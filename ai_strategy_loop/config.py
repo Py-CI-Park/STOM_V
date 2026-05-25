@@ -75,6 +75,22 @@ class LoopConfig:
     #    검증된 단일 종목 5일 런은 ~수십초에 csv_detected까지 도달한다.)
     bt_timeout: int = 300  # 초; BOUNDED 스코프는 이 한참 아래에서 끝나야 한다
 
+    # --- warm 엔진 모드 (전체유니버스 웜풀 백테 세션) ---
+    # bt_engine_mode:
+    #   'warm' — 신규 기본. WarmBacktestSession으로 엔진 32개+데이터를 1회 prepare한 뒤
+    #            세대마다 run()만 호출해 전략만 바꿔 백테한다(세대당 ~60초). 전체유니버스
+    #            충실도를 유지하면서 세대별 subprocess(273초)를 제거한다.
+    #   'cold' — 기존 폴백. 세대마다 stom_backtest.py 서브프로세스를 새로 띄운다
+    #            (run_backtest_for 경로; BOUNDED single_stock/small_universe 스코프).
+    bt_engine_mode: str = "warm"  # 'warm' | 'cold'
+    bt_full_start: int = 20250101  # warm 전체유니버스 시작일 (YYYYMMDD)
+    bt_full_end: int = 20251231    # warm 전체유니버스 종료일 (YYYYMMDD)
+    bt_universe_start_time: int = 90000  # tick 장중 윈도우 시작 (HHMMSS)
+    bt_universe_end_time: int = 92800    # tick 장중 윈도우 종료 (28분; 사용자 Tick 전략 범위)
+    bt_betting: str = "5"  # 종목당 배팅(백만원 단위; 사용자 GUI=5=500만원, fidelity 핵심)
+    bt_avg_time: int = 30  # 평균 틱수 (사용자=30)
+    bt_warm_engine_count: int = 32  # warm 모드 엔진 수(전체유니버스; single_stock용 bt_engine_count와 별도)
+
     # --- small_universe 스코프 (다변화된 소형 유니버스) ---
     # bt_subset_db: build_subset_db.py가 만드는 curated subset back-DB 경로.
     #   small_universe 스코프에서 백테 서브프로세스의 STOM_CLI_DB_STRATEGY 와는
@@ -111,6 +127,17 @@ class LoopConfig:
     #   → 다음 세대 프롬프트 NL 피드백)을 자동으로 공급한다. run_loop에 명시적
     #   autopsy_fn을 넘기면 그쪽이 우선한다. 기본 ON (loop CLI 학습 신호).
     autopsy_enabled: bool = True
+
+    # --- seed-and-refine (시드 출발 + 점진 개선 hill-climb) ---
+    # seed_buy/seed_sell: gen-0에서 생성 대신 평가할 기존 전략 이름(루프 DB).
+    #   주어지면 시드가 곧 첫 출발점이 되고, refine 모드면 gen1+가 이 코드를
+    #   점진 개선한다. None이면 gen-0도 fresh 생성한다(하위호환).
+    seed_buy: Optional[str] = None
+    seed_sell: Optional[str] = None
+    # bt_refine_from_best: True면 gen1+가 현재 best 전략 코드를 출발점으로
+    #   점진 개선한다(seed-and-refine hill-climb). best가 갱신되면 새 best 코드가
+    #   다음 세대의 출발점이 된다. False면 매 세대 백지에서 fresh 생성(기존 동작).
+    bt_refine_from_best: bool = True
 
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":

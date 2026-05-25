@@ -58,6 +58,7 @@ def generate_strategy(
     db_path: str,
     *,
     timeframe: str = "min",
+    base_code: Optional[str] = None,
     autopsy_feedback: Optional[str] = None,
     history_summary: Optional[str] = None,
     retry_max: int = 3,
@@ -71,6 +72,9 @@ def generate_strategy(
         name: 저장 전략 이름 (DB index 컬럼).
         db_path: 저장 대상 strategy DB 경로 (루프 DB / 테스트 tmp DB).
         timeframe: 'min' 또는 'tick'. 프롬프트 지침 + 변수 스코프 가드에 쓰인다.
+        base_code: seed-and-refine 출발점 코드. 주어지면 build_messages가
+            fresh 생성 대신 이 코드를 점진 개선하도록 프롬프트한다. None이면
+            기존 fresh 생성(하위호환).
         autopsy_feedback: 직전 백테스트 부검 피드백(게이트 거리 + 변별 변수).
         history_summary: 누적 세대 이력 요약(CONVERGENCE). build_messages로 전달.
         retry_max: compile/token 실패 시 최대 시도 횟수 (>=1).
@@ -98,6 +102,7 @@ def generate_strategy(
         messages = build_messages(
             kind,
             timeframe=timeframe,
+            base_code=base_code,
             autopsy_feedback=autopsy_feedback,
             history_summary=history_summary,
             prior_error=prior_error,

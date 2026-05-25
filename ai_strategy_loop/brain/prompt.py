@@ -87,6 +87,7 @@ def build_messages(
     kind: str,
     *,
     timeframe: str = "min",
+    base_code: Optional[str] = None,
     autopsy_feedback: Optional[str] = None,
     history_summary: Optional[str] = None,
     prior_error: Optional[str] = None,
@@ -96,6 +97,10 @@ def build_messages(
     Args:
         kind: 'buy' 또는 'sell'.
         timeframe: 'min' 또는 'tick'. 해당 타임프레임 변수 계열만 쓰도록 지시한다.
+        base_code: seed-and-refine 출발점. 현재까지 가장 좋은 전략 코드.
+            주어지면 fresh 생성 대신 이 코드를 **출발점**으로 부검 피드백을
+            반영해 점진 개선(hill-climb)하라고 최우선 지침으로 지시한다.
+            None이면 기존 fresh 생성 동작 그대로(하위호환).
         autopsy_feedback: 직전 백테스트 부검 피드백(게이트 거리 + 변별 변수).
         history_summary: 누적 세대 이력 요약(CONVERGENCE). 무엇을 시도했고
             무엇을 회피할지·어느 방향이 graded를 올리는지 알려준다. 첫 세대면 None.
@@ -126,6 +131,20 @@ def build_messages(
         "- 설명 없이 ```python 코드 블록 하나만 출력한다.",
     ]
     user_lines += _timeframe_lines(timeframe)
+
+    # seed-and-refine 출발점(최우선 지침): 현재까지 가장 좋은 전략을 출발점으로,
+    #   부검 피드백을 반영해 점진 개선(hill-climb)하라고 지시한다. 전면 재작성을
+    #   금지하고 핵심 구조를 유지한 채 1~2개 조건만 조정/추가/완화하게 한다.
+    #   부검/이력보다 앞에 두어 모델이 "어디서 출발하는지"를 먼저 인지하게 한다.
+    if base_code:
+        user_lines += [
+            "",
+            f"아래는 현재까지 가장 좋은 {label['ko']}전략이다. 이것을 **출발점**으로, "
+            "부검 피드백을 반영해 **점진적으로 개선**하라. 전면 재작성 금지 — "
+            "핵심 구조를 유지하고 1~2개 조건만 조정/추가/완화해 "
+            "게이트(거래수/MDD/수익)를 개선하라.",
+            f"```python\n{base_code}\n```",
+        ]
 
     # 0거래 낭비 방지(매수 전략): 진입이 한 번도 안 되면 그 세대는 통째로 버려진다.
     #   매수 전략은 "합리적 거래 빈도"를 목표로 하고, 직전 피드백이 0거래를 가리키면

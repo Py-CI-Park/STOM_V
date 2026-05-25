@@ -289,6 +289,7 @@ def test_loop_feeds_autopsy_summary_into_next_generation(monkeypatch, tmp_path):
     )
 
     config = LoopConfig(provider="openrouter", max_generations=2,
+                        bt_engine_mode="cold",
                         cost_cap_generations=100, cost_cap_tokens=None,
                         autopsy_enabled=True)
     st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))
@@ -353,6 +354,7 @@ def test_loop_autopsy_fn_none_path_still_works(monkeypatch, tmp_path):
 
     # autopsy_enabled=False → 기본 부검 훅 비활성. autopsy_fn도 안 넘김.
     config = LoopConfig(provider="openrouter", max_generations=2,
+                        bt_engine_mode="cold",
                         cost_cap_generations=100, cost_cap_tokens=None,
                         autopsy_enabled=False)
     st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))

@@ -155,6 +155,7 @@ def test_loop_feeds_specific_error_cause_to_next_generation(monkeypatch, tmp_pat
 
     # autopsy_enabled=True여야 실패-원인 피드백이 next-gen에 주입된다.
     config = LoopConfig(provider="openrouter", max_generations=2,
+                        bt_engine_mode="cold",
                         cost_cap_generations=100, cost_cap_tokens=None,
                         autopsy_enabled=True)
     st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))
@@ -215,6 +216,7 @@ def test_success_still_uses_graded_autopsy_path(monkeypatch, tmp_path):
     monkeypatch.setattr(L, "_score_outcome", fake_score)
 
     config = LoopConfig(provider="openrouter", max_generations=2,
+                        bt_engine_mode="cold",
                         cost_cap_generations=100, cost_cap_tokens=None,
                         autopsy_enabled=True, mdd_cap=10.0, min_trades=10)
     st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))

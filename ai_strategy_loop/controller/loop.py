@@ -39,6 +39,8 @@ import time  # noqa: E402
 from typing import Any, Callable, Dict, Optional  # noqa: E402
 
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
+from cli.config import BacktestConfig  # noqa: E402
+from cli.warm_session import WarmBacktestSession  # noqa: E402
 from ai_strategy_loop.controller.history import (  # noqa: E402
     GenRecord,
     build_history_summary,
@@ -314,6 +316,56 @@ def run_backtest_for(config: LoopConfig, buy_name: str, sell_name: str) -> Backt
 
 
 # =====================================================================
+# warm 엔진 모드 (전체유니버스 웜풀 세션) — cold subprocess 경로의 대안.
+# =====================================================================
+def _build_warm_btconfig(config: LoopConfig) -> BacktestConfig:
+    """warm 모드용 BacktestConfig를 LoopConfig의 warm 필드에서 조립한다.
+
+    buy/sell는 빈 문자열로 둔다(run마다 WarmBacktestSession.run에 지정).
+    스코프는 전체유니버스('종목코드별 분류') + 사용자 검증 baseline 파라미터다.
+    """
+    return BacktestConfig(
+        buy_strategy="",
+        sell_strategy="",
+        start_date=config.bt_full_start,
+        end_date=config.bt_full_end,
+        start_time=config.bt_universe_start_time,
+        end_time=config.bt_universe_end_time,
+        avg_time=config.bt_avg_time,
+        engine_count=config.bt_warm_engine_count,
+        is_tick=(config.bt_timeframe == "tick"),
+        betting=config.bt_betting,
+        divid_mode="종목코드별 분류",
+        timeout=getattr(config, "bt_timeout", 3600),
+        verbose=False,
+    )
+
+
+def _warm_to_outcome(result: dict) -> BacktestOutcome:
+    """WarmBacktestSession.run의 result dict를 BacktestOutcome으로 정규화한다.
+
+    run_backtest_for와 동일한 계약(ok=True면 status=='success' + csv_path + metrics).
+    실패는 result의 message/status로 구체 사유를 reason에 보존한다.
+    """
+    result = result or {}
+    status = result.get("status", "error")
+    csv_path = result.get("csv_path")
+    metrics = result.get("metrics")
+    ok = bool(status == "success" and csv_path and metrics)
+    if ok:
+        return BacktestOutcome(True, "success", csv_path, metrics, "ok")
+    message = result.get("message")
+    detail_parts = [f"status={status}"]
+    if message:
+        detail_parts.append(f"message={message}")
+    detail_parts.append(f"csv={'yes' if csv_path else 'no'}")
+    return BacktestOutcome(
+        False, str(status), csv_path, metrics,
+        "warm backtest non-success: " + " ".join(detail_parts),
+    )
+
+
+# =====================================================================
 # 부검 피드백 (US-006 Phase 3) — csv_path → 다음 세대 NL 피드백.
 # =====================================================================
 def _default_autopsy_fn(config: LoopConfig) -> Callable[[str], Optional[str]]:
@@ -383,7 +435,9 @@ def _backtest_error_history_line(reason: str) -> str:
 def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
                    autopsy_feedback: Optional[str],
                    history_summary: Optional[str] = None,
-                   sell_feedback: Optional[str] = None) -> Dict[str, Any]:
+                   sell_feedback: Optional[str] = None,
+                   base_buy_code: Optional[str] = None,
+                   base_sell_code: Optional[str] = None) -> Dict[str, Any]:
     """이 세대의 buy + sell 전략을 생성/저장한다.
 
     Args:
@@ -391,6 +445,10 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             buy 전략 생성에 쓰인다.
         sell_feedback: **매도(SELL)** 측 청산 피드백(give-back/손절/보유시간/매도규칙).
             None이면 buy 측 autopsy_feedback을 sell에도 그대로 쓴다(하위호환).
+        base_buy_code: seed-and-refine 출발점(매수). 주어지면 buy 생성이 이 코드를
+            점진 개선한다. None이면 fresh 생성.
+        base_sell_code: seed-and-refine 출발점(매도). 주어지면 sell 생성이 이 코드를
+            점진 개선한다. None이면 fresh 생성.
 
     Returns:
         {"status": "ok", "buy_name", "sell_name", "tokens"} 또는
@@ -410,9 +468,12 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
     tokens = 0
     for kind, name in (("buy", buy_name), ("sell", sell_name)):
         feedback = sell_fb if kind == "sell" else autopsy_feedback
+        # kind별 출발점 코드(있으면 점진 개선, 없으면 fresh 생성).
+        base_code = base_sell_code if kind == "sell" else base_buy_code
         res = generate_strategy(
             provider, kind, name, db,
             timeframe=config.bt_timeframe,
+            base_code=base_code,
             autopsy_feedback=feedback,
             history_summary=history_summary,
             retry_max=config.max_retries + 1,
@@ -541,8 +602,34 @@ def run_loop(
     cumulative_tokens = 0
     next_autopsy_feedback: Optional[str] = None   # 진입(BUY) 측 다음 세대 피드백.
     next_sell_feedback: Optional[str] = None      # 매도(SELL) 측 다음 세대 청산 피드백.
+    # seed-and-refine: gen1+가 출발점으로 삼을 현재 best 전략 코드(hill-climb).
+    #   gen0 seed 평가 후 시드 코드로 채워지고, best가 갱신될 때마다 새 best 코드로
+    #   갱신된다. None이면 그 세대는 fresh 생성(첫 출발점 미확보 시 정상).
+    base_buy_code: Optional[str] = None
+    base_sell_code: Optional[str] = None
     history_records: list = []  # CONVERGENCE — 누적 GenRecord.
     summary: Optional[Dict[str, Any]] = None
+
+    # warm 엔진 모드: 전체유니버스 엔진/데이터를 1회 prepare하고 세대마다 run()만 호출한다.
+    #   prepare 실패(데이터 부재 등)는 cold(run_backtest_for) 경로로 자동 폴백한다.
+    #   cold 모드면 warm_session은 None으로 두어 기존 subprocess 경로를 그대로 탄다.
+    #   (cumulative_tokens 등 상태 변수 초기화 뒤에 둔다 — _publish_live가 참조.)
+    warm_session = None
+    if getattr(config, "bt_engine_mode", "warm") == "warm":
+        _publish_live(st, rid, config, status="running", current_gen=start_gen,
+                      cumulative_tokens=cumulative_tokens, phase="warm_prepare_start",
+                      message="warm session prepare 시작 (전체유니버스 엔진/데이터 로딩)")
+        warm_session = WarmBacktestSession(_build_warm_btconfig(config))
+        prep = warm_session.prepare()
+        if prep.get("status") != "ok":
+            print(f"[LOOP] warm prepare 실패 → cold 폴백: {prep.get('message')}", flush=True)
+            warm_session = None
+        else:
+            back_count = prep.get("back_count")
+            print(f"[LOOP] warm prepare 완료 (back_count={back_count})", flush=True)
+            _publish_live(st, rid, config, status="running", current_gen=start_gen,
+                          cumulative_tokens=cumulative_tokens, phase="warm_prepare_done",
+                          message=f"warm session 준비 완료 (back_count={back_count})")
 
     # resume 시 기존 best(graded) 복원.
     existing = st.get_run(rid)
@@ -595,13 +682,28 @@ def run_loop(
                 buy_name = seed_buy
                 sell_name = seed_sell
                 print(f"[LOOP] seed 사용: buy={buy_name} sell={sell_name}", flush=True)
+                # seed-and-refine: 시드가 곧 첫 출발점이다. 시드 코드를 base로 채워
+                #   gen1+가 이 코드를 점진 개선(hill-climb)하게 한다.
+                if getattr(config, "bt_refine_from_best", False):
+                    base_buy_code = _read_strategy_code(seed_buy, "buy")
+                    base_sell_code = _read_strategy_code(seed_sell, "sell")
             else:
                 # CONVERGENCE — 누적 이력 요약을 매 세대 만들어 함께 전달한다.
                 history_summary = build_history_summary(history_records)
+                # seed-and-refine: refine 모드면 현재 best 코드를 출발점으로 전달한다.
+                #   base가 아직 None이면(첫 생성 등) fresh 생성으로 자연 폴백한다.
+                refine = getattr(config, "bt_refine_from_best", False)
+                gen_kwargs: Dict[str, Any] = {
+                    "history_summary": history_summary,
+                    "sell_feedback": next_sell_feedback,
+                }
+                if refine and base_buy_code is not None:
+                    gen_kwargs["base_buy_code"] = base_buy_code
+                if refine and base_sell_code is not None:
+                    gen_kwargs["base_sell_code"] = base_sell_code
                 gen_res = _generate_pair(
                     provider, config, rid, gen_no, next_autopsy_feedback,
-                    history_summary=history_summary,
-                    sell_feedback=next_sell_feedback,
+                    **gen_kwargs,
                 )
                 if gen_res.get("status") != "ok":
                     # 생성 실패도 robustness: 이 세대 score=0으로 기록 후 다음으로.
@@ -636,7 +738,14 @@ def run_loop(
                           winner_buy=winner_buy, winner_sell=winner_sell)
             t0 = time.time()
             try:
-                outcome = run_backtest_for(config, buy_name, sell_name)
+                if warm_session is not None:
+                    # warm: 살아있는 엔진에 전략만 바꿔 백테 1회 (세대당 ~60초).
+                    outcome = _warm_to_outcome(
+                        warm_session.run(buy_name, sell_name)
+                    )
+                else:
+                    # cold: 세대마다 stom_backtest.py 서브프로세스 (폴백/기존 경로).
+                    outcome = run_backtest_for(config, buy_name, sell_name)
             except Exception as exc:  # noqa: BLE001 - 어떤 예외든 흡수, 루프 유지.
                 outcome = BacktestOutcome(
                     False, "error", None, None, f"backtest raised: {exc}"
@@ -729,6 +838,15 @@ def run_loop(
                 best_buy = buy_name
                 best_sell = sell_name
                 st.update_best(rid, best_gen, best_score)
+                # seed-and-refine hill-climb: 더 좋은 전략이 나오면 그 코드를
+                #   다음 세대의 새 출발점으로 삼는다(refine 모드일 때만).
+                if getattr(config, "bt_refine_from_best", False):
+                    new_buy_code = _read_strategy_code(buy_name, "buy")
+                    new_sell_code = _read_strategy_code(sell_name, "sell")
+                    if new_buy_code is not None:
+                        base_buy_code = new_buy_code
+                    if new_sell_code is not None:
+                        base_sell_code = new_sell_code
 
             # winner/졸업은 하드 게이트 통과 전략에서만 갱신(graduation 기준 유지).
             if fit.gate_passed and (winner_score is None or fit.score > winner_score):
@@ -781,6 +899,12 @@ def run_loop(
             "stop_reason": stop_reason,
         }
     finally:
+        # warm 세션 정리(엔진/서브토탈/공유메모리) — 프록시/state 정리보다 먼저.
+        if warm_session is not None:
+            try:
+                warm_session.close()
+            except Exception:  # noqa: BLE001 - 세션 정리 실패는 종료를 막지 않음.
+                pass
         # US-007 — 정지 플래그는 run 종료 시 항상 cleanup (다음 run 오염 방지).
         clear_stop_flag()
         if proxy_active:
@@ -881,6 +1005,47 @@ def _score_outcome(outcome: BacktestOutcome, config: LoopConfig):
     except Exception as exc:  # noqa: BLE001
         return None, None, f"compute_fitness 실패: {exc}"
     return fit, graded, None
+
+
+def _read_strategy_code(name: str, kind: str) -> Optional[str]:
+    """루프 DB에서 전략의 전체 코드를 읽는다 (seed-and-refine 출발점용).
+
+    kind=='buy'면 stockbuy, kind=='sell'면 stocksell 테이블의 "전략코드" 컬럼에서
+    name(=index)의 전체 코드를 읽어 반환한다. _strategy_gist의 컬럼 탐지 패턴을
+    재사용한다("전략코드" 우선, 없으면 위치 cols[1] 폴백). 실패하면 None을 돌려
+    호출자가 fresh 생성으로 자연 폴백하게 한다(루프를 막지 않음).
+
+    Args:
+        name: 전략 이름 (DB index 컬럼). None/빈문자열이면 None 반환.
+        kind: 'buy' | 'sell'. 테이블 선택.
+
+    Returns:
+        전체 전략 코드 문자열, 또는 조회 실패/미존재 시 None.
+    """
+    import sqlite3  # noqa: PLC0415
+
+    if not name or kind not in ("buy", "sell"):
+        return None
+    table = "stockbuy" if kind == "buy" else "stocksell"
+    db = str(bootstrap.LOOP_DB_STRATEGY)
+    try:
+        con = sqlite3.connect(db)
+        try:
+            cur = con.cursor()
+            cur.execute(f"PRAGMA table_info({table})")
+            cols = [r[1] for r in cur.fetchall()]
+            # named "전략코드" 우선, 없을 때만 위치 cols[1] 폴백 (_strategy_gist 패턴).
+            code_col = "전략코드" if "전략코드" in cols else (cols[1] if len(cols) >= 2 else "전략코드")
+            row = cur.execute(
+                f'SELECT "{code_col}" FROM {table} WHERE "index" = ?', (name,)
+            ).fetchone()
+        finally:
+            con.close()
+    except Exception:  # noqa: BLE001 - 조회 실패는 None 폴백(fresh 생성).
+        return None
+    if not row or not row[0]:
+        return None
+    return str(row[0])
 
 
 def _strategy_gist(name: str, max_len: int = 90) -> str:
@@ -1026,9 +1191,16 @@ def _main(argv=None) -> int:
     print("[LOOP] provider       :", config.provider, flush=True)
     print("[LOOP] max_generations:", config.max_generations, flush=True)
     print("[LOOP] bt_timeframe   :", config.bt_timeframe, flush=True)
+    print("[LOOP] bt_engine_mode :", config.bt_engine_mode, flush=True)
 
     t0 = time.time()
-    summary = run_loop(config, run_id=args.run_id)
+    # seed-and-refine: config에 seed가 있으면 gen0 출발점으로 전달한다
+    #   (현재 _main은 seed를 안 넘겨 무시되던 것을 배선).
+    summary = run_loop(
+        config, run_id=args.run_id,
+        seed_buy=getattr(config, "seed_buy", None),
+        seed_sell=getattr(config, "seed_sell", None),
+    )
     elapsed = time.time() - t0
 
     print("\n[LOOP] === SUMMARY ===", flush=True)

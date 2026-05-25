@@ -50,7 +50,9 @@ def test_loop_continues_when_backtest_raises(monkeypatch, tmp_path):
 
     monkeypatch.setattr(L, "run_backtest_for", boom)
 
+    # cold 경로(run_backtest_for) robustness 검증이므로 bt_engine_mode='cold'를 명시한다.
     config = LoopConfig(provider="openrouter", max_generations=3,
+                        bt_engine_mode="cold",
                         cost_cap_generations=100, cost_cap_tokens=None)
     st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))
     summary = L.run_loop(config, run_id="boomrun", state=st)
@@ -84,6 +86,7 @@ def test_loop_continues_on_timeout_status(monkeypatch, tmp_path):
     )
 
     config = LoopConfig(provider="openrouter", max_generations=2,
+                        bt_engine_mode="cold",
                         cost_cap_generations=100, cost_cap_tokens=None)
     st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))
     summary = L.run_loop(config, run_id="torun", state=st)
@@ -116,6 +119,7 @@ def test_loop_builds_summary_before_closing_own_state(monkeypatch, tmp_path):
     monkeypatch.setattr(S, "_SNAPSHOT_DIR", tmp_path / "snaps")
 
     config = LoopConfig(provider="openrouter", max_generations=2,
+                        bt_engine_mode="cold",
                         cost_cap_generations=100, cost_cap_tokens=None)
     # state 인자 없음 → run_loop이 자체 LoopState를 만들고 finally에서 닫는다.
     summary = L.run_loop(config, run_id="ownsrun")
@@ -165,6 +169,7 @@ def test_loop_mixes_success_and_failure_and_terminates(monkeypatch, tmp_path):
     monkeypatch.setattr(L, "_strategy_gist", lambda *a, **k: "")
 
     config = LoopConfig(provider="openrouter", max_generations=3,
+                        bt_engine_mode="cold",
                         cost_cap_generations=100, cost_cap_tokens=None)
     st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))
     summary = L.run_loop(config, run_id="mixrun", state=st)

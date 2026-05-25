@@ -115,6 +115,7 @@ def test_loop_stops_at_generation_cap_with_mock_provider(monkeypatch, tmp_path):
         provider="openrouter",         # 프록시 안 띄움.
         target_score=None,
         max_generations=100,
+        bt_engine_mode="cold",         # run_backtest_for(monkeypatch) 경로 검증.
         cost_cap_generations=2,        # 2세대에서 멈춰야 함.
         cost_cap_tokens=None,
     )

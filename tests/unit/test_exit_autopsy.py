@@ -286,6 +286,7 @@ def test_loop_routes_exit_feedback_to_sell_and_entry_to_buy(monkeypatch, tmp_pat
     )
 
     config = LoopConfig(provider="openrouter", max_generations=2,
+                        bt_engine_mode="cold",
                         cost_cap_generations=100, cost_cap_tokens=None,
                         autopsy_enabled=True)
     st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))
@@ -396,6 +397,7 @@ def test_loop_autopsy_fn_none_path_routes_no_feedback(monkeypatch, tmp_path):
     )
 
     config = LoopConfig(provider="openrouter", max_generations=2,
+                        bt_engine_mode="cold",
                         cost_cap_generations=100, cost_cap_tokens=None,
                         autopsy_enabled=False)
     st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))

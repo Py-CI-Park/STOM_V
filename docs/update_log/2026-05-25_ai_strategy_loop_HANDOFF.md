@@ -6,9 +6,29 @@
 ---
 
 ## 0. 한 줄 요약 / 현재 상태
-LLM(GPT-5.5, gpt auth)이 매수/매도 전략 코드를 **생성→백테→채점→부검피드백→재생성**하는 자율 루프 + 실시간 웹 대시보드를 STOM에 구축. **시스템 빌드 ~92% 완료(작동·테스트 검증).** 
-**현재 막힌 핵심(BLOCKER): CLI 백테(`ai-controller run`)가 전체 유니버스에서 23~33분으로 느림 — 사용자는 1~2분 기대.** 이걸 풀어야 루프가 현실적으로 돈다. (§6)
-**수익성(가치증명) 미달**: cold-start 누적 ~50세대에 수익 전략 0개. seed-and-refine(사람 전략 시드 후 개선) 미시도 — 유망 레버. (§7)
+LLM(GPT-5.5, gpt auth)이 매수/매도 전략 코드를 **생성→백테→채점→부검피드백→재생성**하는 자율 루프 + 실시간 웹 대시보드를 STOM에 구축.
+
+### ✅ UPDATE 2026-05-25 (오후 세션) — BLOCKER 해결 + warm-pool + seed-and-refine 완료
+**§6 BLOCKER 완전 해결.** 근본 원인은 CLI 경로 비효율이 아니라 **콜드스타트**였다: CLI는 매 백테마다 엔진 32개를 **순차** spawn(130초) + 데이터 재로딩(80초)하고 끝나면 죽인다(총 ~273초). 실제 연산은 GUI와 동일한 28초. **CLI=GUI 메트릭 완전 일치(betting=5에서 105거래·6.34%·MDD36.38·TPI1.03 정확히 동일)** — CLI 엔진은 정상, 앞선 불일치는 betting 인자(1M vs 5M) 때문이었다. GUI가 빠른 이유: ① `ThreadPoolExecutor` **병렬** spawn ② 엔진을 **살려둔 채 전략만 바꿔 반복**(warm-pool).
+
+**구현·검증 완료(이번 세션):**
+- `cli/warm_session.py` — `WarmBacktestSession`(prepare 1회 178초 → run 세대당 ~50초 → close). 단독 스모크: run1/run2 각 ~60초·105거래 정확 일치·엔진 누수 0.
+- 루프 배선(`controller/loop.py` + `config.py`): `bt_engine_mode='warm'`(기본), `_build_warm_btconfig`, `_warm_to_outcome`, run_loop가 warm 세션을 1회 prepare→세대마다 run→finally close.
+- **견고성**: run 타임아웃이 엔진을 오염시켜 다음 run을 망치던 결함 → `_reset_engines`(`'백테중지'` 핸드셰이크) + `_reload_data`로 복구. 진단+실제 루프 둘 다 검증(gen1 타임아웃 후 gen2 정상).
+- **seed-and-refine**: `build_messages`/`generate_strategy`에 `base_code` + run_loop가 best 전략 코드를 출발점으로 hill-climb. `config.seed_buy/seed_sell/bt_refine_from_best`.
+- 코드리뷰(opus) CRITICAL 1건(`cumulative_tokens` 사용전할당) 수정. 회귀 baseline 유지(7 failed/1480 passed, 신규 0).
+
+**seed-and-refine 첫 실험(Tick_902 시드, warm, tick, 3세대, 792초):**
+- gen0 시드 = 52초·105거래·graded 0.618·MDD36.38(하드게이트 실패)=best.
+- gen1 = 타임아웃(과진입)→리셋복구. gen2 = 40초·248거래·MDD50.72·**수익 음수**(개악).
+- → **인프라(빠름·견고·시드기반) 완성·증명. 남은 과제: 개선이 실제로 climb하도록 튜닝**(프롬프트가 선별성↑·MDD↓·과매매 페널티 유도; graded 가 over-firing 벌점). 시드가 best로 유지됨.
+
+**다음 세션 최우선**: 개선 방향 튜닝(아래 §7'). 인프라는 더 손댈 것 없음.
+**실행법(warm seed-and-refine)**: 시드를 루프 DB에 복사(`_database/strategy.db`→`ai_strategy_loop/state/loop_strategies.db`) 후 `python -m ai_strategy_loop.controller.loop --config-json <warm+seed cfg>`. 예시 cfg: `C:/Temp/warm_seed_cfg.json` 패턴(bt_engine_mode=warm, bt_timeframe=tick, seed_buy/seed_sell, bt_refine_from_best=true, bt_betting="5", bt_warm_engine_count=32).
+
+### (이하 원래 기록 — 역사적)
+**~~현재 막힌 핵심(BLOCKER): CLI 백테가 전체 유니버스에서 23~33분으로 느림~~** → ✅ 위에서 해결(warm-pool).
+**수익성(가치증명)**: cold-start 누적 ~50세대 수익 0. → seed-and-refine 인프라 완성, 개선 튜닝이 다음 레버(§7').
 
 ---
 
