@@ -1,0 +1,257 @@
+"""부검 결과 → 다음 세대 프롬프트용 한국어 자연어 피드백.
+
+목표: AutopsyResult를 곧바로 generate_strategy(autopsy_feedback=...)에 넣을 수 있는
+짧고 실행 가능한 한국어 가이드로 바꾼다.
+
+  - status ok               : 변별력 상위 ~3개 진입 변수를 방향+수치와 함께 짚고,
+                              그 변수의 진입 기준을 어느 쪽으로 조이라고 지시한다.
+  - status insufficient     : "거래가 너무 적었다 → 진입 조건을 완화해 빈도를 높여라".
+  - status single_class     : "전부 수익/손실 → 변별 불가 → 진입 조건을 바꿔 다양성 확보".
+"""
+
+from __future__ import annotations
+
+from typing import Any, List
+
+from .analyze import (
+    STATUS_INSUFFICIENT,
+    STATUS_OK,
+    STATUS_SINGLE_CLASS,
+    AutopsyResult,
+    B_TO_STOM_VAR,
+    Discriminator,
+)
+
+# 요약에 포함할 상위 변별 변수 개수.
+TOP_K = 3
+
+# 백테스트 실패 원인 분류 (다음 세대 피드백 + 이력 라인용).
+#   no_trades     : 진입이 한 번도 안 됨(0거래) → metrics/CSV 없음. 가장 흔한 케이스.
+#   runtime_error : 자식 프로세스 크래시/exec 예외/엔진 오류 → 코드 자체가 깨짐.
+#   timeout       : 제한 시간 초과.
+#   other         : 위 어디에도 안 맞는 경우(raw 원문 노출).
+ERR_NO_TRADES = "no_trades"
+ERR_RUNTIME = "runtime_error"
+ERR_TIMEOUT = "timeout"
+ERR_OTHER = "other"
+
+# runner.run_backtest가 0거래(=metrics 없음)일 때 내는 표준 message.
+#   (cli/runner.py: result['message'] = 'backtest completed without metrics')
+_NO_TRADES_MARKERS = (
+    "completed without metrics",   # CLI/runner: 0거래 → metrics 없음.
+    "without metrics",
+    "no trades",
+)
+# 자식 프로세스 크래시/예외를 나타내는 마커.
+_RUNTIME_MARKERS = (
+    "exited with code",            # runner: Backtest child process exited with code N
+    "moneytop query failed",       # runner: 자식 moneytop 쿼리 실패
+    "traceback",
+    "exception",
+    "nameerror",
+    "typeerror",
+    "valueerror",
+    "keyerror",
+    "indexerror",
+    "attributeerror",
+    "zerodivision",
+    "syntaxerror",
+    "spawn failed",                # loop: backtest spawn failed
+    "raised",                      # loop: backtest raised
+)
+_TIMEOUT_MARKERS = (
+    "timeout",
+    "시간 초과",
+    "timed out",
+)
+
+
+def classify_backtest_error(reason: str) -> str:
+    """백테스트 실패 reason 문자열을 actionable 카테고리로 분류한다.
+
+    reason은 BacktestOutcome.reason (가능하면 runner의 message + last_checkpoint를
+    포함한 구체 원인). 우선순위: timeout > runtime_error > no_trades > other.
+    (timeout/runtime을 먼저 봐서, '0거래'로 오분류되는 것을 막는다.)
+    """
+    text = (reason or "").lower()
+    if any(m in text for m in _TIMEOUT_MARKERS):
+        return ERR_TIMEOUT
+    if any(m in text for m in _RUNTIME_MARKERS):
+        return ERR_RUNTIME
+    if any(m in text for m in _NO_TRADES_MARKERS):
+        return ERR_NO_TRADES
+    return ERR_OTHER
+
+
+def backtest_error_feedback(reason: str, *, min_trades: int = 0) -> str:
+    """백테스트 실패 원인을 분류해 다음 세대용 actionable 한국어 피드백을 만든다.
+
+    '왜 실패했는지'를 모델이 보고 맹목 변이 대신 원인을 직접 겨냥하게 한다:
+      - no_trades     : 진입 조건이 너무 엄격 → 완화하라.
+      - runtime_error : exec/엔진 오류 → 그 오류(변수/로직)를 피하라(원문 포함).
+      - timeout       : 너무 무겁다 → 단순화하라.
+      - other         : raw 원문을 그대로 노출(정보 손실 없이).
+
+    항상 비어 있지 않은 문자열을 반환한다.
+    """
+    category = classify_backtest_error(reason)
+    raw = (reason or "").strip() or "(원인 미상)"
+
+    if category == ERR_NO_TRADES:
+        min_hint = f"(최소 {min_trades}건 필요) " if min_trades else ""
+        return (
+            f"직전 세대 백테스트 실패 원인 = 거래 0건(진입이 한 번도 발생하지 않음) {min_hint}"
+            f"→ 진입 조건이 너무 엄격하다. 진입 조건을 완화하라: 과도하게 좁은 "
+            f"임계값·AND 조건을 줄이고 진입 문턱을 낮춰 실제로 거래가 발생하게 하라."
+        )
+
+    if category == ERR_RUNTIME:
+        return (
+            f"직전 세대 백테스트 실패 원인 = 런타임 오류(전략 코드 실행 중 예외/엔진 오류): "
+            f"{raw} → 이 변수명/로직 오류를 피하라. 정의되지 않은 변수나 잘못된 연산을 "
+            f"쓰지 말고, 검증된 진입 변수만 사용하라."
+        )
+
+    if category == ERR_TIMEOUT:
+        return (
+            f"직전 세대 백테스트 실패 원인 = 시간 초과: {raw} → 전략이 너무 무겁다. "
+            f"조건 수를 줄이고 단순화하라."
+        )
+
+    return (
+        f"직전 세대 백테스트 실패 원인 = {raw} → 이 오류를 직접 겨냥해 개선하라."
+    )
+
+
+def backtest_error_history_line(reason: str) -> str:
+    """실패 세대가 누적 이력(GenRecord.gate_reason)에 남길 구체 사유 라인.
+
+    이력 요약에 '백테스트 실패/거래 0건' 같은 공백 라인 대신 분류된 구체 사유를 남겨,
+    다음 세대가 'gen N: backtest error — <구체 원인>'을 보게 한다.
+    """
+    category = classify_backtest_error(reason)
+    raw = (reason or "").strip() or "원인 미상"
+    label = {
+        ERR_NO_TRADES: "거래 0건(진입 조건 과엄격)",
+        ERR_RUNTIME: f"런타임 오류({raw})",
+        ERR_TIMEOUT: f"시간 초과({raw})",
+        ERR_OTHER: raw,
+    }[category]
+    return f"백테스트 실패 — {label}"
+
+
+def _fmt(value: float) -> str:
+    """평균값을 사람이 읽기 좋은 형태로 — 정수면 정수, 아니면 유효숫자 4자리."""
+    if abs(value) >= 1000 or value == int(value):
+        return f"{value:,.0f}"
+    return f"{value:.4g}"
+
+
+def _discriminator_line(d: Discriminator) -> str:
+    """변별 변수 한 줄: 방향 + 수치 + 튜닝 지시."""
+    stom_var = B_TO_STOM_VAR.get(d.column, d.column)
+    win_s = _fmt(d.win_mean)
+    loss_s = _fmt(d.loss_mean)
+    if d.std_mean_diff > 0:
+        # 수익 거래에서 더 컸다 → 손실 거래는 이 값이 낮았다 → 기준을 높여라.
+        return (
+            f"- 손실 거래는 진입 시 {d.column}가 낮았다"
+            f"(손실 평균 {loss_s} vs 수익 평균 {win_s})"
+            f" → {stom_var} 진입 기준을 높여라."
+        )
+    # 손실 거래에서 더 컸다 → 기준을 낮춰라.
+    return (
+        f"- 손실 거래는 진입 시 {d.column}가 높았다"
+        f"(손실 평균 {loss_s} vs 수익 평균 {win_s})"
+        f" → {stom_var} 진입 기준을 낮춰라."
+    )
+
+
+def gate_failure_directive(
+    *,
+    gate_passed: bool,
+    gate_reason: str,
+    mdd: float = 0.0,
+    mdd_cap: float = 0.0,
+    total_profit: float = 0.0,
+    trade_count: int = 0,
+    min_trades: int = 0,
+) -> str:
+    """게이트 실패 '원인'을 직접 겨냥하는 한 줄 지시문을 만든다.
+
+    MDD/손익 실패는 **매도(SELL) 전략**이 핵심이므로 매도를 고치라고 명시한다.
+    거래 부족은 진입을 완화하라고 한다. 통과 시엔 빈 문자열.
+
+    이 문자열은 summarize의 변별 변수 가이드와 합쳐져, 다음 세대가 (1) 게이트
+    실패 원인과 (2) 승패 변별 변수를 동시에 보게 한다.
+    """
+    if gate_passed:
+        return ""
+
+    parts: List[str] = []
+    if min_trades > 0 and trade_count < min_trades:
+        parts.append(
+            f"거래가 {trade_count}건(<{min_trades})으로 너무 적다 → 진입 조건을 완화해 "
+            f"거래 빈도를 높여라."
+        )
+    if mdd_cap > 0 and abs(mdd) > mdd_cap:
+        parts.append(
+            f"MDD가 {abs(mdd):.4g}로 한도({mdd_cap:.4g})를 초과한다 → 매도(SELL) 전략에서 "
+            f"손절을 강화하고 더 빨리 청산하라(트레일링/고정 손절 추가). 거래수는 유지하라."
+        )
+    if total_profit < 0:
+        parts.append(
+            f"총손익이 음수({total_profit:,.0f})다 → 진입 품질을 높이고(승률 낮은 진입 제거), "
+            f"매도(SELL)에서 손실 거래를 더 빨리 끊어라."
+        )
+    if not parts:
+        # gate_reason만 있는 경우(드묾) 그대로 노출.
+        if gate_reason:
+            return f"게이트 실패 원인: {gate_reason} → 이를 직접 겨냥해 개선하라."
+        return ""
+    return "게이트 실패 원인을 직접 겨냥하라:\n" + "\n".join(f"- {p}" for p in parts)
+
+
+def summarize(result: AutopsyResult, config: Any = None) -> str:
+    """AutopsyResult를 다음 세대 프롬프트용 한국어 피드백 문자열로 변환한다.
+
+    Args:
+        result: analyze_trades 결과.
+        config: LoopConfig 등 (현재는 미사용 — 인터페이스 안정성용 슬롯).
+
+    Returns:
+        몇 줄짜리 한국어 가이드. 항상 비어 있지 않은 문자열.
+    """
+    min_trades = result.min_trades
+
+    if result.status == STATUS_INSUFFICIENT:
+        return (
+            f"직전 전략은 거래 {result.trade_count}건(<최소 {min_trades})으로 너무 적었다 "
+            f"→ 진입 조건을 완화해 거래 빈도를 높여라. "
+            f"(과도하게 좁은 임계값·AND 조건을 줄이고 진입 문턱을 낮춰라.)"
+        )
+
+    if result.status == STATUS_SINGLE_CLASS:
+        only = "수익" if result.loss_count == 0 else "손실"
+        return (
+            f"직전 전략은 거래 {result.trade_count}건이 모두 {only}이었다 "
+            f"→ 수익/손실 변별이 불가하다. 진입 조건을 바꿔 거래 다양성을 확보하라."
+        )
+
+    # status ok
+    top = result.discriminators[:TOP_K]
+    if not top:
+        # 거래는 충분하지만 분석 가능한 B_ 컬럼이 없던 드문 경우.
+        return (
+            f"직전 전략은 거래 {result.trade_count}건(수익 {result.win_count}/"
+            f"손실 {result.loss_count})이었으나 분석 가능한 진입 변수가 없었다 "
+            f"→ 진입 조건을 더 명시적인 변수(체결강도/등락율/당일거래대금 등)로 구성하라."
+        )
+
+    lines: List[str] = [
+        f"직전 백테스트 부검: 거래 {result.trade_count}건"
+        f"(수익 {result.win_count}/손실 {result.loss_count}). "
+        f"수익과 손실을 가장 잘 가른 진입 조건은 다음과 같다. 이를 반영해 개선하라:",
+    ]
+    lines += [_discriminator_line(d) for d in top]
+    return "\n".join(lines)

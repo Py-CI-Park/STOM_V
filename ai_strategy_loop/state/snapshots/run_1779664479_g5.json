@@ -1,0 +1,14 @@
+{
+  "run_id": "run_1779664479",
+  "gen_no": 5,
+  "buy_name": "AILOOP_run_1779664479_g5_buy",
+  "sell_name": "AILOOP_run_1779664479_g5_sell",
+  "status": "ok",
+  "score": 0.6494440806804037,
+  "calmar": -18.25510204081633,
+  "uptrend_r2": 0.9999228095351549,
+  "gate_passed": false,
+  "reason": "trade_count 3 < min_trades 30",
+  "csv_path": "backtest/csv\\stock_bt_AILOOP_run_1779664479_g5_buy_20260525082203.csv",
+  "trade_count": 3
+}

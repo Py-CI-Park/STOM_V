@@ -1,0 +1,14 @@
+{
+  "run_id": "run_1779664479",
+  "gen_no": 3,
+  "buy_name": "AILOOP_run_1779664479_g3_buy",
+  "sell_name": "AILOOP_run_1779664479_g3_sell",
+  "status": "error",
+  "score": 0.0,
+  "calmar": 0.0,
+  "uptrend_r2": 0.0,
+  "gate_passed": false,
+  "reason": "backtest failed/timeout: backtest non-success: exit=2 status=error csv=no",
+  "csv_path": null,
+  "trade_count": 0
+}
