@@ -14,20 +14,32 @@ analyze_trades(is_holdout=True)는 ValueError를 던진다.
 
 from __future__ import annotations
 
-from .analyze import AutopsyResult, Discriminator, analyze_trades
+from .analyze import (
+    AutopsyResult,
+    Discriminator,
+    ExitAutopsyResult,
+    SellRuleStat,
+    analyze_exits,
+    analyze_trades,
+)
 from .summarize import (
     backtest_error_feedback,
     backtest_error_history_line,
     classify_backtest_error,
     gate_failure_directive,
     summarize,
+    summarize_exits,
 )
 
 __all__ = [
     "AutopsyResult",
     "Discriminator",
+    "ExitAutopsyResult",
+    "SellRuleStat",
     "analyze_trades",
+    "analyze_exits",
     "summarize",
+    "summarize_exits",
     "gate_failure_directive",
     "classify_backtest_error",
     "backtest_error_feedback",

@@ -27,7 +27,7 @@ def _neutralize_provider_and_generation(monkeypatch):
     monkeypatch.setattr(L, "_make_provider_with_proxy", lambda cfg: (object(), False))
     monkeypatch.setattr(
         L, "_generate_pair",
-        lambda provider, cfg, rid, gen, fb, history_summary=None: {
+        lambda provider, cfg, rid, gen, fb, history_summary=None, sell_feedback=None: {
             "status": "ok",
             "buy_name": f"AILOOP_{rid}_g{gen}_buy",
             "sell_name": f"AILOOP_{rid}_g{gen}_sell",

@@ -317,9 +317,9 @@ def run_backtest_for(config: LoopConfig, buy_name: str, sell_name: str) -> Backt
 # 부검 피드백 (US-006 Phase 3) — csv_path → 다음 세대 NL 피드백.
 # =====================================================================
 def _default_autopsy_fn(config: LoopConfig) -> Callable[[str], Optional[str]]:
-    """csv_path를 받아 다음 세대 프롬프트용 부검 피드백 문자열을 만드는 기본 훅.
+    """csv_path를 받아 다음 세대 프롬프트용 **진입(BUY)** 부검 피드백을 만드는 기본 훅.
 
-    analyze_trades(working-window 거래 통계) → summarize(NL 가이드).
+    analyze_trades(working-window 진입 변별 통계) → summarize(NL 가이드).
     부검 실패/예외는 run_loop의 autopsy hook에서 흡수되므로 여기선 예외를
     던져도 안전하나, csv 자체 문제는 깔끔히 None을 반환한다.
     """
@@ -333,6 +333,26 @@ def _default_autopsy_fn(config: LoopConfig) -> Callable[[str], Optional[str]]:
         abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
         result = analyze_trades(abs_csv, min_trades=min_trades)
         return summarize(result, config)
+
+    return _fn
+
+
+def _default_exit_autopsy_fn(config: LoopConfig) -> Callable[[str], Optional[str]]:
+    """csv_path를 받아 다음 세대 **매도(SELL)** 전략용 청산 부검 피드백을 만드는 훅.
+
+    analyze_exits(give-back/MAE depth/보유시간/매도규칙) → summarize_exits(NL 가이드).
+    PROFITABILITY 신호의 핵심: 손익을 가르는 매도 측을 직접 겨냥한다.
+    """
+    from ai_strategy_loop.autopsy import analyze_exits, summarize_exits  # noqa: PLC0415
+
+    min_trades = int(getattr(config, "min_trades", 10) or 10)
+
+    def _fn(csv_path: str) -> Optional[str]:
+        if not csv_path:
+            return None
+        abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+        result = analyze_exits(abs_csv, min_trades=min_trades)
+        return summarize_exits(result, config)
 
     return _fn
 
@@ -362,8 +382,15 @@ def _backtest_error_history_line(reason: str) -> str:
 # =====================================================================
 def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
                    autopsy_feedback: Optional[str],
-                   history_summary: Optional[str] = None) -> Dict[str, Any]:
+                   history_summary: Optional[str] = None,
+                   sell_feedback: Optional[str] = None) -> Dict[str, Any]:
     """이 세대의 buy + sell 전략을 생성/저장한다.
+
+    Args:
+        autopsy_feedback: **진입(BUY)** 측 피드백(진입 변별 변수 + 게이트 거리).
+            buy 전략 생성에 쓰인다.
+        sell_feedback: **매도(SELL)** 측 청산 피드백(give-back/손절/보유시간/매도규칙).
+            None이면 buy 측 autopsy_feedback을 sell에도 그대로 쓴다(하위호환).
 
     Returns:
         {"status": "ok", "buy_name", "sell_name", "tokens"} 또는
@@ -377,12 +404,16 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
     sell_name = f"AILOOP_{run_id}_g{gen_no}_sell"
     dedup = DedupTracker(k=5)
 
+    # 매도 전략엔 청산 부검 피드백을 준다(없으면 buy 피드백으로 폴백 = 하위호환).
+    sell_fb = sell_feedback if sell_feedback is not None else autopsy_feedback
+
     tokens = 0
     for kind, name in (("buy", buy_name), ("sell", sell_name)):
+        feedback = sell_fb if kind == "sell" else autopsy_feedback
         res = generate_strategy(
             provider, kind, name, db,
             timeframe=config.bt_timeframe,
-            autopsy_feedback=autopsy_feedback,
+            autopsy_feedback=feedback,
             history_summary=history_summary,
             retry_max=config.max_retries + 1,
             dedup=dedup,
@@ -483,6 +514,13 @@ def run_loop(
     if effective_autopsy_fn is None and getattr(config, "autopsy_enabled", False):
         effective_autopsy_fn = _default_autopsy_fn(config)
 
+    # 매도(SELL) 측 청산 부검 훅: 명시 autopsy_fn이 주어지면 그것을 진입/청산 양쪽에
+    #   쓰던 기존 계약을 유지하기 위해 sell 측엔 별도 훅을 만들지 않는다(autopsy_fn이
+    #   곧 buy 피드백). autopsy_fn 미지정 + autopsy_enabled면 청산 부검 기본 훅을 켠다.
+    effective_exit_autopsy_fn: Optional[Callable[[str], Optional[str]]] = None
+    if autopsy_fn is None and getattr(config, "autopsy_enabled", False):
+        effective_exit_autopsy_fn = _default_exit_autopsy_fn(config)
+
     rid = st.resume_or_start(config, run_id=run_id)
     start_gen = st.get_last_completed_gen(rid) + 1
 
@@ -501,7 +539,8 @@ def run_loop(
     winner_score = None  # 통과 세대의 하드 composite 점수.
     stop_reason = "continue"
     cumulative_tokens = 0
-    next_autopsy_feedback: Optional[str] = None
+    next_autopsy_feedback: Optional[str] = None   # 진입(BUY) 측 다음 세대 피드백.
+    next_sell_feedback: Optional[str] = None      # 매도(SELL) 측 다음 세대 청산 피드백.
     history_records: list = []  # CONVERGENCE — 누적 GenRecord.
     summary: Optional[Dict[str, Any]] = None
 
@@ -562,6 +601,7 @@ def run_loop(
                 gen_res = _generate_pair(
                     provider, config, rid, gen_no, next_autopsy_feedback,
                     history_summary=history_summary,
+                    sell_feedback=next_sell_feedback,
                 )
                 if gen_res.get("status") != "ok":
                     # 생성 실패도 robustness: 이 세대 score=0으로 기록 후 다음으로.
@@ -632,8 +672,12 @@ def run_loop(
                 ))
                 # 다음 세대엔 '구체 원인'을 겨냥한 피드백(0거래면 완화, 런타임 오류면
                 #   그 오류를 피하라 등) + 누적 이력을 함께 전달한다.
-                if effective_autopsy_fn is not None:
-                    next_autopsy_feedback = _backtest_error_feedback(outcome.reason, config)
+                #   실패(거래 0건/크래시)는 CSV가 없어 청산 부검을 못 하므로, 동일한
+                #   원인 피드백을 매도 측에도 전달한다(특히 0거래면 진입 완화가 핵심).
+                if effective_autopsy_fn is not None or effective_exit_autopsy_fn is not None:
+                    err_fb = _backtest_error_feedback(outcome.reason, config)
+                    next_autopsy_feedback = err_fb
+                    next_sell_feedback = err_fb
                 gen_no += 1
                 continue
 
@@ -693,9 +737,11 @@ def run_loop(
                 winner_buy = buy_name
                 winner_sell = sell_name
 
-            # --- f. 다음 세대 피드백: 게이트-거리 지시 + 부검 변별 변수 ---
-            next_autopsy_feedback = _build_feedback(
-                config, outcome, fit, graded, effective_autopsy_fn
+            # --- f. 다음 세대 피드백: 진입(BUY) = 게이트-거리 + 진입 변별 변수,
+            #        매도(SELL) = 게이트-거리 + 청산(give-back/손절/보유/매도규칙) ---
+            next_autopsy_feedback, next_sell_feedback = _build_feedback(
+                config, outcome, fit, graded,
+                effective_autopsy_fn, effective_exit_autopsy_fn,
             )
 
             # US-007 — 세대 완료 라이브 발행 (generations 갱신 반영).
@@ -762,15 +808,21 @@ def run_loop(
     return summary
 
 
-def _build_feedback(config, outcome, fit, graded, effective_autopsy_fn):
-    """다음 세대 피드백을 조립한다: (1) 게이트-거리 지시 + (2) 승패 변별 변수.
+def _build_feedback(config, outcome, fit, graded,
+                    effective_autopsy_fn, effective_exit_autopsy_fn=None):
+    """다음 세대 피드백을 진입(BUY)/매도(SELL) 두 갈래로 조립한다.
 
-    게이트 실패면 그 원인(MDD/손익/거래수)을 직접 겨냥하는 지시문을 앞에 붙이고,
-    그 뒤에 부검(win/loss B_* 변별) 가이드를 잇는다. 부검 실패는 루프를 막지 않는다.
+    공통: 게이트 실패면 그 원인(MDD/손익/거래수)을 직접 겨냥하는 지시문을 앞에 붙인다.
+      - BUY 피드백 = 게이트 지시 + 진입 부검(win/loss B_* 변별).
+      - SELL 피드백 = 게이트 지시 + 청산 부검(give-back/손절/보유시간/매도규칙).
+
+    부검 실패는 루프를 막지 않는다(예외 흡수). 둘 다 None이면 (None, None).
+
+    Returns:
+        (buy_feedback, sell_feedback) — 각각 str 또는 None.
     """
     from ai_strategy_loop.autopsy import gate_failure_directive  # noqa: PLC0415
 
-    parts = []
     directive = gate_failure_directive(
         gate_passed=fit.gate_passed,
         gate_reason=graded.gate_distance,
@@ -780,19 +832,29 @@ def _build_feedback(config, outcome, fit, graded, effective_autopsy_fn):
         trade_count=fit.trade_count,
         min_trades=int(getattr(config, "min_trades", 0) or 0),
     )
-    if directive:
-        parts.append(directive)
 
-    if effective_autopsy_fn is not None and outcome.csv_path:
+    def _run_autopsy(fn, label):
+        if fn is None or not outcome.csv_path:
+            return None
         try:
-            autopsy_text = effective_autopsy_fn(outcome.csv_path)
+            return fn(outcome.csv_path)
         except Exception as exc:  # noqa: BLE001 - 부검 실패는 루프를 막지 않음.
-            logger.info("autopsy_fn 실패(무시): %s", exc)
-            autopsy_text = None
-        if autopsy_text:
-            parts.append(autopsy_text)
+            logger.info("%s 실패(무시): %s", label, exc)
+            return None
 
-    return "\n\n".join(parts) if parts else None
+    buy_parts = [directive] if directive else []
+    buy_autopsy = _run_autopsy(effective_autopsy_fn, "buy autopsy_fn")
+    if buy_autopsy:
+        buy_parts.append(buy_autopsy)
+
+    sell_parts = [directive] if directive else []
+    sell_autopsy = _run_autopsy(effective_exit_autopsy_fn, "exit autopsy_fn")
+    if sell_autopsy:
+        sell_parts.append(sell_autopsy)
+
+    buy_fb = "\n\n".join(buy_parts) if buy_parts else None
+    sell_fb = "\n\n".join(sell_parts) if sell_parts else None
+    return buy_fb, sell_fb
 
 
 def _score_outcome(outcome: BacktestOutcome, config: LoopConfig):

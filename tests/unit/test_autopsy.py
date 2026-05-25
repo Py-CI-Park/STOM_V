@@ -251,7 +251,8 @@ def test_loop_feeds_autopsy_summary_into_next_generation(monkeypatch, tmp_path):
     # generate_strategy(autopsy_feedback=fb)로 흘러가는 값이다.
     captured = {}
 
-    def fake_generate_pair(provider, cfg, rid, gen, fb, history_summary=None):
+    def fake_generate_pair(provider, cfg, rid, gen, fb, history_summary=None,
+                           sell_feedback=None):
         captured[gen] = fb
         return {
             "status": "ok",
@@ -316,7 +317,8 @@ def test_loop_autopsy_fn_none_path_still_works(monkeypatch, tmp_path):
 
     captured = {}
 
-    def fake_generate_pair(provider, cfg, rid, gen, fb, history_summary=None):
+    def fake_generate_pair(provider, cfg, rid, gen, fb, history_summary=None,
+                           sell_feedback=None):
         captured[gen] = fb
         return {
             "status": "ok",

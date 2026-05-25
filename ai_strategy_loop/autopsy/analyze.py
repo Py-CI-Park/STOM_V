@@ -54,6 +54,16 @@ STATUS_OK = "ok"
 STATUS_INSUFFICIENT = "insufficient_trades"
 STATUS_SINGLE_CLASS = "single_class"
 
+# --- 청산(EXIT) 부검용 컬럼 ---
+# 거래당 결과 컬럼 (back_static.py TRADE_RESULT_R_COLUMNS 와 동일 의미).
+MFE_COLUMN = "R_매수후최고수익률"   # 매수 후 최고 수익률(Max Favorable Excursion).
+MAE_COLUMN = "R_매수후최저수익률"   # 매수 후 최저 수익률(Max Adverse Excursion).
+HOLD_COLUMN = "보유시간"            # 보유 시간(분/틱 단위).
+SELL_RULE_COLUMN = "매도조건"        # 발화한 매도 규칙 원문(어떤 청산 룰이 닫았는지).
+
+# give-back 판정 기준: MFE가 이 값(%) 이상이었던 거래만 "익절 기회가 있었다"로 본다.
+DEFAULT_GIVEBACK_MFE_THRESHOLD = 1.0
+
 
 @dataclass
 class Discriminator:
@@ -212,3 +222,206 @@ def analyze_trades(
         discriminators=discriminators, status=STATUS_OK, min_trades=min_trades,
         note=note,
     )
+
+
+# =====================================================================
+# 청산(EXIT) 부검 — 매도 전략/되돌림/손절 깊이를 분석한다 (US-006 PROFITABILITY).
+# =====================================================================
+@dataclass
+class SellRuleStat:
+    """한 매도 규칙(매도조건 원문)의 발화 통계."""
+
+    rule: str            # 매도조건 원문(if ...:) — 어떤 청산 룰이 닫았는지.
+    count: int           # 이 규칙으로 청산된 거래 수.
+    win_count: int       # 그중 수익 거래 수.
+    loss_count: int      # 그중 손실 거래 수.
+    avg_return: float    # 이 규칙으로 닫힌 거래의 평균 실현 수익률(%).
+
+
+@dataclass
+class ExitAutopsyResult:
+    """청산(EXIT)-측 부검 1회 결과.
+
+    매도 전략 개선을 직접 겨냥한다:
+      - give-back: 수익 거래가 고점(MFE) 대비 얼마를 되돌려 반납했는가.
+      - MAE depth: 손실 거래가 청산 전 얼마나 깊이 물렸는가(손절 느슨함).
+      - holding time: 수익 vs 손실 거래의 평균 보유 시간.
+      - sell-rule 분포: 어떤 매도 규칙이 손실에 연관됐는가.
+
+    status:
+      - 'ok'                  : 통계 산출됨.
+      - 'insufficient_trades' : 거래 0건 또는 min_trades 미만.
+      - 'single_class'        : 전부 수익 또는 전부 손실(give-back/MAE 대비 불가하지만,
+                                존재하는 쪽 통계는 채운다).
+    """
+
+    trade_count: int
+    win_count: int
+    loss_count: int
+    # give-back (수익 거래 기준, MFE>=threshold 인 거래만).
+    giveback_eligible: int = 0       # MFE>=threshold 였던 거래 수(익절 기회).
+    avg_mfe_winners: float = 0.0     # 수익 거래 평균 MFE(%).
+    avg_realized_winners: float = 0.0  # 수익 거래 평균 실현 수익률(%).
+    giveback_gap_winners: float = 0.0  # 수익 거래의 평균 (MFE - 실현) = 반납 폭(%).
+    avg_mfe_all: float = 0.0         # 전체 거래 평균 MFE(%).
+    avg_realized_all: float = 0.0    # 전체 거래 평균 실현 수익률(%).
+    giveback_gap_all: float = 0.0    # 전체 평균 반납 폭(%).
+    # MAE depth (손실 거래 기준).
+    avg_mae_losers: float = 0.0      # 손실 거래 평균 MAE(%, 보통 음수).
+    worst_mae_losers: float = 0.0    # 손실 거래 최악 MAE(%).
+    # holding time.
+    avg_hold_winners: float = 0.0
+    avg_hold_losers: float = 0.0
+    # sell-rule 분포 (count 내림차순).
+    sell_rules: List[SellRuleStat] = field(default_factory=list)
+    worst_sell_rule: Optional[str] = None  # 평균 수익률이 가장 낮은(손실 집중) 규칙.
+    status: str = STATUS_OK
+    note: str = ""
+    min_trades: int = DEFAULT_MIN_TRADES
+    giveback_mfe_threshold: float = DEFAULT_GIVEBACK_MFE_THRESHOLD
+
+
+def analyze_exits(
+    csv_path: str,
+    *,
+    min_trades: int = DEFAULT_MIN_TRADES,
+    giveback_mfe_threshold: float = DEFAULT_GIVEBACK_MFE_THRESHOLD,
+    is_holdout: bool = False,
+) -> ExitAutopsyResult:
+    """거래 CSV를 읽어 **청산(매도)** 측 신호를 분석한다(수익성 직결).
+
+    entry(B_*) 변별이 아니라 give-back / MAE depth / 보유시간 / 매도규칙 분포를
+    계산해 매도 전략 개선을 겨냥한다.
+
+    Args:
+        csv_path: 백테스트 결과 CSV(utf-8-sig, 거래당 1행).
+        min_trades: 통계 산출 최소 거래 수 (미만이면 insufficient_trades).
+        giveback_mfe_threshold: give-back 판정 MFE 문턱(%). 이 값 이상이었던 거래만
+            "익절 기회가 있었다"로 본다.
+        is_holdout: True면 ValueError (부검은 working/train 거래에서만, RV2-4/A5).
+
+    Returns:
+        ExitAutopsyResult. 데이터 모양 문제(0건/컬럼없음)는 예외가 아니라 status로.
+
+    Raises:
+        ValueError: is_holdout=True 일 때.
+    """
+    if is_holdout:
+        raise ValueError(
+            "autopsy must run on working/train trades only — holdout 거래로는 부검 금지 (RV2-4/A5)"
+        )
+
+    try:
+        df = pd.read_csv(csv_path, encoding="utf-8-sig")
+    except pd.errors.EmptyDataError:
+        return ExitAutopsyResult(
+            trade_count=0, win_count=0, loss_count=0,
+            status=STATUS_INSUFFICIENT, min_trades=min_trades,
+            giveback_mfe_threshold=giveback_mfe_threshold,
+            note="CSV가 비어 있다 — 거래 0건.",
+        )
+
+    if RETURN_COLUMN not in df.columns:
+        return ExitAutopsyResult(
+            trade_count=int(len(df)), win_count=0, loss_count=0,
+            status=STATUS_INSUFFICIENT, min_trades=min_trades,
+            giveback_mfe_threshold=giveback_mfe_threshold,
+            note=f"수익률 컬럼('{RETURN_COLUMN}')이 없어 청산 분석 불가.",
+        )
+
+    returns = pd.to_numeric(df[RETURN_COLUMN], errors="coerce")
+    valid_mask = returns.notna()
+    df = df.loc[valid_mask].reset_index(drop=True)
+    returns = returns.loc[valid_mask].reset_index(drop=True)
+
+    trade_count = int(len(df))
+    is_win = returns > 0
+    win_count = int(is_win.sum())
+    loss_count = trade_count - win_count
+
+    if trade_count == 0:
+        return ExitAutopsyResult(
+            trade_count=0, win_count=0, loss_count=0,
+            status=STATUS_INSUFFICIENT, min_trades=min_trades,
+            giveback_mfe_threshold=giveback_mfe_threshold,
+            note="거래 0건 — 진입이 한 번도 발생하지 않았다.",
+        )
+    if trade_count < min_trades:
+        return ExitAutopsyResult(
+            trade_count=trade_count, win_count=win_count, loss_count=loss_count,
+            status=STATUS_INSUFFICIENT, min_trades=min_trades,
+            giveback_mfe_threshold=giveback_mfe_threshold,
+            note=f"거래 {trade_count}건 < 최소 {min_trades}건 — 통계가 무의미하다.",
+        )
+
+    # MFE/실현 수익률 — give-back. MFE 컬럼이 없으면 give-back은 0으로 둔다.
+    mfe = pd.to_numeric(df[MFE_COLUMN], errors="coerce") if MFE_COLUMN in df.columns else None
+    mae = pd.to_numeric(df[MAE_COLUMN], errors="coerce") if MAE_COLUMN in df.columns else None
+
+    res = ExitAutopsyResult(
+        trade_count=trade_count, win_count=win_count, loss_count=loss_count,
+        status=STATUS_SINGLE_CLASS if (win_count == 0 or loss_count == 0) else STATUS_OK,
+        min_trades=min_trades, giveback_mfe_threshold=giveback_mfe_threshold,
+    )
+
+    if mfe is not None:
+        all_mfe = mfe.dropna()
+        if len(all_mfe) > 0:
+            res.avg_mfe_all = float(all_mfe.mean())
+        # 전체 give-back gap = 평균 MFE - 평균 실현.
+        res.avg_realized_all = float(returns.mean())
+        res.giveback_gap_all = res.avg_mfe_all - res.avg_realized_all
+
+        # 수익 거래 give-back (익절 기회가 있던 거래: MFE>=threshold).
+        win_mfe = mfe[is_win].dropna()
+        win_ret = returns[is_win]
+        if len(win_mfe) > 0:
+            res.avg_mfe_winners = float(win_mfe.mean())
+            res.avg_realized_winners = float(win_ret.dropna().mean())
+            res.giveback_gap_winners = res.avg_mfe_winners - res.avg_realized_winners
+        eligible_mask = (mfe >= giveback_mfe_threshold) & is_win
+        res.giveback_eligible = int(eligible_mask.fillna(False).sum())
+
+    # MAE depth (손실 거래).
+    if mae is not None and loss_count > 0:
+        loss_mae = mae[~is_win].dropna()
+        if len(loss_mae) > 0:
+            res.avg_mae_losers = float(loss_mae.mean())
+            res.worst_mae_losers = float(loss_mae.min())
+
+    # 보유시간 (수익 vs 손실).
+    if HOLD_COLUMN in df.columns:
+        hold = pd.to_numeric(df[HOLD_COLUMN], errors="coerce")
+        win_hold = hold[is_win].dropna()
+        loss_hold = hold[~is_win].dropna()
+        if len(win_hold) > 0:
+            res.avg_hold_winners = float(win_hold.mean())
+        if len(loss_hold) > 0:
+            res.avg_hold_losers = float(loss_hold.mean())
+
+    # 매도규칙(매도조건) 분포 + 손실 집중 규칙.
+    if SELL_RULE_COLUMN in df.columns:
+        rule_raw = df[SELL_RULE_COLUMN].fillna("(미상)").astype(str).str.strip()
+        stats: List[SellRuleStat] = []
+        for rule, group_idx in rule_raw.groupby(rule_raw).groups.items():
+            sub_ret = returns.loc[group_idx]
+            sub_win = int((sub_ret > 0).sum())
+            n = int(len(group_idx))
+            stats.append(SellRuleStat(
+                rule=str(rule) or "(미상)",
+                count=n, win_count=sub_win, loss_count=n - sub_win,
+                avg_return=float(sub_ret.mean()) if n else 0.0,
+            ))
+        stats.sort(key=lambda s: s.count, reverse=True)
+        res.sell_rules = stats
+        # 손실 집중 규칙: 손실 거래를 가진 규칙 중 평균 수익률 최저(2건 이상만 신뢰).
+        loss_rules = [s for s in stats if s.loss_count > 0 and s.count >= 2]
+        if loss_rules:
+            res.worst_sell_rule = min(loss_rules, key=lambda s: s.avg_return).rule
+
+    res.note = (
+        f"거래 {trade_count}건 (수익 {win_count}/손실 {loss_count}), "
+        f"give-back gap(수익거래) {res.giveback_gap_winners:.4g}%p, "
+        f"손실 평균 MAE {res.avg_mae_losers:.4g}%, 매도규칙 {len(res.sell_rules)}종."
+    )
+    return res

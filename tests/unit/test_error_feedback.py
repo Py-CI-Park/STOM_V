@@ -119,8 +119,9 @@ def _capture_generation_feedback(monkeypatch):
     """_generate_pair에 전달되는 (autopsy_feedback, history_summary)를 세대별로 캡처."""
     captured = []
 
-    def fake_generate(provider, cfg, rid, gen, fb, history_summary=None):
-        captured.append({"gen": gen, "feedback": fb, "history": history_summary})
+    def fake_generate(provider, cfg, rid, gen, fb, history_summary=None, sell_feedback=None):
+        captured.append({"gen": gen, "feedback": fb, "history": history_summary,
+                         "sell_feedback": sell_feedback})
         return {
             "status": "ok",
             "buy_name": f"AILOOP_{rid}_g{gen}_buy",

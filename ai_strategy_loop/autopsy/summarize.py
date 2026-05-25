@@ -20,6 +20,7 @@ from .analyze import (
     AutopsyResult,
     B_TO_STOM_VAR,
     Discriminator,
+    ExitAutopsyResult,
 )
 
 # 요약에 포함할 상위 변별 변수 개수.
@@ -254,4 +255,94 @@ def summarize(result: AutopsyResult, config: Any = None) -> str:
         f"수익과 손실을 가장 잘 가른 진입 조건은 다음과 같다. 이를 반영해 개선하라:",
     ]
     lines += [_discriminator_line(d) for d in top]
+    return "\n".join(lines)
+
+
+# =====================================================================
+# 청산(EXIT) 부검 요약 — 매도(SELL) 전략을 직접 겨냥한 한국어 가이드.
+# =====================================================================
+# give-back gap이 이 값(%p) 이상이면 "익절을 놓치고 반납"으로 지목한다.
+_GIVEBACK_ALERT_PCT = 1.0
+# 손실 거래 평균 MAE가 이 값(%)보다 깊으면 "손절이 느슨하다"로 지목한다.
+_MAE_ALERT_PCT = -2.0
+# 손실 거래 보유시간이 수익 거래의 이 배수 이상이면 "시간 청산 추가"를 권한다.
+_HOLD_RATIO_ALERT = 1.3
+
+
+def _short_rule(rule: str, max_len: int = 60) -> str:
+    """매도조건 원문을 한 줄로 짧게 — 피드백에 넣기 위함."""
+    one = " ".join((rule or "").split())
+    return one if len(one) <= max_len else one[: max_len - 1] + "…"
+
+
+def summarize_exits(result: ExitAutopsyResult, config: Any = None) -> str:
+    """ExitAutopsyResult를 **매도(SELL) 전략용** 다음 세대 한국어 피드백으로 변환한다.
+
+    give-back(익절 반납) / MAE depth(손절 느슨) / 보유시간 / 손실 집중 매도규칙을
+    구체 수치와 함께 짚고, 익절·손절·시간청산 같은 매도 조건을 어떻게 바꾸라고
+    지시한다. 항상 비어 있지 않은 문자열.
+    """
+    if result.status == STATUS_INSUFFICIENT:
+        return (
+            f"직전 전략은 거래 {result.trade_count}건(<최소 {result.min_trades})으로 "
+            f"청산 분석이 무의미했다 → 진입 조건을 완화해 거래 빈도를 먼저 확보하라."
+        )
+
+    lines: List[str] = [
+        f"직전 백테스트 청산(매도) 부검: 거래 {result.trade_count}건"
+        f"(수익 {result.win_count}/손실 {result.loss_count}). "
+        f"매도(SELL) 전략을 다음과 같이 개선하라:",
+    ]
+
+    # 1) give-back (익절 반납) — 수익 거래가 고점 대비 얼마를 반납했는가.
+    if result.win_count > 0 and result.giveback_gap_winners >= _GIVEBACK_ALERT_PCT:
+        tp = max(round(result.avg_mfe_winners * 0.6, 1), 0.5)  # 고점의 60% 근처 익절 제안.
+        lines.append(
+            f"- 수익 거래 평균 MFE(고점) {result.avg_mfe_winners:.2g}%인데 "
+            f"실현 {result.avg_realized_winners:.2g}% "
+            f"({result.giveback_gap_winners:.2g}%p 반납) → 익절을 놓치고 되돌림에 당했다. "
+            f"익절 기준(예: 수익률 >= {tp}%)을 추가해 고점 부근에서 차익을 확정하라."
+        )
+    elif result.win_count > 0 and result.giveback_gap_all >= _GIVEBACK_ALERT_PCT:
+        lines.append(
+            f"- 전체 평균 MFE {result.avg_mfe_all:.2g}% 대비 실현 "
+            f"{result.avg_realized_all:.2g}% ({result.giveback_gap_all:.2g}%p 반납) "
+            f"→ 익절 기준을 추가해 되돌림 반납을 줄여라."
+        )
+
+    # 2) MAE depth (손절 느슨) — 손실 거래가 청산 전 얼마나 깊이 물렸는가.
+    if result.loss_count > 0 and result.avg_mae_losers <= _MAE_ALERT_PCT:
+        # 평균 MAE의 절반 수준으로 손절을 조이라고 제안(과하게 깊지 않게).
+        sl = round(result.avg_mae_losers / 2.0, 1)
+        lines.append(
+            f"- 손실 거래 평균 MAE(최저) {result.avg_mae_losers:.2g}% "
+            f"(최악 {result.worst_mae_losers:.2g}%) → 손절이 느슨하다. "
+            f"손절을 {sl}% 부근(예: -2~-3%)으로 조여 손실을 빨리 끊어라."
+        )
+
+    # 3) 보유시간 — 손실 거래가 더 오래 끌었는가(시간 청산 필요).
+    if (result.avg_hold_winners > 0 and result.avg_hold_losers > 0
+            and result.avg_hold_losers >= result.avg_hold_winners * _HOLD_RATIO_ALERT):
+        lines.append(
+            f"- 손실 거래 평균 보유시간({result.avg_hold_losers:.3g})이 "
+            f"수익 거래({result.avg_hold_winners:.3g})보다 길다 → 손실이 시간을 끌며 "
+            f"악화된다. 시간 기반 청산(예: 보유시간 >= N이면 청산)을 추가하라."
+        )
+
+    # 4) 손실 집중 매도규칙 — 어떤 청산 룰이 손실을 닫고 있는가.
+    if result.worst_sell_rule:
+        worst = next((s for s in result.sell_rules if s.rule == result.worst_sell_rule), None)
+        if worst is not None:
+            lines.append(
+                f"- 손실 집중 매도규칙: `{_short_rule(worst.rule)}` "
+                f"({worst.count}건, 손실 {worst.loss_count}건, 평균 {worst.avg_return:.2g}%) "
+                f"→ 이 규칙이 너무 늦거나 손실을 키운다. 이 매도 조건을 재설계하라."
+            )
+
+    # give-back/MAE/시간/규칙 어느 것도 경보가 안 잡힌 경우(드묾) — 일반 가이드.
+    if len(lines) == 1:
+        lines.append(
+            "- 뚜렷한 청산 결함은 없으나 총손익이 음수라면 익절 기준을 약간 높이고 "
+            "손절을 약간 조여 손익비를 개선하라."
+        )
     return "\n".join(lines)

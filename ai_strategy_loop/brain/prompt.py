@@ -127,6 +127,23 @@ def build_messages(
     ]
     user_lines += _timeframe_lines(timeframe)
 
+    # 0거래 낭비 방지(매수 전략): 진입이 한 번도 안 되면 그 세대는 통째로 버려진다.
+    #   매수 전략은 "합리적 거래 빈도"를 목표로 하고, 직전 피드백이 0거래를 가리키면
+    #   진입 조건을 1~2개의 단순 필터로 줄이라고 명시한다(프롬프트 가이드, 로직 게이팅 없음).
+    if kind == "buy":
+        user_lines += [
+            "",
+            "거래 빈도(중요): 진입이 0건이면 그 세대는 평가 불가로 버려진다. "
+            "과도하게 좁은 임계값이나 많은 AND 조건으로 진입을 0건으로 만들지 마라. "
+            "백테 구간에서 실제로 여러 번 진입이 발생하도록 합리적인 빈도를 목표로 하라.",
+        ]
+        fb_text = autopsy_feedback or ""
+        if ("0건" in fb_text) or ("0거래" in fb_text) or ("거래가" in fb_text and "적" in fb_text):
+            user_lines.append(
+                "직전 세대가 거래 0건(또는 과소)이었다 → 진입 조건을 1~2개의 단순한 "
+                "필터로만 줄여 진입 문턱을 확실히 낮춰라(복합 AND 조건 제거)."
+            )
+
     if history_summary:
         user_lines += [
             "",

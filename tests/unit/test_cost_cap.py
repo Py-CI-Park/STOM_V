@@ -124,7 +124,7 @@ def test_loop_stops_at_generation_cap_with_mock_provider(monkeypatch, tmp_path):
     # 전략 생성도 무력화 (토큰만 약간 누적).
     monkeypatch.setattr(
         L, "_generate_pair",
-        lambda provider, cfg, rid, gen, fb, history_summary=None: {
+        lambda provider, cfg, rid, gen, fb, history_summary=None, sell_feedback=None: {
             "status": "ok",
             "buy_name": f"AILOOP_{rid}_g{gen}_buy",
             "sell_name": f"AILOOP_{rid}_g{gen}_sell",
