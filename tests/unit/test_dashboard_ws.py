@@ -161,6 +161,40 @@ class TestStartControlStubbed:
             assert "invalid config" in reply["message"]
 
 
+class TestStaticFrontendServing:
+    """US-007 — 프론트엔드를 같은 origin(/ui/)에서 서빙하고, /는 거기로 리다이렉트."""
+
+    def test_root_redirects_to_ui(self, client):
+        # 리다이렉트를 따라가지 않고 3xx + Location 헤더를 직접 검증한다.
+        resp = client.get("/", follow_redirects=False)
+        assert resp.status_code in (302, 307)
+        assert resp.headers["location"] == "/ui/"
+
+    def test_ui_serves_dashboard_html(self, client):
+        resp = client.get("/ui/")
+        assert resp.status_code == 200
+        body = resp.text
+        # index.html(= 대시보드 HTML)이 서빙되는지 핵심 마커로 확인.
+        assert '<div id="root">' in body
+        assert "connection.jsx" in body
+        assert "app.jsx" in body
+
+    def test_ui_serves_static_assets(self, client):
+        # 상대 경로로 로드되는 정적 자산이 /ui 하위에서 해석되는지 확인.
+        css = client.get("/ui/styles.css")
+        assert css.status_code == 200
+        jsx = client.get("/ui/connection.jsx")
+        assert jsx.status_code == 200
+        assert "DEFAULT_BASE" in jsx.text
+
+    def test_frontend_dir_and_index_exist(self):
+        # StaticFiles(html=True)가 /ui/ 에서 서빙하려면 디렉토리 + index.html 필요.
+        import ai_strategy_loop.dashboard.app as appmod
+
+        assert os.path.isdir(appmod._FRONTEND_DIR)
+        assert os.path.isfile(os.path.join(appmod._FRONTEND_DIR, "index.html"))
+
+
 class TestUnknownControl:
     def test_unknown_action_returns_error(self, client):
         with client.websocket_connect("/ws") as ws:

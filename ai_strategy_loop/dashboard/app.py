@@ -36,12 +36,19 @@ from typing import Any, Dict, Optional  # noqa: E402
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from fastapi.responses import RedirectResponse  # noqa: E402
+from fastapi.staticfiles import StaticFiles  # noqa: E402
 
 from ai_strategy_loop.controller import contract as C  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# 프론트엔드(Claude Design 산출물) 정적 자산 디렉토리. 모듈 위치 기준 절대 경로로
+#   해석해 CWD와 무관하게 동작한다. 이 디렉토리를 /ui 하위에 마운트해 같은 origin에서
+#   서빙한다(REST/WS API와 동일 출처 → CORS 우회 + 단일 진입점).
+_FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 
 # 폴링 주기(초) — current_state.json 변경 감지 → WS push.
 _POLL_INTERVAL = 1.0
@@ -168,6 +175,11 @@ def create_app() -> FastAPI:
 
     app.state.loop_manager = manager
 
+    @app.get("/")
+    def root() -> RedirectResponse:
+        # 단일 진입점: 루트로 들어오면 정적 대시보드(/ui/)로 보낸다.
+        return RedirectResponse(url="/ui/")
+
     @app.get("/health")
     def health() -> Dict[str, Any]:
         return {"status": "ok", "contract_version": C.CONTRACT_VERSION}
@@ -213,6 +225,14 @@ def create_app() -> FastAPI:
             pass
         finally:
             push_task.cancel()
+
+    # 정적 프론트엔드 마운트는 모든 API 라우트(/health, /status, /config/spec, /ws, /)
+    #   등록 이후에 한다. /ui 하위 경로에 마운트하므로 위 API 라우트와 WS를 가리지
+    #   않는다(StaticFiles는 /ui/* 만 처리). html=True 로 /ui/ 가 index.html을 서빙.
+    #   .jsx 는 StaticFiles 기본 content-type으로 서빙되며 브라우저 fetch+Babel 변환에
+    #   문제 없다. 프론트엔드 디렉토리가 없으면 API만으로도 기동되도록 가드한다.
+    if os.path.isdir(_FRONTEND_DIR):
+        app.mount("/ui", StaticFiles(directory=_FRONTEND_DIR, html=True), name="ui")
 
     return app
 
