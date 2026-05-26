@@ -143,6 +143,26 @@ class LoopConfig:
     #   다음 세대의 출발점이 된다. False면 매 세대 백지에서 fresh 생성(기존 동작).
     bt_refine_from_best: bool = True
 
+    # --- 진화 모드 (P2 GA — population 기반 진화) ---
+    # evolution_mode:
+    #   'hillclimb' — 기존 기본. best 1개를 출발점으로 점진 개선하는 greedy
+    #                 hill-climb(seed-and-refine). run_loop의 세대 루프를 그대로 탄다.
+    #   'ga'        — population 기반 진화(선택+crossover+mutation+elitism).
+    #                 run_loop이 워밍업 직후 controller/ga.run_ga_loop로 단일 분기한다.
+    #                 hillclimb 경로/기존 테스트는 절대 건드리지 않는다(자기완결 격리).
+    #   하위호환: 기본 'hillclimb'이라 기존 run은 동작이 변하지 않는다.
+    evolution_mode: str = "hillclimb"  # 'hillclimb' | 'ga'
+    # ga_population: GA 한 세대의 개체 수 K. 세대당 warm_session.run을 K회 직렬
+    #   호출하므로(병렬 불가), 세대당 wall-clock ≈ K×(warm run~50s)다. 작게 시작.
+    ga_population: int = 6
+    # ga_elite: 세대 간 무변이 보존하는 상위 개체 수(elitism). graded 상위
+    #   ga_elite개는 다음 세대에 그대로 복제돼 회귀를 막는다(0 < ga_elite < ga_population).
+    ga_elite: int = 2
+    # ga_crossover_rate: 비-엘리트 자식 중 crossover(부모 2개 결합)로 만드는 비율.
+    #   나머지는 mutation(부모 1개 점진 개선). [0,1]. 0이면 전부 mutation,
+    #   1이면 전부 crossover. 기본 0.5.
+    ga_crossover_rate: float = 0.5
+
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":
         """dict에서 LoopConfig 생성. 알 수 없는 키는 무시한다."""

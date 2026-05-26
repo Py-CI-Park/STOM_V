@@ -117,3 +117,30 @@ class TestAutopsyPanel:
     def test_app_wires_autopsy_panel(self):
         src = _read("app.jsx")
         assert "<AutopsyPanel state={state} wsStatus={wsStatus}" in src
+
+
+class TestPopulationPanel:
+    """P2 — GA population 패널 구조 계약(page_data.population 소비 + LIVE/DEMO 규약)."""
+
+    def test_population_panel_defined_and_exposed(self):
+        src = _read("panels.jsx")
+        assert "function PopulationPanel(" in src
+        # window 노출 블록에 포함돼야 한다(app.jsx가 전역에서 참조).
+        tail = src[src.rfind("Object.assign(window"):]
+        assert "PopulationPanel" in tail
+
+    def test_population_panel_consumes_page_data(self):
+        # M1 page_data 패스스루를 소비해야 한다(개체군 데이터는 page_data.population).
+        src = _read("panels.jsx")
+        assert "page_data?.population" in src
+
+    def test_population_panel_live_demo_branching(self):
+        # M1 LIVE↔DEMO 규약: 데모면 DEMO 배지, 라이브 미발행이면 대기 안내.
+        src = _read("panels.jsx")
+        assert "isDemoSource" in src
+        assert "DemoBadge" in src
+        assert "실시간 데이터 대기" in src
+
+    def test_app_wires_population_panel(self):
+        src = _read("app.jsx")
+        assert "<PopulationPanel state={state} wsStatus={wsStatus}" in src

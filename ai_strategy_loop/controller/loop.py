@@ -680,6 +680,20 @@ def run_loop(
                   message="loop started")
 
     try:
+        # --- P2 GA 단일 분기 ---
+        #   evolution_mode=='ga'면 population 기반 진화 루프(controller/ga.run_ga_loop)에
+        #   위임하고 그 요약을 그대로 반환한다. warm_session/provider/state 생명주기는
+        #   이 함수가 소유하므로 finally(close/proxy/clear/state.close)는 공통으로 탄다.
+        #   hillclimb 경로(아래 while)는 절대 건드리지 않는다(자기완결 격리).
+        if getattr(config, "evolution_mode", "hillclimb") == "ga":
+            from ai_strategy_loop.controller.ga import run_ga_loop  # noqa: PLC0415
+
+            summary = run_ga_loop(
+                config, warm_session, provider, st, rid,
+                seed_buy=seed_buy, seed_sell=seed_sell,
+            )
+            return summary
+
         gen_no = start_gen
         while True:
             # --- US-007 정지 플래그 (세대 시작 전 깔끔히 종료) ---

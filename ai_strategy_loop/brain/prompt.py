@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 # v1 자산 디렉토리 (저장소 고정 위치).
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -83,11 +83,33 @@ def _timeframe_lines(timeframe: str) -> List[str]:
     ]
 
 
+def _crossover_lines(label: Dict[str, str], parents: Tuple[str, str]) -> List[str]:
+    """crossover(부모 2개 결합) 지침 라인을 만든다 (P2 GA).
+
+    두 부모 전략의 강점을 결합하되 선별성·MDD·수익을 유지하라고 지시한다.
+    전면 재작성이 아니라 두 전략에서 잘 통하는 조건들을 조합해 하나의 정규
+    전략을 만들게 한다. base_code(단일 mutation) 경로와 상호 배타다.
+    """
+    parent_a, parent_b = parents
+    return [
+        "",
+        f"아래는 현재까지 좋은 성과를 낸 두 개의 {label['ko']}전략(부모 A, 부모 B)이다. "
+        "이 둘의 **강점을 결합(crossover)**해 새로운 정규 전략 하나를 만들어라. "
+        "전면 재작성이 아니라 두 전략에서 효과적인 조건/임계값을 골라 조합하라.",
+        "결합 원칙: **선별성을 유지하라**(거래 횟수를 크게 늘리지 마라 — 단 0건은 금지). "
+        "**MDD(최대낙폭)는 낮추고 총수익은 양(+)으로 유지**해야 한다. 두 부모보다 "
+        "과매매가 되지 않도록 진입 조건을 더 엄격한 쪽으로 결합하라.",
+        f"=== 부모 A ===\n```python\n{parent_a}\n```",
+        f"=== 부모 B ===\n```python\n{parent_b}\n```",
+    ]
+
+
 def build_messages(
     kind: str,
     *,
     timeframe: str = "min",
     base_code: Optional[str] = None,
+    crossover_parents: Optional[Tuple[str, str]] = None,
     autopsy_feedback: Optional[str] = None,
     history_summary: Optional[str] = None,
     prior_error: Optional[str] = None,
@@ -97,10 +119,14 @@ def build_messages(
     Args:
         kind: 'buy' 또는 'sell'.
         timeframe: 'min' 또는 'tick'. 해당 타임프레임 변수 계열만 쓰도록 지시한다.
-        base_code: seed-and-refine 출발점. 현재까지 가장 좋은 전략 코드.
-            주어지면 fresh 생성 대신 이 코드를 **출발점**으로 부검 피드백을
-            반영해 점진 개선(hill-climb)하라고 최우선 지침으로 지시한다.
+        base_code: seed-and-refine 출발점(단일 부모 mutation). 현재까지 가장 좋은
+            전략 코드. 주어지면 fresh 생성 대신 이 코드를 **출발점**으로 부검
+            피드백을 반영해 점진 개선(hill-climb)하라고 최우선 지침으로 지시한다.
             None이면 기존 fresh 생성 동작 그대로(하위호환).
+        crossover_parents: (부모A, 부모B) 두 전략 코드 (P2 GA crossover). 주어지면
+            두 전략의 강점을 결합하는 지침을 최우선으로 둔다. base_code(단일 부모
+            mutation)와 상호 배타 — crossover_parents가 주어지면 base_code는 무시된다.
+            None이면 기존 경로(base_code mutation 또는 fresh)를 그대로 탄다.
         autopsy_feedback: 직전 백테스트 부검 피드백(게이트 거리 + 변별 변수).
         history_summary: 누적 세대 이력 요약(CONVERGENCE). 무엇을 시도했고
             무엇을 회피할지·어느 방향이 graded를 올리는지 알려준다. 첫 세대면 None.
@@ -131,6 +157,12 @@ def build_messages(
         "- 설명 없이 ```python 코드 블록 하나만 출력한다.",
     ]
     user_lines += _timeframe_lines(timeframe)
+
+    # P2 GA crossover(최우선 지침): 두 부모를 받으면 결합 지침을 먼저 둔다.
+    #   crossover와 단일 base_code(mutation)는 상호 배타 — crossover면 base_code 무시.
+    if crossover_parents:
+        user_lines += _crossover_lines(label, crossover_parents)
+        base_code = None  # crossover 경로에선 단일 base 지침을 붙이지 않는다(상호 배타).
 
     # seed-and-refine 출발점(최우선 지침): 현재까지 가장 좋은 전략을 출발점으로,
     #   부검 피드백을 반영해 점진 개선(hill-climb)하라고 지시한다. 전면 재작성을

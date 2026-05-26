@@ -297,4 +297,69 @@ function AutopsyPanel({ state, wsStatus }) {
   );
 }
 
-Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, CostPanel, FeedbackPanel, AutopsyPanel });
+// ---- Population panel (P2 GA) ----
+// page_data.population(개체별 graded/거래/MDD/수익/gate)을 LIVE로 렌더한다.
+//   backend(GA 모드)가 발행하면 개체 테이블/막대를 보이고, 없으면(hillclimb 또는
+//   미발행) 출처를 명시한다. M1 LIVE↔DEMO 규약 준수.
+function _PopBar({ frac }) {
+  const w = Math.max(0, Math.min(1, frac || 0)) * 100;
+  return (
+    <div style={{ background: "var(--bg-2)", borderRadius: 3, height: 6, overflow: "hidden" }}>
+      <div style={{ width: `${w}%`, height: "100%", background: "var(--accent)" }}></div>
+    </div>
+  );
+}
+
+function PopulationPanel({ state, wsStatus }) {
+  const pop = state.page_data?.population;
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+
+  const members = (pop && pop.members) || [];
+  const maxGraded = members.reduce((m, x) => Math.max(m, x.graded || 0), 0) || 1;
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot"></span>GA Population
+          {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
+        </div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+          {pop && pop.status === "ok"
+            ? `K=${pop.k} · gate통과 ${pop.gate_passed_count} · 가드실패 ${pop.guardfail_count}`
+            : "개체군 진화"}
+        </span>
+      </div>
+      <div className="panel-bd">
+        {!pop || pop.status !== "ok" || members.length === 0 ? (
+          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+            {isDemo
+              ? "데모 모드 — GA population은 라이브 실행(evolution_mode=ga)에서 발행됩니다."
+              : "실시간 데이터 대기 — GA 모드 세대 평가 시 개체군이 발행됩니다(hillclimb 모드는 미발행)."}
+          </div>
+        ) : (
+          <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+            {members.map((m, i) => (
+              <li key={i} style={{ padding: "6px 0", borderBottom: "1px solid var(--bg-2)" }}>
+                <div className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                  <span>
+                    <span style={{ color: m.gate_passed ? "var(--green)" : "var(--ink-2)" }}>●</span>
+                    {` graded ${(m.graded ?? 0).toFixed(3)}`}
+                    <span style={{ color: "var(--ink-3)" }}>{` [${m.origin}]`}</span>
+                  </span>
+                  <span style={{ color: "var(--ink-3)" }}>
+                    {`${m.trade_count}건 · MDD ${(m.mdd ?? 0).toFixed(1)} · ${(m.profit ?? 0).toLocaleString()}`}
+                  </span>
+                </div>
+                <_PopBar frac={(m.graded || 0) / maxGraded} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel });
