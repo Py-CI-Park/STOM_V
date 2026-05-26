@@ -1,7 +1,9 @@
 
+import ssl
 import jwt
 import json
 import uuid
+import certifi
 import hashlib
 import asyncio
 import requests
@@ -10,6 +12,8 @@ from traceback import format_exc
 from urllib.parse import unquote, urlencode
 from PyQt5.QtCore import QThread, pyqtSignal
 from utility.settings.setting_base import UI_NUM
+
+ssl_context = ssl.create_default_context(cafile=certifi.where())
 
 
 def get_symbols_info():
@@ -174,14 +178,14 @@ class UpbitWebSocketReceiver(QThread):
     async def _connect_cg(self):
         """체결 웹소켓에 연결합니다."""
         self.conn_cg = True
-        self.webs_cg = await websockets.connect(self.url)
+        self.webs_cg = await websockets.connect(self.url, ssl=ssl_context)
         data = [{'ticket': str(uuid.uuid4())}, {'type': 'ticker', 'codes': self.codes, 'isOnlyRealtime': True}]
         await self.webs_cg.send(json.dumps(data))
 
     async def _connect_hg(self):
         """호가 웹소켓에 연결합니다."""
         self.conn_hg = True
-        self.webs_hg = await websockets.connect(self.url)
+        self.webs_hg = await websockets.connect(self.url, ssl=ssl_context)
         data = [{'ticket': str(uuid.uuid4())}, {'type': 'orderbook', 'codes': self.codes, 'isOnlyRealtime': True}]
         await self.webs_hg.send(json.dumps(data))
 
@@ -271,7 +275,7 @@ class UpbitWebSocketTrader(QThread):
     async def _connect(self):
         """주문체결 웹소켓에 연결하고 실시간시세를 등록합니다."""
         headers = self._headers()
-        self.websocket = await websockets.connect(self.url, additional_headers=headers)
+        self.websocket = await websockets.connect(self.url, additional_headers=headers, ssl=ssl_context)
         self.connected = True
         data = [{'ticket': str(uuid.uuid4())}, {'type': 'myOrder'}]
         await self.websocket.send(json.dumps(data))

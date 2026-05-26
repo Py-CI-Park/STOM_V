@@ -33,6 +33,7 @@ def update_dictset(ui, force=False):
     if force:
         ui.dict_set, _ = load_settings()
         change_chart_factors(ui)
+        change_backtest_date_and_time(ui)
         send_dict_set(ui)
 
     update_market_gubun(ui)
@@ -51,6 +52,31 @@ def change_chart_factors(ui):
         if ui.ft_checkBoxxxxx_03.text() != '초당매도수금액': ui.ft_checkBoxxxxx_03.setText('초당매도수금액')
         if ui.ft_checkBoxxxxx_08.text() != '초당체결수량': ui.ft_checkBoxxxxx_08.setText('초당체결수량')
         if ui.ft_checkBoxxxxx_16.text() != '누적초당매도수수량': ui.ft_checkBoxxxxx_16.setText('누적초당매도수수량')
+
+
+def change_backtest_date_and_time(ui):
+    """백테스트 일자 및 시간을 업데이트합니다."""
+    from PyQt5.QtCore import QDate
+    from utility.static_method.static_datetime import str_hms, dt_hms, timedelta_sec
+
+    if ui.dict_set['백테날짜고정']:
+        qdate = QDate.fromString(ui.dict_set['백테날짜'], 'yyyyMMdd')
+    else:
+        qdate = QDate.currentDate().addDays(-int(ui.dict_set['백테날짜']))
+        qweek = qdate.dayOfWeek()
+        if qweek < 5: qdate = qdate.addDays(-6 - qweek)
+        else:         qdate = qdate.addDays(1 - qweek)
+
+    starttime = str(ui.market_info['시작시간']).zfill(6)
+    endtime   = str_hms(timedelta_sec(-120, dt_hms(str(ui.dict_set['전략종료시간'])))).zfill(6)
+
+    ui.be_dateEdittttt_01.setDate(qdate)
+    ui.be_lineEdittttt_01.setText(starttime)
+    ui.be_lineEdittttt_02.setText(endtime)
+
+    ui.svjb_dateEditt_01.setDate(qdate)
+    ui.svjb_lineEditt_02.setText(starttime)
+    ui.svjb_lineEditt_03.setText(endtime)
 
 
 def send_dict_set(ui):

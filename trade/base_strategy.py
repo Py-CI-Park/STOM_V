@@ -52,14 +52,6 @@ class BaseStrategy(StgGlobalsFunc):
         self.info_for_buy    = None
         self.info_for_sell   = None
 
-        self.ms_analyzer     = None
-        self.rk_analyzer     = None
-        self.pt_analyzer     = None
-        self.vf_analyzer     = None
-        self.vs_analyzer     = None
-        self.vp_analyzer     = None
-        self.vt_analyzer     = None
-
         self.dict_data: dict[str, list] = {}
         self.dict_gj: dict[str, dict[str, int | float]] = {}
         self.dict_jg: dict[str, dict[str, int | float]] = {}
@@ -86,8 +78,8 @@ class BaseStrategy(StgGlobalsFunc):
 
         self.jgrv_count      = 0
         self.betting         = 0
-        self.비중조절기준      = 0
         self.vitime_cnt      = 0
+        self.비중조절기준       = 0
 
         self.avg_list        = [self.dict_set['평균값계산틱수']]
         self.rolling_window  = self.dict_set['평균값계산틱수']
@@ -466,73 +458,74 @@ class BaseStrategy(StgGlobalsFunc):
 
             self.profit, self.hold_time, self.indexb = 수익률, 보유시간, 매수틱번호
 
-            BBT = not self.dict_set['매수금지시간'] or \
-                not (self.dict_set['매수금지시작시간'] < 시분초 < self.dict_set['매수금지종료시간'])
-            BLK = not self.dict_set['매수금지블랙리스트'] or 종목명 not in self.black_list
-            NIB = 종목코드 not in self.dict_signal['매수']
-            NIS = 종목코드 not in self.dict_signal['매도']
+            if self.buystrategy is not None:
+                BBT = not self.dict_set['매수금지시간'] or \
+                    not (self.dict_set['매수금지시작시간'] < 시분초 < self.dict_set['매수금지종료시간'])
+                BLK = not self.dict_set['매수금지블랙리스트'] or 종목명 not in self.black_list
+                NIB = 종목코드 not in self.dict_signal['매수']
+                NIS = 종목코드 not in self.dict_signal['매도']
 
-            A = 관심종목 and NIB and 매수가 == 0
-            B = self.dict_set['매수분할시그널']
-            C = NIB and 매수가 != 0 and 분할매수횟수 < self.dict_set['매수분할횟수']
-            D = NIB and self.dict_set['매도취소매수시그널'] and not NIS
+                A = 관심종목 and NIB and 매수가 == 0
+                B = self.dict_set['매수분할시그널']
+                C = NIB and 매수가 != 0 and 분할매수횟수 < self.dict_set['매수분할횟수']
+                D = NIB and self.dict_set['매도취소매수시그널'] and not NIS
 
-            if BBT and BLK and (A or (B and C) or C or D):
-                self.info_for_buy = D, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
+                if BBT and BLK and (A or (B and C) or C or D):
+                    self.info_for_buy = D, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
-                if A or (B and C) or D:
-                    매수 = True
-                    if self.buystrategy is not None:
+                    if A or (B and C) or D:
+                        매수 = True
                         exec(self.buystrategy)
 
-                elif C:
-                    매수 = False
-                    분할매수기준수익률 = \
-                        round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['매수분할고정수익률'] else 수익률
-                    if self.dict_set['매수분할하방'] and 분할매수기준수익률 < -self.dict_set['매수분할하방수익률']:
-                        매수 = True
-                    elif self.dict_set['매수분할상방'] and 분할매수기준수익률 > self.dict_set['매수분할상방수익률']:
-                        매수 = True
+                    elif C:
+                        매수 = False
+                        분할매수기준수익률 = \
+                            round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['매수분할고정수익률'] else 수익률
+                        if self.dict_set['매수분할하방'] and 분할매수기준수익률 < -self.dict_set['매수분할하방수익률']:
+                            매수 = True
+                        elif self.dict_set['매수분할상방'] and 분할매수기준수익률 > self.dict_set['매수분할상방수익률']:
+                            매수 = True
 
-                    if 매수:
-                        self.Buy()
+                        if 매수:
+                            self.Buy()
 
-            SBT = not self.dict_set['매도금지시간'] or \
-                not (self.dict_set['매도금지시작시간'] < 시분초 < self.dict_set['매도금지종료시간'])
-            SCC = self.dict_set['매수분할횟수'] == 1 or \
-                not self.dict_set['매도금지매수횟수'] or 분할매수횟수 > self.dict_set['매도금지매수횟수값']
-            NIB = 종목코드 not in self.dict_signal['매수']
+            if self.sellstrategy is not None:
+                SBT = not self.dict_set['매도금지시간'] or \
+                    not (self.dict_set['매도금지시작시간'] < 시분초 < self.dict_set['매도금지종료시간'])
+                SCC = self.dict_set['매수분할횟수'] == 1 or \
+                    not self.dict_set['매도금지매수횟수'] or 분할매수횟수 > self.dict_set['매도금지매수횟수값']
+                NIB = 종목코드 not in self.dict_signal['매수']
+                NIS = 종목코드 not in self.dict_signal['매도']
 
-            A = NIB and NIS and SCC and 매수가 != 0 and self.dict_set['매도분할횟수'] == 1
-            B = self.dict_set['매도분할시그널']
-            C = NIB and NIS and SCC and 매수가 != 0 and 분할매도횟수 < self.dict_set['매도분할횟수']
-            D = NIS and self.dict_set['매수취소매도시그널'] and not NIB
-            E = NIB and NIS and 매수가 != 0 and self.dict_set['매도익절수익률청산'] and 수익률 > self.dict_set['매도익절수익률']
-            F = NIB and NIS and 매수가 != 0 and self.dict_set['매도익절수익금청산'] and 수익금 > self.dict_set['매도익절수익금']
-            G = NIB and NIS and 매수가 != 0 and self.dict_set['매도손절수익률청산'] and 수익률 < -self.dict_set['매도손절수익률']
-            H = NIB and NIS and 매수가 != 0 and self.dict_set['매도손절수익금청산'] and 수익금 < -self.dict_set['매도손절수익금']
+                A = NIB and NIS and SCC and 매수가 != 0 and self.dict_set['매도분할횟수'] == 1
+                B = self.dict_set['매도분할시그널']
+                C = NIB and NIS and SCC and 매수가 != 0 and 분할매도횟수 < self.dict_set['매도분할횟수']
+                D = NIS and self.dict_set['매수취소매도시그널'] and not NIB
+                E = NIB and NIS and 매수가 != 0 and self.dict_set['매도익절수익률청산'] and 수익률 > self.dict_set['매도익절수익률']
+                F = NIB and NIS and 매수가 != 0 and self.dict_set['매도익절수익금청산'] and 수익금 > self.dict_set['매도익절수익금']
+                G = NIB and NIS and 매수가 != 0 and self.dict_set['매도손절수익률청산'] and 수익률 < -self.dict_set['매도손절수익률']
+                H = NIB and NIS and 매수가 != 0 and self.dict_set['매도손절수익금청산'] and 수익금 < -self.dict_set['매도손절수익금']
 
-            if SBT and (A or (B and C) or C or D or E or F or G or H):
-                강제청산 = E or F or G or H
-                전량매도 = A or 강제청산
-                self.info_for_sell = D, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
+                if SBT and (A or (B and C) or C or D or E or F or G or H):
+                    강제청산 = E or F or G or H
+                    전량매도 = A or 강제청산
+                    self.info_for_sell = D, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
-                매도 = False
-                if A or (B and C) or D:
-                    if self.sellstrategy is not None:
+                    매도 = False
+                    if A or (B and C) or D:
                         exec(self.sellstrategy)
 
-                elif C or 강제청산:
-                    if C:
-                        if self.dict_set['매도분할하방'] and 수익률 < -self.dict_set['매도분할하방수익률'] * (분할매도횟수 + 1):
+                    elif C or 강제청산:
+                        if C:
+                            if self.dict_set['매도분할하방'] and 수익률 < -self.dict_set['매도분할하방수익률'] * (분할매도횟수 + 1):
+                                매도 = True
+                            elif self.dict_set['매도분할상방'] and 수익률 > self.dict_set['매도분할상방수익률'] * (분할매도횟수 + 1):
+                                매도 = True
+                        elif 강제청산:
                             매도 = True
-                        elif self.dict_set['매도분할상방'] and 수익률 > self.dict_set['매도분할상방수익률'] * (분할매도횟수 + 1):
-                            매도 = True
-                    elif 강제청산:
-                        매도 = True
 
-                    if 매도:
-                        self.Sell()
+                        if 매도:
+                            self.Sell()
 
         시그널 = 1 if 시그널 == 'buy' else (-1 if 시그널 == 'sell' else 0)
         self.arry_code[-1, self.area_cnt:] = [
@@ -715,74 +708,75 @@ class BaseStrategy(StgGlobalsFunc):
 
                 self.profit, self.hold_time, self.indexb = 수익률, 보유시간, 매수틱번호
 
-                BBT = not self.dict_set['매수금지시간'] or \
-                    not (self.dict_set['매수금지시작시간'] < 시분초 < self.dict_set['매수금지종료시간'])
-                BLK = not self.dict_set['매수금지블랙리스트'] or 종목명 not in self.black_list
-                NIB = 종목코드 not in self.dict_signal['매수']
-                NIS = 종목코드 not in self.dict_signal['매도']
+                if self.buystrategy is not None:
+                    BBT = not self.dict_set['매수금지시간'] or \
+                        not (self.dict_set['매수금지시작시간'] < 시분초 < self.dict_set['매수금지종료시간'])
+                    BLK = not self.dict_set['매수금지블랙리스트'] or 종목명 not in self.black_list
+                    NIB = 종목코드 not in self.dict_signal['매수']
+                    NIS = 종목코드 not in self.dict_signal['매도']
 
-                A = 관심종목 and NIB and 매수가 == 0
-                B = self.dict_set['매수분할시그널']
-                C = NIB and 매수가 != 0 and 분할매수횟수 < self.dict_set['매수분할횟수']
-                D = NIB and self.dict_set['매도취소매수시그널'] and not NIS
+                    A = 관심종목 and NIB and 매수가 == 0
+                    B = self.dict_set['매수분할시그널']
+                    C = NIB and 매수가 != 0 and 분할매수횟수 < self.dict_set['매수분할횟수']
+                    D = NIB and self.dict_set['매도취소매수시그널'] and not NIS
 
-                if BBT and BLK and (A or (B and C) or C or D):
-                    self.info_for_signal = D, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
+                    if BBT and BLK and (A or (B and C) or C or D):
+                        self.info_for_signal = D, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
-                    if A or (B and C) or D:
-                        매수 = True
-                        if self.buystrategy is not None:
+                        if A or (B and C) or D:
+                            매수 = True
                             exec(self.buystrategy)
 
-                    elif C:
-                        매수 = False
-                        분할매수기준수익률 = round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set[
-                            '매수분할고정수익률'] else 수익률
-                        if self.dict_set['매수분할하방'] and 분할매수기준수익률 < -self.dict_set['매수분할하방수익률']:
-                            매수 = True
-                        elif self.dict_set['매수분할상방'] and 분할매수기준수익률 > self.dict_set['매수분할상방수익률']:
-                            매수 = True
+                        elif C:
+                            매수 = False
+                            분할매수기준수익률 = round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set[
+                                '매수분할고정수익률'] else 수익률
+                            if self.dict_set['매수분할하방'] and 분할매수기준수익률 < -self.dict_set['매수분할하방수익률']:
+                                매수 = True
+                            elif self.dict_set['매수분할상방'] and 분할매수기준수익률 > self.dict_set['매수분할상방수익률']:
+                                매수 = True
 
-                        if 매수:
-                            self.Buy()
+                            if 매수:
+                                self.Buy()
 
-                SBT = not self.dict_set['매도금지시간'] or \
-                    not (self.dict_set['매도금지시작시간'] < 시분초 < self.dict_set['매도금지종료시간'])
-                SCC = self.dict_set['매수분할횟수'] == 1 or \
-                    not self.dict_set['매도금지매수횟수'] or 분할매수횟수 > self.dict_set['매도금지매수횟수값']
-                NIB = 종목코드 not in self.dict_signal['매수']
+                if self.sellstrategy is not None:
+                    SBT = not self.dict_set['매도금지시간'] or \
+                        not (self.dict_set['매도금지시작시간'] < 시분초 < self.dict_set['매도금지종료시간'])
+                    SCC = self.dict_set['매수분할횟수'] == 1 or \
+                        not self.dict_set['매도금지매수횟수'] or 분할매수횟수 > self.dict_set['매도금지매수횟수값']
+                    NIB = 종목코드 not in self.dict_signal['매수']
+                    NIS = 종목코드 not in self.dict_signal['매도']
 
-                A = NIB and NIS and SCC and 매수가 != 0 and self.dict_set['매도분할횟수'] == 1
-                B = self.dict_set['매도분할시그널']
-                C = NIB and NIS and SCC and 매수가 != 0 and 분할매도횟수 < self.dict_set['매도분할횟수']
-                D = NIS and self.dict_set['매수취소매도시그널'] and not NIB
-                E = NIB and NIS and 매수가 != 0 and \
-                    self.dict_set['매도손절수익률청산'] and 수익률 < -self.dict_set['매도손절수익률']
-                F = NIB and NIS and 매수가 != 0 and \
-                    self.dict_set['매도손절수익금청산'] and 수익금 < -self.dict_set['매도손절수익금']
+                    A = NIB and NIS and SCC and 매수가 != 0 and self.dict_set['매도분할횟수'] == 1
+                    B = self.dict_set['매도분할시그널']
+                    C = NIB and NIS and SCC and 매수가 != 0 and 분할매도횟수 < self.dict_set['매도분할횟수']
+                    D = NIS and self.dict_set['매수취소매도시그널'] and not NIB
+                    E = NIB and NIS and 매수가 != 0 and \
+                        self.dict_set['매도손절수익률청산'] and 수익률 < -self.dict_set['매도손절수익률']
+                    F = NIB and NIS and 매수가 != 0 and \
+                        self.dict_set['매도손절수익금청산'] and 수익금 < -self.dict_set['매도손절수익금']
 
-                if SBT and (A or (B and C) or C or D or E or F):
-                    강제청산 = E or F
-                    전량매도 = A or 강제청산
-                    self.info_for_signal = \
-                        D, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
+                    if SBT and (A or (B and C) or C or D or E or F):
+                        강제청산 = E or F
+                        전량매도 = A or 강제청산
+                        self.info_for_signal = \
+                            D, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
-                    매도 = False
-                    if A or (B and C) or D:
-                        if self.sellstrategy is not None:
+                        매도 = False
+                        if A or (B and C) or D:
                             exec(self.sellstrategy)
 
-                    elif C or 강제청산:
-                        if C:
-                            if self.dict_set['매도분할하방'] and 수익률 < -self.dict_set['매도분할하방수익률'] * (분할매도횟수 + 1):
+                        elif C or 강제청산:
+                            if C:
+                                if self.dict_set['매도분할하방'] and 수익률 < -self.dict_set['매도분할하방수익률'] * (분할매도횟수 + 1):
+                                    매도 = True
+                                elif self.dict_set['매도분할상방'] and 수익률 > self.dict_set['매도분할상방수익률'] * (분할매도횟수 + 1):
+                                    매도 = True
+                            elif 강제청산:
                                 매도 = True
-                            elif self.dict_set['매도분할상방'] and 수익률 > self.dict_set['매도분할상방수익률'] * (분할매도횟수 + 1):
-                                매도 = True
-                        elif 강제청산:
-                            매도 = True
 
-                        if 매도:
-                            self.Sell()
+                            if 매도:
+                                self.Sell()
         else:
             pre_data = self.dict_data.get(종목코드)
             if pre_data is None:
@@ -996,109 +990,112 @@ class BaseStrategy(StgGlobalsFunc):
 
             self.profit, self.hold_time, self.indexb = 수익률, 보유시간, 매수틱번호
 
-            BBT  = not self.dict_set['매수금지시간'] or \
-                not (self.dict_set['매수금지시작시간'] < 시분초 < self.dict_set['매수금지종료시간'])
-            BLK  = not self.dict_set['매수금지블랙리스트'] or 종목명 not in self.black_list
-            NIBL = 종목코드 not in self.dict_signal['BUY_LONG']
-            NISS = 종목코드 not in self.dict_signal['SELL_SHORT']
-            NISL = 종목코드 not in self.dict_signal['SELL_LONG']
-            NIBS = 종목코드 not in self.dict_signal['BUY_SHORT']
-            A    = 관심종목 and NIBL and 포지션 is None
-            B    = 관심종목 and NISS and 포지션 is None
-            C    = self.dict_set['매수분할시그널']
-            D    = NIBL and 포지션 == 'LONG' and 분할매수횟수 < self.dict_set['매수분할횟수']
-            E    = NISS and 포지션 == 'SHORT' and 분할매수횟수 < self.dict_set['매수분할횟수']
-            F    = NIBL and self.dict_set['매도취소매수시그널'] and not NISL
-            G    = NISS and self.dict_set['매도취소매수시그널'] and not NIBS
+            if self.buystrategy is not None:
+                BBT  = not self.dict_set['매수금지시간'] or \
+                    not (self.dict_set['매수금지시작시간'] < 시분초 < self.dict_set['매수금지종료시간'])
+                BLK  = not self.dict_set['매수금지블랙리스트'] or 종목명 not in self.black_list
+                NIBL = 종목코드 not in self.dict_signal['BUY_LONG']
+                NISS = 종목코드 not in self.dict_signal['SELL_SHORT']
+                NISL = 종목코드 not in self.dict_signal['SELL_LONG']
+                NIBS = 종목코드 not in self.dict_signal['BUY_SHORT']
 
-            if BBT and BLK and (A or B or (C and D) or (C and E) or D or E or F or G):
-                self.info_for_buy = F or G, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
+                A    = 관심종목 and NIBL and 포지션 is None
+                B    = 관심종목 and NISS and 포지션 is None
+                C    = self.dict_set['매수분할시그널']
+                D    = NIBL and 포지션 == 'LONG' and 분할매수횟수 < self.dict_set['매수분할횟수']
+                E    = NISS and 포지션 == 'SHORT' and 분할매수횟수 < self.dict_set['매수분할횟수']
+                F    = NIBL and self.dict_set['매도취소매수시그널'] and not NISL
+                G    = NISS and self.dict_set['매도취소매수시그널'] and not NIBS
 
-                if A or B or (C and (D or E)) or F or G:
-                    BUY_LONG, SELL_SHORT = True, True
-                    if self.buystrategy is not None:
+                if BBT and BLK and (A or B or (C and D) or (C and E) or D or E or F or G):
+                    self.info_for_buy = F or G, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
+
+                    if A or B or (C and (D or E)) or F or G:
+                        BUY_LONG, SELL_SHORT = True, True
                         exec(self.buystrategy)
 
-                elif D or E:
-                    BUY_LONG, SELL_SHORT = False, False
-                    분할매수기준수익률 = \
-                        round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['매수분할고정수익률'] else 수익률
-                    if D:
-                        if self.dict_set['매수분할하방'] and 분할매수기준수익률 < -self.dict_set['매수분할하방수익률']:
-                            BUY_LONG   = True
-                        elif self.dict_set['매수분할상방'] and 분할매수기준수익률 > self.dict_set['매수분할상방수익률']:
-                            BUY_LONG   = True
-                    elif E:
-                        if self.dict_set['매수분할하방'] and 분할매수기준수익률 < -self.dict_set['매수분할하방수익률']:
-                            SELL_SHORT = True
-                        elif self.dict_set['매수분할상방'] and 분할매수기준수익률 > self.dict_set['매수분할상방수익률']:
-                            SELL_SHORT = True
+                    elif D or E:
+                        BUY_LONG, SELL_SHORT = False, False
+                        분할매수기준수익률 = \
+                            round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['매수분할고정수익률'] else 수익률
+                        if D:
+                            if self.dict_set['매수분할하방'] and 분할매수기준수익률 < -self.dict_set['매수분할하방수익률']:
+                                BUY_LONG   = True
+                            elif self.dict_set['매수분할상방'] and 분할매수기준수익률 > self.dict_set['매수분할상방수익률']:
+                                BUY_LONG   = True
+                        elif E:
+                            if self.dict_set['매수분할하방'] and 분할매수기준수익률 < -self.dict_set['매수분할하방수익률']:
+                                SELL_SHORT = True
+                            elif self.dict_set['매수분할상방'] and 분할매수기준수익률 > self.dict_set['매수분할상방수익률']:
+                                SELL_SHORT = True
 
-                    if BUY_LONG or SELL_SHORT:
-                        self.Buy(BUY_LONG)
+                        if BUY_LONG or SELL_SHORT:
+                            self.Buy(BUY_LONG)
 
-            SBT  = not self.dict_set['매도금지시간'] or \
-                not (self.dict_set['매도금지시작시간'] < 시분초 < self.dict_set['매도금지종료시간'])
-            SCC  = self.dict_set['매수분할횟수'] == 1 or \
-                not self.dict_set['매도금지매수횟수'] or 분할매수횟수 > self.dict_set['매도금지매수횟수값']
-            NIBL = 종목코드 not in self.dict_signal['BUY_LONG']
-            NISS = 종목코드 not in self.dict_signal['SELL_SHORT']
+            if self.sellstrategy is not None:
+                SBT  = not self.dict_set['매도금지시간'] or \
+                    not (self.dict_set['매도금지시작시간'] < 시분초 < self.dict_set['매도금지종료시간'])
+                SCC  = self.dict_set['매수분할횟수'] == 1 or \
+                    not self.dict_set['매도금지매수횟수'] or 분할매수횟수 > self.dict_set['매도금지매수횟수값']
+                NIBL = 종목코드 not in self.dict_signal['BUY_LONG']
+                NISS = 종목코드 not in self.dict_signal['SELL_SHORT']
+                NISL = 종목코드 not in self.dict_signal['SELL_LONG']
+                NIBS = 종목코드 not in self.dict_signal['BUY_SHORT']
 
-            A = NIBL and NISL and SCC and 포지션 == 'LONG' and self.dict_set['매도분할횟수'] == 1
-            B = NISS and NIBS and SCC and 포지션 == 'SHORT' and self.dict_set['매도분할횟수'] == 1
-            C = self.dict_set['매도분할시그널']
-            D = NIBL and NISL and SCC and 포지션 == 'LONG' and 분할매도횟수 < self.dict_set['매도분할횟수']
-            E = NISS and NIBS and SCC and 포지션 == 'SHORT' and 분할매도횟수 < self.dict_set['매도분할횟수']
-            F = NISL and self.dict_set['매수취소매도시그널'] and not NIBL
-            G = NIBS and self.dict_set['매수취소매도시그널'] and not NISS
-            H = NIBL and NISL and 포지션 == 'LONG' and \
-                self.dict_set['매도익절수익률청산'] and 수익률 > self.dict_set['매도익절수익률']
-            J = NISS and NIBS and 포지션 == 'SHORT' and \
-                self.dict_set['매도익절수익률청산'] and 수익률 > self.dict_set['매도익절수익률']
-            K = NIBL and NISL and 포지션 == 'LONG' and \
-                self.dict_set['매도익절수익금청산'] and 수익금 > self.dict_set['매도익절수익금']
-            L = NISS and NIBS and 포지션 == 'SHORT' and \
-                self.dict_set['매도익절수익금청산'] and 수익금 > self.dict_set['매도익절수익금']
-            M = NIBL and NISL and 포지션 == 'LONG' and \
-                self.dict_set['매도손절수익률청산'] and 수익률 < -self.dict_set['매도손절수익률']
-            N = NISS and NIBS and 포지션 == 'SHORT' and \
-                self.dict_set['매도손절수익률청산'] and 수익률 < -self.dict_set['매도손절수익률']
-            P = NIBL and NISL and 포지션 == 'LONG' and \
-                self.dict_set['매도손절수익금청산'] and 수익금 < -self.dict_set['매도손절수익금']
-            Q = NISS and NIBS and 포지션 == 'SHORT' and \
-                self.dict_set['매도손절수익금청산'] and 수익금 < -self.dict_set['매도손절수익금']
-            R = NIBL and NISL and 포지션 == 'LONG' and 수익률 * 레버리지 < -90
-            S = NISS and NIBS and 포지션 == 'SHORT' and 수익률 * 레버리지 < -90
+                A = NIBL and NISL and SCC and 포지션 == 'LONG' and self.dict_set['매도분할횟수'] == 1
+                B = NISS and NIBS and SCC and 포지션 == 'SHORT' and self.dict_set['매도분할횟수'] == 1
+                C = self.dict_set['매도분할시그널']
+                D = NIBL and NISL and SCC and 포지션 == 'LONG' and 분할매도횟수 < self.dict_set['매도분할횟수']
+                E = NISS and NIBS and SCC and 포지션 == 'SHORT' and 분할매도횟수 < self.dict_set['매도분할횟수']
+                F = NISL and self.dict_set['매수취소매도시그널'] and not NIBL
+                G = NIBS and self.dict_set['매수취소매도시그널'] and not NISS
+                H = NIBL and NISL and 포지션 == 'LONG' and \
+                    self.dict_set['매도익절수익률청산'] and 수익률 > self.dict_set['매도익절수익률']
+                J = NISS and NIBS and 포지션 == 'SHORT' and \
+                    self.dict_set['매도익절수익률청산'] and 수익률 > self.dict_set['매도익절수익률']
+                K = NIBL and NISL and 포지션 == 'LONG' and \
+                    self.dict_set['매도익절수익금청산'] and 수익금 > self.dict_set['매도익절수익금']
+                L = NISS and NIBS and 포지션 == 'SHORT' and \
+                    self.dict_set['매도익절수익금청산'] and 수익금 > self.dict_set['매도익절수익금']
+                M = NIBL and NISL and 포지션 == 'LONG' and \
+                    self.dict_set['매도손절수익률청산'] and 수익률 < -self.dict_set['매도손절수익률']
+                N = NISS and NIBS and 포지션 == 'SHORT' and \
+                    self.dict_set['매도손절수익률청산'] and 수익률 < -self.dict_set['매도손절수익률']
+                P = NIBL and NISL and 포지션 == 'LONG' and \
+                    self.dict_set['매도손절수익금청산'] and 수익금 < -self.dict_set['매도손절수익금']
+                Q = NISS and NIBS and 포지션 == 'SHORT' and \
+                    self.dict_set['매도손절수익금청산'] and 수익금 < -self.dict_set['매도손절수익금']
+                R = NIBL and NISL and 포지션 == 'LONG' and 수익률 * 레버리지 < -90
+                S = NISS and NIBS and 포지션 == 'SHORT' and 수익률 * 레버리지 < -90
 
-            if SBT and (A or B or (C and D) or (C and E) or D or E or F or G or H or J or K or L or M or N or P or Q or R or S):
-                강제청산 = H or J or K or L or M or N or P or Q or R or S
-                전량매도 = A or B or 강제청산
-                self.info_for_sell = \
-                    F or G, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
+                if SBT and (A or B or (C and D) or (C and E) or D or E or F or G or H or J or K or L or M or N or P or Q or R or S):
+                    강제청산 = H or J or K or L or M or N or P or Q or R or S
+                    전량매도 = A or B or 강제청산
+                    self.info_for_sell = \
+                        F or G, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
-                SELL_LONG, BUY_SHORT = False, False
-                if A or B or (C and D) or (C and E) or F or G:
-                    if self.sellstrategy is not None:
+                    SELL_LONG, BUY_SHORT = False, False
+                    if A or B or (C and D) or (C and E) or F or G:
                         exec(self.sellstrategy)
 
-                elif D or E or 강제청산:
-                    if H or K or M or P or R:
-                        SELL_LONG = True
-                    elif J or L or N or Q or S:
-                        BUY_SHORT = True
-                    elif D:
-                        if self.dict_set['매도분할하방'] and 수익률 < -self.dict_set['매도분할하방수익률'] * (분할매도횟수 + 1):
+                    elif D or E or 강제청산:
+                        if H or K or M or P or R:
                             SELL_LONG = True
-                        elif self.dict_set['매도분할상방'] and 수익률 > self.dict_set['매도분할상방수익률'] * (분할매도횟수 + 1):
-                            SELL_LONG = True
-                    elif E:
-                        if self.dict_set['매도분할하방'] and 수익률 < -self.dict_set['매도분할하방수익률'] * (분할매도횟수 + 1):
+                        elif J or L or N or Q or S:
                             BUY_SHORT = True
-                        elif self.dict_set['매도분할상방'] and 수익률 > self.dict_set['매도분할상방수익률'] * (분할매도횟수 + 1):
-                            BUY_SHORT = True
+                        elif D:
+                            if self.dict_set['매도분할하방'] and 수익률 < -self.dict_set['매도분할하방수익률'] * (분할매도횟수 + 1):
+                                SELL_LONG = True
+                            elif self.dict_set['매도분할상방'] and 수익률 > self.dict_set['매도분할상방수익률'] * (분할매도횟수 + 1):
+                                SELL_LONG = True
+                        elif E:
+                            if self.dict_set['매도분할하방'] and 수익률 < -self.dict_set['매도분할하방수익률'] * (분할매도횟수 + 1):
+                                BUY_SHORT = True
+                            elif self.dict_set['매도분할상방'] and 수익률 > self.dict_set['매도분할상방수익률'] * (분할매도횟수 + 1):
+                                BUY_SHORT = True
 
-                    if (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):
-                        self.Sell(SELL_LONG)
+                        if (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):
+                            self.Sell(SELL_LONG)
 
         시그널 = 1 if 시그널 == 'buy' else (-1 if 시그널 == 'sell' else 0)
         self.arry_code[-1, self.area_cnt:] = [
@@ -1269,114 +1266,111 @@ class BaseStrategy(StgGlobalsFunc):
 
                 self.profit, self.hold_time, self.indexb = 수익률, 보유시간, 매수틱번호
 
-                BBT  = not self.dict_set['매수금지시간'] or \
-                    not (self.dict_set['매수금지시작시간'] < 시분초 < self.dict_set['매수금지종료시간'])
-                BLK  = not self.dict_set['매수금지블랙리스트'] or 종목명 not in self.black_list
-                NIBL = 종목코드 not in self.dict_signal['BUY_LONG']
-                NISS = 종목코드 not in self.dict_signal['SELL_SHORT']
-                NISL = 종목코드 not in self.dict_signal['SELL_LONG']
-                NIBS = 종목코드 not in self.dict_signal['BUY_SHORT']
-                A    = 관심종목 and NIBL and 포지션 is None
-                B    = 관심종목 and NISS and 포지션 is None
-                C    = self.dict_set['매수분할시그널']
-                D    = NIBL and 포지션 == 'LONG' and 분할매수횟수 < self.dict_set['매수분할횟수']
-                E    = NISS and 포지션 == 'SHORT' and 분할매수횟수 < self.dict_set['매수분할횟수']
-                F    = NIBL and self.dict_set['매도취소매수시그널'] and not NISL
-                G    = NISS and self.dict_set['매도취소매수시그널'] and not NIBS
+                if self.buystrategy is not None:
+                    BBT  = not self.dict_set['매수금지시간'] or \
+                        not (self.dict_set['매수금지시작시간'] < 시분초 < self.dict_set['매수금지종료시간'])
+                    BLK  = not self.dict_set['매수금지블랙리스트'] or 종목명 not in self.black_list
+                    NIBL = 종목코드 not in self.dict_signal['BUY_LONG']
+                    NISS = 종목코드 not in self.dict_signal['SELL_SHORT']
+                    NISL = 종목코드 not in self.dict_signal['SELL_LONG']
+                    NIBS = 종목코드 not in self.dict_signal['BUY_SHORT']
 
-                if BBT and BLK and (A or B or (C and D) or (C and E) or D or E or F or G):
-                    self.info_for_buy = F or G, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
+                    A    = 관심종목 and NIBL and 포지션 is None
+                    B    = 관심종목 and NISS and 포지션 is None
+                    C    = self.dict_set['매수분할시그널']
+                    D    = NIBL and 포지션 == 'LONG' and 분할매수횟수 < self.dict_set['매수분할횟수']
+                    E    = NISS and 포지션 == 'SHORT' and 분할매수횟수 < self.dict_set['매수분할횟수']
+                    F    = NIBL and self.dict_set['매도취소매수시그널'] and not NISL
+                    G    = NISS and self.dict_set['매도취소매수시그널'] and not NIBS
 
-                    if A or B or (C and (D or E)) or F or G:
-                        BUY_LONG, SELL_SHORT = True, True
-                        if self.buystrategy is not None:
-                            try:
-                                exec(self.buystrategy)
-                            except Exception:
-                                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
-                    elif D or E:
-                        BUY_LONG, SELL_SHORT = False, False
-                        분할매수기준수익률 = \
-                            round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['매수분할고정수익률'] else 수익률
-                        if D:
-                            if self.dict_set['매수분할하방'] and 분할매수기준수익률 < -self.dict_set['매수분할하방수익률']:
-                                BUY_LONG   = True
-                            elif self.dict_set['매수분할상방'] and 분할매수기준수익률 > self.dict_set['매수분할상방수익률']:
-                                BUY_LONG   = True
-                        elif E:
-                            if self.dict_set['매수분할하방'] and 분할매수기준수익률 < -self.dict_set['매수분할하방수익률']:
-                                SELL_SHORT = True
-                            elif self.dict_set['매수분할상방'] and 분할매수기준수익률 > self.dict_set['매수분할상방수익률']:
-                                SELL_SHORT = True
+                    if BBT and BLK and (A or B or (C and D) or (C and E) or D or E or F or G):
+                        self.info_for_buy = F or G, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
-                        if BUY_LONG or SELL_SHORT:
-                            self.Buy(BUY_LONG)
+                        if A or B or (C and (D or E)) or F or G:
+                            BUY_LONG, SELL_SHORT = True, True
+                            exec(self.buystrategy)
+                        elif D or E:
+                            BUY_LONG, SELL_SHORT = False, False
+                            분할매수기준수익률 = \
+                                round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['매수분할고정수익률'] else 수익률
+                            if D:
+                                if self.dict_set['매수분할하방'] and 분할매수기준수익률 < -self.dict_set['매수분할하방수익률']:
+                                    BUY_LONG   = True
+                                elif self.dict_set['매수분할상방'] and 분할매수기준수익률 > self.dict_set['매수분할상방수익률']:
+                                    BUY_LONG   = True
+                            elif E:
+                                if self.dict_set['매수분할하방'] and 분할매수기준수익률 < -self.dict_set['매수분할하방수익률']:
+                                    SELL_SHORT = True
+                                elif self.dict_set['매수분할상방'] and 분할매수기준수익률 > self.dict_set['매수분할상방수익률']:
+                                    SELL_SHORT = True
 
-                SBT  = not self.dict_set['매도금지시간'] or \
-                    not (self.dict_set['매도금지시작시간'] < 시분초 < self.dict_set['매도금지종료시간'])
-                SCC  = self.dict_set['매수분할횟수'] == 1 or \
-                    not self.dict_set['매도금지매수횟수'] or 분할매수횟수 > self.dict_set['매도금지매수횟수값']
-                NIBL = 종목코드 not in self.dict_signal['BUY_LONG']
-                NISS = 종목코드 not in self.dict_signal['SELL_SHORT']
+                            if BUY_LONG or SELL_SHORT:
+                                self.Buy(BUY_LONG)
 
-                A = NIBL and NISL and SCC and 포지션 == 'LONG' and self.dict_set['매도분할횟수'] == 1
-                B = NISS and NIBS and SCC and 포지션 == 'SHORT' and self.dict_set['매도분할횟수'] == 1
-                C = self.dict_set['매도분할시그널']
-                D = NIBL and NISL and SCC and 포지션 == 'LONG' and 분할매도횟수 < self.dict_set['매도분할횟수']
-                E = NISS and NIBS and SCC and 포지션 == 'SHORT' and 분할매도횟수 < self.dict_set['매도분할횟수']
-                F = NISL and self.dict_set['매수취소매도시그널'] and not NIBL
-                G = NIBS and self.dict_set['매수취소매도시그널'] and not NISS
-                H = NIBL and NISL and 포지션 == 'LONG' and \
-                    self.dict_set['매도익절수익률청산'] and 수익률 > self.dict_set['매도익절수익률']
-                J = NISS and NIBS and 포지션 == 'SHORT' and \
-                    self.dict_set['매도익절수익률청산'] and 수익률 > self.dict_set['매도익절수익률']
-                K = NIBL and NISL and 포지션 == 'LONG' and \
-                    self.dict_set['매도익절수익금청산'] and 수익금 > self.dict_set['매도익절수익금']
-                L = NISS and NIBS and 포지션 == 'SHORT' and \
-                    self.dict_set['매도익절수익금청산'] and 수익금 > self.dict_set['매도익절수익금']
-                M = NIBL and NISL and 포지션 == 'LONG' and \
-                    self.dict_set['매도손절수익률청산'] and 수익률 < -self.dict_set['매도손절수익률']
-                N = NISS and NIBS and 포지션 == 'SHORT' and \
-                    self.dict_set['매도손절수익률청산'] and 수익률 < -self.dict_set['매도손절수익률']
-                P = NIBL and NISL and 포지션 == 'LONG' and \
-                    self.dict_set['매도손절수익금청산'] and 수익금 < -self.dict_set['매도손절수익금']
-                Q = NISS and NIBS and 포지션 == 'SHORT' and \
-                    self.dict_set['매도손절수익금청산'] and 수익금 < -self.dict_set['매도손절수익금']
-                R = NIBL and NISL and 포지션 == 'LONG' and 수익률 * 레버리지 < -90
-                S = NISS and NIBS and 포지션 == 'SHORT' and 수익률 * 레버리지 < -90
+                if self.sellstrategy is not None:
+                    SBT  = not self.dict_set['매도금지시간'] or \
+                        not (self.dict_set['매도금지시작시간'] < 시분초 < self.dict_set['매도금지종료시간'])
+                    SCC  = self.dict_set['매수분할횟수'] == 1 or \
+                        not self.dict_set['매도금지매수횟수'] or 분할매수횟수 > self.dict_set['매도금지매수횟수값']
+                    NIBL = 종목코드 not in self.dict_signal['BUY_LONG']
+                    NISS = 종목코드 not in self.dict_signal['SELL_SHORT']
+                    NISL = 종목코드 not in self.dict_signal['SELL_LONG']
+                    NIBS = 종목코드 not in self.dict_signal['BUY_SHORT']
 
-                if SBT and (A or B or (C and D) or (C and E) or D or E or F or G or H or J or K or L or M or N or P or Q or R or S):
-                    강제청산 = H or J or K or L or M or N or P or Q or R or S
-                    전량매도 = A or B or 강제청산
-                    self.info_for_sell = \
-                        F or G, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
+                    A = NIBL and NISL and SCC and 포지션 == 'LONG' and self.dict_set['매도분할횟수'] == 1
+                    B = NISS and NIBS and SCC and 포지션 == 'SHORT' and self.dict_set['매도분할횟수'] == 1
+                    C = self.dict_set['매도분할시그널']
+                    D = NIBL and NISL and SCC and 포지션 == 'LONG' and 분할매도횟수 < self.dict_set['매도분할횟수']
+                    E = NISS and NIBS and SCC and 포지션 == 'SHORT' and 분할매도횟수 < self.dict_set['매도분할횟수']
+                    F = NISL and self.dict_set['매수취소매도시그널'] and not NIBL
+                    G = NIBS and self.dict_set['매수취소매도시그널'] and not NISS
+                    H = NIBL and NISL and 포지션 == 'LONG' and \
+                        self.dict_set['매도익절수익률청산'] and 수익률 > self.dict_set['매도익절수익률']
+                    J = NISS and NIBS and 포지션 == 'SHORT' and \
+                        self.dict_set['매도익절수익률청산'] and 수익률 > self.dict_set['매도익절수익률']
+                    K = NIBL and NISL and 포지션 == 'LONG' and \
+                        self.dict_set['매도익절수익금청산'] and 수익금 > self.dict_set['매도익절수익금']
+                    L = NISS and NIBS and 포지션 == 'SHORT' and \
+                        self.dict_set['매도익절수익금청산'] and 수익금 > self.dict_set['매도익절수익금']
+                    M = NIBL and NISL and 포지션 == 'LONG' and \
+                        self.dict_set['매도손절수익률청산'] and 수익률 < -self.dict_set['매도손절수익률']
+                    N = NISS and NIBS and 포지션 == 'SHORT' and \
+                        self.dict_set['매도손절수익률청산'] and 수익률 < -self.dict_set['매도손절수익률']
+                    P = NIBL and NISL and 포지션 == 'LONG' and \
+                        self.dict_set['매도손절수익금청산'] and 수익금 < -self.dict_set['매도손절수익금']
+                    Q = NISS and NIBS and 포지션 == 'SHORT' and \
+                        self.dict_set['매도손절수익금청산'] and 수익금 < -self.dict_set['매도손절수익금']
+                    R = NIBL and NISL and 포지션 == 'LONG' and 수익률 * 레버리지 < -90
+                    S = NISS and NIBS and 포지션 == 'SHORT' and 수익률 * 레버리지 < -90
 
-                    SELL_LONG, BUY_SHORT = False, False
-                    if A or B or (C and D) or (C and E) or F or G:
-                        if self.sellstrategy is not None:
-                            try:
-                                exec(self.sellstrategy)
-                            except Exception:
-                                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
+                    if SBT and (A or B or (C and D) or (C and E) or D or E or F or G or H or J or K or L or M or N or P or Q or R or S):
+                        강제청산 = H or J or K or L or M or N or P or Q or R or S
+                        전량매도 = A or B or 강제청산
+                        self.info_for_sell = \
+                            F or G, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
-                    elif D or E or 강제청산:
-                        if H or K or M or P or R:
-                            SELL_LONG = True
-                        elif J or L or N or Q or S:
-                            BUY_SHORT = True
-                        elif D:
-                            if self.dict_set['매도분할하방'] and 수익률 < -self.dict_set['매도분할하방수익률'] * (분할매도횟수 + 1):
+                        SELL_LONG, BUY_SHORT = False, False
+                        if A or B or (C and D) or (C and E) or F or G:
+                            exec(self.sellstrategy)
+
+                        elif D or E or 강제청산:
+                            if H or K or M or P or R:
                                 SELL_LONG = True
-                            elif self.dict_set['매도분할상방'] and 수익률 > self.dict_set['매도분할상방수익률'] * (분할매도횟수 + 1):
-                                SELL_LONG = True
-                        elif E:
-                            if self.dict_set['매도분할하방'] and 수익률 < -self.dict_set['매도분할하방수익률'] * (분할매도횟수 + 1):
+                            elif J or L or N or Q or S:
                                 BUY_SHORT = True
-                            elif self.dict_set['매도분할상방'] and 수익률 > self.dict_set['매도분할상방수익률'] * (분할매도횟수 + 1):
-                                BUY_SHORT = True
+                            elif D:
+                                if self.dict_set['매도분할하방'] and 수익률 < -self.dict_set['매도분할하방수익률'] * (분할매도횟수 + 1):
+                                    SELL_LONG = True
+                                elif self.dict_set['매도분할상방'] and 수익률 > self.dict_set['매도분할상방수익률'] * (분할매도횟수 + 1):
+                                    SELL_LONG = True
+                            elif E:
+                                if self.dict_set['매도분할하방'] and 수익률 < -self.dict_set['매도분할하방수익률'] * (분할매도횟수 + 1):
+                                    BUY_SHORT = True
+                                elif self.dict_set['매도분할상방'] and 수익률 > self.dict_set['매도분할상방수익률'] * (분할매도횟수 + 1):
+                                    BUY_SHORT = True
 
-                        if (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):
-                            self.Sell(SELL_LONG)
+                            if (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):
+                                self.Sell(SELL_LONG)
 
         else:
             pre_data = self.dict_data.get(종목코드)

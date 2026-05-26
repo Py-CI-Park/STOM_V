@@ -3,6 +3,7 @@ import time
 import ntplib
 import win32api
 from datetime import datetime
+from utility.static_method.static_datetime import UTC_GAP
 from utility.static_method.static_decorator import thread_decorator
 
 
@@ -16,7 +17,7 @@ def timesync(ui_num, windowQ):
             response = ntp_client.request('time.windows.com', version=3)
             offset   = response.offset
             if abs(offset) >= 0.05:
-                dt = datetime.fromtimestamp(response.tx_time + response.delay - 32400).astimezone()
+                dt = datetime.fromtimestamp(response.tx_time + response.delay - UTC_GAP).astimezone()
                 win32api.SetSystemTime(
                     dt.year,
                     dt.month,

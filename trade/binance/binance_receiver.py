@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QApplication
 from trade.base_receiver import BaseReceiver
 from trade.restapi_binance import BinanceWebSocketReceiver
 from utility.static_method.static_decorator import error_decorator
-from utility.static_method.static_datetime import now, now_utc, str_ymd, str_ymdhms_utc
+from utility.static_method.static_datetime import now, now_utc, str_ymd, str_ymdhms_from_timestamp
 
 
 class BinanceReceiver(BaseReceiver):
@@ -83,7 +83,7 @@ class BinanceReceiver(BaseReceiver):
 
         data = data['data']
         if '@depth10' in stream_name:
-            dt = int(str_ymdhms_utc(data['T']))
+            dt = int(str_ymdhms_from_timestamp(data['T']))
             if self.dict_set['전략종료시간'] < dt % 1000000:
                 return
 
@@ -118,7 +118,7 @@ class BinanceReceiver(BaseReceiver):
                                    hoga_bamount, hoga_tamount, receivetime)
 
         elif '@aggTrade' in stream_name:
-            dt   = int(str_ymdhms_utc(data['T']))
+            dt   = int(str_ymdhms_from_timestamp(data['T']))
             code = data['s']
             c    = float(data['p'])
             v    = float(data['q'])

@@ -81,14 +81,6 @@ class BackEngineBase(StgGlobalsFunc):
         self.hoga_eidex      = None
         self.index_arry      = None
 
-        self.ms_analyzer     = None
-        self.rk_analyzer     = None
-        self.pt_analyzer     = None
-        self.vf_analyzer     = None
-        self.vs_analyzer     = None
-        self.vp_analyzer     = None
-        self.vt_analyzer     = None
-
         self.code_list       = []
         self.vars_list       = []
         self.vars_lists      = []
@@ -377,8 +369,7 @@ class BackEngineBase(StgGlobalsFunc):
                 elif data == '백테중지':
                     self._back_stop(2)
             except Exception:
-                if self.gubun == 0:
-                    self.wq.put((UI_NUM['시스템로그'], format_exc()))
+                self.wq.put((UI_NUM['시스템로그'], format_exc()))
 
     def _data_load(self, data):
         """백테스트 데이터를 로드합니다.
@@ -387,7 +378,7 @@ class BackEngineBase(StgGlobalsFunc):
             """종목의 코드, 일자들, 시작시간, 종료시간으로 쿼리를 만들어서 데이터를 로딩 한 후에 롤링 데이터를 추가하고 2차원 어레이로 만든다.
             만든 2차원 어레이와 관련 정보를 all_data에 기록한다."""
             try:
-                df = pd.read_sql(get_back_load_code_query(self.is_tick, code, days, starttime, endtime), con)
+                df = pd.read_sql(get_back_load_code_query(self.is_tick, code, days, starttime, endtime, future_nt), con)
             except Exception:
                 pass
             else:
@@ -410,6 +401,7 @@ class BackEngineBase(StgGlobalsFunc):
 
         all_data = []
         divid_mode = data[-1]
+        future_nt = self.market_gubun == 7
 
         if divid_mode == '종목코드별 분류':
             _, startday, endday, starttime, endtime, code_list, avg_list, code_days, _, _, _ = data
@@ -513,7 +505,7 @@ class BackEngineBase(StgGlobalsFunc):
         if gubun in (1, 2):
             self.bq.put('백테중지완료')
         if gubun == 3:
-            if self.gubun == 0: self.wq.put((UI_NUM['백테스트'], '백테스트 엔진 전략연산 오류, 자동 중지 중 ...'))
+            self.wq.put((UI_NUM['백테스트'], '백테스트 엔진 전략연산 오류, 자동 중지 중 ...'))
 
     def _init_trade_info(self):
         """거래 정보를 초기화합니다.
@@ -667,7 +659,7 @@ class BackEngineBase(StgGlobalsFunc):
                         try:
                             self._strategy()
                         except Exception:
-                            if self.gubun == 0: self.wq.put((UI_NUM['시스템로그'], format_exc()))
+                            self.wq.put((UI_NUM['시스템로그'], format_exc()))
                             self._back_stop(3)
                             return
 

@@ -71,7 +71,8 @@ class BaseReceiver:
         self.dict_jgdt = {}
         self.dict_prec = {}
         self.dict_bool = {
-            '프로세스종료': False
+            '프로세스종료': False,
+            '실시간데이터수신': False
         }
 
         self.list_hgdt    = [0, 0, 0, 0]
@@ -454,6 +455,7 @@ class BaseReceiver:
         self._update_money_top(dt_std)
         if self.hoga_code == code and dt > self.list_hgdt[1]:
             self._update_hoga_window_rem(dt, code, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount)
+        if not self.dict_bool['실시간데이터수신']: self.dict_bool['실시간데이터수신'] = True
 
     def _correction_hoga_data(self, curr_price, hoga_seprice, hoga_samount, hoga_buprice, hoga_bamount):
         """호가 데이터를 보정합니다."""
@@ -565,8 +567,10 @@ class BaseReceiver:
         inthms = get_inthms(self.market_gubun)
         A = self.dict_set['전략종료시간'] < inthms < self.dict_set['전략종료시간'] + 10 and self.dict_set['프로세스종료']
         B = self.market_close < inthms < self.market_close + 10
-        if not self.dict_bool['프로세스종료'] and (A or B):
+        C = not self.dict_bool['실시간데이터수신'] and self.dict_set['휴무프로세스종료'] and self.market_open + 10 < inthms
+        if not self.dict_bool['프로세스종료'] and (A or B or C):
             self._receiver_process_kill()
+            self.dict_bool['프로세스종료'] = True
 
         if self.market_gubun not in (6, 7, 8):
             current_gsjm = tuple(self.list_gsjm)
@@ -624,7 +628,6 @@ class BaseReceiver:
 
     def _receiver_process_kill(self):
         """리시버 프로세스를 종료합니다."""
-        self.dict_bool['프로세스종료'] = True
         self._websocket_kill()
         if self.dict_set['알림소리']:
             self.soundQ.put(f"{self.market_info['마켓이름']} 시스템을 3분 후 종료합니다.")

@@ -1,5 +1,12 @@
 
 import datetime
+from zoneinfo import ZoneInfo
+
+_now_utc = datetime.datetime.now(datetime.timezone.utc)
+_now_cme = _now_utc.astimezone(ZoneInfo('America/Chicago'))
+# noinspection PyUnresolvedReferences
+CME_GAP = int(_now_cme.dst().total_seconds() - 3600 * 14)
+UTC_GAP = 3600 * 9
 
 
 def now():
@@ -9,127 +16,52 @@ def now():
 
 def now_utc():
     """UTC 현재 시간을 반환합니다."""
-    return timedelta_sec(-32400)
+    return timedelta_sec(-UTC_GAP)
 
 
 def now_cme():
     """CME 현재 시간을 반환합니다."""
-    return timedelta_sec(get_time_gap())
+    return timedelta_sec(CME_GAP)
 
 
 def str_ymdhmsf(std_time=None):
     """연월일시분초밀리초 문자열을 반환합니다."""
-    if std_time is not None:
-        return strf_time('%Y%m%d%H%M%S%f', std_time)
-    else:
-        return strf_time('%Y%m%d%H%M%S%f')
+    return strf_time('%Y%m%d%H%M%S%f', std_time)
 
 
 def str_ymdhms(std_time=None):
     """연월일시분초 문자열을 반환합니다."""
-    if std_time is not None:
-        return strf_time('%Y%m%d%H%M%S', std_time)
-    else:
-        return strf_time('%Y%m%d%H%M%S')
+    return strf_time('%Y%m%d%H%M%S', std_time)
 
 
 def str_ymdhm(std_time=None):
     """연월일시분 문자열을 반환합니다."""
-    if std_time is not None:
-        return strf_time('%Y%m%d%H%M', std_time)
-    else:
-        return strf_time('%Y%m%d%H%M')
+    return strf_time('%Y%m%d%H%M', std_time)
 
 
 def str_ymdhms_ios(std_time=None):
     """iOS 형식 연월일시분초 문자열을 반환합니다."""
-    if std_time is not None:
-        return strf_time('%Y-%m-%d %H:%M:%S', std_time)
-    else:
-        return strf_time('%Y-%m-%d %H:%M:%S')
-
-
-def str_ymdhm_ios(std_time=None):
-    """iOS 형식 연월일시분 문자열을 반환합니다."""
-    if std_time is not None:
-        return strf_time('%Y-%m-%d %H:%M', std_time)
-    else:
-        return strf_time('%Y-%m-%d %H:%M')
+    return strf_time('%Y-%m-%d %H:%M:%S', std_time)
 
 
 def str_ymd_ios(std_time=None):
     """iOS 형식 연월일 문자열을 반환합니다."""
-    if std_time is not None:
-        return strf_time('%Y-%m-%d', std_time)
-    else:
-        return strf_time('%Y-%m-%d')
+    return strf_time('%Y-%m-%d', std_time)
 
 
-def str_hms_ios(std_time=None):
-    """iOS 형식 시분초 문자열을 반환합니다."""
-    if std_time is not None:
-        return strf_time('%H:%M:%S', std_time)
-    else:
-        return strf_time('%H:%M:%S')
-
-
-def str_hm_ios(std_time=None):
-    """iOS 형식 시분 문자열을 반환합니다."""
-    if std_time is not None:
-        return strf_time('%H:%M', std_time)
-    else:
-        return strf_time('%H:%M')
-
-
-def str_ymdhms_utc(time_):
+def str_ymdhms_from_timestamp(time_):
     """UTC 연월일시분초 문자열을 반환합니다."""
-    return str_ymdhms(from_timestamp(int(time_ / 1000 - 32400)))
+    return str_ymdhms(from_timestamp(int(time_ / 1000 - UTC_GAP)))
 
 
 def str_ymd(std_time=None):
     """연월일 문자열을 반환합니다."""
-    if std_time is not None:
-        return strf_time('%Y%m%d', std_time)
-    else:
-        return strf_time('%Y%m%d')
-
-
-def str_hmsf(std_time=None):
-    """시분초밀리초 문자열을 반환합니다."""
-    if std_time is not None:
-        return strf_time('%H%M%S%f', std_time)
-    else:
-        return strf_time('%H%M%S%f')
-
-
-def float_hmsf(std_time=None):
-    """시분초밀리초 실수를 반환합니다."""
-    if std_time is not None:
-        return float(strf_time('%H%M%S.%f', std_time))
-    else:
-        return float(strf_time('%H%M%S.%f'))
+    return strf_time('%Y%m%d', std_time)
 
 
 def str_hms(std_time=None):
     """시분초 문자열을 반환합니다."""
-    if std_time is not None:
-        return strf_time('%H%M%S', std_time)
-    else:
-        return strf_time('%H%M%S')
-
-
-def str_hms_cme_from_str(std_hms=None):
-    """CME 시분초 문자열을 반환합니다."""
-    if std_hms is not None:
-        std_time = timedelta_sec(get_time_gap(), dt_hms(std_hms))
-    else:
-        std_time = now_cme()
-    return str_hms(std_time)
-
-
-def str_hm(std_time):
-    """시분 문자열을 반환합니다."""
-    return strf_time('%H%M', std_time)
+    return strf_time('%H%M%S', std_time)
 
 
 def dt_ymdhms_ios(str_time):
@@ -171,7 +103,8 @@ def dt_hm(str_time):
 
 def strf_time(timetype, std_time=None):
     """시간 포맷 문자열을 반환합니다."""
-    return now().strftime(timetype) if std_time is None else std_time.strftime(timetype)
+    if std_time is None: std_time = now()
+    return std_time.strftime(timetype)
 
 
 def from_timestamp(time_):
@@ -181,12 +114,14 @@ def from_timestamp(time_):
 
 def timedelta_sec(second, std_time=None):
     """초 단위 timedelta를 반환합니다."""
-    return now() + datetime.timedelta(seconds=float(second)) if std_time is None else std_time + datetime.timedelta(seconds=float(second))
+    if std_time is None: std_time = now()
+    return std_time + datetime.timedelta(seconds=float(second))
 
 
 def timedelta_day(day, std_time=None):
     """일 단위 timedelta를 반환합니다."""
-    return now() + datetime.timedelta(days=float(day)) if std_time is None else std_time + datetime.timedelta(days=float(day))
+    if std_time is None: std_time = now()
+    return std_time + datetime.timedelta(days=float(day))
 
 
 def get_inthms(market_gubun):
@@ -217,22 +152,6 @@ def get_str_ymdhmsf(market_gubun):
         return str_ymdhmsf(now_cme())
     else:
         return str_ymdhmsf(now_utc())
-
-
-def summer_time():
-    """서머타임을 계산합니다."""
-    from zoneinfo import ZoneInfo
-    now_utc_ = datetime.datetime.now(datetime.timezone.utc)
-    now_cme_ = now_utc_.astimezone(ZoneInfo('America/Chicago'))
-    # noinspection PyUnresolvedReferences
-    summer_t = int(now_cme_.dst().total_seconds())
-    return summer_t
-
-
-def get_time_gap():
-    """시간 차이를 계산합니다."""
-    time_gap = int(summer_time() - 50400)
-    return time_gap
 
 
 def cme_normal_open():

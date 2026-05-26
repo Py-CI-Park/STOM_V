@@ -1,3 +1,5 @@
+import builtins
+
 
 class ImportProgressHook:
     """임포트 진행률 훅 클래스입니다.
@@ -60,21 +62,20 @@ class ImportProgressHook:
         self.total_modules = len(self.modules)
         self.current_index = 0
 
+    def install(self):
+        """훅을 설치합니다."""
+        self.original_import = builtins.__import__
+        builtins.__import__  = self.custom_import
+
+    def uninstall(self):
+        """훅을 제거합니다."""
+        builtins.__import__ = self.original_import
+
     def custom_import(self, name, *args, **kwargs):
         """커스텀 임포트 함수입니다."""
         if name in self.modules:
             self.current_index += 1
             progress = (self.current_index / self.total_modules) * 50
             self.splash.show_progress(f"{name}...", int(progress))
+        # noinspection PyCallingNonCallable
         return self.original_import(name, *args, **kwargs)
-
-    def install(self):
-        """훅을 설치합니다."""
-        import builtins
-        self.original_import = builtins.__import__
-        builtins.__import__ = self.custom_import
-
-    def uninstall(self):
-        """훅을 제거합니다."""
-        import builtins
-        builtins.__import__ = self.original_import

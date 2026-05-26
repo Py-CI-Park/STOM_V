@@ -21,12 +21,23 @@ class StgGlobalsFunc:
         self.mv               = None
         self.k                = None
 
+        self.ms_analyzer      = None
+        self.rk_analyzer      = None
+        self.pt_analyzer      = None
+        self.vf_analyzer      = None
+        self.vs_analyzer      = None
+        self.vp_analyzer      = None
+        self.vt_analyzer      = None
+
         self.fm_list          = None
         self.fm_tcnt          = None
         self.check            = None
         self.line             = None
         self.up               = None
         self.down             = None
+        self.buy              = None
+        self.sell             = None
+        self.hold             = False
         self.is_tick          = False
         self.backtest         = False
 

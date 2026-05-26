@@ -70,17 +70,27 @@ def get_trade_info(gubun):
     return v
 
 
-def get_back_load_code_query(is_tick, code, days, starttime, endtime):
+def get_back_load_code_query(is_tick, code, days, starttime, endtime, future_nt):
     """백테스트 데이터 로드 쿼리를 생성합니다."""
     conditions = []
     for day in days:
         if is_tick:
-            sindex = day * 1000000 + starttime
-            eindex = day * 1000000 + endtime
+            bindex  = day * 1000000
+            sindex1 = bindex + starttime
+            sindex2 = bindex + 240000
+            eindex1 = bindex
+            eindex2 = bindex + endtime
         else:
-            sindex = day * 10000 + int(starttime / 100)
-            eindex = day * 10000 + int(endtime / 100)
-        conditions.append(f"(`index` >= {sindex} AND `index` <= {eindex})")
+            bindex  = day * 10000
+            sindex1 = bindex + int(starttime / 100)
+            sindex2 = bindex + 2400
+            eindex1 = bindex
+            eindex2 = bindex + int(endtime / 100)
+        if future_nt:
+            conditions.append(f"(`index` >= {sindex1} AND `index` <= {sindex2})")
+            conditions.append(f"(`index` >= {eindex1} AND `index` <= {eindex2})")
+        else:
+            conditions.append(f"(`index` >= {sindex1} AND `index` <= {eindex2})")
     where_clause = " OR ".join(conditions)
     query = f"SELECT * FROM '{code}' WHERE {where_clause}"
     return query
@@ -117,6 +127,7 @@ def get_buy_stg(buytxt, gubun, wq):
             indistg = compile(indistg, '<string>', 'exec')
         except Exception:
             indistg = None
+            if gubun == 0: wq.put((UI_NUM['시스템로그'], format_exc()))
     else:
         indistg = None
     return buystg, indistg
@@ -194,6 +205,7 @@ def get_buy_stg_future(buystg, gubun, wq):
             indistg = compile(indistg, '<string>', 'exec')
         except Exception:
             indistg = None
+            if gubun == 0: wq.put((UI_NUM['시스템로그'], format_exc()))
     else:
         indistg = None
     return buystg, indistg

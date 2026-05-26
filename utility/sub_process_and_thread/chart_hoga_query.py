@@ -885,12 +885,10 @@ class ChartHogaQuery:
 
         buy_index  = []
         sell_index = []
-        # noinspection PyUnresolvedReferences
-        arry = np.column_stack((arry, np.zeros((arry.shape[0], 2))))
-        if self.market_gubun > 5:
-            arry = np.column_stack((arry, np.zeros((arry.shape[0], 2))))
-
         indices = arry[:, 0]
+
+        col_cnt = 2 if self.market_gubun < 6 else 4
+        arry = np.column_stack((arry, np.zeros((arry.shape[0], col_cnt))))
 
         def get_cgidx_and_cgtime(cgtime_):
             while cgtime_ not in indices:
