@@ -598,7 +598,7 @@ def plot_show(gubun, is_tick, teleQ, df_tsg, df_bct, market_gubun, seed, mdd, st
     if gubun == '최적화':
         time_unit, plus_time = (1000000, 240000) if is_tick else (10000, 2400)
         endx_list.append(df_tsg[df_tsg['매도시간'] < list_days[2][0] * time_unit + plus_time].index[-1])
-        if list_days[1] is not None:
+        if list_days[1]:
             for vsday, _, _ in list_days[1]:
                 df_tsg_ = df_tsg[df_tsg['매도시간'] < vsday * time_unit]
                 if not df_tsg_.empty:

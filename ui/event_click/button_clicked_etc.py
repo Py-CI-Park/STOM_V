@@ -12,17 +12,17 @@ def opbutton_clicked_01():
 
 def cpbutton_clicked_01(ui):
     """백테스트 상세기록을 그래프로 비교합니다."""
-    from PyQt5.QtWidgets import QMessageBox
+    if ui.backcheckbox_list:
+        from PyQt5.QtWidgets import QMessageBox
+        backdetail_list = []
+        for i, checkbox in enumerate(ui.backcheckbox_list):
+            if checkbox.isChecked():
+                backdetail_list.append(ui.backdetail_list[i])
 
-    backdetail_list = []
-    for i, checkbox in enumerate(ui.backcheckbox_list):
-        if checkbox.isChecked():
-            backdetail_list.append(ui.backdetail_list[i])
-
-    if len(backdetail_list) >= 2:
-        ui.chartQ.put(('그래프비교', backdetail_list))
-    else:
-        QMessageBox.critical(ui.dialog_comp, '오류 알림', '두개 이상의 상세기록을 선택하십시오.\n')
+        if len(backdetail_list) >= 2:
+            ui.chartQ.put(('그래프비교', backdetail_list))
+        else:
+            QMessageBox.critical(ui.dialog_comp, '오류 알림', '두개 이상의 상세기록을 선택하십시오.\n')
 
 
 def ttbutton_clicked_01(ui, cmd):

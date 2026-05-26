@@ -70,7 +70,8 @@ class SetDialogChart:
                '9. 줌인된 상태에서 마우스 우클릭시 줌아웃됩니다.\n' \
                '10. 줌인된 상태에서 마우스 우클릭으로 드레그하면 좌우로 움직입니다.\n' \
                '11. 호가창이 열린 상태에서 마우스 좌클릭 시 해당 시간의 호가정보가 표시됩니다.\n' \
-               '12. 팩터설정 창, 우측 빈칸에 등락율각도, 거래대금각도 계수를 입력하여 다른 계수값 기반 각도를 표시할 수 있습니다.'
+               '12. 팩터설정에서 시장미시구조분석 매수/매도 계수를 입력할 수 있습니다.\n' \
+               '13. 팩터설정에서 각도계수를 입력하여 다른 계수값 기반 각도를 표시할 수 있습니다.'
         self.ui.ct_pushButtonnn_02 = self.wc.setPushbutton('도움말', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, tip=text)
         self.ui.ct_pushButtonnn_03 = self.wc.setPushbutton('수식관리자', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: show_dialog_formula(self.ui))
         self.ui.ct_pushButtonnn_04 = self.wc.setPushbutton('펙터설정', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: show_dialog_factor(self.ui))
@@ -80,7 +81,7 @@ class SetDialogChart:
         self.ui.ct_pushButtonnn_08 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: hg_button_clicked_01(self.ui, '다음'), shortcut='Alt+right')
         self.ui.ct_pushButtonnn_09 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: hg_button_clicked_02(self.ui, '매수'), shortcut='Alt+up')
         self.ui.ct_pushButtonnn_10 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: hg_button_clicked_02(self.ui, '매도'), shortcut='Alt+down')
-        self.ui.ct_pushButtonnn_11 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: chart_screenshot2(self.ui), shortcut='Shift+S')
+        self.ui.ct_pushButtonnn_11 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: chart_screenshot2(self.ui), shortcut='Alt+S')
 
         self.ui.ct_dateEdittttt_02 = self.wc.setDateEdit(self.ui.dialog_chart, changed=lambda: chart_moneytop_list(self.ui))
         self.ui.ct_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_chart, ['종목명'], 100, vscroll=True, clicked=lambda row, col: cell_clicked_06(self.ui, row, col))

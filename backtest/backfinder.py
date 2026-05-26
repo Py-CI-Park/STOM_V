@@ -6,7 +6,6 @@ import sqlite3
 import pandas as pd
 from traceback import format_exc
 from utility.static_method.static_datetime import now, str_ymdhms
-from utility.static_method.static_decorator import error_decorator
 from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, UI_NUM
 
 
@@ -40,7 +39,6 @@ class BackFinder:
             self.wq.put((UI_NUM['시스템로그'], format_exc()))
             self._sys_exit(True)
 
-    @error_decorator
     def _start(self):
         """백파인더를 시작합니다."""
         con = sqlite3.connect(DB_STRATEGY)

@@ -63,7 +63,7 @@ class SetDialogStrategy:
 
         self.ui.stginput_labelllll1 = QLabel(' ▣ 버튼의 이름과 전략조건을 입력하십시오.                            삭제하기 버튼을 누르면 아래의 원래 버튼으로 복구됩니다.', self.ui.dialog_stg_input1)
         self.ui.stginput_lineeditt1 = self.wc.setLineedit(self.ui.dialog_stg_input1, font=qfont14, acenter=True, style=style_bc_dk)
-        self.ui.stginput_lineeditt2 = self.wc.setLineedit(self.ui.dialog_stg_input1, font=qfont14, acenter=True, style=style_bc_dk)
+        self.ui.stginput_lineeditt2 = self.wc.setLineedit(self.ui.dialog_stg_input1, font=qfont14, acenter=True, enable=False, style=style_bc_dk)
         self.ui.stginput_textEditt1 = self.wc.setTextEdit(self.ui.dialog_stg_input1, filter_=True, font=qfont14)
         self.ui.stginput_pushBtn011 = self.wc.setPushbutton('삭제하기', parent=self.ui.dialog_stg_input1, bounced=True, click=lambda: button_clicked_strategy_delete(self.ui))
         self.ui.stginput_pushBtn012 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_stg_input1, bounced=True, click=lambda: button_clicked_strategy_save(self.ui))
@@ -74,7 +74,7 @@ class SetDialogStrategy:
 
         self.ui.stginput_labelllll2 = QLabel(' ▣ 버튼의 이름과 전략조건을 입력하십시오.                            삭제하기 버튼을 누르면 아래의 원래 버튼으로 복구됩니다.', self.ui.dialog_stg_input2)
         self.ui.stginput_lineeditt3 = self.wc.setLineedit(self.ui.dialog_stg_input2, font=qfont14, acenter=True, style=style_bc_dk)
-        self.ui.stginput_lineeditt4 = self.wc.setLineedit(self.ui.dialog_stg_input2, font=qfont14, acenter=True, style=style_bc_dk)
+        self.ui.stginput_lineeditt4 = self.wc.setLineedit(self.ui.dialog_stg_input2, font=qfont14, acenter=True, enable=False, style=style_bc_dk)
         self.ui.stginput_textEditt2 = self.wc.setTextEdit(self.ui.dialog_stg_input2, filter_=True, font=qfont14)
         self.ui.stginput_pushBtn021 = self.wc.setPushbutton('삭제하기', parent=self.ui.dialog_stg_input2, bounced=True, click=lambda: button_clicked_strategy_delete(self.ui))
         self.ui.stginput_pushBtn022 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_stg_input2, bounced=True, click=lambda: button_clicked_strategy_save(self.ui))

@@ -75,12 +75,12 @@ class SetTable:
 
         # =============================================================================================================
 
-        self.ui.tt_tableWidgettt.setGeometry(7, 10, 668, 42)
-        self.ui.td_tableWidgettt.setGeometry(7, 57, 668, 320)
-        self.ui.tj_tableWidgettt.setGeometry(7, 382, 668, 42)
-        self.ui.jg_tableWidgettt.setGeometry(7, 429, 668, 320)
-        self.ui.gj_tableWidgettt.setGeometry(680, 10, 668, 367)
-        self.ui.cj_tableWidgettt.setGeometry(680, 382, 668, 367)
+        self.ui.tt_tableWidgettt.setGeometry(7, 12, 668, 42)
+        self.ui.td_tableWidgettt.setGeometry(7, 58, 668, 319)
+        self.ui.tj_tableWidgettt.setGeometry(7, 385, 668, 42)
+        self.ui.jg_tableWidgettt.setGeometry(7, 431, 668, 319)
+        self.ui.gj_tableWidgettt.setGeometry(680, 12, 668, 365)
+        self.ui.cj_tableWidgettt.setGeometry(680, 385, 668, 365)
 
         self.ui.calendarWidgetttt.setGeometry(7, 10, 668, 245)
         self.ui.dt_tableWidgetttt.setGeometry(7, 260, 668, 42)

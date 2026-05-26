@@ -8,7 +8,6 @@ import pandas as pd
 from traceback import format_exc
 from backtest.back_static_numba import get_result, bootstrap_test
 from utility.static_method.static_datetime import now, str_ymdhms
-from utility.static_method.static_decorator import error_decorator
 from backtest.back_static import plot_show, get_moneytop_query, get_result_dataframe, add_mdd
 from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, UI_NUM, COLUMNS_BBS, DB_SETTING
 
@@ -65,13 +64,11 @@ class BackTest:
             self.wq.put((UI_NUM['시스템로그'], format_exc()))
             self._sys_exit(True)
 
-    # noinspection PyUnresolvedReferences
-    @error_decorator
     def _start(self):
         """백테스트를 시작합니다."""
         con   = sqlite3.connect(self.market_info['백테디비'][self.is_tick])
         query = get_moneytop_query(self.is_tick, self.startday, self.endday, self.starttime, self.endtime)
-        df_mt = pd.read_sql(query, con)
+        df_mt: pd.DataFrame = pd.read_sql(query, con)
         con.close()
 
         if len(df_mt) == 0 or self.back_count == 0:

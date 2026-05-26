@@ -363,6 +363,7 @@ class ChartHogaQuery:
         shutil.copy(data[1], data[2])
         self.con1 = sqlite3.connect(DB_SETTING)
         self.cur1 = self.con1.cursor()
+        self.testQ.put('설정파일복사완료')
 
     def _execute_query(self, data, con, cur):
         """SQL 쿼리를 실행합니다."""
