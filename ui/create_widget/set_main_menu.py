@@ -1,9 +1,10 @@
 
+from PyQt5.QtCore import Qt
 from ui.event_click.button_clicked_shortcut import *
 from PyQt5.QtWidgets import QWidget, QLabel, QGroupBox
 from ui.event_keypress.extend_window import extend_window
-from ui.create_widget.set_style import qfont12, style_pgbar
 from ui.etcetera.etc import chart_screenshot, manual_save_and_exit
+from ui.create_widget.set_style import qfont12, style_pgbar, color_fg_bc
 from ui.event_click.button_clicked_show_dialog import show_order, show_backscheduler, show_qsize, show_treemap, \
     show_db, show_kimp, show_chart, show_hoga, show_giup
 
@@ -58,7 +59,28 @@ class SetMainMenu:
         self.ui.flv_tab = QWidget()
         self.ui.blv_tab = QWidget()
 
-        self.ui.progressBarrr = self.wc.setProgressBar(self.ui, vertical=True, style=style_pgbar)
+        self.ui.progressBar01 = self.wc.setProgressBar(self.ui, vertical=True, style=style_pgbar)
+        self.ui.progressBar02 = self.wc.setProgressBar(self.ui, vertical=True, style=style_pgbar)
+        self.ui.progressBar03 = self.wc.setProgressBar(self.ui, vertical=True, style=style_pgbar)
+        self.ui.progressBar01.setFormat('')
+        self.ui.progressBar02.setFormat('')
+        self.ui.progressBar03.setFormat('')
+
+        self.ui.progressLbl01 = QLabel('CPU\n0%', self.ui)
+        self.ui.progressLbl01.setAlignment(Qt.AlignCenter)
+        self.ui.progressLbl01.setStyleSheet(f"color: {color_fg_bc.name()}; font-size: 11px; font-weight: bold;")
+        self.ui.progressLbl01.setAttribute(Qt.WA_TransparentForMouseEvents)
+
+        self.ui.progressLbl02 = QLabel('MEM\n0%', self.ui)
+        self.ui.progressLbl02.setAlignment(Qt.AlignCenter)
+        self.ui.progressLbl02.setStyleSheet(f"color: {color_fg_bc.name()}; font-size: 11px; font-weight: bold;")
+        self.ui.progressLbl02.setAttribute(Qt.WA_TransparentForMouseEvents)
+
+        self.ui.progressLbl03 = QLabel('NET\n0.0\nMbps', self.ui)
+        self.ui.progressLbl03.setAlignment(Qt.AlignCenter)
+        self.ui.progressLbl03.setStyleSheet(f"color: {color_fg_bc.name()}; font-size: 11px; font-weight: bold;")
+        self.ui.progressLbl03.setAttribute(Qt.WA_TransparentForMouseEvents)
+
         self.ui.at_pushButton = self.wc.setPushbutton('Alt', animated=True)
         self.ui.tt_pushButton = self.wc.setPushbutton('T', color=6, click=lambda: mnbutton_c_clicked_02(self.ui), shortcut='Alt+T',   animated=True, tip='수익집계')
         self.ui.ms_pushButton = self.wc.setPushbutton('L', color=6, click=lambda: mnbutton_c_clicked_03(self.ui), shortcut='Alt+L',   animated=True, tip='수동시작')
@@ -119,7 +141,12 @@ class SetMainMenu:
         self.ui.bd_pushButton.setGeometry(8, 470, 16, 15)
         self.ui.ad_pushButton.setGeometry(23, 470, 16, 15)
 
-        self.ui.progressBarrr.setGeometry(6, 490, 35, 267)
+        self.ui.progressBar01.setGeometry(6, 490, 35, 86)
+        self.ui.progressBar02.setGeometry(6, 581, 35, 86)
+        self.ui.progressBar03.setGeometry(6, 672, 35, 85)
+        self.ui.progressLbl01.setGeometry(6, 490, 35, 86)
+        self.ui.progressLbl02.setGeometry(6, 581, 35, 86)
+        self.ui.progressLbl03.setGeometry(6, 672, 35, 86)
 
         self.ui.image_label1.setGeometry(1057, 475, 335, 105)
         self.ui.image_label2.setGeometry(1057, 755, 335, 600)

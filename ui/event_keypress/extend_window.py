@@ -11,12 +11,22 @@ def extend_window(ui):
         ui.extend_window = True
         ui.setFixedSize(1403, 1368)
         ui.image_label2.setVisible(True)
-        ui.progressBarrr.setGeometry(5, 490, 35, 872)
+        ui.progressBar01.setGeometry(6, 490, 35, 285)
+        ui.progressBar02.setGeometry(6, 780, 35, 285)
+        ui.progressBar03.setGeometry(6, 1070, 35, 285)
+        ui.progressLbl01.setGeometry(6, 490, 35, 285)
+        ui.progressLbl02.setGeometry(6, 780, 35, 285)
+        ui.progressLbl03.setGeometry(6, 1070, 35, 285)
     else:
         ui.extend_window = False
         ui.setFixedSize(1403, 763)
         ui.image_label2.setVisible(False)
-        ui.progressBarrr.setGeometry(5, 490, 35, 267)
+        ui.progressBar01.setGeometry(6, 490, 35, 86)
+        ui.progressBar02.setGeometry(6, 581, 35, 86)
+        ui.progressBar03.setGeometry(6, 672, 35, 85)
+        ui.progressLbl01.setGeometry(6, 490, 35, 86)
+        ui.progressLbl02.setGeometry(6, 581, 35, 86)
+        ui.progressLbl03.setGeometry(6, 672, 35, 85)
 
     ui.st_tab.setGeometry(45, 0, 1353, 1362 if ui.extend_window else 757)
 

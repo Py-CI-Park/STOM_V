@@ -86,7 +86,7 @@ class BaseStrategy(StgGlobalsFunc):
 
         self.jgrv_count      = 0
         self.betting         = 0
-        self.비중조절기준       = 0
+        self.비중조절기준      = 0
         self.vitime_cnt      = 0
 
         self.avg_list        = [self.dict_set['평균값계산틱수']]

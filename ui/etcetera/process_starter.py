@@ -87,6 +87,13 @@ def _update_window_title(ui):
 
 @thread_decorator
 def _update_cpuper(ui):
-    """CPU 사용률을 업데이트합니다."""
+    """네트워크, 메모리, CPU 사용률을 업데이트합니다."""
     import psutil
-    ui.cpu_per = int(psutil.cpu_percent(interval=1))
+
+    memory        = psutil.virtual_memory()
+    net_io        = psutil.net_io_counters()
+    recv_bps      = net_io.bytes_recv - ui.last_recv
+    ui.last_recv  = net_io.bytes_recv
+    ui.net_recv   = round(recv_bps * 8 / 1_000_000, 1)
+    ui.memory_per = int(round(memory.percent))
+    ui.cpu_per    = int(round(psutil.cpu_percent(interval=1)))

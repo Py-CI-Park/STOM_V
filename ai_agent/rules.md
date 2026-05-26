@@ -15,8 +15,8 @@
 # 전략 분석
 - 사용자 전략은 _database/strategy.db의 *_buy와 *._sell 테이블에 저장되어 있다.
 - 사용자가 거래하는 거래소명은 _database/setting.db의 main 테이블에서 거래소 칼럼의 첫번째 값이다.
-- utility/settings/setting_market.py의 DICT_MARKET_GUBUN[거래소명]이 사용자의 거래소번호이다.
-- utility/settings/setting_market.py의 DICT_MARKET_INFO[거래소번호]['전략구분']이 전략구분값이 된다.
+- utility/settings/setting_market.py의 DICT_MARKET_GUBUN.get(거래소명)이 사용자의 거래소번호이다.
+- utility/settings/setting_market.py의 DICT_MARKET_INFO.get(거래소번호).get('전략구분')이 전략구분값이 된다.
 - 예를 들어 전략구분값이 'stock'이라면 매수전략은 stock_buy, 매도전략은 stock_sell 이 테이블명이다.
 - 전략분석을 요청하면 두 테이블의 인덱스값을 각각 매수전략명 목록, 매도전략명 목록으로 선택메뉴 형태로 보여준다.
 - 전략은 전략코드 칼럼값이며, 전략을 분석하기 위해서 ai_agent/strategy.txt 파일에서 변수설명과 예제를 자세히 읽어본다.
@@ -34,8 +34,8 @@
 # 실매매 결과 분석
 - 실매매의 결과는 _database/tradelist.db의 *_tradelist 테이블에 저장되어 있다.
 - 사용자가 거래하는 거래소명은 _database/setting.db의 main 테이블에서 거래소 칼럼의 첫번째 값이다.
-- utility/settings/setting_market.py의 DICT_MARKET_GUBUN[거래소명]이 사용자의 거래소번호이다.
-- utility/settings/setting_market.py의 DICT_MARKET_INFO[거래소번호]['거래디비']가 실매매결과값이 저장되어 있는 테이블명이다.
+- utility/settings/setting_market.py의 DICT_MARKET_GUBUN.get(거래소명)이 사용자의 거래소번호이다.
+- utility/settings/setting_market.py의 DICT_MARKET_INFO.get(거래소번호).get('전략구분')이 실매매결과값이 저장되어 있는 테이블명이다.
 - 최종적으로 해당 테이블에서 실매매 결과값을 불러와서 다양한 각도로 분석하여 보고서를 작성해서 보여준다.
 - 보고서에는 실매매 전략의 장단점 및 개선점을 반드시 포함시킨다.
 - 작성한 보고서는 ai_agent/report 폴더에 매매결과보고서_연월일.txt 파일로 저장한다.

@@ -37,7 +37,12 @@ def update_progressbar(ui):
     """메인 프로그레스바와 버튼 스타일을 업데이트합니다."""
     from ui.create_widget.set_style import style_bc_bb, style_bc_bt, style_bc_by, style_bc_sl, style_bc_st
 
-    ui.progressBarrr.setValue(ui.cpu_per)
+    ui.progressBar01.setValue(ui.cpu_per)
+    ui.progressBar02.setValue(ui.memory_per)
+    ui.progressBar03.setValue(int(round(ui.net_recv)))
+    ui.progressLbl01.setText(f'CPU\n{ui.cpu_per}%')
+    ui.progressLbl02.setText(f'MEM\n{ui.memory_per}%')
+    ui.progressLbl03.setText(f'NET\n{ui.net_recv}\nMbps')
     ui.counter = 0 if ui.counter == 599 else ui.counter + 1
 
     ui.be_pushButtonnn_01.setStyleSheet(style_bc_by if ui.backengine_running else style_bc_bt)
