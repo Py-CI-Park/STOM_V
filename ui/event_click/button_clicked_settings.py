@@ -12,6 +12,7 @@ def setting_load_01(ui):
     ui.sj_main_liEdit_01.setText(de_text(ui.dict_set['키'], df['프로그램비밀번호'][0]) if df['프로그램비밀번호'][0] else '')
     ui.sj_main_comBox_03.setCurrentText('격리' if df['바이낸스선물마진타입'][0] == 'ISOLATED' else '교차')
     ui.sj_main_comBox_04.setCurrentText('단방향' if df['바이낸스선물포지션'][0] == 'false' else '양방향')
+    ui.sj_main_comBox_05.setCurrentText(df['보이스네임'][0])
 
 
 def setting_load_02(ui):
@@ -240,6 +241,7 @@ def setting_save_01(ui, mbox=True):
     프로그램비밀번호_ = ui.sj_main_liEdit_01.text()
     바이낸스선물마진타입 = 'ISOLATED' if ui.sj_main_comBox_03.currentText() == '격리' else 'CROSSED'
     바이낸스선물포지션 = 'false' if ui.sj_main_comBox_04.currentText() == '단방향' else 'true'
+    보이스네임 = ui.sj_main_comBox_05.currentText()
 
     pass_check = True
     if ui.dict_set['프로그램비밀번호'] != '' and ui.dict_set['프로그램비밀번호'] != 프로그램비밀번호_:
@@ -254,7 +256,7 @@ def setting_save_01(ui, mbox=True):
     if pass_check:
         if ui.proc_chqs.is_alive():
             프로그램비밀번호 = en_text(ui.dict_set['키'], 프로그램비밀번호_) if 프로그램비밀번호_ else ''
-            columns = ['거래소', '타임프레임', '데이터저장', '모의투자', '알림소리', '프로그램비밀번호',
+            columns = ['거래소', '타임프레임', '데이터저장', '모의투자', '알림소리', '보이스네임', '프로그램비밀번호',
                        '바이낸스선물마진타입', '바이낸스선물포지션']
             set_txt = ', '.join([f'{col} = ?' for col in columns])
             query = f'UPDATE main SET {set_txt}'

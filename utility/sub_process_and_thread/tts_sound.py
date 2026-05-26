@@ -1,33 +1,42 @@
 
-import pythoncom
+import os
+import winsound
+import tempfile
+from supertonic import TTS
 from PyQt5.QtCore import QThread
 
 
-class TtsSound(QThread):
-    """Windows SAPI를 사용하여 소리를 재생합니다."""
-    def __init__(self, soundQ):
+class SupertonicTTS(QThread):
+    """supertonic TTS를 사용하여 소리를 재생합니다."""
+    def __init__(self, soundQ, voice_name='F1'):
         super().__init__()
         self.soundQ = soundQ
-        self._tts = None
+        self.tts = TTS(auto_download=True)
+        self.style = self.tts.get_voice_style(voice_name=voice_name)
 
     def run(self):
-        pythoncom.CoInitialize()
-        self._tts = self._init_sapi()
-        if self._tts is None:
-            pythoncom.CoUninitialize()
-            return
-
+        """soundQ큐를 감시합니다.
+        텍스트: 소리재생, 듀플: 예제재생, 딕셔너리: 보이스네임 설정 변경"""
         while True:
-            try:
-                data = self.soundQ.get()
-                self._tts.Speak(data)
-            except Exception:
-                pass
+            data = self.soundQ.get()
+            if data.__class__ == str:
+                if data in ('F1', 'F2', 'F3', 'F4', 'F5', 'M1', 'M2', 'M3', 'M4', 'M5'):
+                    text = 'supertonic TTS의 목소리 테스트 중입니다.'
+                    style = self.tts.get_voice_style(voice_name=data)
+                    wav, _ = self.tts.synthesize(text, voice_style=style, total_steps=5, lang="ko")
+                else:
+                    wav, _ = self.tts.synthesize(data, voice_style=self.style, total_steps=5, lang="ko")
+                self._play_sound(wav)
+            elif data.__class__ == dict:
+                voice_name = data['보이스네임']
+                self.style = self.tts.get_voice_style(voice_name=voice_name)
 
-    def _init_sapi(self):
-        """SAPI COM 객체를 초기화합니다."""
+    def _play_sound(self, wav):
+        """wav를 임시파일로 저장하고 winsound로 재생합니다."""
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
+            temp_filename = temp_file.name
+        self.tts.save_audio(wav, temp_filename)
         try:
-            import win32com.client
-            return win32com.client.Dispatch("SAPI.SpVoice")
-        except Exception:
-            return None
+            winsound.PlaySound(temp_filename, winsound.SND_FILENAME)
+        finally:
+            os.unlink(temp_filename)

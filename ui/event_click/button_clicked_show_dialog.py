@@ -190,6 +190,7 @@ def dialog_chart_show(ui):
     ui.ct_lineEdittttt_02.setText(endtime)
     DialogAnimator.setup_dialog_animation(ui.dialog_chart, duration=300)
     ui.dialog_chart.show()
+    ui.ct_pushButtonnn_01.setFocus()
 
     if ui.trading and ui.dict_set['타임프레임'] and ui.dict_set['시장미시구조분석']:
         ui.radar_dialog.show()
@@ -232,7 +233,6 @@ def show_chart(ui):
     """차트 다이얼로그를 토글합니다."""
     if not ui.dialog_chart.isVisible():
         dialog_chart_show(ui)
-        ui.ct_pushButtonnn_01.setFocus()
     else:
         if ui.dialog_formula.isVisible():
             ui.dialog_formula.close()

@@ -567,7 +567,8 @@ class BaseReceiver:
         inthms = get_inthms(self.market_gubun)
         A = self.dict_set['전략종료시간'] < inthms < self.dict_set['전략종료시간'] + 10 and self.dict_set['프로세스종료']
         B = self.market_close < inthms < self.market_close + 10
-        C = not self.dict_bool['실시간데이터수신'] and self.dict_set['휴무프로세스종료'] and self.market_open + 10 < inthms
+        C = not self.dict_bool['실시간데이터수신'] and self.dict_set['휴무프로세스종료'] and \
+            self.market_open + 10 < inthms < self.market_open + 20
         if not self.dict_bool['프로세스종료'] and (A or B or C):
             self._receiver_process_kill()
             self.dict_bool['프로세스종료'] = True

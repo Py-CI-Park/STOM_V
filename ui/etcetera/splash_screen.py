@@ -72,10 +72,10 @@ class StomSplashScreen(QSplashScreen):
         logo_container.setSpacing(15)
 
         icon_label = QLabel()
-        pixmap = QPixmap(f'{ICON_PATH}/logo.png')
-        icon_label.setPixmap(pixmap.scaled(60, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        pixmap = QPixmap(f'{ICON_PATH}/python.png')
+        icon_label.setPixmap(pixmap.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         icon_label.setAlignment(Qt.AlignCenter)
-        icon_label.setFixedSize(60, 50)
+        icon_label.setFixedSize(50, 70)
 
         try:
             with open("_update.txt", "r", encoding="utf-8") as f:
