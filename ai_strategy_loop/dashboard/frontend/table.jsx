@@ -40,7 +40,8 @@ function GenerationsTable({ state, mddCap = 15, onViewCode }) {
               <th style={{ width: 64 }}>게이트</th>
               <th style={{ width: 70 }}>거래수</th>
               <th style={{ width: 76 }}>MDD</th>
-              <th style={{ width: 120 }}>손익</th>
+              <th style={{ width: 80 }}>수익률</th>
+              <th style={{ width: 120 }}>수익금</th>
               <th>사유 / 전략 요지</th>
               <th style={{ width: 60, textAlign: "center" }}>코드</th>
             </tr>
@@ -58,6 +59,7 @@ function GenerationsTable({ state, mddCap = 15, onViewCode }) {
                 <td className="num-muted">—</td>
                 <td className="num-muted">—</td>
                 <td className="num-muted">—</td>
+                <td className="num-muted">—</td>
                 <td className="gist-cell" style={{ color: "var(--amber)" }}>
                   {state.latest?.phase || "—"} · {state.latest?.last_checkpoint || ""}
                 </td>
@@ -66,7 +68,7 @@ function GenerationsTable({ state, mddCap = 15, onViewCode }) {
             )}
             {rows.length === 0 && !running && (
               <tr>
-                <td colSpan="9" style={{ textAlign: "center", padding: 32, color: "var(--ink-3)" }}>
+                <td colSpan="10" style={{ textAlign: "center", padding: 32, color: "var(--ink-3)" }}>
                   아직 실행된 세대가 없습니다
                 </td>
               </tr>
@@ -94,6 +96,9 @@ function GenerationsTable({ state, mddCap = 15, onViewCode }) {
                   </td>
                   <td className="mono">{g.trade_count ?? 0}</td>
                   <td className={`mono ${mddBad ? "num-neg" : ""}`}>{fmtPct(g.mdd)}</td>
+                  <td className={`mono ${g.total_profit_pct > 0 ? "num-pos" : g.total_profit_pct < 0 ? "num-neg" : "num-muted"}`}>
+                    {fmtPct(g.total_profit_pct)}
+                  </td>
                   <td className={`mono ${g.profit > 0 ? "num-pos" : g.profit < 0 ? "num-neg" : "num-muted"}`}>
                     {fmtMoney(g.profit)}
                   </td>

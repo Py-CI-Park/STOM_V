@@ -267,4 +267,156 @@ function Mini({ label, value, sub, color }) {
   );
 }
 
-Object.assign(window, { FitnessChart });
+/* P10 — 세대별 수익률(%) + 수익금(원) 추이 차트(듀얼축).
+   적합도(graded) 차트와 별개로, 손익 자체의 진화를 한눈에 본다. 0선(손익분기)을
+   강조하고, 수익률 라인(좌축, %)과 수익금 라인(우축, 원)을 함께 그린다. 두 지표의
+   스케일이 다르므로 각자 자기 min/max로 정규화해 같은 패널에 겹쳐 그린다. */
+function ProfitChart({ state, targetPct = 0 }) {
+  const gens = state.generations || [];
+
+  const W = 880, H = 300;
+  const padL = 52, padR = 56, padT = 18, padB = 30;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  const xMax = Math.max(state.max_generations, 8);
+  const x = (g) => padL + (g - 0.5) / xMax * innerW;
+
+  // 수익률(%) 스케일: 0을 항상 포함하고, ±여유를 둔다.
+  const pctVals = gens.map(g => (typeof g.total_profit_pct === "number" ? g.total_profit_pct : 0));
+  const pctMax = Math.max(targetPct + 1, 1, ...pctVals);
+  const pctMin = Math.min(0, ...pctVals);
+  const pctRange = (pctMax - pctMin) || 1;
+  const yPct = (v) => padT + innerH - ((v - pctMin) / pctRange) * innerH;
+
+  // 수익금(원) 스케일: 자체 min/max(0 포함)로 정규화(우축).
+  const moneyVals = gens.map(g => (typeof g.profit === "number" ? g.profit : 0));
+  const moneyMax = Math.max(0, ...moneyVals);
+  const moneyMin = Math.min(0, ...moneyVals);
+  const moneyRange = (moneyMax - moneyMin) || 1;
+  const yMoney = (v) => padT + innerH - ((v - moneyMin) / moneyRange) * innerH;
+
+  // X 눈금(적합도 차트와 동일 규칙).
+  const xStep = xMax <= 15 ? 1 : xMax <= 30 ? 2 : 5;
+  const xTicks = [];
+  for (let g = 1; g <= xMax; g++) {
+    if (g === 1 || g === xMax || g % xStep === 0) xTicks.push(g);
+  }
+
+  const pctPath = useMemo_c(() => {
+    if (!gens.length) return "";
+    return gens.map((g, i) =>
+      `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${yPct(g.total_profit_pct || 0).toFixed(2)}`
+    ).join(" ");
+  }, [gens, xMax, pctMin, pctRange]);
+
+  const moneyPath = useMemo_c(() => {
+    if (!gens.length) return "";
+    return gens.map((g, i) =>
+      `${i === 0 ? "M" : "L"} ${x(g.gen_no).toFixed(2)} ${yMoney(g.profit || 0).toFixed(2)}`
+    ).join(" ");
+  }, [gens, xMax, moneyMin, moneyRange]);
+
+  // 통계 요약.
+  const latest = gens[gens.length - 1];
+  const peakPct = gens.reduce((a, b) =>
+    ((b.total_profit_pct || 0) > (a?.total_profit_pct ?? -Infinity) ? b : a), null);
+
+  const zeroY = yPct(0);  // 손익분기(0%) 기준선(좌축 기준).
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--amber)" }}></span>
+          수익 추이 — Profit Trajectory
+        </div>
+        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+          <LegendDot color="var(--amber)" label="수익률 %" />
+          <LegendDot color="var(--blue)" label="수익금 ₩" dashed />
+        </div>
+      </div>
+      <div className="panel-bd">
+        <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
+          <Mini label="최신 수익률" value={latest ? fmtPct(latest.total_profit_pct) : "—"}
+                color={latest && latest.total_profit_pct > 0 ? "var(--teal)"
+                       : latest && latest.total_profit_pct < 0 ? "var(--red)" : undefined} />
+          <Mini label="최고 수익률" value={peakPct ? fmtPct(peakPct.total_profit_pct) : "—"}
+                sub={peakPct ? `gen_${peakPct.gen_no}` : ""} />
+          <Mini label="최신 수익금" value={latest ? fmtMoney(latest.profit) : "—"}
+                color={latest && latest.profit > 0 ? "var(--teal)"
+                       : latest && latest.profit < 0 ? "var(--red)" : undefined} />
+        </div>
+
+        <div className="chart-wrap">
+          <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+            {/* 0% 손익분기 기준선(강조) */}
+            <line x1={padL} x2={W - padR} y1={zeroY} y2={zeroY}
+                  stroke="rgba(255,255,255,0.28)" strokeWidth="1" strokeDasharray="2 3" />
+            <text className="chart-axis-text" x={padL - 8} y={zeroY + 3} textAnchor="end"
+                  fill="var(--ink-2)">0%</text>
+            {/* 좌축 라벨(수익률 max/min) */}
+            <text className="chart-axis-text" x={padL - 8} y={yPct(pctMax) + 3} textAnchor="end"
+                  fill="var(--amber)">{pctMax.toFixed(1)}%</text>
+            <text className="chart-axis-text" x={padL - 8} y={yPct(pctMin) + 3} textAnchor="end"
+                  fill="var(--amber)">{pctMin.toFixed(1)}%</text>
+            {/* 우축 라벨(수익금 max/min) */}
+            <text className="chart-axis-text" x={W - padR + 6} y={yMoney(moneyMax) + 3} textAnchor="start"
+                  fill="var(--blue)">{fmtMoney(moneyMax)}</text>
+            <text className="chart-axis-text" x={W - padR + 6} y={yMoney(moneyMin) + 3} textAnchor="start"
+                  fill="var(--blue)">{fmtMoney(moneyMin)}</text>
+            {/* 목표 수익률선(targetPct > 0일 때만) */}
+            {targetPct > 0 && (
+              <>
+                <line x1={padL} x2={W - padR} y1={yPct(targetPct)} y2={yPct(targetPct)}
+                      stroke="rgba(76,214,179,0.4)" strokeWidth="1" strokeDasharray="6 4" />
+                <text className="chart-axis-text" x={W - padR - 4} y={yPct(targetPct) - 4}
+                      textAnchor="end" fill="var(--teal)">target {targetPct.toFixed(1)}%</text>
+              </>
+            )}
+
+            {/* X 라벨 */}
+            {xTicks.map((g, i) => (
+              <text key={`px${i}`} className="chart-axis-text"
+                    x={x(g)} y={H - 10} textAnchor="middle">gen_{g}</text>
+            ))}
+
+            {/* Frame */}
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH}
+                  stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH}
+                  stroke="var(--line-2)" strokeWidth="1" />
+
+            {/* Data: 수익률(좌축, 실선) + 수익금(우축, 점선) */}
+            {gens.length > 1 && (
+              <>
+                <path d={moneyPath} fill="none" stroke="var(--blue)" strokeWidth="1.5"
+                      strokeDasharray="5 4" opacity="0.85" />
+                <path d={pctPath} fill="none" stroke="var(--amber)" strokeWidth="2" />
+              </>
+            )}
+            {/* 수익률 포인트(부호별 색) */}
+            {gens.map((g, i) => {
+              const cx = x(g.gen_no), cy = yPct(g.total_profit_pct || 0);
+              const col = (g.total_profit_pct || 0) > 0 ? "var(--teal)"
+                        : (g.total_profit_pct || 0) < 0 ? "var(--red)" : "var(--ink-2)";
+              return <circle key={`pp${i}`} cx={cx} cy={cy} r="2.6" fill={col} />;
+            })}
+          </svg>
+
+          {gens.length === 0 && (
+            <div style={{
+              position: "absolute", inset: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "var(--ink-3)", fontSize: 12, fontFamily: "var(--mono)",
+            }}>
+              세대 데이터가 누적되면 수익 추이가 표시됩니다
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { FitnessChart, ProfitChart });

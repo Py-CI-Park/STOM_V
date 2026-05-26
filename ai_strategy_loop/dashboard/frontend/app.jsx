@@ -142,6 +142,7 @@ function App() {
           <div className="grid-main">
             <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
               <FitnessChart state={state} target={targetScore} />
+              <ProfitChart state={state} targetPct={0} />
               <GenerationsTable state={state} mddCap={mddCap}
                                 onViewCode={(g) => setCodeViewGen(g)} />
               {/* 운영·관찰: run 비교 콘솔(REST /runs, loop_runs.db 직접) */}
@@ -183,6 +184,8 @@ function App() {
       <CodeViewer
         generation={codeViewGen}
         onClose={() => setCodeViewGen(null)}
+        runId={state.run_id}
+        baseUrl={baseUrl}
       />
 
       {/* Footer */}

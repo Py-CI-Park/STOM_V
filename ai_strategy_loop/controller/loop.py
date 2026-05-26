@@ -922,6 +922,10 @@ def run_loop(
                 st, rid, parent_gen_for_record,
                 graded.graded, graded.mdd, fit.trade_count, graded.total_profit,
             )
+            # P10 — 수익률(%)은 graded(GradedResult)에 없고 엔진 metrics에만 있다
+            #   (total_profit_pct = '수익률합계'). profit(원)과 별개로 발행해 대시보드
+            #   세대 이력/차트가 수익률을 표시한다. metrics 누락 시 0.0 폴백(무예외).
+            total_profit_pct = float((outcome.metrics or {}).get("total_profit_pct", 0.0) or 0.0)
             st.record_generation(
                 rid, gen_no,
                 buy_name=buy_name, sell_name=sell_name,
@@ -930,6 +934,7 @@ def run_loop(
                 reason=fit.reason, csv_path=outcome.csv_path,
                 trade_count=fit.trade_count,
                 mdd=graded.mdd, profit=graded.total_profit,
+                total_profit_pct=total_profit_pct,
                 strategy_gist=gen_gist,
                 parent_gen=parent_gen_for_record,
                 diff_from_parent=diff_from_parent,

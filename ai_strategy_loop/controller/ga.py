@@ -50,7 +50,8 @@ class Individual:
     __slots__ = (
         "buy_name", "sell_name", "buy_code", "sell_code",
         "graded", "gate_passed", "hard_score",
-        "trade_count", "mdd", "profit", "profit_term", "gate_distance", "ok", "reason",
+        "trade_count", "mdd", "profit", "total_profit_pct", "profit_term",
+        "gate_distance", "ok", "reason",
         "origin",
     )
 
@@ -67,7 +68,9 @@ class Individual:
         self.hard_score: Optional[float] = None
         self.trade_count: int = 0
         self.mdd: float = 0.0
-        self.profit: float = 0.0
+        self.profit: float = 0.0  # 수익금(원).
+        # P10 — 수익률(총수익률, %). profit(원)과 별개로 대시보드 세대 행/차트에 발행한다.
+        self.total_profit_pct: float = 0.0
         # P7 — 정규화 수익 로지스틱 항(graded.profit_term). 'balanced' winner 점수에 쓴다.
         self.profit_term: float = 0.0
         self.gate_distance: str = ""
@@ -280,6 +283,8 @@ def _evaluate_individual(ind: Individual, config: LoopConfig, warm_session) -> N
     ind.trade_count = int(fit.trade_count)
     ind.mdd = float(graded.mdd)
     ind.profit = float(graded.total_profit)
+    # P10 — 수익률(%)은 graded에 없고 엔진 metrics에만 있다(total_profit_pct='수익률합계').
+    ind.total_profit_pct = float((outcome.metrics or {}).get("total_profit_pct", 0.0) or 0.0)
     ind.profit_term = float(graded.profit_term)
     ind.gate_distance = str(graded.gate_distance)
     ind.ok = True
@@ -407,6 +412,7 @@ def _population_page_data(pop: List[Individual], gen_no: int, guardfail: int) ->
             "trade_count": int(ind.trade_count),
             "mdd": round(float(ind.mdd), 4),
             "profit": round(float(ind.profit), 2),
+            "total_profit_pct": round(float(ind.total_profit_pct), 4),
             "origin": ind.origin,
             "ok": bool(ind.ok),
             "gate_distance": ind.gate_distance,
@@ -443,6 +449,7 @@ def _record_and_history(
         reason=ind.reason or ind.gate_distance,
         trade_count=int(ind.trade_count),
         mdd=float(ind.mdd), profit=float(ind.profit),
+        total_profit_pct=float(ind.total_profit_pct),
         strategy_gist=_gist(ind.buy_name),
     )
     history_records.append(GenRecord(

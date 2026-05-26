@@ -74,7 +74,10 @@ class GenerationInfo(BaseModel):
     gate_reason: str = ""
     trade_count: int = 0
     mdd: float = 0.0
-    profit: float = 0.0
+    profit: float = 0.0  # 수익금(총 실현 손익, 원).
+    # P10 — 수익률(총수익률, %). 기존 profit(원)과 별개로 발행한다. 기본 0.0이라
+    #   이 값을 발행하지 않던 구 상태(state)도 그대로 검증 통과한다(하위호환).
+    total_profit_pct: float = 0.0
     strategy_gist: str = ""
 
 

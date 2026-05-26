@@ -190,6 +190,51 @@ def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
                 pass
 
 
+def _strategy_code_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
+    """루프 DB에서 한 세대의 매수/매도 전략 코드를 조회한다(읽기 전용, 무예외).
+
+    P10 — 대시보드 코드 뷰어가 fetch 한다. 세대 행(generations)의 실제 buy_name/
+    sell_name을 먼저 읽어(시드 세대는 seed 이름, 일반 세대는 AILOOP_<run>_g<gen>_*),
+    그 이름으로 loop.py의 _read_strategy_code(stockbuy/stocksell의 "전략코드")를
+    재사용해 코드를 가져온다. 행이 없으면 namespaced 기본 이름으로 폴백한다.
+
+    조회 실패/미존재는 빈 문자열로 표준화한다(대시보드가 "코드가 없습니다"를 표시).
+    """
+    from ai_strategy_loop.controller.loop import _read_strategy_code  # noqa: PLC0415
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+
+    buy_name = f"AILOOP_{run_id}_g{gen_no}_buy"
+    sell_name = f"AILOOP_{run_id}_g{gen_no}_sell"
+    # 세대 행에서 실제 전략 이름을 읽는다(시드 세대는 seed 이름일 수 있음).
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState()
+        for row in st.get_generations(run_id):
+            if int(row.get("gen_no", -1)) == int(gen_no):
+                buy_name = row.get("buy_name") or buy_name
+                sell_name = row.get("sell_name") or sell_name
+                break
+    except Exception:  # noqa: BLE001 - 행 조회 실패는 namespaced 기본 이름으로 폴백.
+        pass
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    buy_code = _read_strategy_code(buy_name, "buy") or ""
+    sell_code = _read_strategy_code(sell_name, "sell") or ""
+    return {
+        "run_id": run_id,
+        "gen": int(gen_no),
+        "buy_name": buy_name,
+        "sell_name": sell_name,
+        "buy_code": buy_code,
+        "sell_code": sell_code,
+    }
+
+
 def create_app() -> FastAPI:
     """대시보드 FastAPI 앱을 생성한다 (테스트가 TestClient로 감싼다)."""
     manager = LoopProcessManager()
@@ -249,6 +294,22 @@ def create_app() -> FastAPI:
         """
         id_list = [s.strip() for s in ids.split(",") if s.strip()] or None
         return _runs_payload(id_list)
+
+    @app.get("/strategy_code")
+    def strategy_code(run: str = "", gen: int = -1) -> Dict[str, Any]:
+        """한 세대의 매수/매도 전략 코드를 반환한다(코드 뷰어 fetch용).
+
+        쿼리: ?run=<run_id>&gen=<n>. 루프 DB(STOM_CLI_DB_STRATEGY)의
+        stockbuy/stocksell에서 그 세대의 코드를 조회해 {buy_code, sell_code}를
+        돌려준다. run 미지정/조회 실패/없는 gen은 빈 코드 문자열로 표준화한다
+        (무예외 — 대시보드가 "코드가 없습니다"를 표시).
+        """
+        if not run or gen < 0:
+            return {
+                "run_id": run, "gen": gen,
+                "buy_name": "", "sell_name": "", "buy_code": "", "sell_code": "",
+            }
+        return _strategy_code_payload(run, gen)
 
     @app.websocket("/ws")
     async def ws(websocket: WebSocket) -> None:

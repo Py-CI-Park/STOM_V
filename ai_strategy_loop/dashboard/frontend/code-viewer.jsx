@@ -1,5 +1,5 @@
 /* Strategy code viewer modal: shows full buy/sell code per generation */
-const { useState: useState_cv, useMemo: useMemo_cv } = React;
+const { useState: useState_cv, useMemo: useMemo_cv, useEffect: useEffect_cv } = React;
 
 // Lightweight Python-ish syntax highlighter
 function highlightPython(code) {
@@ -84,14 +84,42 @@ function CodeBlock({ code }) {
   );
 }
 
-function CodeViewer({ generation, onClose }) {
+function CodeViewer({ generation, onClose, runId, baseUrl }) {
   const [tab, setTab] = useState_cv("buy");
   const [copied, setCopied] = useState_cv(false);
+  // P10 — 세대 행(GenView)에는 코드가 없다. 인라인 코드(데모 소스)가 없으면
+  //   /strategy_code?run=&gen= 로 fetch 해 채운다. {buy_code, sell_code} 또는 null.
+  const [fetched, setFetched] = useState_cv(null);
+  const [loading, setLoading] = useState_cv(false);
+  const [fetchErr, setFetchErr] = useState_cv(null);
+
+  // 인라인 코드(데모/직접 주입)가 이미 있으면 fetch 하지 않는다(LIVE/DEMO 규약).
+  const hasInline = Boolean(generation && (generation.buy_code || generation.sell_code));
+
+  useEffect_cv(() => {
+    // 모달이 닫혀 있거나(generation 없음) 인라인 코드가 있으면 fetch 불필요.
+    setFetched(null);
+    setFetchErr(null);
+    if (!generation || hasInline || !baseUrl || !runId) return;
+    const gen = generation.gen_no;
+    let cancelled = false;
+    setLoading(true);
+    fetch(`${baseUrl}/strategy_code?run=${encodeURIComponent(runId)}&gen=${gen}`,
+          { signal: AbortSignal.timeout(2500) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      .then(j => { if (!cancelled) setFetched({ buy_code: j.buy_code || "", sell_code: j.sell_code || "" }); })
+      .catch(e => { if (!cancelled) setFetchErr(String(e)); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [generation, hasInline, baseUrl, runId]);
 
   if (!generation) return null;
 
   const isErr = generation.status === "error";
-  const code = tab === "buy" ? generation.buy_code : generation.sell_code;
+  // 인라인 코드 우선, 없으면 fetch 결과. 둘 다 없으면 빈 문자열(CodeBlock이 안내).
+  const buyCode = generation.buy_code || (fetched && fetched.buy_code) || "";
+  const sellCode = generation.sell_code || (fetched && fetched.sell_code) || "";
+  const code = tab === "buy" ? buyCode : sellCode;
   const name = tab === "buy" ? generation.buy_name : generation.sell_name;
 
   const onCopy = async () => {
@@ -137,7 +165,17 @@ function CodeViewer({ generation, onClose }) {
         </div>
 
         <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-          <CodeBlock code={code} />
+          {loading ? (
+            <div className="code-block" style={{ color: "var(--ink-3)" }}>
+              코드 불러오는 중…
+            </div>
+          ) : fetchErr && !code ? (
+            <div className="code-block" style={{ color: "var(--red)" }}>
+              코드 조회 실패: {fetchErr}
+            </div>
+          ) : (
+            <CodeBlock code={code} />
+          )}
         </div>
 
         <div className="modal-ft" style={{ justifyContent: "space-between" }}>

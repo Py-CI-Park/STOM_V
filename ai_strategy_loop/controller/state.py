@@ -28,10 +28,11 @@ LOOP_RUNS_DB = _STATE_DIR / "loop_runs.db"
 
 # generations 테이블의 현재 스키마 버전 (P3 연구 파이프라인).
 #   ALTER 누적을 버전으로 관리한다 — 기존 DB는 _migrate_schema에서 누락 컬럼만
-#   멱등하게 보강하고 schema_meta에 현재 버전을 기록한다. 새 DB는 처음부터 v2다.
+#   멱등하게 보강하고 schema_meta에 현재 버전을 기록한다. 새 DB는 처음부터 v3다.
 #     v1: mdd/profit/strategy_gist (legacy — schema_meta 없던 시절).
 #     v2: parent_gen(계보), diff_from_parent(변경 요약) 추가.
-SCHEMA_VERSION = 2
+#     v3: total_profit_pct(수익률 %) 추가 — 대시보드 세대 이력/차트(P10)가 표시한다.
+SCHEMA_VERSION = 3
 
 # US-007 — 루프↔대시보드 라이브 상태 파일 + 정지 플래그 파일.
 #   current_state.json : 루프가 매 세대/백테스트 시점에 atomic write 하는
@@ -119,6 +120,7 @@ class LoopState:
         기존 DB(구버전 loop_runs.db) 호환:
           - mdd/profit/strategy_gist 누락(v1 이전) → 추가(INSERT 실패 방지).
           - parent_gen/diff_from_parent 누락(v2 이전) → 추가(P3 계보/diff).
+          - total_profit_pct 누락(v3 이전) → 추가(P10 수익률 %).
         새 컬럼은 모두 NULL 기본이라 기존 행의 의미를 바꾸지 않는다(하위호환).
         """
         existing_cols = {row[1] for row in self._con.execute("PRAGMA table_info(generations)")}
@@ -129,6 +131,7 @@ class LoopState:
             ("strategy_gist", "TEXT"),   # v1
             ("parent_gen", "INTEGER"),   # v2 — 계보(이 세대가 개선한 부모 세대).
             ("diff_from_parent", "TEXT"),  # v2 — 부모 대비 변경 요약(NL).
+            ("total_profit_pct", "REAL"),  # v3 — 수익률(총수익률, %). 대시보드 표시용.
         ):
             if col not in existing_cols:
                 self._con.execute(f"ALTER TABLE generations ADD COLUMN {col} {decl}")
@@ -209,14 +212,17 @@ class LoopState:
         trade_count: int = 0,
         mdd: float = 0.0,
         profit: float = 0.0,
+        total_profit_pct: float = 0.0,
         strategy_gist: str = "",
         parent_gen: Optional[int] = None,
         diff_from_parent: Optional[str] = None,
     ) -> None:
         """한 세대 결과를 기록한다 (UPSERT — 세대 번호 중복 없음).
 
-        기록 직후 JSON 스냅샷을 남긴다. mdd/profit/strategy_gist는 대시보드
-        세대 행(GenerationInfo)이 그대로 표시하는 값이라 함께 영속한다.
+        기록 직후 JSON 스냅샷을 남긴다. mdd/profit/total_profit_pct/strategy_gist는
+        대시보드 세대 행(GenerationInfo)이 그대로 표시하는 값이라 함께 영속한다.
+        total_profit_pct(수익률 %)는 profit(수익금 원)과 별개 지표다. 기본 0.0이라
+        이 인자를 주지 않던 기존 호출부도 그대로 동작한다(하위호환).
 
         parent_gen/diff_from_parent(P3 연구 파이프라인): 이 세대가 점진 개선한
         부모 세대 번호와 부모 대비 변경 요약(NL)이다. 둘 다 None이면(예: gen0 시드,
@@ -226,14 +232,14 @@ class LoopState:
         self._con.execute(
             "INSERT OR REPLACE INTO generations "
             "(run_id, gen_no, buy_name, sell_name, status, score, calmar, uptrend_r2, "
-            " gate_passed, reason, csv_path, trade_count, mdd, profit, strategy_gist, "
-            " parent_gen, diff_from_parent, created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " gate_passed, reason, csv_path, trade_count, mdd, profit, total_profit_pct, "
+            " strategy_gist, parent_gen, diff_from_parent, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 run_id, gen_no, buy_name, sell_name, status, float(score),
                 float(calmar), float(uptrend_r2), 1 if gate_passed else 0,
                 reason, csv_path, int(trade_count),
-                float(mdd), float(profit), strategy_gist,
+                float(mdd), float(profit), float(total_profit_pct), strategy_gist,
                 (None if parent_gen is None else int(parent_gen)),
                 diff_from_parent,
                 _now(),
@@ -255,6 +261,7 @@ class LoopState:
             "trade_count": int(trade_count),
             "mdd": float(mdd),
             "profit": float(profit),
+            "total_profit_pct": float(total_profit_pct),
             "strategy_gist": strategy_gist,
             "parent_gen": parent_gen,
             "diff_from_parent": diff_from_parent,
@@ -505,6 +512,8 @@ def to_loop_state(
             trade_count=int(g.get("trade_count", 0) or 0),
             mdd=float(g.get("mdd", 0.0) or 0.0),
             profit=float(g.get("profit", 0.0) or 0.0),
+            # P10 — 수익률(%). 구 DB 행(컬럼 없음)은 키가 없거나 NULL이라 0.0 폴백.
+            total_profit_pct=float(g.get("total_profit_pct", 0.0) or 0.0),
             strategy_gist=str(g.get("strategy_gist", "") or ""),
         ))
 
