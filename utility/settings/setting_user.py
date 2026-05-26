@@ -1,10 +1,6 @@
 
 def load_settings():
-    """설정을 로드합니다.
-    데이터베이스에서 설정을 읽어와 딕셔너리로 반환합니다.
-    Returns:
-        설정 딕셔너리
-    """
+    """설정을 로드합니다. 데이터베이스에서 설정을 읽어와 딕셔너리로 반환합니다."""
     import sqlite3
     import pandas as pd
     from cryptography import fernet

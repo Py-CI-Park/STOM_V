@@ -1,9 +1,6 @@
 
 def formula_activated(ui):
-    """수식을 활성화합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """수식관리자 콤보박스 변경 이벤트를 처리합니다."""
     import sqlite3
     from utility.settings.setting_base import DB_STRATEGY
 
@@ -41,10 +38,7 @@ def formula_activated(ui):
 
 
 def formula_button_clicked(ui):
-    """수식 버튼 클릭 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """수식관리자 버튼 클릭 이벤트를 처리합니다."""
     import random
     import sqlite3
     from ui.create_widget.set_text import famous_saying

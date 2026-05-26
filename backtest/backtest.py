@@ -15,9 +15,7 @@ from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, UI_NUM, COLU
 
 class BackTest:
     """백테스트를 실행하는 클래스입니다.
-    전략을 컴파일하고 데이터를 로드하여 백테스트를 실행합니다.
-    """
-
+    전략을 컴파일하고 데이터를 로드하여 백테스트를 실행합니다."""
     def __init__(self, sc, wq, sq, tq, lq, teleQ, beq_list, bstq_list, backname, dict_set, market_infos, betting,
                  avgtime, startday, endday, starttime, endtime, buystg_name, sellstg_name, back_count, blacklist,
                  schedul, back_club):
@@ -70,9 +68,7 @@ class BackTest:
     # noinspection PyUnresolvedReferences
     @error_decorator
     def _start(self):
-        """백테스트를 시작합니다.
-        데이터를 로드하고 전략을 컴파일한 후 백테스트를 실행합니다.
-        """
+        """백테스트를 시작합니다."""
         con   = sqlite3.connect(self.market_info['백테디비'][self.is_tick])
         query = get_moneytop_query(self.is_tick, self.startday, self.endday, self.starttime, self.endtime)
         df_mt = pd.read_sql(query, con)
@@ -148,11 +144,7 @@ class BackTest:
         self._sys_exit(False)
 
     def _report(self, list_tsg, arry_bct):
-        """백테스트 결과를 보고합니다.
-        Args:
-            list_tsg: 거래 결과 리스트
-            arry_bct: 보유 결과 배열
-        """
+        """백테스트 결과를 보고합니다."""
         if not list_tsg:
             self.wq.put((UI_NUM['백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
             self._sys_exit(True)
@@ -295,10 +287,7 @@ class BackTest:
             con.close()
 
     def _sys_exit(self, cancel):
-        """시스템을 종료합니다.
-        Args:
-            cancel: 취소 여부
-        """
+        """시스템을 종료합니다."""
         if cancel:
             self.wq.put((UI_NUM['백테스트'], f'{self.backname} STOP'))
         else:

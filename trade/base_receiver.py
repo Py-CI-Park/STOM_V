@@ -5,6 +5,7 @@ import pandas as pd
 from trade.restapi_ls import LsRestData
 from utility.settings.setting_base import UI_NUM
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
+from utility.static_method.builtin_print import set_builtin_print
 from utility.static_method.static_datetime import now, timedelta_sec, get_inthms
 from utility.static_method.static_etcetera import qtest_qwait, get_hogaunit_stock
 
@@ -83,8 +84,6 @@ class BaseReceiver:
         self.lvhp_time    = now()
         self.int_logt     = 0
 
-        self.ls           = None
-        self.token        = None
         self.int_mtdt     = None
         self.hoga_code    = None
         self.chart_code   = None
@@ -123,6 +122,8 @@ class BaseReceiver:
         self.qtimer.timeout.connect(self._scheduler)
         self.qtimer.start()
 
+        set_builtin_print(self.windowQ)
+
     def _get_code_info(self):
         """종목명 정보를 조회합니다.
         각 거래소 클래스에서 오버라이드되어 있음"""
@@ -149,10 +150,7 @@ class BaseReceiver:
                 self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 리시버 시작"))
 
     def _update_vi(self, code):
-        """정적VI 발동을 기록합니다.
-        Args:
-            code: 종목 코드
-        """
+        """정적VI 발동을 기록합니다."""
         if code not in self.dict_info:
             return
 
@@ -164,12 +162,7 @@ class BaseReceiver:
         self.windowQ.put((UI_NUM['기본로그'], f"변동성 완화 장치 발동 - [{code}] {self.dict_info[code]['종목명']}"))
 
     def _check_vi(self, code, c, o):
-        """장시작 최초틱 및 VI발동 이후 최초틱 수신 시 VI가격을 계산합니다.
-        Args:
-            code: 종목 코드
-            c: 현재가
-            o: 시작가
-        """
+        """장시작 최초틱 및 VI발동 이후 최초틱 수신 시 VI가격을 계산합니다."""
         vipr = self.dict_vipr.get(code)
         if vipr is None:
             self._insert_vi_price(code, o)
@@ -177,30 +170,17 @@ class BaseReceiver:
             self._update_vi_price(code, c)
 
     def _insert_vi_price(self, code, o):
-        """시가 기준 VI가격을 계산합니다.
-        Args:
-            code: 종목 코드
-            o: 시가
-        """
+        """시가 기준 VI가격을 계산합니다."""
         uvi, dvi, vi_hgunit  = self._get_vi_price(o)
         self.dict_vipr[code] = [True, timedelta_sec(-3600), uvi, dvi, vi_hgunit]
 
     def _update_vi_price(self, code, price):
-        """VI발동 이후 현재가 기준 VI가격을 계산합니다.
-        Args:
-            code: 종목 코드
-            price: 가격
-        """
+        """VI발동 이후 현재가 기준 VI가격을 계산합니다."""
         uvi, dvi, vi_hgunit  = self._get_vi_price(price)
         self.dict_vipr[code] = [True, timedelta_sec(5), uvi, dvi, vi_hgunit]
 
     def _get_vi_price(self, std_price):
-        """VI 가격을 계산합니다.
-        Args:
-            std_price: 기준 가격
-        Returns:
-            (상단 VI, 하단 VI, 호가 단위)
-        """
+        """VI 가격을 계산합니다."""
         uvi = int(std_price * 1.1)
         x = get_hogaunit_stock(uvi)
         if uvi % x != 0:
@@ -213,22 +193,7 @@ class BaseReceiver:
 
     def _update_tick_data(self, dt, code, c, o, h, low, per, dm, v=None, cg=None, tbids=None, tasks=None, ch=None):
         """틱 데이터를 업데이트합니다.
-        실시간 체결 데이터를 처리합니다 (바이낸스선물 제외).
-        Args:
-            dt: 데이터 시간
-            code: 종목 코드
-            c: 현재가
-            o: 시작가
-            h: 고가
-            low: 저가
-            per: 등락율
-            dm: 당일거래대금
-            v: 거래량
-            cg: 체결구분
-            tbids: 총 매수수량
-            tasks: 총 매도수량
-            ch: 체결강도
-        """
+        실시간 체결 데이터를 처리합니다 (바이낸스선물 제외)."""
         if self.market_gubun < 4:
             self._check_vi(code, c, o)
 
@@ -306,14 +271,7 @@ class BaseReceiver:
 
     def _update_tick_data_coin_future(self, dt, code, c, v, m):
         """코인 선물 틱 데이터를 업데이트합니다.
-        실시간 체결 데이터를 처리합니다 (바이낸스선물용).
-        Args:
-            dt: 데이터 시간
-            code: 종목 코드
-            c: 현재가
-            v: 거래량
-            m: 매수여부
-        """
+        실시간 체결 데이터를 처리합니다 (바이낸스선물용)."""
         if not self.is_tick and code in self.tuple_jango:
             pre_dt = self.dict_jgdt.get(code)
             if pre_dt is None or dt > pre_dt:
@@ -375,13 +333,7 @@ class BaseReceiver:
             self.dict_dlhp[code] = [dt_, round((h / low - 1) * 100, 2)]
 
     def _update_money_factor(self, code, c, buy_money, sell_money):
-        """머니 팩터를 업데이트합니다.
-        Args:
-            code: 종목 코드
-            c: 현재가
-            buy_money: 매수 금액
-            sell_money: 매도 금액
-        """
+        """금액 관련 팩터를 업데이트합니다."""
         if code not in self.dict_money:
             """초당(분당)매수금액, 초당(분당)매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격
                       0               1            2          3          4          5          6          7"""
@@ -428,19 +380,7 @@ class BaseReceiver:
                 money_arr[7] = c
 
     def _update_hoga_window_tick(self, dt, code, bids_, asks_, c, per, o, h, low, ch):
-        """호가 윈도우 틱을 업데이트합니다.
-        Args:
-            dt: 날짜시간
-            code: 종목 코드
-            bids_: 매수 호가
-            asks_: 매도 호가
-            c: 현재가
-            per: 등락율
-            o: 시가
-            h: 고가
-            low: 저가
-            ch: 체결
-        """
+        """호가창 종목정보 및 체결수량을 업데이트합니다."""
         bids, asks = self.list_hgdt[2:4]
         if bids_ > 0: bids += bids_
         if asks_ > 0: asks += asks_
@@ -455,17 +395,7 @@ class BaseReceiver:
 
     def _update_hoga_data(self, dt, code, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount,
                           receivetime):
-        """호가 데이터를 업데이트합니다.
-        Args:
-            dt: 날짜시간
-            code: 종목 코드
-            hoga_seprice: 호가 매도 가격
-            hoga_buprice: 호가 매수 가격
-            hoga_samount: 호가 매도 수량
-            hoga_bamount: 호가 매수 수량
-            hoga_tamount: 호가 총 수량
-            receivetime: 호가 데이터 수신 시간
-        """
+        """호가 데이터를 업데이트합니다."""
         send = False
         dt_min = int(str(dt)[:12])
         dt_std = dt if self.is_tick else dt_min
@@ -526,14 +456,7 @@ class BaseReceiver:
             self._update_hoga_window_rem(dt, code, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount)
 
     def _correction_hoga_data(self, curr_price, hoga_seprice, hoga_samount, hoga_buprice, hoga_bamount):
-        """호가 데이터를 보정합니다.
-        Args:
-            curr_price: 현재가
-            hoga_seprice: 호가 매도 가격
-            hoga_samount: 호가 매도 수량
-            hoga_buprice: 호가 매수 가격
-            hoga_bamount: 호가 매수 수량
-        """
+        """호가 데이터를 보정합니다."""
         if len(hoga_seprice) == 10:
             if hoga_seprice[0] < curr_price:
                 valid_indices = [i for i, price in enumerate(hoga_seprice) if price >= curr_price]
@@ -589,20 +512,7 @@ class BaseReceiver:
 
     def _get_send_data(self, code, code_data, code_dtdm, money_arr, hoga_samount, hoga_bamount,
                        hoga_seprice, hoga_buprice, hoga_tamount, dt, dt_min):
-        """전송 데이터를 생성합니다.
-        Args:
-            code: 종목 코드
-            code_data: 체결 데이터 리스트
-            code_dtdm: 당일거래대금 딕셔너리
-            money_arr: 머니 배열
-            hoga_samount: 호가 매도 수량
-            hoga_bamount: 호가 매수 수량
-            hoga_tamount: 호가 총 수량
-            hoga_seprice: 호가 매도 가격
-            hoga_buprice: 호가 매수 가격
-        Returns:
-            전송 데이터 튜플
-        """
+        """전송 데이터를 생성합니다."""
         c, _, h, low, _, dm, _, bids, asks = code_data[:9]
         tm = dm - code_dtdm[1]
         if tm == dm: tm = 0
@@ -625,20 +535,13 @@ class BaseReceiver:
         return send_data, c, dm, logt
 
     def _send_log(self, dt_min, receivetime):
-        """로그를 전송합니다.
-        Args:
-            dt_min: 날짜시간 분
-            receivetime: 수신 시간
-        """
+        """로그를 전송합니다."""
         gap = (now() - receivetime).total_seconds()
         self.windowQ.put((UI_NUM['타임로그'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
         self.int_logt = dt_min
 
     def _update_money_top(self, dt_std):
-        """거래대금 순위를 업데이트합니다.
-        Args:
-            dt_std: 날짜시간 표준
-        """
+        """거래대금 순위를 업데이트합니다."""
         if self.int_mtdt is None:
             self.int_mtdt = dt_std
         elif self.int_mtdt < dt_std:
@@ -646,16 +549,7 @@ class BaseReceiver:
             self.int_mtdt = dt_std
 
     def _update_hoga_window_rem(self, dt, code, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount):
-        """호가 윈도우 잔량을 업데이트합니다.
-        Args:
-            dt: 날짜시간
-            code: 종목 코드
-            hoga_tamount: 호가 총 수량
-            hoga_seprice: 호가 매도 가격
-            hoga_buprice: 호가 매수 가격
-            hoga_samount: 호가 매도 수량
-            hoga_bamount: 호가 매수 수량
-        """
+        """호가창 호가 및 잔량을 업데이트합니다."""
         self.list_hgdt[1] = dt
         name = self.dict_info[code]['종목명']
         self.hogaQ.put(
@@ -695,8 +589,7 @@ class BaseReceiver:
         """거래대금상위 종목을 검색합니다.
         국내주식와 해외주식은 순위 필터링 후에 등락율(0%초과) 필터링
         국내주식ETF, ETN, 업비트는 등락율 필터링 후에 순위 필터링
-        그외 선물 거래소는 순위 필터링만
-        """
+        그외 선물 거래소는 순위 필터링만"""
         sorted_daym = sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)
         if self.market_gubun in (1, 4):
             sorted_daym = sorted_daym[:self.mtop_rank]
@@ -719,19 +612,13 @@ class BaseReceiver:
                 self._delete_gsjm_list(code)
 
     def _insert_gsjm_list(self, code):
-        """관심종목 리스트에 추가합니다.
-        Args:
-            code: 종목코드
-        """
+        """관심종목 리스트에 추가합니다."""
         self.list_gsjm.append(code)
         if self.market_gubun not in (6, 7, 8) and self.dict_set['매도취소관심진입']:
             self.traderQ.put(('관심진입', code))
 
     def _delete_gsjm_list(self, code):
-        """관심종목 리스트에서 삭제합니다.
-        Args:
-            code: 종목코드
-        """
+        """관심종목 리스트에서 삭제합니다."""
         self.list_gsjm.remove(code)
         if self.market_gubun not in (6, 7, 8) and self.dict_set['매수취소관심이탈']:
             self.traderQ.put(('관심이탈', code))
@@ -752,10 +639,7 @@ class BaseReceiver:
             self.ws_thread = None
 
     def _update_tuple(self, data):
-        """튜플을 업데이트합니다.
-        Args:
-            data: 데이터
-        """
+        """튜플을 업데이트합니다."""
         gubun, data = data
         if gubun == '잔고목록':
             self.tuple_jango = data
@@ -772,14 +656,11 @@ class BaseReceiver:
 
     def _sys_exit(self, data):
         """시스템을 종료합니다.
-        Args:
-            data: 데이터
-            '프로세스종료' : 전략종료시간 이후 일반적인 종료
-            '프로그램종료' : 프로그램창 닫기 이벤트로 인한 종료
-            '강제종료' : Alt + X 단축키로 인한 종료
-            '전략연산 종료' : 전략연산 프로세스가 일반종료하면서 보낸 신호
-            '전략연산 STOP' : 전략연산 프로세스가 프로그램종료 또는 강제종료하면서 보낸 신호
-        """
+        '프로세스종료' : 전략종료시간 이후 일반적인 종료
+        '프로그램종료' : 프로그램창 닫기 이벤트로 인한 종료
+        '강제종료' : Alt + X 단축키로 인한 종료
+        '전략연산 종료' : 전략연산 프로세스가 일반종료하면서 보낸 신호
+        '전략연산 STOP' : 전략연산 프로세스가 프로그램종료 또는 강제종료하면서 보낸 신호"""
         import sys
 
         if data not in ('전략연산 종료', '전략연산 STOP'):

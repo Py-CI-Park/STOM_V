@@ -5,7 +5,6 @@ from PyQt5.QtCore import QPropertyAnimation, QEasingCurve
 
 class AnimatedDialog(QDialog):
     """페이드인/페이드아웃 애니메이션이 적용된 다이얼로그 클래스"""
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.fade_animation = None

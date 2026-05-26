@@ -49,20 +49,14 @@ class Kimp:
 
     @error_decorator
     def _update_upbit_data(self, data):
-        """업비트 데이터를 업데이트합니다.
-        Args:
-            data: 업비트 데이터
-        """
+        """업비트 데이터를 업데이트합니다."""
         code = data['code'].replace('KRW-', '')
         c = data['trade_price']
         self.df.loc[code, ['종목명', '업비트(원)']] = [code, c]
 
     @error_decorator
     def _update_binance_data(self, data):
-        """바이낸스 데이터를 업데이트합니다.
-        Args:
-            data: 바이낸스 데이터
-        """
+        """바이낸스 데이터를 업데이트합니다."""
         for x in data:
             if re.search('USDT$', x['s']) is not None:
                 code = x['s'].replace('USDT', '')
@@ -105,38 +99,33 @@ class KimpWebSocketManager(QThread):
         self.con_binance = False
 
     def run(self):
-        """웹소켓 관리자를 실행합니다.
-        """
+        """웹소켓 관리자를 실행합니다."""
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         self.loop.run_until_complete(self._run())
 
     async def _run(self):
-        """비동기 작업을 실행합니다.
-        """
+        """비동기 작업을 실행합니다."""
         upbit_task = asyncio.create_task(self.run_upbit())
         binance_task = asyncio.create_task(self.run_binance())
         await asyncio.gather(upbit_task, binance_task)
 
     async def run_upbit(self):
-        """업비트 웹소켓을 실행합니다.
-        """
+        """업비트 웹소켓을 실행합니다."""
         while True:
             await self.connect_upbit()
             await self.receive_upbit()
             await asyncio.sleep(1)
 
     async def run_binance(self):
-        """바이낸스 웹소켓을 실행합니다.
-        """
+        """바이낸스 웹소켓을 실행합니다."""
         while True:
             await self.connect_binance()
             await self.receive_binance()
             await asyncio.sleep(1)
 
     async def connect_upbit(self):
-        """업비트 웹소켓에 연결합니다.
-        """
+        """업비트 웹소켓에 연결합니다."""
         try:
             self.wsk_upbit = await websockets.connect('wss://api.upbit.com/websocket/v1')
             data = [{'ticket': str(uuid.uuid4())[:6]}, {'type': 'ticker', 'codes': self.codes, 'isOnlyRealtime': True}]
@@ -146,8 +135,7 @@ class KimpWebSocketManager(QThread):
             self.con_upbit = False
 
     async def connect_binance(self):
-        """바이낸스 웹소켓에 연결합니다.
-        """
+        """바이낸스 웹소켓에 연결합니다."""
         try:
             client = await AsyncClient.create()
             bsm = BinanceSocketManager(client)
@@ -157,8 +145,7 @@ class KimpWebSocketManager(QThread):
             self.con_binance = False
 
     async def receive_upbit(self):
-        """업비트 데이터를 수신합니다.
-        """
+        """업비트 데이터를 수신합니다."""
         while self.con_upbit:
             try:
                 data = await self.wsk_upbit.recv()
@@ -169,8 +156,7 @@ class KimpWebSocketManager(QThread):
                 self.con_upbit = False
 
     async def receive_binance(self):
-        """바이낸스 데이터를 수신합니다.
-        """
+        """바이낸스 데이터를 수신합니다."""
         while self.con_binance:
             async with self.wsk_binance:
                 try:

@@ -10,8 +10,7 @@ from ui.event_click.button_clicked_show_dialog import show_order, show_backsched
 
 class SetMainMenu:
     """메인 메뉴 설정 클래스입니다.
-    메인 윈도우의 메뉴 버튼 및 단축키를 설정합니다.
-    """
+    메인 윈도우의 메뉴 버튼 및 단축키를 설정합니다."""
     def __init__(self, ui_class, wc):
         self.ui = ui_class
         self.wc = wc
@@ -122,5 +121,5 @@ class SetMainMenu:
 
         self.ui.progressBarrr.setGeometry(6, 490, 35, 267)
 
-        self.ui.image_label1.setGeometry(1057, 478, 335, 105)
-        self.ui.image_label2.setGeometry(1057, 756, 335, 602)
+        self.ui.image_label1.setGeometry(1057, 475, 335, 105)
+        self.ui.image_label2.setGeometry(1057, 755, 335, 600)

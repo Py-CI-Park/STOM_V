@@ -1,10 +1,6 @@
 
 def checkbox_changed_01(ui, state):
-    """모의투자 체크박스 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """모의투자 체크박스 변경 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QMessageBox
     from ui.etcetera.process_alive import trader_process_alive
@@ -14,11 +10,7 @@ def checkbox_changed_01(ui, state):
 
 
 def checkbox_changed_02(ui, state):
-    """팩터 체크박스 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """팩터 체크박스 변경 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QMessageBox
     if ui.dialog_factor.focusWidget() == ui.ft_checkBoxxxxx_01 and state != Qt.Checked:
@@ -27,11 +19,7 @@ def checkbox_changed_02(ui, state):
 
 
 def checkbox_changed_03(ui, state):
-    """일괄/분할 로딩 체크박스 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """일괄/분할 로딩 체크박스 변경 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     if ui.focusWidget() in ui.sj_ilbunback_listtt and state == Qt.Checked:
         for widget in ui.sj_ilbunback_listtt:
@@ -40,11 +28,7 @@ def checkbox_changed_03(ui, state):
 
 
 def checkbox_changed_04(ui, state):
-    """그래프 저장하지 않기 체크박스 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """그래프 저장하지 않기 체크박스 변경 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     if ui.focusWidget() == ui.sj_back_cheBox_14 and state == Qt.Checked:
         if not ui.sj_back_cheBox_15.isChecked():
@@ -52,11 +36,7 @@ def checkbox_changed_04(ui, state):
 
 
 def checkbox_changed_05(ui, state):
-    """그래프 띄우지 않기 체크박스 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """그래프 띄우지 않기 체크박스 변경 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     if ui.focusWidget() == ui.sj_back_cheBox_15 and state != Qt.Checked:
         if ui.sj_back_cheBox_14.isChecked():
@@ -64,11 +44,7 @@ def checkbox_changed_05(ui, state):
 
 
 def checkbox_changed_06(ui, state):
-    """백테스트 스케줄러 체크박스 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """백테스트 스케줄러 체크박스 변경 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     gubun = ui.list_checkBoxxxxxx.index(ui.dialog_scheduler.focusWidget())
     if state == Qt.Checked:
@@ -95,11 +71,7 @@ def checkbox_changed_06(ui, state):
 
 
 def checkbox_changed_07(ui, state):
-    """일전 체크박스 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """일전 체크박스 변경 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     if ui.focusWidget() == ui.sj_back_cheBox_07:
         if state == Qt.Checked:
@@ -111,11 +83,7 @@ def checkbox_changed_07(ui, state):
 
 
 def checkbox_changed_08(ui, state):
-    """고정 체크박스 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """고정 체크박스 변경 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     if ui.focusWidget() == ui.sj_back_cheBox_08:
         if state == Qt.Checked:
@@ -128,21 +96,13 @@ def checkbox_changed_08(ui, state):
 
 # noinspection PyUnusedLocal
 def checkbox_changed_09(ui, state):
-    """차트 코드 초기화 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """차트 코드 초기화 이벤트를 처리합니다."""
     ui.ctpg_code = None
 
 
 # noinspection PyUnresolvedReferences
 def sbcheckbox_changed_01(ui, state):
-    """매수 주문유형 체크박스 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """매수 주문유형 체크박스 변경 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QMessageBox
     if ui.focusWidget() in ui.sodb_checkbox_list1 and state == Qt.Checked:
@@ -185,11 +145,7 @@ def sbcheckbox_changed_01(ui, state):
 
 
 def sbcheckbox_changed_02(ui, state):
-    """분할매수방법 체크박스 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """분할매수방법 체크박스 변경 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     if ui.focusWidget() in ui.sodb_checkbox_list2 and state == Qt.Checked:
         for widget in ui.sodb_checkbox_list2:
@@ -199,11 +155,7 @@ def sbcheckbox_changed_02(ui, state):
 
 # noinspection PyUnresolvedReferences
 def sscheckbox_changed_01(ui, state):
-    """매도 주문유형 체크박스 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """매도 주문유형 체크박스 변경 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QMessageBox
     if ui.focusWidget() in ui.sods_checkbox_list1 and state == Qt.Checked:
@@ -238,11 +190,7 @@ def sscheckbox_changed_01(ui, state):
 
 
 def sscheckbox_changed_02(ui, state):
-    """분할매도방법 체크박스 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """분할매도방법 체크박스 변경 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     if ui.focusWidget() in ui.sods_checkbox_list2 and state == Qt.Checked:
         for widget in ui.sods_checkbox_list2:
@@ -251,11 +199,7 @@ def sscheckbox_changed_02(ui, state):
 
 
 def setting_stock_weight_cotrol_changed(ui, state):
-    """비중조절 체크박스 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        state: 체크 상태
-    """
+    """비중조절 체크박스 변경 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     if ui.focusWidget() in ui.ss_bj_check_button_list and state == Qt.Checked:
         for widget in ui.ss_bj_check_button_list:

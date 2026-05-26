@@ -1,10 +1,6 @@
 
 def load_database(ui):
-    """데이터베이스를 로드합니다.
-
-    Args:
-        ui: UI 객체
-    """
+    """데이터베이스를 로드합니다."""
     import sqlite3
     import pandas as pd
     from PyQt5.QtWidgets import QCompleter

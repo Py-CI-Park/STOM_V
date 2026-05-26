@@ -1,13 +1,6 @@
 
 def get_fix_strategy(ui, strategy, gubun):
-    """전략에 시그널을 추가합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        strategy: 전략 코드
-        gubun: 구분 (매수, 매도)
-    Returns:
-        수정된 전략 코드
-    """
+    """전략에 시그널을 추가합니다."""
     from ui.create_widget.set_text import buy_signal, sell_signal, buy_signal_future, sell_signal_future
 
     if gubun == '매수':
@@ -36,13 +29,7 @@ def get_fix_strategy(ui, strategy, gubun):
 
 
 def get_optivars_to_gavars(ui, opti_vars_text):
-    """최적화 변수를 GA 변수로 변환합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        opti_vars_text: 최적화 변수 텍스트
-    Returns:
-        GA 변수 텍스트
-    """
+    """최적화 변수를 GA 변수로 변환합니다."""
     from traceback import format_exc
     from utility.settings.setting_base import UI_NUM
 
@@ -80,13 +67,7 @@ def get_optivars_to_gavars(ui, opti_vars_text):
 
 
 def get_gavars_to_optivars(ui, ga_vars_text):
-    """GA 변수를 최적화 변수로 변환합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        ga_vars_text: GA 변수 텍스트
-    Returns:
-        최적화 변수 텍스트
-    """
+    """GA 변수를 최적화 변수로 변환합니다."""
     from traceback import format_exc
     from utility.settings.setting_base import UI_NUM
 
@@ -115,13 +96,7 @@ def get_gavars_to_optivars(ui, ga_vars_text):
 
 
 def convert_varstext(cnt, stg_text):
-    """변수 텍스트를 변환합니다.
-    Args:
-        cnt: 카운트
-        stg_text: 전략 텍스트
-    Returns:
-        카운트, 변환된 텍스트
-    """
+    """변수 텍스트를 변환합니다."""
     convert_text = ''
     for text in stg_text:
         convert_text += text
@@ -132,14 +107,7 @@ def convert_varstext(cnt, stg_text):
 
 
 def get_stgtxt_to_varstxt(ui, buystg, sellstg):
-    """전략 텍스트를 변수 텍스트로 변환합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        buystg: 매수 전략
-        sellstg: 매도 전략
-    Returns:
-        매수 전략, 매도 전략
-    """
+    """전략 텍스트를 변수 텍스트로 변환합니다."""
     cnt = 1
     if ui.focusWidget() == ui.svc_pushButton_24:
         if buystg and '변수' in buystg:
@@ -155,13 +123,7 @@ def get_stgtxt_to_varstxt(ui, buystg, sellstg):
 
 
 def sort_varstext(cnt, stg_text):
-    """변수 텍스트를 정렬합니다.
-    Args:
-        cnt: 카운트
-        stg_text: 전략 텍스트
-    Returns:
-        카운트, 정렬된 텍스트
-    """
+    """변수 텍스트를 정렬합니다."""
     sort_text = ''
     for line in stg_text.split('\n'):
         if 'self.vars' in line and line[0] != '#':
@@ -186,13 +148,7 @@ def sort_varstext(cnt, stg_text):
 
 
 def get_stgtxt_sort(buystg, sellstg):
-    """전략 텍스트를 정렬합니다.
-    Args:
-        buystg: 매수 전략
-        sellstg: 매도 전략
-    Returns:
-        매수 전략, 매도 전략
-    """
+    """전략 텍스트를 정렬합니다."""
     if buystg and sellstg and 'self.vars' in buystg and 'self.vars' in sellstg:
         buy_num = int(buystg.split('self.vars[')[1].split(']')[0])
         sell_num = int(sellstg.split('self.vars[')[1].split(']')[0])
@@ -207,13 +163,7 @@ def get_stgtxt_sort(buystg, sellstg):
 
 
 def get_stgtxt_sort2(optivars, gavars):
-    """최적화 변수를 정렬합니다.
-    Args:
-        optivars: 최적화 변수
-        gavars: GA 변수
-    Returns:
-        최적화 변수, GA 변수
-    """
+    """최적화 변수를 정렬합니다."""
     if optivars and 'self.vars' in optivars:
         _, optivars = sort_varstext(0, optivars)
     if gavars and 'self.vars' in gavars:

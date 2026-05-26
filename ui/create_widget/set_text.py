@@ -1,7 +1,6 @@
 
 """UI 텍스트 상수 모듈입니다.
-최적화 설명, 기간 설정, 전략 예제 코드 등의 텍스트 상수를 정의합니다.
-"""
+최적화 설명, 기간 설정, 전략 예제 코드 등의 텍스트 상수를 정의합니다."""
 
 optistandard = 'TG : 수익금합계\n' \
                'TP : 수익률합계\n' \
@@ -402,11 +401,13 @@ elif not (체결강도 < 체결강도평균(30) + 변수):
 elif not (체결강도 < 변수):
     SELL_SHORT = False'''
 
-example_stg_sell_vchange_future = '''if 수익률 <= 변수 or 수익률 >= 변수:
-    SELL_LONG = True
+example_stg_sell_vchange_future = '''if 포지션 == 'LONG':
+    if 수익률 <= 변수 or 수익률 >= 변수:
+        SELL_LONG = True
 
-if 수익률 <= 변수 or 수익률 >= 변수:
-    BUY_SHORT = True'''
+if 포지션 == 'SHORT':
+    if 수익률 <= 변수 or 수익률 >= 변수:
+        BUY_SHORT = True'''
 
 example_stg_optibuy = '''# 최적화할 값들을 self.vars[1] 형태로 변경하십시오.
 # 키값은 0을 제외한 1부터 입력가능합니다.
@@ -511,11 +512,13 @@ elif not (체결강도 < 체결강도평균(30) + self.vars[5]):
 elif not (체결강도 < self.vars[6]):
     SELL_SHORT = False'''
 
-example_stg_optisell_future = '''if 수익률 <= -self.vars[7] or 수익률 >= self.vars[8]:
-    SELL_LONG = True
+example_stg_optisell_future = '''if 포지션 == 'LONG':
+    if 수익률 <= -self.vars[7] or 수익률 >= self.vars[8]:
+        SELL_LONG = True
 
-if 수익률 <= -self.vars[9] or 수익률 >= self.vars[10]:
-    BUY_SHORT = True'''
+if 포지션 == 'SHORT':
+    if 수익률 <= -self.vars[9] or 수익률 >= self.vars[10]:
+        BUY_SHORT = True'''
 
 example_stg_optibuy_future_min = '''# 최적화할 값들을 self.vars[1] 형태로 변경하십시오.
 # 키값은 0을 제외한 1부터 입력가능합니다.
@@ -584,11 +587,13 @@ elif not (ADXR < self.vars[9] and ADXR < ADXR_N(30)):
 #     'WILLR_timeperiod': 14
 # }'''
 
-example_stg_optisell_future_min = '''if 수익률 <= -self.vars[10] or 수익률 >= self.vars[11]:
-    SELL_LONG = True
+example_stg_optisell_future_min = '''if 포지션 == 'LONG':
+    if 수익률 <= -self.vars[10] or 수익률 >= self.vars[11]:
+        SELL_LONG = True
 
-if 수익률 <= -self.vars[12] or 수익률 >= self.vars[13]:
-    BUY_SHORT = True'''
+if 포지션 == 'SHORT':
+    if 수익률 <= -self.vars[12] or 수익률 >= self.vars[13]:
+        BUY_SHORT = True'''
 
 example_opti_vars = '''# 키값 0번을 제외한 모든 변수는 최적화편집기에서
 # 사용한 변수들입니다. 키값 0번의 벨류값은 평균값

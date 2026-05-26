@@ -11,8 +11,7 @@ from utility.settings.setting_base import COLUMNS_TT, COLUMNS_TD, COLUMNS_TJ, CO
 
 class SetTable:
     """테이블 위젯 설정 클래스입니다.
-    거래 내역, 집계, 라이브 데이터 등을 표시하는 테이블 위젯을 설정합니다.
-    """
+    거래 내역, 집계, 라이브 데이터 등을 표시하는 테이블 위젯을 설정합니다."""
     def __init__(self, ui_class, wc):
         self.ui = ui_class
         self.wc = wc

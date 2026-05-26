@@ -34,8 +34,7 @@ def _calculate_setting_hash(*args) -> str:
 @njit(cache=True, fastmath=True, parallel=True)
 def _calculate_volatility_change_rate(prices: np.ndarray, analysis_period: int) -> np.ndarray:
     """변동성 변화율 계산 (이전기간 대비 최근기간 변동성 변화, Numba 최적화)
-    period: 각 기간의 길이 (이전=period, 최근=period, 총 2*period 필요)
-    """
+    period: 각 기간의 길이 (이전=period, 최근=period, 총 2*period 필요)"""
     n = len(prices)
     change_rates = np.zeros(n, dtype=np.float64)
     for i in prange(2 * analysis_period, n):
@@ -164,14 +163,6 @@ class AnalyzerVolatilityPattern:
     """메인 변동성 패턴 분석 통합 클래스"""
     def __init__(self, market_gubun: int, market_info: dict, is_tick: bool,
                  realtime: bool = False, min_samples: int = 20):
-        """
-        초기화
-        market_gubun: 마켓 구분 번호
-        market_info: 마켓 정보 딕셔너리
-        is_tick: 틱 데이터 여부
-        realtime: 실시간 모드 여부
-        min_samples: 최소 샘플 수 (기본값 20)
-        """
         self.volatility_database = VolatilityPatternDatabase(market_info['전략구분'], is_tick)
         self.analysis_period, self.rate_threshold = \
             self.volatility_database.load_volatility_setting(market_gubun)
@@ -198,12 +189,7 @@ class AnalyzerVolatilityPattern:
         self.volatility_scores[code] = self.volatility_database.get_volatility_code_scores(code, date)
 
     def analyze_current_volatility(self, code: str, code_data: np.ndarray) -> Tuple[float, float]:
-        """
-        실시간 변동성 분석 및 학습된 점수 반환 (변동성 변화율 기반)
-        code: 종목코드
-        code_data: 실시간 데이터 (1분봉 또는 틱)
-        return: 변동성점수, 변동성신뢰도
-        """
+        """실시간 변동성 분석 및 학습된 점수 반환 (변동성 변화율 기반)"""
         volatility_score = confidence_score = 0.0
 
         len_min = self.analysis_period * 2 + 1
@@ -224,12 +210,7 @@ class AnalyzerVolatilityPattern:
         return volatility_score, confidence_score
 
     def analyze_batch_data(self, code: str, code_data: np.ndarray) -> np.ndarray:
-        """2차원 어레이 데이터 전체를 일괄 분석합니다.
-        code: 종목코드
-        code_data: 코드 데이터 2차원 어레이
-        return:
-            (N, 2) 형태의 2차원 어레이 - 변동성점수, 변동성신뢰도
-        """
+        """2차원 어레이 데이터 전체를 일괄 분석합니다."""
         date = int(str(code_data[0, 0])[:8])
         self.load_volatility_code_scores(code, date)
 
@@ -430,10 +411,7 @@ class VolatilityPatternDatabase:
             conn.commit()
 
     def get_all_codes(self) -> List[str]:
-        """
-        데이터베이스에 저장된 전체 종목코드 조회
-        return: 종목코드 리스트
-        """
+        """데이터베이스에 저장된 전체 종목코드 조회"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
@@ -446,11 +424,7 @@ class VolatilityPatternDatabase:
             return [result[0] for result in results]
 
     def get_volatility_all_scores(self, code: str) -> Dict[int, Dict[str, float]]:
-        """
-        종목의 전체 변동성 점수 조회 (최신 날짜 기준)
-        code: 종목코드
-        return: 변동성 레벨별 점수 딕셔너리
-        """
+        """종목의 전체 변동성 점수 조회 (최신 날짜 기준)"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
@@ -472,12 +446,7 @@ class VolatilityPatternDatabase:
             return volatility_scores
 
     def get_volatility_code_scores(self, code: str, date: int) -> Dict[int, Dict[str, float]]:
-        """
-        백테스트 날짜 기준으로 해당 날짜 이전의 최신 날짜의 전체 변동성 점수 조회
-        code: 종목코드
-        date: 백테스트 기준 날짜 (YYYYMMDD)
-        return: 변동성 레벨별 점수 딕셔너리
-        """
+        """백테스트 날짜 기준으로 해당 날짜 이전의 최신 날짜의 전체 변동성 점수 조회"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
@@ -504,12 +473,10 @@ class VolatilityPatternDatabase:
             df.to_sql(self.table_name, conn, if_exists='append', index=False, chunksize=2000)
 
     def load_volatility_setting(self, market: int) -> tuple:
-        """
-        마켓번호로 설정값 불러오기
+        """마켓번호로 설정값 불러오기
         market: 마켓번호 (1~9)
         is_tick: 틱 데이터 여부 (기본값 False)
-        return: (analysis_period, rate_threshold) 튜플, 데이터가 없으면 (30, 5) 반환
-        """
+        return: (analysis_period, rate_threshold) 튜플, 데이터가 없으면 (30, 5) 반환"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
@@ -529,13 +496,11 @@ class VolatilityPatternDatabase:
             return analysis_period, rate_threshold
 
     def save_volatility_setting(self, market: int, analysis_period: int, rate_threshold: str):
-        """
-        마켓번호로 설정값 저장
+        """마켓번호로 설정값 저장
         market: 마켓번호 (1~9)
         analysis_period: 분석 기간 분
         rate_threshold: 등락율 임계값
-        is_tick: 틱 데이터 여부 (기본값 False)
-        """
+        is_tick: 틱 데이터 여부 (기본값 False)"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''

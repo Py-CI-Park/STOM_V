@@ -1,9 +1,6 @@
 
 def text_changed_01(ui):
-    """시작일 라인에딧 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """시작일 라인에딧 변경 이벤트를 처리합니다."""
     if ui.dialog_scheduler.focusWidget() in ui.list_slineEdittttt and ui.sd_scheckBoxxxx_01.isChecked():
         gubun = ui.list_slineEdittttt.index(ui.dialog_scheduler.focusWidget())
         text  = ui.list_slineEdittttt[gubun].text()
@@ -13,10 +10,7 @@ def text_changed_01(ui):
 
 
 def text_changed_02(ui):
-    """종료일 라인에딧 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """종료일 라인에딧 변경 이벤트를 처리합니다."""
     if ui.dialog_scheduler.focusWidget() in ui.list_elineEdittttt and ui.sd_scheckBoxxxx_01.isChecked():
         gubun = ui.list_elineEdittttt.index(ui.dialog_scheduler.focusWidget())
         text  = ui.list_elineEdittttt[gubun].text()
@@ -26,10 +20,7 @@ def text_changed_02(ui):
 
 
 def text_changed_03(ui):
-    """배팅금액 라인에딧 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """배팅금액 라인에딧 변경 이벤트를 처리합니다."""
     if ui.dialog_scheduler.focusWidget() in ui.list_blineEdittttt and ui.sd_scheckBoxxxx_01.isChecked():
         gubun = ui.list_blineEdittttt.index(ui.dialog_scheduler.focusWidget())
         text  = ui.list_blineEdittttt[gubun].text()
@@ -39,10 +30,7 @@ def text_changed_03(ui):
 
 
 def text_changed_04(ui):
-    """추가매수 라인에딧 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """추가매수 라인에딧 변경 이벤트를 처리합니다."""
     if ui.dialog_scheduler.focusWidget() in ui.list_alineEdittttt and ui.sd_scheckBoxxxx_01.isChecked():
         gubun = ui.list_alineEdittttt.index(ui.dialog_scheduler.focusWidget())
         text  = ui.list_alineEdittttt[gubun].text()
@@ -53,10 +41,7 @@ def text_changed_04(ui):
 
 
 def text_changed_05(ui):
-    """주문 종목 테이블 변경 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """주문 종목 테이블 변경 이벤트를 처리합니다."""
     name = ui.hj_tableWidgett_01.item(0, 0).text()
     if name:
         try:

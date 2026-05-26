@@ -74,14 +74,6 @@ class AnalyzerCandlePattern:
     """메인 패턴 분석 통합 클래스"""
     def __init__(self, market_gubun: int, market_info: dict, realtime: bool = False,
                  min_candle: int = 15, min_samples: int = 20):
-        """
-        초기화
-        market_gubun: 마켓 구분 번호
-        market_info: 마켓 정보 딕셔너리
-        realtime: 실시간 모드 여부
-        min_candle: 최소 캔들 수 (기본값 15)
-        min_samples: 최소 샘플 수 (기본값 20)
-        """
         self.pattern_database = CandlePatternDatabase(market_info['전략구분'])
         self.analysis_period, self.rate_threshold = self.pattern_database.load_pattern_setting(market_gubun)
 
@@ -110,12 +102,7 @@ class AnalyzerCandlePattern:
         self.pattern_scores[code] = self.pattern_database.get_pattern_code_scores(code, date)
 
     def analyze_current_patterns(self, code: str, code_data: np.ndarray) -> Tuple[float, float]:
-        """
-        실시간 패턴 분석 및 학습된 점수 반환
-        code: 종목코드
-        code_data: 실시간 1분봉 데이터
-        return: 패턴점수, 패턴신뢰도
-        """
+        """실시간 패턴 분석 및 학습된 점수 반환"""
         pattern_score = confidence_score = 0.0
 
         pattern_scores = self.pattern_scores.get(code)
@@ -142,12 +129,7 @@ class AnalyzerCandlePattern:
         return pattern_score, confidence_score
 
     def analyze_batch_data(self, code: str, code_data: np.ndarray) -> np.ndarray:
-        """2차원 어레이 데이터 전체를 일괄 분석합니다.
-        code: 종목코드
-        code_data: 코드 데이터 2차원 어레이
-        return:
-            (N, 2) 형태의 2차원 어레이 - 패턴점수, 패턴신뢰도
-        """
+        """2차원 어레이 데이터 전체를 일괄 분석합니다."""
         date = int(str(code_data[0, 0])[:8])
         self.load_pattern_code_scores(code, date)
 
@@ -339,10 +321,7 @@ class CandlePatternDatabase:
             conn.commit()
 
     def get_all_codes(self) -> List[str]:
-        """
-        데이터베이스에 저장된 전체 종목코드 조회
-        return: 종목코드 리스트
-        """
+        """데이터베이스에 저장된 전체 종목코드 조회"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
@@ -355,11 +334,7 @@ class CandlePatternDatabase:
             return [result[0] for result in results]
 
     def get_pattern_all_scores(self, code: str) -> Dict[str, Dict[str, float]]:
-        """
-        종목의 전체 패턴 점수 조회 (최신 날짜 기준)
-        code: 종목코드
-        return: 패턴별 점수 딕셔너리
-        """
+        """종목의 전체 패턴 점수 조회 (최신 날짜 기준)"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
@@ -379,12 +354,7 @@ class CandlePatternDatabase:
             return pattern_scores
 
     def get_pattern_code_scores(self, code: str, backtest_date: int) -> Dict[str, Dict[str, float]]:
-        """
-        백테스트 날짜 기준으로 해당 날짜 이전의 최신 날짜의 전체 패턴 점수 조회
-        code: 종목코드
-        backtest_date: 백테스트 기준 날짜 (YYYYMMDD)
-        return: 패턴별 점수 딕셔너리
-        """
+        """백테스트 날짜 기준으로 해당 날짜 이전의 최신 날짜의 전체 패턴 점수 조회 """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
@@ -409,11 +379,9 @@ class CandlePatternDatabase:
             df.to_sql(self.table_name, conn, if_exists='append', index=False, chunksize=2000)
 
     def load_pattern_setting(self, market: int) -> tuple:
-        """
-        마켓번호로 설정값 불러오기
+        """마켓번호로 설정값 불러오기
         market: 마켓번호 (1~9)
-        return: (analysis_period, rate_threshold) 튜플, 데이터가 없으면 (30, 10) 반환
-        """
+        return: (analysis_period, rate_threshold) 튜플, 데이터가 없으면 (30, 10) 반환"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
@@ -433,12 +401,7 @@ class CandlePatternDatabase:
             return analysis_period, rate_threshold
 
     def save_pattern_setting(self, market: int, analysis_period: int, rate_threshold: int):
-        """
-        마켓번호로 설정값 저장
-        market: 마켓번호 (1~9)
-        analysis_period: 분봉설정
-        rate_threshold: 퍼센트설정
-        """
+        """마켓번호로 설정값 저장"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''

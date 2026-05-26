@@ -8,8 +8,7 @@ from binance import AsyncClient, BinanceSocketManager
 
 class BinanceWebSocketReceiver(QThread):
     """바이낸스 웹소켓 수신 스레드 클래스입니다.
-    바이낸스 시장 데이터를 웹소켓으로 수신합니다.
-    """
+    바이낸스 시장 데이터를 웹소켓으로 수신합니다."""
     signal = pyqtSignal(dict)
 
     def __init__(self, codes, windowQ):
@@ -116,8 +115,7 @@ class BinanceWebSocketReceiver(QThread):
 
 class BinanceWebSocketTrader(QThread):
     """바이낸스 웹소켓 트레이더 스레드 클래스입니다.
-    바이낸스 주문 데이터를 웹소켓으로 수신합니다.
-    """
+    바이낸스 주문 데이터를 웹소켓으로 수신합니다."""
     signal = pyqtSignal(dict)
 
     def __init__(self, api_key, scret_key, windowQ):

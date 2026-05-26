@@ -89,14 +89,6 @@ class AnalyzerVolumeProfile:
     """메인 볼륨 프로파일 분석 통합 클래스"""
     def __init__(self, market_gubun: int, market_info: dict, is_tick: bool,
                  realtime: bool = False, top_nodes: int = 20):
-        """
-        초기화
-        market_gubun: 마켓 구분 번호
-        market_info: 마켓 정보 딕셔너리
-        is_tick: 틱 데이터 여부
-        realtime: 실시간 모드 여부
-        top_nodes: 상위 볼륨 노드 개수 (기본값 20)
-        """
         self.volume_database = VolumeProfileDatabase(market_info['전략구분'], is_tick)
         self.analysis_period, self.rate_threshold, self.price_range_pct = \
             self.volume_database.load_volume_setting(market_gubun)
@@ -124,12 +116,7 @@ class AnalyzerVolumeProfile:
         self.volume_nodes[code] = self.volume_database.get_volume_code_scores(code, date)
 
     def analyze_current_price(self, code: str, current_price: float) -> Tuple[float, float]:
-        """
-        실시간 가격대 분석 및 학습된 점수 반환
-        code: 종목코드
-        current_price: 현재가 데이터
-        return: 가격대점수, 가격대신뢰도
-        """
+        """실시간 가격대 분석 및 학습된 점수 반환"""
         volume_profile_score = confidence_score = 0.0
 
         volume_nodes = self.volume_nodes.get(code)
@@ -152,12 +139,7 @@ class AnalyzerVolumeProfile:
         return volume_profile_score, confidence_score
 
     def analyze_batch_data(self, code: str, code_data: np.ndarray) -> np.ndarray:
-        """2차원 어레이 데이터 전체를 일괄 분석합니다.
-        code: 종목코드
-        code_data: 코드 데이터 2차원 어레이
-        return:
-            (N, 2) 형태의 2차원 어레이 - 가격대점수, 가격대신뢰도
-        """
+        """2차원 어레이 데이터 전체를 일괄 분석합니다."""
         date = int(str(code_data[0, 0])[:8])
         self.load_volume_code_nodes(code, date)
 
@@ -389,12 +371,7 @@ class VolumeProfileDatabase:
             return volume_scores
 
     def get_volume_code_scores(self, code: str, backtest_date: int) -> Dict[str, Dict[str, float]]:
-        """
-        백테스트 날짜 기준으로 해당 날짜 이전의 최신 날짜의 전체 볼륨 프로파일 점수 조회
-        code: 종목코드
-        backtest_date: 백테스트 기준 날짜 (YYYYMMDD)
-        return: 가격대별 점수 딕셔너리
-        """
+        """백테스트 날짜 기준으로 해당 날짜 이전의 최신 날짜의 전체 볼륨 프로파일 점수 조회"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
@@ -419,12 +396,10 @@ class VolumeProfileDatabase:
             df.to_sql(self.table_name, conn, if_exists='append', index=False, chunksize=2000)
 
     def load_volume_setting(self, market: int) -> tuple:
-        """
-        마켓번호로 설정값 불러오기
+        """마켓번호로 설정값 불러오기
         market: 마켓번호 (1~9)
         is_tick: 틱 데이터 여부 (기본값 False)
-        return: (price_range_pct, rate_threshold) 튜플, 데이터가 없으면 (30, 10) 반환
-        """
+        return: (price_range_pct, rate_threshold) 튜플, 데이터가 없으면 (30, 10) 반환"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
@@ -444,14 +419,12 @@ class VolumeProfileDatabase:
             return analysis_period, rate_threshold, price_range_pct
 
     def save_volume_setting(self, market: int, analysis_period: int, rate_threshold: float, price_range_pct: float):
-        """
-        마켓번호로 설정값 저장
+        """마켓번호로 설정값 저장
         market: 마켓번호 (1~9)
         analysis_period: 분석기간설정
         rate_threshold: 퍼센트설정
         price_range_pct: 분봉설정
-        is_tick: 틱 데이터 여부 (기본값 False)
-        """
+        is_tick: 틱 데이터 여부 (기본값 False)"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''

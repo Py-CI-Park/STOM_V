@@ -4,8 +4,7 @@ from utility.static_method.static_decorator import error_decorator
 
 class DrawHomeChart:
     """홈 차트 그리기 클래스입니다.
-    홈 화면에 시장 지표 차트를 그립니다.
-    """
+    홈 화면에 시장 지표 차트를 그립니다."""
     def __init__(self, ui):
         self.ui = ui
         self.pg_index = {
@@ -29,10 +28,7 @@ class DrawHomeChart:
 
     @error_decorator
     def draw_home_chart(self, data):
-        """홈 차트를 그립니다.
-        Args:
-            data: 차트 데이터 튜플
-        """
+        """홈 차트를 그립니다."""
         for name, df in data[1].items():
             if df is None:
                 continue

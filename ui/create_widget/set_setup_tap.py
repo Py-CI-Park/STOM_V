@@ -10,8 +10,7 @@ from ui.event_click.button_clicked_show_dialog import show_pattern_dialog, show_
 
 class SetSetupTap:
     """설정 탭 설정 클래스입니다.
-    일반설정과 주문설정 탭을 설정합니다.
-    """
+    일반설정과 주문설정 탭을 설정합니다."""
     def __init__(self, ui_class, wc):
         self.ui = ui_class
         self.wc = wc

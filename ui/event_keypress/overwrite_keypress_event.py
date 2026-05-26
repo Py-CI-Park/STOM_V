@@ -1,10 +1,6 @@
 
 def key_press_event(ui, event):
-    """키 누름 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        event: 키 이벤트
-    """
+    """키 누름 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QApplication
     from ui.etcetera.process_alive import backtest_process_alive

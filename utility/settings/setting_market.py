@@ -1,6 +1,6 @@
 """시장 설정 모듈입니다.
-백테스트 및 트레이딩 관련 클래스와 데이터베이스 경로를 포함합니다.
-"""
+백테스트 및 트레이딩 관련 클래스와 데이터베이스 경로를 포함합니다."""
+
 from utility.settings.setting_base import DB_PATH
 from trade.stock_korea.stock_trader import StockTrader
 from trade.stock_korea.stock_receiver import StockReceiver

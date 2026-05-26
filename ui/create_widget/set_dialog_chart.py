@@ -18,8 +18,7 @@ from ui.event_click.button_clicked_chart import indicator_setting_basic, indicat
 
 class SetDialogChart:
     """차트 다이얼로그 설정 클래스입니다.
-    차트 다이얼로그와 팩터 설정 다이얼로그를 설정합니다.
-    """
+    차트 다이얼로그와 팩터 설정 다이얼로그를 설정합니다."""
     def __init__(self, ui_class, wc):
         self.ui = ui_class
         self.wc = wc

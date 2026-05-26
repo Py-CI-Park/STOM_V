@@ -4,6 +4,7 @@ from PyQt5.QtCore import QThread
 
 
 class PyttsxSound(QThread):
+    """pyttsx3 소리를 재생합니다."""
     def __init__(self, soundQ):
         super().__init__()
         self.soundQ = soundQ

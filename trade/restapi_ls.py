@@ -36,6 +36,7 @@ class LsRestAPI:
                 'appsecretkey': self.secret,
                 'scope': 'oob'
             }
+            response = requests.post(url, headers=headers, params=params)
         else:
             tr_data = LsRestData.tr_data[tr_name]
             headers = {
@@ -49,10 +50,6 @@ class LsRestAPI:
             element_keys = tr_data['element_keys']
             element_values = [kwargs[k] for k in tr_data['element_values']]
             params = {body_key: dict(zip(element_keys, element_values))}
-
-        if tr_name == '토큰발급':
-            response = requests.post(url, headers=headers, params=params)
-        else:
             response = requests.post(url, headers=headers, data=json.dumps(params))
 
         return response.json()

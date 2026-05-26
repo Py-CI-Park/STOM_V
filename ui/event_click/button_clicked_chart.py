@@ -1,9 +1,6 @@
 
 def chart_moneytop_list(ui):
-    """차트 거래대금 순위 목록을 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """차트 거래대금 순위 목록을 표시합니다."""
     import os
     import sqlite3
     import pandas as pd
@@ -59,10 +56,7 @@ def chart_moneytop_list(ui):
 
 
 def chart_size_change(ui):
-    """차트 크기를 변경합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """차트 크기를 변경합니다."""
     from ui.create_widget.set_style import style_bc_bt, style_bc_bb
 
     if ui.ct_pushButtonnn_06.text() == '확장':
@@ -90,10 +84,7 @@ def chart_size_change(ui):
 
 
 def indicator_setting_basic(ui):
-    """보조지표 기본 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """보조지표 기본 설정을 로드합니다."""
     from utility.settings.setting_base import DICT_INDICATOR_BASE
 
     k = list(DICT_INDICATOR_BASE.values())
@@ -102,10 +93,7 @@ def indicator_setting_basic(ui):
 
 
 def indicator_setting_load(ui):
-    """보조지표 설정을 데이터베이스에서 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """보조지표 설정을 데이터베이스에서 로드합니다."""
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM back')
     k_list = df['보조지표설정'][0]
     k_list = k_list.split(';')
@@ -114,10 +102,7 @@ def indicator_setting_load(ui):
 
 
 def indicator_setting_save(ui):
-    """보조지표 설정을 데이터베이스에 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """보조지표 설정을 데이터베이스에 저장합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
@@ -134,12 +119,7 @@ def indicator_setting_save(ui):
 
 
 def get_indicator_detail(ui):
-    """보조지표 상세 설정을 가져옵니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    Returns:
-        보조지표 설정 리스트
-    """
+    """보조지표 상세 설정을 가져옵니다."""
     from utility.settings.setting_base import DICT_INDICATOR
 
     k_list = None

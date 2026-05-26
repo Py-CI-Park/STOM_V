@@ -8,11 +8,7 @@ DB_PATH = '../../_database'
 
 
 def Updater(gubun, file_list_):
-    """데이터베이스 중복 데이터를 제거합니다.
-    Args:
-        gubun: 구분
-        file_list_: 파일 리스트
-    """
+    """데이터베이스 중복 데이터를 제거합니다."""
     print(f'[{gubun}] 데이터베이스 중복 확인 시작')
     last = len(file_list_)
     count = 0

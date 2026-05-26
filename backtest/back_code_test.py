@@ -11,8 +11,7 @@ from utility.static_method.static_datetime import timedelta_sec, now
 # noinspection PyUnusedLocal,PyUnresolvedReferences
 class BackCodeTest(QThread):
     """백테스트 코드 테스트 스레드 클래스입니다.
-    전략 코드의 문법을 검증합니다.
-    """
+    전략 코드의 문법을 검증합니다."""
     def __init__(self, testQ, windowQ, stg, fm_list=None, var=None, ga=False):
         super().__init__()
         self.testQ       = testQ
@@ -26,9 +25,7 @@ class BackCodeTest(QThread):
         self.indicator   = DICT_INDICATOR
 
     def run(self):
-        """테스트를 실행합니다.
-        전략 코드의 문법을 검증합니다.
-        """
+        """테스트를 실행합니다. 전략 코드의 문법을 검증합니다."""
         if self.stg is None:
             self.vars = {i: [[1, 2, 1], 1] for i in range(300)}
 

@@ -40,10 +40,7 @@ class FutureOsTrader(BaseTrader):
 
     @error_decorator
     def _send_order(self, data):
-        """주문을 전송합니다.
-        Args:
-            data: 데이터
-        """
+        """주문을 전송합니다."""
         curr_time = now()
         if curr_time < self.order_time:
             next_time = (self.order_time - curr_time).total_seconds()
@@ -100,10 +97,7 @@ class FutureOsTrader(BaseTrader):
 
     @error_decorator
     def _convert_order_data(self, data):
-        """주문 데이터를 변환합니다.
-        Args:
-            data: 데이터
-        """
+        """주문체결 데이터를 변환합니다."""
         body = data['body']
         if body is None:
             return
@@ -119,82 +113,37 @@ class FutureOsTrader(BaseTrader):
             self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
 
     def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
-        """매수 주문 가격을 반환합니다.
-        Args:
-            종목코드: 종목 코드
-            주문구분: 주문 구분
-            주문가격: 주문 가격
-        Returns:
-            매수 주문 가격
-        """
+        """매수 주문 가격을 반환합니다."""
         매수지정가호가번호 = self.dict_set['매수지정가호가번호']
         소숫점자리수 = self.dict_info[종목코드]['소숫점자리수']
         호가차이 = self.dict_info[종목코드]['호가단위'] * 매수지정가호가번호
         return round(주문가격 + 호가차이, 소숫점자리수) if 주문구분 == 'BUY_LONG' else round(주문가격 - 호가차이, 소숫점자리수)
 
     def _get_order_sell_price(self, 종목코드, 주문구분, 주문가격):
-        """매도 주문 가격을 반환합니다.
-        Args:
-            종목코드: 종목 코드
-            주문구분: 주문 구분
-            주문가격: 주문 가격
-        Returns:
-            매도 주문 가격
-        """
+        """매도 주문 가격을 반환합니다."""
         매도지정가호가번호 = self.dict_set['매도지정가호가번호']
         소숫점자리수 = self.dict_info[종목코드]['소숫점자리수']
         호가차이 = self.dict_info[종목코드]['호가단위'] * 매도지정가호가번호
         return round(주문가격 + 호가차이, 소숫점자리수) if 주문구분 == 'SELL_LONG' else round(주문가격 - 호가차이, 소숫점자리수)
 
     def _get_modify_buy_price(self, 현재가, 정정호가, 종목코드):
-        """매수 정정 가격을 반환합니다.
-        Args:
-            현재가: 현재가
-            정정호가: 정정 호가
-            종목코드: 종목 코드
-        Returns:
-            매수 정정 가격
-        """
+        """매수 정정 가격을 반환합니다."""
         return round(현재가 - 정정호가, self.dict_info[종목코드]['소숫점자리수'])
 
     def _get_modify_sell_price(self, 현재가, 정정호가, 종목코드):
-        """매도 정정 가격을 반환합니다.
-        Args:
-            현재가: 현재가
-            정정호가: 정정 호가
-            종목코드: 종목 코드
-        Returns:
-            매도 정정 가격
-        """
+        """매도 정정 가격을 반환합니다."""
         return round(현재가 + 정정호가, self.dict_info[종목코드]['소숫점자리수'])
 
     def _get_profit_long(self, 매입금액, 보유금액, 종목코드=None):
-        """롱 수익을 계산합니다.
-        Args:
-            매입금액: 매입 금액
-            보유금액: 보유 금액
-        Returns:
-            롱 수익
-        """
+        """롱 수익을 계산합니다."""
         mini = 종목코드.startswith('M') or 종목코드.startswith('SIL')
         return get_profit_future_os_long(mini, 매입금액, 보유금액)
 
     def _get_profit_short(self, 매입금액, 보유금액, 종목코드=None):
-        """숏 수익을 계산합니다.
-        Args:
-            매입금액: 매입 금액
-            보유금액: 보유 금액
-        Returns:
-            숏 수익
-        """
+        """숏 수익을 계산합니다."""
         mini = 종목코드.startswith('M') or 종목코드.startswith('SIL')
         return get_profit_future_os_short(mini, 매입금액, 보유금액)
 
     def _get_hogaunit(self, 주문가격또는종목코드):
-        """호가 단위를 반환합니다.
-        Args:
-            주문가격또는종목코드: 주문 가격 또는 종목 코드
-        Returns:
-            호가 단위
-        """
+        """호가 단위를 반환합니다."""
         return self.dict_info[주문가격또는종목코드]['호가단위']

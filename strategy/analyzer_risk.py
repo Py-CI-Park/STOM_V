@@ -338,23 +338,13 @@ class AnalyzerRisk:
                 }
 
     def get_risk_score(self, code_data: np.ndarray) -> float:
-        """리스크 점수를 반환합니다.
-        Args:
-            code_data: 코드 데이터 배열
-        Returns:
-            리스크 점수
-        """
+        """리스크 점수를 반환합니다."""
         analysis = self._analyze_market_data(code_data)
         risk_score = self._calculate_risk_score(analysis)
         return risk_score
 
     def analyze_batch_data(self, code_data: np.ndarray) -> np.ndarray:
-        """2차원 어레이 데이터 전체를 일괄 분석하여 리스크 점수를 반환합니다.
-        Args:
-            code_data: 코드 데이터 2차원 어레이
-        Returns:
-            (N) 형태의 1차원 어레이 - 리스크점수
-        """
+        """2차원 어레이 데이터 전체를 일괄 분석하여 리스크 점수를 반환합니다."""
         n = len(code_data)
         results = np.zeros(n)
 
@@ -366,12 +356,7 @@ class AnalyzerRisk:
         return results
 
     def _analyze_market_data(self, code_data: np.ndarray) -> dict:
-        """시장 데이터를 분석합니다.
-        Args:
-            code_data: 코드 데이터 배열
-        Returns:
-            분석 결과 딕셔너리
-        """
+        """시장 데이터를 분석합니다."""
         current_prices    = code_data[:, self.idx_curr_price]   # 현재가
         volumes           = code_data[:, self.idx_volume]       # 거래대금
         rsi               = _calculate_rsi(current_prices, self.min_data)
@@ -397,12 +382,7 @@ class AnalyzerRisk:
         }
 
     def _analyze_trend(self, prices: np.ndarray) -> dict:
-        """추세를 분석합니다.
-        Args:
-            prices: 가격 배열
-        Returns:
-            추세 분석 결과 딕셔너리
-        """
+        """추세를 분석합니다."""
         short_period  = self.params['trend_short_period']
         medium_period = self.params['trend_medium_period']
         long_period   = self.params['trend_long_period']
@@ -445,12 +425,7 @@ class AnalyzerRisk:
         }
 
     def _calculate_momentum(self, prices: np.ndarray) -> dict:
-        """모멘텀을 계산합니다.
-        Args:
-            prices: 가격 배열
-        Returns:
-            모멘텀 결과 딕셔너리
-        """
+        """모멘텀을 계산합니다."""
         strong_bullish_short  = self.params['momentum_strong_bullish_short']
         strong_bullish_medium = self.params['momentum_strong_bullish_medium']
         strong_bearish_short  = self.params['momentum_strong_bearish_short']
@@ -475,12 +450,7 @@ class AnalyzerRisk:
         }
 
     def _analyze_chegyeol_strength(self, code_data: np.ndarray) -> dict:
-        """체결 강도를 분석합니다.
-        Args:
-            code_data: 코드 데이터 배열
-        Returns:
-            체결 강도 분석 결과 딕셔너리
-        """
+        """체결 강도를 분석합니다."""
         curr_strength = code_data[-1, self.idx_chegyeol_strength]   # 체결강도
         avg_strength  = code_data[-1, self.idx_chegyeol_avg]        # 체결강도평균
 
@@ -497,12 +467,7 @@ class AnalyzerRisk:
         }
 
     def _analyze_suyang_imbalance(self, code_data: np.ndarray) -> dict:
-        """수급 불균형을 분석합니다.
-        Args:
-            code_data: 코드 데이터 배열
-        Returns:
-            수급 불균형 분석 결과 딕셔너리
-        """
+        """수급 불균형을 분석합니다."""
         current_buy  = code_data[-1, self.idx_buy_vol]   # 초당매수수량
         current_sell = code_data[-1, self.idx_sell_vol]  # 초당매도수량
 
@@ -528,12 +493,7 @@ class AnalyzerRisk:
         }
 
     def _analyze_price_position(self, code_data: np.ndarray) -> dict:
-        """가격 위치를 분석합니다.
-        Args:
-            code_data: 코드 데이터 배열
-        Returns:
-            가격 위치 분석 결과 딕셔너리
-        """
+        """가격 위치를 분석합니다."""
         current_price    = code_data[-1, self.idx_curr_price]
         current_high_low = code_data[-1, self.idx_high_low_ratio]   # 고저평균대비등락율
         max_price        = code_data[-1, self.idx_max_price]        # 최고현재가
@@ -561,12 +521,7 @@ class AnalyzerRisk:
         }
 
     def _analyze_angle_trend(self, code_data: np.ndarray) -> dict:
-        """각도 추세를 분석합니다.
-        Args:
-            code_data: 코드 데이터 배열
-        Returns:
-            각도 추세 분석 결과 딕셔너리
-        """
+        """각도 추세를 분석합니다."""
         change_angle = code_data[-1, self.idx_change_angle]    # 등락율각도
 
         if change_angle > self.params['angle_strong_uptrend']:
@@ -585,12 +540,7 @@ class AnalyzerRisk:
         }
 
     def _analyze_volume_trend(self, volumes: np.ndarray) -> dict:
-        """거래량 추세를 분석합니다.
-        Args:
-            volumes: 거래량 배열
-        Returns:
-            거래량 추세 분석 결과 딕셔너리
-        """
+        """거래량 추세를 분석합니다."""
         recent_period   = self.params['volume_recent_period']
         previous_period = self.params['volume_previous_period']
         total_period    = recent_period + previous_period
@@ -606,12 +556,7 @@ class AnalyzerRisk:
         }
 
     def _calculate_risk_score(self, analysis: dict) -> float:
-        """리스크 점수를 계산합니다.
-        Args:
-            analysis: 분석 결과 딕셔너리
-        Returns:
-            리스크 점수
-        """
+        """리스크 점수를 계산합니다."""
         rsi               = analysis.get('rsi', 50)
         volatility        = analysis.get('volatility', 0)
         trend             = analysis.get('trend', {})

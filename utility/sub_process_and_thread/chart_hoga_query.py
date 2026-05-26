@@ -79,7 +79,7 @@ class ChartHogaQuery:
         self.con4.close()
 
     def _set_sub_vars(self):
-        """변수 및 분석기를 설정합니다."""
+        """변수를 설정합니다."""
         from utility.settings.setting_market import DICT_MARKET_GUBUN, DICT_MARKET_INFO
 
         con = sqlite3.connect(DB_CODE_INFO)
@@ -112,6 +112,7 @@ class ChartHogaQuery:
         self._set_analyzer()
 
     def _set_analyzer(self):
+        """분석시스템을 설정합니다."""
         self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], self.dict_findex)
         self.rk_analyzer = AnalyzerRisk(self.market_info['마켓구분'], self.dict_findex)
         self.pt_analyzer = AnalyzerCandlePattern(self.market_gubun, self.market_info)
@@ -213,10 +214,7 @@ class ChartHogaQuery:
                 self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
     def _update_hoga_jongmok(self, data):
-        """호가 종목 정보를 업데이트합니다.
-        Args:
-            data: 호가 데이터
-        """
+        """호가 종목 정보를 업데이트합니다."""
         종목명, 현재가, 등락율, 시가총액, UVI, 시가, 고가, 저가 = data
         if self.hoga_name != 종목명:
             self._init_hoga()
@@ -228,10 +226,7 @@ class ChartHogaQuery:
         }
 
     def _update_chegeol_count(self, data):
-        """체결 수를 업데이트합니다.
-        Args:
-            data: 체결 데이터
-        """
+        """체결 수량를 업데이트합니다."""
         v, ch = data
         if self.market_gubun < 4 or self.market_gubun in (6, 7, 8):
             if v > 0:
@@ -267,20 +262,14 @@ class ChartHogaQuery:
         self.dict_hc['체결강도'] = [hch, ch] + self.dict_hc['체결강도'][1:10] + [lch]
 
     def _update_hoga_jalryang(self, data):
-        """호가 잔량을 업데이트합니다.
-        Args:
-            data: 호가 데이터
-        """
+        """호가 잔량을 업데이트합니다."""
         jr = [data[1]] + list(data[13:23]) + [data[2]]
         hg = [self.dict_hj['고가']] + list(data[3:13]) + [self.dict_hj['저가']]
         self.dict_hg['잔량'] = jr
         self.dict_hg['호가'] = hg
 
     def _update_hoga_for_chart(self, data):
-        """차트용 호가 정보를 업데이트합니다.
-        Args:
-            data: 호가 데이터
-        """
+        """차트용 호가 정보를 업데이트합니다."""
         cmd, code, name, index = data
         searchdate = index[:8]
         index = int(index)
@@ -368,10 +357,7 @@ class ChartHogaQuery:
             self.windowQ.put((UI_NUM['호가잔량'], df_hg))
 
     def _settings_change(self, data):
-        """설정을 변경합니다.
-        Args:
-            data: 설정 데이터
-        """
+        """설정을 변경합니다."""
         self.con1.close()
         os.remove(data[2])
         shutil.copy(data[1], data[2])
@@ -379,12 +365,7 @@ class ChartHogaQuery:
         self.cur1 = self.con1.cursor()
 
     def _execute_query(self, data, con, cur):
-        """SQL 쿼리를 실행합니다.
-        Args:
-            data: 쿼리 데이터
-            con: 데이터베이스 연결
-            cur: 커서
-        """
+        """SQL 쿼리를 실행합니다."""
         if len(data) == 2:
             cur.execute(data[1])
             con.commit()
@@ -395,19 +376,12 @@ class ChartHogaQuery:
             data[1].to_sql(data[2], con, if_exists=data[3], chunksize=2000)
 
     def _dataframe_to_sql(self, data, con):
-        """데이터프레임을 SQL로 저장합니다.
-        Args:
-            data: 데이터
-            con: 데이터베이스 연결
-        """
+        """데이터프레임을 SQL로 저장합니다."""
         if len(data) == 4:
             data[1].to_sql(data[2], con, if_exists=data[3], chunksize=2000)
 
     def _backtest_query(self, data):
-        """백테스트 쿼리를 실행합니다.
-        Args:
-            data: 쿼리 데이터
-        """
+        """백테스트 쿼리를 실행합니다."""
         con = sqlite3.connect(DB_BACKTEST)
         cur = con.cursor()
         cur.execute(data[1])
@@ -415,10 +389,7 @@ class ChartHogaQuery:
         con.close()
 
     def _db_back_day_delete(self, data):
-        """백테스트 DB의 지정일자 데이터를 삭제합니다.
-        Args:
-            data: 데이터
-        """
+        """백테스트 DB의 지정일자 데이터를 삭제합니다."""
         BACK_FILE = self.market_info['백테디비'][self.is_tick]
         con = sqlite3.connect(BACK_FILE)
         df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
@@ -442,10 +413,7 @@ class ChartHogaQuery:
         con.close()
 
     def _db_day_day_delete(self, data):
-        """일자DB의 지정일자 데이터를 삭제합니다.
-        Args:
-            data: 데이터
-        """
+        """일자DB의 지정일자 데이터를 삭제합니다."""
         file_name = f"{self.market_info['일자디비경로'][self.is_tick]}_{data[1]}.db"
         if os.path.isfile(file_name):
             os.remove(file_name)
@@ -454,10 +422,7 @@ class ChartHogaQuery:
             self.windowQ.put((UI_NUM['DB관리'], '지정한 일자의 일자DB가 존재하지 않습니다.'))
 
     def _db_day_time_delete(self, data):
-        """일자DB의 지정시간 이후 데이터를 삭제합니다.
-        Args:
-            data: 데이터
-        """
+        """일자DB의 지정시간 이후 데이터를 삭제합니다."""
         first_name = f"{self.market_info['일자디비경로'][self.is_tick].split('/')[2]}_"
         file_list = os.listdir(DB_PATH)
         file_list = [x for x in file_list if first_name in x and '.db' in x and 'back' not in x]
@@ -496,10 +461,7 @@ class ChartHogaQuery:
             self.windowQ.put((UI_NUM['DB관리'], '일자DB가 존재하지 않습니다.'))
 
     def _db_now_time_delete(self, data):
-        """당일DB의 지정시간 이후 데이터를 삭제합니다.
-        Args:
-            data: 데이터
-        """
+        """당일DB의 지정시간 이후 데이터를 삭제합니다."""
         DB_FILE = self.market_info['당일디비'][self.is_tick]
         con = sqlite3.connect(DB_FILE)
         try:
@@ -540,10 +502,7 @@ class ChartHogaQuery:
         con.close()
 
     def _db_now_time_change(self, data):
-        """당일DB의 체결시간을 조정합니다.
-        Args:
-            data: 데이터
-        """
+        """당일DB의 체결시간을 조정합니다."""
         DB_FILE = self.market_info['당일디비'][self.is_tick]
         con = sqlite3.connect(DB_FILE)
         df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
@@ -569,10 +528,7 @@ class ChartHogaQuery:
         con.close()
 
     def _db_back_create(self, data):
-        """백테스트 DB를 생성합니다.
-        Args:
-            data: 데이터
-        """
+        """백테스트 DB를 생성합니다."""
         BACK_FILE = self.market_info['백테디비'][self.is_tick]
         first_name = f"{self.market_info['일자디비경로'][self.is_tick].split('/')[2]}_"
         file_list = os.listdir(DB_PATH)
@@ -610,10 +566,7 @@ class ChartHogaQuery:
             self.windowQ.put((UI_NUM['DB관리'], '일자DB가 존재하지 않습니다.'))
 
     def _db_back_area_add(self, data):
-        """백테스트 DB에 일자 데이터를 추가합니다.
-        Args:
-            data: 데이터
-        """
+        """백테스트 DB에 일자 데이터를 추가합니다."""
         BACK_FILE = self.market_info['백테디비'][self.is_tick]
         first_name = f"{self.market_info['일자디비경로'][self.is_tick].split('/')[2]}_"
         file_list = os.listdir(DB_PATH)
@@ -647,8 +600,7 @@ class ChartHogaQuery:
             self.windowQ.put((UI_NUM['DB관리'], '일자DB가 존재하지 않습니다.'))
 
     def _db_back_add(self):
-        """백테스트 DB에 당일DB 데이터를 추가합니다.
-        """
+        """백테스트 DB에 당일DB 데이터를 추가합니다."""
         DB_FILE = self.market_info['당일디비'][self.is_tick]
         con = sqlite3.connect(DB_FILE)
         try:
@@ -694,8 +646,7 @@ class ChartHogaQuery:
                     self.windowQ.put((UI_NUM['DB관리'], f'당일DB {DB_FILE} 삭제 완료'))
 
     def _db_now_day_divide(self):
-        """당일DB 데이터를 일자별로 분리합니다.
-        """
+        """당일DB 데이터를 일자별로 분리합니다."""
         DB_FILE = self.market_info['당일디비'][self.is_tick]
         con = sqlite3.connect(DB_FILE)
         try:
@@ -727,10 +678,7 @@ class ChartHogaQuery:
 
     @staticmethod
     def _graph_comparison(backdetail_list):
-        """그래프 비교를 수행합니다.
-        Args:
-            backdetail_list: 백테스트 상세 리스트
-        """
+        """그래프 비교를 수행합니다."""
         from matplotlib import pyplot as plt, font_manager
         plt.rcParams['figure.max_open_warning'] = 0
         plt.rcParams['font.family'] = font_manager.FontProperties(fname='C:/Windows/Fonts/malgun.ttf').get_name()
@@ -756,10 +704,7 @@ class ChartHogaQuery:
         plt.show()
 
     def _update_chart(self, data):
-        """차트를 업데이트합니다.
-        Args:
-            data: 차트 데이터
-        """
+        """차트를 업데이트합니다."""
         if len(data) == 8:
             code, w_unit, searchdate, starttime, endtime, k, buy_cf, sell_cf = data
             detail, buytimes, cf1, cf2 = None, None, None, None

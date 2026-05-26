@@ -42,14 +42,6 @@ def get_result(arry_tsg, arry_bct, betting, market_gubun, day_count):
     arry_bct dtype 'float64'
     체결시간, 보유중목수, 보유금액
       0         1        2
-    Args:
-        arry_tsg: 거래 결과 배열
-        arry_bct: 보유 결과 배열
-        betting: 배팅 금액
-        market_gubun: 마켓 구분
-        day_count: 일 수
-    Returns:
-        (tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_) 튜플
     """
     tc = len(arry_tsg)
     if tc == 0:
@@ -102,14 +94,7 @@ def get_result(arry_tsg, arry_bct, betting, market_gubun, day_count):
 
 @njit(cache=True, fastmath=True, parallel=True)
 def calculate_mdd_bootstrap(sig_array, seed, n_bootstrap=100):
-    """부트스트랩 MDD를 계산합니다.
-    Args:
-        sig_array: 수익률 배열
-        seed: 초기 자금
-        n_bootstrap: 부트스트랩 횟수
-    Returns:
-        (mdd_list, random_cumsums) 튜플
-    """
+    """부트스트랩 MDD를 계산합니다."""
     mdd_list = np.zeros(n_bootstrap)
     random_cumsums = np.empty((n_bootstrap, len(sig_array)))
 
@@ -139,13 +124,7 @@ def calculate_mdd_bootstrap(sig_array, seed, n_bootstrap=100):
 
 @njit(cache=True, fastmath=True, parallel=True)
 def bootstrap_test(returns, n_bootstrap=10000):
-    """부트스트랩 테스트를 수행합니다.
-    Args:
-        returns: 수익률 배열
-        n_bootstrap: 부트스트랩 횟수
-    Returns:
-        부트스트랩 수익률 배열
-    """
+    """부트스트랩 테스트를 수행합니다."""
     n = len(returns)
     bootstrap_returns = np.zeros(n_bootstrap)
     for i in prange(n_bootstrap):

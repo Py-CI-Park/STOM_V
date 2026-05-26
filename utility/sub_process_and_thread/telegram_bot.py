@@ -13,8 +13,7 @@ from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTyp
 
 class TelegramBot(QThread):
     """텔레그램 봇 클래스입니다.
-    텔레그램 봇을 통해 메시지를 주고받습니다.
-    """
+    텔레그램 봇을 통해 메시지를 주고받습니다."""
     def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ, testQ
@@ -37,8 +36,7 @@ class TelegramBot(QThread):
         self.running       = False
 
     def run(self):
-        """텔레그램 봇을 실행합니다.
-        """
+        """텔레그램 봇을 실행합니다."""
         self.message_queue = asyncio.Queue()
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
@@ -71,8 +69,7 @@ class TelegramBot(QThread):
         self.loop.run_forever()
 
     async def start_bot(self):
-        """봇을 시작합니다.
-        """
+        """봇을 시작합니다."""
         try:
             await self.application.initialize()
             await self.application.start()
@@ -106,20 +103,13 @@ class TelegramBot(QThread):
             self.running = False
 
     async def setup_application(self, application):
-        """애플리케이션을 설정합니다.
-        Args:
-            application: 애플리케이션
-        """
+        """애플리케이션을 설정합니다."""
         korea_timezone = ZoneInfo('Asia/Seoul')
         application.bot_data['timezone'] = korea_timezone
 
     # noinspection PyUnusedLocal,PyUnresolvedReferences
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """메시지를 처리합니다.
-        Args:
-            update: 업데이트
-            context: 컨텍스트
-        """
+        """메시지를 처리합니다."""
         cmd = update.message.text
         if cmd == '전략중지':
             if self.dict_set['거래소'][:-2] in ('국내주식', '해외주식'):
@@ -131,8 +121,7 @@ class TelegramBot(QThread):
             self.windowQ.put(cmd)
 
     def moniter_queue(self):
-        """큐를 모니터링합니다.
-        """
+        """큐를 모니터링합니다."""
         while True:
             data = self.teleQ.get()
             if self.running or data.__class__ == tuple:
@@ -141,8 +130,7 @@ class TelegramBot(QThread):
                 break
 
     async def process_messages(self):
-        """메시지를 처리합니다.
-        """
+        """메시지를 처리합니다."""
         while True:
             data = await self.message_queue.get()
             if data.__class__ == str:
@@ -158,6 +146,7 @@ class TelegramBot(QThread):
             self.message_queue.task_done()
 
     async def restart_bot(self):
+        """봇을 재시작합니다."""
         change = False
         if self.token != self.dict_set['텔레그램봇토큰'] or self.chat_id != self.dict_set['텔레그램아이디']:
             change = True
@@ -194,6 +183,7 @@ class TelegramBot(QThread):
                 self.running = False
 
     async def send_message(self, text):
+        """메시지를 전송합니다."""
         if not self.running:
             return
         await self.application.bot.send_message(
@@ -202,6 +192,7 @@ class TelegramBot(QThread):
         )
 
     async def send_photo(self, photo_data):
+        """이미지를 전송합니다."""
         if not self.running:
             return
         if photo_data.__class__ == str:
@@ -218,6 +209,7 @@ class TelegramBot(QThread):
             )
 
     def stop(self):
+        """스레드 및 루프를 종료합니다."""
         self.teleQ.put('스레드종료')
         if self.loop and self.loop.is_running():
             asyncio.run_coroutine_threadsafe(self._shutdown(), self.loop)

@@ -1,9 +1,6 @@
 
 def bebutton_clicked_01(ui):
-    """백테스트 엔진 시작 버튼 클릭 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 엔진 시작 버튼 클릭 이벤트를 처리합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_etcetera import qtest_qwait
     from ui.event_click.button_clicked_backtest_engine import backengine_start
@@ -26,10 +23,7 @@ def bebutton_clicked_01(ui):
 
 
 def backtest_engine_kill(ui):
-    """백테스트 엔진을 종료합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 엔진을 종료합니다."""
     import os
     from multiprocessing import shared_memory
     from utility.settings.setting_base import UI_NUM
@@ -91,10 +85,7 @@ def backtest_engine_kill(ui):
 
 
 def sdbutton_clicked_02(ui):
-    """백테스트 스케줄러 시작 버튼 클릭 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 스케줄러 시작 버튼 클릭 이벤트를 처리합니다."""
     from PyQt5.QtCore import Qt
     from multiprocessing import Process
     from backtest.optimiz import Optimize
@@ -497,11 +488,7 @@ def sdbutton_clicked_02(ui):
 
 
 def stop_scheduler(ui, gubun=False):
-    """백테스트 스케줄러를 중지합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        gubun: 구분
-    """
+    """백테스트 스케줄러를 중지합니다."""
     import os
     from PyQt5.QtCore import QTimer
     from ui.etcetera.process_starter import auto_back_schedule
@@ -516,10 +503,7 @@ def stop_scheduler(ui, gubun=False):
 
 
 def sdbutton_clicked_03(ui):
-    """백테스트 스케줄러 중지 버튼 클릭 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 스케줄러 중지 버튼 클릭 이벤트를 처리합니다."""
     from ui.event_click.button_clicked_stg_editer_backlog import ssbutton_clicked_06
 
     ssbutton_clicked_06(ui)
@@ -528,10 +512,7 @@ def sdbutton_clicked_03(ui):
 
 
 def sdbutton_clicked_04(ui):
-    """백테스트 스케줄러 로드 버튼 클릭 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 스케줄러 로드 버튼 클릭 이벤트를 처리합니다."""
     df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM schedule').set_index('index')
     if len(df) > 0:
         if ui.sd_scheckBoxxxx_01.isChecked():
@@ -546,10 +527,7 @@ def sdbutton_clicked_04(ui):
 
 
 def sdbutton_clicked_05(ui):
-    """백테스트 스케줄러 저장 버튼 클릭 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 스케줄러 저장 버튼 클릭 이벤트를 처리합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying

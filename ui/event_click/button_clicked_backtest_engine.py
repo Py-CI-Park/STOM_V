@@ -3,10 +3,7 @@ from utility.static_method.static_decorator import thread_decorator
 
 
 def backengine_show(ui):
-    """백테스트 엔진 다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 엔진 다이얼로그를 표시합니다."""
     import sqlite3
     import pandas as pd
     from utility.settings.setting_base import CODE_INFO_TABLES
@@ -47,10 +44,7 @@ def backengine_show(ui):
 # noinspection PyUnresolvedReferences
 @thread_decorator
 def backengine_start(ui):
-    """백테스트 엔진을 시작합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 엔진을 시작합니다."""
     import sqlite3
     import numpy as np
     import pandas as pd
@@ -219,13 +213,7 @@ def backengine_start(ui):
 
 
 def back_code_test1(ui, stg):
-    """전략 코드를 테스트합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        stg: 전략 코드
-    Returns:
-        테스트 결과
-    """
+    """전략 코드를 테스트합니다."""
     import sqlite3
     from backtest.back_code_test import BackCodeTest
     from utility.settings.setting_base import DB_STRATEGY
@@ -247,14 +235,7 @@ def back_code_test1(ui, stg):
 
 
 def back_code_test2(ui, vars_code, ga=False):
-    """범위 코드를 테스트합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        vars_code: 변수 코드
-        ga: GA 최적화 여부
-    Returns:
-        테스트 결과
-    """
+    """범위 코드를 테스트합니다."""
     from backtest.back_code_test import BackCodeTest
 
     while not ui.testQ.empty():
@@ -268,14 +249,7 @@ def back_code_test2(ui, vars_code, ga=False):
 
 
 def back_code_test3(ui, gubun, conds_code):
-    """조건 코드를 테스트합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        gubun: 구분 (매수/매도)
-        conds_code: 조건 코드
-    Returns:
-        테스트 결과
-    """
+    """조건 코드를 테스트합니다."""
     from backtest.back_code_test import BackCodeTest
 
     while not ui.testQ.empty():
@@ -295,13 +269,7 @@ def back_code_test3(ui, gubun, conds_code):
 
 
 def formula_code_test(ui, stg):
-    """수식 코드를 테스트합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        stg: 전략 코드
-    Returns:
-        테스트 결과
-    """
+    """수식 코드를 테스트합니다."""
     import sqlite3
     from backtest.back_code_test import BackCodeTest
     from utility.settings.setting_base import DB_STRATEGY
@@ -323,13 +291,7 @@ def formula_code_test(ui, stg):
 
 
 def get_code_test_result(ui, gubun):
-    """코드 테스트 결과를 가져옵니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        gubun: 구분
-    Returns:
-        테스트 성공 여부
-    """
+    """코드 테스트 결과를 가져옵니다."""
     from utility.settings.setting_base import UI_NUM
 
     data = ui.testQ.get()
@@ -341,10 +303,7 @@ def get_code_test_result(ui, gubun):
 
 
 def clear_backtestQ(ui):
-    """백테스트 큐를 비웁니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 큐를 비웁니다."""
     if not ui.backQ.empty():
         while not ui.backQ.empty():
             ui.backQ.get()
@@ -355,11 +314,7 @@ def clear_backtestQ(ui):
 
 
 def backtest_process_kill(ui, enginekill):
-    """백테스트 프로세스를 중지합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        enginekill: 엔진 중지 여부
-    """
+    """백테스트 프로세스를 중지합니다."""
     from utility.settings.setting_base import UI_NUM
 
     if not ui.backengine_running:

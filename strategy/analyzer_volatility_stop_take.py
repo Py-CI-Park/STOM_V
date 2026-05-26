@@ -34,8 +34,7 @@ def _calculate_setting_hash(*args) -> str:
 @njit(cache=True, fastmath=True, parallel=True)
 def _calculate_volatility_change_rate(prices: np.ndarray, analysis_period: int) -> np.ndarray:
     """변동성 변화율 계산 (이전기간 대비 최근기간 변동성 변화, Numba 최적화)
-    period: 각 기간의 길이 (이전=period, 최근=period, 총 2*period 필요)
-    """
+    period: 각 기간의 길이 (이전=period, 최근=period, 총 2*period 필요)"""
     n = len(prices)
     change_rates = np.zeros(n, dtype=np.float64)
     for i in prange(2 * analysis_period, n):
@@ -167,13 +166,6 @@ class AnalyzerVolatilityStopTake:
     """변손익분석 분석 통합 클래스"""
     def __init__(self, market_gubun: int, market_info: dict, is_tick: bool,
                  realtime: bool = False, min_samples: int = 20):
-        """초기화
-        market_gubun: 마켓 구분 번호
-        market_info: 마켓 정보 딕셔너리
-        is_tick: 틱 데이터 여부
-        realtime: 실시간 모드 여부
-        min_samples: 최소 샘플 수 (기본값 20)
-        """
         self.volatility_database = VolatilityStopTakeDatabase(market_info['전략구분'], is_tick)
         self.analysis_period = self.volatility_database.load_volatility_stop_take_setting(market_gubun, is_tick)
         self.backtest_db = market_info['백테디비'][is_tick]
@@ -194,18 +186,11 @@ class AnalyzerVolatilityStopTake:
                 self.volatility_data[code] = self.volatility_database.get_volatility_all_scores(code)
 
     def load_volatility_code_data(self, code: str, date: int):
-        """데이터베이스에서 종목코드의 변동성 데이터 로드
-        code: 종목코드
-        date: 일자 (YYYYMMDD 형식)
-        """
+        """데이터베이스에서 종목코드의 변동성 데이터 로드"""
         self.volatility_data[code] = self.volatility_database.get_volatility_code_scores(code, date)
 
     def analyze_current_volatility(self, code: str, code_data: np.ndarray) -> Tuple[float, float, float, float]:
-        """실시간 변동성 변화율 분석 및 학습된 손절/익절 반환
-        code: 종목코드
-        code_data: 코드 데이터 2차원 어레이
-        return: (에상수익률, 익절수익률, 손절수익률, 변손익신뢰도)
-        """
+        """실시간 변동성 변화율 분석 및 학습된 손절/익절 반환"""
         estimated_return = take_profit_pct = stop_loss_pct = confidence_score = 0.0
 
         len_min    = self.analysis_period * 2 + 1
@@ -228,11 +213,7 @@ class AnalyzerVolatilityStopTake:
         return estimated_return, take_profit_pct, stop_loss_pct, confidence_score
 
     def analyze_batch_data(self, code: str, code_data: np.ndarray) -> np.ndarray:
-        """2차원 어레이 데이터 전체를 일괄 분석
-        code: 종목코드
-        code_data: 코드 데이터 2차원 어레이
-        return: (N, 4) 형태 - 에상수익률, 익절수익률, 손절수익률, 변손익신뢰도
-        """
+        """2차원 어레이 데이터 전체를 일괄 분석"""
         date = int(str(code_data[0, 0])[:8])
         self.load_volatility_code_data(code, date)
 
@@ -496,11 +477,7 @@ class VolatilityStopTakeDatabase:
             return scores
 
     def get_volatility_code_scores(self, code: str, backtest_date: int) -> dict:
-        """백테스트 날짜 기준으로 해당 날짜 이전의 최신 날짜의 전체 변동성 변화율 점수 조회
-        code: 종목코드
-        backtest_date: 백테스트 기준 날짜 (YYYYMMDD)
-        return: 변동성 변화율 그룹별 점수 딕셔너리
-        """
+        """백테스트 날짜 기준으로 해당 날짜 이전의 최신 날짜의 전체 변동성 변화율 점수 조회"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
@@ -530,8 +507,7 @@ class VolatilityStopTakeDatabase:
         """마켓번호로 설정값 불러오기
         market: 마켓번호 (1~9)
         is_tick: 틱 데이터 여부
-        return: analysis_period, 데이터가 없으면 60 반환
-        """
+        return: analysis_period, 데이터가 없으면 60 반환"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
