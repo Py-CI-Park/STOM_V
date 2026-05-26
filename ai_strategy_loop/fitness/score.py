@@ -57,8 +57,9 @@ class GradedResult:
 
     graded:
       - 게이트 통과: 1.0 + composite  → 항상 1.0 이상 (실패 전략 전부보다 위).
-      - 게이트 실패: [0, 1) 범위. 각 제약 "근접도"의 평균(combiner=mean).
-        통과에 가까울수록 1에 근접한다.
+      - 게이트 실패: [0, 1) 범위. profit_term * mean(나머지 4항 근접도).
+        profit을 곱셈 게이트로 분리해 손실 전략이 낮은 MDD만으로 수익 전략을
+        이기지 못하게 한다. 통과에 가까울수록(특히 수익일수록) 1에 근접한다.
 
     구성요소(게이트 실패 시 의미를 가진다):
       trades_term    : min(trade_count / min_trades, 1.0)
@@ -228,13 +229,16 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
 
       게이트 통과: graded = 1.0 + composite   (composite = calmar x uptrend_r2)
                    → 어떤 실패 전략(graded < 1.0)보다도 항상 위에 랭크된다.
-      게이트 실패: graded = mean(trades_term, mdd_term, profit_term, uptrend_term)
-                   → [0,1) 범위. 각 제약에 "얼마나 가까운지"의 평균이라
-                     통과에 가까운 전략일수록 높다 (= 부드러운 선택 그래디언트).
+      게이트 실패: base = mean(trades_term, mdd_term, uptrend_term, overtrade_term)
+                   graded = profit_term * base
+                   → [0,1) 범위. profit을 '곱셈 게이트'로 분리해, 손실 전략이
+                     낮은 MDD만으로 수익 전략을 이기지 못하게 한다.
+                     (수익이면 base 보존, 손실이면 강하게 눌린다.)
 
-    combiner로 product가 아닌 mean을 쓰는 이유: 한 제약이 0이어도(예: uptrend_r2=0)
-    나머지 근접도가 살아남아 그래디언트가 평평해지지 않는다(product면 항 하나가
-    0이면 전체가 0이 되어 변별이 사라진다).
+    base의 combiner로 product가 아닌 mean을 쓰는 이유: 한 제약이 0이어도
+    (예: uptrend_r2=0) 나머지 근접도가 살아남아 그래디언트가 평평해지지 않는다
+    (product면 항 하나가 0이면 전체가 0이 되어 변별이 사라진다). profit만은
+    수익/손실 방향이 결정적이라 평균에 섞지 않고 곱셈으로 분리한다.
     """
     cagr = float(metrics.get("cagr", 0.0) or 0.0)
     mdd = abs(float(metrics.get("mdd_pct", 0.0) or 0.0))
@@ -288,11 +292,16 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
         gate_distance = "ok (gate passed)"
     else:
         composite = 0.0
-        # 게이트 실패 분기에만 과매매 항을 평균에 포함한다(5항 평균).
-        #   통과 분기(1.0 + composite)는 그대로 두되 overtrade_term은 항상 채워
-        #   GradedResult로 노출한다(로그/피드백용).
-        terms = (trades_term, mdd_term, profit_term, uptrend_term, overtrade_term)
-        graded = sum(terms) / len(terms)
+        # profit을 '곱셈 게이트'로 분리한다(수익 신호가 평균에 묻히는 문제 해결).
+        #   base = profit 제외 4항 평균(거래수/MDD/우상향/과매매 근접도).
+        #   graded = profit_term * base 로 결합한다.
+        #   - 손실(profit_term<0.5)이면 graded가 강하게 눌려, 낮은 MDD만으로는
+        #     수익 전략을 이길 수 없다.
+        #   - 수익(profit_term>0.5)이면 base가 대체로 보존된다.
+        #   profit_term, base 모두 [0,1]이므로 graded ∈ [0,1) 단조성 유지.
+        base_terms = (trades_term, mdd_term, uptrend_term, overtrade_term)
+        base = sum(base_terms) / len(base_terms)
+        graded = profit_term * base
         gate_distance = _gate_distance_text(
             trade_count, min_trades, mdd, mdd_cap, total_profit, softcap
         )

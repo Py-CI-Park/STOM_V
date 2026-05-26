@@ -29,7 +29,13 @@ LLM(GPT-5.5, gpt auth)이 매수/매도 전략 코드를 **생성→백테→채
 - ⚠️ gen5~9는 MDD는 낮게 유지하나 **수익 음수**로 드리프트 → 프롬프트가 MDD를 과강조해 수익 희생. **다음: "MDD 낮게 유지 + 수익 양수" 동시 유도**(§7' 튜닝).
 - 메커니즘 완전 증명: cold-start 50세대 0건 → seed-and-refine+튜닝+warm으로 **3세대 만에** 우승전략.
 
-**다음 세션 최우선**: ① 수익+MDD 동시 만족 튜닝 ② 부검(autopsy) 체계 강화(현재 entry B_* Cohen's d + exit MFE/MAE는 됨; 시총/시간대/특징별 세그먼트 cross-tab 미구현) ③ GA(LLM 기반 population/crossover로 local-optimum 탈출) 적용성 검토 ④ 장기 진화(20~30세대). 인프라는 더 손댈 것 없음.
+**수익+MDD 튜닝(2026-05-26) + 20세대 진화 — 시드 능가 전략 확보:**
+- 튜닝: gate-failed graded를 `profit_term × mean(거래·MDD·R²·과매매)`로 → 손실 전략이 수익 전략을 못 이기게 교정(시드 0.458 > 손실 gen5 0.363). 프롬프트에 "수익 양수 유지·손절만 조이고 익절 유지" 추가.
+- 20세대(61분): **우승전략 3개**(gen8·12·13). **gen8 = 시드 완전 능가**(MDD 14.16<36.38, 수익 +536,758>+318,045, 거래 61<105, gate 통과). winner=gen13(graded 1.037; MDD12.14·+230K). 
+- ⚠️ **탐색 불안정(비수렴)**: 타임아웃 4회 + 극단 과매매(gen7: 343거래/−6.4M) + 과선별(gen9/14/16/18: 거래 4~23 < min 30) 오감. greedy hill-climb + 다양성 제어 부재의 증거.
+- ⚠️ **선택 이슈**: gate-passed graded=`1+Calmar×R²`라 절대수익 직접 최대화 안 함 → 수익 최고 gen8(+537K)이 아닌 위험조정 gen13(+230K)이 winner로 뽑힘. 절대수익 중시하려면 통과 graded에 수익 가중 필요.
+
+**다음 세션 최우선**(우선순위순): ① 탐색 안정화 = **GA(population/crossover)** — 불안정성이 현 최대 병목, warm-pool로 K개 병렬백테 가능 ② **부검 강화** = 세그먼트 cross-tab + 기존 `cli/analyzer.py`(분위수+t검정)·`cli/ml_factor_model.py`(RF중요도) 재사용 → 거래밴드·손실원인 구체 피드백 ③ **전략 기록·버전비교·누적·메타분석**(사용자 장기 비전; loop_runs.db 확장 + autoresearch/wiki 스킬 활용) ④ holdout/WFO 과적합 방어 ⑤ 운영 대시보드. 인프라(warm/견고/seed-refine)는 완성.
 **실행법(warm seed-and-refine)**: 시드를 루프 DB에 복사(`_database/strategy.db`→`ai_strategy_loop/state/loop_strategies.db`) 후 `python -m ai_strategy_loop.controller.loop --config-json <warm+seed cfg>`. 예시 cfg: `C:/Temp/warm_seed_cfg.json` 패턴(bt_engine_mode=warm, bt_timeframe=tick, seed_buy/seed_sell, bt_refine_from_best=true, bt_betting="5", bt_warm_engine_count=32).
 
 ### (이하 원래 기록 — 역사적)
