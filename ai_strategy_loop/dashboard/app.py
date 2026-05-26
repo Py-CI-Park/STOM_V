@@ -79,9 +79,25 @@ class LoopProcessManager:
         return self._proc is not None and self._proc.poll() is None
 
     def start(self, config_dict: Dict[str, Any]) -> Dict[str, Any]:
-        """루프를 서브프로세스로 기동한다. 이미 running이면 거부."""
+        """루프를 서브프로세스로 기동한다. 이미 running이면 거부.
+
+        P6 — 대시보드가 추적하는 자식(is_running)뿐 아니라, **cross-process 락**도
+        확인한다. LoopProcessManager는 이 대시보드 인스턴스 한정 보호라, 다른
+        진입점(CLI 또는 다른 대시보드 프로세스)이 이미 루프를 돌리는 경우를 못 본다.
+        runlock.is_locked()로 그 경우까지 막아 같은 state/DB 동시 쓰기를 차단한다.
+        실제 락 획득/해제는 자식 run_loop가 소유한다(여기선 사전 거부만).
+        """
         if self.is_running():
             return {"status": "error", "message": "loop already running"}
+
+        # cross-process 락: 살아있는 다른 루프(CLI/타 GUI)가 보유 중이면 거부.
+        from ai_strategy_loop.controller.runlock import is_locked  # noqa: PLC0415
+
+        if is_locked():
+            return {
+                "status": "error",
+                "message": "다른 루프가 실행 중입니다(cross-process 락 보유). 동시 실행 차단.",
+            }
 
         # 설정 검증 (CLI=GUI 동일 경로). 잘못된 값이면 여기서 막는다.
         try:
@@ -150,6 +166,30 @@ def _current_state_payload() -> Dict[str, Any]:
     return C.idle_state().model_dump()
 
 
+def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
+    """loop_runs.db를 열어 run 비교 요약을 만든다(읽기 전용, 무예외).
+
+    lineage.compare_runs를 호출하고 LoopState 연결을 반드시 닫는다. DB 부재/조회
+    실패는 빈 목록으로 표준화한다(대시보드 콘솔이 깨지지 않게).
+    """
+    from ai_strategy_loop.controller.lineage import compare_runs  # noqa: PLC0415
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState()
+        result = compare_runs(st, run_ids)
+        return result
+    except Exception as exc:  # noqa: BLE001 - run 비교 조회 실패는 빈 목록으로.
+        return {"runs": [], "count": 0, "error": str(exc)}
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+
 def create_app() -> FastAPI:
     """대시보드 FastAPI 앱을 생성한다 (테스트가 TestClient로 감싼다)."""
     manager = LoopProcessManager()
@@ -191,6 +231,24 @@ def create_app() -> FastAPI:
     @app.get("/config/spec")
     def config_spec() -> Dict[str, Any]:
         return {"contract_version": C.CONTRACT_VERSION, "fields": config_field_specs()}
+
+    @app.get("/runs")
+    def runs() -> Dict[str, Any]:
+        """loop_runs.db의 모든 run 요약을 반환한다(run 비교 콘솔 목록).
+
+        lineage.compare_runs(run_ids=None)로 전 run을 요약한다. DB가 없거나
+        조회 실패면 빈 목록을 돌려 대시보드가 깨지지 않게 한다(무예외 계약).
+        """
+        return _runs_payload(None)
+
+    @app.get("/runs/compare")
+    def runs_compare(ids: str = "") -> Dict[str, Any]:
+        """지정한 run id들을 지표/우승전략으로 비교한다(loop_runs.db 직접).
+
+        ids는 쉼표로 구분한 run_id 목록(예: `?ids=run_a,run_b`). 비면 전체 run.
+        """
+        id_list = [s.strip() for s in ids.split(",") if s.strip()] or None
+        return _runs_payload(id_list)
 
     @app.websocket("/ws")
     async def ws(websocket: WebSocket) -> None:

@@ -45,6 +45,10 @@ from ai_strategy_loop.controller.history import (  # noqa: E402
     GenRecord,
     build_history_summary,
 )
+from ai_strategy_loop.controller.runlock import (  # noqa: E402
+    acquire_run_lock,
+    release_run_lock,
+)
 from ai_strategy_loop.controller.state import (  # noqa: E402
     LoopState,
     clear_stop_flag,
@@ -600,6 +604,27 @@ def run_loop(
     Returns:
         {run_id, generations, best_gen, best_score, best_buy, best_sell, stop_reason}.
     """
+    # P6 — cross-process single-writer 락 획득. CLI/GUI 어느 진입점이든 같은
+    #   current_state.json/loop_runs.db에 쓰므로, 살아있는 다른 루프가 락을 잡고
+    #   있으면 즉시 거부한다(동시 쓰기 차단). stale 락(크래시 잔존)은 runlock이
+    #   회수한다. 테스트가 LoopState를 주입(state!=None)하는 경우는 격리 환경이므로
+    #   락을 건너뛴다(운영 lockfile 미접촉 + 동시성 단위테스트 독립 보장).
+    lock_acquired = False
+    if state is None:
+        lock_res = acquire_run_lock()
+        if lock_res.get("status") != "ok":
+            return {
+                "run_id": run_id,
+                "generations": 0,
+                "best_gen": -1, "best_score": None, "best_buy": None, "best_sell": None,
+                "winner_gen": -1, "winner_score": None,
+                "winner_buy": None, "winner_sell": None,
+                "stop_reason": "lock_busy",
+                "error": lock_res.get("message"),
+                "holder_pid": lock_res.get("holder_pid"),
+            }
+        lock_acquired = True
+
     st = state or LoopState()
     owns_state = state is None
 
@@ -1029,6 +1054,9 @@ def run_loop(
             _stop_proxy()
         if owns_state:
             st.close()
+        # P6 — 우리가 잡은 단일 writer 락을 해제한다(다음 루프 진입 허용).
+        if lock_acquired:
+            release_run_lock()
 
     # summary는 정상 경로(try 끝)에서 state 닫기 전에 구성된다. 예외가
     #   while 루프를 빠져나가 전파된 경우 summary가 None일 수 있는데, 그땐

@@ -569,4 +569,124 @@ function HoldoutPanel({ state, wsStatus }) {
   );
 }
 
-Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel });
+// ---- Run 비교 콘솔 (P6 운영·관찰) ----
+// /runs 엔드포인트(loop_runs.db 직접, lineage.compare_runs)에서 여러 run의
+//   지표/우승전략을 가져와 비교 테이블로 렌더한다. 데모/백엔드 미접속이면 안내만.
+//   page_data(라이브 발행)가 아니라 REST 조회라 baseUrl로 직접 fetch 한다.
+function _rcNum(x) { return typeof x === "number" ? x.toFixed(3) : "—"; }
+function _rcTime(ts) {
+  if (typeof ts !== "number") return "—";
+  try { return new Date(ts * 1000).toLocaleString("ko-KR", { hour12: false }); }
+  catch { return "—"; }
+}
+
+function RunComparePanel({ baseUrl, wsStatus }) {
+  const [runs, setRuns] = useState_p([]);
+  const [err, setErr] = useState_p(null);
+  const [loading, setLoading] = useState_p(false);
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+
+  const refresh = React.useCallback(() => {
+    if (isDemo || !baseUrl) return;
+    setLoading(true);
+    fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(2500) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      .then(j => { setRuns(j.runs || []); setErr(j.error || null); })
+      .catch(e => setErr(String(e)))
+      .finally(() => setLoading(false));
+  }, [baseUrl, isDemo]);
+
+  useEffect_p(() => { refresh(); }, [refresh]);
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot"></span>Run 비교 콘솔
+          {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
+        </div>
+        <button className="btn ghost sm" onClick={refresh} disabled={isDemo || loading}
+                data-tip="loop_runs.db에서 run 목록 새로고침">
+          {loading ? "조회중…" : "↻ 새로고침"}
+        </button>
+      </div>
+      <div className="panel-bd">
+        {isDemo ? (
+          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+            데모 모드 — run 비교는 백엔드 연결 시 loop_runs.db에서 조회됩니다.
+          </div>
+        ) : err ? (
+          <div style={{ padding: 14, color: "var(--red)", fontSize: 12 }}>조회 실패: {err}</div>
+        ) : runs.length === 0 ? (
+          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12 }}>
+            기록된 run이 없습니다(루프 실행 후 누적됩니다).
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table className="mono" style={{ width: "100%", borderCollapse: "collapse", fontSize: 11.5 }}>
+              <thead>
+                <tr style={{ color: "var(--ink-3)", textAlign: "left" }}>
+                  <th style={{ padding: "4px 6px" }}>run_id</th>
+                  <th style={{ padding: "4px 6px" }}>상태</th>
+                  <th style={{ padding: "4px 6px" }}>세대</th>
+                  <th style={{ padding: "4px 6px" }}>best graded</th>
+                  <th style={{ padding: "4px 6px" }}>통과</th>
+                  <th style={{ padding: "4px 6px" }}>우승전략</th>
+                </tr>
+              </thead>
+              <tbody>
+                {runs.map((r, i) => (
+                  <tr key={i} style={{ borderTop: "1px solid var(--bg-2)", color: "var(--ink-0)" }}>
+                    <td style={{ padding: "4px 6px" }}>{r.run_id}</td>
+                    <td style={{ padding: "4px 6px", color: "var(--ink-2)" }}>{r.status || "—"}</td>
+                    <td style={{ padding: "4px 6px" }}>{r.gen_count}</td>
+                    <td style={{ padding: "4px 6px", color: "var(--teal)" }}>{_rcNum(r.best_graded)}</td>
+                    <td style={{ padding: "4px 6px", color: r.gate_passed_count > 0 ? "var(--green)" : "var(--ink-3)" }}>
+                      {r.gate_passed_count}
+                    </td>
+                    <td style={{ padding: "4px 6px", color: "var(--ink-2)" }}>
+                      {r.winner
+                        ? `gen_${String(r.winner.gen_no).padStart(2, "0")} · ${_rcNum(r.winner.graded_score)} · ${r.winner.trade_count}건`
+                        : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---- Export 상태 배너 (P6 final_approval 결과 노출) ----
+// final_approval(승인 export) 제어의 마지막 결과(lastReply)를 표시한다. 게이트는
+//   ApprovalDialog(이름+"승인" 입력)가 유지하므로 여기선 결과만 보여준다(자동 export 아님).
+function ExportStatusBanner({ reply }) {
+  if (!reply || reply.action !== "final_approval") return null;
+  const ok = reply.status === "ok";
+  const buyName = reply.buy && reply.buy.name;
+  const sellName = reply.sell && reply.sell.name;
+  return (
+    <div style={{
+      padding: "10px 14px", borderRadius: 6, marginBottom: 4, fontSize: 12.5,
+      border: `1px solid ${ok ? "rgba(46,204,113,0.4)" : "rgba(224,90,90,0.4)"}`,
+      background: ok ? "rgba(46,204,113,0.08)" : "rgba(224,90,90,0.08)",
+      color: "var(--ink-0)",
+    }}>
+      {ok ? (
+        <span>
+          ✓ 운영 strategy.db로 export 완료
+          {reply.demo ? " (데모)" : ""} — 매수 <span className="mono">{buyName || "—"}</span> · 매도 <span className="mono">{sellName || "—"}</span>
+          {reply.dest_db && <span className="mono" style={{ color: "var(--ink-3)" }}>{` → ${reply.dest_db}`}</span>}
+        </span>
+      ) : (
+        <span style={{ color: "var(--red)" }}>✗ export 실패 — {reply.message || "알 수 없는 오류"}</span>
+      )}
+    </div>
+  );
+}
+
+Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, RunComparePanel, ExportStatusBanner });

@@ -8,7 +8,7 @@ function App() {
   const [pendingBase, setPendingBase] = useState_a(baseUrl);
   const [theme, setTheme] = useState_a(() => localStorage.getItem("stom_theme") || "dark");
 
-  const { state, health, wsStatus, configSpec, send, reconnect } = useBackend(baseUrl);
+  const { state, health, wsStatus, configSpec, send, lastReply, reconnect } = useBackend(baseUrl);
 
   const [settingsOpen, setSettingsOpen] = useState_a(false);
   const [approvalOpen, setApprovalOpen] = useState_a(false);
@@ -131,6 +131,9 @@ function App() {
         <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} />
       ) : (
         <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* 승인 export 결과 배너(final_approval 게이트는 ApprovalDialog가 유지) */}
+          <ExportStatusBanner reply={lastReply} />
+
           <CurrentGenPanel state={state} />
           <PhaseTimeline state={state} />
           <PhaseDetailPanel state={state} wsStatus={wsStatus} />
@@ -141,6 +144,8 @@ function App() {
               <FitnessChart state={state} target={targetScore} />
               <GenerationsTable state={state} mddCap={mddCap}
                                 onViewCode={(g) => setCodeViewGen(g)} />
+              {/* 운영·관찰: run 비교 콘솔(REST /runs, loop_runs.db 직접) */}
+              <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
             </div>
             <aside style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <BestCard best={state.best} onViewCode={onViewCodeByGen} />
@@ -149,10 +154,14 @@ function App() {
                           onViewCode={onViewCodeByGen} />
               <CostPanel state={state} cap={50000} />
               <FeedbackPanel state={state} />
+
+              {/* ── 분석 패널 묶음 (P1~P5 live page_data 소비, demo 배지 규약) ── */}
+              <SectionLabel text="진화 분석 · P1~P5" />
               <AutopsyPanel state={state} wsStatus={wsStatus} />
               <PopulationPanel state={state} wsStatus={wsStatus} />
               <LineagePanel state={state} wsStatus={wsStatus} />
               <MetaPanel state={state} wsStatus={wsStatus} />
+              <HoldoutPanel state={state} wsStatus={wsStatus} />
             </aside>
           </div>
         </main>
@@ -180,6 +189,19 @@ function App() {
       <footer style={{ marginTop: 24, padding: "12px 0", textAlign: "center", color: "var(--ink-3)", fontSize: 10.5, fontFamily: "var(--mono)" }}>
         STOM AI · STATE_CONTRACT v{state.contract_version ?? 1} · last_update {fmtTime(state.updated_at)}
       </footer>
+    </div>
+  );
+}
+
+// 분석 패널 묶음을 시각적으로 구분하는 작은 섹션 라벨(레이아웃 정리용).
+function SectionLabel({ text }) {
+  return (
+    <div className="mono" style={{
+      fontSize: 10.5, color: "var(--ink-3)", letterSpacing: ".12em",
+      textTransform: "uppercase", padding: "2px 2px", marginTop: 4,
+      borderTop: "1px solid var(--line-1)", paddingTop: 10,
+    }}>
+      {text}
     </div>
   );
 }

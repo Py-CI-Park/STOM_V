@@ -284,6 +284,10 @@ function useBackend(baseUrl) {
   const [wsStatus, setWsStatus] = useState("connecting"); // connecting | open | reconnecting | demo
   const [state, setState] = useState(INITIAL_STATE);
   const [configSpec, setConfigSpec] = useState(DEFAULT_CONFIG_SPEC);
+  // 제어 응답(start/stop/final_approval)의 마지막 결과. contract_version이 없는
+  //   응답 프레임(=상태 스냅샷이 아닌 제어 echo)을 여기로 라우팅해 export 상태 등을
+  //   UI가 표시할 수 있게 한다. final_approval(export) 게이트 결과 노출에 쓰인다.
+  const [lastReply, setLastReply] = useState(null);
 
   const wsRef = useRef(null);
   const reconnectAttempt = useRef(0);
@@ -823,6 +827,9 @@ function useBackend(baseUrl) {
             //   패널(current_run/engine)은 비어 있을 수 있고, 패널이 "실시간
             //   데이터 대기"로 처리한다(livePanelPending 참조).
             setState(data);
+          } else if (data && typeof data === "object" && "action" in data) {
+            // 제어 echo(start/stop/final_approval 결과). export 상태 등 노출용.
+            setLastReply(data);
           }
         } catch {}
       };
@@ -865,6 +872,9 @@ function useBackend(baseUrl) {
           status: "complete",
           latest: { ...s.latest, phase: "승인 완료", message: `${msg.user_buy} / ${msg.user_sell} 운영 DB로 내보냄` },
         }));
+        // 데모에서도 export 결과 배너가 뜨도록 합성 reply를 둔다(실제 export 아님).
+        setLastReply({ action: "final_approval", status: "ok", demo: true,
+                       buy: { name: msg.user_buy }, sell: { name: msg.user_sell } });
       }
       return true;
     }
@@ -882,6 +892,7 @@ function useBackend(baseUrl) {
     wsStatus,
     configSpec,
     send,
+    lastReply,
     reconnect: tryConnect,
   };
 }

@@ -92,6 +92,67 @@ class TestAppWiresWsStatus:
         assert "<EnginePanel state={state} wsStatus={wsStatus}" in src
 
 
+class TestRunComparePanel:
+    """P6 — run 비교 콘솔 구조 계약(/runs REST 조회 + LIVE/DEMO 규약)."""
+
+    def test_run_compare_panel_defined_and_exposed(self):
+        src = _read("panels.jsx")
+        assert "function RunComparePanel(" in src
+        tail = src[src.rfind("Object.assign(window"):]
+        assert "RunComparePanel" in tail
+
+    def test_run_compare_fetches_runs_endpoint(self):
+        # page_data 라이브 발행이 아니라 REST /runs를 baseUrl로 조회한다.
+        src = _read("panels.jsx")
+        assert '"/runs"' in src
+        assert "baseUrl" in src
+
+    def test_run_compare_demo_branch(self):
+        # 데모/미접속이면 조회하지 않고 안내만(isDemoSource 분기).
+        src = _read("panels.jsx")
+        rc = src[src.find("function RunComparePanel("):]
+        assert "isDemoSource" in rc
+        assert "데모 모드" in rc
+
+    def test_app_wires_run_compare_panel(self):
+        src = _read("app.jsx")
+        assert "<RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus}" in src
+
+
+class TestHoldoutPanelWired:
+    """P5/P6 — holdout 패널이 app.jsx 렌더에 통합됐는지(누락 회귀 방지)."""
+
+    def test_app_wires_holdout_panel(self):
+        src = _read("app.jsx")
+        assert "<HoldoutPanel state={state} wsStatus={wsStatus}" in src
+
+
+class TestExportStatusBanner:
+    """P6 — export(final_approval) 결과 노출 배너 구조 계약."""
+
+    def test_export_banner_defined_and_exposed(self):
+        src = _read("panels.jsx")
+        assert "function ExportStatusBanner(" in src
+        tail = src[src.rfind("Object.assign(window"):]
+        assert "ExportStatusBanner" in tail
+
+    def test_export_banner_reflects_final_approval(self):
+        # final_approval 제어 결과만 표시(자동 export 아님 — 게이트는 ApprovalDialog).
+        src = _read("panels.jsx")
+        eb = src[src.find("function ExportStatusBanner("):]
+        assert "final_approval" in eb
+
+    def test_app_wires_export_banner(self):
+        src = _read("app.jsx")
+        assert "<ExportStatusBanner reply={lastReply}" in src
+
+    def test_connection_routes_control_reply(self):
+        # WS 제어 echo(contract_version 없는 action 프레임)를 lastReply로 라우팅.
+        src = _read("connection.jsx")
+        assert "lastReply" in src
+        assert '"action" in data' in src
+
+
 class TestAutopsyPanel:
     """P1 — 세그먼트 부검 패널 구조 계약(page_data.autopsy 소비 + LIVE/DEMO 규약)."""
 
