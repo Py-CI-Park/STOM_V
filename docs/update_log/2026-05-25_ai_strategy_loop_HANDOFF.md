@@ -23,7 +23,13 @@ LLM(GPT-5.5, gpt auth)이 매수/매도 전략 코드를 **생성→백테→채
 - gen1 = 타임아웃(과진입)→리셋복구. gen2 = 40초·248거래·MDD50.72·**수익 음수**(개악).
 - → **인프라(빠름·견고·시드기반) 완성·증명. 남은 과제: 개선이 실제로 climb하도록 튜닝**(프롬프트가 선별성↑·MDD↓·과매매 페널티 유도; graded 가 over-firing 벌점). 시드가 best로 유지됨.
 
-**다음 세션 최우선**: 개선 방향 튜닝(아래 §7'). 인프라는 더 손댈 것 없음.
+**튜닝 + 10세대 실험(2026-05-25 밤) — 첫 우승전략 확보:**
+- 튜닝: `mdd_cap 25→35`, graded에 `overtrade_term`(거래수>`overtrade_softcap`(150) 감점), 프롬프트 refine 지침에 "선별성↑·거래수 유지/감소·MDD 우선" 명시.
+- Tick_902 시드 warm 10세대(34분): **gen3 = 우승전략(gate 통과)** — 거래63·MDD18.58·수익+180K·Calmar0.201(시드 0.181보다 위험조정 우수)·graded1.016=best. gen4도 통과(MDD11.38). 과매매 페널티가 gen2(176건)를 정확히 강등.
+- ⚠️ gen5~9는 MDD는 낮게 유지하나 **수익 음수**로 드리프트 → 프롬프트가 MDD를 과강조해 수익 희생. **다음: "MDD 낮게 유지 + 수익 양수" 동시 유도**(§7' 튜닝).
+- 메커니즘 완전 증명: cold-start 50세대 0건 → seed-and-refine+튜닝+warm으로 **3세대 만에** 우승전략.
+
+**다음 세션 최우선**: ① 수익+MDD 동시 만족 튜닝 ② 부검(autopsy) 체계 강화(현재 entry B_* Cohen's d + exit MFE/MAE는 됨; 시총/시간대/특징별 세그먼트 cross-tab 미구현) ③ GA(LLM 기반 population/crossover로 local-optimum 탈출) 적용성 검토 ④ 장기 진화(20~30세대). 인프라는 더 손댈 것 없음.
 **실행법(warm seed-and-refine)**: 시드를 루프 DB에 복사(`_database/strategy.db`→`ai_strategy_loop/state/loop_strategies.db`) 후 `python -m ai_strategy_loop.controller.loop --config-json <warm+seed cfg>`. 예시 cfg: `C:/Temp/warm_seed_cfg.json` 패턴(bt_engine_mode=warm, bt_timeframe=tick, seed_buy/seed_sell, bt_refine_from_best=true, bt_betting="5", bt_warm_engine_count=32).
 
 ### (이하 원래 기록 — 역사적)

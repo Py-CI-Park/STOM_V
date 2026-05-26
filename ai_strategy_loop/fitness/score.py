@@ -61,12 +61,15 @@ class GradedResult:
         통과에 가까울수록 1에 근접한다.
 
     구성요소(게이트 실패 시 의미를 가진다):
-      trades_term  : min(trade_count / min_trades, 1.0)
-      mdd_term     : 1.0 if mdd<=cap else clamp(cap / mdd, 0, 1)
-      profit_term  : 손익 로지스틱 — 손실<0 → ~0, 손익분기 → ~0.5, 이익>0 → ~1
-      uptrend_term : uptrend_r2 (이미 [0,1])
-      composite    : 게이트 통과 시의 calmar x uptrend_r2 (FitnessResult.score 와 동일)
-      gate_distance: 게이트 실패 사유를 사람이 읽을 수 있게 요약한 문자열.
+      trades_term    : min(trade_count / min_trades, 1.0)
+      mdd_term       : 1.0 if mdd<=cap else clamp(cap / mdd, 0, 1)
+      profit_term    : 손익 로지스틱 — 손실<0 → ~0, 손익분기 → ~0.5, 이익>0 → ~1
+      uptrend_term   : uptrend_r2 (이미 [0,1])
+      overtrade_term : 과매매 감점. 거래수<=softcap이면 1.0, 초과하면
+                       clamp(softcap / trade_count, 0, 1) (과매매일수록 작아짐).
+                       softcap<=0이면 항상 1.0(페널티 비활성).
+      composite      : 게이트 통과 시의 calmar x uptrend_r2 (FitnessResult.score 와 동일)
+      gate_distance  : 게이트 실패 사유를 사람이 읽을 수 있게 요약한 문자열.
     """
 
     graded: float
@@ -83,6 +86,10 @@ class GradedResult:
     trade_count: int
     total_profit: float
     uptrend_r2: float
+    # 과매매 감점 항 [0,1]. 기본 1.0(페널티 없음) — 직접 GradedResult를 만드는
+    #   테스트 더블 등 호출부 하위호환을 위해 기본값을 둔다(맨 끝 배치).
+    #   실제 compute_graded_fitness는 항상 명시적으로 채운다.
+    overtrade_term: float = 1.0
 
 
 def compute_uptrend_r2(equity_series: Sequence[float]) -> float:
@@ -266,16 +273,28 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
 
     uptrend_term = _clamp01(uptrend_r2)
 
+    # overtrade_term: 과매매(거래수 과다) 감점. softcap 이하면 1.0(무벌점),
+    #   초과하면 softcap/trade_count로 부드럽게 감점한다(거래가 많을수록 작아짐).
+    #   softcap<=0이면 페널티 비활성(기존 동작과 동일).
+    softcap = int(getattr(config, "overtrade_softcap", 0) or 0)
+    if softcap <= 0 or trade_count <= softcap:
+        overtrade_term = 1.0
+    else:
+        overtrade_term = _clamp01(softcap / trade_count)
+
     if hard.gate_passed:
         composite = hard.score  # calmar x uptrend_r2 x 1
         graded = 1.0 + composite
         gate_distance = "ok (gate passed)"
     else:
         composite = 0.0
-        terms = (trades_term, mdd_term, profit_term, uptrend_term)
+        # 게이트 실패 분기에만 과매매 항을 평균에 포함한다(5항 평균).
+        #   통과 분기(1.0 + composite)는 그대로 두되 overtrade_term은 항상 채워
+        #   GradedResult로 노출한다(로그/피드백용).
+        terms = (trades_term, mdd_term, profit_term, uptrend_term, overtrade_term)
         graded = sum(terms) / len(terms)
         gate_distance = _gate_distance_text(
-            trade_count, min_trades, mdd, mdd_cap, total_profit
+            trade_count, min_trades, mdd, mdd_cap, total_profit, softcap
         )
 
     return GradedResult(
@@ -292,20 +311,29 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
         trade_count=trade_count,
         total_profit=total_profit,
         uptrend_r2=uptrend_r2,
+        overtrade_term=overtrade_term,
     )
 
 
 def _gate_distance_text(
-    trade_count: int, min_trades: int, mdd: float, mdd_cap: float, total_profit: float
+    trade_count: int,
+    min_trades: int,
+    mdd: float,
+    mdd_cap: float,
+    total_profit: float,
+    overtrade_softcap: int = 0,
 ) -> str:
     """게이트 실패의 '얼마나 멀리 떨어졌는지'를 사람이 읽을 수 있게 요약한다.
 
     예: "거래 5/30건; MDD 48 is 1.9x cap(25); profit negative".
     피드백/로그에서 다음 세대가 무엇을 좁혀야 하는지 가늠하는 데 쓴다.
+    overtrade_softcap>0이고 거래수가 이를 초과하면 과매매 단서도 덧붙인다.
     """
     parts = []
     if min_trades > 0 and trade_count < min_trades:
         parts.append(f"거래 {trade_count}/{min_trades}건(부족)")
+    if overtrade_softcap > 0 and trade_count > overtrade_softcap:
+        parts.append(f"거래 {trade_count} 과다(>softcap {overtrade_softcap})")
     if mdd_cap not in (float("inf"),) and mdd > mdd_cap and mdd_cap > 0:
         parts.append(f"MDD {mdd:.4g} is {mdd / mdd_cap:.2g}x cap({mdd_cap:.4g})")
     if total_profit < 0:

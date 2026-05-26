@@ -27,8 +27,12 @@ class LoopConfig:
     max_tokens: Optional[int] = None
 
     # --- 루프 파라미터 placeholder (이후 단계용, 아직 미사용) ---
-    mdd_cap: float = 25.0
+    mdd_cap: float = 35.0
     min_trades: int = 30
+    # overtrade_softcap: 거래수가 이 값을 넘으면 graded에서 과매매 감점을 준다.
+    #   시드 105건은 안전(<=150), 과매매 248건은 감점(softcap/trade_count<1). 0이면
+    #   페널티 비활성(하위호환: 기존 동작 그대로).
+    overtrade_softcap: int = 150
     tpi_gate: float = 1.2
     graduation_holdout: bool = False
     # graduation_holdout가 켜졌을 때 train 윈도우 끝에서 떼어 두는 최근 거래일 수.
