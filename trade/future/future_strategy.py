@@ -38,7 +38,21 @@ class FutureStrategy(BaseStrategy):
         """매도 수량을 설정합니다."""
         return int(보유수량 / 보유비율 * oc_ratio)
 
+    def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
+        """매수 주문 가격을 반환합니다."""
+        매수지정가호가번호 = self.dict_set['매수지정가호가번호']
+        소숫점자리수 = self.dict_info[종목코드]['소숫점자리수']
+        호가차이 = self.dict_info[종목코드]['호가단위'] * 매수지정가호가번호
+        return round(주문가격 + 호가차이, 소숫점자리수) if 주문구분 == 'BUY_LONG' else round(주문가격 - 호가차이, 소숫점자리수)
+
+    def _get_order_sell_price(self, 종목코드, 주문구분, 주문가격):
+        """매도 주문 가격을 반환합니다."""
+        매도지정가호가번호 = self.dict_set['매도지정가호가번호']
+        소숫점자리수 = self.dict_info[종목코드]['소숫점자리수']
+        호가차이 = self.dict_info[종목코드]['호가단위'] * 매도지정가호가번호
+        return round(주문가격 + 호가차이, 소숫점자리수) if 주문구분 == 'SELL_LONG' else round(주문가격 - 호가차이, 소숫점자리수)
+
     def _get_order_price(self, 거래금액, 주문수량):
         """주문 가격을 계산합니다."""
         소숫점자리수 = self.dict_info[self.code]['소숫점자리수']
-        return round(거래금액 / 주문수량, 소숫점자리수) if 주문수량 != 0 else 0
+        return round(거래금액 / 주문수량, 소숫점자리수)

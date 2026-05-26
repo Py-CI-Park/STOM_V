@@ -70,7 +70,7 @@ class FutureOsTrader(BaseTrader):
                     add_time = self.dict_set['매도취소시간초']
 
                 self.dict_order[주문구분][종목코드] = [
-                    timedelta_sec(add_time), 정정횟수, 주문가격, 0.01
+                    timedelta_sec(add_time), 정정횟수, 주문가격, 주문수량, 0.01
                 ]
 
                 self._update_chegeollist(
@@ -93,7 +93,6 @@ class FutureOsTrader(BaseTrader):
             self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량)
 
         self.order_time = timedelta_sec(0.2)
-        self.receivQ.put(('주문목록', self._get_order_code_list()))
 
     @error_decorator
     def _convert_order_data(self, data):
@@ -112,27 +111,9 @@ class FutureOsTrader(BaseTrader):
             주문번호 = body['ordr_no']
             self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
 
-    def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
-        """매수 주문 가격을 반환합니다."""
-        매수지정가호가번호 = self.dict_set['매수지정가호가번호']
-        소숫점자리수 = self.dict_info[종목코드]['소숫점자리수']
-        호가차이 = self.dict_info[종목코드]['호가단위'] * 매수지정가호가번호
-        return round(주문가격 + 호가차이, 소숫점자리수) if 주문구분 == 'BUY_LONG' else round(주문가격 - 호가차이, 소숫점자리수)
-
-    def _get_order_sell_price(self, 종목코드, 주문구분, 주문가격):
-        """매도 주문 가격을 반환합니다."""
-        매도지정가호가번호 = self.dict_set['매도지정가호가번호']
-        소숫점자리수 = self.dict_info[종목코드]['소숫점자리수']
-        호가차이 = self.dict_info[종목코드]['호가단위'] * 매도지정가호가번호
-        return round(주문가격 + 호가차이, 소숫점자리수) if 주문구분 == 'SELL_LONG' else round(주문가격 - 호가차이, 소숫점자리수)
-
-    def _get_modify_buy_price(self, 현재가, 정정호가, 종목코드):
+    def _get_modify_price(self, 현재가, 정정호가, 종목코드):
         """매수 정정 가격을 반환합니다."""
         return round(현재가 - 정정호가, self.dict_info[종목코드]['소숫점자리수'])
-
-    def _get_modify_sell_price(self, 현재가, 정정호가, 종목코드):
-        """매도 정정 가격을 반환합니다."""
-        return round(현재가 + 정정호가, self.dict_info[종목코드]['소숫점자리수'])
 
     def _get_profit_long(self, 매입금액, 보유금액, 종목코드=None):
         """롱 수익을 계산합니다."""

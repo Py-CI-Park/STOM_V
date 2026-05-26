@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QApplication
 from trade.base_trader import BaseTrader
 from utility.settings.setting_base import UI_NUM
 from utility.static_method.static_decorator import error_decorator
-from utility.static_method.static_datetime import now, timedelta_sec, get_str_ymdhms
+from utility.static_method.static_datetime import now, timedelta_sec, str_ymdhms_utc
 from utility.static_method.static_numba import get_profit_coin_future_short, get_profit_coin_future_long
 
 
@@ -77,7 +77,8 @@ class BinanceTrader(BaseTrader):
                     add_time = self.dict_set['매도취소시간초']
 
                 self.dict_order[주문구분][종목코드] = [
-                    timedelta_sec(add_time), 정정횟수, 주문가격, self.dict_info[종목코드]['호가단위'], self.dict_lvrg[종목코드]
+                    timedelta_sec(add_time), 정정횟수, 주문가격, 주문수량, self.dict_info[종목코드]['호가단위'],
+                    self.dict_lvrg[종목코드]
                 ]
 
                 self.dict_pos[종목코드] = 포지션
@@ -102,7 +103,6 @@ class BinanceTrader(BaseTrader):
                 ))
 
         self.order_time = timedelta_sec(0.2)
-        self.receivQ.put(('주문목록', self._get_order_code_list()))
 
     def _set_position(self):
         """포지션을 설정합니다."""
@@ -173,31 +173,13 @@ class BinanceTrader(BaseTrader):
             cp = float(data['L'])
             op = float(data['p'])
             on = int(data['i'])
+            ct = str_ymdhms_utc(data['T'])
             if cc > 0 or 'CANCEL' in p:
-                ct = get_str_ymdhms(self.market_gubun)
                 self._update_chejan_data_coin_future(p, code, oc, cc, mc, cp, op, ct, on)
 
-    def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
-        """매수 주문 가격을 반환합니다."""
-        매수지정가호가번호 = self.dict_set['매수지정가호가번호']
-        소숫점자리수 = self.dict_info[종목코드]['가격소숫점자리수']
-        호가차이 = self.dict_info[종목코드]['호가단위'] * 매수지정가호가번호
-        return round(주문가격 + 호가차이, 소숫점자리수) if 주문구분 == 'BUY_LONG' else round(주문가격 - 호가차이, 소숫점자리수)
-
-    def _get_order_sell_price(self, 종목코드, 주문구분, 주문가격):
-        """매도 주문 가격을 반환합니다."""
-        매도지정가호가번호 = self.dict_set['매도지정가호가번호']
-        소숫점자리수 = self.dict_info[종목코드]['가격소숫점자리수']
-        호가차이 = self.dict_info[종목코드]['호가단위'] * 매도지정가호가번호
-        return round(주문가격 + 호가차이, 소숫점자리수) if 주문구분 == 'SELL_LONG' else round(주문가격 - 호가차이, 소숫점자리수)
-
-    def _get_modify_buy_price(self, 현재가, 정정호가, 종목코드):
+    def _get_modify_price(self, 현재가, 정정호가, 종목코드):
         """매수 정정 가격을 반환합니다."""
         return round(현재가 - 정정호가, self.dict_info[종목코드]['가격소숫점자리수'])
-
-    def _get_modify_sell_price(self, 현재가, 정정호가, 종목코드):
-        """매도 정정 가격을 반환합니다."""
-        return round(현재가 + 정정호가, self.dict_info[종목코드]['가격소숫점자리수'])
 
     def _get_profit_long(self, 매입금액, 보유금액, 종목코드=None):
         """롱 수익을 계산합니다."""

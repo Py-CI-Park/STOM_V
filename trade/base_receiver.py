@@ -681,6 +681,7 @@ class BaseReceiver:
             exit_text = '리시버 종료' if data == '전략연산 종료' else '리시버 STOP'
             self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} {exit_text}"))
             qtest_qwait(1)
+            self.qtimer.stop()
             self.receivQ.put('큐스레드종료')
             self.updater.wait()
             sys.exit()

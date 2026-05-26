@@ -202,11 +202,11 @@ class UpdateTablewidget:
 
                 if column in self.columns_time:
                     cgtime = str(value)
-                    if column == '체결시간':
-                        cgtime = f'{cgtime[8:10]}:{cgtime[10:12]}:{cgtime[12:14]}'
-                    elif gubun == UI_NUM['상세기록']:
+                    if gubun == UI_NUM['상세기록']:
                         cgtime = \
                             f'{cgtime[:4]}-{cgtime[4:6]}-{cgtime[6:8]} {cgtime[8:10]}:{cgtime[10:12]}:{cgtime[12:14]}'
+                    else:
+                        cgtime = f'{cgtime[8:10]}:{cgtime[10:12]}:{cgtime[12:14]}'
                     item = QTableWidgetItem(cgtime)
 
                 elif column in self.columns_day:
