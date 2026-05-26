@@ -246,7 +246,13 @@ def _evaluate_individual(ind: Individual, config: LoopConfig, warm_session) -> N
     from ai_strategy_loop.controller.loop import _score_outcome, _warm_to_outcome  # noqa: PLC0415
 
     try:
-        outcome = _warm_to_outcome(warm_session.run(ind.buy_name, ind.sell_name))
+        # per-run fail-fast 타임아웃(bt_warm_run_timeout=120)을 전달한다(hillclimb와 동일).
+        #   over-firing 개체는 120초에 컷되고, warm_session 내부 리셋+재로딩으로 다음 개체
+        #   평가가 영향받지 않는다. 데이터로딩 타임아웃(BacktestConfig.timeout)과는 분리된 값.
+        outcome = _warm_to_outcome(
+            warm_session.run(ind.buy_name, ind.sell_name,
+                             timeout=config.bt_warm_run_timeout)
+        )
     except Exception as exc:  # noqa: BLE001 - 어떤 예외든 흡수, 개체만 0점 처리.
         ind.graded = 0.0
         ind.ok = False

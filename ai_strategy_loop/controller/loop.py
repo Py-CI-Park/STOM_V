@@ -336,7 +336,11 @@ def _build_warm_btconfig(config: LoopConfig) -> BacktestConfig:
         is_tick=(config.bt_timeframe == "tick"),
         betting=config.bt_betting,
         divid_mode="종목코드별 분류",
-        timeout=getattr(config, "bt_timeout", 3600),
+        # BacktestConfig.timeout은 **데이터로딩**(prepare/_send_engine_data/재로딩) 전용이다.
+        #   prepare는 전체유니버스 32엔진 데이터 로딩(~80-180초)이 필요하므로 충분히 높게
+        #   둔다(>=600). per-run fail-fast 컷은 별도 bt_warm_run_timeout(120)으로 처리한다.
+        #   여기를 짧게 두면 재로딩이 잘려 엔진 복구가 실패한다.
+        timeout=max(getattr(config, "bt_timeout", 600), 600),
         verbose=False,
     )
 
@@ -811,8 +815,13 @@ def run_loop(
             try:
                 if warm_session is not None:
                     # warm: 살아있는 엔진에 전략만 바꿔 백테 1회 (세대당 ~60초).
+                    #   per-run fail-fast 타임아웃(bt_warm_run_timeout=120)을 전달한다.
+                    #   over-firing 전략은 120초에 컷되고 리셋+재로딩 후 다음 run으로 넘어간다.
+                    #   이 인자는 BackTest join에만 쓰이며, 데이터로딩(BacktestConfig.timeout)은
+                    #   _build_warm_btconfig에서 별도로 높게 유지되므로 재로딩이 잘리지 않는다.
                     outcome = _warm_to_outcome(
-                        warm_session.run(buy_name, sell_name)
+                        warm_session.run(buy_name, sell_name,
+                                         timeout=config.bt_warm_run_timeout)
                     )
                 else:
                     # cold: 세대마다 stom_backtest.py 서브프로세스 (폴백/기존 경로).

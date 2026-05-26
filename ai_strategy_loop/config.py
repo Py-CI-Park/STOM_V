@@ -78,6 +78,12 @@ class LoopConfig:
     #   (1일 윈도우는 집계 프로토콜이 멈추는 경향이 있어 5일이 안전한 하한.
     #    검증된 단일 종목 5일 런은 ~수십초에 csv_detected까지 도달한다.)
     bt_timeout: int = 300  # 초; BOUNDED 스코프는 이 한참 아래에서 끝나야 한다
+    # bt_warm_run_timeout: per-run 백테 join 타임아웃(초). over-firing 전략 fail-fast용.
+    #   데이터로딩 타임아웃(BacktestConfig.timeout)과 분리된 값으로, warm_session.run의
+    #   BackTest join에만 쓰인다(prepare/재로딩엔 안 쓰임). over-firing 전략은 300초까지
+    #   기다릴 필요 없이 120초에 빨리 포기하고 리셋+재로딩 후 다음 run으로 넘어간다.
+    #   좋은 전략(~50초)에는 영향이 없다. 미설정 시 기본 120.
+    bt_warm_run_timeout: int = 120
 
     # --- warm 엔진 모드 (전체유니버스 웜풀 백테 세션) ---
     # bt_engine_mode:
