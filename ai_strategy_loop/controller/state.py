@@ -374,12 +374,15 @@ def to_loop_state(
     current_gen: int = -1,
     latest: Optional[Dict[str, Any]] = None,
     cumulative_tokens: int = 0,
+    page_data: Optional[Dict[str, Any]] = None,
 ) -> Any:
     """루프 요약 + 세대 기록을 contract.LoopState로 빌드한다.
 
     summary는 run_loop가 반환하는 dict(run_id, best_*, winner_* 등) 형태,
     generations는 LoopState(SQLite).get_generations(run_id) 행 형태를 받는다.
     config는 LoopConfig(provider/bt_timeframe/max_generations) — 없으면 기본값.
+    page_data는 contract v2 패스스루(후속 페이지가 자기 키에 자기 데이터). None이면
+    빈 dict로 발행해 v1과 동일 결과를 유지한다(하위호환).
 
     contract.LoopState(pydantic) 인스턴스를 반환한다. publish_loop_state로
     바로 발행 가능하다.
@@ -446,5 +449,6 @@ def to_loop_state(
             tokens=int(cumulative_tokens),
             cost_or_count=len(gen_rows),
         ),
+        page_data=dict(page_data or {}),
         updated_at=time.time(),
     )

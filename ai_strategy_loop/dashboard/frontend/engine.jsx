@@ -9,9 +9,16 @@ function fmtElapsed(ms) {
   return `${m}m ${s.toString().padStart(2, "0")}s`;
 }
 
-function EnginePanel({ state }) {
+function EnginePanel({ state, wsStatus }) {
   const e = state.engine || {};
   const running = state.status === "running" || state.status === "stopping";
+
+  // LIVE↔DEMO 분리(M1): engine.* 메트릭(CPU/메모리/워커/throughput/chunks)은 backend가
+  //   발행하지 않는 DEMO 전용 필드다(connection.jsx 필드경계 주석 참조). 데모면 DEMO 배지,
+  //   라이브인데 engine 데이터가 없으면 "실시간 데이터 대기"로 명시 분리한다.
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+  const liveNoEngine = !isDemo && !state.engine;
 
   const cpu = e.cpu_pct ?? 0;
   const mem = e.mem_mb ?? 0;
@@ -34,6 +41,7 @@ function EnginePanel({ state }) {
         <div className="panel-hd-title">
           <span className="dot" style={{ background: running ? "var(--amber)" : "var(--ink-3)" }}></span>
           백테스트 엔진 — Runtime
+          {isDemo && typeof window.DemoBadge === "function" && <DemoBadge />}
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <span className="tag-slim">
@@ -45,6 +53,9 @@ function EnginePanel({ state }) {
         </div>
       </div>
       <div className="panel-bd">
+        {liveNoEngine && typeof window.LivePending === "function" ? (
+          <LivePending note="엔진 런타임 메트릭(CPU/메모리/워커)은 backend가 아직 발행하지 않습니다." />
+        ) : (
         <div className="engine-grid">
           {/* CPU */}
           <div className="engine-cell">
@@ -122,6 +133,7 @@ function EnginePanel({ state }) {
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

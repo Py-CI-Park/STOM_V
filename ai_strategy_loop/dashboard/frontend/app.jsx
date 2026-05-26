@@ -133,8 +133,8 @@ function App() {
         <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <CurrentGenPanel state={state} />
           <PhaseTimeline state={state} />
-          <PhaseDetailPanel state={state} />
-          <EnginePanel state={state} />
+          <PhaseDetailPanel state={state} wsStatus={wsStatus} />
+          <EnginePanel state={state} wsStatus={wsStatus} />
 
           <div className="grid-main">
             <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>

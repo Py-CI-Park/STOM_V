@@ -1,6 +1,37 @@
 /* Phase timeline + phase-aware detail panel that switches by current phase */
 const { useState: useState_ph, useMemo: useMemo_ph, useEffect: useEffect_ph, useRef: useRef_ph } = React;
 
+// =====================================================================
+// LIVE↔DEMO 격차 해소(M1) 공용 컴포넌트.
+//   - DemoBadge: 데모 시뮬레이터가 날조한 패널임을 명시(connection.jsx 필드경계 주석 참조).
+//   - LivePending: 라이브 모드인데 backend가 아직 그 패널 데이터를 발행하지 않아 비었을 때.
+// 이 두 표식이 "phase-detail 풍부 패널은 demo-only이고 live에서는 비어있을 수 있다"는
+// 사실을 사용자에게 드러낸다(빈칸/stale 오해 방지).
+// =====================================================================
+function DemoBadge() {
+  return (
+    <span className="mono" style={{
+      fontSize: 9.5, letterSpacing: ".12em", padding: "1px 6px", borderRadius: 4,
+      background: "rgba(165,148,255,0.16)", color: "#a594ff",
+      border: "1px solid rgba(165,148,255,0.4)", textTransform: "uppercase",
+    }} data-tip="시뮬레이터가 생성한 데모 데이터입니다 (backend 미발행)">
+      DEMO
+    </span>
+  );
+}
+
+function LivePending({ note }) {
+  return (
+    <div style={{
+      padding: "24px 20px", color: "var(--ink-3)", textAlign: "center",
+      fontSize: 12, fontFamily: "var(--mono)", lineHeight: 1.6,
+    }}>
+      <div style={{ fontSize: 13, color: "var(--ink-2)", marginBottom: 6 }}>실시간 데이터 대기</div>
+      {note || "이 패널의 상세 스트림은 backend가 아직 발행하지 않습니다 (page_data 승격 예정)."}
+    </div>
+  );
+}
+
 const PHASES = [
   { key: "생성중",      label: "생성",      sub: "LLM Code Gen" },
   { key: "백테스트중",  label: "백테스트",  sub: "Backtest" },
@@ -58,12 +89,22 @@ function PhaseTimeline({ state }) {
 }
 
 // ===================== PHASE DETAIL PANEL =====================
-function PhaseDetailPanel({ state, onViewLatestCode }) {
+function PhaseDetailPanel({ state, wsStatus, onViewLatestCode }) {
   const phase = state.latest?.phase;
   const running = state.status === "running" || state.status === "stopping";
 
+  // LIVE↔DEMO 분리(M1): phase-detail 풍부 패널(코드 스트리밍/자본곡선/채점분해/부검
+  //   스트리밍)은 모두 current_run에 의존하는 DEMO 전용 데이터다. 라이브에서 그 데이터가
+  //   없으면 "실시간 데이터 대기"를 보여주고(stale/빈칸 오해 방지), 데모에서만 채운다.
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+  const livePending = typeof window.livePanelPending === "function"
+    ? window.livePanelPending(wsStatus, state) : false;
+
   let body;
-  if (phase === "생성중") {
+  if (livePending) {
+    body = <LivePending />;
+  } else if (phase === "생성중") {
     body = <GenerationView state={state} onViewLatestCode={onViewLatestCode} />;
   } else if (phase === "백테스트중") {
     body = <BacktestingView state={state} />;
@@ -84,6 +125,7 @@ function PhaseDetailPanel({ state, onViewLatestCode }) {
         <div className="panel-hd-title">
           <span className="dot" style={{ background: running ? "var(--amber)" : "var(--ink-3)" }}></span>
           페이즈 상세 — {phase || "—"}
+          {isDemo && <DemoBadge />}
         </div>
         <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
           {state.latest?.last_checkpoint || "—"}
@@ -450,4 +492,5 @@ Object.assign(window, {
   PhaseDetailPanel,
   GenerationView, BacktestingView, ScoringView, AutopsyView,
   LiveBacktestChartInline,
+  DemoBadge, LivePending,
 });

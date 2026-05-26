@@ -16,12 +16,16 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
 # 계약 버전. 깨는 변경(필드 제거/타입 변경) 시 +1. seam의 단일 진실원.
-CONTRACT_VERSION = 1
+#   v2: page_data 패스스루 한 필드 추가(가산적·하위호환). 후속 페이지(P1~P6)가
+#       자기 데이터를 page_data["<page>"]에 실어 보내고 자기 패널과 함께 머지한다.
+#       기존 필드는 이름/타입 불변이라 v1 소비자(구 프론트)는 page_data를 무시하고
+#       그대로 동작한다(하위호환).
+CONTRACT_VERSION = 2
 
 # status 머신 상태값 (idle | running | stopping | complete | error).
 STATUS_IDLE = "idle"
@@ -110,6 +114,13 @@ class LoopState(BaseModel):
     generations: List[GenerationInfo] = Field(default_factory=list)
     latest: LatestInfo = Field(default_factory=LatestInfo)
     cumulative: CumulativeInfo = Field(default_factory=CumulativeInfo)
+
+    # v2 패스스루 한 필드. 각 후속 페이지가 자기 키에 자기 데이터를 넣는다
+    #   (예: page_data["autopsy"], ["population"], ["lineage"], ["meta"], ["holdout"]).
+    #   계약은 이 dict의 내부 구조를 강제하지 않는다 — 페이지가 자기 패널과 함께
+    #   자기 차례에 스키마를 가져온다(추측 추상화 금지, 단순성). 기본은 빈 dict라
+    #   아무 페이지도 발행하지 않으면 v1과 동일한 직렬화 결과를 유지한다.
+    page_data: Dict[str, Any] = Field(default_factory=dict)
 
     updated_at: float = 0.0
 

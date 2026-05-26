@@ -509,12 +509,16 @@ def _publish_live(
     winner_score: Optional[float] = None,
     winner_buy: Optional[str] = None,
     winner_sell: Optional[str] = None,
+    page_data: Optional[Dict[str, Any]] = None,
 ) -> None:
     """현재 루프 진행 상태를 contract.LoopState로 만들어 current_state.json에 발행.
 
     DB(generations)에서 세대 행을 읽어 to_loop_state로 빌드한다. 발행 실패는
     publish_loop_state 내부에서 흡수되므로 루프를 막지 않는다. DB 조회 자체가
     실패해도(닫힌 DB 등) 라이브 가시화 보조이므로 조용히 건너뛴다.
+
+    page_data는 contract v2 패스스루(후속 페이지가 자기 데이터를 실어보냄). None이면
+    빈 dict로 발행돼 기존 호출부(page_data 무인자)는 v1과 동일하게 동작한다(하위호환).
     """
     try:
         gens = st.get_generations(rid)
@@ -535,6 +539,7 @@ def _publish_live(
         summary, gens, config=config, status=status, current_gen=current_gen,
         latest={"phase": phase, "last_checkpoint": last_checkpoint, "message": message},
         cumulative_tokens=cumulative_tokens,
+        page_data=page_data,
     )
     publish_loop_state(snapshot)
 

@@ -3,6 +3,49 @@ const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
 const DEFAULT_BASE = "http://127.0.0.1:8770";
 
+// =====================================================================
+// LIVE ↔ DEMO 필드 경계 (contract v2, M1 격차 해소)
+//
+//  대시보드 상태는 두 출처 중 하나에서 온다:
+//    - LIVE: 실제 루프(controller/loop.py:_publish_live) → current_state.json → WS.
+//            contract.LoopState(pydantic)가 발행하는 필드만 담긴다.
+//    - DEMO: 프론트 로컬 시뮬레이터(startDemo). backend가 없을 때만 동작하며
+//            phase-detail 패널을 보여주려고 풍부한 필드를 "클라이언트에서 날조"한다.
+//
+//  LIVE가 실제로 발행하는 필드 (backend 계약):
+//    contract_version, run_id, status, current_gen, max_generations, provider,
+//    bt_timeframe, best, winner, generations[], latest{phase,last_checkpoint,message},
+//    cumulative{tokens,cost_or_count}, page_data{...}(v2 패스스루), updated_at.
+//
+//  DEMO 전용(=backend가 발행하지 않는, 시뮬레이터가 날조하는) 필드:
+//    engine{cpu_pct,mem_mb,workers_active,throughput,progress,chunks_* ...},
+//    current_run{equity[],drawdown[],trades[],
+//                generation{buy_code_partial,sell_code_partial,stream_tokens,...},
+//                scoring{metrics[],composite}, autopsy{text_partial,...}}.
+//
+//  ⇒ 그래서 LIVE 모드에서는 시뮬레이터를 절대 돌리지 않는다(setState(data)만).
+//    위 DEMO 전용 패널은 LIVE에서 "실시간 데이터 대기"로 비우고, DEMO 모드에서만
+//    내용을 채우되 "DEMO" 배지로 출처를 명시한다(phase-detail.jsx 참조).
+//    backend가 page_data로 실제 데이터를 발행하기 시작하면 해당 패널이 LIVE로 승격된다.
+// =====================================================================
+
+// 순수 판정 함수(테스트 가능): 현재 상태가 데모 시뮬레이터 출처인지.
+//   wsStatus === "demo"일 때만 current_run/engine을 신뢰할 수 있다.
+function isDemoSource(wsStatus) {
+  return wsStatus === "demo";
+}
+
+// 순수 판정 함수(테스트 가능): 라이브 상태인데 DEMO 전용 패널 데이터가 비었는지.
+//   true면 패널은 "실시간 데이터 대기"를 보여줘야 한다(날조 금지).
+function livePanelPending(wsStatus, state) {
+  if (isDemoSource(wsStatus)) return false;            // 데모는 자체 데이터로 채움
+  const cr = state && state.current_run;
+  const hasRich = !!(cr && ((cr.equity && cr.equity.length) ||
+                            (cr.generation && (cr.generation.buy_code_partial ||
+                                               cr.generation.sell_code_partial))));
+  return !hasRich;                                     // 라이브인데 풍부 필드 없음 → 대기
+}
+
 // ---------- Demo strategy code generators (Korean-flavored stock pseudo-Python) ----------
 function genBuyCode(tag, gen) {
   const seed = (gen * 7) % 9 + 1;
@@ -766,12 +809,19 @@ function useBackend(baseUrl) {
       wsRef.current = ws;
       ws.onopen = () => {
         reconnectAttempt.current = 0;
+        // LIVE↔DEMO 분리: 실제 WS가 열리면 데모 시뮬레이터를 즉시 중단한다.
+        //   (이게 없으면 demo가 돌던 중 연결 시 current_run/engine을 계속 날조해
+        //    라이브 데이터와 섞인다.) 이제 LIVE는 setState(data)만으로 갱신된다.
+        stopDemo();
         setWsStatus("open");
       };
       ws.onmessage = (ev) => {
         try {
           const data = JSON.parse(ev.data);
           if (data && typeof data === "object" && "contract_version" in data) {
+            // LIVE 경로: backend 계약 필드를 그대로 반영(날조 없음). DEMO 전용
+            //   패널(current_run/engine)은 비어 있을 수 있고, 패널이 "실시간
+            //   데이터 대기"로 처리한다(livePanelPending 참조).
             setState(data);
           }
         } catch {}
@@ -866,4 +916,6 @@ Object.assign(window, {
   fmtScore, fmtPct, fmtMoney, fmtInt, fmtTime,
   STATUS_KR,
   DEFAULT_BASE,
+  // LIVE↔DEMO 경계 판정(테스트/패널 공용 순수 함수).
+  isDemoSource, livePanelPending,
 });
