@@ -64,7 +64,8 @@ class GradedResult:
     구성요소(게이트 실패 시 의미를 가진다):
       trades_term    : min(trade_count / min_trades, 1.0)
       mdd_term       : 1.0 if mdd<=cap else clamp(cap / mdd, 0, 1)
-      profit_term    : 손익 로지스틱 — 손실<0 → ~0, 손익분기 → ~0.5, 이익>0 → ~1
+      profit_term    : 손익 척도(부호보존 log 압축+로지스틱) — 손실<0 → ~0(적자
+                       범위 전체에서 변별 유지), 손익분기 → 0.5, 이익>0 → ~1
       uptrend_term   : uptrend_r2 (이미 [0,1])
       overtrade_term : 과매매 감점. 거래수<=softcap이면 1.0, 초과하면
                        clamp(softcap / trade_count, 0, 1) (과매매일수록 작아짐).
@@ -202,21 +203,32 @@ def _clamp01(x: float) -> float:
 
 
 def _profit_term(total_profit: float, scale: float) -> float:
-    """총손익을 [0,1] 단조 증가 척도로 변환한다 (로지스틱).
+    """총손익을 [0,1] 단조 증가 척도로 변환한다 (부호보존 log 압축 + 로지스틱).
 
-    - 큰 손실      → ~0
+    - 큰 손실      → ~0 (단, 적자 범위 전체에서 변별 가능 — 포화 완화)
     - 손익분기(0) → 0.5  (logistic(0) = 0.5)
     - 큰 이익      → ~1
 
+    왜 log 압축인가:
+      기존 선형 z = profit/scale 로지스틱은 scale≈1백만원이라 −99M·−12.4억 모두
+      z≪0으로 0에 포화돼, 큰 적자끼리(−12억 vs −1억)를 전혀 구별하지 못했다
+      (적자 영역 그래디언트 결함). 부호보존 log로 z를 압축하면
+        z = sign(p)·log1p(|p|/scale)
+      손익이 자릿수(orders of magnitude)로 멀어질수록 천천히 변해, 광대역
+      적자(−12억~0)에서도 단조 변별이 살아난다. log1p는 |p|≪scale에서 거의
+      선형(소액 손익의 의미 보존)이고, |p|≫scale에서 로그로 압축된다.
+
     scale은 손익을 정규화하는 기준 규모(원). 0/음수면 안전한 기본값으로 폴백한다.
-    total_profit / scale 을 로지스틱에 통과시킨다. 단조 증가이며 모든 입력에서
-    [0,1]을 벗어나지 않는다.
+    단조 증가이며 모든 입력에서 [0,1]을 벗어나지 않는다(흑자>0.5>적자 유지).
     """
     import math  # noqa: PLC0415
 
     if scale <= 0.0:
         scale = 1.0
-    z = total_profit / scale
+    # 부호보존 log 압축: |p|/scale을 log1p로 눌러 광대역 적자/흑자를 변별.
+    #   p=0이면 z=0 → 로지스틱(0)=0.5(손익분기 보존).
+    sign = math.copysign(1.0, total_profit) if total_profit != 0.0 else 0.0
+    z = sign * math.log1p(abs(total_profit) / scale)
     # overflow 가드: 큰 음수 z에서 exp(-z)가 발산하므로 clamp.
     if z < -50.0:
         return 0.0

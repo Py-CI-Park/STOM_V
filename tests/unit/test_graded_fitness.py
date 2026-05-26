@@ -214,3 +214,82 @@ def test_passing_graded_equals_one_plus_composite():
     graded = compute_graded_fitness(m, _STEADY, cfg)
     assert hard.gate_passed is True
     assert abs(graded.graded - (1.0 + hard.score)) < 1e-9
+
+
+# ============================================================
+# (f) 적자 영역 그래디언트 결함 회귀 (P8)
+#     큰 적자 범위(−수억~−수십억)에서도 profit_term/graded가 단조 변별돼야 한다.
+#     기존 선형 로지스틱(scale≈1백만)은 이 범위 전체가 0으로 포화됐다.
+# ============================================================
+
+# wide baseline 영역의 실측 게이트 설정(min_trades=30, mdd_cap=35).
+def _wide_config():
+    return LoopConfig(min_trades=30, mdd_cap=35.0)
+
+
+def test_deficit_gen0_below_gen1_core_acceptance():
+    """핵심 수용: gen0(−12.4억/42691거래/MDD603)보다
+    gen1(−0.997억/3967거래/MDD285)의 graded가 높아야 한다.
+
+    둘 다 게이트 실패지만 gen1이 손실↓·거래↓·MDD↓로 '명백히 개선'됐으므로
+    선택 그래디언트가 이를 반영해야 한다(이전엔 둘 다 ≈0이라 climb 실패)."""
+    cfg = _wide_config()
+    gen0 = compute_graded_fitness(
+        _metrics(0.0, 603.0, 42691, -1_236_067_340), _STEADY, cfg
+    )
+    gen1 = compute_graded_fitness(
+        _metrics(0.0, 285.0, 3967, -99_663_323), _STEADY, cfg
+    )
+    assert gen0.gate_passed is False and gen1.gate_passed is False
+    assert gen1.graded > gen0.graded
+    # 둘 다 [0,1) 범위(게이트 실패) 유지.
+    assert 0.0 <= gen0.graded < 1.0
+    assert 0.0 <= gen1.graded < 1.0
+
+
+def test_profit_term_monotonic_across_large_deficits():
+    """큰 적자 3종(−12억 < −1억 < −1천만)에서 profit_term이 단조 증가해야 한다.
+
+    이전 선형 로지스틱은 이 범위 전체가 0으로 포화돼 변별 불가였다."""
+    cfg = _wide_config()
+    big = compute_graded_fitness(_metrics(0.0, 50.0, 50, -1_200_000_000), _STEADY, cfg)
+    mid = compute_graded_fitness(_metrics(0.0, 50.0, 50, -100_000_000), _STEADY, cfg)
+    small = compute_graded_fitness(_metrics(0.0, 50.0, 50, -10_000_000), _STEADY, cfg)
+    # 손실이 작을수록 profit_term↑ (포화 없이 변별).
+    assert big.profit_term < mid.profit_term < small.profit_term
+    # 모두 손실이므로 0.5 미만(흑자 영역과 분리).
+    assert small.profit_term < 0.5
+    # graded(동일 구조항)도 같은 순서.
+    assert big.graded < mid.graded < small.graded
+
+
+def test_profit_positive_outranks_negative_among_failing():
+    """흑자 게이트실패 > 적자 게이트실패: 수익이 양수면 더 높게.
+
+    동일 구조(거래/MDD/우상향)에서 +1억(흑자)이 −1억(적자)보다 graded 높다."""
+    cfg = _wide_config()  # mdd 50 > cap 35 → 둘 다 게이트 실패.
+    profit = compute_graded_fitness(_metrics(0.0, 50.0, 50, 100_000_000), _STEADY, cfg)
+    loss = compute_graded_fitness(_metrics(0.0, 50.0, 50, -100_000_000), _STEADY, cfg)
+    assert profit.gate_passed is False and loss.gate_passed is False
+    assert profit.profit_term > 0.5 > loss.profit_term
+    assert profit.graded > loss.graded
+
+
+def test_gate_passed_outranks_gate_failed_even_with_huge_loss_diff():
+    """gate 통과(≥1.0) > gate 실패(<1.0) 불변 — 적자 변별을 살려도 유지."""
+    cfg = _wide_config()
+    passing = compute_graded_fitness(_metrics(30.0, 10.0, 50, 1_000_000), _STEADY, cfg)
+    # 가장 작은 적자(통과에 가장 가까운 실패)라도 통과 전략을 넘지 못한다.
+    near_fail = compute_graded_fitness(_metrics(30.0, 36.0, 50, 5_000_000), _STEADY, cfg)
+    assert passing.gate_passed is True and near_fail.gate_passed is False
+    assert passing.graded >= 1.0 > near_fail.graded
+
+
+def test_deficit_improves_with_lower_trades_and_mdd():
+    """거래/MDD 개선 시 graded↑ (적자 유지, 동일 손실)."""
+    cfg = _wide_config()
+    worse = compute_graded_fitness(_metrics(0.0, 600.0, 42000, -100_000_000), _STEADY, cfg)
+    better = compute_graded_fitness(_metrics(0.0, 285.0, 3900, -100_000_000), _STEADY, cfg)
+    assert worse.gate_passed is False and better.gate_passed is False
+    # 거래 적고 MDD 낮은 better가 더 높다.
+    assert better.graded > worse.graded
