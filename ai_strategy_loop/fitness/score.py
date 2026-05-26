@@ -57,9 +57,11 @@ class GradedResult:
 
     graded:
       - 게이트 통과: 1.0 + composite  → 항상 1.0 이상 (실패 전략 전부보다 위).
-      - 게이트 실패: [0, 1) 범위. profit_term * mean(나머지 4항 근접도).
-        profit을 곱셈 게이트로 분리해 손실 전략이 낮은 MDD만으로 수익 전략을
-        이기지 못하게 한다. 통과에 가까울수록(특히 수익일수록) 1에 근접한다.
+      - 게이트 실패: [0, 1) 범위. profit_term * mean(나머지 4항 근접도) *
+        undertrade_factor. profit을 곱셈 게이트로 분리해 손실 전략이 낮은 MDD만으로
+        수익 전략을 이기지 못하게 하고, undertrade_factor((trade/min)**2)로 거래가
+        min_trades 미달인 전략(거래 붕괴)을 강하게 억제한다. 통과에 가까울수록
+        (특히 수익이고 거래수가 충분할수록) 1에 근접한다.
 
     구성요소(게이트 실패 시 의미를 가진다):
       trades_term    : min(trade_count / min_trades, 1.0)
@@ -202,6 +204,29 @@ def _clamp01(x: float) -> float:
     return x
 
 
+def _undertrade_factor(trade_count: int, min_trades: int) -> float:
+    """거래수가 min_trades 미달일 때 graded에 곱하는 [0,1] 페널티 계수.
+
+    overtrade_term(과다 감점)과 대칭으로, '과소 거래(2~26건 같은 붕괴)'를 강하게
+    억제한다. P8 정체 원인: 루프가 MDD를 낮추려 거래를 극단적으로 줄여도
+    profit_term/mdd_term이 높아 graded가 유지됐다. trades_term(선형, mean의 1/4)
+    만으로는 약해서, 이 계수를 graded에 **추가로 곱해** 과소거래를 dominant하게
+    누른다.
+
+    공식: 거래>=min_trades면 1.0(무벌점). 미만이면 (trade_count/min_trades)**2 —
+      제곱이라 2건 같은 극단(min 30 기준 (2/30)**2≈0.0044)을 선형(0.067)보다 훨씬
+      강하게 억제한다. 거래가 min에 가까울수록 1.0에 수렴한다.
+
+    min_trades<=0이면 페널티 비활성(1.0) — overtrade_softcap<=0과 동일한 컨벤션.
+    """
+    if min_trades <= 0:
+        return 1.0
+    if trade_count >= min_trades:
+        return 1.0
+    ratio = trade_count / min_trades
+    return _clamp01(ratio * ratio)
+
+
 def _profit_term(total_profit: float, scale: float) -> float:
     """총손익을 [0,1] 단조 증가 척도로 변환한다 (부호보존 log 압축 + 로지스틱).
 
@@ -250,10 +275,12 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
                      'profit'             = profit_term(정규화 수익 로지스틱),
                      'balanced'           = composite·(1-w)+profit_term·w (w=profit_weight).
       게이트 실패: base = mean(trades_term, mdd_term, uptrend_term, overtrade_term)
-                   graded = profit_term * base
+                   graded = profit_term * base * undertrade_factor
                    → [0,1) 범위. profit을 '곱셈 게이트'로 분리해, 손실 전략이
-                     낮은 MDD만으로 수익 전략을 이기지 못하게 한다.
-                     (수익이면 base 보존, 손실이면 강하게 눌린다.)
+                     낮은 MDD만으로 수익 전략을 이기지 못하게 하고,
+                     undertrade_factor((trade/min)**2)로 거래수<min_trades(거래 붕괴)
+                     를 추가 억제한다. (수익+거래충분이면 base 보존, 손실/과소거래면
+                     강하게 눌린다.)
 
     base의 combiner로 product가 아닌 mean을 쓰는 이유: 한 제약이 0이어도
     (예: uptrend_r2=0) 나머지 근접도가 살아남아 그래디언트가 평평해지지 않는다
@@ -318,14 +345,18 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
         composite = 0.0
         # profit을 '곱셈 게이트'로 분리한다(수익 신호가 평균에 묻히는 문제 해결).
         #   base = profit 제외 4항 평균(거래수/MDD/우상향/과매매 근접도).
-        #   graded = profit_term * base 로 결합한다.
+        #   graded = profit_term * base * undertrade_factor 로 결합한다.
         #   - 손실(profit_term<0.5)이면 graded가 강하게 눌려, 낮은 MDD만으로는
         #     수익 전략을 이길 수 없다.
         #   - 수익(profit_term>0.5)이면 base가 대체로 보존된다.
-        #   profit_term, base 모두 [0,1]이므로 graded ∈ [0,1) 단조성 유지.
+        #   - undertrade_factor: 거래<min_trades면 (trade/min)**2로 추가 감점한다.
+        #     P8 정체(거래 2~26건 붕괴)를 억제 — trades_term이 mean의 1/4라 약했던
+        #     과소거래 신호를 곱셈으로 dominant하게 만든다(overtrade_term과 대칭).
+        #   세 항 모두 [0,1]이므로 graded ∈ [0,1) 단조성 유지.
         base_terms = (trades_term, mdd_term, uptrend_term, overtrade_term)
         base = sum(base_terms) / len(base_terms)
-        graded = profit_term * base
+        undertrade_factor = _undertrade_factor(trade_count, min_trades)
+        graded = profit_term * base * undertrade_factor
         gate_distance = _gate_distance_text(
             trade_count, min_trades, mdd, mdd_cap, total_profit, softcap
         )

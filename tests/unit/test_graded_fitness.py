@@ -293,3 +293,67 @@ def test_deficit_improves_with_lower_trades_and_mdd():
     assert worse.gate_passed is False and better.gate_passed is False
     # 거래 적고 MDD 낮은 better가 더 높다.
     assert better.graded > worse.graded
+
+
+# ============================================================
+# (g) plateau 붕괴 방지 — sub-min-trades 페널티 (P8)
+#     루프가 MDD를 낮추려 거래를 2~26건(min_trades 미달)으로 붕괴시키는 정체를
+#     막는다. undertrade_factor=(trade/min)**2 를 gate-failed graded에 곱한다.
+# ============================================================
+
+def test_undertrade_penalty_two_trades_far_below_full_trades():
+    """거래 2건(<<min) graded가 거래 35건(>=min, 타 지표 동일)보다 대폭 낮다.
+
+    P8 핵심: 손익분기 근처·저MDD라도 거래 2건은 강하게 눌려야 루프가
+    '거래 붕괴'를 더 이상 선택하지 않는다."""
+    cfg = _config()  # min_trades=30, mdd_cap=25. MDD 60 → 둘 다 게이트 실패.
+    two = compute_graded_fitness(_metrics(0.0, 60.0, 2, 0), _STEADY, cfg)
+    full = compute_graded_fitness(_metrics(0.0, 60.0, 35, 0), _STEADY, cfg)
+    assert two.gate_passed is False and full.gate_passed is False
+    # 거래 2건 graded는 35건보다 훨씬 낮다(제곱 페널티).
+    assert two.graded < full.graded
+    # 제곱 페널티의 강도 확인: factor(2/30)**2≈0.0044 → graded가 1/100 미만 수준.
+    assert two.graded < full.graded * 0.1
+
+
+def test_undertrade_factor_inactive_at_min_trades():
+    """거래수=min_trades면 페널티 없음(factor=1.0): 거래 30 vs 100 graded 동일 구조.
+
+    [min_trades, softcap] 밴드 안에서는 거래수가 graded를 더 깎지 않는다."""
+    cfg = _config()  # min_trades=30, mdd_cap=25, overtrade_softcap=150(LoopConfig 기본).
+    at_min = compute_graded_fitness(_metrics(0.0, 60.0, 30, 0), _STEADY, cfg)
+    in_band = compute_graded_fitness(_metrics(0.0, 60.0, 100, 0), _STEADY, cfg)
+    assert at_min.gate_passed is False and in_band.gate_passed is False
+    # 거래 30(=min)과 100(밴드 내, <softcap 150)은 undertrade/overtrade 모두 무벌점 →
+    #   다른 항이 동일하므로 graded가 같아야 한다.
+    assert abs(at_min.graded - in_band.graded) < 1e-12
+
+
+def test_undertrade_penalty_disabled_when_min_trades_zero():
+    """min_trades<=0이면 undertrade 페널티 비활성 — 거래 2건도 감점 없음."""
+    cfg = LoopConfig(min_trades=0, mdd_cap=25.0)
+    two = compute_graded_fitness(_metrics(0.0, 60.0, 2, 0), _STEADY, cfg)
+    full = compute_graded_fitness(_metrics(0.0, 60.0, 35, 0), _STEADY, cfg)
+    assert two.gate_passed is False and full.gate_passed is False
+    # min_trades=0이면 trades_term=1.0(비활성) + undertrade_factor=1.0(비활성) →
+    #   거래수에 무관하게 graded 동일.
+    assert abs(two.graded - full.graded) < 1e-12
+
+
+def test_undertrade_preserves_profit_over_loss_invariant():
+    """페널티 적용 후에도 흑자>적자 불변(같은 거래수에서 곱셈 상수라 순서 보존)."""
+    cfg = _config()
+    profit = compute_graded_fitness(_metrics(0.0, 60.0, 5, 1_000_000), _STEADY, cfg)
+    loss = compute_graded_fitness(_metrics(0.0, 60.0, 5, -1_000_000), _STEADY, cfg)
+    assert profit.gate_passed is False and loss.gate_passed is False
+    assert profit.graded > loss.graded
+
+
+def test_undertrade_preserves_gate_passed_over_failed_invariant():
+    """페널티가 곱셈([0,1])이라 gate-failed는 여전히 <1.0 < gate-passed."""
+    cfg = _config()
+    passing = compute_graded_fitness(_metrics(30.0, 10.0, 50, 1_000_000), _STEADY, cfg)
+    # 거래 2건 붕괴 전략(저MDD·손익분기)이라도 통과 전략을 넘지 못한다.
+    collapsed = compute_graded_fitness(_metrics(0.0, 5.0, 2, 0), _STEADY, cfg)
+    assert passing.gate_passed is True and collapsed.gate_passed is False
+    assert passing.graded >= 1.0 > collapsed.graded
