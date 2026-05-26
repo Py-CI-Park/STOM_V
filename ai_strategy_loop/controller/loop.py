@@ -460,7 +460,8 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
                    history_summary: Optional[str] = None,
                    sell_feedback: Optional[str] = None,
                    base_buy_code: Optional[str] = None,
-                   base_sell_code: Optional[str] = None) -> Dict[str, Any]:
+                   base_sell_code: Optional[str] = None,
+                   meta_seed: Optional[str] = None) -> Dict[str, Any]:
     """이 세대의 buy + sell 전략을 생성/저장한다.
 
     Args:
@@ -499,6 +500,7 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             base_code=base_code,
             autopsy_feedback=feedback,
             history_summary=history_summary,
+            meta_seed=meta_seed,
             retry_max=config.max_retries + 1,
             dedup=dedup,
         )
@@ -616,6 +618,13 @@ def run_loop(
     if autopsy_fn is None and getattr(config, "autopsy_enabled", False):
         effective_segment_autopsy_fn = _default_segment_autopsy_fn(config)
 
+    # P4 메타 환류: meta_seed_enabled가 ON이면 run 시작 시 1회 메타 인사이트를
+    #   로드해 NL 가이드(meta_seed)를 만든다. 기본 OFF면 None(주입 안 함=하위호환).
+    #   load/build 실패는 학습 보조이므로 흡수한다(루프를 막지 않음).
+    meta_seed_text: Optional[str] = None
+    if getattr(config, "meta_seed_enabled", False):
+        meta_seed_text = _load_meta_seed()
+
     rid = st.resume_or_start(config, run_id=run_id)
     start_gen = st.get_last_completed_gen(rid) + 1
 
@@ -726,6 +735,10 @@ def run_loop(
             print(f"\n[LOOP] === generation {gen_no} (run={rid}) ===", flush=True)
 
             # --- a. 전략 확보 (생성 또는 seed) ---
+            # P3 계보: 이 세대가 어느 세대를 개선했는지(parent_gen). refine 모드에서
+            #   현재 best의 출발 코드를 받아 개선하면 그 best_gen이 부모다. seed/fresh
+            #   (출발점 없음)면 None(루트 세대)으로 기록한다.
+            parent_gen_for_record: Optional[int] = None
             use_seed = gen_no == 0 and seed_buy and seed_sell
             if use_seed:
                 buy_name = seed_buy
@@ -746,10 +759,19 @@ def run_loop(
                     "history_summary": history_summary,
                     "sell_feedback": next_sell_feedback,
                 }
+                # P4 메타 환류: 토글 ON으로 가이드가 만들어졌을 때만 전달한다(기본 OFF면
+                #   키 자체를 넣지 않아 기존 동작/계약과 완전히 동일하다 — 하위호환).
+                if meta_seed_text:
+                    gen_kwargs["meta_seed"] = meta_seed_text
                 if refine and base_buy_code is not None:
                     gen_kwargs["base_buy_code"] = base_buy_code
+                    # 출발 코드가 곧 현재 best의 코드이므로 best_gen이 부모다.
+                    if best_gen >= 0:
+                        parent_gen_for_record = best_gen
                 if refine and base_sell_code is not None:
                     gen_kwargs["base_sell_code"] = base_sell_code
+                    if best_gen >= 0 and parent_gen_for_record is None:
+                        parent_gen_for_record = best_gen
                 gen_res = _generate_pair(
                     provider, config, rid, gen_no, next_autopsy_feedback,
                     **gen_kwargs,
@@ -855,6 +877,13 @@ def run_loop(
             #   선택/리포트하므로). 하드 게이트 통과/사유는 별도 컬럼에 보존된다.
             # mdd/profit/gist도 함께 기록해 대시보드 세대 행이 실값을 표시한다.
             gen_gist = _strategy_gist(buy_name)
+            # P3 계보: 부모(parent_gen) 대비 지표 변경 요약(diff_from_parent)을 만든다.
+            #   부모 행을 DB에서 읽어 graded/MDD/거래/수익 델타를 한 줄 NL로 압축한다.
+            #   코드 전문은 복제 저장하지 않는다(lineage.diff_generations가 namespaced 재조회).
+            diff_from_parent = _build_parent_diff(
+                st, rid, parent_gen_for_record,
+                graded.graded, graded.mdd, fit.trade_count, graded.total_profit,
+            )
             st.record_generation(
                 rid, gen_no,
                 buy_name=buy_name, sell_name=sell_name,
@@ -864,6 +893,8 @@ def run_loop(
                 trade_count=fit.trade_count,
                 mdd=graded.mdd, profit=graded.total_profit,
                 strategy_gist=gen_gist,
+                parent_gen=parent_gen_for_record,
+                diff_from_parent=diff_from_parent,
             )
             print(f"[LOOP] graded={graded.graded:.6g} hard_composite={fit.score:.6g} "
                   f"calmar={fit.calmar:.4g} r2={fit.uptrend_r2:.4g} "
@@ -914,6 +945,8 @@ def run_loop(
 
             # US-007 — 세대 완료 라이브 발행 (generations 갱신 반영).
             #   P1: 세그먼트 부검 요약을 page_data["autopsy"]로 실어 LIVE 패널에 발행.
+            #   P3/P4: 계보(lineage) + 메타(meta) 요약도 같은 page_data에 합쳐 발행.
+            page_data = _build_live_page_data(st, rid, config, last_autopsy_page_data)
             _publish_live(st, rid, config, status="running", current_gen=gen_no,
                           cumulative_tokens=cumulative_tokens, phase="generation_done",
                           message=f"generation {gen_no} recorded",
@@ -921,12 +954,14 @@ def run_loop(
                           best_buy=best_buy, best_sell=best_sell,
                           winner_gen=winner_gen, winner_score=winner_score,
                           winner_buy=winner_buy, winner_sell=winner_sell,
-                          page_data=({"autopsy": last_autopsy_page_data}
-                                     if last_autopsy_page_data else None))
+                          page_data=page_data)
 
             gen_no += 1
 
         st.finish_run(rid, status="complete")
+        # P4 — run 종료 시 누적 메타 인사이트를 재집계·영속한다(state 닫기 전).
+        #   다음 run의 _load_meta_seed가 최신 인사이트를 환류한다. 실패는 흡수.
+        _refresh_meta_insights(st)
         # US-007 — 최종 complete 라이브 발행 (state 닫기 전, DB 조회 가능 시점).
         _publish_live(st, rid, config, status="complete", current_gen=gen_no,
                       cumulative_tokens=cumulative_tokens, phase="complete",
@@ -983,6 +1018,123 @@ def run_loop(
             "stop_reason": stop_reason,
         }
     return summary
+
+
+# =====================================================================
+# P3 연구 파이프라인 / P4 메타분석 — 환류·계보·발행 헬퍼.
+# =====================================================================
+def _load_meta_seed() -> Optional[str]:
+    """영속된 메타 인사이트를 로드해 생성 프롬프트 주입 가이드(meta_seed)를 만든다.
+
+    P4 환류 진입점. meta_insights.json이 없거나(첫 run) 신호가 없으면 None을
+    돌려 주입을 건너뛴다(하위호환). load/build 실패는 흡수한다(학습 보조 경로).
+    """
+    try:
+        from ai_strategy_loop.meta import build_meta_seed_text, load_meta_insights  # noqa: PLC0415
+
+        insights = load_meta_insights()
+        return build_meta_seed_text(insights)
+    except Exception as exc:  # noqa: BLE001 - 메타 환류는 정확성 경로가 아니다.
+        logger.info("메타 시드 로드 실패(무시): %s", exc)
+        return None
+
+
+def _build_parent_diff(
+    st: LoopState,
+    rid: str,
+    parent_gen: Optional[int],
+    graded: float,
+    mdd: float,
+    trade_count: int,
+    profit: float,
+) -> Optional[str]:
+    """부모(parent_gen) 대비 이 세대의 지표 변경을 한 줄 NL로 요약한다(P3).
+
+    부모가 없으면(루트 세대) None. 부모 행을 DB에서 읽어 graded/MDD/거래/수익
+    델타를 압축한다. 코드 전문 비교는 lineage.diff_generations(namespaced 재조회)가
+    on-demand로 한다 — 여기선 지표 변경 요약만 영속한다(복제 저장 회피).
+    """
+    if parent_gen is None or parent_gen < 0:
+        return None
+    try:
+        rows = {int(g.get("gen_no", -1)): g for g in st.get_generations(rid)}
+    except Exception:  # noqa: BLE001 - 조회 실패는 diff 없이 진행(루프를 막지 않음).
+        return None
+    parent = rows.get(int(parent_gen))
+    if parent is None:
+        return None
+
+    def _delta(cur: float, prev: float) -> str:
+        d = cur - prev
+        sign = "+" if d >= 0 else ""
+        return f"{sign}{d:.4g}"
+
+    p_graded = float(parent.get("score", 0.0) or 0.0)
+    p_mdd = float(parent.get("mdd", 0.0) or 0.0)
+    p_trades = int(parent.get("trade_count", 0) or 0)
+    p_profit = float(parent.get("profit", 0.0) or 0.0)
+    return (
+        f"gen{parent_gen} 대비: graded {_delta(graded, p_graded)} "
+        f"MDD {_delta(mdd, p_mdd)} 거래 {_delta(trade_count, p_trades)} "
+        f"손익 {_delta(profit, p_profit)}"
+    )
+
+
+def _refresh_meta_insights(st: LoopState) -> None:
+    """누적 generations(여러 run)에서 메타 인사이트를 재집계해 영속한다(P4).
+
+    run 종료 시 1회 호출. 다음 run의 _load_meta_seed가 이 파일을 읽어 환류한다.
+    집계/저장 실패는 흡수한다(학습 보조 경로 — 루프 종료를 막지 않는다).
+    """
+    try:
+        from ai_strategy_loop.meta import aggregate_meta_insights, save_meta_insights  # noqa: PLC0415
+
+        all_gens = st.get_all_generations()
+        insights = aggregate_meta_insights(all_gens)
+        save_meta_insights(insights)
+    except Exception as exc:  # noqa: BLE001 - 메타 재집계는 정확성 경로가 아니다.
+        logger.info("메타 인사이트 재집계 실패(무시): %s", exc)
+
+
+def _build_live_page_data(
+    st: LoopState,
+    rid: str,
+    config: LoopConfig,
+    autopsy_page_data: Optional[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    """세대 완료 시 LIVE 발행할 page_data를 조립한다(autopsy + lineage + meta).
+
+    - autopsy(P1): 세그먼트 부검 요약(인자로 받음). 없으면 생략.
+    - lineage(P3): 현재 run의 계보 요약(lineage.to_page_data). 조회 실패는 생략.
+    - meta(P4): 누적 메타 인사이트 요약(있으면). 영속 파일이 없으면 생략.
+
+    각 섹션 산출 실패는 흡수한다(LIVE 발행은 정확성 경로가 아니다). 아무 섹션도
+    없으면 None을 돌려 기존 호출부(page_data 무발행)와 동일하게 동작한다.
+    """
+    page_data: Dict[str, Any] = {}
+    if autopsy_page_data:
+        page_data["autopsy"] = autopsy_page_data
+
+    # P3 계보 요약.
+    try:
+        from ai_strategy_loop.controller import lineage as _lineage  # noqa: PLC0415
+
+        page_data["lineage"] = _lineage.to_page_data(st, rid)
+    except Exception as exc:  # noqa: BLE001 - 계보 발행은 보조이므로 생략 가능.
+        logger.info("lineage page_data 실패(무시): %s", exc)
+
+    # P4 메타 인사이트 요약(영속 파일이 있을 때만 — 없으면 status empty 생략).
+    try:
+        from ai_strategy_loop.meta import load_meta_insights  # noqa: PLC0415
+        from ai_strategy_loop.meta.seed import to_page_data as _meta_page_data  # noqa: PLC0415
+
+        insights = load_meta_insights()
+        if insights is not None:
+            page_data["meta"] = _meta_page_data(insights)
+    except Exception as exc:  # noqa: BLE001 - 메타 발행은 보조이므로 생략 가능.
+        logger.info("meta page_data 실패(무시): %s", exc)
+
+    return page_data or None
 
 
 def _build_feedback(config, outcome, fit, graded,

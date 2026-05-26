@@ -62,6 +62,7 @@ def generate_strategy(
     crossover_parents: Optional[Tuple[str, str]] = None,
     autopsy_feedback: Optional[str] = None,
     history_summary: Optional[str] = None,
+    meta_seed: Optional[str] = None,
     retry_max: int = 3,
     dedup: Optional[DedupTracker] = None,
 ) -> Dict[str, Any]:
@@ -81,6 +82,7 @@ def generate_strategy(
             상호 배타(crossover_parents가 우선). None이면 기존 경로.
         autopsy_feedback: 직전 백테스트 부검 피드백(게이트 거리 + 변별 변수).
         history_summary: 누적 세대 이력 요약(CONVERGENCE). build_messages로 전달.
+        meta_seed: 누적 메타분석 환류 가이드(P4). build_messages로 전달(기본 None=주입 안 함).
         retry_max: compile/token 실패 시 최대 시도 횟수 (>=1).
         dedup: 중복 탐지용 DedupTracker (없으면 검사 생략).
 
@@ -110,6 +112,7 @@ def generate_strategy(
             crossover_parents=crossover_parents,
             autopsy_feedback=autopsy_feedback,
             history_summary=history_summary,
+            meta_seed=meta_seed,
             prior_error=prior_error,
         )
 

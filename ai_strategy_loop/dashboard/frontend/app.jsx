@@ -151,6 +151,8 @@ function App() {
               <FeedbackPanel state={state} />
               <AutopsyPanel state={state} wsStatus={wsStatus} />
               <PopulationPanel state={state} wsStatus={wsStatus} />
+              <LineagePanel state={state} wsStatus={wsStatus} />
+              <MetaPanel state={state} wsStatus={wsStatus} />
             </aside>
           </div>
         </main>

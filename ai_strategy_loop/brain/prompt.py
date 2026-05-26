@@ -112,6 +112,7 @@ def build_messages(
     crossover_parents: Optional[Tuple[str, str]] = None,
     autopsy_feedback: Optional[str] = None,
     history_summary: Optional[str] = None,
+    meta_seed: Optional[str] = None,
     prior_error: Optional[str] = None,
 ) -> List[Dict[str, str]]:
     """OpenAI Chat Completions 메시지 리스트를 만든다.
@@ -130,6 +131,9 @@ def build_messages(
         autopsy_feedback: 직전 백테스트 부검 피드백(게이트 거리 + 변별 변수).
         history_summary: 누적 세대 이력 요약(CONVERGENCE). 무엇을 시도했고
             무엇을 회피할지·어느 방향이 graded를 올리는지 알려준다. 첫 세대면 None.
+        meta_seed: 누적 메타분석 환류 가이드(P4). 과거 여러 run에서 학습한 "통과
+            전략 공통 변수/개선 변경/실패 패턴"을 담은 NL 가이드. config.meta_seed_enabled가
+            ON일 때만 주입된다(기본 OFF=None → 하위호환, 기존 프롬프트 불변).
         prior_error: 직전 시도의 compile/token 오류 (재시도 시 모델에 전달).
 
     Returns:
@@ -210,6 +214,14 @@ def build_messages(
             "",
             "누적 진화 이력(이전 세대들의 점수/실패 — 같은 실패를 반복하지 말 것):",
             history_summary,
+        ]
+
+    # P4 메타 환류(선택 — config.meta_seed_enabled ON일 때만 호출부가 채운다).
+    #   과거 여러 run에서 학습한 공통 신호. 현재 run 이력/부검과 조화시키도록 안내한다.
+    if meta_seed:
+        user_lines += [
+            "",
+            meta_seed,
         ]
 
     if autopsy_feedback:

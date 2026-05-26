@@ -144,3 +144,53 @@ class TestPopulationPanel:
     def test_app_wires_population_panel(self):
         src = _read("app.jsx")
         assert "<PopulationPanel state={state} wsStatus={wsStatus}" in src
+
+
+class TestLineagePanel:
+    """P3 — 전략 계보 패널 구조 계약(page_data.lineage 소비 + LIVE/DEMO 규약)."""
+
+    def test_lineage_panel_defined_and_exposed(self):
+        src = _read("panels.jsx")
+        assert "function LineagePanel(" in src
+        tail = src[src.rfind("Object.assign(window"):]
+        assert "LineagePanel" in tail
+
+    def test_lineage_panel_consumes_page_data(self):
+        # 계보 데이터는 page_data.lineage.
+        src = _read("panels.jsx")
+        assert "page_data?.lineage" in src
+
+    def test_lineage_panel_live_demo_branching(self):
+        src = _read("panels.jsx")
+        assert "isDemoSource" in src
+        assert "DemoBadge" in src
+        assert "실시간 데이터 대기" in src
+
+    def test_app_wires_lineage_panel(self):
+        src = _read("app.jsx")
+        assert "<LineagePanel state={state} wsStatus={wsStatus}" in src
+
+
+class TestMetaPanel:
+    """P4 — 메타분석 패널 구조 계약(page_data.meta 소비 + LIVE/DEMO 규약)."""
+
+    def test_meta_panel_defined_and_exposed(self):
+        src = _read("panels.jsx")
+        assert "function MetaPanel(" in src
+        tail = src[src.rfind("Object.assign(window"):]
+        assert "MetaPanel" in tail
+
+    def test_meta_panel_consumes_page_data(self):
+        # 메타 데이터는 page_data.meta.
+        src = _read("panels.jsx")
+        assert "page_data?.meta" in src
+
+    def test_meta_panel_live_demo_branching(self):
+        src = _read("panels.jsx")
+        assert "isDemoSource" in src
+        assert "DemoBadge" in src
+        assert "실시간 데이터 대기" in src
+
+    def test_app_wires_meta_panel(self):
+        src = _read("app.jsx")
+        assert "<MetaPanel state={state} wsStatus={wsStatus}" in src

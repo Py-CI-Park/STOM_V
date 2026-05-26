@@ -26,6 +26,13 @@ _STATE_DIR = _PACKAGE_DIR / "state"
 _SNAPSHOT_DIR = _STATE_DIR / "snapshots"
 LOOP_RUNS_DB = _STATE_DIR / "loop_runs.db"
 
+# generations 테이블의 현재 스키마 버전 (P3 연구 파이프라인).
+#   ALTER 누적을 버전으로 관리한다 — 기존 DB는 _migrate_schema에서 누락 컬럼만
+#   멱등하게 보강하고 schema_meta에 현재 버전을 기록한다. 새 DB는 처음부터 v2다.
+#     v1: mdd/profit/strategy_gist (legacy — schema_meta 없던 시절).
+#     v2: parent_gen(계보), diff_from_parent(변경 요약) 추가.
+SCHEMA_VERSION = 2
+
 # US-007 — 루프↔대시보드 라이브 상태 파일 + 정지 플래그 파일.
 #   current_state.json : 루프가 매 세대/백테스트 시점에 atomic write 하는
 #                        LoopState 스냅샷(contract.py). 대시보드가 폴링/푸시한다.
@@ -93,16 +100,59 @@ class LoopState:
                 created_at  REAL,
                 PRIMARY KEY (run_id, gen_no)
             );
+            CREATE TABLE IF NOT EXISTS schema_meta (
+                key   TEXT PRIMARY KEY,
+                value TEXT
+            );
             """
         )
-        # 기존 DB 마이그레이션: CREATE TABLE IF NOT EXISTS는 이미 존재하는
-        # 테이블의 컬럼을 추가하지 못하므로, 누락 컬럼을 멱등하게 보강한다.
-        # (구버전 loop_runs.db에 mdd/profit/strategy_gist가 없어 INSERT 실패하던 문제)
+        self._migrate_schema()
+
+    def _migrate_schema(self) -> None:
+        """generations 스키마를 현재 SCHEMA_VERSION까지 멱등하게 올린다.
+
+        CREATE TABLE IF NOT EXISTS는 이미 존재하는 테이블의 컬럼을 추가하지
+        못하므로, 누락 컬럼을 PRAGMA table_info로 탐지해 ADD COLUMN 한다. 이미
+        있는 컬럼은 건너뛰므로(멱등) 같은 DB를 여러 번 열어도 안전하다. 마지막에
+        schema_meta에 현재 버전을 기록해 ALTER 누적을 버전으로 추적한다.
+
+        기존 DB(구버전 loop_runs.db) 호환:
+          - mdd/profit/strategy_gist 누락(v1 이전) → 추가(INSERT 실패 방지).
+          - parent_gen/diff_from_parent 누락(v2 이전) → 추가(P3 계보/diff).
+        새 컬럼은 모두 NULL 기본이라 기존 행의 의미를 바꾸지 않는다(하위호환).
+        """
         existing_cols = {row[1] for row in self._con.execute("PRAGMA table_info(generations)")}
-        for col, decl in (("mdd", "REAL"), ("profit", "REAL"), ("strategy_gist", "TEXT")):
+        # (컬럼, 선언) — 순서대로 누락분만 추가한다. 새 버전의 컬럼을 여기 가산한다.
+        for col, decl in (
+            ("mdd", "REAL"),            # v1
+            ("profit", "REAL"),          # v1
+            ("strategy_gist", "TEXT"),   # v1
+            ("parent_gen", "INTEGER"),   # v2 — 계보(이 세대가 개선한 부모 세대).
+            ("diff_from_parent", "TEXT"),  # v2 — 부모 대비 변경 요약(NL).
+        ):
             if col not in existing_cols:
                 self._con.execute(f"ALTER TABLE generations ADD COLUMN {col} {decl}")
+        # 현재 스키마 버전 기록(멱등 UPSERT).
+        self._con.execute(
+            "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+            (str(SCHEMA_VERSION),),
+        )
         self._con.commit()
+
+    def get_schema_version(self) -> int:
+        """현재 DB의 schema_version을 읽는다(없으면 0 = 마이그레이션 전 legacy)."""
+        try:
+            row = self._con.execute(
+                "SELECT value FROM schema_meta WHERE key = 'schema_version'"
+            ).fetchone()
+        except sqlite3.OperationalError:
+            return 0
+        if row is None or row[0] is None:
+            return 0
+        try:
+            return int(row[0])
+        except (TypeError, ValueError):
+            return 0
 
     # ------------------------------------------------------------------
     # run 라이프사이클
@@ -160,23 +210,33 @@ class LoopState:
         mdd: float = 0.0,
         profit: float = 0.0,
         strategy_gist: str = "",
+        parent_gen: Optional[int] = None,
+        diff_from_parent: Optional[str] = None,
     ) -> None:
         """한 세대 결과를 기록한다 (UPSERT — 세대 번호 중복 없음).
 
         기록 직후 JSON 스냅샷을 남긴다. mdd/profit/strategy_gist는 대시보드
         세대 행(GenerationInfo)이 그대로 표시하는 값이라 함께 영속한다.
+
+        parent_gen/diff_from_parent(P3 연구 파이프라인): 이 세대가 점진 개선한
+        부모 세대 번호와 부모 대비 변경 요약(NL)이다. 둘 다 None이면(예: gen0 시드,
+        GA 미배선) NULL로 저장돼 기존 동작과 동일하다(하위호환). **전략 코드 전문은
+        복제 저장하지 않는다** — 코드는 stockbuy/stocksell에 namespaced로 이미 존재.
         """
         self._con.execute(
             "INSERT OR REPLACE INTO generations "
             "(run_id, gen_no, buy_name, sell_name, status, score, calmar, uptrend_r2, "
             " gate_passed, reason, csv_path, trade_count, mdd, profit, strategy_gist, "
-            " created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " parent_gen, diff_from_parent, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 run_id, gen_no, buy_name, sell_name, status, float(score),
                 float(calmar), float(uptrend_r2), 1 if gate_passed else 0,
                 reason, csv_path, int(trade_count),
-                float(mdd), float(profit), strategy_gist, _now(),
+                float(mdd), float(profit), strategy_gist,
+                (None if parent_gen is None else int(parent_gen)),
+                diff_from_parent,
+                _now(),
             ),
         )
         self._con.commit()
@@ -196,6 +256,8 @@ class LoopState:
             "mdd": float(mdd),
             "profit": float(profit),
             "strategy_gist": strategy_gist,
+            "parent_gen": parent_gen,
+            "diff_from_parent": diff_from_parent,
         })
 
     def update_best(self, run_id: str, best_gen: int, best_score: float) -> None:
@@ -252,6 +314,24 @@ class LoopState:
             "SELECT COUNT(*) AS c FROM generations WHERE run_id = ?", (run_id,)
         ).fetchone()
         return int(row["c"]) if row is not None else 0
+
+    def list_runs(self) -> List[Dict[str, Any]]:
+        """모든 run 행을 시작 시각 순으로 반환한다 (run 비교/메타분석용)."""
+        rows = self._con.execute(
+            "SELECT * FROM runs ORDER BY started_at"
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+    def get_all_generations(self) -> List[Dict[str, Any]]:
+        """모든 run의 모든 세대 행을 반환한다 (메타분석 누적 집계용, P4).
+
+        run_id, gen_no 순으로 정렬한다. 여러 run에 걸친 누적 generations를
+        한 번에 읽어 "어떤 변경이 개선을 낳나"를 집계한다.
+        """
+        rows = self._con.execute(
+            "SELECT * FROM generations ORDER BY run_id, gen_no"
+        ).fetchall()
+        return [dict(r) for r in rows]
 
     # ------------------------------------------------------------------
     # 내부

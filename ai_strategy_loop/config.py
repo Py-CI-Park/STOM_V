@@ -132,6 +132,14 @@ class LoopConfig:
     #   autopsy_fn을 넘기면 그쪽이 우선한다. 기본 ON (loop CLI 학습 신호).
     autopsy_enabled: bool = True
 
+    # --- 메타분석 환류 (P4) ---
+    # meta_seed_enabled: True면 생성 프롬프트에 누적 메타 인사이트(과거 여러 run에서
+    #   학습한 "통과 전략 공통 변수/개선 변경/실패 패턴")를 주입한다. 기본 OFF
+    #   (하위호환 — 기존 run의 프롬프트는 변하지 않는다). ON이면 run 시작 시
+    #   meta_insights.json을 로드해 build_messages(meta_seed=...)로 전달한다.
+    #   신호 유효성은 A/B(주입 vs 미주입)로 검증한다(계획 P4 수용기준).
+    meta_seed_enabled: bool = False
+
     # --- seed-and-refine (시드 출발 + 점진 개선 hill-climb) ---
     # seed_buy/seed_sell: gen-0에서 생성 대신 평가할 기존 전략 이름(루프 DB).
     #   주어지면 시드가 곧 첫 출발점이 되고, refine 모드면 gen1+가 이 코드를

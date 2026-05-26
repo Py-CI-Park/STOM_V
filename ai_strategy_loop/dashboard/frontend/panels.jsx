@@ -362,4 +362,153 @@ function PopulationPanel({ state, wsStatus }) {
   );
 }
 
-Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel });
+// ---- Lineage panel (P3 연구 데이터 파이프라인) ----
+// page_data.lineage(계보 트리/best_path/세대 노드)을 LIVE로 렌더한다.
+//   backend가 발행하면 시드→best 경로와 세대별 부모/지표 diff를 보이고,
+//   없으면(데모 또는 미발행) 출처를 명시한다. M1 LIVE↔DEMO 규약 준수.
+function _lnNum(x) { return typeof x === "number" ? x.toFixed(2) : "—"; }
+
+function LineagePanel({ state, wsStatus }) {
+  const lineage = state.page_data?.lineage;
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+
+  const nodes = (lineage && lineage.nodes) || [];
+  const bestPath = (lineage && lineage.best_path) || [];
+  const bestSet = new Set(bestPath);
+  // 세대 번호 오름차순으로 보여준다(계보 흐름).
+  const ordered = [...nodes].sort((a, b) => a.gen_no - b.gen_no);
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot"></span>전략 계보 · 버전 경과
+          {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
+        </div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+          {lineage && lineage.status === "ok"
+            ? `시드→best 경로 ${bestPath.length}세대 · 총 ${lineage.node_count}세대`
+            : "세대 계보/추이"}
+        </span>
+      </div>
+      <div className="panel-bd">
+        {!lineage || lineage.status !== "ok" || ordered.length === 0 ? (
+          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+            {isDemo
+              ? "데모 모드 — 전략 계보는 라이브 실행에서 발행됩니다."
+              : "실시간 데이터 대기 — 세대 완료 시 계보가 발행됩니다."}
+          </div>
+        ) : (
+          <div>
+            <div className="mono" style={{ fontSize: 11, color: "var(--ink-2)", marginBottom: 8 }}>
+              best 세대 = gen_{String(lineage.best_gen).padStart(2, "0")} · 경로 {bestPath.map(g => `g${g}`).join(" → ")}
+            </div>
+            <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+              {ordered.map((n, i) => (
+                <li key={i} style={{ padding: "5px 0", borderBottom: "1px solid var(--bg-2)" }}>
+                  <div className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", display: "flex", justifyContent: "space-between" }}>
+                    <span>
+                      <span style={{ color: bestSet.has(n.gen_no) ? "var(--teal)" : "var(--ink-2)" }}>
+                        {bestSet.has(n.gen_no) ? "★" : "·"}
+                      </span>
+                      {` gen_${String(n.gen_no).padStart(2, "0")}`}
+                      <span style={{ color: "var(--ink-3)" }}>
+                        {n.parent_gen != null ? ` ← gen_${String(n.parent_gen).padStart(2, "0")}` : " (루트)"}
+                      </span>
+                    </span>
+                    <span style={{ color: n.gate_passed ? "var(--green)" : "var(--ink-3)" }}>
+                      {`graded ${_lnNum(n.graded_score)} · ${n.trade_count}건 · MDD ${_lnNum(n.mdd)}`}
+                    </span>
+                  </div>
+                  {n.diff_from_parent && (
+                    <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginTop: 2, paddingLeft: 14 }}>
+                      {n.diff_from_parent}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---- Meta-analysis panel (P4 메타분석 엔진) ----
+// page_data.meta(누적 메타 인사이트: 통과 전략 공통 변수/개선 변경/실패 패턴)을
+//   LIVE로 렌더한다. 없으면(데모 또는 미발행) 출처를 명시한다. M1 규약 준수.
+function MetaPanel({ state, wsStatus }) {
+  const meta = state.page_data?.meta;
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+
+  const commonVars = (meta && meta.common_pass_vars) || [];
+  const changes = (meta && meta.improving_changes) || [];
+  const fp = (meta && meta.failure_patterns) || {};
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot"></span>메타분석 · 누적 학습
+          {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
+        </div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+          {meta && meta.status === "ok"
+            ? `누적 ${meta.total_generations}세대 · 통과 ${meta.passing_count}`
+            : "통과 전략 공통 조건"}
+        </span>
+      </div>
+      <div className="panel-bd">
+        {!meta || meta.status !== "ok" ? (
+          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+            {isDemo
+              ? "데모 모드 — 메타분석은 라이브 실행에서 누적 발행됩니다."
+              : "실시간 데이터 대기 — run 종료 시 누적 메타 인사이트가 발행됩니다."}
+          </div>
+        ) : (
+          <div>
+            {commonVars.length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>
+                  통과 전략 공통 변수
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {commonVars.map((v, i) => (
+                    <span key={i} className="mono" style={{
+                      fontSize: 11, color: "var(--ink-0)", background: "var(--bg-2)",
+                      borderRadius: 4, padding: "2px 7px",
+                    }}>
+                      {`${v[0]} ×${v[1]}`}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {changes.length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>
+                  개선을 낳은 변경
+                </div>
+                <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+                  {changes.map((c, i) => (
+                    <li key={i} className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", padding: "2px 0" }}>
+                      {`· ${c[0]} (×${c[1]})`}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-2)" }}>
+              {`실패 패턴 — 과매매 ${fp.overtrade ?? 0} · 0거래 ${fp.zero_trade ?? 0} · 고MDD ${fp.high_mdd ?? 0}`}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel });
