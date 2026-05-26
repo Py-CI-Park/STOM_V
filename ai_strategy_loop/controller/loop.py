@@ -650,6 +650,7 @@ def run_loop(
     next_autopsy_feedback: Optional[str] = None   # 진입(BUY) 측 다음 세대 피드백.
     next_sell_feedback: Optional[str] = None      # 매도(SELL) 측 다음 세대 청산 피드백.
     last_autopsy_page_data: Optional[Dict[str, Any]] = None  # LIVE 부검 패널용 세그먼트 요약.
+    last_holdout_verdict: Optional[Any] = None  # P5 — 직전 세대 holdout 졸업검사 결과(토글 ON일 때만).
     # seed-and-refine: gen1+가 출발점으로 삼을 현재 best 전략 코드(hill-climb).
     #   gen0 seed 평가 후 시드 코드로 채워지고, best가 갱신될 때마다 새 best 코드로
     #   갱신된다. None이면 그 세대는 fresh 생성(첫 출발점 미확보 시 정상).
@@ -937,8 +938,25 @@ def run_loop(
                     if new_sell_code is not None:
                         base_sell_code = new_sell_code
 
+            # P5 — 과적합 방어(holdout 졸업검사). 토글 ON이면 train 게이트를 통과한
+            #   후보를 결과 CSV의 holdout 거래일 슬라이스로도 게이트 판정한다(추가 백테
+            #   없음). holdout 미통과면 winner 갱신을 스킵한다(best=graded는 위에서 이미
+            #   갱신됐으므로 진행은 막지 않는다). 토글 OFF(기본)면 verdict=None이라
+            #   아래 winner 조건이 기존과 완전히 동일하게 동작한다(하위호환).
+            last_holdout_verdict = None
+            holdout_ok = True
+            if getattr(config, "graduation_holdout", False) and fit.gate_passed:
+                last_holdout_verdict = _compute_holdout_verdict(outcome, config)
+                holdout_ok = bool(last_holdout_verdict and last_holdout_verdict.passed)
+                hv = last_holdout_verdict
+                print(f"[LOOP] holdout gate: passed={hv.passed} status={hv.status} "
+                      f"trades={hv.trade_count} mdd={hv.mdd_pct:.4g} "
+                      f"profit={hv.total_profit:,.0f} reason={hv.reason}", flush=True)
+
             # winner/졸업은 하드 게이트 통과 전략에서만 갱신(graduation 기준 유지).
-            if fit.gate_passed and (winner_score is None or fit.score > winner_score):
+            #   토글 ON이면 holdout 게이트도 통과(holdout_ok)해야 winner로 인정한다.
+            if (fit.gate_passed and holdout_ok
+                    and (winner_score is None or fit.score > winner_score)):
                 winner_score = fit.score
                 winner_gen = gen_no
                 winner_buy = buy_name
@@ -955,7 +973,10 @@ def run_loop(
             # US-007 — 세대 완료 라이브 발행 (generations 갱신 반영).
             #   P1: 세그먼트 부검 요약을 page_data["autopsy"]로 실어 LIVE 패널에 발행.
             #   P3/P4: 계보(lineage) + 메타(meta) 요약도 같은 page_data에 합쳐 발행.
-            page_data = _build_live_page_data(st, rid, config, last_autopsy_page_data)
+            page_data = _build_live_page_data(
+                st, rid, config, last_autopsy_page_data,
+                holdout_verdict=last_holdout_verdict,
+            )
             _publish_live(st, rid, config, status="running", current_gen=gen_no,
                           cumulative_tokens=cumulative_tokens, phase="generation_done",
                           message=f"generation {gen_no} recorded",
@@ -1110,12 +1131,16 @@ def _build_live_page_data(
     rid: str,
     config: LoopConfig,
     autopsy_page_data: Optional[Dict[str, Any]],
+    holdout_verdict: Optional[Any] = None,
 ) -> Optional[Dict[str, Any]]:
-    """세대 완료 시 LIVE 발행할 page_data를 조립한다(autopsy + lineage + meta).
+    """세대 완료 시 LIVE 발행할 page_data를 조립한다(autopsy + lineage + meta + holdout).
 
     - autopsy(P1): 세그먼트 부검 요약(인자로 받음). 없으면 생략.
     - lineage(P3): 현재 run의 계보 요약(lineage.to_page_data). 조회 실패는 생략.
     - meta(P4): 누적 메타 인사이트 요약(있으면). 영속 파일이 없으면 생략.
+    - holdout(P5): holdout 졸업검사 결과(토글 ON일 때만 verdict가 주어짐).
+      graduation_holdout=ON 인데 verdict가 None이면(이 세대가 train 게이트 미통과 등)
+      status='off' 배지로 발행한다. 토글 OFF면 holdout 섹션을 아예 넣지 않는다(하위호환).
 
     각 섹션 산출 실패는 흡수한다(LIVE 발행은 정확성 경로가 아니다). 아무 섹션도
     없으면 None을 돌려 기존 호출부(page_data 무발행)와 동일하게 동작한다.
@@ -1123,6 +1148,15 @@ def _build_live_page_data(
     page_data: Dict[str, Any] = {}
     if autopsy_page_data:
         page_data["autopsy"] = autopsy_page_data
+
+    # P5 holdout 졸업검사 배지: 토글 ON일 때만 섹션을 실어 보낸다(OFF면 무발행=하위호환).
+    if getattr(config, "graduation_holdout", False):
+        try:
+            from ai_strategy_loop.fitness import holdout_verdict_to_page_data  # noqa: PLC0415
+
+            page_data["holdout"] = holdout_verdict_to_page_data(holdout_verdict)
+        except Exception as exc:  # noqa: BLE001 - holdout 배지 산출 실패는 생략 가능.
+            logger.info("holdout page_data 실패(무시): %s", exc)
 
     # P3 계보 요약.
     try:
@@ -1246,6 +1280,34 @@ def _score_outcome(outcome: BacktestOutcome, config: LoopConfig):
     except Exception as exc:  # noqa: BLE001
         return None, None, f"compute_fitness 실패: {exc}"
     return fit, graded, None
+
+
+def _compute_holdout_verdict(outcome: BacktestOutcome, config: LoopConfig):
+    """P5 — 결과 CSV를 holdout 거래일로 분할해 졸업검사(holdout 게이트)를 판정한다.
+
+    추가 백테 없이 outcome.csv_path 한 파일을 거래일 기준 train/holdout으로 쪼갠다.
+    csv_path가 없거나 산출이 실패하면 보수적 미졸업(passed=False) verdict를 돌려
+    winner 갱신을 막는다(루프 자체는 막지 않는다).
+    """
+    from ai_strategy_loop.fitness import (  # noqa: PLC0415
+        HoldoutVerdict,
+        compute_holdout_verdict,
+    )
+
+    csv_path = outcome.csv_path
+    if not csv_path:
+        return HoldoutVerdict(
+            passed=False, status="error", trade_count=0, total_profit=0.0,
+            mdd_pct=0.0, reason="holdout 판정 불가: csv_path 없음",
+        )
+    abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+    try:
+        return compute_holdout_verdict(abs_csv, config)
+    except Exception as exc:  # noqa: BLE001 - holdout 산출 실패는 미졸업으로 흡수.
+        return HoldoutVerdict(
+            passed=False, status="error", trade_count=0, total_profit=0.0,
+            mdd_pct=0.0, reason=f"holdout 판정 예외: {exc}",
+        )
 
 
 def _read_strategy_code(name: str, kind: str) -> Optional[str]:

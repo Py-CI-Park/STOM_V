@@ -14,7 +14,13 @@ holdout(RV2-4)은 단일 train/holdout 날짜 분할 토글이며 기본 OFF다.
 토글만 여기서 제공하고, 루프 배선(점수 적용)은 US-005에서 한다.
 """
 
-from .holdout import HoldoutSplit, split_window
+from .holdout import (
+    HoldoutSplit,
+    HoldoutVerdict,
+    compute_holdout_verdict,
+    holdout_verdict_to_page_data,
+    split_window,
+)
 from .score import (
     FitnessResult,
     GradedResult,
@@ -35,4 +41,7 @@ __all__ = [
     "load_equity_series_from_csv",
     "HoldoutSplit",
     "split_window",
+    "HoldoutVerdict",
+    "compute_holdout_verdict",
+    "holdout_verdict_to_page_data",
 ]

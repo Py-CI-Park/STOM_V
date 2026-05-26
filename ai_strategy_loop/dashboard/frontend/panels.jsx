@@ -511,4 +511,62 @@ function MetaPanel({ state, wsStatus }) {
   );
 }
 
-Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel });
+// ---- Holdout 졸업검사 패널 (P5) ----
+// page_data.holdout(과적합 방어: holdout 거래일 슬라이스 게이트 결과)을 LIVE로 렌더한다.
+//   graduation_holdout=ON일 때만 backend가 holdout 섹션을 발행한다(OFF면 섹션 없음).
+//   status: "ok"(판정함) | "insufficient"(holdout 거래 부족) | "no_holdout"(분할 불가)
+//           | "error" | "off"(토글 OFF/이번 세대 train 미통과). passed: train 통과
+//           후보가 holdout에서도 게이트를 통과했는지(졸업 인정 여부).
+function _hoNum(x) { return typeof x === "number" ? x.toFixed(2) : "—"; }
+
+function HoldoutPanel({ state, wsStatus }) {
+  const holdout = state.page_data?.holdout;
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+
+  // 토글 OFF(또는 미발행)면 섹션 자체가 없다 → 패널은 안내만 표시.
+  const hasData = holdout && holdout.status && holdout.status !== "off";
+  const passed = holdout && holdout.passed === true;
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot"></span>과적합 방어 · holdout 졸업검사
+          {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
+        </div>
+        {hasData && (
+          <span className="mono" style={{
+            fontSize: 10.5, fontWeight: 600,
+            color: passed ? "var(--good, #2ecc71)" : "var(--warn, #e0a030)",
+          }}>
+            {passed ? "holdout 통과 ✓" : "holdout 미통과"}
+          </span>
+        )}
+      </div>
+      <div className="panel-bd">
+        {!hasData ? (
+          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+            {isDemo
+              ? "데모 모드 — holdout 졸업검사는 라이브 실행(graduation_holdout=ON)에서 발행됩니다."
+              : "holdout 졸업검사 OFF 또는 대기 — train 게이트 통과 후보에 한해 holdout 판정이 발행됩니다."}
+          </div>
+        ) : (
+          <div>
+            <div className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", padding: "2px 0" }}>
+              {`train 거래 ${holdout.train_trade_count} · holdout 거래 ${holdout.trade_count}`}
+            </div>
+            <div className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", padding: "2px 0" }}>
+              {`holdout MDD ${_hoNum(holdout.mdd_pct)}% · holdout 수익 ${typeof holdout.total_profit === "number" ? holdout.total_profit.toLocaleString() : "—"}원`}
+            </div>
+            <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-2)", marginTop: 4 }}>
+              {`판정: ${holdout.reason || holdout.status}`}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel });
