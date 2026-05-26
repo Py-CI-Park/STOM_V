@@ -157,6 +157,22 @@ class LoopConfig:
     #   다음 세대의 출발점이 된다. False면 매 세대 백지에서 fresh 생성(기존 동작).
     bt_refine_from_best: bool = True
 
+    # --- 우승/선택 목표 (P7 절대수익 최적화) ---
+    # winner_objective: best(graded) 선택과 winner(졸업) 갱신을 어느 목표로 할지 결정.
+    #   'risk_adjusted' — 기존 기본. graded 통과 분기는 1.0+composite(Calmar×R²),
+    #                     winner는 하드 composite(fit.score) 최고. **하위호환 보장.**
+    #   'profit'        — 절대수익 우선. graded 통과 분기는 1.0+profit_term(정규화 수익
+    #                     로지스틱)이라 통과 전략 중 수익 클수록 graded 높다. winner는
+    #                     gate 통과 중 total_profit 최대(동률이면 MDD 낮은 것).
+    #   'balanced'      — 위험조정·수익 블렌드. graded 통과 분기는
+    #                     1.0+(composite·(1-w)+profit_term·w), winner는 같은 블렌드 점수.
+    #   gate 실패 분기(profit_term×mean)는 objective와 무관하게 그대로 유지한다
+    #     (이미 수익을 곱셈 게이트로 반영). 통과(graded≥1.0)>실패(<1.0) 불변식도 유지.
+    winner_objective: str = "risk_adjusted"  # 'risk_adjusted' | 'profit' | 'balanced'
+    # profit_weight: 'balanced' 목표에서 수익항(profit_term) 가중치 w∈[0,1].
+    #   composite 가중치는 (1-w). 0이면 risk_adjusted와 동일, 1이면 profit와 유사.
+    profit_weight: float = 0.5
+
     # --- 진화 모드 (P2 GA — population 기반 진화) ---
     # evolution_mode:
     #   'hillclimb' — 기존 기본. best 1개를 출발점으로 점진 개선하는 greedy

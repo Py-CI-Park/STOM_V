@@ -50,7 +50,7 @@ class Individual:
     __slots__ = (
         "buy_name", "sell_name", "buy_code", "sell_code",
         "graded", "gate_passed", "hard_score",
-        "trade_count", "mdd", "profit", "gate_distance", "ok", "reason",
+        "trade_count", "mdd", "profit", "profit_term", "gate_distance", "ok", "reason",
         "origin",
     )
 
@@ -68,6 +68,8 @@ class Individual:
         self.trade_count: int = 0
         self.mdd: float = 0.0
         self.profit: float = 0.0
+        # P7 — 정규화 수익 로지스틱 항(graded.profit_term). 'balanced' winner 점수에 쓴다.
+        self.profit_term: float = 0.0
         self.gate_distance: str = ""
         self.ok: bool = False
         self.reason: str = ""
@@ -278,6 +280,7 @@ def _evaluate_individual(ind: Individual, config: LoopConfig, warm_session) -> N
     ind.trade_count = int(fit.trade_count)
     ind.mdd = float(graded.mdd)
     ind.profit = float(graded.total_profit)
+    ind.profit_term = float(graded.profit_term)
     ind.gate_distance = str(graded.gate_distance)
     ind.ok = True
     ind.reason = str(fit.reason)
@@ -470,6 +473,35 @@ def _publish(st: LoopState, rid: str, config: LoopConfig, **kwargs) -> None:
 
 
 # =====================================================================
+# P7 — winner(졸업) 점수/비교 키 (목표별; hillclimb loop와 동일 의미).
+# =====================================================================
+def _ga_winner_score(ind: "Individual", config: LoopConfig) -> float:
+    """winner 점수 스칼라를 목표별로 만든다(요약/발행용; loop._winner_score_value와 동일 의미).
+
+    - 'risk_adjusted'(기본): 하드 점수 hard_score(=fit.score). 기존 동작(하위호환).
+    - 'profit'             : 절대수익 profit.
+    - 'balanced'           : composite·(1-w)+profit_term·w 블렌드(hard_score를 composite로 사용).
+    """
+    objective = str(getattr(config, "winner_objective", "risk_adjusted") or "risk_adjusted")
+    if objective == "profit":
+        return float(ind.profit)
+    if objective == "balanced":
+        from ai_strategy_loop.fitness.score import _gate_passed_term  # noqa: PLC0415
+
+        composite = float(ind.hard_score or 0.0)
+        return float(_gate_passed_term("balanced", composite, ind.profit_term, config))
+    return float(ind.hard_score or 0.0)
+
+
+def _ga_winner_key(ind: "Individual", config: LoopConfig):
+    """winner 비교용 정렬 키(클수록 우수). 'profit'은 동률 시 MDD 낮은 것을 우선한다."""
+    objective = str(getattr(config, "winner_objective", "risk_adjusted") or "risk_adjusted")
+    if objective == "profit":
+        return (float(ind.profit), -float(ind.mdd))
+    return (_ga_winner_score(ind, config),)
+
+
+# =====================================================================
 # 메인: run_ga_loop (run_loop이 단일 분기로 위임).
 # =====================================================================
 def run_ga_loop(
@@ -513,6 +545,7 @@ def run_ga_loop(
     winner_score: Optional[float] = None
     winner_buy: Optional[str] = None
     winner_sell: Optional[str] = None
+    winner_key = None  # P7 — winner 비교용 정렬 키(목표별; profit 동률 시 MDD 낮은 것).
     stop_reason = "continue"
     cumulative_tokens = 0  # GA는 토큰 합산을 추적하지 않음(gpt_auth 세대-수 cap 경로).
     history_records: List[GenRecord] = []
@@ -588,12 +621,16 @@ def run_ga_loop(
             best_buy = gen_best.buy_name
             best_sell = gen_best.sell_name
             st.update_best(rid, best_gen, best_score)
-        # winner: 하드 게이트 통과 개체 중 하드 점수 최고.
+        # winner: 하드 게이트 통과 개체 중 목표별 최고(P7).
+        #   기본 risk_adjusted는 하드 점수(hard_score) 최고 — 기존 동작 그대로(하위호환).
+        #   'profit'은 절대수익 최대(동률 시 MDD 낮은 것), 'balanced'는 블렌드 점수.
         for ind in ranked:
-            if ind.gate_passed and ind.hard_score is not None and (
-                winner_score is None or ind.hard_score > winner_score
-            ):
-                winner_score = ind.hard_score
+            if not (ind.gate_passed and ind.hard_score is not None):
+                continue
+            cand_key = _ga_winner_key(ind, config)
+            if winner_key is None or cand_key > winner_key:
+                winner_key = cand_key
+                winner_score = _ga_winner_score(ind, config)
                 winner_gen = gen_no
                 winner_buy = ind.buy_name
                 winner_sell = ind.sell_name

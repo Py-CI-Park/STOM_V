@@ -669,7 +669,10 @@ def run_loop(
     winner_gen = -1     # 하드 게이트를 통과한 최고 세대 (졸업/export 후보).
     winner_buy = None
     winner_sell = None
-    winner_score = None  # 통과 세대의 하드 composite 점수.
+    winner_score = None  # 통과 세대의 winner 점수(목표별: composite|수익|블렌드).
+    # P7 — winner 비교용 정렬 키(목표별; 'profit'은 동률 시 MDD 낮은 것 우선).
+    #   winner_score(발행용 스칼라)와 분리해, profit 동률 tie-break를 정확히 한다.
+    winner_key = None
     stop_reason = "continue"
     cumulative_tokens = 0
     next_autopsy_feedback: Optional[str] = None   # 진입(BUY) 측 다음 세대 피드백.
@@ -980,12 +983,17 @@ def run_loop(
 
             # winner/졸업은 하드 게이트 통과 전략에서만 갱신(graduation 기준 유지).
             #   토글 ON이면 holdout 게이트도 통과(holdout_ok)해야 winner로 인정한다.
-            if (fit.gate_passed and holdout_ok
-                    and (winner_score is None or fit.score > winner_score)):
-                winner_score = fit.score
-                winner_gen = gen_no
-                winner_buy = buy_name
-                winner_sell = sell_name
+            #   P7 — 목표별 비교 키로 갱신한다('profit'은 수익 최대·동률 시 MDD 낮은 것;
+            #   risk_adjusted/balanced는 스칼라 점수). 기본 risk_adjusted는 fit.score
+            #   단일 비교라 기존 동작과 동일하다(하위호환).
+            if fit.gate_passed and holdout_ok:
+                cand_key = _winner_compare_key(fit, graded, config)
+                if winner_key is None or cand_key > winner_key:
+                    winner_key = cand_key
+                    winner_score = _winner_score_value(fit, graded, config)
+                    winner_gen = gen_no
+                    winner_buy = buy_name
+                    winner_sell = sell_name
 
             # --- f. 다음 세대 피드백: 진입(BUY) = 게이트-거리 + 진입 변별 변수,
             #        매도(SELL) = 게이트-거리 + 청산(give-back/손절/보유/매도규칙) ---
@@ -1282,6 +1290,37 @@ def _build_feedback(config, outcome, fit, graded,
     buy_fb = cap_feedback("\n\n".join(buy_parts)) if buy_parts else None
     sell_fb = cap_feedback("\n\n".join(sell_parts)) if sell_parts else None
     return buy_fb, sell_fb, autopsy_page_data
+
+
+def _winner_score_value(fit, graded, config: LoopConfig) -> float:
+    """P7 — winner(졸업) 점수 스칼라를 목표별로 만든다(요약/발행에 실리는 값).
+
+    - 'risk_adjusted'(기본): 하드 composite fit.score (기존 동작 — 하위호환).
+    - 'profit'             : total_profit(절대수익). 클수록 좋은 winner.
+    - 'balanced'           : composite·(1-w)+profit_term·w 블렌드(graded.objective와 동일 공식).
+
+    알 수 없는 목표는 risk_adjusted로 폴백한다.
+    """
+    objective = str(getattr(config, "winner_objective", "risk_adjusted") or "risk_adjusted")
+    if objective == "profit":
+        return float(graded.total_profit)
+    if objective == "balanced":
+        from ai_strategy_loop.fitness.score import _gate_passed_term  # noqa: PLC0415
+
+        return float(_gate_passed_term("balanced", fit.score, graded.profit_term, config))
+    return float(fit.score)
+
+
+def _winner_compare_key(fit, graded, config: LoopConfig):
+    """winner 비교용 정렬 키(클수록 우수). 'profit'은 동률 시 MDD 낮은 것을 우선한다.
+
+    - 'profit': (total_profit, -mdd) — 수익 최대, 동률이면 MDD 낮은 쪽.
+    - 그 외   : (score,) — 스칼라 단일 비교(risk_adjusted/balanced).
+    """
+    objective = str(getattr(config, "winner_objective", "risk_adjusted") or "risk_adjusted")
+    if objective == "profit":
+        return (float(graded.total_profit), -float(graded.mdd))
+    return (_winner_score_value(fit, graded, config),)
 
 
 def _score_outcome(outcome: BacktestOutcome, config: LoopConfig):

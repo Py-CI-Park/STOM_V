@@ -91,6 +91,10 @@ class GradedResult:
     #   테스트 더블 등 호출부 하위호환을 위해 기본값을 둔다(맨 끝 배치).
     #   실제 compute_graded_fitness는 항상 명시적으로 채운다.
     overtrade_term: float = 1.0
+    # P7 — 이 graded를 산출한 우승/선택 목표('risk_adjusted'|'profit'|'balanced').
+    #   로그·page_data에서 어떤 공식으로 통과 분기를 매겼는지 드러낸다. 기본
+    #   'risk_adjusted'로 두어 기존 호출부 하위호환을 보장한다(맨 끝 배치).
+    objective: str = "risk_adjusted"
 
 
 def compute_uptrend_r2(equity_series: Sequence[float]) -> float:
@@ -227,8 +231,12 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
     하드 게이트(compute_fitness)는 졸업/우승 기준으로 그대로 둔다. 이 함수는
     루프가 매 세대 best를 고르고 진행 방향을 잡는 데 쓰는 0..∞ 스칼라를 만든다.
 
-      게이트 통과: graded = 1.0 + composite   (composite = calmar x uptrend_r2)
+      게이트 통과: graded = 1.0 + term(objective)   (term≥0 → graded≥1.0)
                    → 어떤 실패 전략(graded < 1.0)보다도 항상 위에 랭크된다.
+                   term은 config.winner_objective로 결정한다(_gate_passed_term):
+                     'risk_adjusted'(기본) = composite(calmar×R²)  ← 하위호환,
+                     'profit'             = profit_term(정규화 수익 로지스틱),
+                     'balanced'           = composite·(1-w)+profit_term·w (w=profit_weight).
       게이트 실패: base = mean(trades_term, mdd_term, uptrend_term, overtrade_term)
                    graded = profit_term * base
                    → [0,1) 범위. profit을 '곱셈 게이트'로 분리해, 손실 전략이
@@ -286,9 +294,13 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
     else:
         overtrade_term = _clamp01(softcap / trade_count)
 
+    # P7 — 우승/선택 목표. gate-passed 분기의 그래디언트만 바꾼다(실패 분기 불변).
+    #   기본 'risk_adjusted'면 기존 1.0+composite 그대로(하위호환).
+    objective = str(getattr(config, "winner_objective", "risk_adjusted") or "risk_adjusted")
+
     if hard.gate_passed:
         composite = hard.score  # calmar x uptrend_r2 x 1
-        graded = 1.0 + composite
+        graded = 1.0 + _gate_passed_term(objective, composite, profit_term, config)
         gate_distance = "ok (gate passed)"
     else:
         composite = 0.0
@@ -321,7 +333,28 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
         total_profit=total_profit,
         uptrend_r2=uptrend_r2,
         overtrade_term=overtrade_term,
+        objective=objective,
     )
+
+
+def _gate_passed_term(objective: str, composite: float, profit_term: float, config) -> float:
+    """게이트 통과 전략의 graded 가산항(=graded-1.0)을 목표별로 만든다.
+
+    - 'risk_adjusted'(기본): composite(Calmar×R²) 그대로 — 위험조정 우수일수록 ↑.
+    - 'profit'             : profit_term(정규화 수익 로지스틱) — 수익 클수록 ↑.
+    - 'balanced'           : composite×(1-w) + profit_term×w 블렌드(w=profit_weight).
+
+    어느 목표든 비음수라 graded≥1.0이 보장돼 "통과>실패" 불변식이 유지된다
+    (composite≥0, profit_term∈[0,1]). 알 수 없는 값은 risk_adjusted로 폴백한다.
+    """
+    if objective == "profit":
+        return profit_term
+    if objective == "balanced":
+        w = float(getattr(config, "profit_weight", 0.5) or 0.0)
+        w = _clamp01(w)
+        return composite * (1.0 - w) + profit_term * w
+    # 'risk_adjusted' 및 알 수 없는 값 폴백.
+    return composite
 
 
 def _gate_distance_text(
