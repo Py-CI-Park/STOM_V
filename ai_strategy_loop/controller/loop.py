@@ -933,6 +933,7 @@ def run_loop(
                 uptrend_r2=fit.uptrend_r2, gate_passed=fit.gate_passed,
                 reason=fit.reason, csv_path=outcome.csv_path,
                 trade_count=fit.trade_count,
+                daily_avg_trades=fit.daily_avg_trades,
                 mdd=graded.mdd, profit=graded.total_profit,
                 total_profit_pct=total_profit_pct,
                 strategy_gist=gen_gist,

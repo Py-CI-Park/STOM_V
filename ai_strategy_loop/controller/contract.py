@@ -73,6 +73,9 @@ class GenerationInfo(BaseModel):
     gate_passed: bool = False
     gate_reason: str = ""
     trade_count: int = 0
+    # 일평균거래횟수(거래수/거래일수). 빈도 게이트의 주 기준값을 대시보드에 노출한다.
+    #   기본 0.0이라 이 값을 발행하지 않던 구 상태(state)도 그대로 검증 통과한다(하위호환).
+    daily_avg_trades: float = 0.0
     mdd: float = 0.0
     profit: float = 0.0  # 수익금(총 실현 손익, 원).
     # P10 — 수익률(총수익률, %). 기존 profit(원)과 별개로 발행한다. 기본 0.0이라

@@ -29,6 +29,13 @@ class LoopConfig:
     # --- 루프 파라미터 placeholder (이후 단계용, 아직 미사용) ---
     mdd_cap: float = 35.0
     min_trades: int = 30
+    # min_daily_trades: 일평균거래횟수(거래수/거래일수) 하한 — 빈도 게이트의 주 기준.
+    #   일일 시스템 트레이딩 기준 2~3일에 1회 이상(>=0.5)이 정상 빈도다. 절대
+    #   거래수(min_trades)는 1년 기준이면 너무 희소해 루프가 희소 전략(일평균
+    #   0.08~0.4회)으로 잘못 수렴했다. 그래서 게이트 주 기준을 일평균으로 옮긴다.
+    #   metrics에 daily_avg_trades가 있으면 이 값으로 게이트를 판정하고, 없으면(구
+    #   데이터/테스트) min_trades 절대 하한으로 폴백한다(하위호환).
+    min_daily_trades: float = 0.5
     # overtrade_softcap: 거래수가 이 값을 넘으면 graded에서 과매매 감점을 준다.
     #   시드 105건은 안전(<=150), 과매매 248건은 감점(softcap/trade_count<1). 0이면
     #   페널티 비활성(하위호환: 기존 동작 그대로).

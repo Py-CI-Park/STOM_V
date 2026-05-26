@@ -50,7 +50,8 @@ class Individual:
     __slots__ = (
         "buy_name", "sell_name", "buy_code", "sell_code",
         "graded", "gate_passed", "hard_score",
-        "trade_count", "mdd", "profit", "total_profit_pct", "profit_term",
+        "trade_count", "daily_avg_trades", "mdd", "profit", "total_profit_pct",
+        "profit_term",
         "gate_distance", "ok", "reason",
         "origin",
     )
@@ -67,6 +68,8 @@ class Individual:
         self.gate_passed: bool = False
         self.hard_score: Optional[float] = None
         self.trade_count: int = 0
+        # 일평균거래횟수(거래수/거래일수). 빈도 게이트 주 기준값을 세대 행/대시보드에 발행.
+        self.daily_avg_trades: float = 0.0
         self.mdd: float = 0.0
         self.profit: float = 0.0  # 수익금(원).
         # P10 — 수익률(총수익률, %). profit(원)과 별개로 대시보드 세대 행/차트에 발행한다.
@@ -281,6 +284,7 @@ def _evaluate_individual(ind: Individual, config: LoopConfig, warm_session) -> N
     ind.gate_passed = bool(fit.gate_passed)
     ind.hard_score = float(fit.score)
     ind.trade_count = int(fit.trade_count)
+    ind.daily_avg_trades = float(fit.daily_avg_trades)
     ind.mdd = float(graded.mdd)
     ind.profit = float(graded.total_profit)
     # P10 — 수익률(%)은 graded에 없고 엔진 metrics에만 있다(total_profit_pct='수익률합계').
@@ -410,6 +414,7 @@ def _population_page_data(pop: List[Individual], gen_no: int, guardfail: int) ->
             "graded": round(float(ind.graded), 6),
             "gate_passed": bool(ind.gate_passed),
             "trade_count": int(ind.trade_count),
+            "daily_avg_trades": round(float(ind.daily_avg_trades), 4),
             "mdd": round(float(ind.mdd), 4),
             "profit": round(float(ind.profit), 2),
             "total_profit_pct": round(float(ind.total_profit_pct), 4),
@@ -448,6 +453,7 @@ def _record_and_history(
         gate_passed=bool(ind.gate_passed),
         reason=ind.reason or ind.gate_distance,
         trade_count=int(ind.trade_count),
+        daily_avg_trades=float(ind.daily_avg_trades),
         mdd=float(ind.mdd), profit=float(ind.profit),
         total_profit_pct=float(ind.total_profit_pct),
         strategy_gist=_gist(ind.buy_name),

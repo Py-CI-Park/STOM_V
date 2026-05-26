@@ -217,6 +217,8 @@ function FitnessChart({ state, target = 1.0 }) {
                 </span>
                 <span style={{ color: "var(--ink-2)" }}>거래</span>
                 <span>{hover.trade_count}</span>
+                <span style={{ color: "var(--ink-2)" }}>일평균거래</span>
+                <span>{(typeof hover.daily_avg_trades === "number" ? hover.daily_avg_trades : 0).toFixed(2)}</span>
                 <span style={{ color: "var(--ink-2)" }}>MDD</span>
                 <span style={{ color: "var(--red)" }}>{fmtPct(hover.mdd)}</span>
                 <span style={{ color: "var(--ink-2)" }}>손익</span>

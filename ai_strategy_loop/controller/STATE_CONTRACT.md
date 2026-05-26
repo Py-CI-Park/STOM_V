@@ -66,6 +66,7 @@ WebSocket(`/ws`)으로 push 한다.
 | `gate_passed` | bool | 하드 게이트 통과 여부 |
 | `gate_reason` | str | 게이트 사유/거리 |
 | `trade_count` | int | 거래 수 |
+| `daily_avg_trades` | float | 일평균거래횟수(거래수/거래일수) — 빈도 게이트 주 기준 |
 | `mdd` | float | MDD(%) |
 | `profit` | float | 총 손익 |
 | `strategy_gist` | str | 전략 핵심 한 줄 요약 |

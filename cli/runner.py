@@ -680,8 +680,19 @@ def _extract_metrics(config, min_rowid=0):
         return None
 
     row = df.iloc[0]
+    trade_count = int(row.get('거래횟수', 0))
+    # 일평균거래횟수 = 거래횟수 / 거래일수 (stock_bt 컬럼에 직접 존재; 예 0.4).
+    #   일일 시스템 트레이딩 빈도 게이트의 주 기준이다(절대 거래수가 아니라 일평균).
+    daily_avg_trades = float(row.get('일평균거래횟수', 0.0))
+    # 거래일수(day_count): stock_bt에 직접 없으므로 일평균에서 역산한다.
+    #   거래일수 = 거래횟수 / 일평균(반올림). 일평균이 0이면 역산 불가 → 0.
+    if daily_avg_trades > 0.0:
+        day_count = int(round(trade_count / daily_avg_trades))
+    else:
+        day_count = 0
     return {
-        'trade_count': int(row.get('거래횟수', 0)),
+        'trade_count': trade_count,
+        'daily_avg_trades': daily_avg_trades,
         'win_rate': float(row.get('승률', 0.0)),
         'avg_profit_pct': float(row.get('평균수익률', 0.0)),
         'total_profit_pct': float(row.get('수익률합계', 0.0)),
@@ -693,7 +704,7 @@ def _extract_metrics(config, min_rowid=0):
         'seed_capital': float(row.get('필요자금', 0.0)),
         'max_hold_count': int(row.get('최대보유종목수', 0)),
         'avg_hold_time': float(row.get('평균보유기간', 0.0)),
-        'day_count': 0,
+        'day_count': day_count,
         'bootstrap_avg': 0.0,
         'bootstrap_min': 0.0,
         'bootstrap_max': 0.0,

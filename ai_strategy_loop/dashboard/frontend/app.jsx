@@ -53,6 +53,8 @@ function App() {
 
   // Find mdd_cap from configSpec defaults to color MDDs in the table
   const mddCap = (configSpec.find(f => f.name === "mdd_cap")?.default) ?? 15;
+  // 일평균거래횟수 하한(빈도 게이트 주 기준) — 테이블에서 미달 행을 경고색으로 표시.
+  const minDailyTrades = (configSpec.find(f => f.name === "min_daily_trades")?.default) ?? 0.5;
   const targetScore = (configSpec.find(f => f.name === "target_score")?.default) ?? 1.0;
 
   const pct = state.max_generations > 0 ? Math.min(100, (state.current_gen / state.max_generations) * 100) : 0;
@@ -143,7 +145,7 @@ function App() {
             <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
               <FitnessChart state={state} target={targetScore} />
               <ProfitChart state={state} targetPct={0} />
-              <GenerationsTable state={state} mddCap={mddCap}
+              <GenerationsTable state={state} mddCap={mddCap} minDailyTrades={minDailyTrades}
                                 onViewCode={(g) => setCodeViewGen(g)} />
               {/* 운영·관찰: run 비교 콘솔(REST /runs, loop_runs.db 직접) */}
               <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />

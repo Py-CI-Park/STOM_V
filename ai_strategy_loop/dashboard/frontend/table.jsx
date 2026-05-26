@@ -1,7 +1,13 @@
 /* Generations table - newest at top, current highlighted, expandable gist */
 const { useState: useState_t, useMemo: useMemo_t } = React;
 
-function GenerationsTable({ state, mddCap = 15, onViewCode }) {
+// fmtDaily: 일평균거래횟수를 소수 2자리로 표시(없으면 0.00). fmt 헬퍼가 없을 때 폴백.
+function fmtDaily(v) {
+  const n = typeof v === "number" ? v : 0;
+  return n.toFixed(2);
+}
+
+function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode }) {
   const [expanded, setExpanded] = useState_t(new Set());
 
   const rows = useMemo_t(() => {
@@ -39,6 +45,7 @@ function GenerationsTable({ state, mddCap = 15, onViewCode }) {
               <th style={{ width: 82 }}>등급점수</th>
               <th style={{ width: 64 }}>게이트</th>
               <th style={{ width: 70 }}>거래수</th>
+              <th style={{ width: 84 }}>일평균거래</th>
               <th style={{ width: 76 }}>MDD</th>
               <th style={{ width: 80 }}>수익률</th>
               <th style={{ width: 120 }}>수익금</th>
@@ -60,6 +67,7 @@ function GenerationsTable({ state, mddCap = 15, onViewCode }) {
                 <td className="num-muted">—</td>
                 <td className="num-muted">—</td>
                 <td className="num-muted">—</td>
+                <td className="num-muted">—</td>
                 <td className="gist-cell" style={{ color: "var(--amber)" }}>
                   {state.latest?.phase || "—"} · {state.latest?.last_checkpoint || ""}
                 </td>
@@ -68,13 +76,16 @@ function GenerationsTable({ state, mddCap = 15, onViewCode }) {
             )}
             {rows.length === 0 && !running && (
               <tr>
-                <td colSpan="10" style={{ textAlign: "center", padding: 32, color: "var(--ink-3)" }}>
+                <td colSpan="11" style={{ textAlign: "center", padding: 32, color: "var(--ink-3)" }}>
                   아직 실행된 세대가 없습니다
                 </td>
               </tr>
             )}
             {rows.map(g => {
               const mddBad = typeof g.mdd === "number" && g.mdd > mddCap;
+              // 일평균거래횟수가 빈도 하한 미달이면 경고색(빈도 게이트 탈락 신호).
+              const dailyBad = typeof g.daily_avg_trades === "number"
+                && g.daily_avg_trades < minDailyTrades;
               const isExp = expanded.has(g.gen_no);
               return (
                 <tr key={g.gen_no}>
@@ -95,6 +106,10 @@ function GenerationsTable({ state, mddCap = 15, onViewCode }) {
                       : <span className="pill gate-fail">✗</span>}
                   </td>
                   <td className="mono">{g.trade_count ?? 0}</td>
+                  <td className={`mono ${dailyBad ? "num-neg" : g.daily_avg_trades >= minDailyTrades ? "num-pos" : ""}`}
+                      title="일평균거래횟수 (거래수/거래일수) — 빈도 게이트 주 기준">
+                    {fmtDaily(g.daily_avg_trades)}
+                  </td>
                   <td className={`mono ${mddBad ? "num-neg" : ""}`}>{fmtPct(g.mdd)}</td>
                   <td className={`mono ${g.total_profit_pct > 0 ? "num-pos" : g.total_profit_pct < 0 ? "num-neg" : "num-muted"}`}>
                     {fmtPct(g.total_profit_pct)}
