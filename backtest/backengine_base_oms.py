@@ -80,7 +80,7 @@ class BackEngineBaseOms(BackEngineBase):
         시분초 = int(str(self.index)[8:]) if self.is_tick else int(str(self.index)[8:] + '00')
         순매수금액 = 초당매수금액 - 초당매도금액 if self.is_tick else 분당매수금액 - 분당매도금액
         종목명, 종목코드, 데이터길이, 체결시간 = self.name, self.code, self.tick_count, self.index
-        self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else self.code)
+        self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else None)
 
         current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
         리스크점수 = 패턴점수 = 패턴신뢰도 = 거래량점수 = 거래량신뢰도 = 가격대점수 = 가격대신뢰도 = 변동성점수 = 변동성신뢰도 = \

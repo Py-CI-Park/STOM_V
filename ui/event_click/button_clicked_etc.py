@@ -283,7 +283,7 @@ def lvbutton_clicked_03(ui):
 
                 lvrg_text = \
                     f'{lv2};{lv3};{lv4}^{lv5};{lv6};{lv7}^{lv8};{lv9};{lv10}^{lv11};{lv12};{lv13}^{lv14};{lv15};{lv16}'
-                query  = 'UPDATE main SET 바이낸스선물고정레버리지 = ?, 바이낸스선물고정레버리지값 = ?, 바이낸스선물고정레버리지값 = ?'
+                query  = 'UPDATE main SET 바이낸스선물고정레버리지 = ?, 바이낸스선물고정레버리지값 = ?, 바이낸스선물변동레버리지값 = ?'
                 values = (lv0, lv1, lvrg_text)
                 ui.queryQ.put(('설정디비', query, values))
                 settings_save_completed(ui)

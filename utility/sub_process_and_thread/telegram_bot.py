@@ -102,7 +102,7 @@ class TelegramBot(QThread):
         except asyncio.CancelledError:
             pass
         except Exception:
-            self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - start_bot'))
+            self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
             self.running = False
 
     async def setup_application(self, application):
@@ -190,7 +190,7 @@ class TelegramBot(QThread):
                     self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
                     self.bot_task = self.loop.create_task(self.start_bot())
             except Exception:
-                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - restart_bot'))
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
                 self.running = False
 
     async def send_message(self, text):

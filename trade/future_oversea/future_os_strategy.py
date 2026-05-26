@@ -70,7 +70,7 @@ class FutureOsStrategy(BaseStrategy):
         Returns:
             매수 수량
         """
-        return int(betting / (현재가 if 매수가 == 0 else 매수가) * oc_ratio / 100)
+        return int(betting * oc_ratio / 100)
 
     def _set_sell_count(self, 보유수량, 보유비율, oc_ratio):
         """매도 수량을 설정합니다.

@@ -928,7 +928,7 @@ class ChartHogaQuery:
                     arry[:, self.dict_findex['WILLR']] = WILLR
                 arry = np.nan_to_num(arry)
             except Exception:
-                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 보조지표의 설정값이 잘못되었습니다.'))
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
                 return
 
         fm_list, dict_fm, fm_tcnt = get_formula_data(True, arry.shape[1])

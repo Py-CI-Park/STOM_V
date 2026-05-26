@@ -196,9 +196,7 @@ class UpbitWebSocketReceiver(QThread):
                     await self._connect_cg()
                 await self._receive_cg_msg()
             except Exception:
-                self.windowQ.put(
-                    (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 실시간체결 수신 중 오류가 발생하여 재연결합니다.')
-                )
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
             await self._disconnect_cg()
 
@@ -210,23 +208,21 @@ class UpbitWebSocketReceiver(QThread):
                     await self._connect_hg()
                 await self._receive_hg_msg()
             except Exception:
-                self.windowQ.put(
-                    (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 실시간호가 수신 중 오류가 발생하여 재연결합니다.')
-                )
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
             await self._disconnect_hg()
 
     async def _connect_cg(self):
         """거래 웹소켓에 연결합니다."""
         self.conn_cg = True
-        self.webs_cg = await websockets.connect(self.url, ping_interval=60)
+        self.webs_cg = await websockets.connect(self.url)
         data = [{'ticket': str(uuid.uuid4())}, {'type': 'ticker', 'codes': self.codes, 'isOnlyRealtime': True}]
         await self.webs_cg.send(json.dumps(data))
 
     async def _connect_hg(self):
         """주문 웹소켓에 연결합니다."""
         self.conn_hg = True
-        self.webs_hg = await websockets.connect(self.url, ping_interval=60)
+        self.webs_hg = await websockets.connect(self.url)
         data = [{'ticket': str(uuid.uuid4())}, {'type': 'orderbook', 'codes': self.codes, 'isOnlyRealtime': True}]
         await self.webs_hg.send(json.dumps(data))
 
@@ -301,9 +297,7 @@ class UpbitWebSocketTrader(QThread):
                     await self._connect()
                 await self._receive_msg()
             except Exception:
-                self.windowQ.put(
-                    (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 주문체결 수신 중 오류가 발생하여 재연결합니다.')
-                )
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
             await self._disconnect()
 
@@ -319,7 +313,7 @@ class UpbitWebSocketTrader(QThread):
     async def _connect(self):
         """웹소켓에 연결합니다."""
         headers = self._headers()
-        self.websocket = await websockets.connect(self.url, ping_interval=60, additional_headers=headers)
+        self.websocket = await websockets.connect(self.url, additional_headers=headers)
         self.connected = True
         data = [{'ticket': str(uuid.uuid4())}, {'type': 'myOrder'}]
         await self.websocket.send(json.dumps(data))

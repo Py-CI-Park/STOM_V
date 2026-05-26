@@ -13,7 +13,7 @@ class BackEngineStockOms(BackEngineBaseOms):
     def _get_hogaunit(self, 주문가격):
         """호가 단위를 반환합니다.
         Args:
-            주문가격: 주문 가격
+            주문가격: 주문가격
         Returns:
             호가 단위
         """

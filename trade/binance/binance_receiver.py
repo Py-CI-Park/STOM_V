@@ -35,6 +35,8 @@ class BinanceReceiver(BaseReceiver):
             if '.' in float_:
                 float_ = float_.split('.')[1]
                 return len(float_)
+            elif '1e-0' in float_:
+                return int(float_[-1:])
             return 0
 
         datas = self.binance.futures_exchange_info()

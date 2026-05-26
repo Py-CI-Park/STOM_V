@@ -39,7 +39,7 @@ def backtest_engine_kill(ui):
         if ui.dialog_backengine.isVisible():
             ui.windowQ.put((UI_NUM['백테엔진'], '<font color=#54d2f9>공유메모리 삭제 중 ...</font>'))
         else:
-            ui.windowQ.put((UI_NUM['시스템로그'], '백테스트엔진 공유메모리 삭제 중 ...'))
+            ui.windowQ.put((UI_NUM['시스템로그'], '시스템 명령 실행 알림 - 백테스트엔진 공유메모리 삭제 중 ...'))
         for shared_info in ui.shared_info:
             try:
                 shm = shared_memory.SharedMemory(name=shared_info['shm_name'])
@@ -51,13 +51,13 @@ def backtest_engine_kill(ui):
         if ui.dialog_backengine.isVisible():
             ui.windowQ.put((UI_NUM['백테엔진'], '<font color=#54d2f9>공유메모리 삭제 완료</font>'))
         else:
-            ui.windowQ.put((UI_NUM['시스템로그'], '백테스트엔진 공유메모리 삭제 완료'))
+            ui.windowQ.put((UI_NUM['시스템로그'], '시스템 명령 실행 알림 - 백테스트엔진 공유메모리 삭제 완료'))
 
     elif ui.shared_info and 'file_name' in ui.shared_info[0].keys():
         if ui.dialog_backengine.isVisible():
             ui.windowQ.put((UI_NUM['백테엔진'], '<font color=#54d2f9>임시파일 삭제 중 ...</font>'))
         else:
-            ui.windowQ.put((UI_NUM['시스템로그'], '백테스트엔진 임시파일 삭제 중 ...'))
+            ui.windowQ.put((UI_NUM['시스템로그'], '시스템 명령 실행 알림 - 백테스트엔진 임시파일 삭제 중 ...'))
         for shared_info in ui.shared_info:
             try:
                 os.remove(shared_info['file_name'])
@@ -66,7 +66,7 @@ def backtest_engine_kill(ui):
         if ui.dialog_backengine.isVisible():
             ui.windowQ.put((UI_NUM['백테엔진'], '<font color=#54d2f9>임시파일 삭제 완료</font>'))
         else:
-            ui.windowQ.put((UI_NUM['시스템로그'], '백테스트엔진 임시파일 삭제 완료'))
+            ui.windowQ.put((UI_NUM['시스템로그'], '시스템 명령 실행 알림 - 백테스트엔진 임시파일 삭제 완료'))
 
     clear_backtestQ(ui)
     for p in ui.back_sprocs:
@@ -77,7 +77,7 @@ def backtest_engine_kill(ui):
         q.close()
     for q in ui.back_eques:
         q.close()
-    ui.windowQ.put((UI_NUM['시스템로그'], '백테스트엔진 중간집계용 프로세스 종료 완료'))
+    ui.windowQ.put((UI_NUM['시스템로그'], '시스템 명령 실행 알림 - 백테스트엔진 중간집계용 프로세스 종료 완료'))
 
     ui.back_eprocs = []
     ui.back_sprocs = []

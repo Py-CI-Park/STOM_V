@@ -221,7 +221,7 @@ class BaseStrategy(StgGlobalsFunc):
             try:
                 exec(indistg)
             except Exception:
-                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - indistg'))
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
         self.indi_settings = list(self.indicator.values())
 
     def _get_buy_indi_stg(self, buytxt):
@@ -1259,7 +1259,7 @@ class BaseStrategy(StgGlobalsFunc):
                     try:
                         exec(v)
                     except Exception:
-                        self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 경과틱수 연산오류'))
+                        self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
             if 데이터길이 >= self.rolling_window and self.fm_list:
                 for name, _, _, fname, data_type, _, _, style, stg, col_idx in self.fm_list:
@@ -1346,7 +1346,7 @@ class BaseStrategy(StgGlobalsFunc):
                             try:
                                 exec(self.buystrategy)
                             except Exception:
-                                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
+                                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
                     elif D or E:
                         BUY_LONG, SELL_SHORT = False, False
                         분할매수기준수익률 = \
@@ -1410,7 +1410,7 @@ class BaseStrategy(StgGlobalsFunc):
                             try:
                                 exec(self.sellstrategy)
                             except Exception:
-                                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 매도전략'))
+                                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
                     elif D or E or 강제청산:
                         if H or K or M or P or R:
@@ -1750,8 +1750,10 @@ class BaseStrategy(StgGlobalsFunc):
                     df.to_sql(name, con, index=False, if_exists='append', chunksize=2000)
                 else:
                     df.to_sql(code, con, index=False, if_exists='append', chunksize=2000)
-                log_text = f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... [{self.gubun+1}]{i+1:02d}/{last:02d}'
-                self.windowQ.put((UI_NUM['기본로그'], log_text))
+                self.windowQ.put((
+                    UI_NUM['기본로그'],
+                    f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... [{self.gubun+1}]{i+1:02d}/{last:02d}'
+                ))
             save_time = (now() - start).total_seconds()
             self.windowQ.put((UI_NUM['기본로그'], f'시스템 명령 실행 알림 - 데이터 저장 쓰기소요시간은 [{save_time:.6f}]초입니다.'))
         con.close()

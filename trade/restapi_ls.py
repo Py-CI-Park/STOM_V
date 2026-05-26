@@ -124,8 +124,11 @@ class LsRestAPI:
                         exclusion_list.append(code)
                         dict_data.pop(code, None)
 
-                    if i % 100 == 0 or i == last - 1:
-                        self.windowQ.put((UI_NUM['기본로그'], f'국내주식 상장주식수 조회 중 ... [{i+1:04d}/{last:04d}]'))
+                    if (i + 1) % 100 == 0 or i == last - 1:
+                        self.windowQ.put((
+                            UI_NUM['기본로그'],
+                            f'시스템 명령 실행 알림 - 국내주식 상장주식수 조회 중 ... [{i+1:04d}/{last:04d}]'
+                        ))
 
                     qtest_qwait(0.1)
 
@@ -302,16 +305,19 @@ class LsRestAPI:
             tr_name = '해외선물종목정보'
             out_block = LsRestData.tr_data[tr_name]['out_block']
             data = self._post(tr_name, 구분='')
+            name_list = []
             dict_data = {}
             for data in data[out_block]:
                 name = data['BscGdsNm'].replace(' ', '_')
-                dict_data[data['Symbol']] = {
-                    '종목명': name,
-                    '위탁증거금': int(float(data['OpngMgn'])),
-                    '호가단위': float(data['UntPrc']),
-                    '틱가치': float(data['MnChgAmt']),
-                    '소숫점자리수': int(data['DotGb'])
-                }
+                if name not in name_list:
+                    name_list.append(name)
+                    dict_data[data['Symbol']] = {
+                        '종목명': name,
+                        '위탁증거금': int(float(data['OpngMgn'])),
+                        '호가단위': float(data['UntPrc']),
+                        '틱가치': float(data['MnChgAmt']),
+                        '소숫점자리수': int(data['DotGb'])
+                    }
             return dict_data, list(dict_data.keys())
         except Exception:
             self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
@@ -370,8 +376,8 @@ class LsRestAPI:
             주문구분코드 = LsRestData.국내주식주문구분코드[주문구분]
             호가유형코드 = LsRestData.국내주식호가유형코드[호가유형]
             주문조건코드 = LsRestData.국내주식주문조건코드[호가유형]
-            data = self._post(tr_name, 종목코드=종목코드, 주문수량=주문수량, 주문가격=주문가격, 주문구분코드=주문구분코드, 호가유형코드=호가유형코드,
-                              신용거래코드='000', 대출일='', 주문조건코드=주문조건코드, 회원사번호='')
+            data = self._post(tr_name, 종목코드=종목코드, 주문수량=주문수량, 주문가격=주문가격, 주문구분코드=주문구분코드,
+                              호가유형코드=호가유형코드, 신용거래코드='000', 대출일='', 주문조건코드=주문조건코드, 회원사번호='')
             return data[out_block]['OrdNo'], data['rsp_msg']
         except Exception:
             return 0, format_exc()
@@ -438,7 +444,8 @@ class LsRestAPI:
             out_block = LsRestData.tr_data[tr_name]['out_block']
             주문구분코드 = LsRestData.선물주문구분코드[주문구분]
             호가유형코드 = LsRestData.지수선물호가유형코드[호가유형]
-            data = self._post(tr_name, 종목코드=종목코드, 주문구분코드=주문구분코드, 호가유형코드=호가유형코드, 주문가격=주문가격, 주문수량=주문수량)
+            data = self._post(tr_name, 종목코드=종목코드, 주문구분코드=주문구분코드, 호가유형코드=호가유형코드,
+                              주문가격=주문가격, 주문수량=주문수량)
             return data[out_block]['OrdNo'], data['rsp_msg']
         except Exception:
             return 0, format_exc()
@@ -449,7 +456,8 @@ class LsRestAPI:
             tr_name = '지수선물정정주문'
             out_block = LsRestData.tr_data[tr_name]['out_block']
             호가유형코드 = LsRestData.지수선물호가유형코드[호가유형]
-            data = self._post(tr_name, 종목코드=종목코드, 원주문번호=원주문번호, 호가유형코드=호가유형코드, 주문가격=주문가격, 주문수량=주문수량)
+            data = self._post(tr_name, 종목코드=종목코드, 원주문번호=원주문번호, 호가유형코드=호가유형코드,
+                              주문가격=주문가격, 주문수량=주문수량)
             return data[out_block]['OrdNo'], data['rsp_msg']
         except Exception:
             return 0, format_exc()
@@ -471,8 +479,8 @@ class LsRestAPI:
             out_block = LsRestData.tr_data[tr_name]['out_block']
             주문구분코드 = LsRestData.선물주문구분코드[주문구분]
             호가유형코드 = LsRestData.지수선물호가유형코드[호가유형]
-            data = self._post(tr_name, 종목코드=종목코드, 주문구분코드=주문구분코드, 호가유형코드=호가유형코드, 주문가격=주문가격,
-                              주문수량=주문수량)
+            data = self._post(tr_name, 종목코드=종목코드, 주문구분코드=주문구분코드, 호가유형코드=호가유형코드,
+                              주문가격=주문가격, 주문수량=주문수량)
             return data[out_block]['OrdNo'], data['rsp_msg']
         except Exception:
             return 0, format_exc()
@@ -483,8 +491,8 @@ class LsRestAPI:
             tr_name = '야간선물정정주문'
             out_block = LsRestData.tr_data[tr_name]['out_block']
             호가유형코드 = LsRestData.지수선물호가유형코드[호가유형]
-            data = self._post( tr_name, 종목코드=종목코드, 원주문번호=원주문번호, 호가유형코드=호가유형코드, 주문가격=주문가격,
-                               주문수량=주문수량)
+            data = self._post( tr_name, 종목코드=종목코드, 원주문번호=원주문번호, 호가유형코드=호가유형코드,
+                               주문가격=주문가격, 주문수량=주문수량)
             return data[out_block]['OrdNo'], data['rsp_msg']
         except Exception:
             return 0, format_exc()
@@ -578,7 +586,7 @@ class LsWebSocketReceiver(QThread):
                     reg_task = asyncio.create_task(self._real_reg_cg())
                 await self._receive_cg_msg()
             except Exception:
-                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - LsWebSocketReceiver Chegyeol'))
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
             await self._disconnect_cg()
 
@@ -594,16 +602,16 @@ class LsWebSocketReceiver(QThread):
                     reg_task = asyncio.create_task(self._real_reg_hg())
                 await self._receive_hg_msg()
             except Exception:
-                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - LsWebSocketReceiver Hoga'))
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
             await self._disconnect_hg()
 
     async def _connect_cg(self):
-        self.webs_cg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60)
+        self.webs_cg = await websockets.connect(LsRestData.웹소켓주소)
         self.conn_cg = True
 
     async def _connect_hg(self):
-        self.webs_hg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60)
+        self.webs_hg = await websockets.connect(LsRestData.웹소켓주소)
         self.conn_hg = True
 
     async def _receive_cg_msg(self):
@@ -627,14 +635,14 @@ class LsWebSocketReceiver(QThread):
         data = self._get_send_data('장운영정보', '0')
         await self.webs_cg.send(json.dumps(data))
         await asyncio.sleep(0.02)
-        self.windowQ.put((UI_NUM['기본로그'], '장운영정보 실시간시세 등록'))
+        self.windowQ.put((UI_NUM['기본로그'], '시스템 명령 실행 알림 - 장운영정보 실시간시세 등록'))
 
         if self.gubun == '국내주식':
             gubun = f'{self.gubun}VI'
             data = self._get_send_data(gubun, '0000000000')
             await self.webs_cg.send(json.dumps(data))
             await asyncio.sleep(0.02)
-            self.windowQ.put((UI_NUM['기본로그'], f'{gubun}발동해제 실시간시세 등록'))
+            self.windowQ.put((UI_NUM['기본로그'], f'시스템 명령 실행 알림 - {gubun}발동해제 실시간시세 등록'))
 
         gubun = f'{self.gubun}체결'
         for i, code in enumerate(self.symbols):
@@ -643,7 +651,9 @@ class LsWebSocketReceiver(QThread):
             await asyncio.sleep(0.02)
 
             if (i + 1) % 100 == 0 or i == self.last - 1:
-                self.windowQ.put((UI_NUM['기본로그'], f'{gubun} 실시간시세 등록 [{i+1:04d}/{self.last:04d}]'))
+                self.windowQ.put(
+                    (UI_NUM['기본로그'], f'시스템 명령 실행 알림 - {gubun} 실시간시세 등록 [{i+1:04d}/{self.last:04d}]')
+                )
 
     async def _real_reg_hg(self):
         while not self.conn_hg:
@@ -656,7 +666,9 @@ class LsWebSocketReceiver(QThread):
             await asyncio.sleep(0.02)
 
             if (i + 1) % 100 == 0 or i == self.last - 1:
-                self.windowQ.put((UI_NUM['기본로그'], f'{gubun} 실시간시세 등록 [{i+1:04d}/{self.last:04d}]'))
+                self.windowQ.put(
+                    (UI_NUM['기본로그'], f'시스템 명령 실행 알림 - {gubun} 실시간시세 등록 [{i+1:04d}/{self.last:04d}]')
+                )
 
     def _get_send_data(self, gubun: str, code: str):
         if gubun in ('국내주식체결', '국내주식호가'):
@@ -726,18 +738,18 @@ class LsWebSocketTrader(QThread):
                     await self._connect()
                 await self._receive_msg()
             except Exception:
-                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - LsWebSocketTrader'))
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
             await self._disconnect()
 
     async def _connect(self):
-        self.websocket = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60)
+        self.websocket = await websockets.connect(LsRestData.웹소켓주소)
         self.connected = True
         for k, v in LsRestData.주문거래코드.items():
             if self.market in k:
                 data = self._get_send_data(v)
                 await self.websocket.send(json.dumps(data))
-                self.windowQ.put((UI_NUM['기본로그'], f'{k} 실시간시세 계좌등록'))
+                self.windowQ.put((UI_NUM['기본로그'], f'시스템 명령 실행 알림 - {k} 실시간시세 계좌등록'))
 
     async def _receive_msg(self):
         while self.connected:

@@ -31,9 +31,9 @@ def timesync(ui_num, windowQ):
                     dt.second,
                     dt.microsecond // 1000
                 )
-                windowQ.put((ui_num['시스템로그'], f'표준시간 동기화 중 ... 차이 [{offset:.6f}]초'))
+                windowQ.put((ui_num['시스템로그'], f'시스템 명령 실행 알림 - 표준시간 동기화 중 ... 차이 [{offset:.6f}]초'))
             else:
-                windowQ.put((ui_num['시스템로그'], f'표준시간 동기화 완료 [{offset:.6f}]초'))
+                windowQ.put((ui_num['시스템로그'], f'시스템 명령 실행 알림 - 표준시간 동기화 완료 [{offset:.6f}]초'))
                 break
         except Exception:
             pass

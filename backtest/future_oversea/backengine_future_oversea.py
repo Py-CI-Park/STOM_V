@@ -7,14 +7,14 @@ class BackEngineFutureOversea(BackEngineFuture):
     """해외 선물 백테스트 엔진 클래스입니다.
     BackEngineFuture를 상속받아 해외 선물 시장 특화 로직을 구현합니다.
     """
-    def _get_hogaunit(self, 종목코드):
+    def _get_hogaunit(self, 주문가격):
         """호가 단위를 반환합니다.
         Args:
-            종목코드: 종목 코드
+            주문가격: 주문가격
         Returns:
             호가 단위
         """
-        return self.dict_info[종목코드]['호가단위']
+        return self.dict_info[self.code]['호가단위']
 
     def _set_buy_count(self, betting, 현재가, 매수가, oc_ratio):
         """매수 수량을 설정합니다.
@@ -26,7 +26,7 @@ class BackEngineFutureOversea(BackEngineFuture):
         Returns:
             매수 수량
         """
-        return int(betting / 현재가)
+        return int(betting)
 
     def _get_order_price(self, 거래금액, 주문수량):
         """주문 가격을 계산합니다.

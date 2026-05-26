@@ -138,7 +138,7 @@ class KimpWebSocketManager(QThread):
         """업비트 웹소켓에 연결합니다.
         """
         try:
-            self.wsk_upbit = await websockets.connect('wss://api.upbit.com/websocket/v1', ping_interval=60)
+            self.wsk_upbit = await websockets.connect('wss://api.upbit.com/websocket/v1')
             data = [{'ticket': str(uuid.uuid4())[:6]}, {'type': 'ticker', 'codes': self.codes, 'isOnlyRealtime': True}]
             await self.wsk_upbit.send(json.dumps(data))
             self.con_upbit = True

@@ -46,9 +46,7 @@ class BinanceWebSocketReceiver(QThread):
                     await self._connect_cg()
                 await self._receive_msg_cg()
             except Exception:
-                self.windowQ.put(
-                    (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 바이낸스 웹소켓 체결 수신 중 오류가 발생하여 재연결합니다.')
-                )
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
             self.conn_cg = False
             await asyncio.sleep(1)
@@ -61,9 +59,7 @@ class BinanceWebSocketReceiver(QThread):
                     await self._connect_hg()
                 await self._receive_msg_hg()
             except Exception:
-                self.windowQ.put(
-                    (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 바이낸스 웹소켓 호가 수신 중 오류가 발생하여 재연결합니다.')
-                )
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
             self.conn_hg = False
             await asyncio.sleep(1)
@@ -150,9 +146,7 @@ class BinanceWebSocketTrader(QThread):
                     await self._connect()
                 await self._receive_msg()
             except Exception:
-                self.windowQ.put(
-                    (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 바이낸스 웹소켓 체잔 수신 중 오류가 발생하여 재연결합니다.')
-                )
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
             self.connected = False
             await asyncio.sleep(1)
