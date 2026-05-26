@@ -275,11 +275,10 @@ class OptimizeGeneticAlgorithm:
         day_list = df_mt['일자'].unique()
         day_list.sort()
 
-        valid_days = None
+        valid_days = []
         startday, endday = day_list[0], day_list[-1]
         train_count = len([x for x in day_list if startday <= x <= endday])
         if 'V' in self.backname:
-            valid_days = []
             for vsday, veday in valid_days_:
                 try:
                     valid_days_list = [x for x in day_list if vsday <= x <= veday]

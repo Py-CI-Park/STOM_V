@@ -336,7 +336,7 @@ class BaseReceiver:
         """금액 관련 팩터를 업데이트합니다."""
         if code not in self.dict_money:
             """초당(분당)매수금액, 초당(분당)매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격
-                      0               1            2          3          4          5          6          7"""
+                       0               1             2           3          4           5          6           7"""
             self.dict_money[code] = [buy_money, sell_money, buy_money, buy_money, c, sell_money, sell_money, c]
             self.dict_index[code] = {c: 0}
             self.dict_bmbyp[code] = np.zeros(2000, dtype=np.float64)

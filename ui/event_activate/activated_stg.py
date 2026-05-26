@@ -3,7 +3,7 @@
 UI_ACTIBATED_CONFIG = {
     'tables': [
         '{stg_tname}_buy', '{stg_tname}_sell', '{stg_tname}_optibuy', '{stg_tname}_optivars',
-        '{stg_tname}_optisell', '{stg_tname}_vars', '{stg_tname}_buyconds', '{stg_tname}_sellconds'
+        '{stg_tname}_optisell', '{stg_tname}_optigavars', '{stg_tname}_buyconds', '{stg_tname}_sellconds'
     ],
     'widgets': {
         'text_01': 'ss_textEditttt_01', 'text_02': 'ss_textEditttt_02',

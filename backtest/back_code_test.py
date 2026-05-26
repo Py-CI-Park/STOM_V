@@ -336,6 +336,54 @@ class BackCodeTest(QThread):
         def 경과틱수(tick):
             return 1
 
+        def 시그널N(pre):
+            return 1
+
+        def 신뢰도N(pre):
+            return 1
+
+        def 리스크N(pre):
+            return 1
+
+        def 패턴점수N(pre):
+            return 1
+
+        def 패턴신뢰도N(pre):
+            return 1
+
+        def 리스크점수N(pre):
+            return 1
+
+        def 거래량점수N(pre):
+            return 1
+
+        def 거래량신뢰도N(pre):
+            return 1
+
+        def 가격대점수N(pre):
+            return 1
+
+        def 가격대신뢰도N(pre):
+            return 1
+
+        def 변동성점수N(pre):
+            return 1
+
+        def 변동성신뢰도N(pre):
+            return 1
+
+        def 예상수익률N(pre):
+            return 1
+
+        def 익절수익률N(pre):
+            return 1
+
+        def 손절수익률N(pre):
+            return 1
+
+        def 변손익신뢰도N(pre):
+            return 1
+
         def AD_N(pre):
             return 1
 

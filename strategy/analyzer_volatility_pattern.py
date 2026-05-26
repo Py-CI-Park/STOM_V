@@ -245,7 +245,10 @@ class AnalyzerVolatilityPattern:
 
         multi = cpu_count()
         len_code_list = len(code_list)
-        if len_code_list <= multi:
+        if len_code_list == 0:
+            ui.windowQ.put((UI_NUM['학습로그'], '백테DB에 데이터가 존재하지 않습니다.'))
+            return
+        elif len_code_list <= multi:
             code_chunks = [[code] for code in code_list]
         else:
             code_chunks = []

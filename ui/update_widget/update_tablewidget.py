@@ -416,7 +416,7 @@ class UpdateTablewidget:
 
         elif gubun not in self.col_fixed_size_uinums:
             header = tableWidget.horizontalHeader()
-            hwidth = header.width() if gubun != UI_NUM['스톰라이브10'] else header.width() - 10
+            hwidth = header.width() if gubun != UI_NUM['스톰라이브10'] else 1315
             header_count = header.count()
             width = []
             for i in range(header_count):
