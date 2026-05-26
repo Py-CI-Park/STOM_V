@@ -35,7 +35,21 @@ LLM(GPT-5.5, gpt auth)이 매수/매도 전략 코드를 **생성→백테→채
 - ⚠️ **탐색 불안정(비수렴)**: 타임아웃 4회 + 극단 과매매(gen7: 343거래/−6.4M) + 과선별(gen9/14/16/18: 거래 4~23 < min 30) 오감. greedy hill-climb + 다양성 제어 부재의 증거.
 - ⚠️ **선택 이슈**: gate-passed graded=`1+Calmar×R²`라 절대수익 직접 최대화 안 함 → 수익 최고 gen8(+537K)이 아닌 위험조정 gen13(+230K)이 winner로 뽑힘. 절대수익 중시하려면 통과 graded에 수익 가중 필요.
 
-**다음 세션 최우선**(우선순위순): ① 탐색 안정화 = **GA(population/crossover)** — 불안정성이 현 최대 병목, warm-pool로 K개 병렬백테 가능 ② **부검 강화** = 세그먼트 cross-tab + 기존 `cli/analyzer.py`(분위수+t검정)·`cli/ml_factor_model.py`(RF중요도) 재사용 → 거래밴드·손실원인 구체 피드백 ③ **전략 기록·버전비교·누적·메타분석**(사용자 장기 비전; loop_runs.db 확장 + autoresearch/wiki 스킬 활용) ④ holdout/WFO 과적합 방어 ⑤ 운영 대시보드. 인프라(warm/견고/seed-refine)는 완성.
+### ✅ P1~P6 전체 실행 완료 (2026-05-26, ralplan 승인 → 순차 마일스톤)
+ralplan 합의 계획(`.omc/plans/2026-05-26_pages_1-6_dashboard_plan.md`, Architect+Critic 반영)대로 P0~P6를 순차 구현. 누적 신규 단위테스트 **142개**, **baseline 7 failed/1610 passed 유지(신규 실패 0)**.
+- **M0**: baseline 재확정(7 failed/1480). 가치기준 수치화(graded≥1.0·MDD≤20·거래40~80·수익>0).
+- **M1 (P0, `447efc5b`)**: 관찰 seam — contract v2 `page_data` 패스스루(5필드 선동결 대신) + `_publish_live` 배선 + 프론트 **live↔demo 분리 + DEMO 배지**(demo 시뮬레이터 날조 차단).
+- **M2 (P1, `5312748d`)**: 부검 강화 — `autopsy/segment.py`(기존 `cli/research_segments.py` 시총×시간대 cross-tab + `analyzer.py` 분위수/t검정/BH 임계값 wrap), NL 피드백 + 토큰 게이트(1400자), `page_data['autopsy']`.
+- **M3 (P2, `1c6afc79`)**: GA — `controller/ga.py` 자기완결(population K·crossover 2부모·elitism·**가드실패 시 K 유지**), `evolution_mode` 단일 분기, `page_data['population']`. ⚠️ 비용: 세대당 K×warm — over-firing 타임아웃 증폭(아래 fail-fast로 완화).
+- **fail-fast (`34794d35`)**: `bt_warm_run_timeout=120`(per-run BackTest join), 데이터로딩 타임아웃은 600 분리. over-firing 타임아웃당 ~180초 절약.
+- **M4 (P3+P4, `17af7bc1`)**: 연구 데이터 파이프라인 — state 스키마 v2(schema_version·parent_gen·diff_from_parent, **코드 복제 금지 namespaced 참조**), `controller/lineage.py`(계보트리·버전diff·run비교 loop_runs.db 직접), `meta/analyze.py`(통과전략 공통조건·개선변경·실패패턴 → meta_insights.json 영속, 생성 환류 토글 OFF 기본), `page_data['lineage'/'meta']`.
+- **M5 (P5, `462744f9`)**: holdout 졸업검사 — 결과 CSV 거래일 분할로 holdout 게이트(추가 백테 없음), `graduation_holdout` 토글, `page_data['holdout']`. WFO는 DB경계 불확실로 후속 노트.
+- **M6 (P6, `28fdce4d`)**: 운영 — `controller/runlock.py`(cross-process PID/lockfile 락 + stale 복구; CLI/GUI 동시실행 차단), `/runs`·`/runs/compare` 엔드포인트 + RunComparePanel, ExportStatusBanner(final_approval→export_winner 게이트 유지), 패널 응집 통합.
+
+**cross-cutting 달성**: CLI(`python -m ai_strategy_loop.controller.loop`)·GUI(`python -m ai_strategy_loop` + /control start) 둘 다 같은 state 발행 → 대시보드 `/ui`에서 부검·population·계보·메타·holdout을 LIVE 패널로 실시간 관찰(demo는 배지 구분).
+
+### 다음 세션 후속(코드 완료, 실측·튜닝 잔여)
+① **GA 값-비교 실측**(GA vs hillclimb 동일 wall-clock; fail-fast 적용 후 재측정) ② **메타 환류 A/B**(meta_seed ON vs OFF 졸업률) ③ **WFO OOS**(DB경계 확인 후 배선) ④ 생성 품질 개선(over-firing 추가 억제) ⑤ **열린 결정**(mdd_cap 35 유지 vs 상향; winner=위험조정 vs 절대수익 가중). 인프라·기능(P0~P6)은 완성.
 **실행법(warm seed-and-refine)**: 시드를 루프 DB에 복사(`_database/strategy.db`→`ai_strategy_loop/state/loop_strategies.db`) 후 `python -m ai_strategy_loop.controller.loop --config-json <warm+seed cfg>`. 예시 cfg: `C:/Temp/warm_seed_cfg.json` 패턴(bt_engine_mode=warm, bt_timeframe=tick, seed_buy/seed_sell, bt_refine_from_best=true, bt_betting="5", bt_warm_engine_count=32).
 
 ### (이하 원래 기록 — 역사적)
