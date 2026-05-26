@@ -368,8 +368,8 @@ def show_db(ui):
         ui: UI 클래스 인스턴스
     """
     from PyQt5.QtCore import Qt
-    from ui.create_widget.dialog_animation import DialogAnimator
     from PyQt5.QtWidgets import QTableWidgetItem
+    from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_db.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_db, duration=300)
@@ -500,6 +500,20 @@ def show_order(ui):
                     break
     else:
         ui.dialog_order.close()
+
+
+def show_passticks_dialog(ui):
+    """경과틱수 설정 다이얼로그를 토글합니다.
+    Args:
+        ui: UI 클래스 인스턴스
+    """
+    from ui.create_widget.dialog_animation import DialogAnimator
+
+    if not ui.dialog_setsj.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_setsj, duration=300)
+        ui.dialog_setsj.show()
+    else:
+        ui.dialog_setsj.close()
 
 
 def show_pattern_dialog(ui):

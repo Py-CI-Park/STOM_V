@@ -522,10 +522,15 @@ def setting_acc_view(ui):
         ui: UI 클래스 인스턴스
     """
     from ui.create_widget.set_style import style_bc_bt
+    from ui.create_widget.dialog_animation import DialogAnimator
 
     if ui.sj_etc_pButton_01.text() == '계정 텍스트 보기':
         ui.pa_lineEditttt_01.clear()
-        ui.dialog_pass.show() if not ui.dialog_pass.isVisible() else ui.dialog_pass.close()
+        if not ui.dialog_pass.isVisible():
+            DialogAnimator.setup_dialog_animation(ui.dialog_pass, duration=300)
+            ui.dialog_pass.show()
+        else:
+            ui.dialog_pass.close()
     else:
         from PyQt5.QtWidgets import QLineEdit
         ui.sj_main_liEdit_01.setEchoMode(QLineEdit.Password)
@@ -991,14 +996,6 @@ def setting_all_save(ui):
     shutil.copy(origin_file, copy_file)
     load_setting_file(ui)
     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
-
-
-def setting_passticks(ui):
-    """경과틱수 설정 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
-    ui.dialog_setsj.show() if not ui.dialog_setsj.isVisible() else ui.dialog_setsj.close()
 
 
 def load_setting_file(ui):

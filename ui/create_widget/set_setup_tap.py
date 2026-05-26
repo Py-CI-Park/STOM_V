@@ -5,7 +5,7 @@ from ui.event_click.button_clicked_settings import *
 from PyQt5.QtWidgets import QLabel, QTabWidget, QWidget
 from ui.event_activate import activated_etc, activated_stg
 from ui.event_click.button_clicked_etc import lvbutton_clicked_01
-from ui.event_click.button_clicked_show_dialog import show_pattern_dialog
+from ui.event_click.button_clicked_show_dialog import show_pattern_dialog, show_passticks_dialog
 
 
 class SetSetupTap:
@@ -201,7 +201,7 @@ class SetSetupTap:
         self.ui.sj_save_Button_06 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_06, bounced=True, click=self.ui.setting_serial_save)
 
         self.ui.sj_etc_pButton_01 = self.wc.setPushbutton('계정 텍스트 보기', parent=self.ui.sj_bs_groupBox_01, bounced=True, click=lambda: setting_acc_view(self.ui))
-        self.ui.sj_etc_pButton_02 = self.wc.setPushbutton('경과틱수 변수설정', parent=self.ui.sj_bs_groupBox_04, bounced=True, click=lambda: setting_passticks(self.ui))
+        self.ui.sj_etc_pButton_02 = self.wc.setPushbutton('경과틱수 변수설정', parent=self.ui.sj_bs_groupBox_04, bounced=True, click=lambda: show_passticks_dialog(self.ui))
         self.ui.sj_etc_pButton_03 = self.wc.setPushbutton('각종 분석 학습', parent=self.ui.sj_bs_groupBox_05, bounced=True, click=lambda: show_pattern_dialog(self.ui))
 
         # --------------------------------------------------------------------------------------------------------------

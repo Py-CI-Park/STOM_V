@@ -9,8 +9,8 @@ from traceback import format_exc
 from backtest.back_static_numba import get_result, bootstrap_test
 from utility.static_method.static_datetime import now, str_ymdhms
 from utility.static_method.static_decorator import error_decorator
-from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, UI_NUM, COLUMNS_BBS
 from backtest.back_static import plot_show, get_moneytop_query, get_result_dataframe, add_mdd
+from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, UI_NUM, COLUMNS_BBS, DB_SETTING
 
 
 class BackTest:
@@ -280,16 +280,17 @@ class BackTest:
                 insert_blacklist.append(name)
 
         if insert_blacklist:
-            con = sqlite3.connect(DB_STRATEGY)
+            con = sqlite3.connect(DB_SETTING)
             cur = con.cursor()
             df = pd.read_sql('SELECT * FROM strategy', con).set_index('index')
-            if df['블랙리스트'][0] != '':
-                blacklist = str(df['블랙리스트'][0]).split(';')
+            no = int(self.dict_set['거래소'][-2:])
+            if df['블랙리스트'][no] != '':
+                blacklist = str(df['블랙리스트'][no]).split(';')
                 blacklist += insert_blacklist
                 blacklist = ';'.join(blacklist)
             else:
                 blacklist = ';'.join(insert_blacklist)
-            cur.execute(f"UPDATE strategy SET 블랙리스트 = '{blacklist}'")
+            cur.execute(f"UPDATE strategy SET 블랙리스트 = '{blacklist}' WHERE `index` = {no}")
             con.commit()
             con.close()
 

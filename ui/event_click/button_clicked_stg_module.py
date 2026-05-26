@@ -4,7 +4,13 @@ def strategy_custom_button_show(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
-    ui.dialog_strategy.show() if not ui.dialog_strategy.isVisible() else ui.dialog_strategy.close()
+    from ui.create_widget.dialog_animation import DialogAnimator
+
+    if not ui.dialog_strategy.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_strategy, duration=300)
+        ui.dialog_strategy.show()
+    else:
+        ui.dialog_strategy.close()
 
 
 def strategy_custom_dialog_show(ui):
@@ -12,6 +18,7 @@ def strategy_custom_dialog_show(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.dialog_animation import DialogAnimator
     from ui.create_widget.set_text_stg_button import dict_stg_name
 
     if (ui.stg_btn_number <= 205 and not ui.dialog_stg_input1.isVisible()) or \
@@ -38,7 +45,12 @@ def strategy_custom_dialog_show(ui):
             ui.stginput_lineeditt4.setText(ori_name)
             ui.stginput_textEditt2.insertPlainText(stg_text)
 
-        ui.dialog_stg_input1.show() if ui.stg_btn_number <= 205 else ui.dialog_stg_input2.show()
+        if ui.stg_btn_number <= 205:
+            DialogAnimator.setup_dialog_animation(ui.dialog_stg_input1, duration=300)
+            ui.dialog_stg_input1.show()
+        else:
+            DialogAnimator.setup_dialog_animation(ui.dialog_stg_input2, duration=300)
+            ui.dialog_stg_input2.show()
     else:
         ui.dialog_stg_input1.close() if ui.stg_btn_number <= 205 else ui.dialog_stg_input2.close()
 

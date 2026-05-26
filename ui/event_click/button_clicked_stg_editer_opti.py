@@ -349,7 +349,13 @@ def show_opti_std(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
-    ui.dialog_std.show() if not ui.dialog_std.isVisible() else ui.dialog_std.close()
+    from ui.create_widget.dialog_animation import DialogAnimator
+
+    if not ui.dialog_std.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_std, duration=300)
+        ui.dialog_std.show()
+    else:
+        ui.dialog_std.close()
 
 
 def show_opti_optuna(ui):
@@ -357,12 +363,15 @@ def show_opti_optuna(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.dialog_animation import DialogAnimator
+
     if not ui.dialog_optuna.isVisible():
         if not ui.optuna_window_open:
             ui.op_lineEditttt_01.setText(ui.dict_set['옵튜나고정변수'])
             ui.op_lineEditttt_02.setText(str(ui.dict_set['옵튜나실행횟수']))
             ui.op_checkBoxxxx_01.setChecked(True if ui.dict_set['옵튜나자동스탭'] else False)
             ui.op_comboBoxxxx_01.setCurrentText(ui.dict_set['옵튜나샘플러'])
+        DialogAnimator.setup_dialog_animation(ui.dialog_optuna, duration=300)
         ui.dialog_optuna.show()
         ui.optuna_window_open = True
     else:

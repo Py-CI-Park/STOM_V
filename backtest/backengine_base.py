@@ -1041,8 +1041,8 @@ class BackEngineBase(StgGlobalsFunc):
                 호가배열 = self.bhogainfo[:self.buy_hj_limit]
                 잔량배열 = self.bhreminfo[:self.buy_hj_limit]
 
-            거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
-            if 체결완료:
+            거래금액, 체결가능 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+            if 체결가능:
                 보유중 = 1 if self.market_gubun < 6 or buy_long else 2
                 매수가 = self._get_order_price(거래금액, 주문수량)
                 매수시간 = dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))
@@ -1127,8 +1127,8 @@ class BackEngineBase(StgGlobalsFunc):
                 호가배열 = self.shogainfo[:self.sell_hj_limit]
                 잔량배열 = self.shreminfo[:self.sell_hj_limit]
 
-            거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
-            if 체결완료:
+            거래금액, 체결가능 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+            if 체결가능:
                 self.curr_trade_info['매도가'] = self._get_order_price(거래금액, 주문수량)
                 self._calculation_eyun()
 
@@ -1154,7 +1154,7 @@ class BackEngineBase(StgGlobalsFunc):
                         호가배열 = 매도호가배열[:self.sell_hj_limit]
                         잔량배열 = 매도잔량배열[:self.sell_hj_limit]
 
-                    거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+                    거래금액, 체결가능 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
                     if not 체결완료:
                         거래금액 = 주문수량 * 호가배열[0]
 

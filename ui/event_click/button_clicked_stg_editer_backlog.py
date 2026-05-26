@@ -105,7 +105,10 @@ def ssbutton_clicked_05(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.dialog_animation import DialogAnimator
+
     if not ui.dialog_comp.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_comp, duration=300)
         ui.dialog_comp.show()
 
         df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")

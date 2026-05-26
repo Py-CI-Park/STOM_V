@@ -502,8 +502,8 @@ class BackEngineBaseOms(BackEngineBase):
                     호가배열 = self.bhogainfo[:self.buy_hj_limit]
                     잔량배열 = self.bhreminfo[:self.buy_hj_limit]
 
-                거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
-                if 체결완료:
+                거래금액, 체결가능 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+                if 체결가능:
                     매수가 = self.curr_trade_info['매수가']
                     보유수량 = self.curr_trade_info['보유수량']
                     총수량 = 보유수량 + 주문수량
@@ -743,8 +743,8 @@ class BackEngineBaseOms(BackEngineBase):
                     호가배열 = self.shogainfo[:self.sell_hj_limit]
                     잔량배열 = self.shreminfo[:self.sell_hj_limit]
 
-                거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
-                if 체결완료:
+                거래금액, 체결가능 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+                if 체결가능:
                     self.curr_trade_info['매도가'] = self._get_order_price(거래금액, 주문수량)
                     self._calculation_eyun()
 
