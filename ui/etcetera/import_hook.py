@@ -44,7 +44,6 @@ class ImportProgressHook:
             'ui.etcetera.process_starter',
             'ui.draw_chart.draw_home_chart',
             'ui.draw_chart.draw_chart_real',
-            'ui.etcetera.etc',
             'ui.update_widget.update_textedit',
             'ui.create_widget.set_text_stg_button',
             'ui.update_widget.update_tablewidget',
@@ -53,6 +52,7 @@ class ImportProgressHook:
             'ui.update_widget.update_crawling_data',
             'ui.event_keypress.overwrite_keypress_event',
             'ui.event_keypress.overwrite_event_filter',
+            'ui.etcetera.etc',
             'ui.event_click.button_clicked_backtest_engine',
             'ui.etcetera.process_alive',
             'ui.update_widget.update_progressbar'

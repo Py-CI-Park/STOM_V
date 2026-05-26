@@ -115,14 +115,10 @@ def mnbutton_c_clicked_03(ui, auto=False):
 
 def mnbutton_c_clicked_04(ui):
     """창 크기를 변경합니다."""
-    from ui.create_widget.set_style import style_bc_bb, style_bc_st
-
     if ui.geometry().width() > 1000:
         ui.setFixedSize(726, 384)
-        ui.zo_pushButton.setStyleSheet(style_bc_st)
     else:
         ui.setFixedSize(1403, 763)
-        ui.zo_pushButton.setStyleSheet(style_bc_bb)
 
 
 def mnbutton_c_clicked_05(ui):

@@ -48,14 +48,17 @@ def update_progressbar(ui):
 
     ui.be_pushButtonnn_01.setStyleSheet(style_bc_by if ui.backengine_running else style_bc_bt)
 
-    ui.tt_pushButton.setStyleSheet(style_bc_bb if not ui.calendarWidgetttt.isVisible() and not ui.calendarWidgetttt.isVisible() else style_bc_st)
+    ui.tt_pushButton.setStyleSheet(style_bc_bb if not ui.calendarWidgetttt.isVisible() else style_bc_st)
     ui.dd_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_db.isVisible() else style_bc_st)
+    ui.zo_pushButton.setStyleSheet(style_bc_bb if ui.geometry().width() > 1000 else style_bc_st)
     ui.kp_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_kimp.isVisible() else style_bc_st)
     ui.ct_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_chart.isVisible() else style_bc_st)
     ui.hg_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_hoga.isVisible() else style_bc_st)
     ui.gu_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_info.isVisible() else style_bc_st)
     ui.uj_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_tree.isVisible() else style_bc_st)
     ui.bs_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_scheduler.isVisible() else style_bc_st)
+    ui.od_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_order.isVisible() else style_bc_st)
+    ui.zz_pushButton.setStyleSheet(style_bc_bb if ui.geometry().height() < 1000 else style_bc_st)
 
     ui.sj_etc_pButton_02.setStyleSheet(style_bc_bt if not ui.dialog_setsj.isVisible() else style_bc_bb)
     ui.sj_lvrg_Button_01.setStyleSheet(style_bc_bt if not ui.dialog_leverage.isVisible() else style_bc_bb)

@@ -4,6 +4,7 @@ from PyQt5.QtGui import QPen
 from utility.static_method import syntax
 from ui.create_widget.set_style import *
 from utility.settings.setting_base import *
+from ui.event_keypress.overwrite_keypress_event import key_press_event
 from PyQt5.QtCore import Qt, QDate, QPropertyAnimation, QRect, QEasingCurve, QTimer, QEvent, QPoint
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
     QDialog, QTableWidget, QAbstractItemView, QGroupBox, QTableWidgetItem, QSizePolicy, QToolTip
@@ -321,39 +322,63 @@ class HoverGroupBox(QGroupBox):
     마우스 오버 시 배경색이 변경됩니다."""
     def __init__(self, title, parent=None, duration=100):
         super().__init__(title, parent)
-        self._normal_color = f'rgb({color_hv_bt.red()}, {color_hv_bt.green()}, {color_hv_bt.blue()})'
-        self._hover_color = f'rgb({color_bg_bl.red()}, {color_bg_bl.green()}, {color_bg_bl.blue()})'
         self._duration = duration
-        self.setStyleSheet(self._build_style(self._normal_color))
+        self.setStyleSheet(self._build_style(False))
 
-    def _build_style(self, bg_color):
+    def _build_style(self, hover):
         """스타일시트를 빌드합니다."""
-        return f"""
-            QGroupBox {{
-                background-color: {bg_color};
-                font-family: "나눔고딕";
-                font-size: 12px;
-            }}
-            QGroupBox::title {{
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                font-family: "나눔고딕";
-                font-size: 12px;
-            }}
-            QLabel, QCheckBox, QPushButton, QDateEdit, HoverComboBox {{
-                font-family: "나눔고딕";
-                font-size: 12px;
-            }}
-        """
+        if hover:
+            red, green, blue = color_bg_bl.red(), color_bg_bl.green(), color_bg_bl.blue()
+            return f"""
+                QGroupBox {{
+                    background-color: qlineargradient(
+                        x1:0, y1:0, x2:1, y2:0,
+                        stop:0 rgb({red+20}, {green+20}, {blue+20}),
+                        stop:0.5 rgb({red+10}, {green+10}, {blue+10}),
+                        stop:1 rgb({red}, {green}, {blue})
+                    );
+                    font-family: "나눔고딕";
+                    font-size: 12px;
+                }}
+                QGroupBox::title {{
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    font-family: "나눔고딕";
+                    font-size: 12px;
+                }}
+                QLabel, QCheckBox, QPushButton, QDateEdit, HoverComboBox {{
+                    font-family: "나눔고딕";
+                    font-size: 12px;
+                }}
+            """
+        else:
+            bg_color = f'rgb({color_hv_bt.red()}, {color_hv_bt.green()}, {color_hv_bt.blue()})'
+            return f"""
+                QGroupBox {{
+                    background-color: {bg_color};
+                    font-family: "나눔고딕";
+                    font-size: 12px;
+                }}
+                QGroupBox::title {{
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    font-family: "나눔고딕";
+                    font-size: 12px;
+                }}
+                QLabel, QCheckBox, QPushButton, QDateEdit, HoverComboBox {{
+                    font-family: "나눔고딕";
+                    font-size: 12px;
+                }}
+            """
 
     def enterEvent(self, event):
         """마우스 진입 이벤트를 처리합니다."""
-        self.setStyleSheet(self._build_style(self._hover_color))
+        self.setStyleSheet(self._build_style(True))
         super().enterEvent(event)
 
     def leaveEvent(self, event):
         """마우스 이탈 이벤트를 처리합니다."""
-        self.setStyleSheet(self._build_style(self._normal_color))
+        self.setStyleSheet(self._build_style(False))
         super().leaveEvent(event)
 
 
@@ -557,6 +582,24 @@ class FixedColumnTableWidget(QTableWidget):
             if hasattr(widget, 'text'):
                 widget_clone.setText(widget.text())
             self._first_column_table.setCellWidget(row, 0, widget_clone)
+
+
+class CustomDialog(QDialog):
+    def __init__(self, ui, parent=None):
+        super().__init__(parent)
+        self.ui = ui
+
+    def showEvent(self, event):
+        self.on_dialog_open()
+        super().showEvent(event)
+
+    def keyPressEvent(self, event):
+        key_press_event(self.ui, event)
+        super().keyPressEvent(event)
+
+    def on_dialog_open(self):
+        from ui.etcetera.etc import change_title_bar_color
+        change_title_bar_color(self)
 
 
 class WidgetCreater:
@@ -812,66 +855,44 @@ class WidgetCreater:
     def setDialog(self, name, parent=None, location_save=False):
         """다이얼로그를 생성합니다."""
         if parent is None:
-            dialog = QDialog()
+            dialog = CustomDialog(self.ui)
         else:
-            dialog = QDialog(parent)
+            dialog = CustomDialog(self.ui, parent)
         dialog.setWindowTitle(name)
         dialog.setWindowModality(Qt.WindowModality.NonModal)
         dialog.setWindowIcon(self.ui.icon_main)
         dialog.setFont(qfont12)
         if location_save:
-            dialog.finished.connect(lambda event: self.location_save(event, name))
+            dict_num = {
+                'STOM CHART': 1,
+                'STOM BACKTEST SCHEDULER': 2,
+                'STOM INFO': 3,
+                'STOM WEB': 4,
+                'STOM TREEMAP': 5,
+                'STOM KIMP': 6,
+                'STOM HOGA': 7,
+                'STOM BACKTEST ENGINE': 8,
+                'STOM ORDER': 9,
+                'STOM STRATEGY': 10,
+                'STOM MICROSTRUCTURE RADAR': 11,
+            }
+            dialog.finished.connect(lambda event: self.location_save(event, dialog, dict_num.get(name, 0)))
         return dialog
 
     # noinspection PyUnusedLocal
-    def location_save(self, event, name):
-        if self.ui.window_closing:
-            return
-
-        number = 0
-        dialog = None
-
-        if name == 'STOM CHART':
-            number = 1
-            dialog = self.ui.dialog_chart
-        elif name == 'STOM BACKTEST SCHEDULER':
-            number = 2
-            dialog = self.ui.dialog_scheduler
-        elif name == 'STOM INFO':
-            number = 3
-            dialog = self.ui.dialog_info
-        elif name == 'STOM WEB':
-            number = 4
-            dialog = self.ui.dialog_web
-        elif name == 'STOM TREEMAP':
-            number = 5
-            dialog = self.ui.dialog_tree
-        elif name == 'STOM KIMP':
-            number = 6
-            dialog = self.ui.dialog_kimp
-        elif name == 'STOM HOGA':
-            number = 7
-            dialog = self.ui.dialog_hoga
-        elif name == 'STOM BACKTEST ENGINE':
-            number = 8
-            dialog = self.ui.dialog_backengine
-        elif name == 'STOM ORDER':
-            number = 9
-            dialog = self.ui.dialog_order
-        elif name == 'STOM STRATEGY':
-            number = 10
-            dialog = self.ui.dialog_strategy
-        elif name == 'STOM MICROSTRUCTURE RADAR':
-            number = 11
-            dialog = self.ui.radar_dialog
-
-        if number > 0 and dialog is not None:
-            # noinspection PyUnresolvedReferences
-            data = [str(int(dialog.x())), str(int(dialog.y()))]
-            try:
-                self.ui.location_list[number] = data
-            except Exception:
-                self.ui.location_list.append(data)
+    def location_save(self, event, dialog, number):
+        """다이알로그의 위치를 저장합니다.
+        창의 위치가 타이틀바 크기 만큼 y좌표가 잘못 저장되는 경우가 발생하기 때문에
+        윈도우10 +31, 윈도우11 +32 만큼 클 경우 이전 위치로 저장한다.
+        또한 좌표가 마이너스일 경우 0으로 변경한다."""
+        location_list = self.ui.location_list[number]
+        prev_x, prev_y = int(location_list[0]), int(location_list[1])
+        curr_x = max(0, int(dialog.x()))
+        curr_y = max(0, int(dialog.y()))
+        if prev_y + 31 == curr_y or prev_y + 32 == curr_y:
+            curr_y = prev_y
+        data = [str(curr_x), str(curr_y)]
+        self.ui.location_list[number] = data
 
     # noinspection PyUnresolvedReferences
     def setTablewidget(self, parent, columns, rowcount, vscroll=False, visible=True, clicked=None, valuechanged=None,

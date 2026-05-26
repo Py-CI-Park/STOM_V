@@ -129,7 +129,8 @@ def button_clicked_strategy_save(ui):
         stg_text = ui.stginput_textEditt2.toPlainText()
 
     if not stg_name or not stg_text:
-        QMessageBox.critical(ui.dialog_stg_input, '오류 알림', '버튼명이나 전략조건이 입력되지 않았습니다.\n')
+        dialog_stg_input = ui.dialog_stg_input1 if ui.stg_btn_number <= 205 else ui.dialog_stg_input2
+        QMessageBox.critical(dialog_stg_input, '오류 알림', '버튼명이나 전략조건이 입력되지 않았습니다.\n')
         return
 
     if ui.proc_chqs.is_alive():
