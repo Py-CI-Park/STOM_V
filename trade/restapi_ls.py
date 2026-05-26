@@ -13,7 +13,8 @@ from utility.static_method.static_etcetera import qtest_qwait
 
 
 class LsRestAPI:
-    """ LS증권 RESTAPI 메인 클래스 - 국내주식, 지수선물, 미국주식, 해외선물 모두 지원"""
+    """ LS증권 RESTAPI 메인 클래스
+    국내주식, ETF, ETN, 지수선물, 야간선물, 미국주식, 해외선물 모두 지원"""
     def __init__(self, windowQ, access, secret):
         self.windowQ = windowQ
         self.access  = access
@@ -539,6 +540,8 @@ class LsRestAPI:
 
 
 class LsWebSocketReceiver(QThread):
+    """LS증권 웹소켓 리시버 스레드 클래스
+    체결 및 호가 데이터를 웹소켓으로 수신합니다."""
     signal = pyqtSignal(dict)
 
     def __init__(self, gubun, token, symbols, windowQ):
@@ -555,6 +558,7 @@ class LsWebSocketReceiver(QThread):
         self.conn_hg = False
 
     def run(self):
+        """웹소켓 루프를 실행합니다."""
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         self.loop.create_task(self._run_cg())
@@ -563,6 +567,7 @@ class LsWebSocketReceiver(QThread):
 
     # noinspection PyUnresolvedReferences
     async def _run_cg(self):
+        """체결 웹소켓 연결 및 수신을 실행합니다."""
         reg_task = None
         while True:
             try:
@@ -579,6 +584,7 @@ class LsWebSocketReceiver(QThread):
 
     # noinspection PyUnresolvedReferences
     async def _run_hg(self):
+        """호가 웹소켓 연결 및 수신을 실행합니다."""
         reg_task = None
         while True:
             try:
@@ -594,14 +600,17 @@ class LsWebSocketReceiver(QThread):
             await self._disconnect_hg()
 
     async def _connect_cg(self):
-        self.webs_cg = await websockets.connect(LsRestData.웹소켓주소)
+        """체결 웹소켓에 연결합니다."""
+        self.webs_cg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60, ping_timeout=60)
         self.conn_cg = True
 
     async def _connect_hg(self):
-        self.webs_hg = await websockets.connect(LsRestData.웹소켓주소)
+        """호가 웹소켓에 연결합니다."""
+        self.webs_hg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60, ping_timeout=60)
         self.conn_hg = True
 
     async def _receive_cg_msg(self):
+        """체결 데이터를 수신합니다."""
         while self.conn_cg:
             data = await self.webs_cg.recv()
             data = json.loads(data)
@@ -609,6 +618,7 @@ class LsWebSocketReceiver(QThread):
                 self.signal.emit(data)
 
     async def _receive_hg_msg(self):
+        """호가 데이터를 수신합니다."""
         while self.conn_hg:
             data = await self.webs_hg.recv()
             data = json.loads(data)
@@ -616,6 +626,7 @@ class LsWebSocketReceiver(QThread):
                 self.signal.emit(data)
 
     async def _real_reg_cg(self):
+        """장운영정보, VI발동해제, 체결의 실시간시세를 등록합니다."""
         while not self.conn_cg:
             await asyncio.sleep(0.1)
 
@@ -643,6 +654,7 @@ class LsWebSocketReceiver(QThread):
                 )
 
     async def _real_reg_hg(self):
+        """호가의 실시간시세를 등록합니다."""
         while not self.conn_hg:
             await asyncio.sleep(0.1)
 
@@ -658,6 +670,7 @@ class LsWebSocketReceiver(QThread):
                 )
 
     def _get_send_data(self, gubun: str, code: str):
+        """거래소별 실시간시세 등록용 해더와 바디를 생성합니다."""
         if gubun in ('국내주식체결', '국내주식호가'):
             tr_key = f'U{code:<9}'
         elif '해외주식' in gubun:
@@ -678,6 +691,7 @@ class LsWebSocketReceiver(QThread):
         return data
 
     async def _disconnect_cg(self):
+        """체결 웹소켓을 종료합니다."""
         self.conn_cg = False
         if self.webs_cg is not None:
             try:
@@ -687,6 +701,7 @@ class LsWebSocketReceiver(QThread):
         await asyncio.sleep(1)
 
     async def _disconnect_hg(self):
+        """호가 웹소켓을 종료합니다."""
         self.conn_hg = False
         if self.webs_hg is not None:
             try:
@@ -696,11 +711,14 @@ class LsWebSocketReceiver(QThread):
         await asyncio.sleep(1)
 
     def stop(self):
+        """웹소켓 루프를 종료합니다."""
         if self.loop and self.loop.is_running():
             self.loop.stop()
 
 
 class LsWebSocketTrader(QThread):
+    """LS증권 웹소켓 트레이더 스레드 클래스
+    주문체결 데이터를 웹소켓으로 수신합니다."""
     signal = pyqtSignal(dict)
 
     def __init__(self, market, token, windowQ):
@@ -713,12 +731,14 @@ class LsWebSocketTrader(QThread):
         self.connected = False
 
     def run(self):
+        """웹소켓 루프를 실행합니다."""
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         self.loop.create_task(self._run_user())
         self.loop.run_forever()
 
     async def _run_user(self):
+        """주문체결 웹소켓 연결 및 수신을 실행합니다."""
         while True:
             try:
                 if not self.connected:
@@ -730,7 +750,8 @@ class LsWebSocketTrader(QThread):
             await self._disconnect()
 
     async def _connect(self):
-        self.websocket = await websockets.connect(LsRestData.웹소켓주소)
+        """주문체결 웹소켓을 연결하고 실시간시세를 등록합니다."""
+        self.websocket = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60, ping_timeout=60)
         self.connected = True
         for k, v in LsRestData.주문거래코드.items():
             if self.market in k:
@@ -739,6 +760,7 @@ class LsWebSocketTrader(QThread):
                 self.windowQ.put((UI_NUM['기본로그'], f'시스템 명령 실행 알림 - {k} 실시간시세 계좌등록'))
 
     async def _receive_msg(self):
+        """주문체결 데이터를 수신합니다."""
         while self.connected:
             data = await self.websocket.recv()
             data = json.loads(data)
@@ -746,6 +768,7 @@ class LsWebSocketTrader(QThread):
                 self.signal.emit(data)
 
     def _get_send_data(self, tr_cd: str):
+        """주문체결 실시간시세 등록용 해더와 바디를 생성합니다."""
         data = {
             'header': {
                 'token': self.token,
@@ -759,6 +782,7 @@ class LsWebSocketTrader(QThread):
         return data
 
     async def _disconnect(self):
+        """주문체결 웹소켓을 종료합니다."""
         self.connected = False
         if self.websocket is not None:
             try:
@@ -768,5 +792,6 @@ class LsWebSocketTrader(QThread):
         await asyncio.sleep(1)
 
     def stop(self):
+        """웹소켓 루프를 종료합니다."""
         if self.loop and self.loop.is_running():
             self.loop.stop()

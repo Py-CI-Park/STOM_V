@@ -332,7 +332,7 @@ class BaseTrader:
                     포지션 = self.dict_jg[종목코드]['포지션']
                     주문구분 = 'SELL_LONG' if 포지션 == 'LONG' else 'BUY_SHORT'
                 if self.dict_set['모의투자']:
-                    self._push_chejan_data_for_paper_trade(주문구분, 종목코드, 현재가, 보유수량, now(), True)
+                    self._paper_trade(주문구분, 종목코드, 현재가, 보유수량, now(), True)
                 elif self.market_gubun < 6:
                     self._check_order((주문구분, 종목코드, 종목명, 현재가, 보유수량, now(), True))
                 else:
@@ -518,13 +518,13 @@ class BaseTrader:
             self.dict_signal[종목코드] = [주문구분, 주문가격, 주문수량, 0]
 
         if self.dict_set['모의투자'] or 주문구분 == '시드부족':
-            self._push_chejan_data_for_paper_trade(주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 잔고청산, 수동주문유형)
+            self._paper_trade(주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 잔고청산, 수동주문유형)
         else:
             data = (주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 정정횟수, 수동주문유형)
             self._send_order(data)
 
-    def _push_chejan_data_for_paper_trade(self, 주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 잔고청산, 수동주문유형=None):
-        """모의투자용 체결 데이터를 전송합니다."""
+    def _paper_trade(self, 주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 잔고청산, 수동주문유형=None):
+        """모의투자용 주문체결을 기록합니다."""
         self._order_time_log(시그널시간)
 
         if 주문구분 == '시드부족':
@@ -548,6 +548,7 @@ class BaseTrader:
             self._push_chejan_data(주문구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격)
 
     def _push_chejan_data(self, 주문구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격):
+        """모의투자용 주문체결 데이터를 전송합니다."""
         체결시간 = get_str_ymdhms(self.market_gubun)
         주문번호 = '0' if self.market_gubun in (5, 8) else 0
 
@@ -588,6 +589,8 @@ class BaseTrader:
         elif gubun == '주문확인':
             code, c = data
             self.dict_curc[code] = c
+            if self.dict_set['모의투자']:
+                self._check_limit_order(code, c)
             self._order_time_control(code)
         elif gubun == '저가대비고가등락율':
             self._set_leverage(data)
@@ -655,15 +658,19 @@ class BaseTrader:
                 '평가금액': 평가금액
             })
 
-        if self.dict_set['모의투자']:
-            for 주문구분, 종목주문정보 in self.dict_order.copy().items():
-                주문정보 = 종목주문정보.get(종목코드)
-                if 주문정보:
-                    방향구분 = True if '매수' in 주문구분 or 'BUY' in 주문구분 else False
-                    # noinspection PyUnresolvedReferences
-                    주문가격, 주문수량 = 주문정보[2:4]
-                    if (방향구분 and 현재가 < 주문가격) or (not 방향구분 and 현재가 > 주문가격):
-                        self._push_chejan_data(주문구분, 종목코드, 주문수량, 주문수량, 0, 주문가격, 주문가격)
+        if self.is_tick and self.dict_set['모의투자']:
+            self._check_limit_order(종목코드, 현재가)
+
+    def _check_limit_order(self, 종목코드, 현재가):
+        """모의투자용 지정가 주문체결을 추적합니다."""
+        for 주문구분, 종목주문정보 in self.dict_order.copy().items():
+            주문정보 = 종목주문정보.get(종목코드)
+            if 주문정보:
+                방향구분 = True if '매수' in 주문구분 or 'BUY' in 주문구분 else False
+                # noinspection PyUnresolvedReferences
+                주문가격, 주문수량 = 주문정보[2:4]
+                if (방향구분 and 현재가 < 주문가격) or (not 방향구분 and 현재가 > 주문가격):
+                    self._push_chejan_data(주문구분, 종목코드, 주문수량, 주문수량, 0, 주문가격, 주문가격)
 
     def _update_dict_info(self):
         """종목정보 딕셔너리를 업데이트합니다."""

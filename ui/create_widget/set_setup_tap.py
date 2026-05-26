@@ -5,6 +5,7 @@ from ui.event_click.button_clicked_settings import *
 from PyQt5.QtWidgets import QLabel, QTabWidget, QWidget
 from ui.event_activate import activated_etc, activated_stg
 from ui.event_click.button_clicked_etc import lvbutton_clicked_01
+from ui.event_activate.activated_etc import mactivated_01, mactivated_02, mactivated_03
 from ui.event_click.button_clicked_show_dialog import show_pattern_dialog, show_passticks_dialog
 
 
@@ -45,7 +46,7 @@ class SetSetupTap:
 
         from utility.settings.setting_market import DICT_MARKET_GUBUN
         self.ui.sj_main_labell_01 = QLabel('▣  거래소 선택', self.ui.sj_bs_groupBox_01)
-        self.ui.sj_main_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=list(DICT_MARKET_GUBUN.keys()), tip='사용할 거래소를 선택하십시오.')
+        self.ui.sj_main_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=list(DICT_MARKET_GUBUN.keys()), activated=lambda: mactivated_01(self.ui), tip='사용할 거래소를 선택하십시오.')
         self.ui.sj_main_cheBox_01 = self.wc.setCheckBox('모의투자', self.ui.sj_bs_groupBox_01, changed=lambda state: checkbox_changed_01(self.ui, state), tip='체크 해제 시 실매매')
         self.ui.sj_main_cheBox_02 = self.wc.setCheckBox('데이터저장', self.ui.sj_bs_groupBox_01, tip='전략종료 후 데이터 저장 여부를 설정한다.')
         self.ui.sj_main_cheBox_03 = self.wc.setCheckBox('알림소리', self.ui.sj_bs_groupBox_01, tip='시스템 이벤트를 tts를 통해 소리로 알려준다.')
@@ -55,8 +56,8 @@ class SetSetupTap:
 
         self.ui.sj_main_labell_03 = QLabel('▣  바이낸스선물                                                     마진타입                            포지션', self.ui.sj_bs_groupBox_01)
         self.ui.sj_lvrg_Button_01 = self.wc.setPushbutton('레버리지 유형 설정', parent=self.ui.sj_bs_groupBox_01, bounced=True, click=lambda: lvbutton_clicked_01(self.ui), tip='바이낸스 선물 레버리지를 고정, 변동 형태 중 선택하여 설정한다.')
-        self.ui.sj_main_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['격리', '교차'], activated=activated_stg.activated_10)
-        self.ui.sj_main_comBox_04 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['단방향', '양방향'], activated=activated_stg.activated_11)
+        self.ui.sj_main_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['격리', '교차'], activated=lambda: mactivated_02(self.ui))
+        self.ui.sj_main_comBox_04 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['단방향', '양방향'], activated=lambda: mactivated_03(self.ui))
 
         # --------------------------------------------------------------------------------------------------------------
 

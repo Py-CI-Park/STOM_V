@@ -38,7 +38,7 @@ class BinanceWebSocketReceiver(QThread):
         self.loop.run_forever()
 
     async def _run_cg(self):
-        """체결 데이터를 수신합니다."""
+        """체결 웹소켓 연결 및 수신을 실행합니다."""
         while True:
             try:
                 if not self.conn_cg:
@@ -51,7 +51,7 @@ class BinanceWebSocketReceiver(QThread):
             await asyncio.sleep(1)
 
     async def _run_hg(self):
-        """호가 데이터를 수신합니다."""
+        """호가 웹소켓 연결 및 수신을 실행합니다."""
         while True:
             try:
                 if not self.conn_hg:
@@ -64,7 +64,7 @@ class BinanceWebSocketReceiver(QThread):
             await asyncio.sleep(1)
 
     async def _connect_cg(self):
-        """거래 웹소켓에 연결합니다."""
+        """체결 웹소켓에 연결합니다."""
         if self.webs_cg:
             try:
                 await self.webs_cg.__aexit__(None, None, None)
@@ -79,7 +79,7 @@ class BinanceWebSocketReceiver(QThread):
         self.conn_cg = True
 
     async def _connect_hg(self):
-        """주문 웹소켓에 연결합니다."""
+        """호가 웹소켓에 연결합니다."""
         if self.webs_hg:
             try:
                 await self.webs_hg.__aexit__(None, None, None)
@@ -94,28 +94,28 @@ class BinanceWebSocketReceiver(QThread):
         self.conn_hg = True
 
     async def _receive_msg_cg(self):
-        """거래 데이터를 수신합니다."""
+        """체결의 실시간시세를 등록합니다."""
         async with self.webs_cg as ws:
             while self.conn_cg:
                 data = await ws.recv()
                 self.signal.emit(data)
 
     async def _receive_msg_hg(self):
-        """주문 데이터를 수신합니다."""
+        """호가의 실시간시세를 등록합니다."""
         async with self.webs_hg as ws:
             while self.conn_hg:
                 data = await ws.recv()
                 self.signal.emit(data)
 
     def stop(self):
-        """웹소켓을 종료합니다."""
+        """웹소켓 루프를 종료합니다."""
         if self.loop and self.loop.is_running():
             self.loop.stop()
 
 
 class BinanceWebSocketTrader(QThread):
     """바이낸스 웹소켓 트레이더 스레드 클래스입니다.
-    바이낸스 주문 데이터를 웹소켓으로 수신합니다."""
+    주문체결 데이터를 웹소켓으로 수신합니다."""
     signal = pyqtSignal(dict)
 
     def __init__(self, api_key, scret_key, windowQ):
@@ -137,7 +137,7 @@ class BinanceWebSocketTrader(QThread):
         self.loop.run_forever()
 
     async def _run_user(self):
-        """유저 데이터를 수신합니다."""
+        """주문체결 웹소켓 연결 및 수신을 실행합니다."""
         while True:
             try:
                 if not self.connected:
@@ -150,7 +150,7 @@ class BinanceWebSocketTrader(QThread):
             await asyncio.sleep(1)
 
     async def _connect(self):
-        """유저 웹소켓에 연결합니다."""
+        """주문체결 웹소켓을 연결합니다."""
         if self.websocket:
             try:
                 await self.websocket.__aexit__(None, None, None)
@@ -165,13 +165,13 @@ class BinanceWebSocketTrader(QThread):
         self.connected = True
 
     async def _receive_msg(self):
-        """메시지를 수신합니다."""
+        """주문체결 데이터를 수신합니다."""
         async with self.websocket as ws:
             while self.connected:
                 data = await ws.recv()
                 self.signal.emit(data)
 
     def stop(self):
-        """웹소켓을 종료합니다."""
+        """웹소켓 루프를 종료합니다."""
         if self.loop and self.loop.is_running():
             self.loop.stop()
