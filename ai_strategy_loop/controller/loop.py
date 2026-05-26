@@ -409,6 +409,29 @@ def _default_exit_autopsy_fn(config: LoopConfig) -> Callable[[str], Optional[str
     return _fn
 
 
+def _default_segment_autopsy_fn(
+    config: LoopConfig,
+) -> Callable[[str], Optional[Any]]:
+    """csv_path를 받아 세그먼트 강화 부검(SegmentAutopsyResult)을 만드는 훅(P1).
+
+    analyze_segments(시총·시간대 cross-tab + 구체 임계값) 결과를 그대로 돌려준다.
+    NL 피드백(summarize_segments)과 LIVE page_data(to_page_data) 양쪽에 쓰이므로
+    여기선 결과 객체만 만들고, 합성/직렬화는 호출부(_build_feedback)가 한다.
+    부검 실패/예외는 _build_feedback에서 흡수되므로 안전하다.
+    """
+    from ai_strategy_loop.autopsy import analyze_segments  # noqa: PLC0415
+
+    min_trades = int(getattr(config, "min_trades", 10) or 10)
+
+    def _fn(csv_path: str):
+        if not csv_path:
+            return None
+        abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+        return analyze_segments(abs_csv, min_trades=min_trades)
+
+    return _fn
+
+
 def _backtest_error_feedback(reason: str, config: LoopConfig) -> str:
     """백테스트 실패 세대에 줄 '구체 원인을 겨냥한' 다음 세대 피드백.
 
@@ -587,6 +610,12 @@ def run_loop(
     if autopsy_fn is None and getattr(config, "autopsy_enabled", False):
         effective_exit_autopsy_fn = _default_exit_autopsy_fn(config)
 
+    # 세그먼트 강화 부검 훅(P1): 명시 autopsy_fn이 없고 autopsy_enabled면 켠다.
+    #   세그먼트 NL 피드백을 진입/청산 양쪽에 합성하고, 요약 dict를 page_data로 발행한다.
+    effective_segment_autopsy_fn: Optional[Callable[[str], Optional[Any]]] = None
+    if autopsy_fn is None and getattr(config, "autopsy_enabled", False):
+        effective_segment_autopsy_fn = _default_segment_autopsy_fn(config)
+
     rid = st.resume_or_start(config, run_id=run_id)
     start_gen = st.get_last_completed_gen(rid) + 1
 
@@ -607,6 +636,7 @@ def run_loop(
     cumulative_tokens = 0
     next_autopsy_feedback: Optional[str] = None   # 진입(BUY) 측 다음 세대 피드백.
     next_sell_feedback: Optional[str] = None      # 매도(SELL) 측 다음 세대 청산 피드백.
+    last_autopsy_page_data: Optional[Dict[str, Any]] = None  # LIVE 부검 패널용 세그먼트 요약.
     # seed-and-refine: gen1+가 출발점으로 삼을 현재 best 전략 코드(hill-climb).
     #   gen0 seed 평가 후 시드 코드로 채워지고, best가 갱신될 때마다 새 best 코드로
     #   갱신된다. None이면 그 세대는 fresh 생성(첫 출발점 미확보 시 정상).
@@ -862,19 +892,23 @@ def run_loop(
 
             # --- f. 다음 세대 피드백: 진입(BUY) = 게이트-거리 + 진입 변별 변수,
             #        매도(SELL) = 게이트-거리 + 청산(give-back/손절/보유/매도규칙) ---
-            next_autopsy_feedback, next_sell_feedback = _build_feedback(
+            next_autopsy_feedback, next_sell_feedback, last_autopsy_page_data = _build_feedback(
                 config, outcome, fit, graded,
                 effective_autopsy_fn, effective_exit_autopsy_fn,
+                effective_segment_autopsy_fn,
             )
 
             # US-007 — 세대 완료 라이브 발행 (generations 갱신 반영).
+            #   P1: 세그먼트 부검 요약을 page_data["autopsy"]로 실어 LIVE 패널에 발행.
             _publish_live(st, rid, config, status="running", current_gen=gen_no,
                           cumulative_tokens=cumulative_tokens, phase="generation_done",
                           message=f"generation {gen_no} recorded",
                           best_gen=best_gen, best_score=best_score,
                           best_buy=best_buy, best_sell=best_sell,
                           winner_gen=winner_gen, winner_score=winner_score,
-                          winner_buy=winner_buy, winner_sell=winner_sell)
+                          winner_buy=winner_buy, winner_sell=winner_sell,
+                          page_data=({"autopsy": last_autopsy_page_data}
+                                     if last_autopsy_page_data else None))
 
             gen_no += 1
 
@@ -938,19 +972,31 @@ def run_loop(
 
 
 def _build_feedback(config, outcome, fit, graded,
-                    effective_autopsy_fn, effective_exit_autopsy_fn=None):
+                    effective_autopsy_fn, effective_exit_autopsy_fn=None,
+                    effective_segment_autopsy_fn=None):
     """다음 세대 피드백을 진입(BUY)/매도(SELL) 두 갈래로 조립한다.
 
     공통: 게이트 실패면 그 원인(MDD/손익/거래수)을 직접 겨냥하는 지시문을 앞에 붙인다.
-      - BUY 피드백 = 게이트 지시 + 진입 부검(win/loss B_* 변별).
-      - SELL 피드백 = 게이트 지시 + 청산 부검(give-back/손절/보유시간/매도규칙).
+      - BUY 피드백 = 게이트 지시 + 진입 부검(win/loss B_* 변별) + 세그먼트 부검.
+      - SELL 피드백 = 게이트 지시 + 청산 부검(give-back/손절/보유시간/매도규칙) + 세그먼트 부검.
 
-    부검 실패는 루프를 막지 않는다(예외 흡수). 둘 다 None이면 (None, None).
+    세그먼트 부검(P1)은 "어느 시총·시간대에서 손실이 집중되고 어느 변수의 어느
+    구간이 손실인지"를 구체 임계값과 함께 더해 진입/청산 양쪽에 합성한다. 또한
+    세그먼트 요약 dict(to_page_data)를 LIVE 부검 패널용으로 함께 돌려준다.
+
+    부검 실패는 루프를 막지 않는다(예외 흡수). 합성 피드백은 토큰 회귀 게이트
+    (cap_feedback)로 절대 문자 상한을 적용한다.
 
     Returns:
-        (buy_feedback, sell_feedback) — 각각 str 또는 None.
+        (buy_feedback, sell_feedback, autopsy_page_data) —
+        피드백은 각각 str 또는 None, page_data는 dict 또는 None.
     """
-    from ai_strategy_loop.autopsy import gate_failure_directive  # noqa: PLC0415
+    from ai_strategy_loop.autopsy import (  # noqa: PLC0415
+        cap_feedback,
+        gate_failure_directive,
+        summarize_segments,
+        to_page_data,
+    )
 
     directive = gate_failure_directive(
         gate_passed=fit.gate_passed,
@@ -971,19 +1017,34 @@ def _build_feedback(config, outcome, fit, graded,
             logger.info("%s 실패(무시): %s", label, exc)
             return None
 
+    # 세그먼트 부검(P1): 결과 객체 1회 산출 → NL 피드백 + LIVE page_data 양쪽에 재사용.
+    segment_result = _run_autopsy(effective_segment_autopsy_fn, "segment autopsy_fn")
+    segment_fb = None
+    autopsy_page_data = None
+    if segment_result is not None:
+        try:
+            segment_fb = summarize_segments(segment_result, config) or None
+            autopsy_page_data = to_page_data(segment_result)
+        except Exception as exc:  # noqa: BLE001 - 요약/직렬화 실패는 루프를 막지 않음.
+            logger.info("segment summarize/to_page_data 실패(무시): %s", exc)
+
     buy_parts = [directive] if directive else []
     buy_autopsy = _run_autopsy(effective_autopsy_fn, "buy autopsy_fn")
     if buy_autopsy:
         buy_parts.append(buy_autopsy)
+    if segment_fb:
+        buy_parts.append(segment_fb)
 
     sell_parts = [directive] if directive else []
     sell_autopsy = _run_autopsy(effective_exit_autopsy_fn, "exit autopsy_fn")
     if sell_autopsy:
         sell_parts.append(sell_autopsy)
+    if segment_fb:
+        sell_parts.append(segment_fb)
 
-    buy_fb = "\n\n".join(buy_parts) if buy_parts else None
-    sell_fb = "\n\n".join(sell_parts) if sell_parts else None
-    return buy_fb, sell_fb
+    buy_fb = cap_feedback("\n\n".join(buy_parts)) if buy_parts else None
+    sell_fb = cap_feedback("\n\n".join(sell_parts)) if sell_parts else None
+    return buy_fb, sell_fb, autopsy_page_data
 
 
 def _score_outcome(outcome: BacktestOutcome, config: LoopConfig):

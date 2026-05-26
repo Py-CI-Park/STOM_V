@@ -213,4 +213,88 @@ function FeedbackPanel({ state }) {
   );
 }
 
-Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, CostPanel, FeedbackPanel });
+// ---- Segment autopsy panel (P1) ----
+// page_data.autopsy(세그먼트 강화 부검 요약)를 LIVE로 렌더한다. backend가 발행하면
+//   세그먼트/임계값 테이블을 보이고, 없으면(데모 또는 미발행) 출처를 명시한다.
+//   M1 LIVE↔DEMO 규약 준수: 데모면 DEMO 배지, 라이브인데 미발행이면 "실시간 데이터 대기".
+function _pct(x) { return (typeof x === "number" ? (x * 100).toFixed(0) : "—") + "%"; }
+function _num(x) { return typeof x === "number" ? x.toFixed(2) : "—"; }
+
+function _ThresholdCond(t) {
+  if (t.operator === "between") {
+    const lo = t.lower_bound == null ? "-∞" : _num(t.lower_bound);
+    const hi = t.upper_bound == null ? "∞" : _num(t.upper_bound);
+    return `${t.stom_var} ∈ [${lo}, ${hi}]`;
+  }
+  if (t.threshold != null) return `${t.stom_var} ${t.operator} ${_num(t.threshold)}`;
+  return t.stom_var;
+}
+
+function _SegRows({ title, rows }) {
+  if (!rows || rows.length === 0) return null;
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>{title}</div>
+      <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+        {rows.map((s, i) => (
+          <li key={i} className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", padding: "3px 0", lineHeight: 1.5 }}>
+            <span style={{ color: s.return_diff < 0 ? "var(--red)" : "var(--ink-1)" }}>{s.label}</span>
+            {` · ${s.count}건 · 승률 ${_pct(s.win_rate)} · 평균 ${_num(s.avg_return)}% · 대비 ${s.return_diff >= 0 ? "+" : ""}${_num(s.return_diff)}%p`}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function AutopsyPanel({ state, wsStatus }) {
+  const autopsy = state.page_data?.autopsy;
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot"></span>세그먼트 부검
+          {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
+        </div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+          손실 집중 세그먼트 · 구체 임계값
+        </span>
+      </div>
+      <div className="panel-bd">
+        {!autopsy || autopsy.status !== "ok" ? (
+          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+            {isDemo
+              ? "데모 모드 — 세그먼트 부검은 라이브 실행에서 발행됩니다."
+              : "실시간 데이터 대기 — 세대 완료 시 세그먼트 부검이 발행됩니다."}
+          </div>
+        ) : (
+          <div>
+            <div className="mono" style={{ fontSize: 11, color: "var(--ink-2)", marginBottom: 10 }}>
+              거래 {autopsy.trade_count}건 · 전체 승률 {_pct(autopsy.overall_win_rate)} · 평균 {_num(autopsy.overall_avg_return)}%
+            </div>
+            <_SegRows title="시간대 손실 집중" rows={autopsy.time_segments} />
+            <_SegRows title="시총 밴드 손실 집중" rows={autopsy.market_cap_segments} />
+            <_SegRows title="교차(시간대×시총)" rows={autopsy.cross_segments} />
+            {autopsy.thresholds && autopsy.thresholds.length > 0 && (
+              <div>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>구체 임계값(손실 구간)</div>
+                <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+                  {autopsy.thresholds.map((t, i) => (
+                    <li key={i} className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", padding: "3px 0", lineHeight: 1.5 }}>
+                      {`${_ThresholdCond(t)} · ${t.count}건 · 승률 ${_pct(t.win_rate)} · 평균 ${_num(t.mean_return)}%`}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, CostPanel, FeedbackPanel, AutopsyPanel });

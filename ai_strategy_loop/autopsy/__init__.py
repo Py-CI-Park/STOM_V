@@ -22,13 +22,22 @@ from .analyze import (
     analyze_exits,
     analyze_trades,
 )
+from .segment import (
+    SegmentAutopsyResult,
+    SegmentStat,
+    ThresholdStat,
+    analyze_segments,
+    to_page_data,
+)
 from .summarize import (
     backtest_error_feedback,
     backtest_error_history_line,
+    cap_feedback,
     classify_backtest_error,
     gate_failure_directive,
     summarize,
     summarize_exits,
+    summarize_segments,
 )
 
 __all__ = [
@@ -44,4 +53,12 @@ __all__ = [
     "classify_backtest_error",
     "backtest_error_feedback",
     "backtest_error_history_line",
+    # 세그먼트 강화 부검 (P1).
+    "SegmentAutopsyResult",
+    "SegmentStat",
+    "ThresholdStat",
+    "analyze_segments",
+    "to_page_data",
+    "summarize_segments",
+    "cap_feedback",
 ]

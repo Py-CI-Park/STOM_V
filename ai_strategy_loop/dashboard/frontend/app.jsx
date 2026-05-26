@@ -149,6 +149,7 @@ function App() {
                           onViewCode={onViewCodeByGen} />
               <CostPanel state={state} cap={50000} />
               <FeedbackPanel state={state} />
+              <AutopsyPanel state={state} wsStatus={wsStatus} />
             </aside>
           </div>
         </main>

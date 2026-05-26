@@ -11,7 +11,7 @@
 
 from __future__ import annotations
 
-from typing import Any, List
+from typing import Any, List, Optional
 
 from .analyze import (
     STATUS_INSUFFICIENT,
@@ -22,9 +22,22 @@ from .analyze import (
     Discriminator,
     ExitAutopsyResult,
 )
+from .segment import SegmentAutopsyResult, SegmentStat, ThresholdStat
 
 # 요약에 포함할 상위 변별 변수 개수.
 TOP_K = 3
+
+# 세그먼트 요약에 포함할 상위 세그먼트/임계값 개수(토큰 폭증 방지).
+SEG_TOP_SEGMENTS = 2
+SEG_TOP_THRESHOLDS = 2
+
+# 세그먼트가 "손실 집중"으로 지목되려면 전체 평균 대비 이 값(%p) 이상 낮아야 한다.
+_SEGMENT_LOSS_DIFF_PCT = 0.2
+
+# 부검 피드백 토큰 회귀 게이트(P1 수용기준): 세그먼트 강화로 피드백이 무한정
+#   길어지지 않도록 합성 결과에 절대 문자 상한을 둔다. 초과하면 꼬리를 자른다.
+#   (한국어는 char≈token 근사라 char 상한이 토큰 상한 프록시로 충분하다.)
+MAX_FEEDBACK_CHARS = 1400
 
 # 백테스트 실패 원인 분류 (다음 세대 피드백 + 이력 라인용).
 #   no_trades     : 진입이 한 번도 안 됨(0거래) → metrics/CSV 없음. 가장 흔한 케이스.
@@ -346,3 +359,101 @@ def summarize_exits(result: ExitAutopsyResult, config: Any = None) -> str:
             "손절을 약간 조여 손익비를 개선하라."
         )
     return "\n".join(lines)
+
+
+# =====================================================================
+# 세그먼트 강화 부검 요약 — "어디서·왜 손실인지"를 NL로 framing (P1).
+# =====================================================================
+def _fmt_threshold(t: ThresholdStat) -> str:
+    """임계값 한 변수의 구체 경계를 사람이 읽는 한 줄로."""
+    if t.operator == "<=" and t.threshold is not None:
+        cond = f"{t.stom_var} <= {_fmt(t.threshold)}"
+    elif t.operator in (">=", ">") and t.threshold is not None:
+        cond = f"{t.stom_var} {t.operator} {_fmt(t.threshold)}"
+    elif t.operator == "between" and (t.lower_bound is not None or t.upper_bound is not None):
+        lo = _fmt(t.lower_bound) if t.lower_bound is not None else "-∞"
+        hi = _fmt(t.upper_bound) if t.upper_bound is not None else "∞"
+        cond = f"{t.stom_var} ∈ [{lo}, {hi}]"
+    else:
+        cond = f"{t.stom_var} (경계 미상)"
+    return (
+        f"- 손실 집중 구간 `{cond}` "
+        f"({t.count}건, 승률 {t.win_rate * 100:.0f}%, 평균 {t.mean_return:.2g}%) "
+        f"→ 이 구간을 진입에서 배제하거나 반대 임계값으로 조여라."
+    )
+
+
+def _segment_loss_line(s: SegmentStat, kind: str) -> str:
+    """손실 집중 세그먼트 한 줄: 어느 밴드/시간대에서 손실이 몰렸는가 + 지시."""
+    if kind == "time":
+        action = "그 시간대 진입을 거르는 시간 필터를 추가하라"
+    elif kind == "market_cap":
+        action = "그 시총 밴드를 진입에서 배제하거나 시총 조건을 조여라"
+    else:  # cross
+        action = "그 시간대×시총 조합을 진입 조건에서 배제하라"
+    return (
+        f"- {s.label} 세그먼트가 손실 집중 "
+        f"({s.count}건, 승률 {s.win_rate * 100:.0f}%, 평균 {s.avg_return:.2g}%, "
+        f"전체대비 {s.return_diff:+.2g}%p) → {action}."
+    )
+
+
+def summarize_segments(result: SegmentAutopsyResult, config: Any = None) -> str:
+    """SegmentAutopsyResult를 다음 세대 프롬프트용 한국어 세그먼트 피드백으로 변환한다.
+
+    단변량 부검(summarize/summarize_exits)과 **합성**해 쓴다: 이 함수는 "어느
+    세그먼트·시간대에서 손실이 집중되고, 어느 변수의 어느 구간이 손실인지"를
+    구체 임계값과 함께 짚는다. 손실 집중 신호가 하나도 없으면 빈 문자열을 반환해
+    (피드백 토큰을 아끼고) 합성기가 건너뛰게 한다.
+    """
+    if result.status != STATUS_OK:
+        return ""
+
+    lines: List[str] = []
+
+    # 1) 시간대 손실 집중(가장 낮은 return_diff부터).
+    worst_time = sorted(result.time_segments, key=lambda s: s.return_diff)
+    for s in worst_time[:SEG_TOP_SEGMENTS]:
+        if s.return_diff <= -_SEGMENT_LOSS_DIFF_PCT:
+            lines.append(_segment_loss_line(s, "time"))
+
+    # 2) 시총 밴드 손실 집중.
+    worst_mcap = sorted(result.market_cap_segments, key=lambda s: s.return_diff)
+    for s in worst_mcap[:SEG_TOP_SEGMENTS]:
+        if s.return_diff <= -_SEGMENT_LOSS_DIFF_PCT:
+            lines.append(_segment_loss_line(s, "market_cap"))
+
+    # 3) 교차(시간대×시총) — 가장 나쁜 한 조합만(상호작용 신호).
+    worst_cross = sorted(result.cross_segments, key=lambda s: s.return_diff)
+    if worst_cross and worst_cross[0].return_diff <= -_SEGMENT_LOSS_DIFF_PCT:
+        lines.append(_segment_loss_line(worst_cross[0], "cross"))
+
+    # 4) 구체 임계값(분위수/t검정 경계) — 변수의 어느 값이 손실인가.
+    for t in result.thresholds[:SEG_TOP_THRESHOLDS]:
+        if t.mean_return < result.overall_avg_return:
+            lines.append(_fmt_threshold(t))
+
+    if not lines:
+        return ""
+
+    header = (
+        f"세그먼트 부검(거래 {result.trade_count}건, 전체 승률 "
+        f"{result.overall_win_rate * 100:.0f}%): 손실이 어디에 몰렸는지와 구체 "
+        f"임계값이다. 이를 반영해 진입을 정밀화하라:"
+    )
+    return "\n".join([header] + lines)
+
+
+def cap_feedback(text: Optional[str], *, max_chars: int = MAX_FEEDBACK_CHARS) -> Optional[str]:
+    """합성 피드백 문자열에 절대 문자 상한을 적용한다(P1 토큰 회귀 게이트).
+
+    부검 강화로 피드백이 무한정 길어져 프롬프트 토큰을 폭증시키는 것을 막는다.
+    상한 초과 시 꼬리를 자르고 절단 표식을 붙인다. None/빈 입력은 그대로 통과한다.
+    """
+    if not text:
+        return text
+    if len(text) <= max_chars:
+        return text
+    marker = "\n…(피드백 길이 상한 적용)"
+    keep = max(max_chars - len(marker), 0)
+    return text[:keep] + marker

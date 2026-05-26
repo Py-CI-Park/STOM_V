@@ -90,3 +90,30 @@ class TestAppWiresWsStatus:
         src = _read("app.jsx")
         assert "<PhaseDetailPanel state={state} wsStatus={wsStatus}" in src
         assert "<EnginePanel state={state} wsStatus={wsStatus}" in src
+
+
+class TestAutopsyPanel:
+    """P1 — 세그먼트 부검 패널 구조 계약(page_data.autopsy 소비 + LIVE/DEMO 규약)."""
+
+    def test_autopsy_panel_defined_and_exposed(self):
+        src = _read("panels.jsx")
+        assert "function AutopsyPanel(" in src
+        # window 노출 블록에 포함돼야 한다(app.jsx가 전역에서 참조).
+        tail = src[src.rfind("Object.assign(window"):]
+        assert "AutopsyPanel" in tail
+
+    def test_autopsy_panel_consumes_page_data(self):
+        # M1 page_data 패스스루를 소비해야 한다(부검 데이터는 page_data.autopsy).
+        src = _read("panels.jsx")
+        assert "page_data?.autopsy" in src
+
+    def test_autopsy_panel_live_demo_branching(self):
+        # M1 LIVE↔DEMO 규약: 데모면 DEMO 배지, 라이브 미발행이면 대기 안내.
+        src = _read("panels.jsx")
+        assert "isDemoSource" in src
+        assert "DemoBadge" in src
+        assert "실시간 데이터 대기" in src
+
+    def test_app_wires_autopsy_panel(self):
+        src = _read("app.jsx")
+        assert "<AutopsyPanel state={state} wsStatus={wsStatus}" in src
