@@ -7,6 +7,7 @@ from utility.static_method.static_fernet_key import read_key, write_key
 from utility.settings.setting_base import CODE_INFO_TABLES, DB_PATH, LOG_PATH, BACK_TEMP, GRAPH_PATH, DB_SETTING, \
     DB_CODE_INFO, DB_STRATEGY, DB_TRADELIST
 
+# V3U compatibility: tests and pyd-free adapters import these defaults directly.
 MAIN_CLOUMNS = [
     'index', '거래소', '타임프레임', '데이터저장', '모의투자', '알림소리', '프로그램비밀번호', '바이낸스선물고정레버리지',
     '바이낸스선물고정레버리지값', '바이낸스선물변동레버리지값', '바이낸스선물마진타입', '바이낸스선물포지션'
@@ -16,18 +17,10 @@ MAIN_DATA = [
 ]
 
 ACCOUNT_CLOUMNS = ['index', 'access_key', 'secret_key']
-ACCOUNT_DATA = [
-    [1, '', ''], [2, '', ''], [3, '', ''], [4, '', ''], [5, '', ''], [6, '', ''],
-    [7, '', ''], [8, '', ''], [9, '', ''], [10, '', ''], [11, '', ''], [12, '', ''],
-    [13, '', ''], [14, '', ''], [15, '', ''], [16, '', ''], [17, '', ''], [18, '', '']
-]
+ACCOUNT_DATA = [[i+1, '', ''] for i in range(18)]
 
 TELE_CLOUMNS = ['index', 'bot_token', 'chatingid']
-TELE_DATA = [
-    [1, '', ''], [2, '', ''], [3, '', ''], [4, '', ''], [5, '', ''], [6, '', ''],
-    [7, '', ''], [8, '', ''], [9, '', ''], [10, '', ''], [11, '', ''], [12, '', ''],
-    [13, '', ''], [14, '', ''], [15, '', ''], [16, '', ''], [17, '', ''], [18, '', '']
-]
+TELE_DATA = [[i+1, '', ''] for i in range(18)]
 
 STG_CLOUMNS = [
     'index', '매수전략', '매도전략', '평균값계산틱수', '최대매수종목수', '전략종료시간', '잔고청산', '프로세스종료', '컴퓨터종료',
@@ -61,14 +54,13 @@ BACT_CLOUMNS = [
     '백테스케쥴명', '백테날짜고정', '백테날짜', '최적화기준값제한', '백테엔진분류방법', '옵튜나샘플러', '옵튜나고정변수', '옵튜나실행횟수',
     '옵튜나자동스탭', '보조지표설정'
 ]
-
 BACT_DATA_BASE = [
     0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 4, 160000, '', 0, '365',
     '0.0;1000.0;0;100.0;0.0;100.0;-10.0;10.0;0.0;1000.0;-10000.0;10000.0;0.0;100.0',
     '종목코드별 분류', 'TPESampler', '', 0, 0,
     '3;10;14;12;26;0;14;14;5;2;2;0;14;14;12;26;9;14;10;12;26;0;10;14;0.02;0.2;5;3;0;3;0;5;3;0;14'
 ]
-BACT_DATA = [[i+1] + BACT_DATA_BASE for i in range(18)]
+BACT_DATA = [[i + 1] + BACT_DATA_BASE for i in range(18)]
 
 ETC_CLOUMNS = [
     'index', '테마', '저해상도', '스톰라이브', '휴무프로세스종료', '휴무컴퓨터종료', '웹대시보드', '웹대시보드포트번호', '프로그램종료',
@@ -87,7 +79,7 @@ EXCLUSION_LIST = [
 ETC_DATA_BASE = [
     '다크블루', 0, 1, 1, 1, 0, 3000, 1, 1, '', ';'.join(['1'] * 45), ';'.join(EXCLUSION_LIST), ''
 ]
-ETC_DATA = [[i+1] + ETC_DATA_BASE for i in range(18)]
+ETC_DATA = [[i + 1] + ETC_DATA_BASE for i in range(18)]
 
 BORDER_CLOUMNS = [
     'index', '매수주문유형', '매수분할횟수', '매수분할방법', '매수분할시그널', '매수분할하방', '매수분할상방', '매수분할하방수익률',
@@ -100,7 +92,7 @@ BORDER_DATA_BASE = [
     '시장가', 1, 2, 1, 0, 1, 0.5, 0.5, 1, '매수1호가', 0, 3, 0, 0, 0, 30, 0, 0, 2, 0, 2, 0,
     120000, 130000, 0, 5, 0, 300, 0, 5, 2, '0;0;0;0;0;1;1;1;1;1'
 ]
-BORDER_DATA = [[i+1] + BORDER_DATA_BASE for i in range(18)]
+BORDER_DATA = [[i + 1] + BORDER_DATA_BASE for i in range(18)]
 
 SORDER_CLOUMNS = [
     'index', '매도주문유형', '매도분할횟수', '매도분할방법', '매도분할시그널', '매도분할하방', '매도분할상방', '매도분할하방수익률',
@@ -113,7 +105,8 @@ SORDER_DATA_BASE = [
     '시장가', 1, 1, 1, 0, 1, 0.5, 2.0, '매도1호가', 0, 5, 0, 0, 0, 30, 0, 2, 0,
     120000, 130000, 0, 300, 0, 5, 2, 0, 5, 0, 1_000_000, 0, 5, 0, 1_000_000
 ]
-SORDER_DATA = [[i+1] + SORDER_DATA_BASE for i in range(18)]
+SORDER_DATA = [[i + 1] + SORDER_DATA_BASE for i in range(18)]
+
 
 
 def database_check():
@@ -132,143 +125,85 @@ def database_check():
 
         # --------------------------------------------------------------------------------------------------------------
 
+        DICT_SETTING = {
+            'main': (MAIN_CLOUMNS, MAIN_DATA),
+            'account': (ACCOUNT_CLOUMNS, ACCOUNT_DATA),
+            'telegram': (TELE_CLOUMNS, TELE_DATA),
+            'strategy': (STG_CLOUMNS, STG_DATA),
+            'back': (BACT_CLOUMNS, BACT_DATA),
+            'etc': (ETC_CLOUMNS, ETC_DATA),
+            'buyorder': (BORDER_CLOUMNS, BORDER_DATA),
+            'sellorder': (SORDER_CLOUMNS, SORDER_DATA)
+        }
+
         con = sqlite3.connect(DB_SETTING)
-        df  = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
-        table_list = df['name'].to_list()
 
-        if 'main' not in table_list:
-            df = pd.DataFrame(MAIN_DATA, columns=MAIN_CLOUMNS).set_index('index')
-            df.to_sql('main', con)
-        else:
-            df = pd.read_sql('SELECT * FROM main', con)
-            if list(df.columns) != MAIN_CLOUMNS:
-                df = pd.DataFrame(MAIN_DATA, columns=MAIN_CLOUMNS).set_index('index')
-                df.to_sql('main', con, if_exists='replace')
+        for table_name, (columns, data) in DICT_SETTING.items():
+            df = None
+            try:
+                df = pd.read_sql(f'SELECT * FROM {table_name}', con)
+            except Exception:
+                pass
 
-        if 'account' not in table_list:
-            df = pd.DataFrame(ACCOUNT_DATA, columns=ACCOUNT_CLOUMNS).set_index('index')
-            df.to_sql('account', con)
-        else:
-            df = pd.read_sql('SELECT * FROM account', con)
-            if list(df.columns) != ACCOUNT_CLOUMNS or 1 not in df['index']:
-                df = pd.DataFrame(ACCOUNT_DATA, columns=ACCOUNT_CLOUMNS).set_index('index')
-                df.to_sql('account', con, if_exists='replace')
-
-        if 'telegram' not in table_list:
-            df = pd.DataFrame(TELE_DATA, columns=TELE_CLOUMNS).set_index('index')
-            df.to_sql('telegram', con)
-        else:
-            df = pd.read_sql('SELECT * FROM telegram', con)
-            if list(df.columns) != TELE_CLOUMNS or 1 not in df['index']:
-                df = pd.DataFrame(TELE_DATA, columns=TELE_CLOUMNS).set_index('index')
-                df.to_sql('telegram', con, if_exists='replace')
-
-        if 'strategy' not in table_list:
-            df = pd.DataFrame(STG_DATA, columns=STG_CLOUMNS).set_index('index')
-            df.to_sql('strategy', con)
-        else:
-            df = pd.read_sql('SELECT * FROM strategy', con)
-            if list(df.columns) != STG_CLOUMNS or 1 not in df['index']:
-                df = pd.DataFrame(STG_DATA, columns=STG_CLOUMNS).set_index('index')
-                df.to_sql('strategy', con, if_exists='replace')
-
-        if 'back' not in table_list:
-            df = pd.DataFrame(BACT_DATA, columns=BACT_CLOUMNS).set_index('index')
-            df.to_sql('back', con)
-        else:
-            df = pd.read_sql('SELECT * FROM back', con)
-            if list(df.columns) != BACT_CLOUMNS or 1 not in df['index']:
-                df = pd.DataFrame(BACT_DATA, columns=BACT_CLOUMNS).set_index('index')
-                df.to_sql('back', con, if_exists='replace')
-
-        if 'etc' not in table_list:
-            df = pd.DataFrame(ETC_DATA, columns=ETC_CLOUMNS).set_index('index')
-            df.to_sql('etc', con)
-        else:
-            df = pd.read_sql('SELECT * FROM etc', con)
-            if list(df.columns) != ETC_CLOUMNS or 1 not in df['index']:
-                df = pd.DataFrame(ETC_DATA, columns=ETC_CLOUMNS).set_index('index')
-                df.to_sql('etc', con, if_exists='replace')
-
-        if 'buyorder' not in table_list:
-            df = pd.DataFrame(BORDER_DATA, columns=BORDER_CLOUMNS).set_index('index')
-            df.to_sql('buyorder', con)
-        else:
-            df = pd.read_sql('SELECT * FROM buyorder', con)
-            if list(df.columns) != BORDER_CLOUMNS or 1 not in df['index']:
-                df = pd.DataFrame(BORDER_DATA, columns=BORDER_CLOUMNS).set_index('index')
-                df.to_sql('buyorder', con, if_exists='replace')
-
-        if 'sellorder' not in table_list:
-            df = pd.DataFrame(SORDER_DATA, columns=SORDER_CLOUMNS).set_index('index')
-            df.to_sql('sellorder', con)
-        else:
-            df = pd.read_sql('SELECT * FROM sellorder', con)
-            if list(df.columns) != SORDER_CLOUMNS or 1 not in df['index']:
-                df = pd.DataFrame(SORDER_DATA, columns=SORDER_CLOUMNS).set_index('index')
-                df.to_sql('sellorder', con, if_exists='replace')
+            if df is None or list(df.columns) != columns or (table_name != 'main' and 1 not in df['index']):
+                df = pd.DataFrame(data, columns=columns).set_index('index')
+                df.to_sql(table_name, con, if_exists='replace')
 
         con.close()
 
         # --------------------------------------------------------------------------------------------------------------
 
+        DICT_CODE_INFO = {
+            'stock_info': (
+                ['index', '종목명', '상장주식수'],
+                [['000020', '동화약품', 27931000]]
+            ),
+            'stock_etf_info': (
+                ['index', '종목명', '상장주식수'],
+                [['411060', 'ACE KRX금현물', 154600000]]
+            ),
+            'stock_etn_info': (
+                ['index', '종목명', '상장주식수'],
+                [['570055', '한투 금선물 ETN', 1000000]]
+            ),
+            'stock_usa_info': (
+                ['index', '종목명', '거래소코드', '상장주식수'],
+                [['AAPL', '애플', '82', 14681100000]]
+            ),
+            'future_info': (
+                ['index', '종목명', '위탁증거금', '호가단위', '틱가치', '소숫점자리수'],
+                [['A0166000', '코스피200', 39838185, 0.05, 250000, 2]]
+            ),
+            'future_nt_info': (
+                ['index', '종목명', '위탁증거금', '호가단위', '틱가치', '소숫점자리수'],
+                [['A0166000', '코스피200', 42612007, 0.05, 250000, 2]]
+            ),
+            'future_os_info': (
+                ['index', '종목명', '위탁증거금', '호가단위', '틱가치', '소숫점자리수'],
+                [['LSCH27', 'Steel Scrap(2027.03)', 330, 0.5, 5.0, 2]]
+            ),
+            'coin_info': (
+                ['index', '종목명'],
+                [['KRW-BTC', '비트코인']]
+            ),
+            'coin_future_info': (
+                ['index', '종목명', '호가단위', '가격소숫점자리수', '수량소숫점자리수'],
+                [['BTSUSDT', 'BTSUSDT', 0.1, 1, 3]]
+            )
+        }
+
         con = sqlite3.connect(DB_CODE_INFO)
-        df  = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
-        table_list = df['name'].to_list()
 
-        if 'stock_info' not in table_list:
-            columns = ['index', '종목명', '상장주식수']
-            data = ['000020', '동화약품', 27931000]
-            df = pd.DataFrame([data], columns=columns).set_index('index')
-            df.to_sql('stock_info', con)
+        for table_name, (columns, data) in DICT_CODE_INFO.items():
+            df = None
+            try:
+                df = pd.read_sql(f'SELECT * FROM {table_name}', con)
+            except Exception:
+                pass
 
-        if 'stock_etf_info' not in table_list:
-            columns = ['index', '종목명', '상장주식수']
-            data = ['411060', 'ACE KRX금현물', 154600000]
-            df = pd.DataFrame([data], columns=columns).set_index('index')
-            df.to_sql('stock_etf_info', con)
-
-        if 'stock_etn_info' not in table_list:
-            columns = ['index', '종목명', '상장주식수']
-            data = ['570055', '한투 금선물 ETN', 1000000]
-            df = pd.DataFrame([data], columns=columns).set_index('index')
-            df.to_sql('stock_etn_info', con)
-
-        if 'stock_usa_info' not in table_list:
-            columns = ['index', '종목명', '거래소코드', '상장주식수']
-            data = ['AAPL', '애플', '82', 14681100000]
-            df = pd.DataFrame([data], columns=columns).set_index('index')
-            df.to_sql('stock_usa_info', con)
-
-        if 'future_info' not in table_list:
-            columns = ['index', '종목명', '위탁증거금', '호가단위', '틱가치', '소숫점자리수']
-            data = ['A0166000', '코스피200', 39838185, 0.05, 250000, 2]
-            df = pd.DataFrame([data], columns=columns).set_index('index')
-            df.to_sql('future_info', con)
-
-        if 'future_nt_info' not in table_list:
-            columns = ['index', '종목명', '위탁증거금', '호가단위', '틱가치', '소숫점자리수']
-            data = ['A0166000', '코스피200', 42612007, 0.05, 250000, 2]
-            df = pd.DataFrame([data], columns=columns).set_index('index')
-            df.to_sql('future_nt_info', con)
-
-        if 'future_os_info' not in table_list:
-            columns = ['index', '종목명', '위탁증거금', '호가단위', '틱가치', '소숫점자리수']
-            data = ['LSCH27', 'Steel Scrap(2027.03)', 330, 0.5, 5.0, 2]
-            df = pd.DataFrame([data], columns=columns).set_index('index')
-            df.to_sql('future_os_info', con)
-
-        if 'coin_info' not in table_list:
-            columns = ['index', '종목명']
-            data = ['KRW-BTC', '비트코인']
-            df = pd.DataFrame([data], columns=columns).set_index('index')
-            df.to_sql('coin_info', con)
-
-        if 'coin_future_info' not in table_list:
-            columns = ['index', '종목명', '호가단위', '가격소숫점자리수', '수량소숫점자리수']
-            data = ['BTSUSDT', 'BTSUSDT', 0.1, 1, 3]
-            df = pd.DataFrame([data], columns=columns).set_index('index')
-            df.to_sql('coin_future_info', con)
+            if df is None or list(df.columns) != columns:
+                df = pd.DataFrame(data, columns=columns).set_index('index')
+                df.to_sql(table_name, con, if_exists='replace')
 
         con.close()
 
@@ -276,8 +211,6 @@ def database_check():
 
         con = sqlite3.connect(DB_STRATEGY)
         cur = con.cursor()
-        df  = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
-        table_list = df['name'].to_list()
 
         market_list = [
             'stock', 'stock_etf', 'stock_etn', 'stock_usa', 'future', 'future_nt', 'future_os', 'coin', 'coin_future'
@@ -289,61 +222,55 @@ def database_check():
         for market in market_list:
             for endname in endname_list:
                 table_name = f'{market}{endname}'
-                if table_name not in table_list:
-                    if endname != '_optibuy':
-                        cur.execute(f'''
-                            CREATE TABLE {table_name} (
-                                'index' TEXT,
-                                '전략코드' TEXT,
-                                PRIMARY KEY ('index')
-                            )
-                        ''')
-                    else:
-                        cur.execute(f'''
-                            CREATE TABLE {table_name} (
-                                'index' TEXT,
-                                '전략코드' TEXT,
-                                '변수값' TEXT,
-                                PRIMARY KEY ('index')
-                            )
-                        ''')
+                if endname != '_optibuy':
+                    cur.execute(f'''
+                        CREATE TABLE IF NOT EXISTS {table_name} (
+                            'index' TEXT,
+                            '전략코드' TEXT,
+                            PRIMARY KEY ('index')
+                        )
+                    ''')
+                else:
+                    cur.execute(f'''
+                        CREATE TABLE IF NOT EXISTS {table_name} (
+                            'index' TEXT,
+                            '전략코드' TEXT,
+                            '변수값' TEXT,
+                            PRIMARY KEY ('index')
+                        )
+                    ''')
 
-        # --------------------------------------------------------------------------------------------------------------
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS schedule (
+                'index' TEXT,
+                '스케쥴' TEXT,
+                PRIMARY KEY ('index')
+            )
+        ''')
 
-        if 'schedule' not in table_list:
-            cur.execute('''
-                CREATE TABLE schedule (
-                    'index' TEXT,
-                    '스케쥴' TEXT,
-                    PRIMARY KEY ('index')
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS custombutton (
+                'index' INTEGER,
+                '버튼명' TEXT,
+                '전략코드' TEXT,
+                PRIMARY KEY ('index')
                 )
-            ''')
+        ''')
 
-        if 'custombutton' not in table_list:
-            cur.execute('''
-                CREATE TABLE custombutton (
-                    'index' INTEGER,
-                    '버튼명' TEXT,
-                    '전략코드' TEXT,
-                    PRIMARY KEY ('index')
-                    )
-            ''')
-
-        if 'formula' not in table_list:
-            cur.execute('''
-                CREATE TABLE formula (
-                    '수식명' TEXT,
-                    '차트표시' INTEGER,
-                    '전략연산' INTEGER,
-                    '팩터명' TEXT,
-                    '표시형태' TEXT,
-                    '색상' TEXT,
-                    '크기' REAL,
-                    '라인타입' INTEGER,
-                    '수식코드' TEXT,
-                    PRIMARY KEY ('수식명')
-                )
-            ''')
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS formula (
+                '수식명' TEXT,
+                '차트표시' INTEGER,
+                '전략연산' INTEGER,
+                '팩터명' TEXT,
+                '표시형태' TEXT,
+                '색상' TEXT,
+                '크기' REAL,
+                '라인타입' INTEGER,
+                '수식코드' TEXT,
+                PRIMARY KEY ('수식명')
+            )
+        ''')
 
         con.commit()
         con.close()
@@ -352,8 +279,6 @@ def database_check():
 
         con = sqlite3.connect(DB_TRADELIST)
         cur = con.cursor()
-        df  = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
-        table_list = df['name'].to_list()
 
         market_list = [
             'stock', 'stock_etf', 'stock_etn', 'stock_usa', 'future', 'future_nt', 'future_os', 'coin', 'coin_future'
@@ -365,125 +290,124 @@ def database_check():
         for market in market_list:
             for endname in endname_list:
                 table_name = f'{market}{endname}'
-                if table_name not in table_list:
-                    if endname == '_chegeollist':
+                if endname == '_chegeollist':
+                    cur.execute(f'''
+                        CREATE TABLE IF NOT EXISTS {table_name} (
+                            'index'	TEXT,
+                            '종목명' TEXT,
+                            '주문구분' TEXT,
+                            '주문수량' REAL,
+                            '체결수량' REAL,
+                            '미체결수량' REAL,
+                            '체결가' REAL,
+                            '체결시간' TEXT,
+                            '주문가격' REAL,
+                            '주문번호' TEXT,
+                            PRIMARY KEY ('index')
+                        )
+                    ''')
+                elif endname == '_totaltradelist':
+                    cur.execute(f'''
+                        CREATE TABLE IF NOT EXISTS {table_name} (
+                            'index' TEXT,
+                            '거래횟수' INTEGER,
+                            '총매수금액' INTEGER,
+                            '총매도금액' INTEGER,
+                            '총수익금액' INTEGER,
+                            '총손실금액' INTEGER,
+                            '수익률' REAL,
+                            '수익금합계' INTEGER,
+                            PRIMARY KEY ('index')
+                        )
+                    ''')
+                elif endname == '_jangolist':
+                    if market == 'coin_future':
                         cur.execute(f'''
-                            CREATE TABLE {table_name} (
-                                'index'	TEXT,
-                                '종목명' TEXT,
-                                '주문구분' TEXT,
-                                '주문수량' REAL,
-                                '체결수량' REAL,
-                                '미체결수량' REAL,
-                                '체결가' REAL,
-                                '체결시간' TEXT,
-                                '주문가격' REAL,
-                                '주문번호' TEXT,
-                                PRIMARY KEY ('index')
-                            )
-                        ''')
-                    elif endname == '_totaltradelist':
-                        cur.execute(f'''
-                            CREATE TABLE {table_name} (
+                            CREATE TABLE IF NOT EXISTS {table_name} (
                                 'index' TEXT,
-                                '거래횟수' INTEGER,
-                                '총매수금액' INTEGER,
-                                '총매도금액' INTEGER,
-                                '총수익금액' INTEGER,
-                                '총손실금액' INTEGER,
+                                '종목명' TEXT,
+                                '포지션' TEXT,
+                                '매수가' REAL,
+                                '현재가' REAL,
                                 '수익률' REAL,
-                                '수익금합계' INTEGER,
+                                '평가손익' INTEGER,
+                                '매입금액' INTEGER,
+                                '평가금액' INTEGER,
+                                '보유수량' REAL,
+                                '분할매수횟수' INTEGER,
+                                '분할매도횟수' INTEGER,
+                                '매수시간' TEXT,
+                                '레버리지' INTEGER,
                                 PRIMARY KEY ('index')
                             )
                         ''')
-                    elif endname == '_jangolist':
-                        if market == 'coin_future':
-                            cur.execute(f'''
-                                CREATE TABLE {table_name} (
-                                    'index' TEXT,
-                                    '종목명' TEXT,
-                                    '포지션' TEXT,
-                                    '매수가' REAL,
-                                    '현재가' REAL,
-                                    '수익률' REAL,
-                                    '평가손익' INTEGER,
-                                    '매입금액' INTEGER,
-                                    '평가금액' INTEGER,
-                                    '보유수량' REAL,
-                                    '분할매수횟수' INTEGER,
-                                    '분할매도횟수' INTEGER,
-                                    '매수시간' TEXT,
-                                    '레버리지' INTEGER,
-                                    PRIMARY KEY ('index')
-                                )
-                            ''')
-                        elif 'future' in market:
-                            cur.execute(f'''
-                                CREATE TABLE {table_name} (
-                                    'index' TEXT,
-                                    '종목명' TEXT,
-                                    '포지션' TEXT,
-                                    '매수가' REAL,
-                                    '현재가' REAL,
-                                    '수익률' REAL,
-                                    '평가손익' INTEGER,
-                                    '매입금액' INTEGER,
-                                    '평가금액' INTEGER,
-                                    '보유수량' REAL,
-                                    '분할매수횟수' INTEGER,
-                                    '분할매도횟수' INTEGER,
-                                    '매수시간' TEXT,
-                                    PRIMARY KEY ('index')
-                                )
-                            ''')
-                        else:
-                            cur.execute(f'''
-                                CREATE TABLE {table_name} (
-                                    'index' TEXT,
-                                    '종목명' TEXT,
-                                    '매수가' REAL,
-                                    '현재가' REAL,
-                                    '수익률' REAL,
-                                    '평가손익' INTEGER,
-                                    '매입금액' INTEGER,
-                                    '평가금액' INTEGER,
-                                    '보유수량' REAL,
-                                    '분할매수횟수' INTEGER,
-                                    '분할매도횟수' INTEGER,
-                                    '매수시간' TEXT,
-                                    PRIMARY KEY ('index')
-                                )
-                            ''')
+                    elif 'future' in market:
+                        cur.execute(f'''
+                            CREATE TABLE IF NOT EXISTS {table_name} (
+                                'index' TEXT,
+                                '종목명' TEXT,
+                                '포지션' TEXT,
+                                '매수가' REAL,
+                                '현재가' REAL,
+                                '수익률' REAL,
+                                '평가손익' INTEGER,
+                                '매입금액' INTEGER,
+                                '평가금액' INTEGER,
+                                '보유수량' REAL,
+                                '분할매수횟수' INTEGER,
+                                '분할매도횟수' INTEGER,
+                                '매수시간' TEXT,
+                                PRIMARY KEY ('index')
+                            )
+                        ''')
                     else:
-                        if 'future' in market:
-                            cur.execute(f'''
-                                CREATE TABLE {table_name} (
-                                    'index' TEXT,
-                                    '종목명' TEXT,
-                                    '포지션' TEXT,
-                                    '매수금액' INTEGER,
-                                    '매도금액' INTEGER,
-                                    '주문수량' REAL,
-                                    '수익률' REAL,
-                                    '수익금' INTEGER,
-                                    '체결시간' TEXT,
-                                    PRIMARY KEY ('index')
-                                )
-                            ''')
-                        else:
-                            cur.execute(f'''
-                                CREATE TABLE {table_name} (
-                                    'index' TEXT,
-                                    '종목명' TEXT,
-                                    '매수금액' INTEGER,
-                                    '매도금액' INTEGER,
-                                    '주문수량' REAL,
-                                    '수익률' REAL,
-                                    '수익금' INTEGER,
-                                    '체결시간' TEXT,
-                                    PRIMARY KEY ('index')
-                                )
-                            ''')
+                        cur.execute(f'''
+                            CREATE TABLE IF NOT EXISTS {table_name} (
+                                'index' TEXT,
+                                '종목명' TEXT,
+                                '매수가' REAL,
+                                '현재가' REAL,
+                                '수익률' REAL,
+                                '평가손익' INTEGER,
+                                '매입금액' INTEGER,
+                                '평가금액' INTEGER,
+                                '보유수량' REAL,
+                                '분할매수횟수' INTEGER,
+                                '분할매도횟수' INTEGER,
+                                '매수시간' TEXT,
+                                PRIMARY KEY ('index')
+                            )
+                        ''')
+                else:
+                    if 'future' in market:
+                        cur.execute(f'''
+                            CREATE TABLE IF NOT EXISTS {table_name} (
+                                'index' TEXT,
+                                '종목명' TEXT,
+                                '포지션' TEXT,
+                                '매수금액' INTEGER,
+                                '매도금액' INTEGER,
+                                '주문수량' REAL,
+                                '수익률' REAL,
+                                '수익금' INTEGER,
+                                '체결시간' TEXT,
+                                PRIMARY KEY ('index')
+                            )
+                        ''')
+                    else:
+                        cur.execute(f'''
+                            CREATE TABLE IF NOT EXISTS {table_name} (
+                                'index' TEXT,
+                                '종목명' TEXT,
+                                '매수금액' INTEGER,
+                                '매도금액' INTEGER,
+                                '주문수량' REAL,
+                                '수익률' REAL,
+                                '수익금' INTEGER,
+                                '체결시간' TEXT,
+                                PRIMARY KEY ('index')
+                            )
+                        ''')
 
         con.commit()
         con.close()

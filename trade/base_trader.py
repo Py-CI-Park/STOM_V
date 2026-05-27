@@ -69,15 +69,15 @@ class BaseTrader:
         self.dict_td: dict[str, dict[str, int | float]] = {}  # 거래목록
         self.dict_signal: dict[str, list] = {}
 
-        self.dict_tj       = {}  # 잔고평가
-        self.dict_tt       = {}  # 평가손익
-        self.dict_info     = {}
-        self.dict_expc     = {}
-        self.dict_curc     = {}
-        self.dict_lvrg     = {}
-        self.dict_pos      = {}
-        self.dict_sgbn     = {}
-        self.dict_intg = {
+        self.dict_tj      = {}  # 잔고평가
+        self.dict_tt      = {}  # 평가손익
+        self.dict_info    = {}
+        self.dict_expc    = {}
+        self.dict_curc    = {}
+        self.dict_lvrg    = {}
+        self.dict_pos     = {}
+        self.dict_sgbn    = {}
+        self.dict_intg    = {
             '예수금': 0,
             '추정예수금': 0,
             '추정예탁자산': 0,
