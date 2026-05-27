@@ -210,13 +210,42 @@ def _frequency_gate_failed(
     return None
 
 
+def _tpi_gate_failed(metrics: dict, config) -> Optional[str]:
+    """매매성능지수(tpi) 게이트 판정 — 실패면 사유 문자열, 통과/무영향이면 None.
+
+    옵션·토글·하위호환이다:
+      - config.tpi_gate_enabled가 False(기본)면 항상 None(게이트 불변).
+      - enabled여도 metrics에 tpi 키가 없으면 None(구 데이터/cold 경로 하위호환).
+      - enabled이고 tpi가 있으면 tpi >= tpi_gate를 요구한다. 미달이면 사유 반환.
+
+    우수전략 보고서 기준 winner 판정의 핵심(tpi>=1.25)을 하드게이트에 AND로 더한다.
+    빈도·MDD·흑자 검사 다음의 마지막 AND 절로만 쓰여, OFF에서는 기존 동작과 같다.
+    """
+    if not bool(getattr(config, "tpi_gate_enabled", False)):
+        return None
+    raw = metrics.get("tpi", None)
+    if raw is None:
+        return None  # 하위호환: tpi 키 없으면 무영향.
+    try:
+        tpi = float(raw)
+    except (TypeError, ValueError):
+        return None
+    tpi_gate = float(getattr(config, "tpi_gate", 0.0) or 0.0)
+    if tpi < tpi_gate:
+        return f"tpi {tpi:.4g} < tpi_gate {tpi_gate:.4g}"
+    return None
+
+
 def compute_fitness(metrics: dict, equity_series: Sequence[float], config) -> FitnessResult:
     """metrics dict + 누적수익 곡선 + config로 복합 적합도를 계산한다.
 
     composite = calmar x uptrend_r2 x gate
-    gate = 1 if (빈도 게이트 통과 AND mdd <= mdd_cap AND total_profit > 0) else 0
+    gate = 1 if (빈도 게이트 통과 AND mdd <= mdd_cap AND total_profit > 0
+                 [AND tpi >= tpi_gate, tpi_gate_enabled일 때만]) else 0
       - 빈도 게이트(주 기준): daily_avg_trades >= min_daily_trades.
       - daily_avg_trades가 metrics에 없으면 trade_count >= min_trades로 폴백(하위호환).
+      - tpi 게이트(옵션): config.tpi_gate_enabled=True이고 metrics에 tpi가 있을 때만
+        tpi >= tpi_gate를 마지막 AND 절로 요구한다. 기본 OFF면 게이트 불변(하위호환).
     """
     cagr = float(metrics.get("cagr", 0.0) or 0.0)
     mdd = float(metrics.get("mdd_pct", 0.0) or 0.0)
@@ -246,6 +275,13 @@ def compute_fitness(metrics: dict, equity_series: Sequence[float], config) -> Fi
     elif total_profit <= 0.0:
         gate_passed = False
         reason = f"total_profit {total_profit:.4g} <= 0"
+    else:
+        # tpi 게이트(옵션·토글·하위호환). enabled=False(기본)거나 metrics에 tpi가
+        #   없으면 None → 게이트 불변. 마지막 AND 절이라 OFF에서 byte-동일하다.
+        tpi_fail = _tpi_gate_failed(metrics, config)
+        if tpi_fail is not None:
+            gate_passed = False
+            reason = tpi_fail
 
     gate = 1.0 if gate_passed else 0.0
     score = calmar * uptrend_r2 * gate

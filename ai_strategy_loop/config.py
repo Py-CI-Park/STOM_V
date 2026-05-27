@@ -41,6 +41,12 @@ class LoopConfig:
     #   페널티 비활성(하위호환: 기존 동작 그대로).
     overtrade_softcap: int = 150
     tpi_gate: float = 1.2
+    # tpi_gate_enabled: True면 하드게이트(compute_fitness)에 매매성능지수(tpi) 조건을
+    #   AND로 추가한다(빈도·MDD·흑자 다음). winner 판정 기준인 tpi>=tpi_gate(우수전략
+    #   보고서 기준 1.25)를 게이트로 강제하려는 옵션이다. 기본 OFF이라 기존 게이트는
+    #   불변(byte-동일) — 모든 기존 테스트가 보존된다. enabled=True여도 metrics에 tpi
+    #   키가 없으면 무영향(하위호환). enabled+tpi 존재일 때만 tpi<tpi_gate를 탈락시킨다.
+    tpi_gate_enabled: bool = False
     # --- 청산 품질(exit-quality) 레버 (give-back/payoff 부검 환류) ---
     # 부검(1년치): 손실의 70~88%가 give-back(평가익 2~3% 찍고 -2~-3%로 토해냄)이고
     #   payoff ratio 붕괴(1.20→0.61)가 적자 원인. 진입 피처는 승패를 못 가르고

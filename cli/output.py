@@ -49,6 +49,12 @@ def format_json(result):
             'status': 'success',
             'metrics': {
                 'trade_count': metrics.get('trade_count', 0),
+                # daily_avg_trades(일평균거래횟수)는 빈도 게이트의 주 기준이다.
+                #   warm 경로(cli/runner._extract_metrics)는 stock_bt '일평균거래횟수'를
+                #   채워 넣지만, cold/JSON 경로(loop.run_backtest_for)는 이 직렬화
+                #   블록을 그대로 outcome.metrics로 쓰므로 여기 누락되면 None이 된다.
+                #   소스 result['metrics']에는 이미 존재하므로 그 값을 그대로 운반한다.
+                'daily_avg_trades': metrics.get('daily_avg_trades', 0.0),
                 'win_rate': metrics.get('win_rate', 0.0),
                 'avg_profit_pct': metrics.get('avg_profit_pct', 0.0),
                 'total_profit_pct': metrics.get('total_profit_pct', 0.0),
