@@ -1,10 +1,6 @@
 
 def update_back_progressbar(ui):
-    """백테스트 프로그레스바를 업데이트합니다.
-    백테스트 진행 상황, 경과 시간, 남은 시간을 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 프로그레스바를 업데이트합니다."""
     if ui.back_start_time is not None:
         from utility.static_method.static_datetime import now, timedelta_sec
 
@@ -38,11 +34,7 @@ def update_back_progressbar(ui):
 
 
 def update_progressbar(ui):
-    """메인 프로그레스바와 버튼 스타일을 업데이트합니다.
-    CPU 사용량을 표시하고 다이얼로그 상태에 따라 버튼 스타일을 변경합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """메인 프로그레스바와 버튼 스타일을 업데이트합니다."""
     from ui.create_widget.set_style import style_bc_bb, style_bc_bt, style_bc_by, style_bc_sl, style_bc_st
 
     ui.progressBarrr.setValue(ui.cpu_per)

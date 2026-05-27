@@ -21,8 +21,7 @@ from ui.create_widget.set_text import optistandard, optitext, train_period, vali
 
 class SetStrategyTab:
     """전략 탭 설정 클래스입니다.
-    매수/매도 전략 및 최적화 탭을 설정합니다.
-    """
+    매수/매도 전략 및 최적화 탭을 설정합니다."""
     def __init__(self, ui_class, wc):
         self.ui = ui_class
         self.wc = wc
@@ -384,24 +383,24 @@ class SetStrategyTab:
 
     # =================================================================================================================
 
-        self.ui.ss_textEditttt_01.setGeometry(7, 10, 1000, 463)
-        self.ui.ss_textEditttt_02.setGeometry(7, 480, 1000, 272)
-        self.ui.ss_textEditttt_03.setGeometry(509, 10, 497, 463)
-        self.ui.ss_textEditttt_04.setGeometry(509, 480, 497, 272)
+        self.ui.ss_textEditttt_01.setGeometry(7, 10, 1000, 460)
+        self.ui.ss_textEditttt_02.setGeometry(7, 475, 1000, 275)
+        self.ui.ss_textEditttt_03.setGeometry(509, 10, 497, 460)
+        self.ui.ss_textEditttt_04.setGeometry(509, 475, 497, 275)
         self.ui.ss_textEditttt_05.setGeometry(659, 10, 347, 740)
         self.ui.ss_textEditttt_06.setGeometry(659, 10, 347, 740)
         self.ui.ss_textEditttt_07.setGeometry(7, 10, 497, 740)
         self.ui.ss_textEditttt_08.setGeometry(509, 10, 497, 740)
 
-        self.ui.ss_textEditttt_10.setGeometry(509, 40, 497, 700)
+        self.ui.ss_textEditttt_10.setGeometry(509, 40, 497, 710)
         self.ui.ss_comboBoxxxx_41.setGeometry(7, 10, 497, 25)
         self.ui.ss_comboBoxxxx_42.setGeometry(509, 10, 400, 25)
         self.ui.ss_pushButtonn_41.setGeometry(914, 10, 92, 25)
 
         self.ui.szoo_pushButon_01.setGeometry(937, 15, 50, 20)
-        self.ui.szoo_pushButon_02.setGeometry(937, 483, 50, 20)
+        self.ui.szoo_pushButon_02.setGeometry(937, 480, 50, 20)
 
-        self.ui.ss_tableWidget_01.setGeometry(7, 40, 1000, 713)
+        self.ui.ss_tableWidget_01.setGeometry(7, 40, 1000, 710)
         self.ui.ss_comboBoxxxx_01.setGeometry(7, 10, 150, 25)
         self.ui.ss_pushButtonn_01.setGeometry(162, 10, 100, 25)
         self.ui.ss_pushButtonn_02.setGeometry(267, 10, 55, 25)
@@ -413,9 +412,9 @@ class SetStrategyTab:
         self.ui.ss_pushButtonn_06.setGeometry(907, 10, 55, 25)
         self.ui.ss_pushButtonn_07.setGeometry(967, 10, 40, 25)
 
-        self.ui.ss_textEditttt_09.setGeometry(7, 10, 1000, 703)
-        self.ui.ss_progressBar_01.setGeometry(7, 718, 830, 30)
-        self.ui.ss_pushButtonn_08.setGeometry(842, 718, 165, 30)
+        self.ui.ss_textEditttt_09.setGeometry(7, 10, 1000, 705)
+        self.ui.ss_progressBar_01.setGeometry(7, 720, 830, 30)
+        self.ui.ss_pushButtonn_08.setGeometry(842, 720, 165, 30)
 
         self.ui.svjb_comboBoxx_01.setGeometry(1012, 10, 165, 25)
         self.ui.svjb_lineEditt_01.setGeometry(1182, 10, 165, 25)
@@ -437,22 +436,22 @@ class SetStrategyTab:
         self.ui.svj_pushButton_03.setGeometry(1012, 405, 80, 30)
         self.ui.svj_pushButton_04.setGeometry(1097, 405, 80, 30)
 
-        self.ui.svjs_comboBoxx_01.setGeometry(1012, 478, 165, 25)
-        self.ui.svjs_lineEditt_01.setGeometry(1182, 478, 165, 25)
-        self.ui.svjs_pushButon_01.setGeometry(1012, 508, 165, 30)
-        self.ui.svjs_pushButon_02.setGeometry(1182, 508, 165, 30)
-        self.ui.svjs_pushButon_03.setGeometry(1012, 543, 165, 30)
-        self.ui.svjs_pushButon_04.setGeometry(1182, 543, 165, 30)
-        self.ui.svjs_pushButon_05.setGeometry(1012, 578, 165, 30)
-        self.ui.svjs_pushButon_06.setGeometry(1182, 578, 165, 30)
-        self.ui.svjs_pushButon_07.setGeometry(1012, 613, 165, 30)
-        self.ui.svjs_pushButon_08.setGeometry(1182, 613, 165, 30)
-        self.ui.svjs_pushButon_09.setGeometry(1012, 648, 165, 30)
-        self.ui.svjs_pushButon_10.setGeometry(1182, 648, 165, 30)
-        self.ui.svjs_pushButon_11.setGeometry(1012, 683, 165, 30)
-        self.ui.svjs_pushButon_12.setGeometry(1182, 683, 165, 30)
-        self.ui.svjs_pushButon_13.setGeometry(1012, 718, 165, 30)
-        self.ui.svjs_pushButon_14.setGeometry(1182, 718, 165, 30)
+        self.ui.svjs_comboBoxx_01.setGeometry(1012, 475, 165, 30)
+        self.ui.svjs_lineEditt_01.setGeometry(1182, 475, 165, 30)
+        self.ui.svjs_pushButon_01.setGeometry(1012, 510, 165, 30)
+        self.ui.svjs_pushButon_02.setGeometry(1182, 510, 165, 30)
+        self.ui.svjs_pushButon_03.setGeometry(1012, 545, 165, 30)
+        self.ui.svjs_pushButon_04.setGeometry(1182, 545, 165, 30)
+        self.ui.svjs_pushButon_05.setGeometry(1012, 580, 165, 30)
+        self.ui.svjs_pushButon_06.setGeometry(1182, 580, 165, 30)
+        self.ui.svjs_pushButon_07.setGeometry(1012, 615, 165, 30)
+        self.ui.svjs_pushButon_08.setGeometry(1182, 615, 165, 30)
+        self.ui.svjs_pushButon_09.setGeometry(1012, 650, 165, 30)
+        self.ui.svjs_pushButon_10.setGeometry(1182, 650, 165, 30)
+        self.ui.svjs_pushButon_11.setGeometry(1012, 685, 165, 30)
+        self.ui.svjs_pushButon_12.setGeometry(1182, 685, 165, 30)
+        self.ui.svjs_pushButon_13.setGeometry(1012, 720, 165, 30)
+        self.ui.svjs_pushButon_14.setGeometry(1182, 720, 165, 30)
 
         self.ui.svjb_labelllll_01.setGeometry(1012, 255, 340, 20)
         self.ui.svjb_labelllll_02.setGeometry(1012, 280, 340, 20)
@@ -505,17 +504,17 @@ class SetStrategyTab:
         self.ui.svc_pushButton_28.setGeometry(1097, 370, 80, 30)
         self.ui.svc_pushButton_29.setGeometry(1097, 405, 80, 30)
 
-        self.ui.svc_comboBoxxx_08.setGeometry(1012, 513, 165, 30)
-        self.ui.svc_lineEdittt_03.setGeometry(1182, 513, 165, 30)
-        self.ui.svc_pushButton_09.setGeometry(1012, 548, 165, 30)
-        self.ui.svc_pushButton_10.setGeometry(1182, 548, 165, 30)
-        self.ui.svc_labellllll_04.setGeometry(1012, 583, 335, 130)
-        self.ui.svc_pushButton_11.setGeometry(1012, 718, 335, 30)
+        self.ui.svc_comboBoxxx_08.setGeometry(1012, 510, 165, 30)
+        self.ui.svc_lineEdittt_03.setGeometry(1182, 510, 165, 30)
+        self.ui.svc_pushButton_09.setGeometry(1012, 545, 165, 30)
+        self.ui.svc_pushButton_10.setGeometry(1182, 545, 165, 30)
+        self.ui.svc_labellllll_04.setGeometry(1012, 580, 335, 130)
+        self.ui.svc_pushButton_11.setGeometry(1012, 720, 335, 30)
 
         self.ui.svc_lineEdittt_04.setGeometry(1012, 10, 165, 30)
         self.ui.svc_pushButton_13.setGeometry(1182, 10, 165, 30)
-        self.ui.svc_lineEdittt_05.setGeometry(1012, 478, 165, 30)
-        self.ui.svc_pushButton_14.setGeometry(1182, 478, 165, 30)
+        self.ui.svc_lineEdittt_05.setGeometry(1012, 475, 165, 30)
+        self.ui.svc_pushButton_14.setGeometry(1182, 475, 165, 30)
 
         self.ui.svc_pushButton_15.setGeometry(1012, 335, 80, 30)
         self.ui.svc_pushButton_16.setGeometry(1012, 370, 80, 30)
@@ -566,4 +565,4 @@ class SetStrategyTab:
         self.ui.svo_pushButton_06.setGeometry(1012, 370, 165, 30)
         self.ui.svo_pushButton_07.setGeometry(1012, 405, 165, 30)
 
-        self.ui.svo_pushButton_08.setGeometry(1012, 718, 335, 30)
+        self.ui.svo_pushButton_08.setGeometry(1012, 720, 335, 30)

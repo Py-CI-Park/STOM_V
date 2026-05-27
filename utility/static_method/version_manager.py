@@ -6,22 +6,8 @@ from utility.settings.setting_base import DB_PATH
 
 
 class VersionManager:
-    """
-    전략 버전 관리 클래스
-    - 매수/매도 전략 별도 관리
-    - 저장 버튼 클릭 시 자동 버전 생성
-    - 라인별 diff 색상 표시 지원
-    """
-
+    """전략 버전 관리 클래스"""
     def __init__(self, market: str, gubun1: str, gubun2: str, strategy_name: str):
-        """
-        Args:
-            market: 거래소 구분
-            gubun1: 전략 구분 ('basic', 'opti', 'cond')
-            gubun2: 매수, 매도, 최적화범위, GA범위 구분 ('buy', 'sell', 'vars', 'gavars')
-            strategy_name: 전략 이름
-        """
-
         self.market = market
         self.gubun1 = gubun1
         self.gubun2 = gubun2
@@ -31,9 +17,7 @@ class VersionManager:
         self.file_name = f'{market}_{gubun1}_{gubun2}_{strategy_name}'
 
     def _increment_version(self, current: str) -> str:
-        """
-        버전 증가: 1.00 -> 1.01, 1.09 -> 1.10, 1.99 -> 2.00
-        """
+        """버전 증가: 1.00 -> 1.01, 1.09 -> 1.10, 1.99 -> 2.00"""
         major, minor = map(int, current.split('.'))
         if minor >= 99:
             return f"{major + 1}.00"
@@ -125,5 +109,6 @@ class VersionManager:
 
 
 def stg_save_version(market, gubun1, gubun2, strategy_name, strategy):
+    """전략 저장 시 버전 지정 후 저장"""
     svm = VersionManager(market, gubun1, gubun2, strategy_name)
     svm.save_version(strategy)

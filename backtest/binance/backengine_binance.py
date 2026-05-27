@@ -5,53 +5,26 @@ from utility.static_method.static_numba import get_profit_coin_future_long, get_
 
 class BackEngineBinance(BackEngineBase):
     """바이낸스 백테스트 엔진 클래스입니다.
-    BackEngineBase를 상속받아 바이낸스 시장 특화 로직을 구현합니다.
-    """
+    BackEngineBase를 상속받아 바이낸스 시장 특화 로직을 구현합니다."""
     def _get_hogaunit(self, 주문가격):
-        """호가 단위를 반환합니다.
-        Args:
-            주문가격: 주문가격
-        Returns:
-            호가 단위
-        """
+        """호가 단위를 반환합니다."""
         dict_info = self.dict_info.get(self.code)
         return dict_info['호가단위'] if dict_info else 0.00000001
 
     def _set_buy_count(self, betting, 현재가, 매수가, oc_ratio):
-        """매수 수량을 설정합니다.
-        Args:
-            betting: 배팅 금액
-            현재가: 현재가
-            매수가: 매수가
-            oc_ratio: 분할 비율
-        Returns:
-            매수 수량
-        """
+        """매수 수량을 설정합니다."""
         dict_info = self.dict_info.get(self.code)
         소숫점자리수 = dict_info['수량소숫점자리수'] if dict_info else 8
         return round(betting / 현재가 * oc_ratio / 100, 소숫점자리수)
 
     def _get_order_price(self, 거래금액, 주문수량):
-        """주문 가격을 계산합니다.
-        Args:
-            거래금액: 거래 금액
-            주문수량: 주문 수량
-        Returns:
-            주문 가격
-        """
+        """주문 가격을 계산합니다."""
         dict_info = self.dict_info.get(self.code)
         소숫점자리수 = dict_info['가격소숫점자리수'] if dict_info else 4
         return round(거래금액 / 주문수량, 소숫점자리수)
 
     def _get_profit_info(self, 현재가, 매수가, 보유수량):
-        """수익 정보를 계산합니다.
-        Args:
-            현재가 (float): 현재가
-            매수가 (float): 매수가
-            보유수량 (float): 보유 수량
-        Returns:
-            tuple: (포지션, 평가금액, 수익금, 수익률)
-        """
+        """수익 정보를 계산합니다."""
         if self.curr_trade_info['보유중'] == 1:
             포지션 = 'LONG'
             평가금액, 수익금, 수익률 = get_profit_coin_future_long(

@@ -29,8 +29,7 @@ def get_symbols_info():
 
 class UpbitRestAPI:
     """업비트 RESTAPI 메인 클래스입니다.
-    업비트 시장 데이터를 REST API로 수신합니다.
-    """
+    업비트 시장 데이터를 REST API로 수신합니다."""
     def __init__(self, access, secret, windowQ):
         self.access  = access
         self.secret  = secret
@@ -58,12 +57,7 @@ class UpbitRestAPI:
         }
 
     def _headers(self, query=None):
-        """헤더를 생성합니다.
-        Args:
-            query: 쿼리 파라미터
-        Returns:
-            헤더 딕셔너리
-        """
+        """헤더를 생성합니다."""
         payload = {
             'access_key': self.access,
             'nonce': str(uuid.uuid4())
@@ -78,60 +72,31 @@ class UpbitRestAPI:
         return {'Authorization': f'Bearer {token}'}
 
     def _get(self, url):
-        """GET 요청을 보냅니다.
-        Args:
-            url: URL
-        Returns:
-            응답
-        """
+        """GET 요청을 보냅니다."""
         headers = self._headers()
         response = requests.get(url, headers=headers)
         return response.json()
 
     def _post(self, url, data):
-        """POST 요청을 보냅니다.
-        Args:
-            url: URL
-            data: 데이터
-        Returns:
-            응답
-        """
+        """POST 요청을 보냅니다."""
         headers = self._headers(data)
         response = requests.post(url, headers=headers, data=json.dumps(data))
         return response.json()
 
     def _delete(self, url, data):
-        """DELETE 요청을 보냅니다.
-        Args:
-            url: URL
-            data: 데이터
-        Returns:
-            응답
-        """
+        """DELETE 요청을 보냅니다."""
         headers = self._headers(data)
         response = requests.delete(url, headers=headers, data=json.dumps(data))
         return response.json()
 
     def get_balances(self):
-        """잔고를 조회합니다.
-        Returns:
-            잔고
-        """
+        """예수금을 조회합니다."""
         url = 'https://api.upbit.com/v1/accounts'
         ret = self._get(url)
         return int(float(ret[0]['balance']))
 
     def order_coin(self, 종목코드='', 주문구분='', 주문유형='', 주문금액=0, 주문수량=0):
-        """코인 주문을 전송합니다.
-        Args:
-            종목코드: 종목 코드
-            주문구분: 주문 구분
-            주문유형: 주문 유형
-            주문금액: 주문 금액
-            주문수량: 주문 수량
-        Returns:
-            응답
-        """
+        """주문을 전송합니다."""
         url = 'https://api.upbit.com/v1/orders'
         data = {
             'market': 종목코드,
@@ -152,12 +117,7 @@ class UpbitRestAPI:
         return self._post(url, data)
 
     def order_cancel(self, od_no):
-        """주문을 취소합니다.
-        Args:
-            od_no: 주문 번호
-        Returns:
-            응답
-        """
+        """주문을 취소합니다."""
         url = 'https://api.upbit.com/v1/order'
         data = {'uuid': od_no}
         return self._delete(url, data)
@@ -165,8 +125,7 @@ class UpbitRestAPI:
 
 class UpbitWebSocketReceiver(QThread):
     """업비트 웹소켓 수신 스레드 클래스입니다.
-    업비트 시장 데이터를 웹소켓으로 수신합니다.
-    """
+    업비트 시장 데이터를 웹소켓으로 수신합니다."""
     signal = pyqtSignal(dict)
 
     def __init__(self, codes, windowQ):
@@ -268,8 +227,7 @@ class UpbitWebSocketReceiver(QThread):
 
 class UpbitWebSocketTrader(QThread):
     """업비트 웹소켓 트레이더 스레드 클래스입니다.
-    업비트 주문 데이터를 웹소켓으로 수신합니다.
-    """
+    업비트 주문 데이터를 웹소켓으로 수신합니다."""
     signal = pyqtSignal(dict)
 
     def __init__(self, access, secret, windowQ):

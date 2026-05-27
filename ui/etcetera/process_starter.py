@@ -3,11 +3,7 @@ from utility.static_method.static_decorator import thread_decorator
 
 
 def process_starter(ui):
-    """프로세스 스타터를 실행합니다.
-    자동 백테스트 스케줄러, 자동 실행 등을 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """프로세스 스타터를 실행합니다."""
     from utility.static_method.static_datetime import now, str_hms
     from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_03
 
@@ -28,11 +24,7 @@ def process_starter(ui):
 
 
 def auto_back_schedule(ui, gubun):
-    """자동 백테스트 스케줄러를 실행합니다.
-    Args:
-        ui: UI 객체
-        gubun (int): 구분 번호 (0: 패턴학습확인, 1: 시작, 2: 스케줄러 표시)
-    """
+    """자동 백테스트 스케줄러를 실행합니다."""
     from utility.static_method.static_etcetera import qtest_qwait
     from ui.event_click.button_clicked_backtest_start import backtest_engine_kill
     from ui.event_click.button_clicked_backtest_engine import backengine_show, backengine_start
@@ -66,10 +58,7 @@ def auto_back_schedule(ui, gubun):
 
 
 def _update_window_title(ui):
-    """윈도우 제목을 업데이트합니다.
-    Args:
-        ui: UI 객체
-    """
+    """윈도우 제목을 업데이트합니다."""
     from utility.static_method.static_datetime import now_utc, now_cme, str_ymdhms_ios
     market_text = ui.dict_set['거래소']
     data_type = '1초스냅샷' if ui.dict_set['타임프레임'] else '1분봉'
@@ -98,9 +87,6 @@ def _update_window_title(ui):
 
 @thread_decorator
 def _update_cpuper(ui):
-    """CPU 사용률을 업데이트합니다.
-    Args:
-        ui: UI 객체
-    """
+    """CPU 사용률을 업데이트합니다."""
     import psutil
     ui.cpu_per = int(psutil.cpu_percent(interval=1))

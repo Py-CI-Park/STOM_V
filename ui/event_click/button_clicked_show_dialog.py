@@ -9,11 +9,7 @@ class QuietPage(QWebEnginePage):
 
 
 def show_dialog_graph(ui, df):
-    """그래프 다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        df: 데이터프레임
-    """
+    """그래프 다이얼로그를 표시합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_graph.isVisible():
@@ -51,15 +47,7 @@ def show_dialog_graph(ui, df):
 
 
 def show_dialog(ui, code, name, tickcount, searchdate, col):
-    """다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        code: 코드
-        name: 이름
-        tickcount: 틱 카운트
-        searchdate: 검색 일자
-        col: 컬럼 인덱스
-    """
+    """다이얼로그를 표시합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     if col == 0:
@@ -95,12 +83,7 @@ def show_dialog(ui, code, name, tickcount, searchdate, col):
 
 
 def show_dialog_web(ui, _show, code):
-    """웹 다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        _show: 표시 여부
-        code: 코드
-    """
+    """웹 다이얼로그를 표시합니다."""
     from PyQt5.QtCore import QUrl
     from ui.create_widget.dialog_animation import DialogAnimator
 
@@ -122,10 +105,7 @@ def show_dialog_web(ui, _show, code):
 
 
 def webengineview_set(ui):
-    """웹엔진 뷰를 설정합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """웹엔진 뷰를 설정합니다."""
     from PyQt5.QtWidgets import QVBoxLayout
     from PyQt5.QtWebEngineWidgets import QWebEngineView
 
@@ -138,12 +118,7 @@ def webengineview_set(ui):
 
 
 def show_dialog_hoga(ui, _show, code):
-    """호가 다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        _show: 표시 여부
-        code: 코드
-    """
+    """호가 다이얼로그를 표시합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if _show and not ui.dialog_hoga.isVisible():
@@ -161,11 +136,7 @@ def show_dialog_hoga(ui, _show, code):
 
 
 def put_hoga_code(ui, code):
-    """호가 코드를 전송합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        code: 코드
-    """
+    """호가 코드를 전송합니다."""
     from ui.etcetera.process_alive import receiver_process_alive
 
     if receiver_process_alive(ui):
@@ -174,19 +145,7 @@ def put_hoga_code(ui, code):
 
 def show_dialog_chart(ui, real, code, tickcount=None, searchdate=None, starttime=None, endtime=None,
                       detail=None, buytimes=None):
-    """차트 다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        real: 실시간 여부
-        code: 코드
-        tickcount: 틱 카운트
-        searchdate: 검색 일자
-        starttime: 시작 시간
-        endtime: 종료 시간
-        detail: 상세 정보
-        buytimes: 매수 시간
-    """
-
+    """차트 다이얼로그를 표시합니다."""
     from ui.etcetera.etc import chart_clear
     from ui.event_click.button_clicked_chart import get_indicator_detail
     from ui.etcetera.process_alive import strategy_process_alive, receiver_process_alive
@@ -216,10 +175,7 @@ def show_dialog_chart(ui, real, code, tickcount=None, searchdate=None, starttime
 
 
 def dialog_chart_show(ui):
-    """차트 다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """차트 다이얼로그를 표시합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
     from utility.static_method.static_datetime import str_hms, dt_hms
     from ui.event_click.button_clicked_chart_count import chart_count_change
@@ -240,10 +196,7 @@ def dialog_chart_show(ui):
 
 
 def show_qsize(ui):
-    """큐 사이즈 표시를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """큐 사이즈 표시를 토글합니다."""
     from ui.create_widget.set_style import style_bc_bb, style_bc_st
 
     if not ui.showQsize:
@@ -255,10 +208,7 @@ def show_qsize(ui):
 
 
 def show_dialog_formula(ui):
-    """수식 관리자 다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """수식 관리자 다이얼로그를 표시합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_formula.isVisible():
@@ -269,10 +219,7 @@ def show_dialog_formula(ui):
 
 
 def show_dialog_factor(ui):
-    """팩터 다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """팩터 다이얼로그를 표시합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_factor.isVisible():
@@ -283,10 +230,7 @@ def show_dialog_factor(ui):
 
 
 def show_chart(ui):
-    """차트 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """차트 다이얼로그를 토글합니다."""
     if not ui.dialog_chart.isVisible():
         dialog_chart_show(ui)
     else:
@@ -294,10 +238,7 @@ def show_chart(ui):
 
 
 def show_hoga(ui):
-    """호가 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """호가 다이얼로그를 토글합니다."""
     from utility.settings.setting_base import COLUMNS_HC
     from ui.create_widget.dialog_animation import DialogAnimator
 
@@ -322,10 +263,7 @@ def show_hoga(ui):
 
 
 def show_giup(ui):
-    """기업정보 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """기업정보 다이얼로그를 토글합니다."""
     from PyQt5.QtCore import QUrl
     from ui.create_widget.dialog_animation import DialogAnimator
 
@@ -348,10 +286,7 @@ def show_giup(ui):
 
 
 def show_treemap(ui):
-    """트리맵 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """트리맵 다이얼로그를 토글합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_tree.isVisible():
@@ -363,10 +298,7 @@ def show_treemap(ui):
 
 
 def show_db(ui):
-    """데이터베이스 관리 다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """데이터베이스 관리 다이얼로그를 표시합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QTableWidgetItem
     from ui.create_widget.dialog_animation import DialogAnimator
@@ -437,10 +369,7 @@ def show_db(ui):
 
 
 def show_backscheduler(ui):
-    """백테스트 스케줄러 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 스케줄러 다이얼로그를 토글합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_scheduler.isVisible():
@@ -451,10 +380,7 @@ def show_backscheduler(ui):
 
 
 def show_kimp(ui):
-    """김프 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """김프 다이얼로그를 토글합니다."""
     from multiprocessing import Process
     from ui.create_widget.dialog_animation import DialogAnimator
     from ui.etcetera.process_alive import coinkimp_process_alive
@@ -473,10 +399,7 @@ def show_kimp(ui):
 
 
 def show_order(ui):
-    """주문 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """주문 다이얼로그를 토글합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_order.isVisible():
@@ -503,10 +426,7 @@ def show_order(ui):
 
 
 def show_passticks_dialog(ui):
-    """경과틱수 설정 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """경과틱수 설정 다이얼로그를 토글합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_setsj.isVisible():
@@ -517,10 +437,7 @@ def show_passticks_dialog(ui):
 
 
 def show_pattern_dialog(ui):
-    """분석시스템 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """분석시스템 다이얼로그를 토글합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_pattern.isVisible():

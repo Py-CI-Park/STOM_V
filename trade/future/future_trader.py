@@ -40,10 +40,7 @@ class FutureTrader(BaseTrader):
 
     @error_decorator
     def _send_order(self, data):
-        """주문을 전송합니다.
-        Args:
-            data: 데이터
-        """
+        """주문을 전송합니다."""
         curr_time = now()
         if curr_time < self.order_time:
             next_time = (self.order_time - curr_time).total_seconds()
@@ -118,10 +115,7 @@ class FutureTrader(BaseTrader):
 
     @error_decorator
     def _convert_order_data(self, data):
-        """주문 데이터를 변환합니다.
-        Args:
-            data: 데이터
-        """
+        """주문체결 데이터를 변환합니다."""
         body = data['body']
         if body is None:
             return
@@ -148,14 +142,7 @@ class FutureTrader(BaseTrader):
             self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
 
     def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
-        """매수 주문 가격을 반환합니다.
-        Args:
-            종목코드: 종목 코드
-            주문구분: 주문 구분
-            주문가격: 주문 가격
-        Returns:
-            매수 주문 가격
-        """
+        """매수 주문 가격을 반환합니다."""
         매수지정가호가번호 = self.dict_set['매수지정가호가번호']
         소숫점자리수 = self.dict_info[종목코드]['소숫점자리수']
         호가차이 = self.dict_info[종목코드]['호가단위'] * 매수지정가호가번호

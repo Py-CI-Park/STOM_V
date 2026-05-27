@@ -1,8 +1,6 @@
 
 class SetLogTap:
-    """로그 탭 설정 클래스입니다.
-    로그 탭을 설정합니다.
-    """
+    """로그 탭 설정 클래스입니다."""
     def __init__(self, ui_class, wc):
         self.ui = ui_class
         self.wc = wc

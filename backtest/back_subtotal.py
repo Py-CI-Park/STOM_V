@@ -7,9 +7,7 @@ from backtest.back_static_numba import get_result
 
 
 class BackSubTotal:
-    """백테스트 결과를 집계하는 클래스입니다.
-    여러 백테스트 결과를 수집하고 통합합니다.
-    """
+    """백테스트 결과를 집계하는 클래스입니다. 여러 백테스트 결과를 수집하고 통합합니다."""
     def __init__(self, vkey, wq, tq, bstqs, buystd):
         self.vkey         = vkey
         self.wq           = wq
@@ -40,9 +38,7 @@ class BackSubTotal:
         self._main_loop()
 
     def _main_loop(self):
-        """메인 루프를 실행합니다.
-        백테스트 결과를 수집하고 집계합니다.
-        """
+        """메인 루프를 실행합니다. 백테스트 결과를 수집하고 집계합니다."""
         while True:
             try:
                 data = self.bstq.get()

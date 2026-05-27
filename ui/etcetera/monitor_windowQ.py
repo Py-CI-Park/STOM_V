@@ -6,8 +6,7 @@ from utility.settings.setting_base import UI_NUM
 
 class MonitorWindowQ(QThread):
     """윈도우 큐 모니터 스레드 클래스입니다.
-    윈도우 큐의 데이터를 분류하여 전송합니다.
-    """
+    윈도우 큐의 데이터를 분류하여 전송합니다."""
     signal1 = pyqtSignal(tuple)
     signal2 = pyqtSignal(tuple)
     signal3 = pyqtSignal(tuple)

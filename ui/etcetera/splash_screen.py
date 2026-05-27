@@ -9,8 +9,7 @@ from utility.settings.setting_base import ICON_PATH
 
 class StomSplashScreen(QSplashScreen):
     """STOM 스플래시 스크린 클래스입니다.
-    애플리케이션 시작 시 로딩 화면을 표시합니다.
-    """
+    애플리케이션 시작 시 로딩 화면을 표시합니다."""
     def __init__(self):
         super().__init__()
 
@@ -183,11 +182,7 @@ class StomSplashScreen(QSplashScreen):
         self.setLayout(final_layout)
 
     def show_progress(self, message, progress=None):
-        """진행률을 표시합니다.
-        Args:
-            message: 상태 메시지
-            progress: 진행률 값
-        """
+        """진행률을 표시합니다."""
         self.status_label.setText(message)
         if progress is not None:
             current_value = self.progress_bar.value()

@@ -3,22 +3,13 @@ syntax_highlighters = {}
 
 
 def setup_syntax_highlighter(widget, widget_id):
-    """구문 강조 하이라이터를 설정합니다.
-    Args:
-        widget: 위젯
-        widget_id: 위젯 ID
-    """
+    """구문 강조 하이라이터를 설정합니다."""
     syntax_highlighters[widget_id] = SyntaxHighlighter(widget)
     syntax_highlighters[widget_id].connect_signal()
 
 
 def check_python_syntax(text):
-    """파이썬 문법을 검사합니다.
-    Args:
-        text: 파이썬 코드 텍스트
-    Returns:
-        오류 메시지, 오류 라인
-    """
+    """파이썬 문법을 검사합니다."""
     try:
         compile(text, '<string>', 'exec')
         return None, None
@@ -67,10 +58,7 @@ class SyntaxHighlighter:
 
 
 def handle_auto_indent(widget):
-    """자동 들여쓰기를 처리합니다.
-    Args:
-        widget: 텍스트 위젯
-    """
+    """자동 들여쓰기를 처리합니다."""
     from PyQt5.QtGui import QTextCursor
 
     cursor = widget.textCursor()
@@ -103,14 +91,7 @@ def handle_auto_indent(widget):
 
 
 def event_filter(ui, widget, event):
-    """이벤트 필터를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        widget: 위젯
-        event: 이벤트
-    Returns:
-        이벤트 처리 결과
-    """
+    """이벤트 필터를 처리합니다."""
     from PyQt5.QtCore import QEvent, Qt
     from PyQt5.QtGui import QTextCursor
     from ui.create_widget.set_widget import PlainTextEdit
@@ -251,11 +232,7 @@ def event_filter(ui, widget, event):
 
 
 def close_event(ui, a):
-    """창 닫기 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        a: 이벤트
-    """
+    """창 닫기 이벤트를 처리합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     buttonReply = QMessageBox.question(

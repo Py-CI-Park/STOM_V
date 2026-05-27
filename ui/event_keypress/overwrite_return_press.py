@@ -1,9 +1,6 @@
 
 def return_press_01(ui):
-    """차트 다이얼로그에서 엔터키 누름 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """차트 다이얼로그에서 엔터키 누름 이벤트를 처리합니다."""
     from ui.event_click.table_cell_clicked import cell_clicked_06
     from ui.event_click.button_clicked_show_dialog import show_dialog
 
@@ -27,10 +24,7 @@ def return_press_01(ui):
 
 
 def return_press_02(ui):
-    """비밀번호 다이얼로그에서 엔터키 누름 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """비밀번호 다이얼로그에서 엔터키 누름 이벤트를 처리합니다."""
     from ui.create_widget.set_style import style_bc_dk
     from PyQt5.QtWidgets import QLineEdit, QMessageBox
 

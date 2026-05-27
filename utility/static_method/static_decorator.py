@@ -1,9 +1,6 @@
 
 def error_decorator(func):
-    """에러 처리 데코레이터입니다.
-    Returns:
-        래퍼 함수
-    """
+    """에러 처리 데코레이터입니다."""
     from traceback import format_exc
     from utility.settings.setting_base import UI_NUM
 
@@ -24,12 +21,7 @@ def error_decorator(func):
 
 
 def thread_decorator(func):
-    """스레드 데코레이터입니다.
-    Args:
-        func: 데코레이터를 적용할 함수
-    Returns:
-        래퍼 함수
-    """
+    """스레드 데코레이터입니다."""
     from threading import Thread
 
     def wrapper(*args):

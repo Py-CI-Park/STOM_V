@@ -35,10 +35,7 @@ class FutureOsReceiver(BaseReceiver):
 
     @error_decorator
     def _convert_real_data(self, data):
-        """실시간 데이터를 변환합니다.
-        Args:
-            data: 데이터
-        """
+        """실시간 데이터를 변환합니다."""
         if self.dict_bool['프로세스종료']:
             return
 

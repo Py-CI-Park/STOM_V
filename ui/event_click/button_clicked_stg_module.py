@@ -1,9 +1,6 @@
 
 def strategy_custom_button_show(ui):
-    """전략 커스텀 버튼 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """전략 커스텀 버튼 다이얼로그를 토글합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_strategy.isVisible():
@@ -14,10 +11,7 @@ def strategy_custom_button_show(ui):
 
 
 def strategy_custom_dialog_show(ui):
-    """전략 커스텀 다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """전략 커스텀 다이얼로그를 표시합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
     from ui.create_widget.set_text_stg_button import dict_stg_name
 
@@ -56,11 +50,7 @@ def strategy_custom_dialog_show(ui):
 
 
 def button_clicked_strategy(ui, cmd):
-    """전략 버튼을 클릭합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        cmd: 버튼 명령 번호
-    """
+    """전략 버튼을 클릭합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QMessageBox, QApplication
 
@@ -100,10 +90,7 @@ def button_clicked_strategy(ui, cmd):
 
 
 def button_clicked_strategy_delete(ui):
-    """전략 버튼을 삭제합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """전략 버튼을 삭제합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
@@ -128,10 +115,7 @@ def button_clicked_strategy_delete(ui):
 
 
 def button_clicked_strategy_save(ui):
-    """전략 버튼을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """전략 버튼을 저장합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying

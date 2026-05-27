@@ -1,9 +1,6 @@
 
 def odbutton_clicked_01(ui):
-    """매수 주문을 전송합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매수 주문을 전송합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
@@ -26,10 +23,7 @@ def odbutton_clicked_01(ui):
 
 
 def odbutton_clicked_02(ui):
-    """매도 주문을 전송합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매도 주문을 전송합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_datetime import now
     from utility.static_method.static_etcetera import comma2float
@@ -52,10 +46,7 @@ def odbutton_clicked_02(ui):
 
 
 def odbutton_clicked_03(ui):
-    """롱 매수 주문을 전송합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """롱 매수 주문을 전송합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_datetime import now
     from utility.static_method.static_etcetera import comma2float
@@ -78,10 +69,7 @@ def odbutton_clicked_03(ui):
 
 
 def odbutton_clicked_04(ui):
-    """롱 매도 주문을 전송합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """롱 매도 주문을 전송합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
@@ -104,10 +92,7 @@ def odbutton_clicked_04(ui):
 
 
 def odbutton_clicked_05(ui):
-    """숏 매도 주문을 전송합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """숏 매도 주문을 전송합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
@@ -130,10 +115,7 @@ def odbutton_clicked_05(ui):
 
 
 def odbutton_clicked_06(ui):
-    """숏 매수 주문을 전송합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """숏 매수 주문을 전송합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
@@ -156,10 +138,7 @@ def odbutton_clicked_06(ui):
 
 
 def odbutton_clicked_07(ui):
-    """매수 주문을 취소합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매수 주문을 취소합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
@@ -182,10 +161,7 @@ def odbutton_clicked_07(ui):
 
 
 def odbutton_clicked_08(ui):
-    """매도 주문을 취소합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매도 주문을 취소합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive

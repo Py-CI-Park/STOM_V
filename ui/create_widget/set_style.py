@@ -1,7 +1,6 @@
 
 """UI 스타일 설정 모듈입니다.
-테마별 색상, 폰트, 스타일시트를 정의합니다.
-"""
+테마별 색상, 폰트, 스타일시트를 정의합니다."""
 
 from PyQt5.QtGui import QFont, QColor
 from utility.settings.setting_user import load_settings

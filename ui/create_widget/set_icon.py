@@ -5,8 +5,7 @@ from utility.settings.setting_base import ICON_PATH
 
 class SetIcon:
     """아이콘 설정 클래스입니다.
-    UI에 사용되는 다양한 아이콘을 설정합니다.
-    """
+    UI에 사용되는 다양한 아이콘을 설정합니다."""
     def __init__(self, ui_class):
         self.ui = ui_class
         self.set()

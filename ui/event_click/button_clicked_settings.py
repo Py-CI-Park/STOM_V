@@ -1,9 +1,6 @@
 
 def setting_load_01(ui):
-    """기본 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """기본 설정을 로드합니다."""
     from utility.static_method.static_fernet_key import de_text
 
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM main').set_index('index')
@@ -18,10 +15,7 @@ def setting_load_01(ui):
 
 
 def setting_load_02(ui):
-    """계정 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """계정 설정을 로드합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import de_text
 
@@ -40,10 +34,7 @@ def setting_load_02(ui):
 
 
 def setting_load_03(ui):
-    """텔레그램 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """텔레그램 설정을 로드합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import de_text
 
@@ -62,10 +53,7 @@ def setting_load_03(ui):
 
 
 def setting_load_04(ui):
-    """전략 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """전략 설정을 로드합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     df   = ui.dbreader.read_sql('설정디비', 'SELECT * FROM strategy').set_index('index')
@@ -128,10 +116,7 @@ def setting_load_04(ui):
 
 
 def setting_load_05(ui):
-    """백테스트 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 설정을 로드합니다."""
     from PyQt5.QtCore import QDate
     from PyQt5.QtWidgets import QMessageBox
 
@@ -196,10 +181,7 @@ def setting_load_05(ui):
 
 
 def setting_load_06(ui):
-    """기타 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """기타 설정을 로드합니다."""
     from utility.static_method.static_fernet_key import de_text
 
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM etc').set_index('index')
@@ -219,6 +201,7 @@ def setting_load_06(ui):
 
 
 def settings_save_completed(ui):
+    """설정 저장 시 완료 메시지창을 띄웁니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.etcetera.etc import update_dictset
@@ -230,10 +213,7 @@ def settings_save_completed(ui):
 
 
 def setting_save_01(ui):
-    """기본 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """기본 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import en_text
     from utility.static_method.static_etcetera import qtest_qwait
@@ -298,10 +278,7 @@ def setting_save_01(ui):
 
 
 def setting_save_02(ui):
-    """계정 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """계정 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import en_text
 
@@ -323,10 +300,7 @@ def setting_save_02(ui):
 
 
 def setting_save_03(ui):
-    """텔레그램 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """텔레그램 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import en_text
 
@@ -348,10 +322,7 @@ def setting_save_03(ui):
 
 
 def setting_save_04(ui):
-    """전략 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """전략 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     매수전략 = ui.sj_strgy_cbBox_01.currentText()
@@ -401,10 +372,7 @@ def setting_save_04(ui):
 
 
 def setting_save_05(ui):
-    """백테스트 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from ui.event_click.button_clicked_backtest_start import backtest_engine_kill
 
@@ -478,10 +446,7 @@ def setting_save_05(ui):
 
 
 def setting_save_06(ui):
-    """기타 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """기타 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import en_text
 
@@ -517,10 +482,7 @@ def setting_save_06(ui):
 
 
 def setting_acc_view(ui):
-    """계정 텍스트 표시/숨김을 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """계정 텍스트 표시/숨김을 토글합니다."""
     from ui.create_widget.set_style import style_bc_bt
     from ui.create_widget.dialog_animation import DialogAnimator
 
@@ -544,10 +506,7 @@ def setting_acc_view(ui):
 
 
 def setting_order_load_01(ui):
-    """매수 주문 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매수 주문 설정을 로드합니다."""
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM buyorder').set_index('index')
     no = int(ui.dict_set['거래소'][-2:])
     ui.ss_buyy_checkBox_01.setChecked(True if df['매수주문유형'][no] == '시장가' else False)
@@ -618,10 +577,7 @@ def setting_order_load_01(ui):
 
 
 def setting_order_load_02(ui):
-    """매도 주문 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매도 주문 설정을 로드합니다."""
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM sellorder').set_index('index')
     no = int(ui.dict_set['거래소'][-2:])
     ui.ss_sell_checkBox_01.setChecked(True if df['매도주문유형'][no] == '시장가' else False)
@@ -668,10 +624,7 @@ def setting_order_load_02(ui):
 
 
 def setting_order_save_01(ui):
-    """매수 주문 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매수 주문 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     매수주문유형 = ''
@@ -798,10 +751,7 @@ def setting_order_save_01(ui):
 
 
 def setting_order_save_02(ui):
-    """매도 주문 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매도 주문 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     매도주문유형 = ''
@@ -900,18 +850,12 @@ def setting_order_save_02(ui):
 
 
 def setting_all_load(ui):
-    """모든 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """모든 설정을 로드합니다."""
     load_setting_file(ui)
 
 
 def setting_all_app(ui):
-    """모든 설정을 적용합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """모든 설정을 적용합니다."""
     import os
     import random
     from PyQt5.QtWidgets import QMessageBox
@@ -954,10 +898,7 @@ def setting_all_app(ui):
 
 
 def setting_all_del(ui):
-    """설정 파일을 삭제합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """설정 파일을 삭제합니다."""
     import os
     import random
     from PyQt5.QtWidgets import QMessageBox
@@ -976,10 +917,7 @@ def setting_all_del(ui):
 
 
 def setting_all_save(ui):
-    """모든 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """모든 설정을 저장합니다."""
     import random
     import shutil
     from PyQt5.QtWidgets import QMessageBox
@@ -999,10 +937,7 @@ def setting_all_save(ui):
 
 
 def load_setting_file(ui):
-    """설정 파일 목록을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """설정 파일 목록을 로드합니다."""
     import os
     from utility.settings.setting_base import DB_PATH
 

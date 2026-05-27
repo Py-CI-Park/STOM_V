@@ -1,11 +1,6 @@
 
 def cell_clicked_01(ui, row, col):
-    """테이블 셀 클릭 시 다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        row: 행 인덱스
-        col: 열 인덱스
-    """
+    """테이블 셀 클릭 시 다이얼로그를 표시합니다."""
     from ui.event_click.button_clicked_show_dialog import show_dialog
     from utility.static_method.static_datetime import str_ymd, now_utc, now_cme
 
@@ -32,12 +27,7 @@ def cell_clicked_01(ui, row, col):
 
 # noinspection PyUnusedLocal
 def cell_clicked_02(ui, row, col):
-    """시장가 매도를 실행합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        row: 행 인덱스
-        col: 열 인덱스
-    """
+    """시장가 매도를 실행합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
@@ -70,12 +60,7 @@ def cell_clicked_02(ui, row, col):
 
 # noinspection PyUnusedLocal
 def cell_clicked_03(ui, row, col):
-    """날짜별 테이블 셀 클릭 시 다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        row: 행 인덱스
-        col: 열 인덱스
-    """
+    """날짜별 테이블 셀 클릭 시 다이얼로그를 표시합니다."""
     from PyQt5.QtCore import QDate
     from ui.event_click.button_clicked_show_dialog import show_dialog
 
@@ -96,12 +81,7 @@ def cell_clicked_03(ui, row, col):
 
 # noinspection PyUnusedLocal
 def cell_clicked_04(ui, row, col):
-    """날짜별 거래 그래프를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        row: 행 인덱스
-        col: 열 인덱스
-    """
+    """날짜별 거래 그래프를 표시합니다."""
     from ui.event_click.button_clicked_show_dialog import show_dialog_graph
 
     item = ui.focusWidget().item(row, 0)
@@ -127,12 +107,7 @@ def cell_clicked_04(ui, row, col):
 
 # noinspection PyUnusedLocal,PyUnresolvedReferences
 def cell_clicked_05(ui, row, col):
-    """백테스트 결과 차트를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        row: 행 인덱스
-        col: 열 인덱스
-    """
+    """백테스트 결과 차트를 표시합니다."""
     from PyQt5.QtCore import QDate
     from PyQt5.QtWidgets import QMessageBox
     from ui.event_click.button_clicked_show_dialog import show_dialog_chart
@@ -186,12 +161,7 @@ def cell_clicked_05(ui, row, col):
 
 # noinspection PyUnusedLocal
 def cell_clicked_06(ui, row, col):
-    """차트 테이블 셀 클릭 시 차트를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        row: 행 인덱스
-        col: 열 인덱스
-    """
+    """차트 테이블 셀 클릭 시 차트를 표시합니다."""
     from PyQt5.QtCore import QDate
     from PyQt5.QtWidgets import QMessageBox
     from ui.event_click.button_clicked_chart import get_indicator_detail
@@ -232,12 +202,7 @@ def cell_clicked_06(ui, row, col):
 
 # noinspection PyUnusedLocal
 def cell_clicked_07(ui, row, col):
-    """웹페이지를 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        row: 행 인덱스
-        col: 열 인덱스
-    """
+    """웹페이지를 로드합니다."""
     from PyQt5.QtCore import QUrl
 
     item = ui.dialog_info.focusWidget().item(row, 3)
@@ -248,12 +213,7 @@ def cell_clicked_07(ui, row, col):
 
 
 def cell_clicked_08(ui, row, col):
-    """데이터베이스 항목을 삭제합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        row: 행 인덱스
-        col: 열 인덱스
-    """
+    """데이터베이스 항목을 삭제합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.settings.setting_base import UI_NUM
     from utility.static_method.static_etcetera import qtest_qwait
@@ -322,12 +282,7 @@ def cell_clicked_08(ui, row, col):
 
 
 def cell_clicked_09(ui, row, col):
-    """호가 테이블 셀 클릭 시 주문 가격을 설정합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        row: 행 인덱스
-        col: 열 인덱스
-    """
+    """호가 테이블 셀 클릭 시 주문 가격을 설정합니다."""
     from ui.event_change.changed_text import text_changed_05
     from utility.static_method.static_etcetera import comma2int, comma2float
 
@@ -344,12 +299,7 @@ def cell_clicked_09(ui, row, col):
 
 # noinspection PyUnusedLocal
 def cell_clicked_10(ui, row, col):
-    """전체 거래 그래프를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        row: 행 인덱스
-        col: 열 인덱스
-    """
+    """전체 거래 그래프를 표시합니다."""
     from ui.event_click.button_clicked_show_dialog import show_dialog_graph
 
     table_name = ui.market_info['거래디비']

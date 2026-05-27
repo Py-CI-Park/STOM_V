@@ -1,9 +1,6 @@
 
 def ssbutton_clicked_01(ui):
-    """백테스트 기록 테이블 목록을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 기록 테이블 목록을 로드합니다."""
     from utility.settings.setting_base import UI_NUM
 
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
@@ -22,10 +19,7 @@ def ssbutton_clicked_01(ui):
 
 
 def ssbutton_clicked_02(ui):
-    """최적화 기록 테이블 목록을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 기록 테이블 목록을 로드합니다."""
     from utility.settings.setting_base import UI_NUM
 
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
@@ -46,10 +40,7 @@ def ssbutton_clicked_02(ui):
 
 
 def ssbutton_clicked_03(ui):
-    """전진분석 기록 테이블 목록을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """전진분석 기록 테이블 목록을 로드합니다."""
     from utility.settings.setting_base import UI_NUM
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_03.clear()
@@ -69,10 +60,7 @@ def ssbutton_clicked_03(ui):
 
 
 def ssbutton_clicked_04(ui):
-    """선택된 백테스트 그래프를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """선택된 백테스트 그래프를 표시합니다."""
     from PIL import Image
     from PyQt5.QtWidgets import QMessageBox
     from utility.settings.setting_base import GRAPH_PATH
@@ -101,10 +89,7 @@ def ssbutton_clicked_04(ui):
 
 
 def ssbutton_clicked_05(ui):
-    """백테스트 비교 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 비교 다이얼로그를 토글합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_comp.isVisible():
@@ -130,10 +115,7 @@ def ssbutton_clicked_05(ui):
 
 
 def ssbutton_clicked_06(ui):
-    """백테스트를 중지합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트를 중지합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from ui.event_click.button_clicked_backtest_engine import backtest_process_kill
 

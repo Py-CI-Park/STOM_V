@@ -1,6 +1,6 @@
 """기본 설정 모듈입니다.
-경로, UI 번호, 컬럼 정의 등 기본 설정을 포함합니다.
-"""
+경로, UI 번호, 컬럼 정의 등 기본 설정을 포함합니다."""
+
 DB_PATH      = './_database'
 LOG_PATH     = './_log'
 BACK_PATH    = './backtest'

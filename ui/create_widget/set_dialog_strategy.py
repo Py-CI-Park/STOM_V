@@ -7,8 +7,7 @@ from ui.create_widget.set_text_stg_button import dict_stg_name
 
 class SetDialogStrategy:
     """전략 다이얼로그 설정 클래스입니다.
-    전략 선택 다이얼로그를 설정합니다.
-    """
+    전략 선택 다이얼로그를 설정합니다."""
     def __init__(self, ui_class, wc):
         self.ui = ui_class
         self.wc = wc

@@ -9,11 +9,7 @@ from utility.static_method.static_decorator import thread_decorator
 @thread_decorator
 def timesync(ui_num, windowQ):
     """시간 동기화를 수행합니다.
-    NTP 서버와 시간을 동기화합니다.
-    Args:
-        ui_num: UI 번호
-        windowQ: 윈도우 큐
-    """
+    NTP 서버와 시간을 동기화합니다."""
     while True:
         try:
             ntp_client = ntplib.NTPClient()

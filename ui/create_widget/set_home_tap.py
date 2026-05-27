@@ -17,8 +17,7 @@ qfont12.setPixelSize(12)
 
 class HomTapGroupBox(QGroupBox):
     """홈 탭 그룹박스 클래스입니다.
-    홈 화면의 시장 지표 그룹박스를 관리합니다.
-    """
+    홈 화면의 시장 지표 그룹박스를 관리합니다."""
     def __init__(self, title, parent, ui):
         super().__init__(title, parent)
         self.ui = ui
@@ -27,10 +26,7 @@ class HomTapGroupBox(QGroupBox):
 
     # noinspection PyUnresolvedReferences
     def mousePressEvent(self, event):
-        """마우스 프레스 이벤트를 처리합니다.
-        Args:
-            event: 마우스 이벤트
-        """
+        """마우스 프레스 이벤트를 처리합니다."""
         if event.button() == Qt.LeftButton:
             if self.geometry().width() != 667:
                 self._resetAllGroupBoxes()
@@ -116,22 +112,14 @@ class HomTapGroupBox(QGroupBox):
 
 class SetHomeTap:
     """홈 탭 설정 클래스입니다.
-    홈 화면의 시장 지표 탭을 설정합니다.
-    """
+    홈 화면의 시장 지표 탭을 설정합니다."""
     def __init__(self, ui_class, wc):
         self.ui = ui_class
         self.wc = wc
         self.set()
 
     def setLabel(self, name, font, left=True):
-        """라벨을 생성합니다.
-        Args:
-            name: 라벨 이름
-            font: 폰트
-            left: 왼쪽 정렬 여부
-        Returns:
-            라벨 위젯
-        """
+        """라벨을 생성합니다."""
         label = QLabel(name)
         label.setFont(font)
         if left:
@@ -141,10 +129,7 @@ class SetHomeTap:
         return label
 
     def setaddPlot(self):
-        """플롯 위젯을 생성합니다.
-        Returns:
-            플롯 위젯
-        """
+        """플롯 위젯을 생성합니다."""
         subplot = pg.PlotWidget(axisItems={'bottom': pg.DateAxisItem()})
         subplot.setBackground(color_bg_ct)
         transparent_pen = QPen(QColor(0, 0, 0, 0))

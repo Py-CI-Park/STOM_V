@@ -5,14 +5,7 @@ from numba import njit, prange
 
 @njit(cache=True, fastmath=True)
 def get_profit_stock(bg, cg, etfn=False):
-    """주식 수익을 계산합니다.
-    Args:
-        bg: 매수 금액
-        cg: 매도 금액
-        etfn: etf, etn
-    Returns:
-        (수익금, 수익금액, 수익률)
-    """
+    """주식 수익을 계산합니다."""
     fee = 0.00015 if not etfn else 0.00005
     texs = int(cg * 0.0018)
     bfee = int(bg * fee / 10) * 10
@@ -25,13 +18,7 @@ def get_profit_stock(bg, cg, etfn=False):
 
 @njit(cache=True, fastmath=True)
 def get_profit_stock_os(bg, cg):
-    """해외 주식 수익을 계산합니다.
-    Args:
-        bg: 매수 금액
-        cg: 매도 금액
-    Returns:
-        (수익금, 수익금액, 수익률)
-    """
+    """해외 주식 수익을 계산합니다."""
     texs = int(cg * 0.000008)
     bfee = int(bg * 0.00065 / 10) * 10
     sfee = int(cg * 0.00065 / 10) * 10
@@ -43,13 +30,7 @@ def get_profit_stock_os(bg, cg):
 
 @njit(cache=True, fastmath=True)
 def get_profit_future_long(bg, cg):
-    """선물 롱 수익을 계산합니다.
-    Args:
-        bg: 매수 금액
-        cg: 매도 금액
-    Returns:
-        (수익금, 수익금액, 수익률)
-    """
+    """선물 롱 수익을 계산합니다."""
     fee = 0.00002
     pg = round(cg - fee * 2, 1)
     sg = round(pg - bg, 1)
@@ -59,13 +40,7 @@ def get_profit_future_long(bg, cg):
 
 @njit(cache=True, fastmath=True)
 def get_profit_future_short(bg, cg):
-    """선물 숏 수익을 계산합니다.
-    Args:
-        bg: 매수 금액
-        cg: 매도 금액
-    Returns:
-        (수익금, 수익금액, 수익률)
-    """
+    """선물 숏 수익을 계산합니다."""
     fee = 0.00002
     pg = round(bg + bg - cg - fee * 2, 1)
     sg = round(pg - bg, 1)
@@ -75,14 +50,7 @@ def get_profit_future_short(bg, cg):
 
 @njit(cache=True, fastmath=True)
 def get_profit_future_os_long(mini, bg, cg):
-    """해외 선물 롱 수익을 계산합니다.
-    Args:
-        mini: 미니선물
-        bg: 매수 금액
-        cg: 매도 금액
-    Returns:
-        (수익금, 수익금액, 수익률)
-    """
+    """해외 선물 롱 수익을 계산합니다."""
     fee = 2 if mini else 7.5
     pg = round(cg - fee * 2, 1)
     sg = round(pg - bg, 1)
@@ -92,14 +60,7 @@ def get_profit_future_os_long(mini, bg, cg):
 
 @njit(cache=True, fastmath=True)
 def get_profit_future_os_short(mini, bg, cg):
-    """해외 선물 숏 수익을 계산합니다.
-    Args:
-        mini: 미니선물
-        bg: 매수 금액
-        cg: 매도 금액
-    Returns:
-        (수익금, 수익금액, 수익률)
-    """
+    """해외 선물 숏 수익을 계산합니다."""
     fee = 2 if mini else 7.5
     pg = round(bg + bg - cg - fee * 2, 1)
     sg = round(pg - bg, 1)
@@ -109,13 +70,7 @@ def get_profit_future_os_short(mini, bg, cg):
 
 @njit(cache=True, fastmath=True)
 def get_profit_coin(bg, cg):
-    """코인 수익을 계산합니다.
-    Args:
-        bg: 매수 금액
-        cg: 매도 금액
-    Returns:
-        (수익금, 수익금액, 수익률)
-    """
+    """코인 수익을 계산합니다."""
     bfee = bg * 0.0005
     sfee = cg * 0.0005
     pg = round(cg - bfee - sfee, 4)
@@ -126,15 +81,7 @@ def get_profit_coin(bg, cg):
 
 @njit(cache=True, fastmath=True)
 def get_profit_coin_future_long(bg, cg, market1, market2):
-    """코인 선물 롱 수익을 계산합니다.
-    Args:
-        bg: 매수 금액
-        cg: 매도 금액
-        market1: 시장1
-        market2: 시장2
-    Returns:
-        (수익금, 수익금액, 수익률)
-    """
+    """코인 선물 롱 수익을 계산합니다."""
     bfee = bg * (0.0004 if market1 else 0.0002)
     sfee = (cg - bfee) * (0.0004 if market2 else 0.0002)
     pg = round(cg - bfee - sfee, 4)
@@ -145,15 +92,7 @@ def get_profit_coin_future_long(bg, cg, market1, market2):
 
 @njit(cache=True, fastmath=True)
 def get_profit_coin_future_short(bg, cg, market1, market2):
-    """코인 선물 숏 수익을 계산합니다.
-    Args:
-        bg: 매수 금액
-        cg: 매도 금액
-        market1: 시장1
-        market2: 시장2
-    Returns:
-        (수익금, 수익금액, 수익률)
-    """
+    """코인 선물 숏 수익을 계산합니다."""
     bfee = bg * (0.0004 if market1 else 0.0002)
     sfee = (cg - bfee) * (0.0004 if market2 else 0.0002)
     pg = round(bg + bg - cg - bfee - sfee, 4)
@@ -163,19 +102,7 @@ def get_profit_coin_future_short(bg, cg, market1, market2):
 
 
 def add_rolling_data(df, round_unit, angle_cf_list, avg_list, is_tick, index_arry, cf1=None, cf2=None):
-    """numba를 사용하여 롤링 데이터를 추가합니다.
-    Args:
-        df: 데이터프레임
-        round_unit: 반올림 단위
-        angle_cf_list: 각도 계수 리스트
-        avg_list: 평균 리스트
-        is_tick: 틱 데이터 여부
-        index_arry: 칼럼인덱스 배열
-        cf1: 각도 계수1
-        cf2: 각도 계수2
-    Returns:
-        배열
-    """
+    """numba를 사용하여 롤링 데이터를 추가합니다."""
     from utility.static_method.static_etcetera import get_ema_list
 
     if cf1 is None:

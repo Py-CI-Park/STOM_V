@@ -1,9 +1,6 @@
 
 def opti_buy_load(ui):
-    """최적화 매수 전략을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 매수 전략을 로드합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QMessageBox, QApplication
     from ui.event_click.button_clicked_strategy_version import strategy_version
@@ -27,10 +24,7 @@ def opti_buy_load(ui):
 
 
 def opti_buy_save(ui):
-    """최적화 매수 전략을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 매수 전략을 저장합니다."""
     import random
     from PyQt5.QtCore import Qt
     from ui.create_widget.set_text import famous_saying
@@ -70,10 +64,7 @@ def opti_buy_save(ui):
 
 
 def opti_vars_load(ui):
-    """최적화 변수 범위를 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 변수 범위를 로드합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QMessageBox, QApplication
     from ui.event_click.button_clicked_strategy_version import strategy_version
@@ -97,10 +88,7 @@ def opti_vars_load(ui):
 
 
 def opti_vars_save(ui):
-    """최적화 변수 범위를 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 변수 범위를 저장합니다."""
     import random
     from PyQt5.QtCore import Qt
     from ui.create_widget.set_text import famous_saying
@@ -130,10 +118,7 @@ def opti_vars_save(ui):
 
 
 def opti_sell_load(ui):
-    """최적화 매도 전략을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 매도 전략을 로드합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QMessageBox, QApplication
     from ui.event_click.button_clicked_strategy_version import strategy_version
@@ -157,10 +142,7 @@ def opti_sell_load(ui):
 
 
 def opti_sell_save(ui):
-    """최적화 매도 전략을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 매도 전략을 저장합니다."""
     import random
     from PyQt5.QtCore import Qt
     from ui.create_widget.set_text import famous_saying
@@ -194,10 +176,7 @@ def opti_sell_save(ui):
 
 
 def opti_sample(ui):
-    """최적화 샘플을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 샘플을 로드합니다."""
     from ui.create_widget.set_text import example_stg_buy, example_stg_buy_future, example_stg_sell, \
         example_stg_sell_future, example_stg_buy_vchange, example_stg_buy_vchange_future, example_stg_optibuy, \
         example_stg_optibuy_min, example_stg_optibuy_future, example_stg_optibuy_future_min, example_stg_sell_vchange, \
@@ -258,10 +237,7 @@ def opti_sample(ui):
 
 
 def opti_to_buy_save(ui):
-    """최적화 매수 전략을 매수 전략으로 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 매수 전략을 매수 전략으로 저장합니다."""
     from traceback import format_exc
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_etcetera import send_query_data
@@ -302,10 +278,7 @@ def opti_to_buy_save(ui):
 
 
 def opti_to_sell_save(ui):
-    """최적화 매도 전략을 매도 전략으로 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 매도 전략을 매도 전략으로 저장합니다."""
     from traceback import format_exc
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_etcetera import send_query_data
@@ -345,10 +318,7 @@ def opti_to_sell_save(ui):
 
 
 def show_opti_std(ui):
-    """최적화 기준 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 기준 다이얼로그를 토글합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_std.isVisible():
@@ -359,10 +329,7 @@ def show_opti_std(ui):
 
 
 def show_opti_optuna(ui):
-    """옵튜나 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """옵튜나 다이얼로그를 토글합니다."""
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_optuna.isVisible():

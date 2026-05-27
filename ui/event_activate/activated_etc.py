@@ -1,10 +1,6 @@
 
 def dactivated_01(ui, combobox_no):
-    """테이블 콤보박스 활성화 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-        combobox_no: 콤보박스 번호
-    """
+    """테이블 콤보박스 활성화 이벤트를 처리합니다."""
     if combobox_no == 1:
         comboBox = ui.ss_comboBoxxxx_01
     elif combobox_no == 2:
@@ -20,19 +16,13 @@ def dactivated_01(ui, combobox_no):
 
 
 def dactivated_02(ui):
-    """설정 이름 콤보박스 활성화 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """설정 이름 콤보박스 활성화 이벤트를 처리합니다."""
     name = ui.sj_set_comBoxx_01.currentText()
     ui.sj_set_liEditt_01.setText(name)
 
 
 def dactivated_03(ui):
-    """주문 종목 콤보박스 활성화 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """주문 종목 콤보박스 활성화 이벤트를 처리합니다."""
     ui.od_comboBoxxxxx_02.clear()
     if ui.market_gubun in (1, 2, 3, 6, 7):
         items = ['시장가', '지정가', '최유리지정가', '지정가IOC', '최유리IOC', '지정가FOK', '최유리FOK']

@@ -10,11 +10,7 @@ def dialog_move(ui):
 
 
 def update_image(ui, data):
-    """이미지를 업데이트합니다.
-    Args:
-        ui: UI 객체
-        data: 이미지 데이터 튜플
-    """
+    """이미지를 업데이트합니다."""
     from PyQt5.QtGui import QPixmap
     from PyQt5.QtCore import QSize, Qt
 
@@ -26,16 +22,12 @@ def update_image(ui, data):
     ui.image_label2.clear()
     qpix = QPixmap()
     qpix.loadFromData(data[2])
-    qpix = qpix.scaled(QSize(335, 602), Qt.IgnoreAspectRatio)
+    qpix = qpix.scaled(QSize(335, 600), Qt.IgnoreAspectRatio)
     ui.image_label2.setPixmap(qpix)
 
 
 def update_dictset(ui, force=False):
-    """설정 딕셔너리를 업데이트합니다.
-    Args:
-        ui: UI 객체
-        force: 설정변경 시 DB 재로딩
-    """
+    """설정 딕셔너리를 업데이트합니다."""
     from utility.settings.setting_user import load_settings
 
     if force:
@@ -47,6 +39,7 @@ def update_dictset(ui, force=False):
 
 
 def change_chart_factors(ui):
+    """팩터설정을 업데이트합니다."""
     is_min = not ui.dict_set['타임프레임']
     if is_min:
         if ui.ft_checkBoxxxxx_02.text() != '분당거래대금': ui.ft_checkBoxxxxx_02.setText('분당거래대금')
@@ -61,6 +54,7 @@ def change_chart_factors(ui):
 
 
 def send_dict_set(ui):
+    """설정을 업데이트합니다."""
     from ui.etcetera.process_alive import strategy_process_alive, trader_process_alive, receiver_process_alive
 
     if receiver_process_alive(ui):
@@ -85,6 +79,7 @@ def send_dict_set(ui):
 
 
 def send_analyzer_setting_change(ui):
+    """분석시스템 설정을 업데이트합니다."""
     from ui.etcetera.process_alive import receiver_process_alive
 
     ui.chartQ.put('분석설정변경')
@@ -102,10 +97,7 @@ def send_analyzer_setting_change(ui):
 
 
 def update_market_gubun(ui):
-    """시장 구분을 업데이트합니다.
-    Args:
-        ui: UI 객체
-    """
+    """시장 구분을 업데이트합니다."""
     from utility.settings.setting_market import DICT_MARKET_GUBUN, DICT_MARKET_INFO
 
     ui.market_gubun = DICT_MARKET_GUBUN[ui.dict_set['거래소']]
@@ -116,10 +108,7 @@ def update_market_gubun(ui):
 
 
 def chart_clear(ui):
-    """차트 데이터를 초기화합니다.
-    Args:
-        ui: UI 객체
-    """
+    """차트 데이터를 초기화합니다."""
     ui.ctpg_code    = None
     ui.ctpg_cline   = None
     ui.ctpg_hline   = None
@@ -133,10 +122,7 @@ def chart_clear(ui):
 
 
 def calendar_clicked(ui):
-    """캘린더 클릭 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """캘린더 클릭 이벤트를 처리합니다."""
     import pandas as pd
     from utility.settings.setting_base import COLUMNS_DTT, COLUMNS_DTD, UI_NUM
 
@@ -162,10 +148,7 @@ def calendar_clicked(ui):
 
 
 def chart_screenshot(ui):
-    """차트 스크린샷을 찍습니다.
-    Args:
-        ui: UI 객체
-    """
+    """차트 스크린샷을 찍습니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
@@ -176,10 +159,7 @@ def chart_screenshot(ui):
 
 
 def chart_screenshot2(ui):
-    """차트 스크린샷을 찍습니다 (다이얼로그 기준).
-    Args:
-        ui: UI 객체
-    """
+    """차트 스크린샷을 찍습니다 (다이얼로그 기준)."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
@@ -190,6 +170,7 @@ def chart_screenshot2(ui):
 
 
 def send_chart_screenshot(ui):
+    """차트 스크린샷을 텔레그램큐로 전송합니다."""
     from io import BytesIO
     from PyQt5.QtWidgets import QApplication
     from PyQt5.QtCore import QBuffer, QIODevice
@@ -209,10 +190,7 @@ def send_chart_screenshot(ui):
 
 
 def manual_save_and_exit(ui):
-    """수동으로 저장하고 종료합니다.
-    Args:
-        ui: UI 객체
-    """
+    """수동으로 저장하고 종료합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     buttonReply = QMessageBox.question(
@@ -226,10 +204,7 @@ def manual_save_and_exit(ui):
 
 
 def strategy_setting_label_change(ui):
-    """전략 설정 라벨을 변경합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 설정 라벨을 변경합니다."""
     if ui.market_gubun < 4 or ui.market_gubun == 5:
         ui.sj_strgy_label_02.setText(
             '종목당투자금                          백만원                  ▣  전략중지 및 잔고청산   |')
@@ -245,6 +220,7 @@ def strategy_setting_label_change(ui):
 
 
 def pattern_setting_help(ui):
+    """분석시스템 도움말을 표시합니다."""
     from ui.create_widget.set_text import pattern_text_list
 
     if ui.dialog_pattern.focusWidget() == ui.ptn_pushButton_00:

@@ -71,66 +71,42 @@ def _activated_common(ui, idx):
 
 
 def activated_01(ui):
-    """전략 탭 활성화 이벤트 1을 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 1을 처리합니다."""
     _activated_common(ui, 1)
 
 
 def activated_02(ui):
-    """전략 탭 활성화 이벤트 2를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 2를 처리합니다."""
     _activated_common(ui, 2)
 
 
 def activated_03(ui):
-    """전략 탭 활성화 이벤트 3을 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 3을 처리합니다."""
     _activated_common(ui, 3)
 
 
 def activated_04(ui):
-    """전략 탭 활성화 이벤트 4를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 4를 처리합니다."""
     _activated_common(ui, 4)
 
 
 def activated_05(ui):
-    """전략 탭 활성화 이벤트 5를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 5를 처리합니다."""
     _activated_common(ui, 5)
 
 
 def activated_06(ui):
-    """전략 탭 활성화 이벤트 6을 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 6을 처리합니다."""
     _activated_common(ui, 6)
 
 
 def activated_07(ui):
-    """전략 탭 활성화 이벤트 7을 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 7을 처리합니다."""
     _activated_common(ui, 7)
 
 
 def activated_08(ui):
-    """전략 탭 활성화 이벤트 8을 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 8을 처리합니다."""
     _activated_common(ui, 8)
 
 

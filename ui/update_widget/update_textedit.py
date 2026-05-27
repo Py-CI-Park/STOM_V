@@ -16,8 +16,7 @@ from ui.event_click.button_clicked_database import dbbutton_clicked_08, dbbutton
 
 class UpdateTextedit:
     """텍스트 에디터 업데이트 클래스입니다.
-    로그 텍스트 에디터를 업데이트하고 데이터베이스 관리를 수행합니다.
-    """
+    로그 텍스트 에디터를 업데이트하고 데이터베이스 관리를 수행합니다."""
     def __init__(self, ui):
         self.ui          = ui
         self.learn_start = 0
@@ -32,10 +31,7 @@ class UpdateTextedit:
     @error_decorator
     def update_texedit(self, data):
         """텍스트 에디터를 업데이트합니다.
-        수신된 데이터를 기반으로 로그 텍스트 에디터에 내용을 추가합니다.
-        Args:
-            data: 데이터 (데이터 타입, 내용)
-        """
+        수신된 데이터를 기반으로 로그 텍스트 에디터에 내용을 추가합니다."""
         gubun = data[0]
 
         if gubun == UI_NUM['종목명데이터']:
@@ -238,10 +234,7 @@ class UpdateTextedit:
                 self.ui.gg_textEdittttt_01.append(text)
 
     def _auto_database_control(self, gubun):
-        """데이터베이스 자동 관리를 수행합니다.
-        Args:
-            gubun: 구분 (1: DB관리 시작, 2: 일자DB 분리, 3: 백테DB 추가)
-        """
+        """데이터베이스 자동 관리를 수행합니다."""
         if gubun == 1:
             self.ui.auto_mode = True
             if self.ui.dict_set['알림소리']:
@@ -274,11 +267,7 @@ class UpdateTextedit:
                     self.shut_down = True
 
     def _shut_down_check(self, force=False):
-        """시스템 종료 여부를 확인합니다.
-        설정에 따라 프로그램 또는 컴퓨터를 종료합니다.
-        Args:
-            force: 강제 종료 여부
-        """
+        """시스템 종료 여부를 확인합니다."""
         if self.ui.dict_set['백테스케쥴실행'] and now().weekday() == self.ui.dict_set['백테스케쥴요일']:
             if self.ui.dict_set['알림소리']:
                 self.ui.soundQ.put('오늘은 백테 스케쥴러의 실행이 예약되어 있어 프로그램을 종료하지 않습니다.')
@@ -301,6 +290,7 @@ class UpdateTextedit:
 
 
 def _auto_learn_running(ui, gubun):
+    """분석시스템 자동학습을 실행합니다."""
     from utility.static_method.static_etcetera import qtest_qwait
     from strategy.analyzer_volume_spike import spike_setting_load, spike_train
     from strategy.analyzer_candle_pattern import pattern_setting_load, pattern_train

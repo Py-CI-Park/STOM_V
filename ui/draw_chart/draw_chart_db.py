@@ -9,13 +9,9 @@ from ui.event_click.button_clicked_etc import hg_button_clicked_02
 class DrawDBChart(DrawChartBase):
     """DB 차트 그리기 클래스입니다.
     데이터베이스에서 읽어온 데이터를 사용하여 차트를 그립니다."""
-
     @error_decorator
     def draw_db_chart(self, data):
-        """DB 차트를 그립니다.
-        Args:
-            data: 차트 데이터 튜플
-        """
+        """DB 차트를 그립니다."""
         self.real   = False
         self.is_min = not self.ui.dict_set['타임프레임']
 
