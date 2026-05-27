@@ -273,7 +273,11 @@ class BaseReceiver:
         if ch is None:
             ch = min(500, round(tbids / tasks * 100, 2)) if tasks > 0 else 500
 
-        self.dict_daym[code] = dm
+        if self.market_gubun < 6:
+            self.dict_daym[code] = dm
+        else:
+            name = self.dict_info[code]['종목명']
+            self.dict_daym[name] = dm
 
         if self.market_gubun < 4:
             sgta = int(c * self.dict_info[code]['상장주식수'] / 100_000_000)
@@ -703,11 +707,7 @@ class BaseReceiver:
         else:
             sorted_daym = sorted_daym[:self.mtop_rank]
 
-        if self.market_gubun in (6, 7, 8):
-            list_mtop = [self.dict_info[x]['종목명'] for x, y in sorted_daym]
-        else:
-            list_mtop = [x for x, y in sorted_daym]
-
+        list_mtop  = [x for x, y in sorted_daym]
         insert_set = set(list_mtop) - set(self.list_gsjm)
         delete_set = set(self.list_gsjm) - set(list_mtop)
 

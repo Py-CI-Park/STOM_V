@@ -183,7 +183,7 @@ class BinanceTrader(BaseTrader):
                 p = f'{p}_CANCEL'
             oc = float(data['q'])
             cc = float(data['l'])
-            mc = round(oc - float(data['z']), self.dict_info[code]['소숫점자리수'])
+            mc = round(oc - float(data['z']), self.dict_info[code]['수량소숫점자리수'])
             cp = float(data['L'])
             op = float(data['p'])
             on = int(data['i'])

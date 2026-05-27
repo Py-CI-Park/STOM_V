@@ -422,12 +422,12 @@ class BaseTrader:
             self.dict_signal[종목코드] = [주문구분, 주문가격, 주문수량, 0]
 
         if self.dict_set['모의투자'] or 주문구분 == '시드부족':
-            self._push_chejan_data_for_paper_trade(주문구분, 종목코드, 주문수량, 주문가격, 시그널시간)
+            self._push_chejan_data_for_paper_trade(주문구분, 종목코드, 주문가격, 주문수량, 시그널시간)
         else:
             data = (주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 정정횟수, 수동주문유형)
             self._send_order(data)
 
-    def _push_chejan_data_for_paper_trade(self, 주문구분, 종목코드, 주문수량, 주문가격, 시그널시간):
+    def _push_chejan_data_for_paper_trade(self, 주문구분, 종목코드, 주문가격, 주문수량, 시그널시간):
         """모의투스용 체결 데이터를 전송합니다.
         Args:
             주문구분: 주문 구분
@@ -458,15 +458,16 @@ class BaseTrader:
                     timedelta_sec(self.dict_set['매수취소시간초']), 0, 주문가격, 호가단위
                 ]
 
+        주문번호 = '모의투자' if self.market_gubun in (5, 8) else 0
         if self.market_gubun < 6:
             self._update_chejan_data(
-                주문구분, '체결', 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, '모의투자'
+                주문구분, '체결', 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, 주문번호
             )
         elif self.market_gubun < 9:
-            self._update_chejan_data_future('체결', 종목코드, 주문수량, 주문가격, 체결시간, '모의투자')
+            self._update_chejan_data_future('체결', 종목코드, 주문수량, 주문가격, 체결시간, 주문번호)
         else:
             self._update_chejan_data_coin_future(
-                주문구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, '모의투자'
+                주문구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, 주문번호
             )
 
     def _check_order_error(self, 주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량):
@@ -738,7 +739,7 @@ class BaseTrader:
                     포지션 = self.dict_jg[종목코드]['포지션']
                     주문구분 = 'SELL_LONG' if 포지션 == 'LONG' else 'BUY_SHORT'
                 if self.dict_set['모의투자']:
-                    self._push_chejan_data_for_paper_trade(주문구분, 종목코드, 보유수량, 현재가, now())
+                    self._push_chejan_data_for_paper_trade(주문구분, 종목코드, 현재가, 보유수량, now())
                 else:
                     self._check_order((주문구분, 종목코드, 종목명, 현재가, 보유수량, now(), True))
             if self.dict_set['알림소리']:
@@ -1116,7 +1117,7 @@ class BaseTrader:
         if 주문구분 in ('BUY_LONG', 'SELL_SHORT', 'SELL_LONG', 'BUY_SHORT'):
             if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
                 if 종목코드 in self.dict_jg:
-                    보유수량 = round(self.dict_jg[종목코드]['보유수량'] + 체결수량, self.dict_info[종목코드]['소숫점자리수'])
+                    보유수량 = round(self.dict_jg[종목코드]['보유수량'] + 체결수량, self.dict_info[종목코드]['수량소숫점자리수'])
                     매입금액 = round(self.dict_jg[종목코드]['매입금액'] + 체결수량 * 체결가격, 4)
                     매수가 = round(매입금액 / 보유수량, 8)
                     보유금액 = round(체결가격 * 보유수량, 4)
@@ -1137,10 +1138,7 @@ class BaseTrader:
                     })
                 else:
                     매입금액 = 보유금액 = round(체결가격 * 체결수량, 4)
-                    if self.dict_set['바이낸스선물고정레버리지']:
-                        레버리지 = self.dict_set['바이낸스선물고정레버리지값']
-                    else:
-                        레버리지 = self.dict_order[주문구분][종목코드][4]
+                    레버리지 = self.dict_order[주문구분][종목코드][4]
                     if 주문구분 == 'BUY_LONG':
                         포지션 = 'LONG'
                         평가금액, 수익금, 수익률 = self._get_profit_long(매입금액, 보유금액)
@@ -1173,7 +1171,7 @@ class BaseTrader:
                     return
                 포지션 = self.dict_jg[종목코드]['포지션']
                 매수가 = self.dict_jg[종목코드]['매수가']
-                보유수량 = round(self.dict_jg[종목코드]['보유수량'] - 체결수량, self.dict_info[종목코드]['소숫점자리수'])
+                보유수량 = round(self.dict_jg[종목코드]['보유수량'] - 체결수량, self.dict_info[종목코드]['수량소숫점자리수'])
                 if 보유수량 != 0:
                     매입금액 = round(매수가 * 보유수량, 4)
                     보유금액 = round(체결가격 * 보유수량, 4)
@@ -1435,7 +1433,7 @@ class BaseTrader:
         if self.dict_jg:
             df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
         else:
-            columns = COLUMNS_JG if self.market_gubun < 6 else (COLUMNS_JGF if self.market_gubun < 8 else COLUMNS_JGCF)
+            columns = COLUMNS_JG if self.market_gubun < 6 else (COLUMNS_JGF if self.market_gubun < 9 else COLUMNS_JGCF)
             df_jg = pd.DataFrame(columns=columns)
 
         df_tj = pd.DataFrame.from_dict(self.dict_tj, orient='index')
@@ -1551,8 +1549,7 @@ class BaseTrader:
         return 0
 
     def _set_position(self):
-        """포지션을 설정합니다.
-        """
+        """포지션을 설정합니다."""
         pass
 
     def _set_leverage(self, data):

@@ -352,7 +352,7 @@ class BackEngineBase(StgGlobalsFunc):
                                 self.buystg = compile(data[6], '<string>', 'exec')
                             except Exception:
                                 if self.gubun == 0:
-                                    self.wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
+                                    self.wq.put((UI_NUM['시스템로그'], format_exc()))
                                 self._back_stop()
                             else:
                                 self.opti_kind = data[7]
@@ -792,7 +792,7 @@ class BackEngineBase(StgGlobalsFunc):
         시분초 = int(str(self.index)[8:]) if self.is_tick else int(str(self.index)[8:] + '00')
         순매수금액 = 초당매수금액 - 초당매도금액 if self.is_tick else 분당매수금액 - 분당매도금액
         종목명, 종목코드, 데이터길이, 체결시간 = self.name, self.code, self.tick_count, self.index
-        self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else self.code)
+        self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else None)
 
         current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
         리스크점수 = 패턴점수 = 패턴신뢰도 = 거래량점수 = 거래량신뢰도 = 가격대점수 = 가격대신뢰도 = 변동성점수 = 변동성신뢰도 = \
@@ -1184,10 +1184,10 @@ class BackEngineBase(StgGlobalsFunc):
         self.sell_count += 1
         self.trade_info[vturn][vkey] = get_trade_info(1)
 
-    def _get_hogaunit(self, 주문가격또는종목코드):
+    def _get_hogaunit(self, 주문가격):
         """호가 단위를 반환합니다.
         Args:
-            주문가격또는종목코드: 주문 가격 또는 종목 코드
+            주문가격: 주문 가격
         Returns:
             호가 단위
         """

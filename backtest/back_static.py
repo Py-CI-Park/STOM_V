@@ -142,7 +142,7 @@ def get_buy_stg(buytxt, gubun, wq):
             buystg = compile(buystg, '<string>', 'exec')
         except Exception:
             buystg = None
-            if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_buy_stg'))
+            if gubun == 0: wq.put((UI_NUM['시스템로그'], format_exc()))
     else:
         buystg = None
     if indistg:
@@ -170,7 +170,7 @@ def get_sell_stg(sellstg, gubun, wq):
         sellstg = compile(sellstg, '<string>', 'exec')
     except Exception:
         sellstg = None
-        if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_sell_stg'))
+        if gubun == 0: wq.put((UI_NUM['시스템로그'], format_exc()))
     return sellstg, dict_cond
 
 
@@ -190,7 +190,7 @@ def get_buy_conds(buy_conds, gubun, wq):
         buy_conds = compile(buy_conds, '<string>', 'exec')
     except Exception:
         buy_conds = None
-        if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_buy_conds'))
+        if gubun == 0: wq.put((UI_NUM['시스템로그'], format_exc()))
     return buy_conds
 
 
@@ -211,7 +211,7 @@ def get_sell_conds(sell_conds, gubun, wq):
         sell_conds = compile(sell_conds, '<string>', 'exec')
     except Exception:
         sell_conds = None
-        if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_sell_conds'))
+        if gubun == 0: wq.put((UI_NUM['시스템로그'], format_exc()))
     return sell_conds, dict_cond
 
 
@@ -252,7 +252,7 @@ def get_buy_stg_future(buystg, gubun, wq):
             buystg = compile(buystg, '<string>', 'exec')
         except Exception:
             buystg = None
-            if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_buy_stg_future'))
+            if gubun == 0: wq.put((UI_NUM['시스템로그'], format_exc()))
     else:
         buystg = None
     if indistg:
@@ -280,7 +280,7 @@ def get_sell_stg_future(sellstg, gubun, wq):
         sellstg = compile(sellstg, '<string>', 'exec')
     except Exception:
         sellstg = None
-        if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_sell_stg_future'))
+        if gubun == 0: wq.put((UI_NUM['시스템로그'], format_exc()))
     return sellstg, dict_cond
 
 
@@ -306,7 +306,7 @@ def get_buy_conds_future(is_long, buy_conds, gubun, wq):
         buy_conds = compile(buy_conds, '<string>', 'exec')
     except Exception:
         buy_conds = None
-        if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_buy_conds_future'))
+        if gubun == 0: wq.put((UI_NUM['시스템로그'], format_exc()))
     return buy_conds
 
 
@@ -331,7 +331,7 @@ def get_sell_conds_future(is_long, sell_conds, gubun, wq):
         sell_conds = compile(sell_conds, '<string>', 'exec')
     except Exception:
         sell_conds = None
-        if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_sell_conds_future'))
+        if gubun == 0: wq.put((UI_NUM['시스템로그'], format_exc()))
     return sell_conds, dict_cond
 
 

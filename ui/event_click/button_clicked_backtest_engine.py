@@ -120,6 +120,8 @@ def backengine_start(ui):
         is_tick = ui.dict_set['타임프레임']
         con = sqlite3.connect(ui.market_info['백테디비'][is_tick])
         df = pd.read_sql(f"SELECT * FROM {ui.market_info['종목디비']}", con).set_index('index')
+        if ui.market_gubun in (6, 7, 8):
+            df.set_index('종목명', drop=False, inplace=True)
         dict_info = df.to_dict('index')
         query = get_moneytop_query(is_tick, ui.startday, ui.endday, ui.starttime, ui.endtime)
         df_mt = pd.read_sql(query, con)
@@ -332,7 +334,7 @@ def get_code_test_result(ui, gubun):
 
     data = ui.testQ.get()
     if data == '전략테스트오류':
-        ui.windowQ.put((UI_NUM['시스템로그'], f'{gubun}에 오류가 있어 저장하지 못하였습니다.'))
+        ui.windowQ.put((UI_NUM['시스템로그'], f'오류 알림 - {gubun}에 오류가 있어 저장하지 못하였습니다.'))
         return False
     else:
         return True

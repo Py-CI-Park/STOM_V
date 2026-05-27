@@ -13,7 +13,7 @@ def _calculate_rsi(prices: np.ndarray, period: int) -> float:
     avg_loss = 0.0
     for i in range(period):
         idx = n - period + i
-        delta = prices[idx + 1] - prices[idx]
+        delta = prices[idx] - prices[idx - 1]
         if delta > 0:
             avg_gain += delta
         else:

@@ -41,19 +41,19 @@ def cell_clicked_02(ui, row, col):
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
+    from utility.settings.setting_base import COLUMNS_JG, COLUMNS_JGF
     from utility.static_method.static_etcetera import comma2float, comma2int
-    from utility.settings.setting_base import COLUMNS_JG, COLUMNS_JGF, COLUMNS_JGCF
 
     item = ui.jg_tableWidgettt.item(row, 0)
     if item is None:
         return
 
     name = item.text()
-    columns = COLUMNS_JG if ui.market_gubun < 6 else COLUMNS_JGF if ui.market_gubun < 9 else COLUMNS_JGCF
-    qty_converter = comma2float if ui.market_gubun in (5, 9) else comma2int
-    price_converter = comma2int if ui.market_gubun in (1, 2, 3) else comma2float
-    oc = qty_converter(ui.jg_tableWidgettt.item(row, columns.index('보유수량')).text())
-    c = price_converter(ui.jg_tableWidgettt.item(row, columns.index('현재가')).text())
+    columns = COLUMNS_JG if ui.market_gubun < 6 else COLUMNS_JGF
+    oc = ui.jg_tableWidgettt.item(row, columns.index('보유수량')).text()
+    cc = ui.jg_tableWidgettt.item(row, columns.index('현재가')).text()
+    oc = comma2float(oc) if ui.market_gubun in (5, 9) else comma2int(oc)
+    cc = comma2int(cc) if ui.market_gubun in (1, 2, 3) else comma2float(cc)
     buttonReply = QMessageBox.question(
         ui, f"{ui.market_info['마켓이름']} 시장가 매도", f'{name} {oc}주를 시장가매도합니다.\n계속하시겠습니까?\n',
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
@@ -61,11 +61,11 @@ def cell_clicked_02(ui, row, col):
     if buttonReply == QMessageBox.Yes:
         if trader_process_alive(ui):
             if ui.market_gubun < 6:
-                ui.traderQ.put(('매도', ui.dict_code[name], name, c, oc, now(), True))
+                ui.traderQ.put(('매도', ui.dict_code[name], name, cc, oc, now(), True))
             else:
                 position = ui.jg_tableWidgettt.item(row, columns.index('포지션')).text()
                 position = 'SELL_LONG' if position == 'LONG' else 'BUY_SHORT'
-                ui.traderQ.put((position, ui.dict_code[name], name, c, oc, now(), True))
+                ui.traderQ.put((position, ui.dict_code[name], name, cc, oc, now(), True))
 
 
 # noinspection PyUnusedLocal

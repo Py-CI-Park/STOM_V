@@ -25,12 +25,6 @@ def load_settings():
     df_so = pd.read_sql('SELECT * FROM sellorder', con).set_index('index')
     con.close()
 
-    binance_leverage_ = []
-    for text_ in df_m['바이낸스선물변동레버리지값'][0].split('^'):
-        lvrg_list_ = text_.split(';')
-        lvrg_list_ = [float(x) for x in lvrg_list_]
-        binance_leverage_.append(lvrg_list_)
-
     location_list = None
     df_a_not_empty = True if len(df_a) > 0 else False
     df_t_not_empty  = True if len(df_t) > 0 else False
@@ -42,6 +36,12 @@ def load_settings():
             location_list = [x.split('^') for x in df_e['창위치'][no].split(';')]
         else:
             location_list = [['0', '0'] for _ in range(20)]
+
+        binance_leverage_ = []
+        for text_ in df_m['바이낸스선물변동레버리지값'][0].split('^'):
+            lvrg_list_ = text_.split(';')
+            lvrg_list_ = [float(x) for x in lvrg_list_]
+            binance_leverage_.append(lvrg_list_)
 
         DICT_SET = {
             '키':            EN_KEY,
