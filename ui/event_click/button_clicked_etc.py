@@ -1,6 +1,5 @@
 
-# noinspection PyUnusedLocal
-def opbutton_clicked_01(ui):
+def opbutton_clicked_01():
     """Optuna 서버를 시작합니다."""
     import webbrowser
     from backtest.back_static import RunOptunaServer

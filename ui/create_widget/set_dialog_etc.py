@@ -210,7 +210,7 @@ class SetDialogEtc:
         self.ui.op_labelllllll_05 = QLabel(text, self.ui.op_groupBoxxxx_05)
         self.ui.op_labelllllll_05.setFont(qfont13)
         self.ui.op_labelllllll_05.setAlignment(Qt.AlignCenter)
-        self.ui.op_pushButtonn_01 = self.wc.setPushbutton('OPTUNA DASHBOARD', parent=self.ui.op_groupBoxxxx_05, color=3, click=lambda: opbutton_clicked_01(self.ui))
+        self.ui.op_pushButtonn_01 = self.wc.setPushbutton('OPTUNA DASHBOARD', parent=self.ui.op_groupBoxxxx_05, color=3, bounced=True, click=opbutton_clicked_01)
 
         self.ui.dialog_pass = self.wc.setDialog('STOM PASSWARD', self.ui)
         self.ui.dialog_pass.geometry().center()
@@ -226,7 +226,7 @@ class SetDialogEtc:
         self.ui.dialog_list.append(self.ui.dialog_comp)
 
         self.ui.cp_labelllllll_01 = QLabel('▣ 선택된 두개 이상의 그래프를 비교한다.', self.ui.dialog_comp)
-        self.ui.cp_pushButtonn_01 = self.wc.setPushbutton('그래프 비교', parent=self.ui.dialog_comp, click=lambda: cpbutton_clicked_01(self.ui))
+        self.ui.cp_pushButtonn_01 = self.wc.setPushbutton('그래프 비교', parent=self.ui.dialog_comp, bounced=True, click=lambda: cpbutton_clicked_01(self.ui))
         self.ui.cp_tableWidget_01 = self.wc.setTablewidget(self.ui.dialog_comp, ['백테스트 상세기록'], 40, vscroll=True)
 
         self.ui.dialog_kimp = self.wc.setDialog('STOM KIMP', location_save=True)
@@ -239,8 +239,8 @@ class SetDialogEtc:
         self.ui.dialog_std.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_std)
 
-        self.ui.st_pushButtonn_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_std, click=lambda: stbutton_clicked_01(self.ui))
-        self.ui.st_pushButtonn_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_std, click=lambda: stbutton_clicked_02(self.ui))
+        self.ui.st_pushButtonn_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_std, bounced=True, click=lambda: stbutton_clicked_01(self.ui))
+        self.ui.st_pushButtonn_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_std, bounced=True, click=lambda: stbutton_clicked_02(self.ui))
         self.ui.st_groupBoxxxx_01 = QGroupBox(' ', self.ui.dialog_std)
         self.ui.st_labelllllll_01 = QLabel('<=    최대낙폭률     <=', self.ui.st_groupBoxxxx_01)
         self.ui.st_labelllllll_02 = QLabel('<=    보유종목수     <=', self.ui.st_groupBoxxxx_01)
@@ -257,8 +257,8 @@ class SetDialogEtc:
         self.ui.dialog_leverage.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_leverage)
 
-        self.ui.lv_pushButtonn_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_leverage, click=lambda: lvbutton_clicked_02(self.ui))
-        self.ui.lv_pushButtonn_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_leverage, click=lambda: lvbutton_clicked_03(self.ui))
+        self.ui.lv_pushButtonn_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_leverage, bounced=True, click=lambda: lvbutton_clicked_02(self.ui))
+        self.ui.lv_pushButtonn_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_leverage, bounced=True, click=lambda: lvbutton_clicked_03(self.ui))
         self.ui.lv_groupBoxxxx_01 = QGroupBox(' ', self.ui.dialog_leverage)
         self.ui.lv_checkBoxxxx_01 = self.wc.setCheckBox('고정 레버리지 (모든 종목의 레버리지 고정)', self.ui.lv_groupBoxxxx_01, style=style_ck_bx, changed=lambda state: lvcheck_changed_01(self.ui, state))
         self.ui.lv_lineEditttt_01 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_01, style=style_bc_dk)
@@ -279,9 +279,9 @@ class SetDialogEtc:
         self.ui.dialog_setsj.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_setsj)
 
-        self.ui.set_pushButton_01 = self.wc.setPushbutton('설정예제', parent=self.ui.dialog_setsj, click=lambda: setting_passticks_sample(self.ui))
-        self.ui.set_pushButton_02 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_setsj, click=lambda: setting_passticks_load(self.ui))
-        self.ui.set_pushButton_03 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_setsj, click=lambda: setting_passticks_save(self.ui))
+        self.ui.set_pushButton_01 = self.wc.setPushbutton('설정예제', parent=self.ui.dialog_setsj, bounced=True, click=lambda: setting_passticks_sample(self.ui))
+        self.ui.set_pushButton_02 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_setsj, bounced=True, click=lambda: setting_passticks_load(self.ui))
+        self.ui.set_pushButton_03 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_setsj, bounced=True, click=lambda: setting_passticks_save(self.ui))
         self.ui.set_groupBoxxx_01 = QGroupBox('', self.ui.dialog_setsj)
         text = '''
         ▣ 백테 및 전략연산에서 사용할 경과틱수('조건명')을 설정한다. 경과틱수는 작성한 조건을 만족한 이후 경과한 틱수이며

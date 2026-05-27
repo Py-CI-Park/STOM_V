@@ -355,11 +355,13 @@ elif not (체결강도 < 체결강도평균(30)):
 elif not (체결강도 < 100):
     SELL_SHORT = False'''
 
-example_stg_sell_future = '''if 수익률 <= -2 or 수익률 >= 3:
-    SELL_LONG = True
+example_stg_sell_future = '''if 포지션 == 'LONG':
+    if 수익률 <= -2 or 수익률 >= 3:
+        SELL_LONG = True
 
-if 수익률 <= -2 or 수익률 >= 3:
-    BUY_SHORT = True'''
+if 포지션 == 'SHORT':
+    if 수익률 <= -2 or 수익률 >= 3:
+        BUY_SHORT = True'''
 
 example_stg_buy_vchange = '''# 최적화할 값들을 self.vars[1] 형태로 변경해야합니다.
 # 최적화할 변수들을 모두 "변수"로 변경하고

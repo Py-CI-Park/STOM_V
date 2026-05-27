@@ -34,3 +34,25 @@ def dactivated_03(ui):
         items = ['시장가', '지정가', '지정가IOC', '지정가FOK']
     for item in items:
         ui.od_comboBoxxxxx_02.addItem(item)
+
+
+def mactivated_01(ui):
+    """거래소 변경 시 타임프레임 자동 변경"""
+    no = int(ui.sj_main_comBox_01.currentText()[-2:])
+    ui.sj_main_comBox_02.setCurrentText('1분봉' if no % 2 == 0 else '1초스냅샷')
+
+
+def mactivated_02(ui):
+    """바이낸스 선물 마진타입 경고"""
+    from PyQt5.QtWidgets import QMessageBox
+    if ui.sj_main_comBox_03.currentText() == '교차':
+        ui.sj_main_comBox_03.setCurrentText('격리')
+        QMessageBox.warning(ui, '경고', '현재 바이낸스 선물 마진타입은 격리타입만 지원합니다.\n')
+
+
+def mactivated_03(ui):
+    """바이낸스 선물 포지션모드 경고"""
+    from PyQt5.QtWidgets import QMessageBox
+    if ui.sj_main_comBox_04.currentText() == '양방향':
+        ui.sj_main_comBox_04.setCurrentText('단방향')
+        QMessageBox.warning(ui, '경고', '현재 바이낸스 선물 포지션모드는 단방향만 지원합니다.\n')

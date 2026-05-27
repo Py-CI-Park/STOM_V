@@ -12,13 +12,13 @@ class ImportProgressHook:
             'utility.settings.setting_user',
             'utility.sub_process_and_thread.timesync',
             'utility.static_method.static_etcetera',
+            'utility.sub_process_and_thread.tts_sound',
             'utility.static_method.builtin_print',
             'utility.db_control.database_read_only',
             'utility.sub_process_and_thread.webcrawling',
             'utility.static_method.static_datetime',
             'utility.static_method.static_decorator',
             'utility.sub_process_and_thread.telegram_bot',
-            'utility.sub_process_and_thread.pyttsx_sound',
             'utility.settings.setting_base',
             'utility.sub_process_and_thread.chart_hoga_query',
 
@@ -64,7 +64,7 @@ class ImportProgressHook:
         """커스텀 임포트 함수입니다."""
         if name in self.modules:
             self.current_index += 1
-            progress = (self.current_index / self.total_modules) * 49
+            progress = (self.current_index / self.total_modules) * 50
             self.splash.show_progress(f"{name}...", int(progress))
         return self.original_import(name, *args, **kwargs)
 

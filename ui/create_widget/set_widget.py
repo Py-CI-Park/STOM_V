@@ -243,6 +243,9 @@ class BounceButton(QPushButton):
 
     def _play_bounce_animation(self):
         """바운스 애니메이션을 실행합니다."""
+        # noinspection PyUnresolvedReferences
+        if self.click_animation is not None and self.click_animation.state() == QPropertyAnimation.Running:
+            return
         self.original_geometry = self.geometry()
         center_x = self.original_geometry.x() + self.original_geometry.width() / 2
         center_y = self.original_geometry.y() + self.original_geometry.height() / 2

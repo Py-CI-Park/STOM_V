@@ -71,7 +71,7 @@ class SetDialogChart:
                '10. 줌인된 상태에서 마우스 우클릭으로 드레그하면 좌우로 움직입니다.\n' \
                '11. 호가창이 열린 상태에서 마우스 좌클릭 시 해당 시간의 호가정보가 표시됩니다.\n' \
                '12. 팩터설정 창, 우측 빈칸에 등락율각도, 거래대금각도 계수를 입력하여 다른 계수값 기반 각도를 표시할 수 있습니다.'
-        self.ui.ct_pushButtonnn_02 = self.wc.setPushbutton('도움말', parent=self.ui.ct_groupBoxxxxx_01, tip=text)
+        self.ui.ct_pushButtonnn_02 = self.wc.setPushbutton('도움말', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, tip=text)
         self.ui.ct_pushButtonnn_03 = self.wc.setPushbutton('수식관리자', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: show_dialog_formula(self.ui))
         self.ui.ct_pushButtonnn_04 = self.wc.setPushbutton('펙터설정', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: show_dialog_factor(self.ui))
         self.ui.ct_pushButtonnn_05 = self.wc.setPushbutton('CHART I', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: chart_count_change(self.ui))

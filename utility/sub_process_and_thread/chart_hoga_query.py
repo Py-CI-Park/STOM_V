@@ -899,8 +899,8 @@ class ChartHogaQuery:
                     cgtime_   = int(str_ymdhms(onesecago))
                 else:
                     dt_cgtime = dt_ymdhm(str(cgtime_))
-                    onesecago = timedelta_sec(-1, dt_cgtime)
-                    cgtime_   = int(str_ymdhm(onesecago))
+                    oneminago = timedelta_sec(-60, dt_cgtime)
+                    cgtime_   = int(str_ymdhm(oneminago))
             cgidx_ = np.where(indices == cgtime_)[0][0]
             return cgidx_, cgtime_
 

@@ -434,13 +434,13 @@ class BaseReceiver:
                 else:
                     self.stgQ.put(send_data)
 
-                if self.is_tick and (code in self.tuple_order or code in self.tuple_jango):
-                    self.traderQ.put(('잔고갱신', (code, c)))
+                if self.is_tick:
+                    if code in self.tuple_order or code in self.tuple_jango:
+                        self.traderQ.put(('잔고갱신', (code, c)))
+                elif send and code in self.tuple_order:
+                    self.traderQ.put(('주문확인', (code, c)))
 
-                if self.is_tick or send:
-                    if not self.is_tick and code in self.tuple_order:
-                        self.traderQ.put(('주문확인', (code, c)))
-
+                if send:
                     code_dtdm[0] = dt_std
                     code_dtdm[1] = dm
                     code_data[7] = 0
@@ -578,12 +578,11 @@ class BaseReceiver:
                     self.stgQ.put(('관심목록', current_gsjm))
                 self.last_gsjm = current_gsjm
 
-        if self.market_gubun == 9:
-            curr_time = now()
-            if not self.dict_set['바이낸스선물고정레버리지'] and curr_time > self.lvhp_time:
-                if self.dict_dlhp:
-                    self.traderQ.put(('저가대비고가등락율', self.dict_dlhp))
-                self.lvhp_time = timedelta_sec(300)
+            if self.market_gubun == 9 and not self.dict_set['바이낸스선물고정레버리지']:
+                if now() > self.lvhp_time:
+                    if self.dict_dlhp:
+                        self.traderQ.put(('저가대비고가등락율', self.dict_dlhp))
+                    self.lvhp_time = timedelta_sec(300)
 
     def _money_top_search(self):
         """거래대금상위 종목을 검색합니다.
