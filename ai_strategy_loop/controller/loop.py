@@ -469,7 +469,8 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
                    sell_feedback: Optional[str] = None,
                    base_buy_code: Optional[str] = None,
                    base_sell_code: Optional[str] = None,
-                   meta_seed: Optional[str] = None) -> Dict[str, Any]:
+                   meta_seed: Optional[str] = None,
+                   freeze_buy: bool = False) -> Dict[str, Any]:
     """이 세대의 buy + sell 전략을 생성/저장한다.
 
     Args:
@@ -481,6 +482,13 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             점진 개선한다. None이면 fresh 생성.
         base_sell_code: seed-and-refine 출발점(매도). 주어지면 sell 생성이 이 코드를
             점진 개선한다. None이면 fresh 생성.
+        freeze_buy: 타깃 처방 — True면 매수(진입)를 동결한다. base_buy_code를
+            **LLM 호출 없이** buy_name으로 그대로 DB에 복제 저장하고(토큰 0),
+            매도(청산)만 generate_strategy로 재생성한다. 거래수·빈도·수익을
+            보존한 채 청산만 탐색해 MDD를 깎는 게 목적이다. base_buy_code가
+            None이면 무시하고 기존대로 buy도 생성한다(안전 폴백). 또한 freeze_buy면
+            sell 피드백 앞에 청산-전용 개선 지시를 한 줄 결합한다(원본 변형 안 함).
+            기본 False(하위호환).
 
     Returns:
         {"status": "ok", "buy_name", "sell_name", "tokens"} 또는
@@ -494,11 +502,35 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
     sell_name = f"AILOOP_{run_id}_g{gen_no}_sell"
     dedup = DedupTracker(k=5)
 
+    # 타깃 처방: base_buy_code가 있을 때만 매수 동결을 발동한다(없으면 안전 폴백).
+    do_freeze_buy = bool(freeze_buy and base_buy_code)
+
     # 매도 전략엔 청산 부검 피드백을 준다(없으면 buy 피드백으로 폴백 = 하위호환).
     sell_fb = sell_feedback if sell_feedback is not None else autopsy_feedback
+    # 매수 동결 시 매도 프롬프트에 청산-전용 개선 지시를 결합한다. 원본 sell_fb를
+    #   변형하지 않고 새 문자열로 합친다(불변성).
+    if do_freeze_buy:
+        freeze_directive = (
+            "매수(진입)는 고정·검증됐다. 거래수를 바꾸지 말고 청산(매도)만 개선해 "
+            "MDD를 낮춰라 — 익절(상방 포착)은 유지하고 give-back/손절만 강화하라."
+        )
+        sell_fb = (
+            f"{freeze_directive}\n\n{sell_fb}" if sell_fb else freeze_directive
+        )
 
     tokens = 0
     for kind, name in (("buy", buy_name), ("sell", sell_name)):
+        # 타깃 처방: 매수 동결이면 base_buy_code를 LLM 호출 없이 그대로 복제 저장한다
+        #   (generator의 save 함수 재사용). 토큰 0. 매도만 아래에서 generate_strategy.
+        if kind == "buy" and do_freeze_buy:
+            from cli.strategy_generator import save_strategy_to_db  # noqa: PLC0415
+
+            saved = save_strategy_to_db(db, buy_name, base_buy_code, "buy")
+            if saved.get("status") != "ok":
+                return {"status": "error",
+                        "reason": f"buy 동결 저장 실패: {saved.get('message')}"}
+            continue
+
         feedback = sell_fb if kind == "sell" else autopsy_feedback
         # kind별 출발점 코드(있으면 점진 개선, 없으면 fresh 생성).
         base_code = base_sell_code if kind == "sell" else base_buy_code
@@ -684,6 +716,10 @@ def run_loop(
     #   갱신된다. None이면 그 세대는 fresh 생성(첫 출발점 미확보 시 정상).
     base_buy_code: Optional[str] = None
     base_sell_code: Optional[str] = None
+    # 타깃 처방: 현재 best가 **MDD만 부족**(빈도·수익 통과)한 실패인지 여부.
+    #   best가 갱신될 때마다 재계산한다. True면 다음 세대에서 매수를 동결하고
+    #   매도(청산)만 재생성해 MDD를 깎는다(freeze_buy_on_mdd_only 토글 ON일 때).
+    best_is_mdd_only: bool = False
     history_records: list = []  # CONVERGENCE — 누적 GenRecord.
     summary: Optional[Dict[str, Any]] = None
 
@@ -805,6 +841,14 @@ def run_loop(
                     gen_kwargs["base_sell_code"] = base_sell_code
                     if best_gen >= 0 and parent_gen_for_record is None:
                         parent_gen_for_record = best_gen
+                # 타깃 처방: best가 MDD만 부족하면 매수를 동결하고 청산만 재생성한다
+                #   (refine 모드 + base_buy_code 확보 + 토글 ON일 때만). gen_kwargs에
+                #   넣으면 _generate_pair로 자동 전달된다.
+                if (refine and base_buy_code is not None and best_is_mdd_only
+                        and getattr(config, "freeze_buy_on_mdd_only", True)):
+                    gen_kwargs["freeze_buy"] = True
+                    print(f"[LOOP] freeze_buy=ON (best gen{best_gen} MDD-only: "
+                          f"매수 동결·매도만 재생성)", flush=True)
                 gen_res = _generate_pair(
                     provider, config, rid, gen_no, next_autopsy_feedback,
                     **gen_kwargs,
@@ -962,6 +1006,17 @@ def run_loop(
                 best_buy = buy_name
                 best_sell = sell_name
                 st.update_best(rid, best_gen, best_score)
+                # 타깃 처방: 이 best가 **MDD만 부족**(빈도ok + 수익>0 + mdd>cap)한
+                #   실패인지 계산한다. True면 다음 세대 매수를 동결하고 청산만 탐색한다.
+                #   (시드=gen0도 best가 되며 여기서 계산된다.)
+                best_is_mdd_only = (
+                    (not fit.gate_passed)
+                    and (float(getattr(fit, "daily_avg_trades", 0.0))
+                         >= float(getattr(config, "min_daily_trades", 0.0) or 0.0))
+                    and (float(fit.total_profit) > 0.0)
+                    and (abs(float(fit.mdd))
+                         > float(getattr(config, "mdd_cap", float("inf"))))
+                )
                 # seed-and-refine hill-climb: 더 좋은 전략이 나오면 그 코드를
                 #   다음 세대의 새 출발점으로 삼는다(refine 모드일 때만).
                 if getattr(config, "bt_refine_from_best", False):
@@ -1339,6 +1394,7 @@ def _score_outcome(outcome: BacktestOutcome, config: LoopConfig):
         compute_fitness,
         compute_graded_fitness,
         load_equity_series_from_csv,
+        load_exit_quality_from_csv,
     )
 
     csv_path = outcome.csv_path
@@ -1347,9 +1403,19 @@ def _score_outcome(outcome: BacktestOutcome, config: LoopConfig):
         equity = load_equity_series_from_csv(abs_csv)
     except Exception as exc:  # noqa: BLE001 - CSV 파싱 실패는 score=0 처리.
         return None, None, f"equity load 실패: {exc}"
+    # 청산 품질(payoff_ratio/give_back_rate)을 per-trade CSV에서 산출해 metrics에
+    #   merge한다. 실패해도(컬럼 없음/파싱 오류) score는 그대로 진행한다(빈 dict 폴백).
+    #   원본 outcome.metrics는 변형하지 않고 복사본에 merge한다(불변성).
+    mfe_threshold = float(getattr(config, "give_back_mfe_threshold", 1.5) or 1.5)
     try:
-        fit = compute_fitness(outcome.metrics or {}, equity, config)
-        graded = compute_graded_fitness(outcome.metrics or {}, equity, config)
+        exit_quality = load_exit_quality_from_csv(abs_csv, mfe_threshold)
+    except Exception:  # noqa: BLE001 - 청산품질 산출 실패는 score에 영향 없이 흡수.
+        exit_quality = {}
+    merged_metrics = dict(outcome.metrics or {})
+    merged_metrics.update(exit_quality)
+    try:
+        fit = compute_fitness(merged_metrics, equity, config)
+        graded = compute_graded_fitness(merged_metrics, equity, config)
     except Exception as exc:  # noqa: BLE001
         return None, None, f"compute_fitness 실패: {exc}"
     return fit, graded, None

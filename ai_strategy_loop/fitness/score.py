@@ -105,6 +105,13 @@ class GradedResult:
     #   로그·page_data에서 어떤 공식으로 통과 분기를 매겼는지 드러낸다. 기본
     #   'risk_adjusted'로 두어 기존 호출부 하위호환을 보장한다(맨 끝 배치).
     objective: str = "risk_adjusted"
+    # 청산 품질(exit-quality) 항 [0,1] + 원시 구성요소. give-back/payoff 부검 신호를
+    #   게이트-실패 분기의 선택 그래디언트에 가산한다. metrics에 청산품질 키가 없거나
+    #   exit_quality_enabled=False면 무영향(이 필드는 기본값으로 채워져 하위호환 보장).
+    #   기본값(맨 끝 배치)이라 직접 GradedResult를 만드는 테스트 더블도 그대로 동작한다.
+    exit_quality_term: float = 1.0
+    payoff_ratio: float = 0.0
+    give_back_rate: float = 0.0
 
 
 def compute_uptrend_r2(equity_series: Sequence[float]) -> float:
@@ -346,6 +353,46 @@ def _profit_term(total_profit: float, scale: float) -> float:
     return 1.0 / (1.0 + math.exp(-z))
 
 
+def _exit_quality_term(
+    payoff_ratio: Optional[float],
+    give_back_rate: Optional[float],
+    payoff_target: float,
+    give_back_weight: float,
+) -> Optional[float]:
+    """청산 품질 신호(payoff_ratio/give_back_rate)를 [0,1] 단일 항으로 합친다.
+
+    부검 근거: 손실의 대부분이 give-back이고 payoff ratio 붕괴가 적자 원인이라,
+    청산이 좋을수록(payoff↑, give-back↓) 1에 근접하는 가산 신호를 만든다.
+
+    - payoff_comp  = clamp01(payoff_ratio / payoff_target)  (payoff_ratio 있을 때)
+    - giveback_comp= clamp01(1.0 - give_back_rate)          (give_back_rate 있을 때)
+    - 둘 다 있으면: payoff_comp*(1-w) + giveback_comp*w  (w=give_back_weight)
+    - payoff만 있으면: payoff_comp
+    - 둘 다 없으면: None (다운스트림에서 무영향 처리).
+
+    payoff_target<=0이면 안전한 기본(1.1)으로 폴백한다.
+    """
+    if payoff_ratio is None and give_back_rate is None:
+        return None
+    if payoff_target <= 0.0:
+        payoff_target = 1.1
+    w = _clamp01(give_back_weight)
+
+    payoff_comp = None
+    if payoff_ratio is not None:
+        payoff_comp = _clamp01(payoff_ratio / payoff_target)
+    giveback_comp = None
+    if give_back_rate is not None:
+        giveback_comp = _clamp01(1.0 - give_back_rate)
+
+    if payoff_comp is not None and giveback_comp is not None:
+        return payoff_comp * (1.0 - w) + giveback_comp * w
+    if payoff_comp is not None:
+        return payoff_comp
+    # payoff 없이 give-back만 있는 경우(이론상): give-back 신호만 사용.
+    return giveback_comp
+
+
 def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config) -> GradedResult:
     """하드 게이트를 제거하지 않고 **선택 그래디언트**를 주는 등급화 적합도.
 
@@ -429,6 +476,32 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
     else:
         overtrade_term = _clamp01(softcap / trade_count)
 
+    # 청산 품질(exit-quality) 소프트 항. metrics에 payoff_ratio/give_back_rate가
+    #   주입돼 있으면(loop._score_outcome이 per-trade CSV에서 산출) give-back/payoff
+    #   부검 신호를 게이트-실패 분기의 선택 그래디언트에 가산한다. 키가 없거나
+    #   exit_quality_enabled=False면 term=None → 기존 4항 평균 그대로(하위호환).
+    exit_quality_enabled = bool(getattr(config, "exit_quality_enabled", True))
+    payoff_target = float(getattr(config, "payoff_target", 1.1) or 1.1)
+    give_back_weight = float(getattr(config, "give_back_weight", 0.5) or 0.0)
+    payoff_ratio_raw = metrics.get("payoff_ratio", None)
+    give_back_rate_raw = metrics.get("give_back_rate", None)
+    payoff_ratio_val = None
+    give_back_rate_val = None
+    if exit_quality_enabled:
+        if payoff_ratio_raw is not None:
+            try:
+                payoff_ratio_val = float(payoff_ratio_raw)
+            except (TypeError, ValueError):
+                payoff_ratio_val = None
+        if give_back_rate_raw is not None:
+            try:
+                give_back_rate_val = float(give_back_rate_raw)
+            except (TypeError, ValueError):
+                give_back_rate_val = None
+    exit_quality_term = _exit_quality_term(
+        payoff_ratio_val, give_back_rate_val, payoff_target, give_back_weight
+    )
+
     # P7 — 우승/선택 목표. gate-passed 분기의 그래디언트만 바꾼다(실패 분기 불변).
     #   기본 'risk_adjusted'면 기존 1.0+composite 그대로(하위호환).
     objective = str(getattr(config, "winner_objective", "risk_adjusted") or "risk_adjusted")
@@ -451,7 +524,11 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
         #     trades_term이 mean의 1/4라 약했던 과소거래 신호를 곱셈으로 dominant하게
         #     만든다(overtrade_term과 대칭).
         #   세 항 모두 [0,1]이므로 graded ∈ [0,1) 단조성 유지.
+        # 청산 품질 항이 있으면 base 평균에 5번째 항으로 가산한다(부검 신호 선택압력).
+        #   None이면(키 없음/비활성) 기존 4항 평균 그대로 — 하위호환.
         base_terms = (trades_term, mdd_term, uptrend_term, overtrade_term)
+        if exit_quality_term is not None:
+            base_terms = base_terms + (exit_quality_term,)
         base = sum(base_terms) / len(base_terms)
         if daily_avg_trades_raw is not None:
             undertrade_factor = _undertrade_factor_daily(daily_avg_trades, min_daily_trades)
@@ -480,6 +557,9 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
         overtrade_term=overtrade_term,
         objective=objective,
         daily_avg_trades=daily_avg_trades,
+        exit_quality_term=(exit_quality_term if exit_quality_term is not None else 1.0),
+        payoff_ratio=(payoff_ratio_val if payoff_ratio_val is not None else 0.0),
+        give_back_rate=(give_back_rate_val if give_back_rate_val is not None else 0.0),
     )
 
 
@@ -560,3 +640,102 @@ def load_equity_series_from_csv(csv_path: str) -> list:
                 continue
             equity.append(float(raw))
     return equity
+
+
+def load_exit_quality_from_csv(csv_path: str, mfe_giveback_threshold: float = 1.5) -> dict:
+    """per-trade CSV에서 청산 품질(exit-quality) 지표를 읽어 dict로 반환한다.
+
+    부검 근거(1년치 확증): 손실의 70~88%가 give-back이다 — 평가익(MFE)을 2.4~2.9%
+    찍고도 청산 로직이 못 잡아 -2.3~-3%로 토해내며 마감한다. 그 결과 payoff ratio
+    (평균이익/평균손실)가 1.20→0.61로 붕괴해 적자가 났다. 진입 피처는 승패를
+    예측하지 못하고 **청산이 승패를 결정**함이 데이터로 확인됐다. 이 함수는 그
+    두 신호(payoff_ratio, give_back_rate)를 per-trade 컬럼에서 직접 산출해
+    선택 압력(적합도)과 프롬프트로 환류할 수 있게 한다.
+
+    컬럼:
+      - '수익률'  : per-trade 수익률(%). 양수=이익거래, 음수/0=손실거래.
+      - 'R_MFE'   : 보유 중 최대유리편의(maximum favorable excursion, %).
+
+    인코딩은 utf-8-sig (BOM 포함 가능), 기존 load_equity_series_from_csv와 동일하게
+    csv.DictReader로 컬럼명 직접 접근한다. 빈/결측 행은 skip한다.
+
+    Args:
+        csv_path: per-trade 결과 CSV 경로.
+        mfe_giveback_threshold: give-back으로 간주할 R_MFE 하한(%). 이 이상 평가익을
+            냈는데도 손실(ret<=0)로 마감한 거래를 give-back으로 센다. 기본 1.5%.
+
+    Returns:
+        dict. '수익률' 컬럼이 없으면 {} (하위호환 — 다운스트림 무영향).
+        파싱 가능한 거래가 0건이어도 {} 반환.
+        그 외:
+          {'payoff_ratio': float}
+            - payoff_ratio = mean(이익 ret) / abs(mean(손실 ret)).
+            - 손실거래 0건이면 999.0으로 cap(전부 이익 = 우수).
+            - 이익거래 0건이면 0.0.
+          (+ 'R_MFE' 컬럼이 있을 때만) {'give_back_rate': float}
+            - give_back_rate = (R_MFE>=threshold 이고 ret<=0 인 거래 수)
+                               / max(손실거래 수, 1). [0,1].
+            - 'R_MFE' 컬럼이 없으면 이 키는 생략한다.
+    """
+    rets: list = []
+    mfes: list = []
+    have_ret_col = False
+    have_mfe_col = False
+    with open(csv_path, encoding="utf-8-sig", newline="") as fh:
+        reader = csv.DictReader(fh)
+        fieldnames = reader.fieldnames or []
+        if "수익률" not in fieldnames:
+            return {}  # 하위호환: per-trade 수익률 컬럼이 없으면 무영향.
+        have_ret_col = True
+        have_mfe_col = "R_MFE" in fieldnames
+        for row in reader:
+            raw_ret = row.get("수익률", "")
+            if raw_ret is None or str(raw_ret).strip() == "":
+                continue  # 빈/결측 수익률 행은 skip.
+            try:
+                ret = float(raw_ret)
+            except (TypeError, ValueError):
+                continue
+            mfe = None
+            if have_mfe_col:
+                raw_mfe = row.get("R_MFE", "")
+                if raw_mfe is not None and str(raw_mfe).strip() != "":
+                    try:
+                        mfe = float(raw_mfe)
+                    except (TypeError, ValueError):
+                        mfe = None
+            rets.append(ret)
+            mfes.append(mfe)
+
+    if not have_ret_col or not rets:
+        return {}
+
+    wins = [r for r in rets if r > 0.0]
+    losses = [r for r in rets if r <= 0.0]
+
+    # payoff_ratio = 평균이익 / abs(평균손실).
+    if not losses:
+        payoff_ratio = 999.0  # 손실거래 0건 = 전부 이익 → 우수(큰 양수로 cap).
+    elif not wins:
+        payoff_ratio = 0.0  # 이익거래 0건 = 전멸.
+    else:
+        mean_win = sum(wins) / len(wins)
+        mean_loss = sum(losses) / len(losses)
+        denom = abs(mean_loss)
+        payoff_ratio = (mean_win / denom) if denom > 0.0 else 999.0
+
+    result: dict = {"payoff_ratio": float(payoff_ratio)}
+
+    # give_back_rate는 R_MFE 컬럼이 있을 때만 산출한다.
+    if have_mfe_col:
+        loss_count = len(losses)
+        giveback_count = 0
+        for ret, mfe in zip(rets, mfes):
+            if mfe is None:
+                continue
+            if mfe >= mfe_giveback_threshold and ret <= 0.0:
+                giveback_count += 1
+        give_back_rate = giveback_count / max(loss_count, 1)
+        result["give_back_rate"] = float(_clamp01(give_back_rate))
+
+    return result

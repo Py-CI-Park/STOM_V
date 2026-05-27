@@ -41,6 +41,23 @@ class LoopConfig:
     #   페널티 비활성(하위호환: 기존 동작 그대로).
     overtrade_softcap: int = 150
     tpi_gate: float = 1.2
+    # --- 청산 품질(exit-quality) 레버 (give-back/payoff 부검 환류) ---
+    # 부검(1년치): 손실의 70~88%가 give-back(평가익 2~3% 찍고 -2~-3%로 토해냄)이고
+    #   payoff ratio 붕괴(1.20→0.61)가 적자 원인. 진입 피처는 승패를 못 가르고
+    #   청산이 결정함. 그래서 청산 품질을 적합도 선택압력 + 프롬프트로 반영한다.
+    #   **하드게이트는 불변** — 전부 가산/소프트/토글/하위호환이다.
+    # exit_quality_enabled: True면 게이트-실패 graded 분기에 청산품질 항을 가산한다.
+    #   metrics에 payoff_ratio/give_back_rate가 있을 때만 동작(없으면 무영향). 기본 ON.
+    exit_quality_enabled: bool = True
+    # payoff_target: 목표 payoff ratio(평균이익/평균손실). payoff_comp 정규화 기준.
+    #   부검 목표는 1.1 이상으로 끌어올리는 것.
+    payoff_target: float = 1.1
+    # give_back_weight: 청산품질 항에서 give-back 억제 신호의 가중치 w∈[0,1].
+    #   payoff 신호 가중치는 (1-w). 0.5면 둘을 동등하게 본다.
+    give_back_weight: float = 0.5
+    # give_back_mfe_threshold: give-back으로 셀 R_MFE 하한(%). 이 이상 평가익을
+    #   냈는데도 손실로 마감한 거래를 give-back으로 카운트한다(loop가 CSV에서 산출).
+    give_back_mfe_threshold: float = 1.5
     graduation_holdout: bool = False
     # graduation_holdout가 켜졌을 때 train 윈도우 끝에서 떼어 두는 최근 거래일 수.
     # 이 구간은 iteration 점수에서 제외되며, 졸업하려면 holdout에서도 gate를 통과해야 한다.
@@ -163,6 +180,12 @@ class LoopConfig:
     #   점진 개선한다(seed-and-refine hill-climb). best가 갱신되면 새 best 코드가
     #   다음 세대의 출발점이 된다. False면 매 세대 백지에서 fresh 생성(기존 동작).
     bt_refine_from_best: bool = True
+    # freeze_buy_on_mdd_only: 타깃 처방 — best가 **MDD만 부족**(빈도·수익 통과)할 때
+    #   매수(진입)를 동결(시드/best 코드 그대로 복제)하고 매도(청산)만 재생성한다.
+    #   매수 LLM 호출/토큰 0. 거래수·빈도·수익을 보존한 채 청산만 탐색해 MDD를 깎는다.
+    #   refine 모드 + base_buy_code 확보 + best가 MDD-only 실패일 때만 발동한다.
+    #   기본 ON이지만 위 조건이 안 맞으면 무영향(하위호환). 가역적·토글.
+    freeze_buy_on_mdd_only: bool = True
 
     # --- 우승/선택 목표 (P7 절대수익 최적화) ---
     # winner_objective: best(graded) 선택과 winner(졸업) 갱신을 어느 목표로 할지 결정.

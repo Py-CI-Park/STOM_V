@@ -29,6 +29,7 @@ from .score import (
     compute_graded_fitness,
     compute_uptrend_r2,
     load_equity_series_from_csv,
+    load_exit_quality_from_csv,
 )
 
 __all__ = [
@@ -39,6 +40,7 @@ __all__ = [
     "compute_calmar",
     "compute_uptrend_r2",
     "load_equity_series_from_csv",
+    "load_exit_quality_from_csv",
     "HoldoutSplit",
     "split_window",
     "HoldoutVerdict",
