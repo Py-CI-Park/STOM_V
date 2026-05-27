@@ -33,7 +33,8 @@ LOOP_RUNS_DB = _STATE_DIR / "loop_runs.db"
 #     v2: parent_gen(계보), diff_from_parent(변경 요약) 추가.
 #     v3: total_profit_pct(수익률 %) 추가 — 대시보드 세대 이력/차트(P10)가 표시한다.
 #     v4: daily_avg_trades(일평균거래횟수) 추가 — 빈도 게이트 주 기준을 이력/대시보드에 표시.
-SCHEMA_VERSION = 4
+#     v5: payoff_ratio(손익비), give_back_rate(기회 반납률) 추가 — 청산 품질 대시보드 노출.
+SCHEMA_VERSION = 5
 
 # US-007 — 루프↔대시보드 라이브 상태 파일 + 정지 플래그 파일.
 #   current_state.json : 루프가 매 세대/백테스트 시점에 atomic write 하는
@@ -123,6 +124,7 @@ class LoopState:
           - parent_gen/diff_from_parent 누락(v2 이전) → 추가(P3 계보/diff).
           - total_profit_pct 누락(v3 이전) → 추가(P10 수익률 %).
           - daily_avg_trades 누락(v4 이전) → 추가(빈도 게이트 주 기준).
+          - payoff_ratio/give_back_rate 누락(v5 이전) → 추가(청산 품질 대시보드 노출).
         새 컬럼은 모두 NULL 기본이라 기존 행의 의미를 바꾸지 않는다(하위호환).
         """
         existing_cols = {row[1] for row in self._con.execute("PRAGMA table_info(generations)")}
@@ -135,6 +137,8 @@ class LoopState:
             ("diff_from_parent", "TEXT"),  # v2 — 부모 대비 변경 요약(NL).
             ("total_profit_pct", "REAL"),  # v3 — 수익률(총수익률, %). 대시보드 표시용.
             ("daily_avg_trades", "REAL"),  # v4 — 일평균거래횟수. 빈도 게이트 주 기준.
+            ("payoff_ratio", "REAL"),      # v5 — 손익비(평균이익/abs(평균손실)). 청산 품질.
+            ("give_back_rate", "REAL"),    # v5 — 기회 반납률(MFE 도달 후 손실 비율). 청산 품질.
         ):
             if col not in existing_cols:
                 self._con.execute(f"ALTER TABLE generations ADD COLUMN {col} {decl}")
@@ -220,6 +224,8 @@ class LoopState:
         strategy_gist: str = "",
         parent_gen: Optional[int] = None,
         diff_from_parent: Optional[str] = None,
+        payoff_ratio: float = 0.0,
+        give_back_rate: float = 0.0,
     ) -> None:
         """한 세대 결과를 기록한다 (UPSERT — 세대 번호 중복 없음).
 
@@ -227,6 +233,8 @@ class LoopState:
         strategy_gist는 대시보드 세대 행(GenerationInfo)이 그대로 표시하는 값이라 함께
         영속한다. daily_avg_trades(일평균거래횟수)는 빈도 게이트의 주 기준값이다.
         total_profit_pct(수익률 %)는 profit(수익금 원)과 별개 지표다. 기본 0.0이라
+        이 인자를 주지 않던 기존 호출부도 그대로 동작한다(하위호환).
+        payoff_ratio(손익비)/give_back_rate(기회 반납률)는 청산 품질 지표다. 기본 0.0이라
         이 인자를 주지 않던 기존 호출부도 그대로 동작한다(하위호환).
 
         parent_gen/diff_from_parent(P3 연구 파이프라인): 이 세대가 점진 개선한
@@ -238,8 +246,9 @@ class LoopState:
             "INSERT OR REPLACE INTO generations "
             "(run_id, gen_no, buy_name, sell_name, status, score, calmar, uptrend_r2, "
             " gate_passed, reason, csv_path, trade_count, daily_avg_trades, mdd, profit, "
-            " total_profit_pct, strategy_gist, parent_gen, diff_from_parent, created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " total_profit_pct, strategy_gist, parent_gen, diff_from_parent, "
+            " payoff_ratio, give_back_rate, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 run_id, gen_no, buy_name, sell_name, status, float(score),
                 float(calmar), float(uptrend_r2), 1 if gate_passed else 0,
@@ -247,6 +256,7 @@ class LoopState:
                 float(mdd), float(profit), float(total_profit_pct), strategy_gist,
                 (None if parent_gen is None else int(parent_gen)),
                 diff_from_parent,
+                float(payoff_ratio), float(give_back_rate),
                 _now(),
             ),
         )
@@ -271,6 +281,8 @@ class LoopState:
             "strategy_gist": strategy_gist,
             "parent_gen": parent_gen,
             "diff_from_parent": diff_from_parent,
+            "payoff_ratio": float(payoff_ratio),
+            "give_back_rate": float(give_back_rate),
         })
 
     def update_best(self, run_id: str, best_gen: int, best_score: float) -> None:
@@ -523,6 +535,9 @@ def to_loop_state(
             # P10 — 수익률(%). 구 DB 행(컬럼 없음)은 키가 없거나 NULL이라 0.0 폴백.
             total_profit_pct=float(g.get("total_profit_pct", 0.0) or 0.0),
             strategy_gist=str(g.get("strategy_gist", "") or ""),
+            # 청산 품질. 구 DB 행(v5 이전)은 키가 없거나 NULL이라 0.0 폴백.
+            payoff_ratio=float(g.get("payoff_ratio", 0.0) or 0.0),
+            give_back_rate=float(g.get("give_back_rate", 0.0) or 0.0),
         ))
 
     latest_info = C.LatestInfo(

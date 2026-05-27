@@ -46,6 +46,8 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
               <th style={{ width: 64 }}>게이트</th>
               <th style={{ width: 70 }}>거래수</th>
               <th style={{ width: 84 }}>일평균거래</th>
+              <th style={{ width: 72 }}>Payoff</th>
+              <th style={{ width: 80 }}>Give-back%</th>
               <th style={{ width: 76 }}>MDD</th>
               <th style={{ width: 80 }}>수익률</th>
               <th style={{ width: 120 }}>수익금</th>
@@ -68,6 +70,8 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
                 <td className="num-muted">—</td>
                 <td className="num-muted">—</td>
                 <td className="num-muted">—</td>
+                <td className="num-muted">—</td>
+                <td className="num-muted">—</td>
                 <td className="gist-cell" style={{ color: "var(--amber)" }}>
                   {state.latest?.phase || "—"} · {state.latest?.last_checkpoint || ""}
                 </td>
@@ -76,7 +80,7 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
             )}
             {rows.length === 0 && !running && (
               <tr>
-                <td colSpan="11" style={{ textAlign: "center", padding: 32, color: "var(--ink-3)" }}>
+                <td colSpan="13" style={{ textAlign: "center", padding: 32, color: "var(--ink-3)" }}>
                   아직 실행된 세대가 없습니다
                 </td>
               </tr>
@@ -109,6 +113,14 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
                   <td className={`mono ${dailyBad ? "num-neg" : g.daily_avg_trades >= minDailyTrades ? "num-pos" : ""}`}
                       title="일평균거래횟수 (거래수/거래일수) — 빈도 게이트 주 기준">
                     {fmtDaily(g.daily_avg_trades)}
+                  </td>
+                  <td className={`mono ${typeof g.payoff_ratio === "number" && g.payoff_ratio > 0 ? "num-pos" : "num-muted"}`}
+                      title="손익비 (평균이익/abs(평균손실)) — 1 초과일수록 우수">
+                    {typeof g.payoff_ratio === "number" ? g.payoff_ratio.toFixed(2) : "—"}
+                  </td>
+                  <td className={`mono ${typeof g.give_back_rate === "number" && g.give_back_rate > 0 ? "num-neg" : "num-muted"}`}
+                      title="기회 반납률 — MFE 도달 후 손실 전환 비율. 낮을수록 우수">
+                    {typeof g.give_back_rate === "number" ? (g.give_back_rate * 100).toFixed(1) + "%" : "—"}
                   </td>
                   <td className={`mono ${mddBad ? "num-neg" : ""}`}>{fmtPct(g.mdd)}</td>
                   <td className={`mono ${g.total_profit_pct > 0 ? "num-pos" : g.total_profit_pct < 0 ? "num-neg" : "num-muted"}`}>

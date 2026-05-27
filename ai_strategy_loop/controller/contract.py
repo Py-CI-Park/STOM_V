@@ -82,6 +82,10 @@ class GenerationInfo(BaseModel):
     #   이 값을 발행하지 않던 구 상태(state)도 그대로 검증 통과한다(하위호환).
     total_profit_pct: float = 0.0
     strategy_gist: str = ""
+    # 청산 품질 지표 — fitness/score.py GradedResult에서 전파. 기본 0.0이라
+    #   이 값을 발행하지 않던 구 상태(state)도 그대로 검증 통과한다(하위호환).
+    payoff_ratio: float = 0.0
+    give_back_rate: float = 0.0
 
 
 class LatestInfo(BaseModel):

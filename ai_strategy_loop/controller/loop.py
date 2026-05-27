@@ -983,6 +983,8 @@ def run_loop(
                 strategy_gist=gen_gist,
                 parent_gen=parent_gen_for_record,
                 diff_from_parent=diff_from_parent,
+                payoff_ratio=graded.payoff_ratio,
+                give_back_rate=graded.give_back_rate,
             )
             print(f"[LOOP] graded={graded.graded:.6g} hard_composite={fit.score:.6g} "
                   f"calmar={fit.calmar:.4g} r2={fit.uptrend_r2:.4g} "
