@@ -421,4 +421,258 @@ function ProfitChart({ state, targetPct = 0 }) {
   );
 }
 
-Object.assign(window, { FitnessChart, ProfitChart });
+/* R-Viz1 — 전 전략 누적 수익곡선 오버랩 차트.
+   /equity_curves(GET)에서 세대별 수익금합계 시계열을 받아 멀티라인으로 겹쳐 그린다.
+   - 흐린 회색 얇은 선: 전체 곡선(비우승).
+   - 색 굵은 선: gate_passed=True(우승) 곡선.
+   - 손익분기(y=0) 기준선.
+   - 30초 자동 새로고침 + 수동 새로고침 버튼.
+   - hover 시 run/gen·final_pct 툴팁. */
+const { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq, useRef: useRef_eq } = React;
+
+// 우승 곡선 색 팔레트 (최대 12개).
+const _EQ_WINNER_COLORS = [
+  "#4cd6b3", "#a594ff", "#f0b35a", "#6aa6ff",
+  "#ff7eb6", "#73d673", "#ff9966", "#c084fc",
+  "#38bdf8", "#fb923c", "#a3e635", "#f472b6",
+];
+
+function EquityOverlayChart({ baseUrl, wsStatus }) {
+  const [data, setData] = useState_eq(null);   // {curves, count}
+  const [loading, setLoading] = useState_eq(false);
+  const [err, setErr] = useState_eq(null);
+  const [hover, setHover] = useState_eq(null); // {x_frac, curves_at_x:[{run_id,gen_no,gate_passed,final_pct,y}]}
+  const svgRef = useRef_eq(null);
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+
+  const refresh = useCallback_eq(() => {
+    if (isDemo || !baseUrl) return;
+    setLoading(true);
+    fetch(baseUrl + "/equity_curves", { signal: AbortSignal.timeout(4000) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      .then(j => { setData(j); setErr(null); })
+      .catch(e => setErr(String(e)))
+      .finally(() => setLoading(false));
+  }, [baseUrl, isDemo]);
+
+  // 최초 + 30초 자동 새로고침.
+  useEffect_eq(() => {
+    refresh();
+    const id = setInterval(refresh, 30000);
+    return () => clearInterval(id);
+  }, [refresh]);
+
+  const curves = (data && data.curves) || [];
+  const winners = curves.filter(c => c.gate_passed);
+  const nonWinners = curves.filter(c => !c.gate_passed);
+
+  const W = 880, H = 320;
+  const padL = 52, padR = 24, padT = 18, padB = 30;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  // Y 범위: 전체 equity 값의 min/max (0 포함).
+  const allEquity = curves.flatMap(c => c.equity || []);
+  const yRawMax = allEquity.length ? Math.max(0, ...allEquity) : 1;
+  const yRawMin = allEquity.length ? Math.min(0, ...allEquity) : -1;
+  const yRange = (yRawMax - yRawMin) || 1;
+
+  // SVG 좌표 변환. x는 0~1 정규화(각 곡선 길이 제각각 → 거래진행%).
+  const xSvg = (frac) => padL + frac * innerW;
+  const ySvg = (v) => padT + innerH - ((v - yRawMin) / yRange) * innerH;
+  const zeroY = ySvg(0);
+
+  // Y 눈금 (최대 6개).
+  const yTicks = (() => {
+    const ticks = [];
+    const rawStep = yRange / 5;
+    const mag = Math.pow(10, Math.floor(Math.log10(Math.abs(rawStep) || 1)));
+    const step = Math.ceil(rawStep / mag) * mag || 1;
+    const start = Math.ceil(yRawMin / step) * step;
+    for (let v = start; v <= yRawMax + 1e-9; v += step) {
+      ticks.push(Math.round(v));
+      if (ticks.length >= 8) break;
+    }
+    return ticks;
+  })();
+
+  // 각 곡선을 SVG path d 문자열로 변환.
+  const toPath = (equity) => {
+    if (!equity || equity.length < 2) return "";
+    return equity.map((v, i) => {
+      const fx = i / (equity.length - 1);
+      return `${i === 0 ? "M" : "L"} ${xSvg(fx).toFixed(1)} ${ySvg(v).toFixed(1)}`;
+    }).join(" ");
+  };
+
+  // Hover: SVG mousemove → x 위치 → 가장 가까운 포인트 요약.
+  const onMove = (e) => {
+    if (!curves.length || !svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const px = (e.clientX - rect.left) * (W / rect.width);
+    const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
+    // 각 곡선에서 해당 frac 위치의 값 보간.
+    const tips = curves.slice(0, 40).map(c => {  // 성능: 최대 40곡선만 툴팁
+      const eq = c.equity || [];
+      if (eq.length < 2) return null;
+      const idx = frac * (eq.length - 1);
+      const lo = Math.floor(idx), hi = Math.ceil(idx);
+      const t = idx - lo;
+      const y = eq[lo] * (1 - t) + (eq[hi] || eq[lo]) * t;
+      return { run_id: c.run_id, gen_no: c.gen_no, gate_passed: c.gate_passed, final_pct: c.final_pct, y };
+    }).filter(Boolean);
+    setHover({ frac, tips });
+  };
+  const onLeave = () => setHover(null);
+
+  // 통계.
+  const winnerCount = winners.length;
+  const totalCount = curves.length;
+  const maxFinalPct = curves.length ? Math.max(...curves.map(c => c.final_pct)) : null;
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--teal)" }}></span>
+          전 전략 누적 수익곡선
+        </div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <LegendDot color="rgba(255,255,255,0.18)" label="비우승" />
+          <LegendDot color="var(--teal)" label="우승(gate_passed)" />
+          <button className="btn ghost sm" onClick={refresh} disabled={isDemo || loading}
+                  data-tip="equity curves 새로고침">
+            {loading ? "로딩…" : "↻ 새로고침"}
+          </button>
+        </div>
+      </div>
+      <div className="panel-bd">
+        <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
+          <Mini label="전체 곡선" value={totalCount > 0 ? String(totalCount) : "—"} />
+          <Mini label="우승 곡선" value={winnerCount > 0 ? String(winnerCount) : "—"}
+                color={winnerCount > 0 ? "var(--teal)" : undefined} />
+          <Mini label="최고 수익률"
+                value={maxFinalPct != null ? (maxFinalPct >= 0 ? "+" : "") + maxFinalPct.toFixed(1) + "%" : "—"}
+                color={maxFinalPct != null && maxFinalPct > 0 ? "var(--teal)" : maxFinalPct != null && maxFinalPct < 0 ? "var(--red)" : undefined} />
+        </div>
+
+        <div className="chart-wrap">
+          {isDemo ? (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                          color: "var(--ink-3)", fontSize: 12, fontFamily: "var(--mono)" }}>
+              데모 모드 — 백엔드 연결 시 equity curves가 표시됩니다.
+            </div>
+          ) : err ? (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                          color: "var(--red)", fontSize: 12, fontFamily: "var(--mono)" }}>
+              조회 실패: {err}
+            </div>
+          ) : curves.length === 0 ? (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                          color: "var(--ink-3)", fontSize: 12, fontFamily: "var(--mono)" }}>
+              세대 데이터가 누적되면 수익곡선이 표시됩니다
+            </div>
+          ) : (
+            <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`}
+                 preserveAspectRatio="none"
+                 onMouseMove={onMove} onMouseLeave={onLeave}>
+              {/* Y 그리드 + 눈금 */}
+              {yTicks.map((t, i) => (
+                <g key={`ey${i}`}>
+                  <line className="chart-grid-line"
+                        x1={padL} x2={W - padR} y1={ySvg(t)} y2={ySvg(t)} />
+                  <text className="chart-axis-text"
+                        x={padL - 8} y={ySvg(t) + 3} textAnchor="end">
+                    {t >= 10000 ? (t / 10000).toFixed(0) + "만" : t.toLocaleString()}
+                  </text>
+                </g>
+              ))}
+              {/* 손익분기(0) 기준선 */}
+              <line x1={padL} x2={W - padR} y1={zeroY} y2={zeroY}
+                    stroke="rgba(255,255,255,0.28)" strokeWidth="1" strokeDasharray="2 3" />
+              <text className="chart-axis-text" x={padL - 8} y={zeroY + 3} textAnchor="end"
+                    fill="var(--ink-2)">0</text>
+              {/* X 축 프레임 */}
+              <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH}
+                    stroke="var(--line-2)" strokeWidth="1" />
+              <line x1={padL} x2={padL} y1={padT} y2={padT + innerH}
+                    stroke="var(--line-2)" strokeWidth="1" />
+              {/* X 축 라벨 */}
+              {[0, 0.25, 0.5, 0.75, 1.0].map((f, i) => (
+                <text key={`ex${i}`} className="chart-axis-text"
+                      x={xSvg(f)} y={H - 10} textAnchor="middle">
+                  {Math.round(f * 100)}%
+                </text>
+              ))}
+
+              {/* 비우승 곡선: 얇은 회색 */}
+              {nonWinners.map((c, i) => {
+                const d = toPath(c.equity);
+                if (!d) return null;
+                return <path key={`nw${i}`} d={d} fill="none"
+                             stroke="rgba(255,255,255,0.10)" strokeWidth="0.8" />;
+              })}
+
+              {/* 우승 곡선: 강조(색+굵기). 색 팔레트 순환. */}
+              {winners.map((c, i) => {
+                const d = toPath(c.equity);
+                if (!d) return null;
+                const col = _EQ_WINNER_COLORS[i % _EQ_WINNER_COLORS.length];
+                return <path key={`w${i}`} d={d} fill="none"
+                             stroke={col} strokeWidth="2.0" opacity="0.9" />;
+              })}
+
+              {/* Hover 수직선 */}
+              {hover && (() => {
+                const hx = xSvg(hover.frac);
+                return <line x1={hx} x2={hx} y1={padT} y2={padT + innerH}
+                             stroke="rgba(255,255,255,0.15)" strokeWidth="1" />;
+              })()}
+            </svg>
+          )}
+
+          {/* Hover 툴팁 */}
+          {hover && hover.tips.length > 0 && (() => {
+            const winTips = hover.tips.filter(t => t.gate_passed);
+            const topTips = [
+              ...winTips,
+              ...hover.tips.filter(t => !t.gate_passed).slice(0, Math.max(0, 5 - winTips.length)),
+            ];
+            return (
+              <div style={{
+                position: "absolute", top: 16, right: 16,
+                background: "var(--bg-0)", border: "1px solid var(--line-2)",
+                borderRadius: 6, padding: "8px 10px",
+                fontFamily: "var(--mono)", fontSize: 11,
+                minWidth: 200, maxWidth: 260,
+                boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+                pointerEvents: "none",
+              }}>
+                <div style={{ fontSize: 10, color: "var(--ink-2)", letterSpacing: ".12em",
+                              textTransform: "uppercase", marginBottom: 4 }}>
+                  진행 {Math.round(hover.frac * 100)}%
+                </div>
+                {topTips.map((t, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between",
+                                        gap: 8, padding: "2px 0",
+                                        color: t.gate_passed ? "var(--teal)" : "var(--ink-2)" }}>
+                    <span>{t.run_id.slice(-6)}/g{t.gen_no}</span>
+                    <span>{t.y >= 0 ? "+" : ""}{Math.round(t.y).toLocaleString()}</span>
+                  </div>
+                ))}
+                {hover.tips.length > topTips.length && (
+                  <div style={{ color: "var(--ink-3)", fontSize: 10, marginTop: 3 }}>
+                    외 {hover.tips.length - topTips.length}개…
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { FitnessChart, ProfitChart, EquityOverlayChart });

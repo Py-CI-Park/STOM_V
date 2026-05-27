@@ -190,6 +190,64 @@ def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
                 pass
 
 
+def _equity_curves_payload(cap: int = 200, downsample: int = 200) -> Dict[str, Any]:
+    """loop_runs.db의 모든 세대 equity curve를 읽어 반환한다(읽기 전용, 무예외).
+
+    각 세대의 csv_path로 load_equity_series_from_csv를 호출해 수익금합계 시계열을
+    얻는다. 곡선이 많으면 최근 cap 개로 제한하고, 곡선당 포인트는 downsample 개로
+    줄인다. CSV 없거나 파싱 실패한 세대는 건너뛴다. DB 없으면 빈 응답(무예외).
+
+    반환: {"curves": [{"run_id","gen_no","gate_passed","final_pct","equity":[...]}], "count": N}
+    """
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+    from ai_strategy_loop.fitness.score import load_equity_series_from_csv  # noqa: PLC0415
+
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState()
+        all_gens = st.get_all_generations()
+    except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 빈 응답.
+        return {"curves": [], "count": 0}
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    # created_at 내림차순(최신 우선) → cap 개 제한.
+    sorted_gens = sorted(all_gens, key=lambda g: g.get("created_at") or 0, reverse=True)
+    candidates = sorted_gens[:cap]
+
+    curves = []
+    for g in candidates:
+        csv_path = g.get("csv_path")
+        if not csv_path:
+            continue
+        try:
+            equity_raw = load_equity_series_from_csv(str(csv_path))
+        except Exception:  # noqa: BLE001 - CSV 없거나 파싱 실패는 skip.
+            continue
+        if not equity_raw:
+            continue
+        # 다운샘플: 포인트 수가 downsample 초과면 균등 간격으로 추려 payload 축소.
+        if len(equity_raw) > downsample:
+            step = len(equity_raw) / downsample
+            equity_ds = [equity_raw[int(i * step)] for i in range(downsample)]
+            equity_ds.append(equity_raw[-1])  # 마지막 값 보존.
+        else:
+            equity_ds = equity_raw
+        curves.append({
+            "run_id": g.get("run_id", ""),
+            "gen_no": int(g.get("gen_no", -1)),
+            "gate_passed": bool(g.get("gate_passed")),
+            "final_pct": float(g.get("total_profit_pct") or 0.0),
+            "equity": [float(v) for v in equity_ds],
+        })
+
+    return {"curves": curves, "count": len(curves)}
+
+
 def _strategy_code_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
     """루프 DB에서 한 세대의 매수/매도 전략 코드를 조회한다(읽기 전용, 무예외).
 
@@ -276,6 +334,15 @@ def create_app() -> FastAPI:
     @app.get("/config/spec")
     def config_spec() -> Dict[str, Any]:
         return {"contract_version": C.CONTRACT_VERSION, "fields": config_field_specs()}
+
+    @app.get("/equity_curves")
+    def equity_curves() -> Dict[str, Any]:
+        """모든 run의 세대별 누적수익 시계열(equity curve)을 반환한다(읽기 전용, 무예외).
+
+        최근 200 세대까지 조회하며, 세대당 포인트는 최대 200개로 다운샘플한다.
+        CSV 없거나 파싱 실패한 세대는 건너뛴다. DB 없으면 빈 배열(무예외).
+        """
+        return _equity_curves_payload()
 
     @app.get("/runs")
     def runs() -> Dict[str, Any]:
