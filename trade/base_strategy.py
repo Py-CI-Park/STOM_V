@@ -278,25 +278,11 @@ class BaseStrategy(StgGlobalsFunc):
             if self.jgrv_count == 2:
                 self.jgrv_count = 0
                 self._put_gsjm_and_delete_profit()
-        elif gubun in ('매수완료', '매수취소'):
-            if data in self.dict_signal['매수']:
-                self.dict_signal['매수'].remove(data)
-            if gubun == '매수완료':
-                self.dict_buy_num[data] = self.dict_signal_num.get(data, len(self.dict_data[data]) - 1)
-        elif gubun in ('매도완료', '매도취소'):
-            if data in self.dict_signal['매도']:
-                self.dict_signal['매도'].remove(data)
-        elif gubun == '매수주문':
-            if data not in self.dict_signal['매수']:
-                self.dict_signal['매수'].append(data)
-        elif gubun == '매도주문':
-            if data not in self.dict_signal['매도']:
-                self.dict_signal['매도'].append(data)
         elif '_COMPLETE' in gubun:
             gubun = gubun.replace('_COMPLETE', '')
             if data in self.dict_signal[gubun]:
                 self.dict_signal[gubun].remove(data)
-            if gubun in ('BUY_LONG', 'SELL_SHORT'):
+            if gubun in ('매수', 'BUY_LONG', 'SELL_SHORT'):
                 self.dict_buy_num[data] = self.dict_signal_num.get(data, len(self.dict_data[data]) - 1)
         elif '_CANCEL' in gubun:
             gubun = gubun.replace('_CANCEL', '')
@@ -1550,8 +1536,9 @@ class BaseStrategy(StgGlobalsFunc):
             기준가격, 체결가능 = 현재가, True
             if self.dict_set['매수지정가기준가격'] == '매도1호가':
                 기준가격 = 매도호가1 if self.market_gubun < 6 or buy_long else 매수호가1
-            if self.dict_set['매수지정가기준가격'] == '매수1호가':
+            elif self.dict_set['매수지정가기준가격'] == '매수1호가':
                 기준가격 = 매수호가1 if self.market_gubun < 6 or buy_long else 매도호가1
+            기준가격 = self._get_order_buy_price(self.code, signal_gubun, 기준가격)
         else:
             기준가격 = 0
             if self.market_gubun < 6 or buy_long:
@@ -1621,8 +1608,9 @@ class BaseStrategy(StgGlobalsFunc):
             기준가격, 체결가능 = 현재가, True
             if self.dict_set['매도지정가기준가격'] == '매도1호가':
                 기준가격 = 매도호가1 if self.market_gubun < 6 or sell_long else 매수호가1
-            if self.dict_set['매도지정가기준가격'] == '매수1호가':
+            elif self.dict_set['매도지정가기준가격'] == '매수1호가':
                 기준가격 = 매수호가1 if self.market_gubun < 6 or sell_long else 매도호가1
+            기준가격 = self._get_order_sell_price(self.code, signal_gubun, 기준가격)
         else:
             기준가격 = 0
             if self.market_gubun < 6 or sell_long:
@@ -1734,6 +1722,14 @@ class BaseStrategy(StgGlobalsFunc):
 
     def _set_sell_count(self, 보유수량, 보유비율, oc_ratio):
         """매도 수량을 설정합니다. (오버라이드용)"""
+        return 0
+
+    def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
+        """매수 주문 가격을 반환합니다. (오버라이드용)"""
+        return 0
+
+    def _get_order_sell_price(self, 종목코드, 주문구분, 주문가격):
+        """매도 주문 가격을 반환합니다. (오버라이드용)"""
         return 0
 
     def _get_order_price(self, 거래금액, 주문수량):

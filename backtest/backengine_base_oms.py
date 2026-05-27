@@ -420,7 +420,6 @@ class BackEngineBaseOms(BackEngineBase):
                     self._check_buy(
                         주문포지션, 현재가, 관심이탈, 분봉고가, 분봉저가, 매수가, 주문수량, 보유수량, 매수호가, 매수호가단위, 매수주문취소시간
                     )
-                    return gubun
 
             elif 매수분할횟수 < self.dict_set['매수분할횟수']:
                 if 매수호가 == 0 and 매도호가 == 0:
@@ -433,11 +432,9 @@ class BackEngineBaseOms(BackEngineBase):
                     self._check_buy(
                         주문포지션, 현재가, 관심이탈, 분봉고가, 분봉저가, 매수가, 주문수량, 보유수량, 매수호가, 매수호가단위, 매수주문취소시간
                     )
-                    return gubun
                 else:
                     관심진입 = 관심종목 and not 관심종목1
                     self._check_sell(보유중, 현재가, 관심진입, 분봉고가, 분봉저가, 매도호가, 매도호가단위, 매도정정횟수, 매도주문취소시간)
-                    return gubun
 
             else:
                 if 매도호가 == 0:
@@ -445,7 +442,6 @@ class BackEngineBaseOms(BackEngineBase):
                 else:
                     관심진입 = 관심종목 and not 관심종목1
                     self._check_sell(보유중, 현재가, 관심진입, 분봉고가, 분봉저가, 매도호가, 매도호가단위, 매도정정횟수, 매도주문취소시간)
-                    return gubun
 
         return gubun
 
