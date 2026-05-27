@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QApplication
 from trade.base_trader import BaseTrader
 from utility.settings.setting_base import UI_NUM
 from utility.static_method.static_decorator import error_decorator
-from utility.static_method.static_datetime import now, timedelta_sec, str_ymdhms_utc
+from utility.static_method.static_datetime import now, timedelta_sec, str_ymdhms_from_timestamp
 from utility.static_method.static_numba import get_profit_coin_future_short, get_profit_coin_future_long
 
 
@@ -173,7 +173,7 @@ class BinanceTrader(BaseTrader):
             cp = float(data['L'])
             op = float(data['p'])
             on = int(data['i'])
-            ct = str_ymdhms_utc(data['T'])
+            ct = str_ymdhms_from_timestamp(data['T'])
             if cc > 0 or 'CANCEL' in p:
                 self._update_chejan_data_coin_future(p, code, oc, cc, mc, cp, op, ct, on)
 

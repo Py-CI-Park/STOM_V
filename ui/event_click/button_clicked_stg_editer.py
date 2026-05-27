@@ -1333,15 +1333,15 @@ def backtest_start(ui):
             QMessageBox.critical(ui, '오류 알림', '백테엔진을 먼저 구동하십시오.\n')
             return
 
-        startday = ui.svjb_dateEditt_01.date().toString('yyyyMMdd')
-        endday = ui.svjb_dateEditt_02.date().toString('yyyyMMdd')
+        startday  = ui.svjb_dateEditt_01.date().toString('yyyyMMdd')
+        endday    = ui.svjb_dateEditt_02.date().toString('yyyyMMdd')
         starttime = ui.svjb_lineEditt_02.text()
-        endtime = ui.svjb_lineEditt_03.text()
-        betting = ui.svjb_lineEditt_04.text()
-        avgtime = ui.svjb_lineEditt_05.text()
-        buystg = ui.svjb_comboBoxx_01.currentText()
-        sellstg = ui.svjs_comboBoxx_01.currentText()
-        bl = True if ui.dict_set['블랙리스트추가'] else False
+        endtime   = ui.svjb_lineEditt_03.text()
+        betting   = ui.svjb_lineEditt_04.text()
+        avgtime   = ui.svjb_lineEditt_05.text()
+        buystg    = ui.svjb_comboBoxx_01.currentText()
+        sellstg   = ui.svjs_comboBoxx_01.currentText()
+        bl        = True if ui.dict_set['블랙리스트추가'] else False
 
         if int(avgtime) not in ui.avg_list:
             QMessageBox.critical(ui, '오류 알림', '백테엔진 시작 시 포함되지 않은 평균값틱수를 사용하였습니다.\n현재의 틱수로 백테스팅하려면 백테엔진을 다시 시작하십시오.\n')
@@ -1385,12 +1385,12 @@ def backfinder_start(ui):
         if not _check_backengine(ui):
             return
 
-        startday = ui.svjb_dateEditt_01.date().toString('yyyyMMdd')
-        endday = ui.svjb_dateEditt_02.date().toString('yyyyMMdd')
+        startday  = ui.svjb_dateEditt_01.date().toString('yyyyMMdd')
+        endday    = ui.svjb_dateEditt_02.date().toString('yyyyMMdd')
         starttime = ui.svjb_lineEditt_02.text()
-        endtime = ui.svjb_lineEditt_03.text()
-        avgtime = ui.svjb_lineEditt_05.text()
-        buystg = ui.svjb_comboBoxx_01.currentText()
+        endtime   = ui.svjb_lineEditt_03.text()
+        avgtime   = ui.svjb_lineEditt_05.text()
+        buystg    = ui.svjb_comboBoxx_01.currentText()
 
         if int(avgtime) not in ui.avg_list:
             QMessageBox.critical(ui, '오류 알림', '백테엔진 시작 시 포함되지 않은 평균값틱수를 사용하였습니다.\n현재의 틱수로 백테스팅하려면 백테엔진을 다시 시작하십시오.\n')
@@ -1448,11 +1448,11 @@ def opti_start(ui, back_name):
         if not _check_backengine(ui):
             return
 
-        randomopti = True if not (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
+        randomopti  = True if not (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
                     QApplication.keyboardModifiers() & Qt.AltModifier) else False
-        onlybuy = True if (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
+        onlybuy     = True if (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
                     QApplication.keyboardModifiers() & Qt.ShiftModifier) else False
-        onlysell = True if (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
+        onlysell    = True if (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
                     QApplication.keyboardModifiers() & Qt.AltModifier) else False
         starttime   = ui.svjb_lineEditt_02.text()
         endtime     = ui.svjb_lineEditt_03.text()

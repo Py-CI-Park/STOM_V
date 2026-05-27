@@ -47,11 +47,11 @@ class StockUsaReceiver(BaseReceiver):
         body  = data['body']
 
         if tr_cd == self.tr_cd_hoga:
-            str_hms = body['loctime']
-            if int(str_hms) < self.market_open:
+            int_hms = int(body['loctime'])
+            if int_hms < self.market_open:
                 return
 
-            dt   = int(f"{self.str_today}{str_hms}")
+            dt   = int(f"{self.str_today}{int_hms}")
             code = body['symbol']
             hoga_seprice = [
                 float(body['offerho1']), float(body['offerho2']), float(body['offerho3']),
@@ -76,11 +76,11 @@ class StockUsaReceiver(BaseReceiver):
                                    hoga_bamount, hoga_tamount, start)
 
         elif tr_cd == self.tr_cd_trade:
-            str_hms = body['trdtm']
-            if int(str_hms) < self.market_open:
+            int_hms = int(body['trdtm'])
+            if int_hms < self.market_open:
                 return
 
-            dt   = int(f"{self.str_today}{str_hms}")
+            dt   = int(f"{self.str_today}{int_hms}")
             code = body['symbol']
             c    = float(body['price'])
             o    = float(body['open'])

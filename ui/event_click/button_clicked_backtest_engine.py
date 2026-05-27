@@ -315,7 +315,8 @@ def clear_backtestQ(ui):
 
 def backtest_process_kill(ui, enginekill):
     """백테스트 프로세스를 중지합니다."""
-    from utility.settings.setting_base import UI_NUM
+    if not ui.ssicon_alert:
+        return
 
     if not ui.backengine_running:
         from PyQt5.QtWidgets import QMessageBox
@@ -335,7 +336,9 @@ def backtest_process_kill(ui, enginekill):
             if count == ui.multi:
                 break
 
+    from utility.settings.setting_base import UI_NUM
     from ui.create_widget.set_style import style_bc_dk
+
     ui.windowQ.put((UI_NUM['백테스트'], '백테스트 중지 완료'))
     ui.ss_pushButtonn_08.setStyleSheet(style_bc_dk)
     ui.ssicon_alert = False

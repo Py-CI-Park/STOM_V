@@ -27,6 +27,7 @@ class UpdateTextedit:
         self.db_up_cnt   = 0
         self.data_save   = False
         self.shut_down   = False
+        self.last_text   = None
 
     @error_decorator
     def update_texedit(self, data):
@@ -60,7 +61,12 @@ class UpdateTextedit:
         else:
             time_ = str(now())[:-3]
             text  = data[1]
-            if '오류' in text or '주문실패' in text or 'Traceback' in text or 'Error' in text:
+            if self.last_text == text:
+                return
+            else:
+                self.last_text = text
+
+            if '오류' in text or '주문실패' in text or 'Traceback' in text or 'Error' in text or 'error' in text:
                 self.ui.lgicon_alert = True
                 text = f'<font color=#ffffa0>{text}</font>'
 

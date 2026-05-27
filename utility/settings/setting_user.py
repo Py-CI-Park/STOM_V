@@ -118,6 +118,8 @@ def load_settings():
             '프로그램종료':      df_e['프로그램종료'][no],
             '창위치기억':       df_e['창위치기억'][no],
             '창위치':          location_list,
+            '작은창모드':       df_e['작은창모드'][no],
+            '관심종목표시':     df_e['관심종목표시'][no],
             '팩터선택':         df_e['팩터선택'][no],
             '시리얼키':         de_text(EN_KEY, df_e['시리얼키'][no]) if len(df_e) > 0 and df_e['시리얼키'][no] else None,
 

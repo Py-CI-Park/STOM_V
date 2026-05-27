@@ -62,14 +62,6 @@ class ManagerFormula(StgGlobalsFunc):
         self.dict_set    = dict_set
         self.is_tick     = is_tick
         self.dict_findex = dict_findex
-
-        self.check       = None
-        self.buy         = None
-        self.sell        = None
-        self.line        = None
-        self.up          = None
-        self.down        = None
-        self.hold        = False
         self.base_cnt    = self.dict_findex['관심종목'] + 1
 
         if self.is_tick:

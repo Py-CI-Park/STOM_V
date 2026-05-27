@@ -194,6 +194,8 @@ def setting_load_06(ui):
     ui.sj_etc_checBox_05.setChecked(True if df['웹대시보드'][no] else False)
     ui.sj_etc_checBox_06.setChecked(True if df['창위치기억'][no] else False)
     ui.sj_etc_checBox_07.setChecked(True if df['프로그램종료'][no] else False)
+    ui.sj_etc_checBox_08.setChecked(True if df['작은창모드'][no] else False)
+    ui.sj_etc_checBox_09.setChecked(True if df['관심종목표시'][no] else False)
     ui.sj_etc_liEditt_01.setText(str(df['웹대시보드포트번호'][no]))
 
     if df['시리얼키'][no]:
@@ -456,8 +458,11 @@ def setting_save_06(ui, mbox=True):
     휴무프로세스종료 = 1 if ui.sj_etc_checBox_03.isChecked() else 0
     휴무컴퓨터종료 = 1 if ui.sj_etc_checBox_04.isChecked() else 0
     웹대시보드 = 1 if ui.sj_etc_checBox_05.isChecked() else 0
+    웹대시보드포트번호 = int(ui.sj_etc_liEditt_01.text())
     창위치기억 = 1 if ui.sj_etc_checBox_06.isChecked() else 0
     프로그램종료 = 1 if ui.sj_etc_checBox_07.isChecked() else 0
+    작은창모드 = 1 if ui.sj_etc_checBox_08.isChecked() else 0
+    관심종목표시 = 1 if ui.sj_etc_checBox_09.isChecked() else 0
     시리얼키 = ui.sj_etc_liEditt_02.text()
 
     if 시리얼키 == '':
@@ -465,11 +470,10 @@ def setting_save_06(ui, mbox=True):
         return
 
     시리얼키 = en_text(ui.dict_set['키'], 시리얼키)
-    웹대시보드포트번호 = int(ui.sj_etc_liEditt_01.text())
 
     if ui.proc_chqs.is_alive():
         columns = ['테마', '저해상도', '스톰라이브', '휴무프로세스종료', '휴무컴퓨터종료', '웹대시보드', '웹대시보드포트번호',
-                   '창위치기억', '프로그램종료', '시리얼키']
+                   '창위치기억', '프로그램종료', '작은창모드', '관심종목표시', '시리얼키']
         no      = ui.sj_main_comBox_01.currentText()[-2:]
         set_txt = ', '.join([f'{col} = ?' for col in columns])
         query   = f'UPDATE etc SET {set_txt} WHERE `index` = ?'

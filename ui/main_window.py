@@ -363,6 +363,8 @@ class MainWindow(QMainWindow):
             "데이터저장": False,
             "모의투자": True,
             "알림소리": False,
+            "텔레그램봇토큰": None,
+            "텔레그램아이디": None,
             "백테스케쥴실행": False,
             "백테스케쥴요일": 0,
             "백테스케쥴시간": 0,
@@ -383,7 +385,7 @@ class MainWindow(QMainWindow):
             "프로그램종료": False,
             "휴무프로세스종료": False,
             "휴무컴퓨터종료": False,
-            "팩터선택": "",
+            "팩터선택": ";".join(["1"] * 45),
             "보조지표설정": [],
             "백테엔진프로파일링": False,
         }

@@ -7,7 +7,7 @@ from utility.settings.setting_base import UI_NUM
 from utility.static_method.static_numba import get_profit_coin
 from utility.static_method.static_decorator import error_decorator
 from utility.static_method.static_etcetera import get_hogaunit_coin
-from utility.static_method.static_datetime import now, timedelta_sec, str_ymdhms_utc
+from utility.static_method.static_datetime import now, timedelta_sec, str_ymdhms_from_timestamp
 
 
 class UpbitTrader(BaseTrader):
@@ -121,7 +121,7 @@ class UpbitTrader(BaseTrader):
                 체결된수량 = float(data['executed_volume'])
                 주문수량 = round(미체결수량 + 체결된수량, 8)
                 체결가격 = 주문가격 = float(data['price'])
-                체결시간 = str_ymdhms_utc(data['timestamp'])
+                체결시간 = str_ymdhms_from_timestamp(data['timestamp'])
                 주문번호 = data['uuid']
                 self._update_chejan_data(
                     주문구분, 체결구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, 주문번호

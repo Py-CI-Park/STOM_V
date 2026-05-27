@@ -5,7 +5,7 @@ from trade.base_receiver import BaseReceiver
 from trade.restapi_upbit import get_symbols_info
 from trade.restapi_upbit import UpbitWebSocketReceiver
 from utility.static_method.static_decorator import error_decorator
-from utility.static_method.static_datetime import now, str_ymdhms_utc
+from utility.static_method.static_datetime import now, str_ymdhms_from_timestamp
 
 
 class UpbitReceiver(BaseReceiver):
@@ -38,7 +38,7 @@ class UpbitReceiver(BaseReceiver):
             return
 
         if data['type'] == 'orderbook':
-            dt = int(str_ymdhms_utc(data['timestamp']))
+            dt = int(str_ymdhms_from_timestamp(data['timestamp']))
             if self.dict_set['전략종료시간'] < dt % 1000000:
                 return
 
@@ -72,7 +72,7 @@ class UpbitReceiver(BaseReceiver):
                                    hoga_bamount, hoga_tamount, receivetime)
 
         elif data['type'] == 'ticker':
-            dt    = int(str_ymdhms_utc(data['timestamp']))
+            dt    = int(str_ymdhms_from_timestamp(data['timestamp']))
             code  = data['code']
             c     = data['trade_price']
             o     = data['opening_price']

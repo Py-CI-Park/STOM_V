@@ -116,8 +116,12 @@ def mnbutton_c_clicked_03(ui, auto=False):
 def mnbutton_c_clicked_04(ui):
     """창 크기를 변경합니다."""
     if ui.geometry().width() > 1000:
+        if ui.dict_set['관심종목표시']:
+            ui.gj_tableWidgettt.setGeometry(7, 12, 668, 365)
         ui.setFixedSize(726, 384)
     else:
+        if ui.dict_set['관심종목표시']:
+            ui.gj_tableWidgettt.setGeometry(680, 12, 668, 365)
         ui.setFixedSize(1403, 763)
 
 

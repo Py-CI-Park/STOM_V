@@ -392,6 +392,7 @@ elif dict_set['테마'] == '다크레드':
     color_bf_bb = QColor(110, 70, 70)
     color_bf_dk = QColor(90, 60, 60)
     color_bg_bl = QColor(80, 55, 55)
+    color_hv_bt = QColor(73, 48, 48)
     color_bg_bt = QColor(70, 45, 45)
     color_bg_ld = (70, 45, 45, 150)
     color_bg_bc = QColor(55, 35, 35)

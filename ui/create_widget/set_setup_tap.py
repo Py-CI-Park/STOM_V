@@ -180,6 +180,8 @@ class SetSetupTap:
         self.ui.sj_etc_liEditt_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_06)
         self.ui.sj_etc_checBox_06 = self.wc.setCheckBox('프로그램 종료 시 창위치 기억하기', self.ui.sj_bs_groupBox_06)
         self.ui.sj_etc_checBox_07 = self.wc.setCheckBox('프로세스 종료 시 프로그램종료', self.ui.sj_bs_groupBox_06)
+        self.ui.sj_etc_checBox_08 = self.wc.setCheckBox('프로그램 시작 시 작은창 모드', self.ui.sj_bs_groupBox_06)
+        self.ui.sj_etc_checBox_09 = self.wc.setCheckBox('작은창 모드 시 관심종목 표시', self.ui.sj_bs_groupBox_06)
         self.ui.sj_etc_labelll_02 = QLabel('▣  시리얼키', self.ui.sj_bs_groupBox_06)
         self.ui.sj_etc_liEditt_02 = self.wc.setLineedit(self.ui.sj_bs_groupBox_06, passhide=True)
         self.ui.sj_etc_daEditt_01 = self.wc.setDateEdit(self.ui.sj_bs_groupBox_06, popup=False)
@@ -310,6 +312,8 @@ class SetSetupTap:
 
         self.ui.sj_etc_checBox_06.setGeometry(820, 30, 250, 20)
         self.ui.sj_etc_checBox_07.setGeometry(820, 55, 250, 20)
+        self.ui.sj_etc_checBox_08.setGeometry(820, 80, 170, 20)
+        self.ui.sj_etc_checBox_09.setGeometry(1000, 80, 170, 20)
         self.ui.sj_etc_labelll_02.setGeometry(10, 110, 80, 20)
         self.ui.sj_etc_liEditt_02.setGeometry(80, 110, 880, 20)
         self.ui.sj_etc_daEditt_01.setGeometry(965, 110, 120, 20)
