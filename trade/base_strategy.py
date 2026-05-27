@@ -1596,14 +1596,16 @@ class BaseStrategy(StgGlobalsFunc):
         else:
             signal_gubun = 'BUY_LONG' if buy_long else 'SELL_SHORT'
 
-        if '지정가' in self.dict_set['매수주문유형']:
+        if 주문수량 == 0:
             기준가격 = 현재가
-            if self.dict_set['매수지정가기준가격'] == '매도1호가': 기준가격 = 매도호가1 if self.market_gubun < 6 or buy_long else 매수호가1
-            if self.dict_set['매수지정가기준가격'] == '매수1호가': 기준가격 = 매수호가1 if self.market_gubun < 6 or buy_long else 매도호가1
-            self.dict_signal[signal_gubun].append(self.code)
-            self.dict_signal_num[self.code] = self.indexn
-            self.traderQ.put((signal_gubun, self.code, self.name, 기준가격, 주문수량, now(), False))
+        elif '지정가' in self.dict_set['매수주문유형']:
+            기준가격, 체결가능 = 현재가, True
+            if self.dict_set['매수지정가기준가격'] == '매도1호가':
+                기준가격 = 매도호가1 if self.market_gubun < 6 or buy_long else 매수호가1
+            if self.dict_set['매수지정가기준가격'] == '매수1호가':
+                기준가격 = 매수호가1 if self.market_gubun < 6 or buy_long else 매도호가1
         else:
+            기준가격 = 0
             if self.market_gubun < 6 or buy_long:
                 호가배열 = self.shogainfo[:self.buy_hj_limit]
                 잔량배열 = self.shreminfo[:self.buy_hj_limit]
@@ -1611,12 +1613,14 @@ class BaseStrategy(StgGlobalsFunc):
                 호가배열 = self.bhogainfo[:self.buy_hj_limit]
                 잔량배열 = self.bhreminfo[:self.buy_hj_limit]
 
-            거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
-            if 체결완료:
-                예상체결가 = self._get_order_price(거래금액, 주문수량)
-                self.dict_signal[signal_gubun].append(self.code)
-                self.dict_signal_num[self.code] = self.indexn
-                self.traderQ.put((signal_gubun, self.code, self.name, 예상체결가, 주문수량, now(), False))
+            거래금액, 체결가능 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+            if 체결가능:
+                기준가격 = self._get_order_price(거래금액, 주문수량)
+
+        if 기준가격 > 0:
+            self.dict_signal[signal_gubun].append(self.code)
+            self.dict_signal_num[self.code] = self.indexn
+            self.traderQ.put((signal_gubun, self.code, self.name, 기준가격, 주문수량, now(), False))
 
     def _get_buy_count(self, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율):
         """매수 수량을 계산합니다.
@@ -1654,8 +1658,7 @@ class BaseStrategy(StgGlobalsFunc):
                 betting = self.betting * self.set_weight[9]
 
         oc_ratio = DICT_ORDER_RATIO[self.dict_set['매수분할방법']][self.dict_set['매수분할횟수']][분할매수횟수]
-        매수수량 = self._set_buy_count(betting, 현재가, 매수가, oc_ratio)
-        return 매수수량
+        return self._set_buy_count(betting, 현재가, 매수가, oc_ratio)
 
     def Sell(self, sell_long=False):
         """매도 주문을 실행합니다.
@@ -1675,13 +1678,16 @@ class BaseStrategy(StgGlobalsFunc):
         else:
             signal_gubun = 'SELL_LONG' if sell_long else 'BUY_SHORT'
 
-        if '지정가' in self.dict_set['매도주문유형'] and not 강제청산:
+        if 주문수량 == 0 or 강제청산:
             기준가격 = 현재가
-            if self.dict_set['매도지정가기준가격'] == '매도1호가': 기준가격 = 매도호가1 if self.market_gubun < 6 or sell_long else 매수호가1
-            if self.dict_set['매도지정가기준가격'] == '매수1호가': 기준가격 = 매수호가1 if self.market_gubun < 6 or sell_long else 매도호가1
-            self.dict_signal[signal_gubun].append(self.code)
-            self.traderQ.put((signal_gubun, self.code, self.name, 기준가격, 주문수량, now(), False))
+        elif '지정가' in self.dict_set['매도주문유형']:
+            기준가격, 체결가능 = 현재가, True
+            if self.dict_set['매도지정가기준가격'] == '매도1호가':
+                기준가격 = 매도호가1 if self.market_gubun < 6 or sell_long else 매수호가1
+            if self.dict_set['매도지정가기준가격'] == '매수1호가':
+                기준가격 = 매수호가1 if self.market_gubun < 6 or sell_long else 매도호가1
         else:
+            기준가격 = 0
             if self.market_gubun < 6 or sell_long:
                 호가배열 = self.bhogainfo[:self.sell_hj_limit]
                 잔량배열 = self.bhreminfo[:self.sell_hj_limit]
@@ -1689,11 +1695,13 @@ class BaseStrategy(StgGlobalsFunc):
                 호가배열 = self.shogainfo[:self.sell_hj_limit]
                 잔량배열 = self.shreminfo[:self.sell_hj_limit]
 
-            거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
-            if 체결완료:
-                예상체결가 = self._get_order_price(거래금액, 주문수량)
-                self.dict_signal[signal_gubun].append(self.code)
-                self.traderQ.put((signal_gubun, self.code, self.name, 예상체결가, 주문수량, now(), True if 강제청산 else False))
+            거래금액, 체결가능 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+            if 체결가능:
+                기준가격 = self._get_order_price(거래금액, 주문수량)
+
+        if 기준가격 > 0:
+            self.dict_signal[signal_gubun].append(self.code)
+            self.traderQ.put((signal_gubun, self.code, self.name, 기준가격, 주문수량, now(), True if 강제청산 else False))
 
     def _get_sell_count(self, 분할매도횟수, 보유수량):
         """매도 수량을 계산합니다.

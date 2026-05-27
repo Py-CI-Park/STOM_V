@@ -94,7 +94,7 @@ class StomSplashScreen(QSplashScreen):
                     stop:0 #4a90e2, stop:0.5 #64b5f6, stop:1 #4a90e2);
                 font-size: 50px;
                 font-weight: 900;
-                font-family: 'Segoe UI', 'Malgun Gothic';
+                font-family: 'Segoe UI', '나눔고딕';
                 text-transform: uppercase;
                 letter-spacing: 2px;
             }
@@ -111,7 +111,7 @@ class StomSplashScreen(QSplashScreen):
             QLabel {
                 color: #b0bec5;
                 font-size: 14px;
-                font-family: 'Segoe UI', 'Malgun Gothic';
+                font-family: 'Segoe UI', '나눔고딕';
                 letter-spacing: 3px;
                 text-transform: uppercase;
                 font-weight: 500;
@@ -124,7 +124,7 @@ class StomSplashScreen(QSplashScreen):
             QLabel {
                 color: #607d8b;
                 font-size: 12px;
-                font-family: 'Consolas', 'Malgun Gothic';
+                font-family: 'Consolas', '나눔고딕';
                 background: rgba(255, 255, 255, 0.05);
                 padding: 5px 15px;
                 border-radius: 12px;
@@ -138,7 +138,7 @@ class StomSplashScreen(QSplashScreen):
             QLabel {
                 color: #eceff1;
                 font-size: 16px;
-                font-family: 'Segoe UI', 'Malgun Gothic';
+                font-family: 'Segoe UI', '나눔고딕';
                 font-weight: 500;
             }
         """)
@@ -245,7 +245,7 @@ class StomSplashScreen(QSplashScreen):
             QLabel {
                 color: #4caf50;
                 font-size: 16px;
-                font-family: 'Segoe UI', 'Malgun Gothic';
+                font-family: 'Segoe UI', '나눔고딕';
                 font-weight: 600;
             }
         """)

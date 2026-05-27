@@ -140,7 +140,8 @@ def stbutton_clicked_01(ui):
         ui: UI 클래스 인스턴스
     """
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM back').set_index('index')
-    std_text = df['최적화기준값제한'][0].split(';')
+    no = int(ui.dict_set['거래소'][-2:])
+    std_text = df['최적화기준값제한'][no].split(';')
     ui.st_lineEditttt_01.setText(std_text[0])
     ui.st_lineEditttt_02.setText(std_text[1])
     ui.st_lineEditttt_03.setText(std_text[2])
@@ -201,7 +202,13 @@ def lvbutton_clicked_01(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
-    ui.dialog_leverage.show() if not ui.dialog_leverage.isVisible() else ui.dialog_leverage.close()
+    from ui.create_widget.dialog_animation import DialogAnimator
+
+    if not ui.dialog_leverage.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_leverage, duration=300)
+        ui.dialog_leverage.show()
+    else:
+        ui.dialog_leverage.close()
 
 
 def lvbutton_clicked_02(ui):

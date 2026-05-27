@@ -235,6 +235,9 @@ class BaseTrader:
                 주문취소 = True
         elif self.dict_bool['잔고청산']:
             주문취소 = True
+        elif self.market_gubun == 5 and 주문수량 * 주문가격 < 5000:
+            self.windowQ.put((UI_NUM['시스템로그'], f'오류 알림 - 주문금액이 5천원미만입니다.'))
+            주문취소 = True
         elif 주문구분 == '매수':
             inthms = get_inthms(self.market_gubun)
             거래횟수 = len(set([v['체결시간'] for v in self.dict_td.values() if v['종목명'] == 종목명]))
@@ -410,11 +413,6 @@ class BaseTrader:
                 if 수동주문유형 is None and '지정가' in self.dict_set['매도주문유형']:
                     주문가격 = self._get_order_sell_price(종목코드, 주문구분, 주문가격)
 
-        if self.market_gubun == 5 and 주문수량 * 주문가격 < 5000:
-            self.windowQ.put((UI_NUM['시스템로그'], f'오류 알림 - 주문금액이 5천원미만입니다.'))
-            self._put_order_complete(f'{주문구분}취소', 종목코드)
-            return
-
         if self.market_gubun == 9 and 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
             주문수량 = round(주문수량 * self.dict_lvrg[종목코드], self.dict_info[종목코드]['수량소숫점자리수'])
 
@@ -458,7 +456,7 @@ class BaseTrader:
                     timedelta_sec(self.dict_set['매수취소시간초']), 0, 주문가격, 호가단위
                 ]
 
-        주문번호 = '모의투자' if self.market_gubun in (5, 8) else 0
+        주문번호 = '0' if self.market_gubun in (5, 8) else 0
         if self.market_gubun < 6:
             self._update_chejan_data(
                 주문구분, '체결', 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, 주문번호
@@ -892,7 +890,7 @@ class BaseTrader:
                 self.dict_intg['추정예수금'] += 매입금액 + 수익금
 
             if self.dict_set['알림소리']:
-                self.soundQ.put(f'{종목명} {체결수량}주를 {주문구분[:2]}하였습니다')
+                self.soundQ.put(f'{종목명} {체결수량}개를 {주문구분}하였습니다')
 
             self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {체결가격} | {체결수량}'))
 
@@ -912,7 +910,7 @@ class BaseTrader:
             self._update_chegeollist(index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호)
 
             if self.dict_set['알림소리']:
-                self.soundQ.put(f'{종목명} {주문수량}주를 {주문구분}하였습니다')
+                self.soundQ.put(f'{종목명} {주문수량}개의 {주문구분}주문을 {체결구분}하였습니다')
 
             self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {주문가격} | {주문수량}'))
 
@@ -1045,7 +1043,8 @@ class BaseTrader:
                 if -100 < 수익률 < 100:
                     self._update_tradelist(index, 종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 체결시간, 포지션)
 
-                if 수익률 < 0: self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['매수금지손절간격초'])
+                if 수익률 < 0:
+                    self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['매수금지손절간격초'])
 
             self.dict_jg = dict(sorted(self.dict_jg.items(), key=lambda x: x[1]['매입금액'], reverse=True))
 
@@ -1064,7 +1063,12 @@ class BaseTrader:
                 self.dict_intg['추정예수금'] += 위탁증거금 + 수익금
 
             if self.dict_set['알림소리']:
-                self.soundQ.put(f'{종목명} {체결수량}주를 {주문구분}하였습니다')
+                text = ''
+                if 주문구분 == 'BUY_LONG':     text = f'롱포지션 {체결수량}계약을 매수'
+                elif 주문구분 == 'SELL_SHORT': text = f'숏포지션 {체결수량}계약을 매수'
+                elif 주문구분 == 'SELL_LONG':  text = f'롱포지션 {체결수량}계약을 매도'
+                elif 주문구분 == 'BUY_SHORT':  text = f'숏포지션 {체결수량}계약을 매도'
+                self.soundQ.put(f'{종목명} {text}하였습니다')
 
             self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {체결가격} | {체결수량}'))
 
@@ -1085,7 +1089,18 @@ class BaseTrader:
             self._update_chegeollist(index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 체결수량, 체결가격, 체결시간, 주문가격, 주문번호)
 
             if self.dict_set['알림소리']:
-                self.soundQ.put(f'{종목명} {주문수량}주를 {주문구분}하였습니다')
+                text = ''
+                if 체결구분 == '정정':
+                    if 주문구분 == 'BUY_LONG':     text = f'롱포지션 {체결수량}계약의 매수주문을 정정'
+                    elif 주문구분 == 'SELL_SHORT': text = f'숏포지션 {체결수량}계약의 매수주문을 정정'
+                    elif 주문구분 == 'SELL_LONG':  text = f'롱포지션 {체결수량}계약의 매도주문을 정정'
+                    elif 주문구분 == 'BUY_SHORT':  text = f'숏포지션 {체결수량}계약의 매도주문을 정정'
+                else:
+                    if 주문구분 == 'BUY_LONG':     text = f'롱포지션 {체결수량}계약의 매수주문을 취소'
+                    elif 주문구분 == 'SELL_SHORT': text = f'숏포지션 {체결수량}계약의 매수주문을 취소'
+                    elif 주문구분 == 'SELL_LONG':  text = f'롱포지션 {체결수량}계약의 매도주문을 취소'
+                    elif 주문구분 == 'BUY_SHORT':  text = f'숏포지션 {체결수량}계약의 매도주문을 취소'
+                self.soundQ.put(f'{종목명} {text}하였습니다')
 
             self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {주문가격} | {주문수량}'))
 
@@ -1227,11 +1242,11 @@ class BaseTrader:
 
             if self.dict_set['알림소리']:
                 text = ''
-                if 주문구분 == 'BUY_LONG':     text = '롱포지션을 진입'
-                elif 주문구분 == 'SELL_SHORT': text = '숏포지션을 진입'
-                elif 주문구분 == 'SELL_LONG':  text = '롱포지션을 청산'
-                elif 주문구분 == 'BUY_SHORT':  text = '숏포지션을 청산'
-                self.soundQ.put(f"{종목코드} {text}하였습니다.")
+                if 주문구분 == 'BUY_LONG':     text = f'롱포지션 {체결수량}개를 매수'
+                elif 주문구분 == 'SELL_SHORT': text = f'숏포지션 {체결수량}개를 매수'
+                elif 주문구분 == 'SELL_LONG':  text = f'롱포지션 {체결수량}개를 매도'
+                elif 주문구분 == 'BUY_SHORT':  text = f'숏포지션 {체결수량}개를 매도'
+                self.soundQ.put(f"{종목코드.replace('USDT', '')} {text}하였습니다.")
 
             self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {체결가격} | {체결수량}'))
 
@@ -1248,11 +1263,11 @@ class BaseTrader:
 
             if self.dict_set['알림소리']:
                 text = ''
-                if 주문구분 == 'BUY_LONG_CANCEL':     text = '롱포지션 진입을 취소'
-                elif 주문구분 == 'SELL_SHORT_CANCEL': text = '숏포지션 진입을 취소'
-                elif 주문구분 == 'SELL_LONG_CANCEL':  text = '롱포지션 청산을 취소'
-                elif 주문구분 == 'BUY_SHORT_CANCEL':  text = '숏포지션 청산을 취소'
-                self.soundQ.put(f"{종목코드} {text}하였습니다.")
+                if 주문구분 == 'BUY_LONG_CANCEL':     text = f'롱포지션 {체결수량}개의 매수주문을 취소'
+                elif 주문구분 == 'SELL_SHORT_CANCEL': text = f'숏포지션 {체결수량}개의 매수주문을 취소'
+                elif 주문구분 == 'SELL_LONG_CANCEL':  text = f'롱포지션 {체결수량}개의 매도주문을 취소'
+                elif 주문구분 == 'BUY_SHORT_CANCEL':  text = f'숏포지션 {체결수량}개의 매도주문을 취소'
+                self.soundQ.put(f"{종목코드.replace('USDT', '')} {text}하였습니다.")
 
             self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {주문가격} | {주문수량}'))
 
@@ -1360,7 +1375,9 @@ class BaseTrader:
             주문가격: 주문 가격
             주문번호: 주문 번호
         """
-        self.dict_info[종목코드]['최종거래시간'] = timedelta_sec(self.dict_set['매수금지간격초'])
+        if 주문구분 != '시드부족':
+            self.dict_info[종목코드]['최종거래시간'] = timedelta_sec(self.dict_set['매수금지간격초'])
+
         self.dict_cj[index] = {
             '종목명': 종목명,
             '주문구분': 주문구분,
@@ -1388,33 +1405,29 @@ class BaseTrader:
             총매입금액 = sum([v['매입금액'] for v in jg_values])
             총평가금액 = sum([v['평가금액'] for v in jg_values])
             총수익률 = round(총평가손익 / 총매입금액 * 100, 2)
-            잔고수량 = len(self.dict_jg)
+            보유종목수 = len(self.dict_jg)
             추정예탁자산 = self.dict_intg['예수금'] + 총평가금액
         else:
-            총평가손익, 총매입금액, 총평가금액, 총수익률, 잔고수량 = 0, 0, 0, 0., 0
+            총평가손익, 총매입금액, 총평가금액, 총수익률, 보유종목수 = 0, 0, 0, 0., 0
             추정예탁자산 = self.dict_intg['예수금']
 
         self.dict_tj[self.str_today] = {
             '추정예탁자산': 추정예탁자산,
             '추정예수금': self.dict_intg['예수금'],
-            '보유종목수': 잔고수량,
+            '보유종목수': 보유종목수,
             '수익률': 총수익률,
             '총평가손익': 총평가손익,
             '총매입금액': 총매입금액,
             '총평가금액': 총평가금액
         }
 
-        거래수익금합계 = sum([v['수익금'] for v in self.dict_td.values()])
-        당일평가손익 = 총평가손익 + 거래수익금합계
-
-        if self.dict_set['손실중지']:
-            기준손실금 = -self.dict_intg['추정예탁자산'] * self.dict_set['손실중지수익률'] / 100
-            if 기준손실금 > 당일평가손익:
+        if self.dict_set['손실중지'] or self.dict_set['수익중지']:
+            거래수익금액 = sum([v['수익금'] for v in self.dict_td.values()])
+            당일평가손익 = 총평가손익 + 거래수익금액
+            기준손익금액 = self.dict_intg['추정예탁자산'] * self.dict_set['수익중지수익률'] / 100
+            if self.dict_set['손실중지'] and -기준손익금액 > 당일평가손익:
                 self._strategy_stop()
-
-        if self.dict_set['수익중지']:
-            기준수익금 = self.dict_intg['추정예탁자산'] * self.dict_set['수익중지수익률'] / 100
-            if 기준수익금 < 당일평가손익:
+            if self.dict_set['수익중지'] and 기준손익금액 < 당일평가손익:
                 self._strategy_stop()
 
         if self.dict_set['투자금고정']:
@@ -1423,27 +1436,25 @@ class BaseTrader:
             종목당투자금 = int(추정예탁자산 * 0.98 / self.dict_set['최대매수종목수'])
 
         if self.dict_intg['종목당투자금'] != 종목당투자금:
-            self.dict_intg['종목당투자금'] = 종목당투자금
             if self.market_gubun in (1, 4):
                 for q in self.stgQs:
-                    q.put(('종목당투자금', self.dict_intg['종목당투자금']))
+                    q.put(('종목당투자금', 종목당투자금))
             else:
-                self.stgQ.put(('종목당투자금', self.dict_intg['종목당투자금']))
-
-        if self.dict_jg:
-            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
-        else:
-            columns = COLUMNS_JG if self.market_gubun < 6 else (COLUMNS_JGF if self.market_gubun < 9 else COLUMNS_JGCF)
-            df_jg = pd.DataFrame(columns=columns)
-
-        df_tj = pd.DataFrame.from_dict(self.dict_tj, orient='index')
+                self.stgQ.put(('종목당투자금', 종목당투자금))
+            self.dict_intg['종목당투자금'] = 종목당투자금
 
         if self.dict_intg['추정예탁자산캐시'] != 추정예탁자산:
             self.dict_intg['추정예탁자산캐시'] = 추정예탁자산
-            self.queryQ.put(('거래디비', df_jg, self.market_info['잔고디비'], 'replace'))
+            if self.dict_jg:
+                df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            else:
+                columns = COLUMNS_JG if self.market_gubun < 6 else (COLUMNS_JGF if self.market_gubun < 9 else COLUMNS_JGCF)
+                df_jg = pd.DataFrame(columns=columns)
+            df_tj = pd.DataFrame.from_dict(self.dict_tj, orient='index')
 
-        self.windowQ.put((UI_NUM['잔고목록'], df_jg))
-        self.windowQ.put((UI_NUM['잔고평가'], df_tj))
+            self.queryQ.put(('거래디비', df_jg, self.market_info['잔고디비'], 'replace'))
+            self.windowQ.put((UI_NUM['잔고목록'], df_jg))
+            self.windowQ.put((UI_NUM['잔고평가'], df_tj))
 
     def _strategy_stop(self):
         """전략을 중지합니다."""
@@ -1563,14 +1574,5 @@ class BaseTrader:
         """주문을 전송합니다.
         Args:
             data: 데이터
-        """
-        pass
-
-    def _convert_order_data(self, data):
-        """주문 데이터를 변환합니다.
-        Args:
-            data: 데이터
-        Returns:
-            변환된 주문 데이터
         """
         pass

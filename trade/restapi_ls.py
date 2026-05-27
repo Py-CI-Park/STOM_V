@@ -19,18 +19,14 @@ class LsRestAPI:
         self.access  = access
         self.secret  = secret
         self.token   = None
-        self.tr_cont = False
-        self.tr_cont_key = ''
 
-    def _post(self, gubun: str, cont='N', cont_key='', **kwargs):
+    def _post(self, tr_name: str, **kwargs):
         """요청용 데이터(url, headers, params) 생성 및 전송
-        인자:
-            gubun: TR한글이름
-            cont: 연속조회여부
-            cont_key: 연속조회키
-            **kwargs: TR별 키워드 - LsRestData.tr_data에 미리 선언해두고 조합한다."""
-        url = f'{LsRestData.호스트주소}{LsRestData.마지막주소[gubun]}'
-        if gubun == '토큰발급':
+        tr_name: TR 한글이름
+        **kwargs: TR별 키워드 - LsRestData.tr_data에 미리 선언해두고 조합한다.
+        """
+        url = f'{LsRestData.호스트주소}{LsRestData.마지막주소[tr_name]}'
+        if tr_name == '토큰발급':
             headers = {
                 'content-type': 'application/x-www-form-urlencoded'
             }
@@ -41,29 +37,23 @@ class LsRestAPI:
                 'scope': 'oob'
             }
         else:
-            tr_data = LsRestData.tr_data[gubun]
+            tr_data = LsRestData.tr_data[tr_name]
             headers = {
                 'content-type': 'application/json; charset=utf-8',
                 'authorization': f'Bearer {self.token}',
                 'tr_cd': tr_data['tr_cd'],
-                'tr_cont': cont,
-                'tr_cont_key': cont_key
+                'tr_cont': 'N',
+                'tr_cont_key': ''
             }
-            body_key = str(tr_data['body_key'])
+            body_key = tr_data['body_key']
             element_keys = tr_data['element_keys']
             element_values = [kwargs[k] for k in tr_data['element_values']]
             params = {body_key: dict(zip(element_keys, element_values))}
 
-        self.tr_cont = False
-        self.tr_cont_key = ''
-
-        if gubun == '토큰발급':
+        if tr_name == '토큰발급':
             response = requests.post(url, headers=headers, params=params)
         else:
             response = requests.post(url, headers=headers, data=json.dumps(params))
-
-        self.tr_cont = True if response.headers.get('tr_cont') == 'Y' else False
-        self.tr_cont_key = response.headers.get('tr_cont_key')
 
         return response.json()
 
