@@ -537,7 +537,6 @@ style_bc_bb = f'''
 
 r, g, b = color_bg_dk.red(), color_bg_dk.green(), color_bg_dk.blue()
 style_bc_dk = f'''
-    PlainTextEdit {{background-color: rgb({r}, {g}, {b});}}
     QTextEdit {{background-color: rgb({r}, {g}, {b});}}
     QLineEdit {{background-color: rgb({r}, {g}, {b});}}
     QPushButton {{

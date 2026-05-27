@@ -898,7 +898,9 @@ def setting_all_app(ui):
         setting_order_save_01(ui, mbox=False)
         setting_order_save_02(ui, mbox=False)
 
-        _ = ui.testQ.get()
+        for _ in range(8):
+            _ = ui.testQ.get()
+
         update_dictset(ui, force=True)
         QMessageBox.information(ui, '모든 설정 적용 완료', random.choice(famous_saying))
 
