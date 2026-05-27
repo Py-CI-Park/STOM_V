@@ -11,24 +11,24 @@
 | 공식 V3 worktree | `C:/System_Trading/STOM/STOM_V.wt-3` |
 | 공식 V3 branch/head | `STOM_Version_3` / `3d4390ea STOM V3.29` |
 | V3U worktree | `C:/System_Trading/STOM/STOM_V.wt-3u` |
-| V3U branch/head | `STOM_Version_3U` / `27c3db66` 이후 본 문서 커밋 |
+| V3U branch/head | `STOM_Version_3U` / `e24918cd` 이후 본 문서 커밋 |
 | 제외 범위 | V3.29 tail `f6fd482c..5286cde6`, runtime `_database`, `_log`, `*.db`, upstream `.pyd` |
 
 ## 순차 반영 커밋
 
 | Version | V3 source range | V3 formal commit | V3U commit | pyd 처리 | 주요 V3U 보정 |
 | --- | --- | --- | --- | --- | --- |
-| V3.19 | V3 formal delta | `57511f89` | `c9b3e783` | 제외/계약 유지 | 기존 V3U pyd-free wrapper 유지 |
-| V3.20 | V3 formal delta | `3340f0e2` | `1cfd634f` | 제외/계약 유지 | 기존 V3U pyd-free wrapper 유지 |
-| V3.21 | V3 formal delta | `bf16768e` | `34d6f542` | 제외/계약 유지 | 기존 V3U pyd-free wrapper 유지 |
-| V3.22 | V3 formal delta | `2b0c0555` | `eff59b5e` | 제외/계약 유지 | 기존 V3U pyd-free wrapper 유지 |
-| V3.23 | V3 formal delta | `f0bef5d3` | `de46a2ad` | 제외/계약 유지 | 기존 V3U pyd-free wrapper 유지 |
-| V3.24 | `96822b73..75a7fa45` / local `f0bef5d3..22782984` | `22782984` | `4723f92f` | 제외/계약 유지 | `database_check` 모듈 레벨 기본 상수 노출 복구 |
-| V3.25 | `22782984..468755b8` | `468755b8` | `81a5260e` | 변경 없음 | staged py_compile + V3U targeted pytest 통과 |
-| V3.26 | `468755b8..134f57d6` | `134f57d6` | `afddf4e3` | 변경 없음 | staged py_compile + V3U targeted pytest 통과 |
-| V3.27 | `134f57d6..995dee34` | `995dee34` | `cbf1431f` | `ui/main_window.pyd` 제외 | V3U contract/attr inventory 통과 |
-| V3.28 | `995dee34..812c1280` | `812c1280` | `5190071b` | `ui/main_window.pyd` 제외 | `database_check` 상수 노출, V3U 기본 설정 Telegram/팩터선택 보강, 다크레드 `color_hv_bt` 보강 |
-| V3.29 | `812c1280..3d4390ea` | `3d4390ea` | `27c3db66` | `ui/main_window.pyd` 제외 | `database_check` 상수 노출, `ui.tts_sound` placeholder 계약 노출, `ui/_icon/logo.png` 삭제 반영 |
+| V3.19 | V3 formal delta | `57511f89` | `3faa9be7` | 제외/계약 유지 | 기존 V3U pyd-free wrapper 유지 |
+| V3.20 | V3 formal delta | `3340f0e2` | `8a8e26b0` | 제외/계약 유지 | 기존 V3U pyd-free wrapper 유지 |
+| V3.21 | V3 formal delta | `bf16768e` | `3c37482d` | 제외/계약 유지 | 기존 V3U pyd-free wrapper 유지 |
+| V3.22 | V3 formal delta | `2b0c0555` | `57159a9c` | 제외/계약 유지 | 기존 V3U pyd-free wrapper 유지 |
+| V3.23 | V3 formal delta | `f0bef5d3` | `41e401e5` | 제외/계약 유지 | 기존 V3U pyd-free wrapper 유지 |
+| V3.24 | `96822b73..75a7fa45` / local `f0bef5d3..22782984` | `22782984` | `be593744` | 제외/계약 유지 | `database_check` 모듈 레벨 기본 상수 노출 복구 |
+| V3.25 | `22782984..468755b8` | `468755b8` | `9f854d61` | 변경 없음 | staged py_compile + V3U targeted pytest 통과 |
+| V3.26 | `468755b8..134f57d6` | `134f57d6` | `d3c817bc` | 변경 없음 | staged py_compile + V3U targeted pytest 통과 |
+| V3.27 | `134f57d6..995dee34` | `995dee34` | `dfdbbde7` | `ui/main_window.pyd` 제외 | V3U contract/attr inventory 통과 |
+| V3.28 | `995dee34..812c1280` | `812c1280` | `ee3fbab2` | `ui/main_window.pyd` 제외 | `database_check` 상수 노출, V3U 기본 설정 Telegram/팩터선택 보강, 다크레드 `color_hv_bt` 보강 |
+| V3.29 | `812c1280..3d4390ea` | `3d4390ea` | `e24918cd` | `ui/main_window.pyd` 제외 | `database_check` 상수 노출, `ui.tts_sound` placeholder 계약 노출, `ui/_icon/logo.png` 삭제 반영 |
 
 ## pyd-free 처리 원칙
 
