@@ -9,7 +9,6 @@ import pandas as pd
 from traceback import format_exc
 from multiprocessing import Process, Queue
 from backtest.back_static import send_result, get_moneytop_query
-from utility.static_method.static_decorator import error_decorator
 from utility.static_method.version_manager import stg_save_version
 from utility.settings.setting_base import UI_NUM, DB_STRATEGY, DB_BACKTEST
 from utility.static_method.static_datetime import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
@@ -167,6 +166,7 @@ class OptimizeGeneticAlgorithm:
         self.backname     = backname
         self.ui_gubun     = ui_gubun
         self.dict_set     = dict_set
+        self.is_tick      = self.dict_set['타임프레임']
         self.market_gubun = market_infos[0]
         self.market_info  = market_infos[1]
         self.high_list    = []
@@ -182,13 +182,11 @@ class OptimizeGeneticAlgorithm:
         try:
             self._start()
         except SystemExit:
-            pass
+            sys.exit()
         except Exception:
             self.wq.put((UI_NUM['시스템로그'], format_exc()))
             self.tq.put('백테중지')
 
-    # noinspection PyUnresolvedReferences
-    @error_decorator
     def _start(self):
         """유전 알고리즘 최적화를 시작합니다."""
         start_time = now()
@@ -241,8 +239,8 @@ class OptimizeGeneticAlgorithm:
             self._sys_exit(True)
 
         con   = sqlite3.connect(self.market_info['백테디비'][self.is_tick])
-        query = get_moneytop_query(is_tick, startday, endday, starttime, endtime)
-        df_mt = pd.read_sql(query, con)
+        query = get_moneytop_query(self.is_tick, startday, endday, starttime, endtime)
+        df_mt: pd.DataFrame = pd.read_sql(query, con)
         con.close()
 
         if len(df_mt) == 0 or back_count == 0:
@@ -270,7 +268,7 @@ class OptimizeGeneticAlgorithm:
             self.wq.put((UI_NUM['백테스트'], '시장미시구조분석 미적용 상태입니다. 설정을 변경하십시오.'))
             self._sys_exit(True)
 
-        if is_tick:
+        if self.is_tick:
             df_mt['일자'] = (df_mt['index'].values // 1000000).astype(np.int64)
         else:
             df_mt['일자'] = (df_mt['index'].values // 10000).astype(np.int64)

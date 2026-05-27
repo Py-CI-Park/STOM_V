@@ -8,9 +8,8 @@ import pandas as pd
 from traceback import format_exc
 from multiprocessing import Process, Queue
 from utility.static_method.static_etcetera import factorial
-from utility.settings.setting_base import UI_NUM, DB_BACKTEST
+from utility.settings.setting_base import UI_NUM, DB_BACKTEST, DB_STRATEGY
 from backtest.back_static import send_result, get_moneytop_query
-from utility.static_method.static_decorator import error_decorator
 from utility.static_method.static_datetime import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
 
 
@@ -164,23 +163,21 @@ class OptimizeConditions:
         self.market_info  = market_infos[1]
         self.result       = {}
         self.opti_list    = []
+        self.buyconds     = []
+        self.sellconds    = []
         self.bcount       = None
         self.scount       = None
-        self.buyconds     = None
-        self.sellconds    = None
         self.optistandard = None
         self.savename     = f"{self.market_info['전략구분']}_{self.backname.replace('최적화', '').lower()}"
 
         try:
             self._start()
         except SystemExit:
-            pass
+            sys.exit()
         except Exception:
             self.wq.put((UI_NUM['시스템로그'], format_exc()))
             self.tq.put('백테중지')
 
-    # noinspection PyUnresolvedReferences
-    @error_decorator
     def _start(self):
         """조건 최적화를 시작합니다."""
         start_time = now()
@@ -237,7 +234,7 @@ class OptimizeConditions:
 
         con   = sqlite3.connect(self.market_info['백테디비'][self.is_tick])
         query = get_moneytop_query(self.is_tick, startday, endday, starttime, endtime)
-        df_mt = pd.read_sql(query, con)
+        df_mt: pd.DataFrame = pd.read_sql(query, con)
         con.close()
 
         if len(df_mt) == 0 or back_count == 0:

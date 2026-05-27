@@ -201,7 +201,6 @@ class BaseTrader:
 
         self._update_totaljango()
 
-    # noinspection PyUnresolvedReferences
     def _order_time_control(self, code_=None):
         """주문시간 및 주문가격을 확인하여 취소 및 정정 주문을 생성합니다."""
         cancel_list = []

@@ -21,7 +21,6 @@ def load_settings():
     df_so = pd.read_sql('SELECT * FROM sellorder', con).set_index('index')
     con.close()
 
-    location_list = None
     df_a_not_empty = True if len(df_a) > 0 else False
     df_t_not_empty  = True if len(df_t) > 0 else False
 

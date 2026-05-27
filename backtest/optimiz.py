@@ -11,7 +11,6 @@ from traceback import format_exc
 from multiprocessing import Process, Queue
 from backtest.optimiz_3d_visualization import Visualization3D
 from backtest.back_static_numba import get_result, bootstrap_test
-from utility.static_method.static_decorator import error_decorator
 from utility.static_method.version_manager import stg_save_version
 from utility.static_method.static_datetime import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd
 from backtest.back_static import send_result, plot_show, get_moneytop_query, get_result_dataframe, add_mdd
@@ -171,8 +170,6 @@ class Total:
                     self.mq.put('백테중지')
                     time.sleep(1)
                     break
-            except SystemExit:
-                break
             except Exception:
                 self.wq.put((UI_NUM['시스템로그'], format_exc()))
                 self.mq.put('백테중지')
@@ -200,7 +197,7 @@ class Total:
         self.weeks_train  = data[15]
         self.weeks_valid  = data[16]
         self.weeks_test   = data[17]
-        if self.list_days[1] is not None:
+        if self.list_days[1]:
             self.sub_total = len(self.list_days[1]) * 2
         else:
             self.sub_total = 2
@@ -372,8 +369,6 @@ class Optimize:
             self.wq.put((UI_NUM['시스템로그'], format_exc()))
             self.tq.put('백테중지')
 
-    # noinspection PyUnresolvedReferences
-    @error_decorator
     def _start(self):
         """최적화를 시작합니다."""
         start_time = now()
@@ -450,7 +445,7 @@ class Optimize:
 
         con   = sqlite3.connect(self.market_info['백테디비'][self.is_tick])
         query = get_moneytop_query(self.is_tick, startday, endday, starttime, endtime)
-        df_mt = pd.read_sql(query, con)
+        df_mt: pd.DataFrame = pd.read_sql(query, con)
         con.close()
 
         if len(df_mt) == 0 or back_count == 0:
@@ -568,6 +563,7 @@ class Optimize:
         """날짜 리스트를 생성합니다."""
         train_days_ = [startday, int(str_ymd(timedelta_day(-weeks_test * 7, dt_endday)))]
         valid_days_ = []
+
         if 'VC' in self.backname:
             for i in range(int(weeks_train / weeks_valid)):
                 valid_days_.append([
@@ -579,8 +575,7 @@ class Optimize:
                 int(str_ymd(timedelta_day(-(weeks_valid + weeks_test) * 7 + 1, dt_endday))),
                 int(str_ymd(timedelta_day(-weeks_test * 7, dt_endday)))
             ])
-        else:
-            valid_days_ = None
+
         if 'T' in self.backname:
             test_days = [int(str_ymd(timedelta_day(-weeks_test * 7 + 1, dt_endday))), endday]
         else:
@@ -588,9 +583,10 @@ class Optimize:
             test_days = [next_day, next_day]
 
         train_days_list = [x for x in day_list if train_days_[0] <= x <= train_days_[1]]
+        valid_days = []
+
         if 'V' in self.backname:
             total_vdays_count = 0
-            valid_days = []
             for vdays in valid_days_:
                 try:
                     valid_days_list = [x for x in day_list if vdays[0] <= x <= vdays[1]]
@@ -608,8 +604,8 @@ class Optimize:
                 self.wq.put((UI_NUM['백테스트'], '백테엔진의 데이터 로딩 마지막 일자가 잘못되었거나 검증구간의 데이터가 존재하지 않습니다.'))
                 self._sys_exit(True)
         else:
-            valid_days = None
             train_days = [train_days_list[0], train_days_list[-1], len(train_days_list)]
+
         if 'T' in self.backname:
             test_days_list = [x for x in day_list if test_days[0] <= x <= test_days[1]]
             test_days = [test_days_list[0], test_days_list[-1], len(test_days_list)]

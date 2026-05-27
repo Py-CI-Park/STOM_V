@@ -212,7 +212,7 @@ def settings_save_completed(ui):
     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
-def setting_save_01(ui):
+def setting_save_01(ui, mbox=True):
     """기본 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import en_text
@@ -259,7 +259,7 @@ def setting_save_01(ui):
             localvs = locals()
             values = tuple(localvs[col] for col in columns)
             ui.queryQ.put(('설정디비', query, values))
-            settings_save_completed(ui)
+            if mbox: settings_save_completed(ui)
 
             from ui.etcetera.etc import strategy_setting_label_change
             strategy_setting_label_change(ui)
@@ -277,7 +277,7 @@ def setting_save_01(ui):
     ui.pa_labelllllll_01.setText('프로그램 비밀번호을 입력하십시오.\n미설정 시 입력없이 엔터!!\n')
 
 
-def setting_save_02(ui):
+def setting_save_02(ui, mbox=True):
     """계정 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import en_text
@@ -296,10 +296,10 @@ def setting_save_02(ui):
         query  = 'UPDATE account SET access_key = ?, secret_key = ? WHERE `index` = ?'
         values = (en_access_key, en_secret_key, no)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
 
 
-def setting_save_03(ui):
+def setting_save_03(ui, mbox=True):
     """텔레그램 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import en_text
@@ -318,10 +318,10 @@ def setting_save_03(ui):
         query  = 'UPDATE telegram SET bot_token = ?, chatingid = ? WHERE `index` = ?'
         values = (en_bot_token, en_chatingid, no)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
 
 
-def setting_save_04(ui):
+def setting_save_04(ui, mbox=True):
     """전략 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
@@ -368,10 +368,10 @@ def setting_save_04(ui):
         localvs = locals()
         values  = tuple(localvs[col] for col in columns) + (no,)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
 
 
-def setting_save_05(ui):
+def setting_save_05(ui, mbox=True):
     """백테스트 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from ui.event_click.button_clicked_backtest_start import backtest_engine_kill
@@ -440,12 +440,12 @@ def setting_save_05(ui):
         localvs = locals()
         values  = tuple(localvs[col] for col in columns) + (no,)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
         if pre_bbg != 백테주문관리적용:
             backtest_engine_kill(ui)
 
 
-def setting_save_06(ui):
+def setting_save_06(ui, mbox=True):
     """기타 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import en_text
@@ -476,7 +476,7 @@ def setting_save_06(ui):
         localvs = locals()
         values  = tuple(localvs[col] for col in columns) + (no,)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
         query   = f"UPDATE etc SET 시리얼키 = '{시리얼키}'"
         ui.queryQ.put(('설정디비', query))
 
@@ -623,7 +623,7 @@ def setting_order_load_02(ui):
     ui.ss_sell_lineEdit_14.setText(str(df['매도손절수익금'][no]))
 
 
-def setting_order_save_01(ui):
+def setting_order_save_01(ui, mbox=True):
     """매수 주문 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
@@ -747,10 +747,10 @@ def setting_order_save_01(ui):
         localvs = locals()
         values  = tuple(localvs[col] for col in columns) + (no,)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
 
 
-def setting_order_save_02(ui):
+def setting_order_save_02(ui, mbox=True):
     """매도 주문 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
@@ -846,7 +846,7 @@ def setting_order_save_02(ui):
         localvs = locals()
         values  = tuple(localvs[col] for col in columns) + (no,)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
 
 
 def setting_all_load(ui):
@@ -861,7 +861,6 @@ def setting_all_app(ui):
     from PyQt5.QtWidgets import QMessageBox
     from utility.settings.setting_base import DB_PATH
     from ui.create_widget.set_text import famous_saying
-    from utility.static_method.static_etcetera import qtest_qwait
 
     name = ui.sj_set_comBoxx_01.currentText()
     if name == '':
@@ -876,8 +875,11 @@ def setting_all_app(ui):
         return
 
     if ui.proc_chqs.is_alive():
+        from ui.etcetera.etc import update_dictset
+
         ui.queryQ.put(('설정파일변경', origin_file, copy_file))
-        qtest_qwait(2)
+        _ = ui.testQ.get()
+
         setting_load_01(ui)
         setting_load_02(ui)
         setting_load_03(ui)
@@ -886,14 +888,18 @@ def setting_all_app(ui):
         setting_load_06(ui)
         setting_order_load_01(ui)
         setting_order_load_02(ui)
-        setting_save_01(ui)
-        setting_save_02(ui)
-        setting_save_03(ui)
-        setting_save_04(ui)
-        setting_save_05(ui)
-        setting_save_06(ui)
-        setting_order_save_01(ui)
-        setting_order_save_02(ui)
+
+        setting_save_01(ui, mbox=False)
+        setting_save_02(ui, mbox=False)
+        setting_save_03(ui, mbox=False)
+        setting_save_04(ui, mbox=False)
+        setting_save_05(ui, mbox=False)
+        setting_save_06(ui, mbox=False)
+        setting_order_save_01(ui, mbox=False)
+        setting_order_save_02(ui, mbox=False)
+
+        _ = ui.testQ.get()
+        update_dictset(ui, force=True)
         QMessageBox.information(ui, '모든 설정 적용 완료', random.choice(famous_saying))
 
 

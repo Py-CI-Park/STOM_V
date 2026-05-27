@@ -4,9 +4,9 @@ from PyQt5.QtGui import QPen
 from utility.static_method import syntax
 from ui.create_widget.set_style import *
 from utility.settings.setting_base import *
-from PyQt5.QtCore import Qt, QDate, QPropertyAnimation, QRect, QEasingCurve, QTimer, QEvent
+from PyQt5.QtCore import Qt, QDate, QPropertyAnimation, QRect, QEasingCurve, QTimer, QEvent, QPoint
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
-    QDialog, QTableWidget, QAbstractItemView, QGroupBox, QTableWidgetItem, QSizePolicy
+    QDialog, QTableWidget, QAbstractItemView, QGroupBox, QTableWidgetItem, QSizePolicy, QToolTip
 
 
 class CustomViewBox(pg.ViewBox):
@@ -459,7 +459,9 @@ class FixedColumnTableWidget(QTableWidget):
             self._first_column_table.setColumnCount(1)
             self._first_column_table.setRowCount(self.rowCount())
             self._first_column_table.setColumnWidth(0, self._first_column_width)
-            self._first_column_table.setHorizontalHeaderLabels([self.horizontalHeaderItem(0).text() if self.horizontalHeaderItem(0) else ''])
+            self._first_column_table.setHorizontalHeaderLabels(
+                [self.horizontalHeaderItem(0).text() if self.horizontalHeaderItem(0) else '']
+            )
 
             for row in range(self.rowCount()):
                 item = self.item(row, 0)
@@ -634,6 +636,12 @@ class WidgetCreater:
                 pushbutton.clicked.connect(lambda: click(cmd))
             else:
                 pushbutton.clicked.connect(click)
+        if pname == '도움말':
+            pushbutton.clicked.connect(lambda: QToolTip.showText(
+                pushbutton.mapToGlobal(QPoint(0, pushbutton.height())),
+                pushbutton.toolTip(),
+                pushbutton
+            ))
         return pushbutton
 
     @staticmethod
@@ -704,7 +712,8 @@ class WidgetCreater:
         return checkbox
 
     @staticmethod
-    def setLineedit(parent, enter=None, passhide=False, ltext=None, style=None, tip=None, font=None, aleft=False, acenter=False, visible=True, change=None):
+    def setLineedit(parent, enter=None, passhide=False, ltext=None, style=None, tip=None, font=None, aleft=False,
+                    acenter=False, visible=True, change=None, enable=True):
         """라인 에디트를 생성합니다."""
         lineedit = QLineEdit(parent)
         lineedit.setVisible(visible)
@@ -730,6 +739,8 @@ class WidgetCreater:
             lineedit.returnPressed.connect(enter)
         if change:
             lineedit.textChanged.connect(change)
+        if not enable:
+            lineedit.setEnabled(False)
         return lineedit
 
     @staticmethod
@@ -782,9 +793,11 @@ class WidgetCreater:
         if not dateaxis:
             subplot = layout.addPlot(row=row, col=col, colspan=colspan, viewBox=cb)
         elif title is not None:
-            subplot = layout.addPlot(title=title, row=row, col=col, colspan=colspan, axisItems={'bottom': pg.DateAxisItem()})
+            subplot = layout.addPlot(title=title, row=row, col=col, colspan=colspan,
+                                     axisItems={'bottom': pg.DateAxisItem()})
         else:
-            subplot = layout.addPlot(title=title, row=row, col=col, colspan=colspan, viewBox=cb, axisItems={'bottom': pg.DateAxisItem()})
+            subplot = layout.addPlot(title=title, row=row, col=col, colspan=colspan, viewBox=cb,
+                                     axisItems={'bottom': pg.DateAxisItem()})
         subplot.showAxis('left', False)
         subplot.showAxis('right', True)
         subplot.getAxis('right').setStyle(tickTextWidth=45, autoExpandTextSpace=False)

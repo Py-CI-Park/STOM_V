@@ -151,7 +151,6 @@ class WebCrawling(QThread):
         except Exception:
             self.signal.emit((UI_NUM['시스템로그'], format_exc()))
 
-    # noinspection PyUnresolvedReferences
     @thread_decorator
     def _jmns_crawling(self, code):
         """종목 뉴스를 크롤링합니다."""
@@ -168,7 +167,9 @@ class WebCrawling(QThread):
                     title_tag = news.select_one('a.tit')
                     if not title_tag:
                         continue
+                    # noinspection PyUnresolvedReferences
                     date = news.select_one('td.date').get_text(strip=True)
+                    # noinspection PyUnresolvedReferences
                     press = news.select_one('td.info').get_text(strip=True)
                     title = title_tag.get_text(strip=True)
                     hlink = self.base_url + title_tag['href']
@@ -321,13 +322,13 @@ class WebCrawling(QThread):
         self.get_market_indicator()
         self.get_crypto_data()
 
-    # noinspection PyUnresolvedReferences
     @thread_decorator
     def get_korean_stocks(self, search_today, search_time, name, symbol):
         """한국주식 데이터를 수집합니다 (네이버)."""
         try:
             existing_data = self.dict_data.get(name)
             if existing_data is not None:
+                # noinspection PyUnresolvedReferences
                 last_time = existing_data['time'].iloc[-1]
             else:
                 last_time = None

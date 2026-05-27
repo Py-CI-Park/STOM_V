@@ -10,7 +10,6 @@ import pandas as pd
 from traceback import format_exc
 from multiprocessing import Process, Queue
 from backtest.back_static_numba import get_result, bootstrap_test
-from utility.static_method.static_decorator import error_decorator
 from utility.settings.setting_base import UI_NUM, DB_STRATEGY, DB_BACKTEST, DB_OPTUNA
 from utility.static_method.static_datetime import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd
 from backtest.back_static import send_result, get_moneytop_query, plot_show, get_result_dataframe, add_mdd
@@ -180,8 +179,6 @@ class Total:
                     self.mq.put('백테중지')
                     time.sleep(1)
                     break
-            except SystemExit:
-                break
             except Exception:
                 self.wq.put((UI_NUM['시스템로그'], format_exc()))
                 self.mq.put('백테중지')
@@ -205,7 +202,7 @@ class Total:
         self.weeks_train  = data[11]
         self.weeks_valid  = data[12]
         self.weeks_test   = data[13]
-        if self.list_days[0][1] is not None:
+        if self.list_days[0][1]:
             self.sub_total = len(self.list_days[0][1]) * 2
         else:
             self.sub_total = 2
@@ -358,8 +355,6 @@ class RollingWalkForwardTest:
             self.wq.put((UI_NUM['시스템로그'], format_exc()))
             self.tq.put('백테중지')
 
-    # noinspection PyUnresolvedReferences
-    @error_decorator
     def _start(self):
         """롤링 워크 포워드 테스트를 시작합니다."""
         start_time = now()
@@ -427,7 +422,7 @@ class RollingWalkForwardTest:
 
         con   = sqlite3.connect(self.market_info['백테디비'][self.is_tick])
         query = get_moneytop_query(self.is_tick, startday, endday, starttime, endtime)
-        df_mt = pd.read_sql(query, con)
+        df_mt: pd.DataFrame = pd.read_sql(query, con)
         con.close()
 
         if len(df_mt) == 0 or back_count == 0:
@@ -549,10 +544,9 @@ class RollingWalkForwardTest:
         plus_day   = 3 if self.market_gubun not in (5, 9) else 1
         startday_  = int(str_ymd(timedelta_day(-(weeks_train + weeks_test * (k + 1)) * 7 + plus_day, dt_endday)))
         while startday_ >= startday:
-            train_days_ = [
-                startday_, int(str_ymd(timedelta_day(-weeks_test * (k + 1) * 7, dt_endday)))
-            ]
+            train_days_ = [startday_, int(str_ymd(timedelta_day(-weeks_test * (k + 1) * 7, dt_endday)))]
             valid_days_ = []
+
             if 'VC' in self.backname:
                 for i in range(int(weeks_train / weeks_valid)):
                     valid_days_.append([
@@ -564,8 +558,7 @@ class RollingWalkForwardTest:
                     int(str_ymd(timedelta_day(-(weeks_valid + weeks_test * (k + 1)) * 7 + plus_day, dt_endday))),
                     int(str_ymd(timedelta_day(-(weeks_test * (k + 1)) * 7, dt_endday)))
                 ])
-            else:
-                valid_days_ = None
+
             test_days_ = [
                 int(str_ymd(timedelta_day(-(weeks_test * (k + 1)) * 7 + plus_day, dt_endday))),
                 int(str_ymd(timedelta_day(-(weeks_test * k) * 7, dt_endday)))
@@ -577,9 +570,10 @@ class RollingWalkForwardTest:
         list_days = []
         for train_days_, valid_days_, test_days_ in list_days_:
             train_days_list = [x for x in day_list if train_days_[0] <= x <= train_days_[1]]
+            valid_days = []
+
             if 'V' in self.backname:
                 total_vdays_count = 0
-                valid_days = []
                 for vsday, veday in valid_days_:
                     valid_days_list = [x for x in day_list if vsday <= x <= veday]
                     vdays_count = len(valid_days_list)
@@ -588,8 +582,8 @@ class RollingWalkForwardTest:
                 avg_vdays_count = int(total_vdays_count / len(valid_days))
                 train_days = [train_days_list[0], train_days_list[-1], len(train_days_list) - avg_vdays_count]
             else:
-                valid_days = None
                 train_days = [train_days_list[0], train_days_list[-1], len(train_days_list)]
+
             test_days_list = [x for x in day_list if test_days_[0] <= x <= test_days_[1]]
             test_days = [test_days_list[0], test_days_list[-1]]
             list_days.append([train_days, valid_days, test_days])
