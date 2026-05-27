@@ -519,6 +519,7 @@ class MainWindow(QMainWindow):
         self.proc_chqs: object = _NullProcess()
         self.proc_tele: object = _NullProcess()
         self.telegram: object = _NullWorker()
+        self.tts_sound: object = _NullWorker()
 
         if self._offline_smoke:
             self.logger.info("offline_smoke: worker 시작 생략 (webc/proc_chqs/telegram placeholder)")

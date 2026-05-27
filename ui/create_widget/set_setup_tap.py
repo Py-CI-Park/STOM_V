@@ -1,4 +1,5 @@
 
+from ui.etcetera.etc import tts_sound_test
 from ui.event_change.changed_checkbox import *
 from ui.create_widget.set_style import style_bc_dk
 from ui.event_click.button_clicked_settings import *
@@ -49,7 +50,6 @@ class SetSetupTap:
         self.ui.sj_main_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=list(DICT_MARKET_GUBUN.keys()), activated=lambda: mactivated_01(self.ui), tip='사용할 거래소를 선택하십시오.')
         self.ui.sj_main_cheBox_01 = self.wc.setCheckBox('모의투자', self.ui.sj_bs_groupBox_01, changed=lambda state: checkbox_changed_01(self.ui, state), tip='체크 해제 시 실매매')
         self.ui.sj_main_cheBox_02 = self.wc.setCheckBox('데이터저장', self.ui.sj_bs_groupBox_01, tip='전략종료 후 데이터 저장 여부를 설정한다.')
-        self.ui.sj_main_cheBox_03 = self.wc.setCheckBox('알림소리', self.ui.sj_bs_groupBox_01, tip='시스템 이벤트를 tts를 통해 소리로 알려준다.')
         self.ui.sj_main_labell_02 = QLabel('▣  타임프레임 선택                                          ▣  프로그램 비밀번호', self.ui.sj_bs_groupBox_01)
         self.ui.sj_main_comBox_02 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['1초스냅샷', '1분봉'], tip='사용할 타임프레임을 설정한다.')
         self.ui.sj_main_liEdit_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_01, passhide=True)
@@ -58,6 +58,10 @@ class SetSetupTap:
         self.ui.sj_lvrg_Button_01 = self.wc.setPushbutton('레버리지 유형 설정', parent=self.ui.sj_bs_groupBox_01, bounced=True, click=lambda: lvbutton_clicked_01(self.ui), tip='바이낸스 선물 레버리지를 고정, 변동 형태 중 선택하여 설정한다.')
         self.ui.sj_main_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['격리', '교차'], activated=lambda: mactivated_02(self.ui))
         self.ui.sj_main_comBox_04 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['단방향', '양방향'], activated=lambda: mactivated_03(self.ui))
+
+        self.ui.sj_main_cheBox_03 = self.wc.setCheckBox('알림소리  |  목소리 스타일', self.ui.sj_bs_groupBox_01, tip='시스템 이벤트를 tts를 통해 소리로 알려준다.')
+        self.ui.sj_main_comBox_05 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['F1', 'F2', 'F3', 'F4', 'F5', 'M1', 'M2', 'M3', 'M4', 'M5'])
+        self.ui.sj_main_Button_01 = self.wc.setPushbutton('테스트', parent=self.ui.sj_bs_groupBox_01, bounced=True, click=lambda: tts_sound_test(self.ui), tip='선택한 목소리 스타일을 테스트한다.')
 
         # --------------------------------------------------------------------------------------------------------------
 
@@ -228,7 +232,6 @@ class SetSetupTap:
         self.ui.sj_main_comBox_01.setGeometry(110, 30, 120, 20)
         self.ui.sj_main_cheBox_01.setGeometry(250, 30, 90, 20)
         self.ui.sj_main_cheBox_02.setGeometry(345, 30, 90, 20)
-        self.ui.sj_main_cheBox_03.setGeometry(440, 30, 90, 20)
         self.ui.sj_main_labell_02.setGeometry(562, 30, 500, 20)
         self.ui.sj_main_comBox_02.setGeometry(672, 30, 100, 20)
         self.ui.sj_main_liEdit_01.setGeometry(910, 30, 165, 20)
@@ -237,6 +240,9 @@ class SetSetupTap:
         self.ui.sj_lvrg_Button_01.setGeometry(110, 55, 120, 20)
         self.ui.sj_main_comBox_03.setGeometry(300, 55, 60, 20)
         self.ui.sj_main_comBox_04.setGeometry(420, 55, 85, 20)
+        self.ui.sj_main_cheBox_03.setGeometry(562, 55, 200, 20)
+        self.ui.sj_main_comBox_05.setGeometry(720, 55, 50, 20)
+        self.ui.sj_main_Button_01.setGeometry(780, 55, 50, 20)
 
         self.ui.sj_accc_labell_01.setGeometry(10, 30, 1000, 20)
         self.ui.sj_accc_liEdit_01.setGeometry(110, 30, 425, 20)

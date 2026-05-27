@@ -98,6 +98,8 @@ def send_dict_set(ui):
         ui.chartQ.put(('설정변경', ui.dict_set))
     if ui.telegram.isRunning():
         ui.teleQ.put(('설정변경', ui.dict_set))
+    if ui.tts_sound.isRunning():
+        ui.soundQ.put(ui.dict_set)
 
     if ui.backengine_running:
         for bpq in ui.back_eques:
@@ -282,3 +284,8 @@ def change_title_bar_color(window):
         ctypes.byref(ctypes.c_int(fg_color)),
         ctypes.sizeof(ctypes.c_int)
     )
+
+
+def tts_sound_test(ui):
+    voice_name = ui.sj_main_comBox_05.currentText()
+    ui.soundQ.put(voice_name)
