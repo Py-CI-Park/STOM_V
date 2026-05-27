@@ -4,7 +4,7 @@ from ui.event_click.button_clicked_shortcut import *
 from PyQt5.QtWidgets import QWidget, QLabel, QGroupBox
 from ui.event_keypress.extend_window import extend_window
 from ui.etcetera.etc import chart_screenshot, manual_save_and_exit
-from ui.create_widget.set_style import qfont12, style_pgbar, color_fg_bc
+from ui.create_widget.set_style import qfont12, style_pgbar2, color_fg_bc
 from ui.event_click.button_clicked_show_dialog import show_order, show_backscheduler, show_qsize, show_treemap, \
     show_db, show_kimp, show_chart, show_hoga, show_giup
 
@@ -59,9 +59,9 @@ class SetMainMenu:
         self.ui.flv_tab = QWidget()
         self.ui.blv_tab = QWidget()
 
-        self.ui.progressBar01 = self.wc.setProgressBar(self.ui, vertical=True, style=style_pgbar)
-        self.ui.progressBar02 = self.wc.setProgressBar(self.ui, vertical=True, style=style_pgbar)
-        self.ui.progressBar03 = self.wc.setProgressBar(self.ui, vertical=True, style=style_pgbar)
+        self.ui.progressBar01 = self.wc.setProgressBar(self.ui, vertical=True, style=style_pgbar2)
+        self.ui.progressBar02 = self.wc.setProgressBar(self.ui, vertical=True, style=style_pgbar2)
+        self.ui.progressBar03 = self.wc.setProgressBar(self.ui, vertical=True, style=style_pgbar2)
         self.ui.progressBar01.setFormat('')
         self.ui.progressBar02.setFormat('')
         self.ui.progressBar03.setFormat('')
@@ -111,33 +111,33 @@ class SetMainMenu:
 
         for i in range(6):
             y = 5 + i * 40
-            getattr(self.ui, f'pushButton_{i+1:02d}').setGeometry(5, y, 35, 40)
+            getattr(self.ui, f'pushButton_{i+1:02d}').setGeometry(6, y, 35, 40)
 
         for tab in (self.ui.hm_tab, self.ui.td_tab, self.ui.st_tab, self.ui.lg_tab, self.ui.sj_tab, self.ui.lv_tab):
             tab.setGeometry(45, 0, 1353, 757)
 
-        self.ui.at_pushButton.setGeometry(5, 250, 35, 15)
-        self.ui.tt_pushButton.setGeometry(8, 270, 16, 15)
-        self.ui.ms_pushButton.setGeometry(23, 270, 16, 15)
-        self.ui.dd_pushButton.setGeometry(8, 290, 16, 15)
-        self.ui.zo_pushButton.setGeometry(23, 290, 16, 15)
-        self.ui.kp_pushButton.setGeometry(8, 310, 16, 15)
-        self.ui.ct_pushButton.setGeometry(23, 310, 16, 15)
-        self.ui.hg_pushButton.setGeometry(8, 330, 16, 15)
-        self.ui.gu_pushButton.setGeometry(23, 330, 16, 15)
-        self.ui.uj_pushButton.setGeometry(8, 350, 16, 15)
-        self.ui.qs_pushButton.setGeometry(23, 350, 16, 15)
-        self.ui.bs_pushButton.setGeometry(8, 370, 16, 15)
-        self.ui.ex_pushButton.setGeometry(23, 370, 16, 15)
+        self.ui.at_pushButton.setGeometry(6, 250, 35, 15)
+        self.ui.tt_pushButton.setGeometry(6, 270, 17, 15)
+        self.ui.ms_pushButton.setGeometry(24, 270, 17, 15)
+        self.ui.dd_pushButton.setGeometry(6, 290, 17, 15)
+        self.ui.zo_pushButton.setGeometry(24, 290, 17, 15)
+        self.ui.kp_pushButton.setGeometry(6, 310, 17, 15)
+        self.ui.ct_pushButton.setGeometry(24, 310, 17, 15)
+        self.ui.hg_pushButton.setGeometry(6, 330, 17, 15)
+        self.ui.gu_pushButton.setGeometry(24, 330, 17, 15)
+        self.ui.uj_pushButton.setGeometry(6, 350, 17, 15)
+        self.ui.qs_pushButton.setGeometry(24, 350, 17, 15)
+        self.ui.bs_pushButton.setGeometry(6, 370, 17, 15)
+        self.ui.ex_pushButton.setGeometry(24, 370, 17, 15)
 
-        self.ui.bb_pushButton.setGeometry(8, 390, 16, 15)
-        self.ui.ds_pushButton.setGeometry(23, 390, 16, 15)
-        self.ui.od_pushButton.setGeometry(8, 410, 16, 15)
-        self.ui.zz_pushButton.setGeometry(23, 410, 16, 15)
+        self.ui.bb_pushButton.setGeometry(6, 390, 17, 15)
+        self.ui.ds_pushButton.setGeometry(24, 390, 17, 15)
+        self.ui.od_pushButton.setGeometry(6, 410, 17, 15)
+        self.ui.zz_pushButton.setGeometry(24, 410, 17, 15)
 
-        self.ui.cl_pushButton.setGeometry(5, 430, 35, 15)
-        self.ui.bd_pushButton.setGeometry(8, 450, 16, 15)
-        self.ui.ad_pushButton.setGeometry(23, 450, 16, 15)
+        self.ui.cl_pushButton.setGeometry(6, 430, 35, 15)
+        self.ui.bd_pushButton.setGeometry(6, 450, 17, 15)
+        self.ui.ad_pushButton.setGeometry(24, 450, 17, 15)
 
         self.ui.progressBar01.setGeometry(6, 470, 35, 93)
         self.ui.progressBar02.setGeometry(6, 568, 35, 93)

@@ -321,8 +321,8 @@ class HoverGroupBox(QGroupBox):
     마우스 오버 시 배경색이 변경됩니다."""
     def __init__(self, title, parent=None, duration=100):
         super().__init__(title, parent)
-        self._normal_color = f'rgb({color_gb_nm.red()}, {color_gb_nm.green()}, {color_gb_nm.blue()})'
-        self._hover_color = f'rgb({color_gb_hv.red()}, {color_gb_hv.green()}, {color_gb_hv.blue()})'
+        self._normal_color = f'rgb({color_hv_bt.red()}, {color_hv_bt.green()}, {color_hv_bt.blue()})'
+        self._hover_color = f'rgb({color_bg_bl.red()}, {color_bg_bl.green()}, {color_bg_bl.blue()})'
         self._duration = duration
         self.setStyleSheet(self._build_style(self._normal_color))
 

@@ -250,6 +250,55 @@ class StgGlobalsFunc:
     def _분당매도금액N(self, pre):
         return self._parameter_previous(self.dict_findex['분당매도금액'], pre)
 
+    def _시그널N(self, pre):
+        signal = self._parameter_previous(self.dict_findex['시그널'], pre)
+        return 'buy' if signal == 1 else ('sell' if signal == -1 else 'hold')
+
+    def _신뢰도N(self, pre):
+        return self._parameter_previous(self.dict_findex['신뢰도'], pre)
+
+    def _리스크N(self, pre):
+        return self._parameter_previous(self.dict_findex['리스크'], pre)
+
+    def _패턴점수N(self, pre):
+        return self._parameter_previous(self.dict_findex['패턴점수'], pre)
+
+    def _패턴신뢰도N(self, pre):
+        return self._parameter_previous(self.dict_findex['패턴신뢰도'], pre)
+
+    def _리스크점수N(self, pre):
+        return self._parameter_previous(self.dict_findex['리스크점수'], pre)
+
+    def _거래량점수N(self, pre):
+        return self._parameter_previous(self.dict_findex['거래량점수'], pre)
+
+    def _거래량신뢰도N(self, pre):
+        return self._parameter_previous(self.dict_findex['거래량신뢰도'], pre)
+
+    def _가격대점수N(self, pre):
+        return self._parameter_previous(self.dict_findex['가격대점수'], pre)
+
+    def _가격대신뢰도N(self, pre):
+        return self._parameter_previous(self.dict_findex['가격대신뢰도'], pre)
+
+    def _변동성점수N(self, pre):
+        return self._parameter_previous(self.dict_findex['변동성점수'], pre)
+
+    def _변동성신뢰도N(self, pre):
+        return self._parameter_previous(self.dict_findex['변동성신뢰도'], pre)
+
+    def _예상수익률N(self, pre):
+        return self._parameter_previous(self.dict_findex['예상수익률'], pre)
+
+    def _익절수익률N(self, pre):
+        return self._parameter_previous(self.dict_findex['익절수익률'], pre)
+
+    def _손절수익률N(self, pre):
+        return self._parameter_previous(self.dict_findex['손절수익률'], pre)
+
+    def _변손익신뢰도N(self, pre):
+        return self._parameter_previous(self.dict_findex['변손익신뢰도'], pre)
+
     def _최고분당매수수량(self, tick, pre=0, calc=False):
         return self._parameter_area(self.dict_findex['최고분당매수수량'], self.dict_findex['분당매수수량'], tick, pre, np.max, calc=calc)
 
@@ -999,6 +1048,23 @@ class StgGlobalsFunc:
             '매수총잔량N': self._매수총잔량N,
             '매도수5호가잔량합N': self._매도수5호가잔량합N,
             '관심종목N': self._관심종목N,
+
+            '시그널N': self._시그널N,
+            '신뢰도N': self._신뢰도N,
+            '리스크N': self._리스크N,
+            '패턴점수N': self._패턴점수N,
+            '패턴신뢰도N': self._패턴신뢰도N,
+            '리스크점수N': self._리스크점수N,
+            '거래량점수N': self._거래량점수N,
+            '거래량신뢰도N': self._거래량신뢰도N,
+            '가격대점수N': self._가격대점수N,
+            '가격대신뢰도N': self._가격대신뢰도N,
+            '변동성점수N': self._변동성점수N,
+            '변동성신뢰도N': self._변동성신뢰도N,
+            '예상수익률N': self._예상수익률N,
+            '익절수익률N': self._익절수익률N,
+            '손절수익률N': self._손절수익률N,
+            '변손익신뢰도N': self._변손익신뢰도N,
 
             '이동평균': self._이동평균,
             '최고현재가': self._최고현재가,
