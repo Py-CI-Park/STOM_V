@@ -123,6 +123,11 @@
 ### 8.4 baseline 진실 (중요)
 - 문서상 "7 failed"는 **stale**. 현재 환경 진짜 baseline = **34 failed / 1691 passed**. 추가 33개는 전부 `tune/sweep/wfo/setting/report/optimizer/db/formula/exit_codes/backtest_contract` 등 **cli·ui 도구 테스트**(ai_strategy_loop 무관, 이번 세션 이전부터 존재 — 환경/의존성 드리프트로 추정). 윈도우 개선은 +1 pass·신규 실패 0으로 검증.
 
-### 8.5 다음 단계 = 풀유니버스 (사용자 결정)
-- `bt_engine_mode="warm"`(WarmBacktestSession, 엔진 32개) + `bt_timeframe="tick"`로 풀유니버스 Tick_902 검증 → fresh 진화. 세대당 ~1시간. prepare 비용 큼(tick 29GB) — 먼저 1회 warm 백테로 Tick_902가 풀유니버스서 흑자/보고서급인지 확인 후 진화.
-- 보조 자산(gitignored, 로컬): `state/run_r4_config.json`(N=8 대형주 fresh), `state/run_r5_config.json`(N=12 소형주 fresh+richest), `state/tick_subset_small.db`(소형주 N=12). 진단 스크립트는 워크트리 `_temp_*.py`(커밋 제외).
+### 8.5 🎉 R6 풀유니버스 결과 (2026-05-28, 돌파구)
+- **검증 성공**: `bt_engine_mode="warm"`+`bt_timeframe="tick"` 풀유니버스에서 **Tick_902 흑자·보고서급** (dev-scale 0거래/음수와 정반대 → 구조 결론 최종 확정).
+- **smoke**(1주·202종목·16엔진, `run_full_smoke_config.json`): gate통과·**profit+606,123·MDD6.07·trades4·graded48.4·winner졸업**. prepare~90s + run **18.3s**(세대당~1hr 우려 기각, warm tick 빠름).
+- **진화**(fullevo1, 1개월·400종목·8세대·**21분**, `run_full_evo_config.json`): **gen0 Tick_902=profit+740,353·MDD0.88·calmar117·trades6**(보고서급 우수)이나 일평균0.3<0.4 freq게이트 탈락. best_gen5=+234K·MDD10.01(cap10 0.01초과)·trades39(2/day)·r²0.10.
+- **빈도-품질 프론티어 매핑**(부검 확증): 빈도 0.3→2.15/day 올릴수록 수익 +740K→마진, MDD 0.88→13 악화. **흑자 엣지는 본질적 저빈도.**
+- **winner 0 = 능력 아닌 게이트 보정 문제**: gen0 freq 0.3<0.4 근소·gen5 MDD 10.01>10 근소. **즉시 레버**: `min_daily_trades` 0.3↓ 또는 `mdd_cap` 11↑ → gen0/gen5 즉시 졸업(첫 풀유니버스 보고서급 winner).
+- **다음 후보**: ①게이트 보정 재run(즉시 winner) ②기간 확대(1개월→3~12개월, 보고서급 연간 통계 + fitness 안정) ③보고서급 고빈도(10-23/day)와 흑자 양립(열린 난제 — 저빈도가 본질적 흑자라 looser-but-profitable 진입 재설계 필요).
+- 보조 자산(gitignored, 로컬): `state/run_full_smoke_config.json`·`run_full_evo_config.json`(warm+tick), `run_r4_config.json`(N=8 대형주), `run_r5_config.json`(N=12 소형주+richest), `tick_subset_small.db`. 진단 스크립트 `_temp_*.py`(커밋 제외).
