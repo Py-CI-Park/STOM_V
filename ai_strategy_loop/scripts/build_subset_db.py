@@ -8,7 +8,8 @@
   없으므로, 엔진을 건드리지 않고 유니버스를 좁히는 가장 단순한 방법은
   `moneytop`이 N개 종목만 담은 **curated subset back-DB** 다.
 
-이 빌더가 만드는 것 (`_database/stock_min_back.db` → `state/min_subset.db`):
+이 빌더가 만드는 것 (`_database/stock_min_back.db` → `state/min_subset.db`,
+또는 tick: `_database/stock_tick_back.db` → `state/tick_subset.db`):
   (a) 유동성 높고 잘 채워진 종목 N개의 per-stock 분봉 테이블 복사
   (b) 그 N개 종목만 담도록 필터링한 `moneytop` 테이블
       (원본 스키마/컬럼명/순서를 그대로 보존; 행의 `;`-구분 코드 리스트를 N개로 필터)
@@ -28,8 +29,16 @@
 원본 DB는 read-only(uri mode=ro)로만 연다 — 절대 수정하지 않는다. 멱등(rebuild OK).
 
 실행:
-    python -m ai_strategy_loop.scripts.build_subset_db            # 기본 N=12
-    python -m ai_strategy_loop.scripts.build_subset_db --size 8   # 확인용 N=8
+    python -m ai_strategy_loop.scripts.build_subset_db            # 기본 N=12 (min)
+    python -m ai_strategy_loop.scripts.build_subset_db --size 8   # 확인용 N=8 (min)
+    python -m ai_strategy_loop.scripts.build_subset_db --timeframe tick --size 8  # tick
+
+tick 지원(가산·하위호환):
+    --timeframe tick 이면 source 기본=`_database/stock_tick_back.db`,
+    출력 기본=`state/tick_subset.db`, day divisor=1_000_000 (tick index 14자리
+    YYYYMMDDHHMMSS → //1_000_000 = YYYYMMDD). min 경로는 divisor 10_000으로
+    완전 불변(byte-동일). 스키마(per-stock/moneytop/stockinfo)는 min/tick 동일하므로
+    복사/필터 로직은 그대로 재사용한다.
 """
 
 from __future__ import annotations
@@ -47,10 +56,22 @@ REPO_ROOT = _PACKAGE_DIR.parent
 DEFAULT_SOURCE_DB = REPO_ROOT / "_database" / "stock_min_back.db"
 DEFAULT_SUBSET_DB = _PACKAGE_DIR / "state" / "min_subset.db"
 
+# tick 기본 소스/타겟 경로 (가산; min은 위 기본값 그대로 불변).
+DEFAULT_SOURCE_DB_TICK = REPO_ROOT / "_database" / "stock_tick_back.db"
+DEFAULT_SUBSET_DB_TICK = _PACKAGE_DIR / "state" / "tick_subset.db"
+
 DEFAULT_UNIVERSE_SIZE = 12
 
-# min 분봉 인덱스(YYYYMMDDHHMM)에서 일자(YYYYMMDD) 추출용 제수.
+# 인덱스에서 일자(YYYYMMDD)를 뽑는 제수(timeframe별).
+#   min  : 인덱스 YYYYMMDDHHMM(12자리)   → //10_000     = YYYYMMDD.
+#   tick : 인덱스 YYYYMMDDHHMMSS(14자리) → //1_000_000  = YYYYMMDD.
 _MIN_DAY_DIV = 10_000
+_TICK_DAY_DIV = 1_000_000
+
+
+def _day_div_for(timeframe: str) -> int:
+    """timeframe별 일자 추출 제수. 기본(미지정/min)은 min 제수(하위호환)."""
+    return _TICK_DAY_DIV if timeframe == "tick" else _MIN_DAY_DIV
 
 
 def _connect_ro(path: str) -> sqlite3.Connection:
@@ -92,13 +113,17 @@ def _table_names(cur: sqlite3.Cursor) -> Set[str]:
 
 
 def select_liquid_codes(
-    cur: sqlite3.Cursor, size: int
+    cur: sqlite3.Cursor, size: int, *, day_div: int = _MIN_DAY_DIV
 ) -> List[Tuple[str, int]]:
     """유동성 높고 잘 채워진 종목 N개를 결정론적으로 고른다.
 
     moneytop 등장일 ∩ 종목 자체 테이블 보유일 교집합 일수가 많은 순으로 정렬하고,
     동률이면 코드 오름차순으로 타이브레이크(결정론). 종목 테이블이 없는 코드는
     제외한다(subset에 복사할 데이터가 있어야 하므로).
+
+    Args:
+        day_div: 인덱스 → 일자(YYYYMMDD) 추출 제수. min=10_000(기본), tick=1_000_000.
+            기본값이 min 제수이므로 인자 미지정 호출은 기존 동작과 동일(하위호환).
 
     반환: [(code, common_day_count), ...] 길이 = min(size, 가용 종목 수).
     """
@@ -110,7 +135,7 @@ def select_liquid_codes(
     for idx, text in rows:
         if not text:
             continue
-        day = int(idx) // _MIN_DAY_DIV
+        day = int(idx) // day_div
         for c in str(text).split(";"):
             c = c.strip()
             if c:
@@ -130,7 +155,7 @@ def select_liquid_codes(
             own_days = {
                 r[0]
                 for r in cur.execute(
-                    f'SELECT DISTINCT "index" / {_MIN_DAY_DIV} FROM "{code}"'
+                    f'SELECT DISTINCT "index" / {day_div} FROM "{code}"'
                 ).fetchall()
             }
         except sqlite3.OperationalError:
@@ -166,6 +191,7 @@ def build_subset_db(
     size: int = DEFAULT_UNIVERSE_SIZE,
     *,
     codes: Optional[List[str]] = None,
+    timeframe: str = "min",
 ) -> Dict[str, object]:
     """curated subset back-DB를 빌드한다 (멱등; 기존 subset 파일은 덮어쓴다).
 
@@ -174,10 +200,15 @@ def build_subset_db(
         subset_db: 생성할 subset DB 경로 (기본 state/min_subset.db).
         size: 고를 종목 수 N (codes가 주어지면 무시).
         codes: 명시 코드 리스트(테스트/고정 선택용). None이면 select_liquid_codes로 자동.
+        timeframe: 'min'(기본) | 'tick'. 종목 선택의 일자 추출 제수만 결정한다
+            (min=10_000, tick=1_000_000). per-stock/moneytop/stockinfo 스키마는
+            동일하므로 복사·필터 로직은 그대로다. 기본 min이라 미지정 호출은
+            기존 동작과 byte-동일(하위호환).
 
     Returns:
         {"subset_db", "codes", "stock_tables", "moneytop_rows", "stockinfo_rows"}.
     """
+    day_div = _day_div_for(timeframe)
     source_path = str(source_db)
     subset_path = str(subset_db)
     Path(subset_path).parent.mkdir(parents=True, exist_ok=True)
@@ -190,7 +221,7 @@ def build_subset_db(
         scur = src.cursor()
 
         if codes is None:
-            chosen = [c for c, _ in select_liquid_codes(scur, size)]
+            chosen = [c for c, _ in select_liquid_codes(scur, size, day_div=day_div)]
         else:
             existing = _table_names(scur)
             chosen = [c for c in codes if c in existing]
@@ -278,12 +309,20 @@ def _main(argv=None) -> int:
         description="소형 다변화 유니버스 백테용 curated subset back-DB 빌더",
     )
     parser.add_argument(
-        "--source", type=str, default=str(DEFAULT_SOURCE_DB),
-        help=f"읽기 전용 소스 back-DB (default: {DEFAULT_SOURCE_DB})",
+        "--timeframe", type=str, default="min", choices=["min", "tick"],
+        help="백테 타임프레임 (default: min). tick이면 source/out 기본값과 "
+             "일자 추출 제수가 tick용으로 바뀐다.",
+    )
+    # --source/--out 기본값은 timeframe에 따라 사후 해석한다(None이면 timeframe별 기본).
+    parser.add_argument(
+        "--source", type=str, default=None,
+        help=f"읽기 전용 소스 back-DB (default: min={DEFAULT_SOURCE_DB}, "
+             f"tick={DEFAULT_SOURCE_DB_TICK})",
     )
     parser.add_argument(
-        "--out", type=str, default=str(DEFAULT_SUBSET_DB),
-        help=f"생성할 subset DB 경로 (default: {DEFAULT_SUBSET_DB})",
+        "--out", type=str, default=None,
+        help=f"생성할 subset DB 경로 (default: min={DEFAULT_SUBSET_DB}, "
+             f"tick={DEFAULT_SUBSET_DB_TICK})",
     )
     parser.add_argument(
         "--size", type=int, default=DEFAULT_UNIVERSE_SIZE,
@@ -291,11 +330,20 @@ def _main(argv=None) -> int:
     )
     args = parser.parse_args(argv)
 
-    print(f"[SUBSET] source : {args.source}", flush=True)
-    print(f"[SUBSET] out    : {args.out}", flush=True)
+    is_tick = args.timeframe == "tick"
+    source = args.source or str(
+        DEFAULT_SOURCE_DB_TICK if is_tick else DEFAULT_SOURCE_DB
+    )
+    out = args.out or str(
+        DEFAULT_SUBSET_DB_TICK if is_tick else DEFAULT_SUBSET_DB
+    )
+
+    print(f"[SUBSET] timeframe: {args.timeframe}", flush=True)
+    print(f"[SUBSET] source : {source}", flush=True)
+    print(f"[SUBSET] out    : {out}", flush=True)
     print(f"[SUBSET] size   : {args.size}", flush=True)
 
-    result = build_subset_db(args.source, args.out, args.size)
+    result = build_subset_db(source, out, args.size, timeframe=args.timeframe)
 
     out_path = str(result["subset_db"])
     size_bytes = os.path.getsize(out_path) if os.path.exists(out_path) else 0

@@ -142,22 +142,32 @@ def _select_single_stock(timeframe: str, window_days: int):
     return best_code, window[0], window[-1], len(window)
 
 
-def _default_subset_db() -> str:
-    """small_universe 기본 subset DB 경로 (config.bt_subset_db가 None일 때)."""
-    return os.path.join(REPO_ROOT, "ai_strategy_loop", "state", "min_subset.db")
+def _default_subset_db(timeframe: str = "min") -> str:
+    """small_universe 기본 subset DB 경로 (config.bt_subset_db가 None일 때).
+
+    timeframe='tick'이면 state/tick_subset.db, 그 외(min)는 state/min_subset.db.
+    기본 min이라 미지정 호출은 기존 동작과 동일(하위호환).
+    """
+    name = "tick_subset.db" if timeframe == "tick" else "min_subset.db"
+    return os.path.join(REPO_ROOT, "ai_strategy_loop", "state", name)
 
 
-def _select_universe_window(subset_db: str, window_days: int):
+def _select_universe_window(subset_db: str, window_days: int, timeframe: str = "min"):
     """subset DB의 moneytop에서 백테 날짜 윈도우(앞쪽 window_days 거래일)를 산출한다.
 
     subset DB의 moneytop은 N개 종목만 담은 curated 테이블이다. 그 등장 일자
     (YYYYMMDD)들을 모아 정렬한 뒤 앞쪽 window_days 일을 윈도우로 잡는다.
     one_code는 쓰지 않는다('종목코드별 분류'가 moneytop의 모든 코드를 로딩).
 
+    timeframe별 일자 추출 제수: min=10_000(YYYYMMDDHHMM 12자리),
+    tick=1_000_000(YYYYMMDDHHMMSS 14자리). 기본 min이라 미지정 호출은
+    기존 동작과 동일(하위호환).
+
     반환: (start_yyyymmdd, end_yyyymmdd, day_count).
     """
     import sqlite3  # noqa: PLC0415
 
+    day_div = 1_000_000 if timeframe == "tick" else 10_000
     con = sqlite3.connect(f"file:{subset_db}?mode=ro", uri=True)
     try:
         cur = con.cursor()
@@ -166,7 +176,7 @@ def _select_universe_window(subset_db: str, window_days: int):
         if len(cols) < 2:
             raise RuntimeError("subset moneytop에 값 컬럼이 없습니다")
         days = sorted(
-            {int(r[0]) // 10_000 for r in cur.execute('SELECT "index" FROM moneytop')}
+            {int(r[0]) // day_div for r in cur.execute('SELECT "index" FROM moneytop')}
         )
     finally:
         con.close()
@@ -216,7 +226,10 @@ def run_backtest_for(config: LoopConfig, buy_name: str, sell_name: str) -> Backt
         #   subset의 moneytop이 N개만 담으므로 엔진 무수정으로 그 N개 위에서 백테한다.
         #   one_code는 쓰지 않는다. 날짜 윈도우는 subset moneytop에서 산출한다.
         #   DB 접근/선택 실패도 "절대 raise 안 함" 계약대로 실패 outcome으로 표준화.
-        subset_db = config.bt_subset_db or _default_subset_db()
+        # timeframe-aware: tick이면 tick_subset.db + STOM_CLI_DB_STOCK_BACK_TICK +
+        #   --timeframe tick + tick day-index(1_000_000). min은 기존 경로 그대로(불변).
+        is_tick = config.bt_timeframe == "tick"
+        subset_db = config.bt_subset_db or _default_subset_db(config.bt_timeframe)
         if not os.path.isfile(subset_db):
             return BacktestOutcome(
                 False, "error", None, None,
@@ -227,14 +240,21 @@ def run_backtest_for(config: LoopConfig, buy_name: str, sell_name: str) -> Backt
         bt_end = config.bt_end
         if not (bt_start and bt_end):
             try:
-                bt_start, bt_end, _ = _select_universe_window(subset_db, window_days)
+                bt_start, bt_end, _ = _select_universe_window(
+                    subset_db, window_days, config.bt_timeframe
+                )
             except Exception as exc:  # noqa: BLE001 - 선택 실패도 outcome으로 표준화.
                 return BacktestOutcome(
                     False, "error", None, None,
                     f"universe window selection failed: {exc}",
                 )
-        # 백테 서브프로세스가 subset DB를 back-min DB로 쓰도록 오버라이드.
-        env["STOM_CLI_DB_STOCK_BACK_MIN"] = str(subset_db)
+        # 백테 서브프로세스가 subset DB를 back-DB로 쓰도록 오버라이드.
+        #   tick은 STOM_CLI_DB_STOCK_BACK_TICK, min은 STOM_CLI_DB_STOCK_BACK_MIN.
+        #   (runner.py가 config.is_tick으로 TICK/MIN 경로를 고르므로 일치시킨다.)
+        if is_tick:
+            env["STOM_CLI_DB_STOCK_BACK_TICK"] = str(subset_db)
+        else:
+            env["STOM_CLI_DB_STOCK_BACK_MIN"] = str(subset_db)
         cmd = [
             sys.executable,
             os.path.join(REPO_ROOT, "stom_backtest.py"),
@@ -242,7 +262,7 @@ def run_backtest_for(config: LoopConfig, buy_name: str, sell_name: str) -> Backt
             "--sell", sell_name,
             "--start", str(bt_start),
             "--end", str(bt_end),
-            "--timeframe", "min",  # subset은 min 분봉 back-DB.
+            "--timeframe", config.bt_timeframe,  # subset back-DB의 타임프레임.
             "--divid-mode", "종목코드별 분류",  # moneytop의 모든(=N개) 코드 로딩.
             "--engines", str(config.bt_engine_count),
             "--timeout", str(config.bt_timeout),
