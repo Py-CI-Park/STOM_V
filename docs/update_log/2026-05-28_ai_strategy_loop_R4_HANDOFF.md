@@ -98,3 +98,31 @@
 `319baf01`(P1-P10 핸드오프) → `a5fd7176`(청산레버+freeze_buy) → `e870169f`(대시보드 청산품질) → `88932e29`(연구문서) → `4f218dcf`(재정렬설계+게이트sweep) → `9251b614`(R0/R1) → `9c71fd5a`(R-Viz1) → `9e4b538b`(보고서패턴 프롬프트) → **`481d2578`(R4 tick 인프라)**.
 
 목표 임계값(조정가능): 일평균≥8~10·MDD≤7%·매매성능지수≥1.25·연수익≥130%. (N=30 dev 스케일에선 일평균~2.6라 게이트 하향 조정해 진화; 풀스케일은 풀유니버스.)
+
+---
+
+## §8. R4 실행 결과 + 진단 정정 + R5 (2026-05-28 이어서)
+
+> §2의 "관심종목 게이트가 블로커" 진단은 **틀렸다**. 아래가 정정·최신 상태다.
+
+### 8.1 진단 정정 (관심종목 → 시가총액)
+- **관심종목은 블로커가 아니다**: tick subset 데이터에 관심종목=1이 **50~67%** 존재(09:00~05에도 종목당 6.2만~9.2만 틱). 엔진 `tick.py:88 if not 관심종목:continue`는 통과한다.
+- **진짜 블로커 = 시가총액 미스매치**: `Tick_902`는 `if 시가총액<3000`(소형주)에서만 매수하는데, `build_subset_db`(유동성=거래대금순 선별)는 전부 **대형주**(평균 3~6.6조)라 시총<3000 틱이 ≈0 → 매수=False 고정 → 0거래.
+- **실증**: 시총 제약 없는 느슨 전략 PoC → trade_count 12>0.
+
+### 8.2 R4 진화 결과 (run=r4tick1, N=8 대형주 tick, 8세대, 18분)
+- 파이프라인 **전부 정상**(fresh 생성→tick 백테~103s→채점→대시보드 라이브).
+- **winner 0**: 전 세대 음의 엣지. plateau graded~0.489(gen4: MDD3.84·trades18·수익−36K). 빈도는 보고서급(gen0 93거래=일평균18.6, 목표10~23 안)·MDD제어OK(1~3.8%)지만 흑자 미달(R3 min과 동일).
+
+### 8.3 R5 — 소형주 도메인 + 윈도우 개선 (사용자 선택)
+- **소형주 선별 스캔**: 소스 tick DB 전체 2425종목 중 **1878종목**이 소형주 아침(시총<3000&관심&09:00-30) 활동. top-12로 `state/tick_subset_small.db`(524MB) 빌드.
+- **Tick_902 isolation = 0거래(N=12)**: richest 윈도우(시총<3000 아침틱 41,747 충족)에서도 0거래. **병목은 시총/윈도우가 아니라 Tick_902의 ~10조건 AND 체인** — 12종목 규모에선 진입 confluence가 안 생김.
+- **🔑 구조적 결론**: **선택적 보고서 전략은 풀유니버스(~1379종목)·1년 규모가 본질**. dev-scale(N=8~30) small_universe로는 재현 불가. (느슨 전략은 dev-scale서도 발화하나 음의 엣지.)
+- **윈도우 선택 개선(커밋됨)**: `_select_universe_window`가 '가장 이른 N일'만 골라 데이터 빈약 → `config.bt_window_select` 토글 추가(`earliest`기본=하위호환 / `richest`=moneytop coverage 최대 연속구간). 테스트 4/4, 회귀 0.
+
+### 8.4 baseline 진실 (중요)
+- 문서상 "7 failed"는 **stale**. 현재 환경 진짜 baseline = **34 failed / 1691 passed**. 추가 33개는 전부 `tune/sweep/wfo/setting/report/optimizer/db/formula/exit_codes/backtest_contract` 등 **cli·ui 도구 테스트**(ai_strategy_loop 무관, 이번 세션 이전부터 존재 — 환경/의존성 드리프트로 추정). 윈도우 개선은 +1 pass·신규 실패 0으로 검증.
+
+### 8.5 다음 단계 = 풀유니버스 (사용자 결정)
+- `bt_engine_mode="warm"`(WarmBacktestSession, 엔진 32개) + `bt_timeframe="tick"`로 풀유니버스 Tick_902 검증 → fresh 진화. 세대당 ~1시간. prepare 비용 큼(tick 29GB) — 먼저 1회 warm 백테로 Tick_902가 풀유니버스서 흑자/보고서급인지 확인 후 진화.
+- 보조 자산(gitignored, 로컬): `state/run_r4_config.json`(N=8 대형주 fresh), `state/run_r5_config.json`(N=12 소형주 fresh+richest), `state/tick_subset_small.db`(소형주 N=12). 진단 스크립트는 워크트리 `_temp_*.py`(커밋 제외).

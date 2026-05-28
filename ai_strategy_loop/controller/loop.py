@@ -152,12 +152,21 @@ def _default_subset_db(timeframe: str = "min") -> str:
     return os.path.join(REPO_ROOT, "ai_strategy_loop", "state", name)
 
 
-def _select_universe_window(subset_db: str, window_days: int, timeframe: str = "min"):
-    """subset DB의 moneytop에서 백테 날짜 윈도우(앞쪽 window_days 거래일)를 산출한다.
+def _select_universe_window(
+    subset_db: str, window_days: int, timeframe: str = "min",
+    select_mode: str = "earliest",
+):
+    """subset DB의 moneytop에서 백테 날짜 윈도우(window_days 거래일)를 산출한다.
 
     subset DB의 moneytop은 N개 종목만 담은 curated 테이블이다. 그 등장 일자
-    (YYYYMMDD)들을 모아 정렬한 뒤 앞쪽 window_days 일을 윈도우로 잡는다.
+    (YYYYMMDD)들을 모아 정렬한 뒤 window_days 일을 윈도우로 잡는다.
     one_code는 쓰지 않는다('종목코드별 분류'가 moneytop의 모든 코드를 로딩).
+
+    select_mode:
+      'earliest' — 기본·하위호환. 앞쪽 window_days 일(가장 이른 구간).
+      'richest'  — moneytop coverage(그 날 담긴 코드 수) 합이 최대인 연속 window_days
+                   구간. 활성 종목이 가장 많은 구간을 골라 신호를 풍부하게 한다.
+                   동률이면 더 이른 구간(작은 시작 인덱스)을 선택(결정론).
 
     timeframe별 일자 추출 제수: min=10_000(YYYYMMDDHHMM 12자리),
     tick=1_000_000(YYYYMMDDHHMMSS 14자리). 기본 min이라 미지정 호출은
@@ -175,17 +184,35 @@ def _select_universe_window(subset_db: str, window_days: int, timeframe: str = "
         cols = [r[1] for r in cur.fetchall()]
         if len(cols) < 2:
             raise RuntimeError("subset moneytop에 값 컬럼이 없습니다")
-        days = sorted(
-            {int(r[0]) // day_div for r in cur.execute('SELECT "index" FROM moneytop')}
-        )
+        valcol = cols[1]  # 거래대금순위(;-구분 코드 리스트) — coverage 산출용.
+        # 일자별 coverage(=그 날 moneytop에 담긴 코드 수)를 집계한다.
+        #   같은 날 여러 행이 있으면 최대값을 쓴다(보통 하루 1행).
+        day_cov: dict[int, int] = {}
+        for idx, text in cur.execute(f'SELECT "index","{valcol}" FROM moneytop'):
+            day = int(idx) // day_div
+            cnt = len([c for c in str(text).split(";") if c.strip()]) if text else 0
+            if cnt > day_cov.get(day, 0):
+                day_cov[day] = cnt
+            else:
+                day_cov.setdefault(day, cnt)
     finally:
         con.close()
 
+    days = sorted(day_cov)
     if len(days) < window_days:
         raise RuntimeError(
             f"subset moneytop 거래일 {len(days)}개 < window_days {window_days}"
         )
-    window = days[:window_days]
+    if select_mode == "richest":
+        # 정렬일 기준 연속 window_days 슬라이스 중 coverage 합 최대(동률=이른 구간).
+        best_i, best_sum = 0, -1
+        for i in range(len(days) - window_days + 1):
+            s = sum(day_cov[d] for d in days[i:i + window_days])
+            if s > best_sum:
+                best_sum, best_i = s, i
+        window = days[best_i:best_i + window_days]
+    else:  # 'earliest' (기본·하위호환): 앞쪽 window_days 일.
+        window = days[:window_days]
     return window[0], window[-1], len(window)
 
 
@@ -241,7 +268,8 @@ def run_backtest_for(config: LoopConfig, buy_name: str, sell_name: str) -> Backt
         if not (bt_start and bt_end):
             try:
                 bt_start, bt_end, _ = _select_universe_window(
-                    subset_db, window_days, config.bt_timeframe
+                    subset_db, window_days, config.bt_timeframe,
+                    getattr(config, "bt_window_select", "earliest"),
                 )
             except Exception as exc:  # noqa: BLE001 - 선택 실패도 outcome으로 표준화.
                 return BacktestOutcome(

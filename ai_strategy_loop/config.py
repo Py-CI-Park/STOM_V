@@ -146,6 +146,13 @@ class LoopConfig:
     #   bt_window_days(5)는 그대로 두고, small_universe만 이 값(기본 20)을 쓴다.
     #   속도/충실도: N×window가 클수록 1회 백테가 느려지므로 bt_timeout 아래로 유지.
     bt_window_days_universe: int = 20
+    # bt_window_select: small_universe 백테 윈도우 선택 방식.
+    #   'earliest' — 기본·하위호환. subset moneytop 거래일 중 **앞쪽** window_days일.
+    #                (가장 이른 구간이라 종목이 아직 비활성일 수 있어 데이터 빈약 가능.)
+    #   'richest'  — moneytop coverage(그 날 담긴 코드 수) 합이 최대인 연속 window_days
+    #                구간. 활성 종목이 가장 많은 구간을 골라 백테 신호를 풍부하게 한다.
+    #                동률이면 더 이른 구간 선택(결정론). 기본 OFF이라 기존 동작/테스트 불변.
+    bt_window_select: str = "earliest"  # 'earliest' | 'richest'
 
     # --- 루프 종료/비용 제어 (US-005 Phase 2b) ---
     # target_score: None이면 점수 기반 조기 종료 없음. 값이 있으면

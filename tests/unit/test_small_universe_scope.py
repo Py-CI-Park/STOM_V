@@ -146,6 +146,34 @@ def test_single_stock_uses_one_code_and_no_back_min_override(monkeypatch, tmp_pa
     assert "STOM_CLI_DB_STOCK_BACK_MIN" not in env
 
 
+def test_universe_window_richest_vs_earliest(tmp_path):
+    """bt_window_select: earliest(기본·하위호환) vs richest(coverage 최대 구간)."""
+    sub = tmp_path / "subset.db"
+    con = sqlite3.connect(str(sub))
+    cur = con.cursor()
+    cur.execute('CREATE TABLE "moneytop" ("index" INTEGER, "거래대금순위" TEXT)')
+    # 거래일 10일. coverage: 1~3일=코드 1개, 4~10일=코드 3개(활성 구간).
+    rows = []
+    for d in range(1, 11):
+        day = 20250100 + d
+        codes = "AAAAAA" if d <= 3 else "AAAAAA;BBBBBB;CCCCCC"
+        rows.append((day * _MIN_DAY_DIV + 900, codes))
+    cur.executemany('INSERT INTO moneytop ("index","거래대금순위") VALUES (?,?)', rows)
+    con.commit()
+    con.close()
+
+    # earliest: 앞쪽 3거래일.
+    assert L._select_universe_window(str(sub), 3, "min", "earliest") == (
+        20250101, 20250103, 3
+    )
+    # richest: coverage 최대 연속 3일(가장 이른 high-coverage 구간) = 4~6일.
+    assert L._select_universe_window(str(sub), 3, "min", "richest") == (
+        20250104, 20250106, 3
+    )
+    # 기본 인자(select_mode 미지정)는 earliest와 동일(하위호환).
+    assert L._select_universe_window(str(sub), 3, "min") == (20250101, 20250103, 3)
+
+
 def test_small_universe_missing_subset_db_returns_failure_outcome(monkeypatch, tmp_path):
     """subset DB가 없으면 raise 없이 구체 실패 outcome(never-raises 계약)."""
     # subprocess는 호출되면 안 됨(그 전에 실패해야 함) → 호출 시 폭발하도록.
