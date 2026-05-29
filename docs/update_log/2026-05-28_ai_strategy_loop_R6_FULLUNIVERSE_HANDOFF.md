@@ -224,6 +224,8 @@ trackb4 세대: gen0 시드 +194만 통과 / **gen1 82거래 +125만 MDD6.3 통�
 ## §4. ⚡ 다음 세션 첫 행동 (권장 순서)
 
 > **🔴 2026-05-29 최신(R8 후) 다음 세션 최우선 = 고빈도(일평균10~23) + 고calmar/r² 생성(=시드 능가)**: 이번 세션 결론 — 빈도-흑자-MDD 양립 메커니즘(dispersion·거래대금게이트강제·MDD제어 토글)은 구현했고 개별 성공 사례(trackb2 gen2 1개월·trackb4 gen1 3개월)도 있으나, **refine 생성세대는 빈도만 높지 위험조정수익(calmar·r²)이 시드 Tick_902(calmar31·r²0.85)에 미달**(§3.7 R7.4·§3.9). 즉 "고빈도이면서 시드급 calmar/r²"를 만드는 것이 미해결 핵심. 방향: LLM 생성 품질·프롬프트(보고서 변수패턴 강화)·도메인/시드 재설계. **과발화 정적컷은 불가 판명(§3.7)**이라 런타임 fail-fast 유지. 보고서급 도달 가능성 평가는 §3.10 참조. 대시보드 LIVE 가시성은 R8로 완비(§3.8, phase·active_config·품질지표 실측).
+>
+> **🆕 레버 ① 완료(2026-05-29, 커밋 `19cf5f0f`)**: `winner_objective='multi'`(calmar·r²·일평균빈도·payoff 정규화 동일가중 결합) 구현·code-reviewer APPROVE(3 CRITICAL 불변식 fuzzing 14,524케이스 0 mismatch)·baseline 신규0·기본 OFF(risk_adjusted 유지). **단 multi 단독은 시드 우위 유지 예상**(고빈도+고calmar/r² 세대가 아직 없어 freq 항이 시드의 calmar/payoff 우위를 못 이김 — §3.10) → 실효는 ②③④ 결합 시. **다음 = ② 다종목 동시성 보상 적합도(현 daily_avg_trades는 종목무관 총량이라 불충분) + 엔진 보유상한 토글(별도스코프·사용자확인)부터.** config 신규: multi_calmar_norm 30·multi_payoff_norm 1.3·multi_daily_target 10.
 
 > **🆕 2026-05-29: step 1~2(0.3 보정·gen0 졸업·3개월 확대)는 §3.3에서 완료.** 갱신된 최우선 = **§4-NEW Track B(고빈도·흑자 양립)**. 기존 step 1~5는 후순위 보조로 유지.
 
