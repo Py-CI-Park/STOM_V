@@ -219,6 +219,14 @@ trackb4 세대: gen0 시드 +194만 통과 / **gen1 82거래 +125만 MDD6.3 통�
 - **정직한 결론**: ①**수익·리스크·payoff 품질은 이미 보고서급(payoff 초과)** — 위험조정 기준 **Yes**. ②그러나 보고서 우수전략 정체성인 **'고빈도(10~23)·다종목(6~12) 분산 매매'는 현 구조로 재현 불가**(빈도↑→흑자붕괴/MDD폭증, 동시보유 엔진창발 1~4 상한). 시드 Tick_902는 '저빈도·소수진입 고품질'로 보고서와 **다른 종(種)**. **→ "보고서만큼 좋은 성과": 위험조정 기준 Yes, 보고서 전략 형태(고빈도·다종목)까지면 아직 No.**
 - **유망 경로(다음 세션, §4 최우선과 동일)**: '고빈도+시드급 calmar/r² 생성' 4레버 동시 공략 — ①winner_objective risk_adjusted+다목적 점수(고빈도×calmar×r²) ②다종목 동시성 보상 적합도(현 daily_avg_trades는 종목무관 총량이라 불충분)+엔진 보유상한 토글(별도스코프·사용자확인) ③코드레벨 MDD제어(고빈도 MDD 폭증이 3개월 진짜 병목) ④3~12개월 상시검증(trackb2식 구간 과적합 차단).
 
+### 3.11 STOM 실사용 가능성 검증 (2026-05-29, Workflow: export·형식·e2e) — 조건부 YES
+
+사용자 질문 "생성한 조건식을 STOM에서 바로 쓸 수 있나" 검증 결과:
+- ✅ **형식 100% 호환**: 생성 코드는 STOM 엔진 exec 형식(매수=True/if not(관심종목):매수=False/시분초 게이트/self.Buy(), 매도 self.Sell())·timeframe(tick=초당/min=분당)·compile 전수 통과(AILOOP_* buy 263/sell 261 = 100% compile + self.Buy/Sell 포함). loop_strategies.db ↔ `_database/strategy.db` 스키마 동일(['index','전략코드'] TEXT). 시드 Tick_902는 원본 byte-동일(len 3836 ==).
+- ✅ **export 경로 = 운영 strategy.db 직결**: `final_approval`(WS, 사람 승인) → `_do_final_approval`(app.py:445-472) → `export_winner`(controller/export.py:65-130)가 격리 DB 우승 코드를 **무변형** 복사해 user_buy/user_sell 이름으로 `_database/strategy.db` stockbuy/stocksell '전략코드'에 INSERT/UPDATE. 이 파일·테이블·컬럼이 STOM 백테엔진(backtest.py:164 connect(DB_STRATEGY))·GUI 전략편집기(database_read_only '전략디비')·실거래(kiwoom_strategy_tick)가 읽는 **바로 그것**. GUI 콤보(ui_button_clicked_editer_stg_buy_stock.py:23-29)가 stockbuy 전체 index 로딩 → export 이름 자동 등장. **운영 DB에 이미 과거 AI루프 산출물(AutoResearchBaselineCompare_20260418_T6 등) 적재 = STOM 도달 실증.**
+- **조건(수동·제약)**: ①export는 final_approval 사람 승인이 유일 통로(CLI run만으론 운영 미투입 — 설계상 안전게이트, 무인배포 아님) ②buy/sell **조건코드만** 복사 — 주문설정(stockbuyorder '경과틱수' 등)·변수패턴(stockvars/optivars)·조건분해(stockbuyconds) 미복사(전략이 의존 시 운영 동작 동일성 미보장, export_winner에 동반복사 옵션 추가가 fix) ③export 후 GUI 콤보 수동 재로딩(F1/F5, 자동 새로고침 신호 없음) ④운영 백테 1회 확인 권장(dict_set·ms_analyzer 설정 차이로 수치 변동 가능; ms_analyzer 의존 코드는 '시장미시구조분석' ON 필요) ⑤user 이름이 기존 운영 전략명과 충돌 시 무경고 덮어쓰기(중복확인 로직 없음).
+- **결론**: '형식만 그럴듯한 가짜'가 아니라 **STOM이 그대로 로드·실행하는 1급 전략**이다. 생성·졸업·형식·DB경로 모두 검증 통과(YES). 운영 즉시 사용은 '사람 승인 1단계 + (의존 시)부가설정 동반 + 운영백테 1회'의 조건부. **STOM 사용성 개선 후보**(별도): export에 부가테이블 동반복사·콤보 자동 새로고침 신호·이름 충돌 확인.
+
 ---
 
 ## §4. ⚡ 다음 세션 첫 행동 (권장 순서)
