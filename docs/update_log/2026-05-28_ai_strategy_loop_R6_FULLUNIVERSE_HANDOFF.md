@@ -227,6 +227,22 @@ trackb4 세대: gen0 시드 +194만 통과 / **gen1 82거래 +125만 MDD6.3 통�
 - **조건(수동·제약)**: ①export는 final_approval 사람 승인이 유일 통로(CLI run만으론 운영 미투입 — 설계상 안전게이트, 무인배포 아님) ②buy/sell **조건코드만** 복사 — 주문설정(stockbuyorder '경과틱수' 등)·변수패턴(stockvars/optivars)·조건분해(stockbuyconds) 미복사(전략이 의존 시 운영 동작 동일성 미보장, export_winner에 동반복사 옵션 추가가 fix) ③export 후 GUI 콤보 수동 재로딩(F1/F5, 자동 새로고침 신호 없음) ④운영 백테 1회 확인 권장(dict_set·ms_analyzer 설정 차이로 수치 변동 가능; ms_analyzer 의존 코드는 '시장미시구조분석' ON 필요) ⑤user 이름이 기존 운영 전략명과 충돌 시 무경고 덮어쓰기(중복확인 로직 없음).
 - **결론**: '형식만 그럴듯한 가짜'가 아니라 **STOM이 그대로 로드·실행하는 1급 전략**이다. 생성·졸업·형식·DB경로 모두 검증 통과(YES). 운영 즉시 사용은 '사람 승인 1단계 + (의존 시)부가설정 동반 + 운영백테 1회'의 조건부. **STOM 사용성 개선 후보**(별도): export에 부가테이블 동반복사·콤보 자동 새로고침 신호·이름 충돌 확인.
 
+### 3.12 고빈도+고calmar/r² 목표 연구계획 (2026-05-29, ultracode Workflow judge panel)
+
+**🔴 핵심 인과 정정(DB 실측)**: 진짜 병목은 r²(곡선평활도)가 **아니라 청산 give-back으로 인한 calmar 음수(적자)**다. 고빈도 세대(daily 5~18.6·93~236거래)는 **r² 0.93~0.996로 평활도 멀쩡**한데 calmar 음수(적자)로 게이트 탈락. r²붕괴(0.50)는 trackb3 단일 사례뿐(일반화 오류). score=calmar×r²×gate에서 calmar 음수면 total_profit>0 게이트에서 이미 탈락. **+ 결정적 결함**: `max_hold_count`가 DB 전체에서 {0,1}만 기록 = **다종목 분산 신호가 죽어있음**(236거래 세대조차 0) → 동시보유 보상 선택압이 작동한 적 없음. 측정 복구가 모든 것의 전제.
+
+**성공기준(2단계)**: [1차 마일스톤] 3개월+holdout, AI생성 세대(시드 아님)가 일평균거래≥4 AND calmar≥15 AND MDD≤7 AND total_profit>0 AND uptrend_r2≥0.6 동시충족. [최종 목표] 일평균≥8 AND calmar≥20 AND MDD≤7 AND r²≥0.6 AND 동시보유(sweep-line 실측)≥3. **졸업=3개월 in-sample + holdout(최근30일) 둘 다 통과 필수. 1개월 결과는 졸업 영구 불채택(trackb2 1개월 7/8→3개월 0 과적합 확정).**
+
+**프로세스(OODA 7단계, 3개월 고정)**: S0 baseline 고정+DB백업 → **S1[FIRST] dispersion 측정 복구(엔진무수정)** → S2 측정으로 H2/H3/H5 판별 → S3 청산 give-back 코드봉쇄(MDD 1차병목; graded mdd/exit_quality 가중강화 먼저, 부족시 매도 PRE-SAVE 트레일링/시간손절 강제) → S4 multi+dispersion 결합 ON(_multi_objective_term 4항→6항, 빈도항을 dispersed_frequency로) → S5 holdout 졸업 의무화(graduation_holdout ON, loop.py:1099) → S6 refine 모드붕괴 교정(부모를 gate_passed 빈도최대로 or 빈도-bucket archive).
+
+**신규 메트릭(엔진무수정·csv 사후산출)**: distinct_symbols·concurrent_avg/peak(sweep-line: 매수+1/매도-1, 동일시각 매도먼저)·trades_per_symbol·dispersed_frequency(daily×clamp01(distinct/min_hold))·gate_pass_rate·holdout_delta·min_sample_gate(trade≥30).
+
+**off-ramp(sunk-cost 차단)**: STOP-i(측정복구 후 동시보유≥3 세대 없으면 '엔진수정 없이 다종목 불가' 확정·사용자 게이트) / STOP-ii(통합run multi+dispersion+holdout 3회 내 3개월 holdout 시드초과 winner 0이면 'AI가 인간시드 국소최적 못 넘음' 결론·루프를 시드 청산정제 전용 축소) / STOP-iii(일평균이 3개월서 2 못넘으면 고빈도 포기·시드를 최종성과 인정 — 시드는 이미 payoff1.74·calmar31·MDD5.4 위험조정 보고서급).
+
+**🔴 엔진수정 게이트(H5)**: 동시보유 상한강제(종목당 betting↓+최대보유 상한↑/자본분할)는 backengine_base.py:824-847 numba 런타임 개입=CLAUDE.md '엔진무수정'·backtest/graph 보호 위반 → **사용자 결정 게이트, 그 전 착수 금지.** 단 S1 측정복구는 엔진무수정 가능.
+
+**first_action(즉시·엔진무수정)**: score.py:840 load_exit_quality_from_csv 패턴 복제로 `load_dispersion_from_csv` 추가 → **먼저 백테 0회로** 기존 trackb4·fullevo3·r4tick1(daily18.6) CSV 오프라인 재계산 → 고빈도 세대 실제 동시보유 분포 측정(H2 신호복구·H3 분산형vs희석형·H5 엔진수정필요여부 동시 판별).
+
 ---
 
 ## §4. ⚡ 다음 세션 첫 행동 (권장 순서)
