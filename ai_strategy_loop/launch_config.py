@@ -125,4 +125,58 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "default": d.autopsy_enabled,
             "help": "켜면 매 세대 거래 통계를 분석해 다음 세대 프롬프트에 NL 피드백을 준다.",
         },
+        # R8 — 진화/우승 목표 (대시보드 활성 설정 패널과 함께 노출).
+        {
+            "name": "evolution_mode", "label": "Evolution Mode", "type": "select",
+            "choices": ["hillclimb", "ga"], "default": d.evolution_mode,
+            "help": "hillclimb=best 1개 점진 개선, ga=population 기반 진화(선택/교배/변이).",
+        },
+        {
+            "name": "winner_objective", "label": "Winner Objective", "type": "select",
+            "choices": ["risk_adjusted", "profit", "balanced"],
+            "default": d.winner_objective,
+            "help": "best/winner 선택 목표. risk_adjusted=Calmar×R², profit=절대수익, "
+                    "balanced=둘의 블렌드(profit_weight).",
+        },
+        {
+            "name": "bt_engine_mode", "label": "Engine Mode", "type": "select",
+            "choices": ["warm", "cold"], "default": d.bt_engine_mode,
+            "help": "warm=전체유니버스 엔진 1회 prepare 후 세대마다 run(빠름), "
+                    "cold=세대마다 서브프로세스(폴백).",
+        },
+        # R8 — 5종 안전/Track B 토글 (지금까지 폼·상태 어디에도 안 보이던 것).
+        {
+            "name": "dispersion_prompt_enabled", "label": "분산매매 프롬프트", "type": "bool",
+            "default": d.dispersion_prompt_enabled,
+            "help": "켜면 매수 프롬프트의 저빈도 압력을 다종목 분산(종목 수↑·종목당 발화↓) "
+                    "유도로 치환한다. 기본 OFF.",
+        },
+        {
+            "name": "dispersion_enabled", "label": "분산 적합도 보상", "type": "bool",
+            "default": d.dispersion_enabled,
+            "help": "켜면 게이트-실패 graded 분기에 동시보유(max_hold_count) 분산 보상항을 "
+                    "가산한다. 기본 OFF.",
+        },
+        {
+            "name": "min_hold_symbols", "label": "분산 보상 기준(동시보유 하한)", "type": "number",
+            "default": d.min_hold_symbols,
+            "help": "분산 보상 기준 동시보유 종목 수(보고서 6~12). 이 값 이상이면 보상항 1.0 포화.",
+        },
+        {
+            "name": "require_liquidity_gate", "label": "거래대금 유동성 게이트 강제", "type": "bool",
+            "default": d.require_liquidity_gate,
+            "help": "켜면 매수 전략 저장 전 거래대금 계열 변수+비교 조건 존재를 검증하고 "
+                    "없으면 재생성. 기본 OFF.",
+        },
+        {
+            "name": "mdd_control_enabled", "label": "MDD 제어 강화(매도)", "type": "bool",
+            "default": d.mdd_control_enabled,
+            "help": "켜면 매도 프롬프트에 MDD 억제 최우선 블록(타이트 손절·트레일링·시간 손절)을 "
+                    "추가한다. 기본 OFF.",
+        },
+        {
+            "name": "freeze_buy_on_mdd_only", "label": "MDD-only 시 매수 동결", "type": "bool",
+            "default": d.freeze_buy_on_mdd_only,
+            "help": "best가 MDD만 부족(빈도·수익 통과)할 때 매수를 동결하고 매도(청산)만 재생성. 기본 ON.",
+        },
     ]

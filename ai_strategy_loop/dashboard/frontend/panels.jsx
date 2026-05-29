@@ -43,6 +43,7 @@ function CurrentGenPanel({ state }) {
   const message = state.latest?.message || "";
 
   const phaseColor = {
+    // 데모 시뮬레이터(한국어) phase.
     "생성중": "var(--blue)",
     "백테스트중": "var(--amber)",
     "채점중": "var(--violet)",
@@ -50,6 +51,18 @@ function CurrentGenPanel({ state }) {
     "대기중": "var(--ink-2)",
     "정지됨": "var(--ink-1)",
     "승인 완료": "var(--teal)",
+    // R8 — LIVE(backend 영어) phase도 색을 매핑(이전엔 기본색으로만 표시됐다).
+    "loop_start": "var(--blue)",
+    "warm_prepare_start": "var(--blue)",
+    "warm_prepare_done": "var(--blue)",
+    "ga_init": "var(--blue)",
+    "backtest_start": "var(--amber)",
+    "ga_evaluate_start": "var(--amber)",
+    "backtest_end": "var(--violet)",
+    "generation_done": "var(--teal)",
+    "ga_generation_done": "var(--teal)",
+    "complete": "var(--teal)",
+    "stopping": "var(--ink-1)",
   }[phase] || "var(--ink-1)";
 
   return (
@@ -107,6 +120,115 @@ function CurrentGenPanel({ state }) {
           <span style={{ color: "var(--ink-3)" }}>›</span>
           <span>{message || (state.status === "idle" ? "진화 시작 버튼으로 루프를 개시하세요" : "—")}</span>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- Active config / toggles panel (R8) ----
+// LoopState.active_config(루프가 적용한 주요 설정·5종 안전토글 스냅샷)를 LIVE로 렌더한다.
+//   "지금 무슨 설정으로 돌고 있나"를 폼/상태가 아니라 실시간 상태에서 직접 보여준다.
+//   active_config.toggles(켜진 bool 토글 이름 목록)로 토글을 강조한다. 없으면 안내만.
+function _fmtCfgVal(v) {
+  if (v === true) return "ON";
+  if (v === false) return "OFF";
+  if (v == null) return "—";
+  return String(v);
+}
+
+// 사람이 읽는 라벨(없으면 키 그대로). 키→한국어 매핑(가시화 보조).
+const _CFG_LABELS = {
+  dispersion_prompt_enabled: "분산매매 프롬프트",
+  dispersion_enabled: "분산 적합도 보상",
+  min_hold_symbols: "분산 기준(동시보유 하한)",
+  target_daily_trades: "목표 일평균거래",
+  require_liquidity_gate: "거래대금 게이트 강제",
+  mdd_control_enabled: "MDD 제어 강화(매도)",
+  evolution_mode: "진화 모드",
+  winner_objective: "우승 목표",
+  profit_weight: "수익 가중치",
+  bt_engine_mode: "엔진 모드",
+  bt_scope: "백테 스코프",
+  bt_timeframe: "타임프레임",
+  bt_refine_from_best: "best 점진 개선",
+  freeze_buy_on_mdd_only: "MDD-only 매수 동결",
+  bt_full_start: "전체 시작일",
+  bt_full_end: "전체 종료일",
+  bt_betting: "종목당 배팅",
+  mdd_cap: "MDD 상한",
+  min_trades: "최소 거래수",
+  min_daily_trades: "일평균거래 하한",
+  overtrade_softcap: "과매매 softcap",
+  tpi_gate_enabled: "TPI 게이트",
+  tpi_gate: "TPI 하한",
+  exit_quality_enabled: "청산품질 보상",
+  target_score: "목표 점수",
+  max_generations: "최대 세대",
+};
+
+function ActiveConfigPanel({ state }) {
+  const cfg = state.active_config || {};
+  const toggleNames = new Set(cfg.toggles || []);
+  // toggles 메타 키는 표에서 제외하고 나머지를 정렬해 보여준다.
+  const entries = Object.keys(cfg)
+    .filter(k => k !== "toggles")
+    .map(k => [k, cfg[k]]);
+  // 켜진 토글을 위로(강조), 나머지는 키 순서 유지.
+  const onToggles = entries.filter(([k, v]) => toggleNames.has(k) && v === true);
+  const others = entries.filter(([k, v]) => !(toggleNames.has(k) && v === true));
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title"><span className="dot"></span>활성 설정 · 토글</div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+          {entries.length > 0 ? `${entries.length}개 설정 · 켜진 토글 ${onToggles.length}` : "현재 적용 설정"}
+        </span>
+      </div>
+      <div className="panel-bd" style={{ padding: entries.length === 0 ? 14 : 0 }}>
+        {entries.length === 0 ? (
+          <div style={{ color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+            실시간 데이터 대기 — 루프 시작 시 적용된 설정·토글 스냅샷이 발행됩니다.
+          </div>
+        ) : (
+          <div>
+            {onToggles.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "10px 12px" }}>
+                {onToggles.map(([k]) => (
+                  <span key={k} className="mono" style={{
+                    fontSize: 10.5, color: "var(--teal)", background: "rgba(76,214,179,0.10)",
+                    border: "1px solid rgba(76,214,179,0.35)", borderRadius: 4, padding: "2px 7px",
+                  }}>
+                    {(_CFG_LABELS[k] || k)} · ON
+                  </span>
+                ))}
+              </div>
+            )}
+            <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+              {others.map(([k, v], i) => {
+                const isToggle = toggleNames.has(k);
+                return (
+                  <li key={k} style={{
+                    display: "flex", justifyContent: "space-between", gap: 10,
+                    padding: "6px 12px",
+                    borderTop: i === 0 && onToggles.length > 0 ? "1px solid var(--line-1)" : "none",
+                    borderBottom: i < others.length - 1 ? "1px solid var(--bg-2)" : "none",
+                  }}>
+                    <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
+                      {_CFG_LABELS[k] || k}
+                    </span>
+                    <span className="mono" style={{
+                      fontSize: 11.5,
+                      color: isToggle ? (v === true ? "var(--teal)" : "var(--ink-3)") : "var(--ink-0)",
+                    }}>
+                      {_fmtCfgVal(v)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -689,4 +811,4 @@ function ExportStatusBanner({ reply }) {
   );
 }
 
-Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, RunComparePanel, ExportStatusBanner });
+Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, ActiveConfigPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, RunComparePanel, ExportStatusBanner });

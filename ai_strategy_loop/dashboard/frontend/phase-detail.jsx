@@ -39,9 +39,44 @@ const PHASES = [
   { key: "부검 작성",   label: "부검",      sub: "Autopsy" },
 ];
 
+// R8 — LIVE phase 영/한 정규화 맵.
+//   backend(loop.py:_publish_live, ga.py)는 phase를 **영어**로 발행한다
+//   (warm_prepare_start, backtest_start, backtest_end, generation_done, complete,
+//    ga_evaluate_start, ga_generation_done, loop_start, warm_prepare_done, ga_init,
+//    stopping). 프론트 PHASES 키는 데모 시뮬레이터가 쓰는 **한국어**라, 영어 phase는
+//   phaseIndex()=-1로 떨어져 LIVE 타임라인이 영구 미점등됐다(데모에서만 동작).
+//   아래 맵으로 영어 phase를 4단계 인덱스(0생성·1백테·2채점·3부검/완료)로 정규화한다.
+//   (warm 준비/loop_start/ga_init=생성 단계 0, backtest_start류=백테 1,
+//    backtest_end=채점 2, generation_done류/complete=부검·완료 3.)
+const LIVE_PHASE_INDEX = {
+  // 생성/준비(백테 이전).
+  loop_start: 0,
+  warm_prepare_start: 0,
+  warm_prepare_done: 0,
+  ga_init: 0,
+  // 백테스트.
+  backtest_start: 1,
+  ga_evaluate_start: 1,
+  // 채점(백테 종료 직후 fitness 산출).
+  backtest_end: 2,
+  // 부검/세대 완료.
+  generation_done: 3,
+  ga_generation_done: 3,
+  complete: 3,
+};
+
+// 순수 함수(테스트 가능): phase 문자열 → 4단계 인덱스. 한국어 키(데모)와 영어 키(LIVE)
+//   둘 다 인식한다. 매칭 실패는 -1(타임라인 미점등). window에 노출해 정적/단위 검증 가능.
 function phaseIndex(phase) {
-  const i = PHASES.findIndex(p => p.key === phase);
-  return i;
+  // 1) 한국어 PHASES 키(데모) 우선 — 기존 동작 보존.
+  const k = PHASES.findIndex(p => p.key === phase);
+  if (k !== -1) return k;
+  // 2) 영어 LIVE phase 정규화 맵.
+  if (phase != null && Object.prototype.hasOwnProperty.call(LIVE_PHASE_INDEX, phase)) {
+    return LIVE_PHASE_INDEX[phase];
+  }
+  // 3) stopping 등 단계 외 phase는 미점등(-1).
+  return -1;
 }
 
 function PhaseTimeline({ state }) {
@@ -493,4 +528,6 @@ Object.assign(window, {
   GenerationView, BacktestingView, ScoringView, AutopsyView,
   LiveBacktestChartInline,
   DemoBadge, LivePending,
+  // R8 — phase 매핑 순수 함수/맵 노출(영/한 정규화). 정적·단위 검증 가능.
+  phaseIndex, PHASES, LIVE_PHASE_INDEX,
 });

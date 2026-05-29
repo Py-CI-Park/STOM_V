@@ -262,3 +262,88 @@ class TestPageDataPassthrough:
             _sample_summary(), _sample_generations(), config=LoopConfig(),
         )
         assert ls.page_data == {}
+
+
+class TestGenerationInfoQualityFields:
+    """R8 — GenerationInfo 신규 품질 필드(calmar/uptrend_r2/dispersion_term/max_hold_count)."""
+
+    def test_defaults_are_backward_compatible(self):
+        # 신규 필드는 모두 기본값을 가져 발행하지 않던 구 상태도 검증 통과(하위호환).
+        gi = C.GenerationInfo(gen_no=0)
+        assert gi.calmar == 0.0
+        assert gi.uptrend_r2 == 0.0
+        assert gi.dispersion_term == 1.0   # 분산 보상항 중립값.
+        assert gi.max_hold_count == 0.0
+
+    def test_to_loop_state_maps_quality_fields(self):
+        gens = [{
+            "gen_no": 0, "status": "ok", "score": 1.4, "gate_passed": 1,
+            "reason": "ok", "trade_count": 30, "mdd": 8.0, "profit": 100000.0,
+            "calmar": 3.2, "uptrend_r2": 0.85,
+            "dispersion_term": 0.7, "max_hold_count": 9.0,
+        }]
+        ls = to_loop_state({"run_id": "r", "best_gen": 0, "best_score": 1.4},
+                           gens, config=LoopConfig(), status="running")
+        g0 = ls.generations[0]
+        assert g0.calmar == 3.2
+        assert g0.uptrend_r2 == 0.85
+        assert g0.dispersion_term == 0.7
+        assert g0.max_hold_count == 9.0
+
+    def test_to_loop_state_quality_fields_fallback_for_legacy_rows(self):
+        # 구 DB 행(키 없음/NULL)은 calmar/uptrend_r2/max_hold_count=0.0,
+        #   dispersion_term=1.0(중립)으로 폴백한다(`or` 폴백이 0.0을 1.0으로 바꾸지 않음).
+        gens = [{
+            "gen_no": 0, "status": "ok", "score": 0.9, "gate_passed": 0,
+            "reason": "gate failed", "trade_count": 12,
+            "dispersion_term": None, "max_hold_count": None,
+        }]
+        ls = to_loop_state({"run_id": "r", "best_gen": -1}, gens, config=LoopConfig())
+        g0 = ls.generations[0]
+        assert g0.calmar == 0.0
+        assert g0.uptrend_r2 == 0.0
+        assert g0.dispersion_term == 1.0
+        assert g0.max_hold_count == 0.0
+
+
+class TestActiveConfigSnapshot:
+    """R8 — active_config 스냅샷(적용된 주요 설정/토글 LIVE 노출)."""
+
+    def test_loop_state_active_config_default_empty(self):
+        assert C.LoopState().active_config == {}
+
+    def test_build_active_config_none_is_empty(self):
+        from ai_strategy_loop.controller.state import build_active_config
+        assert build_active_config(None) == {}
+
+    def test_build_active_config_carries_toggles_and_settings(self):
+        from ai_strategy_loop.controller.state import build_active_config
+        cfg = LoopConfig(
+            dispersion_enabled=True, mdd_control_enabled=True,
+            evolution_mode="ga", winner_objective="profit",
+        )
+        ac = build_active_config(cfg)
+        # 5종 안전토글 + 진화/우승/스코프 설정이 실린다.
+        assert ac["dispersion_enabled"] is True
+        assert ac["mdd_control_enabled"] is True
+        assert ac["evolution_mode"] == "ga"
+        assert ac["winner_objective"] == "profit"
+        assert ac["mdd_cap"] == cfg.mdd_cap
+        # 토글 분류 메타: 실제 존재하는 bool 토글 이름 목록.
+        assert "toggles" in ac
+        assert "dispersion_enabled" in ac["toggles"]
+        assert "mdd_control_enabled" in ac["toggles"]
+
+    def test_to_loop_state_publishes_active_config(self):
+        cfg = LoopConfig(dispersion_prompt_enabled=True)
+        ls = to_loop_state(_sample_summary(), _sample_generations(),
+                           config=cfg, status="running")
+        assert ls.active_config.get("dispersion_prompt_enabled") is True
+        # 직렬화 라운드트립 보존.
+        revalidated = C.LoopState.model_validate(ls.model_dump())
+        assert revalidated.active_config.get("dispersion_prompt_enabled") is True
+
+    def test_to_loop_state_active_config_empty_without_config(self):
+        # config 미전달이면 active_config는 빈 dict(하위호환).
+        ls = to_loop_state(_sample_summary(), _sample_generations(), config=None)
+        assert ls.active_config == {}

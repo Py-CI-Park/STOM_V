@@ -34,7 +34,9 @@ LOOP_RUNS_DB = _STATE_DIR / "loop_runs.db"
 #     v3: total_profit_pct(수익률 %) 추가 — 대시보드 세대 이력/차트(P10)가 표시한다.
 #     v4: daily_avg_trades(일평균거래횟수) 추가 — 빈도 게이트 주 기준을 이력/대시보드에 표시.
 #     v5: payoff_ratio(손익비), give_back_rate(기회 반납률) 추가 — 청산 품질 대시보드 노출.
-SCHEMA_VERSION = 5
+#     v6: dispersion_term(다종목 분산 보상항), max_hold_count(최대 동시보유 종목 수) 추가
+#         — R8 품질지표 LIVE 노출(GradedResult에서 전파). calmar/uptrend_r2는 v1부터 존재.
+SCHEMA_VERSION = 6
 
 # US-007 — 루프↔대시보드 라이브 상태 파일 + 정지 플래그 파일.
 #   current_state.json : 루프가 매 세대/백테스트 시점에 atomic write 하는
@@ -125,7 +127,8 @@ class LoopState:
           - total_profit_pct 누락(v3 이전) → 추가(P10 수익률 %).
           - daily_avg_trades 누락(v4 이전) → 추가(빈도 게이트 주 기준).
           - payoff_ratio/give_back_rate 누락(v5 이전) → 추가(청산 품질 대시보드 노출).
-        새 컬럼은 모두 NULL 기본이라 기존 행의 의미를 바꾸지 않는다(하위호환).
+          - dispersion_term/max_hold_count 누락(v6 이전) → 추가(R8 다종목 분산 LIVE 노출).
+        새 컬럼은 모두 NULL/명시 기본이라 기존 행의 의미를 바꾸지 않는다(하위호환).
         """
         existing_cols = {row[1] for row in self._con.execute("PRAGMA table_info(generations)")}
         # (컬럼, 선언) — 순서대로 누락분만 추가한다. 새 버전의 컬럼을 여기 가산한다.
@@ -139,6 +142,12 @@ class LoopState:
             ("daily_avg_trades", "REAL"),  # v4 — 일평균거래횟수. 빈도 게이트 주 기준.
             ("payoff_ratio", "REAL"),      # v5 — 손익비(평균이익/abs(평균손실)). 청산 품질.
             ("give_back_rate", "REAL"),    # v5 — 기회 반납률(MFE 도달 후 손실 비율). 청산 품질.
+            # v6 — R8 다종목 분산 LIVE 노출(GradedResult.dispersion_term/max_hold_count).
+            #   dispersion_term은 보상항(중립=1.0)이라 DEFAULT 1.0으로 ADD해 기존 행도 중립값으로
+            #   백필한다(ALTER ADD COLUMN DEFAULT는 기존 행을 NULL이 아닌 지정값으로 채운다).
+            #   max_hold_count는 DEFAULT 0.0으로 백필. 두 컬럼 모두 기존 행의 의미를 바꾸지 않는다.
+            ("dispersion_term", "REAL DEFAULT 1.0"),
+            ("max_hold_count", "REAL DEFAULT 0.0"),
         ):
             if col not in existing_cols:
                 self._con.execute(f"ALTER TABLE generations ADD COLUMN {col} {decl}")
@@ -226,6 +235,8 @@ class LoopState:
         diff_from_parent: Optional[str] = None,
         payoff_ratio: float = 0.0,
         give_back_rate: float = 0.0,
+        dispersion_term: float = 1.0,
+        max_hold_count: float = 0.0,
     ) -> None:
         """한 세대 결과를 기록한다 (UPSERT — 세대 번호 중복 없음).
 
@@ -235,6 +246,9 @@ class LoopState:
         total_profit_pct(수익률 %)는 profit(수익금 원)과 별개 지표다. 기본 0.0이라
         이 인자를 주지 않던 기존 호출부도 그대로 동작한다(하위호환).
         payoff_ratio(손익비)/give_back_rate(기회 반납률)는 청산 품질 지표다. 기본 0.0이라
+        이 인자를 주지 않던 기존 호출부도 그대로 동작한다(하위호환).
+        dispersion_term(다종목 분산 보상항)/max_hold_count(최대 동시보유 종목 수)는 R8
+        품질지표 LIVE 노출용이다. dispersion_term 기본 1.0(중립), max_hold_count 기본 0.0이라
         이 인자를 주지 않던 기존 호출부도 그대로 동작한다(하위호환).
 
         parent_gen/diff_from_parent(P3 연구 파이프라인): 이 세대가 점진 개선한
@@ -247,8 +261,8 @@ class LoopState:
             "(run_id, gen_no, buy_name, sell_name, status, score, calmar, uptrend_r2, "
             " gate_passed, reason, csv_path, trade_count, daily_avg_trades, mdd, profit, "
             " total_profit_pct, strategy_gist, parent_gen, diff_from_parent, "
-            " payoff_ratio, give_back_rate, created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " payoff_ratio, give_back_rate, dispersion_term, max_hold_count, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 run_id, gen_no, buy_name, sell_name, status, float(score),
                 float(calmar), float(uptrend_r2), 1 if gate_passed else 0,
@@ -257,6 +271,7 @@ class LoopState:
                 (None if parent_gen is None else int(parent_gen)),
                 diff_from_parent,
                 float(payoff_ratio), float(give_back_rate),
+                float(dispersion_term), float(max_hold_count),
                 _now(),
             ),
         )
@@ -283,6 +298,8 @@ class LoopState:
             "diff_from_parent": diff_from_parent,
             "payoff_ratio": float(payoff_ratio),
             "give_back_rate": float(give_back_rate),
+            "dispersion_term": float(dispersion_term),
+            "max_hold_count": float(max_hold_count),
         })
 
     def update_best(self, run_id: str, best_gen: int, best_score: float) -> None:
@@ -470,6 +487,73 @@ def clear_stop_flag(path: Optional[str] = None) -> None:
         pass
 
 
+# R8 — active_config 스냅샷에 실을 주요 config 필드. 5종 안전토글 + 진화/평가/스코프
+#   설정을 한 자리에 모아 대시보드가 "지금 무슨 설정으로 돌고 있나"를 LIVE로 보여준다.
+#   (config 객체에 없는 필드는 getattr 폴백으로 건너뛰므로 LoopConfig 버전 차이에 안전.)
+_ACTIVE_CONFIG_FIELDS = (
+    # 5종 안전/Track B 토글.
+    "dispersion_prompt_enabled",
+    "dispersion_enabled",
+    "min_hold_symbols",
+    "target_daily_trades",
+    "require_liquidity_gate",
+    "mdd_control_enabled",
+    # 진화/우승 목표.
+    "evolution_mode",
+    "winner_objective",
+    "profit_weight",
+    # 평가 엔진/스코프.
+    "bt_engine_mode",
+    "bt_scope",
+    "bt_timeframe",
+    "bt_refine_from_best",
+    "freeze_buy_on_mdd_only",
+    "bt_full_start",
+    "bt_full_end",
+    "bt_betting",
+    # 게이트 경계(가시화).
+    "mdd_cap",
+    "min_trades",
+    "min_daily_trades",
+    "overtrade_softcap",
+    "tpi_gate_enabled",
+    "tpi_gate",
+    "exit_quality_enabled",
+    "target_score",
+    "max_generations",
+)
+
+# 토글로 강조 렌더할 bool 필드(프론트가 켜진 것만 강조). 가시화 보조 메타.
+_ACTIVE_CONFIG_TOGGLES = (
+    "dispersion_prompt_enabled",
+    "dispersion_enabled",
+    "require_liquidity_gate",
+    "mdd_control_enabled",
+    "bt_refine_from_best",
+    "freeze_buy_on_mdd_only",
+    "tpi_gate_enabled",
+    "exit_quality_enabled",
+)
+
+
+def build_active_config(config: Any) -> Dict[str, Any]:
+    """config에서 LIVE 노출용 주요 설정/토글을 dict로 추출한다(없는 필드는 생략).
+
+    순수 함수(테스트 가능). config가 None이면 빈 dict. _ACTIVE_CONFIG_FIELDS에
+    나열된 필드만 골라 담고, 토글 분류는 'toggles' 키에 bool 필드 이름 목록으로
+    덧붙여 프론트가 켜진 토글을 강조할 수 있게 한다(가시화 보조).
+    """
+    if config is None:
+        return {}
+    snapshot: Dict[str, Any] = {}
+    for name in _ACTIVE_CONFIG_FIELDS:
+        if hasattr(config, name):
+            snapshot[name] = getattr(config, name)
+    # 토글 분류 메타: 실제 config에 존재하는 bool 토글 이름만(프론트 강조용).
+    snapshot["toggles"] = [t for t in _ACTIVE_CONFIG_TOGGLES if t in snapshot]
+    return snapshot
+
+
 def to_loop_state(
     summary: Dict[str, Any],
     generations: List[Dict[str, Any]],
@@ -538,6 +622,15 @@ def to_loop_state(
             # 청산 품질. 구 DB 행(v5 이전)은 키가 없거나 NULL이라 0.0 폴백.
             payoff_ratio=float(g.get("payoff_ratio", 0.0) or 0.0),
             give_back_rate=float(g.get("give_back_rate", 0.0) or 0.0),
+            # R8 — 위험조정 품질(calmar/uptrend_r2, v1부터 존재) + 다종목 분산(v6 신설).
+            #   is None 가드는 키가 없는 dict 입력(합성/인메모리 행)·명시적 NULL을 방어한다.
+            #   실제 마이그레이션된 DB 행은 ALTER ADD COLUMN DEFAULT에 의해 1.0/0.0을 갖는다.
+            #   `or` 폴백이 0.0을 1.0으로 바꾸지 않도록 dispersion_term은 None만 1.0으로 처리한다.
+            calmar=float(g.get("calmar", 0.0) or 0.0),
+            uptrend_r2=float(g.get("uptrend_r2", 0.0) or 0.0),
+            dispersion_term=(1.0 if g.get("dispersion_term") is None
+                             else float(g.get("dispersion_term"))),
+            max_hold_count=float(g.get("max_hold_count", 0.0) or 0.0),
         ))
 
     latest_info = C.LatestInfo(
@@ -562,5 +655,7 @@ def to_loop_state(
             cost_or_count=len(gen_rows),
         ),
         page_data=dict(page_data or {}),
+        # R8 — 적용된 config의 주요 설정/토글 스냅샷(없으면 빈 dict=하위호환).
+        active_config=build_active_config(config),
         updated_at=time.time(),
     )

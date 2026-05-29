@@ -43,9 +43,12 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
               <th style={{ width: 68 }}>세대</th>
               <th style={{ width: 70 }}>상태</th>
               <th style={{ width: 82 }}>등급점수</th>
+              <th style={{ width: 64 }}>Calmar</th>
+              <th style={{ width: 56 }}>R²</th>
               <th style={{ width: 64 }}>게이트</th>
               <th style={{ width: 70 }}>거래수</th>
               <th style={{ width: 84 }}>일평균거래</th>
+              <th style={{ width: 72 }}>동시보유</th>
               <th style={{ width: 72 }}>Payoff</th>
               <th style={{ width: 80 }}>Give-back%</th>
               <th style={{ width: 76 }}>MDD</th>
@@ -72,6 +75,9 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
                 <td className="num-muted">—</td>
                 <td className="num-muted">—</td>
                 <td className="num-muted">—</td>
+                <td className="num-muted">—</td>
+                <td className="num-muted">—</td>
+                <td className="num-muted">—</td>
                 <td className="gist-cell" style={{ color: "var(--amber)" }}>
                   {state.latest?.phase || "—"} · {state.latest?.last_checkpoint || ""}
                 </td>
@@ -80,7 +86,7 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
             )}
             {rows.length === 0 && !running && (
               <tr>
-                <td colSpan="13" style={{ textAlign: "center", padding: 32, color: "var(--ink-3)" }}>
+                <td colSpan="16" style={{ textAlign: "center", padding: 32, color: "var(--ink-3)" }}>
                   아직 실행된 세대가 없습니다
                 </td>
               </tr>
@@ -104,6 +110,14 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
                   <td className={`mono ${g.graded_score >= 1 ? "num-pos" : ""}`}>
                     {fmtScore(g.graded_score)}
                   </td>
+                  <td className={`mono ${typeof g.calmar === "number" && g.calmar > 0 ? "num-pos" : "num-muted"}`}
+                      title="Calmar 비율 (CAGR/MDD) — 위험조정 수익. 높을수록 우수">
+                    {typeof g.calmar === "number" ? g.calmar.toFixed(2) : "—"}
+                  </td>
+                  <td className={`mono ${typeof g.uptrend_r2 === "number" && g.uptrend_r2 > 0 ? "" : "num-muted"}`}
+                      title="우상향 R² (누적수익 곡선의 직선 적합도, 0~1) — 1에 가까울수록 꾸준한 우상향">
+                    {typeof g.uptrend_r2 === "number" ? g.uptrend_r2.toFixed(2) : "—"}
+                  </td>
                   <td>
                     {g.gate_passed
                       ? <span className="pill gate-pass">✓ 통과</span>
@@ -113,6 +127,10 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
                   <td className={`mono ${dailyBad ? "num-neg" : g.daily_avg_trades >= minDailyTrades ? "num-pos" : ""}`}
                       title="일평균거래횟수 (거래수/거래일수) — 빈도 게이트 주 기준">
                     {fmtDaily(g.daily_avg_trades)}
+                  </td>
+                  <td className={`mono ${typeof g.max_hold_count === "number" && g.max_hold_count > 0 ? "" : "num-muted"}`}
+                      title="최대 동시보유 종목 수 — 다종목 분산 진입의 1차 근사(클수록 분산)">
+                    {typeof g.max_hold_count === "number" && g.max_hold_count > 0 ? g.max_hold_count.toFixed(0) : "—"}
                   </td>
                   <td className={`mono ${typeof g.payoff_ratio === "number" && g.payoff_ratio > 0 ? "num-pos" : "num-muted"}`}
                       title="손익비 (평균이익/abs(평균손실)) — 1 초과일수록 우수">

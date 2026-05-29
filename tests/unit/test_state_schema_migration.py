@@ -157,3 +157,97 @@ class TestRecordParentDiff:
         assert len(all_gens) == 2
         assert {g["run_id"] for g in all_gens} == {"r1", "r2"}
         assert len(runs) == 2
+
+
+class TestSchemaV6DispersionColumns:
+    """R8 — v6: dispersion_term/max_hold_count 컬럼 추가 + 멱등 마이그레이션 + 기록/읽기."""
+
+    def test_new_db_has_v6_columns(self, tmp_path):
+        st = LoopState(db_path=str(tmp_path / "v6.db"), snapshot_dir=str(tmp_path / "s"))
+        try:
+            assert st.get_schema_version() == SCHEMA_VERSION
+            assert SCHEMA_VERSION >= 6
+            cols = _cols(st._con, "generations")
+            assert "dispersion_term" in cols
+            assert "max_hold_count" in cols
+        finally:
+            st.close()
+
+    def test_legacy_v5_db_gets_v6_columns_and_preserves_rows(self, tmp_path):
+        # v5 형태(dispersion_term/max_hold_count 없음, 나머지 v5 컬럼 보유) DB를 만든다.
+        db = str(tmp_path / "v5_legacy.db")
+        con = sqlite3.connect(db)
+        con.executescript(
+            """
+            CREATE TABLE runs (
+                run_id TEXT PRIMARY KEY, started_at REAL, config_json TEXT,
+                status TEXT, best_gen INTEGER, best_score REAL, finished_at REAL
+            );
+            CREATE TABLE generations (
+                run_id TEXT, gen_no INTEGER, buy_name TEXT, sell_name TEXT,
+                status TEXT, score REAL, calmar REAL, uptrend_r2 REAL,
+                gate_passed INTEGER, reason TEXT, csv_path TEXT, trade_count INTEGER,
+                mdd REAL, profit REAL, strategy_gist TEXT, parent_gen INTEGER,
+                diff_from_parent TEXT, total_profit_pct REAL, daily_avg_trades REAL,
+                payoff_ratio REAL, give_back_rate REAL, created_at REAL,
+                PRIMARY KEY (run_id, gen_no)
+            );
+            """
+        )
+        con.execute(
+            "INSERT INTO generations "
+            "(run_id, gen_no, buy_name, sell_name, status, score, gate_passed, "
+            " trade_count, created_at) "
+            "VALUES ('v5_run', 0, 'b0', 's0', 'ok', 1.2, 1, 40, 1.0)"
+        )
+        con.commit()
+        before = _cols(con, "generations")
+        con.close()
+        assert "dispersion_term" not in before
+        assert "max_hold_count" not in before
+
+        st = LoopState(db_path=db, snapshot_dir=str(tmp_path / "s"))
+        try:
+            after = _cols(st._con, "generations")
+            assert {"dispersion_term", "max_hold_count"}.issubset(after)
+            assert st.get_schema_version() == SCHEMA_VERSION
+            # 기존 행 보존.
+            gens = st.get_generations("v5_run")
+            assert len(gens) == 1
+            assert gens[0]["gen_no"] == 0
+            assert gens[0]["score"] == 1.2
+            # 새 컬럼은 DEFAULT(1.0/0.0)로 채워진다(기존 행 의미 보존).
+            assert gens[0]["dispersion_term"] == 1.0
+            assert gens[0]["max_hold_count"] == 0.0
+        finally:
+            st.close()
+
+    def test_reopen_v6_is_idempotent(self, tmp_path):
+        db = str(tmp_path / "v6_idem.db")
+        st1 = LoopState(db_path=db, snapshot_dir=str(tmp_path / "s"))
+        st1.close()
+        # 두 번째 open에서도 ALTER 중복 에러 없이 동작(멱등).
+        st2 = LoopState(db_path=db, snapshot_dir=str(tmp_path / "s"))
+        try:
+            assert st2.get_schema_version() == SCHEMA_VERSION
+            cols = _cols(st2._con, "generations")
+            assert {"dispersion_term", "max_hold_count"}.issubset(cols)
+        finally:
+            st2.close()
+
+    def test_record_and_read_dispersion_fields(self, tmp_path):
+        st = LoopState(db_path=str(tmp_path / "rec_v6.db"), snapshot_dir=str(tmp_path / "s"))
+        try:
+            rid = st.start_run(LoopConfig())
+            st.record_generation(
+                rid, 0, buy_name="b", sell_name="s", status="ok",
+                score=1.3, calmar=2.5, uptrend_r2=0.8, gate_passed=True,
+                trade_count=30, dispersion_term=0.65, max_hold_count=11.0,
+            )
+            gens = st.get_generations(rid)
+        finally:
+            st.close()
+        assert gens[0]["dispersion_term"] == 0.65
+        assert gens[0]["max_hold_count"] == 11.0
+        assert gens[0]["calmar"] == 2.5
+        assert gens[0]["uptrend_r2"] == 0.8

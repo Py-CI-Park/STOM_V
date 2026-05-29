@@ -146,3 +146,23 @@ class TestConfigFieldSpecs:
             if s["type"] == "select":
                 assert "choices" in s and s["choices"], \
                     f"select field {s['name']} missing choices"
+
+    def test_covers_r8_safety_toggles(self):
+        # R8 — 지금까지 폼·상태 어디에도 안 보이던 5종 안전/Track B 토글 + 진화/스코프 설정.
+        names = {s["name"] for s in config_field_specs()}
+        for required in (
+            "dispersion_prompt_enabled", "dispersion_enabled", "min_hold_symbols",
+            "require_liquidity_gate", "mdd_control_enabled",
+            "evolution_mode", "winner_objective", "bt_engine_mode",
+            "freeze_buy_on_mdd_only",
+        ):
+            assert required in names, f"missing R8 field spec: {required}"
+
+    def test_r8_toggle_specs_are_bool_type(self):
+        bool_fields = {
+            "dispersion_prompt_enabled", "dispersion_enabled",
+            "require_liquidity_gate", "mdd_control_enabled", "freeze_buy_on_mdd_only",
+        }
+        specs = {s["name"]: s for s in config_field_specs()}
+        for name in bool_fields:
+            assert specs[name]["type"] == "bool", f"{name} should be bool type"

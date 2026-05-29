@@ -1043,6 +1043,8 @@ def run_loop(
                 diff_from_parent=diff_from_parent,
                 payoff_ratio=graded.payoff_ratio,
                 give_back_rate=graded.give_back_rate,
+                dispersion_term=graded.dispersion_term,
+                max_hold_count=graded.max_hold_count,
             )
             print(f"[LOOP] graded={graded.graded:.6g} hard_composite={fit.score:.6g} "
                   f"calmar={fit.calmar:.4g} r2={fit.uptrend_r2:.4g} "

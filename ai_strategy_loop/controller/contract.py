@@ -86,6 +86,17 @@ class GenerationInfo(BaseModel):
     #   이 값을 발행하지 않던 구 상태(state)도 그대로 검증 통과한다(하위호환).
     payoff_ratio: float = 0.0
     give_back_rate: float = 0.0
+    # R8 품질지표 LIVE 노출 — generations DB의 calmar/uptrend_r2(이미 영속) 컬럼을
+    #   세대 행에 실어 대시보드 테이블이 위험조정 품질을 표시한다. 기본 0.0이라
+    #   이 값을 발행하지 않던 구 상태(state)도 그대로 검증 통과한다(하위호환).
+    calmar: float = 0.0
+    uptrend_r2: float = 0.0
+    # R8 — 다종목 분산/동시보유 지표(GradedResult.dispersion_term/max_hold_count).
+    #   dispersion_term은 기본 1.0(분산 보상 없음=중립), max_hold_count는 기본 0.0.
+    #   generations DB에 컬럼이 신설(state.py SCHEMA v6)되며, 발행하지 않던 구 상태도
+    #   기본값으로 검증 통과한다(하위호환).
+    dispersion_term: float = 1.0
+    max_hold_count: float = 0.0
 
 
 class LatestInfo(BaseModel):
@@ -131,6 +142,13 @@ class LoopState(BaseModel):
     #   자기 차례에 스키마를 가져온다(추측 추상화 금지, 단순성). 기본은 빈 dict라
     #   아무 페이지도 발행하지 않으면 v1과 동일한 직렬화 결과를 유지한다.
     page_data: Dict[str, Any] = Field(default_factory=dict)
+
+    # R8 — 활성 config/토글 스냅샷. 루프가 적용한 주요 설정·안전토글을 dict로 실어
+    #   대시보드가 "지금 무슨 설정으로 돌고 있나"를 LIVE로 보여준다(폼·상태에 안 보이던
+    #   5종 안전토글 + evolution_mode/winner_objective/bt_* 등). 계약은 내부 구조를
+    #   강제하지 않는다(page_data와 동일한 패스스루 철학). 기본 빈 dict라 이 값을
+    #   발행하지 않던 구 상태(state)도 그대로 검증 통과한다(하위호환).
+    active_config: Dict[str, Any] = Field(default_factory=dict)
 
     updated_at: float = 0.0
 

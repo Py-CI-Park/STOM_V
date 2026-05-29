@@ -156,6 +156,8 @@ function App() {
               <WinnerCard winner={state.winner}
                           onApprove={() => setApprovalOpen(true)}
                           onViewCode={onViewCodeByGen} />
+              {/* R8 — 활성 설정/토글 스냅샷(LoopState.active_config) LIVE 노출 */}
+              <ActiveConfigPanel state={state} />
               <CostPanel state={state} cap={50000} />
               <FeedbackPanel state={state} />
 
