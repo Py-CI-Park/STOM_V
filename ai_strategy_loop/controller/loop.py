@@ -591,6 +591,10 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             meta_seed=meta_seed,
             retry_max=config.max_retries + 1,
             dedup=dedup,
+            # Track B 분산매매 토글 — build_messages는 kind=='buy'일 때만 적용하므로
+            #   매도 경로엔 무영향(기본값과 동일 동작). 기본 OFF면 프롬프트 byte-동일.
+            dispersion_prompt_enabled=config.dispersion_prompt_enabled,
+            target_daily_trades=getattr(config, "target_daily_trades", None),
         )
         if res.get("status") != "ok":
             return {"status": "error", "reason": f"{kind} 생성 실패: {res.get('reason')}"}
@@ -1463,9 +1467,17 @@ def _score_outcome(outcome: BacktestOutcome, config: LoopConfig):
         exit_quality = {}
     merged_metrics = dict(outcome.metrics or {})
     merged_metrics.update(exit_quality)
+    # 다종목 분산 보상은 동시보유(max_hold_count)를 쓴다. outcome.metrics는
+    #   cli.runner._extract_metrics가 'max_hold_count'(최대보유종목수)를 항상 포함하므로
+    #   merged_metrics에도 들어 있다. 누락된 더블/구 데이터면 compute_graded_fitness가
+    #   None 처리(무영향)한다(하위호환).
     try:
         fit = compute_fitness(merged_metrics, equity, config)
-        graded = compute_graded_fitness(merged_metrics, equity, config)
+        graded = compute_graded_fitness(
+            merged_metrics, equity, config,
+            dispersion_enabled=config.dispersion_enabled,
+            min_hold_symbols=config.min_hold_symbols,
+        )
     except Exception as exc:  # noqa: BLE001
         return None, None, f"compute_fitness 실패: {exc}"
     return fit, graded, None

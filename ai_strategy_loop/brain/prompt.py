@@ -83,7 +83,11 @@ def _timeframe_lines(timeframe: str) -> List[str]:
     ]
 
 
-def _report_pattern_lines(kind: str, timeframe: str) -> List[str]:
+def _report_pattern_lines(
+    kind: str,
+    timeframe: str,
+    target_daily_trades: Optional[float] = None,
+) -> List[str]:
     """보고서 우수전략(연130~262%·매매성능지수1.25+) 공통 변수패턴/철학 가이드.
 
     사용자 제공 보고서 19개 우수전략 분석 환류. LLM이 음의 엣지 시드를 벗어나
@@ -91,18 +95,30 @@ def _report_pattern_lines(kind: str, timeframe: str) -> List[str]:
     구체 변수명은 timeframe(_timeframe_lines)이 강제한 계열을 따르게 한다 — 분봉(min)
     엔진에 초당* 변수를 강제하면 exec(buystg)가 NameError로 죽어 백테가 데드락하므로,
     여기서는 절대 특정 계열을 못박지 않고 "현재 timeframe 계열을 쓰라"고만 안내한다.
+
+    target_daily_trades가 주어지면(buy) "적정 보유 종목 수(6~12)" 문구에 분산-기반
+    고빈도 산식을 덧붙인다 — "6~12종목 × 종목당 일평균 1.5~2회 ≈ 일평균 {target}회".
+    None이면 기존 문구 그대로(하위호환). 이 함수는 fresh·base_code 양 경로 공용이라
+    한 곳 수정으로 양쪽이 정렬된다.
     """
     series = "분당*(분당거래대금/분당매수수량 등)" if timeframe == "min" else "초당*(초당거래대금/초당매수수량 등)"
     if kind == "buy":
+        philosophy = (
+            "운용 철학: 유니버스에서 **합리적 빈도**로 진입하라(과선별 금지, 단 0건도 금지). "
+            "**다종목 분산 매매를 전제**로 한다 — 한 종목에 과도하게 의존하지 말고 "
+            "적정 보유 종목 수(6~12)를 염두에 두고 진입 신호를 설계하라."
+        )
+        if target_daily_trades is not None:
+            philosophy += (
+                f" (6~12종목 × 종목당 일평균 1.5~2회 ≈ 일평균 {target_daily_trades:.4g}회)"
+            )
         return [
             "",
             "우수 전략 공통 진입 신호(보고서 환류, 연130~262%·매매성능지수1.25+ 전략): "
             "가격(현재가/고가/시가)·거래량·거래대금·등락율·체결강도·시가총액·VI·호가잔량 "
             "범주를 조합해 진입한다. 거래량/거래대금은 반드시 현재 timeframe 계열을 써라"
             f"(지금은 {series}). 다른 계열을 강제하지 마라(가드 위반=백테 죽음).",
-            "운용 철학: 유니버스에서 **합리적 빈도**로 진입하라(과선별 금지, 단 0건도 금지). "
-            "**다종목 분산 매매를 전제**로 한다 — 한 종목에 과도하게 의존하지 말고 "
-            "적정 보유 종목 수(6~12)를 염두에 두고 진입 신호를 설계하라.",
+            philosophy,
         ]
     return [
         "",
@@ -147,6 +163,8 @@ def build_messages(
     history_summary: Optional[str] = None,
     meta_seed: Optional[str] = None,
     prior_error: Optional[str] = None,
+    dispersion_prompt_enabled: bool = False,
+    target_daily_trades: Optional[float] = None,
 ) -> List[Dict[str, str]]:
     """OpenAI Chat Completions 메시지 리스트를 만든다.
 
@@ -168,6 +186,13 @@ def build_messages(
             전략 공통 변수/개선 변경/실패 패턴"을 담은 NL 가이드. config.meta_seed_enabled가
             ON일 때만 주입된다(기본 OFF=None → 하위호환, 기존 프롬프트 불변).
         prior_error: 직전 시도의 compile/token 오류 (재시도 시 모델에 전달).
+        dispersion_prompt_enabled: True면(매수 seed-refine 경로) 저빈도 압력 문장을
+            다종목 분산매매 유도 문장으로 치환하고, 매수 "거래 빈도" 블록 뒤에 단일
+            종목 과발화 억제 한 줄을 더한다. 기본 False면 기존 프롬프트가 byte-동일
+            유지된다(하위호환). 분산은 매수 의미가 크므로 매도 경로엔 영향이 없다.
+        target_daily_trades: 프롬프트 산식 노출용 목표 일평균거래수. 주어지면
+            _report_pattern_lines(buy)에 "6~12종목 × 종목당 일평균 1.5~2회 ≈ 일평균
+            {target}회" 산식을 덧붙인다. None이면 기존 문구 그대로(하위호환).
 
     Returns:
         [{"role": "system", ...}, {"role": "user", ...}] — 항상 system 포함.
@@ -206,20 +231,48 @@ def build_messages(
     #   금지하고 핵심 구조를 유지한 채 1~2개 조건만 조정/추가/완화하게 한다.
     #   부검/이력보다 앞에 두어 모델이 "어디서 출발하는지"를 먼저 인지하게 한다.
     if base_code:
+        # 저빈도 압력 문장(개선 방향 + MDD 라인의 거래-억제 절)을 분산매매 토글로
+        #   분기한다. OFF(기본)면 기존 문장 byte-동일 유지(하위호환). ON(매수)이면
+        #   종목당 발화↓·종목 수↑로 분산 진입하라는 취지로 치환한다.
+        if dispersion_prompt_enabled and kind == "buy":
+            direction_line = (
+                "개선 방향: 한 종목에서 같은 봉/짧은 구간에 매수가 연속 과발화하지 "
+                "않게 진입 조건을 다듬되(직전 대비 새 돌파/급증이 성립한 순간에만 진입), "
+                "진입 자격 종목 폭을 넓혀 서로 다른 다수 종목(동시보유 6~12 지향)에서 "
+                "각 1~2회씩 분산 진입하라. 종목당 발화는 줄이고 종목 수를 늘려 총 "
+                "진입을 늘려라 — 과매매가 아니라 분산매매다."
+            )
+            mdd_line = (
+                "**MDD(최대낙폭)를 낮추는 것**이 핵심 목표다. 단, MDD를 낮추되 익절(상방 "
+                "포착)을 죽이지 마라 — give-back(평가익을 토해내는 손실)을 줄여 payoff "
+                "ratio(평균이익/평균손실)를 높이는 방향으로 낮춰라. "
+                "진입 시간대를 09:00 직후 몇 분에 가두지 말고 유니버스 시간창 전반"
+                "(예: 09:00~09:28)에 분산하라. 단, 흑자의 핵심인 유동성 게이트"
+                "(당일거래대금 절대 바닥, 당일거래대금각도 같은 거래대금 가속 윈도우)는 "
+                "반드시 유지하고 삭제·완화하지 마라 — 이 게이트를 빼서 빈도를 올리면 "
+                "흑자가 깨진다."
+            )
+        else:
+            direction_line = (
+                "개선 방향: 진입을 **더 선별적으로** 만들어 거래 횟수를 "
+                "**늘리지 말고 유지하거나 줄여라**(단 0건은 금지 — 0건이면 평가 불가). "
+                "과도한 진입(과매매)은 MDD와 손실을 키운다."
+            )
+            mdd_line = (
+                "**MDD(최대낙폭)를 낮추는 것**이 핵심 목표다. 단, MDD를 낮추되 익절(상방 "
+                "포착)을 죽이지 마라 — give-back(평가익을 토해내는 손실)을 줄여 payoff "
+                "ratio(평균이익/평균손실)를 높이는 방향으로 낮춰라. 거래 횟수를 크게 "
+                "늘리는 변형은 하지 마라 — 현재 전략의 거래 수준을 넘지 않게 하라. "
+                "즉 거래수는 유지 또는 적당히 감소(0 금지), MDD는 익절을 죽이지 않고 낮춰라."
+            )
         user_lines += [
             "",
             f"아래는 현재까지 가장 좋은 {label['ko']}전략이다. 이것을 **출발점**으로, "
             "부검 피드백을 반영해 **점진적으로 개선**하라. 전면 재작성 금지 — "
             "핵심 구조를 유지하고 1~2개 조건만 조정/추가/완화해 "
             "게이트(거래수/MDD/수익)를 개선하라.",
-            "개선 방향: 진입을 **더 선별적으로** 만들어 거래 횟수를 "
-            "**늘리지 말고 유지하거나 줄여라**(단 0건은 금지 — 0건이면 평가 불가). "
-            "과도한 진입(과매매)은 MDD와 손실을 키운다.",
-            "**MDD(최대낙폭)를 낮추는 것**이 핵심 목표다. 단, MDD를 낮추되 익절(상방 "
-            "포착)을 죽이지 마라 — give-back(평가익을 토해내는 손실)을 줄여 payoff "
-            "ratio(평균이익/평균손실)를 높이는 방향으로 낮춰라. 거래 횟수를 크게 "
-            "늘리는 변형은 하지 마라 — 현재 전략의 거래 수준을 넘지 않게 하라. "
-            "즉 거래수는 유지 또는 적당히 감소(0 금지), MDD는 익절을 죽이지 않고 낮춰라.",
+            direction_line,
+            mdd_line,
             "**필수: 총수익을 양수로 유지하라.** MDD만 낮추고 손실이 나는 변형은 "
             "실패다. 낮은 MDD와 **양(+)의 수익**을 동시에 달성해야 한다.",
             "익절 조건(상방 포착)은 함부로 죽이지 말고, **손절/리스크 조건만 조여** "
@@ -231,13 +284,20 @@ def build_messages(
     #   매수 전략은 "합리적 거래 빈도"를 목표로 하고, 직전 피드백이 0거래를 가리키면
     #   진입 조건을 1~2개의 단순 필터로 줄이라고 명시한다(프롬프트 가이드, 로직 게이팅 없음).
     if kind == "buy":
-        user_lines += _report_pattern_lines("buy", timeframe)
+        user_lines += _report_pattern_lines("buy", timeframe, target_daily_trades)
         user_lines += [
             "",
             "거래 빈도(중요): 진입이 0건이면 그 세대는 평가 불가로 버려진다. "
             "과도하게 좁은 임계값이나 많은 AND 조건으로 진입을 0건으로 만들지 마라. "
             "백테 구간에서 실제로 여러 번 진입이 발생하도록 합리적인 빈도를 목표로 하라.",
         ]
+        # 분산매매 토글 ON: 단일 종목 과발화(매 틱/봉 항상참 임계로 매수=True 연발)를
+        #   억제하라는 한 줄을 더한다. OFF면 미추가(byte 보존).
+        if dispersion_prompt_enabled:
+            user_lines.append(
+                "단일 종목 과발화 억제 — 현재가>0 같은 항상참 임계로 매 틱 매수=True를 "
+                "켜지 마라. 새 돌파/급증 이벤트가 성립한 순간에만 진입하라."
+            )
         fb_text = autopsy_feedback or ""
         if ("0건" in fb_text) or ("0거래" in fb_text) or ("거래가" in fb_text and "적" in fb_text):
             user_lines.append(

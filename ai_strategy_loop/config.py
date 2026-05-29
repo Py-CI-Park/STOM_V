@@ -236,6 +236,28 @@ class LoopConfig:
     #   1이면 전부 crossover. 기본 0.5.
     ga_crossover_rate: float = 0.5
 
+    # --- Track B 1차: 다종목 분산 기반 고빈도 유도 (분산매매 토글) ---
+    # 데이터 근거: 보고서 우수전략의 고빈도(일평균10~23)는 "한 종목 다발 진입"이
+    #   아니라 "여러 종목에 1~2회씩 분산된 진입"에서 온다(흑자 gen0이 24종목에 1회씩
+    #   완전 분산). 현재 (1) seed-refine 프롬프트가 "거래 줄여라"로 저빈도를 압박하고,
+    #   (2) 적합도가 종목분산(동시보유 max_hold_count)을 전혀 보상하지 않는다. 이를
+    #   토글로 교정한다. **하드게이트 불변** — 전부 가산/소프트/토글/하위호환이다.
+    # dispersion_prompt_enabled: True면 매수 seed-refine 경로의 저빈도 압력 문장을
+    #   분산매매(종목당 발화↓·종목 수↑) 유도 문장으로 치환하고, 단일 종목 과발화
+    #   억제 한 줄을 더한다. 기본 OFF면 기존 프롬프트가 byte-동일 유지된다(하위호환).
+    dispersion_prompt_enabled: bool = False  # 프롬프트 분산 유도
+    # dispersion_enabled: True면 게이트-실패 graded 분기에 동시보유(max_hold_count)
+    #   보상 항을 가산한다(exit_quality_term과 동일 방식). metrics에 max_hold_count가
+    #   있을 때만 동작(없으면 무영향). 기본 OFF면 graded 점수가 기존과 완전 동일하다.
+    dispersion_enabled: bool = False  # 적합도 동시보유 보상
+    # min_hold_symbols: 보고서 6~12 동시보유 하한(분산 보상 기준). dispersion_term은
+    #   clamp01(max_hold_count / min_hold_symbols)이라, 이 값 이상이면 1.0에 포화한다.
+    min_hold_symbols: float = 6.0  # 보고서 6~12 동시보유 하한(보상 기준)
+    # target_daily_trades: 프롬프트 산식 노출용 목표 일평균거래수. 주어지면
+    #   _report_pattern_lines(buy)의 "적정 보유 종목 수(6~12)" 문구에 산식을 덧붙인다
+    #   ("6~12종목 × 종목당 일평균 1.5~2회 ≈ 일평균 {target}회"). None이면 기존 문구 그대로.
+    target_daily_trades: Optional[float] = None  # 프롬프트 산식 노출용 목표 일평균거래수
+
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":
         """dict에서 LoopConfig 생성. 알 수 없는 키는 무시한다."""

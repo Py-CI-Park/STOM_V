@@ -65,6 +65,8 @@ def generate_strategy(
     meta_seed: Optional[str] = None,
     retry_max: int = 3,
     dedup: Optional[DedupTracker] = None,
+    dispersion_prompt_enabled: bool = False,
+    target_daily_trades: Optional[float] = None,
 ) -> Dict[str, Any]:
     """LLM으로 STOM 전략을 생성하고 게이트 통과 시 DB에 저장한다.
 
@@ -85,6 +87,10 @@ def generate_strategy(
         meta_seed: 누적 메타분석 환류 가이드(P4). build_messages로 전달(기본 None=주입 안 함).
         retry_max: compile/token 실패 시 최대 시도 횟수 (>=1).
         dedup: 중복 탐지용 DedupTracker (없으면 검사 생략).
+        dispersion_prompt_enabled: build_messages로 전달(매수 분산매매 프롬프트 토글).
+            기본 False=하위호환(기존 프롬프트 byte-동일).
+        target_daily_trades: build_messages로 전달(프롬프트 산식 노출용 목표 일평균).
+            기본 None=하위호환(산식 미노출).
 
     Returns:
         성공: {status: 'ok', name, code, attempts, usage}
@@ -114,6 +120,8 @@ def generate_strategy(
             history_summary=history_summary,
             meta_seed=meta_seed,
             prior_error=prior_error,
+            dispersion_prompt_enabled=dispersion_prompt_enabled,
+            target_daily_trades=target_daily_trades,
         )
 
         # --- 1) LLM 호출 ---

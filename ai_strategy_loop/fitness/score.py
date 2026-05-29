@@ -112,6 +112,14 @@ class GradedResult:
     exit_quality_term: float = 1.0
     payoff_ratio: float = 0.0
     give_back_rate: float = 0.0
+    # 다종목 분산(dispersion) 항 [0,1] + 원시 동시보유 종목 수. 보고서 우수전략의
+    #   고빈도는 다종목 분산 진입에서 오므로, 동시보유(max_hold_count)가 클수록
+    #   게이트-실패 분기의 선택 그래디언트를 끌어올린다(exit_quality_term과 동일 방식).
+    #   metrics에 max_hold_count가 없거나 dispersion_enabled=False면 무영향(이 필드는
+    #   기본값으로 채워져 하위호환 보장). 기본값(맨 끝 배치)이라 직접 GradedResult를
+    #   만드는 테스트 더블도 그대로 동작한다.
+    dispersion_term: float = 1.0
+    max_hold_count: float = 0.0
 
 
 def compute_uptrend_r2(equity_series: Sequence[float]) -> float:
@@ -429,7 +437,43 @@ def _exit_quality_term(
     return giveback_comp
 
 
-def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config) -> GradedResult:
+def _dispersion_term(
+    max_hold_count: Optional[float],
+    min_hold_symbols: float,
+) -> Optional[float]:
+    """동시보유 종목 수(max_hold_count)를 [0,1] 분산 보상 항으로 변환한다.
+
+    데이터 근거: 보고서 우수전략의 고빈도(일평균10~23)는 한 종목 다발 진입이
+    아니라 여러 종목에 1~2회씩 분산된 진입에서 온다(흑자 gen0이 24종목에 1회씩
+    완전 분산). 동시보유 종목 수가 보고서 하한(6~12)에 가까울수록 1에 근접하는
+    가산 신호를 만들어, 게이트-실패 분기의 선택 그래디언트가 다종목 분산을
+    보상하게 한다.
+
+    공식: clamp01(max_hold_count / min_hold_symbols). min_hold_symbols 이상이면
+      1.0에 포화한다(6 이상이면 충분히 분산된 것으로 본다).
+
+    - max_hold_count가 None이면(metrics에 키 없음) None 반환 → 다운스트림 무영향.
+    - min_hold_symbols<=0이면 안전한 기본(6.0)으로 폴백한다.
+
+    NOTE: max_hold_count는 '최대 동시보유(peak concurrency)'로 '서로 다른 종목에
+    걸쳐 분산됐는지'의 1차 근사(proxy)이며 soft 신호다. 정밀 분산지표(distinct-symbol
+    count per day 등)는 향후 per-trade CSV 파싱이 준비될 때 도입한다.
+    """
+    if max_hold_count is None:
+        return None
+    if min_hold_symbols <= 0.0:
+        min_hold_symbols = 6.0
+    return _clamp01(max_hold_count / min_hold_symbols)
+
+
+def compute_graded_fitness(
+    metrics: dict,
+    equity_series: Sequence[float],
+    config,
+    *,
+    dispersion_enabled: bool = False,
+    min_hold_symbols: float = 6.0,
+) -> GradedResult:
     """하드 게이트를 제거하지 않고 **선택 그래디언트**를 주는 등급화 적합도.
 
     하드 게이트(compute_fitness)는 졸업/우승 기준으로 그대로 둔다. 이 함수는
@@ -458,6 +502,10 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
     mdd = abs(float(metrics.get("mdd_pct", 0.0) or 0.0))
     trade_count = int(metrics.get("trade_count", 0) or 0)
     total_profit = float(metrics.get("total_profit_krw", 0) or 0)
+    # 동시보유 종목 수(다종목 분산 신호). metrics에 키가 없으면 None → 분산 보상
+    #   무영향(하위호환). dispersion_enabled=True이고 값이 있을 때만 게이트-실패
+    #   분기에 가산한다.
+    max_hold_count_raw = metrics.get("max_hold_count", None)
     daily_avg_trades_raw = _resolve_daily_avg_trades(metrics)
     # graded/페널티 노출용 일평균(None이면 0.0). 게이트 분기 판정은 raw(None)로 한다.
     daily_avg_trades = daily_avg_trades_raw if daily_avg_trades_raw is not None else 0.0
@@ -538,6 +586,18 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
         payoff_ratio_val, give_back_rate_val, payoff_target, give_back_weight
     )
 
+    # 다종목 분산(dispersion) 소프트 항. dispersion_enabled=True이고 metrics에
+    #   max_hold_count가 있을 때만 동시보유(max_hold_count/min_hold_symbols) 보상을
+    #   산출한다. OFF거나 키가 없으면 term=None → 기존 base 평균 그대로(하위호환,
+    #   graded byte-동일). exit_quality_term과 완전히 동일한 방식이다.
+    max_hold_count_val = None
+    if dispersion_enabled and max_hold_count_raw is not None:
+        try:
+            max_hold_count_val = float(max_hold_count_raw)
+        except (TypeError, ValueError):
+            max_hold_count_val = None
+    dispersion_term = _dispersion_term(max_hold_count_val, min_hold_symbols)
+
     # P7 — 우승/선택 목표. gate-passed 분기의 그래디언트만 바꾼다(실패 분기 불변).
     #   기본 'risk_adjusted'면 기존 1.0+composite 그대로(하위호환).
     objective = str(getattr(config, "winner_objective", "risk_adjusted") or "risk_adjusted")
@@ -562,9 +622,13 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
         #   세 항 모두 [0,1]이므로 graded ∈ [0,1) 단조성 유지.
         # 청산 품질 항이 있으면 base 평균에 5번째 항으로 가산한다(부검 신호 선택압력).
         #   None이면(키 없음/비활성) 기존 4항 평균 그대로 — 하위호환.
+        # 분산 항(dispersion_term)도 동일 방식으로, 있으면 base 평균에 추가 항으로
+        #   가산한다(다종목 분산 선택압력). None이면(OFF/키 없음) 무영향(하위호환).
         base_terms = (trades_term, mdd_term, uptrend_term, overtrade_term)
         if exit_quality_term is not None:
             base_terms = base_terms + (exit_quality_term,)
+        if dispersion_term is not None:
+            base_terms = base_terms + (dispersion_term,)
         base = sum(base_terms) / len(base_terms)
         if daily_avg_trades_raw is not None:
             undertrade_factor = _undertrade_factor_daily(daily_avg_trades, min_daily_trades)
@@ -596,6 +660,8 @@ def compute_graded_fitness(metrics: dict, equity_series: Sequence[float], config
         exit_quality_term=(exit_quality_term if exit_quality_term is not None else 1.0),
         payoff_ratio=(payoff_ratio_val if payoff_ratio_val is not None else 0.0),
         give_back_rate=(give_back_rate_val if give_back_rate_val is not None else 0.0),
+        dispersion_term=(dispersion_term if dispersion_term is not None else 1.0),
+        max_hold_count=(max_hold_count_val if max_hold_count_val is not None else 0.0),
     )
 
 
