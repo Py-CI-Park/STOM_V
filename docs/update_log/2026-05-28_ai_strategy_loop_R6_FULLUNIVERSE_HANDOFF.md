@@ -187,6 +187,16 @@ trackb4 세대: gen0 시드 +194만 통과 / **gen1 82거래 +125만 MDD6.3 통�
 
 > **🔴 R7.4 ground-truth 정정(2026-05-29)**: 위 ①(과발화 정적 코드 컷)은 **불가 판명**. trackb2/3/4의 타임아웃 세대 vs 정상 세대 매수 코드를 비교(`_temp_overfire_probe.py`)한 결과 게이트 수(31~35)·매수=True 지점(1)·줄수·시간조건이 **거의 동일** — 정적 특징으로 과발화/정상 구분 불가(과발화는 코드 구조가 아니라 런타임 시장 데이터 상호작용). 정적 컷은 정상 흑자 세대(trackb4 gen1류)까지 reject 위험. **→ 과발화는 런타임 fail-fast(현 bt_warm_run_timeout 300)로만 처리 가능.** 위 ③(risk_adjusted)도 시드 calmar31·r²0.85가 gen1(8.55·0.47) 압도라 winner는 시드 유지 예상. **근본 현실: 시드 Tick_902가 모든 지표 best, refine 생성세대는 빈도만 높지 위험조정수익은 시드 미달.** 진짜 다음 레버 = '고빈도이면서 고calmar/r²' 생성(LLM 품질·프롬프트·도메인 재설계) — 미해결 연구과제.
 
+### 3.8 R8 — 대시보드 실시간 가시성 검토·수정 (2026-05-29, 커밋 `45e93038`)
+
+**검토(Workflow 4갈래: backend·frontend·system-gap·live-http)** — 사용자 질문 "AI 조건식 시스템이 잘 개발되는지/알고리즘 진행/성과가 대시보드에서 실시간 확인되나":
+- ✅ 잘 개발됨(생성→백테→채점→부검→진화 파이프라인 + FastAPI 7 REST+WS + loop_runs.db + 계약 v2). ✅ **성과 실시간 확인**(적합도·수익·MDD·winner·자본곡선·run비교 LIVE; live-HTTP 실측으로 fullevo3·trackb1~4 전부 `/runs` 노출, `/status`가 디스크 current_state.json과 updated_at 일치=라이브 서빙 확정, WS 101).
+- ❌ 갭 4종: ①**phase 타임라인 영/한 키 불일치로 LIVE 영구 미점등**(데모에서만) ②5종 안전토글·설정이 폼·상태 비가시 ③품질지표(calmar·r²·dispersion·max_hold) LIVE 미노출 ④엔진/current_run 풍부 패널 backend 미발행(DEMO 전용).
+
+**수정(커밋 `45e93038`, 엔진무수정·CONTRACT_VERSION 2 유지·code-reviewer APPROVE 6불변식 실증·baseline PYTHONUTF8=1 1782 passed/7 failed 신규0)**: ①`phase-detail.jsx` LIVE_PHASE_INDEX(영어 phase→4단계, 한국어 데모키도 인식) ②`contract.LoopState.active_config` + `state.build_active_config` + `launch_config` 9필드 + `ActiveConfigPanel`(켜진 토글 강조) ③`GenerationInfo`에 calmar/uptrend_r2/dispersion_term/max_hold_count + `table.jsx` 컬럼 + generations v5→v6 마이그레이션(PRAGMA-guarded ALTER ADD COLUMN, 멱등·비파괴, 기존 224행 보존). to_loop_state는 dispersion_term None-only 폴백(0.0 중립값 보존).
+
+**미수정(범위 밖·다음)**: 엔진 리소스/current_run 실시간 스트리밍 패널(backend가 engine·current_run 미발행→loop가 경량 메트릭 발행 필요, 중기). GA 경로는 신규 품질필드 기본값(hillclimb만 채움). RunComparePanel `/runs/compare?ids=` 미사용. **LIVE 통합 실측 미완**: 단위(pytest +26)·코드리뷰 통과했으나 대시보드 재기동+running run으로 phase 점등·active_config·품질지표가 실제 HTTP/브라우저에 뜨는지 통합 실측은 미완(대시보드가 구 코드로 떠 있어 재기동 필요).
+
 ---
 
 ## §4. ⚡ 다음 세션 첫 행동 (권장 순서)
