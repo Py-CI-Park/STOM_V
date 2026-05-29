@@ -195,7 +195,7 @@ trackb4 세대: gen0 시드 +194만 통과 / **gen1 82거래 +125만 MDD6.3 통�
 
 **수정(커밋 `45e93038`, 엔진무수정·CONTRACT_VERSION 2 유지·code-reviewer APPROVE 6불변식 실증·baseline PYTHONUTF8=1 1782 passed/7 failed 신규0)**: ①`phase-detail.jsx` LIVE_PHASE_INDEX(영어 phase→4단계, 한국어 데모키도 인식) ②`contract.LoopState.active_config` + `state.build_active_config` + `launch_config` 9필드 + `ActiveConfigPanel`(켜진 토글 강조) ③`GenerationInfo`에 calmar/uptrend_r2/dispersion_term/max_hold_count + `table.jsx` 컬럼 + generations v5→v6 마이그레이션(PRAGMA-guarded ALTER ADD COLUMN, 멱등·비파괴, 기존 224행 보존). to_loop_state는 dispersion_term None-only 폴백(0.0 중립값 보존).
 
-**미수정(범위 밖·다음)**: 엔진 리소스/current_run 실시간 스트리밍 패널(backend가 engine·current_run 미발행→loop가 경량 메트릭 발행 필요, 중기). GA 경로는 신규 품질필드 기본값(hillclimb만 채움). RunComparePanel `/runs/compare?ids=` 미사용. **LIVE 통합 실측 미완**: 단위(pytest +26)·코드리뷰 통과했으나 대시보드 재기동+running run으로 phase 점등·active_config·품질지표가 실제 HTTP/브라우저에 뜨는지 통합 실측은 미완(대시보드가 구 코드로 떠 있어 재기동 필요).
+**미수정(범위 밖·다음)**: 엔진 리소스/current_run 실시간 스트리밍 패널(backend가 engine·current_run 미발행→loop가 경량 메트릭 발행 필요, 중기). GA 경로는 신규 품질필드 기본값(hillclimb만 채움). RunComparePanel `/runs/compare?ids=` 미사용. **✅ LIVE 통합 실측 완료(2026-05-29)**: 대시보드 재기동(새 backend) 후 `run_live_check_config.json`(1주·1세대·토글 전부 ON, run=livecheck) smoke로 HTTP 실측 — `/status.active_config`에 5종 안전토글+27개 설정 LIVE 노출, `generations[0]`에 calmar62.5·uptrend_r2 0.856·**dispersion_term 0.167(=max_hold 1/min_hold 6 정합)**·max_hold_count 1.0 전부 노출(신규 DB컬럼 마이그레이션→record_generation→to_loop_state→/status 파이프라인 전체 작동 확인), `/runs`에 livecheck·trackb4·fullevo3 노출. (running 중 실시간 phase 점등은 1세대 18s로 너무 빨라 직접 미관측 — phase 매핑은 단위테스트 12개로 검증.)
 
 ---
 
