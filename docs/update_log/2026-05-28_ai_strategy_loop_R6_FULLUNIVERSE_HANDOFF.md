@@ -167,6 +167,24 @@ trackb3 세대: gen0 시드 +1,944,536·MDD5.39 통과 / gen2 72거래 −104만
 
 **다음 후보(재설정)**: ①MDD 제어 강화(청산 트레일링/시간손절 + 동시보유 상한 + 과발화 코드 컷) 후 3개월 상시 재검증 ②기간 6~12개월로 시드 강건성 재확인 ③시드를 3개월 기준 best로 인정, 청산만 정제(freeze_buy 활용).
 
+### 3.7 R7.3 — MDD 제어 토글 + trackb4 3개월 검증 (2026-05-29)
+
+**구현(커밋 `9cc99316`)**: `mdd_control_enabled`(기본 OFF) — `kind=='sell'`+ON일 때 매도 프롬프트에 MDD 억제 블록(타이트 손절·트레일링·시간손절·손실구간 노출억제, '낮고 안정적 MDD' 목표). OFF=byte동일·엔진무수정. test_mdd_control 10 passed. **baseline(PYTHONUTF8=1) 1756 passed / 7 failed(신규 0)**. ※ **중요 측정 정정**: cp949 환경의 "34 failed" 중 27개는 한글 소스 디코딩 spurious — `PYTHONUTF8=1`(또는 `-X utf8`)이 정확한 baseline이며 진짜 기존 실패는 **7개**(backtest 계약·ui_jisu, ai_strategy_loop 무관).
+
+**실측(run=trackb4, 3개월, dispersion+게이트강제+MDD제어 모두 ON)** vs trackb3(MDD제어 없음):
+
+| | 게이트 통과 | gen1(첫 refine) | 고빈도 세대 MDD |
+|---|---|---|---|
+| trackb3 (MDD제어 ✗) | 1 (시드만) | 타임아웃 | 15~31 |
+| **trackb4 (MDD제어 ✓)** | **2 (시드+gen1)** | **82거래·MDD6.3·+1,248,536 통과** | 11~25 |
+
+trackb4 세대: gen0 시드 +194만 통과 / **gen1 82거래 +125만 MDD6.3 통과(고빈도 흑자)** / gen3 26거래 −50만 MDD11.21 / gen5 80거래 −94만 MDD25 / gen6 31거래 +1.1만 MDD12.53 / gen7 34거래 −22만 MDD12.93 / gen2·4 타임아웃.
+
+- **MDD제어 = 부분 성공**: ①**3개월 첫 고빈도 흑자 통과**(gen1 82거래·MDD6.3 — trackb3 동일빈도 gen2는 MDD31 실패였음). ②전반 MDD 개선(15~31→11~25). 단 ③**일관성 부족**(gen3/5/6/7 여전히 MDD 11~25 초과 — 매도 프롬프트라 LLM 준수 불확실) ④과발화 타임아웃 2/8(매수 측, MDD제어로 못 막음).
+- **결론**: MDD 제어는 효과 있으나 프롬프트 레벨이라 불완전. winner는 여전히 시드(profit obj, gen1 +125만 < 시드 +194만). 빈도-흑자-MDD 3차원 양립은 미완성.
+
+**다음 후보**: ①**과발화 코드 컷**(매수 저장전 검증 — 모든 run 타임아웃 2~3개 회수, §3.6 불변사실에서 '코드레벨 컷 필요'로 지목) ②MDD 하드 제어(graded MDD 페널티 강화 or 매도 청산 코드 강제) ③`winner_objective=risk_adjusted` 전환(고빈도 저MDD gen1류 우대; 현 profit obj는 시드만 뽑음).
+
 ---
 
 ## §4. ⚡ 다음 세션 첫 행동 (권장 순서)
