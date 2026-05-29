@@ -165,6 +165,7 @@ def build_messages(
     prior_error: Optional[str] = None,
     dispersion_prompt_enabled: bool = False,
     target_daily_trades: Optional[float] = None,
+    mdd_control_enabled: bool = False,
 ) -> List[Dict[str, str]]:
     """OpenAI Chat Completions 메시지 리스트를 만든다.
 
@@ -193,6 +194,10 @@ def build_messages(
         target_daily_trades: 프롬프트 산식 노출용 목표 일평균거래수. 주어지면
             _report_pattern_lines(buy)에 "6~12종목 × 종목당 일평균 1.5~2회 ≈ 일평균
             {target}회" 산식을 덧붙인다. None이면 기존 문구 그대로(하위호환).
+        mdd_control_enabled: True면(매도 경로) 기존 청산 지침에 더해 MDD 억제 최우선
+            블록(타이트 손절·트레일링·시간 손절·손실구간 신규노출 자제)을 매도
+            프롬프트에 추가한다. kind=='sell'일 때만 반영되며 매수(buy)엔 영향이 없다.
+            기본 False면 이 블록이 미추가되어 출력이 byte-동일 유지된다(하위호환).
 
     Returns:
         [{"role": "system", ...}, {"role": "user", ...}] — 항상 system 포함.
@@ -338,6 +343,25 @@ def build_messages(
             "- 변수는 STOM 정규 화이트리스트(현재가/등락율/시분초 및 수익률 관련 "
             "변수)만 사용하라.",
         ]
+        # Track B 3차 MDD 제어 강화(매도 전용 토글): 기존 청산 지침에 더해 MDD 억제를
+        #   최우선 목표로 못박는다. OFF(기본)면 이 블록을 미추가해 출력이 byte-동일하다.
+        #   타임프레임 가드 준수 — 변수명을 못박지 않고 "수익률/최고수익률/보유" 같은
+        #   범주만 권해 분봉/틱 어느 계열도 깨지 않는다.
+        if mdd_control_enabled:
+            user_lines += [
+                "",
+                "★MDD 억제 최우선(Track B 3차): 이 전략의 최대낙폭(MDD)을 게이트 상한 "
+                "이내로 억제하라. 위 청산 지침과 충돌하지 않게 더 강하게 적용한다:",
+                "- ①손절을 타이트하게 — 손실이 커지기 전 빠르게 청산하라"
+                "(예: 수익률 <= -2.0 이면 즉시 매도).",
+                "- ②트레일링 청산 — 최고수익률 도달 후 일정 폭을 되돌리면 즉시 청산해 "
+                "이익 반납(give-back)을 막아라.",
+                "- ③시간 손절 — 보유가 길어지면 강제 청산하라(앞의 강제 종료 청산과 "
+                "동일 취지를 더 짧은 보유로 적용).",
+                "- ④손실 구간에서는 신규 노출을 늘리지 마라 — 동시에 여러 포지션이 "
+                "함께 물리지 않도록 한다.",
+                "목표는 높은 수익이 아니라 '낮고 안정적인 MDD'다.",
+            ]
 
     if history_summary:
         user_lines += [

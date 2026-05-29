@@ -598,6 +598,9 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             # Track B 2차 거래대금 유동성 게이트 — generate_strategy는 kind=='buy'일
             #   때만 적용하므로 매도 경로엔 무영향. 기본 OFF면 동작 byte-동일(하위호환).
             require_liquidity_gate=getattr(config, "require_liquidity_gate", False),
+            # Track B 3차 MDD 제어 강화 — build_messages가 kind=='sell'일 때만 MDD 억제
+            #   블록을 매도 프롬프트에 추가하므로 매수 경로엔 무영향. 기본 OFF면 byte-동일.
+            mdd_control_enabled=getattr(config, "mdd_control_enabled", False),
         )
         if res.get("status") != "ok":
             return {"status": "error", "reason": f"{kind} 생성 실패: {res.get('reason')}"}

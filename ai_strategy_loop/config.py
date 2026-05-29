@@ -268,6 +268,16 @@ class LoopConfig:
     #   기본 OFF면 이 검증은 평가조차 안 돼 generate_strategy 동작이 기존과 byte-동일하다.
     require_liquidity_gate: bool = False
 
+    # --- Track B 3차: MDD 제어 강화 (매도 프롬프트 토글) ---
+    # 데이터 근거(trackb3 3개월): 고빈도 세대(72~348거래)가 전부 MDD 15~31로 게이트
+    #   (mdd_cap 10) 탈락 → MDD 제어가 진짜 병목. 청산(매도) 품질이 MDD를 결정한다
+    #   (부검: 손실의 70~88%가 give-back). 그래서 매도 프롬프트에 MDD 억제를 강화한다.
+    # mdd_control_enabled: True면 build_messages가 매도(kind=='sell') 프롬프트에 MDD
+    #   억제 최우선 블록(타이트 손절·트레일링·시간 손절·손실구간 신규노출 자제)을
+    #   기존 청산 지침에 더해 추가한다. 매수(buy)에는 영향이 없다. 기본 OFF면 이 블록이
+    #   미추가되어 build_messages 출력이 기존과 byte-동일하다(하위호환).
+    mdd_control_enabled: bool = False
+
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":
         """dict에서 LoopConfig 생성. 알 수 없는 키는 무시한다."""

@@ -69,6 +69,7 @@ def generate_strategy(
     dispersion_prompt_enabled: bool = False,
     target_daily_trades: Optional[float] = None,
     require_liquidity_gate: bool = False,
+    mdd_control_enabled: bool = False,
 ) -> Dict[str, Any]:
     """LLM으로 STOM 전략을 생성하고 게이트 통과 시 DB에 저장한다.
 
@@ -97,6 +98,9 @@ def generate_strategy(
             게이트(거래대금 계열 변수 + 비교 조건)를 포함하는지 검증하고, 없으면
             prior_error 설정 후 재시도한다(reject→재생성). 매도(sell)에는 미적용.
             기본 False면 이 검사는 평가조차 안 돼 동작이 기존과 byte-동일(하위호환).
+        mdd_control_enabled: build_messages로 전달(매도 MDD 억제 프롬프트 토글).
+            build_messages가 kind=='sell'일 때만 반영하므로 매수 경로엔 무영향.
+            기본 False=하위호환(기존 프롬프트 byte-동일).
 
     Returns:
         성공: {status: 'ok', name, code, attempts, usage}
@@ -128,6 +132,7 @@ def generate_strategy(
             prior_error=prior_error,
             dispersion_prompt_enabled=dispersion_prompt_enabled,
             target_daily_trades=target_daily_trades,
+            mdd_control_enabled=mdd_control_enabled,
         )
 
         # --- 1) LLM 호출 ---
