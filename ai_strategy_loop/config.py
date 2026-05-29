@@ -209,12 +209,32 @@ class LoopConfig:
     #                     gate 통과 중 total_profit 최대(동률이면 MDD 낮은 것).
     #   'balanced'      — 위험조정·수익 블렌드. graded 통과 분기는
     #                     1.0+(composite·(1-w)+profit_term·w), winner는 같은 블렌드 점수.
+    #   'multi'         — 다목적(4레버 ①). graded 통과 분기를 calmar·R²·일평균빈도·payoff를
+    #                     [0,1]로 정규화한 **동일가중 평균**으로 매긴다(1.0+그 평균). profit
+    #                     단일 시드만 뽑아 다양성이 죽는 현 obj 대비, '고빈도이면서
+    #                     위험조정 좋은' 세대를 winner/refine 방향으로 우대한다. gate 실패
+    #                     분기는 다른 objective와 똑같이 불변이다(아래 참조).
     #   gate 실패 분기(profit_term×mean)는 objective와 무관하게 그대로 유지한다
     #     (이미 수익을 곱셈 게이트로 반영). 통과(graded≥1.0)>실패(<1.0) 불변식도 유지.
-    winner_objective: str = "risk_adjusted"  # 'risk_adjusted' | 'profit' | 'balanced'
+    winner_objective: str = "risk_adjusted"  # 'risk_adjusted' | 'profit' | 'balanced' | 'multi'
     # profit_weight: 'balanced' 목표에서 수익항(profit_term) 가중치 w∈[0,1].
     #   composite 가중치는 (1-w). 0이면 risk_adjusted와 동일, 1이면 profit와 유사.
     profit_weight: float = 0.5
+    # --- 다목적(winner_objective='multi') 정규화 상수 (4레버 ①) ---
+    # multi 분기는 calmar·R²·일평균빈도·payoff 4항을 각각 [0,1]로 정규화해 동일가중
+    #   평균한다. 아래 3개는 그 정규화 기준선(보고서 우수전략 통계에 맞춘 기본값)이다.
+    #   winner_objective!='multi'이면 평가조차 안 돼 기존 동작이 byte-동일 보존된다.
+    # multi_calmar_norm: calmar를 [0,1]로 누르는 분모(보고서 calmar 평균선).
+    #   clamp01(calmar/multi_calmar_norm) — 이 값 이상이면 1.0에 포화.
+    multi_calmar_norm: float = 30.0
+    # multi_payoff_norm: payoff_ratio 정규화 타겟(보고서 payoff 타겟). payoff 항은
+    #   clamp01((payoff_ratio-1.0)/(multi_payoff_norm-1.0)) — 1.0(손익분기)에서 0,
+    #   타겟 이상이면 1.0. 1.0 이하로 설정하면 안전하게 폴백한다(score.py).
+    multi_payoff_norm: float = 1.3
+    # multi_daily_target: 일평균거래수 정규화 하한(보고서 일평균 하한). 빈도 항은
+    #   clamp01(daily_avg_trades/multi_daily_target) — 이 값 이상이면 1.0에 포화.
+    #   '고빈도 우대'의 핵심 — 저빈도 세대를 이 항이 끌어내린다.
+    multi_daily_target: float = 10.0
 
     # --- 진화 모드 (P2 GA — population 기반 진화) ---
     # evolution_mode:

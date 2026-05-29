@@ -604,7 +604,30 @@ def compute_graded_fitness(
 
     if hard.gate_passed:
         composite = hard.score  # calmar x uptrend_r2 x 1
-        graded = 1.0 + _gate_passed_term(objective, composite, profit_term, config)
+        if objective == "multi":
+            # 다목적: calmar·R²·일평균빈도·payoff를 정규화 결합한다. calmar/uptrend_r2/
+            #   daily_avg_trades는 이미 함수 내 산출값을 쓰고, payoff_ratio는 metrics에서
+            #   직접 꺼낸다(없으면 None → payoff 항 제외). 그 외 objective는 이 값들을
+            #   넘기지 않으므로 기존 호출과 byte-동일하다(하위호환).
+            # NOTE: 다목적 payoff 항은 exit_quality_enabled 토글과 독립적이다 —
+            #   위 payoff_ratio_val은 청산품질 기능 게이트(enabled=False면 None)이지만,
+            #   여기서는 metrics의 raw payoff를 직접 써서 토글과 무관하게 평가한다(의도적).
+            payoff_for_multi = None
+            payoff_raw = metrics.get("payoff_ratio", None)
+            if payoff_raw is not None:
+                try:
+                    payoff_for_multi = float(payoff_raw)
+                except (TypeError, ValueError):
+                    payoff_for_multi = None
+            graded = 1.0 + _gate_passed_term(
+                objective, composite, profit_term, config,
+                calmar=hard.calmar,
+                uptrend_r2=uptrend_r2,
+                daily_avg_trades=daily_avg_trades,
+                payoff_ratio=payoff_for_multi,
+            )
+        else:
+            graded = 1.0 + _gate_passed_term(objective, composite, profit_term, config)
         gate_distance = "ok (gate passed)"
     else:
         composite = 0.0
@@ -665,15 +688,81 @@ def compute_graded_fitness(
     )
 
 
-def _gate_passed_term(objective: str, composite: float, profit_term: float, config) -> float:
+def _multi_objective_term(
+    calmar: Optional[float],
+    uptrend_r2: Optional[float],
+    daily_avg_trades: Optional[float],
+    payoff_ratio: Optional[float],
+    config,
+) -> float:
+    """다목적(winner_objective='multi') 가산항 — calmar·R²·빈도·payoff의 [0,1] 동일가중 평균.
+
+    4레버 ①: '고빈도이면서 위험조정 좋은' 게이트통과 세대를 winner/refine 방향으로
+    우대한다. profit 단일 obj가 시드만 뽑아 다양성이 죽는 문제를 4항 정규화 결합으로
+    푼다. 단순·동일가중이다.
+
+    각 항을 config의 정규화 상수로 [0,1]로 누른 뒤 평균한다:
+      - calmar 항      : clamp01(calmar / multi_calmar_norm)
+      - r² 항          : clamp01(uptrend_r2)             (이미 [0,1])
+      - 빈도 항        : clamp01(daily_avg_trades / multi_daily_target)
+      - payoff 항      : clamp01((payoff_ratio-1.0) / (multi_payoff_norm-1.0))
+
+    None-제외 평균(_exit_quality_term의 None-제외 패턴 모방): 어떤 항의 원시 값이 None이면
+    (그 신호를 못 받았다는 뜻 — 예: per-trade CSV 없어 payoff None) 그 항은 평균에서 제외한다.
+    유효한 항이 하나도 없으면 0.0을 돌려 graded=1.0(통과>실패 불변식 유지)으로 둔다.
+
+    반환은 [0,1]이라 graded=1.0+term≥1.0이 보장돼 "통과>실패" 불변식이 유지된다.
+    """
+    calmar_norm = float(getattr(config, "multi_calmar_norm", 30.0) or 30.0)
+    payoff_norm = float(getattr(config, "multi_payoff_norm", 1.3) or 1.3)
+    daily_target = float(getattr(config, "multi_daily_target", 10.0) or 10.0)
+    if calmar_norm <= 0.0:
+        calmar_norm = 30.0
+    if daily_target <= 0.0:
+        daily_target = 10.0
+    # payoff 분모는 (norm-1.0). norm<=1.0이면 분모가 0/음수라 안전한 기본(1.3)으로 폴백.
+    if payoff_norm <= 1.0:
+        payoff_norm = 1.3
+
+    comps = []
+    if calmar is not None:
+        comps.append(_clamp01(calmar / calmar_norm))
+    if uptrend_r2 is not None:
+        comps.append(_clamp01(uptrend_r2))
+    if daily_avg_trades is not None:
+        comps.append(_clamp01(daily_avg_trades / daily_target))
+    if payoff_ratio is not None:
+        comps.append(_clamp01((payoff_ratio - 1.0) / (payoff_norm - 1.0)))
+
+    if not comps:
+        return 0.0
+    return sum(comps) / len(comps)
+
+
+def _gate_passed_term(
+    objective: str,
+    composite: float,
+    profit_term: float,
+    config,
+    *,
+    calmar: Optional[float] = None,
+    uptrend_r2: Optional[float] = None,
+    daily_avg_trades: Optional[float] = None,
+    payoff_ratio: Optional[float] = None,
+) -> float:
     """게이트 통과 전략의 graded 가산항(=graded-1.0)을 목표별로 만든다.
 
     - 'risk_adjusted'(기본): composite(Calmar×R²) 그대로 — 위험조정 우수일수록 ↑.
     - 'profit'             : profit_term(정규화 수익 로지스틱) — 수익 클수록 ↑.
     - 'balanced'           : composite×(1-w) + profit_term×w 블렌드(w=profit_weight).
+    - 'multi'              : calmar·R²·빈도·payoff의 [0,1] 동일가중 평균(_multi_objective_term).
+
+    'multi'를 제외한 분기는 calmar/uptrend_r2/daily_avg_trades/payoff_ratio 키워드를
+    전혀 보지 않으므로, 그 값들을 넘기지 않는 **기존 호출부는 동작이 완전히 동일**하다
+    (하위호환). 'multi'일 때만 그 값들(기본 None은 항 제외)로 다목적 평균을 만든다.
 
     어느 목표든 비음수라 graded≥1.0이 보장돼 "통과>실패" 불변식이 유지된다
-    (composite≥0, profit_term∈[0,1]). 알 수 없는 값은 risk_adjusted로 폴백한다.
+    (composite≥0, profit_term∈[0,1], multi term∈[0,1]). 알 수 없는 값은 risk_adjusted로 폴백한다.
     """
     if objective == "profit":
         return profit_term
@@ -681,6 +770,10 @@ def _gate_passed_term(objective: str, composite: float, profit_term: float, conf
         w = float(getattr(config, "profit_weight", 0.5) or 0.0)
         w = _clamp01(w)
         return composite * (1.0 - w) + profit_term * w
+    if objective == "multi":
+        return _multi_objective_term(
+            calmar, uptrend_r2, daily_avg_trades, payoff_ratio, config
+        )
     # 'risk_adjusted' 및 알 수 없는 값 폴백.
     return composite
 
