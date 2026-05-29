@@ -258,6 +258,16 @@ class LoopConfig:
     #   ("6~12종목 × 종목당 일평균 1.5~2회 ≈ 일평균 {target}회"). None이면 기존 문구 그대로.
     target_daily_trades: Optional[float] = None  # 프롬프트 산식 노출용 목표 일평균거래수
 
+    # --- Track B 2차: 거래대금 유동성 게이트 코드 강제 (PRE-SAVE 검증 토글) ---
+    # 데이터 근거(R7): refine가 빈도를 올릴 때 LLM이 흑자의 핵심인 거래대금 유동성
+    #   게이트(당일거래대금 절대바닥 + 당일거래대금각도 가속 윈도우 등)를 삭제해 흑자가
+    #   깨진다(fullevo3·trackb1 양쪽 확인). 흑자 세대는 게이트 유지, 손실 세대는 통째 삭제.
+    # require_liquidity_gate: True면 generate_strategy가 매수(kind=='buy') 전략을 저장하기
+    #   전에 "거래대금 계열 변수가 비교 조건과 함께 등장"하는지 검증하고, 없으면
+    #   prior_error 설정 후 재시도(reject→재생성)한다. 매도(sell)에는 적용하지 않는다.
+    #   기본 OFF면 이 검증은 평가조차 안 돼 generate_strategy 동작이 기존과 byte-동일하다.
+    require_liquidity_gate: bool = False
+
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":
         """dict에서 LoopConfig 생성. 알 수 없는 키는 무시한다."""

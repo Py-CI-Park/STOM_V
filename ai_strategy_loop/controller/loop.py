@@ -595,6 +595,9 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             #   매도 경로엔 무영향(기본값과 동일 동작). 기본 OFF면 프롬프트 byte-동일.
             dispersion_prompt_enabled=config.dispersion_prompt_enabled,
             target_daily_trades=getattr(config, "target_daily_trades", None),
+            # Track B 2차 거래대금 유동성 게이트 — generate_strategy는 kind=='buy'일
+            #   때만 적용하므로 매도 경로엔 무영향. 기본 OFF면 동작 byte-동일(하위호환).
+            require_liquidity_gate=getattr(config, "require_liquidity_gate", False),
         )
         if res.get("status") != "ok":
             return {"status": "error", "reason": f"{kind} 생성 실패: {res.get('reason')}"}

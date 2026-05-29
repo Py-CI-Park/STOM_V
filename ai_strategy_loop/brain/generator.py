@@ -25,6 +25,7 @@ import logging
 from typing import Any, Dict, Optional, Tuple
 
 from . import token_check
+from .liquidity_gate import has_liquidity_gate
 from .prompt import build_messages, extract_code
 from .token_check import DedupTracker
 from .variable_scope import check_variable_scope
@@ -67,6 +68,7 @@ def generate_strategy(
     dedup: Optional[DedupTracker] = None,
     dispersion_prompt_enabled: bool = False,
     target_daily_trades: Optional[float] = None,
+    require_liquidity_gate: bool = False,
 ) -> Dict[str, Any]:
     """LLM으로 STOM 전략을 생성하고 게이트 통과 시 DB에 저장한다.
 
@@ -91,6 +93,10 @@ def generate_strategy(
             기본 False=하위호환(기존 프롬프트 byte-동일).
         target_daily_trades: build_messages로 전달(프롬프트 산식 노출용 목표 일평균).
             기본 None=하위호환(산식 미노출).
+        require_liquidity_gate: True면 매수(kind=='buy') 코드가 거래대금 유동성
+            게이트(거래대금 계열 변수 + 비교 조건)를 포함하는지 검증하고, 없으면
+            prior_error 설정 후 재시도한다(reject→재생성). 매도(sell)에는 미적용.
+            기본 False면 이 검사는 평가조차 안 돼 동작이 기존과 byte-동일(하위호환).
 
     Returns:
         성공: {status: 'ok', name, code, attempts, usage}
@@ -173,6 +179,19 @@ def generate_strategy(
                 f"{', '.join(offending)}; 예: {hint}"
             )
             logger.info("attempt %d: %s", attempt, prior_error)
+            continue
+
+        # --- 4c) 거래대금 유동성 게이트 (Track B 2차; 매수 전용, 기본 OFF) ---
+        #   R7 실측: refine가 빈도를 올릴 때 LLM이 흑자의 핵심인 거래대금 유동성
+        #   게이트를 삭제해 흑자가 깨진다. require_liquidity_gate=True면 매수 코드에
+        #   거래대금 비교 조건이 없을 때 reject→재시도한다. OFF면 단락되어 무영향.
+        if require_liquidity_gate and kind == "buy" and not has_liquidity_gate(code):
+            prior_error = (
+                "흑자에 필수인 거래대금 유동성 게이트를 매수 조건에 반드시 포함하라 — "
+                "예) 당일거래대금 > 임계값, 그리고 당일거래대금각도 같은 거래대금 가속 "
+                "윈도우. 이 게이트를 빼면 진입 품질이 무너져 손실이 난다."
+            )
+            logger.info("attempt %d: 거래대금 게이트 누락", attempt)
             continue
 
         # --- 5) dedup ---
