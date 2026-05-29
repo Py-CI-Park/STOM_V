@@ -91,6 +91,9 @@ Thumbs.db
 .temp/
 tmp/
 temp/
+# Session scratch / diagnostic scripts (ai_strategy_loop research)
+_temp_*
+.codegraph/
 
 # Backtest result data must survive worktree propagation
 backtest/graph/
