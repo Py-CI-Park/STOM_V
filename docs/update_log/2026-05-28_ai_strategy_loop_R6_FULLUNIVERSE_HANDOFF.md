@@ -400,6 +400,22 @@ trackb4 세대: gen0 시드 +194만 통과 / **gen1 82거래 +125만 MDD6.3 통�
 
 **✅ ① 완료(미커밋, 사용자 승인 대기)**: `winner_objective='uptrend'` 추가 — 누적 우상향 추세(uptrend_r2)를 winner/best 선택 주기준으로 격상(보고서 우수전략의 정의적 특성). gate-passed term = `composite × clamp01(uptrend_r2)`(composite=calmar×r²이므로 r² 추가가중 = 평활도 강조). 4경로 일관(score.py `_gate_passed_term`+호출부 `if objective in ("multi","uptrend")`, loop.py `_winner_compare_key`=(r²,score)·`_winner_score_value`=r², ga.py 미러+`Individual.uptrend_r2` 슬롯추가). 기본 risk_adjusted 불변·엔진무수정·graded≥1.0 불변. **code-reviewer APPROVE(CRITICAL/HIGH/MEDIUM 0, 6불변식 실증)·baseline PYTHONUTF8=1 1804 passed/7 failed(기존)·신규0**. 신규 `tests/unit/test_uptrend_objective.py` 11 passed. 변경: score.py·loop.py·ga.py·config.py·launch_config.py. (참고: launch_config의 winner_objective choices에 'multi'가 원래 누락 — 'uptrend'만 추가, 'multi' UI 노출은 후속.) **② 다년 학습 파이프라인은 미착수(대형 과제 — 2022~2025 다년 백테 + 연도교차 우상향 안정성 학습; 데이터 보유).**
 
+### 3.20 🎯 ② 1단계: 시드 다년(2023~25) 특성화 = 시드는 견고한 다년 우상향 전략 (2026-05-31, run=seed3yr)
+
+② 착수 1단계로 시드 Tick_902를 **2023~2025 3년 한 번에 백테**(`run_seed_3yr_config.json`, winner_objective='uptrend' 첫 실전, warm prepare back_count=2285·per-run 112초) 후 결과 CSV를 **연도별 오프라인 분할**(`_temp_seed_multiyear_split.py`):
+
+| 연도 | 거래 | 승률 | 수익(원) | uptrend r² | 판정 |
+|------|------|------|---------|-----------|------|
+| 2023 | 114 | 54% | **+4,727,001** | **0.95** | 강한 우상향 |
+| 2024 | 88 | 51% | **+3,221,506** | **0.82** | 우상향 |
+| 2025 | 105 | 47% | +318,045 | 0.20 | 흑자(약추세) |
+| **3년 전체** | 307 | — | **+8,266,552** | **0.90** | gate통과(cap40)·MDD **17.76%**·calmar 3.19 |
+
+- **🔴 단일년 비관론 교정**: 시드는 3년 연속 흑자, 3년 누적 r² 0.90(매끄러운 우상향), MDD 17.76%(2025단독 36%보다 낮음 — 2023/24 강세가 베이스를 높임). **2025는 시드의 최악의 해였다** — 그동안 "1년 MDD 36%=별로" 비관은 하필 최악 연도만 본 것. 다년 지평에선 시드가 **견고한 우상향 자산**(사용자가 말한 "등락 있어도 누적 우상향" 정의에 정확히 부합).
+- **검증**: 2025 sub-수익 +318,045가 yr1evo gen0과 정확히 일치 → 연도분할 정확. (per-year MDD%는 연도별 cumsum 리셋 아티팩트로 신뢰불가; 3년 연속곡선 MDD 17.76%만 유효.)
+- **caveat**: in-sample(시드 튜닝시기 포함 가능)이라 미래 보장 아님. 단 3년 트랙레코드 = 단일년 뷰보다 훨씬 신뢰, 감독배포 근거 강화 + 다년 학습의 양성 기준선.
+- **② 다음 단계**: (a) 생성/refine를 다년(2023~25) 적합도(연도별 우상향 안정성 보상)로 평가 → 연도교차 강건 조건만 채택 (b) 2022 partial·2026 추가로 OOS 확장. 신규 config `run_seed_3yr_config.json`, 산출물 `_temp_seed_multiyear_split.py`.
+
 **→ 다음 행동 후보(아키텍처 제약 반영)**: ①**per-stock 레짐 프록시 생성 시도**: `시장리스크분석` ON + 프롬프트로 LLM이 `리스크점수`·종목 변동성·팔로스루를 진입게이트로 쓰게 유도(약하나 가능·엔진내). ②**포트폴리오 오버레이 레짐필터**(전략코드 밖 메타층이 불리레짐일 거래 중단 — 아키텍처 부합 안 함·스코프 큼). ③**mdd_cap 완화 run으로 achievable 연 프론티어 특성화**(현실 타깃 재설정). ④**아키텍처 천장 인정**(per-stock 전략은 매크로 레짐 타이밍 불가가 본질). 신규 config: `run_full_evo_1yr_smoke_config.json`·`run_full_evo_1yr_config.json`(gitignored). 산출물 `_temp_holdout_verify.py`·`_temp_seed_1yr_dd.py`·`_temp_yr1*.log`(재현용).
 
 ---
