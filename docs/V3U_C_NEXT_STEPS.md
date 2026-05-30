@@ -9,15 +9,15 @@
 
 3U_C lane의 미래 결정 옵션을 정렬한다. V3U lane이 `V3U_NEXT_STEPS.md`로 옵션 카탈로그 운영하는 것과 동일 패턴.
 
-## 2. 현재 상태 (사이클 1 종료, 2026-05-22)
+## 2. 현재 상태 (사이클 4 종료, 2026-05-30)
 
 | 지표 | 값 |
 |---|---|
-| 활성 사이클 | 1 (E1 V3.X 흡수 자동화 파이프라인 도입) |
-| 결함 누적 | 0 |
-| 회귀 테스트 | 4 |
-| 신규 자동 도구 | 1 (v3uc_ingest_pipeline.py) |
-| commit 누적 | (사이클 1 commit hash는 §5 기록) |
+| 활성 사이클 | 4 (E2 V3U/3U_C 통합 CLI 도입) |
+| 결함 누적 | 2 (사이클 4 #1 argparse parents gotcha, #2 cp949 utf-8) |
+| 회귀 테스트 | 32 (E1 4 + E5 7 + E7 5 + E2 16) |
+| 신규 자동 도구 | 4 (v3uc_ingest_pipeline.py, v3uc_db_compatibility_check.py, v3uc_strategy_migration.py, v3uc_cli.py) |
+| commit 누적 | 사이클 1 `ebd9a8f3`, 사이클 2 `c0c43958`, 사이클 3 `87b6645b`, 사이클 4 §5 기록 |
 | V3U 안전망 상속 상태 | 46 pytest + baseline 0 (3U_C 워크트리에서 collect 정상) |
 
 ## 3. 옵션 카탈로그
@@ -29,10 +29,13 @@ V3U lane V3U_NEXT_STEPS.md 그룹 E의 V3U_C custom 작업 옵션 (E1~E4) + 3U_C
 - 산출: scripts/v3uc_ingest_pipeline.py + tests/v3uc/test_ingest_pipeline.py + docs/V3U_C_INGEST_PIPELINE.md
 - 운영: V3.19 발표 시 `--dry-run` → 성공 시 `--live` 호출
 
-### E2: STOM_CLI 자동화 + V3U 통합 ⏳ 미진행
+### E2: V3U/3U_C 통합 CLI ✅ **사이클 4 완료** (2026-05-30)
 
-- 후보 작업: 단축키 + 자동화 시나리오 (테스트 실행·verifier·debug 1-key)
-- 2U_C `STOM_CLI_AI_AUTOMATION_PLAN.md` 패턴 참고
+- 산출: scripts/v3uc_cli.py + tests/v3uc/test_cli.py (16) + docs/V3U_C_CLI_GUIDE.md
+- 7 subcommand: status / verify / db scan|migrate / test / ingest / gui
+- 디스패처 패턴: 실 도구는 기존 v3uc_* 4종 + verify_v3u_pyd_gui_contract.py 호출
+- 안전 가드: db migrate `--confirm` 또는 `--dry-run` 필수, utf-8 stdout 재설정
+- 운영: 매 세션 `cli status`로 양 lane 상태 1-key 확인
 
 ### E3: 실시간 모니터링 dashboard ⏳ 미진행
 
@@ -68,15 +71,15 @@ V3U lane V3U_NEXT_STEPS.md 그룹 E의 V3U_C custom 작업 옵션 (E1~E4) + 3U_C
 - E1을 V3.19 + V3.20 연속 처리 가능하도록 확장
 - 각 버전별 audit JSON 누적
 
-## 4. 우선순위 추천 매트릭스
+## 4. 우선순위 추천 매트릭스 (사이클 4 종료 시점 재평가)
 
 | 우선순위 | 옵션 | 사유 |
 |---|---|---|
-| 🟢 1 | E1 운영 dry-run (V3.19 발표 시) | 사이클 1 산출물 첫 실 사용 |
-| 🟡 2 | E2 STOM_CLI 자동화 | V3U 동작 단축키화 — 일상 사용 편의 |
-| 🟠 3 | E3 실시간 dashboard | web_dashboard 활성화 + 사이드카 패턴 도입 |
-| 🔵 4 | E4 고급 백테 자동화 | 백테 자동 최적화 — 사용자 trading workflow 핵심 |
-| ⚪ 5 | E5·E6 (E1 운영 후 확장) | E1 실 운영 사이클 후 자연 발견 |
+| 🟢 1 | E1 운영 dry-run (V3.30+ 발표 시) | `cli ingest --version X --dry-run` 1-key 호출 가능 |
+| 🟡 2 | E4 고급 백테 자동화 | 사용자 백테 정상 확인 후 backtest 결과 자동 분석·ranking |
+| 🟠 3 | E3 실시간 dashboard | web_dashboard 활성화 + 사이드카 패턴 |
+| ⚪ 4 | 기타 DB PK 도구 (E5 v2) | **분석 결과 백테 사용 시 불필요** — 실시간 수집 사용 시에만 |
+| ⚪ 5 | E6 multi-version 흡수 / T06·T07 extension | E1 실 운영 사이클 후 자연 발견 |
 
 ## 5. 선택 이력 (지속 갱신)
 
@@ -89,6 +92,24 @@ V3U lane V3U_NEXT_STEPS.md 그룹 E의 V3U_C custom 작업 옵션 (E1~E4) + 3U_C
 - 본 문서 갱신: <§3·§4 변경 요약>
 - 다음 사이클 후보: <다음 우선순위 옵션>
 ```
+
+### 사이클 4 (2026-05-30): E2 V3U/3U_C 통합 CLI 도입
+
+- 사용자 선택: "c 진행 ultracode" (E2/E3/E4 중 자율 선택)
+- 실행 결과:
+  - scripts/v3uc_cli.py (~330 라인, 7 subcommand, 디스패처 패턴)
+  - tests/v3uc/test_cli.py (16 케이스, 모두 PASS, 32 누적 회귀)
+  - docs/V3U_C_CLI_GUIDE.md (운영 매뉴얼)
+  - 본 문서 §2/§3 E2/§4 우선순위 갱신
+- 발견 신규 결함: 2건 (자체 도구 결함, V3 official 영향 없음)
+  - #1 argparse `parents=` gotcha: subparser default가 부모 namespace를 None으로 덮어씀
+  - #2 Windows cp949 콘솔에서 em-dash 등 비-cp949 글자 UnicodeEncodeError
+  - 둘 다 사이클 내 즉시 fix + 회귀 테스트로 커버
+- V3U lane cross-link: V3U_NEXT_STEPS.md §5 사이클 12 항목으로 등록
+- 사전 분석 부수 산출: backtest 순수 SELECT 확인 → 기타 DB PK 우선순위 ⚪로 하향
+- 다음 사이클 후보:
+  - 사용자 stom.py 백테 시각 확인 (사이클 10/11 Step 6 누적)
+  - E3/E4 중 선택 또는 V3.30 발표 시 `cli ingest` 첫 실 사용
 
 ### 사이클 1 (2026-05-22): E1 V3.X 흡수 자동화 파이프라인 도입
 

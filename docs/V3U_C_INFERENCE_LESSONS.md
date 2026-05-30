@@ -14,6 +14,14 @@ V3U lane의 `V3U_INFERENCE_LESSONS.md`가 pyd-free 추론 결함을 다룬다면
 
 ## 2. 사이클 인벤토리
 
+### 사이클 4 (2026-05-30): E2 V3U/3U_C 통합 CLI 도입
+
+- 산출: scripts/v3uc_cli.py (~330 라인, 7 subcommand, 디스패처 패턴)
+- 테스트: tests/v3uc/test_cli.py (16 케이스 PASS, 누적 32)
+- 문서: docs/V3U_C_CLI_GUIDE.md (운영 매뉴얼)
+- 발견 결함: 2건 (도구 자체 결함, V3 official 영향 없음) — §3 결함 #1·#2 참조
+- V3U lane cross-link: V3U_NEXT_STEPS.md §5 사이클 12 등록
+
 ### 사이클 1 (2026-05-22): E1 V3.X 흡수 자동화 파이프라인 도입
 
 - 산출: scripts/v3uc_ingest_pipeline.py (250+ 라인, 5 T-step)
@@ -36,18 +44,40 @@ V3U lane의 `V3U_INFERENCE_LESSONS.md`가 pyd-free 추론 결함을 다룬다면
 - 재발 방지 액션 매핑: V3U LESSONS §5-N 또는 신규
 ```
 
-(첫 결함이 발견되면 본 절에 추가)
+### 결함 #1 (2026-05-30): argparse `parents=` 시 subparser default가 부모 namespace를 None으로 덮어씀
+
+- 카테고리: 3U_C-specific (도구 자체 결함, 외부 호출 없음)
+- 발견 경로: pytest `test_main_gui_missing_stom_returns_2` 타임아웃 (subprocess 실행됨 → 실 stom.py 호출)
+- 외부 호출 site: 없음 (CLI 신규 도구)
+- 우리 누락 위치: `scripts/v3uc_cli.py:build_parser` — `common = ArgumentParser(add_help=False)`에 `--workspace`/`--dry-run` 등록 후 `parents=[common]`을 main parser와 subparser 모두에 전달했을 때, argparse가 subparser 처리 단계에서 `args.workspace` 를 None으로 reset → `_resolve_workspace(None) = Path.cwd()` → 실제 wt-3uc 작업 디렉터리에 stom.py 가 존재해 subprocess 실행 → 행
+- 수정 커밋: 사이클 4 commit (V3U_C_NEXT_STEPS.md §5 참조)
+- 회귀 테스트: `tests/v3uc/test_cli.py::test_main_gui_missing_stom_returns_2`, `test_main_gui_offscreen_sets_env`, `test_parser_dry_run_global`, `test_main_ingest_dispatches_with_version`
+- 근본 원인: argparse known gotcha — `parents=` 가 child parser의 action default를 적용할 때 부모 namespace에 이미 설정된 값을 덮어씀
+- 재발 방지 액션: 공유 옵션은 `default=argparse.SUPPRESS` 로 등록 + main()에서 `if not hasattr(args, X): args.X = default` 정규화
+
+### 결함 #2 (2026-05-30): Windows cp949 콘솔에서 em-dash 등 비-cp949 글자 UnicodeEncodeError
+
+- 카테고리: 3U_C-specific (도구 자체 결함, OS 환경 인코딩)
+- 발견 경로: `python v3uc_cli.py --help` 실행 시 traceback (`'cp949' codec can't encode character '—'`)
+- 외부 호출 site: 없음
+- 우리 누락 위치: argparse description의 em-dash 출력 + Windows 기본 콘솔 codepage cp949
+- 수정 커밋: 사이클 4 commit
+- 회귀 테스트: `python v3uc_cli.py --help` 수동 smoke (자동 회귀는 monkeypatch로 sys.stdout 변경 없이 동작 검증)
+- 근본 원인: Python 기본 sys.stdout 인코딩이 OS locale 따라 결정 — Windows 한글 환경에서 cp949가 됨
+- 재발 방지 액션: 모든 v3uc 스크립트 헤드에 `sys.stdout.reconfigure(encoding="utf-8", errors="replace")` 가드 (try/except로 안전)
+
+(추가 결함 발견 시 본 절에 누적)
 
 ## 4. 통계 (지속 갱신)
 
-| 측정 | 값 (사이클 1 종료 시점) |
+| 측정 | 값 (사이클 4 종료 시점, 2026-05-30) |
 |---|---|
-| 총 발견 결함 | 0 |
-| 자동 회귀 테스트 | 4 (test_ingest_pipeline 4 케이스) |
-| 신규 자동 도구 | 1 (v3uc_ingest_pipeline.py) |
-| 신규 문서 | 3 (INGEST_PIPELINE + LESSONS + NEXT_STEPS) |
-| 활성 custom 작업 | E1 (V3.X 흡수 자동화 파이프라인) |
-| custom 작업 카테고리 카탈로그 | E1~E4 (V3U_NEXT_STEPS.md 그룹 E) |
+| 총 발견 결함 | 2 (#1 argparse parents, #2 cp949 인코딩) |
+| 자동 회귀 테스트 | 32 (test_ingest 4 + test_db_compat 7 + test_strategy_mig 5 + test_cli 16) |
+| 신규 자동 도구 | 4 (ingest_pipeline, db_compatibility_check, strategy_migration, cli) |
+| 신규 문서 | 6 (INGEST_PIPELINE + DB_MIGRATION_PLAN + CLI_GUIDE + LESSONS + NEXT_STEPS + CARRY_FORWARD 항목) |
+| 활성 custom 작업 | E1·E5·E7·E2 완료, E3/E4/E6 미진행 |
+| custom 작업 카테고리 카탈로그 | E1~E7 (V3U_C_NEXT_STEPS.md) |
 
 ## 5. 운영 규칙
 
