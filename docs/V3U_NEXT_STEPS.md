@@ -197,6 +197,28 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
 
+### 사이클 12 (2026-05-30): 3U_C lane E2 V3U/3U_C 통합 CLI 도입 + 백테 PK 분석
+
+- 사용자 선택: "c 진행 ultracode" (E2/E3/E4 중 자율 선택 → E2 최우선 매트릭스 🟡2 선정)
+- 실행 흐름 (Claude 자율):
+  - 사전 분석: `back_static.py:108` `SELECT * FROM moneytop` 등 backtest는 순수 SELECT → moneytop·기타 DB PK 누락은 백테 차단 안 함 (`INSERT OR REPLACE`/`PRIMARY KEY` 0건 확인)
+  - `scripts/v3uc_cli.py` 7 subcommand 작성 (status/verify/db scan|migrate/test/ingest/gui)
+  - `tests/v3uc/test_cli.py` 16 케이스 작성 → 32 회귀 PASS
+  - `docs/V3U_C_CLI_GUIDE.md` 운영 매뉴얼
+  - V3U_C LESSONS 사이클 4 + 결함 #1·#2(3U_C-specific 도구 자체 결함) 기록
+- 발견 신규 결함: 2건 (3U_C lane 자체 도구 — V3 official source 영향 없음)
+  - #1 argparse `parents=` gotcha — subparser default가 부모 namespace를 None으로 덮어쓰는 known issue (해결: `default=argparse.SUPPRESS` + main()에서 getattr 정규화)
+  - #2 Windows cp949 콘솔 utf-8 미설정 — em-dash(U+2014) 출력 시 UnicodeEncodeError (해결: 스크립트 헤드에서 `sys.stdout.reconfigure(encoding="utf-8")`)
+- 백테 PK 분석 결과 (옵션 카탈로그 갱신 반영):
+  - 기타 DB(backtest/code_info/setting/strategy/tradelist) PK 추가 작업은 **백테 사용 시점에는 불필요** — 실시간 수집(라이브 거래) 사용 시에만 의미
+  - 우선순위 매트릭스에서 "기타 DB PK 도구" 우선순위 하향 (선제 작업 아님)
+- LESSONS.md 갱신: 본 V3U LESSONS는 사이클 12 절만 추가, V3U_C LESSONS에 결함 상세
+- NEXT_STEPS.md 갱신: 본 항목
+- 다음 사이클 후보:
+  - **사용자 stom.py 백테 시각 확인** (사이클 10·11 Step 6 누적, PK 차단 가능성 사전 검증으로 신뢰도 ↑)
+  - E3 web_dashboard 활성화 또는 E4 백테 결과 자동 분석
+  - V3.30+ 발표 시 `cli ingest --version V3.30 --dry-run`로 E1 첫 실 사용
+
 ### 사이클 11 (2026-05-23): 3U_C lane E7 strategy.db 조건식 V2→V3 마이그레이션
 
 - 사용자 통찰: "조건식이 저장안되있어서 아직 못하지 않나요? 조건식을 v2 공식에서 복사해서 적절하게 v3 v3U에 맞게 들고와야 진행가능 하지 않나요?"
