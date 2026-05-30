@@ -1421,6 +1421,7 @@ def _winner_score_value(fit, graded, config: LoopConfig) -> float:
     - 'risk_adjusted'(기본): 하드 composite fit.score (기존 동작 — 하위호환).
     - 'profit'             : total_profit(절대수익). 클수록 좋은 winner.
     - 'balanced'           : composite·(1-w)+profit_term·w 블렌드(graded.objective와 동일 공식).
+    - 'uptrend'            : uptrend_r2(누적수익 곡선 우상향 R²). 클수록 우상향 winner.
 
     알 수 없는 목표는 risk_adjusted로 폴백한다.
     """
@@ -1431,6 +1432,8 @@ def _winner_score_value(fit, graded, config: LoopConfig) -> float:
         from ai_strategy_loop.fitness.score import _gate_passed_term  # noqa: PLC0415
 
         return float(_gate_passed_term("balanced", fit.score, graded.profit_term, config))
+    if objective == "uptrend":
+        return float(fit.uptrend_r2)
     return float(fit.score)
 
 
@@ -1438,11 +1441,14 @@ def _winner_compare_key(fit, graded, config: LoopConfig):
     """winner 비교용 정렬 키(클수록 우수). 'profit'은 동률 시 MDD 낮은 것을 우선한다.
 
     - 'profit': (total_profit, -mdd) — 수익 최대, 동률이면 MDD 낮은 쪽.
+    - 'uptrend': (uptrend_r2, score) — R² 최대, 동률이면 composite(Calmar×R²) 높은 쪽.
     - 그 외   : (score,) — 스칼라 단일 비교(risk_adjusted/balanced).
     """
     objective = str(getattr(config, "winner_objective", "risk_adjusted") or "risk_adjusted")
     if objective == "profit":
         return (float(graded.total_profit), -float(graded.mdd))
+    if objective == "uptrend":
+        return (float(fit.uptrend_r2), float(fit.score))
     return (_winner_score_value(fit, graded, config),)
 
 

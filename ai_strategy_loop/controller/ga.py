@@ -51,7 +51,7 @@ class Individual:
         "buy_name", "sell_name", "buy_code", "sell_code",
         "graded", "gate_passed", "hard_score",
         "trade_count", "daily_avg_trades", "mdd", "profit", "total_profit_pct",
-        "profit_term",
+        "profit_term", "uptrend_r2",
         "gate_distance", "ok", "reason",
         "origin",
     )
@@ -76,6 +76,9 @@ class Individual:
         self.total_profit_pct: float = 0.0
         # P7 — 정규화 수익 로지스틱 항(graded.profit_term). 'balanced' winner 점수에 쓴다.
         self.profit_term: float = 0.0
+        # 누적수익 곡선의 우상향 R²(graded.uptrend_r2). 'uptrend' winner 점수에 쓴다.
+        #   평가 전 0.0(기본). winner_objective!='uptrend'이면 읽히지 않아 무영향(하위호환).
+        self.uptrend_r2: float = 0.0
         self.gate_distance: str = ""
         self.ok: bool = False
         self.reason: str = ""
@@ -290,6 +293,9 @@ def _evaluate_individual(ind: Individual, config: LoopConfig, warm_session) -> N
     # P10 — 수익률(%)은 graded에 없고 엔진 metrics에만 있다(total_profit_pct='수익률합계').
     ind.total_profit_pct = float((outcome.metrics or {}).get("total_profit_pct", 0.0) or 0.0)
     ind.profit_term = float(graded.profit_term)
+    # 우상향 R²('uptrend' winner 점수용). graded가 이미 산출(compute_uptrend_r2)했으므로
+    #   추가 비용 없이 그대로 옮긴다. winner_objective!='uptrend'이면 읽히지 않는다.
+    ind.uptrend_r2 = float(graded.uptrend_r2)
     ind.gate_distance = str(graded.gate_distance)
     ind.ok = True
     ind.reason = str(fit.reason)
@@ -494,6 +500,8 @@ def _ga_winner_score(ind: "Individual", config: LoopConfig) -> float:
     - 'risk_adjusted'(기본): 하드 점수 hard_score(=fit.score). 기존 동작(하위호환).
     - 'profit'             : 절대수익 profit.
     - 'balanced'           : composite·(1-w)+profit_term·w 블렌드(hard_score를 composite로 사용).
+    - 'uptrend'            : 누적수익 곡선 우상향 R²(ind.uptrend_r2). 평가 시 graded에서 옮겨둔다.
+                            Individual에 uptrend_r2가 없는 구 경로 대비 getattr 폴백(없으면 0.0).
     """
     objective = str(getattr(config, "winner_objective", "risk_adjusted") or "risk_adjusted")
     if objective == "profit":
@@ -503,14 +511,22 @@ def _ga_winner_score(ind: "Individual", config: LoopConfig) -> float:
 
         composite = float(ind.hard_score or 0.0)
         return float(_gate_passed_term("balanced", composite, ind.profit_term, config))
+    if objective == "uptrend":
+        return float(getattr(ind, "uptrend_r2", 0.0) or 0.0)
     return float(ind.hard_score or 0.0)
 
 
 def _ga_winner_key(ind: "Individual", config: LoopConfig):
-    """winner 비교용 정렬 키(클수록 우수). 'profit'은 동률 시 MDD 낮은 것을 우선한다."""
+    """winner 비교용 정렬 키(클수록 우수).
+
+    - 'profit' : 동률 시 MDD 낮은 것을 우선한다.
+    - 'uptrend': R²(uptrend_r2) 최대, 동률이면 composite(hard_score=Calmar×R²) 높은 쪽.
+    """
     objective = str(getattr(config, "winner_objective", "risk_adjusted") or "risk_adjusted")
     if objective == "profit":
         return (float(ind.profit), -float(ind.mdd))
+    if objective == "uptrend":
+        return (float(getattr(ind, "uptrend_r2", 0.0) or 0.0), float(ind.hard_score or 0.0))
     return (_ga_winner_score(ind, config),)
 
 

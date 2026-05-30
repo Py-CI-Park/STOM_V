@@ -214,9 +214,14 @@ class LoopConfig:
     #                     단일 시드만 뽑아 다양성이 죽는 현 obj 대비, '고빈도이면서
     #                     위험조정 좋은' 세대를 winner/refine 방향으로 우대한다. gate 실패
     #                     분기는 다른 objective와 똑같이 불변이다(아래 참조).
+    #   'uptrend'       — 우상향 추세 우선. graded 통과 분기를 composite×R²(=Calmar×R²×R²)로
+    #                     매겨 누적수익 곡선이 장기 우상향(uptrend_r2 높음)에 가까운 전략을
+    #                     winner/best로 우대한다(보고서 우수전략의 정의적 특성). winner는 gate
+    #                     통과 중 uptrend_r2 최대(동률이면 composite). winner_objective!='uptrend'
+    #                     이면 평가조차 안 돼 기존 동작이 byte-동일 보존된다.
     #   gate 실패 분기(profit_term×mean)는 objective와 무관하게 그대로 유지한다
     #     (이미 수익을 곱셈 게이트로 반영). 통과(graded≥1.0)>실패(<1.0) 불변식도 유지.
-    winner_objective: str = "risk_adjusted"  # 'risk_adjusted' | 'profit' | 'balanced' | 'multi'
+    winner_objective: str = "risk_adjusted"  # 'risk_adjusted' | 'profit' | 'balanced' | 'multi' | 'uptrend'
     # profit_weight: 'balanced' 목표에서 수익항(profit_term) 가중치 w∈[0,1].
     #   composite 가중치는 (1-w). 0이면 risk_adjusted와 동일, 1이면 profit와 유사.
     profit_weight: float = 0.5

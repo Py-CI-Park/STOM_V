@@ -133,10 +133,10 @@ def config_field_specs() -> List[Dict[str, Any]]:
         },
         {
             "name": "winner_objective", "label": "Winner Objective", "type": "select",
-            "choices": ["risk_adjusted", "profit", "balanced"],
+            "choices": ["risk_adjusted", "profit", "balanced", "uptrend"],
             "default": d.winner_objective,
             "help": "best/winner 선택 목표. risk_adjusted=Calmar×R², profit=절대수익, "
-                    "balanced=둘의 블렌드(profit_weight).",
+                    "balanced=둘의 블렌드(profit_weight), uptrend=우상향 R²(Calmar×R²×R²).",
         },
         {
             "name": "bt_engine_mode", "label": "Engine Mode", "type": "select",
