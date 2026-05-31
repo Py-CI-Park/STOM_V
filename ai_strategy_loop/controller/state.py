@@ -637,6 +637,8 @@ def to_loop_state(
         phase=str((latest or {}).get("phase", "")),
         last_checkpoint=str((latest or {}).get("last_checkpoint", "")),
         message=str((latest or {}).get("message", "")),
+        recent_logs=list((latest or {}).get("recent_logs", [])),
+        current_step=int((latest or {}).get("current_step", -1)),
     )
 
     return C.LoopState(

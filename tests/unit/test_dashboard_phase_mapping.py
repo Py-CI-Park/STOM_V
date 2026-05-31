@@ -97,6 +97,27 @@ class TestLivePhaseIndexMap:
         assert "LIVE_PHASE_INDEX" in pf
 
 
+class TestBackendPhaseStepMap:
+    """backend _PHASE_STEP(5단계 ProcessFlowPanel용) — 발행 phase 전수 매핑 회귀 가드.
+
+    프론트 LIVE_PHASE_INDEX 가드(test_loop_publishes_only_mapped_phases)와 대칭. loop.py/
+    ga.py가 발행하는 영어 phase가 전부 _PHASE_STEP 키에 있어야 current_step이 점등된다.
+    """
+
+    def test_all_published_phases_in_backend_map(self):
+        from ai_strategy_loop.controller.loop import _PHASE_STEP
+        loop_src = (PROJECT_ROOT / "ai_strategy_loop" / "controller" / "loop.py").read_text(encoding="utf-8")
+        ga_src = (PROJECT_ROOT / "ai_strategy_loop" / "controller" / "ga.py").read_text(encoding="utf-8")
+        published = set(re.findall(r'phase="([a-z_]+)"', loop_src + ga_src))
+        missing = published - set(_PHASE_STEP.keys())
+        assert not missing, f"_PHASE_STEP에 없는 backend phase: {missing}"
+
+    def test_backend_map_indices_within_five_steps(self):
+        from ai_strategy_loop.controller.loop import _PHASE_STEP
+        for phase, idx in _PHASE_STEP.items():
+            assert -1 <= idx <= 4, f"{phase} 인덱스 {idx} 범위 밖(-1..4)"
+
+
 class TestActiveConfigPanel:
     """R8 — 활성 설정/토글 패널(LoopState.active_config 소비) 구조 계약."""
 

@@ -36,7 +36,8 @@ import os  # noqa: E402
 import subprocess  # noqa: E402
 import sys  # noqa: E402
 import time  # noqa: E402
-from typing import Any, Callable, Dict, Optional  # noqa: E402
+from collections import deque  # noqa: E402
+from typing import Any, Callable, Deque, Dict, List, Optional  # noqa: E402
 
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from cli.config import BacktestConfig  # noqa: E402
@@ -613,6 +614,41 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
 # =====================================================================
 # US-007 — 라이브 상태 발행 헬퍼 (current_state.json).
 # =====================================================================
+# 프로세스 플로우 패널 — phase → 5단계 인덱스 맵.
+#   -1=없음/완료, 0=생성, 1=백테, 2=채점, 3=부검, 4=반복(세대완료 후 다음 루프).
+#   (프론트 phase-detail.jsx의 LIVE_PHASE_INDEX는 PhaseTimeline/폴백용 별개의 4단계 맵 —
+#    의도적으로 다른 인덱스 공간이다. 두 맵 모두 test_dashboard_phase_mapping.py가 가드.)
+# =====================================================================
+_PHASE_STEP: Dict[str, int] = {
+    # 생성 단계.
+    "generate_start": 0,
+    "generate_done": 0,
+    # warm 준비/loop 시작은 생성 전 준비라 생성 단계로 묶는다.
+    "warm_prepare_start": 0,
+    "warm_prepare_done": 0,
+    "loop_start": 0,
+    # 백테 단계.
+    "backtest_start": 1,
+    "backtest_end": 1,
+    # 채점 단계.
+    "score_start": 2,
+    "score_done": 2,
+    # 부검 단계.
+    "autopsy_start": 3,
+    "autopsy_done": 3,
+    # 반복(세대 완료 후 다음 세대 루프 진입 직전).
+    "generation_done": 4,
+    # GA 경로(run_ga_loop) phase — 힐클라임과 동일 5단계로 매핑.
+    "ga_init": 0,            # 초기 population 생성 = 생성.
+    "ga_evaluate_start": 1,  # population 평가(백테 실행) = 백테.
+    "ga_generation_done": 4, # 세대 완료 = 반복.
+    # 완료/정지는 활성 단계 없음.
+    "complete": -1,
+    "stopping": -1,
+}
+
+
+# =====================================================================
 def _publish_live(
     st: LoopState,
     rid: str,
@@ -633,6 +669,7 @@ def _publish_live(
     winner_buy: Optional[str] = None,
     winner_sell: Optional[str] = None,
     page_data: Optional[Dict[str, Any]] = None,
+    _log_buf: Optional[Deque[str]] = None,
 ) -> None:
     """현재 루프 진행 상태를 contract.LoopState로 만들어 current_state.json에 발행.
 
@@ -642,7 +679,13 @@ def _publish_live(
 
     page_data는 contract v2 패스스루(후속 페이지가 자기 데이터를 실어보냄). None이면
     빈 dict로 발행돼 기존 호출부(page_data 무인자)는 v1과 동일하게 동작한다(하위호환).
+
+    _log_buf는 run_loop이 생성한 run-scoped deque(maxlen=50). None이면(GA/테스트) 빈 로그.
     """
+    # 로그 버퍼에 이 이벤트 한 줄을 추가한다(버퍼가 없으면 조용히 건너뜀).
+    if _log_buf is not None and phase:
+        _log_buf.append(f"[{phase}] {message}" if message else f"[{phase}]")
+
     try:
         gens = st.get_generations(rid)
     except Exception:  # noqa: BLE001 - 라이브 발행은 정확성 경로가 아니다.
@@ -658,9 +701,16 @@ def _publish_live(
         "winner_buy": winner_buy,
         "winner_sell": winner_sell,
     }
+    current_step = _PHASE_STEP.get(phase, -1)
     snapshot = to_loop_state(
         summary, gens, config=config, status=status, current_gen=current_gen,
-        latest={"phase": phase, "last_checkpoint": last_checkpoint, "message": message},
+        latest={
+            "phase": phase,
+            "last_checkpoint": last_checkpoint,
+            "message": message,
+            "recent_logs": list(_log_buf) if _log_buf is not None else [],
+            "current_step": current_step,
+        },
         cumulative_tokens=cumulative_tokens,
         page_data=page_data,
     )
@@ -780,6 +830,9 @@ def run_loop(
     best_is_mdd_only: bool = False
     history_records: list = []  # CONVERGENCE — 누적 GenRecord.
     summary: Optional[Dict[str, Any]] = None
+    # 프로세스 플로우 패널용 run-scoped 로그 버퍼.
+    #   run_loop 호출마다 새로 생성해 세션 간 누수를 방지한다(모듈 전역 금지).
+    _live_log_buf: Deque[str] = deque(maxlen=50)
 
     # warm 엔진 모드: 전체유니버스 엔진/데이터를 1회 prepare하고 세대마다 run()만 호출한다.
     #   prepare 실패(데이터 부재 등)는 cold(run_backtest_for) 경로로 자동 폴백한다.
@@ -789,7 +842,8 @@ def run_loop(
     if getattr(config, "bt_engine_mode", "warm") == "warm":
         _publish_live(st, rid, config, status="running", current_gen=start_gen,
                       cumulative_tokens=cumulative_tokens, phase="warm_prepare_start",
-                      message="warm session prepare 시작 (전체유니버스 엔진/데이터 로딩)")
+                      message="warm session prepare 시작 (전체유니버스 엔진/데이터 로딩)",
+                      _log_buf=_live_log_buf)
         warm_session = WarmBacktestSession(_build_warm_btconfig(config))
         prep = warm_session.prepare()
         if prep.get("status") != "ok":
@@ -800,7 +854,8 @@ def run_loop(
             print(f"[LOOP] warm prepare 완료 (back_count={back_count})", flush=True)
             _publish_live(st, rid, config, status="running", current_gen=start_gen,
                           cumulative_tokens=cumulative_tokens, phase="warm_prepare_done",
-                          message=f"warm session 준비 완료 (back_count={back_count})")
+                          message=f"warm session 준비 완료 (back_count={back_count})",
+                          _log_buf=_live_log_buf)
 
     # resume 시 기존 best(graded) 복원.
     existing = st.get_run(rid)
@@ -813,7 +868,8 @@ def run_loop(
     # 초기 idle→running 라이브 발행.
     _publish_live(st, rid, config, status="running", current_gen=start_gen,
                   cumulative_tokens=cumulative_tokens, phase="loop_start",
-                  message="loop started")
+                  message="loop started",
+                  _log_buf=_live_log_buf)
 
     try:
         # --- P2 GA 단일 분기 ---
@@ -841,7 +897,8 @@ def run_loop(
                               best_gen=best_gen, best_score=best_score,
                               best_buy=best_buy, best_sell=best_sell,
                               winner_gen=winner_gen, winner_score=winner_score,
-                              winner_buy=winner_buy, winner_sell=winner_sell)
+                              winner_buy=winner_buy, winner_sell=winner_sell,
+                              _log_buf=_live_log_buf)
                 break
 
             # --- 종료 판정 (세대 시작 전) ---
@@ -865,6 +922,14 @@ def run_loop(
             # P3 계보: 이 세대가 어느 세대를 개선했는지(parent_gen). refine 모드에서
             #   현재 best의 출발 코드를 받아 개선하면 그 best_gen이 부모다. seed/fresh
             #   (출발점 없음)면 None(루트 세대)으로 기록한다.
+            _publish_live(st, rid, config, status="running", current_gen=gen_no,
+                          cumulative_tokens=cumulative_tokens, phase="generate_start",
+                          message=f"gen {gen_no} 전략 생성 시작",
+                          best_gen=best_gen, best_score=best_score,
+                          best_buy=best_buy, best_sell=best_sell,
+                          winner_gen=winner_gen, winner_score=winner_score,
+                          winner_buy=winner_buy, winner_sell=winner_sell,
+                          _log_buf=_live_log_buf)
             parent_gen_for_record: Optional[int] = None
             use_seed = gen_no == 0 and seed_buy and seed_sell
             if use_seed:
@@ -928,6 +993,14 @@ def run_loop(
                 cumulative_tokens += int(gen_res.get("tokens", 0) or 0)
                 print(f"[LOOP] generated buy={buy_name} sell={sell_name} "
                       f"(cum_tokens={cumulative_tokens})", flush=True)
+                _publish_live(st, rid, config, status="running", current_gen=gen_no,
+                              cumulative_tokens=cumulative_tokens, phase="generate_done",
+                              message=f"gen {gen_no} 전략 생성 완료: buy={buy_name}",
+                              best_gen=best_gen, best_score=best_score,
+                              best_buy=best_buy, best_sell=best_sell,
+                              winner_gen=winner_gen, winner_score=winner_score,
+                              winner_buy=winner_buy, winner_sell=winner_sell,
+                              _log_buf=_live_log_buf)
                 _print_strategy_head(buy_name)
 
             # --- b. 엔진 호환 보장 (formula 빈 테이블) ---
@@ -941,7 +1014,8 @@ def run_loop(
                           best_gen=best_gen, best_score=best_score,
                           best_buy=best_buy, best_sell=best_sell,
                           winner_gen=winner_gen, winner_score=winner_score,
-                          winner_buy=winner_buy, winner_sell=winner_sell)
+                          winner_buy=winner_buy, winner_sell=winner_sell,
+                          _log_buf=_live_log_buf)
             t0 = time.time()
             try:
                 if warm_session is not None:
@@ -969,7 +1043,8 @@ def run_loop(
                           best_gen=best_gen, best_score=best_score,
                           best_buy=best_buy, best_sell=best_sell,
                           winner_gen=winner_gen, winner_score=winner_score,
-                          winner_buy=winner_buy, winner_sell=winner_sell)
+                          winner_buy=winner_buy, winner_sell=winner_sell,
+                          _log_buf=_live_log_buf)
             print(f"[LOOP] backtest status={outcome.status} "
                   f"elapsed={bt_elapsed:.1f}s reason={outcome.reason}", flush=True)
 
@@ -1002,6 +1077,14 @@ def run_loop(
                 continue
 
             # --- e. fitness (하드 게이트 + graded 선택 점수) ---
+            _publish_live(st, rid, config, status="running", current_gen=gen_no,
+                          cumulative_tokens=cumulative_tokens, phase="score_start",
+                          message=f"gen {gen_no} 채점 시작",
+                          best_gen=best_gen, best_score=best_score,
+                          best_buy=best_buy, best_sell=best_sell,
+                          winner_gen=winner_gen, winner_score=winner_score,
+                          winner_buy=winner_buy, winner_sell=winner_sell,
+                          _log_buf=_live_log_buf)
             fit, graded, fit_err = _score_outcome(outcome, config)
             if fit is None:
                 st.record_generation(
@@ -1052,6 +1135,15 @@ def run_loop(
                   f"mdd={graded.mdd:.4g} profit={graded.total_profit:,.0f} "
                   f"trades={fit.trade_count} gate_distance={graded.gate_distance}",
                   flush=True)
+            _publish_live(st, rid, config, status="running", current_gen=gen_no,
+                          cumulative_tokens=cumulative_tokens, phase="score_done",
+                          message=(f"gen {gen_no} 채점 완료: gate={'pass' if fit.gate_passed else 'fail'}"
+                                   f" graded={graded.graded:.4g}"),
+                          best_gen=best_gen, best_score=best_score,
+                          best_buy=best_buy, best_sell=best_sell,
+                          winner_gen=winner_gen, winner_score=winner_score,
+                          winner_buy=winner_buy, winner_sell=winner_sell,
+                          _log_buf=_live_log_buf)
 
             # 이력 기록(CONVERGENCE).
             history_records.append(GenRecord(
@@ -1120,11 +1212,27 @@ def run_loop(
 
             # --- f. 다음 세대 피드백: 진입(BUY) = 게이트-거리 + 진입 변별 변수,
             #        매도(SELL) = 게이트-거리 + 청산(give-back/손절/보유/매도규칙) ---
+            _publish_live(st, rid, config, status="running", current_gen=gen_no,
+                          cumulative_tokens=cumulative_tokens, phase="autopsy_start",
+                          message=f"gen {gen_no} 부검 시작",
+                          best_gen=best_gen, best_score=best_score,
+                          best_buy=best_buy, best_sell=best_sell,
+                          winner_gen=winner_gen, winner_score=winner_score,
+                          winner_buy=winner_buy, winner_sell=winner_sell,
+                          _log_buf=_live_log_buf)
             next_autopsy_feedback, next_sell_feedback, last_autopsy_page_data = _build_feedback(
                 config, outcome, fit, graded,
                 effective_autopsy_fn, effective_exit_autopsy_fn,
                 effective_segment_autopsy_fn,
             )
+            _publish_live(st, rid, config, status="running", current_gen=gen_no,
+                          cumulative_tokens=cumulative_tokens, phase="autopsy_done",
+                          message=f"gen {gen_no} 부검 완료",
+                          best_gen=best_gen, best_score=best_score,
+                          best_buy=best_buy, best_sell=best_sell,
+                          winner_gen=winner_gen, winner_score=winner_score,
+                          winner_buy=winner_buy, winner_sell=winner_sell,
+                          _log_buf=_live_log_buf)
 
             # US-007 — 세대 완료 라이브 발행 (generations 갱신 반영).
             #   P1: 세그먼트 부검 요약을 page_data["autopsy"]로 실어 LIVE 패널에 발행.
@@ -1140,7 +1248,8 @@ def run_loop(
                           best_buy=best_buy, best_sell=best_sell,
                           winner_gen=winner_gen, winner_score=winner_score,
                           winner_buy=winner_buy, winner_sell=winner_sell,
-                          page_data=page_data)
+                          page_data=page_data,
+                          _log_buf=_live_log_buf)
 
             gen_no += 1
 
@@ -1155,7 +1264,8 @@ def run_loop(
                       best_gen=best_gen, best_score=best_score,
                       best_buy=best_buy, best_sell=best_sell,
                       winner_gen=winner_gen, winner_score=winner_score,
-                      winner_buy=winner_buy, winner_sell=winner_sell)
+                      winner_buy=winner_buy, winner_sell=winner_sell,
+                      _log_buf=_live_log_buf)
         # 요약은 state를 닫기(finally) 전에 구성한다 — 닫힌 DB에서 조회하면
         #   sqlite3.ProgrammingError(Cannot operate on a closed database)가 난다.
         summary = {

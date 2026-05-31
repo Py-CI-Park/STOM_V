@@ -26,7 +26,8 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from collections import deque
+from typing import Any, Callable, Deque, Dict, List, Optional, Tuple
 
 from ai_strategy_loop import bootstrap
 from ai_strategy_loop.config import LoopConfig
@@ -579,6 +580,8 @@ def run_ga_loop(
     cumulative_tokens = 0  # GA는 토큰 합산을 추적하지 않음(gpt_auth 세대-수 cap 경로).
     history_records: List[GenRecord] = []
     dedup = DedupTracker(k=max(5, k))
+    # 프로세스 플로우 패널용 run-scoped 로그 버퍼(run_loop과 동일 패턴).
+    _live_log_buf: Deque[str] = deque(maxlen=50)
 
     if warm_session is None:
         # warm 평가 불가 → GA는 직렬 평가 모델이므로 cold 폴백 없이 즉시 종료.
@@ -590,7 +593,8 @@ def run_ga_loop(
 
     _publish(st, rid, config, status="running", current_gen=0,
              cumulative_tokens=cumulative_tokens, phase="ga_init",
-             message=f"GA 초기 population 생성 시작 (K={k})")
+             message=f"GA 초기 population 생성 시작 (K={k})",
+             _log_buf=_live_log_buf)
 
     # --- 초기 population ---
     pop = _build_initial_population(
@@ -635,7 +639,8 @@ def run_ga_loop(
                  best_gen=best_gen, best_score=best_score,
                  best_buy=best_buy, best_sell=best_sell,
                  winner_gen=winner_gen, winner_score=winner_score,
-                 winner_buy=winner_buy, winner_sell=winner_sell)
+                 winner_buy=winner_buy, winner_sell=winner_sell,
+                 _log_buf=_live_log_buf)
         t0 = time.time()
         _evaluate_population(pop, config, warm_session)
         elapsed = time.time() - t0
@@ -674,7 +679,8 @@ def run_ga_loop(
                  best_buy=best_buy, best_sell=best_sell,
                  winner_gen=winner_gen, winner_score=winner_score,
                  winner_buy=winner_buy, winner_sell=winner_sell,
-                 page_data=page_data)
+                 page_data=page_data,
+                 _log_buf=_live_log_buf)
 
         # --- 다음 세대 생성(elitism + crossover + mutation + 가드실패 fill) ---
         history_summary = build_history_summary(history_records)
@@ -695,7 +701,8 @@ def run_ga_loop(
              best_gen=best_gen, best_score=best_score,
              best_buy=best_buy, best_sell=best_sell,
              winner_gen=winner_gen, winner_score=winner_score,
-             winner_buy=winner_buy, winner_sell=winner_sell)
+             winner_buy=winner_buy, winner_sell=winner_sell,
+             _log_buf=_live_log_buf)
 
     return _summary(
         rid, st.get_cumulative_generation_count(rid),

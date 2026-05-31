@@ -105,6 +105,9 @@ class LatestInfo(BaseModel):
     phase: str = ""  # 예: 'backtest_start' | 'backtest_end' | 'generation_done'
     last_checkpoint: str = ""
     message: str = ""
+    # 프로세스 플로우 패널용 필드. 구 current_state.json 미포함 시 기본값으로 파싱(하위호환).
+    recent_logs: List[str] = Field(default_factory=list)   # 최근 ~50 로그 라인.
+    current_step: int = -1  # -1=없음 0=생성 1=백테 2=채점 3=부검 4=반복.
 
 
 class CumulativeInfo(BaseModel):

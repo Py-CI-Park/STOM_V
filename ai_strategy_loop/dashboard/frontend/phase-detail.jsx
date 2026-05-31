@@ -54,12 +54,18 @@ const LIVE_PHASE_INDEX = {
   warm_prepare_start: 0,
   warm_prepare_done: 0,
   ga_init: 0,
+  generate_start: 0,
+  generate_done: 0,
   // 백테스트.
   backtest_start: 1,
   ga_evaluate_start: 1,
   // 채점(백테 종료 직후 fitness 산출).
   backtest_end: 2,
+  score_start: 2,
+  score_done: 2,
   // 부검/세대 완료.
+  autopsy_start: 3,
+  autopsy_done: 3,
   generation_done: 3,
   ga_generation_done: 3,
   complete: 3,
@@ -522,9 +528,69 @@ function IdlePhaseView() {
   );
 }
 
+// =====================================================================
+// ProcessFlowPanel — 5단계 프로세스 플로우 + 라이브 로그 패널.
+//   current_step(-1~4): 0=생성 1=백테 2=채점 3=부검 4=반복.
+//   구 current_state.json(current_step 미포함)은 phaseIndex() 폴백으로 하이라이트.
+// =====================================================================
+const FLOW_STEPS = [
+  { label: "생성",   sub: "Generate" },
+  { label: "백테",   sub: "Backtest" },
+  { label: "채점",   sub: "Score" },
+  { label: "부검",   sub: "Autopsy" },
+  { label: "반복",   sub: "Iterate" },
+];
+
+function ProcessFlowPanel({ state }) {
+  // current_step이 있으면 우선 사용, 없으면 phaseIndex() 폴백(하위호환).
+  const rawStep = state?.latest?.current_step;
+  const currentStep = (rawStep !== undefined && rawStep !== null)
+    ? rawStep
+    : phaseIndex(state?.latest?.phase);
+
+  const logs = state?.latest?.recent_logs ?? [];
+
+  // 로그 패널 자동 스크롤.
+  const logRef = useRef_ph(null);
+  useEffect_ph(() => {
+    if (logRef.current) {
+      logRef.current.scrollTop = logRef.current.scrollHeight;
+    }
+  }, [logs.length]);
+
+  return (
+    <div className="panel" style={{ padding: "12px 14px" }}>
+      <div className="panel-hd" style={{ marginBottom: 8 }}>
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--amber)" }}></span>
+          프로세스 플로우
+        </div>
+      </div>
+      <div className="process-flow-row">
+        {FLOW_STEPS.map((step, i) => (
+          <div
+            key={i}
+            className={`process-box${i === currentStep ? " active" : ""}`}
+          >
+            {step.label}
+            <span className="process-box-sub">{step.sub}</span>
+          </div>
+        ))}
+      </div>
+      <div className="process-log-pane" ref={logRef}>
+        {logs.length === 0
+          ? <span className="process-log-empty">로그 대기중…</span>
+          : logs.map((line, i) => <div key={i}>{line}</div>)
+        }
+      </div>
+    </div>
+  );
+}
+
 Object.assign(window, {
   PhaseTimeline,
   PhaseDetailPanel,
+  ProcessFlowPanel,
   GenerationView, BacktestingView, ScoringView, AutopsyView,
   LiveBacktestChartInline,
   DemoBadge, LivePending,

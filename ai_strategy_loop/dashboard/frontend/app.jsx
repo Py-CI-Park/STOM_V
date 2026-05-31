@@ -138,6 +138,7 @@ function App() {
 
           <CurrentGenPanel state={state} />
           <PhaseTimeline state={state} />
+          <ProcessFlowPanel state={state} />
           <PhaseDetailPanel state={state} wsStatus={wsStatus} />
           <EnginePanel state={state} wsStatus={wsStatus} />
 
