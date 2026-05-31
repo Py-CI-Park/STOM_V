@@ -514,6 +514,10 @@ def _ga_winner_score(ind: "Individual", config: LoopConfig) -> float:
         return float(_gate_passed_term("balanced", composite, ind.profit_term, config))
     if objective == "uptrend":
         return float(getattr(ind, "uptrend_r2", 0.0) or 0.0)
+    # NOTE: multiyear GA winner-selection not wired (hillclimb path is the ② target);
+    #   Individual does not carry multiyear_stability_term, so 'multiyear' falls back to
+    #   hard_score here. The multiyear term still flows into per-individual graded via
+    #   _score_outcome (selection ranking), only GA winner-publish ranking is unaffected.
     return float(ind.hard_score or 0.0)
 
 

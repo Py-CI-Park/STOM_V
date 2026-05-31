@@ -120,6 +120,10 @@ class GradedResult:
     #   만드는 테스트 더블도 그대로 동작한다.
     dispersion_term: float = 1.0
     max_hold_count: float = 0.0
+    # 다년 안정성 항 [0,1]. winner_objective='multiyear'에서만 의미. 기본 1.0(맨 끝,
+    #   하위호환). 결과 CSV를 연도별로 쪼개 cross-year 우상향/흑자/수익 균등성을 합친
+    #   값으로, gate-passed graded에 곱한다. None(데이터 부족)이면 1.0=중립(risk_adjusted).
+    multiyear_stability_term: float = 1.0
 
 
 def compute_uptrend_r2(equity_series: Sequence[float]) -> float:
@@ -473,6 +477,7 @@ def compute_graded_fitness(
     *,
     dispersion_enabled: bool = False,
     min_hold_symbols: float = 6.0,
+    multiyear_stability: Optional[float] = None,
 ) -> GradedResult:
     """하드 게이트를 제거하지 않고 **선택 그래디언트**를 주는 등급화 적합도.
 
@@ -604,10 +609,11 @@ def compute_graded_fitness(
 
     if hard.gate_passed:
         composite = hard.score  # calmar x uptrend_r2 x 1
-        if objective in ("multi", "uptrend"):
-            # 다목적('multi') 및 우상향('uptrend')은 _gate_passed_term에 추가 키워드가
-            #   필요하다. 'multi'는 calmar/uptrend_r2/daily_avg_trades/payoff 4항을 모두
-            #   쓰고, 'uptrend'는 uptrend_r2만 쓴다(나머지는 _gate_passed_term이 무시).
+        if objective in ("multi", "uptrend", "multiyear"):
+            # 다목적('multi')·우상향('uptrend')·다년('multiyear')은 _gate_passed_term에
+            #   추가 키워드가 필요하다. 'multi'는 calmar/uptrend_r2/daily_avg_trades/payoff
+            #   4항을 모두 쓰고, 'uptrend'는 uptrend_r2만, 'multiyear'는 multiyear_stability만
+            #   쓴다(나머지는 _gate_passed_term이 무시).
             #   calmar/uptrend_r2/daily_avg_trades는 이미 함수 내 산출값을 쓰고,
             #   payoff_ratio는 metrics에서 직접 꺼낸다(없으면 None → payoff 항 제외).
             #   'uptrend'에서도 payoff_for_multi를 계산해 넘기지만 반환에 안 쓰여 무해하다.
@@ -629,6 +635,7 @@ def compute_graded_fitness(
                 uptrend_r2=uptrend_r2,
                 daily_avg_trades=daily_avg_trades,
                 payoff_ratio=payoff_for_multi,
+                multiyear_stability=multiyear_stability,
             )
         else:
             graded = 1.0 + _gate_passed_term(objective, composite, profit_term, config)
@@ -689,6 +696,9 @@ def compute_graded_fitness(
         give_back_rate=(give_back_rate_val if give_back_rate_val is not None else 0.0),
         dispersion_term=(dispersion_term if dispersion_term is not None else 1.0),
         max_hold_count=(max_hold_count_val if max_hold_count_val is not None else 0.0),
+        multiyear_stability_term=(
+            multiyear_stability if multiyear_stability is not None else 1.0
+        ),
     )
 
 
@@ -753,6 +763,7 @@ def _gate_passed_term(
     uptrend_r2: Optional[float] = None,
     daily_avg_trades: Optional[float] = None,
     payoff_ratio: Optional[float] = None,
+    multiyear_stability: Optional[float] = None,
 ) -> float:
     """게이트 통과 전략의 graded 가산항(=graded-1.0)을 목표별로 만든다.
 
@@ -763,14 +774,21 @@ def _gate_passed_term(
     - 'uptrend'            : composite×R² — 누적수익 곡선의 우상향(평활도, uptrend_r2)에
                             가중. composite(=Calmar×R²)에 R²를 한 번 더 곱해 "장기 우상향"을
                             winner/선택 주 기준으로 삼는다(보고서 우수전략의 정의적 특성).
+    - 'multiyear'          : composite×stability_term — 결과 CSV를 연도별로 쪼개 산출한
+                            cross-year 안정성(per-year 우상향/흑자/수익 균등성)을 곱해, 단일년
+                            과적합보다 여러 해에 걸쳐 안정적으로 우상향하는 전략을 winner/선택
+                            주 기준으로 삼는다(§3.20 시드의 다년 우상향 형태). None(데이터 부족)
+                            이면 1.0=중립이라 composite 그대로(=risk_adjusted).
 
-    'multi'/'uptrend'를 제외한 분기는 calmar/uptrend_r2/daily_avg_trades/payoff_ratio 키워드를
-    전혀 보지 않으므로, 그 값들을 넘기지 않는 **기존 호출부는 동작이 완전히 동일**하다
-    (하위호환). 'multi'일 때만 그 값들(기본 None은 항 제외)로 다목적 평균을 만들고,
-    'uptrend'일 때만 uptrend_r2(기본 None→0.0)를 추가로 곱한다.
+    'multi'/'uptrend'/'multiyear'를 제외한 분기는 calmar/uptrend_r2/daily_avg_trades/
+    payoff_ratio/multiyear_stability 키워드를 전혀 보지 않으므로, 그 값들을 넘기지 않는
+    **기존 호출부는 동작이 완전히 동일**하다(하위호환). 'multi'일 때만 그 값들(기본 None은
+    항 제외)로 다목적 평균을 만들고, 'uptrend'일 때만 uptrend_r2(기본 None→0.0)를,
+    'multiyear'일 때만 multiyear_stability(기본 None→1.0=중립)를 추가로 곱한다.
 
     어느 목표든 비음수라 graded≥1.0이 보장돼 "통과>실패" 불변식이 유지된다
-    (composite≥0, profit_term∈[0,1], multi term∈[0,1], R²∈[0,1] → composite×R²≥0).
+    (composite≥0, profit_term∈[0,1], multi term∈[0,1], R²∈[0,1], stability_term∈[0,1]
+    → composite×R²≥0, composite×stability_term≥0).
     알 수 없는 값은 risk_adjusted로 폴백한다.
     """
     if objective == "profit":
@@ -787,6 +805,11 @@ def _gate_passed_term(
         # 우상향 추세 강조: composite(calmar×r²)에 r²를 한 번 더 곱해 곡선 평활도(우상향)에 가중.
         #   composite≥0, r²∈[0,1] → 반환≥0이라 graded≥1.0 불변식 유지.
         return composite * _clamp01(uptrend_r2 if uptrend_r2 is not None else 0.0)
+    if objective == "multiyear":
+        # 다년 우상향 안정성 강조: composite(calmar×r²)에 cross-year stability_term을 곱한다.
+        #   None(데이터 부족/CSV 없음)이면 1.0 → composite 그대로(=risk_adjusted, 중립).
+        #   composite≥0, term∈[0,1] → 반환≥0이라 graded≥1.0 불변식 유지.
+        return composite * _clamp01(multiyear_stability if multiyear_stability is not None else 1.0)
     # 'risk_adjusted' 및 알 수 없는 값 폴백.
     return composite
 

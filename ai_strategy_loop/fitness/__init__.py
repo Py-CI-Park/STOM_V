@@ -21,6 +21,11 @@ from .holdout import (
     holdout_verdict_to_page_data,
     split_window,
 )
+from .multiyear import (
+    MultiYearStability,
+    YearMetrics,
+    compute_multiyear_stability,
+)
 from .score import (
     FitnessResult,
     GradedResult,
@@ -46,4 +51,7 @@ __all__ = [
     "HoldoutVerdict",
     "compute_holdout_verdict",
     "holdout_verdict_to_page_data",
+    "MultiYearStability",
+    "YearMetrics",
+    "compute_multiyear_stability",
 ]

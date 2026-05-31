@@ -1532,6 +1532,7 @@ def _winner_score_value(fit, graded, config: LoopConfig) -> float:
     - 'profit'             : total_profit(절대수익). 클수록 좋은 winner.
     - 'balanced'           : composite·(1-w)+profit_term·w 블렌드(graded.objective와 동일 공식).
     - 'uptrend'            : uptrend_r2(누적수익 곡선 우상향 R²). 클수록 우상향 winner.
+    - 'multiyear'          : graded.multiyear_stability_term(cross-year 안정성). 클수록 다년-강건 winner.
 
     알 수 없는 목표는 risk_adjusted로 폴백한다.
     """
@@ -1544,6 +1545,8 @@ def _winner_score_value(fit, graded, config: LoopConfig) -> float:
         return float(_gate_passed_term("balanced", fit.score, graded.profit_term, config))
     if objective == "uptrend":
         return float(fit.uptrend_r2)
+    if objective == "multiyear":
+        return float(graded.multiyear_stability_term)
     return float(fit.score)
 
 
@@ -1552,6 +1555,8 @@ def _winner_compare_key(fit, graded, config: LoopConfig):
 
     - 'profit': (total_profit, -mdd) — 수익 최대, 동률이면 MDD 낮은 쪽.
     - 'uptrend': (uptrend_r2, score) — R² 최대, 동률이면 composite(Calmar×R²) 높은 쪽.
+    - 'multiyear': (multiyear_stability_term, score) — cross-year 안정성 최대,
+      동률이면 composite(Calmar×R²) 높은 쪽.
     - 그 외   : (score,) — 스칼라 단일 비교(risk_adjusted/balanced).
     """
     objective = str(getattr(config, "winner_objective", "risk_adjusted") or "risk_adjusted")
@@ -1559,6 +1564,8 @@ def _winner_compare_key(fit, graded, config: LoopConfig):
         return (float(graded.total_profit), -float(graded.mdd))
     if objective == "uptrend":
         return (float(fit.uptrend_r2), float(fit.score))
+    if objective == "multiyear":
+        return (float(graded.multiyear_stability_term), float(fit.score))
     return (_winner_score_value(fit, graded, config),)
 
 
@@ -1595,12 +1602,25 @@ def _score_outcome(outcome: BacktestOutcome, config: LoopConfig):
     #   cli.runner._extract_metrics가 'max_hold_count'(최대보유종목수)를 항상 포함하므로
     #   merged_metrics에도 들어 있다. 누락된 더블/구 데이터면 compute_graded_fitness가
     #   None 처리(무영향)한다(하위호환).
+    # 다년 안정성(② 다년 학습): winner_objective='multiyear'일 때만 결과 CSV를 연도별로
+    #   쪼개 cross-year stability_term을 산출한다(다른 objective면 zero-cost — 평가 안 함).
+    #   산출 실패(CSV 없음/유효연도 부족/파싱 오류)는 None→중립(score에 무영향)으로 흡수한다.
+    multiyear_stability = None
+    if str(getattr(config, "winner_objective", "") or "") == "multiyear":
+        try:
+            from ai_strategy_loop.fitness import compute_multiyear_stability  # noqa: PLC0415
+
+            _stab = compute_multiyear_stability(abs_csv, config)
+            multiyear_stability = _stab.stability_term if _stab is not None else None
+        except Exception:  # noqa: BLE001 - 다년 산출 실패는 score에 영향 없이 흡수(None→중립).
+            multiyear_stability = None
     try:
         fit = compute_fitness(merged_metrics, equity, config)
         graded = compute_graded_fitness(
             merged_metrics, equity, config,
             dispersion_enabled=config.dispersion_enabled,
             min_hold_symbols=config.min_hold_symbols,
+            multiyear_stability=multiyear_stability,
         )
     except Exception as exc:  # noqa: BLE001
         return None, None, f"compute_fitness 실패: {exc}"
