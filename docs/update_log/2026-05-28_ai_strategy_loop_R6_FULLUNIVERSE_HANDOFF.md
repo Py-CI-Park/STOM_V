@@ -462,6 +462,8 @@ winner=gen0 시드, **winner_score=0.6164(=multiyear stability_term)**, run stat
 
 **현황**: ② 빌드 + 평가기준 정합 **완료**. **AI refine는 여전히 시드 못 이김**(과발화 천장 = 기존 §3.16-D 연구질문, 빌드결함 아님). **15세대 완주는 OOM 인프라 이슈로 미완** — 별도 과제(엔진수↓ / 과발화 PRE-SAVE 사전차단 / per-run 메모리 가드). 신규 config `run_multiyear_long_config.json`·`run_multiyear_long2_config.json`(gitignored).
 
+**🔧 추가 인프라 발견(resume 시도, 2026-05-31)**: 15세대 완주를 resume(`--run-id` 이어하기, myr5+resume)로 시도 → 실패. **크래시한 run이 16개 warm 엔진 자식을 고아(orphan)로 남긴다**(부모가 OOM SIGKILL될 때 자식 엔진 미정리) → myr2~5+resume 누적으로 **~37개 고아·~34GB RAM 점유** → 새 run이 prepare 전 즉시 OOM(resume가 무출력 exit1로 죽음). 정리 = `taskkill /F /IM python.exe`(python3.exe는 별개라 보존). **교훈: 3년 풀유니버스 run 크래시 후엔 반드시 고아 엔진 정리하고, 크래시 루프를 반복하지 말 것. 15세대 완주는 엔진측 자식 정리/거래수 캡(보호영역) 없이는 불가.** myr5 부분결과(Phase E 신규 규칙 실측): gen0 시드 graded **3.584**(=1+composite2.87×전구간r²0.90) winner, gen1 +4.1M·r²0.90이나 빈도0.2<0.3 게이트 실패, gen2 타임아웃 → myr1/myr4와 **동일 결론 재확인**(시드 1등·refine 과발화). 사용자 선택 = '정리 + 마무리'(다).
+
 ---
 
 ## §4. ⚡ 다음 세션 첫 행동 (권장 순서)
