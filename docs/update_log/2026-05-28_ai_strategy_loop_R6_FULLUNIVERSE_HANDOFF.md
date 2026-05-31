@@ -466,6 +466,20 @@ winner=gen0 시드, **winner_score=0.6164(=multiyear stability_term)**, run stat
 
 ---
 
+### 3.23 ✅ (A) 생성 품질 개선 — 과발화 차단 필터게이트 + 시드급 게이팅 프롬프트 (2026-05-31, 커밋 `e16ab39e`)
+
+사용자가 (A)생성 품질 개선을 선택 → refine 과발화 천장을 **생성측**에서 공략. 진단: 과발화 = 진입 게이트 부실(느슨/적음/OR/시간창 무시). 시드는 ~9개 필터 범주를 AND로 결합 + 시초 시간창에 한정 = 307거래(촘촘). 2레버(모두 default-OFF·엔진 무수정·byte-identical):
+- **`brain/filter_gate.py`(신규)**: `count_filter_categories(code)` — 주석 제거 후 비교연산자(`<`/`>`)와 함께 등장한 distinct 필터범주(liquidity·market_cap·price_band·change_band·exec_strength·orderbook·volume_surge·time_window·turnover) 수. `liquidity_gate.py` 패턴 미러(순수함수). "좋은 전략"(R7.4 불가) 아니라 **"충분히 게이트됐나"** 구조검사. `시가`는 시가총액/시가등락율 부분문자열 충돌로 price_band에서 제외.
+- **`prompt.py`**: 매수 경로에 시드 게이팅 구조 가이드 블록(`require_filter_gates`).
+- **`generator.py`**: PRE-SAVE 필터범주 게이트(`<min`이면 reject→재생성, `require_liquidity_gate` 미러).
+- **config**: `require_filter_gates`(기본 False)·`min_filter_categories`(기본 5; 시드=9 여유). `loop._generate_pair` 배선·`launch_config` 폼 2필드.
+
+**검증**: 신규 22 테스트(시드 매수코드 실측 9범주·`매수=True` 0·단일 1·주석무시·default byte-동일). **🎯실측 생성검사(gpt_auth, 백테 없음): 토글 ON 매수 3/3 전부 1회만에 8개 범주 생성** — 과발화(1~2범주/`매수=True`)에서 시드급(8≈9)으로 **생성 품질 실측 개선**. code-reviewer(opus) APPROVE·baseline 1856p/7f 신규0.
+
+**한계/다음**: 구조게이트는 범주 *폭*만 봄 → 다중토큰 항상참(`현재가>0 and …`) 우회 가능(프롬프트 가드레일이 "항상참 금지·이벤트 성립 순간 진입"으로 보완·짝 동작). **남은 검증 질문: 잘 게이트된 생성물이 백테에서 (a)과발화 안 함(거래수 bounded·크래시↓) (b)흑자·시드급 위험조정인가** — 확인하려면 백테 필요(**3년 OOM 회피 위해 소규모/단기**). `require_filter_gates=ON` 짧은 run이 다음 자연스러운 단계. 신규 `_temp_filtergate_gen.py`(gitignored).
+
+---
+
 ## §4. ⚡ 다음 세션 첫 행동 (권장 순서)
 
 > **🔴 2026-05-29 최신(R8 후) 다음 세션 최우선 = 고빈도(일평균10~23) + 고calmar/r² 생성(=시드 능가)**: 이번 세션 결론 — 빈도-흑자-MDD 양립 메커니즘(dispersion·거래대금게이트강제·MDD제어 토글)은 구현했고 개별 성공 사례(trackb2 gen2 1개월·trackb4 gen1 3개월)도 있으나, **refine 생성세대는 빈도만 높지 위험조정수익(calmar·r²)이 시드 Tick_902(calmar31·r²0.85)에 미달**(§3.7 R7.4·§3.9). 즉 "고빈도이면서 시드급 calmar/r²"를 만드는 것이 미해결 핵심. 방향: LLM 생성 품질·프롬프트(보고서 변수패턴 강화)·도메인/시드 재설계. **과발화 정적컷은 불가 판명(§3.7)**이라 런타임 fail-fast 유지. 보고서급 도달 가능성 평가는 §3.10 참조. 대시보드 LIVE 가시성은 R8로 완비(§3.8, phase·active_config·품질지표 실측).
