@@ -167,6 +167,7 @@ def build_messages(
     target_daily_trades: Optional[float] = None,
     mdd_control_enabled: bool = False,
     encourage_time_dispersion: bool = False,
+    require_filter_gates: bool = False,
 ) -> List[Dict[str, str]]:
     """OpenAI Chat Completions 메시지 리스트를 만든다.
 
@@ -204,6 +205,13 @@ def build_messages(
             C-3). 시간 분산은 정적 탐지가 불가하므로 reject 게이트가 아닌 프롬프트
             넛지 전용이다. kind=='buy'일 때만 반영되며 매도(sell)엔 영향이 없다.
             기본 False면 이 줄이 미추가되어 출력이 byte-동일 유지된다(하위호환).
+        require_filter_gates: True면(매수 경로) 시드 게이팅 구조(시총·가격/등락율
+            밴드·당일거래대금 바닥+각도·체결강도·호가압력·시초 시간창 등을 AND로
+            충분히 결합)를 가르치는 과발화 방지 가이드 블록을 매수 프롬프트에
+            추가한다(생성 품질 (A)). kind=='buy'일 때만 반영되며 매도(sell)엔 영향이
+            없다. 게이트(reject) 자체는 generate_strategy가 수행하고, 여기서는 그에
+            맞춰 LLM을 유도하는 프롬프트 역할이다. 기본 False면 이 블록이 미추가되어
+            출력이 byte-동일 유지된다(하위호환).
 
     Returns:
         [{"role": "system", ...}, {"role": "user", ...}] — 항상 system 포함.
@@ -302,6 +310,24 @@ def build_messages(
             "과도하게 좁은 임계값이나 많은 AND 조건으로 진입을 0건으로 만들지 마라. "
             "백테 구간에서 실제로 여러 번 진입이 발생하도록 합리적인 빈도를 목표로 하라.",
         ]
+        # 생성 품질 (A) 필터 게이팅 가이드(매수 전용 토글): 시드 우수전략의 정의적
+        #   특성인 "여러 필터 범주를 AND로 충분히 결합"을 가르쳐 과발화를 막는다.
+        #   generate_strategy의 require_filter_gates reject 게이트와 짝을 이루는
+        #   프롬프트 측 유도다. OFF(기본)면 미추가(byte 보존).
+        if require_filter_gates:
+            user_lines.append(
+                "필터 게이팅(매우 중요 — 과발화 방지): 매수 진입은 아래 필터 범주를 "
+                "**여러 개 AND로 충분히 결합**해야 한다(시드 우수전략의 정의적 특성). "
+                "단일/느슨한 조건, OR 결합, 항상참(예 현재가>0)은 과발화→손실/타임아웃이다.\n"
+                "- 시가총액 밴드(예: 시가총액 < N)\n"
+                "- 가격·등락율 밴드(현재가 범위, 등락율/시가등락율/시가대비등락율 범위)\n"
+                "- 당일거래대금 절대 바닥 + 당일거래대금각도(유동성·가속)\n"
+                "- 초당거래대금 급증비율(초당거래대금/초당거래대금평균 > 배수) — 신선 이벤트\n"
+                "- 체결강도 범위(예: 50~300)\n"
+                "- 호가/체결 압력(매도총잔량·매수총잔량·초당매수수량 비교)\n"
+                "- 시초 시간창(시분초로 09:00~09:05 같은 구간 한정)\n"
+                "진입은 돌파/급증 이벤트가 성립한 순간에만 — 매 틱 항상 참이 되지 않게 하라."
+            )
         # 분산매매 토글 ON: 단일 종목 과발화(매 틱/봉 항상참 임계로 매수=True 연발)를
         #   억제하라는 한 줄을 더한다. OFF면 미추가(byte 보존).
         if dispersion_prompt_enabled:

@@ -71,6 +71,8 @@ def generate_strategy(
     require_liquidity_gate: bool = False,
     mdd_control_enabled: bool = False,
     encourage_time_dispersion: bool = False,
+    require_filter_gates: bool = False,
+    min_filter_categories: int = 5,
 ) -> Dict[str, Any]:
     """LLM으로 STOM 전략을 생성하고 게이트 통과 시 DB에 저장한다.
 
@@ -106,6 +108,14 @@ def generate_strategy(
             프롬프트 토글, Phase C-3). build_messages가 kind=='buy'일 때만 반영하므로
             매도 경로엔 무영향. 시간 분산은 정적 탐지 불가라 reject 게이트가 아닌
             프롬프트 넛지 전용이다. 기본 False=하위호환(기존 프롬프트 byte-동일).
+        require_filter_gates: True면 매수(kind=='buy') 코드가 서로 다른 필터 범주를
+            min_filter_categories개 이상 비교 조건으로 결합했는지 검증하고, 부족하면
+            prior_error 설정 후 재시도한다(reject→재생성). 과발화 방지용 구조적 게이트
+            (품질 판정 아님 — "충분히 게이트됐는가?"). 동시에 build_messages로 전달돼
+            매수 프롬프트에 시드 게이팅 가이드를 주입한다. 매도(sell)에는 미적용.
+            기본 False면 이 검사·프롬프트가 평가조차 안 돼 동작이 기존과 byte-동일하다.
+        min_filter_categories: require_filter_gates=True일 때 요구하는 최소 필터 범주 수.
+            시드는 9개 범주를 충족한다. require_filter_gates=False면 미사용(무영향).
 
     Returns:
         성공: {status: 'ok', name, code, attempts, usage}
@@ -139,6 +149,7 @@ def generate_strategy(
             target_daily_trades=target_daily_trades,
             mdd_control_enabled=mdd_control_enabled,
             encourage_time_dispersion=encourage_time_dispersion,
+            require_filter_gates=require_filter_gates,
         )
 
         # --- 1) LLM 호출 ---
@@ -204,6 +215,24 @@ def generate_strategy(
             )
             logger.info("attempt %d: 거래대금 게이트 누락", attempt)
             continue
+
+        # --- 4d) 필터 범주 게이트 (생성 품질 (A); 매수 전용, 기본 OFF) — 과발화 방지 ---
+        #   §3.22: refine가 진입 필터를 느슨하게/적게 만들어 과발화한다(매수=True·단일
+        #   조건 → 750+ 거래·OOM). 시드는 ~9개 필터 범주를 AND로 결합한다. 품질 판정은
+        #   불가(R7.4)지만 "충분히 게이트됐는가?"라는 구조적(범주 수) 검사는 가능하다.
+        #   require_filter_gates=True면 매수 코드의 서로 다른 필터 범주 수가
+        #   min_filter_categories 미만일 때 reject→재시도한다. OFF면 단락되어 무영향.
+        if require_filter_gates and kind == "buy":
+            from ai_strategy_loop.brain.filter_gate import count_filter_categories  # noqa: PLC0415
+            _ncat = count_filter_categories(code)
+            if _ncat < min_filter_categories:
+                prior_error = (
+                    f"매수 조건이 과발화 위험 — 서로 다른 필터 범주를 최소 {min_filter_categories}개 "
+                    f"AND로 결합하라(현재 {_ncat}개). 시가총액·가격/등락율 밴드·당일거래대금 바닥+각도·"
+                    f"체결강도·호가압력·시초 시간창 중에서 조합하라."
+                )
+                logger.info("attempt %d: 필터 범주 부족 (%d/%d)", attempt, _ncat, min_filter_categories)
+                continue
 
         # --- 5) dedup ---
         if dedup is not None and dedup.is_duplicate(code):

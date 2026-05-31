@@ -338,6 +338,28 @@ class LoopConfig:
     #   이 줄이 미추가되어 build_messages 출력이 기존과 byte-동일하다(하위호환).
     encourage_time_dispersion: bool = False
 
+    # --- 생성 품질 (A): 필터 범주 게이트 강제 + 시드급 게이팅 프롬프트 (과발화 방지) ---
+    # 데이터 근거(§3.22 over-firing): refine가 빈도를 올릴 때 LLM이 진입 필터를
+    #   느슨하게/적게 만들어 과발화한다(매수=True·단일조건 → 750+ 거래·OOM). 인간
+    #   시드는 ~20개 필터 범주를 AND로 결합하고 시초 시간창에 한정해 307 거래로
+    #   적정 게이트된다. R7.4가 입증한 "품질 판정기"는 불가능하므로, 더 거친
+    #   "충분히 게이트됐는가?"라는 구조적(범주 수) 검사로 우회한다(달성 가능).
+    # require_filter_gates: True면 generate_strategy가 매수(kind=='buy') 전략을 저장하기
+    #   전에 서로 다른 필터 범주를 min_filter_categories개 이상 비교 조건으로 결합했는지
+    #   검증하고, 부족하면 prior_error 설정 후 재시도(reject→재생성)한다. 매도(sell)에는
+    #   적용하지 않는다. 또한 build_messages가 매수 프롬프트에 시드 게이팅 구조 가이드를
+    #   주입한다. 기본 OFF면 이 검증/프롬프트가 평가조차 안 돼 동작이 기존과 byte-동일하다.
+    require_filter_gates: bool = False
+    # min_filter_categories: require_filter_gates=True일 때 매수 진입에 요구하는 최소 필터
+    #   범주 수(시드는 9개 범주를 충족). 기본 5면 시총·가격/등락율·거래대금·체결강도·호가/
+    #   시간창 정도의 결합을 강제한다. 튜너블 — 너무 높이면 생성이 어려워지고 너무 낮으면
+    #   과발화를 못 막는다. require_filter_gates=False면 이 값은 평가되지 않는다(무영향).
+    # ⚠️ 한계(구조 검사): 이 게이트는 "범주 *폭*"만 보고 "조건의 *선별성*"은 못 본다.
+    #   다중 토큰 항상참 라인(예: 현재가>0 and 등락율>0 and 시가총액<9e9 and 당일거래대금>0
+    #   = 4범주지만 전부 항상참)은 통과시킬 수 있다. 항상참 회피는 프롬프트 가드레일
+    #   (build_messages)이 보완한다. 둘은 짝(가르침+구조하한)으로 동작한다.
+    min_filter_categories: int = 5
+
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":
         """dict에서 LoopConfig 생성. 알 수 없는 키는 무시한다."""

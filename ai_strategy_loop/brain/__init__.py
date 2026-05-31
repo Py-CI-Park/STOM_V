@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from .filter_gate import categories_present, count_filter_categories
 from .generator import generate_strategy
 from .prompt import build_messages, extract_code
 from .token_check import DedupTracker, check_tokens, normalized_ast_hash
@@ -22,4 +23,6 @@ __all__ = [
     "extract_code",
     "generate_strategy",
     "check_variable_scope",
+    "categories_present",
+    "count_filter_categories",
 ]

@@ -608,6 +608,11 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             # Phase C-3 시간 분산 넛지 — build_messages가 kind=='buy'일 때만 시초 분산
             #   가이드를 추가하므로 매도 경로엔 무영향. 기본 OFF면 프롬프트 byte-동일.
             encourage_time_dispersion=getattr(config, "encourage_time_dispersion", False),
+            # 생성 품질 (A) 필터 범주 게이트 — generate_strategy는 kind=='buy'일 때만
+            #   범주 수 검증+프롬프트 가이드를 적용하므로 매도 경로엔 무영향. 기본 OFF면
+            #   동작 byte-동일(하위호환).
+            require_filter_gates=getattr(config, "require_filter_gates", False),
+            min_filter_categories=getattr(config, "min_filter_categories", 5),
         )
         if res.get("status") != "ok":
             return {"status": "error", "reason": f"{kind} 생성 실패: {res.get('reason')}"}

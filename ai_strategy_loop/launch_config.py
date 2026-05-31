@@ -193,4 +193,18 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "help": "켜면 매수 프롬프트에 진입을 09:00~09:20에 분산하라는 소프트 가이드를 추가한다 "
                     "(reject 아닌 넛지). 기본 OFF.",
         },
+        # 생성 품질 (A) — 필터 범주 게이트 강제 + 시드급 게이팅 프롬프트(과발화 방지).
+        {
+            "name": "require_filter_gates", "label": "필터 범주 게이트 강제(매수)", "type": "bool",
+            "default": d.require_filter_gates,
+            "help": "켜면 매수 전략 저장 전 서로 다른 필터 범주를 최소 N개(아래) 비교 조건으로 "
+                    "결합했는지 검증하고 부족하면 재생성한다(과발화 방지). 매수 프롬프트에 시드 "
+                    "게이팅 가이드도 주입한다. 기본 OFF.",
+        },
+        {
+            "name": "min_filter_categories", "label": "최소 필터 범주 수", "type": "number",
+            "default": d.min_filter_categories,
+            "help": "필터 범주 게이트 강제 ON일 때 매수 진입에 요구하는 최소 필터 범주 수(시드는 9). "
+                    "높일수록 게이팅이 엄격해진다.",
+        },
     ]
