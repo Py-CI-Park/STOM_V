@@ -14,6 +14,21 @@ DEFAULT_TIME_BUCKETS = (
     ('오후', 130000, 153000),
 )
 
+# 시초 20분을 5분 셀로 세분한 버킷(Phase C-2). 시드는 09:00~09:05에 거래가 몰려
+#   coarse '장초반'(09:00~09:30) 한 칸으로는 시초 시간대 신호가 안 보인다. 비-시드
+#   생성 전략이 시초 분포를 드러내도록 5분 셀을 쓰되, 시초 이후 거래(오전/점심/오후)는
+#   coarse 버킷으로 그대로 분류해 전 시간대를 빠짐없이 라벨링한다.
+FINE_TIME_BUCKETS = (
+    ('0900-0905', 90000, 90500),
+    ('0905-0910', 90500, 91000),
+    ('0910-0915', 91000, 91500),
+    ('0915-0920', 91500, 92000),
+    ('0920+', 92000, 93000),
+    ('오전', 93000, 113000),
+    ('점심', 113000, 130000),
+    ('오후', 130000, 153000),
+)
+
 DEFAULT_MARKET_CAP_BUCKETS = (
     ('초소형', 0, 1000),
     ('소형', 1000, 3000),
@@ -30,14 +45,22 @@ def _assign_bucket(value: float, buckets: tuple[tuple[str, float, float], ...], 
     return default
 
 
-def add_time_segment(data, column: str = 'B_시분초') -> pd.DataFrame:
-    """Add `_time_segment` using HHMMSS-style buy-time values."""
+def add_time_segment(
+    data,
+    column: str = 'B_시분초',
+    buckets: tuple = DEFAULT_TIME_BUCKETS,
+) -> pd.DataFrame:
+    """Add `_time_segment` using HHMMSS-style buy-time values.
+
+    `buckets` defaults to DEFAULT_TIME_BUCKETS (30분 coarse) for byte-identical
+    back-compat. Pass FINE_TIME_BUCKETS for 5분 시초 세분(Phase C-2).
+    """
     df = normalize_trade_frame(data)
     if column not in df.columns:
         df['_time_segment'] = '미분류'
         return df
     values = pd.to_numeric(df[column], errors='coerce').fillna(0)
-    df['_time_segment'] = [_assign_bucket(float(value), DEFAULT_TIME_BUCKETS) for value in values]
+    df['_time_segment'] = [_assign_bucket(float(value), buckets) for value in values]
     return df
 
 
@@ -96,9 +119,18 @@ def _segment_summary(group: pd.DataFrame, baseline: dict, segment_info: dict) ->
     }
 
 
-def analyze_single_axis_segments(data, segment_column: str, min_samples: int = 30) -> list[dict]:
-    """Summarize each segment in one segment column."""
-    df = add_market_cap_segment(add_time_segment(data))
+def analyze_single_axis_segments(
+    data,
+    segment_column: str,
+    min_samples: int = 30,
+    time_buckets: tuple = DEFAULT_TIME_BUCKETS,
+) -> list[dict]:
+    """Summarize each segment in one segment column.
+
+    `time_buckets` defaults to DEFAULT_TIME_BUCKETS (byte-identical back-compat);
+    pass FINE_TIME_BUCKETS for 5분 시초 세분(Phase C-2).
+    """
+    df = add_market_cap_segment(add_time_segment(data, buckets=time_buckets))
     baseline = summarize_trade_frame(df)
     if segment_column not in df.columns:
         return []
@@ -110,9 +142,19 @@ def analyze_single_axis_segments(data, segment_column: str, min_samples: int = 3
     return sorted(results, key=lambda item: item['avg_return'])
 
 
-def analyze_two_axis_segments(data, first: str, second: str, min_samples: int = 30) -> list[dict]:
-    """Summarize combinations of two segment columns."""
-    df = add_market_cap_segment(add_time_segment(data))
+def analyze_two_axis_segments(
+    data,
+    first: str,
+    second: str,
+    min_samples: int = 30,
+    time_buckets: tuple = DEFAULT_TIME_BUCKETS,
+) -> list[dict]:
+    """Summarize combinations of two segment columns.
+
+    `time_buckets` defaults to DEFAULT_TIME_BUCKETS (byte-identical back-compat);
+    pass FINE_TIME_BUCKETS for 5분 시초 세분(Phase C-2).
+    """
+    df = add_market_cap_segment(add_time_segment(data, buckets=time_buckets))
     baseline = summarize_trade_frame(df)
     if first not in df.columns or second not in df.columns:
         return []

@@ -175,6 +175,13 @@ class LoopConfig:
     #   autopsy_fn을 넘기면 그쪽이 우선한다. 기본 ON (loop CLI 학습 신호).
     autopsy_enabled: bool = True
 
+    # --- Phase C-2: 5분 시초 시간대 세분 (세그먼트 부검 토글) ---
+    # segment_fine_time: True면 세그먼트 부검(analyze_segments)의 시간축을 5분 시초
+    #   셀(FINE_TIME_BUCKETS; 0900-0905 … 0920+ + 오전/점심/오후)로 세분한다. 비-시드
+    #   생성 전략이 시초 시간대 신호를 드러내도록 한다. 기본 OFF면 기존 30분 coarse
+    #   버킷이라 세그먼트 결과가 byte-동일(하위호환).
+    segment_fine_time: bool = False
+
     # --- 메타분석 환류 (P4) ---
     # meta_seed_enabled: True면 생성 프롬프트에 누적 메타 인사이트(과거 여러 run에서
     #   학습한 "통과 전략 공통 변수/개선 변경/실패 패턴")를 주입한다. 기본 OFF
@@ -316,6 +323,17 @@ class LoopConfig:
     #   기존 청산 지침에 더해 추가한다. 매수(buy)에는 영향이 없다. 기본 OFF면 이 블록이
     #   미추가되어 build_messages 출력이 기존과 byte-동일하다(하위호환).
     mdd_control_enabled: bool = False
+
+    # --- Phase C-3: 생성 진입 시간 분산 유도 (매수 프롬프트 토글) ---
+    # 데이터 근거: 시드는 거래가 09:00~09:05 한 분에 몰려 시간대 신호가 degenerate하다.
+    #   비-시드 생성 전략이 시초 시간대(09:00~09:20)에 진입을 분산하도록 유도하면
+    #   Phase C-2 5분 세분 측정으로 time-of-day 신호를 드러낼 수 있다.
+    # encourage_time_dispersion: True면 build_messages가 매수(kind=='buy') 프롬프트에
+    #   "진입 시점을 09:00~09:20에 분산하라" 소프트 가이드 한 줄을 추가한다. 시간 분산은
+    #   정적으로 신뢰성 있게 탐지할 수 없으므로 reject/retry 게이트가 아닌 **프롬프트
+    #   넛지 전용**이다(효과는 Phase D에서 측정). 매도(sell)에는 영향이 없다. 기본 OFF면
+    #   이 줄이 미추가되어 build_messages 출력이 기존과 byte-동일하다(하위호환).
+    encourage_time_dispersion: bool = False
 
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":

@@ -479,12 +479,15 @@ def _default_segment_autopsy_fn(
     from ai_strategy_loop.autopsy import analyze_segments  # noqa: PLC0415
 
     min_trades = int(getattr(config, "min_trades", 10) or 10)
+    # Phase C-2: 5분 시초 시간대 세분 토글. 기본 OFF면 fine_time=False라 세그먼트
+    #   결과가 기존과 byte-동일하다(하위호환).
+    fine_time = bool(getattr(config, "segment_fine_time", False))
 
     def _fn(csv_path: str):
         if not csv_path:
             return None
         abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
-        return analyze_segments(abs_csv, min_trades=min_trades)
+        return analyze_segments(abs_csv, min_trades=min_trades, fine_time=fine_time)
 
     return _fn
 
@@ -602,6 +605,9 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             # Track B 3차 MDD 제어 강화 — build_messages가 kind=='sell'일 때만 MDD 억제
             #   블록을 매도 프롬프트에 추가하므로 매수 경로엔 무영향. 기본 OFF면 byte-동일.
             mdd_control_enabled=getattr(config, "mdd_control_enabled", False),
+            # Phase C-3 시간 분산 넛지 — build_messages가 kind=='buy'일 때만 시초 분산
+            #   가이드를 추가하므로 매도 경로엔 무영향. 기본 OFF면 프롬프트 byte-동일.
+            encourage_time_dispersion=getattr(config, "encourage_time_dispersion", False),
         )
         if res.get("status") != "ok":
             return {"status": "error", "reason": f"{kind} 생성 실패: {res.get('reason')}"}

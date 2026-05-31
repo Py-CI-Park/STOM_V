@@ -166,6 +166,7 @@ def build_messages(
     dispersion_prompt_enabled: bool = False,
     target_daily_trades: Optional[float] = None,
     mdd_control_enabled: bool = False,
+    encourage_time_dispersion: bool = False,
 ) -> List[Dict[str, str]]:
     """OpenAI Chat Completions 메시지 리스트를 만든다.
 
@@ -198,6 +199,11 @@ def build_messages(
             블록(타이트 손절·트레일링·시간 손절·손실구간 신규노출 자제)을 매도
             프롬프트에 추가한다. kind=='sell'일 때만 반영되며 매수(buy)엔 영향이 없다.
             기본 False면 이 블록이 미추가되어 출력이 byte-동일 유지된다(하위호환).
+        encourage_time_dispersion: True면(매수 경로) 진입 시점을 09:00~09:20 시초
+            구간에 분산하라는 소프트 가이드 한 줄을 매수 프롬프트에 추가한다(Phase
+            C-3). 시간 분산은 정적 탐지가 불가하므로 reject 게이트가 아닌 프롬프트
+            넛지 전용이다. kind=='buy'일 때만 반영되며 매도(sell)엔 영향이 없다.
+            기본 False면 이 줄이 미추가되어 출력이 byte-동일 유지된다(하위호환).
 
     Returns:
         [{"role": "system", ...}, {"role": "user", ...}] — 항상 system 포함.
@@ -302,6 +308,15 @@ def build_messages(
             user_lines.append(
                 "단일 종목 과발화 억제 — 현재가>0 같은 항상참 임계로 매 틱 매수=True를 "
                 "켜지 마라. 새 돌파/급증 이벤트가 성립한 순간에만 진입하라."
+            )
+        # Phase C-3 시간 분산 넛지(매수 전용 토글): 진입 시점을 09:00~09:20 시초
+        #   구간에 분산하라는 소프트 가이드 한 줄. 정적 탐지 불가라 reject 게이트가
+        #   아닌 프롬프트 넛지 전용이다. OFF면 미추가(byte 보존).
+        if encourage_time_dispersion:
+            user_lines.append(
+                "진입 시점을 09:00~09:20 구간에 분산하라 — 단일 분(예: 09:02)에만 "
+                "집중하지 말고 시초 20분 내 여러 시간대 조건을 고려하라(시분초/시간 "
+                "조건을 한 점에 고정하지 말 것)."
             )
         fb_text = autopsy_feedback or ""
         if ("0건" in fb_text) or ("0거래" in fb_text) or ("거래가" in fb_text and "적" in fb_text):

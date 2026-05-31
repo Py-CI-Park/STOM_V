@@ -70,6 +70,7 @@ def generate_strategy(
     target_daily_trades: Optional[float] = None,
     require_liquidity_gate: bool = False,
     mdd_control_enabled: bool = False,
+    encourage_time_dispersion: bool = False,
 ) -> Dict[str, Any]:
     """LLM으로 STOM 전략을 생성하고 게이트 통과 시 DB에 저장한다.
 
@@ -101,6 +102,10 @@ def generate_strategy(
         mdd_control_enabled: build_messages로 전달(매도 MDD 억제 프롬프트 토글).
             build_messages가 kind=='sell'일 때만 반영하므로 매수 경로엔 무영향.
             기본 False=하위호환(기존 프롬프트 byte-동일).
+        encourage_time_dispersion: build_messages로 전달(매수 진입 시간 분산 넛지
+            프롬프트 토글, Phase C-3). build_messages가 kind=='buy'일 때만 반영하므로
+            매도 경로엔 무영향. 시간 분산은 정적 탐지 불가라 reject 게이트가 아닌
+            프롬프트 넛지 전용이다. 기본 False=하위호환(기존 프롬프트 byte-동일).
 
     Returns:
         성공: {status: 'ok', name, code, attempts, usage}
@@ -133,6 +138,7 @@ def generate_strategy(
             dispersion_prompt_enabled=dispersion_prompt_enabled,
             target_daily_trades=target_daily_trades,
             mdd_control_enabled=mdd_control_enabled,
+            encourage_time_dispersion=encourage_time_dispersion,
         )
 
         # --- 1) LLM 호출 ---

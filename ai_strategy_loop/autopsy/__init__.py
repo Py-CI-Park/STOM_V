@@ -23,10 +23,15 @@ from .analyze import (
     analyze_trades,
 )
 from .segment import (
+    MultiYearSegmentResult,
     SegmentAutopsyResult,
     SegmentStat,
+    StableCell,
     ThresholdStat,
+    YearSegments,
     analyze_segments,
+    analyze_segments_by_year,
+    multiyear_to_page_data,
     to_page_data,
 )
 from .summarize import (
@@ -61,4 +66,10 @@ __all__ = [
     "to_page_data",
     "summarize_segments",
     "cap_feedback",
+    # 연도-분할 cross-tab + cross-year 안정성 (Phase C-1).
+    "MultiYearSegmentResult",
+    "YearSegments",
+    "StableCell",
+    "analyze_segments_by_year",
+    "multiyear_to_page_data",
 ]
