@@ -1,21 +1,28 @@
-"""② 다년 학습 — 다년 안정성 winner 점수(winner_objective='multiyear') 단위 테스트.
+"""② 다년 학습 — 다년 전구간 우상향 winner 점수(winner_objective='multiyear') 단위 테스트.
 
-목표: 게이트통과 세대의 graded를 composite(Calmar×R²)에 결과 CSV를 연도별로 쪼개
-산출한 cross-year stability_term을 곱한 composite×stability로 매겨, 단일년 과적합이
-아니라 여러 해에 걸쳐 안정적으로 우상향하는(레짐-강건) 전략을 winner/best로 우대한다
-(§3.20 시드의 다년 우상향 형태).
+목표: 게이트통과 세대의 graded를 composite(Calmar×R²)에 **전구간 단일 누적곡선의
+우상향 R²**(stability_term)를 곱한 composite×stability로 매겨, 단일년 과적합이 아니라
+여러 해에 걸쳐 누적곡선이 장기 우상향하는 전략을 winner/best로 우대한다(§3.20·§3.21).
+
+평가기준 정정(사용자): 합격선은 "매 연도 흑자/일정 기울기/연도 균등성"이 **아니라**
+"등락·기울기 변동이 있어도 다년 전구간 누적이 장기 우상향"이다. 따라서 stability_term은
+연도별 균등성(positive_frac/consistency/profit_even)을 **제거**하고 전구간 R² 하나만 쓴다.
+다년 참여 게이트(유효연도>=min_years)만 균등성 요구 없이 유지한다.
 
 검증:
   (a) compute_multiyear_stability:
-      - 3년 모두 흑자 + 매끄러운 우상향 → 높은 stability_term.
-      - 단일년 과적합(1년만 흑자/우상향, 나머지 평평/적자) → 낮은 stability_term.
-      - 유효연도 < min_years → None.
-      - min_trades_per_year 미만 연도는 드롭.
+      - 매끄러운 다년 우상향 → stability_term ≈ 전구간 R²(높음).
+      - 단일년(유효연도<min_years) → None(중립).
+      - **down-year 허용(핵심)**: 전구간이 강하게 우상향하면 중간 하락/평평 연도가
+        있어도 stability_term은 높다(균등성으로 깎이지 않음). 구 동작과 대비.
+      - min_trades_per_year 미만 연도는 참여 게이트에서 드롭.
       - stability_term ∈ [0,1].
   (b) 불변식: multiyear gate-passed graded ≥ 1.0; multiyear_stability=None이면
       gate-passed graded == risk_adjusted graded(composite) byte-동일.
   (c) _gate_passed_term('multiyear',...) == composite×s, s=None이면 == composite.
-  (d) loop._winner_compare_key/_winner_score_value가 'multiyear'에서 stability 기준 정렬.
+  (d) **winner-strength(gen4 버그 회귀가드)**: '강하지만 덜 균등'(seed-like, graded↑)이
+      '약하지만 균등'(gen4-like, graded↓)을 winner로 이긴다 — _winner_compare_key/
+      _winner_score_value('multiyear')가 graded 기준 정렬.
 
 OFF=기존동작 보존이 핵심 — 'multiyear'는 명시 설정 시에만 동작한다.
 """
@@ -88,58 +95,86 @@ def _metrics(cagr, mdd, profit, *, trades=50):
 # (a) compute_multiyear_stability
 # ============================================================
 
-def test_three_good_years_high_stability(tmp_path):
-    """3년 모두 흑자 + 매끄러운 우상향 → 높은 stability_term."""
+def _full_curve_r2(trades):
+    """trades 리스트(거래순서)의 전구간 누적손익 곡선 우상향 R²(기대값 계산용)."""
+    from ai_strategy_loop.fitness.score import compute_uptrend_r2  # noqa: PLC0415
+
+    equity = []
+    running = 0.0
+    for _day, profit in trades:
+        running += float(profit)
+        equity.append(running)
+    return compute_uptrend_r2(equity)
+
+
+def test_smooth_multiyear_uptrend_high_stability(tmp_path):
+    """매끄러운 다년 우상향 → stability_term ≈ 전구간 R²(높음)."""
     trades = []
     for yr in (2023, 2024, 2025):
-        # 각 연도 25거래 모두 +1000(꾸준한 우상향, 흑자, 변동 없음).
+        # 각 연도 25거래 모두 +1000(꾸준한 우상향).
         trades += _year_trades(yr, 25, 1000.0)
     csv_path = _write_csv(tmp_path, trades)
 
     res = compute_multiyear_stability(csv_path, _cfg("multiyear"))
     assert res is not None
     assert res.total_year_count == 3
-    assert res.positive_year_count == 3
     assert len(res.years) == 3
-    # 각 연도 흑자 + r²≈1 (직선 우상향).
-    for ym in res.years:
-        assert ym.profit > 0.0
-        assert ym.uptrend_r2 > 0.99
-        assert ym.win_rate == 1.0
-    # positive_frac=1, mean_r2≈1, consistency≈1, profit_even≈1 → stability_term 높음.
-    assert res.stability_term > 0.95
+    # stability_term은 전구간 단일 누적곡선의 우상향 R²와 동일하다(연도별 분할 아님).
+    expected = _full_curve_r2(trades)
+    assert abs(res.stability_term - res.full_period_uptrend_r2) < 1e-12
+    assert abs(res.stability_term - expected) < 1e-9
+    # 일정 기울기 직선이라 R²≈1.
+    assert res.stability_term > 0.99
     assert 0.0 <= res.stability_term <= 1.0
 
 
-def test_single_year_overfit_low_stability(tmp_path):
-    """단일년 과적합(1년만 강한 우상향 흑자, 나머지 적자) → 낮은 stability_term.
+def test_down_year_tolerated_when_full_period_trends_up(tmp_path):
+    """down-year 허용(사용자 핵심 요구): 전구간이 강하게 우상향하면 중간 하락 연도가
+    있어도 stability_term은 높다 — 균등성/매년흑자로 깎이지 않는다.
 
-    positive_frac(1/3)과 수익 변동성(profit_even)이 끌어내린다.
+    구 동작(positive_frac·profit_even)이라면 1년 적자가 stability를 강하게 끌어내렸겠지만,
+    새 정의는 전구간 누적곡선 R²만 보므로 전체 추세가 우상향이면 페널티가 없다.
     """
     trades = []
-    # 2023: 강한 흑자 + 우상향.
-    trades += _year_trades(2023, 25, 5000.0)
-    # 2024: 적자(꾸준한 하락 — r² 높지만 profit<0).
-    trades += _year_trades(2024, 25, -2000.0)
-    # 2025: 적자.
-    trades += _year_trades(2025, 25, -2000.0)
+    # 2023: 강한 상승(+2000 ×25).
+    trades += _year_trades(2023, 25, 2000.0)
+    # 2024: 완만한 하락 연도(-300 ×25) — 누적곡선이 잠시 꺾이지만 전체 우상향 유지.
+    trades += _year_trades(2024, 25, -300.0)
+    # 2025: 다시 강한 상승(+2000 ×25) → 전구간 누적은 우상향.
+    trades += _year_trades(2025, 25, 2000.0)
     csv_path = _write_csv(tmp_path, trades)
 
     res = compute_multiyear_stability(csv_path, _cfg("multiyear"))
     assert res is not None
     assert res.total_year_count == 3
-    assert res.positive_year_count == 1  # 2023만 흑자.
-    # positive_frac=1/3가 stability를 강하게 끌어내린다.
-    assert res.stability_term < 0.7
-    assert 0.0 <= res.stability_term <= 1.0
+    # 2024는 적자라 진단상 positive_year_count는 2지만 — term에는 영향이 없어야 한다.
+    assert res.positive_year_count == 2
+    # 전구간 누적이 우상향이므로 stability_term은 여전히 높다(균등성 페널티 없음).
+    #   stability_term == 전구간 R². 중간 하락 연도로 R²가 1에서 약간만 내려갈 뿐,
+    #   균등성 항으로 *추가* 페널티를 받지 않는다(이게 핵심).
+    expected = _full_curve_r2(trades)
+    assert abs(res.stability_term - expected) < 1e-9
+    assert res.stability_term > 0.80, (
+        "전구간 우상향인데 down-year로 stability가 과하게 깎였다 — 균등성 페널티가 남아있다"
+    )
 
-    # 3년 모두 흑자인 케이스보다 확실히 낮아야 한다.
+    # 핵심 대비(구 동작 vs 새 동작): 구 평균식
+    #   mean(positive_frac=2/3, mean_r2≈1, consistency, profit_even)은 적자/변동성으로
+    #   stability를 크게 끌어내렸다. 새 정의(전구간 R²)는 그보다 명확히 높아야 한다.
+    old_style_positive_frac = res.positive_year_count / res.total_year_count  # 2/3≈0.667
+    assert res.stability_term > old_style_positive_frac, (
+        "새 전구간-R² 항이 구 positive_frac(균등성) 항보다 낮다 — 정정 실패"
+    )
+
+    # 대비: 매년 균등 흑자 케이스도 전구간 우상향이라 둘 다 높은 stability.
+    #   균등성으로 가르지 않는다(둘 다 0.80 이상).
     good = []
     for yr in (2023, 2024, 2025):
         good += _year_trades(yr, 25, 1000.0)
     good_path = _write_csv(tmp_path, good)
     good_res = compute_multiyear_stability(good_path, _cfg("multiyear"))
-    assert res.stability_term < good_res.stability_term
+    assert good_res.stability_term > 0.99
+    assert res.stability_term > 0.80
 
 
 def test_fewer_than_min_years_returns_none(tmp_path):
@@ -282,39 +317,47 @@ class _FakeFit:
 
 
 class _FakeGraded:
-    """_winner_*용 최소 graded 더블(multiyear_stability_term 보유)."""
+    """_winner_*용 최소 graded 더블. 'multiyear'는 이제 graded(전체 점수)로 정렬한다."""
 
-    def __init__(self, multiyear_stability_term=0.0, total_profit=0.0, mdd=0.0,
-                 profit_term=0.0):
+    def __init__(self, graded=0.0, multiyear_stability_term=0.0, total_profit=0.0,
+                 mdd=0.0, profit_term=0.0):
+        self.graded = float(graded)
         self.multiyear_stability_term = float(multiyear_stability_term)
         self.total_profit = float(total_profit)
         self.mdd = float(mdd)
         self.profit_term = float(profit_term)
 
 
-def test_loop_winner_score_and_key_multiyear():
-    """loop._winner_score_value/_winner_compare_key가 'multiyear'에서 stability 기준 정렬."""
+def test_loop_winner_strength_beats_evenness_multiyear():
+    """winner-strength 회귀가드(gen4 버그): '강하지만 덜 균등'(seed-like, graded↑)이
+    '약하지만 균등'(gen4-like, graded↓)을 이긴다 — 'multiyear'는 graded 기준 정렬.
+
+    실 데이터(myr4): seed graded ≈ 1 + 2.87×0.90 = 3.58 vs gen4 ≈ 1 + 1.32×0.725 = 1.96.
+    구 동작(stability_term 정렬)은 stability만 보고 더 약한 gen4의 stability가 높으면
+    그쪽을 winner로 골랐다. 새 동작은 graded(=composite×R²+1)를 봐서 강한 seed를 고른다.
+    """
     from ai_strategy_loop.controller.loop import (
         _winner_compare_key,
         _winner_score_value,
     )
 
     cfg = _cfg("multiyear")
-    hi = _FakeFit(score=10.0)
-    g_hi = _FakeGraded(multiyear_stability_term=0.9)
-    lo = _FakeFit(score=99.0)  # score 더 높지만 stability는 낮다.
-    g_lo = _FakeGraded(multiyear_stability_term=0.4)
+    # seed-like: 강하지만(=graded 높음) stability_term 자체는 더 낮을 수도 있다.
+    seed_fit = _FakeFit(score=2.87)
+    seed_g = _FakeGraded(graded=3.58, multiyear_stability_term=0.90)
+    # gen4-like: 약하지만(=graded 낮음) — 구 동작이라면 stability로 이겼을 수 있다.
+    gen4_fit = _FakeFit(score=1.32)
+    gen4_g = _FakeGraded(graded=1.96, multiyear_stability_term=0.725)
 
-    # 점수 스칼라 = multiyear_stability_term.
-    assert _winner_score_value(hi, g_hi, cfg) == 0.9
-    assert _winner_score_value(lo, g_lo, cfg) == 0.4
-    # 비교 키 = (stability, score). stability 1차 → hi > lo (score가 거꾸로여도).
-    assert _winner_compare_key(hi, g_hi, cfg) > _winner_compare_key(lo, g_lo, cfg)
-    # 동률 stability면 composite(score)로 가른다.
-    a_g = _FakeGraded(multiyear_stability_term=0.8)
-    a = _FakeFit(score=5.0)
-    b = _FakeFit(score=3.0)
-    assert _winner_compare_key(a, a_g, cfg) > _winner_compare_key(b, a_g, cfg)
+    # 점수 스칼라 = graded(전체 점수). seed가 더 강하다.
+    assert _winner_score_value(seed_fit, seed_g, cfg) == 3.58
+    assert _winner_score_value(gen4_fit, gen4_g, cfg) == 1.96
+    # 비교 키 = (graded,). seed(강함) > gen4(약함) → seed가 winner.
+    assert _winner_compare_key(seed_fit, seed_g, cfg) > _winner_compare_key(gen4_fit, gen4_g, cfg)
+
+    # 회귀가드의 핵심: gen4의 stability_term이 seed보다 (가정상) 높아도 graded로 골라야 한다.
+    even_but_weak = _FakeGraded(graded=1.96, multiyear_stability_term=0.99)
+    assert _winner_compare_key(seed_fit, seed_g, cfg) > _winner_compare_key(gen4_fit, even_but_weak, cfg)
 
 
 def test_loop_winner_key_default_unchanged_with_multiyear():
@@ -323,7 +366,7 @@ def test_loop_winner_key_default_unchanged_with_multiyear():
 
     cfg = _cfg("risk_adjusted")
     fit = _FakeFit(score=7.0)
-    g = _FakeGraded(multiyear_stability_term=0.95)
+    g = _FakeGraded(graded=8.0, multiyear_stability_term=0.95)
     assert _winner_compare_key(fit, g, cfg) == (7.0,)
 
 

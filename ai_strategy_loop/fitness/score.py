@@ -120,9 +120,9 @@ class GradedResult:
     #   만드는 테스트 더블도 그대로 동작한다.
     dispersion_term: float = 1.0
     max_hold_count: float = 0.0
-    # 다년 안정성 항 [0,1]. winner_objective='multiyear'에서만 의미. 기본 1.0(맨 끝,
-    #   하위호환). 결과 CSV를 연도별로 쪼개 cross-year 우상향/흑자/수익 균등성을 합친
-    #   값으로, gate-passed graded에 곱한다. None(데이터 부족)이면 1.0=중립(risk_adjusted).
+    # 다년 전구간 우상향 항 [0,1]. winner_objective='multiyear'에서만 의미. 기본 1.0(맨 끝,
+    #   하위호환). 결과 CSV 전구간 단일 누적곡선의 우상향 R²(연도별 균등성 아님 — 중간 하락·
+    #   기울기 변동 허용)로, gate-passed graded에 곱한다. None(데이터 부족)이면 1.0=중립.
     multiyear_stability_term: float = 1.0
 
 
@@ -774,11 +774,11 @@ def _gate_passed_term(
     - 'uptrend'            : composite×R² — 누적수익 곡선의 우상향(평활도, uptrend_r2)에
                             가중. composite(=Calmar×R²)에 R²를 한 번 더 곱해 "장기 우상향"을
                             winner/선택 주 기준으로 삼는다(보고서 우수전략의 정의적 특성).
-    - 'multiyear'          : composite×stability_term — 결과 CSV를 연도별로 쪼개 산출한
-                            cross-year 안정성(per-year 우상향/흑자/수익 균등성)을 곱해, 단일년
-                            과적합보다 여러 해에 걸쳐 안정적으로 우상향하는 전략을 winner/선택
-                            주 기준으로 삼는다(§3.20 시드의 다년 우상향 형태). None(데이터 부족)
-                            이면 1.0=중립이라 composite 그대로(=risk_adjusted).
+    - 'multiyear'          : composite×stability_term — stability_term은 결과 CSV 전구간
+                            단일 누적곡선의 우상향 R²다(연도별 균등성 아님 — 중간 하락·기울기
+                            변동 허용). 여러 해에 걸친 장기 우상향을 우대하되 연도 균등성은
+                            요구하지 않는다(§3.21 사용자 평가기준). None(데이터 부족)이면
+                            1.0=중립이라 composite 그대로(=risk_adjusted).
 
     'multi'/'uptrend'/'multiyear'를 제외한 분기는 calmar/uptrend_r2/daily_avg_trades/
     payoff_ratio/multiyear_stability 키워드를 전혀 보지 않으므로, 그 값들을 넘기지 않는

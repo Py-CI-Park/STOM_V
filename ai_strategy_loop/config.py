@@ -226,12 +226,13 @@ class LoopConfig:
     #                     winner/best로 우대한다(보고서 우수전략의 정의적 특성). winner는 gate
     #                     통과 중 uptrend_r2 최대(동률이면 composite). winner_objective!='uptrend'
     #                     이면 평가조차 안 돼 기존 동작이 byte-동일 보존된다.
-    #   'multiyear'     — 다년 안정성 우선(② 다년 학습). graded 통과 분기를 composite×stability_term
-    #                     으로 매겨, 결과 CSV를 연도별로 쪼갠 cross-year 우상향 안정성(per-year
-    #                     r²/흑자/수익 균등성)이 높은(=단일년 과적합이 아닌 레짐-강건) 전략을
-    #                     winner/best로 우대한다(§3.20 시드의 다년 우상향 형태). winner는 gate
-    #                     통과 중 stability_term 최대(동률이면 composite). winner_objective
-    #                     !='multiyear'이면 평가조차 안 돼 기존 동작이 byte-동일 보존된다.
+    #   'multiyear'     — 다년 전구간 우상향 우선(② 다년 학습). graded 통과 분기를
+    #                     composite×stability_term으로 매기며, stability_term은 결과 CSV
+    #                     전구간 단일 누적곡선의 우상향 R²다(연도별 균등성 아님 — 중간 하락·
+    #                     기울기 변동 허용, 사용자 평가기준 §3.21). 다년 참여 게이트로 단일년
+    #                     행운만 거른다. winner는 gate 통과 중 graded 최대(강한 다년-우상향이
+    #                     균등하지만 약한 전략을 이김). winner_objective!='multiyear'이면
+    #                     평가조차 안 돼 기존 동작이 byte-동일 보존된다.
     #   gate 실패 분기(profit_term×mean)는 objective와 무관하게 그대로 유지한다
     #     (이미 수익을 곱셈 게이트로 반영). 통과(graded≥1.0)>실패(<1.0) 불변식도 유지.
     winner_objective: str = "risk_adjusted"  # 'risk_adjusted' | 'profit' | 'balanced' | 'multi' | 'uptrend' | 'multiyear'
@@ -253,14 +254,16 @@ class LoopConfig:
     #   clamp01(daily_avg_trades/multi_daily_target) — 이 값 이상이면 1.0에 포화.
     #   '고빈도 우대'의 핵심 — 저빈도 세대를 이 항이 끌어내린다.
     multi_daily_target: float = 10.0
-    # --- 다년 안정성(winner_objective='multiyear') 정규화 상수 (② 다년 학습) ---
-    #   multiyear는 결과 CSV를 연도별로 쪼개 per-year 우상향(r²)·흑자·수익 균등성의 cross-year
-    #   안정성을 [0,1] stability_term으로 만들어 gate-passed graded에 곱한다. winner_objective
-    #   !='multiyear'이면 평가조차 안 돼 기존 동작이 byte-동일 보존된다(하위호환).
-    multiyear_min_years: int = 2          # 평가에 필요한 최소 유효연도(미달이면 term=None→중립).
-    multiyear_min_trades_per_year: int = 20  # 이 미만 거래 연도는 드롭(부분연도/희소 가드).
-    multiyear_var_norm: float = 0.2       # per-year r² 분산 정규화(consistency=1-var/norm).
-    multiyear_cv_norm: float = 1.0        # per-year 수익 변동계수 정규화(profit_even=1-cv/norm).
+    # --- 다년(winner_objective='multiyear') 설정 (② 다년 학습) ---
+    #   multiyear는 결과 CSV 전구간 단일 누적곡선의 우상향 R²를 stability_term으로 삼아
+    #   gate-passed graded에 곱한다(연도 균등성 아님 §3.21). 아래 2개는 '다년 참여 게이트'
+    #   기준이다. winner_objective!='multiyear'이면 평가조차 안 돼 기존 동작 byte-동일 보존.
+    multiyear_min_years: int = 2          # 참여 게이트: 유효연도<이 값이면 term=None→중립.
+    multiyear_min_trades_per_year: int = 20  # 유효연도 판정 거래수 하한(부분/희소 연도 제외).
+    # var_norm/cv_norm: 균등성 항 제거(§3.21)로 stability_term 산출에는 미사용 — per-year
+    #   진단 필드 참고용으로만 남긴 예약 상수.
+    multiyear_var_norm: float = 0.2       # (예약) stability_term 미사용.
+    multiyear_cv_norm: float = 1.0        # (예약) stability_term 미사용.
 
     # --- 진화 모드 (P2 GA — population 기반 진화) ---
     # evolution_mode:

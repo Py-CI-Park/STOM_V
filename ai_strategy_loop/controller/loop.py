@@ -1538,7 +1538,10 @@ def _winner_score_value(fit, graded, config: LoopConfig) -> float:
     - 'profit'             : total_profit(절대수익). 클수록 좋은 winner.
     - 'balanced'           : composite·(1-w)+profit_term·w 블렌드(graded.objective와 동일 공식).
     - 'uptrend'            : uptrend_r2(누적수익 곡선 우상향 R²). 클수록 우상향 winner.
-    - 'multiyear'          : graded.multiyear_stability_term(cross-year 안정성). 클수록 다년-강건 winner.
+    - 'multiyear'          : graded.graded(=1.0 + composite×다년 전구간 우상향 stability_term).
+                            가장 강한 다년-우상향 전략(우상향 R² × 위험조정 규모)이 winner.
+                            (stability_term 단독이 아니라 전체 graded를 써서, 균등하지만
+                            약한 전략이 강하지만 덜 균등한 전략을 이기지 못하게 한다.)
 
     알 수 없는 목표는 risk_adjusted로 폴백한다.
     """
@@ -1552,7 +1555,7 @@ def _winner_score_value(fit, graded, config: LoopConfig) -> float:
     if objective == "uptrend":
         return float(fit.uptrend_r2)
     if objective == "multiyear":
-        return float(graded.multiyear_stability_term)
+        return float(graded.graded)
     return float(fit.score)
 
 
@@ -1561,8 +1564,9 @@ def _winner_compare_key(fit, graded, config: LoopConfig):
 
     - 'profit': (total_profit, -mdd) — 수익 최대, 동률이면 MDD 낮은 쪽.
     - 'uptrend': (uptrend_r2, score) — R² 최대, 동률이면 composite(Calmar×R²) 높은 쪽.
-    - 'multiyear': (multiyear_stability_term, score) — cross-year 안정성 최대,
-      동률이면 composite(Calmar×R²) 높은 쪽.
+    - 'multiyear': (graded,) — 가장 강한 다년-우상향 전략(graded=1.0+composite×전구간
+      우상향 stability_term)이 winner. stability_term 단독이 아니라 전체 graded를 써서
+      '균등하지만 약한' 전략이 '강하지만 덜 균등한' 전략을 이기지 못하게 한다.
     - 그 외   : (score,) — 스칼라 단일 비교(risk_adjusted/balanced).
     """
     objective = str(getattr(config, "winner_objective", "risk_adjusted") or "risk_adjusted")
@@ -1571,7 +1575,7 @@ def _winner_compare_key(fit, graded, config: LoopConfig):
     if objective == "uptrend":
         return (float(fit.uptrend_r2), float(fit.score))
     if objective == "multiyear":
-        return (float(graded.multiyear_stability_term), float(fit.score))
+        return (float(graded.graded),)
     return (_winner_score_value(fit, graded, config),)
 
 
