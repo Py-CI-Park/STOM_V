@@ -450,6 +450,20 @@ winner=gen0 시드, **winner_score=0.6164(=multiyear stability_term)**, run stat
 
 ---
 
+### 3.22 ⚠️→✅ multiyear 평가기준 정정 + 긴 run OOM 발견 + winner 규칙 수정 (2026-05-31, run=myr2~4 + Phase E)
+
+사용자가 15세대 긴 run 요청 → myr2/myr3/myr4(3년·multiyear) **모두 refine 도중 프로세스 OOM 크래시**(트레이스백 0 = OS kill). **원인 정정(앞선 "대시보드 동시구동" 진단은 오진)**: myr4는 대시보드 없이 단독인데도 gen5에서 크래시 → 진짜 원인은 **refine가 생성한 과발화 전략**(gen2 750거래/MDD160, gen3 `매수=True` 등)이 **단일 백테 도중** 거래·보유 객체로 메모리 폭증 → 타임아웃(시간 컷)이 작동하기 전에 OOM. warm prepare 데이터는 고정(사용자 지적 정확); 폭증은 per-run 거래량. → **3년 풀유니버스 단일 warm 세션은 ~5세대가 한계**(myr1은 3세대라 생존).
+
+**myr4 gen0~4 기록**: gen0 시드 통과(graded 2.77·+8.27M·MDD17.76·r²0.90), gen1/3 타임아웃(과발화), gen2 과발화 적자(−8.27M·MDD160·750거래), **gen4 첫 refine 게이트 통과**(+4.82M·r²0.725·calmar1.82·317거래).
+
+**🔴 평가기준 정정(사용자, 핵심)**: "매년 균등 수익/일정 기울기/매년 흑자"는 **요구하지 않음**. 기준 = **"등락·기울기 변동이 있어도 다년 전구간 누적곡선이 장기 우상향"** 하나. → 기존 multiyear stability_term(per-year positive_frac·consistency·profit_even 균등성 결합)이 바로 그 **거부된 균등성을 강제**했고, 그래서 약한 gen4(stability 0.620)가 강한 시드(0.616)보다 winner로 뽑히는 버그를 유발(§3.21 D에서 관찰).
+
+**✅ Phase E 수정(커밋 `51b35ffc`, code-reviewer opus APPROVE)**: `stability_term = clamp01(전구간 단일 누적곡선 우상향 R²)`(균등성 항 3개 제거, 다년 참여 게이트만 유지=단일년 행운 차단), winner 키 `stability_term → graded`(=1+composite×stability; 강한 다년-우상향이 '균등하지만 약한' 전략을 이김). **실측 재검증(myr4 CSV): 시드 stability 0.90·graded 3.58 > gen4 0.725·1.96 → 시드 정상 우승.** R² 방향 우려(하향 곡선도 R² 높음)는 하드게이트 profit>0가 gate-passed 분기를 막아 무력화(리뷰 확인). 엔진/하드게이트(compute_fitness) 무수정·`score.py` 로직 byte-동일(문서만 정정)·default 'risk_adjusted' byte-identical·graded≥1.0 불변식·신규 16테스트(down-year 허용·winner-strength 가드).
+
+**현황**: ② 빌드 + 평가기준 정합 **완료**. **AI refine는 여전히 시드 못 이김**(과발화 천장 = 기존 §3.16-D 연구질문, 빌드결함 아님). **15세대 완주는 OOM 인프라 이슈로 미완** — 별도 과제(엔진수↓ / 과발화 PRE-SAVE 사전차단 / per-run 메모리 가드). 신규 config `run_multiyear_long_config.json`·`run_multiyear_long2_config.json`(gitignored).
+
+---
+
 ## §4. ⚡ 다음 세션 첫 행동 (권장 순서)
 
 > **🔴 2026-05-29 최신(R8 후) 다음 세션 최우선 = 고빈도(일평균10~23) + 고calmar/r² 생성(=시드 능가)**: 이번 세션 결론 — 빈도-흑자-MDD 양립 메커니즘(dispersion·거래대금게이트강제·MDD제어 토글)은 구현했고 개별 성공 사례(trackb2 gen2 1개월·trackb4 gen1 3개월)도 있으나, **refine 생성세대는 빈도만 높지 위험조정수익(calmar·r²)이 시드 Tick_902(calmar31·r²0.85)에 미달**(§3.7 R7.4·§3.9). 즉 "고빈도이면서 시드급 calmar/r²"를 만드는 것이 미해결 핵심. 방향: LLM 생성 품질·프롬프트(보고서 변수패턴 강화)·도메인/시드 재설계. **과발화 정적컷은 불가 판명(§3.7)**이라 런타임 fail-fast 유지. 보고서급 도달 가능성 평가는 §3.10 참조. 대시보드 LIVE 가시성은 R8로 완비(§3.8, phase·active_config·품질지표 실측).
