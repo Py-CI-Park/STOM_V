@@ -12,6 +12,19 @@
 
 ---
 
+## 0.5 업데이트 (2026-05-31) — ② 본 빌드 완료 (항목 #11 0%→구현·검증)
+
+핸드오프 `2026-05-28_..._HANDOFF.md` §3.21 참조. ② 다년 학습 파이프라인 + 웹 대시보드 프로세스 플로우 + 시초 시간대 측정/유도를 A→B→C→D로 구현·커밋(모두 code-reviewer opus APPROVE·baseline 신규0·엔진 무수정):
+
+- **항목 #11 (② 다년 학습) 0% → 핵심 구현**: `winner_objective='multiyear'`(연도분할 stability_term을 gate-passed graded에 곱함). 커밋 `49db2288`. run=myr1로 production 검증(gen0 graded 2.7703 = 1+composite×stability 0.6164 정확 재현).
+- **항목 #8 (대시보드) 90% → +프로세스 플로우/실시간 로그**: 5단계 active 테두리 + 로그 패널. 커밋 `bed0a1d0`.
+- **항목 #5 (autopsy) 85% → +연도별 cross-tab**: `analyze_segments_by_year`(연도교차 부호일관 stable cells: 소형 avoid·초소형 prefer 3년 일관) + 5분 시초 버킷 토글. 커밋 `609bde6c`.
+- **#13 (생성 품질) 부분 착수**: `encourage_time_dispersion` 프롬프트 넛지(09:00–09:20 분산, default-OFF) — 효과는 장기 run에서 측정 예정.
+
+**남은 후속(소규모)**: ① C-1 `analyze_segments_by_year` → 루프 page_data/대시보드 패널 배선(함수·serializer는 준비완료) ② 장기 진화 run(max_gen↑)으로 refine의 multiyear-안정 학습 + 넛지 효과 측정 ③ 2022/2026 OOS(config window edit만). **refine가 시드를 못 이기는 천장(#11 연구질문)은 여전히 열려 있음 — 빌드는 그 학습을 *측정·압박*하는 인프라를 완성한 것.**
+
+---
+
 ## 1. 목표와 철학 (기준선)
 
 - **목표**: 사람이 GUI로 수동하던 조건식(매수/매도) 개발을 LLM이 자율(생성→백테→분석→개선→반복) 대체. 보고서 우수전략급(**등락 있어도 누적 우상향 추세** + 저MDD)을 생산, STOM 검증 후 사람 감독 실매매.

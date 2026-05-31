@@ -133,10 +133,11 @@ def config_field_specs() -> List[Dict[str, Any]]:
         },
         {
             "name": "winner_objective", "label": "Winner Objective", "type": "select",
-            "choices": ["risk_adjusted", "profit", "balanced", "uptrend"],
+            "choices": ["risk_adjusted", "profit", "balanced", "multi", "uptrend", "multiyear"],
             "default": d.winner_objective,
             "help": "best/winner 선택 목표. risk_adjusted=Calmar×R², profit=절대수익, "
-                    "balanced=둘의 블렌드(profit_weight), uptrend=우상향 R²(Calmar×R²×R²).",
+                    "balanced=둘의 블렌드(profit_weight), multi=calmar·R²·빈도·payoff 동일가중, "
+                    "uptrend=우상향 R²(Calmar×R²×R²), multiyear=연도교차 안정성(②, composite×stability).",
         },
         {
             "name": "bt_engine_mode", "label": "Engine Mode", "type": "select",
@@ -178,5 +179,18 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "name": "freeze_buy_on_mdd_only", "label": "MDD-only 시 매수 동결", "type": "bool",
             "default": d.freeze_buy_on_mdd_only,
             "help": "best가 MDD만 부족(빈도·수익 통과)할 때 매수를 동결하고 매도(청산)만 재생성. 기본 ON.",
+        },
+        # ②C — 시초 5분 시간대 세분 / 생성 진입 시간 분산 유도 토글.
+        {
+            "name": "segment_fine_time", "label": "시초 5분 시간대 세분(부검)", "type": "bool",
+            "default": d.segment_fine_time,
+            "help": "켜면 세그먼트 부검의 시간축을 5분 시초 셀(0900-0905…0920+)로 세분한다. "
+                    "비-시드 생성 전략의 시초 시간대 신호 측정용. 기본 OFF(30분 coarse).",
+        },
+        {
+            "name": "encourage_time_dispersion", "label": "진입 시간 분산 유도(매수)", "type": "bool",
+            "default": d.encourage_time_dispersion,
+            "help": "켜면 매수 프롬프트에 진입을 09:00~09:20에 분산하라는 소프트 가이드를 추가한다 "
+                    "(reject 아닌 넛지). 기본 OFF.",
         },
     ]

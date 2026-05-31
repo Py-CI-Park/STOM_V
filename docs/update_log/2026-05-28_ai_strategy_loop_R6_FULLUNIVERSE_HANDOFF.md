@@ -420,6 +420,36 @@ trackb4 세대: gen0 시드 +194만 통과 / **gen1 82거래 +125만 MDD6.3 통�
 
 ---
 
+### 3.21 🎯 ② 본 빌드 완료 — multiyear objective + 웹 대시보드 프로세스 플로우 + 시간대 측정/유도 (2026-05-31, run=myr1)
+
+사용자 지시: "②본빌드 + GUI(=웹 대시보드) 프로세스 플로우 실시간 가시성 + 시초 20분 시간대×시총 가설", 범위 결정 "A(다년 안정성 핵심)+시간대 탐구 추가". ultracode 워크플로우로 4영역(대시보드·파이프라인·가설 실측·② 스코프) 병렬 파악 후 A→B→C→D 순 구현(각 단계 code-reviewer opus APPROVE·baseline 신규0·엔진 무수정).
+
+**가설 실측(seed3yr 307거래, ultracode)**: 시간축은 *시드*에선 무의미(전부 09:00–09:05 = 902 5분 스캘퍼)이나, 시가총액축은 3년 안정 신호 — **소형 avoid(return_diff −0.1446 매년)·초소형 prefer(+0.6317 매년)**(시드는 대형주 미거래라 "대형 회피"는 시드 데이터로 미표면 = min-samples 게이트의 정확한 동작). → 시간대 특성은 비-시드 생성 전략으로만 측정 가능 → C-2/C-3 추가.
+
+**Phase A (커밋 `bed0a1d0`)**: 웹 대시보드 5단계 프로세스 플로우(생성→백테→채점→부검→반복) active 테두리 + 실시간 로그 패널. `contract.LatestInfo` recent_logs(≤50)/current_step·loop 세분 phase 발행+run-scoped deque·`_PHASE_STEP`(GA 포함)·`ProcessFlowPanel`(current_step 우선·phaseIndex 폴백). 백엔드 맵 대칭 회귀가드 추가. (PyQt 데스크톱 GUI 아님.)
+
+**Phase B (커밋 `49db2288`)**: `winner_objective='multiyear'`. 신규 `fitness/multiyear.py::compute_multiyear_stability`(결과 CSV 연도분할 → `stability_term=clamp01(mean(positive_frac, mean_r2, consistency=1−r2분산/var_norm, profit_even=1−수익CV/cv_norm))`). `score.py` `_gate_passed_term` multiyear 분기(`composite×stability`, None→1.0 중립=risk_adjusted)·config 4필드 default-OFF·loop `_score_outcome` 가드 계산+winner 케이스. 하드게이트(compute_fitness) 무수정·default byte-identical·gate-passed graded≥1.0 불변식. 16 테스트(None==risk_adjusted 정확 동등 포함). 실측 시드 stability_term=**0.6164**(2025 저r²·수익편차가 정확히 끌어내림).
+
+**Phase C (커밋 `609bde6c`)**: C-1 `analyze_segments_by_year`+`_find_stable_cells`(연도교차 return_diff 부호일관 셀을 avoid/prefer로, ≥2년)+`multiyear_to_page_data`. C-2 `FINE_TIME_BUCKETS`(5분 시초 0900-0905…0920+) + `add_time_segment(buckets=)`/`analyze_*_segments(time_buckets=)` optional(기본 byte-identical) + `segment_fine_time` 토글. C-3 `encourage_time_dispersion` → 매수 프롬프트 "09:00–09:20 분산" 소프트 넛지(reject 아님, 기존 dispersion_prompt_enabled와 독립). 12 테스트. `launch_config` 스키마에 multi/multiyear choices + 토글 2종(GUI 선택 가능).
+
+**Phase D 검증 run=myr1** (3년 2023-01~2025-12·multiyear·segment_fine_time·encourage_time_dispersion·hillclimb·gen0 시드+refine 2, ~17분, warm prepare back_count=2285):
+
+| gen | gate | graded | profit | MDD% | calmar | r² | trades |
+|---|---|---|---|---|---|---|---|
+| 0 시드 | **통과** | **2.7703** | +8,266,552 | 17.76 | 3.191 | 0.900 | 307 |
+| 1 refine | 실패 | 0.328 | +3,494,443 | 13.01 | 1.852 | 0.884 | 179 (일평균0.2<0.3) |
+| 2 refine | error | 0 | — | — | — | — | 0 (메트릭 미산출, graceful) |
+
+winner=gen0 시드, **winner_score=0.6164(=multiyear stability_term)**, run status=complete. **gen0 graded 2.7703 = 1 + composite(2.87185) × stability(0.6164) 정확 재현 → ② 통합 파이프라인(연도분할→stability_term→graded→winner 선택)이 production 루프에서 검증 완료.** refine 2세대 = gen1 흑자·평활(r²0.88)하나 빈도 부족으로 gate 실패, gen2 LLM 생성 결함(거래0)으로 graceful error → multiyear가 gate-passed 시드를 정확히 우선. **AI가 3세대 refine로 시드를 못 이김 = 기존 미해결 연구과제(refine 천장 §3.16-D)이지 빌드 결함 아님.**
+
+**검증**: 전체 unit baseline 유지(신규 0)·`verify_nonrelease_sync` 통과·엔진/PyQt/backtest graph 무수정.
+
+**잔여(소규모 후속)**: ① C-1 `analyze_segments_by_year`를 루프 `page_data`에 배선(함수·serializer 준비완료, 대시보드 "연도교차 안정 특성" 패널 표시는 미배선) ② 장기 진화 run(max_gen↑)으로 refine가 multiyear-안정 조건을 학습하는지 + 분산 넛지 효과를 대시보드로 관찰 측정 ③ 2022 partial·2026 OOS 확장(config window edit만, 코드 변경 0).
+
+신규 config `run_multiyear_config.json`(gitignored). 산출물 `_temp_multiyear_check.py`·`_temp_yearseg_check.py`(재현용).
+
+---
+
 ## §4. ⚡ 다음 세션 첫 행동 (권장 순서)
 
 > **🔴 2026-05-29 최신(R8 후) 다음 세션 최우선 = 고빈도(일평균10~23) + 고calmar/r² 생성(=시드 능가)**: 이번 세션 결론 — 빈도-흑자-MDD 양립 메커니즘(dispersion·거래대금게이트강제·MDD제어 토글)은 구현했고 개별 성공 사례(trackb2 gen2 1개월·trackb4 gen1 3개월)도 있으나, **refine 생성세대는 빈도만 높지 위험조정수익(calmar·r²)이 시드 Tick_902(calmar31·r²0.85)에 미달**(§3.7 R7.4·§3.9). 즉 "고빈도이면서 시드급 calmar/r²"를 만드는 것이 미해결 핵심. 방향: LLM 생성 품질·프롬프트(보고서 변수패턴 강화)·도메인/시드 재설계. **과발화 정적컷은 불가 판명(§3.7)**이라 런타임 fail-fast 유지. 보고서급 도달 가능성 평가는 §3.10 참조. 대시보드 LIVE 가시성은 R8로 완비(§3.8, phase·active_config·품질지표 실측).
