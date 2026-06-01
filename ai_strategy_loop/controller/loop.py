@@ -707,6 +707,31 @@ _PHASE_STEP: Dict[str, int] = {
     "stopping": -1,
 }
 
+# #64 — 이산 단계 인덱스(0~4) → step_timings 키(안정적 단계명). 단계가 끝날 때 그 단계의
+#   경과초를 이 키로 step_timings에 기록한다(프론트 완료 배지가 같은 키로 조회). 인덱스를
+#   직접 쓰지 않고 이름을 쓰는 이유: 프론트 FLOW_STEPS 배지가 사람이 읽는 이름으로 매핑하기 쉽고,
+#   reframe/GA 등 phase 베이스가 달라도 동일 단계명으로 안정되게 누적되기 때문이다.
+_STEP_NAME_BY_INDEX: Dict[int, str] = {
+    0: "generate",
+    1: "backtest",
+    2: "score",
+    3: "autopsy",
+    4: "iterate",
+}
+
+
+def _phase_step_name(phase: str) -> Optional[str]:
+    """phase 문자열 → step_timings 키(이산 단계명). 매핑 외(complete/stopping/-1)는 None.
+
+    순수 함수(테스트 가능). _PHASE_STEP로 이산 인덱스를 얻고 _STEP_NAME_BY_INDEX로
+    이름을 돌려준다. 활성 단계가 아닌 phase(-1: complete/stopping/미지정)는 None이라
+    호출부가 단계 경과초를 기록하지 않는다(완료/정지는 단계 타이밍 없음).
+    """
+    idx = _PHASE_STEP.get(phase, -1)
+    if idx < 0:
+        return None
+    return _STEP_NAME_BY_INDEX.get(idx)
+
 
 # =====================================================================
 def _publish_live(
@@ -730,6 +755,7 @@ def _publish_live(
     winner_sell: Optional[str] = None,
     page_data: Optional[Dict[str, Any]] = None,
     _log_buf: Optional[Deque[str]] = None,
+    _timing: Optional[Dict[str, Any]] = None,
 ) -> None:
     """현재 루프 진행 상태를 contract.LoopState로 만들어 current_state.json에 발행.
 
@@ -741,10 +767,50 @@ def _publish_live(
     빈 dict로 발행돼 기존 호출부(page_data 무인자)는 v1과 동일하게 동작한다(하위호환).
 
     _log_buf는 run_loop이 생성한 run-scoped deque(maxlen=50). None이면(GA/테스트) 빈 로그.
+
+    #64 — _timing은 run_loop이 소유하는 mutable 진행시간 컨텍스트 dict(키: phase_t0,
+    gen_t0, timings). None이면(GA/테스트) 진행시간 미발행(phase_started_at/gen_started_at=0.0,
+    step_timings={})이라 프론트가 경과 표시를 생략한다(하위호환·byte-동일 발행). 이 함수가
+    phase 경계 타이밍을 한 곳에서 관리한다:
+      - *_start/loop_start/warm_prepare_start/ga_*: 그 단계의 phase_t0를 now로 리셋.
+      - generate_start: 세대 시작이므로 gen_t0도 now로 리셋(세대 경과 기준).
+      - *_done/*_end: 그 단계의 경과초(now - phase_t0)를 step_timings[단계명]에 누적.
+    이 발행 필드는 LIVE 관찰용이며 graded/하드게이트/DB 영속에 무관하다(엔진/compute_fitness
+    무수정). time.time() 사용은 런타임 코드라 허용(결정론 테스트는 monkeypatch).
     """
     # 로그 버퍼에 이 이벤트 한 줄을 추가한다(버퍼가 없으면 조용히 건너뜀).
     if _log_buf is not None and phase:
         _log_buf.append(f"[{phase}] {message}" if message else f"[{phase}]")
+
+    # #64 — phase 경계 진행시간 갱신(컨텍스트가 있을 때만). 발행 보조 경로라 실패해도
+    #   루프를 막지 않으므로 try로 감싼다(시계 이상/타입 오류 흡수).
+    phase_started_at = 0.0
+    gen_started_at = 0.0
+    step_timings: Dict[str, float] = {}
+    if _timing is not None:
+        try:
+            now = time.time()
+            step_name = _phase_step_name(phase)
+            is_start = phase.endswith("_start") or phase in ("loop_start", "ga_init")
+            is_end = phase.endswith("_done") or phase.endswith("_end")
+            # 세대 시작(generate_start/ga_init)이면 세대 경과 기준 시각도 리셋한다.
+            if phase in ("generate_start", "ga_init"):
+                _timing["gen_t0"] = now
+            # 활성 단계 *_start류면 그 단계 시작 시각을 리셋한다(미지정 phase는 건드리지 않음).
+            if is_start and step_name is not None:
+                _timing["phase_t0"] = now
+            # *_done/*_end면 그 단계의 경과초를 누적 기록(phase_t0가 잡혀 있을 때만).
+            if is_end and step_name is not None:
+                p0 = float(_timing.get("phase_t0", 0.0) or 0.0)
+                if p0 > 0.0:
+                    _timing.setdefault("timings", {})[step_name] = max(0.0, now - p0)
+            phase_started_at = float(_timing.get("phase_t0", 0.0) or 0.0)
+            gen_started_at = float(_timing.get("gen_t0", 0.0) or 0.0)
+            step_timings = dict(_timing.get("timings", {}) or {})
+        except Exception:  # noqa: BLE001 - 진행시간은 가시화 보조, 발행을 막지 않는다.
+            phase_started_at = 0.0
+            gen_started_at = 0.0
+            step_timings = {}
 
     try:
         gens = st.get_generations(rid)
@@ -770,6 +836,11 @@ def _publish_live(
             "message": message,
             "recent_logs": list(_log_buf) if _log_buf is not None else [],
             "current_step": current_step,
+            # #64 — LIVE 진행시간 발행필드. 단계/세대 시작 epoch + 단계별 누적 소요초.
+            #   기본 0.0/빈 dict면 프론트가 경과 표시를 생략한다(구 상태/미발행 안전).
+            "phase_started_at": phase_started_at,
+            "gen_started_at": gen_started_at,
+            "step_timings": dict(step_timings or {}),
         },
         cumulative_tokens=cumulative_tokens,
         page_data=page_data,
@@ -902,6 +973,10 @@ def run_loop(
     # 프로세스 플로우 패널용 run-scoped 로그 버퍼.
     #   run_loop 호출마다 새로 생성해 세션 간 누수를 방지한다(모듈 전역 금지).
     _live_log_buf: Deque[str] = deque(maxlen=50)
+    # #64 — run-scoped 진행시간 컨텍스트(_publish_live가 phase 경계에서 갱신·발행).
+    #   phase_t0=현재 단계 시작 epoch, gen_t0=현재 세대 시작 epoch, timings={단계명: 소요초}.
+    #   run마다 새로 생성해 세션 간 누수를 막는다(_live_log_buf와 동형). 발행 보조라 graded/DB 무관.
+    _timing: Dict[str, Any] = {"phase_t0": 0.0, "gen_t0": 0.0, "timings": {}}
 
     # warm 엔진 모드: 전체유니버스 엔진/데이터를 1회 prepare하고 세대마다 run()만 호출한다.
     #   prepare 실패(데이터 부재 등)는 cold(run_backtest_for) 경로로 자동 폴백한다.
@@ -912,7 +987,7 @@ def run_loop(
         _publish_live(st, rid, config, status="running", current_gen=start_gen,
                       cumulative_tokens=cumulative_tokens, phase="warm_prepare_start",
                       message="warm session prepare 시작 (전체유니버스 엔진/데이터 로딩)",
-                      _log_buf=_live_log_buf)
+                      _log_buf=_live_log_buf, _timing=_timing)
         warm_session = WarmBacktestSession(_build_warm_btconfig(config))
         prep = warm_session.prepare()
         if prep.get("status") != "ok":
@@ -924,7 +999,7 @@ def run_loop(
             _publish_live(st, rid, config, status="running", current_gen=start_gen,
                           cumulative_tokens=cumulative_tokens, phase="warm_prepare_done",
                           message=f"warm session 준비 완료 (back_count={back_count})",
-                          _log_buf=_live_log_buf)
+                          _log_buf=_live_log_buf, _timing=_timing)
 
     # resume 시 기존 best(graded) 복원.
     existing = st.get_run(rid)
@@ -938,7 +1013,7 @@ def run_loop(
     _publish_live(st, rid, config, status="running", current_gen=start_gen,
                   cumulative_tokens=cumulative_tokens, phase="loop_start",
                   message="loop started",
-                  _log_buf=_live_log_buf)
+                  _log_buf=_live_log_buf, _timing=_timing)
 
     try:
         # --- P2 GA 단일 분기 ---
@@ -967,7 +1042,7 @@ def run_loop(
                               best_buy=best_buy, best_sell=best_sell,
                               winner_gen=winner_gen, winner_score=winner_score,
                               winner_buy=winner_buy, winner_sell=winner_sell,
-                              _log_buf=_live_log_buf)
+                              _log_buf=_live_log_buf, _timing=_timing)
                 break
 
             # --- 종료 판정 (세대 시작 전) ---
@@ -998,7 +1073,7 @@ def run_loop(
                           best_buy=best_buy, best_sell=best_sell,
                           winner_gen=winner_gen, winner_score=winner_score,
                           winner_buy=winner_buy, winner_sell=winner_sell,
-                          _log_buf=_live_log_buf)
+                          _log_buf=_live_log_buf, _timing=_timing)
             parent_gen_for_record: Optional[int] = None
             use_seed = gen_no == 0 and seed_buy and seed_sell
             if use_seed:
@@ -1081,7 +1156,7 @@ def run_loop(
                               best_buy=best_buy, best_sell=best_sell,
                               winner_gen=winner_gen, winner_score=winner_score,
                               winner_buy=winner_buy, winner_sell=winner_sell,
-                              _log_buf=_live_log_buf)
+                              _log_buf=_live_log_buf, _timing=_timing)
                 _print_strategy_head(buy_name)
 
             # --- b. 엔진 호환 보장 (formula 빈 테이블) ---
@@ -1096,7 +1171,7 @@ def run_loop(
                           best_buy=best_buy, best_sell=best_sell,
                           winner_gen=winner_gen, winner_score=winner_score,
                           winner_buy=winner_buy, winner_sell=winner_sell,
-                          _log_buf=_live_log_buf)
+                          _log_buf=_live_log_buf, _timing=_timing)
             t0 = time.time()
             try:
                 if warm_session is not None:
@@ -1125,7 +1200,7 @@ def run_loop(
                           best_buy=best_buy, best_sell=best_sell,
                           winner_gen=winner_gen, winner_score=winner_score,
                           winner_buy=winner_buy, winner_sell=winner_sell,
-                          _log_buf=_live_log_buf)
+                          _log_buf=_live_log_buf, _timing=_timing)
             print(f"[LOOP] backtest status={outcome.status} "
                   f"elapsed={bt_elapsed:.1f}s reason={outcome.reason}", flush=True)
 
@@ -1169,7 +1244,7 @@ def run_loop(
                           best_buy=best_buy, best_sell=best_sell,
                           winner_gen=winner_gen, winner_score=winner_score,
                           winner_buy=winner_buy, winner_sell=winner_sell,
-                          _log_buf=_live_log_buf)
+                          _log_buf=_live_log_buf, _timing=_timing)
             fit, graded, fit_err = _score_outcome(outcome, config)
             if fit is None:
                 st.record_generation(
@@ -1270,7 +1345,7 @@ def run_loop(
                           best_buy=best_buy, best_sell=best_sell,
                           winner_gen=winner_gen, winner_score=winner_score,
                           winner_buy=winner_buy, winner_sell=winner_sell,
-                          _log_buf=_live_log_buf)
+                          _log_buf=_live_log_buf, _timing=_timing)
 
             # 이력 기록(CONVERGENCE).
             history_records.append(GenRecord(
@@ -1346,7 +1421,7 @@ def run_loop(
                           best_buy=best_buy, best_sell=best_sell,
                           winner_gen=winner_gen, winner_score=winner_score,
                           winner_buy=winner_buy, winner_sell=winner_sell,
-                          _log_buf=_live_log_buf)
+                          _log_buf=_live_log_buf, _timing=_timing)
             next_autopsy_feedback, next_sell_feedback, last_autopsy_page_data = _build_feedback(
                 config, outcome, fit, graded,
                 effective_autopsy_fn, effective_exit_autopsy_fn,
@@ -1364,7 +1439,7 @@ def run_loop(
                           best_buy=best_buy, best_sell=best_sell,
                           winner_gen=winner_gen, winner_score=winner_score,
                           winner_buy=winner_buy, winner_sell=winner_sell,
-                          _log_buf=_live_log_buf)
+                          _log_buf=_live_log_buf, _timing=_timing)
 
             # US-007 — 세대 완료 라이브 발행 (generations 갱신 반영).
             #   P1: 세그먼트 부검 요약을 page_data["autopsy"]로 실어 LIVE 패널에 발행.
@@ -1381,7 +1456,7 @@ def run_loop(
                           winner_gen=winner_gen, winner_score=winner_score,
                           winner_buy=winner_buy, winner_sell=winner_sell,
                           page_data=page_data,
-                          _log_buf=_live_log_buf)
+                          _log_buf=_live_log_buf, _timing=_timing)
 
             gen_no += 1
 
@@ -1397,7 +1472,7 @@ def run_loop(
                       best_buy=best_buy, best_sell=best_sell,
                       winner_gen=winner_gen, winner_score=winner_score,
                       winner_buy=winner_buy, winner_sell=winner_sell,
-                      _log_buf=_live_log_buf)
+                      _log_buf=_live_log_buf, _timing=_timing)
         # 요약은 state를 닫기(finally) 전에 구성한다 — 닫힌 DB에서 조회하면
         #   sqlite3.ProgrammingError(Cannot operate on a closed database)가 난다.
         summary = {

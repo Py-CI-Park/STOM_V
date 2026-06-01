@@ -533,13 +533,35 @@ function IdlePhaseView() {
 //   current_step(-1~4): 0=생성 1=백테 2=채점 3=부검 4=반복.
 //   구 current_state.json(current_step 미포함)은 phaseIndex() 폴백으로 하이라이트.
 // =====================================================================
+// FLOW_STEPS — 5단계 이산 프로세스. timingKey는 backend step_timings dict의 키
+//   (loop.py _STEP_NAME_BY_INDEX와 일치: 0생성 1백테 2채점 3부검 4반복). 완료된 단계는
+//   step_timings[timingKey]로 소요초 배지를 단다.
 const FLOW_STEPS = [
-  { label: "생성",   sub: "Generate" },
-  { label: "백테",   sub: "Backtest" },
-  { label: "채점",   sub: "Score" },
-  { label: "부검",   sub: "Autopsy" },
-  { label: "반복",   sub: "Iterate" },
+  { label: "생성",   sub: "Generate", timingKey: "generate" },
+  { label: "백테",   sub: "Backtest", timingKey: "backtest" },
+  { label: "채점",   sub: "Score",    timingKey: "score" },
+  { label: "부검",   sub: "Autopsy",  timingKey: "autopsy" },
+  { label: "반복",   sub: "Iterate",  timingKey: "iterate" },
 ];
+
+// #64 — 초 단위 경과를 사람이 읽는 짧은 라벨로(예: 45s, 2m03s). 음수/NaN은 0s.
+function fmtElapsedSec(sec) {
+  const s = typeof sec === "number" && isFinite(sec) && sec > 0 ? Math.floor(sec) : 0;
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}m${String(r).padStart(2, "0")}s`;
+}
+
+// #64 — epoch(초) → 완료 시각 표기(로컬 HH:MM:SS). 0/미발행은 빈 문자열(표시 생략).
+function fmtClockFromEpoch(epochSec) {
+  if (!(typeof epochSec === "number" && isFinite(epochSec) && epochSec > 0)) return "";
+  try {
+    return new Date(epochSec * 1000).toLocaleTimeString("ko-KR", { hour12: false });
+  } catch (e) {
+    return "";
+  }
+}
 
 function ProcessFlowPanel({ state }) {
   // current_step이 있으면 우선 사용, 없으면 phaseIndex() 폴백(하위호환).
@@ -549,6 +571,36 @@ function ProcessFlowPanel({ state }) {
     : phaseIndex(state?.latest?.phase);
 
   const logs = state?.latest?.recent_logs ?? [];
+  const running = state?.status === "running" || state?.status === "stopping";
+
+  // #64 진행시간 발행필드(0/미발행이면 경과 표시 생략 — 구 상태/하위호환 안전).
+  const phaseStartedAt = state?.latest?.phase_started_at ?? 0;
+  const genStartedAt = state?.latest?.gen_started_at ?? 0;
+  const stepTimings = state?.latest?.step_timings ?? {};
+
+  // 라이브 경과초는 1초마다 now를 갱신해 증가시킨다(running일 때만 — 정지/완료는 멈춤).
+  const [nowSec, setNowSec] = useState_ph(() => Date.now() / 1000);
+  useEffect_ph(() => {
+    if (!running) return;
+    const id = setInterval(() => setNowSec(Date.now() / 1000), 1000);
+    return () => clearInterval(id);
+  }, [running]);
+
+  // 활성 단계 경과초(now - phase_started_at) — running이고 phase_started_at>0일 때만.
+  const phaseElapsed = (running && phaseStartedAt > 0) ? (nowSec - phaseStartedAt) : null;
+  // 세대 경과초(now - gen_started_at) — running이고 gen_started_at>0일 때만 라이브,
+  //   완료(complete)면 완료시각(updated_at) 기준 정지값으로 보여준다.
+  const genElapsedLive = (running && genStartedAt > 0) ? (nowSec - genStartedAt) : null;
+  const completedAt = (!running && state?.status === "complete") ? (state?.updated_at ?? 0) : 0;
+  const genElapsedDone = (completedAt > 0 && genStartedAt > 0)
+    ? (completedAt - genStartedAt) : null;
+  const completionClock = fmtClockFromEpoch(completedAt);
+
+  // 진행률(정직): 연속% 금지 — 이산 (current_step+1)/5 단계.
+  const totalSteps = FLOW_STEPS.length;
+  const stepsDone = (typeof currentStep === "number" && currentStep >= 0)
+    ? Math.min(totalSteps, currentStep + 1) : 0;
+  const progressPct = (stepsDone / totalSteps) * 100;
 
   // 로그 패널 자동 스크롤.
   const logRef = useRef_ph(null);
@@ -565,17 +617,62 @@ function ProcessFlowPanel({ state }) {
           <span className="dot" style={{ background: "var(--amber)" }}></span>
           프로세스 플로우
         </div>
+        {/* #64 — 세대 경과/완료 시각 + 이산 진행단계(N/5). running이면 라이브, complete면 정지. */}
+        <span className="mono" style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--ink-3)" }}>
+          {genElapsedLive != null && (
+            <span data-tip="현재 세대 경과 시간 (세대 시작 이후)">
+              세대 경과 {fmtElapsedSec(genElapsedLive)}
+            </span>
+          )}
+          {genElapsedLive == null && genElapsedDone != null && (
+            <span data-tip="마지막 세대 소요 시간">
+              세대 소요 {fmtElapsedSec(genElapsedDone)}
+              {completionClock && ` · 완료 ${completionClock}`}
+            </span>
+          )}
+          {(stepsDone > 0) && (
+            <span style={{ marginLeft: 8 }}>· {stepsDone}/{totalSteps} 단계</span>
+          )}
+        </span>
+      </div>
+      {/* #64 — 이산 진행 막대(연속% 아님, (current_step+1)/5). 단계 미정(−1)이면 0%. */}
+      <div className="process-progress-track" style={{
+        height: 3, background: "var(--line-2)", borderRadius: 2, marginBottom: 8, overflow: "hidden",
+      }}>
+        <div style={{
+          width: `${progressPct}%`, height: "100%",
+          background: "var(--amber)", transition: "width .3s ease",
+        }}></div>
       </div>
       <div className="process-flow-row">
-        {FLOW_STEPS.map((step, i) => (
-          <div
-            key={i}
-            className={`process-box${i === currentStep ? " active" : ""}`}
-          >
-            {step.label}
-            <span className="process-box-sub">{step.sub}</span>
-          </div>
-        ))}
+        {FLOW_STEPS.map((step, i) => {
+          const isActive = i === currentStep;
+          const isDone = typeof currentStep === "number" && currentStep > i;
+          // 완료된 단계는 step_timings[timingKey]로 소요초 배지. 활성 단계는 라이브 경과.
+          const doneSec = stepTimings ? stepTimings[step.timingKey] : undefined;
+          const showActiveElapsed = isActive && running && phaseElapsed != null;
+          const showDoneBadge = (typeof doneSec === "number" && doneSec >= 0) && !isActive;
+          return (
+            <div
+              key={i}
+              className={`process-box${isActive ? " active" : ""}`}
+            >
+              {step.label}
+              <span className="process-box-sub">{step.sub}</span>
+              {/* #64 — 활성 단계 라이브 경과 / 완료 단계 소요초 배지(둘 다 0/미발행이면 생략). */}
+              {showActiveElapsed && (
+                <span className="process-box-timing mono" style={{
+                  display: "block", fontSize: 9.5, color: "var(--amber)", marginTop: 2,
+                }}>경과 {fmtElapsedSec(phaseElapsed)}</span>
+              )}
+              {showDoneBadge && !showActiveElapsed && (
+                <span className="process-box-timing mono" style={{
+                  display: "block", fontSize: 9.5, color: "var(--ink-3)", marginTop: 2,
+                }}>{fmtElapsedSec(doneSec)}</span>
+              )}
+            </div>
+          );
+        })}
       </div>
       <div className="process-log-pane" ref={logRef}>
         {logs.length === 0
@@ -596,4 +693,6 @@ Object.assign(window, {
   DemoBadge, LivePending,
   // R8 — phase 매핑 순수 함수/맵 노출(영/한 정규화). 정적·단위 검증 가능.
   phaseIndex, PHASES, LIVE_PHASE_INDEX,
+  // #64 — 진행시간 포맷 순수 함수 + 단계 메타 노출(정적·단위 검증 가능).
+  fmtElapsedSec, fmtClockFromEpoch, FLOW_STEPS,
 });

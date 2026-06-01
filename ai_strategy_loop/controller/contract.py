@@ -112,6 +112,15 @@ class LatestInfo(BaseModel):
     # 프로세스 플로우 패널용 필드. 구 current_state.json 미포함 시 기본값으로 파싱(하위호환).
     recent_logs: List[str] = Field(default_factory=list)   # 최근 ~50 로그 라인.
     current_step: int = -1  # -1=없음 0=생성 1=백테 2=채점 3=부검 4=반복.
+    # #64 프로세스별 진행률·진행시간·완료시간(이산 단계 진행 + 단계별 경과초 + 세대 경과).
+    #   백테는 블로킹 subprocess라 단계 *내부* 연속%(N/M 종목)는 LIVE 수신 불가 — 정직 범위는
+    #   '이산 단계 진행 + 단계별 경과초 + 세대 경과/완료시각'까지다(가짜 N/M 미약속). 이 세 필드는
+    #   LIVE 관찰용이며 graded/하드게이트/DB 영속에 무관하다. 기본값(0.0/빈 dict)이라 이 값을
+    #   발행하지 않던 구 상태(state)도 그대로 검증 통과한다(하위호환 — calmar/dispersion과 동형).
+    phase_started_at: float = 0.0  # 현재 단계 시작 epoch(초). 프론트가 now-이 값으로 단계 경과초.
+    gen_started_at: float = 0.0    # 현재 세대 시작 epoch(초). 프론트가 now-이 값으로 세대 경과초.
+    # 단계명(이산 5단계 generate/backtest/score/autopsy)→소요초. 완료된 단계 배지에 표시.
+    step_timings: Dict[str, float] = Field(default_factory=dict)
 
 
 class CumulativeInfo(BaseModel):

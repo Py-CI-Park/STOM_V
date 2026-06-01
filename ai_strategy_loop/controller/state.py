@@ -878,12 +878,27 @@ def to_loop_state(
             hypotheses=hyps,
         ))
 
+    # #64 — step_timings는 {단계명: 소요초} dict. 키는 str, 값은 float로 정규화한다
+    #   (구 상태/잘못된 타입 방어). 미발행이면 빈 dict라 프론트가 완료 배지를 생략한다.
+    _raw_timings = (latest or {}).get("step_timings", {}) or {}
+    step_timings: Dict[str, float] = {}
+    if isinstance(_raw_timings, dict):
+        for _k, _v in _raw_timings.items():
+            try:
+                step_timings[str(_k)] = float(_v)
+            except (TypeError, ValueError):
+                continue
     latest_info = C.LatestInfo(
         phase=str((latest or {}).get("phase", "")),
         last_checkpoint=str((latest or {}).get("last_checkpoint", "")),
         message=str((latest or {}).get("message", "")),
         recent_logs=list((latest or {}).get("recent_logs", [])),
         current_step=int((latest or {}).get("current_step", -1)),
+        # #64 — LIVE 진행시간(단계/세대 시작 epoch + 단계별 소요초). 기본 0.0/빈 dict라
+        #   이 값을 발행하지 않던 구 상태도 그대로 검증 통과한다(하위호환).
+        phase_started_at=float((latest or {}).get("phase_started_at", 0.0) or 0.0),
+        gen_started_at=float((latest or {}).get("gen_started_at", 0.0) or 0.0),
+        step_timings=step_timings,
     )
 
     return C.LoopState(

@@ -190,6 +190,72 @@ def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
                 pass
 
 
+def _generation_durations_payload(run_id: Optional[str] = None) -> Dict[str, Any]:
+    """세대별 소요초를 인접 created_at 차분으로 산출한다(#64, 읽기 전용·무예외).
+
+    generations.created_at은 각 세대 *종료* 시각(record_generation 시 _now())이 영속된다.
+    따라서 gen[i] 소요 = created_at[i] - created_at[i-1]. 첫 세대(i=0)는 이전 세대가 없으니
+    runs.started_at(run 시작 시각)으로 보정해 created_at[0] - started_at를 쓴다. 이 방식은
+    추가 백테 0회이고, LIVE 발행이 없던 과거 run(예: reframe1)에도 retroactive하게 작동한다
+    (DB에 이미 created_at/started_at가 있으므로).
+
+    run_id가 주어지면 그 run만, 없으면 모든 run을 산출한다. DB 부재/조회 실패/이상치는
+    빈 목록·None으로 표준화한다(무예외 — 대시보드가 깨지지 않게). 음수 차(시계 역행/UPSERT
+    재기록)는 None으로 둔다(잘못된 소요 표시 방지).
+
+    반환: {"durations": [{"run_id","gen_no","duration_sec","created_at","status"}], "count": N}
+    """
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState()
+        all_gens = st.get_all_generations()
+        runs = {r.get("run_id"): r for r in st.list_runs()}
+    except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 빈 응답.
+        return {"durations": [], "count": 0}
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    # run별로 gen_no 순 그룹핑(인접 차분을 같은 run 안에서만 계산).
+    by_run: Dict[str, list] = {}
+    for g in all_gens:
+        rid = g.get("run_id")
+        if run_id and rid != run_id:
+            continue
+        by_run.setdefault(rid, []).append(g)
+
+    durations: list = []
+    for rid, gens in by_run.items():
+        gens_sorted = sorted(gens, key=lambda g: int(g.get("gen_no", 0) or 0))
+        started_at = (runs.get(rid) or {}).get("started_at")
+        prev_created = float(started_at) if started_at is not None else None
+        for g in gens_sorted:
+            created = g.get("created_at")
+            duration_sec: Optional[float] = None
+            if created is not None and prev_created is not None:
+                delta = float(created) - float(prev_created)
+                # 음수(시계 역행/재기록)는 None으로 — 잘못된 소요 표시 방지.
+                duration_sec = delta if delta >= 0.0 else None
+            # gen_no는 0이 유효값이므로 `or -1`(0을 falsy로 떨구는 버그) 금지 — None만 -1.
+            _gen_no = g.get("gen_no")
+            durations.append({
+                "run_id": rid,
+                "gen_no": (-1 if _gen_no is None else int(_gen_no)),
+                "duration_sec": duration_sec,
+                "created_at": (None if created is None else float(created)),
+                "status": str(g.get("status", "") or ""),
+            })
+            if created is not None:
+                prev_created = float(created)
+
+    return {"durations": durations, "count": len(durations)}
+
+
 def _equity_curves_payload(
     cap: int = 200, downsample: int = 200, run_id: Optional[str] = None
 ) -> Dict[str, Any]:
@@ -740,6 +806,16 @@ def create_app() -> FastAPI:
         조회 실패면 빈 목록을 돌려 대시보드가 깨지지 않게 한다(무예외 계약).
         """
         return _runs_payload(None)
+
+    @app.get("/generation_durations")
+    def generation_durations(run_id: Optional[str] = None) -> Dict[str, Any]:
+        """세대별 소요초(인접 created_at 차분)를 반환한다(#64 과거 run retroactive).
+
+        쿼리: ?run_id=<run_id>(선택). 없으면 전체 run. LIVE 발행이 없던 과거 run에도
+        DB의 created_at/started_at로 산출되므로 사용자가 지금 바로 세대 소요를 본다.
+        DB 없거나 조회 실패면 빈 목록(무예외).
+        """
+        return _generation_durations_payload(run_id)
 
     @app.get("/runs/compare")
     def runs_compare(ids: str = "") -> Dict[str, Any]:
