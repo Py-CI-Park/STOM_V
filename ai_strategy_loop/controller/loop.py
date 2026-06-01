@@ -669,6 +669,9 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             #   범주 수 검증+프롬프트 가이드를 적용하므로 매도 경로엔 무영향. 기본 OFF면
             #   동작 byte-동일(하위호환).
             require_filter_gates=getattr(config, "require_filter_gates", False),
+            # 생성 분류축 유도(매수) — build_messages가 kind=='buy'일 때만 분류축 블록을
+            #   추가하므로 매도 경로엔 무영향. getattr 기본 False라 구버전 config도 무영향.
+            classification_generation_enabled=getattr(config, "classification_generation_enabled", False),
             min_filter_categories=getattr(config, "min_filter_categories", 5),
             # P2b-1 가정 환류 — prev_judged_hypotheses가 없으면(토글 OFF/직전 미판정)
             #   None이라 build_messages가 미주입해 동작 byte-identical(하위호환).

@@ -207,6 +207,14 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "help": "필터 범주 게이트 강제 ON일 때 매수 진입에 요구하는 최소 필터 범주 수(시드는 9). "
                     "높일수록 게이팅이 엄격해진다.",
         },
+        # 생성 분류축 유도(매수) — 넓은 시간창 + 시가총액 구분 + 등락률 구분부터 고려한 생성.
+        {
+            "name": "classification_generation_enabled", "label": "분류축 유도 생성(매수)", "type": "bool",
+            "default": d.classification_generation_enabled,
+            "help": "켜면 매수 프롬프트에 3개 분류축(시가총액 구분·등락률 구분·넓은 시간창 09:00~09:28)에서 "
+                    "일관된 니치를 골라 설계하라는 가이드를 추가한다(시드 5분 고착 탈피). 필터 범주 게이트와 "
+                    "짝(넓게 고르되 좁게 게이트). 기본 OFF.",
+        },
         # 생성 few-shot 샘플 주입 (#67) — 검증된 우수 전략을 K개 프롬프트에 주입(구조 학습).
         {
             "name": "few_shot_enabled", "label": "few-shot 샘플 주입", "type": "bool",

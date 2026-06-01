@@ -381,6 +381,19 @@ class LoopConfig:
     #   few_shot_enabled=False면 미사용(무영향).
     few_shot_source: str = "passing"  # 'passing' | 'seed_db'
 
+    # --- 생성 분류축 유도 (매수 프롬프트 토글): 넓은 시간창 + 시가총액 구분 + 등락률 구분 ---
+    # 사용자 요청: 그동안 refine가 시드(09:00~09:05 5분 스캘프) 구조를 상속해 좁은 한 점에
+    #   고착했다. 인간 고수 19명은 시초 전체 시간창(09:00~09:28)을 쓰고, 시가총액 티어와
+    #   등락률 국면부터 의도적으로 골라 니치를 잡는다. 그래서 생성을 그 3개 분류축
+    #   (시총 티어·등락률 국면·시초 전체 시간창)에서 일관된 니치를 먼저 고르도록 유도한다.
+    # classification_generation_enabled: True면 build_messages가 매수(kind=='buy') 프롬프트에
+    #   3개 분류축(①시가총액 구분 ②등락률 구분 ③넓은 시간창 09:00~09:28)에서 매 세대 서로
+    #   다른 일관된 니치를 의도적으로 선택해 설계하라는 블록을 추가한다. require_filter_gates
+    #   (범주 폭 구조 게이트)와 짝 — 넓게 고르되(축 선택) 좁게 게이트하라(니치 내 선별).
+    #   kind=='buy'에만 반영되며 매도(sell)엔 영향이 없다. 기본 OFF면 이 블록이 미주입되어
+    #   build_messages 출력이 기존과 byte-동일하다(하위호환).
+    classification_generation_enabled: bool = False
+
     # --- 프롬프트 영속화 (P1c): LLM 호출별 프롬프트를 loop_runs.db에 기록 ---
     # 데이터 근거(재현성): 현재 LLM 호출별 프롬프트(system+user 메시지)가 어디에도
     #   저장되지 않고 완전 휘발한다(재현성 0). 어떤 프롬프트가 어떤 전략을 낳았는지

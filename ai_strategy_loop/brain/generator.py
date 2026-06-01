@@ -73,6 +73,7 @@ def generate_strategy(
     encourage_time_dispersion: bool = False,
     require_filter_gates: bool = False,
     min_filter_categories: int = 5,
+    classification_generation_enabled: bool = False,
     hypothesis_feedback: Optional[str] = None,
     few_shot_examples: Optional[list] = None,
     on_prompt: Optional[Callable[[Dict[str, Any]], None]] = None,
@@ -119,6 +120,10 @@ def generate_strategy(
             기본 False면 이 검사·프롬프트가 평가조차 안 돼 동작이 기존과 byte-동일하다.
         min_filter_categories: require_filter_gates=True일 때 요구하는 최소 필터 범주 수.
             시드는 9개 범주를 충족한다. require_filter_gates=False면 미사용(무영향).
+        classification_generation_enabled: build_messages로 전달(매수 분류축 유도 프롬프트
+            토글 — 시총 구분·등락률 구분·넓은 시간창 09:00~09:28). build_messages가
+            kind=='buy'일 때만 반영하므로 매도 경로엔 무영향. 기본 False=하위호환(기존
+            프롬프트 byte-동일).
         hypothesis_feedback: 직전 세대 판정 가정 환류 문자열(P2b-1). build_messages로
             전달돼 부검 피드백보다 먼저 주입된다. None=주입 안 함, byte-identical(하위호환).
         few_shot_examples: 검증된 우수 전략 few-shot 코드 샘플 리스트(#67). build_messages로
@@ -161,6 +166,7 @@ def generate_strategy(
             mdd_control_enabled=mdd_control_enabled,
             encourage_time_dispersion=encourage_time_dispersion,
             require_filter_gates=require_filter_gates,
+            classification_generation_enabled=classification_generation_enabled,
             hypothesis_feedback=hypothesis_feedback,
             few_shot_examples=few_shot_examples,
         )
@@ -204,6 +210,7 @@ def generate_strategy(
                         "mdd_control_enabled": mdd_control_enabled,
                         "encourage_time_dispersion": encourage_time_dispersion,
                         "require_filter_gates": require_filter_gates,
+                        "classification_generation_enabled": classification_generation_enabled,
                         "target_daily_trades": target_daily_trades,
                         "min_filter_categories": min_filter_categories,
                         "has_hypothesis_feedback": bool(hypothesis_feedback),
