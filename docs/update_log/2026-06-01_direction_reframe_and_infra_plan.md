@@ -81,13 +81,25 @@
 
 ---
 
-## 4. Phase 3 — 생성 재조준 (참고자료 반영, 최고 연구 레버) — 🔶 코드 완료, 검증 대기 (2026-06-01)
+## 4. Phase 3 — 생성 재조준 (참고자료 반영, 최고 연구 레버) — ✅ 코드 완료 + smoke 검증 완료 (2026-06-01)
 
 > **핵심 발견(재검토)**: 참고자료의 상당 부분이 **이미 prompt.py에 반영돼 있었음**(_report_pattern_lines: 다종목분산 6~12·VI·호가잔량·체결강도/이동평균/수익률 청산·payoff≥1.25·MDD 3~7%; encourage_time_dispersion: 09:00~20분; dispersion/multi/min_hold 토글·config). 진짜 빠진 **유일 핵심 레버 = 체결강도 "페이드" 청산을 명시 규율로**.
 > **P3-1 `cc32bb12`** (코드): 매도 체결강도 페이드 + 이동평균 추세이탈 청산 규율을 mdd_control_enabled 블록에 추가(OFF byte-identical, code-reviewer APPROVE, baseline 신규0). 인간 매도 18/19의 체결강도 사용 = 낮은 MDD의 핵심 레버.
 > **P3-2 연기**: filter_gate VI/호전량 범주 = 게이트 약화 + 변수명 불확실(과한 설계 경계).
 > **재조준 번들 = 기존 토글/설정을 켜는 run config** (`ai_strategy_loop/state/run_reframe_smoke_config.json`, gitignored): winner_objective=multi·dispersion ON·target_daily_trades=15·mdd_control ON(P3-1)·encourage_time_dispersion ON·require_filter_gates(min7)·require_liquidity_gate·mdd_cap 12·payoff_target 1.25 + hypothesis_tracking/prompt_logging ON(Phase1/2 인프라 관측). 1개월(2025-01)·max_gen 3·OOM 회피. **로드·토글 적용 검증 완료.**
-> **🔴 잔여 = 짧은 백테 검증 실행**: 빈도(→10~23)·동시보유(→6~12)·MDD(→<7%)가 인간 템플릿으로 이동하는지 측정. 자원/시간/OOM 고려로 사용자 결정 대기.
+> **✅ smoke 검증 완료 (run=reframe1, 2025-01 1개월·max_gen 3·OOM/고아 0·clean complete)**:
+> | gen | 역할 | gate | graded | 거래 | 일평균 | 동시보유 | MDD | calmar | 흑자 |
+> |---|---|---|---|---|---|---|---|---|---|
+> | 0 | 시드 | ✅ | **1.72** | 6 | 0.3 | 2.0 | 0.88 | 117 | +740K |
+> | 1 | refine | ✅ | 1.43 | **42** | **2.3** | 1.0 | 11.62 | 3.7 | +155K |
+> | 2 | refine | ❌(빈도) | 0.03 | 1 | 0.1 | 0 | 4.6 | 13.9 | +230K |
+>
+> **양면 결과**:
+> - ✅ **인프라 LIVE 전수 작동 실증**: P1c 프롬프트 4행 영속(gen1/2 buy·sell, model=gpt-5.5·user전문·sha·토큰). P1b 델타 영속(gen1 d_mdd+10.74·d_trades+36). **P2 가정 자동 [기각]**(gen1·2 "refine로 graded 개선 기대"→obs −0.30·−1.69 = graded 하락 = refine가 시드 못 이김을 구조적 자동 포착).
+> - ✅ **재조준 메커니즘 작동**: gen1 **42거래(시드 6의 7배) bounded**(750+ 폭발·OOM 0, require_filter_gates 작동)+gate통과+흑자. 빈도가 템플릿 방향 이동.
+> - ⚠️ **연구 진실 유지**: refine 여전히 시드 미달(graded 1.43·0.03<1.72), 빈도-MDD 프론티어 지속(7배 빈도→MDD 0.88→11.62). **동시보유 미증가**(2→1→0, 보고서 6~12 미달=§3.5 잔여). 1개월=시드 우호창(MDD0.88 산물, 1년 시드 MDD36).
+> - **결론**: 인프라(세션 핵심)는 LIVE 검증 완료. 재조준은 생성 행동을 실제로 바꿈(빈도 7배·과발화 0). 3세대 smoke에선 refine 미달+동시보유 미발현 — 이 한계를 **새 가정 루프가 자동·정직하게 포착**(인프라 가치 증명).
+> - **다음 후보**: ①장기/다세대 run으로 dispersion·multi 효과 관찰(엔진 거래수캡 선결=OOM) ②3개월/1년 OOS로 강건성(현 1개월은 우호창) ③생성 다양화(fresh+시드급 도메인지식). config=`run_reframe_smoke_config.json`. winner 후보 산물=gen1 `AILOOP_reframe1_g1`(bounded 고빈도 흑자).
 
 A·B 인프라로 효과 측정. 모두 토글/프롬프트/config, 엔진 무변.
 - **시간창 30분**: 시드 매수 `시분초<90500`(5분) → 09:00~09:28(엔진창 90000~92800 정합) 확장 fresh 변형 + prompt 하드 가이드(단일 분 고정 금지). encourage_time_dispersion 기본 ON 후보.
