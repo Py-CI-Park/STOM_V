@@ -81,7 +81,13 @@
 
 ---
 
-## 4. Phase 3 — 생성 재조준 (참고자료 반영, 최고 연구 레버)
+## 4. Phase 3 — 생성 재조준 (참고자료 반영, 최고 연구 레버) — 🔶 코드 완료, 검증 대기 (2026-06-01)
+
+> **핵심 발견(재검토)**: 참고자료의 상당 부분이 **이미 prompt.py에 반영돼 있었음**(_report_pattern_lines: 다종목분산 6~12·VI·호가잔량·체결강도/이동평균/수익률 청산·payoff≥1.25·MDD 3~7%; encourage_time_dispersion: 09:00~20분; dispersion/multi/min_hold 토글·config). 진짜 빠진 **유일 핵심 레버 = 체결강도 "페이드" 청산을 명시 규율로**.
+> **P3-1 `cc32bb12`** (코드): 매도 체결강도 페이드 + 이동평균 추세이탈 청산 규율을 mdd_control_enabled 블록에 추가(OFF byte-identical, code-reviewer APPROVE, baseline 신규0). 인간 매도 18/19의 체결강도 사용 = 낮은 MDD의 핵심 레버.
+> **P3-2 연기**: filter_gate VI/호전량 범주 = 게이트 약화 + 변수명 불확실(과한 설계 경계).
+> **재조준 번들 = 기존 토글/설정을 켜는 run config** (`ai_strategy_loop/state/run_reframe_smoke_config.json`, gitignored): winner_objective=multi·dispersion ON·target_daily_trades=15·mdd_control ON(P3-1)·encourage_time_dispersion ON·require_filter_gates(min7)·require_liquidity_gate·mdd_cap 12·payoff_target 1.25 + hypothesis_tracking/prompt_logging ON(Phase1/2 인프라 관측). 1개월(2025-01)·max_gen 3·OOM 회피. **로드·토글 적용 검증 완료.**
+> **🔴 잔여 = 짧은 백테 검증 실행**: 빈도(→10~23)·동시보유(→6~12)·MDD(→<7%)가 인간 템플릿으로 이동하는지 측정. 자원/시간/OOM 고려로 사용자 결정 대기.
 
 A·B 인프라로 효과 측정. 모두 토글/프롬프트/config, 엔진 무변.
 - **시간창 30분**: 시드 매수 `시분초<90500`(5분) → 09:00~09:28(엔진창 90000~92800 정합) 확장 fresh 변형 + prompt 하드 가이드(단일 분 고정 금지). encourage_time_dispersion 기본 ON 후보.
