@@ -262,6 +262,46 @@ _REFERENCE_STRATEGIES_JSON = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "reference_strategies.json"
 )
 
+# 인간 reference 결과 스크린샷 디렉토리(REPO_ROOT 기준). 읽기 전용으로 /reference_img에
+#   StaticFiles 마운트하고, /reference_screenshots가 이 디렉토리의 이미지 파일명을 나열한다.
+#   이 디렉토리만 노출하며(다른 디렉토리 노출 금지) 디렉토리가 없으면 마운트를 스킵한다.
+_REFERENCE_SCREENSHOTS_DIR = os.path.join(REPO_ROOT, "docs", "reference", "STOM_Good_Results")
+
+# 갤러리에 표시할 이미지 확장자. 결과 스크린샷은 .png 17장이 정본이다. 같은 #1의
+#   .jpg/.jpeg 중복 포맷 변환본은 동일 화면이라 갤러리 노이즈가 되므로 .png만 노출한다
+#   (StaticFiles 마운트 자체는 디렉토리 전체를 읽기 전용 서빙하므로 직접 URL 접근엔 영향 없음).
+_SCREENSHOT_EXTS = (".png",)
+
+
+def _reference_screenshots() -> list:
+    """인간 reference 결과 스크린샷 파일명 목록을 반환한다(읽기 전용, 무예외).
+
+    _REFERENCE_SCREENSHOTS_DIR의 최상위(서브디렉토리 미탐색) .png 결과 스크린샷만 나열한다.
+    분석용 파생 크롭/줌(언더스코어 `_`로 시작하는 보조 파일: `_zoom_*`, `_crops` 등)은
+    실제 결과 스크린샷이 아니므로 제외한다. #1의 .jpg/.jpeg 중복 포맷본도 .png 정본과
+    같은 화면이라 제외해(확장자 화이트리스트=.png) 갤러리가 결과 화면 17장만 브라우징하게 한다.
+    파일명만(경로 제외) 정렬해 돌려준다 — 프론트가 baseUrl+'/reference_img/'+filename으로
+    StaticFiles에서 직접 가져온다. 디렉토리 부재/조회 실패는 빈 목록으로 표준화한다(무예외).
+    """
+    try:
+        entries = os.listdir(_REFERENCE_SCREENSHOTS_DIR)
+    except OSError:
+        return []
+    out = []
+    for name in entries:
+        if name.startswith("_"):
+            continue  # 분석용 파생 크롭/줌(보조 파일) 제외 — 결과 스크린샷만.
+        if not name.lower().endswith(_SCREENSHOT_EXTS):
+            continue
+        try:
+            full = os.path.join(_REFERENCE_SCREENSHOTS_DIR, name)
+            if not os.path.isfile(full):
+                continue  # 서브디렉토리(_crops 등)는 제외.
+        except OSError:
+            continue
+        out.append(name)
+    return sorted(out)
+
 
 def _load_reference_strategies() -> list:
     """reference_strategies.json을 읽어 인간 벤치마크 목록을 반환한다(읽기 전용, 무예외).
@@ -317,6 +357,8 @@ def _window_years_from_config(config_json: Optional[str]) -> Optional[float]:
         cfg = json.loads(config_json)
     except (ValueError, TypeError):
         return None
+    if not isinstance(cfg, dict):  # 비-dict JSON(리스트/스칼라) → None(무예외 보장).
+        return None
     start_i = cfg.get("bt_full_start")
     end_i = cfg.get("bt_full_end")
     if start_i is None or end_i is None:
@@ -331,6 +373,38 @@ def _window_years_from_config(config_json: Optional[str]) -> Optional[float]:
     if days <= 0:
         return None
     return days / 365.25
+
+
+def _period_string_from_config(config_json: Optional[str]) -> Optional[str]:
+    """runs.config_json의 bt_full_start/end(YYYYMMDD 정수)를 'YYYY-MM-DD ~ YYYY-MM-DD'로 포맷한다.
+
+    명예의 전당 '백테 기간' 컬럼용. 인간 전략은 reference_strategies.json의 period 문자열을
+    그대로 쓰고, AI 전략은 이 헬퍼로 run 창에서 동일 포맷의 기간 문자열을 만든다.
+    파싱 실패/필드 부재/비정상 값(end<=start)은 None으로 표준화한다(컬럼이 '—' 표시). 무예외.
+    """
+    from datetime import date  # noqa: PLC0415
+
+    if not config_json:
+        return None
+    try:
+        cfg = json.loads(config_json)
+    except (ValueError, TypeError):
+        return None
+    if not isinstance(cfg, dict):  # 비-dict JSON(리스트/스칼라) → None(무예외 보장).
+        return None
+    start_i = cfg.get("bt_full_start")
+    end_i = cfg.get("bt_full_end")
+    if start_i is None or end_i is None:
+        return None
+    try:
+        si, ei = int(start_i), int(end_i)
+        start = date(si // 10000, (si // 100) % 100, si % 100)
+        end = date(ei // 10000, (ei // 100) % 100, ei % 100)
+    except (ValueError, TypeError):
+        return None
+    if (end - start).days <= 0:
+        return None
+    return f"{start.isoformat()} ~ {end.isoformat()}"
 
 
 def _hall_of_fame_payload(ai_limit: int = 30) -> Dict[str, Any]:
@@ -361,15 +435,17 @@ def _hall_of_fame_payload(ai_limit: int = 30) -> Dict[str, Any]:
     st: Optional[LoopState] = None
     all_gens: list = []
     run_window_cache: Dict[str, Optional[float]] = {}
+    run_period_cache: Dict[str, Optional[str]] = {}
     try:
         st = LoopState()
         all_gens = st.get_all_generations()
-        # 각 run의 창 길이(년)를 한 번씩 조회해 캐시한다(연평균 산출용).
+        # 각 run의 창 길이(년)·기간 문자열을 한 번씩 조회해 캐시한다(연평균·백테기간 산출용).
         run_ids = {str(g.get("run_id") or "") for g in all_gens if g.get("run_id")}
         for rid in run_ids:
             run_row = st.get_run(rid)
             cfg_json = run_row.get("config_json") if run_row else None
             run_window_cache[rid] = _window_years_from_config(cfg_json)
+            run_period_cache[rid] = _period_string_from_config(cfg_json)
     except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 AI 빈 목록(무예외).
         return {"human": human, "ai": []}
     finally:
@@ -402,6 +478,7 @@ def _hall_of_fame_payload(ai_limit: int = 30) -> Dict[str, Any]:
         run_id = str(g.get("run_id") or "")
         gen_no = int(g.get("gen_no", -1))
         window_years = run_window_cache.get(run_id)
+        period_str = run_period_cache.get(run_id)
         if window_years and window_years > 0:
             annual_pct = total_pct_f / window_years
             annual_unreliable = window_years < 0.25
@@ -421,6 +498,7 @@ def _hall_of_fame_payload(ai_limit: int = 30) -> Dict[str, Any]:
             "run_id": run_id,
             "gen_no": gen_no,
             "label": f"{run_id}/g{gen_no}",
+            "period": period_str,
             "buy_name": g.get("buy_name"),
             "score": (float(g.get("score")) if g.get("score") is not None else None),
             "operating_capital_krw": operating_capital,
@@ -643,6 +721,17 @@ def create_app() -> FastAPI:
         """
         return _hall_of_fame_payload()
 
+    @app.get("/reference_screenshots")
+    def reference_screenshots() -> Dict[str, Any]:
+        """인간 reference 결과 스크린샷 파일명 목록을 반환한다(갤러리 fetch용, 읽기 전용, 무예외).
+
+        docs/reference/STOM_Good_Results의 최상위 이미지 파일명만 나열한다(분석용 파생
+        크롭/줌은 제외). 프론트가 각 파일명을 baseUrl+'/reference_img/'+filename으로
+        StaticFiles에서 직접 가져온다. 디렉토리 부재/조회 실패는 빈 목록(무예외 계약).
+        """
+        files = _reference_screenshots()
+        return {"screenshots": files, "count": len(files)}
+
     @app.get("/runs")
     def runs() -> Dict[str, Any]:
         """loop_runs.db의 모든 run 요약을 반환한다(run 비교 콘솔 목록).
@@ -730,6 +819,18 @@ def create_app() -> FastAPI:
             pass
         finally:
             push_task.cancel()
+
+    # 인간 reference 결과 스크린샷을 /reference_img 하위에 읽기 전용으로 마운트한다.
+    #   StaticFiles는 GET/HEAD만 처리(쓰기 불가)하고, 노출 대상은 STOM_Good_Results
+    #   디렉토리 단 하나뿐이다(다른 디렉토리 노출 금지). 디렉토리가 없으면 마운트를
+    #   스킵해 API만으로도 기동되게 한다(무예외). 갤러리는 /reference_screenshots로 받은
+    #   파일명을 baseUrl+'/reference_img/'+filename 으로 직접 가져온다.
+    if os.path.isdir(_REFERENCE_SCREENSHOTS_DIR):
+        app.mount(
+            "/reference_img",
+            StaticFiles(directory=_REFERENCE_SCREENSHOTS_DIR),
+            name="reference_img",
+        )
 
     # 정적 프론트엔드 마운트는 모든 API 라우트(/health, /status, /config/spec, /ws, /)
     #   등록 이후에 한다. /ui 하위 경로에 마운트하므로 위 API 라우트와 WS를 가리지

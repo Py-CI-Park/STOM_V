@@ -133,6 +133,14 @@ class TestHumanBenchmark:
         assert s1["total_return_krw"] == 305178048
         assert s1["operating_capital_krw"] == 120000000
 
+    def test_human_period_and_days(self, client):
+        """인간 행에 백테 기간(period 문자열)과 days(거래일수)가 들어간다."""
+        body = client.get("/hall_of_fame").json()
+        s1 = next(x for x in body["human"] if x["label"] == "#1")
+        # reference_strategies.json의 period/days 그대로 매핑.
+        assert s1["period"] == "2022-03-31 ~ 2023-03-31"
+        assert s1["days"] == 249
+
 
 # =====================================================================
 # 2) AI 산식 — 운영금 역산 + 연평균 + 단기 플래그 + 제외 규칙.
@@ -201,6 +209,15 @@ class TestAiFormula:
         labels = [a["label"] for a in body["ai"]]
         assert labels.index("runA/g0") < labels.index("runB/g0")
 
+    def test_ai_period_from_config_window(self, client, seeded_hof_db):
+        """AI 행의 period는 run config_json의 bt_full_start/end를 ISO 기간 문자열로 포맷한다."""
+        body = client.get("/hall_of_fame").json()
+        by = {a["label"]: a for a in body["ai"]}
+        # runA: 2025-01-01 ~ 2025-12-31 창.
+        assert by["runA/g0"]["period"] == "2025-01-01 ~ 2025-12-31"
+        # runB: 1개월 창.
+        assert by["runB/g0"]["period"] == "2025-01-01 ~ 2025-01-31"
+
 
 # =====================================================================
 # 3) 무예외 계약 — DB 없음 / 라우트.
@@ -244,6 +261,20 @@ class TestNoExcept:
         # end<=start → None.
         assert _window_years_from_config('{"bt_full_start": 20251231, "bt_full_end": 20250101}') is None
 
+    def test_period_helper_robust(self):
+        """_period_string_from_config — 잘못된 입력은 None, 정상은 ISO 기간 문자열(무예외)."""
+        from ai_strategy_loop.dashboard.app import _period_string_from_config
+        assert _period_string_from_config(None) is None
+        assert _period_string_from_config("not json") is None
+        assert _period_string_from_config("{}") is None
+        # 정상: 3년 창.
+        ps = _period_string_from_config('{"bt_full_start": 20230101, "bt_full_end": 20251231}')
+        assert ps == "2023-01-01 ~ 2025-12-31"
+        # end<=start → None.
+        assert _period_string_from_config('{"bt_full_start": 20251231, "bt_full_end": 20230101}') is None
+        # 필드 부재 → None.
+        assert _period_string_from_config('{"bt_full_start": 20250101}') is None
+
     def test_ai_limit_caps_results(self, monkeypatch, tmp_path):
         """ai_limit 상위 N개만 반환한다."""
         from ai_strategy_loop.dashboard import app as A
@@ -263,6 +294,50 @@ class TestNoExcept:
         assert len(out["ai"]) == 3
         # score 내림차순 상위 3개(4,3,2).
         assert [a["gen_no"] for a in out["ai"]] == [4, 3, 2]
+
+
+# =====================================================================
+# 3b) 인간 결과 스크린샷 — /reference_screenshots 목록 + StaticFiles 마운트.
+# =====================================================================
+class TestReferenceScreenshots:
+    def test_endpoint_lists_png_screenshots(self, client):
+        """GET /reference_screenshots — .png 결과 스크린샷 파일명만(보조 크롭/줌 제외)."""
+        resp = client.get("/reference_screenshots")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert "screenshots" in body and "count" in body
+        files = body["screenshots"]
+        assert body["count"] == len(files)
+        # 모두 .png 이미지이고 언더스코어 보조 파일(_zoom_*, _crops 등)은 제외.
+        assert all(f.lower().endswith(".png") for f in files)
+        assert all(not f.startswith("_") for f in files)
+        # 결과 스크린샷 디렉토리가 있으면 17장(STOM_Good_Result_Screenshot (1..17).png).
+        from ai_strategy_loop.dashboard import app as A
+        if os.path.isdir(A._REFERENCE_SCREENSHOTS_DIR):
+            assert body["count"] == 17
+
+    def test_screenshots_sorted(self, client):
+        """파일명은 정렬되어 반환된다(결정론적 갤러리 순서)."""
+        files = client.get("/reference_screenshots").json()["screenshots"]
+        assert files == sorted(files)
+
+    def test_screenshots_empty_when_dir_missing(self, client, monkeypatch):
+        """디렉토리 부재 → 빈 목록(무예외 계약)."""
+        from ai_strategy_loop.dashboard import app as A
+        monkeypatch.setattr(A, "_REFERENCE_SCREENSHOTS_DIR", "/no/such/screenshots/dir")
+        resp = client.get("/reference_screenshots")
+        assert resp.status_code == 200
+        assert resp.json() == {"screenshots": [], "count": 0}
+
+    def test_reference_img_mounted_when_dir_exists(self):
+        """디렉토리가 있으면 /reference_img StaticFiles 마운트가 import 시 생성된다."""
+        import os as _os
+        from ai_strategy_loop.dashboard import app as A
+        app_obj = A.create_app()
+        mount_paths = [r.path for r in app_obj.routes if hasattr(r, "path")]
+        if _os.path.isdir(A._REFERENCE_SCREENSHOTS_DIR):
+            assert "/reference_img" in mount_paths
+        # 디렉토리 유무와 무관하게 앱 생성은 무예외(이 시점까지 도달 = 성공).
 
 
 # =====================================================================
@@ -301,6 +376,37 @@ class TestFrontendStructure:
         hof = src[src.find("function HallOfFamePanel("):]
         assert "setInterval" in hof
         assert "새로고침" in hof
+
+    def test_component_has_total_return_krw_and_period_columns(self):
+        """총수익금(원) 컬럼 유지 + 백테 기간 컬럼 추가."""
+        src = _read_front("chart.jsx")
+        hof = src[src.find("function HallOfFamePanel("):]
+        assert "총수익금(원)" in hof   # 1) 총수익금 표기 유지
+        assert "백테 기간" in hof       # 2) 백테 기간 컬럼 추가
+        assert "r.period" in hof        # AI/인간 공통 period 필드 렌더
+
+    def test_component_has_short_window_tooltip_and_legend(self):
+        """3) AI '단기' 라벨 tooltip + 범례 안내."""
+        src = _read_front("chart.jsx")
+        hof = src[src.find("function HallOfFamePanel("):]
+        # 단기 라벨에 설명 tooltip(data-tip/title) — 연평균 과대추정 경고.
+        assert "과대추정" in hof
+        # 범례 한 줄 안내.
+        assert "단기=연환산 신뢰낮음" in hof
+
+    def test_reference_gallery_defined_and_wired(self):
+        """4) 인간 결과 스크린샷 갤러리 — 컴포넌트 정의·엔드포인트·버튼·이미지 경로."""
+        src = _read_front("chart.jsx")
+        assert "function ReferenceGallery(" in src
+        # /reference_screenshots 로 목록 fetch + /reference_img/ 로 이미지 src.
+        assert "/reference_screenshots" in src
+        assert "/reference_img/" in src
+        # 패널 헤더 버튼 + 모달 패턴(modal-bd).
+        assert "인간 결과 스크린샷" in src
+        assert "modal-bd" in src
+        # window 노출(빌드 없는 text/babel 전역 등록).
+        tail = src[src.rfind("Object.assign(window"):]
+        assert "ReferenceGallery" in tail
 
     def test_app_jsx_mounts_hall_of_fame_panel(self):
         src = _read_front("app.jsx")

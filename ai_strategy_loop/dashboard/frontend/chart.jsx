@@ -1191,6 +1191,7 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
   const [err, setErr] = useState_eq(null);
   const [sortKey, setSortKey] = useState_eq("total_return_pct"); // total_return_pct|annual_return_pct|mdd_pct|payoff
   const [filter, setFilter] = useState_eq("all");                // all|human|ai
+  const [galleryOpen, setGalleryOpen] = useState_eq(false);      // 📷 인간 결과 스크린샷 모달.
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
@@ -1264,6 +1265,14 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
           <LegendDot color="var(--green)" label="👤 인간 벤치마크" />
           <LegendDot color="var(--amber)" label="🌱 시드(Tick_902 인간튜닝)" />
           <LegendDot color="var(--violet)" label="🤖 AI 생성(AILOOP)" />
+          <span style={{ fontSize: 10, color: "var(--ink-3)", fontFamily: "var(--mono)" }}
+                data-tip="백테 기간이 3개월 미만이면 연평균이 과대추정됨 — 신뢰 낮음">
+            단기=연환산 신뢰낮음(짧은 백테)
+          </span>
+          <button className="btn ghost sm" onClick={() => setGalleryOpen(true)}
+                  data-tip="인간 reference 결과 스크린샷 갤러리 열기">
+            📷 인간 결과 스크린샷
+          </button>
           <button className="btn ghost sm" onClick={refresh} disabled={isDemo || loading}
                   data-tip="명예의 전당 새로고침">
             {loading ? "로딩…" : "↻ 새로고침"}
@@ -1332,6 +1341,7 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
                   <th style={{ textAlign: "right", padding: "6px 8px" }}>일평균거래</th>
                   <th style={{ textAlign: "right", padding: "6px 8px" }}>동시보유</th>
                   <th style={{ textAlign: "right", padding: "6px 8px" }}>운영금(원)</th>
+                  <th style={{ textAlign: "left", padding: "6px 8px" }}>백테 기간</th>
                 </tr>
               </thead>
               <tbody>
@@ -1366,7 +1376,13 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
                                    color: r.annual_unreliable ? "var(--ink-3)" : "var(--ink-0)" }}>
                         {fmtPctSigned(r.annual_return_pct)}
                         {r.annual_unreliable && (
-                          <span style={{ fontSize: 9, color: "var(--ink-3)", marginLeft: 4 }}>단기</span>
+                          <span
+                            data-tip="백테 기간이 3개월 미만이라 연평균이 과대추정됨(1개월 7%→연84% 식). 단기 창은 신뢰 낮음."
+                            title="백테 기간이 3개월 미만이라 연평균이 과대추정됨(1개월 7%→연84% 식). 단기 창은 신뢰 낮음."
+                            style={{ fontSize: 9, color: "var(--ink-3)", marginLeft: 4,
+                                     borderBottom: "1px dotted var(--ink-3)", cursor: "help" }}>
+                            단기
+                          </span>
                         )}
                       </td>
                       <td style={{ padding: "5px 8px", textAlign: "right", color: "var(--red)" }}>
@@ -1384,6 +1400,15 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
                       <td style={{ padding: "5px 8px", textAlign: "right", color: "var(--ink-2)" }}>
                         {fmtInt2(r.operating_capital_krw)}
                       </td>
+                      <td style={{ padding: "5px 8px", textAlign: "left", color: "var(--ink-2)",
+                                   whiteSpace: "nowrap", fontSize: 11 }}>
+                        {r.period || "—"}
+                        {typeof r.days === "number" && (
+                          <span style={{ color: "var(--ink-3)", marginLeft: 5 }}>
+                            ({r.days}일)
+                          </span>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
@@ -1392,8 +1417,105 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
           </div>
         )}
       </div>
+      {galleryOpen && (
+        <ReferenceGallery baseUrl={baseUrl} onClose={() => setGalleryOpen(false)} />
+      )}
     </div>
   );
 }
 
-Object.assign(window, { FitnessChart, ProfitChart, EquityOverlayChart, QualityTrendChart, BacktestDetailChart, HallOfFamePanel });
+/* 📷 인간 결과 스크린샷 갤러리 모달.
+   GET /reference_screenshots 로 파일명 목록(17장)을 받아 썸네일 그리드로 보여주고,
+   썸네일 클릭 시 같은 모달에서 확대(라이트박스)한다. 이미지 src는
+   baseUrl+'/reference_img/'+filename(StaticFiles 읽기 전용 마운트)로 직접 가져온다.
+   스크린샷↔전략# 매핑은 불확실하므로 개별 행 정확 매핑을 시도하지 않고 전체 갤러리
+   브라우징만 제공한다(정직). 모달 패턴은 CodeViewer(modal-bd/modal)를 따른다. */
+const { useState: useState_rg, useEffect: useEffect_rg } = React;
+
+function ReferenceGallery({ baseUrl, onClose }) {
+  const [files, setFiles] = useState_rg(null);   // string[] | null
+  const [err, setErr] = useState_rg(null);
+  const [zoom, setZoom] = useState_rg(null);     // 확대 중인 파일명 | null
+
+  useEffect_rg(() => {
+    if (!baseUrl) { setFiles([]); return; }
+    let cancelled = false;
+    fetch(baseUrl + "/reference_screenshots", { signal: AbortSignal.timeout(4000) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      .then(j => { if (!cancelled) { setFiles(j.screenshots || []); setErr(null); } })
+      .catch(e => { if (!cancelled) setErr(String(e)); })
+      .finally(() => {});
+    return () => { cancelled = true; };
+  }, [baseUrl]);
+
+  const imgSrc = (name) => baseUrl + "/reference_img/" + encodeURIComponent(name);
+
+  return (
+    <div className="modal-bd"
+         onMouseDown={(e) => { if (e.target === e.currentTarget) (zoom ? setZoom(null) : onClose()); }}>
+      <div className="modal" style={{ width: "min(1100px, calc(100vw - 32px))" }}
+           onMouseDown={(e) => e.stopPropagation()}>
+        <div className="modal-hd">
+          <h2>
+            📷 인간 결과 스크린샷
+            <span className="sub">
+              STOM_Good_Results — 결과 화면 {files ? files.length : "…"}장 · 스크린샷↔전략# 매핑 불확실(전체 브라우징)
+            </span>
+          </h2>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            {zoom && (
+              <button className="btn ghost sm" onClick={() => setZoom(null)}>← 그리드</button>
+            )}
+            <button className="btn ghost sm" onClick={onClose}>닫기</button>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+          {err ? (
+            <div style={{ padding: "28px 0", textAlign: "center", color: "var(--red)",
+                          fontSize: 12, fontFamily: "var(--mono)" }}>
+              스크린샷 목록 조회 실패: {err}
+            </div>
+          ) : files == null ? (
+            <div style={{ padding: "28px 0", textAlign: "center", color: "var(--ink-3)",
+                          fontSize: 12, fontFamily: "var(--mono)" }}>
+              스크린샷 불러오는 중…
+            </div>
+          ) : files.length === 0 ? (
+            <div style={{ padding: "28px 0", textAlign: "center", color: "var(--ink-3)",
+                          fontSize: 12, fontFamily: "var(--mono)" }}>
+              표시할 스크린샷이 없습니다.
+            </div>
+          ) : zoom ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+              <img src={imgSrc(zoom)} alt={zoom}
+                   style={{ maxWidth: "100%", maxHeight: "70vh", objectFit: "contain",
+                            border: "1px solid var(--line-2)", borderRadius: 6 }} />
+              <div style={{ fontSize: 11, color: "var(--ink-3)", fontFamily: "var(--mono)" }}>{zoom}</div>
+            </div>
+          ) : (
+            <div style={{ display: "grid",
+                          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
+              {files.map((name) => (
+                <div key={name} onClick={() => setZoom(name)}
+                     data-tip="클릭하면 확대"
+                     style={{ cursor: "zoom-in", border: "1px solid var(--line-2)",
+                              borderRadius: 6, overflow: "hidden", background: "var(--bg-0)" }}>
+                  <img src={imgSrc(name)} alt={name} loading="lazy"
+                       style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
+                  <div style={{ fontSize: 9.5, color: "var(--ink-3)", fontFamily: "var(--mono)",
+                                padding: "4px 6px", whiteSpace: "nowrap", overflow: "hidden",
+                                textOverflow: "ellipsis" }}>
+                    {name}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { FitnessChart, ProfitChart, EquityOverlayChart, QualityTrendChart, BacktestDetailChart, HallOfFamePanel, ReferenceGallery });
