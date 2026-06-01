@@ -9,25 +9,36 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=20260602b" />
 
-  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <!-- 로컬 번들(vendored) — unpkg CDN 의존 제거로 오프라인/캐시/SRI 문제 차단.
+       이전: unpkg react/react-dom/babel + SRI(integrity). 인터넷 불가/캐시 꼬임 시 검은 화면.
+       이제: 같은 origin 로컬 파일. 버전 쿼리(?v=)로 브라우저 캐시 강제 무효화. -->
+  <script src="vendor-react.js?v=20260602b"></script>
+  <script src="vendor-react-dom.js?v=20260602b"></script>
+  <script src="vendor-babel.js?v=20260602b"></script>
 </head>
 <body>
-  <div id="root"></div>
+  <!-- React 마운트 전/실패 시 보이는 폴백(검은 화면 대신 안내). 마운트 성공 시 교체됨. -->
+  <div id="root">
+    <div style="padding:40px;font-family:system-ui,sans-serif;color:#9fb0c0;background:#0c1014;min-height:100vh;">
+      <div style="font-size:15px;margin-bottom:8px;">STOM AI 대시보드 로딩 중…</div>
+      <div style="font-size:12px;color:#5f7080;">
+        몇 초 이상 이 화면이 지속되면 <b>Ctrl+Shift+R</b>(강력 새로고침)을 눌러주세요.
+      </div>
+    </div>
+  </div>
 
-  <script type="text/babel" src="connection.jsx"></script>
-  <script type="text/babel" src="panels.jsx"></script>
-  <script type="text/babel" src="engine.jsx"></script>
-  <script type="text/babel" src="chart.jsx"></script>
-  <script type="text/babel" src="hypothesis.jsx"></script>
-  <script type="text/babel" src="table.jsx"></script>
-  <script type="text/babel" src="cards.jsx"></script>
-  <script type="text/babel" src="code-viewer.jsx"></script>
-  <script type="text/babel" src="phase-detail.jsx"></script>
-  <script type="text/babel" src="settings.jsx"></script>
-  <script type="text/babel" src="app.jsx"></script>
+  <script type="text/babel" src="connection.jsx?v=20260602b"></script>
+  <script type="text/babel" src="panels.jsx?v=20260602b"></script>
+  <script type="text/babel" src="engine.jsx?v=20260602b"></script>
+  <script type="text/babel" src="chart.jsx?v=20260602b"></script>
+  <script type="text/babel" src="hypothesis.jsx?v=20260602b"></script>
+  <script type="text/babel" src="table.jsx?v=20260602b"></script>
+  <script type="text/babel" src="cards.jsx?v=20260602b"></script>
+  <script type="text/babel" src="code-viewer.jsx?v=20260602b"></script>
+  <script type="text/babel" src="phase-detail.jsx?v=20260602b"></script>
+  <script type="text/babel" src="settings.jsx?v=20260602b"></script>
+  <script type="text/babel" src="app.jsx?v=20260602b"></script>
 </body>
 </html>

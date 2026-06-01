@@ -499,8 +499,36 @@ function IdleState({ onStart, configSpec }) {
   );
 }
 
-Object.assign(window, { App });
+// ErrorBoundary — 한 컴포넌트가 특정 데이터에서 throw해도 전체가 검은 화면이 되지
+//   않게 한다(이전엔 에러바운더리 부재로 단일 크래시가 #root 전체를 언마운트→검은 화면).
+//   크래시 시 오류 메시지+스택+새로고침 버튼을 보여 진단·복구를 돕는다.
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) { console.error("Dashboard render error:", error, info); }
+  render() {
+    if (this.state.error) {
+      const msg = String((this.state.error && this.state.error.stack) || this.state.error);
+      return (
+        <div style={{ padding: 40, fontFamily: "system-ui, sans-serif", background: "#0c1014", minHeight: "100vh" }}>
+          <h2 style={{ color: "#ff8a8a", fontSize: 16, marginBottom: 8 }}>대시보드 렌더 오류</h2>
+          <p style={{ color: "#9fb0c0", fontSize: 13, marginBottom: 12 }}>
+            일부 데이터에서 렌더 오류가 발생했습니다. <b>Ctrl+Shift+R</b>로 새로고침하거나 상단 RUN 셀렉터에서 다른 run을 선택해 보세요.
+          </p>
+          <pre style={{ color: "#caa", fontSize: 11, whiteSpace: "pre-wrap", background: "#11161c", padding: 12, borderRadius: 6, overflow: "auto", maxHeight: 300 }}>{msg}</pre>
+          <button onClick={() => location.reload()}
+                  style={{ marginTop: 12, padding: "6px 14px", background: "#1a2530", color: "#cfe0f0", border: "1px solid #2a3441", borderRadius: 5, cursor: "pointer" }}>
+            새로고침
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+Object.assign(window, { App, ErrorBoundary });
 
 // Mount
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
+root.render(<ErrorBoundary><App /></ErrorBoundary>);
