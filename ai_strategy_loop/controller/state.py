@@ -749,6 +749,17 @@ def to_loop_state(
         gate_passed = bool(g.get("gate_passed"))
         if int(g.get("gen_no", -1)) == best.gen:
             best.gate_passed = gate_passed
+        # P2b-2 — 이 세대가 검증한 가정+판정(hypotheses_json)을 파싱해 대시보드에 노출한다.
+        #   NULL/빈/파싱실패/리스트 아님 → [](하위호환: 토글 OFF/구 상태/부모 없는 세대).
+        raw = g.get("hypotheses_json")
+        hyps: List[Dict[str, Any]] = []
+        if raw:
+            try:
+                parsed = json.loads(raw)
+                if isinstance(parsed, list):
+                    hyps = parsed
+            except (ValueError, TypeError):
+                hyps = []
         gen_rows.append(C.GenerationInfo(
             gen_no=int(g.get("gen_no", -1)),
             status=str(g.get("status", "")),
@@ -775,6 +786,8 @@ def to_loop_state(
             dispersion_term=(1.0 if g.get("dispersion_term") is None
                              else float(g.get("dispersion_term"))),
             max_hold_count=float(g.get("max_hold_count", 0.0) or 0.0),
+            # P2b-2 — 위에서 파싱한 가정 리스트(없으면 [] = 하위호환).
+            hypotheses=hyps,
         ))
 
     latest_info = C.LatestInfo(

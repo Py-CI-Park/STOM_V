@@ -165,6 +165,9 @@ function App() {
 
               {/* ── 분석 패널 묶음 (P1~P5 live page_data 소비, demo 배지 규약) ── */}
               <SectionLabel text="진화 분석 · P1~P5" />
+              {/* P2b-2 — 가정 루프(세운 가정+채택/기각 판정) 가시화. 판정된 가정이
+                  있는 세대가 없으면(토글 OFF/구 상태) 패널이 null 반환해 미표시. */}
+              <HypothesisPanel state={state} />
               <AutopsyPanel state={state} wsStatus={wsStatus} />
               <PopulationPanel state={state} wsStatus={wsStatus} />
               <LineagePanel state={state} wsStatus={wsStatus} />

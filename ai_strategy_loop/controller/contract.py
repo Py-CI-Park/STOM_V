@@ -97,6 +97,8 @@ class GenerationInfo(BaseModel):
     #   기본값으로 검증 통과한다(하위호환).
     dispersion_term: float = 1.0
     max_hold_count: float = 0.0
+    # P2b-2 가정 루프 가시화 — generations.hypotheses_json 파싱. 토글 OFF/구 상태는 [].
+    hypotheses: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class LatestInfo(BaseModel):
