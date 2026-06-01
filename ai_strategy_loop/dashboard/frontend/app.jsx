@@ -147,6 +147,7 @@ function App() {
               <FitnessChart state={state} target={targetScore} />
               <ProfitChart state={state} targetPct={0} />
               <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} />
+              <QualityTrendChart state={state} />
               <GenerationsTable state={state} mddCap={mddCap} minDailyTrades={minDailyTrades}
                                 onViewCode={(g) => setCodeViewGen(g)} />
               {/* 운영·관찰: run 비교 콘솔(REST /runs, loop_runs.db 직접) */}

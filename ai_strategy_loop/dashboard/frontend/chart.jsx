@@ -675,4 +675,192 @@ function EquityOverlayChart({ baseUrl, wsStatus }) {
   );
 }
 
-Object.assign(window, { FitnessChart, ProfitChart, EquityOverlayChart });
+/* P1a — 품질지표 추이 차트(QualityTrendChart).
+   위험조정 품질지표(calmar·우상향R²·MDD·일평균거래·동시보유·손익비)의 세대간 추이를
+   한 패널에 겹쳐 본다. 지표마다 스케일이 크게 다르므로(calmar 0~100 vs R² 0~1 vs
+   MDD 0~160% vs 동시보유 0~12) 각 지표를 자기 min/max로 정규화해 '추세 모양'을 비교하고,
+   실제값은 hover 툴팁에 표시한다. 데이터는 이미 state.generations[]에 LIVE 존재(백엔드 무변).
+   기본 표시 = calmar·우상향R²·MDD(핵심 졸업 기준). 범례 버튼 클릭으로 지표 토글.
+   보고서(STOM_Good_Results) 목표: 일평균10~23·동시보유6~12·MDD<7%·손익비>1.25. */
+const _QUALITY_METRICS = [
+  { key: "calmar",           label: "Calmar",     color: "var(--teal)",   fmt: (v) => v.toFixed(2), hint: "CAGR/MDD 위험조정수익(높을수록 우수)" },
+  { key: "uptrend_r2",       label: "우상향 R²",  color: "var(--violet)", fmt: (v) => v.toFixed(3), hint: "누적곡선 우상향 적합도 0~1(높을수록 우수)" },
+  { key: "mdd",              label: "MDD %",      color: "var(--red)",    fmt: (v) => fmtPct(v),    hint: "최대낙폭(낮을수록 우수) — 보고서 1.9~6.75%" },
+  { key: "daily_avg_trades", label: "일평균거래", color: "var(--amber)",  fmt: (v) => v.toFixed(2), hint: "거래수/거래일(보고서 10~23)" },
+  { key: "max_hold_count",   label: "동시보유",   color: "var(--blue)",   fmt: (v) => v.toFixed(0), hint: "최대 동시보유 종목수(보고서 6~12)" },
+  { key: "payoff_ratio",     label: "손익비",     color: "#73d673",       fmt: (v) => v.toFixed(2), hint: "평균이익/평균손실(보고서 1.15~1.47)" },
+];
+
+function QualityTrendChart({ state }) {
+  const gens = state.generations || [];
+  const [enabled, setEnabled] = useState_c(() => ({
+    calmar: true, uptrend_r2: true, mdd: true,
+    daily_avg_trades: false, max_hold_count: false, payoff_ratio: false,
+  }));
+  const toggle = (k) => setEnabled(s => ({ ...s, [k]: !s[k] }));
+
+  const W = 880, H = 320;
+  const padL = 44, padR = 24, padT = 18, padB = 30;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  const xMax = Math.max(state.max_generations, 8);
+  const x = (g) => padL + (g - 0.5) / xMax * innerW;
+
+  // status==error(전 지표 0)는 스케일 왜곡 방지를 위해 제외.
+  // useMemo로 안정 참조 유지 → 하위 ranges useMemo 캐시가 실제로 동작(FitnessChart와 동일 원리).
+  const okGens = useMemo_c(() => gens.filter(g => g.status !== "error"), [gens]);
+
+  // 각 지표의 자기 min/max(정규화용).
+  const ranges = useMemo_c(() => {
+    const r = {};
+    for (const m of _QUALITY_METRICS) {
+      const vals = okGens.map(g => (typeof g[m.key] === "number" ? g[m.key] : null)).filter(v => v != null);
+      if (!vals.length) { r[m.key] = null; continue; }
+      let lo = Math.min(...vals), hi = Math.max(...vals);
+      if (hi === lo) hi = lo + 1;  // 평탄선 방지(단일/동일값).
+      r[m.key] = { lo, hi };
+    }
+    return r;
+  }, [okGens]);
+
+  // 정규화 y: 지표값 → [0,1] → svg y. 값 없으면 null(선 끊김).
+  const ny = (m, g) => {
+    const rg = ranges[m.key];
+    if (!rg || typeof g[m.key] !== "number" || g.status === "error") return null;
+    const t = (g[m.key] - rg.lo) / (rg.hi - rg.lo);
+    return padT + innerH - t * innerH;
+  };
+
+  const pathFor = (m) => {
+    let d = "", started = false;
+    for (const g of okGens) {
+      const yy = ny(m, g);
+      if (yy == null) continue;
+      d += `${started ? "L" : "M"} ${x(g.gen_no).toFixed(2)} ${yy.toFixed(2)} `;
+      started = true;
+    }
+    return d.trim();
+  };
+
+  const xStep = xMax <= 15 ? 1 : xMax <= 30 ? 2 : 5;
+  const xTicks = [];
+  for (let g = 1; g <= xMax; g++) if (g === 1 || g === xMax || g % xStep === 0) xTicks.push(g);
+
+  const [hover, setHover] = useState_c(null);
+  const svgRef = useRef_c(null);
+  const onMove = (e) => {
+    if (!okGens.length || !svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const px = (e.clientX - rect.left) * (W / rect.width);
+    let best = null, bestDist = Infinity;
+    for (const g of okGens) { const d = Math.abs(x(g.gen_no) - px); if (d < bestDist) { bestDist = d; best = g; } }
+    setHover(best && bestDist < 40 ? best : null);
+  };
+
+  const activeMetrics = _QUALITY_METRICS.filter(m => enabled[m.key]);
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--violet)" }}></span>
+          품질지표 추이 — Quality Metrics
+        </div>
+        <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+          {_QUALITY_METRICS.map(m => (
+            <button key={m.key} onClick={() => toggle(m.key)} data-tip={m.hint}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 5,
+                fontSize: 10.5, fontFamily: "var(--mono)", cursor: "pointer",
+                padding: "3px 7px", borderRadius: 5,
+                border: `1px solid ${enabled[m.key] ? m.color : "var(--line-2)"}`,
+                background: enabled[m.key] ? "rgba(255,255,255,0.04)" : "transparent",
+                color: enabled[m.key] ? "var(--ink-0)" : "var(--ink-3)",
+              }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%",
+                background: enabled[m.key] ? m.color : "var(--line-2)" }}></span>
+              {m.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="panel-bd">
+        <div style={{ fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)", marginBottom: 8 }}>
+          각 지표는 자기 범위로 정규화한 '추세 모양' — 실제값은 hover 참조. 보고서 목표: 일평균10~23·동시보유6~12·MDD&lt;7%·손익비&gt;1.25
+        </div>
+        <div className="chart-wrap">
+          <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
+               onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
+            {/* 정규화 기준 가로 그리드(0/50/100%) */}
+            {[0, 0.5, 1].map((t, i) => {
+              const yy = padT + innerH - t * innerH;
+              return <line key={`qg${i}`} className="chart-grid-line" x1={padL} x2={W - padR} y1={yy} y2={yy} />;
+            })}
+            {/* X 라벨 */}
+            {xTicks.map((g, i) => (
+              <text key={`qx${i}`} className="chart-axis-text" x={x(g)} y={H - 10} textAnchor="middle">gen_{g}</text>
+            ))}
+            {/* Frame */}
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            {/* 지표 라인 */}
+            {activeMetrics.map(m => {
+              const d = pathFor(m);
+              if (!d) return null;
+              return <g key={m.key}>
+                <path d={d} fill="none" stroke={m.color} strokeWidth="1.8" opacity="0.9" />
+                {okGens.map((g, i) => {
+                  const yy = ny(m, g);
+                  if (yy == null) return null;
+                  return <circle key={i} cx={x(g.gen_no)} cy={yy} r="2.4" fill={m.color} />;
+                })}
+              </g>;
+            })}
+            {/* Hover 수직선 */}
+            {hover && (() => {
+              const hx = x(hover.gen_no);
+              return <line x1={hx} x2={hx} y1={padT} y2={padT + innerH} stroke="rgba(255,255,255,0.12)" strokeWidth="1" />;
+            })()}
+          </svg>
+
+          {hover && activeMetrics.length > 0 && (
+            <div style={{
+              position: "absolute", top: 16, right: 16,
+              background: "var(--bg-0)", border: "1px solid var(--line-2)",
+              borderRadius: 6, padding: "8px 10px",
+              fontFamily: "var(--mono)", fontSize: 11, minWidth: 170,
+              boxShadow: "0 6px 16px rgba(0,0,0,0.4)", pointerEvents: "none",
+            }}>
+              <div style={{ fontSize: 10.5, color: "var(--ink-2)", letterSpacing: ".12em",
+                            textTransform: "uppercase", marginBottom: 4 }}>
+                gen_{String(hover.gen_no).padStart(2, "0")}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" }}>
+                {activeMetrics.map(m => (
+                  <React.Fragment key={m.key}>
+                    <span style={{ color: m.color }}>{m.label}</span>
+                    <span style={{ textAlign: "right" }}>
+                      {typeof hover[m.key] === "number" ? m.fmt(hover[m.key]) : "—"}
+                    </span>
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {okGens.length === 0 && (
+            <div style={{
+              position: "absolute", inset: 0, display: "flex", alignItems: "center",
+              justifyContent: "center", color: "var(--ink-3)", fontSize: 12, fontFamily: "var(--mono)",
+            }}>
+              세대 데이터가 누적되면 품질지표 추이가 표시됩니다
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { FitnessChart, ProfitChart, EquityOverlayChart, QualityTrendChart });
