@@ -303,6 +303,92 @@ def _strategy_code_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
     }
 
 
+def _backtest_detail_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
+    """한 세대의 백테 상세 시계열(일별손익·누적수익·낙폭)을 반환한다(읽기 전용, 무예외).
+
+    O1 — 대시보드 BacktestDetailChart가 fetch 한다. 일반 STOM 백테가 만드는 2-그래프
+    (일별손익 막대 + 누적수익곡선)를 헤드리스 루프 결과로 재현한다. 엔진 PNG 생성은
+    꺼져 있으나(cli/runner.py) per-trade 거래 CSV는 항상 생성되므로, 이미 있는 그 CSV
+    하나를 O2의 parse_backtest_series로 시계열 변환한다(추가 백테 0회).
+
+    세대 행(generations)에서 (run_id, gen_no)의 csv_path·gate_passed·daily_avg_trades를
+    조회하고, 그 run의 config_json에서 bt_betting을 뽑아 누적%(cum_pct) 산출에 쓴다.
+    csv_path가 상대경로면 REPO_ROOT 기준으로 해석해 서버 CWD와 무관하게 동작한다.
+
+    csv 없음/파싱 실패/없는 세대는 빈 시계열(daily=[]·summary 0)로 표준화한다(무예외).
+
+    반환:
+      {"run_id","gen_no","gate_passed",
+       "daily":[{date,daily_pnl,profit,loss,net}...],
+       "cumulative":[{date,cum_profit,cum_pct}...],
+       "drawdown":[{date,drawdown}...],
+       "summary":{trade_count,final_profit,max_drawdown,n_days}}
+    """
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+    from ai_strategy_loop.fitness.equity_series import parse_backtest_series  # noqa: PLC0415
+
+    empty_series: Dict[str, Any] = {
+        "daily": [],
+        "cumulative": [],
+        "drawdown": [],
+        "summary": {
+            "trade_count": 0,
+            "final_profit": 0.0,
+            "max_drawdown": 0.0,
+            "n_days": 0,
+        },
+    }
+
+    # 세대 행에서 csv_path·gate_passed 조회 + run config_json에서 bt_betting 추출.
+    csv_path: Optional[str] = None
+    gate_passed = False
+    betting = None
+    found = False
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState()
+        for row in st.get_generations(run_id):
+            if int(row.get("gen_no", -1)) == int(gen_no):
+                csv_path = row.get("csv_path")
+                gate_passed = bool(row.get("gate_passed"))
+                found = True
+                break
+        # bt_betting은 runs.config_json(JSON 문자열)에서 뽑는다(cum_pct 산출용).
+        if found:
+            run_row = st.get_run(run_id)
+            if run_row is not None:
+                try:
+                    cfg = json.loads(run_row.get("config_json") or "{}")
+                    betting = cfg.get("bt_betting")
+                except (ValueError, TypeError):
+                    betting = None
+    except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 빈 응답(무예외).
+        return {"run_id": run_id, "gen_no": int(gen_no), "gate_passed": False, **empty_series}
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    if not found or not csv_path:
+        # 없는 (run,gen) 또는 csv_path 없는 세대 → 빈 시계열(무예외).
+        return {"run_id": run_id, "gen_no": int(gen_no), "gate_passed": gate_passed, **empty_series}
+
+    # 상대경로면 REPO_ROOT 기준으로 해석(서버 CWD 무관 동작). 파서는 실패 시 빈 구조.
+    resolved = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+    series = parse_backtest_series(resolved, betting=betting)
+    return {
+        "run_id": run_id,
+        "gen_no": int(gen_no),
+        "gate_passed": gate_passed,
+        "daily": series.get("daily", []),
+        "cumulative": series.get("cumulative", []),
+        "drawdown": series.get("drawdown", []),
+        "summary": series.get("summary", empty_series["summary"]),
+    }
+
+
 def create_app() -> FastAPI:
     """대시보드 FastAPI 앱을 생성한다 (테스트가 TestClient로 감싼다)."""
     manager = LoopProcessManager()
@@ -388,6 +474,26 @@ def create_app() -> FastAPI:
                 "buy_name": "", "sell_name": "", "buy_code": "", "sell_code": "",
             }
         return _strategy_code_payload(run, gen)
+
+    @app.get("/backtest_detail")
+    def backtest_detail(run_id: str = "", gen_no: int = -1) -> Dict[str, Any]:
+        """한 세대의 백테 상세 시계열(일별손익·누적수익·낙폭)을 반환한다(차트 fetch용).
+
+        쿼리: ?run_id=<run_id>&gen_no=<n>. 그 세대의 per-trade 결과 CSV를
+        parse_backtest_series로 일별손익+누적곡선+낙폭으로 변환해 돌려준다(추가 백테 0회).
+        run_id 미지정/없는 gen/CSV 없음/파싱 실패는 빈 시계열로 표준화한다(무예외 —
+        대시보드가 빈 상태 패널을 표시).
+        """
+        if not run_id or gen_no < 0:
+            return {
+                "run_id": run_id, "gen_no": gen_no, "gate_passed": False,
+                "daily": [], "cumulative": [], "drawdown": [],
+                "summary": {
+                    "trade_count": 0, "final_profit": 0.0,
+                    "max_drawdown": 0.0, "n_days": 0,
+                },
+            }
+        return _backtest_detail_payload(run_id, gen_no)
 
     @app.websocket("/ws")
     async def ws(websocket: WebSocket) -> None:

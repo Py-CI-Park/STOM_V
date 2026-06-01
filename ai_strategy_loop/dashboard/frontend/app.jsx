@@ -147,6 +147,8 @@ function App() {
               <FitnessChart state={state} target={targetScore} />
               <ProfitChart state={state} targetPct={0} />
               <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id} />
+              {/* O1 — 백테 상세(일별손익 막대 + 누적수익곡선): 선택 세대의 per-trade CSV 시계열 재현 */}
+              <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={state} />
               <QualityTrendChart state={state} />
               <GenerationsTable state={state} mddCap={mddCap} minDailyTrades={minDailyTrades}
                                 onViewCode={(g) => setCodeViewGen(g)} />

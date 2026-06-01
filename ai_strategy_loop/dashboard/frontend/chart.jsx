@@ -874,4 +874,304 @@ function QualityTrendChart({ state }) {
   );
 }
 
-Object.assign(window, { FitnessChart, ProfitChart, EquityOverlayChart, QualityTrendChart });
+/* O1 — 백테 상세 차트(BacktestDetailChart).
+   일반 STOM 백테가 만드는 2-그래프(상단 일별손익 막대 + 하단 누적수익곡선)를 헤드리스
+   루프 결과로 한 패널에 재현한다. 헤드리스 루프는 엔진 PNG 생성이 꺼져 있으나(cli/runner.py)
+   per-trade 거래 CSV는 항상 생성되므로, /backtest_detail(GET)이 그 CSV를
+   parse_backtest_series로 일별손익+누적곡선+낙폭으로 변환해 보낸다(추가 백테 0회).
+   - 현재 run(state.run_id)의 세대 중 선택된 gen(기본=best 또는 최신)을 드롭다운으로 고른다.
+   - 한 영역에 STOM fig2 재현: 일별손익 막대(이익=red 위, 손실=blue 아래, 0 기준선) 위에
+     누적수익곡선(cum_profit, orange 굵은선, 별도 우측 스케일).
+   - hover 시 그 거래일의 일손익·누적·낙폭(반납액) 툴팁.
+   - demo면 미fetch(EquityOverlayChart 패턴). 빈 시계열이면 빈 상태 표시. */
+const {
+  useState: useState_bd, useEffect: useEffect_bd,
+  useCallback: useCallback_bd, useRef: useRef_bd, useMemo: useMemo_bd,
+} = React;
+
+function BacktestDetailChart({ baseUrl, wsStatus, state }) {
+  const gens = (state && state.generations) || [];
+  const runId = (state && state.run_id) || "";
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+
+  // 기본 선택 gen: gate_passed(우승) 중 점수 최고 → 없으면 최신 세대.
+  const defaultGen = useMemo_bd(() => {
+    if (!gens.length) return null;
+    const winners = gens.filter(g => g.gate_passed);
+    if (winners.length) {
+      return winners.reduce((a, b) =>
+        ((b.graded_score || 0) > (a.graded_score || 0) ? b : a)).gen_no;
+    }
+    return gens[gens.length - 1].gen_no;
+  }, [gens]);
+
+  const [selGen, setSelGen] = useState_bd(null);
+  // run/세대 목록이 바뀌면 선택을 기본값으로 재동기화(수동 선택 후 새 run 시작 대비).
+  useEffect_bd(() => { setSelGen(defaultGen); }, [defaultGen, runId]);
+  const genNo = selGen != null ? selGen : defaultGen;
+
+  const [data, setData] = useState_bd(null);   // {run_id,gen_no,gate_passed,daily,cumulative,drawdown,summary}
+  const [loading, setLoading] = useState_bd(false);
+  const [err, setErr] = useState_bd(null);
+  const [hover, setHover] = useState_bd(null);  // 거래일 인덱스
+  const svgRef = useRef_bd(null);
+
+  const refresh = useCallback_bd(() => {
+    if (isDemo || !baseUrl || !runId || genNo == null) return;
+    setLoading(true);
+    const url = baseUrl + "/backtest_detail?run_id=" + encodeURIComponent(runId)
+      + "&gen_no=" + encodeURIComponent(genNo);
+    fetch(url, { signal: AbortSignal.timeout(4000) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      .then(j => { setData(j); setErr(null); })
+      .catch(e => setErr(String(e)))
+      .finally(() => setLoading(false));
+  }, [baseUrl, isDemo, runId, genNo]);
+
+  // 최초 + gen 변경 + 30초 자동 새로고침.
+  useEffect_bd(() => {
+    refresh();
+    const id = setInterval(refresh, 30000);
+    return () => clearInterval(id);
+  }, [refresh]);
+
+  const daily = (data && data.daily) || [];
+  const cumulative = (data && data.cumulative) || [];
+  const drawdown = (data && data.drawdown) || [];
+  const summary = (data && data.summary) || {};
+  const hasSeries = daily.length > 0;
+
+  const W = 880, H = 320;
+  const padL = 56, padR = 60, padT = 18, padB = 30;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  // 일별손익(막대) 스케일: 0 포함, ±여유. 좌축.
+  const pnlVals = daily.map(d => d.daily_pnl || 0);
+  const pnlMax = Math.max(0, ...pnlVals);
+  const pnlMin = Math.min(0, ...pnlVals);
+  const pnlRange = (pnlMax - pnlMin) || 1;
+  const yPnl = (v) => padT + innerH - ((v - pnlMin) / pnlRange) * innerH;
+  const zeroY = yPnl(0);  // 0 손익분기 기준선(막대 기준).
+
+  // 누적수익(라인) 스케일: 자체 min/max(0 포함). 우축.
+  const cumVals = cumulative.map(c => c.cum_profit || 0);
+  const cumMax = Math.max(0, ...cumVals);
+  const cumMin = Math.min(0, ...cumVals);
+  const cumRange = (cumMax - cumMin) || 1;
+  const yCum = (v) => padT + innerH - ((v - cumMin) / cumRange) * innerH;
+
+  // 막대 x 위치(거래일 인덱스 기반 등간격). 막대폭은 간격의 70%.
+  const n = daily.length;
+  const slot = n > 0 ? innerW / n : innerW;
+  const barW = Math.max(1, slot * 0.7);
+  const xBar = (i) => padL + (i + 0.5) * slot;  // 막대 중심.
+
+  const fmtMoneyShort = (v) => {
+    const a = Math.abs(v);
+    if (a >= 1e8) return (v / 1e8).toFixed(1) + "억";
+    if (a >= 1e4) return Math.round(v / 1e4) + "만";
+    return Math.round(v).toLocaleString();
+  };
+
+  // 누적 곡선 path(거래일 인덱스 → 막대 중심 x).
+  const cumPath = useMemo_bd(() => {
+    if (cumulative.length < 2) return "";
+    return cumulative.map((c, i) =>
+      `${i === 0 ? "M" : "L"} ${xBar(i).toFixed(2)} ${yCum(c.cum_profit || 0).toFixed(2)}`
+    ).join(" ");
+  }, [cumulative, n, cumMin, cumRange]);
+
+  // X 라벨(거래일): 최대 ~8개만 표시(YYYYMMDD → MM/DD).
+  const xLabelIdxs = (() => {
+    if (n === 0) return [];
+    const step = Math.max(1, Math.ceil(n / 8));
+    const idxs = [];
+    for (let i = 0; i < n; i += step) idxs.push(i);
+    if (idxs[idxs.length - 1] !== n - 1) idxs.push(n - 1);
+    return idxs;
+  })();
+  const fmtDate = (d) => {
+    const s = String(d);
+    return s.length === 8 ? s.slice(4, 6) + "/" + s.slice(6, 8) : s;
+  };
+
+  const onMove = (e) => {
+    if (!n || !svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const px = (e.clientX - rect.left) * (W / rect.width);
+    const i = Math.floor((px - padL) / slot);
+    if (i >= 0 && i < n) setHover(i); else setHover(null);
+  };
+  const onLeave = () => setHover(null);
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--amber)" }}></span>
+          백테 상세 — 일별손익 · 누적수익곡선
+        </div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <LegendDot color="var(--red)" label="이익(일)" />
+          <LegendDot color="var(--blue)" label="손실(일)" />
+          <LegendDot color="var(--amber)" label="누적수익 ₩" />
+          {gens.length > 0 && (
+            <select
+              value={genNo != null ? genNo : ""}
+              onChange={e => setSelGen(Number(e.target.value))}
+              className="mono"
+              style={{
+                fontSize: 11, background: "var(--bg-1)", color: "var(--ink-0)",
+                border: "1px solid var(--line-2)", borderRadius: 5, padding: "3px 6px",
+              }}
+              data-tip="세대 선택">
+              {gens.map(g => (
+                <option key={g.gen_no} value={g.gen_no}>
+                  gen_{g.gen_no}{g.gate_passed ? " ✓" : ""}
+                </option>
+              ))}
+            </select>
+          )}
+          <button className="btn ghost sm" onClick={refresh} disabled={isDemo || loading || !runId}
+                  data-tip="백테 상세 새로고침">
+            {loading ? "로딩…" : "↻ 새로고침"}
+          </button>
+        </div>
+      </div>
+      <div className="panel-bd">
+        <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
+          <Mini label="거래수" value={summary.trade_count != null ? String(summary.trade_count) : "—"} />
+          <Mini label="거래일" value={summary.n_days != null ? String(summary.n_days) : "—"} />
+          <Mini label="최종 누적수익" value={summary.final_profit != null ? fmtMoney(summary.final_profit) : "—"}
+                color={summary.final_profit > 0 ? "var(--teal)"
+                       : summary.final_profit < 0 ? "var(--red)" : undefined} />
+          <Mini label="최대 반납액" value={summary.max_drawdown != null ? fmtMoney(summary.max_drawdown) : "—"}
+                color={summary.max_drawdown > 0 ? "var(--red)" : undefined} sub="고점 대비(원)" />
+        </div>
+
+        <div className="chart-wrap">
+          {isDemo ? (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                          color: "var(--ink-3)", fontSize: 12, fontFamily: "var(--mono)" }}>
+              데모 모드 — 백엔드 연결 시 백테 상세가 표시됩니다.
+            </div>
+          ) : err ? (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                          color: "var(--red)", fontSize: 12, fontFamily: "var(--mono)" }}>
+              조회 실패: {err}
+            </div>
+          ) : !hasSeries ? (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                          color: "var(--ink-3)", fontSize: 12, fontFamily: "var(--mono)" }}>
+              백테 결과 시계열이 없습니다(CSV 없음/토글)
+            </div>
+          ) : (
+            <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
+                 onMouseMove={onMove} onMouseLeave={onLeave}>
+              {/* 0 손익분기 기준선(막대 기준, 좌축) */}
+              <line x1={padL} x2={W - padR} y1={zeroY} y2={zeroY}
+                    stroke="rgba(255,255,255,0.28)" strokeWidth="1" strokeDasharray="2 3" />
+              <text className="chart-axis-text" x={padL - 8} y={zeroY + 3} textAnchor="end"
+                    fill="var(--ink-2)">0</text>
+              {/* 좌축 라벨(일별손익 max/min) */}
+              <text className="chart-axis-text" x={padL - 8} y={yPnl(pnlMax) + 3} textAnchor="end"
+                    fill="var(--ink-2)">{fmtMoneyShort(pnlMax)}</text>
+              {pnlMin < 0 && (
+                <text className="chart-axis-text" x={padL - 8} y={yPnl(pnlMin) + 3} textAnchor="end"
+                      fill="var(--ink-2)">{fmtMoneyShort(pnlMin)}</text>
+              )}
+              {/* 우축 라벨(누적수익 max/min) */}
+              <text className="chart-axis-text" x={W - padR + 6} y={yCum(cumMax) + 3} textAnchor="start"
+                    fill="var(--amber)">{fmtMoneyShort(cumMax)}</text>
+              <text className="chart-axis-text" x={W - padR + 6} y={yCum(cumMin) + 3} textAnchor="start"
+                    fill="var(--amber)">{fmtMoneyShort(cumMin)}</text>
+
+              {/* X 프레임 */}
+              <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH}
+                    stroke="var(--line-2)" strokeWidth="1" />
+              <line x1={padL} x2={padL} y1={padT} y2={padT + innerH}
+                    stroke="var(--line-2)" strokeWidth="1" />
+              {/* X 라벨(거래일) */}
+              {xLabelIdxs.map((i) => (
+                <text key={`bx${i}`} className="chart-axis-text"
+                      x={xBar(i)} y={H - 10} textAnchor="middle">
+                  {fmtDate(daily[i].date)}
+                </text>
+              ))}
+
+              {/* 일별손익 막대(이익=red 위, 손실=blue 아래) */}
+              {daily.map((d, i) => {
+                const v = d.daily_pnl || 0;
+                const yTop = v >= 0 ? yPnl(v) : zeroY;
+                const yBot = v >= 0 ? zeroY : yPnl(v);
+                const h = Math.max(0.5, yBot - yTop);
+                const col = v >= 0 ? "var(--red)" : "var(--blue)";
+                return <rect key={`bar${i}`} x={xBar(i) - barW / 2} y={yTop}
+                             width={barW} height={h} fill={col} opacity="0.78" />;
+              })}
+
+              {/* 누적수익 곡선(우축, orange 굵은선) */}
+              {cumulative.length > 1 && (
+                <path d={cumPath} fill="none" stroke="var(--amber)" strokeWidth="2.2" opacity="0.95" />
+              )}
+
+              {/* Hover 수직선 + 강조 */}
+              {hover != null && (() => {
+                const hx = xBar(hover);
+                return <g>
+                  <line x1={hx} x2={hx} y1={padT} y2={padT + innerH}
+                        stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                  {cumulative[hover] && (
+                    <circle cx={hx} cy={yCum(cumulative[hover].cum_profit || 0)} r="3.5"
+                            fill="none" stroke="var(--amber)" strokeWidth="1.5" />
+                  )}
+                </g>;
+              })()}
+            </svg>
+          )}
+
+          {/* Hover 툴팁 */}
+          {hover != null && hasSeries && daily[hover] && (
+            <div style={{
+              position: "absolute", top: 16, right: 16,
+              background: "var(--bg-0)", border: "1px solid var(--line-2)",
+              borderRadius: 6, padding: "8px 10px",
+              fontFamily: "var(--mono)", fontSize: 11, minWidth: 190,
+              boxShadow: "0 6px 16px rgba(0,0,0,0.4)", pointerEvents: "none",
+            }}>
+              <div style={{ fontSize: 10.5, color: "var(--ink-2)", letterSpacing: ".12em",
+                            textTransform: "uppercase", marginBottom: 4 }}>
+                {fmtDate(daily[hover].date)} · {String(daily[hover].date)}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" }}>
+                <span style={{ color: "var(--ink-2)" }}>일손익</span>
+                <span className={daily[hover].daily_pnl > 0 ? "num-pos" : daily[hover].daily_pnl < 0 ? "num-neg" : ""}
+                      style={{ textAlign: "right" }}>
+                  {fmtMoney(daily[hover].daily_pnl)}
+                </span>
+                <span style={{ color: "var(--ink-2)" }}>누적</span>
+                <span style={{ textAlign: "right", color: "var(--amber)" }}>
+                  {cumulative[hover] ? fmtMoney(cumulative[hover].cum_profit) : "—"}
+                </span>
+                {cumulative[hover] && cumulative[hover].cum_pct != null && (
+                  <>
+                    <span style={{ color: "var(--ink-2)" }}>누적%</span>
+                    <span style={{ textAlign: "right" }}>{fmtPct(cumulative[hover].cum_pct)}</span>
+                  </>
+                )}
+                <span style={{ color: "var(--ink-2)" }}>반납액</span>
+                <span style={{ textAlign: "right", color: "var(--red)" }}>
+                  {drawdown[hover] ? fmtMoney(drawdown[hover].drawdown) : "—"}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { FitnessChart, ProfitChart, EquityOverlayChart, QualityTrendChart, BacktestDetailChart });
