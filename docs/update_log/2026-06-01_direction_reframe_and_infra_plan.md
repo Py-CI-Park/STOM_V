@@ -39,7 +39,11 @@
 
 ---
 
-## 2. Phase 1 — 측정 인프라 (사용자 요구 ①③)
+## 2. Phase 1 — 측정 인프라 (사용자 요구 ①③) — ✅ 완료 (2026-06-01)
+
+> 3커밋 전부 code-reviewer(opus) APPROVE · baseline 신규0 · 엔진/하드게이트 무수정.
+> P1a `4b06f087` (대시보드 QualityTrendChart) · P1c `8cbe191d` (프롬프트 DB v7) · P1b `f60e04af` (숫자 델타 v8).
+> phase-map "버그"는 의도된 4단계/5단계 별개 인덱스(loop.py:630)라 무변경. 거래구조(win_rate/avg_hold/distinct_symbols)·equity_points 테이블은 Phase 3(재조준 측정)와 묶어 연기.
 
 ### P1a. 대시보드 단계별 그래프 + phase 버그
 - **품질지표 추이 차트(QualityTrendChart)** 신설(`dashboard/frontend/chart.jsx`): calmar·uptrend_r2·mdd·daily_avg_trades·max_hold_count·payoff_ratio를 세대축 멀티라인(지표 토글). 데이터는 이미 `state.generations[]`에 LIVE 존재 → **백엔드 무변, 프론트만**. `app.jsx` EquityOverlayChart 아래 배치.
