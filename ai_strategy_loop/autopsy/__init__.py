@@ -44,6 +44,11 @@ from .summarize import (
     summarize_exits,
     summarize_segments,
 )
+from .hypothesis import (
+    Hypothesis,
+    adjudicate,
+    build_hypotheses,
+)
 
 __all__ = [
     "AutopsyResult",
@@ -72,4 +77,8 @@ __all__ = [
     "StableCell",
     "analyze_segments_by_year",
     "multiyear_to_page_data",
+    # 가정(Hypothesis) 루프 코어 (P2a).
+    "Hypothesis",
+    "build_hypotheses",
+    "adjudicate",
 ]

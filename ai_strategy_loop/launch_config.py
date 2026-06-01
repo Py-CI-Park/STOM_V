@@ -214,4 +214,12 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "help": "켜면 매 LLM 호출의 프롬프트(system 해시+user 전문+주입 피처+토큰/응답 해시)를 "
                     "loop_runs.db prompts 테이블에 기록해 사후 재현을 가능하게 한다. 기본 OFF.",
         },
+        # 가정(Hypothesis) 루프 코어 (P2a) — 부검 방향성 예측을 1급 객체로 채택/기각.
+        {
+            "name": "hypothesis_tracking_enabled", "label": "가정 추적(채택/기각)", "type": "bool",
+            "default": d.hypothesis_tracking_enabled,
+            "help": "켜면 부검 방향성 예측(MDD↓/진입품질↑/진입완화 등)을 1급 가정으로 방출하고 "
+                    "다음 세대의 부모 대비 델타로 자동 채택/기각해 generations.hypotheses_json에 "
+                    "기록한다(추가 백테 없음). 기본 OFF.",
+        },
     ]

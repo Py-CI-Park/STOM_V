@@ -41,7 +41,10 @@ LOOP_RUNS_DB = _STATE_DIR / "loop_runs.db"
 #         LLM 호출별 프롬프트(system 해시+user 전문+주입 피처+토큰/응답 해시)를 옵트인
 #         토글로 기록. CREATE TABLE IF NOT EXISTS라 구버전 DB도 안전(하위호환).
 #     v8: 부모 대비 숫자 델타 컬럼(P1b, diff_from_parent의 SQL 조회가능 형태) 추가.
-SCHEMA_VERSION = 8
+#     v9: hypotheses_json 컬럼(P2a) 추가 — 이 세대가 검증한 가정+판정 직렬화.
+#         직전 세대 부검이 세운 가정을 이 세대의 부모 대비 델타로 채택/기각한 결과를
+#         JSON 리스트로 영속한다(추가 백테 없음). NULL 기본(부모 없는 세대·토글 OFF).
+SCHEMA_VERSION = 9
 
 # US-007 — 루프↔대시보드 라이브 상태 파일 + 정지 플래그 파일.
 #   current_state.json : 루프가 매 세대/백테스트 시점에 atomic write 하는
@@ -153,6 +156,7 @@ class LoopState:
           - payoff_ratio/give_back_rate 누락(v5 이전) → 추가(청산 품질 대시보드 노출).
           - dispersion_term/max_hold_count 누락(v6 이전) → 추가(R8 다종목 분산 LIVE 노출).
           - d_graded..d_uptrend_r2 누락(v8 이전) → 추가(P1b 부모 대비 숫자 델타).
+          - hypotheses_json 누락(v9 이전) → 추가(P2a 가정+판정 직렬화).
         새 컬럼은 모두 NULL/명시 기본이라 기존 행의 의미를 바꾸지 않는다(하위호환).
         """
         existing_cols = {row[1] for row in self._con.execute("PRAGMA table_info(generations)")}
@@ -183,6 +187,9 @@ class LoopState:
             ("d_daily_trades", "REAL"),
             ("d_calmar", "REAL"),
             ("d_uptrend_r2", "REAL"),
+            # v9 — P2a 가정+판정 직렬화(이 세대가 검증한 직전 가정 리스트의 JSON).
+            #   DEFAULT 없음 → NULL. 부모 없는 세대·토글 OFF·기존 행은 NULL(하위호환).
+            ("hypotheses_json", "TEXT"),
         ):
             if col not in existing_cols:
                 self._con.execute(f"ALTER TABLE generations ADD COLUMN {col} {decl}")
@@ -279,6 +286,7 @@ class LoopState:
         d_daily_trades: Optional[float] = None,
         d_calmar: Optional[float] = None,
         d_uptrend_r2: Optional[float] = None,
+        hypotheses_json: Optional[str] = None,
     ) -> None:
         """한 세대 결과를 기록한다 (UPSERT — 세대 번호 중복 없음).
 
@@ -301,6 +309,11 @@ class LoopState:
         d_graded..d_uptrend_r2: 부모 대비 숫자 델타(P1b). None이면 NULL(부모 없는
         세대). diff_from_parent NL과 같은 값의 숫자형으로, SQL 집계(AVG/ORDER BY)를
         가능케 한다.
+
+        hypotheses_json(P2a): 이 세대가 검증한 가정+판정의 JSON 직렬화 문자열.
+        직전 세대 부검이 세운 가정을 이 세대의 부모 대비 델타로 채택/기각한 결과다.
+        None이면 NULL(부모 없는 세대·토글 OFF·기존 호출부). 기본 None이라 이 인자를
+        주지 않던 기존 호출부도 그대로 동작한다(하위호환·byte-identical).
         """
         self._con.execute(
             "INSERT OR REPLACE INTO generations "
@@ -309,9 +322,9 @@ class LoopState:
             " total_profit_pct, strategy_gist, parent_gen, diff_from_parent, "
             " payoff_ratio, give_back_rate, dispersion_term, max_hold_count, "
             " d_graded, d_mdd, d_trades, d_profit, d_daily_trades, d_calmar, d_uptrend_r2, "
-            " created_at) "
+            " hypotheses_json, created_at) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-            "?, ?, ?, ?, ?, ?, ?, ?)",
+            "?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 run_id, gen_no, buy_name, sell_name, status, float(score),
                 float(calmar), float(uptrend_r2), 1 if gate_passed else 0,
@@ -330,6 +343,8 @@ class LoopState:
                 (None if d_daily_trades is None else float(d_daily_trades)),
                 (None if d_calmar is None else float(d_calmar)),
                 (None if d_uptrend_r2 is None else float(d_uptrend_r2)),
+                # P2a 가정+판정 직렬화. 문자열 그대로 저장(None이면 NULL).
+                hypotheses_json,
                 _now(),
             ),
         )
@@ -366,6 +381,8 @@ class LoopState:
             "d_daily_trades": d_daily_trades,
             "d_calmar": d_calmar,
             "d_uptrend_r2": d_uptrend_r2,
+            # P2a 가정+판정 직렬화. None이면 그대로 None(JSON null) — 부모 없는 세대·토글 OFF.
+            "hypotheses_json": hypotheses_json,
         })
 
     def record_prompt(

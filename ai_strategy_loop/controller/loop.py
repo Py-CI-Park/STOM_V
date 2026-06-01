@@ -856,6 +856,10 @@ def run_loop(
     cumulative_tokens = 0
     next_autopsy_feedback: Optional[str] = None   # 진입(BUY) 측 다음 세대 피드백.
     next_sell_feedback: Optional[str] = None      # 매도(SELL) 측 다음 세대 청산 피드백.
+    # P2a 가정 루프: 직전 세대 피드백이 '이 다음 세대'를 겨냥해 세운 가정 목록.
+    #   다음 세대에서 그 세대의 부모 대비 델타로 채택/기각해 hypotheses_json으로 영속한다.
+    #   토글 OFF면 항상 None이라 가정 방출·판정·저장이 전혀 안 일어난다(byte-동일).
+    next_hypotheses: Optional[list] = None
     last_autopsy_page_data: Optional[Dict[str, Any]] = None  # LIVE 부검 패널용 세그먼트 요약.
     last_holdout_verdict: Optional[Any] = None  # P5 — 직전 세대 holdout 졸업검사 결과(토글 ON일 때만).
     # seed-and-refine: gen1+가 출발점으로 삼을 현재 best 전략 코드(hill-climb).
@@ -1117,6 +1121,10 @@ def run_loop(
                     err_fb = _backtest_error_feedback(outcome.reason, config)
                     next_autopsy_feedback = err_fb
                     next_sell_feedback = err_fb
+                # P2a — 실패 세대(0거래/크래시)는 게이트 분석할 metrics가 없어 가정을
+                #   세우지 않는다. carry를 비워 다음 세대가 빈/오래된 가정을 판정하지
+                #   않게 한다(토글 OFF면 어차피 항상 None).
+                next_hypotheses = None
                 gen_no += 1
                 continue
 
@@ -1155,6 +1163,13 @@ def run_loop(
                 calmar=fit.calmar, uptrend_r2=fit.uptrend_r2,
             )
             _pd = parent_deltas or {}
+            # P2a 가정 판정·영속: 토글 ON이고 직전 세대가 '이 세대용'으로 세운 가정
+            #   (next_hypotheses)이 있으면, 이 세대의 부모 대비 델타(parent_deltas)로
+            #   채택/기각해 hypotheses_json으로 직렬화한다(추가 백테 없음). 부모 없는 세대
+            #   (parent_deltas None)는 adjudicate가 전부 inconclusive로 매기되, 가정이
+            #   없으면 None=NULL이라 기존과 동일하다. 산출 실패는 흡수(학습 보조 경로).
+            #   토글 OFF면 next_hypotheses가 항상 None이라 hypotheses_json=None(byte-동일).
+            hypotheses_json = _adjudicate_and_serialize(config, next_hypotheses, parent_deltas)
             # P10 — 수익률(%)은 graded(GradedResult)에 없고 엔진 metrics에만 있다
             #   (total_profit_pct = '수익률합계'). profit(원)과 별개로 발행해 대시보드
             #   세대 이력/차트가 수익률을 표시한다. metrics 누락 시 0.0 폴백(무예외).
@@ -1184,6 +1199,8 @@ def run_loop(
                 d_daily_trades=_pd.get("d_daily_trades"),
                 d_calmar=_pd.get("d_calmar"),
                 d_uptrend_r2=_pd.get("d_uptrend_r2"),
+                # P2a — 직전 가정+이 세대 델타로 매긴 판정(토글 OFF면 None=NULL).
+                hypotheses_json=hypotheses_json,
             )
             print(f"[LOOP] graded={graded.graded:.6g} hard_composite={fit.score:.6g} "
                   f"calmar={fit.calmar:.4g} r2={fit.uptrend_r2:.4g} "
@@ -1281,6 +1298,11 @@ def run_loop(
                 effective_autopsy_fn, effective_exit_autopsy_fn,
                 effective_segment_autopsy_fn,
             )
+            # P2a 가정 방출: 부검 NL과 동일 인자(게이트 통과/MDD/손익/거래수)로 이 세대가
+            #   '다음 세대용'으로 세우는 가정을 만든다. is_refine은 다음 세대가 부모를 갖는지
+            #   (현재 best가 출발점이 되는지)로 본다. 토글 OFF면 None이라 가정이 carry되지
+            #   않아 다음 세대 hypotheses_json=None(byte-동일). 산출 실패는 흡수한다.
+            next_hypotheses = _build_next_hypotheses(config, fit, graded, is_refine=(best_gen >= 0))
             _publish_live(st, rid, config, status="running", current_gen=gen_no,
                           cumulative_tokens=cumulative_tokens, phase="autopsy_done",
                           message=f"gen {gen_no} 부검 완료",
@@ -1656,6 +1678,67 @@ def _build_feedback(config, outcome, fit, graded,
     buy_fb = cap_feedback("\n\n".join(buy_parts)) if buy_parts else None
     sell_fb = cap_feedback("\n\n".join(sell_parts)) if sell_parts else None
     return buy_fb, sell_fb, autopsy_page_data
+
+
+# =====================================================================
+# 가정(Hypothesis) 루프 코어 (P2a) — 방출(emit) + 판정·직렬화(adjudicate).
+#   _build_feedback의 NL 반환은 절대 건드리지 않고(byte-동일), 가정은 별도 경로로
+#   다룬다. 두 함수 모두 토글 OFF면 즉시 None을 돌려 기존 동작과 완전히 동일하다.
+# =====================================================================
+def _build_next_hypotheses(config, fit, graded, *, is_refine: bool):
+    """이 세대 결과로 '다음 세대용' 가정 목록을 세운다(토글 ON일 때만).
+
+    gate_failure_directive(부검 NL)와 동일 인자(gate_passed/mdd/mdd_cap/total_profit/
+    trade_count/min_trades)로 build_hypotheses를 호출해, 부검 NL과 가정이 항상 같은
+    원인에서 출발하게 한다. 토글 OFF면 None을 돌려 carry가 비어 다음 세대
+    hypotheses_json=None(byte-동일). 산출 실패는 흡수한다(학습 보조 경로).
+
+    반환: List[Hypothesis] 또는 None(토글 OFF/빈 목록/실패).
+    """
+    if not getattr(config, "hypothesis_tracking_enabled", False):
+        return None
+    try:
+        from ai_strategy_loop.autopsy import build_hypotheses  # noqa: PLC0415
+
+        hyps = build_hypotheses(
+            gate_passed=fit.gate_passed,
+            mdd=graded.mdd,
+            mdd_cap=float(getattr(config, "mdd_cap", 0.0) or 0.0),
+            total_profit=graded.total_profit,
+            trade_count=fit.trade_count,
+            min_trades=int(getattr(config, "min_trades", 0) or 0),
+            is_refine=is_refine,
+        )
+        return hyps or None
+    except Exception as exc:  # noqa: BLE001 - 가정 산출 실패는 루프를 막지 않음.
+        logger.info("가정 산출 실패(무시): %s", exc)
+        return None
+
+
+def _adjudicate_and_serialize(config, next_hypotheses, parent_deltas):
+    """직전 세대가 세운 가정을 이 세대의 부모 대비 델타로 채택/기각해 JSON으로 만든다.
+
+    토글 OFF거나 가정이 없으면(부모 없는 세대/실패 세대) None을 돌려
+    hypotheses_json=NULL(byte-동일). parent_deltas는 _build_parent_diff_and_deltas가
+    만든 dict(없으면 None) — adjudicate가 None을 받으면 전부 inconclusive로 매긴다
+    (추가 백테 없음). 판정/직렬화 실패는 흡수한다(학습 보조 경로).
+
+    반환: json.dumps([h.to_dict() ...], ensure_ascii=False) 문자열 또는 None.
+    """
+    if not getattr(config, "hypothesis_tracking_enabled", False):
+        return None
+    if not next_hypotheses:
+        return None
+    try:
+        from ai_strategy_loop.autopsy import adjudicate  # noqa: PLC0415
+
+        judged = adjudicate(next_hypotheses, parent_deltas)
+        if not judged:
+            return None
+        return json.dumps([h.to_dict() for h in judged], ensure_ascii=False)
+    except Exception as exc:  # noqa: BLE001 - 가정 판정/직렬화 실패는 루프를 막지 않음.
+        logger.info("가정 판정/직렬화 실패(무시): %s", exc)
+        return None
 
 
 def _winner_score_value(fit, graded, config: LoopConfig) -> float:

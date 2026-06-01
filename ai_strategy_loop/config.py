@@ -371,6 +371,20 @@ class LoopConfig:
     #   v1 자산이라 sha만 저장하고, user 전문은 동적이라 전문 저장한다(용량 가드).
     prompt_logging_enabled: bool = False
 
+    # --- 가정(Hypothesis) 루프 코어 (P2a): 부검 방향성 예측을 1급 객체로 채택/기각 ---
+    # 데이터 근거(§3.16-D 천장 의심): 부검(gate_failure_directive)은 이미 방향성 예측을
+    #   만든다("MDD 초과→매도 손절강화", "손익 음수→진입품질↑", "거래 부족→진입완화").
+    #   그러나 이 예측이 NL 문자열로 즉시 소모되고 **채택/기각 판정이 없어** refine가
+    #   같은 빗나간 가정을 반복한다. 이를 1급 Hypothesis 객체로 만들고, 이미 영속되는
+    #   부모 대비 숫자 델타(P1b)로 자동 채택/기각한다(추가 백테 0회). "실행→분석→가정→
+    #   개선→실행" 과학적 방법 루프의 핵심 고리다.
+    # hypothesis_tracking_enabled: True면 run_loop이 매 세대 부검 분기와 동일 인자로
+    #   build_hypotheses(...)도 호출해 가정을 방출하고, 다음 세대로 carry한 뒤 그 세대의
+    #   부모 대비 델타로 adjudicate(채택/기각)해 hypotheses_json으로 영속한다. 기본 OFF면
+    #   가정 방출·저장·판정이 전혀 일어나지 않아 기존 NL 피드백·프롬프트·생성 경로가
+    #   byte-동일하다(하위호환). 가정 산출/판정 실패는 흡수한다(학습 보조 경로).
+    hypothesis_tracking_enabled: bool = False
+
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":
         """dict에서 LoopConfig 생성. 알 수 없는 키는 무시한다."""

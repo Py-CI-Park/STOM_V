@@ -1,7 +1,7 @@
 """P1b — 부모 대비 숫자 델타 영속화 단위 테스트 (state.py + loop.py).
 
 검증(백테/루프 실행 없음, tmp DB):
-  - SCHEMA_VERSION == 8, generations에 d_graded..d_uptrend_r2 7컬럼 존재.
+  - SCHEMA_VERSION >= 8(P1b 도입), generations에 d_graded..d_uptrend_r2 7컬럼 존재.
   - _build_parent_diff_and_deltas: 부모 1회 조회로 NL diff + 숫자 델타(정확값) 반환.
   - record_generation: d_* 전달 시 행에 숫자 저장; 부모 없는 세대는 d_* NULL.
   - diff_from_parent NL 문자열이 기존 포맷과 byte-identical(회귀 가드).
@@ -40,8 +40,10 @@ def _row(st, rid, gen_no):
 
 
 class TestSchema:
-    def test_schema_version_is_8(self):
-        assert S.SCHEMA_VERSION == 8
+    def test_schema_version_at_least_8(self):
+        # P1b는 v8에서 d_* 델타 컬럼을 도입했다. 이후 마이그레이션(P2a v9 등)으로
+        #   버전이 올라가도 d_* 컬럼 계약은 유지된다 — 정확 버전 대신 하한으로 가드한다.
+        assert S.SCHEMA_VERSION >= 8
 
     def test_delta_columns_present(self, tmp_path):
         st = LoopState(db_path=str(tmp_path / "sv.db"), snapshot_dir=str(tmp_path / "s"))
@@ -49,7 +51,8 @@ class TestSchema:
             cols = _cols(st)
             for c in _DELTA_COLS:
                 assert c in cols, f"누락 컬럼: {c}"
-            assert st.get_schema_version() == 8
+            assert st.get_schema_version() == S.SCHEMA_VERSION
+            assert st.get_schema_version() >= 8
         finally:
             st.close()
 
@@ -214,6 +217,7 @@ class TestMigration:
             cols = _cols(st)
             for c in _DELTA_COLS:
                 assert c in cols, f"마이그레이션 후 {c} 컬럼이 있어야 한다"
-            assert st.get_schema_version() == 8
+            assert st.get_schema_version() == S.SCHEMA_VERSION
+            assert st.get_schema_version() >= 8
         finally:
             st.close()
