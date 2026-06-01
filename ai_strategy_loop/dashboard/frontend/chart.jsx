@@ -437,7 +437,7 @@ const _EQ_WINNER_COLORS = [
   "#38bdf8", "#fb923c", "#a3e635", "#f472b6",
 ];
 
-function EquityOverlayChart({ baseUrl, wsStatus }) {
+function EquityOverlayChart({ baseUrl, wsStatus, runId }) {
   const [data, setData] = useState_eq(null);   // {curves, count}
   const [loading, setLoading] = useState_eq(false);
   const [err, setErr] = useState_eq(null);
@@ -449,12 +449,15 @@ function EquityOverlayChart({ baseUrl, wsStatus }) {
   const refresh = useCallback_eq(() => {
     if (isDemo || !baseUrl) return;
     setLoading(true);
-    fetch(baseUrl + "/equity_curves", { signal: AbortSignal.timeout(4000) })
+    // 현재 run만 조회 — 전체 이력의 과발화 폭망 곡선(±수십억)이 y스케일을 장악해
+    //   정상 곡선이 0선에 압착되는 문제 회피. runId 없으면 전체(하위호환).
+    const url = baseUrl + "/equity_curves" + (runId ? "?run_id=" + encodeURIComponent(runId) : "");
+    fetch(url, { signal: AbortSignal.timeout(4000) })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
       .then(j => { setData(j); setErr(null); })
       .catch(e => setErr(String(e)))
       .finally(() => setLoading(false));
-  }, [baseUrl, isDemo]);
+  }, [baseUrl, isDemo, runId]);
 
   // 최초 + 30초 자동 새로고침.
   useEffect_eq(() => {
@@ -472,10 +475,16 @@ function EquityOverlayChart({ baseUrl, wsStatus }) {
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
 
-  // Y 범위: 전체 equity 값의 min/max (0 포함).
+  // Y 범위: 전체 equity 값의 min/max (0 포함). 단 과발화 폭망 곡선(±수십억) outlier가
+  //   스케일을 장악해 정상 곡선을 0선에 압착하지 않도록 5~95 퍼센타일로 클립한다
+  //   (run 필터가 적용되면 보통 outlier가 없어 min/max와 같지만, 전체 모드 견고성용).
   const allEquity = curves.flatMap(c => c.equity || []);
-  const yRawMax = allEquity.length ? Math.max(0, ...allEquity) : 1;
-  const yRawMin = allEquity.length ? Math.min(0, ...allEquity) : -1;
+  const _sortedEq = allEquity.slice().sort((a, b) => a - b);
+  const _pctile = (p) => _sortedEq.length
+    ? _sortedEq[Math.min(_sortedEq.length - 1, Math.max(0, Math.round(p * (_sortedEq.length - 1))))]
+    : 0;
+  const yRawMax = _sortedEq.length ? Math.max(0, _pctile(0.95)) : 1;
+  const yRawMin = _sortedEq.length ? Math.min(0, _pctile(0.05)) : -1;
   const yRange = (yRawMax - yRawMin) || 1;
 
   // SVG 좌표 변환. x는 0~1 정규화(각 곡선 길이 제각각 → 거래진행%).
@@ -584,7 +593,9 @@ function EquityOverlayChart({ baseUrl, wsStatus }) {
                         x1={padL} x2={W - padR} y1={ySvg(t)} y2={ySvg(t)} />
                   <text className="chart-axis-text"
                         x={padL - 8} y={ySvg(t) + 3} textAnchor="end">
-                    {t >= 10000 ? (t / 10000).toFixed(0) + "만" : t.toLocaleString()}
+                    {Math.abs(t) >= 1e8 ? (t / 1e8).toFixed(1) + "억"
+                      : Math.abs(t) >= 10000 ? (t / 10000).toFixed(0) + "만"
+                      : t.toLocaleString()}
                   </text>
                 </g>
               ))}

@@ -146,7 +146,7 @@ function App() {
             <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
               <FitnessChart state={state} target={targetScore} />
               <ProfitChart state={state} targetPct={0} />
-              <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} />
+              <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id} />
               <QualityTrendChart state={state} />
               <GenerationsTable state={state} mddCap={mddCap} minDailyTrades={minDailyTrades}
                                 onViewCode={(g) => setCodeViewGen(g)} />

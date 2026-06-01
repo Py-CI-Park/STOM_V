@@ -190,8 +190,15 @@ def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
                 pass
 
 
-def _equity_curves_payload(cap: int = 200, downsample: int = 200) -> Dict[str, Any]:
-    """loop_runs.db의 모든 세대 equity curve를 읽어 반환한다(읽기 전용, 무예외).
+def _equity_curves_payload(
+    cap: int = 200, downsample: int = 200, run_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """loop_runs.db의 세대 equity curve를 읽어 반환한다(읽기 전용, 무예외).
+
+    run_id가 주어지면 그 run의 세대만 반환한다 — 전체 이력에는 과발화 폭망 곡선
+    (±수십억)이 섞여 있어, 그것까지 한 차트에 그리면 정상 곡선이 y스케일에 압착돼
+    0선에 한 줄처럼 뭉개진다. 현재 보고 있는 run만 보내면 스케일이 정상화된다.
+    run_id 미지정이면 전체(하위호환).
 
     각 세대의 csv_path로 load_equity_series_from_csv를 호출해 수익금합계 시계열을
     얻는다. 곡선이 많으면 최근 cap 개로 제한하고, 곡선당 포인트는 downsample 개로
@@ -215,8 +222,11 @@ def _equity_curves_payload(cap: int = 200, downsample: int = 200) -> Dict[str, A
             except Exception:  # noqa: BLE001
                 pass
 
-    # created_at 내림차순(최신 우선) → cap 개 제한.
+    # created_at 내림차순(최신 우선).
     sorted_gens = sorted(all_gens, key=lambda g: g.get("created_at") or 0, reverse=True)
+    # run_id가 주어지면 해당 run만(현재 보고 있는 run의 곡선만 정상 스케일로 표시).
+    if run_id:
+        sorted_gens = [g for g in sorted_gens if g.get("run_id") == run_id]
     candidates = sorted_gens[:cap]
 
     curves = []
@@ -336,13 +346,14 @@ def create_app() -> FastAPI:
         return {"contract_version": C.CONTRACT_VERSION, "fields": config_field_specs()}
 
     @app.get("/equity_curves")
-    def equity_curves() -> Dict[str, Any]:
-        """모든 run의 세대별 누적수익 시계열(equity curve)을 반환한다(읽기 전용, 무예외).
+    def equity_curves(run_id: Optional[str] = None) -> Dict[str, Any]:
+        """세대별 누적수익 시계열(equity curve)을 반환한다(읽기 전용, 무예외).
 
+        run_id 주면 그 run의 세대만(현재 run 정상 스케일), 없으면 전체(하위호환).
         최근 200 세대까지 조회하며, 세대당 포인트는 최대 200개로 다운샘플한다.
         CSV 없거나 파싱 실패한 세대는 건너뛴다. DB 없으면 빈 배열(무예외).
         """
-        return _equity_curves_payload()
+        return _equity_curves_payload(run_id=run_id)
 
     @app.get("/runs")
     def runs() -> Dict[str, Any]:
