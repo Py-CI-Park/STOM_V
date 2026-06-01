@@ -214,6 +214,14 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "help": "켜면 매 LLM 호출의 프롬프트(system 해시+user 전문+주입 피처+토큰/응답 해시)를 "
                     "loop_runs.db prompts 테이블에 기록해 사후 재현을 가능하게 한다. 기본 OFF.",
         },
+        # 백테 시계열 영속화 (O2) — 누적수익곡선·일별손익·낙폭을 loop_runs.db에 다운샘플 영속.
+        {
+            "name": "equity_points_enabled", "label": "백테 시계열 DB 영속화", "type": "bool",
+            "default": d.equity_points_enabled,
+            "help": "켜면 세대마다 결과 CSV(이미 디스크에 있는 파일)의 누적수익곡선·일별손익·낙폭을 "
+                    "다운샘플해 loop_runs.db equity_points 테이블에 영속한다(추가 백테 없음). CSV 삭제 "
+                    "후에도 곡선이 보존되고 SQL 분석이 가능해진다. 기본 OFF.",
+        },
         # 가정(Hypothesis) 루프 코어 (P2a) — 부검 방향성 예측을 1급 객체로 채택/기각.
         {
             "name": "hypothesis_tracking_enabled", "label": "가정 추적(채택/기각)", "type": "bool",

@@ -44,7 +44,11 @@ LOOP_RUNS_DB = _STATE_DIR / "loop_runs.db"
 #     v9: hypotheses_json 컬럼(P2a) 추가 — 이 세대가 검증한 가정+판정 직렬화.
 #         직전 세대 부검이 세운 가정을 이 세대의 부모 대비 델타로 채택/기각한 결과를
 #         JSON 리스트로 영속한다(추가 백테 없음). NULL 기본(부모 없는 세대·토글 OFF).
-SCHEMA_VERSION = 9
+#     v10: equity_points 테이블 신규(generations 컬럼 변경 없음) — 백테 시계열 영속(O2).
+#         per-trade CSV에서 다운샘플한 누적수익곡선·일별손익·낙폭을 (run_id,gen_no)별로
+#         영속해 CSV 삭제 후에도 곡선을 보존하고 SQL 분석을 가능케 한다. CREATE TABLE
+#         IF NOT EXISTS라 구버전 DB도 안전(하위호환). 옵트인 토글(기본 OFF).
+SCHEMA_VERSION = 10
 
 # US-007 — 루프↔대시보드 라이브 상태 파일 + 정지 플래그 파일.
 #   current_state.json : 루프가 매 세대/백테스트 시점에 atomic write 하는
@@ -136,6 +140,18 @@ class LoopState:
                 created_at   REAL
             );
             CREATE INDEX IF NOT EXISTS idx_prompts_run_gen ON prompts(run_id, gen_no);
+            CREATE TABLE IF NOT EXISTS equity_points (
+                run_id      TEXT,
+                gen_no      INTEGER,
+                t_index     INTEGER,
+                date        INTEGER,
+                daily_pnl   REAL,
+                cum_profit  REAL,
+                cum_pct     REAL,
+                drawdown    REAL,
+                PRIMARY KEY (run_id, gen_no, t_index)
+            );
+            CREATE INDEX IF NOT EXISTS idx_equity_run_gen ON equity_points(run_id, gen_no);
             """
         )
         self._migrate_schema()
@@ -443,6 +459,72 @@ class LoopState:
         """이 run의 모든 프롬프트 기록을 prompt_id 순으로 반환한다 (재현/조회용)."""
         rows = self._con.execute(
             "SELECT * FROM prompts WHERE run_id = ? ORDER BY prompt_id", (run_id,)
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+    def record_equity_curve(
+        self, run_id: str, gen_no: int, series: Optional[Dict[str, Any]]
+    ) -> int:
+        """한 세대의 백테 시계열(다운샘플)을 equity_points에 영속한다 (O2, 멱등).
+
+        series는 fitness.equity_series.parse_backtest_series 결과(daily/cumulative/
+        drawdown/summary)다. **파싱은 호출부(loop.py)가 하고 여기엔 이미 파싱된 series만
+        넘긴다** — state가 fitness를 import하지 않도록(레이어 분리).
+
+        같은 (run_id, gen_no)를 먼저 DELETE 후 삽입해 멱등(재기록 시 중복이 쌓이지
+        않는다). daily/cumulative/drawdown 세 시계열을 거래일(date) 순번(t_index)으로
+        zip해 한 행씩 INSERT한다. 세 시계열은 parse_backtest_series가 동일 거래일 인덱스로
+        만들어 길이가 같다(다운샘플도 동일 인덱스). 빈 series(daily=[])면 기존 행만 지우고
+        0을 반환한다(CSV 없음/파싱 실패의 no-op 흡수).
+
+        Returns:
+            삽입한 시점(point) 수.
+        """
+        # 같은 (run_id, gen_no) 기존 점들을 먼저 제거(멱등 — 재기록 시 중복 방지).
+        self._con.execute(
+            "DELETE FROM equity_points WHERE run_id = ? AND gen_no = ?",
+            (run_id, int(gen_no)),
+        )
+
+        daily = list((series or {}).get("daily", []) or [])
+        cumulative = list((series or {}).get("cumulative", []) or [])
+        drawdown = list((series or {}).get("drawdown", []) or [])
+
+        if not daily:
+            # 빈 구조(CSV 없음/파싱 실패) → 기존 점만 지우고 no-op. 토글 ON이어도 안전.
+            self._con.commit()
+            return 0
+
+        # cumulative/drawdown은 daily와 같은 길이/거래일 순서다. date는 daily 기준으로
+        #   잡고(존재 보장), cum/drawdown은 동일 인덱스에서 가져온다(누락 시 0.0/None).
+        rows_to_insert = []
+        for t_index, d in enumerate(daily):
+            date = int(d.get("date", 0) or 0)
+            daily_pnl = float(d.get("daily_pnl", 0.0) or 0.0)
+            cum = cumulative[t_index] if t_index < len(cumulative) else {}
+            dd = drawdown[t_index] if t_index < len(drawdown) else {}
+            cum_profit = float(cum.get("cum_profit", 0.0) or 0.0)
+            cum_pct_raw = cum.get("cum_pct")
+            cum_pct = None if cum_pct_raw is None else float(cum_pct_raw)
+            drawdown_val = float(dd.get("drawdown", 0.0) or 0.0)
+            rows_to_insert.append((
+                run_id, int(gen_no), int(t_index), date,
+                daily_pnl, cum_profit, cum_pct, drawdown_val,
+            ))
+        self._con.executemany(
+            "INSERT INTO equity_points "
+            "(run_id, gen_no, t_index, date, daily_pnl, cum_profit, cum_pct, drawdown) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            rows_to_insert,
+        )
+        self._con.commit()
+        return len(rows_to_insert)
+
+    def get_equity_points(self, run_id: str, gen_no: int) -> List[Dict[str, Any]]:
+        """한 세대의 equity_points 시점들을 t_index 순으로 반환한다 (테스트·O1 차트용)."""
+        rows = self._con.execute(
+            "SELECT * FROM equity_points WHERE run_id = ? AND gen_no = ? ORDER BY t_index",
+            (run_id, int(gen_no)),
         ).fetchall()
         return [dict(r) for r in rows]
 

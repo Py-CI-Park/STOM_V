@@ -251,17 +251,21 @@ class TestSerialization:
 
 
 # =====================================================================
-# state.py — SCHEMA_VERSION 9 + hypotheses_json 컬럼 + 저장/조회.
+# state.py — SCHEMA_VERSION (>=9, hypotheses_json 도입 버전) + 컬럼 + 저장/조회.
+#   주: 이후 스키마 추가(예: v10 equity_points 테이블)로 버전이 올라가도 이 계약
+#   (hypotheses_json 컬럼 존재 + 버전 >= 9)은 유지된다. 그래서 정확한 정수 대신
+#   '>= 9 그리고 모듈 상수와 일치'로 검증한다(하위호환 — 버전 bump에 강건).
 # =====================================================================
 class TestSchemaAndPersistence:
-    def test_schema_version_is_9(self):
-        assert S.SCHEMA_VERSION == 9
+    def test_schema_version_at_least_9(self):
+        assert S.SCHEMA_VERSION >= 9
 
     def test_hypotheses_json_column_present(self, tmp_path):
         st = LoopState(db_path=str(tmp_path / "hv.db"), snapshot_dir=str(tmp_path / "s"))
         try:
             assert "hypotheses_json" in _cols(st)
-            assert st.get_schema_version() == 9
+            assert st.get_schema_version() == S.SCHEMA_VERSION
+            assert st.get_schema_version() >= 9
         finally:
             st.close()
 

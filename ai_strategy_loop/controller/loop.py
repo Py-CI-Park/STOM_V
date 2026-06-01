@@ -1239,6 +1239,23 @@ def run_loop(
                 # P2a — 직전 가정+이 세대 델타로 매긴 판정(토글 OFF면 None=NULL).
                 hypotheses_json=hypotheses_json,
             )
+            # O2 — 백테 시계열(누적수익곡선·일별손익·낙폭) 영속화. 토글 ON이고 결과
+            #   CSV가 있을 때만, 이미 디스크에 있는 CSV를 파싱(추가 백테 0회)해
+            #   equity_points에 다운샘플 영속한다. **파싱은 여기서(호출부) 하고 state엔
+            #   파싱된 series만 넘긴다**(state가 fitness를 import하지 않도록 레이어 분리).
+            #   토글 OFF면 전혀 호출하지 않아 동작이 byte-동일하다(하위호환). 파싱/영속
+            #   실패는 흡수한다(학습 보조 경로 — 루프를 막지 않는다).
+            if getattr(config, "equity_points_enabled", False) and outcome.csv_path:
+                try:
+                    from ai_strategy_loop.fitness.equity_series import parse_backtest_series  # noqa: PLC0415
+                    eq_csv = (outcome.csv_path if os.path.isabs(outcome.csv_path)
+                              else os.path.join(REPO_ROOT, outcome.csv_path))
+                    eq_series = parse_backtest_series(
+                        eq_csv, betting=getattr(config, "bt_betting", None)
+                    )
+                    st.record_equity_curve(rid, gen_no, eq_series)
+                except Exception as eq_err:  # noqa: BLE001 - 시계열 영속 실패는 흡수.
+                    print(f"[LOOP] equity_points 영속 실패(무시): {eq_err}", flush=True)
             print(f"[LOOP] graded={graded.graded:.6g} hard_composite={fit.score:.6g} "
                   f"calmar={fit.calmar:.4g} r2={fit.uptrend_r2:.4g} "
                   f"gate={fit.gate_passed} reason={fit.reason} "

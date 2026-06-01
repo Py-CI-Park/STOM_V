@@ -371,6 +371,17 @@ class LoopConfig:
     #   v1 자산이라 sha만 저장하고, user 전문은 동적이라 전문 저장한다(용량 가드).
     prompt_logging_enabled: bool = False
 
+    # --- 백테 시계열 영속화 (O2): 누적수익곡선·일별손익·낙폭을 loop_runs.db에 다운샘플 영속 ---
+    # 데이터 근거(P1b 감사): 백테 결과의 누적 수익곡선/일별손익/낙폭 시계열은 현재
+    #   거래 CSV 파일에만 있어 CSV가 지워지면 영구 소실된다. 이를 DB로 다운샘플 영속해
+    #   ①CSV 삭제 후에도 곡선 보존 ②AI가 SQL로 낙폭구간·레짐전환·세대간 곡선 비교를
+    #   분석하게 한다(후속 O1 대시보드 BacktestDetailChart가 같은 파서를 재사용).
+    # equity_points_enabled: True면 record_generation 직후 결과 CSV(이미 디스크에 있는
+    #   파일)를 parse_backtest_series로 읽어 시계열을 equity_points 테이블에 영속한다
+    #   (추가 백테 0회·읽기 전용). 기본 OFF면 이 영속이 평가조차 안 돼 동작이 기존과
+    #   byte-동일하다(하위호환). CSV 없음/파싱 실패는 no-op으로 흡수(루프 안 막음).
+    equity_points_enabled: bool = False
+
     # --- 가정(Hypothesis) 루프 코어 (P2a): 부검 방향성 예측을 1급 객체로 채택/기각 ---
     # 데이터 근거(§3.16-D 천장 의심): 부검(gate_failure_directive)은 이미 방향성 예측을
     #   만든다("MDD 초과→매도 손절강화", "손익 음수→진입품질↑", "거래 부족→진입완화").
