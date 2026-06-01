@@ -629,6 +629,20 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             except Exception as exc:  # noqa: BLE001 - 환류 산출 실패는 루프를 막지 않음.
                 logger.info("가정 환류 산출 실패(무시): %s", exc)
                 hyp_feedback = None
+        # few-shot 우수 전략 샘플 주입(#67): 토글 ON일 때만 검증된 통과/인간 study 전략을
+        #   K개 골라 생성 프롬프트에 주입한다(변수조합·필터 게이팅 구조 학습). select_exemplars는
+        #   무예외(실패 시 빈 리스트)라 루프를 막지 않고, 빈 리스트면 build_messages가 미주입해
+        #   동작이 byte-identical 하다(하위호환). OFF(기본)면 select_exemplars를 호출조차 안 한다.
+        few_shot: Optional[list] = None
+        if getattr(config, "few_shot_enabled", False):
+            from ai_strategy_loop.brain.exemplar_pool import select_exemplars  # noqa: PLC0415
+
+            few_shot = select_exemplars(
+                kind=kind,
+                timeframe=config.bt_timeframe,
+                k=getattr(config, "few_shot_k", 3),
+                source=getattr(config, "few_shot_source", "passing"),
+            ) or None
         res = generate_strategy(
             provider, kind, name, db,
             timeframe=config.bt_timeframe,
@@ -659,6 +673,9 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             # P2b-1 가정 환류 — prev_judged_hypotheses가 없으면(토글 OFF/직전 미판정)
             #   None이라 build_messages가 미주입해 동작 byte-identical(하위호환).
             hypothesis_feedback=hyp_feedback,
+            # few-shot 우수 전략 샘플(#67) — few_shot_enabled OFF(기본)면 위에서 None이라
+            #   build_messages가 미주입해 동작 byte-identical(하위호환).
+            few_shot_examples=few_shot,
             # 프롬프트 영속화(P1c) — 토글 OFF/state=None이면 None이라 무영향(byte-identical).
             #   buy/sell 두 호출 모두 같은 콜백을 받는다(kind는 레코드에 담긴다).
             on_prompt=on_prompt,

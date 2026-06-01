@@ -207,6 +207,25 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "help": "필터 범주 게이트 강제 ON일 때 매수 진입에 요구하는 최소 필터 범주 수(시드는 9). "
                     "높일수록 게이팅이 엄격해진다.",
         },
+        # 생성 few-shot 샘플 주입 (#67) — 검증된 우수 전략을 K개 프롬프트에 주입(구조 학습).
+        {
+            "name": "few_shot_enabled", "label": "few-shot 샘플 주입", "type": "bool",
+            "default": d.few_shot_enabled,
+            "help": "켜면 검증된 우수 전략(통과/인간 study) K개를 생성 프롬프트에 few-shot 코드로 "
+                    "주입해 변수조합·필터 게이팅 구조를 학습시킨다(변수값 복제는 금지하도록 명시). "
+                    "기본 OFF.",
+        },
+        {
+            "name": "few_shot_k", "label": "few-shot 샘플 수(K)", "type": "number",
+            "default": d.few_shot_k,
+            "help": "주입할 few-shot 샘플 최대 개수(토큰/다양성 균형, 3 권장). few-shot 주입 OFF면 무영향.",
+        },
+        {
+            "name": "few_shot_source", "label": "few-shot 출처", "type": "select",
+            "choices": ["passing", "seed_db"], "default": d.few_shot_source,
+            "help": "passing=루프 게이트 통과 전략, seed_db=운영 strategy.db 인간 study 전략(읽기 전용). "
+                    "few-shot 주입 OFF면 무영향.",
+        },
         # 프롬프트 영속화 (P1c) — LLM 호출별 프롬프트를 loop_runs.db에 기록(재현성).
         {
             "name": "prompt_logging_enabled", "label": "프롬프트 DB 영속화", "type": "bool",

@@ -169,6 +169,7 @@ def build_messages(
     encourage_time_dispersion: bool = False,
     require_filter_gates: bool = False,
     hypothesis_feedback: Optional[str] = None,
+    few_shot_examples: Optional[List[str]] = None,
 ) -> List[Dict[str, str]]:
     """OpenAI Chat Completions 메시지 리스트를 만든다.
 
@@ -218,6 +219,11 @@ def build_messages(
             autopsy_feedback 슬롯보다 **먼저(상위)** 주입돼 "이전에 틀린 방향" 경고가
             부검 피드백보다 우선 보이게 한다. None/빈 문자열이면 미주입되어 출력이
             기존과 byte-동일하다(하위호환). 호출부(controller.loop)가 토글 ON일 때만 채운다.
+        few_shot_examples: 검증된 우수 전략 few-shot 코드 샘플 리스트(#67). 주어지면
+            user 메시지 끝부분에 "구조/게이팅을 학습하되 변수값·조건을 그대로 복제하지
+            말라"는 헤더(§3.14 과적합 방지)와 함께 각 샘플을 코드펜스로 주입한다. 부검·
+            가드레일 슬롯과 조화시키되 중복 강조는 피한다. None이거나 빈 리스트면 미주입
+            되어 출력이 기존과 byte-동일하다(하위호환). 호출부가 토글 ON일 때만 채운다.
 
     Returns:
         [{"role": "system", ...}, {"role": "user", ...}] — 항상 system 포함.
@@ -447,6 +453,19 @@ def build_messages(
             "직전 백테스트 부검 피드백(개선 반영):",
             autopsy_feedback,
         ]
+
+    # few-shot 우수 전략 샘플(#67 — 선택, 호출부 토글 ON일 때만 채운다). 검증된
+    #   전략의 변수 조합·다중 필터 AND 게이팅 **구조**를 학습시키되, §3.14(시드 지문
+    #   과적합) 교훈에 따라 변수값·조건을 그대로 복제하지 말라고 명시한다. None/빈
+    #   리스트면 이 블록이 통째로 미추가되어 출력이 기존과 byte-동일하다(하위호환).
+    if few_shot_examples:
+        user_lines += [
+            "",
+            "아래는 검증된 우수 전략 예시다 — 변수조합·다중필터 AND 게이팅 구조를 "
+            "학습하되, 변수값·조건을 그대로 복제하지 말고 현재 목표에 맞게 새로 설계하라.",
+        ]
+        for ex in few_shot_examples:
+            user_lines.append(f"```python\n{ex}\n```")
 
     if prior_error:
         user_lines += [

@@ -360,6 +360,27 @@ class LoopConfig:
     #   (build_messages)이 보완한다. 둘은 짝(가르침+구조하한)으로 동작한다.
     min_filter_categories: int = 5
 
+    # --- 생성 few-shot 샘플 주입 (#67): 검증된 우수 전략을 K개 프롬프트에 주입 ---
+    # 사용자 아이디어(#67): 검증된 우수 전략(인간 study / 게이트 통과 조건식)을 AI 생성
+    #   프롬프트에 few-shot 샘플로 주면 LLM이 "변수 조합 + 다중 필터 AND 게이팅" 구조를
+    #   학습해 과발화/저빈도를 줄일 수 있다. 지금까지 시드(Tick_902)만 base_code(refine
+    #   출발점)로 주입됐고, 다양한 통과 전략 K개를 few-shot 코드로 주는 메커니즘은 없었다.
+    # 핵심 제약(§3.14): few-shot은 **구조 학습용**이지 맹목 복제용이 아니다. 프롬프트가
+    #   "구조/게이팅을 학습하되 변수값·조건을 그대로 베끼지 말라"고 명시하고, 다양성(정규화
+    #   해시) 중복 제거로 단일 시드 반복을 막으며, require_filter_gates/liquidity_gate reject
+    #   게이트는 그대로 유지한다(few-shot은 샘플 선택 전용 — 게이트를 우회하지 않는다).
+    # few_shot_enabled: True면 _generate_pair가 select_exemplars(kind/timeframe/k/source)로
+    #   few-shot 샘플을 골라 generate_strategy→build_messages에 주입한다. 기본 OFF면
+    #   샘플 선택·주입이 평가조차 안 돼 생성 프롬프트가 기존과 byte-동일하다(하위호환).
+    few_shot_enabled: bool = False
+    # few_shot_k: 주입할 few-shot 샘플 최대 개수. 토큰 비용/다양성 균형(3 권장). 0 이하면
+    #   사실상 비활성(select_exemplars가 빈 리스트). few_shot_enabled=False면 미사용(무영향).
+    few_shot_k: int = 3
+    # few_shot_source: 'passing'(기본) — loop_runs.db gate_passed 통과 전략 코드.
+    #                  'seed_db' — 운영 _database/strategy.db 인간 study 전략(읽기 전용).
+    #   few_shot_enabled=False면 미사용(무영향).
+    few_shot_source: str = "passing"  # 'passing' | 'seed_db'
+
     # --- 프롬프트 영속화 (P1c): LLM 호출별 프롬프트를 loop_runs.db에 기록 ---
     # 데이터 근거(재현성): 현재 LLM 호출별 프롬프트(system+user 메시지)가 어디에도
     #   저장되지 않고 완전 휘발한다(재현성 0). 어떤 프롬프트가 어떤 전략을 낳았는지
