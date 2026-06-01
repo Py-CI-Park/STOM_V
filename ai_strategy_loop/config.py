@@ -360,6 +360,17 @@ class LoopConfig:
     #   (build_messages)이 보완한다. 둘은 짝(가르침+구조하한)으로 동작한다.
     min_filter_categories: int = 5
 
+    # --- 프롬프트 영속화 (P1c): LLM 호출별 프롬프트를 loop_runs.db에 기록 ---
+    # 데이터 근거(재현성): 현재 LLM 호출별 프롬프트(system+user 메시지)가 어디에도
+    #   저장되지 않고 완전 휘발한다(재현성 0). 어떤 프롬프트가 어떤 전략을 낳았는지
+    #   사후에 추적·재현할 수 없다. 이를 옵트인 토글로 영속화한다.
+    # prompt_logging_enabled: True면 generate_strategy가 매 LLM 호출 성공 직후 그
+    #   프롬프트(system_sha + user 전문 + 주입 피처 + 토큰/응답 해시)를 loop_runs.db의
+    #   prompts 테이블에 기록한다. 기본 OFF면 콜백이 None으로 전달돼 프롬프트 로깅이
+    #   평가조차 안 되므로 동작이 기존과 byte-동일하다(하위호환). system 전문은 정적
+    #   v1 자산이라 sha만 저장하고, user 전문은 동적이라 전문 저장한다(용량 가드).
+    prompt_logging_enabled: bool = False
+
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":
         """dict에서 LoopConfig 생성. 알 수 없는 키는 무시한다."""

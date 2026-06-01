@@ -22,7 +22,7 @@ NOTE on ordering: compile + token_check + dedup이 PRE-SAVE 게이트다. dry_ru
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 from . import token_check
 from .liquidity_gate import has_liquidity_gate
@@ -73,6 +73,7 @@ def generate_strategy(
     encourage_time_dispersion: bool = False,
     require_filter_gates: bool = False,
     min_filter_categories: int = 5,
+    on_prompt: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
     """LLM으로 STOM 전략을 생성하고 게이트 통과 시 DB에 저장한다.
 
@@ -116,6 +117,9 @@ def generate_strategy(
             기본 False면 이 검사·프롬프트가 평가조차 안 돼 동작이 기존과 byte-동일하다.
         min_filter_categories: require_filter_gates=True일 때 요구하는 최소 필터 범주 수.
             시드는 9개 범주를 충족한다. require_filter_gates=False면 미사용(무영향).
+        on_prompt: LLM 호출이 성공한 직후 그 프롬프트 레코드(dict)를 받는 선택적
+            콜백(P1c 프롬프트 영속화). None이면 호출되지 않아 동작이 byte-identical
+            하다(로깅 안 함=기존과 동일). 예외는 콜백 내부에서 흡수해 루프를 막지 않는다.
 
     Returns:
         성공: {status: 'ok', name, code, attempts, usage}
@@ -164,6 +168,43 @@ def generate_strategy(
 
         text = getattr(result, "text", "") or ""
         last_usage = _usage_to_dict(getattr(result, "usage", None))
+
+        # --- 1b) 프롬프트 영속화 콜백 (P1c) — LLM 호출 성공 직후, 가공 전 시점 ---
+        #   on_prompt가 None(기본)이면 이 블록은 호출조차 안 돼 동작이 byte-identical
+        #   하다(로깅 안 함=기존과 동일). prior_error는 **이번 attempt에 입력된** 값을
+        #   로깅한다(루프 끝에서 갱신되기 전 시점이라 이번 호출의 입력 컨텍스트가 맞음).
+        #   콜백 예외는 흡수한다 — 로깅 실패가 생성/루프를 막아선 안 된다.
+        if on_prompt is not None:
+            try:
+                sys_text = next(
+                    (m.get("content", "") for m in messages if m.get("role") == "system"), ""
+                )
+                usr_text = next(
+                    (m.get("content", "") for m in messages if m.get("role") == "user"), ""
+                )
+                on_prompt({
+                    "kind": kind, "attempt": attempt,
+                    "system_text": sys_text, "user_text": usr_text,
+                    "injected_features": {
+                        "timeframe": timeframe,
+                        "has_base_code": base_code is not None,
+                        "has_crossover": crossover_parents is not None,
+                        "has_meta_seed": meta_seed is not None,
+                        "dispersion_prompt_enabled": dispersion_prompt_enabled,
+                        "require_liquidity_gate": require_liquidity_gate,
+                        "mdd_control_enabled": mdd_control_enabled,
+                        "encourage_time_dispersion": encourage_time_dispersion,
+                        "require_filter_gates": require_filter_gates,
+                        "target_daily_trades": target_daily_trades,
+                        "min_filter_categories": min_filter_categories,
+                    },
+                    "prior_error": prior_error,
+                    "model": getattr(result, "model", None),
+                    "usage": last_usage,
+                    "response_text": getattr(result, "text", "") or "",
+                })
+            except Exception as _e:
+                logger.info("prompt 로깅 실패(무시): %s", _e)
 
         # --- 2) 코드 추출 ---
         code = extract_code(text)

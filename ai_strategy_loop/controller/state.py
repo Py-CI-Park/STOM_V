@@ -13,6 +13,7 @@ resume 계약: 같은 run_id를 다시 열면 마지막 완료 세대 다음부�
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import sqlite3
@@ -36,7 +37,10 @@ LOOP_RUNS_DB = _STATE_DIR / "loop_runs.db"
 #     v5: payoff_ratio(손익비), give_back_rate(기회 반납률) 추가 — 청산 품질 대시보드 노출.
 #     v6: dispersion_term(다종목 분산 보상항), max_hold_count(최대 동시보유 종목 수) 추가
 #         — R8 품질지표 LIVE 노출(GradedResult에서 전파). calmar/uptrend_r2는 v1부터 존재.
-SCHEMA_VERSION = 6
+#     v7: prompts 테이블 신규(generations 컬럼 변경 없음) — P1c 프롬프트 영속화(재현성).
+#         LLM 호출별 프롬프트(system 해시+user 전문+주입 피처+토큰/응답 해시)를 옵트인
+#         토글로 기록. CREATE TABLE IF NOT EXISTS라 구버전 DB도 안전(하위호환).
+SCHEMA_VERSION = 7
 
 # US-007 — 루프↔대시보드 라이브 상태 파일 + 정지 플래그 파일.
 #   current_state.json : 루프가 매 세대/백테스트 시점에 atomic write 하는
@@ -109,6 +113,25 @@ class LoopState:
                 key   TEXT PRIMARY KEY,
                 value TEXT
             );
+            CREATE TABLE IF NOT EXISTS prompts (
+                prompt_id    INTEGER PRIMARY KEY AUTOINCREMENT,
+                run_id       TEXT,
+                gen_no       INTEGER,
+                kind         TEXT,
+                attempt      INTEGER,
+                system_sha   TEXT,
+                user_text    TEXT,
+                user_sha     TEXT,
+                injected_features TEXT,
+                prior_error  TEXT,
+                model        TEXT,
+                prompt_tokens     INTEGER,
+                completion_tokens INTEGER,
+                total_tokens INTEGER,
+                response_sha TEXT,
+                created_at   REAL
+            );
+            CREATE INDEX IF NOT EXISTS idx_prompts_run_gen ON prompts(run_id, gen_no);
             """
         )
         self._migrate_schema()
@@ -301,6 +324,67 @@ class LoopState:
             "dispersion_term": float(dispersion_term),
             "max_hold_count": float(max_hold_count),
         })
+
+    def record_prompt(
+        self,
+        run_id: str,
+        gen_no: int,
+        kind: str,
+        attempt: int,
+        *,
+        system_text: str = "",
+        user_text: str = "",
+        injected_features: Optional[Dict[str, Any]] = None,
+        prior_error: Optional[str] = None,
+        model: Optional[str] = None,
+        prompt_tokens: int = 0,
+        completion_tokens: int = 0,
+        total_tokens: int = 0,
+        response_text: str = "",
+    ) -> None:
+        """한 LLM 호출의 프롬프트를 prompts 테이블에 기록한다 (P1c 프롬프트 영속화).
+
+        재현성: 현재 호출별 프롬프트가 휘발해 어떤 프롬프트가 어떤 전략을 낳았는지
+        사후에 추적할 수 없다. generate_strategy가 매 LLM 호출 성공 직후 콜백으로
+        이 메서드를 호출해 프롬프트를 영속한다(config.prompt_logging_enabled=ON일 때만).
+
+        system 전문은 정적 v1 자산이라 sha만 저장하고(system_sha), user 전문은
+        동적이라 전문 저장한다(user_text + user_sha; 용량 가드). injected_features는
+        json으로 직렬화해 저장한다(어떤 피처/토글이 이 프롬프트에 주입됐는지).
+        sha는 hashlib.sha256(UTF-8)으로 계산하며 빈 문자열도 안전하다. 예외는
+        삼키지 않는다 — 호출측(콜백 try/except)이 처리한다(로깅 실패가 루프를
+        막지 않도록).
+        """
+        system_sha = hashlib.sha256((system_text or "").encode("utf-8")).hexdigest()
+        user_sha = hashlib.sha256((user_text or "").encode("utf-8")).hexdigest()
+        response_sha = hashlib.sha256((response_text or "").encode("utf-8")).hexdigest()
+        features_json = (
+            json.dumps(injected_features, ensure_ascii=False)
+            if injected_features is not None
+            else None
+        )
+        self._con.execute(
+            "INSERT INTO prompts "
+            "(run_id, gen_no, kind, attempt, system_sha, user_text, user_sha, "
+            " injected_features, prior_error, model, prompt_tokens, completion_tokens, "
+            " total_tokens, response_sha, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                run_id, int(gen_no), kind, int(attempt),
+                system_sha, user_text, user_sha,
+                features_json, prior_error, model,
+                int(prompt_tokens), int(completion_tokens), int(total_tokens),
+                response_sha, _now(),
+            ),
+        )
+        self._con.commit()
+
+    def get_prompts(self, run_id: str) -> List[Dict[str, Any]]:
+        """이 run의 모든 프롬프트 기록을 prompt_id 순으로 반환한다 (재현/조회용)."""
+        rows = self._con.execute(
+            "SELECT * FROM prompts WHERE run_id = ? ORDER BY prompt_id", (run_id,)
+        ).fetchall()
+        return [dict(r) for r in rows]
 
     def update_best(self, run_id: str, best_gen: int, best_score: float) -> None:
         """run의 best_gen/best_score를 갱신한다 (더 높은 점수일 때만)."""

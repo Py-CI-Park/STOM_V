@@ -207,4 +207,11 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "help": "필터 범주 게이트 강제 ON일 때 매수 진입에 요구하는 최소 필터 범주 수(시드는 9). "
                     "높일수록 게이팅이 엄격해진다.",
         },
+        # 프롬프트 영속화 (P1c) — LLM 호출별 프롬프트를 loop_runs.db에 기록(재현성).
+        {
+            "name": "prompt_logging_enabled", "label": "프롬프트 DB 영속화", "type": "bool",
+            "default": d.prompt_logging_enabled,
+            "help": "켜면 매 LLM 호출의 프롬프트(system 해시+user 전문+주입 피처+토큰/응답 해시)를 "
+                    "loop_runs.db prompts 테이블에 기록해 사후 재현을 가능하게 한다. 기본 OFF.",
+        },
     ]

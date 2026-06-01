@@ -522,7 +522,8 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
                    base_buy_code: Optional[str] = None,
                    base_sell_code: Optional[str] = None,
                    meta_seed: Optional[str] = None,
-                   freeze_buy: bool = False) -> Dict[str, Any]:
+                   freeze_buy: bool = False,
+                   state: Optional[LoopState] = None) -> Dict[str, Any]:
     """이 세대의 buy + sell 전략을 생성/저장한다.
 
     Args:
@@ -541,6 +542,10 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             None이면 무시하고 기존대로 buy도 생성한다(안전 폴백). 또한 freeze_buy면
             sell 피드백 앞에 청산-전용 개선 지시를 한 줄 결합한다(원본 변형 안 함).
             기본 False(하위호환).
+        state: 프롬프트 영속화(P1c)용 LoopState. config.prompt_logging_enabled가
+            True이고 state가 주어졌을 때만, 각 generate_strategy 호출에 on_prompt
+            콜백을 연결해 LLM 호출별 프롬프트를 prompts 테이블에 기록한다. None이거나
+            토글 OFF면 콜백을 만들지 않아 생성 경로가 byte-identical 하다(하위호환).
 
     Returns:
         {"status": "ok", "buy_name", "sell_name", "tokens"} 또는
@@ -553,6 +558,26 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
     buy_name = f"AILOOP_{run_id}_g{gen_no}_buy"
     sell_name = f"AILOOP_{run_id}_g{gen_no}_sell"
     dedup = DedupTracker(k=5)
+
+    # 프롬프트 영속화(P1c) — 토글 ON + state 보유 시에만 콜백을 만든다. OFF/state=None이면
+    #   on_prompt=None으로 두어 generate_strategy 동작이 byte-identical 하다(하위호환).
+    #   콜백은 generator가 넘긴 레코드 dict를 state.record_prompt 인자로 매핑한다.
+    on_prompt = None
+    if getattr(config, "prompt_logging_enabled", False) and state is not None:
+        def on_prompt(rec):
+            u = rec.get("usage") or {}
+            state.record_prompt(
+                run_id, gen_no, rec["kind"], rec["attempt"],
+                system_text=rec.get("system_text", ""),
+                user_text=rec.get("user_text", ""),
+                injected_features=rec.get("injected_features"),
+                prior_error=rec.get("prior_error"),
+                model=rec.get("model"),
+                prompt_tokens=u.get("prompt_tokens", 0),
+                completion_tokens=u.get("completion_tokens", 0),
+                total_tokens=u.get("total_tokens", 0),
+                response_text=rec.get("response_text", ""),
+            )
 
     # 타깃 처방: base_buy_code가 있을 때만 매수 동결을 발동한다(없으면 안전 폴백).
     do_freeze_buy = bool(freeze_buy and base_buy_code)
@@ -613,6 +638,9 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             #   동작 byte-동일(하위호환).
             require_filter_gates=getattr(config, "require_filter_gates", False),
             min_filter_categories=getattr(config, "min_filter_categories", 5),
+            # 프롬프트 영속화(P1c) — 토글 OFF/state=None이면 None이라 무영향(byte-identical).
+            #   buy/sell 두 호출 모두 같은 콜백을 받는다(kind는 레코드에 담긴다).
+            on_prompt=on_prompt,
         )
         if res.get("status") != "ok":
             return {"status": "error", "reason": f"{kind} 생성 실패: {res.get('reason')}"}
@@ -983,6 +1011,11 @@ def run_loop(
                     gen_kwargs["freeze_buy"] = True
                     print(f"[LOOP] freeze_buy=ON (best gen{best_gen} MDD-only: "
                           f"매수 동결·매도만 재생성)", flush=True)
+                # 프롬프트 영속화(P1c): 토글 ON일 때만 state를 _generate_pair로 넘겨
+                #   프롬프트 로깅 콜백을 활성화한다. OFF(기본)면 state 키를 넣지 않아
+                #   _generate_pair 호출 시그니처가 기존과 byte-identical 하다(하위호환).
+                if getattr(config, "prompt_logging_enabled", False):
+                    gen_kwargs["state"] = st
                 gen_res = _generate_pair(
                     provider, config, rid, gen_no, next_autopsy_feedback,
                     **gen_kwargs,
