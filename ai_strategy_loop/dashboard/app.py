@@ -639,6 +639,101 @@ def _strategy_code_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
     }
 
 
+def _run_state_payload(run_id: str) -> Dict[str, Any]:
+    """과거(또는 현재) run의 전체 LoopState payload를 DB에서 재구성한다(읽기 전용·무예외).
+
+    #65 P0 — run 셀렉터용. 대시보드 라이브 상태(current_state.json)는 한 번에 하나의
+    run만 보여주고, 에이전트 테스트가 합성 run('segrun')을 그 파일에 쓰면 화면이 오염된다.
+    이 엔드포인트는 loop_runs.db의 runs+generations에서 임의 run을 통째로 재구성하므로,
+    사용자가 라이브 오염과 무관하게 실제 run(reframe1 등)을 골라 브라우징할 수 있다.
+
+    재구성:
+      - generations 행을 읽어 summary(best/winner)를 만든다.
+          best   = graded(score) 최고 세대.
+          winner = 하드게이트 통과 세대 중 score 최고(없으면 None).
+        이는 lineage._summarize_run의 우승 선택 규칙과 동일하나, to_loop_state가
+        소비하는 평탄 키(best_gen/best_score/best_buy/best_sell, winner_*)로 만든다.
+      - runs.config_json에서 LoopConfig를 복원해 provider/bt_timeframe/active_config를 채운다.
+      - to_loop_state(summary, gens, config=cfg, status='complete', current_gen=len-1)로 빌드.
+    status='complete'는 과거 run의 정적 스냅샷이라는 의미다(라이브 진행이 아님).
+
+    DB 부재/없는 run/조회 실패는 idle_state로 표준화한다(무예외 — 대시보드가 빈 상태 표시).
+    엔진/하드게이트/CSV 무수정. 추가 백테 0회(DB 조회만).
+    """
+    from ai_strategy_loop.config import LoopConfig  # noqa: PLC0415
+    from ai_strategy_loop.controller.state import LoopState, to_loop_state  # noqa: PLC0415
+
+    if not run_id:
+        return C.idle_state().model_dump()
+
+    st: Optional[LoopState] = None
+    run_row: Optional[Dict[str, Any]] = None
+    gens: list = []
+    try:
+        st = LoopState()
+        run_row = st.get_run(run_id)
+        gens = st.get_generations(run_id)
+    except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 idle(무예외).
+        return C.idle_state().model_dump()
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    # 없는 run(행도 세대도 없음) → idle(무예외 계약).
+    if run_row is None and not gens:
+        return C.idle_state().model_dump()
+
+    # config_json에서 LoopConfig 복원(provider/bt_timeframe/active_config 채움). 실패는 None.
+    cfg: Any = None
+    cfg_json = (run_row or {}).get("config_json")
+    if cfg_json:
+        try:
+            cfg = LoopConfig.from_dict(json.loads(cfg_json))
+        except (ValueError, TypeError):
+            cfg = None
+
+    # best = graded(score) 최고 세대(점수 None은 제외). 동률은 gen_no 큰 쪽(최신).
+    best_row: Optional[Dict[str, Any]] = None
+    for g in gens:
+        if g.get("score") is None:
+            continue
+        if best_row is None or float(g.get("score") or 0.0) >= float(best_row.get("score") or 0.0):
+            best_row = g
+    # winner = 하드게이트 통과 세대 중 score 최고(없으면 None). 동률은 gen_no 큰 쪽.
+    winner_row: Optional[Dict[str, Any]] = None
+    for g in gens:
+        if not bool(g.get("gate_passed")):
+            continue
+        if winner_row is None or float(g.get("score") or 0.0) >= float(winner_row.get("score") or 0.0):
+            winner_row = g
+
+    summary: Dict[str, Any] = {
+        "run_id": run_id,
+        "best_gen": (int(best_row.get("gen_no", -1)) if best_row is not None else -1),
+        "best_score": (float(best_row.get("score")) if best_row and best_row.get("score") is not None else None),
+        "best_buy": (best_row.get("buy_name") if best_row is not None else None),
+        "best_sell": (best_row.get("sell_name") if best_row is not None else None),
+        "winner_gen": (int(winner_row.get("gen_no", -1)) if winner_row is not None else -1),
+        "winner_score": (
+            float(winner_row.get("score")) if winner_row and winner_row.get("score") is not None else None
+        ),
+        "winner_buy": (winner_row.get("buy_name") if winner_row is not None else None),
+        "winner_sell": (winner_row.get("sell_name") if winner_row is not None else None),
+    }
+
+    try:
+        snapshot = to_loop_state(
+            summary, gens, config=cfg, status="complete",
+            current_gen=(len(gens) - 1 if gens else -1),
+        )
+        return snapshot.model_dump()
+    except Exception:  # noqa: BLE001 - 빌드 실패도 idle로 표준화(무예외 계약).
+        return C.idle_state().model_dump()
+
+
 def _backtest_detail_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
     """한 세대의 백테 상세 시계열(일별손익·누적수익·낙폭)을 반환한다(읽기 전용, 무예외).
 
@@ -810,6 +905,17 @@ def create_app() -> FastAPI:
         조회 실패면 빈 목록을 돌려 대시보드가 깨지지 않게 한다(무예외 계약).
         """
         return _runs_payload(None)
+
+    @app.get("/run_state")
+    def run_state(run_id: str = "") -> Dict[str, Any]:
+        """과거(또는 현재) run의 전체 LoopState payload를 DB에서 재구성해 반환한다(#65 run 셀렉터).
+
+        쿼리: ?run_id=<run_id>. loop_runs.db의 runs+generations에서 그 run을 통째로
+        재구성한다(세대표·best/winner·코드뷰어가 그 run을 소비). 라이브 상태가 합성 run으로
+        오염돼도 사용자가 실제 run을 골라 본다. run_id 미지정/없는 run/조회 실패는 idle
+        상태로 표준화한다(무예외 — 대시보드가 빈 상태 표시). 읽기 전용·추가 백테 0회.
+        """
+        return _run_state_payload(run_id)
 
     @app.get("/generation_durations")
     def generation_durations(run_id: Optional[str] = None) -> Dict[str, Any]:

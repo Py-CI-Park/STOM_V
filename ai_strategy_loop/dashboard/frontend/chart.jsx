@@ -889,7 +889,7 @@ const {
   useCallback: useCallback_bd, useRef: useRef_bd, useMemo: useMemo_bd,
 } = React;
 
-function BacktestDetailChart({ baseUrl, wsStatus, state }) {
+function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
   const gens = (state && state.generations) || [];
   const runId = (state && state.run_id) || "";
   const isDemo = typeof window.isDemoSource === "function"
@@ -909,6 +909,11 @@ function BacktestDetailChart({ baseUrl, wsStatus, state }) {
   const [selGen, setSelGen] = useState_bd(null);
   // run/세대 목록이 바뀌면 선택을 기본값으로 재동기화(수동 선택 후 새 run 시작 대비).
   useEffect_bd(() => { setSelGen(defaultGen); }, [defaultGen, runId]);
+  // #65 P1 — 외부(세대표 '백테상세' 클릭)에서 선택 세대를 내려주면 내부 선택을 동기화한다.
+  //   externalSelGen이 null이면(미선택) 내부 선택/기본값을 그대로 쓴다(하위호환).
+  useEffect_bd(() => {
+    if (externalSelGen != null) setSelGen(externalSelGen);
+  }, [externalSelGen]);
   const genNo = selGen != null ? selGen : defaultGen;
 
   const [data, setData] = useState_bd(null);   // {run_id,gen_no,gate_passed,daily,cumulative,drawdown,summary}

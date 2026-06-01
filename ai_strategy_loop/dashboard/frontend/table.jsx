@@ -7,7 +7,7 @@ function fmtDaily(v) {
   return n.toFixed(2);
 }
 
-function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode }) {
+function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode, onSelectDetail }) {
   const [expanded, setExpanded] = useState_t(new Set());
 
   const rows = useMemo_t(() => {
@@ -56,6 +56,7 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
               <th style={{ width: 120 }}>수익금</th>
               <th>사유 / 전략 요지</th>
               <th style={{ width: 60, textAlign: "center" }}>코드</th>
+              <th style={{ width: 76, textAlign: "center" }}>백테상세</th>
             </tr>
           </thead>
           <tbody>
@@ -82,11 +83,12 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
                   {state.latest?.phase || "—"} · {state.latest?.last_checkpoint || ""}
                 </td>
                 <td></td>
+                <td></td>
               </tr>
             )}
             {rows.length === 0 && !running && (
               <tr>
-                <td colSpan="16" style={{ textAlign: "center", padding: 32, color: "var(--ink-3)" }}>
+                <td colSpan="17" style={{ textAlign: "center", padding: 32, color: "var(--ink-3)" }}>
                   아직 실행된 세대가 없습니다
                 </td>
               </tr>
@@ -166,6 +168,16 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
                             data-tip="매수/매도 조건식 코드 보기"
                             style={{ padding: "3px 8px", fontSize: 11 }}>
                       &lt;/&gt;
+                    </button>
+                  </td>
+                  {/* #65 P1 — 행의 백테상세 액션: BacktestDetailChart의 선택 세대를 이 gen으로
+                      동기화(드롭다운 재선택 제거). App의 selectedDetailGen을 올린다. */}
+                  <td style={{ textAlign: "center" }}>
+                    <button className="btn ghost sm"
+                            onClick={() => onSelectDetail && onSelectDetail(g.gen_no)}
+                            data-tip="이 세대를 백테 상세 차트에 표시"
+                            style={{ padding: "3px 8px", fontSize: 11 }}>
+                      📊
                     </button>
                   </td>
                 </tr>

@@ -8,11 +8,61 @@ function App() {
   const [pendingBase, setPendingBase] = useState_a(baseUrl);
   const [theme, setTheme] = useState_a(() => localStorage.getItem("stom_theme") || "dark");
 
-  const { state, health, wsStatus, configSpec, send, lastReply, reconnect } = useBackend(baseUrl);
+  const { state: liveState, health, wsStatus, configSpec, send, lastReply, reconnect } = useBackend(baseUrl);
 
   const [settingsOpen, setSettingsOpen] = useState_a(false);
   const [approvalOpen, setApprovalOpen] = useState_a(false);
   const [codeViewGen, setCodeViewGen] = useState_a(null); // gen object
+  // #65 P1 — 세대표 '백테상세' 클릭 시 BacktestDetailChart에 내려줄 선택 세대(드롭다운 대체).
+  const [selectedDetailGen, setSelectedDetailGen] = useState_a(null);
+
+  // #65 P0 — run 셀렉터. selectedRun이 null/''이면 LIVE(현재 state, WS), 아니면 그 run을
+  //   /run_state로 재구성해 본다. 라이브 state가 합성 run(segrun)으로 오염돼도 실 run을 골라
+  //   볼 수 있다. runList=드롭다운 목록(최신순), fetchedRunState=선택 run의 재구성 payload.
+  const [selectedRun, setSelectedRun] = useState_a("");        // "" = LIVE
+  const [runList, setRunList] = useState_a([]);                // [{run_id, ...}]
+  const [fetchedRunState, setFetchedRunState] = useState_a(null);
+
+  const isDemoSrc = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+
+  // run 목록 로드(GET /runs). 데모/연결 전이면 빈 목록. baseUrl 변경 시 재조회.
+  useEffect_a(() => {
+    if (isDemoSrc || !baseUrl) { setRunList([]); return; }
+    let cancelled = false;
+    fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(3000) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      .then(j => {
+        if (cancelled) return;
+        const runs = Array.isArray(j && j.runs) ? j.runs : [];
+        // 최신순(started_at 내림차순). started_at 없으면 뒤로.
+        runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
+        setRunList(runs);
+      })
+      .catch(() => { if (!cancelled) setRunList([]); });
+    return () => { cancelled = true; };
+  }, [baseUrl, isDemoSrc, liveState.run_id, liveState.status]);
+
+  // 선택 run의 state를 /run_state로 재구성해 가져온다(LIVE면 스킵). 30초 자동 새로고침.
+  const fetchRunState = useCallback_a(() => {
+    if (!selectedRun || isDemoSrc || !baseUrl) { setFetchedRunState(null); return; }
+    fetch(baseUrl + "/run_state?run_id=" + encodeURIComponent(selectedRun),
+          { signal: AbortSignal.timeout(4000) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      .then(j => setFetchedRunState(j))
+      .catch(() => setFetchedRunState(null));
+  }, [baseUrl, selectedRun, isDemoSrc]);
+
+  useEffect_a(() => {
+    if (!selectedRun) { setFetchedRunState(null); return; }
+    fetchRunState();
+    const id = setInterval(fetchRunState, 30000);
+    return () => clearInterval(id);
+  }, [fetchRunState, selectedRun]);
+
+  // effectiveState: 선택 run이 있고 그 state를 받아왔으면 그것을, 아니면 라이브 state를 쓴다.
+  //   모든 하위 패널(차트/테이블/카드/명전 등)은 이 effectiveState를 소비한다(기본 LIVE).
+  const state = (selectedRun && fetchedRunState) ? fetchedRunState : liveState;
 
   const running = state.status === "running" || state.status === "stopping";
 
@@ -117,6 +167,14 @@ function App() {
               <span>{pct.toFixed(1)}%</span>
             </div>
           </div>
+          {/* #65 P0 — run 셀렉터: LIVE(현재) 또는 과거 실 run을 골라 본다(라이브 오염 우회). */}
+          <RunSelector
+            runList={runList}
+            selectedRun={selectedRun}
+            onSelect={setSelectedRun}
+            onRefresh={fetchRunState}
+            disabled={isDemoSrc}
+          />
           <div style={{ display: "flex", gap: 8 }}>
             <button className="btn primary" onClick={() => setSettingsOpen(true)} disabled={running}>
               ▸ 시작
@@ -148,25 +206,21 @@ function App() {
               <ProfitChart state={state} targetPct={0} />
               <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id} />
               {/* O1 — 백테 상세(일별손익 막대 + 누적수익곡선): 선택 세대의 per-trade CSV 시계열 재현 */}
-              <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={state} />
+              {/* #65 P1 — externalSelGen: 세대표 '백테상세' 클릭이 선택 세대를 여기로 동기화 */}
+              <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={state}
+                                   externalSelGen={selectedDetailGen} />
               <QualityTrendChart state={state} />
               {/* 🏆 명예의 전당 — 인간 벤치마크(19전략) + AI 생성 통합(목표선 가시화) */}
               <HallOfFamePanel baseUrl={baseUrl} wsStatus={wsStatus} />
               <GenerationsTable state={state} mddCap={mddCap} minDailyTrades={minDailyTrades}
-                                onViewCode={(g) => setCodeViewGen(g)} />
+                                onViewCode={(g) => setCodeViewGen(g)}
+                                onSelectDetail={(genNo) => setSelectedDetailGen(genNo)} />
               {/* 운영·관찰: run 비교 콘솔(REST /runs, loop_runs.db 직접) */}
               <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
             </div>
             <aside style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <BestCard best={state.best} onViewCode={onViewCodeByGen} />
-              <WinnerCard winner={state.winner}
-                          onApprove={() => setApprovalOpen(true)}
-                          onViewCode={onViewCodeByGen} />
-              {/* R8 — 활성 설정/토글 스냅샷(LoopState.active_config) LIVE 노출 */}
-              <ActiveConfigPanel state={state} />
-              <CostPanel state={state} cap={50000} />
-              <FeedbackPanel state={state} />
-
+              {/* #65 P0 — 분석 클러스터를 판정 카드 위로(인과 순서: 분석→가정→개선이
+                  판정의 근거). 패널 자체 변경 없이 JSX 순서만 재배치. */}
               {/* ── 분석 패널 묶음 (P1~P5 live page_data 소비, demo 배지 규약) ── */}
               <SectionLabel text="진화 분석 · P1~P5" />
               {/* P2b-2 — 가정 루프(세운 가정+채택/기각 판정) 가시화. 판정된 가정이
@@ -177,6 +231,27 @@ function App() {
               <LineagePanel state={state} wsStatus={wsStatus} />
               <MetaPanel state={state} wsStatus={wsStatus} />
               <HoldoutPanel state={state} wsStatus={wsStatus} />
+
+              {/* ── 판정 카드(분석의 결론) ── */}
+              <SectionLabel text="판정 · Best / Winner" />
+              {/* #65 P1 — best.gen===winner.gen이면(게이트 통과한 best가 곧 winner) 한 카드로
+                  병합 표기(graded+score 동시). 다르면 기존 2카드(하위호환). */}
+              {(state.best && state.winner && state.best.gen === state.winner.gen) ? (
+                <MergedBestWinnerCard best={state.best} winner={state.winner}
+                                      onApprove={() => setApprovalOpen(true)}
+                                      onViewCode={onViewCodeByGen} />
+              ) : (
+                <>
+                  <BestCard best={state.best} onViewCode={onViewCodeByGen} />
+                  <WinnerCard winner={state.winner}
+                              onApprove={() => setApprovalOpen(true)}
+                              onViewCode={onViewCodeByGen} />
+                </>
+              )}
+              {/* R8 — 활성 설정/토글 스냅샷(LoopState.active_config) LIVE 노출 */}
+              <ActiveConfigPanel state={state} />
+              <CostPanel state={state} cap={50000} />
+              <FeedbackPanel state={state} />
             </aside>
           </div>
         </main>
@@ -294,6 +369,43 @@ function BaseUrlControl({ value, onChange, onApply, onReconnect }) {
              spellCheck={false} />
       <button className="btn ghost sm" onClick={onApply} data-tip="Base URL 적용 후 재연결">적용</button>
       <button className="btn ghost sm" onClick={onReconnect} data-tip="현재 URL로 재연결">↻</button>
+    </div>
+  );
+}
+
+// #65 P0 — run 셀렉터 드롭다운. 'LIVE(현재)' = 라이브 state(WS), 그 외 = 그 run을
+//   /run_state로 재구성해 본다. 라이브 state가 합성 run(segrun)으로 오염돼도 실 run을
+//   골라 브라우징할 수 있다. 기본 LIVE(value="").
+function RunSelector({ runList, selectedRun, onSelect, onRefresh, disabled }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 6,
+      background: "var(--bg-0)", border: "1px solid var(--line-1)",
+      borderRadius: 5, padding: "3px 6px",
+    }}>
+      <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", letterSpacing: ".08em" }}>RUN</span>
+      <select
+        value={selectedRun}
+        onChange={e => onSelect(e.target.value)}
+        disabled={disabled}
+        className="mono"
+        data-tip="볼 run 선택 — LIVE(현재) 또는 과거 실 run"
+        style={{
+          fontSize: 11, background: "var(--bg-1)", color: "var(--ink-0)",
+          border: "1px solid var(--line-2)", borderRadius: 5, padding: "3px 6px",
+          maxWidth: 200,
+        }}>
+        <option value="">LIVE(현재)</option>
+        {(runList || []).map(r => (
+          <option key={r.run_id} value={r.run_id}>
+            {r.run_id}{r.gate_passed_count > 0 ? " ✓" : ""}
+          </option>
+        ))}
+      </select>
+      {selectedRun && (
+        <button className="btn ghost sm" onClick={onRefresh} disabled={disabled}
+                data-tip="선택 run 새로고침">↻</button>
+      )}
     </div>
   );
 }

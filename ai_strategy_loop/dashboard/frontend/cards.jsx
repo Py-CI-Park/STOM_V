@@ -113,6 +113,63 @@ function WinnerCard({ winner, onApprove, onViewCode }) {
   );
 }
 
+// #65 P1 — Best/Winner 통합 카드. best.gen===winner.gen이면(게이트 통과한 best가
+//   곧 winner) 두 카드가 같은 세대를 중복 표기하므로 한 카드로 병합한다. graded(best)와
+//   score(winner)를 동시에 보여주고, 승인·코드보기 액션을 그대로 노출한다. App이 분기해
+//   호출한다(다르면 기존 BestCard+WinnerCard 2카드 유지=하위호환).
+function MergedBestWinnerCard({ best, winner, onApprove, onViewCode }) {
+  const gen = winner.gen;
+  return (
+    <div className="panel" style={{
+      borderColor: "rgba(165,148,255,0.35)",
+      background: "linear-gradient(180deg, rgba(165,148,255,0.06), var(--bg-1) 70%)",
+    }}>
+      <div className="panel-hd" style={{ background: "rgba(165,148,255,0.08)", borderBottom: "1px solid rgba(165,148,255,0.18)" }}>
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--violet)" }}></span>
+          🏆 Best = Winner — 게이트 통과 최고 세대
+        </div>
+        <span className="badge" style={{ color: "var(--violet)", borderColor: "rgba(165,148,255,0.32)", background: "rgba(165,148,255,0.08)" }}>
+          gen_{String(gen).padStart(2, "0")}
+        </span>
+      </div>
+      <div className="panel-bd">
+        {/* graded(best) + score(winner) 동시 표기 */}
+        <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginBottom: 4, flexWrap: "wrap" }}>
+          <span className="stat-value lg mono" style={{ color: "var(--teal)" }}>
+            {fmtScore(best.graded_score)}
+          </span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>graded</span>
+          <span className="stat-value mono" style={{ color: "var(--violet)", marginLeft: 6 }}>
+            {fmtScore(winner.score)}
+          </span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>winner_score</span>
+          <span className="pill gate-pass" style={{ marginLeft: "auto" }}>✓ 게이트</span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "12px 0 14px" }}>
+          <NameRow label="매수" value={winner.buy_name} />
+          <NameRow label="매도" value={winner.sell_name} />
+        </div>
+        {onViewCode && (
+          <button className="btn ghost sm" onClick={() => onViewCode(gen)}
+                  style={{ width: "100%", justifyContent: "center", marginBottom: 10 }}>
+            &lt;/&gt; 전체 코드 검토 — gen_{String(gen).padStart(2, "0")}
+          </button>
+        )}
+        <button className="btn primary lg" style={{ width: "100%", justifyContent: "center" }}
+                onClick={onApprove}>
+          <span>실전 전략으로 승인 · 내보내기</span>
+          <span style={{ fontSize: 12, opacity: 0.8 }}>→</span>
+        </button>
+        <p style={{ fontSize: 11, color: "var(--ink-2)", marginTop: 10, lineHeight: 1.55, textAlign: "center" }}>
+          승인 시 운영용 <span className="mono" style={{ color: "var(--ink-1)" }}>strategy.db</span>로 export됩니다.
+          취소할 수 없으니 신중히 진행하세요.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function NameRow({ label, value }) {
   return (
     <div style={{
@@ -214,4 +271,4 @@ function ApprovalDialog({ winner, onClose, onConfirm }) {
   );
 }
 
-Object.assign(window, { BestCard, WinnerCard, ApprovalDialog });
+Object.assign(window, { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog });
