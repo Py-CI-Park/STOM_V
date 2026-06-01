@@ -40,7 +40,8 @@ LOOP_RUNS_DB = _STATE_DIR / "loop_runs.db"
 #     v7: prompts 테이블 신규(generations 컬럼 변경 없음) — P1c 프롬프트 영속화(재현성).
 #         LLM 호출별 프롬프트(system 해시+user 전문+주입 피처+토큰/응답 해시)를 옵트인
 #         토글로 기록. CREATE TABLE IF NOT EXISTS라 구버전 DB도 안전(하위호환).
-SCHEMA_VERSION = 7
+#     v8: 부모 대비 숫자 델타 컬럼(P1b, diff_from_parent의 SQL 조회가능 형태) 추가.
+SCHEMA_VERSION = 8
 
 # US-007 — 루프↔대시보드 라이브 상태 파일 + 정지 플래그 파일.
 #   current_state.json : 루프가 매 세대/백테스트 시점에 atomic write 하는
@@ -151,6 +152,7 @@ class LoopState:
           - daily_avg_trades 누락(v4 이전) → 추가(빈도 게이트 주 기준).
           - payoff_ratio/give_back_rate 누락(v5 이전) → 추가(청산 품질 대시보드 노출).
           - dispersion_term/max_hold_count 누락(v6 이전) → 추가(R8 다종목 분산 LIVE 노출).
+          - d_graded..d_uptrend_r2 누락(v8 이전) → 추가(P1b 부모 대비 숫자 델타).
         새 컬럼은 모두 NULL/명시 기본이라 기존 행의 의미를 바꾸지 않는다(하위호환).
         """
         existing_cols = {row[1] for row in self._con.execute("PRAGMA table_info(generations)")}
@@ -171,6 +173,16 @@ class LoopState:
             #   max_hold_count는 DEFAULT 0.0으로 백필. 두 컬럼 모두 기존 행의 의미를 바꾸지 않는다.
             ("dispersion_term", "REAL DEFAULT 1.0"),
             ("max_hold_count", "REAL DEFAULT 0.0"),
+            # v8 — P1b 부모 대비 숫자 델타(diff_from_parent의 SQL 조회가능 형태).
+            #   DEFAULT 없음 → NULL. 부모 없는 세대(시드/gen0/fresh)·기존 행은 NULL(하위호환).
+            #   meta/analyze가 NL 빈도 대신 AVG/ORDER BY로 트렌드를 집계할 수 있다.
+            ("d_graded", "REAL"),
+            ("d_mdd", "REAL"),
+            ("d_trades", "REAL"),
+            ("d_profit", "REAL"),
+            ("d_daily_trades", "REAL"),
+            ("d_calmar", "REAL"),
+            ("d_uptrend_r2", "REAL"),
         ):
             if col not in existing_cols:
                 self._con.execute(f"ALTER TABLE generations ADD COLUMN {col} {decl}")
@@ -260,6 +272,13 @@ class LoopState:
         give_back_rate: float = 0.0,
         dispersion_term: float = 1.0,
         max_hold_count: float = 0.0,
+        d_graded: Optional[float] = None,
+        d_mdd: Optional[float] = None,
+        d_trades: Optional[float] = None,
+        d_profit: Optional[float] = None,
+        d_daily_trades: Optional[float] = None,
+        d_calmar: Optional[float] = None,
+        d_uptrend_r2: Optional[float] = None,
     ) -> None:
         """한 세대 결과를 기록한다 (UPSERT — 세대 번호 중복 없음).
 
@@ -278,14 +297,21 @@ class LoopState:
         부모 세대 번호와 부모 대비 변경 요약(NL)이다. 둘 다 None이면(예: gen0 시드,
         GA 미배선) NULL로 저장돼 기존 동작과 동일하다(하위호환). **전략 코드 전문은
         복제 저장하지 않는다** — 코드는 stockbuy/stocksell에 namespaced로 이미 존재.
+
+        d_graded..d_uptrend_r2: 부모 대비 숫자 델타(P1b). None이면 NULL(부모 없는
+        세대). diff_from_parent NL과 같은 값의 숫자형으로, SQL 집계(AVG/ORDER BY)를
+        가능케 한다.
         """
         self._con.execute(
             "INSERT OR REPLACE INTO generations "
             "(run_id, gen_no, buy_name, sell_name, status, score, calmar, uptrend_r2, "
             " gate_passed, reason, csv_path, trade_count, daily_avg_trades, mdd, profit, "
             " total_profit_pct, strategy_gist, parent_gen, diff_from_parent, "
-            " payoff_ratio, give_back_rate, dispersion_term, max_hold_count, created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " payoff_ratio, give_back_rate, dispersion_term, max_hold_count, "
+            " d_graded, d_mdd, d_trades, d_profit, d_daily_trades, d_calmar, d_uptrend_r2, "
+            " created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
+            "?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 run_id, gen_no, buy_name, sell_name, status, float(score),
                 float(calmar), float(uptrend_r2), 1 if gate_passed else 0,
@@ -295,6 +321,15 @@ class LoopState:
                 diff_from_parent,
                 float(payoff_ratio), float(give_back_rate),
                 float(dispersion_term), float(max_hold_count),
+                # P1b 부모 대비 숫자 델타. None이면 NULL(부모 없는 세대) — float()를
+                #   씌우지 않아 NULL을 0.0으로 바꾸지 않는다(부모 없음 ↔ 델타 0 구분).
+                (None if d_graded is None else float(d_graded)),
+                (None if d_mdd is None else float(d_mdd)),
+                (None if d_trades is None else float(d_trades)),
+                (None if d_profit is None else float(d_profit)),
+                (None if d_daily_trades is None else float(d_daily_trades)),
+                (None if d_calmar is None else float(d_calmar)),
+                (None if d_uptrend_r2 is None else float(d_uptrend_r2)),
                 _now(),
             ),
         )
@@ -323,6 +358,14 @@ class LoopState:
             "give_back_rate": float(give_back_rate),
             "dispersion_term": float(dispersion_term),
             "max_hold_count": float(max_hold_count),
+            # P1b 부모 대비 숫자 델타. None이면 그대로 None(JSON null) — 부모 없는 세대.
+            "d_graded": d_graded,
+            "d_mdd": d_mdd,
+            "d_trades": d_trades,
+            "d_profit": d_profit,
+            "d_daily_trades": d_daily_trades,
+            "d_calmar": d_calmar,
+            "d_uptrend_r2": d_uptrend_r2,
         })
 
     def record_prompt(

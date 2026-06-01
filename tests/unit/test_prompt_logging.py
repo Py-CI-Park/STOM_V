@@ -10,7 +10,7 @@ prompts 테이블에 기록하는 경로를 검증한다.
     system 전문은 미저장(system_sha만), user 전문은 저장된다.
   - on_prompt=None(기본) → 레코드 없음(byte-identical 경로). 그리고 config의
     prompt_logging_enabled 기본값이 False임을 확인한다.
-  - SCHEMA_VERSION == 7, prompts 테이블과 인덱스가 존재한다.
+  - SCHEMA_VERSION 현행(>=7), prompts 테이블과 인덱스가 존재한다.
 
 실DB/백테 미사용: tmp 경로 SQLite만 쓴다.
 """
@@ -210,13 +210,15 @@ def test_prompt_logging_default_disabled():
 
 
 # =====================================================================
-# 4) SCHEMA_VERSION == 7 + prompts 테이블/인덱스 존재.
+# 4) prompts 테이블/인덱스 존재 + 스키마 버전이 prompts 도입(v7) 이후.
+#    SCHEMA_VERSION은 이후 마이그레이션(v8 P1b 등)으로 증가하므로 ">=7"로 검증한다.
 # =====================================================================
-def test_schema_version_is_7_and_prompts_table_exists(tmp_path):
+def test_schema_has_prompts_table_and_current_version(tmp_path):
     st = LoopState(db_path=str(tmp_path / "v7.db"), snapshot_dir=str(tmp_path / "s"))
     try:
-        assert SCHEMA_VERSION == 7
-        assert st.get_schema_version() == 7
+        # prompts 테이블은 v7에 도입됐다 — 그 이후 버전이어야 한다.
+        assert SCHEMA_VERSION >= 7
+        assert st.get_schema_version() == SCHEMA_VERSION
         # prompts 테이블 존재.
         tables = {
             row[0]
@@ -264,7 +266,7 @@ def test_legacy_db_without_prompts_table_gets_it(tmp_path):
 
     st = LoopState(db_path=db, snapshot_dir=str(tmp_path / "s"))
     try:
-        assert st.get_schema_version() == 7
+        assert st.get_schema_version() == SCHEMA_VERSION
         tables = {
             row[0]
             for row in st._con.execute(

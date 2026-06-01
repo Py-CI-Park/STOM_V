@@ -37,7 +37,7 @@ import subprocess  # noqa: E402
 import sys  # noqa: E402
 import time  # noqa: E402
 from collections import deque  # noqa: E402
-from typing import Any, Callable, Deque, Dict, List, Optional  # noqa: E402
+from typing import Any, Callable, Deque, Dict, List, Optional, Tuple  # noqa: E402
 
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from cli.config import BacktestConfig  # noqa: E402
@@ -1144,13 +1144,17 @@ def run_loop(
             #   선택/리포트하므로). 하드 게이트 통과/사유는 별도 컬럼에 보존된다.
             # mdd/profit/gist도 함께 기록해 대시보드 세대 행이 실값을 표시한다.
             gen_gist = _strategy_gist(buy_name)
-            # P3 계보: 부모(parent_gen) 대비 지표 변경 요약(diff_from_parent)을 만든다.
-            #   부모 행을 DB에서 읽어 graded/MDD/거래/수익 델타를 한 줄 NL로 압축한다.
+            # P3 계보 + P1b 숫자 델타: 부모(parent_gen) 행을 1회 읽어 변경 요약(NL,
+            #   diff_from_parent)과 숫자 델타(d_graded..d_uptrend_r2)를 함께 만든다.
+            #   NL은 기존 포맷과 byte-identical, 숫자 델타는 SQL 집계(AVG/ORDER BY)용이다.
             #   코드 전문은 복제 저장하지 않는다(lineage.diff_generations가 namespaced 재조회).
-            diff_from_parent = _build_parent_diff(
+            diff_from_parent, parent_deltas = _build_parent_diff_and_deltas(
                 st, rid, parent_gen_for_record,
-                graded.graded, graded.mdd, fit.trade_count, graded.total_profit,
+                graded=graded.graded, mdd=graded.mdd, trade_count=fit.trade_count,
+                profit=graded.total_profit, daily_avg_trades=fit.daily_avg_trades,
+                calmar=fit.calmar, uptrend_r2=fit.uptrend_r2,
             )
+            _pd = parent_deltas or {}
             # P10 — 수익률(%)은 graded(GradedResult)에 없고 엔진 metrics에만 있다
             #   (total_profit_pct = '수익률합계'). profit(원)과 별개로 발행해 대시보드
             #   세대 이력/차트가 수익률을 표시한다. metrics 누락 시 0.0 폴백(무예외).
@@ -1172,6 +1176,14 @@ def run_loop(
                 give_back_rate=graded.give_back_rate,
                 dispersion_term=graded.dispersion_term,
                 max_hold_count=graded.max_hold_count,
+                # P1b — 부모 대비 숫자 델타(부모 없으면 _pd가 빈 dict → None=NULL).
+                d_graded=_pd.get("d_graded"),
+                d_mdd=_pd.get("d_mdd"),
+                d_trades=_pd.get("d_trades"),
+                d_profit=_pd.get("d_profit"),
+                d_daily_trades=_pd.get("d_daily_trades"),
+                d_calmar=_pd.get("d_calmar"),
+                d_uptrend_r2=_pd.get("d_uptrend_r2"),
             )
             print(f"[LOOP] graded={graded.graded:.6g} hard_composite={fit.score:.6g} "
                   f"calmar={fit.calmar:.4g} r2={fit.uptrend_r2:.4g} "
@@ -1382,6 +1394,27 @@ def _load_meta_seed() -> Optional[str]:
         return None
 
 
+def _fetch_parent_row(
+    st: LoopState,
+    rid: str,
+    parent_gen: Optional[int],
+) -> Optional[Dict[str, Any]]:
+    """부모(parent_gen) 세대 행을 DB에서 1회 조회한다(없으면 None).
+
+    P3 NL diff와 P1b 숫자 델타가 같은 부모 행을 공유해 DB 읽기를 한 번으로 묶는다.
+    parent_gen None/<0(루트 세대)이거나 조회 실패면 None을 돌려 호출부가 diff/델타를
+    건너뛴다(루프를 막지 않음). get_generations는 행 전체(score/mdd/trade_count/profit/
+    calmar/uptrend_r2/daily_avg_trades 포함)를 반환한다.
+    """
+    if parent_gen is None or parent_gen < 0:
+        return None
+    try:
+        rows = {int(g.get("gen_no", -1)): g for g in st.get_generations(rid)}
+    except Exception:  # noqa: BLE001 - 조회 실패는 diff 없이 진행(루프를 막지 않음).
+        return None
+    return rows.get(int(parent_gen))
+
+
 def _build_parent_diff(
     st: LoopState,
     rid: str,
@@ -1397,15 +1430,25 @@ def _build_parent_diff(
     델타를 압축한다. 코드 전문 비교는 lineage.diff_generations(namespaced 재조회)가
     on-demand로 한다 — 여기선 지표 변경 요약만 영속한다(복제 저장 회피).
     """
-    if parent_gen is None or parent_gen < 0:
-        return None
-    try:
-        rows = {int(g.get("gen_no", -1)): g for g in st.get_generations(rid)}
-    except Exception:  # noqa: BLE001 - 조회 실패는 diff 없이 진행(루프를 막지 않음).
-        return None
-    parent = rows.get(int(parent_gen))
+    parent = _fetch_parent_row(st, rid, parent_gen)
     if parent is None:
         return None
+    return _format_parent_diff_nl(parent, parent_gen, graded, mdd, trade_count, profit)
+
+
+def _format_parent_diff_nl(
+    parent: Dict[str, Any],
+    parent_gen: Optional[int],
+    graded: float,
+    mdd: float,
+    trade_count: int,
+    profit: float,
+) -> str:
+    """부모 행 + 현재 지표로 NL diff 한 줄을 만든다(_build_parent_diff와 동일 포맷).
+
+    포맷은 기존과 byte-identical이어야 한다(대시보드/메타가 의존). 분리한 이유는
+    P1b 숫자 델타 함수가 같은 부모 행을 재사용하면서 NL도 한 번에 만들기 위해서다.
+    """
 
     def _delta(cur: float, prev: float) -> str:
         d = cur - prev
@@ -1421,6 +1464,52 @@ def _build_parent_diff(
         f"MDD {_delta(mdd, p_mdd)} 거래 {_delta(trade_count, p_trades)} "
         f"손익 {_delta(profit, p_profit)}"
     )
+
+
+def _build_parent_diff_and_deltas(
+    st: LoopState,
+    rid: str,
+    parent_gen: Optional[int],
+    *,
+    graded: float,
+    mdd: float,
+    trade_count: int,
+    profit: float,
+    daily_avg_trades: float,
+    calmar: float,
+    uptrend_r2: float,
+) -> Tuple[Optional[str], Optional[Dict[str, float]]]:
+    """부모 행을 1회 조회해 NL diff(P3)와 숫자 델타(P1b)를 함께 만든다.
+
+    부모가 없으면(루트 세대/조회 실패) (None, None). NL 문자열은 기존 포맷과
+    byte-identical(_format_parent_diff_nl). 숫자 델타는 NL과 같은 값의 숫자형으로
+    SQL 집계(AVG/ORDER BY)를 가능케 한다. graded는 부모 'score' 컬럼과 비교(NL과
+    동일). 부모 값은 float(parent.get(키) or 0)로 안전 폴백한다.
+
+    호출부는 NL diff와 7개 델타를 한 번의 DB 읽기로 얻는다(NL과 델타를 별도 함수로
+    따로 부르면 get_generations가 두 번 실행되는 것을 회피).
+    """
+    parent = _fetch_parent_row(st, rid, parent_gen)
+    if parent is None:
+        return None, None
+    nl = _format_parent_diff_nl(parent, parent_gen, graded, mdd, trade_count, profit)
+    p_graded = float(parent.get("score", 0.0) or 0.0)
+    p_mdd = float(parent.get("mdd", 0.0) or 0.0)
+    p_trades = float(parent.get("trade_count", 0) or 0)
+    p_profit = float(parent.get("profit", 0.0) or 0.0)
+    p_daily = float(parent.get("daily_avg_trades", 0.0) or 0.0)
+    p_calmar = float(parent.get("calmar", 0.0) or 0.0)
+    p_uptrend = float(parent.get("uptrend_r2", 0.0) or 0.0)
+    deltas = {
+        "d_graded": graded - p_graded,
+        "d_mdd": mdd - p_mdd,
+        "d_trades": float(trade_count) - p_trades,
+        "d_profit": profit - p_profit,
+        "d_daily_trades": daily_avg_trades - p_daily,
+        "d_calmar": calmar - p_calmar,
+        "d_uptrend_r2": uptrend_r2 - p_uptrend,
+    }
+    return nl, deltas
 
 
 def _refresh_meta_insights(st: LoopState) -> None:
