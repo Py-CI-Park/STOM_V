@@ -603,6 +603,15 @@ def compute_graded_fitness(
             max_hold_count_val = None
     dispersion_term = _dispersion_term(max_hold_count_val, min_hold_symbols)
 
+    # 저장/표시용 동시보유 — dispersion 토글과 무관하게 엔진 실측 raw를 항상 싣는다(안전 변환).
+    #   비숫자(이론상) 입력은 0.0으로 흡수해 점수 경로 밖에서 예외가 새지 않게 한다.
+    try:
+        max_hold_count_display = (
+            float(max_hold_count_raw) if max_hold_count_raw is not None else 0.0
+        )
+    except (TypeError, ValueError):
+        max_hold_count_display = 0.0
+
     # P7 — 우승/선택 목표. gate-passed 분기의 그래디언트만 바꾼다(실패 분기 불변).
     #   기본 'risk_adjusted'면 기존 1.0+composite 그대로(하위호환).
     objective = str(getattr(config, "winner_objective", "risk_adjusted") or "risk_adjusted")
@@ -695,7 +704,10 @@ def compute_graded_fitness(
         payoff_ratio=(payoff_ratio_val if payoff_ratio_val is not None else 0.0),
         give_back_rate=(give_back_rate_val if give_back_rate_val is not None else 0.0),
         dispersion_term=(dispersion_term if dispersion_term is not None else 1.0),
-        max_hold_count=(max_hold_count_val if max_hold_count_val is not None else 0.0),
+        # 저장/표시용 LIVE 지표는 dispersion 토글과 무관하게 엔진 실측 raw를 항상 싣는다.
+        #   (dispersion_term 점수 가산만 max_hold_count_val=dispersion_enabled 게이트 유지.)
+        #   dispersion OFF인 run이 엔진 실측 동시보유 피크를 0으로 버리던 정보 손실 수정.
+        max_hold_count=max_hold_count_display,
         multiyear_stability_term=(
             multiyear_stability if multiyear_stability is not None else 1.0
         ),

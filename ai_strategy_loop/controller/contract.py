@@ -78,9 +78,11 @@ class GenerationInfo(BaseModel):
     daily_avg_trades: float = 0.0
     mdd: float = 0.0
     profit: float = 0.0  # 수익금(총 실현 손익, 원).
-    # P10 — 수익률(총수익률, %). 기존 profit(원)과 별개로 발행한다. 기본 0.0이라
-    #   이 값을 발행하지 않던 구 상태(state)도 그대로 검증 통과한다(하위호환).
-    total_profit_pct: float = 0.0
+    # P10 — 수익률(총수익률, %). 기존 profit(원)과 별개로 발행한다. 기본 None이라
+    #   이 값을 발행하지 않던 구 상태(state)·구 run·에러 세대(DB NULL)는 None으로 통과한다.
+    #   None은 '미측정'을 뜻하며, 프론트(table.jsx)가 NULL을 0%로 잘못 표시하지 않고
+    #   "—"로 구분 표시하도록 0.0 강제 폴백을 제거했다(정보 손실 수정).
+    total_profit_pct: Optional[float] = None
     strategy_gist: str = ""
     # 청산 품질 지표 — fitness/score.py GradedResult에서 전파. 기본 0.0이라
     #   이 값을 발행하지 않던 구 상태(state)도 그대로 검증 통과한다(하위호환).

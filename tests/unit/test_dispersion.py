@@ -225,3 +225,53 @@ def test_hard_gate_unchanged_by_dispersion():
     # 하드게이트는 max_hold_count를 보지 않는다 — 통과 여부는 빈도/MDD/수익만.
     assert fit.gate_passed is True
     assert fit.score > 0.0
+
+
+# ============================================================
+# (D) max_hold_count 저장/표시값은 토글 무관 raw(정보 손실 수정)
+# ============================================================
+
+def test_max_hold_count_stored_raw_when_dispersion_off():
+    """버그 수정: dispersion OFF여도 GradedResult.max_hold_count에 엔진 실측 raw를 싣는다.
+
+    엔진은 동시보유 피크(max_hold_count)를 항상 계산하지만, 기존 코드는 이 값을
+    dispersion_enabled=True일 때만 GradedResult에 실어, OFF(기본)인 모든 run이 실측
+    동시보유를 0.0으로 버렸다(정보 손실). 저장/표시용 필드는 토글과 무관하게 raw를
+    싣고, 점수 가산용 dispersion_term만 게이트(enabled)를 유지한다.
+    """
+    cfg = _config()
+    m = _metrics(30.0, 10.0, 50, 1_000_000, max_hold_count=2)
+    # OFF(명시) + 기본 호출 모두 — 표시값은 실측 2.0, dispersion_term은 중립 1.0.
+    off = compute_graded_fitness(m, _STEADY, cfg, dispersion_enabled=False)
+    default = compute_graded_fitness(m, _STEADY, cfg)
+    assert off.max_hold_count == 2.0            # 토글 OFF여도 실측값 보존.
+    assert default.max_hold_count == 2.0        # 기본 호출도 동일.
+    assert off.dispersion_term == 1.0           # 점수 가산항은 게이트로 중립.
+    assert default.dispersion_term == 1.0
+
+
+def test_max_hold_count_raw_does_not_change_graded():
+    """불변식: max_hold_count raw 노출은 graded 점수를 byte-동일하게 둔다.
+
+    graded는 dispersion_term만 사용하고 max_hold_count 필드는 직접 쓰지 않는다.
+    OFF에서 dispersion_term은 항상 중립(None→1.0이지만 base 평균에 미가산)이므로,
+    max_hold_count 키가 있든(2) 없든 graded는 동일해야 한다.
+    """
+    cfg = _config()
+    # 게이트-실패 분기(MDD 초과)에서도 max_hold_count 유무가 graded에 영향 없음.
+    m_with = _metrics(30.0, 60.0, 50, 1_000_000, max_hold_count=2)
+    m_without = _metrics(30.0, 60.0, 50, 1_000_000)  # 키 없음.
+    g_with = compute_graded_fitness(m_with, _STEADY, cfg, dispersion_enabled=False)
+    g_without = compute_graded_fitness(m_without, _STEADY, cfg, dispersion_enabled=False)
+    assert g_with.graded == g_without.graded     # graded byte-동일.
+    # 표시값만 갈린다: raw 있으면 2.0, 없으면 0.0(폴백).
+    assert g_with.max_hold_count == 2.0
+    assert g_without.max_hold_count == 0.0
+
+
+def test_max_hold_count_none_falls_back_to_zero():
+    """metrics에 max_hold_count 키가 없으면 표시값은 0.0 폴백(하위호환)."""
+    cfg = _config()
+    m = _metrics(30.0, 10.0, 50, 1_000_000)  # 키 없음.
+    g = compute_graded_fitness(m, _STEADY, cfg)
+    assert g.max_hold_count == 0.0

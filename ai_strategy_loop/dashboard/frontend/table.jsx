@@ -141,8 +141,8 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
                     {typeof g.give_back_rate === "number" ? (g.give_back_rate * 100).toFixed(1) + "%" : "—"}
                   </td>
                   <td className={`mono ${mddBad ? "num-neg" : ""}`}>{fmtPct(g.mdd)}</td>
-                  <td className={`mono ${g.total_profit_pct > 0 ? "num-pos" : g.total_profit_pct < 0 ? "num-neg" : "num-muted"}`}>
-                    {fmtPct(g.total_profit_pct)}
+                  <td className={`mono ${typeof g.total_profit_pct !== "number" ? "num-muted" : g.total_profit_pct > 0 ? "num-pos" : g.total_profit_pct < 0 ? "num-neg" : "num-muted"}`}>
+                    {typeof g.total_profit_pct === "number" ? fmtPct(g.total_profit_pct) : "—"}
                   </td>
                   <td className={`mono ${g.profit > 0 ? "num-pos" : g.profit < 0 ? "num-neg" : "num-muted"}`}>
                     {fmtMoney(g.profit)}

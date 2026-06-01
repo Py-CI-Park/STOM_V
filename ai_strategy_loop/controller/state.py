@@ -853,8 +853,14 @@ def to_loop_state(
             daily_avg_trades=float(g.get("daily_avg_trades", 0.0) or 0.0),
             mdd=float(g.get("mdd", 0.0) or 0.0),
             profit=float(g.get("profit", 0.0) or 0.0),
-            # P10 — 수익률(%). 구 DB 행(컬럼 없음)은 키가 없거나 NULL이라 0.0 폴백.
-            total_profit_pct=float(g.get("total_profit_pct", 0.0) or 0.0),
+            # P10 — 수익률(%). 구 DB 행(컬럼 없음)·구 run·에러 세대는 키가 없거나 NULL이다.
+            #   NULL을 0.0으로 강제하면 '미측정'과 '실제 0%'가 구분 불가해 대시보드가
+            #   손실 세대를 0%로 잘못 표시한다. None(미측정)은 그대로 전파하고, 값이
+            #   있으면(0.0 포함) float로 보존한다(정보 손실 수정).
+            total_profit_pct=(
+                None if g.get("total_profit_pct") is None
+                else float(g.get("total_profit_pct"))
+            ),
             strategy_gist=str(g.get("strategy_gist", "") or ""),
             # 청산 품질. 구 DB 행(v5 이전)은 키가 없거나 NULL이라 0.0 폴백.
             payoff_ratio=float(g.get("payoff_ratio", 0.0) or 0.0),

@@ -46,10 +46,12 @@ def _cols(con, table):
 # 1) GenView(GenerationInfo) 수익률 필드 + 하위호환.
 # =====================================================================
 class TestGenViewProfitPct:
-    def test_generation_info_has_total_profit_pct_default_zero(self):
-        # 기본 0.0 — 발행 안 하던 구 상태도 그대로 검증 통과(하위호환).
+    def test_generation_info_total_profit_pct_default_none(self):
+        # 기본 None('미측정') — 발행 안 하던 구 상태/에러 세대는 None으로 통과한다.
+        #   NULL을 0.0으로 강제하면 '미측정'과 '실제 0%'가 구분 불가해 대시보드가
+        #   손실 세대를 0%로 잘못 표시한다(정보 손실). None은 프론트가 "—"로 표시.
         gi = C.GenerationInfo(gen_no=0)
-        assert gi.total_profit_pct == 0.0
+        assert gi.total_profit_pct is None
 
     def test_generation_info_total_profit_pct_serializes(self):
         gi = C.GenerationInfo(gen_no=1, total_profit_pct=12.5, profit=200000.0)
@@ -72,12 +74,13 @@ class TestGenViewProfitPct:
         assert revalidated.generations[1].total_profit_pct == 8.0
 
     def test_v2_payload_without_profit_pct_still_validates(self):
-        # 하위호환: total_profit_pct 없는 구 GenView 페이로드 → 기본 0.0.
+        # 하위호환: total_profit_pct 없는 구 GenView 페이로드 → 기본 None('미측정').
+        #   0.0 강제 폴백 제거 — 미측정과 실제 0%를 구분(프론트 "—" 표시).
         gi = C.GenerationInfo.model_validate({
             "gen_no": 2, "status": "ok", "graded_score": 1.4,
             "gate_passed": True, "trade_count": 30, "mdd": 12.0, "profit": 90000.0,
         })
-        assert gi.total_profit_pct == 0.0
+        assert gi.total_profit_pct is None
         assert gi.profit == 90000.0
 
 
