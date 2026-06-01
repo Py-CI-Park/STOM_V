@@ -523,6 +523,7 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
                    base_sell_code: Optional[str] = None,
                    meta_seed: Optional[str] = None,
                    freeze_buy: bool = False,
+                   prev_judged_hypotheses: Optional[list] = None,
                    state: Optional[LoopState] = None) -> Dict[str, Any]:
     """이 세대의 buy + sell 전략을 생성/저장한다.
 
@@ -542,6 +543,11 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             None이면 무시하고 기존대로 buy도 생성한다(안전 폴백). 또한 freeze_buy면
             sell 피드백 앞에 청산-전용 개선 지시를 한 줄 결합한다(원본 변형 안 함).
             기본 False(하위호환).
+        prev_judged_hypotheses: 직전 세대에서 판정된(judged) 가정 목록(P2b-1). 주어지면
+            side별 환류 문자열(format_hypothesis_feedback)을 만들어 buy/sell 생성 프롬프트에
+            주입한다 — 특히 **기각** 가정을 강조해 빗나간 방향 반복을 막는다. 호출부는
+            토글 ON일 때만 이 인자를 채운다(OFF면 None이라 미주입=byte-identical). None이면
+            generate_strategy에 hypothesis_feedback=None이 가 byte-동일하다(하위호환).
         state: 프롬프트 영속화(P1c)용 LoopState. config.prompt_logging_enabled가
             True이고 state가 주어졌을 때만, 각 generate_strategy 호출에 on_prompt
             콜백을 연결해 LLM 호출별 프롬프트를 prompts 테이블에 기록한다. None이거나
@@ -611,6 +617,18 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
         feedback = sell_fb if kind == "sell" else autopsy_feedback
         # kind별 출발점 코드(있으면 점진 개선, 없으면 fresh 생성).
         base_code = base_sell_code if kind == "sell" else base_buy_code
+        # P2b-1 가정 환류: 직전 세대 판정 가정을 side별 환류 문자열로 만들어 주입한다.
+        #   prev_judged_hypotheses는 호출부가 토글 ON일 때만 채운다(OFF면 None →
+        #   hypothesis_feedback=None → byte-identical). 산출 실패는 흡수(학습 보조 경로).
+        hyp_feedback: Optional[str] = None
+        if prev_judged_hypotheses:
+            try:
+                from ai_strategy_loop.autopsy import format_hypothesis_feedback  # noqa: PLC0415
+
+                hyp_feedback = format_hypothesis_feedback(prev_judged_hypotheses, kind) or None
+            except Exception as exc:  # noqa: BLE001 - 환류 산출 실패는 루프를 막지 않음.
+                logger.info("가정 환류 산출 실패(무시): %s", exc)
+                hyp_feedback = None
         res = generate_strategy(
             provider, kind, name, db,
             timeframe=config.bt_timeframe,
@@ -638,6 +656,9 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             #   동작 byte-동일(하위호환).
             require_filter_gates=getattr(config, "require_filter_gates", False),
             min_filter_categories=getattr(config, "min_filter_categories", 5),
+            # P2b-1 가정 환류 — prev_judged_hypotheses가 없으면(토글 OFF/직전 미판정)
+            #   None이라 build_messages가 미주입해 동작 byte-identical(하위호환).
+            hypothesis_feedback=hyp_feedback,
             # 프롬프트 영속화(P1c) — 토글 OFF/state=None이면 None이라 무영향(byte-identical).
             #   buy/sell 두 호출 모두 같은 콜백을 받는다(kind는 레코드에 담긴다).
             on_prompt=on_prompt,
@@ -860,6 +881,11 @@ def run_loop(
     #   다음 세대에서 그 세대의 부모 대비 델타로 채택/기각해 hypotheses_json으로 영속한다.
     #   토글 OFF면 항상 None이라 가정 방출·판정·저장이 전혀 안 일어난다(byte-동일).
     next_hypotheses: Optional[list] = None
+    # P2b-1 가정 환류: 직전 세대에서 판정된(judged) 가정 목록. 이번 세대 생성
+    #   프롬프트로 환류해(format_hypothesis_feedback) "빗나간 방향 반복 금지"를 알린다.
+    #   1세대 지연은 본질적(G용 가정은 G 자신이 판정하므로 G 생성 시점엔 미판정) — 가장
+    #   최근 judged를 쓴다. 토글 OFF면 항상 None이라 환류가 안 일어난다(byte-동일).
+    prev_judged_hypotheses: Optional[list] = None
     last_autopsy_page_data: Optional[Dict[str, Any]] = None  # LIVE 부검 패널용 세그먼트 요약.
     last_holdout_verdict: Optional[Any] = None  # P5 — 직전 세대 holdout 졸업검사 결과(토글 ON일 때만).
     # seed-and-refine: gen1+가 출발점으로 삼을 현재 best 전략 코드(hill-climb).
@@ -1015,6 +1041,13 @@ def run_loop(
                     gen_kwargs["freeze_buy"] = True
                     print(f"[LOOP] freeze_buy=ON (best gen{best_gen} MDD-only: "
                           f"매수 동결·매도만 재생성)", flush=True)
+                # P2b-1 가정 환류: 토글 ON일 때만 직전 세대 판정 가정(prev_judged_hypotheses)을
+                #   _generate_pair로 넘겨 side별 환류 문자열을 생성 프롬프트에 주입한다.
+                #   OFF(기본)면 키를 넣지 않아 _generate_pair 호출 시그니처가 기존과
+                #   byte-identical 하다(P1c state 배선과 동일 — monkeypatch 테스트 보호).
+                if (getattr(config, "hypothesis_tracking_enabled", False)
+                        and prev_judged_hypotheses):
+                    gen_kwargs["prev_judged_hypotheses"] = prev_judged_hypotheses
                 # 프롬프트 영속화(P1c): 토글 ON일 때만 state를 _generate_pair로 넘겨
                 #   프롬프트 로깅 콜백을 활성화한다. OFF(기본)면 state 키를 넣지 않아
                 #   _generate_pair 호출 시그니처가 기존과 byte-identical 하다(하위호환).
@@ -1169,7 +1202,11 @@ def run_loop(
             #   (parent_deltas None)는 adjudicate가 전부 inconclusive로 매기되, 가정이
             #   없으면 None=NULL이라 기존과 동일하다. 산출 실패는 흡수(학습 보조 경로).
             #   토글 OFF면 next_hypotheses가 항상 None이라 hypotheses_json=None(byte-동일).
-            hypotheses_json = _adjudicate_and_serialize(config, next_hypotheses, parent_deltas)
+            #   P2b-1: judged 리스트를 prev_judged_hypotheses에 보관해 다음 세대 생성
+            #   프롬프트로 환류한다(format_hypothesis_feedback). 토글 OFF면 (None, None).
+            hypotheses_json, prev_judged_hypotheses = _adjudicate_and_serialize(
+                config, next_hypotheses, parent_deltas
+            )
             # P10 — 수익률(%)은 graded(GradedResult)에 없고 엔진 metrics에만 있다
             #   (total_profit_pct = '수익률합계'). profit(원)과 별개로 발행해 대시보드
             #   세대 이력/차트가 수익률을 표시한다. metrics 누락 시 0.0 폴백(무예외).
@@ -1716,29 +1753,34 @@ def _build_next_hypotheses(config, fit, graded, *, is_refine: bool):
 
 
 def _adjudicate_and_serialize(config, next_hypotheses, parent_deltas):
-    """직전 세대가 세운 가정을 이 세대의 부모 대비 델타로 채택/기각해 JSON으로 만든다.
+    """직전 세대가 세운 가정을 이 세대의 부모 대비 델타로 채택/기각해 JSON+판정목록으로 만든다.
 
-    토글 OFF거나 가정이 없으면(부모 없는 세대/실패 세대) None을 돌려
+    토글 OFF거나 가정이 없으면(부모 없는 세대/실패 세대) (None, None)을 돌려
     hypotheses_json=NULL(byte-동일). parent_deltas는 _build_parent_diff_and_deltas가
     만든 dict(없으면 None) — adjudicate가 None을 받으면 전부 inconclusive로 매긴다
     (추가 백테 없음). 판정/직렬화 실패는 흡수한다(학습 보조 경로).
 
-    반환: json.dumps([h.to_dict() ...], ensure_ascii=False) 문자열 또는 None.
+    P2b-1: judged 리스트도 함께 돌려준다 — 호출부가 prev_judged_hypotheses에 보관해
+    다음 세대 생성 프롬프트로 환류(format_hypothesis_feedback)한다. JSON 문자열은
+    record_generation 영속용(기존), judged 리스트는 프롬프트 환류용이다.
+
+    반환: (json_str 또는 None, judged 리스트 또는 None).
     """
     if not getattr(config, "hypothesis_tracking_enabled", False):
-        return None
+        return None, None
     if not next_hypotheses:
-        return None
+        return None, None
     try:
         from ai_strategy_loop.autopsy import adjudicate  # noqa: PLC0415
 
         judged = adjudicate(next_hypotheses, parent_deltas)
         if not judged:
-            return None
-        return json.dumps([h.to_dict() for h in judged], ensure_ascii=False)
+            return None, None
+        json_str = json.dumps([h.to_dict() for h in judged], ensure_ascii=False)
+        return json_str, judged
     except Exception as exc:  # noqa: BLE001 - 가정 판정/직렬화 실패는 루프를 막지 않음.
         logger.info("가정 판정/직렬화 실패(무시): %s", exc)
-        return None
+        return None, None
 
 
 def _winner_score_value(fit, graded, config: LoopConfig) -> float:

@@ -48,6 +48,7 @@ from .hypothesis import (
     Hypothesis,
     adjudicate,
     build_hypotheses,
+    format_hypothesis_feedback,
 )
 
 __all__ = [
@@ -81,4 +82,6 @@ __all__ = [
     "Hypothesis",
     "build_hypotheses",
     "adjudicate",
+    # 가정 환류 프롬프트 슬롯 (P2b-1).
+    "format_hypothesis_feedback",
 ]

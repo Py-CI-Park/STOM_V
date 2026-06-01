@@ -73,6 +73,7 @@ def generate_strategy(
     encourage_time_dispersion: bool = False,
     require_filter_gates: bool = False,
     min_filter_categories: int = 5,
+    hypothesis_feedback: Optional[str] = None,
     on_prompt: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
     """LLM으로 STOM 전략을 생성하고 게이트 통과 시 DB에 저장한다.
@@ -117,6 +118,8 @@ def generate_strategy(
             기본 False면 이 검사·프롬프트가 평가조차 안 돼 동작이 기존과 byte-동일하다.
         min_filter_categories: require_filter_gates=True일 때 요구하는 최소 필터 범주 수.
             시드는 9개 범주를 충족한다. require_filter_gates=False면 미사용(무영향).
+        hypothesis_feedback: 직전 세대 판정 가정 환류 문자열(P2b-1). build_messages로
+            전달돼 부검 피드백보다 먼저 주입된다. None=주입 안 함, byte-identical(하위호환).
         on_prompt: LLM 호출이 성공한 직후 그 프롬프트 레코드(dict)를 받는 선택적
             콜백(P1c 프롬프트 영속화). None이면 호출되지 않아 동작이 byte-identical
             하다(로깅 안 함=기존과 동일). 예외는 콜백 내부에서 흡수해 루프를 막지 않는다.
@@ -154,6 +157,7 @@ def generate_strategy(
             mdd_control_enabled=mdd_control_enabled,
             encourage_time_dispersion=encourage_time_dispersion,
             require_filter_gates=require_filter_gates,
+            hypothesis_feedback=hypothesis_feedback,
         )
 
         # --- 1) LLM 호출 ---
@@ -197,6 +201,7 @@ def generate_strategy(
                         "require_filter_gates": require_filter_gates,
                         "target_daily_trades": target_daily_trades,
                         "min_filter_categories": min_filter_categories,
+                        "has_hypothesis_feedback": bool(hypothesis_feedback),
                     },
                     "prior_error": prior_error,
                     "model": getattr(result, "model", None),

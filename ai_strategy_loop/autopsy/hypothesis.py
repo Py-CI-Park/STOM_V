@@ -195,3 +195,52 @@ def adjudicate(
             h, verdict=verdict, observed_delta=observed,
         ))
     return out
+
+
+# 가정 환류 헤더 — 다음 세대 생성 프롬프트에 들어가는 경고 한 줄.
+_FEEDBACK_HEADER = "[직전 가정 판정 — 같은 빗나간 방향 반복 금지]"
+
+
+def format_hypothesis_feedback(judged: List[Hypothesis], side: str) -> str:
+    """판정된 가정 목록(judged)을 다음 세대 생성 프롬프트에 주입할 환류 문자열로 만든다(P2b-1).
+
+    P2a는 가정을 방출·판정·영속까지 하지만, 그 판정 결과가 다음 세대 생성 프롬프트로
+    환류되지 않아 refine가 같은 빗나간 가정을 반복할 수 있다. 이 함수는 직전 세대의
+    **기각(rejected)** 가정을 우선 강조해 "이 방향은 효과 없었으니 다른 레버로
+    접근하라"고 LLM에게 알린다 — 루프의 실제 효용을 닫는 고리다.
+
+    규칙:
+      - side에 해당하는 가정만 본다(h.side==side 또는 h.side=='both').
+      - rejected를 먼저(우선 강조), 그 다음 accepted를 짧게 한 줄.
+      - inconclusive/untested는 생략한다(판정 신호가 없어 노이즈만 된다).
+      - 표면화할 항목이 하나도 없으면 빈 문자열("")을 반환한다 → 호출부가 미주입.
+
+    Args:
+        judged: adjudicate가 판정한 Hypothesis 목록(verdict 채워진 상태).
+        side: 'buy' 또는 'sell' — 이 측 생성 프롬프트에 환류할 가정만 고른다.
+
+    Returns:
+        헤더 한 줄 + 항목들로 이뤄진 환류 문자열, 또는 표면화할 게 없으면 "".
+    """
+    if not judged:
+        return ""
+
+    relevant = [h for h in judged if h.side == side or h.side == "both"]
+    rejected = [h for h in relevant if h.verdict == VERDICT_REJECTED]
+    accepted = [h for h in relevant if h.verdict == VERDICT_ACCEPTED]
+    if not rejected and not accepted:
+        return ""
+
+    lines: List[str] = [_FEEDBACK_HEADER]
+    # 기각 가정 우선 강조 — "이 방향은 효과 없었으니 다른 레버로 접근하라".
+    for h in rejected:
+        obs = h.observed_delta if h.observed_delta is not None else 0.0
+        lines.append(
+            f"- 직전 세대 가정 '{h.text}' → 실측 {h.target_metric} 델타 {obs:+.4g}"
+            f"(기대와 반대) = 기각. 이 방향은 효과 없었으니 다른 레버로 접근하라."
+        )
+    # 채택 가정은 짧게 — 유효했던 방향은 유지/강화 신호로만 둔다.
+    for h in accepted:
+        lines.append(f"- 유효했음: {h.text}")
+
+    return "\n".join(lines)

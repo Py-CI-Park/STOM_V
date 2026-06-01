@@ -325,7 +325,10 @@ class TestToggleDefaultsAndOffPath:
         cfg = LoopConfig()  # 기본 OFF.
         hyps = [Hypothesis(side="sell", text="t", target_metric="mdd",
                            expected_direction=-1, source="gate_mdd")]
-        assert L._adjudicate_and_serialize(cfg, hyps, {"d_mdd": -1.0}) is None
+        # P2b-1: (json_str, judged) 튜플 반환. OFF면 (None, None).
+        json_str, judged = L._adjudicate_and_serialize(cfg, hyps, {"d_mdd": -1.0})
+        assert json_str is None
+        assert judged is None
 
     def test_build_next_hypotheses_on_returns_list(self):
         cfg = LoopConfig.from_dict({"hypothesis_tracking_enabled": True,
@@ -340,15 +343,19 @@ class TestToggleDefaultsAndOffPath:
         cfg = LoopConfig.from_dict({"hypothesis_tracking_enabled": True})
         hyps = [Hypothesis(side="sell", text="t", target_metric="mdd",
                            expected_direction=-1, source="gate_mdd")]
-        s = L._adjudicate_and_serialize(cfg, hyps, {"d_mdd": -3.0})
+        # P2b-1: (json_str, judged) 튜플 — json_str은 영속용, judged는 환류용.
+        s, judged = L._adjudicate_and_serialize(cfg, hyps, {"d_mdd": -3.0})
         assert s is not None
         restored = json.loads(s)
         assert restored[0]["verdict"] == "accepted"
+        # judged 리스트도 함께 노출돼 다음 세대 프롬프트 환류에 쓰인다.
+        assert judged is not None and len(judged) == 1
+        assert judged[0].verdict == VERDICT_ACCEPTED
 
     def test_adjudicate_and_serialize_on_no_hypotheses_returns_none(self):
         cfg = LoopConfig.from_dict({"hypothesis_tracking_enabled": True})
-        assert L._adjudicate_and_serialize(cfg, None, {"d_mdd": -1.0}) is None
-        assert L._adjudicate_and_serialize(cfg, [], {"d_mdd": -1.0}) is None
+        assert L._adjudicate_and_serialize(cfg, None, {"d_mdd": -1.0}) == (None, None)
+        assert L._adjudicate_and_serialize(cfg, [], {"d_mdd": -1.0}) == (None, None)
 
 
 # --- 가벼운 fake (fit/graded 인터페이스 최소 표면만) ---

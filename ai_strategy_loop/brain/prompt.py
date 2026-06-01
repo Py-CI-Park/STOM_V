@@ -168,6 +168,7 @@ def build_messages(
     mdd_control_enabled: bool = False,
     encourage_time_dispersion: bool = False,
     require_filter_gates: bool = False,
+    hypothesis_feedback: Optional[str] = None,
 ) -> List[Dict[str, str]]:
     """OpenAI Chat Completions 메시지 리스트를 만든다.
 
@@ -212,6 +213,11 @@ def build_messages(
             없다. 게이트(reject) 자체는 generate_strategy가 수행하고, 여기서는 그에
             맞춰 LLM을 유도하는 프롬프트 역할이다. 기본 False면 이 블록이 미추가되어
             출력이 byte-동일 유지된다(하위호환).
+        hypothesis_feedback: 직전 세대의 판정된 가정 환류 문자열(P2b-1). 특히 **기각**
+            가정을 강조해 "이 방향은 효과 없었으니 다른 레버로 접근하라"고 알린다.
+            autopsy_feedback 슬롯보다 **먼저(상위)** 주입돼 "이전에 틀린 방향" 경고가
+            부검 피드백보다 우선 보이게 한다. None/빈 문자열이면 미주입되어 출력이
+            기존과 byte-동일하다(하위호환). 호출부(controller.loop)가 토글 ON일 때만 채운다.
 
     Returns:
         [{"role": "system", ...}, {"role": "user", ...}] — 항상 system 포함.
@@ -417,6 +423,14 @@ def build_messages(
         user_lines += [
             "",
             meta_seed,
+        ]
+
+    # P2b-1 가정 환류(선택 — 토글 ON일 때만 호출부가 채운다). 부검 피드백보다 **먼저**
+    #   둬 "이전에 틀린 방향" 경고를 우선 노출한다. None/빈 문자열이면 미주입(byte-동일).
+    if hypothesis_feedback:
+        user_lines += [
+            "",
+            hypothesis_feedback,
         ]
 
     if autopsy_feedback:
