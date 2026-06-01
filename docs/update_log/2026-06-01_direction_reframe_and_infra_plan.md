@@ -62,7 +62,12 @@
 
 ---
 
-## 3. Phase 2 — 가정(Hypothesis) 루프 (사용자 요구 ②)
+## 3. Phase 2 — 가정(Hypothesis) 루프 (사용자 요구 ②) — ✅ 완료 (2026-06-01)
+
+> 3커밋 전부 code-reviewer(opus) APPROVE · baseline 신규0 · 엔진/하드게이트 무수정 · 토글 `hypothesis_tracking_enabled` 기본 OFF.
+> P2a `0a7beaa5` (코어: Hypothesis 객체+build+adjudicate+영속 v9, 31테스트) · P2b-1 `2ef5fec8` (환류 프롬프트 슬롯=루프 닫기, 17테스트) · P2b-2 `c7048b6f` (대시보드 HypothesisPanel, 13테스트).
+> 부검 방향성 예측→1급 Hypothesis→P1b 델타로 자동 채택/기각(추가백테0)→환류로 refine가 빗나간 방향 반복 회피→대시보드 verdict 뱃지 노출.
+> 잔여(소규모 후속): meta hypothesis_accept_rate 집계(source/metric별 채택률 → meta_seed 환류) — 연기.
 
 **근거**: 부검(`autopsy/summarize`)은 이미 방향성 예측("체결강도 낮은 손실거래 → 기준 ↑")을 만들지만 NL 문자열로 즉시 소모 → refine가 **빗나간 가정을 반복**(§3.16-D 천장 의심 원인). 예측 vs 관측 채택/기각이 없음.
 
