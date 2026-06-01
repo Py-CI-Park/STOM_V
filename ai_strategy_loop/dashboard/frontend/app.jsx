@@ -150,6 +150,8 @@ function App() {
               {/* O1 — 백테 상세(일별손익 막대 + 누적수익곡선): 선택 세대의 per-trade CSV 시계열 재현 */}
               <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={state} />
               <QualityTrendChart state={state} />
+              {/* 🏆 명예의 전당 — 인간 벤치마크(19전략) + AI 생성 통합(목표선 가시화) */}
+              <HallOfFamePanel baseUrl={baseUrl} wsStatus={wsStatus} />
               <GenerationsTable state={state} mddCap={mddCap} minDailyTrades={minDailyTrades}
                                 onViewCode={(g) => setCodeViewGen(g)} />
               {/* 운영·관찰: run 비교 콘솔(REST /runs, loop_runs.db 직접) */}

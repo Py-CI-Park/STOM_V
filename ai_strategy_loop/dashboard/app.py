@@ -258,6 +258,198 @@ def _equity_curves_payload(
     return {"curves": curves, "count": len(curves)}
 
 
+_REFERENCE_STRATEGIES_JSON = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "reference_strategies.json"
+)
+
+
+def _load_reference_strategies() -> list:
+    """reference_strategies.json을 읽어 인간 벤치마크 목록을 반환한다(읽기 전용, 무예외).
+
+    파일은 이 모듈 기준 dashboard/reference_strategies.json. 파일 부재/JSON 파싱
+    실패는 빈 목록으로 표준화한다(대시보드가 빈 상태를 표시). 각 항목을 명예의
+    전당 공통 스키마(label·total_return_krw·total_return_pct·annual_return_pct·
+    mdd_pct·payoff·trades·daily_avg_trades·max_holdings·operating_capital_krw·
+    kind='human')로 매핑한다.
+    """
+    try:
+        with open(_REFERENCE_STRATEGIES_JSON, "r", encoding="utf-8") as fh:
+            raw = json.load(fh)
+    except (OSError, ValueError, TypeError):
+        return []
+
+    strategies = (raw or {}).get("strategies") or []
+    out: list = []
+    for s in strategies:
+        if not isinstance(s, dict):
+            continue
+        out.append({
+            "kind": "human",
+            "label": str(s.get("id") or ""),
+            "period": s.get("period"),
+            "days": s.get("days"),
+            "operating_capital_krw": s.get("operating_capital_krw"),
+            "total_return_krw": s.get("profit_krw"),
+            "total_return_pct": s.get("total_return_pct"),
+            "annual_return_pct": s.get("annual_return_pct"),
+            "annual_unreliable": False,
+            "mdd_pct": s.get("mdd_pct"),
+            "payoff": s.get("payoff"),
+            "trades": s.get("trades"),
+            "daily_avg_trades": s.get("daily_avg_trades"),
+            "max_holdings": s.get("max_holdings"),
+            "win_rate_pct": s.get("win_rate_pct"),
+        })
+    return out
+
+
+def _window_years_from_config(config_json: Optional[str]) -> Optional[float]:
+    """runs.config_json의 bt_full_start/bt_full_end(YYYYMMDD 정수)에서 창 길이(년)를 구한다.
+
+    (date(end) − date(start)).days / 365.25. 파싱 실패/필드 부재/비정상 값은 None
+    으로 표준화한다(연평균을 산출하지 못함 → 호출부가 None 처리). 무예외.
+    """
+    from datetime import date  # noqa: PLC0415
+
+    if not config_json:
+        return None
+    try:
+        cfg = json.loads(config_json)
+    except (ValueError, TypeError):
+        return None
+    start_i = cfg.get("bt_full_start")
+    end_i = cfg.get("bt_full_end")
+    if start_i is None or end_i is None:
+        return None
+    try:
+        si, ei = int(start_i), int(end_i)
+        start = date(si // 10000, (si // 100) % 100, si % 100)
+        end = date(ei // 10000, (ei // 100) % 100, ei % 100)
+    except (ValueError, TypeError):
+        return None
+    days = (end - start).days
+    if days <= 0:
+        return None
+    return days / 365.25
+
+
+def _hall_of_fame_payload(ai_limit: int = 30) -> Dict[str, Any]:
+    """명예의 전당 payload: 인간 벤치마크 + AI 생성 통합(읽기 전용, 무예외).
+
+    인간: reference_strategies.json을 로드한다(파일 없으면 빈 목록).
+    AI: loop_runs.db에서 gate_passed=1 AND profit>0 세대를 조회해 워크플로 확정
+        산식으로 매핑한다(추가 백테 0회).
+          - operating_capital_krw = profit / total_profit_pct × 100
+            (total_profit_pct는 '운영금 대비 수익률합계'. ≤0이면 그 행 제외).
+          - total_return_krw = profit (수익금합계, 원).
+          - total_return_pct = total_profit_pct (이미 DB; profit/운영금×100).
+          - annual_return_pct = total_return_pct / window_years (단리).
+            window_years는 runs.config_json의 bt_full_start/end에서 산출. <0.25면
+            annual_unreliable=true(짧은 창 연환산 과대) + 연평균은 그대로 계산.
+            window를 못 구하면 annual_return_pct=None.
+        graded(score) 내림차순 상위 ai_limit.
+
+    LoopState 무예외·close() 패턴은 _equity_curves_payload/_runs_payload와 동일.
+    DB/JSON 부재는 빈 목록(무예외).
+
+    반환: {"human": [...], "ai": [...]}
+    """
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+
+    human = _load_reference_strategies()
+
+    st: Optional[LoopState] = None
+    all_gens: list = []
+    run_window_cache: Dict[str, Optional[float]] = {}
+    try:
+        st = LoopState()
+        all_gens = st.get_all_generations()
+        # 각 run의 창 길이(년)를 한 번씩 조회해 캐시한다(연평균 산출용).
+        run_ids = {str(g.get("run_id") or "") for g in all_gens if g.get("run_id")}
+        for rid in run_ids:
+            run_row = st.get_run(rid)
+            cfg_json = run_row.get("config_json") if run_row else None
+            run_window_cache[rid] = _window_years_from_config(cfg_json)
+    except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 AI 빈 목록(무예외).
+        return {"human": human, "ai": []}
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    ai: list = []
+    for g in all_gens:
+        if not bool(g.get("gate_passed")):
+            continue
+        profit = g.get("profit")
+        total_pct = g.get("total_profit_pct")
+        if profit is None or total_pct is None:
+            continue
+        try:
+            profit_f = float(profit)
+            total_pct_f = float(total_pct)
+        except (ValueError, TypeError):
+            continue
+        # 흑자(profit>0) + 수익률합계>0(운영금 역산 가능)인 세대만.
+        if profit_f <= 0 or total_pct_f <= 0:
+            continue
+
+        # 운영금 역산: profit / total_profit_pct × 100 (total_profit_pct=운영금대비%).
+        operating_capital = profit_f / total_pct_f * 100.0
+
+        run_id = str(g.get("run_id") or "")
+        gen_no = int(g.get("gen_no", -1))
+        window_years = run_window_cache.get(run_id)
+        if window_years and window_years > 0:
+            annual_pct = total_pct_f / window_years
+            annual_unreliable = window_years < 0.25
+        else:
+            annual_pct = None
+            annual_unreliable = False
+
+        # 시드(Tick_902 등 비-AILOOP, 주로 gen0)는 인간이 튜닝한 출발점이고, AILOOP_*만
+        #   AI가 직접 생성한 전략이다. 사용자가 "AI가 직접 한것"과 인간 시드를 구분해 보도록
+        #   kind를 나눈다('ai' vs 'seed'). 둘 다 loop_runs.db 출처라 ai 목록에 함께 담는다.
+        buy_name_str = str(g.get("buy_name") or "")
+        # 시드 = 명명된 비-AILOOP 전략(보통 Tick_902 등 인간 튜닝 gen0). AILOOP_* = AI 생성.
+        #   빈 이름은 시드로 확정할 수 없으므로 'ai'로 둔다(시드/AI 구분 정직성).
+        kind = "seed" if (buy_name_str and not buy_name_str.startswith("AILOOP")) else "ai"
+        ai.append({
+            "kind": kind,
+            "run_id": run_id,
+            "gen_no": gen_no,
+            "label": f"{run_id}/g{gen_no}",
+            "buy_name": g.get("buy_name"),
+            "score": (float(g.get("score")) if g.get("score") is not None else None),
+            "operating_capital_krw": operating_capital,
+            "total_return_krw": profit_f,
+            "total_return_pct": total_pct_f,
+            "annual_return_pct": annual_pct,
+            "annual_unreliable": annual_unreliable,
+            "mdd_pct": (float(g.get("mdd")) if g.get("mdd") is not None else None),
+            "calmar": (float(g.get("calmar")) if g.get("calmar") is not None else None),
+            "payoff": (float(g.get("payoff_ratio")) if g.get("payoff_ratio") is not None else None),
+            "trades": (int(g.get("trade_count")) if g.get("trade_count") is not None else None),
+            "daily_avg_trades": (
+                float(g.get("daily_avg_trades")) if g.get("daily_avg_trades") is not None else None
+            ),
+            "max_hold_count": (
+                float(g.get("max_hold_count")) if g.get("max_hold_count") is not None else None
+            ),
+        })
+
+    # graded(score) 내림차순 상위 ai_limit.
+    ai.sort(key=lambda r: (
+        (r.get("score") if r.get("score") is not None else -1e18),
+        r.get("run_id") or "", r.get("gen_no") or 0,
+    ), reverse=True)  # score 동률 시 (run_id, gen_no)로 결정론적 순서(cap 경계 안정).
+    ai = ai[: max(0, int(ai_limit))]
+
+    return {"human": human, "ai": ai}
+
+
 def _strategy_code_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
     """루프 DB에서 한 세대의 매수/매도 전략 코드를 조회한다(읽기 전용, 무예외).
 
@@ -440,6 +632,16 @@ def create_app() -> FastAPI:
         CSV 없거나 파싱 실패한 세대는 건너뛴다. DB 없으면 빈 배열(무예외).
         """
         return _equity_curves_payload(run_id=run_id)
+
+    @app.get("/hall_of_fame")
+    def hall_of_fame() -> Dict[str, Any]:
+        """명예의 전당: 인간 벤치마크 + AI 생성 통합 목록을 반환한다(읽기 전용, 무예외).
+
+        인간은 reference_strategies.json(19전략), AI는 loop_runs.db의 gate_passed=1·
+        흑자 세대를 운영금 역산·연평균 산식으로 매핑해 graded 상위 30개를 돌려준다.
+        JSON/DB가 없으면 빈 목록(무예외 계약 — 대시보드가 빈 상태를 표시).
+        """
+        return _hall_of_fame_payload()
 
     @app.get("/runs")
     def runs() -> Dict[str, Any]:
