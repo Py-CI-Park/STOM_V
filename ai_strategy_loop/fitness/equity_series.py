@@ -22,7 +22,14 @@ CSV가 지워지면 영구 소실된다(P1b 감사). 이 모듈은 **추가 백�
 
 from __future__ import annotations
 
+import csv
 from typing import Dict, List, Optional
+
+# 동시보유 종목수 재구성용 결과 CSV 컬럼명(holdout._SELL_TIME_COLUMN과 동일 헤더 계열).
+#   - 매수시간/매도시간: 'YYYYMMDDHHMMSS' (거래 진입/청산 시각). event-sweep으로
+#     각 거래의 (매수시간,+1)/(매도시간,-1) 이벤트를 시간순 누적해 동시보유수를 만든다.
+_BUY_TIME_COLUMN = "매수시간"
+_SELL_TIME_COLUMN = "매도시간"
 
 
 def _parse_betting_to_krw(betting) -> Optional[float]:
@@ -63,6 +70,79 @@ def _downsample_indices(n: int, limit: int) -> List[int]:
     return sorted(picks)
 
 
+def _compute_holdings_series(csv_path: str, downsample: int):
+    """결과 CSV의 매수시간/매도시간으로 **동시보유 종목수** 시계열을 재구성한다.
+
+    STOM GUI 백테 fig2 상단(보유종목수 라인)에 대응한다. 엔진 df_bct에만 있는
+    보유금액(원)은 CSV/DB 미저장이라 복원 불가하므로(엔진 무수정 원칙), CSV로
+    완전 재구성 가능한 **동시보유 종목수**를 대신 그린다.
+
+    event-sweep:
+      각 거래는 (매수시간, +1)·(매도시간, -1) 두 이벤트를 만든다. 모든 이벤트를
+      (시각, delta) 오름차순으로 정렬하면 같은 시각에서는 -1(청산)이 +1(진입)보다
+      먼저 처리된다 — 동일 시각 청산/진입이 겹칠 때 보유수가 한 단계 부풀려지는
+      것(엔진 동시보유 의미와의 괴리)을 막는다. 누적합이 매 이벤트 시점의
+      동시보유수다. peak는 그 누적합의 최댓값(raw peak).
+
+    엔진 mhct 정합:
+      엔진(backtest)은 상위 1% 이상치를 제외한 mhct(평균/대표 보유수)를 별도로
+      쓰지만, 여기선 **raw peak(상위 1% 제외 없음)**를 기본으로 한다(단순·결정론).
+      실측상 거래수가 적은 winner(예: reframe1 gen0 6거래)에서는 raw peak == 엔진
+      mhct(=2.0)로 정합한다. 거래가 매우 많아 이상치가 있으면 raw peak가 엔진
+      mhct보다 클 수 있다(척도 차이 — 대시보드는 '최대 동시보유'를 보여줄 뿐 게이트가
+      아니다). 상위 1% 제외 옵션은 도입하지 않는다(불필요한 복잡도).
+
+    Returns:
+        (holdings, peak_holdings):
+          holdings = [{"t_index": int, "count": int}, ...]  # 이벤트(시각) 진행 순서.
+          peak_holdings = int                                # 최대 동시보유 종목수.
+        CSV 없음/컬럼 누락/빈 행/파싱 실패면 ([], 0)로 무예외.
+    """
+    if not csv_path:
+        return [], 0
+
+    events: List = []  # (time_str, delta)
+    try:
+        with open(csv_path, encoding="utf-8-sig", newline="") as fh:
+            reader = csv.DictReader(fh)
+            fields = reader.fieldnames or []
+            if _BUY_TIME_COLUMN not in fields or _SELL_TIME_COLUMN not in fields:
+                return [], 0  # 매수/매도시간 컬럼 없으면 재구성 불가 → 빈 holdings.
+            for row in reader:
+                raw_buy = str(row.get(_BUY_TIME_COLUMN, "") or "").strip()
+                raw_sell = str(row.get(_SELL_TIME_COLUMN, "") or "").strip()
+                # 두 시각 모두 유효(>=8자리)해야 한 거래의 진입/청산 쌍을 만든다.
+                if len(raw_buy) < 8 or len(raw_sell) < 8:
+                    continue
+                events.append((raw_buy, 1))
+                events.append((raw_sell, -1))
+    except Exception:  # noqa: BLE001 - CSV 없음/IO/파싱 실패는 빈 holdings로 흡수(무예외).
+        return [], 0
+
+    if not events:
+        return [], 0
+
+    # (시각, delta) 오름차순 정렬 → 동일 시각에서 -1(청산)이 +1(진입)보다 먼저.
+    events.sort(key=lambda e: (e[0], e[1]))
+
+    holdings: List[Dict[str, int]] = []
+    cur = 0
+    peak = 0
+    for t_index, (_, delta) in enumerate(events):
+        cur += delta
+        if cur > peak:
+            peak = cur
+        holdings.append({"t_index": int(t_index), "count": int(cur)})
+
+    # 이벤트 수가 downsample을 초과하면 균등 추림(마지막 보존). daily 등과 동일 패턴.
+    n = len(holdings)
+    keep = _downsample_indices(n, downsample)
+    if len(keep) != n:
+        holdings = [holdings[i] for i in keep]
+
+    return holdings, int(peak)
+
+
 def parse_backtest_series(
     csv_path: str,
     *,
@@ -90,10 +170,16 @@ def parse_backtest_series(
             "cumulative": [{"date": int, "cum_profit": float,
                             "cum_pct": float|None}, ...],                # 거래일 마지막 누적
             "drawdown": [{"date": int, "drawdown": float(원, ≥0)}, ...], # 고점 대비 반납액(원)
+            "holdings": [{"t_index": int, "count": int}, ...],          # 동시보유 종목수(이벤트/시각축)
             "summary": {"trade_count": int, "final_profit": float,
-                        "max_drawdown": float(원), "n_days": int},
+                        "max_drawdown": float(원), "n_days": int,
+                        "peak_holdings": int},                          # 최대 동시보유 종목수
           }
-        CSV가 없거나 컬럼 누락/빈 행/파싱 실패면 빈 구조(daily=[]·summary 0)로 무예외 반환.
+        daily/cumulative/drawdown는 거래일(date) 축, holdings는 이벤트(시각) 진행 축이라
+        별도 키다(STOM fig2: 상단=보유종목수 시계열, 하단=일별손익+누적). holdings는
+        매수시간/매도시간 event-sweep으로 재구성한다(_compute_holdings_series).
+        CSV가 없거나 컬럼 누락/빈 행/파싱 실패면 빈 구조(daily=[]·holdings=[]·summary 0)로
+        무예외 반환.
     """
     # 프리미티브 재사용: (거래일, 수익금) 행 추출.
     from ai_strategy_loop.fitness.holdout import _read_holdout_rows  # noqa: PLC0415
@@ -102,11 +188,13 @@ def parse_backtest_series(
         "daily": [],
         "cumulative": [],
         "drawdown": [],
+        "holdings": [],
         "summary": {
             "trade_count": 0,
             "final_profit": 0.0,
             "max_drawdown": 0.0,
             "n_days": 0,
+            "peak_holdings": 0,
         },
     }
 
@@ -193,14 +281,21 @@ def parse_backtest_series(
         cumulative = [cumulative[i] for i in keep]
         drawdown = [drawdown[i] for i in keep]
 
+    # 동시보유 종목수 시계열(이벤트/시각축, 별도 키). 매수/매도시간 event-sweep으로
+    #   재구성한다. peak_holdings(최대 동시보유)는 추림 전 전체 곡선 기준(_compute_…
+    #   내부에서 산출). CSV 컬럼 누락 시 ([], 0)로 무예외.
+    holdings, peak_holdings = _compute_holdings_series(csv_path, downsample)
+
     return {
         "daily": daily,
         "cumulative": cumulative,
         "drawdown": drawdown,
+        "holdings": holdings,
         "summary": {
             "trade_count": int(trade_count),
             "final_profit": final_profit,
             "max_drawdown": float(max_drawdown),
             "n_days": int(n_days),
+            "peak_holdings": int(peak_holdings),
         },
     }

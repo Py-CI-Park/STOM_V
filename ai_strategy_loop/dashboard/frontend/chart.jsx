@@ -939,8 +939,11 @@ function BacktestDetailChart({ baseUrl, wsStatus, state }) {
   const daily = (data && data.daily) || [];
   const cumulative = (data && data.cumulative) || [];
   const drawdown = (data && data.drawdown) || [];
+  const holdings = (data && data.holdings) || [];
   const summary = (data && data.summary) || {};
   const hasSeries = daily.length > 0;
+  const hasHoldings = holdings.length > 0;
+  const peakHoldings = summary.peak_holdings != null ? summary.peak_holdings : 0;
 
   const W = 880, H = 320;
   const padL = 56, padR = 60, padT = 18, padB = 30;
@@ -983,6 +986,39 @@ function BacktestDetailChart({ baseUrl, wsStatus, state }) {
     ).join(" ");
   }, [cumulative, n, cumMin, cumRange]);
 
+  // ── 상단 보유종목수 sub-panel(STOM fig2 상단 대응) ──────────────────────
+  //   동시보유 종목수(holdings: [{t_index,count}])를 이벤트(시각) 진행 축으로 계단
+  //   라인 그린다. 보유금액(원)은 엔진 전용(CSV 미저장)이라 동시보유 종목수로 대체.
+  const HpH = 90;                              // 상단 패널 높이.
+  const hpPadT = 14, hpPadB = 18;              // 상하 패딩.
+  const hpInnerH = HpH - hpPadT - hpPadB;
+  // x축은 하단과 동일한 [padL, W-padR] 폭을 쓰되 holdings 이벤트 인덱스로 매핑.
+  const hN = holdings.length;
+  const xHold = (i) => (hN <= 1
+    ? padL + innerW / 2
+    : padL + (i / (hN - 1)) * innerW);
+  // y축: 0..max(count) (정수). 최소 1칸 확보.
+  const holdMax = Math.max(1, peakHoldings, ...holdings.map(h => h.count || 0));
+  const yHold = (v) => hpPadT + hpInnerH - (v / holdMax) * hpInnerH;
+  // 계단(step) path: 각 점에서 수평 유지 후 다음 count로 수직 이동(보유수=정수 계단).
+  const holdPath = useMemo_bd(() => {
+    if (hN < 1) return "";
+    let dStr = `M ${xHold(0).toFixed(2)} ${yHold(holdings[0].count || 0).toFixed(2)}`;
+    for (let i = 1; i < hN; i++) {
+      const x = xHold(i).toFixed(2);
+      const yPrev = yHold(holdings[i - 1].count || 0).toFixed(2);
+      const y = yHold(holdings[i].count || 0).toFixed(2);
+      dStr += ` L ${x} ${yPrev} L ${x} ${y}`;   // 수평 후 수직 = 계단.
+    }
+    return dStr;
+  }, [holdings, hN, holdMax]);
+  // y 눈금(0·max만 — 정수). max가 작으면 중간값도.
+  const holdYTicks = (() => {
+    if (holdMax <= 1) return [0, 1];
+    if (holdMax <= 4) return Array.from({ length: holdMax + 1 }, (_, k) => k);
+    return [0, Math.round(holdMax / 2), holdMax];
+  })();
+
   // X 라벨(거래일): 최대 ~8개만 표시(YYYYMMDD → MM/DD).
   const xLabelIdxs = (() => {
     if (n === 0) return [];
@@ -1011,9 +1047,10 @@ function BacktestDetailChart({ baseUrl, wsStatus, state }) {
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--amber)" }}></span>
-          백테 상세 — 일별손익 · 누적수익곡선
+          백테 상세 — 동시보유 종목수 · 일별손익 · 누적수익곡선
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <LegendDot color="var(--teal)" label="동시보유 종목수" />
           <LegendDot color="var(--red)" label="이익(일)" />
           <LegendDot color="var(--blue)" label="손실(일)" />
           <LegendDot color="var(--amber)" label="누적수익 ₩" />
@@ -1044,12 +1081,50 @@ function BacktestDetailChart({ baseUrl, wsStatus, state }) {
         <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
           <Mini label="거래수" value={summary.trade_count != null ? String(summary.trade_count) : "—"} />
           <Mini label="거래일" value={summary.n_days != null ? String(summary.n_days) : "—"} />
+          <Mini label="최대 동시보유" value={summary.peak_holdings != null ? String(summary.peak_holdings) : "—"}
+                color={peakHoldings > 0 ? "var(--teal)" : undefined} sub="종목수" />
           <Mini label="최종 누적수익" value={summary.final_profit != null ? fmtMoney(summary.final_profit) : "—"}
                 color={summary.final_profit > 0 ? "var(--teal)"
                        : summary.final_profit < 0 ? "var(--red)" : undefined} />
           <Mini label="최대 반납액" value={summary.max_drawdown != null ? fmtMoney(summary.max_drawdown) : "—"}
                 color={summary.max_drawdown > 0 ? "var(--red)" : undefined} sub="고점 대비(원)" />
         </div>
+
+        {/* ── 상단: 동시보유 종목수 시계열(STOM fig2 상단 대응) ──
+            보유금액(원)은 엔진 전용(CSV 미저장)이라 미표시, 동시보유 종목수로 대체.
+            holdings(매수/매도시간 event-sweep)가 비면 이 패널은 생략한다(빈 상태). */}
+        {!isDemo && !err && hasHoldings && (
+          <div style={{ marginBottom: 6 }}>
+            <svg viewBox={`0 0 ${W} ${HpH}`} preserveAspectRatio="none"
+                 style={{ width: "100%", height: HpH, display: "block" }}>
+              {/* 프레임(좌·하) */}
+              <line x1={padL} x2={W - padR} y1={hpPadT + hpInnerH} y2={hpPadT + hpInnerH}
+                    stroke="var(--line-2)" strokeWidth="1" />
+              <line x1={padL} x2={padL} y1={hpPadT} y2={hpPadT + hpInnerH}
+                    stroke="var(--line-2)" strokeWidth="1" />
+              {/* y 눈금(정수 보유수) + 가로 점선 */}
+              {holdYTicks.map((tk) => (
+                <g key={`hyt${tk}`}>
+                  <line x1={padL} x2={W - padR} y1={yHold(tk)} y2={yHold(tk)}
+                        stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+                  <text className="chart-axis-text" x={padL - 8} y={yHold(tk) + 3}
+                        textAnchor="end" fill="var(--ink-2)">{tk}</text>
+                </g>
+              ))}
+              {/* peak 강조선 */}
+              {peakHoldings > 0 && (
+                <text className="chart-axis-text" x={W - padR + 6} y={yHold(peakHoldings) + 3}
+                      textAnchor="start" fill="var(--teal)">peak {peakHoldings}</text>
+              )}
+              {/* 동시보유 종목수 계단 라인(teal) */}
+              <path d={holdPath} fill="none" stroke="var(--teal)" strokeWidth="1.8" opacity="0.95" />
+            </svg>
+            <div style={{ fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)",
+                          marginTop: 2, paddingLeft: padL * (100 / W) + "%" }}>
+              동시보유 종목수(매수~매도 구간 중첩). 보유금액(원)은 엔진 전용이라 미표시 — 동시보유 종목수로 대체.
+            </div>
+          </div>
+        )}
 
         <div className="chart-wrap">
           {isDemo ? (

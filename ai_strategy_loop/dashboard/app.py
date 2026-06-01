@@ -658,7 +658,8 @@ def _backtest_detail_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
        "daily":[{date,daily_pnl,profit,loss,net}...],
        "cumulative":[{date,cum_profit,cum_pct}...],
        "drawdown":[{date,drawdown}...],
-       "summary":{trade_count,final_profit,max_drawdown,n_days}}
+       "holdings":[{t_index,count}...],   # 동시보유 종목수(이벤트/시각축, STOM fig2 상단 대응)
+       "summary":{trade_count,final_profit,max_drawdown,n_days,peak_holdings}}
     """
     from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
     from ai_strategy_loop.fitness.equity_series import parse_backtest_series  # noqa: PLC0415
@@ -667,11 +668,13 @@ def _backtest_detail_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
         "daily": [],
         "cumulative": [],
         "drawdown": [],
+        "holdings": [],
         "summary": {
             "trade_count": 0,
             "final_profit": 0.0,
             "max_drawdown": 0.0,
             "n_days": 0,
+            "peak_holdings": 0,
         },
     }
 
@@ -721,6 +724,7 @@ def _backtest_detail_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
         "daily": series.get("daily", []),
         "cumulative": series.get("cumulative", []),
         "drawdown": series.get("drawdown", []),
+        "holdings": series.get("holdings", []),
         "summary": series.get("summary", empty_series["summary"]),
     }
 

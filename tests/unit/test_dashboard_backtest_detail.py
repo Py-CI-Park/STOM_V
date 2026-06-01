@@ -55,6 +55,23 @@ def _make_trade_csv(path: Path, trades: list) -> str:
     return str(path)
 
 
+def _make_trade_csv_with_buy(path: Path, trades: list) -> str:
+    """매수시간 컬럼까지 포함한 per-trade CSV(holdings 재구성용, #66).
+
+    trades: [(buy_time:str, sell_time:str, profit:float), ...] 거래 순서.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8-sig", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=["종목코드", "매수시간", "매도시간", "수익금"])
+        writer.writeheader()
+        for buy_time, sell_time, profit in trades:
+            writer.writerow({
+                "종목코드": "000001", "매수시간": buy_time,
+                "매도시간": sell_time, "수익금": profit,
+            })
+    return str(path)
+
+
 @pytest.fixture
 def seeded_detail_db(monkeypatch, tmp_path):
     """tmp loop_runs.db에 세대(csv_path 포함/미포함)를 심는다 + bt_betting 설정.
@@ -142,6 +159,49 @@ class TestBacktestDetailPayloadNormal:
         assert s["n_days"] == 2
         assert s["final_profit"] == pytest.approx(1200.0)
         assert s["max_drawdown"] == pytest.approx(0.0)
+
+    def test_holdings_empty_when_no_buy_time(self, seeded_detail_db):
+        """seeded CSV는 매수시간 컬럼이 없으므로 holdings=[]·peak_holdings=0(무예외).
+
+        기존 daily/cumulative/drawdown는 그대로 산출된다(holdings만 빈다).
+        """
+        p = _backtest_detail_payload("runDetail", 0)
+        assert p["holdings"] == []
+        assert p["summary"]["peak_holdings"] == 0
+        assert len(p["daily"]) == 2  # 기존 키 불변.
+
+
+# =====================================================================
+# 1b) holdings(동시보유 종목수) — 매수시간 포함 CSV (#66).
+# =====================================================================
+class TestBacktestDetailHoldings:
+    def test_holdings_peak_from_overlapping_trades(self, monkeypatch, tmp_path):
+        """매수~매도 구간이 겹치는 거래 → /backtest_detail payload에 holdings·peak_holdings."""
+        db = tmp_path / "loop_runs.db"
+        snaps = tmp_path / "snaps"
+        monkeypatch.setattr(S, "LOOP_RUNS_DB", db)
+        # 거래1 09:00~09:05, 거래2 09:02~09:10(09:02~09:05 동시보유 2), 거래3 단독.
+        csv_h = _make_trade_csv_with_buy(tmp_path / "bt_hold_g0.csv", [
+            ("20250101090000", "20250101090500", 1000.0),
+            ("20250101090200", "20250101091000", -300.0),
+            ("20250101092000", "20250101092500", 500.0),
+        ])
+        st = LoopState(db_path=str(db), snapshot_dir=str(snaps))
+        st.start_run(LoopConfig(bt_betting="5"), run_id="runHold")
+        st.record_generation(
+            "runHold", 0, buy_name="b", sell_name="s",
+            status="ok", score=1.0, gate_passed=True, trade_count=3,
+            csv_path=csv_h,
+        )
+        st.close()
+        p = _backtest_detail_payload("runHold", 0)
+        assert p["summary"]["peak_holdings"] == 2
+        counts = [h["count"] for h in p["holdings"]]
+        assert max(counts) == 2
+        assert len(p["holdings"]) == 6  # 거래 3 × 진입/청산 이벤트.
+        # 기존 시계열도 함께 산출(holdings는 추가일 뿐).
+        assert len(p["daily"]) == 1
+        assert p["summary"]["trade_count"] == 3
 
 
 # =====================================================================
@@ -301,6 +361,18 @@ class TestBacktestDetailChartStructure:
         assert "daily" in bd
         assert "cumulative" in bd
         assert "drawdown" in bd
+
+    def test_component_renders_holdings_panel(self):
+        """상단 동시보유 종목수 sub-panel(holdings·peak_holdings)을 소비해야 한다(#66)."""
+        src = _read_front("chart.jsx")
+        bd = src[src.find("function BacktestDetailChart("):]
+        # holdings 시계열·peak_holdings·계단 path·안내문(보유금액 대체) 존재.
+        assert "holdings" in bd
+        assert "peak_holdings" in bd
+        assert "holdPath" in bd
+        assert "동시보유" in bd
+        # 보유금액(원)은 엔진 전용이라 미표시 안내가 있어야 한다.
+        assert "보유금액" in bd
 
     def test_component_empty_state(self):
         src = _read_front("chart.jsx")

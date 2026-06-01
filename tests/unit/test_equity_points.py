@@ -112,7 +112,10 @@ def test_parse_missing_csv_returns_empty():
     assert out["cumulative"] == [] and out["drawdown"] == []
     assert out["summary"] == {
         "trade_count": 0, "final_profit": 0.0, "max_drawdown": 0.0, "n_days": 0,
+        "peak_holdings": 0,
     }
+    # holdings(#66)도 빈 구조.
+    assert out["holdings"] == []
 
 
 def test_parse_missing_columns_returns_empty():
@@ -246,3 +249,117 @@ def test_schema_version_and_equity_table_exist():
 def test_config_equity_points_default_off():
     """config.equity_points_enabled 기본 False(하위호환·byte-동일)."""
     assert LoopConfig().equity_points_enabled is False
+
+
+# =====================================================================
+# holdings event-sweep — 동시보유 종목수 시계열(#66, STOM fig2 상단 대응).
+# =====================================================================
+# holdings는 매수시간/매도시간 둘 다 필요하므로 별도 헤더로 CSV를 만든다.
+_HOLD_HEADER = "종목명,매수시간,매도시간,수익금\n"
+
+
+def _write_hold_csv(rows):
+    """rows=[(buy_time_str, sell_time_str, profit_float), ...] → utf-8-sig CSV.
+
+    parse_backtest_series가 daily(매도시간 거래일)·holdings(매수/매도 event-sweep)
+    둘 다 산출할 수 있도록 매수시간/매도시간/수익금을 모두 채운다.
+    """
+    fd, path = tempfile.mkstemp(suffix=".csv")
+    os.close(fd)
+    with open(path, "w", encoding="utf-8-sig", newline="") as fh:
+        fh.write(_HOLD_HEADER)
+        for buy_time, sell_time, profit in rows:
+            fh.write(f"A종목,{buy_time},{sell_time},{profit}\n")
+    return path
+
+
+def test_holdings_overlap_peak():
+    """겹치는 두 거래 → 동시보유 peak=2, 비겹침이면 1로 떨어진다(event-sweep)."""
+    # 거래1: 09:00:00 매수 ~ 09:05:00 매도.
+    # 거래2: 09:02:00 매수 ~ 09:10:00 매도  → 09:02~09:05 구간 동시보유 2.
+    # 거래3: 09:20:00 매수 ~ 09:25:00 매도  → 단독(겹침 없음) 보유 1.
+    rows = [
+        ("20250103090000", "20250103090500", 100.0),
+        ("20250103090200", "20250103091000", 50.0),
+        ("20250103092000", "20250103092500", -30.0),
+    ]
+    path = _write_hold_csv(rows)
+    try:
+        out = parse_backtest_series(path, betting="5")
+    finally:
+        os.remove(path)
+
+    holdings = out["holdings"]
+    # 이벤트 6개(거래 3 × 진입/청산). t_index는 0..5 연속.
+    assert len(holdings) == 6
+    assert [h["t_index"] for h in holdings] == [0, 1, 2, 3, 4, 5]
+    counts = [h["count"] for h in holdings]
+    # 시각순: +1(09:00)→1, +1(09:02)→2, -1(09:05)→1, -1(09:10)→0,
+    #         +1(09:20)→1, -1(09:25)→0.
+    assert counts == [1, 2, 1, 0, 1, 0]
+    assert out["summary"]["peak_holdings"] == 2
+    # 기존 키 불변(O2 호환): daily/cumulative/drawdown/summary 그대로 존재.
+    assert len(out["daily"]) == 1  # 거래일 1개(20250103).
+    assert out["summary"]["trade_count"] == 3
+
+
+def test_holdings_same_time_sell_before_buy_no_overcount():
+    """동일 시각 청산/진입이 겹쳐도 -1이 +1보다 먼저 처리되어 과대계상 없음."""
+    # 거래1: 09:00 매수 ~ 09:05 매도.
+    # 거래2: 09:05 매수 ~ 09:10 매도  → 09:05에 거래1 청산(-1)·거래2 진입(+1) 동시.
+    #   -1을 먼저 처리하면 보유수가 1을 넘지 않는다(0→1→0→1→0이 아니라 …→0→1…).
+    rows = [
+        ("20250103090000", "20250103090500", 100.0),
+        ("20250103090500", "20250103091000", 50.0),
+    ]
+    path = _write_hold_csv(rows)
+    try:
+        out = parse_backtest_series(path, betting="5")
+    finally:
+        os.remove(path)
+    counts = [h["count"] for h in out["holdings"]]
+    # 정렬: (09:00,+1)→1, (09:05,-1)→0, (09:05,+1)→1, (09:10,-1)→0.
+    assert counts == [1, 0, 1, 0]
+    assert out["summary"]["peak_holdings"] == 1
+
+
+def test_holdings_empty_without_buy_time_column():
+    """매수시간 컬럼이 없으면 holdings는 빈 리스트(daily 등은 정상)."""
+    # _HEADER(매수시간 없음)로 만든 CSV → daily는 매도시간으로 산출되지만 holdings는 빈다.
+    rows = [("20250103090403", 100.0), ("20250104090403", 200.0)]
+    path = _write_csv(rows)  # 매도시간/수익금만(매수시간 없음).
+    try:
+        out = parse_backtest_series(path, betting="5")
+    finally:
+        os.remove(path)
+    assert out["holdings"] == []
+    assert out["summary"]["peak_holdings"] == 0
+    # 기존 daily/cumulative는 정상(holdings만 빈다).
+    assert len(out["daily"]) == 2
+
+
+def test_holdings_missing_csv_empty():
+    """CSV 없음 → holdings=[]·peak_holdings=0 무예외(빈 구조)."""
+    out = parse_backtest_series("/nonexistent/path/x.csv", betting="5")
+    assert out["holdings"] == []
+    assert out["summary"]["peak_holdings"] == 0
+
+
+def test_holdings_downsample_bounds_length_and_peak_preserved():
+    """이벤트 수가 downsample 한도를 넘으면 추림되지만 peak_holdings는 전체 기준."""
+    # 모두 겹치는 50거래(동시보유 50까지 쌓였다 풀린다). downsample=10이면 점<=10.
+    rows = []
+    base_buy = 90000  # HHMMSS 시작.
+    for i in range(50):
+        # 매수는 09:00:00부터 1초씩, 매도는 모두 늦은 10:00:00 이후(전부 겹침).
+        bt = f"20250103{base_buy + i:06d}"
+        st = f"20250103{100000 + i:06d}"
+        rows.append((bt, st, 10.0))
+    path = _write_hold_csv(rows)
+    try:
+        out = parse_backtest_series(path, betting="5", downsample=10)
+    finally:
+        os.remove(path)
+    assert len(out["holdings"]) <= 10
+    # 전부 겹치므로 최대 동시보유=50(추림과 무관하게 전체 기준 peak).
+    assert out["summary"]["peak_holdings"] == 50
