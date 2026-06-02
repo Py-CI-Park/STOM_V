@@ -122,7 +122,7 @@
 
 | 단계 | 목표 | 산출물 | 수용 기준 | 핵심 불변식 |
 |------|------|--------|-----------|-------------|
-| **S0. 시간지평 잠금해제 (선결·최우선)** | 09:28 하드클립 제거 | config에 `bt_universe_end_time` 프로파일(tick=장중최대, min=151500) + 시간확장 시 거래수/메모리 영향 계측 스크립트 | 오후 시간대 틱이 백테에 실제 유입됨을 1개월 소형유니버스로 실측(거래수·메모리 곡선 기록). OOM 없이 완주 | end_time만 config 토글 변경, 엔진 무수정 |
+| **S0. 시간지평 잠금해제 (선결·최우선)** ✅**완료**(`8148467b`) | 09:28 하드클립 제거 | `full_session_enabled` 토글(기본 OFF) + `bt_min_universe_end_time=151900`; `_build_warm_btconfig`가 min+토글ON일 때만 풀세션 개방 | **실증됨**: warm min 스모크 ON=40거래(매수 09:29~11:42·매도~15:18) vs OFF=0거래(09:28클립). 단위 신규0·code-reviewer APPROVE·OOM없음 | end_time만 config 토글 변경, 엔진 무수정 ✅ |
 | **S1. 넓은 생성 기본화** | 적은조건×시간×시총×등락률 광역 생성 | classification_generation_enabled + require_filter_gates(min 5~7) 기본 ON 프로파일 + time_window를 '값 범위' 검사로 승격(시분초 lo/hi 게이트) | 생성 100개 중 시간창 분포가 09:00~15:00에 실제 분산됨을 측정 | 프롬프트+게이트 토글, 하드게이트 무수정 |
 | **S2. 퀀트정제 폐루프 (분석→생성)** | 측정→불필요조건 제거→재생성 자동화 | (1)프론트에 FeatureImportance 막대·EdgeRatio·시간대×시총 Heatmap·MFE-MAE 히스토그램 4패널 (2)stable_cells avoid 세그먼트를 다음세대 프롬프트로 자동 주입하는 폐루프 | 분석 백엔드 3종 UI 렌더 + avoid 세그먼트가 프롬프트에 자동 반영돼 해당 조건 빈도 감소 측정 | 분석 모듈 무영향 계약, 환류는 프롬프트 레벨만 |
 | **S3. 밴드 그릇 배선 + 시간축 일급화** | 넓은 밴드 생성→is_off 결정론 정제 | (1)band_compiler를 generator 경로에 옵트인 배선 (2)**시분초를 BandSpec(op=between_le, lo/hi=시각, active)로 1급 표현**하도록 컴파일러 확장 (3)band_optimizer(Optuna TPE) | 시간/시총/등락률을 밴드축으로 활짝 열고(off) 좁혀 생성한 전략이 백테·채점 통과. 시각창이 연속 튜닝축이 됨 | 순수 추가 모듈, 엔진 0 import, 토글 OFF byte-identical |
