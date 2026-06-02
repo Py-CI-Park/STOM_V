@@ -126,7 +126,7 @@ def generate_strategy(
         min_filter_categories: require_filter_gates=True일 때 요구하는 최소 필터 범주 수.
             시드는 9개 범주를 충족한다. require_filter_gates=False면 미사용(무영향).
         classification_generation_enabled: build_messages로 전달(매수 분류축 유도 프롬프트
-            토글 — 시총 구분·등락률 구분·넓은 시간창 09:00~09:28). build_messages가
+            토글 — 시총 구분·등락률 구분·넓은 시간창 09:00~09:30). build_messages가
             kind=='buy'일 때만 반영하므로 매도 경로엔 무영향. 기본 False=하위호환(기존
             프롬프트 byte-동일).
         hypothesis_feedback: 직전 세대 판정 가정 환류 문자열(P2b-1). build_messages로

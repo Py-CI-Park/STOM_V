@@ -2,7 +2,7 @@
 
 검증 대상 — build_messages(classification_generation_enabled 토글):
   1) ON: kind=='buy' 매수 프롬프트에 3개 분류축 마커 존재
-     ("분류축", "시가총액 구분", "등락률 구분", "09:00~09:28").
+     ("분류축", "시가총액 구분", "등락률 구분", "09:00~09:30").
   2) OFF: kind=='buy' 매수 프롬프트에 "분류축" 부재(미주입).
   3) OFF 경로 byte-동일: kwarg 생략 == 명시 False (메시지 완전 동일).
   4) buy-only: kind=='sell'은 ON이어도 "분류축" 부재(매도 무영향).
@@ -42,7 +42,7 @@ def test_buy_on_contains_classification_axes():
     assert _CLASSIFY_MARKER in text
     assert "시가총액 구분" in text
     assert "등락률 구분" in text
-    assert "09:00~09:28" in text
+    assert "09:00~09:30" in text
 
 
 # ============================================================
