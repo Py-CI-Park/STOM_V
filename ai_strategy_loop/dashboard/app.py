@@ -942,6 +942,74 @@ def _edge_ratio_payload(
     return {"runs": target_runs, "fine_time": bool(fine_time), **report}
 
 
+def _feature_importance_payload(
+    run_id: Optional[str], run_ids: Optional[str], axis: str, fine_time: bool
+) -> Dict[str, Any]:
+    """run(들)의 세대 결과 CSV를 풀링해 세그먼트별 승리-변수 피처 중요도를 반환한다(읽기 전용, 무예외).
+
+    분석 전용(엔진/하드게이트/스코어/생성/winner 무영향). loop_runs.db의 generations에서
+    csv_path를 모은다:
+      - run_ids(쉼표구분) 주면 그 모든 run의 **모든 세대** csv_path를 모은다(파노라마 풀).
+      - 아니면 run_id 단일 run의 모든 세대 csv_path를 모은다.
+    경로는 path로 dedupe하고, 상대경로는 REPO_ROOT 기준으로 해석한다(서버 CWD 무관).
+    모은 CSV를 feature_importance_from_csvs로 풀링 집계한다(추가 백테 0회). 각 B_* 진입
+    피처가 승/패를 가르는 정도(Cohen's d + 분위 승률)를 전역·세그먼트(시총 또는 시간대)별로 낸다.
+
+    run 식별자 미지정/없는 run/세대 없음/조회 실패/풀 비음은 {"error": ...} 또는
+    feature_importance_from_csvs의 insufficient 결과로 표준화한다(무예외).
+    """
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+    from ai_strategy_loop.fitness.feature_importance import (  # noqa: PLC0415
+        feature_importance_from_csvs,
+    )
+
+    # run_ids(쉼표구분) 우선, 없으면 run_id 단일. 둘 다 없으면 error.
+    if run_ids:
+        target_runs = [s.strip() for s in run_ids.split(",") if s.strip()]
+    elif run_id:
+        target_runs = [run_id]
+    else:
+        target_runs = []
+    if not target_runs:
+        return {"error": "run_id or run_ids required"}
+
+    # generations에서 모든 세대 csv_path를 모은다(gate-passed 한정 아님 — 풀을 풍부하게).
+    #   경로는 등장 순서를 보존하며 path로 dedupe한다.
+    seen: set = set()
+    raw_paths: List[str] = []
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState()
+        for rid in target_runs:
+            for row in st.get_generations(rid):  # gen_no 오름차순.
+                cp = row.get("csv_path")
+                if cp and cp not in seen:
+                    seen.add(cp)
+                    raw_paths.append(str(cp))
+    except Exception as exc:  # noqa: BLE001 - DB 없거나 조회 실패면 error(무예외).
+        return {"error": str(exc)}
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    if not raw_paths:
+        return {"error": f"no csv_path for runs={target_runs!r}"}
+
+    # 상대경로는 REPO_ROOT 기준으로 해석(서버 CWD 무관 동작).
+    resolved = [
+        p if os.path.isabs(p) else os.path.join(REPO_ROOT, p) for p in raw_paths
+    ]
+    try:
+        report = feature_importance_from_csvs(resolved, axis=axis, fine_time=fine_time)
+    except Exception as exc:  # noqa: BLE001 - 풀링 집계 실패도 error로 흡수(무예외).
+        return {"error": str(exc)}
+
+    return {"runs": target_runs, **report}
+
+
 def create_app() -> FastAPI:
     """대시보드 FastAPI 앱을 생성한다 (테스트가 TestClient로 감싼다)."""
     manager = LoopProcessManager()
@@ -1112,6 +1180,21 @@ def create_app() -> FastAPI:
         insufficient로 표준화한다(읽기 전용·무예외).
         """
         return _edge_ratio_payload(run_id, run_ids, fine_time)
+
+    @app.get("/feature_importance")
+    def feature_importance(run_id: Optional[str] = None, run_ids: Optional[str] = None,
+                           axis: str = "market_cap", fine_time: bool = False) -> Dict[str, Any]:
+        """run(들)의 세대 결과 CSV를 풀링해 세그먼트별 승리-변수 피처 중요도를 반환한다.
+
+        쿼리: ?run_ids=<a,b,c>(파노라마 다중 run 풀) 또는 ?run_id=<run_id>(단일 run 풀),
+        &axis=<market_cap|time>(세그먼트 축), &fine_time=<bool>(시간축 5분 시초 세분). 각 B_*
+        진입 피처가 승리거래(수익률>0)와 패배거래를 가르는 정도를 표준화 평균차(Cohen's d)와
+        상/하위 사분위 승률로 산출하고, 전역 풀과 세그먼트(시총 등급 또는 시간대)별로 나눠
+        "어느 시간대×시총에서 어느 진입변수가 승패를 가르나"에 답한다(분석 전용·엔진/하드게이트/
+        스코어 무영향·추가 백테 0회). run 식별자 미지정/없는 run/CSV 없음은 {"error": ...} 또는
+        insufficient로 표준화한다(읽기 전용·무예외).
+        """
+        return _feature_importance_payload(run_id, run_ids, axis, fine_time)
 
     @app.websocket("/ws")
     async def ws(websocket: WebSocket) -> None:
