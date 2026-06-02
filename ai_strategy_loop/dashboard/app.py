@@ -32,7 +32,7 @@ import os  # noqa: E402
 import subprocess  # noqa: E402
 import sys  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
-from typing import Any, Dict, Optional  # noqa: E402
+from typing import Any, Dict, List, Optional  # noqa: E402
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
@@ -877,6 +877,71 @@ def _adaptive_timing_payload(run_id: Optional[str], lookback: int) -> Dict[str, 
     return {"run_id": run_id, "lookback": lookback, **report}
 
 
+def _edge_ratio_payload(
+    run_id: Optional[str], run_ids: Optional[str], fine_time: bool
+) -> Dict[str, Any]:
+    """run(들)의 세대 결과 CSV를 풀링해 MFE/MAE 엣지비율 + 파노라마 세그먼트를 반환한다(읽기 전용, 무예외).
+
+    분석 전용(엔진/하드게이트/스코어/생성/winner 무영향). loop_runs.db의 generations에서
+    csv_path를 모은다:
+      - run_ids(쉼표구분) 주면 그 모든 run의 **모든 세대** csv_path를 모은다(파노라마 풀).
+      - 아니면 run_id 단일 run의 모든 세대 csv_path를 모은다.
+    경로는 path로 dedupe하고, 상대경로는 REPO_ROOT 기준으로 해석한다(서버 CWD 무관).
+    모은 CSV를 edge_report_from_csvs로 풀링 집계한다(추가 백테 0회).
+
+    run 식별자 미지정/없는 run/세대 없음/조회 실패/풀 비음은 {"error": ...} 또는
+    edge_report_from_csvs의 insufficient 결과로 표준화한다(무예외).
+    """
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+    from ai_strategy_loop.fitness.edge_ratio import edge_report_from_csvs  # noqa: PLC0415
+
+    # run_ids(쉼표구분) 우선, 없으면 run_id 단일. 둘 다 없으면 error.
+    if run_ids:
+        target_runs = [s.strip() for s in run_ids.split(",") if s.strip()]
+    elif run_id:
+        target_runs = [run_id]
+    else:
+        target_runs = []
+    if not target_runs:
+        return {"error": "run_id or run_ids required"}
+
+    # generations에서 모든 세대 csv_path를 모은다(gate-passed 한정 아님 — 풀을 풍부하게).
+    #   경로는 등장 순서를 보존하며 path로 dedupe한다.
+    seen: set = set()
+    raw_paths: List[str] = []
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState()
+        for rid in target_runs:
+            for row in st.get_generations(rid):  # gen_no 오름차순.
+                cp = row.get("csv_path")
+                if cp and cp not in seen:
+                    seen.add(cp)
+                    raw_paths.append(str(cp))
+    except Exception as exc:  # noqa: BLE001 - DB 없거나 조회 실패면 error(무예외).
+        return {"error": str(exc)}
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    if not raw_paths:
+        return {"error": f"no csv_path for runs={target_runs!r}"}
+
+    # 상대경로는 REPO_ROOT 기준으로 해석(서버 CWD 무관 동작).
+    resolved = [
+        p if os.path.isabs(p) else os.path.join(REPO_ROOT, p) for p in raw_paths
+    ]
+    try:
+        report = edge_report_from_csvs(resolved, fine_time=fine_time)
+    except Exception as exc:  # noqa: BLE001 - 풀링 집계 실패도 error로 흡수(무예외).
+        return {"error": str(exc)}
+
+    return {"runs": target_runs, "fine_time": bool(fine_time), **report}
+
+
 def create_app() -> FastAPI:
     """대시보드 FastAPI 앱을 생성한다 (테스트가 TestClient로 감싼다)."""
     manager = LoopProcessManager()
@@ -1034,6 +1099,19 @@ def create_app() -> FastAPI:
         미지정/없는 run/CSV 없음/파싱 실패는 {"error": ...}로 표준화한다(읽기 전용·무예외).
         """
         return _adaptive_timing_payload(run_id, lookback)
+
+    @app.get("/edge_ratio")
+    def edge_ratio(run_id: Optional[str] = None, run_ids: Optional[str] = None,
+                   fine_time: bool = False) -> Dict[str, Any]:
+        """run(들)의 세대 결과 CSV를 풀링해 MFE/MAE 엣지비율 + 시간대×시총 파노라마 세그먼트를 반환한다.
+
+        쿼리: ?run_ids=<a,b,c>(파노라마 다중 run 풀) 또는 ?run_id=<run_id>(단일 run 풀),
+        &fine_time=<bool>(5분 시초 세분). 미사용이던 R_MFE/R_MAE 신호로 엣지비율(평균MFE/평균|MAE|)을
+        산출하고, 누적된 전체 거래를 시총·시간대·교차로 쪼개 본다(분석 전용·엔진/하드게이트/스코어
+        무영향·추가 백테 0회). run 식별자 미지정/없는 run/CSV 없음은 {"error": ...} 또는
+        insufficient로 표준화한다(읽기 전용·무예외).
+        """
+        return _edge_ratio_payload(run_id, run_ids, fine_time)
 
     @app.websocket("/ws")
     async def ws(websocket: WebSocket) -> None:
