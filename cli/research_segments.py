@@ -37,6 +37,16 @@ DEFAULT_MARKET_CAP_BUCKETS = (
     ('초대형', 50000, float('inf')),
 )
 
+# 매수 시점 등락률(B_등락율) 기준 구간. 음수(하락)·약상승·상승·급등·초급등·폭등 6단계.
+DEFAULT_CHANGE_BUCKETS = (
+    ('급락', float('-inf'), 0.0),
+    ('약상승', 0.0, 3.0),
+    ('상승', 3.0, 6.0),
+    ('급등', 6.0, 10.0),
+    ('초급등', 10.0, 20.0),
+    ('폭등', 20.0, float('inf')),
+)
+
 
 def _assign_bucket(value: float, buckets: tuple[tuple[str, float, float], ...], default: str = '미분류') -> str:
     for name, lower, upper in buckets:
@@ -98,6 +108,29 @@ def add_market_cap_segment(data, column: str = 'B_시가총액') -> pd.DataFrame
         return df
     normalized = _normalize_market_cap_values(df[column])
     df['_market_cap_segment'] = [_assign_bucket(float(value), DEFAULT_MARKET_CAP_BUCKETS) for value in normalized]
+    return df
+
+
+def add_change_segment(
+    data,
+    column: str = 'B_등락율',
+    out_col: str = '_change_segment',
+    buckets: tuple = DEFAULT_CHANGE_BUCKETS,
+) -> pd.DataFrame:
+    """Add `_change_segment` using buy-time change-rate (B_등락율) buckets.
+
+    컬럼이 없거나 유효값이 없으면 전 행을 '미분류'로 채워 graceful하게 처리한다.
+    buckets defaults to DEFAULT_CHANGE_BUCKETS. Pass custom buckets to override.
+    """
+    df = normalize_trade_frame(data)
+    if column not in df.columns:
+        df[out_col] = '미분류'
+        return df
+    values = pd.to_numeric(df[column], errors='coerce')
+    df[out_col] = [
+        _assign_bucket(float(v), buckets) if not pd.isna(v) else '미분류'
+        for v in values
+    ]
     return df
 
 

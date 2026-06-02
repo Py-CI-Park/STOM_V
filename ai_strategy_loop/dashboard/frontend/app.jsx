@@ -221,6 +221,15 @@ function App() {
             <aside style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {/* #65 P0 — 분석 클러스터를 판정 카드 위로(인과 순서: 분석→가정→개선이
                   판정의 근거). 패널 자체 변경 없이 JSX 순서만 재배치. */}
+              {/* ── AI 분석 패널 묶음 (edge_ratio / feature_importance REST) ── */}
+              <SectionLabel text="AI 전략 분석 · Edge Ratio · Feature" />
+              <ErrorBoundary>
+                <EdgeRatioPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
+              </ErrorBoundary>
+              <ErrorBoundary>
+                <FeatureImportancePanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
+              </ErrorBoundary>
+
               {/* ── 분석 패널 묶음 (P1~P5 live page_data 소비, demo 배지 규약) ── */}
               <SectionLabel text="진화 분석 · P1~P5" />
               {/* P2b-2 — 가정 루프(세운 가정+채택/기각 판정) 가시화. 판정된 가정이

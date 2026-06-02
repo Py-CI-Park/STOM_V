@@ -43,6 +43,7 @@ from cli._utils import ensure_dataframe as _ensure_dataframe
 from cli.research_segments import (
     DEFAULT_TIME_BUCKETS,
     FINE_TIME_BUCKETS,
+    add_change_segment,
     add_market_cap_segment,
     add_time_segment,
 )
@@ -212,12 +213,14 @@ def feature_importance_by_segment(
 
     buckets = FINE_TIME_BUCKETS if fine_time else DEFAULT_TIME_BUCKETS
     # add_*_segment는 내부에서 normalize_trade_frame으로 복사하므로 원본 df 불변.
-    labeled = add_market_cap_segment(add_time_segment(df, buckets=buckets))
+    labeled = add_change_segment(add_market_cap_segment(add_time_segment(df, buckets=buckets)))
 
     if axis == "market_cap":
         seg_column = "_market_cap_segment"
     elif axis == "time":
         seg_column = "_time_segment"
+    elif axis == "change":
+        seg_column = "_change_segment"
     else:
         return {}
 
@@ -255,7 +258,7 @@ def feature_importance_from_csvs(
     Args:
         csv_paths: per-trade 결과 CSV 경로 리스트(절대/REPO_ROOT 기준 상대 모두 가능 —
             호출부가 해석해 절대경로로 넘기는 것을 권장).
-        axis: 세그먼트 축 'market_cap'(기본) 또는 'time'.
+        axis: 세그먼트 축 'market_cap'(기본), 'time', 또는 'change'(등락률).
         fine_time: axis='time'에서 True면 5분 시초 셀로 세분(기본 False=30분 coarse).
         min_per_group: 피처당 win/lose 각 최소 유효값 수(기본 10).
         min_cell: 세그먼트 셀 최소 거래 수(기본 20).

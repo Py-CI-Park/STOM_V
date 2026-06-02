@@ -34,6 +34,7 @@ from cli._utils import ensure_dataframe as _ensure_dataframe
 from cli.research_segments import (
     DEFAULT_TIME_BUCKETS,
     FINE_TIME_BUCKETS,
+    add_change_segment,
     add_market_cap_segment,
     add_time_segment,
 )
@@ -180,14 +181,15 @@ def _cell_row(label: str, sub: pd.DataFrame) -> Dict[str, Any]:
 
 
 def edge_by_segment(df: pd.DataFrame, fine_time: bool = False, min_samples: int = DEFAULT_MIN_SAMPLES) -> Dict[str, Any]:
-    """거래 DataFrame을 시총·시간대·교차(시간×시총)로 쪼개 셀별 엣지 지표를 산출한다(순수·무예외).
+    """거래 DataFrame을 시총·시간대·등락률·교차(시간×시총)로 쪼개 셀별 엣지 지표를 산출한다(순수·무예외).
 
     라벨링은 add_market_cap_segment(add_time_segment(...))로 cli/research_segments를
     그대로 재사용한다(시총 단위 자동 추론, fine_time이면 5분 시초 셀). '미분류' 셀과
-    거래 수 < min_samples 셀은 건너뛴다(잡음 배제).
+    거래 수 < min_samples 셀은 건너뛴다(잡음 배제). B_등락율 컬럼이 없으면 change 축은
+    빈 리스트를 돌려 기존 축에 영향 없다(graceful).
 
     Args:
-        df: 거래 DataFrame('수익률' + 라벨링용 B_시분초/B_시가총액 보유 권장).
+        df: 거래 DataFrame('수익률' + 라벨링용 B_시분초/B_시가총액/B_등락율 보유 권장).
         fine_time: True면 시간축을 FINE_TIME_BUCKETS(5분 시초)로, 기본 False면
             DEFAULT_TIME_BUCKETS(30분 coarse)로 라벨링한다.
         min_samples: 한 셀이 보고되려면 필요한 최소 거래 수(기본 5).
@@ -196,16 +198,18 @@ def edge_by_segment(df: pd.DataFrame, fine_time: bool = False, min_samples: int 
         {
           "market_cap": [{label, count, win_rate, avg_return, edge_ratio, mean_mae, total_profit}, ...],
           "time":       [...],   # 시간대 셀.
+          "change":     [...],   # 등락률 셀.
           "cross":      [...],   # label = "{time}×{mcap}".
         }
         각 리스트는 avg_return 오름차순(손실 집중 먼저) 정렬.
     """
     buckets = FINE_TIME_BUCKETS if fine_time else DEFAULT_TIME_BUCKETS
     # add_*_segment는 내부에서 normalize_trade_frame으로 복사하므로 원본 df 불변.
-    labeled = add_market_cap_segment(add_time_segment(df, buckets=buckets))
+    labeled = add_change_segment(add_market_cap_segment(add_time_segment(df, buckets=buckets)))
 
     mcap_rows: List[Dict[str, Any]] = []
     time_rows: List[Dict[str, Any]] = []
+    change_rows: List[Dict[str, Any]] = []
     cross_rows: List[Dict[str, Any]] = []
 
     if "_market_cap_segment" in labeled.columns:
@@ -222,6 +226,13 @@ def edge_by_segment(df: pd.DataFrame, fine_time: bool = False, min_samples: int 
                 continue
             time_rows.append(_cell_row(label, group))
 
+    if "_change_segment" in labeled.columns:
+        for seg, group in labeled.groupby("_change_segment", dropna=False):
+            label = str(seg)
+            if label == _UNCLASSIFIED or len(group) < min_samples:
+                continue
+            change_rows.append(_cell_row(label, group))
+
     if "_time_segment" in labeled.columns and "_market_cap_segment" in labeled.columns:
         for (t_seg, m_seg), group in labeled.groupby(
             ["_time_segment", "_market_cap_segment"], dropna=False
@@ -234,9 +245,10 @@ def edge_by_segment(df: pd.DataFrame, fine_time: bool = False, min_samples: int 
     # avg_return 오름차순(손실 집중 셀 먼저)으로 정렬해 가독성↑.
     mcap_rows.sort(key=lambda r: r["avg_return"])
     time_rows.sort(key=lambda r: r["avg_return"])
+    change_rows.sort(key=lambda r: r["avg_return"])
     cross_rows.sort(key=lambda r: r["avg_return"])
 
-    return {"market_cap": mcap_rows, "time": time_rows, "cross": cross_rows}
+    return {"market_cap": mcap_rows, "time": time_rows, "change": change_rows, "cross": cross_rows}
 
 
 def edge_report_from_csvs(
