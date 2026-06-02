@@ -176,6 +176,13 @@ def config_field_specs() -> List[Dict[str, Any]]:
                     "추가한다. 기본 OFF.",
         },
         {
+            "name": "exit_edge_feedback_enabled", "label": "청산 효율 환류(매도)", "type": "bool",
+            "default": d.exit_edge_feedback_enabled,
+            "help": "켜면 매도 프롬프트에 edge_ratio 부검 발견(손실 MAE가 승리 대비 ~2.6배 깊음·"
+                    "최고평가익의 ~20%만 실현)을 환류하는 블록(손실 빠르게 끊기·트레일 익절)을 "
+                    "추가한다. 기본 OFF.",
+        },
+        {
             "name": "freeze_buy_on_mdd_only", "label": "MDD-only 시 매수 동결", "type": "bool",
             "default": d.freeze_buy_on_mdd_only,
             "help": "best가 MDD만 부족(빈도·수익 통과)할 때 매수를 동결하고 매도(청산)만 재생성. 기본 ON.",

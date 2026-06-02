@@ -70,6 +70,7 @@ def generate_strategy(
     target_daily_trades: Optional[float] = None,
     require_liquidity_gate: bool = False,
     mdd_control_enabled: bool = False,
+    exit_edge_feedback_enabled: bool = False,
     encourage_time_dispersion: bool = False,
     require_filter_gates: bool = False,
     min_filter_categories: int = 5,
@@ -108,6 +109,10 @@ def generate_strategy(
         mdd_control_enabled: build_messages로 전달(매도 MDD 억제 프롬프트 토글).
             build_messages가 kind=='sell'일 때만 반영하므로 매수 경로엔 무영향.
             기본 False=하위호환(기존 프롬프트 byte-동일).
+        exit_edge_feedback_enabled: build_messages로 전달(매도 청산 효율 환류 토글 —
+            edge_ratio 부검 발견[손실 MAE가 승리 대비 ~2.6배 깊음·최고익의 ~20%만
+            실현]을 청산 프롬프트에 환류). build_messages가 kind=='sell'일 때만
+            반영하므로 매수 경로엔 무영향. 기본 False=하위호환(기존 프롬프트 byte-동일).
         encourage_time_dispersion: build_messages로 전달(매수 진입 시간 분산 넛지
             프롬프트 토글, Phase C-3). build_messages가 kind=='buy'일 때만 반영하므로
             매도 경로엔 무영향. 시간 분산은 정적 탐지 불가라 reject 게이트가 아닌
@@ -164,6 +169,7 @@ def generate_strategy(
             dispersion_prompt_enabled=dispersion_prompt_enabled,
             target_daily_trades=target_daily_trades,
             mdd_control_enabled=mdd_control_enabled,
+            exit_edge_feedback_enabled=exit_edge_feedback_enabled,
             encourage_time_dispersion=encourage_time_dispersion,
             require_filter_gates=require_filter_gates,
             classification_generation_enabled=classification_generation_enabled,
@@ -208,6 +214,7 @@ def generate_strategy(
                         "dispersion_prompt_enabled": dispersion_prompt_enabled,
                         "require_liquidity_gate": require_liquidity_gate,
                         "mdd_control_enabled": mdd_control_enabled,
+                        "exit_edge_feedback_enabled": exit_edge_feedback_enabled,
                         "encourage_time_dispersion": encourage_time_dispersion,
                         "require_filter_gates": require_filter_gates,
                         "classification_generation_enabled": classification_generation_enabled,

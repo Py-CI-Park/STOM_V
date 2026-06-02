@@ -662,6 +662,10 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             # Track B 3차 MDD 제어 강화 — build_messages가 kind=='sell'일 때만 MDD 억제
             #   블록을 매도 프롬프트에 추가하므로 매수 경로엔 무영향. 기본 OFF면 byte-동일.
             mdd_control_enabled=getattr(config, "mdd_control_enabled", False),
+            # 청산 효율 환류 — build_messages가 kind=='sell'일 때만 edge_ratio 부검 발견
+            #   (손실 MAE가 승리 대비 ~2.6배 깊음·최고익 ~20%만 실현) 환류 블록을 매도
+            #   프롬프트에 추가하므로 매수 경로엔 무영향. 기본 OFF면 byte-동일(하위호환).
+            exit_edge_feedback_enabled=getattr(config, "exit_edge_feedback_enabled", False),
             # Phase C-3 시간 분산 넛지 — build_messages가 kind=='buy'일 때만 시초 분산
             #   가이드를 추가하므로 매도 경로엔 무영향. 기본 OFF면 프롬프트 byte-동일.
             encourage_time_dispersion=getattr(config, "encourage_time_dispersion", False),

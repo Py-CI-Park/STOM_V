@@ -327,6 +327,22 @@ class LoopConfig:
     #   미추가되어 build_messages 출력이 기존과 byte-동일하다(하위호환).
     mdd_control_enabled: bool = False
 
+    # --- 청산 효율 환류: edge_ratio 부검 발견을 매도(청산) 프롬프트에 환류 ---
+    # Exit-edge feedback: feed the edge_ratio autopsy finding into the SELL prompt.
+    # 데이터 근거(fitness/edge_ratio.py, 시드 pooled trades): edge_ratio ≈ 1.54로
+    #   진입에는 방향성 엣지가 존재한다(유리 변동 > 불리 변동). 그러나
+    #   mae_efficiency ≈ 0.20 — 최고 평가익의 ~20%만 실현하고 ~80%를 반납하며,
+    #   손실거래의 평균 불리 변동(|MAE|)이 승리거래보다 ~2.6배 깊다(손실을 오래
+    #   끌어 깊은 역행을 허용). 결론: 진입 엣지는 있고 손익을 가르는 건 *청산*이다 —
+    #   손실을 더 빨리 끊고(비대칭 역행 차단), 최고 평가익을 더 많이 확정하라.
+    #   The exit, not the entry, decides P/L: cut losers faster, capture more of peak.
+    # exit_edge_feedback_enabled: True면 build_messages가 매도(kind=='sell') 프롬프트에
+    #   이 부검 발견을 가르치는 블록을 기존 청산 지침에 더해 추가한다(타임프레임 무관
+    #   범주명 — 수익률/매수후최고수익률/매수후최저수익률 — 만 사용). kind=='sell'일
+    #   때만 반영되며 매수(buy)에는 영향이 없다. 기본 OFF면 이 블록이 미추가되어
+    #   build_messages 출력이 기존과 byte-동일하다(하위호환).
+    exit_edge_feedback_enabled: bool = False
+
     # --- Phase C-3: 생성 진입 시간 분산 유도 (매수 프롬프트 토글) ---
     # 데이터 근거: 시드는 거래가 09:00~09:05 한 분에 몰려 시간대 신호가 degenerate하다.
     #   비-시드 생성 전략이 시초 시간대(09:00~09:20)에 진입을 분산하도록 유도하면

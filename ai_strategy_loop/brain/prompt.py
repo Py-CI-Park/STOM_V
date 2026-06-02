@@ -166,6 +166,7 @@ def build_messages(
     dispersion_prompt_enabled: bool = False,
     target_daily_trades: Optional[float] = None,
     mdd_control_enabled: bool = False,
+    exit_edge_feedback_enabled: bool = False,
     encourage_time_dispersion: bool = False,
     require_filter_gates: bool = False,
     classification_generation_enabled: bool = False,
@@ -203,6 +204,12 @@ def build_messages(
             블록(타이트 손절·트레일링·시간 손절·손실구간 신규노출 자제)을 매도
             프롬프트에 추가한다. kind=='sell'일 때만 반영되며 매수(buy)엔 영향이 없다.
             기본 False면 이 블록이 미추가되어 출력이 byte-동일 유지된다(하위호환).
+        exit_edge_feedback_enabled: True면(매도 경로) edge_ratio 부검 발견(손실 MAE가
+            승리 대비 ~2.6배 깊음 · 최고 평가익의 ~20%만 실현)을 가르치는 블록을 기존
+            청산 지침에 더해 매도 프롬프트에 추가한다 — 진입 엣지는 있으니 손익을
+            가르는 건 청산 품질임을 명시하고, 손실은 얕고 빠르게 끊고 이익은 고점
+            근처에서 확정하도록 유도한다. kind=='sell'일 때만 반영되며 매수(buy)엔
+            영향이 없다. 기본 False면 미추가되어 출력이 byte-동일 유지된다(하위호환).
         encourage_time_dispersion: True면(매수 경로) 진입 시점을 09:00~09:20 시초
             구간에 분산하라는 소프트 가이드 한 줄을 매수 프롬프트에 추가한다(Phase
             C-3). 시간 분산은 정적 탐지가 불가하므로 reject 게이트가 아닌 프롬프트
@@ -451,6 +458,26 @@ def build_messages(
                 "- ⑥추세이탈 청산(보조): 현재가가 이동평균(현재 timeframe 계열) 아래로 "
                 "이탈하거나 직전 대비 추세가 꺾이면 청산해 추세 붕괴 손실을 막아라.",
                 "목표는 높은 수익이 아니라 '낮고 안정적인 MDD'다.",
+            ]
+        # 청산 효율 환류(매도 전용 토글): edge_ratio 부검 발견을 청산 프롬프트에 환류한다.
+        #   진입 엣지는 존재(edge_ratio≈1.54)하나 mae_efficiency≈0.20(최고익의 ~20%만
+        #   실현)·손실 MAE가 승리 대비 ~2.6배 깊음 → 손익을 가르는 건 청산. OFF(기본)면
+        #   이 블록을 미추가해 출력이 byte-동일하다. 타임프레임 가드 준수 — 변수명을
+        #   못박지 않고 수익률/매수후최고수익률/매수후최저수익률 범주만 권해 분봉/틱
+        #   어느 계열도 깨지 않는다.
+        # Exit-efficiency feedback (sell-only toggle): feed the edge_ratio autopsy
+        #   finding into the exit prompt — entry has edge, exit quality decides P/L.
+        if exit_edge_feedback_enabled:
+            user_lines += [
+                "",
+                "★청산 효율 환류(부검 edge_ratio): 데이터상 ①손실거래가 승리거래보다 약 2.6배 깊게 "
+                "역행한다(손실을 오래 끌어 깊은 손실 MAE를 허용) ②최고평가익의 약 20%만 실현하고 80%를 "
+                "반납한다. 진입 엣지는 존재하므로(평가익 > 역행) 손익을 가르는 건 *청산 품질*이다. 따라서:\n"
+                "- ①손실 측(비대칭 역행 차단): 매수후최저수익률(역행)이 일정폭(예: -1.5~-2%)을 넘으면 *즉시* "
+                "손절하라 — 손실거래가 승리거래보다 깊어지게 두지 마라. 손실 MAE를 승리 수준으로 타이트하게.\n"
+                "- ②이익 측(평가익 반납 차단): 매수후최고수익률 대비 일정폭 되돌리면 *즉시* 트레일 익절하라 — "
+                "최고평가익의 더 큰 비율을 확정해 mae_efficiency를 올려라(80% 반납 → 줄이기).\n"
+                "목표: 손실은 얕고 빠르게, 이익은 고점 근처에서 확정. 승리·손실 MAE 비대칭을 줄이는 것이 핵심."
             ]
 
     if history_summary:
