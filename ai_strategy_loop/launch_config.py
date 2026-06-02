@@ -106,6 +106,17 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "help": "세대별 평가 백테스트 타임프레임. min(분봉)이 검증된 빠른 기본값.",
         },
         {
+            "name": "full_session_enabled", "label": "MIN 풀세션(15시까지)", "type": "bool",
+            "default": d.full_session_enabled,
+            "help": "켜면 min(분봉) 백테 장중 윈도우를 시초 28분이 아니라 풀세션"
+                    "(bt_min_universe_end_time)까지 연다. tick은 데이터 09:30 캡이라 무영향. 기본 OFF.",
+        },
+        {
+            "name": "bt_min_universe_end_time", "label": "MIN 풀세션 종료(HHMMSS)", "type": "number",
+            "default": d.bt_min_universe_end_time,
+            "help": "full_session_enabled+min일 때 장중 윈도우 종료 시각(HHMMSS). 기본 151900(15:19).",
+        },
+        {
             "name": "bt_scope", "label": "Backtest Scope", "type": "select",
             "choices": ["single_stock", "universe"], "default": d.bt_scope,
             "help": "single_stock=MVP 빠른 평가(단일 종목), universe=느린 전체 유니버스.",

@@ -377,13 +377,20 @@ def _build_warm_btconfig(config: LoopConfig) -> BacktestConfig:
     buy/sell는 빈 문자열로 둔다(run마다 WarmBacktestSession.run에 지정).
     스코프는 전체유니버스('종목코드별 분류') + 사용자 검증 baseline 파라미터다.
     """
+    # min 타임프레임 + full_session_enabled일 때만 장중 윈도우를 풀세션까지 연다.
+    #   OFF(기본) 또는 tick → bt_universe_end_time(92800) = 기존과 byte-identical.
+    #   tick은 데이터 09:30 캡이라 토글과 무관하게 항상 bt_universe_end_time.
+    if config.bt_timeframe != "tick" and getattr(config, "full_session_enabled", False):
+        warm_end_time = config.bt_min_universe_end_time
+    else:
+        warm_end_time = config.bt_universe_end_time
     return BacktestConfig(
         buy_strategy="",
         sell_strategy="",
         start_date=config.bt_full_start,
         end_date=config.bt_full_end,
         start_time=config.bt_universe_start_time,
-        end_time=config.bt_universe_end_time,
+        end_time=warm_end_time,
         avg_time=config.bt_avg_time,
         engine_count=config.bt_warm_engine_count,
         is_tick=(config.bt_timeframe == "tick"),

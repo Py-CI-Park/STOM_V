@@ -127,6 +127,15 @@ class LoopConfig:
     bt_full_end: int = 20251231    # warm 전체유니버스 종료일 (YYYYMMDD)
     bt_universe_start_time: int = 90000  # tick 장중 윈도우 시작 (HHMMSS)
     bt_universe_end_time: int = 92800    # tick 장중 윈도우 종료 (28분; 사용자 Tick 전략 범위)
+    # full_session_enabled: min(분봉) 타임프레임에서 장중 윈도우를 시초 28분(92800)이 아니라
+    #   풀세션(bt_min_universe_end_time)까지 연다. 기본 OFF → 기존과 byte-identical(min도 92800).
+    #   엔진엔 명시적 시간 게이트가 없고 start/end_time은 데이터 로딩 윈도우라, end_time을
+    #   풀세션으로 열면 전략이 그 시각까지 거래 가능해진다(_build_warm_btconfig에서만 분기).
+    #   tick은 데이터 자체가 09:30 캡이라 이 토글의 영향을 받지 않는다.
+    full_session_enabled: bool = False
+    # bt_min_universe_end_time: full_session_enabled+min일 때 쓰는 장중 윈도우 종료(HHMMSS).
+    #   min 백DB(stock_min_back.db)는 15:18~moneytop 15:19까지 커버한다. 151900=15:19:00.
+    bt_min_universe_end_time: int = 151900
     bt_betting: str = "5"  # 종목당 배팅(백만원 단위; 사용자 GUI=5=500만원, fidelity 핵심)
     bt_avg_time: int = 30  # 평균 틱수 (사용자=30)
     bt_warm_engine_count: int = 32  # warm 모드 엔진 수(전체유니버스; single_stock용 bt_engine_count와 별도)
