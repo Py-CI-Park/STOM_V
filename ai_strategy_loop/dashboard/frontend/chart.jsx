@@ -949,6 +949,8 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
   const hasSeries = daily.length > 0;
   const hasHoldings = holdings.length > 0;
   const peakHoldings = summary.peak_holdings != null ? summary.peak_holdings : 0;
+  // 무거래 세대 판정: 시계열 없음 또는 trade_count가 명시적으로 0.
+  const noTrades = !hasSeries || (summary.trade_count != null && summary.trade_count === 0);
 
   const W = 880, H = 320;
   const padL = 56, padR = 60, padT = 18, padB = 30;
@@ -1086,8 +1088,9 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
         <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
           <Mini label="거래수" value={summary.trade_count != null ? String(summary.trade_count) : "—"} />
           <Mini label="거래일" value={summary.n_days != null ? String(summary.n_days) : "—"} />
-          <Mini label="최대 동시보유" value={summary.peak_holdings != null ? String(summary.peak_holdings) : "—"}
-                color={peakHoldings > 0 ? "var(--teal)" : undefined} sub="종목수" />
+          <Mini label="최대 동시보유"
+                value={noTrades ? "거래없음" : (summary.peak_holdings != null ? String(summary.peak_holdings) : "—")}
+                color={!noTrades && peakHoldings > 0 ? "var(--teal)" : "var(--ink-3)"} sub="종목수" />
           <Mini label="최종 누적수익" value={summary.final_profit != null ? fmtMoney(summary.final_profit) : "—"}
                 color={summary.final_profit > 0 ? "var(--teal)"
                        : summary.final_profit < 0 ? "var(--red)" : undefined} />
@@ -1117,7 +1120,10 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
                 </g>
               ))}
               {/* peak 강조선 */}
-              {peakHoldings > 0 && (
+              {noTrades ? (
+                <text className="chart-axis-text" x={W - padR + 6} y={hpPadT + hpInnerH / 2 + 3}
+                      textAnchor="start" fill="var(--ink-3)">거래없음</text>
+              ) : peakHoldings > 0 && (
                 <text className="chart-axis-text" x={W - padR + 6} y={yHold(peakHoldings) + 3}
                       textAnchor="start" fill="var(--teal)">peak {peakHoldings}</text>
               )}
@@ -1145,7 +1151,9 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
           ) : !hasSeries ? (
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
                           color: "var(--ink-3)", fontSize: 12, fontFamily: "var(--mono)" }}>
-              백테 결과 시계열이 없습니다(CSV 없음/토글)
+              {(summary.trade_count != null && summary.trade_count === 0)
+                ? "이 세대는 거래가 없습니다 (타임아웃/무거래)"
+                : "백테 결과 시계열이 없습니다(CSV 없음/토글)"}
             </div>
           ) : (
             <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
