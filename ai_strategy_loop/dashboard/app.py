@@ -824,6 +824,59 @@ def _backtest_detail_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
     }
 
 
+def _adaptive_timing_payload(run_id: Optional[str], lookback: int) -> Dict[str, Any]:
+    """run의 gen0(또는 첫 gate_passed) 전략 CSV에 적응형 타이밍 리포트를 적용한다(읽기 전용, 무예외).
+
+    분석 전용(엔진/하드게이트/스코어/생성 무영향) 오버레이다. loop_runs.db의 generations에서
+    그 run의 gen0(가장 낮은 gen_no) 행 csv_path를 찾아 adaptive_timing_report를 돌려준다.
+    gen0에 csv_path가 없으면 첫 gate_passed=1 세대의 csv_path로 폴백한다(_backtest_detail
+    payload와 동일한 LoopState DB 경로/무예외 패턴).
+
+    run_id 미지정/없는 run/csv_path 없음/파싱 실패는 {"error": ...}로 표준화한다(무예외).
+    상대경로 csv_path는 REPO_ROOT 기준으로 해석한다(서버 CWD 무관).
+    """
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+    from ai_strategy_loop.fitness.adaptive_timing import adaptive_timing_report  # noqa: PLC0415
+
+    if not run_id:
+        return {"error": "run_id required"}
+
+    csv_path: Optional[str] = None
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState()
+        rows = st.get_generations(run_id)  # gen_no 오름차순.
+        if not rows:
+            return {"error": f"no generations for run_id={run_id!r}"}
+        # gen0(가장 낮은 gen_no)의 csv_path 우선. 없으면 첫 gate_passed 세대로 폴백.
+        first = rows[0]
+        csv_path = first.get("csv_path")
+        if not csv_path:
+            for row in rows:
+                if bool(row.get("gate_passed")) and row.get("csv_path"):
+                    csv_path = row.get("csv_path")
+                    break
+    except Exception as exc:  # noqa: BLE001 - DB 없거나 조회 실패면 error(무예외).
+        return {"error": str(exc)}
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    if not csv_path:
+        return {"error": f"no csv_path for run_id={run_id!r}"}
+
+    resolved = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+    try:
+        report = adaptive_timing_report(resolved, lookback)
+    except Exception as exc:  # noqa: BLE001 - 리포트 산출 실패도 error로 흡수(무예외).
+        return {"error": str(exc)}
+
+    return {"run_id": run_id, "lookback": lookback, **report}
+
+
 def create_app() -> FastAPI:
     """대시보드 FastAPI 앱을 생성한다 (테스트가 TestClient로 감싼다)."""
     manager = LoopProcessManager()
@@ -971,6 +1024,16 @@ def create_app() -> FastAPI:
                 },
             }
         return _backtest_detail_payload(run_id, gen_no)
+
+    @app.get("/adaptive_timing")
+    def adaptive_timing(run_id: Optional[str] = None, lookback: int = 2) -> Dict[str, Any]:
+        """run의 gen0(또는 첫 gate_passed) 전략 결과 CSV에 적응형 레짐-타이밍 리포트를 돌린다.
+
+        쿼리: ?run_id=<run_id>&lookback=<n>. 분석 전용(엔진/하드게이트/스코어 무영향)
+        오버레이로, always-on 대비 위험조정(수익/MDD)을 비교한다(추가 백테 0회). run_id
+        미지정/없는 run/CSV 없음/파싱 실패는 {"error": ...}로 표준화한다(읽기 전용·무예외).
+        """
+        return _adaptive_timing_payload(run_id, lookback)
 
     @app.websocket("/ws")
     async def ws(websocket: WebSocket) -> None:

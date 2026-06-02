@@ -416,6 +416,22 @@ class LoopConfig:
     #   byte-동일하다(하위호환). CSV 없음/파싱 실패는 no-op으로 흡수(루프 안 막음).
     equity_points_enabled: bool = False
 
+    # --- 적응형 레짐-타이밍 (분석 전용): 시드 자기 자본곡선 추종 오버레이 ---
+    # KR: **분석 전용 — 하드게이트·적합도 스코어·생성(brain) 경로에 무영향이다.** 결과
+    #   CSV의 월별 손익 시계열을 만들어, 각 달에 대해 직전 lookback개월 손익 합이 음수면
+    #   그 달은 FLAT(0 기여)로 두고(워밍업은 맨 앞 lookback개월만 원본 유지) always-on 대비
+    #   위험조정(수익/MDD)을 비교한다. 인과적(미래 미참조) 오버레이로, 다년(2022~2026)
+    #   연속 시계열 OOS에서 시드의 수익/MDD를 ~3.5배 개선함이 검증되었다. 루프 hot path에서
+    #   읽히지 않으며, 대시보드(/adaptive_timing)·오프라인 분석에서만 소비한다.
+    # EN: ANALYSIS-ONLY equity-curve-following overlay (no engine/gate/score/generation
+    #   effect). Go FLAT in a month when the trailing lookback-month P&L sum < 0; compare
+    #   risk-adjusted return vs always-on. Validated ~3.5x return/MDD across multi-year OOS.
+    # adaptive_timing_enabled: 토글이지만 루프 어디서도 읽지 않는다(분석 전용). 켜고 끔이
+    #   대시보드/외부 분석의 의사 표시일 뿐, 루프 동작은 기본 OFF든 ON이든 byte-동일하다.
+    adaptive_timing_enabled: bool = False
+    # adaptive_timing_lookback: 적응형 규칙의 trailing 윈도우(개월). 기본 2(다년 OOS 검증값).
+    adaptive_timing_lookback: int = 2
+
     # --- 가정(Hypothesis) 루프 코어 (P2a): 부검 방향성 예측을 1급 객체로 채택/기각 ---
     # 데이터 근거(§3.16-D 천장 의심): 부검(gate_failure_directive)은 이미 방향성 예측을
     #   만든다("MDD 초과→매도 손절강화", "손익 음수→진입품질↑", "거래 부족→진입완화").
