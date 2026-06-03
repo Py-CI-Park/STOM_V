@@ -404,6 +404,22 @@ class LoopConfig:
     #   (build_messages)이 보완한다. 둘은 짝(가르침+구조하한)으로 동작한다.
     min_filter_categories: int = 5
 
+    # --- T3 (넓은 생성 강화): 무의미한 전범위 시간창(no-op) reject (매수 PRE-SAVE 토글) ---
+    # 데이터 근거(사용자 T3 + 등락률 -30~30 no-op 통찰과 동형): 생성 전략의 '시간창'을
+    #   토큰 존재가 아니라 값 범위(시분초 lo/hi)로 측정하면, 일부 전략이 시간 게이트를
+    #   아예 안 두거나 세션 전범위(예: `시분초 < 153000`만)를 덮어 사실상 시간 무게이트가
+    #   된다. 이는 시간 분산 생성 관점에서 '작성 안 한 것'과 동치다. 이를 약하게 교정한다.
+    # ⚠️ 과도강제 금지(핵심): 인간 시드 Tick_902는 09:02~09:05(3분) **좁은** 창인데
+    #   다년강건 골드다. 따라서 '넓은 창 강제'로 좁은-good 전략을 reject하면 안 된다.
+    #   이 토글은 **no-op(전범위=시간게이트 없음)만** reject하며, 좁은 창은 절대 reject하지
+    #   않는다(is_noop_time_window가 좁은 창을 no-op으로 보지 않음 — filter_gate.py).
+    # require_meaningful_time_window: True면 generate_strategy가 매수(kind=='buy') 전략을
+    #   저장하기 전에 시간창이 세션 전범위를 덮는 no-op(사실상 시간 무게이트)인지 검사하고,
+    #   no-op이면 prior_error 설정 후 재시도(reject→재생성)한다(require_filter_gates 미러).
+    #   매도(sell)에는 적용하지 않는다. 기본 OFF면 이 검증이 평가조차 안 돼 generate_strategy
+    #   동작이 기존과 byte-동일하다(하위호환). T3의 핵심은 측정·가시화이고 강제는 약한 형태만.
+    require_meaningful_time_window: bool = False
+
     # --- 생성 few-shot 샘플 주입 (#67): 검증된 우수 전략을 K개 프롬프트에 주입 ---
     # 사용자 아이디어(#67): 검증된 우수 전략(인간 study / 게이트 통과 조건식)을 AI 생성
     #   프롬프트에 few-shot 샘플로 주면 LLM이 "변수 조합 + 다중 필터 AND 게이팅" 구조를

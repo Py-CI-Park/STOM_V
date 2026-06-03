@@ -39,7 +39,8 @@ min_filter_categories를 채워도 과발화할 수 있다(구조 검사의 본�
 
 from __future__ import annotations
 
-from typing import Dict, Set, Tuple
+import re
+from typing import Dict, Optional, Set, Tuple
 
 # liquidity_gate의 검출 보조함수를 재사용(동일 의미 — 주석 제거 + 부등호 검출).
 from ai_strategy_loop.brain.liquidity_gate import _COMPARISON_RE, _strip_comments
@@ -100,3 +101,182 @@ def count_filter_categories(code: str) -> int:
         서로 다른 필터 범주의 개수(0 이상).
     """
     return len(categories_present(code))
+
+
+# ===================================================================
+# T3 (넓은 생성 강화): 시간창을 '토큰 존재'가 아니라 '값 범위(시분초 lo/hi)'로 측정
+# ===================================================================
+#
+# 배경(사용자 T3): 지금까지 time_window 범주는 `시분초` 토큰이 비교와 함께
+#   등장하는지(존재 유무)만 봤다. 그러나 '넓은 창에 분산 생성하는가?'는 토큰
+#   존재가 아니라 **값 범위**로 측정해야 한다. 시드 Tick_902는 09:02~09:05(3분)
+#   좁은 창이고, 분류축 유도가 노리는 건 09:00~09:30 전체에 분산된 생성이다.
+#   _temp_band_structure.extract_bands(등락률 -30~30 no-op 통찰)와 동형으로,
+#   `시분초`의 lo/hi(HHMMSS)를 추출해 span(초)·전범위(no-op=사실상 시간게이트
+#   없음)를 정적으로 측정·가시화한다(추가 백테 0·코드 텍스트 파싱만).
+#
+# **과도강제 금지(중요)**: 좁은 창(902)은 다년강건 골드다. 이 모듈은 측정기이지
+#   '넓은 창 강제기'가 아니다. is_noop_time_window는 '전범위=게이트 없음'만
+#   탐지하며, 좁은 창은 절대 no-op으로 보지 않는다(좁은-good을 reject하면 안 됨).
+#
+# 설계(extract_bands 스타일을 그대로 따른다 — 순수·graceful):
+#   - `#` 주석 제거 후(_strip_comments),
+#   - 체인비교 `lo <= 시분초 < hi`(양끝 숫자) 및 단일비교(`시분초 < B`/`시분초 > A`/
+#     `A < 시분초`/`B > 시분초`)를 합성한다.
+#   - lo는 하한들의 max, hi는 상한들의 min(가장 좁은 교집합). 토큰 경계 가드로
+#     `시분초` 뒤에 한글/영숫자/언더스코어가 오면 매칭하지 않는다(부분일치 방지).
+
+# `시분초` 시간창 값 패턴 — HHMMSS 정수(예: 90200=09:02:00, 153000=15:30:00).
+#   소수/부호도 허용하되(견고성) 실전은 정수 HHMMSS다.
+_TIME_TOKEN = "시분초"
+_TIME_NUM = r"-?\d+(?:\.\d+)?"
+# 토큰 경계: `시분초` 바로 뒤에 한글/영숫자/_가 오면 다른 식별자의 일부 → 매칭 제외.
+_TIME_BOUNDARY = r"(?![가-힣A-Za-z0-9_])"
+# 체인: A <(=) 시분초 <(=) B
+_TIME_CHAIN_RE = re.compile(
+    rf"({_TIME_NUM})\s*<=?\s*{_TIME_TOKEN}{_TIME_BOUNDARY}\s*<=?\s*({_TIME_NUM})"
+)
+# 단일(시분초 좌변): 시분초 <(=) B  /  시분초 >(=) A
+_TIME_LEFT_RE = re.compile(
+    rf"{_TIME_TOKEN}{_TIME_BOUNDARY}\s*(<=?|>=?)\s*({_TIME_NUM})"
+)
+# 단일(시분초 우변): A <(=) 시분초  /  B >(=) 시분초
+_TIME_RIGHT_RE = re.compile(
+    rf"({_TIME_NUM})\s*(<=?|>=?)\s*{_TIME_TOKEN}{_TIME_BOUNDARY}"
+)
+
+
+def _hhmmss_to_sec(hhmmss: int) -> int:
+    """HHMMSS 정수(예: 90200=09:02:00)를 자정 기준 초로 환산한다.
+
+    분/초 필드가 60+ 같은 비정상 값이어도 산술적으로 환산만 한다(검증 안 함 —
+    전략 코드의 시간 비교는 엔진이 그대로 정수 비교하므로, 여기선 측정만 한다).
+    """
+    h = hhmmss // 10000
+    m = (hhmmss // 100) % 100
+    s = hhmmss % 100
+    return h * 3600 + m * 60 + s
+
+
+def time_window_bounds(code: str) -> Optional[Tuple[Optional[int], Optional[int]]]:
+    """`시분초` 시간 게이트의 (lo, hi) HHMMSS 경계를 추출한다(없으면 None).
+
+    체인비교 `lo <= 시분초 < hi`와 단일비교(`시분초 < hi`·`시분초 > lo`·`lo < 시분초`·
+    `hi > 시분초`)를 모두 합성한다. tick 전략은 902/905처럼 여러 시간 분기(OR)로
+    구성되므로 전체 '거래 창'을 모든 시간 게이트의 **합집합(envelope)**으로 잡는다
+    (lo=하한들의 min=가장 이른 진입, hi=상한들의 max=가장 늦은 진입). 한쪽만 있으면
+    그쪽만 채운다. (단일 AND 경로의 중복 경계는 envelope가 약간 넓게 볼 수 있으나,
+    실측 다분기 생성물에서 교집합이 분기경계서 반전[09:15~09:05 붕괴]하는 것을
+    피하는 게 측정 목적상 우선이다.)
+
+    하한만/상한만 있는 반열림 게이트(예: `시분초 < 93000`만 있고 하한 없음)는
+    빠진 쪽을 세션 경계로 보지 않고 그대로 None을 채워, 호출부(span/no-op)가
+    세션 기본값으로 보정하게 한다(여기선 코드에 적힌 사실만 돌려준다).
+
+    Args:
+        code: 전략 코드 문자열.
+
+    Returns:
+        (lo_hhmmss, hi_hhmmss) — 각 항목은 int 또는 None. 어떤 시간 게이트도
+        없으면 None(튜플이 아니라 None 자체).
+    """
+    if not code:
+        return None
+    stripped = _strip_comments(code)
+    los: list[int] = []
+    his: list[int] = []
+
+    # 체인: A <(=) 시분초 <(=) B → A=하한, B=상한.
+    for m in _TIME_CHAIN_RE.finditer(stripped):
+        los.append(int(float(m.group(1))))
+        his.append(int(float(m.group(2))))
+    # 단일(좌변): 시분초 < B(상한) / 시분초 > A(하한).
+    for m in _TIME_LEFT_RE.finditer(stripped):
+        op, val = m.group(1), int(float(m.group(2)))
+        if op.startswith("<"):
+            his.append(val)
+        else:
+            los.append(val)
+    # 단일(우변): A < 시분초(하한) / B > 시분초(상한).
+    for m in _TIME_RIGHT_RE.finditer(stripped):
+        val, op = int(float(m.group(1))), m.group(2)
+        if op.startswith("<"):
+            los.append(val)   # A < 시분초 → A는 하한
+        else:
+            his.append(val)   # B > 시분초 → B는 상한
+
+    if not los and not his:
+        return None
+    # 전체 '거래 창'은 모든 시간 게이트의 합집합이다(교집합 아님). tick 전략은
+    #   902/905처럼 여러 시간 분기(OR)로 구성되므로, 교집합(max los·min his)을 쓰면
+    #   분기 경계가 서로 반전돼 빈/역전 창이 나온다(예 09:15~09:05). 따라서 가장
+    #   이른 하한 ~ 가장 늦은 상한으로 잡아 '이 전략이 거래하는 시간 범위'를 측정한다.
+    #   (902_905 → 09:00~09:05, 다분기 생성물 → 09:00~09:20 등으로 올바르게 측정.)
+    lo = min(los) if los else None  # 거래 창 시작(가장 이른 하한 = 합집합)
+    hi = max(his) if his else None  # 거래 창 끝(가장 늦은 상한 = 합집합)
+    return (lo, hi)
+
+
+def time_window_span_sec(
+    code: str, *, session_lo: int = 90000, session_hi: int = 153000
+) -> Optional[int]:
+    """`시분초` 시간창의 폭(hi-lo)을 **초**로 돌려준다(없으면 None).
+
+    time_window_bounds로 (lo,hi) HHMMSS를 얻고 각각 초로 환산해 hi-lo를 잰다.
+    반열림 게이트는 빠진 쪽을 세션 경계(session_lo/session_hi)로 보정해 폭을
+    잰다(예: `시분초 < 93000`만 있으면 [09:00, 09:30) 폭). 음수 폭(역전 경계)은
+    0으로 클램프한다(graceful — 비정상 입력이 음수 span을 만들지 않게).
+
+    Args:
+        code: 전략 코드 문자열.
+        session_lo: 하한 미지정 시 보정할 세션 시작(HHMMSS; 기본 09:00:00).
+        session_hi: 상한 미지정 시 보정할 세션 종료(HHMMSS; 기본 15:30:00).
+
+    Returns:
+        시간창 폭(초, 0 이상) 또는 시간 게이트가 없으면 None.
+    """
+    bounds = time_window_bounds(code)
+    if bounds is None:
+        return None
+    lo, hi = bounds
+    lo_sec = _hhmmss_to_sec(lo if lo is not None else session_lo)
+    hi_sec = _hhmmss_to_sec(hi if hi is not None else session_hi)
+    span = hi_sec - lo_sec
+    return span if span > 0 else 0
+
+
+def is_noop_time_window(
+    code: str, *, session_lo: int = 90000, session_hi: int = 153000
+) -> bool:
+    """시간창이 세션 전범위를 덮어 '사실상 게이트 없음(no-op)'인지 판정한다.
+
+    등락률 -30~30 no-op 통찰과 동형: 시간 게이트가 있더라도 그 경계가 세션
+    전체([session_lo, session_hi])를 덮으면 아무 시각도 거르지 못하므로 시간
+    게이트를 안 쓴 것과 같다(no-op=True).
+
+    판정: (lo가 없거나 lo<=session_lo) AND (hi가 없거나 hi>=session_hi) → True.
+    한쪽만 지정한 반열림 게이트는 지정 안 한 쪽이 세션 경계와 같으므로, 지정한
+    쪽이 세션을 못 좁히면 no-op이다(예: `시분초 < 153000`만 = no-op).
+
+    **좁은 창은 절대 no-op이 아니다**: 시드 902(`90200<=시분초<90500`)는 lo>
+    session_lo 또는 hi<session_hi라 False다(측정만 — reject 강제는 호출부 토글).
+
+    시간 게이트가 아예 없으면(bounds=None) no-op으로 본다(시간 분산 측정 관점에서
+    '전범위=시간 무게이트'와 동치). 호출부가 require_meaningful_time_window 토글
+    ON일 때만 이 결과로 reject하며, 기본 OFF면 측정·가시화 전용이다.
+
+    Args:
+        code: 전략 코드 문자열.
+        session_lo: 세션 시작(HHMMSS; 기본 09:00:00).
+        session_hi: 세션 종료(HHMMSS; 기본 15:30:00).
+
+    Returns:
+        시간창이 세션 전범위를 덮으면(=사실상 시간 게이트 없음) True.
+    """
+    bounds = time_window_bounds(code)
+    if bounds is None:
+        return True  # 시간 게이트 자체가 없음 = 전범위 = no-op.
+    lo, hi = bounds
+    lo_covers = lo is None or lo <= session_lo
+    hi_covers = hi is None or hi >= session_hi
+    return lo_covers and hi_covers

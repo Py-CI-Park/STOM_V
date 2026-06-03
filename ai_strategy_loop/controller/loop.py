@@ -686,6 +686,10 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             #   범주 수 검증+프롬프트 가이드를 적용하므로 매도 경로엔 무영향. 기본 OFF면
             #   동작 byte-동일(하위호환).
             require_filter_gates=getattr(config, "require_filter_gates", False),
+            # T3 무의미한 시간창(no-op) 게이트 — generate_strategy는 kind=='buy'일 때만
+            #   no-op(전범위=시간 무게이트)을 reject한다(좁은 창은 통과). 매도 경로엔 무영향.
+            #   getattr 기본 False라 구버전 config도 무영향(byte-동일).
+            require_meaningful_time_window=getattr(config, "require_meaningful_time_window", False),
             # 생성 분류축 유도(매수) — build_messages가 kind=='buy'일 때만 분류축 블록을
             #   추가하므로 매도 경로엔 무영향. getattr 기본 False라 구버전 config도 무영향.
             classification_generation_enabled=getattr(config, "classification_generation_enabled", False),

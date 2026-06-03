@@ -74,6 +74,7 @@ def generate_strategy(
     encourage_time_dispersion: bool = False,
     require_filter_gates: bool = False,
     min_filter_categories: int = 5,
+    require_meaningful_time_window: bool = False,
     classification_generation_enabled: bool = False,
     hypothesis_feedback: Optional[str] = None,
     few_shot_examples: Optional[list] = None,
@@ -126,6 +127,12 @@ def generate_strategy(
             기본 False면 이 검사·프롬프트가 평가조차 안 돼 동작이 기존과 byte-동일하다.
         min_filter_categories: require_filter_gates=True일 때 요구하는 최소 필터 범주 수.
             시드는 9개 범주를 충족한다. require_filter_gates=False면 미사용(무영향).
+        require_meaningful_time_window: True면 매수(kind=='buy') 코드의 시간창이 세션
+            전범위를 덮는 no-op(사실상 시간 무게이트)일 때 prior_error 설정 후 재시도한다
+            (reject→재생성; require_filter_gates 미러). **좁은 창은 reject하지 않는다** —
+            오직 no-op(전범위=시간게이트 없음)만 거른다(과도강제 금지: 시드 902의 좁은-good
+            창 보호). 매도(sell)에는 미적용. 기본 False면 이 검사가 평가조차 안 돼 동작이
+            기존과 byte-동일하다(하위호환). T3 핵심은 측정·가시화이고 강제는 약한 형태만.
         classification_generation_enabled: build_messages로 전달(매수 분류축 유도 프롬프트
             토글 — 시총 구분·등락률 구분·넓은 시간창 09:00~09:30). build_messages가
             kind=='buy'일 때만 반영하므로 매도 경로엔 무영향. 기본 False=하위호환(기존
@@ -209,6 +216,18 @@ def generate_strategy(
                 usr_text = next(
                     (m.get("content", "") for m in messages if m.get("role") == "user"), ""
                 )
+                # T3(넓은 생성 강화): 생성 결과의 시간창을 '값 범위(시분초 lo/hi)'로
+                #   측정해 injected_features에 기록한다(측정·가시화 전용 — 생성 동작
+                #   무변경, 로깅만). 루프가 09:00~09:30 전체에 분산 생성하는지·전범위
+                #   no-op(사실상 시간 무게이트)인지를 사후 SQL로 분석하게 한다.
+                #   순수·graceful이라 이 측정 실패는 바깥 try/except가 흡수한다.
+                from ai_strategy_loop.brain.filter_gate import (  # noqa: PLC0415
+                    is_noop_time_window,
+                    time_window_bounds,
+                    time_window_span_sec,
+                )
+                _resp_code = extract_code(text) or ""
+                _tw_bounds = time_window_bounds(_resp_code)
                 on_prompt({
                     "kind": kind, "attempt": attempt,
                     "system_text": sys_text, "user_text": usr_text,
@@ -229,6 +248,13 @@ def generate_strategy(
                         "has_hypothesis_feedback": bool(hypothesis_feedback),
                         "has_few_shot": bool(few_shot_examples),
                         "has_segment_avoid": bool(segment_avoid_lines),
+                        # T3 시간창 측정(값 범위) — bounds는 [lo,hi] 리스트(JSON 직렬화),
+                        #   없으면 None. span은 초, no-op은 전범위(시간 무게이트) 여부.
+                        "time_window_bounds": (
+                            list(_tw_bounds) if _tw_bounds is not None else None
+                        ),
+                        "time_window_span_sec": time_window_span_sec(_resp_code),
+                        "time_window_noop": is_noop_time_window(_resp_code),
                     },
                     "prior_error": prior_error,
                     "model": getattr(result, "model", None),
@@ -305,6 +331,24 @@ def generate_strategy(
                     f"체결강도·호가압력·시초 시간창 중에서 조합하라."
                 )
                 logger.info("attempt %d: 필터 범주 부족 (%d/%d)", attempt, _ncat, min_filter_categories)
+                continue
+
+        # --- 4e) 무의미한 시간창(no-op) 게이트 (T3 넓은 생성 강화; 매수 전용, 기본 OFF) ---
+        #   T3: 생성 전략의 시간창을 값 범위(시분초 lo/hi)로 측정하면, 시간 게이트를
+        #   아예 안 두거나 세션 전범위를 덮는 no-op(사실상 시간 무게이트)이 나온다
+        #   (등락률 -30~30 no-op과 동형). require_meaningful_time_window=True면 매수 코드가
+        #   no-op일 때 reject→재시도한다. OFF면 단락되어 무영향.
+        #   ⚠️ 과도강제 금지: **좁은 창은 reject하지 않는다**(좁은-good 시드 902 보호) —
+        #   is_noop_time_window가 전범위만 True로 판정하므로 좁은 창은 통과한다.
+        if require_meaningful_time_window and kind == "buy":
+            from ai_strategy_loop.brain.filter_gate import is_noop_time_window  # noqa: PLC0415
+            if is_noop_time_window(code):
+                prior_error = (
+                    "매수 진입의 시간창이 사실상 비어 있다(시간 게이트 없음 또는 09:00~15:30 "
+                    "전범위). 시초 구간(예: 09:00~09:30) 안에서 의미 있는 시분초 범위를 두어라 "
+                    "— 예) 90000 <= 시분초 < 93000. (좁은 창도 좋다 — 전범위만 피하라.)"
+                )
+                logger.info("attempt %d: 무의미한 시간창(no-op)", attempt)
                 continue
 
         # --- 5) dedup ---
