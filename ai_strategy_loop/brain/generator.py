@@ -77,6 +77,7 @@ def generate_strategy(
     classification_generation_enabled: bool = False,
     hypothesis_feedback: Optional[str] = None,
     few_shot_examples: Optional[list] = None,
+    segment_avoid_lines: Optional[list] = None,
     on_prompt: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
     """LLM으로 STOM 전략을 생성하고 게이트 통과 시 DB에 저장한다.
@@ -134,6 +135,10 @@ def generate_strategy(
         few_shot_examples: 검증된 우수 전략 few-shot 코드 샘플 리스트(#67). build_messages로
             전달돼 "구조 학습·복제 금지" 헤더와 함께 코드펜스로 주입된다(§3.14 과적합 방지).
             None/빈 리스트=주입 안 함, byte-identical(하위호환). 호출부가 토글 ON일 때만 채운다.
+        segment_avoid_lines: 직전/best 세대 세그먼트 분석에서 추출한 '패배 구간' avoid 라인
+            리스트(T4 반복 정제 폐루프). build_messages로 전달돼 kind=='buy'일 때만 매수
+            프롬프트에 avoid 가이드 블록으로 주입된다(매도 무영향). None/빈 리스트=주입 안 함,
+            byte-identical(하위호환). 호출부가 토글(segment_feedback_enabled) ON일 때만 채운다.
         on_prompt: LLM 호출이 성공한 직후 그 프롬프트 레코드(dict)를 받는 선택적
             콜백(P1c 프롬프트 영속화). None이면 호출되지 않아 동작이 byte-identical
             하다(로깅 안 함=기존과 동일). 예외는 콜백 내부에서 흡수해 루프를 막지 않는다.
@@ -175,6 +180,7 @@ def generate_strategy(
             classification_generation_enabled=classification_generation_enabled,
             hypothesis_feedback=hypothesis_feedback,
             few_shot_examples=few_shot_examples,
+            segment_avoid_lines=segment_avoid_lines,
         )
 
         # --- 1) LLM 호출 ---
@@ -222,6 +228,7 @@ def generate_strategy(
                         "min_filter_categories": min_filter_categories,
                         "has_hypothesis_feedback": bool(hypothesis_feedback),
                         "has_few_shot": bool(few_shot_examples),
+                        "has_segment_avoid": bool(segment_avoid_lines),
                     },
                     "prior_error": prior_error,
                     "model": getattr(result, "model", None),

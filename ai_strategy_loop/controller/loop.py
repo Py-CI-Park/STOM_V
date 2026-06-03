@@ -531,6 +531,7 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
                    meta_seed: Optional[str] = None,
                    freeze_buy: bool = False,
                    prev_judged_hypotheses: Optional[list] = None,
+                   segment_avoid_lines: Optional[list] = None,
                    state: Optional[LoopState] = None) -> Dict[str, Any]:
     """이 세대의 buy + sell 전략을 생성/저장한다.
 
@@ -555,6 +556,11 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             주입한다 — 특히 **기각** 가정을 강조해 빗나간 방향 반복을 막는다. 호출부는
             토글 ON일 때만 이 인자를 채운다(OFF면 None이라 미주입=byte-identical). None이면
             generate_strategy에 hypothesis_feedback=None이 가 byte-동일하다(하위호환).
+        segment_avoid_lines: 직전/best 세대 세그먼트 분석에서 추출한 '패배 구간' avoid 라인
+            리스트(T4 반복 정제 폐루프). 주어지면 매수(buy) generate_strategy로 전달돼 매수
+            프롬프트에 avoid 가이드로 주입된다(build_messages가 kind=='buy'일 때만 반영 —
+            매도 무영향). 호출부가 토글(segment_feedback_enabled) ON일 때만 채운다. None/빈
+            리스트면 generate_strategy에 None이 가 byte-동일하다(하위호환).
         state: 프롬프트 영속화(P1c)용 LoopState. config.prompt_logging_enabled가
             True이고 state가 주어졌을 때만, 각 generate_strategy 호출에 on_prompt
             콜백을 연결해 LLM 호출별 프롬프트를 prompts 테이블에 기록한다. None이거나
@@ -690,6 +696,11 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             # few-shot 우수 전략 샘플(#67) — few_shot_enabled OFF(기본)면 위에서 None이라
             #   build_messages가 미주입해 동작 byte-identical(하위호환).
             few_shot_examples=few_shot,
+            # T4 반복 정제 폐루프 — 직전/best 세대 패배 구간 avoid 라인. build_messages가
+            #   kind=='buy'일 때만 반영하므로 매도 경로엔 무영향. 매수에만 전달해 sell
+            #   호출 시그니처를 byte-identical 보존한다. 토글 OFF면 호출부가 None을 넘겨
+            #   build_messages가 미주입(byte-동일).
+            segment_avoid_lines=(segment_avoid_lines if kind == "buy" else None),
             # 프롬프트 영속화(P1c) — 토글 OFF/state=None이면 None이라 무영향(byte-identical).
             #   buy/sell 두 호출 모두 같은 콜백을 받는다(kind는 레코드에 담긴다).
             on_prompt=on_prompt,
@@ -979,6 +990,11 @@ def run_loop(
     cumulative_tokens = 0
     next_autopsy_feedback: Optional[str] = None   # 진입(BUY) 측 다음 세대 피드백.
     next_sell_feedback: Optional[str] = None      # 매도(SELL) 측 다음 세대 청산 피드백.
+    # T4 반복 정제 폐루프: 직전 세대 백테 세그먼트 분석에서 추출한 '패배 구간' avoid
+    #   라인. 다음 세대 매수 프롬프트로 환류해 불필요 구간을 줄이며 재생성하게 한다.
+    #   토글(segment_feedback_enabled) OFF면 항상 None이라 산출·주입이 전혀 안 일어난다
+    #   (byte-동일). 백테 실패 세대(CSV 없음)는 None으로 비워 오래된 가이드를 안 남긴다.
+    next_segment_avoid_lines: Optional[list] = None
     # P2a 가정 루프: 직전 세대 피드백이 '이 다음 세대'를 겨냥해 세운 가정 목록.
     #   다음 세대에서 그 세대의 부모 대비 델타로 채택/기각해 hypotheses_json으로 영속한다.
     #   토글 OFF면 항상 None이라 가정 방출·판정·저장이 전혀 안 일어난다(byte-동일).
@@ -1154,6 +1170,13 @@ def run_loop(
                 if (getattr(config, "hypothesis_tracking_enabled", False)
                         and prev_judged_hypotheses):
                     gen_kwargs["prev_judged_hypotheses"] = prev_judged_hypotheses
+                # T4 반복 정제 폐루프: 토글 ON + 직전 세대에서 패배 구간 avoid 라인을
+                #   확보했을 때만 _generate_pair로 넘겨 매수 프롬프트에 환류한다. OFF(기본)
+                #   거나 라인이 비면 키를 넣지 않아 _generate_pair 호출 시그니처가 기존과
+                #   byte-identical 하다(다른 토글 배선과 동일 — monkeypatch 테스트 보호).
+                if (getattr(config, "segment_feedback_enabled", False)
+                        and next_segment_avoid_lines):
+                    gen_kwargs["segment_avoid_lines"] = next_segment_avoid_lines
                 # 프롬프트 영속화(P1c): 토글 ON일 때만 state를 _generate_pair로 넘겨
                 #   프롬프트 로깅 콜백을 활성화한다. OFF(기본)면 state 키를 넣지 않아
                 #   _generate_pair 호출 시그니처가 기존과 byte-identical 하다(하위호환).
@@ -1264,6 +1287,10 @@ def run_loop(
                 #   세우지 않는다. carry를 비워 다음 세대가 빈/오래된 가정을 판정하지
                 #   않게 한다(토글 OFF면 어차피 항상 None).
                 next_hypotheses = None
+                # T4 — 실패 세대는 CSV가 없어 세그먼트 분석이 불가하다. avoid 가이드를
+                #   비워 다음 세대가 오래된 패배 구간 가이드를 환류받지 않게 한다(토글
+                #   OFF면 어차피 항상 None).
+                next_segment_avoid_lines = None
                 gen_no += 1
                 continue
 
@@ -1458,6 +1485,11 @@ def run_loop(
                 effective_autopsy_fn, effective_exit_autopsy_fn,
                 effective_segment_autopsy_fn,
             )
+            # T4 반복 정제 폐루프: 토글 ON일 때만 이 세대의 결과 CSV에서 '패배 구간'
+            #   avoid 라인을 산출해 다음 세대 매수 프롬프트로 환류한다. 산출은 순수·무예외
+            #   (build_segment_avoid_lines가 데이터 없음/부족/읽기 실패를 빈 리스트로 흡수).
+            #   OFF(기본)면 헬퍼를 호출조차 안 해 None을 유지(byte-동일). 실패는 흡수한다.
+            next_segment_avoid_lines = _build_segment_avoid(config, outcome)
             # P2a 가정 방출: 부검 NL과 동일 인자(게이트 통과/MDD/손익/거래수)로 이 세대가
             #   '다음 세대용'으로 세우는 가정을 만든다. is_refine은 다음 세대가 부모를 갖는지
             #   (현재 best가 출발점이 되는지)로 본다. 토글 OFF면 None이라 가정이 carry되지
@@ -1838,6 +1870,44 @@ def _build_feedback(config, outcome, fit, graded,
     buy_fb = cap_feedback("\n\n".join(buy_parts)) if buy_parts else None
     sell_fb = cap_feedback("\n\n".join(sell_parts)) if sell_parts else None
     return buy_fb, sell_fb, autopsy_page_data
+
+
+def _build_segment_avoid(config, outcome) -> Optional[list]:
+    """T4 반복 정제 폐루프 — 이 세대 결과 CSV에서 '패배 구간' avoid 라인을 산출한다(토글 ON일 때만).
+
+    build_segment_avoid_lines(순수·무예외)를 호출해 결과 CSV를 시간대×시총×등락률×교차
+    셀로 쪼개고, 패배 셀(표본 충분 + 적자/저승률)을 매수 프롬프트용 한국어 avoid 라인으로
+    만든다. 다음 세대 매수 프롬프트로 환류해 루프가 불필요 구간을 줄이며 재생성하게 한다.
+
+    토글(segment_feedback_enabled) OFF면 헬퍼를 호출조차 안 해 None을 돌린다(byte-동일).
+    CSV 없음/데이터 부족/읽기 실패는 빈 리스트로 흡수되며, 빈 리스트는 None으로 정규화해
+    호출부가 gen_kwargs에 키를 넣지 않게 한다(byte-identical). 산출 실패도 흡수한다.
+
+    fine_time은 세그먼트 부검(_default_segment_autopsy_fn)과 동일하게 segment_fine_time
+    토글을 따른다(시간축 정합). min_count는 config.segment_feedback_min_count.
+
+    반환: List[str](패배 구간 avoid 라인) 또는 None(토글 OFF/CSV 없음/빈 결과/실패).
+    """
+    if not getattr(config, "segment_feedback_enabled", False):
+        return None
+    csv_path = getattr(outcome, "csv_path", None)
+    if not csv_path:
+        return None
+    try:
+        from ai_strategy_loop.brain.segment_feedback import (  # noqa: PLC0415
+            build_segment_avoid_lines,
+        )
+
+        abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+        lines = build_segment_avoid_lines(
+            abs_csv,
+            min_count=int(getattr(config, "segment_feedback_min_count", 8) or 8),
+            fine_time=bool(getattr(config, "segment_fine_time", False)),
+        )
+        return lines or None
+    except Exception as exc:  # noqa: BLE001 - 환류 산출 실패는 루프를 막지 않음(학습 보조 경로).
+        logger.info("세그먼트 avoid 환류 산출 실패(무시): %s", exc)
+        return None
 
 
 # =====================================================================

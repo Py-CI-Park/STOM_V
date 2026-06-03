@@ -172,6 +172,7 @@ def build_messages(
     classification_generation_enabled: bool = False,
     hypothesis_feedback: Optional[str] = None,
     few_shot_examples: Optional[List[str]] = None,
+    segment_avoid_lines: Optional[List[str]] = None,
 ) -> List[Dict[str, str]]:
     """OpenAI Chat Completions 메시지 리스트를 만든다.
 
@@ -238,6 +239,13 @@ def build_messages(
             말라"는 헤더(§3.14 과적합 방지)와 함께 각 샘플을 코드펜스로 주입한다. 부검·
             가드레일 슬롯과 조화시키되 중복 강조는 피한다. None이거나 빈 리스트면 미주입
             되어 출력이 기존과 byte-동일하다(하위호환). 호출부가 토글 ON일 때만 채운다.
+        segment_avoid_lines: 직전(또는 best) 세대 백테 세그먼트 분석에서 추출한
+            '패배·불필요 구간' avoid 라인 리스트(T4 반복 정제 폐루프). kind=='buy'일
+            때만 매수 프롬프트에 "최근 백테 패배 구간(avoid 가이드)" 블록으로 추가돼
+            그 시간대×시총×등락률 구간 진입을 피하거나 더 엄격히 게이트하도록 유도한다.
+            매도(sell)엔 영향이 없다. None이거나 빈 리스트면 이 블록이 통째로 미주입되어
+            출력이 기존과 byte-동일하다(하위호환). 호출부(controller.loop)가 토글
+            (segment_feedback_enabled) ON일 때만 채운다.
 
     Returns:
         [{"role": "system", ...}, {"role": "user", ...}] — 항상 system 포함.
@@ -391,6 +399,17 @@ def build_messages(
                 "진입 시점을 09:00~09:20 구간에 분산하라 — 단일 분(예: 09:02)에만 "
                 "집중하지 말고 시초 20분 내 여러 시간대 조건을 고려하라(시분초/시간 "
                 "조건을 한 점에 고정하지 말 것)."
+            )
+        # T4 반복 정제 폐루프(매수 전용): 직전/best 세대 세그먼트 분석에서 추출한
+        #   '패배·불필요 구간' avoid 라인을 매수 프롬프트에 추가해, 그 시간대×시총×
+        #   등락률 구간 진입을 피하거나 더 엄격히 게이트하도록 유도한다. 루프가 스스로
+        #   불필요 구간을 줄이며 재생성하게 하는 환류다. None/빈 리스트면 미추가(byte 보존).
+        if segment_avoid_lines:
+            user_lines.append(
+                "최근 백테 패배 구간(avoid 가이드 — 불필요 구간 제거): 아래 구간은 "
+                "직전 백테에서 적자/저승률로 드러난 '불필요한 구간'이다. 이 구간 진입을 "
+                "피하거나 더 엄격히 게이트해 다음 세대를 재생성하라(반대 임계값/필터로 "
+                "이 구간을 배제):\n" + "\n".join(segment_avoid_lines)
             )
         fb_text = autopsy_feedback or ""
         if ("0건" in fb_text) or ("0거래" in fb_text) or ("거래가" in fb_text and "적" in fb_text):

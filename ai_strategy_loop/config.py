@@ -352,6 +352,25 @@ class LoopConfig:
     #   build_messages 출력이 기존과 byte-동일하다(하위호환).
     exit_edge_feedback_enabled: bool = False
 
+    # --- T4 반복 정제 폐루프: 패배 세그먼트 avoid 가이드 환류 (매수 프롬프트 토글) ---
+    # 데이터 근거(fitness/edge_ratio.edge_by_segment): 백테 결과를 시간대×시총×등락률
+    #   셀로 쪼개면 일부 셀이 만성 적자/저승률(예: 특정 시초 5분 × 상승 3~6% 구간이
+    #   적자)이다. 이 '패배·불필요 구간'을 다음 세대 매수 프롬프트에 'avoid 가이드'로
+    #   환류해, 루프가 스스로 불필요 구간을 줄이며 재생성하게 한다("실행→분석→불필요
+    #   구간 제거→재생성" 폐루프). **하드게이트·엔진·backtest_graph 불변** — 전부
+    #   프롬프트 넛지/토글/하위호환이다.
+    # segment_feedback_enabled: True면 loop가 직전(또는 best) 세대 per-trade CSV를
+    #   edge_by_segment(fine_time=segment_fine_time)로 분석해 '패배 셀'(total_profit<0
+    #   또는 win_rate<0.45 AND count>=segment_feedback_min_count)을 NL avoid 라인으로
+    #   만들어 매수(kind=='buy') 프롬프트에 추가한다(build_messages). kind=='sell'엔
+    #   영향이 없다. 기본 OFF면 환류 산출/주입이 평가조차 안 돼 build_messages 출력이
+    #   기존과 byte-동일하다(하위호환). 데이터 없음/부족은 빈 가이드로 흡수(graceful).
+    segment_feedback_enabled: bool = False
+    # segment_feedback_min_count: 패배 셀로 지목되려면 필요한 셀 최소 표본 수(잡음 배제).
+    #   작은 셀의 우연한 적자/저승률을 avoid로 환류하지 않도록 하한을 둔다. 기본 8.
+    #   segment_feedback_enabled=False면 이 값은 평가되지 않는다(무영향).
+    segment_feedback_min_count: int = 8
+
     # --- Phase C-3: 생성 진입 시간 분산 유도 (매수 프롬프트 토글) ---
     # 데이터 근거: 시드는 거래가 09:00~09:05 한 분에 몰려 시간대 신호가 degenerate하다.
     #   비-시드 생성 전략이 시초 시간대(09:00~09:20)에 진입을 분산하도록 유도하면
