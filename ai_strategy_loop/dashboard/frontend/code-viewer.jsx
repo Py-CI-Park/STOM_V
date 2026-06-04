@@ -67,7 +67,7 @@ function CodeBlock({ code }) {
   const highlighted = useMemo_cv(() => highlightPython(code), [code]);
   if (!code) return (
     <div className="code-block" style={{ color: "var(--ink-3)" }}>
-      코드가 없습니다.
+      unavailable: strategy code not found for this generation.
     </div>
   );
   return (
@@ -177,6 +177,14 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
             <CodeBlock code={code} />
           )}
         </div>
+
+        <StrategyInspectorTabs
+          generation={generation}
+          runId={runId}
+          baseUrl={baseUrl}
+          buyCode={buyCode}
+          sellCode={sellCode}
+        />
 
         <div className="modal-ft" style={{ justifyContent: "space-between" }}>
           <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>

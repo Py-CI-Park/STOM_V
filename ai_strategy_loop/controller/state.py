@@ -736,6 +736,8 @@ _ACTIVE_CONFIG_FIELDS = (
     "freeze_buy_on_mdd_only",
     "bt_full_start",
     "bt_full_end",
+    "bt_universe_start_time",
+    "bt_universe_end_time",
     "bt_betting",
     # 게이트 경계(가시화).
     "mdd_cap",

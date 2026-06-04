@@ -27,6 +27,7 @@ from __future__ import annotations
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 
 import asyncio  # noqa: E402
+import difflib  # noqa: E402
 import json  # noqa: E402
 import os  # noqa: E402
 import subprocess  # noqa: E402
@@ -41,6 +42,7 @@ from fastapi.staticfiles import StaticFiles  # noqa: E402
 
 from ai_strategy_loop.controller import contract as C  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
+from ai_strategy_loop.dashboard.research_api import router as research_router  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -63,6 +65,7 @@ _ALLOWED_ORIGINS = [
     "http://localhost",
     "http://127.0.0.1",
 ]
+_PROMPT_HEAD_CHARS = 240
 
 
 class LoopProcessManager:
@@ -229,6 +232,22 @@ def _generation_durations_payload(run_id: Optional[str] = None) -> Dict[str, Any
             continue
         by_run.setdefault(rid, []).append(g)
 
+    run_context: Dict[str, Dict[str, Any]] = {}
+    for rid, row in runs.items():
+        cfg_json = (row or {}).get("config_json")
+        cfg: Dict[str, Any] = {}
+        if cfg_json:
+            try:
+                parsed = json.loads(str(cfg_json))
+                if isinstance(parsed, dict):
+                    cfg = parsed
+            except (ValueError, TypeError):
+                cfg = {}
+        run_context[rid] = {
+            "period": _period_string_from_config(cfg_json),
+            "timeframe": cfg.get("bt_timeframe"),
+        }
+
     durations: list = []
     for rid, gens in by_run.items():
         gens_sorted = sorted(gens, key=lambda g: int(g.get("gen_no", 0) or 0))
@@ -249,6 +268,7 @@ def _generation_durations_payload(run_id: Optional[str] = None) -> Dict[str, Any
                 "duration_sec": duration_sec,
                 "created_at": (None if created is None else float(created)),
                 "status": str(g.get("status", "") or ""),
+                **run_context.get(rid, {}),
             })
             if created is not None:
                 prev_created = float(created)
@@ -639,6 +659,283 @@ def _strategy_code_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
     }
 
 
+def _prompt_row_payload(row: Dict[str, Any]) -> Dict[str, Any]:
+    """프롬프트 행을 해시/메타데이터 + 제한된 user head로 변환한다."""
+    user_text = str(row.get("user_text") or "")
+    features_raw = row.get("injected_features")
+    injected_features = None
+    if features_raw:
+        try:
+            injected_features = json.loads(str(features_raw))
+        except (ValueError, TypeError):
+            injected_features = None
+    return {
+        "prompt_id": row.get("prompt_id"),
+        "run_id": row.get("run_id"),
+        "gen_no": row.get("gen_no"),
+        "kind": row.get("kind"),
+        "attempt": row.get("attempt"),
+        "system_sha": row.get("system_sha"),
+        "user_sha": row.get("user_sha"),
+        "user_text_head": user_text[:_PROMPT_HEAD_CHARS],
+        "user_text_len": len(user_text),
+        "injected_features": injected_features,
+        "prior_error": row.get("prior_error"),
+        "model": row.get("model"),
+        "prompt_tokens": row.get("prompt_tokens"),
+        "completion_tokens": row.get("completion_tokens"),
+        "total_tokens": row.get("total_tokens"),
+        "response_sha": row.get("response_sha"),
+        "created_at": row.get("created_at"),
+    }
+
+
+def _prompts_payload(run_id: Optional[str], gen_no: Optional[int] = None) -> Dict[str, Any]:
+    """저장된 프롬프트를 조회한다. 전문 대신 head/hash만 반환한다."""
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+
+    if not run_id:
+        return {"error": "run_id required", "prompts": []}
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState()
+        rows = st.get_prompts(run_id)
+    except Exception as exc:  # noqa: BLE001 - DB 없거나 조회 실패면 error(무예외).
+        return {"error": str(exc), "run_id": run_id, "gen_no": gen_no, "prompts": []}
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    if gen_no is not None:
+        rows = [row for row in rows if int(row.get("gen_no", -1)) == int(gen_no)]
+    prompts = [_prompt_row_payload(row) for row in rows]
+    reason = None if prompts else "prompt_logging_not_enabled_or_no_records"
+    return {"run_id": run_id, "gen_no": gen_no, "prompts": prompts, "reason": reason}
+
+
+def _diff_lines(base_code: str, code: str, base_name: str, name: str) -> List[str]:
+    """매수/매도 전략 코드 두 버전의 unified diff line 배열을 만든다."""
+    if not base_code and not code:
+        return []
+    return list(difflib.unified_diff(
+        (base_code or "").splitlines(),
+        (code or "").splitlines(),
+        fromfile=base_name or "base",
+        tofile=name or "current",
+        lineterm="",
+    ))
+
+
+def _parse_base_gen(gen_no: int, base_gen: str) -> Optional[int]:
+    """base_gen 쿼리를 해석한다. gen0의 previous는 base 없음."""
+    if base_gen == "previous":
+        return int(gen_no) - 1 if int(gen_no) > 0 else None
+    try:
+        return int(base_gen)
+    except (TypeError, ValueError):
+        return None
+
+
+def _strategy_diff_payload(
+    run_id: Optional[str], gen_no: int, base_gen: str = "previous"
+) -> Dict[str, Any]:
+    """현재 세대와 base 세대의 매수/매도 코드와 diff를 반환한다."""
+    if not run_id:
+        return {"error": "run_id required", "prompts": []}
+
+    current = _strategy_code_payload(run_id, int(gen_no))
+    base_no = _parse_base_gen(int(gen_no), str(base_gen))
+    prompts = _prompts_payload(run_id, int(gen_no)).get("prompts", [])
+    if base_no is None:
+        return {
+            "run_id": run_id,
+            "gen_no": int(gen_no),
+            "buy_name": current.get("buy_name"),
+            "sell_name": current.get("sell_name"),
+            "buy_code": current.get("buy_code", ""),
+            "sell_code": current.get("sell_code", ""),
+            "base_gen": None,
+            "base_buy_name": None,
+            "base_sell_name": None,
+            "base_buy_code": "",
+            "base_sell_code": "",
+            "buy_diff": [],
+            "sell_diff": [],
+            "prompts": prompts,
+            "reason": "no_previous_generation",
+        }
+
+    base = _strategy_code_payload(run_id, int(base_no))
+    return {
+        "run_id": run_id,
+        "gen_no": int(gen_no),
+        "buy_name": current.get("buy_name"),
+        "sell_name": current.get("sell_name"),
+        "buy_code": current.get("buy_code", ""),
+        "sell_code": current.get("sell_code", ""),
+        "base_gen": int(base_no),
+        "base_buy_name": base.get("buy_name"),
+        "base_sell_name": base.get("sell_name"),
+        "base_buy_code": base.get("buy_code", ""),
+        "base_sell_code": base.get("sell_code", ""),
+        "buy_diff": _diff_lines(
+            str(base.get("buy_code") or ""),
+            str(current.get("buy_code") or ""),
+            str(base.get("buy_name") or ""),
+            str(current.get("buy_name") or ""),
+        ),
+        "sell_diff": _diff_lines(
+            str(base.get("sell_code") or ""),
+            str(current.get("sell_code") or ""),
+            str(base.get("sell_name") or ""),
+            str(current.get("sell_name") or ""),
+        ),
+        "prompts": prompts,
+        "reason": None,
+    }
+
+
+def _p5_verdict_note() -> str:
+    """Return the latest honest OOS verdict note without exposing arbitrary files."""
+    path = os.path.join(
+        REPO_ROOT, ".omo", "evidence", "tick-oos-validation-20260603", "p5-decision-card.md"
+    )
+    try:
+        text = open(path, "r", encoding="utf-8", errors="replace").read()
+    except OSError:
+        return "Previous OOS verdict unavailable; do not infer promotion."
+    if "Final Verdict: REJECT_CANDIDATE" in text:
+        return "Final Verdict: REJECT_CANDIDATE; prior candidate remains rejected."
+    return "Previous OOS verdict file exists but no promotion verdict was found."
+
+
+def _ai_context_pack_payload(run_id: Optional[str], gen_no: Optional[int] = None) -> Dict[str, Any]:
+    """Build a deterministic, copyable research-state pack for an external AI agent.
+
+    This is read-only and intentionally excludes prompt bodies, code bodies, secrets,
+    environment values, production DB paths, and any network call.
+    """
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+
+    if not run_id:
+        return {"error": "run_id required"}
+
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState()
+        run_row = st.get_run(run_id)
+        gens = st.get_generations(run_id)
+        prompt_rows = st.get_prompts(run_id)
+    except Exception as exc:  # noqa: BLE001 - context pack must be non-crashing.
+        return {"error": str(exc), "run_id": run_id}
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    if not gens:
+        return {"error": "run_not_found_or_empty", "run_id": run_id}
+
+    def _row_gen_no(row: Dict[str, Any]) -> int:
+        try:
+            return int(row.get("gen_no", -1))
+        except (TypeError, ValueError):
+            return -1
+
+    selected_gen = int(gen_no) if gen_no is not None and int(gen_no) >= 0 else _row_gen_no(gens[-1])
+    gen = next((g for g in gens if _row_gen_no(g) == selected_gen), gens[-1])
+    cfg_json = (run_row or {}).get("config_json")
+    cfg: Dict[str, Any] = {}
+    if cfg_json:
+        try:
+            cfg = json.loads(str(cfg_json))
+        except (ValueError, TypeError):
+            cfg = {}
+    period = _period_string_from_config(cfg_json)
+    timeframe = cfg.get("bt_timeframe")
+    gen_no_out = _row_gen_no(gen)
+    gen_prompts = [p for p in prompt_rows if _row_gen_no(p) == gen_no_out]
+    best = max(gens, key=lambda row: float(row.get("score", 0.0) or 0.0))
+    winners = [g for g in gens if bool(g.get("gate_passed"))]
+    winner = max(winners, key=lambda row: float(row.get("score", 0.0) or 0.0)) if winners else None
+
+    forbidden_actions = [
+        "Do not approve, deploy, or write production strategy storage from this context.",
+        "Do not place live orders or advance V3K gates.",
+        "Do not claim human-level or seed-superior performance without fresh OOS evidence.",
+    ]
+    strategy_names = {"buy": gen.get("buy_name"), "sell": gen.get("sell_name")}
+    verdict_note = _p5_verdict_note()
+    analysis = {
+        "edge_ratio": "available via /edge_ratio when per-trade CSVs exist",
+        "feature_importance": "available via /feature_importance when per-trade CSVs exist",
+        "variable_correlation": "available via /variable_correlation when per-trade CSVs exist",
+        "wiki": "available via /research_docs and /research_doc",
+    }
+    summary_lines = [
+        "STOM AI condition research state",
+        f"run_id: {run_id}",
+        f"gen_no: {gen_no_out}",
+        f"timeframe: {timeframe or '-'}",
+        f"period: {period or '-'}",
+        f"strategy_buy: {strategy_names['buy'] or '-'}",
+        f"strategy_sell: {strategy_names['sell'] or '-'}",
+        f"graded_score: {gen.get('score')}",
+        f"profit: {gen.get('profit')}",
+        f"return_pct: {gen.get('total_profit_pct')}",
+        f"prompt_count: {len(gen_prompts)}",
+        f"verdict: {verdict_note}",
+        "forbidden: " + " | ".join(forbidden_actions),
+    ]
+    return {
+        "run_id": run_id,
+        "gen_no": gen_no_out,
+        "timeframe": timeframe,
+        "period": period,
+        "config": {
+            "provider": cfg.get("provider"),
+            "bt_timeframe": cfg.get("bt_timeframe"),
+            "bt_full_start": cfg.get("bt_full_start"),
+            "bt_full_end": cfg.get("bt_full_end"),
+            "bt_universe_start_time": cfg.get("bt_universe_start_time"),
+            "bt_universe_end_time": cfg.get("bt_universe_end_time"),
+        },
+        "latest_logs": {
+            "run_status": (run_row or {}).get("status"),
+            "started_at": (run_row or {}).get("started_at"),
+            "finished_at": (run_row or {}).get("finished_at"),
+            "generation_count": len(gens),
+        },
+        "best": {
+            "gen_no": int(best.get("gen_no", -1) or -1),
+            "graded_score": best.get("score"),
+            "profit": best.get("profit"),
+        },
+        "winner": (
+            None if winner is None else {
+                "gen_no": int(winner.get("gen_no", -1) or -1),
+                "graded_score": winner.get("score"),
+                "profit": winner.get("profit"),
+            }
+        ),
+        "strategy_names": strategy_names,
+        "prompt_count": len(gen_prompts),
+        "analysis": analysis,
+        "verdict_note": verdict_note,
+        "verdict_refs": [
+            ".omo/evidence/tick-oos-validation-20260603/p5-decision-card.md",
+            ".omo/evidence/tick-research-dashboard-upgrade-20260603/",
+        ],
+        "forbidden_actions": forbidden_actions,
+        "summary_text": "\n".join(summary_lines),
+    }
+
+
 def _run_state_payload(run_id: str) -> Dict[str, Any]:
     """과거(또는 현재) run의 전체 LoopState payload를 DB에서 재구성한다(읽기 전용·무예외).
 
@@ -1010,6 +1307,58 @@ def _feature_importance_payload(
     return {"runs": target_runs, **report}
 
 
+def _variable_correlation_payload(
+    run_id: Optional[str], run_ids: Optional[str], method: str
+) -> Dict[str, Any]:
+    """run(들)의 세대 결과 CSV를 풀링해 B_* 변수 상관도를 반환한다(읽기 전용, 무예외)."""
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+    from ai_strategy_loop.fitness.correlation import (  # noqa: PLC0415
+        variable_correlation_from_csvs,
+    )
+
+    if run_ids:
+        target_runs = [s.strip() for s in run_ids.split(",") if s.strip()]
+    elif run_id:
+        target_runs = [run_id]
+    else:
+        target_runs = []
+    if not target_runs:
+        return {"error": "run_id or run_ids required"}
+
+    seen: set = set()
+    raw_paths: List[str] = []
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState()
+        for rid in target_runs:
+            for row in st.get_generations(rid):
+                cp = row.get("csv_path")
+                if cp and cp not in seen:
+                    seen.add(cp)
+                    raw_paths.append(str(cp))
+    except Exception as exc:  # noqa: BLE001 - DB 없거나 조회 실패면 error(무예외).
+        return {"error": str(exc)}
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    if not raw_paths:
+        return {"error": f"no csv_path for runs={target_runs!r}"}
+
+    resolved = [
+        p if os.path.isabs(p) else os.path.join(REPO_ROOT, p) for p in raw_paths
+    ]
+    try:
+        report = variable_correlation_from_csvs(resolved, method=method)
+    except Exception as exc:  # noqa: BLE001 - 풀링 집계 실패도 error로 흡수(무예외).
+        return {"error": str(exc)}
+
+    return {"runs": target_runs, **report}
+
+
 def create_app() -> FastAPI:
     """대시보드 FastAPI 앱을 생성한다 (테스트가 TestClient로 감싼다)."""
     manager = LoopProcessManager()
@@ -1034,6 +1383,7 @@ def create_app() -> FastAPI:
     )
 
     app.state.loop_manager = manager
+    app.include_router(research_router)
 
     @app.get("/")
     def root() -> RedirectResponse:
@@ -1138,6 +1488,24 @@ def create_app() -> FastAPI:
             }
         return _strategy_code_payload(run, gen)
 
+    @app.get("/prompts")
+    def prompts(run_id: Optional[str] = None, gen_no: Optional[int] = None) -> Dict[str, Any]:
+        """저장된 프롬프트 메타데이터와 bounded text head를 반환한다(읽기 전용)."""
+        return _prompts_payload(run_id, gen_no)
+
+    @app.get("/strategy_diff")
+    def strategy_diff(run_id: Optional[str] = None, gen_no: int = -1,
+                      base_gen: str = "previous") -> Dict[str, Any]:
+        """현재 세대와 이전/base 세대의 매수·매도 전략 코드 diff를 반환한다."""
+        if int(gen_no) < 0:
+            return {"error": "gen_no required", "prompts": []}
+        return _strategy_diff_payload(run_id, int(gen_no), base_gen)
+
+    @app.get("/ai_context_pack")
+    def ai_context_pack(run_id: Optional[str] = None, gen_no: Optional[int] = None) -> Dict[str, Any]:
+        """현재 연구 상태를 외부 AI에게 전달할 수 있는 read-only context pack으로 반환한다."""
+        return _ai_context_pack_payload(run_id, gen_no)
+
     @app.get("/backtest_detail")
     def backtest_detail(run_id: str = "", gen_no: int = -1) -> Dict[str, Any]:
         """한 세대의 백테 상세 시계열(일별손익·누적수익·낙폭)을 반환한다(차트 fetch용).
@@ -1196,6 +1564,17 @@ def create_app() -> FastAPI:
         insufficient로 표준화한다(읽기 전용·무예외).
         """
         return _feature_importance_payload(run_id, run_ids, axis, fine_time)
+
+    @app.get("/variable_correlation")
+    def variable_correlation(run_id: Optional[str] = None, run_ids: Optional[str] = None,
+                             method: str = "pearson") -> Dict[str, Any]:
+        """run(들)의 세대 결과 CSV를 풀링해 변수별 outcome/feature 상관도를 반환한다.
+
+        쿼리: ?run_ids=<a,b,c> 또는 ?run_id=<run_id>, &method=<pearson|spearman>.
+        B_* 진입 변수만 분석하며, outcome은 수익률 컬럼이다. 분석 전용·읽기 전용으로
+        엔진/하드게이트/스코어/생성/winner/export에는 영향이 없다.
+        """
+        return _variable_correlation_payload(run_id, run_ids, method)
 
     @app.websocket("/ws")
     async def ws(websocket: WebSocket) -> None:

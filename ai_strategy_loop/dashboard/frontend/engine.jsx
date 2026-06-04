@@ -28,6 +28,12 @@ function EnginePanel({ state, wsStatus }) {
   const workersActive = e.workers_active ?? 0;
   const tput = e.throughput ?? 0;
   const progress = e.progress ?? 0;
+  const maxGens = state.max_generations || 0;
+  const currentGen = state.current_gen || 0;
+  const overallPct = maxGens > 0 ? Math.min(100, (currentGen / maxGens) * 100) : Math.min(100, progress * 100);
+  const remainingGens = Math.max(0, maxGens - currentGen);
+  const activeConfig = state.active_config || {};
+  const latest = state.latest || {};
 
   // Worker pip array
   const pips = [];
@@ -53,6 +59,24 @@ function EnginePanel({ state, wsStatus }) {
         </div>
       </div>
       <div className="panel-bd">
+        <div className="engine-summary-strip">
+          <span><b>Overall Progress</b> {overallPct.toFixed(1)}%</span>
+          <span><b>Elapsed</b> {fmtElapsed(e.elapsed_ms)}</span>
+          <span><b>Remaining</b> {remainingGens} gen</span>
+          <span><b>ETA</b> {fmtElapsed(e.eta_ms)}</span>
+        </div>
+        <div className="engine-config-strip">
+          <span><b>Engine Config</b></span>
+          <span>min/tick={state.bt_timeframe || activeConfig.bt_timeframe || "-"}</span>
+          <span>bt_full_start={activeConfig.bt_full_start ?? "-"}</span>
+          <span>bt_full_end={activeConfig.bt_full_end ?? "-"}</span>
+          <span>window={activeConfig.bt_universe_start_time ?? "-"}~{activeConfig.bt_universe_end_time ?? "-"}</span>
+        </div>
+        <div className="engine-log-strip">
+          <span><b>Recent Logs</b></span>
+          <span>{latest.phase || state.status || "-"}</span>
+          <span>{latest.last_checkpoint || e.current_symbol || "waiting for engine event"}</span>
+        </div>
         {liveNoEngine && typeof window.LivePending === "function" ? (
           <LivePending note="엔진 런타임 메트릭(CPU/메모리/워커)은 backend가 아직 발행하지 않습니다." />
         ) : (

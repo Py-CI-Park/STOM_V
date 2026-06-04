@@ -194,6 +194,7 @@ function App() {
           {/* 승인 export 결과 배너(final_approval 게이트는 ApprovalDialog가 유지) */}
           <ExportStatusBanner reply={lastReply} />
 
+          <SectionLabel text="Run Monitor" />
           <CurrentGenPanel state={state} />
           <PhaseTimeline state={state} />
           <ProcessFlowPanel state={state} />
@@ -212,22 +213,30 @@ function App() {
               <QualityTrendChart state={state} />
               {/* 🏆 명예의 전당 — 인간 벤치마크(19전략) + AI 생성 통합(목표선 가시화) */}
               <HallOfFamePanel baseUrl={baseUrl} wsStatus={wsStatus} />
+              <SectionLabel text="Strategy / Prompt" />
               <GenerationsTable state={state} mddCap={mddCap} minDailyTrades={minDailyTrades}
                                 onViewCode={(g) => setCodeViewGen(g)}
                                 onSelectDetail={(genNo) => setSelectedDetailGen(genNo)} />
               {/* 운영·관찰: run 비교 콘솔(REST /runs, loop_runs.db 직접) */}
+              <SectionLabel text="Compare" />
               <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
             </div>
             <aside style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {/* #65 P0 — 분석 클러스터를 판정 카드 위로(인과 순서: 분석→가정→개선이
                   판정의 근거). 패널 자체 변경 없이 JSX 순서만 재배치. */}
-              {/* ── AI 분석 패널 묶음 (edge_ratio / feature_importance REST) ── */}
-              <SectionLabel text="AI 전략 분석 · Edge Ratio · Feature" />
+              {/* ── AI 분석 패널 묶음 (edge / feature / correlation / combinations REST) ── */}
+              <SectionLabel text="Research Lab" />
               <ErrorBoundary>
-                <EdgeRatioPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
+                <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
               </ErrorBoundary>
+              <SectionLabel text="Wiki" />
               <ErrorBoundary>
-                <FeatureImportancePanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
+                <ResearchWikiPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
+              </ErrorBoundary>
+              <SectionLabel text="AI Context Pack" />
+              <ErrorBoundary>
+                <AIContextPanel baseUrl={baseUrl} wsStatus={wsStatus}
+                                runId={state.run_id || ""} genNo={state.current_gen} />
               </ErrorBoundary>
 
               {/* ── 분석 패널 묶음 (P1~P5 live page_data 소비, demo 배지 규약) ── */}

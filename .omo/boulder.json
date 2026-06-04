@@ -1,0 +1,59 @@
+{
+    "schema_version":  2,
+    "active_work_id":  null,
+    "works":  {
+                  "condition-research-rereview-20260603":  {
+                                                               "work_id":  "condition-research-rereview-20260603",
+                                                               "active_plan":  ".omo/plans/condition-research-rereview-20260603.md",
+                                                               "plan_name":  "condition-research-rereview-20260603",
+                                                               "session_ids":  [
+                                                                                   "codex:condition-research-rereview-20260603"
+                                                                               ],
+                                                               "status":  "completed",
+                                                               "worktree_path":  null
+                                                           },
+                  "tick-oos-validation-20260603":  {
+                                                       "work_id":  "tick-oos-validation-20260603",
+                                                       "active_plan":  ".omo/plans/tick-oos-validation-20260603.md",
+                                                       "plan_name":  "tick-oos-validation-20260603",
+                                                       "session_ids":  [
+                                                                           "codex:tick-oos-validation-20260603",
+                                                                           "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
+                                                                       ],
+                                                       "status":  "completed",
+                                                       "worktree_path":  null
+                                                   },
+                  "tick-research-dashboard-upgrade-20260603":  {
+                                                                   "work_id":  "tick-research-dashboard-upgrade-20260603",
+                                                                   "active_plan":  ".omo/plans/tick-research-dashboard-upgrade-20260603.md",
+                                                                   "plan_name":  "tick-research-dashboard-upgrade-20260603",
+                                                                   "session_ids":  [
+                                                                                       "codex:tick-research-dashboard-upgrade-20260603"
+                                                                                   ],
+                                                                   "status":  "completed",
+                                                                   "worktree_path":  null
+                                                               },
+                  "tick-oos-dashboard-validation-20260604":  {
+                                                                 "work_id":  "tick-oos-dashboard-validation-20260604",
+                                                                 "active_plan":  ".omo/plans/tick-oos-dashboard-validation-20260604.md",
+                                                                 "plan_name":  "tick-oos-dashboard-validation-20260604",
+                                                                 "session_ids":  [
+                                                                                     "codex:tick-oos-dashboard-validation-20260604"
+                                                                                 ],
+                                                                 "status":  "completed",
+                                                                 "worktree_path":  null,
+                                                                 "completed_at":  "2026-06-04T11:48:55.6080517+09:00"
+                                                             },
+                  "tick-selection-rule-sparse-gen5-research-20260604":  {
+                                                                            "work_id":  "tick-selection-rule-sparse-gen5-research-20260604",
+                                                                            "active_plan":  ".omo/plans/tick-selection-rule-sparse-gen5-research-20260604.md",
+                                                                            "plan_name":  "tick-selection-rule-sparse-gen5-research-20260604",
+                                                                            "session_ids":  [
+                                                                                                "codex:tick-selection-rule-sparse-gen5-research-20260604"
+                                                                                            ],
+                                                                            "status":  "completed",
+                                                                            "worktree_path":  null,
+                                                                            "completed_at":  "2026-06-04T13:48:48.8255929+09:00"
+                                                                        }
+              }
+}

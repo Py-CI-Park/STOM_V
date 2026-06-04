@@ -9,11 +9,16 @@ function fmtDaily(v) {
 
 function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode, onSelectDetail }) {
   const [expanded, setExpanded] = useState_t(new Set());
+  const [sortKey, setSortKey] = useState_t("gen_desc");
 
   const rows = useMemo_t(() => {
-    // newest first
-    return [...(state.generations || [])].reverse();
-  }, [state.generations]);
+    const base = [...(state.generations || [])];
+    if (sortKey === "profit_desc") {
+      return base.sort((a, b) => (b.profit || 0) - (a.profit || 0));
+    }
+    // gen_desc default: newest first
+    return base.reverse();
+  }, [state.generations, sortKey]);
 
   const running = state.status === "running" || state.status === "stopping";
   const currentDisplayGen = running ? state.current_gen + 1 : state.current_gen;
@@ -32,9 +37,17 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
         <div className="panel-hd-title">
           <span className="dot"></span>세대 이력 — Generations
         </div>
-        <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
-          {rows.length}개 세대 누적
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
+            {rows.length}개 세대 누적
+          </span>
+          <button className="btn ghost sm" onClick={() => setSortKey("profit_desc")} data-tip="total_profit sort">
+            Sort: Total Profit
+          </button>
+          <button className="btn ghost sm" onClick={() => setSortKey("gen_desc")}>
+            Sort: Gen
+          </button>
+        </div>
       </div>
       <div style={{ maxHeight: 520, overflowY: "auto" }}>
         <table className="gens">

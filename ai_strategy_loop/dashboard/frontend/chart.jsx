@@ -1,6 +1,14 @@
 /* SVG chart for graded_score per generation. */
 const { useMemo: useMemo_c, useState: useState_c, useRef: useRef_c } = React;
 
+function MetricHelpStrip({ items }) {
+  return (
+    <div className="metric-help-strip">
+      {(items || []).map((item, i) => <span key={i}>{item}</span>)}
+    </div>
+  );
+}
+
 function FitnessChart({ state, target = 1.0 }) {
   const gens = state.generations || [];
   const bestSoFar = useMemo_c(() => {
@@ -105,6 +113,12 @@ function FitnessChart({ state, target = 1.0 }) {
                 color={gatePassedCount > 0 ? "var(--teal)" : undefined} />
           <Mini label="목표" value={target.toFixed(3)} sub="target_score" />
         </div>
+        <MetricHelpStrip items={[
+          "graded_score = weighted fitness",
+          "hard gate = target score plus MDD/trade rules",
+          "Calmar = return divided by MDD",
+          "uptrend_r2 = cumulative equity trend fit",
+        ]} />
 
         <div className="chart-wrap">
           <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`}
@@ -349,6 +363,11 @@ function ProfitChart({ state, targetPct = 0 }) {
                 color={latest && latest.profit > 0 ? "var(--teal)"
                        : latest && latest.profit < 0 ? "var(--red)" : undefined} />
         </div>
+        <MetricHelpStrip items={[
+          "payoff_ratio = avg win / abs(avg loss)",
+          "total_profit_pct = operating-capital return",
+          "profit line uses right-axis money scale",
+        ]} />
 
         <div className="chart-wrap">
           <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
@@ -565,6 +584,11 @@ function EquityOverlayChart({ baseUrl, wsStatus, runId }) {
                 value={maxFinalPct != null ? (maxFinalPct >= 0 ? "+" : "") + maxFinalPct.toFixed(1) + "%" : "—"}
                 color={maxFinalPct != null && maxFinalPct > 0 ? "var(--teal)" : maxFinalPct != null && maxFinalPct < 0 ? "var(--red)" : undefined} />
         </div>
+        <MetricHelpStrip items={[
+          "edge_ratio = segment edge density",
+          "winner curves use a 12-color palette",
+          "non-winner curves stay subdued for comparison",
+        ]} />
 
         <div className="chart-wrap">
           {isDemo ? (
@@ -1097,6 +1121,12 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
           <Mini label="최대 반납액" value={summary.max_drawdown != null ? fmtMoney(summary.max_drawdown) : "—"}
                 color={summary.max_drawdown > 0 ? "var(--red)" : undefined} sub="고점 대비(원)" />
         </div>
+        <MetricHelpStrip items={[
+          `run_id=${runId || "-"}`,
+          `gen_no=${genNo != null ? genNo : "-"}`,
+          "peak_holdings=0 can mean no overlap buy/sell timing data",
+          "period/timeframe are inherited from the selected run",
+        ]} />
 
         {/* ── 상단: 동시보유 종목수 시계열(STOM fig2 상단 대응) ──
             보유금액(원)은 엔진 전용(CSV 미저장)이라 미표시, 동시보유 종목수로 대체.
