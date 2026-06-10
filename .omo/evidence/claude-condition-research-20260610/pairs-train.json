@@ -1,0 +1,5 @@
+[
+  {"label": "BASE_SEED",   "buy": "Tick_B_902_905_Update_2",   "sell": "Tick_S_902_905_Update_2"},
+  {"label": "C7_SEEDPLUS", "buy": "CLDGEN_0610_C7_SEEDPLUS_B", "sell": "Tick_S_902_905_Update_2"},
+  {"label": "C8B_ABSORB",  "buy": "CLDGEN_0610_C8B_ABSORB_LAZY_B", "sell": "CLDGEN_0610_S_FAST"}
+]

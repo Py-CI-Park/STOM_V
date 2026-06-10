@@ -1,0 +1,5 @@
+[BATCH] run_id=cldgen_smoke_d_2025q1_20260610 pairs=2
+[BATCH] prepare status=ok back_count=814 elapsed=67s
+[BATCH] gen0 C2C_X_DYN2 ok profit=-3,102,523 mdd=62.58 trades=171 daily=2.90 payoff=1.8715008015784926 gate=False reason=mdd 62.58 > mdd_cap 35 (21s)
+[BATCH] gen1 C9_X_DYN2 ok profit=-9,294,524 mdd=94.47 trades=684 daily=11.80 payoff=1.966488651809194 gate=False reason=mdd 94.47 > mdd_cap 35 (30s)
+[BATCH] done

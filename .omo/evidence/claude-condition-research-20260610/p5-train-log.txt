@@ -1,0 +1,6 @@
+[BATCH] run_id=cldgen_train_2023_2025_20260610 pairs=3
+[BATCH] prepare status=ok back_count=2285 elapsed=279s
+[BATCH] gen0 BASE_SEED ok profit=8,631,199 mdd=17.44 trades=307 daily=0.40 payoff=1.4861642479780424 gate=True reason=ok (98s)
+[BATCH] gen1 C7_SEEDPLUS ok profit=2,347,400 mdd=16.52 trades=142 daily=0.20 payoff=1.4523395126689873 gate=False reason=daily_avg_trades 0.2 < min_daily_trades 0.3 (92s)
+[BATCH] gen2 C8B_ABSORB ok profit=-7,547,773 mdd=152.49 trades=584 daily=0.80 payoff=1.0386199199507389 gate=False reason=mdd 152.5 > mdd_cap 35 (88s)
+[BATCH] done

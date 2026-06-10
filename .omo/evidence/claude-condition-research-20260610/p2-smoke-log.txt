@@ -1,0 +1,13 @@
+[BATCH] run_id=cldgen_smoke_2025q1_20260610 pairs=10
+[BATCH] prepare status=ok back_count=814 elapsed=62s
+[BATCH] gen0 BASE_SEED ok profit=2,023,670 mdd=4.98 trades=24 daily=0.40 payoff=1.8251473477406681 gate=True reason=ok (23s)
+[BATCH] gen1 BASE_GEN4 ok profit=-141,200 mdd=3.38 trades=5 daily=0.10 payoff=0.25513196480938416 gate=False reason=daily_avg_trades 0.1 < min_daily_trades 0.3 (22s)
+[BATCH] gen2 C1_V5C ERROR (337s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] gen3 C2_F0520 ERROR (337s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] gen4 C3_OPEN ok profit=-1,282,268 mdd=27.02 trades=88 daily=1.50 payoff=1.009197116579667 gate=False reason=total_profit -1.282e+06 <= 0 (34s)
+[BATCH] gen5 C4_MIDCAP ERROR (339s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] gen6 C5_PULLBACK ERROR (337s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] gen7 C6_LARGE ERROR (338s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] gen8 C7_SEEDPLUS ok profit=588,940 mdd=4.49 trades=10 daily=0.20 payoff=1.6735042735042736 gate=False reason=daily_avg_trades 0.2 < min_daily_trades 0.3 (22s)
+[BATCH] gen9 C8_ABSORB ok profit=-770,591 mdd=15.94 trades=35 daily=0.60 payoff=0.8051033875934888 gate=False reason=total_profit -7.706e+05 <= 0 (29s)
+[BATCH] done

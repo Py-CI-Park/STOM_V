@@ -1,0 +1,25 @@
+[OK] 워크트리에 .pyd 파일이 없습니다.
+[OK] 텔레그램 qlist 계약이 현재 MainWindow 순서와 일치합니다.
+[OK] MainWindow가 텔레그램 런타임을 시작합니다.
+[OK] 설정 변경 전파가 TelegramProcessAlive 경로를 사용합니다.
+[OK] 텔레그램 alive helper가 존재합니다.
+[OK] Jisu cleanup matches V2.70 removal.
+[OK] Shutdown cleanup matches current MainWindow runtime.
+[OK] Shutdown persists dialog geometry before closing dialogs.
+[OK] Shutdown hides Qt windows before bounded child cleanup.
+[OK] Shutdown does not raise SystemExit inside Qt closeEvent.
+[OK] Shutdown query/sound child wait is bounded with terminate fallback.
+[OK] Shutdown backtest stop acknowledgement wait is bounded with terminate fallback.
+[OK] BackTest 프로세스 생성자가 직접 인자 전달 계약을 유지합니다.
+[OK] BackTest 실행 인자가 backQ 우회 전달로 오염되지 않습니다.
+[OK] WebCrawling runtime wiring matches QThread contract.
+[OK] static.py compatibility exports match runtime contract.
+[OK] WebCrawling stop contract includes timeout and cancellation guards.
+[OK] Key loading safety guard is present.
+[OK] Kiwoom P/L rounding matches expected loss math.
+[OK] 비정식 워크트리에서 시리얼키 UI 생성이 차단됩니다.
+[OK] 설정 저장이 워크트리 시리얼키 정책을 따릅니다.
+[OK] dict_set 적재가 비정식 워크트리 시리얼키 정책을 따릅니다.
+[OK] legacy utility/setting.py도 비정식 워크트리 시리얼키 정책을 따릅니다.
+
+모든 비정식 워크트리 동기화 가드레일 검사를 통과했습니다.

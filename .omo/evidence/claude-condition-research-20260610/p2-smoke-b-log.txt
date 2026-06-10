@@ -1,0 +1,9 @@
+[BATCH] run_id=cldgen_smoke_b_2025q1_20260610 pairs=6
+[BATCH] prepare status=ok back_count=814 elapsed=63s
+[BATCH] gen0 C1B_V5C ERROR (338s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] gen1 C2B_F0520 ERROR (338s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] gen2 C4B_MIDCAP ERROR (338s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] gen3 C5B_PULLBACK ERROR (339s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] gen4 C6B_LARGE ERROR (343s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] gen5 C8B_ABSORB ok profit=-770,591 mdd=15.94 trades=35 daily=0.60 payoff=0.8051033875934888 gate=False reason=total_profit -7.706e+05 <= 0 (21s)
+[BATCH] done
