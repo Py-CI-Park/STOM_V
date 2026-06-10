@@ -419,7 +419,8 @@ function RunSelector({ runList, selectedRun, onSelect, onRefresh, disabled }) {
         <option value="">LIVE(현재)</option>
         {(runList || []).map(r => (
           <option key={r.run_id} value={r.run_id}>
-            {r.run_id}{r.gate_passed_count > 0 ? " ✓" : ""}
+            {/* D5(2026-06-10): 배치 run은 세대 라벨(BASE_SEED/C7_…)이 정체성 — 대표 라벨 병기 */}
+            {r.run_id}{r.label ? " · " + r.label : ""}{r.gate_passed_count > 0 ? " ✓" : ""}
           </option>
         ))}
       </select>

@@ -45,7 +45,13 @@
    검증된 3.5×)과 v2(쇠퇴 구간 직격 필터: 전일동시간비 하한 등 train 부검 근거).
 
 ## Slippage Status: not run (advisory blocker — 승격 시 필수, 본 사이클은 REJECT라 미적용)
-## PBO/DSR Status: not run (C1 미구현 — advisory blocker로 명시, 승격 주장 없음)
+## PBO/DSR Status: **실측 완료** (C1 구현 후 산출 — p5-overfit-advisory.json)
+- **DSR(C7) = 0.276** (< 0.95): 일별 손익 124거래일, 시도 보정 n_trials=16(이번 사이클 평가된
+  고유 CLDGEN 매수 전략 수). **시도 횟수를 보정하면 C7의 train 엣지는 통계적으로 유의하지
+  않다** — 본 카드의 OOS 결과(2026 적자·합산 시드 미달)와 정합하는 사전 경고로 작동.
+- PBO(CSCV) = 0.0 — 단 풀이 2개(C7/C8B)뿐이라 통계력이 희박하다(C7가 C8B를 전 분할에서
+  지배하는 자명한 결과). 후보 풀이 커지는 차기 사이클부터 의미를 갖는다.
+- 정의 공시: DSR은 거래일 기준 일별 손익의 샤프, PBO는 일별 손익 행렬 CSCV(8블록 70조합).
 
 ## 정직성 공시
 - seed_relative_v1 임계값(MDD≤max(20,시드×1.1)·거래 50~400)은 train 결과를 본 뒤

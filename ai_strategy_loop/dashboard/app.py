@@ -233,6 +233,7 @@ def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
     try:
         st = LoopState()
         result = compare_runs(st, run_ids)
+        _attach_run_labels(result)
         return result
     except Exception as exc:  # noqa: BLE001 - run 비교 조회 실패는 빈 목록으로.
         return {"runs": [], "count": 0, "error": str(exc)}
@@ -242,6 +243,280 @@ def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
                 st.close()
             except Exception:  # noqa: BLE001
                 pass
+
+
+def _attach_run_labels(result: Dict[str, Any]) -> None:
+    """D5 — run 목록에 대표 라벨(strategy_gist)을 덧붙인다(읽기 전용·무예외).
+
+    배치 평가 run(예: cldgen_*)은 세대 라벨(BASE_SEED/C7_SEEDPLUS …)이 정체성이다.
+    run별 첫 비어있지 않은 gist를 label로, 고유 gist 목록(최대 8)을 labels로 노출한다.
+    실패는 조용히 무시한다(라벨은 장식 — 기존 응답 키 불변).
+    """
+    import sqlite3  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+    runs = result.get("runs") if isinstance(result, dict) else None
+    if not runs:
+        return
+    try:
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        try:
+            rows = con.execute(
+                "SELECT run_id, strategy_gist FROM generations"
+                " WHERE strategy_gist IS NOT NULL AND strategy_gist != ''"
+                " ORDER BY gen_no"
+            ).fetchall()
+        finally:
+            con.close()
+        first_gist: Dict[str, str] = {}
+        gists: Dict[str, list] = {}
+        for rid, gist in rows:
+            first_gist.setdefault(rid, gist)
+            bucket = gists.setdefault(rid, [])
+            if gist not in bucket:
+                bucket.append(gist)
+        for row in runs:
+            rid = row.get("run_id")
+            if rid in first_gist:
+                row["label"] = first_gist[rid]
+                row["labels"] = gists[rid][:8]
+    except Exception:  # noqa: BLE001 - 라벨 실패해도 목록은 그대로.
+        return
+
+
+def _row_for_gen(run_id: str, gen_no: int) -> Optional[Dict[str, Any]]:
+    """run/gen 한 행(csv_path 포함)을 dict로 읽는다(읽기 전용, 실패 None)."""
+    import sqlite3  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+    try:
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        try:
+            row = con.execute(
+                "SELECT gen_no, status, score, gate_passed, reason, profit,"
+                " total_profit_pct, mdd, trade_count, daily_avg_trades, payoff_ratio,"
+                " max_hold_count, buy_name, sell_name, csv_path, strategy_gist"
+                " FROM generations WHERE run_id=? AND gen_no=?",
+                (run_id, int(gen_no)),
+            ).fetchone()
+        finally:
+            con.close()
+        return dict(row) if row is not None else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _yearly_detail_from_csv(csv_path: str) -> list:
+    """per-trade CSV에서 연도별 {year, trades, profit, win_rate}를 만든다(graceful)."""
+    try:
+        import pandas as pd  # noqa: PLC0415
+
+        df = pd.read_csv(csv_path, encoding="utf-8-sig")
+        if "매수시간" not in df.columns or "수익금" not in df.columns:
+            return []
+        years = df["매수시간"].astype(str).str[:4]
+        result = []
+        for year, group in df.groupby(years):
+            profits = group["수익금"].astype(float)
+            wins = (group["수익률"].astype(float) > 0) if "수익률" in df.columns else (profits > 0)
+            result.append({
+                "year": str(year),
+                "trades": int(len(group)),
+                "profit": float(profits.sum()),
+                "win_rate": round(float(wins.mean()), 4),
+            })
+        return result
+    except Exception:  # noqa: BLE001
+        return []
+
+
+def _run_yearly_payload(run_id: str) -> Dict[str, Any]:
+    """D1 — run의 세대별 연도 분해(거래수·손익·승률)를 만든다(읽기 전용·무예외).
+
+    근거(2026-06-10 원인5): 시드 알파의 연도별 쇠퇴(+4.88M→+3.37M→+0.38M→2026 적자)는
+    합계만 봐서는 보이지 않는다. generations.csv_path의 per-trade CSV(매수시간·수익금·
+    수익률)를 연도로 집계한다 — 추가 백테 0회. CSV 부재/파싱 실패는 빈 분해로 표준화.
+    """
+    import sqlite3  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+    out: Dict[str, Any] = {"run_id": run_id, "generations": [], "count": 0}
+    if not run_id:
+        return out
+    try:
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        try:
+            rows = con.execute(
+                "SELECT gen_no, status, buy_name, strategy_gist, csv_path, profit,"
+                " trade_count FROM generations WHERE run_id=? ORDER BY gen_no",
+                (run_id,),
+            ).fetchall()
+        finally:
+            con.close()
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = str(exc)
+        return out
+
+    for row in rows:
+        d = dict(row)
+        entry: Dict[str, Any] = {
+            "gen_no": d["gen_no"],
+            "buy_name": d.get("buy_name"),
+            "label": d.get("strategy_gist") or "",
+            "status": d.get("status"),
+            "total_profit": d.get("profit"),
+            "trade_count": d.get("trade_count"),
+            "years": _yearly_detail_from_csv(d.get("csv_path") or "") if d.get("csv_path") else [],
+        }
+        out["generations"].append(entry)
+    out["count"] = len(out["generations"])
+    return out
+
+
+def _autopsy_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
+    """D2 — 세대 CSV에 공식 부검(진입/청산)을 적용해 NL 요약을 반환한다(읽기 전용·무예외).
+
+    autopsy.analyze_trades/analyze_exits + summarize — 루프가 프롬프트 환류로만 쓰던
+    분석을 사람이 대시보드에서 직접 본다("왜 졌는지"). 실패/부족은 status로 표준화.
+    """
+    out: Dict[str, Any] = {
+        "run_id": run_id, "gen_no": gen_no,
+        "entry_summary": "", "exit_summary": "", "status": "unavailable",
+    }
+    row = _row_for_gen(run_id, gen_no)
+    if row is None:
+        return out
+    out["buy_name"] = row.get("buy_name")
+    out["label"] = row.get("strategy_gist") or ""
+    csv_path = row.get("csv_path") or ""
+    if not csv_path:
+        out["status"] = "no_csv"
+        return out
+    try:
+        from ai_strategy_loop.autopsy.analyze import analyze_exits, analyze_trades  # noqa: PLC0415
+        from ai_strategy_loop.autopsy.summarize import summarize, summarize_exits  # noqa: PLC0415
+
+        entry = analyze_trades(csv_path)
+        exits = analyze_exits(csv_path)
+        out["entry_summary"] = summarize(entry) or ""
+        out["exit_summary"] = summarize_exits(exits) or ""
+        out["entry_status"] = getattr(entry, "status", "")
+        out["exit_status"] = getattr(exits, "status", "")
+        out["status"] = "ok"
+    except Exception as exc:  # noqa: BLE001
+        out["status"] = "error"
+        out["error"] = str(exc)
+    return out
+
+
+def _selector_preview_payload(run_id: str, selector: str) -> Dict[str, Any]:
+    """D4 — run 행에 선택기를 진단 적용해 동결 가능 후보를 미리 본다(읽기 전용·무예외).
+
+    근거(2026-06-10 원인1): 기준-목표 비정합(시드조차 탈락)을 눈으로 확인하는 도구.
+    sparse_positive_v1 | seed_relative_v1 지원. 베이스라인(BASE_*)은 후보에서 출처
+    기준으로 제외하되 seed_relative의 시드 프로파일로 쓴다. **진단 전용 — 아무것도
+    쓰지 않으며 동결 아티팩트가 아니다.**
+    """
+    import sqlite3  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+    out: Dict[str, Any] = {
+        "run_id": run_id, "selector": selector or "sparse_positive_v1",
+        "diagnostic_only": True, "selected": False, "eligible": [], "rejected": [],
+    }
+    if not run_id:
+        return out
+    try:
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        try:
+            rows = con.execute(
+                "SELECT gen_no, status, score, gate_passed, reason, profit,"
+                " total_profit_pct, mdd, trade_count, daily_avg_trades, payoff_ratio,"
+                " max_hold_count, buy_name, sell_name, csv_path, strategy_gist"
+                " FROM generations WHERE run_id=? ORDER BY gen_no",
+                (run_id,),
+            ).fetchall()
+        finally:
+            con.close()
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = str(exc)
+        return out
+
+    try:
+        from ai_strategy_loop.controller.candidate_selection import (  # noqa: PLC0415
+            SeedProfile,
+            parse_candidate_generation,
+            select_seed_relative_v1,
+            select_sparse_positive_v1,
+        )
+
+        candidates, labels = [], {}
+        seed_profile = None
+        for r in rows:
+            d = dict(r)
+            gist = d.pop("strategy_gist", "") or ""
+            labels[int(d.get("gen_no") or 0)] = gist
+            d["gate_passed"] = bool(d.get("gate_passed"))
+            for k in ("payoff_ratio", "max_hold_count", "profit", "mdd",
+                      "daily_avg_trades", "score"):
+                if d.get(k) is None:
+                    d[k] = 0.0
+            if d.get("csv_path") is None:
+                d["csv_path"] = ""
+            if gist == "BASE_SEED" and seed_profile is None and d.get("status") == "ok":
+                seed_profile = SeedProfile(
+                    mdd=float(d["mdd"]), trade_count=int(d["trade_count"]),
+                    profit=float(d["profit"]), source=f"BASE_SEED of {run_id}",
+                )
+            if gist.startswith("BASE_"):
+                continue
+            candidates.append(parse_candidate_generation(d))
+
+        if (selector or "") == "seed_relative_v1":
+            res = select_seed_relative_v1(
+                candidates, run_id=run_id, config_path="", config_hash="",
+                seed_profile=seed_profile, diagnostic_only=True,
+            )
+            out["selector"] = "seed_relative_v1"
+            out["mdd_limit"] = res.mdd_limit
+            out["seed_profile"] = (
+                {"mdd": seed_profile.mdd, "trade_count": seed_profile.trade_count}
+                if seed_profile else None
+            )
+        else:
+            out["selector"] = "sparse_positive_v1"
+            res = select_sparse_positive_v1(
+                candidates, run_id=run_id, config_path="", config_hash="",
+                diagnostic_only=True,
+            )
+        out["selected"] = bool(res.selected)
+        if res.selected_candidate is not None:
+            c = res.selected_candidate
+            out["selected_candidate"] = {
+                "gen_no": c.gen_no, "label": labels.get(c.gen_no, ""),
+                "buy_name": c.buy_name, "sell_name": c.sell_name,
+                "profit": c.profit, "mdd": c.mdd, "trade_count": c.trade_count,
+                "payoff_ratio": c.payoff_ratio,
+            }
+        out["eligible"] = [
+            {"gen_no": e.gen_no, "label": labels.get(e.gen_no, "")}
+            for e in res.eligible_candidates
+        ]
+        out["rejected"] = [
+            {"gen_no": rj.gen_no, "label": labels.get(rj.gen_no, ""),
+             "reasons": list(rj.reasons)}
+            for rj in res.rejected_candidates
+        ]
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = str(exc)
+    return out
 
 
 def _generation_durations_payload(run_id: Optional[str] = None) -> Dict[str, Any]:
@@ -1611,6 +1886,34 @@ def create_app() -> FastAPI:
         DB 없거나 조회 실패면 빈 목록(무예외).
         """
         return _generation_durations_payload(run_id)
+
+    @app.get("/run_yearly")
+    def run_yearly(run_id: str = "") -> Dict[str, Any]:
+        """D1 — run의 세대별 연도 분해(거래·손익·승률)를 반환한다(읽기 전용·무예외).
+
+        쿼리: ?run_id=<run_id>. 근거(2026-06-10 원인5): 연도별 쇠퇴는 합계로는 안 보인다.
+        per-trade CSV를 연 단위로 집계한다(추가 백테 0회). CSV 없으면 빈 분해.
+        """
+        return _run_yearly_payload(run_id)
+
+    @app.get("/autopsy")
+    def autopsy(run_id: str = "", gen_no: int = 0) -> Dict[str, Any]:
+        """D2 — 세대 결과 CSV의 공식 부검(진입/청산) NL 요약을 반환한다(읽기 전용·무예외).
+
+        쿼리: ?run_id=<run_id>&gen_no=<n>. 루프 프롬프트 환류로만 쓰이던 부검을 사람이
+        직접 본다(손실군집·MFE 반납·손실집중 매도규칙). CSV 없으면 status=no_csv.
+        """
+        return _autopsy_payload(run_id, gen_no)
+
+    @app.get("/selector_preview")
+    def selector_preview(run_id: str = "", selector: str = "sparse_positive_v1") -> Dict[str, Any]:
+        """D4 — run 행에 선택기를 진단 적용한 미리보기를 반환한다(읽기 전용·무예외).
+
+        쿼리: ?run_id=<run_id>&selector=sparse_positive_v1|seed_relative_v1.
+        근거(2026-06-10 원인1): 기준-목표 비정합을 눈으로 확인한다. **진단 전용** —
+        동결 아티팩트를 쓰지 않으며 OOS-blind 동결 절차를 대체하지 않는다.
+        """
+        return _selector_preview_payload(run_id, selector)
 
     @app.get("/runs/compare")
     def runs_compare(ids: str = "") -> Dict[str, Any]:

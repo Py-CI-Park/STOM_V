@@ -259,6 +259,31 @@ B8 → [P3~P4 연구 사이클 재개] → C1~C3 → D1~D5 → E. GPT 복귀(6/1
   OOS-blind 규율 위반은 아니나, **선택기 설계가 train 정보에 의존**함을 결정 카드에
   명시한다(과적합 위험은 OOS와 C1(PBO/DSR)로 측정).
 
+### C·D·E군 구현 완료 기록 (2026-06-10~11)
+- **C1 완료(스펙 일탈 공시)**: `fitness/overfit_stats.py`(PBO/CSCV + Deflated Sharpe,
+  분석 전용) + `tests/unit/test_overfit_stats.py`(8 테스트). §8 표의 "graded 가산항"
+  대신 **동결 시점 advisory**로 배선 — PBO는 후보 '집단' 통계라 세대 단위 graded에
+  끼우면 의미가 왜곡되기 때문(의도적 일탈). 실측: **DSR(C7)=0.276<0.95** — 16개 시도
+  보정 시 train 엣지가 통계적으로 유의하지 않음을 사전 경고(OOS 결과와 정합).
+  결정 카드 PBO/DSR 칸이 사상 처음 실측치로 채워짐.
+- **C2 완료(문서)**: LLM 루프 run 설정 표준에 `graduation_holdout: true` 권장을 명시
+  (코드 변경 0 — 기존 토글). 차기 루프 설정부터 적용.
+- **C3 완료**: yearly advisory 임계를 seed_relative와 정합(거래 50~400·MDD 20,
+  `SEED_ALIGNED_YEARLY_THRESHOLDS`) — select_and_freeze가 사용.
+- **D1~D5 완료**: 대시보드 검증 뷰 — GET `/run_yearly`(연도 분해: 시드 쇠퇴 가시화),
+  GET `/autopsy`(부검 NL 요약), GET `/selector_preview`(선택기 진단 미리보기 —
+  기준-목표 비정합을 눈으로 확인), `/runs` 대표 라벨(D5), error 세대 reason에
+  elapsed 병기(D3, 선택기 무영향). 프런트: Research Lab에 **Validation 탭**
+  (`_ValidationPanel`) 추가, run 드롭다운 라벨 병기, index.html 캐시 버전 갱신.
+  `tests/unit/test_dashboard_validation_views.py`(14 테스트) + 라이브 QA
+  (실 run 4종 엔드포인트 정상 — 연도분해가 시드 4.88M→3.37M→0.38M 쇠퇴를 표시).
+- **E3 부분 충족**: 배치도구의 핵심 계약(reason 원문 보존)은
+  `test_record_reason_contract.py`가 정적으로 고정. 엔진 spawn이 필요한 전체 흐름
+  단위테스트는 비용 대비 가치가 낮아 보류(연구 도구 — 사용 시마다 로그 증거 생성).
+- **E1·E2 보류(사유)**: E1(claude provider)은 zero-LLM 배치 경로가 이미 대체 수단이고
+  GPT 복귀(6/11 10:00) 임박으로 우선순위 낮음. E2(few-shot 'named' 확장)는 GPT 루프
+  재개 후 실사용 패턴을 보고 결정.
+
 ---
 
 ## 9. 정직성 체크리스트 (이 사이클에서 지켜진 것)

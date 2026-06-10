@@ -1,0 +1,115 @@
+from __future__ import annotations
+
+import os
+import sys
+
+import numpy as np
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+import ai_strategy_loop.bootstrap  # noqa: E402,F401
+from ai_strategy_loop.fitness.overfit_stats import (  # noqa: E402
+    align_daily_matrix,
+    daily_pnl_series,
+    deflated_sharpe_ratio,
+    expected_max_sharpe,
+    pbo_cscv,
+)
+
+
+def test_pbo_high_for_pure_noise_candidates() -> None:
+    """순수 잡음 후보들: IS 최우수가 OOS에서 무작위 순위 → 평균 PBO ≈ 0.5.
+
+    단일 시드는 유한표본 운(잡음 컬럼의 표본 내 지속 드리프트)으로 낮게 나올 수
+    있으므로(실측: seed7=0.14) 5개 시드 평균으로 검정한다.
+    """
+    pbos = []
+    for seed in (1, 2, 3, 7, 42):
+        rng = np.random.default_rng(seed)
+        matrix = rng.normal(0.0, 1.0, size=(240, 10))
+        result = pbo_cscv(matrix, n_blocks=8)
+        assert result is not None
+        assert result["n_combinations"] == 70  # C(8,4)
+        assert result["n_candidates"] == 10
+        pbos.append(result["pbo"])
+    mean_pbo = sum(pbos) / len(pbos)
+    assert 0.30 <= mean_pbo <= 0.70
+
+
+def test_pbo_low_when_true_edge_exists() -> None:
+    """진짜 엣지 후보 1개 + 잡음 9개: IS 최우수가 OOS에서도 상위 → PBO 낮음."""
+    rng = np.random.default_rng(11)
+    noise = rng.normal(0.0, 1.0, size=(240, 9))
+    edge = rng.normal(0.8, 1.0, size=(240, 1))  # 뚜렷한 양의 드리프트
+    matrix = np.hstack([noise, edge])
+    result = pbo_cscv(matrix, n_blocks=8)
+    assert result is not None
+    assert result["pbo"] <= 0.10
+    assert result["is_best_oos_mean_rank"] >= 0.8
+
+
+def test_pbo_graceful_on_insufficient_input() -> None:
+    assert pbo_cscv(np.zeros((10, 1)), n_blocks=8) is None  # 후보 1개
+    assert pbo_cscv(np.zeros((6, 3)), n_blocks=8) is None   # 기간 부족
+    assert pbo_cscv(np.zeros((100, 3)), n_blocks=7) is None  # 홀수 블록
+
+
+def test_dsr_decreases_with_more_trials_and_detects_real_edge() -> None:
+    rng = np.random.default_rng(3)
+    returns = rng.normal(0.25, 1.0, size=500)  # 진짜 엣지(일 샤프 ~0.25)
+
+    one = deflated_sharpe_ratio(returns, n_trials=1)
+    many = deflated_sharpe_ratio(returns, n_trials=200)
+    assert one is not None and many is not None
+    # 시도 횟수가 늘면 기준선(E[max SR])이 올라가 DSR이 내려간다.
+    assert many["expected_max_sharpe_null"] > one["expected_max_sharpe_null"]
+    assert many["dsr"] < one["dsr"]
+    # 명확한 엣지는 200회 보정에도 유의해야 한다.
+    assert many["dsr"] >= 0.95
+
+
+def test_dsr_low_for_noise_picked_among_many_trials() -> None:
+    rng = np.random.default_rng(5)
+    # 200개 잡음 전략 중 '최고'를 뽑은 상황을 흉내: 잡음의 최대 샤프 근처 수익률.
+    noise = rng.normal(0.0, 1.0, size=(300, 200))
+    best_col = int(np.argmax(noise.mean(axis=0) / noise.std(axis=0, ddof=1)))
+    picked = noise[:, best_col]
+    res = deflated_sharpe_ratio(picked, n_trials=200)
+    assert res is not None
+    # 선택 편의를 보정하면 우연 최고는 유의하지 않아야 한다.
+    assert res["dsr"] < 0.95
+
+
+def test_expected_max_sharpe_monotonic() -> None:
+    v = 1.0 / 249
+    assert expected_max_sharpe(1, v) == 0.0
+    e10 = expected_max_sharpe(10, v)
+    e100 = expected_max_sharpe(100, v)
+    assert 0 < e10 < e100
+
+
+def test_daily_series_and_alignment(tmp_path) -> None:
+    csv = tmp_path / "bt.csv"
+    csv.write_text(
+        "종목명,매수시간,매도시간,수익률,수익금\n"
+        "A,20230102090100,20230102090200,1.0,100\n"
+        "B,20230102091000,20230102091100,-0.5,-40\n"
+        "C,20230103090500,20230103090700,2.0,200\n",
+        encoding="utf-8-sig",
+    )
+    series = daily_pnl_series(str(csv))
+    assert series == {"20230102": 60.0, "20230103": 200.0}
+
+    days, labels, matrix = align_daily_matrix({
+        "X": {"20230102": 60.0, "20230103": 200.0},
+        "Y": {"20230103": -50.0},
+    })
+    assert days == ["20230102", "20230103"]
+    assert labels == ["X", "Y"]
+    assert matrix.tolist() == [[60.0, 0.0], [200.0, -50.0]]
+
+
+def test_daily_series_graceful_on_missing_file() -> None:
+    assert daily_pnl_series("no_such_file.csv") is None

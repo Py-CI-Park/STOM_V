@@ -1,0 +1,28 @@
+{
+  "note": "advisory only — selection/판정에 미사용",
+  "pbo": {
+    "pbo": 0.0,
+    "n_combinations": 70,
+    "n_candidates": 2,
+    "n_periods": 439,
+    "median_logit": 1.0986122886681098,
+    "is_best_oos_mean_rank": 0.75,
+    "pool": [
+      "gen1:C7_SEEDPLUS",
+      "gen2:C8B_ABSORB"
+    ]
+  },
+  "dsr": {
+    "sharpe_hat": 0.10890923049412561,
+    "expected_max_sharpe_null": 0.16234149161942715,
+    "dsr": 0.27596259081473096,
+    "n_periods": 124.0,
+    "n_trials": 16.0,
+    "skew": 0.08894624733355136,
+    "kurtosis": 1.6807036581501054,
+    "var_sharpe": 0.008067735176353162,
+    "definition": "선택 후보의 거래일 기준 일별 손익 DSR"
+  },
+  "n_trials_definition": "이번 사이클(run_id LIKE cldgen_%)에서 평가된 고유 CLDGEN 매수 전략 수",
+  "n_trials": 16
+}

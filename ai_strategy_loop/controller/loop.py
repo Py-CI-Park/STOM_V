@@ -1279,11 +1279,15 @@ def run_loop(
                 # 실패 세대: score=0, 계속. 단, '왜' 실패했는지를 구체적으로 분류해
                 #   다음 세대 피드백 + 이력에 남긴다(맹목 변이 차단).
                 err_history_line = _backtest_error_history_line(outcome.reason)
+                # D3(2026-06-10): error 행 reason에 경과시간을 병기해 대시보드에서
+                #   타임아웃(계산예산) 문제를 즉시 식별하게 한다. error 행은 선택기에서
+                #   status!='ok'로 이미 제외되므로 reason 장식이 버킷 판정을 깨지 않는다
+                #   (ok 행의 reason 원문 보존 계약과 구분 — tests/unit/test_record_reason_contract.py).
                 st.record_generation(
                     rid, gen_no,
                     buy_name=buy_name, sell_name=sell_name,
                     status="error", score=0.0, gate_passed=False,
-                    reason=f"backtest failed/timeout: {outcome.reason}",
+                    reason=f"backtest failed/timeout: {outcome.reason} (elapsed {bt_elapsed:.0f}s)",
                     csv_path=outcome.csv_path,
                 )
                 # 이력에 구체 실패 사유를 기록(CONVERGENCE — 회귀 회피 신호).

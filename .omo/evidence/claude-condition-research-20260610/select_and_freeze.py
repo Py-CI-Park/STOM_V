@@ -32,6 +32,28 @@ from ai_strategy_loop.controller.candidate_selection import (  # noqa: E402
     write_selection_artifact,
     write_yearly_sparse_robust_artifact,
 )
+from ai_strategy_loop.controller._yearly_sparse_robust_selection import (  # noqa: E402
+    YearlySparseRobustThresholds,
+)
+from ai_strategy_loop.fitness.overfit_stats import (  # noqa: E402
+    align_daily_matrix,
+    daily_pnl_series,
+    deflated_sharpe_ratio,
+    pbo_cscv,
+)
+
+# C3 — yearly advisory 임계를 seed_relative_v1과 정합(거래 50~400, MDD 20).
+#   기존 DEFAULT(150~250, MDD 10)는 원인1과 같은 절대-기준 비정합을 가진다.
+SEED_ALIGNED_YEARLY_THRESHOLDS = YearlySparseRobustThresholds(
+    min_trade_count=50,
+    max_trade_count=400,
+    min_daily_avg_trades=0.05,
+    max_mdd=20.0,
+    min_payoff_ratio=1.05,
+    min_trades_per_year=10,
+    min_year_profit=0.0,
+    min_full_period_uptrend_r2=0.5,
+)
 
 EVID = Path(__file__).resolve().parent
 RUNS_DB = REPO / "ai_strategy_loop" / "state" / "loop_runs.db"
@@ -54,6 +76,55 @@ def _load_rows(run_ids):
     finally:
         con.close()
     return rows
+
+
+def _overfit_advisory(candidates, labels, primary):
+    """C1 — PBO(CSCV)·DSR 실측치(advisory). 어떤 실패도 흡수한다(판정 불변).
+
+    - PBO: 선택 풀(베이스라인 제외, csv 보유) 후보들의 일별 손익 행렬로 CSCV.
+    - DSR: 선택 후보의 일별 손익(거래일 기준), n_trials = 이번 사이클에서 평가된
+      고유 CLDGEN 매수 전략 수(검색 폭 전체 — 정직한 시도 횟수).
+    """
+    out = {"note": "advisory only — selection/판정에 미사용", "pbo": None, "dsr": None}
+    try:
+        series = {}
+        for c in candidates:
+            if c.status == "ok" and c.csv_path:
+                s = daily_pnl_series(c.csv_path)
+                if s:
+                    series[f"gen{c.gen_no}:{labels.get(c.gen_no, '')}"] = s
+        if len(series) >= 2:
+            _days, names, matrix = align_daily_matrix(series)
+            out["pbo"] = pbo_cscv(matrix, n_blocks=8)
+            if out["pbo"] is not None:
+                out["pbo"]["pool"] = names
+        else:
+            out["pbo_blocked"] = f"csv 보유 후보 {len(series)}개(<2) — PBO 계산 불가"
+
+        con = sqlite3.connect(str(RUNS_DB))
+        try:
+            n_trials = con.execute(
+                "SELECT COUNT(DISTINCT buy_name) FROM generations"
+                " WHERE run_id LIKE 'cldgen_%' AND buy_name LIKE 'CLDGEN_%'"
+            ).fetchone()[0]
+        finally:
+            con.close()
+        out["n_trials_definition"] = (
+            "이번 사이클(run_id LIKE cldgen_%)에서 평가된 고유 CLDGEN 매수 전략 수"
+        )
+        out["n_trials"] = int(n_trials or 1)
+
+        if primary.selected_candidate is not None and primary.selected_candidate.csv_path:
+            s = daily_pnl_series(primary.selected_candidate.csv_path)
+            if s:
+                out["dsr"] = deflated_sharpe_ratio(
+                    list(s.values()), n_trials=max(int(n_trials or 1), 1)
+                )
+                if out["dsr"] is not None:
+                    out["dsr"]["definition"] = "선택 후보의 거래일 기준 일별 손익 DSR"
+    except Exception as exc:  # noqa: BLE001 - advisory는 절대 판정을 막지 않는다.
+        out["error"] = str(exc)
+    return out
 
 
 def main() -> int:
@@ -110,8 +181,15 @@ def main() -> int:
     advisory = select_yearly_sparse_robust_v1(
         candidates, run_id=run_label, config_path=str(CONFIG_PATH),
         config_hash=config_hash, policy_hash=policy_hash, diagnostic_only=True,
+        thresholds=SEED_ALIGNED_YEARLY_THRESHOLDS,
     )
     write_yearly_sparse_robust_artifact(advisory, EVID / "p5-yearly-advisory.json")
+
+    # ── C1: 과적합 advisory (PBO/CSCV + DSR) — 분석 전용, 판정 불변 ────────
+    overfit = _overfit_advisory(candidates, labels, primary)
+    (EVID / "p5-overfit-advisory.json").write_text(
+        json.dumps(overfit, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     print(f"selector={primary.selector_version} selected={primary.selected} "
           f"mdd_limit={primary.mdd_limit:.2f} "
