@@ -169,6 +169,8 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
   const [preview, setPreview] = useState_rl(null);
   const [autopsyGen, setAutopsyGen] = useState_rl(0);
   const [autopsy, setAutopsy] = useState_rl(null);
+  const [cf, setCf] = useState_rl(null);
+  const [mc, setMc] = useState_rl(null);
   const [loading, setLoading] = useState_rl(false);
   const [err, setErr] = useState_rl(null);
 
@@ -191,11 +193,16 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
 
   const fetchAutopsy = useCallback_rl(() => {
     if (isDemo || !baseUrl || !runId) return;
-    const url = baseUrl + "/autopsy?run_id=" + encodeURIComponent(runId)
-      + "&gen_no=" + encodeURIComponent(autopsyGen);
-    fetch(url, { signal: AbortSignal.timeout(10000) })
-      .then(r => r.ok ? r.json() : null)
-      .then(j => setAutopsy(j))
+    const q = "?run_id=" + encodeURIComponent(runId) + "&gen_no=" + encodeURIComponent(autopsyGen);
+    Promise.all([
+      fetch(baseUrl + "/autopsy" + q, { signal: AbortSignal.timeout(10000) })
+        .then(r => r.ok ? r.json() : null),
+      fetch(baseUrl + "/counterfactual" + q, { signal: AbortSignal.timeout(10000) })
+        .then(r => r.ok ? r.json() : null),
+      fetch(baseUrl + "/freeze_mc" + q, { signal: AbortSignal.timeout(15000) })
+        .then(r => r.ok ? r.json() : null),
+    ])
+      .then(([a, c, m]) => { setAutopsy(a); setCf(c); setMc(m); })
       .catch(e => setErr(String(e)));
   }, [autopsyGen, baseUrl, isDemo, runId]);
 
@@ -253,12 +260,12 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
 
       <div className="research-controls" style={{ marginTop: 8 }}>
         <label>
-          <span>autopsy gen</span>
+          <span>gen</span>
           <input type="number" value={autopsyGen} min={0}
                  onChange={(e) => setAutopsyGen(Number(e.target.value) || 0)}
                  style={{ width: 64 }} />
         </label>
-        <button type="button" className="research-tab" onClick={fetchAutopsy}>부검 보기</button>
+        <button type="button" className="research-tab" onClick={fetchAutopsy}>부검·반사실·MC 보기</button>
       </div>
       {autopsy && (
         <div className="mono" style={{ fontSize: 11, whiteSpace: "pre-wrap" }}>
@@ -267,7 +274,72 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
             : `${autopsy.entry_summary || "(진입 부검 없음)"}\n\n${autopsy.exit_summary || "(청산 부검 없음)"}`}
         </div>
       )}
+
+      {cf && cf.status === "ok" && Array.isArray(cf.suggestions) && (
+        <div style={{ marginTop: 8 }}>
+          <div className="research-empty">반사실 필터 제안 (백테 0회·인샘플 advisory — 채택 시 정식 파이프라인 검증 필수)</div>
+          {cf.suggestions.length === 0
+            ? <div className="mono" style={{ fontSize: 11 }}>총손익이 깎이지 않는 강화 필터 없음</div>
+            : (
+              <table className="mono" style={{ fontSize: 11, width: "100%" }}>
+                <thead><tr><th>필터</th><th>거래</th><th>총손익</th><th>승률</th><th>잘린 거래 순손익</th><th>최근연도</th></tr></thead>
+                <tbody>
+                  {cf.suggestions.map((s, i) => (
+                    <tr key={i}>
+                      <td>{s.filter}</td>
+                      <td>{s.base_trades}→{s.kept_trades}</td>
+                      <td>{Math.round((s.profit_ratio || 0) * 100)}%</td>
+                      <td>{Math.round((s.base_win_rate || 0) * 100)}%→{Math.round((s.kept_win_rate || 0) * 100)}%</td>
+                      <td>{Math.round(s.cut_net_profit || 0).toLocaleString()}</td>
+                      <td>{s.recent_year
+                        ? `${s.recent_year.year}: ${Math.round(s.recent_year.base_profit).toLocaleString()}→${Math.round(s.recent_year.kept_profit).toLocaleString()}`
+                        : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+        </div>
+      )}
+
+      {mc && mc.status === "ok" && mc.mc && (
+        <div style={{ marginTop: 8 }}>
+          <div className="research-empty">
+            블록 부트스트랩 MC (일별 손익·레짐 군집 보존 — iid 거래 추출 MC의 OOS 전이 실패 교훈 반영)
+          </div>
+          <div className="mono" style={{ fontSize: 11 }}>
+            {`P(총손익>0)=${Math.round((mc.mc.p_positive || 0) * 100)}% · 총손익 p05/p50/p95 = `
+              + `${Math.round(mc.mc.profit_p05).toLocaleString()} / ${Math.round(mc.mc.profit_p50).toLocaleString()} / ${Math.round(mc.mc.profit_p95).toLocaleString()}`
+              + ` · MDD(낙폭금액) p50/p95 = ${Math.round(mc.mc.mdd_p50).toLocaleString()} / ${Math.round(mc.mc.mdd_p95).toLocaleString()}`
+              + ` (${mc.mc.n_days}일·${mc.mc.n_boot}회·블록 ${mc.mc.block_len}일)`}
+          </div>
+          <_McFanChart fan={mc.mc.fan} />
+        </div>
+      )}
     </div>
+  );
+}
+
+function _McFanChart({ fan }) {
+  if (!fan || !Array.isArray(fan.x) || !fan.x.length) return null;
+  const W = 320, H = 90, PAD = 4;
+  const all = [].concat(fan.p05 || [], fan.p95 || [], fan.p50 || []);
+  const lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+  const span = (hi - lo) || 1;
+  const px = (i) => PAD + (W - 2 * PAD) * (fan.x[i] || 0);
+  const py = (v) => H - PAD - (H - 2 * PAD) * ((v - lo) / span);
+  const pts = (arr) => arr.map((v, i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(" ");
+  const band = (upper, lower) =>
+    pts(upper) + " " + lower.map((v, i) => `${px(lower.length - 1 - i).toFixed(1)},${py(lower[lower.length - 1 - i]).toFixed(1)}`).join(" ");
+  return (
+    <svg width={W} height={H} style={{ display: "block", marginTop: 4 }}
+         role="img" aria-label="MC fan chart">
+      <polygon points={band(fan.p95, fan.p05)} fill="rgba(80,140,200,0.18)" stroke="none" />
+      <polygon points={band(fan.p75, fan.p25)} fill="rgba(80,140,200,0.28)" stroke="none" />
+      <polyline points={pts(fan.p50)} fill="none" stroke="rgba(120,190,255,0.95)" strokeWidth="1.5" />
+      <line x1={PAD} y1={py(0)} x2={W - PAD} y2={py(0)}
+            stroke="rgba(200,200,200,0.4)" strokeDasharray="3,3" strokeWidth="1" />
+    </svg>
   );
 }
 

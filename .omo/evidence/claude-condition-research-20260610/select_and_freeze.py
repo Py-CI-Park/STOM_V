@@ -37,6 +37,8 @@ from ai_strategy_loop.controller._yearly_sparse_robust_selection import (  # noq
 )
 from ai_strategy_loop.fitness.overfit_stats import (  # noqa: E402
     align_daily_matrix,
+    block_bootstrap_daily,
+    daily_correlation_matrix,
     daily_pnl_series,
     deflated_sharpe_ratio,
     pbo_cscv,
@@ -122,6 +124,17 @@ def _overfit_advisory(candidates, labels, primary):
                 )
                 if out["dsr"] is not None:
                     out["dsr"]["definition"] = "선택 후보의 거래일 기준 일별 손익 DSR"
+                # R3(2026-06-11) — 블록 부트스트랩 MC: 일별 손익 블록 재추출로 레짐
+                #   군집을 보존한 총손익·MDD(낙폭금액) 분포. iid 거래 추출 MC의
+                #   OOS 전이 실패(6/2) 교훈 반영. advisory 전용.
+                mc = block_bootstrap_daily(list(s.values()))
+                if mc is not None:
+                    mc.pop("fan", None)  # 아티팩트엔 요약만(팬차트는 /freeze_mc 라우트).
+                    out["mc_block_bootstrap"] = mc
+
+        # R7(2026-06-11) — 후보 간 일별 손익 상관(포트폴리오/앙상블 재료).
+        if len(series) >= 2:
+            out["daily_correlation"] = daily_correlation_matrix(series)
     except Exception as exc:  # noqa: BLE001 - advisory는 절대 판정을 막지 않는다.
         out["error"] = str(exc)
     return out

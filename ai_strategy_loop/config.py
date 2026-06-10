@@ -497,6 +497,20 @@ class LoopConfig:
     #   어휘 블록을 추가한다. 기본 OFF면 미추가되어 출력이 기존과 byte-동일하다(하위호환).
     report_principles_enabled: bool = False
 
+    # --- 분석→생성 환류 업그레이드 (R1·R2, 2026-06-11 검토 보고서 §5) ---
+    # 데이터 근거(G1): 부검이 "기준을 높여라/낮춰라"(방향)만 주면 LLM이 임의 숫자를
+    #   찍는다 — 직이식 임계 5/5 음수 실측. 반사실 실증: 시드 train 307건에서
+    #   '시가총액<=2100' 상한 = 총손익 106% + 2025 쇠퇴 구간 4.4배 개선을 백테 0회로 발견.
+    # quantile_feedback_enabled: True면 부검 변별 라인에 승자 분위수 임계 후보를 병기
+    #   (높여라→하한 후보 승자Q25/중앙값, 낮춰라→상한 후보 승자Q75/중앙값 + 인샘플 주의).
+    #   기본 OFF면 summarize 출력이 기존과 byte-동일하다(하위호환).
+    quantile_feedback_enabled: bool = False
+    # counterfactual_feedback_enabled: True면 진입 부검 피드백 뒤에 반사실 필터 제안
+    #   (fitness/counterfactual.suggest_filters — 총손익이 깎이지 않는 강화 필터만,
+    #   손익 영향 숫자 포함)을 덧붙인다. 분석 전용·인샘플 advisory이며 어떤 게이트/선택도
+    #   바꾸지 않는다. 기본 OFF면 피드백이 기존과 byte-동일하다(하위호환).
+    counterfactual_feedback_enabled: bool = False
+
     # --- 프롬프트 영속화 (P1c): LLM 호출별 프롬프트를 loop_runs.db에 기록 ---
     # 데이터 근거(재현성): 현재 LLM 호출별 프롬프트(system+user 메시지)가 어디에도
     #   저장되지 않고 완전 휘발한다(재현성 0). 어떤 프롬프트가 어떤 전략을 낳았는지

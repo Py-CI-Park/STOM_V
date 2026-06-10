@@ -161,24 +161,42 @@ def _fmt(value: float) -> str:
     return f"{value:.4g}"
 
 
-def _discriminator_line(d: Discriminator) -> str:
-    """변별 변수 한 줄: 방향 + 수치 + 튜닝 지시."""
+def _discriminator_line(d: Discriminator, quantile_feedback: bool = False) -> str:
+    """변별 변수 한 줄: 방향 + 수치 + 튜닝 지시 (+R1 토글 시 승자 분위수 임계 제안).
+
+    R1(2026-06-11): 방향("높여라/낮춰라")만 주면 LLM이 임의 숫자를 찍는다(직이식 임계
+    5/5 음수 실측). quantile_feedback=True면 승자 분위수로 구체 임계 후보를 병기한다 —
+    높여라 → 하한 후보(승자 Q25·중앙값), 낮춰라 → 상한 후보(승자 Q75·중앙값).
+    기본 False면 출력이 기존과 byte-동일하다(하위호환).
+    """
     stom_var = B_TO_STOM_VAR.get(d.column, d.column)
     win_s = _fmt(d.win_mean)
     loss_s = _fmt(d.loss_mean)
     if d.std_mean_diff > 0:
         # 수익 거래에서 더 컸다 → 손실 거래는 이 값이 낮았다 → 기준을 높여라.
-        return (
+        line = (
             f"- 손실 거래는 진입 시 {d.column}가 낮았다"
             f"(손실 평균 {loss_s} vs 수익 평균 {win_s})"
             f" → {stom_var} 진입 기준을 높여라."
         )
+        if quantile_feedback and d.win_q25 is not None and d.win_q50 is not None:
+            line += (
+                f" (하한 후보: ≥ {_fmt(d.win_q25)} 보수적(승자 Q25)"
+                f" 또는 ≥ {_fmt(d.win_q50)} 공격적(승자 중앙값))"
+            )
+        return line
     # 손실 거래에서 더 컸다 → 기준을 낮춰라.
-    return (
+    line = (
         f"- 손실 거래는 진입 시 {d.column}가 높았다"
         f"(손실 평균 {loss_s} vs 수익 평균 {win_s})"
         f" → {stom_var} 진입 기준을 낮춰라."
     )
+    if quantile_feedback and d.win_q75 is not None and d.win_q50 is not None:
+        line += (
+            f" (상한 후보: ≤ {_fmt(d.win_q75)} 보수적(승자 Q75)"
+            f" 또는 ≤ {_fmt(d.win_q50)} 공격적(승자 중앙값))"
+        )
+    return line
 
 
 def gate_failure_directive(
@@ -267,7 +285,15 @@ def summarize(result: AutopsyResult, config: Any = None) -> str:
         f"(수익 {result.win_count}/손실 {result.loss_count}). "
         f"수익과 손실을 가장 잘 가른 진입 조건은 다음과 같다. 이를 반영해 개선하라:",
     ]
-    lines += [_discriminator_line(d) for d in top]
+    # R1 — quantile_feedback_enabled(기본 OFF)면 승자 분위수 임계 후보를 병기한다.
+    #   OFF면 _discriminator_line 기본값 경로라 출력이 기존과 byte-동일(하위호환).
+    quantile_feedback = bool(getattr(config, "quantile_feedback_enabled", False))
+    lines += [_discriminator_line(d, quantile_feedback) for d in top]
+    if quantile_feedback:
+        lines.append(
+            "- 위 임계 후보는 직전 백테 승자 분포에서 산출된 인샘플 수치다 — 그대로 복사하지 말고"
+            " 근처 라운드 값으로 보정해 쓰되, 거래수가 과도하게 줄지 않게 하라."
+        )
     return "\n".join(lines)
 
 

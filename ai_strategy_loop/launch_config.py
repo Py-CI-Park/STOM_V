@@ -298,6 +298,19 @@ def config_field_specs() -> List[Dict[str, Any]]:
                     "(시총=억, 금액=백만원) 명시. 기본 OFF.",
         },
         {
+            "name": "quantile_feedback_enabled", "label": "부검 분위수 임계 환류(R1)", "type": "bool",
+            "default": d.quantile_feedback_enabled,
+            "help": "켜면 진입 부검의 '높여라/낮춰라'에 승자 분위수 임계 후보(Q25/중앙값/Q75)를 "
+                    "병기한다 — 방향만 주면 LLM이 임의 숫자를 찍는 문제(G1) 해소. 기본 OFF.",
+        },
+        {
+            "name": "counterfactual_feedback_enabled", "label": "반사실 필터 환류(R2)", "type": "bool",
+            "default": d.counterfactual_feedback_enabled,
+            "help": "켜면 직전 백테 CSV에 '강화 필터를 걸었다면'을 백테 0회로 평가해, 총손익이 "
+                    "깎이지 않는 필터 후보만 손익 영향 숫자와 함께 매수 피드백에 덧붙인다"
+                    "(인샘플 advisory). 기본 OFF.",
+        },
+        {
             "name": "few_shot_enabled", "label": "few-shot 샘플 주입", "type": "bool",
             "default": d.few_shot_enabled,
             "help": "켜면 검증된 우수 전략(통과/인간 study) K개를 생성 프롬프트에 few-shot 코드로 "

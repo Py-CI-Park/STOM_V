@@ -729,6 +729,8 @@ _ACTIVE_CONFIG_FIELDS = (
     "sell_exec_budget_guard_enabled",
     "sell_max_window_calls",
     "report_principles_enabled",
+    "quantile_feedback_enabled",
+    "counterfactual_feedback_enabled",
     "time_cap_bucket_generation_enabled",
     "time_cap_bucket_end_time",
     # 진화/우승 목표.
@@ -773,6 +775,8 @@ _ACTIVE_CONFIG_TOGGLES = (
     "exec_budget_prompt_enabled",
     "sell_exec_budget_guard_enabled",
     "report_principles_enabled",
+    "quantile_feedback_enabled",
+    "counterfactual_feedback_enabled",
     "time_cap_bucket_generation_enabled",
     "bt_refine_from_best",
     "freeze_buy_on_mdd_only",

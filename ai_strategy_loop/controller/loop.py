@@ -448,7 +448,23 @@ def _default_autopsy_fn(config: LoopConfig) -> Callable[[str], Optional[str]]:
             return None
         abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
         result = analyze_trades(abs_csv, min_trades=min_trades)
-        return summarize(result, config)
+        feedback = summarize(result, config)
+        # R2(2026-06-11) — 반사실 필터 환류(토글, 기본 OFF). 직전 백테 CSV에서
+        #   "강화 필터를 걸었다면"을 백테 0회로 평가해, 총손익이 깎이지 않는 필터만
+        #   손익 영향 숫자와 함께 매수 피드백에 덧붙인다(방향+숫자+증거 — G1·G2 해소).
+        #   실패/제안 없음은 조용히 기존 피드백만 반환(흡수 — byte-동일 하위호환).
+        if getattr(config, "counterfactual_feedback_enabled", False):
+            try:
+                from ai_strategy_loop.fitness.counterfactual import (  # noqa: PLC0415
+                    feedback_lines,
+                    suggest_filters,
+                )
+                cf_lines = feedback_lines(suggest_filters(abs_csv, top_k=3))
+                if cf_lines:
+                    feedback = (feedback or "") + "\n" + "\n".join(cf_lines)
+            except Exception:  # noqa: BLE001 - 보조 환류 실패가 부검을 막지 않게.
+                pass
+        return feedback
 
     return _fn
 

@@ -1594,7 +1594,8 @@ def _adaptive_timing_payload(run_id: Optional[str], lookback: int) -> Dict[str, 
 
 
 def _edge_ratio_payload(
-    run_id: Optional[str], run_ids: Optional[str], fine_time: bool
+    run_id: Optional[str], run_ids: Optional[str], fine_time: bool,
+    gen_no: Optional[int] = None,
 ) -> Dict[str, Any]:
     """run(들)의 세대 결과 CSV를 풀링해 MFE/MAE 엣지비율 + 파노라마 세그먼트를 반환한다(읽기 전용, 무예외).
 
@@ -1630,6 +1631,9 @@ def _edge_ratio_payload(
         st = LoopState()
         for rid in target_runs:
             for row in st.get_generations(rid):  # gen_no 오름차순.
+                # R4(2026-06-11) — gen_no 지정 시 그 세대만(G3: 이질 전략 혼합 풀링 방지).
+                if gen_no is not None and int(row.get("gen_no", -1)) != int(gen_no):
+                    continue
                 cp = row.get("csv_path")
                 if cp and cp not in seen:
                     seen.add(cp)
@@ -1655,11 +1659,13 @@ def _edge_ratio_payload(
     except Exception as exc:  # noqa: BLE001 - 풀링 집계 실패도 error로 흡수(무예외).
         return {"error": str(exc)}
 
-    return {"runs": target_runs, "fine_time": bool(fine_time), **report}
+    return {"runs": target_runs, "fine_time": bool(fine_time),
+            "gen_no": gen_no, **report}
 
 
 def _feature_importance_payload(
-    run_id: Optional[str], run_ids: Optional[str], axis: str, fine_time: bool
+    run_id: Optional[str], run_ids: Optional[str], axis: str, fine_time: bool,
+    gen_no: Optional[int] = None,
 ) -> Dict[str, Any]:
     """run(들)의 세대 결과 CSV를 풀링해 세그먼트별 승리-변수 피처 중요도를 반환한다(읽기 전용, 무예외).
 
@@ -1698,6 +1704,9 @@ def _feature_importance_payload(
         st = LoopState()
         for rid in target_runs:
             for row in st.get_generations(rid):  # gen_no 오름차순.
+                # R4(2026-06-11) — gen_no 지정 시 그 세대만(G3: 이질 전략 혼합 풀링 방지).
+                if gen_no is not None and int(row.get("gen_no", -1)) != int(gen_no):
+                    continue
                 cp = row.get("csv_path")
                 if cp and cp not in seen:
                     seen.add(cp)
@@ -1723,11 +1732,12 @@ def _feature_importance_payload(
     except Exception as exc:  # noqa: BLE001 - 풀링 집계 실패도 error로 흡수(무예외).
         return {"error": str(exc)}
 
-    return {"runs": target_runs, **report}
+    return {"runs": target_runs, "gen_no": gen_no, **report}
 
 
 def _variable_correlation_payload(
-    run_id: Optional[str], run_ids: Optional[str], method: str
+    run_id: Optional[str], run_ids: Optional[str], method: str,
+    gen_no: Optional[int] = None,
 ) -> Dict[str, Any]:
     """run(들)의 세대 결과 CSV를 풀링해 B_* 변수 상관도를 반환한다(읽기 전용, 무예외)."""
     from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
@@ -1751,6 +1761,9 @@ def _variable_correlation_payload(
         st = LoopState()
         for rid in target_runs:
             for row in st.get_generations(rid):
+                # R4(2026-06-11) — gen_no 지정 시 그 세대만(G3: 이질 전략 혼합 풀링 방지).
+                if gen_no is not None and int(row.get("gen_no", -1)) != int(gen_no):
+                    continue
                 cp = row.get("csv_path")
                 if cp and cp not in seen:
                     seen.add(cp)
@@ -1775,7 +1788,7 @@ def _variable_correlation_payload(
     except Exception as exc:  # noqa: BLE001 - 풀링 집계 실패도 error로 흡수(무예외).
         return {"error": str(exc)}
 
-    return {"runs": target_runs, **report}
+    return {"runs": target_runs, "gen_no": gen_no, **report}
 
 
 def create_app() -> FastAPI:
@@ -1915,6 +1928,80 @@ def create_app() -> FastAPI:
         """
         return _selector_preview_payload(run_id, selector)
 
+    @app.get("/counterfactual")
+    def counterfactual(run_id: str = "", gen_no: int = 0, top_k: int = 5) -> Dict[str, Any]:
+        """R2(2026-06-11) — 세대 CSV의 반사실 필터 제안을 반환한다(백테 0회, 읽기 전용·무예외).
+
+        쿼리: ?run_id=<run_id>&gen_no=<n>&top_k=<k>. 부검 변별 변수+승자 분위수로 강화 필터
+        후보를 만들고 "총손익이 깎이지 않는" 것만 손익 영향·연도별 분해와 함께 반환한다.
+        **인샘플 advisory** — 채택 후보는 스모크→train→동결→OOS 규율로 검증해야 한다.
+        """
+        out: Dict[str, Any] = {"run_id": run_id, "gen_no": gen_no,
+                               "suggestions": [], "count": 0, "status": "unavailable"}
+        row = _row_for_gen(run_id, gen_no)
+        if row is None:
+            return out
+        out["label"] = row.get("strategy_gist") or ""
+        csv_path = row.get("csv_path") or ""
+        if not csv_path:
+            out["status"] = "no_csv"
+            return out
+        try:
+            from ai_strategy_loop.fitness.counterfactual import suggestions_payload  # noqa: PLC0415
+
+            abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+            payload = suggestions_payload(abs_csv, top_k=top_k)
+            out.update(payload)
+            out["status"] = "ok"
+        except Exception as exc:  # noqa: BLE001
+            out["status"] = "error"
+            out["error"] = str(exc)
+        return out
+
+    @app.get("/freeze_mc")
+    def freeze_mc(run_id: str = "", gen_no: int = 0,
+                  n_boot: int = 2000, block_len: int = 5) -> Dict[str, Any]:
+        """R3(2026-06-11) — 세대 일별 손익의 블록 부트스트랩 MC를 반환한다(읽기 전용·무예외).
+
+        쿼리: ?run_id=&gen_no=&n_boot=&block_len=. GUI 백테스트 MC(거래 iid 추출)의
+        헤드리스 대응물 — 단 일별 손익 **블록** 재추출로 레짐 군집을 보존하고 MDD(낙폭금액)
+        분포까지 산출한다(6/2 in-sample iid MC의 OOS 전이 실패 교훈 반영). advisory 전용.
+        """
+        out: Dict[str, Any] = {"run_id": run_id, "gen_no": gen_no, "status": "unavailable"}
+        row = _row_for_gen(run_id, gen_no)
+        if row is None:
+            return out
+        out["label"] = row.get("strategy_gist") or ""
+        csv_path = row.get("csv_path") or ""
+        if not csv_path:
+            out["status"] = "no_csv"
+            return out
+        try:
+            from ai_strategy_loop.fitness.overfit_stats import (  # noqa: PLC0415
+                block_bootstrap_daily,
+                daily_pnl_series,
+            )
+
+            abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+            series = daily_pnl_series(abs_csv)
+            if not series:
+                out["status"] = "no_daily_series"
+                return out
+            mc = block_bootstrap_daily(
+                list(series.values()), n_boot=min(int(n_boot), 10000),
+                block_len=max(int(block_len), 1),
+            )
+            if mc is None:
+                out["status"] = "insufficient_days"
+                out["n_days"] = len(series)
+                return out
+            out["mc"] = mc
+            out["status"] = "ok"
+        except Exception as exc:  # noqa: BLE001
+            out["status"] = "error"
+            out["error"] = str(exc)
+        return out
+
     @app.get("/runs/compare")
     def runs_compare(ids: str = "") -> Dict[str, Any]:
         """지정한 run id들을 지표/우승전략으로 비교한다(loop_runs.db 직접).
@@ -2033,7 +2120,8 @@ def create_app() -> FastAPI:
 
     @app.get("/edge_ratio")
     def edge_ratio(run_id: Optional[str] = None, run_ids: Optional[str] = None,
-                   fine_time: bool = False) -> Dict[str, Any]:
+                   fine_time: bool = False,
+                   gen_no: Optional[int] = None) -> Dict[str, Any]:
         """run(들)의 세대 결과 CSV를 풀링해 MFE/MAE 엣지비율 + 시간대×시총 파노라마 세그먼트를 반환한다.
 
         쿼리: ?run_ids=<a,b,c>(파노라마 다중 run 풀) 또는 ?run_id=<run_id>(단일 run 풀),
@@ -2043,7 +2131,7 @@ def create_app() -> FastAPI:
         run 식별자 미지정/없는 run/CSV 없음은 {"error": ...} 또는
         insufficient로 표준화한다(읽기 전용·무예외).
         """
-        return _edge_ratio_payload(run_id, run_ids, fine_time)
+        return _edge_ratio_payload(run_id, run_ids, fine_time, gen_no=gen_no)
 
     @app.get("/feature_importance")
     def feature_importance(run_id: Optional[str] = None, run_ids: Optional[str] = None,
@@ -2058,18 +2146,19 @@ def create_app() -> FastAPI:
         스코어 무영향·추가 백테 0회). run 식별자 미지정/없는 run/CSV 없음은 {"error": ...} 또는
         insufficient로 표준화한다(읽기 전용·무예외).
         """
-        return _feature_importance_payload(run_id, run_ids, axis, fine_time)
+        return _feature_importance_payload(run_id, run_ids, axis, fine_time, gen_no=gen_no)
 
     @app.get("/variable_correlation")
     def variable_correlation(run_id: Optional[str] = None, run_ids: Optional[str] = None,
-                             method: str = "pearson") -> Dict[str, Any]:
+                             method: str = "pearson",
+                             gen_no: Optional[int] = None) -> Dict[str, Any]:
         """run(들)의 세대 결과 CSV를 풀링해 변수별 outcome/feature 상관도를 반환한다.
 
         쿼리: ?run_ids=<a,b,c> 또는 ?run_id=<run_id>, &method=<pearson|spearman>.
         B_* 진입 변수만 분석하며, outcome은 수익률 컬럼이다. 분석 전용·읽기 전용으로
         엔진/하드게이트/스코어/생성/winner/export에는 영향이 없다.
         """
-        return _variable_correlation_payload(run_id, run_ids, method)
+        return _variable_correlation_payload(run_id, run_ids, method, gen_no=gen_no)
 
     @app.websocket("/ws")
     async def ws(websocket: WebSocket) -> None:

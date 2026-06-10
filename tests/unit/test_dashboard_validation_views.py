@@ -180,7 +180,9 @@ class TestFrontendContract:
         assert "function _ValidationPanel" in src
         assert "/run_yearly?run_id=" in src
         assert "/selector_preview?run_id=" in src
-        assert "/autopsy?run_id=" in src
+        # 2026-06-11 R2/R3 확장으로 autopsy fetch가 공용 쿼리 변수(q)를 쓴다 —
+        #   URL 리터럴 대신 라우트 경로 존재를 계약으로 검증한다.
+        assert '"/autopsy"' in src
         assert 'tab === "validation"' in src
 
     def test_app_jsx_shows_run_label(self):
@@ -189,5 +191,6 @@ class TestFrontendContract:
 
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260611a" in src
+        # research-lab.jsx는 2026-06-11 R2/R3 확장으로 v20260611b로 재범프됐다.
+        assert "research-lab.jsx?v=20260611b" in src
         assert "app.jsx?v=20260611a" in src

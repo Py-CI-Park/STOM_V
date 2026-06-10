@@ -212,3 +212,120 @@ def deflated_sharpe_ratio(
         "kurtosis": kurt,
         "var_sharpe": float(var_sr),
     }
+
+
+# ---------------------------------------------------------------------------
+# R3 (2026-06-11) — 블록 부트스트랩 몬테카를로 (일별 손익, 레짐 군집 보존)
+# ---------------------------------------------------------------------------
+# 배경: GUI 백테스트의 MC(back_static_numba.bootstrap_test)는 거래 수익률 iid 추출이라
+#   레짐 군집·시퀀스 위험을 지운다 — 6/2 캠페인의 in-sample iid MC(P=77.9%)가 OOS에서
+#   무너진 전례가 기록돼 있다(6/5 검토 §4.3). 여기서는 **일별 손익을 블록(기본 5거래일)
+#   단위로 재추출**해 군집을 보존하고, iid 거래 추출로는 불가능한 **MDD(낙폭금액) 분포**를
+#   함께 산출한다. 분석/동결 advisory 전용 — 게이트·선택·생성에 관여하지 않는다.
+
+def _max_drawdown_amount(cumulative: np.ndarray) -> float:
+    """누적 손익 곡선의 최대 낙폭 금액(양수)을 반환한다."""
+    peak = np.maximum.accumulate(cumulative)
+    return float(np.max(peak - cumulative)) if cumulative.size else 0.0
+
+
+def block_bootstrap_daily(
+    daily_pnl: Sequence[float],
+    *,
+    n_boot: int = 2000,
+    block_len: int = 5,
+    seed: int = 20260611,
+    fan_points: int = 40,
+) -> Optional[Dict[str, object]]:
+    """일별 손익의 블록 부트스트랩 분포(총손익·MDD·수익확률 + 팬차트 분위 경로).
+
+    Args:
+        daily_pnl: 일별 손익(원) 시퀀스(거래일 순서 보존 — 블록이 군집을 보존한다).
+        n_boot: 재추출 횟수.
+        block_len: 블록 길이(거래일). 기본 5(1주).
+        seed: 결정론 시드(재현성 — 같은 입력이면 같은 advisory).
+        fan_points: 팬차트용 누적 경로 다운샘플 포인트 수.
+
+    Returns:
+        {profit_mean, profit_p05, profit_p50, profit_p95, p_positive,
+         mdd_p50, mdd_p95, n_days, n_boot, block_len,
+         fan: {x(0..1 비율), p05, p25, p50, p75, p95 각 누적경로}}
+        입력 부족(<block_len*4일)이면 None (advisory — 판정을 막지 않는다).
+    """
+    arr = np.asarray(list(daily_pnl), dtype=float)
+    T = arr.size
+    if T < block_len * 4 or n_boot < 100:
+        return None
+
+    rng = np.random.default_rng(seed)
+    n_blocks_needed = int(math.ceil(T / block_len))
+    max_start = T - block_len
+    starts = rng.integers(0, max_start + 1, size=(n_boot, n_blocks_needed))
+
+    totals = np.empty(n_boot)
+    mdds = np.empty(n_boot)
+    # 팬차트: 누적 경로를 fan_points 지점으로 다운샘플해 분위수 밴드를 만든다.
+    idx = np.linspace(0, T - 1, num=min(fan_points, T)).astype(int)
+    paths = np.empty((n_boot, idx.size))
+    for i in range(n_boot):
+        sample = np.concatenate(
+            [arr[s:s + block_len] for s in starts[i]]
+        )[:T]
+        cum = np.cumsum(sample)
+        totals[i] = cum[-1]
+        mdds[i] = _max_drawdown_amount(cum)
+        paths[i] = cum[idx]
+
+    fan = {
+        "x": [round(float(v) / max(T - 1, 1), 4) for v in idx],
+        "p05": np.percentile(paths, 5, axis=0).round(0).tolist(),
+        "p25": np.percentile(paths, 25, axis=0).round(0).tolist(),
+        "p50": np.percentile(paths, 50, axis=0).round(0).tolist(),
+        "p75": np.percentile(paths, 75, axis=0).round(0).tolist(),
+        "p95": np.percentile(paths, 95, axis=0).round(0).tolist(),
+    }
+    return {
+        "profit_mean": float(totals.mean()),
+        "profit_p05": float(np.percentile(totals, 5)),
+        "profit_p50": float(np.percentile(totals, 50)),
+        "profit_p95": float(np.percentile(totals, 95)),
+        "p_positive": float((totals > 0).mean()),
+        "mdd_p50": float(np.percentile(mdds, 50)),
+        "mdd_p95": float(np.percentile(mdds, 95)),
+        "n_days": int(T),
+        "n_boot": int(n_boot),
+        "block_len": int(block_len),
+        "seed": int(seed),
+        "fan": fan,
+        "note": "block bootstrap on daily P&L — preserves regime clustering; advisory only",
+    }
+
+
+# ---------------------------------------------------------------------------
+# R7 (2026-06-11) — 후보 간 일별 손익 상관 (포트폴리오/앙상블 재료)
+# ---------------------------------------------------------------------------
+
+def daily_correlation_matrix(
+    series_by_label: Dict[str, Dict[str, float]],
+) -> Optional[Dict[str, object]]:
+    """후보들의 일별 손익 상관 행렬(피어슨). 앙상블/보완(1안) 설계 재료.
+
+    낮은 상관의 흑자 후보 조합이 포트폴리오 MDD를 낮춘다(분모 효과 — B2 감사 참조).
+    입력이 2후보 미만이거나 정렬 실패면 None (advisory).
+    """
+    if len(series_by_label) < 2:
+        return None
+    try:
+        _days, labels, matrix = align_daily_matrix(series_by_label)
+        if matrix.shape[0] < 10:
+            return None
+        with np.errstate(invalid="ignore"):
+            corr = np.corrcoef(matrix.T)
+        corr = np.nan_to_num(corr, nan=0.0)
+        return {
+            "labels": labels,
+            "n_days": int(matrix.shape[0]),
+            "matrix": [[round(float(v), 4) for v in row] for row in corr],
+        }
+    except Exception:  # noqa: BLE001 - advisory.
+        return None
