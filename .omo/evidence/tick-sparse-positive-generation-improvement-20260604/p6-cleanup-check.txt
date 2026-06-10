@@ -1,0 +1,4 @@
+﻿P6 cleanup check
+timestamp=2026-06-04T18:27:38.6688084+09:00
+query=python processes with tick_spgen_p6_*_20260604 in command line
+<empty>

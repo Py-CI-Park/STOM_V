@@ -45,6 +45,21 @@ def test_code_viewer_embeds_strategy_inspector_and_unavailable_reason() -> None:
     assert "unavailable: strategy code not found for this generation" in src
 
 
+def test_code_viewer_has_vertical_expand_reader_mode() -> None:
+    """Given strategy code can be long, When viewing it, Then a vertical expand control exists."""
+    src = _read_front("code-viewer.jsx")
+    css = _read_front("styles.css")
+
+    assert "code-viewer-height-toggle" in src
+    assert "code-viewer-modal" in src
+    assert "code-viewer-expanded" in src
+    assert "aria-pressed={expandedCodeView}" in src
+    assert "세로 확대" in src
+    assert ".code-viewer-modal.code-viewer-expanded" in css
+    assert ".code-viewer-modal.code-viewer-expanded .code-block" in css
+    assert "72vh" in css
+
+
 def test_index_loads_strategy_inspector_before_app() -> None:
     src = _read_front("index.html")
 
@@ -59,3 +74,50 @@ def test_strategy_inspector_is_exposed_on_window() -> None:
     tail = src[src.rfind("Object.assign(window") :]
 
     assert "StrategyInspectorTabs" in tail
+
+
+def test_strategy_inspector_tolerates_partial_route_failures_and_shows_code() -> None:
+    src = _read_front("strategy-inspector.jsx")
+
+    assert "diffError" in src
+    assert "promptsError" in src
+    assert "strategy_diff route unavailable" in src
+    assert "prompts route unavailable" in src
+    assert "Promise.all([" not in src
+    assert "Current Code" in src
+    assert "buy_code" in src
+    assert "sell_code" in src
+
+
+def test_active_strategy_panel_is_main_page_visible_and_fetches_code_diff() -> None:
+    panels = _read_front("panels.jsx")
+    app = _read_front("app.jsx")
+
+    assert "function ActiveStrategyPanel(" in panels
+    assert "active-strategy-panel" in panels
+    assert "/strategy_code" in panels
+    assert "/strategy_diff" in panels
+    assert "code_status" in panels
+    assert "diff_status" in panels
+    assert "streaming_partial" in panels
+    assert "no_strategy" in panels
+    assert "Object.assign(window" in panels
+    assert "ActiveStrategyPanel" in panels[panels.rfind("Object.assign(window"):]
+    assert "<ActiveStrategyPanel" in app
+    assert "baseUrl={baseUrl}" in app
+    assert "onViewCode={onViewCodeByGen}" in app
+
+
+def test_research_criteria_banner_explains_oos_disabled_mode() -> None:
+    panels = _read_front("panels.jsx")
+    app = _read_front("app.jsx")
+
+    assert "function ResearchCriteriaBanner(" in panels
+    assert "/research_criteria" in panels
+    assert "research_oos_mode" in panels
+    assert "OOS disabled" in panels
+    assert "research/exploration only" in panels
+    assert "not proof of human-level" in panels
+    assert "Object.assign(window" in panels
+    assert "ResearchCriteriaBanner" in panels[panels.rfind("Object.assign(window"):]
+    assert "<ResearchCriteriaBanner" in app

@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "timestamp": "2026-06-04",
+  "selector_version": "yearly_sparse_robust_v1",
+  "base_selector_version": "sparse_positive_v1",
+  "scope": {
+    "training_years": [
+      2023,
+      2024,
+      2025
+    ],
+    "oos_years_forbidden_for_selection": [
+      2022,
+      2026
+    ],
+    "candidate_csv_year_source": "sell_date_year"
+  },
+  "aggregate_thresholds": {
+    "requires_sparse_positive_v1": true,
+    "min_trade_count": 150,
+    "max_trade_count": 250,
+    "min_daily_avg_trades": 0.15,
+    "max_mdd": 10.0,
+    "min_profit_exclusive": 0.0,
+    "min_payoff_ratio": 1.05
+  },
+  "yearly_thresholds": {
+    "required_years": [
+      2023,
+      2024,
+      2025
+    ],
+    "min_trades_per_year": 30,
+    "min_year_profit_exclusive": 0.0,
+    "min_full_period_uptrend_r2": 0.5,
+    "missing_or_malformed_csv_rejects": true
+  },
+  "ranking": {
+    "bucket_priority": [
+      "hard_gate_yearly_robust",
+      "sparse_yearly_robust"
+    ],
+    "rank_key": [
+      "bucket_priority",
+      "minimum_yearly_profit_desc",
+      "profit_per_mdd_desc",
+      "mdd_asc",
+      "capped_trade_count_desc",
+      "payoff_ratio_desc",
+      "gen_no_asc"
+    ]
+  },
+  "forbidden_selector_fields": [
+    "oos_2022",
+    "oos_2026",
+    "seed_2022",
+    "seed_2026",
+    "ai_2022",
+    "ai_2026",
+    "post_oos",
+    "slippage_stress",
+    "pbo",
+    "dsr",
+    "final_verdict",
+    "decision_card"
+  ],
+  "selection_artifact_required_fields": [
+    "selector_version",
+    "selected",
+    "oos_excluded",
+    "diagnostic_only",
+    "forbidden_oos_fields_present",
+    "policy_hash",
+    "config_hash",
+    "selected_generation",
+    "aggregate_checks",
+    "yearly_breakdown",
+    "uptrend_r2",
+    "eligible_candidates",
+    "rejected_candidates"
+  ],
+  "if_no_candidate_qualifies": {
+    "skip_p6_oos": true,
+    "write_artifacts": [
+      "p5-selector-blocked.md",
+      "p6-oos-blocked.md"
+    ]
+  },
+  "no_retuning_rule": {
+    "frozen_before_new_oos": true,
+    "prior_oos_is_lesson_only": true,
+    "current_oos_results_must_not_modify_policy": true
+  }
+}

@@ -1,0 +1,55 @@
+﻿{
+    "task":  "12.ai_context_pack",
+    "base":  "http://127.0.0.1:8796",
+    "timestamp":  "2026-06-04T05:28:15",
+    "selected_run":  "run_1779672477",
+    "checks":  [
+                   {
+                       "path":  "/health",
+                       "status":  200,
+                       "length":  36,
+                       "sample":  "{\"status\":\"ok\",\"contract_version\":2}"
+                   },
+                   {
+                       "path":  "/ui/ai-context.jsx?v=20260603a",
+                       "status":  200,
+                       "length":  3298,
+                       "sample":  "/* Copyable AI state context pack panel */\nconst { useState: useState_ac, useEffect: useEffect_ac } = React;\n\nfunction AIContextPanel({ baseUrl, wsStatus, runId, genNo }) {\n  const [pack, setPack] = useState_ac(null);\n  const [loading, setLoading] = useState_ac(false);\n  const [err, setErr] = useState_ac(\"\");\n  const [copied, setCopied] = useState_ac(false);\n  const isDemo = typeof window.isDemoSource === \"function\"\n    ? window.isDemoSource(wsStatus) : (wsStatus === \"demo\");\n\n  const loadPack = React.useCallback(() =\u003e {\n    if (isDemo || !baseUrl || !runId) return;\n    setLoading(true);\n    setErr(\"\");\n    const suffix = genNo != null ? \"\u0026gen_no=\" + encodeURIComponent(genNo) : \"\";\n    fetch(baseUrl + \"/ai_context_pack?run_id=\" + encodeURIComponent(runId) + suffix,\n          { signal: AbortSignal.timeout(4000) })\n      .then(r =\u003e r.ok ? r.json() : Promise.reject(new Error(\"HTTP \" + r.sta"
+                   },
+                   {
+                       "path":  "/ai_context_pack?run_id=run_1779672477\u0026gen_no=0",
+                       "status":  200,
+                       "length":  1885,
+                       "sample":  "{\"run_id\":\"run_1779672477\",\"gen_no\":0,\"timeframe\":\"min\",\"period\":null,\"config\":{\"provider\":\"gpt_auth\",\"bt_timeframe\":\"min\",\"bt_full_start\":null,\"bt_full_end\":null,\"bt_universe_start_time\":null,\"bt_universe_end_time\":null},\"latest_logs\":{\"run_status\":\"complete\",\"started_at\":1779672477.9032931,\"finished_at\":1779674489.9288542,\"generation_count\":15},\"best\":{\"gen_no\":7,\"graded_score\":0.851803256827309,\"profit\":-349869.0},\"winner\":null,\"strategy_names\":{\"buy\":\"AILOOP_run_1779672477_g0_buy\",\"sell\":\"AILOOP_run_1779672477_g0_sell\"},\"prompt_count\":0,\"analysis\":{\"edge_ratio\":\"available via /edge_ratio when per-trade CSVs exist\",\"feature_importance\":\"available via /feature_importance when per-trade CSVs exist\",\"variable_correlation\":\"available via /variable_correlation when per-trade CSVs exist\",\"wiki\":\"available via /research_docs and /research_doc\"},\"verdict_note\":\"Final Verdict: REJECT_CANDIDATE"
+                   },
+                   {
+                       "path":  "/ai_context_pack",
+                       "status":  200,
+                       "length":  27,
+                       "sample":  "{\"error\":\"run_id required\"}"
+                   }
+               ],
+    "pack_summary":  {
+                         "run_id":  "run_1779672477",
+                         "gen_no":  0,
+                         "timeframe":  "min",
+                         "period":  null,
+                         "prompt_count":  0,
+                         "verdict_note":  "Final Verdict: REJECT_CANDIDATE; prior candidate remains rejected.",
+                         "forbidden_count":  3,
+                         "summary_len":  541
+                     },
+    "gen0_recheck":  {
+                         "requested_gen_no":  0,
+                         "returned_gen_no":  0,
+                         "buy_name":  "AILOOP_run_1779672477_g0_buy"
+                     },
+    "missing":  {
+                    "error":  "run_id required"
+                },
+    "notes":  [
+                  "No external AI call is made.",
+                  "Prompt bodies and secrets are excluded by unit tests.",
+                  "8795 was a stale pre-fix server; final smoke uses 8796 after restart."
+              ]
+}

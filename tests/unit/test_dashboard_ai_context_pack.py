@@ -71,6 +71,7 @@ def test_ai_context_pack_endpoint_summarizes_run_without_secret_leak(monkeypatch
 
     body = TestClient(create_app()).get("/ai_context_pack?run_id=ctxRun&gen_no=1").json()
     raw = json.dumps(body, ensure_ascii=False)
+    context_pack = body["context_pack"]
 
     assert body["run_id"] == "ctxRun"
     assert body["gen_no"] == 1
@@ -81,10 +82,26 @@ def test_ai_context_pack_endpoint_summarizes_run_without_secret_leak(monkeypatch
     assert "REJECT_CANDIDATE" in body["verdict_note"]
     assert body["forbidden_actions"]
     assert "summary_text" in body
+    assert set(context_pack) == {
+        "guide_context",
+        "diff_context",
+        "analysis_context",
+        "correlation_context",
+    }
+    assert context_pack["guide_context"]["prompt_count"] == 1
+    assert context_pack["guide_context"]["prompt_logging_enabled"] is True
+    assert context_pack["diff_context"]["selected_gen_no"] == 1
+    assert context_pack["diff_context"]["comparison_base_gen_no"] == 0
+    assert context_pack["analysis_context"]["best_gen_no"] == 1
+    assert context_pack["analysis_context"]["winner_gen_no"] is None
+    assert context_pack["correlation_context"]["source_route"] == "/variable_correlation"
+    assert context_pack["correlation_context"]["per_trade_csv_available"] is False
     assert "api_key" not in raw.lower()
     assert "secret-token" not in raw
     assert "password" not in raw.lower()
     assert "user_text" not in raw
+    assert "response text" not in raw
+    assert "build context but do not leak" not in raw
 
 
 def test_ai_context_pack_missing_run_id_returns_error(monkeypatch, tmp_path: Path) -> None:
@@ -140,6 +157,12 @@ def test_ai_context_frontend_panel_contract() -> None:
 
     assert "function AIContextPanel(" in src
     assert "/ai_context_pack" in src
+    assert "context_pack" in src
+    assert "ai-context-pack" in src
+    assert "guide_context" in src
+    assert "diff_context" in src
+    assert "analysis_context" in src
+    assert "correlation_context" in src
     assert "copy AI state" in src
     assert "forbidden_actions" in src
     assert "summary_text" in src

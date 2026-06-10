@@ -1,0 +1,42 @@
+{
+    "plan":  "tick-sparse-positive-generation-improvement-20260604",
+    "base_config":  ".omo/evidence/tick-selection-rule-sparse-gen5-research-20260604/p4-train-config.json",
+    "base_config_sha256":  "64ef805703a388e3ed2abfaa8613d0ef5af92f9e08915f65e8db25913a1ab81b",
+    "selector_version":  "sparse_positive_v1",
+    "oos_policy":  "No 2022/2026 OOS before p5-selected-candidate.json is written with oos_excluded=true.",
+    "configs":  [
+                    {
+                        "path":  ".omo/evidence/tick-sparse-positive-generation-improvement-20260604/p3-smoke-off-config.json",
+                        "run_id":  "tick_spgen_p4_smoke_off_20260604",
+                        "period":  "2025-01-01..2025-03-31",
+                        "bt_timeframe":  "tick",
+                        "universe_window":  "09:00:00..09:30:00",
+                        "max_generations":  3,
+                        "prompt_logging_enabled":  true,
+                        "sparse_positive_prompt_enabled":  false,
+                        "sha256":  "7d6a9ca4028213c6a0e84f2c41ce3e1d9da05ed134bda9e7b77821ae71787198"
+                    },
+                    {
+                        "path":  ".omo/evidence/tick-sparse-positive-generation-improvement-20260604/p3-smoke-on-config.json",
+                        "run_id":  "tick_spgen_p4_smoke_on_20260604",
+                        "period":  "2025-01-01..2025-03-31",
+                        "bt_timeframe":  "tick",
+                        "universe_window":  "09:00:00..09:30:00",
+                        "max_generations":  3,
+                        "prompt_logging_enabled":  true,
+                        "sparse_positive_prompt_enabled":  true,
+                        "sha256":  "1676936322efa2fedef2d74ad2c13080d0b9ffd112b3d12b4dac126dd7eb9b96"
+                    },
+                    {
+                        "path":  ".omo/evidence/tick-sparse-positive-generation-improvement-20260604/p3-train-config.json",
+                        "run_id":  "tick_spgen_p5_train_2023_2025_20260604",
+                        "period":  "2023-01-01..2025-12-31",
+                        "bt_timeframe":  "tick",
+                        "universe_window":  "09:00:00..09:30:00",
+                        "max_generations":  8,
+                        "prompt_logging_enabled":  true,
+                        "sparse_positive_prompt_enabled":  true,
+                        "sha256":  "73ecaf945b7cbe14132669f248f8ed1f2341472739fa6d9ab4fdb69986579b3f"
+                    }
+                ]
+}

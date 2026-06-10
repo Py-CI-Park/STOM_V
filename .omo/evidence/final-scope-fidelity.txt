@@ -1,0 +1,14 @@
+Final Verification F3 — Safety / Scope Fidelity Check
+
+Result: PASS
+
+V3K:
+- Gates remain 3/6.
+- No USER_ACK, gate writer, DB cutover, live order wiring, KHOPENAPI connect/login, final_approval, or export_winner was invoked.
+
+Protected paths:
+- `git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json` returned empty.
+
+Runtime DB:
+- Read-only SQLite mode used.
+- `git status --short -- *.db ai_strategy_loop/state` returned empty after inspection.

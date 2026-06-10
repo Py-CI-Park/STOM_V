@@ -1,0 +1,13 @@
+{
+  "selector_version": "candidate_research_pool_v2",
+  "run_id": "tick_realign_p7_train_2023_2025_20260605",
+  "status": "blocked_not_run",
+  "blocker": "P6 2025-01-01..2025-03-31 seed evaluation exceeded bt_warm_run_timeout=300s; 2023-2025 max_generations=10 run is not bounded without a follow-up execution strategy.",
+  "config_path": ".omo/evidence/tick-research-direction-realignment-20260605/p7-train-config.json",
+  "oos_excluded": true,
+  "forbidden_oos_fields_detected": false,
+  "exploration_pool": [],
+  "research_pool": [],
+  "promotion_candidate": null,
+  "rejected_structural": []
+}

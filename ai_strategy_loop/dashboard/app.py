@@ -32,6 +32,7 @@ import json  # noqa: E402
 import os  # noqa: E402
 import subprocess  # noqa: E402
 import sys  # noqa: E402
+import time  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 from typing import Any, Dict, List, Optional  # noqa: E402
 
@@ -39,10 +40,16 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import RedirectResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
+from pydantic import ValidationError  # noqa: E402
 
 from ai_strategy_loop.controller import contract as C  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
+from ai_strategy_loop.controller.progress_contract import (  # noqa: E402
+    build_backtest_progress,
+    build_engine_state,
+)
 from ai_strategy_loop.dashboard.research_api import router as research_router  # noqa: E402
+from ai_strategy_loop.fitness.research_criteria import normalize_research_oos_mode, research_mode_payload  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -165,8 +172,52 @@ def _current_state_payload() -> Dict[str, Any]:
     """current_state.json을 읽어 dict로 반환 (없으면 idle 기본값)."""
     raw = S.read_current_state()
     if raw is not None:
-        return raw
+        try:
+            return _with_observability_defaults(C.LoopState.model_validate(raw).model_dump())
+        except ValidationError:
+            return raw
     return C.idle_state().model_dump()
+
+
+def _with_observability_defaults(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Fill dashboard-only observability fields for legacy current_state snapshots."""
+    latest = payload.get("latest")
+    if not isinstance(latest, dict):
+        return payload
+
+    active_config_raw = payload.get("active_config")
+    active_config = dict(active_config_raw) if isinstance(active_config_raw, dict) else {}
+    try:
+        config = config_from_dict(active_config)
+    except ValueError:
+        config = config_from_dict({})
+
+    status = str(payload.get("status") or "")
+    current_gen = int(payload.get("current_gen") or -1)
+    max_generations = int(payload.get("max_generations") or 0)
+    phase = str(latest.get("phase") or "")
+    bt_timeframe = str(payload.get("bt_timeframe") or getattr(config, "bt_timeframe", "") or "")
+
+    latest["backtest_progress"] = build_backtest_progress(
+        config=config,
+        latest=latest,
+        status=status,
+        current_gen=current_gen,
+        max_generations=max_generations,
+        phase=phase,
+        phase_started_at=float(latest.get("phase_started_at") or 0.0),
+        bt_timeframe=bt_timeframe,
+        now=time.time(),
+    )
+    latest["engine_state"] = build_engine_state(
+        config=config,
+        latest=latest,
+        active_config=active_config,
+        status=status,
+        current_gen=current_gen,
+        phase=phase,
+    )
+    return payload
 
 
 def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
@@ -629,12 +680,14 @@ def _strategy_code_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
 
     buy_name = f"AILOOP_{run_id}_g{gen_no}_buy"
     sell_name = f"AILOOP_{run_id}_g{gen_no}_sell"
+    generation_found = False
     # 세대 행에서 실제 전략 이름을 읽는다(시드 세대는 seed 이름일 수 있음).
     st: Optional[LoopState] = None
     try:
         st = LoopState()
         for row in st.get_generations(run_id):
             if int(row.get("gen_no", -1)) == int(gen_no):
+                generation_found = True
                 buy_name = row.get("buy_name") or buy_name
                 sell_name = row.get("sell_name") or sell_name
                 break
@@ -649,13 +702,26 @@ def _strategy_code_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
 
     buy_code = _read_strategy_code(buy_name, "buy") or ""
     sell_code = _read_strategy_code(sell_name, "sell") or ""
+    code_status = "ok"
+    reason: Optional[str] = None
+    if not buy_code and not sell_code:
+        if not generation_found:
+            code_status = "missing_generation"
+            reason = "missing_generation"
+        else:
+            code_status = "empty_code"
+            reason = "empty_code"
     return {
+        "ok": True,
         "run_id": run_id,
         "gen": int(gen_no),
+        "gen_no": int(gen_no),
         "buy_name": buy_name,
         "sell_name": sell_name,
         "buy_code": buy_code,
         "sell_code": sell_code,
+        "code_status": code_status,
+        "reason": reason,
     }
 
 
@@ -749,8 +815,30 @@ def _strategy_diff_payload(
     current = _strategy_code_payload(run_id, int(gen_no))
     base_no = _parse_base_gen(int(gen_no), str(base_gen))
     prompts = _prompts_payload(run_id, int(gen_no)).get("prompts", [])
+    current_status = str(current.get("code_status") or "")
+    if current_status == "missing_generation":
+        return {
+            "ok": True,
+            "run_id": run_id,
+            "gen_no": int(gen_no),
+            "buy_name": current.get("buy_name"),
+            "sell_name": current.get("sell_name"),
+            "buy_code": current.get("buy_code", ""),
+            "sell_code": current.get("sell_code", ""),
+            "base_gen": base_no,
+            "base_buy_name": None,
+            "base_sell_name": None,
+            "base_buy_code": "",
+            "base_sell_code": "",
+            "buy_diff": [],
+            "sell_diff": [],
+            "prompts": prompts,
+            "diff_status": "missing_generation",
+            "reason": "missing_generation",
+        }
     if base_no is None:
         return {
+            "ok": True,
             "run_id": run_id,
             "gen_no": int(gen_no),
             "buy_name": current.get("buy_name"),
@@ -765,11 +853,22 @@ def _strategy_diff_payload(
             "buy_diff": [],
             "sell_diff": [],
             "prompts": prompts,
+            "diff_status": "no_previous_generation",
             "reason": "no_previous_generation",
         }
 
     base = _strategy_code_payload(run_id, int(base_no))
+    base_status = str(base.get("code_status") or "")
+    diff_status = "ok"
+    reason: Optional[str] = None
+    if current_status == "empty_code" or base_status == "empty_code":
+        diff_status = "empty_code"
+        reason = "empty_code"
+    elif base_status == "missing_generation":
+        diff_status = "missing_generation"
+        reason = "missing_generation"
     return {
+        "ok": True,
         "run_id": run_id,
         "gen_no": int(gen_no),
         "buy_name": current.get("buy_name"),
@@ -794,7 +893,8 @@ def _strategy_diff_payload(
             str(current.get("sell_name") or ""),
         ),
         "prompts": prompts,
-        "reason": None,
+        "diff_status": diff_status,
+        "reason": reason,
     }
 
 
@@ -863,13 +963,56 @@ def _ai_context_pack_payload(run_id: Optional[str], gen_no: Optional[int] = None
     best = max(gens, key=lambda row: float(row.get("score", 0.0) or 0.0))
     winners = [g for g in gens if bool(g.get("gate_passed"))]
     winner = max(winners, key=lambda row: float(row.get("score", 0.0) or 0.0)) if winners else None
+    strategy_names = {"buy": gen.get("buy_name"), "sell": gen.get("sell_name")}
+
+    def _prompt_features(row: Dict[str, Any]) -> Dict[str, Any]:
+        raw = row.get("injected_features")
+        if isinstance(raw, dict):
+            return raw
+        if not raw:
+            return {}
+        try:
+            parsed = json.loads(str(raw))
+        except (TypeError, ValueError):
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
+
+    prompt_feature_rows = [_prompt_features(p) for p in gen_prompts]
+    first_features = next((f for f in prompt_feature_rows if f), {})
+    context_pack = {
+        "guide_context": {
+            "source": "utility/ai_agent/system_prompt/v1",
+            "prompt_count": len(gen_prompts),
+            "prompt_logging_enabled": bool(cfg.get("prompt_logging_enabled")),
+            "injected": first_features.get("guide_context"),
+        },
+        "diff_context": {
+            "selected_gen_no": gen_no_out,
+            "comparison_base_gen_no": gen_no_out - 1 if gen_no_out > 0 else None,
+            "has_current_strategy_names": bool(strategy_names["buy"] or strategy_names["sell"]),
+            "injected": first_features.get("diff_context"),
+        },
+        "analysis_context": {
+            "best_gen_no": int(best.get("gen_no", -1) or -1),
+            "winner_gen_no": (
+                None if winner is None else int(winner.get("gen_no", -1) or -1)
+            ),
+            "score": gen.get("score"),
+            "profit": gen.get("profit"),
+            "injected": first_features.get("analysis_context"),
+        },
+        "correlation_context": {
+            "source_route": "/variable_correlation",
+            "per_trade_csv_available": bool(gen.get("csv_path")),
+            "injected": first_features.get("correlation_context"),
+        },
+    }
 
     forbidden_actions = [
         "Do not approve, deploy, or write production strategy storage from this context.",
         "Do not place live orders or advance V3K gates.",
         "Do not claim human-level or seed-superior performance without fresh OOS evidence.",
     ]
-    strategy_names = {"buy": gen.get("buy_name"), "sell": gen.get("sell_name")}
     verdict_note = _p5_verdict_note()
     analysis = {
         "edge_ratio": "available via /edge_ratio when per-trade CSVs exist",
@@ -925,6 +1068,7 @@ def _ai_context_pack_payload(run_id: Optional[str], gen_no: Optional[int] = None
         ),
         "strategy_names": strategy_names,
         "prompt_count": len(gen_prompts),
+        "context_pack": context_pack,
         "analysis": analysis,
         "verdict_note": verdict_note,
         "verdict_refs": [
@@ -1402,6 +1546,11 @@ def create_app() -> FastAPI:
     def config_spec() -> Dict[str, Any]:
         return {"contract_version": C.CONTRACT_VERSION, "fields": config_field_specs()}
 
+    @app.get("/research_criteria")
+    def research_criteria(mode: Optional[str] = None) -> Dict[str, Any]:
+        active_mode = normalize_research_oos_mode(mode)
+        return {"contract_version": C.CONTRACT_VERSION, **research_mode_payload(active_mode)}
+
     @app.get("/equity_curves")
     def equity_curves(run_id: Optional[str] = None) -> Dict[str, Any]:
         """세대별 누적수익 시계열(equity curve)을 반환한다(읽기 전용, 무예외).
@@ -1482,9 +1631,14 @@ def create_app() -> FastAPI:
         (무예외 — 대시보드가 "코드가 없습니다"를 표시).
         """
         if not run or gen < 0:
+            reason = "missing_run" if not run else "missing_generation"
             return {
+                "ok": True,
                 "run_id": run, "gen": gen,
+                "gen_no": gen,
                 "buy_name": "", "sell_name": "", "buy_code": "", "sell_code": "",
+                "code_status": reason,
+                "reason": reason,
             }
         return _strategy_code_payload(run, gen)
 
@@ -1497,8 +1651,46 @@ def create_app() -> FastAPI:
     def strategy_diff(run_id: Optional[str] = None, gen_no: int = -1,
                       base_gen: str = "previous") -> Dict[str, Any]:
         """현재 세대와 이전/base 세대의 매수·매도 전략 코드 diff를 반환한다."""
+        if not run_id:
+            return {
+                "ok": True,
+                "run_id": run_id,
+                "gen_no": int(gen_no),
+                "buy_name": "",
+                "sell_name": "",
+                "buy_code": "",
+                "sell_code": "",
+                "base_gen": None,
+                "base_buy_name": None,
+                "base_sell_name": None,
+                "base_buy_code": "",
+                "base_sell_code": "",
+                "buy_diff": [],
+                "sell_diff": [],
+                "prompts": [],
+                "diff_status": "missing_run",
+                "reason": "missing_run",
+            }
         if int(gen_no) < 0:
-            return {"error": "gen_no required", "prompts": []}
+            return {
+                "ok": True,
+                "run_id": run_id,
+                "gen_no": int(gen_no),
+                "buy_name": "",
+                "sell_name": "",
+                "buy_code": "",
+                "sell_code": "",
+                "base_gen": None,
+                "base_buy_name": None,
+                "base_sell_name": None,
+                "base_buy_code": "",
+                "base_sell_code": "",
+                "buy_diff": [],
+                "sell_diff": [],
+                "prompts": [],
+                "diff_status": "missing_generation",
+                "reason": "missing_generation",
+            }
         return _strategy_diff_payload(run_id, int(gen_no), base_gen)
 
     @app.get("/ai_context_pack")

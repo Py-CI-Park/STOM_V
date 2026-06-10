@@ -1,0 +1,24 @@
+﻿# Post-review OOS CSV guard fix
+
+Reviewer finding: yearly_sparse_robust_v1 rejected top-level OOS fields but did not explicitly reject 2022/2026 rows inside candidate CSV files.
+
+Fix:
+- Added ALLOWED_CSV_YEARS=frozenset(REQUIRED_YEARS) in ai_strategy_loop/controller/_yearly_sparse_robust_selection.py.
+- Added _non_training_years(rows), called before yearly breakdown and uptrend scoring.
+- CSV rows with any year outside 2023/2024/2025 now return reasons: csv contains non-training year <year>.
+- Added regression test test_rejects_csv_containing_oos_year_rows.
+
+Verification:
+- Red before fix: new test failed because reasons only had full_period_uptrend_r2 < 0.50.
+- Green after fix: tests/unit/test_yearly_sparse_robust_selection.py -> 9 passed.
+- Focused selector/prompt suite after fix -> 82 passed.
+- Dashboard analysis suite after fix -> 13 passed.
+- git diff --check after fix -> exit 0 with existing CRLF warnings only.
+- Protected runtime path status after fix:
+<empty>
+
+Scope fidelity:
+- No final_approval/export_winner.
+- No OOS rerun or OOS-based retuning.
+- No hard gate, official engine, or backtest/graph edit.
+- This fix strengthens pre-OOS training-only eligibility and does not change sparse_positive_v1.

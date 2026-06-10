@@ -14,9 +14,45 @@ A `hard gate` is a mandatory rule that a candidate must satisfy before it can be
 
 `payoff_ratio` compares average winning trade magnitude to average losing trade magnitude. It helps distinguish high-win-rate fragile systems from lower-win-rate systems with better reward-to-risk.
 
+## OOS
+
+`OOS` means out-of-sample: a period not used to select or tune the candidate. If OOS is disabled, the dashboard may still continue discovery, but the candidate remains research signal, not production proof.
+
+## overfit
+
+`overfit` means a rule is too closely fitted to the sampled period. The working criterion is intentionally looser than a production gate: a condition may remain useful for research if the full-period equity curve is upward and recent years improve, but a human-level claim remains blocked until multiyear holdout evidence exists.
+
+## MDD
+
+`MDD` means maximum drawdown, the largest peak-to-trough drop of the cumulative equity curve. It explains how deep the worst loss period became even when total profit is positive.
+
 ## edge_ratio
 
 `edge_ratio` compares maximum favorable excursion against maximum adverse excursion. If edge_ratio is strong but realized profit is weak, exits or timing may be the main problem. If edge_ratio is weak, entry quality is likely poor.
+
+## MFE/MAE
+
+`MFE/MAE` separates entry quality from realized exit quality. `MFE` is the best favorable move while holding a trade, and `MAE` is the worst adverse move while holding it.
+
+## slippage
+
+`slippage` is the difference between the backtest assumed fill and realistic execution. It must be treated as a cost because order book depth, liquidity, and fast tick movement can reduce realized profit.
+
+## PBO
+
+`PBO` means Probability of Backtest Overfitting. It estimates the risk that a selected winner is mainly a product of repeated search rather than a stable condition edge.
+
+## DSR
+
+`DSR` means Deflated Sharpe Ratio. It adjusts Sharpe-style evidence for repeated trials and non-normal return distributions.
+
+## win-day ratio
+
+`win-day ratio` is the share of trading days with positive daily profit/loss. It is useful because a condition can have mixed intraday trades but still produce more profitable days than losing days.
+
+## recent-weighted score
+
+`recent-weighted score` gives stronger research weight to recent years such as 2024, 2025, and available 2026 data. It reflects market regime change, but it is not a standalone promotion rule.
 
 ## feature_importance
 

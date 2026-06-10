@@ -9,6 +9,8 @@ from typing import Final, TypedDict
 
 from fastapi import APIRouter
 
+from ai_strategy_loop.dashboard.analysis_snapshot import analysis_router
+
 
 class ResearchDocSummary(TypedDict):
     id: str
@@ -61,6 +63,7 @@ _SELECTED_UPDATE_LOGS: Final[tuple[str, ...]] = (
 )
 
 router = APIRouter()
+router.include_router(analysis_router)
 
 
 def _repo_path(rel_path: str) -> Path:

@@ -1,0 +1,23 @@
+Final dashboard QA
+timestamp=2026-06-04T09:34:52.106596+00:00
+base=http://127.0.0.1:8799
+note=8799 is owned current-worktree dashboard; pre-existing 8770 was left untouched and appeared stale for config/prompts.
+
+## Endpoint statuses
+- health /health -> HTTP 200, bytes=36, content_type=application/json, path=.omo/evidence/tick-sparse-positive-generation-improvement-20260604/final-dashboard-raw/health.json
+- ui /ui/ -> HTTP 200, bytes=2850, content_type=text/html; charset=utf-8, path=.omo/evidence/tick-sparse-positive-generation-improvement-20260604/final-dashboard-raw/ui.html
+- config_spec /config/spec -> HTTP 200, bytes=9012, content_type=application/json, path=.omo/evidence/tick-sparse-positive-generation-improvement-20260604/final-dashboard-raw/config_spec.json
+- prompts_p5_gen4 /prompts?run_id=tick_spgen_p5_train_2023_2025_20260604&gen_no=4 -> HTTP 200, bytes=3200, content_type=application/json, path=.omo/evidence/tick-sparse-positive-generation-improvement-20260604/final-dashboard-raw/prompts_p5_gen4.json
+- runs_compare_p6 /runs/compare?ids=tick_spgen_p6_seed_2022_20260604,tick_spgen_p6_seed_2026_20260604,tick_spgen_p6_ai_2022_20260604,tick_spgen_p6_ai_2026_20260604 -> HTTP 200, bytes=4948, content_type=application/json, path=.omo/evidence/tick-sparse-positive-generation-improvement-20260604/final-dashboard-raw/runs_compare_p6.json
+
+## Checks
+- health_200: True
+- ui_200: True
+- config_spec_200: True
+- sparse_positive_toggle_visible: True
+- sparse_positive_toggle_default_false: True
+- prompts_200: True
+- prompt_records_present: True
+- p5_prompt_sparse_true: True
+- runs_compare_200: True
+- runs_compare_has_p6_rows: True

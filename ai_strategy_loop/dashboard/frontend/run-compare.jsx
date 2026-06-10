@@ -139,27 +139,37 @@ function RunComparePanel({ baseUrl, wsStatus }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedRuns.map(r => (
-                    <tr key={r.run_id}>
-                      <td><input type="checkbox" checked={selected.includes(r.run_id)} onChange={() => toggleSelected(r.run_id)} /></td>
-                      <td>{r.run_id}</td>
-                      <td>{r.status || "-"}</td>
-                      <td>{r.period || "-"}</td>
-                      <td>{rcYears(r)}</td>
-                      <td>{r.timeframe || "-"}</td>
-                      <td>{rcWindow(r)}</td>
-                      <td className={r.final_profit > 0 ? "num-pos" : r.final_profit < 0 ? "num-neg" : "num-muted"}>{rcMoney(r.final_profit)}</td>
-                      <td className={r.total_profit_pct > 0 ? "num-pos" : r.total_profit_pct < 0 ? "num-neg" : "num-muted"}>{rcPct(r.total_profit_pct)}</td>
-                      <td>{r.trade_count ?? 0}</td>
-                      <td>{rcNum(r.daily_avg_trades, 1)}</td>
-                      <td className={r.mdd > 0 ? "num-neg" : "num-muted"}>{rcPct(r.mdd)}</td>
-                      <td>{rcNum(r.payoff_ratio, 2)}</td>
-                      <td>{rcNum(r.max_hold_count, 0)}</td>
-                      <td>{rcDuration(r.elapsed_sec)}</td>
-                      <td>{r.cost_or_count_text || rcNum(r.cost_or_count, 1)}</td>
-                      <td>{r.winner ? `gen_${String(r.winner.gen_no).padStart(2, "0")} / ${rcNum(r.winner.graded_score, 3)}` : "-"}</td>
-                    </tr>
-                  ))}
+                  {sortedRuns.map(r => {
+                    const sparseHoldSuspicious = typeof r.max_hold_count === "number"
+                      && r.max_hold_count <= 1
+                      && (r.trade_count || 0) >= 50;
+                    return (
+                      <tr key={r.run_id}>
+                        <td><input type="checkbox" checked={selected.includes(r.run_id)} onChange={() => toggleSelected(r.run_id)} /></td>
+                        <td>{r.run_id}</td>
+                        <td>{r.status || "-"}</td>
+                        <td>{r.period || "-"}</td>
+                        <td>{rcYears(r)}</td>
+                        <td>{r.timeframe || "-"}</td>
+                        <td>{rcWindow(r)}</td>
+                        <td className={r.final_profit > 0 ? "num-pos" : r.final_profit < 0 ? "num-neg" : "num-muted"}>{rcMoney(r.final_profit)}</td>
+                        <td className={r.total_profit_pct > 0 ? "num-pos" : r.total_profit_pct < 0 ? "num-neg" : "num-muted"}>{rcPct(r.total_profit_pct)}</td>
+                        <td>{r.trade_count ?? 0}</td>
+                        <td>{rcNum(r.daily_avg_trades, 1)}</td>
+                        <td className={r.mdd > 0 ? "num-neg" : "num-muted"}>{rcPct(r.mdd)}</td>
+                        <td>{rcNum(r.payoff_ratio, 2)}</td>
+                        <td className={sparseHoldSuspicious ? "num-neg" : ""}
+                            title={sparseHoldSuspicious
+                              ? "Sparse hold warning: max_hold_count <= 1 with enough trades; compare Backtest Detail CSV peak_holdings. human corridor 6-12"
+                              : "max_hold_count"}>
+                          {rcNum(r.max_hold_count, 0)}{sparseHoldSuspicious ? " !" : ""}
+                        </td>
+                        <td>{rcDuration(r.elapsed_sec)}</td>
+                        <td>{r.cost_or_count_text || rcNum(r.cost_or_count, 1)}</td>
+                        <td>{r.winner ? `gen_${String(r.winner.gen_no).padStart(2, "0")} / ${rcNum(r.winner.graded_score, 3)}` : "-"}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

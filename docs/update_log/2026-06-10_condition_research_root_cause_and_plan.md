@@ -232,6 +232,33 @@ B2(감사) → B1·B7(선택기+계약 테스트) → B3~B6(가드·프롬프트
 B8 → [P3~P4 연구 사이클 재개] → C1~C3 → D1~D5 → E. GPT 복귀(6/11 10:00) 전에 B군을 마치면
 복귀 즉시 루프가 "계산예산 가드 + 리포트 어휘 + 정합 선택기" 상태로 재가동된다.
 
+### B군 구현 완료 기록 (2026-06-10 당일)
+- **B1 완료**: `controller/_seed_relative_selection.py` + `candidate_selection.py` export +
+  `tests/unit/test_seed_relative_selection.py`(9 테스트). 실데이터 검증: 기존 train run에
+  적용 결과 **C7_SEEDPLUS 동결 성공**(MDD 16.52 ≤ 한도 20, 거래 142, 연도별 2/3 흑자) —
+  같은 입력에서 sparse_positive_v1은 selected=False(원인1 해소 입증).
+- **B2 완료**: `docs/research/condition_research/2026-06-10_measurement_calibration_audit.md`.
+  핵심: MDD% 분모(seed 필요자금)가 동시보유 수에 비례 — 절대 MDD 기준은 포지션 레짐 간
+  이식 불가(시드 17.44% vs 우수전략 1.9~6.75%는 같은 공식·다른 분모). 분산(동시보유↑)이
+  MDD%의 구조 레버.
+- **B3 완료(스펙 교정 포함)**: `brain/exec_budget.py` + generator 4f 게이트 + 토글.
+  ⚠️ 스펙 교정: 실측상 타임아웃 매도식(S_DYN/S_TREND)은 보유시간 상한이 **있었는데도**
+  죽었다(스캔 깊이는 당일 이력에 비례) → "보유시간 상한 시 허용" 조건부 면제를 제거하고
+  매도식 내 비유계 스캔 함수는 무조건 reject로 확정.
+- **B4·B5 완료**: `exec_budget_prompt_enabled` 단일 토글로 매수(지연계산)/매도(스칼라
+  우선·미갱신 금지) 지침 분기. OFF byte-identity 테스트 포함.
+- **B6 완료**: `report_principles_enabled` — v5.0 원리 어휘(F20 수급·F11 상대활성도·위험
+  필터 라이브러리·시총별 동적 청산) + 단위 보정 + "임계값 직이식 금지, 부검 분위수 보정".
+- **B7 완료**: `tests/unit/test_record_reason_contract.py` — fullmatch 계약 + 배치도구
+  원문 보존 정적 고정.
+- **B8 완료**: `select_and_freeze.py`(seed_relative 1차+비교 병기, 복수 run 합산,
+  SQLite bool 보정) + `gen_oos_configs.py`(동결 후보+시드를 동일 창에서 동시 재측정).
+- 신규 테스트 27개 전부 통과, 관련 회귀 101개 통과.
+- **정직성 공시**: seed_relative_v1의 절대 바닥(MDD 20)·회랑(50~400)은 train 결과(시드
+  17.44/307, C7 16.52/142)를 본 뒤 선언됐다. OOS(2022/2026)는 여전히 미개봉이므로
+  OOS-blind 규율 위반은 아니나, **선택기 설계가 train 정보에 의존**함을 결정 카드에
+  명시한다(과적합 위험은 OOS와 C1(PBO/DSR)로 측정).
+
 ---
 
 ## 9. 정직성 체크리스트 (이 사이클에서 지켜진 것)

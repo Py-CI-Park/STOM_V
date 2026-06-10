@@ -1,0 +1,31 @@
+﻿## P2 Programming Architectural Review
+
+Single responsibility:
+- candidate_selection.py owns public API exports only.
+- _candidate_selection_core.py owns sparse_positive_v1 pure selection logic.
+- _candidate_selection_artifact.py owns parse/write boundary for selector artifacts.
+- test_candidate_selection.py owns selector contract tests.
+
+Boundary purity:
+- OOS-contaminated raw rows are parsed once by parse_candidate_generation.
+- Pure selector accepts CandidateGeneration dataclasses, not raw dicts.
+
+Variant discrimination:
+- No tagged variant or enum discrimination was introduced.
+- Bucket selection uses boolean predicates and a Literal return type.
+
+Escape hatches:
+- No explicit Any annotations.
+- No cast, type ignore, pyright ignore, broad except, or silent except added.
+
+Defensive layer:
+- Boundary parsing validates untrusted mapping fields before constructing CandidateGeneration.
+- Core selector operates on typed dataclasses.
+
+Helpers:
+- Private parse helpers are reused across multiple fields.
+- Core ranking/rejection helpers are cohesive and used by the selector.
+
+Tests:
+- Red test captured missing module.
+- Selector behavior is locked by tests that fail if sparse_positive_v1 semantics are reverted.

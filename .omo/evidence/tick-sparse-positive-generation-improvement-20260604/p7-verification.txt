@@ -1,0 +1,10 @@
+P7 verification
+timestamp=2026-06-04T09:30:08.276986+00:00
+final_verdict=REJECT_CANDIDATE
+oos_pass_rule_passed=False
+ai_positive_both_oos_years=False
+combined_ai_profit_gte_seed=False
+combined_ai_oos_trade_count_gte_50=False
+slippage_status=not_run_unstressed_oos_already_failed
+pbo_dsr_status=not_run_advisory_blocker
+forbidden_actions_invoked=false

@@ -1,0 +1,52 @@
+[
+  {
+    "label": "W1",
+    "run_id": "tick_seed_timeout_warm_1d_1m_e1_20260605",
+    "config": ".omo\\evidence\\tick-seed-warm-timeout-root-cause-20260605\\p3-w1-config.json",
+    "period": "20250102..20250102",
+    "window": "090000..090100",
+    "engines": 1,
+    "warm_timeout": 60,
+    "wall_cap": 150
+  },
+  {
+    "label": "W2",
+    "run_id": "tick_seed_timeout_warm_1d_5m_e1_20260605",
+    "config": ".omo\\evidence\\tick-seed-warm-timeout-root-cause-20260605\\p3-w2-config.json",
+    "period": "20250102..20250102",
+    "window": "090000..090500",
+    "engines": 1,
+    "warm_timeout": 90,
+    "wall_cap": 210
+  },
+  {
+    "label": "W3",
+    "run_id": "tick_seed_timeout_warm_3d_1m_e1_20260605",
+    "config": ".omo\\evidence\\tick-seed-warm-timeout-root-cause-20260605\\p3-w3-config.json",
+    "period": "20250101..20250103",
+    "window": "090000..090100",
+    "engines": 1,
+    "warm_timeout": 90,
+    "wall_cap": 210
+  },
+  {
+    "label": "W4",
+    "run_id": "tick_seed_timeout_warm_3d_5m_e1_20260605",
+    "config": ".omo\\evidence\\tick-seed-warm-timeout-root-cause-20260605\\p3-w4-config.json",
+    "period": "20250101..20250103",
+    "window": "090000..090500",
+    "engines": 1,
+    "warm_timeout": 120,
+    "wall_cap": 270
+  },
+  {
+    "label": "W5",
+    "run_id": "tick_seed_timeout_warm_3d_5m_e8_retry_20260605",
+    "config": ".omo\\evidence\\tick-seed-warm-timeout-root-cause-20260605\\p3-w5-config.json",
+    "period": "20250101..20250103",
+    "window": "090000..090500",
+    "engines": 8,
+    "warm_timeout": 120,
+    "wall_cap": 270
+  }
+]

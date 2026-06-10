@@ -1,0 +1,33 @@
+﻿P1 policy verification
+timestamp=2026-06-04T19:33:40.4965343+09:00
+
+JSON parse:
+selector_version=yearly_sparse_robust_v1
+base_selector_version=sparse_positive_v1
+min_trade_count=150
+max_trade_count=250
+min_daily_avg_trades=0.15
+min_trades_per_year=30
+skip_p6_oos=True
+policy_sha256=AE50A063B0945ABAAB6669C3498EC90200964018D60B76A4A4FED954FD500F73
+
+Required rg hits:
+4:Selector version: `yearly_sparse_robust_v1`
+7:`yearly_sparse_robust_v1` is a training-only selector for fresh 2023-2025 TICK research candidates. It does not replace or mutate `sparse_positive_v1`; a candidate must first satisfy `sparse_positive_v1`, then pass the stricter yearly robustness checks below before any fixed 2022/2026 OOS run is allowed.
+9:Prior 2022/2026 OOS evidence is used only as a rejected-candidate lesson: aggregate sparse-positive training success did not transfer to 2022 and did not produce enough OOS trades. It is forbidden to tune, rank, or reselect candidates using 2022/2026 OOS metrics.
+13:- Total training `trade_count` must be between `150` and `250`, inclusive.
+14:- Total training `daily_avg_trades` must be at least `0.15`.
+20:Yearly metrics are computed from the candidate generation CSV by sell-date year. The required training years are exactly `2023`, `2024`, and `2025`.
+22:- All required years `2023`, `2024`, and `2025` must be present.
+23:- Each required year must have at least `30 trades`.
+47:- 2022 OOS metrics.
+48:- 2026 OOS metrics.
+52:- Any post-OOS analysis.
+54:If any forbidden field is present in candidate input or selection metadata, the candidate is rejected and `forbidden_oos_fields_present=true` must be recorded.
+59:- `selector_version=yearly_sparse_robust_v1`
+63:- `forbidden_oos_fields_present=false` for a valid selection
+73:If no candidate qualifies, P6 fixed 2022/2026 OOS is skipped and `p5-selector-blocked.md` plus `p6-oos-blocked.md` must be written.
+76:These thresholds are frozen before implementation, fresh training, or fresh 2022/2026 OOS. Once any new OOS starts, this policy must not be changed for the current plan. Any future threshold change requires a new plan and must not use current-plan OOS results as a selector input.
+
+Protected path status:
+<empty>

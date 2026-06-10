@@ -1,0 +1,38 @@
+ï»¿timestamp_start=2026-06-03T21:35:16.4262668+09:00
+## git diff --check
+exit_code.git_diff_check=0
+## python scripts/verify_nonrelease_sync.py
+[OK] ÌÆlĞ¸Ò¬¹ĞÅ .pyd Ó|ÇtÇ ÆÅµÂÈ²ä².
+[OK] TÑ¸ø­¨· qlist Ä¬}ÅtÇ Ö¬Ç MainWindow ÂÁ@Æ |ÇXÎiÕÈ²ä².
+[OK] MainWindow¬ TÑ¸ø­¨· ğ·ÀĞ„ÇDÇ ÜÂ‘ÇiÕÈ²ä².
+[OK] $ÁÈ À¼½¬ ÈÓ¬ TelegramProcessAlive ½¬\¸|¹ ¬À©ÆiÕÈ²ä².
+[OK] TÑ¸ø­¨· alive helper¬ tÈ¬ÇiÕÈ²ä².
+[OK] Jisu cleanup matches V2.70 removal.
+[OK] Shutdown cleanup matches current MainWindow runtime.
+[OK] Shutdown persists dialog geometry before closing dialogs.
+[OK] Shutdown hides Qt windows before bounded child cleanup.
+[OK] Shutdown does not raise SystemExit inside Qt closeEvent.
+[OK] Shutdown query/sound child wait is bounded with terminate fallback.
+[OK] Shutdown backtest stop acknowledgement wait is bounded with terminate fallback.
+[OK] BackTest Õ\¸8Á¤Â İÀ1ÁÇ¬ ÁÉÈ xÇÇ Èì² Ä¬}ÅDÇ  ÇÀÉiÕÈ²ä².
+[OK] BackTest äÂ‰Õ xÇÇ¬ backQ °ÆŒÖ Èì²\¸ $ÆüÅ´ÀÉ JÅµÂÈ²ä².
+[OK] WebCrawling runtime wiring matches QThread contract.
+[OK] static.py compatibility exports match runtime contract.
+[OK] WebCrawling stop contract includes timeout and cancellation guards.
+[OK] Key loading safety guard is present.
+[OK] Kiwoom P/L rounding matches expected loss math.
+[OK] D¾ÈİÂ ÌÆlĞ¸Ò¬¹ĞÅÁ ÜÂ¬¹¼Å¤Ğ UI İÀ1ÁtÇ (Ìè²)´È²ä².
+[OK] $ÁÈ È¥ÇtÇ ÌÆlĞ¸Ò¬¹ ÜÂ¬¹¼Å¤Ğ ÈEÌDÇ 0µ…¹È²ä².
+[OK] dict_set È¬Ç¬ D¾ÈİÂ ÌÆlĞ¸Ò¬¹ ÜÂ¬¹¼Å¤Ğ ÈEÌDÇ 0µ…¹È²ä².
+[OK] legacy utility/setting.pyÄ³ D¾ÈİÂ ÌÆlĞ¸Ò¬¹ ÜÂ¬¹¼Å¤Ğ ÈEÌDÇ 0µ…¹È²ä².
+
+¨ºà´ D¾ÈİÂ ÌÆlĞ¸Ò¬¹ Ù³0®TÖ ¬Ü´¸|Ç €¬¬À|¹ µÑü¬ˆÕµÂÈ²ä².
+exit_code.verify_nonrelease_sync=0
+## protected path git status
+exit_code.protected_status=0
+## focused pytest
+........................................................................ [ 51%]
+.....................................................................    [100%]
+141 passed in 16.37s
+exit_code.focused_pytest=0
+timestamp_end=2026-06-03T21:35:37.9954926+09:00

@@ -1,0 +1,36 @@
+# Final Plan Compliance Audit
+
+- timestamp: 2026-06-03T21:25:35.869933+09:00
+- evidence_root: `.omo\evidence\tick-oos-validation-20260603`
+- implementation_task_unchecked_after_tasks: 0
+- final_verification_unchecked_before_f1_completion: 4
+
+## Task Evidence Map
+
+- 1 P0 safety snapshot: OK - `.omo\evidence\tick-oos-validation-20260603\safety-snapshot.txt`
+- 2 baseline verifier/API smoke: OK - `.omo\evidence\tick-oos-validation-20260603\baseline-verification.txt`, `.omo\evidence\tick-oos-validation-20260603\dashboard-api-smoke.json`, `.omo\evidence\tick-oos-validation-20260603\dashboard-pid.txt`
+- 3 P1 short reproduction: OK - `.omo\evidence\tick-oos-validation-20260603\p1-smoke-config.json`, `.omo\evidence\tick-oos-validation-20260603\p1-smoke-log.txt`, `.omo\evidence\tick-oos-validation-20260603\p1-api.json`
+- 4 P2 multiyear train: OK - `.omo\evidence\tick-oos-validation-20260603\p2-train-config.json`, `.omo\evidence\tick-oos-validation-20260603\p2-train-log.txt`, `.omo\evidence\tick-oos-validation-20260603\p2-selected-candidate.json`
+- 5 P3 analysis: OK - `.omo\evidence\tick-oos-validation-20260603\p3-analysis.json`, `.omo\evidence\tick-oos-validation-20260603\p3-prompt-feedback.json`, `.omo\evidence\tick-oos-validation-20260603\p3-db-inventory.json`, `.omo\evidence\tick-oos-validation-20260603\p3-feedback-summary.md`
+- 6 P4 OOS comparison: OK - `.omo\evidence\tick-oos-validation-20260603\p4-oos-comparison.json`, `.omo\evidence\tick-oos-validation-20260603\p4-oos-comparison.md`, `.omo\evidence\tick-oos-validation-20260603\p4-api.json`, `.omo\evidence\tick-oos-validation-20260603\p4-seed-2022-log.txt`, `.omo\evidence\tick-oos-validation-20260603\p4-seed-2026-log.txt`, `.omo\evidence\tick-oos-validation-20260603\p4-ai-2022-log.txt`, `.omo\evidence\tick-oos-validation-20260603\p4-ai-2026-log.txt`
+- 7 P5 decision card: OK - `.omo\evidence\tick-oos-validation-20260603\p5-decision-card.md`
+
+## Forbidden Action Search
+
+- searched_terms: ['final_approval', 'export_winner', 'USER_ACK', 'KHOPENAPI', 'taskkill']
+- hit_count: 6
+- unexpected_action_hits: 0
+
+| File | Line | Term | Classification | Text |
+| --- | ---: | --- | --- | --- |
+| `.omo/evidence/tick-oos-validation-20260603/p5-decision-card.md` | 71 | USER_ACK | guardrail/audit text | - No production strategy DB wiring, V3K gate advancement, USER_ACK, KHOPENAPI login/connect, live order wiring, or blanket taskkill was used. |
+| `.omo/evidence/tick-oos-validation-20260603/p5-decision-card.md` | 71 | KHOPENAPI | guardrail/audit text | - No production strategy DB wiring, V3K gate advancement, USER_ACK, KHOPENAPI login/connect, live order wiring, or blanket taskkill was used. |
+| `.omo/evidence/tick-oos-validation-20260603/p5-decision-card.md` | 71 | taskkill | guardrail/audit text | - No production strategy DB wiring, V3K gate advancement, USER_ACK, KHOPENAPI login/connect, live order wiring, or blanket taskkill was used. |
+| `.omo/evidence/tick-oos-validation-20260603/safety-snapshot.txt` | 74 | final_approval | guardrail/audit text | final_approval forbidden; export_winner forbidden; V3K gate advancement forbidden; blanket taskkill forbidden. |
+| `.omo/evidence/tick-oos-validation-20260603/safety-snapshot.txt` | 74 | export_winner | guardrail/audit text | final_approval forbidden; export_winner forbidden; V3K gate advancement forbidden; blanket taskkill forbidden. |
+| `.omo/evidence/tick-oos-validation-20260603/safety-snapshot.txt` | 74 | taskkill | guardrail/audit text | final_approval forbidden; export_winner forbidden; V3K gate advancement forbidden; blanket taskkill forbidden. |
+
+## Result
+
+- Compliance result: PASS
+- `final_approval`, `export_winner`, V3K gate advancement, and blanket `taskkill` were absent as actions. Occurrences are guardrail/audit statements only.

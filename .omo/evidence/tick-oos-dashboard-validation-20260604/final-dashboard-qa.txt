@@ -1,0 +1,46 @@
+# F3 Real Dashboard QA
+
+timestamp=2026-06-04T11:45:43.324736+09:00
+base=http://127.0.0.1:8799
+owned_dashboard_pid=120328
+owned_dashboard_session=28895
+preexisting_8770=left running; not used for current-code QA
+
+## URL Statuses
+- ui /ui/ -> HTTP 200, bytes=2850, content_type=text/html; charset=utf-8, path=.omo/evidence/tick-oos-dashboard-validation-20260604/final-dashboard-raw/ui.html
+- runs /runs -> HTTP 200, bytes=249603, content_type=application/json, path=.omo/evidence/tick-oos-dashboard-validation-20260604/final-dashboard-raw/runs.json
+- run_state /run_state?run_id=tick_oos_dash_p3_train_2023_2025_20260604 -> HTTP 200, bytes=4249, content_type=application/json, path=.omo/evidence/tick-oos-dashboard-validation-20260604/final-dashboard-raw/run_state.json
+- variable_correlation /variable_correlation?run_id=tick_oos_dash_p3_train_2023_2025_20260604&method=spearman -> HTTP 200, bytes=16689, content_type=application/json, path=.omo/evidence/tick-oos-dashboard-validation-20260604/final-dashboard-raw/variable_correlation.json
+- edge_ratio /edge_ratio?run_id=tick_oos_dash_p3_train_2023_2025_20260604&fine_time=true -> HTTP 200, bytes=2747, content_type=application/json, path=.omo/evidence/tick-oos-dashboard-validation-20260604/final-dashboard-raw/edge_ratio.json
+- feature_importance /feature_importance?run_id=tick_oos_dash_p3_train_2023_2025_20260604&axis=change&fine_time=true -> HTTP 200, bytes=11368, content_type=application/json, path=.omo/evidence/tick-oos-dashboard-validation-20260604/final-dashboard-raw/feature_importance.json
+- strategy_diff /strategy_diff?run_id=tick_oos_dash_p3_train_2023_2025_20260604&gen_no=4 -> HTTP 200, bytes=9755, content_type=application/json, path=.omo/evidence/tick-oos-dashboard-validation-20260604/final-dashboard-raw/strategy_diff.json
+- prompts /prompts?run_id=tick_oos_dash_p3_train_2023_2025_20260604&gen_no=4 -> HTTP 200, bytes=3134, content_type=application/json, path=.omo/evidence/tick-oos-dashboard-validation-20260604/final-dashboard-raw/prompts.json
+- research_docs /research_docs -> HTTP 200, bytes=15254, content_type=application/json, path=.omo/evidence/tick-oos-dashboard-validation-20260604/final-dashboard-raw/research_docs.json
+- ai_context_pack /ai_context_pack?run_id=tick_oos_dash_p3_train_2023_2025_20260604&gen_no=4 -> HTTP 200, bytes=2124, content_type=application/json, path=.omo/evidence/tick-oos-dashboard-validation-20260604/final-dashboard-raw/ai_context_pack.json
+- runs_compare_oos /runs/compare?ids=tick_oos_dash_p5_seed_2022_20260604,tick_oos_dash_p5_seed_2026_20260604,tick_oos_dash_p5_ai_2022_20260604,tick_oos_dash_p5_ai_2026_20260604 -> HTTP 200, bytes=4990, content_type=application/json, path=.omo/evidence/tick-oos-dashboard-validation-20260604/final-dashboard-raw/runs_compare_oos.json
+
+## Semantic Checks
+- p3_in_runs: True
+- oos_in_runs: {'tick_oos_dash_p5_seed_2022_20260604': True, 'tick_oos_dash_p5_seed_2026_20260604': True, 'tick_oos_dash_p5_ai_2022_20260604': True, 'tick_oos_dash_p5_ai_2026_20260604': True}
+- runs_compare_keys: ['count', 'generation_count', 'generation_rows', 'runs']
+- runs_compare_count: 4
+
+## Forbidden Actions
+- No websocket call was made.
+- No `final_approval` action was invoked.
+- No `export_winner` route/action was invoked.
+
+## Cleanup
+- Pending: owned dashboard PID 120328 will be stopped after this capture.
+
+## Cleanup Receipt
+cleanup_timestamp=2026-06-04T11:46:23.6160272+09:00
+owned_dashboard_base=http://127.0.0.1:8799
+owned_dashboard_session=28895
+owned_dashboard_pid=120328
+cleanup_action=Ctrl-C sent through owned exec session only
+8799_status=stopped_or_unreachable
+8799_error=The operation has timed out.
+8770_status=200
+protected_status_begin
+protected_status_end

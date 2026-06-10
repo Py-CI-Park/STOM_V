@@ -1,0 +1,19 @@
+{
+  "run_id": "tick_p7_preflight_observable_20260605",
+  "status": "complete",
+  "current_gen": 1,
+  "max_generations": 1,
+  "phase": "complete",
+  "progress_source": "generation_level",
+  "percent": 100.0,
+  "timeout_sec": 300,
+  "bt_engine_mode": "warm",
+  "bt_timeframe": "tick",
+  "effective_engine_count": 8,
+  "cpu_count": 64,
+  "bt_full_start": 20250101,
+  "bt_full_end": 20250131,
+  "bt_universe_start_time": 90000,
+  "bt_universe_end_time": 93000,
+  "latest_reason": "backtest failed/timeout: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no"
+}

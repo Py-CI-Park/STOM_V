@@ -1,0 +1,7 @@
+﻿# F3 cleanup
+owned_pid=147900
+stopped=True
+cleanup_scope=owned uvicorn pid only
+blanket_taskkill_used=false
+stdout=.omo\evidence\tick-sparse-positive-oos-robustness-20260604\final-dashboard-uvicorn-stdout.txt
+stderr=.omo\evidence\tick-sparse-positive-oos-robustness-20260604\final-dashboard-uvicorn-stderr.txt

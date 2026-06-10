@@ -1,0 +1,2927 @@
+{
+  "health": {
+    "ok": true,
+    "status": 200,
+    "url": "http://127.0.0.1:8770/health",
+    "data": {
+      "status": "ok",
+      "contract_version": 2
+    }
+  },
+  "runs": {
+    "seed_2022": {
+      "run_id": "tick_oos_p4_seed_2022_20260603",
+      "run_state": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/run_state?run_id=tick_oos_p4_seed_2022_20260603",
+        "data": {
+          "contract_version": 2,
+          "run_id": "tick_oos_p4_seed_2022_20260603",
+          "status": "complete",
+          "current_gen": 0,
+          "max_generations": 1,
+          "provider": "gpt_auth",
+          "bt_timeframe": "tick",
+          "best": {
+            "gen": 0,
+            "graded_score": 4.649090284518312,
+            "gate_passed": true,
+            "buy_name": "Tick_B_902_905_Update_2",
+            "sell_name": "Tick_S_902_905_Update_2"
+          },
+          "winner": {
+            "gen": 0,
+            "score": 4.649090284518312,
+            "buy_name": "Tick_B_902_905_Update_2",
+            "sell_name": "Tick_S_902_905_Update_2"
+          },
+          "generations": [
+            {
+              "gen_no": 0,
+              "status": "ok",
+              "graded_score": 4.649090284518312,
+              "gate_passed": true,
+              "gate_reason": "ok",
+              "trade_count": 58,
+              "daily_avg_trades": 0.3,
+              "mdd": 13.02,
+              "profit": 2223554.0,
+              "total_profit_pct": 44.36,
+              "strategy_gist": "if not (관심종목 == 1):                         # 공통 필터 – 관심종목",
+              "payoff_ratio": 1.2548258225172206,
+              "give_back_rate": 0.36,
+              "calmar": 4.41321044546851,
+              "uptrend_r2": 0.9093163198724047,
+              "dispersion_term": 1.0,
+              "max_hold_count": 1.0,
+              "hypotheses": []
+            }
+          ],
+          "latest": {
+            "phase": "",
+            "last_checkpoint": "",
+            "message": "",
+            "recent_logs": [],
+            "current_step": -1,
+            "phase_started_at": 0.0,
+            "gen_started_at": 0.0,
+            "step_timings": {}
+          },
+          "cumulative": {
+            "tokens": 0,
+            "cost_or_count": 1
+          },
+          "page_data": {},
+          "active_config": {
+            "dispersion_prompt_enabled": false,
+            "dispersion_enabled": false,
+            "min_hold_symbols": 6.0,
+            "target_daily_trades": null,
+            "require_liquidity_gate": false,
+            "mdd_control_enabled": false,
+            "evolution_mode": "hillclimb",
+            "winner_objective": "uptrend",
+            "profit_weight": 0.5,
+            "bt_engine_mode": "warm",
+            "bt_scope": "single_stock",
+            "bt_timeframe": "tick",
+            "bt_refine_from_best": false,
+            "freeze_buy_on_mdd_only": true,
+            "bt_full_start": 20220101,
+            "bt_full_end": 20221231,
+            "bt_betting": "5",
+            "mdd_cap": 60,
+            "min_trades": 30,
+            "min_daily_trades": 0.05,
+            "overtrade_softcap": 150,
+            "tpi_gate_enabled": false,
+            "tpi_gate": 1.2,
+            "exit_quality_enabled": true,
+            "target_score": null,
+            "max_generations": 1,
+            "toggles": [
+              "dispersion_prompt_enabled",
+              "dispersion_enabled",
+              "require_liquidity_gate",
+              "mdd_control_enabled",
+              "bt_refine_from_best",
+              "freeze_buy_on_mdd_only",
+              "tpi_gate_enabled",
+              "exit_quality_enabled"
+            ]
+          },
+          "updated_at": 1780489178.510453
+        }
+      },
+      "backtest_detail": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/backtest_detail?run_id=tick_oos_p4_seed_2022_20260603&gen_no=0",
+        "data": {
+          "run_id": "tick_oos_p4_seed_2022_20260603",
+          "gen_no": 0,
+          "gate_passed": true,
+          "daily": [
+            {
+              "date": 20220323,
+              "daily_pnl": 240582.0,
+              "profit": 240582.0,
+              "loss": 0.0,
+              "net": 240582.0
+            },
+            {
+              "date": 20220411,
+              "daily_pnl": 56295.0,
+              "profit": 56295.0,
+              "loss": 0.0,
+              "net": 56295.0
+            },
+            {
+              "date": 20220421,
+              "daily_pnl": 17243.0,
+              "profit": 17243.0,
+              "loss": 0.0,
+              "net": 17243.0
+            },
+            {
+              "date": 20220422,
+              "daily_pnl": 195327.0,
+              "profit": 195327.0,
+              "loss": 0.0,
+              "net": 195327.0
+            },
+            {
+              "date": 20220427,
+              "daily_pnl": 201598.0,
+              "profit": 201598.0,
+              "loss": 0.0,
+              "net": 201598.0
+            },
+            {
+              "date": 20220428,
+              "daily_pnl": -88609.0,
+              "profit": 0.0,
+              "loss": -88609.0,
+              "net": -88609.0
+            },
+            {
+              "date": 20220429,
+              "daily_pnl": -275209.0,
+              "profit": 0.0,
+              "loss": -275209.0,
+              "net": -275209.0
+            },
+            {
+              "date": 20220506,
+              "daily_pnl": -144699.0,
+              "profit": 0.0,
+              "loss": -144699.0,
+              "net": -144699.0
+            },
+            {
+              "date": 20220511,
+              "daily_pnl": -147741.0,
+              "profit": 0.0,
+              "loss": -147741.0,
+              "net": -147741.0
+            },
+            {
+              "date": 20220512,
+              "daily_pnl": -88894.0,
+              "profit": 0.0,
+              "loss": -88894.0,
+              "net": -88894.0
+            },
+            {
+              "date": 20220516,
+              "daily_pnl": 247059.0,
+              "profit": 247059.0,
+              "loss": 0.0,
+              "net": 247059.0
+            },
+            {
+              "date": 20220518,
+              "daily_pnl": -71512.0,
+              "profit": 0.0,
+              "loss": -71512.0,
+              "net": -71512.0
+            },
+            {
+              "date": 20220523,
+              "daily_pnl": -118256.0,
+              "profit": 0.0,
+              "loss": -118256.0,
+              "net": -118256.0
+            },
+            {
+              "date": 20220530,
+              "daily_pnl": 244256.0,
+              "profit": 244256.0,
+              "loss": 0.0,
+              "net": 244256.0
+            },
+            {
+              "date": 20220602,
+              "daily_pnl": 239814.0,
+              "profit": 239814.0,
+              "loss": 0.0,
+              "net": 239814.0
+            },
+            {
+              "date": 20220609,
+              "daily_pnl": 247038.0,
+              "profit": 247038.0,
+              "loss": 0.0,
+              "net": 247038.0
+            },
+            {
+              "date": 20220610,
+              "daily_pnl": -138753.0,
+              "profit": 0.0,
+              "loss": -138753.0,
+              "net": -138753.0
+            },
+            {
+              "date": 20220613,
+              "daily_pnl": -266463.0,
+              "profit": 0.0,
+              "loss": -266463.0,
+              "net": -266463.0
+            },
+            {
+              "date": 20220617,
+              "daily_pnl": 229037.0,
+              "profit": 229037.0,
+              "loss": 0.0,
+              "net": 229037.0
+            },
+            {
+              "date": 20220628,
+              "daily_pnl": 253422.0,
+              "profit": 253422.0,
+              "loss": 0.0,
+              "net": 253422.0
+            },
+            {
+              "date": 20220705,
+              "daily_pnl": 221276.0,
+              "profit": 221276.0,
+              "loss": 0.0,
+              "net": 221276.0
+            },
+            {
+              "date": 20220706,
+              "daily_pnl": 90553.0,
+              "profit": 234903.0,
+              "loss": -144350.0,
+              "net": 90553.0
+            },
+            {
+              "date": 20220707,
+              "daily_pnl": -129104.0,
+              "profit": 0.0,
+              "loss": -129104.0,
+              "net": -129104.0
+            },
+            {
+              "date": 20220713,
+              "daily_pnl": 227614.0,
+              "profit": 227614.0,
+              "loss": 0.0,
+              "net": 227614.0
+            },
+            {
+              "date": 20220720,
+              "daily_pnl": -216172.0,
+              "profit": 0.0,
+              "loss": -216172.0,
+              "net": -216172.0
+            },
+            {
+              "date": 20220722,
+              "daily_pnl": 57998.0,
+              "profit": 57998.0,
+              "loss": 0.0,
+              "net": 57998.0
+            },
+            {
+              "date": 20220726,
+              "daily_pnl": 40593.0,
+              "profit": 40593.0,
+              "loss": 0.0,
+              "net": 40593.0
+            },
+            {
+              "date": 20220728,
+              "daily_pnl": -135540.0,
+              "profit": 0.0,
+              "loss": -135540.0,
+              "net": -135540.0
+            },
+            {
+              "date": 20220805,
+              "daily_pnl": 250766.0,
+              "profit": 250766.0,
+              "loss": 0.0,
+              "net": 250766.0
+            },
+            {
+              "date": 20220816,
+              "daily_pnl": 248005.0,
+              "profit": 248005.0,
+              "loss": 0.0,
+              "net": 248005.0
+            },
+            {
+              "date": 20220823,
+              "daily_pnl": -83281.0,
+              "profit": 0.0,
+              "loss": -83281.0,
+              "net": -83281.0
+            },
+            {
+              "date": 20220824,
+              "daily_pnl": -130871.0,
+              "profit": 0.0,
+              "loss": -130871.0,
+              "net": -130871.0
+            },
+            {
+              "date": 20220825,
+              "daily_pnl": 9474.0,
+              "profit": 9474.0,
+              "loss": 0.0,
+              "net": 9474.0
+            },
+            {
+              "date": 20220826,
+              "daily_pnl": 103618.0,
+              "profit": 103618.0,
+              "loss": 0.0,
+              "net": 103618.0
+            },
+            {
+              "date": 20220831,
+              "daily_pnl": 86406.0,
+              "profit": 86406.0,
+              "loss": 0.0,
+              "net": 86406.0
+            },
+            {
+              "date": 20220905,
+              "daily_pnl": -100601.0,
+              "profit": 0.0,
+              "loss": -100601.0,
+              "net": -100601.0
+            },
+            {
+              "date": 20220906,
+              "daily_pnl": 243833.0,
+              "profit": 243833.0,
+              "loss": 0.0,
+              "net": 243833.0
+            },
+            {
+              "date": 20220914,
+              "daily_pnl": 218093.0,
+              "profit": 218093.0,
+              "loss": 0.0,
+              "net": 218093.0
+            },
+            {
+              "date": 20220915,
+              "daily_pnl": -212368.0,
+              "profit": 0.0,
+              "loss": -212368.0,
+              "net": -212368.0
+            },
+            {
+              "date": 20220919,
+              "daily_pnl": 77981.0,
+              "profit": 77981.0,
+              "loss": 0.0,
+              "net": 77981.0
+            },
+            {
+              "date": 20220922,
+              "daily_pnl": -79704.0,
+              "profit": 0.0,
+              "loss": -79704.0,
+              "net": -79704.0
+            },
+            {
+              "date": 20220926,
+              "daily_pnl": -136392.0,
+              "profit": 0.0,
+              "loss": -136392.0,
+              "net": -136392.0
+            },
+            {
+              "date": 20220927,
+              "daily_pnl": 234524.0,
+              "profit": 234524.0,
+              "loss": 0.0,
+              "net": 234524.0
+            },
+            {
+              "date": 20221004,
+              "daily_pnl": 8179.0,
+              "profit": 8179.0,
+              "loss": 0.0,
+              "net": 8179.0
+            },
+            {
+              "date": 20221006,
+              "daily_pnl": 238412.0,
+              "profit": 238412.0,
+              "loss": 0.0,
+              "net": 238412.0
+            },
+            {
+              "date": 20221018,
+              "daily_pnl": 235523.0,
+              "profit": 235523.0,
+              "loss": 0.0,
+              "net": 235523.0
+            },
+            {
+              "date": 20221019,
+              "daily_pnl": -10554.0,
+              "profit": 0.0,
+              "loss": -10554.0,
+              "net": -10554.0
+            },
+            {
+              "date": 20221108,
+              "daily_pnl": 247713.0,
+              "profit": 247713.0,
+              "loss": 0.0,
+              "net": 247713.0
+            },
+            {
+              "date": 20221116,
+              "daily_pnl": -56156.0,
+              "profit": 0.0,
+              "loss": -56156.0,
+              "net": -56156.0
+            },
+            {
+              "date": 20221123,
+              "daily_pnl": -31809.0,
+              "profit": 0.0,
+              "loss": -31809.0,
+              "net": -31809.0
+            },
+            {
+              "date": 20221124,
+              "daily_pnl": -178660.0,
+              "profit": 0.0,
+              "loss": -178660.0,
+              "net": -178660.0
+            },
+            {
+              "date": 20221125,
+              "daily_pnl": 200699.0,
+              "profit": 200699.0,
+              "loss": 0.0,
+              "net": 200699.0
+            },
+            {
+              "date": 20221129,
+              "daily_pnl": 71134.0,
+              "profit": 71134.0,
+              "loss": 0.0,
+              "net": 71134.0
+            },
+            {
+              "date": 20221130,
+              "daily_pnl": -145984.0,
+              "profit": 0.0,
+              "loss": -145984.0,
+              "net": -145984.0
+            },
+            {
+              "date": 20221209,
+              "daily_pnl": 66177.0,
+              "profit": 66177.0,
+              "loss": 0.0,
+              "net": 66177.0
+            },
+            {
+              "date": 20221221,
+              "daily_pnl": -252403.0,
+              "profit": 0.0,
+              "loss": -252403.0,
+              "net": -252403.0
+            },
+            {
+              "date": 20221222,
+              "daily_pnl": 113047.0,
+              "profit": 113047.0,
+              "loss": 0.0,
+              "net": 113047.0
+            }
+          ],
+          "cumulative": [
+            {
+              "date": 20220323,
+              "cum_profit": 240582.0,
+              "cum_pct": 4.81164
+            },
+            {
+              "date": 20220411,
+              "cum_profit": 296877.0,
+              "cum_pct": 5.93754
+            },
+            {
+              "date": 20220421,
+              "cum_profit": 314120.0,
+              "cum_pct": 6.282400000000001
+            },
+            {
+              "date": 20220422,
+              "cum_profit": 509447.0,
+              "cum_pct": 10.18894
+            },
+            {
+              "date": 20220427,
+              "cum_profit": 711045.0,
+              "cum_pct": 14.2209
+            },
+            {
+              "date": 20220428,
+              "cum_profit": 622436.0,
+              "cum_pct": 12.44872
+            },
+            {
+              "date": 20220429,
+              "cum_profit": 347227.0,
+              "cum_pct": 6.944540000000001
+            },
+            {
+              "date": 20220506,
+              "cum_profit": 202528.0,
+              "cum_pct": 4.05056
+            },
+            {
+              "date": 20220511,
+              "cum_profit": 54787.0,
+              "cum_pct": 1.0957400000000002
+            },
+            {
+              "date": 20220512,
+              "cum_profit": -34107.0,
+              "cum_pct": -0.68214
+            },
+            {
+              "date": 20220516,
+              "cum_profit": 212952.0,
+              "cum_pct": 4.25904
+            },
+            {
+              "date": 20220518,
+              "cum_profit": 141440.0,
+              "cum_pct": 2.8288
+            },
+            {
+              "date": 20220523,
+              "cum_profit": 23184.0,
+              "cum_pct": 0.46368
+            },
+            {
+              "date": 20220530,
+              "cum_profit": 267440.0,
+              "cum_pct": 5.3488
+            },
+            {
+              "date": 20220602,
+              "cum_profit": 507254.0,
+              "cum_pct": 10.14508
+            },
+            {
+              "date": 20220609,
+              "cum_profit": 754292.0,
+              "cum_pct": 15.085840000000001
+            },
+            {
+              "date": 20220610,
+              "cum_profit": 615539.0,
+              "cum_pct": 12.310780000000001
+            },
+            {
+              "date": 20220613,
+              "cum_profit": 349076.0,
+              "cum_pct": 6.98152
+            },
+            {
+              "date": 20220617,
+              "cum_profit": 578113.0,
+              "cum_pct": 11.56226
+            },
+            {
+              "date": 20220628,
+              "cum_profit": 831535.0,
+              "cum_pct": 16.6307
+            },
+            {
+              "date": 20220705,
+              "cum_profit": 1052811.0,
+              "cum_pct": 21.05622
+            },
+            {
+              "date": 20220706,
+              "cum_profit": 1143364.0,
+              "cum_pct": 22.86728
+            },
+            {
+              "date": 20220707,
+              "cum_profit": 1014260.0,
+              "cum_pct": 20.2852
+            },
+            {
+              "date": 20220713,
+              "cum_profit": 1241874.0,
+              "cum_pct": 24.83748
+            },
+            {
+              "date": 20220720,
+              "cum_profit": 1025702.0,
+              "cum_pct": 20.51404
+            },
+            {
+              "date": 20220722,
+              "cum_profit": 1083700.0,
+              "cum_pct": 21.674
+            },
+            {
+              "date": 20220726,
+              "cum_profit": 1124293.0,
+              "cum_pct": 22.48586
+            },
+            {
+              "date": 20220728,
+              "cum_profit": 988753.0,
+              "cum_pct": 19.77506
+            },
+            {
+              "date": 20220805,
+              "cum_profit": 1239519.0,
+              "cum_pct": 24.79038
+            },
+            {
+              "date": 20220816,
+              "cum_profit": 1487524.0,
+              "cum_pct": 29.750480000000003
+            },
+            {
+              "date": 20220823,
+              "cum_profit": 1404243.0,
+              "cum_pct": 28.08486
+            },
+            {
+              "date": 20220824,
+              "cum_profit": 1273372.0,
+              "cum_pct": 25.467440000000003
+            },
+            {
+              "date": 20220825,
+              "cum_profit": 1282846.0,
+              "cum_pct": 25.65692
+            },
+            {
+              "date": 20220826,
+              "cum_profit": 1386464.0,
+              "cum_pct": 27.72928
+            },
+            {
+              "date": 20220831,
+              "cum_profit": 1472870.0,
+              "cum_pct": 29.4574
+            },
+            {
+              "date": 20220905,
+              "cum_profit": 1372269.0,
+              "cum_pct": 27.445380000000004
+            },
+            {
+              "date": 20220906,
+              "cum_profit": 1616102.0,
+              "cum_pct": 32.32204
+            },
+            {
+              "date": 20220914,
+              "cum_profit": 1834195.0,
+              "cum_pct": 36.6839
+            },
+            {
+              "date": 20220915,
+              "cum_profit": 1621827.0,
+              "cum_pct": 32.43654
+            },
+            {
+              "date": 20220919,
+              "cum_profit": 1699808.0,
+              "cum_pct": 33.996159999999996
+            },
+            {
+              "date": 20220922,
+              "cum_profit": 1620104.0,
+              "cum_pct": 32.40208
+            },
+            {
+              "date": 20220926,
+              "cum_profit": 1483712.0,
+              "cum_pct": 29.67424
+            },
+            {
+              "date": 20220927,
+              "cum_profit": 1718236.0,
+              "cum_pct": 34.36472
+            },
+            {
+              "date": 20221004,
+              "cum_profit": 1726415.0,
+              "cum_pct": 34.5283
+            },
+            {
+              "date": 20221006,
+              "cum_profit": 1964827.0,
+              "cum_pct": 39.29654
+            },
+            {
+              "date": 20221018,
+              "cum_profit": 2200350.0,
+              "cum_pct": 44.007000000000005
+            },
+            {
+              "date": 20221019,
+              "cum_profit": 2189796.0,
+              "cum_pct": 43.79592
+            },
+            {
+              "date": 20221108,
+              "cum_profit": 2437509.0,
+              "cum_pct": 48.75018
+            },
+            {
+              "date": 20221116,
+              "cum_profit": 2381353.0,
+              "cum_pct": 47.62706
+            },
+            {
+              "date": 20221123,
+              "cum_profit": 2349544.0,
+              "cum_pct": 46.990880000000004
+            },
+            {
+              "date": 20221124,
+              "cum_profit": 2170884.0,
+              "cum_pct": 43.41768
+            },
+            {
+              "date": 20221125,
+              "cum_profit": 2371583.0,
+              "cum_pct": 47.43166
+            },
+            {
+              "date": 20221129,
+              "cum_profit": 2442717.0,
+              "cum_pct": 48.85434
+            },
+            {
+              "date": 20221130,
+              "cum_profit": 2296733.0,
+              "cum_pct": 45.93466
+            },
+            {
+              "date": 20221209,
+              "cum_profit": 2362910.0,
+              "cum_pct": 47.2582
+            },
+            {
+              "date": 20221221,
+              "cum_profit": 2110507.0,
+              "cum_pct": 42.21014
+            },
+            {
+              "date": 20221222,
+              "cum_profit": 2223554.0,
+              "cum_pct": 44.47108
+            }
+          ],
+          "drawdown": [
+            {
+              "date": 20220323,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220411,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220421,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220422,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220427,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220428,
+              "drawdown": 88609.0
+            },
+            {
+              "date": 20220429,
+              "drawdown": 363818.0
+            },
+            {
+              "date": 20220506,
+              "drawdown": 508517.0
+            },
+            {
+              "date": 20220511,
+              "drawdown": 656258.0
+            },
+            {
+              "date": 20220512,
+              "drawdown": 745152.0
+            },
+            {
+              "date": 20220516,
+              "drawdown": 498093.0
+            },
+            {
+              "date": 20220518,
+              "drawdown": 569605.0
+            },
+            {
+              "date": 20220523,
+              "drawdown": 687861.0
+            },
+            {
+              "date": 20220530,
+              "drawdown": 443605.0
+            },
+            {
+              "date": 20220602,
+              "drawdown": 203791.0
+            },
+            {
+              "date": 20220609,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220610,
+              "drawdown": 138753.0
+            },
+            {
+              "date": 20220613,
+              "drawdown": 405216.0
+            },
+            {
+              "date": 20220617,
+              "drawdown": 176179.0
+            },
+            {
+              "date": 20220628,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220705,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220706,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220707,
+              "drawdown": 129104.0
+            },
+            {
+              "date": 20220713,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220720,
+              "drawdown": 216172.0
+            },
+            {
+              "date": 20220722,
+              "drawdown": 158174.0
+            },
+            {
+              "date": 20220726,
+              "drawdown": 117581.0
+            },
+            {
+              "date": 20220728,
+              "drawdown": 253121.0
+            },
+            {
+              "date": 20220805,
+              "drawdown": 2355.0
+            },
+            {
+              "date": 20220816,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220823,
+              "drawdown": 83281.0
+            },
+            {
+              "date": 20220824,
+              "drawdown": 214152.0
+            },
+            {
+              "date": 20220825,
+              "drawdown": 204678.0
+            },
+            {
+              "date": 20220826,
+              "drawdown": 101060.0
+            },
+            {
+              "date": 20220831,
+              "drawdown": 14654.0
+            },
+            {
+              "date": 20220905,
+              "drawdown": 115255.0
+            },
+            {
+              "date": 20220906,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220914,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220915,
+              "drawdown": 212368.0
+            },
+            {
+              "date": 20220919,
+              "drawdown": 134387.0
+            },
+            {
+              "date": 20220922,
+              "drawdown": 214091.0
+            },
+            {
+              "date": 20220926,
+              "drawdown": 350483.0
+            },
+            {
+              "date": 20220927,
+              "drawdown": 115959.0
+            },
+            {
+              "date": 20221004,
+              "drawdown": 107780.0
+            },
+            {
+              "date": 20221006,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20221018,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20221019,
+              "drawdown": 10554.0
+            },
+            {
+              "date": 20221108,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20221116,
+              "drawdown": 56156.0
+            },
+            {
+              "date": 20221123,
+              "drawdown": 87965.0
+            },
+            {
+              "date": 20221124,
+              "drawdown": 266625.0
+            },
+            {
+              "date": 20221125,
+              "drawdown": 65926.0
+            },
+            {
+              "date": 20221129,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20221130,
+              "drawdown": 145984.0
+            },
+            {
+              "date": 20221209,
+              "drawdown": 79807.0
+            },
+            {
+              "date": 20221221,
+              "drawdown": 332210.0
+            },
+            {
+              "date": 20221222,
+              "drawdown": 219163.0
+            }
+          ],
+          "holdings": [
+            {
+              "t_index": 0,
+              "count": 1
+            },
+            {
+              "t_index": 1,
+              "count": 0
+            },
+            {
+              "t_index": 2,
+              "count": 1
+            },
+            {
+              "t_index": 3,
+              "count": 0
+            },
+            {
+              "t_index": 4,
+              "count": 1
+            },
+            {
+              "t_index": 5,
+              "count": 0
+            },
+            {
+              "t_index": 6,
+              "count": 1
+            },
+            {
+              "t_index": 7,
+              "count": 0
+            },
+            {
+              "t_index": 8,
+              "count": 1
+            },
+            {
+              "t_index": 9,
+              "count": 0
+            },
+            {
+              "t_index": 10,
+              "count": 1
+            },
+            {
+              "t_index": 11,
+              "count": 0
+            },
+            {
+              "t_index": 12,
+              "count": 1
+            },
+            {
+              "t_index": 13,
+              "count": 0
+            },
+            {
+              "t_index": 14,
+              "count": 1
+            },
+            {
+              "t_index": 15,
+              "count": 0
+            },
+            {
+              "t_index": 16,
+              "count": 1
+            },
+            {
+              "t_index": 17,
+              "count": 0
+            },
+            {
+              "t_index": 18,
+              "count": 1
+            },
+            {
+              "t_index": 19,
+              "count": 0
+            },
+            {
+              "t_index": 20,
+              "count": 1
+            },
+            {
+              "t_index": 21,
+              "count": 0
+            },
+            {
+              "t_index": 22,
+              "count": 1
+            },
+            {
+              "t_index": 23,
+              "count": 0
+            },
+            {
+              "t_index": 24,
+              "count": 1
+            },
+            {
+              "t_index": 25,
+              "count": 0
+            },
+            {
+              "t_index": 26,
+              "count": 1
+            },
+            {
+              "t_index": 27,
+              "count": 0
+            },
+            {
+              "t_index": 28,
+              "count": 1
+            },
+            {
+              "t_index": 29,
+              "count": 0
+            },
+            {
+              "t_index": 30,
+              "count": 1
+            },
+            {
+              "t_index": 31,
+              "count": 0
+            },
+            {
+              "t_index": 32,
+              "count": 1
+            },
+            {
+              "t_index": 33,
+              "count": 0
+            },
+            {
+              "t_index": 34,
+              "count": 1
+            },
+            {
+              "t_index": 35,
+              "count": 0
+            },
+            {
+              "t_index": 36,
+              "count": 1
+            },
+            {
+              "t_index": 37,
+              "count": 0
+            },
+            {
+              "t_index": 38,
+              "count": 1
+            },
+            {
+              "t_index": 39,
+              "count": 0
+            },
+            {
+              "t_index": 40,
+              "count": 1
+            },
+            {
+              "t_index": 41,
+              "count": 0
+            },
+            {
+              "t_index": 42,
+              "count": 1
+            },
+            {
+              "t_index": 43,
+              "count": 2
+            },
+            {
+              "t_index": 44,
+              "count": 1
+            },
+            {
+              "t_index": 45,
+              "count": 0
+            },
+            {
+              "t_index": 46,
+              "count": 1
+            },
+            {
+              "t_index": 47,
+              "count": 0
+            },
+            {
+              "t_index": 48,
+              "count": 1
+            },
+            {
+              "t_index": 49,
+              "count": 0
+            },
+            {
+              "t_index": 50,
+              "count": 1
+            },
+            {
+              "t_index": 51,
+              "count": 0
+            },
+            {
+              "t_index": 52,
+              "count": 1
+            },
+            {
+              "t_index": 53,
+              "count": 0
+            },
+            {
+              "t_index": 54,
+              "count": 1
+            },
+            {
+              "t_index": 55,
+              "count": 0
+            },
+            {
+              "t_index": 56,
+              "count": 1
+            },
+            {
+              "t_index": 57,
+              "count": 0
+            },
+            {
+              "t_index": 58,
+              "count": 1
+            },
+            {
+              "t_index": 59,
+              "count": 0
+            },
+            {
+              "t_index": 60,
+              "count": 1
+            },
+            {
+              "t_index": 61,
+              "count": 0
+            },
+            {
+              "t_index": 62,
+              "count": 1
+            },
+            {
+              "t_index": 63,
+              "count": 0
+            },
+            {
+              "t_index": 64,
+              "count": 1
+            },
+            {
+              "t_index": 65,
+              "count": 0
+            },
+            {
+              "t_index": 66,
+              "count": 1
+            },
+            {
+              "t_index": 67,
+              "count": 0
+            },
+            {
+              "t_index": 68,
+              "count": 1
+            },
+            {
+              "t_index": 69,
+              "count": 0
+            },
+            {
+              "t_index": 70,
+              "count": 1
+            },
+            {
+              "t_index": 71,
+              "count": 0
+            },
+            {
+              "t_index": 72,
+              "count": 1
+            },
+            {
+              "t_index": 73,
+              "count": 0
+            },
+            {
+              "t_index": 74,
+              "count": 1
+            },
+            {
+              "t_index": 75,
+              "count": 0
+            },
+            {
+              "t_index": 76,
+              "count": 1
+            },
+            {
+              "t_index": 77,
+              "count": 0
+            },
+            {
+              "t_index": 78,
+              "count": 1
+            },
+            {
+              "t_index": 79,
+              "count": 0
+            },
+            {
+              "t_index": 80,
+              "count": 1
+            },
+            {
+              "t_index": 81,
+              "count": 0
+            },
+            {
+              "t_index": 82,
+              "count": 1
+            },
+            {
+              "t_index": 83,
+              "count": 0
+            },
+            {
+              "t_index": 84,
+              "count": 1
+            },
+            {
+              "t_index": 85,
+              "count": 0
+            },
+            {
+              "t_index": 86,
+              "count": 1
+            },
+            {
+              "t_index": 87,
+              "count": 0
+            },
+            {
+              "t_index": 88,
+              "count": 1
+            },
+            {
+              "t_index": 89,
+              "count": 0
+            },
+            {
+              "t_index": 90,
+              "count": 1
+            },
+            {
+              "t_index": 91,
+              "count": 0
+            },
+            {
+              "t_index": 92,
+              "count": 1
+            },
+            {
+              "t_index": 93,
+              "count": 0
+            },
+            {
+              "t_index": 94,
+              "count": 1
+            },
+            {
+              "t_index": 95,
+              "count": 0
+            },
+            {
+              "t_index": 96,
+              "count": 1
+            },
+            {
+              "t_index": 97,
+              "count": 0
+            },
+            {
+              "t_index": 98,
+              "count": 1
+            },
+            {
+              "t_index": 99,
+              "count": 0
+            },
+            {
+              "t_index": 100,
+              "count": 1
+            },
+            {
+              "t_index": 101,
+              "count": 0
+            },
+            {
+              "t_index": 102,
+              "count": 1
+            },
+            {
+              "t_index": 103,
+              "count": 0
+            },
+            {
+              "t_index": 104,
+              "count": 1
+            },
+            {
+              "t_index": 105,
+              "count": 0
+            },
+            {
+              "t_index": 106,
+              "count": 1
+            },
+            {
+              "t_index": 107,
+              "count": 0
+            },
+            {
+              "t_index": 108,
+              "count": 1
+            },
+            {
+              "t_index": 109,
+              "count": 0
+            },
+            {
+              "t_index": 110,
+              "count": 1
+            },
+            {
+              "t_index": 111,
+              "count": 0
+            },
+            {
+              "t_index": 112,
+              "count": 1
+            },
+            {
+              "t_index": 113,
+              "count": 0
+            },
+            {
+              "t_index": 114,
+              "count": 1
+            },
+            {
+              "t_index": 115,
+              "count": 0
+            }
+          ],
+          "summary": {
+            "trade_count": 58,
+            "final_profit": 2223554.0,
+            "max_drawdown": 745152.0,
+            "n_days": 57,
+            "peak_holdings": 2
+          }
+        }
+      },
+      "edge_ratio": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/edge_ratio?run_id=tick_oos_p4_seed_2022_20260603&fine_time=true",
+        "data": {
+          "runs": [
+            "tick_oos_p4_seed_2022_20260603"
+          ],
+          "fine_time": true,
+          "sources": 1,
+          "pooled_trades": 58,
+          "global": {
+            "count": 58,
+            "win_rate": 0.5689655172413793,
+            "avg_return": 0.7656896551724138,
+            "total_profit": 2223554.0,
+            "mean_mfe": 3.0394827586206894,
+            "mean_mae": 1.7127586206896552,
+            "edge_ratio": 1.7746124421179785,
+            "mae_efficiency": 0.2519144591298429,
+            "mean_mae_losers": 2.9188,
+            "mean_mae_winners": 0.799090909090909
+          },
+          "segments": {
+            "market_cap": [
+              {
+                "label": "초소형",
+                "count": 18,
+                "win_rate": 0.3888888888888889,
+                "avg_return": -0.15944444444444436,
+                "edge_ratio": 1.3590546697038726,
+                "mean_mae": 1.951111111111111,
+                "total_profit": -144735.0
+              },
+              {
+                "label": "소형",
+                "count": 40,
+                "win_rate": 0.65,
+                "avg_return": 1.182,
+                "edge_ratio": 2.0018685767673623,
+                "mean_mae": 1.6055,
+                "total_profit": 2368289.0
+              }
+            ],
+            "time": [
+              {
+                "label": "0900-0905",
+                "count": 58,
+                "win_rate": 0.5689655172413793,
+                "avg_return": 0.7656896551724138,
+                "edge_ratio": 1.7746124421179785,
+                "mean_mae": 1.7127586206896552,
+                "total_profit": 2223554.0
+              }
+            ],
+            "change": [
+              {
+                "label": "급등",
+                "count": 30,
+                "win_rate": 0.4666666666666667,
+                "avg_return": 0.3203333333333333,
+                "edge_ratio": 1.4316818103891658,
+                "mean_mae": 1.944333333333333,
+                "total_profit": 480349.0
+              },
+              {
+                "label": "초급등",
+                "count": 12,
+                "win_rate": 0.8333333333333334,
+                "avg_return": 1.1716666666666666,
+                "edge_ratio": 2.387376954255935,
+                "mean_mae": 1.4391666666666667,
+                "total_profit": 705407.0
+              },
+              {
+                "label": "상승",
+                "count": 16,
+                "win_rate": 0.5625,
+                "avg_return": 1.2962500000000001,
+                "edge_ratio": 2.1714406065711875,
+                "mean_mae": 1.4837500000000001,
+                "total_profit": 1037798.0
+              }
+            ],
+            "cross": [
+              {
+                "label": "0900-0905×초소형",
+                "count": 18,
+                "win_rate": 0.3888888888888889,
+                "avg_return": -0.15944444444444436,
+                "edge_ratio": 1.3590546697038726,
+                "mean_mae": 1.951111111111111,
+                "total_profit": -144735.0
+              },
+              {
+                "label": "0900-0905×소형",
+                "count": 40,
+                "win_rate": 0.65,
+                "avg_return": 1.182,
+                "edge_ratio": 2.0018685767673623,
+                "mean_mae": 1.6055,
+                "total_profit": 2368289.0
+              }
+            ]
+          }
+        }
+      },
+      "feature_importance_change": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/feature_importance?run_id=tick_oos_p4_seed_2022_20260603&axis=change&fine_time=true",
+        "data": {
+          "runs": [
+            "tick_oos_p4_seed_2022_20260603"
+          ],
+          "sources": 1,
+          "pooled_trades": 58,
+          "axis": "change",
+          "fine_time": true,
+          "global": [
+            {
+              "feature": "B_거래대금증감",
+              "cohens_d": 0.6091075371030685,
+              "mean_win": -22232999452.878788,
+              "mean_lose": -42520415419.0,
+              "win_rate_top_q": 0.7333333333333333,
+              "win_rate_bot_q": 0.3333333333333333,
+              "n": 58
+            },
+            {
+              "feature": "B_등락율",
+              "cohens_d": 0.3167391135549423,
+              "mean_win": 7.806666666666667,
+              "mean_lose": 6.9948000000000015,
+              "win_rate_top_q": 0.6666666666666666,
+              "win_rate_bot_q": 0.5333333333333333,
+              "n": 58
+            },
+            {
+              "feature": "B_전일동시간비",
+              "cohens_d": -0.24820852121799114,
+              "mean_win": 4124.568181818182,
+              "mean_lose": 10395.974,
+              "win_rate_top_q": 0.6,
+              "win_rate_bot_q": 0.6,
+              "n": 58
+            },
+            {
+              "feature": "B_시가총액",
+              "cohens_d": 0.21711283701076542,
+              "mean_win": 1465.4848484848485,
+              "mean_lose": 1334.64,
+              "win_rate_top_q": 0.5333333333333333,
+              "win_rate_bot_q": 0.4,
+              "n": 58
+            },
+            {
+              "feature": "B_당일거래대금",
+              "cohens_d": 0.20299860718651197,
+              "mean_win": 6284.333333333333,
+              "mean_lose": 5473.88,
+              "win_rate_top_q": 0.6666666666666666,
+              "win_rate_bot_q": 0.5333333333333333,
+              "n": 58
+            },
+            {
+              "feature": "B_체결강도",
+              "cohens_d": 0.16064467997111165,
+              "mean_win": 157.3675757575758,
+              "mean_lose": 150.28,
+              "win_rate_top_q": 0.6666666666666666,
+              "win_rate_bot_q": 0.4666666666666667,
+              "n": 58
+            },
+            {
+              "feature": "B_시분초",
+              "cohens_d": -0.1386731971246514,
+              "mean_win": 90228.36363636363,
+              "mean_lose": 90245.76,
+              "win_rate_top_q": 0.5333333333333333,
+              "win_rate_bot_q": 0.8,
+              "n": 58
+            },
+            {
+              "feature": "B_매수총잔량",
+              "cohens_d": -0.07208057822882982,
+              "mean_win": 75020.0,
+              "mean_lose": 79257.52,
+              "win_rate_top_q": 0.5333333333333333,
+              "win_rate_bot_q": 0.6666666666666666,
+              "n": 58
+            },
+            {
+              "feature": "B_회전율",
+              "cohens_d": 0.06654839571041804,
+              "mean_win": 4.806363636363637,
+              "mean_lose": 4.5604000000000005,
+              "win_rate_top_q": 0.4666666666666667,
+              "win_rate_bot_q": 0.7333333333333333,
+              "n": 58
+            },
+            {
+              "feature": "B_현재가",
+              "cohens_d": -0.03008504493154499,
+              "mean_win": 7888.787878787879,
+              "mean_lose": 8157.8,
+              "win_rate_top_q": 0.6666666666666666,
+              "win_rate_bot_q": 0.6,
+              "n": 58
+            },
+            {
+              "feature": "B_매도총잔량",
+              "cohens_d": -0.02288000849009416,
+              "mean_win": 89516.66666666667,
+              "mean_lose": 91167.76,
+              "win_rate_top_q": 0.6,
+              "win_rate_bot_q": 0.6666666666666666,
+              "n": 58
+            }
+          ],
+          "by_segment": {
+            "급등": [
+              {
+                "feature": "B_회전율",
+                "cohens_d": -0.8550961593283237,
+                "mean_win": 3.3692857142857138,
+                "mean_lose": 4.955,
+                "win_rate_top_q": 0.125,
+                "win_rate_bot_q": 0.625,
+                "n": 30
+              },
+              {
+                "feature": "B_시분초",
+                "cohens_d": -0.5410316662791147,
+                "mean_win": 90221.78571428571,
+                "mean_lose": 90290.75,
+                "win_rate_top_q": 0.375,
+                "win_rate_bot_q": 0.75,
+                "n": 30
+              },
+              {
+                "feature": "B_체결강도",
+                "cohens_d": 0.5259456213465548,
+                "mean_win": 182.23142857142858,
+                "mean_lose": 157.10125,
+                "win_rate_top_q": 0.5,
+                "win_rate_bot_q": 0.25,
+                "n": 30
+              },
+              {
+                "feature": "B_당일거래대금",
+                "cohens_d": -0.478638425321321,
+                "mean_win": 4560.928571428572,
+                "mean_lose": 5795.75,
+                "win_rate_top_q": 0.375,
+                "win_rate_bot_q": 0.625,
+                "n": 30
+              },
+              {
+                "feature": "B_전일동시간비",
+                "cohens_d": -0.2933086377324421,
+                "mean_win": 4460.382857142858,
+                "mean_lose": 14717.204375000003,
+                "win_rate_top_q": 0.5,
+                "win_rate_bot_q": 0.375,
+                "n": 30
+              },
+              {
+                "feature": "B_현재가",
+                "cohens_d": 0.2075850714372852,
+                "mean_win": 8462.142857142857,
+                "mean_lose": 6774.6875,
+                "win_rate_top_q": 0.625,
+                "win_rate_bot_q": 0.5,
+                "n": 30
+              },
+              {
+                "feature": "B_거래대금증감",
+                "cohens_d": 0.17871199390914946,
+                "mean_win": -25482040517.142857,
+                "mean_lose": -31847430491.25,
+                "win_rate_top_q": 0.375,
+                "win_rate_bot_q": 0.5,
+                "n": 30
+              },
+              {
+                "feature": "B_매수총잔량",
+                "cohens_d": -0.13829611335599565,
+                "mean_win": 77556.85714285714,
+                "mean_lose": 84441.625,
+                "win_rate_top_q": 0.375,
+                "win_rate_bot_q": 0.375,
+                "n": 30
+              },
+              {
+                "feature": "B_등락율",
+                "cohens_d": -0.1130701786973335,
+                "mean_win": 7.270714285714286,
+                "mean_lose": 7.391875,
+                "win_rate_top_q": 0.5,
+                "win_rate_bot_q": 0.25,
+                "n": 30
+              },
+              {
+                "feature": "B_시가총액",
+                "cohens_d": 0.10269971954164486,
+                "mean_win": 1360.142857142857,
+                "mean_lose": 1301.625,
+                "win_rate_top_q": 0.5,
+                "win_rate_bot_q": 0.25,
+                "n": 30
+              },
+              {
+                "feature": "B_매도총잔량",
+                "cohens_d": -0.013226559323905807,
+                "mean_win": 97782.35714285714,
+                "mean_lose": 98771.375,
+                "win_rate_top_q": 0.5,
+                "win_rate_bot_q": 0.625,
+                "n": 30
+              }
+            ]
+          }
+        }
+      }
+    },
+    "seed_2026": {
+      "run_id": "tick_oos_p4_seed_2026_20260603",
+      "run_state": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/run_state?run_id=tick_oos_p4_seed_2026_20260603",
+        "data": {
+          "contract_version": 2,
+          "run_id": "tick_oos_p4_seed_2026_20260603",
+          "status": "complete",
+          "current_gen": 0,
+          "max_generations": 1,
+          "provider": "gpt_auth",
+          "bt_timeframe": "tick",
+          "best": {
+            "gen": 0,
+            "graded_score": 0.40809050955823045,
+            "gate_passed": false,
+            "buy_name": "Tick_B_902_905_Update_2",
+            "sell_name": "Tick_S_902_905_Update_2"
+          },
+          "winner": null,
+          "generations": [
+            {
+              "gen_no": 0,
+              "status": "ok",
+              "graded_score": 0.40809050955823045,
+              "gate_passed": false,
+              "gate_reason": "total_profit -1.911e+05 <= 0",
+              "trade_count": 10,
+              "daily_avg_trades": 0.3,
+              "mdd": 15.63,
+              "profit": -191109.0,
+              "total_profit_pct": -3.82,
+              "strategy_gist": "if not (관심종목 == 1):                         # 공통 필터 – 관심종목",
+              "payoff_ratio": 1.259748427672956,
+              "give_back_rate": 0.3333333333333333,
+              "calmar": -1.7959053103007037,
+              "uptrend_r2": 0.6375206082047902,
+              "dispersion_term": 1.0,
+              "max_hold_count": 1.0,
+              "hypotheses": []
+            }
+          ],
+          "latest": {
+            "phase": "",
+            "last_checkpoint": "",
+            "message": "",
+            "recent_logs": [],
+            "current_step": -1,
+            "phase_started_at": 0.0,
+            "gen_started_at": 0.0,
+            "step_timings": {}
+          },
+          "cumulative": {
+            "tokens": 0,
+            "cost_or_count": 1
+          },
+          "page_data": {},
+          "active_config": {
+            "dispersion_prompt_enabled": false,
+            "dispersion_enabled": false,
+            "min_hold_symbols": 6.0,
+            "target_daily_trades": null,
+            "require_liquidity_gate": false,
+            "mdd_control_enabled": false,
+            "evolution_mode": "hillclimb",
+            "winner_objective": "uptrend",
+            "profit_weight": 0.5,
+            "bt_engine_mode": "warm",
+            "bt_scope": "single_stock",
+            "bt_timeframe": "tick",
+            "bt_refine_from_best": false,
+            "freeze_buy_on_mdd_only": true,
+            "bt_full_start": 20260101,
+            "bt_full_end": 20260228,
+            "bt_betting": "5",
+            "mdd_cap": 60,
+            "min_trades": 30,
+            "min_daily_trades": 0.05,
+            "overtrade_softcap": 150,
+            "tpi_gate_enabled": false,
+            "tpi_gate": 1.2,
+            "exit_quality_enabled": true,
+            "target_score": null,
+            "max_generations": 1,
+            "toggles": [
+              "dispersion_prompt_enabled",
+              "dispersion_enabled",
+              "require_liquidity_gate",
+              "mdd_control_enabled",
+              "bt_refine_from_best",
+              "freeze_buy_on_mdd_only",
+              "tpi_gate_enabled",
+              "exit_quality_enabled"
+            ]
+          },
+          "updated_at": 1780489178.8666837
+        }
+      },
+      "backtest_detail": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/backtest_detail?run_id=tick_oos_p4_seed_2026_20260603&gen_no=0",
+        "data": {
+          "run_id": "tick_oos_p4_seed_2026_20260603",
+          "gen_no": 0,
+          "gate_passed": false,
+          "daily": [
+            {
+              "date": 20260105,
+              "daily_pnl": 350610.0,
+              "profit": 350610.0,
+              "loss": 0.0,
+              "net": 350610.0
+            },
+            {
+              "date": 20260109,
+              "daily_pnl": 192524.0,
+              "profit": 192524.0,
+              "loss": 0.0,
+              "net": 192524.0
+            },
+            {
+              "date": 20260112,
+              "daily_pnl": -100747.0,
+              "profit": 0.0,
+              "loss": -100747.0,
+              "net": -100747.0
+            },
+            {
+              "date": 20260113,
+              "daily_pnl": 258346.0,
+              "profit": 258346.0,
+              "loss": 0.0,
+              "net": 258346.0
+            },
+            {
+              "date": 20260120,
+              "daily_pnl": -148182.0,
+              "profit": 0.0,
+              "loss": -148182.0,
+              "net": -148182.0
+            },
+            {
+              "date": 20260123,
+              "daily_pnl": -256106.0,
+              "profit": 0.0,
+              "loss": -256106.0,
+              "net": -256106.0
+            },
+            {
+              "date": 20260128,
+              "daily_pnl": -228687.0,
+              "profit": 0.0,
+              "loss": -228687.0,
+              "net": -228687.0
+            },
+            {
+              "date": 20260205,
+              "daily_pnl": -204804.0,
+              "profit": 0.0,
+              "loss": -204804.0,
+              "net": -204804.0
+            },
+            {
+              "date": 20260210,
+              "daily_pnl": 200968.0,
+              "profit": 200968.0,
+              "loss": 0.0,
+              "net": 200968.0
+            },
+            {
+              "date": 20260227,
+              "daily_pnl": -255031.0,
+              "profit": 0.0,
+              "loss": -255031.0,
+              "net": -255031.0
+            }
+          ],
+          "cumulative": [
+            {
+              "date": 20260105,
+              "cum_profit": 350610.0,
+              "cum_pct": 7.0122
+            },
+            {
+              "date": 20260109,
+              "cum_profit": 543134.0,
+              "cum_pct": 10.86268
+            },
+            {
+              "date": 20260112,
+              "cum_profit": 442387.0,
+              "cum_pct": 8.84774
+            },
+            {
+              "date": 20260113,
+              "cum_profit": 700733.0,
+              "cum_pct": 14.014660000000001
+            },
+            {
+              "date": 20260120,
+              "cum_profit": 552551.0,
+              "cum_pct": 11.051020000000001
+            },
+            {
+              "date": 20260123,
+              "cum_profit": 296445.0,
+              "cum_pct": 5.9289000000000005
+            },
+            {
+              "date": 20260128,
+              "cum_profit": 67758.0,
+              "cum_pct": 1.3551600000000001
+            },
+            {
+              "date": 20260205,
+              "cum_profit": -137046.0,
+              "cum_pct": -2.74092
+            },
+            {
+              "date": 20260210,
+              "cum_profit": 63922.0,
+              "cum_pct": 1.27844
+            },
+            {
+              "date": 20260227,
+              "cum_profit": -191109.0,
+              "cum_pct": -3.82218
+            }
+          ],
+          "drawdown": [
+            {
+              "date": 20260105,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20260109,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20260112,
+              "drawdown": 100747.0
+            },
+            {
+              "date": 20260113,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20260120,
+              "drawdown": 148182.0
+            },
+            {
+              "date": 20260123,
+              "drawdown": 404288.0
+            },
+            {
+              "date": 20260128,
+              "drawdown": 632975.0
+            },
+            {
+              "date": 20260205,
+              "drawdown": 837779.0
+            },
+            {
+              "date": 20260210,
+              "drawdown": 636811.0
+            },
+            {
+              "date": 20260227,
+              "drawdown": 891842.0
+            }
+          ],
+          "holdings": [
+            {
+              "t_index": 0,
+              "count": 1
+            },
+            {
+              "t_index": 1,
+              "count": 0
+            },
+            {
+              "t_index": 2,
+              "count": 1
+            },
+            {
+              "t_index": 3,
+              "count": 0
+            },
+            {
+              "t_index": 4,
+              "count": 1
+            },
+            {
+              "t_index": 5,
+              "count": 0
+            },
+            {
+              "t_index": 6,
+              "count": 1
+            },
+            {
+              "t_index": 7,
+              "count": 0
+            },
+            {
+              "t_index": 8,
+              "count": 1
+            },
+            {
+              "t_index": 9,
+              "count": 0
+            },
+            {
+              "t_index": 10,
+              "count": 1
+            },
+            {
+              "t_index": 11,
+              "count": 0
+            },
+            {
+              "t_index": 12,
+              "count": 1
+            },
+            {
+              "t_index": 13,
+              "count": 0
+            },
+            {
+              "t_index": 14,
+              "count": 1
+            },
+            {
+              "t_index": 15,
+              "count": 0
+            },
+            {
+              "t_index": 16,
+              "count": 1
+            },
+            {
+              "t_index": 17,
+              "count": 0
+            },
+            {
+              "t_index": 18,
+              "count": 1
+            },
+            {
+              "t_index": 19,
+              "count": 0
+            }
+          ],
+          "summary": {
+            "trade_count": 10,
+            "final_profit": -191109.0,
+            "max_drawdown": 891842.0,
+            "n_days": 10,
+            "peak_holdings": 1
+          }
+        }
+      },
+      "edge_ratio": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/edge_ratio?run_id=tick_oos_p4_seed_2026_20260603&fine_time=true",
+        "data": {
+          "runs": [
+            "tick_oos_p4_seed_2026_20260603"
+          ],
+          "fine_time": true,
+          "sources": 1,
+          "pooled_trades": 10,
+          "global": {
+            "count": 10,
+            "win_rate": 0.4,
+            "avg_return": -0.382,
+            "total_profit": -191109.0,
+            "mean_mfe": 2.9419999999999997,
+            "mean_mae": 3.0260000000000007,
+            "edge_ratio": 0.9722405816259084,
+            "mae_efficiency": -0.1298436437797417,
+            "mean_mae_losers": 4.015,
+            "mean_mae_winners": 1.5425
+          },
+          "segments": {
+            "market_cap": [
+              {
+                "label": "소형",
+                "count": 9,
+                "win_rate": 0.3333333333333333,
+                "avg_return": -1.2022222222222223,
+                "edge_ratio": 0.7836134453781513,
+                "mean_mae": 3.173333333333333,
+                "total_profit": -541719.0
+              }
+            ],
+            "time": [
+              {
+                "label": "0900-0905",
+                "count": 10,
+                "win_rate": 0.4,
+                "avg_return": -0.382,
+                "edge_ratio": 0.9722405816259084,
+                "mean_mae": 3.0260000000000007,
+                "total_profit": -191109.0
+              }
+            ],
+            "change": [
+              {
+                "label": "초급등",
+                "count": 5,
+                "win_rate": 0.4,
+                "avg_return": -0.3200000000000001,
+                "edge_ratio": 1.041501976284585,
+                "mean_mae": 3.036,
+                "total_profit": -80322.0
+              }
+            ],
+            "cross": [
+              {
+                "label": "0900-0905×소형",
+                "count": 9,
+                "win_rate": 0.3333333333333333,
+                "avg_return": -1.2022222222222223,
+                "edge_ratio": 0.7836134453781513,
+                "mean_mae": 3.173333333333333,
+                "total_profit": -541719.0
+              }
+            ]
+          }
+        }
+      },
+      "feature_importance_change": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/feature_importance?run_id=tick_oos_p4_seed_2026_20260603&axis=change&fine_time=true",
+        "data": {
+          "runs": [
+            "tick_oos_p4_seed_2026_20260603"
+          ],
+          "sources": 1,
+          "pooled_trades": 10,
+          "axis": "change",
+          "fine_time": true,
+          "global": [],
+          "by_segment": {}
+        }
+      }
+    },
+    "ai_2022": {
+      "run_id": "tick_oos_p4_ai_2022_20260603",
+      "run_state": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/run_state?run_id=tick_oos_p4_ai_2022_20260603",
+        "data": {
+          "contract_version": 2,
+          "run_id": "tick_oos_p4_ai_2022_20260603",
+          "status": "complete",
+          "current_gen": 0,
+          "max_generations": 1,
+          "provider": "gpt_auth",
+          "bt_timeframe": "tick",
+          "best": {
+            "gen": 0,
+            "graded_score": 1.6031107990233684,
+            "gate_passed": true,
+            "buy_name": "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_buy",
+            "sell_name": "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_sell"
+          },
+          "winner": {
+            "gen": 0,
+            "score": 1.6031107990233684,
+            "buy_name": "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_buy",
+            "sell_name": "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_sell"
+          },
+          "generations": [
+            {
+              "gen_no": 0,
+              "status": "ok",
+              "graded_score": 1.6031107990233684,
+              "gate_passed": true,
+              "gate_reason": "ok",
+              "trade_count": 10,
+              "daily_avg_trades": 0.1,
+              "mdd": 3.22,
+              "profit": 248274.0,
+              "total_profit_pct": 4.97,
+              "strategy_gist": "if 관심종목 != 1:",
+              "payoff_ratio": 1.8863232682060393,
+              "give_back_rate": 0.2,
+              "calmar": 1.996894409937888,
+              "uptrend_r2": 0.5495674494277198,
+              "dispersion_term": 1.0,
+              "max_hold_count": 0.0,
+              "hypotheses": []
+            }
+          ],
+          "latest": {
+            "phase": "",
+            "last_checkpoint": "",
+            "message": "",
+            "recent_logs": [],
+            "current_step": -1,
+            "phase_started_at": 0.0,
+            "gen_started_at": 0.0,
+            "step_timings": {}
+          },
+          "cumulative": {
+            "tokens": 0,
+            "cost_or_count": 1
+          },
+          "page_data": {},
+          "active_config": {
+            "dispersion_prompt_enabled": false,
+            "dispersion_enabled": false,
+            "min_hold_symbols": 6.0,
+            "target_daily_trades": null,
+            "require_liquidity_gate": false,
+            "mdd_control_enabled": false,
+            "evolution_mode": "hillclimb",
+            "winner_objective": "uptrend",
+            "profit_weight": 0.5,
+            "bt_engine_mode": "warm",
+            "bt_scope": "single_stock",
+            "bt_timeframe": "tick",
+            "bt_refine_from_best": false,
+            "freeze_buy_on_mdd_only": true,
+            "bt_full_start": 20220101,
+            "bt_full_end": 20221231,
+            "bt_betting": "5",
+            "mdd_cap": 60,
+            "min_trades": 30,
+            "min_daily_trades": 0.05,
+            "overtrade_softcap": 150,
+            "tpi_gate_enabled": false,
+            "tpi_gate": 1.2,
+            "exit_quality_enabled": true,
+            "target_score": null,
+            "max_generations": 1,
+            "toggles": [
+              "dispersion_prompt_enabled",
+              "dispersion_enabled",
+              "require_liquidity_gate",
+              "mdd_control_enabled",
+              "bt_refine_from_best",
+              "freeze_buy_on_mdd_only",
+              "tpi_gate_enabled",
+              "exit_quality_enabled"
+            ]
+          },
+          "updated_at": 1780489179.1455956
+        }
+      },
+      "backtest_detail": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/backtest_detail?run_id=tick_oos_p4_ai_2022_20260603&gen_no=0",
+        "data": {
+          "run_id": "tick_oos_p4_ai_2022_20260603",
+          "gen_no": 0,
+          "gate_passed": true,
+          "daily": [
+            {
+              "date": 20220415,
+              "daily_pnl": 65971.0,
+              "profit": 68371.0,
+              "loss": -2400.0,
+              "net": 65971.0
+            },
+            {
+              "date": 20220812,
+              "daily_pnl": 67671.0,
+              "profit": 67671.0,
+              "loss": 0.0,
+              "net": 67671.0
+            },
+            {
+              "date": 20220816,
+              "daily_pnl": 115810.0,
+              "profit": 115810.0,
+              "loss": 0.0,
+              "net": 115810.0
+            },
+            {
+              "date": 20220826,
+              "daily_pnl": -83757.0,
+              "profit": 0.0,
+              "loss": -83757.0,
+              "net": -83757.0
+            },
+            {
+              "date": 20221013,
+              "daily_pnl": -85210.0,
+              "profit": 0.0,
+              "loss": -85210.0,
+              "net": -85210.0
+            },
+            {
+              "date": 20221020,
+              "daily_pnl": 106981.0,
+              "profit": 106981.0,
+              "loss": 0.0,
+              "net": 106981.0
+            },
+            {
+              "date": 20221103,
+              "daily_pnl": -22190.0,
+              "profit": 0.0,
+              "loss": -22190.0,
+              "net": -22190.0
+            },
+            {
+              "date": 20221125,
+              "daily_pnl": 169826.0,
+              "profit": 169826.0,
+              "loss": 0.0,
+              "net": 169826.0
+            },
+            {
+              "date": 20221221,
+              "daily_pnl": -86828.0,
+              "profit": 0.0,
+              "loss": -86828.0,
+              "net": -86828.0
+            }
+          ],
+          "cumulative": [
+            {
+              "date": 20220415,
+              "cum_profit": 65971.0,
+              "cum_pct": 1.31942
+            },
+            {
+              "date": 20220812,
+              "cum_profit": 133642.0,
+              "cum_pct": 2.67284
+            },
+            {
+              "date": 20220816,
+              "cum_profit": 249452.0,
+              "cum_pct": 4.98904
+            },
+            {
+              "date": 20220826,
+              "cum_profit": 165695.0,
+              "cum_pct": 3.3139000000000003
+            },
+            {
+              "date": 20221013,
+              "cum_profit": 80485.0,
+              "cum_pct": 1.6097000000000001
+            },
+            {
+              "date": 20221020,
+              "cum_profit": 187466.0,
+              "cum_pct": 3.7493199999999995
+            },
+            {
+              "date": 20221103,
+              "cum_profit": 165276.0,
+              "cum_pct": 3.30552
+            },
+            {
+              "date": 20221125,
+              "cum_profit": 335102.0,
+              "cum_pct": 6.702039999999999
+            },
+            {
+              "date": 20221221,
+              "cum_profit": 248274.0,
+              "cum_pct": 4.9654799999999994
+            }
+          ],
+          "drawdown": [
+            {
+              "date": 20220415,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220812,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220816,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20220826,
+              "drawdown": 83757.0
+            },
+            {
+              "date": 20221013,
+              "drawdown": 168967.0
+            },
+            {
+              "date": 20221020,
+              "drawdown": 61986.0
+            },
+            {
+              "date": 20221103,
+              "drawdown": 84176.0
+            },
+            {
+              "date": 20221125,
+              "drawdown": 0.0
+            },
+            {
+              "date": 20221221,
+              "drawdown": 86828.0
+            }
+          ],
+          "holdings": [
+            {
+              "t_index": 0,
+              "count": 1
+            },
+            {
+              "t_index": 1,
+              "count": 0
+            },
+            {
+              "t_index": 2,
+              "count": 1
+            },
+            {
+              "t_index": 3,
+              "count": 0
+            },
+            {
+              "t_index": 4,
+              "count": 1
+            },
+            {
+              "t_index": 5,
+              "count": 0
+            },
+            {
+              "t_index": 6,
+              "count": 1
+            },
+            {
+              "t_index": 7,
+              "count": 0
+            },
+            {
+              "t_index": 8,
+              "count": 1
+            },
+            {
+              "t_index": 9,
+              "count": 0
+            },
+            {
+              "t_index": 10,
+              "count": 1
+            },
+            {
+              "t_index": 11,
+              "count": 0
+            },
+            {
+              "t_index": 12,
+              "count": 1
+            },
+            {
+              "t_index": 13,
+              "count": 0
+            },
+            {
+              "t_index": 14,
+              "count": 1
+            },
+            {
+              "t_index": 15,
+              "count": 0
+            },
+            {
+              "t_index": 16,
+              "count": 1
+            },
+            {
+              "t_index": 17,
+              "count": 0
+            },
+            {
+              "t_index": 18,
+              "count": 1
+            },
+            {
+              "t_index": 19,
+              "count": 0
+            }
+          ],
+          "summary": {
+            "trade_count": 10,
+            "final_profit": 248274.0,
+            "max_drawdown": 168967.0,
+            "n_days": 9,
+            "peak_holdings": 1
+          }
+        }
+      },
+      "edge_ratio": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/edge_ratio?run_id=tick_oos_p4_ai_2022_20260603&fine_time=true",
+        "data": {
+          "runs": [
+            "tick_oos_p4_ai_2022_20260603"
+          ],
+          "fine_time": true,
+          "sources": 1,
+          "pooled_trades": 10,
+          "global": {
+            "count": 10,
+            "win_rate": 0.5,
+            "avg_return": 0.4990000000000001,
+            "total_profit": 248274.0,
+            "mean_mfe": 1.847,
+            "mean_mae": 0.8779999999999999,
+            "edge_ratio": 2.1036446469248293,
+            "mae_efficiency": 0.27016783974011915,
+            "mean_mae_losers": 1.14,
+            "mean_mae_winners": 0.616
+          },
+          "segments": {
+            "market_cap": [
+              {
+                "label": "중형",
+                "count": 7,
+                "win_rate": 0.5714285714285714,
+                "avg_return": 0.8728571428571429,
+                "edge_ratio": 3.882352941176471,
+                "mean_mae": 0.5342857142857143,
+                "total_profit": 304502.0
+              }
+            ],
+            "time": [
+              {
+                "label": "0905-0910",
+                "count": 6,
+                "win_rate": 0.5,
+                "avg_return": 0.27,
+                "edge_ratio": 1.7747603833865815,
+                "mean_mae": 1.0433333333333332,
+                "total_profit": 80485.0
+              }
+            ],
+            "change": [
+              {
+                "label": "급등",
+                "count": 5,
+                "win_rate": 0.6,
+                "avg_return": 0.884,
+                "edge_ratio": 3.4605678233438484,
+                "mean_mae": 0.634,
+                "total_profit": 219711.0
+              }
+            ],
+            "cross": []
+          }
+        }
+      },
+      "feature_importance_change": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/feature_importance?run_id=tick_oos_p4_ai_2022_20260603&axis=change&fine_time=true",
+        "data": {
+          "runs": [
+            "tick_oos_p4_ai_2022_20260603"
+          ],
+          "sources": 1,
+          "pooled_trades": 10,
+          "axis": "change",
+          "fine_time": true,
+          "global": [],
+          "by_segment": {}
+        }
+      }
+    },
+    "ai_2026": {
+      "run_id": "tick_oos_p4_ai_2026_20260603",
+      "run_state": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/run_state?run_id=tick_oos_p4_ai_2026_20260603",
+        "data": {
+          "contract_version": 2,
+          "run_id": "tick_oos_p4_ai_2026_20260603",
+          "status": "complete",
+          "current_gen": 0,
+          "max_generations": 1,
+          "provider": "gpt_auth",
+          "bt_timeframe": "tick",
+          "best": {
+            "gen": 0,
+            "graded_score": 0.0,
+            "gate_passed": false,
+            "buy_name": "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_buy",
+            "sell_name": "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_sell"
+          },
+          "winner": null,
+          "generations": [
+            {
+              "gen_no": 0,
+              "status": "ok",
+              "graded_score": 0.0,
+              "gate_passed": false,
+              "gate_reason": "daily_avg_trades 0 < min_daily_trades 0.05",
+              "trade_count": 1,
+              "daily_avg_trades": 0.0,
+              "mdd": 1.61,
+              "profit": -80344.0,
+              "total_profit_pct": -1.61,
+              "strategy_gist": "if 관심종목 != 1:",
+              "payoff_ratio": 0.0,
+              "give_back_rate": 0.0,
+              "calmar": -7.341614906832298,
+              "uptrend_r2": 0.0,
+              "dispersion_term": 1.0,
+              "max_hold_count": 0.0,
+              "hypotheses": []
+            }
+          ],
+          "latest": {
+            "phase": "",
+            "last_checkpoint": "",
+            "message": "",
+            "recent_logs": [],
+            "current_step": -1,
+            "phase_started_at": 0.0,
+            "gen_started_at": 0.0,
+            "step_timings": {}
+          },
+          "cumulative": {
+            "tokens": 0,
+            "cost_or_count": 1
+          },
+          "page_data": {},
+          "active_config": {
+            "dispersion_prompt_enabled": false,
+            "dispersion_enabled": false,
+            "min_hold_symbols": 6.0,
+            "target_daily_trades": null,
+            "require_liquidity_gate": false,
+            "mdd_control_enabled": false,
+            "evolution_mode": "hillclimb",
+            "winner_objective": "uptrend",
+            "profit_weight": 0.5,
+            "bt_engine_mode": "warm",
+            "bt_scope": "single_stock",
+            "bt_timeframe": "tick",
+            "bt_refine_from_best": false,
+            "freeze_buy_on_mdd_only": true,
+            "bt_full_start": 20260101,
+            "bt_full_end": 20260228,
+            "bt_betting": "5",
+            "mdd_cap": 60,
+            "min_trades": 30,
+            "min_daily_trades": 0.05,
+            "overtrade_softcap": 150,
+            "tpi_gate_enabled": false,
+            "tpi_gate": 1.2,
+            "exit_quality_enabled": true,
+            "target_score": null,
+            "max_generations": 1,
+            "toggles": [
+              "dispersion_prompt_enabled",
+              "dispersion_enabled",
+              "require_liquidity_gate",
+              "mdd_control_enabled",
+              "bt_refine_from_best",
+              "freeze_buy_on_mdd_only",
+              "tpi_gate_enabled",
+              "exit_quality_enabled"
+            ]
+          },
+          "updated_at": 1780489179.4344413
+        }
+      },
+      "backtest_detail": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/backtest_detail?run_id=tick_oos_p4_ai_2026_20260603&gen_no=0",
+        "data": {
+          "run_id": "tick_oos_p4_ai_2026_20260603",
+          "gen_no": 0,
+          "gate_passed": false,
+          "daily": [
+            {
+              "date": 20260108,
+              "daily_pnl": -80344.0,
+              "profit": 0.0,
+              "loss": -80344.0,
+              "net": -80344.0
+            }
+          ],
+          "cumulative": [
+            {
+              "date": 20260108,
+              "cum_profit": -80344.0,
+              "cum_pct": -1.60688
+            }
+          ],
+          "drawdown": [
+            {
+              "date": 20260108,
+              "drawdown": 0.0
+            }
+          ],
+          "holdings": [
+            {
+              "t_index": 0,
+              "count": 1
+            },
+            {
+              "t_index": 1,
+              "count": 0
+            }
+          ],
+          "summary": {
+            "trade_count": 1,
+            "final_profit": -80344.0,
+            "max_drawdown": 0.0,
+            "n_days": 1,
+            "peak_holdings": 1
+          }
+        }
+      },
+      "edge_ratio": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/edge_ratio?run_id=tick_oos_p4_ai_2026_20260603&fine_time=true",
+        "data": {
+          "runs": [
+            "tick_oos_p4_ai_2026_20260603"
+          ],
+          "fine_time": true,
+          "sources": 1,
+          "pooled_trades": 1,
+          "global": {
+            "count": 1,
+            "win_rate": 0.0,
+            "avg_return": -1.61,
+            "total_profit": -80344.0,
+            "mean_mfe": 0.0,
+            "mean_mae": 1.61,
+            "edge_ratio": 0.0,
+            "mae_efficiency": null,
+            "mean_mae_losers": 1.61,
+            "mean_mae_winners": null
+          },
+          "segments": {
+            "market_cap": [],
+            "time": [],
+            "change": [],
+            "cross": []
+          }
+        }
+      },
+      "feature_importance_change": {
+        "ok": true,
+        "status": 200,
+        "url": "http://127.0.0.1:8770/feature_importance?run_id=tick_oos_p4_ai_2026_20260603&axis=change&fine_time=true",
+        "data": {
+          "runs": [
+            "tick_oos_p4_ai_2026_20260603"
+          ],
+          "sources": 1,
+          "pooled_trades": 1,
+          "axis": "change",
+          "fine_time": true,
+          "global": [],
+          "by_segment": {}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "status": "blocked_not_run",
+  "blocked_reason": "P4 long training was not started because P3 preflight timed out on seed warm backtest.",
+  "source_run_id": "tick_p7_train_2023_2025_observable_20260605",
+  "selector_version": "candidate_research_pool_v2",
+  "config_hash": null,
+  "policy_hash": null,
+  "oos_excluded": true,
+  "exploration_pool_v2": [],
+  "research_pool_v2": [],
+  "promotion_gate_v2": {
+    "promotion_allowed": false,
+    "reason": "No P4 generation rows exist because long training was blocked before start.",
+    "frozen_identity": null,
+    "requirements": {
+      "training_period": "2023-01-01..2025-12-31",
+      "timeframe": "tick",
+      "required_generation_rows": ">0",
+      "fixed_holdout_before_promotion": true
+    }
+  },
+  "promotion_candidate": null,
+  "structural_rejections": [
+    {
+      "scope": "P4",
+      "reason": "training_not_started_after_p3_timeout"
+    }
+  ],
+  "diagnostics": {
+    "labels": [
+      "preflight_timeout",
+      "no_training_rows",
+      "no_promotion_candidate"
+    ],
+    "insufficiency_reasons": [
+      "P3 seed warm backtest exceeded 300s and produced no CSV.",
+      "P4 was intentionally not started.",
+      "No candidate can be frozen for fixed holdout comparison."
+    ]
+  }
+}

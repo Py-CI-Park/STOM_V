@@ -1,0 +1,5 @@
+INFO:     127.0.0.1:58174 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58178 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58179 - "GET /config/spec HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58180 - "GET /prompts?run_id=tick_oosrob_p5_train_2023_2025_20260604 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58181 - "GET /runs/compare?ids=tick_oosrob_p6_seed_2022_20260604,tick_oosrob_p6_seed_2026_20260604,tick_oosrob_p6_ai_2022_20260604,tick_oosrob_p6_ai_2026_20260604 HTTP/1.1" 200 OK

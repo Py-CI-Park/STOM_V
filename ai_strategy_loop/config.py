@@ -453,6 +453,49 @@ class LoopConfig:
     #   kind=='buy'에만 반영되며 매도(sell)엔 영향이 없다. 기본 OFF면 이 블록이 미주입되어
     #   build_messages 출력이 기존과 byte-동일하다(하위호환).
     classification_generation_enabled: bool = False
+    # Explicit 5-minute time-bucket x market-cap generation guidance for buy prompts.
+    # Default OFF keeps existing prompt/gate/engine behavior unchanged.
+    time_cap_bucket_generation_enabled: bool = False
+    # 92000 means 09:00~09:20; 93000 adds 09:20~09:30 after bounded preflight.
+    time_cap_bucket_end_time: int = 92000
+    # Research OOS policy for discovery dashboards and candidate pool artifacts.
+    # disabled: no OOS rejection; advisory: reference only; promotion_only: strict frozen review only.
+    research_oos_mode: str = "disabled"
+    # Sparse-positive prompt guidance for TICK candidate generation.
+    # Default OFF keeps the existing prompt, hard gates, and selector behavior unchanged.
+    sparse_positive_prompt_enabled: bool = False
+
+    # --- 계산예산(exec-budget) 가드 (2026-06-10 실측: 타임아웃 지배변수는 매도식) ---
+    # 데이터 근거(11/11 완벽 분리, docs/update_log/2026-06-10_condition_research_root_cause_and_plan.md §2 원인3):
+    #   고가미갱신지속틱수() 같은 비유계 역스캔 + 보유 틱당 윈도우 호출 다수를 쓴 매도식은
+    #   warm run 300초 타임아웃을 유발한다(같은 매수가 스칼라 매도로는 21초). 매도식은
+    #   보유 종목의 모든 틱에서 평가되므로 비용이 (보유 수×보유 시간)에 곱해진다.
+    # exec_budget_prompt_enabled: True면 build_messages가 매수/매도 프롬프트에 계산예산
+    #   지침을 추가한다 — 매수: 싼 스칼라 게이트(좁은 시간창>초당거래대금 하한>체결강도
+    #   밴드) 선행·윈도우 함수 후행(지연계산); 매도: 스칼라(수익률/최고수익률/보유시간)
+    #   우선·미갱신류는 보유시간 상한과 함께만. 기본 OFF면 미추가되어 출력이 기존과
+    #   byte-동일하다(하위호환).
+    exec_budget_prompt_enabled: bool = False
+    # sell_exec_budget_guard_enabled: True면 generate_strategy가 매도(kind=='sell') 전략을
+    #   저장하기 전에 계산예산 정적 검사(brain/exec_budget.check_sell_exec_budget)를 적용해
+    #   ①비유계 스캔 함수(고가/저가미갱신지속틱수) 사용(무조건 — 보유시간 상한이 있어도
+    #   스캔 깊이는 당일 이력에 비례해 타임아웃됨이 실측됨), ②윈도우 함수 호출 수 >
+    #   sell_max_window_calls 를 reject→prior_error 재시도한다.
+    #   매수(buy)에는 적용하지 않는다(매수는 기존 구조 게이트가 담당). 기본 OFF면 이
+    #   검사가 평가조차 안 돼 generate_strategy 동작이 기존과 byte-동일하다(하위호환).
+    sell_exec_budget_guard_enabled: bool = False
+    # sell_max_window_calls: 매도식에 허용하는 윈도우/구간 집계 함수 호출 수 상한.
+    #   S_DYN(타임아웃) 8개 vs 시드매도(고속) 2~3개 실측에 근거한 기본 8. 검사 자체가
+    #   OFF면 미사용(무영향).
+    sell_max_window_calls: int = 8
+    # --- v5.0 오더플로우 리포트 원리 어휘 주입 (매수/매도 프롬프트 토글) ---
+    # 데이터 근거(같은 문서 §2 원인4·§5): 리포트 임계값 직이식 니치는 5/5 음수였으나
+    #   원리 어휘 자체는 유효하다 — 시드 부검이 F11(전일동시간비) 원리를 독립 재발견.
+    #   따라서 임계값이 아닌 **원리/필터 어휘**만 가르치고, 단위 보정(시가총액=억,
+    #   금액류=백만원)과 "임계값은 부검 분위수로 보정"을 명시한다.
+    # report_principles_enabled: True면 build_messages가 매수/매도 프롬프트에 v5.0 원리
+    #   어휘 블록을 추가한다. 기본 OFF면 미추가되어 출력이 기존과 byte-동일하다(하위호환).
+    report_principles_enabled: bool = False
 
     # --- 프롬프트 영속화 (P1c): LLM 호출별 프롬프트를 loop_runs.db에 기록 ---
     # 데이터 근거(재현성): 현재 LLM 호출별 프롬프트(system+user 메시지)가 어디에도

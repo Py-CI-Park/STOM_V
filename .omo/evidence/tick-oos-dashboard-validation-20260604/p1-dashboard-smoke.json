@@ -1,0 +1,78 @@
+﻿{
+    "task":  "P1 current-code dashboard readiness",
+    "timestamp":  "2026-06-04T10:08:22",
+    "selected_base":  "http://127.0.0.1:8799",
+    "owned_pid":  71256,
+    "known_run":  "run_1779672477",
+    "preexisting_8770":  "stale from P0: health 200, new APIs 404; left running",
+    "checks":  [
+                   {
+                       "path":  "/health",
+                       "status":  200,
+                       "length":  36,
+                       "sample":  "{\"status\":\"ok\",\"contract_version\":2}"
+                   },
+                   {
+                       "path":  "/ui/",
+                       "status":  200,
+                       "length":  2585,
+                       "sample":  "\u003c!DOCTYPE html\u003e\r\n\u003chtml lang=\"ko\"\u003e\r\n\u003chead\u003e\r\n  \u003cmeta charset=\"UTF-8\" /\u003e\r\n  \u003cmeta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /\u003e\r\n  \u003ctitle\u003eSTOM AI · 조건식 자율 진화 대시보드\u003c/title\u003e\r\n\r\n  \u003clink rel=\"preconnect\" href=\"https://fonts.googleapis.com\" /\u003e\r\n  \u003clink rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin /\u003e\r\n  \u003clink href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600\u0026family=IBM+Plex+Mono:wght@400;500;600\u0026display=swap\" rel=\"stylesheet\" /\u003e\r\n\r\n  \u003clink rel=\"stylesheet\" href=\"styles.css?v=20260603a\" /\u003e\r\n\r\n  \u003c!-- 로컬 번들(vendored) — unpkg CDN 의존 제거로 오프라인/캐시/SRI 문제 차단.\r\n       이전: unpkg react/react-dom/babel + SRI(integrity). 인터넷 불가/캐시 꼬임 시 검은 화면.\r\n       이제: 같은 origin 로컬 파일. 버전 쿼리(?v=)로 브라우저 캐시 강제 무효화. --\u003e\r\n  \u003cscript src=\"vendor-react.js?v=2026060"
+                   },
+                   {
+                       "path":  "/runs",
+                       "status":  200,
+                       "length":  239316,
+                       "sample":  "{\"runs\":[{\"run_id\":\"run_1779672477\",\"status\":\"complete\",\"started_at\":1779672477.9032931,\"finished_at\":1779674489.9288542,\"elapsed_sec\":2012.026,\"period\":null,\"timeframe\":\"min\",\"bt_full_start\":null,\"bt_full_end\":null,\"bt_universe_start_time\":null,\"bt_universe_end_time\":null,\"start_year\":null,\"end_year\":null,\"years\":[],\"gen_count\":15,\"cost_or_count\":15.0,\"cost_or_count_text\":\"15.0\",\"best_graded\":0.851803,\"gate_passed_count\":0,\"final_profit\":-349869.0,\"total_profit_pct\":null,\"return_pct\":null,\"trade_count\":91,\"daily_avg_trades\":0.0,\"max_hold_count\":0.0,\"mdd\":19.18,\"payoff_ratio\":null,\"winner\":null},{\"run_id\":\"run_1779675770\",\"status\":\"complete\",\"started_at\":1779675770.304588,\"finished_at\":1779679653.9798372,\"elapsed_sec\":3883.675,\"period\":null,\"timeframe\":\"min\",\"bt_full_start\":null,\"bt_full_e"
+                   },
+                   {
+                       "path":  "/run_state?run_id=run_1779672477",
+                       "status":  200,
+                       "length":  8155,
+                       "sample":  "{\"contract_version\":2,\"run_id\":\"run_1779672477\",\"status\":\"complete\",\"current_gen\":14,\"max_generations\":15,\"provider\":\"gpt_auth\",\"bt_timeframe\":\"min\",\"best\":{\"gen\":7,\"graded_score\":0.851803256827309,\"gate_passed\":false,\"buy_name\":\"AILOOP_run_1779672477_g7_buy\",\"sell_name\":\"AILOOP_run_1779672477_g7_sell\"},\"winner\":null,\"generations\":[{\"gen_no\":0,\"status\":\"error\",\"graded_score\":0.0,\"gate_passed\":false,\"gate_reason\":\"backtest failed/timeout: backtest non-success: exit=2 status=error message=backtest completed without metrics last_checkpoint=csv_detected csv=no\",\"trade_count\":0,\"daily_avg_trades\":0.0,\"mdd\":0.0,\"profit\":0.0,\"total_profit_pct\":null,\"strategy_gist\":\"\",\"payoff_ratio\":0.0,\"give_back_rate\":0.0,\"calmar\":0.0,\"uptrend_r2\":0.0,\"dispersion_term\":1.0,\"max_hold_count\":0.0,\"hypotheses\":[]},{"
+                   },
+                   {
+                       "path":  "/variable_correlation?run_id=run_1779672477",
+                       "status":  200,
+                       "length":  17809,
+                       "sample":  "{\"runs\":[\"run_1779672477\"],\"sources\":7,\"method\":\"pearson\",\"pooled_trades\":2549,\"feature_count\":14,\"features\":[\"B_ê±°ëëê¸ì¦ê°\",\"B_ë¹ì¼ê±°ëëê¸\",\"B_ë±ë½ì¨\",\"B_ë§¤ëì´ìë\",\"B_ë§¤ìì´ìë\",\"B_ë¶ë´ê³ ê°\",\"B_ë¶ë´ìê°\",\"B_ë¶ë´ì ê°\",\"B_ìê°ì´ì¡\",\"B_ìë¶ì´\",\"B_ì ì¼ëìê°ë¹\",\"B_ì²´ê²°ê°ë\",\"B_íì¬ê°\",\"B_íì ì¨\"],\"outcome\":\"ììµë¥ \",\"outcome_correlations\":[{\"feature\":\"B_íì ì¨\",\"correlation\":-0.062421370461065974,\"abs_correlation\":0.062421370461065974,\"n\":2549},{\"feature\":\"B_ë¹ì¼ê±°ëëê¸\",\"correlation\":-0.05840834437365777,\"abs_correlation\":0.05840834437365777,\"n\":2549},{\"feature\":\"B_ì²´ê²°ê°ë\",\"correlation\":0.037941874375365434,\"abs_correlation\":0.037941874375365434,\"n\":2549},{\"feature\":\"B_ë§¤ëì´ìë\",\"correlation\":0.0364889"
+                   },
+                   {
+                       "path":  "/edge_ratio?run_id=run_1779672477\u0026fine_time=true",
+                       "status":  200,
+                       "length":  4034,
+                       "sample":  "{\"runs\":[\"run_1779672477\"],\"fine_time\":true,\"sources\":7,\"pooled_trades\":2549,\"global\":{\"count\":2549,\"win_rate\":0.09297763828952531,\"avg_return\":-0.39088269909768536,\"total_profit\":-9421931.0,\"mean_mfe\":0.07857198901530012,\"mean_mae\":0.4303216947822675,\"edge_ratio\":0.1825889560484643,\"mae_efficiency\":-4.974835230677052,\"mean_mae_losers\":0.45493079584775087,\"mean_mae_winners\":0.19025316455696203},\"segments\":{\"market_cap\":[{\"label\":\"ëí\",\"count\":1221,\"win_rate\":0.07944307944307945,\"avg_return\":-0.3969287469287469,\"edge_ratio\":0.1568892391997898,\"mean_mae\":0.4364127764127764,\"total_profit\":-4711011.0},{\"label\":\"ì´ëí\",\"count\":515,\"win_rate\":0.02330097087378641,\"avg_return\":-0.3906990291262136,\"edge_ratio\":0.062651398370403,\"mean_mae\":0.3526990291262136,\"total_profit\":-1686485.0},{\"label"
+                   },
+                   {
+                       "path":  "/feature_importance?run_id=run_1779672477\u0026axis=change\u0026fine_time=true",
+                       "status":  200,
+                       "length":  14015,
+                       "sample":  "{\"runs\":[\"run_1779672477\"],\"sources\":7,\"pooled_trades\":2549,\"axis\":\"change\",\"fine_time\":true,\"global\":[{\"feature\":\"B_ìê°ì´ì¡\",\"cohens_d\":-0.6321095912142455,\"mean_win\":16672.41772151899,\"mean_lose\":28029.38365051903,\"win_rate_top_q\":0.020061728395061727,\"win_rate_bot_q\":0.165625,\"n\":2549},{\"feature\":\"B_íì ì¨\",\"cohens_d\":0.5247813903785686,\"mean_win\":4.999873417721519,\"mean_lose\":3.104442041522491,\"win_rate_top_q\":0.1596244131455399,\"win_rate_bot_q\":0.02936630602782071,\"n\":2549},{\"feature\":\"B_ë¶ë´ì ê°\",\"cohens_d\":-0.4717842088799206,\"mean_win\":65249.57805907173,\"mean_lose\":109801.52465397924,\"win_rate_top_q\":0.0203125,\"win_rate_bot_q\":0.0877742946708464,\"n\":2549},{\"feature\":\"B_ë¶ë´ìê°\",\"cohens_d\":-0.4715066021210516,\"mean_win\":65377.84810126582,\"mean_lose\":109950.259515570"
+                   },
+                   {
+                       "path":  "/strategy_diff?run_id=run_1779672477\u0026gen_no=0",
+                       "status":  200,
+                       "length":  1838,
+                       "sample":  "{\"run_id\":\"run_1779672477\",\"gen_no\":0,\"buy_name\":\"AILOOP_run_1779672477_g0_buy\",\"sell_name\":\"AILOOP_run_1779672477_g0_sell\",\"buy_code\":\"ë§¤ì = True\\n\\nif ë°ì´í°ê¸¸ì´ \u003c 60:\\n    ë§¤ì = False\\n\\nif ë§¤ì and ê´ì¬ì¢\u0085ëª© != 1:\\n    ë§¤ì = False\\n\\nif ë§¤ì and íì¬ê° \u003c= ì´ëíê· (20):\\n    ë§¤ì = False\\n\\nif ë§¤ì and ì´ëíê· (20) \u003c= ì´ëíê· (60):\\n    ë§¤ì = False\\n\\nif ë§¤ì and íì¬ê° \u003c= ë¶ë´ìê°:\\n    ë§¤ì = False\\n\\nif ë§¤ì and ë¶ë¹ê±°ëëê¸ \u003c ë¶ë¹ê±°ëëê¸íê· (20) * 1.5:\\n    ë§¤ì = False\\n\\nif ë§¤ì and ë¶ë¹ë§¤ììë \u003c= ë¶ë¹ë§¤ëìë:\\n    ë§¤ì = False\\n\\nif ë§¤ì and ì²´ê²°ê°ë \u003c 120:\\n    ë§¤ì = False\\n\\nif ë§¤ì and RSI \u003c 50:\\n    ë§¤ì = False\\n\\nif ë§¤ì and RSI \u003e 75:\\n    ë§¤ì = False\\n\\nif ë§¤ì an"
+                   },
+                   {
+                       "path":  "/prompts?run_id=run_1779672477\u0026gen_no=0",
+                       "status":  200,
+                       "length":  103,
+                       "sample":  "{\"run_id\":\"run_1779672477\",\"gen_no\":0,\"prompts\":[],\"reason\":\"prompt_logging_not_enabled_or_no_records\"}"
+                   },
+                   {
+                       "path":  "/research_docs",
+                       "status":  200,
+                       "length":  15254,
+                       "sample":  "{\"docs\":[{\"id\":\"docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md\",\"title\":\"Wide v1 ì°êµ¬ íë¦ê³¼ CLI êµ¬ì¡° ë¦¬ë·°\",\"category\":\"condition_research\",\"updated_at\":\"2026-04-24T13:40:23.640339+00:00\",\"size\":6750},{\"id\":\"docs/research/condition_research/README.md\",\"title\":\"Condition Research\",\"category\":\"condition_research\",\"updated_at\":\"2026-04-20T09:07:12.342015+00:00\",\"size\":931},{\"id\":\"docs/research/condition_research/generated_conditions/2026-04-19_research_test_tick_wide_conditions.md\",\"title\":\"Research Test Tick Wide Conditions\",\"category\":\"condition_research\",\"updated_at\":\"2026-04-20T09:07:12.344037+00:00\",\"size\":1182},{\"id\":\"docs/research/condition_research/mvp/2026-04-26_wide_v1_mvp_freeze.md\",\"title\":\"Wide v1 MVP freeze\",\"category\":\"con"
+                   },
+                   {
+                       "path":  "/ai_context_pack?run_id=run_1779672477\u0026gen_no=0",
+                       "status":  200,
+                       "length":  1885,
+                       "sample":  "{\"run_id\":\"run_1779672477\",\"gen_no\":0,\"timeframe\":\"min\",\"period\":null,\"config\":{\"provider\":\"gpt_auth\",\"bt_timeframe\":\"min\",\"bt_full_start\":null,\"bt_full_end\":null,\"bt_universe_start_time\":null,\"bt_universe_end_time\":null},\"latest_logs\":{\"run_status\":\"complete\",\"started_at\":1779672477.9032931,\"finished_at\":1779674489.9288542,\"generation_count\":15},\"best\":{\"gen_no\":7,\"graded_score\":0.851803256827309,\"profit\":-349869.0},\"winner\":null,\"strategy_names\":{\"buy\":\"AILOOP_run_1779672477_g0_buy\",\"sell\":\"AILOOP_run_1779672477_g0_sell\"},\"prompt_count\":0,\"analysis\":{\"edge_ratio\":\"available via /edge_ratio when per-trade CSVs exist\",\"feature_importance\":\"available via /feature_importance when per-trade CSVs exist\",\"variable_correlation\":\"available via /variable_correlation when per-trade CSVs exist\",\"wik"
+                   }
+               ],
+    "forbidden_actions_invoked":  false,
+    "note":  "Read-only GET smoke only; no websocket final_approval and no export_winner invoked."
+}

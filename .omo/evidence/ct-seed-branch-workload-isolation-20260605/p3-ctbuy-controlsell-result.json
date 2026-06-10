@@ -1,0 +1,21 @@
+{
+  "status": "ok",
+  "timeout": false,
+  "pid": 127044,
+  "returncode": 0,
+  "command": [
+    "C:\\Python\\64\\Python31313\\python.exe",
+    "-m",
+    "ai_strategy_loop.controller.loop",
+    "--config-json",
+    ".omo\\evidence\\ct-seed-branch-workload-isolation-20260605\\p3-ctbuy-controlsell-config.json",
+    "--run-id",
+    "ct_branch_ctbuy_controlsell_warm_20260605"
+  ],
+  "cwd": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+  "wall_cap": 240,
+  "elapsed_seconds": 177.258,
+  "stdout_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\ct-seed-branch-workload-isolation-20260605\\p3-ctbuy-controlsell-result.stdout.txt",
+  "stderr_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\ct-seed-branch-workload-isolation-20260605\\p3-ctbuy-controlsell-result.stderr.txt",
+  "cleanup": null
+}

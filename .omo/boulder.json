@@ -54,6 +54,128 @@
                                                                             "status":  "completed",
                                                                             "worktree_path":  null,
                                                                             "completed_at":  "2026-06-04T13:48:48.8255929+09:00"
+                                                                        },
+                  "tick-sparse-positive-generation-improvement-20260604":  {
+                                                                               "work_id":  "tick-sparse-positive-generation-improvement-20260604",
+                                                                               "active_plan":  ".omo/plans/tick-sparse-positive-generation-improvement-20260604.md",
+                                                                               "plan_name":  "tick-sparse-positive-generation-improvement-20260604",
+                                                                               "session_ids":  [
+                                                                                                   "codex:tick-sparse-positive-generation-improvement-20260604"
+                                                                                               ],
+                                                                               "status":  "completed",
+                                                                               "worktree_path":  null,
+                                                                               "completed_at":  "2026-06-04T18:36:30+09:00"
+                                                                           },
+                  "tick-sparse-positive-oos-robustness-20260604":  {
+                                                                       "work_id":  "tick-sparse-positive-oos-robustness-20260604",
+                                                                       "active_plan":  ".omo/plans/tick-sparse-positive-oos-robustness-20260604.md",
+                                                                       "plan_name":  "tick-sparse-positive-oos-robustness-20260604",
+                                                                       "session_ids":  [
+                                                                                           "codex:tick-sparse-positive-oos-robustness-20260604"
+                                                                                       ],
+                                                                       "status":  "completed",
+                                                                       "worktree_path":  null,
+                                                                       "completed_at":  "2026-06-04T21:29:45.0092262+09:00"
+                                                                   },
+                  "tick-dashboard-observability-research-ux-20260604":  {
+                                                                            "work_id":  "tick-dashboard-observability-research-ux-20260604",
+                                                                            "active_plan":  ".omo/plans/tick-dashboard-observability-research-ux-20260604.md",
+                                                                            "plan_name":  "tick-dashboard-observability-research-ux-20260604",
+                                                                            "session_ids":  [
+                                                                                                "codex:tick-dashboard-observability-research-ux-20260604"
+                                                                                            ],
+                                                                            "status":  "completed",
+                                                                            "worktree_path":  null,
+                                                                            "completed_at":  "2026-06-05T00:16:10.6705427+09:00"
+                                                                        },
+                  "tick-research-direction-realignment-20260605":  {
+                                                                       "work_id":  "tick-research-direction-realignment-20260605",
+                                                                       "active_plan":  ".omo/plans/tick-research-direction-realignment-20260605.md",
+                                                                       "plan_name":  "tick-research-direction-realignment-20260605",
+                                                                       "session_ids":  [
+                                                                                           "codex:tick-research-direction-realignment-20260605"
+                                                                                       ],
+                                                                       "status":  "completed",
+                                                                       "worktree_path":  null,
+                                                                       "completed_at":  "2026-06-05T07:24:21.2675354+09:00"
+                                                                   },
+                  "tick-p7-observability-bounded-training-20260605":  {
+                                                                          "work_id":  "tick-p7-observability-bounded-training-20260605",
+                                                                          "active_plan":  ".omo/plans/tick-p7-observability-bounded-training-20260605.md",
+                                                                          "plan_name":  "tick-p7-observability-bounded-training-20260605",
+                                                                          "session_ids":  [
+                                                                                              "codex:tick-p7-observability-bounded-training-20260605"
+                                                                                          ],
+                                                                          "status":  "completed",
+                                                                          "worktree_path":  null,
+                                                                          "completed_at":  "2026-06-05T12:22:35.0665084+09:00"
+                                                                      },
+                  "tick-p7-timeout-unblock-live-strategy-visibility-20260605":  {
+                                                                                    "work_id":  "tick-p7-timeout-unblock-live-strategy-visibility-20260605",
+                                                                                    "active_plan":  ".omo/plans/tick-p7-timeout-unblock-live-strategy-visibility-20260605.md",
+                                                                                    "plan_name":  "tick-p7-timeout-unblock-live-strategy-visibility-20260605",
+                                                                                    "session_ids":  [
+                                                                                                        "codex:tick-p7-timeout-unblock-live-strategy-visibility-20260605"
+                                                                                                    ],
+                                                                                    "status":  "completed",
+                                                                                    "worktree_path":  null,
+                                                                                    "completed_at":  "2026-06-05T15:27:48.0561541+09:00"
+                                                                                },
+                  "tick-seed-warm-timeout-root-cause-20260605":  {
+                                                                     "work_id":  "tick-seed-warm-timeout-root-cause-20260605",
+                                                                     "active_plan":  ".omo/plans/tick-seed-warm-timeout-root-cause-20260605.md",
+                                                                     "plan_name":  "tick-seed-warm-timeout-root-cause-20260605",
+                                                                     "session_ids":  [
+                                                                                         "codex:tick-seed-warm-timeout-root-cause-20260605"
+                                                                                     ],
+                                                                     "status":  "completed",
+                                                                     "worktree_path":  null,
+                                                                     "completed_at":  "2026-06-05T17:02:41.1988220+09:00"
+                                                                 },
+                  "ct-seed-tick-preflight-repair-20260605":  {
+                                                                 "work_id":  "ct-seed-tick-preflight-repair-20260605",
+                                                                 "active_plan":  ".omo/plans/ct-seed-tick-preflight-repair-20260605.md",
+                                                                 "plan_name":  "ct-seed-tick-preflight-repair-20260605",
+                                                                 "session_ids":  [
+                                                                                     "codex:ct-seed-tick-preflight-repair-20260605"
+                                                                                 ],
+                                                                 "status":  "completed",
+                                                                 "worktree_path":  null,
+                                                                 "completed_at":  "2026-06-05T19:35:31.9546622+09:00"
+                                                             },
+                  "ct-seed-branch-workload-isolation-20260605":  {
+                                                                     "work_id":  "ct-seed-branch-workload-isolation-20260605",
+                                                                     "active_plan":  ".omo/plans/ct-seed-branch-workload-isolation-20260605.md",
+                                                                     "plan_name":  "ct-seed-branch-workload-isolation-20260605",
+                                                                     "session_ids":  [
+                                                                                         "codex:ct-seed-branch-workload-isolation-20260605"
+                                                                                     ],
+                                                                     "status":  "completed",
+                                                                     "worktree_path":  null,
+                                                                     "completed_at":  "2026-06-05T20:00:21.0478602+09:00"
+                                                                 },
+                  "tick-human-like-research-criteria-dashboard-20260605":  {
+                                                                               "work_id":  "tick-human-like-research-criteria-dashboard-20260605",
+                                                                               "active_plan":  ".omo/plans/tick-human-like-research-criteria-dashboard-20260605.md",
+                                                                               "plan_name":  "tick-human-like-research-criteria-dashboard-20260605",
+                                                                               "session_ids":  [
+                                                                                                   "codex:tick-human-like-research-criteria-dashboard-20260605"
+                                                                                               ],
+                                                                               "status":  "completed",
+                                                                               "worktree_path":  null,
+                                                                               "completed_at":  "2026-06-06T07:42:47.2295790+09:00"
+                                                                           },
+                  "tick-900-930-generated-timeout-reduction-20260606":  {
+                                                                            "work_id":  "tick-900-930-generated-timeout-reduction-20260606",
+                                                                            "active_plan":  ".omo/plans/tick-900-930-generated-timeout-reduction-20260606.md",
+                                                                            "plan_name":  "tick-900-930-generated-timeout-reduction-20260606",
+                                                                            "session_ids":  [
+                                                                                                "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
+                                                                                            ],
+                                                                            "status":  "blocked",
+                                                                            "worktree_path":  null,
+                                                                            "blocked_at":  "2026-06-06T10:55:00+09:00",
+                                                                            "blocker":  "P3 split probes ended under wall cap, but generated strategy creation is blocked by gpt_auth HTTP 429 usage_limit_reached and no alternate openrouter/codex_proxy credentials are configured. Do not retry P4 until provider/fallback is available."
                                                                         }
               }
 }

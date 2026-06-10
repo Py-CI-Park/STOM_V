@@ -1,0 +1,59 @@
+﻿{
+    "task":  "11.research_wiki_frontend",
+    "base":  "http://127.0.0.1:8794",
+    "timestamp":  "2026-06-04T05:18:45",
+    "checks":  [
+                   {
+                       "path":  "/health",
+                       "status":  200,
+                       "length":  36,
+                       "sample":  "{\"status\":\"ok\",\"contract_version\":2}"
+                   },
+                   {
+                       "path":  "/ui/research-wiki.jsx?v=20260603a",
+                       "status":  200,
+                       "length":  5112,
+                       "sample":  "/* Read-only research wiki/documentation browser */\nconst { useState: useState_rw, useEffect: useEffect_rw, useMemo: useMemo_rw } = React;\n\nconst RESEARCH_WIKI_CATEGORIES = [\n  { key: \"wiki\", label: \"Methods\" },\n  { key: \"good_results\", label: \"Good Results\" },\n  { key: \"condition_research\", label: \"Metrics\" },\n  { key: \"update_log\", label: \"Failed Candidates\" },\n  { key: \"next\", label: \"Next Experiments\" },\n];\n\nfunction wikiLabel(category) {\n  const found = RESEARCH_WIKI_CATEGORIES.find(c =\u003e c.key === category);\n  return found ? found.label : category || \"Docs\";\n}\n\nfunction ResearchWikiPanel({ baseUrl, wsStatus }) {\n  const [docs, setDocs] = useState_rw([]);\n  const [selectedId, setSelected"
+                   },
+                   {
+                       "path":  "/research_docs",
+                       "status":  200,
+                       "length":  15254,
+                       "sample":  "{\"docs\":[{\"id\":\"docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md\",\"title\":\"Wide v1 ì°êµ¬ íë¦ê³¼ CLI êµ¬ì¡° ë¦¬ë·°\",\"category\":\"condition_research\",\"updated_at\":\"2026-04-24T13:40:23.640339+00:00\",\"size\":6750},{\"id\":\"docs/research/condition_research/README.md\",\"title\":\"Condition Research\",\"category\":\"condition_research\",\"updated_at\":\"2026-04-20T09:07:12.342015+00:00\",\"size\":931},{\"id\":\"docs/research/condition_research/generated_conditions/2026-04-19_research_test_tick_wide_conditions.md\",\"title\":\"Research Test Tick Wide Conditions\",\"category\":\"condition_research\",\"updated_at\":\"2026-04-20T09:07:12.344037+00:00\",\"size\":1182},{\"id\":\"docs/research/c"
+                   },
+                   {
+                       "path":  "/research_doc?id=docs%2Fresearch%2Fcondition_research%2Fwiki%2Fmetrics_glossary.md",
+                       "status":  200,
+                       "length":  2182,
+                       "sample":  "{\"id\":\"docs/research/condition_research/wiki/metrics_glossary.md\",\"title\":\"Metrics Glossary\",\"category\":\"wiki\",\"updated_at\":\"2026-06-03T19:36:40.972069+00:00\",\"size\":1949,\"available\":true,\"markdown\":\"# Metrics Glossary\\n\\nThis glossary defines terms used by the condition research dashboard and agent workflow.\\n\\n## graded\\n\\n`graded` is the loop\u0027s scalar research score. It combines profit, drawdown, trade behavior, and gate status into a sortable value. A high graded score is useful for ranking candidates inside a run, but it is not enough to claim a robust or human-level condition.\\n\\n## hard gate\\n\\nA `hard gate` is a mandatory rule that a candidate must satisfy before it can be treated as"
+                   },
+                   {
+                       "path":  "/research_doc?id=../AGENTS.md",
+                       "status":  200,
+                       "length":  65,
+                       "sample":  "{\"id\":\"../AGENTS.md\",\"available\":false,\"error\":\"doc_not_allowed\"}"
+                   }
+               ],
+    "docs_count":  66,
+    "selected_doc":  {
+                         "id":  "docs/research/condition_research/wiki/metrics_glossary.md",
+                         "category":  "wiki",
+                         "title":  "Metrics Glossary",
+                         "available":  true,
+                         "markdown_len":  1949
+                     },
+    "blocked":  {
+                    "available":  false,
+                    "error":  "doc_not_allowed",
+                    "id":  "../AGENTS.md"
+                },
+    "cleanup":  {
+                    "port":  8794,
+                    "stopped":  true,
+                    "result":  "The operation has timed out."
+                },
+    "notes":  [
+                  "Markdown is rendered as text/pre in frontend static contract.",
+                  "Good results are labeled reference only, not live proof."
+              ]
+}

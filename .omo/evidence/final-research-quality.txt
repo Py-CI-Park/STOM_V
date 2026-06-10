@@ -1,0 +1,15 @@
+Final Verification F2 — Research Quality Review
+
+Result: PASS
+
+Major recommendations are labeled and supported:
+- Evidence-backed: dashboard/API works; DB counts changed; TICK T0-T4 infrastructure exists; tickwide_t0b analysis APIs return meaningful data.
+- Inference: system is sufficient as research platform for human-approximate candidate development.
+- Future experiment: human-level/superior profitability requires toggles ON multiyear run + 2022/2026 OOS.
+
+External citations present:
+- PBO, DSR, TimeSeriesSplit, Optuna multi-objective, triple-barrier metadata, slippage docs.
+
+Overclaim check:
+- Report explicitly rejects current superhuman-profitability claims.
+- No financial guarantees.

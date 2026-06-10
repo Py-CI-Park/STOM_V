@@ -14,10 +14,12 @@ from typing import Any, Dict, Final, List, Optional
 import pandas as pd
 
 from cli._utils import ensure_dataframe as _ensure_dataframe
+from ai_strategy_loop.fitness.correlation_profile import build_correlation_research_profile
 
 _OUTCOME_COLUMN: Final = "수익률"
 _FEATURE_PREFIX: Final = "B_"
 _SUPPORTED_METHODS: Final = {"pearson", "spearman"}
+_DEFAULT_ROW_LIMIT: Final = 50_000
 
 
 def _json_float(value: Any) -> Optional[float]:
@@ -76,6 +78,7 @@ def compute_variable_correlation(
     method: str = "pearson",
     min_samples: int = 3,
     top_n: int = 20,
+    row_limit: int = _DEFAULT_ROW_LIMIT,
 ) -> Dict[str, Any]:
     """Compute outcome and feature-to-feature correlations for numeric B_* columns.
 
@@ -86,14 +89,19 @@ def compute_variable_correlation(
         return {"error": "method must be pearson or spearman", "method": method}
     if df is None or len(df) == 0:
         return {"insufficient": True, "pooled_trades": 0}
-    if _OUTCOME_COLUMN not in df.columns:
+
+    input_rows = int(len(df))
+    truncated = bool(row_limit and row_limit > 0 and input_rows > row_limit)
+    working = df.head(row_limit).copy() if truncated else df
+
+    if _OUTCOME_COLUMN not in working.columns:
         return {
             "insufficient": True,
-            "pooled_trades": int(len(df)),
+            "pooled_trades": int(len(working)),
             "reason": "missing_outcome_column",
         }
 
-    returns = pd.to_numeric(df[_OUTCOME_COLUMN], errors="coerce")
+    returns = pd.to_numeric(working[_OUTCOME_COLUMN], errors="coerce")
     valid_returns = returns.dropna()
     pooled_trades = int(len(valid_returns))
     if pooled_trades < min_samples:
@@ -103,7 +111,7 @@ def compute_variable_correlation(
             "reason": "too_few_outcome_rows",
         }
 
-    features = _feature_columns(df)
+    features = _feature_columns(working)
     if not features:
         return {
             "insufficient": True,
@@ -113,7 +121,7 @@ def compute_variable_correlation(
 
     outcome_rows: List[Dict[str, Any]] = []
     for feature in features:
-        n, corr = _pair_correlation(returns, df[feature], method, min_samples)
+        n, corr = _pair_correlation(returns, working[feature], method, min_samples)
         outcome_rows.append({
             "feature": feature,
             "correlation": corr,
@@ -124,7 +132,7 @@ def compute_variable_correlation(
     matrix_rows: List[Dict[str, Any]] = []
     for index, feature_a in enumerate(features):
         for feature_b in features[index + 1:]:
-            n, corr = _pair_correlation(df[feature_a], df[feature_b], method, min_samples)
+            n, corr = _pair_correlation(working[feature_a], working[feature_b], method, min_samples)
             matrix_rows.append({
                 "feature_a": feature_a,
                 "feature_b": feature_b,
@@ -137,6 +145,19 @@ def compute_variable_correlation(
     sorted_matrix = _sort_correlation_rows(matrix_rows)
     top_pairs = [row for row in sorted_matrix if row["correlation"] is not None][:top_n]
 
+    profile = build_correlation_research_profile(
+        working,
+        features,
+        _OUTCOME_COLUMN,
+        sorted_outcome,
+        sorted_matrix,
+        min_samples,
+        top_n,
+        row_limit,
+        input_rows,
+        truncated,
+    )
+
     return {
         "method": method,
         "pooled_trades": pooled_trades,
@@ -146,6 +167,7 @@ def compute_variable_correlation(
         "outcome_correlations": sorted_outcome,
         "feature_matrix": sorted_matrix,
         "top_pairs": top_pairs,
+        **profile,
     }
 
 
@@ -154,6 +176,7 @@ def variable_correlation_from_csvs(
     method: str = "pearson",
     min_samples: int = 3,
     top_n: int = 20,
+    row_limit: int = _DEFAULT_ROW_LIMIT,
 ) -> Dict[str, Any]:
     """Pool readable trade CSVs and run variable correlation analysis."""
     frames: List[pd.DataFrame] = []
@@ -179,5 +202,6 @@ def variable_correlation_from_csvs(
         method=method,
         min_samples=min_samples,
         top_n=top_n,
+        row_limit=row_limit,
     )
     return {"sources": len(frames), **report}

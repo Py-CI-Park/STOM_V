@@ -1,0 +1,10 @@
+[DASHBOARD] starting on http://127.0.0.1:8796
+[DASHBOARD] health: http://127.0.0.1:8796/health
+INFO:     127.0.0.1:61538 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61539 - "GET /strategy_code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61540 - "GET /strategy_diff?gen_no=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61541 - "GET /ui/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61550 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61551 - "GET /strategy_code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61552 - "GET /strategy_diff?gen_no=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61553 - "GET /ui/ HTTP/1.1" 200 OK

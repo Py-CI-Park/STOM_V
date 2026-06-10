@@ -1,0 +1,38 @@
+﻿## P3 Prior Replay Verification
+timestamp=2026-06-04T12:44:57.6805997+09:00
+
+## artifact checks
+selector_version=sparse_positive_v1
+diagnostic_only=True
+oos_excluded=True
+selected=True
+gen_no=5
+selected_bucket=sparse_positive
+gen4_reasons=profit <= 0,mdd > 10.0,trade_count > 250
+
+## rg checks
+.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-selected-candidate.json:2:  "selector_version": "sparse_positive_v1",
+.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-selected-candidate.json:9:  "selected_bucket": "sparse_positive",
+.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-selected-candidate.json:30:  "oos_excluded": true,
+.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-selected-candidate.json:31:  "diagnostic_only": true,
+.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-selected-candidate.json:35:      "bucket": "sparse_positive",
+.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay.md:4:- diagnostic_only: true
+.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay.md:6:- selector_version: sparse_positive_v1
+.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay.md:9:- selected_bucket: sparse_positive
+.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay.md:14:This replay applies the predeclared sparse_positive_v1 selector to the prior 2023~2025 training rows only. It is a mechanics check and not efficacy evidence, because the prior P5 OOS failure is already known.
+.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay.md:18:- Prior gen5 qualifies as sparse_positive because it is profitable, low MDD, has 99 trades, and its gate failure is only daily_avg_trades 0.1 < min_daily_trades 0.3.
+.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay.md:19:- Artifact has oos_excluded=true and diagnostic_only=true.
+
+## protected-path git status after P3
+
+
+## QA/adversarial classes for P3
+malformed_input=probed by parse_candidate_generation over DB rows; forbidden fields would raise
+prompt_injection=not applicable; no prompt/model call made
+cancel_resume=not applicable; no long runtime started
+stale_state=probed by diagnostic_only/oos_excluded flags and prior-run caveat
+dirty_worktree=probed by protected-path status; unrelated dirty state preserved
+hung_or_long_commands=probed by short DB read/selector command
+flaky_tests=not applicable; deterministic replay over fixed DB rows
+misleading_success_output=probed by explicit selected gen/bucket and gen4 rejection checks
+repeated_interruptions=not applicable; static replay artifact with boulder active

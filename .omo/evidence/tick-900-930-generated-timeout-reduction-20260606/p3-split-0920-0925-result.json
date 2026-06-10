@@ -1,0 +1,21 @@
+{
+  "status": "ok",
+  "timeout": false,
+  "pid": 127140,
+  "returncode": 0,
+  "command": [
+    "C:\\Python\\64\\Python31313\\python.exe",
+    "-m",
+    "ai_strategy_loop.controller.loop",
+    "--config-json",
+    ".omo\\evidence\\tick-900-930-generated-timeout-reduction-20260606\\p3-split-0920-0925-config.json",
+    "--run-id",
+    "tick_p3_split_0920_0925_20260606"
+  ],
+  "cwd": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+  "wall_cap": 600,
+  "elapsed_seconds": 64.702,
+  "stdout_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\tick-900-930-generated-timeout-reduction-20260606\\p3-split-0920-0925-result.stdout.txt",
+  "stderr_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\tick-900-930-generated-timeout-reduction-20260606\\p3-split-0920-0925-result.stderr.txt",
+  "cleanup": null
+}

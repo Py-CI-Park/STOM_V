@@ -1,0 +1,62 @@
+﻿## P0 Canonical Inputs
+
+timestamp=2026-06-04T12:30+09:00
+plan=.omo/plans/tick-selection-rule-sparse-gen5-research-20260604.md
+
+## Files read / existence
+- docs/AGENT_HANDOFF.md: exists, read; portable project handoff and guardrails.
+- docs/update_log/2026-06-03_tick_program_complete_handoff.md: exists, read; detailed TICK handoff.
+- .omo/evidence/tick-oos-dashboard-validation-20260604/p6-decision-card.md: exists, read; prior final verdict.
+- .omo/evidence/tick-oos-dashboard-validation-20260604/p4-analysis.md: exists, read; prior dashboard analysis.
+- .omo/evidence/tick-oos-dashboard-validation-20260604/p5-oos-comparison.md: exists, read; prior fixed OOS comparison.
+- .omo/evidence/tick-oos-dashboard-validation-20260604/p3-selected-candidate.json: exists, read; prior selected candidate and all generations.
+
+## Prior verdict facts
+- Final Verdict: REJECT_CANDIDATE.
+- Reason: fixed AI candidate failed the predeclared 2022/2026 OOS superiority rule.
+- This was research validation only, not promotion/export.
+
+## Prior selected candidate
+- Run: tick_oos_dash_p3_train_2023_2025_20260604.
+- Selected generation: 4.
+- Buy: AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_buy.
+- Sell: AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_sell.
+- gate_passed: false.
+- training profit: -67,190.
+- MDD: 23.52.
+- trades: 287.
+- Selection rule: highest completed pre-OOS generation by graded score from training run only; no 2022/2026 OOS data used.
+
+## Prior sparse-positive observation
+- Prior P3 gen5 was sparse-positive in training.
+- Gen5 metrics: profit +1,432,608; MDD 5.74; trades 99; daily_avg_trades 0.1.
+- Gen5 gate failure: daily_avg_trades 0.1 < min_daily_trades 0.3.
+- Gen5 was not selected under the declared P3 graded-score rule.
+- For this plan, prior gen5 is hypothesis/mechanics evidence only, not efficacy evidence.
+
+## Prior P4 analysis facts
+- pooled_trades: 7,967.
+- win_rate: 0.4672.
+- avg_return: -0.1820.
+- total_profit: -72,411,833.
+- edge_ratio: 1.0097.
+- largest absolute Spearman correlation: about 0.0715, weak signal.
+- segment feedback: observed in buy prompt, not observed in sell prompt.
+
+## Prior P5 OOS facts
+- seed_2022: profit +2,223,554; pct +44.36; MDD 13.02; trades 58.
+- seed_2026: profit -191,109; pct -3.82; MDD 15.63; trades 10.
+- ai_2022: profit -531,523; pct -10.63; MDD 16.77; trades 99.
+- ai_2026: profit +126,238; pct +2.52; MDD 2.52; trades 2.
+- combined_seed_profit: +2,032,445.
+- combined_ai_profit: -405,285.
+- seed_max_mdd: 15.63.
+- ai_max_mdd: 16.77.
+- rule_passed: false.
+
+## Execution guardrails
+- Do not promote prior candidate or claim human-level / seed-superior performance.
+- Do not reselect candidates after OOS.
+- Do not edit official engines, hard gates, or backtest/graph.
+- Do not invoke final_approval/export_winner or production strategy DB writes.
+- Preserve V3K/2U_C nonrelease restrictions.

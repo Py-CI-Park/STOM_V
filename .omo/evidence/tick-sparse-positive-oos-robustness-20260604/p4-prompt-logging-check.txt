@@ -1,0 +1,6 @@
+run_id=tick_oosrob_p4_smoke_20260604
+prompt_count=4
+prompt_text_sparse_positive_v1_hits=4
+prompt_feature_sparse_positive_prompt_enabled_hits=4
+parse_errors=0
+expected: prompt_count > 0 and sparse-positive guidance visible in prompt records

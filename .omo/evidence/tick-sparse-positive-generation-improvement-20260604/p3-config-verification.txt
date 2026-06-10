@@ -1,0 +1,4 @@
+﻿p3-config-manifest.json: parse=ok bom=False sha256=bdb7d3a5e96fcb5843c537f27def1f45a7b6cb27bb54aa13ed0e6c3bbb911dde
+p3-smoke-off-config.json: parse=ok bom=False sha256=7d6a9ca4028213c6a0e84f2c41ce3e1d9da05ed134bda9e7b77821ae71787198
+p3-smoke-on-config.json: parse=ok bom=False sha256=1676936322efa2fedef2d74ad2c13080d0b9ffd112b3d12b4dac126dd7eb9b96
+p3-train-config.json: parse=ok bom=False sha256=73ecaf945b7cbe14132669f248f8ed1f2341472739fa6d9ab4fdb69986579b3f

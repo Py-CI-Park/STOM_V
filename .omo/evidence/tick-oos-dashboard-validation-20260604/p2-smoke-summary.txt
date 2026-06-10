@@ -1,0 +1,27 @@
+P2 short TICK toggles-ON reproduction run summary
+timestamp=2026-06-04T10:24:06.4843309+09:00
+run_id=tick_oos_dash_p2_smoke_20260604
+config=.omo/evidence/tick-oos-dashboard-validation-20260604/p2-smoke-config.json
+official_loop_exit=0 after retry; first attempt failed before loop start due UTF-8 BOM in evidence config and was corrected without source/engine/gate edits
+bt_timeframe=tick
+status=complete
+current_gen=1
+max_generations=2
+best_gen=1
+best_score=0.1640742347057879
+best_buy=AILOOP_tick_oos_dash_p2_smoke_20260604_g1_buy
+best_sell=AILOOP_tick_oos_dash_p2_smoke_20260604_g1_sell
+winner=null
+gen0_status=error
+gen0_gate_reason=backtest failed/timeout: warm backtest non-success: status=error message=ë°±íì¤í¸ ìê° ì´ê³¼ (240ì´) csv=no
+gen1_status=ok
+gen1_gate_passed=False
+gen1_gate_reason=total_profit -3.704e+06 <= 0
+gen1_profit=-3703913.0
+gen1_total_profit_pct=-14.83
+gen1_mdd=14.86
+gen1_trades=179
+api_statuses=health:200, run_state:200, backtest_detail_gen0:200, backtest_detail_gen1:200, variable_correlation:200, edge_ratio:200, feature_importance:200, strategy_diff_gen1:200, prompts_gen1:200, ai_context_pack_gen1:200
+dashboard_cleanup=owned 8799 PID 133652 stopped; pre-existing 8770 left running
+protected_status=empty
+forbidden_actions=none; no final_approval/export_winner

@@ -1,0 +1,7 @@
+selector=seed_relative_v1 selected=True mdd_limit=20.00 seed_profile=17.44/307
+  -> gen1 [C7_SEEDPLUS] buy=CLDGEN_0610_C7_SEEDPLUS_B sell=Tick_S_902_905_Update_2
+     profit=2,347,400 mdd=16.52 trades=142 payoff=1.4523395126689873
+     yearly={'2023': 1954268.0, '2024': 700663.0, '2025': -307531.0} positive=2/3
+eligible: [(1, 'C7_SEEDPLUS')]
+  rejected gen2 [C8B_ABSORB]: profit <= 0; mdd > 20.00 (seed-relative limit); trade_count > 400; payoff_ratio < 1.05
+comparison: sparse_positive_v1 selected=False / yearly advisory selected=False

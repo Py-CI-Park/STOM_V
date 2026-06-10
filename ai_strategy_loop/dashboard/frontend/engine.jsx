@@ -9,8 +9,16 @@ function fmtElapsed(ms) {
   return `${m}m ${s.toString().padStart(2, "0")}s`;
 }
 
+function fmtEpoch(epochSec) {
+  if (typeof epochSec !== "number" || !Number.isFinite(epochSec) || epochSec <= 0) return "-";
+  return new Date(epochSec * 1000).toLocaleString("ko-KR", { hour12: false });
+}
+
 function EnginePanel({ state, wsStatus }) {
-  const e = state.engine || {};
+  const latest = state.latest || {};
+  const progressInfo = latest.backtest_progress || {};
+  const engineState = latest.engine_state || {};
+  const e = state.engine || engineState || {};
   const running = state.status === "running" || state.status === "stopping";
 
   // LIVE↔DEMO 분리(M1): engine.* 메트릭(CPU/메모리/워커/throughput/chunks)은 backend가
@@ -18,7 +26,7 @@ function EnginePanel({ state, wsStatus }) {
   //   라이브인데 engine 데이터가 없으면 "실시간 데이터 대기"로 명시 분리한다.
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
-  const liveNoEngine = !isDemo && !state.engine;
+  const liveNoEngine = !isDemo && !state.engine && !latest.engine_state;
 
   const cpu = e.cpu_pct ?? 0;
   const mem = e.mem_mb ?? 0;
@@ -27,13 +35,38 @@ function EnginePanel({ state, wsStatus }) {
   const workers = e.workers ?? 0;
   const workersActive = e.workers_active ?? 0;
   const tput = e.throughput ?? 0;
-  const progress = e.progress ?? 0;
-  const maxGens = state.max_generations || 0;
-  const currentGen = state.current_gen || 0;
-  const overallPct = maxGens > 0 ? Math.min(100, (currentGen / maxGens) * 100) : Math.min(100, progress * 100);
+  const progress = typeof progressInfo.percent === "number"
+    ? Math.max(0, Math.min(1, progressInfo.percent / 100))
+    : (e.progress ?? 0);
+  const maxGens = progressInfo.max_generations || state.max_generations || 0;
+  const currentGen = typeof progressInfo.current_gen === "number"
+    ? progressInfo.current_gen : (state.current_gen || 0);
+  const overallPct = typeof progressInfo.percent === "number"
+    ? Math.max(0, Math.min(100, progressInfo.percent))
+    : (maxGens > 0 ? Math.min(100, (currentGen / maxGens) * 100) : Math.min(100, progress * 100));
   const remainingGens = Math.max(0, maxGens - currentGen);
-  const activeConfig = state.active_config || {};
-  const latest = state.latest || {};
+  const elapsedMs = typeof progressInfo.elapsed_sec === "number" ? progressInfo.elapsed_sec * 1000 : (e.elapsed_ms ?? 0);
+  const etaMs = typeof progressInfo.eta_sec === "number" ? progressInfo.eta_sec * 1000 : (e.eta_ms ?? 0);
+  const activeConfig = state.active_config || engineState.active_config || {};
+  const progressSource = progressInfo.progress_source || progressInfo.source || "counter unavailable";
+  const doneUnits = progressInfo.done_units ?? progressInfo.current_gen ?? currentGen;
+  const totalUnits = progressInfo.total_units ?? progressInfo.max_generations ?? maxGens;
+  const engineMode = engineState.bt_engine_mode || activeConfig.bt_engine_mode || "-";
+  const btTimeframe = state.bt_timeframe || progressInfo.timeframe || engineState.bt_timeframe || activeConfig.bt_timeframe || "min";
+  const cpuCount = engineState.cpu_count ?? e.cpu_count ?? "-";
+  const effectiveEngineCount = engineState.effective_engine_count ?? e.effective_engine_count ?? workers ?? "-";
+  const evolutionMode = activeConfig.evolution_mode || engineState.evolution_mode || "-";
+  const genModeLabel = evolutionMode === "ga" ? "GA population generation" : "gen = generation";
+  const recentLogs = Array.isArray(engineState.recent_logs) ? engineState.recent_logs : [];
+  const timeoutSec = progressInfo.timeout_sec ?? engineState.timeout_sec ?? activeConfig.bt_warm_run_timeout ?? activeConfig.bt_timeout;
+  const timeoutMs = typeof timeoutSec === "number" ? timeoutSec * 1000 : 0;
+  const timeoutDeadline = progressInfo.timeout_deadline_epoch ?? engineState.timeout_deadline_epoch;
+  const periodStart = engineState.bt_full_start ?? activeConfig.bt_full_start ?? "-";
+  const periodEnd = engineState.bt_full_end ?? activeConfig.bt_full_end ?? "-";
+  const windowStart = engineState.bt_universe_start_time ?? activeConfig.bt_universe_start_time ?? "-";
+  const windowEnd = engineState.bt_universe_end_time ?? activeConfig.bt_universe_end_time ?? "-";
+  const warmTimeout = engineState.bt_warm_run_timeout ?? activeConfig.bt_warm_run_timeout ?? "-";
+  const coldTimeout = engineState.bt_timeout ?? activeConfig.bt_timeout ?? "-";
 
   // Worker pip array
   const pips = [];
@@ -51,7 +84,7 @@ function EnginePanel({ state, wsStatus }) {
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <span className="tag-slim">
-            {state.bt_timeframe || "min"}
+            {btTimeframe}
           </span>
           <span className="tag-slim">
             chunks {e.chunks_done ?? 0}/{e.chunks_total ?? 0}
@@ -61,21 +94,35 @@ function EnginePanel({ state, wsStatus }) {
       <div className="panel-bd">
         <div className="engine-summary-strip">
           <span><b>Overall Progress</b> {overallPct.toFixed(1)}%</span>
-          <span><b>Elapsed</b> {fmtElapsed(e.elapsed_ms)}</span>
+          <span><b>Elapsed</b> {fmtElapsed(elapsedMs)}</span>
           <span><b>Remaining</b> {remainingGens} gen</span>
-          <span><b>ETA</b> {fmtElapsed(e.eta_ms)}</span>
+          <span><b>ETA</b> {fmtElapsed(etaMs)}</span>
+          <span><b>Timeout</b> {fmtElapsed(timeoutMs)}</span>
+          <span><b>Deadline</b> {fmtEpoch(timeoutDeadline)}</span>
+          <span><b>Progress Source</b> {progressSource}</span>
+          <span><b>Units</b> {doneUnits}/{totalUnits}</span>
         </div>
         <div className="engine-config-strip">
           <span><b>Engine Config</b></span>
-          <span>min/tick={state.bt_timeframe || activeConfig.bt_timeframe || "-"}</span>
-          <span>bt_full_start={activeConfig.bt_full_start ?? "-"}</span>
-          <span>bt_full_end={activeConfig.bt_full_end ?? "-"}</span>
-          <span>window={activeConfig.bt_universe_start_time ?? "-"}~{activeConfig.bt_universe_end_time ?? "-"}</span>
+          <span>min/tick={btTimeframe}</span>
+          <span>mode={engineMode}</span>
+          <span>cpu={cpuCount}</span>
+          <span>engines={effectiveEngineCount}</span>
+          <span>{genModeLabel}</span>
+          <span>Period {periodStart}~{periodEnd}</span>
+          <span>bt_full_start={periodStart}</span>
+          <span>bt_full_end={periodEnd}</span>
+          <span>window={windowStart}~{windowEnd}</span>
+          <span>bt_timeout={coldTimeout}</span>
+          <span>bt_warm_run_timeout={warmTimeout}</span>
         </div>
         <div className="engine-log-strip">
           <span><b>Recent Logs</b></span>
-          <span>{latest.phase || state.status || "-"}</span>
-          <span>{latest.last_checkpoint || e.current_symbol || "waiting for engine event"}</span>
+          <span>{progressInfo.phase || latest.phase || state.status || "-"}</span>
+          <span>{progressInfo.message || latest.last_checkpoint || e.current_symbol || "waiting for engine event"}</span>
+          {recentLogs.slice(-2).map((line, i) => (
+            <span key={i}>{line}</span>
+          ))}
         </div>
         {liveNoEngine && typeof window.LivePending === "function" ? (
           <LivePending note="엔진 런타임 메트릭(CPU/메모리/워커)은 backend가 아직 발행하지 않습니다." />
@@ -131,8 +178,8 @@ function EnginePanel({ state, wsStatus }) {
           {/* Elapsed / ETA */}
           <div className="engine-cell">
             <div className="lbl">경과 시간</div>
-            <div className="val tnum mono" style={{ fontSize: 15 }}>{fmtElapsed(e.elapsed_ms)}</div>
-            <div className="sub">ETA {fmtElapsed(e.eta_ms)}</div>
+            <div className="val tnum mono" style={{ fontSize: 15 }}>{fmtElapsed(elapsedMs)}</div>
+            <div className="sub">ETA {fmtElapsed(etaMs)}</div>
           </div>
 
           {/* Current Symbol */}

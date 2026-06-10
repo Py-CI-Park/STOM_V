@@ -283,6 +283,9 @@ class TestStrategyCodeEndpoint:
         assert body["buy_name"] == "AILOOP_runX_g2_buy"
         assert body["run_id"] == "runX"
         assert body["gen"] == 2
+        assert body["ok"] is True
+        assert body["code_status"] == "ok"
+        assert body["reason"] is None
 
     def test_missing_gen_returns_empty_code(self, client, strategy_code_env):
         # 없는 세대 → 빈 코드(무예외 계약). namespaced 기본 이름으로 폴백.
@@ -291,6 +294,9 @@ class TestStrategyCodeEndpoint:
         body = resp.json()
         assert body["buy_code"] == ""
         assert body["sell_code"] == ""
+        assert body["ok"] is True
+        assert body["code_status"] == "missing_generation"
+        assert body["reason"] == "missing_generation"
 
     def test_missing_run_param_returns_empty(self, client, strategy_code_env):
         resp = client.get("/strategy_code")
@@ -298,11 +304,44 @@ class TestStrategyCodeEndpoint:
         body = resp.json()
         assert body["buy_code"] == ""
         assert body["sell_code"] == ""
+        assert body["ok"] is True
+        assert body["code_status"] == "missing_run"
+        assert body["reason"] == "missing_run"
 
     def test_negative_gen_returns_empty(self, client, strategy_code_env):
         resp = client.get("/strategy_code", params={"run": "runX", "gen": -1})
         assert resp.status_code == 200
-        assert resp.json()["buy_code"] == ""
+        body = resp.json()
+        assert body["buy_code"] == ""
+        assert body["code_status"] == "missing_generation"
+
+    def test_existing_generation_with_empty_code_reports_empty_code(
+        self, client, strategy_code_env, tmp_path
+    ):
+        st = LoopState(
+            db_path=str(strategy_code_env["runs_db"]),
+            snapshot_dir=str(tmp_path / "s2"),
+        )
+        try:
+            st.record_generation(
+                "runX", 3,
+                buy_name="AILOOP_runX_g3_buy",
+                sell_name="AILOOP_runX_g3_sell",
+                status="ok",
+                score=1.0,
+                gate_passed=True,
+            )
+        finally:
+            st.close()
+
+        resp = client.get("/strategy_code", params={"run": "runX", "gen": 3})
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["buy_code"] == ""
+        assert body["sell_code"] == ""
+        assert body["code_status"] == "empty_code"
+        assert body["reason"] == "empty_code"
 
 
 # =====================================================================

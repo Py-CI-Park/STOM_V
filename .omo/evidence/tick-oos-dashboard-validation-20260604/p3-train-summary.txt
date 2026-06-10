@@ -1,0 +1,19 @@
+P3 2023-2025 toggles-ON training summary
+timestamp=2026-06-04T11:11:25.2110199+09:00
+run_id=tick_oos_dash_p3_train_2023_2025_20260604
+official_loop_exit=0
+wall_clock_sec=2626.6
+status=complete
+generation_count=6
+winner=null
+selected_gen=4
+selected_buy=AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_buy
+selected_sell=AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_sell
+selected_score=0.35558047094767675
+selected_gate_passed=False
+selected_gate_reason=total_profit -6.719e+04 <= 0
+selected_profit=-67190.0
+selected_mdd=23.52
+selected_trades=287
+selection_rule=pre-OOS graded_score only; no OOS data used
+candidate_warning=gate false and training profit negative; OOS may still be run for fixed comparison but cannot support promotion by itself

@@ -1,0 +1,50 @@
+﻿P2 red/green selector implementation evidence
+timestamp=2026-06-04T19:47:50.8025729+09:00
+
+Baseline before new implementation:
+...........                                                              [100%]
+11 passed in 14.19s
+
+Red test before implementation:
+
+=================================== ERRORS ====================================
+_____ ERROR collecting tests/unit/test_yearly_sparse_robust_selection.py ______
+ImportError while importing test module 'C:\System_Trading\STOM\STOM_V.wt-dev\tests\unit\test_yearly_sparse_robust_selection.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Python\64\Python31313\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\unit\test_yearly_sparse_robust_selection.py:9: in <module>
+    from ai_strategy_loop.controller.candidate_selection import (
+E   ImportError: cannot import name 'select_yearly_sparse_robust_v1' from 'ai_strategy_loop.controller.candidate_selection' (C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\controller\candidate_selection.py)
+=========================== short test summary info ===========================
+ERROR tests/unit/test_yearly_sparse_robust_selection.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 1.11s
+
+Green yearly selector tests:
+........                                                                 [100%]
+8 passed in 0.58s
+
+Combined selector/prompt regression:
+...................                                                      [100%]
+19 passed in 8.87s
+
+Prompt regression suite:
+..............................................................           [100%]
+62 passed in 4.01s
+
+Pure LOC:
+ai_strategy_loop\controller\_candidate_selection_core.py	149
+ai_strategy_loop\controller\_candidate_selection_artifact.py	155
+ai_strategy_loop\controller\_yearly_sparse_robust_selection.py	231
+ai_strategy_loop\controller\_yearly_sparse_robust_artifact.py	83
+ai_strategy_loop\controller\candidate_selection.py	48
+tests\unit\test_yearly_sparse_robust_selection.py	147
+
+No-excuse check:
+scripts/python/check-no-excuse-rules.py not present in repo; manual LOC and focused pytest used.
+
+Protected path status:
+<empty>

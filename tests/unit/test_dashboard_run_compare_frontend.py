@@ -34,6 +34,9 @@ def test_enriched_run_compare_component_exists_and_uses_compare_routes() -> None
     assert "max_hold_count" in src
     assert "payoff_ratio" in src
     assert "mdd" in src
+    assert "sparseHoldSuspicious" in src
+    assert "Sparse hold warning" in src
+    assert "human corridor 6-12" in src
 
 
 def test_run_compare_does_not_filter_negative_profit_rows() -> None:

@@ -1,0 +1,81 @@
+# Final Plan Compliance Audit
+timestamp: 2026-06-04T13:43:21.5590622+09:00
+plan: .omo/plans/tick-selection-rule-sparse-gen5-research-20260604.md
+
+## Checklist State Before F1 Close
+312:- [ ] F1. Plan compliance audit
+332:- [ ] F2. Code and branch safety verification
+355:- [ ] F3. Dashboard/read-only QA if dashboard surface is used
+375:- [ ] F4. Final handoff
+
+## Evidence Map
+P0 safety snapshot and canonical reread -> p0-safety-snapshot.txt, p0-canonical-inputs.txt, p0-verification.txt
+P1 predeclare sparse_positive_v1 -> p1-selector-spec.md, p1-selector-spec.json, p1-oos-blindness-check.txt, p1-verification.txt
+P2 selector support/tests -> p2-red-test.txt, p2-selector-tests.txt, p2-related-tests.txt, p2-final-tests.txt, p2-selector-tooling.txt, p2-verification.txt, p2-architectural-review.txt
+P3 prior replay diagnostic only -> p3-prior-replay-command.txt, p3-prior-replay-selected-candidate.json, p3-prior-replay.md, p3-prior-replay-verification.txt
+P4 fresh training and selector freeze -> p4-train-precheck.txt, p4-train-config.json, p4-train-log-bom-failure.txt, p4-config-bom-fix.txt, p4-train-log.txt, p4-selector-command.txt, p4-selected-candidate.json, p4-selector-blocked.md, p4-verification.txt, p4-cleanup-check.txt
+P5 OOS comparison -> p5-oos-blocked.md, p5-verification.txt; OOS skipped because P4 selected=false
+P6 decision card -> p6-decision-card.md, p6-verification.txt; verdict NEEDS_MORE_EVIDENCE
+F1 plan compliance audit -> final-plan-compliance.txt
+F2 code and branch safety verification -> final-verification.txt (to be created next)
+F3 dashboard/read-only QA -> final-dashboard-qa.txt (to be created next)
+F4 final handoff -> final-scope-fidelity.txt and .omo/boulder.json completion (to be created after F2/F3)
+
+## Evidence Directory Listing
+p0-canonical-inputs.txt
+p0-safety-snapshot.txt
+p0-verification.txt
+p1-oos-blindness-check.txt
+p1-selector-spec.json
+p1-selector-spec.md
+p1-verification.txt
+p2-architectural-review.txt
+p2-final-tests.txt
+p2-red-test.txt
+p2-related-tests.txt
+p2-selector-tests.txt
+p2-selector-tooling.txt
+p2-verification.txt
+p3-prior-replay.md
+p3-prior-replay-command.txt
+p3-prior-replay-selected-candidate.json
+p3-prior-replay-verification.txt
+p4-cleanup-check.txt
+p4-config-bom-fix.txt
+p4-selected-candidate.json
+p4-selector-blocked.md
+p4-selector-command.txt
+p4-train-config.json
+p4-train-log.txt
+p4-train-log-bom-failure.txt
+p4-train-precheck.txt
+p4-verification.txt
+p5-oos-blocked.md
+p5-verification.txt
+p6-decision-card.md
+p6-verification.txt
+
+## Forbidden Action Search
+command: rg -n final_approval|export_winner|USER_ACK|KHOPENAPI|taskkill evidence-root
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p0-canonical-inputs.txt:61:- Do not invoke final_approval/export_winner or production strategy DB writes.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:67:- `final_approval`: not invoked.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:68:- `export_winner`: not invoked.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:70:- live broker / KHOPENAPI / V3K gate advancement: not invoked.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:71:- `taskkill`: not used.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-verification.txt:5:command: rg -n "PROMOTE_CANDIDATE|REJECT_CANDIDATE|NEEDS_MORE_EVIDENCE|human|superior|slippage|PBO|DSR|final_approval|export_winner|taskkill" p6-decision-card.md
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-verification.txt:9:67:- `final_approval`: not invoked.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-verification.txt:10:68:- `export_winner`: not invoked.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-verification.txt:11:71:- `taskkill`: not used.
+
+Interpretation: hits are guardrail text or explicit not-invoked/not-used statements only. No production approval/export/live/V3K action was invoked.
+
+## Engine / Hard Gate / Graph Status
+command: git status --short -- backtest/backengine_*.py backtest/back_static.py ai_strategy_loop/fitness/score.py backtest/graph
+(empty)
+
+## Protected Path Status
+command: git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json
+(empty)
+
+## Compliance Verdict
+F1 PASS: P0-P6 have durable artifacts; final-wave target artifacts are mapped; forbidden actions are absent except as negative guardrail evidence; engine/hard-gate/backtest_graph/protected paths are clean.

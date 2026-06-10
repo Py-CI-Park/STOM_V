@@ -13,12 +13,19 @@ JsonPrimitive: TypeAlias = str | int | float | bool | None
 JsonValue: TypeAlias = JsonPrimitive | dict[str, "JsonValue"] | list["JsonValue"]
 
 FORBIDDEN_OOS_FIELDS: Final = frozenset({
+    "ai_2022",
+    "ai_2026",
+    "decision_card",
     "oos_2022",
     "oos_2026",
+    "seed_2022",
+    "seed_2026",
     "slippage",
+    "slippage_stress",
     "pbo",
     "dsr",
     "final_verdict",
+    "post_oos",
     "post_oos_analysis",
 })
 
@@ -60,6 +67,7 @@ def parse_candidate_generation(raw: Mapping[str, JsonValue]) -> CandidateGenerat
         max_hold_count=_float_field(raw, "max_hold_count"),
         buy_name=_str_field(raw, "buy_name", default=""),
         sell_name=_str_field(raw, "sell_name", default=""),
+        csv_path=_str_field(raw, "csv_path", default=""),
     )
 
 

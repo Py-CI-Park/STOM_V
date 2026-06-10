@@ -1,0 +1,109 @@
+{
+  "selector_version": "sparse_positive_v1",
+  "predeclared_at": "2026-06-04T12:33:00+09:00",
+  "scope": "TICK training generations only; fixed before 2022/2026 OOS",
+  "allowed_fields": [
+    "gen_no",
+    "status",
+    "score",
+    "graded_score",
+    "gate_passed",
+    "gate_reason",
+    "profit",
+    "total_profit_pct",
+    "mdd",
+    "trade_count",
+    "daily_avg_trades",
+    "payoff_ratio",
+    "max_hold_count",
+    "buy_name",
+    "sell_name"
+  ],
+  "forbidden_fields": [
+    "oos_2022",
+    "oos_2026",
+    "slippage",
+    "pbo",
+    "dsr",
+    "final_verdict",
+    "post_oos_analysis"
+  ],
+  "eligibility": {
+    "status": "ok",
+    "require_strategy_names": true,
+    "min_profit_exclusive": 0.0,
+    "max_mdd_inclusive": 10.0,
+    "min_trade_count_inclusive": 20,
+    "max_trade_count_inclusive": 250,
+    "min_daily_avg_trades_inclusive": 0.05,
+    "min_payoff_ratio_inclusive": 1.05,
+    "missing_payoff_default": "reject"
+  },
+  "buckets": [
+    {
+      "name": "hard_gate_positive",
+      "priority": 1,
+      "gate_passed": true,
+      "requires_eligibility": true
+    },
+    {
+      "name": "sparse_positive",
+      "priority": 2,
+      "gate_passed": false,
+      "requires_eligibility": true,
+      "allowed_gate_reason_pattern": "daily_avg_trades .* < min_daily_trades .*",
+      "reject_mixed_failures": true
+    }
+  ],
+  "ranking": [
+    {
+      "key": "profit_div_max_mdd_1",
+      "direction": "desc"
+    },
+    {
+      "key": "mdd",
+      "direction": "asc"
+    },
+    {
+      "key": "min_trade_count_150",
+      "direction": "desc"
+    },
+    {
+      "key": "payoff_ratio",
+      "direction": "desc"
+    },
+    {
+      "key": "gen_no",
+      "direction": "asc"
+    }
+  ],
+  "artifact_schema": [
+    "selector_version",
+    "run_id",
+    "config_path",
+    "config_hash",
+    "selected",
+    "blocked",
+    "blocker",
+    "selected_bucket",
+    "gen_no",
+    "buy_name",
+    "sell_name",
+    "metrics",
+    "selection_timestamp",
+    "oos_excluded",
+    "diagnostic_only",
+    "eligible_candidates",
+    "rejected_candidates",
+    "forbidden_oos_fields_present"
+  ],
+  "oos_pass_rule": {
+    "ai_positive_each_oos_year": true,
+    "combined_ai_profit_gte_combined_seed_profit": true,
+    "ai_max_mdd_lte_seed_max_mdd": true,
+    "min_ai_trades_each_oos_year": 20,
+    "min_ai_combined_oos_trades": 50,
+    "requires_slippage_positive_each_year": true,
+    "pbo_dsr_unavailable_verdict": "NEEDS_MORE_EVIDENCE"
+  }
+}

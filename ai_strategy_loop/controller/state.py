@@ -724,14 +724,26 @@ _ACTIVE_CONFIG_FIELDS = (
     "target_daily_trades",
     "require_liquidity_gate",
     "mdd_control_enabled",
+    "sparse_positive_prompt_enabled",
+    "exec_budget_prompt_enabled",
+    "sell_exec_budget_guard_enabled",
+    "sell_max_window_calls",
+    "report_principles_enabled",
+    "time_cap_bucket_generation_enabled",
+    "time_cap_bucket_end_time",
     # 진화/우승 목표.
     "evolution_mode",
     "winner_objective",
     "profit_weight",
     # 평가 엔진/스코프.
     "bt_engine_mode",
+    "bt_engine_count",
+    "bt_warm_engine_count",
+    "bt_timeout",
+    "bt_warm_run_timeout",
     "bt_scope",
     "bt_timeframe",
+    "research_oos_mode",
     "bt_refine_from_best",
     "freeze_buy_on_mdd_only",
     "bt_full_start",
@@ -757,6 +769,11 @@ _ACTIVE_CONFIG_TOGGLES = (
     "dispersion_enabled",
     "require_liquidity_gate",
     "mdd_control_enabled",
+    "sparse_positive_prompt_enabled",
+    "exec_budget_prompt_enabled",
+    "sell_exec_budget_guard_enabled",
+    "report_principles_enabled",
+    "time_cap_bucket_generation_enabled",
     "bt_refine_from_best",
     "freeze_buy_on_mdd_only",
     "tpi_gate_enabled",
@@ -805,7 +822,12 @@ def to_loop_state(
     바로 발행 가능하다.
     """
     from ai_strategy_loop.controller import contract as C  # noqa: PLC0415
+    from ai_strategy_loop.controller.progress_contract import (  # noqa: PLC0415
+        build_backtest_progress,
+        build_engine_state,
+    )
 
+    latest_dict = latest or {}
     provider = str(getattr(config, "provider", "") or "")
     bt_timeframe = str(getattr(config, "bt_timeframe", "") or "")
     max_gen = int(getattr(config, "max_generations", 0) or summary.get("max_generations", 0) or 0)
@@ -882,7 +904,7 @@ def to_loop_state(
 
     # #64 — step_timings는 {단계명: 소요초} dict. 키는 str, 값은 float로 정규화한다
     #   (구 상태/잘못된 타입 방어). 미발행이면 빈 dict라 프론트가 완료 배지를 생략한다.
-    _raw_timings = (latest or {}).get("step_timings", {}) or {}
+    _raw_timings = latest_dict.get("step_timings", {}) or {}
     step_timings: Dict[str, float] = {}
     if isinstance(_raw_timings, dict):
         for _k, _v in _raw_timings.items():
@@ -890,17 +912,40 @@ def to_loop_state(
                 step_timings[str(_k)] = float(_v)
             except (TypeError, ValueError):
                 continue
+    phase_value = str(latest_dict.get("phase", ""))
+    phase_started_at = float(latest_dict.get("phase_started_at", 0.0) or 0.0)
+    active_config = build_active_config(config)
+    now_value = time.time()
     latest_info = C.LatestInfo(
-        phase=str((latest or {}).get("phase", "")),
-        last_checkpoint=str((latest or {}).get("last_checkpoint", "")),
-        message=str((latest or {}).get("message", "")),
-        recent_logs=list((latest or {}).get("recent_logs", [])),
-        current_step=int((latest or {}).get("current_step", -1)),
+        phase=phase_value,
+        last_checkpoint=str(latest_dict.get("last_checkpoint", "")),
+        message=str(latest_dict.get("message", "")),
+        recent_logs=list(latest_dict.get("recent_logs", [])),
+        current_step=int(latest_dict.get("current_step", -1)),
         # #64 — LIVE 진행시간(단계/세대 시작 epoch + 단계별 소요초). 기본 0.0/빈 dict라
         #   이 값을 발행하지 않던 구 상태도 그대로 검증 통과한다(하위호환).
-        phase_started_at=float((latest or {}).get("phase_started_at", 0.0) or 0.0),
-        gen_started_at=float((latest or {}).get("gen_started_at", 0.0) or 0.0),
+        phase_started_at=phase_started_at,
+        gen_started_at=float(latest_dict.get("gen_started_at", 0.0) or 0.0),
         step_timings=step_timings,
+        backtest_progress=build_backtest_progress(
+            config=config,
+            latest=latest_dict,
+            status=status,
+            current_gen=current_gen,
+            max_generations=max_gen,
+            phase=phase_value,
+            phase_started_at=phase_started_at,
+            bt_timeframe=bt_timeframe,
+            now=now_value,
+        ),
+        engine_state=build_engine_state(
+            config=config,
+            latest=latest_dict,
+            active_config=active_config,
+            status=status,
+            current_gen=current_gen,
+            phase=phase_value,
+        ),
     )
 
     return C.LoopState(
@@ -920,6 +965,6 @@ def to_loop_state(
         ),
         page_data=dict(page_data or {}),
         # R8 — 적용된 config의 주요 설정/토글 스냅샷(없으면 빈 dict=하위호환).
-        active_config=build_active_config(config),
+        active_config=active_config,
         updated_at=time.time(),
     )

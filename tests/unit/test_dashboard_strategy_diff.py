@@ -96,6 +96,8 @@ def test_strategy_diff_route_returns_buy_and_sell_diff(monkeypatch, tmp_path: Pa
     assert body["run_id"] == "runDiff"
     assert body["gen_no"] == 1
     assert body["base_gen"] == 0
+    assert body["ok"] is True
+    assert body["diff_status"] == "ok"
     assert body["buy_name"] == "AILOOP_runDiff_g1_buy"
     assert body["sell_name"] == "AILOOP_runDiff_g1_sell"
     assert any(line.startswith("-if 등락율 > 1:") for line in body["buy_diff"])
@@ -127,6 +129,53 @@ def test_strategy_diff_gen_zero_has_no_previous_base(monkeypatch, tmp_path: Path
     assert resp.status_code == 200
     body = resp.json()
     assert body["base_gen"] is None
+    assert body["ok"] is True
+    assert body["diff_status"] == "no_previous_generation"
     assert body["buy_diff"] == []
     assert body["sell_diff"] == []
     assert body["reason"] == "no_previous_generation"
+
+
+def test_strategy_diff_missing_run_reports_status(monkeypatch, tmp_path: Path) -> None:
+    """Given missing run_id, When diff is requested, Then payload is explicit and non-404."""
+    from fastapi.testclient import TestClient
+
+    from ai_strategy_loop.dashboard.app import create_app
+
+    monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
+    monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
+
+    resp = TestClient(create_app()).get("/strategy_diff?gen_no=1")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["ok"] is True
+    assert body["diff_status"] == "missing_run"
+    assert body["reason"] == "missing_run"
+    assert body["buy_diff"] == []
+    assert body["sell_diff"] == []
+
+
+def test_strategy_diff_missing_generation_reports_status(monkeypatch, tmp_path: Path) -> None:
+    """Given unknown generation, When diff is requested, Then payload reports missing generation."""
+    from fastapi.testclient import TestClient
+
+    import ai_strategy_loop.bootstrap as bootstrap
+    from ai_strategy_loop.dashboard.app import create_app
+
+    strat_db = tmp_path / "loop_strategies.db"
+    runs_db = tmp_path / "loop_runs.db"
+    _seed_strategy_db(strat_db)
+    _seed_run_db(runs_db, tmp_path / "s")
+    monkeypatch.setattr(bootstrap, "LOOP_DB_STRATEGY", str(strat_db))
+    monkeypatch.setattr(S, "LOOP_RUNS_DB", runs_db)
+    monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
+    monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
+
+    resp = TestClient(create_app()).get("/strategy_diff?run_id=runDiff&gen_no=9")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["ok"] is True
+    assert body["diff_status"] == "missing_generation"
+    assert body["reason"] == "missing_generation"

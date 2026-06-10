@@ -25,9 +25,11 @@ function LivePending({ note }) {
     <div style={{
       padding: "24px 20px", color: "var(--ink-3)", textAlign: "center",
       fontSize: 12, fontFamily: "var(--mono)", lineHeight: 1.6,
-    }}>
-      <div style={{ fontSize: 13, color: "var(--ink-2)", marginBottom: 6 }}>실시간 데이터 대기</div>
-      {note || "이 패널의 상세 스트림은 backend가 아직 발행하지 않습니다 (page_data 승격 예정)."}
+    }} data-tip="Live data pending: waiting for a fresh live snapshot from backend.">
+      <div style={{ fontSize: 13, color: "var(--ink-2)", marginBottom: 6 }}>
+        실시간 데이터 대기 · Live data pending
+      </div>
+      {note || "Waiting for a fresh live snapshot from backend; this panel is not a stale result."}
     </div>
   );
 }

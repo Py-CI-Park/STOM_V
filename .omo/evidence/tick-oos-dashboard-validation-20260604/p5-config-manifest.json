@@ -1,0 +1,65 @@
+{
+    "timestamp":  "2026-06-04T11:22:38.1531190+09:00",
+    "candidate_gen":  4,
+    "candidate_buy":  "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_buy",
+    "candidate_sell":  "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_sell",
+    "oos_informed_reselection":  false,
+    "configs":  [
+                    {
+                        "kind":  "seed",
+                        "year":  "2022",
+                        "source":  "ai_strategy_loop/state/run_ens_seed_2022full_config.json",
+                        "config":  ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-seed-2022-config.json",
+                        "seed_buy":  "Tick_B_902_905_Update_2",
+                        "seed_sell":  "Tick_S_902_905_Update_2",
+                        "bt_full_start":  20220101,
+                        "bt_full_end":  20221231,
+                        "bt_universe_start_time":  90000,
+                        "bt_universe_end_time":  92800,
+                        "max_generations":  1,
+                        "bt_refine_from_best":  false
+                    },
+                    {
+                        "kind":  "seed",
+                        "year":  "2026",
+                        "source":  "ai_strategy_loop/state/run_ens_seed_2026full_config.json",
+                        "config":  ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-seed-2026-config.json",
+                        "seed_buy":  "Tick_B_902_905_Update_2",
+                        "seed_sell":  "Tick_S_902_905_Update_2",
+                        "bt_full_start":  20260101,
+                        "bt_full_end":  20260228,
+                        "bt_universe_start_time":  90000,
+                        "bt_universe_end_time":  92800,
+                        "max_generations":  1,
+                        "bt_refine_from_best":  false
+                    },
+                    {
+                        "kind":  "ai",
+                        "year":  "2022",
+                        "source":  "ai_strategy_loop/state/run_ens_seed_2022full_config.json",
+                        "config":  ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-ai-2022-config.json",
+                        "seed_buy":  "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_buy",
+                        "seed_sell":  "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_sell",
+                        "bt_full_start":  20220101,
+                        "bt_full_end":  20221231,
+                        "bt_universe_start_time":  90000,
+                        "bt_universe_end_time":  93000,
+                        "max_generations":  1,
+                        "bt_refine_from_best":  false
+                    },
+                    {
+                        "kind":  "ai",
+                        "year":  "2026",
+                        "source":  "ai_strategy_loop/state/run_ens_seed_2026full_config.json",
+                        "config":  ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-ai-2026-config.json",
+                        "seed_buy":  "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_buy",
+                        "seed_sell":  "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_sell",
+                        "bt_full_start":  20260101,
+                        "bt_full_end":  20260228,
+                        "bt_universe_start_time":  90000,
+                        "bt_universe_end_time":  93000,
+                        "max_generations":  1,
+                        "bt_refine_from_best":  false
+                    }
+                ]
+}

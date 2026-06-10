@@ -1,0 +1,190 @@
+﻿# F4 Scope Fidelity and Final Handoff
+
+timestamp=2026-06-04T11:47:52.1525870+09:00
+plan=.omo/plans/tick-oos-dashboard-validation-20260604.md
+
+## Final Verdict
+4:- Final Verdict: `REJECT_CANDIDATE`
+71:## Final Verdict
+72:- Final Verdict: `REJECT_CANDIDATE`
+
+## Git Status
+## STOM_Version_2U_C-ai-strategy-loop
+ M AGENTS.md
+ M ai_strategy_loop/controller/lineage.py
+ M ai_strategy_loop/controller/state.py
+ M ai_strategy_loop/dashboard/app.py
+ M ai_strategy_loop/dashboard/frontend/app.jsx
+ M ai_strategy_loop/dashboard/frontend/chart.jsx
+ M ai_strategy_loop/dashboard/frontend/code-viewer.jsx
+ M ai_strategy_loop/dashboard/frontend/engine.jsx
+ M ai_strategy_loop/dashboard/frontend/index.html
+ M ai_strategy_loop/dashboard/frontend/styles.css
+ M ai_strategy_loop/dashboard/frontend/table.jsx
+?? .claude/
+?? .omo/
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_min_buy.txt"
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_tick_buy.txt"
+?? "C\357\200\272Tempstom_postchange_full.txt"
+?? ai_strategy_loop/AGENTS.md
+?? ai_strategy_loop/dashboard/frontend/ai-context.jsx
+?? ai_strategy_loop/dashboard/frontend/research-lab.jsx
+?? ai_strategy_loop/dashboard/frontend/research-wiki.jsx
+?? ai_strategy_loop/dashboard/frontend/run-compare.jsx
+?? ai_strategy_loop/dashboard/frontend/strategy-inspector.jsx
+?? ai_strategy_loop/dashboard/research_api.py
+?? ai_strategy_loop/fitness/correlation.py
+?? backtest/AGENTS.md
+?? cli/AGENTS.md
+?? docs/AGENTS.md
+?? docs/reference/
+?? docs/research/condition_research/wiki/
+?? research/AGENTS.md
+?? scripts/AGENTS.md
+?? seed_strategy_output.txt
+?? strategy/AGENTS.md
+?? tests/AGENTS.md
+?? tests/unit/test_dashboard_ai_context_pack.py
+?? tests/unit/test_dashboard_chart_explanations.py
+?? tests/unit/test_dashboard_current_gen_detail.py
+?? tests/unit/test_dashboard_index_compare.py
+?? tests/unit/test_dashboard_integrated_layout.py
+?? tests/unit/test_dashboard_prompts.py
+?? tests/unit/test_dashboard_research_docs.py
+?? tests/unit/test_dashboard_research_lab_frontend.py
+?? tests/unit/test_dashboard_run_compare_frontend.py
+?? tests/unit/test_dashboard_runs_enriched.py
+?? tests/unit/test_dashboard_strategy_diff.py
+?? tests/unit/test_dashboard_strategy_prompt_frontend.py
+?? tests/unit/test_dashboard_table_sorting.py
+?? tests/unit/test_dashboard_wiki_frontend.py
+?? tests/unit/test_research_wiki_docs.py
+?? tests/unit/test_variable_correlation.py
+?? testsunit_exit_test_out.txt
+?? trade/AGENTS.md
+?? ui/AGENTS.md
+?? utility/ai_agent/AGENTS.md
+
+## Protected Path Status
+protected_status_begin
+protected_status_end
+
+## Dashboard Base Caveat
+- Pre-existing http://127.0.0.1:8770 is still running but was stale in P0/P1 for new dashboard APIs; it was not stopped.
+- Current-code dashboard was repeatedly verified on owned http://127.0.0.1:8799 sessions and every owned session was stopped.
+
+## Scope Statement
+- This run is research validation, not production promotion.
+- No engine/hard-gate/backtest_graph/source behavior was intentionally changed by this plan.
+- No final_approval/export_winner/USER_ACK/KHOPENAPI/live order action was invoked.
+- Final Verdict: REJECT_CANDIDATE.
+
+## Recommended Next Command
+$ulw-plan TICK 후보 선택 규칙 개선과 sparse-positive gen5 계열 재연구 계획을 만들어줘. docs/AGENT_HANDOFF.md, .omo/evidence/tick-oos-dashboard-validation-20260604/p6-decision-card.md, p4-analysis.md, p5-oos-comparison.md를 정본으로 삼고, OOS 후 재선택 금지, 엔진/하드게이트/backtest_graph 무수정, 신규 후보는 predeclared selection rule로 고정하는 조건으로 계획해줘.
+
+## Boulder Status Before Close
+{
+  "schema_version": 2,
+  "active_work_id": "tick-oos-dashboard-validation-20260604",
+  "works": {
+    "condition-research-rereview-20260603": {
+      "work_id": "condition-research-rereview-20260603",
+      "active_plan": ".omo/plans/condition-research-rereview-20260603.md",
+      "plan_name": "condition-research-rereview-20260603",
+      "session_ids": [
+        "codex:condition-research-rereview-20260603"
+      ],
+      "status": "completed",
+      "worktree_path": null
+    },
+    "tick-oos-validation-20260603": {
+      "work_id": "tick-oos-validation-20260603",
+      "active_plan": ".omo/plans/tick-oos-validation-20260603.md",
+      "plan_name": "tick-oos-validation-20260603",
+      "session_ids": [
+        "codex:tick-oos-validation-20260603",
+        "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
+      ],
+      "status": "completed",
+      "worktree_path": null
+    },
+    "tick-research-dashboard-upgrade-20260603": {
+      "work_id": "tick-research-dashboard-upgrade-20260603",
+      "active_plan": ".omo/plans/tick-research-dashboard-upgrade-20260603.md",
+      "plan_name": "tick-research-dashboard-upgrade-20260603",
+      "session_ids": [
+        "codex:tick-research-dashboard-upgrade-20260603"
+      ],
+      "status": "completed",
+      "worktree_path": null
+    },
+    "tick-oos-dashboard-validation-20260604": {
+      "work_id": "tick-oos-dashboard-validation-20260604",
+      "active_plan": ".omo/plans/tick-oos-dashboard-validation-20260604.md",
+      "plan_name": "tick-oos-dashboard-validation-20260604",
+      "session_ids": [
+        "codex:tick-oos-dashboard-validation-20260604"
+      ],
+      "status": "active",
+      "worktree_path": null
+    }
+  }
+}
+
+
+## Boulder Status After Close
+{
+    "schema_version":  2,
+    "active_work_id":  null,
+    "works":  {
+                  "condition-research-rereview-20260603":  {
+                                                               "work_id":  "condition-research-rereview-20260603",
+                                                               "active_plan":  ".omo/plans/condition-research-rereview-20260603.md",
+                                                               "plan_name":  "condition-research-rereview-20260603",
+                                                               "session_ids":  [
+                                                                                   "codex:condition-research-rereview-20260603"
+                                                                               ],
+                                                               "status":  "completed",
+                                                               "worktree_path":  null
+                                                           },
+                  "tick-oos-validation-20260603":  {
+                                                       "work_id":  "tick-oos-validation-20260603",
+                                                       "active_plan":  ".omo/plans/tick-oos-validation-20260603.md",
+                                                       "plan_name":  "tick-oos-validation-20260603",
+                                                       "session_ids":  [
+                                                                           "codex:tick-oos-validation-20260603",
+                                                                           "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
+                                                                       ],
+                                                       "status":  "completed",
+                                                       "worktree_path":  null
+                                                   },
+                  "tick-research-dashboard-upgrade-20260603":  {
+                                                                   "work_id":  "tick-research-dashboard-upgrade-20260603",
+                                                                   "active_plan":  ".omo/plans/tick-research-dashboard-upgrade-20260603.md",
+                                                                   "plan_name":  "tick-research-dashboard-upgrade-20260603",
+                                                                   "session_ids":  [
+                                                                                       "codex:tick-research-dashboard-upgrade-20260603"
+                                                                                   ],
+                                                                   "status":  "completed",
+                                                                   "worktree_path":  null
+                                                               },
+                  "tick-oos-dashboard-validation-20260604":  {
+                                                                 "work_id":  "tick-oos-dashboard-validation-20260604",
+                                                                 "active_plan":  ".omo/plans/tick-oos-dashboard-validation-20260604.md",
+                                                                 "plan_name":  "tick-oos-dashboard-validation-20260604",
+                                                                 "session_ids":  [
+                                                                                     "codex:tick-oos-dashboard-validation-20260604"
+                                                                                 ],
+                                                                 "status":  "completed",
+                                                                 "worktree_path":  null,
+                                                                 "completed_at":  "2026-06-04T11:48:55.6080517+09:00"
+                                                             }
+              }
+}
+
+
+## Final Completion Check
+unchecked_top_level_items=0
+protected_path_status=empty
+owned_8799_status=stopped_or_unreachable
+preexisting_8770_status=200_left_running_stale

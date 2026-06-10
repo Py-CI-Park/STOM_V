@@ -374,6 +374,15 @@ class TestBacktestDetailChartStructure:
         # 보유금액(원)은 엔진 전용이라 미표시 안내가 있어야 한다.
         assert "보유금액" in bd
 
+    def test_component_flags_db_vs_csv_hold_discrepancy(self):
+        src = _read_front("chart.jsx")
+        bd = src[src.find("function BacktestDetailChart("):]
+
+        assert "dbMaxHold" in bd
+        assert "sparseHoldSuspicious" in bd
+        assert "CSV peak_holdings" in bd
+        assert "human corridor 6-12" in bd
+
     def test_component_empty_state(self):
         src = _read_front("chart.jsx")
         bd = src[src.find("function BacktestDetailChart("):]

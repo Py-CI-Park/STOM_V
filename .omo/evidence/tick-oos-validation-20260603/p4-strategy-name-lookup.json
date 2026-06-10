@@ -1,0 +1,34 @@
+{
+  "names": [
+    "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_buy",
+    "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_sell",
+    "Tick_B_902_905_Update_2",
+    "Tick_S_902_905_Update_2"
+  ],
+  "found": {
+    "stockbuy": [
+      {
+        "index": "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_buy",
+        "code_head": "????",
+        "code_len": 4
+      },
+      {
+        "index": "Tick_B_902_905_Update_2",
+        "code_head": "????",
+        "code_len": 4
+      }
+    ],
+    "stocksell": [
+      {
+        "index": "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_sell",
+        "code_head": "????",
+        "code_len": 4
+      },
+      {
+        "index": "Tick_S_902_905_Update_2",
+        "code_head": "????",
+        "code_len": 4
+      }
+    ]
+  }
+}

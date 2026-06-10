@@ -1,0 +1,26 @@
+[LOOP] loop DB        : C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\state\loop_strategies.db
+[LOOP] provider       : gpt_auth
+[LOOP] max_generations: 1
+[LOOP] bt_timeframe   : tick
+[LOOP] bt_engine_mode : warm
+[LOOP] warm prepare 완료 (back_count=41)
+
+[LOOP] === generation 0 (run=tick_seed_timeout_warm_1d_1m_e1_20260605_r1) ===
+[LOOP] seed 사용: buy=C_T_900_920_U2_B sell=C_T_900_920_U2_S
+[LOOP] backtest status=error elapsed=11.0s reason=warm backtest non-success: status=error message=backtest completed without metrics csv=no
+
+[LOOP] === SUMMARY ===
+{
+  "run_id": "tick_seed_timeout_warm_1d_1m_e1_20260605_r1",
+  "generations": 1,
+  "best_gen": -1,
+  "best_score": null,
+  "best_buy": null,
+  "best_sell": null,
+  "winner_gen": -1,
+  "winner_score": null,
+  "winner_buy": null,
+  "winner_sell": null,
+  "stop_reason": "max_generations 도달: gen_count 1 >= 1"
+}
+[LOOP] wall-clock: 47.7s

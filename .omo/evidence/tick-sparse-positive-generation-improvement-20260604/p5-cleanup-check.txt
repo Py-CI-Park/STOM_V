@@ -1,0 +1,4 @@
+﻿P5 cleanup check
+timestamp=2026-06-04T18:15:11.1107605+09:00
+query=python processes with tick_spgen_p5_train_2023_2025_20260604 in command line
+<empty>

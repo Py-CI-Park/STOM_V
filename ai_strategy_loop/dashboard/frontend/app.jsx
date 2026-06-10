@@ -196,6 +196,9 @@ function App() {
 
           <SectionLabel text="Run Monitor" />
           <CurrentGenPanel state={state} />
+          <ResearchCriteriaBanner state={state} baseUrl={baseUrl} />
+          <ResearchGlossaryPanel />
+          <ActiveStrategyPanel state={state} baseUrl={baseUrl} onViewCode={onViewCodeByGen} />
           <PhaseTimeline state={state} />
           <ProcessFlowPanel state={state} />
           <PhaseDetailPanel state={state} wsStatus={wsStatus} />

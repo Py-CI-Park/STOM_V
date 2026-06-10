@@ -1,0 +1,7 @@
+﻿P7 verification
+timestamp=2026-06-04T21:16:50.4288790+09:00
+decision_card=written
+final_verdict=NEEDS_MORE_EVIDENCE
+pbo_dsr_tooling=docs/advisory only; no candidate path execution
+slippage=not run because selected=false
+forbidden_actions=false

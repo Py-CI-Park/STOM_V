@@ -1,0 +1,78 @@
+{
+  "status": "ok",
+  "command": "inspect",
+  "config_json": ".omo\\evidence\\tick-p7-timeout-unblock-live-strategy-visibility-20260605\\p5-seed-diag-5m-config.json",
+  "seed_buy": {
+    "name": "C_T_900_920_U2_B",
+    "kind": "buy",
+    "exists": true,
+    "sha256": "902cb36b87f5828548531583cd4aa16ed4a5a2a597b3db3abba217cb0f86e2e3",
+    "length": 13178,
+    "line_count": 431,
+    "first_12_lines": [
+      "# ================================",
+      "#  공통 계산 지표",
+      "# ================================",
+      "전일종가          = 현재가 / (1 + (등락율 / 100))                      # 단위: 원",
+      "시가등락율        = ((시가 - 전일종가) / 전일종가) * 100                # 단위: 퍼센트",
+      "시가대비등락율    = ((현재가 - 시가) / 시가) * 100                      # 단위: 퍼센트",
+      "초당순매수금액    = (초당매수수량 - 초당매도수량) * 현재가 / 1_000_000   # 단위: 백만원",
+      "# ------------------------------------------------",
+      "#  추가 지표 (활용 가능)",
+      "# ------------------------------------------------",
+      "# 누적거래대금비율 = 당일거래대금 / (시가총액 * 회전율 / 100) * 100 if (시가총액 * 회전율 / 100) != 0 else 0",
+      "# 초당순매수비율 = 초당매수수량 / (초당매수수량 + 초당매도수량) * 100 if (초당매수수량 + 초당매도수량) != 0 else 0"
+    ],
+    "contains_self_buy": true,
+    "contains_self_sell": false,
+    "literal_buy_true_count": 0,
+    "literal_sell_true_count": 0,
+    "time_token_count": 14
+  },
+  "seed_sell": {
+    "name": "C_T_900_920_U2_S",
+    "kind": "sell",
+    "exists": true,
+    "sha256": "e61d8ba393ae74de73d07e0cd291861bc3edeec1050cbc7d06a0750d67cba5c6",
+    "length": 1945,
+    "line_count": 87,
+    "first_12_lines": [
+      "# ================================",
+      "#  공통 계산 지표",
+      "# ================================",
+      "시가대비등락율    = ((현재가 - 시가) / 시가) * 100                      # 단위: 퍼센트",
+      "# ------------------------------------------------",
+      "#  추가 지표 (활용 가능)",
+      "# ------------------------------------------------",
+      "# 매도잔량압력 = 매도총잔량 / 초당매도수량 if 초당매도수량 != 0 else 0",
+      "# 체결강도변동성 = (최고체결강도(10) - 최저체결강도(10)) / 체결강도평균(10) * 100 if 체결강도평균(10) != 0 else 0",
+      "",
+      "",
+      ""
+    ],
+    "contains_self_buy": false,
+    "contains_self_sell": true,
+    "literal_buy_true_count": 0,
+    "literal_sell_true_count": 0,
+    "time_token_count": 8
+  },
+  "effective_warm_backtest_config": {
+    "start_date": 20250101,
+    "end_date": 20250103,
+    "start_time": 90000,
+    "end_time": 90500,
+    "avg_time": 30,
+    "engine_count": 8,
+    "is_tick": true,
+    "betting": "5",
+    "divid_mode": "종목코드별 분류",
+    "timeout": 600
+  },
+  "loop_timeout_fields": {
+    "bt_timeout": 600,
+    "bt_warm_run_timeout": 120,
+    "bt_engine_mode": "warm",
+    "bt_timeframe": "tick",
+    "bt_warm_engine_count": 8
+  }
+}

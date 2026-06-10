@@ -32,6 +32,13 @@ def test_research_lab_component_contract() -> None:
     assert "insufficient" in src
     assert "feature_matrix" in src
     assert "sample count" in src
+    assert "range_summaries" in src
+    assert "segment_summaries" in src
+    assert "interaction_candidates" in src
+    assert "histogram" in src
+    assert "win/loss" in src
+    assert "recency_research" in src
+    assert "research_score_not_promotion" in src
 
 
 def test_research_lab_exposes_window_symbol() -> None:

@@ -1,0 +1,39 @@
+[LOOP] loop DB        : C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\state\loop_strategies.db
+[LOOP] provider       : gpt_auth
+[LOOP] max_generations: 2
+[LOOP] bt_timeframe   : tick
+[LOOP] bt_engine_mode : warm
+[LOOP] warm prepare 완료 (back_count=63)
+
+[LOOP] === generation 0 (run=tick_p2_timecap_900_920_preflight_guarded_20260606) ===
+[LOOP] seed 사용: buy=Tick_B_902_905_Update_2 sell=Tick_S_902_905_Update_2
+[LOOP] backtest status=success elapsed=12.2s reason=ok
+[LOOP] graded=1 hard_composite=0 calmar=250.2 r2=0 gate=True reason=ok mdd=4.59 profit=229,983 trades=1 gate_distance=ok (gate passed)
+
+[LOOP] === generation 1 (run=tick_p2_timecap_900_920_preflight_guarded_20260606) ===
+[LOOP] generated buy=AILOOP_tick_p2_timecap_900_920_preflight_guarded_20260606_g1_buy sell=AILOOP_tick_p2_timecap_900_920_preflight_guarded_20260606_g1_sell (cum_tokens=22771)
+[LOOP] --- AILOOP_tick_p2_timecap_900_920_preflight_guarded_20260606_g1_buy (first 6 lines) ---
+    매수 = True
+    
+    전일종가 = 현재가 / (1 + (등락율 / 100))
+    시가등락율 = ((시가 - 전일종가) / 전일종가) * 100
+    시가대비등락율 = ((현재가 - 시가) / 시가) * 100
+    초당순매수금액 = (초당매수수량 - 초당매도수량) * 현재가 / 1000000
+[LOOP] --- /AILOOP_tick_p2_timecap_900_920_preflight_guarded_20260606_g1_buy ---
+[LOOP] backtest status=error elapsed=138.5s reason=warm backtest non-success: status=error message=백테스트 시간 초과 (120초) csv=no
+
+[LOOP] === SUMMARY ===
+{
+  "run_id": "tick_p2_timecap_900_920_preflight_guarded_20260606",
+  "generations": 2,
+  "best_gen": 0,
+  "best_score": 1.0,
+  "best_buy": "Tick_B_902_905_Update_2",
+  "best_sell": "Tick_S_902_905_Update_2",
+  "winner_gen": 0,
+  "winner_score": 0.0,
+  "winner_buy": "Tick_B_902_905_Update_2",
+  "winner_sell": "Tick_S_902_905_Update_2",
+  "stop_reason": "max_generations 도달: gen_count 2 >= 2"
+}
+[LOOP] wall-clock: 284.1s

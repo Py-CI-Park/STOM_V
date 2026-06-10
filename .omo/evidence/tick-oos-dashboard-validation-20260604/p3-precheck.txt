@@ -1,0 +1,2 @@
+﻿timestamp=2026-06-04T10:25:20.4952438+09:00 p3_config_first_three_bytes=123,13,10 protected_status_begin
+protected_status_end

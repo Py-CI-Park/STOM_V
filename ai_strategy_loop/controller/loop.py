@@ -693,6 +693,19 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             # 생성 분류축 유도(매수) — build_messages가 kind=='buy'일 때만 분류축 블록을
             #   추가하므로 매도 경로엔 무영향. getattr 기본 False라 구버전 config도 무영향.
             classification_generation_enabled=getattr(config, "classification_generation_enabled", False),
+            time_cap_bucket_generation_enabled=getattr(config, "time_cap_bucket_generation_enabled", False),
+            time_cap_bucket_end_time=getattr(config, "time_cap_bucket_end_time", 92000),
+            sparse_positive_prompt_enabled=getattr(config, "sparse_positive_prompt_enabled", False),
+            # 계산예산 지침/가드(2026-06-10 원인3) — 프롬프트 지침은 buy/sell 분기 지침을
+            #   build_messages가 kind별로 적용하고, PRE-SAVE 가드는 generate_strategy가
+            #   kind=='sell'일 때만 적용한다. getattr 기본 False/8이라 구버전 config도
+            #   무영향(byte-동일, 하위호환).
+            exec_budget_prompt_enabled=getattr(config, "exec_budget_prompt_enabled", False),
+            sell_exec_budget_guard_enabled=getattr(config, "sell_exec_budget_guard_enabled", False),
+            sell_max_window_calls=getattr(config, "sell_max_window_calls", 8),
+            # v5.0 리포트 원리 어휘 주입 — build_messages가 kind별 어휘 블록을 추가한다.
+            #   getattr 기본 False라 구버전 config도 무영향(byte-동일, 하위호환).
+            report_principles_enabled=getattr(config, "report_principles_enabled", False),
             min_filter_categories=getattr(config, "min_filter_categories", 5),
             # P2b-1 가정 환류 — prev_judged_hypotheses가 없으면(토글 OFF/직전 미판정)
             #   None이라 build_messages가 미주입해 동작 byte-identical(하위호환).

@@ -1,0 +1,15 @@
+﻿timestamp=2026-06-04T11:12:07.4294758+09:00
+p3_loop_session=54339
+p3_loop_parent_pid=48188
+p3_loop_exit_code=0
+p3_dashboard_base=http://127.0.0.1:8799
+p3_dashboard_session=58310
+p3_dashboard_pid=39260
+dashboard_cleanup_action=Ctrl-C sent through owned exec session only
+8799_status=stopped_or_unreachable
+8799_error=The operation has timed out.
+8770_status=200
+p3_loop_parent_alive=False
+p3_loop_child_count=0
+protected_status_begin
+protected_status_end

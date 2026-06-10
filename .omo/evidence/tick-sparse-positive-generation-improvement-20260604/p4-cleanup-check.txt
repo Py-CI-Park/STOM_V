@@ -1,0 +1,4 @@
+﻿P4 cleanup check
+timestamp=2026-06-04T17:18:07.9770344+09:00
+query=python processes with tick_spgen_p4_smoke in command line
+<empty>

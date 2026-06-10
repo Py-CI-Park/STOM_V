@@ -385,6 +385,14 @@ class TestFrontendStructure:
         assert "백테 기간" in hof       # 2) 백테 기간 컬럼 추가
         assert "r.period" in hof        # AI/인간 공통 period 필드 렌더
 
+    def test_component_can_sort_by_total_return_krw_and_scrolls_horizontally(self):
+        """총수익금 기준 정렬 + 넓은 테이블 가로 스크롤 회귀 가드."""
+        src = _read_front("chart.jsx")
+        hof = src[src.find("function HallOfFamePanel("):]
+        assert 'key: "total_return_krw"' in hof
+        assert "hof-scroll" in hof
+        assert "minWidth" in hof
+
     def test_component_has_short_window_tooltip_and_legend(self):
         """3) AI '단기' 라벨 tooltip + 범례 안내."""
         src = _read_front("chart.jsx")

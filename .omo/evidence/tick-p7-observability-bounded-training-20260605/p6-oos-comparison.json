@@ -1,0 +1,34 @@
+{
+  "status": "blocked_no_promotion_candidate",
+  "source": "p5-candidate-pools.json",
+  "promotion_allowed": false,
+  "frozen_candidate_identity": null,
+  "rows": [
+    {
+      "label": "seed_2022",
+      "status": "not_run",
+      "reason": "No frozen AI promotion candidate; fixed comparison blocked."
+    },
+    {
+      "label": "ai_2022",
+      "status": "not_run",
+      "reason": "No frozen AI promotion candidate."
+    },
+    {
+      "label": "seed_2026",
+      "status": "not_run",
+      "reason": "No frozen AI promotion candidate; fixed comparison blocked."
+    },
+    {
+      "label": "ai_2026",
+      "status": "not_run",
+      "reason": "No frozen AI promotion candidate."
+    }
+  ],
+  "diagnostics": {
+    "pbo": "not_run",
+    "dsr": "not_run",
+    "slippage": "not_run",
+    "promotion_status": "blocked"
+  }
+}

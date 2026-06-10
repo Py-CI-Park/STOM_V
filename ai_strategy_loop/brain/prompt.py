@@ -14,6 +14,8 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from .time_cap_bucket import time_cap_bucket_prompt_lines
+
 # v1 자산 디렉토리 (저장소 고정 위치).
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _ASSET_DIR = _REPO_ROOT / "utility" / "ai_agent" / "system_prompt" / "v1"
@@ -153,6 +155,76 @@ def _crossover_lines(label: Dict[str, str], parents: Tuple[str, str]) -> List[st
     ]
 
 
+def _sparse_positive_lines(kind: str) -> List[str]:
+    """Default-OFF sparse_positive_v1 generation guidance."""
+    common = [
+        "",
+        "Sparse-positive generation guidance (sparse_positive_v1; advisory only, not a hard gate or selector relaxation):",
+        "- targets: profit > 0; MDD <= 10; trade_count 20-250; daily_avg_trades >= 0.05; payoff_ratio >= 1.05.",
+        "- Selection remains training-only and OOS-blind; do not tune from 2022/2026 OOS or reselect after OOS.",
+    ]
+    if kind == "buy":
+        return common + [
+            "- Buy-side: target selective sparse-positive entries, avoid high-frequency overtrading, and avoid repeated noisy tick signals.",
+            "- Keep entry filters strong enough to control MDD but not so narrow that trade_count collapses below 20.",
+        ]
+    return common + [
+        "- Sell-side: protect MDD <= 10, reduce giveback, preserve payoff_ratio >= 1.05, and prevent sparse entries from becoming large-loss holds.",
+        "- Cut losers before drawdown expands; lock in gains near peak instead of returning most MFE.",
+    ]
+
+
+def _exec_budget_lines(kind: str) -> List[str]:
+    """Default-OFF 계산예산(exec-budget) 지침 (2026-06-10 실측: 타임아웃 지배변수=매도식).
+
+    11/11 분리 실측: 비유계 스캔 함수+윈도우 호출 다수의 매도식은 warm run 300초
+    타임아웃을 유발한다(같은 매수가 스칼라 매도로는 21초). 매수식은 싼 게이트를
+    앞에 둬야 도달률이 낮아진다(시드/gen4 검증 패턴).
+    """
+    common = [
+        "",
+        "계산예산(백테스트 속도) 지침 — 위반하면 백테스트가 타임아웃돼 세대가 통째로 버려진다:",
+    ]
+    if kind == "buy":
+        return common + [
+            "- 싼 스칼라 게이트를 **앞에** 배치하라: 좁은 시분초 창 → 초당거래대금 절대 하한 → 체결강도 밴드 → 시가총액 슬라이스 → 가격/등락율 밴드 순.",
+            "- 윈도우/구간 함수(이동평균·최고현재가·체결강도평균·누적초당…·각도류)는 위 게이트를 전부 통과한 **뒤에만** 호출하라(지연 계산).",
+            "- 파생변수를 조건 분기 이전에 일괄 선계산하지 마라 — 모든 틱에서 계산돼 타임아웃된다.",
+        ]
+    return common + [
+        "- 매도식은 보유 종목의 **모든 틱**에서 평가된다 — 스칼라 조건(수익률/최고수익률/보유시간/초당매수·매도수량/등락율/시분초) 위주로 작성하라.",
+        "- 고가미갱신지속틱수/저가미갱신지속틱수(비유계 역스캔)는 매도식에서 **사용 금지** — 보유시간 상한이 있어도 스캔 깊이가 당일 이력에 비례해 타임아웃된다(실측).",
+        "- 윈도우/구간 집계 함수 호출은 최소화하라(수 개 이내). `elif 보유시간 >= N:` 시간 청산과 시분초 >= 92800 강제 청산을 포함하라.",
+    ]
+
+
+def _report_principles_lines(kind: str) -> List[str]:
+    """Default-OFF v5.0 오더플로우 리포트 원리 어휘 (임계값이 아닌 원리/필터 어휘만).
+
+    근거: 리포트 임계값 직이식 니치는 5/5 음수였으나(2026-06-10 실측), 원리 어휘는
+    유효하다 — 시드 부검이 F11(전일동시간비) 원리를 독립 재발견했다. 단위 보정과
+    '임계값은 부검 분위수로 보정' 원칙을 함께 가르친다.
+    """
+    common = [
+        "",
+        "오더플로우 연구 리포트(v5.0) 원리 어휘 — 임계값은 베끼지 말고 원리만 차용하라:",
+        "- 단위 주의: 시가총액=억 단위(예: 3000=3000억), 당일거래대금/초당거래대금=백만원 단위.",
+        "- 임계값 직이식 금지 — 직전 백테 부검의 승/패 분위수로 보정하라(예: 하한=승자 하위 4분위).",
+    ]
+    if kind == "buy":
+        return common + [
+            "- 수급 우위(F20): 누적초당매수수량(n)/누적초당매도수량(n) 비율을 1·5·10초 다중 구간에서 확인.",
+            "- 상대 활성도(F11): 전일동시간비·회전율·전일비 — 시드 부검에서 승패를 가장 잘 가른 변수(승자 전일동시간비가 패자의 ~3배).",
+            "- 위험 '필터'로 쓸 것(진입 신호 아님): 스프레드틱 상한, 라운드피겨위5호가이내 회피, VI가격-VI호가단위*5 미만, 하단 매수잔량1 급감 회피, 매도공격비(누적초당매도/매수) 상한.",
+            "- 갭/시가 위치(F01~F03): 시가등락율 밴드와 현재가>=시가 회복 여부로 시초 국면을 구분.",
+        ]
+    return common + [
+        "- 시총별 동적 청산: 소형(시가총액<5000)일수록 손절/익절/트레일링/최대보유를 타이트하게, 대형은 느슨하게.",
+        "- 세력이탈은 **스칼라 항**으로: 초당매도수량>초당매수수량*배수, 체결강도 약화, 수익률<0 동반 시 가중 청산.",
+        "- 트레일링: 최고수익률 >= 시작값 이후 (최고수익률-폭) 이탈 시 청산 — MFE 반납(시드 실측 2.1%p)을 줄인다.",
+    ]
+
+
 def build_messages(
     kind: str,
     *,
@@ -170,6 +242,11 @@ def build_messages(
     encourage_time_dispersion: bool = False,
     require_filter_gates: bool = False,
     classification_generation_enabled: bool = False,
+    time_cap_bucket_generation_enabled: bool = False,
+    time_cap_bucket_end_time: int = 92000,
+    sparse_positive_prompt_enabled: bool = False,
+    exec_budget_prompt_enabled: bool = False,
+    report_principles_enabled: bool = False,
     hypothesis_feedback: Optional[str] = None,
     few_shot_examples: Optional[List[str]] = None,
     segment_avoid_lines: Optional[List[str]] = None,
@@ -272,6 +349,16 @@ def build_messages(
         "- 설명 없이 ```python 코드 블록 하나만 출력한다.",
     ]
     user_lines += _timeframe_lines(timeframe)
+    if sparse_positive_prompt_enabled:
+        user_lines += _sparse_positive_lines(kind)
+    # 계산예산 지침(2026-06-10 실측: 타임아웃 지배변수=매도식 비유계 스캔+호출 도달률).
+    #   OFF(기본)면 미추가 → 출력 byte-동일(하위호환).
+    if exec_budget_prompt_enabled:
+        user_lines += _exec_budget_lines(kind)
+    # v5.0 리포트 원리 어휘(임계값 직이식 금지·단위 보정 포함).
+    #   OFF(기본)면 미추가 → 출력 byte-동일(하위호환).
+    if report_principles_enabled:
+        user_lines += _report_principles_lines(kind)
 
     # P2 GA crossover(최우선 지침): 두 부모를 받으면 결합 지침을 먼저 둔다.
     #   crossover와 단일 base_code(mutation)는 상호 배타 — crossover면 base_code 무시.
@@ -366,6 +453,8 @@ def build_messages(
         #   등락률 국면·넓은 시초 시간창(09:00~09:30, tick 데이터 상한)에서 먼저 니치를 고르도록 유도한다.
         #   require_filter_gates(범주 폭 구조 게이트)와 짝 — 넓게 고르되 좁게 게이트하라.
         #   require_filter_gates 블록 뒤에 배치된다. OFF(기본)면 미추가(byte 보존).
+        if time_cap_bucket_generation_enabled:
+            user_lines += time_cap_bucket_prompt_lines(time_cap_bucket_end_time)
         if classification_generation_enabled:
             user_lines.append(
                 "전략 설계 분류축(매우 중요 — 넓은 탐색): 이 매수 전략을 아래 3개 분류축에서 "

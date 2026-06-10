@@ -1,0 +1,16 @@
+[DASHBOARD] starting on http://127.0.0.1:8794
+[DASHBOARD] health: http://127.0.0.1:8794/health
+INFO:     127.0.0.1:51732 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51768 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54146 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54180 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56405 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56447 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52857 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52892 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54249 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54301 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57120 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57166 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52207 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52208 - "GET /status HTTP/1.1" 200 OK

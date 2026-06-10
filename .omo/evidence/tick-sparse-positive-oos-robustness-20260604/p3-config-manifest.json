@@ -1,0 +1,90 @@
+{
+    "timestamp":  "2026-06-04T19:52:36.7131319+09:00",
+    "plan":  "tick-sparse-positive-oos-robustness-20260604",
+    "selector_version":  "yearly_sparse_robust_v1",
+    "base_selector_version":  "sparse_positive_v1",
+    "policy_json":  ".omo/evidence/tick-sparse-positive-oos-robustness-20260604/p1-yearly-sparse-robust-policy.json",
+    "policy_sha256":  "ae50a063b0945abaab6669c3498ec90200964018d60b76a4a4fed954fd500f73",
+    "oos_informed_reselection":  false,
+    "no_oos_before_p5_selected_candidate":  true,
+    "configs":  [
+                    {
+                        "kind":  "smoke",
+                        "run_id":  "tick_oosrob_p4_smoke_20260604",
+                        "config":  ".omo/evidence/tick-sparse-positive-oos-robustness-20260604/p3-smoke-config.json",
+                        "sha256":  "c9ee59f337bb079197fb98f8360cc5417d1587c544ae5ea70bfe691f264390e0",
+                        "bt_full_start":  20250101,
+                        "bt_full_end":  20250331,
+                        "max_generations":  3,
+                        "bt_timeframe":  "tick",
+                        "bt_universe_start_time":  90000,
+                        "bt_universe_end_time":  93000,
+                        "winner_objective":  "multiyear",
+                        "graduation_holdout":  true,
+                        "holdout_recent_days":  60,
+                        "sparse_positive_prompt_enabled":  true,
+                        "prompt_logging_enabled":  true,
+                        "equity_points_enabled":  true,
+                        "diagnostic_only":  true,
+                        "promotion_evidence":  false
+                    },
+                    {
+                        "kind":  "train",
+                        "run_id":  "tick_oosrob_p5_train_2023_2025_20260604",
+                        "config":  ".omo/evidence/tick-sparse-positive-oos-robustness-20260604/p3-train-config.json",
+                        "sha256":  "62c8786c719544f0d6bdbfa887105383bf6e66a46ec57b26c29f21acf13b1132",
+                        "bt_full_start":  20230101,
+                        "bt_full_end":  20251231,
+                        "max_generations":  10,
+                        "bt_timeframe":  "tick",
+                        "bt_universe_start_time":  90000,
+                        "bt_universe_end_time":  93000,
+                        "winner_objective":  "multiyear",
+                        "graduation_holdout":  true,
+                        "holdout_recent_days":  60,
+                        "multiyear_min_years":  3,
+                        "multiyear_min_trades_per_year":  30,
+                        "sparse_positive_prompt_enabled":  true,
+                        "prompt_logging_enabled":  true,
+                        "equity_points_enabled":  true,
+                        "selector_version":  "yearly_sparse_robust_v1",
+                        "oos_excluded_until_selected_artifact":  true
+                    }
+                ],
+    "predeclared_oos_run_ids":  [
+                                    {
+                                        "kind":  "seed",
+                                        "year":  2022,
+                                        "run_id":  "tick_oosrob_p6_seed_2022_20260604",
+                                        "bt_full_start":  20220101,
+                                        "bt_full_end":  20221231,
+                                        "seed_buy":  "Tick_B_902_905_Update_2",
+                                        "seed_sell":  "Tick_S_902_905_Update_2",
+                                        "executable_in_p3":  false
+                                    },
+                                    {
+                                        "kind":  "seed",
+                                        "year":  2026,
+                                        "run_id":  "tick_oosrob_p6_seed_2026_20260604",
+                                        "bt_full_start":  20260101,
+                                        "bt_full_end":  20260228,
+                                        "seed_buy":  "Tick_B_902_905_Update_2",
+                                        "seed_sell":  "Tick_S_902_905_Update_2",
+                                        "executable_in_p3":  false
+                                    },
+                                    {
+                                        "kind":  "ai",
+                                        "year":  2022,
+                                        "run_id":  "tick_oosrob_p6_ai_2022_20260604",
+                                        "candidate_source":  "p5-selected-candidate.json",
+                                        "executable_in_p3":  false
+                                    },
+                                    {
+                                        "kind":  "ai",
+                                        "year":  2026,
+                                        "run_id":  "tick_oosrob_p6_ai_2026_20260604",
+                                        "candidate_source":  "p5-selected-candidate.json",
+                                        "executable_in_p3":  false
+                                    }
+                                ]
+}

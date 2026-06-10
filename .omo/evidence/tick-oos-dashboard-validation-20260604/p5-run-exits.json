@@ -1,0 +1,34 @@
+﻿[
+    {
+        "label":  "seed_2022",
+        "run_id":  "tick_oos_dash_p5_seed_2022_20260604",
+        "config":  ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-seed-2022-config.json",
+        "log":  ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-seed-2022-log.txt",
+        "exit_code":  0,
+        "ended_at":  "2026-06-04T11:26:03.8729493+09:00"
+    },
+    {
+        "label":  "seed_2026",
+        "run_id":  "tick_oos_dash_p5_seed_2026_20260604",
+        "config":  ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-seed-2026-config.json",
+        "log":  ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-seed-2026-log.txt",
+        "exit_code":  0,
+        "ended_at":  "2026-06-04T11:27:28.0718656+09:00"
+    },
+    {
+        "label":  "ai_2022",
+        "run_id":  "tick_oos_dash_p5_ai_2022_20260604",
+        "config":  ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-ai-2022-config.json",
+        "log":  ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-ai-2022-log.txt",
+        "exit_code":  0,
+        "ended_at":  "2026-06-04T11:30:28.3212682+09:00"
+    },
+    {
+        "label":  "ai_2026",
+        "run_id":  "tick_oos_dash_p5_ai_2026_20260604",
+        "config":  ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-ai-2026-config.json",
+        "log":  ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-ai-2026-log.txt",
+        "exit_code":  0,
+        "ended_at":  "2026-06-04T11:31:54.9277617+09:00"
+    }
+]

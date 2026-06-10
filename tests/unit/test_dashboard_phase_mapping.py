@@ -146,6 +146,31 @@ class TestActiveConfigPanel:
             assert f'"{live_phase}"' in cg, f"CurrentGenPanel 색 맵에 {live_phase} 누락"
 
 
+class TestEngineProgressPanel:
+    """P2 — P1 진행률/엔진 상태 계약을 프론트가 소비하는지 정적 검증."""
+
+    def test_engine_panel_consumes_progress_and_engine_state(self):
+        src = _read("engine.jsx")
+        panel = src[src.find("function EnginePanel("):]
+
+        assert "backtest_progress" in panel
+        assert "engine_state" in panel
+        assert "effective_engine_count" in panel
+        assert "Progress Source" in panel
+        assert "progress_source" in panel
+        assert "timeout_deadline_epoch" in panel
+        assert "bt_warm_run_timeout" in panel
+        assert "counter unavailable" in panel
+        assert "gen = generation" in panel
+        assert 'evolutionMode === "ga"' in panel
+
+    def test_live_pending_has_clear_label(self):
+        src = _read("phase-detail.jsx")
+
+        assert "Live data pending" in src
+        assert "fresh live snapshot" in src
+
+
 class TestGenerationsTableQualityColumns:
     """R8 — 세대 테이블 품질지표 컬럼(Calmar/R²/동시보유)."""
 
@@ -161,6 +186,12 @@ class TestGenerationsTableQualityColumns:
         src = _read("table.jsx")
         assert ">동시보유<" in src
         assert "g.max_hold_count" in src
+
+    def test_table_flags_sparse_hold_suspicion(self):
+        src = _read("table.jsx")
+        assert "sparseHoldSuspicious" in src
+        assert "Sparse hold warning" in src
+        assert "human corridor 6-12" in src
 
     def test_table_colspan_matches_header_count(self):
         # 빈 행 colSpan이 헤더 th 개수와 일치해야 한다(컬럼 추가 시 회귀 방지).

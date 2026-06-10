@@ -129,6 +129,180 @@ function CurrentGenPanel({ state }) {
 // LoopState.active_config(루프가 적용한 주요 설정·5종 안전토글 스냅샷)를 LIVE로 렌더한다.
 //   "지금 무슨 설정으로 돌고 있나"를 폼/상태가 아니라 실시간 상태에서 직접 보여준다.
 //   active_config.toggles(켜진 bool 토글 이름 목록)로 토글을 강조한다. 없으면 안내만.
+function _activeStrategyGenNo(item) {
+  if (!item) return null;
+  const raw = item.gen_no ?? item.gen;
+  return typeof raw === "number" ? raw : null;
+}
+
+function _activeStrategyFromState(state) {
+  const gens = Array.isArray(state.generations) ? state.generations : [];
+  if (state.status === "complete" && _activeStrategyGenNo(state.winner) !== null) {
+    return { source: "winner", generation: { ...state.winner, gen_no: _activeStrategyGenNo(state.winner) } };
+  }
+  if (_activeStrategyGenNo(state.best) !== null) {
+    return { source: "best", generation: { ...state.best, gen_no: _activeStrategyGenNo(state.best) } };
+  }
+  if (gens.length > 0) {
+    const latest = gens.slice().sort((a, b) => (_activeStrategyGenNo(b) ?? -1) - (_activeStrategyGenNo(a) ?? -1))[0];
+    return { source: "latest_generation", generation: { ...latest, gen_no: _activeStrategyGenNo(latest) } };
+  }
+  const streaming = state.current_run?.generation || {};
+  if (streaming.buy_code_partial || streaming.sell_code_partial) {
+    return {
+      source: "streaming_partial",
+      generation: {
+        gen_no: typeof state.current_gen === "number" ? state.current_gen : 0,
+        buy_name: streaming.buy_name || "",
+        sell_name: streaming.sell_name || "",
+        buy_code: streaming.buy_code_partial || "",
+        sell_code: streaming.sell_code_partial || "",
+      },
+    };
+  }
+  return { source: "no_strategy", generation: null };
+}
+
+function ActiveStrategyPanel({ state, baseUrl, onViewCode }) {
+  const [expanded, setExpanded] = useState_p(false);
+  const [codePayload, setCodePayload] = useState_p(null);
+  const [diffPayload, setDiffPayload] = useState_p(null);
+  const [fetchError, setFetchError] = useState_p("");
+  const active = useMemo_p(() => _activeStrategyFromState(state || {}), [state]);
+  const generation = active.generation || {};
+  const genNo = _activeStrategyGenNo(generation);
+  const runId = state.run_id || "";
+  const canFetch = Boolean(baseUrl && runId && genNo !== null && active.source !== "streaming_partial" && active.source !== "no_strategy");
+
+  useEffect_p(() => {
+    setCodePayload(null);
+    setDiffPayload(null);
+    setFetchError("");
+    if (!canFetch) return;
+    let cancelled = false;
+    const codeUrl = `${baseUrl}/strategy_code?run=${encodeURIComponent(runId)}&gen=${genNo}`;
+    const diffUrl = `${baseUrl}/strategy_diff?run_id=${encodeURIComponent(runId)}&gen_no=${genNo}&base_gen=previous`;
+    fetch(codeUrl, { signal: AbortSignal.timeout(2500) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("strategy_code HTTP " + r.status)))
+      .then(j => { if (!cancelled) setCodePayload(j); })
+      .catch(e => { if (!cancelled) setFetchError(String(e)); });
+    fetch(diffUrl, { signal: AbortSignal.timeout(2500) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("strategy_diff HTTP " + r.status)))
+      .then(j => { if (!cancelled) setDiffPayload(j); })
+      .catch(e => { if (!cancelled) setFetchError(String(e)); });
+    return () => { cancelled = true; };
+  }, [baseUrl, runId, genNo, canFetch]);
+
+  const buyName = codePayload?.buy_name || generation.buy_name || "";
+  const sellName = codePayload?.sell_name || generation.sell_name || "";
+  const buyCode = codePayload?.buy_code || generation.buy_code || "";
+  const sellCode = codePayload?.sell_code || generation.sell_code || "";
+  const codeStatus = active.source === "streaming_partial"
+    ? "streaming_partial"
+    : (codePayload?.code_status || (active.source === "no_strategy" ? "no_strategy" : "loading"));
+  const diffStatus = diffPayload?.diff_status || (canFetch ? "loading" : "unavailable");
+  const previewCode = [buyCode, sellCode].filter(Boolean).join("\n\n# sell\n");
+  const previewLines = (previewCode || "").split("\n");
+  const boundedPreview = previewLines.slice(0, expanded ? 80 : 10).join("\n");
+
+  return (
+    <div className="panel active-strategy-panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title"><span className="dot"></span>Active Strategy</div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+          source={active.source}
+        </span>
+      </div>
+      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
+          <div className="stat">
+            <span className="stat-label">buy_name</span>
+            <span className="stat-sub mono">{buyName || "empty"}</span>
+          </div>
+          <div className="stat">
+            <span className="stat-label">sell_name</span>
+            <span className="stat-sub mono">{sellName || "empty"}</span>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>run_id={runId || "none"}</span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>gen_no={genNo ?? "none"}</span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--teal)" }}>code_status={codeStatus}</span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--amber)" }}>diff_status={diffStatus}</span>
+        </div>
+        {fetchError && (
+          <div className="mono" style={{ fontSize: 11, color: "var(--red)" }}>
+            active strategy fetch error: {fetchError}
+          </div>
+        )}
+        <pre className="code-block" style={{ maxHeight: 170, overflow: "auto", margin: 0 }}>
+          {boundedPreview || `unavailable: ${codeStatus}`}
+        </pre>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button className="btn ghost sm" onClick={() => setExpanded(!expanded)}>
+            {expanded ? "collapse" : "expand"} preview
+          </button>
+          <button className="btn ghost sm" disabled={genNo === null || !onViewCode}
+                  onClick={() => onViewCode && onViewCode(genNo)}>
+            open full code
+          </button>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", alignSelf: "center" }}>
+            Previous Diff via /strategy_diff
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ResearchCriteriaBanner({ state, baseUrl }) {
+  const mode = state.active_config?.research_oos_mode || "disabled";
+  const [payload, setPayload] = useState_p(null);
+  const [error, setError] = useState_p("");
+
+  useEffect_p(() => {
+    if (!baseUrl) return;
+    let cancelled = false;
+    const url = `${baseUrl}/research_criteria?mode=${encodeURIComponent(mode)}`;
+    fetch(url, { signal: AbortSignal.timeout(2500) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("research_criteria HTTP " + r.status)))
+      .then(j => { if (!cancelled) { setPayload(j); setError(""); } })
+      .catch(e => { if (!cancelled) setError(String(e)); });
+    return () => { cancelled = true; };
+  }, [baseUrl, mode]);
+
+  const label = payload?.label || (mode === "disabled" ? "OOS disabled" : `OOS ${mode}`);
+  const warning = payload?.warning || "research/exploration only; not proof of human-level or production readiness.";
+  const explanation = payload?.explanation_ko || "OOS를 후보 탈락에 쓰지 않는 연구 탐색 상태입니다.";
+
+  return (
+    <div className="panel" data-testid="research-criteria-banner">
+      <div className="panel-hd">
+        <div className="panel-hd-title"><span className="dot"></span>Research Criteria</div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--amber)" }}>
+          research_oos_mode={mode}
+        </span>
+      </div>
+      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <span className="badge warn">{label}</span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
+            {warning}
+          </span>
+        </div>
+        <div style={{ fontSize: 12, color: "var(--ink-2)", lineHeight: 1.5 }}>
+          {explanation}
+        </div>
+        {error && (
+          <div className="mono" style={{ fontSize: 11, color: "var(--red)" }}>
+            research criteria route unavailable: {error}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function _fmtCfgVal(v) {
   if (v === true) return "ON";
   if (v === false) return "OFF";
@@ -811,4 +985,4 @@ function ExportStatusBanner({ reply }) {
   );
 }
 
-Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, ActiveConfigPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, RunComparePanel, ExportStatusBanner });
+Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, RunComparePanel, ExportStatusBanner });

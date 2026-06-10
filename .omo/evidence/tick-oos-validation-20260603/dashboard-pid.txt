@@ -1,0 +1,9 @@
+﻿
+Name                           Value                         
+----                           -----                         
+pid                            71136                         
+command                        C:\Python\64\Python31313\py...
+ownership                      pre-existing or already liv...
+
+
+

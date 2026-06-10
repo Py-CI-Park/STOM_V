@@ -1,0 +1,40 @@
+﻿P0 canonical reread
+timestamp=2026-06-04T19:31:20.3846457+09:00
+
+Prior P5 selected candidate:
+selected=True
+run_id=
+gen_no=
+buy_name=
+sell_name=
+profit=
+mdd=
+trade_count=
+daily_avg_trades=
+payoff_ratio=
+bucket=
+selector_version=sparse_positive_v1
+oos_excluded=True
+
+Prior P6 OOS comparison:
+oos_pass=False
+combined_seed_profit=2032445.0
+combined_ai_profit=134264.0
+seed_total_trades=68
+ai_total_trades=31
+seed_max_mdd=15.63
+ai_max_mdd=9.0
+seed_2022_profit=2223554.0
+seed_2026_profit=-191109.0
+ai_2022_profit=-222400.0
+ai_2026_profit=356664.0
+ai_2022_trades=24
+ai_2026_trades=7
+
+Prior P7 verdict lines:
+- Final Verdict: `REJECT_CANDIDATE`
+- Reason: the frozen sparse-positive candidate failed the predeclared 2022/2026 OOS pass rule.
+## Final Verdict
+- Final Verdict: `REJECT_CANDIDATE`
+
+Conclusion: prior fixed OOS verdict is REJECT_CANDIDATE; this plan treats prior OOS as a lesson only, not a selector input.

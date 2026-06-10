@@ -1,0 +1,98 @@
+{
+  "selector_version": "seed_relative_v1",
+  "run_id": "cldgen_train_2023_2025_20260610",
+  "config_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\claude-condition-research-20260610\\train-config.json",
+  "config_hash": "a4bed0de8513d8cc28693ec48e482617ec0b82e024a87a3465e75f7b58bfe88a",
+  "seed_profile": {
+    "mdd": 17.44,
+    "trade_count": 307,
+    "profit": 8631199.0,
+    "source": "BASE_SEED gen0 of cldgen_train_2023_2025_20260610"
+  },
+  "mdd_limit": 20.0,
+  "selected": true,
+  "blocked": false,
+  "blocker": "",
+  "selected_candidate": {
+    "gen_no": 1,
+    "status": "ok",
+    "graded_score": 0.2960855162295981,
+    "gate_passed": false,
+    "gate_reason": "daily_avg_trades 0.2 < min_daily_trades 0.3",
+    "profit": 2347400.0,
+    "total_profit_pct": 46.87,
+    "mdd": 16.52,
+    "trade_count": 142,
+    "daily_avg_trades": 0.2,
+    "payoff_ratio": 1.4523395126689873,
+    "max_hold_count": 0.0,
+    "buy_name": "CLDGEN_0610_C7_SEEDPLUS_B",
+    "sell_name": "Tick_S_902_905_Update_2",
+    "csv_path": "backtest/csv\\stock_bt_CLDGEN_0610_C7_SEEDPLUS_B_20260610163011.csv"
+  },
+  "selected_yearly": {
+    "years": [
+      [
+        "2023",
+        1954268.0
+      ],
+      [
+        "2024",
+        700663.0
+      ],
+      [
+        "2025",
+        -307531.0
+      ]
+    ],
+    "positive_years": 2,
+    "observed_years": 3,
+    "meets_advisory": true
+  },
+  "eligible_candidates": [
+    {
+      "gen_no": 1,
+      "rank_key": [
+        -2.0,
+        -142094.43099273607,
+        16.52,
+        -1.4523395126689873,
+        1
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            1954268.0
+          ],
+          [
+            "2024",
+            700663.0
+          ],
+          [
+            "2025",
+            -307531.0
+          ]
+        ],
+        "positive_years": 2,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    }
+  ],
+  "rejected_candidates": [
+    {
+      "gen_no": 2,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 20.00 (seed-relative limit)",
+        "trade_count > 400",
+        "payoff_ratio < 1.05"
+      ]
+    }
+  ],
+  "selection_timestamp": "2026-06-10T11:44:57.635332+00:00",
+  "oos_excluded": true,
+  "diagnostic_only": false,
+  "forbidden_oos_fields_present": false
+}

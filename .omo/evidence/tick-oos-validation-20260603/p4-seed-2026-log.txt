@@ -1,0 +1,31 @@
+ï»¿command=python -m ai_strategy_loop.controller.loop --config-json .omo/evidence/tick-oos-validation-20260603/p4-seed-2026-config.json --run-id tick_oos_p4_seed_2026_20260603
+timestamp_start=2026-06-03T21:10:19.2449601+09:00
+[LOOP] loop DB        : C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\state\loop_strategies.db
+[LOOP] provider       : gpt_auth
+[LOOP] max_generations: 1
+[LOOP] bt_timeframe   : tick
+[LOOP] bt_engine_mode : warm
+[LOOP] warm prepare DÆÌ¸ (back_count=587)
+
+[LOOP] === generation 0 (run=tick_oos_p4_seed_2026_20260603) ===
+[LOOP] seed ¬À©Æ: buy=Tick_B_902_905_Update_2 sell=Tick_S_902_905_Update_2
+[LOOP] backtest status=success elapsed=17.0s reason=ok
+[LOOP] graded=0.408091 hard_composite=-0 calmar=-1.796 r2=0.6375 gate=False reason=total_profit -1.911e+05 <= 0 mdd=15.63 profit=-191,109 trades=10 gate_distance=profit negative
+
+[LOOP] === SUMMARY ===
+{
+  "run_id": "tick_oos_p4_seed_2026_20260603",
+  "generations": 1,
+  "best_gen": 0,
+  "best_score": 0.40809050955823045,
+  "best_buy": "Tick_B_902_905_Update_2",
+  "best_sell": "Tick_S_902_905_Update_2",
+  "winner_gen": -1,
+  "winner_score": null,
+  "winner_buy": null,
+  "winner_sell": null,
+  "stop_reason": "max_generations Ä³ì²: gen_count 1 >= 1"
+}
+[LOOP] wall-clock: 100.0s
+timestamp_end=2026-06-03T21:12:08.2306851+09:00
+exit_code=0

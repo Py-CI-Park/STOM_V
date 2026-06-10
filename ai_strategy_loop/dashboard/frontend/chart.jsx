@@ -973,6 +973,13 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
   const hasSeries = daily.length > 0;
   const hasHoldings = holdings.length > 0;
   const peakHoldings = summary.peak_holdings != null ? summary.peak_holdings : 0;
+  const selectedGeneration = gens.find(g => g.gen_no === genNo) || null;
+  const dbMaxHold = selectedGeneration && typeof selectedGeneration.max_hold_count === "number"
+    ? selectedGeneration.max_hold_count : null;
+  const sparseHoldSuspicious = (summary.trade_count || 0) >= 50
+    && dbMaxHold != null
+    && dbMaxHold <= 1
+    && peakHoldings > dbMaxHold;
   // 무거래 세대 판정: 시계열 없음 또는 trade_count가 명시적으로 0.
   const noTrades = !hasSeries || (summary.trade_count != null && summary.trade_count === 0);
 
@@ -1115,6 +1122,9 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
           <Mini label="최대 동시보유"
                 value={noTrades ? "거래없음" : (summary.peak_holdings != null ? String(summary.peak_holdings) : "—")}
                 color={!noTrades && peakHoldings > 0 ? "var(--teal)" : "var(--ink-3)"} sub="종목수" />
+          <Mini label="DB max_hold_count"
+                value={dbMaxHold != null ? String(dbMaxHold) : "—"}
+                color={sparseHoldSuspicious ? "var(--red)" : undefined} sub="저장값" />
           <Mini label="최종 누적수익" value={summary.final_profit != null ? fmtMoney(summary.final_profit) : "—"}
                 color={summary.final_profit > 0 ? "var(--teal)"
                        : summary.final_profit < 0 ? "var(--red)" : undefined} />
@@ -1125,8 +1135,15 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
           `run_id=${runId || "-"}`,
           `gen_no=${genNo != null ? genNo : "-"}`,
           "peak_holdings=0 can mean no overlap buy/sell timing data",
+          `DB max_hold_count=${dbMaxHold != null ? dbMaxHold : "-"}`,
           "period/timeframe are inherited from the selected run",
         ]} />
+        {sparseHoldSuspicious && (
+          <div className="research-empty danger" title="Sparse hold warning">
+            Sparse hold warning: DB max_hold_count {dbMaxHold} differs from CSV peak_holdings {peakHoldings}.
+            human corridor 6-12; treat this as an audit signal, not promotion proof.
+          </div>
+        )}
 
         {/* ── 상단: 동시보유 종목수 시계열(STOM fig2 상단 대응) ──
             보유금액(원)은 엔진 전용(CSV 미저장)이라 미표시, 동시보유 종목수로 대체.
@@ -1307,7 +1324,7 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
   const [data, setData] = useState_eq(null);   // {human:[...], ai:[...]}
   const [loading, setLoading] = useState_eq(false);
   const [err, setErr] = useState_eq(null);
-  const [sortKey, setSortKey] = useState_eq("total_return_pct"); // total_return_pct|annual_return_pct|mdd_pct|payoff
+  const [sortKey, setSortKey] = useState_eq("total_return_pct"); // total_return_pct|total_return_krw|annual_return_pct|mdd_pct|payoff
   const [filter, setFilter] = useState_eq("all");                // all|human|ai
   const [galleryOpen, setGalleryOpen] = useState_eq(false);      // 📷 인간 결과 스크린샷 모달.
   const isDemo = typeof window.isDemoSource === "function"
@@ -1355,6 +1372,7 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
 
   const SORTS = [
     { key: "total_return_pct", label: "총수익률" },
+    { key: "total_return_krw", label: "총수익금" },
     { key: "annual_return_pct", label: "연평균" },
     { key: "mdd_pct", label: "MDD" },
     { key: "payoff", label: "payoff" },
@@ -1443,9 +1461,10 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
             표시할 전략이 없습니다 (인간 벤치마크 JSON / AI 흑자 세대 누적 시 표시).
           </div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
+          <div className="hof-scroll" style={{ overflowX: "auto", width: "100%" }}>
             <table className="data-table" style={{ width: "100%", borderCollapse: "collapse",
-                                                   fontFamily: "var(--mono)", fontSize: 12 }}>
+                                                   fontFamily: "var(--mono)", fontSize: 12,
+                                                   minWidth: 1180 }}>
               <thead>
                 <tr style={{ color: "var(--ink-2)", fontSize: 10, letterSpacing: ".08em",
                              textTransform: "uppercase", borderBottom: "1px solid var(--line-2)" }}>

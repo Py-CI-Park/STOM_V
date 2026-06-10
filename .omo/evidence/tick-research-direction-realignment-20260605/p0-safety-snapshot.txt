@@ -1,0 +1,114 @@
+﻿## branch/status
+## lazycodex/tick-sparse-positive-generation-improvement-20260604
+ M .omo/boulder.json
+ M .omo/plans/tick-sparse-positive-generation-improvement-20260604.md
+ M .omo/start-work/ledger.jsonl
+ M ai_strategy_loop/brain/generator.py
+ M ai_strategy_loop/brain/prompt.py
+ M ai_strategy_loop/config.py
+ M ai_strategy_loop/controller/_candidate_selection_artifact.py
+ M ai_strategy_loop/controller/_candidate_selection_core.py
+ M ai_strategy_loop/controller/candidate_selection.py
+ M ai_strategy_loop/controller/contract.py
+ M ai_strategy_loop/controller/loop.py
+ M ai_strategy_loop/controller/state.py
+ M ai_strategy_loop/dashboard/app.py
+ M ai_strategy_loop/dashboard/frontend/chart.jsx
+ M ai_strategy_loop/dashboard/frontend/engine.jsx
+ M ai_strategy_loop/dashboard/frontend/phase-detail.jsx
+ M ai_strategy_loop/dashboard/frontend/research-lab.jsx
+ M ai_strategy_loop/dashboard/frontend/run-compare.jsx
+ M ai_strategy_loop/dashboard/frontend/strategy-inspector.jsx
+ M ai_strategy_loop/dashboard/frontend/table.jsx
+ M ai_strategy_loop/fitness/correlation.py
+ M ai_strategy_loop/launch_config.py
+ M tests/unit/test_dashboard_backtest_detail.py
+ M tests/unit/test_dashboard_hall_of_fame.py
+ M tests/unit/test_dashboard_phase_mapping.py
+ M tests/unit/test_dashboard_research_lab_frontend.py
+ M tests/unit/test_dashboard_run_compare_frontend.py
+ M tests/unit/test_dashboard_strategy_prompt_frontend.py
+ M tests/unit/test_variable_correlation.py
+?? .claude/
+?? .omo/drafts/
+?? .omo/evidence/
+?? .omo/plans/tick-dashboard-observability-research-ux-20260604.md
+?? .omo/plans/tick-research-direction-realignment-20260605.md
+?? .omo/plans/tick-sparse-positive-oos-robustness-20260604.md
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_min_buy.txt"
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_tick_buy.txt"
+?? "C\357\200\272Tempstom_postchange_full.txt"
+?? ai_strategy_loop/controller/_yearly_sparse_robust_artifact.py
+?? ai_strategy_loop/controller/_yearly_sparse_robust_selection.py
+?? ai_strategy_loop/controller/progress_contract.py
+?? ai_strategy_loop/fitness/correlation_profile.py
+?? docs/research/2026-06-04_condition_research_rereview_human_reference_graphs.md
+?? docs/update_log/2026-06-05_direction_review_through_84acb6cb.md
+?? seed_strategy_output.txt
+?? test-results/
+?? tests/unit/test_dashboard_engine_progress_contract.py
+?? tests/unit/test_dashboard_route_parity.py
+?? tests/unit/test_sparse_positive_prompt.py
+?? tests/unit/test_yearly_sparse_robust_selection.py
+?? testsunit_exit_test_out.txt
+`n## head
+84acb6cbb0478fa1909a19e17ef214501cbd9a74
+`n## branch
+lazycodex/tick-sparse-positive-generation-improvement-20260604
+`n## protected path status
+`n## research commits since 2026-06-01
+a42fadc5`t2026-06-01 10:50:02 +0900`t`tdocs: 세션 재개 컨텍스트 (2026-06-01) — (A) 검증 이어가기 가이드
+2fea555e`t2026-06-01 12:05:51 +0900`t`tdocs: 방향 재조준 플랜 — 참고자료(인간 30분 템플릿) 반영 + 인프라/가정/재조준 3-Phase
+4b06f087`t2026-06-01 12:16:05 +0900`t`tfeat(P1a): 대시보드 품질지표 추이 차트(QualityTrendChart)
+8cbe191d`t2026-06-01 12:37:14 +0900`t`tfeat(P1c): 프롬프트 DB 영속화 (loop_runs.db v7)
+f60e04af`t2026-06-01 13:15:00 +0900`t`tfeat(P1b): 부모 대비 숫자 델타 영속화 (loop_runs.db v8)
+e9d1e265`t2026-06-01 13:16:53 +0900`t`tdocs: Phase 1 측정 인프라 완료 표시 (P1a/P1c/P1b)
+0a7beaa5`t2026-06-01 13:51:08 +0900`t`tfeat(P2a): 가정(Hypothesis) 루프 코어 — 방출+자동 채택/기각+영속
+2ef5fec8`t2026-06-01 14:15:04 +0900`t`tfeat(P2b-1): 가정 환류 프롬프트 슬롯 — 루프 닫기
+c7048b6f`t2026-06-01 14:31:57 +0900`t`tfeat(P2b-2): 대시보드 가정 패널 — 가정 루프 가시화
+2a86a101`t2026-06-01 14:33:54 +0900`t`tdocs: Phase 2 가정 루프 완료 표시 (P2a/P2b-1/P2b-2)
+cc32bb12`t2026-06-01 14:40:34 +0900`t`tfeat(P3-1): 매도 체결강도 페이드 + 추세이탈 청산 규율 (참고자료 핵심 레버)
+4d5be098`t2026-06-01 14:43:01 +0900`t`tdocs: Phase 3 코드 완료(P3-1 체결강도 페이드) + 재조준 검증 config 준비
+cd94e0d5`t2026-06-01 14:54:59 +0900`t`tdocs(P3): smoke 검증 완료 — 인프라 LIVE 실증 + 재조준 빈도 7배 bounded
+1c984c4a`t2026-06-01 17:25:07 +0900`t`tfix(dashboard): 누적수익곡선 단일라인+y축 000,000 버그
+629ee3e0`t2026-06-01 17:54:29 +0900`t`tfeat(O2): 백테 시계열 DB 영속 (equity_points v10) + 공유 CSV 파서
+e5b79abf`t2026-06-01 18:11:13 +0900`t`tfeat(O1): 대시보드 백테 상세 차트 (BacktestDetailChart) — STOM 2그래프 재현
+4a6e144c`t2026-06-01 20:20:49 +0900`t`tfeat: 성과 명예의 전당 패널 — 인간 벤치마크 + 시드 + AI 생성 통합
+190715a4`t2026-06-01 21:44:15 +0900`t`tfix(Batch A): 동시보유 raw 저장(정보손실) + 수익률 NULL→'—'(0 강제 금지)
+41340f25`t2026-06-01 22:12:23 +0900`t`tfeat(#63): 명예의 전당 보강 — 백테기간·단기 tooltip·인간 스크린샷 갤러리
+d3943cbb`t2026-06-01 22:49:38 +0900`t`tfeat(#64): 프로세스 단계별 진행률·진행시간·완료시간
+da9d420d`t2026-06-01 23:11:09 +0900`t`tfeat(#66): STOM 2번째 그래프 — 백테 상세에 동시보유 종목수 시계열
+6136884f`t2026-06-01 23:37:09 +0900`t`tfeat(#67): 생성 few-shot 샘플 주입 (검증된 우수전략 구조 학습)
+1ad1ae37`t2026-06-02 00:10:53 +0900`t`tfeat(#65): 대시보드 P0~P1 — run 셀렉터(segrun 오염 영구해결)+테이블연동+분석순서+카드병합
+01b53863`t2026-06-02 00:17:56 +0900`t`tdocs: 세션 재개 컨텍스트 (2026-06-02) — 대시보드 배치 6항목 완료 + 다음=few-shot/재조준 검증
+eacd44da`t2026-06-02 00:58:08 +0900`t`tfeat(gen): 시간×시총×등락률 분류 생성 토글 (classification_generation_enabled)
+6f0242ae`t2026-06-02 02:26:17 +0900`t`tdocs(campaign): 야간 생성 연구 E1~E10 종합 — fresh+분류 도메인주입 검증
+e54feab5`t2026-06-02 02:58:39 +0900`t`tdocs(campaign): E11~E15 추가 — 차별화 신호 + 교차레짐 한계 정직 종합
+01e3a74d`t2026-06-02 03:14:01 +0900`t`tdocs(campaign): E16~E17 마무리 — 시드 교차연도 강건 vs AI 연도특이 = 역할분담 종결통찰
+9856816c`t2026-06-02 03:35:44 +0900`t`tdocs(campaign): E18~E19 마무리 — 저빈도 고확신=혼합레짐 강건 긍정 발견 (19 에피소드 완료)
+3b21736b`t2026-06-02 05:56:56 +0900`t`tfix(dashboard): 검은 화면 해결 — react/babel 로컬 번들 + 캐시버스팅 + ErrorBoundary
+b2645528`t2026-06-02 06:02:40 +0900`t`tdocs(ensemble): 시드+AI 앙상블 = 수익 +79%·MDD -58% (강한 실용 발견)
+d7bf7f05`t2026-06-02 07:13:20 +0900`t`tdocs(ensemble): 2024 OOS + 몬테카를로 — 앙상블은 시드약세 조건부(고정전이 실패)
+d88f78a6`t2026-06-02 10:04:08 +0900`t`tdocs(adaptive): 적응형 레짐감지 타이밍 — 약세년 보험(2년 위험조정 3.3배), 고정OOS실패 정면돌파
+c1320696`t2026-06-02 10:49:00 +0900`t`tdocs(adaptive): 다년 OOS 2022~2026 — 적응형 진짜 OOS 통과 (위험조정 3.5배)
+487156be`t2026-06-02 11:53:40 +0900`t`tfeat(adaptive): 적응형 레짐타이밍 정식 토글 — 분석전용 모듈+config+대시보드 엔드포인트
+81fb9b67`t2026-06-02 11:54:51 +0900`t`tdocs(audit): 백테 분석 역량 전수 감사 — 갭 + 우선순위 top-8
+320f9424`t2026-06-02 12:45:09 +0900`t`tfeat(analysis): MFE/MAE edge ratio + 파노라마 시간대×시총 횡단 분석 (감사 #1)
+9aa51e7f`t2026-06-02 13:31:52 +0900`t`tfeat(exit): edge_ratio 부검을 청산 프롬프트에 환류 — exit_edge_feedback_enabled 토글
+6ddec545`t2026-06-02 14:44:14 +0900`t`tfeat(analysis): per-segment 승리-변수 feature importance (사용자 아이디어 정식 구현)
+7e5e7a8c`t2026-06-02 16:35:03 +0900`t`tdocs(design): 밴드 파라미터화 전략 생성기 architect 설계
+e63c7fc7`t2026-06-02 17:01:15 +0900`t`tfeat(band): P0 밴드 생성기 — 결정론 컴파일러 + 시드902 round-trip 증명
+b277db7a`t2026-06-02 21:57:20 +0900`t`tdocs: 세션 핸드오프 재개 컨텍스트 — 밴드 P0 완료, 다음 P1/P2
+6859076b`t2026-06-02 22:35:47 +0900`t`tdocs: 자율진화 전체 종합 문서화 + 정직 검토 + 방향성 재설정(S0~S5)
+8148467b`t2026-06-02 23:41:15 +0900`t`tfeat(S0): min 타임프레임 풀세션 잠금해제 — full_session_enabled 토글(기본 OFF)
+2dde74ef`t2026-06-02 23:42:17 +0900`t`tdocs(S0): 방향성 문서에 S0 완료 표기 — 풀세션 ON=40거래/OFF=0거래 실증
+f60cb5aa`t2026-06-03 05:53:36 +0900`t`tdocs: 세션 핸드오프 — 방향성 재설정 + S0 완료 (S1 재개 컨텍스트)
+a45a7502`t2026-06-03 08:13:57 +0900`t`tfeat(T0): tick 넓은생성 시간창 09:28→09:30 (902 3분 고착 해제)
+b097aa7c`t2026-06-03 08:31:58 +0900`t`tfeat(T1): tick 퀀트분석 등락률 축 + 대시보드 시각화(히트맵/막대)
+a4b8de59`t2026-06-03 08:55:36 +0900`t`tfix(dashboard): 무거래 세대 동시보유 '0'→'거래없음' 구분 표시
+8f1ea7fa`t2026-06-03 09:19:57 +0900`t`tfeat(T4): 패배 세그먼트 → 생성 프롬프트 환류 (반복 정제 폐루프)
+d22efe89`t2026-06-03 09:46:12 +0900`t`tfeat(T3): 시간창 값범위 측정(span·합집합 envelope·no-op 탐지) + 넓은생성 가시화
+447febd3`t2026-06-03 10:06:47 +0900`t`tfeat(T2): 백파인더 원리 headless tick 채굴 — 승리셋업 분포 → 생성 시드
+f63241c3`t2026-06-03 11:36:58 +0900`t`tdocs: 세션 핸드오프 — TICK 우선 프로그램 T0~T4 완료 (다음=토글ON 다년 run+OOS)
+710dd654`t2026-06-03 18:26:43 +0900`t`tdocs: 에이전트-무관 자기완결 핸드오프 (docs/AGENT_HANDOFF.md)
+84acb6cb`t2026-06-04 16:24:34 +0900`tHEAD -> lazycodex/tick-sparse-positive-generation-improvement-20260604, STOM_Version_2U_C-ai-strategy-loop`t조건식 연구 대시보드와 OMO 계획 정리

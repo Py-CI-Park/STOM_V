@@ -1,0 +1,30 @@
+﻿## P2 Selector Tooling
+
+timestamp=2026-06-04T12:42+09:00
+
+## Source boundary
+- ai_strategy_loop/controller/candidate_selection.py: public re-export API only.
+- ai_strategy_loop/controller/_candidate_selection_core.py: pure sparse_positive_v1 selection logic.
+- ai_strategy_loop/controller/_candidate_selection_artifact.py: boundary parsing and JSON freeze artifact writer.
+
+## Tests added
+- tests/unit/test_candidate_selection.py
+
+## Behavior locked
+- Training-negative gen4-like candidate is rejected.
+- Sparse-positive gen5-like candidate is selected when the only gate failure is daily frequency.
+- hard_gate_positive bucket outranks sparse_positive bucket.
+- Mixed gate failures are rejected.
+- OOS-contaminated input fields are rejected at parse boundary.
+- Written artifact contains selector_version, selected identity, oos_excluded, diagnostic_only, eligible/rejected candidates, and forbidden_oos_fields_present=false.
+
+## Red / green / refactor
+- Red: p2-red-test.txt captured ModuleNotFoundError for missing ai_strategy_loop.controller.candidate_selection.
+- Green: p2-selector-tests.txt captured 5 passing selector tests.
+- Refactor: initial monolithic file exceeded 250 pure LOC, so it was split into core/artifact/public API modules.
+- Final: p2-final-tests.txt captured 32 passing focused tests.
+
+## Semantics preserved
+- Existing dashboard best/winner labels are unchanged.
+- ai_strategy_loop/fitness/score.py hard gates are unchanged.
+- Official backtest engines and backtest/graph are unchanged.

@@ -1,0 +1,42 @@
+﻿[
+    {
+        "label":  "seed_2022",
+        "run_id":  "tick_spgen_p6_seed_2022_20260604",
+        "config":  ".omo\\evidence\\tick-sparse-positive-generation-improvement-20260604\\p6-seed-2022-config.json",
+        "log":  ".omo\\evidence\\tick-sparse-positive-generation-improvement-20260604\\p6-seed-2022-log.txt",
+        "start":  "2026-06-04T18:17:51.4995854+09:00",
+        "end":  "2026-06-04T18:20:38.8550122+09:00",
+        "duration_seconds":  167.4,
+        "exit_code":  0
+    },
+    {
+        "label":  "seed_2026",
+        "run_id":  "tick_spgen_p6_seed_2026_20260604",
+        "config":  ".omo\\evidence\\tick-sparse-positive-generation-improvement-20260604\\p6-seed-2026-config.json",
+        "log":  ".omo\\evidence\\tick-sparse-positive-generation-improvement-20260604\\p6-seed-2026-log.txt",
+        "start":  "2026-06-04T18:20:38.8715409+09:00",
+        "end":  "2026-06-04T18:21:58.7350982+09:00",
+        "duration_seconds":  79.9,
+        "exit_code":  0
+    },
+    {
+        "label":  "ai_2022",
+        "run_id":  "tick_spgen_p6_ai_2022_20260604",
+        "config":  ".omo\\evidence\\tick-sparse-positive-generation-improvement-20260604\\p6-ai-2022-config.json",
+        "log":  ".omo\\evidence\\tick-sparse-positive-generation-improvement-20260604\\p6-ai-2022-log.txt",
+        "start":  "2026-06-04T18:21:58.7391172+09:00",
+        "end":  "2026-06-04T18:24:50.6138160+09:00",
+        "duration_seconds":  171.9,
+        "exit_code":  0
+    },
+    {
+        "label":  "ai_2026",
+        "run_id":  "tick_spgen_p6_ai_2026_20260604",
+        "config":  ".omo\\evidence\\tick-sparse-positive-generation-improvement-20260604\\p6-ai-2026-config.json",
+        "log":  ".omo\\evidence\\tick-sparse-positive-generation-improvement-20260604\\p6-ai-2026-log.txt",
+        "start":  "2026-06-04T18:24:50.6183572+09:00",
+        "end":  "2026-06-04T18:26:12.1418622+09:00",
+        "duration_seconds":  81.5,
+        "exit_code":  0
+    }
+]

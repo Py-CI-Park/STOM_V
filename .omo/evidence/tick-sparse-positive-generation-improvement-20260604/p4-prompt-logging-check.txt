@@ -1,0 +1,75 @@
+{
+  "off": {
+    "prompt_count": 4,
+    "sparse_true_count": 0,
+    "sparse_false_count": 4,
+    "malformed_injected_features": 0,
+    "sample_heads": [
+      {
+        "gen_no": 1,
+        "kind": "buy",
+        "attempt": 1,
+        "sparse_positive_prompt_enabled": false,
+        "contains_sparse_positive_v1": false
+      },
+      {
+        "gen_no": 1,
+        "kind": "sell",
+        "attempt": 1,
+        "sparse_positive_prompt_enabled": false,
+        "contains_sparse_positive_v1": false
+      },
+      {
+        "gen_no": 2,
+        "kind": "buy",
+        "attempt": 1,
+        "sparse_positive_prompt_enabled": false,
+        "contains_sparse_positive_v1": false
+      },
+      {
+        "gen_no": 2,
+        "kind": "sell",
+        "attempt": 1,
+        "sparse_positive_prompt_enabled": false,
+        "contains_sparse_positive_v1": false
+      }
+    ]
+  },
+  "on": {
+    "prompt_count": 4,
+    "sparse_true_count": 4,
+    "sparse_false_count": 0,
+    "malformed_injected_features": 0,
+    "sample_heads": [
+      {
+        "gen_no": 1,
+        "kind": "buy",
+        "attempt": 1,
+        "sparse_positive_prompt_enabled": true,
+        "contains_sparse_positive_v1": true
+      },
+      {
+        "gen_no": 1,
+        "kind": "sell",
+        "attempt": 1,
+        "sparse_positive_prompt_enabled": true,
+        "contains_sparse_positive_v1": true
+      },
+      {
+        "gen_no": 2,
+        "kind": "buy",
+        "attempt": 1,
+        "sparse_positive_prompt_enabled": true,
+        "contains_sparse_positive_v1": true
+      },
+      {
+        "gen_no": 2,
+        "kind": "sell",
+        "attempt": 1,
+        "sparse_positive_prompt_enabled": true,
+        "contains_sparse_positive_v1": true
+      }
+    ]
+  },
+  "pass": true
+}

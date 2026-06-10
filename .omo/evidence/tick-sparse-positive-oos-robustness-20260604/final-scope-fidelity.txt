@@ -1,0 +1,83 @@
+﻿# F4 final handoff
+
+Plan: .omo/plans/tick-sparse-positive-oos-robustness-20260604.md
+Branch: lazycodex/tick-sparse-positive-generation-improvement-20260604
+Commit/staging: no commit created, no files staged by this plan.
+Research scope: validation/research only, not production promotion.
+
+## Final verdict
+Final Verdict: NEEDS_MORE_EVIDENCE
+Selected candidate: none
+Selector version: yearly_sparse_robust_v1
+P5 run_id: tick_oosrob_p5_train_2023_2025_20260604
+P5 generations: 10
+P5 prompts: 18
+P5 blocker: no candidate qualified for yearly_sparse_robust_v1
+P6 OOS executed: false
+Reason: P5 selected=false, so fixed 2022/2026 OOS was correctly blocked.
+
+## Important near misses
+- gen6: profit 1,343,705, MDD 7.6, trades 136; rejected because trade_count < 150.
+- gen7: profit 1,378,444, MDD 10.32, trades 91; rejected because MDD > 10.0 and trade count is too low.
+
+## Verification summary
+- git diff --check: exit 0; only line-ending warnings recorded in final-verification.txt.
+- verify_nonrelease_sync.py: exit 0.
+- protected runtime paths: empty status.
+- selector/prompt focused pytest: 81 passed.
+- dashboard analysis pytest: 13 passed.
+- dashboard read-only QA: /health, /config/spec, /prompts, /runs/compare all HTTP 200 on owned port 8799.
+- owned dashboard cleanup: stopped=True, blanket_taskkill_used=false.
+
+## Forbidden action fidelity
+- final_approval invoked: false
+- export_winner invoked: false
+- production strategy DB write: false
+- hard gate edited: false
+- official engine edited: false
+- backtest/graph edited: false
+- OOS-after-the-fact reselection: false
+- blanket taskkill: false
+- V3K gate/live/KHOPENAPI action: false
+
+## Protected path status
+<empty>
+
+## Git status
+## lazycodex/tick-sparse-positive-generation-improvement-20260604
+ M .omo/boulder.json
+ M .omo/plans/tick-sparse-positive-generation-improvement-20260604.md
+ M .omo/start-work/ledger.jsonl
+ M ai_strategy_loop/brain/generator.py
+ M ai_strategy_loop/brain/prompt.py
+ M ai_strategy_loop/config.py
+ M ai_strategy_loop/controller/_candidate_selection_artifact.py
+ M ai_strategy_loop/controller/_candidate_selection_core.py
+ M ai_strategy_loop/controller/candidate_selection.py
+ M ai_strategy_loop/controller/loop.py
+ M ai_strategy_loop/controller/state.py
+ M ai_strategy_loop/launch_config.py
+?? .claude/
+?? .omo/drafts/
+?? .omo/evidence/
+?? .omo/plans/tick-sparse-positive-oos-robustness-20260604.md
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_min_buy.txt"
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_tick_buy.txt"
+?? "C\357\200\272Tempstom_postchange_full.txt"
+?? ai_strategy_loop/controller/_yearly_sparse_robust_artifact.py
+?? ai_strategy_loop/controller/_yearly_sparse_robust_selection.py
+?? docs/research/2026-06-04_condition_research_rereview_human_reference_graphs.md
+?? seed_strategy_output.txt
+?? tests/unit/test_sparse_positive_prompt.py
+?? tests/unit/test_yearly_sparse_robust_selection.py
+?? testsunit_exit_test_out.txt
+
+## Recommended next command
+$ulw-plan TICK yearly_sparse_robust_v1 미선정 원인 개선 계획을 만들어줘. .omo/evidence/tick-sparse-positive-oos-robustness-20260604/p5-selected-candidate.json, p5-train-summary.json, p7-decision-card.md를 정본으로 삼고 gen6 trade_count 136<150와 gen7 MDD 10.32>10 near-miss를 개선 대상으로 하되 엔진/하드게이트/backtest_graph 무수정, 신규 토글 기본 OFF, 후보 동결 전 2022/2026 OOS 금지, final_approval/export_winner 금지 조건으로 계획해줘.
+
+## Post-review correction
+A safety reviewer found that csv_path rows could include non-training years even though top-level OOS fields were forbidden.
+Fix applied: yearly_sparse_robust_v1 now rejects CSV rows outside 2023/2024/2025 before yearly breakdown or uptrend scoring.
+New regression: test_rejects_csv_containing_oos_year_rows.
+Post-fix verification: yearly selector 9 passed; selector/prompt focused suite 82 passed; dashboard analysis 13 passed; protected path status empty.
+Final verdict unchanged: NEEDS_MORE_EVIDENCE, selected candidate none, P6 OOS executed false.

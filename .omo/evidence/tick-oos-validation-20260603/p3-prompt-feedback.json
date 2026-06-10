@@ -1,0 +1,41 @@
+{
+  "run_id": "tick_oos_p2_train_2023_2025_20260603",
+  "db_path": "ai_strategy_loop\\state\\loop_runs.db",
+  "schema_columns": [
+    "prompt_id",
+    "run_id",
+    "gen_no",
+    "kind",
+    "attempt",
+    "system_sha",
+    "user_text",
+    "user_sha",
+    "injected_features",
+    "prior_error",
+    "model",
+    "prompt_tokens",
+    "completion_tokens",
+    "total_tokens",
+    "response_sha",
+    "created_at"
+  ],
+  "prompt_count": 0,
+  "matches_count": 0,
+  "keywords": [
+    "avoid",
+    "segment",
+    "feedback",
+    "????",
+    "??",
+    "??",
+    "??",
+    "??",
+    "market_cap",
+    "change",
+    "time",
+    "0910",
+    "??",
+    "??"
+  ],
+  "matches": []
+}

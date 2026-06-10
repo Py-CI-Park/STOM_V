@@ -1,0 +1,103 @@
+{
+    "task":  "4. P2 selected candidate",
+    "timestamp":  "2026-06-03T20:51:37.2675858+09:00",
+    "run_id":  "tick_oos_p2_train_2023_2025_20260603",
+    "selection_rule":  "highest graded_score among completed P2 generations, predeclared before OOS",
+    "selected":  {
+                     "best_gen":  4,
+                     "buy_name":  "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_buy",
+                     "sell_name":  "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_sell",
+                     "score":  0.28292855129027067,
+                     "gate_passed":  false,
+                     "gate_reason":  "total_profit -6.971e+05 \u003c= 0",
+                     "profit":  -697147,
+                     "max_drawdown":  19.75,
+                     "trade_count":  182,
+                     "daily_avg_trades":  0.3,
+                     "csv_path":  null
+                 },
+    "winner":  null,
+    "completed_generation_count":  5,
+    "all_generations_summary":  [
+                                    {
+                                        "gen_no":  0,
+                                        "status":  "error",
+                                        "score":  0.0,
+                                        "gate_passed":  false,
+                                        "gate_reason":  "backtest failed/timeout: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no",
+                                        "profit":  0.0,
+                                        "mdd":  0.0,
+                                        "trade_count":  0,
+                                        "daily_avg_trades":  0.0,
+                                        "buy_name":  null,
+                                        "sell_name":  null
+                                    },
+                                    {
+                                        "gen_no":  1,
+                                        "status":  "ok",
+                                        "score":  0.03545187723979407,
+                                        "gate_passed":  false,
+                                        "gate_reason":  "mdd 84.49 \u003e mdd_cap 35",
+                                        "profit":  -16043382.0,
+                                        "mdd":  84.49,
+                                        "trade_count":  3451,
+                                        "daily_avg_trades":  4.8,
+                                        "buy_name":  null,
+                                        "sell_name":  null
+                                    },
+                                    {
+                                        "gen_no":  2,
+                                        "status":  "ok",
+                                        "score":  0.21917610310290325,
+                                        "gate_passed":  false,
+                                        "gate_reason":  "mdd 36.03 \u003e mdd_cap 35",
+                                        "profit":  -1327373.0,
+                                        "mdd":  36.03,
+                                        "trade_count":  413,
+                                        "daily_avg_trades":  0.6,
+                                        "buy_name":  null,
+                                        "sell_name":  null
+                                    },
+                                    {
+                                        "gen_no":  3,
+                                        "status":  "ok",
+                                        "score":  0.04070745970530881,
+                                        "gate_passed":  false,
+                                        "gate_reason":  "daily_avg_trades 0.1 \u003c min_daily_trades 0.3",
+                                        "profit":  248716.0,
+                                        "mdd":  11.15,
+                                        "trade_count":  58,
+                                        "daily_avg_trades":  0.1,
+                                        "buy_name":  null,
+                                        "sell_name":  null
+                                    },
+                                    {
+                                        "gen_no":  4,
+                                        "status":  "ok",
+                                        "score":  0.28292855129027067,
+                                        "gate_passed":  false,
+                                        "gate_reason":  "total_profit -6.971e+05 \u003c= 0",
+                                        "profit":  -697147.0,
+                                        "mdd":  19.75,
+                                        "trade_count":  182,
+                                        "daily_avg_trades":  0.3,
+                                        "buy_name":  null,
+                                        "sell_name":  null
+                                    },
+                                    {
+                                        "gen_no":  5,
+                                        "status":  "ok",
+                                        "score":  0.0659200558484315,
+                                        "gate_passed":  false,
+                                        "gate_reason":  "daily_avg_trades 0.1 \u003c min_daily_trades 0.3",
+                                        "profit":  1665802.0,
+                                        "mdd":  6.93,
+                                        "trade_count":  62,
+                                        "daily_avg_trades":  0.1,
+                                        "buy_name":  null,
+                                        "sell_name":  null
+                                    }
+                                ],
+    "raw_run_state":  "{\"contract_version\":2,\"run_id\":\"tick_oos_p2_train_2023_2025_20260603\",\"status\":\"complete\",\"current_gen\":5,\"max_generations\":6,\"provider\":\"gpt_auth\",\"bt_timeframe\":\"tick\",\"best\":{\"gen\":4,\"graded_score\":0.28292855129027067,\"gate_passed\":false,\"buy_name\":\"AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_buy\",\"sell_name\":\"AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_sell\"},\"winner\":null,\"generations\":[{\"gen_no\":0,\"status\":\"error\",\"graded_score\":0.0,\"gate_passed\":false,\"gate_reason\":\"backtest failed/timeout: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no\",\"trade_count\":0,\"daily_avg_trades\":0.0,\"mdd\":0.0,\"profit\":0.0,\"total_profit_pct\":0.0,\"strategy_gist\":\"\",\"payoff_ratio\":0.0,\"give_back_rate\":0.0,\"calmar\":0.0,\"uptrend_r2\":0.0,\"dispersion_term\":1.0,\"max_hold_count\":0.0,\"hypotheses\":[]},{\"gen_no\":1,\"status\":\"ok\",\"graded_score\":0.03545187723979407,\"gate_passed\":false,\"gate_reason\":\"mdd 84.49 \u003e mdd_cap 35\",\"trade_count\":3451,\"daily_avg_trades\":4.8,\"mdd\":84.49,\"profit\":-16043382.0,\"total_profit_pct\":-80.32,\"strategy_gist\":\"if 관심종목 != 1:\",\"payoff_ratio\":1.1848445097684648,\"give_back_rate\":0.16428571428571428,\"calmar\":-0.32773109243697485,\"uptrend_r2\":0.8227858061643848,\"dispersion_term\":1.0,\"max_hold_count\":4.0,\"hypotheses\":[]},{\"gen_no\":2,\"status\":\"ok\",\"graded_score\":0.21917610310290325,\"gate_passed\":false,\"gate_reason\":\"mdd 36.03 \u003e mdd_cap 35\",\"trade_count\":413,\"daily_avg_trades\":0.6,\"mdd\":36.03,\"profit\":-1327373.0,\"total_profit_pct\":-26.52,\"strategy_gist\":\"if 관심종목 != 1:\",\"payoff_ratio\":1.3322392463658268,\"give_back_rate\":0.1111111111111111,\"calmar\":-0.253955037468776,\"uptrend_r2\":0.36734995656744907,\"dispersion_term\":1.0,\"max_hold_count\":1.0,\"hypotheses\":[]},{\"gen_no\":3,\"status\":\"ok\",\"graded_score\":0.04070745970530881,\"gate_passed\":false,\"gate_reason\":\"daily_avg_trades 0.1 \u003c min_daily_trades 0.3\",\"trade_count\":58,\"daily_avg_trades\":0.1,\"mdd\":11.15,\"profit\":248716.0,\"total_profit_pct\":4.97,\"strategy_gist\":\"if 관심종목 != 1:\",\"payoff_ratio\":1.1734989648033127,\"give_back_rate\":0.1,\"calmar\":0.15426008968609864,\"uptrend_r2\":0.01547777995483114,\"dispersion_term\":1.0,\"max_hold_count\":0.0,\"hypotheses\":[]},{\"gen_no\":4,\"status\":\"ok\",\"graded_score\":0.28292855129027067,\"gate_passed\":false,\"gate_reason\":\"total_profit -6.971e+05 \u003c= 0\",\"trade_count\":182,\"daily_avg_trades\":0.3,\"mdd\":19.75,\"profit\":-697147.0,\"total_profit_pct\":-13.94,\"strategy_gist\":\"if 관심종목 != 1:\",\"payoff_ratio\":1.4161864337449797,\"give_back_rate\":0.018018018018018018,\"calmar\":-0.24354430379746833,\"uptrend_r2\":0.0003326514676838887,\"dispersion_term\":1.0,\"max_hold_count\":1.0,\"hypotheses\":[]},{\"gen_no\":5,\"status\":\"ok\",\"graded_score\":0.0659200558484315,\"gate_passed\":false,\"gate_reason\":\"daily_avg_trades 0.1 \u003c min_daily_trades 0.3\",\"trade_count\":62,\"daily_avg_trades\":0.1,\"mdd\":6.93,\"profit\":1665802.0,\"total_profit_pct\":33.32,\"strategy_gist\":\"if 관심종목 != 1:\",\"payoff_ratio\":1.520181273906536,\"give_back_rate\":0.0,\"calmar\":1.6580086580086582,\"uptrend_r2\":0.745830935287567,\"dispersion_term\":1.0,\"max_hold_count\":0.0,\"hypotheses\":[]}],\"latest\":{\"phase\":\"\",\"last_checkpoint\":\"\",\"message\":\"\",\"recent_logs\":[],\"current_step\":-1,\"phase_started_at\":0.0,\"gen_started_at\":0.0,\"step_timings\":{}},\"cumulative\":{\"tokens\":0,\"cost_or_count\":6},\"page_data\":{},\"active_config\":{\"dispersion_prompt_enabled\":false,\"dispersion_enabled\":false,\"min_hold_symbols\":6.0,\"target_daily_trades\":null,\"require_liquidity_gate\":false,\"mdd_control_enabled\":false,\"evolution_mode\":\"hillclimb\",\"winner_objective\":\"uptrend\",\"profit_weight\":0.5,\"bt_engine_mode\":\"warm\",\"bt_scope\":\"single_stock\",\"bt_timeframe\":\"tick\",\"bt_refine_from_best\":true,\"freeze_buy_on_mdd_only\":true,\"bt_full_start\":20230101,\"bt_full_end\":20251231,\"bt_betting\":\"5\",\"mdd_cap\":35,\"min_trades\":30,\"min_daily_trades\":0.3,\"overtrade_softcap\":150,\"tpi_gate_enabled\":false,\"tpi_gate\":1.2,\"exit_quality_enabled\":true,\"target_score\":null,\"max_generations\":6,\"toggles\":[\"dispersion_prompt_enabled\",\"dispersion_enabled\",\"require_liquidity_gate\",\"mdd_control_enabled\",\"bt_refine_from_best\",\"freeze_buy_on_mdd_only\",\"tpi_gate_enabled\",\"exit_quality_enabled\"]},\"updated_at\":1780487496.911909}",
+    "name_source":  "run_state.best for selected generation; run_state.generations lacks buy/sell fields"
+}

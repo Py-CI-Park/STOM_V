@@ -1,6 +1,11 @@
 /* Copyable AI state context pack panel */
 const { useState: useState_ac, useEffect: useEffect_ac } = React;
 
+function packText(value, fallback = "-") {
+  if (value === null || value === undefined || value === "") return fallback;
+  return typeof value === "string" ? value : JSON.stringify(value, null, 2);
+}
+
 function AIContextPanel({ baseUrl, wsStatus, runId, genNo }) {
   const [pack, setPack] = useState_ac(null);
   const [loading, setLoading] = useState_ac(false);
@@ -26,12 +31,35 @@ function AIContextPanel({ baseUrl, wsStatus, runId, genNo }) {
 
   const copyPack = async () => {
     try {
-      const text = pack ? (pack.summary_text || JSON.stringify(pack, null, 2)) : "";
+      const text = pack
+        ? (pack.summary_text
+          ? `${pack.summary_text}\n\ncontext_pack:\n${JSON.stringify(pack.context_pack || {}, null, 2)}`
+          : JSON.stringify(pack.context_pack || pack, null, 2))
+        : "";
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 1400);
     } catch {}
   };
+
+  const contextPack = pack && pack.context_pack ? pack.context_pack : null;
+  const guideContext = packText(contextPack && contextPack.guide_context, pack && pack.summary_text);
+  const diffContext = packText(
+    contextPack && contextPack.diff_context,
+    pack ? [
+      `strategy_buy: ${(pack.strategy_names && pack.strategy_names.buy) || "-"}`,
+      `strategy_sell: ${(pack.strategy_names && pack.strategy_names.sell) || "-"}`,
+      `verdict: ${pack.verdict_note || "-"}`,
+    ].join("\n") : "-",
+  );
+  const analysisContext = packText(
+    contextPack && contextPack.analysis_context,
+    pack && pack.analysis,
+  );
+  const correlationContext = packText(
+    contextPack && contextPack.correlation_context,
+    pack && pack.analysis && pack.analysis.variable_correlation,
+  );
 
   return (
     <div className="panel ai-context-panel">
@@ -68,6 +96,23 @@ function AIContextPanel({ baseUrl, wsStatus, runId, genNo }) {
               <span>prompt_count={pack.prompt_count || 0}</span>
             </div>
             <pre className="ai-context-summary">{pack.summary_text}</pre>
+            <div className="ai-context-pack">
+              <div className="ai-context-pack-head">
+                <strong>context_pack</strong>
+                <span>{contextPack ? Object.keys(contextPack).length + " sections" : "-"}</span>
+              </div>
+              <pre className="ai-context-summary">{JSON.stringify(contextPack, null, 2)}</pre>
+            </div>
+            <div className="ai-context-actions">
+              <span>guide_context</span>
+              <pre className="ai-context-summary">{guideContext}</pre>
+              <span>diff_context</span>
+              <pre className="ai-context-summary">{diffContext}</pre>
+              <span>analysis_context</span>
+              <pre className="ai-context-summary">{analysisContext}</pre>
+              <span>correlation_context</span>
+              <pre className="ai-context-summary">{correlationContext}</pre>
+            </div>
             <div className="ai-context-actions">
               <strong>forbidden_actions</strong>
               {(pack.forbidden_actions || []).map((item, i) => <span key={i}>{item}</span>)}

@@ -94,16 +94,67 @@ function _CombinationList({ rows }) {
         const a = row.feature_a || row.feature || "feature_a";
         const b = row.feature_b || "feature_b";
         const corr = typeof row.correlation === "number" ? row.correlation : null;
+        const score = typeof row.research_score === "number" ? row.research_score : null;
         return (
           <div key={i} className="research-combo-row">
             <span className="mono">{a}</span>
             <span className="research-muted">x</span>
             <span className="mono">{b}</span>
-            <strong style={{ color: _rlCorrColor(corr) }}>{_rlNum(corr, 3)}</strong>
-            <small>sample count {row.n || 0}</small>
+            <strong style={{ color: _rlCorrColor(score == null ? corr : score) }}>
+              {score == null ? _rlNum(corr, 3) : _rlNum(score, 3)}
+            </strong>
+            <small>sample count {row.sample_count || row.n || 0}</small>
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function _RangeSummaryList({ rows }) {
+  if (!rows || rows.length === 0) {
+    return <_ResearchEmptyState message="insufficient range_summaries for histogram research." />;
+  }
+  return (
+    <div className="research-combo-list">
+      {rows.slice(0, 8).map((row, i) => (
+        <div key={i} className="research-combo-row" title="histogram and win/loss range contrast">
+          <span className="mono">{row.feature}</span>
+          <span>median {_rlNum(row.median, 2)}</span>
+          <span>q25-q75 {_rlNum(row.q25, 2)}~{_rlNum(row.q75, 2)}</span>
+          <span>win/loss Δ {_rlNum(row.win_loss && row.win_loss.mean_delta, 3)}</span>
+          <small>histogram {(row.histogram || []).map(b => b.count).join("/")}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function _SegmentSummaryList({ summary, axis }) {
+  const rows = summary && Array.isArray(summary[axis]) ? summary[axis] : [];
+  if (rows.length === 0) {
+    return <_ResearchEmptyState message={"insufficient segment_summaries for " + axis + "."} />;
+  }
+  return (
+    <div className="research-combo-list">
+      {rows.slice(0, 8).map((row, i) => (
+        <div key={i} className="research-combo-row">
+          <span className="mono">{axis}:{row.label}</span>
+          <span>avg {_rlNum(row.avg_return, 3)}</span>
+          <span>win {_rlNum(row.win_rate, 3)}</span>
+          <small>sample count {row.sample_count || 0}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function _RecencyResearchBadge({ recency }) {
+  if (!recency) return null;
+  return (
+    <div className="research-empty" title="research_score_not_promotion">
+      recency_research · {recency.score_label || "research_score_not_promotion"} ·
+      score {_rlNum(recency.research_score, 4)}
     </div>
   );
 }
@@ -138,9 +189,17 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
 
   const matrixRows = (data && Array.isArray(data.feature_matrix)) ? data.feature_matrix : [];
   const outcomeRows = (data && Array.isArray(data.outcome_correlations)) ? data.outcome_correlations : [];
+  const rangeRows = (data && Array.isArray(data.range_summaries)) ? data.range_summaries : [];
+  const segmentSummary = (data && data.segment_summaries) || {};
+  const recencyResearch = (data && data.recency_research) || null;
   const pairRows = useMemo_rl(() => {
-    const raw = (data && Array.isArray(data.top_pairs) && data.top_pairs.length) ? data.top_pairs : matrixRows;
-    return [...raw].sort((a, b) => (b.abs_correlation || Math.abs(b.correlation || 0)) - (a.abs_correlation || Math.abs(a.correlation || 0)));
+    const raw = (data && Array.isArray(data.interaction_candidates) && data.interaction_candidates.length)
+      ? data.interaction_candidates
+      : ((data && Array.isArray(data.top_pairs) && data.top_pairs.length) ? data.top_pairs : matrixRows);
+    return [...raw].sort((a, b) => (
+      (b.research_score || b.abs_correlation || Math.abs(b.correlation || 0))
+      - (a.research_score || a.abs_correlation || Math.abs(a.correlation || 0))
+    ));
   }, [data, matrixRows]);
 
   let body = null;
@@ -168,6 +227,9 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
                               loading={loading} pooledTrades={data && data.pooled_trades}
                               featureCount={data && data.feature_count} />
         <_CorrelationHeatmap rows={matrixRows.length ? matrixRows : outcomeRows} />
+        <_RangeSummaryList rows={rangeRows} />
+        <_SegmentSummaryList summary={segmentSummary} axis={axis} />
+        <_RecencyResearchBadge recency={recencyResearch} />
       </div>
     );
   } else {

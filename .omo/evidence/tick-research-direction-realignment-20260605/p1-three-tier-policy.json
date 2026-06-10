@@ -1,0 +1,92 @@
+{
+  "policy_version": "three_tier_candidate_policy_v2",
+  "oos_blind_until_promotion_freeze": true,
+  "exploration_pool_v2": {
+    "purpose": "retain broad overfit-looking and near-miss candidates for research",
+    "input_period": "2023-2025 training only",
+    "max_candidates": 30,
+    "structural_rejections": [
+      "missing_strategy_identity",
+      "missing_csv_path",
+      "malformed_csv_no_parseable_trades",
+      "oos_year_contamination",
+      "trade_count_below_10"
+    ],
+    "retention_labels": [
+      "human_like",
+      "near_miss",
+      "overfit_risk",
+      "sparse",
+      "mdd_risk",
+      "recent_improving",
+      "max_hold_unknown",
+      "pbo_high",
+      "dsr_insufficient"
+    ],
+    "sort_order": [
+      "profit_desc",
+      "mdd_asc",
+      "trade_count_desc",
+      "gen_no_asc"
+    ],
+    "pbo_dsr_role": "label_only",
+    "human_morphology_role": "research_prior_only"
+  },
+  "research_pool_v2": {
+    "purpose": "rank candidates for deeper diagnosis without promotion claims",
+    "input": "exploration_pool_v2",
+    "max_candidates": 10,
+    "ranking_preferences": {
+      "aggregate_trade_count_gte": 50,
+      "training_years_with_trades_gte": 2
+    },
+    "recent_weighted_profit": {
+      "profit_2023_weight": 0.2,
+      "profit_2024_weight": 0.3,
+      "profit_2025_weight": 0.5
+    },
+    "score_components": [
+      "human_morphology",
+      "recent_improvement",
+      "quant_support",
+      "risk_labels"
+    ],
+    "pbo_dsr_role": "label_only",
+    "oos_role": "forbidden"
+  },
+  "promotion_gate_v2": {
+    "purpose": "strict proof for seed/human-level claims",
+    "max_candidates": 1,
+    "pre_oos_requirements": {
+      "base_sparse_positive_pass": true,
+      "aggregate_training_trades_gte": 150,
+      "each_training_year_trades_gte": 30,
+      "each_training_year_profit_gt": 0,
+      "aggregate_mdd_lte": 10.0
+    },
+    "fixed_oos_requirements": {
+      "ai_2022_profit_gt": 0,
+      "ai_available_2026_profit_gt": 0,
+      "combined_ai_profit_gte_seed": true,
+      "ai_max_mdd_lte_seed_max_mdd": true,
+      "each_ai_oos_trade_count_gte": 20,
+      "combined_ai_oos_trade_count_gte": 50
+    },
+    "diagnostic_requirements": {
+      "slippage_haircuts": [0.001, 0.002, 0.003],
+      "slippage_stressed_oos_positive": true,
+      "pbo_lt": 0.2,
+      "dsr_gt": 0,
+      "insufficient_pbo_or_dsr_blocks_promotion": true
+    }
+  },
+  "forbidden": {
+    "oos_after_the_fact_reselection": true,
+    "final_approval": true,
+    "export_winner": true,
+    "engine_edits": true,
+    "hard_gate_relaxation": true,
+    "backtest_graph_edits": true,
+    "live_broker_or_v3k_actions": true
+  }
+}

@@ -1,0 +1,70 @@
+# Final Scope Fidelity
+
+- Timestamp: `2026-06-04T09:37:05.431687+00:00`
+- Work id: `tick-sparse-positive-generation-improvement-20260604`
+- Final Verdict: `REJECT_CANDIDATE`
+- Scope: research validation only; no production promotion.
+
+## Candidate
+- Selected: `true`
+- Bucket: `sparse_positive`
+- Gen: `4`
+- Buy: `AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_buy`
+- Sell: `AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_sell`
+- Training profit/MDD/trades: `1,155,715` / `9.12` / `124`
+
+## OOS Result
+- OOS pass rule: `false`
+- Combined seed profit: `2,032,445`
+- Combined AI profit: `134,264`
+- Seed max MDD / AI max MDD: `15.63` / `9.0`
+- Seed total trades / AI total trades: `68` / `31`
+- Rejection reasons: AI 2022 OOS profit negative; combined AI profit below seed; AI trade-count sufficiency failed.
+
+## Verification
+- `git diff --check`: exit 0.
+- `python scripts/verify_nonrelease_sync.py`: OK.
+- Focused pytest: 73 passed.
+- Dashboard analysis pytest: 13 passed.
+- Dashboard QA: owned 8799 server read-only checks passed and was stopped; pre-existing 8770 left untouched.
+
+## Forbidden Actions
+- `final_approval`: not invoked.
+- `export_winner`: not invoked.
+- Production strategy DB writes: not invoked.
+- Live broker / KHOPENAPI / V3K gate advancement: not invoked.
+- `taskkill`: not used.
+- Hard gates, official engines, and `backtest/graph` were not edited.
+
+## Git Status
+```text
+## lazycodex/tick-sparse-positive-generation-improvement-20260604
+ M .omo/boulder.json
+ M .omo/plans/tick-sparse-positive-generation-improvement-20260604.md
+ M .omo/start-work/ledger.jsonl
+ M ai_strategy_loop/brain/generator.py
+ M ai_strategy_loop/brain/prompt.py
+ M ai_strategy_loop/config.py
+ M ai_strategy_loop/controller/loop.py
+ M ai_strategy_loop/controller/state.py
+ M ai_strategy_loop/launch_config.py
+?? .claude/
+?? .omo/drafts/
+?? .omo/evidence/
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_min_buy.txt"
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_tick_buy.txt"
+?? "C\357\200\272Tempstom_postchange_full.txt"
+?? seed_strategy_output.txt
+?? tests/unit/test_sparse_positive_prompt.py
+?? testsunit_exit_test_out.txt
+```
+
+## Protected Path Status
+```text
+<empty>
+```
+
+## Recommended Next Command
+```powershell
+$ulw-plan TICK sparse-positive OOS robustness improvement. Use .omo/evidence/tick-sparse-positive-generation-improvement-20260604/p5-selected-candidate.json, p6-oos-comparison.json, p7-decision-card.md, final-verification.txt as canonical evidence. Keep hard gates, official engines, backtest/graph, protected paths unchanged; keep sparse_positive_prompt_enabled default OFF; forbid OOS-after-the-fact reselection and production export.
+```

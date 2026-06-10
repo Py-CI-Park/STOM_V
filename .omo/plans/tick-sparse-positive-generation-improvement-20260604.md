@@ -165,7 +165,7 @@ Wave 6: P7 decision card and final verification.
 
 ## TODOs
 
-- [ ] 1. P0 safety snapshot and canonical reread
+- [x] 1. P0 safety snapshot and canonical reread
 
   **What to do**: Create the evidence root. Capture branch, HEAD, dirty worktree, protected-path status, Boulder state, dashboard status if any, and canonical evidence summaries.
   **Must NOT do**: Do not clean the dirty worktree. Do not stop existing dashboard processes. Do not run long backtests.
@@ -208,7 +208,7 @@ Wave 6: P7 decision card and final verification.
 
   **Commit**: NO
 
-- [ ] 2. P1 failure taxonomy and predeclared generation policy
+- [x] 2. P1 failure taxonomy and predeclared generation policy
 
   **What to do**: Convert the prior P4 rejection facts into a predeclared generation-quality policy before source changes or new OOS. Define the exact prompt targets and explicitly state that the policy is advisory generation guidance, not a hard-gate or selector relaxation.
   **Must NOT do**: Do not tune thresholds from any future OOS. Do not weaken `sparse_positive_v1`.
@@ -246,7 +246,7 @@ Wave 6: P7 decision card and final verification.
 
   **Commit**: NO
 
-- [ ] 3. P2 implement default-OFF sparse-positive prompt guidance with TDD
+- [x] 3. P2 implement default-OFF sparse-positive prompt guidance with TDD
 
   **What to do**: Add the smallest source support for a new default-OFF toggle `sparse_positive_prompt_enabled`. Wire it through `LoopConfig`, `launch_config`, `controller/state` active config allow-lists if needed, `_generate_pair`, `generate_strategy`, and `build_messages`. The ON path must inject kind-specific guidance: buy prompts reduce overtrading and target sparse-positive entry; sell prompts protect MDD/giveback and payoff. OFF path must preserve current output/behavior.
   **Must NOT do**: Do not edit `ai_strategy_loop/fitness/score.py`, official backtest engines, `backtest/graph/`, or selector thresholds. Do not make the new guidance always-on.
@@ -305,7 +305,7 @@ Wave 6: P7 decision card and final verification.
 
   **Commit**: NO
 
-- [ ] 4. P3 predeclare run configs and selector-freeze tooling
+- [x] 4. P3 predeclare run configs and selector-freeze tooling
 
   **What to do**: Create exact smoke and train configs under the evidence root. Base them on `.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604/p4-train-config.json`, but add `sparse_positive_prompt_enabled` only for ON configs. Predeclare all run ids, windows, hashes, and selector application steps. Confirm existing candidate-selection helper can write artifacts; if a tiny evidence-only script is needed, add it with tests.
   **Must NOT do**: Do not start the long run in P3. Do not use any OOS metrics in selector config or prompt policy.
@@ -355,7 +355,7 @@ Wave 6: P7 decision card and final verification.
 
   **Commit**: NO
 
-- [ ] 5. P4 short smoke A/B run, no OOS
+- [x] 5. P4 short smoke A/B run, no OOS
 
   **What to do**: Run two short official loop smoke runs: OFF baseline and ON sparse-positive prompt. Compare generation failures, prompt records, trade/MDD/profit shape, and selector outcome. This is pipeline evidence only, not promotion evidence.
   **Must NOT do**: Do not run 2022/2026 OOS in P4. Do not tune thresholds after seeing smoke results. Do not treat smoke winner as production candidate.
@@ -403,7 +403,7 @@ Wave 6: P7 decision card and final verification.
 
   **Commit**: NO
 
-- [ ] 6. P5 fresh 2023-2025 selector-frozen train run
+- [x] 6. P5 fresh 2023-2025 selector-frozen train run
 
   **What to do**: Run the fresh 2023-2025 train config with `sparse_positive_prompt_enabled=true`. After completion, apply `sparse_positive_v1` to training rows only and write `p5-selected-candidate.json` before any OOS.
   **Must NOT do**: Do not use 2022/2026 OOS data in selection. Do not change the candidate after selection. Do not weaken hard gates, selector thresholds, or prompt policy from P1.
@@ -444,7 +444,7 @@ Wave 6: P7 decision card and final verification.
 
   **Commit**: NO
 
-- [ ] 7. P6 fixed 2022/2026 OOS only if P5 selected a candidate
+- [x] 7. P6 fixed 2022/2026 OOS only if P5 selected a candidate
 
   **What to do**: If P5 selected a candidate, build fixed seed and AI OOS configs for 2022 and 2026. AI configs must use exact P5 buy/sell names, `bt_refine_from_best=false`, `max_generations=1`, TICK timeframe, and no candidate mutation. If P5 selected=false, write `p6-oos-blocked.md` and do not run OOS.
   **Must NOT do**: Do not reselect, tune, or edit candidate code after any OOS result appears.
@@ -492,7 +492,7 @@ Wave 6: P7 decision card and final verification.
 
   **Commit**: NO
 
-- [ ] 8. P7 slippage, PBO/DSR status, and decision card
+- [x] 8. P7 slippage, PBO/DSR status, and decision card
 
   **What to do**: Produce a final decision card. Run slippage/PBO/DSR diagnostics if tooling exists. If tooling is missing or no candidate/OOS exists, record explicit advisory blockers. The final verdict must be one of `PROMOTE_CANDIDATE`, `REJECT_CANDIDATE`, or `NEEDS_MORE_EVIDENCE`.
   **Must NOT do**: Do not promote when P5 selected=false, P6 skipped, OOS trade count is too sparse, OOS fails, slippage fails/unavailable, or PBO/DSR is unresolved.
@@ -531,7 +531,7 @@ Wave 6: P7 decision card and final verification.
 
 ## Final Verification Wave
 
-- [ ] F1. Plan compliance audit
+- [x] F1. Plan compliance audit
 
   **What to do**: Map every task to evidence and record forbidden-action absence.
 
@@ -551,7 +551,7 @@ Wave 6: P7 decision card and final verification.
     Evidence: .omo/evidence/tick-sparse-positive-generation-improvement-20260604/final-plan-compliance.txt
   ```
 
-- [ ] F2. Code and branch safety verification
+- [x] F2. Code and branch safety verification
 
   **What to do**: Run final verification commands, preserving unrelated dirty changes.
 
@@ -574,7 +574,7 @@ Wave 6: P7 decision card and final verification.
     Evidence: .omo/evidence/tick-sparse-positive-generation-improvement-20260604/final-verification.txt
   ```
 
-- [ ] F3. Dashboard/read-only QA if dashboard surface is touched
+- [x] F3. Dashboard/read-only QA if dashboard surface is touched
 
   **What to do**: If launch config, prompt route, run comparison, or dashboard-visible config is touched, capture read-only statuses and cleanup receipt for owned server only.
 
@@ -595,7 +595,7 @@ Wave 6: P7 decision card and final verification.
     Evidence: .omo/evidence/tick-sparse-positive-generation-improvement-20260604/final-dashboard-qa.txt
   ```
 
-- [ ] F4. Final handoff
+- [x] F4. Final handoff
 
   **What to do**: Record final git status, protected-path status, final verdict, selected candidate identity if any, and recommended next command.
 

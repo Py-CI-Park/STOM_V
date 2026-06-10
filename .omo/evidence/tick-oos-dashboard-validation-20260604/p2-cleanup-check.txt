@@ -1,0 +1,10 @@
+﻿timestamp=2026-06-04T10:22:31.4350666+09:00
+owned_dashboard_base=http://127.0.0.1:8799
+owned_dashboard_session=53392
+owned_dashboard_pid=133652
+cleanup_action=Ctrl-C sent through owned exec session only
+8799_status=stopped_or_unreachable
+8799_error=The operation has timed out.
+8770_status=200
+protected_status_begin
+protected_status_end

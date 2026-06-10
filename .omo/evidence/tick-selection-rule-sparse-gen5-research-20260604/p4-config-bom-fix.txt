@@ -1,0 +1,7 @@
+﻿## P4 config BOM fix
+timestamp=2026-06-04T12:48:12.7137021+09:00
+first_three_bytes=123,13,10
+config_sha256_after_bomless_rewrite=64ef805703a388e3ed2abfaa8613d0ef5af92f9e08915f65e8db25913a1ab81b
+json_load_probe=20230101 20251231 tick 6
+root_cause=PowerShell Set-Content -Encoding UTF8 wrote a BOM that Python json.load rejected.
+fix=rewrote same JSON with System.Text.UTF8Encoding(false).

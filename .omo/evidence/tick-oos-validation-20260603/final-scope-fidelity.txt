@@ -1,0 +1,41 @@
+﻿# Final Scope Fidelity Check
+
+timestamp=2026-06-03T21:32:38.5676431+09:00
+
+## git status --short --branch
+## STOM_Version_2U_C-ai-strategy-loop
+ M AGENTS.md
+?? .claude/
+?? .omo/
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_min_buy.txt"
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_tick_buy.txt"
+?? "C\357\200\272Tempstom_postchange_full.txt"
+?? ai_strategy_loop/AGENTS.md
+?? backtest/AGENTS.md
+?? cli/AGENTS.md
+?? docs/AGENTS.md
+?? docs/reference/
+?? research/AGENTS.md
+?? scripts/AGENTS.md
+?? seed_strategy_output.txt
+?? strategy/AGENTS.md
+?? tests/AGENTS.md
+?? testsunit_exit_test_out.txt
+?? trade/AGENTS.md
+?? ui/AGENTS.md
+?? utility/ai_agent/AGENTS.md
+
+## protected path status
+<empty>
+
+## P5 verdict
+Final Verdict: REJECT_CANDIDATE
+
+## Final user summary phrase
+candidate rejected by evidence
+
+## Scope assertions
+- Source engines, hard gates, backtest/graph, live broker wiring, V3K gates, final approval/export boundary were not edited or invoked by this work.
+- Runtime state changes were produced by official loop executions for explicit run_ids only.
+- Pre-existing dirty/untracked files remain unmodified by cleanup/revert operations.
+- Human-level/superior claim is not proven; P5 rejects this candidate.

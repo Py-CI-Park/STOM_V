@@ -76,6 +76,13 @@ def generate_strategy(
     min_filter_categories: int = 5,
     require_meaningful_time_window: bool = False,
     classification_generation_enabled: bool = False,
+    time_cap_bucket_generation_enabled: bool = False,
+    time_cap_bucket_end_time: int = 92000,
+    sparse_positive_prompt_enabled: bool = False,
+    exec_budget_prompt_enabled: bool = False,
+    report_principles_enabled: bool = False,
+    sell_exec_budget_guard_enabled: bool = False,
+    sell_max_window_calls: int = 8,
     hypothesis_feedback: Optional[str] = None,
     few_shot_examples: Optional[list] = None,
     segment_avoid_lines: Optional[list] = None,
@@ -185,6 +192,11 @@ def generate_strategy(
             encourage_time_dispersion=encourage_time_dispersion,
             require_filter_gates=require_filter_gates,
             classification_generation_enabled=classification_generation_enabled,
+            time_cap_bucket_generation_enabled=time_cap_bucket_generation_enabled,
+            time_cap_bucket_end_time=time_cap_bucket_end_time,
+            sparse_positive_prompt_enabled=sparse_positive_prompt_enabled,
+            exec_budget_prompt_enabled=exec_budget_prompt_enabled,
+            report_principles_enabled=report_principles_enabled,
             hypothesis_feedback=hypothesis_feedback,
             few_shot_examples=few_shot_examples,
             segment_avoid_lines=segment_avoid_lines,
@@ -243,11 +255,37 @@ def generate_strategy(
                         "encourage_time_dispersion": encourage_time_dispersion,
                         "require_filter_gates": require_filter_gates,
                         "classification_generation_enabled": classification_generation_enabled,
+                        "time_cap_bucket_generation_enabled": time_cap_bucket_generation_enabled,
+                        "time_cap_bucket_end_time": time_cap_bucket_end_time,
+                        "sparse_positive_prompt_enabled": sparse_positive_prompt_enabled,
+                        "exec_budget_prompt_enabled": exec_budget_prompt_enabled,
+                        "report_principles_enabled": report_principles_enabled,
+                        "sell_exec_budget_guard_enabled": sell_exec_budget_guard_enabled,
                         "target_daily_trades": target_daily_trades,
                         "min_filter_categories": min_filter_categories,
                         "has_hypothesis_feedback": bool(hypothesis_feedback),
                         "has_few_shot": bool(few_shot_examples),
                         "has_segment_avoid": bool(segment_avoid_lines),
+                        "guide_context": {
+                            "system_prompt_assets": "v1",
+                            "timeframe": timeframe,
+                            "few_shot_examples": len(few_shot_examples or []),
+                        },
+                        "diff_context": {
+                            "has_base_code": base_code is not None,
+                            "has_crossover": crossover_parents is not None,
+                            "has_history_summary": bool(history_summary),
+                        },
+                        "analysis_context": {
+                            "has_autopsy_feedback": bool(autopsy_feedback),
+                            "has_meta_seed": bool(meta_seed),
+                            "has_hypothesis_feedback": bool(hypothesis_feedback),
+                            "has_segment_avoid": bool(segment_avoid_lines),
+                        },
+                        "correlation_context": {
+                            "available_route": "/variable_correlation",
+                            "prompt_injected": False,
+                        },
                         # T3 시간창 측정(값 범위) — bounds는 [lo,hi] 리스트(JSON 직렬화),
                         #   없으면 None. span은 초, no-op은 전범위(시간 무게이트) 여부.
                         "time_window_bounds": (
@@ -349,6 +387,31 @@ def generate_strategy(
                     "— 예) 90000 <= 시분초 < 93000. (좁은 창도 좋다 — 전범위만 피하라.)"
                 )
                 logger.info("attempt %d: 무의미한 시간창(no-op)", attempt)
+                continue
+
+        if time_cap_bucket_generation_enabled and kind == "buy":
+            from ai_strategy_loop.brain.time_cap_bucket import time_cap_bucket_complexity_reason  # noqa: PLC0415
+            complexity_reason = time_cap_bucket_complexity_reason(code)
+            if complexity_reason is not None:
+                prior_error = complexity_reason
+                logger.info("attempt %d: %s", attempt, prior_error)
+                continue
+
+        # --- 4f) 매도식 계산예산 가드 (2026-06-10 원인3; 매도 전용, 기본 OFF) ---
+        #   11/11 실측: 비유계 스캔 함수(고가/저가미갱신지속틱수)+윈도우 호출 다수의
+        #   매도식은 warm run 300초 타임아웃을 유발한다(같은 매수가 스칼라 매도로는
+        #   21초). 매도식은 보유 종목의 모든 틱에서 평가되므로 비용이 (보유 수×보유
+        #   시간)에 곱해진다. sell_exec_budget_guard_enabled=True면 매도 코드가
+        #   ①비유계 스캔을 쓰면서 보유시간 상한이 없거나 ②윈도우 호출 수가
+        #   sell_max_window_calls를 넘을 때 reject→재시도한다. OFF면 단락되어 무영향.
+        if sell_exec_budget_guard_enabled and kind == "sell":
+            from ai_strategy_loop.brain.exec_budget import check_sell_exec_budget  # noqa: PLC0415
+            budget_ok, budget_reason = check_sell_exec_budget(
+                code, max_window_calls=sell_max_window_calls
+            )
+            if not budget_ok:
+                prior_error = budget_reason
+                logger.info("attempt %d: 매도 계산예산 위반", attempt)
                 continue
 
         # --- 5) dedup ---

@@ -1,0 +1,28 @@
+[LOOP] loop DB        : C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\state\loop_strategies.db
+[LOOP] provider       : gpt_auth
+[LOOP] max_generations: 1
+[LOOP] bt_timeframe   : tick
+[LOOP] bt_engine_mode : warm
+[LOOP] warm prepare 완료 (back_count=43)
+
+[LOOP] === generation 0 (run=ct_branch_controlbuy_ctsell_warm_20260605) ===
+[LOOP] seed 사용: buy=CT_DIAG_CTLB_902905_20260605 sell=CT_DIAG_CTS_902905_20260605
+[LOOP] backtest status=success elapsed=10.7s reason=ok
+[LOOP] graded=1 hard_composite=0 calmar=249.7 r2=0 gate=True reason=ok mdd=2.99 profit=149,567 trades=1 gate_distance=ok (gate passed)
+[LOOP] holdout gate: passed=False status=no_holdout trades=0 mdd=0 profit=0 reason=holdout 분할 불가: 거래일 1개 <= holdout_recent_days 60 (train 구간 없음)
+
+[LOOP] === SUMMARY ===
+{
+  "run_id": "ct_branch_controlbuy_ctsell_warm_20260605",
+  "generations": 1,
+  "best_gen": 0,
+  "best_score": 1.0,
+  "best_buy": "CT_DIAG_CTLB_902905_20260605",
+  "best_sell": "CT_DIAG_CTS_902905_20260605",
+  "winner_gen": -1,
+  "winner_score": null,
+  "winner_buy": null,
+  "winner_sell": null,
+  "stop_reason": "max_generations 도달: gen_count 1 >= 1"
+}
+[LOOP] wall-clock: 44.4s

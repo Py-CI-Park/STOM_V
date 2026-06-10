@@ -1,0 +1,237 @@
+﻿P0 Safety Snapshot
+Timestamp: 2026-06-04T10:05:23
+
+
+## branch and dirty state
+COMMAND: git status --short --branch
+
+## STOM_Version_2U_C-ai-strategy-loop
+ M AGENTS.md
+ M ai_strategy_loop/controller/lineage.py
+ M ai_strategy_loop/controller/state.py
+ M ai_strategy_loop/dashboard/app.py
+ M ai_strategy_loop/dashboard/frontend/app.jsx
+ M ai_strategy_loop/dashboard/frontend/chart.jsx
+ M ai_strategy_loop/dashboard/frontend/code-viewer.jsx
+ M ai_strategy_loop/dashboard/frontend/engine.jsx
+ M ai_strategy_loop/dashboard/frontend/index.html
+ M ai_strategy_loop/dashboard/frontend/styles.css
+ M ai_strategy_loop/dashboard/frontend/table.jsx
+?? .claude/
+?? .omo/
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_min_buy.txt"
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_tick_buy.txt"
+?? "C\357\200\272Tempstom_postchange_full.txt"
+?? ai_strategy_loop/AGENTS.md
+?? ai_strategy_loop/dashboard/frontend/ai-context.jsx
+?? ai_strategy_loop/dashboard/frontend/research-lab.jsx
+?? ai_strategy_loop/dashboard/frontend/research-wiki.jsx
+?? ai_strategy_loop/dashboard/frontend/run-compare.jsx
+?? ai_strategy_loop/dashboard/frontend/strategy-inspector.jsx
+?? ai_strategy_loop/dashboard/research_api.py
+?? ai_strategy_loop/fitness/correlation.py
+?? backtest/AGENTS.md
+?? cli/AGENTS.md
+?? docs/AGENTS.md
+?? docs/reference/
+?? docs/research/condition_research/wiki/
+?? research/AGENTS.md
+?? scripts/AGENTS.md
+?? seed_strategy_output.txt
+?? strategy/AGENTS.md
+?? tests/AGENTS.md
+?? tests/unit/test_dashboard_ai_context_pack.py
+?? tests/unit/test_dashboard_chart_explanations.py
+?? tests/unit/test_dashboard_current_gen_detail.py
+?? tests/unit/test_dashboard_index_compare.py
+?? tests/unit/test_dashboard_integrated_layout.py
+?? tests/unit/test_dashboard_prompts.py
+?? tests/unit/test_dashboard_research_docs.py
+?? tests/unit/test_dashboard_research_lab_frontend.py
+?? tests/unit/test_dashboard_run_compare_frontend.py
+?? tests/unit/test_dashboard_runs_enriched.py
+?? tests/unit/test_dashboard_strategy_diff.py
+?? tests/unit/test_dashboard_strategy_prompt_frontend.py
+?? tests/unit/test_dashboard_table_sorting.py
+?? tests/unit/test_dashboard_wiki_frontend.py
+?? tests/unit/test_research_wiki_docs.py
+?? tests/unit/test_variable_correlation.py
+?? testsunit_exit_test_out.txt
+?? trade/AGENTS.md
+?? ui/AGENTS.md
+?? utility/ai_agent/AGENTS.md
+EXIT_CODE: 0
+
+
+## HEAD
+COMMAND: git rev-parse HEAD
+
+710dd654317d599e699af7dcc30e8637a152aefc
+EXIT_CODE: 0
+
+
+## current branch
+COMMAND: git branch --show-current
+
+STOM_Version_2U_C-ai-strategy-loop
+EXIT_CODE: 0
+
+
+## protected path status
+COMMAND: git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json
+
+EXIT_CODE: 0
+
+
+## boulder state
+COMMAND: Get-Content .omo/boulder.json
+
+{
+  "schema_version": 2,
+  "active_work_id": "tick-oos-dashboard-validation-20260604",
+  "works": {
+    "condition-research-rereview-20260603": {
+      "work_id": "condition-research-rereview-20260603",
+      "active_plan": ".omo/plans/condition-research-rereview-20260603.md",
+      "plan_name": "condition-research-rereview-20260603",
+      "session_ids": [
+        "codex:condition-research-rereview-20260603"
+      ],
+      "status": "completed",
+      "worktree_path": null
+    },
+    "tick-oos-validation-20260603": {
+      "work_id": "tick-oos-validation-20260603",
+      "active_plan": ".omo/plans/tick-oos-validation-20260603.md",
+      "plan_name": "tick-oos-validation-20260603",
+      "session_ids": [
+        "codex:tick-oos-validation-20260603",
+        "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
+      ],
+      "status": "completed",
+      "worktree_path": null
+    },
+    "tick-research-dashboard-upgrade-20260603": {
+      "work_id": "tick-research-dashboard-upgrade-20260603",
+      "active_plan": ".omo/plans/tick-research-dashboard-upgrade-20260603.md",
+      "plan_name": "tick-research-dashboard-upgrade-20260603",
+      "session_ids": [
+        "codex:tick-research-dashboard-upgrade-20260603"
+      ],
+      "status": "completed",
+      "worktree_path": null
+    },
+    "tick-oos-dashboard-validation-20260604": {
+      "work_id": "tick-oos-dashboard-validation-20260604",
+      "active_plan": ".omo/plans/tick-oos-dashboard-validation-20260604.md",
+      "plan_name": "tick-oos-dashboard-validation-20260604",
+      "session_ids": [
+        "codex:tick-oos-dashboard-validation-20260604"
+      ],
+      "status": "active",
+      "worktree_path": null
+    }
+  }
+}
+EXIT_CODE: 0
+
+
+## prior P5 verdict
+COMMAND: Select-String -Path .omo/evidence/tick-oos-validation-20260603/p5-decision-card.md -Pattern "Final Verdict|REJECT_CANDIDATE|PROMOTE_CANDIDATE|NEEDS_MORE_EVIDENCE"
+
+REJECT_CANDIDATE : The term 'REJECT_CANDIDATE' is not recogni
+zed as the name of a cmdlet, function, script file, or operab
+le program. Check the spelling of the name, or if a path was 
+included, verify that the path is correct and try again.
+At line:1 char:107
++ ... 3/p5-decision-card.md -Pattern Final Verdict|REJECT_CAN
+DIDATE|PROMOTE ...
++                                                  ~~~~~~~~~~
+~~~~~~
+    + CategoryInfo          : ObjectNotFound: (REJECT_CANDID 
+   ATE:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+EXIT_CODE: 1
+
+
+## 8770 health
+COMMAND: try { Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 http://127.0.0.1:8770/health | Select-Object StatusCode,Content } catch { "ERROR: " + $_.Exception.Message }
+
+
+StatusCode Content                             
+---------- -------                             
+       200 {"status":"ok","contract_version":2}
+
+
+EXIT_CODE: 0
+
+
+## 8770 new API probe variable_correlation
+COMMAND: try { Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 "http://127.0.0.1:8770/variable_correlation?run_id=run_1779672477" | Select-Object StatusCode,@{Name="Sample";Expression={$_.Content.Substring(0,[Math]::Min(200,$_.Content.Length))}} } catch { "ERROR: " + $_.Exception.Message }
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Python\64\Python31313\Scripts\sample.exe\__main__.py", line 2, in <module>
+    from sample import main
+ModuleNotFoundError: No module named 'sample'
+ERROR: : The term 'ERROR:' is not recognized as the name of a
+ cmdlet, function, script file, or operable program. Check th
+e spelling of the name, or if a path was included, verify tha
+t the path is correct and try again.
+At line:1 char:245
++ ... ring(0,[Math]::Min(200,$_.Content.Length))}} } catch { 
+ERROR:  + $_.E ...
++                                                            
+~~~~~~
+    + CategoryInfo          : ObjectNotFound: (ERROR::String 
+   ) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+EXIT_CODE: 1
+
+
+## 8770 new API probe ai_context_pack
+COMMAND: try { Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 "http://127.0.0.1:8770/ai_context_pack?run_id=run_1779672477&gen_no=0" | Select-Object StatusCode,@{Name="Sample";Expression={$_.Content.Substring(0,[Math]::Min(200,$_.Content.Length))}} } catch { "ERROR: " + $_.Exception.Message }
+
+At line:1 char:115
++ ...  http://127.0.0.1:8770/ai_context_pack?run_id=run_17796
+72477&gen_no=0 ...
++                                                            
+     ~
+The ampersand (&) character is not allowed. The & operator is
+ reserved for future use; wrap an ampersand in double quotati
+on marks ("&") to pass it as part of a string.
+    + CategoryInfo          : ParserError: (:) [], ParentCon 
+   tainsErrorRecordException
+    + FullyQualifiedErrorId : AmpersandNotAllowed
+ 
+EXIT_CODE: 1
+
+
+## corrected prior verdict and 8770 stale probes
+Timestamp: 2026-06-04T10:05:55
+
+
+### prior P5 verdict corrected
+
+C:\System_Trading\STOM\STOM_V.wt-dev\.omo\evidence\tick-oos-validation-20260603\p5-decision-card.md:74:## Final Verdict
+C:\System_Trading\STOM\STOM_V.wt-dev\.omo\evidence\tick-oos-validation-20260603\p5-decision-card.md:76:Final Verdict: REJECT_CANDIDATE
+
+### 8770 health corrected
+
+status=200 content={"status":"ok","contract_version":2}
+
+### 8770 variable_correlation corrected
+
+ERROR 원격 서버에서 (404) 찾을 수 없음 오류를 반환했습니다.
+
+### 8770 ai_context_pack corrected
+
+ERROR 원격 서버에서 (404) 찾을 수 없음 오류를 반환했습니다.
+
+### P0 corrected conclusion
+- Earlier nested PowerShell command snippets above had quoting errors and are superseded by this corrected section.
+- 8770 must be considered stale if health is 200 but new APIs return 404/errors.
+

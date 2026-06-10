@@ -1,0 +1,14 @@
+P4 long training was not started.
+
+Reason:
+- P3 preflight run `tick_p7_preflight_observable_20260605` timed out on gen0 seed warm backtest.
+- The plan explicitly says not to start P4 if preflight times out or cannot produce status/log evidence.
+- Status/log evidence was produced, but the seed timeout makes the long 2023-2025 run unsafe to start in this execution.
+
+Terminal state:
+- blocked_with_timeout_evidence_no_oos
+
+No process was spawned for:
+- `tick_p7_train_2023_2025_observable_20260605`
+
+No OOS was run.

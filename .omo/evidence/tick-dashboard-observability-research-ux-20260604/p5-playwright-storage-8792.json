@@ -1,0 +1,14 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://127.0.0.1:8792",
+      "localStorage": [
+        {
+          "name": "stom_base_url",
+          "value": "http://127.0.0.1:8792"
+        }
+      ]
+    }
+  ]
+}

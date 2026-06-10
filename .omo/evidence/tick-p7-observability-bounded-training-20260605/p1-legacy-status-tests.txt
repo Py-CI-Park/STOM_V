@@ -1,0 +1,6 @@
+Command:
+$env:PYTHONUTF8='1'; python -m pytest tests/unit/test_dashboard_engine_progress_contract.py::test_status_route_normalizes_legacy_current_state_timeout_fields -q
+
+Result:
+.                                                                        [100%]
+1 passed in 1.52s

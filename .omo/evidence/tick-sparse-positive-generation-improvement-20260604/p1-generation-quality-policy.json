@@ -1,0 +1,51 @@
+{
+  "policy_version": "sparse_positive_generation_policy_v1",
+  "selector_version": "sparse_positive_v1",
+  "created_for_plan": "tick-sparse-positive-generation-improvement-20260604",
+  "scope": "default-OFF prompt guidance only",
+  "default_toggle": {
+    "name": "sparse_positive_prompt_enabled",
+    "default": false
+  },
+  "targets": {
+    "profit": {
+      "operator": ">",
+      "value": 0
+    },
+    "max_mdd": {
+      "operator": "<=",
+      "value": 10.0
+    },
+    "trade_count": {
+      "min": 20,
+      "max": 250
+    },
+    "daily_avg_trades": {
+      "operator": ">=",
+      "value": 0.05
+    },
+    "payoff_ratio": {
+      "operator": ">=",
+      "value": 1.05
+    }
+  },
+  "guidance": {
+    "buy": [
+      "target selective sparse-positive entries",
+      "avoid high-frequency overtrading",
+      "avoid repeated noisy tick signals"
+    ],
+    "sell": [
+      "control MDD and giveback",
+      "protect payoff ratio",
+      "avoid holding losses until large drawdown"
+    ]
+  },
+  "non_relaxation": {
+    "hard_gate_override_allowed": false,
+    "selector_relaxation_allowed": false,
+    "oos_tuning_allowed": false,
+    "oos_after_fact_reselection_allowed": false,
+    "production_promotion_allowed": false
+  }
+}

@@ -1,0 +1,269 @@
+{
+  "plan": "tick-sparse-positive-generation-improvement-20260604",
+  "scope": "P4 smoke A/B only; no 2022/2026 OOS and no promotion evidence",
+  "runs": {
+    "off": {
+      "run_id": "tick_spgen_p4_smoke_off_20260604",
+      "config_path": ".omo/evidence/tick-sparse-positive-generation-improvement-20260604/p3-smoke-off-config.json",
+      "config_hash": "7d6a9ca4028213c6a0e84f2c41ce3e1d9da05ed134bda9e7b77821ae71787198",
+      "gen_count": 3,
+      "generation_error_count": 1,
+      "best_graded": 0.34655019651835495,
+      "gate_passed_count": 0,
+      "prompt_logging": {
+        "prompt_count": 4,
+        "sparse_true_count": 0,
+        "sparse_false_count": 4,
+        "malformed_injected_features": 0,
+        "sample_heads": [
+          {
+            "gen_no": 1,
+            "kind": "buy",
+            "attempt": 1,
+            "sparse_positive_prompt_enabled": false,
+            "contains_sparse_positive_v1": false
+          },
+          {
+            "gen_no": 1,
+            "kind": "sell",
+            "attempt": 1,
+            "sparse_positive_prompt_enabled": false,
+            "contains_sparse_positive_v1": false
+          },
+          {
+            "gen_no": 2,
+            "kind": "buy",
+            "attempt": 1,
+            "sparse_positive_prompt_enabled": false,
+            "contains_sparse_positive_v1": false
+          },
+          {
+            "gen_no": 2,
+            "kind": "sell",
+            "attempt": 1,
+            "sparse_positive_prompt_enabled": false,
+            "contains_sparse_positive_v1": false
+          }
+        ]
+      },
+      "selector": {
+        "selector_version": "sparse_positive_v1",
+        "selected": false,
+        "blocked": true,
+        "blocker": "no candidate qualified for sparse_positive_v1",
+        "eligible_candidates": [],
+        "rejected_candidates": [
+          {
+            "gen_no": 0,
+            "reasons": [
+              "status != ok",
+              "profit <= 0",
+              "trade_count < 20",
+              "daily_avg_trades < 0.05",
+              "payoff_ratio < 1.05"
+            ]
+          },
+          {
+            "gen_no": 1,
+            "reasons": [
+              "profit <= 0",
+              "mdd > 10.0",
+              "trade_count > 250"
+            ]
+          },
+          {
+            "gen_no": 2,
+            "reasons": [
+              "profit <= 0",
+              "mdd > 10.0"
+            ]
+          }
+        ],
+        "diagnostic_only": true,
+        "oos_excluded": true
+      },
+      "generations": [
+        {
+          "gen_no": 0,
+          "status": "error",
+          "score": 0.0,
+          "gate_passed": false,
+          "reason": "backtest failed/timeout: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no",
+          "mdd": 0.0,
+          "profit": 0.0,
+          "trade_count": 0,
+          "daily_avg_trades": 0.0,
+          "payoff_ratio": 0.0,
+          "buy_name": "C_T_900_920_U2_B",
+          "sell_name": "C_T_900_920_U2_S"
+        },
+        {
+          "gen_no": 1,
+          "status": "ok",
+          "score": 0.06335238418968844,
+          "gate_passed": false,
+          "reason": "mdd 91.82 > mdd_cap 35",
+          "mdd": 91.82,
+          "profit": -9150136.0,
+          "trade_count": 853,
+          "daily_avg_trades": 14.7,
+          "payoff_ratio": 1.369699298226897,
+          "buy_name": "AILOOP_tick_spgen_p4_smoke_off_20260604_g1_buy",
+          "sell_name": "AILOOP_tick_spgen_p4_smoke_off_20260604_g1_sell"
+        },
+        {
+          "gen_no": 2,
+          "status": "ok",
+          "score": 0.34655019651835495,
+          "gate_passed": false,
+          "reason": "total_profit -3.079e+05 <= 0",
+          "mdd": 17.56,
+          "profit": -307907.0,
+          "trade_count": 152,
+          "daily_avg_trades": 2.6,
+          "payoff_ratio": 1.6555571358586578,
+          "buy_name": "AILOOP_tick_spgen_p4_smoke_off_20260604_g2_buy",
+          "sell_name": "AILOOP_tick_spgen_p4_smoke_off_20260604_g2_sell"
+        }
+      ]
+    },
+    "on": {
+      "run_id": "tick_spgen_p4_smoke_on_20260604",
+      "config_path": ".omo/evidence/tick-sparse-positive-generation-improvement-20260604/p3-smoke-on-config.json",
+      "config_hash": "1676936322efa2fedef2d74ad2c13080d0b9ffd112b3d12b4dac126dd7eb9b96",
+      "gen_count": 3,
+      "generation_error_count": 1,
+      "best_graded": 0.32683118576768705,
+      "gate_passed_count": 0,
+      "prompt_logging": {
+        "prompt_count": 4,
+        "sparse_true_count": 4,
+        "sparse_false_count": 0,
+        "malformed_injected_features": 0,
+        "sample_heads": [
+          {
+            "gen_no": 1,
+            "kind": "buy",
+            "attempt": 1,
+            "sparse_positive_prompt_enabled": true,
+            "contains_sparse_positive_v1": true
+          },
+          {
+            "gen_no": 1,
+            "kind": "sell",
+            "attempt": 1,
+            "sparse_positive_prompt_enabled": true,
+            "contains_sparse_positive_v1": true
+          },
+          {
+            "gen_no": 2,
+            "kind": "buy",
+            "attempt": 1,
+            "sparse_positive_prompt_enabled": true,
+            "contains_sparse_positive_v1": true
+          },
+          {
+            "gen_no": 2,
+            "kind": "sell",
+            "attempt": 1,
+            "sparse_positive_prompt_enabled": true,
+            "contains_sparse_positive_v1": true
+          }
+        ]
+      },
+      "selector": {
+        "selector_version": "sparse_positive_v1",
+        "selected": false,
+        "blocked": true,
+        "blocker": "no candidate qualified for sparse_positive_v1",
+        "eligible_candidates": [],
+        "rejected_candidates": [
+          {
+            "gen_no": 0,
+            "reasons": [
+              "status != ok",
+              "profit <= 0",
+              "trade_count < 20",
+              "daily_avg_trades < 0.05",
+              "payoff_ratio < 1.05"
+            ]
+          },
+          {
+            "gen_no": 1,
+            "reasons": [
+              "profit <= 0",
+              "mdd > 10.0",
+              "trade_count > 250"
+            ]
+          },
+          {
+            "gen_no": 2,
+            "reasons": [
+              "profit <= 0",
+              "mdd > 10.0"
+            ]
+          }
+        ],
+        "diagnostic_only": true,
+        "oos_excluded": true
+      },
+      "generations": [
+        {
+          "gen_no": 0,
+          "status": "error",
+          "score": 0.0,
+          "gate_passed": false,
+          "reason": "backtest failed/timeout: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no",
+          "mdd": 0.0,
+          "profit": 0.0,
+          "trade_count": 0,
+          "daily_avg_trades": 0.0,
+          "payoff_ratio": 0.0,
+          "buy_name": "C_T_900_920_U2_B",
+          "sell_name": "C_T_900_920_U2_S"
+        },
+        {
+          "gen_no": 1,
+          "status": "ok",
+          "score": 0.07120130562104864,
+          "gate_passed": false,
+          "reason": "total_profit -9.277e+06 <= 0",
+          "mdd": 27.08,
+          "profit": -9277017.0,
+          "trade_count": 697,
+          "daily_avg_trades": 12.0,
+          "payoff_ratio": 1.4245555026918741,
+          "buy_name": "AILOOP_tick_spgen_p4_smoke_on_20260604_g1_buy",
+          "sell_name": "AILOOP_tick_spgen_p4_smoke_on_20260604_g1_sell"
+        },
+        {
+          "gen_no": 2,
+          "status": "ok",
+          "score": 0.32683118576768705,
+          "gate_passed": false,
+          "reason": "total_profit -9.01e+05 <= 0",
+          "mdd": 16.96,
+          "profit": -900989.0,
+          "trade_count": 29,
+          "daily_avg_trades": 0.5,
+          "payoff_ratio": 1.7631966351209254,
+          "buy_name": "AILOOP_tick_spgen_p4_smoke_on_20260604_g2_buy",
+          "sell_name": "AILOOP_tick_spgen_p4_smoke_on_20260604_g2_sell"
+        }
+      ]
+    }
+  },
+  "interpretation": {
+    "smoke_not_oos": true,
+    "promotion_evidence": false,
+    "on_prompt_active": true,
+    "off_prompt_inactive": true,
+    "notable_shape": "ON gen2 reached trade_count corridor but remained profit negative; no sparse_positive_v1 candidate selected.",
+    "off_gen2_profit": -307907.0,
+    "off_gen2_mdd": 17.56,
+    "off_gen2_trades": 152,
+    "on_gen2_profit": -900989.0,
+    "on_gen2_mdd": 16.96,
+    "on_gen2_trades": 29
+  }
+}

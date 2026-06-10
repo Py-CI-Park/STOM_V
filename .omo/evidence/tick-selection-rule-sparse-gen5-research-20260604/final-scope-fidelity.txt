@@ -1,0 +1,92 @@
+# Final Scope Fidelity
+timestamp: 2026-06-04T13:48:04.8381378+09:00
+plan: .omo/plans/tick-selection-rule-sparse-gen5-research-20260604.md
+
+## Branch Status
+## STOM_Version_2U_C-ai-strategy-loop
+ M AGENTS.md
+ M ai_strategy_loop/controller/lineage.py
+ M ai_strategy_loop/controller/state.py
+ M ai_strategy_loop/dashboard/app.py
+ M ai_strategy_loop/dashboard/frontend/app.jsx
+ M ai_strategy_loop/dashboard/frontend/chart.jsx
+ M ai_strategy_loop/dashboard/frontend/code-viewer.jsx
+ M ai_strategy_loop/dashboard/frontend/engine.jsx
+ M ai_strategy_loop/dashboard/frontend/index.html
+ M ai_strategy_loop/dashboard/frontend/styles.css
+ M ai_strategy_loop/dashboard/frontend/table.jsx
+?? .claude/
+?? .omo/
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_min_buy.txt"
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_tick_buy.txt"
+?? "C\357\200\272Tempstom_postchange_full.txt"
+?? ai_strategy_loop/AGENTS.md
+?? ai_strategy_loop/controller/_candidate_selection_artifact.py
+?? ai_strategy_loop/controller/_candidate_selection_core.py
+?? ai_strategy_loop/controller/candidate_selection.py
+?? ai_strategy_loop/dashboard/frontend/ai-context.jsx
+?? ai_strategy_loop/dashboard/frontend/research-lab.jsx
+?? ai_strategy_loop/dashboard/frontend/research-wiki.jsx
+?? ai_strategy_loop/dashboard/frontend/run-compare.jsx
+?? ai_strategy_loop/dashboard/frontend/strategy-inspector.jsx
+?? ai_strategy_loop/dashboard/research_api.py
+?? ai_strategy_loop/fitness/correlation.py
+?? backtest/AGENTS.md
+?? cli/AGENTS.md
+?? docs/AGENTS.md
+?? docs/reference/
+?? docs/research/condition_research/wiki/
+?? research/AGENTS.md
+?? scripts/AGENTS.md
+?? seed_strategy_output.txt
+?? strategy/AGENTS.md
+?? tests/AGENTS.md
+?? tests/unit/test_candidate_selection.py
+?? tests/unit/test_dashboard_ai_context_pack.py
+?? tests/unit/test_dashboard_chart_explanations.py
+?? tests/unit/test_dashboard_current_gen_detail.py
+?? tests/unit/test_dashboard_index_compare.py
+?? tests/unit/test_dashboard_integrated_layout.py
+?? tests/unit/test_dashboard_prompts.py
+?? tests/unit/test_dashboard_research_docs.py
+?? tests/unit/test_dashboard_research_lab_frontend.py
+?? tests/unit/test_dashboard_run_compare_frontend.py
+?? tests/unit/test_dashboard_runs_enriched.py
+?? tests/unit/test_dashboard_strategy_diff.py
+?? tests/unit/test_dashboard_strategy_prompt_frontend.py
+?? tests/unit/test_dashboard_table_sorting.py
+?? tests/unit/test_dashboard_wiki_frontend.py
+?? tests/unit/test_research_wiki_docs.py
+?? tests/unit/test_variable_correlation.py
+?? testsunit_exit_test_out.txt
+?? trade/AGENTS.md
+?? ui/AGENTS.md
+?? utility/ai_agent/AGENTS.md
+
+## Protected Path Status
+(empty)
+
+## Final Verdict Evidence
+4:NEEDS_MORE_EVIDENCE
+76:## Final Verdict
+77:NEEDS_MORE_EVIDENCE
+
+## Selected Candidate Identity
+selected: False
+blocked: True
+blocker: no candidate qualified for sparse_positive_v1
+gen_no: 
+buy_name: 
+sell_name: 
+
+## Scope Statement
+This work is research validation and selector/process hardening only. It is not production promotion, not final_approval, not export_winner, not strategy DB deployment, and not live broker/V3K gate advancement.
+Fresh P4 selected no candidate, so P5 OOS was intentionally skipped and the final verdict is NEEDS_MORE_EVIDENCE.
+
+## Recommended Next Command
+$ulw-plan TICK sparse-positive candidate generation prompt and constraint improvement plan. Use .omo/evidence/tick-selection-rule-sparse-gen5-research-20260604/p6-decision-card.md, p4-selected-candidate.json, p4-selector-blocked.md, final-verification.txt as canonical evidence. Keep hard gates, official engines, and backtest/graph unchanged; keep new toggles default OFF; forbid OOS-after-the-fact reselection; require predeclared selector freeze before any OOS.
+
+## Cleanup
+No owned dashboard/server process was spawned by F4. Pre-existing 8770 dashboard was left running. No taskkill used.
+
+F4 PASS: final state, verdict, scope, protected paths, and next command are explicit.

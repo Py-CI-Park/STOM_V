@@ -1,0 +1,327 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.13, pytest-9.0.3, pluggy-1.6.0
+PyQt5 5.15.11 -- Qt runtime 5.15.2 -- Qt compiled 5.15.2
+rootdir: C:\System_Trading\STOM\STOM_V.wt-dev
+plugins: anyio-4.13.0, mock-3.15.1, qt-4.5.0, timeout-2.4.0
+collected 1635 items
+
+tests\unit\test_ai_controller.py ....................................... [  2%]
+.                                                                        [  2%]
+tests\unit\test_ai_dictionary.py ....                                    [  2%]
+tests\unit\test_analyzer.py ....................                         [  3%]
+tests\unit\test_auto_discovery.py ...........................            [  5%]
+tests\unit\test_auto_discovery_batch.py ..........................       [  7%]
+tests\unit\test_auto_discovery_evolve.py ....................            [  8%]
+tests\unit\test_autopsy.py ........
+[REAL CSV AUTOPSY]
+  trade_count=204 win=6 loss=198
+  B_매수총잔량: win_mean=1.503e+04 loss_mean=1.941e+04 smd=-0.7620
+  B_전일동시간비: win_mean=277.8 loss_mean=230.9 smd=+0.6337
+  B_매도총잔량: win_mean=2.943e+04 loss_mean=2.445e+04 smd=+0.4801
+  --- SUMMARY ---
+직전 백테스트 부검: 거래 204건(수익 6/손실 198). 수익과 손실을 가장 잘 가른 진입 조건은 다음과 같다. 이를 반영해 개선하라:
+- 손실 거래는 진입 시 B_매수총잔량가 높았다(손실 평균 19,407 vs 수익 평균 15,029) → 매수총잔량 진입 기준을 낮춰라.
+- 손실 거래는 진입 시 B_전일동시간비가 낮았다(손실 평균 230.9 vs 수익 평균 277.8) → 전일동시간비 진입 기준을 높여라.
+- 손실 거래는 진입 시 B_매도총잔량가 낮았다(손실 평균 24,451 vs 수익 평균 29,431) → 매도총잔량 진입 기준을 높여라.
+...                                   [  9%]
+tests\unit\test_backengine_day_boundary.py ..                            [  9%]
+tests\unit\test_backengine_hoga_contract.py ..                           [  9%]
+tests\unit\test_backengine_opti_kind_contract.py ..                      [  9%]
+tests\unit\test_backengine_shared_memory_cleanup.py ...                  [  9%]
+tests\unit\test_backtest_button_contract.py F.                           [  9%]
+tests\unit\test_backtest_checkpoints.py ...                              [  9%]
+tests\unit\test_backtest_process_protocol_diagnostics.py ..FF            [ 10%]
+tests\unit\test_backtest_result_expansion.py .......                     [ 10%]
+tests\unit\test_backtest_spawn_contract_audit.py FF.                     [ 10%]
+tests\unit\test_ci_scripts.py ................                           [ 11%]
+tests\unit\test_cli_ux.py ..........                                     [ 12%]
+tests\unit\test_composite_score.py .............                         [ 13%]
+tests\unit\test_condition_generator.py ...                               [ 13%]
+tests\unit\test_config.py .............................................. [ 16%]
+..............                                                           [ 17%]
+tests\unit\test_cost_cap.py .......                                      [ 17%]
+tests\unit\test_cross_timeframe.py ............                          [ 18%]
+tests\unit\test_dashboard_live_demo_split.py ........................... [ 19%]
+.......                                                                  [ 20%]
+tests\unit\test_dashboard_runs_lock.py ......                            [ 20%]
+tests\unit\test_dashboard_ws.py ................                         [ 21%]
+tests\unit\test_data_bridge.py .............                             [ 22%]
+tests\unit\test_db_cli.py .........                                      [ 22%]
+tests\unit\test_discovery_history_cli.py .......................         [ 24%]
+tests\unit\test_discovery_report.py ........                             [ 24%]
+tests\unit\test_engine_tuner.py ....................                     [ 26%]
+tests\unit\test_env_isolation.py .....                                   [ 26%]
+tests\unit\test_error_decorator_contract.py ..                           [ 26%]
+tests\unit\test_error_feedback.py ......                                 [ 26%]
+tests\unit\test_exit_autopsy.py .......
+[REAL CSV EXIT AUTOPSY]
+  trade_count=91 win=13 loss=78
+  giveback_gap(winners)=0.4069%p avg_mfe_w=0.7892 avg_realized_w=0.3823
+  avg_mae_losers=-0.5318% worst_mae=-1.57%
+  hold_win=11.62 hold_loss=8.077
+  worst_sell_rule='if 수익률 <= -1.0:'
+  --- SELL FEEDBACK ---
+직전 백테스트 청산(매도) 부검: 거래 91건(수익 13/손실 78). 매도(SELL) 전략을 다음과 같이 개선하라:
+- 손실 집중 매도규칙: `if 수익률 <= -1.0:` (5건, 손실 5건, 평균 -1.3%) → 이 규칙이 너무 늦거나 손실을 키운다. 이 매도 조건을 재설계하라.
+......                            [ 27%]
+tests\unit\test_exit_codes.py ........                                   [ 28%]
+tests\unit\test_export_named_column.py ...                               [ 28%]
+tests\unit\test_extract_code.py .....                                    [ 28%]
+tests\unit\test_formula.py ..............                                [ 29%]
+tests\unit\test_formula_json.py .....                                    [ 29%]
+tests\unit\test_ga_loop.py .............                                 [ 30%]
+tests\unit\test_generator_guardrail.py ....                              [ 30%]
+tests\unit\test_graded_fitness.py ...................                    [ 31%]
+tests\unit\test_gui_contract_manifest.py .                               [ 32%]
+tests\unit\test_history.py .............................                 [ 33%]
+tests\unit\test_history_prompt.py ........                               [ 34%]
+tests\unit\test_holdout_graduation.py .........                          [ 34%]
+tests\unit\test_holdout_toggle.py .........                              [ 35%]
+tests\unit\test_holdout_winner_wiring.py ...                             [ 35%]
+tests\unit\test_launch_config.py .................                       [ 36%]
+tests\unit\test_lineage.py ........                                      [ 37%]
+tests\unit\test_loop_lineage_meta_wiring.py ......                       [ 37%]
+tests\unit\test_loop_robustness.py .....                                 [ 37%]
+tests\unit\test_loop_runlock_wiring.py ..                                [ 37%]
+tests\unit\test_m3_m6_fixes.py .......                                   [ 38%]
+tests\unit\test_meta_analyze.py ...............                          [ 39%]
+tests\unit\test_ml_factor_model.py ...........                           [ 39%]
+tests\unit\test_monitor.py ..........................                    [ 41%]
+tests\unit\test_optimizer.py .........................                   [ 43%]
+tests\unit\test_optimizer_cli.py ......                                  [ 43%]
+tests\unit\test_output.py .............................................. [ 46%]
+.                                                                        [ 46%]
+tests\unit\test_phase4_report_history.py .............                   [ 47%]
+tests\unit\test_promotion.py .......                                     [ 47%]
+tests\unit\test_provider.py ........                                     [ 48%]
+tests\unit\test_publish_live_page_data.py ...                            [ 48%]
+tests\unit\test_queue_drain.py ........................                  [ 49%]
+tests\unit\test_report.py ........................                       [ 51%]
+tests\unit\test_report_cli.py ......                                     [ 51%]
+tests\unit\test_research_candidates.py ......                            [ 51%]
+tests\unit\test_research_command_wiring.py ......                        [ 52%]
+tests\unit\test_research_compare.py .........                            [ 52%]
+tests\unit\test_research_iteration_v2.py ........                        [ 53%]
+tests\unit\test_research_iteration_v3.py ........                        [ 53%]
+tests\unit\test_research_iteration_v4.py ........                        [ 54%]
+tests\unit\test_research_iteration_v5.py .....                           [ 54%]
+tests\unit\test_research_iteration_v5_recovery.py .......                [ 54%]
+tests\unit\test_research_loop.py ....................................... [ 57%]
+..............................................                           [ 60%]
+tests\unit\test_research_metrics.py .........                            [ 60%]
+tests\unit\test_research_optimizer.py ......................             [ 62%]
+tests\unit\test_research_optimizer_report.py .......                     [ 62%]
+tests\unit\test_research_optimizer_state.py .........                    [ 63%]
+tests\unit\test_research_promotion.py ................                   [ 64%]
+tests\unit\test_research_report.py ......................                [ 65%]
+tests\unit\test_research_retention.py ..................                 [ 66%]
+tests\unit\test_research_rowdiff.py .........                            [ 67%]
+tests\unit\test_research_runtime_output.py ...                           [ 67%]
+tests\unit\test_research_segments.py .........                           [ 67%]
+tests\unit\test_research_v3_decision.py ..........................       [ 69%]
+tests\unit\test_research_v3_tiebreak.py ..................               [ 70%]
+tests\unit\test_research_v4_rowset.py ...                                [ 70%]
+tests\unit\test_runlock.py ........                                      [ 71%]
+tests\unit\test_runner_helpers.py ...................F.................. [ 73%]
+..........                                                               [ 74%]
+tests\unit\test_runtime_preflight.py ..............                      [ 74%]
+tests\unit\test_safe_io.py .....                                         [ 75%]
+tests\unit\test_segment_autopsy.py ............                          [ 75%]
+tests\unit\test_setting_base_cli_overrides.py .....                      [ 76%]
+tests\unit\test_setting_cli.py ........                                  [ 76%]
+tests\unit\test_setting_schema_contract.py ......                        [ 77%]
+tests\unit\test_small_universe_scope.py ...                              [ 77%]
+tests\unit\test_smoke.py ...                                             [ 77%]
+tests\unit\test_smoke_offline_gui.py ...                                 [ 77%]
+tests\unit\test_state_concurrency.py ...                                 [ 77%]
+tests\unit\test_state_contract.py ..................                     [ 78%]
+tests\unit\test_state_schema_migration.py .....                          [ 79%]
+tests\unit\test_static_compat.py .....                                   [ 79%]
+tests\unit\test_strategy.py ..........                                   [ 80%]
+tests\unit\test_strategy_generator.py .......................            [ 81%]
+tests\unit\test_strategy_loader.py ....................................  [ 83%]
+tests\unit\test_subcommands.py ......................................... [ 86%]
+........................................                                 [ 88%]
+tests\unit\test_subset_db.py .......                                     [ 89%]
+tests\unit\test_sweep.py ..........................                      [ 90%]
+tests\unit\test_sweep_cli.py .......                                     [ 91%]
+tests\unit\test_telegram_contract_text.py .                              [ 91%]
+tests\unit\test_telegram_network_noise.py .....                          [ 91%]
+tests\unit\test_timeframe_detector.py ............................       [ 93%]
+tests\unit\test_token_check.py ......................                    [ 94%]
+tests\unit\test_tune_cli.py .......                                      [ 95%]
+tests\unit\test_ui_jisu_cleanup.py F.                                    [ 95%]
+tests\unit\test_ui_runtime_wiring.py ....                                [ 95%]
+tests\unit\test_v3k_shadow_schema_hash.py ...                            [ 95%]
+tests\unit\test_variable_scope.py .............                          [ 96%]
+tests\unit\test_verify_nonrelease_sync.py ..........                     [ 97%]
+tests\unit\test_verify_pyd_gui_contract.py ......                        [ 97%]
+tests\unit\test_webcrawling_contract_text.py .                           [ 97%]
+tests\unit\test_webcrawling_network_noise.py ......                      [ 97%]
+tests\unit\test_wfo.py .......                                           [ 98%]
+tests\unit\test_wfo_cli.py .......                                       [ 98%]
+tests\unit\test_wide_v1_v5_analysis.py ....                              [ 98%]
+tests\unit\test_winner_export.py .....                                   [ 99%]
+tests\unit\test_winner_objective.py .............                        [100%]
+
+================================== FAILURES ===================================
+________ test_backtest_constructor_contract_is_small_and_queue_driven _________
+
+    def test_backtest_constructor_contract_is_small_and_queue_driven():
+        params = list(inspect.signature(BackTest.__init__).parameters)
+>       assert params == [
+            "self",
+            "sc",
+            "wq",
+            "bq",
+            "sq",
+            "tq",
+            "lq",
+            "teleQ",
+            "beq_list",
+            "bstq_list",
+            "backname",
+            "ui_gubun",
+            "dict_set",
+        ]
+E       AssertionError: assert ['self', 'sc'...q', 'lq', ...] == ['self', 'sc'...q', 'tq', ...]
+E         
+E         At index 3 diff: 'sq' != 'bq'
+E         Left contains 13 more items, first extra item: 'avgtime'
+E         Use -v to get more diff
+
+tests\unit\test_backtest_button_contract.py:9: AssertionError
+_____________ test_backtest_start_emits_key_protocol_checkpoints ______________
+
+    def test_backtest_start_emits_key_protocol_checkpoints():
+        content = (ROOT / 'backtest' / 'backtest.py').read_text(encoding='utf-8')
+    
+        for checkpoint in [
+            'backtest_child_started',
+            'backtest_child_config_received',
+            'backtest_child_moneytop_loaded',
+            'backtest_child_total_process_started',
+            'backtest_child_engine_start_sent',
+            'backtest_child_waiting_mq_first',
+            'backtest_child_mq_first_received',
+            'backtest_child_waiting_mq_second',
+            'backtest_child_completed',
+        ]:
+>           assert checkpoint in content
+E           assert 'backtest_child_started' in "\nimport json\nimport os\nimport re\nimport sys\nimport time\nimport sqlite3\nfrom pathlib import Path\nimport numpy ...elf.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} COMPLETE'))\n        time.sleep(1)\n        sys.exit()\n"
+
+tests\unit\test_backtest_process_protocol_diagnostics.py:53: AssertionError
+__________________ test_total_emits_key_protocol_checkpoints __________________
+
+    def test_total_emits_key_protocol_checkpoints():
+        content = (ROOT / 'backtest' / 'backtest.py').read_text(encoding='utf-8')
+    
+        for checkpoint in [
+            'total_process_started',
+            'total_info_received',
+            'total_engine_done_count',
+            'total_subtotal_collection_done_count',
+            'total_result_received',
+            'total_report_started',
+            'total_report_no_trades',
+            'total_report_db_written',
+            'total_report_csv_written',
+            'total_report_mq_sent',
+        ]:
+>           assert checkpoint in content
+E           assert 'total_process_started' in "\nimport json\nimport os\nimport re\nimport sys\nimport time\nimport sqlite3\nfrom pathlib import Path\nimport numpy ...elf.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} COMPLETE'))\n        time.sleep(1)\n        sys.exit()\n"
+
+tests\unit\test_backtest_process_protocol_diagnostics.py:71: AssertionError
+________ test_stock_backtest_spawn_does_not_pass_legacy_long_signature ________
+
+    def test_stock_backtest_spawn_does_not_pass_legacy_long_signature():
+        text = Path('ui/ui_button_clicked_editer_stock.py').read_text(encoding='utf-8')
+        block = _extract_backtest_spawn_block(text)
+    
+        assert "target=BackTest" in text
+        assert "ui.back_sques" in block
+        assert "ui.dict_set" in block
+>       assert "betting" not in block
+E       AssertionError: assert 'betting' not in 'ui.shared_c...e, back_club'
+E         
+E         'betting' is contained here:
+E           dict_set, betting, avgtime, startday, endday, starttime,
+E         ?           +++++++
+E                             endtime, buystg, sellstg, ui.dict_cn, ui.back_count, bl, False, back_club
+
+tests\unit\test_backtest_spawn_contract_audit.py:32: AssertionError
+________ test_coin_backtest_spawn_does_not_pass_legacy_long_signature _________
+
+    def test_coin_backtest_spawn_does_not_pass_legacy_long_signature():
+        text = Path('ui/ui_button_clicked_editer_coin.py').read_text(encoding='utf-8')
+        block = _extract_backtest_spawn_block(text)
+    
+        assert "target=BackTest" in text
+        assert "ui.back_sques" in block
+        assert "ui.dict_set" in block
+>       assert "betting" not in block
+E       AssertionError: assert 'betting' not in 'ui.shared_c...e, back_club'
+E         
+E         'betting' is contained here:
+E           dict_set, betting, avgtime, startday, endday, starttime,
+E         ?           +++++++
+E                             endtime, buystg, sellstg, None, ui.back_count, bl, False, back_club
+
+tests\unit\test_backtest_spawn_contract_audit.py:46: AssertionError
+_ TestCliDictSetProcessArgs.test_backtest_process_passes_dict_set_to_constructor _
+
+self = <tests.unit.test_runner_helpers.TestCliDictSetProcessArgs object at 0x0000023BDA7AF360>
+
+    def test_backtest_process_passes_dict_set_to_constructor(self):
+        content = self._runner_source_without_space()
+    
+>       assert (
+            "args=(BackTest,dict(dict_set),"
+            "shared_cnt,windowQ,backQ,soundQ,totalQ,liveQ,teleQ,"
+            "back_eques,back_sques,'백테스트','S',dict(dict_set))"
+        ) in content
+E       assert "args=(BackTest,dict(dict_set),shared_cnt,windowQ,backQ,soundQ,totalQ,liveQ,teleQ,back_eques,back_sques,'백테스트','S',dict(dict_set))" in "importosimportsysimportjsonimportglobimporttimeimportsignalimportsqlite3importatexitimportpandasaspdfrommultiprocessi...vg_hold_time':float(row.get('평균보유기간',0.0)),'day_count':0,'bootstrap_avg':0.0,'bootstrap_min':0.0,'bootstrap_max':0.0,}"
+
+tests\unit\test_runner_helpers.py:231: AssertionError
+__________ test_v270_removed_jisu_chart_references_are_fully_cleaned __________
+
+    def test_v270_removed_jisu_chart_references_are_fully_cleaned():
+        mainwindow_text = Path('ui/ui_mainwindow.py').read_text(encoding='utf-8')
+        process_kill_text = Path('ui/ui_process_kill.py').read_text(encoding='utf-8')
+    
+        assert not Path('ui/ui_draw_jisuchart.py').exists(), 'V2.70 이후 지수차트 모듈은 삭제 상태여야 합니다.'
+        assert 'ui.ui_draw_jisuchart' not in mainwindow_text, '삭제된 지수차트 모듈 import가 남아 있습니다.'
+        assert 'DrawRealJisuChart' not in mainwindow_text, '삭제된 지수차트 드로어 객체 참조가 남아 있습니다.'
+        assert 'show_jisu(' not in mainwindow_text, '삭제된 지수차트 표시 함수 참조가 남아 있습니다.'
+        assert 'dialog_jisu' not in process_kill_text, '삭제된 지수차트 다이얼로그 종료/직렬화 참조가 남아 있습니다.'
+>       assert "ui.dict_set['창위치'][7]" in process_kill_text, 'dialog_info 창 위치 인덱스가 지수차트 제거 기준으로 재정렬되어야 합니다.'
+E       AssertionError: dialog_info 창 위치 인덱스가 지수차트 제거 기준으로 재정렬되어야 합니다.
+E       assert "ui.dict_set['창위치'][7]" in '\nfrom utility.setting_base import ui_num\nfrom queue import Empty\nfrom time import monotonic\nfrom PyQt5.QtWidgets ...qwait(1)\n    _process_qt_events()\n\n    app = QApplication.instance()\n    if app is not None:\n        app.quit()\n'
+
+tests\unit\test_ui_jisu_cleanup.py:18: AssertionError
+============================== warnings summary ===============================
+tests/unit/test_analyzer.py: 7 warnings
+tests/unit/test_autopsy.py: 2 warnings
+tests/unit/test_segment_autopsy.py: 21 warnings
+  C:\Python\64\Python31313\Lib\site-packages\scipy\stats\_axis_nan_policy.py:592: RuntimeWarning: Precision loss occurred in moment calculation due to catastrophic cancellation. This occurs when the data are nearly identical. Results may be unreliable.
+    res = hypotest_fun_out(*samples, **kwds)
+
+tests/unit/test_ui_jisu_cleanup.py::test_ui_mainwindow_import_succeeds_without_deleted_jisu_module
+tests/unit/test_ui_jisu_cleanup.py::test_ui_mainwindow_import_succeeds_without_deleted_jisu_module
+  C:\Python\64\Python31313\Lib\site-packages\binance\ws\websocket_api.py:4: DeprecationWarning: websockets.WebSocketClientProtocol is deprecated
+    from websockets import WebSocketClientProtocol  # type: ignore
+
+tests/unit/test_ui_jisu_cleanup.py::test_ui_mainwindow_import_succeeds_without_deleted_jisu_module
+  C:\Python\64\Python31313\Lib\site-packages\websockets\legacy\__init__.py:6: DeprecationWarning: websockets.legacy is deprecated; see https://websockets.readthedocs.io/en/stable/howto/upgrade.html for upgrade instructions
+    warnings.warn(  # deprecated in 14.0 - 2024-11-09
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/unit/test_backtest_button_contract.py::test_backtest_constructor_contract_is_small_and_queue_driven
+FAILED tests/unit/test_backtest_process_protocol_diagnostics.py::test_backtest_start_emits_key_protocol_checkpoints
+FAILED tests/unit/test_backtest_process_protocol_diagnostics.py::test_total_emits_key_protocol_checkpoints
+FAILED tests/unit/test_backtest_spawn_contract_audit.py::test_stock_backtest_spawn_does_not_pass_legacy_long_signature
+FAILED tests/unit/test_backtest_spawn_contract_audit.py::test_coin_backtest_spawn_does_not_pass_legacy_long_signature
+FAILED tests/unit/test_runner_helpers.py::TestCliDictSetProcessArgs::test_backtest_process_passes_dict_set_to_constructor
+FAILED tests/unit/test_ui_jisu_cleanup.py::test_v270_removed_jisu_chart_references_are_fully_cleaned
+=========== 7 failed, 1628 passed, 33 warnings in 337.13s (0:05:37) ===========

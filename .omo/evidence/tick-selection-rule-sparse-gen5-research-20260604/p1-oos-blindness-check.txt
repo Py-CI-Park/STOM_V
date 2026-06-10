@@ -1,0 +1,19 @@
+## P1 OOS-Blindness Check
+
+timestamp=2026-06-04T12:33:00+09:00
+
+The selector is fixed before fresh 2022/2026 OOS execution.
+
+Allowed selector inputs are restricted to training-generation fields listed in `p1-selector-spec.md` and `p1-selector-spec.json`.
+
+Forbidden selector inputs:
+- 2022 OOS metrics
+- 2026 OOS metrics
+- slippage-stress outputs
+- PBO/DSR outputs
+- final decision verdicts
+- post-OOS analysis fields
+
+Prior run replay is allowed only with `diagnostic_only=true`; it validates mechanics and cannot support an efficacy claim.
+
+Any selected candidate must be frozen to an artifact with `oos_excluded=true` before P5 starts.

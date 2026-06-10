@@ -1,0 +1,56 @@
+﻿F1 Plan Compliance Audit
+Timestamp: 2026-06-04T05:47:04
+Plan: .omo/plans/tick-research-dashboard-upgrade-20260603.md
+
+Unchecked before F1 completion:
+634:- [ ] F1. Plan Compliance Audit
+655:- [ ] F2. Code Quality Review
+678:- [ ] F3. Real Manual QA
+703:- [ ] F4. Scope Fidelity Check
+
+Task-to-evidence map:
+1 -> safety-snapshot.txt, baseline-tests.txt
+2 -> task-2-correlation-api.json
+3 -> task-3-prompts-empty.json
+4 -> task-4-runs-compare.json
+5 -> task-5-docs.json
+6 -> task-6-docs-api.json, task-6-wiki-rg.txt, docs/research/condition_research/wiki/* plus test_research_wiki_docs.py
+7 -> task-7-correlation-smoke.json
+8 -> task-8-strategy-prompt-ui.json
+9 -> task-9-compare-smoke.json
+10 -> task-10-dashboard-qa.txt
+11 -> task-11-docs-smoke.json
+12 -> task-12-ai-context.json
+13 -> task-13-api-smoke.json, task-13-focused-tests.txt
+F1 -> final-plan-compliance.txt
+F2 -> final-verification.txt
+F3 -> final-dashboard-qa.txt
+F4 -> final-scope-fidelity.txt
+
+Evidence files:
+baseline-tests.txt
+safety-snapshot.txt
+task-10-dashboard-qa.txt
+task-11-docs-smoke.json
+task-12-ai-context.json
+task-13-api-smoke.json
+task-13-focused-tests.txt
+task-2-correlation-api.json
+task-3-prompts-empty.json
+task-4-runs-compare.json
+task-5-docs.json
+task-6-docs-api.json
+task-6-wiki-rg.txt
+task-7-correlation-smoke.json
+task-8-strategy-prompt-ui.json
+task-9-compare-smoke.json
+
+Forbidden-action scan:
+.omo/evidence/tick-research-dashboard-upgrade-20260603\task-13-api-smoke.json:70:    "forbidden_actions_note":  "No websocket final_approval and no export_winner route/action was invoked during this smoke.",
+
+Conclusion:
+- Tasks 1-13 have task evidence files or documented repo artifacts.
+- Forbidden terms appear only as guardrail/audit text or negative notes in evidence.
+- No final_approval websocket action, export_winner invocation, USER_ACK creation, KHOPENAPI action, or taskkill command was executed by this work.
+- Previous OOS decision remains REJECT_CANDIDATE; this plan improves dashboard/process visibility only.
+

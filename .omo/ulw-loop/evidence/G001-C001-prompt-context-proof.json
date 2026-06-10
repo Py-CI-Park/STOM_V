@@ -1,0 +1,19 @@
+﻿{
+    "run_id":  "tick_p7_timecap_900_930_bounded_20260606",
+    "gen_no":  1,
+    "ai_context_pack_http_status":  200,
+    "prompts_http_status":  200,
+    "context_pack_sections":  [
+                                  "guide_context",
+                                  "diff_context",
+                                  "analysis_context",
+                                  "correlation_context"
+                              ],
+    "has_context_pack_sections":  true,
+    "prompt_count":  3,
+    "prompt_has_base_code":  true,
+    "prompt_has_few_shot":  true,
+    "prompt_has_legacy_analysis_flags":  true,
+    "new_generator_context_fields_test":  "python -m pytest tests/unit/test_prompt_logging.py::test_generate_strategy_invokes_on_prompt_callback ... passed",
+    "cleanup":  "no new process or temp runtime resource created; reused live dashboard PID 114272"
+}

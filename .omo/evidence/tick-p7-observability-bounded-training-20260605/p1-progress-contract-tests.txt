@@ -1,0 +1,6 @@
+Command:
+$env:PYTHONUTF8='1'; python -m pytest tests/unit/test_dashboard_engine_progress_contract.py tests/unit/test_process_timing.py -q
+
+Result:
+...................................                                      [100%]
+35 passed in 13.00s

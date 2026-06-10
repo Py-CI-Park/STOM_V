@@ -55,10 +55,14 @@ def test_engine_panel_exposes_progress_eta_config_and_logs() -> None:
         "Elapsed",
         "Remaining",
         "ETA",
+        "Timeout",
+        "Deadline",
         "Engine Config",
         "min/tick",
+        "Period",
         "bt_full_start",
         "bt_full_end",
+        "bt_warm_run_timeout",
         "Recent Logs",
     ):
         assert text in src

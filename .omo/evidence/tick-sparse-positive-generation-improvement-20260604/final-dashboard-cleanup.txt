@@ -1,0 +1,8 @@
+﻿Final dashboard cleanup
+timestamp=2026-06-04T18:35:23.4631176+09:00
+owned_base=http://127.0.0.1:8799
+owned_session=50197
+owned_pid=46380
+action=Ctrl-C sent through owned exec session only
+post_cleanup_8799_response=curl: (28) Connection timed out after 2008 milliseconds
+protected_path_status=<empty>

@@ -1,0 +1,88 @@
+﻿F4 Scope Fidelity Check
+Timestamp: 2026-06-04T05:55:23
+Plan: .omo/plans/tick-research-dashboard-upgrade-20260603.md
+Recommended resume command: $start-work tick-research-dashboard-upgrade-20260603
+
+Final git status --short --branch:
+## STOM_Version_2U_C-ai-strategy-loop
+ M AGENTS.md
+ M ai_strategy_loop/controller/lineage.py
+ M ai_strategy_loop/controller/state.py
+ M ai_strategy_loop/dashboard/app.py
+ M ai_strategy_loop/dashboard/frontend/app.jsx
+ M ai_strategy_loop/dashboard/frontend/chart.jsx
+ M ai_strategy_loop/dashboard/frontend/code-viewer.jsx
+ M ai_strategy_loop/dashboard/frontend/engine.jsx
+ M ai_strategy_loop/dashboard/frontend/index.html
+ M ai_strategy_loop/dashboard/frontend/styles.css
+ M ai_strategy_loop/dashboard/frontend/table.jsx
+?? .claude/
+?? .omo/
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_min_buy.txt"
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_tick_buy.txt"
+?? "C\357\200\272Tempstom_postchange_full.txt"
+?? ai_strategy_loop/AGENTS.md
+?? ai_strategy_loop/dashboard/frontend/ai-context.jsx
+?? ai_strategy_loop/dashboard/frontend/research-lab.jsx
+?? ai_strategy_loop/dashboard/frontend/research-wiki.jsx
+?? ai_strategy_loop/dashboard/frontend/run-compare.jsx
+?? ai_strategy_loop/dashboard/frontend/strategy-inspector.jsx
+?? ai_strategy_loop/dashboard/research_api.py
+?? ai_strategy_loop/fitness/correlation.py
+?? backtest/AGENTS.md
+?? cli/AGENTS.md
+?? docs/AGENTS.md
+?? docs/reference/
+?? docs/research/condition_research/wiki/
+?? research/AGENTS.md
+?? scripts/AGENTS.md
+?? seed_strategy_output.txt
+?? strategy/AGENTS.md
+?? tests/AGENTS.md
+?? tests/unit/test_dashboard_ai_context_pack.py
+?? tests/unit/test_dashboard_chart_explanations.py
+?? tests/unit/test_dashboard_current_gen_detail.py
+?? tests/unit/test_dashboard_index_compare.py
+?? tests/unit/test_dashboard_integrated_layout.py
+?? tests/unit/test_dashboard_prompts.py
+?? tests/unit/test_dashboard_research_docs.py
+?? tests/unit/test_dashboard_research_lab_frontend.py
+?? tests/unit/test_dashboard_run_compare_frontend.py
+?? tests/unit/test_dashboard_runs_enriched.py
+?? tests/unit/test_dashboard_strategy_diff.py
+?? tests/unit/test_dashboard_strategy_prompt_frontend.py
+?? tests/unit/test_dashboard_table_sorting.py
+?? tests/unit/test_dashboard_wiki_frontend.py
+?? tests/unit/test_research_wiki_docs.py
+?? tests/unit/test_variable_correlation.py
+?? testsunit_exit_test_out.txt
+?? trade/AGENTS.md
+?? ui/AGENTS.md
+?? utility/ai_agent/AGENTS.md
+
+Protected path status:
+
+
+Unchecked plan items before F4 completion:
+703:- [ ] F4. Scope Fidelity Check
+
+Promotion/superiority/approval scan in evidence:
+.omo/evidence/tick-research-dashboard-upgrade-20260603\final-dashboard-qa.txt:70:- No websocket final_approval action invoked.
+.omo/evidence/tick-research-dashboard-upgrade-20260603\final-dashboard-qa.txt:71:- No export_winner route/action invoked.
+.omo/evidence/tick-research-dashboard-upgrade-20260603\final-dashboard-qa.txt:153:- No websocket final_approval action invoked.
+.omo/evidence/tick-research-dashboard-upgrade-20260603\final-dashboard-qa.txt:154:- No export_winner route/action invoked.
+.omo/evidence/tick-research-dashboard-upgrade-20260603\final-plan-compliance.txt:49:.omo/evidence/tick-research-dashboard-upgrade-20260603\task-13-api-smoke.json:70:    "forbidden_actions_note":  "No websocket final_approval and no export_winner route/action was invoked during this smoke.",
+.omo/evidence/tick-research-dashboard-upgrade-20260603\final-plan-compliance.txt:54:- No final_approval websocket action, export_winner invocation, USER_ACK creation, KHOPENAPI action, or taskkill command was executed by this work.
+.omo/evidence/tick-research-dashboard-upgrade-20260603\safety-snapshot.txt:68:command=Select-String -Path .omo/evidence/tick-oos-validation-20260603/p5-decision-card.md -Pattern "Final Verdict|REJECT_CANDIDATE|PROMOTE_CANDIDATE"
+.omo/evidence/tick-research-dashboard-upgrade-20260603\task-11-docs-smoke.json:28:                       "sample":  "{\"id\":\"docs/research/condition_research/wiki/metrics_glossary.md\",\"title\":\"Metrics Glossary\",\"category\":\"wiki\",\"updated_at\":\"2026-06-03T19:36:40.972069+00:00\",\"size\":1949,\"available\":true,\"markdown\":\"# Metrics Glossary\\n\\nThis glossary defines terms used by the condition research dashboard and agent workflow.\\n\\n## graded\\n\\n`graded` is the loop\u0027s scalar research score. It combines profit, drawdown, trade behavior, and gate status into a sortable value. A high graded score is useful for ranking candidates inside a run, but it is not enough to claim a robust or human-level condition.\\n\\n## hard gate\\n\\nA `hard gate` is a mandatory rule that a candidate must satisfy before it can be treated as"
+.omo/evidence/tick-research-dashboard-upgrade-20260603\task-13-api-smoke.json:70:    "forbidden_actions_note":  "No websocket final_approval and no export_winner route/action was invoked during this smoke.",
+.omo/evidence/tick-research-dashboard-upgrade-20260603\task-6-docs-api.json:32:    "misleading_success_output": "REJECT_CANDIDATE recorded; forbidden PROMOTE_CANDIDATE string absent.",
+.omo/evidence/tick-research-dashboard-upgrade-20260603\task-6-wiki-rg.txt:29:rg -n "PROMOTE_CANDIDATE" docs/research/condition_research/wiki
+
+Scope assertions:
+- This work is a dashboard/process/research-visibility upgrade, not a strategy promotion.
+- Previous OOS candidate remains rejected: Final Verdict: REJECT_CANDIDATE.
+- No human-level/superior/seed-superior claim is made from this work.
+- No final_approval websocket action or export_winner invocation was executed.
+- No protected runtime path writes are present in git status.
+- Existing 8770 dashboard is stale for new API routes and must be restarted by the operator to serve the upgraded backend on that port; it was left running.
