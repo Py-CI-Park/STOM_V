@@ -1975,10 +1975,17 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
         con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
         con.row_factory = sqlite3.Row
         try:
+            # 2026-06-12 — OOS run을 '현재 동결 후보'에 바인딩: 도전자 기각 후
+            #   최신 OOS(기각자 것)가 챔피언 결산에 섞여 표시되던 혼선 수정.
+            cand_buy = (out.get("selected") or {}).get("buy_name")
             for year in ("2022", "2026"):
                 rid_row = con.execute(
-                    "SELECT run_id FROM runs WHERE run_id LIKE ?"
-                    " ORDER BY started_at DESC LIMIT 1", (f"%oos_{year}%",),
+                    "SELECT r.run_id FROM runs r WHERE r.run_id LIKE ?"
+                    " AND EXISTS (SELECT 1 FROM generations g"
+                    "   WHERE g.run_id = r.run_id AND g.strategy_gist='FROZEN'"
+                    "   AND (? IS NULL OR g.buy_name = ?))"
+                    " ORDER BY r.started_at DESC LIMIT 1",
+                    (f"%oos_{year}%", cand_buy, cand_buy),
                 ).fetchone()
                 if rid_row is None:
                     continue

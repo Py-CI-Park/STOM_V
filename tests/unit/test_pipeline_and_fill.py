@@ -69,6 +69,36 @@ class TestPipelineCheckpoint:
         assert build_stage_command("oos2026", **kw) is None  # oos2022가 함께 처리.
 
 
+class TestMorningReport:
+    """P-C(2026-06-12) — 아침 보고 합성: 절 단위 생략·핵심 섹션 계약."""
+
+    def test_compose_full_sections(self) -> None:
+        from ai_strategy_loop.scripts.gen_morning_report import compose_report
+
+        text = compose_report(
+            verdict={"promote_checklist": [{"item": "V3", "status": "pass", "detail": "ok"}],
+                     "alerts": ["얇은 마진"], "lines": ["동결 후보: genX"]},
+            niche={"runs": [{"run_id": "tmapA", "status": "complete",
+                             "baseline": {"profit": 1000.0, "mdd": 5.0},
+                             "top_slot": {"param": "cap", "center": 2500},
+                             "corr_vs_frozen": 0.18}]},
+            ops={"recent": [{"run_id": "r1", "gens": 7, "best_profit": 123.0}]},
+            decisions={"decisions": []},
+            now_label="2026-06-12 07:00",
+        )
+        assert "PROMOTE 체크리스트" in text and "✅" in text
+        assert "⚠️ 얇은 마진" in text
+        assert "tmapA" in text and "0.18" in text
+        assert "V6 결정 대기" in text  # 결정 없음 → 대기 안내.
+
+    def test_compose_graceful_on_empty(self) -> None:
+        from ai_strategy_loop.scripts.gen_morning_report import compose_report
+
+        text = compose_report(None, None, None, None, now_label="x")
+        assert "아침 자동 보고" in text
+        assert "운용 결정 이력" in text  # 결정 절은 항상 존재(대기 안내 포함).
+
+
 class TestBatchLiveState:
     """E3(2026-06-11) — 배치 라이브 상태 발행: 계약 호환·실패 흡수."""
 
