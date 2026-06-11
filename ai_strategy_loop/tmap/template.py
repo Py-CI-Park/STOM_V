@@ -85,7 +85,8 @@ def render(template: TemplateSpec, theta: Optional[Dict[str, Any]] = None) -> Tu
 
 
 def validate_rendered(buy_code: str, sell_code: str, timeframe: str) -> List[str]:
-    """렌더 결과를 기존 생성 가드(compile/token/scope)로 검증한다. 오류 목록 반환."""
+    """렌더 결과를 생성 가드(compile/token/scope/시간무결성)로 검증한다."""
+    from ai_strategy_loop.brain.time_integrity import check_time_integrity  # noqa: PLC0415
     from ai_strategy_loop.brain.token_check import check_tokens  # noqa: PLC0415
     from ai_strategy_loop.brain.variable_scope import check_variable_scope  # noqa: PLC0415
 
@@ -102,6 +103,9 @@ def validate_rendered(buy_code: str, sell_code: str, timeframe: str) -> List[str
         ok, missing = check_variable_scope(code, timeframe, kind)
         if not ok:
             errors.append(f"{kind} scope: {missing}")
+        # N4(2026-06-11) — 미래참조 리터럴 인자 정적 차단(θ 렌더가 음수/0
+        #   윈도우를 만들 수 있는 유일한 진입점이라 여기서 막는다).
+        errors.extend(f"{kind} {e}" for e in check_time_integrity(code))
     return errors
 
 

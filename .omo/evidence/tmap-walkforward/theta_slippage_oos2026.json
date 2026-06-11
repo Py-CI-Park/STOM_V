@@ -1,0 +1,31 @@
+{
+  "trade_count": 9,
+  "skipped_trades": 0,
+  "base_total_profit": 164602.0,
+  "betting_krw": null,
+  "csv_paths": [
+    "backtest/csv/stock_bt_THETA_seed_902905_06_B_20260611142307.csv"
+  ],
+  "scenarios": [
+    {
+      "tick": 1,
+      "fee_bps": 0.0,
+      "total_profit": 28685.963721287553,
+      "profit_delta": -135916.03627871245,
+      "profit_retention_ratio": 0.17427469727760023,
+      "mdd_amount": 985348.0144323418,
+      "trade_count": 9,
+      "breakeven_tick": 1.2110565059627216
+    },
+    {
+      "tick": 2,
+      "fee_bps": 0.0,
+      "total_profit": -107230.07255742495,
+      "profit_delta": -271832.07255742495,
+      "profit_retention_ratio": -0.6514506054447999,
+      "mdd_amount": 1078854.0288646836,
+      "trade_count": 9,
+      "breakeven_tick": 1.2110565059627216
+    }
+  ]
+}
