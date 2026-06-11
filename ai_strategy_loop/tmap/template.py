@@ -164,3 +164,45 @@ def parse_point_label(label: str) -> Optional[Tuple[str, Optional[float]]]:
         return name.strip(), float(raw)
     except ValueError:
         return name.strip(), None
+
+
+def grid_points(
+    template: TemplateSpec, param_a: str, param_b: str
+) -> List[Dict[str, Any]]:
+    """C6/P1(2026-06-11) — 두 슬롯의 데카르트 격자 좌표(기본점 1 + |A|×|B|).
+
+    1-D 단면(coordinate_points)의 한계(L1 — 상호작용 비가시)를 직접 해소한다:
+    두 1-D 고원의 교차점이 실제 '고원 면(mesa)'인지 면으로 측정한다.
+    라벨 'TMAP2 a=x|b=y'는 grid_summary가 파싱한다(1-D tendency는 무시 — 공존).
+    """
+    by_name = {p.name: p for p in template.params}
+    for name in (param_a, param_b):
+        if name not in by_name:
+            raise KeyError(f"unknown grid param: {name}")
+    points: List[Dict[str, Any]] = [
+        {"label": "TMAP __default__", "param": "__default__", "value": None, "theta": {}}
+    ]
+    for va in by_name[param_a].values:
+        for vb in by_name[param_b].values:
+            points.append({
+                "label": f"TMAP2 {param_a}={va}|{param_b}={vb}",
+                "param": f"{param_a}|{param_b}", "value": None,
+                "theta": {param_a: va, param_b: vb},
+            })
+    return points
+
+
+def parse_grid_label(label: str) -> Optional[Tuple[str, float, str, float]]:
+    """'TMAP2 a=x|b=y' → (a, x, b, y). 격자 라벨이 아니면 None."""
+    if not label or not label.startswith("TMAP2 "):
+        return None
+    body = label[len("TMAP2 "):].strip()
+    parts = body.split("|")
+    if len(parts) != 2:
+        return None
+    try:
+        a, _, ra = parts[0].partition("=")
+        b, _, rb = parts[1].partition("=")
+        return a.strip(), float(ra), b.strip(), float(rb)
+    except ValueError:
+        return None

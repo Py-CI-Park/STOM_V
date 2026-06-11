@@ -52,7 +52,7 @@ from ai_strategy_loop.scripts.tmap_walkforward import (  # noqa: E402
 class TestTemplate:
     def test_load_and_defaults_render_restores_seed_literals(self) -> None:
         t = load_template("seed_902905")
-        assert len(t.params) == 13
+        assert len(t.params) == 14  # M9(2026-06-11): window_start 슬롯 추가(14θ).
         buy, sell = render(t)  # 기본값
         # 슬롯 잔존 0(완전 렌더).
         assert "{" not in buy and "{" not in sell
@@ -336,6 +336,71 @@ class TestRoutes:
         td = body.get("time_dispersion") or {}
         assert td.get("union_bucket_count") == 1  # 픽스처 전 거래가 09:01 진입.
         assert "warning" in td
+
+
+class TestGridAndNoise:
+    """C6(2-D 격자)·C5′(베이스라인 노이즈 밴드) — 2026-06-11."""
+
+    def test_grid_points_and_label_roundtrip(self) -> None:
+        from ai_strategy_loop.tmap.template import grid_points, parse_grid_label
+
+        t = load_template("seed_902905")
+        pts = grid_points(t, "cap_max", "take_hard")
+        assert pts[0]["param"] == "__default__"
+        assert len(pts) == 1 + 7 * 5  # |cap_max|×|take_hard|.
+        a, va, b, vb = parse_grid_label(pts[1]["label"])
+        assert (a, b) == ("cap_max", "take_hard")
+        assert pts[1]["theta"] == {"cap_max": va, "take_hard": vb}
+        assert parse_grid_label("TMAP cap_max=1") is None  # 1-D 라벨은 격자 아님.
+        with pytest.raises(KeyError):
+            grid_points(t, "cap_max", "no_such")
+
+    def test_grid_summary_mesa_and_best(self, monkeypatch, tmp_path) -> None:
+        from ai_strategy_loop.tmap.tendency import grid_summary
+
+        db = tmp_path / "loop_runs.db"
+        st = LoopState(db_path=str(db), snapshot_dir=str(tmp_path / "s"))
+        st.start_run(LoopConfig(), run_id="gridT")
+        # 십자(+) 흑자 패턴 — 모서리 전부 적자라 4-이웃 전부 흑자인 셀은
+        #   중앙 (2,2) 하나뿐이다(경계 셀은 적자 모서리가 이웃이라 탈락).
+        cells = {(1, 1): -10, (1, 2): 120, (1, 3): -50,
+                 (2, 1): 110, (2, 2): 200, (2, 3): 90,
+                 (3, 1): -5, (3, 2): 130, (3, 3): -20}
+        st.record_generation("gridT", 0, buy_name="B", sell_name="S", status="ok",
+                             score=1.0, gate_passed=True, reason="ok", profit=50.0,
+                             strategy_gist="TMAP __default__")
+        for i, ((a, b), profit) in enumerate(sorted(cells.items()), start=1):
+            st.record_generation(
+                "gridT", i, buy_name=f"B{i}", sell_name=f"S{i}", status="ok",
+                score=1.0, gate_passed=True, reason="ok", profit=float(profit),
+                strategy_gist=f"TMAP2 pa={a}|pb={b}",
+            )
+        st.close()
+
+        g = grid_summary("gridT", db_path=str(db))
+        assert g["count"] == 9
+        assert g["baseline"]["profit"] == 50.0
+        assert g["best_cell"]["profit"] == 200.0
+        mesa = g["mesa_cells"]
+        assert len(mesa) == 1
+        assert (mesa[0]["a"], mesa[0]["b"]) == (2.0, 2.0)
+        assert g["positive_ratio"] == round(5 / 9, 4)
+
+    def test_baseline_noise_band_from_replicates(self, monkeypatch, tmp_path) -> None:
+        db = tmp_path / "loop_runs.db"
+        st = LoopState(db_path=str(db), snapshot_dir=str(tmp_path / "s"))
+        st.start_run(LoopConfig(), run_id="noiseT")
+        for i, profit in enumerate([1_000_000.0, 1_000_300.0, 999_800.0]):
+            st.record_generation(
+                "noiseT", i, buy_name=f"B{i}", sell_name=f"S{i}", status="ok",
+                score=1.0, gate_passed=True, reason="ok", profit=profit,
+                strategy_gist="TMAP __default__",
+            )
+        st.close()
+        out = summarize_tendency("noiseT", db_path=str(db))
+        assert out["baseline"]["replicates"] == 3
+        assert out["baseline"]["noise_band"] == 500.0  # 1,000,300 - 999,800.
+        assert out["baseline"]["profit"] == 1_000_000.0  # 첫 행 기준 유지.
 
 
 class TestNewStructureTemplates:

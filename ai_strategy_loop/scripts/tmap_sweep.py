@@ -30,6 +30,7 @@ from ai_strategy_loop.controller.state import LoopState
 from ai_strategy_loop.tmap.resume import resume_done_map, resume_row
 from ai_strategy_loop.tmap.template import (
     coordinate_points,
+    grid_points,
     load_template,
     render,
     strategy_names,
@@ -55,11 +56,22 @@ def main() -> int:
         "--resume", action="store_true",
         help="같은 run-id의 기존 ok 세대는 건너뛰고 error/누락 포인트만 평가(중단 재개)",
     )
+    ap.add_argument("--grid", default="",
+                    help="C6/P1 — 2-D 격자 모드 'paramA,paramB' (--params와 배타)")
+    ap.add_argument("--replicate-baseline", type=int, default=0,
+                    help="C5'/N8 — 기본값 점 추가 측정 횟수(노이즈 밴드 산출)")
     args = ap.parse_args()
 
     template = load_template(args.template)
-    params = [p.strip() for p in args.params.split(",") if p.strip()] or None
-    points = coordinate_points(template, params=params)[: args.max_points]
+    if args.grid:
+        ga, gb = [s.strip() for s in args.grid.split(",") if s.strip()][:2]
+        points = grid_points(template, ga, gb)[: args.max_points]
+    else:
+        params = [p.strip() for p in args.params.split(",") if p.strip()] or None
+        points = coordinate_points(template, params=params)[: args.max_points]
+    if args.replicate_baseline > 0 and points and points[0]["param"] == "__default__":
+        for k in range(args.replicate_baseline):
+            points.insert(1 + k, dict(points[0]))  # 같은 라벨 — 노이즈 측정용 복제.
 
     config = config_from_dict(_load_json(args.config_json))
     bootstrap.ensure_loop_db_engine_compat()
@@ -193,9 +205,18 @@ def _write_manifest_and_summary(args, manifest: dict, rid: str) -> None:
         )
 
     from ai_strategy_loop.tmap.tendency import summarize_tendency
+    if getattr(args, "grid", ""):
+        from ai_strategy_loop.tmap.tendency import grid_summary
+        g = grid_summary(rid)
+        best = g.get("best_cell") or {}
+        print(f"[SWEEP] grid {g.get('param_a')}×{g.get('param_b')}: cells={g.get('count')}"
+              f" positive={g.get('positive_ratio')} best=({best.get('a')},{best.get('b')}"
+              f")={best.get('profit', 0):,.0f} mesa={len(g.get('mesa_cells') or [])}셀",
+              flush=True)
     summary = summarize_tendency(rid)
     base = summary.get("baseline") or {}
-    print(f"[SWEEP] baseline profit={base.get('profit', 0):,.0f} mdd={base.get('mdd')}", flush=True)
+    noise = f" noise_band={base.get('noise_band'):,.0f}" if base.get("noise_band") is not None else ""
+    print(f"[SWEEP] baseline profit={base.get('profit', 0):,.0f} mdd={base.get('mdd')}{noise}", flush=True)
     ranked = sorted(summary.get("params", {}).items(),
                     key=lambda kv: -(kv[1].get("plateau_score") or 0))
     for name, m in ranked:

@@ -169,6 +169,14 @@ def summarize_tendency(run_id: str, db_path: Optional[str] = None) -> Dict[str, 
             "trades": int(base.get("trade_count") or 0),
             "status": base.get("status"),
         }
+        # C5′/N8(2026-06-11) — 베이스라인 중복 측정(--replicate-baseline) 시
+        #   측정 노이즈 밴드(max-min)를 산출한다. 이 밴드보다 작은 절벽(cliff)은
+        #   신호가 아니라 측정 흔들림으로 읽어야 한다(절벽 판독의 하한).
+        reps = [float(r.get("profit") or 0.0) for r in rows
+                if r["param"] == "__default__" and r.get("status") == "ok"]
+        if len(reps) > 1:
+            out["baseline"]["replicates"] = len(reps)
+            out["baseline"]["noise_band"] = round(max(reps) - min(reps), 2)
     base_profit = abs(out["baseline"]["profit"]) if out["baseline"] else 1.0
 
     if base is not None and out["baseline"] is not None:
@@ -211,3 +219,81 @@ def _shape_for_csv(csv_path: Optional[str]) -> Optional[Dict[str, Any]]:
 
     series = daily_pnl_series(csv_path)
     return curve_shape_metrics(series) if series else None
+
+
+def grid_summary(run_id: str, db_path: Optional[str] = None) -> Dict[str, Any]:
+    """C6/P1(2026-06-11) — 2-D 격자 스윕 요약: 행렬·흑자율·최강 셀·mesa.
+
+    mesa(고원 면) = 흑자 셀 중 존재하는 4-이웃이 전부 흑자인 셀(사전선언).
+    1-D 고원 둘의 교차가 면으로도 안정적인지의 직접 증거다. 실패는 count=0.
+    """
+    import sqlite3  # noqa: PLC0415
+
+    from ai_strategy_loop.tmap.template import parse_grid_label  # noqa: PLC0415
+
+    out: Dict[str, Any] = {"run_id": run_id, "baseline": None, "param_a": None,
+                           "param_b": None, "cells": [], "count": 0}
+    try:
+        con = sqlite3.connect(str(db_path or _runs_db_path()))
+        con.row_factory = sqlite3.Row
+        try:
+            rows = con.execute(
+                "SELECT status, profit, mdd, trade_count, strategy_gist"
+                " FROM generations WHERE run_id=? ORDER BY gen_no", (run_id,),
+            ).fetchall()
+        finally:
+            con.close()
+    except Exception:  # noqa: BLE001
+        return out
+
+    cells: Dict[tuple, Dict[str, Any]] = {}
+    for r in rows:
+        gist = r["strategy_gist"] or ""
+        if gist.startswith("TMAP __default__") and out["baseline"] is None:
+            out["baseline"] = {"profit": float(r["profit"] or 0.0),
+                               "mdd": float(r["mdd"] or 0.0),
+                               "trades": int(r["trade_count"] or 0)}
+            continue
+        parsed = parse_grid_label(gist)
+        if parsed is None:
+            continue
+        a, va, b, vb = parsed
+        out["param_a"], out["param_b"] = a, b
+        cells[(va, vb)] = {
+            "a": va, "b": vb,
+            "profit": float(r["profit"] or 0.0),
+            "mdd": float(r["mdd"] or 0.0),
+            "trades": int(r["trade_count"] or 0),
+            "ok": r["status"] == "ok",
+        }
+    if not cells:
+        return out
+
+    a_values = sorted({k[0] for k in cells})
+    b_values = sorted({k[1] for k in cells})
+    positive = [c for c in cells.values() if c["ok"] and c["profit"] > 0]
+    mesa = []
+    for (va, vb), c in cells.items():
+        if not (c["ok"] and c["profit"] > 0):
+            continue
+        ia, ib = a_values.index(va), b_values.index(vb)
+        neighbors = []
+        for da, db_ in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            ja, jb = ia + da, ib + db_
+            if 0 <= ja < len(a_values) and 0 <= jb < len(b_values):
+                n = cells.get((a_values[ja], b_values[jb]))
+                if n is not None:
+                    neighbors.append(n)
+        if neighbors and all(n["ok"] and n["profit"] > 0 for n in neighbors):
+            mesa.append({"a": va, "b": vb, "profit": c["profit"], "mdd": c["mdd"]})
+    best = max((c for c in cells.values() if c["ok"]),
+               key=lambda c: c["profit"], default=None)
+    out.update({
+        "a_values": a_values, "b_values": b_values,
+        "cells": sorted(cells.values(), key=lambda c: (c["a"], c["b"])),
+        "count": len(cells),
+        "positive_ratio": round(len(positive) / max(len(cells), 1), 4),
+        "best_cell": best,
+        "mesa_cells": sorted(mesa, key=lambda c: -c["profit"]),
+    })
+    return out
