@@ -19,5 +19,5 @@
   "bt_refine_from_best": false,
   "max_generations": 1,
   "equity_points_enabled": true,
-  "_comment": "cldgen fixed OOS 2022: 동결 후보(CLDGEN_0610_C7_SEEDPLUS_B)와 시드를 동일 창(93000)에서 동시 재측정. OOS 후 재선택 금지."
+  "_comment": "cldgen fixed OOS 2022: 동결 후보(THETA_seed_902905_06_B)와 시드를 동일 창(93000)에서 동시 재측정. OOS 후 재선택 금지."
 }

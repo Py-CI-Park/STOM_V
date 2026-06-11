@@ -1,8 +1,8 @@
 [
   {
     "label": "FROZEN",
-    "buy": "CLDGEN_0610_C7_SEEDPLUS_B",
-    "sell": "Tick_S_902_905_Update_2"
+    "buy": "THETA_seed_902905_06_B",
+    "sell": "THETA_seed_902905_06_S"
   },
   {
     "label": "BASE_SEED",
