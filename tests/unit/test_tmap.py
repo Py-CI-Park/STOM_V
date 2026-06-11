@@ -338,6 +338,28 @@ class TestRoutes:
         assert "warning" in td
 
 
+class TestNewStructureTemplates:
+    """C10(M8 exit2)·C12(P4 F07) — 신규 구조 템플릿 로드·가드·니치 계약."""
+
+    def test_exit2_defaults_pass_guards_and_buy_is_fixed(self) -> None:
+        t = load_template("seed_902905_exit2")
+        buy, sell = render(t)
+        assert validate_rendered(buy, sell, t.timeframe) == []
+        assert "{" not in buy  # 매수는 시드 기본값 리터럴 고정(변인 통제).
+        assert "보유시간 >= 600" in sell  # 시간 청산(신규 구조).
+        assert "최고수익률 - 수익률 >= 2.0" in sell  # 절대 격차 트레일(신규 구조).
+
+    def test_f07_covers_post_0905_niche(self) -> None:
+        t = load_template("orderflow_f07_ignition")
+        buy, sell = render(t)
+        assert validate_rendered(buy, sell, t.timeframe) == []
+        assert "90500 <= 시분초 < 91500" in buy  # 시드 사각지대(09:05~) 니치.
+        assert "등락율각도(60)" in buy  # F07 횡보 감지(유계 윈도우 — 계산예산 안전).
+        b2, s2 = render(t, {"window_end": 92500, "burst_min": 8.0})
+        assert "시분초 < 92500" in b2
+        assert validate_rendered(b2, s2, t.timeframe) == []
+
+
 class TestYearlyConsistency:
     """P2 — θ* 중심점 연도 일관성(흑자 연도 >= 2). 알파 감쇠 차단 회귀."""
 
