@@ -318,8 +318,8 @@ class BaseStrategy(StgGlobalsFunc):
                 self.receivQ.put(exit_text)
                 self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} {exit_text}"))
 
-            import sys
             time.sleep(1)
+            import sys
             sys.exit()
 
     # noinspection PyUnusedLocal

@@ -50,12 +50,13 @@ class FutureReceiver(BaseReceiver):
         body  = data['body']
 
         if tr_cd == self.tr_cd_hoga:
-            int_hms = int(body['hotime'])
-            self._update_today(int_hms)
-            if not (self.market_open <= int_hms or int_hms <= self.market_close):
+            strhms = body['hotime']
+            inthms = int(strhms)
+            self._update_today(inthms)
+            if not (self.market_open <= inthms or inthms <= self.market_close):
                 return
 
-            dt = int(f"{self.str_today}{int_hms}")
+            dt = int(f"{self.str_today}{strhms}")
             code = body['futcode']
             hoga_seprice = [
                 float(body['offerho1']), float(body['offerho2']), float(body['offerho3']),
@@ -80,12 +81,13 @@ class FutureReceiver(BaseReceiver):
                                    hoga_bamount, hoga_tamount, start)
 
         elif tr_cd == self.tr_cd_trade:
-            int_hms = int(body['chetime'])
-            self._update_today(int_hms)
-            if not (self.market_open <= int_hms or int_hms <= self.market_close):
+            strhms = body['chetime']
+            inthms = int(strhms)
+            self._update_today(inthms)
+            if not (self.market_open <= inthms or inthms <= self.market_close):
                 return
 
-            dt    = int(f"{self.str_today}{int_hms}")
+            dt    = int(f"{self.str_today}{strhms}")
             code  = body['futcode']
             c     = float(body['price'])
             o     = float(body['open'])
@@ -108,7 +110,7 @@ class FutureReceiver(BaseReceiver):
                     self.windowQ.put((UI_NUM['기본로그'], f'장운영 정보 수신 알림 - {text}'))
                     self.soundQ.put(text)
 
-    def _update_today(self, int_hms):
-        if int_hms < 10 and not self.update_today:
+    def _update_today(self, inthms):
+        if inthms < 10 and not self.update_today:
             self.str_today = str_ymd(timedelta_day(1, dt_ymd(self.str_today)))
             self.update_today = True

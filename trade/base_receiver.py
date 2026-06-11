@@ -1,6 +1,6 @@
 
+import heapq
 import sqlite3
-import numpy as np
 import pandas as pd
 from trade.restapi_ls import LsRestData
 from utility.settings.setting_base import UI_NUM
@@ -53,14 +53,13 @@ class BaseReceiver:
         self.market_gubun = market_infos[0]
         self.market_info  = market_infos[1]
 
-        self.dict_dtdm: dict[str, list]        = {}
-        self.dict_data: dict[str, list]        = {}
-        self.dict_money: dict[str, list]       = {}
-        self.dict_bmbyp: dict[str, np.ndarray] = {}
-        self.dict_smbyp: dict[str, np.ndarray] = {}
-        self.dict_index: dict[str, dict]       = {}
-        self.dict_vipr: dict[str, list]        = {}
-        self.dict_dlhp: dict[str, list]        = {}
+        self.dict_dtdm: dict[str, list]  = {}
+        self.dict_data: dict[str, list]  = {}
+        self.dict_vipr: dict[str, list]  = {}
+        self.dict_dlhp: dict[str, list]  = {}
+        self.dict_money: dict[str, list] = {}
+        self.dict_bmbyp: dict[str, dict[float, float]] = {}
+        self.dict_smbyp: dict[str, dict[float, float]] = {}
 
         self.dict_info = {}
         self.dict_expc = {}
@@ -339,46 +338,28 @@ class BaseReceiver:
             """초당(분당)매수금액, 초당(분당)매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격
                        0               1             2           3          4           5          6           7"""
             self.dict_money[code] = [buy_money, sell_money, buy_money, buy_money, c, sell_money, sell_money, c]
-            self.dict_index[code] = {c: 0}
-            self.dict_bmbyp[code] = np.zeros(2000, dtype=np.float64)
-            self.dict_smbyp[code] = np.zeros(2000, dtype=np.float64)
-            self.dict_bmbyp[code][0] = buy_money
-            self.dict_smbyp[code][0] = sell_money
-            self.dict_index[code]['count'] = 1
+            self.dict_bmbyp[code] = {c: buy_money}
+            self.dict_smbyp[code] = {c: sell_money}
         else:
-            money_arr = self.dict_money[code]
-            price_idx = self.dict_index[code]
-            buy_arr = self.dict_bmbyp[code]
-            sell_arr = self.dict_smbyp[code]
+            money_list = self.dict_money[code]
+            buy_dict   = self.dict_bmbyp[code]
+            sell_dict  = self.dict_smbyp[code]
 
-            money_arr[0] += buy_money
-            money_arr[1] += sell_money
-            money_arr[2] += buy_money
-            money_arr[5] += sell_money
+            buy_val  = buy_dict.get(c, 0) + buy_money
+            sell_val = sell_dict.get(c, 0) + sell_money
+            buy_dict[c]  = buy_val
+            sell_dict[c] = sell_val
 
-            idx = price_idx.get(c)
-            if idx is not None:
-                buy_arr[idx] += buy_money
-                sell_arr[idx] += sell_money
-            else:
-                idx = price_idx['count']
-                if idx >= len(buy_arr):
-                    self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
-                    self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
-                    buy_arr = self.dict_bmbyp[code]
-                    sell_arr = self.dict_smbyp[code]
-
-                price_idx[c] = idx
-                buy_arr[idx] = buy_money
-                sell_arr[idx] = sell_money
-                price_idx['count'] += 1
-
-            if buy_arr[idx] >= money_arr[3]:
-                money_arr[3] = buy_arr[idx]
-                money_arr[4] = c
-            if sell_arr[idx] >= money_arr[6]:
-                money_arr[6] = sell_arr[idx]
-                money_arr[7] = c
+            money_list[0] += buy_money
+            money_list[1] += sell_money
+            money_list[2] += buy_money
+            if buy_val >= money_list[3]:
+                money_list[3] = buy_val
+                money_list[4] = c
+            money_list[5] += sell_money
+            if sell_val >= money_list[6]:
+                money_list[6] = sell_val
+                money_list[7] = c
 
     def _update_hoga_window_tick(self, dt, code, bids_, asks_, c, per, o, h, low, ch):
         """호가창 종목정보 및 체결수량을 업데이트합니다."""
@@ -461,8 +442,7 @@ class BaseReceiver:
         """호가 데이터를 보정합니다."""
         if len(hoga_seprice) == 10:
             if hoga_seprice[0] < curr_price:
-                valid_indices = [i for i, price in enumerate(hoga_seprice) if price >= curr_price]
-                start_idx = valid_indices[0] if valid_indices else None
+                start_idx = next((i for i, price in enumerate(hoga_seprice) if price >= curr_price), None)
                 if start_idx is not None:
                     end_idx = min(start_idx + 5, 10)
                     add_cnt = max(start_idx - 5, 0)
@@ -476,8 +456,7 @@ class BaseReceiver:
                 hoga_samount = hoga_samount[:5]
 
             if hoga_buprice[0] > curr_price:
-                valid_indices = [i for i, price in enumerate(hoga_buprice) if price <= curr_price]
-                start_idx = valid_indices[0] if valid_indices else None
+                start_idx = next((i for i, price in enumerate(hoga_buprice) if price <= curr_price), None)
                 if start_idx is not None:
                     end_idx = min(start_idx + 5, 10)
                     add_cnt = max(start_idx - 5, 0)
@@ -491,8 +470,7 @@ class BaseReceiver:
                 hoga_bamount = hoga_bamount[:5]
         else:
             if hoga_seprice[0] < curr_price:
-                valid_indices = [i for i, price in enumerate(hoga_seprice) if price >= curr_price]
-                start_idx = valid_indices[0] if valid_indices else None
+                start_idx = next((i for i, price in enumerate(hoga_seprice) if price >= curr_price), None)
                 if start_idx is not None:
                     hoga_seprice = hoga_seprice[start_idx:] + [0.] * start_idx
                     hoga_samount = hoga_samount[start_idx:] + [0] * start_idx
@@ -501,8 +479,7 @@ class BaseReceiver:
                     hoga_samount = [0.] * 5
 
             if hoga_buprice[0] > curr_price:
-                valid_indices = [i for i, price in enumerate(hoga_buprice) if price <= curr_price]
-                start_idx = valid_indices[0] if valid_indices else None
+                start_idx = next((i for i, price in enumerate(hoga_buprice) if price <= curr_price), None)
                 if start_idx is not None:
                     hoga_buprice = hoga_buprice[start_idx:] + [0.] * start_idx
                     hoga_bamount = hoga_bamount[start_idx:] + [0] * start_idx
@@ -571,7 +548,6 @@ class BaseReceiver:
             self.market_open + 10 < inthms < self.market_open + 20
         if not self.dict_bool['프로세스종료'] and (A or B or C):
             self._receiver_process_kill()
-            self.dict_bool['프로세스종료'] = True
 
         if self.market_gubun not in (6, 7, 8):
             current_gsjm = tuple(self.list_gsjm)
@@ -591,22 +567,21 @@ class BaseReceiver:
 
     def _money_top_search(self):
         """거래대금상위 종목을 검색합니다.
-        국내주식와 해외주식은 순위 필터링 후에 등락율(0%초과) 필터링
         국내주식ETF, ETN, 업비트는 등락율 필터링 후에 순위 필터링
+        국내주식와 해외주식은 순위 필터링 후에 등락율(0%초과) 필터링
         그외 선물 거래소는 순위 필터링만"""
-        sorted_daym = sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)
-        if self.market_gubun in (1, 4):
-            sorted_daym = sorted_daym[:self.mtop_rank]
-            sorted_daym = [(x, y) for x, y in sorted_daym if self.dict_data[x][4] > 0]
-        elif self.market_gubun in (2, 3, 5):
-            sorted_daym = [(x, y) for x, y in sorted_daym if self.dict_data[x][4] > 0]
-            sorted_daym = sorted_daym[:self.mtop_rank]
+        if self.market_gubun in (2, 3, 5):
+            sorted_daym = [(x, y) for x, y in self.dict_daym.items() if self.dict_data[x][4] > 0]
+            sorted_daym = heapq.nlargest(self.mtop_rank, sorted_daym, key=lambda x: x[1])
         else:
-            sorted_daym = sorted_daym[:self.mtop_rank]
+            sorted_daym = heapq.nlargest(self.mtop_rank, self.dict_daym.items(), key=lambda x: x[1])
+            if self.market_gubun in (1, 4):
+                sorted_daym = [(x, y) for x, y in sorted_daym if self.dict_data[x][4] > 0]
 
-        list_mtop  = [x for x, y in sorted_daym]
-        insert_set = set(list_mtop) - set(self.list_gsjm)
-        delete_set = set(self.list_gsjm) - set(list_mtop)
+        gsjm_set   = set(self.list_gsjm)
+        mtop_set   = set((x for x, y in sorted_daym))
+        insert_set = mtop_set - gsjm_set
+        delete_set = gsjm_set - mtop_set
 
         if insert_set:
             for code in insert_set:
@@ -629,17 +604,10 @@ class BaseReceiver:
 
     def _receiver_process_kill(self):
         """리시버 프로세스를 종료합니다."""
-        self._websocket_kill()
+        self.dict_bool['프로세스종료'] = True
         if self.dict_set['알림소리']:
             self.soundQ.put(f"{self.market_info['마켓이름']} 시스템을 3분 후 종료합니다.")
         QTimer.singleShot(180 * 1000, lambda: self.receivQ.put('프로세스종료'))
-
-    def _websocket_kill(self):
-        """웹소켓을 종료합니다."""
-        if self.ws_thread:
-            self.ws_thread.stop()
-            self.ws_thread.terminate()
-            self.ws_thread = None
 
     def _update_tuple(self, data):
         """튜플을 업데이트합니다."""
@@ -664,10 +632,8 @@ class BaseReceiver:
         '강제종료' : Alt + X 단축키로 인한 종료
         '전략연산 종료' : 전략연산 프로세스가 일반종료하면서 보낸 신호
         '전략연산 STOP' : 전략연산 프로세스가 프로그램종료 또는 강제종료하면서 보낸 신호"""
-        import sys
 
         if data not in ('전략연산 종료', '전략연산 STOP'):
-            self._websocket_kill()
             if data == '프로세스종료' and self.dict_set['데이터저장']:
                 self._save_moneytop()
             elif self.market_gubun in (1, 4):
@@ -683,10 +649,15 @@ class BaseReceiver:
 
             exit_text = '리시버 종료' if data == '전략연산 종료' else '리시버 STOP'
             self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} {exit_text}"))
+
+            if self.ws_thread is not None:
+                self.ws_thread.terminate()
+
             qtest_qwait(1)
             self.qtimer.stop()
             self.receivQ.put('큐스레드종료')
             self.updater.wait()
+            import sys
             sys.exit()
 
     def _save_moneytop(self):

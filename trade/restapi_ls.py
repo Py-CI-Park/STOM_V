@@ -579,7 +579,6 @@ class LsWebSocketReceiver(QThread):
                 await self._receive_cg_msg()
             except Exception:
                 self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
-
             await self._disconnect_cg()
 
     # noinspection PyUnresolvedReferences
@@ -596,18 +595,23 @@ class LsWebSocketReceiver(QThread):
                 await self._receive_hg_msg()
             except Exception:
                 self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
-
             await self._disconnect_hg()
 
     async def _connect_cg(self):
         """체결 웹소켓에 연결합니다."""
-        self.webs_cg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60, ping_timeout=60)
-        self.conn_cg = True
+        try:
+            self.webs_cg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60, ping_timeout=60)
+            self.conn_cg = True
+        except Exception:
+            self.conn_cg = False
 
     async def _connect_hg(self):
         """호가 웹소켓에 연결합니다."""
-        self.webs_hg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60, ping_timeout=60)
-        self.conn_hg = True
+        try:
+            self.webs_hg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60, ping_timeout=60)
+            self.conn_hg = True
+        except Exception:
+            self.conn_hg = False
 
     async def _receive_cg_msg(self):
         """체결 데이터를 수신합니다."""
@@ -692,28 +696,23 @@ class LsWebSocketReceiver(QThread):
 
     async def _disconnect_cg(self):
         """체결 웹소켓을 종료합니다."""
-        self.conn_cg = False
-        if self.webs_cg is not None:
-            try:
+        try:
+            if self.webs_cg is not None:
                 await self.webs_cg.close()
-            except Exception:
-                pass
+        except Exception:
+            pass
+        self.conn_cg = False
         await asyncio.sleep(1)
 
     async def _disconnect_hg(self):
         """호가 웹소켓을 종료합니다."""
-        self.conn_hg = False
-        if self.webs_hg is not None:
-            try:
+        try:
+            if self.webs_hg is not None:
                 await self.webs_hg.close()
-            except Exception:
-                pass
+        except Exception:
+            pass
+        self.conn_hg = False
         await asyncio.sleep(1)
-
-    def stop(self):
-        """웹소켓 루프를 종료합니다."""
-        if self.loop and self.loop.is_running():
-            self.loop.stop()
 
 
 class LsWebSocketTrader(QThread):
@@ -746,18 +745,20 @@ class LsWebSocketTrader(QThread):
                 await self._receive_msg()
             except Exception:
                 self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
-
             await self._disconnect()
 
     async def _connect(self):
         """주문체결 웹소켓을 연결하고 실시간시세를 등록합니다."""
-        self.websocket = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60, ping_timeout=60)
-        self.connected = True
-        for k, v in LsRestData.주문거래코드.items():
-            if self.market in k:
-                data = self._get_send_data(v)
-                await self.websocket.send(json.dumps(data))
-                self.windowQ.put((UI_NUM['기본로그'], f'시스템 명령 실행 알림 - {k} 실시간시세 계좌등록'))
+        try:
+            self.websocket = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60, ping_timeout=60)
+            self.connected = True
+            for k, v in LsRestData.주문거래코드.items():
+                if self.market in k:
+                    data = self._get_send_data(v)
+                    await self.websocket.send(json.dumps(data))
+                    self.windowQ.put((UI_NUM['기본로그'], f'시스템 명령 실행 알림 - {k} 실시간시세 계좌등록'))
+        except Exception:
+            self.connected = False
 
     async def _receive_msg(self):
         """주문체결 데이터를 수신합니다."""
@@ -783,15 +784,10 @@ class LsWebSocketTrader(QThread):
 
     async def _disconnect(self):
         """주문체결 웹소켓을 종료합니다."""
-        self.connected = False
-        if self.websocket is not None:
-            try:
+        try:
+            if self.websocket is not None:
                 await self.websocket.close()
-            except Exception:
-                pass
+        except Exception:
+            pass
+        self.connected = False
         await asyncio.sleep(1)
-
-    def stop(self):
-        """웹소켓 루프를 종료합니다."""
-        if self.loop and self.loop.is_running():
-            self.loop.stop()
