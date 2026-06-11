@@ -1,0 +1,383 @@
+"""Daily tick/min DB replay engine — 시간순 병합 스트림 + tick OHLC 집계 (PR3).
+
+차트 시뮬레이션 탭이 일일 시세 DB(``_database/stock_tick_YYYYMMDD.db`` /
+``stock_min_YYYYMMDD.db``)를 시간순으로 리플레이하기 위한 데이터 계층이다. WS 세션
+(simulation_api.SimReplaySession)이 이 엔진을 구동해 배속 스케줄로 bar 배치를 push 한다.
+
+설계 계약(무예외):
+  - 시세 DB 는 반드시 ``file:...?mode=ro`` 로만 연다(하드링크 원본 오염 방지).
+  - 코드별 시계열을 한 번에 메모리로 로드한다(일일 수십 MB → OK). tick 은 ``agg_sec``
+    단위 OHLC 로 집계해 과밀 구간 렌더 부하를 줄인다. min 은 행 자체가 1분봉이라 집계 없음.
+  - 다종목을 단일 시간축(HHMMSS)으로 병합해 같은 슬롯의 bar 들을 하나의 프레임으로 묶는다.
+  - 빈/이상 입력(없는 날짜·종목·빈 DB)에도 raise 하지 않고 빈 시계열을 돌려준다.
+
+용어:
+  - bar    : 한 종목의 한 시점(o,h,l,c,vol,등락율,체결강도) — tick 은 집계봉, min 은 분봉.
+  - frame  : 같은 시간 슬롯(t)에 속한 여러 종목 bar 의 묶음(WS 가 한 번에 보내는 단위).
+"""
+
+from __future__ import annotations
+
+import sqlite3
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+# 패키지 루트(.../ai_strategy_loop) 기준 경로. CWD 무관.
+_PACKAGE_DIR = Path(__file__).resolve().parent.parent
+REPO_ROOT = _PACKAGE_DIR.parent
+_DATABASE_DIR = REPO_ROOT / "_database"
+
+# tick 집계 기본 단위(초). 1063행/일 수준이라 10초면 분당 6봉 정도로 압축된다.
+DEFAULT_AGG_SEC = 10
+# 한 종목 시계열 로드 안전 상한(과대 입력 방지). 일일 tick 도 수천 행 수준.
+_MAX_ROWS_PER_CODE = 200_000
+
+# 일일 DB candle 컬럼 인덱스(tick 54열 / min 57열 공통 선두 10열은 동일 레이아웃).
+#   PRAGMA 확인: 0=index, 1=현재가, 2=시가, 3=고가, 4=저가, 5=등락율,
+#               6=당일거래대금, 7=체결강도, 8=(초|분)당매수수량, 9=(초|분)당매도수량.
+_COL_INDEX = "index"
+_COL_CURRENT = "현재가"
+_COL_OPEN = "시가"
+_COL_HIGH = "고가"
+_COL_LOW = "저가"
+_COL_CHANGE = "등락율"
+_COL_STRENGTH = "체결강도"
+_COL_BUY_QTY_TICK = "초당매수수량"
+_COL_SELL_QTY_TICK = "초당매도수량"
+_COL_BUY_QTY_MIN = "분당매수수량"
+_COL_SELL_QTY_MIN = "분당매도수량"
+
+
+def daily_db_path(date: int, src: str) -> Path:
+    """일일 DB 파일 경로. src='tick'|'min'."""
+    prefix = "stock_tick" if src == "tick" else "stock_min"
+    return _DATABASE_DIR / f"{prefix}_{int(date)}.db"
+
+
+def _connect_ro(db_path: Path) -> Optional[sqlite3.Connection]:
+    """일일 시세 DB를 읽기전용(mode=ro)으로만 연다. 없거나 실패하면 None."""
+    if not db_path.is_file():
+        return None
+    try:
+        return sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True)
+    except sqlite3.Error:
+        return None
+
+
+def _table_columns(con: sqlite3.Connection, table: str) -> List[str]:
+    try:
+        return [str(r[1]) for r in con.execute(f'PRAGMA table_info("{table}")').fetchall()]
+    except sqlite3.Error:
+        return []
+
+
+def list_tables(date: int, src: str) -> List[str]:
+    """그날 DB의 종목 테이블 목록(moneytop 제외, 정렬)."""
+    con = _connect_ro(daily_db_path(date, src))
+    if con is None:
+        return []
+    try:
+        rows = con.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()
+    except sqlite3.Error:
+        return []
+    finally:
+        con.close()
+    return sorted(str(r[0]) for r in rows if str(r[0]) != "moneytop")
+
+
+def stock_summary(date: int, src: str) -> List[Dict[str, Any]]:
+    """그날 종목별 마지막 행 요약(등락율·거래대금). 등락 내림차순 정렬.
+
+    각 항목: {code, last_change_pct, trade_value, rows}. code_info 이름 결합은
+    호출측(simulation_api)에서 한다(이 엔진은 시세 DB 만 본다).
+    """
+    con = _connect_ro(daily_db_path(date, src))
+    if con is None:
+        return []
+    out: List[Dict[str, Any]] = []
+    try:
+        tables = sorted(
+            str(r[0]) for r in con.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+            if str(r[0]) != "moneytop"
+        )
+        for code in tables:
+            cols = _table_columns(con, code)
+            if _COL_INDEX not in cols:
+                continue
+            change_expr = f'"{_COL_CHANGE}"' if _COL_CHANGE in cols else "0"
+            value_expr = f'"{_COL_CURRENT}"' if _COL_CURRENT in cols else "0"
+            tv_expr = '"당일거래대금"' if "당일거래대금" in cols else "0"
+            try:
+                row = con.execute(
+                    f'SELECT {change_expr}, {tv_expr}, {value_expr}, COUNT(*) '
+                    f'FROM (SELECT * FROM "{code}" ORDER BY "{_COL_INDEX}")'
+                ).fetchone()
+                last = con.execute(
+                    f'SELECT {change_expr}, {tv_expr} FROM "{code}" '
+                    f'ORDER BY "{_COL_INDEX}" DESC LIMIT 1'
+                ).fetchone()
+                cnt = con.execute(f'SELECT COUNT(*) FROM "{code}"').fetchone()
+            except sqlite3.Error:
+                continue
+            if last is None:
+                continue
+            out.append({
+                "code": code,
+                "last_change_pct": _safe_float(last[0]),
+                "trade_value": _safe_float(last[1]),
+                "rows": int(cnt[0]) if cnt else 0,
+            })
+    except sqlite3.Error:
+        return out
+    finally:
+        con.close()
+    out.sort(key=lambda r: r["last_change_pct"], reverse=True)
+    return out
+
+
+def _safe_float(value: Any) -> float:
+    try:
+        f = float(value)
+        return f if f == f else 0.0  # NaN guard
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _load_code_rows(
+    con: sqlite3.Connection, code: str, src: str
+) -> List[Dict[str, Any]]:
+    """한 종목의 candle 행을 시간순 dict 리스트로 로드한다(읽기전용·무예외).
+
+    각 행: {ts(int index), o,h,l,c, vol(거래량 추정=매수+매도수량), change, strength}.
+    """
+    cols = _table_columns(con, code)
+    if _COL_INDEX not in cols:
+        return []
+    buy_q = _COL_BUY_QTY_TICK if src == "tick" else _COL_BUY_QTY_MIN
+    sell_q = _COL_SELL_QTY_TICK if src == "tick" else _COL_SELL_QTY_MIN
+
+    def col(name: str) -> str:
+        return f'"{name}"' if name in cols else "0"
+
+    select = (
+        f'SELECT "{_COL_INDEX}", {col(_COL_CURRENT)}, {col(_COL_OPEN)}, '
+        f'{col(_COL_HIGH)}, {col(_COL_LOW)}, {col(_COL_CHANGE)}, '
+        f'{col(_COL_STRENGTH)}, {col(buy_q)}, {col(sell_q)} '
+        f'FROM "{code}" ORDER BY "{_COL_INDEX}" LIMIT {_MAX_ROWS_PER_CODE}'
+    )
+    rows: List[Dict[str, Any]] = []
+    try:
+        cursor = con.execute(select)
+    except sqlite3.Error:
+        return []
+    for r in cursor:
+        try:
+            ts = int(r[0])
+        except (TypeError, ValueError):
+            continue
+        buy_qty = _safe_float(r[7])
+        sell_qty = _safe_float(r[8])
+        rows.append({
+            "ts": ts,
+            "c": _safe_float(r[1]),
+            "o": _safe_float(r[2]),
+            "h": _safe_float(r[3]),
+            "l": _safe_float(r[4]),
+            "change": _safe_float(r[5]),
+            "strength": _safe_float(r[6]),
+            "vol": buy_qty + sell_qty,
+        })
+    return rows
+
+
+def _hms_from_index(ts: int, src: str) -> int:
+    """index(YYYYMMDDHHMMSS tick / YYYYMMDDHHMM min) → HHMMSS(int, min 은 *100)."""
+    s = str(ts)
+    if src == "tick" and len(s) >= 14:
+        return int(s[8:14])
+    if src == "min" and len(s) >= 12:
+        return int(s[8:12]) * 100  # HHMM → HHMMSS(초=00)
+    # 폴백: 뒤 6자리.
+    tail = s[-6:] if len(s) >= 6 else s
+    try:
+        return int(tail)
+    except ValueError:
+        return 0
+
+
+def _agg_bucket(hms: int, agg_sec: int) -> int:
+    """HHMMSS 를 agg_sec 초 버킷의 시작 HHMMSS 로 내림 정렬한다."""
+    if agg_sec <= 1:
+        return hms
+    h, m, s = hms // 10000, (hms // 100) % 100, hms % 100
+    total = h * 3600 + m * 60 + s
+    floored = (total // agg_sec) * agg_sec
+    return (floored // 3600) * 10000 + ((floored % 3600) // 60) * 100 + (floored % 60)
+
+
+def _aggregate_tick(rows: List[Dict[str, Any]], agg_sec: int) -> List[Dict[str, Any]]:
+    """tick 행들을 agg_sec 단위 OHLC 봉으로 집계한다(시간순 유지).
+
+    o=버킷 첫 현재가, h/l=버킷 내 고저(현재가 기준), c=버킷 마지막 현재가,
+    vol=합산, change/strength=버킷 마지막 값.
+    """
+    if agg_sec <= 1:
+        # 집계 없이 현재가를 OHLC 로 쓰되, h/l 은 행의 고저 컬럼을 존중.
+        return [
+            {
+                "hms": _hms_from_index(r["ts"], "tick"),
+                "o": r["c"], "h": max(r["c"], r["h"]), "l": min(r["c"], r["l"] or r["c"]),
+                "c": r["c"], "vol": r["vol"], "change": r["change"], "strength": r["strength"],
+            }
+            for r in rows
+        ]
+    buckets: "Dict[int, Dict[str, Any]]" = {}
+    order: List[int] = []
+    for r in rows:
+        hms = _hms_from_index(r["ts"], "tick")
+        b = _agg_bucket(hms, agg_sec)
+        price = r["c"]
+        cur = buckets.get(b)
+        if cur is None:
+            buckets[b] = {
+                "hms": b, "o": price, "h": price, "l": price, "c": price,
+                "vol": r["vol"], "change": r["change"], "strength": r["strength"],
+            }
+            order.append(b)
+        else:
+            cur["h"] = max(cur["h"], price)
+            cur["l"] = min(cur["l"], price)
+            cur["c"] = price
+            cur["vol"] += r["vol"]
+            cur["change"] = r["change"]
+            cur["strength"] = r["strength"]
+    return [buckets[b] for b in order]
+
+
+def _min_bars(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """min 행은 그 자체가 1분봉 — OHLC 를 행의 시/고/저/현재가로 직접 매핑한다."""
+    out: List[Dict[str, Any]] = []
+    for r in rows:
+        o = r["o"] or r["c"]
+        out.append({
+            "hms": _hms_from_index(r["ts"], "min"),
+            "o": o,
+            "h": max(o, r["h"], r["c"]) if r["h"] else max(o, r["c"]),
+            "l": min(o, r["l"], r["c"]) if r["l"] else min(o, r["c"]),
+            "c": r["c"],
+            "vol": r["vol"],
+            "change": r["change"],
+            "strength": r["strength"],
+        })
+    return out
+
+
+class ReplayData:
+    """리플레이 1세션의 메모리 자료구조 — 코드별 시계열 + 병합된 시간축.
+
+    frames: List[{t:int HHMMSS, items:[{code,o,h,l,c,vol,change,strength}...]}].
+    동일 t 슬롯의 종목 bar 들은 같은 frame 에 묶인다. seek 은 t→frame 인덱스 점프.
+    """
+
+    def __init__(
+        self,
+        date: int,
+        src: str,
+        codes: List[str],
+        frames: List[Dict[str, Any]],
+        session_range: Tuple[int, int],
+    ) -> None:
+        self.date = date
+        self.src = src
+        self.codes = codes
+        self.frames = frames
+        self.session_range = session_range
+
+    @property
+    def bars_total(self) -> int:
+        return len(self.frames)
+
+    def seek_index(self, hms: int) -> int:
+        """t(HHMMSS) 이상인 첫 frame 인덱스를 이진 탐색한다(없으면 끝)."""
+        lo, hi = 0, len(self.frames)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if self.frames[mid]["t"] < hms:
+                lo = mid + 1
+            else:
+                hi = mid
+        return lo
+
+
+def load_replay(
+    date: int,
+    src: str,
+    codes: List[str],
+    *,
+    agg_sec: int = DEFAULT_AGG_SEC,
+) -> ReplayData:
+    """일일 DB 에서 codes 의 시계열을 로드·집계·병합해 ReplayData 를 만든다(무예외).
+
+    codes 없음/없는 날짜/빈 DB → frames=[] 로 정상 반환(WS 가 즉시 done 처리).
+    """
+    src = "tick" if src == "tick" else "min"
+    agg_sec = int(agg_sec) if agg_sec else DEFAULT_AGG_SEC
+    if agg_sec < 1:
+        agg_sec = 1
+    codes = [str(c) for c in (codes or [])][:4]  # 최대 4종목.
+
+    con = _connect_ro(daily_db_path(date, src))
+    if con is None or not codes:
+        if con is not None:
+            con.close()
+        return ReplayData(date, src, codes, [], (0, 0))
+
+    # 코드별 봉 시계열(hms→bar) 적재.
+    per_code: Dict[str, Dict[int, Dict[str, Any]]] = {}
+    valid_codes: List[str] = []
+    try:
+        existing = {
+            str(r[0]) for r in con.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+        }
+        for code in codes:
+            if code not in existing:
+                continue
+            rows = _load_code_rows(con, code, src)
+            if not rows:
+                continue
+            bars = _aggregate_tick(rows, agg_sec) if src == "tick" else _min_bars(rows)
+            if not bars:
+                continue
+            valid_codes.append(code)
+            per_code[code] = {b["hms"]: b for b in bars}
+    finally:
+        con.close()
+
+    if not per_code:
+        return ReplayData(date, src, valid_codes, [], (0, 0))
+
+    # 전체 시간축(모든 코드 hms 합집합) 정렬 → frame 병합.
+    all_hms = sorted({hms for series in per_code.values() for hms in series})
+    frames: List[Dict[str, Any]] = []
+    for t in all_hms:
+        items: List[Dict[str, Any]] = []
+        for code in valid_codes:
+            bar = per_code[code].get(t)
+            if bar is None:
+                continue
+            items.append({
+                "code": code,
+                "o": bar["o"], "h": bar["h"], "l": bar["l"], "c": bar["c"],
+                "vol": bar["vol"], "change": bar["change"], "strength": bar["strength"],
+            })
+        if items:
+            frames.append({"t": t, "items": items})
+
+    session_range = (all_hms[0], all_hms[-1]) if all_hms else (0, 0)
+    return ReplayData(date, src, valid_codes, frames, session_range)
