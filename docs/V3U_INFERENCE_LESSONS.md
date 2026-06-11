@@ -286,6 +286,24 @@ CRITICAL로 잡지 못한다. 보강 옵션은 `docs/V3U_NEXT_STEPS.md` §3 A7. 
 - 근본 원인 매핑: §3-1 (pyd 내부 init 미관찰), §3-3 (외부 호출 일치 검증 한계)
 - 재발 방지 액션 매핑: §5-2 한계 갱신 (read-before-write) + NEXT_STEPS §3 신규 옵션 A7 (도구 보강)
 
+### 사이클 15 (2026-06-11): V3.30~V3.32 흡수 — 게이트가 신규 pyd 계약(homepg)을 첫 실전 차단
+
+V3 upstream(`refs/heads/V3.00`, stale tag 아님) V3.30~V3.32를 버전별로 흡수했다.
+상세는 `docs/update_log/2026-06-11_v3u_v330_v332_pyd_free_update.md`.
+
+**게이트 가치 첫 실전 입증**: V3.32 홈탭 마우스오버가 pyd 내부에서 초기화하던
+`ui.homepg` dict를 신규 요구 → 1차 게이트에서 attr inventory CRITICAL drift 1 +
+pytest drift 테스트 FAIL로 **커밋 전 자동 차단**. `_init_runtime_state`에 빈 dict
+추가로 해소. 첨자 할당(`ui.homepg[0] = x`)은 도구의 setattr 추출에 잡히지 않는
+것이 올바른 동작임을 확인 (attr 미생성이므로 실제로 init 필요).
+
+**의도적 변경**: V3.32 supertonic 삭제로 tts_sound placeholder 사유 소멸 →
+실 TextToSpeak(win32com SAPI) 부착 (soundQ 소비자 복원, 알림소리 parity).
+회귀 테스트 `test_text_to_speak_attach_contract` 추가 (pytest 49).
+
+**잔여**: V3.32 tail `fcc626a5`(윈도우 핸들 ctypes 수정) 미포함 — 다음 V3 흡수
+시 formal 포함. `change_title_bar_color` 오류 관찰 시 원인 후보 1순위.
+
 ### A5 적용 (2026-06-11): proc_chqs ChartHogaQuery 실 spawn — 결함 #12 잔여 의무 완결
 
 - 배경: 결함 #12(2026-05-20)는 AttributeError 방지 placeholder까지만 적용하고
@@ -556,12 +574,12 @@ A2(CRITICAL drift 정리) 사이클에서 추가로 발견된 init/method 누락
 
 ## 7. 통계 (지속 갱신)
 
-| 측정 | 값 (2026-06-11 사이클 14 A5 적용 시점; 3U_C lane 항목은 사이클 9 시점 수치) |
+| 측정 | 값 (2026-06-11 사이클 15 V3.30~32 흡수 시점; 3U_C lane 항목은 사이클 9 시점 수치) |
 |---|---|
-| 총 발견 결함 (V3U lane) | 20 (#16: V3.24 흡수 회귀, 재검증 감사 발견) + #12 잔여 의무 완결(A5) |
-| 자동 회귀 테스트 추가 (V3U lane) | 22 |
-| pytest 케이스 (V3U lane) | 48 |
-| 수정 커밋 누적 (V3U lane) | 13 |
+| 총 발견 결함 (V3U lane) | 20 + #12 잔여 완결(A5) + 게이트 사전 차단 1건(homepg, 사이클 15) |
+| 자동 회귀 테스트 추가 (V3U lane) | 23 |
+| pytest 케이스 (V3U lane) | 49 |
+| 수정 커밋 누적 (V3U lane) | 17 (V3.30~32 흡수 3 + 기록 1 포함) |
 | 신규 자동 도구 (V3U lane) | 1 (attr_inventory_diff) + A3 verifier UX 분리 |
 | **3U_C lane 추가 자동 도구** | **1** (v3uc_ingest_pipeline 5 T-step) |
 | **3U_C lane 추가 회귀 테스트** | **4** |

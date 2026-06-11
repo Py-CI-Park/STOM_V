@@ -15,19 +15,19 @@ V3U lane 진행 중 매 사이클 종료 시점에 **다음 사이클의 옵션�
 
 ---
 
-## 2. 현재 사이클 상태 (사이클 14, 2026-06-11)
+## 2. 현재 사이클 상태 (사이클 15, 2026-06-11)
 
 | 지표 | 값 |
 |---|---|
-| 결함 누적 (LESSONS.md §7) | 20 (#16: V3.24 흡수 회귀) + #12 잔여 의무 완결(A5) |
-| 자동 회귀 테스트 (pytest tests/v3u) | 48 |
+| 결함 누적 (LESSONS.md §7) | 20 + #12 잔여 완결(A5) + 게이트 사전 차단 1건(homepg) |
+| 자동 회귀 테스트 (pytest tests/v3u) | 49 |
 | 신규 자동 도구 | 1 (`scripts/v3u_attr_inventory_diff.py`) + A3 verifier 8 stage UX |
-| 수정 커밋 누적 | 13 |
+| 수정 커밋 누적 | 17 (V3.30~32 흡수 3 + 기록 포함) |
 | 재발 방지 액션 | 5/5 적용 + §5-2 read-before-write 한계 기록 (보강 옵션 A7) |
-| CRITICAL drift baseline | 0 (strict 모드) |
-| 사용자 시각 검증 사이클 | 6회 (V3.29 흡수 이후 0회 — 직접 테스트 대기) |
-| Remote sync | 사이클 13(`828f8a02`)까지 push 완료, 사이클 14 commit 후 push |
-| stom.py 활성 상태 | 미실행 (V3.29 + #16 fix + A5 proc_chqs spawn 직접 테스트 대기) |
+| CRITICAL drift baseline | 0 (strict 모드) — V3.32 흡수에서 첫 실전 차단 입증 |
+| 사용자 시각 검증 사이클 | 6회 (V3.29~V3.32 흡수 이후 0회 — 직접 테스트 대기) |
+| V3 lane 버전 | V3.32 (`3dea3b94`, tail `fcc626a5` 1건 차기 흡수 예정) |
+| stom.py 활성 상태 | 미실행 (V3.32 + #16 fix + A5 chqs + TTS 실 worker 직접 테스트 대기) |
 
 ### 미해결 사용자 잔여 작업 (선행 핸드오프 §3 기준)
 
@@ -218,6 +218,24 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - LESSONS.md 갱신: §6 결함 #14 통합 항목 + §7 통계 (45/19/8/baseline **0**, 결함 18건)
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
+
+### 사이클 15 (2026-06-11): 업스트림 신선도 점검 + V3.30~V3.32 흡수 + 2U_C 백포트 검토
+
+- 사용자 선택: "공식 업데이트 업스트림 확인 + version별 업데이트 + 3U 추가 흡수 분석 + 2U_C 반영 상세 검토 커밋 (검토 문서 stom_v/wt-3u 동시 커밋)"
+- 실행 결과:
+  - V2 lane: upstream tag V2.0 == 로컬 V2.79 → 반영 없음
+  - V3 freshness 권원 정정: `refs/tags/V3.0` stale → `refs/heads/V3.00` (tip fcc626a5, V3.32)
+  - wt-3 formal: `a488af5d`(V3.30) `b9cdcd99`(V3.31) `3dea3b94`(V3.32), parity 검증 통과
+  - V3U 흡수: `9459a422`/`83be2de0`/`1da630da`, 버전별 게이트 8/8 PASS
+  - **게이트 첫 실전 차단**: V3.32 신규 계약 `ui.homepg` CRITICAL drift 자동 검출 → 보정
+  - TTS 실 worker 전환 (supertonic 삭제로 placeholder 사유 소멸) + 회귀 테스트 → pytest 49
+  - 2U_C 백포트 검토: 후보 10항목 판정 (1순위: 업비트 첫틱 당일매수/매도금액 수정),
+    공용 검토 문서 STOM_V/wt-3u 동시 커밋
+- 발견 신규 결함: 0건 (게이트 사전 차단 1건은 커밋 전 해소)
+- LESSONS.md 갱신: 사이클 15 절 + §7 통계 (23/49/17)
+- 다음 사이클 후보: **B1 사용자 직접 테스트 최우선** (확인 항목에 V3.30~32 효과 추가:
+  홈탭 마우스오버, TTS 윈도우 음성·읽기속도, 타이틀바 색 오류 시 tail fcc626a5 원인 후보),
+  V3.33 발표 시 tail 포함 흡수, 2U_C 백포트 사이클 (기능 브랜치 정리 후)
 
 ### 사이클 14 (2026-06-11): A5 proc_chqs ChartHogaQuery 실 spawn — 결함 #12 잔여 완결
 
