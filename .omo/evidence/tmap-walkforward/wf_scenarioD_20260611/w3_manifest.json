@@ -1,0 +1,171 @@
+{
+  "template": "seed_902905",
+  "run_id": "wf_scenarioD_20260611_w3_fit_sweep",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_seed_902905_000_B",
+      "status": "ok",
+      "profit": 3751743.0,
+      "mdd": 25.16,
+      "trades": 193
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP cap_max=1500",
+      "param": "cap_max",
+      "value": 1500,
+      "buy_name": "TMAP_seed_902905_001_B",
+      "status": "ok",
+      "profit": 3341131.0,
+      "mdd": 14.18,
+      "trades": 100
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP cap_max=2000",
+      "param": "cap_max",
+      "value": 2000,
+      "buy_name": "TMAP_seed_902905_002_B",
+      "status": "ok",
+      "profit": 4026853.0,
+      "mdd": 16.91,
+      "trades": 137
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP cap_max=2500",
+      "param": "cap_max",
+      "value": 2500,
+      "buy_name": "TMAP_seed_902905_003_B",
+      "status": "ok",
+      "profit": 4477337.0,
+      "mdd": 19.06,
+      "trades": 168
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP cap_max=4000",
+      "param": "cap_max",
+      "value": 4000,
+      "buy_name": "TMAP_seed_902905_004_B",
+      "status": "ok",
+      "profit": 2286972.0,
+      "mdd": 35.52,
+      "trades": 216
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP cap_max=6000",
+      "param": "cap_max",
+      "value": 6000,
+      "buy_name": "TMAP_seed_902905_005_B",
+      "status": "ok",
+      "profit": 1685687.0,
+      "mdd": 39.32,
+      "trades": 229
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP cap_max=10000",
+      "param": "cap_max",
+      "value": 10000,
+      "buy_name": "TMAP_seed_902905_006_B",
+      "status": "ok",
+      "profit": 1662441.0,
+      "mdd": 39.41,
+      "trades": 233
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP take_hard=3",
+      "param": "take_hard",
+      "value": 3,
+      "buy_name": "TMAP_seed_902905_007_B",
+      "status": "ok",
+      "profit": 3332493.0,
+      "mdd": 19.74,
+      "trades": 196
+    },
+    {
+      "gen_no": 8,
+      "label": "TMAP take_hard=4",
+      "param": "take_hard",
+      "value": 4,
+      "buy_name": "TMAP_seed_902905_008_B",
+      "status": "ok",
+      "profit": 2866018.0,
+      "mdd": 26.8,
+      "trades": 193
+    },
+    {
+      "gen_no": 9,
+      "label": "TMAP take_hard=7",
+      "param": "take_hard",
+      "value": 7,
+      "buy_name": "TMAP_seed_902905_009_B",
+      "status": "ok",
+      "profit": 4632244.0,
+      "mdd": 21.17,
+      "trades": 193
+    },
+    {
+      "gen_no": 10,
+      "label": "TMAP take_hard=9",
+      "param": "take_hard",
+      "value": 9,
+      "buy_name": "TMAP_seed_902905_010_B",
+      "status": "ok",
+      "profit": 5136034.0,
+      "mdd": 20.93,
+      "trades": 193
+    },
+    {
+      "gen_no": 11,
+      "label": "TMAP trail_start=2",
+      "param": "trail_start",
+      "value": 2,
+      "buy_name": "TMAP_seed_902905_011_B",
+      "status": "ok",
+      "profit": 2123790.0,
+      "mdd": 28.29,
+      "trades": 197
+    },
+    {
+      "gen_no": 12,
+      "label": "TMAP trail_start=3",
+      "param": "trail_start",
+      "value": 3,
+      "buy_name": "TMAP_seed_902905_012_B",
+      "status": "ok",
+      "profit": 4344897.0,
+      "mdd": 19.0,
+      "trades": 194
+    },
+    {
+      "gen_no": 13,
+      "label": "TMAP trail_start=4",
+      "param": "trail_start",
+      "value": 4,
+      "buy_name": "TMAP_seed_902905_013_B",
+      "status": "ok",
+      "profit": 4226875.0,
+      "mdd": 22.15,
+      "trades": 193
+    },
+    {
+      "gen_no": 14,
+      "label": "TMAP trail_start=8",
+      "param": "trail_start",
+      "value": 8,
+      "buy_name": "TMAP_seed_902905_014_B",
+      "status": "ok",
+      "profit": 3751743.0,
+      "mdd": 25.16,
+      "trades": 193
+    }
+  ]
+}

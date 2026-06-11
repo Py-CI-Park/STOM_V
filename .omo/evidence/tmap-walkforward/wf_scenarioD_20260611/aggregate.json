@@ -1,0 +1,122 @@
+{
+  "template": "seed_902905",
+  "windows": [
+    {
+      "fit_start": 20220101,
+      "fit_end": 20221231,
+      "eval_start": 20230103,
+      "eval_end": 20230630,
+      "status": "ok",
+      "theta": {
+        "cap_max": 4000.0
+      },
+      "theta_basis": {
+        "param": "cap_max",
+        "value": 4000.0,
+        "plateau_score": 6.5603,
+        "plateau": {
+          "width": 6,
+          "center_value": 4000.0,
+          "mean_profit": 2307462.5,
+          "min_profit": 635416.0,
+          "values": [
+            1500.0,
+            2000.0,
+            2500.0,
+            4000.0,
+            6000.0,
+            10000.0
+          ]
+        },
+        "baseline_profit": 2110382.0
+      },
+      "policy": {
+        "profit": 2096006.0,
+        "trades": 57
+      },
+      "baseline": {
+        "profit": 2105157.0,
+        "trades": 55
+      }
+    },
+    {
+      "fit_start": 20220101,
+      "fit_end": 20231231,
+      "eval_start": 20240103,
+      "eval_end": 20240630,
+      "status": "ok",
+      "theta": null,
+      "theta_basis": {
+        "reason": "no qualifying plateau — fallback to baseline",
+        "baseline_profit": 6989838.0
+      },
+      "policy": {
+        "profit": 2079550.0,
+        "trades": 40
+      },
+      "baseline": {
+        "profit": 2079550.0,
+        "trades": 40
+      }
+    },
+    {
+      "fit_start": 20230101,
+      "fit_end": 20241231,
+      "eval_start": 20250103,
+      "eval_end": 20250630,
+      "status": "ok",
+      "theta": null,
+      "theta_basis": {
+        "reason": "no qualifying plateau — fallback to baseline",
+        "baseline_profit": 8251787.0
+      },
+      "policy": {
+        "profit": 1693831.0,
+        "trades": 57
+      },
+      "baseline": {
+        "profit": 1693831.0,
+        "trades": 57
+      }
+    },
+    {
+      "fit_start": 20240101,
+      "fit_end": 20251231,
+      "eval_start": 20260103,
+      "eval_end": 20260228,
+      "status": "ok",
+      "theta": {
+        "take_hard": 7.0
+      },
+      "theta_basis": {
+        "param": "take_hard",
+        "value": 7.0,
+        "plateau_score": 4.2558,
+        "plateau": {
+          "width": 4,
+          "center_value": 7.0,
+          "mean_profit": 3991697.25,
+          "min_profit": 2866018.0,
+          "values": [
+            3.0,
+            4.0,
+            7.0,
+            9.0
+          ]
+        },
+        "baseline_profit": 3751743.0
+      },
+      "policy": {
+        "profit": -102776.0,
+        "trades": 10
+      },
+      "baseline": {
+        "profit": -191109.0,
+        "trades": 10
+      }
+    }
+  ],
+  "washout_days": 2,
+  "policy_total": 5766611.0,
+  "baseline_total": 5687429.0
+}
