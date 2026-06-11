@@ -284,8 +284,12 @@ class TestFrontendContract:
         # E1/E2/E5(2026-06-11) — 전용 lab 페이지·수익곡선·히트맵 토글 계약.
         assert "/equity_curve" in src
         assert "_EquityChart" in src
+        # F1/F2/F7/F10(2026-06-11) — 니치 확장열·run 자동완성·탭 경고·WF 표 계약.
+        assert "rl-run-options" in src
+        assert "동결상관" in src
+        assert "기권(시드 유지)" in src
         lab = (FRONTEND / "lab.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260611j" in lab
+        assert "research-lab.jsx?v=20260611k" in lab
         assert "ResearchLabPanel" in lab
 
     def test_app_jsx_shows_run_label(self):
@@ -295,5 +299,5 @@ class TestFrontendContract:
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
-        assert "research-lab.jsx?v=20260611j" in src
+        assert "research-lab.jsx?v=20260611k" in src
         assert "app.jsx?v=20260611a" in src

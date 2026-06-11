@@ -1879,6 +1879,27 @@ def _ops_status_payload(window_hours: int = 24) -> Dict[str, Any]:
     except Exception:  # noqa: BLE001
         pass
 
+    try:  # F6(2026-06-11) — 배치 큐 스테이지: 최신 *queue*log* 휴리스틱 파싱.
+        qlogs = sorted(
+            _glob.glob(os.path.join(REPO_ROOT, ".omo/evidence/tmap-walkforward",
+                                    "*queue*log*.txt")),
+            key=os.path.getmtime, reverse=True,
+        )
+        if qlogs:
+            import re as _re  # noqa: PLC0415
+
+            with open(qlogs[0], encoding="utf-8", errors="ignore") as fh:
+                text = fh.read()
+            templates = _re.findall(r"template=(\S+)", text)
+            out["batch_queue"] = {
+                "log": os.path.basename(qlogs[0]),
+                "stages_done": text.count("] done"),
+                "current_template": templates[-1] if templates else None,
+                "age_min": round((now - os.path.getmtime(qlogs[0])) / 60, 1),
+            }
+    except Exception:  # noqa: BLE001
+        pass
+
     try:  # 증거 신선도 — 두 증거 디렉토리의 최신 파일 5종.
         files = []
         for pattern in (".omo/evidence/tmap-walkforward/*",
@@ -2201,6 +2222,24 @@ def _niche_compare_payload(run_ids: str = "") -> Dict[str, Any]:
                     (_time.time() - 7 * 86400,),
                 ).fetchall()
                 ids = [r["run_id"] for r in rows]
+            # F1(2026-06-11) — 상관 비교 기준: 최신 reeval run의 최고 손익 gen(동결 후보).
+            vs_series = None
+            try:
+                vs_row = con.execute(
+                    "SELECT g.csv_path FROM generations g JOIN runs r"
+                    " ON g.run_id = r.run_id"
+                    " WHERE g.run_id LIKE '%reeval%' AND g.status='ok'"
+                    " ORDER BY r.started_at DESC, g.profit DESC LIMIT 1"
+                ).fetchone()
+                if vs_row and vs_row["csv_path"]:
+                    from ai_strategy_loop.fitness.overfit_stats import (  # noqa: PLC0415
+                        daily_pnl_series as _dps,
+                    )
+
+                    p = vs_row["csv_path"]
+                    vs_series = _dps(p if os.path.isabs(p) else os.path.join(REPO_ROOT, p))
+            except Exception:  # noqa: BLE001
+                vs_series = None
             for rid in ids:
                 entry: Dict[str, Any] = {"run_id": rid}
                 try:
@@ -2213,6 +2252,36 @@ def _niche_compare_payload(run_ids: str = "") -> Dict[str, Any]:
                     entry["gens_ok"] = int(agg["c"] or 0)
                     entry["best_profit"] = (
                         float(agg["best"]) if agg["best"] is not None else None)
+                    # F1 — 최고 손익 gen의 CSV로 시간버킷·곡선 형태·동결 상관(advisory).
+                    best_row = con.execute(
+                        "SELECT csv_path FROM generations WHERE run_id=? AND status='ok'"
+                        " ORDER BY profit DESC LIMIT 1", (rid,)).fetchone()
+                    csvp = (best_row["csv_path"] or "") if best_row else ""
+                    if csvp:
+                        abs_csv = csvp if os.path.isabs(csvp) else os.path.join(REPO_ROOT, csvp)
+                        buckets = sorted(_entry_time_buckets(abs_csv))
+                        if buckets:
+                            entry["time_buckets"] = buckets[:4]
+                        from ai_strategy_loop.fitness.overfit_stats import (  # noqa: PLC0415
+                            curve_shape_metrics,
+                            daily_pnl_series,
+                        )
+
+                        series = daily_pnl_series(abs_csv)
+                        shape = curve_shape_metrics(series) if series else None
+                        if shape:
+                            entry["shape_r2"] = shape["uptrend_r2"]
+                            entry["stagnation_days"] = shape["max_stagnation_days"]
+                        if series and vs_series:
+                            common = sorted(set(series) & set(vs_series))
+                            if len(common) >= 10:
+                                import numpy as _np  # noqa: PLC0415
+
+                                a = _np.asarray([series[d] for d in common], dtype=float)
+                                b = _np.asarray([vs_series[d] for d in common], dtype=float)
+                                if float(a.std()) > 0 and float(b.std()) > 0:
+                                    entry["corr_vs_frozen"] = round(
+                                        float(_np.corrcoef(a, b)[0, 1]), 3)
                     summary = summarize_tendency(rid)
                     entry["baseline"] = summary.get("baseline")
                     params = summary.get("params") or {}

@@ -191,6 +191,15 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
   }, [baseUrl, gridRun, isDemo, runId]);
 
   const [gridMetric, setGridMetric] = useState_rl("profit");  /* E5 — 히트맵 색 기준. */
+  const [runOptions, setRunOptions] = useState_rl([]);  /* F2 — run 자동완성. */
+  useEffect_rl(() => {
+    if (isDemo || !baseUrl) return;
+    fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(10000) })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => setRunOptions(((d && d.runs) || []).slice(0, 40).map(r => r.run_id)))
+      .catch(() => {});
+  }, [baseUrl, isDemo]);
+
   const [niche, setNiche] = useState_rl(null);  /* D3 — 니치 지도 비교. */
   const fetchNiche = useCallback_rl(() => {
     if (isDemo || !baseUrl) return;
@@ -340,6 +349,25 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
               </tbody>
             </table>
           )}
+          {verdict.walkforward && Array.isArray(verdict.walkforward.windows)
+            && verdict.walkforward.windows.length > 0 && (
+            <table className="mono" style={{ fontSize: 11, marginBottom: 4 }}>
+              <thead><tr><th>WF 창(fit)</th><th>eval</th><th>θ 선택</th><th>정책</th><th>시드</th></tr></thead>
+              <tbody>
+                {verdict.walkforward.windows.map((w, i) => (
+                  <tr key={"w" + i}>
+                    <td>{w.fit_start}~{w.fit_end}</td>
+                    <td>{w.eval_start}~{w.eval_end}</td>
+                    <td>{w.theta
+                      ? Object.entries(w.theta).map(([k, v]) => `${k}=${v}`).join(",")
+                      : "기권(시드 유지)"}</td>
+                    <td>{w.policy ? Math.round(w.policy.profit).toLocaleString() : "—"}</td>
+                    <td>{w.baseline ? Math.round(w.baseline.profit).toLocaleString() : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
           {(verdict.alerts || []).map((a, i) => (
             <div key={"a" + i} className="mono" style={{ fontSize: 11, color: "#c95" }}>⚠️ {a}</div>
           ))}
@@ -353,7 +381,7 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
         <div style={{ marginTop: 8 }}>
           <div className="research-empty">니치 지도 비교 (최근 tmap run 자동 — 신규 니치 4종 아침 분석용)</div>
           <table className="mono" style={{ fontSize: 11, width: "100%" }}>
-            <thead><tr><th>run</th><th>상태</th><th>ok세대</th><th>베이스라인</th><th>최강 슬롯 고원 / 격자</th><th>최고 단일점</th></tr></thead>
+            <thead><tr><th>run</th><th>상태</th><th>ok세대</th><th>베이스라인</th><th>최강 슬롯 고원 / 격자</th><th>최고 단일점</th><th>시간대</th><th>R²·정체</th><th>동결상관</th></tr></thead>
             <tbody>
               {niche.runs.map(r => (
                 <tr key={r.run_id}>
@@ -369,6 +397,9 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
                         : "—"}
                   </td>
                   <td>{r.best_profit != null ? Math.round(r.best_profit).toLocaleString() : "—"}</td>
+                  <td>{(r.time_buckets || []).join(",") || "—"}</td>
+                  <td>{r.shape_r2 != null ? `${_rlNum(r.shape_r2, 2)}·${r.stagnation_days}일` : "—"}</td>
+                  <td>{r.corr_vs_frozen != null ? _rlNum(r.corr_vs_frozen, 2) : "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -417,15 +448,20 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
                  style={{ width: 64 }} />
         </label>
         <button type="button" className="research-tab" onClick={fetchAutopsy}>부검·반사실·MC 보기</button>
+        <datalist id="rl-run-options">
+          {runOptions.map(id => <option key={id} value={id} />)}
+        </datalist>
         <label>
           <span>비교 run</span>
           <input type="text" value={compareRun} placeholder="다른 스윕 run_id (선택)"
+                 list="rl-run-options"
                  onChange={(e) => setCompareRun(e.target.value)} style={{ width: 180 }} />
         </label>
         <button type="button" className="research-tab" onClick={fetchTmap}>TMAP 지도</button>
         <label>
           <span>격자 run</span>
           <input type="text" value={gridRun} placeholder="--grid 스윕 run_id"
+                 list="rl-run-options"
                  onChange={(e) => setGridRun(e.target.value)} style={{ width: 180 }} />
         </label>
         <button type="button" className="research-tab" onClick={fetchGrid}>2-D 히트맵</button>
@@ -678,7 +714,14 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
     if (!baseUrl) return undefined;
     const pull = () => fetch(baseUrl + "/ops_status", { signal: AbortSignal.timeout(8000) })
       .then(r => (r.ok ? r.json() : null))
-      .then(j => setOpsStrip(j))
+      .then(j => {
+        setOpsStrip(j);
+        try {  /* F7 — 정체 의심 시 브라우저 탭 제목 경고(자리 비움 감지용). */
+          const stalled = ((j && j.active) || []).some(a => a.health !== "active");
+          const base = document.title.replace(/^⚠️ /, "");
+          document.title = (stalled ? "⚠️ " : "") + base;
+        } catch (e) { /* 제목 갱신 실패는 무시. */ }
+      })
       .catch(() => {});
     pull();
     const timer = setInterval(pull, 10000);
