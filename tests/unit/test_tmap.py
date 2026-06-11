@@ -212,6 +212,32 @@ class TestWalkforward:
         assert theta is None
         assert "fallback" in basis["reason"]
 
+    def test_select_theta_rejects_less_bad_loss_on_negative_baseline(self) -> None:
+        """N9 회귀 — 적자 베이스라인에서 '덜 나쁜' 적자 고원을 알파로 오인 금지.
+
+        베이스라인 -300만일 때 평균 -50만 고원은 (덜 나쁘지만) 적자다 —
+        종전 규칙(mean > base)은 통과시켰다. 교정 후엔 절대 흑자만 적격.
+        """
+        trap = {
+            "baseline": {"profit": -3_000_000.0},
+            "params": {
+                "less_bad": {"positive_ratio": 0.6, "plateau_score": 5.0,
+                             "plateau": {"center_value": 10, "width": 4,
+                                         "mean_profit": -500_000.0}},
+            },
+        }
+        theta, basis = select_theta(trap)
+        assert theta is None  # 절대 흑자 없음 → 베이스라인 유지.
+        assert "fallback" in basis["reason"]
+
+        # 같은 적자 베이스라인이라도 절대 흑자 고원은 적격.
+        trap["params"]["truly_positive"] = {
+            "positive_ratio": 0.7, "plateau_score": 2.0,
+            "plateau": {"center_value": 7, "width": 3, "mean_profit": 400_000.0},
+        }
+        theta, _ = select_theta(trap)
+        assert theta == {"truly_positive": 7}
+
 
 # =====================================================================
 # 라우트 — /tmap_map, /portfolio_preview

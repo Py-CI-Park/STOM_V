@@ -14,6 +14,7 @@ from ai_strategy_loop.fitness.overfit_stats import (  # noqa: E402
     align_daily_matrix,
     daily_pnl_series,
     deflated_sharpe_ratio,
+    effective_independent_count,
     expected_max_sharpe,
     pbo_cscv,
 )
@@ -113,3 +114,32 @@ def test_daily_series_and_alignment(tmp_path) -> None:
 
 def test_daily_series_graceful_on_missing_file() -> None:
     assert daily_pnl_series("no_such_file.csv") is None
+
+
+# ---------------------------------------------------------------------------
+# N2 (2026-06-11) — 유효 독립 후보 수 (PBO 신뢰도 주석)
+# ---------------------------------------------------------------------------
+
+def _corr_payload(n: int, rho: float) -> dict:
+    matrix = [[1.0 if i == j else rho for j in range(n)] for i in range(n)]
+    return {"labels": [f"c{i}" for i in range(n)], "n_days": 100, "matrix": matrix}
+
+
+def test_effective_count_twin_pool_warns() -> None:
+    out = effective_independent_count(_corr_payload(5, 0.9))
+    # N_eff = 5 / (1 + 4*0.9) = 1.087 — 사실상 후보 1개짜리 풀.
+    assert out["effective_independent_candidates"] == 1.09
+    assert "pbo_reliability_warning" in out
+
+
+def test_effective_count_low_corr_no_warning() -> None:
+    out = effective_independent_count(_corr_payload(5, 0.1))
+    assert out["effective_independent_candidates"] > 3.0
+    assert "pbo_reliability_warning" not in out
+
+
+def test_effective_count_negative_corr_clamped_and_graceful() -> None:
+    out = effective_independent_count(_corr_payload(3, -0.4))
+    assert out["mean_pairwise_correlation"] == 0.0  # 음수 클램프(보수적).
+    assert out["effective_independent_candidates"] == 3.0
+    assert effective_independent_count({"labels": ["x"], "matrix": [[1.0]]}) is None

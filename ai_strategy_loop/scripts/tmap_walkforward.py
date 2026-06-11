@@ -49,8 +49,13 @@ def parse_windows(spec: str) -> List[Dict[str, int]]:
 def select_theta(summary: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], Dict[str, Any]]:
     """정책 v1: plateau_score 최고 슬롯의 고원 중심값 1개 변경 (순수 — 테스트 대상).
 
-    적격 조건: plateau 존재 + 고원 평균손익 > 베이스라인 손익(개선 증거) +
+    적격 조건: plateau 존재 + 고원 평균손익 > max(베이스라인 손익, 0) +
     positive_ratio >= 0.5(이웃 절반 이상 흑자 — 고원다움).
+
+    [N9 교정 2026-06-11] 비교 기준을 베이스라인 단독에서 max(베이스라인, 0)으로
+    강화. 종전엔 베이스라인이 적자인 fit창(시드 쇠퇴 구간)에서 '덜 나쁜' 적자
+    고원(-50만 > -300만)이 개선으로 통과해 정책 θ로 선택될 수 있었다 — 약세장
+    에서 손실 전략을 알파로 오인하는 함정. 절대 흑자가 없으면 베이스라인 유지.
     Returns: (theta or None, 근거 dict).
     """
     base = (summary.get("baseline") or {})
@@ -62,7 +67,7 @@ def select_theta(summary: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], Dic
             continue
         if (m.get("positive_ratio") or 0.0) < 0.5:
             continue
-        if plateau["mean_profit"] <= base_profit:
+        if plateau["mean_profit"] <= max(base_profit, 0.0):
             continue
         score = m.get("plateau_score") or 0.0
         if score > best_score:

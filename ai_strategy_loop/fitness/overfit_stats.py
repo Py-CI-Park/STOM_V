@@ -329,3 +329,39 @@ def daily_correlation_matrix(
         }
     except Exception:  # noqa: BLE001 - advisory.
         return None
+
+
+# ---------------------------------------------------------------------------
+# N2 (2026-06-11) — 후보 풀 독립성 진단: 유효 독립 후보 수
+# ---------------------------------------------------------------------------
+
+def effective_independent_count(corr: Dict[str, object]) -> Optional[Dict[str, object]]:
+    """후보 풀의 '유효 독립 후보 수' N_eff = N / (1 + (N-1)·ρ̄) (advisory).
+
+    1-D 템플릿 변형들은 거의 같은 거래를 공유해 일별 손익 상관이 높다(쌍둥이 풀).
+    CSCV(PBO)는 후보들이 함께 오르내리면 IS/OOS 분할에서도 같은 순위를 유지해
+    과적합 확률을 과소평가한다. 평균 쌍별 상관 ρ̄(음수는 0으로 클램프 — 보수적)로
+    유효 표본수를 병기하고, ρ̄>0.7이면 PBO 신뢰도 경고를 단다. 판정 미사용.
+    """
+    try:
+        matrix = corr.get("matrix")
+        labels = corr.get("labels") or []
+        n = len(labels)
+        if not matrix or n < 2:
+            return None
+        off = [float(matrix[i][j]) for i in range(n) for j in range(n) if i < j]
+        rho = max(0.0, sum(off) / len(off))
+        n_eff = n / (1.0 + (n - 1) * rho) if rho < 1.0 else 1.0
+        out: Dict[str, object] = {
+            "n_candidates": n,
+            "mean_pairwise_correlation": round(rho, 4),
+            "effective_independent_candidates": round(n_eff, 2),
+        }
+        if rho > 0.7:
+            out["pbo_reliability_warning"] = (
+                f"후보 풀 평균 상관 {rho:.2f} > 0.7 — 후보들이 사실상 쌍둥이라"
+                f" PBO가 과적합을 과소평가할 수 있음(유효 독립 후보 ≈ {n_eff:.1f})"
+            )
+        return out
+    except Exception:  # noqa: BLE001 - advisory.
+        return None

@@ -60,7 +60,8 @@ def _dominant_plateau(curve: list[dict], base_profit: float) -> dict | None:
     best = None
     run: list[dict] = []
     for p in curve:
-        if p.get("ok") and p["profit"] > base_profit:
+        # [N9] max(base, 0): 베이스라인이 적자여도 절대 흑자가 아닌 점은 지배 아님.
+        if p.get("ok") and p["profit"] > max(base_profit, 0.0):
             run.append(p)
         else:
             run = []
@@ -96,9 +97,11 @@ def qualified_slots(summary: dict) -> list[dict]:
         else:
             if (m.get("positive_ratio") or 0.0) < 0.5:
                 reasons.append(f"positive_ratio {m.get('positive_ratio')} < 0.5")
-            if plateau["mean_profit"] <= base_profit:
+            # [N9] max(base, 0): 적자 베이스라인 구간에서 '덜 나쁜' 적자 고원 차단.
+            if plateau["mean_profit"] <= max(base_profit, 0.0):
                 reasons.append(
-                    f"plateau mean {plateau['mean_profit']:,.0f} <= baseline {base_profit:,.0f}"
+                    f"plateau mean {plateau['mean_profit']:,.0f}"
+                    f" <= max(baseline {base_profit:,.0f}, 0)"
                 )
         v1_ok = not reasons
         dominant = _dominant_plateau(curve, base_profit)

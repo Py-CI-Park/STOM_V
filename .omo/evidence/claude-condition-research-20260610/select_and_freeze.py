@@ -41,6 +41,7 @@ from ai_strategy_loop.fitness.overfit_stats import (  # noqa: E402
     daily_correlation_matrix,
     daily_pnl_series,
     deflated_sharpe_ratio,
+    effective_independent_count,
     pbo_cscv,
 )
 
@@ -80,12 +81,18 @@ def _load_rows(run_ids):
     return rows
 
 
-def _overfit_advisory(candidates, labels, primary):
+def _overfit_advisory(candidates, labels, primary, run_ids=None, trial_runs=None):
     """C1 — PBO(CSCV)·DSR 실측치(advisory). 어떤 실패도 흡수한다(판정 불변).
 
     - PBO: 선택 풀(베이스라인 제외, csv 보유) 후보들의 일별 손익 행렬로 CSCV.
-    - DSR: 선택 후보의 일별 손익(거래일 기준), n_trials = 이번 사이클에서 평가된
-      고유 CLDGEN 매수 전략 수(검색 폭 전체 — 정직한 시도 횟수).
+    - DSR: 선택 후보의 일별 손익(거래일 기준).
+    - n_trials [N5 교정 2026-06-11]: 종전엔 CLDGEN_%만 세서 **TMAP 스윕 그리드
+      (최대 다중성 원천, 재설계 문서 T3가 명시한 '그리드 전체=시도 집합')가
+      누락**됐다 — 설계-구현 불일치. 이제 선택 대상 run + --trial-runs(후보를
+      낳은 스윕 run들) + 사이클 CLDGEN 풀의 고유 매수 전략 수를 합산한다
+      (중복은 DISTINCT로 제거, 과대 계상 쪽이 보수적).
+    - pool_independence [N2 2026-06-11]: 후보 풀 평균 상관·유효 독립 후보 수
+      병기 — 1-D 변형 쌍둥이 풀에서 PBO 과소평가 위험 공시.
     """
     out = {"note": "advisory only — selection/판정에 미사용", "pbo": None, "dsr": None}
     try:
@@ -103,18 +110,27 @@ def _overfit_advisory(candidates, labels, primary):
         else:
             out["pbo_blocked"] = f"csv 보유 후보 {len(series)}개(<2) — PBO 계산 불가"
 
+        trial_run_ids = [str(r) for r in (list(run_ids or []) + list(trial_runs or []))]
         con = sqlite3.connect(str(RUNS_DB))
         try:
+            in_clause = ""
+            if trial_run_ids:
+                placeholders = ",".join("?" for _ in trial_run_ids)
+                in_clause = f"run_id IN ({placeholders}) OR "
             n_trials = con.execute(
                 "SELECT COUNT(DISTINCT buy_name) FROM generations"
-                " WHERE run_id LIKE 'cldgen_%' AND buy_name LIKE 'CLDGEN_%'"
+                f" WHERE {in_clause}(run_id LIKE 'cldgen_%' AND buy_name LIKE 'CLDGEN_%')",
+                trial_run_ids,
             ).fetchone()[0]
         finally:
             con.close()
         out["n_trials_definition"] = (
-            "이번 사이클(run_id LIKE cldgen_%)에서 평가된 고유 CLDGEN 매수 전략 수"
+            "이 선택을 낳은 평가 점 전체의 고유 매수 전략 수 = 선택 대상 run"
+            " + trial-runs(TMAP 스윕 그리드) + 사이클 CLDGEN 풀"
+            " (N5 교정: 종전 CLDGEN만 카운트 → 스윕 그리드 누락 수정)"
         )
         out["n_trials"] = int(n_trials or 1)
+        out["n_trials_runs"] = trial_run_ids
 
         if primary.selected_candidate is not None and primary.selected_candidate.csv_path:
             s = daily_pnl_series(primary.selected_candidate.csv_path)
@@ -134,14 +150,27 @@ def _overfit_advisory(candidates, labels, primary):
 
         # R7(2026-06-11) — 후보 간 일별 손익 상관(포트폴리오/앙상블 재료).
         if len(series) >= 2:
-            out["daily_correlation"] = daily_correlation_matrix(series)
+            corr = daily_correlation_matrix(series)
+            out["daily_correlation"] = corr
+            if corr:
+                eff = effective_independent_count(corr)  # N2 — PBO 신뢰도 주석.
+                if eff:
+                    out["pool_independence"] = eff
     except Exception as exc:  # noqa: BLE001 - advisory는 절대 판정을 막지 않는다.
         out["error"] = str(exc)
     return out
 
 
 def main() -> int:
-    run_ids = sys.argv[1:] or ["cldgen_train_2023_2025_20260610"]
+    # N5 — --trial-runs=<run_id,...>: 후보를 낳은 스윕 run들(시도 횟수에 합산).
+    trial_runs: list = []
+    args = []
+    for a in sys.argv[1:]:
+        if a.startswith("--trial-runs="):
+            trial_runs = [s for s in a.split("=", 1)[1].split(",") if s]
+        else:
+            args.append(a)
+    run_ids = args or ["cldgen_train_2023_2025_20260610"]
     run_label = "+".join(run_ids)
     config_hash = hashlib.sha256(CONFIG_PATH.read_bytes()).hexdigest()
 
@@ -199,7 +228,9 @@ def main() -> int:
     write_yearly_sparse_robust_artifact(advisory, EVID / "p5-yearly-advisory.json")
 
     # ── C1: 과적합 advisory (PBO/CSCV + DSR) — 분석 전용, 판정 불변 ────────
-    overfit = _overfit_advisory(candidates, labels, primary)
+    overfit = _overfit_advisory(
+        candidates, labels, primary, run_ids=run_ids, trial_runs=trial_runs
+    )
     (EVID / "p5-overfit-advisory.json").write_text(
         json.dumps(overfit, ensure_ascii=False, indent=2), encoding="utf-8"
     )
