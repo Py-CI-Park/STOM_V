@@ -508,4 +508,4 @@ class TestFrontendContract:
         assert "_GridHeatmap" in src
         assert "_CurveSpark" in src
         index = (frontend / "index.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260611h" in index
+        assert "research-lab.jsx?v=20260611i" in index

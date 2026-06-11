@@ -625,6 +625,19 @@ function _McFanChart({ fan }) {
 
 function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
   const [tab, setTab] = useState_rl("edge");
+  const [fullscreen, setFullscreen] = useState_rl(false);  /* 전체 화면 토글. */
+  const [opsStrip, setOpsStrip] = useState_rl(null);       /* 탭 공통 운영 띠. */
+
+  useEffect_rl(() => {
+    if (!baseUrl) return undefined;
+    const pull = () => fetch(baseUrl + "/ops_status", { signal: AbortSignal.timeout(8000) })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => setOpsStrip(j))
+      .catch(() => {});
+    pull();
+    const timer = setInterval(pull, 10000);
+    return () => clearInterval(timer);
+  }, [baseUrl]);
   const [method, setMethod] = useState_rl("spearman");
   const [axis, setAxis] = useState_rl("time");
   const [data, setData] = useState_rl(null);
@@ -709,9 +722,15 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
     );
   }
 
+  const shellStyle = fullscreen
+    ? { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999,
+        background: "#0d1117", overflow: "auto", padding: "12px 18px" }
+    : undefined;
+  const activeOps = (opsStrip && opsStrip.active) || [];
   return (
-    <div className="research-lab-shell">
-      <div className="research-tabs" role="tablist" aria-label="Research Lab">
+    <div className="research-lab-shell" style={shellStyle}>
+      <div className="research-tabs" role="tablist" aria-label="Research Lab"
+           style={{ display: "flex", alignItems: "center" }}>
         {RESEARCH_TABS.map(item => (
           <button key={item.id}
                   type="button"
@@ -720,6 +739,17 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
             {item.label}
           </button>
         ))}
+        <button type="button" className="research-tab" style={{ marginLeft: "auto" }}
+                onClick={() => setFullscreen(!fullscreen)}>
+          {fullscreen ? "✕ 전체 화면 닫기" : "⛶ 전체 화면"}
+        </button>
+      </div>
+      <div className="mono" style={{ fontSize: 11, margin: "2px 0 6px", opacity: 0.9 }}>
+        {activeOps.length
+          ? activeOps.map(a =>
+              `🔄 ${a.run_id} · ${a.gens}세대 · ${a.last_label || ""} · ${a.health === "active" ? "진행 중" : "⚠️ 정체 의심"}`
+            ).join("  |  ")
+          : "실행 중 작업 없음"}
       </div>
       {body}
     </div>
