@@ -83,3 +83,5 @@ def test_index_html_loads_tab_scripts_before_app() -> None:
     assert "simulation.jsx" in index
     assert index.index("backtest.jsx") < index.index("app.jsx")
     assert index.index("simulation.jsx") < index.index("app.jsx")
+    # PR2: 차트 분리 모듈은 backtest.jsx 보다 먼저 로드돼야 한다(window 전역 공유 의존).
+    assert index.index("backtest-charts.jsx") < index.index("backtest.jsx?")

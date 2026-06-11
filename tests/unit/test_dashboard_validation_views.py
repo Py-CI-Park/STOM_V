@@ -300,4 +300,8 @@ class TestFrontendContract:
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
         assert "research-lab.jsx?v=20260611k" in src
-        assert "app.jsx?v=20260611a" in src
+        # app.jsx는 2026-06-11 3탭 셸 도입(PR1·PR2 워크벤치)으로 v20260611b로 재범프됐다.
+        assert "app.jsx?v=20260611b" in src
+        # 백테스트 워크벤치(PR2) — 차트 모듈이 backtest.jsx보다 먼저 로드돼야 한다.
+        assert "backtest-charts.jsx?v=20260612a" in src
+        assert "backtest.jsx?v=20260612a" in src
