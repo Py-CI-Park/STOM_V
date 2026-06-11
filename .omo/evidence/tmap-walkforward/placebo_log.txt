@@ -1,0 +1,15 @@
+[BATCH] run_id=placebo_train_20260611 pairs=12
+[BATCH] prepare status=ok back_count=2285 elapsed=262s
+[BATCH] gen0 PLACEBO R2 S0 ok profit=-957,889,031 mdd=795.41 trades=37292 daily=51.40 payoff=2.1416099379766798 gate=False reason=mdd 795.4 > mdd_cap 35 (172s)
+[BATCH] gen1 PLACEBO R2 S1 ok profit=-919,110,289 mdd=764.16 trades=37089 daily=51.20 payoff=2.152375194790048 gate=False reason=mdd 764.2 > mdd_cap 35 (169s)
+[BATCH] gen2 PLACEBO R2 S2 ok profit=-926,099,184 mdd=773.35 trades=37113 daily=51.20 payoff=2.1344502245225145 gate=False reason=mdd 773.4 > mdd_cap 35 (167s)
+[BATCH] gen3 PLACEBO R5 S0 ok profit=-1,644,075,427 mdd=863.55 trades=63564 daily=87.70 payoff=2.07224091691339 gate=False reason=mdd 863.5 > mdd_cap 35 (258s)
+[BATCH] gen4 PLACEBO R5 S1 ok profit=-1,619,894,732 mdd=852.08 trades=63369 daily=87.40 payoff=2.0888909561853493 gate=False reason=mdd 852.1 > mdd_cap 35 (261s)
+[BATCH] gen5 PLACEBO R5 S2 ok profit=-1,624,210,952 mdd=855.36 trades=63457 daily=87.50 payoff=2.080094436533575 gate=False reason=mdd 855.4 > mdd_cap 35 (257s)
+[BATCH] gen6 PLACEBO R10 S0 ok profit=-2,003,112,348 mdd=852.54 trades=77914 daily=107.50 payoff=2.0065542452399323 gate=False reason=mdd 852.5 > mdd_cap 35 (324s)
+[BATCH] gen7 PLACEBO R10 S1 ok profit=-2,005,149,947 mdd=853.24 trades=77920 daily=107.50 payoff=2.0058454027516723 gate=False reason=mdd 853.2 > mdd_cap 35 (321s)
+[BATCH] gen8 PLACEBO R10 S2 ok profit=-2,011,890,841 mdd=856.65 trades=78108 daily=107.70 payoff=2.0067004299063047 gate=False reason=mdd 856.6 > mdd_cap 35 (311s)
+[BATCH] gen9 PLACEBO R20 S0 ok profit=-2,251,963,964 mdd=866.29 trades=84868 daily=117.10 payoff=1.9025351388318994 gate=False reason=mdd 866.3 > mdd_cap 35 (338s)
+[BATCH] gen10 PLACEBO R20 S1 ok profit=-2,244,586,282 mdd=863.60 trades=84806 daily=117.00 payoff=1.9032733357048583 gate=False reason=mdd 863.6 > mdd_cap 35 (332s)
+[BATCH] gen11 PLACEBO R20 S2 ok profit=-2,244,061,628 mdd=863.43 trades=84796 daily=117.00 payoff=1.9021936161940398 gate=False reason=mdd 863.4 > mdd_cap 35 (333s)
+[BATCH] done
