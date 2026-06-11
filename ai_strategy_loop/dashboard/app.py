@@ -1791,6 +1791,29 @@ def _variable_correlation_payload(
     return {"runs": target_runs, "gen_no": gen_no, **report}
 
 
+def _entry_time_buckets(csv_path: str) -> set:
+    """N6(2026-06-11) — per-trade CSV의 진입 시각 30분 버킷(HHMM) 집합.
+
+    포트폴리오 시간 분산 게이트 재료: 전 후보가 같은 버킷 1개면 결합이
+    무의미하다(같은 30분 창의 쌍둥이들). 어떤 실패도 빈 집합(advisory).
+    """
+    try:
+        import pandas as pd  # noqa: PLC0415
+
+        if not csv_path or not os.path.isfile(csv_path):
+            return set()
+        df = pd.read_csv(csv_path, encoding="utf-8-sig")
+        if "매수시간" not in df.columns:
+            return set()
+        hhmm = df["매수시간"].astype(str).str[8:12]
+        return {
+            f"{s[:2]}{'00' if s[2:4] < '30' else '30'}"
+            for s in hhmm if len(s) == 4 and s.isdigit()
+        }
+    except Exception:  # noqa: BLE001 - advisory.
+        return set()
+
+
 def create_app() -> FastAPI:
     """대시보드 FastAPI 앱을 생성한다 (테스트가 TestClient로 감싼다)."""
     manager = LoopProcessManager()
@@ -2003,17 +2026,26 @@ def create_app() -> FastAPI:
         return out
 
     @app.get("/tmap_map")
-    def tmap_map(run_id: str = "") -> Dict[str, Any]:
+    def tmap_map(run_id: str = "", compare_run_id: str = "") -> Dict[str, Any]:
         """TMAP G3(2026-06-11) — 스윕 run의 경향성 지도를 반환한다(읽기 전용·무예외).
 
-        쿼리: ?run_id=<tmap_sweep run_id>. 변수별 응답 곡선·고원(중심/폭/평균손익)·
-        절벽·plateau_score + 베이스라인. TMAP 라벨 행이 없으면 count=0(graceful).
+        쿼리: ?run_id=<tmap_sweep run_id>[&compare_run_id=<다른 스윕 run>].
+        변수별 응답 곡선·고원(중심/폭/평균손익)·절벽·plateau_score + 베이스라인.
+        compare_run_id(M12)를 주면 같은 슬롯의 다른 창(마이크로/본/연도) 지도를
+        compare 키로 병기 — 구간별 경향 발산(예: window_end 분기 +61% vs 3년
+        +12%)을 즉시 가시화한다. TMAP 라벨 행이 없으면 count=0(graceful).
         피크가 아닌 고원을 고르는 것이 계약 — advisory 전용.
         """
         try:
             from ai_strategy_loop.tmap.tendency import summarize_tendency  # noqa: PLC0415
 
-            return summarize_tendency(run_id)
+            out = summarize_tendency(run_id)
+            if compare_run_id:
+                try:
+                    out["compare"] = summarize_tendency(compare_run_id)
+                except Exception as exc:  # noqa: BLE001 - 비교 실패가 본 지도를 막지 않게.
+                    out["compare"] = {"run_id": compare_run_id, "error": str(exc)}
+            return out
         except Exception as exc:  # noqa: BLE001
             return {"run_id": run_id, "baseline": None, "params": {},
                     "count": 0, "error": str(exc)}
@@ -2050,7 +2082,7 @@ def create_app() -> FastAPI:
             from ai_strategy_loop.fitness.overfit_stats import daily_pnl_series  # noqa: PLC0415
             from ai_strategy_loop.tmap.portfolio import greedy_portfolio  # noqa: PLC0415
 
-            series = {}
+            series, csv_by_key = {}, {}
             for r in rows:
                 d = dict(r)
                 if d.get("status") != "ok" or not d.get("csv_path"):
@@ -2062,12 +2094,28 @@ def create_app() -> FastAPI:
                 s = daily_pnl_series(abs_csv)
                 if s:
                     label = d.get("strategy_gist") or d.get("buy_name") or f"gen{d['gen_no']}"
-                    series[f"gen{d['gen_no']}:{label}"] = s
+                    key = f"gen{d['gen_no']}:{label}"
+                    series[key] = s
+                    csv_by_key[key] = abs_csv
             if len(series) < 1:
                 out["status"] = "no_series"
                 return out
             result = greedy_portfolio(series, max_size=max_size, corr_cap=corr_cap)
             out.update(result)
+            # N6(2026-06-11) — 진입 시간대 분산 게이트: 전 후보가 같은 30분 창이면
+            #   상관 게이트와 무관하게 포트폴리오가 무의미하다(쌍둥이 풀 — 정직 공시).
+            selection = result.get("selection") or []
+            buckets = {k: sorted(_entry_time_buckets(csv_by_key.get(k, ""))) for k in selection}
+            union = set().union(*buckets.values()) if buckets else set()
+            out["time_dispersion"] = {
+                "buckets_by_candidate": buckets,
+                "union_bucket_count": len(union),
+            }
+            if selection and len(union) <= 1:
+                out["time_dispersion"]["warning"] = (
+                    "선택 후보 전원이 같은 30분 진입 창 — 시간 분산 0,"
+                    " 포트폴리오 결합 무의미(독립 니치 템플릿(A4)이 필요)"
+                )
             out["status"] = "ok"
         except Exception as exc:  # noqa: BLE001
             out["status"] = "error"

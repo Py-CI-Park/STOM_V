@@ -303,6 +303,21 @@ class TestRoutes:
             "no_series", "unavailable",
         )
 
+    def test_tmap_map_compare_param(self, client) -> None:
+        """M12 — compare_run_id로 다른 창 지도를 병기(구간 발산 가시화)."""
+        body = client.get(
+            "/tmap_map", params={"run_id": "runP", "compare_run_id": "runP"}
+        ).json()
+        assert body["compare"]["run_id"] == "runP"
+        assert "cap_max" in body["compare"]["params"]
+
+    def test_portfolio_time_dispersion_gate(self, client) -> None:
+        """N6 — 전 후보가 같은 30분 진입 창이면 경고(시간 분산 0 공시)."""
+        body = client.get("/portfolio_preview", params={"run_id": "runP"}).json()
+        td = body.get("time_dispersion") or {}
+        assert td.get("union_bucket_count") == 1  # 픽스처 전 거래가 09:01 진입.
+        assert "warning" in td
+
 
 class TestYearlyConsistency:
     """P2 — θ* 중심점 연도 일관성(흑자 연도 >= 2). 알파 감쇠 차단 회귀."""
@@ -383,4 +398,4 @@ class TestFrontendContract:
         assert "TMAP 지도" in src
         assert "plateau score" in src
         index = (frontend / "index.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260611c" in index
+        assert "research-lab.jsx?v=20260611d" in index

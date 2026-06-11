@@ -172,17 +172,20 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
   const [cf, setCf] = useState_rl(null);
   const [mc, setMc] = useState_rl(null);
   const [tmap, setTmap] = useState_rl(null);
+  const [compareRun, setCompareRun] = useState_rl("");  /* M12 — 지도 비교 run. */
   const [loading, setLoading] = useState_rl(false);
   const [err, setErr] = useState_rl(null);
 
   const fetchTmap = useCallback_rl(() => {
     if (isDemo || !baseUrl || !runId) return;
-    fetch(baseUrl + "/tmap_map?run_id=" + encodeURIComponent(runId),
+    const cmp = compareRun.trim()
+      ? "&compare_run_id=" + encodeURIComponent(compareRun.trim()) : "";
+    fetch(baseUrl + "/tmap_map?run_id=" + encodeURIComponent(runId) + cmp,
           { signal: AbortSignal.timeout(10000) })
       .then(r => r.ok ? r.json() : null)
       .then(j => setTmap(j))
       .catch(e => setErr(String(e)));
-  }, [baseUrl, isDemo, runId]);
+  }, [baseUrl, compareRun, isDemo, runId]);
 
   const refresh = useCallback_rl(() => {
     if (isDemo || !baseUrl || !runId) return;
@@ -276,6 +279,11 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
                  style={{ width: 64 }} />
         </label>
         <button type="button" className="research-tab" onClick={fetchAutopsy}>부검·반사실·MC 보기</button>
+        <label>
+          <span>비교 run</span>
+          <input type="text" value={compareRun} placeholder="다른 스윕 run_id (선택)"
+                 onChange={(e) => setCompareRun(e.target.value)} style={{ width: 180 }} />
+        </label>
         <button type="button" className="research-tab" onClick={fetchTmap}>TMAP 지도</button>
       </div>
       {autopsy && (
@@ -343,23 +351,33 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
                     : "베이스라인 없음"}
                 </div>
                 <table className="mono" style={{ fontSize: 11, width: "100%" }}>
-                  <thead><tr><th>슬롯(θ)</th><th>plateau score</th><th>고원 중심</th><th>폭</th><th>고원 평균손익</th><th>흑자율</th><th>절벽(최대 점프)</th></tr></thead>
+                  <thead><tr><th>슬롯(θ)</th><th>plateau score</th><th>고원 중심</th><th>폭</th><th>고원 평균손익</th><th>흑자율</th><th>절벽(최대 점프)</th><th>중심 형태(R²·정체일)</th>{tmap.compare && <th>비교 run(중심·score)</th>}</tr></thead>
                   <tbody>
                     {Object.entries(tmap.params)
                       .sort((a, b) => (b[1].plateau_score || 0) - (a[1].plateau_score || 0))
-                      .map(([name, m]) => (
-                        <tr key={name}>
-                          <td>{name}</td>
-                          <td>{_rlNum(m.plateau_score, 3)}</td>
-                          <td>{m.plateau ? m.plateau.center_value : "—"}</td>
-                          <td>{m.plateau ? m.plateau.width : "—"}</td>
-                          <td>{m.plateau ? Math.round(m.plateau.mean_profit).toLocaleString() : "—"}</td>
-                          <td>{Math.round((m.positive_ratio || 0) * 100)}%</td>
-                          <td>{m.cliff ? `${Math.round(m.cliff.jump).toLocaleString()} @${m.cliff.between.join("→")}` : "—"}</td>
-                        </tr>
-                      ))}
+                      .map(([name, m]) => {
+                        const cm = (tmap.compare && tmap.compare.params) ? tmap.compare.params[name] : null;
+                        return (
+                          <tr key={name}>
+                            <td>{name}</td>
+                            <td>{_rlNum(m.plateau_score, 3)}</td>
+                            <td>{m.plateau ? m.plateau.center_value : "—"}</td>
+                            <td>{m.plateau ? m.plateau.width : "—"}</td>
+                            <td>{m.plateau ? Math.round(m.plateau.mean_profit).toLocaleString() : "—"}</td>
+                            <td>{Math.round((m.positive_ratio || 0) * 100)}%</td>
+                            <td>{m.cliff ? `${Math.round(m.cliff.jump).toLocaleString()} @${m.cliff.between.join("→")}` : "—"}</td>
+                            <td>{m.center_shape ? `${_rlNum(m.center_shape.uptrend_r2, 2)}·${m.center_shape.max_stagnation_days}일` : "—"}</td>
+                            {tmap.compare && <td>{cm && cm.plateau ? `${cm.plateau.center_value} · ${_rlNum(cm.plateau_score, 2)}` : "—"}</td>}
+                          </tr>
+                        );
+                      })}
                   </tbody>
                 </table>
+                {tmap.compare && (
+                  <div className="research-empty">
+                    비교 run: {tmap.compare.run_id || "—"} — 구간별 경향 발산 확인용(M12). 다년 지도의 고원만 동결 자격.
+                  </div>
+                )}
               </div>
             )}
         </div>
