@@ -129,6 +129,10 @@ def main() -> int:
         sess.close()
 
     st.finish_run(rid, status="complete")
+    # G-1 보완(2026-06-11) — 종료 발행 누락이 라이브 영역 'gen N 박제'를 만들었다
+    #   (스윕에는 있던 idle 발행이 배치에 없었음 — 23:28 실사고).
+    publish_batch_state(rid, len(pairs), len(pairs), status="idle",
+                        message=f"배치 완료: {rid}")
     print("[BATCH] done", flush=True)
     return 0
 
