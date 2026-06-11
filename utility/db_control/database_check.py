@@ -25,11 +25,11 @@ def database_check():
         # --------------------------------------------------------------------------------------------------------------
 
         MAIN_CLOUMNS = [
-            'index', '거래소', '타임프레임', '데이터저장', '모의투자', '알림소리', '보이스네임', '프로그램비밀번호',
+            'index', '거래소', '타임프레임', '데이터저장', '모의투자', '알림소리', '읽기속도', '프로그램비밀번호',
             '바이낸스선물고정레버리지', '바이낸스선물고정레버리지값', '바이낸스선물변동레버리지값', '바이낸스선물마진타입', '바이낸스선물포지션'
         ]
         MAIN_DATA = [
-            [0, '국내주식01', 1, 1, 1, 1, 'F1', '', 1, 1, '0;5;1^5;10;2^10;20;3^20;30;4^30;100;5', 'ISOLATED', 'false']
+            [0, '국내주식01', 1, 1, 1, 1, 1, '', 1, 1, '0;5;1^5;10;2^10;20;3^20;30;4^30;100;5', 'ISOLATED', 'false']
         ]
 
         ACCOUNT_CLOUMNS = ['index', 'access_key', 'secret_key']
@@ -144,8 +144,14 @@ def database_check():
                 pass
 
             if df is None or list(df.columns) != columns or (table_name != 'main' and 1 not in df['index']):
-                df = pd.DataFrame(data, columns=columns).set_index('index')
-                df.to_sql(table_name, con, if_exists='replace')
+                if df is not None and table_name == 'main':
+                    if '읽기속도' not in df.columns:
+                        df['읽기속도'] = 1
+                        df = df[columns]
+                        df.to_sql(table_name, con, if_exists='replace')
+                else:
+                    df = pd.DataFrame(data, columns=columns).set_index('index')
+                    df.to_sql(table_name, con, if_exists='replace')
 
         con.close()
 

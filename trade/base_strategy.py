@@ -53,9 +53,9 @@ class BaseStrategy(StgGlobalsFunc):
         self.info_for_sell   = None
 
         self.dict_data: dict[str, list] = {}
+        self.dict_profit: dict[str, list] = {}
         self.dict_gj: dict[str, dict[str, int | float]] = {}
         self.dict_jg: dict[str, dict[str, int | float]] = {}
-        self.dict_profit: dict[str, list] = {}
 
         if self.market_gubun < 6:
             self.dict_signal = {
