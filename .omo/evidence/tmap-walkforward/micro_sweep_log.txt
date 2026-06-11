@@ -1,0 +1,18 @@
+[SWEEP] template=seed_902905 points=12/12
+[SWEEP] prepare status=ok back_count=814 elapsed=70s
+[SWEEP] gen0 TMAP __default__ profit=2,023,670 mdd=4.98 trades=24 (31s)
+[SWEEP] gen1 TMAP cap_max=1500 profit=442,161 mdd=3.94 trades=10 (32s)
+[SWEEP] gen2 TMAP cap_max=2000 profit=1,597,672 mdd=5.28 trades=16 (32s)
+[SWEEP] gen3 TMAP cap_max=2500 profit=2,056,043 mdd=5.11 trades=21 (31s)
+[SWEEP] gen4 TMAP cap_max=4000 profit=2,203,462 mdd=4.03 trades=29 (32s)
+[SWEEP] gen5 TMAP cap_max=6000 profit=2,203,462 mdd=4.03 trades=29 (32s)
+[SWEEP] gen6 TMAP cap_max=10000 profit=2,126,832 mdd=4.08 trades=30 (32s)
+[SWEEP] gen7 TMAP window_end=90300 profit=723,241 mdd=3.14 trades=11 (32s)
+[SWEEP] gen8 TMAP window_end=90700 profit=3,268,019 mdd=2.16 trades=38 (32s)
+[SWEEP] gen9 TMAP window_end=91000 profit=2,498,816 mdd=5.21 trades=46 (32s)
+[SWEEP] gen10 TMAP window_end=91500 profit=2,567,173 mdd=7.29 trades=58 (32s)
+[SWEEP] gen11 TMAP window_end=92000 profit=2,579,123 mdd=8.15 trades=64 (32s)
+[SWEEP] baseline profit=2,023,670 mdd=4.98
+[SWEEP] window_end: plateau_score=5.7501 center=91000.0 width=5 positive=1.0
+[SWEEP] cap_max: plateau_score=5.2527 center=4000.0 width=6 positive=1.0
+[SWEEP] done

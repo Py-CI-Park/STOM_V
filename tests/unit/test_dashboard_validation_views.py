@@ -191,6 +191,6 @@ class TestFrontendContract:
 
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
-        # research-lab.jsx는 2026-06-11 R2/R3 확장으로 v20260611b로 재범프됐다.
-        assert "research-lab.jsx?v=20260611b" in src
+        # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611c로 재범프됐다.
+        assert "research-lab.jsx?v=20260611c" in src
         assert "app.jsx?v=20260611a" in src

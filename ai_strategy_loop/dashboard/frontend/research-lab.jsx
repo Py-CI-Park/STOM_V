@@ -171,8 +171,18 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
   const [autopsy, setAutopsy] = useState_rl(null);
   const [cf, setCf] = useState_rl(null);
   const [mc, setMc] = useState_rl(null);
+  const [tmap, setTmap] = useState_rl(null);
   const [loading, setLoading] = useState_rl(false);
   const [err, setErr] = useState_rl(null);
+
+  const fetchTmap = useCallback_rl(() => {
+    if (isDemo || !baseUrl || !runId) return;
+    fetch(baseUrl + "/tmap_map?run_id=" + encodeURIComponent(runId),
+          { signal: AbortSignal.timeout(10000) })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => setTmap(j))
+      .catch(e => setErr(String(e)));
+  }, [baseUrl, isDemo, runId]);
 
   const refresh = useCallback_rl(() => {
     if (isDemo || !baseUrl || !runId) return;
@@ -266,6 +276,7 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
                  style={{ width: 64 }} />
         </label>
         <button type="button" className="research-tab" onClick={fetchAutopsy}>부검·반사실·MC 보기</button>
+        <button type="button" className="research-tab" onClick={fetchTmap}>TMAP 지도</button>
       </div>
       {autopsy && (
         <div className="mono" style={{ fontSize: 11, whiteSpace: "pre-wrap" }}>
@@ -314,6 +325,43 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
               + ` (${mc.mc.n_days}일·${mc.mc.n_boot}회·블록 ${mc.mc.block_len}일)`}
           </div>
           <_McFanChart fan={mc.mc.fan} />
+        </div>
+      )}
+
+      {tmap && (
+        <div style={{ marginTop: 8 }}>
+          <div className="research-empty">
+            TMAP 경향성 지도 (고원 &gt; 피크 — 이웃 θ도 흑자인 영역이 진짜)
+          </div>
+          {(!tmap.count || !Object.keys(tmap.params || {}).length)
+            ? <div className="mono" style={{ fontSize: 11 }}>이 run은 TMAP 스윕이 아닙니다 (tmap_sweep run_id를 선택하세요)</div>
+            : (
+              <div>
+                <div className="mono" style={{ fontSize: 11 }}>
+                  {tmap.baseline
+                    ? `베이스라인(θ=기본값): 손익 ${Math.round(tmap.baseline.profit).toLocaleString()} · MDD ${_rlNum(tmap.baseline.mdd, 2)} · ${tmap.baseline.trades}건`
+                    : "베이스라인 없음"}
+                </div>
+                <table className="mono" style={{ fontSize: 11, width: "100%" }}>
+                  <thead><tr><th>슬롯(θ)</th><th>plateau score</th><th>고원 중심</th><th>폭</th><th>고원 평균손익</th><th>흑자율</th><th>절벽(최대 점프)</th></tr></thead>
+                  <tbody>
+                    {Object.entries(tmap.params)
+                      .sort((a, b) => (b[1].plateau_score || 0) - (a[1].plateau_score || 0))
+                      .map(([name, m]) => (
+                        <tr key={name}>
+                          <td>{name}</td>
+                          <td>{_rlNum(m.plateau_score, 3)}</td>
+                          <td>{m.plateau ? m.plateau.center_value : "—"}</td>
+                          <td>{m.plateau ? m.plateau.width : "—"}</td>
+                          <td>{m.plateau ? Math.round(m.plateau.mean_profit).toLocaleString() : "—"}</td>
+                          <td>{Math.round((m.positive_ratio || 0) * 100)}%</td>
+                          <td>{m.cliff ? `${Math.round(m.cliff.jump).toLocaleString()} @${m.cliff.between.join("→")}` : "—"}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
         </div>
       )}
     </div>

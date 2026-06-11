@@ -2002,6 +2002,78 @@ def create_app() -> FastAPI:
             out["error"] = str(exc)
         return out
 
+    @app.get("/tmap_map")
+    def tmap_map(run_id: str = "") -> Dict[str, Any]:
+        """TMAP G3(2026-06-11) — 스윕 run의 경향성 지도를 반환한다(읽기 전용·무예외).
+
+        쿼리: ?run_id=<tmap_sweep run_id>. 변수별 응답 곡선·고원(중심/폭/평균손익)·
+        절벽·plateau_score + 베이스라인. TMAP 라벨 행이 없으면 count=0(graceful).
+        피크가 아닌 고원을 고르는 것이 계약 — advisory 전용.
+        """
+        try:
+            from ai_strategy_loop.tmap.tendency import summarize_tendency  # noqa: PLC0415
+
+            return summarize_tendency(run_id)
+        except Exception as exc:  # noqa: BLE001
+            return {"run_id": run_id, "baseline": None, "params": {},
+                    "count": 0, "error": str(exc)}
+
+    @app.get("/portfolio_preview")
+    def portfolio_preview(run_id: str = "", gens: str = "",
+                          max_size: int = 4, corr_cap: float = 0.5) -> Dict[str, Any]:
+        """TMAP G5(2026-06-11) — 세대들의 일별손익 저상관 결합 미리보기(읽기 전용·무예외).
+
+        쿼리: ?run_id=&gens=<0,1,2>(비우면 status=ok 전 세대)&max_size=&corr_cap=.
+        일별손익 합산 근사(동시보유 자본 제약 무시 — 낙관 편향, note에 명시) —
+        채택 조합은 실백테 확인이 계약. advisory 전용.
+        """
+        import sqlite3  # noqa: PLC0415
+
+        from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+        out: Dict[str, Any] = {"run_id": run_id, "selection": [], "steps": [],
+                               "combined": None, "status": "unavailable"}
+        if not run_id:
+            return out
+        try:
+            con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+            con.row_factory = sqlite3.Row
+            try:
+                rows = con.execute(
+                    "SELECT gen_no, status, strategy_gist, buy_name, csv_path"
+                    " FROM generations WHERE run_id=? ORDER BY gen_no",
+                    (run_id,),
+                ).fetchall()
+            finally:
+                con.close()
+            wanted = {int(g) for g in gens.split(",") if g.strip()} if gens.strip() else None
+            from ai_strategy_loop.fitness.overfit_stats import daily_pnl_series  # noqa: PLC0415
+            from ai_strategy_loop.tmap.portfolio import greedy_portfolio  # noqa: PLC0415
+
+            series = {}
+            for r in rows:
+                d = dict(r)
+                if d.get("status") != "ok" or not d.get("csv_path"):
+                    continue
+                if wanted is not None and int(d["gen_no"]) not in wanted:
+                    continue
+                csv_path = d["csv_path"]
+                abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+                s = daily_pnl_series(abs_csv)
+                if s:
+                    label = d.get("strategy_gist") or d.get("buy_name") or f"gen{d['gen_no']}"
+                    series[f"gen{d['gen_no']}:{label}"] = s
+            if len(series) < 1:
+                out["status"] = "no_series"
+                return out
+            result = greedy_portfolio(series, max_size=max_size, corr_cap=corr_cap)
+            out.update(result)
+            out["status"] = "ok"
+        except Exception as exc:  # noqa: BLE001
+            out["status"] = "error"
+            out["error"] = str(exc)
+        return out
+
     @app.get("/runs/compare")
     def runs_compare(ids: str = "") -> Dict[str, Any]:
         """지정한 run id들을 지표/우승전략으로 비교한다(loop_runs.db 직접).

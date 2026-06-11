@@ -135,4 +135,5 @@ class TestFrontendContract:
 
     def test_index_cache_bumped(self) -> None:
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260611b" in src
+        # 2026-06-11 TMAP 지도 추가로 v20260611c로 재범프됐다.
+        assert "research-lab.jsx?v=20260611c" in src
