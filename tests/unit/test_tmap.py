@@ -39,7 +39,11 @@ from ai_strategy_loop.tmap.tendency import (  # noqa: E402
     plateau_metrics,
     summarize_tendency,
 )
-from ai_strategy_loop.scripts.tmap_walkforward import parse_windows, select_theta  # noqa: E402
+from ai_strategy_loop.scripts.tmap_walkforward import (  # noqa: E402
+    apply_washout,
+    parse_windows,
+    select_theta,
+)
 
 
 # =====================================================================
@@ -215,6 +219,21 @@ class TestWalkforward:
         theta, basis = select_theta({"baseline": {"profit": 1.0}, "params": {}})
         assert theta is None
         assert "fallback" in basis["reason"]
+
+    def test_apply_washout_pushes_adjacent_eval_start(self) -> None:
+        """C3/N7 — fit_end 인접 eval_start는 (days+1)일 뒤로, 이미 늦으면 무변경."""
+        w = parse_windows("20230101-20231231:20240101-20240630")
+        out = apply_washout(w, days=2)
+        assert out[0]["eval_start"] == 20240103  # 12/31 + 3일.
+        assert out[0]["eval_end"] == 20240630  # 종료는 불변.
+        late = parse_windows("20230101-20231231:20240201-20240630")
+        assert apply_washout(late, days=2)[0]["eval_start"] == 20240201  # 무변경.
+        assert apply_washout(w, days=0) == w  # 기본값 — 기존 동작 보존.
+
+    def test_apply_washout_crosses_month_boundary(self) -> None:
+        w = parse_windows("20220101-20220630:20220701-20221231")
+        out = apply_washout(w, days=3)
+        assert out[0]["eval_start"] == 20220704
 
     def test_select_theta_rejects_less_bad_loss_on_negative_baseline(self) -> None:
         """N9 회귀 — 적자 베이스라인에서 '덜 나쁜' 적자 고원을 알파로 오인 금지.

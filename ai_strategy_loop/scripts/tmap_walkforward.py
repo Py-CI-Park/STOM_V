@@ -82,6 +82,27 @@ def select_theta(summary: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], Dic
     )
 
 
+def apply_washout(windows: List[Dict[str, int]], days: int) -> List[Dict[str, int]]:
+    """N7(C3, 2026-06-11) — fit_end와 eval_start 사이 달력일 갭을 강제한다.
+
+    근거: 전일 참조 함수(전일동시간비 등)는 데이터 로드 시 전일을 사전 fetch
+    하므로(감사 §A.3) 인접 창은 데이터 수준에서 1일 겹친다. eval_start를
+    최소 fit_end + (days+1)일로 민다(원래 시작이 이미 더 늦으면 무변경).
+    달력일 기준 — 주말 인접 케이스까지 덮으려면 days >= 2 권장(거래일 캘린더
+    기반 정밀화는 후속). days <= 0 이면 무변경(기존 동작 보존).
+    """
+    if days <= 0:
+        return windows
+    from datetime import datetime, timedelta  # noqa: PLC0415
+
+    out = []
+    for w in windows:
+        fit_end = datetime.strptime(str(w["fit_end"]), "%Y%m%d")
+        min_start = int((fit_end + timedelta(days=days + 1)).strftime("%Y%m%d"))
+        out.append({**w, "eval_start": max(int(w["eval_start"]), min_start)})
+    return out
+
+
 def _run(cmd: List[str]) -> int:
     print("[WF] $", " ".join(cmd), flush=True)
     return subprocess.call(cmd, cwd=str(REPO_ROOT))
@@ -103,6 +124,8 @@ def main() -> int:
     ap.add_argument("--windows", required=True)
     ap.add_argument("--params", default="")
     ap.add_argument("--out", default="")
+    ap.add_argument("--washout-days", type=int, default=0,
+                    help="fit_end↔eval_start 최소 달력일 갭(N7 전일참조 누수 완화, 권장 2)")
     args = ap.parse_args()
 
     import ai_strategy_loop.bootstrap  # noqa: F401,PLC0415
@@ -111,11 +134,12 @@ def main() -> int:
 
     template = load_template(args.template)
     base_config = json.loads(Path(args.config_json).read_text(encoding="utf-8"))
-    windows = parse_windows(args.windows)
+    windows = apply_washout(parse_windows(args.windows), args.washout_days)
     workdir = Path(".omo/evidence/tmap-walkforward") / args.run_prefix
     workdir.mkdir(parents=True, exist_ok=True)
 
     aggregate: Dict[str, Any] = {"template": template.name, "windows": [],
+                                 "washout_days": args.washout_days,
                                  "policy_total": 0.0, "baseline_total": 0.0}
     for i, w in enumerate(windows):
         tag = f"{args.run_prefix}_w{i}"
