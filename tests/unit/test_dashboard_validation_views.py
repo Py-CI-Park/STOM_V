@@ -329,9 +329,12 @@ class TestFrontendContract:
     def test_app_jsx_shows_run_label(self):
         src = (FRONTEND / "app.jsx").read_text(encoding="utf-8")
         assert 'r.label ? " · " + r.label : ""' in src
+        # Phase3-lite(2026-06-12) — 공통 네비(운영|연구|결정) 계약.
+        assert '/ui/lab.html' in src
+        assert '/ui/verdict.html' in src
 
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
         assert "research-lab.jsx?v=20260611l" in src
-        assert "app.jsx?v=20260611a" in src
+        assert "app.jsx?v=20260612a" in src
