@@ -143,3 +143,39 @@ def test_effective_count_negative_corr_clamped_and_graceful() -> None:
     assert out["mean_pairwise_correlation"] == 0.0  # 음수 클램프(보수적).
     assert out["effective_independent_candidates"] == 3.0
     assert effective_independent_count({"labels": ["x"], "matrix": [[1.0]]}) is None
+
+
+# ---------------------------------------------------------------------------
+# P3 (2026-06-11) — 우상향 품질 지표 (사람의 '그림' 직관 정량화)
+# ---------------------------------------------------------------------------
+
+def test_curve_shape_steady_uptrend() -> None:
+    from ai_strategy_loop.fitness.overfit_stats import curve_shape_metrics
+
+    daily = {f"202301{i:02d}": 100.0 for i in range(1, 31)}
+    out = curve_shape_metrics(daily)
+    assert out["uptrend_r2"] > 0.99
+    assert out["max_stagnation_days"] == 0
+    assert out["monthly_positive_ratio"] == 1.0
+    assert out["mdd_amount"] == 0.0
+
+
+def test_curve_shape_lump_then_decay_is_distinguished() -> None:
+    """같은 '흑자 곡선'이라도 한 달 몰아 벌고 정체하는 곡선은 지표가 갈라져야 한다."""
+    from ai_strategy_loop.fitness.overfit_stats import curve_shape_metrics
+
+    steady = curve_shape_metrics({f"202301{i:02d}": 100.0 for i in range(1, 31)})
+    lump = dict({f"202301{i:02d}": 1000.0 for i in range(1, 6)})
+    lump.update({f"202302{i:02d}": -10.0 for i in range(1, 26)})
+    out = curve_shape_metrics(lump)
+    assert out["max_stagnation_days"] == 25  # 신고점 25거래일 미갱신.
+    assert out["monthly_positive_ratio"] == 0.5  # 2월은 적자 월.
+    assert out["uptrend_r2"] < steady["uptrend_r2"]
+    assert out["mdd_amount"] == 250.0  # -10 × 25일.
+
+
+def test_curve_shape_graceful_on_short_or_empty() -> None:
+    from ai_strategy_loop.fitness.overfit_stats import curve_shape_metrics
+
+    assert curve_shape_metrics({}) is None
+    assert curve_shape_metrics({f"2023010{i}": 1.0 for i in range(1, 6)}) is None

@@ -171,20 +171,43 @@ def summarize_tendency(run_id: str, db_path: Optional[str] = None) -> Dict[str, 
         }
     base_profit = abs(out["baseline"]["profit"]) if out["baseline"] else 1.0
 
+    if base is not None and out["baseline"] is not None:
+        out["baseline"]["shape"] = _shape_for_csv(base.get("csv_path"))  # P3.
+
     params = sorted({r["param"] for r in rows if r["param"] != "__default__"})
     for name in params:
         curve = _curve_for(rows, name)
         metrics = plateau_metrics(curve)
         plateau = metrics.get("plateau")
         score = 0.0
+        center_shape = None
         if plateau:
             score = (
                 metrics["positive_ratio"] * plateau["width"]
                 * (plateau["mean_profit"] / max(base_profit, 1.0))
             )
+            center_row = next(
+                (p for p in curve if p.get("value") == plateau.get("center_value")), None
+            )
+            if center_row:  # P3 — θ* 근거 병기용 고원 중심점 곡선 형태(advisory).
+                center_shape = _shape_for_csv(center_row.get("csv_path"))
         out["params"][name] = {
             "curve": curve,
             **metrics,
             "plateau_score": round(score, 4),
+            "center_shape": center_shape,
         }
     return out
+
+
+def _shape_for_csv(csv_path: Optional[str]) -> Optional[Dict[str, Any]]:
+    """P3 — CSV의 일별 손익으로 우상향 품질 지표를 계산한다(실패는 None)."""
+    if not csv_path:
+        return None
+    from ai_strategy_loop.fitness.overfit_stats import (  # noqa: PLC0415
+        curve_shape_metrics,
+        daily_pnl_series,
+    )
+
+    series = daily_pnl_series(csv_path)
+    return curve_shape_metrics(series) if series else None

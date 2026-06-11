@@ -365,3 +365,54 @@ def effective_independent_count(corr: Dict[str, object]) -> Optional[Dict[str, o
         return out
     except Exception:  # noqa: BLE001 - advisory.
         return None
+
+
+# ---------------------------------------------------------------------------
+# P3 (2026-06-11) — 누적 손익곡선의 '우상향 품질' 지표
+# ---------------------------------------------------------------------------
+
+def curve_shape_metrics(daily: Dict[str, float]) -> Optional[Dict[str, object]]:
+    """사람이 우상향 '그림'으로 시드를 고르던 직관의 정량화 (advisory 전용).
+
+    같은 총수익이라도 "한 달에 다 벌고 멈춘 곡선"과 "꾸준히 오르는 곡선"을
+    구분한다. 선택 판정에는 쓰지 않는다 — 매끈한 과거 곡선은 곡선적합으로
+    만들기 쉽기 때문(검토 문서 §3 경고). 근거 병기·동순위 참고용.
+
+    - uptrend_r2: 누적곡선 vs 거래일 인덱스 선형 R²(기울기 음수면 0).
+    - max_stagnation_days: 신고점 미갱신 최장 거래일 수("오래 멈추지 않는다").
+    - monthly_positive_ratio: 흑자 월 비율("특정 달 운빨이 아니다").
+    - mdd_amount: 일별 누적 기준 최대 낙폭 금액("깊게 꺼지지 않는다").
+    입력 10거래일 미만이면 None.
+    """
+    if not daily or len(daily) < 10:
+        return None
+    try:
+        days = sorted(daily)
+        vals = np.asarray([float(daily[d]) for d in days], dtype=float)
+        cum = np.cumsum(vals)
+        if float(np.std(cum)) < 1e-9:
+            r2 = 0.0
+        else:
+            x = np.arange(len(cum), dtype=float)
+            slope = float(np.polyfit(x, cum, 1)[0])
+            corr = float(np.corrcoef(x, cum)[0, 1])
+            r2 = corr ** 2 if slope > 0 else 0.0
+        peak = np.maximum.accumulate(cum)
+        stagnation, current = 0, 0
+        for c, p in zip(cum, peak):
+            current = current + 1 if c < p else 0
+            stagnation = max(stagnation, current)
+        monthly: Dict[str, float] = {}
+        for d, v in zip(days, vals):
+            key = str(d)[:6]
+            monthly[key] = monthly.get(key, 0.0) + float(v)
+        positive_months = sum(1 for v in monthly.values() if v > 0)
+        return {
+            "uptrend_r2": round(float(r2), 4),
+            "max_stagnation_days": int(stagnation),
+            "monthly_positive_ratio": round(positive_months / max(len(monthly), 1), 4),
+            "n_months": len(monthly),
+            "mdd_amount": round(_max_drawdown_amount(cum), 2),
+        }
+    except Exception:  # noqa: BLE001 - advisory.
+        return None
