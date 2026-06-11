@@ -26,7 +26,7 @@ from ai_strategy_loop.controller.loop import (
     _warm_to_outcome,
     _score_outcome,
 )
-from ai_strategy_loop.controller.state import LoopState
+from ai_strategy_loop.controller.state import LoopState, publish_batch_state
 from cli.warm_session import WarmBacktestSession
 
 
@@ -63,6 +63,9 @@ def main() -> int:
         for i, pair in enumerate(pairs):
             label = pair.get("label", f"pair{i}")
             buy, sell = pair["buy"], pair["sell"]
+            # E3(2026-06-11) — 배치도 라이브 상태 발행(대시보드 상단 표시, 실패 흡수).
+            publish_batch_state(rid, i, len(pairs), label=label,
+                                message=f"배치 {i + 1}/{len(pairs)} 평가 중: {label}")
             t1 = time.time()
             try:
                 outcome = _warm_to_outcome(

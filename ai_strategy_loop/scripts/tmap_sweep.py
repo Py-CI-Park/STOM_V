@@ -26,7 +26,7 @@ from ai_strategy_loop.controller.loop import (
     _warm_to_outcome,
     _score_outcome,
 )
-from ai_strategy_loop.controller.state import LoopState
+from ai_strategy_loop.controller.state import LoopState, publish_batch_state
 from ai_strategy_loop.tmap.resume import resume_done_map, resume_row
 from ai_strategy_loop.tmap.template import (
     coordinate_points,
@@ -136,6 +136,11 @@ def main() -> int:
 
     try:
         for gen_no, point, buy_name, sell_name, entry in todo:
+            # E3 — 라이브 상태 발행: 대시보드 상단 라이브 영역에 배치 진행 표시.
+            publish_batch_state(
+                rid, gen_no, len(prepared), label=point["label"],
+                message=f"스윕 {gen_no + 1}/{len(prepared)} 평가 중: {point['label']}",
+            )
             t1 = time.time()
             try:
                 outcome = _warm_to_outcome(
@@ -191,6 +196,8 @@ def main() -> int:
         sess.close()
 
     st.finish_run(rid, status="complete")
+    publish_batch_state(rid, len(prepared), len(prepared), status="idle",
+                        message=f"스윕 완료: {rid}")  # E3 — 종료 표시.
     _write_manifest_and_summary(args, manifest, rid)
     return 0
 

@@ -667,6 +667,47 @@ def publish_loop_state(state: Any, path: Optional[str] = None) -> None:
         pass
 
 
+def publish_batch_state(
+    run_id: str,
+    gen_no: int,
+    total: int,
+    *,
+    label: str = "",
+    message: str = "",
+    status: str = "running",
+    path: Optional[str] = None,
+) -> None:
+    """E3(2026-06-11) — 배치(스윕/일괄평가)도 라이브 상태를 발행한다.
+
+    배치는 일반 프로세스지만 current_state.json을 쓰지 않아 대시보드 상단
+    라이브 영역에 안 보였다("gen_02 박제" 실사고). 이 헬퍼가 contract.LoopState
+    의 부분집합 dict를 발행하면(미지정 필드는 계약 기본값) 루프와 동일하게
+    상단에 표시된다. 어떤 실패도 배치를 막지 않는다(가시화 보조 — 전부 흡수).
+    """
+    try:
+        from ai_strategy_loop.controller import contract as _C  # noqa: PLC0415
+
+        now = _now()
+        publish_loop_state({
+            "contract_version": _C.CONTRACT_VERSION,
+            "run_id": run_id,
+            "status": status,
+            "current_gen": int(gen_no),
+            "max_generations": int(total),
+            "provider": "batch",
+            "latest": {
+                "gen_no": int(gen_no),
+                "status": status,
+                "strategy_gist": label,
+                "message": message,
+                "gen_started_at": now,
+            },
+            "updated_at": now,
+        }, path=path)
+    except Exception:  # noqa: BLE001 - 라이브 발행은 보조 — 배치를 절대 막지 않는다.
+        pass
+
+
 def read_current_state(path: Optional[str] = None) -> Optional[Dict[str, Any]]:
     """current_state.json을 dict로 읽는다. 없거나 손상이면 None.
 

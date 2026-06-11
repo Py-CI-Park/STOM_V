@@ -57,6 +57,33 @@ class TestPipelineCheckpoint:
         assert build_stage_command("oos2026", **kw) is None  # oos2022가 함께 처리.
 
 
+class TestBatchLiveState:
+    """E3(2026-06-11) — 배치 라이브 상태 발행: 계약 호환·실패 흡수."""
+
+    def test_publish_and_read_roundtrip_contract_compatible(self, tmp_path) -> None:
+        from ai_strategy_loop.controller import contract as C
+        from ai_strategy_loop.controller.state import (
+            publish_batch_state,
+            read_current_state,
+        )
+
+        p = str(tmp_path / "current_state.json")
+        publish_batch_state("runB", 3, 10, label="TMAP x=1",
+                            message="스윕 4/10 평가 중", path=p)
+        d = read_current_state(p)
+        assert d["run_id"] == "runB"
+        assert d["current_gen"] == 3 and d["max_generations"] == 10
+        assert d["latest"]["strategy_gist"] == "TMAP x=1"
+        assert d["status"] == "running"
+        C.LoopState(**d)  # 계약 검증 통과 — 상단 라이브 영역이 그대로 소비 가능.
+
+    def test_publish_failure_is_absorbed(self) -> None:
+        from ai_strategy_loop.controller.state import publish_batch_state
+
+        # 쓸 수 없는 경로여도 예외가 새어나오면 안 된다(배치를 막지 않는 계약).
+        publish_batch_state("runB", 0, 1, path="Z:\\no_such_dir\\x\\state.json")
+
+
 class TestFillFragility:
     @staticmethod
     def _csv(path: Path, rows) -> str:
