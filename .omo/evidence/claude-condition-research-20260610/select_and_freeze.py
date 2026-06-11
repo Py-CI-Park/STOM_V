@@ -181,6 +181,7 @@ def main() -> int:
 
     candidates, labels = [], {}
     seed_profile = None
+    seed_csv = ""  # M1 — 거래 중복도 비교용 시드 per-trade CSV.
     offset = 0  # 복수 run 합산 시 gen_no 충돌 방지용 오프셋
     for r in rows:
         d = dict(r)
@@ -201,6 +202,7 @@ def main() -> int:
                 profit=float(d["profit"]),
                 source=f"BASE_SEED gen{d['gen_no']} of {run_label}",
             )
+            seed_csv = d.get("csv_path") or ""
         # 베이스라인은 발굴 후보가 아니므로 출처 기준 제외(사전선언).
         if gist.startswith("BASE_"):
             continue
@@ -234,6 +236,18 @@ def main() -> int:
     (EVID / "p5-overfit-advisory.json").write_text(
         json.dumps(overfit, ensure_ascii=False, indent=2), encoding="utf-8"
     )
+
+    # ── M1(2026-06-11): 시드↔선택 후보 거래 중복도 — V6(대체 vs 보완) 입력 ──
+    overlap = None
+    if (primary.selected_candidate is not None and seed_csv
+            and primary.selected_candidate.csv_path):
+        from ai_strategy_loop.fitness.trade_overlap import trade_overlap  # noqa: PLC0415
+
+        overlap = trade_overlap(seed_csv, primary.selected_candidate.csv_path)
+        if overlap:
+            (EVID / "p5-trade-overlap.json").write_text(
+                json.dumps(overlap, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
 
     print(f"selector={primary.selector_version} selected={primary.selected} "
           f"mdd_limit={primary.mdd_limit:.2f} "
