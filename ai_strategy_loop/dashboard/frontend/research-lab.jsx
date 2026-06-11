@@ -173,8 +173,20 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
   const [mc, setMc] = useState_rl(null);
   const [tmap, setTmap] = useState_rl(null);
   const [compareRun, setCompareRun] = useState_rl("");  /* M12 — 지도 비교 run. */
+  const [ops, setOps] = useState_rl(null);  /* 운영 현황 — 10초 자동 갱신. */
   const [loading, setLoading] = useState_rl(false);
   const [err, setErr] = useState_rl(null);
+
+  useEffect_rl(() => {
+    if (isDemo || !baseUrl) return undefined;
+    const pull = () => fetch(baseUrl + "/ops_status", { signal: AbortSignal.timeout(8000) })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => setOps(j))
+      .catch(() => {});
+    pull();
+    const timer = setInterval(pull, 10000);
+    return () => clearInterval(timer);
+  }, [baseUrl, isDemo]);
 
   const fetchTmap = useCallback_rl(() => {
     if (isDemo || !baseUrl || !runId) return;
@@ -237,6 +249,47 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
         <span className="research-empty">diagnostic_only · 동결 아티팩트 아님</span>
       </div>
       {err && <_ResearchEmptyState message={"insufficient response: " + err} />}
+
+      {ops && (
+        <div style={{ marginTop: 6 }}>
+          <div className="research-empty">
+            {"운영 현황 (10초 자동 갱신)"
+              + (ops.walkforward
+                ? ` · WF ${ops.walkforward.path}: 정책 ${Math.round(ops.walkforward.policy_total || 0).toLocaleString()} vs 시드 ${Math.round(ops.walkforward.baseline_total || 0).toLocaleString()} (${ops.walkforward.windows_done}창 완료)`
+                : "")}
+          </div>
+          {(ops.active || []).length === 0
+            ? <div className="mono" style={{ fontSize: 11 }}>실행 중 run 없음</div>
+            : (
+              <table className="mono" style={{ fontSize: 11, width: "100%" }}>
+                <thead><tr><th>실행 중 run</th><th>세대</th><th>마지막 포인트</th><th>무진행(초)</th><th>상태</th></tr></thead>
+                <tbody>
+                  {ops.active.map(a => (
+                    <tr key={a.run_id}>
+                      <td>{a.run_id}</td>
+                      <td>{a.gens}</td>
+                      <td>{a.last_label || "—"}</td>
+                      <td>{a.seconds_since_last_gen}</td>
+                      <td>{a.health === "active" ? "✅ 진행 중" : "⚠️ 정체 의심"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          {(ops.recent || []).length > 0 && (
+            <div className="mono" style={{ fontSize: 11 }}>
+              {"최근 완료: " + ops.recent.slice(0, 5).map(r =>
+                `${r.run_id}(${r.gens}세대${r.best_profit != null ? "·최고 " + Math.round(r.best_profit).toLocaleString() : ""})`
+              ).join("  ·  ")}
+            </div>
+          )}
+          {(ops.evidence || []).length > 0 && (
+            <div className="research-empty">
+              {"최신 증거: " + ops.evidence.map(e => `${e.name}(${e.age_min}분 전)`).join(" · ")}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="research-empty" style={{ marginTop: 6 }}>연도 분해 (per-trade CSV 집계)</div>
       <table className="mono" style={{ fontSize: 11, width: "100%" }}>

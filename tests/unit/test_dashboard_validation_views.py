@@ -173,6 +173,39 @@ class TestRunLabels:
         assert result["runs"] == []
 
 
+class TestOpsStatus:
+    """2026-06-11 — 운영 현황 라우트·run 정렬(최신 우선·running 최상단)."""
+
+    def test_running_run_listed_active_with_health(self, seeded_validation_db):
+        from ai_strategy_loop.dashboard.app import _ops_status_payload
+
+        out = _ops_status_payload()
+        active = {a["run_id"]: a for a in out["active"]}
+        assert "runV" in active  # start_run 후 미종료 → running.
+        assert active["runV"]["health"] == "active"  # 방금 세대 기록 — 무진행 짧음.
+        assert active["runV"]["gens"] == 3
+        assert "evidence" in out and "walkforward" in out  # 부분 결과 허용 키.
+
+    def test_runs_payload_recent_and_running_first(self, seeded_validation_db):
+        import sqlite3
+
+        from ai_strategy_loop.dashboard.app import _runs_payload
+
+        db = seeded_validation_db["db"]
+        st = LoopState(db_path=str(db), snapshot_dir=str(Path(db).parent / "s2"))
+        st.start_run(LoopConfig(), run_id="runOld")
+        st.finish_run("runOld", status="complete")
+        st.close()
+        con = sqlite3.connect(str(db))
+        con.execute("UPDATE runs SET started_at = started_at - 86400 WHERE run_id='runOld'")
+        con.commit()
+        con.close()
+
+        ids = [r["run_id"] for r in _runs_payload(None)["runs"]]
+        assert ids[0] == "runV"  # running 최상단 + 최신 우선.
+        assert ids.index("runV") < ids.index("runOld")
+
+
 class TestFrontendContract:
     def test_research_lab_has_validation_tab_and_panel(self):
         src = (FRONTEND / "research-lab.jsx").read_text(encoding="utf-8")
@@ -184,6 +217,10 @@ class TestFrontendContract:
         #   URL 리터럴 대신 라우트 경로 존재를 계약으로 검증한다.
         assert '"/autopsy"' in src
         assert 'tab === "validation"' in src
+        # 2026-06-11 — Ops 패널(운영 현황 10초 폴링) 계약.
+        assert "/ops_status" in src
+        assert "운영 현황" in src
+        assert "정체 의심" in src
 
     def test_app_jsx_shows_run_label(self):
         src = (FRONTEND / "app.jsx").read_text(encoding="utf-8")
@@ -192,5 +229,5 @@ class TestFrontendContract:
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
-        assert "research-lab.jsx?v=20260611d" in src
+        assert "research-lab.jsx?v=20260611e" in src
         assert "app.jsx?v=20260611a" in src

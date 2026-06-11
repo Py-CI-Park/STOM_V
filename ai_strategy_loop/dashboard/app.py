@@ -234,6 +234,15 @@ def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
         st = LoopState()
         result = compare_runs(st, run_ids)
         _attach_run_labels(result)
+        # 2026-06-11 — 최신 우선 + running 최상단. 종전 오름차순은 당일 작업
+        #   13개가 132개 목록 맨 뒤에 묻혀 "운영 중인 게 안 보이는" 문제를 냈다.
+        if isinstance(result.get("runs"), list):
+            result["runs"].sort(
+                key=lambda r: (
+                    0 if r.get("status") == "running" else 1,
+                    -(r.get("started_at") or 0.0),
+                )
+            )
         return result
     except Exception as exc:  # noqa: BLE001 - run 비교 조회 실패는 빈 목록으로.
         return {"runs": [], "count": 0, "error": str(exc)}
@@ -1791,6 +1800,98 @@ def _variable_correlation_payload(
     return {"runs": target_runs, "gen_no": gen_no, **report}
 
 
+def _ops_status_payload(window_hours: int = 24) -> Dict[str, Any]:
+    """운영 현황(2026-06-11) — '지금 무엇이 돌고 있고 잘 돌고 있는가' 한 화면.
+
+    - active: status=running run + 마지막 세대 이후 경과초 → 활성/정체 판정
+      (한 점 평가 ~30~340초 실측 — 10분 무진행이면 stalled 의심 표시).
+    - recent: 최근 window_hours 내 완료 run + 최고 손익/세대 수.
+    - walkforward: 최신 aggregate.json의 정책-대-베이스라인 누적.
+    - evidence: 증거 디렉토리 최신 파일 5종(신선도 분).
+    읽기 전용·무예외 — 어떤 실패도 부분 결과로 흡수한다.
+    """
+    import glob as _glob  # noqa: PLC0415
+    import sqlite3  # noqa: PLC0415
+    import time as _time  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+    now = _time.time()
+    out: Dict[str, Any] = {"now": now, "active": [], "recent": [],
+                           "walkforward": None, "evidence": []}
+    try:
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        try:
+            rows = con.execute(
+                "SELECT r.run_id, r.status, r.started_at, r.finished_at,"
+                " (SELECT COUNT(*) FROM generations g WHERE g.run_id=r.run_id) AS gens,"
+                " (SELECT MAX(created_at) FROM generations g WHERE g.run_id=r.run_id)"
+                "   AS last_gen_at,"
+                " (SELECT strategy_gist FROM generations g WHERE g.run_id=r.run_id"
+                "   ORDER BY gen_no DESC LIMIT 1) AS last_label,"
+                " (SELECT MAX(profit) FROM generations g WHERE g.run_id=r.run_id"
+                "   AND g.status='ok') AS best_profit"
+                " FROM runs r WHERE r.started_at > ? ORDER BY r.started_at DESC",
+                (now - window_hours * 3600,),
+            ).fetchall()
+        finally:
+            con.close()
+        for r in rows:
+            d = {
+                "run_id": r["run_id"], "status": r["status"],
+                "gens": int(r["gens"] or 0),
+                "last_label": r["last_label"] or "",
+                "best_profit": float(r["best_profit"]) if r["best_profit"] is not None else None,
+                "elapsed_min": round((now - (r["started_at"] or now)) / 60, 1),
+            }
+            if r["status"] == "running":
+                idle = now - float(r["last_gen_at"] or r["started_at"] or now)
+                d["seconds_since_last_gen"] = round(idle)
+                d["health"] = "active" if idle < 600 else "stalled?"
+                out["active"].append(d)
+            else:
+                out["recent"].append(d)
+    except Exception as exc:  # noqa: BLE001 - 부분 결과 허용.
+        out["error_runs"] = str(exc)
+
+    try:  # walk-forward 최신 집계(있으면).
+        aggs = sorted(
+            _glob.glob(os.path.join(REPO_ROOT, ".omo/evidence/tmap-walkforward",
+                                    "*", "aggregate.json")),
+            key=os.path.getmtime, reverse=True,
+        )
+        if aggs:
+            with open(aggs[0], encoding="utf-8") as fh:
+                agg = json.load(fh)
+            out["walkforward"] = {
+                "path": os.path.basename(os.path.dirname(aggs[0])),
+                "windows_done": sum(1 for w in agg.get("windows", [])
+                                    if w.get("status") == "ok"),
+                "policy_total": agg.get("policy_total"),
+                "baseline_total": agg.get("baseline_total"),
+                "age_min": round((now - os.path.getmtime(aggs[0])) / 60, 1),
+            }
+    except Exception:  # noqa: BLE001
+        pass
+
+    try:  # 증거 신선도 — 두 증거 디렉토리의 최신 파일 5종.
+        files = []
+        for pattern in (".omo/evidence/tmap-walkforward/*",
+                        ".omo/evidence/claude-condition-research-20260610/*"):
+            files += [p for p in _glob.glob(os.path.join(REPO_ROOT, pattern))
+                      if os.path.isfile(p)]
+        files.sort(key=os.path.getmtime, reverse=True)
+        out["evidence"] = [
+            {"name": os.path.basename(p),
+             "age_min": round((now - os.path.getmtime(p)) / 60, 1)}
+            for p in files[:5]
+        ]
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
 def _entry_time_buckets(csv_path: str) -> set:
     """N6(2026-06-11) — per-trade CSV의 진입 시각 30분 버킷(HHMM) 집합.
 
@@ -1899,8 +2000,18 @@ def create_app() -> FastAPI:
 
         lineage.compare_runs(run_ids=None)로 전 run을 요약한다. DB가 없거나
         조회 실패면 빈 목록을 돌려 대시보드가 깨지지 않게 한다(무예외 계약).
+        2026-06-11부터 최신 우선 정렬(running 최상단) — _runs_payload 참조.
         """
         return _runs_payload(None)
+
+    @app.get("/ops_status")
+    def ops_status(window_hours: int = 24) -> Dict[str, Any]:
+        """운영 현황(2026-06-11) — 실행 중 run 활성/정체·최근 완료·WF 집계·증거 신선도.
+
+        쿼리: ?window_hours=24. '지금 무엇이 돌고 있고 잘 돌고 있는가'를 한
+        호출로 — Validation 탭 Ops 패널이 10초 폴링한다. 읽기 전용·무예외.
+        """
+        return _ops_status_payload(window_hours)
 
     @app.get("/run_state")
     def run_state(run_id: str = "") -> Dict[str, Any]:

@@ -439,4 +439,4 @@ class TestFrontendContract:
         assert "TMAP 지도" in src
         assert "plateau score" in src
         index = (frontend / "index.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260611d" in index
+        assert "research-lab.jsx?v=20260611e" in index
