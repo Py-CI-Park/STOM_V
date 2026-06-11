@@ -190,6 +190,7 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
       .catch(e => setErr(String(e)));
   }, [baseUrl, gridRun, isDemo, runId]);
 
+  const [gridMetric, setGridMetric] = useState_rl("profit");  /* E5 — 히트맵 색 기준. */
   const [niche, setNiche] = useState_rl(null);  /* D3 — 니치 지도 비교. */
   const fetchNiche = useCallback_rl(() => {
     if (isDemo || !baseUrl) return;
@@ -244,6 +245,7 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
 
   useEffect_rl(() => { refresh(); }, [refresh]);
 
+  const [equity, setEquity] = useState_rl(null);  /* E2/D4 — 누적 수익곡선. */
   const fetchAutopsy = useCallback_rl(() => {
     if (isDemo || !baseUrl || !runId) return;
     const q = "?run_id=" + encodeURIComponent(runId) + "&gen_no=" + encodeURIComponent(autopsyGen);
@@ -254,8 +256,10 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
         .then(r => r.ok ? r.json() : null),
       fetch(baseUrl + "/freeze_mc" + q, { signal: AbortSignal.timeout(15000) })
         .then(r => r.ok ? r.json() : null),
+      fetch(baseUrl + "/equity_curve" + q, { signal: AbortSignal.timeout(10000) })
+        .then(r => r.ok ? r.json() : null),
     ])
-      .then(([a, c, m]) => { setAutopsy(a); setCf(c); setMc(m); })
+      .then(([a, c, m, eq]) => { setAutopsy(a); setCf(c); setMc(m); setEquity(eq); })
       .catch(e => setErr(String(e)));
   }, [autopsyGen, baseUrl, isDemo, runId]);
 
@@ -477,6 +481,16 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
         </div>
       )}
 
+      {equity && equity.status === "ok" && (
+        <div style={{ marginTop: 8 }}>
+          <div className="research-empty">
+            {`누적 수익곡선 — gen ${equity.gen_no}${equity.label ? " · " + equity.label : ""}`
+              + ` · ${equity.n_days}거래일 · 총 ${Math.round(equity.total).toLocaleString()}`}
+          </div>
+          <_EquityChart cum={equity.cum} />
+        </div>
+      )}
+
       {tmap && (
         <div style={{ marginTop: 8 }}>
           <div className="research-empty">
@@ -527,11 +541,17 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
 
       {grid && grid.count > 0 && (
         <div style={{ marginTop: 8 }}>
-          <div className="research-empty">
-            {`2-D 격자 히트맵 (${grid.param_a} × ${grid.param_b}) — ★=mesa(4-이웃 전부 흑자) · 흑자율 ${Math.round((grid.positive_ratio || 0) * 100)}%`
-              + (grid.baseline ? ` · 베이스라인 ${Math.round(grid.baseline.profit).toLocaleString()}` : "")}
+          <div className="research-empty" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span>
+              {`2-D 격자 히트맵 (${grid.param_a} × ${grid.param_b}) — ★=mesa(4-이웃 전부 흑자) · 흑자율 ${Math.round((grid.positive_ratio || 0) * 100)}%`
+                + (grid.baseline ? ` · 베이스라인 ${Math.round(grid.baseline.profit).toLocaleString()}` : "")}
+            </span>
+            <button type="button" className="research-tab"
+                    onClick={() => setGridMetric(gridMetric === "profit" ? "mdd" : "profit")}>
+              색: {gridMetric === "profit" ? "수익" : "MDD"}
+            </button>
           </div>
-          <_GridHeatmap grid={grid} />
+          <_GridHeatmap grid={grid} metric={gridMetric} />
         </div>
       )}
       {grid && grid.count === 0 && (
@@ -541,11 +561,12 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
   );
 }
 
-/* C6(2026-06-11) — 2-D 격자 히트맵: 수익 부호·크기를 색으로, mesa를 ★로. */
-function _GridHeatmap({ grid }) {
+/* C6(2026-06-11) — 2-D 격자 히트맵: 수익(부호·크기) 또는 MDD(E5 토글)를 색으로, mesa를 ★로. */
+function _GridHeatmap({ grid, metric }) {
+  const useMdd = metric === "mdd";
   const cells = {};
   (grid.cells || []).forEach(c => { cells[c.a + "|" + c.b] = c; });
-  const maxAbs = Math.max(1, ...((grid.cells || []).map(c => Math.abs(c.profit))));
+  const maxAbs = Math.max(1, ...((grid.cells || []).map(c => Math.abs(useMdd ? c.mdd : c.profit))));
   const mesaSet = new Set((grid.mesa_cells || []).map(m => m.a + "|" + m.b));
   return (
     <table className="mono" style={{ fontSize: 10, marginTop: 4 }}>
@@ -562,15 +583,18 @@ function _GridHeatmap({ grid }) {
             {(grid.b_values || []).map(b => {
               const c = cells[a + "|" + b];
               if (!c) return <td key={b}>—</td>;
-              const alpha = (0.15 + 0.7 * Math.abs(c.profit) / maxAbs).toFixed(2);
-              const bg = c.profit > 0 ? `rgba(60,160,90,${alpha})` : `rgba(200,80,80,${alpha})`;
+              const value = useMdd ? c.mdd : c.profit;
+              const alpha = (0.15 + 0.7 * Math.abs(value) / maxAbs).toFixed(2);
+              const bg = useMdd
+                ? `rgba(200,80,80,${alpha})`  /* MDD — 클수록 진한 적색(위험 지형). */
+                : (c.profit > 0 ? `rgba(60,160,90,${alpha})` : `rgba(200,80,80,${alpha})`);
               const isMesa = mesaSet.has(a + "|" + b);
               return (
                 <td key={b}
                     title={`${grid.param_a}=${a}, ${grid.param_b}=${b} · 손익 ${Math.round(c.profit).toLocaleString()} · MDD ${_rlNum(c.mdd, 2)} · ${c.trades}건`}
                     style={{ background: bg, textAlign: "right", padding: "2px 6px",
                              outline: isMesa ? "2px solid #d4af37" : "none" }}>
-                  {Math.round(c.profit / 10000).toLocaleString()}만{isMesa ? "★" : ""}
+                  {useMdd ? _rlNum(c.mdd, 1) : Math.round(c.profit / 10000).toLocaleString() + "만"}{isMesa ? "★" : ""}
                 </td>
               );
             })}
@@ -578,6 +602,28 @@ function _GridHeatmap({ grid }) {
         ))}
       </tbody>
     </table>
+  );
+}
+
+/* E2/D4(2026-06-11) — 누적 수익곡선: '우상향 그림'을 직접 렌더(0선 점선). */
+function _EquityChart({ cum }) {
+  const pts = (cum || []).map(Number).filter(v => isFinite(v));
+  if (pts.length < 2) return null;
+  const W = 620, H = 150, PAD = 6;
+  const min = Math.min(0, ...pts), max = Math.max(0, ...pts);
+  const span = Math.max(max - min, 1);
+  const x = i => PAD + (i / (pts.length - 1)) * (W - PAD * 2);
+  const y = v => H - PAD - ((v - min) / span) * (H - PAD * 2);
+  const path = pts.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const last = pts[pts.length - 1];
+  return (
+    <svg width={W} height={H} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 4 }}>
+      <line x1={PAD} y1={y(0)} x2={W - PAD} y2={y(0)} stroke="#777" strokeDasharray="3,3" strokeWidth="0.8" />
+      <path d={path} fill="none" stroke={last >= 0 ? "#4c9" : "#c66"} strokeWidth="1.8" />
+      <text x={W - PAD - 4} y={y(last) - 6} fill="#9ab" fontSize="10" textAnchor="end">
+        {Math.round(last).toLocaleString()}
+      </text>
+    </svg>
   );
 }
 

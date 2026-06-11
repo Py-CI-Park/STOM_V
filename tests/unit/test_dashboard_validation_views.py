@@ -281,6 +281,12 @@ class TestFrontendContract:
         # 2026-06-11 — 전체 화면 토글·탭 공통 운영 띠 계약.
         assert "전체 화면" in src
         assert "opsStrip" in src
+        # E1/E2/E5(2026-06-11) — 전용 lab 페이지·수익곡선·히트맵 토글 계약.
+        assert "/equity_curve" in src
+        assert "_EquityChart" in src
+        lab = (FRONTEND / "lab.html").read_text(encoding="utf-8")
+        assert "research-lab.jsx?v=20260611j" in lab
+        assert "ResearchLabPanel" in lab
 
     def test_app_jsx_shows_run_label(self):
         src = (FRONTEND / "app.jsx").read_text(encoding="utf-8")
@@ -289,5 +295,5 @@ class TestFrontendContract:
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
-        assert "research-lab.jsx?v=20260611i" in src
+        assert "research-lab.jsx?v=20260611j" in src
         assert "app.jsx?v=20260611a" in src

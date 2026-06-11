@@ -2130,6 +2130,51 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
     return out
 
 
+def _equity_curve_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
+    """E2/D4(2026-06-11) — 세대 누적 수익곡선(일별, ≤240점 다운샘플).
+
+    per-trade CSV의 일별 손익을 누적해 '우상향 그림'을 차트로 직접 렌더할
+    데이터를 만든다. 읽기 전용·무예외 — CSV 부재는 no_csv.
+    """
+    out: Dict[str, Any] = {"run_id": run_id, "gen_no": gen_no, "status": "unavailable"}
+    try:
+        row = _row_for_gen(run_id, gen_no)
+        if row is None:
+            return out
+        csv_path = row.get("csv_path") or ""
+        abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+        if not csv_path or not os.path.isfile(abs_csv):
+            out["status"] = "no_csv"
+            return out
+        from ai_strategy_loop.fitness.overfit_stats import daily_pnl_series  # noqa: PLC0415
+
+        series = daily_pnl_series(abs_csv)
+        if not series:
+            out["status"] = "no_csv"
+            return out
+        days = sorted(series)
+        cum, total = [], 0.0
+        for d in days:
+            total += float(series[d])
+            cum.append(round(total, 2))
+        step = max(1, len(days) // 240)
+        idx = list(range(0, len(days), step))
+        if idx and idx[-1] != len(days) - 1:
+            idx.append(len(days) - 1)
+        out.update({
+            "status": "ok",
+            "days": [days[i] for i in idx],
+            "cum": [cum[i] for i in idx],
+            "total": round(total, 2),
+            "n_days": len(days),
+            "label": row.get("strategy_gist") or "",
+        })
+    except Exception as exc:  # noqa: BLE001
+        out["status"] = "error"
+        out["error"] = str(exc)
+    return out
+
+
 def _niche_compare_payload(run_ids: str = "") -> Dict[str, Any]:
     """D3(2026-06-11) — 니치 지도 비교: 여러 스윕 run을 한 표에(읽기 전용·무예외).
 
@@ -2348,6 +2393,11 @@ def create_app() -> FastAPI:
     def niche_compare(run_ids: str = "") -> Dict[str, Any]:
         """D3(2026-06-11) — 니치 지도 비교(미지정 시 최근 tmap run 자동 발굴)."""
         return _niche_compare_payload(run_ids)
+
+    @app.get("/equity_curve")
+    def equity_curve(run_id: str = "", gen_no: int = 0) -> Dict[str, Any]:
+        """E2/D4(2026-06-11) — 세대 누적 수익곡선(일별·다운샘플). 읽기 전용·무예외."""
+        return _equity_curve_payload(run_id, gen_no)
 
     @app.get("/tmap_grid")
     def tmap_grid(run_id: str = "") -> Dict[str, Any]:
