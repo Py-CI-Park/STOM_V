@@ -7,6 +7,10 @@ function App() {
   });
   const [pendingBase, setPendingBase] = useState_a(baseUrl);
   const [theme, setTheme] = useState_a(() => localStorage.getItem("stom_theme") || "dark");
+  // 상단 탭: "evolution"(진화 대시보드·기본) | "backtest" | "simulation".
+  //   localStorage 로 새로고침 후에도 마지막 탭 유지. useBackend(WS)는 App 레벨에
+  //   그대로 두어 어느 탭에 있어도 진화 상태 수신이 끊기지 않는다.
+  const [activeTab, setActiveTab] = useState_a(() => localStorage.getItem("stom_active_tab") || "evolution");
 
   const { state: liveState, health, wsStatus, configSpec, send, lastReply, reconnect } = useBackend(baseUrl);
 
@@ -75,6 +79,10 @@ function App() {
     localStorage.setItem("stom_theme", theme);
   }, [theme]);
 
+  useEffect_a(() => {
+    localStorage.setItem("stom_active_tab", activeTab);
+  }, [activeTab]);
+
   const onStart = useCallback_a((config) => {
     send({ action: "start", config });
     setSettingsOpen(false);
@@ -141,6 +149,11 @@ function App() {
           </div>
         </div>
 
+        {/* ===== 탭 내비게이션 (전 탭 공통, 브랜드 행 바로 아래) ===== */}
+        <TabNav activeTab={activeTab} onSelect={setActiveTab} />
+
+        {/* 진화 컨트롤 스트립(진행도/run 셀렉터/시작·정지)은 진화 탭에서만 노출 */}
+        {activeTab === "evolution" && (
         <div style={{
           display: "flex", alignItems: "center", gap: 14,
           padding: "12px 16px",
@@ -184,10 +197,19 @@ function App() {
             </button>
           </div>
         </div>
+        )}
       </header>
 
       {/* ============= MAIN ============= */}
-      {isIdle ? (
+      {activeTab === "backtest" ? (
+        <ErrorBoundary>
+          <BacktestTab baseUrl={baseUrl} wsStatus={wsStatus} />
+        </ErrorBoundary>
+      ) : activeTab === "simulation" ? (
+        <ErrorBoundary>
+          <SimulationTab baseUrl={baseUrl} wsStatus={wsStatus} />
+        </ErrorBoundary>
+      ) : isIdle ? (
         <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} />
       ) : (
         <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -303,6 +325,52 @@ function App() {
         STOM AI · STATE_CONTRACT v{state.contract_version ?? 1} · last_update {fmtTime(state.updated_at)}
       </footer>
     </div>
+  );
+}
+
+// 상단 탭 내비게이션. 브랜드 행 아래에 위치하며 전 탭 공통으로 항상 보인다.
+//   디자인 언어: mono 폰트, var(--line-1) 보더, 활성 탭은 teal 강조 밑줄.
+const STOM_TABS = [
+  { key: "evolution", label: "진화 대시보드" },
+  { key: "backtest", label: "백테스트" },
+  { key: "simulation", label: "차트 시뮬레이션" },
+];
+
+function TabNav({ activeTab, onSelect }) {
+  return (
+    <nav role="tablist" aria-label="대시보드 탭" style={{
+      display: "flex", alignItems: "stretch", gap: 2,
+      margin: "12px 0 14px",
+      borderBottom: "1px solid var(--line-1)",
+    }}>
+      {STOM_TABS.map(tab => {
+        const active = activeTab === tab.key;
+        return (
+          <button
+            key={tab.key}
+            role="tab"
+            aria-selected={active}
+            className="mono"
+            onClick={() => onSelect(tab.key)}
+            style={{
+              appearance: "none",
+              background: active ? "var(--bg-1)" : "transparent",
+              color: active ? "var(--ink-0)" : "var(--ink-2)",
+              border: "1px solid " + (active ? "var(--line-1)" : "transparent"),
+              borderBottom: active ? "2px solid var(--teal)" : "2px solid transparent",
+              borderRadius: "6px 6px 0 0",
+              padding: "8px 16px",
+              fontSize: 12,
+              letterSpacing: ".04em",
+              cursor: "pointer",
+              marginBottom: -1,
+            }}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
+    </nav>
   );
 }
 

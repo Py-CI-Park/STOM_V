@@ -49,6 +49,8 @@ from ai_strategy_loop.controller.progress_contract import (  # noqa: E402
     build_engine_state,
 )
 from ai_strategy_loop.dashboard.research_api import router as research_router  # noqa: E402
+from ai_strategy_loop.dashboard.backtest_api import backtest_router  # noqa: E402
+from ai_strategy_loop.dashboard.simulation_api import simulation_router  # noqa: E402
 from ai_strategy_loop.fitness.research_criteria import normalize_research_oos_mode, research_mode_payload  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
@@ -2376,6 +2378,8 @@ def create_app() -> FastAPI:
 
     app.state.loop_manager = manager
     app.include_router(research_router)
+    app.include_router(backtest_router)
+    app.include_router(simulation_router)
 
     @app.get("/")
     def root() -> RedirectResponse:
