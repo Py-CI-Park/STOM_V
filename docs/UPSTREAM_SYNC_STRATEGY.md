@@ -83,13 +83,21 @@ The preflight must pass before claiming the release sync is clean. A branch mism
 
 ## V3 Wave Source Of Truth
 
-V3 lane은 V2 lane과 별도 freshness 권원을 가진다. 그러나 본 V2.79 웨이브에서는 V3 ingress가 정지 상태이며, V3 wave가 시작될 때 본 절을 활성화한다.
+V3 lane은 V2 lane과 별도 freshness 권원을 가진다. V3 lane은 V3.18 intake로 활성화되었고, 본 절의 권원으로 V3.30~V3.32까지 흡수했다.
 
 - 공식 freshness 권원: `https://github.com/devstom/STOM.git`
 - 로컬 reference mirror: `C:/System_Trading/STOM/STOM_devstom`
-- V3 wave source 후보: `refs/tags/V3.0` (현재 STOM_Version_3 head는 로컬 `7faec937 STOM V3.18`)
+- V3 wave source: `refs/heads/V3.00` (현재 STOM_Version_3 head는 로컬 `3dea3b94 STOM V3.32`)
+- `refs/tags/V3.0`은 2026-04-23 V3.08에서 멈춘 **stale tag**로 확인됨 (2026-06-11 점검,
+  `docs/update_log/2026-06-11_upstream_freshness_and_2uc_backport_review.md` §2.1) —
+  freshness 권원으로 사용하지 않는다.
 
-V3 wave 시작 시 `git fetch https://github.com/devstom/STOM.git refs/tags/V3.0:refs/remotes/devstom_tmp/tags/V3.0`로 freshness 비교 후 흡수 결정한다.
+V3 freshness 점검 시 다음 시퀀스로 `_update.txt` 마커를 비교해 흡수를 결정한다.
+
+```bash
+git fetch https://github.com/devstom/STOM.git refs/heads/V3.00:refs/remotes/devstom_tmp/heads/V3.00 --force
+git show refs/remotes/devstom_tmp/heads/V3.00:_update.txt | head -5
+```
 
 ## V3 Wave Exclusion Note
 

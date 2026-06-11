@@ -304,6 +304,16 @@ pytest drift 테스트 FAIL로 **커밋 전 자동 차단**. `_init_runtime_stat
 **잔여**: V3.32 tail `fcc626a5`(윈도우 핸들 ctypes 수정) 미포함 — 다음 V3 흡수
 시 formal 포함. `change_title_bar_color` 오류 관찰 시 원인 후보 1순위.
 
+**사이클 15 시각 검증 결과 (2026-06-11, B1) — 결함 0건으로 종결**:
+- 부팅 5 worker INFO 정상 (MainWindow/TelegramBot/ChartHogaQuery pid=137952/
+  TextToSpeak/WebCrawling), 10분 세션 traceback 0건
+- 종료 5단계 클린 (timers → proc_chqs 종료 OK → tts_sound → telegram → webc
+  graceful timeout 위임), exit code 0
+- 사용자 시각 확인 전 항목 정상: MEM/NET 게이지(결함 #16 fix), DB관리 탭
+  응답(A5 chqs), 홈탭 마우스오버(V3.32 homepg), 읽기속도 윈도우 음성(V3.32 TTS)
+- 누적 검증 의미: 결함 #16 + A5 + TTS 실 worker + V3.30~32 흡수가 한 세션에서
+  동시 검증됨. proc_chqs 실 프로세스의 spawn→종료 lifecycle 첫 실가동 확인.
+
 ### A5 적용 (2026-06-11): proc_chqs ChartHogaQuery 실 spawn — 결함 #12 잔여 의무 완결
 
 - 배경: 결함 #12(2026-05-20)는 AttributeError 방지 placeholder까지만 적용하고
