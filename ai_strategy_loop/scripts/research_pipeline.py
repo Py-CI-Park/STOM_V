@@ -24,13 +24,14 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EVID_RESEARCH = REPO_ROOT / ".omo/evidence/claude-condition-research-20260610"
 EVID_TMAP = REPO_ROOT / ".omo/evidence/tmap-walkforward"
 
-STAGES = ["sweep", "theta_star", "reeval", "freeze", "oos2022", "oos2026"]
+STAGES = ["sweep", "theta_star", "reeval", "freeze", "oos2022", "oos2026",
+          "placebo", "slippage"]  # P-B(2026-06-12): V2·V5 자동화 — 카드 입력 완성.
 
 
 def pending_stages(state: Dict[str, str], from_stage: str = "") -> List[str]:
@@ -87,9 +88,117 @@ def _run(cmd: List[str]) -> int:
     return subprocess.call([str(c) for c in cmd], cwd=str(REPO_ROOT))
 
 
+def _selected_candidate() -> Optional[Dict[str, Any]]:
+    """동결 아티팩트에서 선택 후보를 읽는다(없으면 None — 스테이지 건너뜀)."""
+    try:
+        with open(EVID_RESEARCH / "p5-selected-candidate.json", encoding="utf-8") as fh:
+            return json.load(fh).get("selected_candidate")
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def placebo_pairs(placebo_prefix: str, sell_name: str,
+                  rates=(2, 5, 10), shifts=(0, 1)) -> List[Dict[str, str]]:
+    """P-B — 플라시보 페어 구성(gen_placebo_strategy 명명 규약과 정합).
+
+    순수 함수 — 테스트 대상. 같은 매도식 + 무작위 진입 buys.
+    """
+    pairs = []
+    for rate in rates:
+        for shift in shifts:
+            buy = (f"{placebo_prefix}_R{rate}_B" if shift == 0
+                   else f"{placebo_prefix}_R{rate}_S{shift}_B")
+            pairs.append({"label": f"PLACEBO R{rate} S{shift}",
+                          "buy": buy, "sell": sell_name})
+    return pairs
+
+
+def _run_placebo_stage(prefix: str, config_json: str, workdir: Path) -> int:
+    """V2 자동화: 무작위 진입 생성 → 동일 매도 배치 → 분포 위치 산출(C1)."""
+    cand = _selected_candidate()
+    if not cand or not cand.get("sell_name"):
+        print("[PIPE] placebo: 동결 후보 없음 — 건너뜀", flush=True)
+        return 0
+    pfx = f"PLB_{prefix[-12:]}"
+    rc = _run([sys.executable, "-m", "ai_strategy_loop.scripts.gen_placebo_strategy",
+               "--prefix", pfx, "--rates", "2,5,10", "--shifts", "0,1"])
+    if rc != 0:
+        return rc
+    pairs = placebo_pairs(pfx, cand["sell_name"])
+    pairs_path = workdir / "pairs-placebo.json"
+    pairs_path.write_text(json.dumps(pairs, ensure_ascii=False, indent=2),
+                          encoding="utf-8")
+    run_id = f"{prefix}_placebo"
+    rc = _run([sys.executable, "-m", "ai_strategy_loop.scripts.claude_candidate_batch_eval",
+               "--pairs-json", str(pairs_path), "--config-json", config_json,
+               "--run-id", run_id])
+    if rc != 0:
+        return rc
+    from ai_strategy_loop.controller.state import LOOP_RUNS_DB  # noqa: PLC0415
+    from ai_strategy_loop.fitness.placebo_check import (  # noqa: PLC0415
+        placebo_position,
+        placebo_profits_from_run,
+    )
+
+    rows = placebo_profits_from_run(run_id, str(LOOP_RUNS_DB))
+    position = placebo_position(float(cand.get("profit") or 0.0),
+                                [r["profit"] for r in rows])
+    (workdir / "placebo_position.json").write_text(
+        json.dumps({"candidate": cand.get("buy_name"), "samples": rows,
+                    "position": position}, ensure_ascii=False, indent=2),
+        encoding="utf-8")
+    print(f"[PIPE] placebo: {position.get('interpretation') if position else '표본 부족'}",
+          flush=True)
+    return 0
+
+
+def _run_slippage_stage(prefix: str, workdir: Path) -> int:
+    """V5 자동화: 동결 후보의 train+OOS CSV 수집 → 슬리피지 스트레스 리포트."""
+    cand = _selected_candidate()
+    if not cand or not cand.get("buy_name"):
+        print("[PIPE] slippage: 동결 후보 없음 — 건너뜀", flush=True)
+        return 0
+    import sqlite3  # noqa: PLC0415
+
+    from ai_strategy_loop.controller.state import LOOP_RUNS_DB  # noqa: PLC0415
+
+    csvs: List[str] = []
+    try:
+        con = sqlite3.connect(str(LOOP_RUNS_DB))
+        try:
+            for rid in (f"{prefix}_reeval", f"{prefix}_oos_2022", f"{prefix}_oos_2026"):
+                row = con.execute(
+                    "SELECT csv_path FROM generations WHERE run_id=? AND buy_name=?"
+                    " AND status='ok' AND csv_path IS NOT NULL LIMIT 1",
+                    (rid, cand["buy_name"]),
+                ).fetchone()
+                if row and row[0]:
+                    csvs.append(row[0])
+        finally:
+            con.close()
+    except Exception as exc:  # noqa: BLE001
+        print(f"[PIPE] slippage: CSV 조회 실패 {exc} — 건너뜀", flush=True)
+        return 0
+    if not csvs:
+        print("[PIPE] slippage: 후보 CSV 없음 — 건너뜀", flush=True)
+        return 0
+    cmd = [sys.executable, "-m", "ai_strategy_loop.scripts.slippage_stress_report",
+           "--ticks", "0,1,2", "--fee-bps", "0,5",
+           "--out", str(workdir / "slippage_stress.json")]
+    for c in csvs:
+        cmd += ["--csv", c]
+    return _run(cmd)
+
+
 def run_stage(stage: str, *, template: str, config_json: str, prefix: str,
               params: str = "") -> int:
-    """단계 실행. oos2022/oos2026은 config 생성 1회 + 연도별 배치로 풀린다."""
+    """단계 실행. oos는 config 1회+연도 배치, placebo/slippage는 P-B 자동화."""
+    workdir = REPO_ROOT / ".omo/evidence/pipeline" / prefix
+    workdir.mkdir(parents=True, exist_ok=True)
+    if stage == "placebo":
+        return _run_placebo_stage(prefix, config_json, workdir)
+    if stage == "slippage":
+        return _run_slippage_stage(prefix, workdir)
     if stage in ("oos2022", "oos2026"):
         year = stage[-4:]
         if stage == "oos2022":  # config 생성은 한 번만(동결 아티팩트 기반).

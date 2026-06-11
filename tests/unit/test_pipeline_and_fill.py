@@ -30,7 +30,8 @@ from ai_strategy_loop.scripts.research_pipeline import (  # noqa: E402
 class TestPipelineCheckpoint:
     def test_done_stages_skipped(self) -> None:
         state = {"sweep": "done", "theta_star": "done"}
-        assert pending_stages(state) == ["reeval", "freeze", "oos2022", "oos2026"]
+        assert pending_stages(state) == [
+            "reeval", "freeze", "oos2022", "oos2026", "placebo", "slippage"]
 
     def test_failed_stage_reruns(self) -> None:
         state = {"sweep": "done", "theta_star": "failed rc=2"}
@@ -38,9 +39,20 @@ class TestPipelineCheckpoint:
 
     def test_from_stage_forces_rerun_of_suffix(self) -> None:
         state = {s: "done" for s in STAGES}
-        assert pending_stages(state, from_stage="freeze") == ["freeze", "oos2022", "oos2026"]
+        assert pending_stages(state, from_stage="freeze") == [
+            "freeze", "oos2022", "oos2026", "placebo", "slippage"]
         with pytest.raises(ValueError):
             pending_stages(state, from_stage="nope")
+
+    def test_placebo_pairs_naming_convention(self) -> None:
+        """P-B — gen_placebo_strategy 명명 규약(S0은 무접미)과 정합해야 한다."""
+        from ai_strategy_loop.scripts.research_pipeline import placebo_pairs
+
+        pairs = placebo_pairs("PLB_X", "CAND_S", rates=(2, 5), shifts=(0, 1))
+        assert len(pairs) == 4
+        assert pairs[0] == {"label": "PLACEBO R2 S0", "buy": "PLB_X_R2_B", "sell": "CAND_S"}
+        assert pairs[1]["buy"] == "PLB_X_R2_S1_B"  # shift>0은 _S{n} 접미.
+        assert all(p["sell"] == "CAND_S" for p in pairs)  # 동일 매도(대조 변인 통제).
 
     def test_stage_commands_call_official_tools_only(self) -> None:
         kw = {"template": "seed_902905", "config_json": "cfg.json", "prefix": "p1"}
