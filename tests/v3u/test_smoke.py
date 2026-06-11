@@ -258,7 +258,9 @@ def test_web_dashboard_attr_present_for_safe_attribute_access(main_window) -> No
 def test_proc_chqs_safe_for_is_alive_call(main_window) -> None:
     """결함 #12: 외부 20+ site가 ui.proc_chqs.is_alive()를 None 체크 없이 호출.
 
-    _NullProcess placeholder가 부착되어 AttributeError 없이 False를 반환해야 한다.
+    STOM_V3U_DISABLE_CHQS=1(conftest) 환경에서는 _NullProcess placeholder가
+    부착되어 AttributeError 없이 False를 반환해야 한다. 실 spawn 계약은
+    test_chart_hoga_query_spawn_contract가 검증한다 (A5).
     """
     assert hasattr(main_window, "proc_chqs"), "proc_chqs attr 누락"
     # None이면 외부에서 .is_alive() 호출 시 AttributeError → V3U 결함
@@ -273,6 +275,80 @@ def test_proc_chqs_safe_for_is_alive_call(main_window) -> None:
         assert callable(getattr(main_window.proc_chqs, method, None)), (
             f"proc_chqs.{method} 누락 (Process 인터페이스 위반)"
         )
+
+
+def test_chart_hoga_query_spawn_contract(qapp, monkeypatch) -> None:
+    """A5 (결함 #12 잔여 의무 완결): V3 pyd가 부팅 시 spawn하던 ChartHogaQuery를
+    V3U `_init_workers`가 2U 선례(wt-2u/ui/ui_mainwindow.py:344)와 동일 계약으로
+    spawn한다.
+
+    검증 계약:
+    - target은 ChartHogaQuery 클래스 (child가 생성자 → _main_loop 진입)
+    - args는 (qlist, dict_set) — qlist[2]=queryQ/[4]=chartQ/[5]=hogaQ 소비
+    - daemon=True (2U 선례와 동일, main exit 시 OS cleanup 보장)
+    - start() 호출됨 → 외부 가드 47곳의 `ui.proc_chqs.is_alive()`가 True
+    - process_kill()이 terminate로 종료 (A5 cleanup 계약)
+
+    실 child process는 talib import + sqlite 연결 + 무한 루프로 무거우므로
+    Process를 spy로 monkeypatch해 spawn 계약만 검증한다.
+    """
+    import ui.main_window as mwmod
+
+    spawned: dict = {}
+
+    class _SpyProcess:
+        def __init__(self, target=None, args=(), daemon=None, **_kwargs):
+            spawned["target"] = target
+            spawned["args"] = args
+            spawned["daemon"] = daemon
+            self._alive = False
+
+        def start(self):
+            spawned["started"] = True
+            self._alive = True
+
+        def is_alive(self):
+            return self._alive
+
+        def terminate(self):
+            spawned["terminated"] = True
+            self._alive = False
+
+        def join(self, *_a, **_k):
+            return None
+
+        @property
+        def pid(self):
+            return 99999
+
+    monkeypatch.delenv("STOM_V3U_DISABLE_CHQS", raising=False)
+    monkeypatch.setattr(mwmod, "Process", _SpyProcess)
+
+    mw = mwmod.MainWindow(auto_run=0, splash=None)
+    try:
+        from utility.sub_process_and_thread.chart_hoga_query import ChartHogaQuery
+
+        assert spawned.get("target") is ChartHogaQuery, (
+            f"spawn target은 ChartHogaQuery여야 함, 실제 {spawned.get('target')!r}"
+        )
+        assert spawned.get("daemon") is True, "2U 선례와 동일하게 daemon=True 필요"
+        assert spawned.get("started") is True, "proc_chqs.start() 미호출"
+        assert spawned["args"][0] is mw.qlist, "args[0]은 qlist (V3 컨벤션 0~12)"
+        assert spawned["args"][1] is mw.dict_set, "args[1]은 dict_set"
+        assert mw.proc_chqs.is_alive() is True, (
+            "spawn 후 외부 가드 `ui.proc_chqs.is_alive()`가 True여야 DB관리/차트 기능 활성"
+        )
+
+        mw.process_kill()
+        assert spawned.get("terminated") is True, "process_kill이 proc_chqs를 terminate해야 함"
+        assert mw.proc_chqs.is_alive() is False
+    finally:
+        try:
+            mw.process_kill()
+        except Exception:
+            pass
+        mw.hide()
+        mw.deleteLater()
 
 
 def test_safe_webc_run_wrapper_swallows_handle_closed() -> None:

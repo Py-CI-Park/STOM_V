@@ -286,6 +286,32 @@ CRITICAL로 잡지 못한다. 보강 옵션은 `docs/V3U_NEXT_STEPS.md` §3 A7. 
 - 근본 원인 매핑: §3-1 (pyd 내부 init 미관찰), §3-3 (외부 호출 일치 검증 한계)
 - 재발 방지 액션 매핑: §5-2 한계 갱신 (read-before-write) + NEXT_STEPS §3 신규 옵션 A7 (도구 보강)
 
+### A5 적용 (2026-06-11): proc_chqs ChartHogaQuery 실 spawn — 결함 #12 잔여 의무 완결
+
+- 배경: 결함 #12(2026-05-20)는 AttributeError 방지 placeholder까지만 적용하고
+  "V3 pyd가 실제로 어떻게 ChartHogaQuery를 spawn하는지 reactive 학습 후 진짜
+  Process로 교체"를 잔여 의무로 남겼다. 사이클 13 재검증 감사에서 2U 선례
+  (`wt-2u/ui/ui_mainwindow.py:344` `Process(target=ChartHogaQuerySound,
+  args=(qlist, dict_set), daemon=True)`)와 V3 동일 계약 클래스
+  (`utility/sub_process_and_thread/chart_hoga_query.py:25`, `__init__` →
+  `_main_loop()` 진입), pyd import 증거(`ui/etcetera/import_hook.py:25`)를 확보해
+  추론 불확실성이 해소됐다.
+- 영향 해소: queryQ/chartQ/hogaQ 소비자 부재로 비활성이던
+  `if ui.proc_chqs.is_alive():` 가드 47곳 (DB관리 탭 버튼 10개, 차트/호가 조회,
+  설정 저장 반영, 전략에디터/GA/옵튜나 등) 활성화.
+- 적용: `_init_workers`에 `Process(target=ChartHogaQuery, args=(self.qlist,
+  self.dict_set), daemon=True)` spawn + `process_kill`에 terminate/join cleanup
+  (A4/A6의 proc_chqs 분 함께 처리).
+- pytest 안전 가드: conftest가 `STOM_V3U_DISABLE_CHQS=1` 설정 (매 테스트 실
+  child process spawn 방지). webc의 `STOM_V3U_DISABLE_WEBC` 패턴 재사용.
+- 회귀 테스트: `tests/v3u/test_smoke.py::test_chart_hoga_query_spawn_contract`
+  (Process spy monkeypatch로 target/args/daemon/start/terminate 계약 검증)
+- 잔여: 실 spawn 후 child process의 DB 연결·hoga 갱신 동작은 사용자 시각 검증
+  (B1)으로 확인 필요. terminate의 mid-write 중단 가능성은 daemon=True OS cleanup과
+  동일 수준 (2U 선례와 같은 트레이드오프).
+- 근본 원인 매핑: §3-1 (pyd 내부 spawn 미관찰) — 2U 선례 교차 검증으로 해소
+- 재발 방지 액션 매핑: §5-1 (2U attr/패턴 명세를 출발점으로 사용)
+
 ### 사이클 11 (2026-05-23): 3U_C lane E7 strategy.db 조건식 V2→V3 마이그레이션
 
 사이클 10 끝 사용자 통찰 — "조건식(strategy.db)이 V2 시절 데이터인데 V3는 stock_buy(밑줄) 컨벤션이라 백테 못 함". 즉시 사이클 11 발동 + 4단계 워크플로우.
@@ -530,12 +556,12 @@ A2(CRITICAL drift 정리) 사이클에서 추가로 발견된 init/method 누락
 
 ## 7. 통계 (지속 갱신)
 
-| 측정 | 값 (2026-06-11 사이클 13 결함 #16 수정 시점; 3U_C lane 항목은 사이클 9 시점 수치) |
+| 측정 | 값 (2026-06-11 사이클 14 A5 적용 시점; 3U_C lane 항목은 사이클 9 시점 수치) |
 |---|---|
-| 총 발견 결함 (V3U lane) | 20 (#16: V3.24 흡수 회귀, 재검증 감사 발견) |
-| 자동 회귀 테스트 추가 (V3U lane) | 21 |
-| pytest 케이스 (V3U lane) | 47 |
-| 수정 커밋 누적 (V3U lane) | 12 |
+| 총 발견 결함 (V3U lane) | 20 (#16: V3.24 흡수 회귀, 재검증 감사 발견) + #12 잔여 의무 완결(A5) |
+| 자동 회귀 테스트 추가 (V3U lane) | 22 |
+| pytest 케이스 (V3U lane) | 48 |
+| 수정 커밋 누적 (V3U lane) | 13 |
 | 신규 자동 도구 (V3U lane) | 1 (attr_inventory_diff) + A3 verifier UX 분리 |
 | **3U_C lane 추가 자동 도구** | **1** (v3uc_ingest_pipeline 5 T-step) |
 | **3U_C lane 추가 회귀 테스트** | **4** |

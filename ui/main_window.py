@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import logging
 import os
-from multiprocessing import Queue
+from multiprocessing import Process, Queue
 from typing import Any, Callable
 
 from PyQt5.QtCore import QTimer
@@ -557,6 +557,26 @@ class MainWindow(QMainWindow):
         except Exception as exc:
             self.logger.exception("TelegramBot 시작 실패 — placeholder 유지: %s", exc)
 
+        # A5 (결함 #12 잔여 의무 완결): V3 pyd가 부팅 시 spawn하던 ChartHogaQuery
+        # 프로세스를 2U 선례(wt-2u/ui/ui_mainwindow.py:344)와 동일 패턴으로 spawn한다.
+        # ChartHogaQuery.__init__은 _main_loop()로 진입해 hogaQ/chartQ/queryQ를
+        # 소비한다. 미spawn 시 `if ui.proc_chqs.is_alive():` 가드 47곳(DB관리 탭
+        # 버튼 10개, 차트/호가 조회, 설정 저장 반영, 전략에디터/GA/옵튜나 등)이
+        # 전부 비활성된다. pytest는 매 테스트 MainWindow를 생성하므로 conftest가
+        # STOM_V3U_DISABLE_CHQS=1로 실 spawn을 생략한다 (spawn 계약은
+        # tests/v3u/test_smoke.py::test_chart_hoga_query_spawn_contract가 검증).
+        if os.environ.get("STOM_V3U_DISABLE_CHQS") == "1":
+            self.logger.info("STOM_V3U_DISABLE_CHQS=1: ChartHogaQuery spawn 생략")
+        else:
+            try:
+                from utility.sub_process_and_thread.chart_hoga_query import ChartHogaQuery
+                self.proc_chqs = Process(target=ChartHogaQuery, args=(self.qlist, self.dict_set), daemon=True)
+                self.proc_chqs.start()
+                self.logger.info("worker ChartHogaQuery 프로세스 시작 OK (pid=%s)", self.proc_chqs.pid)
+            except Exception as exc:
+                self.logger.exception("ChartHogaQuery 시작 실패 — placeholder 유지: %s", exc)
+                self.proc_chqs = _NullProcess()
+
         # pytest 환경에서 mid-network-call WebCrawling이 fixture teardown에서
         # Windows access violation을 일으키므로 명시적으로 비활성화 가능.
         if os.environ.get("STOM_V3U_DISABLE_WEBC") == "1":
@@ -610,8 +630,7 @@ class MainWindow(QMainWindow):
         """V3 ui/event_keypress/overwrite_event_filter.py:close_event가 호출하는 shutdown hook.
 
         timer/worker를 안전하게 정지해 종료 시 multiprocessing.Queue 핸들 invalid OSError를
-        방지한다. 향후 추가 worker(proc_chqs, proc_tele 등) 시작되면 본 메서드에 종료 호출
-        추가 필요.
+        방지한다. 종료 대상: qtimer1~3, proc_chqs(A5), telegram, webc.
         """
         try:
             for tname in ("qtimer1", "qtimer2", "qtimer3"):
@@ -621,6 +640,19 @@ class MainWindow(QMainWindow):
             self.logger.info("process_kill: timers stopped")
         except Exception:
             self.logger.exception("process_kill: timer stop 실패")
+
+        # ChartHogaQuery 프로세스 cleanup (A5). daemon=True라 main exit 시 OS가
+        # 정리하지만, graceful terminate로 sqlite 연결 잔류를 줄인다.
+        proc_chqs = getattr(self, "proc_chqs", None)
+        if proc_chqs is not None and hasattr(proc_chqs, "is_alive"):
+            try:
+                if proc_chqs.is_alive():
+                    proc_chqs.terminate()
+                    if hasattr(proc_chqs, "join"):
+                        proc_chqs.join(1)
+                    self.logger.info("process_kill: proc_chqs 종료 OK")
+            except Exception:
+                self.logger.exception("process_kill: proc_chqs 종료 실패")
 
         # TelegramBot cleanup (QThread)
         telegram = getattr(self, "telegram", None)

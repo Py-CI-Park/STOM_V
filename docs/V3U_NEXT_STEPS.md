@@ -15,19 +15,19 @@ V3U lane 진행 중 매 사이클 종료 시점에 **다음 사이클의 옵션�
 
 ---
 
-## 2. 현재 사이클 상태 (사이클 13, 2026-06-11)
+## 2. 현재 사이클 상태 (사이클 14, 2026-06-11)
 
 | 지표 | 값 |
 |---|---|
-| 결함 누적 (LESSONS.md §7) | 20 (#16: V3.24 흡수 회귀) |
-| 자동 회귀 테스트 (pytest tests/v3u) | 47 |
+| 결함 누적 (LESSONS.md §7) | 20 (#16: V3.24 흡수 회귀) + #12 잔여 의무 완결(A5) |
+| 자동 회귀 테스트 (pytest tests/v3u) | 48 |
 | 신규 자동 도구 | 1 (`scripts/v3u_attr_inventory_diff.py`) + A3 verifier 8 stage UX |
-| 수정 커밋 누적 | 12 |
+| 수정 커밋 누적 | 13 |
 | 재발 방지 액션 | 5/5 적용 + §5-2 read-before-write 한계 기록 (보강 옵션 A7) |
 | CRITICAL drift baseline | 0 (strict 모드) |
 | 사용자 시각 검증 사이클 | 6회 (V3.29 흡수 이후 0회 — 직접 테스트 대기) |
-| Remote sync | `git log origin/STOM_Version_3U..HEAD`로 미push 분 확인 |
-| stom.py 활성 상태 | 미실행 (V3.29 + 결함 #16 fix 직접 테스트 대기) |
+| Remote sync | 사이클 13(`828f8a02`)까지 push 완료, 사이클 14 commit 후 push |
+| stom.py 활성 상태 | 미실행 (V3.29 + #16 fix + A5 proc_chqs spawn 직접 테스트 대기) |
 
 ### 미해결 사용자 잔여 작업 (선행 핸드오프 §3 기준)
 
@@ -74,10 +74,11 @@ LESSONS.md §4 예측 결함 후보를 사용자가 클릭하기 전 사전 점�
 
 **ROI**: A1 진행 시 자연스럽게 함께 처리됨.
 
-#### A5: proc_chqs(ChartHogaQuery) 실 spawn (사이클 13 재검증에서 옵션화)
+#### A5: proc_chqs(ChartHogaQuery) 실 spawn ✅ **완료 (사이클 14, 2026-06-11)**
 2U 선례(`wt-2u/ui/ui_mainwindow.py:344`)는 부팅 시 `Process(target=..., args=(qlist, dict_set), daemon=True)` 직접 spawn. V3에 동일 계약 `ChartHogaQuery(qlist, dict_set)` 존재(`utility/sub_process_and_thread/chart_hoga_query.py:25`), pyd import 목록(`import_hook.py:25`)에도 등재. 현재 `_NullProcess` 영구 placeholder → queryQ 소비자 부재 → **DB관리 탭 버튼 10개 전면 무반응 + 차트/호가 조회 + 설정 저장 반영 + 전략에디터/GA/옵튜나 등 가드 47곳 비활성**.
 
 **ROI**: pyd 기능 최대 미달점 해소. 결함 #12 잔여 의무 완결.
+**적용 결과 (사이클 14)**: `_init_workers` spawn + `process_kill` terminate cleanup(proc_chqs 분 A6 선반영) + conftest `STOM_V3U_DISABLE_CHQS=1` + spawn 계약 회귀 테스트. 실 child 동작은 B1 시각 검증 필요.
 
 #### A6: process_kill 종료 범위 보강 (2U 선례)
 2U `ui/ui_process_kill.py` 선례: 다이얼로그 23종 close + 백테 프로세스 26종 terminate/join + 트레이드 프로세스 정리. V3 공식 소스의 트레이드 프로세스는 non-daemon(`button_clicked_shortcut.py:203-214`) → 거래/백테 중 종료 시 zombie/hang 위험.
@@ -156,16 +157,15 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 
 | 우선순위 | 옵션 | 사유 |
 |---|---|---|
-| 🟢 1 | A5 (proc_chqs 실 spawn) | pyd 기능 최대 미달점 (가드 47곳 비활성), 2U 선례 명확해 추론 불확실성 낮음 |
-| 🟢 2 | B1 (사용자 직접 테스트) | V3.29 흡수 + 결함 #16 fix 이후 시각 검증 0회 |
-| 🟡 3 | A6 (process_kill 보강) | 거래/백테 중 종료 시 zombie/hang 위험, A5와 같은 사이클 처리 효율적 |
-| 🟡 4 | A7 (도구 read-before-write) | 결함 #16 패턴 자동 차단 |
-| ⚪ 5 | A8 (allowlist 정합성) | 기능 영향 없음, 거버넌스 일치화 |
-| 🔵 6 | C1 (DB 검증) → C2 (실거래) | release 전 사용자 |
-| ⚪ 7 | D1·D2·D3 (정책 결정) | 정량 측정 불가, 사용자 판단 |
+| 🟢 1 | B1 (사용자 직접 테스트) | V3.29 흡수 + #16 fix + A5 proc_chqs spawn 이후 시각 검증 0회 — DB관리 탭·차트/호가·MEM/NET 게이지 활성 확인 |
+| 🟡 2 | A6 (process_kill 잔여 보강) | 트레이드/백테 프로세스 종료 (proc_chqs 분은 A5에서 선반영) |
+| 🟡 3 | A7 (도구 read-before-write) | 결함 #16 패턴 자동 차단 |
+| ⚪ 4 | A8 (allowlist 정합성) | 기능 영향 없음, 거버넌스 일치화 |
+| 🔵 5 | C1 (DB 검증) → C2 (실거래) | release 전 사용자 |
+| ⚪ 6 | D1·D2·D3 (정책 결정) | 정량 측정 불가, 사용자 판단 |
 
-**Default 권장 흐름**: A5(+A6) → B1 → A7 → A8 → C1 → C2 → D1
-(완료 이력: A1·A2 사이클 5·6, A3·A4 사이클 7)
+**Default 권장 흐름**: B1 → A6 → A7 → A8 → C1 → C2 → D1
+(완료 이력: A1·A2 사이클 5·6, A3·A4 사이클 7, A5 사이클 14)
 
 ---
 
@@ -218,6 +218,21 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - LESSONS.md 갱신: §6 결함 #14 통합 항목 + §7 통계 (45/19/8/baseline **0**, 결함 18건)
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
+
+### 사이클 14 (2026-06-11): A5 proc_chqs ChartHogaQuery 실 spawn — 결함 #12 잔여 완결
+
+- 사용자 선택: "push 하고 A5 진행"
+- 실행 결과:
+  - 사이클 13 commit `828f8a02` origin push 완료
+  - `_init_workers`에 `Process(target=ChartHogaQuery, args=(qlist, dict_set), daemon=True)`
+    spawn (2U 선례 `wt-2u/ui/ui_mainwindow.py:344` 동일 패턴)
+  - `process_kill`에 proc_chqs terminate/join cleanup (A6의 proc_chqs 분 선반영)
+  - conftest `STOM_V3U_DISABLE_CHQS=1` (pytest 실 child spawn 방지)
+  - 회귀 테스트 +1: `test_chart_hoga_query_spawn_contract` → pytest 48 케이스
+- 발견 신규 결함: 0건 (기존 공백 해소 작업)
+- LESSONS.md 갱신: §6 "A5 적용" 절 + §7 통계 (회귀 22 / pytest 48 / 커밋 13)
+- 다음 사이클 후보: **B1 사용자 직접 테스트 최우선** (V3.29 + #16 + A5 효과 통합 확인:
+  DB관리 탭 버튼 반응, 차트/호가 조회, MEM/NET 게이지, 종료 로그 proc_chqs 종료 OK)
 
 ### 사이클 13 (2026-06-11): pyd→py 추론 전면 재검증 + 결함 #16 4단계 수정
 
