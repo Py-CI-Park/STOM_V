@@ -126,11 +126,14 @@ class BacktestJobManager:
         jobs_dir: Optional[Path] = None,
         command_builder: Optional[CommandBuilder] = None,
         strategy_db: Optional[Path] = None,
+        deadline_grace: float = 60.0,
     ) -> None:
         self._jobs_dir = Path(jobs_dir) if jobs_dir else _JOBS_DIR
         self._jobs_dir.mkdir(parents=True, exist_ok=True)
         self._command_builder = command_builder or default_command_builder
         self._strategy_db = Path(strategy_db) if strategy_db else _OPERATIONAL_STRATEGY_DB
+        # spec.timeout 에 더해지는 하드 데드라인 유예(초). 테스트가 짧게 줄일 수 있다.
+        self._deadline_grace = float(deadline_grace)
         self._lock = threading.RLock()
         self._records: Dict[str, BacktestJobRecord] = {}
         self._queue: List[str] = []
@@ -296,7 +299,16 @@ class BacktestJobManager:
             self._proc = proc
             record.pid = proc.pid
 
-        deadline = run_start + spec.timeout + 60
+        deadline = run_start + spec.timeout + self._deadline_grace
+        # 워치독: --quiet CLI 는 종료 시점까지 stdout 을 전혀 내지 않으므로
+        #   읽기 루프 안의 데드라인 검사만으로는 타임아웃이 영원히 발동하지
+        #   않는다(첫 read 에서 블록 — 2026-06-12 실측). 출력과 무관하게
+        #   데드라인에 트리 전체를 회수하는 독립 타이머가 필요하다.
+        watchdog = threading.Timer(
+            max(1.0, deadline - _now()), self._hard_stop, args=(proc,)
+        )
+        watchdog.daemon = True
+        watchdog.start()
         try:
             assert proc.stdout is not None
             for line in proc.stdout:
@@ -313,6 +325,7 @@ class BacktestJobManager:
             log_fh.close()
 
         returncode = proc.wait()
+        watchdog.cancel()
         finished = _now()
         full_stdout = "".join(stdout_buf)
         cancelled = record.job_id in self._cancel_requested
@@ -381,9 +394,30 @@ class BacktestJobManager:
 
     # ----------------------------------------------------------- process kill
     def _hard_stop(self, proc: subprocess.Popen, *, grace: float = 10.0) -> bool:
-        """terminate→grace→kill→wait 로 자식을 강제 회수한다(LoopProcessManager 패턴)."""
+        """프로세스 **트리 전체**를 강제 회수한다(자식 우선, 그 다음 부모).
+
+        부모만 죽이면 CLI 가 spawn 한 엔진/BackTest 자식들이 상속받은 stdout
+        파이프를 계속 쥐고 있어 `for line in proc.stdout` 가 EOF 를 영원히 받지
+        못한다 → 워커 스레드가 영구 블록되고 동시 1실행 슬롯이 해제되지 않아
+        후속 잡이 pending 에 갇힌다(2026-06-12 실측). 트리 킬로 파이프의 모든
+        보유자를 정리해야 읽기 루프가 풀린다.
+        """
         if proc.poll() is not None:
             return False
+        try:
+            import psutil  # noqa: PLC0415 - 킬 경로에서만 필요(콜드 임포트 회피).
+
+            try:
+                children = psutil.Process(proc.pid).children(recursive=True)
+            except psutil.Error:
+                children = []
+            for child in children:
+                try:
+                    child.kill()
+                except psutil.Error:
+                    pass
+        except ImportError:
+            pass  # psutil 부재 시 부모 단독 킬로 폴백(파이프 잔류 위험은 워치독이 보완).
         try:
             proc.terminate()
             try:

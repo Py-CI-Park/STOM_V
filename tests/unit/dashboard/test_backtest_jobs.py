@@ -159,6 +159,55 @@ def test_get_missing_job(tmp_path: Path):
     assert manager.get("nope")["available"] is False
 
 
+# ------------------------------------------------- watchdog / tree-kill (회귀)
+def test_quiet_job_times_out_without_output(tmp_path: Path):
+    """--quiet CLI 처럼 stdout 무출력 + 장기 실행이면 워치독이 데드라인에 회수해야 한다.
+
+    회귀 근거(2026-06-12): 데드라인 검사가 stdout 읽기 루프 안에만 있어 무출력
+    프로세스에서 타임아웃이 영원히 발동하지 않았다.
+    """
+    def quiet_slow(spec):
+        return [sys.executable, "-c", "import time; time.sleep(60)"]
+
+    manager = BacktestJobManager(
+        jobs_dir=tmp_path / "jobs", command_builder=quiet_slow, deadline_grace=1.0,
+    )
+    job_id = manager.submit(_spec(timeout=1))["job_id"]
+    rec = _wait_status(manager, job_id, {"timeout", "error", "success"}, timeout=20.0)
+    assert rec["status"] == "timeout"
+
+
+def test_cancel_kills_child_tree_and_releases_queue(tmp_path: Path):
+    """취소가 자식 트리까지 회수하고 동시 1실행 슬롯을 해제해야 한다.
+
+    회귀 근거(2026-06-12): 부모만 죽이면 spawn 자식이 stdout 파이프를 쥐고 있어
+    워커가 EOF 를 못 받고 영구 블록 → 후속 잡이 pending 에 갇혔다.
+    """
+    spawner = (
+        "import subprocess, sys;"
+        "p = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(120)']);"
+        "p.wait()"
+    )
+
+    def tree_command(spec):
+        return [sys.executable, "-c", spawner]
+
+    manager = BacktestJobManager(jobs_dir=tmp_path / "jobs", command_builder=tree_command)
+    job_id = manager.submit(_spec(timeout=300))["job_id"]
+    rec = _wait_status(manager, job_id, {"running"}, timeout=10.0)
+    assert rec["status"] == "running"
+
+    assert manager.cancel(job_id)["status"] == "ok"
+    rec = _wait_status(manager, job_id, {"cancelled", "error", "timeout"}, timeout=20.0)
+    assert rec["status"] == "cancelled"
+
+    # 슬롯 해제 검증: 후속 잡이 pending 에 갇히지 않고 완주해야 한다.
+    manager._command_builder = _success_command("backtest/csv/after_cancel.csv")
+    follow_id = manager.submit(_spec("follow"))["job_id"]
+    rec2 = _wait_status(manager, follow_id, {"success", "error", "timeout"}, timeout=20.0)
+    assert rec2["status"] == "success"
+
+
 def test_log_tail_captured(tmp_path: Path):
     manager = BacktestJobManager(
         jobs_dir=tmp_path / "jobs",
