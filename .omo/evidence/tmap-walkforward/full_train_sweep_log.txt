@@ -15,3 +15,77 @@
 [SWEEP] gen12 TMAP prev_ratio_min=5000 profit=2,153,301 mdd=9.44 trades=45 (105s)
 [SWEEP] gen13 TMAP strength_min=70 profit=8,631,199 mdd=17.44 trades=307 (105s)
 [SWEEP] gen14 TMAP strength_min=90 ERROR (252s)
+[SWEEP] template=seed_902905 points=56/56
+[SWEEP] gen0 TMAP __default__ SKIP(resume)
+[SWEEP] gen1 TMAP cap_max=1500 SKIP(resume)
+[SWEEP] gen2 TMAP cap_max=2000 SKIP(resume)
+[SWEEP] gen3 TMAP cap_max=2500 SKIP(resume)
+[SWEEP] gen4 TMAP cap_max=4000 SKIP(resume)
+[SWEEP] gen5 TMAP cap_max=6000 SKIP(resume)
+[SWEEP] gen6 TMAP cap_max=10000 SKIP(resume)
+[SWEEP] gen7 TMAP prev_ratio_min=100 SKIP(resume)
+[SWEEP] gen8 TMAP prev_ratio_min=300 SKIP(resume)
+[SWEEP] gen9 TMAP prev_ratio_min=500 SKIP(resume)
+[SWEEP] gen10 TMAP prev_ratio_min=1000 SKIP(resume)
+[SWEEP] gen11 TMAP prev_ratio_min=2000 SKIP(resume)
+[SWEEP] gen12 TMAP prev_ratio_min=5000 SKIP(resume)
+[SWEEP] gen13 TMAP strength_min=70 SKIP(resume)
+[SWEEP] resume: 평가 대상 42점 / 스킵 14점
+[SWEEP] prepare status=ok back_count=2285 elapsed=212s
+[SWEEP] gen14 TMAP strength_min=90 profit=8,301,135 mdd=18.55 trades=302 (122s)
+[SWEEP] gen15 TMAP strength_min=110 profit=7,988,019 mdd=15.88 trades=272 (111s)
+[SWEEP] gen16 TMAP strength_min=130 profit=6,161,569 mdd=12.02 trades=186 (100s)
+[SWEEP] gen17 TMAP strength_min=150 profit=3,823,301 mdd=11.66 trades=119 (96s)
+[SWEEP] gen18 TMAP strength_max=200 profit=7,393,966 mdd=18.72 trades=290 (96s)
+[SWEEP] gen19 TMAP strength_max=250 profit=8,726,861 mdd=16.41 trades=305 (100s)
+[SWEEP] gen20 TMAP strength_max=350 profit=8,184,804 mdd=20.55 trades=311 (112s)
+[SWEEP] gen21 TMAP window_end=90300 profit=2,921,934 mdd=14.97 trades=155 (115s)
+[SWEEP] gen22 TMAP window_end=90700 profit=9,660,666 mdd=16.21 trades=445 (142s)
+[SWEEP] gen23 TMAP window_end=91000 profit=6,917,823 mdd=22.16 trades=587 (155s)
+[SWEEP] gen24 TMAP window_end=91500 profit=4,288,153 mdd=33.50 trades=749 (127s)
+[SWEEP] gen25 TMAP window_end=92000 profit=2,171,578 mdd=38.33 trades=846 (116s)
+[SWEEP] gen26 TMAP angle_min_902=3 profit=8,439,693 mdd=17.65 trades=308 (110s)
+[SWEEP] gen27 TMAP angle_min_902=8 profit=8,389,484 mdd=17.71 trades=306 (98s)
+[SWEEP] gen28 TMAP angle_min_902=10 profit=8,247,184 mdd=17.51 trades=302 (100s)
+[SWEEP] gen29 TMAP angle_min_902=15 profit=7,259,153 mdd=18.18 trades=289 (143s)
+[SWEEP] gen30 TMAP burst_min_902=2.0 profit=8,619,194 mdd=13.01 trades=341 (149s)
+[SWEEP] gen31 TMAP burst_min_902=2.5 profit=9,763,807 mdd=11.33 trades=327 (151s)
+[SWEEP] gen32 TMAP burst_min_902=3.5 profit=7,957,998 mdd=17.52 trades=299 (149s)
+[SWEEP] gen33 TMAP burst_min_902=4.0 profit=7,006,506 mdd=18.69 trades=292 (150s)
+[SWEEP] gen34 TMAP turnover_min_902=1 profit=4,153,870 mdd=18.26 trades=490 (149s)
+[SWEEP] gen35 TMAP turnover_min_902=1.5 profit=7,393,819 mdd=13.42 trades=378 (150s)
+[SWEEP] gen36 TMAP turnover_min_902=3 profit=6,036,852 mdd=17.08 trades=266 (117s)
+[SWEEP] gen37 TMAP turnover_min_902=4 profit=5,828,867 mdd=17.02 trades=252 (130s)
+[SWEEP] gen38 TMAP stop_deep=-1.0 profit=8,631,199 mdd=17.44 trades=307 (133s)
+[SWEEP] gen39 TMAP stop_deep=-1.5 profit=8,631,199 mdd=17.44 trades=307 (97s)
+[SWEEP] gen40 TMAP stop_deep=-2.5 profit=8,631,199 mdd=17.44 trades=307 (113s)
+[SWEEP] gen41 TMAP stop_deep=-3.0 profit=8,631,199 mdd=17.44 trades=307 (150s)
+[SWEEP] gen42 TMAP take_hard=3 profit=6,846,095 mdd=14.32 trades=311 (148s)
+[SWEEP] gen43 TMAP take_hard=4 profit=7,834,251 mdd=18.01 trades=308 (97s)
+[SWEEP] gen44 TMAP take_hard=7 profit=9,482,718 mdd=11.43 trades=307 (94s)
+[SWEEP] gen45 TMAP take_hard=9 profit=9,890,998 mdd=11.57 trades=307 (113s)
+[SWEEP] gen46 TMAP stop_hard=-3.0 profit=6,293,981 mdd=20.01 trades=308 (149s)
+[SWEEP] gen47 TMAP stop_hard=-4.0 profit=7,342,836 mdd=20.10 trades=308 (149s)
+[SWEEP] gen48 TMAP stop_hard=-7.0 profit=8,764,462 mdd=18.04 trades=307 (149s)
+[SWEEP] gen49 TMAP trail_start=2 profit=5,699,841 mdd=20.23 trades=314 (147s)
+[SWEEP] gen50 TMAP trail_start=3 profit=8,830,568 mdd=13.43 trades=308 (113s)
+[SWEEP] gen51 TMAP trail_start=4 profit=9,470,958 mdd=15.09 trades=307 (98s)
+[SWEEP] gen52 TMAP trail_start=8 profit=8,631,199 mdd=17.44 trades=307 (97s)
+[SWEEP] gen53 TMAP trail_keep=0.5 profit=8,631,199 mdd=17.44 trades=307 (95s)
+[SWEEP] gen54 TMAP trail_keep=0.7 profit=8,631,199 mdd=17.44 trades=307 (101s)
+[SWEEP] gen55 TMAP trail_keep=0.8 profit=8,631,199 mdd=17.44 trades=307 (129s)
+[SWEEP] baseline profit=8,631,199 mdd=17.44
+[SWEEP] cap_max: plateau_score=5.0593 center=4000.0 width=6 positive=1.0
+[SWEEP] strength_min: plateau_score=4.0441 center=110.0 width=5 positive=1.0
+[SWEEP] stop_deep: plateau_score=4.0 center=-1.5 width=4 positive=1.0
+[SWEEP] take_hard: plateau_score=3.9455 center=7.0 width=4 positive=1.0
+[SWEEP] burst_min_902: plateau_score=3.8636 center=3.5 width=4 positive=1.0
+[SWEEP] trail_start: plateau_score=3.7808 center=4.0 width=4 positive=1.0
+[SWEEP] angle_min_902: plateau_score=3.7464 center=10.0 width=4 positive=1.0
+[SWEEP] prev_ratio_min: plateau_score=3.6088 center=1000.0 width=6 positive=1.0
+[SWEEP] window_end: plateau_score=3.0077 center=91000.0 width=5 positive=1.0
+[SWEEP] trail_keep: plateau_score=3.0 center=0.7 width=3 positive=1.0
+[SWEEP] strength_max: plateau_score=2.816 center=250.0 width=3 positive=1.0
+[SWEEP] turnover_min_902: plateau_score=2.7126 center=3.0 width=4 positive=1.0
+[SWEEP] stop_hard: plateau_score=2.5954 center=-4.0 width=3 positive=1.0
+[SWEEP] done

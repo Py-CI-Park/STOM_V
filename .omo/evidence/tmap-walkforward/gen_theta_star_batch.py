@@ -43,16 +43,24 @@ MAX_COMBOS = 6
 
 
 def _dominant_plateau(curve: list[dict], base_profit: float) -> dict | None:
-    """v2(사전선언 보조 규칙): profit >= 베이스라인 손익인 최장 연속 구간.
+    """v2(사전선언 보조 규칙): profit이 베이스라인을 '엄격 초과'하는 최장 연속 구간.
 
     v1(전체 흑자 고원 평균>베이스라인)은 전 점이 흑자인 슬롯에서 고원이 곡선
     전체로 잡혀 평균이 희석되는 약점이 있다(전 슬롯 부적격 위험). v2는 베이스라인
     '지배' 구간만 고원으로 본다. 폭 >= 2(이웃 동반 흑자 — 고원다움) 요구.
+
+    [2026-06-11 배치 실행 전 교정] 비교를 >= 에서 > 로 강화한다. 이유: 본 스윕에서
+    stop_deep·trail_keep이 모든 값에서 베이스라인과 바이트 동일 결과(불활성 슬롯
+    — 해당 분기가 한 번도 발동하지 않음)를 내며 등호로 '지배 고원'에 적격 판정됐다.
+    개선 증거가 0인 점(profit == base)은 지배가 아니다 — 등호 포함 시 시드와 동일한
+    후보가 배치를 점유하고, 실제 우세 슬롯(trail_start)이 싱글 정원에서 밀린다.
+    이 교정은 특정 결과를 고르는 사후 선택이 아니라 규칙의 퇴화 케이스 제거이며,
+    적용 후 재판독 결과를 그대로 따른다.
     """
     best = None
     run: list[dict] = []
     for p in curve:
-        if p.get("ok") and p["profit"] >= base_profit:
+        if p.get("ok") and p["profit"] > base_profit:
             run.append(p)
         else:
             run = []
