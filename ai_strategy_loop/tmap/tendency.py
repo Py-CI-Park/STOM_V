@@ -62,9 +62,44 @@ def _curve_for(rows: List[Dict[str, Any]], param: str) -> List[Dict[str, Any]]:
             "trades": int(r.get("trade_count") or 0),
             "status": r.get("status"),
             "ok": r.get("status") == "ok",
+            "csv_path": r.get("csv_path"),  # P2 — 연도 일관성 검사 재료.
         }
         for r in pts
     ]
+
+
+def center_yearly_consistency(
+    curve: List[Dict[str, Any]], center_value: Any, min_positive_years: int = 2
+) -> Optional[Dict[str, Any]]:
+    """P2(2026-06-11) — θ* 중심점의 연도 일관성 검사 (사전선언 규칙).
+
+    중심점 CSV의 연도별 손익에서 흑자 연도 >= min_positive_years(기본 2,
+    3년 train 기준). 합산 수익이 가리는 알파 감쇠(2023 大흑자가 2025 적자를
+    가리는 패턴 — 시드의 실측 문제)를 후보 선정 단계에서 차단한다.
+    CSV 부재/파싱 실패는 None(검사 생략 — graceful, advisory 계약과 동일).
+    """
+    from ai_strategy_loop.controller._seed_relative_selection import (  # noqa: PLC0415
+        yearly_profit_breakdown,
+    )
+
+    row = next((p for p in curve if p.get("value") == center_value), None)
+    if not row or not row.get("csv_path"):
+        return None
+    breakdown = yearly_profit_breakdown(row["csv_path"])
+    if not breakdown:
+        return None
+    years = {year: profit for year, profit in breakdown}
+    positive = sum(1 for v in years.values() if v > 0)
+    passed = positive >= min_positive_years
+    return {
+        "passed": passed,
+        "years": {y: round(p) for y, p in sorted(years.items())},
+        "positive_years": positive,
+        "reason": "" if passed else (
+            f"yearly consistency fail: 흑자 연도 {positive}/{len(years)}"
+            f" < {min_positive_years}"
+        ),
+    }
 
 
 def plateau_metrics(curve: List[Dict[str, Any]]) -> Dict[str, Any]:

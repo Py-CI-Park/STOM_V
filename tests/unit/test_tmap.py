@@ -34,7 +34,11 @@ from ai_strategy_loop.tmap.template import (  # noqa: E402
     validate_rendered,
 )
 from ai_strategy_loop.tmap.resume import resume_done_map, resume_row  # noqa: E402
-from ai_strategy_loop.tmap.tendency import plateau_metrics, summarize_tendency  # noqa: E402
+from ai_strategy_loop.tmap.tendency import (  # noqa: E402
+    center_yearly_consistency,
+    plateau_metrics,
+    summarize_tendency,
+)
 from ai_strategy_loop.scripts.tmap_walkforward import parse_windows, select_theta  # noqa: E402
 
 
@@ -298,6 +302,46 @@ class TestRoutes:
         assert client.get("/portfolio_preview", params={"run_id": "nope"}).json()["status"] in (
             "no_series", "unavailable",
         )
+
+
+class TestYearlyConsistency:
+    """P2 — θ* 중심점 연도 일관성(흑자 연도 >= 2). 알파 감쇠 차단 회귀."""
+
+    @staticmethod
+    def _yearly_csv(path: Path, year_profits: dict) -> str:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8-sig", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=["종목명", "매수시간", "매도시간", "수익률", "수익금"])
+            w.writeheader()
+            for year, profit in year_profits.items():
+                w.writerow({"종목명": "T", "매수시간": f"{year}0102090100",
+                            "매도시간": f"{year}0102090300",
+                            "수익률": 1.0 if profit > 0 else -0.5, "수익금": profit})
+        return str(path)
+
+    def test_alpha_decay_pattern_fails(self, tmp_path) -> None:
+        # 시드의 실측 패턴 모사: 2023 大흑자가 합산을 가리는 케이스 — 차단돼야 한다.
+        csvp = self._yearly_csv(tmp_path / "decay.csv",
+                                {2023: 2_000_000, 2024: -100_000, 2025: -500_000})
+        curve = [{"value": 9, "csv_path": csvp, "ok": True}]
+        out = center_yearly_consistency(curve, 9)
+        assert out["passed"] is False
+        assert out["positive_years"] == 1
+        assert "yearly consistency fail" in out["reason"]
+
+    def test_two_positive_years_pass(self, tmp_path) -> None:
+        csvp = self._yearly_csv(tmp_path / "ok.csv",
+                                {2023: 900_000, 2024: 400_000, 2025: -100_000})
+        out = center_yearly_consistency([{"value": 7, "csv_path": csvp}], 7)
+        assert out["passed"] is True
+        assert out["years"]["2023"] == 900_000
+
+    def test_graceful_on_missing_csv_or_value(self, tmp_path) -> None:
+        assert center_yearly_consistency([{"value": 1, "csv_path": None}], 1) is None
+        assert center_yearly_consistency(
+            [{"value": 1, "csv_path": str(tmp_path / "nope.csv")}], 1
+        ) is None
+        assert center_yearly_consistency([{"value": 1, "csv_path": "x"}], 99) is None
 
 
 class TestResume:

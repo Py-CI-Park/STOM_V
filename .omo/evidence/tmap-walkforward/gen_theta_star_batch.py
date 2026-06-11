@@ -82,10 +82,14 @@ def _dominant_plateau(curve: list[dict], base_profit: float) -> dict | None:
 def qualified_slots(summary: dict) -> list[dict]:
     """적격 슬롯을 plateau_score 내림차순으로 돌려준다(근거 포함).
 
-    적격 = v1(positive_ratio>=0.5 AND 고원 평균>베이스라인)
-        OR v2(베이스라인 지배 연속 구간 폭>=2). v1 실패·v2 통과 슬롯의
-    θ* 중심값은 v2 지배 고원의 중심을 쓴다(qualified_rule 필드에 명시).
+    적격 = [v1(positive_ratio>=0.5 AND 고원 평균>max(베이스라인,0))
+        OR v2(베이스라인 엄격 지배 연속 구간 폭>=2)]
+        AND [P2 연도 일관성: θ* 중심점 CSV의 흑자 연도 >= 2 — 합산 수익이
+        가리는 알파 감쇠 차단. CSV 부재 시 검사 생략(graceful)].
+    v1 실패·v2 통과 슬롯의 θ* 중심값은 v2 지배 고원의 중심을 쓴다.
     """
+    from ai_strategy_loop.tmap.tendency import center_yearly_consistency  # noqa: PLC0415
+
     base_profit = float((summary.get("baseline") or {}).get("profit") or 0.0)
     out = []
     for name, m in (summary.get("params") or {}).items():
@@ -107,12 +111,23 @@ def qualified_slots(summary: dict) -> list[dict]:
         dominant = _dominant_plateau(curve, base_profit)
         rule = "v1" if v1_ok else ("v2_dominant" if dominant else None)
         effective = plateau if v1_ok else dominant
+        reject = list(reasons)
+        if rule is None and not dominant:
+            reject.append("no dominant sub-plateau (width>=2)")
+        # [P2] 연도 일관성 — 적격 후보의 중심점만 검사(비적격은 이미 탈락).
+        yearly = None
+        if rule is not None and effective is not None:
+            yearly = center_yearly_consistency(curve, effective["center_value"])
+            if yearly is not None and not yearly["passed"]:
+                reject.append(yearly["reason"])
+                rule, effective = None, None
         out.append({
             "param": name,
             "qualified": rule is not None,
             "qualified_rule": rule,
-            "reject_reasons": [] if rule else reasons + ["no dominant sub-plateau (width>=2)"],
+            "reject_reasons": [] if rule else reject,
             "v1_reject_reasons": reasons,
+            "yearly_consistency": yearly,
             "plateau_score": m.get("plateau_score"),
             "positive_ratio": m.get("positive_ratio"),
             "plateau": m.get("plateau"),
