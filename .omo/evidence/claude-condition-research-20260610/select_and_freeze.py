@@ -81,7 +81,8 @@ def _load_rows(run_ids):
     return rows
 
 
-def _overfit_advisory(candidates, labels, primary, run_ids=None, trial_runs=None):
+def _overfit_advisory(candidates, labels, primary, run_ids=None, trial_runs=None,
+                      trial_runs_like=""):
     """C1 — PBO(CSCV)·DSR 실측치(advisory). 어떤 실패도 흡수한다(판정 불변).
 
     - PBO: 선택 풀(베이스라인 제외, csv 보유) 후보들의 일별 손익 행렬로 CSCV.
@@ -113,17 +114,23 @@ def _overfit_advisory(candidates, labels, primary, run_ids=None, trial_runs=None
         trial_run_ids = [str(r) for r in (list(run_ids or []) + list(trial_runs or []))]
         con = sqlite3.connect(str(RUNS_DB))
         try:
-            in_clause = ""
+            clauses, params = [], list(trial_run_ids)
             if trial_run_ids:
                 placeholders = ",".join("?" for _ in trial_run_ids)
-                in_clause = f"run_id IN ({placeholders}) OR "
+                clauses.append(f"run_id IN ({placeholders})")
+            if trial_runs_like:  # C4 — walk-forward 등 run 패밀리의 시도 자동 누적.
+                clauses.append("run_id LIKE ?")
+                params.append(trial_runs_like)
+            clauses.append("(run_id LIKE 'cldgen_%' AND buy_name LIKE 'CLDGEN_%')")
             n_trials = con.execute(
-                "SELECT COUNT(DISTINCT buy_name) FROM generations"
-                f" WHERE {in_clause}(run_id LIKE 'cldgen_%' AND buy_name LIKE 'CLDGEN_%')",
-                trial_run_ids,
+                "SELECT COUNT(DISTINCT buy_name) FROM generations WHERE "
+                + " OR ".join(clauses),
+                params,
             ).fetchone()[0]
         finally:
             con.close()
+        if trial_runs_like:
+            out["n_trials_like"] = trial_runs_like
         out["n_trials_definition"] = (
             "이 선택을 낳은 평가 점 전체의 고유 매수 전략 수 = 선택 대상 run"
             " + trial-runs(TMAP 스윕 그리드) + 사이클 CLDGEN 풀"
@@ -164,10 +171,13 @@ def _overfit_advisory(candidates, labels, primary, run_ids=None, trial_runs=None
 def main() -> int:
     # N5 — --trial-runs=<run_id,...>: 후보를 낳은 스윕 run들(시도 횟수에 합산).
     trial_runs: list = []
+    trial_runs_like = ""  # C4 — run 패밀리 패턴(예: wf_scenarioD_20260611_%).
     args = []
     for a in sys.argv[1:]:
         if a.startswith("--trial-runs="):
             trial_runs = [s for s in a.split("=", 1)[1].split(",") if s]
+        elif a.startswith("--trial-runs-like="):
+            trial_runs_like = a.split("=", 1)[1]
         else:
             args.append(a)
     run_ids = args or ["cldgen_train_2023_2025_20260610"]
@@ -231,7 +241,8 @@ def main() -> int:
 
     # ── C1: 과적합 advisory (PBO/CSCV + DSR) — 분석 전용, 판정 불변 ────────
     overfit = _overfit_advisory(
-        candidates, labels, primary, run_ids=run_ids, trial_runs=trial_runs
+        candidates, labels, primary, run_ids=run_ids, trial_runs=trial_runs,
+        trial_runs_like=trial_runs_like,
     )
     (EVID / "p5-overfit-advisory.json").write_text(
         json.dumps(overfit, ensure_ascii=False, indent=2), encoding="utf-8"
