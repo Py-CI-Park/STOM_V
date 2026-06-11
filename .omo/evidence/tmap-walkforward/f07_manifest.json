@@ -1,0 +1,303 @@
+{
+  "template": "orderflow_f07_ignition",
+  "run_id": "tmap_f07_train_20260611",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_orderflow_f07_ignition_000_B",
+      "status": "ok",
+      "profit": -6188764.0,
+      "mdd": 64.93,
+      "trades": 779
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP window_end=91000",
+      "param": "window_end",
+      "value": 91000,
+      "buy_name": "TMAP_orderflow_f07_ignition_001_B",
+      "status": "ok",
+      "profit": -2628589.0,
+      "mdd": 31.33,
+      "trades": 491
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP window_end=92000",
+      "param": "window_end",
+      "value": 92000,
+      "buy_name": "TMAP_orderflow_f07_ignition_002_B",
+      "status": "ok",
+      "profit": -8556253.0,
+      "mdd": 59.57,
+      "trades": 1048
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP window_end=92500",
+      "param": "window_end",
+      "value": 92500,
+      "buy_name": "TMAP_orderflow_f07_ignition_003_B",
+      "status": "ok",
+      "profit": -14710674.0,
+      "mdd": 99.35,
+      "trades": 1254
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP cap_max=1500",
+      "param": "cap_max",
+      "value": 1500,
+      "buy_name": "TMAP_orderflow_f07_ignition_004_B",
+      "status": "ok",
+      "profit": -1257174.0,
+      "mdd": 36.56,
+      "trades": 321
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP cap_max=2000",
+      "param": "cap_max",
+      "value": 2000,
+      "buy_name": "TMAP_orderflow_f07_ignition_005_B",
+      "status": "ok",
+      "profit": -639543.0,
+      "mdd": 21.33,
+      "trades": 501
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP cap_max=5000",
+      "param": "cap_max",
+      "value": 5000,
+      "buy_name": "TMAP_orderflow_f07_ignition_006_B",
+      "status": "ok",
+      "profit": -8939686.0,
+      "mdd": 61.77,
+      "trades": 1126
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP flat_angle=1.0",
+      "param": "flat_angle",
+      "value": 1.0,
+      "buy_name": "TMAP_orderflow_f07_ignition_007_B",
+      "status": "ok",
+      "profit": -3247234.0,
+      "mdd": 39.9,
+      "trades": 428
+    },
+    {
+      "gen_no": 8,
+      "label": "TMAP flat_angle=3.0",
+      "param": "flat_angle",
+      "value": 3.0,
+      "buy_name": "TMAP_orderflow_f07_ignition_008_B",
+      "status": "ok",
+      "profit": -11839514.0,
+      "mdd": 80.79,
+      "trades": 1133
+    },
+    {
+      "gen_no": 9,
+      "label": "TMAP flat_window=30",
+      "param": "flat_window",
+      "value": 30,
+      "buy_name": "TMAP_orderflow_f07_ignition_009_B",
+      "status": "ok",
+      "profit": -3819429.0,
+      "mdd": 46.57,
+      "trades": 591
+    },
+    {
+      "gen_no": 10,
+      "label": "TMAP flat_window=120",
+      "param": "flat_window",
+      "value": 120,
+      "buy_name": "TMAP_orderflow_f07_ignition_010_B",
+      "status": "ok",
+      "profit": -13673800.0,
+      "mdd": 92.11,
+      "trades": 1077
+    },
+    {
+      "gen_no": 11,
+      "label": "TMAP burst_min=3.0",
+      "param": "burst_min",
+      "value": 3.0,
+      "buy_name": "TMAP_orderflow_f07_ignition_011_B",
+      "status": "ok",
+      "profit": -10234526.0,
+      "mdd": 71.77,
+      "trades": 897
+    },
+    {
+      "gen_no": 12,
+      "label": "TMAP burst_min=5.0",
+      "param": "burst_min",
+      "value": 5.0,
+      "buy_name": "TMAP_orderflow_f07_ignition_012_B",
+      "status": "ok",
+      "profit": -3642593.0,
+      "mdd": 40.12,
+      "trades": 659
+    },
+    {
+      "gen_no": 13,
+      "label": "TMAP burst_min=8.0",
+      "param": "burst_min",
+      "value": 8.0,
+      "buy_name": "TMAP_orderflow_f07_ignition_013_B",
+      "status": "ok",
+      "profit": 751054.0,
+      "mdd": 18.9,
+      "trades": 398
+    },
+    {
+      "gen_no": 14,
+      "label": "TMAP strength_min=100",
+      "param": "strength_min",
+      "value": 100,
+      "buy_name": "TMAP_orderflow_f07_ignition_014_B",
+      "status": "ok",
+      "profit": -28406480.0,
+      "mdd": 145.04,
+      "trades": 1671
+    },
+    {
+      "gen_no": 15,
+      "label": "TMAP strength_min=150",
+      "param": "strength_min",
+      "value": 150,
+      "buy_name": "TMAP_orderflow_f07_ignition_015_B",
+      "status": "ok",
+      "profit": -2752536.0,
+      "mdd": 58.68,
+      "trades": 237
+    },
+    {
+      "gen_no": 16,
+      "label": "TMAP absorb_ratio=0.2",
+      "param": "absorb_ratio",
+      "value": 0.2,
+      "buy_name": "TMAP_orderflow_f07_ignition_016_B",
+      "status": "ok",
+      "profit": -14799312.0,
+      "mdd": 99.94,
+      "trades": 1178
+    },
+    {
+      "gen_no": 17,
+      "label": "TMAP absorb_ratio=0.5",
+      "param": "absorb_ratio",
+      "value": 0.5,
+      "buy_name": "TMAP_orderflow_f07_ignition_017_B",
+      "status": "ok",
+      "profit": -1632829.0,
+      "mdd": 26.2,
+      "trades": 386
+    },
+    {
+      "gen_no": 18,
+      "label": "TMAP prev_ratio_min=0",
+      "param": "prev_ratio_min",
+      "value": 0,
+      "buy_name": "TMAP_orderflow_f07_ignition_018_B",
+      "status": "ok",
+      "profit": -8482518.0,
+      "mdd": 60.68,
+      "trades": 899
+    },
+    {
+      "gen_no": 19,
+      "label": "TMAP prev_ratio_min=500",
+      "param": "prev_ratio_min",
+      "value": 500,
+      "buy_name": "TMAP_orderflow_f07_ignition_019_B",
+      "status": "ok",
+      "profit": -3764398.0,
+      "mdd": 42.41,
+      "trades": 479
+    },
+    {
+      "gen_no": 20,
+      "label": "TMAP prev_ratio_min=1000",
+      "param": "prev_ratio_min",
+      "value": 1000,
+      "buy_name": "TMAP_orderflow_f07_ignition_020_B",
+      "status": "ok",
+      "profit": -2291289.0,
+      "mdd": 55.02,
+      "trades": 320
+    },
+    {
+      "gen_no": 21,
+      "label": "TMAP take_hard=3",
+      "param": "take_hard",
+      "value": 3,
+      "buy_name": "TMAP_orderflow_f07_ignition_021_B",
+      "status": "ok",
+      "profit": -9062238.0,
+      "mdd": 92.69,
+      "trades": 790
+    },
+    {
+      "gen_no": 22,
+      "label": "TMAP take_hard=7",
+      "param": "take_hard",
+      "value": 7,
+      "buy_name": "TMAP_orderflow_f07_ignition_022_B",
+      "status": "ok",
+      "profit": -5043487.0,
+      "mdd": 37.26,
+      "trades": 778
+    },
+    {
+      "gen_no": 23,
+      "label": "TMAP stop_hard=-2.0",
+      "param": "stop_hard",
+      "value": -2.0,
+      "buy_name": "TMAP_orderflow_f07_ignition_023_B",
+      "status": "ok",
+      "profit": -4833175.0,
+      "mdd": 52.07,
+      "trades": 796
+    },
+    {
+      "gen_no": 24,
+      "label": "TMAP stop_hard=-5.0",
+      "param": "stop_hard",
+      "value": -5.0,
+      "buy_name": "TMAP_orderflow_f07_ignition_024_B",
+      "status": "ok",
+      "profit": -6411037.0,
+      "mdd": 45.48,
+      "trades": 770
+    },
+    {
+      "gen_no": 25,
+      "label": "TMAP max_hold_sec=180",
+      "param": "max_hold_sec",
+      "value": 180,
+      "buy_name": "TMAP_orderflow_f07_ignition_025_B",
+      "status": "ok",
+      "profit": -7041931.0,
+      "mdd": 72.25,
+      "trades": 860
+    },
+    {
+      "gen_no": 26,
+      "label": "TMAP max_hold_sec=300",
+      "param": "max_hold_sec",
+      "value": 300,
+      "buy_name": "TMAP_orderflow_f07_ignition_026_B",
+      "status": "ok",
+      "profit": -5735434.0,
+      "mdd": 62.61,
+      "trades": 814
+    }
+  ]
+}

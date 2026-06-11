@@ -1,0 +1,1173 @@
+[SWEEP] template=seed_902905 points=38/38
+[SWEEP] resume: 평가 대상 38점 / 스킵 0점
+[SWEEP] prepare status=ok back_count=2285 elapsed=266s
+[SWEEP] gen0 TMAP __default__ profit=8,631,199 mdd=17.44 trades=307 (138s)
+[SWEEP] gen1 TMAP __default__ profit=8,631,199 mdd=17.44 trades=307 (149s)
+[SWEEP] gen2 TMAP __default__ profit=8,631,199 mdd=17.44 trades=307 (126s)
+[SWEEP] gen3 TMAP2 cap_max=1500|take_hard=3 profit=6,365,050 mdd=7.65 trades=175 (148s)
+[SWEEP] gen4 TMAP2 cap_max=1500|take_hard=4 profit=7,183,237 mdd=8.36 trades=173 (149s)
+[SWEEP] gen5 TMAP2 cap_max=1500|take_hard=5 profit=6,942,596 mdd=10.26 trades=172 (148s)
+[SWEEP] gen6 TMAP2 cap_max=1500|take_hard=7 profit=7,386,536 mdd=10.02 trades=172 (150s)
+[SWEEP] gen7 TMAP2 cap_max=1500|take_hard=9 profit=7,357,777 mdd=10.09 trades=172 (149s)
+[SWEEP] gen8 TMAP2 cap_max=2000|take_hard=3 profit=6,597,969 mdd=7.41 trades=235 (148s)
+[SWEEP] gen9 TMAP2 cap_max=2000|take_hard=4 profit=8,188,306 mdd=10.79 trades=232 (148s)
+[SWEEP] gen10 TMAP2 cap_max=2000|take_hard=5 profit=8,766,888 mdd=11.68 trades=231 (134s)
+[SWEEP] gen11 TMAP2 cap_max=2000|take_hard=7 profit=9,351,886 mdd=11.02 trades=231 (135s)
+[SWEEP] gen12 TMAP2 cap_max=2000|take_hard=9 profit=9,559,909 mdd=11.65 trades=231 (126s)
+[SWEEP] gen13 TMAP2 cap_max=2500|take_hard=3 profit=7,024,062 mdd=9.29 trades=276 (112s)
+[SWEEP] gen14 TMAP2 cap_max=2500|take_hard=4 profit=8,269,377 mdd=13.98 trades=273 (111s)
+[SWEEP] gen15 TMAP2 cap_max=2500|take_hard=5 profit=8,987,958 mdd=13.66 trades=272 (108s)
+[SWEEP] gen16 TMAP2 cap_max=2500|take_hard=7 profit=9,703,003 mdd=12.07 trades=272 (101s)
+[SWEEP] gen17 TMAP2 cap_max=2500|take_hard=9 profit=10,028,143 mdd=12.19 trades=272 (103s)
+[SWEEP] gen18 TMAP2 cap_max=3000|take_hard=3 profit=6,846,095 mdd=14.32 trades=311 (109s)
+[SWEEP] gen19 TMAP2 cap_max=3000|take_hard=4 profit=7,834,251 mdd=18.01 trades=308 (148s)
+[SWEEP] gen20 TMAP2 cap_max=3000|take_hard=5 profit=8,631,199 mdd=17.44 trades=307 (150s)
+[SWEEP] gen21 TMAP2 cap_max=3000|take_hard=7 profit=9,482,718 mdd=11.43 trades=307 (148s)
+[SWEEP] gen22 TMAP2 cap_max=3000|take_hard=9 profit=9,890,998 mdd=11.57 trades=307 (147s)
+[SWEEP] gen23 TMAP2 cap_max=4000|take_hard=3 profit=4,677,319 mdd=23.30 trades=341 (148s)
+[SWEEP] gen24 TMAP2 cap_max=4000|take_hard=4 profit=5,755,813 mdd=26.52 trades=338 (148s)
+[SWEEP] gen25 TMAP2 cap_max=4000|take_hard=5 profit=6,615,107 mdd=18.73 trades=337 (147s)
+[SWEEP] gen26 TMAP2 cap_max=4000|take_hard=7 profit=7,384,973 mdd=16.82 trades=337 (147s)
+[SWEEP] gen27 TMAP2 cap_max=4000|take_hard=9 profit=7,793,253 mdd=16.87 trades=337 (148s)
+[SWEEP] gen28 TMAP2 cap_max=6000|take_hard=3 profit=4,625,335 mdd=22.69 trades=355 (149s)
+[SWEEP] gen29 TMAP2 cap_max=6000|take_hard=4 profit=5,285,578 mdd=28.83 trades=352 (147s)
+[SWEEP] gen30 TMAP2 cap_max=6000|take_hard=5 profit=6,255,715 mdd=20.16 trades=351 (148s)
+[SWEEP] gen31 TMAP2 cap_max=6000|take_hard=7 profit=6,940,305 mdd=18.30 trades=351 (148s)
+[SWEEP] gen32 TMAP2 cap_max=6000|take_hard=9 profit=7,348,585 mdd=18.32 trades=351 (147s)
+[SWEEP] gen33 TMAP2 cap_max=10000|take_hard=3 profit=4,707,839 mdd=22.53 trades=360 (147s)
+[SWEEP] gen34 TMAP2 cap_max=10000|take_hard=4 profit=5,099,502 mdd=29.23 trades=357 (136s)
+[SWEEP] gen35 TMAP2 cap_max=10000|take_hard=5 profit=6,099,876 mdd=20.32 trades=356 (114s)
+[SWEEP] gen36 TMAP2 cap_max=10000|take_hard=7 profit=6,780,522 mdd=18.45 trades=356 (147s)
+[SWEEP] gen37 TMAP2 cap_max=10000|take_hard=9 profit=7,188,802 mdd=18.46 trades=356 (147s)
+[SWEEP] grid cap_max×take_hard: cells=35 positive=1.0 best=(2500.0,9.0)=10,028,143 mesa=35셀
+[SWEEP] baseline profit=8,631,199 mdd=17.44 noise_band=0
+[SWEEP] done
+[SWEEP] template=seed_902905_exit2 points=25/25
+[SWEEP] resume: 평가 대상 25점 / 스킵 0점
+[SWEEP] prepare status=ok back_count=2285 elapsed=242s
+[SWEEP] gen0 TMAP __default__ profit=10,585,859 mdd=10.83 trades=299 (104s)
+[SWEEP] gen1 TMAP take_hard=3 profit=7,297,031 mdd=18.55 trades=304 (117s)
+[SWEEP] gen2 TMAP take_hard=4 profit=8,608,751 mdd=13.31 trades=300 (121s)
+[SWEEP] gen3 TMAP take_hard=7 profit=10,601,328 mdd=10.97 trades=299 (123s)
+[SWEEP] gen4 TMAP take_hard=9 profit=11,608,670 mdd=10.27 trades=299 (138s)
+[SWEEP] gen5 TMAP stop_hard=-3.0 profit=8,888,575 mdd=7.43 trades=300 (146s)
+[SWEEP] gen6 TMAP stop_hard=-4.0 profit=9,650,432 mdd=9.70 trades=300 (145s)
+[SWEEP] gen7 TMAP stop_hard=-7.0 profit=10,558,746 mdd=10.27 trades=299 (148s)
+[SWEEP] gen8 TMAP max_hold_sec=90 profit=4,335,473 mdd=18.33 trades=313 (144s)
+[SWEEP] gen9 TMAP max_hold_sec=180 profit=6,999,856 mdd=14.23 trades=302 (145s)
+[SWEEP] gen10 TMAP max_hold_sec=300 profit=9,885,833 mdd=14.24 trades=299 (143s)
+[SWEEP] gen11 TMAP max_hold_sec=1200 profit=8,025,691 mdd=14.21 trades=299 (144s)
+[SWEEP] gen12 TMAP be_trigger=2 profit=8,481,380 mdd=21.26 trades=300 (145s)
+[SWEEP] gen13 TMAP be_trigger=4 profit=10,502,699 mdd=14.28 trades=299 (159s)
+[SWEEP] gen14 TMAP be_trigger=6 profit=10,647,810 mdd=14.00 trades=299 (144s)
+[SWEEP] gen15 TMAP be_floor=0.1 profit=10,404,416 mdd=11.10 trades=299 (145s)
+[SWEEP] gen16 TMAP be_floor=0.5 profit=10,275,562 mdd=10.86 trades=299 (146s)
+[SWEEP] gen17 TMAP be_floor=1.0 profit=9,944,365 mdd=10.34 trades=300 (147s)
+[SWEEP] gen18 TMAP trail_gap=1.0 profit=10,585,859 mdd=10.83 trades=299 (146s)
+[SWEEP] gen19 TMAP trail_gap=1.5 profit=10,585,859 mdd=10.83 trades=299 (147s)
+[SWEEP] gen20 TMAP trail_gap=3.0 profit=10,585,859 mdd=10.83 trades=299 (147s)
+[SWEEP] gen21 TMAP trail_gap=4.0 profit=10,585,859 mdd=10.83 trades=299 (143s)
+[SWEEP] gen22 TMAP trail_start=3 profit=10,071,768 mdd=10.54 trades=300 (144s)
+[SWEEP] gen23 TMAP trail_start=4 profit=10,043,577 mdd=10.85 trades=299 (144s)
+[SWEEP] gen24 TMAP trail_start=8 profit=10,585,859 mdd=10.83 trades=299 (147s)
+[SWEEP] baseline profit=10,585,859 mdd=10.83
+[SWEEP] trail_gap: plateau_score=4.0 center=3.0 width=4 positive=1.0
+[SWEEP] take_hard: plateau_score=3.6006 center=7.0 width=4 positive=1.0
+[SWEEP] trail_start: plateau_score=2.9002 center=4.0 width=3 positive=1.0
+[SWEEP] be_floor: plateau_score=2.8929 center=0.5 width=3 positive=1.0
+[SWEEP] be_trigger: plateau_score=2.7992 center=4.0 width=3 positive=1.0
+[SWEEP] max_hold_sec: plateau_score=2.7628 center=300.0 width=4 positive=1.0
+[SWEEP] stop_hard: plateau_score=2.7487 center=-4.0 width=3 positive=1.0
+[SWEEP] done
+[SWEEP] template=orderflow_f07_ignition points=27/27
+[SWEEP] resume: 평가 대상 27점 / 스킵 0점
+[SWEEP] prepare status=ok back_count=2285 elapsed=265s
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen0 TMAP __default__ profit=-6,188,764 mdd=64.93 trades=779 (143s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen1 TMAP window_end=91000 profit=-2,628,589 mdd=31.33 trades=491 (140s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen2 TMAP window_end=92000 profit=-8,556,253 mdd=59.57 trades=1048 (151s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+[SWEEP] gen3 TMAP window_end=92500 profit=-14,710,674 mdd=99.35 trades=1254 (134s)
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen4 TMAP cap_max=1500 profit=-1,257,174 mdd=36.56 trades=321 (113s)
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen5 TMAP cap_max=2000 profit=-639,543 mdd=21.33 trades=501 (123s)
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen6 TMAP cap_max=5000 profit=-8,939,686 mdd=61.77 trades=1126 (110s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen7 TMAP flat_angle=1.0 profit=-3,247,234 mdd=39.90 trades=428 (116s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen8 TMAP flat_angle=3.0 profit=-11,839,514 mdd=80.79 trades=1133 (103s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen9 TMAP flat_window=30 profit=-3,819,429 mdd=46.57 trades=591 (99s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+[SWEEP] gen10 TMAP flat_window=120 profit=-13,673,800 mdd=92.11 trades=1077 (103s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen11 TMAP burst_min=3.0 profit=-10,234,526 mdd=71.77 trades=897 (99s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen12 TMAP burst_min=5.0 profit=-3,642,593 mdd=40.12 trades=659 (98s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen13 TMAP burst_min=8.0 profit=751,054 mdd=18.90 trades=398 (97s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen14 TMAP strength_min=100 profit=-28,406,480 mdd=145.04 trades=1671 (97s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen15 TMAP strength_min=150 profit=-2,752,536 mdd=58.68 trades=237 (97s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen16 TMAP absorb_ratio=0.2 profit=-14,799,312 mdd=99.94 trades=1178 (98s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen17 TMAP absorb_ratio=0.5 profit=-1,632,829 mdd=26.20 trades=386 (98s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen18 TMAP prev_ratio_min=0 profit=-8,482,518 mdd=60.68 trades=899 (97s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen19 TMAP prev_ratio_min=500 profit=-3,764,398 mdd=42.41 trades=479 (97s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen20 TMAP prev_ratio_min=1000 profit=-2,291,289 mdd=55.02 trades=320 (97s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen21 TMAP take_hard=3 profit=-9,062,238 mdd=92.69 trades=790 (97s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen22 TMAP take_hard=7 profit=-5,043,487 mdd=37.26 trades=778 (97s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen23 TMAP stop_hard=-2.0 profit=-4,833,175 mdd=52.07 trades=796 (97s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen24 TMAP stop_hard=-5.0 profit=-6,411,037 mdd=45.48 trades=770 (97s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen25 TMAP max_hold_sec=180 profit=-7,041,931 mdd=72.25 trades=860 (97s)
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: invalid value encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+<string>:19: RuntimeWarning: divide by zero encountered in scalar divide
+[SWEEP] gen26 TMAP max_hold_sec=300 profit=-5,735,434 mdd=62.61 trades=814 (96s)
+[SWEEP] baseline profit=-6,188,764 mdd=64.93
+[SWEEP] burst_min: plateau_score=0.0404 center=8.0 width=1 positive=0.3333
+[SWEEP] absorb_ratio: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] cap_max: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] flat_angle: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] flat_window: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] max_hold_sec: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] prev_ratio_min: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] stop_hard: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] strength_min: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] take_hard: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] window_end: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] done
+[SWEEP] template=orderflow_f10_largecap_trend points=22/22
+[SWEEP] resume: 평가 대상 22점 / 스킵 0점
+[SWEEP] prepare status=ok back_count=2285 elapsed=208s
+[SWEEP] gen0 TMAP __default__ profit=-387,778,408 mdd=390.42 trades=21037 (102s)
+[SWEEP] gen1 TMAP window_end=91500 profit=-223,102,163 mdd=236.44 trades=12238 (97s)
+[SWEEP] gen2 TMAP window_end=92000 profit=-331,294,147 mdd=334.94 trades=17988 (102s)
+[SWEEP] gen3 TMAP cap_min=5000 profit=-523,330,689 mdd=439.86 trades=27902 (117s)
+[SWEEP] gen4 TMAP cap_min=20000 profit=-261,110,008 mdd=349.92 trades=14112 (111s)
+[SWEEP] gen5 TMAP chg_max=5 profit=-304,512,231 mdd=360.28 trades=16554 (106s)
+[SWEEP] gen6 TMAP chg_max=15 profit=-404,065,068 mdd=389.43 trades=22045 (108s)
+[SWEEP] gen7 TMAP ma_window=30 profit=-390,783,147 mdd=376.80 trades=21540 (113s)
+[SWEEP] gen8 TMAP ma_window=120 profit=-372,798,868 mdd=376.37 trades=20256 (112s)
+[SWEEP] gen9 TMAP ma_shift=10 profit=-390,824,710 mdd=392.69 trades=21424 (106s)
+[SWEEP] gen10 TMAP ma_shift=60 profit=-374,236,325 mdd=377.72 trades=20481 (104s)
+[SWEEP] gen11 TMAP flow_ratio=0.8 profit=-395,727,567 mdd=398.08 trades=21200 (104s)
+[SWEEP] gen12 TMAP flow_ratio=1.2 profit=-382,435,108 mdd=385.32 trades=20894 (104s)
+[SWEEP] gen13 TMAP flow_ratio=1.5 profit=-371,801,891 mdd=375.02 trades=20632 (103s)
+[SWEEP] gen14 TMAP strength_min=90 profit=-435,093,441 mdd=398.79 trades=23232 (104s)
+[SWEEP] gen15 TMAP strength_min=120 profit=-287,216,184 mdd=340.52 trades=16715 (102s)
+[SWEEP] gen16 TMAP take_hard=2 profit=-410,678,795 mdd=413.18 trades=21869 (106s)
+[SWEEP] gen17 TMAP take_hard=5 profit=-375,578,530 mdd=378.05 trades=20620 (105s)
+[SWEEP] gen18 TMAP stop_hard=-1.5 profit=-419,588,398 mdd=443.38 trades=22747 (106s)
+[SWEEP] gen19 TMAP stop_hard=-3.0 profit=-360,971,853 mdd=346.59 trades=19922 (108s)
+[SWEEP] gen20 TMAP max_hold_sec=300 profit=-550,903,010 mdd=618.03 trades=30452 (129s)
+[SWEEP] gen21 TMAP max_hold_sec=1200 profit=-304,769,559 mdd=279.63 trades=16291 (103s)
+[SWEEP] baseline profit=-387,778,408 mdd=390.42
+[SWEEP] cap_min: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] chg_max: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] flow_ratio: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] ma_shift: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] ma_window: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] max_hold_sec: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] stop_hard: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] strength_min: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] take_hard: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] window_end: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] done
+[SWEEP] template=min_morning_momentum points=51/51
+[SWEEP] resume: 평가 대상 51점 / 스킵 0점
+[SWEEP] prepare status=ok back_count=1379 elapsed=38s
+[SWEEP] gen0 TMAP __default__ profit=-10,274,839 mdd=109.87 trades=298 (18s)
+[SWEEP] gen1 TMAP entry_end=93000 ERROR (17s)
+[SWEEP] gen2 TMAP entry_end=100000 profit=-7,033,554 mdd=142.24 trades=178 (18s)
+[SWEEP] gen3 TMAP entry_end=110000 profit=-13,346,179 mdd=137.43 trades=363 (18s)
+[SWEEP] gen4 TMAP entry_end=120000 profit=-15,677,620 mdd=158.66 trades=437 (18s)
+[SWEEP] gen5 TMAP entry_end=130000 profit=-16,692,832 mdd=168.45 trades=484 (18s)
+[SWEEP] gen6 TMAP price_max=10000 profit=-7,313,379 mdd=148.25 trades=189 (18s)
+[SWEEP] gen7 TMAP price_max=20000 profit=-9,062,937 mdd=103.64 trades=267 (19s)
+[SWEEP] gen8 TMAP price_max=50000 profit=-11,483,478 mdd=120.38 trades=308 (18s)
+[SWEEP] gen9 TMAP rate_min=1.0 profit=-10,434,102 mdd=111.47 trades=299 (18s)
+[SWEEP] gen10 TMAP rate_min=3.0 profit=-10,372,019 mdd=110.84 trades=298 (20s)
+[SWEEP] gen11 TMAP rate_min=5.0 profit=-11,003,694 mdd=111.18 trades=292 (18s)
+[SWEEP] gen12 TMAP rate_max=10.0 profit=-5,653,391 mdd=120.46 trades=141 (22s)
+[SWEEP] gen13 TMAP rate_max=20.0 profit=-18,343,031 mdd=188.01 trades=433 (18s)
+[SWEEP] gen14 TMAP rate_max=25.0 profit=-23,275,233 mdd=230.40 trades=500 (18s)
+[SWEEP] gen15 TMAP cap_max=1500 profit=-4,278,333 mdd=100.36 trades=107 (18s)
+[SWEEP] gen16 TMAP cap_max=2000 profit=-6,686,282 mdd=143.11 trades=178 (18s)
+[SWEEP] gen17 TMAP cap_max=6000 profit=-16,610,676 mdd=111.06 trades=479 (18s)
+[SWEEP] gen18 TMAP cap_max=10000 profit=-17,189,293 mdd=117.36 trades=562 (18s)
+[SWEEP] gen19 TMAP prev_ratio_min=0 profit=-13,845,331 mdd=149.97 trades=363 (18s)
+[SWEEP] gen20 TMAP prev_ratio_min=300 profit=-9,851,557 mdd=204.29 trades=193 (18s)
+[SWEEP] gen21 TMAP prev_ratio_min=500 profit=-6,613,062 mdd=133.09 trades=144 (18s)
+[SWEEP] gen22 TMAP prev_ratio_min=1000 profit=-3,320,630 mdd=72.38 trades=82 (18s)
+[SWEEP] gen23 TMAP burst_min=2.0 profit=-11,450,917 mdd=128.80 trades=362 (18s)
+[SWEEP] gen24 TMAP burst_min=2.5 profit=-11,874,659 mdd=126.75 trades=334 (18s)
+[SWEEP] gen25 TMAP burst_min=4.0 profit=-8,062,922 mdd=84.33 trades=239 (18s)
+[SWEEP] gen26 TMAP burst_min=5.0 profit=-6,352,573 mdd=134.24 trades=170 (18s)
+[SWEEP] gen27 TMAP breakout_lookback=10 profit=-10,224,509 mdd=112.27 trades=308 (18s)
+[SWEEP] gen28 TMAP breakout_lookback=20 profit=-10,277,960 mdd=111.56 trades=302 (18s)
+[SWEEP] gen29 TMAP breakout_lookback=60 profit=-11,280,654 mdd=120.11 trades=309 (18s)
+[SWEEP] gen30 TMAP strength_min=70 profit=-19,034,891 mdd=127.48 trades=476 (18s)
+[SWEEP] gen31 TMAP strength_min=90 profit=-18,034,586 mdd=183.97 trades=449 (18s)
+[SWEEP] gen32 TMAP strength_min=130 profit=-2,544,736 mdd=65.67 trades=126 (18s)
+[SWEEP] gen33 TMAP strength_min=150 profit=-1,196,475 mdd=25.10 trades=39 (18s)
+[SWEEP] gen34 TMAP take_hard=3 profit=-11,447,807 mdd=121.54 trades=305 (18s)
+[SWEEP] gen35 TMAP take_hard=4 profit=-10,233,160 mdd=112.29 trades=301 (18s)
+[SWEEP] gen36 TMAP take_hard=7 profit=-9,968,717 mdd=103.47 trades=296 (18s)
+[SWEEP] gen37 TMAP take_hard=9 profit=-9,445,488 mdd=101.98 trades=295 (18s)
+[SWEEP] gen38 TMAP stop_hard=-2.0 profit=-10,424,613 mdd=222.69 trades=314 (18s)
+[SWEEP] gen39 TMAP stop_hard=-4.0 profit=-9,866,725 mdd=109.87 trades=292 (18s)
+[SWEEP] gen40 TMAP stop_hard=-5.0 profit=-11,378,400 mdd=122.98 trades=291 (18s)
+[SWEEP] gen41 TMAP trail_start=2 profit=-8,063,009 mdd=85.53 trades=303 (18s)
+[SWEEP] gen42 TMAP trail_start=3 profit=-10,011,602 mdd=100.14 trades=299 (18s)
+[SWEEP] gen43 TMAP trail_start=6 profit=-11,201,664 mdd=113.12 trades=298 (18s)
+[SWEEP] gen44 TMAP trail_start=8 profit=-11,201,664 mdd=113.12 trades=298 (18s)
+[SWEEP] gen45 TMAP trail_keep=0.5 profit=-10,158,691 mdd=107.64 trades=298 (18s)
+[SWEEP] gen46 TMAP trail_keep=0.6 profit=-10,485,339 mdd=111.35 trades=298 (18s)
+[SWEEP] gen47 TMAP trail_keep=0.8 profit=-10,088,955 mdd=108.13 trades=298 (18s)
+[SWEEP] gen48 TMAP max_hold_min=30 profit=-9,638,219 mdd=106.31 trades=302 (18s)
+[SWEEP] gen49 TMAP max_hold_min=120 profit=-10,895,913 mdd=116.32 trades=298 (18s)
+[SWEEP] gen50 TMAP max_hold_min=240 profit=-10,897,234 mdd=118.30 trades=298 (18s)
+[SWEEP] baseline profit=-10,274,839 mdd=109.87
+[SWEEP] breakout_lookback: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] burst_min: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] cap_max: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] entry_end: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] max_hold_min: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] prev_ratio_min: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] price_max: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] rate_max: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] rate_min: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] stop_hard: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] strength_min: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] take_hard: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] trail_keep: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] trail_start: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] done
+[SWEEP] template=min_afternoon_pullback points=45/45
+[SWEEP] resume: 평가 대상 45점 / 스킵 0점
+[SWEEP] prepare status=ok back_count=1379 elapsed=39s
+[SWEEP] gen0 TMAP __default__ profit=-10,224,054 mdd=102.12 trades=316 (18s)
+[SWEEP] gen1 TMAP entry_start=110000 profit=-11,941,754 mdd=79.41 trades=477 (18s)
+[SWEEP] gen2 TMAP entry_start=130000 profit=-6,644,906 mdd=69.19 trades=175 (18s)
+[SWEEP] gen3 TMAP entry_end=133000 profit=-7,466,841 mdd=74.25 trades=224 (18s)
+[SWEEP] gen4 TMAP entry_end=140000 profit=-8,888,241 mdd=88.63 trades=268 (18s)
+[SWEEP] gen5 TMAP entry_end=150000 profit=-11,980,432 mdd=119.85 trades=362 (18s)
+[SWEEP] gen6 TMAP rate_min=3.0 profit=-10,655,672 mdd=106.37 trades=321 (18s)
+[SWEEP] gen7 TMAP rate_min=6.0 profit=-10,013,787 mdd=100.05 trades=292 (18s)
+[SWEEP] gen8 TMAP rate_min=8.0 profit=-9,442,517 mdd=94.31 trades=261 (18s)
+[SWEEP] gen9 TMAP rate_max=15.0 profit=-4,205,856 mdd=44.56 trades=170 (18s)
+[SWEEP] gen10 TMAP rate_max=20.0 profit=-6,727,994 mdd=68.59 trades=240 (18s)
+[SWEEP] gen11 TMAP rate_max=29.0 profit=-10,813,844 mdd=108.04 trades=331 (18s)
+[SWEEP] gen12 TMAP cap_max=2000 profit=-4,327,966 mdd=85.93 trades=130 (18s)
+[SWEEP] gen13 TMAP cap_max=3000 profit=-8,535,795 mdd=85.10 trades=215 (18s)
+[SWEEP] gen14 TMAP cap_max=8000 profit=-14,523,869 mdd=96.77 trades=473 (19s)
+[SWEEP] gen15 TMAP pull_min=1.0 profit=-16,341,298 mdd=108.93 trades=493 (24s)
+[SWEEP] gen16 TMAP pull_min=3.0 profit=-7,935,328 mdd=79.47 trades=162 (18s)
+[SWEEP] gen17 TMAP pull_min=5.0 profit=-710,305 mdd=29.33 trades=31 (18s)
+[SWEEP] gen18 TMAP ma_len=10 profit=-12,828,734 mdd=128.27 trades=345 (18s)
+[SWEEP] gen19 TMAP ma_len=30 profit=-10,591,894 mdd=105.87 trades=292 (26s)
+[SWEEP] gen20 TMAP ma_len=60 profit=-9,872,757 mdd=98.66 trades=250 (19s)
+[SWEEP] gen21 TMAP ma_band=0.5 profit=-3,924,025 mdd=38.74 trades=162 (18s)
+[SWEEP] gen22 TMAP ma_band=1.5 profit=-10,325,967 mdd=68.66 trades=371 (19s)
+[SWEEP] gen23 TMAP ma_band=2.0 profit=-13,482,578 mdd=89.89 trades=414 (18s)
+[SWEEP] gen24 TMAP vol_rebound=1.2 profit=-16,237,839 mdd=108.27 trades=443 (25s)
+[SWEEP] gen25 TMAP vol_rebound=2.0 profit=-5,136,958 mdd=52.35 trades=158 (26s)
+[SWEEP] gen26 TMAP vol_rebound=3.0 profit=-623,102 mdd=23.26 trades=41 (24s)
+[SWEEP] gen27 TMAP strength_min=80 profit=-60,103,854 mdd=200.58 trades=1488 (25s)
+[SWEEP] gen28 TMAP strength_min=120 profit=80,666 mdd=9.27 trades=16 (24s)
+[SWEEP] gen29 TMAP strength_min=140 profit=97,178 mdd=0.21 trades=3 (25s)
+[SWEEP] gen30 TMAP take_hard=3 profit=-10,345,617 mdd=103.37 trades=316 (24s)
+[SWEEP] gen31 TMAP take_hard=5 profit=-9,795,704 mdd=97.77 trades=316 (24s)
+[SWEEP] gen32 TMAP take_hard=7 profit=-9,780,260 mdd=97.62 trades=316 (24s)
+[SWEEP] gen33 TMAP stop_hard=-1.5 profit=-10,887,251 mdd=108.87 trades=349 (25s)
+[SWEEP] gen34 TMAP stop_hard=-2.0 profit=-10,468,631 mdd=104.60 trades=330 (24s)
+[SWEEP] gen35 TMAP stop_hard=-3.5 profit=-11,560,366 mdd=76.92 trades=299 (25s)
+[SWEEP] gen36 TMAP trail_start=2 profit=-10,625,230 mdd=106.11 trades=319 (25s)
+[SWEEP] gen37 TMAP trail_start=4 profit=-10,738,680 mdd=107.28 trades=311 (20s)
+[SWEEP] gen38 TMAP trail_start=6 profit=-10,738,680 mdd=107.28 trades=311 (20s)
+[SWEEP] gen39 TMAP trail_keep=0.5 profit=-10,107,807 mdd=100.93 trades=316 (24s)
+[SWEEP] gen40 TMAP trail_keep=0.6 profit=-10,433,354 mdd=104.22 trades=316 (25s)
+[SWEEP] gen41 TMAP trail_keep=0.8 profit=-10,382,895 mdd=103.73 trades=316 (25s)
+[SWEEP] gen42 TMAP max_hold_min=30 profit=-10,120,008 mdd=101.22 trades=334 (25s)
+[SWEEP] gen43 TMAP max_hold_min=60 profit=-11,084,318 mdd=110.81 trades=321 (24s)
+[SWEEP] gen44 TMAP max_hold_min=180 profit=-10,418,033 mdd=69.33 trades=312 (25s)
+[SWEEP] baseline profit=-10,224,054 mdd=102.12
+[SWEEP] strength_min: plateau_score=0.0116 center=140.0 width=2 positive=0.6667
+[SWEEP] cap_max: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] entry_end: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] entry_start: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] ma_band: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] ma_len: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] max_hold_min: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] pull_min: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] rate_max: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] rate_min: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] stop_hard: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] take_hard: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] trail_keep: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] trail_start: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] vol_rebound: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] done
+[MULTISEED] 21 pairs -> .omo/evidence/tmap-walkforward/pairs-multiseed.json
+  MULTISEED Tick_B_902_905_Update_2 (이력 최고 8,631,199 / 307건)
+  MULTISEED AILOOP_myr4_g4_buy (이력 최고 4,819,996 / 317건)
+  MULTISEED CLDGEN_0610_C7_SEEDPLUS_B (이력 최고 1,712,130 / 31건)
+  MULTISEED AILOOP_trackb4_g1_buy (이력 최고 1,248,536 / 82건)
+  MULTISEED AILOOP_trackb2_g2_buy (이력 최고 790,121 / 49건)
+  MULTISEED AILOOP_tickwide_t0b_g1_buy (이력 최고 685,127 / 91건)
+  MULTISEED AILOOP_trackb2_g6_buy (이력 최고 661,653 / 48건)
+  MULTISEED AILOOP_trackb2_g4_buy (이력 최고 583,725 / 44건)
+  MULTISEED AILOOP_run_1779754848_g8_buy (이력 최고 536,758 / 61건)
+  MULTISEED AILOOP_run_1779754848_g12_buy (이력 최고 483,844 / 47건)
+[BATCH] run_id=multiseed_train_20260611 pairs=21
+[BATCH] prepare status=ok back_count=2285 elapsed=265s

@@ -1,0 +1,149 @@
+[
+  {
+    "label": "MULTISEED Tick_B_902_905_Update_2",
+    "buy": "Tick_B_902_905_Update_2",
+    "sell": "Tick_S_902_905_Update_2",
+    "history_best_profit": 8631199.0,
+    "history_trades": 307
+  },
+  {
+    "label": "MULTISEED AILOOP_myr4_g4_buy",
+    "buy": "AILOOP_myr4_g4_buy",
+    "sell": "AILOOP_myr4_g4_sell",
+    "history_best_profit": 4819996.0,
+    "history_trades": 317
+  },
+  {
+    "label": "MULTISEED CLDGEN_0610_C7_SEEDPLUS_B",
+    "buy": "CLDGEN_0610_C7_SEEDPLUS_B",
+    "sell": "Tick_S_902_905_Update_2",
+    "history_best_profit": 1712130.0,
+    "history_trades": 31
+  },
+  {
+    "label": "MULTISEED AILOOP_trackb4_g1_buy",
+    "buy": "AILOOP_trackb4_g1_buy",
+    "sell": "AILOOP_trackb4_g1_sell",
+    "history_best_profit": 1248536.0,
+    "history_trades": 82
+  },
+  {
+    "label": "MULTISEED AILOOP_trackb2_g2_buy",
+    "buy": "AILOOP_trackb2_g2_buy",
+    "sell": "AILOOP_trackb2_g2_sell",
+    "history_best_profit": 790121.0,
+    "history_trades": 49
+  },
+  {
+    "label": "MULTISEED AILOOP_tickwide_t0b_g1_buy",
+    "buy": "AILOOP_tickwide_t0b_g1_buy",
+    "sell": "AILOOP_tickwide_t0b_g1_sell",
+    "history_best_profit": 685127.0,
+    "history_trades": 91
+  },
+  {
+    "label": "MULTISEED AILOOP_trackb2_g6_buy",
+    "buy": "AILOOP_trackb2_g6_buy",
+    "sell": "AILOOP_trackb2_g6_sell",
+    "history_best_profit": 661653.0,
+    "history_trades": 48
+  },
+  {
+    "label": "MULTISEED AILOOP_trackb2_g4_buy",
+    "buy": "AILOOP_trackb2_g4_buy",
+    "sell": "AILOOP_trackb2_g4_sell",
+    "history_best_profit": 583725.0,
+    "history_trades": 44
+  },
+  {
+    "label": "MULTISEED AILOOP_run_1779754848_g8_buy",
+    "buy": "AILOOP_run_1779754848_g8_buy",
+    "sell": "AILOOP_run_1779754848_g8_sell",
+    "history_best_profit": 536758.0,
+    "history_trades": 61
+  },
+  {
+    "label": "MULTISEED AILOOP_run_1779754848_g12_buy",
+    "buy": "AILOOP_run_1779754848_g12_buy",
+    "sell": "AILOOP_run_1779754848_g12_sell",
+    "history_best_profit": 483844.0,
+    "history_trades": 47
+  },
+  {
+    "label": "MULTISEED AILOOP_tick_oos_p1_smoke_20260603_g1_buy",
+    "buy": "AILOOP_tick_oos_p1_smoke_20260603_g1_buy",
+    "sell": "AILOOP_tick_oos_p1_smoke_20260603_g1_sell",
+    "history_best_profit": 482322.0,
+    "history_trades": 36
+  },
+  {
+    "label": "MULTISEED AILOOP_run_1779828476_g6_buy",
+    "buy": "AILOOP_run_1779828476_g6_buy",
+    "sell": "AILOOP_run_1779828476_g6_sell",
+    "history_best_profit": 303240.0,
+    "history_trades": 65
+  },
+  {
+    "label": "MULTISEED AILOOP_run_1779857251_g2_buy",
+    "buy": "AILOOP_run_1779857251_g2_buy",
+    "sell": "AILOOP_run_1779857251_g2_sell",
+    "history_best_profit": 248474.0,
+    "history_trades": 104
+  },
+  {
+    "label": "MULTISEED AILOOP_run_1779754848_g13_buy",
+    "buy": "AILOOP_run_1779754848_g13_buy",
+    "sell": "AILOOP_run_1779754848_g13_sell",
+    "history_best_profit": 229805.0,
+    "history_trades": 39
+  },
+  {
+    "label": "MULTISEED AILOOP_run_1779714844_g3_buy",
+    "buy": "AILOOP_run_1779714844_g3_buy",
+    "sell": "AILOOP_run_1779714844_g3_sell",
+    "history_best_profit": 180196.0,
+    "history_trades": 63
+  },
+  {
+    "label": "MULTISEED AILOOP_reframe1_g1_buy",
+    "buy": "AILOOP_reframe1_g1_buy",
+    "sell": "AILOOP_reframe1_g1_sell",
+    "history_best_profit": 155138.0,
+    "history_trades": 42
+  },
+  {
+    "label": "MULTISEED AILOOP_yr1front_g4_buy",
+    "buy": "AILOOP_yr1front_g4_buy",
+    "sell": "AILOOP_yr1front_g4_sell",
+    "history_best_profit": 146250.0,
+    "history_trades": 105
+  },
+  {
+    "label": "MULTISEED AILOOP_campaign_e10_deepen_g9_buy",
+    "buy": "AILOOP_campaign_e10_deepen_g9_buy",
+    "sell": "AILOOP_campaign_e10_deepen_g9_sell",
+    "history_best_profit": 112424.0,
+    "history_trades": 34
+  },
+  {
+    "label": "MULTISEED AILOOP_campaign_e10_deepen_g1_buy",
+    "buy": "AILOOP_campaign_e10_deepen_g1_buy",
+    "sell": "AILOOP_campaign_e10_deepen_g1_sell",
+    "history_best_profit": 99383.0,
+    "history_trades": 30
+  },
+  {
+    "label": "MULTISEED AILOOP_campaign_e7_promote_g3_buy",
+    "buy": "AILOOP_campaign_e7_promote_g3_buy",
+    "sell": "AILOOP_campaign_e7_promote_g3_sell",
+    "history_best_profit": 87202.0,
+    "history_trades": 36
+  },
+  {
+    "label": "MULTISEED AILOOP_run_1779714844_g4_buy",
+    "buy": "AILOOP_run_1779714844_g4_buy",
+    "sell": "AILOOP_run_1779714844_g4_sell",
+    "history_best_profit": 50351.0,
+    "history_trades": 33
+  }
+]
