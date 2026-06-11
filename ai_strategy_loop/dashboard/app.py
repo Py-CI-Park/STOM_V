@@ -2250,6 +2250,16 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    @app.middleware("http")
+    async def _no_cache_html(request, call_next):
+        # 2026-06-11 — index.html 브라우저 캐시 박제 방지: HTML 응답은 매 로드마다
+        #   재검증(no-cache)시킨다. ETag 304로 비용은 없고, jsx 버전 범프(v=...)가
+        #   즉시 반영된다 ("새 기능이 안 보이는 옛 대시보드" 실사고 재발 방지).
+        response = await call_next(request)
+        if "text/html" in (response.headers.get("content-type") or ""):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
+
     app.state.loop_manager = manager
     app.include_router(research_router)
 
