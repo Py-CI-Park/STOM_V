@@ -137,6 +137,12 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 - WARN: 2U has + V3 external uses + V3U init 누락 → V3에도 확실히 필요한 패턴
 - INFO: 2U-only (V2/Kiwoom 전용), V3U-extra (자체 추가)
 
+**한계 (2026-06-11 결함 #16에서 확인)**: 도구가 `ui.X =` 외부 할당을 widget-builder
+setattr와 동일하게 '커버됨'으로 분류하므로, 외부 코드가 같은 attr을 **할당보다 먼저
+읽는** read-before-write 패턴(예: `process_starter.py:95`가 읽고 `:96`이 할당)은
+CRITICAL로 잡지 못한다. 보강 옵션은 `docs/V3U_NEXT_STEPS.md` §3 A7. 임시 안전망:
+`tests/v3u/test_smoke.py::test_cpuper_network_stat_attrs_initialized`.
+
 ### 액션 3: V3 worker qlist 컨벤션 자동 검증 ✅ **적용**
 
 **적용 커밋**: `b72f0162`
@@ -253,6 +259,32 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 - 수정 커밋: `25f61980`
 - 회귀 테스트: `tests/v3u/test_smoke.py::test_v3_helper_attr_names`
 - 근본 원인 매핑: §3-2, §3-3
+
+### 결함 #16 (2026-06-11): last_recv/memory_per/net_recv 미초기화 — V3.24 흡수 회귀 (read-before-write)
+
+- 카테고리: A (runtime state) — **카테고리 A 3번째 반복** (#1·#2 이후)
+- 발견 경로: pyd→py 추론 재검증 심층 감사 (통합 게이트 8/8 PASS 상태에서 수동 교차 감사로 발견 — §5 자동망 회피 사례)
+- 외부 호출 site: `ui/etcetera/process_starter.py:95` (last_recv 읽기),
+  `ui/update_widget/update_progressbar.py:42/45` (memory_per), `:43/46` (net_recv)
+- 우리 누락 위치: `ui/main_window.py::_init_runtime_state` (cpu_per만 init, 나머지 3개 부재)
+- 유입 시점: upstream V3.24(`22782984`)가 `_update_cpuper()`를 process_starter.py에 추가 →
+  V3U 흡수 커밋 `be593744`가 외부 소스는 반영했으나 pyd 내부 초기화 대응분을 누락
+- 증상 연쇄: qtimer1 매초 → `net_io.bytes_recv - ui.last_recv` → `__getattr__` no-op 함수 반환
+  → `int - function` TypeError (thread_decorator 데몬 스레드) → 자기치유 할당(96행) 미도달
+  → memory_per/net_recv 영구 미설정 → `update_progressbar.py:42` `setValue(함수)` TypeError
+  → `MainWindow.UpdateProgressBar` try/except가 매 500ms 침묵 삼킴
+  → MEM/NET 게이지·다이얼로그 버튼 스타일·백테 프로세스 26종 깜빡임 표시·로그 오류
+  알림소리·풍경사진 요청(webcQ) 전부 비활성
+- 수정: `_init_runtime_state`에 `last_recv = 0`, `memory_per = 0`, `net_recv = 0.0` 추가
+- 수정 커밋: (본 사이클)
+- 회귀 테스트: `tests/v3u/test_smoke.py::test_cpuper_network_stat_attrs_initialized`
+- 자동 검증망이 못 잡은 이유 2가지:
+  1. attr inventory가 `ui.X =` 외부 할당(`process_starter.py:96-98`)을 '커버됨'으로 분류 —
+     **read-before-write 맹점** (`scripts/v3u_attr_inventory_diff.py:137` 할당 패턴 추출)
+  2. `__getattr__` no-op fallback이 AttributeError fail-fast를 차단 + 사이클 5·6 시각 검증은
+     V3.24 흡수(2026-05-27) **이전**이라 본 회귀를 관찰할 수 없었음
+- 근본 원인 매핑: §3-1 (pyd 내부 init 미관찰), §3-3 (외부 호출 일치 검증 한계)
+- 재발 방지 액션 매핑: §5-2 한계 갱신 (read-before-write) + NEXT_STEPS §3 신규 옵션 A7 (도구 보강)
 
 ### 사이클 11 (2026-05-23): 3U_C lane E7 strategy.db 조건식 V2→V3 마이그레이션
 
@@ -498,12 +530,12 @@ A2(CRITICAL drift 정리) 사이클에서 추가로 발견된 init/method 누락
 
 ## 7. 통계 (지속 갱신)
 
-| 측정 | 값 (2026-05-22 사이클 9 3U_C E1 도입 완료 시점) |
+| 측정 | 값 (2026-06-11 사이클 13 결함 #16 수정 시점; 3U_C lane 항목은 사이클 9 시점 수치) |
 |---|---|
-| 총 발견 결함 (V3U lane) | 19 (사이클 9는 3U_C 신규 작업, V3U 결함 0건) |
-| 자동 회귀 테스트 추가 (V3U lane) | 20 |
-| pytest 케이스 (V3U lane) | 46 |
-| 수정 커밋 누적 (V3U lane) | 11 |
+| 총 발견 결함 (V3U lane) | 20 (#16: V3.24 흡수 회귀, 재검증 감사 발견) |
+| 자동 회귀 테스트 추가 (V3U lane) | 21 |
+| pytest 케이스 (V3U lane) | 47 |
+| 수정 커밋 누적 (V3U lane) | 12 |
 | 신규 자동 도구 (V3U lane) | 1 (attr_inventory_diff) + A3 verifier UX 분리 |
 | **3U_C lane 추가 자동 도구** | **1** (v3uc_ingest_pipeline 5 T-step) |
 | **3U_C lane 추가 회귀 테스트** | **4** |

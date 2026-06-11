@@ -139,6 +139,39 @@ def test_runtime_state_attrs_initialized(main_window) -> None:
     )
 
 
+def test_cpuper_network_stat_attrs_initialized(main_window) -> None:
+    """결함 #16: V3.24 upstream이 `ui/etcetera/process_starter.py:_update_cpuper`에
+    `net_io.bytes_recv - ui.last_recv` 읽기-후-쓰기(read-before-write) 코드를 추가했다.
+
+    last_recv가 init에 없으면 `__getattr__` no-op fallback이 함수 객체를 반환해
+    `int - function` TypeError가 데몬 스레드에서 매초 발생하고, 자기치유 할당
+    (process_starter.py:96)에 도달하지 못해 memory_per/net_recv가 영구 미설정된다.
+    그 결과 `update_progressbar.py:42` `setValue(함수객체)` TypeError를
+    UpdateProgressBar의 try/except가 매 500ms 조용히 삼켜 MEM/NET 게이지·버튼
+    스타일·백테 깜빡임·오류 알림·풍경사진 요청이 전부 비활성되는 침묵 연쇄가 생긴다.
+
+    attr inventory 도구는 `ui.X =` 외부 할당을 '커버됨'으로 분류하므로
+    (scripts/v3u_attr_inventory_diff.py:137) 이 read-before-write 패턴을 잡지 못한다.
+    본 케이스가 해당 맹점의 회귀 안전망이다.
+    """
+    # 외부 읽기 site: process_starter.py:95 (last_recv),
+    # update_progressbar.py:42/45 (memory_per), :43/46 (net_recv)
+    for attr in ("last_recv", "memory_per", "cpu_per"):
+        value = getattr(main_window, attr)
+        assert isinstance(value, int) and not isinstance(value, bool), (
+            f"{attr}는 _init_runtime_state에서 int 0으로 고정 필요, "
+            f"실제 {type(value).__name__} {value!r} — __getattr__ fallback이 가리면 "
+            f"외부 read site에서 TypeError 연쇄 발생 (결함 #16)"
+        )
+    assert isinstance(main_window.net_recv, (int, float)) and not callable(main_window.net_recv), (
+        f"net_recv는 숫자 init 필요, 실제 {type(main_window.net_recv).__name__}"
+    )
+
+    # V3.24 외부 계약 산술 재현: process_starter.py:95가 TypeError 없이 동작해야 한다.
+    recv_bps = 123_456_789 - main_window.last_recv
+    assert isinstance(recv_bps, int)
+
+
 def test_qlist_v3_convention_order(main_window) -> None:
     """qlist 인덱스가 V3 worker 컨벤션을 따른다.
 

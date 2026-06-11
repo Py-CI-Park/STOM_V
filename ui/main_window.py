@@ -210,6 +210,14 @@ class MainWindow(QMainWindow):
         self.main_btn = 0
         self.counter = 0
         self.cpu_per = 0
+        # 결함 #16: V3.24 upstream이 ui/etcetera/process_starter.py:_update_cpuper에
+        # `net_io.bytes_recv - ui.last_recv` 읽기를 먼저 수행하는 코드를 추가했다
+        # (read-before-write). pyd는 내부에서 초기화하므로 V3U init도 0으로 고정해야
+        # __getattr__ no-op fallback이 함수 객체를 돌려줘 매초 TypeError →
+        # memory_per/net_recv 영구 미설정 → update_progressbar 침묵 실패 연쇄를 막는다.
+        self.last_recv = 0
+        self.memory_per = 0
+        self.net_recv = 0.0
         self.int_time = 0
 
         self.dict_name: dict[Any, Any] = {}
