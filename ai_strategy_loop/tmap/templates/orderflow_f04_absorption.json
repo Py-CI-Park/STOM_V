@@ -1,0 +1,145 @@
+{
+  "name": "orderflow_f04_absorption",
+  "timeframe": "tick",
+  "source": "v5.0 보고서 F04+F14 구조 차용 (P4 — 로드맵 §B 2순위)",
+  "description": "P4 오더플로우 원리 템플릿 — F04 매도흡수재돌파(10초 매도 우위가 흡수되며 신고가 재돌파) + F14 돌파 틱 매수 공격 확인. 시드와 같은 창의 역신호 니치 + window_end 시간 확장 축(09:03~09:15). 12θ, 유계 윈도우 4회·역스캔 0.",
+  "buy_code": "# ================================\n#  F04 매도흡수재돌파 + F14 매도벽소화 (P4 구조 차용)\n#  창: 09:00:30~ — 시드와 같은 시간, 다른 메커니즘(매도 출회 흡수 후 재돌파)\n# ================================\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not ({window_start} <= 시분초 < {window_end}):\n    매수 = False\nelif not (1000 < 현재가 <= 50000):\n    매수 = False\nelif not (0.5 < 등락율 <= 20.0):\n    매수 = False\nelif not (시가총액 < {cap_max}):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (누적초당매도수량(10) >= 누적초당매수수량(10) * {sell_dom}):\n    매수 = False                                  # F04 — 매도 출회 존재(흡수 대상)\nelif not (현재가 >= 시가 - 호가단위 * {open_band}):\n    매수 = False                                  # F04 — 시가권 방어(흡수 성공 증거)\nelif not (현재가 > 최고현재가({brk_window}, 1)):\n    매수 = False                                  # F04 — 고가 재돌파\nelif not (초당거래대금 > 초당거래대금평균({brk_window}, 1) * {vol_mult}):\n    매수 = False                                  # F04 — 거래대금 동반\nelif not (초당매수수량 > 초당매도수량 * {atk_ratio}):\n    매수 = False                                  # F14 — 돌파 순간 매수 공격 우위\nelif not (체결강도 >= {strength_min}):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+  "sell_code": "# ================================\n#  F04 니치 청산 — 스칼라 전용(계산예산 안전)\n# ================================\n매도 = False\n\nif 등락율 > 29.5:\n    매도 = True\nelif 수익률 >= {take_hard} or 수익률 <= {stop_hard}:\n    매도 = True\nelif 보유시간 >= {max_hold_sec}:\n    매도 = True\nelif 최고수익률 > 4 and 최고수익률 * 0.6 >= 수익률:\n    매도 = True\n\nif 매도:\n    self.Sell()\n",
+  "params": [
+    {
+      "name": "window_start",
+      "default": 90030,
+      "values": [
+        90010,
+        90030,
+        90100
+      ],
+      "side": "buy",
+      "note": "F04 창 시작 — 흡수 관측에 10틱 필요"
+    },
+    {
+      "name": "window_end",
+      "default": 90500,
+      "values": [
+        90300,
+        90500,
+        91000,
+        91500
+      ],
+      "side": "buy",
+      "note": "창 종료 — **시간 확장 축**(시드 종료 09:05 너머 응답)"
+    },
+    {
+      "name": "cap_max",
+      "default": 3000,
+      "values": [
+        1500,
+        2500,
+        3000,
+        5000
+      ],
+      "side": "buy",
+      "note": "시총 상한(억) — 챔피언 mesa(2500) 좌표 포함"
+    },
+    {
+      "name": "sell_dom",
+      "default": 0.75,
+      "values": [
+        0.5,
+        0.75,
+        1.0,
+        1.3
+      ],
+      "side": "buy",
+      "note": "F04 매도 출회 강도(매도/매수 10초 누적 비율 하한)"
+    },
+    {
+      "name": "open_band",
+      "default": 2,
+      "values": [
+        0,
+        2,
+        5
+      ],
+      "side": "buy",
+      "note": "시가 방어 밴드(호가단위 배수 — 0=시가 위만)"
+    },
+    {
+      "name": "brk_window",
+      "default": 10,
+      "values": [
+        5,
+        10,
+        30
+      ],
+      "side": "buy",
+      "note": "재돌파 기준 신고가/거래대금 평균 창(틱)"
+    },
+    {
+      "name": "vol_mult",
+      "default": 2.0,
+      "values": [
+        1.5,
+        2.0,
+        3.0
+      ],
+      "side": "buy",
+      "note": "F04 돌파 거래대금 배수"
+    },
+    {
+      "name": "atk_ratio",
+      "default": 1.0,
+      "values": [
+        0.8,
+        1.0,
+        1.5
+      ],
+      "side": "buy",
+      "note": "F14 돌파 틱 매수/매도 공격 배수"
+    },
+    {
+      "name": "strength_min",
+      "default": 100,
+      "values": [
+        90,
+        100,
+        120
+      ],
+      "side": "buy",
+      "note": "체결강도 하한"
+    },
+    {
+      "name": "take_hard",
+      "default": 5,
+      "values": [
+        3,
+        5,
+        7
+      ],
+      "side": "sell",
+      "note": "하드 익절"
+    },
+    {
+      "name": "stop_hard",
+      "default": -3.0,
+      "values": [
+        -2.0,
+        -3.0,
+        -5.0
+      ],
+      "side": "sell",
+      "note": "하드 손절"
+    },
+    {
+      "name": "max_hold_sec",
+      "default": 300,
+      "values": [
+        120,
+        300,
+        600
+      ],
+      "side": "sell",
+      "note": "시간 청산 — 흡수 실패 시 빠른 이탈 기본"
+    }
+  ]
+}
