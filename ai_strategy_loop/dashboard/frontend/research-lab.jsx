@@ -174,8 +174,21 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
   const [tmap, setTmap] = useState_rl(null);
   const [compareRun, setCompareRun] = useState_rl("");  /* M12 — 지도 비교 run. */
   const [ops, setOps] = useState_rl(null);  /* 운영 현황 — 10초 자동 갱신. */
+  const [grid, setGrid] = useState_rl(null);     /* C6 — 2-D 격자 히트맵. */
+  const [gridRun, setGridRun] = useState_rl("");
   const [loading, setLoading] = useState_rl(false);
   const [err, setErr] = useState_rl(null);
+
+  const fetchGrid = useCallback_rl(() => {
+    if (isDemo || !baseUrl) return;
+    const rid = gridRun.trim() || runId;
+    if (!rid) return;
+    fetch(baseUrl + "/tmap_grid?run_id=" + encodeURIComponent(rid),
+          { signal: AbortSignal.timeout(10000) })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => setGrid(j))
+      .catch(e => setErr(String(e)));
+  }, [baseUrl, gridRun, isDemo, runId]);
 
   const [verdict, setVerdict] = useState_rl(null);  /* 검증 결산 — V1~V5 종합. */
 
@@ -356,6 +369,12 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
                  onChange={(e) => setCompareRun(e.target.value)} style={{ width: 180 }} />
         </label>
         <button type="button" className="research-tab" onClick={fetchTmap}>TMAP 지도</button>
+        <label>
+          <span>격자 run</span>
+          <input type="text" value={gridRun} placeholder="--grid 스윕 run_id"
+                 onChange={(e) => setGridRun(e.target.value)} style={{ width: 180 }} />
+        </label>
+        <button type="button" className="research-tab" onClick={fetchGrid}>2-D 히트맵</button>
       </div>
       {autopsy && (
         <div className="mono" style={{ fontSize: 11, whiteSpace: "pre-wrap" }}>
@@ -422,7 +441,7 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
                     : "베이스라인 없음"}
                 </div>
                 <table className="mono" style={{ fontSize: 11, width: "100%" }}>
-                  <thead><tr><th>슬롯(θ)</th><th>plateau score</th><th>고원 중심</th><th>폭</th><th>고원 평균손익</th><th>흑자율</th><th>절벽(최대 점프)</th><th>중심 형태(R²·정체일)</th>{tmap.compare && <th>비교 run(중심·score)</th>}</tr></thead>
+                  <thead><tr><th>슬롯(θ)</th><th>응답 곡선</th><th>plateau score</th><th>고원 중심</th><th>폭</th><th>고원 평균손익</th><th>흑자율</th><th>절벽(최대 점프)</th><th>중심 형태(R²·정체일)</th>{tmap.compare && <th>비교 run(중심·score)</th>}</tr></thead>
                   <tbody>
                     {Object.entries(tmap.params)
                       .sort((a, b) => (b[1].plateau_score || 0) - (a[1].plateau_score || 0))
@@ -431,6 +450,7 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
                         return (
                           <tr key={name}>
                             <td>{name}</td>
+                            <td><_CurveSpark curve={m.curve} /></td>
                             <td>{_rlNum(m.plateau_score, 3)}</td>
                             <td>{m.plateau ? m.plateau.center_value : "—"}</td>
                             <td>{m.plateau ? m.plateau.width : "—"}</td>
@@ -453,7 +473,79 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
             )}
         </div>
       )}
+
+      {grid && grid.count > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <div className="research-empty">
+            {`2-D 격자 히트맵 (${grid.param_a} × ${grid.param_b}) — ★=mesa(4-이웃 전부 흑자) · 흑자율 ${Math.round((grid.positive_ratio || 0) * 100)}%`
+              + (grid.baseline ? ` · 베이스라인 ${Math.round(grid.baseline.profit).toLocaleString()}` : "")}
+          </div>
+          <_GridHeatmap grid={grid} />
+        </div>
+      )}
+      {grid && grid.count === 0 && (
+        <div className="mono" style={{ fontSize: 11 }}>격자 run 아님(--grid 스윕 run_id를 입력하세요)</div>
+      )}
     </div>
+  );
+}
+
+/* C6(2026-06-11) — 2-D 격자 히트맵: 수익 부호·크기를 색으로, mesa를 ★로. */
+function _GridHeatmap({ grid }) {
+  const cells = {};
+  (grid.cells || []).forEach(c => { cells[c.a + "|" + c.b] = c; });
+  const maxAbs = Math.max(1, ...((grid.cells || []).map(c => Math.abs(c.profit))));
+  const mesaSet = new Set((grid.mesa_cells || []).map(m => m.a + "|" + m.b));
+  return (
+    <table className="mono" style={{ fontSize: 10, marginTop: 4 }}>
+      <thead>
+        <tr>
+          <th>{grid.param_a + " \\ " + grid.param_b}</th>
+          {(grid.b_values || []).map(b => <th key={b} style={{ padding: "2px 6px" }}>{b}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {(grid.a_values || []).map(a => (
+          <tr key={a}>
+            <th style={{ padding: "2px 6px" }}>{a}</th>
+            {(grid.b_values || []).map(b => {
+              const c = cells[a + "|" + b];
+              if (!c) return <td key={b}>—</td>;
+              const alpha = (0.15 + 0.7 * Math.abs(c.profit) / maxAbs).toFixed(2);
+              const bg = c.profit > 0 ? `rgba(60,160,90,${alpha})` : `rgba(200,80,80,${alpha})`;
+              const isMesa = mesaSet.has(a + "|" + b);
+              return (
+                <td key={b}
+                    title={`${grid.param_a}=${a}, ${grid.param_b}=${b} · 손익 ${Math.round(c.profit).toLocaleString()} · MDD ${_rlNum(c.mdd, 2)} · ${c.trades}건`}
+                    style={{ background: bg, textAlign: "right", padding: "2px 6px",
+                             outline: isMesa ? "2px solid #d4af37" : "none" }}>
+                  {Math.round(c.profit / 10000).toLocaleString()}만{isMesa ? "★" : ""}
+                </td>
+              );
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+/* C6 보조 — 1-D 응답 곡선 스파크라인(0선 점선 기준, 흑자 구간이 한눈에). */
+function _CurveSpark({ curve }) {
+  const pts = (curve || []).filter(p => p && p.ok);
+  if (pts.length < 2) return null;
+  const W = 90, H = 22;
+  const profits = pts.map(p => p.profit || 0);
+  const min = Math.min(0, ...profits), max = Math.max(0, ...profits);
+  const span = Math.max(max - min, 1);
+  const x = i => 2 + (i / (pts.length - 1)) * (W - 4);
+  const y = v => H - 2 - ((v - min) / span) * (H - 4);
+  const path = pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.profit || 0).toFixed(1)}`).join(" ");
+  return (
+    <svg width={W} height={H} style={{ verticalAlign: "middle" }}>
+      <line x1="2" y1={y(0)} x2={W - 2} y2={y(0)} stroke="#777" strokeDasharray="2,2" strokeWidth="0.8" />
+      <path d={path} fill="none" stroke="#5b9" strokeWidth="1.5" />
+    </svg>
   );
 }
 

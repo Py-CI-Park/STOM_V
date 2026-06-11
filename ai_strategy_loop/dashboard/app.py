@@ -2181,6 +2181,20 @@ def create_app() -> FastAPI:
         """
         return _freeze_verdict_payload()
 
+    @app.get("/tmap_grid")
+    def tmap_grid(run_id: str = "") -> Dict[str, Any]:
+        """C6/P1(2026-06-11) — 2-D 격자 지도(mesa·히트맵 데이터). 읽기 전용·무예외.
+
+        쿼리: ?run_id=<--grid 스윕 run>. 셀 행렬·흑자율·최강 셀·mesa(4-이웃
+        전부 흑자)를 반환 — 프런트가 히트맵으로 그린다.
+        """
+        try:
+            from ai_strategy_loop.tmap.tendency import grid_summary  # noqa: PLC0415
+
+            return grid_summary(run_id)
+        except Exception as exc:  # noqa: BLE001
+            return {"run_id": run_id, "cells": [], "count": 0, "error": str(exc)}
+
     @app.get("/run_state")
     def run_state(run_id: str = "") -> Dict[str, Any]:
         """과거(또는 현재) run의 전체 LoopState payload를 DB에서 재구성해 반환한다(#65 run 셀렉터).

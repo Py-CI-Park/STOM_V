@@ -503,5 +503,9 @@ class TestFrontendContract:
         assert "/tmap_map?run_id=" in src
         assert "TMAP 지도" in src
         assert "plateau score" in src
+        # C6(2026-06-11) — 2-D 히트맵·응답 곡선 스파크라인 계약.
+        assert "/tmap_grid" in src
+        assert "_GridHeatmap" in src
+        assert "_CurveSpark" in src
         index = (frontend / "index.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260611f" in index
+        assert "research-lab.jsx?v=20260611g" in index
