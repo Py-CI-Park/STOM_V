@@ -1,0 +1,33 @@
+{
+  "candidate": "THETA cap_max=2500+take_hard=9+trail_start=4 (동결 bef011ef)",
+  "measured_at": "2026-06-11 15:45 (도구 첫 실전 적용 — C8/M10/M11)",
+  "fill_fragility_train": {
+    "n_trades": 272,
+    "fragile_trades": 14,
+    "fragile_trade_ratio": 0.0515,
+    "fragile_profit_share": 0.2013,
+    "robust_profit": 8757837.0,
+    "reading": "추격 체결 의존 거래는 5.2%뿐이나 수익의 20.1%를 차지 — 보수적으로 그 수익을 전부 제외해도 +875만(시드 863만 상회)"
+  },
+  "fill_fragility_oos2026": {
+    "n_trades": 9,
+    "fragile_trades": 0,
+    "fragile_profit_share": 0.0,
+    "reading": "2026 얇은 마진은 체결 낙관 가정에 의존하지 않음(전 거래 매수가 재방문)"
+  },
+  "circuit_breaker_train": {
+    "best_rule": "당일 손실 2건 도달 시 잔여 거래 중단",
+    "profit_ratio": 1.0238,
+    "trades_removed": 5,
+    "days_triggered": 11,
+    "reading": "+2.4% 개선(인샘플 advisory) — 채택하려면 사전선언 후 OOS 재확인"
+  },
+  "sizing_advisory": {
+    "assumption_max_dd": 3000000,
+    "mdd_p95": 1544271.05,
+    "raw_scale": 1.943,
+    "applied_scale": 1.471,
+    "recommended_betting_vs_current100": 147.1,
+    "reading": "감내 낙폭 300만 가정 시 베팅 1.47배 여지(상향분 50% 보수 반영) — M3 용량 분석 전까지 참고만"
+  }
+}
