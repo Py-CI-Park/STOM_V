@@ -65,7 +65,8 @@ def main() -> int:
             buy, sell = pair["buy"], pair["sell"]
             # E3(2026-06-11) — 배치도 라이브 상태 발행(대시보드 상단 표시, 실패 흡수).
             publish_batch_state(rid, i, len(pairs), label=label,
-                                message=f"배치 {i + 1}/{len(pairs)} 평가 중: {label}")
+                                message=f"배치 {i + 1}/{len(pairs)} 평가 중: {label}",
+                                engine={"back_count": prep.get("back_count")})
             t1 = time.time()
             try:
                 outcome = _warm_to_outcome(

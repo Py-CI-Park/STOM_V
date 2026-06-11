@@ -675,7 +675,9 @@ def publish_batch_state(
     label: str = "",
     message: str = "",
     status: str = "running",
+    engine: Optional[Dict[str, Any]] = None,
     path: Optional[str] = None,
+    db_path: Optional[str] = None,
 ) -> None:
     """E3(2026-06-11) — 배치(스윕/일괄평가)도 라이브 상태를 발행한다.
 
@@ -683,11 +685,49 @@ def publish_batch_state(
     라이브 영역에 안 보였다("gen_02 박제" 실사고). 이 헬퍼가 contract.LoopState
     의 부분집합 dict를 발행하면(미지정 필드는 계약 기본값) 루프와 동일하게
     상단에 표시된다. 어떤 실패도 배치를 막지 않는다(가시화 보조 — 전부 흡수).
+
+    [G-1 2026-06-11 2단계] 적합도·수익·품질 '추이 차트'는 state.generations[]
+    를, 엔진 패널은 latest.engine_state를 소비한다(실사고: 배치 진행은 보이는데
+    차트 공백). run의 기존 세대들을 DB에서 GenerationInfo 부분집합으로 구성해
+    함께 발행하고, engine(예: prepare back_count)을 latest.engine_state로 싣는다.
     """
     try:
         from ai_strategy_loop.controller import contract as _C  # noqa: PLC0415
 
         now = _now()
+        generations = []
+        try:  # G-1 — 추이 차트 데이터: DB의 기존 세대(완료분)로 구성.
+            st = LoopState(db_path=db_path)
+            try:
+                rows = st.get_generations(run_id)
+            finally:
+                st.close()
+            for g in rows:
+                generations.append({
+                    "gen_no": int(g.get("gen_no") or 0),
+                    "status": g.get("status") or "ok",
+                    "graded_score": float(g.get("score") or 0.0),
+                    "gate_passed": bool(g.get("gate_passed")),
+                    "gate_reason": g.get("reason") or "",
+                    "trade_count": int(g.get("trade_count") or 0),
+                    "daily_avg_trades": float(g.get("daily_avg_trades") or 0.0),
+                    "mdd": float(g.get("mdd") or 0.0),
+                    "profit": float(g.get("profit") or 0.0),
+                    "payoff_ratio": float(g.get("payoff_ratio") or 0.0),
+                    "strategy_gist": g.get("strategy_gist") or "",
+                })
+        except Exception:  # noqa: BLE001 - 차트 데이터는 보조.
+            generations = []
+
+        latest: Dict[str, Any] = {
+            "gen_no": int(gen_no),
+            "status": status,
+            "strategy_gist": label,
+            "message": message,
+            "gen_started_at": now,
+        }
+        if engine:
+            latest["engine_state"] = dict(engine)
         publish_loop_state({
             "contract_version": _C.CONTRACT_VERSION,
             "run_id": run_id,
@@ -695,13 +735,8 @@ def publish_batch_state(
             "current_gen": int(gen_no),
             "max_generations": int(total),
             "provider": "batch",
-            "latest": {
-                "gen_no": int(gen_no),
-                "status": status,
-                "strategy_gist": label,
-                "message": message,
-                "gen_started_at": now,
-            },
+            "generations": generations,
+            "latest": latest,
             "updated_at": now,
         }, path=path)
     except Exception:  # noqa: BLE001 - 라이브 발행은 보조 — 배치를 절대 막지 않는다.

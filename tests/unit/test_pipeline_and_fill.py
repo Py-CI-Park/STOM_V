@@ -61,20 +61,40 @@ class TestBatchLiveState:
     """E3(2026-06-11) — 배치 라이브 상태 발행: 계약 호환·실패 흡수."""
 
     def test_publish_and_read_roundtrip_contract_compatible(self, tmp_path) -> None:
+        from ai_strategy_loop.config import LoopConfig
         from ai_strategy_loop.controller import contract as C
         from ai_strategy_loop.controller.state import (
+            LoopState,
             publish_batch_state,
             read_current_state,
         )
 
+        # G-1 — 추이 차트 재료: run의 기존 세대들이 generations[]로 함께 발행된다.
+        db = str(tmp_path / "loop_runs.db")
+        st = LoopState(db_path=db, snapshot_dir=str(tmp_path / "s"))
+        st.start_run(LoopConfig(), run_id="runB")
+        for i, profit in enumerate([100_000.0, 250_000.0]):
+            st.record_generation(
+                "runB", i, buy_name=f"B{i}", sell_name=f"S{i}", status="ok",
+                score=0.5 + i, gate_passed=True, reason="ok", profit=profit,
+                mdd=5.0, trade_count=10, payoff_ratio=1.2,
+                strategy_gist=f"TMAP x={i}",
+            )
+        st.close()
+
         p = str(tmp_path / "current_state.json")
         publish_batch_state("runB", 3, 10, label="TMAP x=1",
-                            message="스윕 4/10 평가 중", path=p)
+                            message="스윕 4/10 평가 중", path=p, db_path=db,
+                            engine={"back_count": 2285})
         d = read_current_state(p)
         assert d["run_id"] == "runB"
         assert d["current_gen"] == 3 and d["max_generations"] == 10
         assert d["latest"]["strategy_gist"] == "TMAP x=1"
+        assert d["latest"]["engine_state"] == {"back_count": 2285}
         assert d["status"] == "running"
+        assert len(d["generations"]) == 2  # 추이 차트가 그릴 세대 배열.
+        assert d["generations"][1]["profit"] == 250_000.0
+        assert d["generations"][1]["graded_score"] == 1.5
         C.LoopState(**d)  # 계약 검증 통과 — 상단 라이브 영역이 그대로 소비 가능.
 
     def test_publish_failure_is_absorbed(self) -> None:

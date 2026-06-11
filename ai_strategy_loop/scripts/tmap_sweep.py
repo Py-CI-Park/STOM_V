@@ -140,6 +140,7 @@ def main() -> int:
             publish_batch_state(
                 rid, gen_no, len(prepared), label=point["label"],
                 message=f"스윕 {gen_no + 1}/{len(prepared)} 평가 중: {point['label']}",
+                engine={"back_count": prep.get("back_count")},  # G-1 — 엔진 패널 재료.
             )
             t1 = time.time()
             try:
