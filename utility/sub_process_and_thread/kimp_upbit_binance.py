@@ -91,12 +91,14 @@ class KimpWebSocketManager(QThread):
 
     def __init__(self, codes):
         super().__init__()
-        self.codes       = codes
-        self.loop        = None
-        self.wsk_upbit   = None
-        self.wsk_binance = None
-        self.con_upbit   = False
-        self.con_binance = False
+        self.codes        = codes
+        self.loop         = None
+        self.async_client = None
+        self.sock_manager = None
+        self.wsk_upbit    = None
+        self.wsk_binance  = None
+        self.con_upbit    = False
+        self.con_binance  = False
 
     def run(self):
         """웹소켓 관리자를 실행합니다."""
@@ -127,7 +129,8 @@ class KimpWebSocketManager(QThread):
     async def connect_upbit(self):
         """업비트 웹소켓에 연결합니다."""
         try:
-            self.wsk_upbit = await websockets.connect('wss://api.upbit.com/websocket/v1')
+            self.wsk_upbit = await websockets.connect('wss://api.upbit.com/websocket/v1',
+                                                      ping_interval=60, ping_timeout=60)
             data = [{'ticket': str(uuid.uuid4())[:6]}, {'type': 'ticker', 'codes': self.codes, 'isOnlyRealtime': True}]
             await self.wsk_upbit.send(json.dumps(data))
             self.con_upbit = True
@@ -137,9 +140,10 @@ class KimpWebSocketManager(QThread):
     async def connect_binance(self):
         """바이낸스 웹소켓에 연결합니다."""
         try:
-            client = await AsyncClient.create()
-            bsm = BinanceSocketManager(client)
-            self.wsk_binance = bsm.miniticker_socket()
+            if self.async_client is None:
+                self.async_client = await AsyncClient.create()
+                self.sock_manager = BinanceSocketManager(self.async_client, max_queue_size=100000)
+            self.wsk_binance = self.sock_manager.miniticker_socket()
             self.con_binance = True
         except Exception:
             self.con_binance = False
@@ -152,7 +156,10 @@ class KimpWebSocketManager(QThread):
                 data = json.loads(data)
                 self.signal1.emit(data)
             except Exception:
-                await self.wsk_upbit.close()
+                try:
+                    await self.wsk_upbit.close()
+                except Exception:
+                    pass
                 self.con_upbit = False
 
     async def receive_binance(self):
@@ -163,4 +170,8 @@ class KimpWebSocketManager(QThread):
                     data = await self.wsk_binance.recv()
                     self.signal2.emit(data)
                 except Exception:
+                    try:
+                        await self.wsk_binance.__aexit__(None, None, None)
+                    except:
+                        pass
                     self.con_binance = False

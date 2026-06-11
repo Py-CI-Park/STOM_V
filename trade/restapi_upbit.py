@@ -160,7 +160,6 @@ class UpbitWebSocketReceiver(QThread):
                 await self._receive_cg_msg()
             except Exception:
                 self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
-
             await self._disconnect_cg()
 
     async def _run_hg(self):
@@ -172,22 +171,27 @@ class UpbitWebSocketReceiver(QThread):
                 await self._receive_hg_msg()
             except Exception:
                 self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
-
             await self._disconnect_hg()
 
     async def _connect_cg(self):
         """체결 웹소켓에 연결합니다."""
-        self.conn_cg = True
-        self.webs_cg = await websockets.connect(self.url, ssl=ssl_context)
-        data = [{'ticket': str(uuid.uuid4())}, {'type': 'ticker', 'codes': self.codes, 'isOnlyRealtime': True}]
-        await self.webs_cg.send(json.dumps(data))
+        try:
+            self.webs_cg = await websockets.connect(self.url, ping_interval=60, ping_timeout=60, ssl=ssl_context)
+            self.conn_cg = True
+            data = [{'ticket': str(uuid.uuid4())}, {'type': 'ticker', 'codes': self.codes, 'isOnlyRealtime': True}]
+            await self.webs_cg.send(json.dumps(data))
+        except Exception:
+            self.conn_cg = False
 
     async def _connect_hg(self):
         """호가 웹소켓에 연결합니다."""
-        self.conn_hg = True
-        self.webs_hg = await websockets.connect(self.url, ssl=ssl_context)
-        data = [{'ticket': str(uuid.uuid4())}, {'type': 'orderbook', 'codes': self.codes, 'isOnlyRealtime': True}]
-        await self.webs_hg.send(json.dumps(data))
+        try:
+            self.webs_hg = await websockets.connect(self.url, ping_interval=60, ping_timeout=60, ssl=ssl_context)
+            self.conn_hg = True
+            data = [{'ticket': str(uuid.uuid4())}, {'type': 'orderbook', 'codes': self.codes, 'isOnlyRealtime': True}]
+            await self.webs_hg.send(json.dumps(data))
+        except Exception:
+            self.conn_hg = False
 
     async def _receive_cg_msg(self):
         """체결 데이터를 수신합니다."""
@@ -205,28 +209,23 @@ class UpbitWebSocketReceiver(QThread):
 
     async def _disconnect_cg(self):
         """체결 웹소켓을 종료합니다."""
-        self.conn_cg = False
-        if self.webs_cg is not None:
-            try:
+        try:
+            if self.webs_cg is not None:
                 await self.webs_cg.close()
-            except Exception:
-                pass
+        except Exception:
+            pass
+        self.conn_cg = False
         await asyncio.sleep(1)
 
     async def _disconnect_hg(self):
         """호가 웹소켓을 종료합니다."""
-        self.conn_hg = False
-        if self.webs_hg is not None:
-            try:
+        try:
+            if self.webs_hg is not None:
                 await self.webs_hg.close()
-            except Exception:
-                pass
+        except Exception:
+            pass
+        self.conn_hg = False
         await asyncio.sleep(1)
-
-    def stop(self):
-        """웹소켓 루프를 종료합니다."""
-        if self.loop and self.loop.is_running():
-            self.loop.stop()
 
 
 class UpbitWebSocketTrader(QThread):
@@ -260,7 +259,6 @@ class UpbitWebSocketTrader(QThread):
                 await self._receive_msg()
             except Exception:
                 self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
-
             await self._disconnect()
 
     def _headers(self):
@@ -274,11 +272,14 @@ class UpbitWebSocketTrader(QThread):
 
     async def _connect(self):
         """주문체결 웹소켓에 연결하고 실시간시세를 등록합니다."""
-        headers = self._headers()
-        self.websocket = await websockets.connect(self.url, additional_headers=headers, ssl=ssl_context)
-        self.connected = True
-        data = [{'ticket': str(uuid.uuid4())}, {'type': 'myOrder'}]
-        await self.websocket.send(json.dumps(data))
+        try:
+            self.websocket = await websockets.connect(self.url, ping_interval=60, ping_timeout=60,
+                                                      additional_headers=self._headers(), ssl=ssl_context)
+            self.connected = True
+            data = [{'ticket': str(uuid.uuid4())}, {'type': 'myOrder'}]
+            await self.websocket.send(json.dumps(data))
+        except Exception:
+            self.connected = False
 
     async def _receive_msg(self):
         """주문체결 데이터를 수신합니다."""
@@ -289,12 +290,10 @@ class UpbitWebSocketTrader(QThread):
 
     async def _disconnect(self):
         """웹소켓 연결을 종료합니다."""
+        try:
+            if self.websocket is not None:
+                await self.websocket.close()
+        except Exception:
+            pass
         self.connected = False
-        if self.websocket is not None:
-            await self.websocket.close()
         await asyncio.sleep(1)
-
-    def stop(self):
-        """웹소켓 루프를 종료합니다."""
-        if self.loop and self.loop.is_running():
-            self.loop.stop()

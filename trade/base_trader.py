@@ -690,24 +690,24 @@ class BaseTrader:
 
     def _sys_exit(self, data):
         """시스템을 종료합니다."""
-        self._websocket_kill()
         exit_text = '트레이더 종료' if data == '프로세스종료' else '트레이더 STOP'
         self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} {exit_text}"))
 
-        import sys
+        if self.ws_thread is not None:
+            self.ws_thread.terminate()
+
         qtest_qwait(1)
         self.qtimer1.stop()
         self.qtimer2.stop()
         self.traderQ.put('큐스레드종료')
         self.updater.wait()
+        import sys
         sys.exit()
 
     def _websocket_kill(self):
         """웹소켓을 종료합니다."""
-        if self.ws_thread:
-            self.ws_thread.stop()
+        if self.ws_thread is not None:
             self.ws_thread.terminate()
-            self.ws_thread = None
 
     def _get_index(self):
         """체결목록용 인덱스를 반환합니다."""

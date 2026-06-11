@@ -16,7 +16,7 @@ class SupertonicTTS(QThread):
 
     def run(self):
         """soundQ큐를 감시합니다.
-        텍스트: 소리재생, 듀플: 예제재생, 딕셔너리: 보이스네임 설정 변경"""
+        텍스트: 소리재생, 딕셔너리: 보이스네임 설정 변경"""
         while True:
             data = self.soundQ.get()
             if data.__class__ == str:

@@ -227,4 +227,4 @@ class TelegramBot(QThread):
             await self.application.updater.stop()
             await self.application.stop()
             await self.application.shutdown()
-        self.loop.stop()
+        self.loop.call_soon_threadsafe(self.loop.stop)
