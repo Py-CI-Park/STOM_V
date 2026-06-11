@@ -190,6 +190,15 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
       .catch(e => setErr(String(e)));
   }, [baseUrl, gridRun, isDemo, runId]);
 
+  const [niche, setNiche] = useState_rl(null);  /* D3 — 니치 지도 비교. */
+  const fetchNiche = useCallback_rl(() => {
+    if (isDemo || !baseUrl) return;
+    fetch(baseUrl + "/niche_compare", { signal: AbortSignal.timeout(15000) })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => setNiche(j))
+      .catch(e => setErr(String(e)));
+  }, [baseUrl, isDemo]);
+
   const [verdict, setVerdict] = useState_rl(null);  /* 검증 결산 — V1~V5 종합. */
 
   useEffect_rl(() => {
@@ -313,12 +322,53 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
       {verdict && (verdict.lines || []).length > 0 && (
         <div style={{ marginTop: 8 }}>
           <div className="research-empty">검증 결산 (V1~V5 + 리스크 — 결정 카드 라이브)</div>
+          {(verdict.promote_checklist || []).length > 0 && (
+            <table className="mono" style={{ fontSize: 11, marginBottom: 4 }}>
+              <thead><tr><th>PROMOTE 조건</th><th>상태</th><th>근거</th></tr></thead>
+              <tbody>
+                {verdict.promote_checklist.map((c, i) => (
+                  <tr key={"c" + i}>
+                    <td>{c.item}</td>
+                    <td>{c.status === "pass" ? "✅" : c.status === "warn" ? "⚠️" : c.status === "fail" ? "❌" : "⏳"}</td>
+                    <td>{c.detail || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
           {(verdict.alerts || []).map((a, i) => (
             <div key={"a" + i} className="mono" style={{ fontSize: 11, color: "#c95" }}>⚠️ {a}</div>
           ))}
           {verdict.lines.map((l, i) => (
             <div key={"l" + i} className="mono" style={{ fontSize: 11 }}>{l}</div>
           ))}
+        </div>
+      )}
+
+      {niche && (niche.runs || []).length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <div className="research-empty">니치 지도 비교 (최근 tmap run 자동 — 신규 니치 4종 아침 분석용)</div>
+          <table className="mono" style={{ fontSize: 11, width: "100%" }}>
+            <thead><tr><th>run</th><th>상태</th><th>ok세대</th><th>베이스라인</th><th>최강 슬롯 고원 / 격자</th><th>최고 단일점</th></tr></thead>
+            <tbody>
+              {niche.runs.map(r => (
+                <tr key={r.run_id}>
+                  <td>{r.run_id}</td>
+                  <td>{r.status === "running" ? "🔄" : "✅"}</td>
+                  <td>{r.gens_ok}</td>
+                  <td>{r.baseline ? `${Math.round(r.baseline.profit).toLocaleString()} (MDD ${_rlNum(r.baseline.mdd, 1)})` : "—"}</td>
+                  <td>
+                    {r.top_slot
+                      ? `${r.top_slot.param}: 중심 ${r.top_slot.center} · 평균 ${Math.round(r.top_slot.mean_profit || 0).toLocaleString()} (score ${_rlNum(r.top_slot.plateau_score, 2)})`
+                      : r.grid
+                        ? `격자 ${r.grid.cells}셀 · 흑자 ${Math.round((r.grid.positive_ratio || 0) * 100)}% · mesa ${r.grid.mesa}`
+                        : "—"}
+                  </td>
+                  <td>{r.best_profit != null ? Math.round(r.best_profit).toLocaleString() : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -375,6 +425,7 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
                  onChange={(e) => setGridRun(e.target.value)} style={{ width: 180 }} />
         </label>
         <button type="button" className="research-tab" onClick={fetchGrid}>2-D 히트맵</button>
+        <button type="button" className="research-tab" onClick={fetchNiche}>니치 비교</button>
       </div>
       {autopsy && (
         <div className="mono" style={{ fontSize: 11, whiteSpace: "pre-wrap" }}>

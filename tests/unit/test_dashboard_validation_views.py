@@ -182,6 +182,45 @@ class TestFreezeVerdict:
         out = _freeze_verdict_payload()  # 증거 파일 일부 부재여도 예외 없이.
         assert isinstance(out.get("lines"), list)
         assert isinstance(out.get("alerts"), list)
+        # D2 — PROMOTE 체크리스트: 항상 리스트, 상태값은 4종 중 하나.
+        checklist = out.get("promote_checklist")
+        assert isinstance(checklist, list) and len(checklist) >= 4
+        assert all(c["status"] in ("pass", "warn", "fail", "pending") for c in checklist)
+
+
+class TestNicheCompare:
+    """D3(2026-06-11) — 니치 지도 비교: 자동 발굴·1-D 요약·무예외 계약."""
+
+    def test_discovers_tmap_runs_and_summarizes(self, seeded_validation_db):
+        from ai_strategy_loop.dashboard.app import _niche_compare_payload
+
+        db = seeded_validation_db["db"]
+        st = LoopState(db_path=str(db), snapshot_dir=str(Path(db).parent / "s3"))
+        st.start_run(LoopConfig(), run_id="tmapNiche1")
+        rows = [("TMAP __default__", 500_000.0), ("TMAP cap_max=2000", 700_000.0),
+                ("TMAP cap_max=2500", 650_000.0)]
+        for i, (gist, profit) in enumerate(rows):
+            st.record_generation(
+                "tmapNiche1", i, buy_name=f"B{i}", sell_name=f"S{i}", status="ok",
+                score=1.0, gate_passed=True, reason="ok", trade_count=50,
+                mdd=6.0, profit=profit, strategy_gist=gist,
+            )
+        st.close()
+
+        out = _niche_compare_payload("")  # 자동 발굴 — 'tmap%'만.
+        ids = [r["run_id"] for r in out["runs"]]
+        assert ids == ["tmapNiche1"]  # runV(비-tmap)는 제외.
+        entry = out["runs"][0]
+        assert entry["baseline"]["profit"] == 500_000.0
+        assert entry["top_slot"]["param"] == "cap_max"
+        assert entry["best_profit"] == 700_000.0
+
+    def test_explicit_ids_and_graceful_on_unknown(self, seeded_validation_db):
+        from ai_strategy_loop.dashboard.app import _niche_compare_payload
+
+        out = _niche_compare_payload("no_such_run")
+        assert out["count"] == 1
+        assert out["runs"][0]["gens_ok"] == 0  # 무예외 — 빈 요약.
 
 
 class TestOpsStatus:
@@ -235,6 +274,10 @@ class TestFrontendContract:
         # 2026-06-11 — 검증 결산(결정 카드 라이브) 계약.
         assert "/freeze_verdict" in src
         assert "검증 결산" in src
+        # D2/D3(2026-06-11) — PROMOTE 체크리스트·니치 비교 계약.
+        assert "promote_checklist" in src
+        assert "/niche_compare" in src
+        assert "니치 비교" in src
 
     def test_app_jsx_shows_run_label(self):
         src = (FRONTEND / "app.jsx").read_text(encoding="utf-8")
@@ -243,5 +286,5 @@ class TestFrontendContract:
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
-        assert "research-lab.jsx?v=20260611g" in src
+        assert "research-lab.jsx?v=20260611h" in src
         assert "app.jsx?v=20260611a" in src

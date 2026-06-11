@@ -1967,6 +1967,13 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
                 )}
                 fz, bs = rows.get("FROZEN"), rows.get("BASE_SEED")
                 if fz and bs:
+                    out.setdefault("oos", {})[year] = {
+                        "frozen_profit": float(fz["profit"] or 0.0),
+                        "frozen_mdd": float(fz["mdd"] or 0.0),
+                        "frozen_trades": int(fz["trade_count"] or 0),
+                        "seed_profit": float(bs["profit"] or 0.0),
+                        "seed_mdd": float(bs["mdd"] or 0.0),
+                    }
                     lines.append(
                         f"V3 OOS {year}: 후보 {fz['profit']:,.0f}({fz['trade_count']}건"
                         f"·MDD {fz['mdd']:.2f}) vs 시드 {bs['profit']:,.0f}"
@@ -1994,6 +2001,12 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
                   for s in (sl.get("scenarios") or []) if isinstance(s, dict)}
         s1, s2 = by_key.get((1, 0.0)), by_key.get((2, 0.0))
         if s1:
+            out["slippage_summary"] = {
+                "t1_retention": s1.get("profit_retention_ratio"),
+                "t2_retention": (s2 or {}).get("profit_retention_ratio"),
+                "t2_profit": (s2 or {}).get("total_profit"),
+                "breakeven_tick": s1.get("breakeven_tick"),
+            }
             lines.append(
                 f"V5 슬리피지(합산 {sl.get('trade_count')}건): 1틱 유지"
                 f" {s1.get('profit_retention_ratio', 0) * 100:.0f}%"
@@ -2048,6 +2061,146 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
                 )
     except Exception:  # noqa: BLE001
         pass
+
+    # ── D2(2026-06-11): PROMOTE 조건 체크리스트 ────────────────────────────
+    #   사전선언 p0 §5(V3 4기준) + advisory 기준(V1·V2·V4·V5). 게이트가 아니라
+    #   표시 전용 — 'PROMOTE까지 무엇이 남았나'를 한눈에(상태: pass/warn/fail/pending).
+    checklist: List[Dict[str, str]] = []
+
+    def _check(item: str, status: str, detail: str = "") -> None:
+        checklist.append({"item": item, "status": status, "detail": detail})
+
+    oos = out.get("oos") or {}
+    o22, o26 = oos.get("2022"), oos.get("2026")
+    if o22 and o26:
+        both = o22["frozen_profit"] > 0 and o26["frozen_profit"] > 0
+        _check("V3 두 OOS 연도 모두 흑자", "pass" if both else "fail",
+               f"2022 {o22['frozen_profit']:,.0f} / 2026 {o26['frozen_profit']:,.0f}")
+        cand_sum = o22["frozen_profit"] + o26["frozen_profit"]
+        seed_sum = o22["seed_profit"] + o26["seed_profit"]
+        _check("V3 합산 후보 ≥ 합산 시드", "pass" if cand_sum >= seed_sum else "fail",
+               f"{cand_sum:,.0f} vs {seed_sum:,.0f}")
+        cand_mdd = max(o22["frozen_mdd"], o26["frozen_mdd"])
+        seed_mdd = max(o22["seed_mdd"], o26["seed_mdd"])
+        _check("V3 후보 maxMDD ≤ 시드", "pass" if cand_mdd <= seed_mdd else "fail",
+               f"{cand_mdd:.2f} vs {seed_mdd:.2f}")
+        trades_ok = o22["frozen_trades"] >= 20 and o26["frozen_trades"] >= 20
+        _check("V3 연 20거래", "pass" if trades_ok else "warn",
+               f"2022 {o22['frozen_trades']} / 2026 {o26['frozen_trades']}"
+               " — 2026 창 2개월 구조 한계(V4 표본으로 보강)")
+    else:
+        _check("V3 고정 OOS", "pending", "OOS run 미발견")
+
+    ovf = out.get("overfit") or {}
+    if ovf.get("dsr") is not None:
+        _check("V1 DSR ≥ 0.5 (advisory)", "pass" if ovf["dsr"] >= 0.5 else "warn",
+               f"{ovf['dsr']:.3f} (n_trials {ovf.get('n_trials')})")
+        if ovf.get("p_positive") is not None:
+            _check("V1 MC P(흑자) ≥ 0.95", "pass" if ovf["p_positive"] >= 0.95 else "warn",
+                   str(ovf["p_positive"]))
+    else:
+        _check("V1 과적합 통계", "pending", "")
+
+    plc = out.get("placebo")
+    if plc:
+        _check("V2 플라시보 전 표본 상회", "pass" if plc.get("exceeds_all") else "fail",
+               f"표본 {plc.get('n_placebo')}종 · 백분위 {plc.get('percentile')}")
+    else:
+        _check("V2 플라시보", "pending", "")
+
+    slp = out.get("slippage_summary")
+    if slp:
+        t2_pos = (slp.get("t2_profit") or 0) > 0
+        _check("V5 합산 2틱 불리에도 흑자", "pass" if t2_pos else "fail",
+               f"2틱 유지율 {round((slp.get('t2_retention') or 0) * 100)}%")
+        if any("얇은 마진" in a for a in alerts):
+            _check("V5 최신 구간 마진", "warn", "2026 단독 손익분기 < 2틱")
+    else:
+        _check("V5 슬리피지", "pending", "")
+
+    wf = out.get("walkforward") or {}
+    if wf.get("windows"):
+        ok_w = [w for w in wf["windows"] if w.get("status") == "ok"]
+        noninf = (wf.get("policy_total") or 0) >= (wf.get("baseline_total") or 0)
+        _check("V4 정책 누적 비열등", "pass" if noninf and ok_w else "fail",
+               f"{wf.get('policy_total', 0):,.0f} vs {wf.get('baseline_total', 0):,.0f} ({len(ok_w)}창)")
+    else:
+        _check("V4 walk-forward", "pending", "")
+    out["promote_checklist"] = checklist
+    return out
+
+
+def _niche_compare_payload(run_ids: str = "") -> Dict[str, Any]:
+    """D3(2026-06-11) — 니치 지도 비교: 여러 스윕 run을 한 표에(읽기 전용·무예외).
+
+    run_ids 미지정이면 최근 7일 'tmap%' run 최신 8개를 자동 발굴 — 밤샘 큐의
+    신규 니치 4종(exit2·F07·F10·min)을 아침에 나란히 비교하는 용도. run별:
+    베이스라인 · 최강 슬롯 고원(1-D) 또는 격자 요약(grid) · 최고 단일점 · 진행.
+    """
+    import sqlite3  # noqa: PLC0415
+    import time as _time  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+    from ai_strategy_loop.tmap.tendency import grid_summary, summarize_tendency  # noqa: PLC0415
+
+    ids = [s.strip() for s in run_ids.split(",") if s.strip()]
+    out: Dict[str, Any] = {"runs": [], "count": 0}
+    try:
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        try:
+            if not ids:
+                rows = con.execute(
+                    "SELECT run_id FROM runs WHERE run_id LIKE 'tmap%' AND started_at > ?"
+                    " ORDER BY started_at DESC LIMIT 8",
+                    (_time.time() - 7 * 86400,),
+                ).fetchall()
+                ids = [r["run_id"] for r in rows]
+            for rid in ids:
+                entry: Dict[str, Any] = {"run_id": rid}
+                try:
+                    status = con.execute(
+                        "SELECT status FROM runs WHERE run_id=?", (rid,)).fetchone()
+                    entry["status"] = status["status"] if status else None
+                    agg = con.execute(
+                        "SELECT COUNT(*) AS c, MAX(profit) AS best FROM generations"
+                        " WHERE run_id=? AND status='ok'", (rid,)).fetchone()
+                    entry["gens_ok"] = int(agg["c"] or 0)
+                    entry["best_profit"] = (
+                        float(agg["best"]) if agg["best"] is not None else None)
+                    summary = summarize_tendency(rid)
+                    entry["baseline"] = summary.get("baseline")
+                    params = summary.get("params") or {}
+                    if params:
+                        entry["type"] = "1d"
+                        name, m = max(params.items(),
+                                      key=lambda kv: kv[1].get("plateau_score") or 0.0)
+                        plateau = m.get("plateau") or {}
+                        entry["top_slot"] = {
+                            "param": name,
+                            "plateau_score": m.get("plateau_score"),
+                            "center": plateau.get("center_value"),
+                            "width": plateau.get("width"),
+                            "mean_profit": plateau.get("mean_profit"),
+                        }
+                    else:
+                        grid = grid_summary(rid)
+                        if grid.get("count"):
+                            entry["type"] = "grid"
+                            entry["grid"] = {
+                                "cells": grid["count"],
+                                "positive_ratio": grid.get("positive_ratio"),
+                                "mesa": len(grid.get("mesa_cells") or []),
+                                "best": grid.get("best_cell"),
+                            }
+                except Exception as exc:  # noqa: BLE001 - run 단위 부분 실패 허용.
+                    entry["error"] = str(exc)
+                out["runs"].append(entry)
+        finally:
+            con.close()
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = str(exc)
+    out["count"] = len(out["runs"])
     return out
 
 
@@ -2180,6 +2333,11 @@ def create_app() -> FastAPI:
         슬리피지·중복도·체결/서킷/사이징·walk-forward를 lines/alerts로 합성.
         """
         return _freeze_verdict_payload()
+
+    @app.get("/niche_compare")
+    def niche_compare(run_ids: str = "") -> Dict[str, Any]:
+        """D3(2026-06-11) — 니치 지도 비교(미지정 시 최근 tmap run 자동 발굴)."""
+        return _niche_compare_payload(run_ids)
 
     @app.get("/tmap_grid")
     def tmap_grid(run_id: str = "") -> Dict[str, Any]:
