@@ -51,6 +51,9 @@ W1 본 스윕 56pt 완주 → θ* 동결(3중 조합: train +1,097만/MDD 10.04/
 | 6 | P-C `gen_morning_report.py` 보고 자동화 | 대기 | 니치비교+결산 → md |
 | 7 | Phase 3: 메인 운영 다이어트 + 공통 네비 | 대기 | 계약 테스트 동반(마지막) |
 | 8 | P-F GPT 합류(A6): P5 배선 + 토글 ON 스모크 | 대기 | gpt_auth 충전 확인됨 |
+| 9 | **G-1 E3 2단계** — publish_batch_state에 generations 배열(loop_runs.db에서 GenerationInfo 구성)+max_generations+back_count(engine/progress) 발행 | 대기(밤샘 큐) | 22:10 사용자 보고: 배치 진행은 보이나 **적합도·수익·품질 추이 차트와 엔진 갯수가 공백** — 차트는 state.generations[], 엔진 패널은 engine_state 소비(코드 확인) |
+| 10 | **G-2 엔진 지표 가독성** — engine.jsx 지표 숫자 fontSize 10.5→13.5 상향(+주요 수치 강조) | 대기(밤샘 큐) | 사용자 요청: 글자가 너무 작음 |
+| 11 | **G-3 인사이트 패스** — 추이 차트에 배치 라벨 툴팁·상단 run 종류 뱃지(루프/배치)·운영 영역에 검증 결산 1줄 요약·니치 비교 정렬/하이라이트 | 대기(밤샘 큐) | 전체 인사이트 강화 검토분 |
 
 후순위(승인됨·시점 미정): F4 곡선 오버레이 · F5 원클릭 부검 · F8 반응형 ·
 F9 run 메모 · P-E 데이터 신선도 규약 · 2순위 머신(N8 공식 잔여·N3 유니버스
