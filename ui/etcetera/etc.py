@@ -287,5 +287,5 @@ def change_title_bar_color(window):
 
 
 def tts_sound_test(ui):
-    voice_name = ui.sj_main_comBox_05.currentText()
+    voice_name = int(ui.sj_main_comBox_05.currentText())
     ui.soundQ.put(voice_name)

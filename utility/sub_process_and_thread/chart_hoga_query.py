@@ -669,7 +669,7 @@ class ChartHogaQuery:
                         df = pd.read_sql(f'SELECT * FROM "{code}" WHERE "index" LIKE "{day}%"', con)
                         if len(df) > 0:
                             con2 = sqlite3.connect(f'{DB_PATH}/{first_name}{day}.db')
-                            df.to_sql(code, con2, index=False, if_exists='replace', chunksize=2000)
+                            df.to_sql(code, con2, index=False, if_exists='append', chunksize=2000)
                             con2.close()
                     self.windowQ.put((UI_NUM['DB관리'], f'당일DB [{code}] 데이터 분리 중 ... [{i+1}/{last}]'))
                 self.windowQ.put((UI_NUM['DB관리'], '당일DB 데이터, 일자DB로 분리 완료'))

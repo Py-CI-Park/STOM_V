@@ -3,7 +3,7 @@ import pyqtgraph as pg
 from PyQt5.QtGui import QFont, QPen, QColor
 from PyQt5.QtCore import Qt, QPropertyAnimation, QRect
 from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QHBoxLayout
-from ui.create_widget.set_style import color_fg_bc, color_bg_ct, style_ht_gb, style_ht_pb
+from ui.create_widget.set_style import color_fg_bc, color_bg_ct, style_ht_pb, color_bg_dk
 
 qfont16 = QFont()
 qfont16.setFamily('나눔고딕')
@@ -18,11 +18,44 @@ qfont12.setPixelSize(12)
 class HomTapGroupBox(QGroupBox):
     """홈 탭 그룹박스 클래스입니다.
     홈 화면의 시장 지표 그룹박스를 관리합니다."""
-    def __init__(self, title, parent, ui):
+    def __init__(self, title, num, parent, ui):
         super().__init__(title, parent)
-        self.ui = ui
+        self.num = num
+        self.ui  = ui
         self.move_gbox = None
         self.animation = None
+        self.setStyleSheet(self._build_style(False))
+
+    def _build_style(self, hover):
+        """스타일시트를 빌드합니다."""
+        if hover:
+            bg_color = f'rgb({color_bg_dk.red()}, {color_bg_dk.green()}, {color_bg_dk.blue()})'
+        else:
+            bg_color = f'rgb({color_bg_ct.red()}, {color_bg_ct.green()}, {color_bg_ct.blue()})'
+        return f"""
+            QGroupBox {{
+                background-color: {bg_color};
+                border: none;
+                font-family: "나눔고딕";
+                font-size: 16px;
+            }}
+            QLabel, QPushButton {{
+                font-family: "나눔고딕";
+                font-size: 16px;
+            }}
+        """
+
+    def enterEvent(self, event):
+        """마우스 진입 이벤트를 처리합니다."""
+        self.setStyleSheet(self._build_style(True))
+        self.ui.homepg[self.num].setBackground(color_bg_dk)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        """마우스 이탈 이벤트를 처리합니다."""
+        self.setStyleSheet(self._build_style(False))
+        self.ui.homepg[self.num].setBackground(color_bg_ct)
+        super().leaveEvent(event)
 
     # noinspection PyUnresolvedReferences
     def mousePressEvent(self, event):
@@ -156,23 +189,23 @@ class SetHomeTap:
 
     def set(self):
         """홈 탭을 설정합니다."""
-        self.ui.kospi_boxxxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.kosdaq_boxxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.kospi100_boxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.kospi200_boxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.future_boxxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.usdkrw_boxxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.oilgsl_boxxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.gold_boxxxxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.kospi_boxxxxxx = HomTapGroupBox('', 0, self.ui.hm_tab, self.ui)
+        self.ui.kosdaq_boxxxxx = HomTapGroupBox('', 1, self.ui.hm_tab, self.ui)
+        self.ui.kospi100_boxxx = HomTapGroupBox('', 2, self.ui.hm_tab, self.ui)
+        self.ui.kospi200_boxxx = HomTapGroupBox('', 3, self.ui.hm_tab, self.ui)
+        self.ui.future_boxxxxx = HomTapGroupBox('', 4, self.ui.hm_tab, self.ui)
+        self.ui.usdkrw_boxxxxx = HomTapGroupBox('', 5, self.ui.hm_tab, self.ui)
+        self.ui.oilgsl_boxxxxx = HomTapGroupBox('', 6, self.ui.hm_tab, self.ui)
+        self.ui.gold_boxxxxxxx = HomTapGroupBox('', 7, self.ui.hm_tab, self.ui)
 
-        self.ui.btcusdt_boxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.ethusdt_boxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.bnbusdt_boxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.xrpusdt_boxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.solusdt_boxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.dogeusdt_boxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.adausdt_boxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.linkusdt_boxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.btcusdt_boxxxx = HomTapGroupBox('', 8, self.ui.hm_tab, self.ui)
+        self.ui.ethusdt_boxxxx = HomTapGroupBox('', 9, self.ui.hm_tab, self.ui)
+        self.ui.bnbusdt_boxxxx = HomTapGroupBox('', 10, self.ui.hm_tab, self.ui)
+        self.ui.xrpusdt_boxxxx = HomTapGroupBox('', 11, self.ui.hm_tab, self.ui)
+        self.ui.solusdt_boxxxx = HomTapGroupBox('', 12, self.ui.hm_tab, self.ui)
+        self.ui.dogeusdt_boxxx = HomTapGroupBox('', 13, self.ui.hm_tab, self.ui)
+        self.ui.adausdt_boxxxx = HomTapGroupBox('', 14, self.ui.hm_tab, self.ui)
+        self.ui.linkusdt_boxxx = HomTapGroupBox('', 15, self.ui.hm_tab, self.ui)
 
         self.ui.home_gbox_all_list = [
             self.ui.kospi_boxxxxxx, self.ui.kosdaq_boxxxxx, self.ui.kospi100_boxxx, self.ui.kospi200_boxxx,
@@ -200,24 +233,6 @@ class SetHomeTap:
         self.ui.home_gbox_center_list = [
             self.ui.kospi200_boxxx, self.ui.oilgsl_boxxxxx, self.ui.ethusdt_boxxxx, self.ui.solusdt_boxxxx
         ]
-
-        self.ui.kospi_boxxxxxx.setStyleSheet(style_ht_gb)
-        self.ui.kosdaq_boxxxxx.setStyleSheet(style_ht_gb)
-        self.ui.kospi100_boxxx.setStyleSheet(style_ht_gb)
-        self.ui.kospi200_boxxx.setStyleSheet(style_ht_gb)
-        self.ui.future_boxxxxx.setStyleSheet(style_ht_gb)
-        self.ui.usdkrw_boxxxxx.setStyleSheet(style_ht_gb)
-        self.ui.oilgsl_boxxxxx.setStyleSheet(style_ht_gb)
-        self.ui.gold_boxxxxxxx.setStyleSheet(style_ht_gb)
-
-        self.ui.btcusdt_boxxxx.setStyleSheet(style_ht_gb)
-        self.ui.ethusdt_boxxxx.setStyleSheet(style_ht_gb)
-        self.ui.bnbusdt_boxxxx.setStyleSheet(style_ht_gb)
-        self.ui.xrpusdt_boxxxx.setStyleSheet(style_ht_gb)
-        self.ui.solusdt_boxxxx.setStyleSheet(style_ht_gb)
-        self.ui.dogeusdt_boxxx.setStyleSheet(style_ht_gb)
-        self.ui.adausdt_boxxxx.setStyleSheet(style_ht_gb)
-        self.ui.linkusdt_boxxx.setStyleSheet(style_ht_gb)
 
         self.ui.kospi_boxxxxxx.setGeometry(7, 10, 331, 181)
         self.ui.kosdaq_boxxxxx.setGeometry(343, 10, 331, 181)
@@ -448,8 +463,6 @@ class SetHomeTap:
         adausdt_h2layout.addWidget(self.ui.home_label_031, stretch=1)
         linkusdt_h2layout.addWidget(self.ui.home_label_016, stretch=1)
         linkusdt_h2layout.addWidget(self.ui.home_label_032, stretch=1)
-
-        self.ui.homepg   = {}
 
         kospi_plot    = self.setaddPlot()
         kosdaq_plot   = self.setaddPlot()

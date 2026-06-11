@@ -239,6 +239,10 @@ class MainWindow(QMainWindow):
         self.home_gbox_right_up_list: list[Any] = []
         self.home_gbox_left_down_list: list[Any] = []
         self.home_gbox_right_down_list: list[Any] = []
+        # V3.32 홈탭 마우스오버: set_home_tap.py:484-499가 ui.homepg[0..15] = plot
+        # 인덱스 할당, hover enter/leave(:51/:57)와 draw_home_chart(:114)가 읽음.
+        # 첨자 할당은 attr 자체를 만들지 않으므로 pyd처럼 빈 dict 사전 초기화 필요.
+        self.homepg: dict[int, Any] = {}
 
         self.back_schedul = False
         self.showQsize = False
@@ -371,6 +375,7 @@ class MainWindow(QMainWindow):
             "데이터저장": False,
             "모의투자": True,
             "알림소리": False,
+            "읽기속도": 1,
             "텔레그램봇토큰": None,
             "텔레그램아이디": None,
             "백테스케쥴실행": False,
@@ -577,6 +582,24 @@ class MainWindow(QMainWindow):
                 self.logger.exception("ChartHogaQuery 시작 실패 — placeholder 유지: %s", exc)
                 self.proc_chqs = _NullProcess()
 
+        # V3.32: tts 윈도우 기본 전환 (supertonic 삭제). placeholder 사유였던
+        # supertonic 자동 다운로드/외부 런타임 부작용이 사라져 실 worker
+        # (TextToSpeak, win32com SAPI)를 부착한다. soundQ 소비자가 생겨
+        # '알림소리'가 pyd와 동일하게 동작한다. run()은 내부 except가 예외를
+        # 삼키므로 종료는 webc 선례(quit+wait 후 main exit 위임)를 따른다.
+        # pytest는 conftest가 STOM_V3U_DISABLE_TTS=1로 생략.
+        if os.environ.get("STOM_V3U_DISABLE_TTS") == "1":
+            self.logger.info("STOM_V3U_DISABLE_TTS=1: TextToSpeak 시작 생략")
+        else:
+            try:
+                from utility.sub_process_and_thread.tts_sound import TextToSpeak
+                self.tts_sound = TextToSpeak(self.soundQ, self.dict_set)
+                self.tts_sound.start()
+                self.logger.info("worker TextToSpeak 시작 OK (윈도우 SAPI, soundQ 소비)")
+            except Exception as exc:
+                self.logger.exception("TextToSpeak 시작 실패 — placeholder 유지: %s", exc)
+                self.tts_sound = _NullWorker()
+
         # pytest 환경에서 mid-network-call WebCrawling이 fixture teardown에서
         # Windows access violation을 일으키므로 명시적으로 비활성화 가능.
         if os.environ.get("STOM_V3U_DISABLE_WEBC") == "1":
@@ -653,6 +676,19 @@ class MainWindow(QMainWindow):
                     self.logger.info("process_kill: proc_chqs 종료 OK")
             except Exception:
                 self.logger.exception("process_kill: proc_chqs 종료 실패")
+
+        # TextToSpeak cleanup (QThread). run()이 soundQ.get() block이라 quit이
+        # 즉시 안 먹을 수 있음 — webc 선례대로 wait(500) 후 main exit에 위임.
+        tts_sound = getattr(self, "tts_sound", None)
+        if tts_sound is not None and hasattr(tts_sound, "isRunning"):
+            try:
+                if tts_sound.isRunning():
+                    tts_sound.quit()
+                    if hasattr(tts_sound, "wait"):
+                        tts_sound.wait(500)
+                    self.logger.info("process_kill: tts_sound 종료 처리 (graceful 또는 main exit 위임)")
+            except Exception:
+                self.logger.exception("process_kill: tts_sound 종료 실패")
 
         # TelegramBot cleanup (QThread)
         telegram = getattr(self, "telegram", None)

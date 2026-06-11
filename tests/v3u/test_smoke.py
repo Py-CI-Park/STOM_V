@@ -351,6 +351,70 @@ def test_chart_hoga_query_spawn_contract(qapp, monkeypatch) -> None:
         mw.deleteLater()
 
 
+def test_text_to_speak_attach_contract(qapp, monkeypatch) -> None:
+    """V3.32: tts 윈도우 기본 전환 — supertonic 삭제로 V3U tts_sound placeholder
+    사유가 소멸해 실 worker(TextToSpeak)를 부착한다.
+
+    검증 계약:
+    - TextToSpeak(soundQ, dict_set) 생성자 인자 (tts_sound.py:11)
+    - start() 호출됨 → soundQ 소비자 활성 (알림소리 기능)
+    - 외부 가드 `ui.tts_sound.isRunning()` (etc.py) 안전 호출
+    - process_kill()이 quit/wait로 종료 처리 (webc 선례)
+
+    win32com SAPI COM 초기화는 pytest에서 불필요하므로 TextToSpeak를 spy로
+    monkeypatch해 부착 계약만 검증한다.
+    """
+    import ui.main_window as mwmod
+    import utility.sub_process_and_thread.tts_sound as tts_mod
+
+    attached: dict = {}
+
+    class _SpyTts:
+        def __init__(self, soundQ, dict_set):
+            attached["soundQ"] = soundQ
+            attached["dict_set"] = dict_set
+            self._running = False
+
+        def start(self):
+            attached["started"] = True
+            self._running = True
+
+        def isRunning(self):
+            return self._running
+
+        def quit(self):
+            attached["quit"] = True
+            self._running = False
+
+        def wait(self, *_a, **_k):
+            return True
+
+    monkeypatch.delenv("STOM_V3U_DISABLE_TTS", raising=False)
+    monkeypatch.setattr(tts_mod, "TextToSpeak", _SpyTts)
+
+    mw = mwmod.MainWindow(auto_run=0, splash=None)
+    try:
+        assert isinstance(mw.tts_sound, _SpyTts), (
+            f"tts_sound는 TextToSpeak 인스턴스여야 함, 실제 {type(mw.tts_sound).__name__}"
+        )
+        assert attached.get("started") is True, "tts_sound.start() 미호출"
+        assert attached["soundQ"] is mw.soundQ, "TextToSpeak 첫 인자는 soundQ (qlist[1])"
+        assert attached["dict_set"] is mw.dict_set, "TextToSpeak 둘째 인자는 dict_set"
+        assert mw.tts_sound.isRunning() is True, (
+            "부착 후 외부 가드 `ui.tts_sound.isRunning()`이 True여야 알림소리 활성"
+        )
+
+        mw.process_kill()
+        assert attached.get("quit") is True, "process_kill이 tts_sound.quit()을 호출해야 함"
+    finally:
+        try:
+            mw.process_kill()
+        except Exception:
+            pass
+        mw.hide()
+        mw.deleteLater()
+
+
 def test_safe_webc_run_wrapper_swallows_handle_closed() -> None:
     """결함 #13: WebCrawling.run()이 main exit 시 OSError('handle is closed')를
     내뱉어 stderr에 traceback 표시. _safe_webc_run_wrapper가 이를 swallow한다.

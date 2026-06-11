@@ -59,9 +59,9 @@ class SetSetupTap:
         self.ui.sj_main_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['격리', '교차'], activated=lambda: mactivated_02(self.ui))
         self.ui.sj_main_comBox_04 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['단방향', '양방향'], activated=lambda: mactivated_03(self.ui))
 
-        self.ui.sj_main_cheBox_03 = self.wc.setCheckBox('알림소리  |  목소리 스타일', self.ui.sj_bs_groupBox_01, tip='시스템 이벤트를 tts를 통해 소리로 알려준다.')
-        self.ui.sj_main_comBox_05 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['F1', 'F2', 'F3', 'F4', 'F5', 'M1', 'M2', 'M3', 'M4', 'M5'])
-        self.ui.sj_main_Button_01 = self.wc.setPushbutton('테스트', parent=self.ui.sj_bs_groupBox_01, bounced=True, click=lambda: tts_sound_test(self.ui), tip='선택한 목소리 스타일을 테스트한다.')
+        self.ui.sj_main_cheBox_03 = self.wc.setCheckBox('알림소리   |   읽기속도', self.ui.sj_bs_groupBox_01, tip='시스템 이벤트를 tts를 통해 소리로 알려준다.')
+        self.ui.sj_main_comBox_05 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['0', '1', '2', '3', '4', '5'])
+        self.ui.sj_main_Button_01 = self.wc.setPushbutton('테스트', parent=self.ui.sj_bs_groupBox_01, bounced=True, click=lambda: tts_sound_test(self.ui), tip='선택한 읽기속도를 테스트한다.')
 
         # --------------------------------------------------------------------------------------------------------------
 
@@ -241,8 +241,8 @@ class SetSetupTap:
         self.ui.sj_main_comBox_03.setGeometry(300, 55, 60, 20)
         self.ui.sj_main_comBox_04.setGeometry(420, 55, 85, 20)
         self.ui.sj_main_cheBox_03.setGeometry(562, 55, 200, 20)
-        self.ui.sj_main_comBox_05.setGeometry(720, 55, 50, 20)
-        self.ui.sj_main_Button_01.setGeometry(780, 55, 50, 20)
+        self.ui.sj_main_comBox_05.setGeometry(702, 55, 70, 20)
+        self.ui.sj_main_Button_01.setGeometry(785, 55, 70, 20)
 
         self.ui.sj_accc_labell_01.setGeometry(10, 30, 1000, 20)
         self.ui.sj_accc_liEdit_01.setGeometry(110, 30, 425, 20)

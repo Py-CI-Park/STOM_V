@@ -31,6 +31,9 @@ os.environ.setdefault("STOM_V3U_DISABLE_WEBC", "1")
 # (talib/pandas import + sqlite 연결 + 무한 루프) teardown 경합 위험이 있어 생략.
 # spawn 계약은 test_smoke.py::test_chart_hoga_query_spawn_contract가 monkeypatch로 검증.
 os.environ.setdefault("STOM_V3U_DISABLE_CHQS", "1")
+# TextToSpeak(win32com SAPI COM)도 매 테스트 QThread 시작은 불필요 — 생략.
+# 부착 계약은 test_smoke.py::test_text_to_speak_attach_contract가 monkeypatch로 검증.
+os.environ.setdefault("STOM_V3U_DISABLE_TTS", "1")
 
 
 @pytest.fixture(scope="session")

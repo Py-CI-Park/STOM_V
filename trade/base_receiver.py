@@ -64,7 +64,6 @@ class BaseReceiver:
         self.dict_info = {}
         self.dict_expc = {}
         self.dict_sgbn = {}
-        self.dict_sncd = {}
         self.dict_daym = {}
         self.dict_mtop = {}
         self.dict_jgdt = {}
@@ -79,7 +78,6 @@ class BaseReceiver:
         self.codes        = []
         self.tuple_jango  = ()
         self.tuple_order  = ()
-        self.tuple_kosd   = ()
 
         self.lvhp_time    = now()
         self.int_logt     = 0
@@ -222,8 +220,8 @@ class BaseReceiver:
         if v is None:
             bids_ = round(tbids - pretbids, 8)
             asks_ = round(tasks - pretasks, 8)
-            if bids_ == tbids: bids_ = 0.0
-            if asks_ == tasks: asks_ = 0.0
+            if pretbids == 0 or bids_ < 0: bids_ = 0.0
+            if pretasks == 0 or asks_ < 0: asks_ = 0.0
         else:
             bids_ = v if cg == '+' else 0
             asks_ = v if cg == '-' else 0
