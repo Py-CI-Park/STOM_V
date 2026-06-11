@@ -234,12 +234,16 @@ def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
         st = LoopState()
         result = compare_runs(st, run_ids)
         _attach_run_labels(result)
-        # 2026-06-11 — 최신 우선 + running 최상단. 종전 오름차순은 당일 작업
-        #   13개가 132개 목록 맨 뒤에 묻혀 "운영 중인 게 안 보이는" 문제를 냈다.
+        # 2026-06-11 — 최신 우선 + (최근 48h 내) running 최상단. 종전 오름차순은
+        #   당일 작업 13개가 132개 목록 맨 뒤에 묻혀 "운영 중인 게 안 보이는"
+        #   문제를 냈다. 48h 컷: 과거 세션 중단으로 running이 박제된 좀비 run이
+        #   상단을 점유하지 않게 한다(실가동 myr2~5 사례).
         if isinstance(result.get("runs"), list):
+            _now = time.time()
             result["runs"].sort(
                 key=lambda r: (
-                    0 if r.get("status") == "running" else 1,
+                    0 if (r.get("status") == "running"
+                          and (r.get("started_at") or 0) > _now - 48 * 3600) else 1,
                     -(r.get("started_at") or 0.0),
                 )
             )
