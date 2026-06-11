@@ -1,0 +1,11 @@
+[BATCH] run_id=theta_star_reeval_20260611 pairs=8
+[BATCH] prepare status=ok back_count=2285 elapsed=261s
+[BATCH] gen0 BASE_SEED ok profit=8,631,199 mdd=17.44 trades=307 daily=0.40 payoff=1.4861642479780424 gate=True reason=ok (147s)
+[BATCH] gen1 THETA cap_max=2500 ok profit=8,987,958 mdd=13.66 trades=272 daily=0.40 payoff=1.4922780934091997 gate=True reason=ok (147s)
+[BATCH] gen2 THETA take_hard=9 ok profit=9,890,998 mdd=11.57 trades=307 daily=0.40 payoff=1.5579138479514798 gate=True reason=ok (149s)
+[BATCH] gen3 THETA trail_start=4 ok profit=9,470,958 mdd=15.09 trades=307 daily=0.40 payoff=1.4598760031777795 gate=True reason=ok (136s)
+[BATCH] gen4 THETA cap_max=2500+take_hard=9 ok profit=10,028,143 mdd=12.19 trades=272 daily=0.40 payoff=1.5572687440692028 gate=True reason=ok (147s)
+[BATCH] gen5 THETA cap_max=2500+trail_start=4 ok profit=9,861,566 mdd=11.41 trades=272 daily=0.40 payoff=1.467328628478109 gate=True reason=ok (147s)
+[BATCH] gen6 THETA take_hard=9+trail_start=4 ok profit=10,794,485 mdd=12.78 trades=307 daily=0.40 payoff=1.533679914398516 gate=True reason=ok (147s)
+[BATCH] gen7 THETA cap_max=2500+take_hard=9+trail_start=4 ok profit=10,965,479 mdd=10.04 trades=272 daily=0.40 payoff=1.534815263812587 gate=True reason=ok (148s)
+[BATCH] done

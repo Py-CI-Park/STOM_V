@@ -1,97 +1,261 @@
 {
   "selector_version": "seed_relative_v1",
-  "run_id": "cldgen_train_2023_2025_20260610",
+  "run_id": "theta_star_reeval_20260611",
   "config_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\claude-condition-research-20260610\\train-config.json",
   "config_hash": "a4bed0de8513d8cc28693ec48e482617ec0b82e024a87a3465e75f7b58bfe88a",
   "seed_profile": {
     "mdd": 17.44,
     "trade_count": 307,
     "profit": 8631199.0,
-    "source": "BASE_SEED gen0 of cldgen_train_2023_2025_20260610"
+    "source": "BASE_SEED gen0 of theta_star_reeval_20260611"
   },
   "mdd_limit": 20.0,
   "selected": true,
   "blocked": false,
   "blocker": "",
   "selected_candidate": {
-    "gen_no": 1,
+    "gen_no": 7,
     "status": "ok",
-    "graded_score": 0.2960855162295981,
-    "gate_passed": false,
-    "gate_reason": "daily_avg_trades 0.2 < min_daily_trades 0.3",
-    "profit": 2347400.0,
-    "total_profit_pct": 46.87,
-    "mdd": 16.52,
-    "trade_count": 142,
-    "daily_avg_trades": 0.2,
-    "payoff_ratio": 1.4523395126689873,
+    "graded_score": 7.849793006786826,
+    "gate_passed": true,
+    "gate_reason": "ok",
+    "profit": 10965479.0,
+    "total_profit_pct": 218.24,
+    "mdd": 10.04,
+    "trade_count": 272,
+    "daily_avg_trades": 0.4,
+    "payoff_ratio": 1.534815263812587,
     "max_hold_count": 0.0,
-    "buy_name": "CLDGEN_0610_C7_SEEDPLUS_B",
-    "sell_name": "Tick_S_902_905_Update_2",
-    "csv_path": "backtest/csv\\stock_bt_CLDGEN_0610_C7_SEEDPLUS_B_20260610163011.csv"
+    "buy_name": "THETA_seed_902905_06_B",
+    "sell_name": "THETA_seed_902905_06_S",
+    "csv_path": "backtest/csv\\stock_bt_THETA_seed_902905_06_B_20260611141549.csv"
   },
   "selected_yearly": {
     "years": [
       [
         "2023",
-        1954268.0
+        4590073.0
       ],
       [
         "2024",
-        700663.0
+        4518416.0
       ],
       [
         "2025",
-        -307531.0
+        1856990.0
       ]
     ],
-    "positive_years": 2,
+    "positive_years": 3,
     "observed_years": 3,
     "meets_advisory": true
   },
   "eligible_candidates": [
     {
+      "gen_no": 7,
+      "rank_key": [
+        -3.0,
+        -1092179.1832669324,
+        10.04,
+        -1.534815263812587,
+        7
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            4590073.0
+          ],
+          [
+            "2024",
+            4518416.0
+          ],
+          [
+            "2025",
+            1856990.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 5,
+      "rank_key": [
+        -3.0,
+        -864291.4986853637,
+        11.41,
+        -1.467328628478109,
+        5
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            4875248.0
+          ],
+          [
+            "2024",
+            3909879.0
+          ],
+          [
+            "2025",
+            1076439.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 2,
+      "rank_key": [
+        -3.0,
+        -854883.1460674157,
+        11.57,
+        -1.5579138479514798,
+        2
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            4754964.0
+          ],
+          [
+            "2024",
+            3902314.0
+          ],
+          [
+            "2025",
+            1233720.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 6,
+      "rank_key": [
+        -3.0,
+        -844638.8888888889,
+        12.78,
+        -1.533679914398516,
+        6
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            5118041.0
+          ],
+          [
+            "2024",
+            4117757.0
+          ],
+          [
+            "2025",
+            1558687.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 4,
+      "rank_key": [
+        -3.0,
+        -822653.2403609516,
+        12.19,
+        -1.5572687440692028,
+        4
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            4226996.0
+          ],
+          [
+            "2024",
+            4269124.0
+          ],
+          [
+            "2025",
+            1532023.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
       "gen_no": 1,
       "rank_key": [
-        -2.0,
-        -142094.43099273607,
-        16.52,
-        -1.4523395126689873,
+        -3.0,
+        -657976.4275256223,
+        13.66,
+        -1.4922780934091997,
         1
       ],
       "yearly": {
         "years": [
           [
             "2023",
-            1954268.0
+            4510621.0
           ],
           [
             "2024",
-            700663.0
+            3725865.0
           ],
           [
             "2025",
-            -307531.0
+            751472.0
           ]
         ],
-        "positive_years": 2,
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 3,
+      "rank_key": [
+        -3.0,
+        -627631.4115308151,
+        15.09,
+        -1.4598760031777795,
+        3
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            5244083.0
+          ],
+          [
+            "2024",
+            3522496.0
+          ],
+          [
+            "2025",
+            704379.0
+          ]
+        ],
+        "positive_years": 3,
         "observed_years": 3,
         "meets_advisory": true
       }
     }
   ],
-  "rejected_candidates": [
-    {
-      "gen_no": 2,
-      "reasons": [
-        "profit <= 0",
-        "mdd > 20.00 (seed-relative limit)",
-        "trade_count > 400",
-        "payoff_ratio < 1.05"
-      ]
-    }
-  ],
-  "selection_timestamp": "2026-06-10T12:47:01.932363+00:00",
+  "rejected_candidates": [],
+  "selection_timestamp": "2026-06-11T05:16:55.284086+00:00",
   "oos_excluded": true,
   "diagnostic_only": false,
   "forbidden_oos_fields_present": false
