@@ -2318,6 +2318,58 @@ def _niche_compare_payload(run_ids: str = "") -> Dict[str, Any]:
     return out
 
 
+DECISIONS_FILE = os.path.join(REPO_ROOT, ".omo", "evidence", "decisions.jsonl")
+
+
+def _decisions_payload() -> Dict[str, Any]:
+    """F3/P-D(2026-06-11) — V6 운용 결정 이력(append-only jsonl) 읽기. 무예외."""
+    out: Dict[str, Any] = {"decisions": []}
+    try:
+        with open(DECISIONS_FILE, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if line:
+                    out["decisions"].append(json.loads(line))
+    except FileNotFoundError:
+        pass
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = str(exc)
+    out["count"] = len(out["decisions"])
+    return out
+
+
+def _record_decision(verdict: str, note: str) -> Dict[str, Any]:
+    """F3/P-D — V6 운용 결정을 기록한다(연구 거버넌스 — 유일한 쓰기 라우트).
+
+    append-only: 수정·삭제 없음(결정 번복도 새 레코드로 — 이력 보존).
+    현재 동결 후보 스냅샷을 함께 박제해 '무엇에 대한 결정'인지 고정한다.
+    """
+    if verdict not in ("promote", "complement", "hold", "reject"):
+        return {"status": "invalid",
+                "allowed": ["promote", "complement", "hold", "reject"]}
+    try:
+        candidate = None
+        try:
+            sel_path = os.path.join(
+                REPO_ROOT, ".omo/evidence/claude-condition-research-20260610",
+                "p5-selected-candidate.json")
+            with open(sel_path, encoding="utf-8") as fh:
+                sel = json.load(fh)
+            c = sel.get("selected_candidate") or {}
+            candidate = {"buy_name": c.get("buy_name"), "profit": c.get("profit"),
+                         "mdd": c.get("mdd"), "trade_count": c.get("trade_count")}
+        except Exception:  # noqa: BLE001 - 후보 스냅샷은 보조.
+            pass
+        record = {"ts": time.time(), "verdict": verdict, "note": (note or "")[:500],
+                  "candidate": candidate}
+        os.makedirs(os.path.dirname(DECISIONS_FILE), exist_ok=True)
+        with open(DECISIONS_FILE, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+        return {"status": "ok", "recorded": record}
+    except Exception as exc:  # noqa: BLE001
+        return {"status": "error", "error": str(exc)}
+
+
 def _entry_time_buckets(csv_path: str) -> set:
     """N6(2026-06-11) — per-trade CSV의 진입 시각 30분 버킷(HHMM) 집합.
 
@@ -2467,6 +2519,17 @@ def create_app() -> FastAPI:
     def equity_curve(run_id: str = "", gen_no: int = 0) -> Dict[str, Any]:
         """E2/D4(2026-06-11) — 세대 누적 수익곡선(일별·다운샘플). 읽기 전용·무예외."""
         return _equity_curve_payload(run_id, gen_no)
+
+    @app.get("/decisions")
+    def decisions() -> Dict[str, Any]:
+        """F3/P-D — V6 운용 결정 이력. 읽기 전용·무예외."""
+        return _decisions_payload()
+
+    @app.post("/record_decision")
+    def record_decision(payload: Dict[str, Any]) -> Dict[str, Any]:
+        """F3/P-D — V6 운용 결정 기록(promote|complement|hold|reject, append-only)."""
+        return _record_decision(str(payload.get("verdict") or ""),
+                                str(payload.get("note") or ""))
 
     @app.get("/tmap_grid")
     def tmap_grid(run_id: str = "") -> Dict[str, Any]:

@@ -223,6 +223,34 @@ class TestNicheCompare:
         assert out["runs"][0]["gens_ok"] == 0  # 무예외 — 빈 요약.
 
 
+class TestDecisions:
+    """F3/P-D(2026-06-11) — V6 결정 기록: append-only·검증값 거부·이력 순서."""
+
+    def test_record_and_list_roundtrip(self, seeded_validation_db, tmp_path, monkeypatch):
+        from fastapi.testclient import TestClient
+
+        import ai_strategy_loop.dashboard.app as A
+
+        monkeypatch.setattr(A, "DECISIONS_FILE", str(tmp_path / "decisions.jsonl"))
+        client = TestClient(A.create_app())
+        r1 = client.post("/record_decision", json={"verdict": "hold", "note": "검증 추가 대기"})
+        assert r1.json()["status"] == "ok"
+        r2 = client.post("/record_decision", json={"verdict": "promote", "note": "OOS 통과"})
+        assert r2.json()["status"] == "ok"
+        hist = client.get("/decisions").json()
+        assert hist["count"] == 2
+        assert hist["decisions"][0]["verdict"] == "hold"  # append-only 순서 보존.
+        assert "ts" in hist["decisions"][0]
+
+    def test_invalid_verdict_rejected(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        monkeypatch.setattr(A, "DECISIONS_FILE", str(tmp_path / "d.jsonl"))
+        out = A._record_decision("yolo", "x")
+        assert out["status"] == "invalid"
+        assert A._decisions_payload()["count"] == 0  # 무효 입력은 기록 안 됨.
+
+
 class TestOpsStatus:
     """2026-06-11 — 운영 현황 라우트·run 정렬(최신 우선·running 최상단)."""
 
@@ -289,8 +317,14 @@ class TestFrontendContract:
         assert "동결상관" in src
         assert "기권(시드 유지)" in src
         lab = (FRONTEND / "lab.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260611k" in lab
+        assert "research-lab.jsx?v=20260611l" in lab
         assert "ResearchLabPanel" in lab
+        # Phase1/2(2026-06-11) — 사이드바·결정 페이지 계약.
+        assert "run 목록" in lab
+        assert "verdict.html" in lab
+        vd = (FRONTEND / "verdict.html").read_text(encoding="utf-8")
+        assert "/record_decision" in vd
+        assert "결정 이력" in vd
 
     def test_app_jsx_shows_run_label(self):
         src = (FRONTEND / "app.jsx").read_text(encoding="utf-8")
@@ -299,5 +333,5 @@ class TestFrontendContract:
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
-        assert "research-lab.jsx?v=20260611k" in src
+        assert "research-lab.jsx?v=20260611l" in src
         assert "app.jsx?v=20260611a" in src

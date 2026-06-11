@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STOM Verdict · 검증 결산과 운용 결정</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=20260603a" />
+  <script src="vendor-react.js?v=20260603a"></script>
+  <script src="vendor-react-dom.js?v=20260603a"></script>
+  <script src="vendor-babel.js?v=20260603a"></script>
+</head>
+<body>
+  <!-- Phase2(2026-06-11) — 결정 페이지: 증거(체크리스트·결산)를 보고 V6 운용
+       결정을 기록한다(append-only — 번복도 새 레코드, 이력 보존). -->
+  <div id="root">
+    <div style="padding:40px;font-family:system-ui,sans-serif;color:#9fb0c0;background:#0c1014;min-height:100vh;">
+      Verdict 로딩 중… (지속 시 Ctrl+Shift+R)
+    </div>
+  </div>
+
+  <script type="text/babel">
+    const ICON = { pass: "✅", warn: "⚠️", fail: "❌", pending: "⏳" };
+
+    function VerdictRoot() {
+      const [v, setV] = React.useState(null);
+      const [history, setHistory] = React.useState([]);
+      const [choice, setChoice] = React.useState("hold");
+      const [note, setNote] = React.useState("");
+      const [saved, setSaved] = React.useState(null);
+
+      const loadHistory = () =>
+        fetch("/decisions", { signal: AbortSignal.timeout(8000) })
+          .then(r => (r.ok ? r.json() : null))
+          .then(d => setHistory((d && d.decisions) || []))
+          .catch(() => {});
+      React.useEffect(() => {
+        fetch("/freeze_verdict", { signal: AbortSignal.timeout(12000) })
+          .then(r => (r.ok ? r.json() : null)).then(j => setV(j)).catch(() => {});
+        loadHistory();
+      }, []);
+
+      const submit = () => {
+        fetch("/record_decision", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ verdict: choice, note }),
+        })
+          .then(r => r.json())
+          .then(d => { setSaved(d); setNote(""); loadHistory(); })
+          .catch(e => setSaved({ status: "error", error: String(e) }));
+      };
+
+      return (
+        <div style={{ padding: "14px 20px", maxWidth: 980, margin: "0 auto", minHeight: "100vh" }}>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
+            <b style={{ fontSize: 16 }}>검증 결산과 운용 결정 (V6)</b>
+            <a href="/ui/" style={{ marginLeft: "auto", color: "#7ab", fontSize: 12 }}>운영</a>
+            <a href="/ui/lab.html" style={{ marginLeft: 12, color: "#7ab", fontSize: 12 }}>연구</a>
+          </div>
+
+          {v && (v.promote_checklist || []).length > 0 && (
+            <table className="mono" style={{ fontSize: 12, width: "100%", marginBottom: 8 }}>
+              <thead><tr><th>PROMOTE 조건</th><th>상태</th><th>근거</th></tr></thead>
+              <tbody>
+                {v.promote_checklist.map((c, i) => (
+                  <tr key={i}><td>{c.item}</td><td>{ICON[c.status] || "?"}</td><td>{c.detail || "—"}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {v && (v.alerts || []).map((a, i) => (
+            <div key={"a" + i} className="mono" style={{ fontSize: 12, color: "#c95" }}>⚠️ {a}</div>
+          ))}
+          {v && (v.lines || []).map((l, i) => (
+            <div key={"l" + i} className="mono" style={{ fontSize: 12 }}>{l}</div>
+          ))}
+
+          <div style={{ marginTop: 14, padding: 12, border: "1px solid rgba(255,255,255,0.12)", borderRadius: 6 }}>
+            <div className="research-empty">운용 결정 기록 (append-only — 번복도 새 레코드로 이력 보존)</div>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", margin: "8px 0", flexWrap: "wrap" }}>
+              {["promote", "complement", "hold", "reject"].map(k => (
+                <label key={k} className="mono" style={{ fontSize: 12, cursor: "pointer" }}>
+                  <input type="radio" name="verdict" checked={choice === k}
+                         onChange={() => setChoice(k)} /> {k}
+                </label>
+              ))}
+              <input type="text" value={note} placeholder="결정 근거 메모"
+                     onChange={e => setNote(e.target.value)}
+                     className="mono" style={{ flex: 1, minWidth: 220, fontSize: 12 }} />
+              <button type="button" className="research-tab" onClick={submit}>기록</button>
+            </div>
+            {saved && (
+              <div className="mono" style={{ fontSize: 11, color: saved.status === "ok" ? "#5b9" : "#c95" }}>
+                {saved.status === "ok" ? "기록됨" : `실패: ${saved.error || saved.status}`}
+              </div>
+            )}
+          </div>
+
+          <div style={{ marginTop: 12 }}>
+            <div className="research-empty">결정 이력</div>
+            {history.length === 0
+              ? <div className="mono" style={{ fontSize: 11 }}>기록 없음</div>
+              : (
+                <table className="mono" style={{ fontSize: 11, width: "100%" }}>
+                  <thead><tr><th>시각</th><th>결정</th><th>대상 후보</th><th>메모</th></tr></thead>
+                  <tbody>
+                    {history.slice().reverse().map((d, i) => (
+                      <tr key={i}>
+                        <td>{new Date((d.ts || 0) * 1000).toLocaleString("ko-KR")}</td>
+                        <td>{d.verdict}</td>
+                        <td>{d.candidate ? `${d.candidate.buy_name} (${Math.round(d.candidate.profit || 0).toLocaleString()})` : "—"}</td>
+                        <td>{d.note || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+          </div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById("root")).render(<VerdictRoot />);
+  </script>
+</body>
+</html>
