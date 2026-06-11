@@ -72,7 +72,10 @@ class UpbitReceiver(BaseReceiver):
                                    hoga_bamount, hoga_tamount, receivetime)
 
         elif data['type'] == 'ticker':
-            dt    = int(str_ymdhms_from_timestamp(data['timestamp']))
+            dt = int(str_ymdhms_from_timestamp(data['timestamp']))
+            if self.dict_set['전략종료시간'] < dt % 1000000:
+                return
+
             code  = data['code']
             c     = data['trade_price']
             o     = data['opening_price']
