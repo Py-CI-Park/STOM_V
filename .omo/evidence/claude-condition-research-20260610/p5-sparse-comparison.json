@@ -1,6 +1,6 @@
 {
   "selector_version": "sparse_positive_v1",
-  "run_id": "theta_star_reeval_20260611",
+  "run_id": "exit2_combo_train_20260611",
   "config_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\claude-condition-research-20260610\\train-config.json",
   "config_hash": "a4bed0de8513d8cc28693ec48e482617ec0b82e024a87a3465e75f7b58bfe88a",
   "selected": false,
@@ -11,7 +11,7 @@
   "buy_name": null,
   "sell_name": null,
   "metrics": null,
-  "selection_timestamp": "2026-06-11T05:23:22.991805+00:00",
+  "selection_timestamp": "2026-06-11T14:07:54.286536+00:00",
   "oos_excluded": true,
   "diagnostic_only": true,
   "eligible_candidates": [],
@@ -33,33 +33,23 @@
     {
       "gen_no": 3,
       "reasons": [
-        "mdd > 10.0",
         "trade_count > 250"
       ]
     },
     {
       "gen_no": 4,
       "reasons": [
-        "mdd > 10.0",
         "trade_count > 250"
       ]
     },
     {
       "gen_no": 5,
       "reasons": [
-        "mdd > 10.0",
         "trade_count > 250"
       ]
     },
     {
       "gen_no": 6,
-      "reasons": [
-        "mdd > 10.0",
-        "trade_count > 250"
-      ]
-    },
-    {
-      "gen_no": 7,
       "reasons": [
         "mdd > 10.0",
         "trade_count > 250"

@@ -1,8 +1,8 @@
 {
   "n_trades_a": 304,
-  "n_trades_b": 270,
-  "n_common": 270,
-  "jaccard": 0.8882,
+  "n_trades_b": 265,
+  "n_common": 265,
+  "jaccard": 0.8717,
   "interpretation": "사실상 동일 거래 — '보완'은 동일 베팅 2배와 같음(대체 검토)",
   "note": "advisory — V6 운용 결정(대체 vs 보완) 참고용, 판정 미사용"
 }

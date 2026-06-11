@@ -1,48 +1,48 @@
 {
   "selector_version": "seed_relative_v1",
-  "run_id": "theta_star_reeval_20260611",
+  "run_id": "exit2_combo_train_20260611",
   "config_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\claude-condition-research-20260610\\train-config.json",
   "config_hash": "a4bed0de8513d8cc28693ec48e482617ec0b82e024a87a3465e75f7b58bfe88a",
   "seed_profile": {
     "mdd": 17.44,
     "trade_count": 307,
     "profit": 8631199.0,
-    "source": "BASE_SEED gen0 of theta_star_reeval_20260611"
+    "source": "BASE_SEED gen0 of exit2_combo_train_20260611"
   },
   "mdd_limit": 20.0,
   "selected": true,
   "blocked": false,
   "blocker": "",
   "selected_candidate": {
-    "gen_no": 7,
+    "gen_no": 5,
     "status": "ok",
-    "graded_score": 7.849793006786826,
+    "graded_score": 7.082643878862229,
     "gate_passed": true,
     "gate_reason": "ok",
-    "profit": 10965479.0,
-    "total_profit_pct": 218.24,
-    "mdd": 10.04,
-    "trade_count": 272,
+    "profit": 12319055.0,
+    "total_profit_pct": 123.27,
+    "mdd": 6.23,
+    "trade_count": 265,
     "daily_avg_trades": 0.4,
-    "payoff_ratio": 1.534815263812587,
+    "payoff_ratio": 1.417700438312091,
     "max_hold_count": 0.0,
-    "buy_name": "THETA_seed_902905_06_B",
-    "sell_name": "THETA_seed_902905_06_S",
-    "csv_path": "backtest/csv\\stock_bt_THETA_seed_902905_06_B_20260611141549.csv"
+    "buy_name": "EXIT2C_02_B",
+    "sell_name": "EXIT2C_02_S",
+    "csv_path": "backtest/csv\\stock_bt_EXIT2C_02_B_20260611230232.csv"
   },
   "selected_yearly": {
     "years": [
       [
         "2023",
-        4590073.0
+        5975618.0
       ],
       [
         "2024",
-        4518416.0
+        4870092.0
       ],
       [
         "2025",
-        1856990.0
+        1473345.0
       ]
     ],
     "positive_years": 3,
@@ -51,13 +51,100 @@
   },
   "eligible_candidates": [
     {
-      "gen_no": 7,
+      "gen_no": 5,
+      "rank_key": [
+        -3.0,
+        -1977376.404494382,
+        6.23,
+        -1.417700438312091,
+        5
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            5975618.0
+          ],
+          [
+            "2024",
+            4870092.0
+          ],
+          [
+            "2025",
+            1473345.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 4,
+      "rank_key": [
+        -3.0,
+        -1708996.1136023914,
+        6.69,
+        -1.3701161154989563,
+        4
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            5928861.0
+          ],
+          [
+            "2024",
+            4438081.0
+          ],
+          [
+            "2025",
+            1066242.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 3,
+      "rank_key": [
+        -3.0,
+        -1614364.992826399,
+        6.97,
+        -1.3043499921178845,
+        3
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            5800295.0
+          ],
+          [
+            "2024",
+            4584996.0
+          ],
+          [
+            "2025",
+            866833.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 1,
       "rank_key": [
         -3.0,
         -1092179.1832669324,
         10.04,
         -1.534815263812587,
-        7
+        1
       ],
       "yearly": {
         "years": [
@@ -80,56 +167,27 @@
       }
     },
     {
-      "gen_no": 5,
-      "rank_key": [
-        -3.0,
-        -864291.4986853637,
-        11.41,
-        -1.467328628478109,
-        5
-      ],
-      "yearly": {
-        "years": [
-          [
-            "2023",
-            4875248.0
-          ],
-          [
-            "2024",
-            3909879.0
-          ],
-          [
-            "2025",
-            1076439.0
-          ]
-        ],
-        "positive_years": 3,
-        "observed_years": 3,
-        "meets_advisory": true
-      }
-    },
-    {
       "gen_no": 2,
       "rank_key": [
         -3.0,
-        -854883.1460674157,
-        11.57,
-        -1.5579138479514798,
+        -977456.9713758079,
+        10.83,
+        -1.2360748634481893,
         2
       ],
       "yearly": {
         "years": [
           [
             "2023",
-            4754964.0
+            6135767.0
           ],
           [
             "2024",
-            3902314.0
+            4370459.0
           ],
           [
             "2025",
-            1233720.0
+            79633.0
           ]
         ],
         "positive_years": 3,
@@ -141,111 +199,24 @@
       "gen_no": 6,
       "rank_key": [
         -3.0,
-        -844638.8888888889,
-        12.78,
-        -1.533679914398516,
+        -966392.7073837739,
+        10.97,
+        -1.2843233162049295,
         6
       ],
       "yearly": {
         "years": [
           [
             "2023",
-            5118041.0
+            6294359.0
           ],
           [
             "2024",
-            4117757.0
+            4210268.0
           ],
           [
             "2025",
-            1558687.0
-          ]
-        ],
-        "positive_years": 3,
-        "observed_years": 3,
-        "meets_advisory": true
-      }
-    },
-    {
-      "gen_no": 4,
-      "rank_key": [
-        -3.0,
-        -822653.2403609516,
-        12.19,
-        -1.5572687440692028,
-        4
-      ],
-      "yearly": {
-        "years": [
-          [
-            "2023",
-            4226996.0
-          ],
-          [
-            "2024",
-            4269124.0
-          ],
-          [
-            "2025",
-            1532023.0
-          ]
-        ],
-        "positive_years": 3,
-        "observed_years": 3,
-        "meets_advisory": true
-      }
-    },
-    {
-      "gen_no": 1,
-      "rank_key": [
-        -3.0,
-        -657976.4275256223,
-        13.66,
-        -1.4922780934091997,
-        1
-      ],
-      "yearly": {
-        "years": [
-          [
-            "2023",
-            4510621.0
-          ],
-          [
-            "2024",
-            3725865.0
-          ],
-          [
-            "2025",
-            751472.0
-          ]
-        ],
-        "positive_years": 3,
-        "observed_years": 3,
-        "meets_advisory": true
-      }
-    },
-    {
-      "gen_no": 3,
-      "rank_key": [
-        -3.0,
-        -627631.4115308151,
-        15.09,
-        -1.4598760031777795,
-        3
-      ],
-      "yearly": {
-        "years": [
-          [
-            "2023",
-            5244083.0
-          ],
-          [
-            "2024",
-            3522496.0
-          ],
-          [
-            "2025",
-            704379.0
+            96701.0
           ]
         ],
         "positive_years": 3,
@@ -255,7 +226,7 @@
     }
   ],
   "rejected_candidates": [],
-  "selection_timestamp": "2026-06-11T05:23:22.989825+00:00",
+  "selection_timestamp": "2026-06-11T14:07:54.284223+00:00",
   "oos_excluded": true,
   "diagnostic_only": false,
   "forbidden_oos_fields_present": false
