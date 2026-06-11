@@ -27,6 +27,7 @@ from ai_strategy_loop.controller.loop import (
     _score_outcome,
 )
 from ai_strategy_loop.controller.state import LoopState
+from ai_strategy_loop.tmap.resume import resume_done_map, resume_row
 from ai_strategy_loop.tmap.template import (
     coordinate_points,
     load_template,
@@ -50,6 +51,10 @@ def main() -> int:
     ap.add_argument("--params", default="", help="스윕할 슬롯 부분집합(쉼표). 비우면 전체")
     ap.add_argument("--max-points", type=int, default=200)
     ap.add_argument("--manifest-out", default="")
+    ap.add_argument(
+        "--resume", action="store_true",
+        help="같은 run-id의 기존 ok 세대는 건너뛰고 error/누락 포인트만 평가(중단 재개)",
+    )
     args = ap.parse_args()
 
     template = load_template(args.template)
@@ -78,7 +83,36 @@ def main() -> int:
     print(f"[SWEEP] template={template.name} points={len(prepared)}/{len(points)}", flush=True)
 
     st = LoopState()
-    rid = st.start_run(config, run_id=args.run_id)
+    if args.resume:
+        # 재개: 기존 run row/config를 보존하고(resume_or_start), ok 세대는 스킵한다.
+        rid = st.resume_or_start(config, run_id=args.run_id)
+        done = resume_done_map(st, rid)
+    else:
+        rid = st.start_run(config, run_id=args.run_id)
+        done = {}
+
+    manifest = {"template": template.name, "run_id": rid, "points": []}
+    todo = []
+    for gen_no, (point, buy_name, sell_name) in enumerate(prepared):
+        entry = {"gen_no": gen_no, **{k: point[k] for k in ("label", "param", "value")},
+                 "buy_name": buy_name}
+        prev = resume_row(done, gen_no, point["label"])
+        if prev is not None:
+            entry.update({"status": "ok", "profit": prev.get("profit"),
+                          "mdd": prev.get("mdd"), "trades": prev.get("trade_count"),
+                          "resumed": True})
+            manifest["points"].append(entry)
+            print(f"[SWEEP] gen{gen_no} {point['label']} SKIP(resume)", flush=True)
+            continue
+        todo.append((gen_no, point, buy_name, sell_name, entry))
+    if args.resume:
+        print(f"[SWEEP] resume: 평가 대상 {len(todo)}점 / 스킵 {len(prepared) - len(todo)}점",
+              flush=True)
+    if not todo:
+        st.finish_run(rid, status="complete")
+        _write_manifest_and_summary(args, manifest, rid)
+        return 0
+
     sess = WarmBacktestSession(_build_warm_btconfig(config))
     t0 = time.time()
     prep = sess.prepare()
@@ -88,9 +122,8 @@ def main() -> int:
         st.finish_run(rid, status="error")
         return 2
 
-    manifest = {"template": template.name, "run_id": rid, "points": []}
     try:
-        for gen_no, (point, buy_name, sell_name) in enumerate(prepared):
+        for gen_no, point, buy_name, sell_name, entry in todo:
             t1 = time.time()
             try:
                 outcome = _warm_to_outcome(
@@ -100,8 +133,6 @@ def main() -> int:
                 from ai_strategy_loop.controller.loop import BacktestOutcome
                 outcome = BacktestOutcome(False, "error", None, None, f"run raised: {exc}")
             elapsed = time.time() - t1
-            entry = {"gen_no": gen_no, **{k: point[k] for k in ("label", "param", "value")},
-                     "buy_name": buy_name}
 
             if not outcome.ok:
                 st.record_generation(
@@ -148,13 +179,19 @@ def main() -> int:
         sess.close()
 
     st.finish_run(rid, status="complete")
+    _write_manifest_and_summary(args, manifest, rid)
+    return 0
+
+
+def _write_manifest_and_summary(args, manifest: dict, rid: str) -> None:
+    """manifest 저장(gen_no 순 정렬) + 경향성 요약 출력(advisory)."""
+    manifest["points"].sort(key=lambda e: e.get("gen_no", 0))
     if args.manifest_out:
         Path(args.manifest_out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.manifest_out).write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
         )
 
-    # 경향성 요약 즉시 출력(advisory).
     from ai_strategy_loop.tmap.tendency import summarize_tendency
     summary = summarize_tendency(rid)
     base = summary.get("baseline") or {}
@@ -167,7 +204,6 @@ def main() -> int:
               f"center={plateau.get('center_value')} width={plateau.get('width')} "
               f"positive={m.get('positive_ratio')}", flush=True)
     print("[SWEEP] done", flush=True)
-    return 0
 
 
 if __name__ == "__main__":

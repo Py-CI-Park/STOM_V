@@ -1,0 +1,139 @@
+{
+  "sweep_run_id": "tmap_seed_full_train_20260611",
+  "baseline": {
+    "profit": 8631199.0,
+    "mdd": 17.44,
+    "trades": 307,
+    "status": "ok"
+  },
+  "slots": [
+    {
+      "param": "cap_max",
+      "qualified": true,
+      "qualified_rule": "v2_dominant",
+      "reject_reasons": [],
+      "v1_reject_reasons": [
+        "plateau mean 7,278,023 <= baseline 8,631,199"
+      ],
+      "plateau_score": 5.0593,
+      "positive_ratio": 1.0,
+      "plateau": {
+        "width": 6,
+        "center_value": 4000.0,
+        "mean_profit": 7278023.333333333,
+        "min_profit": 6099876.0,
+        "values": [
+          1500.0,
+          2000.0,
+          2500.0,
+          4000.0,
+          6000.0,
+          10000.0
+        ]
+      },
+      "dominant_plateau": {
+        "width": 2,
+        "center_value": 2500.0,
+        "mean_profit": 8877423.0,
+        "min_profit": 8766888.0,
+        "values": [
+          2000.0,
+          2500.0
+        ]
+      },
+      "effective_plateau": {
+        "width": 2,
+        "center_value": 2500.0,
+        "mean_profit": 8877423.0,
+        "min_profit": 8766888.0,
+        "values": [
+          2000.0,
+          2500.0
+        ]
+      },
+      "cliff": {
+        "between": [
+          2500.0,
+          4000.0
+        ],
+        "jump": 2372851.0
+      }
+    },
+    {
+      "param": "prev_ratio_min",
+      "qualified": false,
+      "qualified_rule": null,
+      "reject_reasons": [
+        "plateau mean 5,191,404 <= baseline 8,631,199",
+        "no dominant sub-plateau (width>=2)"
+      ],
+      "v1_reject_reasons": [
+        "plateau mean 5,191,404 <= baseline 8,631,199"
+      ],
+      "plateau_score": 3.6088,
+      "positive_ratio": 1.0,
+      "plateau": {
+        "width": 6,
+        "center_value": 1000.0,
+        "mean_profit": 5191403.666666667,
+        "min_profit": 2153301.0,
+        "values": [
+          100.0,
+          300.0,
+          500.0,
+          1000.0,
+          2000.0,
+          5000.0
+        ]
+      },
+      "dominant_plateau": null,
+      "effective_plateau": null,
+      "cliff": {
+        "between": [
+          1000.0,
+          2000.0
+        ],
+        "jump": 2210899.0
+      }
+    },
+    {
+      "param": "strength_min",
+      "qualified": false,
+      "qualified_rule": null,
+      "reject_reasons": [
+        "plateau mean 8,631,199 <= baseline 8,631,199",
+        "no dominant sub-plateau (width>=2)"
+      ],
+      "v1_reject_reasons": [
+        "plateau mean 8,631,199 <= baseline 8,631,199"
+      ],
+      "plateau_score": 1.0,
+      "positive_ratio": 1.0,
+      "plateau": {
+        "width": 1,
+        "center_value": 70.0,
+        "mean_profit": 8631199.0,
+        "min_profit": 8631199.0,
+        "values": [
+          70.0
+        ]
+      },
+      "dominant_plateau": null,
+      "effective_plateau": null,
+      "cliff": null
+    }
+  ],
+  "points": [
+    {
+      "label": "THETA cap_max=2500",
+      "theta": {
+        "cap_max": 2500
+      },
+      "kind": "single",
+      "status": "ok",
+      "buy_name": "THETA_seed_902905_00_B",
+      "sell_name": "THETA_seed_902905_00_S"
+    }
+  ],
+  "dry_run": true
+}

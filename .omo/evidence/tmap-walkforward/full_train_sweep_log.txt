@@ -1,0 +1,17 @@
+[SWEEP] template=seed_902905 points=56/56
+[SWEEP] prepare status=ok back_count=2285 elapsed=306s
+[SWEEP] gen0 TMAP __default__ profit=8,631,199 mdd=17.44 trades=307 (152s)
+[SWEEP] gen1 TMAP cap_max=1500 profit=6,942,596 mdd=10.26 trades=172 (153s)
+[SWEEP] gen2 TMAP cap_max=2000 profit=8,766,888 mdd=11.68 trades=231 (152s)
+[SWEEP] gen3 TMAP cap_max=2500 profit=8,987,958 mdd=13.66 trades=272 (149s)
+[SWEEP] gen4 TMAP cap_max=4000 profit=6,615,107 mdd=18.73 trades=337 (146s)
+[SWEEP] gen5 TMAP cap_max=6000 profit=6,255,715 mdd=20.16 trades=351 (147s)
+[SWEEP] gen6 TMAP cap_max=10000 profit=6,099,876 mdd=20.32 trades=356 (134s)
+[SWEEP] gen7 TMAP prev_ratio_min=100 profit=7,157,982 mdd=20.24 trades=290 (146s)
+[SWEEP] gen8 TMAP prev_ratio_min=300 profit=6,220,758 mdd=17.79 trades=234 (146s)
+[SWEEP] gen9 TMAP prev_ratio_min=500 profit=6,043,938 mdd=11.95 trades=192 (146s)
+[SWEEP] gen10 TMAP prev_ratio_min=1000 profit=5,891,671 mdd=8.13 trades=137 (129s)
+[SWEEP] gen11 TMAP prev_ratio_min=2000 profit=3,680,772 mdd=10.02 trades=85 (104s)
+[SWEEP] gen12 TMAP prev_ratio_min=5000 profit=2,153,301 mdd=9.44 trades=45 (105s)
+[SWEEP] gen13 TMAP strength_min=70 profit=8,631,199 mdd=17.44 trades=307 (105s)
+[SWEEP] gen14 TMAP strength_min=90 ERROR (252s)

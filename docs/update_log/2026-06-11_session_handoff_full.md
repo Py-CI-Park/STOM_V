@@ -119,3 +119,20 @@ PYTHONUTF8=1 python -m ai_strategy_loop.scripts.tmap_sweep `
 7. 증거: `.omo/evidence/claude-condition-research-20260610/`(동결·OOS·결정 카드),
    `.omo/evidence/tmap-walkforward/`(첫 지도)
 8. 영구 메모리: stom-tick-engine-compute-budget · stom-zero-llm-eval-path
+
+## 9. W1 진행 추록 (2026-06-11 12시 — 중단·복구 기록)
+
+핸드오프(`b6a3af45`) 이후 같은 날 진행된 작업과 중단 사건:
+
+- 후속 커밋 2건: `dc36dbcb`(V5 슬리피지 스트레스 advisory 도구 — §6 V5 갭 해소,
+  CSV 후처리 시나리오 재계산·엔진 무수정·테스트 215줄) ·
+  `16bc3e4d`(A4 니치 템플릿 2종 — min 풀세션 오전 모멘텀/오후 되돌림 θ 모수화).
+- gpt_auth 충전 확인(PONG, 429 미발생) — `gpt_auth_health_20260611.txt`.
+- **W1 본 스윕 착수 → gen14에서 프로세스 중단**(56포인트 중 15만 기록,
+  gen14는 child exit 1 — 중단 여파, 전략 문제 아님). 부분 지도에서도
+  cap_max 2000~2500 우세 고원(평균 8.88M > 베이스라인 8.63M) 신호.
+- θ* dry-run: `gen_theta_star_batch.py` + `theta_star_summary.json` —
+  단, **3/13 슬롯 부분 지도 기준이므로 본 스윕 완주 후 재산출 필요**.
+- 복구: `tmap_sweep.py`에 `--resume` 추가(ok 세대 스킵·error/누락 재평가·
+  라벨 불일치 시 재평가, `tmap/resume.py` + TestResume). 같은 명령에
+  `--resume`만 붙여 재개하면 된다(§4 명령 + `--resume`).

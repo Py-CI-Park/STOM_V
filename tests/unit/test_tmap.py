@@ -33,6 +33,7 @@ from ai_strategy_loop.tmap.template import (  # noqa: E402
     strategy_names,
     validate_rendered,
 )
+from ai_strategy_loop.tmap.resume import resume_done_map, resume_row  # noqa: E402
 from ai_strategy_loop.tmap.tendency import plateau_metrics, summarize_tendency  # noqa: E402
 from ai_strategy_loop.scripts.tmap_walkforward import parse_windows, select_theta  # noqa: E402
 
@@ -271,6 +272,37 @@ class TestRoutes:
         assert client.get("/portfolio_preview", params={"run_id": "nope"}).json()["status"] in (
             "no_series", "unavailable",
         )
+
+
+class TestResume:
+    """--resume 스킵 판정 — W1 본 스윕 gen14 프로세스 중단 사건의 회귀 방지.
+
+    계약: ok 세대만 스킵 후보 / error·누락 세대는 재평가 / 라벨 불일치는
+    스킵하지 않는다(템플릿 변경 시 오래된 결과를 새 포인트로 오인 금지).
+    """
+
+    def test_done_map_and_skip_rules(self, tmp_path) -> None:
+        st = LoopState(db_path=str(tmp_path / "loop_runs.db"),
+                       snapshot_dir=str(tmp_path / "s"))
+        st.start_run(LoopConfig(), run_id="runR")
+        st.record_generation(
+            "runR", 0, buy_name="B0", sell_name="S0", status="ok",
+            score=1.0, gate_passed=True, reason="ok", profit=100.0,
+            mdd=1.0, trade_count=10, strategy_gist="TMAP __default__",
+        )
+        st.record_generation(
+            "runR", 1, buy_name="B1", sell_name="S1", status="error",
+            score=0.0, gate_passed=False, reason="backtest failed: child exit 1",
+            strategy_gist="TMAP cap_max=1500",
+        )
+        done = resume_done_map(st, "runR")
+        st.close()
+
+        assert set(done) == {0}  # error 세대는 스킵 후보에서 제외 → 자동 재시도.
+        assert resume_row(done, 0, "TMAP __default__")["profit"] == 100.0
+        assert resume_row(done, 0, "TMAP other=1") is None  # 라벨 불일치 → 재평가.
+        assert resume_row(done, 1, "TMAP cap_max=1500") is None
+        assert resume_row(done, 2, "TMAP cap_max=2000") is None  # 누락 → 평가.
 
 
 class TestFrontendContract:
