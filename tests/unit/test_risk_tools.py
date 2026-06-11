@@ -103,3 +103,67 @@ class TestSizing:
         assert sizing_advisory({}, 100, 1) is None
         assert sizing_advisory({"mdd_p95": 0}, 100, 1) is None
         assert sizing_advisory({"mdd_p95": 10}, 0, 1) is None
+
+
+# ── M4 챔피언-챌린저 ─────────────────────────────────────────────────────
+class TestChampionChallenger:
+    def test_decay_and_dominance_alerts(self) -> None:
+        from ai_strategy_loop.fitness.champion_challenger import championship_report
+
+        champ = {"20250105": 100.0, "20250205": -50.0, "20250305": -30.0}
+        chall = {"20250105": 50.0, "20250205": 20.0, "20250305": 10.0}
+        out = championship_report(champ, chall, consecutive_alert=2)
+        assert out["max_champion_negative_streak"] == 2
+        assert any("champion_decay" in a for a in out["alerts"])
+        assert any("challenger_dominance" in a for a in out["alerts"])
+        assert out["months"][0]["winner"] == "champion"
+        assert out["months"][2]["winner"] == "challenger"
+
+    def test_healthy_champion_no_alerts(self) -> None:
+        from ai_strategy_loop.fitness.champion_challenger import championship_report
+
+        champ = {"20250105": 100.0, "20250205": 80.0}
+        chall = {"20250105": 10.0, "20250205": 20.0}
+        out = championship_report(champ, chall)
+        assert out["alerts"] == []
+
+    def test_graceful_on_single_month(self) -> None:
+        from ai_strategy_loop.fitness.champion_challenger import championship_report
+
+        assert championship_report({"20250105": 1.0}, {"20250106": 1.0}) is None
+
+
+# ── M5 다중 시드 발굴 ────────────────────────────────────────────────────
+class TestMultiseedPairs:
+    def test_top_pairs_excludes_derivatives_and_ranks(self, tmp_path) -> None:
+        from ai_strategy_loop.config import LoopConfig
+        from ai_strategy_loop.controller.state import LoopState
+        from ai_strategy_loop.scripts.gen_multiseed_pairs import top_pairs
+
+        db = tmp_path / "loop_runs.db"
+        st = LoopState(db_path=str(db), snapshot_dir=str(tmp_path / "s"))
+        st.start_run(LoopConfig(), run_id="hist")
+        rows = [
+            ("CLDGEN_A_B", "CLDGEN_A_S", "후보A", 5_000_000.0, 100, True),
+            ("CLDGEN_B_B", "CLDGEN_B_S", "후보B", 9_000_000.0, 80, True),
+            ("THETA_x_B", "THETA_x_S", "THETA cap=1", 99_000_000.0, 100, True),  # 파생물 제외.
+            ("CLDGEN_C_B", "CLDGEN_C_S", "후보C", 8_000_000.0, 10, True),  # 거래수 미달.
+            ("CLDGEN_D_B", "CLDGEN_D_S", "후보D", 7_000_000.0, 100, False),  # 게이트 탈락.
+        ]
+        for i, (b, s, gist, profit, trades, gate) in enumerate(rows):
+            st.record_generation(
+                "hist", i, buy_name=b, sell_name=s, status="ok", score=1.0,
+                gate_passed=gate, reason="ok", profit=profit, trade_count=trades,
+                strategy_gist=gist,
+            )
+        st.close()
+
+        out = top_pairs(str(db), top=10, min_trades=30)
+        names = [p["buy"] for p in out]
+        assert names == ["CLDGEN_B_B", "CLDGEN_A_B"]  # 순위 + 제외 규칙.
+        assert out[0]["history_best_profit"] == 9_000_000.0
+
+    def test_graceful_on_missing_db(self, tmp_path) -> None:
+        from ai_strategy_loop.scripts.gen_multiseed_pairs import top_pairs
+
+        assert top_pairs(str(tmp_path / "none.db")) == []
