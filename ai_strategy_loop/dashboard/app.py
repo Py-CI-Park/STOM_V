@@ -1896,6 +1896,161 @@ def _ops_status_payload(window_hours: int = 24) -> Dict[str, Any]:
     return out
 
 
+def _freeze_verdict_payload() -> Dict[str, Any]:
+    """검증 결산(2026-06-11) — 동결 후보의 V1~V5+리스크 증거를 한 화면으로.
+
+    증거 JSON(동결·과적합·중복도·플라시보·슬리피지·리스크 advisory)과 OOS
+    run(loop_runs.db, 최신 *_oos_<year>* run)을 모아 사람이 읽는 lines와
+    경고(alerts)로 합성한다. 파일 부재/스키마 드리프트는 해당 항목만 생략
+    (무예외 — 부분 결과). 읽기 전용 · 판정 미사용(advisory 표시 전용).
+    """
+    base_t = os.path.join(REPO_ROOT, ".omo/evidence/tmap-walkforward")
+    base_r = os.path.join(REPO_ROOT, ".omo/evidence/claude-condition-research-20260610")
+
+    def _load(*parts):
+        try:
+            with open(os.path.join(*parts), encoding="utf-8") as fh:
+                return json.load(fh)
+        except Exception:  # noqa: BLE001
+            return None
+
+    out: Dict[str, Any] = {"lines": [], "alerts": []}
+    lines, alerts = out["lines"], out["alerts"]
+
+    sel = _load(base_r, "p5-selected-candidate.json")
+    if sel and sel.get("selected_candidate"):
+        c = sel["selected_candidate"]
+        out["selected"] = c
+        lines.append(
+            f"동결 후보: gen{c.get('gen_no')} {c.get('buy_name')} — train 손익"
+            f" {(c.get('profit') or 0):,.0f} · MDD {c.get('mdd')}"
+            f" · {c.get('trade_count')}건 · payoff {round(c.get('payoff_ratio') or 0, 2)}"
+        )
+
+    ov = _load(base_r, "p5-overfit-advisory.json")
+    if ov:
+        dsr = (ov.get("dsr") or {}).get("dsr")
+        pbo = (ov.get("pbo") or {}).get("pbo")
+        mc = ov.get("mc_block_bootstrap") or {}
+        pool = ov.get("pool_independence") or {}
+        out["overfit"] = {"dsr": dsr, "pbo": pbo, "n_trials": ov.get("n_trials"),
+                          "p_positive": mc.get("p_positive"),
+                          "pool_independence": pool}
+        if dsr is not None:
+            lines.append(
+                f"V1 과적합: DSR {dsr:.3f} (n_trials {ov.get('n_trials')})"
+                f" · PBO {round(pbo, 3) if pbo is not None else '—'}"
+                f" · MC P(흑자) {mc.get('p_positive')}"
+            )
+        if pool.get("pbo_reliability_warning"):
+            alerts.append("V1: " + str(pool["pbo_reliability_warning"]))
+
+    # V3 — 최신 고정 OOS run 2개(연도별)에서 FROZEN vs BASE_SEED.
+    try:
+        import sqlite3  # noqa: PLC0415
+
+        from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        try:
+            for year in ("2022", "2026"):
+                rid_row = con.execute(
+                    "SELECT run_id FROM runs WHERE run_id LIKE ?"
+                    " ORDER BY started_at DESC LIMIT 1", (f"%oos_{year}%",),
+                ).fetchone()
+                if rid_row is None:
+                    continue
+                rows = {r["strategy_gist"]: r for r in con.execute(
+                    "SELECT strategy_gist, profit, mdd, trade_count FROM generations"
+                    " WHERE run_id=? AND status='ok'", (rid_row["run_id"],),
+                )}
+                fz, bs = rows.get("FROZEN"), rows.get("BASE_SEED")
+                if fz and bs:
+                    lines.append(
+                        f"V3 OOS {year}: 후보 {fz['profit']:,.0f}({fz['trade_count']}건"
+                        f"·MDD {fz['mdd']:.2f}) vs 시드 {bs['profit']:,.0f}"
+                        f"(MDD {bs['mdd']:.2f})"
+                    )
+        finally:
+            con.close()
+    except Exception:  # noqa: BLE001
+        pass
+
+    pl = _load(base_t, "placebo_position.json")
+    if pl and pl.get("position"):
+        pos = pl["position"]
+        out["placebo"] = pos
+        lines.append(
+            f"V2 플라시보: 표본 {pos.get('n_placebo')}종 전부 하회"
+            if pos.get("exceeds_all")
+            else f"V2 플라시보: 백분위 {pos.get('percentile')}"
+        )
+        lines[-1] += f" — {pos.get('interpretation')}"
+
+    sl = _load(base_t, "theta_slippage_stress.json")
+    if sl:
+        by_key = {(s.get("tick"), s.get("fee_bps")): s
+                  for s in (sl.get("scenarios") or []) if isinstance(s, dict)}
+        s1, s2 = by_key.get((1, 0.0)), by_key.get((2, 0.0))
+        if s1:
+            lines.append(
+                f"V5 슬리피지(합산 {sl.get('trade_count')}건): 1틱 유지"
+                f" {s1.get('profit_retention_ratio', 0) * 100:.0f}%"
+                + (f" · 2틱 {s2.get('profit_retention_ratio', 0) * 100:.0f}%" if s2 else "")
+                + f" · 손익분기 {round(s1.get('breakeven_tick') or 0, 2)}틱"
+            )
+        oos26 = _load(base_t, "theta_slippage_oos2026.json")
+        if oos26:
+            sc = next((s for s in (oos26.get("scenarios") or [])
+                       if s.get("tick") == 1 and not s.get("fee_bps")), None)
+            if sc and (sc.get("breakeven_tick") or 9) < 2:
+                alerts.append(
+                    f"V5: 2026 OOS 단독 손익분기 {round(sc['breakeven_tick'], 2)}틱 — 얇은 마진"
+                )
+
+    tov = _load(base_r, "p5-trade-overlap.json")
+    if tov:
+        out["trade_overlap"] = tov
+        lines.append(f"M1 중복도: jaccard {tov.get('jaccard')} — {tov.get('interpretation')}")
+
+    ra = _load(base_t, "theta_risk_advisories.json")
+    if ra:
+        ff = ra.get("fill_fragility_train") or {}
+        cb = ra.get("circuit_breaker_train") or {}
+        sz = ra.get("sizing_advisory") or {}
+        if ff:
+            lines.append(
+                f"C8 체결: 추격 의존 거래 {round((ff.get('fragile_trade_ratio') or 0) * 100, 1)}%"
+                f" · 의존 수익비중 {round((ff.get('fragile_profit_share') or 0) * 100, 1)}%"
+            )
+        if cb.get("best_rule"):
+            lines.append(f"M10 서킷: {cb['best_rule']} → x{cb.get('profit_ratio')}")
+        if sz.get("applied_scale"):
+            lines.append(f"M11 사이징: 권고 배수 x{sz['applied_scale']}")
+
+    try:  # V4 — 최신 walk-forward 집계(창별 행 포함).
+        import glob as _glob  # noqa: PLC0415
+
+        aggs = sorted(
+            _glob.glob(os.path.join(base_t, "*", "aggregate.json")),
+            key=os.path.getmtime, reverse=True,
+        )
+        if aggs:
+            agg = _load(aggs[0]) or {}
+            out["walkforward"] = agg
+            done = [w for w in agg.get("windows", []) if w.get("status") == "ok"]
+            if done:
+                lines.append(
+                    f"V4 walk-forward({len(done)}창): 정책 누적"
+                    f" {agg.get('policy_total', 0):,.0f} vs 시드"
+                    f" {agg.get('baseline_total', 0):,.0f}"
+                )
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
 def _entry_time_buckets(csv_path: str) -> set:
     """N6(2026-06-11) — per-trade CSV의 진입 시각 30분 버킷(HHMM) 집합.
 
@@ -2016,6 +2171,15 @@ def create_app() -> FastAPI:
         호출로 — Validation 탭 Ops 패널이 10초 폴링한다. 읽기 전용·무예외.
         """
         return _ops_status_payload(window_hours)
+
+    @app.get("/freeze_verdict")
+    def freeze_verdict() -> Dict[str, Any]:
+        """검증 결산(2026-06-11) — 동결 후보의 V1~V5+리스크 증거 종합(읽기 전용).
+
+        결정 카드의 라이브 버전: 동결·DSR/PBO(+쌍둥이 경고)·OOS·플라시보·
+        슬리피지·중복도·체결/서킷/사이징·walk-forward를 lines/alerts로 합성.
+        """
+        return _freeze_verdict_payload()
 
     @app.get("/run_state")
     def run_state(run_id: str = "") -> Dict[str, Any]:

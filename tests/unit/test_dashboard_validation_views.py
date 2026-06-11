@@ -173,6 +173,17 @@ class TestRunLabels:
         assert result["runs"] == []
 
 
+class TestFreezeVerdict:
+    """2026-06-11 — 검증 결산(결정 카드 라이브): 무예외·부분 결과 계약."""
+
+    def test_payload_structure_and_graceful(self, seeded_validation_db):
+        from ai_strategy_loop.dashboard.app import _freeze_verdict_payload
+
+        out = _freeze_verdict_payload()  # 증거 파일 일부 부재여도 예외 없이.
+        assert isinstance(out.get("lines"), list)
+        assert isinstance(out.get("alerts"), list)
+
+
 class TestOpsStatus:
     """2026-06-11 — 운영 현황 라우트·run 정렬(최신 우선·running 최상단)."""
 
@@ -221,6 +232,9 @@ class TestFrontendContract:
         assert "/ops_status" in src
         assert "운영 현황" in src
         assert "정체 의심" in src
+        # 2026-06-11 — 검증 결산(결정 카드 라이브) 계약.
+        assert "/freeze_verdict" in src
+        assert "검증 결산" in src
 
     def test_app_jsx_shows_run_label(self):
         src = (FRONTEND / "app.jsx").read_text(encoding="utf-8")
@@ -229,5 +243,5 @@ class TestFrontendContract:
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
-        assert "research-lab.jsx?v=20260611e" in src
+        assert "research-lab.jsx?v=20260611f" in src
         assert "app.jsx?v=20260611a" in src

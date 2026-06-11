@@ -177,6 +177,8 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
   const [loading, setLoading] = useState_rl(false);
   const [err, setErr] = useState_rl(null);
 
+  const [verdict, setVerdict] = useState_rl(null);  /* 검증 결산 — V1~V5 종합. */
+
   useEffect_rl(() => {
     if (isDemo || !baseUrl) return undefined;
     const pull = () => fetch(baseUrl + "/ops_status", { signal: AbortSignal.timeout(8000) })
@@ -185,6 +187,10 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
       .catch(() => {});
     pull();
     const timer = setInterval(pull, 10000);
+    fetch(baseUrl + "/freeze_verdict", { signal: AbortSignal.timeout(12000) })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => setVerdict(j))
+      .catch(() => {});
     return () => clearInterval(timer);
   }, [baseUrl, isDemo]);
 
@@ -288,6 +294,18 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
               {"최신 증거: " + ops.evidence.map(e => `${e.name}(${e.age_min}분 전)`).join(" · ")}
             </div>
           )}
+        </div>
+      )}
+
+      {verdict && (verdict.lines || []).length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <div className="research-empty">검증 결산 (V1~V5 + 리스크 — 결정 카드 라이브)</div>
+          {(verdict.alerts || []).map((a, i) => (
+            <div key={"a" + i} className="mono" style={{ fontSize: 11, color: "#c95" }}>⚠️ {a}</div>
+          ))}
+          {verdict.lines.map((l, i) => (
+            <div key={"l" + i} className="mono" style={{ fontSize: 11 }}>{l}</div>
+          ))}
         </div>
       )}
 
