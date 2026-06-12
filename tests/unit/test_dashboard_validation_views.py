@@ -489,7 +489,7 @@ class TestFrontendContract:
         # 백테스트 워크벤치(PR2) — 차트 모듈이 backtest.jsx보다 먼저 로드돼야 한다.
         # 2단계 업그레이드(A/B 비교·몬테카를로·오더플로우·통계검정)로 v20260612c 재범프.
         assert "backtest-charts.jsx?v=20260612j" in src
-        assert "backtest.jsx?v=20260612g" in src
+        assert "backtest.jsx?v=20260612l" in src
         # 차트 시뮬레이션(PR3) — 차트 모듈이 simulation.jsx보다 먼저 로드돼야 한다.
         assert "simulation-charts.jsx?v=20260612k" in src
         assert "simulation.jsx?v=20260612k" in src

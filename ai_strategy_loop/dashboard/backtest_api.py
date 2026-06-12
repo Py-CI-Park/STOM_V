@@ -15,9 +15,10 @@ from __future__ import annotations
 
 import asyncio
 import os
+import re
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional, Set, TypedDict
 
 from fastapi import APIRouter, Body, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
@@ -187,6 +188,83 @@ def validate_strategy_code(payload: Dict[str, Any] = Body(default={})) -> Dict[s
     return _compile_check(code)
 
 
+# ---------------------------------------------------------------- variables SSOT
+# 전략 변수 SSOT(단일 진실 공급원) — 한글 식별자 추출 + 화이트리스트 대조에 쓴다.
+#   변수 키워드 칩(트랙 B ①)이 이 어휘로 코드의 한글 변수를 식별/배지 표시한다.
+_VARIABLES_REF = (
+    REPO_ROOT / "utility" / "ai_agent" / "system_prompt" / "v1" / "variables_reference.md"
+)
+# 백틱 인라인 코드 토큰(함수형 이름) — test_ai_dictionary 와 동일 정규식.
+_INLINE_CODE_TOKEN = re.compile(r"`([0-9A-Za-z_가-힣]+)`")
+# 한글이 1자 이상 포함된 식별자(코드에서 한글 변수만 추출 — ASCII-only 토큰 제외).
+_HANGUL_IDENT = re.compile(r"[0-9A-Za-z_가-힣]*[가-힣][0-9A-Za-z_가-힣]*")
+# variables_reference.md 의 "- 변수명 — 설명" / "- 변수명, 변수명 ..." 줄에서 스칼라 변수명 추출.
+_SCALAR_BULLET = re.compile(r"^\s*-\s+(.+)$")
+
+_SSOT_CACHE: Optional[Set[str]] = None
+
+
+def _load_ssot_vocabulary() -> Set[str]:
+    """variables_reference.md 에서 전략 변수 어휘 집합을 만든다(백틱 함수형 + 스칼라 불릿).
+
+    프로세스 생애 1회 캐시(SSOT 파일은 런타임 불변). 파일 부재/IO 실패면 빈 집합(무예외).
+    백틱 토큰은 함수형 화이트리스트(181개), 불릿의 콤마/공백 분리 한글 토큰은 스칼라 변수다.
+    """
+    global _SSOT_CACHE
+    if _SSOT_CACHE is not None:
+        return _SSOT_CACHE
+    vocab: Set[str] = set()
+    try:
+        text = _VARIABLES_REF.read_text(encoding="utf-8")
+    except OSError:
+        _SSOT_CACHE = vocab
+        return vocab
+    # 함수형 이름(백틱).
+    vocab.update(_INLINE_CODE_TOKEN.findall(text))
+    # 스칼라/잔고 변수 — 불릿 줄의 한글 식별자 토큰(설명 텍스트의 한글은 어휘 오염이 되지만,
+    #   추출은 '코드 안의 한글 식별자가 어휘에 있는지' 멤버십 판정에만 쓰므로 false-negative
+    #   를 줄이는 방향이 안전하다 — 미지 변수만 'SSOT 외'로 표시되면 충분).
+    for line in text.splitlines():
+        m = _SCALAR_BULLET.match(line)
+        if not m:
+            continue
+        # 불릿 본문에서 한글 식별자만 뽑는다(예: "현재가 — 현재 틱의 현재가" → 현재가, 현재, 틱…).
+        for tok in _HANGUL_IDENT.findall(m.group(1)):
+            if len(tok) >= 2:
+                vocab.add(tok)
+    _SSOT_CACHE = vocab
+    return vocab
+
+
+@backtest_router.get("/variables")
+def list_variables() -> Dict[str, Any]:
+    """전략 변수 SSOT 어휘 목록(정렬) + 개수. 변수 키워드 칩 패널이 소비한다."""
+    vocab = _load_ssot_vocabulary()
+    return {"variables": sorted(vocab), "count": len(vocab)}
+
+
+@backtest_router.post("/extract_vars")
+def extract_variables(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
+    """전략 코드에서 한글 식별자를 추출하고 SSOT 화이트리스트 멤버십을 판정한다.
+
+    {code} → {known:[{name,count}], unknown:[{name,count}]}. known 은 SSOT 어휘에 있는
+    한글 변수(칩 청록), unknown 은 어휘 밖(칩 경고). Python 키워드/주석은 식별자 추출
+    특성상 제외된다(한글 키워드 없음). 무예외(빈 코드→빈 목록).
+    """
+    code = str(payload.get("code", "") or "")
+    vocab = _load_ssot_vocabulary()
+    counts: Dict[str, int] = {}
+    for tok in _HANGUL_IDENT.findall(code):
+        if len(tok) >= 2:
+            counts[tok] = counts.get(tok, 0) + 1
+    known: List[Dict[str, Any]] = []
+    unknown: List[Dict[str, Any]] = []
+    for name in sorted(counts):
+        entry = {"name": name, "count": counts[name]}
+        (known if name in vocab else unknown).append(entry)
+    return {"known": known, "unknown": unknown, "total": len(counts)}
+
+
 def _compile_check(code: str) -> Dict[str, Any]:
     if not code.strip():
         return {"ok": False, "error": "전략 코드가 비어있습니다."}
@@ -347,6 +425,18 @@ def run_backtest(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
                     "status": "error",
                     "message": "back_db_override 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
                 }
+        mode = str(payload.get("mode", "backtest") or "backtest").strip() or "backtest"
+        param_space = None
+        if payload.get("param_space"):
+            raw_ps = str(payload["param_space"]).strip()
+            param_space = _validate_back_db_override(raw_ps)
+            # param_space 도 시세 DB allowlist 와 동일 루트(_database/·state/)로 제한한다
+            #   (임의 절대경로 JSON 읽기 차단 — back_db_override 와 동일 위생 게이트).
+            if param_space is None:
+                return {
+                    "status": "error",
+                    "message": "param_space 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
+                }
         spec = BacktestJobSpec(
             buy=str(payload.get("buy", "") or "").strip(),
             sell=str(payload.get("sell", "") or "").strip(),
@@ -358,6 +448,10 @@ def run_backtest(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
             divid_mode=divid_mode,
             one_code=one_code,
             back_db_override=back_db_override,
+            mode=mode,
+            param_space=param_space,
+            opt_method=str(payload.get("opt_method", "grid") or "grid").strip() or "grid",
+            opt_objective=str(payload.get("opt_objective", "tpi") or "tpi").strip() or "tpi",
         )
     except (TypeError, ValueError) as exc:
         return {"status": "error", "message": f"잘못된 파라미터: {exc}"}
@@ -387,6 +481,30 @@ def cancel_job(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
     return get_job_manager().cancel(job_id)
 
 
+@backtest_router.post("/job/meta")
+def update_job_meta(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
+    """잡 결과 메타(태그·메모·즐겨찾기) 부분 갱신 — 결과 체계 관리(트랙 B ③).
+
+    {job_id, tags?(list[str]), memo?(str), favorite?(bool)}. 미포함 키는 미변경.
+    잡 없음/잘못된 타입은 무예외 error 페이로드(HTTP 200, 대시보드 컨벤션).
+    """
+    job_id = str(payload.get("job_id", "") or "")
+    if not job_id:
+        return {"status": "error", "message": "job_id 가 비었습니다."}
+    tags: Optional[List[str]] = None
+    if "tags" in payload:
+        raw_tags = payload.get("tags")
+        if not isinstance(raw_tags, list):
+            return {"status": "error", "message": "tags 는 문자열 리스트여야 합니다."}
+        tags = [str(t) for t in raw_tags]
+    memo = str(payload["memo"]) if "memo" in payload else None
+    favorite = bool(payload["favorite"]) if "favorite" in payload else None
+    result = get_job_manager().update_meta(job_id, tags=tags, memo=memo, favorite=favorite)
+    if not result.get("available"):
+        return {"status": "error", "message": "job_id 없음", "job_id": job_id}
+    return {"status": "ok", **result}
+
+
 # --------------------------------------------------------------------- result
 @backtest_router.get("/result")
 def get_result(
@@ -395,14 +513,21 @@ def get_result(
     t_end: Optional[int] = None,
     run_id: str = "",
     gen_no: Optional[int] = None,
+    demo: int = 0,
 ) -> Dict[str, Any]:
     """완료 잡 또는 진화 세대의 metrics + 분석 전체 묶음. 없음이면 available=False.
 
-    호출 경로(둘 중 하나):
+    호출 경로(셋 중 하나):
+      - demo=1: 합성 예시 결과(잡 미선택 기본 화면 — 빈 화면 금지, 트랙 B ④). is_demo:true.
       - job_id: 완료 잡 결과(t_start/t_end 로 구간 한정 가능 — 브러시).
       - run_id+gen_no: loop_runs.db 세대 결과(잡과 동일 스키마, CSV 부재 시 축약).
     no_trades 잡은 metrics=None, analysis=빈 구조로 정상 반환(에러 아님).
     """
+    # 데모 경로 — 잡/세대 없이 합성 거래로 풀 분석을 만든다(분석 전 키 포함).
+    #   sentinel job_id("__demo__") 도 데모로 라우팅한다(프론트 BtResultArea 가 job_id 만
+    #   URL 에 싣고 호출하므로, 별도 charts 수정 없이 기본 화면 예시 렌더를 가능케 한다).
+    if demo or job_id == _DEMO_JOB_ID:
+        return _demo_result()
     # 진화 세대 경로 — 잡 매니저를 거치지 않고 loop_runs.db(읽기 전용)에서 직접.
     if not job_id and run_id and gen_no is not None:
         return _result_for_run(run_id, int(gen_no))
@@ -580,6 +705,114 @@ def _result_for_run(run_id: str, gen_no: int) -> Dict[str, Any]:
         "analysis": analysis.full_analysis(None),
         "has_csv": False,
         "message": "결과 CSV 가 없어 세대 메트릭 요약만 표시합니다(차트/분석 생략).",
+    }
+
+
+# ----------------------------------------------------------------------- demo
+# 데모 합성 결과 캐시(state/ 하위, gitignored). 같은 시드로 재생성하므로 결정적.
+_DEMO_CSV = _PACKAGE_DIR / "state" / "webbt_demo" / "demo_trades.csv"
+_DEMO_SEED = 20260612
+_DEMO_TRADE_COUNT = 180
+# 프론트가 BtResultArea 에 실어 보내는 데모 sentinel job_id(charts 무수정 렌더 경로).
+_DEMO_JOB_ID = "__demo__"
+
+
+def _demo_trades_rows() -> List[Dict[str, Any]]:
+    """결정적(시드 고정) 합성 거래 행 목록 — 분석 전 키를 모두 채운다(빈 화면 금지).
+
+    완만한 우상향 수익곡선·현실적 승률(약 55%)·요일/시간대 분산·MAE/MFE·청산사유·
+    오더플로우 스냅샷을 포함해 모든 차트가 의미 있게 그려지도록 한다(예시 데이터 배지).
+    """
+    import datetime as _dt
+    import random as _random
+
+    rng = _random.Random(_DEMO_SEED)
+    base = _dt.date(2025, 4, 7)
+    names = ["삼성전자", "에코프로", "포스코퓨처엠", "에코프로비엠", "한미반도체", "두산에너빌리티"]
+    reasons = ["목표가도달", "손절", "시간청산", "추세이탈", "변동성청산"]
+    rows: List[Dict[str, Any]] = []
+    day_cursor = base
+    per_day = 0
+    for i in range(_DEMO_TRADE_COUNT):
+        if per_day >= 4 or rng.random() < 0.3:
+            day_cursor += _dt.timedelta(days=1)
+            while day_cursor.weekday() >= 5:  # 주말 건너뜀.
+                day_cursor += _dt.timedelta(days=1)
+            per_day = 0
+        per_day += 1
+        ymd = day_cursor.strftime("%Y%m%d")
+        hh = rng.randint(9, 14)
+        mm = rng.randint(0, 59)
+        buy_t = f"{ymd}{hh:02d}{mm:02d}00"
+        hold_min = round(rng.uniform(3.0, 90.0), 1)
+        sell_dt = _dt.datetime(day_cursor.year, day_cursor.month, day_cursor.day, hh, mm) + _dt.timedelta(minutes=hold_min)
+        sell_t = sell_dt.strftime("%Y%m%d%H%M%S")
+        # 55% 승률·약한 양의 기대값(현실적 소폭 손익 — 합산 우상향).
+        win = rng.random() < 0.55
+        pct = round(rng.uniform(0.2, 2.2) if win else -rng.uniform(0.2, 1.6), 2)
+        krw = round(pct * rng.uniform(8000, 22000))
+        mfe = round(abs(pct) + rng.uniform(0.1, 1.5), 2)
+        mae = round(-(abs(pct) * 0.5 + rng.uniform(0.1, 1.2)), 2)
+        reason = "목표가도달" if win and rng.random() < 0.6 else rng.choice(reasons)
+        rows.append({
+            analysis.COL_NAME: rng.choice(names),
+            analysis.COL_BUY_TIME: buy_t,
+            analysis.COL_SELL_TIME: sell_t,
+            analysis.COL_HOLD_MIN: hold_min,
+            analysis.COL_PROFIT_PCT: pct,
+            analysis.COL_PROFIT_KRW: krw,
+            analysis.COL_MFE: mfe,
+            analysis.COL_MAE: mae,
+            analysis.COL_EXIT_REASON: reason,
+            analysis.COL_OF_STRENGTH: round(rng.uniform(80, 220), 1),
+            analysis.COL_OF_BUY_REST: rng.randint(20000, 200000),
+            analysis.COL_OF_SELL_REST: rng.randint(20000, 200000),
+            analysis.COL_OF_PREVDAY: round(rng.uniform(0.5, 3.0), 2),
+            analysis.COL_OF_UPDOWN: round(rng.uniform(-2.0, 8.0), 2),
+        })
+    return rows
+
+
+def _ensure_demo_csv() -> Optional[str]:
+    """데모 합성 거래 CSV 를 (없으면) 생성하고 경로를 반환한다. IO 실패면 None(무예외)."""
+    import csv as _csv
+
+    try:
+        _DEMO_CSV.parent.mkdir(parents=True, exist_ok=True)
+        if not _DEMO_CSV.is_file():
+            rows = _demo_trades_rows()
+            cols = [
+                analysis.COL_NAME, analysis.COL_BUY_TIME, analysis.COL_SELL_TIME,
+                analysis.COL_HOLD_MIN, analysis.COL_PROFIT_PCT, analysis.COL_PROFIT_KRW,
+                analysis.COL_MFE, analysis.COL_MAE, analysis.COL_EXIT_REASON,
+                analysis.COL_OF_STRENGTH, analysis.COL_OF_BUY_REST, analysis.COL_OF_SELL_REST,
+                analysis.COL_OF_PREVDAY, analysis.COL_OF_UPDOWN,
+            ]
+            with open(_DEMO_CSV, "w", encoding="utf-8-sig", newline="") as fh:
+                writer = _csv.DictWriter(fh, fieldnames=cols)
+                writer.writeheader()
+                writer.writerows(rows)
+        return str(_DEMO_CSV)
+    except OSError:
+        return None
+
+
+def _demo_result() -> Dict[str, Any]:
+    """합성 예시 결과(/bt/result?demo=1) — 잡과 동일 스키마 + is_demo:true(빈 화면 금지).
+
+    실제 잡 CSV 와 동일한 full_analysis 묶음을 쓰므로 모든 차트/카드가 정상 렌더된다.
+    CSV 생성 실패 시 빈 분석 구조로 폴백(무예외).
+    """
+    csv_path = _ensure_demo_csv()
+    bundle = analysis.full_analysis(csv_path)
+    return {
+        "available": True,
+        "is_demo": True,
+        "job_id": "",
+        "status": "success",
+        "metrics": bundle["summary"],
+        "analysis": bundle,
+        "message": "예시 데이터 — 실제 백테스트를 실행하면 이 자리에 결과가 표시됩니다.",
     }
 
 
