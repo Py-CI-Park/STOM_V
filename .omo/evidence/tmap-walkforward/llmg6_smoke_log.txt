@@ -1,0 +1,4 @@
+[BATCH] run_id=smoke_llmg6_20260612 pairs=1
+[BATCH] prepare status=ok back_count=814 elapsed=79s
+[BATCH] gen0 LLMG6 realign default ok profit=-3,031,439 mdd=30.41 trades=107 daily=1.80 payoff=1.0166337856692171 gate=False reason=total_profit -3.031e+06 <= 0 (34s)
+[BATCH] done

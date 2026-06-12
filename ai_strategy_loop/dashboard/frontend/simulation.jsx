@@ -18,6 +18,17 @@ function _simFetchJson(url, timeoutMs) {
 
 const _SIM_SPEEDS = [1, 5, 20, 60, 240];
 const _SIM_MAX_CODES = 4;
+const _SIM_DEMO_SPEED = 20;                 // 자동 데모 배속(빠른 둘러보기).
+const _SIM_DEMO_LS_KEY = "stom.sim.demoSeen.v1";   // 데모 1회 시청 기억(매번 강제 금지).
+
+// 데모 1회 시청 여부 — localStorage(무예외). 미지원 환경이면 '안 봄'으로 취급.
+function _simDemoSeen() {
+  try { return window.localStorage.getItem(_SIM_DEMO_LS_KEY) === "1"; }
+  catch (e) { return false; }
+}
+function _simMarkDemoSeen() {
+  try { window.localStorage.setItem(_SIM_DEMO_LS_KEY, "1"); } catch (e) {}
+}
 
 // baseUrl(http) → ws(ws/wss) URL.
 function _wsUrl(baseUrl, path) {
@@ -163,6 +174,35 @@ function _simFmtDate(d) {
   const s = String(d);
   if (s.length === 8) return s.slice(0, 4) + "-" + s.slice(4, 6) + "-" + s.slice(6, 8);
   return s;
+}
+
+// ===========================================================================
+// 1c. 원클릭 프리셋 바 — [최근 거래일]·[최대 상승일] 즉시 적용(서버 /sim/demo 추천).
+//     클릭 시 추천 날짜·등락 1위 종목을 선택하고 자동 재생까지 트리거한다.
+// ===========================================================================
+function SimPresetBar({ isDemo, busy, onPreset }) {
+  if (isDemo) return null;
+  const presets = [
+    { mode: "latest", label: "최근 거래일", hint: "마지막 거래일·등락 1위" },
+    { mode: "top_gainer", label: "최대 상승일", hint: "최근 중 등락 최대일" },
+  ];
+  return (
+    <div className="panel">
+      <div className="panel-bd" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", padding: "8px 10px" }}>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginRight: 2 }}>
+          빠른 시작
+        </span>
+        {presets.map(p => (
+          <button key={p.mode} className="btn sm" onClick={() => onPreset(p.mode)} disabled={busy}
+                  title={p.hint}
+                  style={{ fontSize: 11, padding: "4px 10px", opacity: busy ? 0.5 : 1 }}>
+            ⚡ {p.label}
+          </button>
+        ))}
+        {busy && <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>추천 조회 중…</span>}
+      </div>
+    </div>
+  );
 }
 
 // ===========================================================================
@@ -335,6 +375,12 @@ function SimulationTab({ baseUrl, wsStatus }) {
   const [wsErr, setWsErr] = useState_sim("");
   const [signals, setSignals] = useState_sim({});      // code → [signal...]
 
+  // 즉시 체험 — 자동 데모 진행 중 여부·프리셋 조회 busy·자동재생 대기 플래그.
+  const [demoActive, setDemoActive] = useState_sim(false);   // 예시 자동 재생 배지 노출.
+  const [presetBusy, setPresetBusy] = useState_sim(false);   // /sim/demo 조회 중.
+  const pendingAutoplayRef = useRef_sim(false);              // date/selected 반영 후 자동재생 트리거.
+  const demoTriedRef = useRef_sim(false);                    // 자동 데모 1회만 시도(재진입 루프 방지).
+
   // 학습 모드 — 신호 자동 일시정지 토글 + 하이라이트 신호 키.
   const [autoPause, setAutoPause] = useState_sim(false);
   const [highlightSig, setHighlightSig] = useState_sim(null);  // "code@buy_hms" 형태.
@@ -358,9 +404,11 @@ function SimulationTab({ baseUrl, wsStatus }) {
     _simFetchJson(baseUrl + "/sim/days?src=" + src, 5000)
       .then(j => setDays(Array.isArray(j && j.days) ? j.days : []))
       .catch(() => setDays([]));
-    // src 변경 시 선택/리플레이 리셋.
-    _stopReplay();
-    setDate(""); setStocks([]); setSelected([]);
+    // src 변경 시 선택/리플레이 리셋(프리셋/데모 자동재생 대기 중이면 보존).
+    if (!pendingAutoplayRef.current) {
+      _stopReplay();
+      setDate(""); setStocks([]); setSelected([]);
+    }
   }, [baseUrl, isDemo, src]);
 
   // 조건식 목록(buy/sell).
@@ -388,10 +436,12 @@ function SimulationTab({ baseUrl, wsStatus }) {
       .then(j => setStocks(Array.isArray(j && j.stocks) ? j.stocks : []))
       .catch(() => setStocks([]))
       .finally(() => setLoadingStocks(false));
-    setSelected([]); _stopReplay();
+    // 프리셋/데모가 미리 고른 종목·재생은 보존(autoplay 대기 중이면 리셋하지 않음).
+    if (!pendingAutoplayRef.current) { setSelected([]); _stopReplay(); }
   }, [baseUrl, isDemo, date]);
 
   const toggleStock = useCallback_sim((code) => {
+    setDemoActive(false);   // 사용자가 직접 종목을 고르면 데모 컨텍스트 종료.
     setSelected(prev => {
       if (prev.includes(code)) return prev.filter(c => c !== code);
       if (prev.length >= _SIM_MAX_CODES) return prev;
@@ -511,6 +561,64 @@ function SimulationTab({ baseUrl, wsStatus }) {
 
   const stopReplay = () => { _stopReplay(); };
 
+  // --- 즉시 체험: /sim/demo 추천 적용 + 자동재생 ---
+  //   서버가 날짜·등락 1위 종목을 직접 주므로 stocks 목록 로딩을 기다리지 않고 바로 선택한다.
+  //   date/selected/src/speed 를 세팅한 뒤 pendingAutoplay 플래그로 다음 렌더에서 재생 시작.
+  const applyDemo = useCallback_sim((mode, asDemo) => {
+    if (isDemo || !baseUrl) return;
+    setPresetBusy(true);
+    _stopReplay();
+    _simFetchJson(baseUrl + "/sim/demo?src=min&mode=" + encodeURIComponent(mode || "latest"), 8000)
+      .then(j => {
+        if (!j || !j.available || !j.date || !j.code) {
+          setPresetBusy(false);
+          if (asDemo) setDemoActive(false);
+          return;
+        }
+        setSrc("min");
+        setDate(String(j.date));
+        setSelected([String(j.code)]);
+        setSpeed(_SIM_DEMO_SPEED);
+        setDemoActive(!!asDemo);
+        pendingAutoplayRef.current = true;
+        setPresetBusy(false);
+      })
+      .catch(() => { setPresetBusy(false); if (asDemo) setDemoActive(false); });
+  }, [baseUrl, isDemo, _stopReplay]);
+
+  // 자동재생 트리거 — applyDemo 가 세팅한 date/selected 가 반영되면 1회 재생 시작.
+  useEffect_sim(() => {
+    if (!pendingAutoplayRef.current) return;
+    if (!date || selected.length === 0) return;
+    pendingAutoplayRef.current = false;
+    startReplay();
+  }, [date, selected, startReplay]);
+
+  // 최초 진입 자동 데모 — 선택 없음 + 미시청 + 백엔드 연결 시 1회. localStorage 로 재방문 시 생략.
+  useEffect_sim(() => {
+    if (demoTriedRef.current) return;
+    if (isDemo || !baseUrl) return;
+    if (selected.length > 0 || date) return;        // 이미 사용자가 고른 상태면 데모 안 함.
+    if (_simDemoSeen()) return;                     // 이전에 본 적 있으면 강제 안 함.
+    demoTriedRef.current = true;
+    _simMarkDemoSeen();
+    applyDemo("latest", true);
+  }, [baseUrl, isDemo, applyDemo]);
+
+  // 사용자가 직접 선택/조작하면 데모 배지 해제(자동재생 컨텍스트 종료).
+  const exitDemo = useCallback_sim(() => {
+    setDemoActive(false);
+    pendingAutoplayRef.current = false;
+    _stopReplay();
+    setDate(""); setSelected([]);
+  }, [_stopReplay]);
+
+  // 프리셋 클릭(수동) — 데모 배지 없이 추천 적용 + 자동재생.
+  const onPreset = useCallback_sim((mode) => {
+    setDemoActive(false);
+    applyDemo(mode, false);
+  }, [applyDemo]);
+
   // 렌더·로직 공용 파생값(차트 그리드·신호 평탄화·재생 가능 여부).
   const codes = (meta && meta.codes && meta.codes.length) ? meta.codes : selected;
   const canPlay = !isDemo && !!date && selected.length > 0 && (status === "idle" || status === "done" || status === "error");
@@ -618,6 +726,7 @@ function SimulationTab({ baseUrl, wsStatus }) {
       <div className="grid-main" style={{ gridTemplateColumns: "minmax(0, 380px) minmax(0, 1fr)" }}>
         {/* 좌: 컨트롤 + 지표 라이브 테이블 + 학습 모드 + 체결 로그 */}
         <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
+          <SimPresetBar isDemo={isDemo} busy={presetBusy} onPreset={onPreset} />
           <SimControlBar
             baseUrl={baseUrl} isDemo={isDemo} src={src} onSrc={setSrc}
             date={date} onDate={setDate} days={days}
@@ -645,6 +754,28 @@ function SimulationTab({ baseUrl, wsStatus }) {
 
         {/* 우: 재생 컨트롤 + 차트 그리드 */}
         <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
+          {demoActive && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 10, padding: "8px 12px",
+              background: "rgba(124,108,240,0.10)", border: "1px solid var(--violet)",
+              borderRadius: 8,
+            }}>
+              <span className="mono" style={{
+                fontSize: 10.5, color: "var(--violet)", letterSpacing: ".04em",
+                fontWeight: 600, display: "flex", alignItems: "center", gap: 6,
+              }}>
+                <span className="dot" style={{ background: "var(--violet)" }}></span>
+                예시 자동 재생
+              </span>
+              <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>
+                준비된 데이터로 둘러보는 중 · {_SIM_DEMO_SPEED}x
+              </span>
+              <button className="btn ghost sm" onClick={exitDemo}
+                      style={{ marginLeft: "auto", fontSize: 10.5, padding: "3px 10px" }}>
+                내가 선택하기
+              </button>
+            </div>
+          )}
           <SimPlaybackBar
             status={status} onPlay={startReplay} onPause={pauseReplay}
             onResume={resumeReplay} onStop={stopReplay}

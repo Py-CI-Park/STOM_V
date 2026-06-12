@@ -1,7 +1,16 @@
 /* Connection: REST + WS w/ auto-reconnect; falls back to local simulator for demo. */
 const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
-const DEFAULT_BASE = "http://127.0.0.1:8770";
+// 기본 BASE는 대시보드가 실제로 서빙된 origin(same-origin)으로 잡는다.
+//   UI(/ui/)와 API(/health,/bt/...)가 같은 서버에서 제공되므로, origin을 쓰면
+//   포트가 8770/8771 무엇이든 브라우저 fetch가 same-origin이 되어 CORS 차단·데모
+//   폴백을 원천 차단한다. 과거 하드코딩(8770)은 8771 서빙 시 CORS로 데모모드에 갇혔다.
+//   file:// 등 origin이 없을 때만 마지막 폴백으로 127.0.0.1:8770 사용.
+const DEFAULT_BASE = (typeof window !== "undefined" &&
+  window.location && window.location.origin &&
+  window.location.origin.startsWith("http"))
+  ? window.location.origin
+  : "http://127.0.0.1:8770";
 
 // =====================================================================
 // LIVE ↔ DEMO 필드 경계 (contract v2, M1 격차 해소)

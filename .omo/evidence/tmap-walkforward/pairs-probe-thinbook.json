@@ -1,0 +1,7 @@
+[
+  {
+    "label": "PROBE thinbook only",
+    "buy": "SMOKE_PROBE_THINBOOK_B",
+    "sell": "SMOKE_PROBE_THINBOOK_S"
+  }
+]

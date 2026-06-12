@@ -59,7 +59,7 @@ function _btElapsed(rec) {
 // ===========================================================================
 // 1. 조건식 라이브러리 패널 (좌) — kind 토글 + 검색 + 목록.
 // ===========================================================================
-function BtLibraryPanel({ baseUrl, isDemo, kind, onKind, onPick, selectedName, reloadKey }) {
+function BtLibraryPanel({ baseUrl, isDemo, kind, onKind, onPick, selectedName, reloadKey, lockKind }) {
   const [items, setItems] = useState_bt([]);
   const [query, setQuery] = useState_bt("");
   const [err, setErr] = useState_bt("");
@@ -88,26 +88,33 @@ function BtLibraryPanel({ baseUrl, isDemo, kind, onKind, onPick, selectedName, r
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--teal)" }}></span>
           조건식 라이브러리
+          {lockKind && (
+            <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 6 }}>
+              {kind === "buy" ? "매수" : kind === "sell" ? "매도" : "수식"}
+            </span>
+          )}
         </div>
         <button className="btn ghost sm" onClick={load} disabled={isDemo || loading}>
           {loading ? "로딩…" : "↻"}
         </button>
       </div>
       <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {/* kind 토글 */}
-        <div style={{ display: "flex", gap: 4 }}>
-          {[["buy", "매수"], ["sell", "매도"], ["formula", "수식"]].map(([k, lbl]) => (
-            <button key={k} onClick={() => onKind(k)} className="mono"
-              style={{
-                flex: 1, padding: "5px 8px", fontSize: 11, borderRadius: 5,
-                border: "1px solid " + (kind === k ? "var(--teal-dim)" : "var(--line-1)"),
-                background: kind === k ? "rgba(76,214,179,0.08)" : "transparent",
-                color: kind === k ? "var(--teal)" : "var(--ink-2)", cursor: "pointer",
-              }}>
-              {lbl}
-            </button>
-          ))}
-        </div>
+        {/* kind 토글(잠금 시 숨김) */}
+        {!lockKind && (
+          <div style={{ display: "flex", gap: 4 }}>
+            {[["buy", "매수"], ["sell", "매도"], ["formula", "수식"]].map(([k, lbl]) => (
+              <button key={k} onClick={() => onKind(k)} className="mono"
+                style={{
+                  flex: 1, padding: "5px 8px", fontSize: 11, borderRadius: 5,
+                  border: "1px solid " + (kind === k ? "var(--teal-dim)" : "var(--line-1)"),
+                  background: kind === k ? "rgba(76,214,179,0.08)" : "transparent",
+                  color: kind === k ? "var(--teal)" : "var(--ink-2)", cursor: "pointer",
+                }}>
+                {lbl}
+              </button>
+            ))}
+          </div>
+        )}
         {/* 검색 */}
         <input className="input" placeholder="이름 검색…" value={query}
                onChange={e => setQuery(e.target.value)} spellCheck={false} />
@@ -156,37 +163,92 @@ function BtLibraryPanel({ baseUrl, isDemo, kind, onKind, onPick, selectedName, r
 }
 
 // ===========================================================================
-// 2. 조건식 에디터 패널 — textarea + 검증/저장/다른이름/삭제.
+// 2b. 변수 키워드 칩 — 코드에서 한글 변수 추출 후 SSOT 대조(POST /bt/extract_vars).
+//   known(청록): SSOT 화이트리스트에 있는 변수. unknown(경고): 어휘 밖(오타/미지).
 // ===========================================================================
-function BtEditorPanel({ baseUrl, isDemo, kind, name, onSaved, onDeleted }) {
+function BtVarChips({ baseUrl, isDemo, code }) {
+  const [known, setKnown] = useState_bt([]);
+  const [unknown, setUnknown] = useState_bt([]);
+
+  useEffect_bt(() => {
+    if (isDemo || !baseUrl) { setKnown([]); setUnknown([]); return; }
+    const trimmed = (code || "").trim();
+    if (!trimmed) { setKnown([]); setUnknown([]); return; }
+    let cancelled = false;
+    // 입력 디바운스(타이핑 중 과호출 방지).
+    const t = setTimeout(() => {
+      _btPostJson(baseUrl + "/bt/extract_vars", { code: trimmed }, 5000)
+        .then(j => {
+          if (cancelled) return;
+          setKnown(Array.isArray(j && j.known) ? j.known : []);
+          setUnknown(Array.isArray(j && j.unknown) ? j.unknown : []);
+        })
+        .catch(() => { if (!cancelled) { setKnown([]); setUnknown([]); } });
+    }, 400);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [baseUrl, isDemo, code]);
+
+  if (known.length === 0 && unknown.length === 0) {
+    return (
+      <div className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>
+        사용 변수 칩 — 코드 입력 시 한글 변수가 SSOT 대조되어 표시됩니다.
+      </div>
+    );
+  }
+  const chip = (v, ok) => (
+    <span key={(ok ? "k:" : "u:") + v.name} className="mono"
+      title={ok ? "SSOT 화이트리스트 변수" : "SSOT 어휘 밖 — 오타이거나 정의되지 않은 변수일 수 있습니다"}
+      style={{
+        fontSize: 10, padding: "2px 6px", borderRadius: 4,
+        border: "1px solid " + (ok ? "var(--teal-dim)" : "rgba(240,179,90,0.45)"),
+        color: ok ? "var(--teal)" : "var(--amber)",
+        background: ok ? "rgba(76,214,179,0.06)" : "rgba(240,179,90,0.06)",
+        display: "inline-flex", alignItems: "center", gap: 4,
+      }}>
+      {ok ? "" : "⚠ "}{v.name}
+      {v.count > 1 && <span style={{ color: "var(--ink-3)" }}>×{v.count}</span>}
+    </span>
+  );
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+        {known.map(v => chip(v, true))}
+        {unknown.map(v => chip(v, false))}
+      </div>
+      <div className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)" }}>
+        SSOT 변수 {known.length} · 미확인 {unknown.length}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// 2c. 단일 코드 에디터(매수/매도 한 쪽) — 로드/검증/저장/변수칩. 듀얼 에디터의 한 패널.
+// ===========================================================================
+function BtCodeEditor({ baseUrl, isDemo, kind, label, accent, name, onSaved, onDeleted }) {
   const [code, setCode] = useState_bt("");
   const [editName, setEditName] = useState_bt("");
   const [loadedName, setLoadedName] = useState_bt("");
-  const [validate, setValidate] = useState_bt(null);   // {ok, error}
-  const [busy, setBusy] = useState_bt("");              // "" | "validate" | "save" | "delete"
-  const [msg, setMsg] = useState_bt(null);              // {kind:"ok"|"error", text}
+  const [validate, setValidate] = useState_bt(null);
+  const [busy, setBusy] = useState_bt("");
+  const [msg, setMsg] = useState_bt(null);
   const [confirmDel, setConfirmDel] = useState_bt("");
 
-  // 선택 조건식 로드.
   useEffect_bt(() => {
-    if (isDemo || !baseUrl || !name) return;
+    if (isDemo || !baseUrl || !name) {
+      if (!name) { setCode(""); setEditName(""); setLoadedName(""); setValidate(null); setMsg(null); }
+      return;
+    }
     _btFetchJson(baseUrl + "/bt/strategy?kind=" + encodeURIComponent(kind) + "&name=" + encodeURIComponent(name), 4000)
       .then(j => {
-        if (j && j.available) {
-          setCode(j.code || ""); setEditName(j.name || name); setLoadedName(j.name || name);
-        } else {
-          setCode(""); setEditName(name); setLoadedName("");
-        }
-        setValidate(null); setMsg(null); setConfirmDel("");
+        if (j && j.available) { setCode(j.code || ""); setEditName(j.name || name); setLoadedName(j.name || name); }
+        else { setCode(""); setEditName(name); setLoadedName(""); }
+        setValidate(null); setMsg(null);
       })
-      .catch(() => { setMsg({ kind: "error", text: "조건식 로드 실패" }); });
+      .catch(() => setMsg({ kind: "error", text: "조건식 로드 실패" }));
   }, [baseUrl, isDemo, kind, name]);
 
   const lineCount = useMemo_bt(() => code.split("\n").length, [code]);
-
-  const newStrategy = () => {
-    setCode(""); setEditName(""); setLoadedName(""); setValidate(null); setMsg(null); setConfirmDel("");
-  };
 
   const runValidate = () => {
     if (isDemo) return;
@@ -201,35 +263,16 @@ function BtEditorPanel({ baseUrl, isDemo, kind, name, onSaved, onDeleted }) {
     if (isDemo) return;
     const targetName = (editName || "").trim();
     if (!targetName) { setMsg({ kind: "error", text: "이름을 입력하세요." }); return; }
-    // 다른 이름으로 저장이 아니고 기존 로드명과 같으면 overwrite=true.
     const overwrite = !asNew && targetName === loadedName;
     setBusy("save"); setMsg(null);
     _btPostJson(baseUrl + "/bt/strategy", { kind, name: targetName, code, overwrite }, 8000)
       .then(j => {
         if (j && j.status === "ok") {
-          setLoadedName(targetName); setConfirmDel("");
+          setLoadedName(targetName);
           setMsg({ kind: "ok", text: `저장 완료: ${targetName}` });
           onSaved && onSaved(targetName);
         } else if (j && j.code === "exists") {
-          setMsg({ kind: "error", text: `'${targetName}' 이미 존재 — '덮어쓰기 저장'을 누르세요.` });
-        } else {
-          setMsg({ kind: "error", text: (j && j.message) || "저장 실패" });
-        }
-      })
-      .catch(e => setMsg({ kind: "error", text: "저장 실패: " + e }))
-      .finally(() => setBusy(""));
-  };
-
-  const doSaveOverwrite = () => {
-    const targetName = (editName || "").trim();
-    if (!targetName) { setMsg({ kind: "error", text: "이름을 입력하세요." }); return; }
-    setBusy("save"); setMsg(null);
-    _btPostJson(baseUrl + "/bt/strategy", { kind, name: targetName, code, overwrite: true }, 8000)
-      .then(j => {
-        if (j && j.status === "ok") {
-          setLoadedName(targetName);
-          setMsg({ kind: "ok", text: `덮어쓰기 저장 완료: ${targetName}` });
-          onSaved && onSaved(targetName);
+          setMsg({ kind: "error", text: `'${targetName}' 이미 존재 — '덮어쓰기'를 누르세요.` });
         } else {
           setMsg({ kind: "error", text: (j && j.message) || "저장 실패" });
         }
@@ -244,9 +287,9 @@ function BtEditorPanel({ baseUrl, isDemo, kind, name, onSaved, onDeleted }) {
     _btPostJson(baseUrl + "/bt/strategy/delete", { kind, name: loadedName, confirm: confirmDel }, 8000)
       .then(j => {
         if (j && j.status === "ok") {
-          setMsg({ kind: "ok", text: `삭제 완료: ${loadedName}` });
           const deleted = loadedName;
-          newStrategy();
+          setCode(""); setEditName(""); setLoadedName(""); setConfirmDel("");
+          setMsg({ kind: "ok", text: `삭제 완료: ${deleted}` });
           onDeleted && onDeleted(deleted);
         } else {
           setMsg({ kind: "error", text: (j && j.message) || "삭제 실패" });
@@ -257,36 +300,26 @@ function BtEditorPanel({ baseUrl, isDemo, kind, name, onSaved, onDeleted }) {
   };
 
   return (
-    <div className="panel">
+    <div className="panel" style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
       <div className="panel-hd">
         <div className="panel-hd-title">
-          <span className="dot" style={{ background: "var(--violet)" }}></span>
-          조건식 에디터
-          <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 6 }}>
-            {kind} · {lineCount}줄
-          </span>
+          <span className="dot" style={{ background: accent }}></span>
+          {label} 에디터
+          <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 6 }}>{lineCount}줄</span>
         </div>
-        <button className="btn ghost sm" onClick={newStrategy} disabled={isDemo}>＋ 새로 작성</button>
       </div>
-      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <div className="field">
-          <label>이름</label>
-          <input className="input" value={editName} onChange={e => setEditName(e.target.value)}
-                 placeholder="조건식 이름" spellCheck={false} disabled={isDemo} />
-        </div>
-        <textarea
-          className="input mono"
-          value={code}
+      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <input className="input" value={editName} onChange={e => setEditName(e.target.value)}
+               placeholder={label + " 조건식 이름"} spellCheck={false} disabled={isDemo} />
+        <textarea className="input mono" value={code}
           onChange={e => { setCode(e.target.value); setValidate(null); }}
-          spellCheck={false}
-          disabled={isDemo}
-          style={{ minHeight: 260, resize: "vertical", lineHeight: 1.5, whiteSpace: "pre", tabSize: 4, fontSize: 12 }}
-          placeholder="# 전략 코드 (Python)" />
-
-        {/* 검증 결과 인라인 */}
+          spellCheck={false} disabled={isDemo}
+          style={{ minHeight: 200, resize: "vertical", lineHeight: 1.5, whiteSpace: "pre", tabSize: 4, fontSize: 12 }}
+          placeholder={"# " + label + " 전략 코드 (Python)"} />
+        <BtVarChips baseUrl={baseUrl} isDemo={isDemo} code={code} />
         {validate && (
           <div style={{
-            padding: "8px 10px", borderRadius: 5, fontSize: 11.5, fontFamily: "var(--mono)", lineHeight: 1.5,
+            padding: "6px 9px", borderRadius: 5, fontSize: 11, fontFamily: "var(--mono)",
             border: "1px solid " + (validate.ok ? "rgba(76,214,179,0.3)" : "rgba(255,107,107,0.3)"),
             background: validate.ok ? "rgba(76,214,179,0.06)" : "rgba(255,107,107,0.06)",
             color: validate.ok ? "var(--teal)" : "var(--red)",
@@ -296,7 +329,7 @@ function BtEditorPanel({ baseUrl, isDemo, kind, name, onSaved, onDeleted }) {
         )}
         {msg && (
           <div style={{
-            padding: "8px 10px", borderRadius: 5, fontSize: 11.5, fontFamily: "var(--mono)",
+            padding: "6px 9px", borderRadius: 5, fontSize: 11, fontFamily: "var(--mono)",
             border: "1px solid " + (msg.kind === "ok" ? "rgba(76,214,179,0.3)" : "rgba(255,107,107,0.3)"),
             background: msg.kind === "ok" ? "rgba(76,214,179,0.06)" : "rgba(255,107,107,0.06)",
             color: msg.kind === "ok" ? "var(--teal)" : "var(--red)",
@@ -304,32 +337,22 @@ function BtEditorPanel({ baseUrl, isDemo, kind, name, onSaved, onDeleted }) {
             {msg.text}
           </div>
         )}
-
-        {/* 액션 버튼 */}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           <button className="btn ghost sm" onClick={runValidate} disabled={isDemo || busy === "validate"}>
             {busy === "validate" ? "검증중…" : "검증"}
           </button>
           <button className="btn primary sm" onClick={() => doSave(false)} disabled={isDemo || busy === "save"}>
-            {busy === "save" ? "저장중…" : "저장"}
+            {busy === "save" ? "저장중…" : (editName.trim() === loadedName && loadedName ? "덮어쓰기" : "저장")}
           </button>
           <button className="btn sm" onClick={() => doSave(true)} disabled={isDemo || busy === "save"}>
             다른 이름으로
           </button>
-          {loadedName && editName.trim() === loadedName && (
-            <button className="btn sm" onClick={doSaveOverwrite} disabled={isDemo || busy === "save"}
-                    style={{ borderColor: "rgba(240,179,90,0.4)", color: "var(--amber)" }}>
-              덮어쓰기 저장
-            </button>
-          )}
         </div>
-
         {/* 삭제(이름 재입력 confirm) */}
         {loadedName && (
-          <div style={{ borderTop: "1px solid var(--line-1)", paddingTop: 10, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>삭제하려면 이름 재입력:</span>
-            <input className="input" style={{ flex: 1, minWidth: 120 }} value={confirmDel}
-                   onChange={e => setConfirmDel(e.target.value)} placeholder={loadedName}
+          <div style={{ borderTop: "1px solid var(--line-1)", paddingTop: 8, display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+            <input className="input" style={{ flex: 1, minWidth: 100, fontSize: 11 }} value={confirmDel}
+                   onChange={e => setConfirmDel(e.target.value)} placeholder={"삭제하려면 '" + loadedName + "' 재입력"}
                    spellCheck={false} disabled={isDemo} />
             <button className="btn danger sm" onClick={doDelete}
                     disabled={isDemo || busy === "delete" || confirmDel !== loadedName}>
@@ -343,15 +366,31 @@ function BtEditorPanel({ baseUrl, isDemo, kind, name, onSaved, onDeleted }) {
 }
 
 // ===========================================================================
+// 2d. 매수+매도 듀얼 에디터 — 두 코드 에디터를 나란히 표시(한 화면 동시 편집).
+//   각 패널은 독립 라이브러리 선택(buyName/sellName)에서 코드를 로드한다.
+// ===========================================================================
+function BtDualEditor({ baseUrl, isDemo, buyName, sellName, onSaved, onDeletedBuy, onDeletedSell }) {
+  return (
+    <div style={{ display: "flex", gap: 12, minWidth: 0, flexWrap: "wrap" }}>
+      <BtCodeEditor baseUrl={baseUrl} isDemo={isDemo} kind="buy" label="매수" accent="var(--teal)"
+                    name={buyName} onSaved={onSaved} onDeleted={onDeletedBuy} />
+      <BtCodeEditor baseUrl={baseUrl} isDemo={isDemo} kind="sell" label="매도" accent="var(--red)"
+                    name={sellName} onSaved={onSaved} onDeleted={onDeletedSell} />
+    </div>
+  );
+}
+
+// ===========================================================================
 // 3. 백테스트 실행 패널 — buy/sell 선택, 기간/tf/engines, 잡 카드 + 이력 + 폴링.
 // ===========================================================================
-function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB, onJobs }) {
-  const [buy, setBuy] = useState_bt("");
-  const [sell, setSell] = useState_bt("");
+function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB, onJobs,
+                      buy, sell, onBuy, onSell, reloadJobsKey }) {
   const [start, setStart] = useState_bt("");
   const [end, setEnd] = useState_bt("");
   const [timeframe, setTimeframe] = useState_bt("min");
   const [engines, setEngines] = useState_bt(4);
+  const [mode, setMode] = useState_bt("backtest");      // backtest | optimize (GUI 패리티 1차).
+  const [paramSpace, setParamSpace] = useState_bt("");  // optimize 탐색공간 JSON 경로.
   const [range, setRange] = useState_bt(null);          // /bt/data_range
   const [jobs, setJobs] = useState_bt([]);              // 이력
   const [activeJob, setActiveJob] = useState_bt(null);  // 현재 추적 job record
@@ -365,15 +404,15 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
     _btFetchJson(baseUrl + "/bt/data_range", 5000).then(setRange).catch(() => setRange(null));
   }, [baseUrl, isDemo]);
 
-  // 잡 이력 로드(최근 10).
+  // 잡 이력 로드(결과 라이브러리가 검색/필터하므로 전체를 끌어온다).
   const loadJobs = useCallback_bt(() => {
     if (isDemo || !baseUrl) { setJobs([]); return; }
     _btFetchJson(baseUrl + "/bt/jobs", 4000)
-      .then(j => setJobs(Array.isArray(j && j.jobs) ? j.jobs.slice(0, 10) : []))
+      .then(j => setJobs(Array.isArray(j && j.jobs) ? j.jobs : []))
       .catch(() => {});
   }, [baseUrl, isDemo]);
 
-  useEffect_bt(() => { loadJobs(); }, [loadJobs]);
+  useEffect_bt(() => { loadJobs(); }, [loadJobs, reloadJobsKey]);
 
   // 잡 목록이 바뀌면 부모로 끌어올린다(포트폴리오 패널이 완료 잡을 소비).
   useEffect_bt(() => { onJobs && onJobs(jobs); }, [jobs, onJobs]);
@@ -438,10 +477,16 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
       buy: (buy || "").trim(), sell: (sell || "").trim(),
       start: parseInt(start, 10) || 0, end: parseInt(end, 10) || 0,
       timeframe, engines: parseInt(engines, 10) || 4,
+      mode,
     };
     if (!payload.buy || !payload.sell) { setRunErr("매수/매도 조건식을 선택하세요."); return; }
     if (!/^\d{8}$/.test(String(start)) || !/^\d{8}$/.test(String(end))) {
       setRunErr("기간은 YYYYMMDD 8자리로 입력하세요."); return;
+    }
+    if (mode === "optimize") {
+      const ps = (paramSpace || "").trim();
+      if (!ps) { setRunErr("최적화 모드는 파라미터 탐색공간 JSON 경로가 필요합니다."); return; }
+      payload.param_space = ps;
     }
     _btPostJson(baseUrl + "/bt/run", payload, 8000)
       .then(j => {
@@ -480,78 +525,101 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
     try { window.open(url, "_blank", "noopener"); } catch (e) {}
   };
 
-  const fillName = (setter) => (e) => setter(e.target.value);
   const pct = activeJob ? Math.round((activeJob.progress || 0) * 100) : 0;
+  const tracking = activeJob && (activeJob.status === "running" || activeJob.status === "pending");
 
   return (
-    <div className="panel">
-      <div className="panel-hd">
-        <div className="panel-hd-title">
-          <span className="dot" style={{ background: "var(--amber)" }}></span>
-          백테스트 실행
-        </div>
-        <button className="btn ghost sm" onClick={loadJobs} disabled={isDemo}>↻ 이력</button>
-      </div>
+    <div className="panel" style={{ background: "var(--bg-1)" }}>
       <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {/* buy/sell 선택 */}
-        <div className="field-row">
-          <div className="field">
+        {/* 전폭 실행 컨트롤 바 — 모드 토글 · 매수/매도 · 기간 · tf/engines · 대형 실행 버튼 */}
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: 10 }}>
+          {/* 모드 토글 [백테스트|최적화] */}
+          <div className="field" style={{ minWidth: 150 }}>
+            <label>모드</label>
+            <div style={{ display: "flex", gap: 4 }}>
+              {[["backtest", "백테스트"], ["optimize", "최적화"]].map(([m, lbl]) => (
+                <button key={m} onClick={() => setMode(m)} className="mono" disabled={isDemo}
+                  style={{
+                    flex: 1, padding: "6px 8px", fontSize: 11, borderRadius: 5,
+                    border: "1px solid " + (mode === m ? "var(--amber)" : "var(--line-1)"),
+                    background: mode === m ? "rgba(240,179,90,0.1)" : "transparent",
+                    color: mode === m ? "var(--amber)" : "var(--ink-2)", cursor: "pointer",
+                  }}>
+                  {lbl}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="field" style={{ minWidth: 160 }}>
             <label>매수 조건식</label>
-            <select className="select" value={buy} onChange={fillName(setBuy)} disabled={isDemo}>
+            <select className="select" value={buy} onChange={e => onBuy(e.target.value)} disabled={isDemo}>
               <option value="">— 선택 —</option>
               {libNames.buy.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
-          <div className="field">
+          <div className="field" style={{ minWidth: 160 }}>
             <label>매도 조건식</label>
-            <select className="select" value={sell} onChange={fillName(setSell)} disabled={isDemo}>
+            <select className="select" value={sell} onChange={e => onSell(e.target.value)} disabled={isDemo}>
               <option value="">— 선택 —</option>
               {libNames.sell.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
-        </div>
-        {/* 기간 */}
-        <div className="field-row">
-          <div className="field">
+          <div className="field" style={{ minWidth: 110 }}>
             <label>시작 (YYYYMMDD)</label>
             <input className="input" value={start} onChange={e => setStart(e.target.value)}
                    placeholder="20250101" spellCheck={false} disabled={isDemo} />
           </div>
-          <div className="field">
+          <div className="field" style={{ minWidth: 110 }}>
             <label>종료 (YYYYMMDD)</label>
             <input className="input" value={end} onChange={e => setEnd(e.target.value)}
                    placeholder="20251231" spellCheck={false} disabled={isDemo} />
           </div>
-        </div>
-        {/* tf / engines */}
-        <div className="field-row">
-          <div className="field">
+          <div className="field" style={{ minWidth: 100 }}>
             <label>시간단위</label>
             <select className="select" value={timeframe} onChange={e => setTimeframe(e.target.value)} disabled={isDemo}>
               <option value="min">분봉 (min)</option>
               <option value="tick">틱 (tick)</option>
             </select>
           </div>
-          <div className="field">
+          <div className="field" style={{ minWidth: 76 }}>
             <label>엔진 수</label>
             <input className="input" type="number" min="1" max="16" value={engines}
                    onChange={e => setEngines(e.target.value)} disabled={isDemo} />
           </div>
+          {/* 대형 실행 버튼 — 폴드 위 가시성 핵심 */}
+          <button className="btn primary" onClick={submit}
+                  disabled={isDemo || tracking}
+                  style={{ fontSize: 14, padding: "10px 22px", minWidth: 120 }}>
+            ▸ {mode === "optimize" ? "최적화 실행" : "백테스트 실행"}
+          </button>
+          <button className="btn ghost sm" onClick={loadJobs} disabled={isDemo}>↻ 이력</button>
         </div>
-        {/* 가용 범위 안내 */}
-        {tfRange && (
-          <div className="mono" style={{ fontSize: 10, color: "var(--ink-3)", lineHeight: 1.5 }}>
-            가용 {timeframe}: 일일DB {tfRange.count}일
-            {tfRange.back_range ? ` · back ${tfRange.back_range.start}~${tfRange.back_range.end}` : ""}
+
+        {/* optimize 전용 — 파라미터 탐색공간 JSON 경로 */}
+        {mode === "optimize" && (
+          <div className="field">
+            <label>파라미터 탐색공간 JSON 경로 (_database/ 또는 ai_strategy_loop/state/ 하위)</label>
+            <input className="input mono" value={paramSpace} onChange={e => setParamSpace(e.target.value)}
+                   placeholder="_database/param_space.json" spellCheck={false} disabled={isDemo}
+                   style={{ fontSize: 11 }} />
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button className="btn primary" onClick={submit}
-                  disabled={isDemo || (activeJob && (activeJob.status === "running" || activeJob.status === "pending"))}>
-            ▸ 실행
-          </button>
+        {/* 가용 범위 안내 + 실행 오류 */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+          {tfRange && (
+            <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>
+              가용 {timeframe}: 일일DB {tfRange.count}일
+              {tfRange.back_range ? ` · back ${tfRange.back_range.start}~${tfRange.back_range.end}` : ""}
+            </span>
+          )}
           {runErr && <span className="mono" style={{ fontSize: 11, color: "var(--red)" }}>{runErr}</span>}
+          {compareA && (
+            <span className="mono tag-slim" style={{ fontSize: 9.5, color: "var(--amber)", marginLeft: "auto" }}
+                  title="비교 기준(A) 고정됨 — 결과 라이브러리에서 다른 잡의 '비교(B)' 를 누르세요">
+              비교 A={compareA}
+            </span>
+          )}
         </div>
 
         {/* 활성 잡 카드 */}
@@ -574,7 +642,7 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
               <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-2)", lineHeight: 1.5 }}>{activeJob.message}</div>
             )}
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {(activeJob.status === "running" || activeJob.status === "pending") && (
+              {tracking && (
                 <button className="btn danger sm" onClick={() => cancelJob(activeJob.job_id)}>◼ 중지</button>
               )}
               {(activeJob.status === "success" || activeJob.status === "no_trades") && (
@@ -597,70 +665,213 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
             )}
           </div>
         )}
-
-        {/* 잡 이력(최근 10) */}
-        <div style={{ borderTop: "1px solid var(--line-1)", paddingTop: 8 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", letterSpacing: ".1em", textTransform: "uppercase" }}>
-              잡 이력 (최근 10)
-            </span>
-            {compareA && (
-              <span className="mono tag-slim" style={{ fontSize: 9.5, color: "var(--amber)", marginLeft: "auto" }}
-                    title="비교 기준(A) 고정됨 — 다른 잡의 '비교(B)' 를 누르세요">
-                A={compareA}
-              </span>
-            )}
-          </div>
-          {isDemo ? (
-            <div className="research-empty">데모 모드 — 백엔드 연결 시 잡 이력이 표시됩니다.</div>
-          ) : jobs.length === 0 ? (
-            <div className="research-empty">실행 이력이 없습니다</div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              {jobs.map(j => {
-                const b = _BT_JOB_BADGE[j.status] || _BT_JOB_BADGE.pending;
-                const clickable = j.status === "success" || j.status === "no_trades";
-                const active = j.job_id === selectedJobId;
-                const canCompare = clickable && compareA && onCompareB;
-                return (
-                  <div key={j.job_id}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 6, padding: "6px 8px", borderRadius: 5,
-                      border: "1px solid " + (active ? "var(--teal-dim)" : "var(--line-1)"),
-                      background: active ? "rgba(76,214,179,0.06)" : "var(--bg-0)",
-                      opacity: clickable ? 1 : 0.7,
-                    }}>
-                    <button onClick={() => clickable && pickJob(j.job_id)} disabled={!clickable}
-                      style={{
-                        display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0,
-                        background: "transparent", border: 0, padding: 0, textAlign: "left",
-                        cursor: clickable ? "pointer" : "default",
-                      }}>
-                      <span className={b.cls} style={{ flexShrink: 0 }}>{b.txt}</span>
-                      <span className="mono" style={{ fontSize: 10, color: "var(--ink-2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>
-                        {j.job_id}
-                      </span>
-                      <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", flexShrink: 0 }}>{_btElapsed(j)}</span>
-                    </button>
-                    {clickable && (
-                      <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
-                              onClick={() => openReport(j.job_id)} title="HTML 리포트 새 탭">
-                        📄
-                      </button>
-                    )}
-                    {canCompare && j.job_id !== compareA && (
-                      <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
-                              onClick={() => onCompareB(j.job_id)} title={"A(" + compareA + ") 와 비교"}>
-                        비교(B)
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
       </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// 3b. 결과 라이브러리 — 잡 이력 + 태그·메모·즐겨찾기·검색·필터(결과 체계 관리).
+//   완료 잡을 클릭하면 결과를 로드(onResult). 메타는 POST /bt/job/meta 로 영속.
+// ===========================================================================
+function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onReload,
+                           compareA, onSetCompareA, onCompareB }) {
+  const [query, setQuery] = useState_bt("");
+  const [favOnly, setFavOnly] = useState_bt(false);
+  const [tagFilter, setTagFilter] = useState_bt("");
+  const [editing, setEditing] = useState_bt("");      // 메타 편집 중인 job_id.
+  const [tagDraft, setTagDraft] = useState_bt("");
+  const [memoDraft, setMemoDraft] = useState_bt("");
+
+  const openReport = (jobId) => {
+    if (isDemo || !baseUrl || !jobId) return;
+    try { window.open(baseUrl + "/bt/report?job_id=" + encodeURIComponent(jobId), "_blank", "noopener"); } catch (e) {}
+  };
+
+  const saveMeta = (jobId, patch) => {
+    if (isDemo || !baseUrl || !jobId) return;
+    _btPostJson(baseUrl + "/bt/job/meta", Object.assign({ job_id: jobId }, patch), 6000)
+      .then(() => { onReload && onReload(); })
+      .catch(() => {});
+  };
+
+  const toggleFav = (j) => saveMeta(j.job_id, { favorite: !j.favorite });
+
+  const beginEdit = (j) => {
+    setEditing(j.job_id);
+    setTagDraft((j.tags || []).join(", "));
+    setMemoDraft(j.memo || "");
+  };
+  const commitEdit = (jobId) => {
+    const tags = tagDraft.split(",").map(s => s.trim()).filter(Boolean);
+    saveMeta(jobId, { tags, memo: memoDraft });
+    setEditing("");
+  };
+
+  // 전체 태그 어휘(필터 셀렉터용).
+  const allTags = useMemo_bt(() => {
+    const s = new Set();
+    (jobs || []).forEach(j => (j.tags || []).forEach(t => s.add(t)));
+    return Array.from(s).sort();
+  }, [jobs]);
+
+  const filtered = useMemo_bt(() => {
+    const q = query.trim().toLowerCase();
+    let out = (jobs || []);
+    if (favOnly) out = out.filter(j => j.favorite);
+    if (tagFilter) out = out.filter(j => (j.tags || []).includes(tagFilter));
+    if (q) out = out.filter(j => {
+      const hay = (j.job_id + " " + (j.memo || "") + " " + (j.tags || []).join(" ")
+        + " " + ((j.spec && (j.spec.buy + " " + j.spec.sell)) || "")).toLowerCase();
+      return hay.includes(q);
+    });
+    // 즐겨찾기 우선 정렬(이후 원래 최신순 유지).
+    return out.slice().sort((a, b) => (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0));
+  }, [jobs, query, favOnly, tagFilter]);
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--amber)" }}></span>
+          결과 라이브러리
+          <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 6 }}>
+            {filtered.length}/{(jobs || []).length}
+          </span>
+        </div>
+        <button className="btn ghost sm" onClick={onReload} disabled={isDemo}>↻</button>
+      </div>
+      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {isDemo ? (
+          <div className="research-empty">데모 모드 — 백엔드 연결 시 결과 이력이 표시됩니다.</div>
+        ) : (
+          <>
+            {/* 검색·필터 */}
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+              <input className="input" placeholder="잡/메모/태그/전략 검색…" value={query}
+                     onChange={e => setQuery(e.target.value)} spellCheck={false}
+                     style={{ flex: 1, minWidth: 140 }} />
+              <button className="mono" onClick={() => setFavOnly(f => !f)}
+                style={{
+                  padding: "5px 9px", fontSize: 11, borderRadius: 5, cursor: "pointer",
+                  border: "1px solid " + (favOnly ? "var(--amber)" : "var(--line-1)"),
+                  background: favOnly ? "rgba(240,179,90,0.1)" : "transparent",
+                  color: favOnly ? "var(--amber)" : "var(--ink-2)",
+                }}>
+                ★ 즐겨찾기
+              </button>
+              {allTags.length > 0 && (
+                <select className="select" value={tagFilter} onChange={e => setTagFilter(e.target.value)}
+                        style={{ maxWidth: 140 }}>
+                  <option value="">전체 태그</option>
+                  {allTags.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              )}
+            </div>
+            {/* 목록 */}
+            {filtered.length === 0 ? (
+              <div className="research-empty">{(jobs || []).length === 0 ? "실행 이력이 없습니다" : "조건에 맞는 결과 없음"}</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 360, overflowY: "auto" }}>
+                {filtered.map(j => {
+                  const b = _BT_JOB_BADGE[j.status] || _BT_JOB_BADGE.pending;
+                  const clickable = j.status === "success" || j.status === "no_trades";
+                  const active = j.job_id === selectedJobId;
+                  const canCompare = clickable && compareA && onCompareB && j.job_id !== compareA;
+                  const isEditing = editing === j.job_id;
+                  return (
+                    <div key={j.job_id}
+                      style={{
+                        display: "flex", flexDirection: "column", gap: 5, padding: "7px 9px", borderRadius: 5,
+                        border: "1px solid " + (active ? "var(--teal-dim)" : "var(--line-1)"),
+                        background: active ? "rgba(76,214,179,0.06)" : "var(--bg-0)",
+                        opacity: clickable ? 1 : 0.7,
+                      }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <button onClick={() => toggleFav(j)} title="즐겨찾기 토글"
+                          style={{ background: "transparent", border: 0, cursor: "pointer", fontSize: 13, padding: 0,
+                                   color: j.favorite ? "var(--amber)" : "var(--ink-3)" }}>
+                          {j.favorite ? "★" : "☆"}
+                        </button>
+                        <button onClick={() => clickable && onResult(j.job_id)} disabled={!clickable}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0,
+                            background: "transparent", border: 0, padding: 0, textAlign: "left",
+                            cursor: clickable ? "pointer" : "default",
+                          }}>
+                          <span className={b.cls} style={{ flexShrink: 0 }}>{b.txt}</span>
+                          <span className="mono" style={{ fontSize: 10, color: "var(--ink-2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>
+                            {j.job_id}
+                          </span>
+                          <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", flexShrink: 0 }}>{_btElapsed(j)}</span>
+                        </button>
+                        {clickable && (
+                          <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
+                                  onClick={() => openReport(j.job_id)} title="HTML 리포트 새 탭">📄</button>
+                        )}
+                        {clickable && onSetCompareA && (
+                          <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
+                                  onClick={() => onSetCompareA(j.job_id)} title="비교 기준(A) 으로 고정">A</button>
+                        )}
+                        {canCompare && (
+                          <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
+                                  onClick={() => onCompareB(j.job_id)} title={"A(" + compareA + ") 와 비교"}>B</button>
+                        )}
+                        <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
+                                onClick={() => (isEditing ? setEditing("") : beginEdit(j))} title="태그·메모 편집">🏷</button>
+                      </div>
+                      {/* 태그·메모 표시 */}
+                      {!isEditing && ((j.tags && j.tags.length > 0) || j.memo) && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, alignItems: "center" }}>
+                          {(j.tags || []).map(t => (
+                            <span key={t} className="tag-slim" style={{ fontSize: 9.5, color: "var(--teal)" }}>{t}</span>
+                          ))}
+                          {j.memo && <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>· {j.memo}</span>}
+                        </div>
+                      )}
+                      {/* 태그·메모 편집 */}
+                      {isEditing && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                          <input className="input" value={tagDraft} onChange={e => setTagDraft(e.target.value)}
+                                 placeholder="태그(쉼표 구분)" spellCheck={false} style={{ fontSize: 11 }} />
+                          <input className="input" value={memoDraft} onChange={e => setMemoDraft(e.target.value)}
+                                 placeholder="메모" spellCheck={false} style={{ fontSize: 11 }} />
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <button className="btn primary sm" onClick={() => commitEdit(j.job_id)}>저장</button>
+                            <button className="btn ghost sm" onClick={() => setEditing("")}>취소</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// 3c. 접이식 섹션 래퍼 — 수직 과적 해소(evo/포트폴리오를 접을 수 있게).
+// ===========================================================================
+function BtCollapsible({ title, accent, defaultOpen, children }) {
+  const [open, setOpen] = useState_bt(!!defaultOpen);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: open ? 10 : 0 }}>
+      <button onClick={() => setOpen(o => !o)} className="mono"
+        style={{
+          display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 6,
+          border: "1px solid var(--line-1)", background: "var(--bg-1)", cursor: "pointer",
+          color: "var(--ink-1)", fontSize: 12, textAlign: "left",
+        }}>
+        <span className="dot" style={{ background: accent || "var(--ink-3)" }}></span>
+        <span style={{ flex: 1 }}>{title}</span>
+        <span style={{ color: "var(--ink-3)" }}>{open ? "▾ 접기" : "▸ 펼치기"}</span>
+      </button>
+      {open && children}
     </div>
   );
 }
@@ -1012,15 +1223,18 @@ function BacktestTab({ baseUrl, wsStatus }) {
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
   const [health, setHealth] = useState_bt(null);
-  const [kind, setKind] = useState_bt("buy");
-  const [selectedName, setSelectedName] = useState_bt("");
   const [reloadKey, setReloadKey] = useState_bt(0);     // 라이브러리 재로드 트리거(저장/삭제 후).
   const [resultJobId, setResultJobId] = useState_bt("");
   const [libNames, setLibNames] = useState_bt({ buy: [], sell: [] });
+  // 실행 셀렉터 = 듀얼 에디터 소스. 매수/매도 선택을 탭 루트로 끌어올려 공유한다.
+  const [buyName, setBuyName] = useState_bt("");
+  const [sellName, setSellName] = useState_bt("");
   // 진화 세대 분석 소스 — {run_id, gen_no} 또는 null. 잡 선택과 상호배타(둘 중 하나만).
   const [evoSource, setEvoSource] = useState_bt(null);
-  // 포트폴리오 패널이 소비할 완료 잡 목록(BtRunPanel 이 끌어올려 공유).
+  // 포트폴리오·결과 라이브러리가 소비할 완료 잡 목록(BtRunPanel 이 끌어올려 공유).
   const [jobsList, setJobsList] = useState_bt([]);
+  // 결과 라이브러리 강제 재로드 토큰(메타 갱신/잡 변경 후 잡 목록 새로고침).
+  const [jobsReloadKey, setJobsReloadKey] = useState_bt(0);
   // A/B 비교 — compareA(기준 잡 id), compareView(/bt/compare 응답).
   const [compareA, setCompareA] = useState_bt("");
   const [compareView, setCompareView] = useState_bt(null);
@@ -1083,7 +1297,12 @@ function BacktestTab({ baseUrl, wsStatus }) {
       : { label: "checking", color: "var(--amber)" };
 
   const onSaved = useCallback_bt(() => { setReloadKey(k => k + 1); }, []);
-  const onDeleted = useCallback_bt(() => { setReloadKey(k => k + 1); setSelectedName(""); }, []);
+  const reloadJobs = useCallback_bt(() => { setJobsReloadKey(k => k + 1); }, []);
+
+  // 데모 예시 모드 — 연결됐고 잡/세대 미선택이면 기본 화면에 합성 예시 결과를 띄운다
+  //   (빈 화면 금지). sentinel job_id 를 BtResultArea 에 실어 charts 무수정 렌더 경로로 보낸다.
+  const showDemoResult = connected && !isDemo && !resultJobId && !evoSource;
+  const effectiveJobId = showDemoResult ? "__demo__" : resultJobId;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -1098,24 +1317,51 @@ function BacktestTab({ baseUrl, wsStatus }) {
         </span>
       </div>
 
-      <div className="grid-main" style={{ gridTemplateColumns: "minmax(0, 420px) minmax(0, 1fr)" }}>
-        {/* 좌: 라이브러리 + 에디터 + 실행 */}
+      {/* 상단 고정 전폭 실행 패널 — 폴드 위 가시성 핵심(매수/매도·기간·모드·대형 실행 버튼) */}
+      <BtRunPanel baseUrl={baseUrl} isDemo={isDemo} libNames={libNames} onResult={onPickJobResult}
+                  compareA={compareA} onCompareB={runCompare} onJobs={setJobsList}
+                  buy={buyName} sell={sellName} onBuy={setBuyName} onSell={setSellName}
+                  reloadJobsKey={jobsReloadKey} />
+
+      {/* 본문 2컬럼 — 좌(라이브러리·듀얼 에디터·결과 라이브러리) / 우(결과·분석) */}
+      <div className="grid-main" style={{ gridTemplateColumns: "minmax(0, 520px) minmax(0, 1fr)" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
-          <BtLibraryPanel baseUrl={baseUrl} isDemo={isDemo} kind={kind} onKind={setKind}
-                          onPick={setSelectedName} selectedName={selectedName} reloadKey={reloadKey} />
-          <BtEditorPanel baseUrl={baseUrl} isDemo={isDemo} kind={kind} name={selectedName}
-                         onSaved={onSaved} onDeleted={onDeleted} />
-          <BtRunPanel baseUrl={baseUrl} isDemo={isDemo} libNames={libNames} onResult={onPickJobResult}
-                      compareA={compareA} onCompareB={runCompare} onJobs={setJobsList} />
-          <BtEvoSelector baseUrl={baseUrl} isDemo={isDemo} onPickGen={onPickGen} activeEvo={evoSource} />
-          <BtPortfolioPanel baseUrl={baseUrl} isDemo={isDemo} jobs={jobsList} activeEvo={evoSource} />
+          <BtDualEditor baseUrl={baseUrl} isDemo={isDemo} buyName={buyName} sellName={sellName}
+                        onSaved={onSaved}
+                        onDeletedBuy={() => { setReloadKey(k => k + 1); setBuyName(""); }}
+                        onDeletedSell={() => { setReloadKey(k => k + 1); setSellName(""); }} />
+          <BtResultLibrary baseUrl={baseUrl} isDemo={isDemo} jobs={jobsList} onResult={onPickJobResult}
+                           selectedJobId={resultJobId} onReload={reloadJobs}
+                           compareA={compareA} onSetCompareA={onSetCompareA} onCompareB={runCompare} />
         </div>
-        {/* 우: 결과·분석 */}
-        <div style={{ minWidth: 0 }}>
-          <BtResultArea baseUrl={baseUrl} isDemo={isDemo} jobId={resultJobId} evoSource={evoSource}
+        <div style={{ minWidth: 0, position: "relative" }}>
+          {showDemoResult && (
+            <span className="badge warn" style={{ position: "absolute", top: 10, right: 10, zIndex: 2 }}>
+              예시 데이터
+            </span>
+          )}
+          <BtResultArea baseUrl={baseUrl} isDemo={isDemo} jobId={effectiveJobId} evoSource={evoSource}
                         onSetCompareA={onSetCompareA} compareView={compareView} onCloseCompare={onCloseCompare} />
         </div>
       </div>
+
+      {/* 접이식 섹션 — 수직 과적 해소(진화 세대 분석 · 포트폴리오 결합) */}
+      <BtCollapsible title="진화 세대 분석" accent="var(--violet)" defaultOpen={false}>
+        <BtEvoSelector baseUrl={baseUrl} isDemo={isDemo} onPickGen={onPickGen} activeEvo={evoSource} />
+      </BtCollapsible>
+      <BtCollapsible title="포트폴리오 결합 분석" accent="var(--blue)" defaultOpen={false}>
+        <BtPortfolioPanel baseUrl={baseUrl} isDemo={isDemo} jobs={jobsList} activeEvo={evoSource} />
+      </BtCollapsible>
+
+      {/* 조건식 라이브러리 — 듀얼 에디터의 보조(접이식). 선택 시 셀렉터로 끌어와 편집 */}
+      <BtCollapsible title="조건식 라이브러리(빠른 선택)" accent="var(--teal)" defaultOpen={false}>
+        <div className="grid-main" style={{ gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)" }}>
+          <BtLibraryPanel baseUrl={baseUrl} isDemo={isDemo} kind="buy" onKind={() => {}} lockKind
+                          onPick={setBuyName} selectedName={buyName} reloadKey={reloadKey} />
+          <BtLibraryPanel baseUrl={baseUrl} isDemo={isDemo} kind="sell" onKind={() => {}} lockKind
+                          onPick={setSellName} selectedName={sellName} reloadKey={reloadKey} />
+        </div>
+      </BtCollapsible>
     </div>
   );
 }

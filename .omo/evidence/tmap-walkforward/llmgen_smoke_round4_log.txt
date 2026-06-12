@@ -1,0 +1,4 @@
+[BATCH] run_id=smoke_llmgmin2_20260612 pairs=1
+[BATCH] prepare status=ok back_count=416 elapsed=39s
+[BATCH] gen0 LLMGMIN2 lunch default ok profit=-18,752,914 mdd=25.72 trades=447 daily=27.90 payoff=1.2937153526015364 gate=False reason=total_profit -1.875e+07 <= 0 (11s)
+[BATCH] done

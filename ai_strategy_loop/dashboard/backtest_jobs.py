@@ -57,6 +57,14 @@ class BacktestJobSpec:
     one_code: Optional[str] = None
     # 스모크/서브셋 백테용: 절대 경로를 주면 STOM_CLI_DB_STOCK_BACK_TICK/MIN 으로 주입된다.
     back_db_override: Optional[str] = None
+    # 실행 모드: "backtest"(기본, --buy/--sell 단일 실행) | "optimize"(stom_backtest optimize
+    #   서브커맨드 래핑 — param_space JSON 파일 필수). GUI 패리티 1차(최적화) 진입점.
+    mode: str = "backtest"
+    # optimize 모드 파라미터 탐색공간 JSON 파일 절대경로(--param-space 로 전달).
+    param_space: Optional[str] = None
+    # optimize 방법(grid|random)·목표지표.
+    opt_method: str = "grid"
+    opt_objective: str = "tpi"
 
 
 @dataclass
@@ -76,6 +84,10 @@ class BacktestJobRecord:
     progress: float = 0.0  # 0.0~1.0 추정.
     phase: str = "queued"
     pid: Optional[int] = None
+    # 결과 체계 관리(트랙 B ③) — 사용자 분류 메타. 잡 실행과 무관하게 update_meta 로 갱신된다.
+    tags: List[str] = field(default_factory=list)
+    memo: str = ""
+    favorite: bool = False
 
     def to_public(self) -> Dict[str, Any]:
         """API 응답용 dict(로그 테일은 매니저가 별도 부착)."""
@@ -94,7 +106,30 @@ def _safe_name(value: str) -> bool:
 
 
 def default_command_builder(spec: BacktestJobSpec) -> List[str]:
-    """controller/loop.py 와 동일한 stom_backtest.py 서브프로세스 커맨드를 만든다."""
+    """stom_backtest.py 서브프로세스 커맨드를 만든다(mode 에 따라 단일 백테/최적화 분기).
+
+    backtest(기본): controller/loop.py 와 동일한 --buy/--sell 단일 실행.
+    optimize: stom_backtest optimize 서브커맨드 래핑(cli/subcommands.py 계약 — --param-space
+      JSON 파일 필수, --method grid|random, --objective). GUI 패리티 1차 진입점.
+    """
+    if spec.mode == "optimize":
+        cmd = [
+            sys.executable,
+            str(REPO_ROOT / "stom_backtest.py"),
+            "optimize",
+            "--buy", spec.buy,
+            "--sell", spec.sell,
+            "--start", str(spec.start),
+            "--end", str(spec.end),
+            "--param-space", str(spec.param_space or ""),
+            "--method", spec.opt_method,
+            "--objective", spec.opt_objective,
+            "--timeframe", spec.timeframe,
+            "--engines", str(spec.engines),
+            "--timeout", str(spec.timeout),
+            "--format", "json",
+        ]
+        return cmd
     cmd = [
         sys.executable,
         str(REPO_ROOT / "stom_backtest.py"),
@@ -154,6 +189,10 @@ class BacktestJobManager:
             return {"status": "error", "message": "start/end 는 YYYYMMDD 8자리여야 합니다."}
         if spec.start > spec.end:
             return {"status": "error", "message": "start 가 end 보다 늦습니다."}
+        if spec.mode not in ("backtest", "optimize"):
+            return {"status": "error", "message": f"mode 는 backtest|optimize 만 허용: {spec.mode!r}"}
+        if spec.mode == "optimize" and not (spec.param_space and str(spec.param_space).strip()):
+            return {"status": "error", "message": "optimize 모드는 param_space(탐색공간 JSON 경로)가 필요합니다."}
 
         job_id = self._new_job_id(spec.buy)
         with self._lock:
@@ -213,6 +252,40 @@ class BacktestJobManager:
             if record is None:
                 return None
             return record.csv_path
+
+    def update_meta(
+        self,
+        job_id: str,
+        *,
+        tags: Optional[List[str]] = None,
+        memo: Optional[str] = None,
+        favorite: Optional[bool] = None,
+    ) -> Dict[str, Any]:
+        """잡 결과 메타(태그/메모/즐겨찾기)를 갱신·영속한다(결과 체계 관리, 트랙 B ③).
+
+        None 인자는 미변경(부분 업데이트). 잡 없음이면 available=False(무예외). 태그는
+        공백 제거·중복 제거 후 정렬해 저장한다(빈 토큰 무시).
+        """
+        with self._lock:
+            record = self._records.get(job_id)
+            if record is None:
+                return {"available": False, "job_id": job_id}
+            if tags is not None:
+                # 시스템 경계 위생: 태그 64자·50개, 메모 2000자 상한(리뷰 권고 — JSON 비대 방지).
+                cleaned = {t.strip()[:64] for t in tags if isinstance(t, str) and t.strip()}
+                record.tags = sorted(cleaned)[:50]
+            if memo is not None:
+                record.memo = str(memo)[:2000]
+            if favorite is not None:
+                record.favorite = bool(favorite)
+            self._persist(record)
+            return {
+                "available": True,
+                "job_id": job_id,
+                "tags": list(record.tags),
+                "memo": record.memo,
+                "favorite": record.favorite,
+            }
 
     # ----------------------------------------------------------------- worker
     def _ensure_worker(self) -> None:

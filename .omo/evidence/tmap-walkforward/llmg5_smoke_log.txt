@@ -1,0 +1,4 @@
+[BATCH] run_id=smoke_llmg5_20260612 pairs=1
+[BATCH] prepare status=ok back_count=814 elapsed=83s
+[BATCH] gen0 LLMG5 demand_shock default ok profit=-3,568,754 mdd=35.48 trades=53 daily=0.90 payoff=0.9923296077142232 gate=False reason=mdd 35.48 > mdd_cap 35 (46s)
+[BATCH] done

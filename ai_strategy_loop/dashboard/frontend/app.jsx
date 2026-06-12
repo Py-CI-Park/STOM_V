@@ -3,7 +3,16 @@ const { useState: useState_a, useEffect: useEffect_a, useCallback: useCallback_a
 
 function App() {
   const [baseUrl, setBaseUrl] = useState_a(() => {
-    return localStorage.getItem("stom_base_url") || DEFAULT_BASE;
+    // 캐시된 BASE가 현재 페이지 origin과 다른 cross-origin(예: 과거 8770 캐시인데
+    // 8771에서 서빙)이면 same-origin으로 마이그레이션한다 — 안 그러면 CORS로 데모모드.
+    const cached = localStorage.getItem("stom_base_url");
+    const here = (typeof window !== "undefined" && window.location && window.location.origin) || "";
+    if (cached && here.startsWith("http")) {
+      try {
+        if (new URL(cached).origin !== here) return DEFAULT_BASE;
+      } catch { return DEFAULT_BASE; }
+    }
+    return cached || DEFAULT_BASE;
   });
   const [pendingBase, setPendingBase] = useState_a(baseUrl);
   const [theme, setTheme] = useState_a(() => localStorage.getItem("stom_theme") || "dark");
@@ -335,20 +344,18 @@ function App() {
 }
 
 // 상단 탭 내비게이션. 브랜드 행 아래에 위치하며 전 탭 공통으로 항상 보인다.
-//   디자인 언어: mono 폰트, var(--line-1) 보더, 활성 탭은 teal 강조 밑줄.
+//   Phase4 트랙A(2026-06-12): 대형화·강한 활성 대비·탭 아이콘.
+//   크기/색/대비는 styles.css(.stom-tabnav / .stom-tab / .stom-tab-active)에서
+//   구동한다 — 인라인 스타일은 클래스를 덮으므로 사이즈 prop을 두지 않는다.
 const STOM_TABS = [
-  { key: "evolution", label: "진화 대시보드" },
-  { key: "backtest", label: "백테스트" },
-  { key: "simulation", label: "차트 시뮬레이션" },
+  { key: "evolution", label: "진화 대시보드", icon: "🧬" },
+  { key: "backtest", label: "백테스트", icon: "📊" },
+  { key: "simulation", label: "차트 시뮬레이션", icon: "📈" },
 ];
 
 function TabNav({ activeTab, onSelect }) {
   return (
-    <nav role="tablist" aria-label="대시보드 탭" style={{
-      display: "flex", alignItems: "stretch", gap: 2,
-      margin: "12px 0 14px",
-      borderBottom: "1px solid var(--line-1)",
-    }}>
+    <nav role="tablist" aria-label="대시보드 탭" className="stom-tabnav">
       {STOM_TABS.map(tab => {
         const active = activeTab === tab.key;
         return (
@@ -356,22 +363,10 @@ function TabNav({ activeTab, onSelect }) {
             key={tab.key}
             role="tab"
             aria-selected={active}
-            className="mono"
+            className={"stom-tab" + (active ? " stom-tab-active" : "")}
             onClick={() => onSelect(tab.key)}
-            style={{
-              appearance: "none",
-              background: active ? "var(--bg-1)" : "transparent",
-              color: active ? "var(--ink-0)" : "var(--ink-2)",
-              border: "1px solid " + (active ? "var(--line-1)" : "transparent"),
-              borderBottom: active ? "2px solid var(--teal)" : "2px solid transparent",
-              borderRadius: "6px 6px 0 0",
-              padding: "8px 16px",
-              fontSize: 12,
-              letterSpacing: ".04em",
-              cursor: "pointer",
-              marginBottom: -1,
-            }}
           >
+            <span className="stom-tab-ico" aria-hidden="true">{tab.icon}</span>
             {tab.label}
           </button>
         );

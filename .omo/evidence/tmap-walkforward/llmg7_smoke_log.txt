@@ -1,0 +1,4 @@
+[BATCH] run_id=smoke_llmg7_20260612 pairs=1
+[BATCH] prepare status=ok back_count=416 elapsed=54s
+[BATCH] gen0 LLMG7 midday default ok profit=-8,789,594 mdd=29.45 trades=166 daily=10.40 payoff=1.7405523612953955 gate=False reason=total_profit -8.79e+06 <= 0 (14s)
+[BATCH] done
