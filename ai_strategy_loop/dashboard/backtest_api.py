@@ -390,13 +390,22 @@ def cancel_job(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
 # --------------------------------------------------------------------- result
 @backtest_router.get("/result")
 def get_result(
-    job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None
+    job_id: str = "",
+    t_start: Optional[int] = None,
+    t_end: Optional[int] = None,
+    run_id: str = "",
+    gen_no: Optional[int] = None,
 ) -> Dict[str, Any]:
-    """완료 잡의 metrics + 분석 전체 묶음. 미완료/없음이면 available=False.
+    """완료 잡 또는 진화 세대의 metrics + 분석 전체 묶음. 없음이면 available=False.
 
+    호출 경로(둘 중 하나):
+      - job_id: 완료 잡 결과(t_start/t_end 로 구간 한정 가능 — 브러시).
+      - run_id+gen_no: loop_runs.db 세대 결과(잡과 동일 스키마, CSV 부재 시 축약).
     no_trades 잡은 metrics=None, analysis=빈 구조로 정상 반환(에러 아님).
-    t_start/t_end(매수시간 YYYYMMDDHHMMSS) 가 있으면 그 구간만 재분석한다(브러시).
     """
+    # 진화 세대 경로 — 잡 매니저를 거치지 않고 loop_runs.db(읽기 전용)에서 직접.
+    if not job_id and run_id and gen_no is not None:
+        return _result_for_run(run_id, int(gen_no))
     manager = get_job_manager()
     record = manager.get(job_id, log_tail=0)
     if not record.get("available"):
@@ -433,6 +442,145 @@ def _analysis_for_job(
     csv_path = get_job_manager().result_csv_path(job_id)
     trades = analysis.load_trades_csv(csv_path)
     return analysis.filter_trades(trades, t_start, t_end)
+
+
+# --------------------------------------------------------------- evo (run/gen)
+def _gen_row_readonly(run_id: str, gen_no: int) -> Optional[Dict[str, Any]]:
+    """loop_runs.db(읽기 전용) 에서 (run_id, gen_no) 세대 한 행을 dict로 읽는다.
+
+    LoopState(readonly=True) 는 mode=ro URI 로만 열어 보호된 loop_runs.db 에 어떤
+    쓰기(WAL 생성·스키마 마이그레이션·디렉토리 생성)도 하지 않는다. DB 부재/조회
+    실패/세대 없음은 None(무예외 — 호출측이 available=False 로 표준화).
+    """
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState(readonly=True)
+        for r in st.get_generations(run_id):
+            if int(r.get("gen_no", -1)) == int(gen_no):
+                return r
+    except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 None(무예외).
+        return None
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+    return None
+
+
+def _opt_metric(value: Any) -> Optional[float]:
+    """세대 행 메트릭을 Optional[float]로 정규화한다(None/비숫자→None, 숫자→float).
+
+    None(미측정)은 그대로 None으로 전파해 '미측정'과 '실제 0%'를 구분한다(대시보드가
+    손실 세대를 0%로 오표시하지 않도록). 비숫자(손상 행)도 None으로 흡수(무예외).
+    """
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    try:
+        return float(str(value))
+    except (TypeError, ValueError):
+        return None
+
+
+def _resolve_gen_csv(row: Dict[str, Any]) -> Optional[str]:
+    """세대 행의 csv_path 를 절대경로로 정규화한다(상대경로는 REPO_ROOT 기준). 없으면 None."""
+    raw_csv = row.get("csv_path")
+    if not raw_csv:
+        return None
+    csv_path = raw_csv if os.path.isabs(raw_csv) else os.path.join(str(REPO_ROOT), raw_csv)
+    return csv_path if os.path.isfile(csv_path) else None
+
+
+@backtest_router.get("/evo_gens")
+def evo_generations(run_id: str = "") -> Dict[str, Any]:
+    """진화 run 의 세대 목록(loop_runs.db 읽기 전용). 백테스트 탭 '진화 세대 분석' 셀렉터용.
+
+    각 항목: {gen_no, buy_name, sell_name, status, trade_count, gate_passed, score,
+              profit, mdd, has_csv, strategy_gist}. run_id 없음/DB 부재/조회 실패면
+    빈 목록(무예외). has_csv 는 결과 CSV 가 실제로 존재하는지(없으면 축약 분석만 가능).
+    """
+    if not run_id:
+        return {"items": [], "count": 0, "run_id": run_id}
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+
+    st: Optional[LoopState] = None
+    rows: List[Dict[str, Any]] = []
+    try:
+        st = LoopState(readonly=True)
+        rows = st.get_generations(run_id)
+    except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 빈 목록(무예외).
+        return {"items": [], "count": 0, "run_id": run_id}
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+    items: List[Dict[str, Any]] = []
+    for r in rows:
+        raw_gen = r.get("gen_no")
+        items.append({
+            # gen 0 은 falsy 라 `or -1` 로 합치면 -1 로 뭉개진다 — is None 가드로 보존.
+            "gen_no": -1 if raw_gen is None else int(raw_gen),
+            "buy_name": r.get("buy_name"),
+            "sell_name": r.get("sell_name"),
+            "status": r.get("status"),
+            "trade_count": int(r.get("trade_count", 0) or 0),
+            "gate_passed": bool(r.get("gate_passed")),
+            "score": float(r.get("score", 0.0) or 0.0),
+            "profit": float(r.get("profit", 0.0) or 0.0),
+            "mdd": float(r.get("mdd", 0.0) or 0.0),
+            "has_csv": _resolve_gen_csv(r) is not None,
+            "strategy_gist": r.get("strategy_gist") or "",
+        })
+    return {"items": items, "count": len(items), "run_id": run_id}
+
+
+def _result_for_run(run_id: str, gen_no: int) -> Dict[str, Any]:
+    """run/gen 세대 → 잡 결과(/bt/result)와 동일 스키마 응답(무예외).
+
+    csv_path 존재 시 풀 분석(잡과 동일 묶음). CSV 부재 시 generations 행 메트릭
+    요약 + 빈 분석 구조(차트/분석 생략, 카드만). 세대 없음이면 available=False.
+    """
+    row = _gen_row_readonly(run_id, gen_no)
+    if row is None:
+        return {"available": False, "run_id": run_id, "gen_no": gen_no}
+    csv_path = _resolve_gen_csv(row)
+    if csv_path:
+        bundle = analysis.full_analysis(csv_path)
+        return {
+            "available": True,
+            "run_id": run_id,
+            "gen_no": gen_no,
+            "status": row.get("status"),
+            "metrics": bundle["summary"],
+            "analysis": bundle,
+            "has_csv": True,
+        }
+    # CSV 부재 — generations 행 메트릭 요약 + 빈 분석 구조(무예외).
+    #   total_profit_pct 는 None(미측정)을 0.0으로 강제하지 않는다(손실 세대 오표시 방지).
+    fallback_metrics = {
+        "trade_count": int(row.get("trade_count", 0) or 0),
+        "total_profit_krw": float(row.get("profit", 0.0) or 0.0),
+        "total_profit_pct": _opt_metric(row.get("total_profit_pct")),
+        "max_drawdown_pct": float(row.get("mdd", 0.0) or 0.0),
+        "payoff_ratio": float(row.get("payoff_ratio", 0.0) or 0.0),
+    }
+    return {
+        "available": True,
+        "run_id": run_id,
+        "gen_no": gen_no,
+        "status": row.get("status"),
+        "metrics": fallback_metrics,
+        "analysis": analysis.full_analysis(None),
+        "has_csv": False,
+        "message": "결과 CSV 가 없어 세대 메트릭 요약만 표시합니다(차트/분석 생략).",
+    }
 
 
 @backtest_router.get("/analysis/summary")
@@ -563,6 +711,87 @@ def compare_jobs(job_a: str = "", job_b: str = "") -> Dict[str, Any]:
     }
 
 
+# ------------------------------------------------------------------- portfolio
+# 포트폴리오 결합 분석 입력 개수 경계(2~6). 1개는 결합 의미 없음, 과다는 히트맵 가독성 저하.
+_PORTFOLIO_MIN = 2
+_PORTFOLIO_MAX = 6
+
+
+def _portfolio_item_trades(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """포트폴리오 입력 1개({job_id} | {run_id,gen_no}) → {label, trades}. 못 찾으면 None.
+
+    잡은 result_csv_path 로, 세대는 loop_runs.db(읽기 전용)의 csv_path 로 trades 를
+    읽는다. CSV 부재(세대 축약)면 trades=[] 로 포함한다(빈 전략 — 합성에 0 기여).
+    """
+    if not isinstance(item, dict):
+        return None
+    job_id = str(item.get("job_id", "") or "").strip()
+    if job_id:
+        manager = get_job_manager()
+        record = manager.get(job_id, log_tail=0)
+        if not record.get("available"):
+            return None
+        csv_path = manager.result_csv_path(job_id)
+        spec = record.get("spec") or {}
+        label = str(item.get("label", "") or "").strip() or (
+            f"{spec.get('buy', '')}·{job_id[:8]}" if spec.get("buy") else job_id[:12]
+        )
+        return {"label": label, "trades": analysis.load_trades_csv(csv_path)}
+    run_id = str(item.get("run_id", "") or "").strip()
+    gen_no = item.get("gen_no")
+    if run_id and gen_no is not None:
+        try:
+            gen_int = int(gen_no)
+        except (TypeError, ValueError):
+            return None
+        row = _gen_row_readonly(run_id, gen_int)
+        if row is None:
+            return None
+        csv_path = _resolve_gen_csv(row)
+        label = str(item.get("label", "") or "").strip() or f"{run_id}/g{gen_int}"
+        return {"label": label, "trades": analysis.load_trades_csv(csv_path)}
+    return None
+
+
+@backtest_router.post("/portfolio")
+def portfolio_combine(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
+    """포트폴리오 결합 분석 — 2~6 전략(잡/세대)의 일별손익 합성(워크벤치 UI 레이어).
+
+    요청: {"items": [{"job_id"} | {"run_id","gen_no"} (옵션 "label") ...]} (2~6개).
+    각 item 을 trades 로 해석해 analysis.portfolio_analysis 로 결합 곡선·결합 MDD·
+    전략 간 일별손익 상관행렬·기여도를 만든다. 개수 경계 위반/해석 실패는 무예외
+    error 페이로드(HTTP 200, 대시보드 컨벤션).
+
+    부모 P-A 의 포트폴리오 상관 스캔(.omo/evidence — 선택기 레이어)과 역할이 다르다:
+    본 엔드포인트는 워크벤치가 한 화면에서 바로 시각화할 결합 결과만 만든다(advisory
+    판정 지표 미생산). 레이어 구분은 backtest_analysis.portfolio_analysis docstring 참조.
+    """
+    raw_items = payload.get("items")
+    if not isinstance(raw_items, list):
+        return {"status": "error", "message": "items 는 리스트여야 합니다."}
+    if not (_PORTFOLIO_MIN <= len(raw_items) <= _PORTFOLIO_MAX):
+        return {
+            "status": "error",
+            "message": f"포트폴리오는 {_PORTFOLIO_MIN}~{_PORTFOLIO_MAX}개 전략이 필요합니다(받음: {len(raw_items)}).",
+        }
+    resolved: List[Dict[str, Any]] = []
+    failed: List[int] = []
+    for idx, item in enumerate(raw_items):
+        got = _portfolio_item_trades(item)
+        if got is None:
+            failed.append(idx)
+        else:
+            resolved.append(got)
+    if len(resolved) < _PORTFOLIO_MIN:
+        return {
+            "status": "error",
+            "message": f"유효한 전략이 {_PORTFOLIO_MIN}개 미만입니다(해석 실패 인덱스: {failed}).",
+            "failed": failed,
+        }
+    result = analysis.portfolio_analysis(resolved)
+    return {"status": "ok", "portfolio": result, "failed": failed}
+
+
 # --------------------------------------------------------------------- report
 def _period_label(start: Any, end: Any) -> str:
     """잡 spec/세대의 시작·종료를 'YYYYMMDD~YYYYMMDD' 라벨로(없으면 '—')."""
@@ -614,35 +843,14 @@ def _report_payload_for_run(run_id: str, gen_no: int) -> Optional[Dict[str, Any]
     """loop_runs.db(읽기전용) 세대 → render_report payload. 세대 없음이면 None.
 
     csv_path 존재 시 같은 풀 분석 리포트. CSV 부재 시 generations 행의
-    trade_count/profit/mdd 등으로 축약 리포트(무예외).
+    trade_count/profit/mdd 등으로 축약 리포트(무예외). 세대 조회는 LoopState(readonly=True)
+    로 mode=ro URI 만 열어 보호된 loop_runs.db 에 어떤 쓰기도 하지 않는다.
     """
-    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
-
-    row: Optional[Dict[str, Any]] = None
-    st: Optional[LoopState] = None
-    try:
-        st = LoopState()
-        for r in st.get_generations(run_id):
-            if int(r.get("gen_no", -1)) == int(gen_no):
-                row = r
-                break
-    except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 None(무예외).
-        return None
-    finally:
-        if st is not None:
-            try:
-                st.close()
-            except Exception:  # noqa: BLE001
-                pass
+    row = _gen_row_readonly(run_id, gen_no)
     if row is None:
         return None
 
-    raw_csv = row.get("csv_path")
-    csv_path = None
-    if raw_csv:
-        csv_path = raw_csv if os.path.isabs(raw_csv) else os.path.join(str(REPO_ROOT), raw_csv)
-        if not os.path.isfile(csv_path):
-            csv_path = None
+    csv_path = _resolve_gen_csv(row)
 
     base_meta = {
         "title": f"세대 리포트 · {run_id} / g{gen_no}",

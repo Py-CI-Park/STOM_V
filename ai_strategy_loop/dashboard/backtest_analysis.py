@@ -1221,3 +1221,160 @@ def full_analysis(
         "stats": stats,
         "orderflow": orderflow,
     }
+
+
+# ---------------------------------------------------------------------------
+# 12. portfolio_analysis — 복수 전략 일별손익 합성(결합 곡선·MDD·상관·기여).
+#
+# 레이어 구분(중요): 이 함수는 **워크벤치 UI 레이어**다. per-trade CSV(또는 그에서
+#   파싱한 trade dict 리스트)를 입력으로 받아 워크벤치 결과 패널이 그릴 결합 수익곡선
+#   SVG·상관 히트맵·개별 기여 표를 직접 만든다. 부모 P-A 의 포트폴리오 상관 스캔
+#   (fitness/portfolio.py + .omo/evidence)은 run 단위 일별손익 dict 를 받는 **선택기
+#   레이어**로, 분산이득(diversification_gain)·한계 MDD 같은 advisory 판정 보조 지표를
+#   낸다. 본 함수는 그 advisory 지표를 재생산하지 않고(중복 회피), 워크벤치가 한 화면에서
+#   바로 시각화할 결합 곡선/상관/기여만 만든다(무예외·순수함수).
+# ---------------------------------------------------------------------------
+def _pearson(xs: List[float], ys: List[float]) -> Optional[float]:
+    """두 동일길이 시퀀스의 피어슨 상관계수. 표본<2거나 한쪽 분산 0이면 None."""
+    n = len(xs)
+    if n < 2 or len(ys) != n:
+        return None
+    mean_x = sum(xs) / n
+    mean_y = sum(ys) / n
+    cov = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys))
+    var_x = sum((x - mean_x) ** 2 for x in xs)
+    var_y = sum((y - mean_y) ** 2 for y in ys)
+    if var_x <= 0.0 or var_y <= 0.0:
+        return None
+    return cov / math.sqrt(var_x * var_y)
+
+
+def portfolio_analysis(
+    items: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """복수 전략(잡/세대)의 일별손익을 균등 합성해 결합 분석을 만든다(무예외).
+
+    각 item: {"label": 표시명, "trades": trade dict 리스트} 또는
+             {"label": 표시명, "csv_path": per-trade CSV 경로}.
+    csv_path 가 있으면 load_trades_csv 로 읽는다(trades 우선). 라벨이 비면 자동 부여.
+
+    합성은 균등 가중(1/N 아님 — 단순 일별손익 '합산'으로, 동일 자본 N개 운용을 가정).
+    날짜 축은 전 전략 거래일 합집합이며, 특정 전략에 없는 날은 0원으로 채운다. 상관은
+    이 합집합 축에 정렬한 일별손익 시계열 간 피어슨 상관(결측일=0)이다.
+
+    반환(무예외 — 빈/단일 입력도 빈 구조):
+      {
+        "strategies": [{label, total_profit_krw, max_drawdown_krw, trading_days,
+                        contribution_pct}],          # 개별 단독 지표 + 기여 비중
+        "combined": {                                # 결합(합산) 결과
+            "total_profit_krw", "max_drawdown_krw", "trading_days",
+            "equity": [{date, daily_pnl, cum_profit, drawdown}],   # 다운샘플 ≤500pt
+        },
+        "correlation": {                             # 전략 간 일별손익 상관행렬
+            "labels": [label...],
+            "matrix": [[r|None ...]...],             # 대각 1.0, 산출불가 None
+        },
+        "count": N,
+      }
+    입력이 2개 미만이면 correlation.matrix 는 빈/단일 구조이나 raise 하지 않는다.
+    """
+    # 1) 각 item → (label, day→pnl 맵). 라벨 충돌은 접미 인덱스로 유일화.
+    resolved: List[Tuple[str, Dict[int, float]]] = []
+    used_labels: Dict[str, int] = {}
+    for idx, item in enumerate(items or []):
+        raw_label = str((item or {}).get("label", "") or "").strip() or f"전략{idx + 1}"
+        label = raw_label
+        if label in used_labels:
+            used_labels[raw_label] += 1
+            label = f"{raw_label}#{used_labels[raw_label]}"
+        else:
+            used_labels[raw_label] = 1
+        trades = (item or {}).get("trades")
+        if trades is None:
+            trades = load_trades_csv((item or {}).get("csv_path"))
+        resolved.append((label, _daily_pnl_map(list(trades or []))))
+
+    if not resolved:
+        return {
+            "strategies": [], "combined": {
+                "total_profit_krw": 0.0, "max_drawdown_krw": 0.0,
+                "trading_days": 0, "equity": [],
+            },
+            "correlation": {"labels": [], "matrix": []}, "count": 0,
+        }
+
+    # 2) 날짜 합집합 축(정렬).
+    all_days = sorted({d for _, m in resolved for d in m})
+
+    # 3) 개별 전략 단독 지표.
+    strategies: List[Dict[str, Any]] = []
+    per_total: List[float] = []
+    for label, day_map in resolved:
+        vals = list(day_map.values())  # 거래일 순(이미 _daily_pnl_map 가 정렬).
+        total = sum(vals)
+        cum: List[float] = []
+        run = 0.0
+        for v in vals:
+            run += v
+            cum.append(run)
+        per_total.append(total)
+        strategies.append({
+            "label": label,
+            "total_profit_krw": float(total),
+            "max_drawdown_krw": float(_mdd_of_cumulative(cum)),
+            "trading_days": len(day_map),
+        })
+
+    # 기여 비중(%): 단독 총손익이 결합 총손익에서 차지하는 비중. 결합 총손익이 0이면
+    #   분모가 |총손익| 합(부호 무시)으로 폴백(0/0 방지). 그래도 0이면 0%.
+    grand_total = sum(per_total)
+    denom = grand_total if grand_total != 0.0 else sum(abs(t) for t in per_total)
+    for s, total in zip(strategies, per_total):
+        s["contribution_pct"] = round(total / denom * 100.0, 4) if denom != 0.0 else 0.0
+
+    # 4) 결합 곡선(합집합 축, 결측일=0 합산).
+    combined_daily: List[Dict[str, Any]] = []
+    combined_cum: List[float] = []
+    run = 0.0
+    peak = float("-inf")
+    for day in all_days:
+        pnl = sum(m.get(day, 0.0) for _, m in resolved)
+        run += pnl
+        if run > peak:
+            peak = run
+        dd = max(0.0, peak - run)
+        combined_cum.append(run)
+        combined_daily.append({
+            "date": int(day), "daily_pnl": float(pnl),
+            "cum_profit": float(run), "drawdown": float(dd),
+        })
+
+    combined = {
+        "total_profit_krw": float(combined_cum[-1]) if combined_cum else 0.0,
+        "max_drawdown_krw": float(_mdd_of_cumulative(combined_cum)),
+        "trading_days": len(all_days),
+        "equity": _downsample(combined_daily),
+    }
+
+    # 5) 상관행렬 — 합집합 축에 정렬한 일별손익 시계열 간 피어슨(결측일=0).
+    labels = [label for label, _ in resolved]
+    aligned: List[List[float]] = [
+        [day_map.get(day, 0.0) for day in all_days] for _, day_map in resolved
+    ]
+    matrix: List[List[Optional[float]]] = []
+    for i in range(len(resolved)):
+        row: List[Optional[float]] = []
+        for j in range(len(resolved)):
+            if i == j:
+                row.append(1.0)
+            else:
+                r = _pearson(aligned[i], aligned[j])
+                row.append(None if r is None else round(r, 6))
+        matrix.append(row)
+
+    return {
+        "strategies": strategies,
+        "combined": combined,
+        "correlation": {"labels": labels, "matrix": matrix},
+        "count": len(resolved),
+    }
