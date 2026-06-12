@@ -307,6 +307,10 @@ class TestFrontendContract:
         assert "backtest-charts.jsx?v=20260612b" in src
         assert "backtest.jsx?v=20260612b" in src
         # 차트 시뮬레이션(PR3) — 차트 모듈이 simulation.jsx보다 먼저 로드돼야 한다.
-        assert "simulation-charts.jsx?v=20260612a" in src
-        assert "simulation.jsx?v=20260612a" in src
-        assert src.index("simulation-charts.jsx") < src.index("simulation.jsx?")
+        assert "simulation-charts.jsx?v=20260612b" in src
+        assert "simulation.jsx?v=20260612b" in src
+        # S3(2026-06-12) — lightweight-charts vendor 는 babel 이전 일반 script 로 로드.
+        assert "vendor-lightweight-charts.js?v=20260612a" in src
+        # src= 속성 기준 비교(주석 내 파일명 언급에 걸리지 않게).
+        assert src.index('src="vendor-lightweight-charts.js') < src.index('src="simulation-charts.jsx')
+        assert src.index('src="simulation-charts.jsx') < src.index('src="simulation.jsx?')

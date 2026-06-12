@@ -201,3 +201,99 @@ class TestTickAggregation:
         rd = RE.load_replay(20250102, "tick", ["005930"], agg_sec=1)
         # 집계 없음 → 7 행 그대로.
         assert rd.bars_total == 7
+
+
+# --------------------------------------------------------------- live indicators
+# 호가불균형 컬럼(매수총잔량/매도총잔량)을 포함한 확장 min 컬럼 레이아웃.
+_MIN_COLS_IMB = _MIN_COLS + ["매도총잔량", "매수총잔량"]
+
+
+def _make_min_db_imbalance(path: Path, tables: dict) -> None:
+    """매도총잔량/매수총잔량 컬럼을 가진 합성 min DB. tables=={code:[(idx, +base9, sell_tot, buy_tot)...]}."""
+    con = sqlite3.connect(str(path))
+    con.execute('CREATE TABLE moneytop ("index" INTEGER, "거래대금순위" TEXT)')
+    for code, rows in tables.items():
+        coldef = ", ".join(f'"{c}" REAL' for c in _MIN_COLS_IMB)
+        con.execute(f'CREATE TABLE "{code}" ("index" INTEGER, {coldef})')
+        ph = ", ".join("?" for _ in range(len(_MIN_COLS_IMB) + 1))
+        con.executemany(f'INSERT INTO "{code}" VALUES ({ph})', rows)
+    con.commit()
+    con.close()
+
+
+@pytest.fixture
+def synthetic_ma_db(monkeypatch, tmp_path):
+    """min DB(20250103) 1종목 6행 — 종가 10,12,14,16,18,20 으로 MA5 점등을 검증한다."""
+    db_dir = tmp_path / "_database"
+    db_dir.mkdir()
+    closes = [10.0, 12.0, 14.0, 16.0, 18.0, 20.0]
+    rows = [
+        (202501030900 + i, c, c, c, c, 0.0, 1000.0, 100.0, 5.0, 5.0)
+        for i, c in enumerate(closes)
+    ]
+    _make_daily_db(db_dir / "stock_min_20250103.db", "min", {"005930": rows})
+    monkeypatch.setattr(RE, "_DATABASE_DIR", db_dir)
+    monkeypatch.setattr(SA, "_DATABASE_DIR", db_dir)
+    return db_dir
+
+
+@pytest.fixture
+def synthetic_imbalance_db(monkeypatch, tmp_path):
+    """매수/매도총잔량 컬럼을 가진 min DB(20250104) 1종목 — imbalance 가용 분기."""
+    db_dir = tmp_path / "_database"
+    db_dir.mkdir()
+    # (index, 현재가..분당매도수량(9), 매도총잔량, 매수총잔량)
+    rows = [
+        (202501040900, 100.0, 99.0, 101.0, 98.0, 1.0, 5000.0, 110.0, 30.0, 20.0, 200.0, 300.0),
+        (202501040901, 102.0, 100.0, 103.0, 100.0, 3.0, 6000.0, 120.0, 40.0, 25.0, 100.0, 250.0),
+        (202501040902, 101.0, 102.0, 102.0, 100.0, 2.0, 5500.0, 105.0, 35.0, 30.0, 0.0, 250.0),
+    ]
+    _make_min_db_imbalance(db_dir / "stock_min_20250104.db", {"005930": rows})
+    monkeypatch.setattr(RE, "_DATABASE_DIR", db_dir)
+    monkeypatch.setattr(SA, "_DATABASE_DIR", db_dir)
+    return db_dir
+
+
+class TestMovingAverages:
+    def test_ma5_none_until_window_filled(self, synthetic_ma_db):
+        rd = RE.load_replay(20250103, "min", ["005930"], agg_sec=10)
+        items = [f["items"][0] for f in rd.frames]
+        assert len(items) == 6
+        # MA5 는 5번째 bar(인덱스 4)부터 점등. 그 전엔 None.
+        for i in range(4):
+            assert items[i]["ma5"] is None
+        # 인덱스 4: (10+12+14+16+18)/5 = 14.0.
+        assert items[4]["ma5"] == 14.0
+        # 인덱스 5: (12+14+16+18+20)/5 = 16.0 — 증분 윈도우 슬라이드 검증.
+        assert items[5]["ma5"] == 16.0
+
+    def test_ma20_ma60_none_when_series_short(self, synthetic_ma_db):
+        rd = RE.load_replay(20250103, "min", ["005930"], agg_sec=10)
+        # 6행뿐이라 MA20/MA60 은 끝까지 None.
+        for f in rd.frames:
+            assert f["items"][0]["ma20"] is None
+            assert f["items"][0]["ma60"] is None
+
+    def test_ma_present_in_frame_schema(self, synthetic_ma_db):
+        rd = RE.load_replay(20250103, "min", ["005930"], agg_sec=10)
+        item = rd.frames[0]["items"][0]
+        for key in ("ma5", "ma20", "ma60", "imbalance"):
+            assert key in item
+
+
+class TestImbalance:
+    def test_imbalance_computed_when_columns_present(self, synthetic_imbalance_db):
+        rd = RE.load_replay(20250104, "min", ["005930"], agg_sec=10)
+        items = [f["items"][0] for f in rd.frames]
+        # 첫 행: 매수총잔량/매도총잔량 = 300/200 = 1.5.
+        assert items[0]["imbalance"] == 1.5
+        # 둘째: 250/100 = 2.5.
+        assert items[1]["imbalance"] == 2.5
+        # 셋째: 매도총잔량=0 → 분모 보호로 None.
+        assert items[2]["imbalance"] is None
+
+    def test_imbalance_none_when_columns_absent(self, synthetic_min_db):
+        # synthetic_min_db 는 총잔량 컬럼이 없다 → imbalance 전부 None.
+        rd = RE.load_replay(20250102, "min", ["005930"], agg_sec=10)
+        for f in rd.frames:
+            assert f["items"][0]["imbalance"] is None

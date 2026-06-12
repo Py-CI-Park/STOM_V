@@ -249,6 +249,12 @@ function SimulationTab({ baseUrl, wsStatus }) {
   const [wsErr, setWsErr] = useState_sim("");
   const [signals, setSignals] = useState_sim({});      // code → [signal...]
 
+  // 학습 모드 — 신호 자동 일시정지 토글 + 하이라이트 신호 키.
+  const [autoPause, setAutoPause] = useState_sim(false);
+  const [highlightSig, setHighlightSig] = useState_sim(null);  // "code@buy_hms" 형태.
+  // 이미 자동정지한 신호(중복 정지 방지) — ref 로 들고 리렌더 유발 안 함.
+  const autoPausedRef = useRef_sim(new Set());
+
   const wsRef = useRef_sim(null);
   // 코드별 누적 bar 시계열(append). ref 로 들고 상태는 버전 카운터로 리렌더.
   const barsRef = useRef_sim({});
@@ -365,11 +371,15 @@ function SimulationTab({ baseUrl, wsStatus }) {
         setMeta({ codes: m.codes || [], bars_total: m.bars_total || 0, session_range: m.session_range || [0, 0] });
         setCursor(0);
       } else if (m.type === "bars") {
-        // 코드별 시계열에 append.
+        // 코드별 시계열에 append(서버 계산 지표 ma5/ma20/ma60·imbalance 포함).
         const store = barsRef.current;
         (m.items || []).forEach(it => {
           if (!store[it.code]) store[it.code] = [];
-          store[it.code].push({ t: m.t, o: it.o, h: it.h, l: it.l, c: it.c, vol: it.vol, change: it.change, strength: it.strength });
+          store[it.code].push({
+            t: m.t, o: it.o, h: it.h, l: it.l, c: it.c, vol: it.vol,
+            change: it.change, strength: it.strength,
+            ma5: it.ma5, ma20: it.ma20, ma60: it.ma60, imbalance: it.imbalance,
+          });
         });
         setCursor((m.index || 0) + 1);
         setCurT(m.t);
@@ -414,6 +424,78 @@ function SimulationTab({ baseUrl, wsStatus }) {
 
   const stopReplay = () => { _stopReplay(); };
 
+  // 렌더·로직 공용 파생값(차트 그리드·신호 평탄화·재생 가능 여부).
+  const codes = (meta && meta.codes && meta.codes.length) ? meta.codes : selected;
+  const canPlay = !isDemo && !!date && selected.length > 0 && (status === "idle" || status === "done" || status === "error");
+  // 키보드 핸들러가 stale 클로저로 보지 않도록 canPlay 를 ref 로 미러링.
+  const canPlayRef = useRef_sim(canPlay);
+  useEffect_sim(() => { canPlayRef.current = canPlay; }, [canPlay]);
+
+  // 신호 시각(HHMMSS)으로 직접 시킹 — 북마크 클릭용. 서버 seek 은 t(HHMMSS)를 직접 받는다.
+  const seekToTime = useCallback_sim((hms) => {
+    if (hms == null) return;
+    _wsSend({ action: "seek", t: hms });
+    setCurT(hms);
+    // 커서 근사(세션 범위 선형 역보간) — 슬라이더/진행률 표시용.
+    const range = meta && meta.session_range;
+    if (range && range[1] > range[0] && meta.bars_total) {
+      const frac = (hms - range[0]) / (range[1] - range[0]);
+      setCursor(Math.max(0, Math.min(meta.bars_total, Math.round(frac * (meta.bars_total - 1)))));
+    }
+  }, [meta]);
+
+  // 학습 모드 — 평탄화된 전체 신호(시각순). 자동정지·북마크 공용.
+  const flatSignals = useMemo_sim(() => _flattenSignals(signals, codes), [signals, codes.join(",")]);
+
+  // 신호 자동 일시정지 — 재생 중 curT 가 거래(매수) 시각에 도달하면 1회 pause + 하이라이트.
+  useEffect_sim(() => {
+    if (!autoPause || status !== "playing" || curT == null) return;
+    const seen = autoPausedRef.current;
+    for (const sig of flatSignals) {
+      const key = sig.code + "@" + sig.buy_hms;
+      if (sig.buy_hms <= curT && !seen.has(key)) {
+        seen.add(key);
+        setHighlightSig(key);
+        _wsSend({ action: "pause" });
+        setStatus("paused");
+        break;
+      }
+    }
+  }, [autoPause, status, curT, flatSignals]);
+
+  // 리플레이 새로 시작/정지 시 자동정지 기록 리셋.
+  useEffect_sim(() => {
+    if (status === "idle" || status === "playing" && cursor === 0) {
+      autoPausedRef.current = new Set();
+    }
+  }, [status]);
+
+  // 키보드 단축키 — Space=재생/정지, ←/→=배속 다운/업, Esc=정지. 입력 필드 포커스 시 무시.
+  useEffect_sim(() => {
+    const onKey = (e) => {
+      const tag = (e.target && e.target.tagName) || "";
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (e.target && e.target.isContentEditable)) return;
+      if (e.key === " " || e.code === "Space") {
+        e.preventDefault();
+        if (status === "playing") pauseReplay();
+        else if (status === "paused") resumeReplay();
+        else if (canPlayRef.current) startReplay();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        const i = _SIM_SPEEDS.indexOf(speed);
+        changeSpeed(_SIM_SPEEDS[Math.min(_SIM_SPEEDS.length - 1, (i < 0 ? 0 : i) + 1)]);
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        const i = _SIM_SPEEDS.indexOf(speed);
+        changeSpeed(_SIM_SPEEDS[Math.max(0, (i < 0 ? 0 : i) - 1)]);
+      } else if (e.key === "Escape") {
+        if (status === "playing" || status === "paused") stopReplay();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [status, speed]);
+
   const connected = !!(health && health.status === "ok");
   const badge = isDemo
     ? { label: "demo", color: "var(--ink-3)" }
@@ -423,14 +505,12 @@ function SimulationTab({ baseUrl, wsStatus }) {
 
   // 렌더용 코드별 bar 시계열(barsVersion 의존).
   const barsByCode = useMemo_sim(() => ({ ...barsRef.current }), [barsVersion]);
-  const codes = (meta && meta.codes && meta.codes.length) ? meta.codes : selected;
   const gridCols = codes.length <= 1 ? "1fr" : "1fr 1fr";
   const nameByCode = useMemo_sim(() => {
     const m = {};
     stocks.forEach(s => { m[s.code] = s.name; });
     return m;
   }, [stocks]);
-  const canPlay = !isDemo && !!date && selected.length > 0 && (status === "idle" || status === "done" || status === "error");
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -449,7 +529,7 @@ function SimulationTab({ baseUrl, wsStatus }) {
       </div>
 
       <div className="grid-main" style={{ gridTemplateColumns: "minmax(0, 380px) minmax(0, 1fr)" }}>
-        {/* 좌: 컨트롤 + 체결 로그 */}
+        {/* 좌: 컨트롤 + 지표 라이브 테이블 + 학습 모드 + 체결 로그 */}
         <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
           <SimControlBar
             baseUrl={baseUrl} isDemo={isDemo} src={src} onSrc={setSrc}
@@ -458,8 +538,15 @@ function SimulationTab({ baseUrl, wsStatus }) {
             stockQuery={stockQuery} onStockQuery={setStockQuery} loadingStocks={loadingStocks}
             buy={buy} onBuy={setBuy} sell={sell} onSell={setSell} strategies={strategies}
             aggSec={aggSec} onAggSec={setAggSec} />
+          {codes.length > 0 && (status !== "idle" || cursor > 0) && (
+            <SimIndicatorTable codes={codes} barsByCode={barsByCode} nameByCode={nameByCode} />
+          )}
           {(buy && sell) && (
-            <SimSignalLog signals={_flattenSignals(signals, codes)} curT={curT} />
+            <SimLearningPanel autoPause={autoPause} onToggleAutoPause={() => setAutoPause(v => !v)}
+              signals={flatSignals} curT={curT} highlightSig={highlightSig} onSeek={seekToTime} />
+          )}
+          {(buy && sell) && (
+            <SimSignalLog signals={flatSignals} curT={curT} />
           )}
         </div>
 
@@ -513,6 +600,155 @@ function _flattenSignals(signals, codes) {
   });
   out.sort((a, b) => a.buy_hms - b.buy_hms);
   return out;
+}
+
+// ===========================================================================
+// 변수 라이브 뷰 — 종목별 현재 지표 테이블(현재가·등락·체결강도·MA5/20/60·호가불균형).
+//   갱신 시 값 변화 방향(상승=teal / 하락=red)으로 셀 색 플래시.
+// ===========================================================================
+function _simFmtNum(v, digits) {
+  if (v == null) return "—";
+  const n = Number(v);
+  if (!isFinite(n)) return "—";
+  return n.toLocaleString("ko-KR", { maximumFractionDigits: digits == null ? 0 : digits });
+}
+
+function SimIndicatorCell({ value, digits, prev, className }) {
+  // 이전값 대비 방향으로 1회 플래시. key 를 값+버전으로 바꿔 애니메이션 재시작.
+  const dir = (prev == null || value == null || value === prev) ? "" :
+    (value > prev ? "sim-flash-up" : "sim-flash-down");
+  return (
+    <td key={value + ":" + dir} className={(className || "") + " " + dir}>
+      {_simFmtNum(value, digits)}
+    </td>
+  );
+}
+
+function SimIndicatorTable({ codes, barsByCode, nameByCode }) {
+  const prevRef = useRef_sim({});
+  const rows = (codes || []).map(code => {
+    const arr = barsByCode[code] || [];
+    const last = arr.length ? arr[arr.length - 1] : null;
+    return { code, name: nameByCode[code] || code, bar: last };
+  });
+  // 이전값 스냅샷(렌더 후 갱신).
+  const prev = prevRef.current;
+  useEffect_sim(() => {
+    const next = {};
+    rows.forEach(r => { if (r.bar) next[r.code] = r.bar; });
+    prevRef.current = next;
+  });
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--teal)" }}></span>
+          지표 라이브
+        </div>
+        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>현재 시각 기준</span>
+      </div>
+      <div className="panel-bd" style={{ overflowX: "auto", padding: "6px 8px" }}>
+        <table className="sim-live-table">
+          <thead>
+            <tr>
+              <th>종목</th><th>현재가</th><th>등락%</th><th>강도</th>
+              <th>MA5</th><th>MA20</th><th>MA60</th><th>호가불균형</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(({ code, name, bar }) => {
+              const p = prev[code] || {};
+              if (!bar) {
+                return (
+                  <tr key={code}>
+                    <td title={name}>{code}</td>
+                    <td colSpan={7} style={{ color: "var(--ink-3)" }}>대기…</td>
+                  </tr>
+                );
+              }
+              return (
+                <tr key={code}>
+                  <td title={name} style={{ color: "var(--ink-1)" }}>{code}</td>
+                  <SimIndicatorCell value={bar.c} digits={0} prev={p.c} />
+                  <td className={bar.change > 0 ? "num-pos" : bar.change < 0 ? "num-neg" : ""}>
+                    {bar.change > 0 ? "+" : ""}{(bar.change || 0).toFixed(2)}
+                  </td>
+                  <SimIndicatorCell value={bar.strength} digits={0} prev={p.strength} />
+                  <SimIndicatorCell value={bar.ma5} digits={0} prev={p.ma5} />
+                  <SimIndicatorCell value={bar.ma20} digits={0} prev={p.ma20} />
+                  <SimIndicatorCell value={bar.ma60} digits={0} prev={p.ma60} />
+                  <SimIndicatorCell value={bar.imbalance} digits={2} prev={p.imbalance} />
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// 학습 모드 패널 — 신호 자동 일시정지 토글 + 키보드 힌트 + 신호 북마크(클릭 시킹).
+// ===========================================================================
+function SimLearningPanel({ autoPause, onToggleAutoPause, signals, curT, highlightSig, onSeek }) {
+  const rows = signals || [];
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--violet)" }}></span>
+          학습 모드
+        </div>
+      </div>
+      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10, padding: "10px" }}>
+        {/* 자동 일시정지 토글 */}
+        <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+          <input type="checkbox" checked={autoPause} onChange={onToggleAutoPause}
+                 style={{ accentColor: "var(--violet)" }} />
+          <span style={{ fontSize: 11.5, color: "var(--ink-1)" }}>신호 자동 일시정지</span>
+          <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)", marginLeft: "auto" }}>
+            매수 시각 도달 시 정지
+          </span>
+        </label>
+
+        {/* 키보드 힌트 */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 10, color: "var(--ink-3)" }}>
+          <span className="sim-kbd">Space</span> 재생/정지
+          <span className="sim-kbd">←</span><span className="sim-kbd">→</span> 배속
+          <span className="sim-kbd">Esc</span> 정지
+        </div>
+
+        {/* 신호 북마크 목록 → 클릭 시킹 */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 3, maxHeight: 200, overflowY: "auto" }}>
+          {rows.length === 0 ? (
+            <div className="research-empty" style={{ fontSize: 10.5 }}>매매 신호가 없습니다.</div>
+          ) : rows.map((s, i) => {
+            const key = s.code + "@" + s.buy_hms;
+            const reached = curT != null && s.buy_hms <= curT;
+            const isHi = highlightSig === key;
+            return (
+              <button key={i} className={"sim-bookmark " + (reached ? "reached" : "pending")}
+                onClick={() => onSeek(s.buy_hms)}
+                style={isHi ? { borderColor: "var(--violet)", background: "rgba(124,108,240,0.12)" } : null}>
+                <span className="mono" style={{ fontSize: 10, color: "var(--teal)", flexShrink: 0 }}>
+                  ▲{window._simTimeLabel(s.buy_hms)}
+                </span>
+                <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)", flexShrink: 0 }}>
+                  {s.code}
+                </span>
+                <span className={"mono " + (s.profit_pct >= 0 ? "num-pos" : "num-neg")}
+                      style={{ fontSize: 10.5, marginLeft: "auto", flexShrink: 0 }}>
+                  {s.profit_pct >= 0 ? "+" : ""}{(s.profit_pct || 0).toFixed(1)}%
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 Object.assign(window, { SimulationTab });

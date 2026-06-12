@@ -46,6 +46,13 @@ _COL_BUY_QTY_TICK = "초당매수수량"
 _COL_SELL_QTY_TICK = "초당매도수량"
 _COL_BUY_QTY_MIN = "분당매수수량"
 _COL_SELL_QTY_MIN = "분당매도수량"
+# 호가불균형용 총잔량(컬럼 존재는 PRAGMA 로 동적 확인 — tick/min 레이아웃에서 위치가 다르고
+# 일부 구버전 DB 엔 없을 수 있다. 없으면 imbalance=None 으로 흘려보낸다).
+_COL_BUY_TOTAL = "매수총잔량"
+_COL_SELL_TOTAL = "매도총잔량"
+
+# 변수 라이브 뷰 이동평균 윈도우(종가 롤링). MA60 까지 증분 계산.
+_MA_WINDOWS = (5, 20, 60)
 
 
 def daily_db_path(date: int, src: str) -> Path:
@@ -152,13 +159,16 @@ def _load_code_rows(
 ) -> List[Dict[str, Any]]:
     """한 종목의 candle 행을 시간순 dict 리스트로 로드한다(읽기전용·무예외).
 
-    각 행: {ts(int index), o,h,l,c, vol(거래량 추정=매수+매도수량), change, strength}.
+    각 행: {ts(int index), o,h,l,c, vol(거래량 추정=매수+매도수량), change, strength,
+            imbalance(호가불균형=매수총잔량/매도총잔량 — 컬럼 부재 시 None)}.
+    호가불균형 컬럼(매수총잔량/매도총잔량)은 PRAGMA 로 존재를 확인 후 가용할 때만 읽는다.
     """
     cols = _table_columns(con, code)
     if _COL_INDEX not in cols:
         return []
     buy_q = _COL_BUY_QTY_TICK if src == "tick" else _COL_BUY_QTY_MIN
     sell_q = _COL_SELL_QTY_TICK if src == "tick" else _COL_SELL_QTY_MIN
+    has_imbalance = _COL_BUY_TOTAL in cols and _COL_SELL_TOTAL in cols
 
     def col(name: str) -> str:
         return f'"{name}"' if name in cols else "0"
@@ -166,7 +176,8 @@ def _load_code_rows(
     select = (
         f'SELECT "{_COL_INDEX}", {col(_COL_CURRENT)}, {col(_COL_OPEN)}, '
         f'{col(_COL_HIGH)}, {col(_COL_LOW)}, {col(_COL_CHANGE)}, '
-        f'{col(_COL_STRENGTH)}, {col(buy_q)}, {col(sell_q)} '
+        f'{col(_COL_STRENGTH)}, {col(buy_q)}, {col(sell_q)}, '
+        f'{col(_COL_BUY_TOTAL)}, {col(_COL_SELL_TOTAL)} '
         f'FROM "{code}" ORDER BY "{_COL_INDEX}" LIMIT {_MAX_ROWS_PER_CODE}'
     )
     rows: List[Dict[str, Any]] = []
@@ -190,8 +201,18 @@ def _load_code_rows(
             "change": _safe_float(r[5]),
             "strength": _safe_float(r[6]),
             "vol": buy_qty + sell_qty,
+            "imbalance": _imbalance(r[9], r[10]) if has_imbalance else None,
         })
     return rows
+
+
+def _imbalance(buy_total: Any, sell_total: Any) -> Optional[float]:
+    """호가불균형 = 매수총잔량 / 매도총잔량. 매도총잔량 0/음수면 None(분모 보호)."""
+    buy = _safe_float(buy_total)
+    sell = _safe_float(sell_total)
+    if sell <= 0:
+        return None
+    return buy / sell
 
 
 def _hms_from_index(ts: int, src: str) -> int:
@@ -232,6 +253,7 @@ def _aggregate_tick(rows: List[Dict[str, Any]], agg_sec: int) -> List[Dict[str, 
                 "hms": _hms_from_index(r["ts"], "tick"),
                 "o": r["c"], "h": max(r["c"], r["h"]), "l": min(r["c"], r["l"] or r["c"]),
                 "c": r["c"], "vol": r["vol"], "change": r["change"], "strength": r["strength"],
+                "imbalance": r.get("imbalance"),
             }
             for r in rows
         ]
@@ -246,6 +268,7 @@ def _aggregate_tick(rows: List[Dict[str, Any]], agg_sec: int) -> List[Dict[str, 
             buckets[b] = {
                 "hms": b, "o": price, "h": price, "l": price, "c": price,
                 "vol": r["vol"], "change": r["change"], "strength": r["strength"],
+                "imbalance": r.get("imbalance"),
             }
             order.append(b)
         else:
@@ -255,6 +278,7 @@ def _aggregate_tick(rows: List[Dict[str, Any]], agg_sec: int) -> List[Dict[str, 
             cur["vol"] += r["vol"]
             cur["change"] = r["change"]
             cur["strength"] = r["strength"]
+            cur["imbalance"] = r.get("imbalance")
     return [buckets[b] for b in order]
 
 
@@ -272,8 +296,30 @@ def _min_bars(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             "vol": r["vol"],
             "change": r["change"],
             "strength": r["strength"],
+            "imbalance": r.get("imbalance"),
         })
     return out
+
+
+def _attach_moving_averages(bars: List[Dict[str, Any]]) -> None:
+    """종가 롤링 이동평균(MA5/20/60)을 각 bar 에 증분 계산해 붙인다(제자리 수정).
+
+    전체 재계산 금지 — 각 윈도우당 running sum 을 유지해 O(n) 으로 채운다. 윈도우가
+    아직 안 찼으면(예: 4번째 bar 의 MA5) None 으로 둔다(부분 평균은 오해 소지).
+    """
+    if not bars:
+        return
+    sums = {w: 0.0 for w in _MA_WINDOWS}
+    closes: List[float] = []
+    for i, bar in enumerate(bars):
+        c = _safe_float(bar.get("c"))
+        closes.append(c)
+        for w in _MA_WINDOWS:
+            sums[w] += c
+            if i >= w:
+                sums[w] -= closes[i - w]
+            key = f"ma{w}"
+            bar[key] = (sums[w] / w) if (i + 1) >= w else None
 
 
 class ReplayData:
@@ -354,6 +400,7 @@ def load_replay(
             bars = _aggregate_tick(rows, agg_sec) if src == "tick" else _min_bars(rows)
             if not bars:
                 continue
+            _attach_moving_averages(bars)
             valid_codes.append(code)
             per_code[code] = {b["hms"]: b for b in bars}
     finally:
@@ -375,6 +422,8 @@ def load_replay(
                 "code": code,
                 "o": bar["o"], "h": bar["h"], "l": bar["l"], "c": bar["c"],
                 "vol": bar["vol"], "change": bar["change"], "strength": bar["strength"],
+                "ma5": bar.get("ma5"), "ma20": bar.get("ma20"), "ma60": bar.get("ma60"),
+                "imbalance": bar.get("imbalance"),
             })
         if items:
             frames.append({"t": t, "items": items})

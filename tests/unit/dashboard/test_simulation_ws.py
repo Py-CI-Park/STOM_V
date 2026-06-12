@@ -91,6 +91,26 @@ class TestWsReplaySession:
             assert bars == 4
             assert done
 
+    def test_bars_carry_indicator_fields(self, ws_client):
+        """bars 프레임 item 에 서버 계산 지표(ma5/ma20/ma60·imbalance) 키가 실린다."""
+        with ws_client.websocket_connect("/sim/ws") as ws:
+            ws.send_json({"action": "start", "date": 20250102, "src": "min",
+                          "codes": ["005930"], "speed": 60, "agg_sec": 10})
+            assert ws.receive_json()["type"] == "meta"
+            seen = None
+            for _ in range(50):
+                m = ws.receive_json()
+                if m["type"] == "bars":
+                    seen = m["items"][0]
+                    break
+                if m["type"] == "done":
+                    break
+            assert seen is not None
+            for key in ("ma5", "ma20", "ma60", "imbalance"):
+                assert key in seen
+            # 합성 min DB(총잔량 컬럼 없음) → imbalance 는 None.
+            assert seen["imbalance"] is None
+
     def test_error_on_missing_codes(self, ws_client):
         with ws_client.websocket_connect("/sim/ws") as ws:
             ws.send_json({"action": "start", "date": 20250102, "src": "min", "codes": []})
