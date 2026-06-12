@@ -37,6 +37,8 @@ from ai_strategy_loop.tmap.template import (  # noqa: E402
 
 _PROMPTS_DIR = REPO_ROOT / "ai_strategy_loop" / "brain" / "prompts"
 _P5_ASSET = _PROMPTS_DIR / "p5_template_hypothesis.md"
+# 누적 기각 이력·교훈 컨텍스트(2026-06-12) — 존재하면 프롬프트에 자동 주입.
+_LESSONS_PATH = REPO_ROOT / ".omo/evidence/tmap-walkforward/llm_context_failure_lessons.md"
 
 # =====================================================================
 # 순수 함수: registry_summary
@@ -68,12 +70,15 @@ def registry_summary() -> str:
 # 순수 함수: build_prompt
 # =====================================================================
 
-def build_prompt(principles_text: str, registry_summary_text: str) -> str:
+def build_prompt(principles_text: str, registry_summary_text: str,
+                 lessons_text: str = "") -> str:
     """P5 프롬프트 자산에 컨텍스트(기존 템플릿 이름·축 요약, 실패 교훈)를 결합.
 
     Args:
         principles_text: 원리 설명 텍스트 (P5 자산의 {principle_text} 자리).
         registry_summary_text: registry_summary()의 반환값.
+        lessons_text: 누적 실패 교훈 문서 본문(있으면 컨텍스트에 추가 —
+            기각된 8계열의 응답곡선 교훈을 주입해 같은 벽에 부딪히지 않게 한다).
 
     Returns:
         LLM에 전달할 완성된 사용자 프롬프트 문자열.
@@ -94,6 +99,8 @@ def build_prompt(principles_text: str, registry_summary_text: str) -> str:
         "임계 이식 금지·구조 차용: 숫자(임계값)를 그대로 복사하면 5/5 음수."
         " 구조(조건 골격)를 가져오되 모든 숫자는 슬롯으로 비워라."
     )
+    if lessons_text:
+        context_block += "\n\n[누적 기각 이력과 교훈 — 같은 가설 재제출 금지]\n" + lessons_text
 
     return filled_system + "\n\n" + context_block
 
@@ -121,6 +128,8 @@ def validate_hypothesis(payload: Dict[str, Any]) -> List[str]:
         3. params 각 항목에 name, default, values, side, note 필요.
         4. 기본값 렌더 + 각 축 별 전 후보값 렌더를 validate_rendered로 검증
            (build_f07_template.py와 같은 깔때기).
+        5. timeframe(선택, 기본 "tick")은 "tick"|"min"만 허용 — min이면
+           분당 변수 스코프로 검증된다(2026-06-12: min 15:19 세션 지원).
 
     Returns:
         오류 문자열 목록. 빈 리스트 = 통과.
@@ -138,6 +147,10 @@ def validate_hypothesis(payload: Dict[str, Any]) -> List[str]:
     buy_tmpl: str = payload["buy_template"]
     sell_tmpl: str = payload["sell_template"]
     params: List[Dict[str, Any]] = payload["params"]
+    timeframe = payload.get("timeframe", "tick")
+    if timeframe not in ("tick", "min"):
+        errors.append(f"timeframe '{timeframe}' 불허 — 'tick'|'min'만 허용")
+        return errors
 
     # 2) llmgen_ 접두 검사
     if not name.startswith("llmgen_"):
@@ -168,7 +181,7 @@ def validate_hypothesis(payload: Dict[str, Any]) -> List[str]:
         errors.append(f"기본값 렌더 실패: {exc}")
         return errors
 
-    render_errors = validate_rendered(buy_rendered, sell_rendered, "tick")
+    render_errors = validate_rendered(buy_rendered, sell_rendered, timeframe)
     for e in render_errors:
         errors.append(f"기본값 렌더 가드: {e}")
 
@@ -182,7 +195,7 @@ def validate_hypothesis(payload: Dict[str, Any]) -> List[str]:
             except (KeyError, ValueError) as exc:
                 errors.append(f"{p['name']}={v} 렌더 실패: {exc}")
                 continue
-            for e in validate_rendered(b, s, "tick"):
+            for e in validate_rendered(b, s, timeframe):
                 errors.append(f"{p['name']}={v} 가드: {e}")
 
     return errors
@@ -258,7 +271,10 @@ def main(
             return 1
 
     reg_summary = registry_summary()
-    prompt_text = build_prompt(args.principles, reg_summary)
+    lessons = ""
+    if _LESSONS_PATH.is_file():
+        lessons = _LESSONS_PATH.read_text(encoding="utf-8")
+    prompt_text = build_prompt(args.principles, reg_summary, lessons_text=lessons)
 
     last_errors: List[str] = []
     payload: Optional[Dict[str, Any]] = None
@@ -319,7 +335,7 @@ def main(
     out_path = TEMPLATE_DIR / f"{name}.json"
     spec = {
         "name": name,
-        "timeframe": "tick",
+        "timeframe": payload.get("timeframe", "tick"),
         "source": "P5 LLM 가설 생성 (gen_template_hypothesis)",
         "description": payload.get("niche_claim", ""),
         "buy_code": payload["buy_template"],

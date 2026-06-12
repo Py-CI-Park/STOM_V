@@ -1,0 +1,22 @@
+{
+  "_comment": "min 스모크 선별 창 (프로토콜 §3, go/no-go -50만) — 재정의: train 내부",
+  "provider": "gpt_auth",
+  "bt_engine_mode": "warm",
+  "bt_timeframe": "min",
+  "full_session_enabled": true,
+  "bt_min_universe_end_time": 151900,
+  "bt_universe_start_time": 90000,
+  "bt_warm_engine_count": 16,
+  "bt_betting": "5",
+  "bt_avg_time": 30,
+  "min_daily_trades": 0.3,
+  "mdd_cap": 35,
+  "winner_objective": "uptrend",
+  "autopsy_enabled": false,
+  "bt_full_start": 20250501,
+  "bt_full_end": 20250531,
+  "max_generations": 1,
+  "bt_timeout": 7200,
+  "bt_warm_run_timeout": 1200,
+  "equity_points_enabled": true
+}
