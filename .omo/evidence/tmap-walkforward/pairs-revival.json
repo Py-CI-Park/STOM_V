@@ -10,9 +10,19 @@
     "sell": "THETA_seed_902905_06_S"
   },
   {
+    "label": "REVIVAL C7 SEEDPLUS",
+    "buy": "CLDGEN_0610_C7_SEEDPLUS_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
     "label": "REVIVAL EXIT2C take9",
     "buy": "EXIT2C_02_B",
     "sell": "EXIT2C_02_S"
+  },
+  {
+    "label": "REVIVAL PA-NICHE g9",
+    "buy": "AILOOP_run_1779754848_g12_buy",
+    "sell": "AILOOP_run_1779754848_g12_sell"
   },
   {
     "label": "REVIVAL EXIT2NA take6",

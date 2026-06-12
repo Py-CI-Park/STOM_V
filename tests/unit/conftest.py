@@ -17,3 +17,10 @@ def _isolate_live_state(monkeypatch, tmp_path):
 
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
+
+    # 2026-06-12 추가: 발굴 이력 DB 오염 차단 — phase4/discovery 테스트들이
+    # 실제 _database/backtest_history.db에 TestBuy/A·B 행을 쓰던 실사고
+    # (discovery_runs 619~623 실측, gen_02와 동일 패턴)의 근본 수정.
+    import cli.history as H
+
+    monkeypatch.setattr(H, "DEFAULT_DB_PATH", str(tmp_path / "backtest_history.db"))
