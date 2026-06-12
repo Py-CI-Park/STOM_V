@@ -325,6 +325,8 @@ function SimCandleChartLWC({ bars, signals, curT, code, name, compact, indicator
       rightPriceScale: { borderColor: "rgba(255,255,255,0.1)" },
       timeScale: {
         borderColor: "rgba(255,255,255,0.1)",
+        // 봉 수가 적은 리플레이 초반의 우측 압착/과확대 방지 — 고정 기본 간격.
+        rightOffset: 4, barSpacing: 7, minBarSpacing: 2,
         timeVisible: true, secondsVisible: !compact,
         tickMarkFormatter: (t) => {
           const sec = ((t % 86400) + 86400) % 86400;
@@ -805,8 +807,9 @@ function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engi
       </div>
       <div className="panel-bd">
         {children}
-        <SimQuotePressure lastBar={lastBar} compact={compact} />
+        <SimOrderBook lastBar={lastBar} compact={compact} />
         <SimOrderFlowTape bars={bars} compact={compact} />
+        <SimFootprint bars={bars} compact={compact} />
         <SimHeatStrip bars={bars} compact={compact} />
         <SimRestFlow bars={bars} compact={compact} />
       </div>
@@ -818,45 +821,6 @@ function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engi
 function SimCandleChart(props) {
   const useLwc = useMemo_simc(() => _lwcAvailable(), []);
   return useLwc ? <SimCandleChartLWC {...props} /> : <SimCandleChartSVG {...props} />;
-}
-
-/* ─────────────── 라이브 호가 압력 바 (Part: 오더플로우) ───────────────
-   매수총잔량 vs 매도총잔량 비율을 좌우 분할 막대로(매수 teal / 매도 red), 중앙에
-   현재가·매수호가1(bid1)·매도호가1(ask1) 라벨. 잔량 데이터 전무면 패널 숨김(무예외). */
-function SimQuotePressure({ lastBar, compact }) {
-  if (!lastBar) return null;
-  const buyRest = (lastBar.buy_rest != null && isFinite(lastBar.buy_rest)) ? lastBar.buy_rest : null;
-  const sellRest = (lastBar.sell_rest != null && isFinite(lastBar.sell_rest)) ? lastBar.sell_rest : null;
-  if (buyRest == null && sellRest == null) return null;
-
-  const b = buyRest || 0, s = sellRest || 0;
-  const tot = b + s;
-  const buyPct = tot > 0 ? (b / tot) * 100 : 50;
-  const sellPct = 100 - buyPct;
-  const bid1 = (lastBar.bid1 != null && isFinite(lastBar.bid1)) ? lastBar.bid1 : null;
-  const ask1 = (lastBar.ask1 != null && isFinite(lastBar.ask1)) ? lastBar.ask1 : null;
-
-  return (
-    <div style={{ marginTop: 6 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
-        <span className="mono" style={{ fontSize: 9.5, color: "var(--teal)" }}>
-          매수 {_simPriceTick(b)} {bid1 != null ? "· 호가 " + _simPriceTick(bid1) : ""}
-        </span>
-        <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-2)" }}>
-          호가 압력 {buyPct.toFixed(0)}:{sellPct.toFixed(0)}
-        </span>
-        <span className="mono" style={{ fontSize: 9.5, color: "var(--red)" }}>
-          {ask1 != null ? "호가 " + _simPriceTick(ask1) + " · " : ""}매도 {_simPriceTick(s)}
-        </span>
-      </div>
-      <div style={{ display: "flex", height: compact ? 10 : 13, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" }}>
-        <div title={"매수총잔량 " + _simPriceTick(b)}
-             style={{ width: buyPct + "%", background: "rgba(76,214,179,0.55)", transition: "width 0.2s ease-out" }} />
-        <div title={"매도총잔량 " + _simPriceTick(s)}
-             style={{ width: sellPct + "%", background: "rgba(255,93,108,0.5)", transition: "width 0.2s ease-out" }} />
-      </div>
-    </div>
-  );
 }
 
 /* ─────────────── 오더플로우 테이프 (Part: 오더플로우) ───────────────
@@ -891,6 +855,230 @@ function SimOrderFlowTape({ bars, compact }) {
                  style={{ flex: 1, background: bg }} />
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── footprint 오더플로우 (S3) ───────────────
+   가격 레벨별 매수/매도 체결량을 누적해 footprint 차트처럼 그린다(가격 사다리 행).
+   각 행: [매도체결량 막대 | 가격 | 매수체결량 막대] + 델타. 현재가 행 강조, 강도 히트 색.
+
+   체결량 분리(매수 vs 매도) — 데이터 출처 정직성:
+     • net_qty(=초/분당매수수량−매도수량) 가 있으면 **실데이터 정확 분리**:
+         buy = (vol + net_qty)/2,  sell = (vol − net_qty)/2   (분당매수/매도수량 복원).
+     • net_qty 가 없으면(구버전 DB) 체결강도 휴리스틱으로 근사:
+         강도>100 → 매수 우세, <100 → 매도 우세. share = clamp(strength/200, 0..1).
+       이 경우는 근사임을 행 상단 배지로 명시한다(허위 정밀 회피).
+   가격 버킷: bar 종가를 틱 크기로 내림 정렬(추정 틱 = 가격대별 한국거래소 호가단위 근사). */
+function _hoga_tick(price) {
+  // 한국거래소 호가단위 근사(2023 개편 기준 단순화). 정확값 아님 — footprint 버킷팅용.
+  const p = Math.abs(Number(price) || 0);
+  if (p < 2000) return 1;
+  if (p < 5000) return 5;
+  if (p < 20000) return 10;
+  if (p < 50000) return 50;
+  if (p < 200000) return 100;
+  if (p < 500000) return 500;
+  return 1000;
+}
+
+function _bucketPrice(price, tick) {
+  const t = tick || 1;
+  return Math.round(Math.floor((Number(price) || 0) / t) * t);
+}
+
+// bar 한 개의 (buy, sell) 체결량 추정. real=net_qty 사용 여부.
+function _barBuySell(bar) {
+  const vol = (bar.vol != null && isFinite(bar.vol)) ? bar.vol : 0;
+  const nq = bar.net_qty;
+  if (nq != null && isFinite(nq)) {
+    const buy = (vol + nq) / 2;
+    const sell = (vol - nq) / 2;
+    return { buy: Math.max(0, buy), sell: Math.max(0, sell), real: true };
+  }
+  // 휴리스틱 — 체결강도로 매수 점유율 근사(100=균형).
+  const s = (bar.strength != null && isFinite(bar.strength)) ? bar.strength : 100;
+  const buyShare = Math.max(0, Math.min(1, s / 200));
+  return { buy: vol * buyShare, sell: vol * (1 - buyShare), real: false };
+}
+
+function SimFootprint({ bars, compact }) {
+  const [open, setOpen] = useState_simc(false);
+
+  // 가격 레벨별 누적 매수/매도 체결량 집계(최근 윈도우). real 플래그도 추적.
+  const agg = useMemo_simc(() => {
+    const arr = bars || [];
+    const view = arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+    if (view.length === 0) return { levels: [], real: true, curPrice: null, hasVol: false };
+    const last = view[view.length - 1];
+    const tick = _hoga_tick(last.c);
+    const map = new Map();     // bucketPrice → {buy, sell}
+    let real = true;
+    let hasVol = false;
+    for (let i = 0; i < view.length; i++) {
+      const b = view[i];
+      const bs = _barBuySell(b);
+      if (!bs.real) real = false;
+      if ((bs.buy + bs.sell) > 0) hasVol = true;
+      const key = _bucketPrice(b.c, tick);
+      const cur = map.get(key) || { buy: 0, sell: 0 };
+      cur.buy += bs.buy; cur.sell += bs.sell;
+      map.set(key, cur);
+    }
+    // 가격 내림차순(높은 가격이 위).
+    const levels = Array.from(map.entries())
+      .map(([price, v]) => ({ price, buy: v.buy, sell: v.sell, delta: v.buy - v.sell }))
+      .sort((a, b) => b.price - a.price);
+    return { levels, real, curPrice: _bucketPrice(last.c, tick), hasVol };
+  }, [bars]);
+
+  if (!agg.hasVol) return null;   // 체결량 데이터 전무 → 숨김(무예외).
+
+  const maxSide = Math.max(1, ...agg.levels.map(l => Math.max(l.buy, l.sell)));
+  const rowH = compact ? 14 : 17;
+  const barW = compact ? 80 : 110;
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      <button onClick={() => setOpen(o => !o)} className="mono"
+        style={{
+          display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "4px 8px",
+          background: "transparent", border: "1px solid var(--line-1)", borderRadius: 5,
+          color: "var(--ink-2)", cursor: "pointer", fontSize: 10,
+        }}>
+        <span style={{ color: "var(--ink-3)" }}>{open ? "▼" : "▶"}</span>
+        오더플로우 footprint
+        <span style={{ marginLeft: "auto", color: agg.real ? "var(--teal)" : "var(--amber)" }}>
+          {agg.real ? "실데이터" : "강도 근사"}
+        </span>
+      </button>
+      {open && (
+        <div style={{ marginTop: 4, display: "flex", flexDirection: "column", gap: 1 }}>
+          {/* 헤더 */}
+          <div className="mono" style={{ display: "flex", alignItems: "center", fontSize: 8.5, color: "var(--ink-3)", padding: "0 2px" }}>
+            <span style={{ width: barW, textAlign: "left", color: "var(--red)" }}>매도체결</span>
+            <span style={{ flex: 1, textAlign: "center" }}>가격</span>
+            <span style={{ width: barW, textAlign: "right", color: "var(--teal)" }}>매수체결</span>
+            <span style={{ width: compact ? 44 : 56, textAlign: "right" }}>델타</span>
+          </div>
+          {agg.levels.map(lv => {
+            const isCur = lv.price === agg.curPrice;
+            const sellW = (lv.sell / maxSide) * barW;
+            const buyW = (lv.buy / maxSide) * barW;
+            const sellInt = Math.min(1, lv.sell / maxSide);
+            const buyInt = Math.min(1, lv.buy / maxSide);
+            return (
+              <div key={lv.price} className="mono"
+                   style={{
+                     display: "flex", alignItems: "center", height: rowH, fontSize: 9.5,
+                     background: isCur ? "rgba(255,210,76,0.10)" : "transparent",
+                     borderRadius: 3,
+                     boxShadow: isCur ? "0 0 0 1px rgba(255,210,76,0.4) inset" : "none",
+                   }}>
+                {/* 매도 체결 막대(우측 정렬 — 가격 쪽으로 자람) */}
+                <div style={{ width: barW, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 4 }}>
+                  <span style={{ color: "var(--ink-3)", fontSize: 8.5 }}>
+                    {lv.sell >= 1 ? _simPriceTick(lv.sell) : ""}
+                  </span>
+                  <div style={{ width: sellW, height: rowH - 5, background: `rgba(255,93,108,${(0.25 + sellInt * 0.6).toFixed(3)})`, borderRadius: 2 }} />
+                </div>
+                {/* 가격 */}
+                <span style={{ flex: 1, textAlign: "center", color: isCur ? "var(--amber)" : "var(--ink-1)", fontWeight: isCur ? 600 : 400 }}>
+                  {_simPriceTick(lv.price)}
+                </span>
+                {/* 매수 체결 막대(좌측 정렬 — 가격 쪽에서 자람) */}
+                <div style={{ width: barW, display: "flex", justifyContent: "flex-start", alignItems: "center", gap: 4 }}>
+                  <div style={{ width: buyW, height: rowH - 5, background: `rgba(76,214,179,${(0.25 + buyInt * 0.6).toFixed(3)})`, borderRadius: 2 }} />
+                  <span style={{ color: "var(--ink-3)", fontSize: 8.5 }}>
+                    {lv.buy >= 1 ? _simPriceTick(lv.buy) : ""}
+                  </span>
+                </div>
+                {/* 델타 */}
+                <span style={{ width: compact ? 44 : 56, textAlign: "right", color: lv.delta >= 0 ? "var(--teal)" : "var(--red)" }}>
+                  {lv.delta >= 0 ? "+" : ""}{_simPriceTick(lv.delta)}
+                </span>
+              </div>
+            );
+          })}
+          {!agg.real && (
+            <div style={{ fontSize: 8.5, color: "var(--ink-3)", marginTop: 3, lineHeight: 1.4 }}>
+              순매수수량(net_qty) 부재로 체결강도 기반 근사 분리다(실 매수/매도 체결량 아님).
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────── HTS형 호가창 (S5) ───────────────
+   실제 거래화면 호가창처럼 현재가 중심 수직 사다리. 매도 호가(위·파랑 톤·HTS 관행)·
+   매수 호가(아래·빨강 톤)·레벨별 가로 잔량 막대·총매도/총매수 잔량 footer·체결강도 배지.
+
+   가용 실데이터 한계 정직 표기: 일일 DB 는 최우선호가(bid1/ask1)와 총잔량(buy_rest/
+   sell_rest)만 제공한다(레벨 2~10 호가 없음). 따라서 레벨1 + 총잔량을 크게 보여주고
+   "레벨1 호가 + 총잔량" 임을 명시한다(허위 다단 호가 생성 금지). */
+function SimOrderBook({ lastBar, compact }) {
+  if (!lastBar) return null;
+  const bid1 = (lastBar.bid1 != null && isFinite(lastBar.bid1)) ? lastBar.bid1 : null;
+  const ask1 = (lastBar.ask1 != null && isFinite(lastBar.ask1)) ? lastBar.ask1 : null;
+  const buyRest = (lastBar.buy_rest != null && isFinite(lastBar.buy_rest)) ? lastBar.buy_rest : null;
+  const sellRest = (lastBar.sell_rest != null && isFinite(lastBar.sell_rest)) ? lastBar.sell_rest : null;
+  // 호가도 잔량도 전무하면 숨김(무예외).
+  if (bid1 == null && ask1 == null && buyRest == null && sellRest == null) return null;
+
+  const cur = (lastBar.c != null && isFinite(lastBar.c)) ? lastBar.c : null;
+  const strength = (lastBar.strength != null && isFinite(lastBar.strength)) ? lastBar.strength : null;
+  const maxRest = Math.max(1, buyRest || 0, sellRest || 0);
+  const askW = sellRest != null ? (sellRest / maxRest) * 100 : 0;
+  const bidW = buyRest != null ? (buyRest / maxRest) * 100 : 0;
+  // 체결강도 색(100=균형). >100 매수 우세(teal), <100 매도 우세(red).
+  const stColor = strength == null ? "var(--ink-2)" : strength >= 100 ? "var(--teal)" : "var(--red)";
+  const rowH = compact ? 20 : 24;
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+        <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)" }}>호가창 (레벨1 + 총잔량)</span>
+        {strength != null && (
+          <span className="mono" style={{ fontSize: 9.5, color: stColor, padding: "1px 6px", borderRadius: 3, border: "1px solid " + (strength >= 100 ? "var(--teal-dim)" : "var(--line-1)") }}>
+            체결강도 {strength.toFixed(0)}
+          </span>
+        )}
+      </div>
+      {/* 매도호가1(위, HTS 파랑 톤) */}
+      <div style={{ display: "flex", alignItems: "center", height: rowH, background: "rgba(56,140,255,0.06)", borderRadius: 3, marginBottom: 1 }}>
+        <span className="mono" style={{ width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#5aa0ff", paddingRight: 8 }}>
+          {ask1 != null ? _simPriceTick(ask1) : "—"}
+        </span>
+        <div style={{ flex: 1, height: rowH - 8, position: "relative", display: "flex", justifyContent: "flex-start" }}>
+          <div style={{ width: askW + "%", height: "100%", background: "rgba(56,140,255,0.30)", borderRadius: 2, transition: "width 0.2s ease-out" }} />
+        </div>
+        <span className="mono" style={{ width: compact ? 60 : 74, textAlign: "right", fontSize: 9.5, color: "#5aa0ff", paddingRight: 4 }}>
+          {sellRest != null ? _simPriceTick(sellRest) : "—"}
+        </span>
+      </div>
+      {/* 현재가 구분선 */}
+      <div className="mono" style={{ textAlign: "center", fontSize: 11, color: "var(--amber)", padding: "2px 0", letterSpacing: ".04em" }}>
+        ▸ {cur != null ? _simPriceTick(cur) : "—"} ◂
+      </div>
+      {/* 매수호가1(아래, HTS 빨강 톤) */}
+      <div style={{ display: "flex", alignItems: "center", height: rowH, background: "rgba(255,93,108,0.06)", borderRadius: 3, marginTop: 1 }}>
+        <span className="mono" style={{ width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#ff8088", paddingRight: 8 }}>
+          {bid1 != null ? _simPriceTick(bid1) : "—"}
+        </span>
+        <div style={{ flex: 1, height: rowH - 8, display: "flex", justifyContent: "flex-start" }}>
+          <div style={{ width: bidW + "%", height: "100%", background: "rgba(255,93,108,0.28)", borderRadius: 2, transition: "width 0.2s ease-out" }} />
+        </div>
+        <span className="mono" style={{ width: compact ? 60 : 74, textAlign: "right", fontSize: 9.5, color: "#ff8088", paddingRight: 4 }}>
+          {buyRest != null ? _simPriceTick(buyRest) : "—"}
+        </span>
+      </div>
+      {/* footer — 총매도/총매수 잔량 */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 9.5 }}>
+        <span className="mono" style={{ color: "#5aa0ff" }}>총매도 {sellRest != null ? _simPriceTick(sellRest) : "—"}</span>
+        <span className="mono" style={{ color: "#ff8088" }}>총매수 {buyRest != null ? _simPriceTick(buyRest) : "—"}</span>
       </div>
     </div>
   );
@@ -1046,9 +1234,10 @@ function SimSignalLog({ signals, curT }) {
 }
 
 Object.assign(window, {
-  SimCandleChart, SimHeatStrip, SimRestFlow, SimSignalLog,
+  SimCandleChart, SimCandleChartLWC, SimCandleChartSVG,
+  SimHeatStrip, SimRestFlow, SimSignalLog,
   SimChangeGauge, SimSessionRing,
-  SimQuotePressure, SimOrderFlowTape, SimOverlayChart,
+  SimOrderFlowTape, SimFootprint, SimOrderBook, SimOverlayChart,
   _simTimeLabel, _simPriceTick, _strengthColor, _sessionProgress, _changeColor,
   _SIM_DEFAULT_INDICATORS,
 });
