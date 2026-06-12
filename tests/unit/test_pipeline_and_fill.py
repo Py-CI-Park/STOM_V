@@ -23,6 +23,7 @@ from ai_strategy_loop.fitness.fill_feasibility import fill_fragility  # noqa: E4
 from ai_strategy_loop.scripts.research_pipeline import (  # noqa: E402
     STAGES,
     build_stage_command,
+    build_stages,
     pending_stages,
 )
 
@@ -67,6 +68,51 @@ class TestPipelineCheckpoint:
         assert any("select_and_freeze.py" in str(c) for c in freeze)
         assert any("--trial-runs=p1_sweep" in str(c) for c in freeze)  # N5 연동.
         assert build_stage_command("oos2026", **kw) is None  # oos2022가 함께 처리.
+
+    def test_no_wf_windows_gives_8_stages(self) -> None:
+        """V4 — --wf-windows 없을 때 기존 8단계 불변(하위 호환)."""
+        assert build_stages("") == list(STAGES)
+        assert len(build_stages("")) == 8
+        # pending_stages도 8단계만 반환.
+        assert pending_stages({}) == list(STAGES)
+        assert "walkforward" not in pending_stages({})
+
+    def test_wf_windows_gives_9_stages_walkforward_last(self) -> None:
+        """V4 — --wf-windows 주어지면 9단계·walkforward가 마지막."""
+        stages = build_stages("20230101-20231231:20240101-20240630")
+        assert len(stages) == 9
+        assert stages[-1] == "walkforward"
+        # pending_stages도 동일하게 9번째로 반환.
+        pending = pending_stages({}, wf_windows="20230101-20231231:20240101-20240630")
+        assert len(pending) == 9
+        assert pending[-1] == "walkforward"
+
+    def test_build_stage_command_walkforward(self) -> None:
+        """V4 — build_stage_command('walkforward') 명령 구성 검증."""
+        kw = {"template": "seed_902905", "config_json": "cfg.json", "prefix": "p1"}
+        wf_spec = "20230101-20231231:20240101-20240630"
+        cmd = build_stage_command("walkforward", **kw, params="cap_max",
+                                  wf_windows=wf_spec)
+        assert cmd is not None
+        assert "ai_strategy_loop.scripts.tmap_walkforward" in cmd
+        assert "--run-prefix" in cmd
+        assert any("p1_wf" in str(c) for c in cmd)  # run-prefix 전달.
+        assert "--windows" in cmd
+        assert wf_spec in cmd  # windows 값 전달.
+        assert "--params" in cmd and "cap_max" in cmd  # params 전달.
+        assert "--out" in cmd
+        assert any("p1_wf_aggregate.json" in str(c) for c in cmd)
+
+    def test_from_stage_walkforward_forces_rerun(self) -> None:
+        """V4 — --from-stage walkforward 강제 재실행: done 상태여도 재포함."""
+        wf_spec = "20230101-20231231:20240101-20240630"
+        state = {s: "done" for s in STAGES} | {"walkforward": "done"}
+        pending = pending_stages(state, from_stage="walkforward",
+                                 wf_windows=wf_spec)
+        assert pending == ["walkforward"]
+        # wf_windows 없이 from_stage="walkforward"는 ValueError.
+        with pytest.raises(ValueError):
+            pending_stages(state, from_stage="walkforward", wf_windows="")
 
 
 class TestMorningReport:

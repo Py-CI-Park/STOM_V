@@ -4,6 +4,7 @@ import os
 import sys
 
 import numpy as np
+import pytest
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if PROJECT_ROOT not in sys.path:
@@ -16,6 +17,7 @@ from ai_strategy_loop.fitness.overfit_stats import (  # noqa: E402
     deflated_sharpe_ratio,
     effective_independent_count,
     expected_max_sharpe,
+    oos_diff_ci,
     pbo_cscv,
 )
 
@@ -179,3 +181,68 @@ def test_curve_shape_graceful_on_short_or_empty() -> None:
 
     assert curve_shape_metrics({}) is None
     assert curve_shape_metrics({f"2023010{i}": 1.0 for i in range(1, 6)}) is None
+
+
+# ---------------------------------------------------------------------------
+# C1-OOS (2026-06-12) — OOS 차이 블록 부트스트랩 신뢰구간
+# ---------------------------------------------------------------------------
+
+def _make_daily(start_idx: int, n: int, pnl: float) -> dict:
+    """20230101 기준 start_idx 오프셋부터 n일치 일별 손익 dict를 만든다."""
+    base = 20230101
+    result = {}
+    day = base
+    count = 0
+    while count < start_idx + n:
+        if count >= start_idx:
+            result[str(day)] = pnl
+        day += 1
+        count += 1
+    return result
+
+
+def test_oos_diff_ci_clear_advantage_ci_low_positive() -> None:
+    """후보가 매일 +100, 시드가 매일 0 → 차이 합계 = 3000, ci_low > 0 (30일)."""
+    candidate = {f"202301{i:02d}": 100.0 for i in range(1, 31)}
+    seed = {f"202301{i:02d}": 0.0 for i in range(1, 31)}
+    out = oos_diff_ci(candidate, seed, n_boot=2000, block=5, seed=42)
+    assert out is not None
+    assert out["total_diff"] == pytest.approx(3000.0, abs=1.0)
+    assert out["ci_low"] > 0
+    assert out["p_diff_le_0"] < 0.05
+    assert out["n_days"] == 30
+    assert out["n_boot"] == 2000
+    assert out["block"] == 5
+
+
+def test_oos_diff_ci_small_noisy_sample_ci_straddles_zero() -> None:
+    """6일, 부호 혼재: CI가 0을 걸쳐야 한다 (ci_low < 0 < ci_high)."""
+    candidate = {"20230101": 200.0, "20230102": -150.0, "20230103": 80.0,
+                 "20230104": -60.0, "20230105": 120.0, "20230106": -90.0}
+    seed = {"20230101": 0.0, "20230102": 0.0, "20230103": 0.0,
+            "20230104": 0.0, "20230105": 0.0, "20230106": 0.0}
+    out = oos_diff_ci(candidate, seed, n_boot=2000, block=5, seed=42)
+    assert out is not None
+    assert out["n_days"] == 6
+    assert out["ci_low"] < 0
+    assert out["ci_high"] > 0
+
+
+def test_oos_diff_ci_four_days_returns_none() -> None:
+    """4일 입력 → None (n_days < 5 조건)."""
+    candidate = {f"2023010{i}": 100.0 for i in range(1, 5)}
+    seed = {f"2023010{i}": 0.0 for i in range(1, 5)}
+    assert oos_diff_ci(candidate, seed) is None
+
+
+def test_oos_diff_ci_deterministic() -> None:
+    """같은 입력 두 번 호출 → 완전히 동일한 결과 (결정성 보장)."""
+    candidate = {f"202301{i:02d}": float(i * 10) for i in range(1, 21)}
+    seed = {f"202301{i:02d}": float(i * 3) for i in range(1, 21)}
+    out1 = oos_diff_ci(candidate, seed, n_boot=500, block=5, seed=42)
+    out2 = oos_diff_ci(candidate, seed, n_boot=500, block=5, seed=42)
+    assert out1 is not None and out2 is not None
+    assert out1["total_diff"] == out2["total_diff"]
+    assert out1["ci_low"] == out2["ci_low"]
+    assert out1["ci_high"] == out2["ci_high"]
+    assert out1["p_diff_le_0"] == out2["p_diff_le_0"]

@@ -10,11 +10,13 @@
   PYTHONUTF8=1 python -m ai_strategy_loop.scripts.research_pipeline \
       --template seed_902905 \
       --config-json .omo/evidence/claude-condition-research-20260610/train-config.json \
-      --prefix pipe_20260612 [--params cap_max,take_hard] [--from-stage freeze]
+      --prefix pipe_20260612 [--params cap_max,take_hard] [--from-stage freeze] \
+      [--wf-windows "20230101-20231231:20240101-20240630,..."]
 
-단계: sweep → theta_star → reeval → freeze(+V1 자동) → oos2022 → oos2026.
-슬리피지(V5)·플라시보(V2)·카드(V6)는 결과 해석이 필요해 의도적으로 수동 단계로
-남긴다(자동화는 측정까지 — 판단은 사람/에이전트).
+단계: sweep → theta_star → reeval → freeze(+V1 자동) → oos2022 → oos2026 →
+      placebo(V2) → slippage(V5) [→ walkforward(V4, --wf-windows 시)].
+카드(V6)만 의도적으로 수동으로 남긴다(자동화는 측정까지 — 판단은 사람).
+V4 walk-forward는 표본 164건급 일반화 증거 — 9건 고정 OOS의 거짓 기각 보완.
 """
 from __future__ import annotations
 
@@ -33,17 +35,30 @@ EVID_TMAP = REPO_ROOT / ".omo/evidence/tmap-walkforward"
 STAGES = ["sweep", "theta_star", "reeval", "freeze", "oos2022", "oos2026",
           "placebo", "slippage"]  # P-B(2026-06-12): V2·V5 자동화 — 카드 입력 완성.
 
+WF_STAGE = "walkforward"  # V4 선택적 9번째 단계(--wf-windows 시 활성화).
 
-def pending_stages(state: Dict[str, str], from_stage: str = "") -> List[str]:
+
+def build_stages(wf_windows: str = "") -> List[str]:
+    """실행 단계 목록 생성. wf_windows가 비어 있지 않으면 walkforward 추가.
+
+    순수 함수 — 테스트 대상. STAGES 상수는 불변 유지.
+    """
+    return STAGES + [WF_STAGE] if wf_windows else list(STAGES)
+
+
+def pending_stages(state: Dict[str, str], from_stage: str = "",
+                   wf_windows: str = "") -> List[str]:
     """완료(done) 단계를 스킵한 실행 목록. from_stage부터는 강제 재실행.
 
-    순수 함수 — 테스트 대상. from_stage가 STAGES에 없으면 ValueError.
+    순수 함수 — 테스트 대상. from_stage가 stages에 없으면 ValueError.
+    wf_windows가 주어지면 walkforward 단계가 목록 마지막에 포함된다.
     """
-    if from_stage and from_stage not in STAGES:
-        raise ValueError(f"unknown stage: {from_stage} (choices: {STAGES})")
-    start = STAGES.index(from_stage) if from_stage else None
+    stages = build_stages(wf_windows)
+    if from_stage and from_stage not in stages:
+        raise ValueError(f"unknown stage: {from_stage} (choices: {stages})")
+    start = stages.index(from_stage) if from_stage else None
     out = []
-    for i, stage in enumerate(STAGES):
+    for i, stage in enumerate(stages):
         if start is not None and i >= start:
             out.append(stage)  # 강제 재실행 구간.
         elif state.get(stage) != "done":
@@ -52,7 +67,8 @@ def pending_stages(state: Dict[str, str], from_stage: str = "") -> List[str]:
 
 
 def build_stage_command(
-    stage: str, *, template: str, config_json: str, prefix: str, params: str = ""
+    stage: str, *, template: str, config_json: str, prefix: str,
+    params: str = "", wf_windows: str = "",
 ) -> Optional[List[str]]:
     """단계별 서브프로세스 명령(순수 함수 — 테스트 대상). 미지원 단계는 None."""
     py = sys.executable
@@ -80,6 +96,16 @@ def build_stage_command(
         return [py, str(EVID_RESEARCH / "gen_oos_configs.py")]
     if stage == "oos2026":
         return None  # oos2022 단계에서 두 해 배치를 함께 실행한다(아래 run_stage).
+    if stage == WF_STAGE:
+        # V4 walk-forward: 표본 164건급 일반화 증거 — 9건 고정 OOS의 거짓 기각 보완.
+        cmd = [py, "-m", "ai_strategy_loop.scripts.tmap_walkforward",
+               "--template", template, "--config-json", config_json,
+               "--run-prefix", f"{prefix}_wf",
+               "--windows", wf_windows,
+               "--out", str(EVID_TMAP / f"{prefix}_wf_aggregate.json")]
+        if params:
+            cmd += ["--params", params]
+        return cmd
     return None
 
 
@@ -191,7 +217,7 @@ def _run_slippage_stage(prefix: str, workdir: Path) -> int:
 
 
 def run_stage(stage: str, *, template: str, config_json: str, prefix: str,
-              params: str = "") -> int:
+              params: str = "", wf_windows: str = "") -> int:
     """단계 실행. oos는 config 1회+연도 배치, placebo/slippage는 P-B 자동화."""
     workdir = REPO_ROOT / ".omo/evidence/pipeline" / prefix
     workdir.mkdir(parents=True, exist_ok=True)
@@ -212,7 +238,7 @@ def run_stage(stage: str, *, template: str, config_json: str, prefix: str,
                      "--config-json", str(EVID_RESEARCH / f"oos-{year}-config.json"),
                      "--run-id", f"{prefix}_oos_{year}"])
     cmd = build_stage_command(stage, template=template, config_json=config_json,
-                              prefix=prefix, params=params)
+                              prefix=prefix, params=params, wf_windows=wf_windows)
     if cmd is None:
         return 0
     return _run(cmd)
@@ -225,6 +251,9 @@ def main() -> int:
     ap.add_argument("--prefix", required=True)
     ap.add_argument("--params", default="")
     ap.add_argument("--from-stage", default="")
+    ap.add_argument("--wf-windows", default="",
+                    help="walk-forward 창 명세(비어 있으면 기존 8단계 유지). "
+                         "형식: 'fitStart-fitEnd:evalStart-evalEnd,...'")
     args = ap.parse_args()
 
     state_dir = REPO_ROOT / ".omo/evidence/pipeline" / args.prefix
@@ -234,14 +263,16 @@ def main() -> int:
         json.loads(state_path.read_text(encoding="utf-8")) if state_path.is_file() else {}
     )
 
-    todo = pending_stages(state, args.from_stage)
-    skipped = [s for s in STAGES if s not in todo]
+    stages = build_stages(args.wf_windows)
+    todo = pending_stages(state, args.from_stage, wf_windows=args.wf_windows)
+    skipped = [s for s in stages if s not in todo]
     if skipped:
         print(f"[PIPE] skip(완료): {skipped}", flush=True)
     for stage in todo:
         t0 = time.time()
         rc = run_stage(stage, template=args.template, config_json=args.config_json,
-                       prefix=args.prefix, params=args.params)
+                       prefix=args.prefix, params=args.params,
+                       wf_windows=args.wf_windows)
         state[stage] = "done" if rc == 0 else f"failed rc={rc}"
         state_path.write_text(json.dumps(state, ensure_ascii=False, indent=2),
                               encoding="utf-8")
