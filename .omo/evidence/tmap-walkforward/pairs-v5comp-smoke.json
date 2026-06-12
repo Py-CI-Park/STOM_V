@@ -1,0 +1,12 @@
+[
+  {
+    "label": "V5COMP default",
+    "buy": "SMOKE_V5COMP_B",
+    "sell": "SMOKE_V5COMP_S"
+  },
+  {
+    "label": "BASE_SEED",
+    "buy": "Tick_B_902_905_Update_2",
+    "sell": "Tick_S_902_905_Update_2"
+  }
+]
