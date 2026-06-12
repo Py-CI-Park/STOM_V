@@ -223,16 +223,92 @@ class TestWsReplaySession:
             m = ws.receive_json()
             assert m["type"] == "error"
 
-    def test_concurrent_session_rejected(self, ws_client):
-        # 첫 연결이 게이트를 점유하면(start 로 세션 활성), 두 번째 연결은 정중히 거절.
-        with ws_client.websocket_connect("/sim/ws") as ws1:
-            ws1.send_json({"action": "start", "date": 20250102, "src": "min",
-                           "codes": ["005930"], "speed": 1})
-            assert ws1.receive_json()["type"] == "meta"  # 첫 세션 활성 확정.
-            with ws_client.websocket_connect("/sim/ws") as ws2:
-                m = ws2.receive_json()
+    def test_two_concurrent_sessions_stream_in_parallel(self, ws_client):
+        """동시 2세션이 각자 meta→bars 를 독립 수신한다(상호 간섭 없음)."""
+        with ws_client.websocket_connect("/sim/ws") as ws1, \
+                ws_client.websocket_connect("/sim/ws") as ws2:
+            for ws in (ws1, ws2):
+                ws.send_json({"action": "start", "date": 20250102, "src": "min",
+                              "codes": ["005930"], "speed": 60, "agg_sec": 10})
+            assert ws1.receive_json()["type"] == "meta"
+            assert ws2.receive_json()["type"] == "meta"
+            # 두 세션 각각에서 bars/done 을 받을 때까지 수신(상호 독립).
+            for ws in (ws1, ws2):
+                bars = 0
+                done = False
+                for _ in range(50):
+                    m = ws.receive_json()
+                    if m["type"] == "bars":
+                        bars += 1
+                        assert m["items"][0]["code"] == "005930"
+                    elif m["type"] == "done":
+                        done = True
+                        break
+                assert bars == 4
+                assert done
+
+    def test_over_limit_session_rejected(self, ws_client):
+        """상한(_MAX_SESSIONS)까지 허용하고, 그 다음 연결만 정중히 거절한다."""
+        import contextlib
+
+        with contextlib.ExitStack() as stack:
+            # 상한 개수만큼 세션을 활성화(각 start 로 게이트 점유 확정).
+            for _ in range(SA._MAX_SESSIONS):
+                ws = stack.enter_context(ws_client.websocket_connect("/sim/ws"))
+                ws.send_json({"action": "start", "date": 20250102, "src": "min",
+                              "codes": ["005930"], "speed": 1})
+                assert ws.receive_json()["type"] == "meta"
+            # 상한 초과 연결은 거절(무예외 error 후 종료).
+            with ws_client.websocket_connect("/sim/ws") as ws_over:
+                m = ws_over.receive_json()
                 assert m["type"] == "error"
-                assert "동시" in m["message"] or "1개" in m["message"]
+                assert "동시" in m["message"] or "상한" in m["message"]
+
+    def test_one_stop_does_not_affect_other(self, ws_client):
+        """한 세션 stop 이 다른 세션의 스트림에 영향을 주지 않는다."""
+        with ws_client.websocket_connect("/sim/ws") as ws1, \
+                ws_client.websocket_connect("/sim/ws") as ws2:
+            ws1.send_json({"action": "start", "date": 20250102, "src": "min",
+                           "codes": ["005930"], "speed": 1, "agg_sec": 10})
+            assert ws1.receive_json()["type"] == "meta"
+            ws2.send_json({"action": "start", "date": 20250102, "src": "min",
+                           "codes": ["005930"], "speed": 60, "agg_sec": 10})
+            assert ws2.receive_json()["type"] == "meta"
+            # ws1 을 stop — in-flight bars 를 흘려보내고 done 을 확인한다.
+            ws1.send_json({"action": "stop"})
+            ws1_done = False
+            for _ in range(50):
+                m = ws1.receive_json()
+                if m["type"] == "done":
+                    ws1_done = True
+                    break
+            assert ws1_done
+            # ws2 는 영향 없이 끝까지 bars→done 수신.
+            bars = 0
+            done = False
+            for _ in range(50):
+                m = ws2.receive_json()
+                if m["type"] == "bars":
+                    bars += 1
+                elif m["type"] == "done":
+                    done = True
+                    break
+            assert bars == 4
+            assert done
+
+    def test_reconnect_releases_ghost_session(self, ws_client):
+        """연결 종료 시 세션이 정리되어 유령 세션이 남지 않는다(반복 재연결 가능).
+
+        상한만큼 연속으로 연결·종료를 반복해도 거절되지 않으면 정리가 보장된 것.
+        """
+        for _ in range(SA._MAX_SESSIONS + 3):
+            with ws_client.websocket_connect("/sim/ws") as ws:
+                ws.send_json({"action": "start", "date": 20250102, "src": "min",
+                              "codes": ["005930"], "speed": 1})
+                assert ws.receive_json()["type"] == "meta"
+            # with 블록 종료(disconnect) → 해당 세션 정리. 다음 반복이 거절되면 누수.
+        # 모든 반복 후 활성 세션 0(유령 없음).
+        assert SA._GATE.active_count() == 0
 
 
 # --------------------------------------------------------------------- signals

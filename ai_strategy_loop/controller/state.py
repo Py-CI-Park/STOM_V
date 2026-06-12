@@ -69,9 +69,38 @@ class LoopState:
     LOOP_RUNS_DB이며, 테스트는 tmp 경로를 주입할 수 있다.
     """
 
-    def __init__(self, db_path: Optional[str] = None, snapshot_dir: Optional[str] = None):
+    def __init__(
+        self,
+        db_path: Optional[str] = None,
+        snapshot_dir: Optional[str] = None,
+        *,
+        readonly: bool = False,
+    ):
+        """루프 상태 저장소를 연다.
+
+        readonly=False(기본): 종전 동작 그대로 — 부모 디렉토리/스냅샷 디렉토리를
+          mkdir 하고 WAL/synchronous PRAGMA를 걸고 스키마를 마이그레이션한다.
+        readonly=True: 대시보드 read 경로 전용 — DB를 ``file:...?mode=ro`` URI로
+          열고 mkdir/PRAGMA/스키마 마이그레이션을 전부 스킵한다. 디스크에 어떤
+          쓰기도(WAL 생성·DDL·디렉토리 생성) 하지 않아 보호된 loop_runs.db를
+          오염시키지 않는다. 쓰기 메서드(record_* 등)를 호출하면 sqlite가
+          'attempt to write a readonly database'로 거부한다(읽기 전용 강제).
+          기본 False라 이 인자를 주지 않던 기존 호출부는 byte-identical하게 동작한다.
+        """
         self.db_path = str(db_path or LOOP_RUNS_DB)
         self.snapshot_dir = str(snapshot_dir or _SNAPSHOT_DIR)
+        self.readonly = bool(readonly)
+        if self.readonly:
+            # 읽기 전용: mkdir/PRAGMA/스키마 변경 없이 mode=ro URI로만 연다.
+            #   check_same_thread=False는 쓰기 경로와 동일(대시보드 폴링이 별도
+            #   스레드를 쓰더라도 안전). row_factory만 맞춰 조회 dict 변환을 유지한다.
+            self._con = sqlite3.connect(
+                f"file:{Path(self.db_path).as_posix()}?mode=ro",
+                uri=True,
+                check_same_thread=False,
+            )
+            self._con.row_factory = sqlite3.Row
+            return
         Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         Path(self.snapshot_dir).mkdir(parents=True, exist_ok=True)
         # check_same_thread=False: 프록시/엔진이 별도 스레드를 쓰더라도 동일

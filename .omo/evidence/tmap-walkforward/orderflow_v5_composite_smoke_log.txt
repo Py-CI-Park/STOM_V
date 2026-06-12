@@ -1,0 +1,5 @@
+[BATCH] run_id=smoke_v5composite_20260612 pairs=2
+[BATCH] prepare status=ok back_count=814 elapsed=56s
+[BATCH] gen0 V5COMP default ok profit=-111,116,600 mdd=52.07 trades=4989 daily=86.00 payoff=1.1845138953629542 gate=False reason=mdd 52.07 > mdd_cap 35 (81s)
+[BATCH] gen1 BASE_SEED ok profit=2,023,670 mdd=4.98 trades=24 daily=0.40 payoff=1.8251473477406681 gate=True reason=ok (28s)
+[BATCH] done

@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\scripts\gen_template_hypothesis.py", line 415, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\scripts\gen_template_hypothesis.py", line 311, in main
+    last_errors = validate_hypothesis(payload)
+  File "C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\scripts\gen_template_hypothesis.py", line 165, in validate_hypothesis
+    missing_p = param_required - set(p.keys())
+                                     ^^^^^^
+AttributeError: 'str' object has no attribute 'keys'
+[시도 1] 검증 실패 (1개 오류):
+  - 필수 키 누락: ['params']

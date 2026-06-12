@@ -1,0 +1,4 @@
+[BATCH] run_id=min_e2e_smoke_20260612 pairs=1
+[BATCH] prepare status=ok back_count=346 elapsed=39s
+[BATCH] gen0 MIN_E2E_SMOKE ok profit=-64,197 mdd=6.51 trades=6 daily=0.30 payoff=1.8275181040157997 gate=False reason=total_profit -6.42e+04 <= 0 (12s)
+[BATCH] done

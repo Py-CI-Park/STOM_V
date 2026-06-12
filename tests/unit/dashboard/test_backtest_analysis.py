@@ -565,3 +565,116 @@ def test_full_analysis_includes_stats_and_orderflow(tmp_path: Path):
     bundle = A.full_analysis(str(csv_path))
     assert "stats" in bundle and "orderflow" in bundle
     assert bundle["orderflow"]["separation"]  # 분리 가능한 합성 데이터.
+
+
+# ============================================================================
+# portfolio_analysis — 복수 전략 일별손익 합성(결합 곡선·MDD·상관·기여)
+# ============================================================================
+def _pf_trade(day: str, krw: float):
+    """포트폴리오용 최소 trade(매도시간 day + 손익만; 분석은 day/profit_krw 만 쓴다)."""
+    return _trade("x", day + "0930", day + "094500", 10, krw / 1000.0, krw)
+
+
+def test_portfolio_empty_and_single_no_raise():
+    empty = A.portfolio_analysis([])
+    assert empty["count"] == 0
+    assert empty["combined"]["equity"] == []
+    assert empty["correlation"]["matrix"] == []
+    # 단일 전략도 무예외(상관 1x1, 대각 1.0).
+    one = A.portfolio_analysis([{"label": "솔로", "trades": [_pf_trade("20230102", 1000)]}])
+    assert one["count"] == 1
+    assert one["correlation"]["matrix"] == [[1.0]]
+
+
+def test_portfolio_combined_total_and_mdd():
+    # A: +100, -300, +50 (일별)  → 누적 100, -200, -150 → MDD = 100-(-200)=300.
+    # B: +50, +50, +50          → 누적 50, 100, 150     → MDD = 0.
+    # 결합(합산): 150, -250, 100 → 누적 150, -100, 0     → MDD = 150-(-100)=250.
+    a = [_pf_trade("20230101", 100), _pf_trade("20230102", -300), _pf_trade("20230103", 50)]
+    b = [_pf_trade("20230101", 50), _pf_trade("20230102", 50), _pf_trade("20230103", 50)]
+    pf = A.portfolio_analysis([{"label": "A", "trades": a}, {"label": "B", "trades": b}])
+
+    strat = {s["label"]: s for s in pf["strategies"]}
+    assert strat["A"]["total_profit_krw"] == -150.0
+    assert strat["A"]["max_drawdown_krw"] == 300.0
+    assert strat["B"]["total_profit_krw"] == 150.0
+    assert strat["B"]["max_drawdown_krw"] == 0.0
+    # 결합: 총손익 0, 결합 MDD 250(합성 정합).
+    assert pf["combined"]["total_profit_krw"] == 0.0
+    assert pf["combined"]["max_drawdown_krw"] == 250.0
+    assert pf["combined"]["trading_days"] == 3
+
+
+def test_portfolio_correlation_perfect_positive_and_negative():
+    # 완전 양의 상관: B = 2*A (일별).  → corr = +1.
+    a = [_pf_trade("20230101", 100), _pf_trade("20230102", -50), _pf_trade("20230103", 30)]
+    b = [_pf_trade("20230101", 200), _pf_trade("20230102", -100), _pf_trade("20230103", 60)]
+    pf = A.portfolio_analysis([{"label": "A", "trades": a}, {"label": "B", "trades": b}])
+    mat = pf["correlation"]["matrix"]
+    assert mat[0][0] == 1.0 and mat[1][1] == 1.0
+    assert abs(mat[0][1] - 1.0) < 1e-9
+    assert abs(mat[1][0] - 1.0) < 1e-9
+
+    # 완전 음의 상관: C = -A.  → corr = -1.
+    c = [_pf_trade("20230101", -100), _pf_trade("20230102", 50), _pf_trade("20230103", -30)]
+    pf2 = A.portfolio_analysis([{"label": "A", "trades": a}, {"label": "C", "trades": c}])
+    assert abs(pf2["correlation"]["matrix"][0][1] - (-1.0)) < 1e-9
+
+
+def test_portfolio_correlation_aligns_on_day_union_with_zero_fill():
+    # A 는 day1·day2, B 는 day2·day3 → 합집합 3일, 결측일 0 채움.
+    #   A aligned: [100, -50, 0],  B aligned: [0, 80, 40] → 상관 산출 가능(분산>0).
+    a = [_pf_trade("20230101", 100), _pf_trade("20230102", -50)]
+    b = [_pf_trade("20230102", 80), _pf_trade("20230103", 40)]
+    pf = A.portfolio_analysis([{"label": "A", "trades": a}, {"label": "B", "trades": b}])
+    assert pf["combined"]["trading_days"] == 3
+    r = pf["correlation"]["matrix"][0][1]
+    assert r is not None and -1.0 <= r <= 1.0
+
+
+def test_portfolio_correlation_none_when_zero_variance():
+    # 한 전략이 매일 동일 손익(분산 0) → 상관 정의 불가 → None(무예외).
+    a = [_pf_trade("20230101", 100), _pf_trade("20230102", 100)]   # 분산 0.
+    b = [_pf_trade("20230101", 50), _pf_trade("20230102", -50)]
+    pf = A.portfolio_analysis([{"label": "A", "trades": a}, {"label": "B", "trades": b}])
+    assert pf["correlation"]["matrix"][0][1] is None
+
+
+def test_portfolio_contribution_pct_sums_meaningfully():
+    # A 총 +200, B 총 +100, C 총 -100 → 결합 +200. 기여: A=100%, B=50%, C=-50%.
+    a = [_pf_trade("20230101", 200)]
+    b = [_pf_trade("20230101", 100)]
+    c = [_pf_trade("20230101", -100)]
+    pf = A.portfolio_analysis([
+        {"label": "A", "trades": a}, {"label": "B", "trades": b}, {"label": "C", "trades": c},
+    ])
+    contrib = {s["label"]: s["contribution_pct"] for s in pf["strategies"]}
+    assert abs(contrib["A"] - 100.0) < 1e-6
+    assert abs(contrib["B"] - 50.0) < 1e-6
+    assert abs(contrib["C"] - (-50.0)) < 1e-6
+
+
+def test_portfolio_csv_path_input(tmp_path: Path):
+    # trades 대신 csv_path 입력도 동작(load_trades_csv 경유).
+    def _write(path, krws):
+        with open(path, "w", encoding="utf-8-sig", newline="") as fh:
+            fh.write("종목명,매수시간,매도시간,보유시간,수익률,수익금\n")
+            for i, krw in enumerate(krws):
+                day = f"202301{i + 1:02d}"
+                fh.write(f"x,{day}0930,{day}094500,10,{krw / 1000.0},{krw}\n")
+        return str(path)
+
+    p1 = _write(tmp_path / "s1.csv", [100, -50, 30])
+    p2 = _write(tmp_path / "s2.csv", [50, 50, 50])
+    pf = A.portfolio_analysis([{"label": "S1", "csv_path": p1}, {"label": "S2", "csv_path": p2}])
+    assert pf["count"] == 2
+    assert len(pf["strategies"]) == 2
+    assert pf["combined"]["trading_days"] == 3
+
+
+def test_portfolio_duplicate_labels_uniquified():
+    a = [_pf_trade("20230101", 100)]
+    b = [_pf_trade("20230101", -100)]
+    pf = A.portfolio_analysis([{"label": "동일", "trades": a}, {"label": "동일", "trades": b}])
+    labels = pf["correlation"]["labels"]
+    assert len(set(labels)) == 2  # 라벨 충돌은 접미 인덱스로 유일화.
