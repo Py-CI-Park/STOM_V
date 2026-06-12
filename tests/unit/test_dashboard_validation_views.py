@@ -485,7 +485,7 @@ class TestFrontendContract:
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
         assert "research-lab.jsx?v=20260612c" in src
         # app.jsx는 3탭 셸(PR1~S3)과 부모 브랜치 작업 병합으로 v20260612d로 재범프됐다.
-        assert "app.jsx?v=20260612h" in src
+        assert "app.jsx?v=20260612i" in src
         # 백테스트 워크벤치(PR2) — 차트 모듈이 backtest.jsx보다 먼저 로드돼야 한다.
         # 2단계 업그레이드(A/B 비교·몬테카를로·오더플로우·통계검정)로 v20260612c 재범프.
         assert "backtest-charts.jsx?v=20260612g" in src

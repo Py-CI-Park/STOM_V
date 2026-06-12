@@ -1622,3 +1622,124 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   .bt-metric-card .summary-val { transition: none; }
   .bt-insight-card { transition: none; }
 }
+
+/* ============================================================
+   Phase 4 · 트랙 A — 전역 UX 스케일 업 (2026-06-12)
+   원칙: 기존 룰을 수정하지 않는다. 추가 클래스 + 미디어쿼리로만
+   오버라이드한다(진화 탭 회귀 위험 최소화). 모든 규칙은 신규다.
+   ============================================================ */
+
+/* ---- A1. 탭 내비게이션 대형화 (.stom-tabnav / .stom-tab) ----
+   목표: 높이 ~48px · 폰트 15px+ · 활성 탭 강한 대비(배경+보더+글로우).
+   app.jsx 탭바에서 인라인 사이즈 prop을 제거하고 이 클래스로 구동한다. */
+.stom-tabnav {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  margin: 14px 0 18px;
+  border-bottom: 1px solid var(--line-2);
+  padding-bottom: 0;
+}
+.stom-tab {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: .03em;
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: 3px solid transparent;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: -1px;
+  cursor: pointer;
+  transition: color .14s ease, background .14s ease, border-color .14s ease, box-shadow .2s ease;
+}
+.stom-tab .stom-tab-ico { font-size: 16px; line-height: 1; filter: saturate(0.85); }
+.stom-tab:hover {
+  color: var(--ink-1);
+  background: var(--bg-2);
+  border-color: var(--line-1);
+}
+.stom-tab:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+/* 활성 탭 — 강한 대비: 밝은 배경 + 테두리 + 하단 강조선 + 청록 글로우. */
+.stom-tab-active,
+.stom-tab-active:hover {
+  color: var(--ink-0);
+  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  border-color: var(--line-2);
+  border-bottom-color: var(--teal);
+  box-shadow:
+    0 0 0 1px rgba(76,214,179,0.18) inset,
+    0 -1px 14px -6px rgba(76,214,179,0.55),
+    0 4px 18px -10px rgba(76,214,179,0.40);
+}
+.stom-tab-active .stom-tab-ico { filter: none; }
+[data-theme="light"] .stom-tab-active,
+[data-theme="light"] .stom-tab-active:hover {
+  background: linear-gradient(180deg, #ffffff, var(--bg-2));
+  box-shadow:
+    0 0 0 1px rgba(13,155,120,0.22) inset,
+    0 4px 16px -10px rgba(13,155,120,0.40);
+}
+
+/* ---- A2. 전역 가독성: 패널 구분 강화 (추가 클래스, 기존 .panel 불변) ----
+   .panel.panel-emph 로 보더 대비↑·미세 그림자로 패널 간 분리감을 높인다.
+   app.jsx 핫파일은 건드리지 않으므로 .panel 직접 선택자에 한해 은은한
+   분리 그림자만 추가한다(레이아웃 영향 없음 · 색/보더 변화는 없음). */
+.panel {
+  box-shadow: 0 1px 0 0 rgba(0,0,0,0.25), 0 6px 18px -14px rgba(0,0,0,0.6);
+}
+[data-theme="light"] .panel {
+  box-shadow: 0 1px 0 0 rgba(20,30,45,0.04), 0 6px 16px -14px rgba(20,30,45,0.18);
+}
+.panel + .panel { margin-top: 2px; }
+/* 패널 헤더 배경 차등(헤더가 본문보다 한 단계 밝게) — 기존 색을 덮지 않고
+   대비만 살짝 높인다. */
+.panel-hd { box-shadow: inset 0 -1px 0 0 var(--line-2); }
+.panel-hd-title { color: var(--ink-0); }
+
+/* SectionLabel 가시성↑ — app.jsx 인라인 스타일 위에 클래스를 추가하면
+   인라인이 우선하므로, 신규 .stom-section-label 클래스를 만들어 탭바
+   영역 외 호출부가 옵트인할 수 있게 한다(현 호출부는 인라인 유지). */
+.stom-section-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-1);
+  border-top: 1px solid var(--line-2);
+  padding-top: 12px;
+  margin-top: 6px;
+}
+
+/* ---- A3. 와이드 화면(>1800px) 활용 ----
+   기존 .grid-main(1fr + 360px)·차트 높이를 미디어쿼리로 확장한다.
+   기존 룰은 그대로 두고 더 좁은 브레이크포인트(max-width:1180px)와
+   상호 배타이므로 회귀 없음. 본문 폭 캡(app.jsx 인라인 maxWidth:1600)은
+   핫파일이라 손대지 않는다 — 캡 내부에서의 밀도·가독성만 끌어올린다. */
+@media (min-width: 1800px) {
+  /* 전역 폰트 스케일 업: 와이드에서 13 -> 13.5px 상당. */
+  body { font-size: 13.5px; }
+  /* 우측 사이드 컬럼을 넓혀 와이드에서 정보 밀도를 확보. */
+  .grid-main { grid-template-columns: minmax(0, 1fr) 420px; gap: 18px; }
+  /* 분석 차트 영역을 키워 인사이트 가독성↑(높이 auto SVG는 비율로 커짐). */
+  .chart-wrap svg, .live-chart-wrap svg { min-height: 240px; }
+  /* 패널 본문 여백을 늘려 와이드에서 답답함 완화. */
+  .panel-bd { padding: 18px; }
+  /* 탭을 와이드에서 한 단계 더 크게. */
+  .stom-tab { min-height: 52px; font-size: 16px; padding: 0 26px; }
+}
+@media (min-width: 2200px) {
+  body { font-size: 14px; }
+  .grid-main { grid-template-columns: minmax(0, 1fr) 480px; }
+}
