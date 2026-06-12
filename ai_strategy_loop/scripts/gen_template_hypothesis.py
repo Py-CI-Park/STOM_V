@@ -128,6 +128,41 @@ def build_prompt(principles_text: str, registry_summary_text: str,
 
 
 # =====================================================================
+# 엔진 실측 규칙 (2026-06-12 대조실험) — 정적 차단
+# =====================================================================
+
+# 반드시 (N) 인자로 호출해야 하는 함수형 변수 — 무인자 사용 시 항상-거짓
+# 비교(전 코너 0건, gen3 실측) 또는 평가 시간 초과(352초, gen2 실측).
+_FUNC_REQUIRED_NAMES = (
+    "호가갭발생", "횡보감지", "거래대금급증", "체결강도급등", "호가하락압력",
+    "누적초당매수수량", "누적초당매도수량", "누적분당매수수량", "누적분당매도수량",
+    "등락율각도", "이동평균", "최고현재가", "최저현재가", "현재가N",
+    "초당거래대금평균", "체결강도평균", "분당거래대금평균",
+    "구간호가총잔량비율", "전일비각도", "당일거래대금각도",
+)
+
+
+def _engine_cost_errors(code: str) -> List[str]:
+    """엔진 비용·의미 규칙 위반을 정적으로 찾는다 (순수 함수 — 테스트 대상)."""
+    errors: List[str] = []
+    for name in _FUNC_REQUIRED_NAMES:
+        pat = rf"(?<![가-힣A-Za-z0-9_]){re.escape(name)}(?![가-힣A-Za-z0-9_])(?!\s*\()"
+        if re.search(pat, code):
+            errors.append(
+                f"'{name}' 무인자 사용 금지 — 반드시 (N) 인자로 호출"
+                " (무인자형은 항상-거짓 비교 또는 평가 시간 초과, 엔진 실측)"
+            )
+    n_depth_calls = len(re.findall(r"(?:매도|매수)잔량[1-5]\s*\(", code))
+    if n_depth_calls > 2:
+        errors.append(
+            f"잔량i(N) 호출형 {n_depth_calls}회 — 2회 초과 금지(잔량 5단 호출"
+            " 10회만으로 300초 초과 실측). bare(현재값) 또는 잔량iN(1)"
+            " 시프트형을 사용하라"
+        )
+    return errors
+
+
+# =====================================================================
 # 순수 함수: validate_hypothesis
 # =====================================================================
 
@@ -152,6 +187,12 @@ def validate_hypothesis(payload: Dict[str, Any]) -> List[str]:
            (build_f07_template.py와 같은 깔때기).
         5. timeframe(선택, 기본 "tick")은 "tick"|"min"만 허용 — min이면
            분당 변수 스코프로 검증된다(2026-06-12: min 15:19 세션 지원).
+        6. [엔진 실측 규칙 — 2026-06-12 대조실험으로 확정]
+           (a) 함수형 변수의 무인자 사용 금지: 호가갭발생·누적초당X 등을
+               괄호 없이 식에 쓰면 항상-거짓 비교(전 코너 0건) 또는 평가
+               시간 초과(352초)가 된다 — 정적 차단.
+           (b) 잔량i(N) 호출형 다수 사용 금지: 잔량 5단 호출 10회만으로
+               300초 초과 실측 — bare(현재값) 또는 잔량iN(1) 시프트형만.
 
     Returns:
         오류 문자열 목록. 빈 리스트 = 통과.
@@ -201,6 +242,10 @@ def validate_hypothesis(payload: Dict[str, Any]) -> List[str]:
         missing_p = param_required - set(p.keys())
         if missing_p:
             errors.append(f"params[{i}] 필수 키 누락: {sorted(missing_p)}")
+
+    # 엔진 실측 규칙 (정적 — 렌더 전 원문 텍스트에서 검사)
+    errors.extend(_engine_cost_errors(buy_tmpl))
+    errors.extend(_engine_cost_errors(sell_tmpl))
 
     # 오류가 이미 있으면 렌더 검증 전에 반환 (포맷 오류 있으면 렌더가 터짐)
     if errors:
