@@ -47,6 +47,14 @@ const _BT_JOB_BADGE = {
   cancelled: { txt: "취소됨", cls: "badge idle" },
 };
 
+// 모드별 대형 실행 버튼 라벨.
+const _BT_MODE_RUN_LABEL = {
+  backtest: "백테스트 실행",
+  optimize: "최적화 실행",
+  wfo: "전진분석 실행",
+  sweep: "스윕 실행",
+};
+
 function _btElapsed(rec) {
   const s = rec.started_at;
   if (!s) return "—";
@@ -389,8 +397,16 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
   const [end, setEnd] = useState_bt("");
   const [timeframe, setTimeframe] = useState_bt("min");
   const [engines, setEngines] = useState_bt(4);
-  const [mode, setMode] = useState_bt("backtest");      // backtest | optimize (GUI 패리티 1차).
-  const [paramSpace, setParamSpace] = useState_bt("");  // optimize 탐색공간 JSON 경로.
+  const [mode, setMode] = useState_bt("backtest");      // backtest | optimize | wfo | sweep.
+  const [paramSpace, setParamSpace] = useState_bt("");  // optimize/wfo 탐색공간 JSON 경로.
+  // wfo(전진분석) 입력.
+  const [trainWindow, setTrainWindow] = useState_bt("");
+  const [testWindow, setTestWindow] = useState_bt("");
+  const [stepDays, setStepDays] = useState_bt("");       // wfo/sweep rolling 공용.
+  // sweep 입력.
+  const [sweepAction, setSweepAction] = useState_bt("param");  // param | rolling.
+  const [sweepParams, setSweepParams] = useState_bt("");       // sweep param 조합 JSON 경로.
+  const [windowDays, setWindowDays] = useState_bt("");         // sweep rolling 윈도우 크기.
   const [range, setRange] = useState_bt(null);          // /bt/data_range
   const [jobs, setJobs] = useState_bt([]);              // 이력
   const [activeJob, setActiveJob] = useState_bt(null);  // 현재 추적 job record
@@ -487,6 +503,29 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
       const ps = (paramSpace || "").trim();
       if (!ps) { setRunErr("최적화 모드는 파라미터 탐색공간 JSON 경로가 필요합니다."); return; }
       payload.param_space = ps;
+    } else if (mode === "wfo") {
+      const tr = parseInt(trainWindow, 10) || 0;
+      const te = parseInt(testWindow, 10) || 0;
+      if (tr < 1 || te < 1) { setRunErr("전진분석은 훈련·테스트 윈도우(일, 1 이상)가 필요합니다."); return; }
+      payload.train_window_days = tr;
+      payload.test_window_days = te;
+      if (stepDays) payload.step_days = parseInt(stepDays, 10) || 0;
+      if ((paramSpace || "").trim()) payload.param_space = (paramSpace || "").trim();
+      payload.opt_objective = "tpi";
+      payload.opt_method = "grid";
+    } else if (mode === "sweep") {
+      payload.sweep_action = sweepAction;
+      if (sweepAction === "rolling") {
+        const wd = parseInt(windowDays, 10) || 0;
+        const sd = parseInt(stepDays, 10) || 0;
+        if (wd < 1 || sd < 1) { setRunErr("롤링 스윕은 윈도우·이동(일, 1 이상)이 필요합니다."); return; }
+        payload.window_days = wd;
+        payload.step_days = sd;
+      } else {
+        const sp = (sweepParams || "").trim();
+        if (!sp) { setRunErr("파라미터 스윕은 조합 JSON 경로가 필요합니다."); return; }
+        payload.sweep_params = sp;
+      }
     }
     _btPostJson(baseUrl + "/bt/run", payload, 8000)
       .then(j => {
@@ -533,11 +572,11 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
       <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {/* 전폭 실행 컨트롤 바 — 모드 토글 · 매수/매도 · 기간 · tf/engines · 대형 실행 버튼 */}
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: 10 }}>
-          {/* 모드 토글 [백테스트|최적화] */}
-          <div className="field" style={{ minWidth: 150 }}>
+          {/* 모드 토글 [백테스트|최적화|WFO|스윕] */}
+          <div className="field" style={{ minWidth: 240 }}>
             <label>모드</label>
             <div style={{ display: "flex", gap: 4 }}>
-              {[["backtest", "백테스트"], ["optimize", "최적화"]].map(([m, lbl]) => (
+              {[["backtest", "백테스트"], ["optimize", "최적화"], ["wfo", "WFO"], ["sweep", "스윕"]].map(([m, lbl]) => (
                 <button key={m} onClick={() => setMode(m)} className="mono" disabled={isDemo}
                   style={{
                     flex: 1, padding: "6px 8px", fontSize: 11, borderRadius: 5,
@@ -590,7 +629,7 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
           <button className="btn primary" onClick={submit}
                   disabled={isDemo || tracking}
                   style={{ fontSize: 14, padding: "10px 22px", minWidth: 120 }}>
-            ▸ {mode === "optimize" ? "최적화 실행" : "백테스트 실행"}
+            ▸ {_BT_MODE_RUN_LABEL[mode] || "백테스트 실행"}
           </button>
           <button className="btn ghost sm" onClick={loadJobs} disabled={isDemo}>↻ 이력</button>
         </div>
@@ -602,6 +641,76 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
             <input className="input mono" value={paramSpace} onChange={e => setParamSpace(e.target.value)}
                    placeholder="_database/param_space.json" spellCheck={false} disabled={isDemo}
                    style={{ fontSize: 11 }} />
+          </div>
+        )}
+
+        {/* wfo 전용 — 전진분석 윈도우 입력(훈련/테스트/이동일, 선택 탐색공간 JSON) */}
+        {mode === "wfo" && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "flex-end" }}>
+            <div className="field" style={{ minWidth: 120 }}>
+              <label>훈련 윈도우 (일)</label>
+              <input className="input" type="number" min="1" value={trainWindow}
+                     onChange={e => setTrainWindow(e.target.value)} placeholder="60" disabled={isDemo} />
+            </div>
+            <div className="field" style={{ minWidth: 120 }}>
+              <label>테스트 윈도우 (일)</label>
+              <input className="input" type="number" min="1" value={testWindow}
+                     onChange={e => setTestWindow(e.target.value)} placeholder="20" disabled={isDemo} />
+            </div>
+            <div className="field" style={{ minWidth: 120 }}>
+              <label>이동 간격 (일, 선택)</label>
+              <input className="input" type="number" min="1" value={stepDays}
+                     onChange={e => setStepDays(e.target.value)} placeholder="테스트 윈도우" disabled={isDemo} />
+            </div>
+            <div className="field" style={{ flex: 1, minWidth: 200 }}>
+              <label>탐색공간 JSON 경로 (선택 — 미지정 시 고정 파라미터)</label>
+              <input className="input mono" value={paramSpace} onChange={e => setParamSpace(e.target.value)}
+                     placeholder="_database/param_space.json" spellCheck={false} disabled={isDemo}
+                     style={{ fontSize: 11 }} />
+            </div>
+          </div>
+        )}
+
+        {/* sweep 전용 — 하위 동작 토글(param|rolling) + 동작별 입력 */}
+        {mode === "sweep" && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "flex-end" }}>
+            <div className="field" style={{ minWidth: 160 }}>
+              <label>스윕 종류</label>
+              <div style={{ display: "flex", gap: 4 }}>
+                {[["param", "파라미터"], ["rolling", "날짜 롤링"]].map(([a, lbl]) => (
+                  <button key={a} onClick={() => setSweepAction(a)} className="mono" disabled={isDemo}
+                    style={{
+                      flex: 1, padding: "6px 8px", fontSize: 11, borderRadius: 5,
+                      border: "1px solid " + (sweepAction === a ? "var(--amber)" : "var(--line-1)"),
+                      background: sweepAction === a ? "rgba(240,179,90,0.1)" : "transparent",
+                      color: sweepAction === a ? "var(--amber)" : "var(--ink-2)", cursor: "pointer",
+                    }}>
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {sweepAction === "param" ? (
+              <div className="field" style={{ flex: 1, minWidth: 220 }}>
+                <label>스윕 조합 JSON 경로 (_database/ 또는 ai_strategy_loop/state/ 하위)</label>
+                <input className="input mono" value={sweepParams} onChange={e => setSweepParams(e.target.value)}
+                       placeholder="_database/sweep_params.json" spellCheck={false} disabled={isDemo}
+                       style={{ fontSize: 11 }} />
+              </div>
+            ) : (
+              <>
+                <div className="field" style={{ minWidth: 120 }}>
+                  <label>윈도우 (일)</label>
+                  <input className="input" type="number" min="1" value={windowDays}
+                         onChange={e => setWindowDays(e.target.value)} placeholder="20" disabled={isDemo} />
+                </div>
+                <div className="field" style={{ minWidth: 120 }}>
+                  <label>이동 간격 (일)</label>
+                  <input className="input" type="number" min="1" value={stepDays}
+                         onChange={e => setStepDays(e.target.value)} placeholder="5" disabled={isDemo} />
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -845,6 +954,371 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// 3b-2. 모드별 결과 표(WFO·스윕) — /bt/result 의 mode_result 를 정렬 가능 표로.
+//   wfo: 윈도우(라운드)별 train/test 기간·메트릭. sweep: 조합/윈도우별 결과.
+//   csv 단일 분석(BtResultArea)과 별개 — wfo/sweep 잡 선택 시 이 표가 뜬다.
+// ===========================================================================
+function _btNum(v, digits) {
+  const n = Number(v);
+  if (v == null || isNaN(n)) return "—";
+  return n.toFixed(digits == null ? 2 : digits);
+}
+
+// wfo rounds → 정렬 가능 행. 각 round: {window:{round,train_*,test_*}, best_params, test_result:{metrics}}.
+function BtWfoTable({ result }) {
+  const [sortKey, setSortKey] = useState_bt("round");
+  const [sortAsc, setSortAsc] = useState_bt(true);
+  const rounds = (result && result.rounds) || [];
+  const summary = (result && result.summary) || {};
+  const rows = useMemo_bt(() => rounds.map((r, i) => {
+    const w = r.window || {};
+    const tr = (r.test_result && r.test_result.metrics) || {};
+    return {
+      round: w.round != null ? w.round : (i + 1),
+      train: (w.train_start != null ? w.train_start : "—") + "~" + (w.train_end != null ? w.train_end : "—"),
+      test: (w.test_start != null ? w.test_start : "—") + "~" + (w.test_end != null ? w.test_end : "—"),
+      status: (r.test_result && r.test_result.status) || "—",
+      trade_count: tr.trade_count,
+      total_profit_pct: tr.total_profit_pct,
+      max_drawdown_pct: tr.max_drawdown_pct,
+    };
+  }), [rounds]);
+  const sorted = useMemo_bt(() => rows.slice().sort((a, b) => {
+    const va = a[sortKey], vb = b[sortKey];
+    const na = Number(va), nb = Number(vb);
+    const cmp = (!isNaN(na) && !isNaN(nb)) ? (na - nb) : String(va).localeCompare(String(vb));
+    return sortAsc ? cmp : -cmp;
+  }), [rows, sortKey, sortAsc]);
+  const setSort = (k) => { if (k === sortKey) setSortAsc(a => !a); else { setSortKey(k); setSortAsc(true); } };
+  const cols = [
+    ["round", "라운드"], ["train", "훈련기간"], ["test", "테스트기간"], ["status", "상태"],
+    ["trade_count", "거래수"], ["total_profit_pct", "수익%"], ["max_drawdown_pct", "MDD%"],
+  ];
+  if (rounds.length === 0) return <div className="research-empty">WFO 라운드 결과가 없습니다.</div>;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div className="mono" style={{ fontSize: 11, color: "var(--ink-2)", display: "flex", gap: 14, flexWrap: "wrap" }}>
+        <span>라운드 {summary.round_count != null ? summary.round_count : rounds.length}</span>
+        <span>성공률 {summary.success_rate != null ? (summary.success_rate * 100).toFixed(0) + "%" : "—"}</span>
+        <span>평균 OOS {summary.metric || "tpi"} {_btNum(summary.mean_oos_metric)}</span>
+        <span>무거래 라운드 {summary.zero_trade_rounds != null ? summary.zero_trade_rounds : "—"}</span>
+      </div>
+      <div style={{ overflowX: "auto" }}>
+        <table className="mono" style={{ borderCollapse: "collapse", fontSize: 11, width: "100%" }}>
+          <thead>
+            <tr>
+              {cols.map(([k, lbl]) => (
+                <th key={k} onClick={() => setSort(k)} title="정렬"
+                  style={{ padding: "5px 8px", textAlign: "left", cursor: "pointer", color: "var(--ink-3)",
+                           borderBottom: "1px solid var(--line-1)", whiteSpace: "nowrap" }}>
+                  {lbl}{sortKey === k ? (sortAsc ? " ▲" : " ▼") : ""}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((r, i) => (
+              <tr key={i}>
+                <td style={{ padding: "4px 8px", color: "var(--ink-0)" }}>{r.round}</td>
+                <td style={{ padding: "4px 8px", color: "var(--ink-3)" }}>{r.train}</td>
+                <td style={{ padding: "4px 8px", color: "var(--ink-3)" }}>{r.test}</td>
+                <td style={{ padding: "4px 8px" }}>
+                  <span className={(_BT_JOB_BADGE[r.status] || _BT_JOB_BADGE.pending).cls}>{r.status}</span>
+                </td>
+                <td style={{ padding: "4px 8px", textAlign: "right" }}>{r.trade_count == null ? "—" : r.trade_count}</td>
+                <td style={{ padding: "4px 8px", textAlign: "right",
+                             color: Number(r.total_profit_pct) >= 0 ? "var(--teal)" : "var(--red)" }}>
+                  {_btNum(r.total_profit_pct)}
+                </td>
+                <td style={{ padding: "4px 8px", textAlign: "right", color: "var(--red)" }}>{_btNum(r.max_drawdown_pct)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// sweep results → 정렬 가능 표. 각 항목: {...combo, result:{metrics}} 또는 {window, ...metrics}.
+function BtSweepTable({ result }) {
+  const [sortKey, setSortKey] = useState_bt("__idx");
+  const [sortAsc, setSortAsc] = useState_bt(true);
+  const raw = (result && result.results) || [];
+  // 조합 키(combo)는 result/window 외 임의 키. 동적 컬럼을 수집한다.
+  const rows = useMemo_bt(() => raw.map((item, i) => {
+    const m = (item && item.result && item.result.metrics) || item.metrics || {};
+    const combo = {};
+    Object.keys(item || {}).forEach(k => {
+      if (k !== "result" && k !== "metrics" && k !== "window" && k !== "status") combo[k] = item[k];
+    });
+    return {
+      __idx: i + 1,
+      __combo: combo,
+      window: item.window ? (Array.isArray(item.window) ? item.window.join("~") : String(item.window)) : null,
+      trade_count: m.trade_count,
+      total_profit_pct: m.total_profit_pct,
+      max_drawdown_pct: m.max_drawdown_pct,
+    };
+  }), [raw]);
+  const comboKeys = useMemo_bt(() => {
+    const s = new Set();
+    rows.forEach(r => Object.keys(r.__combo).forEach(k => s.add(k)));
+    return Array.from(s);
+  }, [rows]);
+  const hasWindow = useMemo_bt(() => rows.some(r => r.window != null), [rows]);
+  const sorted = useMemo_bt(() => rows.slice().sort((a, b) => {
+    const get = (r) => (r.__combo[sortKey] != null ? r.__combo[sortKey] : r[sortKey]);
+    const va = get(a), vb = get(b);
+    const na = Number(va), nb = Number(vb);
+    const cmp = (!isNaN(na) && !isNaN(nb)) ? (na - nb) : String(va).localeCompare(String(vb));
+    return sortAsc ? cmp : -cmp;
+  }), [rows, sortKey, sortAsc]);
+  const setSort = (k) => { if (k === sortKey) setSortAsc(a => !a); else { setSortKey(k); setSortAsc(true); } };
+  if (raw.length === 0) return <div className="research-empty">스윕 결과가 없습니다.</div>;
+  const metricCols = [["trade_count", "거래수"], ["total_profit_pct", "수익%"], ["max_drawdown_pct", "MDD%"]];
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
+        총 {result.total_combinations != null ? result.total_combinations : raw.length}개 조합
+      </div>
+      <div style={{ overflowX: "auto" }}>
+        <table className="mono" style={{ borderCollapse: "collapse", fontSize: 11, width: "100%" }}>
+          <thead>
+            <tr>
+              <th onClick={() => setSort("__idx")} style={{ padding: "5px 8px", textAlign: "left", cursor: "pointer", color: "var(--ink-3)", borderBottom: "1px solid var(--line-1)" }}>
+                #{sortKey === "__idx" ? (sortAsc ? " ▲" : " ▼") : ""}
+              </th>
+              {hasWindow && (
+                <th onClick={() => setSort("window")} style={{ padding: "5px 8px", textAlign: "left", cursor: "pointer", color: "var(--ink-3)", borderBottom: "1px solid var(--line-1)" }}>
+                  윈도우{sortKey === "window" ? (sortAsc ? " ▲" : " ▼") : ""}
+                </th>
+              )}
+              {comboKeys.map(k => (
+                <th key={k} onClick={() => setSort(k)} style={{ padding: "5px 8px", textAlign: "left", cursor: "pointer", color: "var(--ink-3)", borderBottom: "1px solid var(--line-1)", whiteSpace: "nowrap" }}>
+                  {k}{sortKey === k ? (sortAsc ? " ▲" : " ▼") : ""}
+                </th>
+              ))}
+              {metricCols.map(([k, lbl]) => (
+                <th key={k} onClick={() => setSort(k)} style={{ padding: "5px 8px", textAlign: "right", cursor: "pointer", color: "var(--ink-3)", borderBottom: "1px solid var(--line-1)", whiteSpace: "nowrap" }}>
+                  {lbl}{sortKey === k ? (sortAsc ? " ▲" : " ▼") : ""}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((r, i) => (
+              <tr key={i}>
+                <td style={{ padding: "4px 8px", color: "var(--ink-3)" }}>{r.__idx}</td>
+                {hasWindow && <td style={{ padding: "4px 8px", color: "var(--ink-3)" }}>{r.window || "—"}</td>}
+                {comboKeys.map(k => (
+                  <td key={k} style={{ padding: "4px 8px", color: "var(--ink-0)" }}>
+                    {r.__combo[k] != null ? String(r.__combo[k]) : "—"}
+                  </td>
+                ))}
+                <td style={{ padding: "4px 8px", textAlign: "right" }}>{r.trade_count == null ? "—" : r.trade_count}</td>
+                <td style={{ padding: "4px 8px", textAlign: "right", color: Number(r.total_profit_pct) >= 0 ? "var(--teal)" : "var(--red)" }}>
+                  {_btNum(r.total_profit_pct)}
+                </td>
+                <td style={{ padding: "4px 8px", textAlign: "right", color: "var(--red)" }}>{_btNum(r.max_drawdown_pct)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function BtModeResultPanel({ baseUrl, isDemo, jobId, mode }) {
+  const [data, setData] = useState_bt(null);
+  const [err, setErr] = useState_bt("");
+  useEffect_bt(() => {
+    if (isDemo || !baseUrl || !jobId) { setData(null); return; }
+    let cancelled = false;
+    _btFetchJson(baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId), 12000)
+      .then(j => { if (!cancelled) { setData(j); setErr(""); } })
+      .catch(e => { if (!cancelled) { setData(null); setErr(String(e)); } });
+    return () => { cancelled = true; };
+  }, [baseUrl, isDemo, jobId]);
+  const mr = data && data.mode_result;
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--amber)" }}></span>
+          {mode === "wfo" ? "전진분석(WFO) 결과" : "스윕 결과"}
+        </div>
+      </div>
+      <div className="panel-bd">
+        {err ? (
+          <div className="mono" style={{ fontSize: 11, color: "var(--red)" }}>{err}</div>
+        ) : !mr ? (
+          <div className="research-empty">결과를 불러오는 중이거나 구조화 결과가 없습니다.</div>
+        ) : mode === "wfo" ? (
+          <BtWfoTable result={mr} />
+        ) : (
+          <BtSweepTable result={mr} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// 3b-3. 다중 잡 오버레이 — 결과 라이브러리에서 2~4개 선택 → 수익곡선 겹쳐 보기.
+//   GET /bt/overlay?job_ids=a,b,c. 정규화 토글(첫 포인트 0 기준)·범례.
+// ===========================================================================
+const _BT_OVERLAY_COLORS = ["var(--teal)", "var(--amber)", "var(--violet)", "var(--blue)"];
+
+function BtOverlayCurves({ series, normalize }) {
+  if (!series || series.length === 0) return <div className="research-empty">오버레이할 곡선이 없습니다.</div>;
+  const W = 680, H = 220, padL = 8, padR = 8, padT = 12, padB = 12;
+  // 각 시리즈의 cum_profit 배열(정규화 시 첫 포인트를 0으로 평행이동).
+  const lines = series.map(s => {
+    const cums = (s.cumulative || []).map(p => p.cum_profit || 0);
+    const base = (normalize && cums.length > 0) ? cums[0] : 0;
+    return cums.map(v => v - base);
+  });
+  const allVals = lines.reduce((acc, ln) => acc.concat(ln), [0]);
+  const lo = Math.min(...allVals), hi = Math.max(...allVals);
+  const span = (hi - lo) || 1;
+  const maxN = Math.max(1, ...lines.map(l => l.length));
+  const x = (i, n) => padL + (n <= 1 ? 0 : (i * (W - padL - padR) / (Math.max(1, maxN - 1))));
+  const y = (v) => padT + (H - padT - padB) * (1 - (v - lo) / span);
+  const zeroY = y(0);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 220 }} preserveAspectRatio="none">
+      <line x1={padL} y1={zeroY} x2={W - padR} y2={zeroY} stroke="var(--line-1)" strokeDasharray="3 3" />
+      {lines.map((ln, si) => {
+        if (ln.length === 0) return null;
+        const path = ln.map((v, i) => (i === 0 ? "M" : "L") + x(i, ln.length).toFixed(1) + " " + y(v).toFixed(1)).join(" ");
+        return <path key={si} d={path} fill="none" stroke={_BT_OVERLAY_COLORS[si % _BT_OVERLAY_COLORS.length]} strokeWidth="1.6" />;
+      })}
+    </svg>
+  );
+}
+
+function BtOverlayPanel({ baseUrl, isDemo, jobs }) {
+  const [picked, setPicked] = useState_bt([]);   // job_id 목록(2~4).
+  const [normalize, setNormalize] = useState_bt(false);
+  const [result, setResult] = useState_bt(null);
+  const [busy, setBusy] = useState_bt(false);
+  const [err, setErr] = useState_bt("");
+
+  const doneJobs = (jobs || []).filter(j => j.status === "success" || j.status === "no_trades");
+  const toggle = (jobId) => {
+    setPicked(prev => prev.includes(jobId)
+      ? prev.filter(p => p !== jobId)
+      : (prev.length >= 4 ? prev : prev.concat([jobId])));
+  };
+  const run = () => {
+    if (isDemo || !baseUrl || picked.length < 2) return;
+    setBusy(true); setErr(""); setResult(null);
+    _btFetchJson(baseUrl + "/bt/overlay?job_ids=" + encodeURIComponent(picked.join(",")), 15000)
+      .then(j => {
+        if (j && j.status === "ok") setResult(j);
+        else { setErr((j && j.message) || "오버레이 실패"); }
+      })
+      .catch(e => setErr("실패: " + e))
+      .finally(() => setBusy(false));
+  };
+  const clearAll = () => { setPicked([]); setResult(null); setErr(""); };
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--teal)" }}></span>
+          다중 잡 오버레이
+          <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 6 }}>{picked.length}/4</span>
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button className="btn primary sm" onClick={run} disabled={isDemo || busy || picked.length < 2}>
+            {busy ? "로딩…" : "▸ 겹쳐보기"}
+          </button>
+          <button className="btn ghost sm" onClick={clearAll} disabled={picked.length === 0}>비우기</button>
+        </div>
+      </div>
+      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {isDemo ? (
+          <div className="research-empty">데모 모드 — 백엔드 연결 시 완료 잡을 겹쳐볼 수 있습니다.</div>
+        ) : (
+          <>
+            {doneJobs.length === 0 ? (
+              <div className="research-empty">완료된 잡이 없습니다.</div>
+            ) : (
+              <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                {doneJobs.slice(0, 16).map(j => {
+                  const on = picked.includes(j.job_id);
+                  return (
+                    <button key={j.job_id} className="mono" onClick={() => toggle(j.job_id)}
+                      disabled={!on && picked.length >= 4}
+                      style={{
+                        fontSize: 10, padding: "3px 7px", borderRadius: 4, cursor: "pointer",
+                        border: "1px solid " + (on ? "var(--teal)" : "var(--line-1)"),
+                        background: on ? "rgba(76,214,179,0.1)" : "transparent",
+                        color: on ? "var(--teal)" : "var(--ink-2)",
+                      }}
+                      title={j.job_id}>
+                      {on ? "✓ " : ""}{j.job_id.slice(0, 14)}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {picked.length < 2 && (
+              <div className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>오버레이에는 2~4개 잡이 필요합니다.</div>
+            )}
+            {err && <div className="mono" style={{ fontSize: 11, color: "var(--red)" }}>{err}</div>}
+            {result && result.series && result.series.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, borderTop: "1px solid var(--line-1)", paddingTop: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  <button className="mono" onClick={() => setNormalize(n => !n)}
+                    style={{
+                      padding: "4px 9px", fontSize: 10.5, borderRadius: 5, cursor: "pointer",
+                      border: "1px solid " + (normalize ? "var(--amber)" : "var(--line-1)"),
+                      background: normalize ? "rgba(240,179,90,0.1)" : "transparent",
+                      color: normalize ? "var(--amber)" : "var(--ink-2)",
+                    }}>
+                    {normalize ? "✓ " : ""}정규화(첫 포인트 0)
+                  </button>
+                  {/* 범례 */}
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    {result.series.map((s, i) => (
+                      <span key={s.job_id} className="mono" style={{ fontSize: 10, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                        <span style={{ width: 12, height: 3, background: _BT_OVERLAY_COLORS[i % _BT_OVERLAY_COLORS.length], display: "inline-block" }}></span>
+                        {s.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <BtOverlayCurves series={result.series} normalize={normalize} />
+                {/* 시리즈별 요약 */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  {result.series.map((s, i) => (
+                    <div key={s.job_id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "3px 6px", borderBottom: "1px solid var(--line-1)" }}>
+                      <span style={{ width: 10, height: 10, borderRadius: 2, background: _BT_OVERLAY_COLORS[i % _BT_OVERLAY_COLORS.length], flexShrink: 0 }}></span>
+                      <span className="mono" style={{ fontSize: 10.5, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label}</span>
+                      <span className="mono" style={{ fontSize: 10.5, color: (Number(s.summary.total_profit_pct) >= 0 ? "var(--teal)" : "var(--red)") }}>
+                        {_btNum(s.summary.total_profit_pct)}%
+                      </span>
+                      <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", width: 70, textAlign: "right" }}>
+                        {s.summary.trade_count}거래
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </>
@@ -1304,6 +1778,14 @@ function BacktestTab({ baseUrl, wsStatus }) {
   const showDemoResult = connected && !isDemo && !resultJobId && !evoSource;
   const effectiveJobId = showDemoResult ? "__demo__" : resultJobId;
 
+  // 선택 잡의 모드(wfo/sweep 이면 csv 단일 분석 대신 모드별 표를 띄운다).
+  const selectedJobMode = useMemo_bt(() => {
+    if (!resultJobId) return "backtest";
+    const j = (jobsList || []).find(x => x.job_id === resultJobId);
+    return (j && j.spec && j.spec.mode) || "backtest";
+  }, [jobsList, resultJobId]);
+  const isModeResult = resultJobId && (selectedJobMode === "wfo" || selectedJobMode === "sweep");
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {/* 탭 헤더 배지 행 */}
@@ -1340,14 +1822,21 @@ function BacktestTab({ baseUrl, wsStatus }) {
               예시 데이터
             </span>
           )}
-          <BtResultArea baseUrl={baseUrl} isDemo={isDemo} jobId={effectiveJobId} evoSource={evoSource}
-                        onSetCompareA={onSetCompareA} compareView={compareView} onCloseCompare={onCloseCompare} />
+          {isModeResult ? (
+            <BtModeResultPanel baseUrl={baseUrl} isDemo={isDemo} jobId={resultJobId} mode={selectedJobMode} />
+          ) : (
+            <BtResultArea baseUrl={baseUrl} isDemo={isDemo} jobId={effectiveJobId} evoSource={evoSource}
+                          onSetCompareA={onSetCompareA} compareView={compareView} onCloseCompare={onCloseCompare} />
+          )}
         </div>
       </div>
 
       {/* 접이식 섹션 — 수직 과적 해소(진화 세대 분석 · 포트폴리오 결합) */}
       <BtCollapsible title="진화 세대 분석" accent="var(--violet)" defaultOpen={false}>
         <BtEvoSelector baseUrl={baseUrl} isDemo={isDemo} onPickGen={onPickGen} activeEvo={evoSource} />
+      </BtCollapsible>
+      <BtCollapsible title="다중 잡 오버레이(수익곡선 겹쳐보기)" accent="var(--teal)" defaultOpen={false}>
+        <BtOverlayPanel baseUrl={baseUrl} isDemo={isDemo} jobs={jobsList} />
       </BtCollapsible>
       <BtCollapsible title="포트폴리오 결합 분석" accent="var(--blue)" defaultOpen={false}>
         <BtPortfolioPanel baseUrl={baseUrl} isDemo={isDemo} jobs={jobsList} activeEvo={evoSource} />

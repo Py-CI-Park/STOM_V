@@ -50,9 +50,21 @@ _COL_SELL_QTY_MIN = "분당매도수량"
 # 일부 구버전 DB 엔 없을 수 있다. 없으면 imbalance=None 으로 흘려보낸다).
 _COL_BUY_TOTAL = "매수총잔량"
 _COL_SELL_TOTAL = "매도총잔량"
+# 라이브 호가 압력 바용 최우선호가(best bid/ask). PRAGMA 로 존재 확인 후 가용할 때만 읽는다.
+_COL_BID1 = "매수호가1"
+_COL_ASK1 = "매도호가1"
+# VWAP 분자용 bar 당 실거래대금(Σ가격×수량). tick=초당·min=분당 (매수금액+매도금액).
+# 당일거래대금(누적·백만원 단위 반올림)보다 정확해 이 컬럼을 우선 쓴다(부재 시 None → VWAP None).
+_COL_BUY_AMT_TICK = "초당매수금액"
+_COL_SELL_AMT_TICK = "초당매도금액"
+_COL_BUY_AMT_MIN = "분당매수금액"
+_COL_SELL_AMT_MIN = "분당매도금액"
 
 # 변수 라이브 뷰 이동평균 윈도우(종가 롤링). MA60 까지 증분 계산.
 _MA_WINDOWS = (5, 20, 60)
+# 볼린저 밴드(종가 SMA ± k·표준편차) 윈도우·계수.
+_BOLL_WINDOW = 20
+_BOLL_K = 2.0
 
 
 def daily_db_path(date: int, src: str) -> Path:
@@ -159,10 +171,13 @@ def _load_code_rows(
 ) -> List[Dict[str, Any]]:
     """한 종목의 candle 행을 시간순 dict 리스트로 로드한다(읽기전용·무예외).
 
-    각 행: {ts(int index), o,h,l,c, vol(거래량 추정=매수+매도수량), change, strength,
+    각 행: {ts(int index), o,h,l,c, vol(거래량 추정=매수+매도수량),
+            net_qty(순매수수량=매수−매도), trade_amt(bar 거래대금=매수+매도금액 — VWAP 분자),
+            change, strength,
             imbalance(호가불균형=매수총잔량/매도총잔량 — 컬럼 부재 시 None),
-            buy_rest(매수총잔량 raw), sell_rest(매도총잔량 raw) — 컬럼 부재 시 None}.
-    호가잔량 컬럼(매수총잔량/매도총잔량)은 PRAGMA 로 존재를 확인 후 가용할 때만 읽는다.
+            buy_rest(매수총잔량 raw), sell_rest(매도총잔량 raw),
+            bid1(매수호가1)/ask1(매도호가1) — 컬럼 부재 시 None}.
+    호가/잔량/금액 컬럼은 PRAGMA 로 존재를 확인 후 가용할 때만 읽는다(구버전 DB 하위호환).
     imbalance 와 raw 잔량은 같은 컬럼을 공유한다(중복 조회 없음).
     """
     cols = _table_columns(con, code)
@@ -170,16 +185,21 @@ def _load_code_rows(
         return []
     buy_q = _COL_BUY_QTY_TICK if src == "tick" else _COL_BUY_QTY_MIN
     sell_q = _COL_SELL_QTY_TICK if src == "tick" else _COL_SELL_QTY_MIN
+    buy_amt = _COL_BUY_AMT_TICK if src == "tick" else _COL_BUY_AMT_MIN
+    sell_amt = _COL_SELL_AMT_TICK if src == "tick" else _COL_SELL_AMT_MIN
     has_imbalance = _COL_BUY_TOTAL in cols and _COL_SELL_TOTAL in cols
+    has_quote = _COL_BID1 in cols and _COL_ASK1 in cols
+    has_amount = buy_amt in cols and sell_amt in cols
 
     def col(name: str) -> str:
-        return f'"{name}"' if name in cols else "0"
+        return f'"{name}"' if name in cols else "NULL"
 
     select = (
         f'SELECT "{_COL_INDEX}", {col(_COL_CURRENT)}, {col(_COL_OPEN)}, '
         f'{col(_COL_HIGH)}, {col(_COL_LOW)}, {col(_COL_CHANGE)}, '
         f'{col(_COL_STRENGTH)}, {col(buy_q)}, {col(sell_q)}, '
-        f'{col(_COL_BUY_TOTAL)}, {col(_COL_SELL_TOTAL)} '
+        f'{col(_COL_BUY_TOTAL)}, {col(_COL_SELL_TOTAL)}, '
+        f'{col(_COL_BID1)}, {col(_COL_ASK1)}, {col(buy_amt)}, {col(sell_amt)} '
         f'FROM "{code}" ORDER BY "{_COL_INDEX}" LIMIT {_MAX_ROWS_PER_CODE}'
     )
     rows: List[Dict[str, Any]] = []
@@ -194,6 +214,8 @@ def _load_code_rows(
             continue
         buy_qty = _safe_float(r[7])
         sell_qty = _safe_float(r[8])
+        # bar 당 실거래대금(Σ가격×수량) = 매수금액 + 매도금액. VWAP 분자(누적합).
+        trade_amt = (_safe_float(r[13]) + _safe_float(r[14])) if has_amount else None
         rows.append({
             "ts": ts,
             "c": _safe_float(r[1]),
@@ -203,9 +225,13 @@ def _load_code_rows(
             "change": _safe_float(r[5]),
             "strength": _safe_float(r[6]),
             "vol": buy_qty + sell_qty,
+            "net_qty": buy_qty - sell_qty,
+            "trade_amt": trade_amt,
             "imbalance": _imbalance(r[9], r[10]) if has_imbalance else None,
             "buy_rest": _safe_float(r[9]) if has_imbalance else None,
             "sell_rest": _safe_float(r[10]) if has_imbalance else None,
+            "bid1": _safe_float(r[11]) if has_quote else None,
+            "ask1": _safe_float(r[12]) if has_quote else None,
         })
     return rows
 
@@ -256,9 +282,12 @@ def _aggregate_tick(rows: List[Dict[str, Any]], agg_sec: int) -> List[Dict[str, 
             {
                 "hms": _hms_from_index(r["ts"], "tick"),
                 "o": r["c"], "h": max(r["c"], r["h"]), "l": min(r["c"], r["l"] or r["c"]),
-                "c": r["c"], "vol": r["vol"], "change": r["change"], "strength": r["strength"],
+                "c": r["c"], "vol": r["vol"], "net_qty": r.get("net_qty"),
+                "trade_amt": r.get("trade_amt"),
+                "change": r["change"], "strength": r["strength"],
                 "imbalance": r.get("imbalance"),
                 "buy_rest": r.get("buy_rest"), "sell_rest": r.get("sell_rest"),
+                "bid1": r.get("bid1"), "ask1": r.get("ask1"),
             }
             for r in rows
         ]
@@ -272,9 +301,12 @@ def _aggregate_tick(rows: List[Dict[str, Any]], agg_sec: int) -> List[Dict[str, 
         if cur is None:
             buckets[b] = {
                 "hms": b, "o": price, "h": price, "l": price, "c": price,
-                "vol": r["vol"], "change": r["change"], "strength": r["strength"],
+                "vol": r["vol"], "net_qty": (r.get("net_qty") or 0.0),
+                "trade_amt": r.get("trade_amt"),
+                "change": r["change"], "strength": r["strength"],
                 "imbalance": r.get("imbalance"),
                 "buy_rest": r.get("buy_rest"), "sell_rest": r.get("sell_rest"),
+                "bid1": r.get("bid1"), "ask1": r.get("ask1"),
             }
             order.append(b)
         else:
@@ -282,12 +314,19 @@ def _aggregate_tick(rows: List[Dict[str, Any]], agg_sec: int) -> List[Dict[str, 
             cur["l"] = min(cur["l"], price)
             cur["c"] = price
             cur["vol"] += r["vol"]
+            cur["net_qty"] += (r.get("net_qty") or 0.0)   # 순매수수량은 버킷 내 합산.
+            # bar 당 거래대금도 버킷 내 합산(VWAP 분자 — 마지막값 아님). None 이면 합산 스킵.
+            amt = r.get("trade_amt")
+            if amt is not None:
+                cur["trade_amt"] = (cur.get("trade_amt") or 0.0) + amt
             cur["change"] = r["change"]
             cur["strength"] = r["strength"]
             cur["imbalance"] = r.get("imbalance")
-            # 잔량은 스냅샷(누적 아님) — 버킷 마지막 값으로 대표(imbalance·strength 와 동일).
+            # 스냅샷 값(잔량·호가)은 버킷 마지막 행으로 대표(imbalance·strength 와 동일).
             cur["buy_rest"] = r.get("buy_rest")
             cur["sell_rest"] = r.get("sell_rest")
+            cur["bid1"] = r.get("bid1")
+            cur["ask1"] = r.get("ask1")
     return [buckets[b] for b in order]
 
 
@@ -303,11 +342,15 @@ def _min_bars(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             "l": min(o, r["l"], r["c"]) if r["l"] else min(o, r["c"]),
             "c": r["c"],
             "vol": r["vol"],
+            "net_qty": r.get("net_qty"),
+            "trade_amt": r.get("trade_amt"),
             "change": r["change"],
             "strength": r["strength"],
             "imbalance": r.get("imbalance"),
             "buy_rest": r.get("buy_rest"),
             "sell_rest": r.get("sell_rest"),
+            "bid1": r.get("bid1"),
+            "ask1": r.get("ask1"),
         })
     return out
 
@@ -333,13 +376,70 @@ def _attach_moving_averages(bars: List[Dict[str, Any]]) -> None:
             bar[key] = (sums[w] / w) if (i + 1) >= w else None
 
 
+def _attach_vwap(bars: List[Dict[str, Any]]) -> None:
+    """VWAP(거래량 가중 평균가)를 각 bar 에 증분 계산해 붙인다(제자리 수정).
+
+    VWAP = Σ(bar 거래대금) / Σ(bar 거래량). bar 거래대금(trade_amt)은
+    (초|분)당매수금액+매도금액(=Σ가격×수량) 이라 정확하다. 금액 컬럼 부재(trade_amt=None)
+    또는 누적거래량 0 이면 None(분모/데이터 보호).
+    """
+    if not bars:
+        return
+    cum_amt = 0.0
+    cum_vol = 0.0
+    for bar in bars:
+        amt = bar.get("trade_amt")
+        # 금액·거래량은 짝으로만 누적해 분자/분모 동기를 보장(금액 부재 bar 는 둘 다 스킵).
+        if amt is not None:
+            cum_amt += _safe_float(amt)
+            cum_vol += _safe_float(bar.get("vol"))
+        bar["vwap"] = (cum_amt / cum_vol) if (amt is not None and cum_vol > 0) else None
+
+
+def _attach_bollinger(bars: List[Dict[str, Any]]) -> None:
+    """볼린저 밴드(종가 SMA20 ± 2σ)를 각 bar 에 증분 계산해 붙인다(제자리 수정).
+
+    윈도우(_BOLL_WINDOW) 미충족 구간은 None(부분 통계는 오해 소지 — MA 정책과 동일).
+    running sum/제곱합으로 O(n) 표준편차(모표준편차). 음수 분산은 부동소수 오차로 보고 0 클램프.
+    """
+    if not bars:
+        return
+    w = _BOLL_WINDOW
+    closes: List[float] = []
+    s = 0.0
+    s2 = 0.0
+    for i, bar in enumerate(bars):
+        c = _safe_float(bar.get("c"))
+        closes.append(c)
+        s += c
+        s2 += c * c
+        if i >= w:
+            old = closes[i - w]
+            s -= old
+            s2 -= old * old
+        if (i + 1) >= w:
+            mean = s / w
+            var = (s2 / w) - (mean * mean)
+            if var < 0:
+                var = 0.0
+            sd = var ** 0.5
+            bar["bb_mid"] = mean
+            bar["bb_up"] = mean + _BOLL_K * sd
+            bar["bb_low"] = mean - _BOLL_K * sd
+        else:
+            bar["bb_mid"] = None
+            bar["bb_up"] = None
+            bar["bb_low"] = None
+
+
 class ReplayData:
     """리플레이 1세션의 메모리 자료구조 — 코드별 시계열 + 병합된 시간축.
 
     frames: List[{t:int HHMMSS, items:[{code,o,h,l,c,vol,change,strength,
-                  ma5,ma20,ma60,imbalance,buy_rest,sell_rest}...]}].
+                  ma5,ma20,ma60,vwap,bb_mid,bb_up,bb_low,net_qty,
+                  imbalance,buy_rest,sell_rest,bid1,ask1}...]}].
     동일 t 슬롯의 종목 bar 들은 같은 frame 에 묶인다. seek 은 t→frame 인덱스 점프.
-    buy_rest/sell_rest 는 raw 호가총잔량(컬럼 부재 시 None — 하위호환).
+    buy_rest/sell_rest/bid1/ask1/net_qty/vwap/bb_* 는 컬럼·데이터 부재 시 None(하위호환).
     """
 
     def __init__(
@@ -414,6 +514,8 @@ def load_replay(
             if not bars:
                 continue
             _attach_moving_averages(bars)
+            _attach_vwap(bars)
+            _attach_bollinger(bars)
             valid_codes.append(code)
             per_code[code] = {b["hms"]: b for b in bars}
     finally:
@@ -436,8 +538,12 @@ def load_replay(
                 "o": bar["o"], "h": bar["h"], "l": bar["l"], "c": bar["c"],
                 "vol": bar["vol"], "change": bar["change"], "strength": bar["strength"],
                 "ma5": bar.get("ma5"), "ma20": bar.get("ma20"), "ma60": bar.get("ma60"),
+                "vwap": bar.get("vwap"),
+                "bb_mid": bar.get("bb_mid"), "bb_up": bar.get("bb_up"), "bb_low": bar.get("bb_low"),
+                "net_qty": bar.get("net_qty"),
                 "imbalance": bar.get("imbalance"),
                 "buy_rest": bar.get("buy_rest"), "sell_rest": bar.get("sell_rest"),
+                "bid1": bar.get("bid1"), "ask1": bar.get("ask1"),
             })
         if items:
             frames.append({"t": t, "items": items})

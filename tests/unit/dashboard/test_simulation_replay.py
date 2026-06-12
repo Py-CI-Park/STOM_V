@@ -405,3 +405,160 @@ class TestRawRestQuantities:
         bar0 = rd.frames[0]["items"][0]
         assert bar0["buy_rest"] == 330.0
         assert bar0["sell_rest"] == 110.0
+
+
+# ----------------------------------------------------- VWAP / Bollinger / 호가
+# 금액·호가·잔량 컬럼을 모두 가진 확장 min 레이아웃(실DB 와 동형 — 컬럼명 기준 조회).
+_MIN_COLS_FULL = _MIN_COLS + [
+    "분당매수금액", "분당매도금액", "매수호가1", "매도호가1", "매도총잔량", "매수총잔량",
+]
+
+
+def _make_min_db_full(path: Path, tables: dict) -> None:
+    """금액(분당매수/매도금액)·호가1·총잔량 컬럼을 가진 합성 min DB."""
+    con = sqlite3.connect(str(path))
+    con.execute('CREATE TABLE moneytop ("index" INTEGER, "x" TEXT)')
+    for code, rows in tables.items():
+        coldef = ", ".join(f'"{c}" REAL' for c in _MIN_COLS_FULL)
+        con.execute(f'CREATE TABLE "{code}" ("index" INTEGER, {coldef})')
+        ph = ", ".join("?" for _ in range(len(_MIN_COLS_FULL) + 1))
+        con.executemany(f'INSERT INTO "{code}" VALUES ({ph})', rows)
+    con.commit()
+    con.close()
+
+
+@pytest.fixture
+def synthetic_full_db(monkeypatch, tmp_path):
+    """금액·호가·잔량 컬럼을 가진 min DB(20250106) 1종목 — VWAP/볼린저/호가 분기 검증.
+
+    (index, 현재가,시가,고가,저가,등락율,당일거래대금,체결강도,분매수수량,분매도수량,
+     분당매수금액,분당매도금액,매수호가1,매도호가1,매도총잔량,매수총잔량)
+    종가/거래대금을 단순값으로 둬 VWAP 가 손으로 검산되게 한다.
+    행0: vol=100(60+40), 금액=100*1000+... 단순히 매수금액=6000,매도금액=4000 → amt=10000, vwap=10000/100=100.
+    """
+    db_dir = tmp_path / "_database"
+    db_dir.mkdir()
+    rows = [
+        (202501060900, 100.0, 100.0, 100.0, 100.0, 0.0, 1.0, 100.0, 60.0, 40.0,
+         6000.0, 4000.0, 99.0, 101.0, 500.0, 700.0),
+        (202501060901, 110.0, 100.0, 110.0, 100.0, 1.0, 2.0, 100.0, 70.0, 30.0,
+         8800.0, 3300.0, 109.0, 111.0, 400.0, 800.0),
+    ]
+    _make_min_db_full(db_dir / "stock_min_20250106.db", {"005930": rows})
+    monkeypatch.setattr(RE, "_DATABASE_DIR", db_dir)
+    monkeypatch.setattr(SA, "_DATABASE_DIR", db_dir)
+    return db_dir
+
+
+class TestVWAP:
+    def test_vwap_cumulative_amount_over_volume(self, synthetic_full_db):
+        rd = RE.load_replay(20250106, "min", ["005930"], agg_sec=10)
+        items = [f["items"][0] for f in rd.frames]
+        # 행0: amt=10000, vol=100 → vwap=100.0.
+        assert items[0]["vwap"] == 100.0
+        # 행1: 누적 amt=10000+12100=22100, 누적 vol=100+100=200 → vwap=110.5.
+        assert items[1]["vwap"] == pytest.approx(110.5)
+
+    def test_vwap_none_when_amount_columns_absent(self, synthetic_min_db):
+        # 금액 컬럼 부재 → vwap 전부 None(하위호환).
+        rd = RE.load_replay(20250102, "min", ["005930"], agg_sec=10)
+        for f in rd.frames:
+            assert f["items"][0]["vwap"] is None
+
+    def test_vwap_tick_sums_amount_within_bucket(self, monkeypatch, tmp_path):
+        """tick agg 버킷은 거래대금(금액)을 합산해 VWAP 분자에 쓴다(마지막값 아님)."""
+        db_dir = tmp_path / "_database"
+        db_dir.mkdir()
+        tick_cols = _TICK_COLS + ["초당매수금액", "초당매도금액"]
+        con = sqlite3.connect(str(db_dir / "stock_tick_20250107.db"))
+        con.execute('CREATE TABLE moneytop ("index" INTEGER, "x" TEXT)')
+        coldef = ", ".join(f'"{c}" REAL' for c in tick_cols)
+        con.execute(f'CREATE TABLE "005930" ("index" INTEGER, {coldef})')
+        ph = ", ".join("?" for _ in range(len(tick_cols) + 1))
+        # 한 버킷(agg 10s) 3행: 각 vol=15(10+5), 금액 매수+매도 = 1500 each → amt 합=4500, vol 합=45.
+        rows = [
+            (20250107090000, 100.0, 99.0, 102.0, 98.0, 0.0, 1.0, 100.0, 10.0, 5.0, 1000.0, 500.0),
+            (20250107090003, 101.0, 100.0, 103.0, 99.0, 1.0, 2.0, 101.0, 10.0, 5.0, 1000.0, 500.0),
+            (20250107090007, 102.0, 101.0, 104.0, 100.0, 2.0, 3.0, 102.0, 10.0, 5.0, 1000.0, 500.0),
+        ]
+        con.executemany(f'INSERT INTO "005930" VALUES ({ph})', rows)
+        con.commit()
+        con.close()
+        monkeypatch.setattr(RE, "_DATABASE_DIR", db_dir)
+        rd = RE.load_replay(20250107, "tick", ["005930"], agg_sec=10)
+        bar0 = rd.frames[0]["items"][0]
+        # amt 합=4500, vol 합=45 → vwap=100.0.
+        assert bar0["vwap"] == pytest.approx(100.0)
+
+
+class TestBollinger:
+    def test_bollinger_none_until_window_filled(self, synthetic_ma_db):
+        rd = RE.load_replay(20250103, "min", ["005930"], agg_sec=10)
+        # 6행뿐 → 볼린저(20) 윈도우 미충족, 전부 None.
+        for f in rd.frames:
+            it = f["items"][0]
+            assert it["bb_mid"] is None
+            assert it["bb_up"] is None
+            assert it["bb_low"] is None
+
+    def test_bollinger_bands_compute_on_constant_series(self, monkeypatch, tmp_path):
+        """종가 일정(σ=0)이면 상/하단 = 중심선(밴드 폭 0). 20행 충족 시 점등."""
+        db_dir = tmp_path / "_database"
+        db_dir.mkdir()
+        rows = [
+            (202501080900 + i, 50.0, 50.0, 50.0, 50.0, 0.0, 1000.0, 100.0, 5.0, 5.0)
+            for i in range(20)
+        ]
+        _make_daily_db(db_dir / "stock_min_20250108.db", "min", {"005930": rows})
+        monkeypatch.setattr(RE, "_DATABASE_DIR", db_dir)
+        rd = RE.load_replay(20250108, "min", ["005930"], agg_sec=10)
+        last = rd.frames[-1]["items"][0]
+        assert last["bb_mid"] == pytest.approx(50.0)
+        assert last["bb_up"] == pytest.approx(50.0)
+        assert last["bb_low"] == pytest.approx(50.0)
+
+
+class TestQuoteAndNetQty:
+    def test_bid_ask_present_when_quote_columns_present(self, synthetic_full_db):
+        rd = RE.load_replay(20250106, "min", ["005930"], agg_sec=10)
+        items = [f["items"][0] for f in rd.frames]
+        assert items[0]["bid1"] == 99.0
+        assert items[0]["ask1"] == 101.0
+        assert items[1]["bid1"] == 109.0
+        assert items[1]["ask1"] == 111.0
+
+    def test_bid_ask_none_when_columns_absent(self, synthetic_min_db):
+        rd = RE.load_replay(20250102, "min", ["005930"], agg_sec=10)
+        for f in rd.frames:
+            assert f["items"][0]["bid1"] is None
+            assert f["items"][0]["ask1"] is None
+
+    def test_net_qty_buy_minus_sell(self, synthetic_full_db):
+        rd = RE.load_replay(20250106, "min", ["005930"], agg_sec=10)
+        items = [f["items"][0] for f in rd.frames]
+        # 행0: 매수60-매도40=20, 행1: 70-30=40.
+        assert items[0]["net_qty"] == 20.0
+        assert items[1]["net_qty"] == 40.0
+
+    def test_net_qty_sums_within_tick_bucket(self, synthetic_tick_db):
+        # tick 버킷 내 순매수수량 합산(매수10-매도5=5 per 행). 첫 버킷 3행 → 15.
+        rd = RE.load_replay(20250102, "tick", ["005930"], agg_sec=10)
+        bar0 = rd.frames[0]["items"][0]
+        assert bar0["net_qty"] == 15.0  # 3행 × (10-5).
+
+
+class TestExtendedFrameSchema:
+    def test_all_new_keys_present_in_frame(self, synthetic_full_db):
+        rd = RE.load_replay(20250106, "min", ["005930"], agg_sec=10)
+        item = rd.frames[0]["items"][0]
+        for key in ("vwap", "bb_mid", "bb_up", "bb_low", "net_qty", "bid1", "ask1"):
+            assert key in item
+
+    def test_schema_keys_present_even_when_columns_absent(self, synthetic_min_db):
+        # 확장 컬럼이 없어도 키는 존재하고 None(하위호환 — 클라가 키 부재로 깨지지 않음).
+        rd = RE.load_replay(20250102, "min", ["005930"], agg_sec=10)
+        item = rd.frames[0]["items"][0]
+        for key in ("vwap", "bb_mid", "bb_up", "bb_low", "bid1", "ask1"):
+            assert key in item
+            assert item[key] is None
+        assert "net_qty" in item  # net_qty 는 수량 차라 컬럼 있으면 값(여기선 분당수량 있음).

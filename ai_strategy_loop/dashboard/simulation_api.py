@@ -51,16 +51,66 @@ REPO_ROOT = _PACKAGE_DIR.parent
 _DATABASE_DIR = REPO_ROOT / "_database"
 _CODE_INFO_DB = _DATABASE_DIR / "code_info.db"
 
-# 배속 상한(스케줄 sleep 하한 보호). 한 frame 당 기본 base_interval 초.
-_BASE_INTERVAL_SEC = 0.5
-_MIN_SLEEP_SEC = 0.005
+# --- wall-clock 페이싱 상수 -------------------------------------------------
+# bar 간 실제 시간차(t_delta)/speed 만큼 sleep 하는 정밀 페이싱. speed=1x 면 1초봉이
+# 정확히 1초마다·1분봉이 1분마다 전송된다(시간이 실제로 흐르는 체감). 고배속은 sleep 을
+# 잘게 줄이되 bar 시간 비례를 유지한다(프레임 누락 없이 빠르게 흐름).
 _MAX_SPEED = 240
-# WS 한 번에 보낼 frame 배치 상한(배속 높을 때 묶음 전송).
-_MAX_BATCH = 64
+# 한 sleep 의 하한(초) — 너무 잦은 await 로 이벤트 루프가 과부하 되지 않도록 묶음 처리한다.
+_MIN_FRAME_SLEEP_SEC = 0.02
+# 누적 대기시간이 이 값을 넘으면 그때까지 모인 frame 들을 한 번에 flush 하고 sleep 한다.
+# (고배속에서 1프레임당 sleep 이 _MIN_FRAME_SLEEP_SEC 미만이면 묶음 — 묶음 내 시간 비례 유지.)
+_FRAME_FLUSH_SLEEP_SEC = 0.05
+# 한 번에 보낼 frame 배치 절대 상한(폭주 입력 방어). 시간 비례 묶음이 이보다 커지면 잘라 보낸다.
+_MAX_BATCH = 256
+# 페이싱 sleep 을 잘게 쪼개는 청크(초) — 긴 대기(예: 1x min=60s)도 이 간격마다 stop/pause/seek 에 반응.
+_PACED_SLEEP_CHUNK_SEC = 0.05
+# bar 간 t_delta 산출 시 비정상(역행·과대) 간격을 막는 상한(초). 장 중 정상 gap 은 수 초~수십 초.
+_MAX_BAR_GAP_SEC = 600
 # 동시 WS 리플레이 세션 상한(프로세스 전역). 초과 연결은 정중히 거절.
 _MAX_SESSIONS = 4
 # /sim/signals 잡 폴링 상한(초). 1일·1종목 백테는 통상 1분 내.
 _SIGNAL_JOB_TIMEOUT = 180
+
+
+def _hms_to_seconds(hms: int) -> int:
+    """HHMMSS(int) → 자정 기준 초. 페이싱의 bar 간 t_delta 산출에 쓴다."""
+    h = (hms // 10000) % 100
+    m = (hms // 100) % 100
+    s = hms % 100
+    return h * 3600 + m * 60 + s
+
+
+def _bar_gap_seconds(prev_t: int, next_t: int) -> float:
+    """두 frame 시각(HHMMSS) 사이의 실제 경과 초. 역행/과대 간격은 보호 클램프한다.
+
+    같은 슬롯(0)·역행(음수)은 0 으로, 점심시간 등 비정상 큰 간격은 _MAX_BAR_GAP_SEC 로 클램프.
+    """
+    gap = _hms_to_seconds(int(next_t)) - _hms_to_seconds(int(prev_t))
+    if gap <= 0:
+        return 0.0
+    if gap > _MAX_BAR_GAP_SEC:
+        return float(_MAX_BAR_GAP_SEC)
+    return float(gap)
+
+
+def _pacing_schedule(times: List[int], speed: int) -> List[float]:
+    """frame 시각열 → 각 frame '전송 직전' 대기초(speed 반영) 목록.
+
+    schedule[i] = (times[i] - times[i-1]) 의 실제 초 / speed (i=0 은 0 — 첫 frame 즉시).
+    speed 가 클수록 대기는 비례 축소된다(wall-clock 페이싱). 순수 함수라 단위테스트로
+    sleep 간격을 직접 검증한다(monkeypatch 없이 스케줄만 확인 가능).
+    """
+    spd = _clamp_speed(speed)
+    out: List[float] = []
+    prev: Optional[int] = None
+    for t in times:
+        if prev is None:
+            out.append(0.0)
+        else:
+            out.append(_bar_gap_seconds(prev, int(t)) / spd)
+        prev = int(t)
+    return out
 
 
 class HealthResponse(TypedDict):
@@ -428,6 +478,8 @@ class SimReplaySession:
         self.speed = 1
         self.paused = False
         self.running = False
+        # 고배속 묶음 전송 기준 인덱스(이 인덱스부터 누적 전송 개수를 센다).
+        self._batch_anchor = 0
 
     async def handle_start(self, msg: Dict[str, Any]) -> None:
         """start — 데이터 로드 후 meta 송신, 스트림 루프 시작."""
@@ -452,6 +504,7 @@ class SimReplaySession:
             replay_engine.load_replay, date, src, codes, agg_sec=agg_sec
         )
         self.cursor = 0
+        self._batch_anchor = 0
         self.paused = False
         await self._send({
             "type": "meta",
@@ -469,28 +522,80 @@ class SimReplaySession:
         await self._stream_loop()
 
     async def _stream_loop(self) -> None:
-        """배속 스케줄로 frame 배치를 push 한다. paused 면 idle, 끝나면 done."""
+        """wall-clock 페이싱으로 frame 을 push 한다. bar 간 실제 시간차/speed 만큼 대기.
+
+        설계: 각 frame 을 보내기 전, 직전 frame 과의 실제 시각차(초)를 speed 로 나눈 만큼
+        기다린다 → speed=1x 면 1초봉은 1초마다·1분봉은 1분마다 도착(시간이 흐르는 체감).
+        고배속에서 프레임당 대기가 _MIN_FRAME_SLEEP_SEC 미만이면, 대기를 누적하다
+        _FRAME_FLUSH_SLEEP_SEC 에 도달했을 때 그 사이 frame 들을 한 번에 flush 후 한 번
+        sleep 한다(묶음 내 시간 비례 유지·이벤트 루프 과부하 방지). pause/speed/seek 는
+        매 frame 경계에서 즉시 반영된다(speed 변경 시 다음 gap 부터 새 배속 적용).
+        """
         assert self.data is not None
+        pending_sleep = 0.0           # 아직 자지 않은 누적 대기(초).
+        prev_t: Optional[int] = None  # 직전 전송 frame 시각(HHMMSS) — gap 산출용.
         while self.running and self.cursor < self.data.bars_total:
             if self.paused:
+                # 일시정지 — 누적 대기는 버리고(재개 시 현재 위치부터) idle.
+                pending_sleep = 0.0
+                prev_t = None
                 await asyncio.sleep(0.05)
                 continue
-            batch = min(_MAX_BATCH, max(1, self.speed))
-            end = min(self.cursor + batch, self.data.bars_total)
-            for i in range(self.cursor, end):
-                frame = self.data.frames[i]
-                await self._send({
-                    "type": "bars",
-                    "t": frame["t"],
-                    "index": i,
-                    "items": frame["items"],
-                })
-            self.cursor = end
-            sleep_s = max(_MIN_SLEEP_SEC, _BASE_INTERVAL_SEC * batch / max(1, self.speed))
-            await asyncio.sleep(sleep_s)
+
+            i = self.cursor
+            frame = self.data.frames[i]
+            t = int(frame["t"])
+            # 이 frame 전송 전 대기 = (직전 frame 과의 실제 초) / 현재 speed.
+            if prev_t is not None:
+                pending_sleep += _bar_gap_seconds(prev_t, t) / _clamp_speed(self.speed)
+
+            # 누적 대기가 한 번 잘 만큼 모였으면(또는 절대 배치 상한 도달) sleep 한 뒤 전송.
+            sent_since_sleep = i - self._batch_anchor
+            if pending_sleep >= _FRAME_FLUSH_SLEEP_SEC or sent_since_sleep >= _MAX_BATCH:
+                if pending_sleep > 0:
+                    interrupted = await self._paced_sleep(pending_sleep)
+                    pending_sleep = 0.0
+                    # sleep 중 pause/stop/seek 가 들어왔으면 루프 상단에서 재평가.
+                    if interrupted:
+                        prev_t = None
+                        continue
+                self._batch_anchor = i
+
+            await self._send({
+                "type": "bars",
+                "t": t,
+                "index": i,
+                "items": frame["items"],
+            })
+            prev_t = t
+            self.cursor = i + 1
+
+        # 루프 종료 시 남은 누적 대기를 마저 소진(끝부분 시간 비례 유지)하고 done.
         if self.running and self.data and self.cursor >= self.data.bars_total:
+            if pending_sleep > 0 and not self.paused:
+                await asyncio.sleep(min(pending_sleep, _FRAME_FLUSH_SLEEP_SEC))
             await self._send({"type": "done"})
             self.running = False
+
+    async def _paced_sleep(self, seconds: float) -> bool:
+        """page 대기를 작은 청크로 나눠 자며, 도중 상태 변화(stop/pause/seek)면 조기 반환한다.
+
+        반환 True = 도중 중단(상위 루프가 상태를 재평가해야 함). False = 정상 완료.
+        한 청크 상한(_PACED_SLEEP_CHUNK_SEC)으로 60초 대기도 ~수십 ms 안에 stop/pause 에
+        반응한다(고정 0.5s 배치가 아니라 정밀 페이싱이라도 제어 반응성 유지).
+        """
+        remaining = float(seconds)
+        start_cursor = self.cursor
+        while remaining > 0:
+            if not self.running or self.paused or self.cursor != start_cursor:
+                return True
+            chunk = remaining if remaining < _PACED_SLEEP_CHUNK_SEC else _PACED_SLEEP_CHUNK_SEC
+            await asyncio.sleep(chunk)
+            remaining -= chunk
+        # 깬 직후에도 상태 변화 점검(seek/stop 이 sleep 막바지에 들어온 경우).
+        if not self.running or self.paused or self.cursor != start_cursor:
+            return True
+        return False
 
     def handle_pause(self) -> None:
         self.paused = True
@@ -510,6 +615,7 @@ class SimReplaySession:
         except (TypeError, ValueError):
             return
         self.cursor = self.data.seek_index(hms)
+        self._batch_anchor = self.cursor  # seek 후 묶음 기준 재설정.
 
     def handle_stop(self) -> None:
         self.running = False

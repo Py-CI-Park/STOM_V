@@ -19,6 +19,11 @@ function _simFetchJson(url, timeoutMs) {
 const _SIM_SPEEDS = [1, 5, 20, 60, 240];
 const _SIM_MAX_CODES = 4;
 const _SIM_DEMO_SPEED = 20;                 // 자동 데모 배속(빠른 둘러보기).
+// 차트 보기 모드 — split(분할 그리드) / overlay(정규화 한 차트 겹침).
+const _SIM_CHART_MODES = [["split", "분할"], ["overlay", "오버레이"]];
+// 분할 그리드 컬럼 토글(1/2 — 4종목이면 2열이 2×2). 단일 종목은 항상 1열.
+const _SIM_SPLIT_LS_KEY = "stom.sim.split.v1";
+const _SIM_IND_LS_KEY = "stom.sim.indicators.v1";
 const _SIM_DEMO_LS_KEY = "stom.sim.demoSeen.v1";   // 데모 1회 시청 기억(매번 강제 금지).
 
 // 데모 1회 시청 여부 — localStorage(무예외). 미지원 환경이면 '안 봄'으로 취급.
@@ -28,6 +33,30 @@ function _simDemoSeen() {
 }
 function _simMarkDemoSeen() {
   try { window.localStorage.setItem(_SIM_DEMO_LS_KEY, "1"); } catch (e) {}
+}
+
+// 보조지표 토글 로드/저장(localStorage·무예외). 기본값은 charts 파일 전역 _SIM_DEFAULT_INDICATORS.
+function _loadIndicators() {
+  const def = window._SIM_DEFAULT_INDICATORS || { ma: true, vwap: true, boll: false };
+  try {
+    const raw = window.localStorage.getItem(_SIM_IND_LS_KEY);
+    const obj = raw ? JSON.parse(raw) : null;
+    if (obj && typeof obj === "object") return { ...def, ...obj };
+  } catch (e) {}
+  return { ...def };
+}
+function _saveIndicators(obj) {
+  try { window.localStorage.setItem(_SIM_IND_LS_KEY, JSON.stringify(obj || {})); } catch (e) {}
+}
+// 분할 컬럼(1/2) 로드/저장.
+function _loadSplitCols() {
+  try {
+    const v = parseInt(window.localStorage.getItem(_SIM_SPLIT_LS_KEY), 10);
+    return v === 1 ? 1 : 2;
+  } catch (e) { return 2; }
+}
+function _saveSplitCols(v) {
+  try { window.localStorage.setItem(_SIM_SPLIT_LS_KEY, String(v)); } catch (e) {}
 }
 
 // baseUrl(http) → ws(ws/wss) URL.
@@ -328,9 +357,13 @@ function SimPlaybackBar({
             ))}
           </div>
 
-          <span className="mono" style={{ fontSize: 11, color: "var(--ink-1)", marginLeft: "auto" }}>
+          <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)", marginLeft: 6 }}
+                title="1x = 실시간(1초봉 1초/1분봉 1분). 배속만큼 빠르게 흐릅니다.">
+            ⏱ {speed === 1 ? "실시간" : speed + "x"} 페이싱
+          </span>
+          <span className="mono" style={{ fontSize: 13, color: "var(--teal)", marginLeft: "auto", letterSpacing: ".04em" }}>
             {curT != null ? window._simTimeLabel(curT) : "--:--:--"}
-            <span style={{ color: "var(--ink-3)" }}> · {cursor}/{total}</span>
+            <span style={{ color: "var(--ink-3)", fontSize: 11 }}> · {cursor}/{total}</span>
           </span>
         </div>
 
@@ -380,6 +413,12 @@ function SimulationTab({ baseUrl, wsStatus }) {
   const [presetBusy, setPresetBusy] = useState_sim(false);   // /sim/demo 조회 중.
   const pendingAutoplayRef = useRef_sim(false);              // date/selected 반영 후 자동재생 트리거.
   const demoTriedRef = useRef_sim(false);                    // 자동 데모 1회만 시도(재진입 루프 방지).
+
+  // 보조지표 토글(MA·VWAP·볼린저) — localStorage 보존. 차트 라인 오버레이 제어.
+  const [indicators, setIndicators] = useState_sim(_loadIndicators);
+  // 멀티차트 보기 모드(split/overlay) + 분할 컬럼 수(1/2).
+  const [chartMode, setChartMode] = useState_sim("split");
+  const [splitCols, setSplitCols] = useState_sim(_loadSplitCols);
 
   // 학습 모드 — 신호 자동 일시정지 토글 + 하이라이트 신호 키.
   const [autoPause, setAutoPause] = useState_sim(false);
@@ -449,6 +488,18 @@ function SimulationTab({ baseUrl, wsStatus }) {
     });
   }, []);
 
+  // 보조지표 토글(ma/vwap/boll) — 즉시 차트 반영 + localStorage 저장.
+  const toggleIndicator = useCallback_sim((key) => {
+    setIndicators(prev => {
+      const next = { ...prev, [key]: !prev[key] };
+      _saveIndicators(next);
+      return next;
+    });
+  }, []);
+  const setSplitColsPersist = useCallback_sim((v) => {
+    setSplitCols(v); _saveSplitCols(v);
+  }, []);
+
   // 신호 로드(buy/sell + 선택 종목 변경 시). 종목별로 1일·1종목 백테 신호를 받는다.
   useEffect_sim(() => {
     if (isDemo || !baseUrl || !date || !buy || !sell || selected.length === 0) {
@@ -516,6 +567,8 @@ function SimulationTab({ baseUrl, wsStatus }) {
             change: it.change, strength: it.strength,
             ma5: it.ma5, ma20: it.ma20, ma60: it.ma60, imbalance: it.imbalance,
             buy_rest: it.buy_rest, sell_rest: it.sell_rest,
+            vwap: it.vwap, bb_mid: it.bb_mid, bb_up: it.bb_up, bb_low: it.bb_low,
+            net_qty: it.net_qty, bid1: it.bid1, ask1: it.ask1,
           });
         });
         setCursor((m.index || 0) + 1);
@@ -700,7 +753,8 @@ function SimulationTab({ baseUrl, wsStatus }) {
 
   // 렌더용 코드별 bar 시계열(barsVersion 의존).
   const barsByCode = useMemo_sim(() => ({ ...barsRef.current }), [barsVersion]);
-  const gridCols = codes.length <= 1 ? "1fr" : "1fr 1fr";
+  // 분할 그리드 컬럼: 단일 종목은 1열, 다종목은 사용자 토글(1/2)을 따른다.
+  const gridCols = codes.length <= 1 ? "1fr" : (splitCols === 1 ? "1fr" : "1fr 1fr");
   const nameByCode = useMemo_sim(() => {
     const m = {};
     stocks.forEach(s => { m[s.code] = s.name; });
@@ -783,6 +837,14 @@ function SimulationTab({ baseUrl, wsStatus }) {
             total={meta ? meta.bars_total : 0} curT={curT}
             sessionRange={meta ? meta.session_range : [0, 0]} onSeek={seekByIndex} canPlay={canPlay} />
 
+          {selected.length > 0 && (
+            <SimViewBar
+              indicators={indicators} onToggleIndicator={toggleIndicator}
+              chartMode={chartMode} onChartMode={setChartMode}
+              splitCols={splitCols} onSplitCols={setSplitColsPersist}
+              multi={codes.length > 1} />
+          )}
+
           {wsErr && (
             <div className="panel"><div className="panel-bd">
               <div className="research-empty" style={{ color: "var(--red)" }}>
@@ -801,16 +863,66 @@ function SimulationTab({ baseUrl, wsStatus }) {
                 캔들 차트가 실시간으로 리플레이됩니다.
               </div>
             </div></div>
+          ) : (chartMode === "overlay" && codes.length > 1) ? (
+            // 오버레이 모드 — 정규화(시작=100) 한 차트 겹침 비교.
+            <SimOverlayChart codes={codes} barsByCode={barsByCode}
+              nameByCode={nameByCode} curT={curT} />
           ) : (
+            // 분할 모드 — 종목별 캔들 차트 그리드(1/2 열 토글).
             <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: 14 }}>
               {codes.map(code => (
                 <SimCandleChart key={code} code={code} name={nameByCode[code]}
                   bars={barsByCode[code] || []} signals={signals[code] || []}
-                  curT={curT} compact={codes.length > 1} />
+                  curT={curT} compact={codes.length > 1 && splitCols !== 1}
+                  indicators={indicators} />
               ))}
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// 보기 도구 바 — 보조지표 토글(MA·VWAP·볼린저) + 멀티차트 모드(분할/오버레이) + 분할 열(1/2).
+// ===========================================================================
+function SimViewBar({ indicators, onToggleIndicator, chartMode, onChartMode, splitCols, onSplitCols, multi }) {
+  const indDefs = [["ma", "MA"], ["vwap", "VWAP"], ["boll", "볼린저"]];
+  const tbtn = (active, label, onClick, key, title) => (
+    <button key={key} onClick={onClick} className="mono" title={title}
+      style={{
+        padding: "3px 9px", fontSize: 10.5, borderRadius: 4,
+        border: "1px solid " + (active ? "var(--teal-dim)" : "var(--line-1)"),
+        background: active ? "rgba(76,214,179,0.10)" : "transparent",
+        color: active ? "var(--teal)" : "var(--ink-2)", cursor: "pointer",
+      }}>
+      {label}
+    </button>
+  );
+  return (
+    <div className="panel">
+      <div className="panel-bd" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "7px 10px" }}>
+        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>지표</span>
+        <div style={{ display: "flex", gap: 4 }}>
+          {indDefs.map(([k, lbl]) => tbtn(!!indicators[k], lbl, () => onToggleIndicator(k), k))}
+        </div>
+        {multi && (
+          <>
+            <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 6 }}>보기</span>
+            <div style={{ display: "flex", gap: 4 }}>
+              {_SIM_CHART_MODES.map(([m, lbl]) =>
+                tbtn(chartMode === m, lbl, () => onChartMode(m), m,
+                     m === "overlay" ? "정규화 한 차트 겹침" : "종목별 분할 그리드"))}
+            </div>
+            {chartMode === "split" && (
+              <div style={{ display: "flex", gap: 4 }}>
+                {[[2, "2열"], [1, "1열"]].map(([v, lbl]) =>
+                  tbtn(splitCols === v, lbl, () => onSplitCols(v), "c" + v))}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -877,7 +989,7 @@ function SimIndicatorTable({ codes, barsByCode, nameByCode }) {
           <thead>
             <tr>
               <th>종목</th><th>현재가</th><th>등락%</th><th>강도</th>
-              <th>MA5</th><th>MA20</th><th>MA60</th><th>호가불균형</th>
+              <th>VWAP</th><th>MA5</th><th>MA20</th><th>MA60</th><th>호가불균형</th>
             </tr>
           </thead>
           <tbody>
@@ -887,7 +999,7 @@ function SimIndicatorTable({ codes, barsByCode, nameByCode }) {
                 return (
                   <tr key={code}>
                     <td title={name}>{code}</td>
-                    <td colSpan={7} style={{ color: "var(--ink-3)" }}>대기…</td>
+                    <td colSpan={8} style={{ color: "var(--ink-3)" }}>대기…</td>
                   </tr>
                 );
               }
@@ -899,6 +1011,7 @@ function SimIndicatorTable({ codes, barsByCode, nameByCode }) {
                     {bar.change > 0 ? "+" : ""}{(bar.change || 0).toFixed(2)}
                   </td>
                   <SimIndicatorCell value={bar.strength} digits={0} prev={p.strength} />
+                  <SimIndicatorCell value={bar.vwap} digits={0} prev={p.vwap} />
                   <SimIndicatorCell value={bar.ma5} digits={0} prev={p.ma5} />
                   <SimIndicatorCell value={bar.ma20} digits={0} prev={p.ma20} />
                   <SimIndicatorCell value={bar.ma60} digits={0} prev={p.ma60} />
@@ -985,9 +1098,11 @@ const _SIM_WATCH_VARS = [
   { key: "c", label: "현재가", digits: 0 },
   { key: "change", label: "등락율", digits: 2 },
   { key: "strength", label: "체결강도", digits: 0 },
+  { key: "vwap", label: "VWAP", digits: 0 },
   { key: "ma5", label: "MA5", digits: 0 },
   { key: "ma20", label: "MA20", digits: 0 },
   { key: "ma60", label: "MA60", digits: 0 },
+  { key: "net_qty", label: "순매수수량", digits: 0 },
   { key: "imbalance", label: "호가불균형", digits: 2 },
   { key: "buy_rest", label: "매수총잔량", digits: 0 },
   { key: "sell_rest", label: "매도총잔량", digits: 0 },

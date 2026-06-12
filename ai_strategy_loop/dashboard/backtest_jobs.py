@@ -57,14 +57,28 @@ class BacktestJobSpec:
     one_code: Optional[str] = None
     # 스모크/서브셋 백테용: 절대 경로를 주면 STOM_CLI_DB_STOCK_BACK_TICK/MIN 으로 주입된다.
     back_db_override: Optional[str] = None
-    # 실행 모드: "backtest"(기본, --buy/--sell 단일 실행) | "optimize"(stom_backtest optimize
-    #   서브커맨드 래핑 — param_space JSON 파일 필수). GUI 패리티 1차(최적화) 진입점.
+    # 실행 모드(GUI 패리티 진입점):
+    #   "backtest"(기본, --buy/--sell 단일 실행)
+    #   "optimize"(stom_backtest optimize 래핑 — param_space JSON 파일 필수)
+    #   "wfo"(stom_backtest wfo 래핑 — 전진분석, train/test 윈도우 필수)
+    #   "sweep"(stom_backtest sweep param|rolling 래핑 — sweep_action 으로 분기)
     mode: str = "backtest"
-    # optimize 모드 파라미터 탐색공간 JSON 파일 절대경로(--param-space 로 전달).
+    # optimize/wfo 모드 파라미터 탐색공간 JSON 파일 절대경로(--param-space 로 전달).
     param_space: Optional[str] = None
-    # optimize 방법(grid|random)·목표지표.
+    # optimize/wfo 방법(grid|random)·목표지표.
     opt_method: str = "grid"
     opt_objective: str = "tpi"
+    # wfo(전진분석) train/test 윈도우 크기(일). mode=="wfo" 필수(>=1).
+    train_window_days: int = 0
+    test_window_days: int = 0
+    # wfo/sweep rolling 윈도우 이동 간격(일). wfo 미지정(0)이면 test_window_days 사용.
+    step_days: int = 0
+    # sweep 하위 동작: "param"(조합 스윕, sweep_params JSON 필수) | "rolling"(날짜 롤링).
+    sweep_action: str = "param"
+    # sweep param 모드 파라미터 조합 JSON 파일 절대경로(--params 로 전달).
+    sweep_params: Optional[str] = None
+    # sweep rolling 모드 윈도우 크기(일). mode=="sweep" + sweep_action=="rolling" 필수(>=1).
+    window_days: int = 0
 
 
 @dataclass
@@ -80,6 +94,8 @@ class BacktestJobRecord:
     returncode: Optional[int] = None
     csv_path: Optional[str] = None
     metrics: Optional[Dict[str, Any]] = None
+    # wfo/sweep 등 csv_path 없는 모드의 구조화 결과(윈도우별/조합별 표). 단일 백테/최적화는 None.
+    mode_result: Optional[Dict[str, Any]] = None
     message: str = ""
     progress: float = 0.0  # 0.0~1.0 추정.
     phase: str = "queued"
@@ -106,16 +122,20 @@ def _safe_name(value: str) -> bool:
 
 
 def default_command_builder(spec: BacktestJobSpec) -> List[str]:
-    """stom_backtest.py 서브프로세스 커맨드를 만든다(mode 에 따라 단일 백테/최적화 분기).
+    """stom_backtest.py 서브프로세스 커맨드를 만든다(mode 에 따라 분기).
 
     backtest(기본): controller/loop.py 와 동일한 --buy/--sell 단일 실행.
-    optimize: stom_backtest optimize 서브커맨드 래핑(cli/subcommands.py 계약 — --param-space
-      JSON 파일 필수, --method grid|random, --objective). GUI 패리티 1차 진입점.
+    optimize: stom_backtest optimize 래핑(--param-space JSON 필수, --method, --objective).
+    wfo: stom_backtest wfo 래핑(전진분석 — --train-window-days/--test-window-days 필수,
+      선택 --param-space, --step-days). cli/subcommands.py 계약은 --divid-mode 를 받지 않는다.
+    sweep: stom_backtest sweep param|rolling 래핑(sweep_action 으로 분기 — param 은 --params
+      JSON, rolling 은 --window-days/--step-days). 마찬가지로 --divid-mode 없음.
     """
+    _STOM = str(REPO_ROOT / "stom_backtest.py")
     if spec.mode == "optimize":
         cmd = [
             sys.executable,
-            str(REPO_ROOT / "stom_backtest.py"),
+            _STOM,
             "optimize",
             "--buy", spec.buy,
             "--sell", spec.sell,
@@ -129,6 +149,57 @@ def default_command_builder(spec: BacktestJobSpec) -> List[str]:
             "--timeout", str(spec.timeout),
             "--format", "json",
         ]
+        return cmd
+    if spec.mode == "wfo":
+        cmd = [
+            sys.executable,
+            _STOM,
+            "wfo",
+            "--buy", spec.buy,
+            "--sell", spec.sell,
+            "--start", str(spec.start),
+            "--end", str(spec.end),
+            "--train-window-days", str(spec.train_window_days),
+            "--test-window-days", str(spec.test_window_days),
+            "--objective", spec.opt_objective,
+            "--method", spec.opt_method,
+            "--timeframe", spec.timeframe,
+            "--engines", str(spec.engines),
+            "--timeout", str(spec.timeout),
+            "--format", "json",
+        ]
+        if spec.step_days:
+            cmd.extend(["--step-days", str(spec.step_days)])
+        if spec.param_space:
+            cmd.extend(["--param-space", str(spec.param_space)])
+        return cmd
+    if spec.mode == "sweep":
+        cmd = [sys.executable, _STOM, "sweep"]
+        if spec.sweep_action == "rolling":
+            cmd.extend([
+                "rolling",
+                "--buy", spec.buy,
+                "--sell", spec.sell,
+                "--start", str(spec.start),
+                "--end", str(spec.end),
+                "--window-days", str(spec.window_days),
+                "--step-days", str(spec.step_days),
+            ])
+        else:
+            cmd.extend([
+                "param",
+                "--buy", spec.buy,
+                "--sell", spec.sell,
+                "--start", str(spec.start),
+                "--end", str(spec.end),
+                "--params", str(spec.sweep_params or ""),
+            ])
+        cmd.extend([
+            "--timeframe", spec.timeframe,
+            "--engines", str(spec.engines),
+            "--timeout", str(spec.timeout),
+            "--format", "json",
+        ])
         return cmd
     cmd = [
         sys.executable,
@@ -189,10 +260,20 @@ class BacktestJobManager:
             return {"status": "error", "message": "start/end 는 YYYYMMDD 8자리여야 합니다."}
         if spec.start > spec.end:
             return {"status": "error", "message": "start 가 end 보다 늦습니다."}
-        if spec.mode not in ("backtest", "optimize"):
-            return {"status": "error", "message": f"mode 는 backtest|optimize 만 허용: {spec.mode!r}"}
+        if spec.mode not in ("backtest", "optimize", "wfo", "sweep"):
+            return {"status": "error", "message": f"mode 는 backtest|optimize|wfo|sweep 만 허용: {spec.mode!r}"}
         if spec.mode == "optimize" and not (spec.param_space and str(spec.param_space).strip()):
             return {"status": "error", "message": "optimize 모드는 param_space(탐색공간 JSON 경로)가 필요합니다."}
+        if spec.mode == "wfo":
+            if spec.train_window_days < 1 or spec.test_window_days < 1:
+                return {"status": "error", "message": "wfo 모드는 train_window_days·test_window_days(>=1)가 필요합니다."}
+        if spec.mode == "sweep":
+            if spec.sweep_action not in ("param", "rolling"):
+                return {"status": "error", "message": f"sweep_action 은 param|rolling 만 허용: {spec.sweep_action!r}"}
+            if spec.sweep_action == "param" and not (spec.sweep_params and str(spec.sweep_params).strip()):
+                return {"status": "error", "message": "sweep param 모드는 sweep_params(조합 JSON 경로)가 필요합니다."}
+            if spec.sweep_action == "rolling" and (spec.window_days < 1 or spec.step_days < 1):
+                return {"status": "error", "message": "sweep rolling 모드는 window_days·step_days(>=1)가 필요합니다."}
 
         job_id = self._new_job_id(spec.buy)
         with self._lock:
@@ -417,6 +498,7 @@ class BacktestJobManager:
         status = payload.get("status")
         csv_path = payload.get("csv_path")
         metrics = payload.get("metrics")
+        mode = str((record.spec or {}).get("mode", "backtest") or "backtest")
 
         with self._lock:
             record.returncode = returncode
@@ -432,6 +514,13 @@ class BacktestJobManager:
                 record.status = "timeout"
                 record.phase = "timeout"
                 record.message = f"timeout (>{int(deadline - (record.started_at or finished))}s)"
+            elif mode in ("wfo", "sweep") and returncode == 0 and status == "ok":
+                # wfo/sweep 은 csv_path 없이 구조화 결과(windows/rounds/results)를 낸다.
+                #   전체 payload 를 mode_result 로 보존해 API 가 모드별 표로 반환한다.
+                record.status = "success"
+                record.phase = "done"
+                record.message = "ok"
+                record.mode_result = payload
             elif returncode == 0 and status == "success" and csv_path:
                 record.status = "success"
                 record.phase = "done"
