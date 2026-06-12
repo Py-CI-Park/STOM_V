@@ -65,6 +65,87 @@ function _lwcAvailable() {
     typeof window.LightweightCharts.createChart === "function";
 }
 
+/* ─────────────────────── 비주얼 추가 (Track C) ───────────────────────
+   ① SimChangeGauge : 종목 등락율 반원 게이지(상승 빨강/하락 파랑, ±12% 포화).
+   ② SimSessionRing : 세션 진행 링(09:00~15:30 대비 현재 시각 호 채움).
+   ③ 신호 플래시    : 신호 도달 순간 차트 테두리 1회 플래시(SimChartShell 적용). */
+const _SESSION_START_SEC = 9 * 3600;            // 09:00:00.
+const _SESSION_END_SEC = 15 * 3600 + 30 * 60;   // 15:30:00.
+
+// HHMMSS(int) 또는 None → 세션 진행률 0..1(09:00=0, 15:30=1, 범위 밖 클램프).
+function _sessionProgress(hms) {
+  if (hms == null) return 0;
+  const sec = _hmsToSec(hms);
+  const span = _SESSION_END_SEC - _SESSION_START_SEC;
+  if (span <= 0) return 0;
+  return Math.max(0, Math.min(1, (sec - _SESSION_START_SEC) / span));
+}
+
+// 등락율(%) → 게이지 색. 상승 빨강(--red), 하락 파랑, 0=중립 회색. 농도는 |등락|/12.
+function _changeColor(pct) {
+  const v = Number(pct) || 0;
+  const mag = Math.min(1, Math.abs(v) / 12);
+  const a = (0.35 + mag * 0.6).toFixed(3);
+  if (v > 0) return `rgba(255,93,108,${a})`;
+  if (v < 0) return `rgba(56,140,255,${a})`;
+  return "rgba(150,158,170,0.5)";
+}
+
+// 반원 게이지 — 등락율을 -12%(좌)~+12%(우) 반원 바늘로 표시. SVG 순수(라이브러리 없음).
+function SimChangeGauge({ changePct, size }) {
+  const S = size || 56;
+  const v = Number(changePct) || 0;
+  const clamped = Math.max(-12, Math.min(12, v));
+  // -12%→180°(좌), 0%→90°(상), +12%→0°(우). 반원(180°→0°).
+  const angle = 180 - ((clamped + 12) / 24) * 180;
+  const rad = (angle * Math.PI) / 180;
+  const r = S / 2 - 4;
+  const cx = S / 2, cy = S / 2;
+  const nx = cx + r * Math.cos(rad);
+  const ny = cy - r * Math.sin(rad);
+  const color = _changeColor(v);
+  return (
+    <svg width={S} height={S / 2 + 6} viewBox={`0 0 ${S} ${S / 2 + 6}`} aria-hidden="true">
+      {/* 반원 트랙 */}
+      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+            fill="none" stroke="var(--line-2)" strokeWidth="3" strokeLinecap="round" />
+      {/* 중앙 0% 틱 */}
+      <line x1={cx} y1={cy - r} x2={cx} y2={cy - r + 4}
+            stroke="var(--ink-3)" strokeWidth="1" />
+      {/* 바늘 */}
+      <line x1={cx} y1={cy} x2={nx.toFixed(2)} y2={ny.toFixed(2)}
+            stroke={color} strokeWidth="2.4" strokeLinecap="round" />
+      <circle cx={cx} cy={cy} r="2.6" fill={color} />
+      {/* 등락 라벨 */}
+      <text x={cx} y={cy - 2} textAnchor="middle" fontSize="10" className="mono"
+            fill={color}>
+        {v > 0 ? "+" : ""}{v.toFixed(2)}%
+      </text>
+    </svg>
+  );
+}
+
+// 세션 진행 링 — 09:00~15:30 대비 현재 시각(curT) 호 채움 + 중앙 HH:MM.
+function SimSessionRing({ curT, size }) {
+  const S = size || 52;
+  const r = S / 2 - 5;
+  const cx = S / 2, cy = S / 2;
+  const circ = 2 * Math.PI * r;
+  const prog = _sessionProgress(curT);
+  const dash = (circ * prog).toFixed(2);
+  const label = curT != null ? _simTimeLabel(curT).slice(0, 5) : "--:--";
+  return (
+    <svg width={S} height={S} viewBox={`0 0 ${S} ${S}`} aria-hidden="true">
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--line-2)" strokeWidth="3" />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--teal)" strokeWidth="3"
+              strokeLinecap="round" strokeDasharray={`${dash} ${(circ - dash).toFixed(2)}`}
+              transform={`rotate(-90 ${cx} ${cy})`} />
+      <text x={cx} y={cy + 3.2} textAnchor="middle" fontSize="10" className="mono"
+            fill="var(--ink-1)">{label}</text>
+    </svg>
+  );
+}
+
 /* ───────────────────────── 히트 스트립 (Part C) ─────────────────────────
    차트 하단 체결강도 색 밴드(시간축 정렬). 리플레이 진행에 따라 view 가 채워진다. */
 function SimHeatStrip({ bars, compact }) {
@@ -301,7 +382,8 @@ function SimCandleChartLWC({ bars, signals, curT, code, name, compact }) {
 
   const lastBar = (bars && bars.length) ? bars[bars.length - 1] : null;
   return (
-    <SimChartShell code={code} name={name} lastBar={lastBar} bars={bars} compact={compact} engine="lwc">
+    <SimChartShell code={code} name={name} lastBar={lastBar} bars={bars}
+                   signals={signals} curT={curT} compact={compact} engine="lwc">
       <div ref={wrapRef} style={{ width: "100%", height: H }} />
     </SimChartShell>
   );
@@ -426,7 +508,8 @@ function SimCandleChartSVG({ bars, signals, curT, code, name, compact }) {
   const lastBar = (bars && bars.length) ? bars[bars.length - 1] : null;
 
   return (
-    <SimChartShell code={code} name={name} lastBar={lastBar} bars={bars} compact={compact} engine="svg">
+    <SimChartShell code={code} name={name} lastBar={lastBar} bars={bars}
+                   signals={signals} curT={curT} compact={compact} engine="svg">
       <div className="chart-wrap">
         <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
              onMouseMove={onMove} onMouseLeave={() => { setHover(null); onUp(); }}
@@ -573,10 +656,44 @@ function SimCandleChartSVG({ bars, signals, curT, code, name, compact }) {
   );
 }
 
-/* 공통 셸 — 헤더(종목·현재가·등락) + 본문(차트) + 히트 스트립. */
-function SimChartShell({ code, name, lastBar, bars, compact, engine, children }) {
+/* 공통 셸 — 헤더(종목·현재가·등락 게이지·세션 링) + 본문(차트) + 히트 스트립.
+   신호(매수/매도) 도달 순간 패널 테두리를 1회 플래시한다(curT 가 신호 시각을 막 넘을 때). */
+function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engine, children }) {
+  // 신호 도달 플래시 — curT 가 새 신호 시각(buy/sell)을 넘는 순간 1회 깜빡. ref 로 도달분 추적.
+  const seenRef = useRef_simc(new Set());
+  const [flash, setFlash] = useState_simc(null);  // "buy"|"sell"|null.
+
+  // 리플레이 재시작(curT 리셋) 시 도달 기록 초기화.
+  useEffect_simc(() => {
+    if (curT == null) seenRef.current = new Set();
+  }, [curT]);
+
+  useEffect_simc(() => {
+    if (curT == null) return;
+    const seen = seenRef.current;
+    let kind = null;
+    (signals || []).forEach((sig) => {
+      const bk = code + "@b@" + sig.buy_hms;
+      if (sig.buy_hms != null && sig.buy_hms <= curT && !seen.has(bk)) { seen.add(bk); kind = "buy"; }
+      const sk = code + "@s@" + sig.sell_hms;
+      if (sig.sell_hms != null && sig.sell_hms <= curT && !seen.has(sk)) { seen.add(sk); kind = "sell"; }
+    });
+    if (kind) {
+      setFlash(kind);
+      const id = setTimeout(() => setFlash(null), 650);
+      return () => clearTimeout(id);
+    }
+  }, [curT, signals, code]);
+
+  // 신호 도달 테두리 플래시 — 인라인 boxShadow + transition 으로 1회 점멸(styles.css 불가).
+  //   매수=teal 글로우, 매도=red 글로우. 650ms 뒤 flash=null → transition 으로 부드럽게 소멸.
+  const flashGlow = flash === "buy"
+    ? "0 0 0 2px var(--teal), 0 0 16px 2px rgba(76,214,179,0.55)"
+    : flash === "sell"
+      ? "0 0 0 2px var(--red), 0 0 16px 2px rgba(255,93,108,0.55)"
+      : "none";
   return (
-    <div className="panel" style={{ minWidth: 0 }}>
+    <div className="panel" style={{ minWidth: 0, boxShadow: flashGlow, transition: "box-shadow 0.45s ease-out" }}>
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--teal)" }}></span>
@@ -587,17 +704,15 @@ function SimChartShell({ code, name, lastBar, bars, compact, engine, children })
             {engine === "lwc" ? "LWC" : "SVG"}
           </span>
         </div>
-        {lastBar && (
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          {lastBar && <SimChangeGauge changePct={lastBar.change} size={compact ? 48 : 56} />}
+          <SimSessionRing curT={curT} size={compact ? 44 : 52} />
+          {lastBar && (
             <span className="mono" style={{ fontSize: 11, color: "var(--ink-1)" }}>
               {_simPriceTick(lastBar.c)}
             </span>
-            <span className={"mono " + (lastBar.change > 0 ? "num-pos" : lastBar.change < 0 ? "num-neg" : "")}
-                  style={{ fontSize: 11 }}>
-              {lastBar.change > 0 ? "+" : ""}{(lastBar.change || 0).toFixed(2)}%
-            </span>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       <div className="panel-bd">
         {children}
@@ -668,5 +783,6 @@ function SimSignalLog({ signals, curT }) {
 
 Object.assign(window, {
   SimCandleChart, SimHeatStrip, SimRestFlow, SimSignalLog,
-  _simTimeLabel, _simPriceTick, _strengthColor,
+  SimChangeGauge, SimSessionRing,
+  _simTimeLabel, _simPriceTick, _strengthColor, _sessionProgress, _changeColor,
 });

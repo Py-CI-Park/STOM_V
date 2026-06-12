@@ -135,6 +135,63 @@ class TestInventoryRoutes:
         assert out["count"] == 0
 
 
+class TestDemoRecommend:
+    """/sim/demo — 즉시 체험 추천(자동 데모·원클릭 프리셋이 소비). 무예외·인벤토리만 읽음."""
+
+    def test_latest_picks_most_recent_day_and_top_mover(self, synthetic_min_db):
+        out = SA.sim_demo(src="min", mode="latest")
+        assert out["available"] is True
+        assert out["date"] == 20250102            # 인벤토리 유일 날짜.
+        # 마지막 행 등락 1위: 000660=4.0 > 005930=2.0.
+        assert out["code"] == "000660"
+        assert out["name"] == "SK하이닉스"
+        assert out["change_pct"] == 4.0
+        assert out["src"] == "min"
+        assert out["mode"] == "latest"
+
+    def test_top_gainer_scans_for_largest_change(self, synthetic_min_db):
+        out = SA.sim_demo(src="min", mode="top_gainer")
+        assert out["available"] is True
+        # 단일 날짜뿐 — 그날 등락 1위(000660)가 곧 최대 상승.
+        assert out["date"] == 20250102
+        assert out["code"] == "000660"
+        assert out["change_pct"] == 4.0
+        assert out["mode"] == "top_gainer"
+
+    def test_empty_when_no_inventory(self, synthetic_min_db):
+        # tick DB 는 없다 → 추천 불가(available=False), 무예외 빈 페이로드.
+        out = SA.sim_demo(src="tick", mode="latest")
+        assert out["available"] is False
+        assert out["date"] == 0
+        assert out["code"] == ""
+
+    def test_mode_normalized_to_latest_on_garbage(self, synthetic_min_db):
+        out = SA.sim_demo(src="min", mode="bogus")
+        assert out["mode"] == "latest"
+        assert out["available"] is True
+
+    def test_top_gainer_picks_day_with_highest_top_mover(self, monkeypatch, tmp_path):
+        """여러 날 중 등락 1위가 가장 큰 날을 고른다('최대 상승일' 근사)."""
+        db_dir = tmp_path / "_database"
+        db_dir.mkdir()
+        # 0102: 종목 등락 1위 +4.0 / 0103: 등락 1위 +9.0 (더 큼) → top_gainer 는 0103 선택.
+        _make_daily_db(db_dir / "stock_min_20250102.db", "min", {
+            "005930": [(202501020900, 100.0, 99.0, 101.0, 98.0, 4.0, 5000.0, 110.0, 30.0, 20.0)],
+        })
+        _make_daily_db(db_dir / "stock_min_20250103.db", "min", {
+            "000660": [(202501030900, 50.0, 49.0, 51.0, 49.0, 9.0, 3000.0, 90.0, 15.0, 18.0)],
+        })
+        monkeypatch.setattr(RE, "_DATABASE_DIR", db_dir)
+        monkeypatch.setattr(SA, "_DATABASE_DIR", db_dir)
+        out = SA.sim_demo(src="min", mode="top_gainer")
+        assert out["date"] == 20250103
+        assert out["code"] == "000660"
+        assert out["change_pct"] == 9.0
+        # latest 모드는 최신 날짜(0103)를 고른다(동일 결과지만 경로 다름).
+        latest = SA.sim_demo(src="min", mode="latest")
+        assert latest["date"] == 20250103
+
+
 class TestReplayMerge:
     def test_min_merges_codes_in_time_order(self, synthetic_min_db):
         rd = RE.load_replay(20250102, "min", ["005930", "000660"], agg_sec=10)

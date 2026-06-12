@@ -85,3 +85,47 @@ def test_index_html_loads_tab_scripts_before_app() -> None:
     assert index.index("simulation.jsx") < index.index("app.jsx")
     # PR2: 차트 분리 모듈은 backtest.jsx 보다 먼저 로드돼야 한다(window 전역 공유 의존).
     assert index.index("backtest-charts.jsx") < index.index("backtest.jsx?")
+
+
+# --------------------------------------------------- Track C (즉시 체험) frontend
+def test_simulation_jsx_has_instant_experience_surface() -> None:
+    """simulation.jsx 가 자동 데모·원클릭 프리셋 표면을 갖는다(Track C)."""
+    src = (FRONTEND / "simulation.jsx").read_text(encoding="utf-8")
+    # 원클릭 프리셋 바 + 두 모드.
+    assert "SimPresetBar" in src
+    assert "최근 거래일" in src
+    assert "최대 상승일" in src
+    # 자동 데모: /sim/demo 소비 + 예시 배지 + 해제 버튼 + localStorage 1회 기억.
+    assert "/sim/demo" in src
+    assert "예시 자동 재생" in src
+    assert "내가 선택하기" in src
+    assert "stom.sim.demoSeen" in src
+
+
+def test_simulation_charts_jsx_has_visual_components() -> None:
+    """simulation-charts.jsx 가 등락 게이지·세션 링·신호 플래시 비주얼을 갖는다(Track C)."""
+    src = (FRONTEND / "simulation-charts.jsx").read_text(encoding="utf-8")
+    assert "SimChangeGauge" in src        # 등락율 반원 게이지.
+    assert "SimSessionRing" in src        # 세션 진행 링.
+    assert "_sessionProgress" in src      # 09:00~15:30 진행률.
+    # 신호 도달 플래시 — 인라인 boxShadow(styles.css 불가)로 1회 점멸.
+    assert "boxShadow" in src
+    assert "window._simTimeLabel" not in src or "_simTimeLabel" in src
+    # 두 컴포넌트가 window 전역으로 노출돼 simulation.jsx 가 쓸 수 있어야 한다.
+    assert "SimChangeGauge, SimSessionRing" in src
+
+
+def test_simulation_demo_route_returns_contract(monkeypatch, tmp_path: Path) -> None:
+    """GET /sim/demo 가 추천 계약(date/code/available 키)을 반환한다(데이터 없어도 무예외)."""
+    client = _client(monkeypatch, tmp_path)
+    # 격리 클라이언트엔 _database 가 없으므로 available=False 빈 추천(무예외 200).
+    from ai_strategy_loop.dashboard import simulation_api as SA
+
+    monkeypatch.setattr(SA, "_DATABASE_DIR", tmp_path / "no_such_db_dir")
+    response = client.get("/sim/demo?src=min&mode=latest")
+    assert response.status_code == 200
+    body = response.json()
+    for key in ("date", "code", "name", "change_pct", "src", "mode", "available"):
+        assert key in body
+    assert body["available"] is False
+    assert body["mode"] == "latest"

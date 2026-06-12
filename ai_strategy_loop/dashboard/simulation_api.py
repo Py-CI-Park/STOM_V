@@ -101,6 +101,69 @@ def _daily_db_dates(prefix: str) -> List[int]:
     return sorted(set(dates))
 
 
+# 데모/프리셋 추천 — '최대 상승일' 근사 시 스캔하는 최근 일수 상한(과한 I/O 방지).
+_DEMO_SCAN_DAYS = 8
+
+
+@simulation_router.get("/demo")
+def sim_demo(src: str = "min", mode: str = "latest") -> Dict[str, Any]:
+    """즉시 체험용 추천(날짜·종목) — 실제 인벤토리에서 자동 선택.
+
+    탭 최초 진입 자동 데모와 원클릭 프리셋이 소비한다. 신호 백테는 돌리지 않고
+    인벤토리 요약만 읽으므로 빠르고 무예외(데이터 없으면 빈 추천).
+
+      - mode='latest'      : 최신 거래일 + 그날 등락 1위 종목.
+      - mode='top_gainer'  : 최근 _DEMO_SCAN_DAYS 일을 샘플 조회해 등락 1위가 가장
+                             큰 날 + 그 종목('최대 상승일' 근사).
+
+    반환: {date, code, name, change_pct, src, mode, available}. 날짜/종목이 없으면
+    available=False 로 빈 추천(클라이언트가 빈상태 처리).
+    """
+    src = "tick" if src == "tick" else "min"
+    mode = "top_gainer" if mode == "top_gainer" else "latest"
+    prefix = "stock_tick" if src == "tick" else "stock_min"
+    days = _daily_db_dates(prefix)
+    empty = {
+        "date": 0, "code": "", "name": "", "change_pct": 0.0,
+        "src": src, "mode": mode, "available": False,
+    }
+    if not days:
+        return empty
+
+    if mode == "latest":
+        candidates = [days[-1]]
+    else:
+        candidates = list(reversed(days))[:_DEMO_SCAN_DAYS]
+
+    best: Optional[Dict[str, Any]] = None
+    for day in candidates:
+        top = _top_mover(int(day), src)
+        if top is None:
+            continue
+        if best is None or top["change_pct"] > best["change_pct"]:
+            best = {"date": int(day), **top}
+        # latest 모드는 첫 유효 후보(최신일)에서 확정.
+        if mode == "latest" and best is not None:
+            break
+
+    if best is None:
+        return empty
+    return {
+        "date": best["date"], "code": best["code"], "name": best["name"],
+        "change_pct": best["change_pct"], "src": src, "mode": mode, "available": True,
+    }
+
+
+def _top_mover(date: int, src: str) -> Optional[Dict[str, Any]]:
+    """그날 등락 1위 종목 1건(code·name·change_pct). 종목이 없으면 None(무예외)."""
+    summary = replay_engine.stock_summary(int(date), src)
+    if not summary:
+        return None
+    top = summary[0]  # stock_summary 는 등락 내림차순 정렬.
+    name = _code_names({top["code"]}).get(top["code"], top["code"])
+    return {"code": top["code"], "name": name, "change_pct": top["last_change_pct"]}
+
+
 @simulation_router.get("/stocks")
 def sim_stocks(date: int = 0, src: str = "tick") -> Dict[str, Any]:
     """그날 DB 종목 목록 + code_info 이름 + 마지막 행 등락/거래대금(등락 내림차순)."""
