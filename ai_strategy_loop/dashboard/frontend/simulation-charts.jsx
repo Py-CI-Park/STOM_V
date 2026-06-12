@@ -90,6 +90,96 @@ function SimHeatStrip({ bars, compact }) {
   );
 }
 
+/* ───────────────────── 호가 잔량 흐름 (Part C) ─────────────────────
+   매수총잔량(위)·매도총잔량(아래) 미러형 영역 차트(시간축 동기). 캔들 아래 접이식 패널.
+   데이터(buy_rest/sell_rest)가 전혀 없으면(컬럼 부재 등) 패널 자동 숨김(무예외). */
+function SimRestFlow({ bars, compact }) {
+  const [open, setOpen] = useState_simc(false);
+
+  const view = useMemo_simc(() => {
+    const arr = bars || [];
+    return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+  }, [bars]);
+
+  // 유효 잔량 데이터 유무 — 하나라도 숫자면 패널 노출. 전부 None/무값이면 숨김.
+  const hasData = useMemo_simc(() =>
+    view.some(b => (b.buy_rest != null && isFinite(b.buy_rest)) ||
+                   (b.sell_rest != null && isFinite(b.sell_rest))),
+    [view]);
+
+  if (!hasData) return null;
+
+  const n = view.length;
+  const W = 880;
+  const half = compact ? 28 : 38;          // 위/아래 각 영역 높이.
+  const H = half * 2 + 18;                  // +중앙 라벨/축 여백.
+  const padL = 56, padR = 16;
+  const innerW = W - padL - padR;
+  const mid = half + 4;                     // 중앙선 y.
+
+  const buyVals = view.map(b => (b.buy_rest != null && isFinite(b.buy_rest)) ? b.buy_rest : 0);
+  const sellVals = view.map(b => (b.sell_rest != null && isFinite(b.sell_rest)) ? b.sell_rest : 0);
+  const maxRest = Math.max(1, ...buyVals, ...sellVals);
+
+  const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + (innerW * i) / (n - 1);
+  const yBuy = (v) => mid - (Math.min(v, maxRest) / maxRest) * half;     // 위로.
+  const ySell = (v) => mid + (Math.min(v, maxRest) / maxRest) * half;    // 아래로.
+
+  const areaPath = (vals, yFn) => {
+    if (n === 0) return "";
+    let d = `M ${xAt(0).toFixed(1)} ${mid.toFixed(1)} `;
+    for (let i = 0; i < n; i++) d += `L ${xAt(i).toFixed(1)} ${yFn(vals[i]).toFixed(1)} `;
+    d += `L ${xAt(n - 1).toFixed(1)} ${mid.toFixed(1)} Z`;
+    return d;
+  };
+
+  const last = view.length ? view[view.length - 1] : null;
+  const lastBuy = last && last.buy_rest != null ? last.buy_rest : null;
+  const lastSell = last && last.sell_rest != null ? last.sell_rest : null;
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      <button onClick={() => setOpen(o => !o)} className="mono"
+        style={{
+          display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "4px 8px",
+          background: "transparent", border: "1px solid var(--line-1)", borderRadius: 5,
+          color: "var(--ink-2)", cursor: "pointer", fontSize: 10,
+        }}>
+        <span style={{ color: "var(--ink-3)" }}>{open ? "▼" : "▶"}</span>
+        호가 잔량 흐름
+        {lastBuy != null && (
+          <span style={{ marginLeft: "auto", color: "var(--teal)" }}>
+            매수 {_simPriceTick(lastBuy)}
+          </span>
+        )}
+        {lastSell != null && (
+          <span style={{ color: "var(--red)" }}>매도 {_simPriceTick(lastSell)}</span>
+        )}
+      </button>
+      {open && (
+        <div style={{ marginTop: 4 }}>
+          <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: H }}>
+            {/* 중앙 기준선 */}
+            <line x1={padL} x2={W - padR} y1={mid} y2={mid}
+                  stroke="var(--line-2)" strokeWidth="1" />
+            {/* 매수잔량(위, teal 영역) */}
+            {n > 0 && <path d={areaPath(buyVals, yBuy)} fill="rgba(76,214,179,0.28)"
+                            stroke="var(--teal)" strokeWidth="1" />}
+            {/* 매도잔량(아래, red 영역) */}
+            {n > 0 && <path d={areaPath(sellVals, ySell)} fill="rgba(255,93,108,0.26)"
+                            stroke="var(--red)" strokeWidth="1" />}
+            <text className="chart-axis-text" x={padL - 8} y={mid - half + 8} textAnchor="end" fill="var(--teal)">매수</text>
+            <text className="chart-axis-text" x={padL - 8} y={mid + half} textAnchor="end" fill="var(--red)">매도</text>
+            <text className="chart-axis-text" x={padL - 8} y={mid + 3} textAnchor="end" fill="var(--ink-3)">
+              {_simPriceTick(maxRest)}
+            </text>
+          </svg>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─────────────── lightweight-charts 엔진 경로 (기본) ─────────────── */
 function SimCandleChartLWC({ bars, signals, curT, code, name, compact }) {
   const wrapRef = useRef_simc(null);
@@ -512,6 +602,7 @@ function SimChartShell({ code, name, lastBar, bars, compact, engine, children })
       <div className="panel-bd">
         {children}
         <SimHeatStrip bars={bars} compact={compact} />
+        <SimRestFlow bars={bars} compact={compact} />
       </div>
     </div>
   );
@@ -576,5 +667,6 @@ function SimSignalLog({ signals, curT }) {
 }
 
 Object.assign(window, {
-  SimCandleChart, SimHeatStrip, SimSignalLog, _simTimeLabel, _simPriceTick, _strengthColor,
+  SimCandleChart, SimHeatStrip, SimRestFlow, SimSignalLog,
+  _simTimeLabel, _simPriceTick, _strengthColor,
 });

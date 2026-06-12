@@ -47,6 +47,43 @@ def _make_min_db(path: Path, tables: Dict[str, List[tuple]]) -> None:
     con.close()
 
 
+_MIN_COLS_REST = _MIN_COLS + ["매도총잔량", "매수총잔량"]
+
+
+def _make_min_db_rest(path: Path, tables: Dict[str, List[tuple]]) -> None:
+    """매도총잔량/매수총잔량 컬럼을 가진 합성 min DB(raw 잔량 WS 흐름 검증용)."""
+    con = sqlite3.connect(str(path))
+    con.execute('CREATE TABLE moneytop ("index" INTEGER, "x" TEXT)')
+    coldef = ", ".join(f'"{c}" REAL' for c in _MIN_COLS_REST)
+    for code, rows in tables.items():
+        con.execute(f'CREATE TABLE "{code}" ("index" INTEGER, {coldef})')
+        ph = ", ".join("?" for _ in range(len(_MIN_COLS_REST) + 1))
+        con.executemany(f'INSERT INTO "{code}" VALUES ({ph})', rows)
+    con.commit()
+    con.close()
+
+
+@pytest.fixture
+def ws_client_rest(monkeypatch, tmp_path):
+    """총잔량 컬럼을 가진 격리 대시보드 클라이언트 — raw 잔량 실값 WS 수신 검증."""
+    db_dir = tmp_path / "_database"
+    db_dir.mkdir()
+    # (index, 현재가..분당매도수량(9), 매도총잔량, 매수총잔량)
+    rows = [
+        (202501020900 + i, 100.0 + i, 99.0 + i, 102.0 + i, 98.0 + i, float(i),
+         5000.0, 100.0 + i, 30.0, 20.0, 150.0 + i, 250.0 + i)
+        for i in range(4)
+    ]
+    _make_min_db_rest(db_dir / "stock_min_20250102.db", {"005930": rows})
+    monkeypatch.setattr(RE, "_DATABASE_DIR", db_dir)
+    monkeypatch.setattr(SA, "_DATABASE_DIR", db_dir)
+    monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
+    monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
+    SA._GATE.release()
+    from ai_strategy_loop.dashboard.app import create_app
+    return TestClient(create_app())
+
+
 @pytest.fixture
 def ws_client(monkeypatch, tmp_path):
     """합성 min DB(20250102, 005930 4행)를 가진 격리 대시보드 클라이언트."""
@@ -110,6 +147,53 @@ class TestWsReplaySession:
                 assert key in seen
             # 합성 min DB(총잔량 컬럼 없음) → imbalance 는 None.
             assert seen["imbalance"] is None
+
+    def test_bars_carry_rest_fields_backward_compat(self, ws_client):
+        """bars 프레임 item 에 raw 호가잔량(buy_rest/sell_rest) 키가 실린다(스키마 하위호환).
+
+        합성 min DB 는 총잔량 컬럼이 없으므로 None — 기존 필드는 모두 보존된다.
+        """
+        with ws_client.websocket_connect("/sim/ws") as ws:
+            ws.send_json({"action": "start", "date": 20250102, "src": "min",
+                          "codes": ["005930"], "speed": 60, "agg_sec": 10})
+            assert ws.receive_json()["type"] == "meta"
+            seen = None
+            for _ in range(50):
+                m = ws.receive_json()
+                if m["type"] == "bars":
+                    seen = m["items"][0]
+                    break
+                if m["type"] == "done":
+                    break
+            assert seen is not None
+            # 신규 raw 잔량 키 존재 + 기존 필드 보존(하위호환).
+            for key in ("buy_rest", "sell_rest"):
+                assert key in seen
+            for key in ("code", "o", "h", "l", "c", "vol", "change", "strength",
+                        "ma5", "ma20", "ma60", "imbalance"):
+                assert key in seen
+            # 총잔량 컬럼 부재 → raw 잔량 None.
+            assert seen["buy_rest"] is None
+            assert seen["sell_rest"] is None
+
+    def test_bars_carry_real_rest_values(self, ws_client_rest):
+        """총잔량 컬럼이 있는 DB → WS 프레임에 raw 잔량 실값이 실린다(스모크의 단위 형태)."""
+        with ws_client_rest.websocket_connect("/sim/ws") as ws:
+            ws.send_json({"action": "start", "date": 20250102, "src": "min",
+                          "codes": ["005930"], "speed": 60, "agg_sec": 10})
+            assert ws.receive_json()["type"] == "meta"
+            first = None
+            for _ in range(50):
+                m = ws.receive_json()
+                if m["type"] == "bars":
+                    first = m["items"][0]
+                    break
+                if m["type"] == "done":
+                    break
+            assert first is not None
+            # 첫 행: 매수총잔량=250, 매도총잔량=150.
+            assert first["buy_rest"] == 250.0
+            assert first["sell_rest"] == 150.0
 
     def test_error_on_missing_codes(self, ws_client):
         with ws_client.websocket_connect("/sim/ws") as ws:
