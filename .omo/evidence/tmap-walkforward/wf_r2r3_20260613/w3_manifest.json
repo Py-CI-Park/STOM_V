@@ -1,0 +1,61 @@
+{
+  "template": "seed_902905_r2full",
+  "run_id": "wf_r2r3_20260613_w3_fit_sweep",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_seed_902905_r2full_000_B",
+      "status": "ok",
+      "profit": 6375406.0,
+      "mdd": 13.68,
+      "trades": 168
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP burst_a=2.0",
+      "param": "burst_a",
+      "value": 2.0,
+      "buy_name": "TMAP_seed_902905_r2full_001_B",
+      "status": "ok",
+      "profit": 6356905.0,
+      "mdd": 12.09,
+      "trades": 191
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP burst_a=4.5",
+      "param": "burst_a",
+      "value": 4.5,
+      "buy_name": "TMAP_seed_902905_r2full_002_B",
+      "status": "ok",
+      "profit": 5357297.0,
+      "mdd": 13.52,
+      "trades": 155
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP ogap_lo_b=2.0",
+      "param": "ogap_lo_b",
+      "value": 2.0,
+      "buy_name": "TMAP_seed_902905_r2full_003_B",
+      "status": "ok",
+      "profit": 5999068.0,
+      "mdd": 14.46,
+      "trades": 190
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP ogap_lo_b=4.0",
+      "param": "ogap_lo_b",
+      "value": 4.0,
+      "buy_name": "TMAP_seed_902905_r2full_004_B",
+      "status": "ok",
+      "profit": 6413194.0,
+      "mdd": 12.67,
+      "trades": 146
+    }
+  ]
+}
