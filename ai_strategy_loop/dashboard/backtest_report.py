@@ -296,7 +296,7 @@ def _heatmap_svg(heatmap: Optional[Dict[str, Any]]) -> str:
     if not cells:
         return _empty_chart("히트맵 데이터 없음")
     # 슬롯 범위(장중) 산출.
-    slots = sorted({int(c.get("slot", 0)) for c in cells})
+    slots = sorted({int(c.get("slot") or 0) for c in cells})
     if not slots:
         return _empty_chart("히트맵 데이터 없음")
     slot_lo, slot_hi = slots[0], slots[-1]
@@ -309,8 +309,8 @@ def _heatmap_svg(heatmap: Optional[Dict[str, Any]]) -> str:
 
     rects: List[str] = []
     for c in cells:
-        wd = int(c.get("weekday", 0))
-        sl = int(c.get("slot", 0))
+        wd = int(c.get("weekday") or 0)
+        sl = int(c.get("slot") or 0)
         if not (0 <= wd < 7):
             continue
         prof = float(c.get("profit_krw", 0.0) or 0.0)
