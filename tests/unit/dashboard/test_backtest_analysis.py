@@ -678,3 +678,133 @@ def test_portfolio_duplicate_labels_uniquified():
     pf = A.portfolio_analysis([{"label": "동일", "trades": a}, {"label": "동일", "trades": b}])
     labels = pf["correlation"]["labels"]
     assert len(set(labels)) == 2  # 라벨 충돌은 접미 인덱스로 유일화.
+
+
+# ============================================================================
+# 트랙 D — rolling_metrics / monthly_calendar / cumulative_trades
+# ============================================================================
+def _rolling_seq(n: int):
+    """순서가 명확한 n 거래(매도시간 순차 증가). 앞 절반 이익, 뒤 절반 손실."""
+    out = []
+    for i in range(n):
+        mm = f"{(i % 50) + 1:02d}"
+        ss = f"{(i % 50):02d}"
+        sell = f"202504070{9}{mm}{ss}"  # 2025-04-07 09:MM:SS — 순차 증가.
+        pct = 2.0 if i < n // 2 else -1.0
+        krw = 20000.0 if i < n // 2 else -10000.0
+        out.append(_trade(f"s{i}", sell[:12], sell, 10, pct, krw))
+    return out
+
+
+def test_rolling_metrics_window_and_shape():
+    trades = _rolling_seq(30)
+    roll = A.rolling_metrics(trades, window=20)
+    assert roll["window"] == 20
+    series = roll["series"]
+    # 완전 채워진 창만 → 30-20+1 = 11 점.
+    assert len(series) == 11
+    p0 = series[0]
+    assert set(p0.keys()) == {"index", "sell_time", "win_rate", "payoff", "avg_pnl_pct"}
+    # 첫 창[0..19]: 앞 15 이익 + 뒤 5 손실(n//2=15) → 승률 75%.
+    assert abs(p0["win_rate"] - 75.0) < 1e-6
+    # 마지막 창[10..29]: 이익 5 + 손실 15 → 승률 25%.
+    assert abs(series[-1]["win_rate"] - 25.0) < 1e-6
+    # payoff = 평균이익20000 / |평균손실10000| = 2.0.
+    assert abs(p0["payoff"] - 2.0) < 1e-6
+
+
+def test_rolling_metrics_too_few_trades_empty():
+    assert A.rolling_metrics(_rolling_seq(10), window=20)["series"] == []
+    assert A.rolling_metrics([], window=20)["series"] == []
+
+
+def test_rolling_metrics_no_loss_payoff_zero():
+    # 모두 이익 → 손실 없음 → payoff 0(정의 불가), 승률 100%.
+    trades = [
+        _trade("a", "20250407093" + f"{i:01d}", "202504070930" + f"{i:02d}", 10, 1.0, 1000)
+        for i in range(5)
+    ]
+    roll = A.rolling_metrics(trades, window=3)
+    assert roll["series"]
+    assert roll["series"][0]["win_rate"] == 100.0
+    assert roll["series"][0]["payoff"] == 0.0
+
+
+def test_rolling_metrics_downsamples_over_cap():
+    big = _rolling_seq(700)
+    # 매도시간 충돌(같은 분초 반복) 있어도 무예외 — 점 수만 다운샘플 상한 확인.
+    roll = A.rolling_metrics(big, window=20)
+    assert len(roll["series"]) <= A._DOWNSAMPLE_MAX
+
+
+def test_monthly_calendar_groups_year_month():
+    trades = [
+        _trade("a", "202501070930", "202501071000", 10, 1.0, 10000),   # 2025-01
+        _trade("a", "202501080930", "202501081000", 10, -1.0, -4000),  # 2025-01
+        _trade("a", "202502070930", "202502071000", 10, 2.0, 20000),   # 2025-02
+        _trade("a", "202403070930", "202403071000", 10, 1.0, 5000),    # 2024-03
+    ]
+    cal = A.monthly_calendar(trades)
+    assert cal["years"] == [2024, 2025]
+    by_key = {(c["year"], c["month"]): c for c in cal["cells"]}
+    jan = by_key[(2025, 1)]
+    assert jan["trades"] == 2
+    assert jan["profit_krw"] == 6000.0   # 10000 - 4000.
+    assert jan["win_rate"] == 50.0       # 1승 / 2거래.
+    assert by_key[(2025, 2)]["profit_krw"] == 20000.0
+    assert by_key[(2024, 3)]["profit_krw"] == 5000.0
+    # 셀은 (연,월) 오름차순 정렬.
+    order = [(c["year"], c["month"]) for c in cal["cells"]]
+    assert order == sorted(order)
+
+
+def test_monthly_calendar_empty_and_bad_day():
+    assert A.monthly_calendar([]) == {"years": [], "cells": []}
+    # day 가 8자리 미만/파싱 불가 → 제외(무예외).
+    bad = [_trade("a", "202504070930", "202504071000", 10, 1.0, 1000)]
+    bad[0]["day"] = 99  # 비정상 day → 제외.
+    assert A.monthly_calendar(bad)["cells"] == []
+
+
+def test_cumulative_trades_monotonic_count_and_running_sum():
+    trades = [
+        _trade("a", "202504070930", "202504071000", 10, 1.0, 10000),
+        _trade("a", "202504070935", "202504071005", 10, -1.0, -4000),
+        _trade("a", "202504070940", "202504071010", 10, 2.0, 6000),
+    ]
+    ct = A.cumulative_trades(trades)
+    series = ct["series"]
+    assert len(series) == 3
+    assert set(series[0].keys()) == {"index", "sell_time", "cum_trades", "cum_profit_krw"}
+    # 누적 거래수 1,2,3.
+    assert [p["cum_trades"] for p in series] == [1, 2, 3]
+    # 누적 손익 10000, 6000, 12000.
+    assert [p["cum_profit_krw"] for p in series] == [10000.0, 6000.0, 12000.0]
+
+
+def test_cumulative_trades_sorts_by_sell_time():
+    # 입력 순서가 매도시간과 어긋나도 매도시간 오름차순으로 누적.
+    trades = [
+        _trade("late", "202504070940", "202504071010", 10, 2.0, 6000),
+        _trade("early", "202504070930", "202504071000", 10, 1.0, 10000),
+    ]
+    ct = A.cumulative_trades(trades)
+    assert ct["series"][0]["sell_time"] == "202504071000"   # early 먼저.
+    assert ct["series"][-1]["cum_profit_krw"] == 16000.0
+
+
+def test_cumulative_trades_empty():
+    assert A.cumulative_trades([]) == {"series": []}
+
+
+def test_full_analysis_includes_track_d_keys(tmp_path: Path):
+    csv_path = tmp_path / "trades.csv"
+    lines = ["﻿종목명,매수시간,매도시간,보유시간,수익률,수익금"]
+    for t in _rolling_seq(25):
+        lines.append(f"{t['name']},{t['buy_time']},{t['sell_time']},{int(t['hold_min'])},{t['profit_pct']},{int(t['profit_krw'])}")
+    csv_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    bundle = A.full_analysis(str(csv_path))
+    assert "rolling" in bundle and "monthly" in bundle and "cumulative_trades" in bundle
+    assert bundle["rolling"]["window"] == A._ROLLING_WINDOW
+    assert bundle["cumulative_trades"]["series"]
+    assert bundle["monthly"]["cells"]

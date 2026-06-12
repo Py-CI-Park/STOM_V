@@ -932,6 +932,21 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
   // 몬테카를로(지연 계산) — {data, loading}.
   const [mc, setMc] = useState_btc(null);
   const [mcLoading, setMcLoading] = useState_btc(false);
+  // 전체화면 분석 모드(트랙 D) — position:fixed 오버레이. Esc 로 닫기.
+  const [fullscreen, setFullscreen] = useState_btc(false);
+
+  // Esc 키로 전체화면 닫기 + 배경 스크롤 잠금(전체화면 동안만).
+  useEffect_btc(() => {
+    if (!fullscreen) return undefined;
+    const onKey = (e) => { if (e.key === "Escape") setFullscreen(false); };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [fullscreen]);
 
   // 결과 소스: jobId(잡) 우선, 없으면 evoSource(run_id+gen_no, 진화 세대 분석).
   //   진화 세대는 브러시/몬테카를로 구간 재계산을 지원하지 않는다(잡 전용 경로).
@@ -1103,6 +1118,8 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
                       }}
                       title="이 세대의 자급자족 HTML 리포트를 새 탭으로 열기">📄 리포트</button>
             )}
+            <button className="btn ghost sm" onClick={() => setFullscreen(true)}
+                    title="전체 화면에서 더 많은 분석 그래프를 한눈에 보기 (Esc 로 닫기)">⛶ 전체화면 분석</button>
             <button className="btn ghost sm" onClick={load} disabled={loading}>{loading ? "로딩…" : "↻"}</button>
           </div>
         </div>
@@ -1132,6 +1149,18 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
       <BtOrderflowPanel orderflow={orderflow} />
       <BtStatTestPanel stats={stats} />
 
+      {/* 트랙 D — 추가 분석 그래프(일반 모드에선 접이식, 전체화면에선 우선 배치) */}
+      <details className="bt-extra-charts" open={false}>
+        <summary style={{ cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" }}>
+          ▸ 추가 분석 그래프 — 롤링 지표 · 월별 캘린더 · 누적 거래 (전체화면 권장)
+        </summary>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 10 }}>
+          <BtRollingChart rolling={analysis.rolling} />
+          <BtMonthlyCalendar monthly={analysis.monthly} />
+          <BtCumulativeTradesChart data={analysis.cumulative_trades} />
+        </div>
+      </details>
+
       {/* 종목 기여 Top/Bottom */}
       {(topC.length > 0 || botC.length > 0) && (
         <div className="panel">
@@ -1149,6 +1178,81 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
 
       {/* 인사이트 패널 */}
       <BtInsightsPanel insights={insights} />
+
+      {/* 전체화면 분석 모드 오버레이(트랙 D) — position:fixed 풀스크린, 2~3컬럼 그리드 */}
+      {fullscreen && (
+        <_BtFullscreenAnalysis
+          analysis={analysis} distribution={distribution} orderflow={orderflow}
+          stats={stats} insights={insights} mc={mc} mcLoading={mcLoading} onRunMc={loadMc}
+          range={range} onBrush={onBrush} onBrushClear={onBrushClear}
+          onClose={() => setFullscreen(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// 전체화면 분석 오버레이 — 차트를 2~3컬럼 그리드로 크게 배치(인사이트 우선 노출).
+//   인라인 스타일 풀스크린(position:fixed). 닫기: ✕ 버튼 또는 Esc(상위에서 처리).
+function _BtFullscreenAnalysis({
+  analysis, distribution, orderflow, stats, insights,
+  mc, mcLoading, onRunMc, range, onBrush, onBrushClear, onClose,
+}) {
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 4000,
+      background: "var(--bg-1, #0d1117)", overflowY: "auto",
+      padding: "16px 22px 40px",
+    }}>
+      {/* 상단 고정 바 */}
+      <div style={{
+        position: "sticky", top: 0, zIndex: 2,
+        display: "flex", alignItems: "center", gap: 12,
+        padding: "10px 4px 12px", marginBottom: 10,
+        background: "var(--bg-1, #0d1117)", borderBottom: "1px solid var(--line-2)",
+      }}>
+        <span className="dot" style={{ background: "var(--teal)" }}></span>
+        <strong style={{ fontSize: 15, color: "var(--ink-0)" }}>전체화면 분석</strong>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+          더 많은 그래프로 인사이트 — 2~3컬럼 확대 배치
+        </span>
+        {range && (
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--teal)" }}>
+            ◧ 구간 분석 적용 중
+          </span>
+        )}
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
+          {range && <button className="btn ghost sm" onClick={onBrushClear}>전체로 복귀</button>}
+          <button className="btn sm" onClick={onClose}
+                  style={{ borderColor: "var(--teal-dim)", color: "var(--teal)" }}>✕ 닫기 (Esc)</button>
+        </div>
+      </div>
+
+      {/* 인사이트 우선 — 전체 폭 */}
+      <div style={{ marginBottom: 14 }}>
+        <BtInsightsPanel insights={insights} />
+      </div>
+
+      {/* 추가 분석 그래프 우선 배치(트랙 D) — 2컬럼 */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(440px, 1fr))", gap: 14, marginBottom: 14 }}>
+        <BtRollingChart rolling={analysis.rolling} />
+        <BtCumulativeTradesChart data={analysis.cumulative_trades} />
+        <BtMonthlyCalendar monthly={analysis.monthly} />
+        <BtEquityChart equity={analysis.equity} onBrush={onBrush}
+                       brushActive={!!range} onBrushClear={onBrushClear} />
+      </div>
+
+      {/* 나머지 분석 — 3컬럼(넓은 화면) */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 14 }}>
+        <BtDistributionChart distribution={distribution} />
+        <BtUnderwaterChart underwater={analysis.underwater} />
+        <BtHeatmap heatmap={analysis.heatmap} />
+        <BtMaeMfeScatter points={analysis.mae_mfe} />
+        <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
+        <BtExitReasonPanel rows={analysis.exit_reasons} />
+        <BtOrderflowPanel orderflow={orderflow} />
+        <BtStatTestPanel stats={stats} />
+      </div>
     </div>
   );
 }
@@ -1538,6 +1642,354 @@ function BtStatTestPanel({ stats }) {
   );
 }
 
+/* ⑪ 롤링 지표 라인(트랙 D) — analysis.rolling {window, series:[{index,sell_time,win_rate,payoff,avg_pnl_pct}]}.
+   거래 순서 축으로 롤링 승률(좌축 %)·payoff(우축 배)를 듀얼축 라인으로 겹쳐 그린다. */
+function BtRollingChart({ rolling }) {
+  const series = (rolling && rolling.series) || [];
+  const window = (rolling && rolling.window) || 20;
+  const [hover, setHover] = useState_btc(null);
+  const svgRef = useRef_btc(null);
+
+  const W = 880, H = 260;
+  const padL = 48, padR = 52, padT = 18, padB = 30;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  const n = series.length;
+  const x = (i) => n > 1 ? padL + (i / (n - 1)) * innerW : padL + innerW / 2;
+
+  // 좌축: 승률 0~100%.
+  const yWin = (v) => padT + innerH - (Math.max(0, Math.min(100, v)) / 100) * innerH;
+  // 우축: payoff 0~max(2 하한).
+  const payoffMax = Math.max(2, ...series.map(s => s.payoff || 0));
+  const yPay = (v) => padT + innerH - (Math.max(0, v) / payoffMax) * innerH;
+
+  const winPath = useMemo_btc(() => n < 2 ? "" :
+    series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yWin(s.win_rate || 0).toFixed(1)}`).join(" "),
+    [series, n]);
+  const payPath = useMemo_btc(() => n < 2 ? "" :
+    series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yPay(s.payoff || 0).toFixed(1)}`).join(" "),
+    [series, n, payoffMax]);
+
+  const xTickIdx = useMemo_btc(() => {
+    if (n <= 1) return n === 1 ? [0] : [];
+    const step = Math.max(1, Math.ceil(n / 8));
+    const idx = [];
+    for (let i = 0; i < n; i += step) idx.push(i);
+    if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
+    return idx;
+  }, [n]);
+
+  const onMove = (e) => {
+    if (!n || !svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const px = (e.clientX - rect.left) * (W / rect.width);
+    const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
+    const i = Math.round(frac * (n - 1));
+    if (i >= 0 && i < n) setHover(i); else setHover(null);
+  };
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--teal)" }}></span>
+          롤링 지표 — 승률 · Payoff
+        </div>
+        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+          <LegendDot color="var(--teal)" label="롤링 승률 %" />
+          <LegendDot color="var(--amber)" label="롤링 payoff 배" />
+        </div>
+      </div>
+      <div className="panel-bd">
+        <MetricHelpStrip items={[
+          `${window}거래 이동창 기준`,
+          "좌축 = 승률(%) · 우축 = payoff(평균이익/평균손실)",
+          "구간별 전략 안정성 추이 진단",
+        ]} />
+        <div className="chart-wrap">
+          <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
+               onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
+            {/* 50% 기준선(좌축) */}
+            <line x1={padL} x2={W - padR} y1={yWin(50)} y2={yWin(50)} stroke="rgba(255,255,255,0.18)" strokeWidth="1" strokeDasharray="2 3" />
+            <text className="chart-axis-text" x={padL - 8} y={yWin(50) + 3} textAnchor="end" fill="var(--ink-2)">50%</text>
+            {/* 좌축 0/100 */}
+            <text className="chart-axis-text" x={padL - 8} y={yWin(100) + 3} textAnchor="end" fill="var(--teal)">100%</text>
+            <text className="chart-axis-text" x={padL - 8} y={yWin(0) + 3} textAnchor="end" fill="var(--ink-2)">0%</text>
+            {/* 우축 payoff max */}
+            <text className="chart-axis-text" x={W - padR + 6} y={yPay(payoffMax) + 3} textAnchor="start" fill="var(--amber)">{payoffMax.toFixed(1)}×</text>
+            <text className="chart-axis-text" x={W - padR + 6} y={yPay(1) + 3} textAnchor="start" fill="var(--ink-3)">1×</text>
+            {/* payoff=1 손익분기선 */}
+            <line x1={padL} x2={W - padR} y1={yPay(1)} y2={yPay(1)} stroke="rgba(240,179,90,0.2)" strokeWidth="1" strokeDasharray="4 4" />
+            {/* Frame */}
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            {/* 라인 */}
+            {n > 1 && <path d={winPath} fill="none" stroke="var(--teal)" strokeWidth="2" />}
+            {n > 1 && <path d={payPath} fill="none" stroke="var(--amber)" strokeWidth="1.6" strokeDasharray="5 3" opacity="0.9" />}
+            {/* X 라벨(거래 인덱스) */}
+            {xTickIdx.map((i) => (
+              <text key={`rx${i}`} className="chart-axis-text" x={x(i)} y={H - 10} textAnchor="middle">
+                {series[i] ? `#${series[i].index + 1}` : ""}
+              </text>
+            ))}
+            {hover != null && series[hover] && (
+              <line x1={x(hover)} x2={x(hover)} y1={padT} y2={padT + innerH} stroke="rgba(255,255,255,0.22)" strokeWidth="1" />
+            )}
+          </svg>
+
+          {hover != null && series[hover] && (
+            <div style={{
+              position: "absolute", top: 16, right: 16,
+              background: "var(--bg-0)", border: "1px solid var(--line-2)",
+              borderRadius: 6, padding: "8px 10px", fontFamily: "var(--mono)", fontSize: 11,
+              minWidth: 160, boxShadow: "0 6px 16px rgba(0,0,0,0.4)", pointerEvents: "none",
+            }}>
+              <div style={{ fontSize: 10.5, color: "var(--ink-2)", marginBottom: 4 }}>거래 #{series[hover].index + 1}</div>
+              <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" }}>
+                <span style={{ color: "var(--ink-2)" }}>승률</span>
+                <span style={{ textAlign: "right", color: "var(--teal)" }}>{fmtPct(series[hover].win_rate)}</span>
+                <span style={{ color: "var(--ink-2)" }}>payoff</span>
+                <span style={{ textAlign: "right", color: "var(--amber)" }}>{(series[hover].payoff || 0).toFixed(2)}×</span>
+                <span style={{ color: "var(--ink-2)" }}>평균손익</span>
+                <span className={series[hover].avg_pnl_pct > 0 ? "num-pos" : series[hover].avg_pnl_pct < 0 ? "num-neg" : ""}
+                      style={{ textAlign: "right" }}>{series[hover].avg_pnl_pct.toFixed(2)}%</span>
+              </div>
+            </div>
+          )}
+
+          {n === 0 && <_BtChartEmpty message={`거래가 ${window}건 이상 누적되면 롤링 지표가 표시됩니다`} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const _BT_MONTHS = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
+
+/* ⑫ 월별 캘린더 히트맵(트랙 D) — analysis.monthly {years:[...], cells:[{year,month,profit_krw,trades,win_rate}]}.
+   행=연도, 열=1~12월. 셀 색=실현손익 부호·크기. 거래 없는 (연,월) 은 빈 셀. */
+function BtMonthlyCalendar({ monthly }) {
+  const years = (monthly && monthly.years) || [];
+  const cells = (monthly && monthly.cells) || [];
+  const [hover, setHover] = useState_btc(null);
+
+  const cellMap = useMemo_btc(() => {
+    const m = {};
+    for (const c of cells) m[c.year + "_" + c.month] = c;
+    return m;
+  }, [cells]);
+
+  const maxAbs = Math.max(1, ...cells.map(c => Math.abs(c.profit_krw || 0)));
+  const cellColor = (c) => {
+    if (!c) return "var(--bg-0)";
+    const t = Math.min(1, Math.abs(c.profit_krw || 0) / maxAbs);
+    if ((c.profit_krw || 0) >= 0) return `rgba(76,214,179,${(0.12 + 0.66 * t).toFixed(3)})`;
+    return `rgba(255,107,107,${(0.12 + 0.66 * t).toFixed(3)})`;
+  };
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--blue)" }}></span>
+          월별 수익 캘린더
+        </div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>매도일 기준 · 월별 손익 합</span>
+      </div>
+      <div className="panel-bd">
+        {cells.length === 0 ? (
+          <div style={{ position: "relative", minHeight: 120 }}>
+            <_BtChartEmpty message="거래가 누적되면 월별 수익 캘린더가 표시됩니다" />
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ borderCollapse: "separate", borderSpacing: 3, fontFamily: "var(--mono)" }}>
+              <thead>
+                <tr>
+                  <th style={{ width: 44 }}></th>
+                  {_BT_MONTHS.map((m, i) => (
+                    <th key={i} style={{ fontSize: 9.5, color: "var(--ink-3)", fontWeight: 400, padding: "0 1px", whiteSpace: "nowrap" }}>{m}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {years.map(yr => (
+                  <tr key={yr}>
+                    <td style={{ fontSize: 11, color: "var(--ink-2)", textAlign: "center", paddingRight: 4 }}>{yr}</td>
+                    {_BT_MONTHS.map((_, mi) => {
+                      const month = mi + 1;
+                      const key = yr + "_" + month;
+                      const c = cellMap[key];
+                      return (
+                        <td key={mi}
+                            onMouseEnter={() => c && setHover(key)}
+                            onMouseLeave={() => setHover(null)}
+                            title={c ? `${yr}년 ${month}월 · ${fmtMoney(c.profit_krw)} · ${c.trades}건 · ${fmtPct(c.win_rate)}` : ""}
+                            style={{
+                              width: 48, height: 30, borderRadius: 4,
+                              background: cellColor(c),
+                              border: hover === key ? "1px solid var(--ink-0)" : "1px solid var(--line-1)",
+                              textAlign: "center", fontSize: 9, lineHeight: 1.25,
+                              color: c ? "var(--ink-0)" : "var(--ink-3)",
+                            }}>
+                          {c ? (
+                            <div>
+                              <div style={{ fontSize: 9.5 }}>{_btMoneyTick(c.profit_krw)}</div>
+                              <div style={{ fontSize: 8, color: "var(--ink-2)" }}>{c.trades}건</div>
+                            </div>
+                          ) : ""}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ display: "flex", gap: 14, marginTop: 10, alignItems: "center" }}>
+              <LegendDot color="rgba(76,214,179,0.78)" label="이익 월" />
+              <LegendDot color="rgba(255,107,107,0.78)" label="손실 월" />
+              <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>셀 = 손익 · 거래수</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ⑬ 누적 거래 듀얼축(트랙 D) — analysis.cumulative_trades {series:[{index,sell_time,cum_trades,cum_profit_krw}]}.
+   거래 순서 축으로 누적 거래수(좌축, 면적)와 누적 실현손익(우축, 라인)을 겹쳐 그린다. */
+function BtCumulativeTradesChart({ data }) {
+  const series = (data && data.series) || [];
+  const [hover, setHover] = useState_btc(null);
+  const svgRef = useRef_btc(null);
+
+  const W = 880, H = 280;
+  const padL = 52, padR = 60, padT = 18, padB = 30;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  const n = series.length;
+  const x = (i) => n > 1 ? padL + (i / (n - 1)) * innerW : padL + innerW / 2;
+
+  // 좌축: 누적 거래수 0~max.
+  const maxTrades = Math.max(1, ...series.map(s => s.cum_trades || 0));
+  const yTrades = (v) => padT + innerH - (v / maxTrades) * innerH;
+  // 우축: 누적 손익(0 포함).
+  const profits = series.map(s => s.cum_profit_krw || 0);
+  const pMax = Math.max(0, ...profits);
+  const pMin = Math.min(0, ...profits);
+  const pRange = (pMax - pMin) || 1;
+  const yProfit = (v) => padT + innerH - ((v - pMin) / pRange) * innerH;
+
+  const tradesArea = useMemo_btc(() => {
+    if (n < 2) return "";
+    const top = series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yTrades(s.cum_trades || 0).toFixed(1)}`).join(" ");
+    return `${top} L ${x(n - 1).toFixed(1)} ${(padT + innerH).toFixed(1)} L ${x(0).toFixed(1)} ${(padT + innerH).toFixed(1)} Z`;
+  }, [series, n, maxTrades]);
+  const profitPath = useMemo_btc(() => n < 2 ? "" :
+    series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yProfit(s.cum_profit_krw || 0).toFixed(1)}`).join(" "),
+    [series, n, pMin, pRange]);
+
+  const xTickIdx = useMemo_btc(() => {
+    if (n <= 1) return n === 1 ? [0] : [];
+    const step = Math.max(1, Math.ceil(n / 8));
+    const idx = [];
+    for (let i = 0; i < n; i += step) idx.push(i);
+    if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
+    return idx;
+  }, [n]);
+
+  const onMove = (e) => {
+    if (!n || !svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const px = (e.clientX - rect.left) * (W / rect.width);
+    const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
+    const i = Math.round(frac * (n - 1));
+    if (i >= 0 && i < n) setHover(i); else setHover(null);
+  };
+
+  const profitZeroY = yProfit(0);
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--violet)" }}></span>
+          누적 거래 · 누적 손익
+        </div>
+        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+          <LegendDot color="var(--blue)" label="누적 거래수" />
+          <LegendDot color="var(--amber)" label="누적 손익 ₩" />
+        </div>
+      </div>
+      <div className="panel-bd">
+        <MetricHelpStrip items={[
+          "x축 = 거래 순서(체결 순)",
+          "좌축 = 누적 거래수 · 우축 = 누적 실현손익",
+          "체결 빈도와 자본 증가를 한 화면에서 비교",
+        ]} />
+        <div className="chart-wrap">
+          <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
+               onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
+            <defs>
+              <linearGradient id="bt-ct-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#5b8def" stopOpacity="0.34" />
+                <stop offset="100%" stopColor="#5b8def" stopOpacity="0.02" />
+              </linearGradient>
+            </defs>
+            {/* 손익 0 기준선(우축) */}
+            <line x1={padL} x2={W - padR} y1={profitZeroY} y2={profitZeroY} stroke="rgba(255,255,255,0.28)" strokeWidth="1" strokeDasharray="2 3" />
+            <text className="chart-axis-text" x={W - padR + 6} y={profitZeroY + 3} textAnchor="start" fill="var(--ink-2)">0</text>
+            {/* 좌축(누적 거래수 max) */}
+            <text className="chart-axis-text" x={padL - 8} y={yTrades(maxTrades) + 3} textAnchor="end" fill="var(--blue)">{maxTrades}</text>
+            <text className="chart-axis-text" x={padL - 8} y={yTrades(0) + 3} textAnchor="end" fill="var(--ink-2)">0</text>
+            {/* 우축(누적 손익 max/min) */}
+            <text className="chart-axis-text" x={W - padR + 6} y={yProfit(pMax) + 3} textAnchor="start" fill="var(--amber)">{_btMoneyTick(pMax)}</text>
+            <text className="chart-axis-text" x={W - padR + 6} y={yProfit(pMin) + 3} textAnchor="start" fill="var(--amber)">{_btMoneyTick(pMin)}</text>
+            {/* Frame */}
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            {/* 누적 거래수 면적 + 누적 손익 라인 */}
+            {n > 1 && <path d={tradesArea} fill="url(#bt-ct-grad)" stroke="var(--blue)" strokeWidth="1.2" opacity="0.85" />}
+            {n > 1 && <path d={profitPath} fill="none" stroke="var(--amber)" strokeWidth="2" />}
+            {/* X 라벨 */}
+            {xTickIdx.map((i) => (
+              <text key={`cx${i}`} className="chart-axis-text" x={x(i)} y={H - 10} textAnchor="middle">
+                {series[i] ? `#${series[i].index}` : ""}
+              </text>
+            ))}
+            {hover != null && series[hover] && (
+              <line x1={x(hover)} x2={x(hover)} y1={padT} y2={padT + innerH} stroke="rgba(255,255,255,0.22)" strokeWidth="1" />
+            )}
+          </svg>
+
+          {hover != null && series[hover] && (
+            <div style={{
+              position: "absolute", top: 16, right: 16,
+              background: "var(--bg-0)", border: "1px solid var(--line-2)",
+              borderRadius: 6, padding: "8px 10px", fontFamily: "var(--mono)", fontSize: 11,
+              minWidth: 170, boxShadow: "0 6px 16px rgba(0,0,0,0.4)", pointerEvents: "none",
+            }}>
+              <div style={{ fontSize: 10.5, color: "var(--ink-2)", marginBottom: 4 }}>거래 #{series[hover].index}</div>
+              <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" }}>
+                <span style={{ color: "var(--ink-2)" }}>누적 거래</span>
+                <span style={{ textAlign: "right", color: "var(--blue)" }}>{series[hover].cum_trades}건</span>
+                <span style={{ color: "var(--ink-2)" }}>누적 손익</span>
+                <span className={series[hover].cum_profit_krw > 0 ? "num-pos" : series[hover].cum_profit_krw < 0 ? "num-neg" : ""}
+                      style={{ textAlign: "right" }}>{fmtMoney(series[hover].cum_profit_krw)}</span>
+              </div>
+            </div>
+          )}
+
+          {n === 0 && <_BtChartEmpty message="거래가 누적되면 누적 거래·손익 곡선이 표시됩니다" />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ⑩ A/B 비교 뷰 — /bt/compare {a, b, delta}.
    수익곡선 오버레이(A 실선 / B 점선, 정규화 토글) + 메트릭 나란히 표(delta 색상·우세 하이라이트). */
 const _BT_CMP_METRICS = [
@@ -1668,4 +2120,5 @@ Object.assign(window, {
   BtEquityChart, BtDistributionChart, BtHeatmap, BtUnderwaterChart, BtResultArea,
   BtMaeMfeScatter, BtExitReasonPanel,
   BtMonteCarloChart, BtOrderflowPanel, BtStatTestPanel, BtCompareView,
+  BtRollingChart, BtMonthlyCalendar, BtCumulativeTradesChart,
 });

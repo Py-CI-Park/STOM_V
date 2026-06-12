@@ -50,6 +50,8 @@ _HIST_BINS = 20
 _TOP_N = 10
 # MAE/MFE 산점도 최대 표본(브라우저 렌더 부하 방지).
 _SCATTER_MAX = 1000
+# 롤링 지표 기본 창(거래 단위). 창보다 거래가 적으면 빈 시리즈(무예외).
+_ROLLING_WINDOW = 20
 
 # 한국 거래일 기준 연율화 상수(252 거래일/년).
 _TRADING_DAYS_PER_YEAR = 252.0
@@ -1187,6 +1189,137 @@ def statistical_tests(trades: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 
 # ---------------------------------------------------------------------------
+# 13. rolling_metrics — 거래 순서 축 롤링 승률·payoff(전체화면 인사이트, 트랙 D).
+# ---------------------------------------------------------------------------
+def rolling_metrics(
+    trades: List[Dict[str, Any]],
+    window: int = _ROLLING_WINDOW,
+) -> Dict[str, Any]:
+    """거래 순서(매도시간) 축으로 window 거래 롤링 승률·payoff·평균손익(%)을 만든다(무예외).
+
+    각 점 i 는 거래 [i-window+1 .. i] 구간의 지표다(완전 채워진 창만 산출 → 첫 점은
+    window-1 번째 거래에서 시작). 거래가 window 미만이면 빈 시리즈를 돌린다(점 부족).
+    payoff = 창 내 평균이익 / |평균손실|(손실 없으면 0). 시계열은 다운샘플 ≤500pt.
+
+    반환: {window, series:[{index, sell_time, win_rate, payoff, avg_pnl_pct}]}.
+    """
+    win = max(1, int(window))
+    n = len(trades)
+    if n < win:
+        return {"window": win, "series": []}
+
+    # 거래 순서 = 매도시간 오름차순(없으면 입력 순서 유지). 안정 정렬.
+    ordered = sorted(
+        range(n),
+        key=lambda i: str(trades[i].get("sell_time", "") or ""),
+    )
+    seq = [trades[i] for i in ordered]
+    pcts = [float(t.get("profit_pct", 0.0) or 0.0) for t in seq]
+    krws = [float(t.get("profit_krw", 0.0) or 0.0) for t in seq]
+
+    series: List[Dict[str, Any]] = []
+    for end in range(win - 1, n):
+        lo = end - win + 1
+        w_pct = pcts[lo:end + 1]
+        w_krw = krws[lo:end + 1]
+        wins = [p for p in w_krw if p > 0.0]
+        losses = [p for p in w_krw if p < 0.0]
+        avg_win = (sum(wins) / len(wins)) if wins else 0.0
+        avg_loss = (sum(losses) / len(losses)) if losses else 0.0
+        payoff = (avg_win / abs(avg_loss)) if avg_loss != 0.0 else 0.0
+        series.append({
+            "index": int(end),
+            "sell_time": str(seq[end].get("sell_time", "") or ""),
+            "win_rate": round(len(wins) / win * 100.0, 4),
+            "payoff": float(payoff),
+            "avg_pnl_pct": float(sum(w_pct) / win),
+        })
+
+    return {"window": win, "series": _downsample(series)}
+
+
+# ---------------------------------------------------------------------------
+# 14. monthly_calendar — 연×월 실현손익 히트맵(전체화면 인사이트, 트랙 D).
+# ---------------------------------------------------------------------------
+def monthly_calendar(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """매도일(YYYYMMDD) 기준 (연, 월) 셀별 실현손익/거래수/승률 히트맵을 만든다(무예외).
+
+    반환: {years:[정렬된 연도], cells:[{year, month(1~12), profit_krw, trades, win_rate}]}.
+    거래 없는 (연, 월) 셀은 생략한다(소비측이 격자에서 결측 처리). 빈 입력→빈 구조.
+    매도일이 8자리 미만이면 그 거래는 제외한다(파싱 불가).
+    """
+    cells_map: Dict[Tuple[int, int], Dict[str, Any]] = {}
+    years: set = set()
+    for t in trades:
+        raw_day = t.get("day")
+        if raw_day is None:
+            continue
+        try:
+            day_int = int(str(raw_day).strip())
+        except (ValueError, TypeError):
+            continue
+        if day_int < 10000000:  # YYYYMMDD 최소 8자리.
+            continue
+        year = day_int // 10000
+        month = (day_int // 100) % 100
+        if month < 1 or month > 12:
+            continue
+        years.add(year)
+        key = (year, month)
+        cell = cells_map.setdefault(
+            key, {"year": year, "month": month, "profit_krw": 0.0, "trades": 0, "wins": 0}
+        )
+        pnl = float(t.get("profit_krw", 0.0) or 0.0)
+        cell["profit_krw"] += pnl
+        cell["trades"] += 1
+        if pnl > 0.0:
+            cell["wins"] += 1
+
+    cells = [
+        {
+            "year": int(c["year"]),
+            "month": int(c["month"]),
+            "profit_krw": float(c["profit_krw"]),
+            "trades": int(c["trades"]),
+            "win_rate": round(c["wins"] / c["trades"] * 100.0, 2) if c["trades"] else 0.0,
+        }
+        for c in sorted(cells_map.values(), key=lambda c: (c["year"], c["month"]))
+    ]
+    return {"years": sorted(years), "cells": cells}
+
+
+# ---------------------------------------------------------------------------
+# 15. cumulative_trades — 거래 순서 축 누적 거래수·누적 실현손익(전체화면, 트랙 D).
+# ---------------------------------------------------------------------------
+def cumulative_trades(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """거래 순서(매도시간) 축으로 누적 거래수·누적 실현손익(원) 듀얼 시계열을 만든다(무예외).
+
+    equity_series 가 거래일 단위로 묶는 것과 달리 여기선 개별 거래 단위 누적이라
+    한 화면에서 체결 빈도와 자본 증가를 함께 본다. 시계열은 다운샘플 ≤500pt.
+
+    반환: {series:[{index, sell_time, cum_trades, cum_profit_krw}]}. 빈 입력→빈 시리즈.
+    """
+    if not trades:
+        return {"series": []}
+
+    ordered = sorted(
+        range(len(trades)),
+        key=lambda i: str(trades[i].get("sell_time", "") or ""),
+    )
+    series: List[Dict[str, Any]] = []
+    running = 0.0
+    for rank, i in enumerate(ordered):
+        running += float(trades[i].get("profit_krw", 0.0) or 0.0)
+        series.append({
+            "index": int(rank + 1),
+            "sell_time": str(trades[i].get("sell_time", "") or ""),
+            "cum_trades": int(rank + 1),
+            "cum_profit_krw": float(running),
+        })
+    return {"series": _downsample(series)}
+
+
+# ---------------------------------------------------------------------------
 # 묶음 — 잡 결과 CSV 하나로 전체 분석을 한 번에 만든다(API /bt/result 가 소비).
 # ---------------------------------------------------------------------------
 def full_analysis(
@@ -1220,6 +1353,10 @@ def full_analysis(
         "exit_reasons": exit_reason_breakdown(trades),
         "stats": stats,
         "orderflow": orderflow,
+        # 트랙 D — 전체화면 분석 모드 추가 그래프(롤링 지표·월별 캘린더·누적 거래).
+        "rolling": rolling_metrics(trades),
+        "monthly": monthly_calendar(trades),
+        "cumulative_trades": cumulative_trades(trades),
     }
 
 
