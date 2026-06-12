@@ -726,6 +726,7 @@ def test_collect_engine_shared_info_records_structured_timeout():
         'missing_count': 1,
         'timeout_seconds': 60,
         'received_lengths': [1],
+        'engine_liveness': [],
     }
     assert result['checkpoint_status'] == 'error'
     assert result['last_checkpoint'] == 'engine_data_response_timeout'
@@ -733,6 +734,55 @@ def test_collect_engine_shared_info_records_structured_timeout():
         event['name'] == 'engine_data_response_timeout'
         for event in checkpoint.events
     )
+
+
+class FakeEngineProc:
+    """is_alive/exitcode/pid 만 노출하는 엔진 프로세스 더블."""
+
+    def __init__(self, pid, alive, exitcode):
+        self.pid = pid
+        self._alive = alive
+        self.exitcode = exitcode
+
+    def is_alive(self):
+        return self._alive
+
+
+def test_collect_engine_shared_info_timeout_captures_engine_liveness():
+    """issue #35: 데이터 응답 교착 시 엔진 생존/종료코드를 진단에 첨부한다.
+
+    한 엔진이 alive=False + exitcode!=0 이면 DataLoad 단계 침묵 예외
+    (self.bq.put 미도달)를, 전원 alive=True 면 계산 지연을 가리킨다.
+    '응답 0/N' 증상을 블록 지점으로 환원하는 핵심 진단 신호다.
+    """
+    from queue import Empty
+
+    from cli.runner import _collect_engine_shared_info
+
+    backQ = FakeEngineDataBackQueue([Empty()])
+    checkpoint = FakeEngineDataCheckpoint()
+    result = {}
+    windowQ = FakeEngineDataWindowQueue()
+    engine_procs = [
+        FakeEngineProc(pid=1001, alive=True, exitcode=None),   # 계산 중
+        FakeEngineProc(pid=1002, alive=False, exitcode=1),     # 침묵 예외로 사망
+    ]
+
+    shared_info = _collect_engine_shared_info(
+        backQ, 2, 60, checkpoint, result, windowQ, 'test',
+        None, None, engine_procs,
+    )
+
+    assert shared_info is None
+    liveness = result['engine_data_loading']['engine_liveness']
+    assert liveness == [
+        {'engine_index': 0, 'pid': 1001, 'alive': True, 'exitcode': None},
+        {'engine_index': 1, 'pid': 1002, 'alive': False, 'exitcode': 1},
+    ]
+    timeout_event = next(
+        e for e in checkpoint.events if e['name'] == 'engine_data_response_timeout'
+    )
+    assert timeout_event['detail']['engine_liveness'] == liveness
 
 
 def test_runner_collects_backtest_child_diagnostics():

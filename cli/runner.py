@@ -173,6 +173,31 @@ def _cleanup_shared_memory(shared_info):
             pass
 
 
+def _snapshot_engine_liveness(engine_procs):
+    """엔진 자식 프로세스의 생존/종료코드 스냅샷을 반환한다.
+
+    멀티엔진 데이터 응답 교착(issue #35)의 진단 핵심: '응답 0건' 증상이
+    (a) 엔진이 살아서 계산 중인지, (b) 엔진이 조용히 죽었는지를 구분하지
+    못하면 블록 지점을 확정할 수 없다. 타임아웃 시점에 각 엔진의 is_alive/
+    exitcode/pid 를 수집해 결과에 첨부하면, 한 엔진이라도 alive=False +
+    exitcode!=0 이면 DataLoad 단계의 침묵 예외(self.bq.put 미도달)를,
+    전원 alive=True 면 계산 지연(전략 비용/대용량 데이터)을 가리킨다.
+    """
+    snapshot = []
+    for idx, proc in enumerate(engine_procs or []):
+        try:
+            entry = {
+                'engine_index': idx,
+                'pid': proc.pid,
+                'alive': bool(proc.is_alive()),
+                'exitcode': proc.exitcode,
+            }
+        except Exception as exc:  # noqa: BLE001 - 진단 수집 실패가 타임아웃 처리를 막지 않는다.
+            entry = {'engine_index': idx, 'error': str(exc)}
+        snapshot.append(entry)
+    return snapshot
+
+
 def _record_engine_data_loading_timeout(
     checkpoint,
     result,
@@ -180,23 +205,21 @@ def _record_engine_data_loading_timeout(
     received_count,
     timeout,
     received_lengths,
+    engine_procs=None,
 ):
-    checkpoint.mark('engine_data_response_timeout', detail={
+    engine_liveness = _snapshot_engine_liveness(engine_procs)
+    detail = {
         'expected_count': multi,
         'received_count': received_count,
         'missing_count': multi - received_count,
         'timeout_seconds': timeout,
         'received_lengths': received_lengths,
-    })
+        'engine_liveness': engine_liveness,
+    }
+    checkpoint.mark('engine_data_response_timeout', detail=detail)
     result['status'] = 'error'
     result['message'] = 'engine data loading timed out'
-    result['engine_data_loading'] = {
-        'expected_count': multi,
-        'received_count': received_count,
-        'missing_count': multi - received_count,
-        'timeout_seconds': timeout,
-        'received_lengths': received_lengths,
-    }
+    result['engine_data_loading'] = dict(detail)
     result.update(checkpoint.to_result_fields(status='error'))
 
 
@@ -210,6 +233,7 @@ def _collect_engine_shared_info(
     log_gubun,
     shared_info=None,
     load_stats=None,
+    engine_procs=None,
 ):
     data_load_deadline = time.monotonic() + timeout
     received_count = 0
@@ -228,7 +252,8 @@ def _collect_engine_shared_info(
         remaining = data_load_deadline - time.monotonic()
         if remaining <= 0:
             _record_engine_data_loading_timeout(
-                checkpoint, result, multi, received_count, timeout, received_lengths
+                checkpoint, result, multi, received_count, timeout, received_lengths,
+                engine_procs,
             )
             return None
 
@@ -236,7 +261,8 @@ def _collect_engine_shared_info(
             shared_info_ = backQ.get(timeout=remaining)
         except Empty:
             _record_engine_data_loading_timeout(
-                checkpoint, result, multi, received_count, timeout, received_lengths
+                checkpoint, result, multi, received_count, timeout, received_lengths,
+                engine_procs,
             )
             return None
 
@@ -399,6 +425,7 @@ def run_backtest(config):
         else:
             target = BackEngineKiwoomTick2 if config.is_tick else BackEngineKiwoomMin2
 
+        engine_procs = []
         for i in range(config.engine_count):
             profiling = i == 0 and dict_set['백테엔진프로파일링']
             proc = Process(
@@ -410,6 +437,7 @@ def run_backtest(config):
             )
             proc.start()
             _child_procs.append(proc)
+            engine_procs.append(proc)
             windowQ.put((1.4, f'엔진 프로세스{i + 1} 생성 완료'))
 
         # === Step 4: 데이터 로딩 (DB 연결 + moneytop 파싱) ===
@@ -533,7 +561,7 @@ def run_backtest(config):
         shared_info.clear()
         collected_shared_info = _collect_engine_shared_info(
             backQ, multi, timeout, checkpoint, result, windowQ, log_gubun,
-            shared_info, data_load_stats
+            shared_info, data_load_stats, engine_procs
         )
         if collected_shared_info is None:
             return result
