@@ -1,0 +1,7 @@
+[BATCH] run_id=r5c_combo_train_20260613 pairs=4
+[BATCH] prepare status=ok back_count=2285 elapsed=281s
+[BATCH] gen0 BASE_SEED ok profit=8,631,199 mdd=17.44 trades=307 daily=0.40 payoff=1.4861642479780424 gate=True reason=ok (147s)
+[BATCH] gen1 FROZEN_THETA ok profit=10,965,479 mdd=10.04 trades=272 daily=0.40 payoff=1.534815263812587 gate=True reason=ok (148s)
+[BATCH] gen2 R5C THETA-전일비제거 ok profit=10,625,154 mdd=10.24 trades=284 daily=0.40 payoff=1.5372193966951901 gate=True reason=ok (148s)
+[BATCH] gen3 R5C THETA-전일비-등락율밴드제거 ok profit=10,596,429 mdd=11.82 trades=293 daily=0.40 payoff=1.5322514179535014 gate=True reason=ok (147s)
+[BATCH] done
