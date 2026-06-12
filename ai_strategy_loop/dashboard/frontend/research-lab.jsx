@@ -20,6 +20,26 @@ function _rlNum(value, digits) {
   return value.toFixed(digits == null ? 3 : digits);
 }
 
+/* E3(2026-06-13) — YYYYMMDD 정수를 'YYYY-MM-DD'로 포맷(연도 표기 포함). 비정상 값은 null. */
+function _rlYmd(v) {
+  const n = typeof v === "number" ? v : parseInt(v, 10);
+  if (!isFinite(n) || n < 19000101 || n > 21001231) return null;
+  const y = Math.floor(n / 10000);
+  const m = Math.floor((n % 10000) / 100);
+  const d = n % 100;
+  if (m < 1 || m > 12 || d < 1 || d > 31) return null;
+  return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
+
+/* E3 — equity_curve.days(정렬된 YYYYMMDD 배열)에서 '시작 ~ 끝(연도 포함)' 기간 문자열. */
+function _rlPeriodFromDays(days) {
+  if (!Array.isArray(days) || days.length === 0) return "기간 정보 없음";
+  const s = _rlYmd(days[0]);
+  const e = _rlYmd(days[days.length - 1]);
+  if (!s || !e) return "기간 정보 없음";
+  return s === e ? s : `${s} ~ ${e}`;
+}
+
 function _rlCorrColor(value) {
   if (typeof value !== "number" || !isFinite(value)) return "rgba(80,96,116,0.48)";
   const t = Math.min(1, Math.abs(value));
@@ -337,6 +357,15 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
           </select>
         </label>
         <span className="research-empty">diagnostic_only · 동결 아티팩트 아님</span>
+        {/* E4 — 품질/적합도 용어 hover 설명(이 파이프라인 기준). */}
+        <span className="research-help"
+              title="적합도(Fitness): 손익·MDD·거래수·일관성을 가중합한 한 개의 점수. 세대(전략)가 목표 기준에 얼마나 부합하는지를 나타냅니다 — 높을수록 좋고, 게이트의 1차 통과 기준입니다. 차트는 세대 진행(x)에 따라 적합도가 우상향하는지를 봅니다.">
+          적합도 ?
+        </span>
+        <span className="research-help"
+              title="품질(Quality): 결과의 견고함 지표 모음(흑자율·고원/mesa 안정성·OOS 유지 등). 단발 고점이 아니라 이웃 파라미터·다른 기간에서도 성과가 유지되는지를 봅니다 — 과최적화를 거르는 척도입니다.">
+          품질 ?
+        </span>
       </div>
       {err && <_ResearchEmptyState message={"insufficient response: " + err} />}
 
@@ -568,9 +597,14 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
 
       {equity && equity.status === "ok" && (
         <div style={{ marginTop: 8 }}>
-          <div className="research-empty">
+          <div className="research-empty"
+               title="x축은 거래일 진행(왼→오른쪽=과거→현재), y축은 누적 손익(원). 0선 점선 위는 흑자 구간입니다.">
             {`누적 수익곡선 — gen ${equity.gen_no}${equity.label ? " · " + equity.label : ""}`
-              + ` · ${equity.n_days}거래일 · 총 ${Math.round(equity.total).toLocaleString()}`}
+              + ` · 총 ${Math.round(equity.total).toLocaleString()}`}
+          </div>
+          {/* E3 — 축 의미(거래일 진행)·기간(연도 포함) 명시. */}
+          <div className="mono" style={{ fontSize: 10, color: "#9ab", marginBottom: 2 }}>
+            {`x축: 거래일 진행(${equity.n_days}거래일) · 기간 ${_rlPeriodFromDays(equity.days)} · y축: 누적 손익(원)`}
           </div>
           <_EquityChart cum={equity.cum} />
         </div>
@@ -811,10 +845,75 @@ function _McFanChart({ fan }) {
   );
 }
 
+/* E10(2026-06-13) — 진화 프로세스 플로우 오버레이(자족형).
+   research-pro.jsx가 로드되면 더 풍부한 window.ResearchProcessFlowOverlay를 쓰지만,
+   메인 앱(index.html)에는 research-pro.jsx가 없으므로 리서치랩이 자체 오버레이를
+   포함해 어느 페이지에서도 '프로세스' 버튼이 동작하게 한다. 단계별 한국어 설명 +
+   용어 사전(세대/격자/니치/OOS/동결)을 카드+화살표로 보여준다. */
+const _RL_PIPELINE = [
+  { icon: "🌱", title: "시드 선택", desc: "사람이 검증한 출발 전략(시드)을 고릅니다. 이후 진화의 기준점입니다.",
+    terms: [["시드", "진화의 출발이 되는 기준 전략."]] },
+  { icon: "🧬", title: "후보 생성 (LLM)", desc: "직전 부검(왜 졌는지)을 컨텍스트로 새 매수/매도 조건식을 생성합니다.",
+    terms: [["세대", "한 번의 생성→평가 사이클(gen_00, gen_01 …)."]] },
+  { icon: "▦", title: "격자 탐색", desc: "파라미터(θ)를 격자로 훑어 단일 피크가 아닌 '고원'을 찾습니다.",
+    terms: [["격자", "여러 값을 바둑판처럼 조합해 전수 탐색."], ["고원/mesa", "이웃 값도 모두 흑자인 안정 영역."]] },
+  { icon: "📊", title: "백테스트 평가", desc: "지정 기간·시간단위로 자본곡선·낙폭(MDD)·매매를 시뮬레이션합니다.",
+    terms: [["MDD", "최대 낙폭 — 고점 대비 최대 하락폭(작을수록 안전)."]] },
+  { icon: "🚦", title: "적합도/품질 게이트", desc: "점수≥목표 & MDD≤상한 & 거래수≥하한을 동시에 만족해야 통과합니다.",
+    terms: [["적합도", "손익·MDD·거래수·일관성의 가중합 점수."], ["니치", "특정 환경(시간대·시총)에 특화된 군집."]] },
+  { icon: "🔬", title: "OOS 검증", desc: "학습에 쓰지 않은 기간(OOS)에서 성과가 유지되는지 확인합니다.",
+    terms: [["OOS", "Out-Of-Sample — 최적화에 안 쓴 별도 구간(진짜 일반화 검증)."]] },
+  { icon: "🏆", title: "명예의 전당/동결", desc: "검증 통과 전략을 명예의 전당에 올리고 동결(고정)해 운영 후보로 보관합니다.",
+    terms: [["동결", "전략을 박제해 재현 가능한 기준선으로 보존."]] },
+];
+
+function _RlProcessFlowOverlay({ onClose, activeStage }) {
+  useEffect_rl(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  const ai = typeof activeStage === "number" ? activeStage : -1;
+  return (
+    <div className="rp-overlay" onClick={onClose}>
+      <div className="rp-overlay-card" onClick={(e) => e.stopPropagation()}>
+        <div className="rp-overlay-hd">
+          <span className="rp-card-title">진화 프로세스 — 전체 흐름</span>
+          {ai >= 0 && <span className="rp-card-sub">현재 단계: {_RL_PIPELINE[ai].title}</span>}
+          <button type="button" className="btn ghost sm" style={{ marginLeft: "auto" }} onClick={onClose}>
+            ✕ 닫기 (Esc)
+          </button>
+        </div>
+        <div className="rp-flow">
+          {_RL_PIPELINE.map((s, i) => (
+            <React.Fragment key={s.title}>
+              <div className={"rp-flow-node" + (i === ai ? " rp-flow-active" : "")}>
+                <div className="rp-flow-ico">{s.icon}</div>
+                <div className="rp-flow-name">
+                  {i + 1}. {s.title}
+                  {i === ai && <span className="rp-flow-pulse"> ● 진행</span>}
+                </div>
+                <div className="rp-flow-desc">{s.desc}</div>
+                <div className="rp-flow-terms">
+                  {s.terms.map(([t, d]) => (
+                    <div key={t} className="rp-flow-term"><b>{t}</b> {d}</div>
+                  ))}
+                </div>
+              </div>
+              {i < _RL_PIPELINE.length - 1 && <div className="rp-flow-arrow">→</div>}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
   const [tab, setTab] = useState_rl("edge");
   const [fullscreen, setFullscreen] = useState_rl(false);  /* 전체 화면 토글. */
   const [opsStrip, setOpsStrip] = useState_rl(null);       /* 탭 공통 운영 띠. */
+  const [showFlow, setShowFlow] = useState_rl(false);      /* E10 — 프로세스 흐름 오버레이. */
 
   useEffect_rl(() => {
     if (!baseUrl) return undefined;
@@ -922,6 +1021,11 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
         background: "#0d1117", overflow: "auto", padding: "12px 18px" }
     : undefined;
   const activeOps = (opsStrip && opsStrip.active) || [];
+  const recentOps = (opsStrip && opsStrip.recent) || [];
+  /* E1 — '모드/대상' 라벨을 명시(이전엔 "운영 연구 결과"류 평문이라 의미 불명). */
+  const labMode = activeOps.length ? "운영(실행 중)" : "연구(분석)";
+  /* E10 — 활성 단계 추정: 실행 중 작업이 있으면 백테 평가(3) 단계로 강조, 없으면 정적(-1). */
+  const flowActiveStage = activeOps.length ? 3 : -1;
   return (
     <div className="research-lab-shell" style={shellStyle}>
       <div className="research-tabs" role="tablist" aria-label="Research Lab"
@@ -934,19 +1038,53 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
             {item.label}
           </button>
         ))}
+        {/* E10 — 진화 전체 프로세스를 흐름으로 보는 오버레이(자족형, 어느 페이지에서도 동작). */}
         <button type="button" className="research-tab" style={{ marginLeft: "auto" }}
+                title="시드→생성→격자→백테→게이트→OOS→동결 전체 흐름과 용어 보기"
+                onClick={() => setShowFlow(true)}>
+          🧭 프로세스
+        </button>
+        {/* E2 — 리서치 프로(전체화면 분석)를 새 탭으로. */}
+        <a className="research-tab" href="/ui/pro.html" target="_blank" rel="noopener"
+           style={{ textDecoration: "none" }}
+           title="화면 전체를 쓰는 상세 분석 워크스페이스(히트맵·명예의전당·비교·히스토리)">
+          🔬 리서치 프로
+        </a>
+        <button type="button" className="research-tab"
                 onClick={() => setFullscreen(!fullscreen)}>
           {fullscreen ? "✕ 전체 화면 닫기" : "⛶ 전체 화면"}
         </button>
       </div>
-      <div className="mono" style={{ fontSize: 11, margin: "2px 0 6px", opacity: 0.9 }}>
+      {/* E1 — 평문 대신 라벨+값+툴팁 상태 배지 바. */}
+      <div className="research-statusbar mono">
+        <span className="research-badge" title="현재 리서치랩 모드 — 실행 중 run이 있으면 '운영', 없으면 '연구(분석)'.">
+          <b>모드</b> {labMode}
+        </span>
+        <span className="research-badge" title="이 패널이 보여주는 대상 — 분석 중인 run/세대 결과의 건수.">
+          <b>대상</b> 실행 {activeOps.length}건 · 최근완료 {recentOps.length}건
+        </span>
         {activeOps.length
-          ? activeOps.map(a =>
-              `🔄 ${a.run_id} · ${a.gens}세대 · ${a.last_label || ""} · ${a.health === "active" ? "진행 중" : "⚠️ 정체 의심"}`
-            ).join("  |  ")
-          : "실행 중 작업 없음"}
+          ? activeOps.map(a => (
+              <span key={a.run_id} className="research-badge"
+                    title={`run ${a.run_id} · ${a.gens}세대 · 마지막 ${a.last_label || "—"} · ${a.health === "active" ? "정상 진행" : "10분+ 무진행(정체 의심)"}`}>
+                <b>{a.health === "active" ? "🔄 진행" : "⚠️ 정체"}</b> {a.run_id} · {a.gens}세대
+              </span>
+            ))
+          : (
+            <span className="research-badge" title="현재 실행 중인 진화 작업이 없습니다(분석 전용).">
+              <b>상태</b> 실행 중 작업 없음
+            </span>
+          )}
       </div>
       {body}
+      {/* E10 — research-pro.jsx가 로드된 페이지면 더 풍부한 전역 오버레이를, 아니면 자족형. */}
+      {showFlow && (typeof window.ResearchProcessFlowOverlay === "function"
+        ? React.createElement(window.ResearchProcessFlowOverlay, {
+            onClose: () => setShowFlow(false),
+            liveState: activeOps.length ? { status: "running" } : null,
+            ops: opsStrip,
+          })
+        : <_RlProcessFlowOverlay onClose={() => setShowFlow(false)} activeStage={flowActiveStage} />)}
     </div>
   );
 }

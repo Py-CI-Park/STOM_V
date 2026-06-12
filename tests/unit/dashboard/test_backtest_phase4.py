@@ -192,8 +192,17 @@ def test_demo_result_route(client: TestClient):
     assert body["status"] == "success"
     # 합성 거래로 분석 묶음 전 키가 채워진다.
     assert body["analysis"]["summary"]["trade_count"] > 0
-    for key in ("equity", "distribution", "heatmap", "underwater", "insights", "rolling", "monthly"):
+    for key in ("equity", "distribution", "heatmap", "underwater", "insights", "rolling", "monthly", "gui_parity"):
         assert key in body["analysis"]
+    # B3 — GUI 패리티 6 차트 데이터가 데모에서 모두 채워진다(빈 화면 금지).
+    gp = body["analysis"]["gui_parity"]
+    assert set(gp.keys()) == {"mdd_random", "daily", "hourly", "weekday", "holding", "trade_rolling"}
+    assert gp["mdd_random"]["n"] > 0 and gp["mdd_random"]["actual"]
+    assert gp["daily"]["series"] and gp["daily"]["index_available"] is False
+    assert gp["weekday"]["days"]
+    # 데모 CSV 에 매수금액이 있어 보유금액 곡선이 전부 반영된다.
+    assert gp["holding"]["covered"] == gp["holding"]["total"] and gp["holding"]["series"]
+    assert gp["trade_rolling"]["windows"] == [20, 60, 120, 240, 480]
 
 
 def test_demo_result_sentinel_job_id(client: TestClient):
@@ -201,6 +210,16 @@ def test_demo_result_sentinel_job_id(client: TestClient):
     r = client.get("/bt/result", params={"job_id": "__demo__"})
     body = r.json()
     assert body["available"] is True and body["is_demo"] is True
+
+
+def test_gui_parity_route_empty_job_no_raise(client: TestClient):
+    # B3 — 잡 미지정 GUI 패리티 라우트는 빈 구조를 200 으로 돌린다(무예외 계약).
+    r = client.get("/bt/analysis/gui_parity", params={"job_id": ""})
+    assert r.status_code == 200
+    gp = r.json()["gui_parity"]
+    assert set(gp.keys()) == {"mdd_random", "daily", "hourly", "weekday", "holding", "trade_rolling"}
+    assert gp["mdd_random"]["n"] == 0 and gp["daily"]["series"] == []
+    assert gp["holding"]["series"] == [] and gp["trade_rolling"]["series"] == []
 
 
 # --------------------------------------------------------------- variables SSOT
