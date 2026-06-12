@@ -1,0 +1,17 @@
+[
+  {
+    "label": "BASE_SEED",
+    "buy": "Tick_B_902_905_Update_2",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R4 M0 top5",
+    "buy": "R4M0_B",
+    "sell": "R4M0_S"
+  },
+  {
+    "label": "R4 M1 top9",
+    "buy": "R4M1_B",
+    "sell": "R4M1_S"
+  }
+]
