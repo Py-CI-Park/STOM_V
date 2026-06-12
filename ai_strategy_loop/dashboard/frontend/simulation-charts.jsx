@@ -22,6 +22,21 @@ const _SIM_WINDOW = 400;
 // LWC 에 넘기는 누적 캔들 상한(과대 입력 방지 — 일일 데이터는 통상 이 안).
 const _SIM_LWC_MAX = 5000;
 
+// 보조지표 기본 토글 — 차트 위 라인 오버레이로 렌더(LWC addLineSeries / SVG path 동일).
+//   ma: MA5/20/60, vwap: VWAP, boll: 볼린저(20,2) 상/중/하단.
+const _SIM_DEFAULT_INDICATORS = { ma: true, vwap: true, boll: false };
+
+// 지표별 색/스타일(LWC·SVG 공통 팔레트). dashed 는 SVG strokeDasharray·LWC LineStyle 매핑.
+const _SIM_IND_STYLE = {
+  ma5:    { color: "#4cd6b3", width: 1, dashed: true,  label: "MA5" },
+  ma20:   { color: "#f0b35a", width: 1.1, dashed: false, label: "MA20" },
+  ma60:   { color: "#7c6cf0", width: 1.1, dashed: false, label: "MA60" },
+  vwap:   { color: "#ffd24c", width: 1.4, dashed: false, label: "VWAP" },
+  bb_up:  { color: "#5a93c8", width: 1, dashed: true,  label: "BB+" },
+  bb_mid: { color: "#5a93c8", width: 0.9, dashed: true, label: "BB" },
+  bb_low: { color: "#5a93c8", width: 1, dashed: true,  label: "BB-" },
+};
+
 // HHMMSS(int) → HH:MM:SS 라벨.
 function _simTimeLabel(hms) {
   const s = String(hms).padStart(6, "0");
@@ -261,13 +276,39 @@ function SimRestFlow({ bars, compact }) {
   );
 }
 
+// bar t → 자정 기준 단조 증가 초 매핑(LWC setData 와 동일 규칙: 동일/역순 슬롯 +1 보정).
+function _monotonicSecs(bars) {
+  const out = [];
+  let lastSec = -1;
+  for (let i = 0; i < bars.length; i++) {
+    let sec = _hmsToSec(bars[i].t);
+    if (sec <= lastSec) sec = lastSec + 1;
+    lastSec = sec;
+    out.push(sec);
+  }
+  return out;
+}
+
+// 지표 라인 데이터 추출 — bar[key] 가 null 인 구간은 건너뛴다(끊어 그림 → LWC whitespace).
+function _lineData(bars, secs, key) {
+  const out = [];
+  for (let i = 0; i < bars.length; i++) {
+    const v = bars[i][key];
+    if (v == null || !isFinite(v)) continue;
+    out.push({ time: secs[i], value: v });
+  }
+  return out;
+}
+
 /* ─────────────── lightweight-charts 엔진 경로 (기본) ─────────────── */
-function SimCandleChartLWC({ bars, signals, curT, code, name, compact }) {
+function SimCandleChartLWC({ bars, signals, curT, code, name, compact, indicators }) {
   const wrapRef = useRef_simc(null);
   const chartRef = useRef_simc(null);
   const candleRef = useRef_simc(null);
   const volRef = useRef_simc(null);
   const roRef = useRef_simc(null);
+  const lineRef = useRef_simc({});   // key → LWC line series.
+  const ind = indicators || _SIM_DEFAULT_INDICATORS;
 
   const H = compact ? 240 : 360;
 
@@ -319,6 +360,7 @@ function SimCandleChartLWC({ bars, signals, curT, code, name, compact }) {
       if (roRef.current) { try { roRef.current.disconnect(); } catch (e) {} roRef.current = null; }
       try { chart.remove(); } catch (e) {}
       chartRef.current = null; candleRef.current = null; volRef.current = null;
+      lineRef.current = {};   // chart.remove() 가 모든 series 파괴 — 참조만 비운다.
     };
   }, [H, compact]);
 
@@ -342,6 +384,46 @@ function SimCandleChartLWC({ bars, signals, curT, code, name, compact }) {
     }
     try { candle.setData(cData); vol.setData(vData); } catch (e) {}
   }, [bars]);
+
+  // 보조지표 라인 오버레이(MA5/20/60·VWAP·볼린저) — 토글에 따라 생성/갱신/제거.
+  useEffect_simc(() => {
+    const chart = chartRef.current;
+    if (!chart || typeof chart.addLineSeries !== "function") return;
+    const arr = (bars || []);
+    const src = arr.length > _SIM_LWC_MAX ? arr.slice(arr.length - _SIM_LWC_MAX) : arr;
+    const secs = _monotonicSecs(src);
+    const lines = lineRef.current;
+
+    // 토글에 따라 켜질 지표 키 집합.
+    const active = {};
+    if (ind.ma) { active.ma5 = 1; active.ma20 = 1; active.ma60 = 1; }
+    if (ind.vwap) active.vwap = 1;
+    if (ind.boll) { active.bb_up = 1; active.bb_mid = 1; active.bb_low = 1; }
+
+    // 비활성 라인 제거.
+    Object.keys(lines).forEach(key => {
+      if (!active[key]) {
+        try { chart.removeSeries(lines[key]); } catch (e) {}
+        delete lines[key];
+      }
+    });
+    // 활성 라인 생성·갱신.
+    Object.keys(active).forEach(key => {
+      const st = _SIM_IND_STYLE[key];
+      if (!st) return;
+      if (!lines[key]) {
+        try {
+          lines[key] = chart.addLineSeries({
+            color: st.color, lineWidth: st.width,
+            lineStyle: st.dashed && window.LightweightCharts && window.LightweightCharts.LineStyle
+              ? window.LightweightCharts.LineStyle.Dashed : 0,
+            priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
+          });
+        } catch (e) { return; }
+      }
+      try { lines[key].setData(_lineData(src, secs, key)); } catch (e) {}
+    });
+  }, [bars, ind.ma, ind.vwap, ind.boll]);
 
   // 신호 마커(매수▲/매도▼) — curT 이하 도달분만. nearest bar 시각에 스냅.
   useEffect_simc(() => {
@@ -390,7 +472,8 @@ function SimCandleChartLWC({ bars, signals, curT, code, name, compact }) {
 }
 
 /* ─────────────── 순수 SVG 폴백 경로(줌/팬/크로스헤어 직접 구현) ─────────────── */
-function SimCandleChartSVG({ bars, signals, curT, code, name, compact }) {
+function SimCandleChartSVG({ bars, signals, curT, code, name, compact, indicators }) {
+  const ind = indicators || _SIM_DEFAULT_INDICATORS;
   const [hover, setHover] = useState_simc(null);
   // 팬 오프셋(우측 끝에서 좌로 이동한 캔들 수) + 줌(보이는 캔들 수).
   const [zoom, setZoom] = useState_simc(0);     // 추가 확대 단계(0=기본 윈도우).
@@ -524,10 +607,16 @@ function SimCandleChartSVG({ bars, signals, curT, code, name, compact }) {
           <line x1={padL} x2={W - padR} y1={priceBot} y2={priceBot} stroke="var(--line-2)" strokeWidth="1" />
           <line x1={padL} x2={padL} y1={priceTop} y2={priceBot} stroke="var(--line-2)" strokeWidth="1" />
 
-          {/* MA 오버레이(5=teal점선, 20=amber, 60=violet) */}
-          {n > 1 && <path d={maPath("ma5")} fill="none" stroke="var(--teal)" strokeWidth="1" opacity="0.5" strokeDasharray="3 2" />}
-          {n > 1 && <path d={maPath("ma20")} fill="none" stroke="var(--amber)" strokeWidth="1.1" opacity="0.7" />}
-          {n > 1 && <path d={maPath("ma60")} fill="none" stroke="var(--violet)" strokeWidth="1.1" opacity="0.6" />}
+          {/* MA 오버레이(5=teal점선, 20=amber, 60=violet) — 토글 ind.ma */}
+          {n > 1 && ind.ma && <path d={maPath("ma5")} fill="none" stroke="var(--teal)" strokeWidth="1" opacity="0.5" strokeDasharray="3 2" />}
+          {n > 1 && ind.ma && <path d={maPath("ma20")} fill="none" stroke="var(--amber)" strokeWidth="1.1" opacity="0.7" />}
+          {n > 1 && ind.ma && <path d={maPath("ma60")} fill="none" stroke="var(--violet)" strokeWidth="1.1" opacity="0.6" />}
+          {/* VWAP(금색 실선) — 토글 ind.vwap */}
+          {n > 1 && ind.vwap && <path d={maPath("vwap")} fill="none" stroke="#ffd24c" strokeWidth="1.4" opacity="0.85" />}
+          {/* 볼린저(20,2) 상/중/하단(청색 점선) — 토글 ind.boll */}
+          {n > 1 && ind.boll && <path d={maPath("bb_up")} fill="none" stroke="#5a93c8" strokeWidth="1" opacity="0.6" strokeDasharray="3 2" />}
+          {n > 1 && ind.boll && <path d={maPath("bb_mid")} fill="none" stroke="#5a93c8" strokeWidth="0.9" opacity="0.45" strokeDasharray="2 3" />}
+          {n > 1 && ind.boll && <path d={maPath("bb_low")} fill="none" stroke="#5a93c8" strokeWidth="1" opacity="0.6" strokeDasharray="3 2" />}
 
           {/* 캔들 */}
           {view.map((b, i) => {
@@ -716,6 +805,8 @@ function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engi
       </div>
       <div className="panel-bd">
         {children}
+        <SimQuotePressure lastBar={lastBar} compact={compact} />
+        <SimOrderFlowTape bars={bars} compact={compact} />
         <SimHeatStrip bars={bars} compact={compact} />
         <SimRestFlow bars={bars} compact={compact} />
       </div>
@@ -727,6 +818,179 @@ function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engi
 function SimCandleChart(props) {
   const useLwc = useMemo_simc(() => _lwcAvailable(), []);
   return useLwc ? <SimCandleChartLWC {...props} /> : <SimCandleChartSVG {...props} />;
+}
+
+/* ─────────────── 라이브 호가 압력 바 (Part: 오더플로우) ───────────────
+   매수총잔량 vs 매도총잔량 비율을 좌우 분할 막대로(매수 teal / 매도 red), 중앙에
+   현재가·매수호가1(bid1)·매도호가1(ask1) 라벨. 잔량 데이터 전무면 패널 숨김(무예외). */
+function SimQuotePressure({ lastBar, compact }) {
+  if (!lastBar) return null;
+  const buyRest = (lastBar.buy_rest != null && isFinite(lastBar.buy_rest)) ? lastBar.buy_rest : null;
+  const sellRest = (lastBar.sell_rest != null && isFinite(lastBar.sell_rest)) ? lastBar.sell_rest : null;
+  if (buyRest == null && sellRest == null) return null;
+
+  const b = buyRest || 0, s = sellRest || 0;
+  const tot = b + s;
+  const buyPct = tot > 0 ? (b / tot) * 100 : 50;
+  const sellPct = 100 - buyPct;
+  const bid1 = (lastBar.bid1 != null && isFinite(lastBar.bid1)) ? lastBar.bid1 : null;
+  const ask1 = (lastBar.ask1 != null && isFinite(lastBar.ask1)) ? lastBar.ask1 : null;
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+        <span className="mono" style={{ fontSize: 9.5, color: "var(--teal)" }}>
+          매수 {_simPriceTick(b)} {bid1 != null ? "· 호가 " + _simPriceTick(bid1) : ""}
+        </span>
+        <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-2)" }}>
+          호가 압력 {buyPct.toFixed(0)}:{sellPct.toFixed(0)}
+        </span>
+        <span className="mono" style={{ fontSize: 9.5, color: "var(--red)" }}>
+          {ask1 != null ? "호가 " + _simPriceTick(ask1) + " · " : ""}매도 {_simPriceTick(s)}
+        </span>
+      </div>
+      <div style={{ display: "flex", height: compact ? 10 : 13, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" }}>
+        <div title={"매수총잔량 " + _simPriceTick(b)}
+             style={{ width: buyPct + "%", background: "rgba(76,214,179,0.55)", transition: "width 0.2s ease-out" }} />
+        <div title={"매도총잔량 " + _simPriceTick(s)}
+             style={{ width: sellPct + "%", background: "rgba(255,93,108,0.5)", transition: "width 0.2s ease-out" }} />
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── 오더플로우 테이프 (Part: 오더플로우) ───────────────
+   최근 N bar 의 순매수수량(net_qty) 을 색 스트립으로(순매수>0 teal 농도 / 순매도<0 red 농도).
+   net_qty 데이터 전무면 숨김. 진행에 따라 우측으로 자라난다(리플레이 체감 강화). */
+function SimOrderFlowTape({ bars, compact }) {
+  const view = useMemo_simc(() => {
+    const arr = bars || [];
+    return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+  }, [bars]);
+
+  const hasData = useMemo_simc(() =>
+    view.some(b => b.net_qty != null && isFinite(b.net_qty) && b.net_qty !== 0),
+    [view]);
+  if (!hasData) return null;
+
+  const maxAbs = Math.max(1, ...view.map(b => Math.abs(b.net_qty || 0)));
+  const H = compact ? 14 : 18;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
+      <span className="mono" style={{ fontSize: 9.5, color: "var(--teal)", flexShrink: 0, width: 48 }}>
+        오더플로우
+      </span>
+      <div style={{ display: "flex", flex: 1, height: H, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" }}>
+        {view.map((b, i) => {
+          const nq = b.net_qty || 0;
+          const mag = Math.min(1, Math.abs(nq) / maxAbs);
+          const a = (0.15 + mag * 0.75).toFixed(3);
+          const bg = nq > 0 ? `rgba(76,214,179,${a})` : nq < 0 ? `rgba(255,93,108,${a})` : "rgba(150,158,170,0.12)";
+          return (
+            <div key={i} title={_simTimeLabel(b.t) + " · 순매수 " + _simPriceTick(nq)}
+                 style={{ flex: 1, background: bg }} />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── 멀티차트 오버레이 모드 (정규화 비교) ───────────────
+   선택 종목들(≤4)을 한 차트에 정규화(각 종목 시작 종가=100) 라인으로 겹쳐 그린다.
+   범례·색상 구분. 진행에 따라 함께 자라난다. 순수 SVG(라이브러리 불필요 — 비교 전용). */
+const _SIM_OVERLAY_COLORS = ["#4cd6b3", "#ff5d6c", "#f0b35a", "#7c6cf0"];
+
+function SimOverlayChart({ codes, barsByCode, nameByCode, curT }) {
+  const series = useMemo_simc(() => {
+    return (codes || []).map((code, idx) => {
+      const arr = (barsByCode[code] || []);
+      const base = arr.length ? (arr[0].c || 0) : 0;
+      const pts = (base > 0)
+        ? arr.map(b => ({ t: b.t, v: (b.c / base) * 100 }))
+        : [];
+      return { code, name: nameByCode[code] || code, color: _SIM_OVERLAY_COLORS[idx % 4], pts };
+    });
+  }, [codes.join(","), barsByCode]);
+
+  const allVals = [];
+  series.forEach(s => s.pts.forEach(p => allVals.push(p.v)));
+  const hasData = allVals.length > 0;
+
+  const W = 880, H = 360, padL = 48, padR = 16, padT = 16, padB = 26;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+  const vMax = hasData ? Math.max(100.5, ...allVals) : 105;
+  const vMin = hasData ? Math.min(99.5, ...allVals) : 95;
+  const vRange = (vMax - vMin) || 1;
+
+  // 공통 시간축: 모든 종목 t 의 정렬 합집합 → x 위치(인덱스 기반 균등 — 비교 직관).
+  const allT = useMemo_simc(() => {
+    const set = new Set();
+    series.forEach(s => s.pts.forEach(p => set.add(p.t)));
+    return Array.from(set).sort((a, b) => a - b);
+  }, [series]);
+  const tIdx = useMemo_simc(() => {
+    const m = new Map(); allT.forEach((t, i) => m.set(t, i)); return m;
+  }, [allT]);
+  const nT = allT.length;
+  const xAt = (t) => {
+    const i = tIdx.has(t) ? tIdx.get(t) : 0;
+    return nT <= 1 ? padL + innerW / 2 : padL + (innerW * i) / (nT - 1);
+  };
+  const yAt = (v) => padT + innerH - ((v - vMin) / vRange) * innerH;
+
+  const linePath = (pts) => {
+    if (pts.length < 2) return "";
+    return pts.map((p, i) => `${i === 0 ? "M" : "L"} ${xAt(p.t).toFixed(1)} ${yAt(p.v).toFixed(1)}`).join(" ");
+  };
+
+  return (
+    <div className="panel" style={{ minWidth: 0 }}>
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--violet)" }}></span>
+          <span className="mono" style={{ fontSize: 12.5 }}>정규화 오버레이 (시작=100)</span>
+        </div>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          {series.map(s => {
+            const last = s.pts.length ? s.pts[s.pts.length - 1].v : 100;
+            return (
+              <span key={s.code} className="mono" style={{ fontSize: 10, color: s.color, display: "flex", alignItems: "center", gap: 4 }}>
+                <span style={{ width: 9, height: 2, background: s.color, display: "inline-block" }}></span>
+                {s.name} <span style={{ color: last >= 100 ? "var(--teal)" : "var(--red)" }}>{last.toFixed(1)}</span>
+              </span>
+            );
+          })}
+        </div>
+      </div>
+      <div className="panel-bd">
+        <div className="chart-wrap">
+          <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: H }}>
+            {/* 기준선 100 */}
+            <line x1={padL} x2={W - padR} y1={yAt(100)} y2={yAt(100)}
+                  stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3 3" />
+            <text className="chart-axis-text" x={padL - 6} y={yAt(100) + 3} textAnchor="end" fill="var(--ink-3)">100</text>
+            <text className="chart-axis-text" x={padL - 6} y={yAt(vMax) + 8} textAnchor="end" fill="var(--ink-2)">{vMax.toFixed(1)}</text>
+            <text className="chart-axis-text" x={padL - 6} y={yAt(vMin)} textAnchor="end" fill="var(--ink-2)">{vMin.toFixed(1)}</text>
+            {series.map(s => s.pts.length > 1 && (
+              <path key={s.code} d={linePath(s.pts)} fill="none" stroke={s.color} strokeWidth="1.5" opacity="0.9" />
+            ))}
+            {/* 시간 라벨(시작·중간·끝) */}
+            {nT > 0 && [0, Math.floor(nT / 2), nT - 1].map((i, k) => (
+              <text key={k} className="chart-axis-text" x={xAt(allT[i])} y={H - 8} textAnchor="middle">
+                {allT[i] != null ? _simTimeLabel(allT[i]) : ""}
+              </text>
+            ))}
+            {!hasData && (
+              <text x={W / 2} y={H / 2} textAnchor="middle" fill="var(--ink-3)" fontSize="12" className="mono">
+                재생을 시작하면 정규화 비교선이 채워집니다
+              </text>
+            )}
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /* ② 체결 로그 — 신호(매수/매도) 목록. 현재 리플레이 시각(curT) 도달 행 하이라이트. */
@@ -784,5 +1048,7 @@ function SimSignalLog({ signals, curT }) {
 Object.assign(window, {
   SimCandleChart, SimHeatStrip, SimRestFlow, SimSignalLog,
   SimChangeGauge, SimSessionRing,
+  SimQuotePressure, SimOrderFlowTape, SimOverlayChart,
   _simTimeLabel, _simPriceTick, _strengthColor, _sessionProgress, _changeColor,
+  _SIM_DEFAULT_INDICATORS,
 });
