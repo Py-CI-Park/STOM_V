@@ -464,7 +464,20 @@ class TestFrontendContract:
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
         assert "research-lab.jsx?v=20260612c" in src
-        assert "app.jsx?v=20260612a" in src
+        # app.jsx는 3탭 셸(PR1~S3)과 부모 브랜치 작업 병합으로 v20260612d로 재범프됐다.
+        assert "app.jsx?v=20260612d" in src
+        # 백테스트 워크벤치(PR2) — 차트 모듈이 backtest.jsx보다 먼저 로드돼야 한다.
+        # 2단계 업그레이드(A/B 비교·몬테카를로·오더플로우·통계검정)로 v20260612c 재범프.
+        assert "backtest-charts.jsx?v=20260612c" in src
+        assert "backtest.jsx?v=20260612c" in src
+        # 차트 시뮬레이션(PR3) — 차트 모듈이 simulation.jsx보다 먼저 로드돼야 한다.
+        assert "simulation-charts.jsx?v=20260612b" in src
+        assert "simulation.jsx?v=20260612b" in src
+        # S3(2026-06-12) — lightweight-charts vendor 는 babel 이전 일반 script 로 로드.
+        assert "vendor-lightweight-charts.js?v=20260612a" in src
+        # src= 속성 기준 비교(주석 내 파일명 언급에 걸리지 않게).
+        assert src.index('src="vendor-lightweight-charts.js') < src.index('src="simulation-charts.jsx')
+        assert src.index('src="simulation-charts.jsx') < src.index('src="simulation.jsx?')
 
 
 class TestRegimeReport:
