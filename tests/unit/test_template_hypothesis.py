@@ -183,3 +183,81 @@ class TestBuildPrompt:
         """build_prompt 결과에 실패 교훈(임계 이식 금지) 문구가 포함돼야 한다."""
         prompt = build_prompt("원리", registry_summary())
         assert "임계 이식 금지" in prompt
+
+# ---------------------------------------------------------------------------
+# 2026-06-12 추가: timeframe(tick|min) 지원 + 교훈 컨텍스트 주입
+# ---------------------------------------------------------------------------
+
+class TestTimeframeSupport:
+    def test_min_timeframe_valid_payload_passes(self) -> None:
+        """min 템플릿 코드 + timeframe='min' payload가 min 스코프로 통과한다."""
+        spec = json.loads(
+            (TEMPLATE_DIR / "min_morning_momentum.json").read_text(encoding="utf-8")
+        )
+        payload = {
+            "name": "llmgen_min_probe",
+            "buy_template": spec["buy_code"],
+            "sell_template": spec["sell_code"],
+            "params": spec["params"],
+            "timeframe": "min",
+        }
+        assert validate_hypothesis(payload) == []
+
+    def test_min_code_with_tick_timeframe_fails_scope(self) -> None:
+        """분당 변수 코드를 tick 스코프로 검증하면 scope 오류가 나야 한다."""
+        spec = json.loads(
+            (TEMPLATE_DIR / "min_morning_momentum.json").read_text(encoding="utf-8")
+        )
+        payload = {
+            "name": "llmgen_min_probe",
+            "buy_template": spec["buy_code"],
+            "sell_template": spec["sell_code"],
+            "params": spec["params"],
+            "timeframe": "tick",
+        }
+        errors = validate_hypothesis(payload)
+        assert errors, "tick 스코프에서 분당 변수가 통과하면 안 된다"
+
+    def test_invalid_timeframe_rejected(self) -> None:
+        payload = _valid_payload()
+        payload["timeframe"] = "day"
+        errors = validate_hypothesis(payload)
+        assert any("timeframe" in e for e in errors)
+
+    def test_default_timeframe_is_tick(self) -> None:
+        """timeframe 미지정 payload는 기존(tick) 동작 그대로 통과한다."""
+        payload = _valid_payload()
+        payload.pop("timeframe", None)
+        assert validate_hypothesis(payload) == []
+
+
+class TestLessonsInjection:
+    def test_build_prompt_includes_lessons_when_given(self) -> None:
+        out = build_prompt("원리", "템플릿목록", lessons_text="교훈본문XYZ")
+        assert "교훈본문XYZ" in out
+        assert "누적 기각 이력" in out
+
+    def test_build_prompt_without_lessons_unchanged(self) -> None:
+        out = build_prompt("원리", "템플릿목록")
+        assert "누적 기각 이력" not in out
+
+class TestTypeGuards:
+    def test_params_as_string_list_returns_error_not_crash(self) -> None:
+        """실전 LLM이 params를 문자열 배열로 보낸 사고의 회귀 테스트."""
+        payload = _valid_payload()
+        payload["params"] = ["cap_max", "take_hard"]
+        errors = validate_hypothesis(payload)
+        assert any("객체 배열" in e for e in errors)
+
+    def test_buy_template_as_list_returns_error_not_crash(self) -> None:
+        payload = _valid_payload()
+        payload["buy_template"] = ["라인1", "라인2"]
+        errors = validate_hypothesis(payload)
+        assert any("문자열" in e for e in errors)
+
+
+class TestSchemaInPrompt:
+    def test_build_prompt_contains_output_schema(self) -> None:
+        out = build_prompt("원리", "목록")
+        assert "출력 형식" in out and "객체 배열" in out
+
