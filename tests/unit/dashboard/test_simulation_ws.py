@@ -176,6 +176,30 @@ class TestWsReplaySession:
             assert seen["buy_rest"] is None
             assert seen["sell_rest"] is None
 
+    def test_bars_carry_new_indicator_fields(self, ws_client):
+        """bars 프레임 item 에 신규 지표 키(vwap/bb_*/net_qty/bid1/ask1)가 실린다(스키마 확장).
+
+        합성 min DB(금액·호가 컬럼 없음) → 해당 파생값 None 이지만 키는 존재(하위호환).
+        """
+        with ws_client.websocket_connect("/sim/ws") as ws:
+            ws.send_json({"action": "start", "date": 20250102, "src": "min",
+                          "codes": ["005930"], "speed": 240, "agg_sec": 10})
+            assert ws.receive_json()["type"] == "meta"
+            seen = None
+            for _ in range(50):
+                m = ws.receive_json()
+                if m["type"] == "bars":
+                    seen = m["items"][0]
+                    break
+                if m["type"] == "done":
+                    break
+            assert seen is not None
+            for key in ("vwap", "bb_mid", "bb_up", "bb_low", "net_qty", "bid1", "ask1"):
+                assert key in seen
+            # 금액·호가 컬럼 부재 → None.
+            assert seen["vwap"] is None
+            assert seen["bid1"] is None
+
     def test_bars_carry_real_rest_values(self, ws_client_rest):
         """총잔량 컬럼이 있는 DB → WS 프레임에 raw 잔량 실값이 실린다(스모크의 단위 형태)."""
         with ws_client_rest.websocket_connect("/sim/ws") as ws:
@@ -343,6 +367,107 @@ def _write_trade_csv(path: Path, trades: List[tuple]) -> str:
             w.writerow({"종목명": "테스트", "매수시간": bt, "매도시간": st,
                         "매수가": bp, "매도가": sp, "수익률": pct})
     return str(path)
+
+
+class TestPacingSchedule:
+    """wall-clock 페이싱 — bar 간 실제 시간차/speed 만큼 대기하는 순수 스케줄 검증.
+
+    sleep 호출 간격을 직접 계산하는 _pacing_schedule(순수 함수)로 monkeypatch 없이 확인.
+    핵심 신고("시간이 흐르는 체감")의 수치 계약을 고정한다.
+    """
+
+    def test_hms_to_seconds(self):
+        assert SA._hms_to_seconds(90000) == 9 * 3600
+        assert SA._hms_to_seconds(91530) == 9 * 3600 + 15 * 60 + 30
+        assert SA._hms_to_seconds(0) == 0
+
+    def test_bar_gap_seconds_basic(self):
+        # 1분 간격 = 60초.
+        assert SA._bar_gap_seconds(90000, 90100) == 60.0
+        # 10초 간격.
+        assert SA._bar_gap_seconds(90000, 90010) == 10.0
+
+    def test_bar_gap_guards_reverse_and_same_slot(self):
+        assert SA._bar_gap_seconds(90100, 90000) == 0.0   # 역행 → 0.
+        assert SA._bar_gap_seconds(90000, 90000) == 0.0   # 동일 슬롯 → 0.
+
+    def test_bar_gap_clamps_large_gap(self):
+        # 점심시간 등 큰 간격은 상한으로 클램프(과대 대기 방지).
+        gap = SA._bar_gap_seconds(113000, 130000)  # 1h30m.
+        assert gap == float(SA._MAX_BAR_GAP_SEC)
+
+    def test_schedule_min_1x_is_one_minute_each(self):
+        # 1분봉 1x → 첫 frame 0, 이후 매 frame 60초(1min=1분 체감).
+        sched = SA._pacing_schedule([90000, 90100, 90200], 1)
+        assert sched == [0.0, 60.0, 60.0]
+
+    def test_schedule_min_60x_compresses_to_one_second(self):
+        # 60x → 60/60 = 1초/frame.
+        sched = SA._pacing_schedule([90000, 90100, 90200], 60)
+        assert sched == [0.0, 1.0, 1.0]
+
+    def test_schedule_tick_10s_agg_respects_real_gap(self):
+        # 10초 agg tick 1x → 10초/frame(1tick≈집계초 단위로 시간 흐름).
+        sched = SA._pacing_schedule([90000, 90010, 90020], 1)
+        assert sched == [0.0, 10.0, 10.0]
+        # 20x → 0.5초/frame.
+        sched20 = SA._pacing_schedule([90000, 90010, 90020], 20)
+        assert sched20 == [0.0, 0.5, 0.5]
+
+    def test_schedule_speed_scales_inversely(self):
+        # 같은 gap 이라도 speed 가 커질수록 대기는 비례 축소(wall-clock 페이싱 본질).
+        s1 = SA._pacing_schedule([90000, 90100], 1)[1]
+        s2 = SA._pacing_schedule([90000, 90100], 2)[1]
+        s4 = SA._pacing_schedule([90000, 90100], 4)[1]
+        assert s1 == 60.0 and s2 == 30.0 and s4 == 15.0
+
+    def test_schedule_clamps_speed_out_of_range(self):
+        # speed 0/음수 → 1 로, 과대 → _MAX_SPEED 로 클램프(스케줄도 그 기준).
+        slow = SA._pacing_schedule([90000, 90100], 0)
+        assert slow[1] == 60.0  # speed=1 적용.
+        fast = SA._pacing_schedule([90000, 90100], 10_000)
+        assert fast[1] == pytest.approx(60.0 / SA._MAX_SPEED)
+
+
+class TestStreamLoopPacing:
+    """_stream_loop 가 실제로 페이싱 대기를 호출하는지(asyncio.sleep 간격) monkeypatch 검증."""
+
+    def test_stream_sleeps_proportional_to_bar_gap(self, monkeypatch):
+        import asyncio
+
+        # 1분 간격 min frame 3개. speed=60 → 프레임당 1초 대기 기대.
+        frames = [
+            {"t": 90000, "items": [{"code": "X", "c": 1.0}]},
+            {"t": 90100, "items": [{"code": "X", "c": 2.0}]},
+            {"t": 90200, "items": [{"code": "X", "c": 3.0}]},
+        ]
+        data = RE.ReplayData(20250102, "min", ["X"], frames, (90000, 90200))
+
+        sent: List[Dict[str, Any]] = []
+        slept: List[float] = []
+
+        class _FakeWS:
+            async def send_json(self, payload):
+                sent.append(payload)
+
+        sess = SA.SimReplaySession(_FakeWS())
+        sess.data = data
+        sess.speed = 60
+        sess.running = True
+
+        # asyncio.sleep 을 가로채 누적 대기를 기록(실제로 자지 않음 — 빠른 테스트).
+        async def _fake_sleep(sec):
+            slept.append(sec)
+
+        monkeypatch.setattr(SA.asyncio, "sleep", _fake_sleep)
+        asyncio.run(sess._stream_loop())
+
+        # 3개 bars + done 전송.
+        types = [m["type"] for m in sent]
+        assert types.count("bars") == 3
+        assert types[-1] == "done"
+        # 총 누적 대기 ≈ 두 gap(각 60초/60=1초) = 2초. 청크로 쪼개져도 합은 보존.
+        assert sum(slept) == pytest.approx(2.0, abs=0.2)
 
 
 class TestSignals:

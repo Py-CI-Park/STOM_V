@@ -260,6 +260,9 @@ function App() {
               {/* 운영·관찰: run 비교 콘솔(REST /runs, loop_runs.db 직접) */}
               <SectionLabel text="Compare" />
               <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
+              {/* 트랙 L — 진화 결과 분석 시각화(세대 멀티라인·산점도·상위표, GET /bt/evo_gens) */}
+              <SectionLabel text="Generation Analytics" />
+              <ErrorBoundary><EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} onOpenWorkbench={() => setActiveTab("backtest")} /></ErrorBoundary>
             </div>
             <aside style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {/* #65 P0 — 분석 클러스터를 판정 카드 위로(인과 순서: 분석→가정→개선이
