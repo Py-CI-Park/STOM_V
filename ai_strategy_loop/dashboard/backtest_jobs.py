@@ -271,10 +271,11 @@ class BacktestJobManager:
             if record is None:
                 return {"available": False, "job_id": job_id}
             if tags is not None:
-                cleaned = {t.strip() for t in tags if isinstance(t, str) and t.strip()}
-                record.tags = sorted(cleaned)
+                # 시스템 경계 위생: 태그 64자·50개, 메모 2000자 상한(리뷰 권고 — JSON 비대 방지).
+                cleaned = {t.strip()[:64] for t in tags if isinstance(t, str) and t.strip()}
+                record.tags = sorted(cleaned)[:50]
             if memo is not None:
-                record.memo = str(memo)
+                record.memo = str(memo)[:2000]
             if favorite is not None:
                 record.favorite = bool(favorite)
             self._persist(record)
