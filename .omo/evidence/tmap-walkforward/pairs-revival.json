@@ -20,6 +20,11 @@
     "sell": "EXIT2C_02_S"
   },
   {
+    "label": "REVIVAL PA-NICHE g9",
+    "buy": "AILOOP_run_1779754848_g12_buy",
+    "sell": "AILOOP_run_1779754848_g12_sell"
+  },
+  {
     "label": "REVIVAL EXIT2NA take6",
     "buy": "EXIT2NA_06_B",
     "sell": "EXIT2NA_06_S"

@@ -20,6 +20,15 @@
       "train": {"profit": 12319055, "mdd": 6.23, "window": "2023-2025"}
     },
     {
+      "label": "REVIVAL PA-NICHE g9",
+      "buy": "AILOOP_run_1779754848_g12_buy",
+      "sell": "AILOOP_run_1779754848_g12_sell",
+      "frozen_at": "2026-06-12",
+      "rejected_at": "2026-06-12",
+      "reject_basis": "고정 OOS 2022 +174,771(시드의 8%, payoff 0.91<1.05) + 2026 -309,706(시드 열위) — P-A absolute_niche_v1 1호 동결자. 저MDD는 일반화·수익은 붕괴(M5 생존편향 4번째 실증)",
+      "train": {"profit": 1877320, "mdd": 9.62, "window": "2023-2025"}
+    },
+    {
       "label": "REVIVAL EXIT2NA take6",
       "buy": "EXIT2NA_06_B",
       "sell": "EXIT2NA_06_S",
