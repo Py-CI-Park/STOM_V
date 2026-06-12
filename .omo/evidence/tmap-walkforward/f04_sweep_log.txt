@@ -1,0 +1,45 @@
+[SWEEP] template=orderflow_f04_absorption points=28/28
+[SWEEP] resume: 평가 대상 28점 / 스킵 0점
+[SWEEP] prepare status=ok back_count=2285 elapsed=259s
+[SWEEP] gen0 TMAP __default__ profit=-45,976,358 mdd=185.54 trades=2599 (97s)
+[SWEEP] gen1 TMAP window_start=90010 profit=-45,976,358 mdd=185.54 trades=2599 (96s)
+[SWEEP] gen2 TMAP window_start=90100 profit=-40,815,173 mdd=165.29 trades=2424 (96s)
+[SWEEP] gen3 TMAP window_end=90300 profit=-27,072,163 mdd=140.31 trades=1447 (125s)
+[SWEEP] gen4 TMAP window_end=91000 profit=-106,602,819 mdd=355.74 trades=4945 (146s)
+[SWEEP] gen5 TMAP window_end=91500 profit=-159,718,971 mdd=456.37 trades=7128 (149s)
+[SWEEP] gen6 TMAP cap_max=1500 profit=-16,408,955 mdd=112.49 trades=1316 (141s)
+[SWEEP] gen7 TMAP cap_max=2500 profit=-41,203,852 mdd=167.01 trades=2286 (142s)
+[SWEEP] gen8 TMAP cap_max=5000 profit=-67,031,424 mdd=225.38 trades=3387 (143s)
+[SWEEP] gen9 TMAP sell_dom=0.5 profit=-59,283,170 mdd=148.59 trades=4753 (142s)
+[SWEEP] gen10 TMAP sell_dom=1.0 profit=-24,317,487 mdd=165.65 trades=1293 (141s)
+[SWEEP] gen11 TMAP sell_dom=1.3 profit=-11,737,474 mdd=126.49 trades=598 (95s)
+[SWEEP] gen12 TMAP open_band=0 profit=-42,609,416 mdd=172.21 trades=2537 (96s)
+[SWEEP] gen13 TMAP open_band=5 profit=-47,549,274 mdd=191.77 trades=2637 (96s)
+[SWEEP] gen14 TMAP brk_window=5 profit=-89,198,028 mdd=224.41 trades=4476 (96s)
+[SWEEP] gen15 TMAP brk_window=30 profit=-46,454,225 mdd=312.58 trades=1736 (95s)
+[SWEEP] gen16 TMAP vol_mult=1.5 profit=-62,710,863 mdd=210.46 trades=3468 (96s)
+[SWEEP] gen17 TMAP vol_mult=3.0 profit=-27,241,198 mdd=181.24 trades=1440 (134s)
+[SWEEP] gen18 TMAP atk_ratio=0.8 profit=-48,344,025 mdd=194.03 trades=2709 (122s)
+[SWEEP] gen19 TMAP atk_ratio=1.5 profit=-38,351,478 mdd=155.12 trades=2352 (105s)
+[SWEEP] gen20 TMAP strength_min=90 profit=-59,579,073 mdd=200.69 trades=2973 (105s)
+[SWEEP] gen21 TMAP strength_min=120 profit=-30,077,030 mdd=152.57 trades=1705 (110s)
+[SWEEP] gen22 TMAP take_hard=3 profit=-53,948,961 mdd=216.55 trades=2649 (109s)
+[SWEEP] gen23 TMAP take_hard=7 profit=-41,981,825 mdd=169.53 trades=2590 (111s)
+[SWEEP] gen24 TMAP stop_hard=-2.0 profit=-46,180,876 mdd=231.55 trades=2665 (121s)
+[SWEEP] gen25 TMAP stop_hard=-5.0 profit=-42,181,703 mdd=171.05 trades=2550 (122s)
+[SWEEP] gen26 TMAP max_hold_sec=120 profit=-49,177,678 mdd=247.89 trades=2725 (143s)
+[SWEEP] gen27 TMAP max_hold_sec=600 profit=-50,320,352 mdd=169.29 trades=2599 (146s)
+[SWEEP] baseline profit=-45,976,358 mdd=185.54
+[SWEEP] atk_ratio: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] brk_window: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] cap_max: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] max_hold_sec: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] open_band: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] sell_dom: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] stop_hard: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] strength_min: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] take_hard: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] vol_mult: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] window_end: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] window_start: plateau_score=0.0 center=None width=None positive=0.0
+[SWEEP] done
