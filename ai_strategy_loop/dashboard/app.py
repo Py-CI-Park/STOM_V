@@ -1935,7 +1935,7 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
         except Exception:  # noqa: BLE001
             return None
 
-    out: Dict[str, Any] = {"lines": [], "alerts": []}
+    out: Dict[str, Any] = {"lines": [], "alerts": [], "oos_diff_ci": {}}
     lines, alerts = out["lines"], out["alerts"]
 
     sel = _load(base_r, "p5-selected-candidate.json")
@@ -1990,8 +1990,9 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
                 if rid_row is None:
                     continue
                 rows = {r["strategy_gist"]: r for r in con.execute(
-                    "SELECT strategy_gist, profit, mdd, trade_count FROM generations"
-                    " WHERE run_id=? AND status='ok'", (rid_row["run_id"],),
+                    "SELECT strategy_gist, profit, mdd, trade_count, csv_path"
+                    " FROM generations WHERE run_id=? AND status='ok'",
+                    (rid_row["run_id"],),
                 )}
                 fz, bs = rows.get("FROZEN"), rows.get("BASE_SEED")
                 if fz and bs:
@@ -2007,6 +2008,27 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
                         f"·MDD {fz['mdd']:.2f}) vs 시드 {bs['profit']:,.0f}"
                         f"(MDD {bs['mdd']:.2f})"
                     )
+                    # C1-OOS (2026-06-12) — 후보 vs 시드 OOS 차이 CI (advisory).
+                    # csv_path 부재·daily_pnl_series 실패·oos_diff_ci 실패는 None으로.
+                    try:
+                        from ai_strategy_loop.fitness.overfit_stats import (  # noqa: PLC0415
+                            daily_pnl_series,
+                            oos_diff_ci,
+                        )
+
+                        fz_csv = str(fz["csv_path"] or "")
+                        bs_csv = str(bs["csv_path"] or "")
+                        if fz_csv and bs_csv:
+                            fz_abs = fz_csv if os.path.isabs(fz_csv) else os.path.join(REPO_ROOT, fz_csv)
+                            bs_abs = bs_csv if os.path.isabs(bs_csv) else os.path.join(REPO_ROOT, bs_csv)
+                            fz_series = daily_pnl_series(fz_abs) or {}
+                            bs_series = daily_pnl_series(bs_abs) or {}
+                            ci = oos_diff_ci(fz_series, bs_series)
+                        else:
+                            ci = None
+                    except Exception:  # noqa: BLE001 - advisory: 어떤 예외도 기존 응답을 깨지 않는다.
+                        ci = None
+                    out["oos_diff_ci"][year] = ci
         finally:
             con.close()
     except Exception:  # noqa: BLE001
@@ -2156,6 +2178,61 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
         _check("V4 walk-forward", "pending", "")
     out["promote_checklist"] = checklist
     return out
+
+
+def _portfolio_sim_payload(run_ids_str: str) -> Dict[str, Any]:
+    """과업2(2026-06-12) — 복수 run의 최신 ok 세대를 균등 가중 결합해 포트폴리오 리포트.
+
+    각 run_id의 최신 ok 세대(csv_path 보유)에서 daily_pnl_series를 구성하고
+    portfolio_report를 호출한다. 유효 시리즈 2개 미만이면 portfolio_report의
+    {"error": ...}를 그대로 200으로 반환한다(advisory — 판정 미사용).
+    읽기 전용·무예외: 모든 예외는 {"error": ...}로 흡수한다.
+    """
+    import sqlite3  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+    run_ids = [r.strip() for r in run_ids_str.split(",") if r.strip()]
+    if not run_ids:
+        return {"error": "run_ids 파라미터가 비어 있습니다."}
+
+    try:
+        from ai_strategy_loop.fitness.overfit_stats import daily_pnl_series  # noqa: PLC0415
+        from ai_strategy_loop.fitness.portfolio import portfolio_report  # noqa: PLC0415
+
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        series: Dict[str, Dict[str, float]] = {}
+        try:
+            for run_id in run_ids:
+                # 최신 ok 세대 중 csv_path 보유한 것 1개.
+                row = con.execute(
+                    "SELECT gen_no, buy_name, strategy_gist, csv_path"
+                    " FROM generations"
+                    " WHERE run_id=? AND status='ok' AND csv_path IS NOT NULL AND csv_path != ''"
+                    " ORDER BY gen_no DESC LIMIT 1",
+                    (run_id,),
+                ).fetchone()
+                if row is None:
+                    continue
+                csv_path = str(row["csv_path"])
+                abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+                s = daily_pnl_series(abs_csv)
+                if s:
+                    label = (
+                        str(row["strategy_gist"] or "")
+                        or str(row["buy_name"] or "")
+                        or run_id
+                    )
+                    # 같은 run_id를 중복 제출해도 키가 유일하도록 run_id를 접두로.
+                    key = f"{run_id}:{label}"
+                    series[key] = s
+        finally:
+            con.close()
+
+        return portfolio_report(series)
+    except Exception as exc:  # noqa: BLE001 - advisory: 어떤 예외도 200으로 흡수.
+        return {"error": str(exc)}
 
 
 def _equity_curve_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
@@ -2516,6 +2593,16 @@ def create_app() -> FastAPI:
         슬리피지·중복도·체결/서킷/사이징·walk-forward를 lines/alerts로 합성.
         """
         return _freeze_verdict_payload()
+
+    @app.get("/portfolio_sim")
+    def portfolio_sim(runs: str = "") -> Dict[str, Any]:
+        """과업2(2026-06-12) — 복수 run 균등 가중 결합 시뮬(advisory).
+
+        쿼리: ?runs=run1,run2[,run3...]. 각 run의 최신 ok 세대 일별 손익으로
+        portfolio_report를 호출한다. 유효 시리즈 2개 미만이면 {"error": ...} 200.
+        읽기 전용·무예외·판정 미사용.
+        """
+        return _portfolio_sim_payload(runs)
 
     @app.get("/niche_compare")
     def niche_compare(run_ids: str = "") -> Dict[str, Any]:

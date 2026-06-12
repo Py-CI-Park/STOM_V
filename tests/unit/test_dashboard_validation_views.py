@@ -284,6 +284,133 @@ class TestOpsStatus:
         assert ids.index("runV") < ids.index("runOld")
 
 
+class TestFreezeVerdictOosDiffCi:
+    """과업1(2026-06-12) — /freeze_verdict 응답에 oos_diff_ci 키 존재 + 기존 키 불변."""
+
+    def test_oos_diff_ci_key_present_and_existing_keys_intact(self, seeded_validation_db, monkeypatch):
+        """OOS run(run_id에 oos_2022·oos_2026 포함)이 있으면 oos_diff_ci 키가 등장한다.
+
+        양쪽 시리즈가 있으면 dict, csv_path 부재면 None — 둘 다 허용(값 None 허용 계약).
+        기존 키(lines·alerts·promote_checklist)는 반드시 유지.
+        """
+        from pathlib import Path
+
+        db = seeded_validation_db["db"]
+        # OOS run 2개 심기 — run_id가 oos_2022·oos_2026 패턴을 포함해야 쿼리에 걸린다.
+        csv_frozen_2022 = _make_trade_csv(Path(db).parent / "bt_frozen_2022.csv", [
+            ("20220103090100", "20220103090300", 1.5, 120000.0),
+            ("20220210090100", "20220210090300", 0.8, 60000.0),
+        ])
+        csv_seed_2022 = _make_trade_csv(Path(db).parent / "bt_seed_2022.csv", [
+            ("20220104090100", "20220104090300", 0.5, 40000.0),
+            ("20220211090100", "20220211090300", -0.3, -20000.0),
+        ])
+        st = LoopState(db_path=str(db), snapshot_dir=str(Path(db).parent / "s_oos"))
+        st.start_run(LoopConfig(), run_id="cldgen_oos_2022_ci_test")
+        st.record_generation(
+            "cldgen_oos_2022_ci_test", 0,
+            buy_name="SEED_B", sell_name="SEED_S", status="ok",
+            score=0.5, gate_passed=True, reason="ok", trade_count=2,
+            daily_avg_trades=0.1, mdd=5.0, profit=20000.0,
+            payoff_ratio=1.0, csv_path=csv_seed_2022, strategy_gist="BASE_SEED",
+        )
+        st.record_generation(
+            "cldgen_oos_2022_ci_test", 1,
+            buy_name="SEED_B", sell_name="SEED_S", status="ok",
+            score=0.8, gate_passed=True, reason="ok", trade_count=2,
+            daily_avg_trades=0.1, mdd=4.0, profit=180000.0,
+            payoff_ratio=1.5, csv_path=csv_frozen_2022, strategy_gist="FROZEN",
+        )
+        st.close()
+
+        from ai_strategy_loop.dashboard.app import _freeze_verdict_payload
+
+        out = _freeze_verdict_payload()
+        # oos_diff_ci 키 존재 — 값이 dict 또는 None 어느 쪽이든 허용(표본 부족 시 None).
+        assert "oos_diff_ci" in out, "oos_diff_ci 키가 응답에 없음"
+        ci_map = out["oos_diff_ci"]
+        assert isinstance(ci_map, dict)
+        # 2022 연도 항목이 등장하면 dict 구조를 확인한다.
+        if ci_map.get("2022") is not None:
+            ci = ci_map["2022"]
+            assert "total_diff" in ci
+            assert "ci_low" in ci
+            assert "ci_high" in ci
+            assert "p_diff_le_0" in ci
+        # 기존 키 불변.
+        assert isinstance(out.get("lines"), list)
+        assert isinstance(out.get("alerts"), list)
+        assert isinstance(out.get("promote_checklist"), list)
+
+    def test_oos_diff_ci_graceful_without_oos_runs(self, seeded_validation_db):
+        """OOS run이 없으면 oos_diff_ci 키 자체가 없거나 빈 dict — 예외 없이 통과."""
+        from ai_strategy_loop.dashboard.app import _freeze_verdict_payload
+
+        out = _freeze_verdict_payload()
+        # OOS run 없으면 키가 아예 없어도 되고, 있어도 빈 dict면 OK.
+        ci_map = out.get("oos_diff_ci", {})
+        assert isinstance(ci_map, dict)
+        assert isinstance(out.get("lines"), list)
+
+
+class TestPortfolioSim:
+    """과업2(2026-06-12) — /portfolio_sim 엔드포인트 계약."""
+
+    def test_two_runs_returns_portfolio_report(self, seeded_validation_db):
+        """ok 세대 csv_path를 가진 run 2개 → combined_total·combined_mdd·diversification_gain."""
+        from pathlib import Path
+
+        db = seeded_validation_db["db"]
+        # seeded_validation_db 에는 runV가 있고 gen0(csv_seed)·gen1(csv_cand)에 csv_path 있음.
+        # 두 번째 run을 추가한다.
+        csv_b = _make_trade_csv(Path(db).parent / "bt_runB.csv", [
+            ("20230110090100", "20230110090300", 2.0, 200000.0),
+            ("20240115090100", "20240115090300", -1.0, -80000.0),
+            ("20250120090100", "20250120090300", 1.5, 130000.0),
+        ])
+        st = LoopState(db_path=str(db), snapshot_dir=str(Path(db).parent / "s_psim"))
+        st.start_run(LoopConfig(), run_id="runB")
+        st.record_generation(
+            "runB", 0, buy_name="B_BUY", sell_name="B_SELL", status="ok",
+            score=1.2, gate_passed=True, reason="ok", trade_count=3,
+            daily_avg_trades=0.3, mdd=8.0, profit=250000.0,
+            payoff_ratio=1.6, csv_path=csv_b, strategy_gist="B_STRAT",
+        )
+        st.close()
+
+        from ai_strategy_loop.dashboard.app import _portfolio_sim_payload
+
+        out = _portfolio_sim_payload("runV,runB")
+        assert "error" not in out, f"예상치 못한 오류: {out.get('error')}"
+        assert "combined_total" in out
+        assert "combined_mdd" in out
+        assert "diversification_gain" in out
+        # 상관 행렬 존재 여부 — 날짜 겹침이 충분하면 등장한다(없으면 None 허용).
+        assert "correlation" in out
+
+    def test_one_run_returns_error(self, seeded_validation_db):
+        """유효 시리즈 1개 → portfolio_report의 error 응답을 200으로 반환한다."""
+        from ai_strategy_loop.dashboard.app import _portfolio_sim_payload
+
+        out = _portfolio_sim_payload("runV")
+        assert "error" in out
+
+    def test_empty_runs_returns_error(self, seeded_validation_db):
+        """빈 파라미터 → error 응답."""
+        from ai_strategy_loop.dashboard.app import _portfolio_sim_payload
+
+        out = _portfolio_sim_payload("")
+        assert "error" in out
+
+    def test_frontend_has_portfolio_sim_panel(self):
+        """research-lab.jsx에 결합 시뮬 패널·/portfolio_sim 라우트가 존재한다."""
+        src = (FRONTEND / "research-lab.jsx").read_text(encoding="utf-8")
+        assert "/portfolio_sim" in src
+        assert "결합 시뮬" in src
+        assert "combined_total" in src
+        assert "diversification_gain" in src
+
+
 class TestFrontendContract:
     def test_research_lab_has_validation_tab_and_panel(self):
         src = (FRONTEND / "research-lab.jsx").read_text(encoding="utf-8")
@@ -317,7 +444,7 @@ class TestFrontendContract:
         assert "동결상관" in src
         assert "기권(시드 유지)" in src
         lab = (FRONTEND / "lab.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260611l" in lab
+        assert "research-lab.jsx?v=20260612b" in lab
         assert "ResearchLabPanel" in lab
         # Phase1/2(2026-06-11) — 사이드바·결정 페이지 계약.
         assert "run 목록" in lab
@@ -336,5 +463,5 @@ class TestFrontendContract:
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
-        assert "research-lab.jsx?v=20260611l" in src
+        assert "research-lab.jsx?v=20260612b" in src
         assert "app.jsx?v=20260612a" in src

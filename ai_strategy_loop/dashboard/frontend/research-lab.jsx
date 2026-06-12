@@ -209,6 +209,21 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
       .catch(e => setErr(String(e)));
   }, [baseUrl, isDemo]);
 
+  /* 과업2(2026-06-12) — 포트폴리오 결합 시뮬 v0 균등가중. */
+  const [psimRun1, setPsimRun1] = useState_rl("");
+  const [psimRun2, setPsimRun2] = useState_rl("");
+  const [psim, setPsim] = useState_rl(null);
+  const fetchPsim = useCallback_rl(() => {
+    if (isDemo || !baseUrl) return;
+    const r1 = psimRun1.trim(), r2 = psimRun2.trim();
+    if (!r1 || !r2) return;
+    fetch(baseUrl + "/portfolio_sim?runs=" + encodeURIComponent(r1 + "," + r2),
+          { signal: AbortSignal.timeout(15000) })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => setPsim(j))
+      .catch(e => setErr(String(e)));
+  }, [baseUrl, isDemo, psimRun1, psimRun2]);
+
   const [verdict, setVerdict] = useState_rl(null);  /* 검증 결산 — V1~V5 종합. */
 
   useEffect_rl(() => {
@@ -593,6 +608,60 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
       {grid && grid.count === 0 && (
         <div className="mono" style={{ fontSize: 11 }}>격자 run 아님(--grid 스윕 run_id를 입력하세요)</div>
       )}
+
+      {/* 과업2(2026-06-12) — 결합 시뮬(v0 균등가중) advisory 패널 */}
+      <div style={{ marginTop: 10 }}>
+        <div className="research-empty">결합 시뮬 (v0 균등가중) — advisory. 판정 미사용.</div>
+        <div className="research-controls" style={{ marginTop: 4 }}>
+          <label>
+            <span>run 1</span>
+            <input type="text" value={psimRun1} placeholder="run_id"
+                   list="rl-run-options"
+                   onChange={e => setPsimRun1(e.target.value)} style={{ width: 180 }} />
+          </label>
+          <label>
+            <span>run 2</span>
+            <input type="text" value={psimRun2} placeholder="run_id"
+                   list="rl-run-options"
+                   onChange={e => setPsimRun2(e.target.value)} style={{ width: 180 }} />
+          </label>
+          <button type="button" className="research-tab" onClick={fetchPsim}>결합 시뮬 실행</button>
+        </div>
+        {psim && !psim.error && (
+          <div style={{ marginTop: 6 }}>
+            <div className="mono" style={{ fontSize: 11 }}>
+              결합 총손익: <b>{Math.round(psim.combined_total || 0).toLocaleString()}</b>
+              {" · "}결합 MDD: <b>{Math.round(psim.combined_mdd || 0).toLocaleString()}</b>
+              {psim.diversification_gain != null
+                ? ` · 분산이득: ${(psim.diversification_gain * 100).toFixed(1)}%`
+                : ""}
+            </div>
+            {psim.correlation && Array.isArray(psim.correlation.labels) && (
+              <table className="mono" style={{ fontSize: 11, marginTop: 4 }}>
+                <thead>
+                  <tr>
+                    <th>상관</th>
+                    {psim.correlation.labels.map(l => <th key={l}>{l.split(":")[0]}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {psim.correlation.labels.map((row, i) => (
+                    <tr key={row}>
+                      <th>{row.split(":")[0]}</th>
+                      {(psim.correlation.matrix[i] || []).map((v, j) => (
+                        <td key={j}>{v.toFixed(2)}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+        {psim && psim.error && (
+          <div className="mono" style={{ fontSize: 11, color: "#c95" }}>{psim.error}</div>
+        )}
+      </div>
     </div>
   );
 }

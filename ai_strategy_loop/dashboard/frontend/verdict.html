@@ -69,6 +69,26 @@
               </tbody>
             </table>
           )}
+          {v && v.oos_diff_ci && Object.keys(v.oos_diff_ci).length > 0 && (
+            <div style={{ marginTop: 8, marginBottom: 4 }}>
+              <div className="mono" style={{ fontSize: 11, color: "#9fb0c0", marginBottom: 2 }}>
+                OOS 차이 신뢰구간 (advisory) — CI가 0을 걸치면 표본 부족 신호 — 판정 미사용
+              </div>
+              <table className="mono" style={{ fontSize: 11, width: "100%" }}>
+                <thead><tr><th>OOS 연도</th><th>total_diff</th><th>CI 95%</th><th>P(diff≤0)</th></tr></thead>
+                <tbody>
+                  {Object.entries(v.oos_diff_ci).map(([year, ci]) => (
+                    <tr key={year}>
+                      <td>{year}</td>
+                      <td>{ci ? Math.round(ci.total_diff).toLocaleString() : "—"}</td>
+                      <td>{ci ? `[${Math.round(ci.ci_low).toLocaleString()}, ${Math.round(ci.ci_high).toLocaleString()}]` : "—"}</td>
+                      <td>{ci ? ci.p_diff_le_0 : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
           {v && (v.alerts || []).map((a, i) => (
             <div key={"a" + i} className="mono" style={{ fontSize: 12, color: "#c95" }}>⚠️ {a}</div>
           ))}
