@@ -923,28 +923,40 @@ const _BT_METRIC_CARDS = [
   { key: "cagr",             label: "CAGR",       fmt: (v) => fmtPct(v), signed: true },
 ];
 
-function BtResultArea({ baseUrl, isDemo, jobId, onSetCompareA, compareView, onCloseCompare }) {
+function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compareView, onCloseCompare }) {
   const [result, setResult] = useState_btc(null);   // /bt/result
   const [loading, setLoading] = useState_btc(false);
   const [err, setErr] = useState_btc("");
-  // 브러시 구간 분석 — {t_start,t_end} 또는 null(전체).
+  // 브러시 구간 분석 — {t_start,t_end} 또는 null(전체). 진화 세대(evoSource)는 미지원.
   const [range, setRange] = useState_btc(null);
   // 몬테카를로(지연 계산) — {data, loading}.
   const [mc, setMc] = useState_btc(null);
   const [mcLoading, setMcLoading] = useState_btc(false);
 
+  // 결과 소스: jobId(잡) 우선, 없으면 evoSource(run_id+gen_no, 진화 세대 분석).
+  //   진화 세대는 브러시/몬테카를로 구간 재계산을 지원하지 않는다(잡 전용 경로).
+  const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
+  const hasSource = !!jobId || isEvo;
+  const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
+
   const load = useCallback_btc(() => {
-    if (isDemo || !baseUrl || !jobId) { setResult(null); return; }
+    if (isDemo || !baseUrl || !hasSource) { setResult(null); return; }
     setLoading(true); setErr("");
-    let url = baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId);
-    if (range) { url += "&t_start=" + range.t_start + "&t_end=" + range.t_end; }
+    let url;
+    if (jobId) {
+      url = baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId);
+      if (range) { url += "&t_start=" + range.t_start + "&t_end=" + range.t_end; }
+    } else {
+      url = baseUrl + "/bt/result?run_id=" + encodeURIComponent(evoSource.run_id)
+          + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
+    }
     _btFetchJson(url, 8000)
       .then(j => { setResult(j); if (!(j && j.available)) setErr("결과를 찾을 수 없습니다"); })
       .catch(e => { setResult(null); setErr(String(e)); })
       .finally(() => setLoading(false));
-  }, [baseUrl, isDemo, jobId, range]);
+  }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
 
-  // 몬테카를로 재계산(현재 구간 반영). 무예외.
+  // 몬테카를로 재계산(현재 구간 반영). 잡 전용 — 진화 세대는 스킵. 무예외.
   const loadMc = useCallback_btc(() => {
     if (isDemo || !baseUrl || !jobId) { setMc(null); return; }
     setMcLoading(true);
@@ -957,19 +969,20 @@ function BtResultArea({ baseUrl, isDemo, jobId, onSetCompareA, compareView, onCl
   }, [baseUrl, isDemo, jobId, range]);
 
   useEffect_btc(() => { load(); }, [load]);
-  // jobId 가 바뀌면 구간 선택·몬테카를로 초기화.
-  useEffect_btc(() => { setRange(null); setMc(null); }, [jobId]);
-  // 결과/구간이 바뀌면 몬테카를로 자동 재계산(성공/구간 잡일 때만).
+  // 소스(잡/세대)가 바뀌면 구간 선택·몬테카를로 초기화.
+  useEffect_btc(() => { setRange(null); setMc(null); }, [sourceKey]);
+  // 결과/구간이 바뀌면 몬테카를로 자동 재계산(성공/구간 잡일 때만; 세대는 스킵).
   useEffect_btc(() => {
-    if (result && result.available && result.status !== "no_trades") { loadMc(); }
-  }, [result, loadMc]);
+    if (jobId && result && result.available && result.status !== "no_trades") { loadMc(); }
+  }, [result, loadMc, jobId]);
 
   const onBrush = useCallback_btc((t_start, t_end) => {
+    if (!jobId) { return; }   // 진화 세대는 구간 분석 미지원.
     setRange({ t_start, t_end });
-  }, []);
+  }, [jobId]);
   const onBrushClear = useCallback_btc(() => { setRange(null); }, []);
 
-  if (!jobId) {
+  if (!hasSource) {
     return (
       <div className="panel">
         <div className="panel-hd">
@@ -1066,12 +1079,29 @@ function BtResultArea({ baseUrl, isDemo, jobId, onSetCompareA, compareView, onCl
       <div className="panel">
         <div className="panel-hd">
           <div className="panel-hd-title">
-            <span className="dot" style={{ background: "var(--teal)" }}></span>핵심 메트릭
+            <span className="dot" style={{ background: isEvo ? "var(--violet)" : "var(--teal)" }}></span>
+            {isEvo ? "핵심 메트릭 · 진화 세대" : "핵심 메트릭"}
+            {isEvo && (
+              <span className="mono tag-slim" style={{ fontSize: 9.5, color: "var(--violet)", marginLeft: 6 }}
+                    title="진화 run 세대 분석 — loop_runs.db 읽기 전용">
+                {evoSource.run_id}/g{evoSource.gen_no}
+              </span>
+            )}
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {onSetCompareA && (
+            {/* 비교 기준(A) 는 잡 전용(진화 세대는 A/B 비교 미지원). */}
+            {onSetCompareA && jobId && (
               <button className="btn ghost sm" onClick={() => onSetCompareA(jobId)}
                       title="이 잡을 A/B 비교의 기준(A)으로 고정">⊕ 비교 기준(A)</button>
+            )}
+            {isEvo && (
+              <button className="btn ghost sm"
+                      onClick={() => {
+                        const u = baseUrl + "/bt/report?run_id=" + encodeURIComponent(evoSource.run_id)
+                                + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
+                        try { window.open(u, "_blank", "noopener"); } catch (e) {}
+                      }}
+                      title="이 세대의 자급자족 HTML 리포트를 새 탭으로 열기">📄 리포트</button>
             )}
             <button className="btn ghost sm" onClick={load} disabled={loading}>{loading ? "로딩…" : "↻"}</button>
           </div>

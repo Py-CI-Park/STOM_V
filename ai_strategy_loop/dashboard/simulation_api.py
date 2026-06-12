@@ -20,7 +20,9 @@
 설계 계약(무예외):
   - 모든 REST 는 데이터 없어도 빈 구조를 반환하고 절대 500 으로 대시보드를 깨지 않는다.
   - 시세 DB 는 replay_engine 이 ``file:...?mode=ro`` 로만 연다(하드링크 보호).
-  - 동시 WS 세션 1개 제한(초과 시 정중한 error 후 종료). stop/연결종료 시 태스크 정리.
+  - 동시 WS 세션 4개까지 허용(초과 시 정중한 error 후 종료). 각 세션은 독립
+    리플레이 태스크를 갖고 disconnect/stop 시 자기 세션만 정리한다. 세션 간
+    자원 간섭 없음(각자 일일 DB 읽기전용 — 파일 핸들 독립).
   - app.py 접점은 ``include_router`` 한 줄(wt-dev 머지 충돌 최소화).
 """
 
@@ -28,6 +30,7 @@ from __future__ import annotations
 
 import asyncio
 import csv
+import itertools
 import sqlite3
 import threading
 import time
@@ -54,6 +57,8 @@ _MIN_SLEEP_SEC = 0.005
 _MAX_SPEED = 240
 # WS 한 번에 보낼 frame 배치 상한(배속 높을 때 묶음 전송).
 _MAX_BATCH = 64
+# 동시 WS 리플레이 세션 상한(프로세스 전역). 초과 연결은 정중히 거절.
+_MAX_SESSIONS = 4
 # /sim/signals 잡 폴링 상한(초). 1일·1종목 백테는 통상 1분 내.
 _SIGNAL_JOB_TIMEOUT = 180
 
@@ -305,26 +310,45 @@ def _safe_float(value: Any) -> float:
 
 
 # ------------------------------------------------------------------- WS session
-class _SessionGate:
-    """동시 WS 리플레이 세션 1개 제한 게이트(프로세스 전역)."""
+class _SessionRegistry:
+    """동시 WS 리플레이 세션 레지스트리(프로세스 전역, 상한 _MAX_SESSIONS).
 
-    def __init__(self) -> None:
+    세션 id 를 키로 활성 세션을 추적한다. ``acquire`` 는 상한 미만일 때만 새
+    세션 id 를 등록하고 그 id 를 돌려주며, 초과 시 ``None`` 을 돌려준다(호출부가
+    정중한 error 로 거절). ``release`` 는 해당 세션 id 만 제거하므로 한 세션의
+    종료가 다른 세션에 영향을 주지 않는다. ``release()`` 를 인자 없이 호출하면
+    전체를 비운다(테스트 격리용).
+    """
+
+    def __init__(self, limit: int = _MAX_SESSIONS) -> None:
         self._lock = threading.Lock()
-        self._active = False
+        self._active: set[str] = set()
+        self._limit = limit
+        self._counter = itertools.count(1)
 
-    def acquire(self) -> bool:
+    def acquire(self) -> Optional[str]:
+        """상한 미만이면 새 세션 id 를 등록·반환, 초과면 ``None``."""
         with self._lock:
-            if self._active:
-                return False
-            self._active = True
-            return True
+            if len(self._active) >= self._limit:
+                return None
+            session_id = f"sim-{next(self._counter)}"
+            self._active.add(session_id)
+            return session_id
 
-    def release(self) -> None:
+    def release(self, session_id: Optional[str] = None) -> None:
+        """``session_id`` 세션만 제거(없으면 무시). 인자 없으면 전체 초기화."""
         with self._lock:
-            self._active = False
+            if session_id is None:
+                self._active.clear()
+            else:
+                self._active.discard(session_id)
+
+    def active_count(self) -> int:
+        with self._lock:
+            return len(self._active)
 
 
-_GATE = _SessionGate()
+_GATE = _SessionRegistry()
 
 
 class SimReplaySession:
@@ -444,17 +468,19 @@ def _clamp_speed(value: Any) -> int:
 
 @simulation_router.websocket("/ws")
 async def simulation_ws(websocket: WebSocket) -> None:
-    """리플레이 WS 세션. 동시 1개 제한 — 초과 시 정중히 거절 후 종료.
+    """리플레이 WS 세션. 동시 _MAX_SESSIONS 개까지 — 초과 시 정중히 거절 후 종료.
 
-    프로토콜(클라→서버): start/pause/resume/speed/seek/stop.
-      서버→클라: meta → bars(배치) → done | error.
+    각 연결은 독립 세션 id·SimReplaySession·스트림 태스크를 가지며, 연결 종료·stop
+    시 자기 세션만 정리한다(다른 세션 무영향). 프로토콜(클라→서버):
+    start/pause/resume/speed/seek/stop. 서버→클라: meta → bars(배치) → done | error.
     제어 메시지는 스트림 루프와 동시 처리되도록 별도 수신 태스크로 받는다.
     """
     await websocket.accept()
-    if not _GATE.acquire():
+    session_id = _GATE.acquire()
+    if session_id is None:
         await websocket.send_json({
             "type": "error",
-            "message": "이미 다른 리플레이 세션이 실행 중입니다(동시 1개 제한).",
+            "message": f"동시 리플레이 세션 상한({_MAX_SESSIONS}개)에 도달했습니다.",
         })
         await websocket.close()
         return
@@ -499,7 +525,7 @@ async def simulation_ws(websocket: WebSocket) -> None:
         session.handle_stop()
         if stream_task is not None and not stream_task.done():
             stream_task.cancel()
-        _GATE.release()
+        _GATE.release(session_id)
 
 
 def _parse_json(raw: str) -> Dict[str, Any]:
