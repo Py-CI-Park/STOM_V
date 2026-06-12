@@ -444,7 +444,7 @@ class TestFrontendContract:
         assert "동결상관" in src
         assert "기권(시드 유지)" in src
         lab = (FRONTEND / "lab.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260612b" in lab
+        assert "research-lab.jsx?v=20260612c" in lab
         assert "ResearchLabPanel" in lab
         # Phase1/2(2026-06-11) — 사이드바·결정 페이지 계약.
         assert "run 목록" in lab
@@ -463,5 +463,124 @@ class TestFrontendContract:
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
-        assert "research-lab.jsx?v=20260612b" in src
+        assert "research-lab.jsx?v=20260612c" in src
         assert "app.jsx?v=20260612a" in src
+
+
+class TestRegimeReport:
+    """과업1(2026-06-12) — /regime_report 엔드포인트: 정상(tmp JSON) + 파일 부재."""
+
+    def test_returns_data_when_file_exists(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        regime_data = {
+            "THETA": {"active_months": 8, "active_profit": 1200000, "contracted_profit": 800000,
+                      "concentration": 0.72},
+            "SEED": {"active_months": 6, "active_profit": 900000, "contracted_profit": 600000},
+        }
+        evidence_dir = tmp_path / ".omo" / "evidence" / "tmap-walkforward"
+        evidence_dir.mkdir(parents=True)
+        regime_file = evidence_dir / "regime_report_20260612.json"
+        regime_file.write_text(__import__("json").dumps(regime_data), encoding="utf-8")
+
+        monkeypatch.setattr(A, "REPO_ROOT", str(tmp_path))
+        out = A._regime_report_payload()
+        assert "THETA" in out
+        assert out["THETA"]["active_profit"] == 1200000
+
+    def test_unavailable_when_no_file(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        monkeypatch.setattr(A, "REPO_ROOT", str(tmp_path))
+        out = A._regime_report_payload()
+        assert out["status"] == "unavailable"
+
+
+class TestRevivalRegistry:
+    """과업2(2026-06-12) — /revival_registry 엔드포인트: 정상(tmp JSON) + 파일 부재."""
+
+    def test_returns_data_when_file_exists(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        registry_data = {
+            "candidates": [
+                {"label": "C7_SEEDPLUS", "rejected_at": "2026-06-01", "reject_basis": "mdd>20%"},
+                {"label": "C8_TEST", "rejected_at": "2026-06-05", "reject_basis": "profit<0"},
+            ]
+        }
+        evidence_dir = tmp_path / ".omo" / "evidence" / "tmap-walkforward"
+        evidence_dir.mkdir(parents=True)
+        (evidence_dir / "rejected_registry.json").write_text(
+            __import__("json").dumps(registry_data), encoding="utf-8"
+        )
+
+        monkeypatch.setattr(A, "REPO_ROOT", str(tmp_path))
+        out = A._revival_registry_payload()
+        assert isinstance(out["candidates"], list)
+        assert len(out["candidates"]) == 2
+        assert out["candidates"][0]["label"] == "C7_SEEDPLUS"
+
+    def test_unavailable_when_no_file(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        monkeypatch.setattr(A, "REPO_ROOT", str(tmp_path))
+        out = A._revival_registry_payload()
+        assert out["status"] == "unavailable"
+
+
+class TestPipelineStatus:
+    """과업3(2026-06-12) — /pipeline_status 엔드포인트: 정상(tmp state.json들) + 디렉토리 없음."""
+
+    def test_returns_items_when_state_files_exist(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        pipeline_dir = tmp_path / ".omo" / "evidence" / "pipeline"
+        for prefix, stages in [
+            ("run_alpha", {"fetch": True, "backtest": True, "evaluate": False}),
+            ("run_beta",  {"fetch": True, "backtest": False, "evaluate": False}),
+        ]:
+            d = pipeline_dir / prefix
+            d.mkdir(parents=True)
+            (d / "state.json").write_text(
+                __import__("json").dumps(stages), encoding="utf-8"
+            )
+
+        monkeypatch.setattr(A, "REPO_ROOT", str(tmp_path))
+        out = A._pipeline_status_payload()
+        assert out["count"] == 2
+        prefixes = {item["prefix"] for item in out["items"]}
+        assert "run_alpha" in prefixes
+        assert "run_beta" in prefixes
+        alpha = next(item for item in out["items"] if item["prefix"] == "run_alpha")
+        assert alpha["stages"]["fetch"] is True
+        assert alpha["stages"]["evaluate"] is False
+
+    def test_empty_when_no_pipeline_dir(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        monkeypatch.setattr(A, "REPO_ROOT", str(tmp_path))
+        out = A._pipeline_status_payload()
+        assert out["items"] == []
+        assert out["count"] == 0
+
+
+class TestNewFrontendContract:
+    """과업1~3(2026-06-12) — 새 엔드포인트·패널 프런트 계약."""
+
+    def test_verdict_html_has_regime_and_revival_blocks(self):
+        src = (FRONTEND / "verdict.html").read_text(encoding="utf-8")
+        assert "/regime_report" in src
+        assert "레짐 분해 (advisory)" in src
+        assert "/revival_registry" in src
+        assert "패자부활 레지스트리" in src
+        assert "신규 데이터 도착 시 전수 자동 재검증" in src
+
+    def test_research_lab_has_pipeline_checkpoint_panel(self):
+        src = (FRONTEND / "research-lab.jsx").read_text(encoding="utf-8")
+        assert "/pipeline_status" in src
+        assert "파이프라인 체크포인트" in src
+        assert "_PipelineCheckpointPanel" in src
+
+    def test_lab_html_cache_bumped(self):
+        src = (FRONTEND / "lab.html").read_text(encoding="utf-8")
+        assert "research-lab.jsx?v=20260612c" in src

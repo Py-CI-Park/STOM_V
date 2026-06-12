@@ -28,6 +28,8 @@
       const [choice, setChoice] = React.useState("hold");
       const [note, setNote] = React.useState("");
       const [saved, setSaved] = React.useState(null);
+      const [regime, setRegime] = React.useState(null);
+      const [revival, setRevival] = React.useState(null);
 
       const loadHistory = () =>
         fetch("/decisions", { signal: AbortSignal.timeout(8000) })
@@ -37,6 +39,10 @@
       React.useEffect(() => {
         fetch("/freeze_verdict", { signal: AbortSignal.timeout(12000) })
           .then(r => (r.ok ? r.json() : null)).then(j => setV(j)).catch(() => {});
+        fetch("/regime_report", { signal: AbortSignal.timeout(10000) })
+          .then(r => (r.ok ? r.json() : null)).then(j => setRegime(j)).catch(() => {});
+        fetch("/revival_registry", { signal: AbortSignal.timeout(10000) })
+          .then(r => (r.ok ? r.json() : null)).then(j => setRevival(j)).catch(() => {});
         loadHistory();
       }, []);
 
@@ -95,6 +101,54 @@
           {v && (v.lines || []).map((l, i) => (
             <div key={"l" + i} className="mono" style={{ fontSize: 12 }}>{l}</div>
           ))}
+
+          {regime && regime.status !== "unavailable" && (
+            <div style={{ marginTop: 10 }}>
+              <div className="research-empty">레짐 분해 (advisory) — 판정 미사용</div>
+              {["THETA", "SEED"].map(grp => {
+                const d = regime[grp];
+                if (!d) return null;
+                return (
+                  <div key={grp} className="mono" style={{ fontSize: 11, marginTop: 4 }}>
+                    <b>{grp}</b>
+                    {" · active "}
+                    {d.active_months != null ? d.active_months : (Array.isArray(d.months) ? d.months.length : "—")}
+                    {" 개월 · 수익 "}
+                    {d.active_profit != null ? Math.round(d.active_profit).toLocaleString() : "—"}
+                    {" · contracted "}
+                    {d.contracted_profit != null ? Math.round(d.contracted_profit).toLocaleString() : "—"}
+                    {d.concentration != null ? ` · concentration ${(d.concentration * 100).toFixed(1)}%` : ""}
+                    {d.warning ? <span style={{ color: "#c95" }}> ⚠️ {d.warning}</span> : null}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {regime && regime.status === "unavailable" && (
+            <div className="mono" style={{ fontSize: 11, marginTop: 8, opacity: 0.6 }}>레짐 분해: 데이터 없음</div>
+          )}
+
+          {revival && revival.status !== "unavailable" && (
+            <div style={{ marginTop: 10 }}>
+              <div className="research-empty">
+                패자부활 레지스트리
+                {revival.candidates != null ? ` — 등재 후보 ${Array.isArray(revival.candidates) ? revival.candidates.length : revival.candidates}개` : ""}
+              </div>
+              {Array.isArray(revival.candidates) && revival.candidates.slice(0, 10).map((item, i) => (
+                <div key={i} className="mono" style={{ fontSize: 11 }}>
+                  {item.label || item.run_id || "—"}
+                  {item.rejected_at ? ` · 기각 ${item.rejected_at}` : ""}
+                  {item.reject_basis ? ` · ${item.reject_basis}` : ""}
+                </div>
+              ))}
+              <div className="mono" style={{ fontSize: 10, opacity: 0.65, marginTop: 2 }}>
+                신규 데이터 도착 시 전수 자동 재검증
+              </div>
+            </div>
+          )}
+          {revival && revival.status === "unavailable" && (
+            <div className="mono" style={{ fontSize: 11, marginTop: 8, opacity: 0.6 }}>패자부활 레지스트리: 데이터 없음</div>
+          )}
 
           <div style={{ marginTop: 14, padding: 12, border: "1px solid rgba(255,255,255,0.12)", borderRadius: 6 }}>
             <div className="research-empty">운용 결정 기록 (append-only — 번복도 새 레코드로 이력 보존)</div>

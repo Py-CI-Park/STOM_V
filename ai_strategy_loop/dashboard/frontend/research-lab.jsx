@@ -160,6 +160,40 @@ function _RecencyResearchBadge({ recency }) {
   );
 }
 
+/* 과업3(2026-06-12) — 파이프라인 체크포인트 소형 패널.
+   /pipeline_status → {items:[{prefix, stages:{stage:bool,...}, mtime},...]}
+   prefix별로 단계 체크리스트(done=✅/미완=·) 1줄씩, 최대 5개. */
+function _PipelineCheckpointPanel({ baseUrl, isDemo }) {
+  const [items, setItems] = useState_rl(null);
+  useEffect_rl(() => {
+    if (isDemo || !baseUrl) return;
+    fetch(baseUrl + "/pipeline_status", { signal: AbortSignal.timeout(8000) })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => setItems(j && Array.isArray(j.items) ? j.items : []))
+      .catch(() => {});
+  }, [baseUrl, isDemo]);
+
+  if (!items || items.length === 0) return null;
+  return (
+    <div style={{ marginTop: 10 }}>
+      <div className="research-empty">파이프라인 체크포인트</div>
+      {items.slice(0, 5).map((item, i) => {
+        const stages = item.stages || {};
+        const stageList = Object.entries(stages);
+        return (
+          <div key={i} className="mono" style={{ fontSize: 11, marginTop: 2 }}>
+            <b>{item.prefix}</b>
+            {" · "}
+            {stageList.length === 0
+              ? "단계 없음"
+              : stageList.map(([k, v]) => (v ? "✅" : "·") + k).join("  ")}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* D1/D2/D4(2026-06-10) — 검증 패널: 연도 분해 · 선택기 미리보기 · 부검 요약.
    읽기 전용 GET 3종(/run_yearly /selector_preview /autopsy)만 소비한다.
    근거: 원인5(연도별 쇠퇴는 합계로 안 보임)·원인1(기준-목표 비정합을 눈으로 확인). */
@@ -608,6 +642,9 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
       {grid && grid.count === 0 && (
         <div className="mono" style={{ fontSize: 11 }}>격자 run 아님(--grid 스윕 run_id를 입력하세요)</div>
       )}
+
+      {/* 과업3(2026-06-12) — 파이프라인 체크포인트 패널 */}
+      <_PipelineCheckpointPanel baseUrl={baseUrl} isDemo={isDemo} />
 
       {/* 과업2(2026-06-12) — 결합 시뮬(v0 균등가중) advisory 패널 */}
       <div style={{ marginTop: 10 }}>

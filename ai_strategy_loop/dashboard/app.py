@@ -2477,6 +2477,79 @@ def _entry_time_buckets(csv_path: str) -> set:
         return set()
 
 
+def _regime_report_payload() -> Dict[str, Any]:
+    """과업1(2026-06-12) — 레짐 분해 리포트(최신 regime_report_*.json 반환).
+
+    .omo/evidence/tmap-walkforward/regime_report_*.json 중 mtime 최신을 읽어
+    그대로 반환한다. 파일 없으면 {"status": "unavailable"}. 읽기 전용·무예외.
+    """
+    import glob as _glob  # noqa: PLC0415
+
+    pattern = os.path.join(REPO_ROOT, ".omo", "evidence", "tmap-walkforward",
+                           "regime_report_*.json")
+    try:
+        candidates = sorted(_glob.glob(pattern), key=os.path.getmtime, reverse=True)
+        if not candidates:
+            return {"status": "unavailable"}
+        with open(candidates[0], encoding="utf-8") as fh:
+            data = json.load(fh)
+        return data if isinstance(data, dict) else {"status": "unavailable"}
+    except Exception:  # noqa: BLE001
+        return {"status": "unavailable"}
+
+
+def _revival_registry_payload() -> Dict[str, Any]:
+    """과업2(2026-06-12) — 패자부활 레지스트리(rejected_registry.json 반환).
+
+    .omo/evidence/tmap-walkforward/rejected_registry.json을 읽어 그대로 반환한다.
+    파일 없으면 {"status": "unavailable"}. 읽기 전용·무예외.
+    """
+    path = os.path.join(REPO_ROOT, ".omo", "evidence", "tmap-walkforward",
+                        "rejected_registry.json")
+    try:
+        with open(path, encoding="utf-8") as fh:
+            data = json.load(fh)
+        return data if isinstance(data, dict) else {"status": "unavailable"}
+    except FileNotFoundError:
+        return {"status": "unavailable"}
+    except Exception:  # noqa: BLE001
+        return {"status": "unavailable"}
+
+
+def _pipeline_status_payload() -> Dict[str, Any]:
+    """과업3(2026-06-12) — 파이프라인 체크포인트 상태(state.json 순회).
+
+    .omo/evidence/pipeline/*/state.json 을 순회해 {prefix, stages, mtime} 목록을
+    mtime 최신순으로 반환한다. 디렉토리 없으면 빈 목록. 읽기 전용·무예외.
+    """
+    import glob as _glob  # noqa: PLC0415
+
+    pipeline_dir = os.path.join(REPO_ROOT, ".omo", "evidence", "pipeline")
+    out: Dict[str, Any] = {"items": [], "count": 0}
+    try:
+        state_files = _glob.glob(os.path.join(pipeline_dir, "*", "state.json"))
+        items: list = []
+        for sf in state_files:
+            try:
+                prefix = os.path.basename(os.path.dirname(sf))
+                mtime = os.path.getmtime(sf)
+                with open(sf, encoding="utf-8") as fh:
+                    stages = json.load(fh)
+                items.append({
+                    "prefix": prefix,
+                    "stages": stages if isinstance(stages, dict) else {},
+                    "mtime": round(mtime, 1),
+                })
+            except Exception:  # noqa: BLE001 - 개별 파일 실패는 skip.
+                continue
+        items.sort(key=lambda x: x["mtime"], reverse=True)
+        out["items"] = items
+        out["count"] = len(items)
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
 def create_app() -> FastAPI:
     """대시보드 FastAPI 앱을 생성한다 (테스트가 TestClient로 감싼다)."""
     manager = LoopProcessManager()
@@ -2603,6 +2676,21 @@ def create_app() -> FastAPI:
         읽기 전용·무예외·판정 미사용.
         """
         return _portfolio_sim_payload(runs)
+
+    @app.get("/regime_report")
+    def regime_report() -> Dict[str, Any]:
+        """과업1(2026-06-12) — 레짐 분해 리포트(최신 regime_report_*.json 반환). 읽기 전용·무예외."""
+        return _regime_report_payload()
+
+    @app.get("/revival_registry")
+    def revival_registry() -> Dict[str, Any]:
+        """과업2(2026-06-12) — 패자부활 레지스트리(rejected_registry.json 반환). 읽기 전용·무예외."""
+        return _revival_registry_payload()
+
+    @app.get("/pipeline_status")
+    def pipeline_status() -> Dict[str, Any]:
+        """과업3(2026-06-12) — 파이프라인 체크포인트 상태(.omo/evidence/pipeline/*/state.json). 읽기 전용·무예외."""
+        return _pipeline_status_payload()
 
     @app.get("/niche_compare")
     def niche_compare(run_ids: str = "") -> Dict[str, Any]:
