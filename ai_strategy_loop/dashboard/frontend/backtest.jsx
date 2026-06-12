@@ -25,6 +25,18 @@ function _btPostJson(url, body, timeoutMs) {
   }).then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
 }
 
+// http(s) baseUrl + 경로 → ws(s) URL. baseUrl 이 비면 현재 origin 기준.
+function _btWsUrl(baseUrl, path) {
+  let origin = baseUrl || (window.location ? window.location.origin : "");
+  origin = origin.replace(/^http:/i, "ws:").replace(/^https:/i, "wss:");
+  if (!/^wss?:/i.test(origin)) {
+    const loc = window.location || {};
+    const proto = (loc.protocol === "https:") ? "wss:" : "ws:";
+    origin = proto + "//" + (loc.host || "");
+  }
+  return origin.replace(/\/$/, "") + path;
+}
+
 const _BT_JOB_BADGE = {
   pending:   { txt: "대기", cls: "badge idle" },
   running:   { txt: "실행중", cls: "badge run" },
@@ -363,13 +375,46 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult }) {
 
   useEffect_bt(() => { loadJobs(); }, [loadJobs]);
 
-  // 활성 잡 폴링 — running/pending 일 때만 2초 간격.
+  // 추적 대상 job_id(WS/폴링 공용). 활성 잡이 running/pending 이면 그 id.
+  const trackId = activeJob && (activeJob.status === "running" || activeJob.status === "pending")
+    ? activeJob.job_id : null;
+  // WS 연결 성공 여부 ref — 성공 시 폴링을 끈다(폴백 전용).
+  const wsOkRef = useRef_bt(false);
+
+  // 라이브 잡 WebSocket — running/pending 일 때 구독. 실패 시 폴링 폴백(무예외).
   useEffect_bt(() => {
-    if (isDemo || !baseUrl || !activeJob) return;
-    const st = activeJob.status;
-    if (st !== "running" && st !== "pending") return;
+    wsOkRef.current = false;
+    if (isDemo || !baseUrl || !trackId) return;
+    let ws = null;
+    let closedByUs = false;
+    try {
+      const wsUrl = _btWsUrl(baseUrl, "/bt/ws_job?job_id=" + encodeURIComponent(trackId));
+      ws = new WebSocket(wsUrl);
+    } catch (e) { return; }
+    ws.onopen = () => { wsOkRef.current = true; };
+    ws.onmessage = (ev) => {
+      let m = null;
+      try { m = JSON.parse(ev.data); } catch (e) { return; }
+      if (!m || m.error) { return; }
+      wsOkRef.current = true;
+      // WS 페이로드를 activeJob 형태로 머지(job 카드가 기대하는 필드 유지).
+      setActiveJob(prev => Object.assign({}, prev, {
+        job_id: m.job_id, status: m.status, progress: m.progress,
+        phase: m.phase, message: m.message, log_tail: m.log_tail || (prev && prev.log_tail) || [],
+      }));
+      if (m.terminal) { loadJobs(); }
+    };
+    ws.onerror = () => { wsOkRef.current = false; };
+    ws.onclose = () => { if (!closedByUs) { /* 폴링 폴백이 이어받음 */ } };
+    return () => { closedByUs = true; try { ws && ws.close(); } catch (e) {} };
+  }, [baseUrl, isDemo, trackId, loadJobs]);
+
+  // 폴링 폴백 — WS 미연결일 때만 2초 간격(WS 성공 시 즉시 중단).
+  useEffect_bt(() => {
+    if (isDemo || !baseUrl || !trackId) return;
     const id = setInterval(() => {
-      _btFetchJson(baseUrl + "/bt/job?job_id=" + encodeURIComponent(activeJob.job_id), 4000)
+      if (wsOkRef.current) return;   // WS 가 살아있으면 폴링은 쉰다(폴백 전용).
+      _btFetchJson(baseUrl + "/bt/job?job_id=" + encodeURIComponent(trackId), 4000)
         .then(j => {
           if (j && j.available) {
             setActiveJob(j);
@@ -379,7 +424,7 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult }) {
         .catch(() => {});
     }, 2000);
     return () => clearInterval(id);
-  }, [baseUrl, isDemo, activeJob, loadJobs]);
+  }, [baseUrl, isDemo, trackId, loadJobs]);
 
   const tfRange = range ? range[timeframe] : null;
 

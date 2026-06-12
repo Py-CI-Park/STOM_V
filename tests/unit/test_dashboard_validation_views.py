@@ -303,8 +303,9 @@ class TestFrontendContract:
         # app.jsx는 2026-06-11 3탭 셸 도입(PR1·PR2 워크벤치)으로 v20260611b로 재범프됐다.
         assert "app.jsx?v=20260611b" in src
         # 백테스트 워크벤치(PR2) — 차트 모듈이 backtest.jsx보다 먼저 로드돼야 한다.
-        assert "backtest-charts.jsx?v=20260612a" in src
-        assert "backtest.jsx?v=20260612a" in src
+        # 1단계 업그레이드(라이브 WS·차트 인터랙션·메트릭 모션·MAE/MFE)로 v20260612b 재범프.
+        assert "backtest-charts.jsx?v=20260612b" in src
+        assert "backtest.jsx?v=20260612b" in src
         # 차트 시뮬레이션(PR3) — 차트 모듈이 simulation.jsx보다 먼저 로드돼야 한다.
         assert "simulation-charts.jsx?v=20260612a" in src
         assert "simulation.jsx?v=20260612a" in src

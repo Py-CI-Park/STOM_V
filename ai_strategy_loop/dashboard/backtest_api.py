@@ -13,15 +13,21 @@ PR1 의 헬스 골격 위에 GUI 백테스트의 웹 이관(조건식 CRUD, 잡 
 
 from __future__ import annotations
 
+import asyncio
 import os
 import sqlite3
 from pathlib import Path
 from typing import Any, Dict, List, Optional, TypedDict
 
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, WebSocket, WebSocketDisconnect
 
 from ai_strategy_loop.dashboard import backtest_analysis as analysis
 from ai_strategy_loop.dashboard.backtest_jobs import BacktestJobSpec, get_job_manager
+
+# 라이브 잡 WS push 간격(초)·로그 테일 줄 수.
+_WS_JOB_INTERVAL_SEC = 1.0
+_WS_JOB_LOG_TAIL = 10
+_JOB_TERMINAL = ("success", "no_trades", "error", "timeout", "cancelled", "stale")
 
 # 패키지 루트(.../ai_strategy_loop) 기준 경로.
 _PACKAGE_DIR = Path(__file__).resolve().parent.parent
@@ -345,10 +351,13 @@ def cancel_job(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
 
 # --------------------------------------------------------------------- result
 @backtest_router.get("/result")
-def get_result(job_id: str = "") -> Dict[str, Any]:
+def get_result(
+    job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None
+) -> Dict[str, Any]:
     """완료 잡의 metrics + 분석 전체 묶음. 미완료/없음이면 available=False.
 
     no_trades 잡은 metrics=None, analysis=빈 구조로 정상 반환(에러 아님).
+    t_start/t_end(매수시간 YYYYMMDDHHMMSS) 가 있으면 그 구간만 재분석한다(브러시).
     """
     manager = get_job_manager()
     record = manager.get(job_id, log_tail=0)
@@ -366,47 +375,124 @@ def get_result(job_id: str = "") -> Dict[str, Any]:
             "analysis": analysis.full_analysis(None),
             "message": record.get("message", ""),
         }
+    bundle = analysis.full_analysis(csv_path, t_start, t_end)
+    ranged = t_start is not None or t_end is not None
     return {
         "available": True,
         "job_id": job_id,
         "status": status,
-        "metrics": record.get("metrics"),
-        "analysis": analysis.full_analysis(csv_path),
+        # 구간 분석 시 metrics 는 CLI 전체 메트릭 대신 구간 summary 로 대체(카드 동기).
+        "metrics": bundle["summary"] if ranged else record.get("metrics"),
+        "analysis": bundle,
+        "ranged": ranged,
     }
 
 
-def _analysis_for_job(job_id: str) -> List[Dict[str, Any]]:
-    """잡 결과 CSV → trades 리스트(분석 개별 엔드포인트 공용)."""
+def _analysis_for_job(
+    job_id: str, t_start: Optional[int] = None, t_end: Optional[int] = None
+) -> List[Dict[str, Any]]:
+    """잡 결과 CSV → trades 리스트(분석 개별 엔드포인트 공용, 옵션 매수시간 범위 필터)."""
     csv_path = get_job_manager().result_csv_path(job_id)
-    return analysis.load_trades_csv(csv_path)
+    trades = analysis.load_trades_csv(csv_path)
+    return analysis.filter_trades(trades, t_start, t_end)
 
 
 @backtest_router.get("/analysis/summary")
-def analysis_summary(job_id: str = "") -> Dict[str, Any]:
-    return {"job_id": job_id, "summary": analysis.summary_metrics(_analysis_for_job(job_id))}
+def analysis_summary(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
+    return {"job_id": job_id, "summary": analysis.summary_metrics(_analysis_for_job(job_id, t_start, t_end))}
 
 
 @backtest_router.get("/analysis/equity")
-def analysis_equity(job_id: str = "") -> Dict[str, Any]:
-    return {"job_id": job_id, "equity": analysis.equity_series(_analysis_for_job(job_id))}
+def analysis_equity(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
+    return {"job_id": job_id, "equity": analysis.equity_series(_analysis_for_job(job_id, t_start, t_end))}
 
 
 @backtest_router.get("/analysis/distribution")
-def analysis_distribution(job_id: str = "") -> Dict[str, Any]:
-    return {"job_id": job_id, "distribution": analysis.pnl_distribution(_analysis_for_job(job_id))}
+def analysis_distribution(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
+    return {"job_id": job_id, "distribution": analysis.pnl_distribution(_analysis_for_job(job_id, t_start, t_end))}
 
 
 @backtest_router.get("/analysis/heatmap")
-def analysis_heatmap(job_id: str = "") -> Dict[str, Any]:
-    return {"job_id": job_id, "heatmap": analysis.time_heatmap(_analysis_for_job(job_id))}
+def analysis_heatmap(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
+    return {"job_id": job_id, "heatmap": analysis.time_heatmap(_analysis_for_job(job_id, t_start, t_end))}
 
 
 @backtest_router.get("/analysis/underwater")
-def analysis_underwater(job_id: str = "") -> Dict[str, Any]:
-    return {"job_id": job_id, "underwater": analysis.underwater(_analysis_for_job(job_id))}
+def analysis_underwater(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
+    return {"job_id": job_id, "underwater": analysis.underwater(_analysis_for_job(job_id, t_start, t_end))}
 
 
 @backtest_router.get("/analysis/insights")
-def analysis_insights(job_id: str = "") -> Dict[str, Any]:
-    trades = _analysis_for_job(job_id)
+def analysis_insights(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
+    trades = _analysis_for_job(job_id, t_start, t_end)
     return {"job_id": job_id, "insights": analysis.generate_insights(trades)}
+
+
+@backtest_router.get("/analysis/mae_mfe")
+def analysis_mae_mfe(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
+    """MAE/MFE 산점도 포인트(R_MAE/R_MFE, 결측 제외, 최대 1000pt)."""
+    return {"job_id": job_id, "mae_mfe": analysis.mae_mfe(_analysis_for_job(job_id, t_start, t_end))}
+
+
+@backtest_router.get("/analysis/exit_reasons")
+def analysis_exit_reasons(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
+    """매도조건(청산사유)별 거래수/총손익/승률 분해."""
+    return {"job_id": job_id, "exit_reasons": analysis.exit_reason_breakdown(_analysis_for_job(job_id, t_start, t_end))}
+
+
+# --------------------------------------------------------------------- live WS
+@backtest_router.websocket("/ws_job")
+async def ws_job(websocket: WebSocket, job_id: str = "") -> None:
+    """라이브 잡 상태 WS — 1초 간격으로 진행 상태를 push, 종결 시 close.
+
+    페이로드: {job_id, status, progress, phase, elapsed, log_tail(최근 10줄)}.
+    잡이 없으면 {error} 후 close. 터미널 상태 도달 시 마지막 페이로드에 terminal:true.
+    잡 매니저는 기존 모듈 레벨 싱글톤을 재사용한다(수정 없음).
+    """
+    await websocket.accept()
+    if not job_id:
+        await websocket.send_json({"error": "job_id 가 필요합니다."})
+        await websocket.close()
+        return
+    manager = get_job_manager()
+    try:
+        while True:
+            record = manager.get(job_id, log_tail=_WS_JOB_LOG_TAIL)
+            if not record.get("available"):
+                await websocket.send_json({"error": "job_id 없음", "job_id": job_id})
+                await websocket.close()
+                return
+            status = record.get("status")
+            terminal = status in _JOB_TERMINAL
+            await websocket.send_json({
+                "job_id": job_id,
+                "status": status,
+                "progress": record.get("progress", 0.0),
+                "phase": record.get("phase", ""),
+                "elapsed": _job_elapsed(record),
+                "log_tail": record.get("log_tail", []),
+                "message": record.get("message", ""),
+                "terminal": terminal,
+            })
+            if terminal:
+                await websocket.close()
+                return
+            await asyncio.sleep(_WS_JOB_INTERVAL_SEC)
+    except WebSocketDisconnect:
+        pass
+    except Exception:  # noqa: BLE001 - 어떤 예외도 흡수(대시보드 보호), 연결만 닫는다.
+        try:
+            await websocket.close()
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def _job_elapsed(record: Dict[str, Any]) -> float:
+    """잡 경과초(시작~종료 또는 현재). 미시작이면 0."""
+    import time
+
+    started = record.get("started_at")
+    if not started:
+        return 0.0
+    end = record.get("finished_at") or time.time()
+    return max(0.0, float(end) - float(started))

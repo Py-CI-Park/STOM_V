@@ -1496,3 +1496,129 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .ai-context-empty.danger {
   color: var(--red);
 }
+
+/* ── 시뮬레이션 변수 라이브 뷰(지표 테이블) — 값 변화 방향 색 플래시 ── */
+.sim-live-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 10.5px;
+}
+.sim-live-table th {
+  text-align: right;
+  padding: 3px 6px;
+  color: var(--ink-3);
+  font-weight: 500;
+  border-bottom: 1px solid var(--line-1);
+  white-space: nowrap;
+}
+.sim-live-table th:first-child,
+.sim-live-table td:first-child {
+  text-align: left;
+}
+.sim-live-table td {
+  text-align: right;
+  padding: 4px 6px;
+  color: var(--ink-1);
+  border-bottom: 1px solid var(--line-1);
+  white-space: nowrap;
+}
+.sim-flash-up {
+  animation: simFlashUp 0.5s ease-out;
+}
+.sim-flash-down {
+  animation: simFlashDown 0.5s ease-out;
+}
+@keyframes simFlashUp {
+  0% { background: rgba(76, 214, 179, 0.32); }
+  100% { background: transparent; }
+}
+@keyframes simFlashDown {
+  0% { background: rgba(255, 93, 108, 0.32); }
+  100% { background: transparent; }
+}
+/* 신호 북마크 항목 */
+.sim-bookmark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 7px;
+  border-radius: 5px;
+  border: 1px solid var(--line-1);
+  background: var(--bg-0);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+.sim-bookmark:hover {
+  border-color: var(--teal-dim);
+  background: rgba(76, 214, 179, 0.06);
+}
+.sim-bookmark.reached {
+  opacity: 1;
+}
+.sim-bookmark.pending {
+  opacity: 0.55;
+}
+/* 키보드 단축키 힌트 */
+.sim-kbd {
+  display: inline-block;
+  min-width: 14px;
+  padding: 1px 5px;
+  border: 1px solid var(--line-2);
+  border-radius: 3px;
+  background: var(--bg-0);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  text-align: center;
+}
+
+/* ===========================================================================
+   웹 대시보드 업그레이드 1단계 — 메트릭 모션·게이지·스파크라인·severity glow·브러시.
+   (추가 전용: 기존 룰 미수정. 진화 탭 공유 파일 보호.)
+   =========================================================================== */
+.bt-metric-card {
+  position: relative;
+  background: var(--bg-1);
+  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 4px;
+  overflow: hidden;
+}
+.bt-metric-card .summary-val { transition: color .25s ease; }
+.bt-gauge-wrap { display: flex; align-items: center; gap: 10px; }
+.bt-gauge-num { display: flex; flex-direction: column; gap: 2px; }
+.bt-spark { display: block; width: 100%; height: auto; }
+
+/* severity 좌측 보더 + 은은한 glow (인사이트 카드). */
+.bt-insight-card { position: relative; transition: box-shadow .3s ease; }
+.bt-insight-card.sev-critical { box-shadow: -3px 0 0 0 var(--red) inset, 0 0 14px -6px rgba(255,107,107,0.5); }
+.bt-insight-card.sev-warning  { box-shadow: -3px 0 0 0 var(--amber) inset, 0 0 14px -6px rgba(240,179,90,0.45); }
+.bt-insight-card.sev-info     { box-shadow: -3px 0 0 0 var(--teal) inset, 0 0 12px -7px rgba(76,214,179,0.4); }
+
+/* 수익곡선 드로우인(stroke-dasharray reveal). */
+@keyframes btDrawIn { to { stroke-dashoffset: 0; } }
+.bt-draw-in { animation: btDrawIn .8s ease-out forwards; }
+
+/* 브러시 선택 구간 하이라이트(SVG rect 위 오버레이). */
+.bt-brush-band { fill: rgba(76,214,179,0.12); stroke: var(--teal-dim); stroke-width: 1; stroke-dasharray: 3 3; }
+.bt-range-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 7px 10px; border-radius: 6px;
+  border: 1px solid var(--teal-dim); background: rgba(76,214,179,0.06);
+}
+
+/* MAE/MFE 산점도 사분면 가이드·점. */
+.bt-scatter-pt { transition: opacity .15s ease; cursor: default; }
+.bt-quadrant-label { font-size: 9.5px; fill: var(--ink-3); font-family: var(--mono); }
+
+/* 매도조건 가로 막대 미니 패널. */
+.bt-exit-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.bt-exit-track { position: relative; flex: 1; height: 14px; border-radius: 3px; background: var(--bg-0); border: 1px solid var(--line-1); overflow: hidden; }
+.bt-exit-fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-draw-in { animation: none; stroke-dashoffset: 0 !important; }
+  .bt-metric-card .summary-val { transition: none; }
+  .bt-insight-card { transition: none; }
+}

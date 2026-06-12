@@ -17,7 +17,7 @@ if PROJECT_ROOT not in sys.path:
 from ai_strategy_loop.dashboard import backtest_analysis as A  # noqa: E402
 
 
-def _trade(name, buy, sell, hold, pct, krw):
+def _trade(name, buy, sell, hold, pct, krw, *, mae=None, mfe=None, exit_reason=""):
     return {
         "name": name,
         "buy_time": buy,
@@ -26,6 +26,9 @@ def _trade(name, buy, sell, hold, pct, krw):
         "hold_min": float(hold),
         "profit_pct": float(pct),
         "profit_krw": float(krw),
+        "mae": mae,
+        "mfe": mfe,
+        "exit_reason": exit_reason,
     }
 
 
@@ -230,3 +233,104 @@ def test_full_analysis_from_csv(tmp_path: Path):
     assert bundle["trade_count"] == 6
     assert bundle["summary"]["total_profit_krw"] == 60000.0
     assert "equity" in bundle and "insights" in bundle
+    # 1단계 — mae_mfe/exit_reasons 가 묶음에 포함된다(합성 CSV 엔 결측 → 빈 구조 허용).
+    assert "mae_mfe" in bundle and "exit_reasons" in bundle
+
+
+# ----------------------------------------------------------- filter_trades (B)
+def test_filter_trades_by_buy_time_range():
+    trades = _sample_trades()
+    # 매수시간(YYYYMMDDHHMMSS 가 아니라 YYYYMMDDHHMM=12자리) — int 비교는 동일하게 동작.
+    buys = sorted(int(t["buy_time"]) for t in trades)
+    mid = buys[len(buys) // 2]
+    sub = A.filter_trades(trades, t_start=mid)
+    assert all(int(t["buy_time"]) >= mid for t in sub)
+    assert 0 < len(sub) < len(trades)
+    # 상한만.
+    upper = A.filter_trades(trades, t_end=buys[0])
+    assert all(int(t["buy_time"]) <= buys[0] for t in upper)
+
+
+def test_filter_trades_empty_range_no_raise():
+    trades = _sample_trades()
+    buys = sorted(int(t["buy_time"]) for t in trades)
+    # 첫 거래보다 이른 상한 → 빈 결과(무예외).
+    assert A.filter_trades(trades, t_end=buys[0] - 1) == []
+    # 경계 둘 다 None → 원본 그대로.
+    assert len(A.filter_trades(trades)) == len(trades)
+
+
+def test_filter_trades_skips_nonnumeric_buy_time():
+    trades = [_trade("a", "bad", "202504071000", 10, 1.0, 1000)]
+    assert A.filter_trades(trades, t_start=0) == []
+
+
+def test_full_analysis_with_range(tmp_path: Path):
+    csv_path = tmp_path / "trades.csv"
+    lines = ["﻿종목명,매수시간,매도시간,보유시간,수익률,수익금"]
+    for t in _sample_trades():
+        lines.append(f"{t['name']},{t['buy_time']},{t['sell_time']},{int(t['hold_min'])},{t['profit_pct']},{int(t['profit_krw'])}")
+    csv_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    buys = sorted(int(t["buy_time"]) for t in _sample_trades())
+    mid = buys[len(buys) // 2]
+    bundle = A.full_analysis(str(csv_path), t_start=mid)
+    assert bundle["trade_count"] < 6
+    assert bundle["trade_count"] > 0
+
+
+# ----------------------------------------------------------------- mae_mfe (D)
+def test_mae_mfe_points_exclude_missing():
+    trades = [
+        _trade("a", "202504070930", "202504071000", 10, 1.0, 1000, mae=-0.5, mfe=2.0, exit_reason="익절"),
+        _trade("b", "202504070935", "202504071005", 20, -1.0, -2000, mae=-1.5, mfe=0.3, exit_reason="손절"),
+        _trade("c", "202504070940", "202504071010", 10, 0.5, 500),  # mae/mfe 결측 → 제외.
+    ]
+    pts = A.mae_mfe(trades)
+    assert len(pts) == 2
+    p0 = pts[0]
+    assert set(p0.keys()) == {"mae", "mfe", "pnl_pct", "hold_sec", "code"}
+    assert p0["mae"] == -0.5 and p0["mfe"] == 2.0
+    assert p0["pnl_pct"] == 1.0
+    assert p0["hold_sec"] == 600.0  # 10분 → 600초.
+
+
+def test_mae_mfe_empty_no_raise():
+    assert A.mae_mfe([]) == []
+    assert A.mae_mfe(_sample_trades()) == []  # 합성 trade 엔 mae/mfe 결측.
+
+
+def test_mae_mfe_downsamples_over_cap():
+    big = [
+        _trade("x", "202504070930", "202504071000", 1, 0.1, 100, mae=-0.1, mfe=0.1)
+        for _ in range(1500)
+    ]
+    pts = A.mae_mfe(big)
+    assert len(pts) <= A._SCATTER_MAX
+
+
+# ------------------------------------------------------- exit_reason_breakdown
+def test_exit_reason_breakdown_groups_and_sorts():
+    trades = [
+        _trade("a", "202504070930", "202504071000", 10, 1.0, 10000, exit_reason="익절"),
+        _trade("b", "202504070935", "202504071005", 10, 2.0, 20000, exit_reason="익절"),
+        _trade("c", "202504070940", "202504071010", 10, -1.0, -5000, exit_reason="손절"),
+    ]
+    rows = A.exit_reason_breakdown(trades)
+    assert len(rows) == 2
+    # total_pnl 내림차순 → 익절(30000) 먼저.
+    assert rows[0]["reason"] == "익절"
+    assert rows[0]["count"] == 2
+    assert rows[0]["total_pnl"] == 30000.0
+    assert rows[0]["win_rate"] == 100.0
+    assert rows[1]["reason"] == "손절"
+    assert rows[1]["win_rate"] == 0.0
+
+
+def test_exit_reason_breakdown_blank_reason():
+    trades = [_trade("a", "202504070930", "202504071000", 10, 1.0, 1000)]
+    rows = A.exit_reason_breakdown(trades)
+    assert rows[0]["reason"] == "(미상)"
+
+
+def test_exit_reason_breakdown_empty():
+    assert A.exit_reason_breakdown([]) == []

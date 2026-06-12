@@ -32,10 +32,16 @@ COL_SELL_TIME = "매도시간"
 COL_HOLD_MIN = "보유시간"
 COL_PROFIT_PCT = "수익률"
 COL_PROFIT_KRW = "수익금"
+# MAE/MFE·청산사유(D) — per-trade CSV 에 이미 존재(틱 DB 재조회 없이 CSV 만으로).
+COL_MFE = "R_MFE"
+COL_MAE = "R_MAE"
+COL_EXIT_REASON = "매도조건"
 
 _DOWNSAMPLE_MAX = 500
 _HIST_BINS = 20
 _TOP_N = 10
+# MAE/MFE 산점도 최대 표본(브라우저 렌더 부하 방지).
+_SCATTER_MAX = 1000
 
 # 한국 거래일 기준 연율화 상수(252 거래일/년).
 _TRADING_DAYS_PER_YEAR = 252.0
@@ -88,6 +94,10 @@ def _normalize_row(row: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         "hold_min": _safe_float(row.get(COL_HOLD_MIN)),
         "profit_pct": _safe_float(row.get(COL_PROFIT_PCT)),
         "profit_krw": profit_krw,
+        # MAE/MFE·청산사유(D) — 결측이면 None/빈문자(소비측이 결측 행 제외).
+        "mfe": _opt_float(row.get(COL_MFE)),
+        "mae": _opt_float(row.get(COL_MAE)),
+        "exit_reason": str(row.get(COL_EXIT_REASON, "") or "").strip(),
     }
 
 
@@ -98,6 +108,45 @@ def _safe_float(value: Any) -> float:
         return float(value)
     except (ValueError, TypeError):
         return 0.0
+
+
+def _opt_float(value: Any) -> Optional[float]:
+    """결측(빈/파싱불가)이면 None, 아니면 float. MAE/MFE 결측 행 제외에 쓴다."""
+    try:
+        if value is None or str(value).strip() == "":
+            return None
+        return float(value)
+    except (ValueError, TypeError):
+        return None
+
+
+def filter_trades(
+    trades: List[Dict[str, Any]],
+    t_start: Optional[int] = None,
+    t_end: Optional[int] = None,
+) -> List[Dict[str, Any]]:
+    """매수시간(YYYYMMDDHHMMSS) 범위로 trade 리스트를 거른다(순수함수·무예외).
+
+    t_start/t_end 는 매수시간을 정수로 본 포함 경계다(둘 중 하나만 줘도 됨).
+    경계가 None 이면 그쪽은 무제한. 매수시간이 정수로 파싱되지 않는 행은 제외한다.
+    빈 결과여도 raise 하지 않고 [] 를 돌린다(브러시 구간이 비면 그대로 빈 분석).
+    """
+    if t_start is None and t_end is None:
+        return list(trades)
+    lo = t_start if t_start is not None else None
+    hi = t_end if t_end is not None else None
+    out: List[Dict[str, Any]] = []
+    for t in trades:
+        buy = str(t.get("buy_time", "") or "").strip()
+        if not buy.isdigit():
+            continue
+        bt = int(buy)
+        if lo is not None and bt < lo:
+            continue
+        if hi is not None and bt > hi:
+            continue
+        out.append(t)
+    return out
 
 
 def _downsample(series: List[Any], limit: int = _DOWNSAMPLE_MAX) -> List[Any]:
@@ -669,11 +718,75 @@ def _worst_loss_slot(trades: List[Dict[str, Any]]) -> Optional[tuple[str, float,
 
 
 # ---------------------------------------------------------------------------
+# 7. mae_mfe — MAE/MFE 산점도 포인트(R_MAE/R_MFE, 결측 제외, 최대 1000pt 샘플).
+# ---------------------------------------------------------------------------
+def mae_mfe(trades: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """매수후 최저(MAE)/최고(MFE) 수익률 산점도 포인트를 만든다(무예외).
+
+    각 포인트: {mae, mfe, pnl_pct, hold_sec, code}. R_MAE/R_MFE 둘 다 있는 행만
+    쓴다(결측 제외). 1000pt 초과면 균등 다운샘플(브라우저 렌더 부하 방지).
+    hold_sec 은 보유시간(분)→초 환산(차트 점 크기/색 보조용).
+    """
+    points: List[Dict[str, Any]] = []
+    for t in trades:
+        mae = t.get("mae")
+        mfe = t.get("mfe")
+        if mae is None or mfe is None:
+            continue
+        points.append({
+            "mae": float(mae),
+            "mfe": float(mfe),
+            "pnl_pct": float(t.get("profit_pct", 0.0) or 0.0),
+            "hold_sec": float(t.get("hold_min", 0.0) or 0.0) * 60.0,
+            "code": str(t.get("name", "") or ""),
+        })
+    return _downsample(points, _SCATTER_MAX)
+
+
+# ---------------------------------------------------------------------------
+# 8. exit_reason_breakdown — 매도조건별 거래수/총손익/승률.
+# ---------------------------------------------------------------------------
+def exit_reason_breakdown(trades: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """매도조건(청산사유)별 {reason, count, total_pnl, win_rate} 집계(무예외).
+
+    총손익(원) 내림차순 정렬. 사유가 비면 '(미상)'. 빈 입력→[].
+    """
+    by_reason: Dict[str, Dict[str, Any]] = {}
+    for t in trades:
+        reason = str(t.get("exit_reason", "") or "").strip() or "(미상)"
+        agg = by_reason.setdefault(reason, {"reason": reason, "count": 0, "total_pnl": 0.0, "wins": 0})
+        agg["count"] += 1
+        pnl = float(t.get("profit_krw", 0.0) or 0.0)
+        agg["total_pnl"] += pnl
+        if pnl > 0.0:
+            agg["wins"] += 1
+    rows = [
+        {
+            "reason": a["reason"],
+            "count": int(a["count"]),
+            "total_pnl": float(a["total_pnl"]),
+            "win_rate": round(a["wins"] / a["count"] * 100.0, 2) if a["count"] else 0.0,
+        }
+        for a in by_reason.values()
+    ]
+    rows.sort(key=lambda r: r["total_pnl"], reverse=True)
+    return rows
+
+
+# ---------------------------------------------------------------------------
 # 묶음 — 잡 결과 CSV 하나로 전체 분석을 한 번에 만든다(API /bt/result 가 소비).
 # ---------------------------------------------------------------------------
-def full_analysis(csv_path: Optional[str]) -> Dict[str, Any]:
-    """CSV 한 파일로 summary/equity/distribution/heatmap/underwater/insights 전부 산출."""
-    trades = load_trades_csv(csv_path)
+def full_analysis(
+    csv_path: Optional[str],
+    t_start: Optional[int] = None,
+    t_end: Optional[int] = None,
+) -> Dict[str, Any]:
+    """CSV 한 파일로 summary/equity/distribution/heatmap/underwater/insights 전부 산출.
+
+    t_start/t_end(매수시간 YYYYMMDDHHMMSS) 를 주면 그 구간 거래만으로 재계산한다
+    (수익곡선 브러시 → 구간 분석). 빈 구간이어도 무예외(빈 분석 구조).
+    """
+    trades = filter_trades(load_trades_csv(csv_path), t_start, t_end)
     summary = summary_metrics(trades)
     distribution = pnl_distribution(trades)
     heatmap = time_heatmap(trades)
@@ -685,4 +798,6 @@ def full_analysis(csv_path: Optional[str]) -> Dict[str, Any]:
         "heatmap": heatmap,
         "underwater": underwater(trades),
         "insights": generate_insights(trades, summary, distribution, heatmap),
+        "mae_mfe": mae_mfe(trades),
+        "exit_reasons": exit_reason_breakdown(trades),
     }
