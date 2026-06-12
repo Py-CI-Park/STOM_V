@@ -20,8 +20,10 @@ from __future__ import annotations
 
 import csv
 import math
+import os
+import struct
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 # ---------------------------------------------------------------------------
 # 컬럼 상수 (holdout/equity_series 와 동일 헤더 계열).
@@ -36,6 +38,12 @@ COL_PROFIT_KRW = "수익금"
 COL_MFE = "R_MFE"
 COL_MAE = "R_MAE"
 COL_EXIT_REASON = "매도조건"
+# 오더플로우(2단계 C) — 진입 시점 호가/체결 스냅샷(per-trade CSV 에 존재).
+COL_OF_STRENGTH = "B_체결강도"      # 체결강도(매수세 우위 지표).
+COL_OF_BUY_REST = "B_매수총잔량"    # 매수 총 잔량(호가).
+COL_OF_SELL_REST = "B_매도총잔량"   # 매도 총 잔량(호가).
+COL_OF_PREVDAY = "B_전일동시간비"   # 전일 동시간 거래대금 비.
+COL_OF_UPDOWN = "B_등락율"          # 진입 시점 등락율.
 
 _DOWNSAMPLE_MAX = 500
 _HIST_BINS = 20
@@ -45,6 +53,17 @@ _SCATTER_MAX = 1000
 
 # 한국 거래일 기준 연율화 상수(252 거래일/년).
 _TRADING_DAYS_PER_YEAR = 252.0
+
+# 몬테카를로 기본 시행수·팬차트 다운샘플 상한·기본 파산 임계(자본 대비 %).
+_MC_DEFAULT_N = 2000
+_MC_FAN_MAX = 200
+_MC_RUIN_PCT = 30.0
+# 통계 검정 유의수준·최소 표본(과신 방지).
+_STAT_ALPHA = 0.05
+_STAT_MIN_N = 30
+
+# 요일 한글 라벨(0=월~6=일).
+_BT_WEEKDAY_KO = ["월", "화", "수", "목", "금", "토", "일"]
 
 
 # ---------------------------------------------------------------------------
@@ -98,6 +117,12 @@ def _normalize_row(row: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         "mfe": _opt_float(row.get(COL_MFE)),
         "mae": _opt_float(row.get(COL_MAE)),
         "exit_reason": str(row.get(COL_EXIT_REASON, "") or "").strip(),
+        # 오더플로우(C) — 진입 호가/체결 스냅샷. 결측이면 None(소비측이 결측 제외).
+        "of_strength": _opt_float(row.get(COL_OF_STRENGTH)),
+        "of_buy_rest": _opt_float(row.get(COL_OF_BUY_REST)),
+        "of_sell_rest": _opt_float(row.get(COL_OF_SELL_REST)),
+        "of_prevday": _opt_float(row.get(COL_OF_PREVDAY)),
+        "of_updown": _opt_float(row.get(COL_OF_UPDOWN)),
     }
 
 
@@ -566,11 +591,15 @@ def generate_insights(
     summary: Optional[Dict[str, Any]] = None,
     distribution: Optional[Dict[str, Any]] = None,
     heatmap: Optional[Dict[str, Any]] = None,
+    stats: Optional[List[Dict[str, Any]]] = None,
+    mc: Optional[Dict[str, Any]] = None,
+    orderflow: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, str]]:
     """분석 결과로 규칙 기반 인사이트 리스트를 만든다 [{severity,title,detail}](무예외).
 
     severity: 'info'|'warning'|'critical'. 입력이 비면 빈 리스트.
     호출측이 summary/distribution/heatmap 을 미리 계산해 넘기면 재계산을 피한다.
+    stats/mc/orderflow(2단계 D) 를 주면 통계검정·몬테카를로·오더플로우 인사이트도 붙인다.
     """
     if not trades:
         return []
@@ -687,6 +716,57 @@ def generate_insights(
             "detail": f"총 {summary['trade_count']}거래로 {total_krw:,.0f}원(수익률합 {summary['total_profit_pct']:.1f}%) 순손실.",
         })
 
+    # 규칙 11: 통계 검정(요일/시간대 효과 유의성).
+    if stats:
+        sig = [s for s in stats if s.get("significant")]
+        # 가장 큰 평균(양수) 유의 버킷 하나만 대표로 표기(과잉 노출 방지).
+        sig_pos = sorted([s for s in sig if s.get("mean", 0.0) > 0.0], key=lambda s: s["mean"], reverse=True)
+        if sig_pos:
+            s0 = sig_pos[0]
+            kind_ko = "요일" if s0["kind"] == "weekday" else "시간대"
+            insights.append({
+                "severity": "info",
+                "title": "통계적으로 유의한 시점 효과",
+                "detail": f"{kind_ko} '{s0['label']}' 평균 수익률 {s0['mean']:+.2f}% — 통계적으로 유의(p={s0['p_value']:.3f}, n={s0['n']}).",
+            })
+        sig_neg = sorted([s for s in sig if s.get("mean", 0.0) < 0.0], key=lambda s: s["mean"])
+        if sig_neg:
+            s1 = sig_neg[0]
+            kind_ko = "요일" if s1["kind"] == "weekday" else "시간대"
+            insights.append({
+                "severity": "warning",
+                "title": "유의한 손실 시점",
+                "detail": f"{kind_ko} '{s1['label']}' 평균 수익률 {s1['mean']:+.2f}% — 통계적으로 유의한 손실(p={s1['p_value']:.3f}, n={s1['n']}).",
+            })
+
+    # 규칙 12: 몬테카를로(운 의존성 진단).
+    if mc and mc.get("observed") and mc.get("n", 0) > 0:
+        obs_mdd = float(mc["observed"].get("mdd_krw", 0.0) or 0.0)
+        p95_mdd = float(mc.get("mdd_krw", {}).get("p95", 0.0) or 0.0)
+        if obs_mdd > 0.0 and p95_mdd >= obs_mdd * 1.5:
+            insights.append({
+                "severity": "warning",
+                "title": "운에 의존한 낙폭 구간",
+                "detail": f"몬테카를로 MDD p95({p95_mdd:,.0f}원)가 실측({obs_mdd:,.0f}원)의 {p95_mdd / obs_mdd:.1f}배 — 거래 순서가 유리했을 수 있음.",
+            })
+        ruin = float(mc.get("ruin_prob", 0.0) or 0.0)
+        if ruin >= 0.05:
+            insights.append({
+                "severity": "critical" if ruin >= 0.2 else "warning",
+                "title": "파산 위험 노출",
+                "detail": f"몬테카를로 파산확률 {ruin * 100:.0f}%(자본 대비 -{mc.get('ruin_pct', _MC_RUIN_PCT):.0f}% 도달) — 자금관리 점검 필요.",
+            })
+
+    # 규칙 13: 오더플로우(승리 진입 프로파일).
+    if orderflow and orderflow.get("separation"):
+        top_sep = orderflow["separation"][0]
+        direction = "높음" if top_sep["diff"] > 0.0 else "낮음"
+        insights.append({
+            "severity": "info",
+            "title": "승리 진입 오더플로우 프로파일",
+            "detail": f"이기는 진입의 {top_sep['label']} 중앙값({top_sep['win_p50']:.2f})이 패배({top_sep['loss_p50']:.2f}) 대비 {direction}(차이 {top_sep['diff']:+.2f}) — 진입 필터 후보.",
+        })
+
     return insights
 
 
@@ -774,6 +854,339 @@ def exit_reason_breakdown(trades: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 
 # ---------------------------------------------------------------------------
+# 9. monte_carlo — 일별 손익 시퀀스 무작위 재배열로 MDD/최종손익 분포(2단계 B).
+# ---------------------------------------------------------------------------
+def _quantiles(values: List[float]) -> Dict[str, float]:
+    """정렬값에서 p5/p25/p50/p75/p95 백분위(선형보간). 빈 입력→0 구조."""
+    if not values:
+        return {"p5": 0.0, "p25": 0.0, "p50": 0.0, "p75": 0.0, "p95": 0.0}
+    ordered = sorted(values)
+    n = len(ordered)
+
+    def _pct(q: float) -> float:
+        if n == 1:
+            return float(ordered[0])
+        pos = q * (n - 1)
+        lo = int(math.floor(pos))
+        hi = min(lo + 1, n - 1)
+        frac = pos - lo
+        return float(ordered[lo] + (ordered[hi] - ordered[lo]) * frac)
+
+    return {
+        "p5": _pct(0.05), "p25": _pct(0.25), "p50": _pct(0.50),
+        "p75": _pct(0.75), "p95": _pct(0.95),
+    }
+
+
+def _mdd_of_cumulative(cum: List[float]) -> float:
+    """누적 손익 시퀀스의 최대낙폭(원, 양수). peak-to-trough 절대액."""
+    peak = float("-inf")
+    max_dd = 0.0
+    for v in cum:
+        if v > peak:
+            peak = v
+        dd = peak - v
+        if dd > max_dd:
+            max_dd = dd
+    return max(0.0, max_dd)
+
+
+def _rng_seeded(seed: Optional[int]):
+    """numpy Generator(가용) 또는 random.Random 폴백. seed=None 이면 os.urandom 기반."""
+    actual = seed
+    if actual is None:
+        actual = struct.unpack("<I", os.urandom(4))[0]
+    try:
+        import numpy as np  # noqa: WPS433 - 선택 의존(가용 시만).
+
+        return np.random.default_rng(int(actual)), "numpy"
+    except Exception:  # noqa: BLE001 - numpy 없으면 표준 random 으로 폴백.
+        import random
+
+        return random.Random(int(actual)), "random"
+
+
+def monte_carlo(
+    trades: List[Dict[str, Any]],
+    n: int = _MC_DEFAULT_N,
+    seed: Optional[int] = None,
+    ruin_pct: float = _MC_RUIN_PCT,
+) -> Dict[str, Any]:
+    """일별 손익 시퀀스를 무작위 재배열(복원 없이 셔플)해 MDD/최종손익 분포를 만든다.
+
+    각 시행: 일별 손익을 셔플 → 누적곡선 → MDD/최종손익 계산.
+    반환: {mdd_pct, mdd_krw, final, ruin_prob, n, fan, observed, days}.
+      - mdd_pct/mdd_krw/final: {p5,p25,p50,p75,p95} 백분위.
+      - ruin_prob: 누적 저점이 시작자본 대비 -ruin_pct% 도달한 시행 비율.
+        자본 기준은 |일별 손익 합|+총이익으로 근사(별도 자본 입력 없음 → 보수적).
+      - fan: 일자 인덱스별 누적 손익 분포 밴드(p5/p25/p50/p75/p95) 다운샘플 ≤200pt.
+      - observed: 실측(셔플 없는 원래 순서) MDD/최종손익.
+    seed 를 주면 재현 가능(테스트). 빈/단일 거래일 입력도 무예외(빈 구조).
+    """
+    days_map = _daily_pnl_map(trades)
+    daily = list(days_map.values())
+    days = len(daily)
+    n_runs = max(0, int(n))
+    empty_q = {"p5": 0.0, "p25": 0.0, "p50": 0.0, "p75": 0.0, "p95": 0.0}
+    if days == 0 or n_runs == 0:
+        return {
+            "mdd_pct": dict(empty_q), "mdd_krw": dict(empty_q), "final": dict(empty_q),
+            "ruin_prob": 0.0, "n": 0, "days": days, "fan": [], "observed": None,
+        }
+
+    total = sum(daily)
+    gross_profit = sum(p for p in daily if p > 0.0)
+    # 파산 자본 기준(보수적): 총이익 규모(없으면 |총합|, 그래도 0이면 1).
+    capital = gross_profit if gross_profit > 0.0 else abs(total)
+    if capital <= 0.0:
+        capital = 1.0
+    ruin_threshold = -capital * (float(ruin_pct) / 100.0)
+
+    rng, backend = _rng_seeded(seed)
+    mdd_krws: List[float] = []
+    finals: List[float] = []
+    ruin_hits = 0
+    # 팬: 일자별 누적 분포(각 일자에 대해 n_runs 개 누적값 수집 → 백분위).
+    per_day_cum: List[List[float]] = [[] for _ in range(days)]
+
+    for _ in range(n_runs):
+        if backend == "numpy":
+            order = rng.permutation(days)
+            shuffled = [daily[i] for i in order]
+        else:
+            shuffled = list(daily)
+            rng.shuffle(shuffled)
+        running = 0.0
+        peak = float("-inf")
+        trough = float("inf")
+        run_mdd = 0.0
+        for di, p in enumerate(shuffled):
+            running += p
+            per_day_cum[di].append(running)
+            if running > peak:
+                peak = running
+            dd = peak - running
+            if dd > run_mdd:
+                run_mdd = dd
+            if running < trough:
+                trough = running
+        mdd_krws.append(run_mdd)
+        finals.append(running)
+        if trough <= ruin_threshold:
+            ruin_hits += 1
+
+    # MDD % = MDD_krw / capital * 100 (시행별).
+    mdd_pcts = [(m / capital * 100.0) for m in mdd_krws]
+
+    fan_full = [
+        {"day_index": di, **_quantiles(per_day_cum[di])}
+        for di in range(days)
+    ]
+    fan = _downsample(fan_full, _MC_FAN_MAX)
+
+    obs_cum: List[float] = []
+    running = 0.0
+    for p in daily:
+        running += p
+        obs_cum.append(running)
+    observed = {
+        "mdd_krw": _mdd_of_cumulative(obs_cum),
+        "final_krw": obs_cum[-1] if obs_cum else 0.0,
+        "mdd_pct": (_mdd_of_cumulative(obs_cum) / capital * 100.0) if capital else 0.0,
+    }
+
+    return {
+        "mdd_pct": _quantiles(mdd_pcts),
+        "mdd_krw": _quantiles(mdd_krws),
+        "final": _quantiles(finals),
+        "ruin_prob": round(ruin_hits / n_runs, 6) if n_runs else 0.0,
+        "ruin_pct": float(ruin_pct),
+        "capital": float(capital),
+        "n": n_runs,
+        "days": days,
+        "fan": fan,
+        "observed": observed,
+    }
+
+
+# ---------------------------------------------------------------------------
+# 10. entry_orderflow — 승/패 그룹별 진입 오더플로우 분포 비교(2단계 C).
+# ---------------------------------------------------------------------------
+_OF_VARS: List[Tuple[str, str]] = [
+    ("strength", "체결강도"),
+    ("imbalance", "호가불균형"),
+    ("prevday", "전일동시간비"),
+    ("updown", "등락율"),
+]
+
+
+def _of_value(trade: Dict[str, Any], var: str) -> Optional[float]:
+    """trade 에서 오더플로우 변수 값을 뽑는다. 호가불균형=매수총잔량/매도총잔량."""
+    if var == "strength":
+        return trade.get("of_strength")
+    if var == "prevday":
+        return trade.get("of_prevday")
+    if var == "updown":
+        return trade.get("of_updown")
+    if var == "imbalance":
+        buy = trade.get("of_buy_rest")
+        sell = trade.get("of_sell_rest")
+        if buy is None or sell is None or sell == 0.0:
+            return None
+        return float(buy) / float(sell)
+    return None
+
+
+def _of_distribution(values: List[float]) -> Dict[str, Any]:
+    """값 리스트의 quantile(p10/25/50/75/90)+평균+표본수. 빈 입력→None 구조."""
+    if not values:
+        return {"n": 0, "mean": None, "p10": None, "p25": None, "p50": None, "p75": None, "p90": None}
+    ordered = sorted(values)
+    m = len(ordered)
+
+    def _pct(q: float) -> float:
+        if m == 1:
+            return float(ordered[0])
+        pos = q * (m - 1)
+        lo = int(math.floor(pos))
+        hi = min(lo + 1, m - 1)
+        return float(ordered[lo] + (ordered[hi] - ordered[lo]) * (pos - lo))
+
+    return {
+        "n": m,
+        "mean": float(sum(ordered) / m),
+        "p10": _pct(0.10), "p25": _pct(0.25), "p50": _pct(0.50),
+        "p75": _pct(0.75), "p90": _pct(0.90),
+    }
+
+
+def entry_orderflow(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """승(수익률>0)/패 그룹별 진입 오더플로우 변수 분포를 비교한다(무예외).
+
+    변수: 체결강도·호가불균형(매수총잔량/매도총잔량)·전일동시간비·등락율.
+    각 변수에 대해 승/패 그룹의 quantile/평균 분포를 산출하고, 승패 중앙값 차이를
+    절대값 내림차순으로 정렬한 'separation'(분리력 순위)을 만든다.
+    반환: {wins:{var:dist}, losses:{var:dist}, separation:[{var,label,win_p50,loss_p50,diff}]}.
+    빈 입력/결측이면 빈/None 구조(소비측이 결측 제외).
+    """
+    wins_dist: Dict[str, Any] = {}
+    losses_dist: Dict[str, Any] = {}
+    separation: List[Dict[str, Any]] = []
+
+    for var, label in _OF_VARS:
+        win_vals: List[float] = []
+        loss_vals: List[float] = []
+        for t in trades:
+            v = _of_value(t, var)
+            if v is None:
+                continue
+            if float(t.get("profit_pct", 0.0) or 0.0) > 0.0:
+                win_vals.append(v)
+            else:
+                loss_vals.append(v)
+        wd = _of_distribution(win_vals)
+        ld = _of_distribution(loss_vals)
+        wins_dist[var] = wd
+        losses_dist[var] = ld
+        if wd["p50"] is not None and ld["p50"] is not None:
+            diff = wd["p50"] - ld["p50"]
+            separation.append({
+                "var": var,
+                "label": label,
+                "win_p50": float(wd["p50"]),
+                "loss_p50": float(ld["p50"]),
+                "diff": float(diff),
+            })
+
+    separation.sort(key=lambda r: abs(r["diff"]), reverse=True)
+    return {"wins": wins_dist, "losses": losses_dist, "separation": separation}
+
+
+# ---------------------------------------------------------------------------
+# 11. 통계 검정 — 요일/시간대 버킷 평균 수익률 차이 z/t 검정(2단계 D).
+# ---------------------------------------------------------------------------
+def _welch_pvalue(a: List[float], b: List[float]) -> Optional[float]:
+    """두 표본 평균차의 양측 p값. scipy 가용 시 Welch t-test, 아니면 정규근사.
+
+    표본<2 이거나 분산이 모두 0 이면 None(검정 불가).
+    """
+    na, nb = len(a), len(b)
+    if na < 2 or nb < 2:
+        return None
+    mean_a = sum(a) / na
+    mean_b = sum(b) / nb
+    var_a = sum((x - mean_a) ** 2 for x in a) / (na - 1)
+    var_b = sum((x - mean_b) ** 2 for x in b) / (nb - 1)
+    se2 = var_a / na + var_b / nb
+    if se2 <= 0.0:
+        return None
+    try:
+        from scipy import stats  # noqa: WPS433 - 선택 의존.
+
+        _, pval = stats.ttest_ind(a, b, equal_var=False)
+        if pval is None or (isinstance(pval, float) and math.isnan(pval)):
+            return None
+        return float(pval)
+    except Exception:  # noqa: BLE001 - scipy 없으면 정규근사로 폴백.
+        z = (mean_a - mean_b) / math.sqrt(se2)
+        # 표준정규 양측 p값 = 2*(1 - Phi(|z|)), Phi 는 erf 기반.
+        return float(2.0 * (1.0 - 0.5 * (1.0 + math.erf(abs(z) / math.sqrt(2.0)))))
+
+
+def _bucket_pnl(trades: List[Dict[str, Any]], by: str) -> Dict[int, List[float]]:
+    """버킷(요일|슬롯)→ 그 버킷의 수익률(%) 리스트. 매수시각 파싱 가능 행만."""
+    buckets: Dict[int, List[float]] = {}
+    for t in trades:
+        buy = str(t.get("buy_time", "") or "")
+        if len(buy) < 12:
+            continue
+        try:
+            dt = datetime.strptime(buy[:12], "%Y%m%d%H%M")
+        except ValueError:
+            continue
+        key = dt.weekday() if by == "weekday" else (dt.hour * 60 + dt.minute) // 30
+        buckets.setdefault(key, []).append(float(t.get("profit_pct", 0.0) or 0.0))
+    return buckets
+
+
+def statistical_tests(trades: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """요일/시간대 버킷의 수익률 평균을 나머지 거래와 z/t 검정한다(무예외).
+
+    각 버킷에 대해 (버킷 평균 vs 그 외 전체 평균) 차이의 양측 p값을 구한다.
+    반환: [{kind, bucket, label, n, mean, p_value, significant, underpowered}].
+      - significant: p<0.05 (충분 표본일 때만 True).
+      - underpowered: 표본<30(과신 방지 표기).
+    scipy 유/무 모두 동작(분기). 빈 입력/단일 버킷이면 빈 리스트.
+    """
+    out: List[Dict[str, Any]] = []
+    for by, kind in (("weekday", "weekday"), ("slot", "slot")):
+        buckets = _bucket_pnl(trades, by)
+        if len(buckets) < 2:
+            continue
+        for key, vals in sorted(buckets.items()):
+            rest: List[float] = []
+            for other_key, other_vals in buckets.items():
+                if other_key != key:
+                    rest.extend(other_vals)
+            n_bucket = len(vals)
+            mean_bucket = sum(vals) / n_bucket if n_bucket else 0.0
+            pval = _welch_pvalue(vals, rest)
+            underpowered = n_bucket < _STAT_MIN_N
+            significant = (pval is not None and pval < _STAT_ALPHA and not underpowered)
+            out.append({
+                "kind": kind,
+                "bucket": int(key),
+                "label": _BT_WEEKDAY_KO[key] if kind == "weekday" and 0 <= key < 7 else _slot_label(key),
+                "n": int(n_bucket),
+                "mean": float(mean_bucket),
+                "p_value": (round(float(pval), 6) if pval is not None else None),
+                "significant": bool(significant),
+                "underpowered": bool(underpowered),
+            })
+    return out
+
+
+# ---------------------------------------------------------------------------
 # 묶음 — 잡 결과 CSV 하나로 전체 분석을 한 번에 만든다(API /bt/result 가 소비).
 # ---------------------------------------------------------------------------
 def full_analysis(
@@ -790,6 +1203,9 @@ def full_analysis(
     summary = summary_metrics(trades)
     distribution = pnl_distribution(trades)
     heatmap = time_heatmap(trades)
+    # 통계 검정(D) 은 묶음에 포함해 인사이트에 연결한다(요일/시간대 효과 유의성).
+    stats = statistical_tests(trades)
+    orderflow = entry_orderflow(trades)
     return {
         "trade_count": summary["trade_count"],
         "summary": summary,
@@ -797,7 +1213,11 @@ def full_analysis(
         "distribution": distribution,
         "heatmap": heatmap,
         "underwater": underwater(trades),
-        "insights": generate_insights(trades, summary, distribution, heatmap),
+        "insights": generate_insights(
+            trades, summary, distribution, heatmap, stats=stats, orderflow=orderflow
+        ),
         "mae_mfe": mae_mfe(trades),
         "exit_reasons": exit_reason_breakdown(trades),
+        "stats": stats,
+        "orderflow": orderflow,
     }

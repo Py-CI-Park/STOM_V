@@ -345,7 +345,7 @@ function BtEditorPanel({ baseUrl, isDemo, kind, name, onSaved, onDeleted }) {
 // ===========================================================================
 // 3. 백테스트 실행 패널 — buy/sell 선택, 기간/tf/engines, 잡 카드 + 이력 + 폴링.
 // ===========================================================================
-function BtRunPanel({ baseUrl, isDemo, libNames, onResult }) {
+function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB }) {
   const [buy, setBuy] = useState_bt("");
   const [sell, setSell] = useState_bt("");
   const [start, setStart] = useState_bt("");
@@ -586,8 +586,16 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult }) {
 
         {/* 잡 이력(최근 10) */}
         <div style={{ borderTop: "1px solid var(--line-1)", paddingTop: 8 }}>
-          <div className="mono" style={{ fontSize: 10, color: "var(--ink-3)", letterSpacing: ".1em", textTransform: "uppercase", marginBottom: 6 }}>
-            잡 이력 (최근 10)
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", letterSpacing: ".1em", textTransform: "uppercase" }}>
+              잡 이력 (최근 10)
+            </span>
+            {compareA && (
+              <span className="mono tag-slim" style={{ fontSize: 9.5, color: "var(--amber)", marginLeft: "auto" }}
+                    title="비교 기준(A) 고정됨 — 다른 잡의 '비교(B)' 를 누르세요">
+                A={compareA}
+              </span>
+            )}
           </div>
           {isDemo ? (
             <div className="research-empty">데모 모드 — 백엔드 연결 시 잡 이력이 표시됩니다.</div>
@@ -599,22 +607,34 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult }) {
                 const b = _BT_JOB_BADGE[j.status] || _BT_JOB_BADGE.pending;
                 const clickable = j.status === "success" || j.status === "no_trades";
                 const active = j.job_id === selectedJobId;
+                const canCompare = clickable && compareA && onCompareB;
                 return (
-                  <button key={j.job_id} onClick={() => clickable && pickJob(j.job_id)}
-                    disabled={!clickable}
+                  <div key={j.job_id}
                     style={{
-                      display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 5,
+                      display: "flex", alignItems: "center", gap: 6, padding: "6px 8px", borderRadius: 5,
                       border: "1px solid " + (active ? "var(--teal-dim)" : "var(--line-1)"),
                       background: active ? "rgba(76,214,179,0.06)" : "var(--bg-0)",
-                      cursor: clickable ? "pointer" : "default", opacity: clickable ? 1 : 0.7,
-                      textAlign: "left",
+                      opacity: clickable ? 1 : 0.7,
                     }}>
-                    <span className={b.cls} style={{ flexShrink: 0 }}>{b.txt}</span>
-                    <span className="mono" style={{ fontSize: 10, color: "var(--ink-2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>
-                      {j.job_id}
-                    </span>
-                    <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", flexShrink: 0 }}>{_btElapsed(j)}</span>
-                  </button>
+                    <button onClick={() => clickable && pickJob(j.job_id)} disabled={!clickable}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0,
+                        background: "transparent", border: 0, padding: 0, textAlign: "left",
+                        cursor: clickable ? "pointer" : "default",
+                      }}>
+                      <span className={b.cls} style={{ flexShrink: 0 }}>{b.txt}</span>
+                      <span className="mono" style={{ fontSize: 10, color: "var(--ink-2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>
+                        {j.job_id}
+                      </span>
+                      <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", flexShrink: 0 }}>{_btElapsed(j)}</span>
+                    </button>
+                    {canCompare && j.job_id !== compareA && (
+                      <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
+                              onClick={() => onCompareB(j.job_id)} title={"A(" + compareA + ") 와 비교"}>
+                        비교(B)
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -640,6 +660,25 @@ function BacktestTab({ baseUrl, wsStatus }) {
   const [reloadKey, setReloadKey] = useState_bt(0);     // 라이브러리 재로드 트리거(저장/삭제 후).
   const [resultJobId, setResultJobId] = useState_bt("");
   const [libNames, setLibNames] = useState_bt({ buy: [], sell: [] });
+  // A/B 비교 — compareA(기준 잡 id), compareView(/bt/compare 응답).
+  const [compareA, setCompareA] = useState_bt("");
+  const [compareView, setCompareView] = useState_bt(null);
+
+  // 비교(B) 실행 — A 고정 후 다른 잡을 B 로 비교.
+  const runCompare = useCallback_bt((jobB) => {
+    if (isDemo || !baseUrl || !compareA || !jobB) return;
+    const url = baseUrl + "/bt/compare?job_a=" + encodeURIComponent(compareA)
+              + "&job_b=" + encodeURIComponent(jobB);
+    _btFetchJson(url, 12000)
+      .then(j => setCompareView(j || null))
+      .catch(() => setCompareView(null));
+  }, [baseUrl, isDemo, compareA]);
+
+  const onSetCompareA = useCallback_bt((jobId) => {
+    setCompareA(jobId);
+    setCompareView(null);
+  }, []);
+  const onCloseCompare = useCallback_bt(() => { setCompareView(null); }, []);
 
   // 헬스 체크.
   useEffect_bt(() => {
@@ -694,11 +733,13 @@ function BacktestTab({ baseUrl, wsStatus }) {
                           onPick={setSelectedName} selectedName={selectedName} reloadKey={reloadKey} />
           <BtEditorPanel baseUrl={baseUrl} isDemo={isDemo} kind={kind} name={selectedName}
                          onSaved={onSaved} onDeleted={onDeleted} />
-          <BtRunPanel baseUrl={baseUrl} isDemo={isDemo} libNames={libNames} onResult={setResultJobId} />
+          <BtRunPanel baseUrl={baseUrl} isDemo={isDemo} libNames={libNames} onResult={setResultJobId}
+                      compareA={compareA} onCompareB={runCompare} />
         </div>
         {/* 우: 결과·분석 */}
         <div style={{ minWidth: 0 }}>
-          <BtResultArea baseUrl={baseUrl} isDemo={isDemo} jobId={resultJobId} />
+          <BtResultArea baseUrl={baseUrl} isDemo={isDemo} jobId={resultJobId}
+                        onSetCompareA={onSetCompareA} compareView={compareView} onCloseCompare={onCloseCompare} />
         </div>
       </div>
     </div>

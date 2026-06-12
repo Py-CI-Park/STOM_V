@@ -923,12 +923,15 @@ const _BT_METRIC_CARDS = [
   { key: "cagr",             label: "CAGR",       fmt: (v) => fmtPct(v), signed: true },
 ];
 
-function BtResultArea({ baseUrl, isDemo, jobId }) {
+function BtResultArea({ baseUrl, isDemo, jobId, onSetCompareA, compareView, onCloseCompare }) {
   const [result, setResult] = useState_btc(null);   // /bt/result
   const [loading, setLoading] = useState_btc(false);
   const [err, setErr] = useState_btc("");
   // 브러시 구간 분석 — {t_start,t_end} 또는 null(전체).
   const [range, setRange] = useState_btc(null);
+  // 몬테카를로(지연 계산) — {data, loading}.
+  const [mc, setMc] = useState_btc(null);
+  const [mcLoading, setMcLoading] = useState_btc(false);
 
   const load = useCallback_btc(() => {
     if (isDemo || !baseUrl || !jobId) { setResult(null); return; }
@@ -941,9 +944,25 @@ function BtResultArea({ baseUrl, isDemo, jobId }) {
       .finally(() => setLoading(false));
   }, [baseUrl, isDemo, jobId, range]);
 
+  // 몬테카를로 재계산(현재 구간 반영). 무예외.
+  const loadMc = useCallback_btc(() => {
+    if (isDemo || !baseUrl || !jobId) { setMc(null); return; }
+    setMcLoading(true);
+    let url = baseUrl + "/bt/analysis/montecarlo?job_id=" + encodeURIComponent(jobId) + "&n=2000";
+    if (range) { url += "&t_start=" + range.t_start + "&t_end=" + range.t_end; }
+    _btFetchJson(url, 12000)
+      .then(j => setMc((j && j.montecarlo) || null))
+      .catch(() => setMc(null))
+      .finally(() => setMcLoading(false));
+  }, [baseUrl, isDemo, jobId, range]);
+
   useEffect_btc(() => { load(); }, [load]);
-  // jobId 가 바뀌면 구간 선택 초기화.
-  useEffect_btc(() => { setRange(null); }, [jobId]);
+  // jobId 가 바뀌면 구간 선택·몬테카를로 초기화.
+  useEffect_btc(() => { setRange(null); setMc(null); }, [jobId]);
+  // 결과/구간이 바뀌면 몬테카를로 자동 재계산(성공/구간 잡일 때만).
+  useEffect_btc(() => {
+    if (result && result.available && result.status !== "no_trades") { loadMc(); }
+  }, [result, loadMc]);
 
   const onBrush = useCallback_btc((t_start, t_end) => {
     setRange({ t_start, t_end });
@@ -1026,6 +1045,8 @@ function BtResultArea({ baseUrl, isDemo, jobId }) {
   const topC = distribution.top_contributors || [];
   const botC = distribution.bottom_contributors || [];
   const dailyPnl = ((analysis.equity || {}).daily || []).map(d => d.pnl || 0);
+  const orderflow = analysis.orderflow || {};
+  const stats = analysis.stats || [];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -1047,7 +1068,13 @@ function BtResultArea({ baseUrl, isDemo, jobId }) {
           <div className="panel-hd-title">
             <span className="dot" style={{ background: "var(--teal)" }}></span>핵심 메트릭
           </div>
-          <button className="btn ghost sm" onClick={load} disabled={loading}>{loading ? "로딩…" : "↻"}</button>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {onSetCompareA && (
+              <button className="btn ghost sm" onClick={() => onSetCompareA(jobId)}
+                      title="이 잡을 A/B 비교의 기준(A)으로 고정">⊕ 비교 기준(A)</button>
+            )}
+            <button className="btn ghost sm" onClick={load} disabled={loading}>{loading ? "로딩…" : "↻"}</button>
+          </div>
         </div>
         <div className="bt-summary-row" style={{ gridTemplateColumns: "repeat(6, 1fr)" }}>
           {_BT_METRIC_CARDS.map(m => {
@@ -1058,6 +1085,9 @@ function BtResultArea({ baseUrl, isDemo, jobId }) {
         </div>
       </div>
 
+      {/* A/B 비교 뷰(활성 시 최상단) */}
+      {compareView && <BtCompareView cmp={compareView} onClose={onCloseCompare} />}
+
       {/* 차트 — 수익곡선(인터랙션+브러시) → 분포 → 히트맵 → 언더워터 → MAE/MFE → 매도조건 */}
       <BtEquityChart equity={analysis.equity} onBrush={onBrush}
                      brushActive={!!range} onBrushClear={onBrushClear} />
@@ -1066,6 +1096,11 @@ function BtResultArea({ baseUrl, isDemo, jobId }) {
       <BtUnderwaterChart underwater={analysis.underwater} />
       <BtMaeMfeScatter points={analysis.mae_mfe} />
       <BtExitReasonPanel rows={analysis.exit_reasons} />
+
+      {/* 2단계 — 몬테카를로 · 오더플로우 · 통계검정 */}
+      <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={loadMc} />
+      <BtOrderflowPanel orderflow={orderflow} />
+      <BtStatTestPanel stats={stats} />
 
       {/* 종목 기여 Top/Bottom */}
       {(topC.length > 0 || botC.length > 0) && (
@@ -1190,7 +1225,417 @@ function BtInsightsPanel({ insights }) {
   );
 }
 
+/* ⑦ 몬테카를로 팬 차트 — analysis montecarlo {fan:[{day_index,p5,p25,p50,p75,p95}], mdd_pct, final, ruin_prob, observed}.
+   누적 손익 분포 밴드(p5~p95 음영) + 실측 곡선 오버레이 + MDD 분포 미니 히스토그램 + 파산/기대MDD 카드. */
+function BtMonteCarloChart({ mc, loading, onRun }) {
+  const fan = (mc && mc.fan) || [];
+  const observed = mc && mc.observed;
+  const n = fan.length;
+
+  const W = 880, H = 300;
+  const padL = 58, padR = 24, padT = 18, padB = 30;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  // y 도메인 — p5 최저 ~ p95 최고(0 포함).
+  const allLo = fan.map(f => f.p5);
+  const allHi = fan.map(f => f.p95);
+  const obsVal = observed ? [observed.final_krw, 0] : [0];
+  const yMin = Math.min(0, ...allLo, ...obsVal);
+  const yMax = Math.max(0, ...allHi, ...obsVal);
+  const yRange = (yMax - yMin) || 1;
+  const x = (i) => n > 1 ? padL + (i / (n - 1)) * innerW : padL + innerW / 2;
+  const y = (v) => padT + innerH - ((v - yMin) / yRange) * innerH;
+
+  const band = (loKey, hiKey) => {
+    if (n < 2) return "";
+    const top = fan.map((f, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(f[hiKey]).toFixed(1)}`).join(" ");
+    const bot = fan.slice().reverse().map((f, i) => `L ${x(n - 1 - i).toFixed(1)} ${y(f[loKey]).toFixed(1)}`).join(" ");
+    return `${top} ${bot} Z`;
+  };
+  const median = useMemo_btc(() => {
+    if (n < 2) return "";
+    return fan.map((f, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(f.p50).toFixed(1)}`).join(" ");
+  }, [fan, n, yMin, yRange]);
+
+  // 실측 곡선(셔플 없는 원래 순서) — observed 는 최종값만 있어 fan median 과 비교용으로 직선 보조.
+  const zeroY = y(0);
+
+  const q = (obj) => obj || { p5: 0, p25: 0, p50: 0, p75: 0, p95: 0 };
+  const mddPct = q(mc && mc.mdd_pct);
+  const finalQ = q(mc && mc.final);
+  const ruin = mc && typeof mc.ruin_prob === "number" ? mc.ruin_prob : null;
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--violet)" }}></span>
+          몬테카를로 — 누적손익 팬
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+            {mc && mc.n ? `${mc.n.toLocaleString("ko-KR")}회 · ${mc.days}일` : "미실행"}
+          </span>
+          <button className="btn ghost sm" onClick={onRun} disabled={loading}>{loading ? "계산중…" : "↻ 재계산"}</button>
+        </div>
+      </div>
+      <div className="panel-bd">
+        <MetricHelpStrip items={[
+          "일별 손익을 무작위 재배열한 분포",
+          "밴드 = p5~p95 / 진한선 = 중앙값(p50)",
+          "거래 순서가 결과에 준 영향(운) 진단",
+        ]} />
+        {/* 분포 카드 행 */}
+        <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
+          <Mini label="기대 MDD p95" value={fmtPct(mddPct.p95)} color="var(--red)" />
+          <Mini label="MDD 중앙값" value={fmtPct(mddPct.p50)} />
+          <Mini label="최종손익 p50" value={fmtMoney(finalQ.p50)}
+                color={finalQ.p50 > 0 ? "var(--teal)" : finalQ.p50 < 0 ? "var(--red)" : undefined} />
+          <Mini label="파산확률" value={ruin != null ? fmtPct(ruin * 100) : "—"}
+                color={ruin != null && ruin >= 0.2 ? "var(--red)" : ruin != null && ruin >= 0.05 ? "var(--amber)" : undefined}
+                sub={mc && mc.ruin_pct ? `자본 -${Math.round(mc.ruin_pct)}%` : undefined} />
+        </div>
+        <div className="chart-wrap">
+          <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+            {/* 0 기준선 */}
+            <line x1={padL} x2={W - padR} y1={zeroY} y2={zeroY} stroke="rgba(255,255,255,0.28)" strokeWidth="1" strokeDasharray="2 3" />
+            <text className="chart-axis-text" x={padL - 8} y={zeroY + 3} textAnchor="end" fill="var(--ink-2)">0</text>
+            <text className="chart-axis-text" x={padL - 8} y={y(yMax) + 3} textAnchor="end" fill="var(--teal)">{_btMoneyTick(yMax)}</text>
+            <text className="chart-axis-text" x={padL - 8} y={y(yMin) + 3} textAnchor="end" fill="var(--red)">{_btMoneyTick(yMin)}</text>
+            {/* Frame */}
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            {/* 밴드 p5~p95(연한), p25~p75(진한) */}
+            {n > 1 && (
+              <>
+                <path d={band("p5", "p95")} fill="rgba(155,135,245,0.12)" />
+                <path d={band("p25", "p75")} fill="rgba(155,135,245,0.24)" />
+                <path d={median} fill="none" stroke="var(--violet)" strokeWidth="2" />
+              </>
+            )}
+            {/* 관측 최종손익 마지막 점 가이드 */}
+            {observed && n > 1 && (
+              <circle cx={x(n - 1)} cy={y(observed.final_krw)} r="4" fill="var(--amber)" stroke="var(--bg-0)" strokeWidth="1" />
+            )}
+          </svg>
+          {n === 0 && <_BtChartEmpty message="몬테카를로를 실행하면 손익 분포 팬이 표시됩니다 (거래일 2일 이상 필요)" />}
+        </div>
+        {/* MDD 분포 미니 박스(p5~p95) */}
+        {mc && mc.n > 0 && (
+          <_BtMddBox mddPct={mddPct} observedPct={observed ? observed.mdd_pct : null} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// MDD 백분위 분포 미니 박스플롯(가로) — p5~p95 범위에 p25/50/75 박스 + 실측 마커.
+function _BtMddBox({ mddPct, observedPct }) {
+  const lo = mddPct.p5, hi = Math.max(mddPct.p95, observedPct || 0, 0.0001);
+  const span = (hi - lo) || 1;
+  const fx = (v) => ((v - lo) / span) * 100;
+  return (
+    <div style={{ marginTop: 12 }}>
+      <div className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginBottom: 4 }}>MDD 분포 (%)</div>
+      <div style={{ position: "relative", height: 26, background: "var(--bg-0)", border: "1px solid var(--line-1)", borderRadius: 4 }}>
+        {/* p25~p75 박스 */}
+        <div style={{ position: "absolute", top: 6, height: 14, borderRadius: 3,
+                      left: fx(mddPct.p25) + "%", width: Math.max(1, fx(mddPct.p75) - fx(mddPct.p25)) + "%",
+                      background: "rgba(255,107,107,0.28)", border: "1px solid rgba(255,107,107,0.5)" }} />
+        {/* p50 중앙선 */}
+        <div style={{ position: "absolute", top: 4, height: 18, width: 2, background: "var(--red)", left: fx(mddPct.p50) + "%" }} />
+        {/* 실측 마커 */}
+        {observedPct != null && (
+          <div title="실측 MDD" style={{ position: "absolute", top: 2, height: 22, width: 2, background: "var(--amber)", left: Math.max(0, Math.min(100, fx(observedPct))) + "%" }} />
+        )}
+      </div>
+      <div className="mono" style={{ display: "flex", justifyContent: "space-between", fontSize: 9.5, color: "var(--ink-3)", marginTop: 3 }}>
+        <span>p5 {mddPct.p5.toFixed(1)}%</span>
+        <span style={{ color: "var(--amber)" }}>{observedPct != null ? `실측 ${observedPct.toFixed(1)}%` : ""}</span>
+        <span>p95 {mddPct.p95.toFixed(1)}%</span>
+      </div>
+    </div>
+  );
+}
+
+/* ⑧ 오더플로우 진입 프로파일 — analysis orderflow {wins, losses, separation}.
+   변수별 승/패 분포(p10~p90 박스 비교, SVG) + 분리력 순위 리스트. */
+function BtOrderflowPanel({ orderflow }) {
+  const sep = (orderflow && orderflow.separation) || [];
+  const wins = (orderflow && orderflow.wins) || {};
+  const losses = (orderflow && orderflow.losses) || {};
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--blue)" }}></span>
+          오더플로우 — 이기는 진입 프로파일
+        </div>
+        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+          <LegendDot color="var(--teal)" label="승 진입" />
+          <LegendDot color="var(--red)" label="패 진입" />
+        </div>
+      </div>
+      <div className="panel-bd">
+        {sep.length === 0 ? (
+          <div className="research-empty">오더플로우 데이터가 없습니다 (B_체결강도·잔량 등 결측)</div>
+        ) : (
+          <>
+            <MetricHelpStrip items={[
+              "변수별 승/패 진입 분포(p10~p90) 비교",
+              "박스 = p25~p75 · 세로선 = 중앙값(p50)",
+              "분리력 = 승패 중앙값 차 절대값 순위",
+            ]} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {sep.map((s) => (
+                <_BtOfRow key={s.var} sep={s} win={wins[s.var]} loss={losses[s.var]} />
+              ))}
+            </div>
+            <div style={{ marginTop: 12, borderTop: "1px solid var(--line-1)", paddingTop: 8 }}>
+              <div className="mono" style={{ fontSize: 10, color: "var(--ink-3)", letterSpacing: ".1em", textTransform: "uppercase", marginBottom: 6 }}>
+                분리력 순위
+              </div>
+              {sep.map((s, i) => (
+                <div key={s.var} style={{ display: "flex", alignItems: "center", gap: 8, padding: "3px 0", fontSize: 11, fontFamily: "var(--mono)" }}>
+                  <span style={{ color: "var(--ink-3)", width: 16 }}>{i + 1}.</span>
+                  <span style={{ color: "var(--ink-1)", flex: 1 }}>{s.label}</span>
+                  <span style={{ color: "var(--teal)" }}>{s.win_p50.toFixed(2)}</span>
+                  <span style={{ color: "var(--ink-3)" }}>vs</span>
+                  <span style={{ color: "var(--red)" }}>{s.loss_p50.toFixed(2)}</span>
+                  <span className={s.diff > 0 ? "num-pos" : "num-neg"} style={{ width: 70, textAlign: "right" }}>
+                    {s.diff > 0 ? "+" : ""}{s.diff.toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// 오더플로우 변수 1개 — 승/패 분포 가로 박스 비교(공통 도메인 정규화).
+function _BtOfRow({ sep, win, loss }) {
+  const w = win || {}, l = loss || {};
+  const vals = [w.p10, w.p90, l.p10, l.p90, w.p50, l.p50].filter(v => typeof v === "number");
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const span = (hi - lo) || 1;
+  const fx = (v) => typeof v === "number" ? ((v - lo) / span) * 100 : 0;
+  const box = (d, color) => (typeof d.p25 === "number" && typeof d.p75 === "number") ? (
+    <div style={{ position: "relative", height: 16, flex: 1 }}>
+      {/* whisker p10~p90 */}
+      <div style={{ position: "absolute", top: 7, height: 2, background: color, opacity: 0.4,
+                    left: fx(d.p10) + "%", width: Math.max(1, fx(d.p90) - fx(d.p10)) + "%" }} />
+      {/* box p25~p75 */}
+      <div style={{ position: "absolute", top: 2, height: 12, borderRadius: 2,
+                    left: fx(d.p25) + "%", width: Math.max(1, fx(d.p75) - fx(d.p25)) + "%",
+                    background: color === "var(--teal)" ? "rgba(76,214,179,0.25)" : "rgba(255,107,107,0.25)",
+                    border: "1px solid " + color }} />
+      {/* p50 */}
+      <div style={{ position: "absolute", top: 0, height: 16, width: 2, background: color, left: fx(d.p50) + "%" }} />
+    </div>
+  ) : <div style={{ flex: 1, fontSize: 10, color: "var(--ink-3)" }}>표본 부족</div>;
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+        <span className="mono" style={{ fontSize: 11, color: "var(--ink-1)", width: 86, flexShrink: 0 }}>{sep.label}</span>
+        <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)" }}>승 n={w.n || 0} · 패 n={l.n || 0}</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span className="mono" style={{ fontSize: 9, color: "var(--teal)", width: 20 }}>승</span>{box(w, "var(--teal)")}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span className="mono" style={{ fontSize: 9, color: "var(--red)", width: 20 }}>패</span>{box(l, "var(--red)")}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ⑨ 통계 검정 인사이트 패널 — analysis stats [{kind,bucket,label,n,mean,p_value,significant,underpowered}].
+   유의(p<0.05) 항목 강조 · 표본 부족 경고. 요일/시간대 효과 신뢰도 구분. */
+function BtStatTestPanel({ stats }) {
+  const rows = Array.isArray(stats) ? stats : [];
+  const sig = rows.filter(r => r.significant);
+  if (rows.length === 0) {
+    return (
+      <div className="panel">
+        <div className="panel-hd">
+          <div className="panel-hd-title"><span className="dot" style={{ background: "var(--amber)" }}></span>통계 검정</div>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>요일·시간대 효과</span>
+        </div>
+        <div className="panel-bd"><div className="research-empty">버킷이 부족해 검정을 수행하지 못했습니다 (요일/시간대 2종 이상 필요).</div></div>
+      </div>
+    );
+  }
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title"><span className="dot" style={{ background: "var(--amber)" }}></span>통계 검정</div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>유의 {sig.length}건 / 전체 {rows.length}버킷</span>
+      </div>
+      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {rows.map((r, i) => {
+          const pos = r.mean > 0;
+          return (
+            <div key={i} style={{
+              display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 5, fontSize: 11, fontFamily: "var(--mono)",
+              border: "1px solid " + (r.significant ? (pos ? "rgba(76,214,179,0.4)" : "rgba(255,107,107,0.4)") : "var(--line-1)"),
+              background: r.significant ? (pos ? "rgba(76,214,179,0.06)" : "rgba(255,107,107,0.06)") : "var(--bg-0)",
+            }}>
+              <span style={{ color: "var(--ink-3)", width: 56 }}>{r.kind === "weekday" ? "요일" : "시간대"}</span>
+              <span style={{ color: "var(--ink-1)", width: 48 }}>{r.label}</span>
+              <span className={pos ? "num-pos" : "num-neg"} style={{ width: 64, textAlign: "right" }}>{r.mean > 0 ? "+" : ""}{r.mean.toFixed(2)}%</span>
+              <span style={{ color: "var(--ink-3)", width: 56, textAlign: "right" }}>n={r.n}</span>
+              <span style={{ flex: 1, textAlign: "right" }}>
+                {r.underpowered ? (
+                  <span style={{ color: "var(--ink-3)" }}>표본 부족</span>
+                ) : r.significant ? (
+                  <span style={{ color: pos ? "var(--teal)" : "var(--red)" }}>유의 (p={r.p_value != null ? r.p_value.toFixed(3) : "—"})</span>
+                ) : (
+                  <span style={{ color: "var(--ink-3)" }}>p={r.p_value != null ? r.p_value.toFixed(3) : "—"}</span>
+                )}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ⑩ A/B 비교 뷰 — /bt/compare {a, b, delta}.
+   수익곡선 오버레이(A 실선 / B 점선, 정규화 토글) + 메트릭 나란히 표(delta 색상·우세 하이라이트). */
+const _BT_CMP_METRICS = [
+  { key: "trade_count", label: "거래수", fmt: (v) => fmtInt(v), higher: true },
+  { key: "win_rate", label: "승률", fmt: (v) => fmtPct(v), higher: true },
+  { key: "total_profit_pct", label: "수익률합", fmt: (v) => fmtPct(v), higher: true },
+  { key: "total_profit_krw", label: "수익금", fmt: (v) => fmtMoney(v), higher: true },
+  { key: "max_drawdown_pct", label: "MDD", fmt: (v) => fmtPct(v), higher: false },
+  { key: "profit_factor", label: "PF", fmt: (v) => (v != null ? v.toFixed(2) : "—"), higher: true },
+  { key: "payoff_ratio", label: "Payoff", fmt: (v) => (v != null ? v.toFixed(2) : "—"), higher: true },
+  { key: "sharpe", label: "Sharpe", fmt: (v) => (v != null ? v.toFixed(2) : "—"), higher: true },
+];
+
+function BtCompareView({ cmp, onClose }) {
+  const [norm, setNorm] = useState_btc(true);   // 정규화(시작점 100) 토글.
+  const a = cmp && cmp.a, b = cmp && cmp.b;
+  const delta = (cmp && cmp.delta) || {};
+
+  const cumA = (a && a.equity && a.equity.cumulative) || [];
+  const cumB = (b && b.equity && b.equity.cumulative) || [];
+
+  const W = 880, H = 280;
+  const padL = 58, padR = 24, padT = 18, padB = 30;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  // 정규화: 시작점 100 기준 (시작 누적이 0 일 수 있으므로 첫 값 기준 가산 방식).
+  const toSeries = (cum) => {
+    const arr = cum.map(c => c.cum_profit || 0);
+    if (!norm) return arr;
+    const base = arr.length ? arr[0] : 0;
+    // 시작 100 + 누적증분 비율 — base 가 0 이면 절대 증분에 100 가산(스케일 통일).
+    return arr.map(v => 100 + (v - base));
+  };
+  const sA = toSeries(cumA), sB = toSeries(cumB);
+  const allV = [...sA, ...sB];
+  const yMin = allV.length ? Math.min(...allV) : 0;
+  const yMax = allV.length ? Math.max(...allV) : 1;
+  const yRange = (yMax - yMin) || 1;
+  const nMax = Math.max(sA.length, sB.length);
+  const x = (i) => nMax > 1 ? padL + (i / (nMax - 1)) * innerW : padL + innerW / 2;
+  const y = (v) => padT + innerH - ((v - yMin) / yRange) * innerH;
+  const pathOf = (s) => s.length < 2 ? "" : s.map((v, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--amber)" }}></span>
+          A / B 비교
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <LegendDot color="var(--teal)" label={"A " + (a ? a.job_id : "—")} />
+          <LegendDot color="var(--violet)" label={"B " + (b ? b.job_id : "—")} />
+          <button className="btn ghost sm" onClick={() => setNorm(v => !v)}>
+            {norm ? "정규화 ON" : "정규화 OFF"}
+          </button>
+          {onClose && <button className="btn ghost sm" onClick={onClose}>✕ 닫기</button>}
+        </div>
+      </div>
+      <div className="panel-bd">
+        {(!a && !b) ? (
+          <div className="research-empty">비교할 잡을 선택하세요.</div>
+        ) : (
+          <>
+            {/* 수익곡선 오버레이 */}
+            <div className="chart-wrap" style={{ marginBottom: 14 }}>
+              <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+                <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+                <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+                <text className="chart-axis-text" x={padL - 8} y={y(yMax) + 3} textAnchor="end">{norm ? yMax.toFixed(0) : _btMoneyTick(yMax)}</text>
+                <text className="chart-axis-text" x={padL - 8} y={y(yMin) + 3} textAnchor="end">{norm ? yMin.toFixed(0) : _btMoneyTick(yMin)}</text>
+                {sA.length > 1 && <path d={pathOf(sA)} fill="none" stroke="var(--teal)" strokeWidth="2" />}
+                {sB.length > 1 && <path d={pathOf(sB)} fill="none" stroke="var(--violet)" strokeWidth="2" strokeDasharray="5 4" />}
+                {allV.length === 0 && null}
+              </svg>
+              {allV.length === 0 && <_BtChartEmpty message="비교할 수익곡선이 없습니다" />}
+            </div>
+            {/* 메트릭 나란히 표 */}
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "var(--mono)", fontSize: 11.5 }}>
+              <thead>
+                <tr style={{ color: "var(--ink-3)", fontSize: 10, textTransform: "uppercase", letterSpacing: ".08em" }}>
+                  <th style={{ textAlign: "left", padding: "4px 8px" }}>메트릭</th>
+                  <th style={{ textAlign: "right", padding: "4px 8px", color: "var(--teal)" }}>A</th>
+                  <th style={{ textAlign: "right", padding: "4px 8px", color: "var(--violet)" }}>B</th>
+                  <th style={{ textAlign: "right", padding: "4px 8px" }}>Δ (B−A)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {_BT_CMP_METRICS.map(m => {
+                  const sa = (a && a.summary) || {};
+                  const sb = (b && b.summary) || {};
+                  const va = sa[m.key], vb = sb[m.key];
+                  const d = delta[m.key];
+                  // 우세 판정: higher=true 면 큰 쪽, false(MDD) 면 작은 쪽이 우세.
+                  let aWin = false, bWin = false;
+                  if (typeof va === "number" && typeof vb === "number" && va !== vb) {
+                    const aBetter = m.higher ? va > vb : va < vb;
+                    aWin = aBetter; bWin = !aBetter;
+                  }
+                  const dColor = d == null ? "var(--ink-3)"
+                    : (m.higher ? d > 0 : d < 0) ? "var(--teal)" : (d === 0 ? "var(--ink-3)" : "var(--red)");
+                  return (
+                    <tr key={m.key} style={{ borderTop: "1px solid var(--line-1)" }}>
+                      <td style={{ textAlign: "left", padding: "5px 8px", color: "var(--ink-2)" }}>{m.label}</td>
+                      <td style={{ textAlign: "right", padding: "5px 8px", color: aWin ? "var(--teal)" : "var(--ink-1)", fontWeight: aWin ? 700 : 400 }}>
+                        {typeof va === "number" ? m.fmt(va) : "—"}
+                      </td>
+                      <td style={{ textAlign: "right", padding: "5px 8px", color: bWin ? "var(--violet)" : "var(--ink-1)", fontWeight: bWin ? 700 : 400 }}>
+                        {typeof vb === "number" ? m.fmt(vb) : "—"}
+                      </td>
+                      <td style={{ textAlign: "right", padding: "5px 8px", color: dColor }}>
+                        {d == null ? "—" : (d > 0 ? "+" : "") + m.fmt(d)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 Object.assign(window, {
   BtEquityChart, BtDistributionChart, BtHeatmap, BtUnderwaterChart, BtResultArea,
   BtMaeMfeScatter, BtExitReasonPanel,
+  BtMonteCarloChart, BtOrderflowPanel, BtStatTestPanel, BtCompareView,
 });

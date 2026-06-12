@@ -440,6 +440,91 @@ def analysis_exit_reasons(job_id: str = "", t_start: Optional[int] = None, t_end
     return {"job_id": job_id, "exit_reasons": analysis.exit_reason_breakdown(_analysis_for_job(job_id, t_start, t_end))}
 
 
+# 몬테카를로 시행수 상한(서버 보호 — 과도한 n 차단).
+_MC_MAX_N = 20000
+
+
+@backtest_router.get("/analysis/montecarlo")
+def analysis_montecarlo(
+    job_id: str = "",
+    n: int = 2000,
+    seed: Optional[int] = None,
+    ruin_pct: float = 30.0,
+    t_start: Optional[int] = None,
+    t_end: Optional[int] = None,
+) -> Dict[str, Any]:
+    """몬테카를로 — 일별 손익 셔플 재배열로 MDD/최종손익 분포·파산확률·팬차트."""
+    n = max(0, min(int(n), _MC_MAX_N))
+    trades = _analysis_for_job(job_id, t_start, t_end)
+    return {"job_id": job_id, "montecarlo": analysis.monte_carlo(trades, n=n, seed=seed, ruin_pct=ruin_pct)}
+
+
+@backtest_router.get("/analysis/orderflow")
+def analysis_orderflow(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
+    """오더플로우 — 승/패 그룹별 진입 체결강도/호가불균형/전일동시간비/등락율 분포 비교."""
+    return {"job_id": job_id, "orderflow": analysis.entry_orderflow(_analysis_for_job(job_id, t_start, t_end))}
+
+
+# --------------------------------------------------------------------- compare
+def _compare_side(job_id: str) -> Optional[Dict[str, Any]]:
+    """단일 잡의 비교 페이로드 {job_id, status, metrics, equity}. 없으면 None(무예외).
+
+    metrics 는 CLI 저장 메트릭이 있으면 그것을, 없으면 analysis.summary 를 쓴다.
+    equity 는 결과 CSV 로부터 누적수익곡선을 재계산한다(없으면 빈 구조).
+    """
+    if not job_id:
+        return None
+    manager = get_job_manager()
+    record = manager.get(job_id, log_tail=0)
+    if not record.get("available"):
+        return None
+    csv_path = manager.result_csv_path(job_id)
+    trades = analysis.load_trades_csv(csv_path)
+    summary = analysis.summary_metrics(trades)
+    cli_metrics = record.get("metrics")
+    return {
+        "job_id": job_id,
+        "status": record.get("status"),
+        "metrics": cli_metrics if cli_metrics else summary,
+        "summary": summary,
+        "equity": analysis.equity_series(trades),
+        "trade_count": summary["trade_count"],
+    }
+
+
+# 비교 delta 산출 대상 메트릭(둘 다 숫자일 때만 차이 계산).
+_COMPARE_KEYS = (
+    "trade_count", "win_rate", "total_profit_pct", "total_profit_krw",
+    "max_drawdown_pct", "profit_factor", "payoff_ratio", "sharpe", "calmar",
+)
+
+
+def _compare_delta(a: Optional[Dict[str, Any]], b: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """두 잡 summary 의 주요 메트릭 차이(b - a). 한쪽이라도 없으면 빈 dict."""
+    if not a or not b:
+        return {}
+    sa = a.get("summary") or {}
+    sb = b.get("summary") or {}
+    delta: Dict[str, Any] = {}
+    for key in _COMPARE_KEYS:
+        va, vb = sa.get(key), sb.get(key)
+        if isinstance(va, (int, float)) and isinstance(vb, (int, float)):
+            delta[key] = float(vb) - float(va)
+    return delta
+
+
+@backtest_router.get("/compare")
+def compare_jobs(job_a: str = "", job_b: str = "") -> Dict[str, Any]:
+    """두 잡 A/B 비교 — 각 메트릭·수익곡선 + delta(b-a). 한쪽 없으면 해당 키 null(무예외)."""
+    a = _compare_side(job_a)
+    b = _compare_side(job_b)
+    return {
+        "a": a,
+        "b": b,
+        "delta": _compare_delta(a, b),
+    }
+
+
 # --------------------------------------------------------------------- live WS
 @backtest_router.websocket("/ws_job")
 async def ws_job(websocket: WebSocket, job_id: str = "") -> None:

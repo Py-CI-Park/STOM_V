@@ -17,7 +17,10 @@ if PROJECT_ROOT not in sys.path:
 from ai_strategy_loop.dashboard import backtest_analysis as A  # noqa: E402
 
 
-def _trade(name, buy, sell, hold, pct, krw, *, mae=None, mfe=None, exit_reason=""):
+def _trade(
+    name, buy, sell, hold, pct, krw, *, mae=None, mfe=None, exit_reason="",
+    of_strength=None, of_buy_rest=None, of_sell_rest=None, of_prevday=None, of_updown=None,
+):
     return {
         "name": name,
         "buy_time": buy,
@@ -29,6 +32,11 @@ def _trade(name, buy, sell, hold, pct, krw, *, mae=None, mfe=None, exit_reason="
         "mae": mae,
         "mfe": mfe,
         "exit_reason": exit_reason,
+        "of_strength": of_strength,
+        "of_buy_rest": of_buy_rest,
+        "of_sell_rest": of_sell_rest,
+        "of_prevday": of_prevday,
+        "of_updown": of_updown,
     }
 
 
@@ -334,3 +342,226 @@ def test_exit_reason_breakdown_blank_reason():
 
 def test_exit_reason_breakdown_empty():
     assert A.exit_reason_breakdown([]) == []
+
+
+# ============================================================================
+# 2단계 B — monte_carlo
+# ============================================================================
+def _multiday_trades():
+    """5 거래일 · 일별 손익이 서로 다른 데이터(셔플 효과 검증용)."""
+    return [
+        _trade("a", "202504070930", "202504071000", 10, 1.0, 30000),    # day1
+        _trade("a", "202504080930", "202504081000", 10, -1.0, -50000),  # day2
+        _trade("a", "202504090930", "202504091000", 10, 2.0, 40000),    # day3
+        _trade("a", "202504100930", "202504101000", 10, -1.0, -20000),  # day4
+        _trade("a", "202504110930", "202504111000", 10, 1.0, 25000),    # day5
+    ]
+
+
+def test_monte_carlo_reproducible_with_seed():
+    trades = _multiday_trades()
+    mc1 = A.monte_carlo(trades, n=300, seed=7)
+    mc2 = A.monte_carlo(trades, n=300, seed=7)
+    assert mc1["mdd_krw"] == mc2["mdd_krw"]
+    assert mc1["final"] == mc2["final"]
+    assert mc1["ruin_prob"] == mc2["ruin_prob"]
+    assert mc1["fan"] == mc2["fan"]
+
+
+def test_monte_carlo_empty_and_zero_n_no_raise():
+    empty = A.monte_carlo([], n=100)
+    assert empty["n"] == 0 and empty["days"] == 0 and empty["fan"] == []
+    assert empty["mdd_pct"] == {"p5": 0.0, "p25": 0.0, "p50": 0.0, "p75": 0.0, "p95": 0.0}
+    # n=0 → 빈 분포(무예외).
+    z = A.monte_carlo(_multiday_trades(), n=0)
+    assert z["n"] == 0
+
+
+def test_monte_carlo_final_invariant_under_shuffle():
+    # 최종 누적손익은 셔플 순서와 무관(합은 동일) → final 백분위가 모두 동일해야 한다.
+    trades = _multiday_trades()
+    mc = A.monte_carlo(trades, n=500, seed=1)
+    total = sum(t["profit_krw"] for t in trades)  # 25000
+    for key in ("p5", "p25", "p50", "p75", "p95"):
+        assert abs(mc["final"][key] - total) < 1e-6
+    # observed 최종손익도 총합과 일치.
+    assert abs(mc["observed"]["final_krw"] - total) < 1e-6
+
+
+def test_monte_carlo_quantile_monotonic():
+    mc = A.monte_carlo(_multiday_trades(), n=800, seed=3)
+    q = mc["mdd_krw"]
+    assert q["p5"] <= q["p25"] <= q["p50"] <= q["p75"] <= q["p95"]
+    # MDD 는 항상 >=0.
+    assert q["p5"] >= 0.0
+
+
+def test_monte_carlo_fan_downsampled():
+    # 250 거래일 → fan 은 200pt 이하로 다운샘플.
+    trades = [
+        _trade("a", f"202504{(i % 28) + 1:02d}0930", f"202504{(i % 28) + 1:02d}1000", 10, 0.1, (i % 5 - 2) * 1000)
+        for i in range(250)
+    ]
+    # 서로 다른 일자가 되도록 day 를 강제로 분산(같은 월일 중복 방지 위해 day 직접 세팅).
+    for i, t in enumerate(trades):
+        t["day"] = 20250101 + i
+    mc = A.monte_carlo(trades, n=50, seed=9)
+    assert mc["days"] == 250
+    assert len(mc["fan"]) <= A._MC_FAN_MAX
+
+
+# ============================================================================
+# 2단계 C — entry_orderflow
+# ============================================================================
+def _orderflow_trades():
+    """승(높은 체결강도) vs 패(낮은 체결강도) 분리가 명확한 합성 데이터."""
+    wins = [
+        _trade("w", "202504070930", "202504071000", 10, 1.0, 1000,
+               of_strength=120.0, of_buy_rest=8000.0, of_sell_rest=2000.0, of_prevday=300.0, of_updown=5.0)
+        for _ in range(10)
+    ]
+    losses = [
+        _trade("l", "202504070935", "202504071005", 10, -1.0, -1000,
+               of_strength=60.0, of_buy_rest=2000.0, of_sell_rest=8000.0, of_prevday=150.0, of_updown=1.0)
+        for _ in range(10)
+    ]
+    return wins + losses
+
+
+def test_entry_orderflow_separates_win_loss():
+    of = A.entry_orderflow(_orderflow_trades())
+    assert "wins" in of and "losses" in of and "separation" in of
+    # 체결강도: 승 120 > 패 60 → diff = +60.
+    sep_by_var = {s["var"]: s for s in of["separation"]}
+    assert "strength" in sep_by_var
+    assert abs(sep_by_var["strength"]["diff"] - 60.0) < 1e-6
+    assert sep_by_var["strength"]["win_p50"] == 120.0
+    assert sep_by_var["strength"]["loss_p50"] == 60.0
+    # 호가불균형: 승 8000/2000=4.0 vs 패 2000/8000=0.25 → diff +3.75.
+    assert abs(sep_by_var["imbalance"]["diff"] - 3.75) < 1e-6
+
+
+def test_entry_orderflow_separation_sorted_by_abs_diff():
+    of = A.entry_orderflow(_orderflow_trades())
+    diffs = [abs(s["diff"]) for s in of["separation"]]
+    assert diffs == sorted(diffs, reverse=True)
+
+
+def test_entry_orderflow_missing_columns_no_raise():
+    # of_* 전부 결측 → separation 빈, wins/losses 분포는 n=0.
+    of = A.entry_orderflow(_sample_trades())
+    assert of["separation"] == []
+    assert of["wins"]["strength"]["n"] == 0
+
+
+def test_entry_orderflow_imbalance_zero_sell_excluded():
+    trades = [
+        _trade("a", "202504070930", "202504071000", 10, 1.0, 1000,
+               of_buy_rest=5000.0, of_sell_rest=0.0),  # 분모 0 → 호가불균형 제외.
+    ]
+    of = A.entry_orderflow(trades)
+    assert of["wins"]["imbalance"]["n"] == 0
+
+
+# ============================================================================
+# 2단계 D — statistical_tests (scipy 유/무 분기)
+# ============================================================================
+def _two_weekday_trades():
+    """월요일(이익 큼) vs 화요일(손실) — 평균차가 크고 그룹 내 분산이 있는 두 요일 버킷.
+
+    Welch t-test 가 정의되려면 그룹 내 분산>0 이어야 하므로 값에 작은 변동을 준다.
+    """
+    out = []
+    for i in range(40):
+        pct = 3.0 + (0.2 if i % 2 == 0 else -0.2)  # 월: 평균 3.0, 분산 있음.
+        out.append(_trade("a", "202504070930", "202504071000", 10, pct, pct * 1000))
+    for i in range(40):
+        pct = -2.0 + (0.2 if i % 2 == 0 else -0.2)  # 화: 평균 -2.0, 분산 있음.
+        out.append(_trade("a", "202504080930", "202504081000", 10, pct, pct * 1000))
+    return out
+
+
+def test_statistical_tests_detects_significant_weekday():
+    st = A.statistical_tests(_two_weekday_trades())
+    wd = [s for s in st if s["kind"] == "weekday"]
+    assert len(wd) == 2
+    # 평균차가 크고 표본 40 → 유의.
+    assert any(s["significant"] for s in wd)
+    for s in wd:
+        assert s["n"] == 40
+        assert not s["underpowered"]  # 40 >= 30.
+        assert s["p_value"] is not None
+
+
+def test_statistical_tests_underpowered_small_sample():
+    # 표본 < 30 → underpowered=True, significant 는 표본 부족으로 False 강제.
+    trades = (
+        [_trade("a", "202504070930", "202504071000", 10, 5.0, 5000) for _ in range(5)]
+        + [_trade("a", "202504080930", "202504081000", 10, -5.0, -5000) for _ in range(5)]
+    )
+    st = A.statistical_tests(trades)
+    wd = [s for s in st if s["kind"] == "weekday"]
+    assert all(s["underpowered"] for s in wd)
+    assert all(not s["significant"] for s in wd)
+
+
+def test_statistical_tests_scipy_and_fallback_branches(monkeypatch):
+    trades = _two_weekday_trades()
+    # scipy 가용(기본).
+    with_scipy = A.statistical_tests(trades)
+    # scipy import 실패를 강제 → 정규근사 폴백.
+    import builtins
+    real_import = builtins.__import__
+
+    def _no_scipy(name, *args, **kwargs):
+        if name == "scipy" or name.startswith("scipy."):
+            raise ImportError("forced")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", _no_scipy)
+    without_scipy = A.statistical_tests(trades)
+    # 두 분기 모두 동일 버킷 수 + p값 산출(값은 근사라 다를 수 있으나 유의성 결론은 동일).
+    assert len(with_scipy) == len(without_scipy)
+    sig_with = {(s["kind"], s["bucket"]) for s in with_scipy if s["significant"]}
+    sig_without = {(s["kind"], s["bucket"]) for s in without_scipy if s["significant"]}
+    assert sig_with == sig_without
+
+
+def test_statistical_tests_single_bucket_empty():
+    # 모든 거래가 같은 요일+같은 슬롯 → 버킷 1개 → 검정 없음.
+    trades = [_trade("a", "202504070930", "202504071000", 10, 1.0, 1000) for _ in range(10)]
+    assert A.statistical_tests(trades) == []
+
+
+# ============================================================================
+# 인사이트 연결 — mc/orderflow/stats 가 인사이트에 반영
+# ============================================================================
+def test_insights_orderflow_rule():
+    of = A.entry_orderflow(_orderflow_trades())
+    insights = A.generate_insights(_orderflow_trades(), orderflow=of)
+    titles = [i["title"] for i in insights]
+    assert "승리 진입 오더플로우 프로파일" in titles
+
+
+def test_insights_statistical_rule():
+    trades = _two_weekday_trades()
+    st = A.statistical_tests(trades)
+    insights = A.generate_insights(trades, stats=st)
+    titles = [i["title"] for i in insights]
+    # 유의한 양수/음수 시점 중 적어도 하나는 등장.
+    assert ("통계적으로 유의한 시점 효과" in titles) or ("유의한 손실 시점" in titles)
+
+
+def test_full_analysis_includes_stats_and_orderflow(tmp_path: Path):
+    csv_path = tmp_path / "trades.csv"
+    header = "﻿종목명,매수시간,매도시간,보유시간,수익률,수익금,B_체결강도,B_매수총잔량,B_매도총잔량,B_전일동시간비,B_등락율"
+    lines = [header]
+    for t in _orderflow_trades():
+        lines.append(
+            f"{t['name']},{t['buy_time']},{t['sell_time']},{int(t['hold_min'])},{t['profit_pct']},{int(t['profit_krw'])},"
+            f"{t['of_strength']},{t['of_buy_rest']},{t['of_sell_rest']},{t['of_prevday']},{t['of_updown']}"
+        )
+    csv_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    bundle = A.full_analysis(str(csv_path))
+    assert "stats" in bundle and "orderflow" in bundle
+    assert bundle["orderflow"]["separation"]  # 분리 가능한 합성 데이터.
