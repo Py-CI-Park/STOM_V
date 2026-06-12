@@ -48,6 +48,7 @@ from ._seed_relative_selection import (
     write_seed_relative_artifact,
     yearly_profit_breakdown,
 )
+from ._absolute_niche_selection import ABSOLUTE_NICHE_VERSION, AbsoluteNicheThresholds, AbsoluteNicheEligible, AbsoluteNicheRejected, AbsoluteNicheResult, DEFAULT_ABSOLUTE_NICHE_THRESHOLDS, NicheMetricEntry, select_absolute_niche_v1, write_absolute_niche_artifact  # noqa: E501
 
 __all__ = [
     "CandidateGeneration",
@@ -90,4 +91,13 @@ __all__ = [
     "write_candidate_research_pool_artifact",
     "write_selection_artifact",
     "write_yearly_sparse_robust_artifact",
+    "ABSOLUTE_NICHE_VERSION",
+    "AbsoluteNicheThresholds",
+    "AbsoluteNicheEligible",
+    "AbsoluteNicheRejected",
+    "AbsoluteNicheResult",
+    "DEFAULT_ABSOLUTE_NICHE_THRESHOLDS",
+    "NicheMetricEntry",
+    "select_absolute_niche_v1",
+    "write_absolute_niche_artifact",
 ]
