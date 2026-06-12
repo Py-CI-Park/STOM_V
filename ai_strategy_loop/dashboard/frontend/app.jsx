@@ -143,11 +143,26 @@ function App() {
                 autonomous_strategy_loop · contract_v{health.contract_version ?? state.contract_version ?? 1}
               </span>
             </div>
-            {/* Phase3-lite(2026-06-12) — 공통 네비: 운영(현재)|연구|결정. */}
-            <nav className="mono" style={{ display: "flex", gap: 10, marginLeft: 14, fontSize: 12 }}>
-              <span style={{ color: "var(--ink-2)" }}>운영</span>
-              <a href="/ui/lab.html" style={{ color: "var(--blue, #7ab)" }}>연구</a>
-              <a href="/ui/verdict.html" style={{ color: "var(--blue, #7ab)" }}>결정</a>
+            {/* Phase6-E1(2026-06-13) — 공통 네비 체계화: 맨글자 링크 → 의미가 드러나는
+                페이지 버튼 그룹(아이콘+라벨+호버 설명). 사용자 피드백: "운영 연구 결정"이
+                무엇인지 알 수 없음. */}
+            <nav className="stom-pagenav mono" aria-label="페이지 이동">
+              <span className="stom-pagenav-item stom-pagenav-active"
+                    title="운영 대시보드(현재 페이지) — 진화 루프 운영 상태·백테스트·차트 시뮬레이션">
+                ⚙ 운영
+              </span>
+              <a className="stom-pagenav-item" href="/ui/lab.html"
+                 title="연구실 페이지로 이동 — run 비교·검증 뷰·TMAP 지도 등 연구 결과 화면">
+                🔬 연구실
+              </a>
+              <a className="stom-pagenav-item" href="/ui/pro.html" target="_blank" rel="noopener"
+                 title="리서치 프로(새 탭, 전체화면) — 명예의 전당·히스토리·프로세스 흐름까지 보는 상세 분석 워크스페이스">
+                📊 리서치 프로
+              </a>
+              <a className="stom-pagenav-item" href="/ui/verdict.html"
+                 title="결정 이력 페이지로 이동 — 전략 동결/승격 결정 기록">
+                ⚖ 결정
+              </a>
             </nav>
           </div>
 

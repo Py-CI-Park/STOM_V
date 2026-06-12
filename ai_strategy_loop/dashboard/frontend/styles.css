@@ -25,8 +25,8 @@
   --bg-radial-a: rgba(76,214,179,0.04);
   --bg-radial-b: rgba(165,148,255,0.035);
 
-  --sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, "JetBrains Mono", monospace;
+  --sans: "IBM Plex Sans", "Malgun Gothic", "맑은 고딕", ui-sans-serif, system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "JetBrains Mono", "Malgun Gothic", "맑은 고딕", monospace;
 }
 
 [data-theme="light"] {
@@ -1742,4 +1742,232 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 @media (min-width: 2200px) {
   body { font-size: 14px; }
   .grid-main { grid-template-columns: minmax(0, 1fr) 480px; }
+}
+
+/* ── research-pro (Phase6-L) ──────────────────────────────────────────────
+   리서치 프로 풀스크린 워크스페이스(research-pro.jsx)와 리서치랩 surgical 편집
+   (E1 상태배지·E4 도움말 칩)용 클래스. 전부 신규 prefix(.rp-* / .research-statusbar
+   / .research-badge / .research-help)라 기존 룰과 충돌 없음(append-only). */
+
+/* E1 — 리서치랩 상단 상태 배지 바(평문 → 라벨+값+툴팁). */
+.research-statusbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin: 4px 0 8px; font-size: 11px;
+}
+.research-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px; border-radius: 6px;
+  background: var(--bg-0); border: 1px solid var(--line-1);
+  color: var(--ink-1); cursor: help; white-space: nowrap;
+}
+.research-badge b { color: var(--ink-0); font-weight: 600; }
+/* E4 — 품질/적합도 hover 도움말 칩(? 표식). */
+.research-help {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 7px; border-radius: 999px; cursor: help;
+  font-size: 10.5px; color: var(--blue);
+  border: 1px solid var(--line-2); background: rgba(106,166,255,0.07);
+}
+.research-help:hover { background: rgba(106,166,255,0.16); }
+
+/* 풀스크린 컨테이너 */
+.research-pro {
+  min-height: 100vh; color: var(--ink-0);
+  display: flex; flex-direction: column;
+}
+.rp-topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 12px 18px; background: var(--bg-1);
+  border-bottom: 1px solid var(--line-2);
+}
+.rp-topbar-title { display: flex; align-items: center; gap: 10px; }
+.rp-topbar-mark { font-size: 22px; }
+.rp-topbar-h { font-size: 15px; font-weight: 600; letter-spacing: .01em; }
+.rp-topbar-sub { font-size: 11px; color: var(--ink-3); }
+.rp-topbar-controls { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rp-ctl { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-2); }
+.rp-select {
+  font-size: 11px; background: var(--bg-0); color: var(--ink-0);
+  border: 1px solid var(--line-2); border-radius: 5px; padding: 4px 7px; max-width: 280px;
+}
+.rp-num-input {
+  width: 64px; font-size: 11px; background: var(--bg-0); color: var(--ink-0);
+  border: 1px solid var(--line-2); border-radius: 5px; padding: 4px 6px;
+}
+
+/* 분석 그리드 — 풀 뷰포트 폭 활용(대형 1열, 초광폭에서 2열). */
+.rp-grid {
+  display: grid; grid-template-columns: 1fr; gap: 16px;
+  padding: 16px 18px 40px;
+}
+@media (min-width: 1700px) {
+  /* 히트맵·명예의전당은 폭이 넓을수록 좋으므로 전폭(1열) 유지, 비교·히스토리만 2열화하지
+     않고 전부 전폭으로 둔다(밀도보다 가독성 우선). 필요한 카드만 내부에서 스크롤. */
+  .rp-grid { gap: 18px; }
+}
+
+.rp-card {
+  background: var(--bg-1); border: 1px solid var(--line-1);
+  border-radius: 10px; overflow: hidden;
+}
+.rp-card-hd {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-bottom: 1px solid var(--line-1);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+}
+.rp-card-title { font-size: 13px; font-weight: 600; color: var(--ink-0); }
+.rp-card-sub { font-size: 11px; color: var(--ink-3); font-family: var(--mono); }
+.rp-card-bd { padding: 14px; }
+.rp-help {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%; cursor: help;
+  font-size: 10px; font-weight: 700; color: var(--blue);
+  border: 1px solid var(--line-2); background: rgba(106,166,255,0.08);
+}
+.rp-empty { color: var(--ink-3); font-size: 12px; font-family: var(--mono); padding: 16px 4px; }
+.rp-muted { color: var(--ink-3); }
+.rp-pos { color: var(--teal); }
+.rp-neg { color: var(--red); }
+
+/* 변수 칩 */
+.rp-chip {
+  font-size: 10px; padding: 2px 6px; border-radius: 4px;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+
+/* 조건식 뷰어 */
+.rp-code-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 900px) { .rp-code-grid { grid-template-columns: 1fr; } }
+.rp-code-label { font-size: 11px; font-weight: 600; margin-bottom: 4px; font-family: var(--mono); }
+.rp-code-block {
+  font-family: var(--mono); font-size: 11px; line-height: 1.5;
+  background: var(--bg-0); border: 1px solid var(--line-1); border-radius: 6px;
+  padding: 8px 10px; margin: 0 0 6px; white-space: pre-wrap; word-break: break-word;
+  max-height: 240px; overflow: auto; color: var(--ink-1);
+}
+.rp-code-empty { font-size: 11px; color: var(--ink-3); padding: 8px 2px; }
+
+/* 표 */
+.rp-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.rp-table thead th {
+  text-align: right; padding: 6px 8px; color: var(--ink-2);
+  border-bottom: 1px solid var(--line-2); white-space: nowrap;
+}
+.rp-table thead th:nth-child(1), .rp-table thead th:nth-child(2) { text-align: left; }
+.rp-table tbody td { padding: 6px 8px; text-align: right; border-top: 1px solid var(--line-1); }
+.rp-table tbody td:nth-child(1), .rp-table tbody td:nth-child(2) { text-align: left; }
+.rp-row-open td { background: rgba(106,166,255,0.06); }
+.rp-row-detail td { background: var(--bg-0); padding: 12px 14px; }
+.rp-kind {
+  display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 9.5px; font-weight: 600;
+}
+.rp-kind-ai { color: var(--violet); border: 1px solid rgba(165,148,255,0.4); }
+.rp-kind-seed { color: var(--blue); border: 1px solid rgba(106,166,255,0.4); }
+
+/* 대형 히트맵(E7) — 컨테이너 폭 추종 반응형 셀. */
+.rp-heatmap {
+  display: grid; gap: 3px; width: 100%;
+}
+.rp-heatmap-corner, .rp-heatmap-colhd, .rp-heatmap-rowhd {
+  font-size: 10px; color: var(--ink-3); display: flex; align-items: center;
+}
+.rp-heatmap-colhd { justify-content: center; text-align: center; padding: 2px; }
+.rp-heatmap-rowhd { color: var(--ink-2); padding-right: 6px; }
+.rp-heatmap-corner { color: var(--ink-3); }
+.rp-heatmap-cell {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 44px; border-radius: 5px; padding: 4px 2px; cursor: help;
+}
+.rp-heatmap-cell strong { font-size: 13px; font-weight: 600; }
+.rp-heatmap-cell small { font-size: 8.5px; opacity: 0.7; }
+
+/* Run Compare 추가 바 */
+.rp-compare-add { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.rp-compare-sep { color: var(--ink-3); font-size: 11px; }
+.rp-compare-genlbl { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--ink-2); }
+
+/* 히스토리(E9) */
+.rp-history-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.rp-history-grid { display: grid; grid-template-columns: 220px 1fr; gap: 14px; }
+@media (max-width: 1100px) { .rp-history-grid { grid-template-columns: 1fr; } }
+.rp-history-genlist { display: flex; flex-direction: column; gap: 4px; max-height: 520px; overflow: auto; }
+.rp-mini-label {
+  font-size: 10px; color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase;
+  font-family: var(--mono); margin-bottom: 4px;
+}
+.rp-gen-btn {
+  display: flex; align-items: center; gap: 8px; justify-content: space-between;
+  padding: 6px 8px; font-size: 11px; border-radius: 6px; cursor: pointer;
+  background: var(--bg-0); border: 1px solid var(--line-1); color: var(--ink-1);
+}
+.rp-gen-btn:hover { border-color: var(--line-2); }
+.rp-gen-btn.active { border-color: var(--blue); background: rgba(106,166,255,0.12); }
+.rp-history-detail { min-width: 0; }
+.rp-history-actions { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.rp-history-charts { margin-top: 12px; }
+
+/* E10 — 프로세스 플로우 오버레이 */
+.rp-overlay {
+  position: fixed; inset: 0; z-index: 10000;
+  background: rgba(4,7,11,0.78); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.rp-overlay-card {
+  background: var(--bg-1); border: 1px solid var(--line-2); border-radius: 14px;
+  max-width: 1280px; width: 100%; max-height: 90vh; overflow: auto;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+}
+.rp-overlay-hd {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 18px; border-bottom: 1px solid var(--line-1);
+  position: sticky; top: 0; background: var(--bg-1); z-index: 2;
+}
+.rp-flow {
+  display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap;
+  padding: 20px 18px; justify-content: center;
+}
+.rp-flow-node {
+  flex: 1 1 220px; max-width: 280px; min-width: 200px;
+  background: var(--bg-0); border: 1px solid var(--line-1); border-radius: 12px;
+  padding: 14px; display: flex; flex-direction: column; gap: 8px;
+  transition: border-color .25s ease, box-shadow .25s ease;
+}
+.rp-flow-active {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 1px var(--teal), 0 0 22px rgba(76,214,179,0.35);
+}
+.rp-flow-ico { font-size: 26px; }
+.rp-flow-name { font-size: 13px; font-weight: 600; color: var(--ink-0); }
+.rp-flow-pulse { color: var(--teal); font-size: 10.5px; animation: rpPulse 1.4s ease-in-out infinite; }
+@keyframes rpPulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+.rp-flow-desc { font-size: 11.5px; line-height: 1.55; color: var(--ink-2); }
+.rp-flow-terms { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
+.rp-flow-term { font-size: 10.5px; color: var(--ink-3); line-height: 1.4; }
+.rp-flow-term b { color: var(--blue); }
+.rp-flow-arrow {
+  display: flex; align-items: center; color: var(--ink-3); font-size: 20px; align-self: center;
+}
+@media (max-width: 760px) { .rp-flow-arrow { transform: rotate(90deg); } }
+
+
+/* ── Phase6-E1 공통 페이지 네비 버튼 그룹 (2026-06-13, 메인 통합) ── */
+.stom-pagenav {
+  display: inline-flex; gap: 4px; margin-left: 14px; padding: 3px;
+  border: 1px solid var(--line-2); border-radius: 9px;
+  background: rgba(255,255,255,0.02);
+}
+.stom-pagenav-item {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: 6px; font-size: 12px;
+  color: var(--ink-2); text-decoration: none; cursor: pointer;
+  border: 1px solid transparent; white-space: nowrap;
+}
+.stom-pagenav-item:hover {
+  color: var(--ink-0); border-color: var(--line-2);
+  background: rgba(255,255,255,0.05);
+}
+.stom-pagenav-active {
+  color: var(--ink-0); cursor: default;
+  background: rgba(76,214,179,0.10); border-color: rgba(76,214,179,0.35);
 }
