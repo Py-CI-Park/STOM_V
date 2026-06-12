@@ -1,0 +1,4 @@
+[BATCH] run_id=smoke_llmg4_20260612 pairs=1
+[BATCH] prepare status=ok back_count=814 elapsed=69s
+[BATCH] gen0 LLMG4 flow_skew default ERROR (349s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] done

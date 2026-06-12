@@ -261,3 +261,53 @@ class TestSchemaInPrompt:
         out = build_prompt("원리", "목록")
         assert "출력 형식" in out and "객체 배열" in out
 
+class TestEngineCostRules:
+    """2026-06-12 대조실험으로 확정된 엔진 실측 규칙의 정적 차단."""
+
+    def test_bare_function_variable_rejected(self) -> None:
+        payload = _valid_payload()
+        payload["buy_template"] = payload["buy_template"].replace(
+            "if 매수:", "매수 = 매수 and 호가갭발생 == 1\nif 매수:"
+        )
+        errors = validate_hypothesis(payload)
+        assert any("무인자" in e for e in errors)
+
+    def test_bare_cumulative_variable_rejected(self) -> None:
+        payload = _valid_payload()
+        payload["buy_template"] = payload["buy_template"].replace(
+            "if 매수:", "매수 = 매수 and 누적초당매수수량 >= 누적초당매도수량\nif 매수:"
+        )
+        errors = validate_hypothesis(payload)
+        assert any("누적초당매수수량" in e for e in errors)
+
+    def test_called_form_not_rejected(self) -> None:
+        """(N) 호출형은 규칙에 걸리지 않아야 한다 — 기존 유효 payload 회귀."""
+        assert validate_hypothesis(_valid_payload()) == []
+
+    def test_depth_call_overuse_rejected(self) -> None:
+        payload = _valid_payload()
+        cond = " and ".join(f"매도잔량{i}(1) > 0" for i in (1, 2, 3, 4, 5))
+        payload["buy_template"] = payload["buy_template"].replace(
+            "if 매수:", f"매수 = 매수 and {cond}\nif 매수:"
+        )
+        errors = validate_hypothesis(payload)
+        assert any("잔량i(N)" in e for e in errors)
+
+    def test_depth_shift_form_allowed(self) -> None:
+        """잔량iN(1) 시프트형은 비용 규칙에 안 걸린다(v5 실측 81초 정상)."""
+        from ai_strategy_loop.scripts.gen_template_hypothesis import _engine_cost_errors
+        code = "매수 = 매도잔량1N(1) > 매도잔량1 and 매수잔량1N(1) > 0"
+        assert _engine_cost_errors(code) == []
+
+    def test_scalar_called_as_function_rejected(self) -> None:
+        """4세대 실측 회귀: 스칼라 초당매수수량(N) 호출형 → 정적 거부."""
+        from ai_strategy_loop.scripts.gen_template_hypothesis import _engine_cost_errors
+        code = "매수 = 초당매수수량(5) >= 초당매도수량(5) * 1.2"
+        errors = _engine_cost_errors(code)
+        assert any("검증되지 않은 호출형" in e for e in errors)
+
+    def test_whitelisted_calls_pass(self) -> None:
+        from ai_strategy_loop.scripts.gen_template_hypothesis import _engine_cost_errors
+        code = "매수 = 이동평균(20, 1) < 현재가 and 누적초당매수수량(10) > 0 and 매도잔량1N(1) > 매도잔량1"
+        assert _engine_cost_errors(code) == []
+
