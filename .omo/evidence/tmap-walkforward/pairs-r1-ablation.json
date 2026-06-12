@@ -1,0 +1,107 @@
+[
+  {
+    "label": "BASE_SEED",
+    "buy": "Tick_B_902_905_Update_2",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (0.5 <= 시가대비등락율 < 6.0):",
+    "buy": "R1ABL_00_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (1.0 < 등락율 <= 8.0):",
+    "buy": "R1ABL_01_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (1 < 초당순매수금액 < 1000):",
+    "buy": "R1ABL_02_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (2 < 회전율):",
+    "buy": "R1ABL_03_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (고저평균대비등락율 > 0):",
+    "buy": "R1ABL_04_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (누적초당매도수량(30) * 1.0 < 누적초당매수수량(30) * ",
+    "buy": "R1ABL_05_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (누적초당매수수량(30) * 0.5 < 누적초당매도수량(30) * ",
+    "buy": "R1ABL_06_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (당일거래대금 > 5 * 100):",
+    "buy": "R1ABL_07_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (당일거래대금각도(30) > 10 and 당일거래대금각도(30) <",
+    "buy": "R1ABL_08_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (매도총잔량 * 0.10 < 매수총잔량 * 1.0):",
+    "buy": "R1ABL_09_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (매도총잔량 > 매수총잔량 * 0.10 and 매도총잔량 < 매수총",
+    "buy": "R1ABL_10_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (전일비 > 0 and 전일동시간비 > 0):",
+    "buy": "R1ABL_11_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (체결강도 >= 50 and 체결강도 <= 300):",
+    "buy": "R1ABL_12_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (초당거래대금 / 초당거래대금평균(30) > 3.0):",
+    "buy": "R1ABL_13_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (초당거래대금 > 초당거래대금N(1) * 1.0):",
+    "buy": "R1ABL_14_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (초당매수수량 > 매도총잔량 * 0.20):",
+    "buy": "R1ABL_15_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (현재가 < VI아래5호가):",
+    "buy": "R1ABL_16_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (현재가 > (고가 - (고가 - 저가) * 0.20)):",
+    "buy": "R1ABL_17_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif not (회전율 > 1.5):",
+    "buy": "R1ABL_18_B",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R1 -elif 라운드피겨위5호가이내:",
+    "buy": "R1ABL_19_B",
+    "sell": "Tick_S_902_905_Update_2"
+  }
+]

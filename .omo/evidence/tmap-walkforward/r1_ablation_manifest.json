@@ -1,0 +1,154 @@
+[
+  {
+    "gen_label": "R1 -elif not (0.5 <= 시가대비등락율 < 6.0):",
+    "lines": [
+      42,
+      88
+    ],
+    "cond": "elif not (0.5 <= 시가대비등락율 < 6.0):"
+  },
+  {
+    "gen_label": "R1 -elif not (1.0 < 등락율 <= 8.0):",
+    "lines": [
+      29,
+      74
+    ],
+    "cond": "elif not (1.0 < 등락율 <= 8.0):"
+  },
+  {
+    "gen_label": "R1 -elif not (1 < 초당순매수금액 < 1000):",
+    "lines": [
+      44,
+      90
+    ],
+    "cond": "elif not (1 < 초당순매수금액 < 1000):"
+  },
+  {
+    "gen_label": "R1 -elif not (2 < 회전율):",
+    "lines": [
+      50
+    ],
+    "cond": "elif not (2 < 회전율):"
+  },
+  {
+    "gen_label": "R1 -elif not (고저평균대비등락율 > 0):",
+    "lines": [
+      31,
+      76
+    ],
+    "cond": "elif not (고저평균대비등락율 > 0):"
+  },
+  {
+    "gen_label": "R1 -elif not (누적초당매도수량(30) * 1.0 < 누적초당매수수량(30) * ",
+    "lines": [
+      110
+    ],
+    "cond": "elif not (누적초당매도수량(30) * 1.0 < 누적초당매수수량(30) * 1.0):"
+  },
+  {
+    "gen_label": "R1 -elif not (누적초당매수수량(30) * 0.5 < 누적초당매도수량(30) * ",
+    "lines": [
+      108
+    ],
+    "cond": "elif not (누적초당매수수량(30) * 0.5 < 누적초당매도수량(30) * 1.0):"
+  },
+  {
+    "gen_label": "R1 -elif not (당일거래대금 > 5 * 100):",
+    "lines": [
+      52,
+      98
+    ],
+    "cond": "elif not (당일거래대금 > 5 * 100):"
+  },
+  {
+    "gen_label": "R1 -elif not (당일거래대금각도(30) > 10 and 당일거래대금각도(30) <",
+    "lines": [
+      100
+    ],
+    "cond": "elif not (당일거래대금각도(30) > 10 and 당일거래대금각도(30) < 30):"
+  },
+  {
+    "gen_label": "R1 -elif not (매도총잔량 * 0.10 < 매수총잔량 * 1.0):",
+    "lines": [
+      106
+    ],
+    "cond": "elif not (매도총잔량 * 0.10 < 매수총잔량 * 1.0):"
+  },
+  {
+    "gen_label": "R1 -elif not (매도총잔량 > 매수총잔량 * 0.10 and 매도총잔량 < 매수총",
+    "lines": [
+      60
+    ],
+    "cond": "elif not (매도총잔량 > 매수총잔량 * 0.10 and 매도총잔량 < 매수총잔량 * 2.0):"
+  },
+  {
+    "gen_label": "R1 -elif not (전일비 > 0 and 전일동시간비 > 0):",
+    "lines": [
+      48,
+      94
+    ],
+    "cond": "elif not (전일비 > 0 and 전일동시간비 > 0):"
+  },
+  {
+    "gen_label": "R1 -elif not (체결강도 >= 50 and 체결강도 <= 300):",
+    "lines": [
+      62,
+      112
+    ],
+    "cond": "elif not (체결강도 >= 50 and 체결강도 <= 300):"
+  },
+  {
+    "gen_label": "R1 -elif not (초당거래대금 / 초당거래대금평균(30) > 3.0):",
+    "lines": [
+      56,
+      102
+    ],
+    "cond": "elif not (초당거래대금 / 초당거래대금평균(30) > 3.0):"
+  },
+  {
+    "gen_label": "R1 -elif not (초당거래대금 > 초당거래대금N(1) * 1.0):",
+    "lines": [
+      82
+    ],
+    "cond": "elif not (초당거래대금 > 초당거래대금N(1) * 1.0):"
+  },
+  {
+    "gen_label": "R1 -elif not (초당매수수량 > 매도총잔량 * 0.20):",
+    "lines": [
+      58,
+      104
+    ],
+    "cond": "elif not (초당매수수량 > 매도총잔량 * 0.20):"
+  },
+  {
+    "gen_label": "R1 -elif not (현재가 < VI아래5호가):",
+    "lines": [
+      33,
+      78
+    ],
+    "cond": "elif not (현재가 < VI아래5호가):"
+  },
+  {
+    "gen_label": "R1 -elif not (현재가 > (고가 - (고가 - 저가) * 0.20)):",
+    "lines": [
+      46,
+      92
+    ],
+    "cond": "elif not (현재가 > (고가 - (고가 - 저가) * 0.20)):"
+  },
+  {
+    "gen_label": "R1 -elif not (회전율 > 1.5):",
+    "lines": [
+      96
+    ],
+    "cond": "elif not (회전율 > 1.5):"
+  },
+  {
+    "gen_label": "R1 -elif 라운드피겨위5호가이내:",
+    "lines": [
+      35,
+      80
+    ],
+    "cond": "elif 라운드피겨위5호가이내:"
+  }
+]
