@@ -223,6 +223,34 @@ class TestNicheCompare:
         assert out["runs"][0]["gens_ok"] == 0  # 무예외 — 빈 요약.
 
 
+class TestDecisions:
+    """F3/P-D(2026-06-11) — V6 결정 기록: append-only·검증값 거부·이력 순서."""
+
+    def test_record_and_list_roundtrip(self, seeded_validation_db, tmp_path, monkeypatch):
+        from fastapi.testclient import TestClient
+
+        import ai_strategy_loop.dashboard.app as A
+
+        monkeypatch.setattr(A, "DECISIONS_FILE", str(tmp_path / "decisions.jsonl"))
+        client = TestClient(A.create_app())
+        r1 = client.post("/record_decision", json={"verdict": "hold", "note": "검증 추가 대기"})
+        assert r1.json()["status"] == "ok"
+        r2 = client.post("/record_decision", json={"verdict": "promote", "note": "OOS 통과"})
+        assert r2.json()["status"] == "ok"
+        hist = client.get("/decisions").json()
+        assert hist["count"] == 2
+        assert hist["decisions"][0]["verdict"] == "hold"  # append-only 순서 보존.
+        assert "ts" in hist["decisions"][0]
+
+    def test_invalid_verdict_rejected(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        monkeypatch.setattr(A, "DECISIONS_FILE", str(tmp_path / "d.jsonl"))
+        out = A._record_decision("yolo", "x")
+        assert out["status"] == "invalid"
+        assert A._decisions_payload()["count"] == 0  # 무효 입력은 기록 안 됨.
+
+
 class TestOpsStatus:
     """2026-06-11 — 운영 현황 라우트·run 정렬(최신 우선·running 최상단)."""
 
@@ -254,6 +282,133 @@ class TestOpsStatus:
         ids = [r["run_id"] for r in _runs_payload(None)["runs"]]
         assert ids[0] == "runV"  # running 최상단 + 최신 우선.
         assert ids.index("runV") < ids.index("runOld")
+
+
+class TestFreezeVerdictOosDiffCi:
+    """과업1(2026-06-12) — /freeze_verdict 응답에 oos_diff_ci 키 존재 + 기존 키 불변."""
+
+    def test_oos_diff_ci_key_present_and_existing_keys_intact(self, seeded_validation_db, monkeypatch):
+        """OOS run(run_id에 oos_2022·oos_2026 포함)이 있으면 oos_diff_ci 키가 등장한다.
+
+        양쪽 시리즈가 있으면 dict, csv_path 부재면 None — 둘 다 허용(값 None 허용 계약).
+        기존 키(lines·alerts·promote_checklist)는 반드시 유지.
+        """
+        from pathlib import Path
+
+        db = seeded_validation_db["db"]
+        # OOS run 2개 심기 — run_id가 oos_2022·oos_2026 패턴을 포함해야 쿼리에 걸린다.
+        csv_frozen_2022 = _make_trade_csv(Path(db).parent / "bt_frozen_2022.csv", [
+            ("20220103090100", "20220103090300", 1.5, 120000.0),
+            ("20220210090100", "20220210090300", 0.8, 60000.0),
+        ])
+        csv_seed_2022 = _make_trade_csv(Path(db).parent / "bt_seed_2022.csv", [
+            ("20220104090100", "20220104090300", 0.5, 40000.0),
+            ("20220211090100", "20220211090300", -0.3, -20000.0),
+        ])
+        st = LoopState(db_path=str(db), snapshot_dir=str(Path(db).parent / "s_oos"))
+        st.start_run(LoopConfig(), run_id="cldgen_oos_2022_ci_test")
+        st.record_generation(
+            "cldgen_oos_2022_ci_test", 0,
+            buy_name="SEED_B", sell_name="SEED_S", status="ok",
+            score=0.5, gate_passed=True, reason="ok", trade_count=2,
+            daily_avg_trades=0.1, mdd=5.0, profit=20000.0,
+            payoff_ratio=1.0, csv_path=csv_seed_2022, strategy_gist="BASE_SEED",
+        )
+        st.record_generation(
+            "cldgen_oos_2022_ci_test", 1,
+            buy_name="SEED_B", sell_name="SEED_S", status="ok",
+            score=0.8, gate_passed=True, reason="ok", trade_count=2,
+            daily_avg_trades=0.1, mdd=4.0, profit=180000.0,
+            payoff_ratio=1.5, csv_path=csv_frozen_2022, strategy_gist="FROZEN",
+        )
+        st.close()
+
+        from ai_strategy_loop.dashboard.app import _freeze_verdict_payload
+
+        out = _freeze_verdict_payload()
+        # oos_diff_ci 키 존재 — 값이 dict 또는 None 어느 쪽이든 허용(표본 부족 시 None).
+        assert "oos_diff_ci" in out, "oos_diff_ci 키가 응답에 없음"
+        ci_map = out["oos_diff_ci"]
+        assert isinstance(ci_map, dict)
+        # 2022 연도 항목이 등장하면 dict 구조를 확인한다.
+        if ci_map.get("2022") is not None:
+            ci = ci_map["2022"]
+            assert "total_diff" in ci
+            assert "ci_low" in ci
+            assert "ci_high" in ci
+            assert "p_diff_le_0" in ci
+        # 기존 키 불변.
+        assert isinstance(out.get("lines"), list)
+        assert isinstance(out.get("alerts"), list)
+        assert isinstance(out.get("promote_checklist"), list)
+
+    def test_oos_diff_ci_graceful_without_oos_runs(self, seeded_validation_db):
+        """OOS run이 없으면 oos_diff_ci 키 자체가 없거나 빈 dict — 예외 없이 통과."""
+        from ai_strategy_loop.dashboard.app import _freeze_verdict_payload
+
+        out = _freeze_verdict_payload()
+        # OOS run 없으면 키가 아예 없어도 되고, 있어도 빈 dict면 OK.
+        ci_map = out.get("oos_diff_ci", {})
+        assert isinstance(ci_map, dict)
+        assert isinstance(out.get("lines"), list)
+
+
+class TestPortfolioSim:
+    """과업2(2026-06-12) — /portfolio_sim 엔드포인트 계약."""
+
+    def test_two_runs_returns_portfolio_report(self, seeded_validation_db):
+        """ok 세대 csv_path를 가진 run 2개 → combined_total·combined_mdd·diversification_gain."""
+        from pathlib import Path
+
+        db = seeded_validation_db["db"]
+        # seeded_validation_db 에는 runV가 있고 gen0(csv_seed)·gen1(csv_cand)에 csv_path 있음.
+        # 두 번째 run을 추가한다.
+        csv_b = _make_trade_csv(Path(db).parent / "bt_runB.csv", [
+            ("20230110090100", "20230110090300", 2.0, 200000.0),
+            ("20240115090100", "20240115090300", -1.0, -80000.0),
+            ("20250120090100", "20250120090300", 1.5, 130000.0),
+        ])
+        st = LoopState(db_path=str(db), snapshot_dir=str(Path(db).parent / "s_psim"))
+        st.start_run(LoopConfig(), run_id="runB")
+        st.record_generation(
+            "runB", 0, buy_name="B_BUY", sell_name="B_SELL", status="ok",
+            score=1.2, gate_passed=True, reason="ok", trade_count=3,
+            daily_avg_trades=0.3, mdd=8.0, profit=250000.0,
+            payoff_ratio=1.6, csv_path=csv_b, strategy_gist="B_STRAT",
+        )
+        st.close()
+
+        from ai_strategy_loop.dashboard.app import _portfolio_sim_payload
+
+        out = _portfolio_sim_payload("runV,runB")
+        assert "error" not in out, f"예상치 못한 오류: {out.get('error')}"
+        assert "combined_total" in out
+        assert "combined_mdd" in out
+        assert "diversification_gain" in out
+        # 상관 행렬 존재 여부 — 날짜 겹침이 충분하면 등장한다(없으면 None 허용).
+        assert "correlation" in out
+
+    def test_one_run_returns_error(self, seeded_validation_db):
+        """유효 시리즈 1개 → portfolio_report의 error 응답을 200으로 반환한다."""
+        from ai_strategy_loop.dashboard.app import _portfolio_sim_payload
+
+        out = _portfolio_sim_payload("runV")
+        assert "error" in out
+
+    def test_empty_runs_returns_error(self, seeded_validation_db):
+        """빈 파라미터 → error 응답."""
+        from ai_strategy_loop.dashboard.app import _portfolio_sim_payload
+
+        out = _portfolio_sim_payload("")
+        assert "error" in out
+
+    def test_frontend_has_portfolio_sim_panel(self):
+        """research-lab.jsx에 결합 시뮬 패널·/portfolio_sim 라우트가 존재한다."""
+        src = (FRONTEND / "research-lab.jsx").read_text(encoding="utf-8")
+        assert "/portfolio_sim" in src
+        assert "결합 시뮬" in src
+        assert "combined_total" in src
+        assert "diversification_gain" in src
 
 
 class TestFrontendContract:
@@ -289,19 +444,28 @@ class TestFrontendContract:
         assert "동결상관" in src
         assert "기권(시드 유지)" in src
         lab = (FRONTEND / "lab.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260611k" in lab
+        assert "research-lab.jsx?v=20260612c" in lab
         assert "ResearchLabPanel" in lab
+        # Phase1/2(2026-06-11) — 사이드바·결정 페이지 계약.
+        assert "run 목록" in lab
+        assert "verdict.html" in lab
+        vd = (FRONTEND / "verdict.html").read_text(encoding="utf-8")
+        assert "/record_decision" in vd
+        assert "결정 이력" in vd
 
     def test_app_jsx_shows_run_label(self):
         src = (FRONTEND / "app.jsx").read_text(encoding="utf-8")
         assert 'r.label ? " · " + r.label : ""' in src
+        # Phase3-lite(2026-06-12) — 공통 네비(운영|연구|결정) 계약.
+        assert '/ui/lab.html' in src
+        assert '/ui/verdict.html' in src
 
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
-        assert "research-lab.jsx?v=20260611k" in src
-        # app.jsx는 2026-06-11 3탭 셸 도입(PR1·PR2 워크벤치)으로 v20260611b로 재범프됐다.
-        assert "app.jsx?v=20260611b" in src
+        assert "research-lab.jsx?v=20260612c" in src
+        # app.jsx는 3탭 셸(PR1~S3)과 부모 브랜치 작업 병합으로 v20260612d로 재범프됐다.
+        assert "app.jsx?v=20260612d" in src
         # 백테스트 워크벤치(PR2) — 차트 모듈이 backtest.jsx보다 먼저 로드돼야 한다.
         # 2단계 업그레이드(A/B 비교·몬테카를로·오더플로우·통계검정)로 v20260612c 재범프.
         assert "backtest-charts.jsx?v=20260612c" in src
@@ -314,3 +478,122 @@ class TestFrontendContract:
         # src= 속성 기준 비교(주석 내 파일명 언급에 걸리지 않게).
         assert src.index('src="vendor-lightweight-charts.js') < src.index('src="simulation-charts.jsx')
         assert src.index('src="simulation-charts.jsx') < src.index('src="simulation.jsx?')
+
+
+class TestRegimeReport:
+    """과업1(2026-06-12) — /regime_report 엔드포인트: 정상(tmp JSON) + 파일 부재."""
+
+    def test_returns_data_when_file_exists(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        regime_data = {
+            "THETA": {"active_months": 8, "active_profit": 1200000, "contracted_profit": 800000,
+                      "concentration": 0.72},
+            "SEED": {"active_months": 6, "active_profit": 900000, "contracted_profit": 600000},
+        }
+        evidence_dir = tmp_path / ".omo" / "evidence" / "tmap-walkforward"
+        evidence_dir.mkdir(parents=True)
+        regime_file = evidence_dir / "regime_report_20260612.json"
+        regime_file.write_text(__import__("json").dumps(regime_data), encoding="utf-8")
+
+        monkeypatch.setattr(A, "REPO_ROOT", str(tmp_path))
+        out = A._regime_report_payload()
+        assert "THETA" in out
+        assert out["THETA"]["active_profit"] == 1200000
+
+    def test_unavailable_when_no_file(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        monkeypatch.setattr(A, "REPO_ROOT", str(tmp_path))
+        out = A._regime_report_payload()
+        assert out["status"] == "unavailable"
+
+
+class TestRevivalRegistry:
+    """과업2(2026-06-12) — /revival_registry 엔드포인트: 정상(tmp JSON) + 파일 부재."""
+
+    def test_returns_data_when_file_exists(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        registry_data = {
+            "candidates": [
+                {"label": "C7_SEEDPLUS", "rejected_at": "2026-06-01", "reject_basis": "mdd>20%"},
+                {"label": "C8_TEST", "rejected_at": "2026-06-05", "reject_basis": "profit<0"},
+            ]
+        }
+        evidence_dir = tmp_path / ".omo" / "evidence" / "tmap-walkforward"
+        evidence_dir.mkdir(parents=True)
+        (evidence_dir / "rejected_registry.json").write_text(
+            __import__("json").dumps(registry_data), encoding="utf-8"
+        )
+
+        monkeypatch.setattr(A, "REPO_ROOT", str(tmp_path))
+        out = A._revival_registry_payload()
+        assert isinstance(out["candidates"], list)
+        assert len(out["candidates"]) == 2
+        assert out["candidates"][0]["label"] == "C7_SEEDPLUS"
+
+    def test_unavailable_when_no_file(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        monkeypatch.setattr(A, "REPO_ROOT", str(tmp_path))
+        out = A._revival_registry_payload()
+        assert out["status"] == "unavailable"
+
+
+class TestPipelineStatus:
+    """과업3(2026-06-12) — /pipeline_status 엔드포인트: 정상(tmp state.json들) + 디렉토리 없음."""
+
+    def test_returns_items_when_state_files_exist(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        pipeline_dir = tmp_path / ".omo" / "evidence" / "pipeline"
+        for prefix, stages in [
+            ("run_alpha", {"fetch": True, "backtest": True, "evaluate": False}),
+            ("run_beta",  {"fetch": True, "backtest": False, "evaluate": False}),
+        ]:
+            d = pipeline_dir / prefix
+            d.mkdir(parents=True)
+            (d / "state.json").write_text(
+                __import__("json").dumps(stages), encoding="utf-8"
+            )
+
+        monkeypatch.setattr(A, "REPO_ROOT", str(tmp_path))
+        out = A._pipeline_status_payload()
+        assert out["count"] == 2
+        prefixes = {item["prefix"] for item in out["items"]}
+        assert "run_alpha" in prefixes
+        assert "run_beta" in prefixes
+        alpha = next(item for item in out["items"] if item["prefix"] == "run_alpha")
+        assert alpha["stages"]["fetch"] is True
+        assert alpha["stages"]["evaluate"] is False
+
+    def test_empty_when_no_pipeline_dir(self, tmp_path, monkeypatch):
+        import ai_strategy_loop.dashboard.app as A
+
+        monkeypatch.setattr(A, "REPO_ROOT", str(tmp_path))
+        out = A._pipeline_status_payload()
+        assert out["items"] == []
+        assert out["count"] == 0
+
+
+class TestNewFrontendContract:
+    """과업1~3(2026-06-12) — 새 엔드포인트·패널 프런트 계약."""
+
+    def test_verdict_html_has_regime_and_revival_blocks(self):
+        src = (FRONTEND / "verdict.html").read_text(encoding="utf-8")
+        assert "/regime_report" in src
+        assert "레짐 분해 (advisory)" in src
+        assert "/revival_registry" in src
+        assert "패자부활 레지스트리" in src
+        assert "신규 데이터 도착 시 전수 자동 재검증" in src
+
+    def test_research_lab_has_pipeline_checkpoint_panel(self):
+        src = (FRONTEND / "research-lab.jsx").read_text(encoding="utf-8")
+        assert "/pipeline_status" in src
+        assert "파이프라인 체크포인트" in src
+        assert "_PipelineCheckpointPanel" in src
+
+    def test_lab_html_cache_bumped(self):
+        src = (FRONTEND / "lab.html").read_text(encoding="utf-8")
+        assert "research-lab.jsx?v=20260612c" in src

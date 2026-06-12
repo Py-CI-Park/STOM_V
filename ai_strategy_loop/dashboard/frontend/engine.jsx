@@ -268,16 +268,16 @@ function LiveBacktestChart({ state }) {
           현재 세대 백테스트 — Equity & Drawdown
         </div>
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-          <span style={{ fontSize: 10.5, color: "var(--ink-2)", fontFamily: "var(--mono)" }}>
+          <span style={{ fontSize: 13.5,  /* G-2(2026-06-11): 10.5 → 13.5 — 지표 가독성 상향. */ color: "var(--ink-2)", fontFamily: "var(--mono)" }}>
             <span style={{ color: lastPnl >= 0 ? "var(--teal)" : "var(--red)" }}>
               {lastPnl >= 0 ? "+" : "−"}{Math.abs(lastPnl).toLocaleString("ko-KR")}원
             </span>
             <span style={{ color: "var(--ink-3)" }}> ({lastPnlPct >= 0 ? "+" : ""}{lastPnlPct.toFixed(2)}%)</span>
           </span>
-          <span style={{ fontSize: 10.5, color: "var(--red)", fontFamily: "var(--mono)" }}>
+          <span style={{ fontSize: 13.5,  /* G-2(2026-06-11): 10.5 → 13.5 — 지표 가독성 상향. */ color: "var(--red)", fontFamily: "var(--mono)" }}>
             DD {lastDD.toFixed(2)}%
           </span>
-          <span style={{ fontSize: 10.5, color: "var(--ink-2)", fontFamily: "var(--mono)" }}>
+          <span style={{ fontSize: 13.5,  /* G-2(2026-06-11): 10.5 → 13.5 — 지표 가독성 상향. */ color: "var(--ink-2)", fontFamily: "var(--mono)" }}>
             trades {trades.length}
           </span>
         </div>

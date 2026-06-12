@@ -1937,7 +1937,7 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
         except Exception:  # noqa: BLE001
             return None
 
-    out: Dict[str, Any] = {"lines": [], "alerts": []}
+    out: Dict[str, Any] = {"lines": [], "alerts": [], "oos_diff_ci": {}}
     lines, alerts = out["lines"], out["alerts"]
 
     sel = _load(base_r, "p5-selected-candidate.json")
@@ -1977,16 +1977,24 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
         con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
         con.row_factory = sqlite3.Row
         try:
+            # 2026-06-12 — OOS run을 '현재 동결 후보'에 바인딩: 도전자 기각 후
+            #   최신 OOS(기각자 것)가 챔피언 결산에 섞여 표시되던 혼선 수정.
+            cand_buy = (out.get("selected") or {}).get("buy_name")
             for year in ("2022", "2026"):
                 rid_row = con.execute(
-                    "SELECT run_id FROM runs WHERE run_id LIKE ?"
-                    " ORDER BY started_at DESC LIMIT 1", (f"%oos_{year}%",),
+                    "SELECT r.run_id FROM runs r WHERE r.run_id LIKE ?"
+                    " AND EXISTS (SELECT 1 FROM generations g"
+                    "   WHERE g.run_id = r.run_id AND g.strategy_gist='FROZEN'"
+                    "   AND (? IS NULL OR g.buy_name = ?))"
+                    " ORDER BY r.started_at DESC LIMIT 1",
+                    (f"%oos_{year}%", cand_buy, cand_buy),
                 ).fetchone()
                 if rid_row is None:
                     continue
                 rows = {r["strategy_gist"]: r for r in con.execute(
-                    "SELECT strategy_gist, profit, mdd, trade_count FROM generations"
-                    " WHERE run_id=? AND status='ok'", (rid_row["run_id"],),
+                    "SELECT strategy_gist, profit, mdd, trade_count, csv_path"
+                    " FROM generations WHERE run_id=? AND status='ok'",
+                    (rid_row["run_id"],),
                 )}
                 fz, bs = rows.get("FROZEN"), rows.get("BASE_SEED")
                 if fz and bs:
@@ -2002,6 +2010,27 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
                         f"·MDD {fz['mdd']:.2f}) vs 시드 {bs['profit']:,.0f}"
                         f"(MDD {bs['mdd']:.2f})"
                     )
+                    # C1-OOS (2026-06-12) — 후보 vs 시드 OOS 차이 CI (advisory).
+                    # csv_path 부재·daily_pnl_series 실패·oos_diff_ci 실패는 None으로.
+                    try:
+                        from ai_strategy_loop.fitness.overfit_stats import (  # noqa: PLC0415
+                            daily_pnl_series,
+                            oos_diff_ci,
+                        )
+
+                        fz_csv = str(fz["csv_path"] or "")
+                        bs_csv = str(bs["csv_path"] or "")
+                        if fz_csv and bs_csv:
+                            fz_abs = fz_csv if os.path.isabs(fz_csv) else os.path.join(REPO_ROOT, fz_csv)
+                            bs_abs = bs_csv if os.path.isabs(bs_csv) else os.path.join(REPO_ROOT, bs_csv)
+                            fz_series = daily_pnl_series(fz_abs) or {}
+                            bs_series = daily_pnl_series(bs_abs) or {}
+                            ci = oos_diff_ci(fz_series, bs_series)
+                        else:
+                            ci = None
+                    except Exception:  # noqa: BLE001 - advisory: 어떤 예외도 기존 응답을 깨지 않는다.
+                        ci = None
+                    out["oos_diff_ci"][year] = ci
         finally:
             con.close()
     except Exception:  # noqa: BLE001
@@ -2151,6 +2180,61 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
         _check("V4 walk-forward", "pending", "")
     out["promote_checklist"] = checklist
     return out
+
+
+def _portfolio_sim_payload(run_ids_str: str) -> Dict[str, Any]:
+    """과업2(2026-06-12) — 복수 run의 최신 ok 세대를 균등 가중 결합해 포트폴리오 리포트.
+
+    각 run_id의 최신 ok 세대(csv_path 보유)에서 daily_pnl_series를 구성하고
+    portfolio_report를 호출한다. 유효 시리즈 2개 미만이면 portfolio_report의
+    {"error": ...}를 그대로 200으로 반환한다(advisory — 판정 미사용).
+    읽기 전용·무예외: 모든 예외는 {"error": ...}로 흡수한다.
+    """
+    import sqlite3  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+    run_ids = [r.strip() for r in run_ids_str.split(",") if r.strip()]
+    if not run_ids:
+        return {"error": "run_ids 파라미터가 비어 있습니다."}
+
+    try:
+        from ai_strategy_loop.fitness.overfit_stats import daily_pnl_series  # noqa: PLC0415
+        from ai_strategy_loop.fitness.portfolio import portfolio_report  # noqa: PLC0415
+
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        series: Dict[str, Dict[str, float]] = {}
+        try:
+            for run_id in run_ids:
+                # 최신 ok 세대 중 csv_path 보유한 것 1개.
+                row = con.execute(
+                    "SELECT gen_no, buy_name, strategy_gist, csv_path"
+                    " FROM generations"
+                    " WHERE run_id=? AND status='ok' AND csv_path IS NOT NULL AND csv_path != ''"
+                    " ORDER BY gen_no DESC LIMIT 1",
+                    (run_id,),
+                ).fetchone()
+                if row is None:
+                    continue
+                csv_path = str(row["csv_path"])
+                abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+                s = daily_pnl_series(abs_csv)
+                if s:
+                    label = (
+                        str(row["strategy_gist"] or "")
+                        or str(row["buy_name"] or "")
+                        or run_id
+                    )
+                    # 같은 run_id를 중복 제출해도 키가 유일하도록 run_id를 접두로.
+                    key = f"{run_id}:{label}"
+                    series[key] = s
+        finally:
+            con.close()
+
+        return portfolio_report(series)
+    except Exception as exc:  # noqa: BLE001 - advisory: 어떤 예외도 200으로 흡수.
+        return {"error": str(exc)}
 
 
 def _equity_curve_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
@@ -2320,6 +2404,58 @@ def _niche_compare_payload(run_ids: str = "") -> Dict[str, Any]:
     return out
 
 
+DECISIONS_FILE = os.path.join(REPO_ROOT, ".omo", "evidence", "decisions.jsonl")
+
+
+def _decisions_payload() -> Dict[str, Any]:
+    """F3/P-D(2026-06-11) — V6 운용 결정 이력(append-only jsonl) 읽기. 무예외."""
+    out: Dict[str, Any] = {"decisions": []}
+    try:
+        with open(DECISIONS_FILE, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if line:
+                    out["decisions"].append(json.loads(line))
+    except FileNotFoundError:
+        pass
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = str(exc)
+    out["count"] = len(out["decisions"])
+    return out
+
+
+def _record_decision(verdict: str, note: str) -> Dict[str, Any]:
+    """F3/P-D — V6 운용 결정을 기록한다(연구 거버넌스 — 유일한 쓰기 라우트).
+
+    append-only: 수정·삭제 없음(결정 번복도 새 레코드로 — 이력 보존).
+    현재 동결 후보 스냅샷을 함께 박제해 '무엇에 대한 결정'인지 고정한다.
+    """
+    if verdict not in ("promote", "complement", "hold", "reject"):
+        return {"status": "invalid",
+                "allowed": ["promote", "complement", "hold", "reject"]}
+    try:
+        candidate = None
+        try:
+            sel_path = os.path.join(
+                REPO_ROOT, ".omo/evidence/claude-condition-research-20260610",
+                "p5-selected-candidate.json")
+            with open(sel_path, encoding="utf-8") as fh:
+                sel = json.load(fh)
+            c = sel.get("selected_candidate") or {}
+            candidate = {"buy_name": c.get("buy_name"), "profit": c.get("profit"),
+                         "mdd": c.get("mdd"), "trade_count": c.get("trade_count")}
+        except Exception:  # noqa: BLE001 - 후보 스냅샷은 보조.
+            pass
+        record = {"ts": time.time(), "verdict": verdict, "note": (note or "")[:500],
+                  "candidate": candidate}
+        os.makedirs(os.path.dirname(DECISIONS_FILE), exist_ok=True)
+        with open(DECISIONS_FILE, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+        return {"status": "ok", "recorded": record}
+    except Exception as exc:  # noqa: BLE001
+        return {"status": "error", "error": str(exc)}
+
+
 def _entry_time_buckets(csv_path: str) -> set:
     """N6(2026-06-11) — per-trade CSV의 진입 시각 30분 버킷(HHMM) 집합.
 
@@ -2341,6 +2477,79 @@ def _entry_time_buckets(csv_path: str) -> set:
         }
     except Exception:  # noqa: BLE001 - advisory.
         return set()
+
+
+def _regime_report_payload() -> Dict[str, Any]:
+    """과업1(2026-06-12) — 레짐 분해 리포트(최신 regime_report_*.json 반환).
+
+    .omo/evidence/tmap-walkforward/regime_report_*.json 중 mtime 최신을 읽어
+    그대로 반환한다. 파일 없으면 {"status": "unavailable"}. 읽기 전용·무예외.
+    """
+    import glob as _glob  # noqa: PLC0415
+
+    pattern = os.path.join(REPO_ROOT, ".omo", "evidence", "tmap-walkforward",
+                           "regime_report_*.json")
+    try:
+        candidates = sorted(_glob.glob(pattern), key=os.path.getmtime, reverse=True)
+        if not candidates:
+            return {"status": "unavailable"}
+        with open(candidates[0], encoding="utf-8") as fh:
+            data = json.load(fh)
+        return data if isinstance(data, dict) else {"status": "unavailable"}
+    except Exception:  # noqa: BLE001
+        return {"status": "unavailable"}
+
+
+def _revival_registry_payload() -> Dict[str, Any]:
+    """과업2(2026-06-12) — 패자부활 레지스트리(rejected_registry.json 반환).
+
+    .omo/evidence/tmap-walkforward/rejected_registry.json을 읽어 그대로 반환한다.
+    파일 없으면 {"status": "unavailable"}. 읽기 전용·무예외.
+    """
+    path = os.path.join(REPO_ROOT, ".omo", "evidence", "tmap-walkforward",
+                        "rejected_registry.json")
+    try:
+        with open(path, encoding="utf-8") as fh:
+            data = json.load(fh)
+        return data if isinstance(data, dict) else {"status": "unavailable"}
+    except FileNotFoundError:
+        return {"status": "unavailable"}
+    except Exception:  # noqa: BLE001
+        return {"status": "unavailable"}
+
+
+def _pipeline_status_payload() -> Dict[str, Any]:
+    """과업3(2026-06-12) — 파이프라인 체크포인트 상태(state.json 순회).
+
+    .omo/evidence/pipeline/*/state.json 을 순회해 {prefix, stages, mtime} 목록을
+    mtime 최신순으로 반환한다. 디렉토리 없으면 빈 목록. 읽기 전용·무예외.
+    """
+    import glob as _glob  # noqa: PLC0415
+
+    pipeline_dir = os.path.join(REPO_ROOT, ".omo", "evidence", "pipeline")
+    out: Dict[str, Any] = {"items": [], "count": 0}
+    try:
+        state_files = _glob.glob(os.path.join(pipeline_dir, "*", "state.json"))
+        items: list = []
+        for sf in state_files:
+            try:
+                prefix = os.path.basename(os.path.dirname(sf))
+                mtime = os.path.getmtime(sf)
+                with open(sf, encoding="utf-8") as fh:
+                    stages = json.load(fh)
+                items.append({
+                    "prefix": prefix,
+                    "stages": stages if isinstance(stages, dict) else {},
+                    "mtime": round(mtime, 1),
+                })
+            except Exception:  # noqa: BLE001 - 개별 파일 실패는 skip.
+                continue
+        items.sort(key=lambda x: x["mtime"], reverse=True)
+        out["items"] = items
+        out["count"] = len(items)
+    except Exception:  # noqa: BLE001
+        pass
+    return out
 
 
 def create_app() -> FastAPI:
@@ -2462,6 +2671,31 @@ def create_app() -> FastAPI:
         """
         return _freeze_verdict_payload()
 
+    @app.get("/portfolio_sim")
+    def portfolio_sim(runs: str = "") -> Dict[str, Any]:
+        """과업2(2026-06-12) — 복수 run 균등 가중 결합 시뮬(advisory).
+
+        쿼리: ?runs=run1,run2[,run3...]. 각 run의 최신 ok 세대 일별 손익으로
+        portfolio_report를 호출한다. 유효 시리즈 2개 미만이면 {"error": ...} 200.
+        읽기 전용·무예외·판정 미사용.
+        """
+        return _portfolio_sim_payload(runs)
+
+    @app.get("/regime_report")
+    def regime_report() -> Dict[str, Any]:
+        """과업1(2026-06-12) — 레짐 분해 리포트(최신 regime_report_*.json 반환). 읽기 전용·무예외."""
+        return _regime_report_payload()
+
+    @app.get("/revival_registry")
+    def revival_registry() -> Dict[str, Any]:
+        """과업2(2026-06-12) — 패자부활 레지스트리(rejected_registry.json 반환). 읽기 전용·무예외."""
+        return _revival_registry_payload()
+
+    @app.get("/pipeline_status")
+    def pipeline_status() -> Dict[str, Any]:
+        """과업3(2026-06-12) — 파이프라인 체크포인트 상태(.omo/evidence/pipeline/*/state.json). 읽기 전용·무예외."""
+        return _pipeline_status_payload()
+
     @app.get("/niche_compare")
     def niche_compare(run_ids: str = "") -> Dict[str, Any]:
         """D3(2026-06-11) — 니치 지도 비교(미지정 시 최근 tmap run 자동 발굴)."""
@@ -2471,6 +2705,17 @@ def create_app() -> FastAPI:
     def equity_curve(run_id: str = "", gen_no: int = 0) -> Dict[str, Any]:
         """E2/D4(2026-06-11) — 세대 누적 수익곡선(일별·다운샘플). 읽기 전용·무예외."""
         return _equity_curve_payload(run_id, gen_no)
+
+    @app.get("/decisions")
+    def decisions() -> Dict[str, Any]:
+        """F3/P-D — V6 운용 결정 이력. 읽기 전용·무예외."""
+        return _decisions_payload()
+
+    @app.post("/record_decision")
+    def record_decision(payload: Dict[str, Any]) -> Dict[str, Any]:
+        """F3/P-D — V6 운용 결정 기록(promote|complement|hold|reject, append-only)."""
+        return _record_decision(str(payload.get("verdict") or ""),
+                                str(payload.get("note") or ""))
 
     @app.get("/tmap_grid")
     def tmap_grid(run_id: str = "") -> Dict[str, Any]:

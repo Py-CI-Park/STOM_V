@@ -15,19 +15,79 @@
   <script src="vendor-babel.js?v=20260603a"></script>
 </head>
 <body>
-  <!-- E1(2026-06-11) — Research Lab 전용 풀페이지: /ui/lab.html (북마크 가능).
-       메인 대시보드의 라이브 영역 없이 연구 패널만 전체 폭으로 띄운다. -->
+  <!-- Phase1(2026-06-11) — 사이드바(실행 중·결산 요약·run 목록) + 메인 작업영역.
+       run 종류 뱃지(G-3)·결정 페이지 링크 포함. -->
   <div id="root">
     <div style="padding:40px;font-family:system-ui,sans-serif;color:#9fb0c0;background:#0c1014;min-height:100vh;">
       Research Lab 로딩 중… (지속 시 Ctrl+Shift+R)
     </div>
   </div>
 
-  <script type="text/babel" src="research-lab.jsx?v=20260611k"></script>
+  <script type="text/babel" src="research-lab.jsx?v=20260612c"></script>
   <script type="text/babel">
+    /* G-3 — run 종류 뱃지(접두 휴리스틱). */
+    const RUN_KIND = id =>
+      id.startsWith("tmap2") ? "격자" :
+      id.startsWith("tmap") ? "지도" :
+      id.startsWith("wf_") ? "전진" :
+      id.includes("placebo") ? "대조" :
+      id.includes("oos") ? "OOS" :
+      (id.includes("reeval") || id.includes("combo")) ? "재평가" :
+      id.includes("multiseed") ? "발굴" : "루프";
+
+    function Sidebar({ runs, runId, setRunId, ops, verdict }) {
+      const active = (ops && ops.active) || [];
+      return (
+        <div style={{ width: 280, flexShrink: 0, paddingRight: 12, overflowY: "auto",
+                      maxHeight: "calc(100vh - 24px)",
+                      borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+          <div className="research-empty">실행 중</div>
+          {active.length === 0
+            ? <div className="mono" style={{ fontSize: 11 }}>없음</div>
+            : active.map(a => (
+              <div key={a.run_id} className="mono" style={{ fontSize: 11, marginBottom: 4 }}>
+                🔄 {a.run_id}
+                <div style={{ opacity: 0.65 }}>
+                  {a.gens}세대 · {a.health === "active" ? "진행 중" : "⚠️ 정체 의심"}
+                </div>
+              </div>
+            ))}
+          {ops && ops.batch_queue && (
+            <div className="mono" style={{ fontSize: 10.5, opacity: 0.7, marginTop: 2 }}>
+              큐: {ops.batch_queue.stages_done}단계 완료 · {ops.batch_queue.current_template || "—"}
+            </div>
+          )}
+
+          {verdict && (verdict.lines || []).length > 0 && (
+            <div style={{ marginTop: 10 }}>
+              <div className="research-empty">
+                검증 결산 요약{(verdict.alerts || []).length ? ` · ⚠️${verdict.alerts.length}` : ""}
+              </div>
+              {verdict.lines.slice(0, 2).map((l, i) => (
+                <div key={i} className="mono" style={{ fontSize: 10.5, opacity: 0.85 }}>{l}</div>
+              ))}
+            </div>
+          )}
+
+          <div className="research-empty" style={{ marginTop: 10 }}>run 목록 (최신순)</div>
+          {runs.map(r => (
+            <div key={r.run_id} onClick={() => setRunId(r.run_id)} className="mono"
+                 style={{ fontSize: 11, padding: "3px 5px", cursor: "pointer", borderRadius: 4,
+                          background: r.run_id === runId ? "rgba(90,140,200,0.25)" : "transparent" }}>
+              <span style={{ opacity: 0.55 }}>[{RUN_KIND(r.run_id)}]</span>
+              {r.status === "running" ? " 🔄 " : " "}{r.run_id}
+              {r.label ? <div style={{ opacity: 0.5, fontSize: 10 }}>{r.label}</div> : null}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
     function LabRoot() {
       const [runs, setRuns] = React.useState([]);
       const [runId, setRunId] = React.useState("");
+      const [ops, setOps] = React.useState(null);
+      const [verdict, setVerdict] = React.useState(null);
       React.useEffect(() => {
         fetch("/runs", { signal: AbortSignal.timeout(10000) })
           .then(r => (r.ok ? r.json() : null))
@@ -35,24 +95,27 @@
             const list = ((d && d.runs) || []).slice(0, 40);
             setRuns(list);
             if (list.length) setRunId(prev => prev || list[0].run_id);
-          })
-          .catch(() => {});
+          }).catch(() => {});
+        fetch("/freeze_verdict", { signal: AbortSignal.timeout(12000) })
+          .then(r => (r.ok ? r.json() : null)).then(j => setVerdict(j)).catch(() => {});
+        const pull = () => fetch("/ops_status", { signal: AbortSignal.timeout(8000) })
+          .then(r => (r.ok ? r.json() : null)).then(j => setOps(j)).catch(() => {});
+        pull();
+        const timer = setInterval(pull, 10000);
+        return () => clearInterval(timer);
       }, []);
       return (
-        <div style={{ padding: "12px 18px", minHeight: "100vh" }}>
-          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
-            <b style={{ fontSize: 15 }}>STOM Research Lab</b>
-            <select value={runId} onChange={e => setRunId(e.target.value)}
-                    style={{ maxWidth: 420 }}>
-              {runs.map(r => (
-                <option key={r.run_id} value={r.run_id}>
-                  {r.run_id + (r.status === "running" ? " 🔄" : "") + (r.label ? " · " + r.label : "")}
-                </option>
-              ))}
-            </select>
-            <a href="/ui/" style={{ marginLeft: "auto", color: "#7ab", fontSize: 12 }}>← 메인 대시보드</a>
+        <div style={{ display: "flex", gap: 14, padding: "12px 16px", minHeight: "100vh" }}>
+          <Sidebar runs={runs} runId={runId} setRunId={setRunId} ops={ops} verdict={verdict} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+              <b style={{ fontSize: 15 }}>STOM Research Lab</b>
+              <span className="mono" style={{ marginLeft: 10, fontSize: 11, opacity: 0.7 }}>{runId}</span>
+              <a href="/ui/" style={{ marginLeft: "auto", color: "#7ab", fontSize: 12 }}>운영</a>
+              <a href="/ui/verdict.html" style={{ marginLeft: 12, color: "#7ab", fontSize: 12 }}>결정</a>
+            </div>
+            <ResearchLabPanel baseUrl={window.location.origin} wsStatus="na" runId={runId} />
           </div>
-          <ResearchLabPanel baseUrl={window.location.origin} wsStatus="na" runId={runId} />
         </div>
       );
     }

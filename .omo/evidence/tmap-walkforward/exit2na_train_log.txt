@@ -1,0 +1,7 @@
+[BATCH] run_id=exit2na_train_20260612 pairs=4
+[BATCH] prepare status=ok back_count=2285 elapsed=275s
+[BATCH] gen0 BASE_SEED ok profit=8,631,199 mdd=17.44 trades=307 daily=0.40 payoff=1.4861642479780424 gate=True reason=ok (145s)
+[BATCH] gen1 EXIT2NA cap2500+e2take5 ok profit=11,252,124 mdd=6.97 trades=265 daily=0.40 payoff=1.3043499921178845 gate=True reason=ok (146s)
+[BATCH] gen2 EXIT2NA cap2500+e2take6 ok profit=11,230,126 mdd=6.55 trades=265 daily=0.40 payoff=1.3591019739989156 gate=True reason=ok (145s)
+[BATCH] gen3 EXIT2NA cap2500+e2take7 ok profit=11,433,184 mdd=6.69 trades=265 daily=0.40 payoff=1.3701161154989563 gate=True reason=ok (147s)
+[BATCH] done

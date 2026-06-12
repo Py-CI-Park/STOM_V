@@ -134,6 +134,12 @@ function App() {
                 autonomous_strategy_loop · contract_v{health.contract_version ?? state.contract_version ?? 1}
               </span>
             </div>
+            {/* Phase3-lite(2026-06-12) — 공통 네비: 운영(현재)|연구|결정. */}
+            <nav className="mono" style={{ display: "flex", gap: 10, marginLeft: 14, fontSize: 12 }}>
+              <span style={{ color: "var(--ink-2)" }}>운영</span>
+              <a href="/ui/lab.html" style={{ color: "var(--blue, #7ab)" }}>연구</a>
+              <a href="/ui/verdict.html" style={{ color: "var(--blue, #7ab)" }}>결정</a>
+            </nav>
           </div>
 
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>

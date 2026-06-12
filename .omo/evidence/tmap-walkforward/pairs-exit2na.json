@@ -1,0 +1,22 @@
+[
+  {
+    "label": "BASE_SEED",
+    "buy": "Tick_B_902_905_Update_2",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "EXIT2NA cap2500+e2take5",
+    "buy": "EXIT2C_00_B",
+    "sell": "EXIT2C_00_S"
+  },
+  {
+    "label": "EXIT2NA cap2500+e2take6",
+    "buy": "EXIT2NA_06_B",
+    "sell": "EXIT2NA_06_S"
+  },
+  {
+    "label": "EXIT2NA cap2500+e2take7",
+    "buy": "EXIT2C_01_B",
+    "sell": "EXIT2C_01_S"
+  }
+]

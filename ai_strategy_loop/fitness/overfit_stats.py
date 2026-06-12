@@ -302,6 +302,79 @@ def block_bootstrap_daily(
 
 
 # ---------------------------------------------------------------------------
+# C1-OOS (2026-06-12) — 후보 vs 시드 OOS 차이의 블록 부트스트랩 신뢰구간
+# ---------------------------------------------------------------------------
+
+def oos_diff_ci(
+    candidate_daily: Dict[str, float],
+    seed_daily: Dict[str, float],
+    *,
+    n_boot: int = 2000,
+    block: int = 5,
+    seed: int = 42,
+) -> Optional[Dict[str, object]]:
+    """후보와 시드의 일별 손익 차이(candidate−seed)에 대한 블록 부트스트랩 신뢰구간.
+
+    공통 날짜 합집합(없는 날 0.0)으로 차이 시리즈를 구성하고, block_bootstrap_daily와
+    같은 블록 리샘플 방식으로 n_boot회 합계 분포를 만들어 CI를 반환한다.
+    advisory 전용 — 판정·게이트·생성 경로에 일절 관여하지 않는다.
+
+    Args:
+        candidate_daily: 후보 일별 손익 {YYYYMMDD: pnl} (daily_pnl_series 산출물과 같은 형식).
+        seed_daily:      시드 일별 손익 {YYYYMMDD: pnl}.
+        n_boot:          재추출 횟수 (기본 2000).
+        block:           블록 길이(거래일). 기본 5(1주) — 레짐 군집 보존.
+        seed:            결정론 시드. 같은 입력이면 같은 출력을 보장한다.
+
+    Returns:
+        {total_diff, ci_low(2.5%), ci_high(97.5%), p_diff_le_0(합계≤0 비율),
+         n_days, n_boot, block,
+         note: "advisory — 판정 미사용. CI가 0을 크게 걸치면 표본 부족 신호"}
+        공통 날짜 수 n_days < 5이면 None (advisory — 판정을 막지 않는다).
+    """
+    # 날짜 합집합: 없는 날은 0으로 채운다.
+    all_days = sorted(set(candidate_daily) | set(seed_daily))
+    diff = np.asarray(
+        [candidate_daily.get(d, 0.0) - seed_daily.get(d, 0.0) for d in all_days],
+        dtype=float,
+    )
+    T = diff.size
+    if T < 5:
+        return None
+
+    total_diff = float(diff.sum())
+
+    # block_bootstrap_daily와 동일한 블록 리샘플 방식(np.random.default_rng).
+    rng = np.random.default_rng(seed)
+    n_blocks_needed = int(math.ceil(T / block))
+    max_start = T - block
+    if max_start < 0:
+        # 블록 크기가 전체 길이보다 크면 블록 = T 로 폴백.
+        block = T
+        max_start = 0
+        n_blocks_needed = 1
+    starts = rng.integers(0, max_start + 1, size=(n_boot, n_blocks_needed))
+
+    totals = np.empty(n_boot)
+    for i in range(n_boot):
+        sample = np.concatenate(
+            [diff[s : s + block] for s in starts[i]]
+        )[:T]
+        totals[i] = sample.sum()
+
+    return {
+        "total_diff": round(total_diff, 2),
+        "ci_low": round(float(np.percentile(totals, 2.5)), 2),
+        "ci_high": round(float(np.percentile(totals, 97.5)), 2),
+        "p_diff_le_0": round(float((totals <= 0).mean()), 4),
+        "n_days": int(T),
+        "n_boot": int(n_boot),
+        "block": int(block),
+        "note": "advisory — 판정 미사용. CI가 0을 크게 걸치면 표본 부족 신호",
+    }
+
+
+# ---------------------------------------------------------------------------
 # R7 (2026-06-11) — 후보 간 일별 손익 상관 (포트폴리오/앙상블 재료)
 # ---------------------------------------------------------------------------
 

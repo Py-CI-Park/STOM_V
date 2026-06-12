@@ -160,6 +160,40 @@ function _RecencyResearchBadge({ recency }) {
   );
 }
 
+/* 과업3(2026-06-12) — 파이프라인 체크포인트 소형 패널.
+   /pipeline_status → {items:[{prefix, stages:{stage:bool,...}, mtime},...]}
+   prefix별로 단계 체크리스트(done=✅/미완=·) 1줄씩, 최대 5개. */
+function _PipelineCheckpointPanel({ baseUrl, isDemo }) {
+  const [items, setItems] = useState_rl(null);
+  useEffect_rl(() => {
+    if (isDemo || !baseUrl) return;
+    fetch(baseUrl + "/pipeline_status", { signal: AbortSignal.timeout(8000) })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => setItems(j && Array.isArray(j.items) ? j.items : []))
+      .catch(() => {});
+  }, [baseUrl, isDemo]);
+
+  if (!items || items.length === 0) return null;
+  return (
+    <div style={{ marginTop: 10 }}>
+      <div className="research-empty">파이프라인 체크포인트</div>
+      {items.slice(0, 5).map((item, i) => {
+        const stages = item.stages || {};
+        const stageList = Object.entries(stages);
+        return (
+          <div key={i} className="mono" style={{ fontSize: 11, marginTop: 2 }}>
+            <b>{item.prefix}</b>
+            {" · "}
+            {stageList.length === 0
+              ? "단계 없음"
+              : stageList.map(([k, v]) => (v ? "✅" : "·") + k).join("  ")}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* D1/D2/D4(2026-06-10) — 검증 패널: 연도 분해 · 선택기 미리보기 · 부검 요약.
    읽기 전용 GET 3종(/run_yearly /selector_preview /autopsy)만 소비한다.
    근거: 원인5(연도별 쇠퇴는 합계로 안 보임)·원인1(기준-목표 비정합을 눈으로 확인). */
@@ -208,6 +242,21 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
       .then(j => setNiche(j))
       .catch(e => setErr(String(e)));
   }, [baseUrl, isDemo]);
+
+  /* 과업2(2026-06-12) — 포트폴리오 결합 시뮬 v0 균등가중. */
+  const [psimRun1, setPsimRun1] = useState_rl("");
+  const [psimRun2, setPsimRun2] = useState_rl("");
+  const [psim, setPsim] = useState_rl(null);
+  const fetchPsim = useCallback_rl(() => {
+    if (isDemo || !baseUrl) return;
+    const r1 = psimRun1.trim(), r2 = psimRun2.trim();
+    if (!r1 || !r2) return;
+    fetch(baseUrl + "/portfolio_sim?runs=" + encodeURIComponent(r1 + "," + r2),
+          { signal: AbortSignal.timeout(15000) })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => setPsim(j))
+      .catch(e => setErr(String(e)));
+  }, [baseUrl, isDemo, psimRun1, psimRun2]);
 
   const [verdict, setVerdict] = useState_rl(null);  /* 검증 결산 — V1~V5 종합. */
 
@@ -593,6 +642,63 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
       {grid && grid.count === 0 && (
         <div className="mono" style={{ fontSize: 11 }}>격자 run 아님(--grid 스윕 run_id를 입력하세요)</div>
       )}
+
+      {/* 과업3(2026-06-12) — 파이프라인 체크포인트 패널 */}
+      <_PipelineCheckpointPanel baseUrl={baseUrl} isDemo={isDemo} />
+
+      {/* 과업2(2026-06-12) — 결합 시뮬(v0 균등가중) advisory 패널 */}
+      <div style={{ marginTop: 10 }}>
+        <div className="research-empty">결합 시뮬 (v0 균등가중) — advisory. 판정 미사용.</div>
+        <div className="research-controls" style={{ marginTop: 4 }}>
+          <label>
+            <span>run 1</span>
+            <input type="text" value={psimRun1} placeholder="run_id"
+                   list="rl-run-options"
+                   onChange={e => setPsimRun1(e.target.value)} style={{ width: 180 }} />
+          </label>
+          <label>
+            <span>run 2</span>
+            <input type="text" value={psimRun2} placeholder="run_id"
+                   list="rl-run-options"
+                   onChange={e => setPsimRun2(e.target.value)} style={{ width: 180 }} />
+          </label>
+          <button type="button" className="research-tab" onClick={fetchPsim}>결합 시뮬 실행</button>
+        </div>
+        {psim && !psim.error && (
+          <div style={{ marginTop: 6 }}>
+            <div className="mono" style={{ fontSize: 11 }}>
+              결합 총손익: <b>{Math.round(psim.combined_total || 0).toLocaleString()}</b>
+              {" · "}결합 MDD: <b>{Math.round(psim.combined_mdd || 0).toLocaleString()}</b>
+              {psim.diversification_gain != null
+                ? ` · 분산이득: ${(psim.diversification_gain * 100).toFixed(1)}%`
+                : ""}
+            </div>
+            {psim.correlation && Array.isArray(psim.correlation.labels) && (
+              <table className="mono" style={{ fontSize: 11, marginTop: 4 }}>
+                <thead>
+                  <tr>
+                    <th>상관</th>
+                    {psim.correlation.labels.map(l => <th key={l}>{l.split(":")[0]}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {psim.correlation.labels.map((row, i) => (
+                    <tr key={row}>
+                      <th>{row.split(":")[0]}</th>
+                      {(psim.correlation.matrix[i] || []).map((v, j) => (
+                        <td key={j}>{v.toFixed(2)}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+        {psim && psim.error && (
+          <div className="mono" style={{ fontSize: 11, color: "#c95" }}>{psim.error}</div>
+        )}
+      </div>
     </div>
   );
 }
