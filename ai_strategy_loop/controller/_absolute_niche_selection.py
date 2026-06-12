@@ -48,7 +48,7 @@ class NicheMetricEntry:
     """gen_no별 니치 자격 측정치 (N6/F1 실측값 주입).
 
     corr_vs_frozen:      동결 후보와의 일별 수익 상관계수 (None이면 미측정).
-    time_bucket_overlap: 진입 시간버킷 비중첩 여부 False=겹침, True=비중첩 (None이면 미측정).
+    time_bucket_overlap: 진입 시간버킷 겹침 여부 — True=겹침, False=비중첩(자격 충족) (None이면 미측정).
     """
 
     corr_vs_frozen: float | None
