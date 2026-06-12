@@ -121,6 +121,17 @@ def _validate_back_db_override(raw: str) -> Optional[str]:
     return None
 
 
+def _gated_json_path(raw: Any) -> Optional[str]:
+    """JSON 입력 경로(param_space·sweep_params)를 시세 DB 와 동일 allowlist 로 검증한다.
+
+    빈 값/미지정은 None(미사용). allowlist(_database/·state/) 밖이면 None(호출측이 error
+    페이로드로 변환). _validate_back_db_override 와 동일 게이트 — 임의 절대경로 차단.
+    """
+    if not raw or not str(raw).strip():
+        return None
+    return _validate_back_db_override(str(raw).strip())
+
+
 # --------------------------------------------------------------- strategy CRUD
 @backtest_router.get("/strategies")
 def list_strategies(kind: str = "buy") -> Dict[str, Any]:
@@ -426,17 +437,20 @@ def run_backtest(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
                     "message": "back_db_override 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
                 }
         mode = str(payload.get("mode", "backtest") or "backtest").strip() or "backtest"
-        param_space = None
-        if payload.get("param_space"):
-            raw_ps = str(payload["param_space"]).strip()
-            param_space = _validate_back_db_override(raw_ps)
-            # param_space 도 시세 DB allowlist 와 동일 루트(_database/·state/)로 제한한다
-            #   (임의 절대경로 JSON 읽기 차단 — back_db_override 와 동일 위생 게이트).
-            if param_space is None:
-                return {
-                    "status": "error",
-                    "message": "param_space 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
-                }
+        # param_space(optimize·wfo)·sweep_params(sweep param) 은 동일 allowlist(_database/·state/)
+        #   로 게이트한다 — 임의 절대경로 JSON 읽기 차단(back_db_override 와 동일 위생).
+        param_space = _gated_json_path(payload.get("param_space"))
+        if payload.get("param_space") and param_space is None:
+            return {
+                "status": "error",
+                "message": "param_space 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
+            }
+        sweep_params = _gated_json_path(payload.get("sweep_params"))
+        if payload.get("sweep_params") and sweep_params is None:
+            return {
+                "status": "error",
+                "message": "sweep_params 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
+            }
         spec = BacktestJobSpec(
             buy=str(payload.get("buy", "") or "").strip(),
             sell=str(payload.get("sell", "") or "").strip(),
@@ -452,6 +466,12 @@ def run_backtest(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
             param_space=param_space,
             opt_method=str(payload.get("opt_method", "grid") or "grid").strip() or "grid",
             opt_objective=str(payload.get("opt_objective", "tpi") or "tpi").strip() or "tpi",
+            train_window_days=int(payload.get("train_window_days", 0) or 0),
+            test_window_days=int(payload.get("test_window_days", 0) or 0),
+            step_days=int(payload.get("step_days", 0) or 0),
+            sweep_action=str(payload.get("sweep_action", "param") or "param").strip() or "param",
+            sweep_params=sweep_params,
+            window_days=int(payload.get("window_days", 0) or 0),
         )
     except (TypeError, ValueError) as exc:
         return {"status": "error", "message": f"잘못된 파라미터: {exc}"}
@@ -537,6 +557,18 @@ def get_result(
         return {"available": False, "job_id": job_id}
     status = record.get("status")
     csv_path = record.get("csv_path")
+    spec = record.get("spec") or {}
+    mode = str(spec.get("mode", "backtest") or "backtest")
+    # wfo/sweep 모드 — csv 단일 분석 대신 구조화 결과(윈도우별/조합별 표)를 반환한다.
+    if mode in ("wfo", "sweep"):
+        return {
+            "available": True,
+            "job_id": job_id,
+            "status": status,
+            "mode": mode,
+            "mode_result": record.get("mode_result"),
+            "message": record.get("message", ""),
+        }
     # no_trades 는 csv_path 없이 정상 종결 — 빈 분석 구조를 반환한다.
     if status == "no_trades":
         return {
@@ -942,6 +974,74 @@ def compare_jobs(job_a: str = "", job_b: str = "") -> Dict[str, Any]:
         "b": b,
         "delta": _compare_delta(a, b),
     }
+
+
+# --------------------------------------------------------------------- overlay
+# 다중 잡 오버레이 입력 개수 경계(2~4). 1개는 오버레이 의미 없음, 과다는 곡선 가독성 저하.
+_OVERLAY_MIN = 2
+_OVERLAY_MAX = 4
+
+
+def _overlay_series(job_id: str) -> Optional[Dict[str, Any]]:
+    """단일 잡 → 오버레이 시계열 {job_id, label, summary, cumulative}. 없으면 None(무예외).
+
+    cumulative 는 결과 CSV 의 거래일축 누적수익곡선(equity_series.cumulative). 프론트가
+    정규화 토글로 첫 포인트 기준 상대화하거나 원시 누적손익으로 그린다.
+    """
+    if not job_id:
+        return None
+    manager = get_job_manager()
+    record = manager.get(job_id, log_tail=0)
+    if not record.get("available"):
+        return None
+    csv_path = manager.result_csv_path(job_id)
+    trades = analysis.load_trades_csv(csv_path)
+    summary = analysis.summary_metrics(trades)
+    spec = record.get("spec") or {}
+    label = f"{spec.get('buy', '')}·{job_id[:8]}" if spec.get("buy") else job_id[:12]
+    return {
+        "job_id": job_id,
+        "label": label,
+        "status": record.get("status"),
+        "summary": summary,
+        "cumulative": analysis.equity_series(trades).get("cumulative", []),
+    }
+
+
+@backtest_router.get("/overlay")
+def overlay_jobs(job_ids: str = "") -> Dict[str, Any]:
+    """다중 잡(2~4) 수익곡선 오버레이 — 각 잡 누적수익곡선 + summary(범례/정규화는 프론트).
+
+    job_ids: 쉼표구분 job_id 목록(2~4). 각 잡을 거래일축 누적수익곡선으로 해석해 한 화면에
+    겹쳐 그릴 시리즈를 반환한다. 개수 경계 위반/해석 실패는 무예외 error 페이로드(HTTP 200,
+    대시보드 컨벤션). 정규화(첫 포인트 0 기준)는 프론트 토글이 처리한다(원시 곡선 그대로 전달).
+    """
+    ids = [s.strip() for s in str(job_ids or "").split(",") if s.strip()]
+    # 중복 제거(입력 순서 유지).
+    seen: Set[str] = set()
+    unique_ids = [i for i in ids if not (i in seen or seen.add(i))]
+    if not (_OVERLAY_MIN <= len(unique_ids) <= _OVERLAY_MAX):
+        return {
+            "status": "error",
+            "message": f"오버레이는 {_OVERLAY_MIN}~{_OVERLAY_MAX}개 잡이 필요합니다(받음: {len(unique_ids)}).",
+            "series": [],
+        }
+    series: List[Dict[str, Any]] = []
+    failed: List[str] = []
+    for jid in unique_ids:
+        got = _overlay_series(jid)
+        if got is None:
+            failed.append(jid)
+        else:
+            series.append(got)
+    if len(series) < _OVERLAY_MIN:
+        return {
+            "status": "error",
+            "message": f"유효한 잡이 {_OVERLAY_MIN}개 미만입니다(해석 실패: {failed}).",
+            "series": series,
+            "failed": failed,
+        }
+    return {"status": "ok", "series": series, "count": len(series), "failed": failed}
 
 
 # ------------------------------------------------------------------- portfolio
