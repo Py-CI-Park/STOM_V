@@ -166,6 +166,92 @@ function _simFmtDate(d) {
 }
 
 // ===========================================================================
+// 1b. 시장 미니맵 — 그날 종목을 등락율 색상 타일 그리드로(상승 빨강/하락 파랑 농도).
+//     타일 클릭 → 선택 토글(최대 4). 선택 타일 테두리 강조. 검색 필터와 공존.
+// ===========================================================================
+// 등락율(%) → 타일 배경색. 상승=빨강 계열, 하락=파랑 계열, 0=중립 회색. 농도는 |등락|로.
+function _simTileColor(pct) {
+  const v = Number(pct) || 0;
+  const mag = Math.min(1, Math.abs(v) / 12);   // ±12% 에서 최대 농도 포화.
+  const a = 0.12 + mag * 0.7;
+  if (v > 0) return `rgba(255,93,108,${a.toFixed(3)})`;   // 상승 빨강(--red 계열).
+  if (v < 0) return `rgba(56,140,255,${a.toFixed(3)})`;   // 하락 파랑.
+  return "rgba(150,158,170,0.14)";                         // 보합 중립.
+}
+
+function SimMarketMinimap({ stocks, selected, onToggleStock, query, isDemo, date, loading }) {
+  // 검색 필터와 공존 — 컨트롤바와 동일 규칙(코드/이름 부분일치).
+  const tiles = useMemo_sim(() => {
+    const q = (query || "").trim().toLowerCase();
+    const base = stocks || [];
+    if (!q) return base;
+    return base.filter(s =>
+      (s.code || "").toLowerCase().includes(q) || (s.name || "").toLowerCase().includes(q));
+  }, [stocks, query]);
+
+  let body;
+  if (isDemo) {
+    body = <div className="research-empty">데모 모드 — 백엔드 연결 시 시장 미니맵이 표시됩니다.</div>;
+  } else if (!date) {
+    body = <div className="research-empty">날짜를 먼저 선택하세요.</div>;
+  } else if (loading) {
+    body = <div className="research-empty">미니맵 로딩 중…</div>;
+  } else if (tiles.length === 0) {
+    body = <div className="research-empty">{query ? "검색 결과 없음" : "종목이 없습니다"}</div>;
+  } else {
+    body = (
+      <div style={{
+        display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(74px, 1fr))",
+        gap: 4, maxHeight: 240, overflowY: "auto",
+      }}>
+        {tiles.map(s => {
+          const active = selected.includes(s.code);
+          const atCap = !active && selected.length >= _SIM_MAX_CODES;
+          const pct = Number(s.last_change_pct) || 0;
+          return (
+            <button key={s.code} onClick={() => onToggleStock(s.code)} disabled={atCap}
+              title={s.code + " · " + (s.name || "") + " · " + (pct > 0 ? "+" : "") + pct.toFixed(2) + "%"}
+              style={{
+                display: "flex", flexDirection: "column", gap: 1, padding: "5px 6px",
+                borderRadius: 5, textAlign: "left", overflow: "hidden",
+                border: "1.5px solid " + (active ? "var(--teal)" : "transparent"),
+                background: _simTileColor(pct),
+                cursor: atCap ? "not-allowed" : "pointer", opacity: atCap ? 0.45 : 1,
+                boxShadow: active ? "0 0 0 1px var(--teal-dim) inset" : "none",
+              }}>
+              <span style={{
+                fontSize: 10.5, color: "var(--ink-1)", fontWeight: active ? 600 : 400,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {s.name || s.code}
+              </span>
+              <span className="mono" style={{ fontSize: 10, color: pct >= 0 ? "#ffd2d6" : "#cfe0ff" }}>
+                {pct > 0 ? "+" : ""}{pct.toFixed(2)}%
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--red)" }}></span>
+          시장 미니맵
+        </div>
+        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>
+          {selected.length}/{_SIM_MAX_CODES} 선택 · 등락순
+        </span>
+      </div>
+      <div className="panel-bd" style={{ padding: "8px 10px" }}>{body}</div>
+    </div>
+  );
+}
+
+// ===========================================================================
 // 2. 재생 컨트롤 — ▶/⏸/⏹, 배속, 진행 슬라이더(seek), 현재 시각.
 // ===========================================================================
 function SimPlaybackBar({
@@ -379,6 +465,7 @@ function SimulationTab({ baseUrl, wsStatus }) {
             t: m.t, o: it.o, h: it.h, l: it.l, c: it.c, vol: it.vol,
             change: it.change, strength: it.strength,
             ma5: it.ma5, ma20: it.ma20, ma60: it.ma60, imbalance: it.imbalance,
+            buy_rest: it.buy_rest, sell_rest: it.sell_rest,
           });
         });
         setCursor((m.index || 0) + 1);
@@ -538,8 +625,14 @@ function SimulationTab({ baseUrl, wsStatus }) {
             stockQuery={stockQuery} onStockQuery={setStockQuery} loadingStocks={loadingStocks}
             buy={buy} onBuy={setBuy} sell={sell} onSell={setSell} strategies={strategies}
             aggSec={aggSec} onAggSec={setAggSec} />
+          <SimMarketMinimap
+            stocks={stocks} selected={selected} onToggleStock={toggleStock}
+            query={stockQuery} isDemo={isDemo} date={date} loading={loadingStocks} />
           {codes.length > 0 && (status !== "idle" || cursor > 0) && (
             <SimIndicatorTable codes={codes} barsByCode={barsByCode} nameByCode={nameByCode} />
+          )}
+          {codes.length > 0 && (status !== "idle" || cursor > 0) && (
+            <SimVariableWatch codes={codes} barsByCode={barsByCode} nameByCode={nameByCode} />
           )}
           {(buy && sell) && (
             <SimLearningPanel autoPause={autoPause} onToggleAutoPause={() => setAutoPause(v => !v)}
@@ -745,6 +838,174 @@ function SimLearningPanel({ autoPause, onToggleAutoPause, signals, curT, highlig
               </button>
             );
           })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// 변수 워치 패널 — 현재 프레임 값 + 사용자 임계 비교(≥/≤). 충족 행 녹색/미충족 적색,
+//   충족 순간 1회 플래시. 임계 세트는 localStorage 저장(조건식 코드 평가는 범위 외 —
+//   엔진 정합 신호는 /sim/signals 가 담당). 단일 종목(첫 선택) 기준.
+// ===========================================================================
+// 워치 가능한 변수 정의(키·라벨·소수 자릿수). buy/sell_rest 는 None 가능(부재 시 —).
+const _SIM_WATCH_VARS = [
+  { key: "c", label: "현재가", digits: 0 },
+  { key: "change", label: "등락율", digits: 2 },
+  { key: "strength", label: "체결강도", digits: 0 },
+  { key: "ma5", label: "MA5", digits: 0 },
+  { key: "ma20", label: "MA20", digits: 0 },
+  { key: "ma60", label: "MA60", digits: 0 },
+  { key: "imbalance", label: "호가불균형", digits: 2 },
+  { key: "buy_rest", label: "매수총잔량", digits: 0 },
+  { key: "sell_rest", label: "매도총잔량", digits: 0 },
+];
+
+const _SIM_WATCH_LS_KEY = "stom.sim.watch.v1";
+
+function _loadWatchThresholds() {
+  try {
+    const raw = window.localStorage.getItem(_SIM_WATCH_LS_KEY);
+    const obj = raw ? JSON.parse(raw) : null;
+    return (obj && typeof obj === "object") ? obj : {};
+  } catch (e) { return {}; }
+}
+
+function _saveWatchThresholds(map) {
+  try { window.localStorage.setItem(_SIM_WATCH_LS_KEY, JSON.stringify(map || {})); } catch (e) {}
+}
+
+// 임계 충족 평가 — 값/임계 유효할 때만. {met:bool|null} (null=미설정/무값).
+function _evalWatch(value, th) {
+  if (!th || th.value === "" || th.value == null) return null;
+  if (value == null) return null;
+  const v = Number(value), t = Number(th.value);
+  if (!isFinite(v) || !isFinite(t)) return null;
+  return th.op === "<=" ? v <= t : v >= t;
+}
+
+function SimVariableWatch({ codes, barsByCode, nameByCode }) {
+  // 임계 맵: key → {op:">="|"<=", value:string}. localStorage 동기화.
+  const [thresholds, setThresholds] = useState_sim(_loadWatchThresholds);
+  // 워치 대상 종목(첫 선택). 다종목이어도 워치는 1종목 집중(직관·과밀 방지).
+  const [watchCode, setWatchCode] = useState_sim((codes && codes[0]) || "");
+  // 직전 충족 상태(플래시 트리거용) — ref 로 들고 리렌더 유발 안 함.
+  const prevMetRef = useRef_sim({});
+
+  // codes 변경 시 워치 종목 보정(현재 선택이 사라지면 첫 종목으로).
+  useEffect_sim(() => {
+    if (!codes || codes.length === 0) return;
+    if (!codes.includes(watchCode)) setWatchCode(codes[0]);
+  }, [codes.join(",")]);
+
+  const setTh = useCallback_sim((key, patch) => {
+    setThresholds(prev => {
+      const cur = prev[key] || { op: ">=", value: "" };
+      const next = { ...prev, [key]: { ...cur, ...patch } };
+      _saveWatchThresholds(next);
+      return next;
+    });
+  }, []);
+
+  const clearAll = useCallback_sim(() => {
+    setThresholds({}); _saveWatchThresholds({}); prevMetRef.current = {};
+  }, []);
+
+  const arr = barsByCode[watchCode] || [];
+  const bar = arr.length ? arr[arr.length - 1] : null;
+
+  // 충족 상태 스냅샷 갱신(플래시는 prev→met 전환 시 1회).
+  useEffect_sim(() => {
+    const snap = {};
+    _SIM_WATCH_VARS.forEach(v => {
+      snap[v.key] = bar ? _evalWatch(bar[v.key], thresholds[v.key]) : null;
+    });
+    prevMetRef.current = snap;
+  });
+
+  const prevMet = prevMetRef.current;
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--amber)" }}></span>
+          변수 워치
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {codes && codes.length > 1 && (
+            <select className="select" value={watchCode} onChange={e => setWatchCode(e.target.value)}
+                    style={{ fontSize: 10.5, padding: "2px 6px", height: "auto" }}>
+              {codes.map(c => <option key={c} value={c}>{nameByCode[c] || c}</option>)}
+            </select>
+          )}
+          <button className="btn ghost sm" onClick={clearAll} style={{ fontSize: 10, padding: "2px 7px" }}>
+            임계 초기화
+          </button>
+        </div>
+      </div>
+      <div className="panel-bd" style={{ padding: "6px 8px" }}>
+        {!bar ? (
+          <div className="research-empty" style={{ fontSize: 10.5 }}>재생을 시작하면 현재 값이 표시됩니다.</div>
+        ) : (
+          <table className="sim-live-table" style={{ width: "100%" }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: "left" }}>변수</th>
+                <th>현재값</th>
+                <th style={{ width: 44 }}>조건</th>
+                <th style={{ width: 76 }}>임계값</th>
+              </tr>
+            </thead>
+            <tbody>
+              {_SIM_WATCH_VARS.map(v => {
+                const value = bar[v.key];
+                const th = thresholds[v.key] || { op: ">=", value: "" };
+                const met = _evalWatch(value, th);
+                const was = prevMet[v.key];
+                // 미설정 → 무색. 충족 → 녹/미충족 → 적. 막 충족(was≠true & met) → 플래시.
+                const rowBg = met == null ? "transparent"
+                  : met ? "rgba(76,214,179,0.10)" : "rgba(255,93,108,0.10)";
+                const flash = (met === true && was !== true) ? "sim-flash-up" : "";
+                const valTxt = value == null ? "—" : _simFmtNum(value, v.digits);
+                return (
+                  <tr key={v.key} className={flash} style={{ background: rowBg }}>
+                    <td style={{ textAlign: "left", color: "var(--ink-1)" }}>{v.label}</td>
+                    <td className="mono" style={{
+                      color: met == null ? "var(--ink-1)" : met ? "var(--teal)" : "var(--red)",
+                    }}>
+                      {valTxt}
+                    </td>
+                    <td>
+                      <select value={th.op} onChange={e => setTh(v.key, { op: e.target.value })}
+                              className="mono" style={{
+                                fontSize: 11, padding: "1px 2px", background: "var(--bg-0)",
+                                color: "var(--ink-1)", border: "1px solid var(--line-1)", borderRadius: 4,
+                              }}>
+                        <option value=">=">≥</option>
+                        <option value="<=">≤</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input type="number" value={th.value}
+                             onChange={e => setTh(v.key, { value: e.target.value })}
+                             placeholder="—" className="mono"
+                             style={{
+                               width: "100%", fontSize: 11, padding: "2px 4px", textAlign: "right",
+                               background: "var(--bg-0)", color: "var(--ink-1)",
+                               border: "1px solid var(--line-1)", borderRadius: 4,
+                             }} />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+        <div style={{ fontSize: 9.5, color: "var(--ink-3)", marginTop: 6, lineHeight: 1.5 }}>
+          임계는 현재 프레임 값과의 단순 비교다. 조건식 엔진 정합 매매 신호는
+          위 <span style={{ color: "var(--teal)" }}>매수/매도 조건식</span> 선택 시 차트에 오버레이된다.
         </div>
       </div>
     </div>

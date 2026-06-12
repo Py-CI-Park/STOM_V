@@ -20,8 +20,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, TypedDict
 
 from fastapi import APIRouter, Body, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse
 
 from ai_strategy_loop.dashboard import backtest_analysis as analysis
+from ai_strategy_loop.dashboard import backtest_report as report
 from ai_strategy_loop.dashboard.backtest_jobs import BacktestJobSpec, get_job_manager
 
 # 라이브 잡 WS push 간격(초)·로그 테일 줄 수.
@@ -33,6 +35,13 @@ _JOB_TERMINAL = ("success", "no_trades", "error", "timeout", "cancelled", "stale
 _PACKAGE_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = _PACKAGE_DIR.parent
 _DATABASE_DIR = REPO_ROOT / "_database"
+
+# back_db_override(#36) allowlist 루트 — 이 두 디렉토리 하위 경로만 시세 DB 교체에
+#   허용한다(임의 절대경로로 하드링크 보호 시세 DB 영역 밖을 가리키는 것을 차단).
+_BACK_DB_ALLOW_ROOTS = (
+    _DATABASE_DIR.resolve(),
+    (_PACKAGE_DIR / "state").resolve(),
+)
 
 # 운영 strategy.db / 시세 통합 back-DB(읽기전용).
 _STRATEGY_DB = _DATABASE_DIR / "strategy.db"
@@ -87,6 +96,28 @@ def _connect_ro(db_path: Path) -> Optional[sqlite3.Connection]:
         return sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True)
     except sqlite3.Error:
         return None
+
+
+def _validate_back_db_override(raw: str) -> Optional[str]:
+    """back_db_override(#36) 경로를 allowlist 로 검증한다. 위반이면 None.
+
+    _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용한다(임의 절대경로 차단).
+    symlink/.. 우회를 막기 위해 resolve 후 root 의 하위인지 확인한다. 비ASCII/존재
+    여부는 보지 않는다(경로 위치만 게이트 — 실제 존재 검사는 잡 매니저가 수행).
+    """
+    if not raw or not raw.strip():
+        return None
+    try:
+        candidate = Path(raw.strip()).resolve()
+    except (OSError, ValueError, RuntimeError):
+        return None
+    for root in _BACK_DB_ALLOW_ROOTS:
+        try:
+            candidate.relative_to(root)
+            return str(candidate)
+        except ValueError:
+            continue
+    return None
 
 
 # --------------------------------------------------------------- strategy CRUD
@@ -306,9 +337,16 @@ def run_backtest(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
         divid_mode = str(payload.get("divid_mode", "") or "").strip() or (
             "한종목 로딩" if one_code else "종목코드별 분류"
         )
-        back_db_override = (
-            str(payload["back_db_override"]).strip() if payload.get("back_db_override") else None
-        )
+        back_db_override = None
+        if payload.get("back_db_override"):
+            raw_override = str(payload["back_db_override"]).strip()
+            back_db_override = _validate_back_db_override(raw_override)
+            # #36: allowlist(_database/ · ai_strategy_loop/state/) 밖이면 무예외 error.
+            if back_db_override is None:
+                return {
+                    "status": "error",
+                    "message": "back_db_override 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
+                }
         spec = BacktestJobSpec(
             buy=str(payload.get("buy", "") or "").strip(),
             sell=str(payload.get("sell", "") or "").strip(),
@@ -523,6 +561,154 @@ def compare_jobs(job_a: str = "", job_b: str = "") -> Dict[str, Any]:
         "b": b,
         "delta": _compare_delta(a, b),
     }
+
+
+# --------------------------------------------------------------------- report
+def _period_label(start: Any, end: Any) -> str:
+    """잡 spec/세대의 시작·종료를 'YYYYMMDD~YYYYMMDD' 라벨로(없으면 '—')."""
+    s = str(start or "").strip()
+    e = str(end or "").strip()
+    if s and e:
+        return f"{s}~{e}"
+    return s or e or "—"
+
+
+def _report_payload_for_job(
+    job_id: str, t_start: Optional[int], t_end: Optional[int]
+) -> Optional[Dict[str, Any]]:
+    """완료 잡 → render_report payload. 잡 없음이면 None(404 대신 에러 HTML 은 호출측)."""
+    manager = get_job_manager()
+    record = manager.get(job_id, log_tail=0)
+    if not record.get("available"):
+        return None
+    status = record.get("status")
+    spec = record.get("spec") or {}
+    csv_path = record.get("csv_path")
+    bundle = analysis.full_analysis(csv_path, t_start, t_end)
+    trades = analysis.filter_trades(analysis.load_trades_csv(csv_path), t_start, t_end)
+    mc = analysis.monte_carlo(trades, n=2000)
+    ranged = t_start is not None or t_end is not None
+    note = ""
+    if status == "no_trades":
+        note = "거래 0건 — 전략이 해당 기간에 매수 신호를 내지 않았습니다(메트릭 없음)."
+    elif not csv_path:
+        note = "결과 CSV 가 없어 메트릭 요약만 표시합니다."
+    return {
+        "meta": {
+            "title": f"백테스트 리포트 · {spec.get('buy', '')}",
+            "buy": spec.get("buy"),
+            "sell": spec.get("sell"),
+            "period": _period_label(spec.get("start"), spec.get("end")),
+            "source": f"job:{job_id}" + (" (구간)" if ranged else ""),
+            "trade_count": bundle["summary"]["trade_count"],
+            "status": status,
+            "note": note,
+        },
+        "metrics": bundle["summary"] if ranged else (record.get("metrics") or bundle["summary"]),
+        "analysis": bundle,
+        "montecarlo": mc,
+    }
+
+
+def _report_payload_for_run(run_id: str, gen_no: int) -> Optional[Dict[str, Any]]:
+    """loop_runs.db(읽기전용) 세대 → render_report payload. 세대 없음이면 None.
+
+    csv_path 존재 시 같은 풀 분석 리포트. CSV 부재 시 generations 행의
+    trade_count/profit/mdd 등으로 축약 리포트(무예외).
+    """
+    from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+
+    row: Optional[Dict[str, Any]] = None
+    st: Optional[LoopState] = None
+    try:
+        st = LoopState()
+        for r in st.get_generations(run_id):
+            if int(r.get("gen_no", -1)) == int(gen_no):
+                row = r
+                break
+    except Exception:  # noqa: BLE001 - DB 없거나 조회 실패면 None(무예외).
+        return None
+    finally:
+        if st is not None:
+            try:
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
+    if row is None:
+        return None
+
+    raw_csv = row.get("csv_path")
+    csv_path = None
+    if raw_csv:
+        csv_path = raw_csv if os.path.isabs(raw_csv) else os.path.join(str(REPO_ROOT), raw_csv)
+        if not os.path.isfile(csv_path):
+            csv_path = None
+
+    base_meta = {
+        "title": f"세대 리포트 · {run_id} / g{gen_no}",
+        "buy": row.get("buy_name"),
+        "sell": row.get("sell_name"),
+        "period": "—",
+        "source": f"run:{run_id} gen:{gen_no}",
+    }
+    if csv_path:
+        bundle = analysis.full_analysis(csv_path)
+        trades = analysis.load_trades_csv(csv_path)
+        mc = analysis.monte_carlo(trades, n=2000)
+        return {
+            "meta": {**base_meta, "trade_count": bundle["summary"]["trade_count"], "note": ""},
+            "metrics": bundle["summary"],
+            "analysis": bundle,
+            "montecarlo": mc,
+        }
+    # CSV 부재 — generations 행 메트릭으로 축약 리포트(메트릭 카드만).
+    fallback_metrics = {
+        "trade_count": row.get("trade_count"),
+        "total_profit_krw": row.get("profit"),
+        "total_profit_pct": row.get("total_profit_pct"),
+        "max_drawdown_pct": row.get("mdd"),
+        "payoff_ratio": row.get("payoff_ratio"),
+    }
+    return {
+        "meta": {
+            **base_meta,
+            "trade_count": row.get("trade_count"),
+            "note": "결과 CSV 가 없어 세대 메트릭 요약만 표시합니다(차트/분석 생략).",
+        },
+        "metrics": fallback_metrics,
+        "analysis": {},
+        "montecarlo": None,
+    }
+
+
+@backtest_router.get("/report")
+def backtest_report_html(
+    job_id: str = "",
+    t_start: Optional[int] = None,
+    t_end: Optional[int] = None,
+    run_id: str = "",
+    gen_no: Optional[int] = None,
+) -> HTMLResponse:
+    """자급자족 HTML 리포트(외부 리소스 0). job_id 또는 run_id+gen_no 로 호출.
+
+    - job_id: 완료 잡의 전체 분석+몬테카를로 리포트(t_start/t_end 로 구간 한정 가능).
+    - run_id+gen_no: loop_runs.db 세대의 csv_path 로 같은 리포트, CSV 부재 시 축약.
+    잡/세대를 못 찾으면 안내 HTML(200)을 반환한다(무예외 — 대시보드 새 탭이 소비).
+    """
+    payload: Optional[Dict[str, Any]] = None
+    if job_id:
+        payload = _report_payload_for_job(job_id, t_start, t_end)
+    elif run_id and gen_no is not None:
+        payload = _report_payload_for_run(run_id, int(gen_no))
+    if payload is None:
+        notice = {
+            "meta": {
+                "title": "리포트를 생성할 수 없습니다",
+                "note": "해당 job_id 또는 run_id/gen_no 의 결과를 찾을 수 없습니다.",
+            }
+        }
+        return HTMLResponse(content=report.render_report(notice), status_code=200)
+    return HTMLResponse(content=report.render_report(payload), status_code=200)
 
 
 # --------------------------------------------------------------------- live WS

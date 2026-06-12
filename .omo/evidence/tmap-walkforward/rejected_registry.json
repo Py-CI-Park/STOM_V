@@ -2,6 +2,15 @@
   "_doc": "S4 패자부활 레지스트리 (2026-06-12 신설) — 동결-기각자는 삭제가 아니라 등재된다. 신규(미접촉) 데이터 도착 시 gen_revival_pairs.py가 전수(선별 없는) 재검증 배치를 생성한다. 같은 데이터 재선택 금지와 양립: 새 데이터·전원 자동·사람 선택 개입 없음.",
   "rejected": [
     {
+      "label": "REVIVAL C7 SEEDPLUS",
+      "buy": "CLDGEN_0610_C7_SEEDPLUS_B",
+      "sell": "Tick_S_902_905_Update_2",
+      "frozen_at": "2026-06-10",
+      "rejected_at": "2026-06-10",
+      "reject_basis": "고정 OOS 2026 -229,360(시드 -191,109보다 약함) — 프로그램 최초 대형 OOS 흑자(2022 +1,712,130)였으나 REJECT. 레지스트리 신설(6/12) 시 누락돼 보완 등재",
+      "train": {"profit": 2347400, "mdd": 16.52, "window": "2023-2025"}
+    },
+    {
       "label": "REVIVAL EXIT2C take9",
       "buy": "EXIT2C_02_B",
       "sell": "EXIT2C_02_S",
@@ -9,6 +18,15 @@
       "rejected_at": "2026-06-11",
       "reject_basis": "고정 OOS 2026 -70,903 + maxMDD 20.14 위배 (결정 카드 §7b)",
       "train": {"profit": 12319055, "mdd": 6.23, "window": "2023-2025"}
+    },
+    {
+      "label": "REVIVAL PA-NICHE g9",
+      "buy": "AILOOP_run_1779754848_g12_buy",
+      "sell": "AILOOP_run_1779754848_g12_sell",
+      "frozen_at": "2026-06-12",
+      "rejected_at": "2026-06-12",
+      "reject_basis": "고정 OOS 2022 +174,771(시드의 8%, payoff 0.91<1.05) + 2026 -309,706(시드 열위) — P-A absolute_niche_v1 1호 동결자. 저MDD는 일반화·수익은 붕괴(M5 생존편향 4번째 실증)",
+      "train": {"profit": 1877320, "mdd": 9.62, "window": "2023-2025"}
     },
     {
       "label": "REVIVAL EXIT2NA take6",

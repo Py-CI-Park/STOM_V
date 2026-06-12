@@ -160,8 +160,10 @@ def _load_code_rows(
     """한 종목의 candle 행을 시간순 dict 리스트로 로드한다(읽기전용·무예외).
 
     각 행: {ts(int index), o,h,l,c, vol(거래량 추정=매수+매도수량), change, strength,
-            imbalance(호가불균형=매수총잔량/매도총잔량 — 컬럼 부재 시 None)}.
-    호가불균형 컬럼(매수총잔량/매도총잔량)은 PRAGMA 로 존재를 확인 후 가용할 때만 읽는다.
+            imbalance(호가불균형=매수총잔량/매도총잔량 — 컬럼 부재 시 None),
+            buy_rest(매수총잔량 raw), sell_rest(매도총잔량 raw) — 컬럼 부재 시 None}.
+    호가잔량 컬럼(매수총잔량/매도총잔량)은 PRAGMA 로 존재를 확인 후 가용할 때만 읽는다.
+    imbalance 와 raw 잔량은 같은 컬럼을 공유한다(중복 조회 없음).
     """
     cols = _table_columns(con, code)
     if _COL_INDEX not in cols:
@@ -202,6 +204,8 @@ def _load_code_rows(
             "strength": _safe_float(r[6]),
             "vol": buy_qty + sell_qty,
             "imbalance": _imbalance(r[9], r[10]) if has_imbalance else None,
+            "buy_rest": _safe_float(r[9]) if has_imbalance else None,
+            "sell_rest": _safe_float(r[10]) if has_imbalance else None,
         })
     return rows
 
@@ -254,6 +258,7 @@ def _aggregate_tick(rows: List[Dict[str, Any]], agg_sec: int) -> List[Dict[str, 
                 "o": r["c"], "h": max(r["c"], r["h"]), "l": min(r["c"], r["l"] or r["c"]),
                 "c": r["c"], "vol": r["vol"], "change": r["change"], "strength": r["strength"],
                 "imbalance": r.get("imbalance"),
+                "buy_rest": r.get("buy_rest"), "sell_rest": r.get("sell_rest"),
             }
             for r in rows
         ]
@@ -269,6 +274,7 @@ def _aggregate_tick(rows: List[Dict[str, Any]], agg_sec: int) -> List[Dict[str, 
                 "hms": b, "o": price, "h": price, "l": price, "c": price,
                 "vol": r["vol"], "change": r["change"], "strength": r["strength"],
                 "imbalance": r.get("imbalance"),
+                "buy_rest": r.get("buy_rest"), "sell_rest": r.get("sell_rest"),
             }
             order.append(b)
         else:
@@ -279,6 +285,9 @@ def _aggregate_tick(rows: List[Dict[str, Any]], agg_sec: int) -> List[Dict[str, 
             cur["change"] = r["change"]
             cur["strength"] = r["strength"]
             cur["imbalance"] = r.get("imbalance")
+            # 잔량은 스냅샷(누적 아님) — 버킷 마지막 값으로 대표(imbalance·strength 와 동일).
+            cur["buy_rest"] = r.get("buy_rest")
+            cur["sell_rest"] = r.get("sell_rest")
     return [buckets[b] for b in order]
 
 
@@ -297,6 +306,8 @@ def _min_bars(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             "change": r["change"],
             "strength": r["strength"],
             "imbalance": r.get("imbalance"),
+            "buy_rest": r.get("buy_rest"),
+            "sell_rest": r.get("sell_rest"),
         })
     return out
 
@@ -325,8 +336,10 @@ def _attach_moving_averages(bars: List[Dict[str, Any]]) -> None:
 class ReplayData:
     """리플레이 1세션의 메모리 자료구조 — 코드별 시계열 + 병합된 시간축.
 
-    frames: List[{t:int HHMMSS, items:[{code,o,h,l,c,vol,change,strength}...]}].
+    frames: List[{t:int HHMMSS, items:[{code,o,h,l,c,vol,change,strength,
+                  ma5,ma20,ma60,imbalance,buy_rest,sell_rest}...]}].
     동일 t 슬롯의 종목 bar 들은 같은 frame 에 묶인다. seek 은 t→frame 인덱스 점프.
+    buy_rest/sell_rest 는 raw 호가총잔량(컬럼 부재 시 None — 하위호환).
     """
 
     def __init__(
@@ -424,6 +437,7 @@ def load_replay(
                 "vol": bar["vol"], "change": bar["change"], "strength": bar["strength"],
                 "ma5": bar.get("ma5"), "ma20": bar.get("ma20"), "ma60": bar.get("ma60"),
                 "imbalance": bar.get("imbalance"),
+                "buy_rest": bar.get("buy_rest"), "sell_rest": bar.get("sell_rest"),
             })
         if items:
             frames.append({"t": t, "items": items})

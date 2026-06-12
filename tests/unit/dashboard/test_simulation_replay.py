@@ -277,7 +277,7 @@ class TestMovingAverages:
     def test_ma_present_in_frame_schema(self, synthetic_ma_db):
         rd = RE.load_replay(20250103, "min", ["005930"], agg_sec=10)
         item = rd.frames[0]["items"][0]
-        for key in ("ma5", "ma20", "ma60", "imbalance"):
+        for key in ("ma5", "ma20", "ma60", "imbalance", "buy_rest", "sell_rest"):
             assert key in item
 
 
@@ -297,3 +297,54 @@ class TestImbalance:
         rd = RE.load_replay(20250102, "min", ["005930"], agg_sec=10)
         for f in rd.frames:
             assert f["items"][0]["imbalance"] is None
+
+
+class TestRawRestQuantities:
+    """raw 호가총잔량(buy_rest/sell_rest) — imbalance 와 같은 컬럼 공유, 가용/부재 분기."""
+
+    def test_rest_raw_values_when_columns_present(self, synthetic_imbalance_db):
+        rd = RE.load_replay(20250104, "min", ["005930"], agg_sec=10)
+        items = [f["items"][0] for f in rd.frames]
+        # 매수총잔량 raw: 300, 250, 250 / 매도총잔량 raw: 200, 100, 0.
+        assert [it["buy_rest"] for it in items] == [300.0, 250.0, 250.0]
+        assert [it["sell_rest"] for it in items] == [200.0, 100.0, 0.0]
+
+    def test_rest_present_even_when_imbalance_none(self, synthetic_imbalance_db):
+        # 셋째 행: 매도총잔량=0 → imbalance 는 None 이지만 raw 잔량은 그대로 보존.
+        rd = RE.load_replay(20250104, "min", ["005930"], agg_sec=10)
+        third = rd.frames[2]["items"][0]
+        assert third["imbalance"] is None
+        assert third["buy_rest"] == 250.0
+        assert third["sell_rest"] == 0.0
+
+    def test_rest_none_when_columns_absent(self, synthetic_min_db):
+        # 총잔량 컬럼 부재 → buy_rest/sell_rest 전부 None(하위호환).
+        rd = RE.load_replay(20250102, "min", ["005930"], agg_sec=10)
+        for f in rd.frames:
+            assert f["items"][0]["buy_rest"] is None
+            assert f["items"][0]["sell_rest"] is None
+
+    def test_tick_rest_carries_last_value_in_bucket(self, monkeypatch, tmp_path):
+        # tick agg 버킷은 잔량 스냅샷의 마지막 값을 대표로 싣는다.
+        db_dir = tmp_path / "_database"
+        db_dir.mkdir()
+        tick_cols = _TICK_COLS + ["매도총잔량", "매수총잔량"]
+        con = sqlite3.connect(str(db_dir / "stock_tick_20250105.db"))
+        con.execute('CREATE TABLE moneytop ("index" INTEGER, "x" TEXT)')
+        coldef = ", ".join(f'"{c}" REAL' for c in tick_cols)
+        con.execute(f'CREATE TABLE "005930" ("index" INTEGER, {coldef})')
+        ph = ", ".join("?" for _ in range(len(tick_cols) + 1))
+        # 09:00:00, :03, :07 → 한 버킷(agg 10s). 마지막(=:07) 매수총잔량=330, 매도총잔량=110.
+        rows = [
+            (20250105090000, 100.0, 99.0, 102.0, 98.0, 0.0, 1000.0, 100.0, 10.0, 5.0, 200.0, 300.0),
+            (20250105090003, 101.0, 100.0, 103.0, 99.0, 1.0, 1100.0, 101.0, 10.0, 5.0, 150.0, 320.0),
+            (20250105090007, 102.0, 101.0, 104.0, 100.0, 2.0, 1200.0, 102.0, 10.0, 5.0, 110.0, 330.0),
+        ]
+        con.executemany(f'INSERT INTO "005930" VALUES ({ph})', rows)
+        con.commit()
+        con.close()
+        monkeypatch.setattr(RE, "_DATABASE_DIR", db_dir)
+        rd = RE.load_replay(20250105, "tick", ["005930"], agg_sec=10)
+        bar0 = rd.frames[0]["items"][0]
+        assert bar0["buy_rest"] == 330.0
+        assert bar0["sell_rest"] == 110.0
