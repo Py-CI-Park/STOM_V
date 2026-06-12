@@ -470,6 +470,13 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB 
     onResult && onResult(jobId);
   };
 
+  // 자급자족 HTML 리포트를 새 탭으로 연다(외부 리소스 0 — /bt/report 가 완성 HTML 반환).
+  const openReport = (jobId) => {
+    if (isDemo || !baseUrl || !jobId) return;
+    const url = baseUrl + "/bt/report?job_id=" + encodeURIComponent(jobId);
+    try { window.open(url, "_blank", "noopener"); } catch (e) {}
+  };
+
   const fillName = (setter) => (e) => setter(e.target.value);
   const pct = activeJob ? Math.round((activeJob.progress || 0) * 100) : 0;
 
@@ -570,6 +577,10 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB 
               {(activeJob.status === "success" || activeJob.status === "no_trades") && (
                 <button className="btn ghost sm" onClick={() => pickJob(activeJob.job_id)}>결과 보기</button>
               )}
+              {(activeJob.status === "success" || activeJob.status === "no_trades") && (
+                <button className="btn ghost sm" onClick={() => openReport(activeJob.job_id)}
+                        title="자급자족 HTML 리포트를 새 탭으로 열기">📄 리포트</button>
+              )}
               {(activeJob.log_tail && activeJob.log_tail.length > 0) && (
                 <button className="btn ghost sm" onClick={() => setShowLog(s => !s)}>
                   {showLog ? "로그 접기" : "로그 보기"}
@@ -628,6 +639,12 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB 
                       </span>
                       <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", flexShrink: 0 }}>{_btElapsed(j)}</span>
                     </button>
+                    {clickable && (
+                      <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
+                              onClick={() => openReport(j.job_id)} title="HTML 리포트 새 탭">
+                        📄
+                      </button>
+                    )}
                     {canCompare && j.job_id !== compareA && (
                       <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
                               onClick={() => onCompareB(j.job_id)} title={"A(" + compareA + ") 와 비교"}>

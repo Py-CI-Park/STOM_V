@@ -3084,7 +3084,8 @@ def create_app() -> FastAPI:
 
     @app.get("/feature_importance")
     def feature_importance(run_id: Optional[str] = None, run_ids: Optional[str] = None,
-                           axis: str = "market_cap", fine_time: bool = False) -> Dict[str, Any]:
+                           axis: str = "market_cap", fine_time: bool = False,
+                           gen_no: Optional[int] = None) -> Dict[str, Any]:
         """run(들)의 세대 결과 CSV를 풀링해 세그먼트별 승리-변수 피처 중요도를 반환한다.
 
         쿼리: ?run_ids=<a,b,c>(파노라마 다중 run 풀) 또는 ?run_id=<run_id>(단일 run 풀),
