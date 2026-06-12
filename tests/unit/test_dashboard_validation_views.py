@@ -460,12 +460,32 @@ class TestFrontendContract:
         assert '/ui/lab.html' in src
         assert '/ui/verdict.html' in src
 
+    def test_phase4_track_a_tabnav_scale_up(self):
+        """Phase4 트랙A(2026-06-12) — 전역 UX 스케일 업 계약.
+
+        탭 내비는 styles.css 의 .stom-tabnav/.stom-tab(.stom-tab-active) 클래스로
+        대형화·강한 활성 대비를 구동한다(app.jsx 인라인 사이즈 prop 제거). 와이드
+        화면(>1800px) 미디어쿼리로 grid-main 확장·폰트 스케일 업을 추가한다.
+        """
+        app = (FRONTEND / "app.jsx").read_text(encoding="utf-8")
+        # 탭바·탭에 신규 클래스가 적용되고 탭 아이콘이 존재한다.
+        assert 'className="stom-tabnav"' in app
+        assert '"stom-tab" + (active ? " stom-tab-active" : "")' in app
+        assert "stom-tab-ico" in app
+        css = (FRONTEND / "styles.css").read_text(encoding="utf-8")
+        # 대형화(높이 ~48px+·폰트 15px+)와 활성 대비(글로우) 룰이 존재한다.
+        assert ".stom-tab {" in css
+        assert ".stom-tab-active" in css
+        assert "min-height: 48px" in css
+        # 와이드 화면 활용 미디어쿼리(>1800px) — grid-main 확장.
+        assert "@media (min-width: 1800px)" in css
+
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # research-lab.jsx는 2026-06-11 TMAP 지도 추가로 v20260611d로 재범프됐다(M12 비교·P3 형태 열).
         assert "research-lab.jsx?v=20260612c" in src
         # app.jsx는 3탭 셸(PR1~S3)과 부모 브랜치 작업 병합으로 v20260612d로 재범프됐다.
-        assert "app.jsx?v=20260612d" in src
+        assert "app.jsx?v=20260612h" in src
         # 백테스트 워크벤치(PR2) — 차트 모듈이 backtest.jsx보다 먼저 로드돼야 한다.
         # 2단계 업그레이드(A/B 비교·몬테카를로·오더플로우·통계검정)로 v20260612c 재범프.
         assert "backtest-charts.jsx?v=20260612g" in src
