@@ -1,0 +1,84 @@
+{
+  "note": "advisory only — selection/판정에 미사용",
+  "pbo": {
+    "pbo": 0.8,
+    "n_combinations": 70,
+    "n_candidates": 3,
+    "n_periods": 255,
+    "median_logit": -1.6094379124341005,
+    "is_best_oos_mean_rank": 0.3666666666666667,
+    "pool": [
+      "gen1:R2R3_A {'burst_a': 2.0, 'ogap_lo_b': 2.0}",
+      "gen2:R2R3_B {'burst_a': 2.0, 'ogap_lo_b': 3.0}",
+      "gen3:R2R3_C {'burst_a': 3.0, 'ogap_lo_b': 2.0}"
+    ]
+  },
+  "dsr": {
+    "sharpe_hat": 0.2452421387539538,
+    "expected_max_sharpe_null": 0.17139745183270372,
+    "dsr": 0.8731374252165984,
+    "n_periods": 234.0,
+    "n_trials": 128.0,
+    "skew": 0.1847198393802455,
+    "kurtosis": 2.373121458325739,
+    "var_sharpe": 0.0041860303221292056,
+    "definition": "선택 후보의 거래일 기준 일별 손익 DSR"
+  },
+  "n_trials_definition": "이 선택을 낳은 평가 점 전체의 고유 매수 전략 수 = 선택 대상 run + trial-runs(TMAP 스윕 그리드) + 사이클 CLDGEN 풀 (N5 교정: 종전 CLDGEN만 카운트 → 스윕 그리드 누락 수정)",
+  "n_trials": 128,
+  "n_trials_runs": [
+    "r2r3_reeval_20260613",
+    "r1_ablation_train_20260612",
+    "r5c_combo_train_20260613",
+    "tmap_r2full_train_20260613",
+    "tmap_r3grid_train_20260613",
+    "tmap_seed_full_train_20260611",
+    "tmap2_cap_take_train_20260611",
+    "theta_star_reeval_20260611"
+  ],
+  "mc_block_bootstrap": {
+    "profit_mean": 10874881.481,
+    "profit_p05": 5671654.85,
+    "profit_p50": 10789804.5,
+    "profit_p95": 16074955.8,
+    "p_positive": 1.0,
+    "mdd_p50": 1278814.5,
+    "mdd_p95": 2178747.3,
+    "n_days": 234,
+    "n_boot": 2000,
+    "block_len": 5,
+    "seed": 20260611,
+    "note": "block bootstrap on daily P&L — preserves regime clustering; advisory only"
+  },
+  "daily_correlation": {
+    "labels": [
+      "gen1:R2R3_A {'burst_a': 2.0, 'ogap_lo_b': 2.0}",
+      "gen2:R2R3_B {'burst_a': 2.0, 'ogap_lo_b': 3.0}",
+      "gen3:R2R3_C {'burst_a': 3.0, 'ogap_lo_b': 2.0}"
+    ],
+    "n_days": 255,
+    "matrix": [
+      [
+        1.0,
+        0.9628,
+        0.9167
+      ],
+      [
+        0.9628,
+        1.0,
+        0.8667
+      ],
+      [
+        0.9167,
+        0.8667,
+        1.0
+      ]
+    ]
+  },
+  "pool_independence": {
+    "n_candidates": 3,
+    "mean_pairwise_correlation": 0.9154,
+    "effective_independent_candidates": 1.06,
+    "pbo_reliability_warning": "후보 풀 평균 상관 0.92 > 0.7 — 후보들이 사실상 쌍둥이라 PBO가 과적합을 과소평가할 수 있음(유효 독립 후보 ≈ 1.1)"
+  }
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "label": "BASE_SEED",
+    "buy": "Tick_B_902_905_Update_2",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "R2R3_A {'burst_a': 2.0, 'ogap_lo_b': 2.0}",
+    "buy": "R2R3_A_B",
+    "sell": "R2R3_A_S"
+  },
+  {
+    "label": "R2R3_B {'burst_a': 2.0, 'ogap_lo_b': 3.0}",
+    "buy": "R2R3_B_B",
+    "sell": "R2R3_B_S"
+  },
+  {
+    "label": "R2R3_C {'burst_a': 3.0, 'ogap_lo_b': 2.0}",
+    "buy": "R2R3_C_B",
+    "sell": "R2R3_C_S"
+  }
+]
