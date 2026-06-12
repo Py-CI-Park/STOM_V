@@ -31,6 +31,8 @@ _DATABASE_DIR = REPO_ROOT / "_database"
 DEFAULT_AGG_SEC = 10
 # 한 종목 시계열 로드 안전 상한(과대 입력 방지). 일일 tick 도 수천 행 수준.
 _MAX_ROWS_PER_CODE = 200_000
+# 동시 리플레이 종목 상한(S2 동시보기 1~10). load_replay·WS start 가 공유하는 단일 출처.
+MAX_CODES = 10
 
 # 일일 DB candle 컬럼 인덱스(tick 54열 / min 57열 공통 선두 10열은 동일 레이아웃).
 #   PRAGMA 확인: 0=index, 1=현재가, 2=시가, 3=고가, 4=저가, 5=등락율,
@@ -487,7 +489,7 @@ def load_replay(
     agg_sec = int(agg_sec) if agg_sec else DEFAULT_AGG_SEC
     if agg_sec < 1:
         agg_sec = 1
-    codes = [str(c) for c in (codes or [])][:4]  # 최대 4종목.
+    codes = [str(c) for c in (codes or [])][:MAX_CODES]  # 최대 MAX_CODES 종목(S2).
 
     con = _connect_ro(daily_db_path(date, src))
     if con is None or not codes:

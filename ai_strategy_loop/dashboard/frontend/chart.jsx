@@ -96,6 +96,10 @@ function FitnessChart({ state, target = 1.0 }) {
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--teal)" }}></span>
           적합도 추이 — Fitness Trajectory
+          <span data-tip="적합도(graded_score) = 수익·MDD·거래수 게이트를 통과한 정도를 0~100으로 등급화한 점수. 세대가 진행되며 점수가 우상향하면 진화가 작동 중이라는 뜻. 점선 = 지금까지의 최고점, 링 = 게이트 통과 세대."
+                style={{ marginLeft: 6, fontSize: 10, color: "var(--ink-3)", border: "1px solid var(--line-2)",
+                         borderRadius: "50%", width: 15, height: 15, display: "inline-flex",
+                         alignItems: "center", justifyContent: "center", cursor: "help" }}>?</span>
         </div>
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
           <LegendDot color="var(--teal)" label="graded_score" />
@@ -461,6 +465,7 @@ function EquityOverlayChart({ baseUrl, wsStatus, runId }) {
   const [loading, setLoading] = useState_eq(false);
   const [err, setErr] = useState_eq(null);
   const [hover, setHover] = useState_eq(null); // {x_frac, curves_at_x:[{run_id,gen_no,gate_passed,final_pct,y}]}
+  const [periodInfo, setPeriodInfo] = useState_eq(null); // {period:"YYYY-MM-DD ~ YYYY-MM-DD", timeframe}
   const svgRef = useRef_eq(null);
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
@@ -484,6 +489,23 @@ function EquityOverlayChart({ baseUrl, wsStatus, runId }) {
     const id = setInterval(refresh, 30000);
     return () => clearInterval(id);
   }, [refresh]);
+
+  // 백테 기간(연도 포함) — /generation_durations 가 run config 의 bt_full_start/end 를
+  //   "YYYY-MM-DD ~ YYYY-MM-DD" 로 이미 제공한다. run 당 1회만 조회(무예외).
+  useEffect_eq(() => {
+    if (isDemo || !baseUrl || !runId) { setPeriodInfo(null); return; }
+    let alive = true;
+    fetch(baseUrl + "/generation_durations?run_id=" + encodeURIComponent(runId),
+          { signal: AbortSignal.timeout(4000) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      .then(j => {
+        if (!alive) return;
+        const first = ((j && j.durations) || []).find(d => d.period) || null;
+        setPeriodInfo(first ? { period: first.period, timeframe: first.timeframe } : null);
+      })
+      .catch(() => { if (alive) setPeriodInfo(null); });
+    return () => { alive = false; };
+  }, [baseUrl, isDemo, runId]);
 
   const curves = (data && data.curves) || [];
   const winners = curves.filter(c => c.gate_passed);
@@ -565,6 +587,10 @@ function EquityOverlayChart({ baseUrl, wsStatus, runId }) {
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--teal)" }}></span>
           전 전략 누적 수익곡선
+          <span data-tip="이 run 의 모든 세대(전략)의 백테스트 누적 수익금을 한 차트에 겹쳐, 우승(게이트 통과) 전략이 비우승 대비 얼마나 우월한지 한눈에 비교합니다. X축 = 거래 진행률(전략마다 거래 수가 달라 0~100%로 정규화), Y축 = 누적 수익금(원)."
+                style={{ marginLeft: 6, fontSize: 10, color: "var(--ink-3)", border: "1px solid var(--line-2)",
+                         borderRadius: "50%", width: 15, height: 15, display: "inline-flex",
+                         alignItems: "center", justifyContent: "center", cursor: "help" }}>?</span>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <LegendDot color="rgba(255,255,255,0.18)" label="비우승" />
@@ -583,6 +609,12 @@ function EquityOverlayChart({ baseUrl, wsStatus, runId }) {
           <Mini label="최고 수익률"
                 value={maxFinalPct != null ? (maxFinalPct >= 0 ? "+" : "") + maxFinalPct.toFixed(1) + "%" : "—"}
                 color={maxFinalPct != null && maxFinalPct > 0 ? "var(--teal)" : maxFinalPct != null && maxFinalPct < 0 ? "var(--red)" : undefined} />
+          <Mini label="백테 기간"
+                value={periodInfo && periodInfo.period ? periodInfo.period : "기간 정보 없음"}
+                sub={periodInfo && periodInfo.timeframe ? String(periodInfo.timeframe) : ""} />
+        </div>
+        <div style={{ fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)", marginBottom: 8 }}>
+          X축 = 거래 진행률 0~100%(전략마다 거래 수가 달라 정규화) · Y축 = 누적 수익금(원) · 회색 = 비우승 · 색 = 우승(gate 통과)
         </div>
         <MetricHelpStrip items={[
           "edge_ratio = segment edge density",
@@ -801,6 +833,10 @@ function QualityTrendChart({ state }) {
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--violet)" }}></span>
           품질지표 추이 — Quality Metrics
+          <span data-tip="품질 = 수익 크기와 별개로 '전략이 얼마나 건강한가'를 보는 위험조정 지표 묶음(calmar·우상향 R²·MDD·일평균 거래·동시보유·손익비). 각 칩에 마우스를 올리면 지표별 설명이 나오고, 클릭하면 표시를 켜고 끕니다."
+                style={{ marginLeft: 6, fontSize: 10, color: "var(--ink-3)", border: "1px solid var(--line-2)",
+                         borderRadius: "50%", width: 15, height: 15, display: "inline-flex",
+                         alignItems: "center", justifyContent: "center", cursor: "help" }}>?</span>
         </div>
         <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
           {_QUALITY_METRICS.map(m => (

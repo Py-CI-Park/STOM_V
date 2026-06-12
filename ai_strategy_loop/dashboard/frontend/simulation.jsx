@@ -17,9 +17,13 @@ function _simFetchJson(url, timeoutMs) {
 }
 
 const _SIM_SPEEDS = [1, 5, 20, 60, 240];
-const _SIM_MAX_CODES = 4;
+const _SIM_MAX_CODES = 10;                  // S2 동시보기 1~10(백엔드 replay_engine.MAX_CODES 와 일치).
 const _SIM_DEMO_SPEED = 20;                 // 자동 데모 배속(빠른 둘러보기).
-// 차트 보기 모드 — split(분할 그리드) / overlay(정규화 한 차트 겹침).
+// 차트 엔진 모드 — 라이브(Canvas·기본) / LWC(lightweight-charts) / SVG(폴백 순수 SVG).
+//   S4: "라이브" 가 기본. 멀티 비교용 overlay 는 별도 보기 모드(_SIM_VIEW_MODES)로 분리.
+const _SIM_ENGINE_MODES = [["live", "라이브"], ["lwc", "LWC"], ["svg", "SVG"]];
+const _SIM_ENGINE_LS_KEY = "stom.sim.engine.v1";
+// 멀티차트 보기 모드 — split(분할 그리드) / overlay(정규화 한 차트 겹침).
 const _SIM_CHART_MODES = [["split", "분할"], ["overlay", "오버레이"]];
 // 분할 그리드 컬럼 토글(1/2 — 4종목이면 2열이 2×2). 단일 종목은 항상 1열.
 const _SIM_SPLIT_LS_KEY = "stom.sim.split.v1";
@@ -57,6 +61,25 @@ function _loadSplitCols() {
 }
 function _saveSplitCols(v) {
   try { window.localStorage.setItem(_SIM_SPLIT_LS_KEY, String(v)); } catch (e) {}
+}
+// 차트 엔진 모드(live/lwc/svg) 로드/저장. 기본 라이브(S4). LWC 부재 환경이어도 live/svg 동작.
+function _loadEngineMode() {
+  try {
+    const v = window.localStorage.getItem(_SIM_ENGINE_LS_KEY);
+    return (v === "lwc" || v === "svg" || v === "live") ? v : "live";
+  } catch (e) { return "live"; }
+}
+function _saveEngineMode(v) {
+  try { window.localStorage.setItem(_SIM_ENGINE_LS_KEY, String(v)); } catch (e) {}
+}
+
+// S2 자동 반응형 그리드 컬럼 수 — 동시 차트 개수에 따라(1→1, 2~4→2, 5~9→3, 10→4).
+//   사용자가 분할열(1/2)을 강제하면 그 값 우선(단일 종목은 항상 1열).
+function _responsiveCols(count) {
+  if (count <= 1) return 1;
+  if (count <= 4) return 2;
+  if (count <= 9) return 3;
+  return 4;
 }
 
 // baseUrl(http) → ws(ws/wss) URL.
@@ -416,9 +439,11 @@ function SimulationTab({ baseUrl, wsStatus }) {
 
   // 보조지표 토글(MA·VWAP·볼린저) — localStorage 보존. 차트 라인 오버레이 제어.
   const [indicators, setIndicators] = useState_sim(_loadIndicators);
-  // 멀티차트 보기 모드(split/overlay) + 분할 컬럼 수(1/2).
+  // 멀티차트 보기 모드(split/overlay) + 분할 컬럼 수(1/2 — 강제 토글, auto=반응형).
   const [chartMode, setChartMode] = useState_sim("split");
   const [splitCols, setSplitCols] = useState_sim(_loadSplitCols);
+  // 차트 엔진 모드(live/lwc/svg) — 기본 라이브(S4). localStorage 보존.
+  const [engineMode, setEngineMode] = useState_sim(_loadEngineMode);
 
   // 학습 모드 — 신호 자동 일시정지 토글 + 하이라이트 신호 키.
   const [autoPause, setAutoPause] = useState_sim(false);
@@ -499,6 +524,9 @@ function SimulationTab({ baseUrl, wsStatus }) {
   const setSplitColsPersist = useCallback_sim((v) => {
     setSplitCols(v); _saveSplitCols(v);
   }, []);
+  const setEngineModePersist = useCallback_sim((v) => {
+    setEngineMode(v); _saveEngineMode(v);
+  }, []);
 
   // 신호 로드(buy/sell + 선택 종목 변경 시). 종목별로 1일·1종목 백테 신호를 받는다.
   useEffect_sim(() => {
@@ -558,18 +586,22 @@ function SimulationTab({ baseUrl, wsStatus }) {
         setMeta({ codes: m.codes || [], bars_total: m.bars_total || 0, session_range: m.session_range || [0, 0] });
         setCursor(0);
       } else if (m.type === "bars") {
-        // 코드별 시계열에 append(서버 계산 지표 ma5/ma20/ma60·imbalance 포함).
+        // S1 결함 수정 — 코드별 시계열에 **불변(immutable) append**.
+        //   기존 .push() 는 같은 배열을 mutate 해 per-code 배열 참조가 안 바뀌어
+        //   SimCandleChartLWC 의 useEffect([bars]) 가 최초 1회만 돌아 봉·거래량이 1개로 동결됐다.
+        //   → 매 프레임 새 배열을 만들어(store[code] = [...prev, bar]) 참조를 갱신해야
+        //     LWC effect 가 매번 재실행되며 봉·거래량 히스토그램이 정상 리플레이된다.
         const store = barsRef.current;
         (m.items || []).forEach(it => {
-          if (!store[it.code]) store[it.code] = [];
-          store[it.code].push({
+          const bar = {
             t: m.t, o: it.o, h: it.h, l: it.l, c: it.c, vol: it.vol,
             change: it.change, strength: it.strength,
             ma5: it.ma5, ma20: it.ma20, ma60: it.ma60, imbalance: it.imbalance,
             buy_rest: it.buy_rest, sell_rest: it.sell_rest,
             vwap: it.vwap, bb_mid: it.bb_mid, bb_up: it.bb_up, bb_low: it.bb_low,
             net_qty: it.net_qty, bid1: it.bid1, ask1: it.ask1,
-          });
+          };
+          store[it.code] = [...(store[it.code] || []), bar];   // 새 배열 참조(불변 append).
         });
         setCursor((m.index || 0) + 1);
         setCurT(m.t);
@@ -753,8 +785,13 @@ function SimulationTab({ baseUrl, wsStatus }) {
 
   // 렌더용 코드별 bar 시계열(barsVersion 의존).
   const barsByCode = useMemo_sim(() => ({ ...barsRef.current }), [barsVersion]);
-  // 분할 그리드 컬럼: 단일 종목은 1열, 다종목은 사용자 토글(1/2)을 따른다.
-  const gridCols = codes.length <= 1 ? "1fr" : (splitCols === 1 ? "1fr" : "1fr 1fr");
+  // S2 분할 그리드 컬럼 — 단일 종목은 1열. 사용자가 1/2열을 강제하면 우선,
+  //   아니면 개수 기반 반응형(2~4→2 / 5~9→3 / 10→4)으로 화면을 최대 활용.
+  const autoCols = _responsiveCols(codes.length);
+  const effCols = codes.length <= 1 ? 1 : (splitCols === 1 ? 1 : (splitCols === 2 && autoCols <= 2 ? 2 : autoCols));
+  const gridCols = "repeat(" + effCols + ", minmax(0, 1fr))";
+  // S2 컴팩트 — 5개 이상이면 차트 높이·보조패널을 축소(과밀 방지).
+  const dense = codes.length >= 5;
   const nameByCode = useMemo_sim(() => {
     const m = {};
     stocks.forEach(s => { m[s.code] = s.name; });
@@ -842,6 +879,7 @@ function SimulationTab({ baseUrl, wsStatus }) {
               indicators={indicators} onToggleIndicator={toggleIndicator}
               chartMode={chartMode} onChartMode={setChartMode}
               splitCols={splitCols} onSplitCols={setSplitColsPersist}
+              engineMode={engineMode} onEngineMode={setEngineModePersist}
               multi={codes.length > 1} />
           )}
 
@@ -868,14 +906,17 @@ function SimulationTab({ baseUrl, wsStatus }) {
             <SimOverlayChart codes={codes} barsByCode={barsByCode}
               nameByCode={nameByCode} curT={curT} />
           ) : (
-            // 분할 모드 — 종목별 캔들 차트 그리드(1/2 열 토글).
-            <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: 14 }}>
-              {codes.map(code => (
-                <SimCandleChart key={code} code={code} name={nameByCode[code]}
-                  bars={barsByCode[code] || []} signals={signals[code] || []}
-                  curT={curT} compact={codes.length > 1 && splitCols !== 1}
-                  indicators={indicators} />
-              ))}
+            // 분할 모드 — 종목별 차트 그리드(반응형 열). 엔진 모드(라이브/LWC/SVG)로 컴포넌트 선택.
+            <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: dense ? 10 : 14 }}>
+              {codes.map(code => {
+                const chartProps = {
+                  code, name: nameByCode[code],
+                  bars: barsByCode[code] || [], signals: signals[code] || [],
+                  curT, compact: (codes.length > 1 && effCols > 1) || dense,
+                  indicators,
+                };
+                return <SimChartByEngine key={code} engineMode={engineMode} {...chartProps} />;
+              })}
             </div>
           )}
         </div>
@@ -885,9 +926,30 @@ function SimulationTab({ baseUrl, wsStatus }) {
 }
 
 // ===========================================================================
-// 보기 도구 바 — 보조지표 토글(MA·VWAP·볼린저) + 멀티차트 모드(분할/오버레이) + 분할 열(1/2).
+// 엔진 디스패처 — engineMode(live/lwc/svg)에 맞는 차트 컴포넌트를 고른다.
+//   live  → window.SimLiveChart(Canvas·기본). 미로드(부재)면 SimCandleChart 로 폴백(무중단).
+//   lwc   → window.SimCandleChartLWC(부재 시 SimCandleChart 자동선택).
+//   svg   → window.SimCandleChartSVG(부재 시 SimCandleChart).
+//   모든 경로는 동일 props(bars/signals/curT/code/name/compact/indicators)를 받는다.
 // ===========================================================================
-function SimViewBar({ indicators, onToggleIndicator, chartMode, onChartMode, splitCols, onSplitCols, multi }) {
+function SimChartByEngine({ engineMode, ...props }) {
+  const Live = window.SimLiveChart;
+  const Lwc = window.SimCandleChartLWC;
+  const Svg = window.SimCandleChartSVG;
+  const Auto = window.SimCandleChart;
+  if (engineMode === "live" && Live) return <Live {...props} />;
+  if (engineMode === "svg" && Svg) return <Svg {...props} />;
+  if (engineMode === "lwc" && Lwc) return <Lwc {...props} />;
+  // 폴백 — 선택 엔진 컴포넌트가 아직 window 에 없으면 자동선택(LWC↔SVG) 래퍼.
+  return Auto ? <Auto {...props} /> : null;
+}
+
+// ===========================================================================
+// 보기 도구 바 — 엔진 모드(라이브/LWC/SVG) + 보조지표 토글(MA·VWAP·볼린저)
+//   + 멀티차트 모드(분할/오버레이) + 분할 열(1/2).
+// ===========================================================================
+function SimViewBar({ indicators, onToggleIndicator, chartMode, onChartMode,
+                      splitCols, onSplitCols, multi, engineMode, onEngineMode }) {
   const indDefs = [["ma", "MA"], ["vwap", "VWAP"], ["boll", "볼린저"]];
   const tbtn = (active, label, onClick, key, title) => (
     <button key={key} onClick={onClick} className="mono" title={title}
@@ -903,7 +965,14 @@ function SimViewBar({ indicators, onToggleIndicator, chartMode, onChartMode, spl
   return (
     <div className="panel">
       <div className="panel-bd" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "7px 10px" }}>
-        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>지표</span>
+        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>엔진</span>
+        <div style={{ display: "flex", gap: 4 }}>
+          {_SIM_ENGINE_MODES.map(([m, lbl]) =>
+            tbtn(engineMode === m, lbl, () => onEngineMode(m), "e" + m,
+                 m === "live" ? "Canvas 라이브 렌더(현재봉 성장·플래시)"
+                   : m === "lwc" ? "lightweight-charts 엔진" : "순수 SVG 폴백"))}
+        </div>
+        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 6 }}>지표</span>
         <div style={{ display: "flex", gap: 4 }}>
           {indDefs.map(([k, lbl]) => tbtn(!!indicators[k], lbl, () => onToggleIndicator(k), k))}
         </div>

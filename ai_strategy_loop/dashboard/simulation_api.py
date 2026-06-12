@@ -488,7 +488,7 @@ class SimReplaySession:
         except (TypeError, ValueError):
             date = 0
         src = "tick" if msg.get("src") == "tick" else "min"
-        codes = [str(c) for c in (msg.get("codes") or [])][:4]
+        codes = [str(c) for c in (msg.get("codes") or [])][:replay_engine.MAX_CODES]
         try:
             agg_sec = int(msg.get("agg_sec", replay_engine.DEFAULT_AGG_SEC) or replay_engine.DEFAULT_AGG_SEC)
         except (TypeError, ValueError):

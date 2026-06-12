@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STOM 리서치 프로 · 전체화면 분석</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css?v=20260613a" />
+  <script src="vendor-react.js?v=20260603a"></script>
+  <script src="vendor-react-dom.js?v=20260603a"></script>
+  <script src="vendor-babel.js?v=20260603a"></script>
+</head>
+<body>
+  <!-- 리서치 프로(E2) 전용 전체화면 페이지. 백테스트 탭의 Bt* 차트 전역과
+       research-pro.jsx의 ResearchProPanel을 화면 전체로 렌더한다. -->
+  <div id="root">
+    <div style="padding:40px;font-family:system-ui,sans-serif;color:#9fb0c0;background:#0c1014;min-height:100vh;">
+      리서치 프로 로딩 중… (지속 시 Ctrl+Shift+R)
+    </div>
+  </div>
+
+  <!-- 의존: 포매터/공용 헬퍼(connection.jsx) → 분석 전역(analysis.jsx) →
+       백테 차트 전역(backtest-charts.jsx, window.BtResultArea 등) → research-pro.jsx. -->
+  <script type="text/babel" src="connection.jsx?v=20260612h"></script>
+  <script type="text/babel" src="chart.jsx?v=20260613a"></script>
+  <script type="text/babel" src="analysis.jsx?v=20260603a"></script>
+  <script type="text/babel" src="research-lab.jsx?v=20260613a"></script>
+  <script type="text/babel" src="backtest-charts.jsx?v=20260613a"></script>
+  <script type="text/babel" src="backtest.jsx?v=20260613a"></script>
+  <script type="text/babel" src="research-pro.jsx?v=20260613a"></script>
+  <script type="text/babel">
+    /* 리서치 프로 루트 — run 목록 첫 항목을 기본 run으로, ResearchProPanel에 위임. */
+    function ProRoot() {
+      const [runId, setRunId] = React.useState("");
+      React.useEffect(() => {
+        fetch("/runs", { signal: AbortSignal.timeout(10000) })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            const list = ((d && d.runs) || []).slice(0, 40);
+            if (list.length) setRunId((prev) => prev || list[0].run_id);
+          })
+          .catch(() => {});
+      }, []);
+      return (
+        <div style={{ minHeight: "100vh" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 18px",
+                        borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+            <b style={{ fontSize: 15 }}>STOM 리서치 프로</b>
+            <a href="/ui/" style={{ marginLeft: "auto", color: "#7ab", fontSize: 12 }}>운영</a>
+            <a href="/ui/lab.html" style={{ marginLeft: 12, color: "#7ab", fontSize: 12 }}>연구랩</a>
+            <a href="/ui/verdict.html" style={{ marginLeft: 12, color: "#7ab", fontSize: 12 }}>결정</a>
+          </div>
+          <ResearchProPanel baseUrl={window.location.origin} wsStatus="na" runId={runId} />
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById("root")).render(<ProRoot />);
+  </script>
+</body>
+</html>
