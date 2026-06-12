@@ -1,0 +1,244 @@
+{
+  "name": "llmgen_same_time_flow_skew",
+  "timeframe": "tick",
+  "source": "P5 LLM 가설 생성 (gen_template_hypothesis)",
+  "description": "시드의 09:02~09:05 거래대금각도 폭발이 아니라 09:08 이후 전일 동시간 대비 관심 증가와 매수·매도 체결수량 비대칭이 동시에 나타나는 종목 간 상대 수요 이상치를 노린다.",
+  "buy_code": "if 데이터길이 >= {min_len} and 시분초 >= {entry_start} and 시분초 <= {entry_end} and 시가총액 <= {cap_max} and 당일거래대금 >= {day_money_min} and 전일동시간비 >= {same_time_ratio_min} and 등락율 <= {rate_max} and 고저평균대비등락율 >= {range_mid_bias_min} and 초당매수수량({flow_n}) >= 초당매도수량({flow_n}) * {buy_sell_ratio} and 체결강도평균({strength_n}, 1) >= {strength_avg_min}:\n    self.Buy()",
+  "sell_code": "if 수익률 >= {take_profit} or 수익률 <= -{stop_loss} or 보유시간 >= {max_hold_sec} or (수익률 >= {weak_exit_floor} and 체결강도평균({exit_strength_n}, 1) <= {exit_strength_min}):\n    self.Sell()",
+  "params": [
+    {
+      "name": "min_len",
+      "default": 60,
+      "values": [
+        30,
+        60,
+        90,
+        120,
+        180
+      ],
+      "side": "buy",
+      "note": "틱 데이터 초기 불안정 구간을 제거하는 최소 길이. 30은 매우 관대, 60을 기본으로 두어 기본 렌더 신호를 확보하고 180까지 안정화 강도를 스윕한다."
+    },
+    {
+      "name": "entry_start",
+      "default": 90800,
+      "values": [
+        90500,
+        90800,
+        91000,
+        91200,
+        91500
+      ],
+      "side": "buy",
+      "note": "시드의 09:02~09:05 직후 폭발 추격과 분리하기 위한 시작 시각. 09:05는 가장 관대, 기본 09:08부터 전일 동시간 비교가 의미를 갖는 구간을 탐색한다."
+    },
+    {
+      "name": "entry_end",
+      "default": 92200,
+      "values": [
+        92500,
+        92200,
+        92000,
+        91800,
+        91500
+      ],
+      "side": "buy",
+      "note": "후반부 신호 가치 저하 교훈을 반영해 09:25를 최대 관대치로 제한한다. 기본은 09:22이며 09:15까지 조여 시간 노출을 줄인다."
+    },
+    {
+      "name": "cap_max",
+      "default": 3000,
+      "values": [
+        3500,
+        3000,
+        2500,
+        2000,
+        1500
+      ],
+      "side": "buy",
+      "note": "시총 축소가 MDD를 줄인 실증을 반영하되 시드 숫자 고정은 피한다. 3500은 신호 확보용, 1500은 초소형주 집중 검증용이다."
+    },
+    {
+      "name": "day_money_min",
+      "default": 2000,
+      "values": [
+        1000,
+        2000,
+        3500,
+        5000,
+        8000
+      ],
+      "side": "buy",
+      "note": "연속 빈도 조절축. 단위는 백만원이며 moneytop 내에서도 당일 실제 관심이 붙은 종목만 남기되 기본값은 두 번째로 느슨하게 둔다."
+    },
+    {
+      "name": "same_time_ratio_min",
+      "default": 150,
+      "values": [
+        120,
+        150,
+        180,
+        220,
+        280
+      ],
+      "side": "buy",
+      "note": "전일 동시간 대비 상대 관심 증가를 보는 핵심 축. 보고서 임계 이식이 아니라 120~280의 넓은 좌표로 동시간 이상치 강도를 측정한다."
+    },
+    {
+      "name": "rate_max",
+      "default": 15,
+      "values": [
+        18,
+        15,
+        12,
+        10,
+        8
+      ],
+      "side": "buy",
+      "note": "이미 과열된 상한가 근접 추격을 줄이는 상단 필터. 기본은 관대하게 15로 두고 엄격화 시 고가권 함정 매수를 줄이는지 확인한다."
+    },
+    {
+      "name": "range_mid_bias_min",
+      "default": 0.3,
+      "values": [
+        0.0,
+        0.3,
+        0.7,
+        1.2,
+        2.0
+      ],
+      "side": "buy",
+      "note": "현재가가 당일 고저 평균보다 위에서 거래되는지 보는 체결 위치 편향. 되돌림·재진입이 아니라 당일 가격 수용 구간의 상방 편향만 사용한다."
+    },
+    {
+      "name": "flow_n",
+      "default": 5,
+      "values": [
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "side": "buy",
+      "note": "초당 매수·매도수량 비대칭을 측정하는 짧은 틱 윈도우. 너무 짧으면 노이즈, 길면 반응이 늦으므로 3~21틱을 탐색한다."
+    },
+    {
+      "name": "buy_sell_ratio",
+      "default": 1.15,
+      "values": [
+        1.05,
+        1.15,
+        1.3,
+        1.5,
+        1.8
+      ],
+      "side": "buy",
+      "note": "체결 분포의 매수수량 우위를 직접 표현하는 핵심 미시구조 축. 1.05는 거의 균형, 1.8은 희소한 일방향 체결 편향이다."
+    },
+    {
+      "name": "strength_n",
+      "default": 5,
+      "values": [
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "side": "buy",
+      "note": "체결강도 평균의 측정 길이. flow_n과 별도 축으로 두어 수량 비대칭과 체결강도 지속성의 조합을 지도 측정한다."
+    },
+    {
+      "name": "strength_avg_min",
+      "default": 100,
+      "values": [
+        90,
+        100,
+        110,
+        125,
+        145
+      ],
+      "side": "buy",
+      "note": "체결강도 평균 하한. 90은 관대하게 신호를 살리고 145는 강한 매수 체결만 통과시키는 희소 영역이다."
+    },
+    {
+      "name": "take_profit",
+      "default": 7,
+      "values": [
+        5,
+        7,
+        9,
+        11,
+        13
+      ],
+      "side": "sell",
+      "note": "익절 다이얼이 수익을 지배한 교훈을 반영해 넓게 둔다. 기본은 두 번째로 느슨한 7이며 9 이상에서 payoff 개선 여부를 확인한다."
+    },
+    {
+      "name": "stop_loss",
+      "default": 3,
+      "values": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "side": "sell",
+      "note": "하드 손절 폭. 체결 비대칭 신호가 실패할 때 손실 꼬리를 제한하며 2~6 범위에서 승률·손익비 균형을 본다."
+    },
+    {
+      "name": "max_hold_sec",
+      "default": 180,
+      "values": [
+        120,
+        180,
+        240,
+        300,
+        420
+      ],
+      "side": "sell",
+      "note": "오전 초반 틱 단타의 시간 노출 제한. 후반부 신호 가치 저하를 고려해 2~7분 범위로 보유 시간 민감도를 탐색한다."
+    },
+    {
+      "name": "weak_exit_floor",
+      "default": 1,
+      "values": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "side": "sell",
+      "note": "약화 청산을 적용할 최소 수익 구간. 진입 후 약간이라도 이익이 난 상태에서 체결강도가 식으면 조기 회수하는 안전장치다."
+    },
+    {
+      "name": "exit_strength_n",
+      "default": 8,
+      "values": [
+        3,
+        8,
+        13,
+        21,
+        34
+      ],
+      "side": "sell",
+      "note": "청산용 체결강도 평균 윈도우. 매도식 윈도우 집계 호출을 1회로 제한하면서 단기 약화부터 완만한 둔화까지 탐색한다."
+    },
+    {
+      "name": "exit_strength_min",
+      "default": 85,
+      "values": [
+        75,
+        85,
+        95,
+        105,
+        115
+      ],
+      "side": "sell",
+      "note": "체결강도 약화 청산 기준. 낮을수록 오래 보유하고 높을수록 빠르게 회수한다."
+    }
+  ]
+}
