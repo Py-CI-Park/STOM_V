@@ -102,6 +102,20 @@ def build_prompt(principles_text: str, registry_summary_text: str,
     if lessons_text:
         context_block += "\n\n[누적 기각 이력과 교훈 — 같은 가설 재제출 금지]\n" + lessons_text
 
+    # 출력 스키마 강제(2026-06-12 — 실전 1회차에서 params 누락/문자열 배열
+    # 형식 위반 관측): 정확한 JSON 형태를 예시로 못박는다.
+    context_block += (
+        "\n\n[출력 형식 — 이 JSON 스키마 그대로, 다른 텍스트 금지]\n"
+        '{"name": "llmgen_<영문스네이크>", "timeframe": "tick"|"min", '
+        '"niche_claim": "<한 줄 가설>", '
+        '"buy_template": "<{슬롯} 포함 매수 코드>", '
+        '"sell_template": "<{슬롯} 포함 매도 코드>", '
+        '"params": [{"name": "slot명", "default": 숫자, "values": [숫자, ...], '
+        '"side": "buy"|"sell", "note": "설명"}, ...]}\n'
+        "params는 반드시 객체 배열(문자열 배열 금지). buy/sell_template의 모든"
+        " {슬롯}은 params에 정의돼야 한다."
+    )
+
     return filled_system + "\n\n" + context_block
 
 
@@ -144,12 +158,26 @@ def validate_hypothesis(payload: Dict[str, Any]) -> List[str]:
         return errors  # 이후 검증 불가
 
     name = payload["name"]
-    buy_tmpl: str = payload["buy_template"]
-    sell_tmpl: str = payload["sell_template"]
-    params: List[Dict[str, Any]] = payload["params"]
+    buy_tmpl = payload["buy_template"]
+    sell_tmpl = payload["sell_template"]
+    params = payload["params"]
     timeframe = payload.get("timeframe", "tick")
     if timeframe not in ("tick", "min"):
         errors.append(f"timeframe '{timeframe}' 불허 — 'tick'|'min'만 허용")
+        return errors
+
+    # 타입 가드 (2026-06-12 — 실전 LLM 출력이 params를 문자열 배열로 보내
+    # AttributeError 크래시를 낸 실사고의 근본 수정): 형식 위반은 크래시가
+    # 아니라 피드백 가능한 오류 문자열이어야 재생성 루프가 교정할 수 있다.
+    if not isinstance(name, str) or not isinstance(buy_tmpl, str) \
+            or not isinstance(sell_tmpl, str):
+        errors.append("name/buy_template/sell_template은 문자열이어야 함")
+        return errors
+    if not isinstance(params, list) or not all(isinstance(p, dict) for p in params):
+        errors.append(
+            "params는 객체 배열이어야 함 — 각 항목: "
+            '{"name": str, "default": num, "values": [num...], "side": "buy"|"sell", "note": str}'
+        )
         return errors
 
     # 2) llmgen_ 접두 검사
@@ -363,8 +391,34 @@ def _make_provider_fn(provider_name: str) -> Optional[Callable[[str], str]]:
 
     반환: (prompt: str) -> raw_text: str
     generator.py의 provider.chat() 경로를 재사용한다(인증/호출 로직 중복 없음).
+    gpt_auth면 루프(_loop.py)와 동일하게 OAuth 로컬 프록시를 직접 기동한다
+    (2026-06-12 수정 — 종전엔 프록시 기동 누락으로 연결 거부 실사고).
     """
     from ai_strategy_loop.provider.factory import make_provider  # noqa: PLC0415
+
+    if provider_name == "gpt_auth":
+        import atexit  # noqa: PLC0415
+
+        from ai_strategy_loop.provider.chatgpt_oauth import (  # noqa: PLC0415
+            clear_env,
+            inject_env,
+            start_proxy_sync,
+            stop_proxy_sync,
+        )
+
+        inject_env()
+        if not start_proxy_sync():
+            clear_env()
+            print("[ERROR] gpt_auth 프록시 시작 실패", file=sys.stderr)
+            return None
+
+        def _cleanup() -> None:
+            try:
+                stop_proxy_sync()
+            finally:
+                clear_env()
+
+        atexit.register(_cleanup)
 
     class _FakeConfig:
         provider = provider_name

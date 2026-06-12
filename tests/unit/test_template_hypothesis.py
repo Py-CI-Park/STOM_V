@@ -241,3 +241,23 @@ class TestLessonsInjection:
         out = build_prompt("원리", "템플릿목록")
         assert "누적 기각 이력" not in out
 
+class TestTypeGuards:
+    def test_params_as_string_list_returns_error_not_crash(self) -> None:
+        """실전 LLM이 params를 문자열 배열로 보낸 사고의 회귀 테스트."""
+        payload = _valid_payload()
+        payload["params"] = ["cap_max", "take_hard"]
+        errors = validate_hypothesis(payload)
+        assert any("객체 배열" in e for e in errors)
+
+    def test_buy_template_as_list_returns_error_not_crash(self) -> None:
+        payload = _valid_payload()
+        payload["buy_template"] = ["라인1", "라인2"]
+        errors = validate_hypothesis(payload)
+        assert any("문자열" in e for e in errors)
+
+
+class TestSchemaInPrompt:
+    def test_build_prompt_contains_output_schema(self) -> None:
+        out = build_prompt("원리", "목록")
+        assert "출력 형식" in out and "객체 배열" in out
+
