@@ -1,0 +1,22 @@
+[
+  {
+    "label": "BASE_SEED",
+    "buy": "Tick_B_902_905_Update_2",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "FROZEN_THETA",
+    "buy": "THETA_seed_902905_06_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "R5C THETA-전일비제거",
+    "buy": "R5C_01_B",
+    "sell": "R5C_01_S"
+  },
+  {
+    "label": "R5C THETA-전일비-등락율밴드제거",
+    "buy": "R5C_02_B",
+    "sell": "R5C_02_S"
+  }
+]
