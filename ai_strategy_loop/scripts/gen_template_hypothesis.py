@@ -113,7 +113,11 @@ def build_prompt(principles_text: str, registry_summary_text: str,
         '"params": [{"name": "slot명", "default": 숫자, "values": [숫자, ...], '
         '"side": "buy"|"sell", "note": "설명"}, ...]}\n'
         "params는 반드시 객체 배열(문자열 배열 금지). buy/sell_template의 모든"
-        " {슬롯}은 params에 정의돼야 한다."
+        " {슬롯}은 params에 정의돼야 한다.\n"
+        "[신호 밀도 규칙 — 2026-06-12 실측 교훈] and 조건은 10개 이하로 하라."
+        " 조건 15개+의 교집합은 기본값에서 신호 0건이었다(생성물 2종 실측)."
+        " default는 각 축의 두 번째로 느슨한 값으로 잡아 기본값 렌더가 실제"
+        " 신호를 내게 하라 — 엄격화는 스윕 축이 담당한다."
     )
 
     return filled_system + "\n\n" + context_block
