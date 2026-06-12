@@ -142,9 +142,25 @@ _FUNC_REQUIRED_NAMES = (
 )
 
 
+# 호출형(괄호 사용)이 엔진에서 실증된 이름의 화이트리스트 — 검증 통과한
+# 기존 템플릿 전체에서 추출(2026-06-12). 이 밖의 이름을 호출형으로 쓰면
+# 정적 거부: 4세대 실측 — 스칼라 초당매수수량(N) 호출이 349초 타임아웃.
+_CALLABLE_WHITELIST = frozenset(
+    ["이동평균", "최고현재가", "최저현재가", "현재가N",
+     "누적초당매수수량", "누적초당매도수량", "누적분당매수수량", "누적분당매도수량",
+     "초당거래대금평균", "분당거래대금평균", "체결강도평균",
+     "등락율각도", "횡보감지", "거래대금급증", "체결강도급등", "호가하락압력",
+     "호가갭발생", "구간호가총잔량비율", "전일비각도", "당일거래대금각도"]
+    + [f"{side}잔량{i}{sfx}" for side in ("매도", "매수")
+       for i in range(1, 6) for sfx in ("", "N")]
+)
+
+
 def _engine_cost_errors(code: str) -> List[str]:
     """엔진 비용·의미 규칙 위반을 정적으로 찾는다 (순수 함수 — 테스트 대상)."""
     errors: List[str] = []
+    # 주석 제거 — 주석 속 한국어 괄호("횡보(각도 평탄)" 등)의 호출 오탐 방지.
+    code = re.sub(r"#[^\n]*", "", code)
     for name in _FUNC_REQUIRED_NAMES:
         pat = rf"(?<![가-힣A-Za-z0-9_]){re.escape(name)}(?![가-힣A-Za-z0-9_])(?!\s*\()"
         if re.search(pat, code):
@@ -159,6 +175,15 @@ def _engine_cost_errors(code: str) -> List[str]:
             " 10회만으로 300초 초과 실측). bare(현재값) 또는 잔량iN(1)"
             " 시프트형을 사용하라"
         )
+    # 호출형 화이트리스트 — 한글 포함 이름의 괄호 호출만 검사(내장 max 등 제외).
+    for m in re.finditer(r"([가-힣][가-힣A-Za-z0-9_]*)\s*\(", code):
+        called = m.group(1)
+        if called not in _CALLABLE_WHITELIST:
+            errors.append(
+                f"'{called}(...)' — 검증되지 않은 호출형. 호출형은 화이트리스트"
+                " 변수만 허용(스칼라를 함수처럼 호출하면 평가 시간 초과 —"
+                " 4세대 실측 349초). 스칼라는 무인자, 과거값은 현재가N(N)류 사용"
+            )
     return errors
 
 

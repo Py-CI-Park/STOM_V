@@ -299,3 +299,15 @@ class TestEngineCostRules:
         code = "매수 = 매도잔량1N(1) > 매도잔량1 and 매수잔량1N(1) > 0"
         assert _engine_cost_errors(code) == []
 
+    def test_scalar_called_as_function_rejected(self) -> None:
+        """4세대 실측 회귀: 스칼라 초당매수수량(N) 호출형 → 정적 거부."""
+        from ai_strategy_loop.scripts.gen_template_hypothesis import _engine_cost_errors
+        code = "매수 = 초당매수수량(5) >= 초당매도수량(5) * 1.2"
+        errors = _engine_cost_errors(code)
+        assert any("검증되지 않은 호출형" in e for e in errors)
+
+    def test_whitelisted_calls_pass(self) -> None:
+        from ai_strategy_loop.scripts.gen_template_hypothesis import _engine_cost_errors
+        code = "매수 = 이동평균(20, 1) < 현재가 and 누적초당매수수량(10) > 0 and 매도잔량1N(1) > 매도잔량1"
+        assert _engine_cost_errors(code) == []
+
