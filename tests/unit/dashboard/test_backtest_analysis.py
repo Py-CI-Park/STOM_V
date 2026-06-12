@@ -20,6 +20,7 @@ from ai_strategy_loop.dashboard import backtest_analysis as A  # noqa: E402
 def _trade(
     name, buy, sell, hold, pct, krw, *, mae=None, mfe=None, exit_reason="",
     of_strength=None, of_buy_rest=None, of_sell_rest=None, of_prevday=None, of_updown=None,
+    buy_amount=None, sell_amount=None,
 ):
     return {
         "name": name,
@@ -29,6 +30,8 @@ def _trade(
         "hold_min": float(hold),
         "profit_pct": float(pct),
         "profit_krw": float(krw),
+        "buy_amount": buy_amount,
+        "sell_amount": sell_amount,
         "mae": mae,
         "mfe": mfe,
         "exit_reason": exit_reason,
@@ -808,3 +811,170 @@ def test_full_analysis_includes_track_d_keys(tmp_path: Path):
     assert bundle["rolling"]["window"] == A._ROLLING_WINDOW
     assert bundle["cumulative_trades"]["series"]
     assert bundle["monthly"]["cells"]
+
+
+# ============================================================================
+# GUI 패리티 (B3) — back_static.PlotShow() 2장 이미지 동등 데이터
+# ============================================================================
+def _gui_trades():
+    """3 거래일·요일/시간대 분산·매수금액 포함 6 거래(이익 3·손실 3)."""
+    return [
+        _trade("알파", "202504070930", "202504071000", 30, 2.0, 20000, buy_amount=1000000, sell_amount=1020000),
+        _trade("베타", "202504071030", "202504071100", 30, -1.0, -10000, buy_amount=500000, sell_amount=490000),
+        _trade("알파", "202504081335", "202504081405", 30, 3.0, 30000, buy_amount=1000000, sell_amount=1030000),
+        _trade("감마", "202504081030", "202504081100", 30, -2.0, -25000, buy_amount=1250000, sell_amount=1225000),
+        _trade("알파", "202504091000", "202504091200", 120, 5.0, 50000, buy_amount=1000000, sell_amount=1050000),
+        _trade("베타", "202504091030", "202504091100", 30, -0.5, -5000, buy_amount=1000000, sell_amount=995000),
+    ]
+
+
+# ----------------------------------------------------------------- empty/no-raise
+def test_gui_parity_empty_inputs_never_raise():
+    gp = A.gui_parity([])
+    assert gp["mdd_random"]["n"] == 0 and gp["mdd_random"]["actual"] == []
+    assert gp["daily"]["series"] == [] and gp["daily"]["index_available"] is False
+    assert gp["hourly"]["slots"] == []
+    assert gp["weekday"]["days"] == []
+    assert gp["holding"]["series"] == [] and gp["holding"]["covered"] == 0
+    assert gp["trade_rolling"]["series"] == []
+    assert A.mdd_random_curves([])["n"] == 0
+    assert A.daily_pnl([])["series"] == []
+    assert A.hourly_pnl([])["slots"] == []
+    assert A.weekday_pnl([])["days"] == []
+    assert A.holding_curve([])["series"] == []
+    assert A.trade_rolling([])["series"] == []
+
+
+# ------------------------------------------------------------------ mdd_random
+def test_mdd_random_curves_shape_and_count():
+    r = A.mdd_random_curves(_gui_trades())
+    assert r["n"] == A._MDD_RANDOM_CURVES
+    assert len(r["curves"]) == A._MDD_RANDOM_CURVES
+    assert r["actual"][-1]["cum"] == 60000.0
+    rm = r["random_mdd_pct"]
+    assert rm["min"] <= rm["avg"] <= rm["max"]
+
+
+def test_mdd_random_curves_deterministic_with_default_seed():
+    a = A.mdd_random_curves(_gui_trades())
+    b = A.mdd_random_curves(_gui_trades())
+    assert a["random_mdd_pct"] == b["random_mdd_pct"]
+    assert a["curves"][0] == b["curves"][0]
+
+
+def test_mdd_random_curves_explicit_seed_reproducible():
+    a = A.mdd_random_curves(_gui_trades(), seed=42)
+    b = A.mdd_random_curves(_gui_trades(), seed=42)
+    c = A.mdd_random_curves(_gui_trades(), seed=99)
+    assert a["curves"] == b["curves"]
+    assert a["curves"] != c["curves"] or a["random_mdd_pct"] != c["random_mdd_pct"]
+
+
+# -------------------------------------------------------------------- daily_pnl
+def test_daily_pnl_cumulative_and_index_flag():
+    d = A.daily_pnl(_gui_trades())
+    series = d["series"]
+    assert len(series) == 3
+    assert [s["pnl"] for s in series] == [10000.0, 5000.0, 45000.0]
+    assert [s["cum"] for s in series] == [10000.0, 15000.0, 60000.0]
+    assert d["index_available"] is False
+
+
+# ------------------------------------------------------------------- hourly_pnl
+def test_hourly_pnl_splits_profit_loss_by_slot():
+    h = A.hourly_pnl(_gui_trades())
+    by_label = {s["slot_label"]: s for s in h["slots"]}
+    assert "09:30" in by_label and by_label["09:30"]["profit"] == 20000.0
+    for s in h["slots"]:
+        assert abs(s["net"] - (s["profit"] + s["loss"])) < 1e-9
+
+
+def test_hourly_pnl_excludes_short_buy_time():
+    trades = [_trade("x", "20250407", "202504071000", 10, 1.0, 1000)]
+    assert A.hourly_pnl(trades)["slots"] == []
+
+
+# ------------------------------------------------------------------ weekday_pnl
+def test_weekday_pnl_weekdays_always_present():
+    w = A.weekday_pnl(_gui_trades())
+    labels = [d["label"] for d in w["days"]]
+    assert labels == ["월", "화", "수", "목", "금"]
+    by_label = {d["label"]: d for d in w["days"]}
+    assert by_label["월"]["net"] == 10000.0
+    assert by_label["수"]["net"] == 45000.0
+    assert by_label["목"]["trades"] == 0
+
+
+def test_weekday_pnl_includes_weekend_when_traded():
+    trades = [_trade("x", "202504120930", "202504121000", 10, 1.0, 7000)]
+    labels = [d["label"] for d in A.weekday_pnl(trades)["days"]]
+    assert "토" in labels and "일" not in labels
+
+
+# ----------------------------------------------------------------- holding_curve
+def test_holding_curve_overlapping_positions():
+    trades = [
+        _trade("a", "202504070930", "202504071100", 90, 0.1, 100, buy_amount=1000000),
+        _trade("b", "202504071000", "202504071030", 30, 0.1, 100, buy_amount=500000),
+    ]
+    h = A.holding_curve(trades)
+    holdings = [int(p["holding"]) for p in h["series"]]
+    assert holdings == [1000000, 1500000, 1000000, 0]
+    assert h["covered"] == 2 and h["total"] == 2
+    assert h["holding_basis"] == "entry_cost"
+
+
+def test_holding_curve_excludes_missing_buy_amount():
+    trades = [
+        _trade("a", "202504070930", "202504071000", 30, 1.0, 1000, buy_amount=None),
+        _trade("b", "202504070935", "202504071005", 30, 1.0, 1000, buy_amount=800000),
+    ]
+    h = A.holding_curve(trades)
+    assert h["covered"] == 1 and h["total"] == 2
+    assert all(p["holding"] >= 0.0 for p in h["series"])
+
+
+# ----------------------------------------------------------------- trade_rolling
+def test_trade_rolling_windows_and_partial_none():
+    r = A.trade_rolling(_gui_trades())
+    assert r["windows"] == list(A._GUI_ROLLING_WINDOWS)
+    series = r["series"]
+    assert len(series) == 6
+    assert [s["pnl"] for s in series][0] == 20000.0
+    assert series[-1]["cum"] == 60000.0
+    for s in series:
+        assert all(v is None for v in s["roll"].values())
+
+
+def test_trade_rolling_small_window_produces_values():
+    r = A.trade_rolling(_gui_trades(), windows=(2,))
+    series = r["series"]
+    assert series[0]["roll"]["2"] is None
+    assert series[1]["roll"]["2"] is not None
+    expected = round((series[0]["cum"] + series[1]["cum"]) / 2.0, 4)
+    assert abs(series[1]["roll"]["2"] - expected) < 1e-6
+
+
+def test_trade_rolling_sorts_by_sell_time():
+    trades = list(reversed(_gui_trades()))
+    r = A.trade_rolling(trades)
+    sell_times = [s["sell_time"] for s in r["series"]]
+    assert sell_times == sorted(sell_times)
+
+
+# --------------------------------------------------------------- bundle/CSV path
+def test_full_analysis_includes_gui_parity(tmp_path: Path):
+    csv_path = tmp_path / "trades.csv"
+    header = "﻿종목명,매수시간,매도시간,보유시간,수익률,수익금,매수금액,매도금액"
+    lines = [header]
+    for t in _gui_trades():
+        lines.append(
+            f"{t['name']},{t['buy_time']},{t['sell_time']},{int(t['hold_min'])},{t['profit_pct']},"
+            f"{int(t['profit_krw'])},{int(t['buy_amount'])},{int(t['sell_amount'])}"
+        )
+    csv_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    bundle = A.full_analysis(str(csv_path))
+    gp = bundle["gui_parity"]
+    assert set(gp.keys()) == {"mdd_random", "daily", "hourly", "weekday", "holding", "trade_rolling"}
+    assert gp["holding"]["covered"] == 6
+    assert gp["daily"]["series"][-1]["cum"] == 60000.0

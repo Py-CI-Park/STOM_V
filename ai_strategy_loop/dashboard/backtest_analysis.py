@@ -34,6 +34,10 @@ COL_SELL_TIME = "매도시간"
 COL_HOLD_MIN = "보유시간"
 COL_PROFIT_PCT = "수익률"
 COL_PROFIT_KRW = "수익금"
+# 진입/청산 체결금액(원) — 보유금액(holding value) 곡선 계산용(GUI 패리티 이미지2-e).
+#   per-trade CSV 의 GetResultDataframe 헤더에 존재. 결측이면 None(소비측이 결측 행 제외).
+COL_BUY_AMOUNT = "매수금액"
+COL_SELL_AMOUNT = "매도금액"
 # MAE/MFE·청산사유(D) — per-trade CSV 에 이미 존재(틱 DB 재조회 없이 CSV 만으로).
 COL_MFE = "R_MFE"
 COL_MAE = "R_MAE"
@@ -52,6 +56,15 @@ _TOP_N = 10
 _SCATTER_MAX = 1000
 # 롤링 지표 기본 창(거래 단위). 창보다 거래가 적으면 빈 시리즈(무예외).
 _ROLLING_WINDOW = 20
+# GUI 패리티 — back_static.PlotShow() 거래별 손익+롤링 창(수익금합계 rolling mean 창과 동일).
+_GUI_ROLLING_WINDOWS = (20, 60, 120, 240, 480)
+# GUI 패리티 — MDD 랜덤 곡선 시행수(PlotShow 가 30개 셔플 곡선을 메인 위에 겹친다).
+_MDD_RANDOM_CURVES = 30
+# GUI 패리티 — MDD 랜덤 곡선 기본 시드(재현성 — 같은 거래 시퀀스면 같은 셔플 곡선).
+_DEMO_SEED_GUI = 20260613
+# GUI 패리티 — 시간대별 손익 슬롯 폭(분). PlotShow 는 세션 길이로 3~30분을 고르나,
+#   웹은 30분 슬롯으로 고정해 time_heatmap·통계검정 슬롯 정의와 일관되게 한다.
+_HOURLY_SLOT_MIN = 30
 
 # 한국 거래일 기준 연율화 상수(252 거래일/년).
 _TRADING_DAYS_PER_YEAR = 252.0
@@ -115,6 +128,9 @@ def _normalize_row(row: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         "hold_min": _safe_float(row.get(COL_HOLD_MIN)),
         "profit_pct": _safe_float(row.get(COL_PROFIT_PCT)),
         "profit_krw": profit_krw,
+        # 진입/청산 체결금액(원) — 보유금액 곡선용. 결측이면 None(소비측이 결측 행 제외).
+        "buy_amount": _opt_float(row.get(COL_BUY_AMOUNT)),
+        "sell_amount": _opt_float(row.get(COL_SELL_AMOUNT)),
         # MAE/MFE·청산사유(D) — 결측이면 None/빈문자(소비측이 결측 행 제외).
         "mfe": _opt_float(row.get(COL_MFE)),
         "mae": _opt_float(row.get(COL_MAE)),
@@ -1319,6 +1335,337 @@ def cumulative_trades(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
     return {"series": _downsample(series)}
 
 
+# ===========================================================================
+# GUI 패리티 (B3) — back_static.py PlotShow() 2장 이미지의 웹 동등 데이터.
+#
+#   PlotShow 는 결과 PNG 2장을 그린다:
+#     이미지1(부가정보 2×2): (a) MDD 랜덤 30곡선+메인 (b) 일별수익+누적(+지수)
+#                            (c) 시간대별 손익 누적바 (d) 요일별 손익 누적바
+#     이미지2(결과 2×1):     (e) 보유금액 곡선 (f) 거래별 손익+롤링 평균
+#   아래 순수함수가 같은 데이터를 만든다. PlotShow 가 numpy/pandas 와 별도 보유금액
+#   배열(arry_bct)·지수 데이터(yfinance)에 의존하는 부분은 per-trade CSV 만으로
+#   정직하게 근사하고 그 한계를 메타로 표기한다(무예외·다운샘플 ≤500pt).
+# ===========================================================================
+def _trade_profit_sequence(trades: List[Dict[str, Any]]) -> List[float]:
+    """거래 순서(매도시간 오름차순)의 거래별 실현손익(원) 시퀀스. 안정 정렬·무예외."""
+    if not trades:
+        return []
+    ordered = sorted(
+        range(len(trades)),
+        key=lambda i: str(trades[i].get("sell_time", "") or ""),
+    )
+    return [float(trades[i].get("profit_krw", 0.0) or 0.0) for i in ordered]
+
+
+def _cumsum(values: List[float]) -> List[float]:
+    """누적합 시퀀스. 빈 입력→빈 리스트."""
+    out: List[float] = []
+    run = 0.0
+    for v in values:
+        run += v
+        out.append(run)
+    return out
+
+
+def mdd_random_curves(
+    trades: List[Dict[str, Any]],
+    n_curves: int = _MDD_RANDOM_CURVES,
+    seed: Optional[int] = None,
+) -> Dict[str, Any]:
+    """거래별 손익 순서를 무작위 셔플한 n개 누적곡선 + 실제 누적곡선(PlotShow 이미지1-a).
+
+    PlotShow 는 `수익금`(거래별 실현손익)을 30회 permutation 해 누적합 곡선을 메인
+    누적곡선 위에 겹친다. 여기서도 동일하게 거래별 손익을 셔플→누적해 n개 곡선과
+    실제(셔플 없는) 곡선을 만든다. 재현성을 위해 seed 를 고정한다(기본 결정적).
+
+    반환(무예외 — 빈 입력도 빈 구조):
+      {n, actual:[{index,cum}], curves:[[{index,cum}]...], actual_mdd_pct,
+       random_mdd_pct:{max,min,avg}}.
+    각 곡선/실제곡선은 다운샘플 ≤500pt. MDD%는 시작자본 근사(|총손익 절대합|) 대비.
+    """
+    seq = _trade_profit_sequence(trades)
+    if not seq:
+        return {
+            "n": 0, "actual": [], "curves": [],
+            "actual_mdd_pct": 0.0, "random_mdd_pct": {"max": 0.0, "min": 0.0, "avg": 0.0},
+        }
+
+    # 시작자본 근사(PlotShow 는 seed 자본을 쓰나 CSV 엔 없음): 총이익 규모로 보수 근사.
+    gross_profit = sum(p for p in seq if p > 0.0)
+    capital = gross_profit if gross_profit > 0.0 else abs(sum(seq))
+    if capital <= 0.0:
+        capital = 1.0
+
+    def _to_points(cum: List[float]) -> List[Dict[str, Any]]:
+        pts = [{"index": i, "cum": float(c)} for i, c in enumerate(cum)]
+        return _downsample(pts)
+
+    def _mdd_pct(cum: List[float]) -> float:
+        return round(_mdd_of_cumulative(cum) / capital * 100.0, 4) if capital else 0.0
+
+    actual_cum = _cumsum(seq)
+    actual_mdd = _mdd_pct(actual_cum)
+
+    n_runs = max(0, int(n_curves))
+    rng, backend = _rng_seeded(seed if seed is not None else _DEMO_SEED_GUI)
+    curves: List[List[Dict[str, Any]]] = []
+    rand_mdds: List[float] = []
+    for _ in range(n_runs):
+        if backend == "numpy":
+            order = rng.permutation(len(seq))
+            shuffled = [seq[i] for i in order]
+        else:
+            shuffled = list(seq)
+            rng.shuffle(shuffled)
+        cum = _cumsum(shuffled)
+        curves.append(_to_points(cum))
+        rand_mdds.append(_mdd_pct(cum))
+
+    rmax = max(rand_mdds) if rand_mdds else 0.0
+    rmin = min(rand_mdds) if rand_mdds else 0.0
+    ravg = round(sum(rand_mdds) / len(rand_mdds), 4) if rand_mdds else 0.0
+    return {
+        "n": len(curves),
+        "actual": _to_points(actual_cum),
+        "curves": curves,
+        "actual_mdd_pct": actual_mdd,
+        "random_mdd_pct": {"max": float(rmax), "min": float(rmin), "avg": float(ravg)},
+    }
+
+
+def daily_pnl(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """거래일별 실현손익(원) 막대 + 누적 라인(PlotShow 이미지1-b). 다운샘플 ≤500pt·무예외.
+
+    PlotShow 는 일별 수익을 막대로, 누적수익률(%)을 라인으로 그리고 시장지수를 겹친다.
+    지수 데이터는 per-trade CSV 에 없어 제공하지 않는다(정직 — index_available=False).
+
+    반환: {series:[{date, pnl, cum}], index_available:false}.
+      - pnl: 그날 실현손익(원), cum: 그날까지 누적 실현손익(원).
+    """
+    days_map = _daily_pnl_map(trades)
+    series: List[Dict[str, Any]] = []
+    run = 0.0
+    for day, pnl in days_map.items():
+        run += pnl
+        series.append({"date": int(day), "pnl": float(pnl), "cum": float(run)})
+    return {"series": _downsample(series), "index_available": False}
+
+
+def hourly_pnl(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """매수시각 30분 슬롯별 이익/손실 분리 손익(원)(PlotShow 이미지1-c). 무예외.
+
+    PlotShow 는 시간대별 이익금액(빨강)·손실금액(파랑)을 막대로 쌓는다. 여기서도 각
+    슬롯의 양/음 손익을 분리 집계한다(slot=(HH*60+MM)//30). 매수시각 12자리 미만 제외.
+
+    반환: {slots:[{slot, slot_label, profit, loss, net, trades}]}. 슬롯 오름차순.
+    """
+    by_slot: Dict[int, Dict[str, Any]] = {}
+    for t in trades:
+        buy = str(t.get("buy_time", "") or "")
+        if len(buy) < 12:
+            continue
+        try:
+            dt = datetime.strptime(buy[:12], "%Y%m%d%H%M")
+        except ValueError:
+            continue
+        slot = (dt.hour * 60 + dt.minute) // _HOURLY_SLOT_MIN
+        pnl = float(t.get("profit_krw", 0.0) or 0.0)
+        cell = by_slot.setdefault(slot, {"profit": 0.0, "loss": 0.0, "trades": 0})
+        if pnl >= 0.0:
+            cell["profit"] += pnl
+        else:
+            cell["loss"] += pnl
+        cell["trades"] += 1
+    slots = [
+        {
+            "slot": int(s),
+            "slot_label": _slot_label(s),
+            "profit": float(c["profit"]),
+            "loss": float(c["loss"]),
+            "net": float(c["profit"] + c["loss"]),
+            "trades": int(c["trades"]),
+        }
+        for s, c in sorted(by_slot.items())
+    ]
+    return {"slots": slots}
+
+
+def weekday_pnl(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """요일(0=월~6=일)별 이익/손실 분리 손익(원)(PlotShow 이미지1-d). 무예외.
+
+    PlotShow 는 요일별 이익금액(빨강)·손실금액(파랑)을 막대로 쌓는다(월~금, 토일은
+    거래 있을 때). 매수시각 기준 요일(time_heatmap 과 일관). 12자리 미만 제외.
+
+    반환: {days:[{weekday, label, profit, loss, net, trades}]}. 평일 항상·주말 거래 시.
+    """
+    by_wd: Dict[int, Dict[str, Any]] = {}
+    for t in trades:
+        buy = str(t.get("buy_time", "") or "")
+        if len(buy) < 12:
+            continue
+        try:
+            dt = datetime.strptime(buy[:12], "%Y%m%d%H%M")
+        except ValueError:
+            continue
+        wd = dt.weekday()
+        pnl = float(t.get("profit_krw", 0.0) or 0.0)
+        cell = by_wd.setdefault(wd, {"profit": 0.0, "loss": 0.0, "trades": 0})
+        if pnl >= 0.0:
+            cell["profit"] += pnl
+        else:
+            cell["loss"] += pnl
+        cell["trades"] += 1
+    # 파싱 가능한 거래가 하나도 없으면 빈 구조(빈 입력 무예외 계약 — 빈 막대 격자 방지).
+    if not by_wd:
+        return {"days": []}
+    # 평일(0~4)은 항상 표기, 주말(5~6)은 거래 있을 때만(PlotShow 와 동일).
+    order = [0, 1, 2, 3, 4]
+    for wd in (5, 6):
+        if wd in by_wd:
+            order.append(wd)
+    days = [
+        {
+            "weekday": int(wd),
+            "label": _BT_WEEKDAY_KO[wd],
+            "profit": float(by_wd.get(wd, {}).get("profit", 0.0)),
+            "loss": float(by_wd.get(wd, {}).get("loss", 0.0)),
+            "net": float(by_wd.get(wd, {}).get("profit", 0.0) + by_wd.get(wd, {}).get("loss", 0.0)),
+            "trades": int(by_wd.get(wd, {}).get("trades", 0)),
+        }
+        for wd in order
+    ]
+    return {"days": days}
+
+
+def holding_curve(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """진입/청산 이벤트로 시점별 보유금액(원) 곡선을 재구성한다(PlotShow 이미지2-e). 무예외.
+
+    PlotShow 는 별도 보유금액 배열(arry_bct)을 그리나, 그건 per-trade CSV 에 없다.
+    여기선 매수시간에 +매수금액, 매도시간에 -매수금액(원금 회수) 이벤트를 시간순으로
+    적용해 미청산 진입원금 합(=보유 중 투입금액) 곡선을 만든다 — GUI 보유금액의 정직
+    근사(평가손익 변동·수수료 미반영, holding_basis='entry_cost' 로 명시).
+
+    매수금액 결측 행은 제외한다(결측이면 곡선 기여 불가). 매수/매도 시각이 12자리
+    미만이면 그 이벤트는 제외한다. 시계열은 다운샘플 ≤500pt.
+
+    반환: {series:[{time, holding}], holding_basis:'entry_cost', covered, total}.
+      - time: YYYYMMDDHHMM(int), holding: 그 시점 직후 보유 진입원금 합(원).
+      - covered/total: 매수금액이 있어 곡선에 반영된 거래수 / 전체 거래수(한계 표기).
+    """
+    events: List[Tuple[int, float]] = []  # (시각, 보유금액 증감).
+    covered = 0
+    total = len(trades)
+    for t in trades:
+        amt = t.get("buy_amount")
+        if amt is None:
+            continue
+        buy = str(t.get("buy_time", "") or "")
+        sell = str(t.get("sell_time", "") or "")
+        if len(buy) < 12:
+            continue
+        try:
+            buy_key = int(buy[:12])
+        except ValueError:
+            continue
+        amount = float(amt)
+        events.append((buy_key, amount))   # 진입: 보유 +매수금액.
+        if len(sell) >= 12:
+            try:
+                sell_key = int(sell[:12])
+                events.append((sell_key, -amount))  # 청산: 보유 -매수금액(원금 회수).
+            except ValueError:
+                pass
+        covered += 1
+
+    if not events:
+        return {"series": [], "holding_basis": "entry_cost", "covered": 0, "total": int(total)}
+
+    # 시각 오름차순(동시각은 청산을 진입보다 먼저 적용 → 음수 증감 우선 정렬로 순간 과대 방지).
+    events.sort(key=lambda e: (e[0], 0 if e[1] < 0.0 else 1))
+    series: List[Dict[str, Any]] = []
+    holding = 0.0
+    for time_key, delta in events:
+        holding += delta
+        if holding < 0.0:
+            holding = 0.0  # 부동소수/정렬 잔차 보호(음수 보유금액 방지).
+        series.append({"time": int(time_key), "holding": float(holding)})
+
+    return {
+        "series": _downsample(series),
+        "holding_basis": "entry_cost",
+        "covered": int(covered),
+        "total": int(total),
+    }
+
+
+def trade_rolling(
+    trades: List[Dict[str, Any]],
+    windows: Tuple[int, ...] = _GUI_ROLLING_WINDOWS,
+) -> Dict[str, Any]:
+    """거래별 손익(원) + 누적손익의 롤링 평균 라인들(PlotShow 이미지2-f). 무예외.
+
+    PlotShow 는 거래별 이익금액(빨강)·손실금액(파랑) 막대에 `수익금합계`(누적손익)의
+    rolling mean(창 20/60/120/240/480) 라인과 누적손익 자체를 겹친다. 여기서도 거래
+    순서(매도시간) 축으로 거래별 손익·누적손익·각 창 누적손익 롤링평균을 만든다.
+
+    창보다 거래가 적은 창은 그 구간을 None(미정의)으로 둔다(부분창 미산출). 거래별
+    손익/누적은 항상 산출. 모든 시리즈는 동일 인덱스 축으로 다운샘플 ≤500pt.
+
+    반환: {windows:[...], series:[{index, sell_time, pnl, cum, roll:{w:val|None}}]}.
+    """
+    if not trades:
+        return {"windows": list(windows), "series": []}
+
+    ordered = sorted(
+        range(len(trades)),
+        key=lambda i: str(trades[i].get("sell_time", "") or ""),
+    )
+    seq = [trades[i] for i in ordered]
+    pnls = [float(t.get("profit_krw", 0.0) or 0.0) for t in seq]
+    cum = _cumsum(pnls)
+    wins = [max(1, int(w)) for w in windows]
+
+    # 각 창의 누적손익(cum) 단순이동평균. 창 미충족 인덱스는 None(부분창 미산출).
+    def _rolling_mean(values: List[float], w: int) -> List[Optional[float]]:
+        out: List[Optional[float]] = []
+        running = 0.0
+        for idx, v in enumerate(values):
+            running += v
+            if idx >= w:
+                running -= values[idx - w]
+            out.append(round(running / w, 4) if idx >= w - 1 else None)
+        return out
+
+    roll_by_w: Dict[int, List[Optional[float]]] = {w: _rolling_mean(cum, w) for w in wins}
+
+    series: List[Dict[str, Any]] = []
+    for idx in range(len(seq)):
+        series.append({
+            "index": int(idx),
+            "sell_time": str(seq[idx].get("sell_time", "") or ""),
+            "pnl": float(pnls[idx]),
+            "cum": float(cum[idx]),
+            "roll": {str(w): roll_by_w[w][idx] for w in wins},
+        })
+    return {"windows": list(wins), "series": _downsample(series)}
+
+
+def gui_parity(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """PlotShow 2장 이미지의 6개 차트 데이터 묶음(무예외).
+
+    반환: {mdd_random, daily, hourly, weekday, holding, trade_rolling}.
+    각 키는 위 동명 순수함수 결과. 빈 입력도 각 함수가 빈 구조를 돌린다.
+    """
+    return {
+        "mdd_random": mdd_random_curves(trades),
+        "daily": daily_pnl(trades),
+        "hourly": hourly_pnl(trades),
+        "weekday": weekday_pnl(trades),
+        "holding": holding_curve(trades),
+        "trade_rolling": trade_rolling(trades),
+    }
+
+
 # ---------------------------------------------------------------------------
 # 묶음 — 잡 결과 CSV 하나로 전체 분석을 한 번에 만든다(API /bt/result 가 소비).
 # ---------------------------------------------------------------------------
@@ -1357,6 +1704,8 @@ def full_analysis(
         "rolling": rolling_metrics(trades),
         "monthly": monthly_calendar(trades),
         "cumulative_trades": cumulative_trades(trades),
+        # B3 — STOM GUI PlotShow 2장 이미지 패리티(MDD 랜덤·일별·시간대·요일·보유·거래롤링).
+        "gui_parity": gui_parity(trades),
     }
 
 

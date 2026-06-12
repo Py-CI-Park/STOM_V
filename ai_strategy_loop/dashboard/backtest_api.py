@@ -742,8 +742,10 @@ def _result_for_run(run_id: str, gen_no: int) -> Dict[str, Any]:
 
 # ----------------------------------------------------------------------- demo
 # 데모 합성 결과 캐시(state/ 하위, gitignored). 같은 시드로 재생성하므로 결정적.
-_DEMO_CSV = _PACKAGE_DIR / "state" / "webbt_demo" / "demo_trades.csv"
-_DEMO_SEED = 20260612
+# seed 를 파일명에 반영한다 — 스키마/시드 변경 시 새 파일로 분기해 구 캐시(구 컬럼)를
+#   자연 무효화한다(_ensure_demo_csv 는 파일 부재 시에만 재생성하므로 파일명 분기가 필요).
+_DEMO_SEED = 20260613
+_DEMO_CSV = _PACKAGE_DIR / "state" / "webbt_demo" / f"demo_trades_{_DEMO_SEED}.csv"
 _DEMO_TRADE_COUNT = 180
 # 프론트가 BtResultArea 에 실어 보내는 데모 sentinel job_id(charts 무수정 렌더 경로).
 _DEMO_JOB_ID = "__demo__"
@@ -782,7 +784,10 @@ def _demo_trades_rows() -> List[Dict[str, Any]]:
         # 55% 승률·약한 양의 기대값(현실적 소폭 손익 — 합산 우상향).
         win = rng.random() < 0.55
         pct = round(rng.uniform(0.2, 2.2) if win else -rng.uniform(0.2, 1.6), 2)
-        krw = round(pct * rng.uniform(8000, 22000))
+        # 진입 체결금액(원) — 보유금액 곡선용. 청산금액 = 매수금액*(1+수익률/100) 근사.
+        buy_amount = round(rng.uniform(2_000_000, 8_000_000))
+        krw = round(buy_amount * pct / 100.0)
+        sell_amount = round(buy_amount + krw)
         mfe = round(abs(pct) + rng.uniform(0.1, 1.5), 2)
         mae = round(-(abs(pct) * 0.5 + rng.uniform(0.1, 1.2)), 2)
         reason = "목표가도달" if win and rng.random() < 0.6 else rng.choice(reasons)
@@ -793,6 +798,8 @@ def _demo_trades_rows() -> List[Dict[str, Any]]:
             analysis.COL_HOLD_MIN: hold_min,
             analysis.COL_PROFIT_PCT: pct,
             analysis.COL_PROFIT_KRW: krw,
+            analysis.COL_BUY_AMOUNT: buy_amount,
+            analysis.COL_SELL_AMOUNT: sell_amount,
             analysis.COL_MFE: mfe,
             analysis.COL_MAE: mae,
             analysis.COL_EXIT_REASON: reason,
@@ -816,6 +823,7 @@ def _ensure_demo_csv() -> Optional[str]:
             cols = [
                 analysis.COL_NAME, analysis.COL_BUY_TIME, analysis.COL_SELL_TIME,
                 analysis.COL_HOLD_MIN, analysis.COL_PROFIT_PCT, analysis.COL_PROFIT_KRW,
+                analysis.COL_BUY_AMOUNT, analysis.COL_SELL_AMOUNT,
                 analysis.COL_MFE, analysis.COL_MAE, analysis.COL_EXIT_REASON,
                 analysis.COL_OF_STRENGTH, analysis.COL_OF_BUY_REST, analysis.COL_OF_SELL_REST,
                 analysis.COL_OF_PREVDAY, analysis.COL_OF_UPDOWN,
@@ -914,6 +922,15 @@ def analysis_montecarlo(
 def analysis_orderflow(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
     """오더플로우 — 승/패 그룹별 진입 체결강도/호가불균형/전일동시간비/등락율 분포 비교."""
     return {"job_id": job_id, "orderflow": analysis.entry_orderflow(_analysis_for_job(job_id, t_start, t_end))}
+
+
+@backtest_router.get("/analysis/gui_parity")
+def analysis_gui_parity(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
+    """STOM GUI PlotShow 2장 이미지 패리티 — MDD 랜덤곡선·일별·시간대·요일·보유금액·거래롤링.
+
+    full_analysis 묶음의 gui_parity 와 동일 데이터를 개별 라우트로도 제공한다(구간 필터 지원).
+    """
+    return {"job_id": job_id, "gui_parity": analysis.gui_parity(_analysis_for_job(job_id, t_start, t_end))}
 
 
 # --------------------------------------------------------------------- compare
