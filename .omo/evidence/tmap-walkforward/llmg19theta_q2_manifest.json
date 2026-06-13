@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_open_gap_oneway_flow_9001_theta",
+  "run_id": "tmap_llmg19theta_q2_e32_20260614",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_theta_000_B",
+      "status": "ok",
+      "profit": 195797.0,
+      "mdd": 8.3,
+      "trades": 22
+    }
+  ]
+}

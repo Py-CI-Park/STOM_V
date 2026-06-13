@@ -1,0 +1,169 @@
+{
+  "name": "llmgen_late_oversold_qty_flip_costdiet",
+  "timeframe": "tick",
+  "source": "P5 LLM 가설 생성 (gen_template_hypothesis)",
+  "description": "시드의 09:02~09:05 초반 발화·돌파 추격이 아니라 09:12 이후 하락각도 과매도에서 초당매수수량이 초당매도수량을 되받는 단기 평균회귀 니치다.",
+  "buy_code": "if 시분초 >= {entry_start} and 시분초 <= {entry_end} and 초당거래대금 >= {sec_money_min} and 시가총액 <= {cap_max} and 등락율 >= {rate_floor} and 등락율 <= {rate_ceiling} and 등락율각도({angle_window}, 1) <= -{drop_angle_min} and 초당매수수량 >= 초당매도수량 * {buy_reversal_ratio}:\n    self.Buy()",
+  "sell_code": "if 수익률 >= {take_profit} or 수익률 <= -{stop_loss} or 보유시간 >= {max_hold_sec}:\n    self.Sell()",
+  "params": [
+    {
+      "name": "entry_start",
+      "default": 91200,
+      "values": [
+        90900,
+        91200,
+        91500,
+        91800,
+        92000
+      ],
+      "side": "buy",
+      "note": "시드 09:02~09:05와 분리하기 위해 첫 발화 이후 눌림이 생기는 09:09~09:20대 초반을 탐색한다. default는 두 번째로 이른 09:12로 신호 밀도를 확보한다."
+    },
+    {
+      "name": "entry_end",
+      "default": 92600,
+      "values": [
+        92200,
+        92600,
+        92800,
+        92900,
+        93000
+      ],
+      "side": "buy",
+      "note": "tick 데이터 경계 09:30 안에서 후반 눌림 반등만 본다. 너무 늦추면 잡음이 늘 수 있어 09:22~09:30 사이로 제한한다."
+    },
+    {
+      "name": "sec_money_min",
+      "default": 20,
+      "values": [
+        10,
+        20,
+        35,
+        50,
+        80,
+        120
+      ],
+      "side": "buy",
+      "note": "폭락 잡주와 무체결 반등을 거르기 위한 초당거래대금 절대하한이다. 단위는 백만원이며 default는 두 번째로 느슨한 20으로 실제 신호 발생을 우선한다."
+    },
+    {
+      "name": "cap_max",
+      "default": 3000,
+      "values": [
+        5000,
+        3000,
+        2500,
+        2000,
+        1500,
+        1000
+      ],
+      "side": "buy",
+      "note": "대형주 후반 밀도 폭발을 피하고 폭락 잡주도 일부 거르기 위한 상한이다. 단위는 억이며 5000에서 1000까지 밀도를 연속 조절한다."
+    },
+    {
+      "name": "rate_floor",
+      "default": -7.0,
+      "values": [
+        -10.0,
+        -7.0,
+        -5.0,
+        -3.0,
+        -1.5
+      ],
+      "side": "buy",
+      "note": "하락 종목을 잡도록 등락율 하한을 음수까지 연다. -10은 폭락까지 포함, -1.5는 얕은 눌림만 허용하는 축이다."
+    },
+    {
+      "name": "rate_ceiling",
+      "default": 3.0,
+      "values": [
+        5.0,
+        3.0,
+        1.5,
+        0.0,
+        -1.0
+      ],
+      "side": "buy",
+      "note": "상승 추격 구조와 겹치지 않도록 등락율 상단을 낮춘다. default 3%는 과도하게 좁히지 않아 측정 빈도를 확보한다."
+    },
+    {
+      "name": "angle_window",
+      "default": 30,
+      "values": [
+        20,
+        30,
+        45,
+        60,
+        90
+      ],
+      "side": "buy",
+      "note": "직전 구간 대비 낙폭 과대를 표현하는 등락율각도 윈도우다. 너무 짧으면 틱 노이즈, 너무 길면 첫 발화 구조와 섞이므로 20~90틱으로 둔다."
+    },
+    {
+      "name": "drop_angle_min",
+      "default": 4.0,
+      "values": [
+        2.0,
+        4.0,
+        6.0,
+        8.0,
+        12.0,
+        16.0
+      ],
+      "side": "buy",
+      "note": "등락율각도가 음수권으로 충분히 꺾였는지를 재는 핵심 조건이다. 코드에서는 -값 이하를 요구하며 default는 두 번째로 느슨한 4로 신호 0건을 피한다."
+    },
+    {
+      "name": "buy_reversal_ratio",
+      "default": 1.05,
+      "values": [
+        1.0,
+        1.05,
+        1.15,
+        1.3,
+        1.5
+      ],
+      "side": "buy",
+      "note": "초당매수수량이 초당매도수량을 역전했는지 보는 두 번째 핵심 조건이다. 1.00은 단순 역전, 1.50은 강한 매수 반전이다."
+    },
+    {
+      "name": "take_profit",
+      "default": 2.2,
+      "values": [
+        1.5,
+        2.2,
+        3.0,
+        4.0,
+        5.5
+      ],
+      "side": "sell",
+      "note": "평균회귀 반등은 시드 돌파보다 짧게 먹는 가설이므로 낮은 익절부터 탐색한다. 단위는 수익률 % 가정이다."
+    },
+    {
+      "name": "stop_loss",
+      "default": 2.0,
+      "values": [
+        1.2,
+        2.0,
+        2.8,
+        3.6,
+        5.0
+      ],
+      "side": "sell",
+      "note": "떨어지는 칼 위험을 인정하되 손실 꼬리를 제한한다. default는 과도하게 타이트하지 않은 두 번째 값이다."
+    },
+    {
+      "name": "max_hold_sec",
+      "default": 180,
+      "values": [
+        90,
+        180,
+        300,
+        480,
+        720
+      ],
+      "side": "sell",
+      "note": "초반 평균회귀가 즉시 나오지 않으면 가설 실패로 보고 시간 청산한다. 1.5분~12분 사이에서 체류 시간을 조절한다."
+    }
+  ]
+}

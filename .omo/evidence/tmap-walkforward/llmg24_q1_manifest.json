@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_bidwall_support_break906",
+  "run_id": "tmap_llmg24_q1_e32_20260614",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_bidwall_support_break906_000_B",
+      "status": "ok",
+      "profit": -9456518.0,
+      "mdd": 33.79,
+      "trades": 449
+    }
+  ]
+}

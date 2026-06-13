@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_tick_squeeze_range_expansion_break",
+  "run_id": "tmap_llmg21_q1_e32_20260613",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_tick_squeeze_range_expansion_break_000_B",
+      "status": "ok",
+      "profit": -22170384.0,
+      "mdd": 37.77,
+      "trades": 759
+    }
+  ]
+}

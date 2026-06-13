@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_turnover_quality_first_break",
+  "run_id": "tmap_llmg22_q2_e32_20260614",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_turnover_quality_first_break_000_B",
+      "status": "ok",
+      "profit": -12094262.0,
+      "mdd": 35.32,
+      "trades": 920
+    }
+  ]
+}

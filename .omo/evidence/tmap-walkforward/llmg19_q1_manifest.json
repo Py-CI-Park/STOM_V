@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_open_gap_oneway_flow_9001",
+  "run_id": "tmap_llmg19_q1_e32_20260613",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_000_B",
+      "status": "ok",
+      "profit": -1354863.0,
+      "mdd": 15.52,
+      "trades": 214
+    }
+  ]
+}
