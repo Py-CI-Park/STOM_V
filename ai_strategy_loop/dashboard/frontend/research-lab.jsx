@@ -8,11 +8,11 @@ const {
 } = React;
 
 const RESEARCH_TABS = [
-  { id: "edge", label: "Edge" },
-  { id: "feature", label: "Feature Importance" },
-  { id: "correlation", label: "Correlation" },
-  { id: "combos", label: "Variable Combinations" },
-  { id: "validation", label: "Validation" },
+  { id: "edge", label: "엣지(승률·기대값)" },
+  { id: "feature", label: "변수 중요도" },
+  { id: "correlation", label: "상관관계" },
+  { id: "combos", label: "변수 조합" },
+  { id: "validation", label: "검증" },
 ];
 
 function _rlNum(value, digits) {
@@ -40,17 +40,23 @@ function _rlPeriodFromDays(days) {
   return s === e ? s : `${s} ~ ${e}`;
 }
 
+/* 상관계수 → 발산형(0 중심) 색. 라이트/다크 정합을 위해 하드코딩 rgba 대신
+   디자인 토큰(var(--teal)/var(--red)/var(--ink-2))을 color-mix 로 농도 스케일한다.
+   양(+)=teal, 음(-)=red, |값|이 클수록 진해진다. 결측/비정상은 faint ink. */
 function _rlCorrColor(value) {
-  if (typeof value !== "number" || !isFinite(value)) return "rgba(80,96,116,0.48)";
+  if (typeof value !== "number" || !isFinite(value)) {
+    return "color-mix(in srgb, var(--ink-2) 42%, transparent)";
+  }
   const t = Math.min(1, Math.abs(value));
-  if (value >= 0) return `rgba(${Math.round(35 + 30 * (1 - t))},${Math.round(130 + 70 * t)},${Math.round(126 + 40 * t)},0.86)`;
-  return `rgba(${Math.round(178 + 48 * t)},${Math.round(108 - 32 * t)},${Math.round(62 - 24 * t)},0.86)`;
+  const pct = Math.round(22 + 64 * t);  /* 22%~86% — 0 근처는 옅게, ±1 근처는 진하게. */
+  const token = value >= 0 ? "var(--teal)" : "var(--red)";
+  return `color-mix(in srgb, ${token} ${pct}%, transparent)`;
 }
 
 function _ResearchEmptyState({ message }) {
   return (
     <div className="research-empty">
-      {message || "insufficient data for the selected research view."}
+      {message || "선택한 리서치 화면에 표시할 데이터가 부족합니다."}
     </div>
   );
 }
@@ -83,7 +89,7 @@ function _CorrelationControls({ method, setMethod, axis, setAxis, loading, poole
 
 function _CorrelationHeatmap({ rows }) {
   if (!rows || rows.length === 0) {
-    return <_ResearchEmptyState message="insufficient feature_matrix rows for a correlation heatmap." />;
+    return <_ResearchEmptyState message="상관 히트맵을 그릴 feature_matrix 행이 부족합니다." />;
   }
   return (
     <div className="research-heatmap">
@@ -107,7 +113,7 @@ function _CorrelationHeatmap({ rows }) {
 
 function _CombinationList({ rows }) {
   if (!rows || rows.length === 0) {
-    return <_ResearchEmptyState message="insufficient variable combinations for the selected run." />;
+    return <_ResearchEmptyState message="선택한 run 에 분석할 변수 조합이 부족합니다." />;
   }
   return (
     <div className="research-combo-list">
@@ -134,7 +140,7 @@ function _CombinationList({ rows }) {
 
 function _RangeSummaryList({ rows }) {
   if (!rows || rows.length === 0) {
-    return <_ResearchEmptyState message="insufficient range_summaries for histogram research." />;
+    return <_ResearchEmptyState message="히스토그램 분석에 필요한 range_summaries 가 부족합니다." />;
   }
   return (
     <div className="research-combo-list">
@@ -154,7 +160,7 @@ function _RangeSummaryList({ rows }) {
 function _SegmentSummaryList({ summary, axis }) {
   const rows = summary && Array.isArray(summary[axis]) ? summary[axis] : [];
   if (rows.length === 0) {
-    return <_ResearchEmptyState message={"insufficient segment_summaries for " + axis + "."} />;
+    return <_ResearchEmptyState message={axis + " 축의 segment_summaries 가 부족합니다."} />;
   }
   return (
     <div className="research-combo-list">
@@ -342,7 +348,7 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
   }, [autopsyGen, baseUrl, isDemo, runId]);
 
   if (isDemo || !runId) {
-    return <div className="research-lab-panel"><_ResearchEmptyState message="insufficient run context for validation views." /></div>;
+    return <div className="research-lab-panel"><_ResearchEmptyState message="검증 화면을 표시할 run 컨텍스트가 부족합니다." /></div>;
   }
 
   const gens = (yearly && Array.isArray(yearly.generations)) ? yearly.generations : [];
@@ -367,7 +373,7 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
           품질 ?
         </span>
       </div>
-      {err && <_ResearchEmptyState message={"insufficient response: " + err} />}
+      {err && <_ResearchEmptyState message={"응답을 받지 못했습니다: " + err} />}
 
       {ops && (
         <div style={{ marginTop: 6 }}>
@@ -988,11 +994,11 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
       </div>
     );
   } else if (isDemo || !runId) {
-    body = <div className="research-lab-panel"><_ResearchEmptyState message="insufficient run context for correlation research." /></div>;
+    body = <div className="research-lab-panel"><_ResearchEmptyState message="상관 분석을 표시할 run 컨텍스트가 부족합니다." /></div>;
   } else if (err) {
-    body = <div className="research-lab-panel"><_ResearchEmptyState message={"insufficient response: " + err} /></div>;
+    body = <div className="research-lab-panel"><_ResearchEmptyState message={"응답을 받지 못했습니다: " + err} /></div>;
   } else if (loading && !data) {
-    body = <div className="research-lab-panel"><_ResearchEmptyState message="loading correlation research..." /></div>;
+    body = <div className="research-lab-panel"><_ResearchEmptyState message="상관 분석을 불러오는 중…" /></div>;
   } else if (tab === "correlation") {
     body = (
       <div className="research-lab-panel">

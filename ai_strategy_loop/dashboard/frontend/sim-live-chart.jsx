@@ -69,7 +69,7 @@ function _animatedBars(bars, lastAnim) {
   return out;
 }
 
-function SimLiveChart({ bars, signals, curT, code, name, compact }) {
+function SimLiveChart({ bars, signals, curT, code, name, compact, indicators }) {
   const canvasRef = useRef_slc(null);
   const wrapRef = useRef_slc(null);
   const rafRef = useRef_slc(0);
@@ -80,11 +80,15 @@ function SimLiveChart({ bars, signals, curT, code, name, compact }) {
     prevClose: null, flashKind: null, flashStart: 0,
     prevLastT: null,          // 직전 마지막 bar 시각(새 bar 감지).
     scrollOffset: 0,          // 오토스크롤 보간용 진행(0..1) — 새 bar 시 0→1.
+    // Phase7 — 배치 도착 간 실제 경과(ms). lerp 를 min(_SLC_LERP_MS, batchWallMs)로 바운드해
+    //   고속(240x/600x) 재생에서 보간이 배치가 대표하는 wall-time 을 넘지 않게 한다(1x=실시간 불변).
+    prevArrival: 0, lerpMs: _SLC_LERP_MS,
   });
   const barsRef = useRef_slc(bars || []);
   const sigRef = useRef_slc(signals || []);
   const curTRef = useRef_slc(curT);
   const compactRef = useRef_slc(!!compact);
+  const indRef = useRef_slc(indicators || null);
   const [hover, setHover] = useState_slc(null);  // {x, idx} — 크로스헤어.
   const hoverRef = useRef_slc(null);
 
@@ -106,7 +110,13 @@ function SimLiveChart({ bars, signals, curT, code, name, compact }) {
         : { o: newLast.o, h: newLast.o, l: newLast.o, c: newLast.o };
       a.lastFrom = from;
       a.lastTarget = { o: newLast.o, h: newLast.h, l: newLast.l, c: newLast.c };
-      a.lastStart = (typeof performance !== "undefined" ? performance.now() : Date.now());
+      const nowTs = (typeof performance !== "undefined" ? performance.now() : Date.now());
+      // 배치 도착 간 실제 경과 = 이 배치가 대표하는 wall-time. lerp 를 이 값과 150ms 중
+      //   작은 쪽으로 바운드 → 고속 재생에서 보간이 wall-time 을 넘기지 않음(1x=실시간 보존).
+      const batchWallMs = a.prevArrival > 0 ? (nowTs - a.prevArrival) : _SLC_LERP_MS;
+      a.lerpMs = Math.max(16, Math.min(_SLC_LERP_MS, batchWallMs));
+      a.prevArrival = nowTs;
+      a.lastStart = nowTs;
       // 종가 변화 → 플래시(상승/하락).
       if (a.prevClose != null && newLast.c !== a.prevClose) {
         a.flashKind = newLast.c >= a.prevClose ? "up" : "down";
@@ -117,11 +127,60 @@ function SimLiveChart({ bars, signals, curT, code, name, compact }) {
       if (!sameBar) { a.scrollOffset = 0; a.prevLastT = newLast.t; }
     }
     barsRef.current = arr;
+
+    // MEDIUM-1: 배치 도착 시점에 클라이언트 지표 배열을 한 번만 계산해 animRef 에 캐시.
+    //   rAF _drawFrame 은 60fps 로 돌지만 bar 데이터는 배치 단위로만 바뀐다.
+    //   캐시를 여기서 갱신하고 draw 에서 참조하면 프레임당 재계산이 0 으로 줄어든다.
+    //   window 전역(_simRsi/_simMacd/_simEma/_simVolMa/_simStrengthMa)은 simulation-charts.jsx 가
+    //   이미 로드된 이후이므로 이 effect 호출 시점에는 반드시 정의돼 있다(load 순서 보장).
+    const viewArr = arr.length > _SLC_WINDOW ? arr.slice(arr.length - _SLC_WINDOW) : arr;
+    const ind = a.lastIndForCache || null;
+    const rsiEnabled = !ind || ind.rsi !== false ? !!ind && !!ind.rsi : false;
+    const macdEnabled = !ind || ind.macd !== false ? !!ind && !!ind.macd : false;
+    const emaEnabled = !ind || ind.ema !== false ? !!ind && !!ind.ema : false;
+    const volmaEnabled = !ind || ind.volma !== false ? !!ind && !!ind.volma : false;
+    if (typeof window !== "undefined") {
+      if (rsiEnabled && typeof window._simRsi === "function")
+        a.cachedRsi = window._simRsi(viewArr, 14);
+      if (macdEnabled && typeof window._simMacd === "function")
+        a.cachedMacd = window._simMacd(viewArr);
+      if (emaEnabled && typeof window._simEma === "function") {
+        a.cachedEma12 = window._simEma(viewArr, 12);
+        a.cachedEma26 = window._simEma(viewArr, 26);
+      }
+      if (volmaEnabled && typeof window._simVolMa === "function")
+        a.cachedVolMa = window._simVolMa(viewArr, [5, 20]);
+      if (typeof window._simStrengthMa === "function")
+        a.cachedStrMa = window._simStrengthMa(viewArr, 5);
+    }
   }, [bars]);
 
   useEffect_slc(() => { sigRef.current = signals || []; }, [signals]);
   useEffect_slc(() => { curTRef.current = curT; }, [curT]);
   useEffect_slc(() => { compactRef.current = !!compact; }, [compact]);
+  useEffect_slc(() => {
+    indRef.current = indicators || null;
+    // indicators 변경 시에도 캐시를 즉시 재계산한다(토글 ON 시 다음 frame 부터 바로 그려짐).
+    const a = animRef.current;
+    a.lastIndForCache = indicators || null;
+    const arr = barsRef.current;
+    const viewArr = arr.length > _SLC_WINDOW ? arr.slice(arr.length - _SLC_WINDOW) : arr;
+    const ind = indicators || null;
+    if (typeof window !== "undefined" && viewArr.length > 0) {
+      if (ind && ind.rsi && typeof window._simRsi === "function")
+        a.cachedRsi = window._simRsi(viewArr, 14);
+      if (ind && ind.macd && typeof window._simMacd === "function")
+        a.cachedMacd = window._simMacd(viewArr);
+      if (ind && ind.ema && typeof window._simEma === "function") {
+        a.cachedEma12 = window._simEma(viewArr, 12);
+        a.cachedEma26 = window._simEma(viewArr, 26);
+      }
+      if (ind && ind.volma && typeof window._simVolMa === "function")
+        a.cachedVolMa = window._simVolMa(viewArr, [5, 20]);
+      if (typeof window._simStrengthMa === "function")
+        a.cachedStrMa = window._simStrengthMa(viewArr, 5);
+    }
+  }, [indicators]);
 
   // rAF 렌더 루프 — 마운트 1회 시작, 언마운트 시 취소.
   useEffect_slc(() => {
@@ -132,7 +191,8 @@ function SimLiveChart({ bars, signals, curT, code, name, compact }) {
     const draw = () => {
       const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
       _drawFrame(canvas, wrap, barsRef.current, sigRef.current, curTRef.current,
-                 compactRef.current, animRef.current, hoverRef.current, now, H);
+                 compactRef.current, animRef.current, hoverRef.current, now, H,
+                 indRef.current);
       rafRef.current = requestAnimationFrame(draw);
     };
     rafRef.current = requestAnimationFrame(draw);
@@ -224,17 +284,24 @@ function SimLiveChart({ bars, signals, curT, code, name, compact }) {
   );
 }
 
-/* 레이아웃 상수(패딩·서브패널 높이). 캔들/거래량 영역 분할. */
-function _layout(W, H, compact) {
+/* 레이아웃 상수(패딩·서브패널 높이). 캔들/거래량/하단 스트립 영역 분할.
+   strips = 켜진 하단 서브패인 수(체결강도/호가불균형/net-delta/RSI/MACD) — 각 stripH 만큼 priceH 에서 차감. */
+function _layout(W, H, compact, strips) {
   const padL = 52, padR = 14, padT = 12, padB = 20;
   const volH = compact ? 38 : 56;
   const gap = 8;
-  const priceH = H - padT - padB - volH - gap;
-  return { padL, padR, padT, padB, volH, gap, priceH };
+  const ns = strips || 0;
+  const stripH = compact ? 22 : 30;
+  const stripsTotal = ns > 0 ? ns * (stripH + gap) : 0;
+  const priceH = H - padT - padB - volH - gap - stripsTotal;
+  return { padL, padR, padT, padB, volH, gap, priceH, stripH };
 }
 
-/* 한 프레임 렌더 — devicePixelRatio 대응 + 보간 애니메이션. 순수(상태 변이는 anim ref 진행만). */
-function _drawFrame(canvas, wrap, allBars, signals, curT, compact, anim, hover, now, H) {
+/* 한 프레임 렌더 — devicePixelRatio 대응 + 보간 애니메이션. 순수(상태 변이는 anim ref 진행만).
+   indicators(토글) 로 하단 서브패인(체결강도/호가불균형/net-delta — ASYMMETRIC: live 가 풀셋)
+   과 EMA 오버레이를 그린다. 헬퍼(_simEma/_simStrengthMa)는 simulation-charts.jsx 의 window 전역. */
+function _drawFrame(canvas, wrap, allBars, signals, curT, compact, anim, hover, now, H, indicators) {
+  const ind = indicators || {};
   const cssW = wrap.clientWidth || 600;
   const cssH = H;
   const dpr = (typeof window !== "undefined" && window.devicePixelRatio) ? window.devicePixelRatio : 1;
@@ -252,10 +319,12 @@ function _drawFrame(canvas, wrap, allBars, signals, curT, compact, anim, hover, 
   const arr = allBars || [];
   if (arr.length === 0) return;
 
-  // 마지막 캔들 성장 보간(lerp).
+  // 마지막 캔들 성장 보간(lerp). 보간 시간은 배치 wall-time 으로 바운드된 anim.lerpMs
+  //   (= min(_SLC_LERP_MS, batchWallMs)) — 고속 재생에서 1x=실시간 비례 보존.
   let lastAnim = null;
   if (anim.lastTarget && anim.lastFrom) {
-    const t = Math.min(1, (now - anim.lastStart) / _SLC_LERP_MS);
+    const lerpMs = (anim.lerpMs && isFinite(anim.lerpMs)) ? anim.lerpMs : _SLC_LERP_MS;
+    const t = Math.min(1, (now - anim.lastStart) / lerpMs);
     lastAnim = {
       o: _lerp(anim.lastFrom.o, anim.lastTarget.o, t),
       h: _lerp(anim.lastFrom.h, anim.lastTarget.h, t),
@@ -267,7 +336,18 @@ function _drawFrame(canvas, wrap, allBars, signals, curT, compact, anim, hover, 
   const view = animated.length > _SLC_WINDOW ? animated.slice(animated.length - _SLC_WINDOW) : animated;
   const n = view.length;
 
-  const L = _layout(cssW, cssH, compact);
+  // 켜진 하단 서브패인 수(체결강도/호가불균형/net-delta/RSI/MACD) — 데이터 유무도 함께 본다.
+  const hasStrength = ind.strength !== false;   // 기본 ON(SVG 와 동일).
+  const hasImb = !!ind.imbalance && view.some(b =>
+    (b.imbalance != null && isFinite(b.imbalance)) ||
+    (b.buy_rest != null && b.sell_rest != null));
+  const hasOf = !!ind.orderflow && view.some(b => b.net_qty != null && isFinite(b.net_qty) && b.net_qty !== 0);
+  // RSI/MACD: 클라이언트 헬퍼가 window 에 있고 ind 토글이 켜졌을 때만. 데이터는 항상 충분(close 만 필요).
+  const hasRsi = !!ind.rsi && typeof window !== "undefined" && typeof window._simRsi === "function";
+  const hasMacd = !!ind.macd && typeof window !== "undefined" && typeof window._simMacd === "function";
+  const strips = (hasStrength ? 1 : 0) + (hasImb ? 1 : 0) + (hasOf ? 1 : 0) + (hasRsi ? 1 : 0) + (hasMacd ? 1 : 0);
+
+  const L = _layout(cssW, cssH, compact, strips);
   const innerW = cssW - L.padL - L.padR;
   const slot = _slcSlot(innerW, n);
   const candleW = Math.max(1, Math.min(13, slot * 0.64));
@@ -337,11 +417,58 @@ function _drawFrame(canvas, wrap, allBars, signals, curT, compact, anim, hover, 
   }
 
   // --- 지표 라인(MA/VWAP) — bars 가 서버 계산값(ma5/ma20/ma60·vwap)을 들고 있으면 그린다.
-  //     null 구간은 끊어 그린다(윈도우 미충족). 라이브 모드는 핵심 추세선만(과밀 방지). ---
-  _drawLine(ctx, view, xCenter, yPrice, "ma5", "#4cd6b3", 1, 0.5, n);
-  _drawLine(ctx, view, xCenter, yPrice, "ma20", "#f0b35a", 1.1, 0.7, n);
-  _drawLine(ctx, view, xCenter, yPrice, "ma60", "#7c6cf0", 1.1, 0.6, n);
-  _drawLine(ctx, view, xCenter, yPrice, "vwap", "#ffd24c", 1.4, 0.85, n);
+  //     null 구간은 끊어 그린다(윈도우 미충족). 토글(ind.ma/ind.vwap) — 미지정(undefined)이면
+  //     하위호환으로 ON 취급(기존 라이브 동작 보존). ---
+  if (ind.ma !== false) {
+    _drawLine(ctx, view, xCenter, yPrice, "ma5", "#4cd6b3", 1, 0.5, n);
+    _drawLine(ctx, view, xCenter, yPrice, "ma20", "#f0b35a", 1.1, 0.7, n);
+    _drawLine(ctx, view, xCenter, yPrice, "ma60", "#7c6cf0", 1.1, 0.6, n);
+  }
+  if (ind.vwap !== false) _drawLine(ctx, view, xCenter, yPrice, "vwap", "#ffd24c", 1.4, 0.85, n);
+  // VWAP 밴드(서버 vwap_up/vwap_low) — ind.vwapband.
+  if (ind.vwapband) {
+    _drawLine(ctx, view, xCenter, yPrice, "vwap_up", "#ffd24c", 0.9, 0.5, n);
+    _drawLine(ctx, view, xCenter, yPrice, "vwap_low", "#ffd24c", 0.9, 0.5, n);
+  }
+  // EMA12/26 — 배치 캐시(anim.cachedEma12/26) 사용. 배치 도착 시 한 번만 재계산(60fps 재계산 X).
+  if (ind.ema) {
+    _drawArrLine(ctx, anim.cachedEma12 || [], xCenter, yPrice, "#6fd6ff", 1, 0.7, n);
+    _drawArrLine(ctx, anim.cachedEma26 || [], xCenter, yPrice, "#b07cf0", 1, 0.7, n);
+  }
+  // 거래량 MA5/20 — 배치 캐시(anim.cachedVolMa) 사용.
+  if (ind.volma) {
+    const vm = anim.cachedVolMa || {};
+    _drawArrLine(ctx, vm.vol_ma5, xCenter, yVol, "#4cd6b3", 0.9, 0.7, n);
+    _drawArrLine(ctx, vm.vol_ma20, xCenter, yVol, "#f0b35a", 0.9, 0.6, n);
+  }
+
+  // --- 하단 서브패인(체결강도 / 호가 불균형 / net-delta / RSI / MACD) — ASYMMETRIC: live 가 풀셋 ---
+  let stripTop = volBot + L.gap;
+  const stripRight = cssW - L.padR;
+  if (hasStrength) {
+    _drawStrengthStrip(ctx, view, xCenter, L, stripRight, stripTop, n, compact, ind, anim.cachedStrMa);
+    stripTop += L.stripH + L.gap;
+  }
+  if (hasImb) {
+    _drawImbalanceStrip(ctx, view, xCenter, L, stripRight, stripTop, n);
+    stripTop += L.stripH + L.gap;
+  }
+  if (hasOf) {
+    _drawNetDeltaStrip(ctx, view, xCenter, slot, L, stripRight, stripTop, n);
+    stripTop += L.stripH + L.gap;
+  }
+  // RSI(0–100, Wilder 14기간) — 30/50/70 가이드선 + 폴리라인. LWC 제외(ASYMMETRIC PARITY).
+  if (hasRsi) {
+    const rsiVals = anim.cachedRsi || [];
+    _drawRsiPane(ctx, rsiVals, xCenter, L, stripRight, stripTop, n);
+    stripTop += L.stripH + L.gap;
+  }
+  // MACD(12/26/9) — 히스토그램 막대 + MACD 라인 + 시그널 라인. LWC 제외(ASYMMETRIC PARITY).
+  if (hasMacd) {
+    const macdData = anim.cachedMacd || {};
+    _drawMacdPane(ctx, macdData, xCenter, slot, L, stripRight, stripTop, n);
+    stripTop += L.stripH + L.gap;
+  }
 
   // --- 마지막 가격선 + 플래시 ---
   const last = view[n - 1];
@@ -437,6 +564,194 @@ function _drawLine(ctx, view, xCenter, yPrice, key, color, width, alpha, n) {
     if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
   }
   ctx.stroke();
+  ctx.restore();
+}
+
+// 값 배열(view 길이) 라인 그리기(클라이언트 계산 지표 — EMA/volMA). null 구간 끊어 그림.
+function _drawArrLine(ctx, vals, xCenter, yFn, color, width, alpha, n) {
+  if (!vals || n < 2) return;
+  ctx.save();
+  ctx.globalAlpha = alpha; ctx.strokeStyle = color; ctx.lineWidth = width;
+  ctx.beginPath();
+  let started = false;
+  for (let i = 0; i < n; i++) {
+    const v = vals[i];
+    if (v == null || !isFinite(v)) { started = false; continue; }
+    const x = xCenter(i), y = yFn(v);
+    if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+// 체결강도 스트립(Req 8) — strength 폴리라인 + 100 균형선, _strengthColor 로 채색.
+//   strma 토글 시 배치 캐시 배열(cachedStrMa) 점선 오버레이.
+function _drawStrengthStrip(ctx, view, xCenter, L, right, top, n, compact, ind, cachedStrMa) {
+  const h = L.stripH;
+  const bot = top + h;
+  let sMax = 100;
+  for (let i = 0; i < n; i++) sMax = Math.max(sMax, view[i].strength || 0);
+  const yStr = (v) => bot - (Math.min(v, sMax) / sMax) * h;
+  // 100 균형선.
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,255,255,0.12)"; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+  ctx.beginPath(); ctx.moveTo(L.padL, yStr(100)); ctx.lineTo(right, yStr(100)); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+  // 강도 폴리라인 — _strengthColor(라이브 색 통일). window 전역(simulation-charts.jsx) 우선, 폴백 violet.
+  const colorFn = (typeof window !== "undefined" && typeof window._strengthColor === "function")
+    ? window._strengthColor : null;
+  ctx.save();
+  ctx.lineWidth = 1.3;
+  if (n > 1) {
+    ctx.beginPath();
+    let started = false;
+    for (let i = 0; i < n; i++) {
+      const s = view[i].strength;
+      if (s == null || !isFinite(s)) { started = false; continue; }
+      const x = xCenter(i), y = yStr(s);
+      if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+    }
+    ctx.strokeStyle = colorFn ? colorFn(view[n - 1].strength, 0.95) : "#7c6cf0";
+    ctx.stroke();
+  }
+  ctx.restore();
+  // strma — 체결강도 MA5 점선. cachedStrMa 는 배치 도착 시 갱신(60fps 재계산 X).
+  if (ind && ind.strma && cachedStrMa) {
+    _drawArrLine(ctx, cachedStrMa, xCenter, yStr, "#f0b35a", 1, 0.7, n);
+  }
+  // 라벨.
+  ctx.save();
+  ctx.fillStyle = "#7c6cf0"; ctx.font = "9px " + _slcFont(); ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  ctx.fillText("체결강도", L.padL - 6, top + 6);
+  ctx.restore();
+}
+
+// 호가 불균형 스트립(Req 9) — imbalance(=매수/매도 총잔량비, 1.0=균형) 시계열 + 1.0 기준선.
+function _drawImbalanceStrip(ctx, view, xCenter, L, right, top, n) {
+  const h = L.stripH;
+  const bot = top + h;
+  const valOf = (b) => {
+    if (b.imbalance != null && isFinite(b.imbalance)) return b.imbalance;
+    const br = (b.buy_rest != null && isFinite(b.buy_rest)) ? b.buy_rest : null;
+    const sr = (b.sell_rest != null && isFinite(b.sell_rest)) ? b.sell_rest : null;
+    return (br != null && sr != null && sr > 0) ? br / sr : null;
+  };
+  let vMax = 2.0;
+  for (let i = 0; i < n; i++) { const v = valOf(view[i]); if (v != null && isFinite(v)) vMax = Math.max(vMax, v); }
+  const yImb = (v) => bot - (Math.min(v, vMax) / vMax) * h;
+  // 1.0 균형선.
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,255,255,0.14)"; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+  ctx.beginPath(); ctx.moveTo(L.padL, yImb(1.0)); ctx.lineTo(right, yImb(1.0)); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+  _drawArrLine(ctx, view.map(valOf), xCenter, yImb, "#4cd6b3", 1.2, 0.85, n);
+  ctx.save();
+  ctx.fillStyle = _SLC_INK3; ctx.font = "9px " + _slcFont(); ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  ctx.fillText("호가불균형", L.padL - 6, top + 6);
+  ctx.restore();
+}
+
+// net-delta 스트립(Req 7 in-chart orderflow) — bar 별 net_qty 히스토그램(>0 teal / <0 red).
+function _drawNetDeltaStrip(ctx, view, xCenter, slot, L, right, top, n) {
+  const h = L.stripH;
+  const mid = top + h / 2;
+  const half = h / 2 - 2;
+  let maxAbs = 1;
+  for (let i = 0; i < n; i++) maxAbs = Math.max(maxAbs, Math.abs(view[i].net_qty || 0));
+  const barW = Math.max(1, slot * 0.7);
+  // 0 기준선.
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,255,255,0.12)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(L.padL, mid); ctx.lineTo(right, mid); ctx.stroke();
+  ctx.restore();
+  for (let i = 0; i < n; i++) {
+    const nq = view[i].net_qty || 0;
+    const bh = (Math.min(Math.abs(nq), maxAbs) / maxAbs) * half;
+    const x = xCenter(i) - barW / 2;
+    const y = nq >= 0 ? mid - bh : mid;
+    ctx.fillStyle = nq > 0 ? "rgba(76,214,179,0.7)" : nq < 0 ? "rgba(255,93,108,0.7)" : "rgba(107,116,128,0.5)";
+    ctx.fillRect(x, y, barW, Math.max(0.5, bh));
+  }
+  ctx.save();
+  ctx.fillStyle = _SLC_UP; ctx.font = "9px " + _slcFont(); ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  ctx.fillText("net-delta", L.padL - 6, top + 6);
+  ctx.restore();
+}
+
+// RSI 패인(Req 2, ASYMMETRIC: live+svg only, LWC 제외).
+//   0–100 스케일, 30/50/70 가이드선(점선), RSI 폴리라인. null 구간 끊어 그림.
+//   rsiVals 는 배치 캐시(anim.cachedRsi — view 길이와 동일).
+function _drawRsiPane(ctx, rsiVals, xCenter, L, right, top, n) {
+  const h = L.stripH;
+  const bot = top + h;
+  // y 변환: 0→bot, 100→top.
+  const yRsi = (v) => bot - (Math.max(0, Math.min(100, v)) / 100) * h;
+  // 30 / 50 / 70 가이드선.
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,255,255,0.10)"; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+  [30, 50, 70].forEach(lv => {
+    ctx.beginPath(); ctx.moveTo(L.padL, yRsi(lv)); ctx.lineTo(right, yRsi(lv)); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+  ctx.restore();
+  // RSI 폴리라인(teal).
+  _drawArrLine(ctx, rsiVals, xCenter, yRsi, "#4cd6b3", 1.2, 0.85, n);
+  // 라벨.
+  ctx.save();
+  ctx.fillStyle = "#4cd6b3"; ctx.font = "9px " + _slcFont();
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  ctx.fillText("RSI(14)", L.padL - 6, top + 6);
+  ctx.restore();
+}
+
+// MACD 패인(Req 2, ASYMMETRIC: live+svg only, LWC 제외).
+//   zero-centered: 히스토그램 막대(hist) + MACD 라인(teal) + 시그널 라인(amber).
+//   macdData 는 배치 캐시(anim.cachedMacd — {macd[], signal[], hist[]}, view 길이 동일).
+function _drawMacdPane(ctx, macdData, xCenter, slot, L, right, top, n) {
+  const h = L.stripH;
+  const mid = top + h / 2;
+  const half = h / 2 - 1;
+  const macd = macdData.macd || [];
+  const signal = macdData.signal || [];
+  const hist = macdData.hist || [];
+  // 스케일: hist 의 최대 절댓값 기준.
+  let maxAbs = 1;
+  for (let i = 0; i < n; i++) {
+    const v = hist[i];
+    if (v != null && isFinite(v)) maxAbs = Math.max(maxAbs, Math.abs(v));
+  }
+  const yMacd = (v) => (v == null || !isFinite(v)) ? mid : mid - (Math.max(-maxAbs, Math.min(maxAbs, v)) / maxAbs) * half;
+  // 0 기준선.
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,255,255,0.12)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(L.padL, mid); ctx.lineTo(right, mid); ctx.stroke();
+  ctx.restore();
+  // 히스토그램 막대(>0 teal / <0 red).
+  const barW = Math.max(1, slot * 0.55);
+  for (let i = 0; i < n; i++) {
+    const v = hist[i];
+    if (v == null || !isFinite(v)) continue;
+    const bh = Math.abs(yMacd(v) - mid);
+    const x = xCenter(i) - barW / 2;
+    const y = v >= 0 ? mid - bh : mid;
+    ctx.fillStyle = v > 0 ? "rgba(76,214,179,0.55)" : "rgba(255,93,108,0.55)";
+    ctx.fillRect(x, y, barW, Math.max(0.5, bh));
+  }
+  // MACD 라인(teal 실선).
+  _drawArrLine(ctx, macd, xCenter, yMacd, "#4cd6b3", 1.1, 0.9, n);
+  // 시그널 라인(amber 점선).
+  ctx.save();
+  ctx.setLineDash([3, 2]);
+  _drawArrLine(ctx, signal, xCenter, yMacd, "#f0b35a", 1, 0.8, n);
+  ctx.setLineDash([]);
+  ctx.restore();
+  // 라벨.
+  ctx.save();
+  ctx.fillStyle = "#4cd6b3"; ctx.font = "9px " + _slcFont();
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  ctx.fillText("MACD", L.padL - 6, top + 6);
   ctx.restore();
 }
 

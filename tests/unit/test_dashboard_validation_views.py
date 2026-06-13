@@ -414,7 +414,7 @@ class TestPortfolioSim:
 class TestFrontendContract:
     def test_research_lab_has_validation_tab_and_panel(self):
         src = (FRONTEND / "research-lab.jsx").read_text(encoding="utf-8")
-        assert '{ id: "validation", label: "Validation" }' in src
+        assert '{ id: "validation", label: "검증" }' in src
         assert "function _ValidationPanel" in src
         assert "/run_yearly?run_id=" in src
         assert "/selector_preview?run_id=" in src
@@ -444,7 +444,7 @@ class TestFrontendContract:
         assert "동결상관" in src
         assert "기권(시드 유지)" in src
         lab = (FRONTEND / "lab.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260613a" in lab
+        assert "research-lab.jsx?v=20260614a" in lab
         assert "ResearchLabPanel" in lab
         # Phase1/2(2026-06-11) — 사이드바·결정 페이지 계약.
         assert "run 목록" in lab
@@ -486,17 +486,17 @@ class TestFrontendContract:
         #   G1(폰트)·E3/E4(chart.jsx) 일괄 변경으로 관련 자산 전부 v20260613a 재범프.
         assert "styles.css?v=20260613a" in src
         assert "chart.jsx?v=20260613a" in src
-        assert "research-lab.jsx?v=20260613a" in src
+        assert "research-lab.jsx?v=20260614a" in src
         assert "app.jsx?v=20260613b" in src
-        assert "evolution-analysis.jsx?v=20260612a" in src
+        assert "evolution-analysis.jsx?v=20260614a" in src
         # Phase6-L — 리서치 프로 패널(별도 pro.html 에서도 로드).
         assert "research-pro.jsx?v=20260613b" in src
         assert "backtest-charts.jsx?v=20260613a" in src
-        assert "backtest.jsx?v=20260613a" in src
+        assert "backtest.jsx?v=20260614a" in src
         # Phase6-S — Canvas 라이브 차트는 simulation.jsx 보다 먼저 로드돼야 한다.
-        assert "sim-live-chart.jsx?v=20260613a" in src
-        assert "simulation-charts.jsx?v=20260613a" in src
-        assert "simulation.jsx?v=20260613b" in src
+        assert "sim-live-chart.jsx?v=20260614a" in src
+        assert "simulation-charts.jsx?v=20260614a" in src
+        assert "simulation.jsx?v=20260614a" in src
         # S3(2026-06-12) — lightweight-charts vendor 는 babel 이전 일반 script 로 로드.
         assert "vendor-lightweight-charts.js?v=20260612a" in src
         # src= 속성 기준 비교(주석 내 파일명 언급에 걸리지 않게).
@@ -622,4 +622,4 @@ class TestNewFrontendContract:
 
     def test_lab_html_cache_bumped(self):
         src = (FRONTEND / "lab.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260613a" in src
+        assert "research-lab.jsx?v=20260614a" in src
