@@ -156,11 +156,54 @@ _CALLABLE_WHITELIST = frozenset(
 )
 
 
+# 윈도우 집계 함수 — (윈도우, 시프트) 2-인자 호출형. 시프트(2번째 인자)는 1 이상
+# 이어야 한다. 14a/14b 실측: shift -1 = 평가 비용폭탄(356초 타임아웃) vs shift 1 =
+# 정상(18초, 20배). p5 규약은 shift>=-1을 형식 허용하나 -1/0은 비용폭탄이므로 차단.
+# (1-인자 호출형 — 당일거래대금각도(30) 등 — 은 시프트가 없어 검사 대상 아님.)
+_WINDOW_SHIFT_FUNCS = (
+    "이동평균", "최고현재가", "최저현재가", "초당거래대금평균", "체결강도평균",
+    "분당거래대금평균", "등락율각도", "당일거래대금각도", "전일비각도",
+    "최고분봉고가", "최저분봉저가", "분봉이동평균", "초당체결강도평균",
+)
+_WINDOW_SHIFT_RE = re.compile(
+    r"(?<![가-힣A-Za-z0-9_])(" + "|".join(re.escape(n) for n in _WINDOW_SHIFT_FUNCS)
+    + r")\s*\(\s*[^,()]+,\s*(-?\d+(?:\.\d+)?)\s*\)"
+)
+# 윈도우 시프트가 슬롯({name})으로 들어간 경우의 슬롯명 추출 — params 값 검사용.
+_WINDOW_SHIFT_SLOT_RE = re.compile(
+    r"(?:" + "|".join(re.escape(n) for n in _WINDOW_SHIFT_FUNCS)
+    + r")\s*\(\s*[^,()]+,\s*\{(\w+)\}\s*\)"
+)
+
+
+def _window_shift_errors(code: str) -> List[str]:
+    """윈도우 집계 함수의 시프트(2번째) 인자가 숫자 리터럴이고 1 미만이면 오류.
+
+    슬롯({...}) 시프트는 여기서 못 잡으므로 validate_hypothesis가 params 값으로
+    별도 검사한다. 14a/14b 실측 근거는 _WINDOW_SHIFT_FUNCS 주석 참조.
+    """
+    errors: List[str] = []
+    code = re.sub(r"#[^\n]*", "", code)
+    for m in _WINDOW_SHIFT_RE.finditer(code):
+        try:
+            shift = float(m.group(2))
+        except ValueError:
+            continue
+        if shift < 1:
+            errors.append(
+                f"'{m.group(1)}(..., {m.group(2)})' — 윈도우 시프트(2번째 인자)는 1 이상"
+                " 이어야 함. shift -1/0은 평가 비용폭탄(356초 타임아웃, 14a/14b 실측)"
+                " — shift 1은 18초 정상. 직전 N틱(현재 제외)은 1을 쓰라"
+            )
+    return errors
+
+
 def _engine_cost_errors(code: str) -> List[str]:
     """엔진 비용·의미 규칙 위반을 정적으로 찾는다 (순수 함수 — 테스트 대상)."""
     errors: List[str] = []
     # 주석 제거 — 주석 속 한국어 괄호("횡보(각도 평탄)" 등)의 호출 오탐 방지.
     code = re.sub(r"#[^\n]*", "", code)
+    errors.extend(_window_shift_errors(code))
     for name in _FUNC_REQUIRED_NAMES:
         pat = rf"(?<![가-힣A-Za-z0-9_]){re.escape(name)}(?![가-힣A-Za-z0-9_])(?!\s*\()"
         if re.search(pat, code):
@@ -273,6 +316,21 @@ def validate_hypothesis(payload: Dict[str, Any]) -> List[str]:
     errors.extend(_engine_cost_errors(sell_tmpl))
 
     # 오류가 이미 있으면 렌더 검증 전에 반환 (포맷 오류 있으면 렌더가 터짐)
+    if errors:
+        return errors
+
+    # 윈도우 시프트 슬롯의 모든 후보값(default 포함)이 1 이상인지 검사.
+    # (리터럴 시프트<1은 _engine_cost_errors가 위에서 이미 차단·조기반환했다.)
+    shift_slots = set(_WINDOW_SHIFT_SLOT_RE.findall(buy_tmpl + " " + sell_tmpl))
+    for p in params:
+        if p["name"] in shift_slots:
+            vals = [p.get("default"), *p.get("values", [])]
+            bad = [v for v in vals if isinstance(v, (int, float)) and v < 1]
+            if bad:
+                errors.append(
+                    f"params['{p['name']}'](윈도우 시프트 슬롯) 값 {bad}가 1 미만 — "
+                    "shift는 1 이상만 허용(shift -1/0=평가 비용폭탄 356초, 14a/14b 실측)"
+                )
     if errors:
         return errors
 

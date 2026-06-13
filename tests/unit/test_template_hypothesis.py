@@ -311,3 +311,55 @@ class TestEngineCostRules:
         code = "매수 = 이동평균(20, 1) < 현재가 and 누적초당매수수량(10) > 0 and 매도잔량1N(1) > 매도잔량1"
         assert _engine_cost_errors(code) == []
 
+    # --- 윈도우 시프트 규칙 (14a/14b 회귀: shift -1 = 비용폭탄 356s) ---
+    def test_window_shift_negative_literal_rejected(self) -> None:
+        """윈도우함수 시프트 리터럴 -1은 정적 거부(14a/14b 타임아웃 회귀)."""
+        from ai_strategy_loop.scripts.gen_template_hypothesis import _engine_cost_errors
+        code = "현재가 > 최고현재가(30, -1) and 초당거래대금 >= 초당거래대금평균(8, -1) * 8"
+        errors = _engine_cost_errors(code)
+        assert any("시프트" in e and "1 이상" in e for e in errors), errors
+
+    def test_window_shift_zero_literal_rejected(self) -> None:
+        """시프트 0도 1 미만이므로 거부."""
+        from ai_strategy_loop.scripts.gen_template_hypothesis import _window_shift_errors
+        assert _window_shift_errors("이동평균(20, 0) < 현재가") != []
+
+    def test_window_shift_one_literal_allowed(self) -> None:
+        """시프트 1은 정상(gen8/gen9/THETA 관례, 18~33초)."""
+        from ai_strategy_loop.scripts.gen_template_hypothesis import _window_shift_errors
+        assert _window_shift_errors("현재가 > 최고현재가(30, 1) and 등락율각도(9, 2) >= 5") == []
+
+    def test_window_one_arg_call_not_flagged(self) -> None:
+        """1-인자 호출형(당일거래대금각도(30))은 시프트가 없어 검사 대상 아님."""
+        from ai_strategy_loop.scripts.gen_template_hypothesis import _window_shift_errors
+        assert _window_shift_errors("당일거래대금각도(30) > 5") == []
+
+    def test_window_shift_slot_negative_value_rejected(self) -> None:
+        """시프트 슬롯 후보값에 -1이 있으면 validate_hypothesis가 거부(슬롯 경로)."""
+        payload = {
+            "name": "llmgen_shift_slot_probe",
+            "buy_template": "if 시분초 >= 90000 and 현재가 > 최고현재가({bw}, {bsh}):\n    self.Buy()",
+            "sell_template": "if 수익률 >= {tp}:\n    self.Sell()",
+            "params": [
+                {"name": "bw", "default": 30, "values": [20, 30], "side": "buy", "note": "윈도우"},
+                {"name": "bsh", "default": 1, "values": [1, 2, -1], "side": "buy", "note": "시프트"},
+                {"name": "tp", "default": 5, "values": [5, 7], "side": "sell", "note": "익절"},
+            ],
+        }
+        errors = validate_hypothesis(payload)
+        assert any("시프트 슬롯" in e for e in errors), errors
+
+    def test_window_shift_slot_all_positive_passes(self) -> None:
+        """시프트 슬롯 값이 모두 1 이상이면 통과(캐너리 — 최소 템플릿 자체는 유효)."""
+        payload = {
+            "name": "llmgen_shift_slot_ok",
+            "buy_template": "if 시분초 >= 90000 and 현재가 > 최고현재가({bw}, {bsh}):\n    self.Buy()",
+            "sell_template": "if 수익률 >= {tp}:\n    self.Sell()",
+            "params": [
+                {"name": "bw", "default": 30, "values": [20, 30], "side": "buy", "note": "윈도우"},
+                {"name": "bsh", "default": 1, "values": [1, 2, 3], "side": "buy", "note": "시프트"},
+                {"name": "tp", "default": 5, "values": [5, 7], "side": "sell", "note": "익절"},
+            ],
+        }
+        assert validate_hypothesis(payload) == []
+
