@@ -1,0 +1,4 @@
+[BATCH] run_id=smoke_llmg13_q2_20260613 pairs=1
+[BATCH] prepare status=ok back_count=923 elapsed=83s
+[BATCH] gen0 LLMG13 smallcap prebreak ok profit=-3,251,450 mdd=12.81 trades=518 daily=8.50 payoff=1.3999815984328714 gate=False reason=total_profit -3.251e+06 <= 0 (33s)
+[BATCH] done
