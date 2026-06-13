@@ -35,6 +35,11 @@
 | 25 | 체결강도 지속 가속 | strength_persistent_accel_break | -7.29M/380건 · -4.15M/602건 | no-go |
 | 26 | 거래대금 가속도(각도상승) | f07_money_angle_accel_break_qtyskew | -4.28M/345건 · -8.50M/588건 | no-go |
 
+## 28세대 (누적 순매수 축적 — no-go)
+- cum_buy_pressure_priorhigh_break: Q1 -12.95M/MDD33/640건 · Q2 -10.12M/MDD28/905건.
+  시드가 게이트로만 쓰던 순매수를 주신호化해도 홍수 손실. 시드구성요소 주신호화 무효.
+- **14~28 총 15 가설 전멸. 활성 생성 종료(이후 standby+워치독, /goal clear 대기).**
+
 ## 27세대 (라운드피겨 돌파 — no-go) + 진짜 소진
 - roundfigure_breakout_flow906: Q1 -808,177/MDD17/17건 · Q2 -965,138/MDD20/41건. no-go.
   시드가 라운드피겨 근접을 회피 필터로 쓴 것이 옳았음(정수대 돌파도 엣지 없음).
