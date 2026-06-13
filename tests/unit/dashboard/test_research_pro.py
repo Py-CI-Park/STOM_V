@@ -103,12 +103,20 @@ class TestResearchProSource:
         assert "/ui/pro.html" in src
 
     def test_app_jsx_links_research_pro(self):
+        # Phase9(2026-06-13) — SPA 6탭 통합: app.jsx 의 pro.html 풀 리로드 하드링크는
+        #   제거됐다. 대신 인페이지 탭으로 window.ProPage 를 마운트한다(단일 SPA).
         src = _read_front("app.jsx")
-        assert "/ui/pro.html" in src
+        assert "/ui/pro.html" not in src
+        assert "window.ProPage" in src
+        assert 'activeTab === "pro"' in src
 
     def test_pro_html_mounts_panel(self):
+        # Phase9 — pro.html 본문 정본은 dashboard-pages.jsx 전역 window.ProPage 로
+        #   이전됐다. pro.html 은 그 전역을 마운트하고, ResearchProPanel 의존(research-pro.jsx)과
+        #   백테 차트 전역(backtest-charts.jsx)은 dashboard-pages.jsx 이전에 로드한다.
         html = _read_front("pro.html")
-        assert "<ResearchProPanel" in html
+        assert "<window.ProPage" in html
+        assert "dashboard-pages.jsx" in html
         assert "research-pro.jsx" in html
         # 백테 차트 전역 의존 로드(BtResultArea 재사용).
         assert "backtest-charts.jsx" in html

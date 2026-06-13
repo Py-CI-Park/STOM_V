@@ -146,26 +146,17 @@ function App() {
                 autonomous_strategy_loop · contract_v{health.contract_version ?? state.contract_version ?? 1}
               </span>
             </div>
-            {/* Phase6-E1(2026-06-13) — 공통 네비 체계화: 맨글자 링크 → 의미가 드러나는
-                페이지 버튼 그룹(아이콘+라벨+호버 설명). 사용자 피드백: "운영 연구 결정"이
-                무엇인지 알 수 없음. */}
-            <nav className="stom-pagenav mono" aria-label="페이지 이동">
+            {/* Phase9(2026-06-13) — SPA 6탭 통합: 별도 HTML 풀 리로드 하드링크(연구실/
+                리서치프로/결정)를 제거. 네비는 아래 탭바(TabNav)가 전담하고, 여기는
+                "현재 위치"만 표시하는 브레드크럼으로 축소(이중 진입·명명 혼란 제거). */}
+            <nav className="stom-pagenav mono" aria-label="현재 위치">
               <span className="stom-pagenav-item stom-pagenav-active"
-                    title="운영 대시보드(현재 페이지) — 진화 루프 운영 상태·백테스트·차트 시뮬레이션">
-                ⚙ 운영
+                    title="현재 보고 있는 탭(아래 탭바로 전환)">
+                {(() => {
+                  const cur = STOM_TABS.find(t => t.key === activeTab);
+                  return cur ? `${cur.icon} ${cur.label}` : "STOM";
+                })()}
               </span>
-              <a className="stom-pagenav-item" href="/ui/lab.html"
-                 title="연구실 페이지로 이동 — run 비교·검증 뷰·TMAP 지도 등 연구 결과 화면">
-                🔬 연구실
-              </a>
-              <a className="stom-pagenav-item" href="/ui/pro.html" target="_blank" rel="noopener"
-                 title="리서치 프로(새 탭, 전체화면) — 명예의 전당·히스토리·프로세스 흐름까지 보는 상세 분석 워크스페이스">
-                📊 리서치 프로
-              </a>
-              <a className="stom-pagenav-item" href="/ui/verdict.html"
-                 title="결정 이력 페이지로 이동 — 전략 동결/승격 결정 기록">
-                ⚖ 결정
-              </a>
             </nav>
           </div>
 
@@ -247,7 +238,28 @@ function App() {
         <ErrorBoundary>
           <BacktestTab baseUrl={baseUrl} wsStatus={wsStatus} />
         </ErrorBoundary>
-      ) : activeTab === "simulation" ? null : isIdle ? (
+      ) : activeTab === "simulation" ? null
+        /* Phase9 — SPA 6탭: 연구실/분석 프로/결정 이력은 dashboard-pages.jsx 전역을
+           마운트. 전역 부재 시(로드 순서 이상) 크래시 대신 자리표시자. */
+        : activeTab === "lab" ? (
+        <ErrorBoundary>
+          {window.LabPage
+            ? <window.LabPage baseUrl={baseUrl} />
+            : <div className="research-empty" style={{ padding: "12px 16px" }}>연구실 로딩 중…</div>}
+        </ErrorBoundary>
+      ) : activeTab === "pro" ? (
+        <ErrorBoundary>
+          {window.ProPage
+            ? <window.ProPage baseUrl={baseUrl} />
+            : <div className="research-empty" style={{ padding: "12px 16px" }}>분석 프로 로딩 중…</div>}
+        </ErrorBoundary>
+      ) : activeTab === "verdict" ? (
+        <ErrorBoundary>
+          {window.VerdictPanel
+            ? <window.VerdictPanel baseUrl={baseUrl} />
+            : <div className="research-empty" style={{ padding: "12px 16px" }}>결정 이력 로딩 중…</div>}
+        </ErrorBoundary>
+      ) : isIdle ? (
         <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} />
       ) : (
         <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -377,10 +389,16 @@ function App() {
 //   Phase4 트랙A(2026-06-12): 대형화·강한 활성 대비·탭 아이콘.
 //   크기/색/대비는 styles.css(.stom-tabnav / .stom-tab / .stom-tab-active)에서
 //   구동한다 — 인라인 스타일은 클래스를 덮으므로 사이즈 prop을 두지 않는다.
+// Phase9(2026-06-13) — SPA 6탭 통합: 별도 HTML(lab/pro/verdict)을 인페이지 탭으로
+//   승격해 풀 리로드·중복 진입을 제거. lab/pro/verdict 본문은 dashboard-pages.jsx
+//   전역(window.LabPage / ProPage / VerdictPanel)이 담당한다.
 const STOM_TABS = [
   { key: "evolution", label: "진화 대시보드", icon: "🧬" },
   { key: "backtest", label: "백테스트", icon: "📊" },
   { key: "simulation", label: "차트 시뮬레이션", icon: "📈" },
+  { key: "lab", label: "연구실", icon: "🔬" },
+  { key: "pro", label: "분석 프로", icon: "📊" },
+  { key: "verdict", label: "결정 이력", icon: "⚖️" },
 ];
 
 function TabNav({ activeTab, onSelect }) {
