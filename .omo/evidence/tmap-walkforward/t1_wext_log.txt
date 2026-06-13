@@ -1,0 +1,8 @@
+[BATCH] run_id=t1_wext_train_20260613 pairs=5
+[BATCH] prepare status=ok back_count=2285 elapsed=254s
+[BATCH] gen0 BASE_SEED ok profit=8,631,199 mdd=17.44 trades=307 daily=0.40 payoff=1.4861642479780424 gate=True reason=ok (141s)
+[BATCH] gen1 FROZEN_THETA(=90500) ok profit=10,965,479 mdd=10.04 trades=272 daily=0.40 payoff=1.534815263812587 gate=True reason=ok (144s)
+[BATCH] gen2 T1 THETA+we90700 ok profit=11,166,131 mdd=11.45 trades=391 daily=0.50 payoff=1.4154777040619668 gate=True reason=ok (146s)
+[BATCH] gen3 T1 THETA+we91000 ok profit=7,960,866 mdd=17.51 trades=512 daily=0.70 payoff=1.4383362092252152 gate=True reason=ok (146s)
+[BATCH] gen4 T1 THETA+we91500 ok profit=5,821,073 mdd=26.35 trades=657 daily=0.90 payoff=1.4199698946312092 gate=True reason=ok (147s)
+[BATCH] done
