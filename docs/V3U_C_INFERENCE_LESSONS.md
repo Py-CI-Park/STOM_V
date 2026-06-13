@@ -14,6 +14,17 @@ V3U lane의 `V3U_INFERENCE_LESSONS.md`가 pyd-free 추론 결함을 다룬다면
 
 ## 2. 사이클 인벤토리
 
+### 사이클 5 (2026-06-13): V3.19~V3.32 흡수 (V3U lane 따라잡기) — 결함 0건
+
+- 산출: merge commit `32900141` (`git merge --no-ff STOM_Version_3U`)
+- 흡수: V3.19~V3.32 + 결함 #16 fix + A5 proc_chqs spawn + V3.32 TTS/homepg
+- 테스트: tests/v3u 49 + tests/v3uc 32 = 81 케이스 PASS, 통합 게이트 8/8
+- 발견 결함: 0건 (merge 충돌 0 + 런타임 소스는 V3U 검증분 그대로 상속)
+- 핵심 교훈: **V3U→3U_C hop은 git merge, V3공식→V3U hop은 overlay/E1**. 혼동 금지
+  (상세 docs/update_log/2026-06-13_v3uc_v319_v332_absorption.md "흡수 방식" 절)
+- pyttsx_sound.py 삭제는 upstream 제거 전파(custom 손실 아님)
+- 문서: docs/update_log/2026-06-13_v3uc_v319_v332_absorption.md
+
 ### 사이클 4 (2026-05-30): E2 V3U/3U_C 통합 CLI 도입
 
 - 산출: scripts/v3uc_cli.py (~330 라인, 7 subcommand, 디스패처 패턴)
@@ -70,13 +81,14 @@ V3U lane의 `V3U_INFERENCE_LESSONS.md`가 pyd-free 추론 결함을 다룬다면
 
 ## 4. 통계 (지속 갱신)
 
-| 측정 | 값 (사이클 4 종료 시점, 2026-05-30) |
+| 측정 | 값 (사이클 5 종료 시점, 2026-06-13) |
 |---|---|
-| 총 발견 결함 | 2 (#1 argparse parents, #2 cp949 인코딩) |
-| 자동 회귀 테스트 | 32 (test_ingest 4 + test_db_compat 7 + test_strategy_mig 5 + test_cli 16) |
+| 총 발견 결함 | 2 (#1 argparse parents, #2 cp949 인코딩) — 사이클 5 신규 0건 |
+| 자동 회귀 테스트 | 3U_C custom 32 + V3U 안전망 상속 49 = 81 |
 | 신규 자동 도구 | 4 (ingest_pipeline, db_compatibility_check, strategy_migration, cli) |
-| 신규 문서 | 6 (INGEST_PIPELINE + DB_MIGRATION_PLAN + CLI_GUIDE + LESSONS + NEXT_STEPS + CARRY_FORWARD 항목) |
+| 신규 문서 | 6 + 흡수 감사 1 (2026-06-13_v3uc_v319_v332_absorption.md) |
 | 활성 custom 작업 | E1·E5·E7·E2 완료, E3/E4/E6 미진행 |
+| lane 버전 | **V3.32** (사이클 5에서 V3.18 → V3.32 따라잡기 완료) |
 | custom 작업 카테고리 카탈로그 | E1~E7 (V3U_C_NEXT_STEPS.md) |
 
 ## 5. 운영 규칙

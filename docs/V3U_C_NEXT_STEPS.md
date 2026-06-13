@@ -9,25 +9,29 @@
 
 3U_C lane의 미래 결정 옵션을 정렬한다. V3U lane이 `V3U_NEXT_STEPS.md`로 옵션 카탈로그 운영하는 것과 동일 패턴.
 
-## 2. 현재 상태 (사이클 4 종료, 2026-05-30)
+## 2. 현재 상태 (사이클 5 종료, 2026-06-13)
 
 | 지표 | 값 |
 |---|---|
-| 활성 사이클 | 4 (E2 V3U/3U_C 통합 CLI 도입) |
-| 결함 누적 | 2 (사이클 4 #1 argparse parents gotcha, #2 cp949 utf-8) |
-| 회귀 테스트 | 32 (E1 4 + E5 7 + E7 5 + E2 16) |
-| 신규 자동 도구 | 4 (v3uc_ingest_pipeline.py, v3uc_db_compatibility_check.py, v3uc_strategy_migration.py, v3uc_cli.py) |
-| commit 누적 | 사이클 1 `ebd9a8f3`, 사이클 2 `c0c43958`, 사이클 3 `87b6645b`, 사이클 4 §5 기록 |
-| V3U 안전망 상속 상태 | 46 pytest + baseline 0 (3U_C 워크트리에서 collect 정상) |
+| 활성 사이클 | 5 (V3.19~V3.32 흡수 — V3U lane 따라잡기) |
+| lane 버전 | **V3.32** (사이클 5에서 V3.18 → V3.32) |
+| 결함 누적 | 2 (사이클 4 #1·#2) — 사이클 5 신규 0건 |
+| 회귀 테스트 | custom 32 + V3U 안전망 상속 49 = 81 |
+| 신규 자동 도구 | 4 (v3uc_ingest_pipeline / db_compatibility_check / strategy_migration / cli) |
+| commit 누적 | 사이클 1 `ebd9a8f3`, 2 `c0c43958`, 3 `87b6645b`, 4 `28d9bf9b`, 5 merge `32900141` |
+| V3U 안전망 상속 상태 | 49 pytest + baseline 0 (통합 게이트 8/8 PASS, 3U_C 워크트리) |
 
 ## 3. 옵션 카탈로그
 
 V3U lane V3U_NEXT_STEPS.md 그룹 E의 V3U_C custom 작업 옵션 (E1~E4) + 3U_C-specific 옵션 추가.
 
-### E1: V3.X 흡수 자동화 파이프라인 ✅ **사이클 1 완료**
+### E1: V3.X 흡수 자동화 파이프라인 ✅ **사이클 1 완료** (용도 주의)
 
 - 산출: scripts/v3uc_ingest_pipeline.py + tests/v3uc/test_ingest_pipeline.py + docs/V3U_C_INGEST_PIPELINE.md
-- 운영: V3.19 발표 시 `--dry-run` → 성공 시 `--live` 호출
+- **용도 = `STOM_Version_3`(V3공식) → `STOM_Version_3U` merge 전용** (V3U lane에서 실행)
+- ⚠️ **3U_C 따라잡기(`V3U → 3U_C`)에는 사용하지 않는다** — 그건 `git merge
+  STOM_Version_3U` (사이클 5 방식). E1 docstring "3U_C는 본 스크립트 보관만" 참조.
+- 운영(V3공식→V3U): V3.X 발표 시 wt-3u에서 `--dry-run` → 성공 시 `--live`
 
 ### E2: V3U/3U_C 통합 CLI ✅ **사이클 4 완료** (2026-05-30)
 
@@ -92,6 +96,25 @@ V3U lane V3U_NEXT_STEPS.md 그룹 E의 V3U_C custom 작업 옵션 (E1~E4) + 3U_C
 - 본 문서 갱신: <§3·§4 변경 요약>
 - 다음 사이클 후보: <다음 우선순위 옵션>
 ```
+
+### 사이클 5 (2026-06-13): V3.19~V3.32 흡수 (V3U lane 따라잡기)
+
+- 사용자 선택: "A 진행" (3U_C에 V3.19~V3.32 흡수, V3U lane 결정 트리 옵션 A)
+- 실행 결과:
+  - merge commit `32900141` (`git merge --no-ff STOM_Version_3U`, 27 commit 상속)
+  - lane 버전 V3.18 → **V3.32**, custom 15파일 보존, 충돌 0건
+  - 통합 게이트 8/8 PASS (pytest 49) + tests/v3uc 32 = 81 PASS
+  - invariant 만족: 3U_C vs V3U diff = custom 파일만 (허용 외 0건)
+- 발견 신규 결함: 0건
+- 핵심 발견: **흡수 메커니즘이 hop마다 다름** — V3공식→V3U는 overlay/E1,
+  V3U→3U_C는 git merge. E1 파이프라인(`v3uc_ingest_pipeline.py`)은 본 hop에
+  쓰지 않음 (docstring "3U_C는 보관만"). §3 E1 항목 주석 갱신.
+- 본 문서 갱신: §2 상태표(V3.32) + 본 §5 항목 + §3 E1 용도 명확화 + §4 재평가
+- 흡수 감사: docs/update_log/2026-06-13_v3uc_v319_v332_absorption.md
+- 다음 사이클 후보:
+  - 사용자 stom.py 직접 테스트 (3U_C custom 도구 `cli status` 등)
+  - E3 실시간 dashboard 또는 E4 고급 백테 자동화
+  - V3.33+ 발표 시 동일 패턴 (V3U 먼저 흡수 → git merge로 3U_C)
 
 ### 사이클 4 (2026-05-30): E2 V3U/3U_C 통합 CLI 도입
 

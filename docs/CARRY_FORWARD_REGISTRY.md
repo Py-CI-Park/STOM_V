@@ -157,6 +157,22 @@ This rule does not loosen the 2U rule: `STOM_Version_2U` remains the pyd-to-py i
   - backtest.db / code_info.db / setting.db schema 변환 (별도 사이클)
   - 분석 시스템 학습 DB(volume_spike·pattern 등) 폴리시 자동화
 
+### 사이클 5 (2026-06-13): V3.19~V3.32 흡수 (V3U lane 따라잡기)
+
+- 신규 custom 파일: 없음 (사이클 5는 흡수 사이클, 도구 추가 아님)
+- 추가 문서: `docs/update_log/2026-06-13_v3uc_v319_v332_absorption.md` (흡수 감사)
+- merge: `32900141` (`git merge --no-ff STOM_Version_3U`), lane V3.18 → V3.32
+- invariant 재확인: `3U_C vs 3U` diff = custom 15파일만 (허용 외 0건, 본 registry
+  사이클 1~3 등록분 + V3U_C_* 문서). 3-tier verification 전부 PASS.
+- carry-forward 위험: 없음 (merge 충돌 0 + 통합 게이트 8/8 + tests/v3uc 32 PASS)
+- **흡수 메커니즘 명문화 (재발 방지)**:
+  - `V3공식(wt-3) → V3U(wt-3u)`: overlay (pyd 제외) 또는 E1 파이프라인
+  - `V3U(wt-3u) → 3U_C(wt-3uc)`: **git merge STOM_Version_3U** ← 본 사이클
+  - E1(`v3uc_ingest_pipeline.py`)은 V3공식→V3U 전용, 3U_C hop에 사용 금지
+- 잔여 의무:
+  - V3.33+ 발표 시: V3U 먼저 흡수 → `git merge STOM_Version_3U`로 3U_C 따라잡기
+  - 3U_C 워크트리 사용자 stom.py 직접 테스트 (custom 도구 `cli status` 등)
+
 ### 사이클 3 (2026-05-23): E7 strategy.db V2→V3 조건식 마이그레이션
 
 - 추가 파일 (custom allowlist 등록):
