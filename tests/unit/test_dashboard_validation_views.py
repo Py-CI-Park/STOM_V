@@ -623,3 +623,104 @@ class TestNewFrontendContract:
     def test_lab_html_cache_bumped(self):
         src = (FRONTEND / "lab.html").read_text(encoding="utf-8")
         assert "research-lab.jsx?v=20260614a" in src
+
+
+class TestPortfolioVerdict:
+    """V6 채택 추천 포트폴리오(2026-06-13) — /portfolio_verdict 정상·파일 부재 계약."""
+
+    def test_adopted_when_complement_decision_and_m4_exist(self, tmp_path, monkeypatch):
+        """decisions.jsonl(complement) + m4_monitor_baseline.json 픽스처 → adopted=true."""
+        import json as _json
+
+        import ai_strategy_loop.dashboard.app as A
+
+        # decisions.jsonl 픽스처
+        decisions_file = tmp_path / "decisions.jsonl"
+        decisions_file.write_text(
+            _json.dumps({"ts": 1000.0, "verdict": "complement",
+                         "note": "V6 test note", "candidate": None}) + "\n",
+            encoding="utf-8",
+        )
+
+        # m4_monitor_baseline.json 픽스처
+        m4_dir = tmp_path / ".omo" / "evidence" / "tmap-walkforward"
+        m4_dir.mkdir(parents=True)
+        m4_data = {
+            "report": {
+                "months": [{"month": "202301", "champion": 100, "challenger": 80}],
+                "champion_total": 13000000,
+                "challenger_total": 10000000,
+                "alerts": [],
+            }
+        }
+        (m4_dir / "m4_monitor_baseline.json").write_text(
+            _json.dumps(m4_data), encoding="utf-8"
+        )
+
+        monkeypatch.setattr(A, "DECISIONS_FILE", str(decisions_file))
+        monkeypatch.setattr(A, "M4_MONITOR_BASELINE_FILE",
+                            str(m4_dir / "m4_monitor_baseline.json"))
+
+        out = A._portfolio_verdict_payload()
+        assert out["adopted"] is True
+        assert isinstance(out["members"], list)
+        assert len(out["members"]) == 2
+        assert out["members"][0]["name"] == "THETA"
+        assert out["members"][1]["name"] == "T2C3"
+        assert out["m4"]["champion_total"] == 13000000
+        assert out["m4"]["challenger_total"] == 10000000
+        assert out["m4"]["n_months"] == 1
+        assert isinstance(out["m4"]["alerts"], list)
+        assert out["decision_note"] == "V6 test note"
+        assert "findings_doc" in out
+
+    def test_unavailable_when_no_files(self, tmp_path, monkeypatch):
+        """decisions.jsonl·m4_monitor_baseline.json 모두 없으면 unavailable."""
+        import ai_strategy_loop.dashboard.app as A
+
+        monkeypatch.setattr(A, "DECISIONS_FILE", str(tmp_path / "no_decisions.jsonl"))
+        monkeypatch.setattr(A, "M4_MONITOR_BASELINE_FILE",
+                            str(tmp_path / "no_m4.json"))
+
+        out = A._portfolio_verdict_payload()
+        assert out["adopted"] is False
+        assert out.get("status") == "unavailable"
+
+    def test_endpoint_returns_200(self, tmp_path, monkeypatch):
+        """TestClient로 /portfolio_verdict GET → 200 + adopted 키 존재."""
+        import json as _json
+
+        from fastapi.testclient import TestClient
+
+        import ai_strategy_loop.dashboard.app as A
+
+        decisions_file = tmp_path / "d.jsonl"
+        decisions_file.write_text(
+            _json.dumps({"ts": 1.0, "verdict": "complement", "note": "ok",
+                         "candidate": None}) + "\n",
+            encoding="utf-8",
+        )
+        m4_dir = tmp_path / ".omo" / "evidence" / "tmap-walkforward"
+        m4_dir.mkdir(parents=True)
+        (m4_dir / "m4_monitor_baseline.json").write_text(
+            _json.dumps({"report": {"months": [], "champion_total": 1,
+                                    "challenger_total": 2, "alerts": []}}),
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(A, "DECISIONS_FILE", str(decisions_file))
+        monkeypatch.setattr(A, "M4_MONITOR_BASELINE_FILE",
+                            str(m4_dir / "m4_monitor_baseline.json"))
+
+        client = TestClient(A.create_app())
+        r = client.get("/portfolio_verdict")
+        assert r.status_code == 200
+        data = r.json()
+        assert "adopted" in data
+
+    def test_verdict_html_has_portfolio_panel(self):
+        """verdict.html에 V6 포트폴리오 패널 필수 문자열이 존재한다."""
+        src = (FRONTEND / "verdict.html").read_text(encoding="utf-8")
+        assert "/portfolio_verdict" in src
+        assert "V6 채택 추천 포트폴리오" in src
+        assert "portfolio.adopted" in src
+        assert "findings_doc" in src

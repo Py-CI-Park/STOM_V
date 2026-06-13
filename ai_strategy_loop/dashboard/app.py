@@ -2552,6 +2552,87 @@ def _pipeline_status_payload() -> Dict[str, Any]:
     return out
 
 
+M4_MONITOR_BASELINE_FILE = os.path.join(
+    REPO_ROOT, ".omo", "evidence", "tmap-walkforward", "m4_monitor_baseline.json"
+)
+
+_T2C3_FINDINGS_DOC = os.path.join(
+    ".omo", "evidence", "tmap-walkforward", "t2c3_verdict_findings.md"
+)
+
+# V6 포트폴리오 구성(하드코딩 — V6 결정 불변).
+_V6_MEMBERS = [
+    {"name": "THETA", "weight": 0.5},
+    {"name": "T2C3", "weight": 0.5},
+]
+
+
+def _portfolio_verdict_payload() -> Dict[str, Any]:
+    """V6 채택 추천 포트폴리오 패널 데이터(읽기 전용, 무예외).
+
+    m4_monitor_baseline.json(포트폴리오 vs 시드 월별 M4 baseline) +
+    decisions.jsonl(최신 complement 결정) 을 읽어 반환한다.
+
+    반환:
+      {"adopted": true/false,
+       "members": [{"name":"THETA","weight":0.5},{"name":"T2C3","weight":0.5}],
+       "m4": {"champion_total":..., "challenger_total":..., "alerts":[...], "n_months":...},
+       "decision_note": "<complement 결정의 note>",
+       "findings_doc": "<t2c3_verdict_findings.md 상대경로>"}
+
+    파일 부재/오류 시 {"adopted": false, "status": "unavailable"}. 무예외 계약.
+    """
+    # decisions.jsonl 에서 최신 complement 레코드 탐색.
+    decision_note: Optional[str] = None
+    adopted = False
+    try:
+        with open(DECISIONS_FILE, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except (ValueError, TypeError):
+                    continue
+                if rec.get("verdict") == "complement":
+                    decision_note = str(rec.get("note") or "")
+                    adopted = True
+    except FileNotFoundError:
+        pass
+    except Exception:  # noqa: BLE001 - 무예외 계약.
+        pass
+
+    # m4_monitor_baseline.json 읽기.
+    m4: Optional[Dict[str, Any]] = None
+    try:
+        with open(M4_MONITOR_BASELINE_FILE, encoding="utf-8") as fh:
+            raw = json.load(fh)
+        report = (raw or {}).get("report") or {}
+        months = report.get("months") or []
+        m4 = {
+            "champion_total": report.get("champion_total"),
+            "challenger_total": report.get("challenger_total"),
+            "alerts": report.get("alerts") or [],
+            "n_months": len(months),
+        }
+    except FileNotFoundError:
+        pass
+    except Exception:  # noqa: BLE001 - 무예외 계약.
+        pass
+
+    if not adopted and m4 is None:
+        return {"adopted": False, "status": "unavailable"}
+
+    return {
+        "adopted": adopted,
+        "members": _V6_MEMBERS,
+        "m4": m4,
+        "decision_note": decision_note,
+        "findings_doc": _T2C3_FINDINGS_DOC,
+    }
+
+
 def create_app() -> FastAPI:
     """대시보드 FastAPI 앱을 생성한다 (테스트가 TestClient로 감싼다)."""
     manager = LoopProcessManager()
@@ -2695,6 +2776,11 @@ def create_app() -> FastAPI:
     def pipeline_status() -> Dict[str, Any]:
         """과업3(2026-06-12) — 파이프라인 체크포인트 상태(.omo/evidence/pipeline/*/state.json). 읽기 전용·무예외."""
         return _pipeline_status_payload()
+
+    @app.get("/portfolio_verdict")
+    def portfolio_verdict() -> Dict[str, Any]:
+        """V6 채택 추천 포트폴리오(2026-06-13) — m4 baseline + 최신 complement 결정. 읽기 전용·무예외."""
+        return _portfolio_verdict_payload()
 
     @app.get("/niche_compare")
     def niche_compare(run_ids: str = "") -> Dict[str, Any]:

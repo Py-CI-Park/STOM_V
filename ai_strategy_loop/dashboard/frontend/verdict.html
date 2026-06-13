@@ -12,7 +12,8 @@
 </head>
 <body>
   <!-- Phase2(2026-06-11) — 결정 페이지: 증거(체크리스트·결산)를 보고 V6 운용
-       결정을 기록한다(append-only — 번복도 새 레코드, 이력 보존). -->
+       결정을 기록한다(append-only — 번복도 새 레코드, 이력 보존).
+       Phase3(2026-06-13) — V6 채택 추천 포트폴리오 패널 추가. -->
   <div id="root">
     <div style="padding:40px;font-family:system-ui,sans-serif;color:#9fb0c0;background:#0c1014;min-height:100vh;">
       Verdict 로딩 중… (지속 시 Ctrl+Shift+R)
@@ -30,6 +31,7 @@
       const [saved, setSaved] = React.useState(null);
       const [regime, setRegime] = React.useState(null);
       const [revival, setRevival] = React.useState(null);
+      const [portfolio, setPortfolio] = React.useState(null);
 
       const loadHistory = () =>
         fetch("/decisions", { signal: AbortSignal.timeout(8000) })
@@ -43,6 +45,8 @@
           .then(r => (r.ok ? r.json() : null)).then(j => setRegime(j)).catch(() => {});
         fetch("/revival_registry", { signal: AbortSignal.timeout(10000) })
           .then(r => (r.ok ? r.json() : null)).then(j => setRevival(j)).catch(() => {});
+        fetch("/portfolio_verdict", { signal: AbortSignal.timeout(10000) })
+          .then(r => (r.ok ? r.json() : null)).then(j => setPortfolio(j)).catch(() => {});
         loadHistory();
       }, []);
 
@@ -148,6 +152,61 @@
           )}
           {revival && revival.status === "unavailable" && (
             <div className="mono" style={{ fontSize: 11, marginTop: 8, opacity: 0.6 }}>패자부활 레지스트리: 데이터 없음</div>
+          )}
+
+          {/* ★ V6 채택 추천 포트폴리오 패널 */}
+          {portfolio && portfolio.adopted && (
+            <div style={{ marginTop: 14, padding: 12, border: "1px solid rgba(90,180,100,0.35)", borderRadius: 6, background: "rgba(50,120,60,0.08)" }}>
+              <div className="research-empty" style={{ color: "#7c4" }}>★ V6 채택 추천 포트폴리오</div>
+              <div className="mono" style={{ fontSize: 12, marginTop: 6 }}>
+                {(portfolio.members || []).map(m => (
+                  <span key={m.name} style={{ marginRight: 16 }}>
+                    <b>{m.name}</b> {Math.round(m.weight * 100)}%
+                  </span>
+                ))}
+              </div>
+              {portfolio.m4 && (
+                <div style={{ marginTop: 8 }}>
+                  <div className="mono" style={{ fontSize: 11, opacity: 0.75, marginBottom: 2 }}>M4 baseline (포트폴리오 vs 시드 — {portfolio.m4.n_months}개월)</div>
+                  <div className="mono" style={{ fontSize: 12 }}>
+                    포트폴리오 합계: <b>{portfolio.m4.champion_total != null ? Math.round(portfolio.m4.champion_total).toLocaleString() : "—"}</b>
+                    {" · "}
+                    시드 합계: <b>{portfolio.m4.challenger_total != null ? Math.round(portfolio.m4.challenger_total).toLocaleString() : "—"}</b>
+                    {portfolio.m4.champion_total != null && portfolio.m4.challenger_total != null && portfolio.m4.challenger_total !== 0 && (
+                      <span style={{ marginLeft: 8, color: portfolio.m4.champion_total >= portfolio.m4.challenger_total ? "#7c4" : "#c95" }}>
+                        ({portfolio.m4.champion_total >= portfolio.m4.challenger_total ? "+" : ""}
+                        {(((portfolio.m4.champion_total - portfolio.m4.challenger_total) / Math.abs(portfolio.m4.challenger_total)) * 100).toFixed(1)}% 우위)
+                      </span>
+                    )}
+                  </div>
+                  {(portfolio.m4.alerts || []).length > 0 && portfolio.m4.alerts.map((a, i) => (
+                    <div key={i} className="mono" style={{ fontSize: 11, color: "#c95" }}>⚠️ {a}</div>
+                  ))}
+                  {(portfolio.m4.alerts || []).length === 0 && (
+                    <div className="mono" style={{ fontSize: 11, opacity: 0.6 }}>경보 없음</div>
+                  )}
+                </div>
+              )}
+              {portfolio.decision_note && (
+                <div className="mono" style={{ fontSize: 11, marginTop: 8, opacity: 0.85, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 6 }}>
+                  결정 노트: {portfolio.decision_note}
+                </div>
+              )}
+              {portfolio.findings_doc && (
+                <div className="mono" style={{ fontSize: 10, marginTop: 4, opacity: 0.55 }}>
+                  검증 문서: {portfolio.findings_doc}
+                </div>
+              )}
+            </div>
+          )}
+          {portfolio && !portfolio.adopted && portfolio.status !== "unavailable" && (
+            <div style={{ marginTop: 14, padding: 12, border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6 }}>
+              <div className="research-empty">V6 포트폴리오 채택 미결정</div>
+              <div className="mono" style={{ fontSize: 11, opacity: 0.6, marginTop: 4 }}>complement 결정 기록 없음</div>
+            </div>
+          )}
+          {portfolio && portfolio.status === "unavailable" && (
+            <div className="mono" style={{ fontSize: 11, marginTop: 8, opacity: 0.6 }}>V6 포트폴리오: 데이터 없음</div>
           )}
 
           <div style={{ marginTop: 14, padding: 12, border: "1px solid rgba(255,255,255,0.12)", borderRadius: 6 }}>
