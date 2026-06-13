@@ -75,6 +75,9 @@ _MA_WINDOWS = (5, 20, 60)
 # 볼린저 밴드(종가 SMA ± k·표준편차) 윈도우·계수.
 _BOLL_WINDOW = 20
 _BOLL_K = 2.0
+# VWAP 밴드(VWAP ± k·거래대금가중가 표준편차) 윈도우·계수. 볼린저(종가 2σ)와 구분되는 1σ.
+_VWAP_BAND_WINDOW = 20
+_VWAP_BAND_K = 1.0
 
 
 def daily_db_path(date: int, src: str) -> Path:
@@ -413,23 +416,63 @@ def _attach_moving_averages(bars: List[Dict[str, Any]]) -> None:
 
 
 def _attach_vwap(bars: List[Dict[str, Any]]) -> None:
-    """VWAP(거래량 가중 평균가)를 각 bar 에 증분 계산해 붙인다(제자리 수정).
+    """VWAP(거래량 가중 평균가) + VWAP 밴드를 각 bar 에 증분 계산해 붙인다(제자리 수정).
 
     VWAP = Σ(bar 거래대금) / Σ(bar 거래량). bar 거래대금(trade_amt)은
     (초|분)당매수금액+매도금액(=Σ가격×수량) 이라 정확하다. 금액 컬럼 부재(trade_amt=None)
-    또는 누적거래량 0 이면 None(분모/데이터 보호).
+    또는 누적거래량 0 이면 vwap=None(분모/데이터 보호).
+
+    VWAP 밴드(vwap_up/vwap_low) = vwap ± _VWAP_BAND_K·σ. σ 는 bar 거래대금가중가
+    (typ = trade_amt/vol, 즉 그 봉의 평균체결가)의 _VWAP_BAND_WINDOW 롤링 표준편차다.
+    윈도우 미충족·금액 컬럼 부재·vwap None 이면 vwap_up/vwap_low = None(MA/볼린저 정책과 동일).
+    running sum/제곱합으로 O(n)(볼린저와 동형). 음수 분산은 부동소수 오차로 보고 0 클램프.
     """
     if not bars:
         return
     cum_amt = 0.0
     cum_vol = 0.0
-    for bar in bars:
+    w = _VWAP_BAND_WINDOW
+    typs: List[Optional[float]] = []   # bar 평균체결가(trade_amt/vol) — None 은 윈도우 미포함.
+    s = 0.0       # 롤링 윈도우 내 typ 합.
+    s2 = 0.0      # 롤링 윈도우 내 typ 제곱합.
+    n = 0         # 롤링 윈도우 내 유효 typ 개수(σ 분모).
+    for i, bar in enumerate(bars):
         amt = bar.get("trade_amt")
         # 금액·거래량은 짝으로만 누적해 분자/분모 동기를 보장(금액 부재 bar 는 둘 다 스킵).
+        vwap: Optional[float] = None
         if amt is not None:
             cum_amt += _safe_float(amt)
             cum_vol += _safe_float(bar.get("vol"))
-        bar["vwap"] = (cum_amt / cum_vol) if (amt is not None and cum_vol > 0) else None
+            if cum_vol > 0:
+                vwap = cum_amt / cum_vol
+        bar["vwap"] = vwap
+
+        # 그 봉의 평균체결가(typ) — trade_amt/vol. 둘 중 하나라도 부재/0 이면 None(σ 제외).
+        bar_vol = _safe_float(bar.get("vol"))
+        typ: Optional[float] = (_safe_float(amt) / bar_vol) if (amt is not None and bar_vol > 0) else None
+        typs.append(typ)
+        if typ is not None:
+            s += typ
+            s2 += typ * typ
+            n += 1
+        if i >= w:
+            old = typs[i - w]
+            if old is not None:
+                s -= old
+                s2 -= old * old
+                n -= 1
+        # 밴드는 vwap 가 있고 윈도우가 유효 typ 로 가득 찼을 때만(부분 통계 금지).
+        if vwap is not None and n >= w:
+            mean = s / n
+            var = (s2 / n) - (mean * mean)
+            if var < 0:
+                var = 0.0
+            sd = var ** 0.5
+            bar["vwap_up"] = vwap + _VWAP_BAND_K * sd
+            bar["vwap_low"] = vwap - _VWAP_BAND_K * sd
+        else:
+            bar["vwap_up"] = None
+            bar["vwap_low"] = None
 
 
 def _attach_bollinger(bars: List[Dict[str, Any]]) -> None:
@@ -472,10 +515,10 @@ class ReplayData:
     """리플레이 1세션의 메모리 자료구조 — 코드별 시계열 + 병합된 시간축.
 
     frames: List[{t:int HHMMSS, items:[{code,o,h,l,c,vol,change,strength,
-                  ma5,ma20,ma60,vwap,bb_mid,bb_up,bb_low,net_qty,
+                  ma5,ma20,ma60,vwap,vwap_up,vwap_low,bb_mid,bb_up,bb_low,net_qty,
                   imbalance,buy_rest,sell_rest,bid1,ask1}...]}].
     동일 t 슬롯의 종목 bar 들은 같은 frame 에 묶인다. seek 은 t→frame 인덱스 점프.
-    buy_rest/sell_rest/bid1/ask1/net_qty/vwap/bb_* 는 컬럼·데이터 부재 시 None(하위호환).
+    buy_rest/sell_rest/bid1/ask1/net_qty/vwap/vwap_up/vwap_low/bb_* 는 컬럼·데이터 부재 시 None(하위호환).
     """
 
     def __init__(
@@ -575,6 +618,7 @@ def load_replay(
                 "vol": bar["vol"], "change": bar["change"], "strength": bar["strength"],
                 "ma5": bar.get("ma5"), "ma20": bar.get("ma20"), "ma60": bar.get("ma60"),
                 "vwap": bar.get("vwap"),
+                "vwap_up": bar.get("vwap_up"), "vwap_low": bar.get("vwap_low"),
                 "bb_mid": bar.get("bb_mid"), "bb_up": bar.get("bb_up"), "bb_low": bar.get("bb_low"),
                 "net_qty": bar.get("net_qty"),
                 "imbalance": bar.get("imbalance"),
