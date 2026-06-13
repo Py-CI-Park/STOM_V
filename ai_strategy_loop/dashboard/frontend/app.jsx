@@ -20,6 +20,9 @@ function App() {
   //   localStorage 로 새로고침 후에도 마지막 탭 유지. useBackend(WS)는 App 레벨에
   //   그대로 두어 어느 탭에 있어도 진화 상태 수신이 끊기지 않는다.
   const [activeTab, setActiveTab] = useState_a(() => localStorage.getItem("stom_active_tab") || "evolution");
+  // Phase6.1 — 시뮬 탭 keep-alive: 한 번 방문하면 언마운트하지 않고 hidden 처리(상태 유지).
+  const [simVisited, setSimVisited] = useState_a(() => (localStorage.getItem("stom_active_tab") || "evolution") === "simulation");
+  useEffect_a(() => { if (activeTab === "simulation") setSimVisited(true); }, [activeTab]);
 
   const { state: liveState, health, wsStatus, configSpec, send, lastReply, reconnect } = useBackend(baseUrl);
 
@@ -231,15 +234,20 @@ function App() {
       </header>
 
       {/* ============= MAIN ============= */}
+      {/* Phase6.1 — 시뮬 탭은 첫 방문 후 hidden 으로 유지(언마운트 금지): 탭을 오가도
+          리플레이 WS·재생 위치·종목 선택이 초기화되지 않는다(사용자 신고). */}
+      {simVisited && (
+        <div style={{ display: activeTab === "simulation" ? undefined : "none" }}>
+          <ErrorBoundary>
+            <SimulationTab baseUrl={baseUrl} wsStatus={wsStatus} />
+          </ErrorBoundary>
+        </div>
+      )}
       {activeTab === "backtest" ? (
         <ErrorBoundary>
           <BacktestTab baseUrl={baseUrl} wsStatus={wsStatus} />
         </ErrorBoundary>
-      ) : activeTab === "simulation" ? (
-        <ErrorBoundary>
-          <SimulationTab baseUrl={baseUrl} wsStatus={wsStatus} />
-        </ErrorBoundary>
-      ) : isIdle ? (
+      ) : activeTab === "simulation" ? null : isIdle ? (
         <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} />
       ) : (
         <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -258,6 +266,10 @@ function App() {
 
           <div className="grid-main">
             <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
+              {/* Phase6.1(E7) — 탐색 히트맵을 적합도 추이 위에 동일 크기 패널로(사용자 요청). */}
+              {window.ResearchHeatmapPanel ? (
+                <window.ResearchHeatmapPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id} />
+              ) : null}
               <FitnessChart state={state} target={targetScore} />
               <ProfitChart state={state} targetPct={0} />
               <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id} />

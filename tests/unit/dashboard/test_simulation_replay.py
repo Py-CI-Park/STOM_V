@@ -207,13 +207,16 @@ class TestReplayMerge:
         assert {it["code"] for it in f1["items"]} == {"005930"}
 
     def test_min_bar_ohlc_mapping(self, synthetic_min_db):
+        # Phase6.1 — 행의 시가/고가/저가는 "당일" 누적값이라 봉에 쓰지 않는다.
+        #   분봉시가/분봉고가/분봉저가 컬럼이 정본이고, 이 합성 DB(구버전 스키마)처럼
+        #   분봉 컬럼이 없으면 직전 종가 근사(첫 봉만 당일 시가): h/l 은 o·c 로 한정.
         rd = RE.load_replay(20250102, "min", ["005930"], agg_sec=10)
         bar = rd.frames[0]["items"][0]
-        # 첫 행: current=100, open=99, high=101, low=98 → o=open, c=current.
+        # 첫 행: current=100, 당일 open=99 → o=99(첫 봉만 당일 시가), c=100.
         assert bar["o"] == 99.0
         assert bar["c"] == 100.0
-        assert bar["h"] == 101.0
-        assert bar["l"] == 98.0
+        assert bar["h"] == max(bar["o"], bar["c"]) == 100.0
+        assert bar["l"] == min(bar["o"], bar["c"]) == 99.0
         # vol = buyq + sellq = 30 + 20.
         assert bar["vol"] == 50.0
 

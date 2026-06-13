@@ -487,16 +487,16 @@ class TestFrontendContract:
         assert "styles.css?v=20260613a" in src
         assert "chart.jsx?v=20260613a" in src
         assert "research-lab.jsx?v=20260613a" in src
-        assert "app.jsx?v=20260613a" in src
+        assert "app.jsx?v=20260613b" in src
         assert "evolution-analysis.jsx?v=20260612a" in src
         # Phase6-L — 리서치 프로 패널(별도 pro.html 에서도 로드).
-        assert "research-pro.jsx?v=20260613a" in src
+        assert "research-pro.jsx?v=20260613b" in src
         assert "backtest-charts.jsx?v=20260613a" in src
         assert "backtest.jsx?v=20260613a" in src
         # Phase6-S — Canvas 라이브 차트는 simulation.jsx 보다 먼저 로드돼야 한다.
         assert "sim-live-chart.jsx?v=20260613a" in src
         assert "simulation-charts.jsx?v=20260613a" in src
-        assert "simulation.jsx?v=20260613a" in src
+        assert "simulation.jsx?v=20260613b" in src
         # S3(2026-06-12) — lightweight-charts vendor 는 babel 이전 일반 script 로 로드.
         assert "vendor-lightweight-charts.js?v=20260612a" in src
         # src= 속성 기준 비교(주석 내 파일명 언급에 걸리지 않게).

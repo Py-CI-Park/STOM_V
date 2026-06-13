@@ -17,6 +17,15 @@ function _simFetchJson(url, timeoutMs) {
 }
 
 const _SIM_SPEEDS = [1, 5, 20, 60, 240];
+// WS frame item → store bar 필드 매핑(증분 "bars" 와 seek "history" 스냅샷이 공유).
+const _simWsBar = (it, t) => ({
+  t, o: it.o, h: it.h, l: it.l, c: it.c, vol: it.vol,
+  change: it.change, strength: it.strength,
+  ma5: it.ma5, ma20: it.ma20, ma60: it.ma60, imbalance: it.imbalance,
+  buy_rest: it.buy_rest, sell_rest: it.sell_rest,
+  vwap: it.vwap, bb_mid: it.bb_mid, bb_up: it.bb_up, bb_low: it.bb_low,
+  net_qty: it.net_qty, bid1: it.bid1, ask1: it.ask1,
+});
 const _SIM_MAX_CODES = 10;                  // S2 동시보기 1~10(백엔드 replay_engine.MAX_CODES 와 일치).
 const _SIM_DEMO_SPEED = 20;                 // 자동 데모 배속(빠른 둘러보기).
 // 차트 엔진 모드 — 라이브(Canvas·기본) / LWC(lightweight-charts) / SVG(폴백 순수 SVG).
@@ -593,18 +602,22 @@ function SimulationTab({ baseUrl, wsStatus }) {
         //     LWC effect 가 매번 재실행되며 봉·거래량 히스토그램이 정상 리플레이된다.
         const store = barsRef.current;
         (m.items || []).forEach(it => {
-          const bar = {
-            t: m.t, o: it.o, h: it.h, l: it.l, c: it.c, vol: it.vol,
-            change: it.change, strength: it.strength,
-            ma5: it.ma5, ma20: it.ma20, ma60: it.ma60, imbalance: it.imbalance,
-            buy_rest: it.buy_rest, sell_rest: it.sell_rest,
-            vwap: it.vwap, bb_mid: it.bb_mid, bb_up: it.bb_up, bb_low: it.bb_low,
-            net_qty: it.net_qty, bid1: it.bid1, ask1: it.ask1,
-          };
-          store[it.code] = [...(store[it.code] || []), bar];   // 새 배열 참조(불변 append).
+          store[it.code] = [...(store[it.code] || []), _simWsBar(it, m.t)];   // 새 배열 참조(불변 append).
         });
         setCursor((m.index || 0) + 1);
         setCurT(m.t);
+        setBarsVersion(v => v + 1);
+      } else if (m.type === "history") {
+        // Phase6.1 — seek 스냅샷: 코드별 시계열을 통째로 교체. 전진 seek 의 공백(시킹
+        //   이후 frame 만 쌓여 봉 6개만 남던 신고 증상)과 후진 seek 의 중복 append 를
+        //   모두 해소한다. bar 필드 매핑은 증분 "bars" 와 동일(_simWsBar 공유).
+        const store = {};
+        Object.keys(m.items_by_code || {}).forEach(code => {
+          store[code] = (m.items_by_code[code] || []).map(b => _simWsBar(b, b.t));
+        });
+        barsRef.current = store;
+        if (m.index != null) setCursor(m.index);
+        if (m.t != null) setCurT(m.t);
         setBarsVersion(v => v + 1);
       } else if (m.type === "done") {
         setStatus(s => (s === "playing" || s === "paused") ? "done" : s);

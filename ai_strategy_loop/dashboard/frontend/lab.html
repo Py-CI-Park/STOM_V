@@ -23,7 +23,16 @@
     </div>
   </div>
 
+  <!-- Phase6.1 — 연구실 페이지 크래시 수정: research-lab.jsx 가 참조하는 전역
+       (EdgeRatioPanel=analysis.jsx 등)을 로드하지 않아 ReferenceError 로 페이지 전체가
+       죽어 있었다. pro.html 과 동일한(검증된) 의존 세트를 동일 순서로 로드한다. -->
+  <script type="text/babel" src="connection.jsx?v=20260612h"></script>
+  <script type="text/babel" src="chart.jsx?v=20260613a"></script>
+  <script type="text/babel" src="analysis.jsx?v=20260603a"></script>
   <script type="text/babel" src="research-lab.jsx?v=20260613a"></script>
+  <script type="text/babel" src="backtest-charts.jsx?v=20260613a"></script>
+  <script type="text/babel" src="backtest.jsx?v=20260613a"></script>
+  <script type="text/babel" src="research-pro.jsx?v=20260613b"></script>
   <script type="text/babel">
     /* G-3 — run 종류 뱃지(접두 휴리스틱). */
     const RUN_KIND = id =>
