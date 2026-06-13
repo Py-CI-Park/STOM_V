@@ -1710,6 +1710,64 @@ function SimOverlayChart({ codes, barsByCode, nameByCode, curT }) {
   );
 }
 
+/* CSV 셀 이스케이프 — 콤마/따옴표/줄바꿈 포함 시 큰따옴표 감싸기(따옴표는 2배).
+   Phase13 리뷰 — 수식 인젝션 방어: =,+,-,@ 로 시작하면 앞에 ' 를 붙여 Excel/Sheets 가
+   수식으로 평가하지 않게 한다(종목코드 등 비숫자 컬럼 안전 강화). */
+function _simCsvCell(v) {
+  let s = v == null ? "" : String(v);
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
+  return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+// buy_time/sell_time(YYYYMMDDHHMMSS) 우선 HH:MM:SS, 부재 시 hms(HHMMSS) 폴백.
+function _simCsvTime(full, hms) {
+  if (full != null && full !== "") {
+    const s = String(full).padStart(14, "0");
+    return s.slice(8, 10) + ":" + s.slice(10, 12) + ":" + s.slice(12, 14);
+  }
+  return _simTimeLabel(hms);
+}
+
+/* 체결 로그 → CSV 문자열(utf-8 BOM 포함). 컬럼: (종목코드)·매수시간·매도시간·매수가·매도가·수익률(%).
+   종목코드는 어떤 행에라도 code 가 있을 때만 컬럼으로 포함한다(엑셀 한글 호환 위해 BOM 선행). */
+function _simSignalLogCsv(rows) {
+  const list = rows || [];
+  const hasCode = list.some((r) => r && (r.code != null && r.code !== ""));
+  const header = (hasCode ? ["종목코드"] : []).concat(["매수시간", "매도시간", "매수가", "매도가", "수익률(%)"]);
+  const lines = [header.map(_simCsvCell).join(",")];
+  for (let i = 0; i < list.length; i++) {
+    const r = list[i] || {};
+    const cells = hasCode ? [r.code != null ? r.code : ""] : [];
+    cells.push(_simCsvTime(r.buy_time, r.buy_hms));
+    cells.push(_simCsvTime(r.sell_time, r.sell_hms));
+    cells.push(r.buy_price != null ? Math.round(r.buy_price) : "");
+    cells.push(r.sell_price != null ? Math.round(r.sell_price) : "");
+    cells.push((r.profit_pct || 0).toFixed(2));
+    lines.push(cells.map(_simCsvCell).join(","));
+  }
+  return "﻿" + lines.join("\r\n");   // utf-8 BOM — 엑셀 한글 깨짐 방지.
+}
+
+// 클라이언트 Blob 다운로드 — 백엔드 없이 a[download] 클릭. 파일명 체결로그_YYYY-MM-DD.csv.
+function _simDownloadSignalLogCsv(rows) {
+  const csv = _simSignalLogCsv(rows);
+  const d = new Date();
+  const ymd = d.getFullYear() + "-"
+    + String(d.getMonth() + 1).padStart(2, "0") + "-"
+    + String(d.getDate()).padStart(2, "0");
+  const fname = "체결로그_" + ymd + ".csv";
+  try {
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e) {} }, 0);
+  } catch (e) { /* 브라우저 미지원/차단 시 조용히 무시. */ }
+}
+
 /* ② 체결 로그 — 신호(매수/매도) 목록. 현재 리플레이 시각(curT) 도달 행 하이라이트. */
 function SimSignalLog({ signals, curT }) {
   const rows = signals || [];
@@ -1720,9 +1778,19 @@ function SimSignalLog({ signals, curT }) {
           <span className="dot" style={{ background: "var(--amber)" }}></span>
           체결 로그
         </div>
-        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
-          {rows.length}건 · 엔진 신호
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+            {rows.length}건 · 엔진 신호
+          </span>
+          {rows.length > 0 && (
+            <button className="btn ghost sm"
+                    style={{ fontSize: 10, padding: "2px 8px" }}
+                    onClick={() => _simDownloadSignalLogCsv(rows)}
+                    title="체결 로그를 CSV 파일로 내보냅니다">
+              CSV 내보내기
+            </button>
+          )}
+        </div>
       </div>
       <div className="panel-bd" style={{ maxHeight: 420, overflowY: "auto", padding: "8px 10px" }}>
         {rows.length === 0 ? (
