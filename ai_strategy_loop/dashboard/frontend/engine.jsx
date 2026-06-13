@@ -212,13 +212,15 @@ function EnginePanel({ state, wsStatus }) {
             </div>
           </div>
 
-          {/* Progress within gen + Overall 게이지(항상 teal) */}
+          {/* 세대 내 진행(숫자) + 전체 진행(게이지) — Phase12-A: 게이지 라벨을 '전체'로
+              명확화(숫자=세대 내, 게이지=세대 누적 전체로 서로 다른 지표임을 구분). */}
           <div className="engine-cell">
             <div className="lbl">세대 백테 진행</div>
             <div className="val tnum">
               {(progress * 100).toFixed(0)}<span className="unit">%</span>
+              <span className="unit"> (세대 내)</span>
             </div>
-            <GaugeRow label="Progress" value={overallPct} unit="%" />
+            <GaugeRow label="전체" value={overallPct} unit="%" />
           </div>
         </div>
         )}

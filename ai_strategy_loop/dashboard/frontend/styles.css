@@ -729,49 +729,8 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 }
 
 /* ====== Process Flow Panel ====== */
-.process-flow-row {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  padding: 10px 14px;
-  background: var(--bg-1);
-  border: 1px solid var(--line-1);
-  border-radius: 8px;
-  overflow-x: auto;
-}
-.process-box {
-  flex: 1;
-  min-width: 80px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--line-1);
-  background: var(--bg-2);
-  text-align: center;
-  font-size: 12px;
-  color: var(--ink-2);
-  font-family: var(--sans);
-  font-weight: 500;
-  transition: border-color .2s, color .2s, background .2s, box-shadow .2s;
-  position: relative;
-}
-.process-box + .process-box {
-  margin-left: 6px;
-}
-.process-box .process-box-sub {
-  display: block;
-  font-size: 9.5px;
-  font-family: var(--mono);
-  color: var(--ink-3);
-  letter-spacing: .05em;
-  margin-top: 2px;
-}
-.process-box.active {
-  border-color: var(--amber);
-  color: var(--amber);
-  background: rgba(240,179,90,0.10);
-  box-shadow: 0 0 0 3px rgba(240,179,90,0.12);
-}
-.process-box.active .process-box-sub { color: var(--amber); opacity: .7; }
+/* Phase12-A — .process-flow-row/.process-box* 룰 제거(죽은 CSS): Phase11 에서 박스행이
+   SVG 노드+화살표 다이어그램(.stom-flow-*, styles.css 하단)으로 대체돼 더는 참조되지 않음. */
 /* Log pane */
 .process-log-pane {
   margin-top: 8px;
