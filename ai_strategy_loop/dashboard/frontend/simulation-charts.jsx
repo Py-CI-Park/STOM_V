@@ -1710,9 +1710,12 @@ function SimOverlayChart({ codes, barsByCode, nameByCode, curT }) {
   );
 }
 
-/* CSV 셀 이스케이프 — 콤마/따옴표/줄바꿈 포함 시 큰따옴표 감싸기(따옴표는 2배). */
+/* CSV 셀 이스케이프 — 콤마/따옴표/줄바꿈 포함 시 큰따옴표 감싸기(따옴표는 2배).
+   Phase13 리뷰 — 수식 인젝션 방어: =,+,-,@ 로 시작하면 앞에 ' 를 붙여 Excel/Sheets 가
+   수식으로 평가하지 않게 한다(종목코드 등 비숫자 컬럼 안전 강화). */
 function _simCsvCell(v) {
-  const s = v == null ? "" : String(v);
+  let s = v == null ? "" : String(v);
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
   return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
 }
 
