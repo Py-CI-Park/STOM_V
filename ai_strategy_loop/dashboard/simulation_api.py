@@ -55,7 +55,7 @@ _CODE_INFO_DB = _DATABASE_DIR / "code_info.db"
 # bar 간 실제 시간차(t_delta)/speed 만큼 sleep 하는 정밀 페이싱. speed=1x 면 1초봉이
 # 정확히 1초마다·1분봉이 1분마다 전송된다(시간이 실제로 흐르는 체감). 고배속은 sleep 을
 # 잘게 줄이되 bar 시간 비례를 유지한다(프레임 누락 없이 빠르게 흐름).
-_MAX_SPEED = 240
+_MAX_SPEED = 600
 # 한 sleep 의 하한(초) — 너무 잦은 await 로 이벤트 루프가 과부하 되지 않도록 묶음 처리한다.
 _MIN_FRAME_SLEEP_SEC = 0.02
 # 누적 대기시간이 이 값을 넘으면 그때까지 모인 frame 들을 한 번에 flush 하고 sleep 한다.

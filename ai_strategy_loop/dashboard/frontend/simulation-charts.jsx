@@ -23,8 +23,19 @@ const _SIM_WINDOW = 400;
 const _SIM_LWC_MAX = 5000;
 
 // 보조지표 기본 토글 — 차트 위 라인 오버레이로 렌더(LWC addLineSeries / SVG path 동일).
-//   ma: MA5/20/60, vwap: VWAP, boll: 볼린저(20,2) 상/중/하단.
-const _SIM_DEFAULT_INDICATORS = { ma: true, vwap: true, boll: false };
+//   기존: ma(MA5/20/60), vwap(VWAP), boll(볼린저 20,2 상/중/하단).
+//   Phase7 신규(CROSS-FILE CONTRACT — Track B 와 동일 키 집합):
+//     · 클라이언트 계산(버퍼 위 순수 함수, 와이어 무변경): ema(EMA12/26), rsi(RSI14),
+//       macd(MACD 12/26/9), volma(거래량 MA 5/20), strma(체결강도 MA 5).
+//     · 서버 공급(vwap_up/vwap_low 프레임 필드): vwapband(VWAP 밴드 ±1σ).
+//     · 뷰 토글(별도 데이터 없음 — 그리기만): strength(체결강도 그래프), imbalance(호가 불균형),
+//       orderflow(net-delta strip).
+//   heavy 한 것들은 기본 OFF. strength 는 SVG 가 이미 그리므로 기본 ON.
+const _SIM_DEFAULT_INDICATORS = {
+  ma: true, vwap: true, boll: false,
+  ema: false, rsi: false, macd: false, volma: false, strma: false,
+  vwapband: false, strength: true, imbalance: false, orderflow: false,
+};
 
 // 지표별 색/스타일(LWC·SVG 공통 팔레트). dashed 는 SVG strokeDasharray·LWC LineStyle 매핑.
 const _SIM_IND_STYLE = {
@@ -35,7 +46,110 @@ const _SIM_IND_STYLE = {
   bb_up:  { color: "#5a93c8", width: 1, dashed: true,  label: "BB+" },
   bb_mid: { color: "#5a93c8", width: 0.9, dashed: true, label: "BB" },
   bb_low: { color: "#5a93c8", width: 1, dashed: true,  label: "BB-" },
+  // Phase7 — 클라이언트 계산 라인(EMA/VWAP밴드).
+  ema12:    { color: "#6fd6ff", width: 1, dashed: false, label: "EMA12" },
+  ema26:    { color: "#b07cf0", width: 1, dashed: false, label: "EMA26" },
+  vwap_up:  { color: "#ffd24c", width: 0.9, dashed: true, label: "VWAP+" },
+  vwap_low: { color: "#ffd24c", width: 0.9, dashed: true, label: "VWAP-" },
 };
+
+/* ─────────────── Phase7 클라이언트 지표 헬퍼 (CROSS-FILE CONTRACT) ───────────────
+   bar 버퍼 위 순수 함수 — 동일 입력 ⇒ 동일 출력(엔진 간 발산 없음). 입력은 모두
+   이미 프레임에 실려 오는 값(OHLCV + strength)이라 와이어 변경/서버 헬퍼가 필요 없다.
+   각 헬퍼는 bars 와 같은 길이의 배열을 돌려준다(윈도우 미충족 구간은 null → 끊어 그림). */
+
+// 단순이동평균(period) over selector(b)→number. 윈도우 미충족 구간 null.
+function _simSma(bars, period, sel) {
+  const out = new Array(bars.length).fill(null);
+  let sum = 0, cnt = 0;
+  const q = [];
+  for (let i = 0; i < bars.length; i++) {
+    const v = sel(bars[i]);
+    const x = (v != null && isFinite(v)) ? v : null;
+    q.push(x);
+    if (x != null) { sum += x; cnt++; }
+    if (q.length > period) {
+      const drop = q.shift();
+      if (drop != null) { sum -= drop; cnt--; }
+    }
+    out[i] = (q.length >= period && cnt === period) ? sum / period : null;
+  }
+  return out;
+}
+
+// 지수이동평균(period) over close. 첫 유효 close 를 seed, 이후 EMA 점화식.
+function _simEma(bars, period) {
+  const out = new Array(bars.length).fill(null);
+  const k = 2 / (period + 1);
+  let ema = null;
+  for (let i = 0; i < bars.length; i++) {
+    const c = bars[i].c;
+    if (c == null || !isFinite(c)) { out[i] = ema; continue; }
+    ema = (ema == null) ? c : c * k + ema * (1 - k);
+    out[i] = ema;
+  }
+  return out;
+}
+
+// RSI(Wilder, 기본 14) over close. 윈도우 미충족 구간 null.
+function _simRsi(bars, period) {
+  const p = period || 14;
+  const out = new Array(bars.length).fill(null);
+  let avgGain = null, avgLoss = null, prev = null;
+  let seedG = 0, seedL = 0, seedN = 0;
+  for (let i = 0; i < bars.length; i++) {
+    const c = bars[i].c;
+    if (c == null || !isFinite(c)) { out[i] = null; continue; }
+    if (prev == null) { prev = c; out[i] = null; continue; }
+    const ch = c - prev; prev = c;
+    const gain = ch > 0 ? ch : 0, loss = ch < 0 ? -ch : 0;
+    if (avgGain == null) {
+      seedG += gain; seedL += loss; seedN++;
+      if (seedN === p) { avgGain = seedG / p; avgLoss = seedL / p; }
+      else { out[i] = null; continue; }
+    } else {
+      avgGain = (avgGain * (p - 1) + gain) / p;
+      avgLoss = (avgLoss * (p - 1) + loss) / p;
+    }
+    const rs = avgLoss === 0 ? Infinity : avgGain / avgLoss;
+    out[i] = avgLoss === 0 ? 100 : 100 - 100 / (1 + rs);
+  }
+  return out;
+}
+
+// MACD(12/26/9) over close → {macd[], signal[], hist[]} (각 bars 길이, null 패딩).
+function _simMacd(bars) {
+  const fast = _simEma(bars, 12);
+  const slow = _simEma(bars, 26);
+  const macd = bars.map((b, i) =>
+    (fast[i] != null && slow[i] != null) ? fast[i] - slow[i] : null);
+  // signal = MACD 의 9 EMA(유효 구간만 점화).
+  const signal = new Array(bars.length).fill(null);
+  const k = 2 / (9 + 1);
+  let s = null;
+  for (let i = 0; i < bars.length; i++) {
+    const m = macd[i];
+    if (m == null) { signal[i] = s; continue; }
+    s = (s == null) ? m : m * k + s * (1 - k);
+    signal[i] = s;
+  }
+  const hist = bars.map((b, i) =>
+    (macd[i] != null && signal[i] != null) ? macd[i] - signal[i] : null);
+  return { macd, signal, hist };
+}
+
+// 거래량 MA — periods(예 [5,20]) 각각의 SMA over b.vol → { ["vol_ma"+p]: number[] }.
+function _simVolMa(bars, periods) {
+  const ps = periods || [5, 20];
+  const out = {};
+  ps.forEach(p => { out["vol_ma" + p] = _simSma(bars, p, b => b.vol); });
+  return out;
+}
+
+// 체결강도 MA — SMA(period=5) over b.strength. volMA 와 동일 계열의 클라이언트 계산.
+function _simStrengthMa(bars, period) {
+  return _simSma(bars, period || 5, b => b.strength);
+}
 
 // HHMMSS(int) → HH:MM:SS 라벨.
 function _simTimeLabel(hms) {
@@ -301,6 +415,16 @@ function _lineData(bars, secs, key) {
 }
 
 /* ─────────────── lightweight-charts 엔진 경로 (기본) ─────────────── */
+/* ⚠ ASYMMETRIC PARITY (FINAL) — LWC stacking SPIKE 결론(Phase7 §7.3 STEP 0):
+   lightweight-charts v4.2 에는 addPane API 가 없다. 서브-시리즈는 단일 캔들 페인 위에
+   distinct priceScaleId + scaleMargins 로 쌓는 "오버레이 프라이스 스케일"뿐이다.
+   compact H=240 에서 vol(scaleMargins top:0.82 → 18%) + strength + imbalance 를 3개
+   오버레이 밴드로 쌓으면 각 밴드가 화면을 또 갉아먹어 캔들 본체 밴드가 가독 하한
+   55% 아래(추정 ~45% 이하)로 떨어진다(vol 18% + strength~13% + imbalance~13% ≈ 44%
+   소비 → 캔들 ≈ 56% 이지만 축 라벨/여백 차감 시 55% 하회). 따라서 비대칭 패리티를
+   FINAL 로 못박는다: LWC 는 strength 오버레이 한 개만 싣는다(그 전문 강점은 줌/크로스헤어/
+   네이티브 last-price 애니메이션이지 커스텀 서브패인이 아니다). 호가 불균형·net-delta 는
+   live+svg 만 싣는다(SimCandleChartSVG·SimLiveChart). */
 function SimCandleChartLWC({ bars, signals, curT, code, name, compact, indicators }) {
   const wrapRef = useRef_simc(null);
   const chartRef = useRef_simc(null);
@@ -308,6 +432,8 @@ function SimCandleChartLWC({ bars, signals, curT, code, name, compact, indicator
   const volRef = useRef_simc(null);
   const roRef = useRef_simc(null);
   const lineRef = useRef_simc({});   // key → LWC line series.
+  const strRef = useRef_simc(null);  // 체결강도 오버레이 라인 시리즈(단 하나의 서브-시리즈).
+  const strMaRef = useRef_simc(null); // 체결강도 MA 오버레이(strma 토글 시).
   const ind = indicators || _SIM_DEFAULT_INDICATORS;
 
   const H = compact ? 240 : 360;
@@ -363,6 +489,7 @@ function SimCandleChartLWC({ bars, signals, curT, code, name, compact, indicator
       try { chart.remove(); } catch (e) {}
       chartRef.current = null; candleRef.current = null; volRef.current = null;
       lineRef.current = {};   // chart.remove() 가 모든 series 파괴 — 참조만 비운다.
+      strRef.current = null; strMaRef.current = null;
     };
   }, [H, compact]);
 
@@ -396,11 +523,25 @@ function SimCandleChartLWC({ bars, signals, curT, code, name, compact, indicator
     const secs = _monotonicSecs(src);
     const lines = lineRef.current;
 
-    // 토글에 따라 켜질 지표 키 집합.
+    // 토글에 따라 켜질 지표 키 집합. 서버 라인(ma/vwap/boll/vwapband)은 bar 필드,
+    //   클라이언트 라인(ema)은 _simEma 로 계산해 src 위에 매핑한다.
     const active = {};
     if (ind.ma) { active.ma5 = 1; active.ma20 = 1; active.ma60 = 1; }
     if (ind.vwap) active.vwap = 1;
     if (ind.boll) { active.bb_up = 1; active.bb_mid = 1; active.bb_low = 1; }
+    if (ind.vwapband) { active.vwap_up = 1; active.vwap_low = 1; }   // 서버 공급 필드.
+    if (ind.ema) { active.ema12 = 1; active.ema26 = 1; }             // 클라이언트 계산.
+
+    // 클라이언트 계산 EMA(12/26) — bar 필드가 아니므로 별도 배열로 준비.
+    const emaData = {};
+    if (ind.ema) {
+      const e12 = _simEma(src, 12), e26 = _simEma(src, 26);
+      emaData.ema12 = []; emaData.ema26 = [];
+      for (let i = 0; i < src.length; i++) {
+        if (e12[i] != null && isFinite(e12[i])) emaData.ema12.push({ time: secs[i], value: e12[i] });
+        if (e26[i] != null && isFinite(e26[i])) emaData.ema26.push({ time: secs[i], value: e26[i] });
+      }
+    }
 
     // 비활성 라인 제거.
     Object.keys(lines).forEach(key => {
@@ -423,9 +564,73 @@ function SimCandleChartLWC({ bars, signals, curT, code, name, compact, indicator
           });
         } catch (e) { return; }
       }
-      try { lines[key].setData(_lineData(src, secs, key)); } catch (e) {}
+      // ema12/ema26 는 클라이언트 계산 배열, 그 외는 bar 필드.
+      const data = (key === "ema12" || key === "ema26") ? (emaData[key] || []) : _lineData(src, secs, key);
+      try { lines[key].setData(data); } catch (e) {}
     });
-  }, [bars, ind.ma, ind.vwap, ind.boll]);
+  }, [bars, ind.ma, ind.vwap, ind.boll, ind.ema, ind.vwapband]);
+
+  // 체결강도 오버레이 — LWC 가 싣는 단 하나의 서브-시리즈(비대칭 패리티). 자체 priceScaleId +
+  //   scaleMargins 로 캔들 페인 하단에 얇은 밴드를 카빙(0~200 스케일). strma 토글 시 MA5 도 함께.
+  useEffect_simc(() => {
+    const chart = chartRef.current;
+    if (!chart || typeof chart.addLineSeries !== "function") return;
+    const arr = (bars || []);
+    const src = arr.length > _SIM_LWC_MAX ? arr.slice(arr.length - _SIM_LWC_MAX) : arr;
+    const secs = _monotonicSecs(src);
+
+    const ensureScale = () => {
+      try { chart.priceScale("strength").applyOptions({ scaleMargins: { top: 0.86, bottom: 0 } }); } catch (e) {}
+    };
+    // 체결강도 라인.
+    if (ind.strength) {
+      if (!strRef.current) {
+        try {
+          strRef.current = chart.addLineSeries({
+            color: "#7c6cf0", lineWidth: 1.2, priceScaleId: "strength",
+            priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
+          });
+        } catch (e) { strRef.current = null; }
+        ensureScale();
+      }
+      if (strRef.current) {
+        const data = [];
+        for (let i = 0; i < src.length; i++) {
+          const s = src[i].strength;
+          if (s != null && isFinite(s)) data.push({ time: secs[i], value: s });
+        }
+        try { strRef.current.setData(data); } catch (e) {}
+      }
+    } else if (strRef.current) {
+      try { chart.removeSeries(strRef.current); } catch (e) {}
+      strRef.current = null;
+    }
+    // 체결강도 MA5(클라이언트 _simStrengthMa) — strength+strma 둘 다 켜질 때만.
+    if (ind.strength && ind.strma) {
+      if (!strMaRef.current) {
+        try {
+          strMaRef.current = chart.addLineSeries({
+            color: "#f0b35a", lineWidth: 1, priceScaleId: "strength",
+            lineStyle: window.LightweightCharts && window.LightweightCharts.LineStyle
+              ? window.LightweightCharts.LineStyle.Dashed : 0,
+            priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false,
+          });
+        } catch (e) { strMaRef.current = null; }
+        ensureScale();
+      }
+      if (strMaRef.current) {
+        const ma = _simStrengthMa(src, 5);
+        const data = [];
+        for (let i = 0; i < src.length; i++) {
+          if (ma[i] != null && isFinite(ma[i])) data.push({ time: secs[i], value: ma[i] });
+        }
+        try { strMaRef.current.setData(data); } catch (e) {}
+      }
+    } else if (strMaRef.current) {
+      try { chart.removeSeries(strMaRef.current); } catch (e) {}
+      strMaRef.current = null;
+    }
+  }, [bars, ind.strength, ind.strma]);
 
   // 신호 마커(매수▲/매도▼) — curT 이하 도달분만. nearest bar 시각에 스냅.
   useEffect_simc(() => {
@@ -467,7 +672,8 @@ function SimCandleChartLWC({ bars, signals, curT, code, name, compact, indicator
   const lastBar = (bars && bars.length) ? bars[bars.length - 1] : null;
   return (
     <SimChartShell code={code} name={name} lastBar={lastBar} bars={bars}
-                   signals={signals} curT={curT} compact={compact} engine="lwc">
+                   signals={signals} curT={curT} compact={compact} engine="lwc"
+                   indicators={ind}>
       <div ref={wrapRef} style={{ width: "100%", height: H }} />
     </SimChartShell>
   );
@@ -545,6 +751,26 @@ function SimCandleChartSVG({ bars, signals, curT, code, name, compact, indicator
     ).join(" ");
   }, [view, n, sMax]);
 
+  // 클라이언트 계산 지표(EMA12/26, 체결강도 MA5, 거래량 MA5/20) — 순수 헬퍼로 버퍼 위 계산.
+  //   토글 OFF 면 계산 자체를 생략(빈 배열)해 비용 0.
+  const ema12 = useMemo_simc(() => ind.ema ? _simEma(view, 12) : [], [view, ind.ema]);
+  const ema26 = useMemo_simc(() => ind.ema ? _simEma(view, 26) : [], [view, ind.ema]);
+  const strMa = useMemo_simc(() => (ind.strength && ind.strma) ? _simStrengthMa(view, 5) : [], [view, ind.strength, ind.strma]);
+  const volMa = useMemo_simc(() => ind.volma ? _simVolMa(view, [5, 20]) : {}, [view, ind.volma]);
+
+  // 값 배열(bars 길이)→ y 매핑 path. null 구간 끊어 그림. yFn 으로 스케일 선택(가격/거래량/강도).
+  const arrPath = (vals, yFn) => {
+    if (!vals || n < 2) return "";
+    let d = "", started = false;
+    for (let i = 0; i < n; i++) {
+      const v = vals[i];
+      if (v == null || !isFinite(v)) { started = false; continue; }
+      d += `${started ? "L" : "M"} ${xCenter(i).toFixed(1)} ${yFn(v).toFixed(1)} `;
+      started = true;
+    }
+    return d;
+  };
+
   // MA 오버레이 path(MA5/20/60 — null 구간은 끊어 그린다).
   const maPath = (key) => {
     if (n < 2) return "";
@@ -594,7 +820,8 @@ function SimCandleChartSVG({ bars, signals, curT, code, name, compact, indicator
 
   return (
     <SimChartShell code={code} name={name} lastBar={lastBar} bars={bars}
-                   signals={signals} curT={curT} compact={compact} engine="svg">
+                   signals={signals} curT={curT} compact={compact} engine="svg"
+                   indicators={ind}>
       <div className="chart-wrap">
         <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
              onMouseMove={onMove} onMouseLeave={() => { setHover(null); onUp(); }}
@@ -615,6 +842,12 @@ function SimCandleChartSVG({ bars, signals, curT, code, name, compact, indicator
           {n > 1 && ind.ma && <path d={maPath("ma60")} fill="none" stroke="var(--violet)" strokeWidth="1.1" opacity="0.6" />}
           {/* VWAP(금색 실선) — 토글 ind.vwap */}
           {n > 1 && ind.vwap && <path d={maPath("vwap")} fill="none" stroke="#ffd24c" strokeWidth="1.4" opacity="0.85" />}
+          {/* VWAP 밴드(±1σ, 서버 vwap_up/vwap_low) — 토글 ind.vwapband */}
+          {n > 1 && ind.vwapband && <path d={maPath("vwap_up")} fill="none" stroke="#ffd24c" strokeWidth="0.9" opacity="0.5" strokeDasharray="2 3" />}
+          {n > 1 && ind.vwapband && <path d={maPath("vwap_low")} fill="none" stroke="#ffd24c" strokeWidth="0.9" opacity="0.5" strokeDasharray="2 3" />}
+          {/* EMA12/26(클라이언트 _simEma) — 토글 ind.ema */}
+          {n > 1 && ind.ema && <path d={arrPath(ema12, yPrice)} fill="none" stroke="#6fd6ff" strokeWidth="1" opacity="0.7" />}
+          {n > 1 && ind.ema && <path d={arrPath(ema26, yPrice)} fill="none" stroke="#b07cf0" strokeWidth="1" opacity="0.7" />}
           {/* 볼린저(20,2) 상/중/하단(청색 점선) — 토글 ind.boll */}
           {n > 1 && ind.boll && <path d={maPath("bb_up")} fill="none" stroke="#5a93c8" strokeWidth="1" opacity="0.6" strokeDasharray="3 2" />}
           {n > 1 && ind.boll && <path d={maPath("bb_mid")} fill="none" stroke="#5a93c8" strokeWidth="0.9" opacity="0.45" strokeDasharray="2 3" />}
@@ -647,13 +880,17 @@ function SimCandleChartSVG({ bars, signals, curT, code, name, compact, indicator
                          width={candleW} height={Math.max(0, volBot - y)}
                          fill={up ? "var(--teal)" : "var(--red)"} opacity="0.4" />;
           })}
+          {/* 거래량 MA5/20(클라이언트 _simVolMa) — 토글 ind.volma */}
+          {n > 1 && ind.volma && <path d={arrPath(volMa.vol_ma5, yVol)} fill="none" stroke="#4cd6b3" strokeWidth="0.9" opacity="0.7" />}
+          {n > 1 && ind.volma && <path d={arrPath(volMa.vol_ma20, yVol)} fill="none" stroke="#f0b35a" strokeWidth="0.9" opacity="0.6" />}
           <text className="chart-axis-text" x={padL - 8} y={volTop + 8} textAnchor="end" fill="var(--ink-3)">거래량</text>
 
-          {/* 체결강도 서브라인(100 균형선) */}
-          <line x1={padL} x2={W - padR} y1={yStr(100)} y2={yStr(100)}
-                stroke="rgba(255,255,255,0.12)" strokeWidth="1" strokeDasharray="2 3" />
-          {n > 1 && <path d={strPath} fill="none" stroke="var(--violet)" strokeWidth="1.3" opacity="0.85" />}
-          <text className="chart-axis-text" x={padL - 8} y={strTop + 8} textAnchor="end" fill="var(--violet)">체결강도</text>
+          {/* 체결강도 서브라인(100 균형선) — 토글 ind.strength. strma 시 MA5 점선 오버레이. */}
+          {ind.strength && <line x1={padL} x2={W - padR} y1={yStr(100)} y2={yStr(100)}
+                stroke="rgba(255,255,255,0.12)" strokeWidth="1" strokeDasharray="2 3" />}
+          {n > 1 && ind.strength && <path d={strPath} fill="none" stroke="var(--violet)" strokeWidth="1.3" opacity="0.85" />}
+          {n > 1 && ind.strength && ind.strma && <path d={arrPath(strMa, yStr)} fill="none" stroke="#f0b35a" strokeWidth="1" opacity="0.7" strokeDasharray="3 2" />}
+          {ind.strength && <text className="chart-axis-text" x={padL - 8} y={strTop + 8} textAnchor="end" fill="var(--violet)">체결강도</text>}
 
           {/* 신호 마커 */}
           {(signals || []).map((sig, si) => {
@@ -747,9 +984,243 @@ function SimCandleChartSVG({ bars, signals, curT, code, name, compact, indicator
   );
 }
 
+/* ─────────────── 호가 불균형 그래프 (Req 9, ASYMMETRIC: live+svg only) ───────────────
+   b.imbalance(=매수총잔량/매도총잔량, 1.0=균형) 시계열 + 1.0 기준선. imbalance 부재 시
+   buy_rest/sell_rest 로 정규화 폴백. 데이터 전무면 숨김(무예외). LWC 는 싣지 않는다. */
+function SimImbalancePane({ bars, compact }) {
+  const view = useMemo_simc(() => {
+    const arr = bars || [];
+    return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+  }, [bars]);
+
+  // imbalance 값(직접 필드 우선, 없으면 buy_rest/sell_rest 비율). 둘 다 없으면 null.
+  const vals = useMemo_simc(() => view.map(b => {
+    if (b.imbalance != null && isFinite(b.imbalance)) return b.imbalance;
+    const br = (b.buy_rest != null && isFinite(b.buy_rest)) ? b.buy_rest : null;
+    const sr = (b.sell_rest != null && isFinite(b.sell_rest)) ? b.sell_rest : null;
+    if (br != null && sr != null && sr > 0) return br / sr;
+    return null;
+  }), [view]);
+
+  const hasData = useMemo_simc(() => vals.some(v => v != null), [vals]);
+  if (!hasData) return null;
+
+  const n = view.length;
+  const W = 880;
+  const H = compact ? 30 : 40;
+  const padL = 56, padR = 16, padT = 4, padB = 4;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  // 1.0 중심, 동적 상한(최대 비율, 최소 2.0). 0..vMax 선형, 1.0 균형선.
+  const finite = vals.filter(v => v != null && isFinite(v));
+  const vMax = Math.max(2.0, ...finite);
+  const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + (innerW * i) / (n - 1);
+  const yAt = (v) => padT + innerH - (Math.min(v, vMax) / vMax) * innerH;
+
+  let d = "", started = false;
+  for (let i = 0; i < n; i++) {
+    const v = vals[i];
+    if (v == null || !isFinite(v)) { started = false; continue; }
+    d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
+    started = true;
+  }
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)" }}>호가 불균형(레벨1 총잔량비)</span>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: H }}>
+        {/* 1.0 균형선 */}
+        <line x1={padL} x2={W - padR} y1={yAt(1.0)} y2={yAt(1.0)}
+              stroke="rgba(255,255,255,0.14)" strokeWidth="1" strokeDasharray="2 3" />
+        <text className="chart-axis-text" x={padL - 6} y={yAt(1.0) + 3} textAnchor="end" fill="var(--ink-3)">1.0</text>
+        {n > 1 && <path d={d} fill="none" stroke="var(--teal)" strokeWidth="1.2" opacity="0.85" />}
+      </svg>
+    </div>
+  );
+}
+
+/* ─────────────── net-delta strip (Req 7 in-chart orderflow, ASYMMETRIC: live+svg only) ───────────────
+   bar 별 순매수수량(net_qty)을 색 히스토그램(>0 teal / <0 red)으로 캔들 아래 띠에 그린다.
+   SimOrderFlowTape(side panel)과 달리 차트-내부 오더플로우 표현. net_qty 전무면 숨김. LWC 제외. */
+function SimNetDeltaStrip({ bars, compact }) {
+  const view = useMemo_simc(() => {
+    const arr = bars || [];
+    return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+  }, [bars]);
+
+  const hasData = useMemo_simc(() =>
+    view.some(b => b.net_qty != null && isFinite(b.net_qty) && b.net_qty !== 0),
+    [view]);
+  if (!hasData) return null;
+
+  const n = view.length;
+  const W = 880;
+  const H = compact ? 28 : 38;
+  const padL = 56, padR = 16;
+  const innerW = W - padL - padR;
+  const mid = H / 2;
+  const half = mid - 3;
+  const maxAbs = Math.max(1, ...view.map(b => Math.abs(b.net_qty || 0)));
+  const slot = n > 0 ? innerW / n : innerW;
+  const barW = Math.max(1, slot * 0.7);
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      <span className="mono" style={{ fontSize: 9.5, color: "var(--teal)" }}>net-delta(순매수수량)</span>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: H }}>
+        {/* 0 기준선 */}
+        <line x1={padL} x2={W - padR} y1={mid} y2={mid} stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+        {view.map((b, i) => {
+          const nq = b.net_qty || 0;
+          const h = (Math.min(Math.abs(nq), maxAbs) / maxAbs) * half;
+          const x = padL + slot * i + (slot - barW) / 2;
+          const y = nq >= 0 ? mid - h : mid;
+          const color = nq > 0 ? "var(--teal)" : nq < 0 ? "var(--red)" : "var(--ink-3)";
+          return <rect key={i} x={x.toFixed(1)} y={y.toFixed(1)} width={barW.toFixed(1)}
+                       height={Math.max(0.5, h).toFixed(1)} fill={color} opacity="0.7" />;
+        })}
+      </svg>
+    </div>
+  );
+}
+
+/* ─────────────── RSI 서브패인 (Req 2, ASYMMETRIC: live+svg only) ───────────────
+   RSI(Wilder 14기간) 0–100 스케일 SVG. 30/50/70 가이드선 + 폴리라인.
+   클라이언트 _simRsi(window 전역) 으로 계산. LWC 는 싣지 않는다(ASYMMETRIC PARITY). */
+function SimRsiPane({ bars, compact }) {
+  const view = useMemo_simc(() => {
+    const arr = bars || [];
+    return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+  }, [bars]);
+
+  const rsiVals = useMemo_simc(() =>
+    (typeof _simRsi === "function") ? _simRsi(view, 14) : [],
+    [view]);
+
+  const hasData = useMemo_simc(() => rsiVals.some(v => v != null), [rsiVals]);
+  if (!hasData) return null;
+
+  const n = view.length;
+  const W = 880;
+  const H = compact ? 30 : 40;
+  const padL = 56, padR = 16, padT = 4, padB = 4;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + (innerW * i) / (n - 1);
+  const yAt = (v) => padT + innerH - (Math.max(0, Math.min(100, v)) / 100) * innerH;
+
+  let d = "", started = false;
+  for (let i = 0; i < n; i++) {
+    const v = rsiVals[i];
+    if (v == null || !isFinite(v)) { started = false; continue; }
+    d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
+    started = true;
+  }
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      <span className="mono" style={{ fontSize: 9.5, color: "var(--teal)" }}>RSI(14)</span>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: H }}>
+        {/* 30 / 50 / 70 가이드선 */}
+        {[30, 50, 70].map(lv => (
+          <line key={lv} x1={padL} x2={W - padR} y1={yAt(lv)} y2={yAt(lv)}
+                stroke="rgba(255,255,255,0.10)" strokeWidth="1" strokeDasharray="2 3" />
+        ))}
+        <text className="chart-axis-text" x={padL - 6} y={yAt(70) + 3} textAnchor="end" fill="var(--ink-3)">70</text>
+        <text className="chart-axis-text" x={padL - 6} y={yAt(30) + 3} textAnchor="end" fill="var(--ink-3)">30</text>
+        {n > 1 && <path d={d} fill="none" stroke="var(--teal)" strokeWidth="1.2" opacity="0.85" />}
+      </svg>
+    </div>
+  );
+}
+
+/* ─────────────── MACD 서브패인 (Req 2, ASYMMETRIC: live+svg only) ───────────────
+   MACD(12/26/9) zero-centered SVG: 히스토그램(hist) + MACD 라인 + 시그널 라인.
+   클라이언트 _simMacd(window 전역) 으로 계산. LWC 는 싣지 않는다(ASYMMETRIC PARITY). */
+function SimMacdPane({ bars, compact }) {
+  const view = useMemo_simc(() => {
+    const arr = bars || [];
+    return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+  }, [bars]);
+
+  const macdData = useMemo_simc(() =>
+    (typeof _simMacd === "function") ? _simMacd(view) : { macd: [], signal: [], hist: [] },
+    [view]);
+
+  const hasData = useMemo_simc(() =>
+    (macdData.macd || []).some(v => v != null),
+    [macdData]);
+  if (!hasData) return null;
+
+  const n = view.length;
+  const W = 880;
+  const H = compact ? 30 : 42;
+  const padL = 56, padR = 16, padT = 4, padB = 4;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const mid = padT + innerH / 2;
+  const half = innerH / 2 - 1;
+
+  const hist = macdData.hist || [];
+  const macdLine = macdData.macd || [];
+  const signalLine = macdData.signal || [];
+
+  let maxAbs = 1;
+  for (let i = 0; i < n; i++) {
+    const v = hist[i];
+    if (v != null && isFinite(v)) maxAbs = Math.max(maxAbs, Math.abs(v));
+  }
+  const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + (innerW * i) / (n - 1);
+  const yAt = (v) => (v == null || !isFinite(v)) ? mid
+    : mid - (Math.max(-maxAbs, Math.min(maxAbs, v)) / maxAbs) * half;
+
+  const slot = n > 1 ? innerW / n : innerW;
+  const barW = Math.max(1, slot * 0.55);
+
+  // MACD / 시그널 라인 path.
+  const linePath = (vals) => {
+    let d = "", started = false;
+    for (let i = 0; i < n; i++) {
+      const v = vals[i];
+      if (v == null || !isFinite(v)) { started = false; continue; }
+      d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
+      started = true;
+    }
+    return d;
+  };
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      <span className="mono" style={{ fontSize: 9.5, color: "var(--teal)" }}>MACD(12,26,9)</span>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: H }}>
+        {/* 0 기준선 */}
+        <line x1={padL} x2={W - padR} y1={mid} y2={mid} stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+        {/* 히스토그램 막대 */}
+        {view.map((b, i) => {
+          const v = hist[i];
+          if (v == null || !isFinite(v)) return null;
+          const bh = Math.abs(yAt(v) - mid);
+          const x = xAt(i) - barW / 2;
+          const y = v >= 0 ? mid - bh : mid;
+          const color = v > 0 ? "var(--teal)" : "var(--red)";
+          return <rect key={i} x={x.toFixed(1)} y={y.toFixed(1)}
+                       width={barW.toFixed(1)} height={Math.max(0.5, bh).toFixed(1)}
+                       fill={color} opacity="0.55" />;
+        })}
+        {/* MACD 라인(teal 실선) */}
+        {n > 1 && <path d={linePath(macdLine)} fill="none" stroke="var(--teal)" strokeWidth="1.1" opacity="0.9" />}
+        {/* 시그널 라인(amber 점선) */}
+        {n > 1 && <path d={linePath(signalLine)} fill="none" stroke="var(--amber)" strokeWidth="1" opacity="0.8" strokeDasharray="3 2" />}
+      </svg>
+    </div>
+  );
+}
+
 /* 공통 셸 — 헤더(종목·현재가·등락 게이지·세션 링) + 본문(차트) + 히트 스트립.
-   신호(매수/매도) 도달 순간 패널 테두리를 1회 플래시한다(curT 가 신호 시각을 막 넘을 때). */
-function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engine, children }) {
+   신호(매수/매도) 도달 순간 패널 테두리를 1회 플래시한다(curT 가 신호 시각을 막 넘을 때).
+   호가 불균형·net-delta·RSI·MACD 서브패인은 ASYMMETRIC — live+svg 만(engine !== "lwc") 토글 시 노출. */
+function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engine, indicators, children }) {
+  const ind = indicators || _SIM_DEFAULT_INDICATORS;
   // 신호 도달 플래시 — curT 가 새 신호 시각(buy/sell)을 넘는 순간 1회 깜빡. ref 로 도달분 추적.
   const seenRef = useRef_simc(new Set());
   const [flash, setFlash] = useState_simc(null);  // "buy"|"sell"|null.
@@ -807,6 +1278,11 @@ function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engi
       </div>
       <div className="panel-bd">
         {children}
+        {/* 차트-내부 서브패인 — ASYMMETRIC: live+svg 만(LWC 제외). 토글별 노출. */}
+        {engine !== "lwc" && ind.imbalance && <SimImbalancePane bars={bars} compact={compact} />}
+        {engine !== "lwc" && ind.orderflow && <SimNetDeltaStrip bars={bars} compact={compact} />}
+        {engine !== "lwc" && ind.rsi && <SimRsiPane bars={bars} compact={compact} />}
+        {engine !== "lwc" && ind.macd && <SimMacdPane bars={bars} compact={compact} />}
         <SimOrderBook lastBar={lastBar} compact={compact} />
         <SimOrderFlowTape bars={bars} compact={compact} />
         <SimFootprint bars={bars} compact={compact} />
@@ -1020,9 +1496,27 @@ function SimFootprint({ bars, compact }) {
    sell_rest)만 제공한다(레벨 2~10 호가 없음). 따라서 레벨1 + 총잔량을 크게 보여주고
    "레벨1 호가 + 총잔량" 임을 명시한다(허위 다단 호가 생성 금지). */
 function SimOrderBook({ lastBar, compact }) {
+  // Phase7 — bid1/ask1 변동 플래시. prev 값 추적해 변할 때 짧은 배경 글로우(CSS transition).
+  const prevRef = useRef_simc({ bid1: null, ask1: null });
+  const [flash, setFlash] = useState_simc({ bid: false, ask: false });
+
+  const bid1 = (lastBar && lastBar.bid1 != null && isFinite(lastBar.bid1)) ? lastBar.bid1 : null;
+  const ask1 = (lastBar && lastBar.ask1 != null && isFinite(lastBar.ask1)) ? lastBar.ask1 : null;
+
+  useEffect_simc(() => {
+    const p = prevRef.current;
+    const bidChg = p.bid1 != null && bid1 != null && bid1 !== p.bid1;
+    const askChg = p.ask1 != null && ask1 != null && ask1 !== p.ask1;
+    if (bidChg || askChg) {
+      setFlash({ bid: bidChg, ask: askChg });
+      const id = setTimeout(() => setFlash({ bid: false, ask: false }), 280);
+      prevRef.current = { bid1, ask1 };
+      return () => clearTimeout(id);
+    }
+    prevRef.current = { bid1, ask1 };
+  }, [bid1, ask1]);
+
   if (!lastBar) return null;
-  const bid1 = (lastBar.bid1 != null && isFinite(lastBar.bid1)) ? lastBar.bid1 : null;
-  const ask1 = (lastBar.ask1 != null && isFinite(lastBar.ask1)) ? lastBar.ask1 : null;
   const buyRest = (lastBar.buy_rest != null && isFinite(lastBar.buy_rest)) ? lastBar.buy_rest : null;
   const sellRest = (lastBar.sell_rest != null && isFinite(lastBar.sell_rest)) ? lastBar.sell_rest : null;
   // 호가도 잔량도 전무하면 숨김(무예외).
@@ -1033,22 +1527,40 @@ function SimOrderBook({ lastBar, compact }) {
   const maxRest = Math.max(1, buyRest || 0, sellRest || 0);
   const askW = sellRest != null ? (sellRest / maxRest) * 100 : 0;
   const bidW = buyRest != null ? (buyRest / maxRest) * 100 : 0;
+  // 스프레드(ask1-bid1) + bps(중간가 기준 만분율). 둘 다 있을 때만.
+  const spread = (bid1 != null && ask1 != null) ? (ask1 - bid1) : null;
+  const mid = (bid1 != null && ask1 != null) ? (ask1 + bid1) / 2 : null;
+  const spreadBps = (spread != null && mid && mid > 0) ? (spread / mid) * 10000 : null;
+  // 잔량 점유율(buy_rest vs sell_rest 총합 대비) — true ratio depth.
+  const totRest = (buyRest || 0) + (sellRest || 0);
+  const buyShare = totRest > 0 ? (buyRest || 0) / totRest * 100 : null;
+  const sellShare = totRest > 0 ? (sellRest || 0) / totRest * 100 : null;
   // 체결강도 색(100=균형). >100 매수 우세(teal), <100 매도 우세(red).
   const stColor = strength == null ? "var(--ink-2)" : strength >= 100 ? "var(--teal)" : "var(--red)";
   const rowH = compact ? 20 : 24;
+  const askBg = flash.ask ? "rgba(56,140,255,0.22)" : "rgba(56,140,255,0.06)";
+  const bidBg = flash.bid ? "rgba(255,93,108,0.22)" : "rgba(255,93,108,0.06)";
 
   return (
     <div style={{ marginTop: 6 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
-        <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)" }}>호가창 (레벨1 + 총잔량)</span>
-        {strength != null && (
-          <span className="mono" style={{ fontSize: 9.5, color: stColor, padding: "1px 6px", borderRadius: 3, border: "1px solid " + (strength >= 100 ? "var(--teal-dim)" : "var(--line-1)") }}>
-            체결강도 {strength.toFixed(0)}
-          </span>
-        )}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3, gap: 6 }}>
+        <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)" }}
+              title="일일 DB는 최우선호가·총잔량만 제공(레벨2~10 없음)">호가창 (레벨1 + 총잔량)</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {spread != null && (
+            <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-2)" }}>
+              스프레드 {_simPriceTick(spread)}{spreadBps != null ? ` (${spreadBps.toFixed(1)}bp)` : ""}
+            </span>
+          )}
+          {strength != null && (
+            <span className="mono" style={{ fontSize: 9.5, color: stColor, padding: "1px 6px", borderRadius: 3, border: "1px solid " + (strength >= 100 ? "var(--teal-dim)" : "var(--line-1)") }}>
+              체결강도 {strength.toFixed(0)}
+            </span>
+          )}
+        </div>
       </div>
-      {/* 매도호가1(위, HTS 파랑 톤) */}
-      <div style={{ display: "flex", alignItems: "center", height: rowH, background: "rgba(56,140,255,0.06)", borderRadius: 3, marginBottom: 1 }}>
+      {/* 매도호가1(위, HTS 파랑 톤) — bid/ask 변동 시 배경 플래시(CSS transition) */}
+      <div style={{ display: "flex", alignItems: "center", height: rowH, background: askBg, borderRadius: 3, marginBottom: 1, transition: "background 0.28s ease-out" }}>
         <span className="mono" style={{ width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#5aa0ff", paddingRight: 8 }}>
           {ask1 != null ? _simPriceTick(ask1) : "—"}
         </span>
@@ -1064,7 +1576,7 @@ function SimOrderBook({ lastBar, compact }) {
         ▸ {cur != null ? _simPriceTick(cur) : "—"} ◂
       </div>
       {/* 매수호가1(아래, HTS 빨강 톤) */}
-      <div style={{ display: "flex", alignItems: "center", height: rowH, background: "rgba(255,93,108,0.06)", borderRadius: 3, marginTop: 1 }}>
+      <div style={{ display: "flex", alignItems: "center", height: rowH, background: bidBg, borderRadius: 3, marginTop: 1, transition: "background 0.28s ease-out" }}>
         <span className="mono" style={{ width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#ff8088", paddingRight: 8 }}>
           {bid1 != null ? _simPriceTick(bid1) : "—"}
         </span>
@@ -1075,6 +1587,19 @@ function SimOrderBook({ lastBar, compact }) {
           {buyRest != null ? _simPriceTick(buyRest) : "—"}
         </span>
       </div>
+      {/* 미니 불균형 게이지 — buy_rest vs sell_rest 점유율(% 라벨). 잔량 데이터 있을 때만. */}
+      {buyShare != null && sellShare != null && (
+        <div style={{ marginTop: 5 }}>
+          <div style={{ display: "flex", height: 6, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" }}>
+            <div style={{ width: buyShare.toFixed(1) + "%", background: "var(--teal)", opacity: 0.7, transition: "width 0.25s ease-out" }} />
+            <div style={{ width: sellShare.toFixed(1) + "%", background: "var(--red)", opacity: 0.7, transition: "width 0.25s ease-out" }} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2, fontSize: 9 }}>
+            <span className="mono" style={{ color: "var(--teal)" }}>매수 {buyShare.toFixed(0)}%</span>
+            <span className="mono" style={{ color: "var(--red)" }}>매도 {sellShare.toFixed(0)}%</span>
+          </div>
+        </div>
+      )}
       {/* footer — 총매도/총매수 잔량 */}
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 9.5 }}>
         <span className="mono" style={{ color: "#5aa0ff" }}>총매도 {sellRest != null ? _simPriceTick(sellRest) : "—"}</span>
@@ -1238,6 +1763,8 @@ Object.assign(window, {
   SimHeatStrip, SimRestFlow, SimSignalLog,
   SimChangeGauge, SimSessionRing,
   SimOrderFlowTape, SimFootprint, SimOrderBook, SimOverlayChart,
+  SimImbalancePane, SimNetDeltaStrip, SimRsiPane, SimMacdPane,
   _simTimeLabel, _simPriceTick, _strengthColor, _sessionProgress, _changeColor,
+  _simSma, _simEma, _simRsi, _simMacd, _simVolMa, _simStrengthMa,
   _SIM_DEFAULT_INDICATORS,
 });

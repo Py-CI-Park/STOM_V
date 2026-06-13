@@ -26,10 +26,11 @@ def test_research_lab_component_contract() -> None:
     assert "pearson" in src
     assert "spearman" in src
     assert "Edge" in src
-    assert "Feature Importance" in src
+    # Phase7 §7.7 — 탭 라벨은 한글화됨(영문 라벨 누수 제거). 분석 섹션 존재는 한글 라벨로 검증.
+    assert "변수 중요도" in src
     assert "Correlation" in src
     assert "Variable Combinations" in src
-    assert "insufficient" in src
+    assert "데이터가 부족합니다" in src
     assert "feature_matrix" in src
     assert "sample count" in src
     assert "range_summaries" in src

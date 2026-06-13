@@ -40,7 +40,7 @@ const _fInt = (v) => (typeof window.fmtInt === "function" ? window.fmtInt(v)
 const EA_SERIES = [
   { key: "score", label: "score", color: "var(--teal)", fmt: _fScore },
   { key: "profit", label: "profit", color: "var(--violet)", fmt: _fMoney },
-  { key: "mdd", label: "mdd", color: "var(--red)", fmt: _fPct },
+  { key: "mdd", label: "mdd(%)", color: "var(--red)", fmt: _fPct },
   { key: "trade_count", label: "trades", color: "var(--blue)", fmt: _fInt },
 ];
 
@@ -307,6 +307,9 @@ function EaScatterChart({ gens }) {
 //    버튼: backtest.jsx 직접 import 없이 window 이벤트 발행 + 탭 전환(onOpenWorkbench).
 // ---------------------------------------------------------------------------
 function EaTopTable({ runId, gens, topN, onOpenWorkbench }) {
+  // 워크벤치 연동 가능 여부 — 콜백이 없으면 탭 전환이 일어나지 않으므로(조용한 무동작 방지)
+  //   버튼을 비활성화하고 그 이유를 툴팁으로 알린다.
+  const canOpenWorkbench = typeof onOpenWorkbench === "function";
   const top = useMemo_ea(() => {
     return gens.filter(g => g.gen_no >= 0)
       .slice()
@@ -360,9 +363,10 @@ function EaTopTable({ runId, gens, topN, onOpenWorkbench }) {
                 {g.gate_passed ? "✓" : "—"}
               </td>
               <td style={{ padding: "6px 8px", textAlign: "center" }}>
-                <button className="btn ghost sm" disabled={!g.has_csv}
-                        data-tip={g.has_csv ? "백테스트 탭에서 이 세대 결과를 상세 분석"
-                                            : "결과 CSV 가 없어 상세 분석 불가"}
+                <button className="btn ghost sm" disabled={!g.has_csv || !canOpenWorkbench}
+                        data-tip={!canOpenWorkbench ? "워크벤치 연동이 비활성화됨(탭 전환 콜백 없음)"
+                                  : g.has_csv ? "백테스트 탭에서 이 세대 결과를 상세 분석"
+                                              : "결과 CSV 가 없어 상세 분석 불가"}
                         onClick={() => openInWorkbench(g.gen_no)}>
                   워크벤치 분석
                 </button>
@@ -511,7 +515,7 @@ function EvolutionAnalysisPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
                 세대 산점도 — MDD × 손익(니치 지도)
               </span>
               <LegendDot color="var(--teal)" label="게이트 통과" filled="ring" />
-              <LegendDot color="var(--ink-3)" label="탈락" />
+              <LegendDot color="var(--ink-3)" label="게이트 탈락(흐린 점)" />
             </div>
             <EaScatterChart gens={gens} />
 

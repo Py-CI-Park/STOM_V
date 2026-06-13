@@ -55,6 +55,22 @@ const _BT_MODE_RUN_LABEL = {
   sweep: "스윕 실행",
 };
 
+// 모드 토글 hover 설명 — 전문 용어(WFO·스윕)를 풀어 쓴다.
+const _BT_MODE_TIP = {
+  backtest: "백테스트 — 고른 기간에 매수/매도 조건식을 1회 시뮬레이션합니다.",
+  optimize: "최적화 — 파라미터 탐색공간을 격자로 훑어 최적 조합을 찾습니다.",
+  wfo: "WFO(전진분석, Walk-Forward) — 훈련 구간에서 파라미터를 고른 뒤, "
+     + "바로 다음 미학습 구간에서 검증하기를 굴려가며 반복합니다(과최적화 점검).",
+  sweep: "스윕(sweep) — 파라미터 조합 또는 날짜 윈도우를 일괄로 쓸어가며 "
+       + "성과 지형(고원/절벽)을 펼쳐 봅니다.",
+};
+
+// 기간 입력 placeholder 예시 — 현재 연도 기준으로 동적 생성(연도 고정 시 매년 노후화).
+//   예: 2026년이면 시작 "20260101" · 종료 "20261231".
+const _BT_YEAR = (new Date()).getFullYear();
+const _BT_START_EG = _BT_YEAR + "0101";
+const _BT_END_EG = _BT_YEAR + "1231";
+
 function _btElapsed(rec) {
   const s = rec.started_at;
   if (!s) return "—";
@@ -589,6 +605,7 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
             <div style={{ display: "flex", gap: 4 }}>
               {[["backtest", "백테스트"], ["optimize", "최적화"], ["wfo", "WFO"], ["sweep", "스윕"]].map(([m, lbl]) => (
                 <button key={m} onClick={() => setMode(m)} className="mono" disabled={isDemo}
+                  title={_BT_MODE_TIP[m]} data-tip={_BT_MODE_TIP[m]}
                   style={{
                     flex: 1, padding: "6px 8px", fontSize: 11, borderRadius: 5,
                     border: "1px solid " + (mode === m ? "var(--amber)" : "var(--line-1)"),
@@ -617,12 +634,12 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
           <div className="field" style={{ minWidth: 110 }}>
             <label>시작 (YYYYMMDD)</label>
             <input className="input" value={start} onChange={e => setStart(e.target.value)}
-                   placeholder="20250101" spellCheck={false} disabled={isDemo} />
+                   placeholder={_BT_START_EG} spellCheck={false} disabled={isDemo} />
           </div>
           <div className="field" style={{ minWidth: 110 }}>
             <label>종료 (YYYYMMDD)</label>
             <input className="input" value={end} onChange={e => setEnd(e.target.value)}
-                   placeholder="20251231" spellCheck={false} disabled={isDemo} />
+                   placeholder={_BT_END_EG} spellCheck={false} disabled={isDemo} />
           </div>
           <div className="field" style={{ minWidth: 100 }}>
             <label>시간단위</label>
@@ -1849,6 +1866,18 @@ function BacktestTab({ baseUrl, wsStatus }) {
           ● {badge.label}
         </span>
       </div>
+
+      {/* 데모 모드 안내 — 미연결 상태의 빈/예시 화면을 '버그'로 오인하지 않도록 명시 배너. */}
+      {isDemo && (
+        <div className="mono" style={{
+          display: "flex", alignItems: "center", gap: 8, padding: "8px 14px",
+          background: "rgba(240,179,90,0.08)", border: "1px solid rgba(240,179,90,0.35)",
+          borderRadius: 8, fontSize: 11.5, color: "var(--amber)",
+        }}>
+          <span className="badge warn" style={{ flexShrink: 0 }}>데모 모드</span>
+          백엔드 미연결 — 표시되는 결과는 예시이며 실제 데이터가 아닙니다. 서버에 연결하면 실거래 백테스트가 활성화됩니다.
+        </div>
+      )}
 
       {/* 상단 고정 전폭 실행 패널 — 항상 노출(매수/매도·기간·모드·대형 실행 버튼·활성 잡 카드) */}
       <BtRunPanel baseUrl={baseUrl} isDemo={isDemo} libNames={libNames} onResult={onPickJobResult}

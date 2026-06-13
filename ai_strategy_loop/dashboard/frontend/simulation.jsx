@@ -16,14 +16,15 @@ function _simFetchJson(url, timeoutMs) {
     .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
 }
 
-const _SIM_SPEEDS = [1, 5, 20, 60, 240];
+const _SIM_SPEEDS = [1, 5, 20, 60, 240, 600];
 // WS frame item → store bar 필드 매핑(증분 "bars" 와 seek "history" 스냅샷이 공유).
 const _simWsBar = (it, t) => ({
   t, o: it.o, h: it.h, l: it.l, c: it.c, vol: it.vol,
   change: it.change, strength: it.strength,
   ma5: it.ma5, ma20: it.ma20, ma60: it.ma60, imbalance: it.imbalance,
   buy_rest: it.buy_rest, sell_rest: it.sell_rest,
-  vwap: it.vwap, bb_mid: it.bb_mid, bb_up: it.bb_up, bb_low: it.bb_low,
+  vwap: it.vwap, vwap_up: it.vwap_up, vwap_low: it.vwap_low,
+  bb_mid: it.bb_mid, bb_up: it.bb_up, bb_low: it.bb_low,
   net_qty: it.net_qty, bid1: it.bid1, ask1: it.ask1,
 });
 const _SIM_MAX_CODES = 10;                  // S2 동시보기 1~10(백엔드 replay_engine.MAX_CODES 와 일치).
@@ -34,8 +35,10 @@ const _SIM_ENGINE_MODES = [["live", "라이브"], ["lwc", "LWC"], ["svg", "SVG"]
 const _SIM_ENGINE_LS_KEY = "stom.sim.engine.v1";
 // 멀티차트 보기 모드 — split(분할 그리드) / overlay(정규화 한 차트 겹침).
 const _SIM_CHART_MODES = [["split", "분할"], ["overlay", "오버레이"]];
-// 분할 그리드 컬럼 토글(1/2 — 4종목이면 2열이 2×2). 단일 종목은 항상 1열.
-const _SIM_SPLIT_LS_KEY = "stom.sim.split.v1";
+// 분할 그리드 열(cols) 선택 1~5 + 행(rows) 캡 스테퍼. 단일 종목은 항상 1열.
+const _SIM_SPLIT_LS_KEY = "stom.sim.split.v1";    // cols(1~5) 보존.
+const _SIM_ROWS_LS_KEY = "stom.sim.rows.v1";      // rows 캡(0=자동·무제한) 보존.
+const _SIM_MAX_SPLIT_COLS = 5;                    // 열 선택 상한(7.6).
 const _SIM_IND_LS_KEY = "stom.sim.indicators.v1";
 const _SIM_DEMO_LS_KEY = "stom.sim.demoSeen.v1";   // 데모 1회 시청 기억(매번 강제 금지).
 
@@ -61,15 +64,27 @@ function _loadIndicators() {
 function _saveIndicators(obj) {
   try { window.localStorage.setItem(_SIM_IND_LS_KEY, JSON.stringify(obj || {})); } catch (e) {}
 }
-// 분할 컬럼(1/2) 로드/저장.
+// 분할 열(cols, 1~_SIM_MAX_SPLIT_COLS) 로드/저장. 미설정/이상값은 2(기존 기본).
 function _loadSplitCols() {
   try {
     const v = parseInt(window.localStorage.getItem(_SIM_SPLIT_LS_KEY), 10);
-    return v === 1 ? 1 : 2;
+    if (v >= 1 && v <= _SIM_MAX_SPLIT_COLS) return v;
+    return 2;
   } catch (e) { return 2; }
 }
 function _saveSplitCols(v) {
   try { window.localStorage.setItem(_SIM_SPLIT_LS_KEY, String(v)); } catch (e) {}
+}
+// 분할 행(rows) 캡 로드/저장. 0=자동(무제한·종목수 기반 자동 행). 1 이상이면 그 행수로 캡(초과는 스크롤).
+function _loadSplitRows() {
+  try {
+    const v = parseInt(window.localStorage.getItem(_SIM_ROWS_LS_KEY), 10);
+    if (v >= 1 && v <= _SIM_MAX_CODES) return v;
+    return 0;
+  } catch (e) { return 0; }
+}
+function _saveSplitRows(v) {
+  try { window.localStorage.setItem(_SIM_ROWS_LS_KEY, String(v)); } catch (e) {}
 }
 // 차트 엔진 모드(live/lwc/svg) 로드/저장. 기본 라이브(S4). LWC 부재 환경이어도 live/svg 동작.
 function _loadEngineMode() {
@@ -384,7 +399,7 @@ function SimPlaybackBar({
                   background: speed === sp ? "rgba(76,214,179,0.08)" : "transparent",
                   color: speed === sp ? "var(--teal)" : "var(--ink-2)", cursor: "pointer",
                 }}>
-                {sp === 240 ? "최대" : sp + "x"}
+                {sp === 600 ? "초고속" : sp + "x"}
               </button>
             ))}
           </div>
@@ -451,6 +466,8 @@ function SimulationTab({ baseUrl, wsStatus }) {
   // 멀티차트 보기 모드(split/overlay) + 분할 컬럼 수(1/2 — 강제 토글, auto=반응형).
   const [chartMode, setChartMode] = useState_sim("split");
   const [splitCols, setSplitCols] = useState_sim(_loadSplitCols);
+  // 분할 행 캡(0=자동·무제한). 종목수/열 기반 자동 행을 사용자가 줄여 스크롤 그리드로 만든다.
+  const [splitRows, setSplitRows] = useState_sim(_loadSplitRows);
   // 차트 엔진 모드(live/lwc/svg) — 기본 라이브(S4). localStorage 보존.
   const [engineMode, setEngineMode] = useState_sim(_loadEngineMode);
 
@@ -532,6 +549,9 @@ function SimulationTab({ baseUrl, wsStatus }) {
   }, []);
   const setSplitColsPersist = useCallback_sim((v) => {
     setSplitCols(v); _saveSplitCols(v);
+  }, []);
+  const setSplitRowsPersist = useCallback_sim((v) => {
+    setSplitRows(v); _saveSplitRows(v);
   }, []);
   const setEngineModePersist = useCallback_sim((v) => {
     setEngineMode(v); _saveEngineMode(v);
@@ -798,13 +818,22 @@ function SimulationTab({ baseUrl, wsStatus }) {
 
   // 렌더용 코드별 bar 시계열(barsVersion 의존).
   const barsByCode = useMemo_sim(() => ({ ...barsRef.current }), [barsVersion]);
-  // S2 분할 그리드 컬럼 — 단일 종목은 1열. 사용자가 1/2열을 강제하면 우선,
-  //   아니면 개수 기반 반응형(2~4→2 / 5~9→3 / 10→4)으로 화면을 최대 활용.
-  const autoCols = _responsiveCols(codes.length);
-  const effCols = codes.length <= 1 ? 1 : (splitCols === 1 ? 1 : (splitCols === 2 && autoCols <= 2 ? 2 : autoCols));
+  // 7.6 분할 그리드 — 사용자가 열(1~5)을 직접 고른다. 단일 종목은 항상 1열.
+  //   effCols = clamp(userCols, 1, min(5, codes.length)). 종목수보다 많은 열은 빈칸 방지로 클램프.
+  const colCap = Math.min(_SIM_MAX_SPLIT_COLS, Math.max(1, codes.length));
+  const effCols = codes.length <= 1 ? 1 : Math.min(Math.max(1, splitCols), colCap);
   const gridCols = "repeat(" + effCols + ", minmax(0, 1fr))";
+  // 자동 행수 = ceil(종목수/열). 사용자가 splitRows(>0)로 더 적게 캡하면 그 행만 보이고 나머지는 스크롤.
+  const autoRows = Math.max(1, Math.ceil(codes.length / effCols));
+  const effRows = splitRows > 0 ? Math.min(splitRows, autoRows) : autoRows;
+  const rowsCapped = effRows < autoRows;
   // S2 컴팩트 — 5개 이상이면 차트 높이·보조패널을 축소(과밀 방지).
   const dense = codes.length >= 5;
+  // 행 캡 시: 보이는 행만큼 높이를 제한하고 세로 스크롤(gridAutoRows 로 행 높이 균일).
+  const gridExtra = rowsCapped
+    ? { gridAutoRows: "minmax(0, " + (100 / effRows).toFixed(4) + "%)",
+        maxHeight: "calc(100vh - 220px)", overflowY: "auto" }
+    : {};
   const nameByCode = useMemo_sim(() => {
     const m = {};
     stocks.forEach(s => { m[s.code] = s.name; });
@@ -892,6 +921,8 @@ function SimulationTab({ baseUrl, wsStatus }) {
               indicators={indicators} onToggleIndicator={toggleIndicator}
               chartMode={chartMode} onChartMode={setChartMode}
               splitCols={splitCols} onSplitCols={setSplitColsPersist}
+              splitRows={splitRows} onSplitRows={setSplitRowsPersist}
+              colCap={colCap} codeCount={codes.length}
               engineMode={engineMode} onEngineMode={setEngineModePersist}
               multi={codes.length > 1} />
           )}
@@ -920,7 +951,7 @@ function SimulationTab({ baseUrl, wsStatus }) {
               nameByCode={nameByCode} curT={curT} />
           ) : (
             // 분할 모드 — 종목별 차트 그리드(반응형 열). 엔진 모드(라이브/LWC/SVG)로 컴포넌트 선택.
-            <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: dense ? 10 : 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: dense ? 10 : 14, ...gridExtra }}>
               {codes.map(code => {
                 const chartProps = {
                   code, name: nameByCode[code],
@@ -957,13 +988,79 @@ function SimChartByEngine({ engineMode, ...props }) {
   return Auto ? <Auto {...props} /> : null;
 }
 
+// SimViewBar 라벨 공통 스타일(7.0 가독성 — ink-3·10 → ink-1·11·600·자간).
+//   styles.css 클래스 추가 없이 인라인(Shared 가 후속에서 추출할 수 있음).
+const _SIM_VIEWBAR_LABEL = {
+  fontSize: 11, color: "var(--ink-1)", fontWeight: 600, letterSpacing: ".3px",
+};
+
+// 엔진 비대칭 설명 팝오버 — 3엔진의 실제 역할/오더플로우 지원 차이를 표로 보여준다(7.2).
+//   라이브=Canvas·기본·최경량·풀 오더플로우 / SVG=무의존 폴백·풀 오더플로우 /
+//   LWC=전문 줌·크로스헤어·체결강도 오버레이만. 클릭/키보드(Esc·Enter·Space) 닫힘.
+const _SIM_ENGINE_ROWS = [
+  ["라이브", "Canvas·기본·최경량 · 풀 오더플로우(체결강도·호가·net-delta)"],
+  ["SVG", "무의존 폴백 · 풀 오더플로우(체결강도·호가·net-delta)"],
+  ["LWC", "전문 줌/크로스헤어 · 체결강도 오버레이만"],
+];
+function SimEnginePopover({ onClose }) {
+  const ref = useRef_sim(null);
+  useEffect_sim(() => {
+    // 바깥 클릭·Esc 로 닫기(접근성). 마운트 시 포커스해 키보드 사용자가 바로 닫게.
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onDoc);
+    if (ref.current) { try { ref.current.focus(); } catch (e) {} }
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onDoc);
+    };
+  }, [onClose]);
+  return (
+    <div ref={ref} role="dialog" aria-label="엔진 설명" tabIndex={-1}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onClose(); }}
+      style={{
+        position: "absolute", top: "100%", left: 0, marginTop: 6, zIndex: 30,
+        minWidth: 320, maxWidth: 420, padding: "10px 12px",
+        background: "var(--bg-1)", border: "1px solid var(--line-1)",
+        borderRadius: 8, boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
+        color: "var(--ink-1)",
+      }}>
+      <div className="mono" style={{ fontSize: 11, fontWeight: 600, color: "var(--ink-1)", marginBottom: 6 }}>
+        엔진별 역할(비대칭) — 같은 데이터, 다른 강점
+      </div>
+      <table className="mono" style={{ width: "100%", fontSize: 10.5, color: "var(--ink-1)", borderCollapse: "collapse" }}>
+        <tbody>
+          {_SIM_ENGINE_ROWS.map(([name, desc]) => (
+            <tr key={name}>
+              <td style={{ padding: "3px 8px 3px 0", color: "var(--teal)", whiteSpace: "nowrap", verticalAlign: "top" }}>{name}</td>
+              <td style={{ padding: "3px 0", color: "var(--ink-1)" }}>{desc}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={{ marginTop: 8, textAlign: "right" }}>
+        <button className="btn ghost sm" onClick={onClose} style={{ fontSize: 10.5, padding: "2px 10px" }}>닫기</button>
+      </div>
+    </div>
+  );
+}
+
 // ===========================================================================
-// 보기 도구 바 — 엔진 모드(라이브/LWC/SVG) + 보조지표 토글(MA·VWAP·볼린저)
-//   + 멀티차트 모드(분할/오버레이) + 분할 열(1/2).
+// 보기 도구 바 — 엔진 모드(라이브/LWC/SVG) + 보조지표 토글(가격·모멘텀·흐름)
+//   + 멀티차트 모드(분할/오버레이) + 분할 열(1~5)/행 캡 + 엔진 설명 ⓘ.
 // ===========================================================================
 function SimViewBar({ indicators, onToggleIndicator, chartMode, onChartMode,
-                      splitCols, onSplitCols, multi, engineMode, onEngineMode }) {
-  const indDefs = [["ma", "MA"], ["vwap", "VWAP"], ["boll", "볼린저"]];
+                      splitCols, onSplitCols, splitRows, onSplitRows,
+                      colCap, codeCount, multi, engineMode, onEngineMode }) {
+  // 지표 그룹 — 가격(MA/EMA/VWAP/볼린저/VWAP밴드) | 모멘텀(RSI/MACD) | 흐름(체결강도/호가/오더플로우/거래량MA/체결강도MA).
+  //   key 세트는 Track S 와의 교차파일 계약(_SIM_DEFAULT_INDICATORS 와 정확히 일치).
+  const indGroups = [
+    ["가격", [["ma", "MA"], ["ema", "EMA"], ["vwap", "VWAP"], ["boll", "볼린저"], ["vwapband", "VWAP밴드"]]],
+    ["모멘텀", [["rsi", "RSI"], ["macd", "MACD"]]],
+    ["흐름", [["strength", "체결강도"], ["imbalance", "호가"], ["orderflow", "오더플로우"], ["volma", "거래량MA"], ["strma", "체결강도MA"]]],
+  ];
+  const [engineInfoOpen, setEngineInfoOpen] = useState_sim(false);
   const tbtn = (active, label, onClick, key, title) => (
     <button key={key} onClick={onClick} className="mono" title={title}
       style={{
@@ -975,32 +1072,73 @@ function SimViewBar({ indicators, onToggleIndicator, chartMode, onChartMode,
       {label}
     </button>
   );
+  // 열 선택지(1~colCap) — 종목수/상한(5)으로 클램프된 colCap 까지만 노출.
+  const colChoices = [];
+  for (let c = 1; c <= Math.max(1, colCap || 1); c += 1) colChoices.push(c);
   return (
     <div className="panel">
       <div className="panel-bd" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "7px 10px" }}>
-        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>엔진</span>
+        <span className="mono" style={{ ..._SIM_VIEWBAR_LABEL, display: "inline-flex", alignItems: "center", gap: 4, position: "relative" }}>
+          엔진
+          <button type="button" aria-label="엔진 설명" title="엔진별 역할 설명"
+            onClick={() => setEngineInfoOpen(v => !v)}
+            style={{
+              width: 16, height: 16, lineHeight: "14px", padding: 0, borderRadius: "50%",
+              border: "1px solid var(--line-1)", background: "transparent",
+              color: "var(--ink-1)", cursor: "pointer", fontSize: 10, fontWeight: 700,
+            }}>ⓘ</button>
+          {engineInfoOpen && <SimEnginePopover onClose={() => setEngineInfoOpen(false)} />}
+        </span>
         <div style={{ display: "flex", gap: 4 }}>
           {_SIM_ENGINE_MODES.map(([m, lbl]) =>
             tbtn(engineMode === m, lbl, () => onEngineMode(m), "e" + m,
-                 m === "live" ? "Canvas 라이브 렌더(현재봉 성장·플래시)"
-                   : m === "lwc" ? "lightweight-charts 엔진" : "순수 SVG 폴백"))}
+                 m === "live" ? "Canvas 라이브 렌더(현재봉 성장·플래시·풀 오더플로우)"
+                   : m === "lwc" ? "lightweight-charts(전문 줌/크로스헤어·체결강도 오버레이만)" : "순수 SVG 폴백(풀 오더플로우)"))}
         </div>
-        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 6 }}>지표</span>
-        <div style={{ display: "flex", gap: 4 }}>
-          {indDefs.map(([k, lbl]) => tbtn(!!indicators[k], lbl, () => onToggleIndicator(k), k))}
+        <span className="mono" style={{ ..._SIM_VIEWBAR_LABEL, marginLeft: 6 }}>지표</span>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          {indGroups.map(([grp, defs]) => (
+            <div key={grp} style={{ display: "flex", gap: 4, alignItems: "center" }}>
+              <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)" }}>{grp}</span>
+              {defs.map(([k, lbl]) => tbtn(!!indicators[k], lbl, () => onToggleIndicator(k), k))}
+            </div>
+          ))}
         </div>
         {multi && (
           <>
-            <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 6 }}>보기</span>
+            <span className="mono" style={{ ..._SIM_VIEWBAR_LABEL, marginLeft: 6 }}>보기</span>
             <div style={{ display: "flex", gap: 4 }}>
               {_SIM_CHART_MODES.map(([m, lbl]) =>
                 tbtn(chartMode === m, lbl, () => onChartMode(m), m,
                      m === "overlay" ? "정규화 한 차트 겹침" : "종목별 분할 그리드"))}
             </div>
             {chartMode === "split" && (
-              <div style={{ display: "flex", gap: 4 }}>
-                {[[2, "2열"], [1, "1열"]].map(([v, lbl]) =>
-                  tbtn(splitCols === v, lbl, () => onSplitCols(v), "c" + v))}
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                  <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)" }}>열</span>
+                  {colChoices.map(c =>
+                    tbtn(splitCols === c, String(c), () => onSplitCols(c), "c" + c, c + "열로 분할"))}
+                </div>
+                <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                  <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)" }}>행</span>
+                  <button className="mono" title="자동 행수(종목수/열)"
+                    onClick={() => onSplitRows(0)}
+                    style={{
+                      padding: "3px 9px", fontSize: 10.5, borderRadius: 4,
+                      border: "1px solid " + ((splitRows || 0) === 0 ? "var(--teal-dim)" : "var(--line-1)"),
+                      background: (splitRows || 0) === 0 ? "rgba(76,214,179,0.10)" : "transparent",
+                      color: (splitRows || 0) === 0 ? "var(--teal)" : "var(--ink-2)", cursor: "pointer",
+                    }}>자동</button>
+                  <button className="mono" aria-label="행 줄이기" title="보이는 행 줄이기"
+                    onClick={() => onSplitRows(Math.max(1, (splitRows || 0) - 1))}
+                    style={{ padding: "3px 8px", fontSize: 11, borderRadius: 4, border: "1px solid var(--line-1)", background: "transparent", color: "var(--ink-2)", cursor: "pointer" }}>−</button>
+                  <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-1)", minWidth: 18, textAlign: "center" }}>
+                    {(splitRows || 0) === 0 ? "—" : splitRows}
+                  </span>
+                  <button className="mono" aria-label="행 늘리기" title="보이는 행 늘리기"
+                    onClick={() => onSplitRows(Math.min(_SIM_MAX_CODES, (splitRows || 0) + 1))}
+                    style={{ padding: "3px 8px", fontSize: 11, borderRadius: 4, border: "1px solid var(--line-1)", background: "transparent", color: "var(--ink-2)", cursor: "pointer" }}>＋</button>
+                </div>
               </div>
             )}
           </>
