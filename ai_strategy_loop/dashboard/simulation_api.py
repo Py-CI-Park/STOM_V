@@ -63,6 +63,8 @@ _MIN_FRAME_SLEEP_SEC = 0.02
 _FRAME_FLUSH_SLEEP_SEC = 0.05
 # 한 번에 보낼 frame 배치 절대 상한(폭주 입력 방어). 시간 비례 묶음이 이보다 커지면 잘라 보낸다.
 _MAX_BATCH = 256
+# seek 스냅샷 코드당 봉 상한(차트 가시 윈도우보다 넉넉히 — payload 폭주 방지).
+_HISTORY_MAX_BARS = 2000
 # 페이싱 sleep 을 잘게 쪼개는 청크(초) — 긴 대기(예: 1x min=60s)도 이 간격마다 stop/pause/seek 에 반응.
 _PACED_SLEEP_CHUNK_SEC = 0.05
 # bar 간 t_delta 산출 시 비정상(역행·과대) 간격을 막는 상한(초). 장 중 정상 gap 은 수 초~수십 초.
@@ -480,6 +482,8 @@ class SimReplaySession:
         self.running = False
         # 고배속 묶음 전송 기준 인덱스(이 인덱스부터 누적 전송 개수를 센다).
         self._batch_anchor = 0
+        # seek 직후 과거 봉 스냅샷 재전송 예약(스트림 루프가 다음 경계에서 소비).
+        self._history_pending = False
 
     async def handle_start(self, msg: Dict[str, Any]) -> None:
         """start — 데이터 로드 후 meta 송신, 스트림 루프 시작."""
@@ -535,6 +539,13 @@ class SimReplaySession:
         pending_sleep = 0.0           # 아직 자지 않은 누적 대기(초).
         prev_t: Optional[int] = None  # 직전 전송 frame 시각(HHMMSS) — gap 산출용.
         while self.running and self.cursor < self.data.bars_total:
+            # seek 직후엔 0..cursor 스냅샷부터 — 클라이언트가 시킹 이후 frame 만 쌓아
+            #   차트에 과거 봉이 사라지는 공백(Phase6.1 신고)을 막는다. pause 중에도 전송.
+            if self._history_pending:
+                self._history_pending = False
+                await self._send_history()
+                pending_sleep = 0.0
+                prev_t = None
             if self.paused:
                 # 일시정지 — 누적 대기는 버리고(재개 시 현재 위치부터) idle.
                 pending_sleep = 0.0
@@ -570,6 +581,10 @@ class SimReplaySession:
             prev_t = t
             self.cursor = i + 1
 
+        # 끝까지 seek 한 경우(루프 미진입) 스냅샷만이라도 전송 — 차트가 비지 않게.
+        if self.running and self._history_pending:
+            self._history_pending = False
+            await self._send_history()
         # 루프 종료 시 남은 누적 대기를 마저 소진(끝부분 시간 비례 유지)하고 done.
         if self.running and self.data and self.cursor >= self.data.bars_total:
             if pending_sleep > 0 and not self.paused:
@@ -607,7 +622,7 @@ class SimReplaySession:
         self.speed = _clamp_speed(value)
 
     def handle_seek(self, t: Any) -> None:
-        """seek — HHMMSS 시각으로 커서를 점프한다(이진 탐색)."""
+        """seek — HHMMSS 시각으로 커서를 점프한다(이진 탐색). 과거 봉 스냅샷 재전송 예약."""
         if self.data is None:
             return
         try:
@@ -616,6 +631,35 @@ class SimReplaySession:
             return
         self.cursor = self.data.seek_index(hms)
         self._batch_anchor = self.cursor  # seek 후 묶음 기준 재설정.
+        self._history_pending = True
+
+    async def _send_history(self) -> None:
+        """0..cursor 구간 봉을 코드별 스냅샷으로 전송한다(코드당 최근 _HISTORY_MAX_BARS 개).
+
+        전진 seek 는 건너뛴 구간이 스트림되지 않아 차트에 공백이 생기고, 후진 seek 는
+        이미 받은 봉이 중복 append 된다 — 둘 다 스냅샷 전체 교체로 해결한다(클라이언트는
+        "history" 수신 시 코드별 시계열을 통째로 대체). bar dict 는 frame item 과 동일
+        스키마에 t 만 더한다(증분 "bars" 와 같은 필드 매핑을 재사용하게).
+        """
+        if self.data is None:
+            return
+        upto = min(self.cursor, self.data.bars_total)
+        by_code: Dict[str, list] = {}
+        for i in range(upto):
+            frame = self.data.frames[i]
+            t = int(frame["t"])
+            for it in frame["items"]:
+                by_code.setdefault(str(it.get("code", "")), []).append({**it, "t": t})
+        for code, arr in by_code.items():
+            if len(arr) > _HISTORY_MAX_BARS:
+                by_code[code] = arr[-_HISTORY_MAX_BARS:]
+        last_t = int(self.data.frames[upto - 1]["t"]) if upto > 0 else None
+        await self._send({
+            "type": "history",
+            "index": upto,
+            "t": last_t,
+            "items_by_code": by_code,
+        })
 
     def handle_stop(self) -> None:
         self.running = False

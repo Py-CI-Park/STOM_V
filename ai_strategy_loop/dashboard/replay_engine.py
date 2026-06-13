@@ -48,6 +48,14 @@ _COL_BUY_QTY_TICK = "초당매수수량"
 _COL_SELL_QTY_TICK = "초당매도수량"
 _COL_BUY_QTY_MIN = "분당매수수량"
 _COL_SELL_QTY_MIN = "분당매도수량"
+# min 행의 시가/고가/저가 컬럼은 "당일" 시/고/저 누적값이다(고가는 행마다 단조 증가,
+#   시가는 하루 종일 동일 — 20250604 실DB 검증). 분봉 OHLC 는 별도 컬럼에 있다:
+#   o=분봉시가, h=분봉고가, l=분봉저가, c=현재가. 이 컬럼이 없는 구버전 DB 는
+#   _min_bars 가 직전 종가 기반 근사로 대체한다(당일 컬럼을 봉으로 쓰면 모든 캔들이
+#   당일 전체 범위 풀하이트로 그려지는 왜곡 — Phase6.1 사용자 신고 버그).
+_COL_MBAR_OPEN = "분봉시가"
+_COL_MBAR_HIGH = "분봉고가"
+_COL_MBAR_LOW = "분봉저가"
 # 호가불균형용 총잔량(컬럼 존재는 PRAGMA 로 동적 확인 — tick/min 레이아웃에서 위치가 다르고
 # 일부 구버전 DB 엔 없을 수 있다. 없으면 imbalance=None 으로 흘려보낸다).
 _COL_BUY_TOTAL = "매수총잔량"
@@ -192,6 +200,13 @@ def _load_code_rows(
     has_imbalance = _COL_BUY_TOTAL in cols and _COL_SELL_TOTAL in cols
     has_quote = _COL_BID1 in cols and _COL_ASK1 in cols
     has_amount = buy_amt in cols and sell_amt in cols
+    # 분봉 OHLC 정본 컬럼(min 전용 — 시가/고가/저가는 당일 누적값이라 봉에 못 쓴다).
+    has_mbar = (
+        src == "min"
+        and _COL_MBAR_OPEN in cols
+        and _COL_MBAR_HIGH in cols
+        and _COL_MBAR_LOW in cols
+    )
 
     def col(name: str) -> str:
         return f'"{name}"' if name in cols else "NULL"
@@ -201,7 +216,8 @@ def _load_code_rows(
         f'{col(_COL_HIGH)}, {col(_COL_LOW)}, {col(_COL_CHANGE)}, '
         f'{col(_COL_STRENGTH)}, {col(buy_q)}, {col(sell_q)}, '
         f'{col(_COL_BUY_TOTAL)}, {col(_COL_SELL_TOTAL)}, '
-        f'{col(_COL_BID1)}, {col(_COL_ASK1)}, {col(buy_amt)}, {col(sell_amt)} '
+        f'{col(_COL_BID1)}, {col(_COL_ASK1)}, {col(buy_amt)}, {col(sell_amt)}, '
+        f'{col(_COL_MBAR_OPEN)}, {col(_COL_MBAR_HIGH)}, {col(_COL_MBAR_LOW)} '
         f'FROM "{code}" ORDER BY "{_COL_INDEX}" LIMIT {_MAX_ROWS_PER_CODE}'
     )
     rows: List[Dict[str, Any]] = []
@@ -234,6 +250,9 @@ def _load_code_rows(
             "sell_rest": _safe_float(r[10]) if has_imbalance else None,
             "bid1": _safe_float(r[11]) if has_quote else None,
             "ask1": _safe_float(r[12]) if has_quote else None,
+            "mo": _safe_float(r[15]) if has_mbar else None,
+            "mh": _safe_float(r[16]) if has_mbar else None,
+            "ml": _safe_float(r[17]) if has_mbar else None,
         })
     return rows
 
@@ -333,16 +352,31 @@ def _aggregate_tick(rows: List[Dict[str, Any]], agg_sec: int) -> List[Dict[str, 
 
 
 def _min_bars(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """min 행은 그 자체가 1분봉 — OHLC 를 행의 시/고/저/현재가로 직접 매핑한다."""
+    """min 행 → 1분봉. 분봉시가/분봉고가/분봉저가 컬럼이 정본(c=현재가).
+
+    행의 시가/고가/저가는 "당일" 누적 시/고/저라 봉으로 쓰면 모든 캔들이 당일 전체
+    범위로 그려진다(Phase6.1 신고 버그). 분봉 컬럼이 없는 구버전 DB 는 직전 종가를
+    시가로 한 근사봉(h=max(o,c), l=min(o,c))으로 대체한다 — 첫 봉만 당일 시가 사용.
+    """
     out: List[Dict[str, Any]] = []
+    prev_close: float = 0.0
     for r in rows:
-        o = r["o"] or r["c"]
+        c = r["c"]
+        if r.get("mo") and r.get("mh") and r.get("ml"):
+            o = r["mo"]
+            h = max(r["mh"], o, c)
+            l = min(r["ml"], o, c)
+        else:
+            o = prev_close or r["o"] or c
+            h = max(o, c)
+            l = min(o, c)
+        prev_close = c
         out.append({
             "hms": _hms_from_index(r["ts"], "min"),
             "o": o,
-            "h": max(o, r["h"], r["c"]) if r["h"] else max(o, r["c"]),
-            "l": min(o, r["l"], r["c"]) if r["l"] else min(o, r["c"]),
-            "c": r["c"],
+            "h": h,
+            "l": l,
+            "c": c,
             "vol": r["vol"],
             "net_qty": r.get("net_qty"),
             "trade_amt": r.get("trade_amt"),

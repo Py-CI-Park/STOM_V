@@ -39,7 +39,8 @@ def test_s1_immutable_append_fixes_frozen_candles() -> None:
     """simulation.jsx bars 핸들러가 push() mutate 가 아닌 새 배열 참조로 append 한다."""
     src = _read("simulation.jsx")
     # 새 배열 참조 생성(불변 append) — LWC useEffect([bars]) 매 프레임 재실행 조건.
-    assert "store[it.code] = [...(store[it.code] || []), bar]" in src
+    #   Phase6.1 에서 bar 생성이 공용 매퍼 _simWsBar 로 추출됐다("history" 스냅샷과 공유).
+    assert "store[it.code] = [...(store[it.code] || []), _simWsBar(it, m.t)]" in src
     # 옛 결함 패턴(push 로 동일 배열 mutate)이 bars 핸들러에서 제거됐다.
     assert "store[it.code].push(" not in src
 
