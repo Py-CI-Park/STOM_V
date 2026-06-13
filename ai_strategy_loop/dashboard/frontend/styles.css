@@ -25,6 +25,12 @@
   --bg-radial-a: rgba(76,214,179,0.04);
   --bg-radial-b: rgba(165,148,255,0.035);
 
+  /* Phase11 — 상태 배경·강조 토큰(인라인 하드코딩 rgba 대체로 테마 일관성 확보). */
+  --teal-bg:  rgba(76,214,179,0.12);   /* 성공/활성 옅은 배경 */
+  --amber-bg: rgba(240,179,90,0.12);   /* 진행/주의 옅은 배경 */
+  --red-bg:   rgba(255,107,107,0.10);  /* 손실/위험 옅은 배경 */
+  --mesa-gold:#d4af37;                 /* 고원(mesa) 강조 */
+
   --sans: "IBM Plex Sans", "Malgun Gothic", "맑은 고딕", ui-sans-serif, system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "JetBrains Mono", "Malgun Gothic", "맑은 고딕", monospace;
 }
@@ -54,6 +60,12 @@
 
   --bg-radial-a: rgba(13,155,120,0.05);
   --bg-radial-b: rgba(106,85,214,0.045);
+
+  /* Phase11 — 상태 배경·강조 토큰(라이트 테마). */
+  --teal-bg:  rgba(13,155,120,0.12);
+  --amber-bg: rgba(178,114,0,0.14);
+  --red-bg:   rgba(214,61,61,0.10);
+  --mesa-gold:#b8860b;
 }
 
 * { box-sizing: border-box; }
@@ -1971,3 +1983,38 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   color: var(--ink-0); cursor: default;
   background: rgba(76,214,179,0.10); border-color: rgba(76,214,179,0.35);
 }
+
+/* ── Phase11 (2026-06-13) — 공통 시각 유틸: 게이지·프로세스 플로우·콤보 히트맵 ── */
+
+/* 리소스/진척 게이지 바 (엔진 메트릭 — 텍스트 대신 그래픽). */
+.stom-gauge {
+  position: relative; height: 8px; border-radius: 4px;
+  background: var(--bg-3); overflow: hidden; min-width: 60px;
+}
+.stom-gauge-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px;
+  background: var(--teal); transition: width .3s ease, background .3s ease; }
+.stom-gauge-fill.warn { background: var(--amber); }
+.stom-gauge-fill.danger { background: var(--red); }
+.stom-gauge-row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+.stom-gauge-label { font-family: var(--mono); font-size: 10.5px; color: var(--ink-2); min-width: 64px; }
+.stom-gauge-val { font-family: var(--mono); font-size: 10.5px; color: var(--ink-1); min-width: 52px; text-align: right; }
+
+/* 프로세스 플로우 — SVG 노드+화살표(진화 루프 단계). 활성 단계 글로우. */
+.stom-flow-wrap { width: 100%; overflow-x: auto; }
+.stom-flow-node-done   { fill: var(--teal-bg);  stroke: var(--teal); }
+.stom-flow-node-active { fill: var(--amber-bg); stroke: var(--amber); }
+.stom-flow-node-pend   { fill: var(--bg-2);     stroke: var(--line-2); }
+.stom-flow-label { fill: var(--ink-0); font-family: var(--sans); font-size: 12px; font-weight: 600; }
+.stom-flow-sub   { fill: var(--ink-2); font-family: var(--mono); font-size: 9.5px; }
+.stom-flow-arrow { stroke: var(--line-2); stroke-width: 2; fill: none; }
+.stom-flow-arrow.lit { stroke: var(--teal); }
+
+/* 콤보 변수 상호작용 히트맵 — 2D 그리드(셀 배경 = 상관 색). */
+.stom-combo-grid { display: grid; gap: 2px; font-family: var(--mono); font-size: 10px; }
+.stom-combo-cell {
+  min-height: 26px; display: flex; align-items: center; justify-content: center;
+  border-radius: 3px; color: var(--ink-0); cursor: default; padding: 2px;
+}
+.stom-combo-axis { color: var(--ink-2); font-size: 9.5px; display: flex; align-items: center;
+  justify-content: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stom-combo-axis.col { writing-mode: vertical-rl; transform: rotate(180deg); max-height: 64px; }

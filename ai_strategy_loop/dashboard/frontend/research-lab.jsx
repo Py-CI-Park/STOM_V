@@ -111,29 +111,80 @@ function _CorrelationHeatmap({ rows }) {
   );
 }
 
+/* P11(2026-06-13) — 변수 조합 탭: 평면 행 목록 → 2-D 상호작용 히트맵.
+   pair 배열({feature_a, feature_b, research_score|correlation, sample_count})을
+   대칭 행렬로 피벗한다. feature 는 |research_score|(없으면 |corr|) 합으로 점수화해
+   상위 N(가독성 위해 cap=10)만 축으로 잡고, 셀 배경은 _rlCorrColor 발산색으로 칠한다.
+   대각=자기자신(blank), 누락 pair=빈 셀. hover title 로 "A × B · score · n=…" 노출. */
+const _COMBO_MAX_FEATURES = 10;
+
+function _combinationMatrix(rows) {
+  const score = {};   /* feature → Σ|score| (축 선정용). */
+  const cellMap = {};  /* "a|b" → {score, n} (양방향 저장으로 대칭화). */
+  rows.forEach(row => {
+    const a = row.feature_a || row.feature;
+    const b = row.feature_b;
+    if (!a || !b || a === b) return;
+    const corr = typeof row.correlation === "number" ? row.correlation : null;
+    const val = typeof row.research_score === "number" ? row.research_score : corr;
+    if (val == null) return;
+    const n = row.sample_count || row.n || 0;
+    const w = Math.abs(val);
+    score[a] = (score[a] || 0) + w;
+    score[b] = (score[b] || 0) + w;
+    cellMap[a + "|" + b] = { score: val, n };
+    cellMap[b + "|" + a] = { score: val, n };
+  });
+  const features = Object.keys(score)
+    .sort((x, y) => score[y] - score[x])
+    .slice(0, _COMBO_MAX_FEATURES);
+  return { features, cellMap };
+}
+
 function _CombinationList({ rows }) {
-  if (!rows || rows.length === 0) {
+  const { features, cellMap } = _combinationMatrix(rows || []);
+  if (features.length === 0) {
     return <_ResearchEmptyState message="선택한 run 에 분석할 변수 조합이 부족합니다." />;
   }
+  const N = features.length;
   return (
-    <div className="research-combo-list">
-      {rows.slice(0, 14).map((row, i) => {
-        const a = row.feature_a || row.feature || "feature_a";
-        const b = row.feature_b || "feature_b";
-        const corr = typeof row.correlation === "number" ? row.correlation : null;
-        const score = typeof row.research_score === "number" ? row.research_score : null;
-        return (
-          <div key={i} className="research-combo-row">
-            <span className="mono">{a}</span>
-            <span className="research-muted">x</span>
-            <span className="mono">{b}</span>
-            <strong style={{ color: _rlCorrColor(score == null ? corr : score) }}>
-              {score == null ? _rlNum(corr, 3) : _rlNum(score, 3)}
-            </strong>
-            <small>sample count {row.sample_count || row.n || 0}</small>
-          </div>
-        );
-      })}
+    <div>
+      <div className="stom-combo-grid"
+           style={{ gridTemplateColumns: `auto repeat(${N}, minmax(0,1fr))` }}>
+        {/* 헤더 행: 좌상단 빈 칸 + 열 라벨(세로). */}
+        <div className="stom-combo-axis" />
+        {features.map(f => (
+          <div key={"col-" + f} className="stom-combo-axis col" title={f}>{f}</div>
+        ))}
+        {/* 본문: 행 라벨 + 셀(대각=blank, 누락=빈 셀). */}
+        {features.map(rowF => (
+          <React.Fragment key={"row-" + rowF}>
+            <div className="stom-combo-axis" title={rowF}>{rowF}</div>
+            {features.map(colF => {
+              if (rowF === colF) {
+                return <div key={rowF + "|" + colF} className="stom-combo-cell" />;
+              }
+              const cell = cellMap[rowF + "|" + colF];
+              if (!cell) {
+                return <div key={rowF + "|" + colF} className="stom-combo-cell" />;
+              }
+              return (
+                <div key={rowF + "|" + colF}
+                     className="stom-combo-cell"
+                     style={{ background: _rlCorrColor(cell.score) }}
+                     title={`${rowF} × ${colF} · ${_rlNum(cell.score, 3)} · n=${cell.n}`}>
+                  {_rlNum(cell.score, 2)}
+                </div>
+              );
+            })}
+          </React.Fragment>
+        ))}
+      </div>
+      <div className="research-empty" style={{ marginTop: 6 }}>
+        범례: <span style={{ color: "var(--teal)" }}>teal=양(+)</span>
+        {" · "}<span style={{ color: "var(--red)" }}>red=음(-)</span>
+        {" · |값|이 클수록 진함 · 대각/누락 조합은 빈 셀"}
+      </div>
     </div>
   );
 }
@@ -453,7 +504,7 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
             </table>
           )}
           {(verdict.alerts || []).map((a, i) => (
-            <div key={"a" + i} className="mono" style={{ fontSize: 11, color: "#c95" }}>⚠️ {a}</div>
+            <div key={"a" + i} className="mono" style={{ fontSize: 11, color: "var(--amber)" }}>⚠️ {a}</div>
           ))}
           {verdict.lines.map((l, i) => (
             <div key={"l" + i} className="mono" style={{ fontSize: 11 }}>{l}</div>
@@ -609,7 +660,7 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
               + ` · 총 ${Math.round(equity.total).toLocaleString()}`}
           </div>
           {/* E3 — 축 의미(거래일 진행)·기간(연도 포함) 명시. */}
-          <div className="mono" style={{ fontSize: 10, color: "#9ab", marginBottom: 2 }}>
+          <div className="mono" style={{ fontSize: 10, color: "var(--ink-2)", marginBottom: 2 }}>
             {`x축: 거래일 진행(${equity.n_days}거래일) · 기간 ${_rlPeriodFromDays(equity.days)} · y축: 누적 손익(원)`}
           </div>
           <_EquityChart cum={equity.cum} />
@@ -736,7 +787,7 @@ function _ValidationPanel({ baseUrl, runId, isDemo }) {
           </div>
         )}
         {psim && psim.error && (
-          <div className="mono" style={{ fontSize: 11, color: "#c95" }}>{psim.error}</div>
+          <div className="mono" style={{ fontSize: 11, color: "var(--amber)" }}>{psim.error}</div>
         )}
       </div>
     </div>
@@ -766,16 +817,16 @@ function _GridHeatmap({ grid, metric }) {
               const c = cells[a + "|" + b];
               if (!c) return <td key={b}>—</td>;
               const value = useMdd ? c.mdd : c.profit;
-              const alpha = (0.15 + 0.7 * Math.abs(value) / maxAbs).toFixed(2);
-              const bg = useMdd
-                ? `rgba(200,80,80,${alpha})`  /* MDD — 클수록 진한 적색(위험 지형). */
-                : (c.profit > 0 ? `rgba(60,160,90,${alpha})` : `rgba(200,80,80,${alpha})`);
+              const pct = Math.round(15 + 70 * Math.abs(value) / maxAbs);  /* 15%~85% 농도. */
+              /* MDD=위험 적색, 수익은 부호별 발산(흑자 teal · 적자 red) — 라이트/다크 토큰. */
+              const token = useMdd ? "var(--red)" : (c.profit > 0 ? "var(--teal)" : "var(--red)");
+              const bg = `color-mix(in srgb, ${token} ${pct}%, transparent)`;
               const isMesa = mesaSet.has(a + "|" + b);
               return (
                 <td key={b}
                     title={`${grid.param_a}=${a}, ${grid.param_b}=${b} · 손익 ${Math.round(c.profit).toLocaleString()} · MDD ${_rlNum(c.mdd, 2)} · ${c.trades}건`}
                     style={{ background: bg, textAlign: "right", padding: "2px 6px",
-                             outline: isMesa ? "2px solid #d4af37" : "none" }}>
+                             outline: isMesa ? "2px solid var(--mesa-gold)" : "none" }}>
                   {useMdd ? _rlNum(c.mdd, 1) : Math.round(c.profit / 10000).toLocaleString() + "만"}{isMesa ? "★" : ""}
                 </td>
               );
@@ -802,7 +853,7 @@ function _EquityChart({ cum }) {
     <svg width={W} height={H} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 4 }}>
       <line x1={PAD} y1={y(0)} x2={W - PAD} y2={y(0)} stroke="#777" strokeDasharray="3,3" strokeWidth="0.8" />
       <path d={path} fill="none" stroke={last >= 0 ? "#4c9" : "#c66"} strokeWidth="1.8" />
-      <text x={W - PAD - 4} y={y(last) - 6} fill="#9ab" fontSize="10" textAnchor="end">
+      <text x={W - PAD - 4} y={y(last) - 6} fill="var(--ink-2)" fontSize="10" textAnchor="end">
         {Math.round(last).toLocaleString()}
       </text>
     </svg>

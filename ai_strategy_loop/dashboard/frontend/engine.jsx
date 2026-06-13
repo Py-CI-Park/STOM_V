@@ -14,6 +14,26 @@ function fmtEpoch(epochSec) {
   return new Date(epochSec * 1000).toLocaleString("ko-KR", { hour12: false });
 }
 
+// 게이지 바(.stom-gauge) — 임계값 색상은 styles.css 토큰(.warn=--amber/.danger=--red)으로만.
+//   값이 null/undefined/NaN 이면 빈 바 + "—" 값으로 표기(크래시 금지).
+function GaugeRow({ label, value, unit, warn, danger }) {
+  const hasValue = typeof value === "number" && Number.isFinite(value);
+  const pct = hasValue ? Math.max(0, Math.min(100, value)) : 0;
+  let fillClass = "stom-gauge-fill";
+  if (hasValue && typeof danger === "number" && value >= danger) fillClass += " danger";
+  else if (hasValue && typeof warn === "number" && value >= warn) fillClass += " warn";
+  const valText = hasValue ? `${value.toFixed(1)}${unit || ""}` : "—";
+  return (
+    <div className="stom-gauge-row">
+      <div className="stom-gauge-label">{label}</div>
+      <div className="stom-gauge">
+        <div className={fillClass} style={{ width: `${pct}%` }}></div>
+      </div>
+      <div className="stom-gauge-val">{valText}</div>
+    </div>
+  );
+}
+
 function EnginePanel({ state, wsStatus }) {
   const latest = state.latest || {};
   const progressInfo = latest.backtest_progress || {};
@@ -32,6 +52,9 @@ function EnginePanel({ state, wsStatus }) {
   const mem = e.mem_mb ?? 0;
   const memCap = e.mem_cap_mb || 8192;
   const memPct = Math.min(100, (mem / memCap) * 100);
+  // 게이지용 null-safe 값(0 과 "없음"을 구분 — 필드 부재 시 게이지는 빈 바 + "—").
+  const cpuGauge = typeof e.cpu_pct === "number" ? e.cpu_pct : null;
+  const memPctGauge = typeof e.mem_mb === "number" ? memPct : null;
   const workers = e.workers ?? 0;
   const workersActive = e.workers_active ?? 0;
   const tput = e.throughput ?? 0;
@@ -128,27 +151,23 @@ function EnginePanel({ state, wsStatus }) {
           <LivePending note="엔진 런타임 메트릭(CPU/메모리/워커)은 backend가 아직 발행하지 않습니다." />
         ) : (
         <div className="engine-grid">
-          {/* CPU */}
+          {/* CPU — 게이지(warn ≥70 amber, danger ≥90 red), 텍스트 수치 병기 */}
           <div className="engine-cell">
             <div className="lbl">CPU 사용률</div>
             <div className="val tnum">
               {cpu.toFixed(1)}<span className="unit">%</span>
             </div>
-            <div className="mini-bar">
-              <div className={cpu > 85 ? "warn" : cpu < 10 ? "cool" : ""} style={{ width: `${Math.min(100, cpu)}%` }}></div>
-            </div>
+            <GaugeRow label="CPU" value={cpuGauge} unit="%" warn={70} danger={90} />
           </div>
 
-          {/* Memory */}
+          {/* Memory — 게이지(warn ≥75 amber, danger ≥90 red), 텍스트 수치 병기 */}
           <div className="engine-cell">
             <div className="lbl">메모리</div>
             <div className="val tnum">
               {mem >= 1024 ? (mem / 1024).toFixed(2) : mem}
               <span className="unit">{mem >= 1024 ? "GB" : "MB"}</span>
             </div>
-            <div className="mini-bar">
-              <div className={memPct > 80 ? "warn" : memPct < 10 ? "cool" : ""} style={{ width: `${memPct}%` }}></div>
-            </div>
+            <GaugeRow label="Mem %" value={memPctGauge} unit="%" warn={75} danger={90} />
             <div className="sub">/ {(memCap / 1024).toFixed(1)} GB cap</div>
           </div>
 
@@ -193,15 +212,13 @@ function EnginePanel({ state, wsStatus }) {
             </div>
           </div>
 
-          {/* Progress within gen */}
+          {/* Progress within gen + Overall 게이지(항상 teal) */}
           <div className="engine-cell">
             <div className="lbl">세대 백테 진행</div>
             <div className="val tnum">
               {(progress * 100).toFixed(0)}<span className="unit">%</span>
             </div>
-            <div className="mini-bar">
-              <div style={{ width: `${progress * 100}%` }}></div>
-            </div>
+            <GaugeRow label="Progress" value={overallPct} unit="%" />
           </div>
         </div>
         )}
@@ -287,12 +304,12 @@ function LiveBacktestChart({ state }) {
           <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
             <defs>
               <linearGradient id="eq-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#4cd6b3" stopOpacity="0.5" />
-                <stop offset="100%" stopColor="#4cd6b3" stopOpacity="0" />
+                <stop offset="0%" stopColor="var(--teal)" stopOpacity="0.5" />
+                <stop offset="100%" stopColor="var(--teal)" stopOpacity="0" />
               </linearGradient>
               <linearGradient id="dd-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ff6b6b" stopOpacity="0.20" />
-                <stop offset="100%" stopColor="#ff6b6b" stopOpacity="0" />
+                <stop offset="0%" stopColor="var(--red)" stopOpacity="0.20" />
+                <stop offset="100%" stopColor="var(--red)" stopOpacity="0" />
               </linearGradient>
             </defs>
 
