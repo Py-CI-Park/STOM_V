@@ -1,0 +1,4 @@
+[BATCH] run_id=smoke_t2_q2_20260613 pairs=1
+[BATCH] prepare status=ok back_count=923 elapsed=79s
+[BATCH] gen0 T2 late default ok profit=1,591,148 mdd=7.35 trades=61 daily=1.00 payoff=1.8869114088963332 gate=True reason=ok (31s)
+[BATCH] done

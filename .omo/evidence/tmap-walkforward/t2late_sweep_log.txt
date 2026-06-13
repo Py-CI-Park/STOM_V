@@ -1,0 +1,19 @@
+[SWEEP] template=seed_902905_t2late points=10/10
+[SWEEP] resume: 평가 대상 10점 / 스킵 0점
+[SWEEP] prepare status=ok back_count=2285 elapsed=342s
+[SWEEP] gen0 TMAP __default__ profit=6,609,818 mdd=17.79 trades=612 (147s)
+[SWEEP] gen1 TMAP ext_end=91000 profit=8,796,340 mdd=12.95 trades=439 (150s)
+[SWEEP] gen2 TMAP ext_end=91500 profit=7,411,318 mdd=13.20 trades=536 (148s)
+[SWEEP] gen3 TMAP ext_end=92500 profit=5,329,563 mdd=19.55 trades=669 (102s)
+[SWEEP] gen4 TMAP cap_lo_late=1500 profit=6,209,654 mdd=18.26 trades=848 (103s)
+[SWEEP] gen5 TMAP cap_lo_late=4000 profit=9,713,977 mdd=9.32 trades=418 (105s)
+[SWEEP] gen6 TMAP cap_hi_late=10000 profit=5,808,317 mdd=21.03 trades=594 (103s)
+[SWEEP] gen7 TMAP cap_hi_late=99999 profit=6,698,387 mdd=17.91 trades=614 (101s)
+[SWEEP] gen8 TMAP burst_late=3.0 profit=8,567,825 mdd=12.79 trades=571 (101s)
+[SWEEP] gen9 TMAP burst_late=4.0 profit=9,465,862 mdd=9.90 trades=531 (135s)
+[SWEEP] baseline profit=6,609,818 mdd=17.79
+[SWEEP] ext_end: plateau_score=3.2584 center=91500.0 width=3 positive=1.0
+[SWEEP] burst_late: plateau_score=2.7283 center=4.0 width=2 positive=1.0
+[SWEEP] cap_lo_late: plateau_score=2.4091 center=4000.0 width=2 positive=1.0
+[SWEEP] cap_hi_late: plateau_score=1.8921 center=99999.0 width=2 positive=1.0
+[SWEEP] done
