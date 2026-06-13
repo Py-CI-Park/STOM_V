@@ -141,12 +141,96 @@ function _combinationMatrix(rows) {
   return { features, cellMap };
 }
 
+/* P13(2026-06-13) — 셀 드릴다운 해석: cellMap 에 이미 있는 score·n 만으로
+   부호(양/음 상호작용)·|값| 강도 라벨·표본 충분성(n<임계 경고)을 1줄 한국어로 해석한다.
+   백테/거래분포 등 데이터에 없는 통계는 절대 지어내지 않는다(정직성). */
+const _COMBO_MIN_SAMPLE = 30;  /* 표본 부족 경고 임계(n<이 값이면 해석 신뢰도 낮음). */
+
+function _rlPairInterpret(score, n) {
+  const v = typeof score === "number" && isFinite(score) ? score : null;
+  if (v == null) {
+    return { sign: "—", strength: "해석 불가", line: "값이 없어 상호작용을 해석할 수 없습니다." };
+  }
+  const a = Math.abs(v);
+  const sign = v >= 0 ? "양(+)" : "음(-)";
+  /* |값| 강도 라벨(상관계수 관례: 0.1/0.3/0.5 경계). */
+  const strength = a >= 0.5 ? "강함" : a >= 0.3 ? "중간" : a >= 0.1 ? "약함" : "미미";
+  const lowSample = (n || 0) < _COMBO_MIN_SAMPLE;
+  let line;
+  if (a >= 0.5) {
+    line = v >= 0
+      ? "강한 양의 상호작용 — 두 변수가 함께 높을 때 우수한 경향."
+      : "강한 음의 상호작용 — 한쪽이 높고 다른 쪽이 낮을 때 우수한 경향.";
+  } else if (a >= 0.3) {
+    line = v >= 0
+      ? "중간 양의 상호작용 — 함께 움직이는 경향이 관찰됩니다."
+      : "중간 음의 상호작용 — 반대로 움직이는 경향이 관찰됩니다.";
+  } else if (a >= 0.1) {
+    line = "약한 상관 — 방향성은 있으나 신호가 약합니다.";
+  } else {
+    line = "미미한 상관 — 두 변수의 상호작용이 거의 없습니다.";
+  }
+  if (lowSample) {
+    line += ` 표본 부족 주의(n=${n || 0} < ${_COMBO_MIN_SAMPLE}) — 해석 신뢰도 낮음.`;
+  }
+  return { sign, strength, line, lowSample };
+}
+
+/* P13 — 선택 변수쌍 상세 팝오버(.rp-overlay 재사용, click-outside + Esc 닫기).
+   cellMap 에 이미 있는 score·n 만 노출하고, 더 깊은 per-pair 거래 분포는
+   향후 백엔드 엔드포인트가 필요함을 정직하게 안내한다(통계 날조 금지). */
+function _ComboPairPopover({ pair, onClose }) {
+  useEffect_rl(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  if (!pair) return null;
+  const info = _rlPairInterpret(pair.score, pair.n);
+  return (
+    <div className="rp-overlay" onClick={onClose}>
+      <div className="rp-overlay-card" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
+        <div className="rp-overlay-hd">
+          <span className="rp-card-title">변수쌍 상세 — {pair.a} × {pair.b}</span>
+          <button type="button" className="btn ghost sm" style={{ marginLeft: "auto" }} onClick={onClose}>
+            ✕ 닫기 (Esc)
+          </button>
+        </div>
+        <div style={{ padding: "14px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
+          <div className="mono" style={{ fontSize: 12 }}>
+            변수쌍: <b>{pair.a}</b> × <b>{pair.b}</b>
+          </div>
+          <div className="mono" style={{ fontSize: 12 }}>
+            research_score/correlation: <b style={{ color: pair.score >= 0 ? "var(--teal)" : "var(--red)" }}>
+              {_rlNum(pair.score, 4)}
+            </b>
+            {" · "}부호 {info.sign} · 강도 {info.strength}
+          </div>
+          <div className="mono" style={{ fontSize: 12 }}>
+            sample_count: <b>{pair.n || 0}</b>
+            {info.lowSample ? <span style={{ color: "var(--amber)" }}> · 표본 부족</span> : null}
+          </div>
+          <div className="research-empty" style={{ marginTop: 2 }}>
+            {info.line}
+          </div>
+          <div className="research-empty" style={{ color: "var(--ink-3)", fontSize: 11 }}>
+            ※ 더 깊은 변수쌍별 거래 분포(승률·구간별 손익 등)는 향후 백엔드 엔드포인트가 필요합니다 —
+            현재는 이 화면 데이터(score·n)에 없는 통계를 만들어 표시하지 않습니다.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function _CombinationList({ rows }) {
   const { features, cellMap } = _combinationMatrix(rows || []);
+  const [selected, setSelected] = useState_rl(null);  /* P13 — 드릴다운 선택 변수쌍. */
   if (features.length === 0) {
     return <_ResearchEmptyState message="선택한 run 에 분석할 변수 조합이 부족합니다." />;
   }
   const N = features.length;
+  const selKey = selected ? selected.a + "|" + selected.b : null;
   return (
     <div>
       <div className="stom-combo-grid"
@@ -168,11 +252,18 @@ function _CombinationList({ rows }) {
               if (!cell) {
                 return <div key={rowF + "|" + colF} className="stom-combo-cell" />;
               }
+              const key = rowF + "|" + colF;
+              const isSel = selKey === key;
+              /* P13 — 채워진 셀 클릭 시 드릴다운 팝오버. hover title 은 유지. */
               return (
-                <div key={rowF + "|" + colF}
+                <div key={key}
                      className="stom-combo-cell"
-                     style={{ background: _rlCorrColor(cell.score) }}
-                     title={`${rowF} × ${colF} · ${_rlNum(cell.score, 3)} · n=${cell.n}`}>
+                     role="button"
+                     tabIndex={0}
+                     style={{ background: _rlCorrColor(cell.score), cursor: "pointer",
+                              outline: isSel ? "2px solid var(--blue)" : "none" }}
+                     title={`${rowF} × ${colF} · ${_rlNum(cell.score, 3)} · n=${cell.n} · 클릭=상세`}
+                     onClick={() => setSelected({ a: rowF, b: colF, score: cell.score, n: cell.n })}>
                   {_rlNum(cell.score, 2)}
                 </div>
               );
@@ -183,8 +274,10 @@ function _CombinationList({ rows }) {
       <div className="research-empty" style={{ marginTop: 6 }}>
         범례: <span style={{ color: "var(--teal)" }}>teal=양(+)</span>
         {" · "}<span style={{ color: "var(--red)" }}>red=음(-)</span>
-        {" · |값|이 클수록 진함 · 대각/누락 조합은 빈 셀"}
+        {" · |값|이 클수록 진함 · 대각/누락 조합은 빈 셀 · 셀 클릭=변수쌍 상세"}
       </div>
+      {/* P13 — 변수쌍 드릴다운 팝오버(click-outside + Esc 닫기). */}
+      {selected && <_ComboPairPopover pair={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }

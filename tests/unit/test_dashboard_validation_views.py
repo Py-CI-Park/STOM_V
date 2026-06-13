@@ -446,7 +446,7 @@ class TestFrontendContract:
         # Phase9 — 사이드바·연구실 로직은 dashboard-pages.jsx(window.LabPage)로 단일화됐고
         #   lab.html 은 그 전역을 마운트한다. verdict 로직도 window.VerdictPanel 로 이동.
         lab = (FRONTEND / "lab.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260614e" in lab
+        assert "research-lab.jsx?v=20260614g" in lab
         assert "window.LabPage" in lab
         dp = (FRONTEND / "dashboard-pages.jsx").read_text(encoding="utf-8")
         assert "ResearchLabPanel" in dp
@@ -488,7 +488,7 @@ class TestFrontendContract:
         #   G1(폰트)·E3/E4(chart.jsx) 일괄 변경으로 관련 자산 전부 v20260613a 재범프.
         assert "styles.css?v=20260614f" in src
         assert "chart.jsx?v=20260614b" in src
-        assert "research-lab.jsx?v=20260614e" in src
+        assert "research-lab.jsx?v=20260614g" in src
         assert "app.jsx?v=20260614c" in src
         assert "evolution-analysis.jsx?v=20260614a" in src
         # Phase9 — SPA 6탭 통합: dashboard-pages.jsx(LabPage/ProPage/VerdictPanel)는
@@ -499,10 +499,10 @@ class TestFrontendContract:
         # Phase6-L — 리서치 프로 패널(별도 pro.html 에서도 로드).
         assert "research-pro.jsx?v=20260613b" in src
         assert "backtest-charts.jsx?v=20260614b" in src
-        assert "backtest.jsx?v=20260614a" in src
+        assert "backtest.jsx?v=20260614g" in src
         # Phase6-S — Canvas 라이브 차트는 simulation.jsx 보다 먼저 로드돼야 한다.
         assert "sim-live-chart.jsx?v=20260614f" in src
-        assert "simulation-charts.jsx?v=20260614f" in src
+        assert "simulation-charts.jsx?v=20260614g" in src
         assert "simulation.jsx?v=20260614a" in src
         # S3(2026-06-12) — lightweight-charts vendor 는 babel 이전 일반 script 로 로드.
         assert "vendor-lightweight-charts.js?v=20260612a" in src
@@ -630,7 +630,7 @@ class TestNewFrontendContract:
 
     def test_lab_html_cache_bumped(self):
         src = (FRONTEND / "lab.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260614e" in src
+        assert "research-lab.jsx?v=20260614g" in src
 
 
 class TestPortfolioVerdict:

@@ -405,6 +405,88 @@ function BtDualEditor({ baseUrl, isDemo, buyName, sellName, onSaved, onDeletedBu
 }
 
 // ===========================================================================
+// 2b. 스윕 파라미터 빌더 — [변수명][min][max][step] 행 추가/삭제 → sweep 스펙으로 직렬화.
+//   백엔드 /bt/run 이 sweep_spec(행 배열)을 받아 게이트된 _database/ 임시 JSON 으로 쓰고
+//   CLI --params 경로로 잇는다. CLI 계약은 {변수명:[값,...]} 명시 값 리스트이므로(2026-06-13
+//   cli/sweep.generate_combinations 실측), 각 행의 min/max/step 은 백엔드가 값 리스트로 펼친다.
+//   _btSweepRowCount: 빈 변수명 행을 제외한 유효 행 수(제출 검증·미리보기 공용 순수 함수).
+// ===========================================================================
+function _btSweepRowCount(rows) {
+  if (!Array.isArray(rows)) return 0;
+  return rows.filter(r => r && String(r.name || "").trim()).length;
+}
+
+// 행 한 줄 → 조합 개수 추정(min/max/step 펼침). 미리보기 배지가 데카르트 곱 추정에 쓴다.
+//   백엔드 _expand_sweep_range 와 동일 규칙(포함 구간, step<=0/lo>hi → 1개).
+function _btSweepValueCount(row) {
+  if (!row) return 0;
+  const lo = Number(row.min), hi = Number(row.max), step = Number(row.step);
+  if (!isFinite(lo) || !isFinite(hi)) return 0;
+  if (!isFinite(step) || step <= 0 || lo > hi) return 1;
+  return Math.min(64, Math.floor((hi - lo) / step + 1e-9) + 1);
+}
+
+function _SweepParamBuilder({ rows, onChange, disabled }) {
+  const safeRows = Array.isArray(rows) ? rows : [];
+  const setRow = (i, patch) => {
+    const next = safeRows.map((r, idx) => (idx === i ? Object.assign({}, r, patch) : r));
+    onChange(next);
+  };
+  const addRow = () => onChange(safeRows.concat([{ name: "", min: "", max: "", step: "" }]));
+  const removeRow = (i) => onChange(safeRows.filter((_, idx) => idx !== i));
+
+  // 유효 행들의 데카르트 곱 추정(빈 변수명 제외, 값 0개 행은 곱에서 제외).
+  let comboEst = 1;
+  let validCount = 0;
+  safeRows.forEach(r => {
+    if (!r || !String(r.name || "").trim()) return;
+    const vc = _btSweepValueCount(r);
+    if (vc > 0) { comboEst *= vc; validCount += 1; }
+  });
+  if (validCount === 0) comboEst = 0;
+
+  return (
+    <div className="field" style={{ flex: 1, minWidth: 320 }}>
+      <label>스윕 변수 빌더 (변수명 · 최소 · 최대 · 간격)</label>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {safeRows.length === 0 && (
+          <div className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>
+            변수 행을 추가하세요(예: avg_time 60~180 간격 60 → 60·120·180).
+          </div>
+        )}
+        {safeRows.map((r, i) => (
+          <div key={i} style={{ display: "flex", gap: 4, alignItems: "center" }}>
+            <input className="input mono" value={r.name || ""} disabled={disabled}
+                   onChange={e => setRow(i, { name: e.target.value })}
+                   placeholder="변수명 (예: avg_time)" spellCheck={false}
+                   style={{ flex: 1, minWidth: 110, fontSize: 11 }} />
+            <input className="input" type="number" value={r.min == null ? "" : r.min} disabled={disabled}
+                   onChange={e => setRow(i, { min: e.target.value })}
+                   placeholder="min" style={{ width: 64, fontSize: 11 }} />
+            <input className="input" type="number" value={r.max == null ? "" : r.max} disabled={disabled}
+                   onChange={e => setRow(i, { max: e.target.value })}
+                   placeholder="max" style={{ width: 64, fontSize: 11 }} />
+            <input className="input" type="number" value={r.step == null ? "" : r.step} disabled={disabled}
+                   onChange={e => setRow(i, { step: e.target.value })}
+                   placeholder="step" style={{ width: 64, fontSize: 11 }} />
+            <button className="btn ghost sm" onClick={() => removeRow(i)} disabled={disabled}
+                    title="이 변수 행 삭제" style={{ padding: "2px 8px" }}>✕</button>
+          </div>
+        ))}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button className="btn ghost sm" onClick={addRow} disabled={disabled}>+ 변수 추가</button>
+          {validCount > 0 && (
+            <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>
+              예상 조합 {comboEst}개 ({validCount}개 변수)
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
 // 3. 백테스트 실행 패널 — buy/sell 선택, 기간/tf/engines, 잡 카드 + 이력 + 폴링.
 // ===========================================================================
 function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB, onJobs,
@@ -421,7 +503,9 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
   const [stepDays, setStepDays] = useState_bt("");       // wfo/sweep rolling 공용.
   // sweep 입력.
   const [sweepAction, setSweepAction] = useState_bt("param");  // param | rolling.
-  const [sweepParams, setSweepParams] = useState_bt("");       // sweep param 조합 JSON 경로.
+  const [sweepParams, setSweepParams] = useState_bt("");       // sweep param 조합 JSON 경로(파일 폴백).
+  const [sweepRows, setSweepRows] = useState_bt([{ name: "", min: "", max: "", step: "" }]);  // 빌더 행.
+  const [sweepInputMode, setSweepInputMode] = useState_bt("builder");  // builder | file.
   const [windowDays, setWindowDays] = useState_bt("");         // sweep rolling 윈도우 크기.
   const [range, setRange] = useState_bt(null);          // /bt/data_range
   const [jobs, setJobs] = useState_bt([]);              // 이력
@@ -548,10 +632,24 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
         if (wd < 1 || sd < 1) { setRunErr("롤링 스윕은 윈도우·이동(일, 1 이상)이 필요합니다."); return; }
         payload.window_days = wd;
         payload.step_days = sd;
-      } else {
+      } else if (sweepInputMode === "file") {
         const sp = (sweepParams || "").trim();
         if (!sp) { setRunErr("파라미터 스윕은 조합 JSON 경로가 필요합니다."); return; }
         payload.sweep_params = sp;
+      } else {
+        // 빌더 모드 — 유효 행을 sweep_spec 으로 보낸다(백엔드가 게이트 임시 JSON 으로 직렬화).
+        const validRows = (sweepRows || [])
+          .filter(r => r && String(r.name || "").trim())
+          .map(r => ({
+            name: String(r.name).trim(),
+            min: Number(r.min), max: Number(r.max), step: Number(r.step),
+          }));
+        if (_btSweepRowCount(sweepRows) < 1) {
+          setRunErr("파라미터 스윕은 변수 행이 1개 이상 필요합니다(변수명 입력)."); return;
+        }
+        const bad = validRows.find(r => !isFinite(r.min) || !isFinite(r.max) || !isFinite(r.step));
+        if (bad) { setRunErr(`변수 '${bad.name}' 의 min/max/step 을 숫자로 입력하세요.`); return; }
+        payload.sweep_spec = validRows;
       }
     }
     _btPostJson(baseUrl + "/bt/run", payload, 8000)
@@ -719,12 +817,35 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
               </div>
             </div>
             {sweepAction === "param" ? (
-              <div className="field" style={{ flex: 1, minWidth: 220 }}>
-                <label>스윕 조합 JSON 경로 (_database/ 또는 ai_strategy_loop/state/ 하위)</label>
-                <input className="input mono" value={sweepParams} onChange={e => setSweepParams(e.target.value)}
-                       placeholder="_database/sweep_params.json" spellCheck={false} disabled={isDemo}
-                       style={{ fontSize: 11 }} />
-              </div>
+              <>
+                {/* 입력 방식 토글 [빌더|파일] — 빌더는 행을 sweep_spec 으로, 파일은 경로를 보낸다. */}
+                <div className="field" style={{ minWidth: 150 }}>
+                  <label>입력 방식</label>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {[["builder", "빌더"], ["file", "파일 경로"]].map(([m, lbl]) => (
+                      <button key={m} onClick={() => setSweepInputMode(m)} className="mono" disabled={isDemo}
+                        style={{
+                          flex: 1, padding: "6px 8px", fontSize: 11, borderRadius: 5,
+                          border: "1px solid " + (sweepInputMode === m ? "var(--amber)" : "var(--line-1)"),
+                          background: sweepInputMode === m ? "rgba(240,179,90,0.1)" : "transparent",
+                          color: sweepInputMode === m ? "var(--amber)" : "var(--ink-2)", cursor: "pointer",
+                        }}>
+                        {lbl}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {sweepInputMode === "builder" ? (
+                  <_SweepParamBuilder rows={sweepRows} onChange={setSweepRows} disabled={isDemo} />
+                ) : (
+                  <div className="field" style={{ flex: 1, minWidth: 220 }}>
+                    <label>스윕 조합 JSON 경로 (_database/ 또는 ai_strategy_loop/state/ 하위)</label>
+                    <input className="input mono" value={sweepParams} onChange={e => setSweepParams(e.target.value)}
+                           placeholder="_database/sweep_params.json" spellCheck={false} disabled={isDemo}
+                           style={{ fontSize: 11 }} />
+                  </div>
+                )}
+              </>
             ) : (
               <>
                 <div className="field" style={{ minWidth: 120 }}>
@@ -1237,9 +1358,58 @@ function BtOverlayCurves({ series, normalize }) {
   );
 }
 
+// 분할(small-multiple) 그리드 — 각 잡을 자기 셀의 작은 SVG 수익곡선으로 그린다.
+//   BtOverlayCurves 의 단일 시리즈 경로(누적·정규화)를 셀마다 재사용한다. normalize 토글은
+//   겹침/분할 양쪽에서 동일하게 동작한다(정규화 시 첫 포인트 0 기준 평행이동).
+//   열 수: 2~3개 → 2열, 4개 → 2열(2×2). 가독성 위해 최대 2열 고정(작은 화면 대비).
+function _btSplitCellPath(cumulative, normalize, W, H, padL, padR, padT, padB) {
+  const cums = (cumulative || []).map(p => p.cum_profit || 0);
+  const base = (normalize && cums.length > 0) ? cums[0] : 0;
+  const vals = cums.map(v => v - base);
+  if (vals.length === 0) return { path: "", zeroY: padT + (H - padT - padB) / 2 };
+  const withZero = vals.concat([0]);
+  const lo = Math.min(...withZero), hi = Math.max(...withZero);
+  const span = (hi - lo) || 1;
+  const n = vals.length;
+  const x = (i) => padL + (n <= 1 ? 0 : (i * (W - padL - padR) / (n - 1)));
+  const y = (v) => padT + (H - padT - padB) * (1 - (v - lo) / span);
+  const path = vals.map((v, i) => (i === 0 ? "M" : "L") + x(i).toFixed(1) + " " + y(v).toFixed(1)).join(" ");
+  return { path, zeroY: y(0) };
+}
+
+function BtSplitGrid({ series, normalize }) {
+  if (!series || series.length === 0) return <div className="research-empty">분할할 곡선이 없습니다.</div>;
+  const W = 320, H = 140, padL = 6, padR = 6, padT = 10, padB = 10;
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
+      {series.map((s, si) => {
+        const { path, zeroY } = _btSplitCellPath(s.cumulative, normalize, W, H, padL, padR, padT, padB);
+        const color = _BT_OVERLAY_COLORS[si % _BT_OVERLAY_COLORS.length];
+        const pos = Number(s.summary && s.summary.total_profit_pct) >= 0;
+        return (
+          <div key={s.job_id} style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 8, background: "var(--bg-0)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+              <span style={{ width: 10, height: 3, background: color, display: "inline-block", flexShrink: 0 }}></span>
+              <span className="mono" style={{ fontSize: 10, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label}</span>
+              <span className="mono" style={{ fontSize: 10, color: (pos ? "var(--teal)" : "var(--red)") }}>
+                {_btNum(s.summary && s.summary.total_profit_pct)}%
+              </span>
+            </div>
+            <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 120 }} preserveAspectRatio="none">
+              <line x1={padL} y1={zeroY} x2={W - padR} y2={zeroY} stroke="var(--line-1)" strokeDasharray="3 3" />
+              {path && <path d={path} fill="none" stroke={color} strokeWidth="1.6" />}
+            </svg>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function BtOverlayPanel({ baseUrl, isDemo, jobs }) {
   const [picked, setPicked] = useState_bt([]);   // job_id 목록(2~4).
   const [normalize, setNormalize] = useState_bt(false);
+  const [viewMode, setViewMode] = useState_bt("overlay");  // overlay(겹침) | split(분할).
   const [result, setResult] = useState_bt(null);
   const [busy, setBusy] = useState_bt(false);
   const [err, setErr] = useState_bt("");
@@ -1271,7 +1441,22 @@ function BtOverlayPanel({ baseUrl, isDemo, jobs }) {
           다중 잡 오버레이
           <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 6 }}>{picked.length}/4</span>
         </div>
-        <div style={{ display: "flex", gap: 6 }}>
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          {/* 보기 방식 토글 [겹침|분할] — 겹침은 한 차트에, 분할은 잡별 small-multiple. */}
+          <div style={{ display: "flex", gap: 4 }}>
+            {[["overlay", "겹침"], ["split", "분할"]].map(([m, lbl]) => (
+              <button key={m} onClick={() => setViewMode(m)} className="mono"
+                title={m === "overlay" ? "겹침 — 모든 잡 곡선을 한 차트에 겹쳐 그립니다." : "분할 — 잡마다 작은 차트로 나눠 그립니다."}
+                style={{
+                  padding: "4px 9px", fontSize: 10.5, borderRadius: 5, cursor: "pointer",
+                  border: "1px solid " + (viewMode === m ? "var(--teal)" : "var(--line-1)"),
+                  background: viewMode === m ? "rgba(76,214,179,0.1)" : "transparent",
+                  color: viewMode === m ? "var(--teal)" : "var(--ink-2)",
+                }}>
+                {lbl}
+              </button>
+            ))}
+          </div>
           <button className="btn primary sm" onClick={run} disabled={isDemo || busy || picked.length < 2}>
             {busy ? "로딩…" : "▸ 겹쳐보기"}
           </button>
@@ -1331,7 +1516,9 @@ function BtOverlayPanel({ baseUrl, isDemo, jobs }) {
                     ))}
                   </div>
                 </div>
-                <BtOverlayCurves series={result.series} normalize={normalize} />
+                {viewMode === "split"
+                  ? <BtSplitGrid series={result.series} normalize={normalize} />
+                  : <BtOverlayCurves series={result.series} normalize={normalize} />}
                 {/* 시리즈별 요약 */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   {result.series.map((s, i) => (
