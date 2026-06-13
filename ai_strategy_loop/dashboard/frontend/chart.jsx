@@ -1,6 +1,17 @@
 /* SVG chart for graded_score per generation. */
 const { useMemo: useMemo_c, useState: useState_c, useRef: useRef_c } = React;
 
+// 축 눈금 값 배열(min~max 를 cnt 등분, 양끝 포함). 중간 눈금 라벨용. 무예외.
+function _axisTicks(min, max, cnt) {
+  const lo = Number(min), hi = Number(max);
+  const n = Math.max(2, Math.floor(cnt || 5));
+  if (!isFinite(lo) || !isFinite(hi)) return [];
+  if (hi === lo) return [lo];
+  const out = [];
+  for (let i = 0; i < n; i++) out.push(lo + ((hi - lo) * i) / (n - 1));
+  return out;
+}
+
 function MetricHelpStrip({ items }) {
   return (
     <div className="metric-help-strip">
@@ -385,11 +396,26 @@ function ProfitChart({ state, targetPct = 0 }) {
                   fill="var(--amber)">{pctMax.toFixed(1)}%</text>
             <text className="chart-axis-text" x={padL - 8} y={yPct(pctMin) + 3} textAnchor="end"
                   fill="var(--amber)">{pctMin.toFixed(1)}%</text>
+            {/* 좌축 중간 눈금(수익률 %) — 0·max·min 과 겹치면 생략. */}
+            {_axisTicks(pctMin, pctMax, 5).map((tv, i) => (
+              (Math.abs(tv) < 1e-9 || Math.abs(tv - pctMax) < 1e-9 || Math.abs(tv - pctMin) < 1e-9) ? null : (
+                <g key={`pyl${i}`}>
+                  <line x1={padL} x2={W - padR} y1={yPct(tv)} y2={yPct(tv)} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+                  <text className="chart-axis-text" x={padL - 8} y={yPct(tv) + 3} textAnchor="end" fill="var(--ink-3)">{tv.toFixed(1)}%</text>
+                </g>
+              )
+            ))}
             {/* 우축 라벨(수익금 max/min) */}
             <text className="chart-axis-text" x={W - padR + 6} y={yMoney(moneyMax) + 3} textAnchor="start"
                   fill="var(--blue)">{fmtMoney(moneyMax)}</text>
             <text className="chart-axis-text" x={W - padR + 6} y={yMoney(moneyMin) + 3} textAnchor="start"
                   fill="var(--blue)">{fmtMoney(moneyMin)}</text>
+            {/* 우축 중간 눈금(수익금) — max·min 과 겹치면 생략. */}
+            {_axisTicks(moneyMin, moneyMax, 5).map((tv, i) => (
+              (Math.abs(tv - moneyMax) < 1e-9 || Math.abs(tv - moneyMin) < 1e-9) ? null : (
+                <text key={`pyr${i}`} className="chart-axis-text" x={W - padR + 6} y={yMoney(tv) + 3} textAnchor="start" fill="var(--ink-3)">{fmtMoney(tv)}</text>
+              )
+            ))}
             {/* 목표 수익률선(targetPct > 0일 때만) */}
             {targetPct > 0 && (
               <>
@@ -1106,6 +1132,16 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
     const s = String(d);
     return s.length === 8 ? s.slice(4, 6) + "/" + s.slice(6, 8) : s;
   };
+  // 연도 보강 x축 라벨 — 직전 틱과 연도가 다르거나 첫 틱이면 YYYY-MM-DD, 그 외 MM/DD.
+  const fmtDateY = (d, prevD) => {
+    const s = String(d);
+    if (s.length !== 8) return fmtDate(d);
+    const ps = prevD != null ? String(prevD) : "";
+    const sameYear = ps.length === 8 && ps.slice(0, 4) === s.slice(0, 4);
+    return sameYear
+      ? s.slice(4, 6) + "/" + s.slice(6, 8)
+      : s.slice(0, 4) + "-" + s.slice(4, 6) + "-" + s.slice(6, 8);
+  };
 
   const onMove = (e) => {
     if (!n || !svgRef.current) return;
@@ -1253,22 +1289,37 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
                 <text className="chart-axis-text" x={padL - 8} y={yPnl(pnlMin) + 3} textAnchor="end"
                       fill="var(--ink-2)">{fmtMoneyShort(pnlMin)}</text>
               )}
+              {/* 좌축 중간 눈금(일별손익) — 0·max·min 과 겹치면 생략. */}
+              {_axisTicks(pnlMin, pnlMax, 5).map((tv, i) => (
+                (Math.abs(tv) < 1e-9 || Math.abs(tv - pnlMax) < 1e-9 || Math.abs(tv - pnlMin) < 1e-9) ? null : (
+                  <g key={`byl${i}`}>
+                    <line x1={padL} x2={W - padR} y1={yPnl(tv)} y2={yPnl(tv)} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+                    <text className="chart-axis-text" x={padL - 8} y={yPnl(tv) + 3} textAnchor="end" fill="var(--ink-3)">{fmtMoneyShort(tv)}</text>
+                  </g>
+                )
+              ))}
               {/* 우축 라벨(누적수익 max/min) */}
               <text className="chart-axis-text" x={W - padR + 6} y={yCum(cumMax) + 3} textAnchor="start"
                     fill="var(--amber)">{fmtMoneyShort(cumMax)}</text>
               <text className="chart-axis-text" x={W - padR + 6} y={yCum(cumMin) + 3} textAnchor="start"
                     fill="var(--amber)">{fmtMoneyShort(cumMin)}</text>
+              {/* 우축 중간 눈금(누적수익) — max·min 과 겹치면 생략. */}
+              {_axisTicks(cumMin, cumMax, 5).map((tv, i) => (
+                (Math.abs(tv - cumMax) < 1e-9 || Math.abs(tv - cumMin) < 1e-9) ? null : (
+                  <text key={`byr${i}`} className="chart-axis-text" x={W - padR + 6} y={yCum(tv) + 3} textAnchor="start" fill="var(--ink-3)">{fmtMoneyShort(tv)}</text>
+                )
+              ))}
 
               {/* X 프레임 */}
               <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH}
                     stroke="var(--line-2)" strokeWidth="1" />
               <line x1={padL} x2={padL} y1={padT} y2={padT + innerH}
                     stroke="var(--line-2)" strokeWidth="1" />
-              {/* X 라벨(거래일) */}
-              {xLabelIdxs.map((i) => (
+              {/* X 라벨(거래일) — 연도 경계/첫 틱은 YYYY-MM-DD, 그 외 MM/DD. */}
+              {xLabelIdxs.map((i, k) => (
                 <text key={`bx${i}`} className="chart-axis-text"
                       x={xBar(i)} y={H - 10} textAnchor="middle">
-                  {fmtDate(daily[i].date)}
+                  {fmtDateY(daily[i].date, k > 0 && daily[xLabelIdxs[k - 1]] ? daily[xLabelIdxs[k - 1]].date : null)}
                 </text>
               ))}
 

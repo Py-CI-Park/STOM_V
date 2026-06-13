@@ -6,7 +6,7 @@
    소비 컴포넌트(export):
      - BtEquityChart      : analysis.equity   {daily, cumulative, drawdown}
      - BtDistributionChart: analysis.distribution.pnl_histogram (손익 % 히스토그램)
-     - BtHeatmap          : analysis.heatmap.cells (요일×30분 슬롯)
+     - BtHeatmap          : analysis.heatmap.cells (요일×30분 슬롯, 셀=수익률 합계(%))
      - BtUnderwaterChart  : analysis.underwater {series, max_drawdown}
 */
 const {
@@ -30,6 +30,28 @@ function _btDateLabel(d) {
   const s = String(d);
   if (s.length === 8) return s.slice(4, 6) + "/" + s.slice(6, 8);
   return s;
+}
+
+// 연도 정보를 보강한 x축 날짜 라벨. 직전 틱과 연도가 다르거나(=경계) 첫 틱이면
+//   YYYY-MM-DD 로, 그 외에는 MM/DD 로 표기해 축에 연도 맥락을 남긴다(틱 과밀 방지).
+function _btDateLabelY(d, prevD) {
+  const s = String(d);
+  if (s.length !== 8) return _btDateLabel(d);
+  const ps = prevD != null ? String(prevD) : "";
+  const sameYear = ps.length === 8 && ps.slice(0, 4) === s.slice(0, 4);
+  if (sameYear) return s.slice(4, 6) + "/" + s.slice(6, 8);
+  return s.slice(0, 4) + "-" + s.slice(4, 6) + "-" + s.slice(6, 8);
+}
+
+// 축 눈금 값 배열(min~max 를 cnt 등분, 양끝 포함). 중간 눈금 라벨용. 무예외.
+function _btAxisTicks(min, max, cnt) {
+  const lo = Number(min), hi = Number(max);
+  const n = Math.max(2, Math.floor(cnt || 5));
+  if (!isFinite(lo) || !isFinite(hi)) return [];
+  if (hi === lo) return [lo];
+  const out = [];
+  for (let i = 0; i < n; i++) out.push(lo + ((hi - lo) * i) / (n - 1));
+  return out;
 }
 
 const _BT_WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"];
@@ -333,9 +355,24 @@ function BtEquityChart({ equity, onBrush, brushActive, onBrushClear }) {
             {/* 좌축(일별손익 max/min) */}
             <text className="chart-axis-text" x={padL - 8} y={yPnl(pnlMax) + 3} textAnchor="end" fill="var(--teal)">{_btMoneyTick(pnlMax)}</text>
             <text className="chart-axis-text" x={padL - 8} y={yPnl(pnlMin) + 3} textAnchor="end" fill="var(--red)">{_btMoneyTick(pnlMin)}</text>
+            {/* 좌축 중간 눈금(가로 점선 + 라벨) — 스케일 가독성. 0·max·min 과 겹치면 생략. */}
+            {_btAxisTicks(pnlMin, pnlMax, 5).map((tv, i) => (
+              (Math.abs(tv) < 1e-9 || Math.abs(tv - pnlMax) < 1e-9 || Math.abs(tv - pnlMin) < 1e-9) ? null : (
+                <g key={`eyl${i}`}>
+                  <line x1={padL} x2={W - padR} y1={yPnl(tv)} y2={yPnl(tv)} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+                  <text className="chart-axis-text" x={padL - 8} y={yPnl(tv) + 3} textAnchor="end" fill="var(--ink-3)">{_btMoneyTick(tv)}</text>
+                </g>
+              )
+            ))}
             {/* 우축(누적 max/min) */}
             <text className="chart-axis-text" x={W - padR + 6} y={yCum(cumMax) + 3} textAnchor="start" fill="var(--amber)">{_btMoneyTick(cumMax)}</text>
             <text className="chart-axis-text" x={W - padR + 6} y={yCum(cumMin) + 3} textAnchor="start" fill="var(--amber)">{_btMoneyTick(cumMin)}</text>
+            {/* 우축 중간 눈금 라벨(누적) — max·min 과 겹치면 생략. */}
+            {_btAxisTicks(cumMin, cumMax, 5).map((tv, i) => (
+              (Math.abs(tv - cumMax) < 1e-9 || Math.abs(tv - cumMin) < 1e-9) ? null : (
+                <text key={`eyr${i}`} className="chart-axis-text" x={W - padR + 6} y={yCum(tv) + 3} textAnchor="start" fill="var(--ink-3)">{_btMoneyTick(tv)}</text>
+              )
+            ))}
             {/* Frame */}
             <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
             <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
@@ -359,10 +396,10 @@ function BtEquityChart({ equity, onBrush, brushActive, onBrushClear }) {
                       ? { strokeDasharray: cumLen, strokeDashoffset: cumLen }
                       : undefined} />
             )}
-            {/* X 라벨 */}
-            {xTickIdx.map((i) => (
+            {/* X 라벨 — 연도 경계/첫 틱은 YYYY-MM-DD, 그 외 MM/DD. */}
+            {xTickIdx.map((i, k) => (
               <text key={`x${i}`} className="chart-axis-text" x={xCenter(i)} y={H - 10} textAnchor="middle">
-                {vDaily[i] ? _btDateLabel(vDaily[i].date) : ""}
+                {vDaily[i] ? _btDateLabelY(vDaily[i].date, k > 0 && vDaily[xTickIdx[k - 1]] ? vDaily[xTickIdx[k - 1]].date : null) : ""}
               </text>
             ))}
             {/* 크로스헤어(수직선) */}
@@ -669,9 +706,10 @@ function BtDistributionChart({ distribution }) {
   );
 }
 
-/* ③ 요일×시간 히트맵 — analysis.heatmap.cells [{weekday,slot,slot_label,profit_krw,trades}].
+/* ③ 요일×시간 히트맵 — analysis.heatmap.cells [{weekday,slot,slot_label,profit_pct_sum,profit_krw,trades}].
    행=요일(월~금 우선, 토/일은 데이터 있을 때만), 열=30분 슬롯(09:00~15:30 범위).
-   셀 색: 손익 부호·크기(red↔teal), hover 시 손익/거래수 툴팁. research-cell 패턴 차용. */
+   셀 값=수익률 합계(%) (수익금 절대액은 종목 규모에 좌우돼 시간대 비교에 부적합).
+   셀 색: 부호·크기(red↔teal, 0 중심), hover 시 수익률 합계·수익금·거래수 툴팁. */
 function BtHeatmap({ heatmap }) {
   const cells = (heatmap && heatmap.cells) || [];
   const [hover, setHover] = useState_btc(null);
@@ -713,12 +751,14 @@ function BtHeatmap({ heatmap }) {
     return m;
   }, [cells]);
 
-  // 색 스케일 — 절대 손익 최대값 기준 정규화.
-  const maxAbs = Math.max(1, ...cells.map(c => Math.abs(c.profit_krw || 0)));
+  // 셀 1차 지표 = 수익률 합계(%). 구버전 API(profit_pct_sum 부재) 면 0 으로 폴백.
+  const cellPct = (c) => (c ? Number(c.profit_pct_sum || 0) : 0);
+  // 색 스케일 — 수익률 합계 절대 최대값 기준 정규화(0 중심: 이익 teal / 손실 red).
+  const maxAbs = Math.max(1e-6, ...cells.map(c => Math.abs(cellPct(c))));
   const cellColor = (c) => {
     if (!c) return "var(--bg-0)";
-    const t = Math.min(1, Math.abs(c.profit_krw || 0) / maxAbs);
-    if ((c.profit_krw || 0) >= 0) {
+    const t = Math.min(1, Math.abs(cellPct(c)) / maxAbs);
+    if (cellPct(c) >= 0) {
       return `rgba(76,214,179,${(0.12 + 0.66 * t).toFixed(3)})`;
     }
     return `rgba(255,107,107,${(0.12 + 0.66 * t).toFixed(3)})`;
@@ -745,13 +785,8 @@ function BtHeatmap({ heatmap }) {
   const valFont = big ? Math.min(18, Math.round(cellH * 0.34)) : 9.5;
   const hdFont = big ? 11 : 9.5;
   const lblFont = big ? 13 : 11;
-  // 셀 내부에 손익 금액도 표기(크면 2줄: 건수 + 금액).
-  const cellMoney = (v) => {
-    const a = Math.abs(v || 0);
-    if (a >= 1e8) return ((v || 0) / 1e8).toFixed(1) + "억";
-    if (a >= 1e4) return Math.round((v || 0) / 1e4) + "만";
-    return Math.round(v || 0).toLocaleString("ko-KR");
-  };
+  // 수익률 합계(%) 라벨 — "+12.3%" / "-4.5%" 형식(부호 포함).
+  const cellPctLabel = (v) => `${(v || 0) >= 0 ? "+" : ""}${(v || 0).toFixed(1)}%`;
 
   return (
     <div className="panel">
@@ -760,7 +795,7 @@ function BtHeatmap({ heatmap }) {
           <span className="dot" style={{ background: "var(--blue)" }}></span>
           요일 × 시간대 히트맵
         </div>
-        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>매수시각 기준 · 손익 합</span>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>매수시각 기준 · 수익률 합계(%)</span>
       </div>
       <div className="panel-bd">
         {/* 측정 래퍼 — 전체 폭을 차지해 ResizeObserver 가 패널 폭을 읽는다. */}
@@ -795,7 +830,7 @@ function BtHeatmap({ heatmap }) {
                           <td key={s}
                               onMouseEnter={() => c && setHover(key)}
                               onMouseLeave={() => setHover(null)}
-                              title={c ? `${_BT_WEEKDAYS[w]} ${slotLabel(s)} · ${fmtMoney(c.profit_krw)} · ${c.trades}건` : ""}
+                              title={c ? `${_BT_WEEKDAYS[w]} ${slotLabel(s)} · 수익률 합계 ${cellPctLabel(cellPct(c))} · 수익금 ${fmtMoney(c.profit_krw)} · ${c.trades}건` : ""}
                               style={{
                                 width: cellW, height: cellH, borderRadius: 4,
                                 background: cellColor(c),
@@ -807,12 +842,14 @@ function BtHeatmap({ heatmap }) {
                             {c ? (
                               big ? (
                                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                                  <span style={{ fontWeight: 600 }}>{c.trades}건</span>
-                                  <span style={{ fontSize: Math.max(8.5, valFont - 5), color: (c.profit_krw || 0) >= 0 ? "var(--teal)" : "var(--red)" }}>
-                                    {cellMoney(c.profit_krw)}
+                                  <span style={{ fontWeight: 600, color: cellPct(c) >= 0 ? "var(--teal)" : "var(--red)" }}>
+                                    {cellPctLabel(cellPct(c))}
+                                  </span>
+                                  <span style={{ fontSize: Math.max(8.5, valFont - 5), color: "var(--ink-3)" }}>
+                                    {c.trades}건
                                   </span>
                                 </div>
-                              ) : c.trades
+                              ) : cellPctLabel(cellPct(c))
                             ) : ""}
                           </td>
                         );
@@ -822,10 +859,10 @@ function BtHeatmap({ heatmap }) {
                 </tbody>
               </table>
               <div style={{ display: "flex", gap: 14, marginTop: 10, alignItems: "center" }}>
-                <LegendDot color="rgba(76,214,179,0.78)" label="이익 슬롯" />
-                <LegendDot color="rgba(255,107,107,0.78)" label="손실 슬롯" />
+                <LegendDot color="rgba(76,214,179,0.78)" label="이익 슬롯(수익률 합계 +)" />
+                <LegendDot color="rgba(255,107,107,0.78)" label="손실 슬롯(수익률 합계 −)" />
                 <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>
-                  {big ? "셀 = 거래 건수 · 손익 합" : "셀 숫자 = 거래 건수"}
+                  {big ? "셀 = 수익률 합계(%) · 거래 건수" : "셀 = 수익률 합계(%)"}
                 </span>
               </div>
             </div>
@@ -919,6 +956,15 @@ function BtUnderwaterChart({ underwater }) {
             <text className="chart-axis-text" x={padL - 8} y={padT + innerH + 3} textAnchor="end" fill="var(--red)">
               −{_btMoneyTick(ddMax)}
             </text>
+            {/* y 중간 눈금(반납액) — 가로 점선 + 라벨. 0·ddMax 와 겹치면 생략. */}
+            {_btAxisTicks(0, ddMax, 5).map((tv, i) => (
+              (Math.abs(tv) < 1e-9 || Math.abs(tv - ddMax) < 1e-9) ? null : (
+                <g key={`uyl${i}`}>
+                  <line x1={padL} x2={W - padR} y1={y(tv)} y2={y(tv)} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+                  <text className="chart-axis-text" x={padL - 8} y={y(tv) + 3} textAnchor="end" fill="var(--ink-3)">−{_btMoneyTick(tv)}</text>
+                </g>
+              )
+            ))}
             {/* Frame */}
             <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
             {/* 언더워터 영역 + 라인 */}
@@ -928,10 +974,10 @@ function BtUnderwaterChart({ underwater }) {
                 <path d={linePath} fill="none" stroke="var(--red)" strokeWidth="1.4" opacity="0.85" />
               </>
             )}
-            {/* X 라벨 */}
-            {xTickIdx.map((i) => (
+            {/* X 라벨 — 연도 경계/첫 틱은 YYYY-MM-DD, 그 외 MM/DD. */}
+            {xTickIdx.map((i, k) => (
               <text key={`ux${i}`} className="chart-axis-text" x={x(i)} y={H - 10} textAnchor="middle">
-                {series[i] ? _btDateLabel(series[i].date) : ""}
+                {series[i] ? _btDateLabelY(series[i].date, k > 0 && series[xTickIdx[k - 1]] ? series[xTickIdx[k - 1]].date : null) : ""}
               </text>
             ))}
             {/* Hover */}
@@ -2008,6 +2054,12 @@ function BtCumulativeTradesChart({ data }) {
             {/* 우축(누적 손익 max/min) */}
             <text className="chart-axis-text" x={W - padR + 6} y={yProfit(pMax) + 3} textAnchor="start" fill="var(--amber)">{_btMoneyTick(pMax)}</text>
             <text className="chart-axis-text" x={W - padR + 6} y={yProfit(pMin) + 3} textAnchor="start" fill="var(--amber)">{_btMoneyTick(pMin)}</text>
+            {/* 우축 중간 눈금(누적 손익) — max·min·0 과 겹치면 생략. */}
+            {_btAxisTicks(pMin, pMax, 5).map((tv, i) => (
+              (Math.abs(tv - pMax) < 1e-9 || Math.abs(tv - pMin) < 1e-9 || Math.abs(tv) < 1e-9) ? null : (
+                <text key={`cyr${i}`} className="chart-axis-text" x={W - padR + 6} y={yProfit(tv) + 3} textAnchor="start" fill="var(--ink-3)">{_btMoneyTick(tv)}</text>
+              )
+            ))}
             {/* Frame */}
             <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
             <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
@@ -2122,6 +2174,15 @@ function BtCompareView({ cmp, onClose }) {
                 <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
                 <text className="chart-axis-text" x={padL - 8} y={y(yMax) + 3} textAnchor="end">{norm ? yMax.toFixed(0) : _btMoneyTick(yMax)}</text>
                 <text className="chart-axis-text" x={padL - 8} y={y(yMin) + 3} textAnchor="end">{norm ? yMin.toFixed(0) : _btMoneyTick(yMin)}</text>
+                {/* y 중간 눈금(가로 점선 + 라벨) — max·min 과 겹치면 생략. */}
+                {_btAxisTicks(yMin, yMax, 5).map((tv, i) => (
+                  (Math.abs(tv - yMax) < 1e-9 || Math.abs(tv - yMin) < 1e-9) ? null : (
+                    <g key={`cmpy${i}`}>
+                      <line x1={padL} x2={W - padR} y1={y(tv)} y2={y(tv)} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+                      <text className="chart-axis-text" x={padL - 8} y={y(tv) + 3} textAnchor="end" fill="var(--ink-3)">{norm ? tv.toFixed(0) : _btMoneyTick(tv)}</text>
+                    </g>
+                  )
+                ))}
                 {sA.length > 1 && <path d={pathOf(sA)} fill="none" stroke="var(--teal)" strokeWidth="2" />}
                 {sB.length > 1 && <path d={pathOf(sB)} fill="none" stroke="var(--violet)" strokeWidth="2" strokeDasharray="5 4" />}
                 {allV.length === 0 && null}

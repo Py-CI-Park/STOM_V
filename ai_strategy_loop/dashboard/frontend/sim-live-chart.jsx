@@ -37,6 +37,8 @@ function _slcSlot(innerW, n) { return innerW / Math.max(n, _SLC_MIN_SLOTS); }
 const _SLC_LERP_MS = 150;
 // 마지막 가격선 플래시 지속(ms).
 const _SLC_FLASH_MS = 220;
+// 재드로우 최소 간격(ms) — 약 35fps 캡. 차트 다수 활성 재생 시 CPU 포화 방지.
+const _SLC_MIN_FRAME_MS = 28;
 
 // HHMMSS(int) → HH:MM:SS (simulation-charts 의 _simTimeLabel 과 동일 규칙 — 독립 정의로 결합 회피).
 function _slcTimeLabel(hms) {
@@ -83,6 +85,7 @@ function SimLiveChart({ bars, signals, curT, code, name, compact, indicators }) 
     // Phase7 — 배치 도착 간 실제 경과(ms). lerp 를 min(_SLC_LERP_MS, batchWallMs)로 바운드해
     //   고속(240x/600x) 재생에서 보간이 배치가 대표하는 wall-time 을 넘지 않게 한다(1x=실시간 불변).
     prevArrival: 0, lerpMs: _SLC_LERP_MS,
+    lastDrawTs: 0,            // 마지막 실제 재드로우 시각(프레임레이트 캡용).
   });
   const barsRef = useRef_slc(bars || []);
   const sigRef = useRef_slc(signals || []);
@@ -91,6 +94,12 @@ function SimLiveChart({ bars, signals, curT, code, name, compact, indicators }) 
   const indRef = useRef_slc(indicators || null);
   const [hover, setHover] = useState_slc(null);  // {x, idx} — 크로스헤어.
   const hoverRef = useRef_slc(null);
+  // 성능 — 더티 플래그. rAF 는 60fps 로 돌지만, 실제 캔버스 재드로우는
+  //   ① 더티(데이터/지표/hover/리사이즈 변경) 또는 ② 진행 중 애니메이션(lerp·플래시·스크롤)
+  //   일 때만 한다. 정지/유휴(다른 탭 keep-alive 포함) 시엔 그리지 않아 CPU/GPU 점유 0.
+  //   초기 1회는 그려야 하므로 true 로 시작.
+  const dirtyRef = useRef_slc(true);
+  const markDirty = () => { dirtyRef.current = true; };
 
   const H = compact ? 220 : 340;
 
@@ -127,6 +136,7 @@ function SimLiveChart({ bars, signals, curT, code, name, compact, indicators }) 
       if (!sameBar) { a.scrollOffset = 0; a.prevLastT = newLast.t; }
     }
     barsRef.current = arr;
+    markDirty();   // 새 배치 → 재드로우 필요.
 
     // MEDIUM-1: 배치 도착 시점에 클라이언트 지표 배열을 한 번만 계산해 animRef 에 캐시.
     //   rAF _drawFrame 은 60fps 로 돌지만 bar 데이터는 배치 단위로만 바뀐다.
@@ -155,11 +165,12 @@ function SimLiveChart({ bars, signals, curT, code, name, compact, indicators }) 
     }
   }, [bars]);
 
-  useEffect_slc(() => { sigRef.current = signals || []; }, [signals]);
-  useEffect_slc(() => { curTRef.current = curT; }, [curT]);
-  useEffect_slc(() => { compactRef.current = !!compact; }, [compact]);
+  useEffect_slc(() => { sigRef.current = signals || []; markDirty(); }, [signals]);
+  useEffect_slc(() => { curTRef.current = curT; markDirty(); }, [curT]);
+  useEffect_slc(() => { compactRef.current = !!compact; markDirty(); }, [compact]);
   useEffect_slc(() => {
     indRef.current = indicators || null;
+    markDirty();   // 지표 토글 → 재드로우 필요.
     // indicators 변경 시에도 캐시를 즉시 재계산한다(토글 ON 시 다음 frame 부터 바로 그려짐).
     const a = animRef.current;
     a.lastIndForCache = indicators || null;
@@ -189,14 +200,39 @@ function SimLiveChart({ bars, signals, curT, code, name, compact, indicators }) 
     if (!canvas || !wrap) return;
 
     const draw = () => {
-      const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
-      _drawFrame(canvas, wrap, barsRef.current, sigRef.current, curTRef.current,
-                 compactRef.current, animRef.current, hoverRef.current, now, H,
-                 indRef.current);
       rafRef.current = requestAnimationFrame(draw);
+      // 가시성 게이트 — 다른 탭으로 전환된 keep-alive(display:none)면 offsetParent 가 null.
+      //   숨김 상태에선 절대 그리지 않는다(차트 10개 × 60fps 영구 재드로우 → 전체 랙의 주원인).
+      if (!wrap.offsetParent) return;
+      const a = animRef.current;
+      const now = (typeof performance !== "undefined" ? performance.now() : Date.now());
+      // 진행 중 애니메이션이 있나? (마지막 캔들 lerp · 가격선 플래시) — 있으면 매 프레임 갱신.
+      const animating =
+        (!!a.lastTarget && (now - a.lastStart) < (a.lerpMs || _SLC_LERP_MS)) ||
+        (!!a.flashKind && (now - a.flashStart) < _SLC_FLASH_MS);
+      // 더티(데이터/지표/hover/리사이즈)도 애니도 없으면 재드로우 스킵 — 유휴 시 CPU 0.
+      if (!dirtyRef.current && !animating) return;
+      // 프레임레이트 캡(~35fps) — 차트 다수(분할 5~10) 활성 재생 시 60fps 풀 재드로우가
+      //   CPU 를 포화시키는 것 방지. 더티는 소비 전이라 다음 프레임에 반드시 그려진다(유실 없음).
+      if ((now - a.lastDrawTs) < _SLC_MIN_FRAME_MS) return;
+      a.lastDrawTs = now;
+      _drawFrame(canvas, wrap, barsRef.current, sigRef.current, curTRef.current,
+                 compactRef.current, a, hoverRef.current, now, H,
+                 indRef.current);
+      // 애니메이션이 끝났고 더티만으로 그린 경우 → 더티 소비(다음 변경까지 유휴).
+      if (!animating) dirtyRef.current = false;
     };
     rafRef.current = requestAnimationFrame(draw);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+    // 컨테이너 크기 변경 시 재드로우 필요 — ResizeObserver 로 더티 표시.
+    let ro = null;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => markDirty());
+      try { ro.observe(wrap); } catch (e) { /* noop */ }
+    }
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (ro) { try { ro.disconnect(); } catch (e) { /* noop */ } }
+    };
   }, [H]);
 
   // hover 좌표 → bar 인덱스. 보이는 윈도우 기준 역산.
@@ -214,7 +250,7 @@ function SimLiveChart({ bars, signals, curT, code, name, compact, indicators }) 
     const i = Math.floor((x - layout.padL) / slot);
     if (i >= 0 && i < n) _setHover({ idx: i, base: arr.length - n }); else _setHover(null);
   };
-  const _setHover = (h) => { hoverRef.current = h; setHover(h); };
+  const _setHover = (h) => { hoverRef.current = h; setHover(h); markDirty(); };
   const onLeave = () => _setHover(null);
 
   const lastBar = (bars && bars.length) ? bars[bars.length - 1] : null;
