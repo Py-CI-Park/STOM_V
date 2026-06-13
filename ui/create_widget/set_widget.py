@@ -4,15 +4,15 @@ from PyQt5.QtGui import QPen
 from utility.static_method import syntax
 from ui.create_widget.set_style import *
 from utility.settings.setting_base import *
-from PyQt5.QtCore import Qt, QDate, QPropertyAnimation, QRect, QEasingCurve, QTimer, QEvent
+from ui.event_keypress.overwrite_keypress_event import key_press_event
+from PyQt5.QtCore import Qt, QDate, QPropertyAnimation, QRect, QEasingCurve, QTimer, QEvent, QPoint
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
-    QDialog, QTableWidget, QAbstractItemView, QGroupBox, QTableWidgetItem, QSizePolicy
+    QDialog, QTableWidget, QAbstractItemView, QGroupBox, QTableWidgetItem, QSizePolicy, QToolTip
 
 
 class CustomViewBox(pg.ViewBox):
     """커스텀 뷰박스 클래스입니다.
-    마우스 우클릭 호가창정보표시, 좌드레그 확대, 우클릭 확대복귀, 우드레그 X축 이동 기능을 제공합니다.
-    """
+    마우스 우클릭 호가창정보표시, 좌드레그 확대, 우클릭 확대복귀, 우드레그 X축 이동 기능을 제공합니다."""
     def __init__(self, *args, **kwds):
         pg.ViewBox.__init__(self, *args, **kwds)
         self.setMouseMode(self.RectMode)
@@ -31,37 +31,22 @@ class CustomViewBox(pg.ViewBox):
         self.original_y_range     = None
 
     def set_uiclass(self, ui_class):
-        """UI 클래스를 설정합니다.
-        Args:
-            ui_class: UI 클래스 인스턴스
-        """
+        """UI 클래스를 설정합니다."""
         self.ui = ui_class
 
     def set_range(self, xmin, xmax, ymin, ymax):
-        """뷰 범위를 설정합니다.
-        Args:
-            xmin: 최소 x 좌표
-            xmax: 최대 x 좌표
-            ymin: 최소 y 좌표
-            ymax: 최대 y 좌표
-        """
+        """뷰 범위를 설정합니다."""
         self.xmin = xmin
         self.xmax = xmax
         self.ymin = ymin
         self.ymax = ymax
 
     def is_zoomin(self):
-        """확대 상태를 반환합니다.
-        Returns:
-            확대 상태
-        """
+        """확대 상태를 반환합니다."""
         return self.zoom_in
 
     def linkX(self, other_view):
-        """다른 뷰와 X축을 연결합니다.
-        Args:
-            other_view: 연결할 다른 뷰
-        """
+        """다른 뷰와 X축을 연결합니다."""
         if other_view not in self.linked_views:
             self.linked_views.append(other_view)
             other_view.linked_views.append(self)
@@ -69,22 +54,14 @@ class CustomViewBox(pg.ViewBox):
             other_view.sigXRangeChanged.connect(self._update_linked_views)
 
     def _update_linked_views(self, _, x_range):
-        """연결된 뷰를 업데이트합니다.
-        Args:
-            _: 사용하지 않음
-            x_range: X축 범위
-        """
+        """연결된 뷰를 업데이트합니다."""
         x_min, x_max = x_range
         for view in self.linked_views:
             if view != self:
                 view.setXRange(x_min, x_max, padding=0)
 
     def mouseClickEvent(self, ev):
-        """마우스 클릭 이벤트를 처리합니다.
-        좌클릭 시 호가창 정보를 요청합니다.
-        Args:
-            ev: 마우스 이벤트
-        """
+        """마우스 클릭 이벤트를 처리합니다."""
         if ev.button() == Qt.LeftButton:
             try:
                 if self.ui.database_chart and self.ui.dialog_hoga.isVisible():
@@ -114,11 +91,7 @@ class CustomViewBox(pg.ViewBox):
             super().mouseClickEvent(ev)
 
     def mousePressEvent(self, ev):
-        """마우스 누름 이벤트를 처리합니다.
-        우클릭 시 드래그 모드를 시작합니다.
-        Args:
-            ev: 마우스 이벤트
-        """
+        """마우스 누름 이벤트를 처리합니다."""
         if ev.button() == Qt.RightButton:
             self.is_right_dragging = True
             self.right_drag_start_pos = ev.pos()
@@ -128,11 +101,7 @@ class CustomViewBox(pg.ViewBox):
             super().mousePressEvent(ev)
 
     def mouseMoveEvent(self, ev):
-        """마우스 이동 이벤트를 처리합니다.
-        우클릭 드래그 시 뷰를 이동합니다.
-        Args:
-            ev: 마우스 이벤트
-        """
+        """마우스 이동 이벤트를 처리합니다."""
         if self.is_right_dragging and self.right_drag_start_pos is not None:
             current_pos   = ev.pos()
             delta_x       = current_pos.x() - self.right_drag_start_pos.x()
@@ -176,11 +145,7 @@ class CustomViewBox(pg.ViewBox):
             super().mouseMoveEvent(ev)
 
     def mouseReleaseEvent(self, ev):
-        """마우스 릴리즈 이벤트를 처리합니다.
-        우클릭 시 드래그가 아니면 원래 뷰로 복귀합니다.
-        Args:
-            ev: 마우스 이벤트
-        """
+        """마우스 릴리즈 이벤트를 처리합니다."""
         if ev.button() == Qt.RightButton:
             was_dragging = False
             if self.is_right_dragging and self.right_drag_start_pos is not None:
@@ -203,12 +168,7 @@ class CustomViewBox(pg.ViewBox):
             super().mouseReleaseEvent(ev)
 
     def mouseDragEvent(self, ev, axis=None):
-        """마우스 드래그 이벤트를 처리합니다.
-        좌클릭 드래그 시 확대 모드를 설정합니다.
-        Args:
-            ev: 마우스 이벤트
-            axis: 축
-        """
+        """마우스 드래그 이벤트를 처리합니다."""
         if not self.is_right_dragging:
             super().mouseDragEvent(ev)
             if ev.isFinish():
@@ -217,8 +177,7 @@ class CustomViewBox(pg.ViewBox):
 
 class AnimatedPushButton(QPushButton):
     """호버 애니메이션 푸시버튼 클래스입니다.
-    마우스 오버 시 확대 애니메이션을 제공합니다.
-    """
+    마우스 오버 시 확대 애니메이션을 제공합니다."""
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
         self.hover_animation = None
@@ -237,11 +196,7 @@ class AnimatedPushButton(QPushButton):
         self.animation_timer.timeout.connect(self._delayed_leave)
 
     def enterEvent(self, event):
-        """마우스 진입 이벤트를 처리합니다.
-        버튼을 확대하는 애니메이션을 시작합니다.
-        Args:
-            event: 이벤트
-        """
+        """마우스 진입 이벤트를 처리합니다."""
         if self.original_geometry is None:
             self.original_geometry = self.geometry()
         self.is_hovering = True
@@ -258,11 +213,7 @@ class AnimatedPushButton(QPushButton):
         super().enterEvent(event)
 
     def leaveEvent(self, event):
-        """마우스 이탈 이벤트를 처리합니다.
-        지연 후 버튼을 원래 크기로 복원합니다.
-        Args:
-            event: 이벤트
-        """
+        """마우스 이탈 이벤트를 처리합니다."""
         self.is_hovering = False
         self.animation_timer.start(50)
         super().leaveEvent(event)
@@ -277,8 +228,7 @@ class AnimatedPushButton(QPushButton):
 
 class BounceButton(QPushButton):
     """바운스 애니메이션 버튼 클래스입니다.
-    클릭 시 버튼이 커졌다가 원래대로 돌아가는 애니메이션을 제공합니다.
-    """
+    클릭 시 버튼이 커졌다가 원래대로 돌아가는 애니메이션을 제공합니다."""
     def __init__(self, text, parent=None, scale=1.20, duration=300):
         super().__init__(text, parent)
         self.scale_factor = scale
@@ -287,19 +237,16 @@ class BounceButton(QPushButton):
         self.click_animation = None
 
     def mousePressEvent(self, event):
-        """마우스 누름 이벤트를 처리합니다.
-        좌클릭 시 바운스 애니메이션을 실행합니다.
-        Args:
-            event: 마우스 이벤트
-        """
+        """마우스 누름 이벤트를 처리합니다. """
         if event.button() == Qt.LeftButton:
             self._play_bounce_animation()
         super().mousePressEvent(event)
 
     def _play_bounce_animation(self):
-        """바운스 애니메이션을 실행합니다.
-        버튼이 커졌다가 원래대로 돌아가는 애니메이션을 재생합니다.
-        """
+        """바운스 애니메이션을 실행합니다."""
+        # noinspection PyUnresolvedReferences
+        if self.click_animation is not None and self.click_animation.state() == QPropertyAnimation.Running:
+            return
         self.original_geometry = self.geometry()
         center_x = self.original_geometry.x() + self.original_geometry.width() / 2
         center_y = self.original_geometry.y() + self.original_geometry.height() / 2
@@ -319,9 +266,7 @@ class BounceButton(QPushButton):
 
 class HoverComboBox(QComboBox):
     """호버 콤보박스 클래스입니다.
-    마우스 오버 시 드롭다운을 자동으로 열고 닫습니다.
-    """
-
+    마우스 오버 시 드롭다운을 자동으로 열고 닫습니다."""
     # noinspection PyUnresolvedReferences
     def __init__(self, parent=None, delay_ms=100):
         super().__init__(parent)
@@ -334,11 +279,7 @@ class HoverComboBox(QComboBox):
         self.view().viewport().installEventFilter(self)
 
     def enterEvent(self, event):
-        """마우스 진입 이벤트를 처리합니다.
-        마우스가 콤보박스 위로 들어오면 드롭다운을 엽니다.
-        Args:
-            event: 이벤트
-        """
+        """마우스 진입 이벤트를 처리합니다."""
         self._is_mouse_over = True
         self._close_timer.stop()
         if not self._is_open:
@@ -347,25 +288,14 @@ class HoverComboBox(QComboBox):
         super().enterEvent(event)
 
     def leaveEvent(self, event):
-        """마우스 이탈 이벤트를 처리합니다.
-        마우스가 콤보박스 영역을 벗어나면 닫기 타이머를 시작합니다.
-        Args:
-            event: 이벤트
-        """
+        """마우스 이탈 이벤트를 처리합니다."""
         self._is_mouse_over = False
         self._close_timer.start(self._delay_ms)
         super().leaveEvent(event)
 
     # noinspection PyUnresolvedReferences
     def eventFilter(self, obj, event):
-        """이벤트 필터를 처리합니다.
-        드롭다운 리스트의 마우스 이벤트를 감지합니다.
-        Args:
-            obj: 객체
-            event: 이벤트
-        Returns:
-            이벤트 필터 결과
-        """
+        """이벤트 필터를 처리합니다."""
         if obj == self.view().viewport():
             if event.type() == QEvent.Enter:
                 self._is_mouse_over = True
@@ -376,93 +306,94 @@ class HoverComboBox(QComboBox):
         return super().eventFilter(obj, event)
 
     def _try_close(self):
-        """드롭다운 닫기를 시도합니다.
-        마우스가 영역 밖에 있으면 드롭다운을 닫습니다.
-        """
+        """드롭다운 닫기를 시도합니다."""
         if not self._is_mouse_over:
             self.hidePopup()
             self._is_open = False
 
     def hidePopup(self):
-        """드롭다운을 닫습니다.
-        드롭다운이 닫히면 상태를 초기화합니다."""
+        """드롭다운을 닫습니다."""
         super().hidePopup()
         self._is_open = False
 
 
 class HoverGroupBox(QGroupBox):
     """호버 그룹박스 클래스입니다.
-    마우스 오버 시 배경색이 변경됩니다.
-    """
+    마우스 오버 시 배경색이 변경됩니다."""
     def __init__(self, title, parent=None, duration=100):
         super().__init__(title, parent)
-        self._normal_color = f'rgb({color_gb_nm.red()}, {color_gb_nm.green()}, {color_gb_nm.blue()})'
-        self._hover_color = f'rgb({color_gb_hv.red()}, {color_gb_hv.green()}, {color_gb_hv.blue()})'
         self._duration = duration
-        self.setStyleSheet(self._build_style(self._normal_color))
+        self.setStyleSheet(self._build_style(False))
 
-    def _build_style(self, bg_color):
-        """스타일시트를 빌드합니다.
-        Args:
-            bg_color: 배경색
-        Returns:
-            스타일시트 문자열
-        """
-        return f"""
-            QGroupBox {{
-                background-color: {bg_color};
-                font-family: "나눔고딕", "Malgun Gothic";
-                font-size: 12px;
-            }}
-            QGroupBox::title {{
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                font-family: "나눔고딕", "Malgun Gothic";
-                font-size: 12px;
-            }}
-            QLabel, QCheckBox, QPushButton, QDateEdit, HoverComboBox {{
-                font-family: "나눔고딕", "Malgun Gothic";
-                font-size: 12px;
-            }}
-        """
+    def _build_style(self, hover):
+        """스타일시트를 빌드합니다."""
+        if hover:
+            red, green, blue = color_bg_bl.red(), color_bg_bl.green(), color_bg_bl.blue()
+            return f"""
+                QGroupBox {{
+                    background-color: qlineargradient(
+                        x1:0, y1:0, x2:1, y2:0,
+                        stop:0 rgb({red+20}, {green+20}, {blue+20}),
+                        stop:0.5 rgb({red+10}, {green+10}, {blue+10}),
+                        stop:1 rgb({red}, {green}, {blue})
+                    );
+                    font-family: "나눔고딕";
+                    font-size: 12px;
+                }}
+                QGroupBox::title {{
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    font-family: "나눔고딕";
+                    font-size: 12px;
+                }}
+                QLabel, QCheckBox, QPushButton, QDateEdit, HoverComboBox {{
+                    font-family: "나눔고딕";
+                    font-size: 12px;
+                }}
+            """
+        else:
+            bg_color = f'rgb({color_hv_bt.red()}, {color_hv_bt.green()}, {color_hv_bt.blue()})'
+            return f"""
+                QGroupBox {{
+                    background-color: {bg_color};
+                    font-family: "나눔고딕";
+                    font-size: 12px;
+                }}
+                QGroupBox::title {{
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    font-family: "나눔고딕";
+                    font-size: 12px;
+                }}
+                QLabel, QCheckBox, QPushButton, QDateEdit, HoverComboBox {{
+                    font-family: "나눔고딕";
+                    font-size: 12px;
+                }}
+            """
 
     def enterEvent(self, event):
-        """마우스 진입 이벤트를 처리합니다.
-        마우스가 들어오면 배경색을 변경합니다.
-        Args:
-            event: 이벤트
-        """
-        self.setStyleSheet(self._build_style(self._hover_color))
+        """마우스 진입 이벤트를 처리합니다."""
+        self.setStyleSheet(self._build_style(True))
         super().enterEvent(event)
 
     def leaveEvent(self, event):
-        """마우스 이탈 이벤트를 처리합니다.
-        마우스가 나가면 원래 배경색을 복원합니다.
-        Args:
-            event: 이벤트
-        """
-        self.setStyleSheet(self._build_style(self._normal_color))
+        """마우스 이탈 이벤트를 처리합니다."""
+        self.setStyleSheet(self._build_style(False))
         super().leaveEvent(event)
 
 
 class PlainTextEdit(QTextEdit):
     """일반 텍스트 편집 클래스입니다.
-    서식 없는 텍스트 붙여넣기만 허용합니다.
-    """
+    서식 없는 텍스트 붙여넣기만 허용합니다."""
     # noinspection PyUnresolvedReferences
     def insertFromMimeData(self, source):
-        """마임 데이터를 삽입합니다.
-        텍스트만 삽입하여 서식을 제거합니다.
-        Args:
-            source: 마임 데이터 소스
-        """
+        """마임 데이터를 삽입합니다."""
         self.insertPlainText(source.text())
 
 
 class FixedColumnTableWidget(QTableWidget):
     """고정 칼럼 테이블 위젯 클래스입니다.
-    첫번째 칼럼과 동일한 별도의 자식테이블을 만들어서 부모테이블과 동기화합니다.
-    """
+    첫번째 칼럼과 동일한 별도의 자식테이블을 만들어서 부모테이블과 동기화합니다."""
     def __init__(self, parent=None, clicked=None):
         super().__init__(parent)
         self._first_column_table = None
@@ -497,29 +428,18 @@ class FixedColumnTableWidget(QTableWidget):
 
     # noinspection PyUnresolvedReferences
     def _sync_child_to_parent_scroll(self, value):
-        """자식 테이블 스크롤을 부모 테이블에 동기화합니다.
-        Args:
-            value: 스크롤 값
-        """
+        """자식 테이블 스크롤을 부모 테이블에 동기화합니다."""
         if self._is_fixed:
             self.verticalScrollBar().setValue(value)
 
     def _sync_parent_to_child_scroll(self, value):
-        """부모 테이블 스크롤을 자식 테이블에 동기화합니다.
-        Args:
-            value: 스크롤 값
-        """
+        """부모 테이블 스크롤을 자식 테이블에 동기화합니다."""
         if self._is_fixed and self._first_column_table:
             self._first_column_table.verticalScrollBar().setValue(value)
 
     # noinspection PyUnusedLocal
     def _on_column_resized(self, logical_index, old_size, new_size):
-        """칼럼 리사이즈 이벤트를 처리합니다.
-        Args:
-            logical_index: 논리적 인덱스
-            old_size: 이전 크기
-            new_size: 새 크기
-        """
+        """칼럼 리사이즈 이벤트를 처리합니다."""
         if self._is_fixed and logical_index == 0:
             self._first_column_width = new_size
             self._first_column_table.setColumnWidth(0, new_size)
@@ -527,11 +447,7 @@ class FixedColumnTableWidget(QTableWidget):
 
     # noinspection PyUnusedLocal
     def _on_sort_changed(self, logical_index, order):
-        """정렬 변경 이벤트를 처리합니다.
-        Args:
-            logical_index: 논리적 인덱스
-            order: 정렬 순서
-        """
+        """정렬 변경 이벤트를 처리합니다."""
         if not self._is_fixed or not self._first_column_table:
             return
         QTimer.singleShot(50, self._sync_all_data_to_child)
@@ -561,17 +477,16 @@ class FixedColumnTableWidget(QTableWidget):
 
     # noinspection PyUnresolvedReferences
     def setFirstColumnFixed(self, fixed=True):
-        """첫번째 칼럼 고정을 설정합니다.
-        Args:
-            fixed: 고정 여부
-        """
+        """첫번째 칼럼 고정을 설정합니다."""
         self._is_fixed = fixed
         if fixed and self.columnCount() > 0:
             self._first_column_width = self.columnWidth(0)
             self._first_column_table.setColumnCount(1)
             self._first_column_table.setRowCount(self.rowCount())
             self._first_column_table.setColumnWidth(0, self._first_column_width)
-            self._first_column_table.setHorizontalHeaderLabels([self.horizontalHeaderItem(0).text() if self.horizontalHeaderItem(0) else ''])
+            self._first_column_table.setHorizontalHeaderLabels(
+                [self.horizontalHeaderItem(0).text() if self.horizontalHeaderItem(0) else '']
+            )
 
             for row in range(self.rowCount()):
                 item = self.item(row, 0)
@@ -604,36 +519,23 @@ class FixedColumnTableWidget(QTableWidget):
                                              self._first_column_width, self.viewport().height() + header_height)
 
     def resizeEvent(self, event):
-        """리사이즈 이벤트를 처리합니다.
-        Args:
-            event: 이벤트
-        """
+        """리사이즈 이벤트를 처리합니다."""
         super().resizeEvent(event)
         self._update_fixed_column_position()
 
     def scrollContentsBy(self, dx, dy):
-        """스크롤 이벤트를 처리합니다.
-        Args:
-            dx: X축 델타
-            dy: Y축 델타
-        """
+        """스크롤 이벤트를 처리합니다."""
         super().scrollContentsBy(dx, dy)
         self._update_fixed_column_position()
 
     def setColumnCount(self, count):
-        """칼럼 수를 설정합니다.
-        Args:
-            count: 칼럼 수
-        """
+        """칼럼 수를 설정합니다."""
         super().setColumnCount(count)
         if self._is_fixed and count > 0:
             self._first_column_table.setColumnCount(1)
 
     def setRowCount(self, count):
-        """행 수를 설정합니다.
-        Args:
-            count: 행 수
-        """
+        """행 수를 설정합니다."""
         super().setRowCount(count)
         if self._is_fixed and self._first_column_table:
             self._first_column_table.setRowCount(count)
@@ -646,20 +548,13 @@ class FixedColumnTableWidget(QTableWidget):
 
     # noinspection PyUnresolvedReferences
     def setHorizontalHeaderLabels(self, labels):
-        """수평 헤더 라벨을 설정합니다.
-        Args:
-            labels: 라벨 리스트
-        """
+        """수평 헤더 라벨을 설정합니다."""
         super().setHorizontalHeaderLabels(labels)
         if self._is_fixed and len(labels) > 0:
             self._first_column_table.setHorizontalHeaderLabels([labels[0]])
 
     def setColumnWidth(self, column, width):
-        """칼럼 너비를 설정합니다.
-        Args:
-            column: 칼럼 인덱스
-            width: 너비
-        """
+        """칼럼 너비를 설정합니다."""
         super().setColumnWidth(column, width)
         if column == 0 and self._is_fixed:
             self._first_column_width = width
@@ -669,12 +564,7 @@ class FixedColumnTableWidget(QTableWidget):
             self._first_column_width = width
 
     def setItem(self, row, column, item):
-        """테이블 아이템을 설정합니다.
-        Args:
-            row: 행 인덱스
-            column: 칼럼 인덱스
-            item: 테이블 아이템
-        """
+        """테이블 아이템을 설정합니다."""
         super().setItem(row, column, item)
         if column == 0 and self._is_fixed and item:
             child_item = QTableWidgetItem(item.text())
@@ -685,12 +575,7 @@ class FixedColumnTableWidget(QTableWidget):
             self._first_column_table.setItem(row, 0, child_item)
 
     def setCellWidget(self, row, column, widget):
-        """셀 위젯을 설정합니다.
-        Args:
-            row: 행 인덱스
-            column: 칼럼 인덱스
-            widget: 위젯
-        """
+        """셀 위젯을 설정합니다."""
         super().setCellWidget(row, column, widget)
         if column == 0 and self._is_fixed and widget:
             widget_clone = type(widget)()
@@ -699,22 +584,32 @@ class FixedColumnTableWidget(QTableWidget):
             self._first_column_table.setCellWidget(row, 0, widget_clone)
 
 
+class CustomDialog(QDialog):
+    def __init__(self, ui, parent=None):
+        super().__init__(parent)
+        self.ui = ui
+
+    def showEvent(self, event):
+        self.on_dialog_open()
+        super().showEvent(event)
+
+    def keyPressEvent(self, event):
+        key_press_event(self.ui, event)
+        super().keyPressEvent(event)
+
+    def on_dialog_open(self):
+        from ui.etcetera.etc import change_title_bar_color
+        change_title_bar_color(self)
+
+
 class WidgetCreater:
     """위젯 생성자 클래스입니다.
-    다양한 UI 위젯을 생성하고 설정합니다.
-    """
+    다양한 UI 위젯을 생성하고 설정합니다."""
     def __init__(self, ui_class):
         self.ui = ui_class
 
     def setQGroupBox(self, gname, parent, hover=False):
-        """그룹박스를 생성합니다.
-        Args:
-            gname: 그룹박스 이름
-            parent: 부모 위젯
-            hover: 호버 효과 사용 여부
-        Returns:
-            그룹박스 위젯
-        """
+        """그룹박스를 생성합니다."""
         if hover:
             groupbox = HoverGroupBox(gname, parent)
         else:
@@ -723,22 +618,7 @@ class WidgetCreater:
 
     def setPushbutton(self, pname, color=0, parent=None, cmd=None, icon=None, tip=None, shortcut=None, visible=True,
                       click=None, animated=False, bounced=False):
-        """푸시버튼을 생성합니다.
-        Args:
-            pname: 버튼 이름
-            color: 색상 코드
-            parent: 부모 위젯
-            cmd: 명령어
-            icon: 아이콘
-            tip: 툴팁
-            shortcut: 단축키
-            visible: 표시 여부
-            click: 클릭 콜백
-            animated: 애니메이션 효과
-            bounced: 바운스 효과
-        Returns:
-            푸시버튼 위젯
-        """
+        """푸시버튼을 생성합니다."""
         if animated:
             if parent is not None:
                 pushbutton = AnimatedPushButton(pname, parent)
@@ -799,17 +679,17 @@ class WidgetCreater:
                 pushbutton.clicked.connect(lambda: click(cmd))
             else:
                 pushbutton.clicked.connect(click)
+        if pname == '도움말':
+            pushbutton.clicked.connect(lambda: QToolTip.showText(
+                pushbutton.mapToGlobal(QPoint(0, pushbutton.height())),
+                pushbutton.toolTip(),
+                pushbutton
+            ))
         return pushbutton
 
     @staticmethod
     def setLine(parent, width):
-        """라인을 생성합니다.
-        Args:
-            parent: 부모 위젯
-            width: 라인 너비
-        Returns:
-            프레임 위젯
-        """
+        """라인을 생성합니다."""
         line = QFrame(parent)
         line.setLineWidth(width)
         line.setStyleSheet(style_fc_dk)
@@ -817,17 +697,7 @@ class WidgetCreater:
         return line
 
     def setTextEdit(self, parent, visible=True, font=None, vscroll=False, filter_=False, event_filter=True):
-        """텍스트 에디터를 생성합니다.
-        Args:
-            parent: 부모 위젯
-            visible: 표시 여부
-            font: 폰트
-            vscroll: 수직 스크롤바 표시 여부
-            filter_: 필터 사용 여부
-            event_filter: 이벤트 필터 사용 여부
-        Returns:
-            텍스트 에디터 위젯
-        """
+        """텍스트 에디터를 생성합니다."""
         if filter_:
             textedit = PlainTextEdit(parent)
         else:
@@ -850,18 +720,7 @@ class WidgetCreater:
 
     @staticmethod
     def setCombobox(parent, font=None, items=None, tip=None, visible=True, activated=None, hover=True):
-        """콤보박스를 생성합니다.
-        Args:
-            parent: 부모 위젯
-            font: 폰트
-            items: 아이템 리스트
-            tip: 툴팁
-            visible: 표시 여부
-            activated: 활성화 콜백
-            hover: 호버 효과 사용 여부
-        Returns:
-            콤보박스 위젯
-        """
+        """콤보박스를 생성합니다."""
         if hover:
             combobox = HoverComboBox(parent)
         else:
@@ -882,17 +741,7 @@ class WidgetCreater:
 
     @staticmethod
     def setCheckBox(cname, parent, checked=False, tip=None, style=None, changed=None):
-        """체크박스를 생성합니다.
-        Args:
-            cname: 체크박스 이름
-            parent: 부모 위젯
-            checked: 체크 상태
-            tip: 툴팁
-            style: 스타일
-            changed: 변경 콜백
-        Returns:
-            체크박스 위젯
-        """
+        """체크박스를 생성합니다."""
         checkbox = QCheckBox(cname, parent)
         if checked:
             checkbox.setChecked(checked)
@@ -906,23 +755,9 @@ class WidgetCreater:
         return checkbox
 
     @staticmethod
-    def setLineedit(parent, enter=None, passhide=False, ltext=None, style=None, tip=None, font=None, aleft=False, acenter=False, visible=True, change=None):
-        """라인 에디트를 생성합니다.
-        Args:
-            parent: 부모 위젯
-            enter: 엔터키 콜백
-            passhide: 비밀번호 숨김 여부
-            ltext: 초기 텍스트
-            style: 스타일
-            tip: 툴팁
-            font: 폰트
-            aleft: 좌측 정렬
-            acenter: 중앙 정렬
-            visible: 표시 여부
-            change: 변경 콜백
-        Returns:
-            라인 에디트 위젯
-        """
+    def setLineedit(parent, enter=None, passhide=False, ltext=None, style=None, tip=None, font=None, aleft=False,
+                    acenter=False, visible=True, change=None, enable=True):
+        """라인 에디트를 생성합니다."""
         lineedit = QLineEdit(parent)
         lineedit.setVisible(visible)
         if aleft:
@@ -947,20 +782,13 @@ class WidgetCreater:
             lineedit.returnPressed.connect(enter)
         if change:
             lineedit.textChanged.connect(change)
+        if not enable:
+            lineedit.setEnabled(False)
         return lineedit
 
     @staticmethod
     def setDateEdit(parent, qday=None, addday=None, changed=None, popup=True):
-        """날짜 에디트를 생성합니다.
-        Args:
-            parent: 부모 위젯
-            qday: 특정 날짜
-            addday: 추가 일수
-            changed: 변경 콜백
-            popup: 팝업 사용 여부
-        Returns:
-            날짜 에디트 위젯
-        """
+        """날짜 에디트를 생성합니다."""
         dateEdit = QDateEdit(parent)
         if qday is not None:
             qdate = qday
@@ -989,15 +817,7 @@ class WidgetCreater:
 
     @staticmethod
     def setProgressBar(parent, vertical=False, style=None, visible=True):
-        """프로그레스바를 생성합니다.
-        Args:
-            parent: 부모 위젯
-            vertical: 수직 방향 여부
-            style: 스타일
-            visible: 표시 여부
-        Returns:
-            프로그레스바 위젯
-        """
+        """프로그레스바를 생성합니다."""
         progressBar = QProgressBar(parent)
         progressBar.setAlignment(Qt.AlignCenter)
         if vertical:
@@ -1010,25 +830,17 @@ class WidgetCreater:
         return progressBar
 
     def setaddPlot(self, layout, row, col, colspan=1, dateaxis=True, title=None):
-        """플롯을 추가합니다.
-        Args:
-            layout: 레이아웃
-            row: 행 위치
-            col: 칼럼 위치
-            colspan: 칼럼 스팬
-            dateaxis: 날짜 축 사용 여부
-            title: 제목
-        Returns:
-            서브플롯과 커스텀 뷰박스
-        """
+        """플롯을 추가합니다."""
         cb = CustomViewBox()
         cb.set_uiclass(self.ui)
         if not dateaxis:
             subplot = layout.addPlot(row=row, col=col, colspan=colspan, viewBox=cb)
         elif title is not None:
-            subplot = layout.addPlot(title=title, row=row, col=col, colspan=colspan, axisItems={'bottom': pg.DateAxisItem()})
+            subplot = layout.addPlot(title=title, row=row, col=col, colspan=colspan,
+                                     axisItems={'bottom': pg.DateAxisItem()})
         else:
-            subplot = layout.addPlot(title=title, row=row, col=col, colspan=colspan, viewBox=cb, axisItems={'bottom': pg.DateAxisItem()})
+            subplot = layout.addPlot(title=title, row=row, col=col, colspan=colspan, viewBox=cb,
+                                     axisItems={'bottom': pg.DateAxisItem()})
         subplot.showAxis('left', False)
         subplot.showAxis('right', True)
         subplot.getAxis('right').setStyle(tickTextWidth=45, autoExpandTextSpace=False)
@@ -1041,93 +853,51 @@ class WidgetCreater:
         return subplot, cb
 
     def setDialog(self, name, parent=None, location_save=False):
-        """다이얼로그를 생성합니다.
-        Args:
-            name: 다이얼로그 이름
-            parent: 부모 위젯
-            location_save: 창위치 기억
-        Returns:
-            다이얼로그 위젯
-        """
+        """다이얼로그를 생성합니다."""
         if parent is None:
-            dialog = QDialog()
+            dialog = CustomDialog(self.ui)
         else:
-            dialog = QDialog(parent)
+            dialog = CustomDialog(self.ui, parent)
         dialog.setWindowTitle(name)
         dialog.setWindowModality(Qt.WindowModality.NonModal)
         dialog.setWindowIcon(self.ui.icon_main)
         dialog.setFont(qfont12)
         if location_save:
-            dialog.finished.connect(lambda event: self.location_save(event, name))
+            dict_num = {
+                'STOM CHART': 1,
+                'STOM BACKTEST SCHEDULER': 2,
+                'STOM INFO': 3,
+                'STOM WEB': 4,
+                'STOM TREEMAP': 5,
+                'STOM KIMP': 6,
+                'STOM HOGA': 7,
+                'STOM BACKTEST ENGINE': 8,
+                'STOM ORDER': 9,
+                'STOM STRATEGY': 10,
+                'STOM MICROSTRUCTURE RADAR': 11,
+            }
+            dialog.finished.connect(lambda event: self.location_save(event, dialog, dict_num.get(name, 0)))
         return dialog
 
     # noinspection PyUnusedLocal
-    def location_save(self, event, name):
-        if self.ui.window_closing:
-            return
-
-        number = 0
-        dialog = None
-
-        if name == 'STOM CHART':
-            number = 1
-            dialog = self.ui.dialog_chart
-        elif name == 'STOM BACKTEST SCHEDULER':
-            number = 2
-            dialog = self.ui.dialog_scheduler
-        elif name == 'STOM INFO':
-            number = 3
-            dialog = self.ui.dialog_info
-        elif name == 'STOM WEB':
-            number = 4
-            dialog = self.ui.dialog_web
-        elif name == 'STOM TREEMAP':
-            number = 5
-            dialog = self.ui.dialog_tree
-        elif name == 'STOM KIMP':
-            number = 6
-            dialog = self.ui.dialog_kimp
-        elif name == 'STOM HOGA':
-            number = 7
-            dialog = self.ui.dialog_hoga
-        elif name == 'STOM BACKTEST ENGINE':
-            number = 8
-            dialog = self.ui.dialog_backengine
-        elif name == 'STOM ORDER':
-            number = 9
-            dialog = self.ui.dialog_order
-        elif name == 'STOM STRATEGY':
-            number = 10
-            dialog = self.ui.dialog_strategy
-        elif name == 'STOM MICROSTRUCTURE RADAR':
-            number = 11
-            dialog = self.ui.radar_dialog
-
-        if number > 0 and dialog is not None:
-            # noinspection PyUnresolvedReferences
-            data = [str(int(dialog.x())), str(int(dialog.y()))]
-            try:
-                self.ui.location_list[number] = data
-            except Exception:
-                self.ui.location_list.append(data)
+    def location_save(self, event, dialog, number):
+        """다이알로그의 위치를 저장합니다.
+        창의 위치가 타이틀바 크기 만큼 y좌표가 잘못 저장되는 경우가 발생하기 때문에
+        윈도우10 +31, 윈도우11 +32 만큼 클 경우 이전 위치로 저장한다.
+        또한 좌표가 마이너스일 경우 0으로 변경한다."""
+        location_list = self.ui.location_list[number]
+        prev_x, prev_y = int(location_list[0]), int(location_list[1])
+        curr_x = max(0, int(dialog.x()))
+        curr_y = max(0, int(dialog.y()))
+        if prev_y + 31 == curr_y or prev_y + 32 == curr_y:
+            curr_y = prev_y
+        data = [str(curr_x), str(curr_y)]
+        self.ui.location_list[number] = data
 
     # noinspection PyUnresolvedReferences
     def setTablewidget(self, parent, columns, rowcount, vscroll=False, visible=True, clicked=None, valuechanged=None,
                        sortchanged=None, fixed=False):
-        """테이블 위젯을 생성합니다.
-        Args:
-            parent: 부모 위젯
-            columns: 칼럼 리스트
-            rowcount: 행 수
-            vscroll: 수직 스크롤바 표시 여부
-            visible: 표시 여부
-            clicked: 클릭 콜백
-            valuechanged: 값 변경 콜백
-            sortchanged: 정렬 변경 콜백
-            fixed: 고정 칼럼 사용 여부
-        Returns:
-            테이블 위젯
-        """
+        """테이블 위젯을 생성합니다."""
         if fixed:
             if clicked is not None:
                 tableWidget = FixedColumnTableWidget(parent, clicked=clicked)

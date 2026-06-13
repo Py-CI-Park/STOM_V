@@ -1,9 +1,6 @@
 
 def setting_load_01(ui):
-    """기본 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """기본 설정을 로드합니다."""
     from utility.static_method.static_fernet_key import de_text
 
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM main').set_index('index')
@@ -15,13 +12,11 @@ def setting_load_01(ui):
     ui.sj_main_liEdit_01.setText(de_text(ui.dict_set['키'], df['프로그램비밀번호'][0]) if df['프로그램비밀번호'][0] else '')
     ui.sj_main_comBox_03.setCurrentText('격리' if df['바이낸스선물마진타입'][0] == 'ISOLATED' else '교차')
     ui.sj_main_comBox_04.setCurrentText('단방향' if df['바이낸스선물포지션'][0] == 'false' else '양방향')
+    ui.sj_main_comBox_05.setCurrentText(str(df['읽기속도'][0]))
 
 
 def setting_load_02(ui):
-    """계정 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """계정 설정을 로드합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import de_text
 
@@ -40,10 +35,7 @@ def setting_load_02(ui):
 
 
 def setting_load_03(ui):
-    """텔레그램 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """텔레그램 설정을 로드합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import de_text
 
@@ -62,10 +54,7 @@ def setting_load_03(ui):
 
 
 def setting_load_04(ui):
-    """전략 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """전략 설정을 로드합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     df   = ui.dbreader.read_sql('설정디비', 'SELECT * FROM strategy').set_index('index')
@@ -128,10 +117,7 @@ def setting_load_04(ui):
 
 
 def setting_load_05(ui):
-    """백테스트 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 설정을 로드합니다."""
     from PyQt5.QtCore import QDate
     from PyQt5.QtWidgets import QMessageBox
 
@@ -196,10 +182,7 @@ def setting_load_05(ui):
 
 
 def setting_load_06(ui):
-    """기타 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """기타 설정을 로드합니다."""
     from utility.static_method.static_fernet_key import de_text
 
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM etc').set_index('index')
@@ -212,6 +195,8 @@ def setting_load_06(ui):
     ui.sj_etc_checBox_05.setChecked(True if df['웹대시보드'][no] else False)
     ui.sj_etc_checBox_06.setChecked(True if df['창위치기억'][no] else False)
     ui.sj_etc_checBox_07.setChecked(True if df['프로그램종료'][no] else False)
+    ui.sj_etc_checBox_08.setChecked(True if df['작은창모드'][no] else False)
+    ui.sj_etc_checBox_09.setChecked(True if df['관심종목표시'][no] else False)
     ui.sj_etc_liEditt_01.setText(str(df['웹대시보드포트번호'][no]))
 
     if df['시리얼키'][no]:
@@ -219,6 +204,7 @@ def setting_load_06(ui):
 
 
 def settings_save_completed(ui):
+    """설정 저장 시 완료 메시지창을 띄웁니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.etcetera.etc import update_dictset
@@ -229,11 +215,8 @@ def settings_save_completed(ui):
     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
-def setting_save_01(ui):
-    """기본 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+def setting_save_01(ui, mbox=True):
+    """기본 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import en_text
     from utility.static_method.static_etcetera import qtest_qwait
@@ -258,6 +241,7 @@ def setting_save_01(ui):
     프로그램비밀번호_ = ui.sj_main_liEdit_01.text()
     바이낸스선물마진타입 = 'ISOLATED' if ui.sj_main_comBox_03.currentText() == '격리' else 'CROSSED'
     바이낸스선물포지션 = 'false' if ui.sj_main_comBox_04.currentText() == '단방향' else 'true'
+    읽기속도 = int(ui.sj_main_comBox_05.currentText())
 
     pass_check = True
     if ui.dict_set['프로그램비밀번호'] != '' and ui.dict_set['프로그램비밀번호'] != 프로그램비밀번호_:
@@ -272,14 +256,14 @@ def setting_save_01(ui):
     if pass_check:
         if ui.proc_chqs.is_alive():
             프로그램비밀번호 = en_text(ui.dict_set['키'], 프로그램비밀번호_) if 프로그램비밀번호_ else ''
-            columns = ['거래소', '타임프레임', '데이터저장', '모의투자', '알림소리', '프로그램비밀번호',
+            columns = ['거래소', '타임프레임', '데이터저장', '모의투자', '알림소리', '읽기속도', '프로그램비밀번호',
                        '바이낸스선물마진타입', '바이낸스선물포지션']
             set_txt = ', '.join([f'{col} = ?' for col in columns])
             query = f'UPDATE main SET {set_txt}'
             localvs = locals()
             values = tuple(localvs[col] for col in columns)
             ui.queryQ.put(('설정디비', query, values))
-            settings_save_completed(ui)
+            if mbox: settings_save_completed(ui)
 
             from ui.etcetera.etc import strategy_setting_label_change
             strategy_setting_label_change(ui)
@@ -297,11 +281,8 @@ def setting_save_01(ui):
     ui.pa_labelllllll_01.setText('프로그램 비밀번호을 입력하십시오.\n미설정 시 입력없이 엔터!!\n')
 
 
-def setting_save_02(ui):
-    """계정 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+def setting_save_02(ui, mbox=True):
+    """계정 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import en_text
 
@@ -319,14 +300,11 @@ def setting_save_02(ui):
         query  = 'UPDATE account SET access_key = ?, secret_key = ? WHERE `index` = ?'
         values = (en_access_key, en_secret_key, no)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
 
 
-def setting_save_03(ui):
-    """텔레그램 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+def setting_save_03(ui, mbox=True):
+    """텔레그램 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import en_text
 
@@ -344,14 +322,11 @@ def setting_save_03(ui):
         query  = 'UPDATE telegram SET bot_token = ?, chatingid = ? WHERE `index` = ?'
         values = (en_bot_token, en_chatingid, no)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
 
 
-def setting_save_04(ui):
-    """전략 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+def setting_save_04(ui, mbox=True):
+    """전략 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     매수전략 = ui.sj_strgy_cbBox_01.currentText()
@@ -397,14 +372,11 @@ def setting_save_04(ui):
         localvs = locals()
         values  = tuple(localvs[col] for col in columns) + (no,)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
 
 
-def setting_save_05(ui):
-    """백테스트 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+def setting_save_05(ui, mbox=True):
+    """백테스트 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from ui.event_click.button_clicked_backtest_start import backtest_engine_kill
 
@@ -472,16 +444,13 @@ def setting_save_05(ui):
         localvs = locals()
         values  = tuple(localvs[col] for col in columns) + (no,)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
         if pre_bbg != 백테주문관리적용:
             backtest_engine_kill(ui)
 
 
-def setting_save_06(ui):
-    """기타 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+def setting_save_06(ui, mbox=True):
+    """기타 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_fernet_key import en_text
 
@@ -491,8 +460,11 @@ def setting_save_06(ui):
     휴무프로세스종료 = 1 if ui.sj_etc_checBox_03.isChecked() else 0
     휴무컴퓨터종료 = 1 if ui.sj_etc_checBox_04.isChecked() else 0
     웹대시보드 = 1 if ui.sj_etc_checBox_05.isChecked() else 0
+    웹대시보드포트번호 = int(ui.sj_etc_liEditt_01.text())
     창위치기억 = 1 if ui.sj_etc_checBox_06.isChecked() else 0
     프로그램종료 = 1 if ui.sj_etc_checBox_07.isChecked() else 0
+    작은창모드 = 1 if ui.sj_etc_checBox_08.isChecked() else 0
+    관심종목표시 = 1 if ui.sj_etc_checBox_09.isChecked() else 0
     시리얼키 = ui.sj_etc_liEditt_02.text()
 
     if 시리얼키 == '':
@@ -500,32 +472,33 @@ def setting_save_06(ui):
         return
 
     시리얼키 = en_text(ui.dict_set['키'], 시리얼키)
-    웹대시보드포트번호 = int(ui.sj_etc_liEditt_01.text())
 
     if ui.proc_chqs.is_alive():
         columns = ['테마', '저해상도', '스톰라이브', '휴무프로세스종료', '휴무컴퓨터종료', '웹대시보드', '웹대시보드포트번호',
-                   '창위치기억', '프로그램종료', '시리얼키']
+                   '창위치기억', '프로그램종료', '작은창모드', '관심종목표시', '시리얼키']
         no      = ui.sj_main_comBox_01.currentText()[-2:]
         set_txt = ', '.join([f'{col} = ?' for col in columns])
         query   = f'UPDATE etc SET {set_txt} WHERE `index` = ?'
         localvs = locals()
         values  = tuple(localvs[col] for col in columns) + (no,)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
         query   = f"UPDATE etc SET 시리얼키 = '{시리얼키}'"
         ui.queryQ.put(('설정디비', query))
 
 
 def setting_acc_view(ui):
-    """계정 텍스트 표시/숨김을 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """계정 텍스트 표시/숨김을 토글합니다."""
     from ui.create_widget.set_style import style_bc_bt
+    from ui.create_widget.dialog_animation import DialogAnimator
 
     if ui.sj_etc_pButton_01.text() == '계정 텍스트 보기':
         ui.pa_lineEditttt_01.clear()
-        ui.dialog_pass.show() if not ui.dialog_pass.isVisible() else ui.dialog_pass.close()
+        if not ui.dialog_pass.isVisible():
+            DialogAnimator.setup_dialog_animation(ui.dialog_pass, duration=300)
+            ui.dialog_pass.show()
+        else:
+            ui.dialog_pass.close()
     else:
         from PyQt5.QtWidgets import QLineEdit
         ui.sj_main_liEdit_01.setEchoMode(QLineEdit.Password)
@@ -539,10 +512,7 @@ def setting_acc_view(ui):
 
 
 def setting_order_load_01(ui):
-    """매수 주문 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매수 주문 설정을 로드합니다."""
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM buyorder').set_index('index')
     no = int(ui.dict_set['거래소'][-2:])
     ui.ss_buyy_checkBox_01.setChecked(True if df['매수주문유형'][no] == '시장가' else False)
@@ -613,10 +583,7 @@ def setting_order_load_01(ui):
 
 
 def setting_order_load_02(ui):
-    """매도 주문 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매도 주문 설정을 로드합니다."""
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM sellorder').set_index('index')
     no = int(ui.dict_set['거래소'][-2:])
     ui.ss_sell_checkBox_01.setChecked(True if df['매도주문유형'][no] == '시장가' else False)
@@ -662,11 +629,8 @@ def setting_order_load_02(ui):
     ui.ss_sell_lineEdit_14.setText(str(df['매도손절수익금'][no]))
 
 
-def setting_order_save_01(ui):
-    """매수 주문 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+def setting_order_save_01(ui, mbox=True):
+    """매수 주문 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     매수주문유형 = ''
@@ -789,14 +753,11 @@ def setting_order_save_01(ui):
         localvs = locals()
         values  = tuple(localvs[col] for col in columns) + (no,)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
 
 
-def setting_order_save_02(ui):
-    """매도 주문 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+def setting_order_save_02(ui, mbox=True):
+    """매도 주문 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     매도주문유형 = ''
@@ -891,28 +852,21 @@ def setting_order_save_02(ui):
         localvs = locals()
         values  = tuple(localvs[col] for col in columns) + (no,)
         ui.queryQ.put(('설정디비', query, values))
-        settings_save_completed(ui)
+        if mbox: settings_save_completed(ui)
 
 
 def setting_all_load(ui):
-    """모든 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """모든 설정을 로드합니다."""
     load_setting_file(ui)
 
 
 def setting_all_app(ui):
-    """모든 설정을 적용합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """모든 설정을 적용합니다."""
     import os
     import random
     from PyQt5.QtWidgets import QMessageBox
     from utility.settings.setting_base import DB_PATH
     from ui.create_widget.set_text import famous_saying
-    from utility.static_method.static_etcetera import qtest_qwait
 
     name = ui.sj_set_comBoxx_01.currentText()
     if name == '':
@@ -927,8 +881,11 @@ def setting_all_app(ui):
         return
 
     if ui.proc_chqs.is_alive():
+        from ui.etcetera.etc import update_dictset
+
         ui.queryQ.put(('설정파일변경', origin_file, copy_file))
-        qtest_qwait(2)
+        _ = ui.testQ.get()
+
         setting_load_01(ui)
         setting_load_02(ui)
         setting_load_03(ui)
@@ -937,22 +894,25 @@ def setting_all_app(ui):
         setting_load_06(ui)
         setting_order_load_01(ui)
         setting_order_load_02(ui)
-        setting_save_01(ui)
-        setting_save_02(ui)
-        setting_save_03(ui)
-        setting_save_04(ui)
-        setting_save_05(ui)
-        setting_save_06(ui)
-        setting_order_save_01(ui)
-        setting_order_save_02(ui)
+
+        setting_save_01(ui, mbox=False)
+        setting_save_02(ui, mbox=False)
+        setting_save_03(ui, mbox=False)
+        setting_save_04(ui, mbox=False)
+        setting_save_05(ui, mbox=False)
+        setting_save_06(ui, mbox=False)
+        setting_order_save_01(ui, mbox=False)
+        setting_order_save_02(ui, mbox=False)
+
+        for _ in range(8):
+            _ = ui.testQ.get()
+
+        update_dictset(ui, force=True)
         QMessageBox.information(ui, '모든 설정 적용 완료', random.choice(famous_saying))
 
 
 def setting_all_del(ui):
-    """설정 파일을 삭제합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """설정 파일을 삭제합니다."""
     import os
     import random
     from PyQt5.QtWidgets import QMessageBox
@@ -971,10 +931,7 @@ def setting_all_del(ui):
 
 
 def setting_all_save(ui):
-    """모든 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """모든 설정을 저장합니다."""
     import random
     import shutil
     from PyQt5.QtWidgets import QMessageBox
@@ -993,19 +950,8 @@ def setting_all_save(ui):
     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
-def setting_passticks(ui):
-    """경과틱수 설정 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
-    ui.dialog_setsj.show() if not ui.dialog_setsj.isVisible() else ui.dialog_setsj.close()
-
-
 def load_setting_file(ui):
-    """설정 파일 목록을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """설정 파일 목록을 로드합니다."""
     import os
     from utility.settings.setting_base import DB_PATH
 

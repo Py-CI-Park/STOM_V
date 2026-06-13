@@ -7,8 +7,7 @@ from ui.create_widget.set_style import color_bg_ct, color_pluss, color_minus
 
 class AreaItem(pg.GraphicsObject):
     """영역 아이템 클래스입니다.
-    관심종목 영역을 그립니다.
-    """
+    관심종목 영역을 그립니다."""
     def __init__(self, ar, ymin, ymax, xticks, gubun=0):
         pg.GraphicsObject.__init__(self)
         self.setZValue(0)
@@ -16,14 +15,7 @@ class AreaItem(pg.GraphicsObject):
         self.draw(ar, ymin, ymax, xticks, gubun)
 
     def draw(self, ar, ymin, ymax, xticks, gubun):
-        """영역을 그립니다.
-        Args:
-            ar: 관심종목 배열
-            ymin: 최소 y 좌표
-            ymax: 최대 y 좌표
-            xticks: x축 틱
-            gubun: 구분
-        """
+        """영역을 그립니다."""
         def draw_area():
             height = ymax - ymin
             if len(ar[ar > 0]) == 0:
@@ -62,26 +54,18 @@ class AreaItem(pg.GraphicsObject):
         p.end()
 
     def paint(self, p, *args):
-        """페인트 이벤트를 처리합니다.
-        Args:
-            p: 페인터
-            *args: 추가 인자
-        """
+        """페인트 이벤트를 처리합니다."""
         if args is None: return
         p.drawPicture(0, 0, self.picture)
 
     def boundingRect(self):
-        """바운딩 사각형을 반환합니다.
-        Returns:
-            바운딩 사각형
-        """
+        """바운딩 사각형을 반환합니다."""
         return QRectF(self.picture.boundingRect())
 
 
 class CandlestickItem(pg.GraphicsObject):
     """캔들스틱 아이템 클래스입니다.
-    캔들스틱 차트를 그립니다.
-    """
+    캔들스틱 차트를 그립니다."""
     def __init__(self, ar, idxs, xticks, gubun=0):
         pg.GraphicsObject.__init__(self)
         self.setZValue(20)
@@ -89,13 +73,7 @@ class CandlestickItem(pg.GraphicsObject):
         self.draw(ar, idxs, xticks, gubun)
 
     def draw(self, ar, idxs, xticks, gubun):
-        """캔들스틱을 그립니다.
-        Args:
-            ar: 데이터 배열
-            idxs: 인덱스 리스트
-            xticks: x축 틱
-            gubun: 구분
-        """
+        """캔들스틱을 그립니다."""
         def draw_candle(x, c, o, h, low):
             color = color_minus
             if c > o:
@@ -127,26 +105,18 @@ class CandlestickItem(pg.GraphicsObject):
         p.end()
 
     def paint(self, p, *args):
-        """페인트 이벤트를 처리합니다.
-        Args:
-            p: 페인터
-            *args: 추가 인자
-        """
+        """페인트 이벤트를 처리합니다."""
         if args is None: return
         p.drawPicture(0, 0, self.picture)
 
     def boundingRect(self):
-        """바운딩 사각형을 반환합니다.
-        Returns:
-            바운딩 사각형
-        """
+        """바운딩 사각형을 반환합니다."""
         return QRectF(self.picture.boundingRect())
 
 
 class VolumeBarItem(pg.GraphicsObject):
     """볼륨바 아이템 클래스입니다.
-    거래량 바 차트를 그립니다.
-    """
+    거래량 바 차트를 그립니다."""
     def __init__(self, ar, idxs, xticks, gubun=0):
         pg.GraphicsObject.__init__(self)
         self.setZValue(20)
@@ -154,13 +124,7 @@ class VolumeBarItem(pg.GraphicsObject):
         self.draw(ar, idxs, xticks, gubun)
 
     def draw(self, ar, idxs, xticks, gubun):
-        """볼륨바를 그립니다.
-        Args:
-            ar: 데이터 배열
-            idxs: 인덱스 리스트
-            xticks: x축 틱
-            gubun: 구분
-        """
+        """볼륨바를 그립니다."""
         def draw_bar(x, c, o, m):
             color = color_minus
             if c > o:
@@ -188,17 +152,10 @@ class VolumeBarItem(pg.GraphicsObject):
         p.end()
 
     def paint(self, p, *args):
-        """페인트 이벤트를 처리합니다.
-        Args:
-            p: 페인터
-            *args: 추가 인자
-        """
+        """페인트 이벤트를 처리합니다."""
         if args is None: return
         p.drawPicture(0, 0, self.picture)
 
     def boundingRect(self):
-        """바운딩 사각형을 반환합니다.
-        Returns:
-            바운딩 사각형
-        """
+        """바운딩 사각형을 반환합니다."""
         return QRectF(self.picture.boundingRect())

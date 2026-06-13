@@ -10,10 +10,10 @@ from ui.create_widget.set_text import pattern_text_list
 from ui.event_change.changed_text import text_changed_05
 from PyQt5.QtWidgets import QGroupBox, QLabel, QTabWidget, QWidget
 from ui.event_keypress.overwrite_return_press import return_press_02
-from ui.create_widget.set_style import style_ck_bx, style_bc_dk, qfont14, style_fc_dk, style_pgbar
 from strategy.analyzer_volume_spike import spike_setting_load, spike_setting_save, spike_train
 from ui.event_click.table_cell_clicked import cell_clicked_09, cell_clicked_07, cell_clicked_08
 from strategy.analyzer_candle_pattern import pattern_setting_load, pattern_setting_save, pattern_train
+from ui.create_widget.set_style import style_ck_bx, style_bc_dk, qfont14, style_fc_dk, style_pgbar, qfont13
 from strategy.analyzer_volume_profile import volume_setting_load, volume_setting_save, volume_profile_train
 from strategy.analyzer_volatility_stop_take import volatility_stop_take_setting_load, volatility_stop_take_train, \
     volatility_stop_take_setting_save
@@ -24,8 +24,7 @@ from utility.settings.setting_base import COLUMNS_HJ, COLUMNS_HC, COLUMNS_HG, CO
 
 class SetDialogEtc:
     """기타 다이얼로그 설정 클래스입니다.
-    호가, 정보, 데이터베이스, 주문 등 다양한 다이얼로그를 설정합니다.
-    """
+    호가, 정보, 데이터베이스, 주문 등 다양한 다이얼로그를 설정합니다."""
     def __init__(self, ui_class, wc):
         self.ui = ui_class
         self.wc = wc
@@ -131,7 +130,7 @@ class SetDialogEtc:
         self.ui.od_labellllllll_01 = QLabel('주문종목명', self.ui.od_groupBoxxxxx_01)
         self.ui.od_comboBoxxxxx_01 = self.wc.setCombobox(self.ui.od_groupBoxxxxx_01, hover=False, activated=lambda: activated_etc.dactivated_03(self.ui))
         self.ui.od_labellllllll_02 = QLabel('주문유형', self.ui.od_groupBoxxxxx_01)
-        self.ui.od_comboBoxxxxx_02 = self.wc.setCombobox(self.ui.od_groupBoxxxxx_01, hover=False, items=['시장가', '지정가', '최유리지정가', '최우선지정가', '지정가IOC', '시장가IOC', '최유리IOC', '지정가FOK', '시장가FOK', '최유리FOK'])
+        self.ui.od_comboBoxxxxx_02 = self.wc.setCombobox(self.ui.od_groupBoxxxxx_01, hover=False, items=['시장가', '지정가', '최유리지정가', '지정가IOC', '최유리IOC', '지정가FOK', '최유리FOK'])
         self.ui.od_labellllllll_03 = QLabel('주문가격', self.ui.od_groupBoxxxxx_01)
         self.ui.od_lineEdittttt_01 = self.wc.setLineedit(self.ui.od_groupBoxxxxx_01, style=style_bc_dk, enter=lambda: text_changed_05(self.ui))
         self.ui.od_labellllllll_04 = QLabel('주문수량', self.ui.od_groupBoxxxxx_01)
@@ -150,64 +149,68 @@ class SetDialogEtc:
         self.ui.dialog_list.append(self.ui.dialog_optuna)
 
         self.ui.op_groupBoxxxx_01 = QGroupBox(' ', self.ui.dialog_optuna)
+        self.ui.op_groupBoxxxx_02 = QGroupBox(' ', self.ui.dialog_optuna)
+        self.ui.op_groupBoxxxx_03 = QGroupBox(' ', self.ui.dialog_optuna)
+        self.ui.op_groupBoxxxx_04 = QGroupBox(' ', self.ui.dialog_optuna)
+        self.ui.op_groupBoxxxx_05 = QGroupBox(' ', self.ui.dialog_optuna)
         text = '''
-        "optuna의 범위설정은 최적화 범위
-        설정과 동일합니다. 그대로 사용해도
-        되지만, 일부 아는 중요한 값들은
-        고정하여 사용하면 초기에 보다
+        OPTUNA의 범위설정은 최적화 범위
+        설정과 동일합니다. 중요한 값들을
+        고정하여 사용하면 최적화 초기에 보다
         빠르게 최적값을 탐색할 수 있습니다.
         아래의 빈칸에 콤머로 구분하여
-        고정할 변수의 번호를 입력하십시오."
+        고정할 변수의 번호를 입력하십시오.
         '''
         self.ui.op_labelllllll_01 = QLabel(text, self.ui.op_groupBoxxxx_01)
+        self.ui.op_labelllllll_01.setFont(qfont13)
         self.ui.op_labelllllll_01.setAlignment(Qt.AlignCenter)
         self.ui.op_lineEditttt_01 = self.wc.setLineedit(self.ui.op_groupBoxxxx_01, style=style_bc_dk)
         text = '''
-        "optuna은 기본적으로 범위설정에서
+        OPTUNA은 기본적으로 범위설정에서
         입력한 간격대로 변수를 탐색합니다.
         하지만 범위설정의 간격을 무시하고
-        optuna가 최소, 최대의 범위안에서
+        OPTUNA가 최소, 최대의 범위안에서
         자동으로 탐색하게 할 수 있습니다.
-        원하시면 아래의 설정을 사용하십시오."
+        원하시면 아래의 설정을 사용하십시오.
         '''
-        self.ui.op_labelllllll_02 = QLabel(text, self.ui.op_groupBoxxxx_01)
+        self.ui.op_labelllllll_02 = QLabel(text, self.ui.op_groupBoxxxx_02)
+        self.ui.op_labelllllll_02.setFont(qfont13)
         self.ui.op_labelllllll_02.setAlignment(Qt.AlignCenter)
-        self.ui.op_checkBoxxxx_01 = self.wc.setCheckBox('범위간격 자동탐색 사용하기', self.ui.op_groupBoxxxx_01, checked=False, style=style_ck_bx)
+        self.ui.op_checkBoxxxx_01 = self.wc.setCheckBox('범위간격 자동탐색 사용하기', self.ui.op_groupBoxxxx_02, checked=False, style=style_ck_bx)
         text = '''
-        "optuna의 기본 최적화 알고리즘은
-        베이지안서치(TPESampler)입니다.
+        OPTUNA의 기본 최적화 알고리즘은
+        베이지안(TPESampler)입니다.
         아래 콤보박스에서 다른 최적화
-        알고리즘을 선택할 수 있습니다."
+        알고리즘을 선택할 수 있습니다.
+        BruteForce, CmaEs, QMC,
+        Random Sampler를 지원합니다.
         '''
-        self.ui.op_labelllllll_03 = QLabel(text, self.ui.op_groupBoxxxx_01)
+        self.ui.op_labelllllll_03 = QLabel(text, self.ui.op_groupBoxxxx_03)
+        self.ui.op_labelllllll_03.setFont(qfont13)
         self.ui.op_labelllllll_03.setAlignment(Qt.AlignCenter)
         item_list = ['TPESampler', 'BruteForceSampler', 'CmaEsSampler', 'QMCSampler', 'RandomSampler']
-        self.ui.op_comboBoxxxx_01 = self.wc.setCombobox(self.ui.op_groupBoxxxx_01, items=item_list)
+        self.ui.op_comboBoxxxx_01 = self.wc.setCombobox(self.ui.op_groupBoxxxx_03, items=item_list)
         text = '''
-        "optuna의 실행 횟수는 변수의
+        OPTUNA의 실행 횟수는 변수의
         개수만큼 실행되어도 기준값이
         변경되지 않으면 탐색을 종료하도록
-        설정되어 있습니다(0입력시적용).
+        설정되어 있습니다(0입력시 미적용).
         설정을 무시하고 기준값 미변경 시
         중단할 횟수를 빈칸에 입력하십시오.
-        20회 이하의 횟수로 최적값을 빠르게
-        랜덤하게 바꿀 수도 있으며
-        200회 이상의 횟수로 고강도 탐색을
-        유도할 수도 있습니다."
         '''
-        self.ui.op_labelllllll_04 = QLabel(text, self.ui.op_groupBoxxxx_01)
+        self.ui.op_labelllllll_04 = QLabel(text, self.ui.op_groupBoxxxx_04)
+        self.ui.op_labelllllll_04.setFont(qfont13)
         self.ui.op_labelllllll_04.setAlignment(Qt.AlignCenter)
-        self.ui.op_lineEditttt_02 = self.wc.setLineedit(self.ui.op_groupBoxxxx_01, style=style_bc_dk)
+        self.ui.op_lineEditttt_02 = self.wc.setLineedit(self.ui.op_groupBoxxxx_04, style=style_bc_dk)
         self.ui.op_lineEditttt_02.setText('0')
         text = '''
-        "optuna로 실행된 최적화의 정보는
-        별도의 데이터베이스에 저장됩니다
-        해당 DB의 정보를 열람하려면
-        아래 버튼을 클릭하십시오."
+        OPTUNA로 실행된 최적화의 정보는 별도의 데이터베이스에 저장됩니다
+        해당 DB의 정보를 열람하려면 아래 버튼을 클릭하십시오.
         '''
-        self.ui.op_labelllllll_05 = QLabel(text, self.ui.op_groupBoxxxx_01)
+        self.ui.op_labelllllll_05 = QLabel(text, self.ui.op_groupBoxxxx_05)
+        self.ui.op_labelllllll_05.setFont(qfont13)
         self.ui.op_labelllllll_05.setAlignment(Qt.AlignCenter)
-        self.ui.op_pushButtonn_01 = self.wc.setPushbutton('OPTUNA DASHBOARD', parent=self.ui.op_groupBoxxxx_01, color=3, click=lambda: opbutton_clicked_01(self.ui))
+        self.ui.op_pushButtonn_01 = self.wc.setPushbutton('OPTUNA DASHBOARD', parent=self.ui.op_groupBoxxxx_05, color=3, bounced=True, click=opbutton_clicked_01)
 
         self.ui.dialog_pass = self.wc.setDialog('STOM PASSWARD', self.ui)
         self.ui.dialog_pass.geometry().center()
@@ -223,7 +226,7 @@ class SetDialogEtc:
         self.ui.dialog_list.append(self.ui.dialog_comp)
 
         self.ui.cp_labelllllll_01 = QLabel('▣ 선택된 두개 이상의 그래프를 비교한다.', self.ui.dialog_comp)
-        self.ui.cp_pushButtonn_01 = self.wc.setPushbutton('그래프 비교', parent=self.ui.dialog_comp, click=lambda: cpbutton_clicked_01(self.ui))
+        self.ui.cp_pushButtonn_01 = self.wc.setPushbutton('그래프 비교', parent=self.ui.dialog_comp, bounced=True, click=lambda: cpbutton_clicked_01(self.ui))
         self.ui.cp_tableWidget_01 = self.wc.setTablewidget(self.ui.dialog_comp, ['백테스트 상세기록'], 40, vscroll=True)
 
         self.ui.dialog_kimp = self.wc.setDialog('STOM KIMP', location_save=True)
@@ -236,8 +239,8 @@ class SetDialogEtc:
         self.ui.dialog_std.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_std)
 
-        self.ui.st_pushButtonn_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_std, click=lambda: stbutton_clicked_01(self.ui))
-        self.ui.st_pushButtonn_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_std, click=lambda: stbutton_clicked_02(self.ui))
+        self.ui.st_pushButtonn_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_std, bounced=True, click=lambda: stbutton_clicked_01(self.ui))
+        self.ui.st_pushButtonn_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_std, bounced=True, click=lambda: stbutton_clicked_02(self.ui))
         self.ui.st_groupBoxxxx_01 = QGroupBox(' ', self.ui.dialog_std)
         self.ui.st_labelllllll_01 = QLabel('<=    최대낙폭률     <=', self.ui.st_groupBoxxxx_01)
         self.ui.st_labelllllll_02 = QLabel('<=    보유종목수     <=', self.ui.st_groupBoxxxx_01)
@@ -254,8 +257,8 @@ class SetDialogEtc:
         self.ui.dialog_leverage.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_leverage)
 
-        self.ui.lv_pushButtonn_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_leverage, click=lambda: lvbutton_clicked_02(self.ui))
-        self.ui.lv_pushButtonn_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_leverage, click=lambda: lvbutton_clicked_03(self.ui))
+        self.ui.lv_pushButtonn_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_leverage, bounced=True, click=lambda: lvbutton_clicked_02(self.ui))
+        self.ui.lv_pushButtonn_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_leverage, bounced=True, click=lambda: lvbutton_clicked_03(self.ui))
         self.ui.lv_groupBoxxxx_01 = QGroupBox(' ', self.ui.dialog_leverage)
         self.ui.lv_checkBoxxxx_01 = self.wc.setCheckBox('고정 레버리지 (모든 종목의 레버리지 고정)', self.ui.lv_groupBoxxxx_01, style=style_ck_bx, changed=lambda state: lvcheck_changed_01(self.ui, state))
         self.ui.lv_lineEditttt_01 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_01, style=style_bc_dk)
@@ -276,9 +279,9 @@ class SetDialogEtc:
         self.ui.dialog_setsj.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_setsj)
 
-        self.ui.set_pushButton_01 = self.wc.setPushbutton('설정예제', parent=self.ui.dialog_setsj, click=lambda: setting_passticks_sample(self.ui))
-        self.ui.set_pushButton_02 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_setsj, click=lambda: setting_passticks_load(self.ui))
-        self.ui.set_pushButton_03 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_setsj, click=lambda: setting_passticks_save(self.ui))
+        self.ui.set_pushButton_01 = self.wc.setPushbutton('설정예제', parent=self.ui.dialog_setsj, bounced=True, click=lambda: setting_passticks_sample(self.ui))
+        self.ui.set_pushButton_02 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_setsj, bounced=True, click=lambda: setting_passticks_load(self.ui))
+        self.ui.set_pushButton_03 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_setsj, bounced=True, click=lambda: setting_passticks_save(self.ui))
         self.ui.set_groupBoxxx_01 = QGroupBox('', self.ui.dialog_setsj)
         text = '''
         ▣ 백테 및 전략연산에서 사용할 경과틱수('조건명')을 설정한다. 경과틱수는 작성한 조건을 만족한 이후 경과한 틱수이며
@@ -367,7 +370,7 @@ class SetDialogEtc:
 
         self.ui.dialog_info.setFixedSize(1403, 570)
         self.ui.gg_textEdittttt_01.setGeometry(7, 5, 692, 90)
-        self.ui.gs_tableWidgett_01.setGeometry(7, 100, 692, 463)
+        self.ui.gs_tableWidgett_01.setGeometry(7, 100, 692, 460)
         self.ui.ns_tableWidgett_01.setGeometry(704, 5, 693, 233)
         self.ui.jm_tableWidgett_01.setGeometry(704, 243, 320, 320)
         self.ui.jm_tableWidgett_02.setGeometry(1024, 243, 373, 320)
@@ -435,18 +438,23 @@ class SetDialogEtc:
             y = 150 + i // 2 * 35
             getattr(self.ui, f'od_pushButtonnn_{i+1:02d}').setGeometry(x, y, 100, 30)
 
-        self.ui.dialog_optuna.setFixedSize(220, 670)
-        self.ui.op_groupBoxxxx_01.setGeometry(5, -10, 210, 675)
-        self.ui.op_labelllllll_01.setGeometry(-10, 10, 210, 130)
-        self.ui.op_lineEditttt_01.setGeometry(10, 132, 190, 30)
-        self.ui.op_labelllllll_02.setGeometry(-10, 160, 210, 100)
-        self.ui.op_checkBoxxxx_01.setGeometry(25, 265, 190, 20)
-        self.ui.op_labelllllll_03.setGeometry(-10, 277, 210, 70)
-        self.ui.op_comboBoxxxx_01.setGeometry(10, 355, 190, 30)
-        self.ui.op_labelllllll_04.setGeometry(-10, 382, 210, 155)
-        self.ui.op_lineEditttt_02.setGeometry(10, 537, 190, 30)
-        self.ui.op_labelllllll_05.setGeometry(-10, 560, 200, 70)
-        self.ui.op_pushButtonn_01.setGeometry(10, 637, 190, 30)
+        self.ui.dialog_optuna.setFixedSize(505, 400)
+        self.ui.op_groupBoxxxx_01.setGeometry(5, -10, 245, 165)
+        self.ui.op_groupBoxxxx_02.setGeometry(255, -10, 245, 165)
+        self.ui.op_groupBoxxxx_03.setGeometry(5, 142, 245, 165)
+        self.ui.op_groupBoxxxx_04.setGeometry(255, 142, 245, 165)
+        self.ui.op_groupBoxxxx_05.setGeometry(5, 294, 495, 100)
+
+        self.ui.op_labelllllll_01.setGeometry(-15, 15, 245, 115)
+        self.ui.op_lineEditttt_01.setGeometry(5, 130, 235, 30)
+        self.ui.op_labelllllll_02.setGeometry(-15, 15, 245, 115)
+        self.ui.op_checkBoxxxx_01.setGeometry(40, 130, 200, 30)
+        self.ui.op_labelllllll_03.setGeometry(-15, 15, 245, 115)
+        self.ui.op_comboBoxxxx_01.setGeometry(5, 130, 235, 30)
+        self.ui.op_labelllllll_04.setGeometry(-15, 15, 245, 115)
+        self.ui.op_lineEditttt_02.setGeometry(5, 130, 235, 30)
+        self.ui.op_labelllllll_05.setGeometry(-15, 15, 490, 50)
+        self.ui.op_pushButtonn_01.setGeometry(5, 65, 485, 30)
 
         self.ui.dialog_pass.setFixedSize(200, 100)
         self.ui.pa_groupBoxxxx_01.setGeometry(5, -10, 190, 105)
@@ -456,7 +464,7 @@ class SetDialogEtc:
         self.ui.dialog_comp.setFixedSize(350, 763)
         self.ui.cp_labelllllll_01.setGeometry(10, 10, 220, 25)
         self.ui.cp_pushButtonn_01.setGeometry(240, 10, 103, 25)
-        self.ui.cp_tableWidget_01.setGeometry(5, 40, 340, 718)
+        self.ui.cp_tableWidget_01.setGeometry(5, 40, 340, 720)
 
         self.ui.dialog_kimp.setFixedSize(535, 763)
         self.ui.kp_tableWidget_01.setGeometry(5, 5, 525, 753)

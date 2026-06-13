@@ -1,6 +1,6 @@
 STOM LICENSE
 Version 3.0
-Copyright (c) 2025 STOM. All rights reserved.
+Copyright (c) 2026 STOM. All rights reserved.
 
 1. STOM은 시스템트레이딩을 위한 도구일뿐이며 전략을 제공하거나 판매하지 않습니다.
 2. 소스코드의 원본 또는 수정본을 상업적으로 이용할 수 없습니다.

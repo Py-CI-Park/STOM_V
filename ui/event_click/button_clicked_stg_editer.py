@@ -15,15 +15,15 @@ def group_animation_01(ui):
     current_geo_zoo02 = ui.szoo_pushButon_02.geometry()
 
     # 목표 지오메트리 설정
-    target_geo_tedt1 = QRect(7, 10, 647, 740 if ui.extend_window else 463)
-    target_geo_tedt2 = QRect(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
-    target_geo_tedt3 = QRect(659, 10, 347, 1347 if ui.extend_window else 740)
+    target_geo_tedt1 = QRect(7, 10, 647, 740 if ui.extend_window else 460)
+    target_geo_tedt2 = QRect(7, 755 if ui.extend_window else 475, 647, 600 if ui.extend_window else 275)
+    target_geo_tedt3 = QRect(659, 10, 347, 1345 if ui.extend_window else 740)
     target_geo_comb1 = QRect(1012, 115, 165, 30)
     target_geo_line1 = QRect(1182, 115, 165, 30)
     target_geo_btn01 = QRect(1012, 150, 165, 30)
     target_geo_btn02 = QRect(1182, 150, 165, 30)
     target_geo_zoo01 = QRect(584, 15, 50, 20)
-    target_geo_zoo02 = QRect(584, 761 if ui.extend_window else 483, 50, 20)
+    target_geo_zoo02 = QRect(584, 760 if ui.extend_window else 480, 50, 20)
 
     # 애니메이션 그룹 생성
     ui.animation_group = QParallelAnimationGroup()
@@ -118,9 +118,9 @@ def group_animation_02(ui):
     current_geo_zoo02 = ui.szoo_pushButon_02.geometry()
 
     # 목표 지오메트리 설정
-    target_geo_tedt1 = QRect(7, 10, 647, 740 if ui.extend_window else 463)
-    target_geo_tedt2 = QRect(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
-    target_geo_tedt3 = QRect(659, 10, 347, 1347 if ui.extend_window else 740)
+    target_geo_tedt1 = QRect(7, 10, 647, 740 if ui.extend_window else 460)
+    target_geo_tedt2 = QRect(7, 755 if ui.extend_window else 475, 647, 600 if ui.extend_window else 275)
+    target_geo_tedt3 = QRect(659, 10, 347, 1345 if ui.extend_window else 740)
     target_geo_comb1 = QRect(1012, 115, 165, 30)
     target_geo_line1 = QRect(1182, 115, 165, 30)
     target_geo_btn01 = QRect(1012, 150, 165, 30)
@@ -130,7 +130,7 @@ def group_animation_02(ui):
     target_geo_btn03 = QRect(1012, 150, 165, 30)
     target_geo_btn04 = QRect(1182, 150, 165, 30)
     target_geo_zoo01 = QRect(584, 15, 50, 20)
-    target_geo_zoo02 = QRect(584, 761 if ui.extend_window else 483, 50, 20)
+    target_geo_zoo02 = QRect(584, 760 if ui.extend_window else 480, 50, 20)
 
     # 애니메이션 그룹 생성
     ui.animation_group = QParallelAnimationGroup()
@@ -250,8 +250,8 @@ def group_animation_03(ui):
     current_geo_btn04 = ui.sva_pushButton_05.geometry()
 
     # 목표 지오메트리 설정
-    target_geo_tedt1 = QRect(7, 10, 497, 1347 if ui.extend_window else 740)
-    target_geo_tedt2 = QRect(509, 10, 497, 1347 if ui.extend_window else 740)
+    target_geo_tedt1 = QRect(7, 10, 497, 1345 if ui.extend_window else 740)
+    target_geo_tedt2 = QRect(509, 10, 497, 1345 if ui.extend_window else 740)
     target_geo_comb1 = QRect(1012, 10, 165, 30)
     target_geo_line1 = QRect(1182, 10, 165, 30)
     target_geo_btn01 = QRect(1012, 45, 165, 30)
@@ -360,14 +360,14 @@ def group_animation_04(ui):
     current_geo_btn04 = ui.svc_pushButton_04.geometry()
 
     # 목표 지오메트리 설정
-    target_geo_tedt1 = QRect(7, 10, 497, 740 if ui.extend_window else 463)
-    target_geo_tedt2 = QRect(7, 756 if ui.extend_window else 478, 497, 602 if ui.extend_window else 272)
-    target_geo_tedt3 = QRect(509, 10, 497, 740 if ui.extend_window else 463)
-    target_geo_tedt4 = QRect(509, 756 if ui.extend_window else 478, 497, 602 if ui.extend_window else 272)
+    target_geo_tedt1 = QRect(7, 10, 497, 740 if ui.extend_window else 460)
+    target_geo_tedt2 = QRect(7, 755 if ui.extend_window else 475, 497, 600 if ui.extend_window else 275)
+    target_geo_tedt3 = QRect(509, 10, 497, 740 if ui.extend_window else 460)
+    target_geo_tedt4 = QRect(509, 755 if ui.extend_window else 475, 497, 600 if ui.extend_window else 275)
     target_geo_comb1 = QRect(1012, 10, 165, 30)
     target_geo_btn01 = QRect(1182, 10, 165, 30)
-    target_geo_comb2 = QRect(1012, 478, 165, 30)
-    target_geo_btn02 = QRect(1182, 478, 165, 30)
+    target_geo_comb2 = QRect(1012, 475, 165, 30)
+    target_geo_btn02 = QRect(1182, 475, 165, 30)
     target_geo_comb3 = QRect(1012, 115, 165, 30)
     target_geo_line1 = QRect(1182, 115, 165, 30)
     target_geo_btn03 = QRect(1012, 150, 165, 30)
@@ -482,14 +482,14 @@ def group_animation_05(ui):
     current_geo_zoo02 = ui.szoo_pushButon_02.geometry()
 
     # 목표 지오메트리 설정
-    target_geo_tedt1 = QRect(7, 10, 1000, 740 if ui.extend_window else 463)
-    target_geo_tedt2 = QRect(7, 756 if ui.extend_window else 478, 1000, 602 if ui.extend_window else 272)
+    target_geo_tedt1 = QRect(7, 10, 1000, 740 if ui.extend_window else 460)
+    target_geo_tedt2 = QRect(7, 755 if ui.extend_window else 475, 1000, 600 if ui.extend_window else 275)
     target_geo_comb1 = QRect(1012, 10, 165, 25)
     target_geo_btn01 = QRect(1012, 40, 165, 30)
-    target_geo_comb2 = QRect(1012, 478, 165, 25)
-    target_geo_btn02 = QRect(1012, 508, 165, 30)
+    target_geo_comb2 = QRect(1012, 475, 165, 30)
+    target_geo_btn02 = QRect(1012, 510, 165, 30)
     target_geo_zoo01 = QRect(937, 15, 50, 20)
-    target_geo_zoo02 = QRect(937, 761 if ui.extend_window else 483, 50, 20)
+    target_geo_zoo02 = QRect(937, 760 if ui.extend_window else 480, 50, 20)
 
     # 애니메이션 그룹 생성
     ui.animation_group = QParallelAnimationGroup()
@@ -559,14 +559,7 @@ def group_animation_05(ui):
 
 # noinspection PyUnboundLocalVariable
 def group_animation_06(ui, pushButton1, pushButton2, pushButton3, pushButton4=None):
-    """버튼 그룹 애니메이션 06을 실행합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        pushButton1: 첫 번째 푸시 버튼
-        pushButton2: 두 번째 푸시 버튼
-        pushButton3: 세 번째 푸시 버튼
-        pushButton4: 네 번째 푸시 버튼 (선택)
-    """
+    """버튼 그룹 애니메이션 06을 실행합니다."""
     from PyQt5.QtCore import QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
 
     # 위젯들의 좌측 상단으로 지오메트리 저장
@@ -626,16 +619,7 @@ def group_animation_06(ui, pushButton1, pushButton2, pushButton3, pushButton4=No
 
 
 def group_animation_07(ui, pushButton1, pushButton2, pushButton3, pushButton4, pushButton5, pushButton6):
-    """버튼 그룹 애니메이션 07을 실행합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        pushButton1: 첫 번째 푸시 버튼
-        pushButton2: 두 번째 푸시 버튼
-        pushButton3: 세 번째 푸시 버튼
-        pushButton4: 네 번째 푸시 버튼
-        pushButton5: 다섯 번째 푸시 버튼
-        pushButton6: 여섯 번째 푸시 버튼
-    """
+    """버튼 그룹 애니메이션 07을 실행합니다."""
     from PyQt5.QtCore import QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
 
     # 위젯들의 좌측 상단으로 지오메트리 저장
@@ -707,10 +691,7 @@ def group_animation_07(ui, pushButton1, pushButton2, pushButton3, pushButton4, p
 
 
 def opti_test_editer(ui):
-    """최적화 테스트 에디터를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 테스트 에디터를 표시합니다."""
     from ui.create_widget.set_text import testtext
 
     group_animation_01(ui)
@@ -768,10 +749,7 @@ def opti_test_editer(ui):
 
 
 def rwf_test_editer(ui):
-    """전진분석 테스트 에디터를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """전진분석 테스트 에디터를 표시합니다."""
     from ui.create_widget.set_text import rwfttext
 
     group_animation_01(ui)
@@ -830,10 +808,7 @@ def rwf_test_editer(ui):
 
 
 def opti_ga_editer(ui):
-    """유전알고리즘 최적화 에디터를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """유전알고리즘 최적화 에디터를 표시합니다."""
     from ui.create_widget.set_text import gaoptext
 
     group_animation_02(ui)
@@ -891,10 +866,7 @@ def opti_ga_editer(ui):
 
 
 def opti_vars_editer(ui):
-    """최적화 변수 에디터를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 변수 에디터를 표시합니다."""
     from ui.create_widget.set_text import gaoptext, vedittxt
 
     group_animation_03(ui)
@@ -970,10 +942,7 @@ def opti_vars_editer(ui):
 
 
 def opti_editer(ui):
-    """최적화 에디터를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 에디터를 표시합니다."""
     from ui.create_widget.set_text import optitext
 
     group_animation_01(ui)
@@ -1031,10 +1000,7 @@ def opti_editer(ui):
 
 
 def opti_gavars_editer(ui):
-    """최적화 GA 변수 에디터를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 GA 변수 에디터를 표시합니다."""
     from ui.create_widget.set_text import optitext
 
     group_animation_04(ui)
@@ -1099,10 +1065,7 @@ def opti_gavars_editer(ui):
 
 
 def change_pre_button_edit(ui):
-    """이전 버튼의 색상을 변경합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """이전 버튼의 색상을 변경합니다."""
     from ui.create_widget.set_style import style_bc_bd
     if ui.svj_pushButton_01.isVisible():
         ui.svj_pushButton_09.setStyleSheet(style_bc_bd)
@@ -1123,10 +1086,7 @@ def change_pre_button_edit(ui):
 
 
 def backtest_log(ui):
-    """백테스트 로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 로그를 표시합니다."""
     from ui.create_widget.set_style import style_bc_by, style_bc_dk, style_bc_bs
 
     change_pre_button_edit(ui)
@@ -1140,9 +1100,9 @@ def backtest_log(ui):
     ui.ss_textEditttt_07.setVisible(False)
     ui.ss_textEditttt_08.setVisible(False)
 
-    ui.ss_textEditttt_09.setGeometry(7, 10, 1000, 1313 if ui.extend_window else 703)
-    ui.ss_progressBar_01.setGeometry(7, 1328 if ui.extend_window else 718, 830, 30)
-    ui.ss_pushButtonn_08.setGeometry(842, 1328 if ui.extend_window else 718, 165, 30)
+    ui.ss_textEditttt_09.setGeometry(7, 10, 1000, 1310 if ui.extend_window else 705)
+    ui.ss_progressBar_01.setGeometry(7, 1325 if ui.extend_window else 720, 830, 30)
+    ui.ss_pushButtonn_08.setGeometry(842, 1325 if ui.extend_window else 720, 165, 30)
 
     for item in ui.version_list:
         item.setVisible(False)
@@ -1161,10 +1121,7 @@ def backtest_log(ui):
 
 
 def backtest_detail(ui):
-    """백테스트 상세 정보를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 상세 정보를 표시합니다."""
     from ui.create_widget.set_style import style_bc_dk, style_bc_bs
 
     change_pre_button_edit(ui)
@@ -1178,7 +1135,7 @@ def backtest_detail(ui):
     ui.ss_textEditttt_07.setVisible(False)
     ui.ss_textEditttt_08.setVisible(False)
 
-    ui.ss_tableWidget_01.setGeometry(7, 40, 1000, 1318 if ui.extend_window else 713)
+    ui.ss_tableWidget_01.setGeometry(7, 40, 1000, 1315 if ui.extend_window else 710)
     if (ui.extend_window and ui.ss_tableWidget_01.rowCount() < 60) or \
             (not ui.extend_window and ui.ss_tableWidget_01.rowCount() < 32):
         ui.ss_tableWidget_01.setRowCount(60 if ui.extend_window else 32)
@@ -1199,10 +1156,7 @@ def backtest_detail(ui):
 
 
 def stg_editer(ui):
-    """전략 에디터를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """전략 에디터를 표시합니다."""
     group_animation_05(ui)
     group_animation_06(ui, ui.svj_pushButton_01, ui.svj_pushButton_02, ui.svj_pushButton_03, ui.svj_pushButton_04)
 
@@ -1257,10 +1211,7 @@ def stg_editer(ui):
 
 
 def opti_cond_editer(ui):
-    """조건 최적화 에디터를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """조건 최적화 에디터를 표시합니다."""
     from ui.create_widget.set_text import condtext, cedittxt
 
     group_animation_06(ui, ui.svo_pushButton_05, ui.svo_pushButton_06, ui.svo_pushButton_07)
@@ -1272,8 +1223,8 @@ def opti_cond_editer(ui):
     ui.ss_textEditttt_05.setVisible(False)
     ui.ss_textEditttt_06.setVisible(False)
 
-    ui.ss_textEditttt_07.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
-    ui.ss_textEditttt_08.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
+    ui.ss_textEditttt_07.setGeometry(7, 10, 497, 1345 if ui.extend_window else 740)
+    ui.ss_textEditttt_08.setGeometry(509, 10, 497, 1345 if ui.extend_window else 740)
 
     for item in ui.version_list:
         item.setVisible(False)
@@ -1331,6 +1282,7 @@ def opti_cond_editer(ui):
 
 
 def _check_backengine(ui):
+    """백테스트 엔진 구동여부를 확인합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QMessageBox
     from PyQt5.QtWidgets import QApplication
@@ -1360,10 +1312,7 @@ def _check_backengine(ui):
 
 
 def backtest_start(ui):
-    """백테스트를 시작합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트를 시작합니다."""
     from PyQt5.QtCore import Qt
     from multiprocessing import Process
     from backtest.backtest import BackTest
@@ -1384,15 +1333,15 @@ def backtest_start(ui):
             QMessageBox.critical(ui, '오류 알림', '백테엔진을 먼저 구동하십시오.\n')
             return
 
-        startday = ui.svjb_dateEditt_01.date().toString('yyyyMMdd')
-        endday = ui.svjb_dateEditt_02.date().toString('yyyyMMdd')
+        startday  = ui.svjb_dateEditt_01.date().toString('yyyyMMdd')
+        endday    = ui.svjb_dateEditt_02.date().toString('yyyyMMdd')
         starttime = ui.svjb_lineEditt_02.text()
-        endtime = ui.svjb_lineEditt_03.text()
-        betting = ui.svjb_lineEditt_04.text()
-        avgtime = ui.svjb_lineEditt_05.text()
-        buystg = ui.svjb_comboBoxx_01.currentText()
-        sellstg = ui.svjs_comboBoxx_01.currentText()
-        bl = True if ui.dict_set['블랙리스트추가'] else False
+        endtime   = ui.svjb_lineEditt_03.text()
+        betting   = ui.svjb_lineEditt_04.text()
+        avgtime   = ui.svjb_lineEditt_05.text()
+        buystg    = ui.svjb_comboBoxx_01.currentText()
+        sellstg   = ui.svjs_comboBoxx_01.currentText()
+        bl        = True if ui.dict_set['블랙리스트추가'] else False
 
         if int(avgtime) not in ui.avg_list:
             QMessageBox.critical(ui, '오류 알림', '백테엔진 시작 시 포함되지 않은 평균값틱수를 사용하였습니다.\n현재의 틱수로 백테스팅하려면 백테엔진을 다시 시작하십시오.\n')
@@ -1423,10 +1372,7 @@ def backtest_start(ui):
 
 
 def backfinder_start(ui):
-    """백파인더를 시작합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백파인더를 시작합니다."""
     from multiprocessing import Process
     from PyQt5.QtWidgets import QMessageBox
     from backtest.backfinder import BackFinder
@@ -1439,12 +1385,12 @@ def backfinder_start(ui):
         if not _check_backengine(ui):
             return
 
-        startday = ui.svjb_dateEditt_01.date().toString('yyyyMMdd')
-        endday = ui.svjb_dateEditt_02.date().toString('yyyyMMdd')
+        startday  = ui.svjb_dateEditt_01.date().toString('yyyyMMdd')
+        endday    = ui.svjb_dateEditt_02.date().toString('yyyyMMdd')
         starttime = ui.svjb_lineEditt_02.text()
-        endtime = ui.svjb_lineEditt_03.text()
-        avgtime = ui.svjb_lineEditt_05.text()
-        buystg = ui.svjb_comboBoxx_01.currentText()
+        endtime   = ui.svjb_lineEditt_03.text()
+        avgtime   = ui.svjb_lineEditt_05.text()
+        buystg    = ui.svjb_comboBoxx_01.currentText()
 
         if int(avgtime) not in ui.avg_list:
             QMessageBox.critical(ui, '오류 알림', '백테엔진 시작 시 포함되지 않은 평균값틱수를 사용하였습니다.\n현재의 틱수로 백테스팅하려면 백테엔진을 다시 시작하십시오.\n')
@@ -1478,10 +1424,7 @@ def backfinder_start(ui):
 
 
 def backfinder_sample(ui):
-    """백파인더 샘플을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백파인더 샘플을 로드합니다."""
     from ui.create_widget.set_text import example_backfinder
     if ui.ss_textEditttt_01.isVisible():
         ui.ss_textEditttt_01.clear()
@@ -1490,11 +1433,7 @@ def backfinder_sample(ui):
 
 
 def opti_start(ui, back_name):
-    """최적화를 시작합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        back_name: 백테스트 이름
-    """
+    """최적화를 시작합니다."""
     from PyQt5.QtCore import Qt
     from multiprocessing import Process
     from backtest.optimiz import Optimize
@@ -1509,11 +1448,11 @@ def opti_start(ui, back_name):
         if not _check_backengine(ui):
             return
 
-        randomopti = True if not (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
+        randomopti  = True if not (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
                     QApplication.keyboardModifiers() & Qt.AltModifier) else False
-        onlybuy = True if (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
+        onlybuy     = True if (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
                     QApplication.keyboardModifiers() & Qt.ShiftModifier) else False
-        onlysell = True if (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
+        onlysell    = True if (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
                     QApplication.keyboardModifiers() & Qt.AltModifier) else False
         starttime   = ui.svjb_lineEditt_02.text()
         endtime     = ui.svjb_lineEditt_03.text()
@@ -1649,11 +1588,7 @@ def opti_start(ui, back_name):
 
 
 def opti_rwft_start(ui, back_name):
-    """전진분석 최적화를 시작합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        back_name: 백테스트 이름
-    """
+    """전진분석을 시작합니다."""
     from PyQt5.QtCore import Qt
     from multiprocessing import Process
     from PyQt5.QtWidgets import QMessageBox
@@ -1767,11 +1702,7 @@ def opti_rwft_start(ui, back_name):
 
 
 def opti_ga_start(ui, back_name):
-    """유전알고리즘 최적화를 시작합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        back_name: 백테스트 이름
-    """
+    """유전알고리즘 최적화를 시작합니다."""
     from multiprocessing import Process
     from PyQt5.QtWidgets import QMessageBox
     from ui.etcetera.process_alive import backtest_process_alive
@@ -1849,11 +1780,7 @@ def opti_ga_start(ui, back_name):
 
 
 def opti_cond_start(ui, back_name):
-    """조건 최적화를 시작합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        back_name: 백테스트 이름
-    """
+    """조건 최적화를 시작합니다."""
     from multiprocessing import Process
     from PyQt5.QtWidgets import QMessageBox
     from ui.etcetera.process_alive import backtest_process_alive
@@ -1934,10 +1861,7 @@ def opti_cond_start(ui, back_name):
 
 
 def optivars_to_gavars(ui):
-    """최적화 변수를 GA 변수로 변환합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 변수를 GA 변수로 변환합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from ui.event_click.button_clicked_varstext_change import get_optivars_to_gavars
 
@@ -1951,10 +1875,7 @@ def optivars_to_gavars(ui):
 
 
 def gavars_to_optivars(ui):
-    """GA 변수를 최적화 변수로 변환합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """GA 변수를 최적화 변수로 변환합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from ui.event_click.button_clicked_varstext_change import get_gavars_to_optivars
 
@@ -1968,10 +1889,7 @@ def gavars_to_optivars(ui):
 
 
 def stg_vars_change(ui):
-    """전략 변수를 변경합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """전략 변수를 변경합니다."""
     from ui.event_click.button_clicked_varstext_change import get_stgtxt_to_varstxt
 
     buystg = ui.ss_textEditttt_01.toPlainText()
@@ -1984,10 +1902,7 @@ def stg_vars_change(ui):
 
 
 def stgvars_key_sort(ui):
-    """전략 변수 키를 정렬합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """전략 변수 키를 정렬합니다."""
     from ui.event_click.button_clicked_varstext_change import get_stgtxt_sort2
 
     optivars = ui.ss_textEditttt_05.toPlainText()
@@ -2000,10 +1915,7 @@ def stgvars_key_sort(ui):
 
 
 def optivars_key_sort(ui):
-    """최적화 변수 키를 정렬합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 변수 키를 정렬합니다."""
     from ui.event_click.button_clicked_varstext_change import get_stgtxt_sort
 
     buystg = ui.ss_textEditttt_03.toPlainText()
@@ -2016,10 +1928,7 @@ def optivars_key_sort(ui):
 
 
 def change_svj_button_color(ui):
-    """버튼 색상을 변경합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """버튼 색상을 변경합니다."""
     from ui.create_widget.set_style import style_bc_dk, style_bc_bs
 
     for button in ui.editer_list:
@@ -2027,10 +1936,7 @@ def change_svj_button_color(ui):
 
 
 def change_version_button_color(ui):
-    """버전 버튼 색상을 변경합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """버전 버튼 색상을 변경합니다."""
     from ui.create_widget.set_style import style_bc_dk, style_bc_st
 
     for button in ui.load_list:

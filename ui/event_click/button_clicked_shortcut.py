@@ -3,11 +3,7 @@ from utility.static_method.static_decorator import thread_decorator
 
 
 def mnbutton_c_clicked_01(ui, index):
-    """메인 탭을 변경합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        index: 탭 인덱스
-    """
+    """메인 탭을 변경합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_style import style_bc_bb, style_bc_st
     from PyQt5.QtCore import QTimer, QPropertyAnimation, QSize, QEasingCurve
@@ -45,10 +41,7 @@ def mnbutton_c_clicked_01(ui, index):
 
 
 def mnbutton_c_clicked_02(ui):
-    """테이블 표시를 전환합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """테이블 표시를 전환합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     if ui.main_btn == 1:
@@ -67,11 +60,7 @@ def mnbutton_c_clicked_02(ui):
 
 
 def mnbutton_c_clicked_03(ui, auto=False):
-    """매매 시스템을 시작합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        auto: 자동 시작 여부
-    """
+    """매매 시스템을 시작합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.settings.setting_base import UI_NUM
     from ui.create_widget.set_style import style_bc_st
@@ -109,7 +98,7 @@ def mnbutton_c_clicked_03(ui, auto=False):
                 holiday = True
 
             if holiday:
-                ui.windowQ.put((UI_NUM['기본로그'], f"거래소 {ui.market_info['마켓이름']}, 휴무 종료"))
+                ui.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - 거래소 {ui.market_info['마켓이름']}, 휴무 종료"))
                 return
 
         if receiver_process_alive(ui):
@@ -125,25 +114,19 @@ def mnbutton_c_clicked_03(ui, auto=False):
 
 
 def mnbutton_c_clicked_04(ui):
-    """창 크기를 변경합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
-    from ui.create_widget.set_style import style_bc_bb, style_bc_st
-
+    """창 크기를 변경합니다."""
     if ui.geometry().width() > 1000:
+        if ui.dict_set['관심종목표시']:
+            ui.gj_tableWidgettt.setGeometry(7, 12, 668, 365)
         ui.setFixedSize(726, 384)
-        ui.zo_pushButton.setStyleSheet(style_bc_st)
     else:
+        if ui.dict_set['관심종목표시']:
+            ui.gj_tableWidgettt.setGeometry(680, 12, 668, 365)
         ui.setFixedSize(1403, 763)
-        ui.zo_pushButton.setStyleSheet(style_bc_bb)
 
 
 def mnbutton_c_clicked_05(ui):
-    """백테 그래프 및 기록 DB를 삭제합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테 그래프 및 기록 DB를 삭제합니다."""
     import os
     from PyQt5.QtWidgets import QMessageBox
     from utility.settings.setting_base import GRAPH_PATH
@@ -166,10 +149,7 @@ def mnbutton_c_clicked_05(ui):
 
 
 def mnbutton_c_clicked_06(ui):
-    """계정 설정을 초기화합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """계정 설정을 초기화합니다."""
     import pandas as pd
     from PyQt5.QtWidgets import QMessageBox
 
@@ -206,10 +186,7 @@ def mnbutton_c_clicked_06(ui):
 
 @thread_decorator
 def trade_process_start(ui):
-    """거래 프로세스를 시작합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """거래 프로세스를 시작합니다."""
     from multiprocessing import Process
     from concurrent.futures import ThreadPoolExecutor
 

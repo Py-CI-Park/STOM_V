@@ -15,19 +15,19 @@ V3U lane 진행 중 매 사이클 종료 시점에 **다음 사이클의 옵션�
 
 ---
 
-## 2. 현재 사이클 상태 (사이클 5, 2026-05-20)
+## 2. 현재 사이클 상태 (사이클 15, 2026-06-11)
 
 | 지표 | 값 |
 |---|---|
-| 결함 누적 (LESSONS.md §7) | 10 |
-| 자동 회귀 테스트 | 42 |
-| 신규 자동 도구 | 1 (`scripts/v3u_attr_inventory_diff.py`) |
-| 수정 커밋 누적 | 5 |
-| 재발 방지 액션 | 5/5 적용 완료 |
-| CRITICAL drift baseline | 68 (max 100) |
-| 사용자 시각 검증 사이클 | 5회 |
-| Remote sync | 14 commits push 완료 (`Py-CI-Park/STOM_V`) |
-| stom.py 활성 상태 | 백그라운드 (사용자 시각 검증 대기) |
+| 결함 누적 (LESSONS.md §7) | 20 + #12 잔여 완결(A5) + 게이트 사전 차단 1건(homepg) |
+| 자동 회귀 테스트 (pytest tests/v3u) | 49 |
+| 신규 자동 도구 | 1 (`scripts/v3u_attr_inventory_diff.py`) + A3 verifier 8 stage UX |
+| 수정 커밋 누적 | 17 (V3.30~32 흡수 3 + 기록 포함) |
+| 재발 방지 액션 | 5/5 적용 + §5-2 read-before-write 한계 기록 (보강 옵션 A7) |
+| CRITICAL drift baseline | 0 (strict 모드) — V3.32 흡수에서 첫 실전 차단 입증 |
+| 사용자 시각 검증 사이클 | 7회 (사이클 15 B1: V3.32 + #16 + A5 + TTS 동시 검증, 결함 0건) |
+| V3 lane 버전 | V3.32 (`3dea3b94`, tail `fcc626a5` 1건 차기 흡수 예정) |
+| stom.py 활성 상태 | 사이클 15 B1 정상 종료 (2026-06-11, traceback 0건·exit 0) |
 
 ### 미해결 사용자 잔여 작업 (선행 핸드오프 §3 기준)
 
@@ -73,6 +73,27 @@ LESSONS.md §4 예측 결함 후보를 사용자가 클릭하기 전 사전 점�
 `process_kill`이 현재 timer + webc만 정리. proc_chqs/proc_tele 추가 시 동일 cleanup 추가 필요.
 
 **ROI**: A1 진행 시 자연스럽게 함께 처리됨.
+
+#### A5: proc_chqs(ChartHogaQuery) 실 spawn ✅ **완료 (사이클 14, 2026-06-11)**
+2U 선례(`wt-2u/ui/ui_mainwindow.py:344`)는 부팅 시 `Process(target=..., args=(qlist, dict_set), daemon=True)` 직접 spawn. V3에 동일 계약 `ChartHogaQuery(qlist, dict_set)` 존재(`utility/sub_process_and_thread/chart_hoga_query.py:25`), pyd import 목록(`import_hook.py:25`)에도 등재. 현재 `_NullProcess` 영구 placeholder → queryQ 소비자 부재 → **DB관리 탭 버튼 10개 전면 무반응 + 차트/호가 조회 + 설정 저장 반영 + 전략에디터/GA/옵튜나 등 가드 47곳 비활성**.
+
+**ROI**: pyd 기능 최대 미달점 해소. 결함 #12 잔여 의무 완결.
+**적용 결과 (사이클 14)**: `_init_workers` spawn + `process_kill` terminate cleanup(proc_chqs 분 A6 선반영) + conftest `STOM_V3U_DISABLE_CHQS=1` + spawn 계약 회귀 테스트. 실 child 동작은 B1 시각 검증 필요.
+
+#### A6: process_kill 종료 범위 보강 (2U 선례)
+2U `ui/ui_process_kill.py` 선례: 다이얼로그 23종 close + 백테 프로세스 26종 terminate/join + 트레이드 프로세스 정리. V3 공식 소스의 트레이드 프로세스는 non-daemon(`button_clicked_shortcut.py:203-214`) → 거래/백테 중 종료 시 zombie/hang 위험.
+
+**ROI**: 종료 안정성. A5 진행 시 proc_chqs cleanup도 함께 (A4 통합).
+
+#### A7: attr inventory read-before-write 감지 보강
+결함 #16의 자동망 회피 경로 차단. `ui.X =` 외부 할당을 '커버됨'으로 분류하는 현 로직에, 같은 파일에서 할당보다 앞서 읽는 site 또는 runtime 디렉토리 전용 할당을 분리 분류하는 휴리스틱 추가. WARN 신설 시 strict 게이트 영향 검토 필요.
+
+**ROI**: 카테고리 A 회귀의 V3.X 흡수 시 자동 차단.
+
+#### A8: allowlist 정합성 (거버넌스)
+직접 tree diff에서 allowlist 외 경로 2건(`ui/create_widget/set_style.py` +1줄 color_hv_bt, `utility/db_control/database_check.py` 상수 노출)이 금지 경로에 존재하나 update_log 사유만 있고 ① CARRY_FORWARD_REGISTRY allowlist 미등재 ② PLAN §5.2 조건부 허용 양식 미작성 ③ 통합 게이트가 allowlist diff를 실제 검사하지 않음(위반 상태 8/8 PASS).
+
+**ROI**: CLAUDE.md "위반 시 게이트 자동 fail" 문구와 실제 게이트 동작 일치화.
 
 ### 그룹 B — 사용자 시각 검증 reactive (Claude 4단계 워크플로우 자동 적용)
 
@@ -136,14 +157,15 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 
 | 우선순위 | 옵션 | 사유 |
 |---|---|---|
-| 🟢 1 | A1 (사전 정찰) | 사용자 추가 시각 사이클 사전 차단, ROI 가장 높음 |
-| 🟡 2 | A2 (CRITICAL 정리) | A1 진행 중 자연스럽게 일부 처리됨 + 안전망 강화 |
-| 🟠 3 | B1 (시각 결과 reactive) | stom.py 떠있는 동안 병렬 가능 |
-| 🔵 4 | C1 (DB 검증) | production 사용 전 |
-| 🔵 5 | C2 (실거래) | release 전 |
+| 🟢 1 | B1 (사용자 직접 테스트) | V3.29 흡수 + #16 fix + A5 proc_chqs spawn 이후 시각 검증 0회 — DB관리 탭·차트/호가·MEM/NET 게이지 활성 확인 |
+| 🟡 2 | A6 (process_kill 잔여 보강) | 트레이드/백테 프로세스 종료 (proc_chqs 분은 A5에서 선반영) |
+| 🟡 3 | A7 (도구 read-before-write) | 결함 #16 패턴 자동 차단 |
+| ⚪ 4 | A8 (allowlist 정합성) | 기능 영향 없음, 거버넌스 일치화 |
+| 🔵 5 | C1 (DB 검증) → C2 (실거래) | release 전 사용자 |
 | ⚪ 6 | D1·D2·D3 (정책 결정) | 정량 측정 불가, 사용자 판단 |
 
-**Default 권장 흐름**: A1 → A2 → (B1 reactive) → C1 → C2 → D1
+**Default 권장 흐름**: B1 → A6 → A7 → A8 → C1 → C2 → D1
+(완료 이력: A1·A2 사이클 5·6, A3·A4 사이클 7, A5 사이클 14)
 
 ---
 
@@ -196,6 +218,154 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - LESSONS.md 갱신: §6 결함 #14 통합 항목 + §7 통계 (45/19/8/baseline **0**, 결함 18건)
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
+
+### 사이클 15 (2026-06-11): 업스트림 신선도 점검 + V3.30~V3.32 흡수 + 2U_C 백포트 검토
+
+- 사용자 선택: "공식 업데이트 업스트림 확인 + version별 업데이트 + 3U 추가 흡수 분석 + 2U_C 반영 상세 검토 커밋 (검토 문서 stom_v/wt-3u 동시 커밋)"
+- 실행 결과:
+  - V2 lane: upstream tag V2.0 == 로컬 V2.79 → 반영 없음
+  - V3 freshness 권원 정정: `refs/tags/V3.0` stale → `refs/heads/V3.00` (tip fcc626a5, V3.32)
+  - wt-3 formal: `a488af5d`(V3.30) `b9cdcd99`(V3.31) `3dea3b94`(V3.32), parity 검증 통과
+  - V3U 흡수: `9459a422`/`83be2de0`/`1da630da`, 버전별 게이트 8/8 PASS
+  - **게이트 첫 실전 차단**: V3.32 신규 계약 `ui.homepg` CRITICAL drift 자동 검출 → 보정
+  - TTS 실 worker 전환 (supertonic 삭제로 placeholder 사유 소멸) + 회귀 테스트 → pytest 49
+  - 2U_C 백포트 검토: 후보 10항목 판정 (1순위: 업비트 첫틱 당일매수/매도금액 수정),
+    공용 검토 문서 STOM_V/wt-3u 동시 커밋
+- 발견 신규 결함: 0건 (게이트 사전 차단 1건은 커밋 전 해소)
+- LESSONS.md 갱신: 사이클 15 절 + §7 통계 (23/49/17)
+- **B1 시각 검증 종결 (2026-06-11)**: 사용자 "모두 정상 확인" — 부팅/종료 로그 클린
+  + MEM/NET 게이지·DB관리 탭·홈탭 마우스오버·읽기속도 음성 전 항목 정상, 결함 0건.
+  UPSTREAM_SYNC_STRATEGY.md V3 권원도 refs/heads/V3.00으로 갱신 (후속 권고 §4-4 이행)
+- 다음 사이클 후보: V3.33 발표 시 tail `fcc626a5` 포함 흡수 (E1 ingest CLI 첫 실 사용 후보),
+  2U_C 백포트 사이클 (기능 브랜치 정리 후, 1순위 업비트 첫틱), A6/A7/A8 자율 작업
+
+### 사이클 14 (2026-06-11): A5 proc_chqs ChartHogaQuery 실 spawn — 결함 #12 잔여 완결
+
+- 사용자 선택: "push 하고 A5 진행"
+- 실행 결과:
+  - 사이클 13 commit `828f8a02` origin push 완료
+  - `_init_workers`에 `Process(target=ChartHogaQuery, args=(qlist, dict_set), daemon=True)`
+    spawn (2U 선례 `wt-2u/ui/ui_mainwindow.py:344` 동일 패턴)
+  - `process_kill`에 proc_chqs terminate/join cleanup (A6의 proc_chqs 분 선반영)
+  - conftest `STOM_V3U_DISABLE_CHQS=1` (pytest 실 child spawn 방지)
+  - 회귀 테스트 +1: `test_chart_hoga_query_spawn_contract` → pytest 48 케이스
+- 발견 신규 결함: 0건 (기존 공백 해소 작업)
+- LESSONS.md 갱신: §6 "A5 적용" 절 + §7 통계 (회귀 22 / pytest 48 / 커밋 13)
+- 다음 사이클 후보: **B1 사용자 직접 테스트 최우선** (V3.29 + #16 + A5 효과 통합 확인:
+  DB관리 탭 버튼 반응, 차트/호가 조회, MEM/NET 게이지, 종료 로그 proc_chqs 종료 OK)
+
+### 사이클 13 (2026-06-11): pyd→py 추론 전면 재검증 + 결함 #16 4단계 수정
+
+- 사용자 선택: "pyd→py 추론 반영 재검증 검토" → "결함 #16 4단계 워크플로우로 수정 진행"
+- 실행 결과:
+  - 재검증: 통합 게이트 8/8 PASS 재확인 + 병렬 심층 감사 3종
+    (이벤트 핸들러 278개 배선 PASS / upstream V3.19~V3.29 계약 커버리지 PASS /
+    main_window.py stub·lifecycle 감사에서 신규 결함 1건 + 기능 공백 2건 확인)
+  - 결함 #16 fix: `_init_runtime_state`에 last_recv/memory_per/net_recv 초기화 추가
+  - 회귀 테스트 +1: `test_cpuper_network_stat_attrs_initialized` → pytest 47 케이스
+- 발견 신규 결함: #16 (A 카테고리 3번째 반복, V3.24 흡수 회귀) — 통합 게이트 PASS
+  상태에서 자동망 회피 (attr inventory read-before-write 맹점 + `__getattr__` 가림)
+- 미해결 공백 옵션화: A5 (proc_chqs 미spawn — 가드 47곳 비활성), A6 (process_kill
+  축소), A7 (도구 맹점 보강), A8 (allowlist 외 2파일 거버넌스 정합성)
+- LESSONS.md 갱신: §6 결함 #16 + §5-2 한계 + §7 통계 (결함 20 / 회귀 21 / pytest 47 / 커밋 12)
+- 다음 사이클 후보: A5(+A6) 최우선, 사용자 stom.py 직접 테스트 (V3.29 + #16 fix 효과 확인)
+
+### 사이클 12 (2026-05-30): 3U_C lane E2 V3U/3U_C 통합 CLI 도입 + 백테 PK 분석
+
+- 사용자 선택: "c 진행 ultracode" (E2/E3/E4 중 자율 선택 → E2 최우선 매트릭스 🟡2 선정)
+- 실행 흐름 (Claude 자율):
+  - 사전 분석: `back_static.py:108` `SELECT * FROM moneytop` 등 backtest는 순수 SELECT → moneytop·기타 DB PK 누락은 백테 차단 안 함 (`INSERT OR REPLACE`/`PRIMARY KEY` 0건 확인)
+  - `scripts/v3uc_cli.py` 7 subcommand 작성 (status/verify/db scan|migrate/test/ingest/gui)
+  - `tests/v3uc/test_cli.py` 16 케이스 작성 → 32 회귀 PASS
+  - `docs/V3U_C_CLI_GUIDE.md` 운영 매뉴얼
+  - V3U_C LESSONS 사이클 4 + 결함 #1·#2(3U_C-specific 도구 자체 결함) 기록
+- 발견 신규 결함: 2건 (3U_C lane 자체 도구 — V3 official source 영향 없음)
+  - #1 argparse `parents=` gotcha — subparser default가 부모 namespace를 None으로 덮어쓰는 known issue (해결: `default=argparse.SUPPRESS` + main()에서 getattr 정규화)
+  - #2 Windows cp949 콘솔 utf-8 미설정 — em-dash(U+2014) 출력 시 UnicodeEncodeError (해결: 스크립트 헤드에서 `sys.stdout.reconfigure(encoding="utf-8")`)
+- 백테 PK 분석 결과 (옵션 카탈로그 갱신 반영):
+  - 기타 DB(backtest/code_info/setting/strategy/tradelist) PK 추가 작업은 **백테 사용 시점에는 불필요** — 실시간 수집(라이브 거래) 사용 시에만 의미
+  - 우선순위 매트릭스에서 "기타 DB PK 도구" 우선순위 하향 (선제 작업 아님)
+- LESSONS.md 갱신: 본 V3U LESSONS는 사이클 12 절만 추가, V3U_C LESSONS에 결함 상세
+- NEXT_STEPS.md 갱신: 본 항목
+- 다음 사이클 후보:
+  - **사용자 stom.py 백테 시각 확인** (사이클 10·11 Step 6 누적, PK 차단 가능성 사전 검증으로 신뢰도 ↑)
+  - E3 web_dashboard 활성화 또는 E4 백테 결과 자동 분석
+  - V3.30+ 발표 시 `cli ingest --version V3.30 --dry-run`로 E1 첫 실 사용
+
+### 사이클 11 (2026-05-23): 3U_C lane E7 strategy.db 조건식 V2→V3 마이그레이션
+
+- 사용자 통찰: "조건식이 저장안되있어서 아직 못하지 않나요? 조건식을 v2 공식에서 복사해서 적절하게 v3 v3U에 맞게 들고와야 진행가능 하지 않나요?"
+- 발견: V3U strategy.db에 V2 시절 stockbuy/stocksell 데이터 보존(51/35 rows)되어 있으나 V3 컨벤션(stock_buy 밑줄)으로 안 옮겨짐 → 백테 못 함
+- 실행 흐름 (Claude 자율 도구 + 실 변환):
+  - 3U_C E7 도구 작성 (87b6645b origin/STOM_Version_3U_C push)
+  - V3U 실 strategy.db scan: 95 rows 마이그레이션 후보 발견
+  - dry-run + 실 migrate: 95 rows 복사, 에러 0
+  - post-verification: V2 == V3 == 95 ✅
+- 발견 신규 결함: 0건 (사용자 통찰로 발견됐지만 도구 자체 결함은 아님 — 사용자 환경 마이그레이션 누락)
+- LESSONS.md 갱신: 사이클 11 + V3 거래소별 prefix 패턴 정본화
+- NEXT_STEPS.md 갱신: 본 항목
+- 다음 사이클 후보:
+  - **사용자 stom.py 백테 시각 확인** (사이클 10 Step 6과 통합)
+  - 사용자가 V2에서 다른 거래소(coin/future/stock_etf) 조건식 만들었다면 --target 별도 호출
+  - 기타 DB(backtest/code_info/setting) 마이그레이션 (E5 v2 또는 E8)
+
+### 사이클 10 (2026-05-22~23): 3U_C lane E5 + A++ DB 마이그레이션 끝까지 자동 실행
+
+- 사용자 선택: "위의 업무 내용 지금까지 조사 내용 먼저 문서로 아주 자세하게 남기고 한글로 아주 자세하개 commit 하고 A++ 진행"
+- 실행 흐름 (Claude 자율 Step 1~5 + 사용자 Step 6 시각 1분):
+  - Step 1: 3U_C에 진단 도구 + 종합 조사 문서 + 7 회귀 (c0c43958 push)
+  - Step 2: 백업 1175 파일
+  - Step 3: V2→V3 컬럼 변환 (1166 stock DB)
+  - Step 4: PK 진단 (89,699 stock 테이블 미호환 발견)
+  - Step 5: 88,534 PK 추가 (에러 0)
+- 발견 신규 결함: 0건 (백업 안전망 + 단위 테스트 + dry-run 검증)
+- LESSONS.md 갱신: 본 V3U LESSONS 사이클 10 + V3U_C LESSONS 사이클 2
+- NEXT_STEPS.md 갱신: 본 항목
+- 잔여:
+  - **Step 6 사용자 시각 확인 1분** (python stom.py → 백테 라이브 → 시작 → 결과 화면)
+  - 기타 DB(backtest/code_info/setting) PK 별도 사이클
+- 다음 사이클 후보:
+  - Step 6 결과 reactive (정상 PASS면 사이클 10 종료, 결함 발견 시 4단계 워크플로우)
+  - 기타 DB PK 자동 추가 도구 확장 (E5 v2)
+  - V3.19 발표 시 E1 실 dry-run
+
+### 사이클 9 (2026-05-22): 3U_C lane E1 V3.X 흡수 자동화 파이프라인 도입
+
+- 사용자 선택: "E1 진행" (V3U_C custom 작업 첫 사이클, 3U_C lane)
+- 실행 위치: wt-3uc (STOM_Version_3U_C)
+- 실행 결과:
+  - origin/STOM_Version_3U_C에 2 commit 추가 (ebd9a8f3·9f565c3d)
+  - scripts/v3uc_ingest_pipeline.py (5 T-step 흡수 자동화)
+  - tests/v3uc/test_ingest_pipeline.py (4 unit 케이스 PASS)
+  - docs/V3U_C_INGEST_PIPELINE.md (운영 매뉴얼)
+  - docs/V3U_C_INFERENCE_LESSONS.md (3U_C 결함 진실 원천 신규)
+  - docs/V3U_C_NEXT_STEPS.md (3U_C decision tree 신규)
+  - CARRY_FORWARD_REGISTRY 사이클 1 항목 등록
+- 발견 신규 결함 (V3U lane): 0건 (3U_C 신규 산출만)
+- LESSONS.md 갱신: 본 V3U LESSONS에 사이클 9 절 + §7 통계 (3U_C lane 통계 분리 표기)
+- NEXT_STEPS.md 갱신: 본 항목
+- 본 commit은 V3U lane에 머무름 (3U_C 사이클 진행 기록만, 3U_C 산출은 origin/STOM_Version_3U_C에 별도)
+- 다음 사이클 후보:
+  - V3.19 발표 시 E1 실 dry-run + live 검증
+  - 3U_C 그룹 E의 E2/E3/E4 중 선택
+  - V3U lane 사용자 2순위 시각 검증 (백테 1회·차트·변손익분석)
+  - C1 DB 마이그레이션 (사용자 백업 DB)
+
+### 사이클 8 (2026-05-22): 3U_C 생성 Phase A·B 완료
+
+- 사용자 선택: "A 진행" (V3U_TRANSITION_AUDIT §7 우선순위 4번, 3U_C 생성)
+- 실행 결과:
+  - 23번째 커밋(`2ba974f8`) Phase A 거버넌스 사전 작업 (docs 3개 갱신)
+  - Phase B: STOM_Version_3U_C branch 생성 + wt-3uc 워크트리 + origin push
+  - 24번째 커밋(본 사이클) LESSONS/NEXT_STEPS 사이클 8 기록
+- 발견 신규 결함: 0건 (거버넌스 작업)
+- 3U_C lane 사전 검증:
+  - 3U vs 3U_C diff 비어있음 (invariant 유지)
+  - 3U_C 워크트리 pytest collect 46 케이스 정상 (V3U 안전망 자동 상속)
+  - origin/STOM_Version_3U_C remote push 완료
+- LESSONS.md 갱신: §6 사이클 8 거버넌스 작업 절 + §7 통계 (46/20/11/baseline 0, 활성 워크트리 6)
+- NEXT_STEPS.md 갱신: 본 항목
+- 다음 사이클 후보: 그룹 E (V3U_C custom 작업 X1~X4 중 선택) — 사용자 결정 필요
 
 ### 사이클 7 (2026-05-22): A3 verifier UX 분리 + A4 web_dashboard placeholder
 

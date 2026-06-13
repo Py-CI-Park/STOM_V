@@ -1,11 +1,6 @@
 
-# noinspection PyUnusedLocal
-def opbutton_clicked_01(ui):
-    """Optuna 서버를 시작합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
-
+def opbutton_clicked_01():
+    """Optuna 서버를 시작합니다."""
     import webbrowser
     from backtest.back_static import RunOptunaServer
     from utility.static_method.static_etcetera import qtest_qwait
@@ -16,30 +11,22 @@ def opbutton_clicked_01(ui):
 
 
 def cpbutton_clicked_01(ui):
-    """백테스트 상세기록을 그래프로 비교합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
-    from PyQt5.QtWidgets import QMessageBox
+    """백테스트 상세기록을 그래프로 비교합니다."""
+    if ui.backcheckbox_list:
+        from PyQt5.QtWidgets import QMessageBox
+        backdetail_list = []
+        for i, checkbox in enumerate(ui.backcheckbox_list):
+            if checkbox.isChecked():
+                backdetail_list.append(ui.backdetail_list[i])
 
-    backdetail_list = []
-    for i, checkbox in enumerate(ui.backcheckbox_list):
-        if checkbox.isChecked():
-            backdetail_list.append(ui.backdetail_list[i])
-
-    if len(backdetail_list) >= 2:
-        ui.chartQ.put(('그래프비교', backdetail_list))
-    else:
-        QMessageBox.critical(ui.dialog_comp, '오류 알림', '두개 이상의 상세기록을 선택하십시오.\n')
+        if len(backdetail_list) >= 2:
+            ui.chartQ.put(('그래프비교', backdetail_list))
+        else:
+            QMessageBox.critical(ui.dialog_comp, '오류 알림', '두개 이상의 상세기록을 선택하십시오.\n')
 
 
 def ttbutton_clicked_01(ui, cmd):
-    """집계 버튼 클릭 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        cmd: 명령어
-    """
-
+    """집계 버튼 클릭 이벤트를 처리합니다."""
     import pandas as pd
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static_datetime import strf_time
@@ -105,10 +92,7 @@ def ttbutton_clicked_01(ui, cmd):
 
 
 def change_back_sdate(ui):
-    """백테스트 스케줄러 시작일자를 변경합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 스케줄러 시작일자를 변경합니다."""
     from PyQt5.QtCore import QDate
 
     if ui.sd_scheckBoxxxx_01.isChecked():
@@ -120,10 +104,7 @@ def change_back_sdate(ui):
 
 
 def change_back_edate(ui):
-    """백테스트 스케줄러 종료일자를 변경합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 스케줄러 종료일자를 변경합니다."""
     from PyQt5.QtCore import QDate
 
     if ui.sd_scheckBoxxxx_01.isChecked():
@@ -135,12 +116,10 @@ def change_back_edate(ui):
 
 
 def stbutton_clicked_01(ui):
-    """최적화 기준값 제한을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """최적화 기준값 제한을 로드합니다."""
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM back').set_index('index')
-    std_text = df['최적화기준값제한'][0].split(';')
+    no = int(ui.dict_set['거래소'][-2:])
+    std_text = df['최적화기준값제한'][no].split(';')
     ui.st_lineEditttt_01.setText(std_text[0])
     ui.st_lineEditttt_02.setText(std_text[1])
     ui.st_lineEditttt_03.setText(std_text[2])
@@ -158,11 +137,7 @@ def stbutton_clicked_01(ui):
 
 
 def stbutton_clicked_02(ui):
-    """최적화 기준값 제한을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
-
+    """최적화 기준값 제한을 저장합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
@@ -197,18 +172,18 @@ def stbutton_clicked_02(ui):
 
 
 def lvbutton_clicked_01(ui):
-    """레버리지 다이얼로그를 토글합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
-    ui.dialog_leverage.show() if not ui.dialog_leverage.isVisible() else ui.dialog_leverage.close()
+    """레버리지 다이얼로그를 토글합니다."""
+    from ui.create_widget.dialog_animation import DialogAnimator
+
+    if not ui.dialog_leverage.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_leverage, duration=300)
+        ui.dialog_leverage.show()
+    else:
+        ui.dialog_leverage.close()
 
 
 def lvbutton_clicked_02(ui):
-    """레버리지 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """레버리지 설정을 로드합니다."""
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM main').set_index('index')
     ui.lv_checkBoxxxx_01.setChecked(True if df['바이낸스선물고정레버리지'][0] else False)
     ui.lv_checkBoxxxx_02.setChecked(True if not df['바이낸스선물고정레버리지'][0] else False)
@@ -237,10 +212,7 @@ def lvbutton_clicked_02(ui):
 
 
 def lvbutton_clicked_03(ui):
-    """레버리지 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """레버리지 설정을 저장합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     lv0 = 1 if ui.lv_checkBoxxxx_01.isChecked() else 0
@@ -283,18 +255,14 @@ def lvbutton_clicked_03(ui):
 
                 lvrg_text = \
                     f'{lv2};{lv3};{lv4}^{lv5};{lv6};{lv7}^{lv8};{lv9};{lv10}^{lv11};{lv12};{lv13}^{lv14};{lv15};{lv16}'
-                query  = 'UPDATE main SET 바이낸스선물고정레버리지 = ?, 바이낸스선물고정레버리지값 = ?, 바이낸스선물고정레버리지값 = ?'
+                query  = 'UPDATE main SET 바이낸스선물고정레버리지 = ?, 바이낸스선물고정레버리지값 = ?, 바이낸스선물변동레버리지값 = ?'
                 values = (lv0, lv1, lvrg_text)
                 ui.queryQ.put(('설정디비', query, values))
                 settings_save_completed(ui)
 
 
 def lvcheck_changed_01(ui, state):
-    """레버리지 체크박스 상태 변경을 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        state: 체크 상태
-    """
+    """레버리지 체크박스 상태 변경을 처리합니다."""
     from PyQt5.QtCore import Qt
 
     if ui.dialog_leverage.focusWidget() in ui.lv_checkbox_listt and state == Qt.Checked:
@@ -304,11 +272,7 @@ def lvcheck_changed_01(ui, state):
 
 
 def hg_button_clicked_01(ui, gubun):
-    """호가 이전/다음 버튼 클릭 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        gubun: 구분 (이전/다음)
-    """
+    """호가 이전/다음 버튼 클릭 이벤트를 처리합니다."""
     if not ui.dialog_hoga.isVisible():
         return
 
@@ -323,11 +287,7 @@ def hg_button_clicked_01(ui, gubun):
 
 
 def hg_button_clicked_02(ui, gubun):
-    """호가 매수/매도 버튼 클릭 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        gubun: 구분 (매수/매도)
-    """
+    """호가 매수/매도 버튼 클릭 이벤트를 처리합니다."""
     if not ui.dialog_hoga.isVisible():
         return
 

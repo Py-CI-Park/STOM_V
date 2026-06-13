@@ -8,16 +8,13 @@ import pandas as pd
 from traceback import format_exc
 from backtest.back_static_numba import get_result, bootstrap_test
 from utility.static_method.static_datetime import now, str_ymdhms
-from utility.static_method.static_decorator import error_decorator
-from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, UI_NUM, COLUMNS_BBS
 from backtest.back_static import plot_show, get_moneytop_query, get_result_dataframe, add_mdd
+from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, UI_NUM, COLUMNS_BBS, DB_SETTING
 
 
 class BackTest:
     """백테스트를 실행하는 클래스입니다.
-    전략을 컴파일하고 데이터를 로드하여 백테스트를 실행합니다.
-    """
-
+    전략을 컴파일하고 데이터를 로드하여 백테스트를 실행합니다."""
     def __init__(self, sc, wq, sq, tq, lq, teleQ, beq_list, bstq_list, backname, dict_set, market_infos, betting,
                  avgtime, startday, endday, starttime, endtime, buystg_name, sellstg_name, back_count, blacklist,
                  schedul, back_club):
@@ -67,15 +64,11 @@ class BackTest:
             self.wq.put((UI_NUM['시스템로그'], format_exc()))
             self._sys_exit(True)
 
-    # noinspection PyUnresolvedReferences
-    @error_decorator
     def _start(self):
-        """백테스트를 시작합니다.
-        데이터를 로드하고 전략을 컴파일한 후 백테스트를 실행합니다.
-        """
+        """백테스트를 시작합니다."""
         con   = sqlite3.connect(self.market_info['백테디비'][self.is_tick])
         query = get_moneytop_query(self.is_tick, self.startday, self.endday, self.starttime, self.endtime)
-        df_mt = pd.read_sql(query, con)
+        df_mt: pd.DataFrame = pd.read_sql(query, con)
         con.close()
 
         if len(df_mt) == 0 or self.back_count == 0:
@@ -148,11 +141,7 @@ class BackTest:
         self._sys_exit(False)
 
     def _report(self, list_tsg, arry_bct):
-        """백테스트 결과를 보고합니다.
-        Args:
-            list_tsg: 거래 결과 리스트
-            arry_bct: 보유 결과 배열
-        """
+        """백테스트 결과를 보고합니다."""
         if not list_tsg:
             self.wq.put((UI_NUM['백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
             self._sys_exit(True)
@@ -280,24 +269,22 @@ class BackTest:
                 insert_blacklist.append(name)
 
         if insert_blacklist:
-            con = sqlite3.connect(DB_STRATEGY)
+            con = sqlite3.connect(DB_SETTING)
             cur = con.cursor()
             df = pd.read_sql('SELECT * FROM strategy', con).set_index('index')
-            if df['블랙리스트'][0] != '':
-                blacklist = str(df['블랙리스트'][0]).split(';')
+            no = int(self.dict_set['거래소'][-2:])
+            if df['블랙리스트'][no] != '':
+                blacklist = str(df['블랙리스트'][no]).split(';')
                 blacklist += insert_blacklist
                 blacklist = ';'.join(blacklist)
             else:
                 blacklist = ';'.join(insert_blacklist)
-            cur.execute(f"UPDATE strategy SET 블랙리스트 = '{blacklist}'")
+            cur.execute(f"UPDATE strategy SET 블랙리스트 = '{blacklist}' WHERE `index` = {no}")
             con.commit()
             con.close()
 
     def _sys_exit(self, cancel):
-        """시스템을 종료합니다.
-        Args:
-            cancel: 취소 여부
-        """
+        """시스템을 종료합니다."""
         if cancel:
             self.wq.put((UI_NUM['백테스트'], f'{self.backname} STOP'))
         else:

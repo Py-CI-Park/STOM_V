@@ -56,10 +56,7 @@ class StockReceiver(BaseReceiver):
 
     @error_decorator
     def _convert_real_data(self, data):
-        """실시간 데이터를 변환합니다.
-        Args:
-            data: 데이터
-        """
+        """실시간 데이터를 변환합니다."""
         if self.dict_bool['프로세스종료']:
             return
 
@@ -68,11 +65,11 @@ class StockReceiver(BaseReceiver):
         body  = data['body']
 
         if tr_cd == self.tr_cd_hoga:
-            hotime = body['hotime']
-            if int(hotime) < self.market_open:
+            strhms = body['hotime']
+            if int(strhms) < self.market_open:
                 return
 
-            dt   = int(f"{self.str_today}{hotime}")
+            dt   = int(f"{self.str_today}{strhms}")
             code = body['shcode']
             hoga_seprice = [
                 int(body['offerho1']), int(body['offerho2']), int(body['offerho3']), int(body['offerho4']),
@@ -105,11 +102,11 @@ class StockReceiver(BaseReceiver):
             market = body['exchname']
             if market != 'KRX':
                 return
-            chetime = body['chetime']
-            if int(chetime) < self.market_open:
+            strhms = body['chetime']
+            if int(strhms) < self.market_open:
                 return
 
-            dt    = int(f"{self.str_today}{chetime}")
+            dt    = int(f"{self.str_today}{strhms}")
             code  = body['shcode']
             c     = int(body['price'])
             o     = int(body['open'])

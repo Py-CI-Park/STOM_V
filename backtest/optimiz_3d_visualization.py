@@ -5,19 +5,13 @@ from utility.settings.setting_base import GRAPH_PATH
 
 
 class Visualization3D:
-    """3D 최적화 시각화 클래스입니다.
-    최적화 진화 과정을 3D로 시각화합니다.
-    """
+    """3D 최적화 시각화 클래스입니다. 최적화 진화 과정을 3D로 시각화합니다."""
     def __init__(self):
         self.top_3_params = None
         self.optimization_3d_history = []
 
     def update_3d_visualization(self, k, dict_turn_hvar_hstd):
-        """3D 최적화 진화 시각화를 업데이트합니다.
-        Args:
-            k: 현재 최적화 단계
-            dict_turn_hvar_hstd: 파라미터 인덱스별 최적값과 최고기준값 딕셔너리
-        """
+        """3D 최적화 진화 시각화를 업데이트합니다."""
         current_data = {
             'step': k,
             'params': dict_turn_hvar_hstd
@@ -25,11 +19,7 @@ class Visualization3D:
         self.optimization_3d_history.append(current_data)
 
     def plot_3d_visualization(self, schedul, save_file_name):
-        """3D 시각화를 생성합니다.
-        Args:
-            schedul: 스케줄 여부
-            save_file_name: 저장 파일 이름
-        """
+        """3D 시각화를 생성합니다."""
         if len(self.optimization_3d_history) < 3:
             return
 
@@ -71,11 +61,7 @@ class Visualization3D:
             plt.show()
 
     def _plot_param_evolution_3d(self, ax):
-        """파라미터 진화 3D 라인 플롯을 그립니다.
-        Args:
-            ax: matplotlib 축
-        """
-
+        """파라미터 진화 3D 라인 플롯을 그립니다."""
         # 파라미터별 진화 궤적 추출
         param_evolution = {}
 
@@ -127,11 +113,7 @@ class Visualization3D:
         ax.grid(True, alpha=0.3)
 
     def _plot_optimal_value_surface(self, ax):
-        """최적값 변화 3D 서피스를 그립니다.
-        Args:
-            ax: matplotlib 축
-        """
-
+        """최적값 변화 3D 서피스를 그립니다."""
         # 스코어 변화량이 가장 큰 파라미터 3개 구하기
         self.top_3_params = self._get_top_score_variance_params(3)
         param1_idx, param2_idx = self.top_3_params[0], self.top_3_params[1]
@@ -177,14 +159,7 @@ class Visualization3D:
         plt.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
 
     def _get_top_score_variance_params(self, n):
-        """
-        스코어 변화량이 가장 큰 파라미터 인덱스들을 반환
-        Args:
-            n: 반환할 파라미터 개수
-        Returns:
-            list: 스코어 변화량이 큰 파라미터 인덱스 리스트 (내림차순)
-        """
-
+        """스코어 변화량이 가장 큰 파라미터 인덱스들을 반환"""
         # 파라미터별 스코어 변화량 계산
         param_variances = {}
 
@@ -207,11 +182,7 @@ class Visualization3D:
         return [param_idx for param_idx, _ in sorted_params[:n]]
 
     def _plot_param_correlation_3d(self, ax):
-        """파라미터 상관관계 3D 산점도를 그립니다.
-        Args:
-            ax: matplotlib 축
-        """
-
+        """파라미터 상관관계 3D 산점도를 그립니다."""
         # 선택된 파라미터들로 데이터 수집
         all_params = []
         all_scores = []
@@ -252,11 +223,7 @@ class Visualization3D:
         plt.colorbar(scatter, ax=ax, shrink=0.5, aspect=5)
 
     def _plot_convergence_heatmap(self, ax):
-        """수렴 패턴 2D 히트맵을 그립니다.
-        Args:
-            ax: matplotlib 축
-        """
-
+        """수렴 패턴 2D 히트맵을 그립니다."""
         # 파라미터 변화율 계산
         n_steps = len(self.optimization_3d_history)
         n_params = len(self.optimization_3d_history[0]['params'])
@@ -284,11 +251,7 @@ class Visualization3D:
         plt.colorbar(im, ax=ax)
 
     def _plot_sensitivity_evolution(self, ax):
-        """파라미터 민감도 진화를 그립니다.
-        Args:
-            ax: matplotlib 축
-        """
-
+        """파라미터 민감도 진화를 그립니다."""
         steps = []
         sensitivity_scores = []
 
@@ -324,11 +287,7 @@ class Visualization3D:
         ax.grid(True, alpha=0.3)
 
     def _plot_optimization_efficiency(self, ax):
-        """최적화 효율성 분석을 그립니다.
-        Args:
-            ax: matplotlib 축
-        """
-
+        """최적화 효율성 분석을 그립니다."""
         steps = []
         scores = []
         improvements = []

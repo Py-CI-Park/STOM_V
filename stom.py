@@ -30,7 +30,7 @@ if __name__ == '__main__':
     import_hook.install()
 
     from ui.main_window import MainWindow
-    from ui.create_widget.set_style import color_bg_bc, color_fg_bc, color_bg_dk, color_fg_bk, color_fg_hl, color_bg_bk
+    from ui.create_widget.set_style import color_bg_bc, color_fg_bc, color_bg_dk, color_bf_bt, color_fg_hl, color_bg_bk
 
     palette = QPalette()
     palette.setColor(QPalette.Window, color_bg_bc)
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     palette.setColor(QPalette.Text, color_fg_bc)
     palette.setColor(QPalette.Button, color_bg_bc)
     palette.setColor(QPalette.ButtonText, color_fg_bc)
-    palette.setColor(QPalette.Link, color_fg_bk)
+    palette.setColor(QPalette.Link, color_bf_bt)
     palette.setColor(QPalette.Highlight, color_fg_hl)
     palette.setColor(QPalette.HighlightedText, color_bg_bk)
     app.setPalette(palette)

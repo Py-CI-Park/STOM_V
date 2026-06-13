@@ -1,10 +1,6 @@
 
 def load_settings():
-    """설정을 로드합니다.
-    데이터베이스에서 설정을 읽어와 딕셔너리로 반환합니다.
-    Returns:
-        설정 딕셔너리
-    """
+    """설정을 로드합니다. 데이터베이스에서 설정을 읽어와 딕셔너리로 반환합니다."""
     import sqlite3
     import pandas as pd
     from cryptography import fernet
@@ -25,13 +21,6 @@ def load_settings():
     df_so = pd.read_sql('SELECT * FROM sellorder', con).set_index('index')
     con.close()
 
-    binance_leverage_ = []
-    for text_ in df_m['바이낸스선물변동레버리지값'][0].split('^'):
-        lvrg_list_ = text_.split(';')
-        lvrg_list_ = [float(x) for x in lvrg_list_]
-        binance_leverage_.append(lvrg_list_)
-
-    location_list = None
     df_a_not_empty = True if len(df_a) > 0 else False
     df_t_not_empty  = True if len(df_t) > 0 else False
 
@@ -43,6 +32,12 @@ def load_settings():
         else:
             location_list = [['0', '0'] for _ in range(20)]
 
+        binance_leverage_ = []
+        for text_ in df_m['바이낸스선물변동레버리지값'][0].split('^'):
+            lvrg_list_ = text_.split(';')
+            lvrg_list_ = [float(x) for x in lvrg_list_]
+            binance_leverage_.append(lvrg_list_)
+
         DICT_SET = {
             '키':            EN_KEY,
             '거래소':         df_m['거래소'][0],
@@ -50,6 +45,7 @@ def load_settings():
             '데이터저장':      df_m['데이터저장'][0],
             '모의투자':       df_m['모의투자'][0],
             '알림소리':       df_m['알림소리'][0],
+            '읽기속도':       df_m['읽기속도'][0],
             '프로그램비밀번호': de_text(EN_KEY, df_m['프로그램비밀번호'][0]) if df_m['프로그램비밀번호'][0] else '',
 
             '바이낸스선물고정레버리지':   df_m['바이낸스선물고정레버리지'][0],
@@ -113,7 +109,7 @@ def load_settings():
             '옵튜나자동스탭':     df_b['옵튜나자동스탭'][no],
             '보조지표설정':      [int(x) if '.' not in x else float(x) for x in df_b['보조지표설정'][no].split(';')],
 
-            '테마': df_e['테마'][no],
+            '테마':            df_e['테마'][no],
             '저해상도':         df_e['저해상도'][no],
             '스톰라이브':       df_e['스톰라이브'][no],
             '휴무프로세스종료':   df_e['휴무프로세스종료'][no],
@@ -123,6 +119,8 @@ def load_settings():
             '프로그램종료':      df_e['프로그램종료'][no],
             '창위치기억':       df_e['창위치기억'][no],
             '창위치':          location_list,
+            '작은창모드':       df_e['작은창모드'][no],
+            '관심종목표시':     df_e['관심종목표시'][no],
             '팩터선택':         df_e['팩터선택'][no],
             '시리얼키':         de_text(EN_KEY, df_e['시리얼키'][no]) if len(df_e) > 0 and df_e['시리얼키'][no] else None,
 
@@ -196,8 +194,8 @@ def load_settings():
             '백테엔진프로파일링': False
         }
     except fernet.InvalidToken:
-        return 'fernet.InvalidToken', location_list
+        return 'InvalidToken', None
     except Exception:
-        return format_exc(), location_list
+        return format_exc(), None
     else:
         return DICT_SET, location_list

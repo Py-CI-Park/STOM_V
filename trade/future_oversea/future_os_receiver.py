@@ -35,10 +35,7 @@ class FutureOsReceiver(BaseReceiver):
 
     @error_decorator
     def _convert_real_data(self, data):
-        """실시간 데이터를 변환합니다.
-        Args:
-            data: 데이터
-        """
+        """실시간 데이터를 변환합니다."""
         if self.dict_bool['프로세스종료']:
             return
 
@@ -47,11 +44,11 @@ class FutureOsReceiver(BaseReceiver):
         body  = data['body']
 
         if tr_cd == self.tr_cd_hoga:
-            str_hms = body['hotime']
-            if int(str_hms) < self.market_open:
+            strhms = body['hotime']
+            if int(strhms) < self.market_open:
                 return
 
-            dt = int(f"{self.str_today}{str_hms}")
+            dt = int(f"{self.str_today}{strhms}")
             code = body['symbol']
             hoga_seprice = [
                 float(body['offerho1']), float(body['offerho2']), float(body['offerho3']),
@@ -76,11 +73,11 @@ class FutureOsReceiver(BaseReceiver):
                                    hoga_bamount, hoga_tamount, start)
 
         elif tr_cd == self.tr_cd_trade:
-            str_hms = body['trdtm']
-            if int(str_hms) < self.market_open:
+            strhms = body['trdtm']
+            if int(strhms) < self.market_open:
                 return
 
-            dt = int(f"{self.str_today}{str_hms}")
+            dt    = int(f"{self.str_today}{strhms}")
             code  = body['symbol']
             c     = float(body['curpr'])
             o     = float(body['open'])

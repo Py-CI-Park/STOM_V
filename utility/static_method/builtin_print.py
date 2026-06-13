@@ -1,10 +1,6 @@
 
 def set_builtin_print(q):
-    """내장 print 함수를 설정합니다.
-    UI 큐를 통해 로그를 출력합니다.
-    Args:
-        q: UI 큐
-    """
+    """내장 print 함수를 설정합니다. UI 큐를 통해 로그를 출력합니다."""
     import re
     import inspect
     import builtins

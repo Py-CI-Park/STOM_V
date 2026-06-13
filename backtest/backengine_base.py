@@ -27,7 +27,6 @@ class BackEngineBase(StgGlobalsFunc):
     """백테스트 엔진의 기본 클래스입니다.
     주문 관리 시스템(OMS)이 적용되지 않은 백테스트 엔진으로,
     데이터 로드, 전략 실행, 기본 매수/매도 로직을 처리합니다."""
-
     def __init__(self, gubun, shared_cnt, lock, wq, tq, bq, beq_list, bstq_list, dict_set, profile=False):
         super().__init__()
         self.gubun           = gubun
@@ -81,14 +80,6 @@ class BackEngineBase(StgGlobalsFunc):
         self.hoga_sidex      = None
         self.hoga_eidex      = None
         self.index_arry      = None
-
-        self.ms_analyzer     = None
-        self.rk_analyzer     = None
-        self.pt_analyzer     = None
-        self.vf_analyzer     = None
-        self.vs_analyzer     = None
-        self.vp_analyzer     = None
-        self.vt_analyzer     = None
 
         self.code_list       = []
         self.vars_list       = []
@@ -185,8 +176,7 @@ class BackEngineBase(StgGlobalsFunc):
 
     def _set_passticks_and_blacklist(self):
         """경과틱수 조건과 블랙리스트를 설정합니다.
-        데이터베이스에서 경과틱수 전략을 읽어 컴파일하고,
-        블랙리스트를 설정합니다."""
+        데이터베이스에서 경과틱수 전략을 읽어 컴파일하고 블랙리스트를 설정합니다."""
         def compile_condition(x):
             return compile(f"if {x}:\n    self.dict_cond_indexn[종목코드][k+self.turn_key] = self.indexn", '<string>', 'exec')
 
@@ -352,7 +342,7 @@ class BackEngineBase(StgGlobalsFunc):
                                 self.buystg = compile(data[6], '<string>', 'exec')
                             except Exception:
                                 if self.gubun == 0:
-                                    self.wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
+                                    self.wq.put((UI_NUM['시스템로그'], format_exc()))
                                 self._back_stop()
                             else:
                                 self.opti_kind = data[7]
@@ -379,21 +369,16 @@ class BackEngineBase(StgGlobalsFunc):
                 elif data == '백테중지':
                     self._back_stop(2)
             except Exception:
-                if self.gubun == 0:
-                    self.wq.put((UI_NUM['시스템로그'], format_exc()))
+                self.wq.put((UI_NUM['시스템로그'], format_exc()))
 
     def _data_load(self, data):
         """백테스트 데이터를 로드합니다.
-        데이터베이스에서 종목 데이터를 읽어 공유 메모리 또는 파일에 저장합니다.
-        Args:
-            data: 로드에 필요한 데이터 튜플
-        """
-
+        데이터베이스에서 종목 데이터를 읽어 공유 메모리 또는 파일에 저장합니다."""
         def load_and_add_data():
             """종목의 코드, 일자들, 시작시간, 종료시간으로 쿼리를 만들어서 데이터를 로딩 한 후에 롤링 데이터를 추가하고 2차원 어레이로 만든다.
             만든 2차원 어레이와 관련 정보를 all_data에 기록한다."""
             try:
-                df = pd.read_sql(get_back_load_code_query(self.is_tick, code, days, starttime, endtime), con)
+                df = pd.read_sql(get_back_load_code_query(self.is_tick, code, days, starttime, endtime, future_nt), con)
             except Exception:
                 pass
             else:
@@ -416,6 +401,7 @@ class BackEngineBase(StgGlobalsFunc):
 
         all_data = []
         divid_mode = data[-1]
+        future_nt = self.market_gubun == 7
 
         if divid_mode == '종목코드별 분류':
             _, startday, endday, starttime, endtime, code_list, avg_list, code_days, _, _, _ = data
@@ -485,19 +471,12 @@ class BackEngineBase(StgGlobalsFunc):
         self.set_globals_func()
 
     def _update_globals_func(self, dict_add_func):
-        """전역 함수를 업데이트합니다.
-        Args:
-            dict_add_func: 추가할 전역 함수 딕셔너리
-        """
+        """전역 함수를 업데이트합니다."""
         globals().update(dict_add_func)
 
     def _check_avg_list(self, avg_list):
         """평균값 틱수 목록을 검증합니다.
-        백테 엔진 구동 시 포함되지 않은 평균값 틱수가 있으면
-        백테스트를 중지합니다.
-        Args:
-            avg_list: 평균값 틱수 목록
-        """
+        백테 엔진 구동 시 포함되지 않은 평균값 틱수가 있으면 백테스트를 중지합니다."""
         not_in_list = [x for x in avg_list if x not in self.avg_list]
         if len(not_in_list) > 0 and self.gubun == 0:
             self.wq.put((UI_NUM['백테스트'], '백테엔진 구동 시 포함되지 않은 평균값 틱수를 사용하여 중지되었습니다.'))
@@ -506,8 +485,7 @@ class BackEngineBase(StgGlobalsFunc):
 
     def _check_day_and_time(self):
         """날짜와 시간 범위를 확인하고 설정합니다.
-        이전 데이터 로딩과 현재 설정이 동일한지 확인하고,
-        틱/분봉에 따른 단위를 설정합니다."""
+        이전 데이터 로딩과 현재 설정이 동일한지 확인하고 틱/분봉에 따른 단위를 설정합니다."""
         self.same_days = self.startday_ == self.startday and self.endday_ == self.endday
         self.same_time = self.starttime_ == self.starttime and self.endtime_ == self.endtime
 
@@ -520,21 +498,18 @@ class BackEngineBase(StgGlobalsFunc):
 
     def _back_stop(self, gubun=0):
         """백테스트를 중지합니다.
-        Args:
-            gubun: 중지 구분 (0:일반, 1:사용자요청, 2:완료알림, 3:오류)
-        """
+        gubun: 중지 구분 (0:일반, 1:사용자요청, 2:완료알림, 3:오류)"""
         self.back_type = None
         if gubun in (0, 1):
             if self.gubun == 0: self.wq.put((UI_NUM['백테스트'], '백테스트 엔진 중지 중 ...'))
         if gubun in (1, 2):
             self.bq.put('백테중지완료')
         if gubun == 3:
-            if self.gubun == 0: self.wq.put((UI_NUM['백테스트'], '백테스트 엔진 전략연산 오류, 자동 중지 중 ...'))
+            self.wq.put((UI_NUM['백테스트'], '백테스트 엔진 전략연산 오류, 자동 중지 중 ...'))
 
     def _init_trade_info(self):
         """거래 정보를 초기화합니다.
-        백테스트에 필요한 거래 관련 변수들을 초기화하고,
-        OMS 적용 여부에 따라 적절한 구조로 설정합니다."""
+        백테스트에 필요한 거래 관련 변수들을 초기화하고 OMS 적용 여부에 따라 적절한 구조로 설정합니다."""
         self.high_low = []
         self.tick_count = 0
         self.dict_cond_indexn = {}
@@ -565,10 +540,7 @@ class BackEngineBase(StgGlobalsFunc):
 
     # noinspection PyUnresolvedReferences
     def _get_array_data(self):
-        """공유 메모리 또는 파일에서 배열 데이터를 가져옵니다.
-        Returns:
-            종목 코드. 데이터가 없으면 None을 반환합니다.
-        """
+        """공유 메모리 또는 파일에서 배열 데이터를 가져옵니다. 종목 코드. 데이터가 없으면 None을 반환합니다."""
         shared_info = None
         with self.shared_lock:
             shared_cnt = self.shared_cnt.value
@@ -615,8 +587,7 @@ class BackEngineBase(StgGlobalsFunc):
         return code
 
     def _update_formula_data(self):
-        """사용자 수식 데이터를 업데이트합니다.
-        데이터베이스에서 수식을 읽어 컴파일하고 전역 함수를 설정합니다."""
+        """사용자 수식 데이터를 업데이트합니다. 데이터베이스에서 수식을 읽어 컴파일하고 전역 함수를 설정합니다."""
         total_cnt = self.base_cnt + 5 + self.add_cnt * len(self.avg_list)
         self.fm_list, _, self.fm_tcnt = get_formula_data(False, total_cnt)
         if self.fm_list:
@@ -688,7 +659,7 @@ class BackEngineBase(StgGlobalsFunc):
                         try:
                             self._strategy()
                         except Exception:
-                            if self.gubun == 0: self.wq.put((UI_NUM['시스템로그'], format_exc()))
+                            self.wq.put((UI_NUM['시스템로그'], format_exc()))
                             self._back_stop(3)
                             return
 
@@ -716,10 +687,7 @@ class BackEngineBase(StgGlobalsFunc):
             self.wq.put((UI_NUM['시스템로그'], self.get_profile_text()))
 
     def get_profile_text(self):
-        """프로파일 텍스트를 가져옵니다.
-        Returns:
-            프로파일 텍스트
-        """
+        """프로파일 텍스트를 가져옵니다."""
         import io
         import pstats
         output = io.StringIO()
@@ -732,8 +700,7 @@ class BackEngineBase(StgGlobalsFunc):
 
     # noinspection PyUnusedLocal
     def _strategy(self):
-        """전략을 실행합니다.
-        현재 틱 데이터를 기반으로 매수/매도 전략을 실행합니다."""
+        """전략을 실행합니다. 현재 틱 데이터를 기반으로 매수/매도 전략을 실행합니다."""
         초당매수금액 = 초당매도금액 = 분당매수금액 = 분당매도금액 = 분봉고가 = 분봉저가 = 0
         if self.market_gubun < 4:
             if self.is_tick:
@@ -792,7 +759,7 @@ class BackEngineBase(StgGlobalsFunc):
         시분초 = int(str(self.index)[8:]) if self.is_tick else int(str(self.index)[8:] + '00')
         순매수금액 = 초당매수금액 - 초당매도금액 if self.is_tick else 분당매수금액 - 분당매도금액
         종목명, 종목코드, 데이터길이, 체결시간 = self.name, self.code, self.tick_count, self.index
-        self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else self.code)
+        self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else None)
 
         current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
         리스크점수 = 패턴점수 = 패턴신뢰도 = 거래량점수 = 거래량신뢰도 = 가격대점수 = 가격대신뢰도 = 변동성점수 = 변동성신뢰도 = \
@@ -870,13 +837,6 @@ class BackEngineBase(StgGlobalsFunc):
                     if vturn == 0 and self.tick_count < self.vars[0]:
                         continue
 
-                    if self.dict_condition:
-                        self.turn_key = f'{vturn}{vturn}'
-                        if 종목코드 not in self.dict_cond_indexn:
-                            self.dict_cond_indexn[종목코드] = {}
-                        for k, v in self.dict_condition.items():
-                            exec(v)
-
                     if not self.is_tick:
                         if self.indistg is not None:
                             exec(self.indistg)
@@ -884,6 +844,13 @@ class BackEngineBase(StgGlobalsFunc):
                         AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, \
                             MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
                             get_indicator(self.mc, self.mh, self.ml, self.mv, self.k)
+
+                    if self.dict_condition:
+                        self.turn_key = f'{vturn}{vturn}'
+                        if 종목코드 not in self.dict_cond_indexn:
+                            self.dict_cond_indexn[종목코드] = {}
+                        for k, v in self.dict_condition.items():
+                            exec(v)
 
                     self.info_for_order = 현재가, 저가대비고가등락율, vturn, vkey
                     self.curr_trade_info = self.trade_info[vturn][vkey]
@@ -918,13 +885,6 @@ class BackEngineBase(StgGlobalsFunc):
                     elif self.tick_count < self.avgtime:
                         return
 
-                    if self.dict_condition:
-                        self.turn_key = f'{vturn}{vturn}'
-                        if 종목코드 not in self.dict_cond_indexn:
-                            self.dict_cond_indexn[종목코드] = {}
-                        for k, v in self.dict_condition.items():
-                            exec(v)
-
                     if not self.is_tick:
                         if self.indistg is not None:
                             exec(self.indistg)
@@ -932,6 +892,13 @@ class BackEngineBase(StgGlobalsFunc):
                         AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, \
                             MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
                             get_indicator(self.mc, self.mh, self.ml, self.mv, self.k)
+
+                    if self.dict_condition:
+                        self.turn_key = f'{vturn}{vturn}'
+                        if 종목코드 not in self.dict_cond_indexn:
+                            self.dict_cond_indexn[종목코드] = {}
+                        for k, v in self.dict_condition.items():
+                            exec(v)
 
                     self.info_for_order = 현재가, 저가대비고가등락율, vturn, vkey
                     self.curr_trade_info = self.trade_info[vturn][vkey]
@@ -966,13 +933,6 @@ class BackEngineBase(StgGlobalsFunc):
                 if self.tick_count < self.avgtime:
                     return
 
-            if self.dict_condition:
-                self.turn_key = f'{vturn}{vturn}'
-                if 종목코드 not in self.dict_cond_indexn:
-                    self.dict_cond_indexn[종목코드] = {}
-                for k, v in self.dict_condition.items():
-                    exec(v)
-
             if not self.is_tick:
                 if self.indistg is not None:
                     exec(self.indistg)
@@ -980,6 +940,13 @@ class BackEngineBase(StgGlobalsFunc):
                 AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, \
                     MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
                     get_indicator(self.mc, self.mh, self.ml, self.mv, self.k)
+
+            if self.dict_condition:
+                self.turn_key = f'{vturn}{vturn}'
+                if 종목코드 not in self.dict_cond_indexn:
+                    self.dict_cond_indexn[종목코드] = {}
+                for k, v in self.dict_condition.items():
+                    exec(v)
 
             self.info_for_order = 현재가, 저가대비고가등락율, vturn, vkey
             self.curr_trade_info = self.trade_info[vturn][vkey]
@@ -1000,11 +967,7 @@ class BackEngineBase(StgGlobalsFunc):
                 exec(self.sellstg)
 
     def _update_highlow(self, 현재가또는분봉고가=None, 분봉저가=None):
-        """고가/저가 정보를 업데이트합니다.
-        Args:
-            현재가또는분봉고가: 현재가 또는 분봉 고가
-            분봉저가: 분봉 저가
-        """
+        """고가/저가 정보를 업데이트합니다."""
         if 분봉저가 is None:
             if self.high_low:
                 if 현재가또는분봉고가 >= self.high_low[0]:
@@ -1027,10 +990,7 @@ class BackEngineBase(StgGlobalsFunc):
                 self.high_low = [현재가또는분봉고가, self.indexn, 분봉저가, self.indexn]
 
     def Buy(self, buy_long=False):
-        """매수 주문을 실행합니다.
-        Args:
-            buy_long: 롱 포지션 여부
-        """
+        """매수 주문을 실행합니다."""
         self._get_buy_count()
         주문수량 = self.curr_trade_info['주문수량']
         if 주문수량 > 0:
@@ -1041,8 +1001,8 @@ class BackEngineBase(StgGlobalsFunc):
                 호가배열 = self.bhogainfo[:self.buy_hj_limit]
                 잔량배열 = self.bhreminfo[:self.buy_hj_limit]
 
-            거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
-            if 체결완료:
+            거래금액, 체결가능 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+            if 체결가능:
                 보유중 = 1 if self.market_gubun < 6 or buy_long else 2
                 매수가 = self._get_order_price(거래금액, 주문수량)
                 매수시간 = dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))
@@ -1059,9 +1019,7 @@ class BackEngineBase(StgGlobalsFunc):
                 })
 
     def _get_buy_count(self):
-        """매수 수량을 계산합니다.
-        비중 조절 설정에 따라 배팅 금액을 조절하고,
-        현재가에 따른 주문 수량을 계산합니다."""
+        """매수 수량을 계산합니다. 비중 조절 설정에 따라 배팅 금액을 조절하고 현재가에 따른 주문 수량을 계산합니다."""
         현재가, 저가대비고가등락율 = self.info_for_order[:2]
         if self.set_weight[0] == 0:
             betting = self.betting
@@ -1091,18 +1049,7 @@ class BackEngineBase(StgGlobalsFunc):
         self.curr_trade_info['주문수량'] = self._set_buy_count(betting, 현재가, 0, 100)
 
     def _get_hold_info(self, 보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수틱번호, 매수시간):
-        """보유 정보를 계산합니다.
-        Args:
-            보유수량: 보유 수량
-            매수가: 매수 가격
-            현재가: 현재 가격
-            최고수익률: 최고 수익률
-            최저수익률: 최저 수익률
-            매수틱번호: 매수 틱 번호
-            매수시간: 매수 시간
-        Returns:
-            (시가총액또는포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간) 튜플
-        """
+        """보유 정보를 계산합니다."""
         시가총액또는포지션, _, 수익금, 수익률 = self._get_profit_info(현재가, 매수가, 보유수량)
         if 수익률 > 최고수익률:   self.curr_trade_info['최고수익률'] = 최고수익률 = 수익률
         elif 수익률 < 최저수익률: self.curr_trade_info['최저수익률'] = 최저수익률 = 수익률
@@ -1114,10 +1061,7 @@ class BackEngineBase(StgGlobalsFunc):
         return 시가총액또는포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간
 
     def Sell(self, sell_long=False):
-        """매도 주문을 실행합니다.
-        Args:
-            sell_long: 롱 포지션 매도 여부
-        """
+        """매도 주문을 실행합니다."""
         주문수량 = self.curr_trade_info['주문수량']
         if 주문수량 > 0:
             if self.market_gubun < 6 or sell_long:
@@ -1127,14 +1071,13 @@ class BackEngineBase(StgGlobalsFunc):
                 호가배열 = self.shogainfo[:self.sell_hj_limit]
                 잔량배열 = self.shreminfo[:self.sell_hj_limit]
 
-            거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
-            if 체결완료:
+            거래금액, 체결가능 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+            if 체결가능:
                 self.curr_trade_info['매도가'] = self._get_order_price(거래금액, 주문수량)
                 self._calculation_eyun()
 
     def _last_sell(self):
-        """마지막 틱에서 매도를 처리합니다.
-        일일 마지막 틱에서 보유 중인 포지션을 청산합니다."""
+        """마지막 틱에서 매도를 처리합니다. 일일 마지막 틱에서 보유 중인 포지션을 청산합니다."""
         호가데이터 = self.arry_code[self.indexn, self.hoga_sidex:self.hoga_eidex]
         매도호가배열 = 호가데이터[:5]
         매수호가배열 = 호가데이터[5:10]
@@ -1154,8 +1097,8 @@ class BackEngineBase(StgGlobalsFunc):
                         호가배열 = 매도호가배열[:self.sell_hj_limit]
                         잔량배열 = 매도잔량배열[:self.sell_hj_limit]
 
-                    거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
-                    if not 체결완료:
+                    거래금액, 체결가능 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+                    if not 체결가능:
                         거래금액 = 주문수량 * 호가배열[0]
 
                     self.curr_trade_info['매도가'] = self._get_order_price(거래금액, 주문수량)
@@ -1164,8 +1107,7 @@ class BackEngineBase(StgGlobalsFunc):
                     self._calculation_eyun()
 
     def _calculation_eyun(self):
-        """수익을 계산하고 결과를 전송합니다.
-        거래 완료 후 수익금, 수익률 등을 계산하고 백테스트 결과를 큐에 전송합니다."""
+        """수익을 계산하고 결과를 전송합니다."""
         vturn, vkey = self.info_for_order[-2:]
         _, 매수가, 매도가, 주문수량, _, _, _, 매수틱번호, 매수시간 = self.curr_trade_info.values()
         if self.is_tick:
@@ -1184,44 +1126,18 @@ class BackEngineBase(StgGlobalsFunc):
         self.sell_count += 1
         self.trade_info[vturn][vkey] = get_trade_info(1)
 
-    def _get_hogaunit(self, 주문가격또는종목코드):
-        """호가 단위를 반환합니다.
-        Args:
-            주문가격또는종목코드: 주문 가격 또는 종목 코드
-        Returns:
-            호가 단위
-        """
+    def _get_hogaunit(self, 주문가격):
+        """호가 단위를 반환합니다. (오버라이드용)"""
         return 0
 
     def _set_buy_count(self, betting, 현재가, 매수가, oc_ratio):
-        """매수 수량을 설정합니다.
-        Args:
-            betting: 배팅 금액
-            현재가: 현재 가격
-            매수가: 매수 가격
-            oc_ratio: OC 비율
-        Returns:
-            매수 수량
-        """
+        """매수 수량을 설정합니다. (오버라이드용)"""
         return 0
 
     def _get_order_price(self, 거래금액, 주문수량):
-        """주문 가격을 계산합니다.
-        Args:
-            거래금액: 거래 금액
-            주문수량: 주문 수량
-        Returns:
-            주문 가격
-        """
+        """주문 가격을 계산합니다. (오버라이드용)"""
         return 0
 
     def _get_profit_info(self, 현재가, 매수가, 보유수량):
-        """수익 정보를 계산합니다.
-        Args:
-            현재가: 현재 가격
-            매수가: 매수 가격
-            보유수량: 보유 수량
-        Returns:
-            (포지션, 평가금액, 수익금, 수익률) 튜플
-        """
+        """수익 정보를 계산합니다. (오버라이드용)"""
         return None, 0, 0, 0

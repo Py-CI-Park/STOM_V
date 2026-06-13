@@ -1,15 +1,6 @@
 
 def get_indicator(mc, mh, ml, mv, k):
-    """지표를 계산합니다.
-    Args:
-        mc: 현재가
-        mh: 고가
-        ml: 저가
-        mv: 거래량
-        k: 파라미터 리스트
-    Returns:
-        지표 리스트
-    """
+    """보조지표를 계산합니다."""
     from talib import stream
     AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV, PPO, \
         ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \

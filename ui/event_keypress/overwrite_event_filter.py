@@ -1,24 +1,33 @@
 
+from PyQt5.QtCore import QTimer, QEvent, Qt
+from PyQt5.QtGui import QTextCursor, QTextCharFormat
+from PyQt5.QtWidgets import QTextEdit, QMainWindow, QApplication, QMessageBox
+
+from ui.create_widget.set_style import color_bf_dk
+from ui.create_widget.set_widget import PlainTextEdit
+from ui.event_keypress.extend_window import extend_window
+from ui.etcetera.etc import chart_screenshot, manual_save_and_exit
+from ui.event_click.button_clicked_etc import hg_button_clicked_01, hg_button_clicked_02
+from ui.event_click.button_clicked_zoom import sz_button_clicked_01, sz_button_clicked_02
+from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_02, mnbutton_c_clicked_03, \
+    mnbutton_c_clicked_04, trade_process_kill, mnbutton_c_clicked_01, mnbutton_c_clicked_05, \
+    mnbutton_c_clicked_06
+from ui.event_click.button_clicked_show_dialog import show_db, show_kimp, show_chart, show_hoga, show_giup, \
+    show_treemap, show_qsize, show_backscheduler, show_order
+from ui.event_click.button_clicked_stg_editer import stg_editer, opti_editer, opti_test_editer, rwf_test_editer, \
+    opti_ga_editer, opti_cond_editer, opti_vars_editer, opti_gavars_editer, backtest_log, backtest_detail
+
 syntax_highlighters = {}
 
 
 def setup_syntax_highlighter(widget, widget_id):
-    """구문 강조 하이라이터를 설정합니다.
-    Args:
-        widget: 위젯
-        widget_id: 위젯 ID
-    """
+    """구문 강조 하이라이터를 설정합니다."""
     syntax_highlighters[widget_id] = SyntaxHighlighter(widget)
     syntax_highlighters[widget_id].connect_signal()
 
 
 def check_python_syntax(text):
-    """파이썬 문법을 검사합니다.
-    Args:
-        text: 파이썬 코드 텍스트
-    Returns:
-        오류 메시지, 오류 라인
-    """
+    """파이썬 문법을 검사합니다."""
     try:
         compile(text, '<string>', 'exec')
         return None, None
@@ -30,7 +39,6 @@ def check_python_syntax(text):
 
 class SyntaxHighlighter:
     def __init__(self, widget):
-        from PyQt5.QtCore import QTimer
         self.widget = widget
         self.timer = QTimer()
         self.timer.timeout.connect(self.check_syntax)
@@ -43,10 +51,6 @@ class SyntaxHighlighter:
         self.timer.start(300)
 
     def check_syntax(self):
-        from PyQt5.QtWidgets import QTextEdit
-        from ui.create_widget.set_style import color_bf_dk
-        from PyQt5.QtGui import QTextCursor, QTextCharFormat
-
         text = self.widget.toPlainText()
         error_msg, error_line = check_python_syntax(text)
         self.widget.setExtraSelections([])
@@ -67,12 +71,7 @@ class SyntaxHighlighter:
 
 
 def handle_auto_indent(widget):
-    """자동 들여쓰기를 처리합니다.
-    Args:
-        widget: 텍스트 위젯
-    """
-    from PyQt5.QtGui import QTextCursor
-
+    """자동 들여쓰기를 처리합니다."""
     cursor = widget.textCursor()
     cursor.movePosition(QTextCursor.StartOfLine)
     cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
@@ -103,27 +102,12 @@ def handle_auto_indent(widget):
 
 
 def event_filter(ui, widget, event):
-    """이벤트 필터를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        widget: 위젯
-        event: 이벤트
-    Returns:
-        이벤트 처리 결과
-    """
-    from PyQt5.QtCore import QEvent, Qt
-    from PyQt5.QtGui import QTextCursor
-    from ui.create_widget.set_widget import PlainTextEdit
-    from PyQt5.QtWidgets import QMainWindow, QApplication
-    from ui.event_keypress.extend_window import extend_window
-    from ui.event_click.button_clicked_zoom import sz_button_clicked_01, sz_button_clicked_02
-    from ui.event_click.button_clicked_stg_editer import stg_editer, opti_editer, opti_test_editer, rwf_test_editer, \
-        opti_ga_editer, opti_cond_editer, opti_vars_editer, opti_gavars_editer, backtest_log, backtest_detail
-
+    """이벤트 필터를 처리합니다."""
     if event.type() != QEvent.KeyPress:
         return QMainWindow.eventFilter(ui, widget, event)
 
-    if widget.__class__ == PlainTextEdit and not (QApplication.keyboardModifiers() & Qt.AltModifier):
+    if widget.__class__ == PlainTextEdit and not (QApplication.keyboardModifiers() & Qt.AltModifier) and \
+            not (QApplication.keyboardModifiers() & Qt.ControlModifier):
         widget_id = id(widget)
         if widget_id not in syntax_highlighters:
             setup_syntax_highlighter(widget, widget_id)
@@ -209,20 +193,16 @@ def event_filter(ui, widget, event):
                     widget.setTextCursor(cursor)
             return True
 
-    if ui.main_btn == 2:
-        if event.key() == Qt.Key_Escape:
-            if not ui.svc_pushButton_24.isVisible():
-                if widget in (ui.ss_textEditttt_01, ui.ss_textEditttt_03):
-                    sz_button_clicked_01(ui)
-                elif widget in (ui.ss_textEditttt_02, ui.ss_textEditttt_04):
-                    sz_button_clicked_02(ui)
-            return True
+    if event.key() == Qt.Key_Escape and ui.main_btn == 2:
+        if not ui.svc_pushButton_24.isVisible():
+            if widget in (ui.ss_textEditttt_01, ui.ss_textEditttt_03):
+                sz_button_clicked_01(ui)
+            elif widget in (ui.ss_textEditttt_02, ui.ss_textEditttt_04):
+                sz_button_clicked_02(ui)
+        return True
 
-        elif event.key() == Qt.Key_E and (QApplication.keyboardModifiers() & Qt.ShiftModifier):
-            extend_window(ui)
-            return True
-
-        elif (QApplication.keyboardModifiers() & Qt.AltModifier) and \
+    elif QApplication.keyboardModifiers() & Qt.AltModifier:
+        if ui.main_btn == 2 and \
                 event.key() in (Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5,
                                 Qt.Key_6, Qt.Key_7, Qt.Key_8, Qt.Key_9, Qt.Key_0):
             if event.key() == Qt.Key_1:
@@ -245,19 +225,80 @@ def event_filter(ui, widget, event):
                 backtest_log(ui)
             elif event.key() == Qt.Key_0:
                 backtest_detail(ui)
+            elif event.key() == Qt.Key_E:
+                extend_window(ui)
+            return True
+
+        elif event.key() in (Qt.Key_T, Qt.Key_L, Qt.Key_D, Qt.Key_Z, Qt.Key_K, Qt.Key_C, Qt.Key_H, Qt.Key_G,
+                             Qt.Key_U, Qt.Key_Q, Qt.Key_B, Qt.Key_X, Qt.Key_S, Qt.Key_V, Qt.Key_O, Qt.Key_E,
+                             Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down):
+            if event.key() == Qt.Key_T:
+                mnbutton_c_clicked_02(ui)
+            elif event.key() == Qt.Key_L:
+                mnbutton_c_clicked_03(ui)
+            elif event.key() == Qt.Key_D:
+                show_db(ui)
+            elif event.key() == Qt.Key_Z:
+                mnbutton_c_clicked_04(ui)
+            elif event.key() == Qt.Key_K:
+                show_kimp(ui)
+            elif event.key() == Qt.Key_C:
+                show_chart(ui)
+            elif event.key() == Qt.Key_H:
+                show_hoga(ui)
+            elif event.key() == Qt.Key_G:
+                show_giup(ui)
+            elif event.key() == Qt.Key_U:
+                show_treemap(ui)
+            elif event.key() == Qt.Key_Q:
+                show_qsize(ui)
+            elif event.key() == Qt.Key_B:
+                show_backscheduler(ui)
+            elif event.key() == Qt.Key_X:
+                trade_process_kill(ui)
+            elif event.key() == Qt.Key_S:
+                chart_screenshot(ui)
+            elif event.key() == Qt.Key_V:
+                manual_save_and_exit(ui)
+            elif event.key() == Qt.Key_O:
+                show_order(ui)
+            elif event.key() == Qt.Key_E:
+                extend_window(ui)
+            elif event.key() == Qt.Key_Left:
+                hg_button_clicked_01(ui, '이전')
+            elif event.key() == Qt.Key_Right:
+                hg_button_clicked_01(ui, '다음')
+            elif event.key() == Qt.Key_Up:
+                hg_button_clicked_02(ui, '매수')
+            elif event.key() == Qt.Key_Down:
+                hg_button_clicked_02(ui, '매도')
+            return True
+
+    elif QApplication.keyboardModifiers() & Qt.ControlModifier:
+        if event.key() in (Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5, Qt.Key_6, Qt.Key_B, Qt.Key_A):
+            if event.key() == Qt.Key_1:
+                mnbutton_c_clicked_01(ui, 0)
+            elif event.key() == Qt.Key_2:
+                mnbutton_c_clicked_01(ui, 1)
+            elif event.key() == Qt.Key_3:
+                mnbutton_c_clicked_01(ui, 2)
+            elif event.key() == Qt.Key_4:
+                mnbutton_c_clicked_01(ui, 3)
+            elif event.key() == Qt.Key_5:
+                mnbutton_c_clicked_01(ui, 4)
+            elif event.key() == Qt.Key_6:
+                mnbutton_c_clicked_01(ui, 5)
+            elif event.key() == Qt.Key_B:
+                mnbutton_c_clicked_05(ui)
+            elif event.key() == Qt.Key_A:
+                mnbutton_c_clicked_06(ui)
             return True
 
     return QMainWindow.eventFilter(ui, widget, event)
 
 
 def close_event(ui, a):
-    """창 닫기 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        a: 이벤트
-    """
-    from PyQt5.QtWidgets import QMessageBox
-
+    """창 닫기 이벤트를 처리합니다."""
     buttonReply = QMessageBox.question(
         ui, "프로그램 종료", "프로그램을 종료합니다.",
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No

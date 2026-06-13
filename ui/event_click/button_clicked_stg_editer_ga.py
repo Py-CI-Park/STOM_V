@@ -1,9 +1,6 @@
 
 def gavars_load(ui):
-    """GA 변수 범위를 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """GA 변수 범위를 로드합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QMessageBox, QApplication
     from ui.event_click.button_clicked_strategy_version import strategy_version
@@ -27,10 +24,7 @@ def gavars_load(ui):
 
 
 def gavars_save(ui):
-    """GA 변수 범위를 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """GA 변수 범위를 저장합니다."""
     import random
     from PyQt5.QtCore import Qt
     from ui.create_widget.set_text import famous_saying
@@ -59,10 +53,7 @@ def gavars_save(ui):
 
 
 def condbuy_load(ui):
-    """조건 최적화 매수 전략을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """조건 최적화 매수 전략을 로드합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QMessageBox, QApplication
     from ui.event_click.button_clicked_strategy_version import strategy_version
@@ -86,10 +77,7 @@ def condbuy_load(ui):
 
 
 def condbuy_save(ui):
-    """조건 최적화 매수 전략을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """조건 최적화 매수 전략을 저장합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
@@ -117,10 +105,7 @@ def condbuy_save(ui):
 
 
 def condsell_load(ui):
-    """조건 최적화 매도 전략을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """조건 최적화 매도 전략을 로드합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QMessageBox, QApplication
     from ui.event_click.button_clicked_strategy_version import strategy_version
@@ -144,10 +129,7 @@ def condsell_load(ui):
 
 
 def condsell_save(ui):
-    """조건 최적화 매도 전략을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """조건 최적화 매도 전략을 저장합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying

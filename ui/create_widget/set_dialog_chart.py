@@ -1,6 +1,5 @@
 
 import pyqtgraph as pg
-from ui.etcetera.etc import chart_screenshot2
 from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout
 from ui.event_click.table_cell_clicked import cell_clicked_06
 from utility.settings.setting_base import DICT_INDICATOR_BASE
@@ -10,7 +9,6 @@ from ui.event_click.button_clicked_chart_count import chart_count_change
 from ui.create_widget.dialog_radar_chart import MicrostructureRadarDialog
 from ui.create_widget.set_style import style_bc_dk, style_ck_bx, color_bg_bk
 from ui.event_change.changed_checkbox import checkbox_changed_02, checkbox_changed_09
-from ui.event_click.button_clicked_etc import hg_button_clicked_01, hg_button_clicked_02
 from ui.event_click.button_clicked_show_dialog import show_dialog_formula, show_dialog_factor
 from ui.event_click.button_clicked_chart import indicator_setting_basic, indicator_setting_load, indicator_setting_save, \
     chart_size_change, chart_moneytop_list
@@ -18,8 +16,7 @@ from ui.event_click.button_clicked_chart import indicator_setting_basic, indicat
 
 class SetDialogChart:
     """차트 다이얼로그 설정 클래스입니다.
-    차트 다이얼로그와 팩터 설정 다이얼로그를 설정합니다.
-    """
+    차트 다이얼로그와 팩터 설정 다이얼로그를 설정합니다."""
     def __init__(self, ui_class, wc):
         self.ui = ui_class
         self.wc = wc
@@ -71,17 +68,13 @@ class SetDialogChart:
                '9. 줌인된 상태에서 마우스 우클릭시 줌아웃됩니다.\n' \
                '10. 줌인된 상태에서 마우스 우클릭으로 드레그하면 좌우로 움직입니다.\n' \
                '11. 호가창이 열린 상태에서 마우스 좌클릭 시 해당 시간의 호가정보가 표시됩니다.\n' \
-               '12. 팩터설정 창, 우측 빈칸에 등락율각도, 거래대금각도 계수를 입력하여 다른 계수값 기반 각도를 표시할 수 있습니다.'
-        self.ui.ct_pushButtonnn_02 = self.wc.setPushbutton('도움말', parent=self.ui.ct_groupBoxxxxx_01, tip=text)
+               '12. 팩터설정에서 시장미시구조분석 매수/매도 계수를 입력할 수 있습니다.\n' \
+               '13. 팩터설정에서 각도계수를 입력하여 다른 계수값 기반 각도를 표시할 수 있습니다.'
+        self.ui.ct_pushButtonnn_02 = self.wc.setPushbutton('도움말', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, tip=text)
         self.ui.ct_pushButtonnn_03 = self.wc.setPushbutton('수식관리자', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: show_dialog_formula(self.ui))
         self.ui.ct_pushButtonnn_04 = self.wc.setPushbutton('펙터설정', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: show_dialog_factor(self.ui))
         self.ui.ct_pushButtonnn_05 = self.wc.setPushbutton('CHART I', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: chart_count_change(self.ui))
         self.ui.ct_pushButtonnn_06 = self.wc.setPushbutton('확장', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: chart_size_change(self.ui))
-        self.ui.ct_pushButtonnn_07 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: hg_button_clicked_01(self.ui, '이전'), shortcut='Alt+left')
-        self.ui.ct_pushButtonnn_08 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: hg_button_clicked_01(self.ui, '다음'), shortcut='Alt+right')
-        self.ui.ct_pushButtonnn_09 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: hg_button_clicked_02(self.ui, '매수'), shortcut='Alt+up')
-        self.ui.ct_pushButtonnn_10 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: hg_button_clicked_02(self.ui, '매도'), shortcut='Alt+down')
-        self.ui.ct_pushButtonnn_11 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: chart_screenshot2(self.ui), shortcut='Shift+S')
 
         self.ui.ct_dateEdittttt_02 = self.wc.setDateEdit(self.ui.dialog_chart, changed=lambda: chart_moneytop_list(self.ui))
         self.ui.ct_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_chart, ['종목명'], 100, vscroll=True, clicked=lambda row, col: cell_clicked_06(self.ui, row, col))
@@ -297,11 +290,6 @@ class SetDialogChart:
         self.ui.ct_pushButtonnn_04.setGeometry(1135, 25, 80, 30)
         self.ui.ct_pushButtonnn_05.setGeometry(1220, 25, 80, 30)
         self.ui.ct_pushButtonnn_06.setGeometry(1305, 25, 80, 30)
-        self.ui.ct_pushButtonnn_07.setGeometry(0, 0, 0, 0)
-        self.ui.ct_pushButtonnn_08.setGeometry(0, 0, 0, 0)
-        self.ui.ct_pushButtonnn_09.setGeometry(0, 0, 0, 0)
-        self.ui.ct_pushButtonnn_10.setGeometry(0, 0, 0, 0)
-        self.ui.ct_pushButtonnn_11.setGeometry(0, 0, 0, 0)
 
         self.ui.ct_dateEdittttt_02.setGeometry(1403, 15, 120, 30)
         if self.ui.dict_set is not None:

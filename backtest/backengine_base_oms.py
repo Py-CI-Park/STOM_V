@@ -80,7 +80,7 @@ class BackEngineBaseOms(BackEngineBase):
         시분초 = int(str(self.index)[8:]) if self.is_tick else int(str(self.index)[8:] + '00')
         순매수금액 = 초당매수금액 - 초당매도금액 if self.is_tick else 분당매수금액 - 분당매도금액
         종목명, 종목코드, 데이터길이, 체결시간 = self.name, self.code, self.tick_count, self.index
-        self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else self.code)
+        self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else None)
 
         current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
         리스크점수 = 패턴점수 = 패턴신뢰도 = 거래량점수 = 거래량신뢰도 = 가격대점수 = 가격대신뢰도 = 변동성점수 = 변동성신뢰도 = \
@@ -158,13 +158,6 @@ class BackEngineBaseOms(BackEngineBase):
                     if vturn == 0 and self.tick_count < self.vars[0]:
                         continue
 
-                    if self.dict_condition:
-                        self.turn_key = f'{vturn}{vturn}'
-                        if 종목코드 not in self.dict_cond_indexn:
-                            self.dict_cond_indexn[종목코드] = {}
-                        for k, v in self.dict_condition.items():
-                            exec(v)
-
                     if not self.is_tick:
                         if self.indistg is not None:
                             exec(self.indistg)
@@ -172,6 +165,13 @@ class BackEngineBaseOms(BackEngineBase):
                         AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, \
                             MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
                             get_indicator(self.mc, self.mh, self.ml, self.mv, self.k)
+
+                    if self.dict_condition:
+                        self.turn_key = f'{vturn}{vturn}'
+                        if 종목코드 not in self.dict_cond_indexn:
+                            self.dict_cond_indexn[종목코드] = {}
+                        for k, v in self.dict_condition.items():
+                            exec(v)
 
                     self.curr_day_info = self.day_info[vturn][vkey]
                     self.curr_trade_info = self.trade_info[vturn][vkey]
@@ -237,13 +237,6 @@ class BackEngineBaseOms(BackEngineBase):
                     elif self.tick_count < self.avgtime:
                         return
 
-                    if self.dict_condition:
-                        self.turn_key = f'{vturn}{vturn}'
-                        if 종목코드 not in self.dict_cond_indexn:
-                            self.dict_cond_indexn[종목코드] = {}
-                        for k, v in self.dict_condition.items():
-                            exec(v)
-
                     if not self.is_tick:
                         if self.indistg is not None:
                             exec(self.indistg)
@@ -251,6 +244,13 @@ class BackEngineBaseOms(BackEngineBase):
                         AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, \
                             MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
                             get_indicator(self.mc, self.mh, self.ml, self.mv, self.k)
+
+                    if self.dict_condition:
+                        self.turn_key = f'{vturn}{vturn}'
+                        if 종목코드 not in self.dict_cond_indexn:
+                            self.dict_cond_indexn[종목코드] = {}
+                        for k, v in self.dict_condition.items():
+                            exec(v)
 
                     self.curr_day_info = self.day_info[vturn][vkey]
                     self.curr_trade_info = self.trade_info[vturn][vkey]
@@ -322,13 +322,6 @@ class BackEngineBaseOms(BackEngineBase):
                 if self.tick_count < self.avgtime:
                     return
 
-            if self.dict_condition:
-                self.turn_key = f'{vturn}{vturn}'
-                if 종목코드 not in self.dict_cond_indexn:
-                    self.dict_cond_indexn[종목코드] = {}
-                for k, v in self.dict_condition.items():
-                    exec(v)
-
             if not self.is_tick:
                 if self.indistg is not None:
                     exec(self.indistg)
@@ -336,6 +329,13 @@ class BackEngineBaseOms(BackEngineBase):
                 AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, \
                     MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
                     get_indicator(self.mc, self.mh, self.ml, self.mv, self.k)
+
+            if self.dict_condition:
+                self.turn_key = f'{vturn}{vturn}'
+                if 종목코드 not in self.dict_cond_indexn:
+                    self.dict_cond_indexn[종목코드] = {}
+                for k, v in self.dict_condition.items():
+                    exec(v)
 
             self.curr_day_info = self.day_info[vturn][vkey]
             self.curr_trade_info = self.trade_info[vturn][vkey]
@@ -386,18 +386,7 @@ class BackEngineBaseOms(BackEngineBase):
                         exec(self.sellstg)
 
     def _get_hold_info(self, 보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수틱번호, 매수시간):
-        """보유 정보를 계산합니다 (OMS 버전).
-        Args:
-            보유수량: 보유 수량
-            매수가: 매수 가격
-            현재가: 현재 가격
-            최고수익률: 최고 수익률
-            최저수익률: 최저 수익률
-            매수틱번호: 매수 틱 번호
-            매수시간: 매수 시간
-        Returns:
-            (시가총액또는포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간) 튜플
-        """
+        """보유 정보를 계산합니다 (OMS 버전)."""
         시가총액또는포지션, 수익금, 수익률, 보유시간 = None, 0, 0, 0
         if self.curr_trade_info['보유중']:
             시가총액또는포지션, _, 수익금, 수익률 = self._get_profit_info(현재가, 매수가, 보유수량)
@@ -411,12 +400,7 @@ class BackEngineBaseOms(BackEngineBase):
 
     def _check_buy_or_sell(self, 보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 매수가, 주문수량, 보유수량, 매수호가단위,
                            매수주문취소시간, 매도호가단위, 매도정정횟수, 매도주문취소시간, 주문포지션, 분봉고가=None, 분봉저가=None):
-        """매수 또는 매도 여부를 확인합니다.
-        주문 유형(시장가/지정가)과 보유 상태에 따라
-        매수, 매도, 매수매도 중 하나를 결정합니다.
-        Returns:
-            '매수', '매도', '매수매도' 또는 None
-        """
+        """매수 또는 매도 여부를 확인합니다."""
         gubun = None
         if self.dict_set['매수주문유형'] == '시장가':
             if not 보유중:
@@ -436,7 +420,6 @@ class BackEngineBaseOms(BackEngineBase):
                     self._check_buy(
                         주문포지션, 현재가, 관심이탈, 분봉고가, 분봉저가, 매수가, 주문수량, 보유수량, 매수호가, 매수호가단위, 매수주문취소시간
                     )
-                    return gubun
 
             elif 매수분할횟수 < self.dict_set['매수분할횟수']:
                 if 매수호가 == 0 and 매도호가 == 0:
@@ -449,11 +432,9 @@ class BackEngineBaseOms(BackEngineBase):
                     self._check_buy(
                         주문포지션, 현재가, 관심이탈, 분봉고가, 분봉저가, 매수가, 주문수량, 보유수량, 매수호가, 매수호가단위, 매수주문취소시간
                     )
-                    return gubun
                 else:
                     관심진입 = 관심종목 and not 관심종목1
                     self._check_sell(보유중, 현재가, 관심진입, 분봉고가, 분봉저가, 매도호가, 매도호가단위, 매도정정횟수, 매도주문취소시간)
-                    return gubun
 
             else:
                 if 매도호가 == 0:
@@ -461,15 +442,11 @@ class BackEngineBaseOms(BackEngineBase):
                 else:
                     관심진입 = 관심종목 and not 관심종목1
                     self._check_sell(보유중, 현재가, 관심진입, 분봉고가, 분봉저가, 매도호가, 매도호가단위, 매도정정횟수, 매도주문취소시간)
-                    return gubun
 
         return gubun
 
     def _cancel_buy_order(self):
-        """매수 주문 취소 조건을 확인합니다.
-        Returns:
-            취소 여부
-        """
+        """매수 주문 취소 조건을 확인합니다."""
         cancel = False
         now_time = self._now()
         거래횟수, 손절횟수, 직전거래시간, 손절매도시간 = self.curr_day_info.values()
@@ -487,10 +464,7 @@ class BackEngineBaseOms(BackEngineBase):
         return cancel
 
     def Buy(self, buy_long=False):
-        """매수 주문을 실행합니다 (OMS 버전).
-        Args:
-            buy_long: 롱 포지션 여부
-        """
+        """매수 주문을 실행합니다 (OMS 버전)."""
         self._get_buy_count(buy_long)
         주문수량 = self.curr_trade_info['주문수량']
         if 주문수량 > 0:
@@ -502,8 +476,8 @@ class BackEngineBaseOms(BackEngineBase):
                     호가배열 = self.bhogainfo[:self.buy_hj_limit]
                     잔량배열 = self.bhreminfo[:self.buy_hj_limit]
 
-                거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
-                if 체결완료:
+                거래금액, 체결가능 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+                if 체결가능:
                     매수가 = self.curr_trade_info['매수가']
                     보유수량 = self.curr_trade_info['보유수량']
                     총수량 = 보유수량 + 주문수량
@@ -529,11 +503,7 @@ class BackEngineBaseOms(BackEngineBase):
                 })
 
     def _get_buy_count(self, buy_long=False):
-        """매수 수량을 계산합니다 (OMS 버전).
-        비중 조절과 분할 매수 비율을 고려하여 주문 수량을 계산합니다.
-        Args:
-            buy_long: 롱 포지션 여부
-        """
+        """매수 수량을 계산합니다 (OMS 버전)."""
         보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1 = self.info_for_order[:-4]
         if self.set_weight[0] == 0:
             betting = self.betting
@@ -571,16 +541,7 @@ class BackEngineBaseOms(BackEngineBase):
             self.curr_trade_info['매수호가_'] = 기준가격 + self.hoga_unit * self.dict_set['매수지정가호가번호']
 
     def _check_divid_buy(self, 포지션, 현재가, 추가매수가, 수익률):
-        """분할 매수 조건을 확인합니다.
-        수익률에 따른 분할 매수 조건을 확인하고 매수를 실행합니다.
-        Args:
-            포지션: 시가총액 또는 포지션
-            현재가: 현재 가격
-            추가매수가: 추가 매수 가격
-            수익률: 수익률
-        Returns:
-            매수 실행 여부
-        """
+        """분할 매수 조건을 확인합니다."""
         분할매수기준수익률 = round((현재가 / 추가매수가 - 1) * 100, 2) if self.dict_set['매수분할고정수익률'] else 수익률
         if self.market_gubun < 6:
             if self.dict_set['매수분할하방'] and 분할매수기준수익률 < -self.dict_set['매수분할하방수익률']:
@@ -605,9 +566,7 @@ class BackEngineBaseOms(BackEngineBase):
         return False
 
     def _check_buy(self, 주문포지션, 현재가, 관심이탈, 분봉고가, 분봉저가, 매수가, 주문수량, 보유수량, 매수호가, 매수호가단위, 매수주문취소시간):
-        """매수 주문 정정/취소 조건을 확인합니다.
-        관심 종목 이탈, 시간 초과 등 조건에 따라 매수 주문을 취소합니다.
-        """
+        """매수 주문 정정/취소 조건을 확인합니다. 관심 종목 이탈, 시간 초과 등 조건에 따라 매수 주문을 취소합니다."""
         if self.dict_set['매수취소관심이탈'] and 관심이탈:
             self.curr_trade_info['매수호가'] = 0
 
@@ -652,12 +611,7 @@ class BackEngineBaseOms(BackEngineBase):
                 self._update_buy_info(주문포지션, True if 매수가 == 0 else False)
 
     def _update_buy_info(self, 주문포지션, firstbuy):
-        """매수 정보를 업데이트합니다.
-        매수 체결 후 거래 정보를 업데이트합니다.
-        Args:
-            주문포지션 (str or None): 주문 포지션
-            firstbuy (bool): 첫 매수 여부
-        """
+        """매수 정보를 업데이트합니다."""
         datetimefromindex = dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))
         self.curr_trade_info.update({
             '보유중': 1 if 주문포지션 is None or 주문포지션 == 'LONG' else 2,
@@ -679,14 +633,7 @@ class BackEngineBaseOms(BackEngineBase):
         self.curr_trade_info['매수분할횟수'] += 1
 
     def _check_sonjeol(self, 수익률, 수익금):
-        """익절/손절 조건을 확인합니다.
-        수익률과 수익금에 따른 익절/손절 조건을 확인하고 청산합니다.
-        Args:
-            수익률: 수익률
-            수익금: 수익금
-        Returns:
-            청산 실행 여부
-        """
+        """익절/손절 조건을 확인합니다."""
         A = self.dict_set['매도익절수익률청산'] and 수익률 > self.dict_set['매도익절수익률']
         B = self.dict_set['매도익절수익금청산'] and 수익금 > self.dict_set['매도익절수익금']
         C = self.dict_set['매도손절수익률청산'] and 수익률 < -self.dict_set['매도손절수익률']
@@ -702,12 +649,7 @@ class BackEngineBaseOms(BackEngineBase):
         return False
 
     def _cancel_sell_order(self, 매수분할횟수):
-        """매도 주문 취소 조건을 확인합니다.
-        Args:
-            매수분할횟수: 매수 분할 횟수
-        Returns:
-            취소 여부
-        """
+        """매도 주문 취소 조건을 확인합니다."""
         cancel = False
         if self.dict_set['매도주문유형'] == '시장가':
             if 매수분할횟수 != self.curr_trade_info['매수분할횟수']:
@@ -728,10 +670,7 @@ class BackEngineBaseOms(BackEngineBase):
         return cancel
 
     def Sell(self, sell_long=False):
-        """매도 주문을 실행합니다 (OMS 버전).
-        Args:
-            sell_long: 롱 포지션 매도 여부
-        """
+        """매도 주문을 실행합니다 (OMS 버전)."""
         self._get_sell_count()
         if self.dict_set['매도주문유형'] == '시장가':
             주문수량 = self.curr_trade_info['주문수량']
@@ -743,8 +682,8 @@ class BackEngineBaseOms(BackEngineBase):
                     호가배열 = self.shogainfo[:self.sell_hj_limit]
                     잔량배열 = self.shreminfo[:self.sell_hj_limit]
 
-                거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
-                if 체결완료:
+                거래금액, 체결가능 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+                if 체결가능:
                     self.curr_trade_info['매도가'] = self._get_order_price(거래금액, 주문수량)
                     self._calculation_eyun()
 
@@ -760,9 +699,7 @@ class BackEngineBaseOms(BackEngineBase):
             })
 
     def _get_sell_count(self):
-        """매도 수량을 계산합니다.
-        분할 매도 비율을 고려하여 주문 수량을 계산합니다.
-        """
+        """매도 수량을 계산합니다."""
         _, _, 현재가, _, _, 매도호가1, 매수호가1, 보유수량, 매도분할횟수 = self.info_for_order[:-2]
         if self.dict_set['매도분할횟수'] == 1:
             self.curr_trade_info['주문수량'] = 보유수량
@@ -783,15 +720,7 @@ class BackEngineBaseOms(BackEngineBase):
             self.curr_trade_info['매도호가_'] = 기준가격 + self.hoga_unit * self.dict_set['매도지정가호가번호']
 
     def _check_divid_sell(self, 포지션, 수익률, 매도분할횟수):
-        """분할 매도 조건을 확인합니다.
-        수익률에 따른 분할 매도 조건을 확인하고 매도를 실행합니다.
-        Args:
-            포지션: 포지션
-            수익률: 수익률
-            매도분할횟수: 매도 분할 횟수
-        Returns:
-            매도 실행 여부
-        """
+        """분할 매도 조건을 확인합니다."""
         if 포지션.__class__ == int:
             if self.dict_set['매도분할하방'] and 수익률 < -self.dict_set['매도분할하방수익률'] * (매도분할횟수 + 1):
                 self.Sell()
@@ -825,9 +754,7 @@ class BackEngineBaseOms(BackEngineBase):
         return False
 
     def _check_sell(self, 보유중, 현재가, 관심진입, 분봉고가, 분봉저가, 매도호가, 매도호가단위, 매도정정횟수, 매도주문취소시간):
-        """매도 주문 정정/취소 조건을 확인합니다.
-        관심 종목 진입, 시간 초과 등 조건에 따라 매도 주문을 취소하거나 정정합니다.
-        """
+        """매도 주문 정정/취소 조건을 확인합니다. 관심 종목 진입, 시간 초과 등 조건에 따라 매도 주문을 취소하거나 정정합니다. """
         if self.dict_set['매도취소관심진입'] and 관심진입:
             self.curr_trade_info['매도호가'] = 0
 
@@ -867,8 +794,7 @@ class BackEngineBaseOms(BackEngineBase):
         매수/매도 거래의 수익률, 수익금 등을 계산하여 결과 큐에 전송합니다.
         보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, 매도호가, \
             매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, 매도분할횟수, \
-            매수주문취소시간, 매도주문취소시간, 주문포지션 = self.curr_trade_info.values()
-        """
+            매수주문취소시간, 매도주문취소시간, 주문포지션 = self.curr_trade_info.values()"""
         vturn, vkey = self.info_for_order[-2:]
         _, 매수가, 매도가, 주문수량, 보유수량, _, _, 매수틱번호, 매수시간, 추가매수시간 = list(self.curr_trade_info.values())[:10]
         if self.is_tick:
@@ -904,13 +830,5 @@ class BackEngineBaseOms(BackEngineBase):
             self.trade_info[vturn][vkey] = get_trade_info(2)
 
     def _set_sell_count(self, 보유수량, 보유비율, oc_ratio):
-        """매도 수량을 설정합니다 (오버라이드용).
-        하위 클래스에서 오버라이드하여 구현합니다.
-        Args:
-            보유수량: 보유 수량
-            보유비율: 보유 비율
-            oc_ratio: 분할 비율
-        Returns:
-            매도 수량
-        """
+        """매도 수량을 설정합니다 (오버라이드용)"""
         return 0

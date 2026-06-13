@@ -3,10 +3,7 @@ from utility.static_method.static_decorator import thread_decorator
 
 
 def backengine_show(ui):
-    """백테스트 엔진 다이얼로그를 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 엔진 다이얼로그를 표시합니다."""
     import sqlite3
     import pandas as pd
     from utility.settings.setting_base import CODE_INFO_TABLES
@@ -47,10 +44,7 @@ def backengine_show(ui):
 # noinspection PyUnresolvedReferences
 @thread_decorator
 def backengine_start(ui):
-    """백테스트 엔진을 시작합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 엔진을 시작합니다."""
     import sqlite3
     import numpy as np
     import pandas as pd
@@ -120,6 +114,8 @@ def backengine_start(ui):
         is_tick = ui.dict_set['타임프레임']
         con = sqlite3.connect(ui.market_info['백테디비'][is_tick])
         df = pd.read_sql(f"SELECT * FROM {ui.market_info['종목디비']}", con).set_index('index')
+        if ui.market_gubun in (6, 7, 8):
+            df.set_index('종목명', drop=False, inplace=True)
         dict_info = df.to_dict('index')
         query = get_moneytop_query(is_tick, ui.startday, ui.endday, ui.starttime, ui.endtime)
         df_mt = pd.read_sql(query, con)
@@ -217,13 +213,7 @@ def backengine_start(ui):
 
 
 def back_code_test1(ui, stg):
-    """전략 코드를 테스트합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        stg: 전략 코드
-    Returns:
-        테스트 결과
-    """
+    """전략 코드를 테스트합니다."""
     import sqlite3
     from backtest.back_code_test import BackCodeTest
     from utility.settings.setting_base import DB_STRATEGY
@@ -245,14 +235,7 @@ def back_code_test1(ui, stg):
 
 
 def back_code_test2(ui, vars_code, ga=False):
-    """범위 코드를 테스트합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        vars_code: 변수 코드
-        ga: GA 최적화 여부
-    Returns:
-        테스트 결과
-    """
+    """범위 코드를 테스트합니다."""
     from backtest.back_code_test import BackCodeTest
 
     while not ui.testQ.empty():
@@ -266,14 +249,7 @@ def back_code_test2(ui, vars_code, ga=False):
 
 
 def back_code_test3(ui, gubun, conds_code):
-    """조건 코드를 테스트합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        gubun: 구분 (매수/매도)
-        conds_code: 조건 코드
-    Returns:
-        테스트 결과
-    """
+    """조건 코드를 테스트합니다."""
     from backtest.back_code_test import BackCodeTest
 
     while not ui.testQ.empty():
@@ -293,13 +269,7 @@ def back_code_test3(ui, gubun, conds_code):
 
 
 def formula_code_test(ui, stg):
-    """수식 코드를 테스트합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        stg: 전략 코드
-    Returns:
-        테스트 결과
-    """
+    """수식 코드를 테스트합니다."""
     import sqlite3
     from backtest.back_code_test import BackCodeTest
     from utility.settings.setting_base import DB_STRATEGY
@@ -321,28 +291,19 @@ def formula_code_test(ui, stg):
 
 
 def get_code_test_result(ui, gubun):
-    """코드 테스트 결과를 가져옵니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        gubun: 구분
-    Returns:
-        테스트 성공 여부
-    """
+    """코드 테스트 결과를 가져옵니다."""
     from utility.settings.setting_base import UI_NUM
 
     data = ui.testQ.get()
     if data == '전략테스트오류':
-        ui.windowQ.put((UI_NUM['시스템로그'], f'{gubun}에 오류가 있어 저장하지 못하였습니다.'))
+        ui.windowQ.put((UI_NUM['시스템로그'], f'오류 알림 - {gubun}에 오류가 있어 저장하지 못하였습니다.'))
         return False
     else:
         return True
 
 
 def clear_backtestQ(ui):
-    """백테스트 큐를 비웁니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 큐를 비웁니다."""
     if not ui.backQ.empty():
         while not ui.backQ.empty():
             ui.backQ.get()
@@ -353,12 +314,9 @@ def clear_backtestQ(ui):
 
 
 def backtest_process_kill(ui, enginekill):
-    """백테스트 프로세스를 중지합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        enginekill: 엔진 중지 여부
-    """
-    from utility.settings.setting_base import UI_NUM
+    """백테스트 프로세스를 중지합니다."""
+    if not ui.ssicon_alert:
+        return
 
     if not ui.backengine_running:
         from PyQt5.QtWidgets import QMessageBox
@@ -378,7 +336,9 @@ def backtest_process_kill(ui, enginekill):
             if count == ui.multi:
                 break
 
+    from utility.settings.setting_base import UI_NUM
     from ui.create_widget.set_style import style_bc_dk
+
     ui.windowQ.put((UI_NUM['백테스트'], '백테스트 중지 완료'))
     ui.ss_pushButtonn_08.setStyleSheet(style_bc_dk)
     ui.ssicon_alert = False

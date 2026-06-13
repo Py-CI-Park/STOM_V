@@ -7,8 +7,7 @@ from ui.event_click.button_clicked_formula import formula_button_clicked, formul
 
 class SetDialogFormula:
     """수식 관리자 다이얼로그 설정 클래스입니다.
-    사용자 수식을 관리하는 다이얼로그를 설정합니다.
-    """
+    사용자 수식을 관리하는 다이얼로그를 설정합니다."""
     def __init__(self, ui_class, wc):
         self.ui = ui_class
         self.wc = wc

@@ -4,13 +4,7 @@ from PyQt5.QtGui import QColor, QTextCharFormat, QFont, QSyntaxHighlighter
 
 
 def color_format(color, style=''):
-    """텍스트 포맷을 생성합니다.
-    Args:
-        color: 텍스트 색상
-        style: 스타일 ('bold', 'italic')
-    Returns:
-        텍스트 포맷
-    """
+    """텍스트 포맷을 생성합니다."""
     _format = QTextCharFormat()
     _format.setForeground(color)
     if 'bold' in style:   _format.setFontWeight(QFont.Bold)
@@ -35,8 +29,7 @@ STYLES = {
 
 class PythonHighlighter(QSyntaxHighlighter):
     """Python 문법 하이라이터 클래스입니다.
-    Python 코드의 문법을 강조 표시합니다.
-    """
+    Python 코드의 문법을 강조 표시합니다."""
     keywords = [
         'and', 'assert', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'exec', 'finally',
         'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'not', 'or', 'pass',

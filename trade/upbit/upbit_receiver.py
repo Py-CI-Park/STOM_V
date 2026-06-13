@@ -5,7 +5,7 @@ from trade.base_receiver import BaseReceiver
 from trade.restapi_upbit import get_symbols_info
 from trade.restapi_upbit import UpbitWebSocketReceiver
 from utility.static_method.static_decorator import error_decorator
-from utility.static_method.static_datetime import now, str_ymdhms_utc
+from utility.static_method.static_datetime import now, str_ymdhms_from_timestamp
 
 
 class UpbitReceiver(BaseReceiver):
@@ -33,15 +33,12 @@ class UpbitReceiver(BaseReceiver):
 
     @error_decorator
     def _convert_real_data(self, data):
-        """실시간 데이터를 변환합니다.
-        Args:
-            data: 데이터
-        """
+        """실시간 데이터를 변환합니다."""
         if self.dict_bool['프로세스종료']:
             return
 
         if data['type'] == 'orderbook':
-            dt = int(str_ymdhms_utc(data['timestamp']))
+            dt = int(str_ymdhms_from_timestamp(data['timestamp']))
             if self.dict_set['전략종료시간'] < dt % 1000000:
                 return
 
@@ -75,7 +72,10 @@ class UpbitReceiver(BaseReceiver):
                                    hoga_bamount, hoga_tamount, receivetime)
 
         elif data['type'] == 'ticker':
-            dt    = int(str_ymdhms_utc(data['timestamp']))
+            dt = int(str_ymdhms_from_timestamp(data['timestamp']))
+            if self.dict_set['전략종료시간'] < dt % 1000000:
+                return
+
             code  = data['code']
             c     = data['trade_price']
             o     = data['opening_price']

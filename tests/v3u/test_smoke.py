@@ -139,6 +139,39 @@ def test_runtime_state_attrs_initialized(main_window) -> None:
     )
 
 
+def test_cpuper_network_stat_attrs_initialized(main_window) -> None:
+    """결함 #16: V3.24 upstream이 `ui/etcetera/process_starter.py:_update_cpuper`에
+    `net_io.bytes_recv - ui.last_recv` 읽기-후-쓰기(read-before-write) 코드를 추가했다.
+
+    last_recv가 init에 없으면 `__getattr__` no-op fallback이 함수 객체를 반환해
+    `int - function` TypeError가 데몬 스레드에서 매초 발생하고, 자기치유 할당
+    (process_starter.py:96)에 도달하지 못해 memory_per/net_recv가 영구 미설정된다.
+    그 결과 `update_progressbar.py:42` `setValue(함수객체)` TypeError를
+    UpdateProgressBar의 try/except가 매 500ms 조용히 삼켜 MEM/NET 게이지·버튼
+    스타일·백테 깜빡임·오류 알림·풍경사진 요청이 전부 비활성되는 침묵 연쇄가 생긴다.
+
+    attr inventory 도구는 `ui.X =` 외부 할당을 '커버됨'으로 분류하므로
+    (scripts/v3u_attr_inventory_diff.py:137) 이 read-before-write 패턴을 잡지 못한다.
+    본 케이스가 해당 맹점의 회귀 안전망이다.
+    """
+    # 외부 읽기 site: process_starter.py:95 (last_recv),
+    # update_progressbar.py:42/45 (memory_per), :43/46 (net_recv)
+    for attr in ("last_recv", "memory_per", "cpu_per"):
+        value = getattr(main_window, attr)
+        assert isinstance(value, int) and not isinstance(value, bool), (
+            f"{attr}는 _init_runtime_state에서 int 0으로 고정 필요, "
+            f"실제 {type(value).__name__} {value!r} — __getattr__ fallback이 가리면 "
+            f"외부 read site에서 TypeError 연쇄 발생 (결함 #16)"
+        )
+    assert isinstance(main_window.net_recv, (int, float)) and not callable(main_window.net_recv), (
+        f"net_recv는 숫자 init 필요, 실제 {type(main_window.net_recv).__name__}"
+    )
+
+    # V3.24 외부 계약 산술 재현: process_starter.py:95가 TypeError 없이 동작해야 한다.
+    recv_bps = 123_456_789 - main_window.last_recv
+    assert isinstance(recv_bps, int)
+
+
 def test_qlist_v3_convention_order(main_window) -> None:
     """qlist 인덱스가 V3 worker 컨벤션을 따른다.
 
@@ -225,7 +258,9 @@ def test_web_dashboard_attr_present_for_safe_attribute_access(main_window) -> No
 def test_proc_chqs_safe_for_is_alive_call(main_window) -> None:
     """결함 #12: 외부 20+ site가 ui.proc_chqs.is_alive()를 None 체크 없이 호출.
 
-    _NullProcess placeholder가 부착되어 AttributeError 없이 False를 반환해야 한다.
+    STOM_V3U_DISABLE_CHQS=1(conftest) 환경에서는 _NullProcess placeholder가
+    부착되어 AttributeError 없이 False를 반환해야 한다. 실 spawn 계약은
+    test_chart_hoga_query_spawn_contract가 검증한다 (A5).
     """
     assert hasattr(main_window, "proc_chqs"), "proc_chqs attr 누락"
     # None이면 외부에서 .is_alive() 호출 시 AttributeError → V3U 결함
@@ -240,6 +275,144 @@ def test_proc_chqs_safe_for_is_alive_call(main_window) -> None:
         assert callable(getattr(main_window.proc_chqs, method, None)), (
             f"proc_chqs.{method} 누락 (Process 인터페이스 위반)"
         )
+
+
+def test_chart_hoga_query_spawn_contract(qapp, monkeypatch) -> None:
+    """A5 (결함 #12 잔여 의무 완결): V3 pyd가 부팅 시 spawn하던 ChartHogaQuery를
+    V3U `_init_workers`가 2U 선례(wt-2u/ui/ui_mainwindow.py:344)와 동일 계약으로
+    spawn한다.
+
+    검증 계약:
+    - target은 ChartHogaQuery 클래스 (child가 생성자 → _main_loop 진입)
+    - args는 (qlist, dict_set) — qlist[2]=queryQ/[4]=chartQ/[5]=hogaQ 소비
+    - daemon=True (2U 선례와 동일, main exit 시 OS cleanup 보장)
+    - start() 호출됨 → 외부 가드 47곳의 `ui.proc_chqs.is_alive()`가 True
+    - process_kill()이 terminate로 종료 (A5 cleanup 계약)
+
+    실 child process는 talib import + sqlite 연결 + 무한 루프로 무거우므로
+    Process를 spy로 monkeypatch해 spawn 계약만 검증한다.
+    """
+    import ui.main_window as mwmod
+
+    spawned: dict = {}
+
+    class _SpyProcess:
+        def __init__(self, target=None, args=(), daemon=None, **_kwargs):
+            spawned["target"] = target
+            spawned["args"] = args
+            spawned["daemon"] = daemon
+            self._alive = False
+
+        def start(self):
+            spawned["started"] = True
+            self._alive = True
+
+        def is_alive(self):
+            return self._alive
+
+        def terminate(self):
+            spawned["terminated"] = True
+            self._alive = False
+
+        def join(self, *_a, **_k):
+            return None
+
+        @property
+        def pid(self):
+            return 99999
+
+    monkeypatch.delenv("STOM_V3U_DISABLE_CHQS", raising=False)
+    monkeypatch.setattr(mwmod, "Process", _SpyProcess)
+
+    mw = mwmod.MainWindow(auto_run=0, splash=None)
+    try:
+        from utility.sub_process_and_thread.chart_hoga_query import ChartHogaQuery
+
+        assert spawned.get("target") is ChartHogaQuery, (
+            f"spawn target은 ChartHogaQuery여야 함, 실제 {spawned.get('target')!r}"
+        )
+        assert spawned.get("daemon") is True, "2U 선례와 동일하게 daemon=True 필요"
+        assert spawned.get("started") is True, "proc_chqs.start() 미호출"
+        assert spawned["args"][0] is mw.qlist, "args[0]은 qlist (V3 컨벤션 0~12)"
+        assert spawned["args"][1] is mw.dict_set, "args[1]은 dict_set"
+        assert mw.proc_chqs.is_alive() is True, (
+            "spawn 후 외부 가드 `ui.proc_chqs.is_alive()`가 True여야 DB관리/차트 기능 활성"
+        )
+
+        mw.process_kill()
+        assert spawned.get("terminated") is True, "process_kill이 proc_chqs를 terminate해야 함"
+        assert mw.proc_chqs.is_alive() is False
+    finally:
+        try:
+            mw.process_kill()
+        except Exception:
+            pass
+        mw.hide()
+        mw.deleteLater()
+
+
+def test_text_to_speak_attach_contract(qapp, monkeypatch) -> None:
+    """V3.32: tts 윈도우 기본 전환 — supertonic 삭제로 V3U tts_sound placeholder
+    사유가 소멸해 실 worker(TextToSpeak)를 부착한다.
+
+    검증 계약:
+    - TextToSpeak(soundQ, dict_set) 생성자 인자 (tts_sound.py:11)
+    - start() 호출됨 → soundQ 소비자 활성 (알림소리 기능)
+    - 외부 가드 `ui.tts_sound.isRunning()` (etc.py) 안전 호출
+    - process_kill()이 quit/wait로 종료 처리 (webc 선례)
+
+    win32com SAPI COM 초기화는 pytest에서 불필요하므로 TextToSpeak를 spy로
+    monkeypatch해 부착 계약만 검증한다.
+    """
+    import ui.main_window as mwmod
+    import utility.sub_process_and_thread.tts_sound as tts_mod
+
+    attached: dict = {}
+
+    class _SpyTts:
+        def __init__(self, soundQ, dict_set):
+            attached["soundQ"] = soundQ
+            attached["dict_set"] = dict_set
+            self._running = False
+
+        def start(self):
+            attached["started"] = True
+            self._running = True
+
+        def isRunning(self):
+            return self._running
+
+        def quit(self):
+            attached["quit"] = True
+            self._running = False
+
+        def wait(self, *_a, **_k):
+            return True
+
+    monkeypatch.delenv("STOM_V3U_DISABLE_TTS", raising=False)
+    monkeypatch.setattr(tts_mod, "TextToSpeak", _SpyTts)
+
+    mw = mwmod.MainWindow(auto_run=0, splash=None)
+    try:
+        assert isinstance(mw.tts_sound, _SpyTts), (
+            f"tts_sound는 TextToSpeak 인스턴스여야 함, 실제 {type(mw.tts_sound).__name__}"
+        )
+        assert attached.get("started") is True, "tts_sound.start() 미호출"
+        assert attached["soundQ"] is mw.soundQ, "TextToSpeak 첫 인자는 soundQ (qlist[1])"
+        assert attached["dict_set"] is mw.dict_set, "TextToSpeak 둘째 인자는 dict_set"
+        assert mw.tts_sound.isRunning() is True, (
+            "부착 후 외부 가드 `ui.tts_sound.isRunning()`이 True여야 알림소리 활성"
+        )
+
+        mw.process_kill()
+        assert attached.get("quit") is True, "process_kill이 tts_sound.quit()을 호출해야 함"
+    finally:
+        try:
+            mw.process_kill()
+        except Exception:
+            pass
+        mw.hide()
+        mw.deleteLater()
 
 
 def test_safe_webc_run_wrapper_swallows_handle_closed() -> None:

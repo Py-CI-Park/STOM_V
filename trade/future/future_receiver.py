@@ -3,9 +3,9 @@ import sys
 from PyQt5.QtWidgets import QApplication
 from trade.base_receiver import BaseReceiver
 from utility.settings.setting_base import UI_NUM
-from utility.static_method.static_datetime import now
 from utility.static_method.static_decorator import error_decorator
 from trade.restapi_ls import LsRestAPI, LsRestData, LsWebSocketReceiver
+from utility.static_method.static_datetime import now, dt_ymd, timedelta_day, str_ymd
 
 
 class FutureReceiver(BaseReceiver):
@@ -15,6 +15,8 @@ class FutureReceiver(BaseReceiver):
         app = QApplication(sys.argv)
 
         super().__init__(qlist, dict_set, market_infos)
+
+        self.update_today = False
 
         self.ls = LsRestAPI(self.windowQ, self.access_key, self.secret_key)
         self.token = self.ls.create_token()
@@ -39,10 +41,7 @@ class FutureReceiver(BaseReceiver):
 
     @error_decorator
     def _convert_real_data(self, data):
-        """실시간 데이터를 변환합니다.
-        Args:
-            data: 데이터
-        """
+        """실시간 데이터를 변환합니다."""
         if self.dict_bool['프로세스종료']:
             return
 
@@ -51,11 +50,18 @@ class FutureReceiver(BaseReceiver):
         body  = data['body']
 
         if tr_cd == self.tr_cd_hoga:
-            str_hms = body['hotime']
-            if int(str_hms) < self.market_open:
-                return
+            strhms = body['hotime']
+            inthms = int(strhms)
 
-            dt = int(f"{self.str_today}{str_hms}")
+            if self.market_gubun == 6:
+                if inthms < self.market_open:
+                    return
+            else:
+                self._update_today(inthms)
+                if not (self.market_open <= inthms or inthms <= self.market_close):
+                    return
+
+            dt = int(f"{self.str_today}{strhms}")
             code = body['futcode']
             hoga_seprice = [
                 float(body['offerho1']), float(body['offerho2']), float(body['offerho3']),
@@ -80,11 +86,18 @@ class FutureReceiver(BaseReceiver):
                                    hoga_bamount, hoga_tamount, start)
 
         elif tr_cd == self.tr_cd_trade:
-            str_hms = body['chetime']
-            if int(str_hms) < self.market_open:
-                return
+            strhms = body['chetime']
+            inthms = int(strhms)
 
-            dt = int(f"{self.str_today}{str_hms}")
+            if self.market_gubun == 6:
+                if inthms < self.market_open:
+                    return
+            else:
+                self._update_today(inthms)
+                if not (self.market_open <= inthms or inthms <= self.market_close):
+                    return
+
+            dt    = int(f"{self.str_today}{strhms}")
             code  = body['futcode']
             c     = float(body['price'])
             o     = float(body['open'])
@@ -106,3 +119,8 @@ class FutureReceiver(BaseReceiver):
                     text = LsRestData.장운영상태[operation]
                     self.windowQ.put((UI_NUM['기본로그'], f'장운영 정보 수신 알림 - {text}'))
                     self.soundQ.put(text)
+
+    def _update_today(self, inthms):
+        if inthms < 100 and not self.update_today:
+            self.str_today = str_ymd(timedelta_day(1, dt_ymd(self.str_today)))
+            self.update_today = True

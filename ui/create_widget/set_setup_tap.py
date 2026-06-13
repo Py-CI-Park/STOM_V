@@ -1,17 +1,18 @@
 
+from ui.etcetera.etc import tts_sound_test
 from ui.event_change.changed_checkbox import *
 from ui.create_widget.set_style import style_bc_dk
 from ui.event_click.button_clicked_settings import *
 from PyQt5.QtWidgets import QLabel, QTabWidget, QWidget
 from ui.event_activate import activated_etc, activated_stg
 from ui.event_click.button_clicked_etc import lvbutton_clicked_01
-from ui.event_click.button_clicked_show_dialog import show_pattern_dialog
+from ui.event_activate.activated_etc import mactivated_01, mactivated_02, mactivated_03
+from ui.event_click.button_clicked_show_dialog import show_pattern_dialog, show_passticks_dialog
 
 
 class SetSetupTap:
     """설정 탭 설정 클래스입니다.
-    일반설정과 주문설정 탭을 설정합니다.
-    """
+    일반설정과 주문설정 탭을 설정합니다."""
     def __init__(self, ui_class, wc):
         self.ui = ui_class
         self.wc = wc
@@ -46,18 +47,21 @@ class SetSetupTap:
 
         from utility.settings.setting_market import DICT_MARKET_GUBUN
         self.ui.sj_main_labell_01 = QLabel('▣  거래소 선택', self.ui.sj_bs_groupBox_01)
-        self.ui.sj_main_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=list(DICT_MARKET_GUBUN.keys()), tip='사용할 거래소를 선택하십시오.')
+        self.ui.sj_main_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=list(DICT_MARKET_GUBUN.keys()), activated=lambda: mactivated_01(self.ui), tip='사용할 거래소를 선택하십시오.')
         self.ui.sj_main_cheBox_01 = self.wc.setCheckBox('모의투자', self.ui.sj_bs_groupBox_01, changed=lambda state: checkbox_changed_01(self.ui, state), tip='체크 해제 시 실매매')
         self.ui.sj_main_cheBox_02 = self.wc.setCheckBox('데이터저장', self.ui.sj_bs_groupBox_01, tip='전략종료 후 데이터 저장 여부를 설정한다.')
-        self.ui.sj_main_cheBox_03 = self.wc.setCheckBox('알림소리', self.ui.sj_bs_groupBox_01, tip='시스템 이벤트를 tts를 통해 소리로 알려준다.')
         self.ui.sj_main_labell_02 = QLabel('▣  타임프레임 선택                                          ▣  프로그램 비밀번호', self.ui.sj_bs_groupBox_01)
         self.ui.sj_main_comBox_02 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['1초스냅샷', '1분봉'], tip='사용할 타임프레임을 설정한다.')
         self.ui.sj_main_liEdit_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_01, passhide=True)
 
         self.ui.sj_main_labell_03 = QLabel('▣  바이낸스선물                                                     마진타입                            포지션', self.ui.sj_bs_groupBox_01)
         self.ui.sj_lvrg_Button_01 = self.wc.setPushbutton('레버리지 유형 설정', parent=self.ui.sj_bs_groupBox_01, bounced=True, click=lambda: lvbutton_clicked_01(self.ui), tip='바이낸스 선물 레버리지를 고정, 변동 형태 중 선택하여 설정한다.')
-        self.ui.sj_main_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['격리', '교차'], activated=activated_stg.activated_10)
-        self.ui.sj_main_comBox_04 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['단방향', '양방향'], activated=activated_stg.activated_11)
+        self.ui.sj_main_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['격리', '교차'], activated=lambda: mactivated_02(self.ui))
+        self.ui.sj_main_comBox_04 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['단방향', '양방향'], activated=lambda: mactivated_03(self.ui))
+
+        self.ui.sj_main_cheBox_03 = self.wc.setCheckBox('알림소리   |   읽기속도', self.ui.sj_bs_groupBox_01, tip='시스템 이벤트를 tts를 통해 소리로 알려준다.')
+        self.ui.sj_main_comBox_05 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['0', '1', '2', '3', '4', '5'])
+        self.ui.sj_main_Button_01 = self.wc.setPushbutton('테스트', parent=self.ui.sj_bs_groupBox_01, bounced=True, click=lambda: tts_sound_test(self.ui), tip='선택한 읽기속도를 테스트한다.')
 
         # --------------------------------------------------------------------------------------------------------------
 
@@ -180,6 +184,8 @@ class SetSetupTap:
         self.ui.sj_etc_liEditt_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_06)
         self.ui.sj_etc_checBox_06 = self.wc.setCheckBox('프로그램 종료 시 창위치 기억하기', self.ui.sj_bs_groupBox_06)
         self.ui.sj_etc_checBox_07 = self.wc.setCheckBox('프로세스 종료 시 프로그램종료', self.ui.sj_bs_groupBox_06)
+        self.ui.sj_etc_checBox_08 = self.wc.setCheckBox('프로그램 시작 시 작은창 모드', self.ui.sj_bs_groupBox_06)
+        self.ui.sj_etc_checBox_09 = self.wc.setCheckBox('작은창 모드 시 관심종목 표시', self.ui.sj_bs_groupBox_06)
         self.ui.sj_etc_labelll_02 = QLabel('▣  시리얼키', self.ui.sj_bs_groupBox_06)
         self.ui.sj_etc_liEditt_02 = self.wc.setLineedit(self.ui.sj_bs_groupBox_06, passhide=True)
         self.ui.sj_etc_daEditt_01 = self.wc.setDateEdit(self.ui.sj_bs_groupBox_06, popup=False)
@@ -201,7 +207,7 @@ class SetSetupTap:
         self.ui.sj_save_Button_06 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_06, bounced=True, click=self.ui.setting_serial_save)
 
         self.ui.sj_etc_pButton_01 = self.wc.setPushbutton('계정 텍스트 보기', parent=self.ui.sj_bs_groupBox_01, bounced=True, click=lambda: setting_acc_view(self.ui))
-        self.ui.sj_etc_pButton_02 = self.wc.setPushbutton('경과틱수 변수설정', parent=self.ui.sj_bs_groupBox_04, bounced=True, click=lambda: setting_passticks(self.ui))
+        self.ui.sj_etc_pButton_02 = self.wc.setPushbutton('경과틱수 변수설정', parent=self.ui.sj_bs_groupBox_04, bounced=True, click=lambda: show_passticks_dialog(self.ui))
         self.ui.sj_etc_pButton_03 = self.wc.setPushbutton('각종 분석 학습', parent=self.ui.sj_bs_groupBox_05, bounced=True, click=lambda: show_pattern_dialog(self.ui))
 
         # --------------------------------------------------------------------------------------------------------------
@@ -226,7 +232,6 @@ class SetSetupTap:
         self.ui.sj_main_comBox_01.setGeometry(110, 30, 120, 20)
         self.ui.sj_main_cheBox_01.setGeometry(250, 30, 90, 20)
         self.ui.sj_main_cheBox_02.setGeometry(345, 30, 90, 20)
-        self.ui.sj_main_cheBox_03.setGeometry(440, 30, 90, 20)
         self.ui.sj_main_labell_02.setGeometry(562, 30, 500, 20)
         self.ui.sj_main_comBox_02.setGeometry(672, 30, 100, 20)
         self.ui.sj_main_liEdit_01.setGeometry(910, 30, 165, 20)
@@ -235,6 +240,9 @@ class SetSetupTap:
         self.ui.sj_lvrg_Button_01.setGeometry(110, 55, 120, 20)
         self.ui.sj_main_comBox_03.setGeometry(300, 55, 60, 20)
         self.ui.sj_main_comBox_04.setGeometry(420, 55, 85, 20)
+        self.ui.sj_main_cheBox_03.setGeometry(562, 55, 200, 20)
+        self.ui.sj_main_comBox_05.setGeometry(702, 55, 70, 20)
+        self.ui.sj_main_Button_01.setGeometry(785, 55, 70, 20)
 
         self.ui.sj_accc_labell_01.setGeometry(10, 30, 1000, 20)
         self.ui.sj_accc_liEdit_01.setGeometry(110, 30, 425, 20)
@@ -310,6 +318,8 @@ class SetSetupTap:
 
         self.ui.sj_etc_checBox_06.setGeometry(820, 30, 250, 20)
         self.ui.sj_etc_checBox_07.setGeometry(820, 55, 250, 20)
+        self.ui.sj_etc_checBox_08.setGeometry(820, 80, 170, 20)
+        self.ui.sj_etc_checBox_09.setGeometry(1000, 80, 170, 20)
         self.ui.sj_etc_labelll_02.setGeometry(10, 110, 80, 20)
         self.ui.sj_etc_liEditt_02.setGeometry(80, 110, 880, 20)
         self.ui.sj_etc_daEditt_01.setGeometry(965, 110, 120, 20)

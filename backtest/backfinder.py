@@ -11,8 +11,7 @@ from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, UI_NUM
 
 class BackFinder:
     """백파인더를 실행하는 클래스입니다.
-    전략의 tickcols와 tickdata를 검증합니다.
-    """
+    전략의 tickcols와 tickdata를 검증합니다."""
     def __init__(self, sc, wq, sq, tq, lq, beq_list, dict_set, market_infos, avgtime, startday, endday,
                  starttime, endtime, buystg_name, back_count):
         self.shared_cnt   = sc
@@ -41,9 +40,7 @@ class BackFinder:
             self._sys_exit(True)
 
     def _start(self):
-        """백파인더를 시작합니다.
-        전략의 tickcols와 tickdata를 검증합니다.
-        """
+        """백파인더를 시작합니다."""
         con = sqlite3.connect(DB_STRATEGY)
         dfb = pd.read_sql(f"SELECT * FROM {self.market_info['전략구분']}_buy", con).set_index('index')
         con.close()
@@ -109,10 +106,7 @@ class BackFinder:
         self._sys_exit(False)
 
     def _sys_exit(self, cancel):
-        """시스템을 종료합니다.
-        Args:
-            cancel: 취소 여부
-        """
+        """시스템을 종료합니다."""
         if cancel:
             self.wq.put((UI_NUM['백테스트'], '백파인더 STOP'))
         else:

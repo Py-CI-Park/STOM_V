@@ -9,8 +9,7 @@ from utility.settings.setting_base import ICON_PATH
 
 class StomSplashScreen(QSplashScreen):
     """STOM 스플래시 스크린 클래스입니다.
-    애플리케이션 시작 시 로딩 화면을 표시합니다.
-    """
+    애플리케이션 시작 시 로딩 화면을 표시합니다."""
     def __init__(self):
         super().__init__()
 
@@ -73,10 +72,10 @@ class StomSplashScreen(QSplashScreen):
         logo_container.setSpacing(15)
 
         icon_label = QLabel()
-        pixmap = QPixmap(f'{ICON_PATH}/logo.png')
-        icon_label.setPixmap(pixmap.scaled(60, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        pixmap = QPixmap(f'{ICON_PATH}/python.png')
+        icon_label.setPixmap(pixmap.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         icon_label.setAlignment(Qt.AlignCenter)
-        icon_label.setFixedSize(60, 50)
+        icon_label.setFixedSize(50, 70)
 
         try:
             with open("_update.txt", "r", encoding="utf-8") as f:
@@ -94,7 +93,7 @@ class StomSplashScreen(QSplashScreen):
                     stop:0 #4a90e2, stop:0.5 #64b5f6, stop:1 #4a90e2);
                 font-size: 50px;
                 font-weight: 900;
-                font-family: 'Segoe UI', 'Malgun Gothic';
+                font-family: 'Segoe UI', '나눔고딕';
                 text-transform: uppercase;
                 letter-spacing: 2px;
             }
@@ -111,7 +110,7 @@ class StomSplashScreen(QSplashScreen):
             QLabel {
                 color: #b0bec5;
                 font-size: 14px;
-                font-family: 'Segoe UI', 'Malgun Gothic';
+                font-family: 'Segoe UI', '나눔고딕';
                 letter-spacing: 3px;
                 text-transform: uppercase;
                 font-weight: 500;
@@ -124,7 +123,7 @@ class StomSplashScreen(QSplashScreen):
             QLabel {
                 color: #607d8b;
                 font-size: 12px;
-                font-family: 'Consolas', 'Malgun Gothic';
+                font-family: 'Consolas', '나눔고딕';
                 background: rgba(255, 255, 255, 0.05);
                 padding: 5px 15px;
                 border-radius: 12px;
@@ -138,7 +137,7 @@ class StomSplashScreen(QSplashScreen):
             QLabel {
                 color: #eceff1;
                 font-size: 16px;
-                font-family: 'Segoe UI', 'Malgun Gothic';
+                font-family: 'Segoe UI', '나눔고딕';
                 font-weight: 500;
             }
         """)
@@ -183,11 +182,7 @@ class StomSplashScreen(QSplashScreen):
         self.setLayout(final_layout)
 
     def show_progress(self, message, progress=None):
-        """진행률을 표시합니다.
-        Args:
-            message: 상태 메시지
-            progress: 진행률 값
-        """
+        """진행률을 표시합니다."""
         self.status_label.setText(message)
         if progress is not None:
             current_value = self.progress_bar.value()
@@ -245,7 +240,7 @@ class StomSplashScreen(QSplashScreen):
             QLabel {
                 color: #4caf50;
                 font-size: 16px;
-                font-family: 'Segoe UI', 'Malgun Gothic';
+                font-family: 'Segoe UI', '나눔고딕';
                 font-weight: 600;
             }
         """)

@@ -9,7 +9,6 @@ import pandas as pd
 from traceback import format_exc
 from multiprocessing import Process, Queue
 from backtest.back_static import send_result, get_moneytop_query
-from utility.static_method.static_decorator import error_decorator
 from utility.static_method.version_manager import stg_save_version
 from utility.settings.setting_base import UI_NUM, DB_STRATEGY, DB_BACKTEST
 from utility.static_method.static_datetime import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
@@ -17,8 +16,7 @@ from utility.static_method.static_datetime import now, timedelta_day, timedelta_
 
 class Total:
     """유전 알고리즘 최적화를 실행하는 클래스입니다.
-    유전 알고리즘을 사용하여 파라미터 최적화를 수행합니다.
-    """
+    유전 알고리즘을 사용하여 파라미터 최적화를 수행합니다."""
     def __init__(self, wq, tq, mq, bstq_list, dict_set):
         self.wq           = wq
         self.tq           = tq
@@ -44,9 +42,7 @@ class Total:
         self._main_loop()
 
     def _main_loop(self):
-        """메인 루프를 실행합니다.
-        백테스트 결과를 수집하고 유전 알고리즘 최적화를 수행합니다.
-        """
+        """메인 루프를 실행합니다. 백테스트 결과를 수집하고 유전 알고리즘 최적화를 수행합니다."""
         sc = 0
         bc = 0
         st = {}
@@ -136,10 +132,7 @@ class Total:
         sys.exit()
 
     def _back_info(self, data):
-        """백테스트 정보를 설정합니다.
-        Args:
-            data: 백테스트 정보 데이터
-        """
+        """백테스트 정보를 설정합니다."""
         self.betting      = data[1]
         self.startday     = data[2]
         self.endday       = data[3]
@@ -152,21 +145,14 @@ class Total:
             self.sub_total = 2
 
     def _get_send_data(self, vturn, vkey):
-        """전송 데이터를 생성합니다.
-        Args:
-            vturn: 회전 수
-            vkey: 키 값
-        Returns:
-            전송 데이터 리스트
-        """
+        """전송 데이터를 생성합니다."""
         index = vturn * 20 + vkey
         return ['GA최적화', self.wq, self.mq, self.stdp, self.optistandard, 0, vturn, vkey, self.vars_lists[index], self.startday, self.endday, self.std_list, self.betting]
 
 
 class OptimizeGeneticAlgorithm:
     """유전 알고리즘 최적화 엔진 클래스입니다.
-    유전 알고리즘을 사용하여 파라미터 최적화를 수행합니다.
-    """
+    유전 알고리즘을 사용하여 파라미터 최적화를 수행합니다."""
     def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, bstq_list, multi, backname, ui_gubun, dict_set, market_infos):
         self.shared_cnt   = sc
         self.wq           = wq
@@ -180,6 +166,7 @@ class OptimizeGeneticAlgorithm:
         self.backname     = backname
         self.ui_gubun     = ui_gubun
         self.dict_set     = dict_set
+        self.is_tick      = self.dict_set['타임프레임']
         self.market_gubun = market_infos[0]
         self.market_info  = market_infos[1]
         self.high_list    = []
@@ -195,13 +182,11 @@ class OptimizeGeneticAlgorithm:
         try:
             self._start()
         except SystemExit:
-            pass
+            sys.exit()
         except Exception:
             self.wq.put((UI_NUM['시스템로그'], format_exc()))
             self.tq.put('백테중지')
 
-    # noinspection PyUnresolvedReferences
-    @error_decorator
     def _start(self):
         """유전 알고리즘 최적화를 시작합니다."""
         start_time = now()
@@ -254,8 +239,8 @@ class OptimizeGeneticAlgorithm:
             self._sys_exit(True)
 
         con   = sqlite3.connect(self.market_info['백테디비'][self.is_tick])
-        query = get_moneytop_query(is_tick, startday, endday, starttime, endtime)
-        df_mt = pd.read_sql(query, con)
+        query = get_moneytop_query(self.is_tick, startday, endday, starttime, endtime)
+        df_mt: pd.DataFrame = pd.read_sql(query, con)
         con.close()
 
         if len(df_mt) == 0 or back_count == 0:
@@ -283,18 +268,17 @@ class OptimizeGeneticAlgorithm:
             self.wq.put((UI_NUM['백테스트'], '시장미시구조분석 미적용 상태입니다. 설정을 변경하십시오.'))
             self._sys_exit(True)
 
-        if is_tick:
+        if self.is_tick:
             df_mt['일자'] = (df_mt['index'].values // 1000000).astype(np.int64)
         else:
             df_mt['일자'] = (df_mt['index'].values // 10000).astype(np.int64)
         day_list = df_mt['일자'].unique()
         day_list.sort()
 
-        valid_days = None
+        valid_days = []
         startday, endday = day_list[0], day_list[-1]
         train_count = len([x for x in day_list if startday <= x <= endday])
         if 'V' in self.backname:
-            valid_days = []
             for vsday, veday in valid_days_:
                 try:
                     valid_days_list = [x for x in day_list if vsday <= x <= veday]
@@ -412,10 +396,7 @@ class OptimizeGeneticAlgorithm:
         self._sys_exit(False)
 
     def _get_varslist(self):
-        """변수 리스트를 생성합니다.
-        Returns:
-            변수 리스트
-        """
+        """변수 리스트를 생성합니다."""
         vars_lists = []
         limit_time = timedelta_sec(30)
         for _ in range(1000):
@@ -430,12 +411,7 @@ class OptimizeGeneticAlgorithm:
         return vars_lists
 
     def _set_optilist(self, count, rank, goal):
-        """최적화 리스트를 설정합니다.
-        Args:
-            count: 카운트
-            rank: 랭크
-            goal: 목표
-        """
+        """최적화 리스트를 설정합니다."""
         self.vars_list = [[] for _ in self.vars_list]
         rs_list = sorted(self.result.items(), key=lambda x: x[0], reverse=True)
 
@@ -467,13 +443,7 @@ class OptimizeGeneticAlgorithm:
                     self.vars_list[i].append(vars_)
 
     def _save_varslist(self, rank, optistandard, buystg, sellstg):
-        """변수 리스트를 저장합니다.
-        Args:
-            rank: 랭크
-            optistandard: 최적화 기준
-            buystg: 매수 전략
-            sellstg: 매도 전략
-        """
+        """변수 리스트를 저장합니다."""
         rs_list = sorted(self.result.items(), key=lambda x: x[0], reverse=True)
         con = sqlite3.connect(DB_BACKTEST)
         for std, vars_list in rs_list[:rank]:
@@ -485,10 +455,7 @@ class OptimizeGeneticAlgorithm:
         self.wq.put((UI_NUM['백테스트'], f'{self.backname} 상위100위 결과 저장 완료'))
 
     def _sys_exit(self, cancel):
-        """시스템을 종료합니다.
-        Args:
-            cancel: 취소 여부
-        """
+        """시스템을 종료합니다."""
         if cancel:
             self.wq.put((UI_NUM['백테스트'], f'{self.backname} STOP'))
         else:

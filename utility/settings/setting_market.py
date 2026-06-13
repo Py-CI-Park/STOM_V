@@ -1,6 +1,6 @@
 """시장 설정 모듈입니다.
-백테스트 및 트레이딩 관련 클래스와 데이터베이스 경로를 포함합니다.
-"""
+백테스트 및 트레이딩 관련 클래스와 데이터베이스 경로를 포함합니다."""
+
 from utility.settings.setting_base import DB_PATH
 from trade.stock_korea.stock_trader import StockTrader
 from trade.stock_korea.stock_receiver import StockReceiver
@@ -317,7 +317,7 @@ DICT_MARKET_INFO = {
         '거래대금순위': 10,
         '반올림단위': 3,
         '시작시간': 84500,
-        '종료시간': {0: 143500, 1: 100000},
+        '종료시간': {0: 153500, 1: 100000},
         '프로세스종료시간': 154530,
         '각도계수': {0: [100, 0.000_000_05], 1: [100, 0.000_000_05]},
         '마켓구분': 'future',

@@ -3,7 +3,8 @@ from utility.static_method.static_datetime import str_ymd
 
 
 class LsRestData:
-    """LS증권 RESTAPI 데이터 클래스"""
+    """LS증권 RESTAPI 데이터 클래스
+    각종 주소 및 코드와 TR데이터 항목들을 선언합니다."""
     호스트주소 = 'https://openapi.ls-sec.co.kr:8080'
     웹소켓주소 = 'wss://openapi.ls-sec.co.kr:9443/websocket'
     마지막주소 = {

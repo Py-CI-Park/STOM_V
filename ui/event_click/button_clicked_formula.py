@@ -1,9 +1,6 @@
 
 def formula_activated(ui):
-    """수식을 활성화합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """수식관리자 콤보박스 변경 이벤트를 처리합니다."""
     import sqlite3
     from utility.settings.setting_base import DB_STRATEGY
 
@@ -41,10 +38,7 @@ def formula_activated(ui):
 
 
 def formula_button_clicked(ui):
-    """수식 버튼 클릭 이벤트를 처리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """수식관리자 버튼 클릭 이벤트를 처리합니다."""
     import random
     import sqlite3
     from ui.create_widget.set_text import famous_saying
@@ -80,10 +74,15 @@ def formula_button_clicked(ui):
         style  = int(ui.fm_comboBoxxxxx_04.currentText()[:1])
         stg    = ui.fm_textEdittttt_01.toPlainText()
 
+        name_blacklist = [
+            '시그널', '신뢰도', '리스크', '패턴점수', '패턴신뢰도', '리스크점수', '거래량점수', '거래량신뢰도', '가격대점수', '가격대신뢰도',
+            '변동성점수', '변동성신뢰도', '예상수익률', '익절수익률', '손절수익률', '변손익신뢰도'
+        ]
+
         if name == '' or stg == '':
             QMessageBox.critical(ui.dialog_formula, '오류 알림', '수식명 또는 수식코드가 공백상태입니다.\n')
             return
-        elif name in dict_stg_name.values():
+        elif name in dict_stg_name.values() or name in name_blacklist:
             QMessageBox.critical(ui.dialog_formula, '오류 알림', '글로벌 함수명과 같은 이름을 사용할 수 없습니다.\n')
             return
         elif vtype in ('선:일반', '선:조건') and width > 5:

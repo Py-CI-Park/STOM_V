@@ -10,11 +10,7 @@ def dialog_move(ui):
 
 
 def update_image(ui, data):
-    """이미지를 업데이트합니다.
-    Args:
-        ui: UI 객체
-        data: 이미지 데이터 튜플
-    """
+    """이미지를 업데이트합니다."""
     from PyQt5.QtGui import QPixmap
     from PyQt5.QtCore import QSize, Qt
 
@@ -26,27 +22,25 @@ def update_image(ui, data):
     ui.image_label2.clear()
     qpix = QPixmap()
     qpix.loadFromData(data[2])
-    qpix = qpix.scaled(QSize(335, 602), Qt.IgnoreAspectRatio)
+    qpix = qpix.scaled(QSize(335, 600), Qt.IgnoreAspectRatio)
     ui.image_label2.setPixmap(qpix)
 
 
 def update_dictset(ui, force=False):
-    """설정 딕셔너리를 업데이트합니다.
-    Args:
-        ui: UI 객체
-        force: 설정변경 시 DB 재로딩
-    """
+    """설정 딕셔너리를 업데이트합니다."""
     from utility.settings.setting_user import load_settings
 
     if force:
         ui.dict_set, _ = load_settings()
         change_chart_factors(ui)
+        change_backtest_date_and_time(ui)
         send_dict_set(ui)
 
     update_market_gubun(ui)
 
 
 def change_chart_factors(ui):
+    """팩터설정을 업데이트합니다."""
     is_min = not ui.dict_set['타임프레임']
     if is_min:
         if ui.ft_checkBoxxxxx_02.text() != '분당거래대금': ui.ft_checkBoxxxxx_02.setText('분당거래대금')
@@ -60,7 +54,33 @@ def change_chart_factors(ui):
         if ui.ft_checkBoxxxxx_16.text() != '누적초당매도수수량': ui.ft_checkBoxxxxx_16.setText('누적초당매도수수량')
 
 
+def change_backtest_date_and_time(ui):
+    """백테스트 일자 및 시간을 업데이트합니다."""
+    from PyQt5.QtCore import QDate
+    from utility.static_method.static_datetime import str_hms, dt_hms, timedelta_sec
+
+    if ui.dict_set['백테날짜고정']:
+        qdate = QDate.fromString(ui.dict_set['백테날짜'], 'yyyyMMdd')
+    else:
+        qdate = QDate.currentDate().addDays(-int(ui.dict_set['백테날짜']))
+        qweek = qdate.dayOfWeek()
+        if qweek < 5: qdate = qdate.addDays(-6 - qweek)
+        else:         qdate = qdate.addDays(1 - qweek)
+
+    starttime = str(ui.market_info['시작시간']).zfill(6)
+    endtime   = str_hms(timedelta_sec(-120, dt_hms(str(ui.dict_set['전략종료시간'])))).zfill(6)
+
+    ui.be_dateEdittttt_01.setDate(qdate)
+    ui.be_lineEdittttt_01.setText(starttime)
+    ui.be_lineEdittttt_02.setText(endtime)
+
+    ui.svjb_dateEditt_01.setDate(qdate)
+    ui.svjb_lineEditt_02.setText(starttime)
+    ui.svjb_lineEditt_03.setText(endtime)
+
+
 def send_dict_set(ui):
+    """설정을 업데이트합니다."""
     from ui.etcetera.process_alive import strategy_process_alive, trader_process_alive, receiver_process_alive
 
     if receiver_process_alive(ui):
@@ -78,6 +98,8 @@ def send_dict_set(ui):
         ui.chartQ.put(('설정변경', ui.dict_set))
     if ui.telegram.isRunning():
         ui.teleQ.put(('설정변경', ui.dict_set))
+    if ui.tts_sound.isRunning():
+        ui.soundQ.put(ui.dict_set)
 
     if ui.backengine_running:
         for bpq in ui.back_eques:
@@ -85,6 +107,7 @@ def send_dict_set(ui):
 
 
 def send_analyzer_setting_change(ui):
+    """분석시스템 설정을 업데이트합니다."""
     from ui.etcetera.process_alive import receiver_process_alive
 
     ui.chartQ.put('분석설정변경')
@@ -102,10 +125,7 @@ def send_analyzer_setting_change(ui):
 
 
 def update_market_gubun(ui):
-    """시장 구분을 업데이트합니다.
-    Args:
-        ui: UI 객체
-    """
+    """시장 구분을 업데이트합니다."""
     from utility.settings.setting_market import DICT_MARKET_GUBUN, DICT_MARKET_INFO
 
     ui.market_gubun = DICT_MARKET_GUBUN[ui.dict_set['거래소']]
@@ -116,10 +136,7 @@ def update_market_gubun(ui):
 
 
 def chart_clear(ui):
-    """차트 데이터를 초기화합니다.
-    Args:
-        ui: UI 객체
-    """
+    """차트 데이터를 초기화합니다."""
     ui.ctpg_code    = None
     ui.ctpg_cline   = None
     ui.ctpg_hline   = None
@@ -133,10 +150,7 @@ def chart_clear(ui):
 
 
 def calendar_clicked(ui):
-    """캘린더 클릭 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """캘린더 클릭 이벤트를 처리합니다."""
     import pandas as pd
     from utility.settings.setting_base import COLUMNS_DTT, COLUMNS_DTD, UI_NUM
 
@@ -162,10 +176,7 @@ def calendar_clicked(ui):
 
 
 def chart_screenshot(ui):
-    """차트 스크린샷을 찍습니다.
-    Args:
-        ui: UI 객체
-    """
+    """차트 스크린샷을 찍습니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
@@ -176,10 +187,7 @@ def chart_screenshot(ui):
 
 
 def chart_screenshot2(ui):
-    """차트 스크린샷을 찍습니다 (다이얼로그 기준).
-    Args:
-        ui: UI 객체
-    """
+    """차트 스크린샷을 찍습니다 (다이얼로그 기준)."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
@@ -190,6 +198,7 @@ def chart_screenshot2(ui):
 
 
 def send_chart_screenshot(ui):
+    """차트 스크린샷을 텔레그램큐로 전송합니다."""
     from io import BytesIO
     from PyQt5.QtWidgets import QApplication
     from PyQt5.QtCore import QBuffer, QIODevice
@@ -209,10 +218,7 @@ def send_chart_screenshot(ui):
 
 
 def manual_save_and_exit(ui):
-    """수동으로 저장하고 종료합니다.
-    Args:
-        ui: UI 객체
-    """
+    """수동으로 저장하고 종료합니다."""
     from PyQt5.QtWidgets import QMessageBox
 
     buttonReply = QMessageBox.question(
@@ -226,10 +232,7 @@ def manual_save_and_exit(ui):
 
 
 def strategy_setting_label_change(ui):
-    """전략 설정 라벨을 변경합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 설정 라벨을 변경합니다."""
     if ui.market_gubun < 4 or ui.market_gubun == 5:
         ui.sj_strgy_label_02.setText(
             '종목당투자금                          백만원                  ▣  전략중지 및 잔고청산   |')
@@ -245,6 +248,7 @@ def strategy_setting_label_change(ui):
 
 
 def pattern_setting_help(ui):
+    """분석시스템 도움말을 표시합니다."""
     from ui.create_widget.set_text import pattern_text_list
 
     if ui.dialog_pattern.focusWidget() == ui.ptn_pushButton_00:
@@ -258,3 +262,30 @@ def pattern_setting_help(ui):
     else:
         text = pattern_text_list[4]
     ui.ptn_labellllll_02.setText(text)
+
+
+def change_title_bar_color(window):
+    import ctypes
+    from ui.create_widget.set_style import color_bf_dk, color_fg_bc
+
+    hwnd = int(window.winId())
+    bg_color = (color_bf_dk.blue() << 16) | (color_bf_dk.green() << 8) | color_bf_dk.red()
+    fg_color = (color_fg_bc.blue() << 16) | (color_fg_bc.green() << 8) | color_fg_bc.red()
+
+    # noinspection PyUnresolvedReferences
+    ctypes.windll.dwmapi.DwmSetWindowAttribute(
+        hwnd, 35,
+        ctypes.byref(ctypes.c_int(bg_color)),
+        ctypes.sizeof(ctypes.c_int)
+    )
+    # noinspection PyUnresolvedReferences
+    ctypes.windll.dwmapi.DwmSetWindowAttribute(
+        hwnd, 36,
+        ctypes.byref(ctypes.c_int(fg_color)),
+        ctypes.sizeof(ctypes.c_int)
+    )
+
+
+def tts_sound_test(ui):
+    voice_name = int(ui.sj_main_comBox_05.currentText())
+    ui.soundQ.put(voice_name)

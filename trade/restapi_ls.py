@@ -13,24 +13,21 @@ from utility.static_method.static_etcetera import qtest_qwait
 
 
 class LsRestAPI:
-    """ LS증권 RESTAPI 메인 클래스 - 국내주식, 지수선물, 미국주식, 해외선물 모두 지원"""
+    """ LS증권 RESTAPI 메인 클래스
+    국내주식, ETF, ETN, 지수선물, 야간선물, 미국주식, 해외선물 모두 지원"""
     def __init__(self, windowQ, access, secret):
         self.windowQ = windowQ
         self.access  = access
         self.secret  = secret
         self.token   = None
-        self.tr_cont = False
-        self.tr_cont_key = ''
 
-    def _post(self, gubun: str, cont='N', cont_key='', **kwargs):
+    def _post(self, tr_name: str, **kwargs):
         """요청용 데이터(url, headers, params) 생성 및 전송
-        인자:
-            gubun: TR한글이름
-            cont: 연속조회여부
-            cont_key: 연속조회키
-            **kwargs: TR별 키워드 - LsRestData.tr_data에 미리 선언해두고 조합한다."""
-        url = f'{LsRestData.호스트주소}{LsRestData.마지막주소[gubun]}'
-        if gubun == '토큰발급':
+        tr_name: TR 한글이름
+        **kwargs: TR별 키워드 - LsRestData.tr_data에 미리 선언해두고 조합한다.
+        """
+        url = f'{LsRestData.호스트주소}{LsRestData.마지막주소[tr_name]}'
+        if tr_name == '토큰발급':
             headers = {
                 'content-type': 'application/x-www-form-urlencoded'
             }
@@ -40,30 +37,21 @@ class LsRestAPI:
                 'appsecretkey': self.secret,
                 'scope': 'oob'
             }
+            response = requests.post(url, headers=headers, params=params)
         else:
-            tr_data = LsRestData.tr_data[gubun]
+            tr_data = LsRestData.tr_data[tr_name]
             headers = {
                 'content-type': 'application/json; charset=utf-8',
                 'authorization': f'Bearer {self.token}',
                 'tr_cd': tr_data['tr_cd'],
-                'tr_cont': cont,
-                'tr_cont_key': cont_key
+                'tr_cont': 'N',
+                'tr_cont_key': ''
             }
-            body_key = str(tr_data['body_key'])
+            body_key = tr_data['body_key']
             element_keys = tr_data['element_keys']
             element_values = [kwargs[k] for k in tr_data['element_values']]
             params = {body_key: dict(zip(element_keys, element_values))}
-
-        self.tr_cont = False
-        self.tr_cont_key = ''
-
-        if gubun == '토큰발급':
-            response = requests.post(url, headers=headers, params=params)
-        else:
             response = requests.post(url, headers=headers, data=json.dumps(params))
-
-        self.tr_cont = True if response.headers.get('tr_cont') == 'Y' else False
-        self.tr_cont_key = response.headers.get('tr_cont_key')
 
         return response.json()
 
@@ -124,8 +112,11 @@ class LsRestAPI:
                         exclusion_list.append(code)
                         dict_data.pop(code, None)
 
-                    if i % 100 == 0 or i == last - 1:
-                        self.windowQ.put((UI_NUM['기본로그'], f'국내주식 상장주식수 조회 중 ... [{i+1:04d}/{last:04d}]'))
+                    if (i + 1) % 100 == 0 or i == last - 1:
+                        self.windowQ.put((
+                            UI_NUM['기본로그'],
+                            f'시스템 명령 실행 알림 - 국내주식 상장주식수 조회 중 ... [{i+1:04d}/{last:04d}]'
+                        ))
 
                     qtest_qwait(0.1)
 
@@ -302,16 +293,19 @@ class LsRestAPI:
             tr_name = '해외선물종목정보'
             out_block = LsRestData.tr_data[tr_name]['out_block']
             data = self._post(tr_name, 구분='')
+            name_list = []
             dict_data = {}
             for data in data[out_block]:
                 name = data['BscGdsNm'].replace(' ', '_')
-                dict_data[data['Symbol']] = {
-                    '종목명': name,
-                    '위탁증거금': int(float(data['OpngMgn'])),
-                    '호가단위': float(data['UntPrc']),
-                    '틱가치': float(data['MnChgAmt']),
-                    '소숫점자리수': int(data['DotGb'])
-                }
+                if name not in name_list:
+                    name_list.append(name)
+                    dict_data[data['Symbol']] = {
+                        '종목명': name,
+                        '위탁증거금': int(float(data['OpngMgn'])),
+                        '호가단위': float(data['UntPrc']),
+                        '틱가치': float(data['MnChgAmt']),
+                        '소숫점자리수': int(data['DotGb'])
+                    }
             return dict_data, list(dict_data.keys())
         except Exception:
             self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
@@ -370,8 +364,8 @@ class LsRestAPI:
             주문구분코드 = LsRestData.국내주식주문구분코드[주문구분]
             호가유형코드 = LsRestData.국내주식호가유형코드[호가유형]
             주문조건코드 = LsRestData.국내주식주문조건코드[호가유형]
-            data = self._post(tr_name, 종목코드=종목코드, 주문수량=주문수량, 주문가격=주문가격, 주문구분코드=주문구분코드, 호가유형코드=호가유형코드,
-                              신용거래코드='000', 대출일='', 주문조건코드=주문조건코드, 회원사번호='')
+            data = self._post(tr_name, 종목코드=종목코드, 주문수량=주문수량, 주문가격=주문가격, 주문구분코드=주문구분코드,
+                              호가유형코드=호가유형코드, 신용거래코드='000', 대출일='', 주문조건코드=주문조건코드, 회원사번호='')
             return data[out_block]['OrdNo'], data['rsp_msg']
         except Exception:
             return 0, format_exc()
@@ -438,7 +432,8 @@ class LsRestAPI:
             out_block = LsRestData.tr_data[tr_name]['out_block']
             주문구분코드 = LsRestData.선물주문구분코드[주문구분]
             호가유형코드 = LsRestData.지수선물호가유형코드[호가유형]
-            data = self._post(tr_name, 종목코드=종목코드, 주문구분코드=주문구분코드, 호가유형코드=호가유형코드, 주문가격=주문가격, 주문수량=주문수량)
+            data = self._post(tr_name, 종목코드=종목코드, 주문구분코드=주문구분코드, 호가유형코드=호가유형코드,
+                              주문가격=주문가격, 주문수량=주문수량)
             return data[out_block]['OrdNo'], data['rsp_msg']
         except Exception:
             return 0, format_exc()
@@ -449,7 +444,8 @@ class LsRestAPI:
             tr_name = '지수선물정정주문'
             out_block = LsRestData.tr_data[tr_name]['out_block']
             호가유형코드 = LsRestData.지수선물호가유형코드[호가유형]
-            data = self._post(tr_name, 종목코드=종목코드, 원주문번호=원주문번호, 호가유형코드=호가유형코드, 주문가격=주문가격, 주문수량=주문수량)
+            data = self._post(tr_name, 종목코드=종목코드, 원주문번호=원주문번호, 호가유형코드=호가유형코드,
+                              주문가격=주문가격, 주문수량=주문수량)
             return data[out_block]['OrdNo'], data['rsp_msg']
         except Exception:
             return 0, format_exc()
@@ -471,8 +467,8 @@ class LsRestAPI:
             out_block = LsRestData.tr_data[tr_name]['out_block']
             주문구분코드 = LsRestData.선물주문구분코드[주문구분]
             호가유형코드 = LsRestData.지수선물호가유형코드[호가유형]
-            data = self._post(tr_name, 종목코드=종목코드, 주문구분코드=주문구분코드, 호가유형코드=호가유형코드, 주문가격=주문가격,
-                              주문수량=주문수량)
+            data = self._post(tr_name, 종목코드=종목코드, 주문구분코드=주문구분코드, 호가유형코드=호가유형코드,
+                              주문가격=주문가격, 주문수량=주문수량)
             return data[out_block]['OrdNo'], data['rsp_msg']
         except Exception:
             return 0, format_exc()
@@ -483,8 +479,8 @@ class LsRestAPI:
             tr_name = '야간선물정정주문'
             out_block = LsRestData.tr_data[tr_name]['out_block']
             호가유형코드 = LsRestData.지수선물호가유형코드[호가유형]
-            data = self._post( tr_name, 종목코드=종목코드, 원주문번호=원주문번호, 호가유형코드=호가유형코드, 주문가격=주문가격,
-                               주문수량=주문수량)
+            data = self._post( tr_name, 종목코드=종목코드, 원주문번호=원주문번호, 호가유형코드=호가유형코드,
+                               주문가격=주문가격, 주문수량=주문수량)
             return data[out_block]['OrdNo'], data['rsp_msg']
         except Exception:
             return 0, format_exc()
@@ -544,6 +540,8 @@ class LsRestAPI:
 
 
 class LsWebSocketReceiver(QThread):
+    """LS증권 웹소켓 리시버 스레드 클래스
+    체결 및 호가 데이터를 웹소켓으로 수신합니다."""
     signal = pyqtSignal(dict)
 
     def __init__(self, gubun, token, symbols, windowQ):
@@ -560,6 +558,7 @@ class LsWebSocketReceiver(QThread):
         self.conn_hg = False
 
     def run(self):
+        """웹소켓 루프를 실행합니다."""
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         self.loop.create_task(self._run_cg())
@@ -568,6 +567,7 @@ class LsWebSocketReceiver(QThread):
 
     # noinspection PyUnresolvedReferences
     async def _run_cg(self):
+        """체결 웹소켓 연결 및 수신을 실행합니다."""
         reg_task = None
         while True:
             try:
@@ -578,12 +578,12 @@ class LsWebSocketReceiver(QThread):
                     reg_task = asyncio.create_task(self._real_reg_cg())
                 await self._receive_cg_msg()
             except Exception:
-                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - LsWebSocketReceiver Chegyeol'))
-
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
             await self._disconnect_cg()
 
     # noinspection PyUnresolvedReferences
     async def _run_hg(self):
+        """호가 웹소켓 연결 및 수신을 실행합니다."""
         reg_task = None
         while True:
             try:
@@ -594,19 +594,27 @@ class LsWebSocketReceiver(QThread):
                     reg_task = asyncio.create_task(self._real_reg_hg())
                 await self._receive_hg_msg()
             except Exception:
-                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - LsWebSocketReceiver Hoga'))
-
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
             await self._disconnect_hg()
 
     async def _connect_cg(self):
-        self.webs_cg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60)
-        self.conn_cg = True
+        """체결 웹소켓에 연결합니다."""
+        try:
+            self.webs_cg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60, ping_timeout=60)
+            self.conn_cg = True
+        except Exception:
+            self.conn_cg = False
 
     async def _connect_hg(self):
-        self.webs_hg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60)
-        self.conn_hg = True
+        """호가 웹소켓에 연결합니다."""
+        try:
+            self.webs_hg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60, ping_timeout=60)
+            self.conn_hg = True
+        except Exception:
+            self.conn_hg = False
 
     async def _receive_cg_msg(self):
+        """체결 데이터를 수신합니다."""
         while self.conn_cg:
             data = await self.webs_cg.recv()
             data = json.loads(data)
@@ -614,6 +622,7 @@ class LsWebSocketReceiver(QThread):
                 self.signal.emit(data)
 
     async def _receive_hg_msg(self):
+        """호가 데이터를 수신합니다."""
         while self.conn_hg:
             data = await self.webs_hg.recv()
             data = json.loads(data)
@@ -621,20 +630,21 @@ class LsWebSocketReceiver(QThread):
                 self.signal.emit(data)
 
     async def _real_reg_cg(self):
+        """장운영정보, VI발동해제, 체결의 실시간시세를 등록합니다."""
         while not self.conn_cg:
             await asyncio.sleep(0.1)
 
         data = self._get_send_data('장운영정보', '0')
         await self.webs_cg.send(json.dumps(data))
         await asyncio.sleep(0.02)
-        self.windowQ.put((UI_NUM['기본로그'], '장운영정보 실시간시세 등록'))
+        self.windowQ.put((UI_NUM['기본로그'], '시스템 명령 실행 알림 - 장운영정보 실시간시세 등록'))
 
         if self.gubun == '국내주식':
             gubun = f'{self.gubun}VI'
             data = self._get_send_data(gubun, '0000000000')
             await self.webs_cg.send(json.dumps(data))
             await asyncio.sleep(0.02)
-            self.windowQ.put((UI_NUM['기본로그'], f'{gubun}발동해제 실시간시세 등록'))
+            self.windowQ.put((UI_NUM['기본로그'], f'시스템 명령 실행 알림 - {gubun}발동해제 실시간시세 등록'))
 
         gubun = f'{self.gubun}체결'
         for i, code in enumerate(self.symbols):
@@ -643,9 +653,12 @@ class LsWebSocketReceiver(QThread):
             await asyncio.sleep(0.02)
 
             if (i + 1) % 100 == 0 or i == self.last - 1:
-                self.windowQ.put((UI_NUM['기본로그'], f'{gubun} 실시간시세 등록 [{i+1:04d}/{self.last:04d}]'))
+                self.windowQ.put(
+                    (UI_NUM['기본로그'], f'시스템 명령 실행 알림 - {gubun} 실시간시세 등록 [{i+1:04d}/{self.last:04d}]')
+                )
 
     async def _real_reg_hg(self):
+        """호가의 실시간시세를 등록합니다."""
         while not self.conn_hg:
             await asyncio.sleep(0.1)
 
@@ -656,9 +669,12 @@ class LsWebSocketReceiver(QThread):
             await asyncio.sleep(0.02)
 
             if (i + 1) % 100 == 0 or i == self.last - 1:
-                self.windowQ.put((UI_NUM['기본로그'], f'{gubun} 실시간시세 등록 [{i+1:04d}/{self.last:04d}]'))
+                self.windowQ.put(
+                    (UI_NUM['기본로그'], f'시스템 명령 실행 알림 - {gubun} 실시간시세 등록 [{i+1:04d}/{self.last:04d}]')
+                )
 
     def _get_send_data(self, gubun: str, code: str):
+        """거래소별 실시간시세 등록용 해더와 바디를 생성합니다."""
         if gubun in ('국내주식체결', '국내주식호가'):
             tr_key = f'U{code:<9}'
         elif '해외주식' in gubun:
@@ -679,29 +695,29 @@ class LsWebSocketReceiver(QThread):
         return data
 
     async def _disconnect_cg(self):
-        self.conn_cg = False
-        if self.webs_cg is not None:
-            try:
+        """체결 웹소켓을 종료합니다."""
+        try:
+            if self.webs_cg is not None:
                 await self.webs_cg.close()
-            except Exception:
-                pass
+        except Exception:
+            pass
+        self.conn_cg = False
         await asyncio.sleep(1)
 
     async def _disconnect_hg(self):
-        self.conn_hg = False
-        if self.webs_hg is not None:
-            try:
+        """호가 웹소켓을 종료합니다."""
+        try:
+            if self.webs_hg is not None:
                 await self.webs_hg.close()
-            except Exception:
-                pass
+        except Exception:
+            pass
+        self.conn_hg = False
         await asyncio.sleep(1)
-
-    def stop(self):
-        if self.loop and self.loop.is_running():
-            self.loop.stop()
 
 
 class LsWebSocketTrader(QThread):
+    """LS증권 웹소켓 트레이더 스레드 클래스
+    주문체결 데이터를 웹소켓으로 수신합니다."""
     signal = pyqtSignal(dict)
 
     def __init__(self, market, token, windowQ):
@@ -714,32 +730,38 @@ class LsWebSocketTrader(QThread):
         self.connected = False
 
     def run(self):
+        """웹소켓 루프를 실행합니다."""
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         self.loop.create_task(self._run_user())
         self.loop.run_forever()
 
     async def _run_user(self):
+        """주문체결 웹소켓 연결 및 수신을 실행합니다."""
         while True:
             try:
                 if not self.connected:
                     await self._connect()
                 await self._receive_msg()
             except Exception:
-                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - LsWebSocketTrader'))
-
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
             await self._disconnect()
 
     async def _connect(self):
-        self.websocket = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60)
-        self.connected = True
-        for k, v in LsRestData.주문거래코드.items():
-            if self.market in k:
-                data = self._get_send_data(v)
-                await self.websocket.send(json.dumps(data))
-                self.windowQ.put((UI_NUM['기본로그'], f'{k} 실시간시세 계좌등록'))
+        """주문체결 웹소켓을 연결하고 실시간시세를 등록합니다."""
+        try:
+            self.websocket = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60, ping_timeout=60)
+            self.connected = True
+            for k, v in LsRestData.주문거래코드.items():
+                if self.market in k:
+                    data = self._get_send_data(v)
+                    await self.websocket.send(json.dumps(data))
+                    self.windowQ.put((UI_NUM['기본로그'], f'시스템 명령 실행 알림 - {k} 실시간시세 계좌등록'))
+        except Exception:
+            self.connected = False
 
     async def _receive_msg(self):
+        """주문체결 데이터를 수신합니다."""
         while self.connected:
             data = await self.websocket.recv()
             data = json.loads(data)
@@ -747,6 +769,7 @@ class LsWebSocketTrader(QThread):
                 self.signal.emit(data)
 
     def _get_send_data(self, tr_cd: str):
+        """주문체결 실시간시세 등록용 해더와 바디를 생성합니다."""
         data = {
             'header': {
                 'token': self.token,
@@ -760,14 +783,11 @@ class LsWebSocketTrader(QThread):
         return data
 
     async def _disconnect(self):
-        self.connected = False
-        if self.websocket is not None:
-            try:
+        """주문체결 웹소켓을 종료합니다."""
+        try:
+            if self.websocket is not None:
                 await self.websocket.close()
-            except Exception:
-                pass
+        except Exception:
+            pass
+        self.connected = False
         await asyncio.sleep(1)
-
-    def stop(self):
-        if self.loop and self.loop.is_running():
-            self.loop.stop()

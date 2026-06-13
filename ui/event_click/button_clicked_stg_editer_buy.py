@@ -1,9 +1,6 @@
 
 def buy_stg_load(ui):
-    """매수 전략을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매수 전략을 로드합니다."""
     from PyQt5.QtCore import Qt
     from PyQt5.QtWidgets import QMessageBox, QApplication
     from ui.create_widget.set_style import style_bc_st
@@ -29,10 +26,7 @@ def buy_stg_load(ui):
 
 
 def buy_stg_save(ui):
-    """매수 전략을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매수 전략을 저장합니다."""
     import random
     from PyQt5.QtCore import Qt
     from ui.create_widget.set_style import style_bc_st
@@ -68,10 +62,7 @@ def buy_stg_save(ui):
 
 
 def buy_factor(ui):
-    """매수 팩터를 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매수 팩터를 로드합니다."""
     from ui.create_widget.set_style import style_bc_st
     from ui.create_widget.set_text import buy_text_min, buy_text_tick
 
@@ -81,10 +72,7 @@ def buy_factor(ui):
 
 
 def buy_stg_start(ui):
-    """매수 전략 연산을 시작합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매수 전략 연산을 시작합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_style import style_bc_st, style_bc_dk
 
@@ -103,10 +91,7 @@ def buy_stg_start(ui):
 
 
 def buy_signal_insert(ui):
-    """매수 시그널을 삽입합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매수 시그널을 삽입합니다."""
     from ui.create_widget.set_text import buy_signal, buy_signal_future
 
     signal = buy_signal if ui.market_gubun < 6 else buy_signal_future
@@ -114,10 +99,7 @@ def buy_signal_insert(ui):
 
 
 def buy_stg_stop(ui):
-    """매수 전략 연산을 중지합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """매수 전략 연산을 중지합니다."""
     from ui.create_widget.set_style import style_bc_st, style_bc_dk
 
     ui.wdzservQ.put(('strategy', '매수전략중지'))

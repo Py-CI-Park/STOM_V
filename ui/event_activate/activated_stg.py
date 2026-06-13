@@ -3,7 +3,7 @@
 UI_ACTIBATED_CONFIG = {
     'tables': [
         '{stg_tname}_buy', '{stg_tname}_sell', '{stg_tname}_optibuy', '{stg_tname}_optivars',
-        '{stg_tname}_optisell', '{stg_tname}_vars', '{stg_tname}_buyconds', '{stg_tname}_sellconds'
+        '{stg_tname}_optisell', '{stg_tname}_optigavars', '{stg_tname}_buyconds', '{stg_tname}_sellconds'
     ],
     'widgets': {
         'text_01': 'ss_textEditttt_01', 'text_02': 'ss_textEditttt_02',
@@ -71,66 +71,42 @@ def _activated_common(ui, idx):
 
 
 def activated_01(ui):
-    """전략 탭 활성화 이벤트 1을 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 1을 처리합니다."""
     _activated_common(ui, 1)
 
 
 def activated_02(ui):
-    """전략 탭 활성화 이벤트 2를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 2를 처리합니다."""
     _activated_common(ui, 2)
 
 
 def activated_03(ui):
-    """전략 탭 활성화 이벤트 3을 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 3을 처리합니다."""
     _activated_common(ui, 3)
 
 
 def activated_04(ui):
-    """전략 탭 활성화 이벤트 4를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 4를 처리합니다."""
     _activated_common(ui, 4)
 
 
 def activated_05(ui):
-    """전략 탭 활성화 이벤트 5를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 5를 처리합니다."""
     _activated_common(ui, 5)
 
 
 def activated_06(ui):
-    """전략 탭 활성화 이벤트 6을 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 6을 처리합니다."""
     _activated_common(ui, 6)
 
 
 def activated_07(ui):
-    """전략 탭 활성화 이벤트 7을 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 7을 처리합니다."""
     _activated_common(ui, 7)
 
 
 def activated_08(ui):
-    """전략 탭 활성화 이벤트 8을 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """전략 탭 활성화 이벤트 8을 처리합니다."""
     _activated_common(ui, 8)
 
 
@@ -158,19 +134,3 @@ def activated_09(ui):
             f'매도전략 또한 반드시 최적화용 전략으로 변경하십시오.\n'
             f'최적화 백테스트를 실행할 경우 자동으로 변경됩니다.\n'
         )
-
-
-def activated_10(ui):
-    """바이낸스 선물 마진타입 경고"""
-    from PyQt5.QtWidgets import QMessageBox
-    if ui.sj_main_comBox_03.currentText() == '교차':
-        ui.sj_main_comBox_03.setCurrentText('격리')
-        QMessageBox.warning(ui, '경고', '현재 바이낸스 선물 마진타입은 격리타입만 지원합니다.\n')
-
-
-def activated_11(ui):
-    """바이낸스 선물 포지션모드 경고"""
-    from PyQt5.QtWidgets import QMessageBox
-    if ui.sj_main_comBox_04.currentText() == '양방향':
-        ui.sj_main_comBox_04.setCurrentText('단방향')
-        QMessageBox.warning(ui, '경고', '현재 바이낸스 선물 포지션모드는 단방향만 지원합니다.\n')

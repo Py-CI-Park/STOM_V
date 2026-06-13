@@ -1,9 +1,6 @@
 
 def bactivated_01(ui):
-    """백테스트 스케줄러 그룹박스 활성화 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """백테스트 스케줄러 그룹박스 활성화 이벤트를 처리합니다."""
     try:
         gubun = ui.list_checkBoxxxxxx.index(ui.dialog_scheduler.focusWidget())
     except Exception:
@@ -92,10 +89,7 @@ def bactivated_01(ui):
 
 # noinspection PyUnresolvedReferences
 def bactivated_02(ui):
-    """백테스트 스케줄러 콤보박스 활성화 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """백테스트 스케줄러 콤보박스 활성화 이벤트를 처리합니다."""
     if ui.sd_scheckBoxxxx_01.isChecked():
         list_comboBox = None
         if ui.dialog_scheduler.focusWidget() in ui.list_p1comboBoxxxx:
@@ -132,10 +126,7 @@ def bactivated_02(ui):
 
 
 def bactivated_03(ui):
-    """백테스트 스케줄러 로드 이벤트를 처리합니다.
-    Args:
-        ui: UI 객체
-    """
+    """백테스트 스케줄러 로드 이벤트를 처리합니다."""
     try:
         for checkbox in ui.list_checkBoxxxxxx:
             checkbox.setFocus()

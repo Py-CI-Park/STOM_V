@@ -7,9 +7,7 @@ from backtest.back_static_numba import get_result
 
 
 class BackSubTotal:
-    """백테스트 결과를 집계하는 클래스입니다.
-    여러 백테스트 결과를 수집하고 통합합니다.
-    """
+    """백테스트 결과를 집계하는 클래스입니다. 여러 백테스트 결과를 수집하고 통합합니다."""
     def __init__(self, vkey, wq, tq, bstqs, buystd):
         self.vkey         = vkey
         self.wq           = wq
@@ -40,9 +38,7 @@ class BackSubTotal:
         self._main_loop()
 
     def _main_loop(self):
-        """메인 루프를 실행합니다.
-        백테스트 결과를 수집하고 집계합니다.
-        """
+        """메인 루프를 실행합니다. 백테스트 결과를 수집하고 집계합니다."""
         while True:
             try:
                 data = self.bstq.get()
@@ -144,9 +140,9 @@ class BackSubTotal:
     def _send_subtotal(self):
         """전체 결과를 전송합니다."""
         def send_result():
-            if self.list_days is not None:
+            if self.list_days:
                 train_days, valid_days, test_days = self.list_days if self.in_out_cnt is None else self.list_days[self.in_out_cnt]
-                if valid_days is not None:
+                if valid_days:
                     for i, vdays in enumerate(valid_days):
                         data = (arry_tsg, arry_bct, vdays[0], vdays[1], test_days[0], train_days[2], vdays[2], i, vturn, vkey)
                         self._send_result(data)
@@ -154,7 +150,7 @@ class BackSubTotal:
                     data = (arry_tsg, arry_bct, train_days[2], vturn, vkey)
                     self._send_result(data)
 
-            elif self.valid_days is not None:
+            elif self.valid_days:
                 for i, vdays in enumerate(self.valid_days):
                     data = (arry_tsg, arry_bct, vdays[0], vdays[1], vdays[2], vdays[3], i, vturn, vkey)
                     self._send_result(data)

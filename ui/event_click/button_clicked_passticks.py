@@ -1,9 +1,6 @@
 
 def setting_passticks_sample(ui):
-    """경과틱수 설정 샘플을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """경과틱수 설정 샘플을 로드합니다."""
     ui.set_lineEdittt_01.setText('이평60데드')
     ui.set_lineEdittt_02.setText('이평60골든')
     ui.set_lineEdittt_11.setText('현재가N(1) >= 이동평균(60, 1) and  이동평균(60) > 현재가')
@@ -11,10 +8,7 @@ def setting_passticks_sample(ui):
 
 
 def setting_passticks_load(ui):
-    """경과틱수 설정을 로드합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """경과틱수 설정을 로드합니다."""
     for lineedit in ui.scn_lineedit_list:
         lineedit.clear()
     for lineedit in ui.scc_lineedit_list:
@@ -31,10 +25,7 @@ def setting_passticks_load(ui):
 
 
 def setting_passticks_save(ui):
-    """경과틱수 설정을 저장합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """경과틱수 설정을 저장합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying

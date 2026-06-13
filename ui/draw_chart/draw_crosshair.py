@@ -8,8 +8,7 @@ from ui.create_widget.set_style import color_cs_hr, color_fg_bt, color_bg_bt, co
 
 class CrossHair:
     """십자선 클래스입니다.
-    차트 위에 십자선을 표시합니다.
-    """
+    차트 위에 십자선을 표시합니다."""
     def __init__(self, ui):
         self.ui = ui
 

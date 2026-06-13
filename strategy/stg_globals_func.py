@@ -6,9 +6,7 @@ from utility.static_method.static_datetime import dt_ymdhms, dt_ymdhm
 
 class StgGlobalsFunc:
     """전략 전역 함수를 제공하는 기본 클래스입니다.
-    백테스트 및 실시간 트레이딩에서 사용되는 전역 함수들을 제공합니다.
-    """
-
+    백테스트 및 실시간 트레이딩에서 사용되는 전역 함수들을 제공합니다."""
     def __init__(self):
         self.code             = None
         self.name             = None
@@ -23,12 +21,23 @@ class StgGlobalsFunc:
         self.mv               = None
         self.k                = None
 
+        self.ms_analyzer      = None
+        self.rk_analyzer      = None
+        self.pt_analyzer      = None
+        self.vf_analyzer      = None
+        self.vs_analyzer      = None
+        self.vp_analyzer      = None
+        self.vt_analyzer      = None
+
         self.fm_list          = None
         self.fm_tcnt          = None
         self.check            = None
         self.line             = None
         self.up               = None
         self.down             = None
+        self.buy              = None
+        self.sell             = None
+        self.hold             = False
         self.is_tick          = False
         self.backtest         = False
 
@@ -58,14 +67,7 @@ class StgGlobalsFunc:
         self.bhreminfo        = np.zeros(5, dtype=np.float64)
 
     def _calc_fill_amount(self, 주문수량, 호가배열, 잔량배열):
-        """체결 금액을 계산합니다.
-        Args:
-            주문수량 (int): 주문 수량
-            호가배열 (np.ndarray): 호가 배열
-            잔량배열 (np.ndarray): 잔량 배열
-        Returns:
-            tuple: (거래금액, 체결성공여부)
-        """
+        """거래금액 및 체결가능을 계산합니다."""
         누적잔량 = np.cumsum(잔량배열)
         fill_idx = np.searchsorted(누적잔량, 주문수량, side='left')
         if fill_idx >= len(호가배열):
@@ -77,20 +79,9 @@ class StgGlobalsFunc:
         return 거래금액, True
 
     def _now(self):
-        """현재 시간을 반환합니다.
-        Returns:
-            datetime: 현재 시간
-        """
         return dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))
 
     def _parameter_previous(self, cidx, pre):
-        """이전 파라미터를 반환합니다.
-        Args:
-            cidx (int): 컬럼 인덱스
-            pre (int): 이전 틱 수
-        Returns:
-            float: 파라미터 값
-        """
         if pre < self.tick_count:
             ridx = self.indexn - pre if pre != -1 else self.indexb
             return self.arry_code[ridx, cidx]
@@ -269,6 +260,55 @@ class StgGlobalsFunc:
 
     def _분당매도금액N(self, pre):
         return self._parameter_previous(self.dict_findex['분당매도금액'], pre)
+
+    def _시그널N(self, pre):
+        signal = self._parameter_previous(self.dict_findex['시그널'], pre)
+        return 'buy' if signal == 1 else ('sell' if signal == -1 else 'hold')
+
+    def _신뢰도N(self, pre):
+        return self._parameter_previous(self.dict_findex['신뢰도'], pre)
+
+    def _리스크N(self, pre):
+        return self._parameter_previous(self.dict_findex['리스크'], pre)
+
+    def _패턴점수N(self, pre):
+        return self._parameter_previous(self.dict_findex['패턴점수'], pre)
+
+    def _패턴신뢰도N(self, pre):
+        return self._parameter_previous(self.dict_findex['패턴신뢰도'], pre)
+
+    def _리스크점수N(self, pre):
+        return self._parameter_previous(self.dict_findex['리스크점수'], pre)
+
+    def _거래량점수N(self, pre):
+        return self._parameter_previous(self.dict_findex['거래량점수'], pre)
+
+    def _거래량신뢰도N(self, pre):
+        return self._parameter_previous(self.dict_findex['거래량신뢰도'], pre)
+
+    def _가격대점수N(self, pre):
+        return self._parameter_previous(self.dict_findex['가격대점수'], pre)
+
+    def _가격대신뢰도N(self, pre):
+        return self._parameter_previous(self.dict_findex['가격대신뢰도'], pre)
+
+    def _변동성점수N(self, pre):
+        return self._parameter_previous(self.dict_findex['변동성점수'], pre)
+
+    def _변동성신뢰도N(self, pre):
+        return self._parameter_previous(self.dict_findex['변동성신뢰도'], pre)
+
+    def _예상수익률N(self, pre):
+        return self._parameter_previous(self.dict_findex['예상수익률'], pre)
+
+    def _익절수익률N(self, pre):
+        return self._parameter_previous(self.dict_findex['익절수익률'], pre)
+
+    def _손절수익률N(self, pre):
+        return self._parameter_previous(self.dict_findex['손절수익률'], pre)
+
+    def _변손익신뢰도N(self, pre):
+        return self._parameter_previous(self.dict_findex['변손익신뢰도'], pre)
 
     def _최고분당매수수량(self, tick, pre=0, calc=False):
         return self._parameter_area(self.dict_findex['최고분당매수수량'], self.dict_findex['분당매수수량'], tick, pre, np.max, calc=calc)
@@ -1019,6 +1059,23 @@ class StgGlobalsFunc:
             '매수총잔량N': self._매수총잔량N,
             '매도수5호가잔량합N': self._매도수5호가잔량합N,
             '관심종목N': self._관심종목N,
+
+            '시그널N': self._시그널N,
+            '신뢰도N': self._신뢰도N,
+            '리스크N': self._리스크N,
+            '패턴점수N': self._패턴점수N,
+            '패턴신뢰도N': self._패턴신뢰도N,
+            '리스크점수N': self._리스크점수N,
+            '거래량점수N': self._거래량점수N,
+            '거래량신뢰도N': self._거래량신뢰도N,
+            '가격대점수N': self._가격대점수N,
+            '가격대신뢰도N': self._가격대신뢰도N,
+            '변동성점수N': self._변동성점수N,
+            '변동성신뢰도N': self._변동성신뢰도N,
+            '예상수익률N': self._예상수익률N,
+            '익절수익률N': self._익절수익률N,
+            '손절수익률N': self._손절수익률N,
+            '변손익신뢰도N': self._변손익신뢰도N,
 
             '이동평균': self._이동평균,
             '최고현재가': self._최고현재가,

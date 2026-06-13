@@ -1,9 +1,6 @@
 
 def dbbutton_clicked_01(ui):
-    """백테DB 지정일자 데이터를 삭제합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테DB 지정일자 데이터를 삭제합니다."""
     from utility.settings.setting_base import UI_NUM
 
     if not ui.database_control:
@@ -18,10 +15,7 @@ def dbbutton_clicked_01(ui):
 
 
 def dbbutton_clicked_02(ui):
-    """일자DB 지정일자 데이터를 삭제합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """일자DB 지정일자 데이터를 삭제합니다."""
     from utility.settings.setting_base import UI_NUM
 
     if not ui.database_control:
@@ -36,10 +30,7 @@ def dbbutton_clicked_02(ui):
 
 
 def dbbutton_clicked_03(ui):
-    """일자DB 지정시간 이후 데이터를 삭제합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """일자DB 지정시간 이후 데이터를 삭제합니다."""
     from utility.settings.setting_base import UI_NUM
 
     if not ui.database_control:
@@ -54,10 +45,7 @@ def dbbutton_clicked_03(ui):
 
 
 def dbbutton_clicked_04(ui):
-    """당일 데이터 지정시간 이후 데이터를 삭제합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """당일 데이터 지정시간 이후 데이터를 삭제합니다."""
     from utility.settings.setting_base import UI_NUM
 
     if not ui.database_control:
@@ -72,10 +60,7 @@ def dbbutton_clicked_04(ui):
 
 
 def dbbutton_clicked_05(ui):
-    """당일DB 체결시간을 조정합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """당일DB 체결시간을 조정합니다."""
     from utility.settings.setting_base import UI_NUM
 
     if not ui.database_control:
@@ -90,10 +75,7 @@ def dbbutton_clicked_05(ui):
 
 
 def dbbutton_clicked_06(ui):
-    """일자DB로 백테DB를 생성합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """일자DB로 백테DB를 생성합니다."""
     from utility.settings.setting_base import UI_NUM
 
     if not ui.database_control:
@@ -109,10 +91,7 @@ def dbbutton_clicked_06(ui):
 
 
 def dbbutton_clicked_07(ui):
-    """일자DB를 백테DB로 추가합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """일자DB를 백테DB로 추가합니다."""
     from utility.settings.setting_base import UI_NUM
 
     if not ui.database_control:
@@ -128,10 +107,7 @@ def dbbutton_clicked_07(ui):
 
 
 def dbbutton_clicked_08(ui):
-    """당일DB를 백테DB로 추가합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """당일DB를 백테DB로 추가합니다."""
     from utility.settings.setting_base import UI_NUM
 
     if not ui.database_control:
@@ -142,10 +118,7 @@ def dbbutton_clicked_08(ui):
 
 
 def dbbutton_clicked_09(ui):
-    """당일DB를 일자DB로 분리합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """당일DB를 일자DB로 분리합니다."""
     from utility.settings.setting_base import UI_NUM
 
     if not ui.database_control:
@@ -156,10 +129,7 @@ def dbbutton_clicked_09(ui):
 
 
 def dbbutton_clicked_10(ui):
-    """거래기록을 삭제합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """거래기록을 삭제합니다."""
     from PyQt5.QtWidgets import QMessageBox
     from utility.settings.setting_base import UI_NUM
 

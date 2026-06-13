@@ -52,12 +52,7 @@ class DrawChartBase:
         ]
 
     def fi(self, fname):
-        """요소 인덱스를 반환합니다.
-        Args:
-            fname: 요소 이름
-        Returns:
-            요소 인덱스
-        """
+        """요소 인덱스를 반환합니다."""
         return self.ui.dict_findex[fname]
 
     def draw_all_chart(self):
@@ -334,10 +329,7 @@ class DrawChartBase:
                 self.ui.ctpg_data[i] = col
 
     def get_drop_zero_factors(self):
-        """0값 제거 요소 인덱스를 반환합니다.
-        Returns:
-            0값 제거 요소 인덱스 튜플
-        """
+        """0값 제거 요소 인덱스를 반환합니다."""
         if self.is_min:
             drop_zero_factors = (
                 self.fi('이동평균5'), self.fi('이동평균10'), self.fi('이동평균20'), self.fi('이동평균60'), self.fi('이동평균120'),
@@ -357,10 +349,7 @@ class DrawChartBase:
         return drop_zero_factors
 
     def get_optimized_min_max(self, fidx_list):
-        """최적화된 최소/최대값을 계산합니다.
-        Args:
-            fidx_list: 요소 인덱스 리스트
-        """
+        """최적화된 최소/최대값을 계산합니다."""
         fidx_tuple = fidx_list if isinstance(fidx_list, tuple) else (fidx_list,)
         if self.same_code and self.same_time and fidx_tuple in self.cached_min_max:
             self._incremental_min_max_update(fidx_tuple)
@@ -368,10 +357,7 @@ class DrawChartBase:
             self._full_min_max_calculation(fidx_tuple)
 
     def _incremental_min_max_update(self, fidx_tuple):
-        """증분 최소/최대값 업데이트를 수행합니다.
-        Args:
-            fidx_tuple: 요소 인덱스 튜플
-        """
+        """증분 최소/최대값 업데이트를 수행합니다."""
         cached_ymax, cached_ymin = self.cached_min_max[fidx_tuple]
         new_values = []
         for fidx in fidx_tuple:
@@ -388,10 +374,7 @@ class DrawChartBase:
             self.ymax, self.ymin = cached_ymax, cached_ymin
 
     def _full_min_max_calculation(self, fidx_tuple):
-        """전체 최소/최대값 계산을 수행합니다.
-        Args:
-            fidx_tuple: 요소 인덱스 튜플
-        """
+        """전체 최소/최대값 계산을 수행합니다. """
         all_values = []
         for fidx in fidx_tuple:
             if fidx in self.ui.ctpg_data and len(self.ui.ctpg_data[fidx]) > 0:
@@ -406,10 +389,7 @@ class DrawChartBase:
             self.cached_min_max[fidx_tuple] = (0, 0)
 
     def draw_buy_or_sell_point(self, i):
-        """매수/매도 지점을 그립니다.
-        Args:
-            i: 차트 인덱스
-        """
+        """매수/매도 지점을 그립니다."""
         if self.ui.market_gubun < 6:
             buy_index = -2
             sell_index = -1
@@ -445,12 +425,7 @@ class DrawChartBase:
                     self.ui.ctpg[i].addItem(arrow)
 
     def draw_line(self, i, fidx1, color):
-        """라인을 그립니다.
-        Args:
-            i: 차트 인덱스
-            fidx1: 요소 인덱스
-            color: 색상
-        """
+        """라인을 그립니다."""
         ydata = self.ui.ctpg_data[fidx1]
         xdata = self.ui.ctpg_xticks[-len(ydata):]
         if self.same_code and self.same_time:
@@ -461,11 +436,7 @@ class DrawChartBase:
             self.ui.ctpg_item[fidx1] = line
 
     def draw_infinite_line(self, i, fidx1):
-        """무한 라인을 그립니다.
-        Args:
-            i: 차트 인덱스
-            fidx1: 요소 인덱스
-        """
+        """무한 라인을 그립니다."""
         if self.same_code and self.same_time:
             self.ui.ctpg_cline.setPos(self.ui.ctpg_data[fidx1][-1])
         else:
@@ -476,10 +447,7 @@ class DrawChartBase:
             self.ui.ctpg[i].addItem(self.ui.ctpg_cline)
 
     def draw_area(self, i):
-        """영역을 그립니다.
-        Args:
-            i: 차트 인덱스
-        """
+        """영역을 그립니다."""
         if self.same_code and self.same_time:
             last_area = self.ui.ctpg_item[0]
             self.ui.ctpg[i].removeItem(last_area)
@@ -491,14 +459,7 @@ class DrawChartBase:
         self.ui.ctpg[i].addItem(last_area)
 
     def draw_candlestick(self, i, fidx1, fidx2, fidx3, fidx4):
-        """캔들스틱을 그립니다.
-        Args:
-            i: 차트 인덱스
-            fidx1: 시가 인덱스
-            fidx2: 고가 인덱스
-            fidx3: 저가 인덱스
-            fidx4: 종가 인덱스
-        """
+        """캔들스틱을 그립니다."""
         if self.same_code and self.same_time:
             last_candlestick = self.ui.ctpg_item[fidx1]
             self.ui.ctpg[i].removeItem(last_candlestick)
@@ -510,13 +471,7 @@ class DrawChartBase:
         self.ui.ctpg[i].addItem(last_candlestick)
 
     def draw_volumebar(self, i, fidx1, fidx3, fidx4):
-        """볼륨바를 그립니다.
-        Args:
-            i: 차트 인덱스
-            fidx1: 거래량 인덱스
-            fidx3: 시가 인덱스
-            fidx4: 종가 인덱스
-        """
+        """볼륨바를 그립니다."""
         if self.same_code and self.same_time:
             last_volumebar = self.ui.ctpg_item[fidx1]
             self.ui.ctpg[i].removeItem(last_volumebar)
@@ -528,10 +483,7 @@ class DrawChartBase:
         self.ui.ctpg[i].addItem(last_volumebar)
 
     def draw_legend(self, i):
-        """범례를 그립니다.
-        Args:
-            i: 차트 인덱스
-        """
+        """범례를 그립니다."""
         if self.same_code and self.same_time:
             if self.ui.ct_checkBoxxxxx_01.isChecked():
                 self.ui.ctpg_labels[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][0])
@@ -558,11 +510,7 @@ class DrawChartBase:
                 self.ui.ctpg_legend[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][1])
 
     def draw_formula(self, i, factor):
-        """공식을 그립니다.
-        Args:
-            i: 차트 인덱스
-            factor: 요소 이름
-        """
+        """공식을 그립니다."""
         if self.ui.fm_list:
             factor_fm_list = [fm for fm in self.ui.fm_list if fm[3] == factor]
             if factor_fm_list:
@@ -575,14 +523,7 @@ class DrawChartBase:
                         self.draw_fm_area(i, col_idx, color)
 
     def draw_fm_line(self, i, col_idx, color, width, style):
-        """공식 라인을 그립니다.
-        Args:
-            i: 차트 인덱스
-            col_idx: 칼럼 인덱스
-            color: 색상
-            width: 너비
-            style: 스타일
-        """
+        """공식 라인을 그립니다."""
         ydata = self.ui.ctpg_data[col_idx]
         xdata = self.ui.ctpg_xticks
         if self.same_code and self.same_time:
@@ -593,14 +534,7 @@ class DrawChartBase:
             self.ui.ctpg_item[col_idx] = line
 
     def draw_fm_arrow(self, i, col_idx, style, width, color):
-        """공식 화살표를 그립니다.
-        Args:
-            i: 차트 인덱스
-            col_idx: 칼럼 인덱스
-            style: 스타일
-            width: 너비
-            color: 색상
-        """
+        """공식 화살표를 그립니다."""
         style_angle = {
             6: 90,
             7: -90,
@@ -637,12 +571,7 @@ class DrawChartBase:
             self.ui.ctpg[i].addItem(arrow)
 
     def draw_fm_area(self, i, col_idx, color):
-        """공식 영역을 그립니다.
-        Args:
-            i: 차트 인덱스
-            col_idx: 칼럼 인덱스
-            color: 색상
-        """
+        """공식 영역을 그립니다."""
         arry = self.ui.ctpg_data[col_idx]
         if self.same_code and self.same_time:
             fill_item = self.ui.ctpg_item[col_idx]

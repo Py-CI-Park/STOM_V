@@ -1,10 +1,6 @@
 
 def update_back_progressbar(ui):
-    """백테스트 프로그레스바를 업데이트합니다.
-    백테스트 진행 상황, 경과 시간, 남은 시간을 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """백테스트 프로그레스바를 업데이트합니다."""
     if ui.back_start_time is not None:
         from utility.static_method.static_datetime import now, timedelta_sec
 
@@ -26,9 +22,10 @@ def update_back_progressbar(ui):
             remain_backtime = \
                 timedelta_sec(left_total_sec / curr_back_count * (total_back_count - curr_back_count)) - curr_time
             if ui.back_schedul:
-                ui.list_progressBarrr[ui.back_scount].setFormat('%p%')
-                ui.list_progressBarrr[ui.back_scount].setRange(0, total_back_count)
-                ui.list_progressBarrr[ui.back_scount].setValue(curr_back_count)
+                progressbar = ui.list_progressBarrr[ui.back_scount]
+                progressbar.setFormat('%p%')
+                progressbar.setRange(0, total_back_count)
+                progressbar.setValue(curr_back_count)
             if ui.ssicon_alert:
                 ui.ss_progressBar_01.setFormat(
                     f'%p% | 경과 시간 {str(left_backtime)[:-3]} | 남은 시간 {str(remain_backtime)[:-3]}'
@@ -38,26 +35,30 @@ def update_back_progressbar(ui):
 
 
 def update_progressbar(ui):
-    """메인 프로그레스바와 버튼 스타일을 업데이트합니다.
-    CPU 사용량을 표시하고 다이얼로그 상태에 따라 버튼 스타일을 변경합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
+    """메인 프로그레스바와 버튼 스타일을 업데이트합니다."""
     from ui.create_widget.set_style import style_bc_bb, style_bc_bt, style_bc_by, style_bc_sl, style_bc_st
 
-    ui.progressBarrr.setValue(ui.cpu_per)
+    ui.progressBar01.setValue(ui.cpu_per)
+    ui.progressBar02.setValue(ui.memory_per)
+    ui.progressBar03.setValue(int(round(ui.net_recv)))
+    ui.progressLbl01.setText(f'CPU\n{ui.cpu_per}%')
+    ui.progressLbl02.setText(f'MEM\n{ui.memory_per}%')
+    ui.progressLbl03.setText(f'NET\n{ui.net_recv}\nMbps')
     ui.counter = 0 if ui.counter == 599 else ui.counter + 1
 
     ui.be_pushButtonnn_01.setStyleSheet(style_bc_by if ui.backengine_running else style_bc_bt)
 
-    ui.tt_pushButton.setStyleSheet(style_bc_bb if not ui.calendarWidgetttt.isVisible() and not ui.calendarWidgetttt.isVisible() else style_bc_st)
+    ui.tt_pushButton.setStyleSheet(style_bc_bb if not ui.calendarWidgetttt.isVisible() else style_bc_st)
     ui.dd_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_db.isVisible() else style_bc_st)
+    ui.zo_pushButton.setStyleSheet(style_bc_bb if ui.geometry().width() > 1000 else style_bc_st)
     ui.kp_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_kimp.isVisible() else style_bc_st)
     ui.ct_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_chart.isVisible() else style_bc_st)
     ui.hg_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_hoga.isVisible() else style_bc_st)
     ui.gu_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_info.isVisible() else style_bc_st)
     ui.uj_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_tree.isVisible() else style_bc_st)
     ui.bs_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_scheduler.isVisible() else style_bc_st)
+    ui.od_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_order.isVisible() else style_bc_st)
+    ui.zz_pushButton.setStyleSheet(style_bc_bb if ui.geometry().height() < 1000 else style_bc_st)
 
     ui.sj_etc_pButton_02.setStyleSheet(style_bc_bt if not ui.dialog_setsj.isVisible() else style_bc_bb)
     ui.sj_lvrg_Button_01.setStyleSheet(style_bc_bt if not ui.dialog_leverage.isVisible() else style_bc_bb)

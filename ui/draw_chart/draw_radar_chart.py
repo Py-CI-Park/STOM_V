@@ -18,15 +18,8 @@ class DrawRadarChart:
         n_axes: 축 개수 (8개)
         axis_names: 각 축의 지표명 리스트
         axis_labels: 각 축의 표시명 리스트 (한글)
-        angles: 각 축의 각도 (라디안)
-    """
-
+        angles: 각 축의 각도 (라디안)"""
     def __init__(self, size: int, parent=None):
-        """초기화 메서드입니다.
-        Args:
-            parent: 부모 위젯 (None 가능)
-            size: 차트 크기 (픽셀)
-        """
         self.n_axes       = 8
         self.avg_plot     = None
         self.current_plot = None
@@ -47,11 +40,7 @@ class DrawRadarChart:
         self._setup_ui(parent, size)
 
     def _setup_ui(self, parent, size: int):
-        """UI를 설정합니다.
-        Args:
-            parent: 부모 위젯
-            size: 차트 크기
-        """
+        """UI를 설정합니다."""
         # PlotWidget 생성
         pg.setConfigOption('background', color_bg_bk)
         self.plot_widget = pg.PlotWidget(parent=parent)
@@ -134,12 +123,7 @@ class DrawRadarChart:
         self.plot_widget.addItem(self.current_plot)
 
     def update_chart(self, current_values: List[float], avg_values: List[float], overall_risk: float = 0.0):
-        """차트를 업데이트합니다.
-        Args:
-            current_values: 현재 8개 지표값 리스트 (0~1 범위)
-            avg_values: 평균 8개 지표값 리스트 (0~1 범위)
-            overall_risk: 전체 리스크 값 (색상 결정용)
-        """
+        """차트를 업데이트합니다."""
         # 좌표 변환
         avg_x, avg_y = self._polar_to_cartesian(avg_values)
         current_x, current_y = self._polar_to_cartesian(current_values)
@@ -155,12 +139,7 @@ class DrawRadarChart:
         )
 
     def _polar_to_cartesian(self, values: List[float]) -> Tuple[np.ndarray, np.ndarray]:
-        """극좌표를 직교좌표로 변환합니다.
-        Args:
-            values: 8개 축의 값 리스트 (0~1)
-        Returns:
-            (x좌표 배열, y좌표 배열) 튜플
-        """
+        """극좌표를 직교좌표로 변환합니다."""
         # 닫힌 다각형을 위해 첫 값을 끝에 추가
         values = [max(v, 0.00000001) for v in values]
         values_closed = values + [values[0]]
@@ -172,12 +151,7 @@ class DrawRadarChart:
         return x, y
 
     def _get_risk_color(self, overall_risk: float) -> Tuple[int, int, int]:
-        """리스크 값에 따른 색상을 반환합니다.
-        Args:
-            overall_risk: 전체 리스크 값 (0~1)
-        Returns:
-            (R, G, B) 색상 튜플
-        """
+        """리스크 값에 따른 색상을 반환합니다."""
         if overall_risk < 0.3:
             return 0, 200, 0  # 녹색 (안전)
         elif overall_risk < 0.6:
@@ -186,8 +160,5 @@ class DrawRadarChart:
             return 255, 50, 50  # 빨간색 (위험)
 
     def get_widget(self):
-        """차트 위젯을 반환합니다.
-        Returns:
-            PyQtGraph PlotWidget
-        """
+        """차트 위젯을 반환합니다."""
         return self.plot_widget

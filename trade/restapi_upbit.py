@@ -1,7 +1,9 @@
 
+import ssl
 import jwt
 import json
 import uuid
+import certifi
 import hashlib
 import asyncio
 import requests
@@ -11,8 +13,11 @@ from urllib.parse import unquote, urlencode
 from PyQt5.QtCore import QThread, pyqtSignal
 from utility.settings.setting_base import UI_NUM
 
+ssl_context = ssl.create_default_context(cafile=certifi.where())
+
 
 def get_symbols_info():
+    """업비트 종목정보를 조회합니다."""
     dict_data = {}
     headers = {'accept': 'application/json'}
     url = 'https://api.upbit.com/v1/market/all'
@@ -28,9 +33,7 @@ def get_symbols_info():
 
 
 class UpbitRestAPI:
-    """업비트 RESTAPI 메인 클래스입니다.
-    업비트 시장 데이터를 REST API로 수신합니다.
-    """
+    """업비트 RESTAPI 메인 클래스입니다."""
     def __init__(self, access, secret, windowQ):
         self.access  = access
         self.secret  = secret
@@ -58,12 +61,7 @@ class UpbitRestAPI:
         }
 
     def _headers(self, query=None):
-        """헤더를 생성합니다.
-        Args:
-            query: 쿼리 파라미터
-        Returns:
-            헤더 딕셔너리
-        """
+        """헤더를 생성합니다."""
         payload = {
             'access_key': self.access,
             'nonce': str(uuid.uuid4())
@@ -78,60 +76,31 @@ class UpbitRestAPI:
         return {'Authorization': f'Bearer {token}'}
 
     def _get(self, url):
-        """GET 요청을 보냅니다.
-        Args:
-            url: URL
-        Returns:
-            응답
-        """
+        """GET 요청을 보냅니다."""
         headers = self._headers()
         response = requests.get(url, headers=headers)
         return response.json()
 
     def _post(self, url, data):
-        """POST 요청을 보냅니다.
-        Args:
-            url: URL
-            data: 데이터
-        Returns:
-            응답
-        """
+        """POST 요청을 보냅니다."""
         headers = self._headers(data)
         response = requests.post(url, headers=headers, data=json.dumps(data))
         return response.json()
 
     def _delete(self, url, data):
-        """DELETE 요청을 보냅니다.
-        Args:
-            url: URL
-            data: 데이터
-        Returns:
-            응답
-        """
+        """DELETE 요청을 보냅니다."""
         headers = self._headers(data)
         response = requests.delete(url, headers=headers, data=json.dumps(data))
         return response.json()
 
     def get_balances(self):
-        """잔고를 조회합니다.
-        Returns:
-            잔고
-        """
+        """예수금을 조회합니다."""
         url = 'https://api.upbit.com/v1/accounts'
         ret = self._get(url)
         return int(float(ret[0]['balance']))
 
     def order_coin(self, 종목코드='', 주문구분='', 주문유형='', 주문금액=0, 주문수량=0):
-        """코인 주문을 전송합니다.
-        Args:
-            종목코드: 종목 코드
-            주문구분: 주문 구분
-            주문유형: 주문 유형
-            주문금액: 주문 금액
-            주문수량: 주문 수량
-        Returns:
-            응답
-        """
+        """주문을 전송합니다."""
         url = 'https://api.upbit.com/v1/orders'
         data = {
             'market': 종목코드,
@@ -152,12 +121,7 @@ class UpbitRestAPI:
         return self._post(url, data)
 
     def order_cancel(self, od_no):
-        """주문을 취소합니다.
-        Args:
-            od_no: 주문 번호
-        Returns:
-            응답
-        """
+        """주문을 취소합니다."""
         url = 'https://api.upbit.com/v1/order'
         data = {'uuid': od_no}
         return self._delete(url, data)
@@ -165,8 +129,7 @@ class UpbitRestAPI:
 
 class UpbitWebSocketReceiver(QThread):
     """업비트 웹소켓 수신 스레드 클래스입니다.
-    업비트 시장 데이터를 웹소켓으로 수신합니다.
-    """
+    체결 및 호가 데이터를 웹소켓으로 수신합니다."""
     signal = pyqtSignal(dict)
 
     def __init__(self, codes, windowQ):
@@ -189,91 +152,85 @@ class UpbitWebSocketReceiver(QThread):
         self.loop.run_forever()
 
     async def _run_cg(self):
-        """거래 데이터를 수신합니다."""
+        """체결 웹소켓 연결 및 수신을 실행합니다."""
         while True:
             try:
                 if not self.conn_cg:
                     await self._connect_cg()
                 await self._receive_cg_msg()
             except Exception:
-                self.windowQ.put(
-                    (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 실시간체결 수신 중 오류가 발생하여 재연결합니다.')
-                )
-
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
             await self._disconnect_cg()
 
     async def _run_hg(self):
-        """주문 데이터를 수신합니다."""
+        """호가 웹소켓 연결 및 수신을 실행합니다."""
         while True:
             try:
                 if not self.conn_hg:
                     await self._connect_hg()
                 await self._receive_hg_msg()
             except Exception:
-                self.windowQ.put(
-                    (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 실시간호가 수신 중 오류가 발생하여 재연결합니다.')
-                )
-
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
             await self._disconnect_hg()
 
     async def _connect_cg(self):
-        """거래 웹소켓에 연결합니다."""
-        self.conn_cg = True
-        self.webs_cg = await websockets.connect(self.url, ping_interval=60)
-        data = [{'ticket': str(uuid.uuid4())}, {'type': 'ticker', 'codes': self.codes, 'isOnlyRealtime': True}]
-        await self.webs_cg.send(json.dumps(data))
+        """체결 웹소켓에 연결합니다."""
+        try:
+            self.webs_cg = await websockets.connect(self.url, ping_interval=60, ping_timeout=60, ssl=ssl_context)
+            self.conn_cg = True
+            data = [{'ticket': str(uuid.uuid4())}, {'type': 'ticker', 'codes': self.codes, 'isOnlyRealtime': True}]
+            await self.webs_cg.send(json.dumps(data))
+        except Exception:
+            self.conn_cg = False
 
     async def _connect_hg(self):
-        """주문 웹소켓에 연결합니다."""
-        self.conn_hg = True
-        self.webs_hg = await websockets.connect(self.url, ping_interval=60)
-        data = [{'ticket': str(uuid.uuid4())}, {'type': 'orderbook', 'codes': self.codes, 'isOnlyRealtime': True}]
-        await self.webs_hg.send(json.dumps(data))
+        """호가 웹소켓에 연결합니다."""
+        try:
+            self.webs_hg = await websockets.connect(self.url, ping_interval=60, ping_timeout=60, ssl=ssl_context)
+            self.conn_hg = True
+            data = [{'ticket': str(uuid.uuid4())}, {'type': 'orderbook', 'codes': self.codes, 'isOnlyRealtime': True}]
+            await self.webs_hg.send(json.dumps(data))
+        except Exception:
+            self.conn_hg = False
 
     async def _receive_cg_msg(self):
-        """티커 데이터를 수신합니다."""
+        """체결 데이터를 수신합니다."""
         while self.conn_cg:
             data = await self.webs_cg.recv()
             data = json.loads(data)
             self.signal.emit(data)
 
     async def _receive_hg_msg(self):
-        """주문 데이터를 수신합니다."""
+        """호가 데이터를 수신합니다."""
         while self.conn_hg:
             data = await self.webs_hg.recv()
             data = json.loads(data)
             self.signal.emit(data)
 
     async def _disconnect_cg(self):
-        """거래 웹소켓 연결을 해제합니다."""
-        self.conn_cg = False
-        if self.webs_cg is not None:
-            try:
+        """체결 웹소켓을 종료합니다."""
+        try:
+            if self.webs_cg is not None:
                 await self.webs_cg.close()
-            except Exception:
-                pass
+        except Exception:
+            pass
+        self.conn_cg = False
         await asyncio.sleep(1)
 
     async def _disconnect_hg(self):
-        """주문 웹소켓 연결을 해제합니다."""
-        self.conn_hg = False
-        if self.webs_hg is not None:
-            try:
+        """호가 웹소켓을 종료합니다."""
+        try:
+            if self.webs_hg is not None:
                 await self.webs_hg.close()
-            except Exception:
-                pass
+        except Exception:
+            pass
+        self.conn_hg = False
         await asyncio.sleep(1)
-
-    def stop(self):
-        """웹소켓을 종료합니다."""
-        if self.loop and self.loop.is_running():
-            self.loop.stop()
 
 
 class UpbitWebSocketTrader(QThread):
     """업비트 웹소켓 트레이더 스레드 클래스입니다.
-    업비트 주문 데이터를 웹소켓으로 수신합니다.
-    """
+    주문체결 데이터를 웹소켓으로 수신합니다."""
     signal = pyqtSignal(dict)
 
     def __init__(self, access, secret, windowQ):
@@ -294,21 +251,18 @@ class UpbitWebSocketTrader(QThread):
         self.loop.run_forever()
 
     async def _run_user(self):
-        """메인 루프를 실행합니다."""
+        """주문체결 웹소켓 연결 및 수신을 실행합니다."""
         while True:
             try:
                 if not self.connected:
                     await self._connect()
                 await self._receive_msg()
             except Exception:
-                self.windowQ.put(
-                    (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 주문체결 수신 중 오류가 발생하여 재연결합니다.')
-                )
-
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
             await self._disconnect()
 
     def _headers(self):
-        """JWT 토큰을 생성합니다."""
+        """JWT 토큰으로 해더를 생성합니다."""
         payload = {
             'access_key': self.access,
             'nonce': str(uuid.uuid4())
@@ -317,28 +271,29 @@ class UpbitWebSocketTrader(QThread):
         return {'Authorization': f'Bearer {token}'}
 
     async def _connect(self):
-        """웹소켓에 연결합니다."""
-        headers = self._headers()
-        self.websocket = await websockets.connect(self.url, ping_interval=60, additional_headers=headers)
-        self.connected = True
-        data = [{'ticket': str(uuid.uuid4())}, {'type': 'myOrder'}]
-        await self.websocket.send(json.dumps(data))
+        """주문체결 웹소켓에 연결하고 실시간시세를 등록합니다."""
+        try:
+            self.websocket = await websockets.connect(self.url, ping_interval=60, ping_timeout=60,
+                                                      additional_headers=self._headers(), ssl=ssl_context)
+            self.connected = True
+            data = [{'ticket': str(uuid.uuid4())}, {'type': 'myOrder'}]
+            await self.websocket.send(json.dumps(data))
+        except Exception:
+            self.connected = False
 
     async def _receive_msg(self):
-        """메시지를 수신합니다."""
+        """주문체결 데이터를 수신합니다."""
         while self.connected:
             data = await self.websocket.recv()
             data = json.loads(data)
             self.signal.emit(data)
 
     async def _disconnect(self):
-        """웹소켓 연결을 해제합니다."""
+        """웹소켓 연결을 종료합니다."""
+        try:
+            if self.websocket is not None:
+                await self.websocket.close()
+        except Exception:
+            pass
         self.connected = False
-        if self.websocket is not None:
-            await self.websocket.close()
         await asyncio.sleep(1)
-
-    def stop(self):
-        """웹소켓을 종료합니다."""
-        if self.loop and self.loop.is_running():
-            self.loop.stop()

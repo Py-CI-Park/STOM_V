@@ -1,15 +1,6 @@
 
 def get_label_text(ui, is_min, xpoint, factor, hms):
-    """라벨 텍스트를 반환합니다.
-    Args:
-        ui: UI 객체
-        is_min: 분봉 여부
-        xpoint: x 좌표 포인트
-        factor: 요소 이름
-        hms: 시간 문자열
-    Returns:
-        라벨 텍스트
-    """
+    """라벨 텍스트를 반환합니다."""
     def fi(fname):
         return ui.dict_findex[fname]
 
