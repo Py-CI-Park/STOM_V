@@ -289,7 +289,67 @@ def test_live_lerp_bounded_by_batch_walltime() -> None:
 
 
 # ============================================================================
-# 7) vendor-babel 트랜스폼 — 두 JSX 가 브라우저 동일 엔진으로 문법 무결.
+# 7) RSI / MACD 렌더 경로 — HIGH-1 fix: 토글 켜면 실제로 그려진다.
+# ============================================================================
+
+def test_rsi_drawn_in_live_chart() -> None:
+    """RSI 패인이 live(Canvas) 엔진에 결선된다 — ind.rsi 토글로 게이팅."""
+    src = _read("sim-live-chart.jsx")
+    # 드로우 헬퍼 정의.
+    assert "function _drawRsiPane" in src
+    # 드로우 헬퍼 호출(hasRsi 게이팅).
+    assert "_drawRsiPane(" in src
+    # 토글 확인 키.
+    assert "hasRsi" in src
+    assert "ind.rsi" in src
+    # 30/50/70 가이드선(RSI 과매수/과매도 표준).
+    assert "30, 50, 70" in src or "[30, 50, 70]" in src
+
+
+def test_macd_drawn_in_live_chart() -> None:
+    """MACD 패인이 live(Canvas) 엔진에 결선된다 — ind.macd 토글로 게이팅."""
+    src = _read("sim-live-chart.jsx")
+    assert "function _drawMacdPane" in src
+    assert "_drawMacdPane(" in src
+    assert "hasMacd" in src
+    assert "ind.macd" in src
+    # 히스토그램 + MACD 라인 + 시그널 라인.
+    assert "cachedMacd" in src
+
+
+def test_rsi_and_macd_drawn_in_svg() -> None:
+    """RSI / MACD 컴포넌트가 SVG 엔진에 정의되고 SimChartShell 에 결선된다."""
+    src = _read("simulation-charts.jsx")
+    assert "function SimRsiPane" in src
+    assert "function SimMacdPane" in src
+    # SimChartShell 결선 — engine !== "lwc" 게이팅.
+    assert 'engine !== "lwc" && ind.rsi && <SimRsiPane' in src
+    assert 'engine !== "lwc" && ind.macd && <SimMacdPane' in src
+    # 30/50/70 가이드선.
+    assert "30, 50, 70" in src or "[30, 50, 70]" in src
+    # MACD 히스토그램 + 시그널.
+    assert "hist" in src and "signal" in src
+
+
+def test_asymmetry_lwc_excludes_rsi_and_macd() -> None:
+    """비대칭 패리티 — RSI/MACD 는 engine !== "lwc" 일 때만 렌더된다(LWC 에 없음)."""
+    charts = _read("simulation-charts.jsx")
+    # LWC 컴포넌트(SimCandleChartLWC) 내에 SimRsiPane/SimMacdPane 직접 렌더 없음.
+    # SimChartShell 결선이 engine != "lwc" 조건으로 감싸져 있는지 확인.
+    assert 'engine !== "lwc" && ind.rsi && <SimRsiPane' in charts
+    assert 'engine !== "lwc" && ind.macd && <SimMacdPane' in charts
+    # live 엔진도 lwc 가 아님을 확인(live 헬퍼는 sim-live-chart.jsx 에만 존재).
+    live = _read("sim-live-chart.jsx")
+    assert "_drawRsiPane" in live
+    assert "_drawMacdPane" in live
+    # LWC JSX(SimChartShell engine="lwc")는 RSI/MACD draw 를 추가로 갖지 않는다.
+    # simulation-charts.jsx 의 LWC 컴포넌트 블록엔 _drawRsiPane/_drawMacdPane 참조 없음.
+    assert "_drawRsiPane" not in charts
+    assert "_drawMacdPane" not in charts
+
+
+# ============================================================================
+# 8) vendor-babel 트랜스폼 — 두 JSX 가 브라우저 동일 엔진으로 문법 무결.
 # ============================================================================
 
 def test_phase7_jsx_transforms_with_vendor_babel(tmp_path: Path) -> None:

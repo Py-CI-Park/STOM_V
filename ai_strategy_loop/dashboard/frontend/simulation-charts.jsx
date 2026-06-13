@@ -1084,9 +1084,141 @@ function SimNetDeltaStrip({ bars, compact }) {
   );
 }
 
+/* ─────────────── RSI 서브패인 (Req 2, ASYMMETRIC: live+svg only) ───────────────
+   RSI(Wilder 14기간) 0–100 스케일 SVG. 30/50/70 가이드선 + 폴리라인.
+   클라이언트 _simRsi(window 전역) 으로 계산. LWC 는 싣지 않는다(ASYMMETRIC PARITY). */
+function SimRsiPane({ bars, compact }) {
+  const view = useMemo_simc(() => {
+    const arr = bars || [];
+    return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+  }, [bars]);
+
+  const rsiVals = useMemo_simc(() =>
+    (typeof _simRsi === "function") ? _simRsi(view, 14) : [],
+    [view]);
+
+  const hasData = useMemo_simc(() => rsiVals.some(v => v != null), [rsiVals]);
+  if (!hasData) return null;
+
+  const n = view.length;
+  const W = 880;
+  const H = compact ? 30 : 40;
+  const padL = 56, padR = 16, padT = 4, padB = 4;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + (innerW * i) / (n - 1);
+  const yAt = (v) => padT + innerH - (Math.max(0, Math.min(100, v)) / 100) * innerH;
+
+  let d = "", started = false;
+  for (let i = 0; i < n; i++) {
+    const v = rsiVals[i];
+    if (v == null || !isFinite(v)) { started = false; continue; }
+    d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
+    started = true;
+  }
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      <span className="mono" style={{ fontSize: 9.5, color: "var(--teal)" }}>RSI(14)</span>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: H }}>
+        {/* 30 / 50 / 70 가이드선 */}
+        {[30, 50, 70].map(lv => (
+          <line key={lv} x1={padL} x2={W - padR} y1={yAt(lv)} y2={yAt(lv)}
+                stroke="rgba(255,255,255,0.10)" strokeWidth="1" strokeDasharray="2 3" />
+        ))}
+        <text className="chart-axis-text" x={padL - 6} y={yAt(70) + 3} textAnchor="end" fill="var(--ink-3)">70</text>
+        <text className="chart-axis-text" x={padL - 6} y={yAt(30) + 3} textAnchor="end" fill="var(--ink-3)">30</text>
+        {n > 1 && <path d={d} fill="none" stroke="var(--teal)" strokeWidth="1.2" opacity="0.85" />}
+      </svg>
+    </div>
+  );
+}
+
+/* ─────────────── MACD 서브패인 (Req 2, ASYMMETRIC: live+svg only) ───────────────
+   MACD(12/26/9) zero-centered SVG: 히스토그램(hist) + MACD 라인 + 시그널 라인.
+   클라이언트 _simMacd(window 전역) 으로 계산. LWC 는 싣지 않는다(ASYMMETRIC PARITY). */
+function SimMacdPane({ bars, compact }) {
+  const view = useMemo_simc(() => {
+    const arr = bars || [];
+    return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+  }, [bars]);
+
+  const macdData = useMemo_simc(() =>
+    (typeof _simMacd === "function") ? _simMacd(view) : { macd: [], signal: [], hist: [] },
+    [view]);
+
+  const hasData = useMemo_simc(() =>
+    (macdData.macd || []).some(v => v != null),
+    [macdData]);
+  if (!hasData) return null;
+
+  const n = view.length;
+  const W = 880;
+  const H = compact ? 30 : 42;
+  const padL = 56, padR = 16, padT = 4, padB = 4;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const mid = padT + innerH / 2;
+  const half = innerH / 2 - 1;
+
+  const hist = macdData.hist || [];
+  const macdLine = macdData.macd || [];
+  const signalLine = macdData.signal || [];
+
+  let maxAbs = 1;
+  for (let i = 0; i < n; i++) {
+    const v = hist[i];
+    if (v != null && isFinite(v)) maxAbs = Math.max(maxAbs, Math.abs(v));
+  }
+  const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + (innerW * i) / (n - 1);
+  const yAt = (v) => (v == null || !isFinite(v)) ? mid
+    : mid - (Math.max(-maxAbs, Math.min(maxAbs, v)) / maxAbs) * half;
+
+  const slot = n > 1 ? innerW / n : innerW;
+  const barW = Math.max(1, slot * 0.55);
+
+  // MACD / 시그널 라인 path.
+  const linePath = (vals) => {
+    let d = "", started = false;
+    for (let i = 0; i < n; i++) {
+      const v = vals[i];
+      if (v == null || !isFinite(v)) { started = false; continue; }
+      d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
+      started = true;
+    }
+    return d;
+  };
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      <span className="mono" style={{ fontSize: 9.5, color: "var(--teal)" }}>MACD(12,26,9)</span>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: H }}>
+        {/* 0 기준선 */}
+        <line x1={padL} x2={W - padR} y1={mid} y2={mid} stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+        {/* 히스토그램 막대 */}
+        {view.map((b, i) => {
+          const v = hist[i];
+          if (v == null || !isFinite(v)) return null;
+          const bh = Math.abs(yAt(v) - mid);
+          const x = xAt(i) - barW / 2;
+          const y = v >= 0 ? mid - bh : mid;
+          const color = v > 0 ? "var(--teal)" : "var(--red)";
+          return <rect key={i} x={x.toFixed(1)} y={y.toFixed(1)}
+                       width={barW.toFixed(1)} height={Math.max(0.5, bh).toFixed(1)}
+                       fill={color} opacity="0.55" />;
+        })}
+        {/* MACD 라인(teal 실선) */}
+        {n > 1 && <path d={linePath(macdLine)} fill="none" stroke="var(--teal)" strokeWidth="1.1" opacity="0.9" />}
+        {/* 시그널 라인(amber 점선) */}
+        {n > 1 && <path d={linePath(signalLine)} fill="none" stroke="var(--amber)" strokeWidth="1" opacity="0.8" strokeDasharray="3 2" />}
+      </svg>
+    </div>
+  );
+}
+
 /* 공통 셸 — 헤더(종목·현재가·등락 게이지·세션 링) + 본문(차트) + 히트 스트립.
    신호(매수/매도) 도달 순간 패널 테두리를 1회 플래시한다(curT 가 신호 시각을 막 넘을 때).
-   호가 불균형·net-delta 서브패인은 ASYMMETRIC — live+svg 만(engine !== "lwc") 토글 시 노출. */
+   호가 불균형·net-delta·RSI·MACD 서브패인은 ASYMMETRIC — live+svg 만(engine !== "lwc") 토글 시 노출. */
 function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engine, indicators, children }) {
   const ind = indicators || _SIM_DEFAULT_INDICATORS;
   // 신호 도달 플래시 — curT 가 새 신호 시각(buy/sell)을 넘는 순간 1회 깜빡. ref 로 도달분 추적.
@@ -1146,9 +1278,11 @@ function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engi
       </div>
       <div className="panel-bd">
         {children}
-        {/* 차트-내부 오더플로우 서브패인 — ASYMMETRIC: live+svg 만(LWC 제외). 토글별 노출. */}
+        {/* 차트-내부 서브패인 — ASYMMETRIC: live+svg 만(LWC 제외). 토글별 노출. */}
         {engine !== "lwc" && ind.imbalance && <SimImbalancePane bars={bars} compact={compact} />}
         {engine !== "lwc" && ind.orderflow && <SimNetDeltaStrip bars={bars} compact={compact} />}
+        {engine !== "lwc" && ind.rsi && <SimRsiPane bars={bars} compact={compact} />}
+        {engine !== "lwc" && ind.macd && <SimMacdPane bars={bars} compact={compact} />}
         <SimOrderBook lastBar={lastBar} compact={compact} />
         <SimOrderFlowTape bars={bars} compact={compact} />
         <SimFootprint bars={bars} compact={compact} />
@@ -1629,7 +1763,7 @@ Object.assign(window, {
   SimHeatStrip, SimRestFlow, SimSignalLog,
   SimChangeGauge, SimSessionRing,
   SimOrderFlowTape, SimFootprint, SimOrderBook, SimOverlayChart,
-  SimImbalancePane, SimNetDeltaStrip,
+  SimImbalancePane, SimNetDeltaStrip, SimRsiPane, SimMacdPane,
   _simTimeLabel, _simPriceTick, _strengthColor, _sessionProgress, _changeColor,
   _simSma, _simEma, _simRsi, _simMacd, _simVolMa, _simStrengthMa,
   _SIM_DEFAULT_INDICATORS,
