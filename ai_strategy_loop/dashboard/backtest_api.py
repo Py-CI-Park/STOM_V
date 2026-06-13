@@ -132,6 +132,108 @@ def _gated_json_path(raw: Any) -> Optional[str]:
     return _validate_back_db_override(str(raw).strip())
 
 
+# sweep param 인라인 스펙(빌더 UI) → CLI 가 기대하는 {변수명: [값,...]} dict.
+#   cli/sweep.generate_combinations 가 product(*values) 로 데카르트 곱을 만들므로
+#   각 변수의 값은 반드시 '명시적 값 리스트'여야 한다(min/max/step 이 아님 — 2026-06-13
+#   cli/sweep.py·cli/subcommands._handle_sweep 계약 실측). 빌더의 [min][max][step] 행은
+#   여기서 명시 값 리스트로 펼친다.
+_SWEEP_MAX_VARS = 8            # 변수 개수 상한(조합 폭발·JSON 비대 방지).
+_SWEEP_MAX_VALUES_PER_VAR = 64  # 변수 1개당 값 개수 상한.
+
+
+def _expand_sweep_range(lo: float, hi: float, step: float) -> List[Any]:
+    """[min, max, step] 을 명시적 값 리스트로 펼친다(포함 구간, 부동소수 오차 흡수).
+
+    step<=0 이거나 lo>hi 면 [lo] 단일값(무예외). 정수만 들어오면 정수로, 하나라도 실수면
+    실수로 보존한다(CLI 는 값 타입을 그대로 product 에 넣어 BacktestConfig 오버라이드).
+    값 개수는 _SWEEP_MAX_VALUES_PER_VAR 로 절단한다(조합 폭발 방지).
+    """
+    is_int = all(float(v).is_integer() for v in (lo, hi, step))
+    if step <= 0 or lo > hi:
+        return [int(lo) if is_int else float(lo)]
+    values: List[Any] = []
+    cur = lo
+    # 1e-9 여유로 hi 를 포함(0.1 누적 오차로 마지막 값이 빠지는 것 방지).
+    while cur <= hi + 1e-9 and len(values) < _SWEEP_MAX_VALUES_PER_VAR:
+        values.append(int(round(cur)) if is_int else round(cur, 10))
+        cur += step
+    return values
+
+
+def _build_sweep_spec(rows: Any) -> Optional[Dict[str, List[Any]]]:
+    """빌더 행 목록 → {변수명: [값,...]} sweep 스펙(CLI generate_combinations 입력).
+
+    rows: [{"name": str, "min": num, "max": num, "step": num}] 또는 값 리스트를 직접
+    담은 [{"name": str, "values": [..]}]. 빈/무효 행은 건너뛴다(무예외). 유효 변수가
+    하나도 없으면 None(호출측이 error 페이로드). 변수명 중복은 마지막이 우선.
+    """
+    if not isinstance(rows, list) or not rows:
+        return None
+    spec: Dict[str, List[Any]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        name = str(row.get("name", "") or "").strip()
+        if not name:
+            continue
+        # 명시 값 리스트가 오면 그대로(숫자만 수용), 아니면 min/max/step 을 펼친다.
+        if isinstance(row.get("values"), list):
+            vals: List[Any] = []
+            for v in row["values"][:_SWEEP_MAX_VALUES_PER_VAR]:
+                if isinstance(v, bool):
+                    continue  # bool 은 숫자 아님(파라미터 값으로 부적절).
+                if isinstance(v, (int, float)):
+                    vals.append(v)
+                else:
+                    try:
+                        fv = float(str(v).strip())
+                        vals.append(int(fv) if fv.is_integer() else fv)
+                    except (TypeError, ValueError):
+                        continue
+            if vals:
+                spec[name] = vals
+            if len(spec) >= _SWEEP_MAX_VARS:
+                break
+            continue
+        try:
+            lo = float(row.get("min"))
+            hi = float(row.get("max"))
+            step = float(row.get("step"))
+        except (TypeError, ValueError):
+            continue
+        spec[name] = _expand_sweep_range(lo, hi, step)
+        if len(spec) >= _SWEEP_MAX_VARS:
+            break
+    return spec or None
+
+
+def _write_sweep_spec_file(spec: Dict[str, List[Any]]) -> Optional[str]:
+    """sweep 스펙 dict 를 게이트된 _database/ 하위 임시 JSON 으로 쓰고 경로를 반환한다.
+
+    CLI 는 --params <파일경로> 만 받으므로 인라인 스펙을 파일로 직렬화해야 한다. 기존
+    allowlist(_database/) 안에 쓰므로 sweep_params 게이트(_gated_json_path)를 그대로
+    통과한다. IO 실패면 None(무예외 — 호출측이 error 페이로드). 파일명은 충돌 방지용
+    타임스탬프+난수.
+    """
+    import json as _json
+    import time as _time
+    import uuid as _uuid
+
+    if not isinstance(spec, dict) or not spec:
+        return None
+    sweep_dir = _DATABASE_DIR / "webbt_sweep"
+    try:
+        sweep_dir.mkdir(parents=True, exist_ok=True)
+        fname = f"sweep_{_time.strftime('%Y%m%d_%H%M%S')}_{_uuid.uuid4().hex[:8]}.json"
+        target = sweep_dir / fname
+        with open(target, "w", encoding="utf-8") as fh:
+            _json.dump(spec, fh, ensure_ascii=False)
+        # 작성한 파일이 sweep_params 게이트(_database/ 하위)를 통과하는지 자기검증.
+        return _gated_json_path(str(target))
+    except OSError:
+        return None
+
+
 # --------------------------------------------------------------- strategy CRUD
 @backtest_router.get("/strategies")
 def list_strategies(kind: str = "buy") -> Dict[str, Any]:
@@ -451,6 +553,22 @@ def run_backtest(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
                 "status": "error",
                 "message": "sweep_params 는 _database/ 또는 ai_strategy_loop/state/ 하위 경로만 허용됩니다.",
             }
+        # 인라인 sweep 스펙(빌더 UI) — 파일 경로 미지정 시 빌더 행을 게이트된 임시 JSON 으로
+        #   직렬화해 sweep_params 경로로 잇는다(CLI 는 --params <파일> 만 받음). 파일 경로가
+        #   직접 오면 그 경로가 우선(파일 입력 폴백 유지).
+        if not sweep_params and payload.get("sweep_spec") is not None:
+            spec_dict = _build_sweep_spec(payload.get("sweep_spec"))
+            if spec_dict is None:
+                return {
+                    "status": "error",
+                    "message": "sweep 스펙이 비었습니다 — 변수명·범위(min/max/step)가 있는 행이 1개 이상 필요합니다.",
+                }
+            sweep_params = _write_sweep_spec_file(spec_dict)
+            if sweep_params is None:
+                return {
+                    "status": "error",
+                    "message": "sweep 스펙 임시 파일 생성에 실패했습니다.",
+                }
         spec = BacktestJobSpec(
             buy=str(payload.get("buy", "") or "").strip(),
             sell=str(payload.get("sell", "") or "").strip(),
