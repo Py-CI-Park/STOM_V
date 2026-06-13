@@ -174,6 +174,16 @@ function VerdictPanel({ baseUrl }) {
   const [regime, setRegime] = useState_dp(null);
   const [revival, setRevival] = useState_dp(null);
   const [portfolio, setPortfolio] = useState_dp(null);  // 부모 Phase3 — V6 채택 추천 포트폴리오.
+  // 하위 탭 — 다른 탭(연구실)과 동일한 .research-tabs 패턴으로 밀집된 결정 화면을 분류.
+  //   summary(검증 결산)·regime(레짐·부활)·portfolio(V6 포트폴리오)·decide(운용 결정).
+  const [vsub, setVsub] = useState_dp(() => {
+    try { return window.localStorage.getItem("stom_verdict_subtab") || "summary"; }
+    catch (e) { return "summary"; }
+  });
+  const selectVsub = (k) => {
+    setVsub(k);
+    try { window.localStorage.setItem("stom_verdict_subtab", k); } catch (e) {}
+  };
 
   const loadHistory = () =>
     fetch(base + "/decisions", { signal: AbortSignal.timeout(8000) })
@@ -203,194 +213,252 @@ function VerdictPanel({ baseUrl }) {
       .catch(e => setSaved({ status: "error", error: String(e) }));
   };
 
+  // 하위 탭 정의 — 라벨 옆에 현황 배지(개수/상태)를 달아 한눈에 분류되게 한다.
+  const _vBadge = (() => {
+    const checks = (v && v.promote_checklist) || [];
+    const alerts = ((v && v.alerts) || []).length;
+    return {
+      summary: checks.length ? (alerts ? "⚠️" + alerts : "✓") : "",
+      regime: (regime && regime.status !== "unavailable" ? "" : "—"),
+      portfolio: (portfolio && portfolio.adopted ? "★" : (portfolio && portfolio.status === "unavailable" ? "—" : "")),
+      decide: history.length ? String(history.length) : "",
+    };
+  })();
+  const VSUBS = [
+    { key: "summary", label: "검증 결산", ico: "📋" },
+    { key: "regime", label: "레짐·부활", ico: "🌐" },
+    { key: "portfolio", label: "V6 포트폴리오", ico: "★" },
+    { key: "decide", label: "운용 결정", ico: "⚖️" },
+  ];
+
   return (
     <div style={{ padding: "14px 0", maxWidth: 980, margin: "0 auto", minHeight: "60vh" }}>
       <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
         <b style={{ fontSize: 16 }}>검증 결산과 운용 결정 (V6)</b>
+        <span className="mono" style={{ marginLeft: 10, fontSize: 11, color: "var(--ink-3)" }}>
+          증거 → 결정(append-only) 워크플로우
+        </span>
       </div>
 
-      {v && (v.promote_checklist || []).length > 0 && (
-        <table className="mono" style={{ fontSize: 12, width: "100%", marginBottom: 8 }}>
-          <thead><tr><th>PROMOTE 조건</th><th>상태</th><th>근거</th></tr></thead>
-          <tbody>
-            {v.promote_checklist.map((c, i) => (
-              <tr key={i}><td>{c.item}</td><td>{ICON[c.status] || "?"}</td><td>{c.detail || "—"}</td></tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      {v && v.oos_diff_ci && Object.keys(v.oos_diff_ci).length > 0 && (
-        <div style={{ marginTop: 8, marginBottom: 4 }}>
-          <div className="mono" style={{ fontSize: 11, color: "#9fb0c0", marginBottom: 2 }}>
-            OOS 차이 신뢰구간 (advisory) — CI가 0을 걸치면 표본 부족 신호 — 판정 미사용
-          </div>
-          <table className="mono" style={{ fontSize: 11, width: "100%" }}>
-            <thead><tr><th>OOS 연도</th><th>total_diff</th><th>CI 95%</th><th>P(diff≤0)</th></tr></thead>
-            <tbody>
-              {Object.entries(v.oos_diff_ci).map(([year, ci]) => (
-                <tr key={year}>
-                  <td>{year}</td>
-                  <td>{ci ? Math.round(ci.total_diff).toLocaleString() : "—"}</td>
-                  <td>{ci ? `[${Math.round(ci.ci_low).toLocaleString()}, ${Math.round(ci.ci_high).toLocaleString()}]` : "—"}</td>
-                  <td>{ci ? ci.p_diff_le_0 : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      {v && (v.alerts || []).map((a, i) => (
-        <div key={"a" + i} className="mono" style={{ fontSize: 12, color: "#c95" }}>⚠️ {a}</div>
-      ))}
-      {v && (v.lines || []).map((l, i) => (
-        <div key={"l" + i} className="mono" style={{ fontSize: 12 }}>{l}</div>
-      ))}
-
-      {regime && regime.status !== "unavailable" && (
-        <div style={{ marginTop: 10 }}>
-          <div className="research-empty">레짐 분해 (advisory) — 판정 미사용</div>
-          {["THETA", "SEED"].map(grp => {
-            const d = (regime.breakdowns || {})[grp];
-            if (!d) return null;
-            const act = d.active || {}, con = d.contracted || {};
-            return (
-              <div key={grp} className="mono" style={{ fontSize: 11, marginTop: 4 }}>
-                <b>{grp}</b>
-                {" · 활성장 "}
-                {act.profit != null ? "+" + Math.round(act.profit).toLocaleString() : "—"}
-                {act.days != null ? ` (${act.days}일)` : ""}
-                {" · 위축장 "}
-                {con.profit != null ? "+" + Math.round(con.profit).toLocaleString() : "—"}
-                {con.days != null ? ` (${con.days}일)` : ""}
-                {d.concentration != null ? ` · 집중도 ${(d.concentration * 100).toFixed(1)}%` : ""}
-                {d.warning ? <span style={{ color: "#c95" }}> ⚠️ {d.warning}</span> : <span style={{ color: "#7c4" }}> ✓ 레짐 균형</span>}
-              </div>
-            );
-          })}
-        </div>
-      )}
-      {regime && regime.status === "unavailable" && (
-        <div className="mono" style={{ fontSize: 11, marginTop: 8, opacity: 0.6 }}>레짐 분해: 데이터 없음</div>
-      )}
-
-      {revival && revival.status !== "unavailable" && (
-        <div style={{ marginTop: 10 }}>
-          <div className="research-empty">
-            패자부활 레지스트리
-            {Array.isArray(revival.rejected) ? ` — 등재 ${revival.rejected.length}건` : ""}
-          </div>
-          {Array.isArray(revival.rejected) && revival.rejected.slice(0, 10).map((item, i) => (
-            <div key={i} className="mono" style={{ fontSize: 11, marginTop: 2 }}>
-              <b>{item.label || "—"}</b>
-              {item.rejected_at ? ` · 기각 ${item.rejected_at}` : ""}
-              {item.reject_basis ? ` · ${item.reject_basis}` : ""}
-            </div>
-          ))}
-          <div className="mono" style={{ fontSize: 10, opacity: 0.65, marginTop: 2 }}>
-            신규 데이터 도착 시 전수 자동 재검증
-          </div>
-        </div>
-      )}
-      {revival && revival.status === "unavailable" && (
-        <div className="mono" style={{ fontSize: 11, marginTop: 8, opacity: 0.6 }}>패자부활 레지스트리: 데이터 없음</div>
-      )}
-
-      {/* ★ V6 채택 추천 포트폴리오 패널 (부모 Phase3 — /portfolio_verdict) */}
-      {portfolio && portfolio.adopted && (
-        <div style={{ marginTop: 14, padding: 12, border: "1px solid rgba(90,180,100,0.35)", borderRadius: 6, background: "rgba(50,120,60,0.08)" }}>
-          <div className="research-empty" style={{ color: "#7c4" }}>★ V6 채택 추천 포트폴리오</div>
-          <div className="mono" style={{ fontSize: 12, marginTop: 6 }}>
-            {(portfolio.members || []).map(m => (
-              <span key={m.name} style={{ marginRight: 16 }}>
-                <b>{m.name}</b> {Math.round(m.weight * 100)}%
-              </span>
-            ))}
-          </div>
-          {portfolio.m4 && (
-            <div style={{ marginTop: 8 }}>
-              <div className="mono" style={{ fontSize: 11, opacity: 0.75, marginBottom: 2 }}>M4 baseline (포트폴리오 vs 시드 — {portfolio.m4.n_months}개월)</div>
-              <div className="mono" style={{ fontSize: 12 }}>
-                포트폴리오 합계: <b>{portfolio.m4.champion_total != null ? Math.round(portfolio.m4.champion_total).toLocaleString() : "—"}</b>
-                {" · "}
-                시드 합계: <b>{portfolio.m4.challenger_total != null ? Math.round(portfolio.m4.challenger_total).toLocaleString() : "—"}</b>
-                {portfolio.m4.champion_total != null && portfolio.m4.challenger_total != null && portfolio.m4.challenger_total !== 0 && (
-                  <span style={{ marginLeft: 8, color: portfolio.m4.champion_total >= portfolio.m4.challenger_total ? "#7c4" : "#c95" }}>
-                    ({portfolio.m4.champion_total >= portfolio.m4.challenger_total ? "+" : ""}
-                    {(((portfolio.m4.champion_total - portfolio.m4.challenger_total) / Math.abs(portfolio.m4.challenger_total)) * 100).toFixed(1)}% 우위)
-                  </span>
-                )}
-              </div>
-              {(portfolio.m4.alerts || []).length > 0 && portfolio.m4.alerts.map((a, i) => (
-                <div key={i} className="mono" style={{ fontSize: 11, color: "#c95" }}>⚠️ {a}</div>
-              ))}
-              {(portfolio.m4.alerts || []).length === 0 && (
-                <div className="mono" style={{ fontSize: 11, opacity: 0.6 }}>경보 없음</div>
-              )}
-            </div>
-          )}
-          {portfolio.decision_note && (
-            <div className="mono" style={{ fontSize: 11, marginTop: 8, opacity: 0.85, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 6 }}>
-              결정 노트: {portfolio.decision_note}
-            </div>
-          )}
-          {portfolio.findings_doc && (
-            <div className="mono" style={{ fontSize: 10, marginTop: 4, opacity: 0.55 }}>
-              검증 문서: {portfolio.findings_doc}
-            </div>
-          )}
-        </div>
-      )}
-      {portfolio && !portfolio.adopted && portfolio.status !== "unavailable" && (
-        <div style={{ marginTop: 14, padding: 12, border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6 }}>
-          <div className="research-empty">V6 포트폴리오 채택 미결정</div>
-          <div className="mono" style={{ fontSize: 11, opacity: 0.6, marginTop: 4 }}>complement 결정 기록 없음</div>
-        </div>
-      )}
-      {portfolio && portfolio.status === "unavailable" && (
-        <div className="mono" style={{ fontSize: 11, marginTop: 8, opacity: 0.6 }}>V6 포트폴리오: 데이터 없음</div>
-      )}
-
-      <div style={{ marginTop: 14, padding: 12, border: "1px solid rgba(255,255,255,0.12)", borderRadius: 6 }}>
-        <div className="research-empty">운용 결정 기록 (append-only — 번복도 새 레코드로 이력 보존)</div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center", margin: "8px 0", flexWrap: "wrap" }}>
-          {["promote", "complement", "hold", "reject"].map(k => (
-            <label key={k} className="mono" style={{ fontSize: 12, cursor: "pointer" }}>
-              <input type="radio" name="verdict" checked={choice === k}
-                     onChange={() => setChoice(k)} /> {k}
-            </label>
-          ))}
-          <input type="text" value={note} placeholder="결정 근거 메모"
-                 onChange={e => setNote(e.target.value)}
-                 className="mono" style={{ flex: 1, minWidth: 220, fontSize: 12 }} />
-          <button type="button" className="research-tab" onClick={submit}>기록</button>
-        </div>
-        {saved && (
-          <div className="mono" style={{ fontSize: 11, color: saved.status === "ok" ? "#5b9" : "#c95" }}>
-            {saved.status === "ok" ? "기록됨" : `실패: ${saved.error || saved.status}`}
-          </div>
-        )}
+      {/* 하위 탭바 — 다른 탭(연구실)과 동일한 .research-tabs 패턴으로 체계화. */}
+      <div className="research-tabs" role="tablist" aria-label="결정 이력 하위 탭" style={{ marginBottom: 12 }}>
+        {VSUBS.map(t => (
+          <button key={t.key} type="button" role="tab" aria-selected={vsub === t.key}
+                  className={"research-tab" + (vsub === t.key ? " active" : "")}
+                  onClick={() => selectVsub(t.key)}>
+            <span aria-hidden="true" style={{ marginRight: 4 }}>{t.ico}</span>
+            {t.label}
+            {_vBadge[t.key] ? <span style={{ marginLeft: 5, opacity: 0.7 }}>{_vBadge[t.key]}</span> : null}
+          </button>
+        ))}
       </div>
 
-      <div style={{ marginTop: 12 }}>
-        <div className="research-empty">결정 이력</div>
-        {history.length === 0
-          ? <div className="mono" style={{ fontSize: 11 }}>기록 없음</div>
-          : (
-            <table className="mono" style={{ fontSize: 11, width: "100%" }}>
-              <thead><tr><th>시각</th><th>결정</th><th>대상 후보</th><th>메모</th></tr></thead>
+      {/* ── 검증 결산: PROMOTE 체크리스트 · OOS CI · 경보/요약 ── */}
+      {vsub === "summary" && (
+        <div>
+          {v && (v.promote_checklist || []).length > 0 ? (
+            <table className="mono" style={{ fontSize: 12, width: "100%", marginBottom: 8 }}>
+              <thead><tr><th>PROMOTE 조건</th><th>상태</th><th>근거</th></tr></thead>
               <tbody>
-                {history.slice().reverse().map((d, i) => (
-                  <tr key={i}>
-                    <td>{new Date((d.ts || 0) * 1000).toLocaleString("ko-KR")}</td>
-                    <td>{d.verdict}</td>
-                    <td>{d.candidate ? `${d.candidate.buy_name} (${Math.round(d.candidate.profit || 0).toLocaleString()})` : "—"}</td>
-                    <td>{d.note || "—"}</td>
-                  </tr>
+                {v.promote_checklist.map((c, i) => (
+                  <tr key={i}><td>{c.item}</td><td>{ICON[c.status] || "?"}</td><td>{c.detail || "—"}</td></tr>
                 ))}
               </tbody>
             </table>
+          ) : (
+            <div className="mono" style={{ fontSize: 11, opacity: 0.6 }}>PROMOTE 체크리스트: 데이터 없음</div>
           )}
-      </div>
+          {v && v.oos_diff_ci && Object.keys(v.oos_diff_ci).length > 0 && (
+            <div style={{ marginTop: 8, marginBottom: 4 }}>
+              <div className="mono" style={{ fontSize: 11, color: "#9fb0c0", marginBottom: 2 }}>
+                OOS 차이 신뢰구간 (advisory) — CI가 0을 걸치면 표본 부족 신호 — 판정 미사용
+              </div>
+              <table className="mono" style={{ fontSize: 11, width: "100%" }}>
+                <thead><tr><th>OOS 연도</th><th>total_diff</th><th>CI 95%</th><th>P(diff≤0)</th></tr></thead>
+                <tbody>
+                  {Object.entries(v.oos_diff_ci).map(([year, ci]) => (
+                    <tr key={year}>
+                      <td>{year}</td>
+                      <td>{ci ? Math.round(ci.total_diff).toLocaleString() : "—"}</td>
+                      <td>{ci ? `[${Math.round(ci.ci_low).toLocaleString()}, ${Math.round(ci.ci_high).toLocaleString()}]` : "—"}</td>
+                      <td>{ci ? ci.p_diff_le_0 : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {v && (v.alerts || []).map((a, i) => (
+            <div key={"a" + i} className="mono" style={{ fontSize: 12, color: "#c95" }}>⚠️ {a}</div>
+          ))}
+          {v && (v.lines || []).map((l, i) => (
+            <div key={"l" + i} className="mono" style={{ fontSize: 12 }}>{l}</div>
+          ))}
+        </div>
+      )}
+
+      {/* ── 레짐·부활: 레짐 분해 · 패자부활 레지스트리 (둘 다 advisory) ── */}
+      {vsub === "regime" && (
+        <div>
+          {regime && regime.status !== "unavailable" && (
+            <div>
+              <div className="research-empty">레짐 분해 (advisory) — 판정 미사용</div>
+              {["THETA", "SEED"].map(grp => {
+                const d = (regime.breakdowns || {})[grp];
+                if (!d) return null;
+                const act = d.active || {}, con = d.contracted || {};
+                return (
+                  <div key={grp} className="mono" style={{ fontSize: 11, marginTop: 4 }}>
+                    <b>{grp}</b>
+                    {" · 활성장 "}
+                    {act.profit != null ? "+" + Math.round(act.profit).toLocaleString() : "—"}
+                    {act.days != null ? ` (${act.days}일)` : ""}
+                    {" · 위축장 "}
+                    {con.profit != null ? "+" + Math.round(con.profit).toLocaleString() : "—"}
+                    {con.days != null ? ` (${con.days}일)` : ""}
+                    {d.concentration != null ? ` · 집중도 ${(d.concentration * 100).toFixed(1)}%` : ""}
+                    {d.warning ? <span style={{ color: "#c95" }}> ⚠️ {d.warning}</span> : <span style={{ color: "#7c4" }}> ✓ 레짐 균형</span>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {regime && regime.status === "unavailable" && (
+            <div className="mono" style={{ fontSize: 11, opacity: 0.6 }}>레짐 분해: 데이터 없음</div>
+          )}
+
+          {revival && revival.status !== "unavailable" && (
+            <div style={{ marginTop: 14 }}>
+              <div className="research-empty">
+                패자부활 레지스트리
+                {Array.isArray(revival.rejected) ? ` — 등재 ${revival.rejected.length}건` : ""}
+              </div>
+              {Array.isArray(revival.rejected) && revival.rejected.slice(0, 10).map((item, i) => (
+                <div key={i} className="mono" style={{ fontSize: 11, marginTop: 2 }}>
+                  <b>{item.label || "—"}</b>
+                  {item.rejected_at ? ` · 기각 ${item.rejected_at}` : ""}
+                  {item.reject_basis ? ` · ${item.reject_basis}` : ""}
+                </div>
+              ))}
+              <div className="mono" style={{ fontSize: 10, opacity: 0.65, marginTop: 2 }}>
+                신규 데이터 도착 시 전수 자동 재검증
+              </div>
+            </div>
+          )}
+          {revival && revival.status === "unavailable" && (
+            <div className="mono" style={{ fontSize: 11, marginTop: 14, opacity: 0.6 }}>패자부활 레지스트리: 데이터 없음</div>
+          )}
+        </div>
+      )}
+
+      {/* ── V6 포트폴리오: 채택 추천 포트폴리오 (부모 Phase3 — /portfolio_verdict) ── */}
+      {vsub === "portfolio" && (
+        <div>
+          {portfolio && portfolio.adopted && (
+            <div style={{ padding: 12, border: "1px solid rgba(90,180,100,0.35)", borderRadius: 6, background: "rgba(50,120,60,0.08)" }}>
+              <div className="research-empty" style={{ color: "#7c4" }}>★ V6 채택 추천 포트폴리오</div>
+              <div className="mono" style={{ fontSize: 12, marginTop: 6 }}>
+                {(portfolio.members || []).map(m => (
+                  <span key={m.name} style={{ marginRight: 16 }}>
+                    <b>{m.name}</b> {Math.round(m.weight * 100)}%
+                  </span>
+                ))}
+              </div>
+              {portfolio.m4 && (
+                <div style={{ marginTop: 8 }}>
+                  <div className="mono" style={{ fontSize: 11, opacity: 0.75, marginBottom: 2 }}>M4 baseline (포트폴리오 vs 시드 — {portfolio.m4.n_months}개월)</div>
+                  <div className="mono" style={{ fontSize: 12 }}>
+                    포트폴리오 합계: <b>{portfolio.m4.champion_total != null ? Math.round(portfolio.m4.champion_total).toLocaleString() : "—"}</b>
+                    {" · "}
+                    시드 합계: <b>{portfolio.m4.challenger_total != null ? Math.round(portfolio.m4.challenger_total).toLocaleString() : "—"}</b>
+                    {portfolio.m4.champion_total != null && portfolio.m4.challenger_total != null && portfolio.m4.challenger_total !== 0 && (
+                      <span style={{ marginLeft: 8, color: portfolio.m4.champion_total >= portfolio.m4.challenger_total ? "#7c4" : "#c95" }}>
+                        ({portfolio.m4.champion_total >= portfolio.m4.challenger_total ? "+" : ""}
+                        {(((portfolio.m4.champion_total - portfolio.m4.challenger_total) / Math.abs(portfolio.m4.challenger_total)) * 100).toFixed(1)}% 우위)
+                      </span>
+                    )}
+                  </div>
+                  {(portfolio.m4.alerts || []).length > 0 && portfolio.m4.alerts.map((a, i) => (
+                    <div key={i} className="mono" style={{ fontSize: 11, color: "#c95" }}>⚠️ {a}</div>
+                  ))}
+                  {(portfolio.m4.alerts || []).length === 0 && (
+                    <div className="mono" style={{ fontSize: 11, opacity: 0.6 }}>경보 없음</div>
+                  )}
+                </div>
+              )}
+              {portfolio.decision_note && (
+                <div className="mono" style={{ fontSize: 11, marginTop: 8, opacity: 0.85, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 6 }}>
+                  결정 노트: {portfolio.decision_note}
+                </div>
+              )}
+              {portfolio.findings_doc && (
+                <div className="mono" style={{ fontSize: 10, marginTop: 4, opacity: 0.55 }}>
+                  검증 문서: {portfolio.findings_doc}
+                </div>
+              )}
+            </div>
+          )}
+          {portfolio && !portfolio.adopted && portfolio.status !== "unavailable" && (
+            <div style={{ padding: 12, border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6 }}>
+              <div className="research-empty">V6 포트폴리오 채택 미결정</div>
+              <div className="mono" style={{ fontSize: 11, opacity: 0.6, marginTop: 4 }}>complement 결정 기록 없음</div>
+            </div>
+          )}
+          {portfolio && portfolio.status === "unavailable" && (
+            <div className="mono" style={{ fontSize: 11, opacity: 0.6 }}>V6 포트폴리오: 데이터 없음</div>
+          )}
+          {!portfolio && (
+            <div className="mono" style={{ fontSize: 11, opacity: 0.6 }}>V6 포트폴리오: 로딩 중…</div>
+          )}
+        </div>
+      )}
+
+      {/* ── 운용 결정: 결정 기록 폼(append-only) + 결정 이력 ── */}
+      {vsub === "decide" && (
+        <div>
+          <div style={{ padding: 12, border: "1px solid rgba(255,255,255,0.12)", borderRadius: 6 }}>
+            <div className="research-empty">운용 결정 기록 (append-only — 번복도 새 레코드로 이력 보존)</div>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", margin: "8px 0", flexWrap: "wrap" }}>
+              {["promote", "complement", "hold", "reject"].map(k => (
+                <label key={k} className="mono" style={{ fontSize: 12, cursor: "pointer" }}>
+                  <input type="radio" name="verdict" checked={choice === k}
+                         onChange={() => setChoice(k)} /> {k}
+                </label>
+              ))}
+              <input type="text" value={note} placeholder="결정 근거 메모"
+                     onChange={e => setNote(e.target.value)}
+                     className="mono" style={{ flex: 1, minWidth: 220, fontSize: 12 }} />
+              <button type="button" className="research-tab" onClick={submit}>기록</button>
+            </div>
+            {saved && (
+              <div className="mono" style={{ fontSize: 11, color: saved.status === "ok" ? "#5b9" : "#c95" }}>
+                {saved.status === "ok" ? "기록됨" : `실패: ${saved.error || saved.status}`}
+              </div>
+            )}
+          </div>
+
+          <div style={{ marginTop: 12 }}>
+            <div className="research-empty">결정 이력</div>
+            {history.length === 0
+              ? <div className="mono" style={{ fontSize: 11 }}>기록 없음</div>
+              : (
+                <table className="mono" style={{ fontSize: 11, width: "100%" }}>
+                  <thead><tr><th>시각</th><th>결정</th><th>대상 후보</th><th>메모</th></tr></thead>
+                  <tbody>
+                    {history.slice().reverse().map((d, i) => (
+                      <tr key={i}>
+                        <td>{new Date((d.ts || 0) * 1000).toLocaleString("ko-KR")}</td>
+                        <td>{d.verdict}</td>
+                        <td>{d.candidate ? `${d.candidate.buy_name} (${Math.round(d.candidate.profit || 0).toLocaleString()})` : "—"}</td>
+                        <td>{d.note || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
