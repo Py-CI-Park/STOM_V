@@ -60,7 +60,7 @@ def time_cap_bucket_prompt_lines(raw_end_time: int | str) -> list[str]:
     labels = time_cap_bucket_labels(end_time)
     range_label = "09:00~09:30" if end_time == 93000 else "09:00~09:20"
     bucket_text = ", ".join(labels)
-    return [
+    lines = [
         "",
         "time_cap_bucket_v1: 매수 조건식은 시간대 x 시가총액 조합을 명시적으로 탐색한다.",
         f"- 현재 기준선은 {range_label}이며, 5분 버킷은 {bucket_text} 이다.",
@@ -77,6 +77,14 @@ def time_cap_bucket_prompt_lines(raw_end_time: int | str) -> list[str]:
         "유지하라. 8~12개 핵심 필터만 남기고 나머지는 다음 세대에서 따로 실험한다.",
         "- 목표는 거래수 0/1건 고착을 풀면서도 과매매하지 않는 우상향 후보 탐색이다.",
     ]
+    if end_time == 93000:
+        lines.insert(
+            3,
+            "- 확장 탐색에서는 09:20~09:25를 우선 단독 branch로 실험하라. "
+            "09:00~09:05 시드 구간과 섞지 말고, 후반 안정화/재가속 신호인지 "
+            "분리해서 검증한다.",
+        )
+    return lines
 
 
 def time_cap_bucket_complexity_reason(code: str) -> str | None:

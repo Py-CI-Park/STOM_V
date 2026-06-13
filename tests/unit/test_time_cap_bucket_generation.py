@@ -174,6 +174,7 @@ def test_build_messages_on_buy_can_extend_to_0930() -> None:
 
     assert "09:20~09:25" in user
     assert "09:25~09:30" in user
+    assert "09:20~09:25를 우선" in user
 
 
 def test_build_messages_on_sell_does_not_inject_time_cap_bucket() -> None:
