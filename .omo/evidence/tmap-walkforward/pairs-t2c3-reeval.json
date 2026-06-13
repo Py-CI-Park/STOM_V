@@ -1,0 +1,12 @@
+[
+  {
+    "label": "BASE_SEED",
+    "buy": "Tick_B_902_905_Update_2",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "T2C3 ext91500/cap4000/burst4",
+    "buy": "T2C3_B",
+    "sell": "T2C3_S"
+  }
+]
