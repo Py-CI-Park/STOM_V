@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_f07_money_angle_accel_break_qtyskew",
+  "run_id": "tmap_llmg26_q1_e32_20260614",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_f07_money_angle_accel_break_qtyskew_000_B",
+      "status": "ok",
+      "profit": -4281287.0,
+      "mdd": 22.73,
+      "trades": 345
+    }
+  ]
+}

@@ -1,0 +1,229 @@
+{
+  "name": "llmgen_strength_persistent_accel_break",
+  "timeframe": "tick",
+  "source": "P5 LLM 가설 생성 (gen_template_hypothesis)",
+  "description": "09:06 이후 순간 거래대금 폭발이 아니라 체결강도가 직전 평균 대비 부드럽게 상향 이탈하는 지속 매수공격성 누적 후 고가를 넘는 비시드형 강도 가속 니치",
+  "buy_code": "if 시분초 >= {entry_start} and 시분초 <= {entry_end} and 초당거래대금 >= {sec_money_min} and 시가총액 <= {cap_max} and 등락율 >= {rate_min} and 등락율 <= {rate_max} and 체결강도 >= {strength_abs_min} and 체결강도 >= 체결강도평균({strength_avg_win}, {strength_avg_shift}) * {strength_accel_ratio} and 현재가 > 최고현재가({break_win}, {break_shift}):\n    self.Buy()",
+  "sell_code": "if 수익률 >= {take_profit} or 수익률 <= -{stop_loss} or 보유시간 >= {max_hold_sec} or (최고수익률 >= {trail_start} and 최고수익률 - 수익률 >= {trail_gap}):\n    self.Sell()",
+  "params": [
+    {
+      "name": "entry_start",
+      "default": 90800,
+      "values": [
+        90600,
+        90800,
+        91000,
+        91200,
+        91500
+      ],
+      "side": "buy",
+      "note": "09:06 이후 조건을 만족하면서 시드 09:02~09:05와 시간 니치를 분리한다. 빠른 시작일수록 느슨하고, 늦출수록 후행 추세 확인 성격이 강해진다."
+    },
+    {
+      "name": "entry_end",
+      "default": 92500,
+      "values": [
+        93000,
+        92500,
+        92000,
+        91500,
+        91200
+      ],
+      "side": "buy",
+      "note": "tick 데이터 경계 09:30 안에서 지속 강도 가속이 살아있는 후반부만 탐색한다. default는 두 번째로 느슨해 기본 신호 발생을 우선한다."
+    },
+    {
+      "name": "sec_money_min",
+      "default": 40,
+      "values": [
+        20,
+        40,
+        70,
+        110,
+        160
+      ],
+      "side": "buy",
+      "note": "값비싼 윈도우 함수 앞에 두는 절대 유동성 게이트다. 단위는 백만원이며, 빈도 1~3건/일 조절을 위한 연속 밀도 축이다."
+    },
+    {
+      "name": "cap_max",
+      "default": 3500,
+      "values": [
+        5000,
+        3500,
+        2500,
+        1800,
+        1200
+      ],
+      "side": "buy",
+      "note": "단위는 억이다. 시드 계열에서 소형화가 MDD를 낮춘 경험을 반영하되 default는 너무 좁히지 않아 공집합을 피한다."
+    },
+    {
+      "name": "rate_min",
+      "default": 1,
+      "values": [
+        0,
+        1,
+        2,
+        3,
+        5
+      ],
+      "side": "buy",
+      "note": "가격이 이미 약한 종목의 체결강도 반등을 배제한다. 낮은 값은 신호 확보, 높은 값은 추세 확인 강화다."
+    },
+    {
+      "name": "rate_max",
+      "default": 25,
+      "values": [
+        30,
+        25,
+        20,
+        15,
+        12
+      ],
+      "side": "buy",
+      "note": "과열 상단 제한이다. 너무 높은 등락률의 막판 추격을 줄이되 default는 두 번째로 느슨하게 둔다."
+    },
+    {
+      "name": "strength_abs_min",
+      "default": 115,
+      "values": [
+        105,
+        115,
+        125,
+        140,
+        160
+      ],
+      "side": "buy",
+      "note": "체결강도의 절대 강세 조건이다. 순간 스파이크가 아니라 평균 대비 가속 조건과 함께 통과해야 하므로 단독 임계는 과도하게 높이지 않는다."
+    },
+    {
+      "name": "strength_avg_win",
+      "default": 30,
+      "values": [
+        15,
+        30,
+        45,
+        60,
+        90
+      ],
+      "side": "buy",
+      "note": "체결강도 지속성을 측정하는 직전 평균 구간이다. 짧으면 민감하고 길면 완만한 누적 매수공격성을 포착한다."
+    },
+    {
+      "name": "strength_avg_shift",
+      "default": 1,
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "side": "buy",
+      "note": "체결강도평균 호출형의 시프트다. 미래참조와 비용폭탄을 피하기 위해 1 이상만 사용한다."
+    },
+    {
+      "name": "strength_accel_ratio",
+      "default": 1.05,
+      "values": [
+        1.02,
+        1.05,
+        1.08,
+        1.12,
+        1.18
+      ],
+      "side": "buy",
+      "note": "현재 체결강도가 직전 평균보다 얼마나 높아야 하는지의 지속 가속 배율이다. 순간 폭발 대신 평균 대비 완만한 우상향을 표현한다."
+    },
+    {
+      "name": "break_win",
+      "default": 20,
+      "values": [
+        10,
+        20,
+        30,
+        45,
+        60
+      ],
+      "side": "buy",
+      "note": "가격 확인용 직전 고가 윈도우다. 체결강도 가속만으로 진입하지 않고 실제 가격이 직전 고가를 넘었는지 확인한다."
+    },
+    {
+      "name": "break_shift",
+      "default": 1,
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "side": "buy",
+      "note": "최고현재가 호출의 시프트다. -1을 금지하고 1 이상만 사용해 비용과 미래참조 문제를 피한다."
+    },
+    {
+      "name": "take_profit",
+      "default": 6,
+      "values": [
+        4,
+        6,
+        8,
+        10,
+        12
+      ],
+      "side": "sell",
+      "note": "기본 익절 다이얼이다. 지속 가속형은 추세 지속 가능성을 보므로 너무 빠른 익절과 느린 익절을 모두 스윕한다."
+    },
+    {
+      "name": "stop_loss",
+      "default": 3.5,
+      "values": [
+        2.5,
+        3.5,
+        4.5,
+        6,
+        8
+      ],
+      "side": "sell",
+      "note": "하드 손절 폭이다. 체결강도 가속 실패 시 가격 돌파가 무효화되는 구간을 제어한다."
+    },
+    {
+      "name": "max_hold_sec",
+      "default": 120,
+      "values": [
+        60,
+        120,
+        180,
+        300,
+        480
+      ],
+      "side": "sell",
+      "note": "틱 단타용 최대 보유 시간이다. 09:30 전 데이터 경계 안에서 후속 추세가 없으면 시간 청산한다."
+    },
+    {
+      "name": "trail_start",
+      "default": 5,
+      "values": [
+        3,
+        5,
+        7,
+        9,
+        12
+      ],
+      "side": "sell",
+      "note": "트레일링을 시작할 최소 최고수익률이다. 강도 지속형의 큰 추세 가능성과 반납 위험을 동시에 탐색한다."
+    },
+    {
+      "name": "trail_gap",
+      "default": 3,
+      "values": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "side": "sell",
+      "note": "최고수익률 대비 반납 허용 폭이다. 청산 다이얼이 수익을 지배했던 시드 계열 교훈을 반영해 넓은 후보를 둔다."
+    }
+  ]
+}
