@@ -1,0 +1,93 @@
+{
+  "trade_count": 424,
+  "skipped_trades": 7,
+  "base_total_profit": 12913169.0,
+  "betting_krw": null,
+  "csv_paths": [
+    "backtest/csv\\stock_bt_T2C3_B_20260613112713.csv",
+    "backtest/csv\\stock_bt_T2C3_B_20260613113149.csv",
+    "backtest/csv\\stock_bt_T2C3_B_20260613113435.csv"
+  ],
+  "scenarios": [
+    {
+      "tick": 0,
+      "fee_bps": 0.0,
+      "total_profit": 12913169.0,
+      "profit_delta": 0.0,
+      "profit_retention_ratio": 1.0,
+      "mdd_amount": 1819342.0,
+      "trade_count": 424,
+      "breakeven_tick": 2.431184734519464
+    },
+    {
+      "tick": 1,
+      "fee_bps": 0.0,
+      "total_profit": 7601697.264985032,
+      "profit_delta": -5311471.735014968,
+      "profit_retention_ratio": 0.5886779043149697,
+      "mdd_amount": 2620638.1720991777,
+      "trade_count": 424,
+      "breakeven_tick": 2.431184734519464
+    },
+    {
+      "tick": 2,
+      "fee_bps": 0.0,
+      "total_profit": 2290225.5299700648,
+      "profit_delta": -10622943.470029935,
+      "profit_retention_ratio": 0.1773558086299393,
+      "mdd_amount": 3662342.344198352,
+      "trade_count": 424,
+      "breakeven_tick": 2.431184734519464
+    },
+    {
+      "tick": 3,
+      "fee_bps": 0.0,
+      "total_profit": -3021246.205044903,
+      "profit_delta": -15934415.205044903,
+      "profit_retention_ratio": -0.23396628705509104,
+      "mdd_amount": 4721334.131041383,
+      "trade_count": 424,
+      "breakeven_tick": 2.431184734519464
+    },
+    {
+      "tick": 0,
+      "fee_bps": 5.0,
+      "total_profit": 10786097.7775,
+      "profit_delta": -2127071.2225,
+      "profit_retention_ratio": 0.8352789139133856,
+      "mdd_amount": 2029214.776500009,
+      "trade_count": 424,
+      "breakeven_tick": 2.0307173445722206
+    },
+    {
+      "tick": 1,
+      "fee_bps": 5.0,
+      "total_profit": 5474626.042485032,
+      "profit_delta": -7438542.957514968,
+      "profit_retention_ratio": 0.4239568182283553,
+      "mdd_amount": 3030072.508099174,
+      "trade_count": 424,
+      "breakeven_tick": 2.0307173445722206
+    },
+    {
+      "tick": 2,
+      "fee_bps": 5.0,
+      "total_profit": 163154.3074700649,
+      "profit_delta": -12750014.692529935,
+      "profit_retention_ratio": 0.01263472254332495,
+      "mdd_amount": 4071776.680198355,
+      "trade_count": 424,
+      "breakeven_tick": 2.0307173445722206
+    },
+    {
+      "tick": 3,
+      "fee_bps": 5.0,
+      "total_profit": -5148317.427544903,
+      "profit_delta": -18061486.427544903,
+      "profit_retention_ratio": -0.39868737314170544,
+      "mdd_amount": 6088737.926190416,
+      "trade_count": 424,
+      "breakeven_tick": 2.0307173445722206
+    }
+  ]
+}
