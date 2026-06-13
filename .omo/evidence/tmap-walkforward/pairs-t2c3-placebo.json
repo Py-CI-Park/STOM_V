@@ -1,0 +1,47 @@
+[
+  {
+    "label": "T2C3 train ref",
+    "buy": "T2C3_B",
+    "sell": "T2C3_S"
+  },
+  {
+    "label": "PLACEBO R2 S0",
+    "buy": "T2C3PLB_R2_B",
+    "sell": "T2C3_S"
+  },
+  {
+    "label": "PLACEBO R2 S3",
+    "buy": "T2C3PLB_R2_S3_B",
+    "sell": "T2C3_S"
+  },
+  {
+    "label": "PLACEBO R5 S0",
+    "buy": "T2C3PLB_R5_B",
+    "sell": "T2C3_S"
+  },
+  {
+    "label": "PLACEBO R5 S3",
+    "buy": "T2C3PLB_R5_S3_B",
+    "sell": "T2C3_S"
+  },
+  {
+    "label": "PLACEBO R10 S0",
+    "buy": "T2C3PLB_R10_B",
+    "sell": "T2C3_S"
+  },
+  {
+    "label": "PLACEBO R10 S3",
+    "buy": "T2C3PLB_R10_S3_B",
+    "sell": "T2C3_S"
+  },
+  {
+    "label": "PLACEBO R20 S0",
+    "buy": "T2C3PLB_R20_B",
+    "sell": "T2C3_S"
+  },
+  {
+    "label": "PLACEBO R20 S3",
+    "buy": "T2C3PLB_R20_S3_B",
+    "sell": "T2C3_S"
+  }
+]
