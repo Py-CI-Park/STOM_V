@@ -1,0 +1,134 @@
+{
+  "note": "advisory only — selection/판정에 미사용",
+  "pbo": {
+    "pbo": 0.34285714285714286,
+    "n_combinations": 70,
+    "n_candidates": 7,
+    "n_periods": 234,
+    "median_logit": 1.2992829841302609,
+    "is_best_oos_mean_rank": 0.6795918367346938,
+    "pool": [
+      "gen1:THETA cap_max=2500",
+      "gen2:THETA take_hard=9",
+      "gen3:THETA trail_start=4",
+      "gen4:THETA cap_max=2500+take_hard=9",
+      "gen5:THETA cap_max=2500+trail_start=4",
+      "gen6:THETA take_hard=9+trail_start=4",
+      "gen7:THETA cap_max=2500+take_hard=9+trail_start=4"
+    ]
+  },
+  "dsr": {
+    "sharpe_hat": 0.27771548842148897,
+    "expected_max_sharpe_null": 0.16873869156250132,
+    "dsr": 0.9446653547343211,
+    "n_periods": 212.0,
+    "n_trials": 80.0,
+    "skew": 0.15688907880157435,
+    "kurtosis": 2.4686273874176314,
+    "var_sharpe": 0.004667046314488758,
+    "definition": "선택 후보의 거래일 기준 일별 손익 DSR"
+  },
+  "n_trials_definition": "이 선택을 낳은 평가 점 전체의 고유 매수 전략 수 = 선택 대상 run + trial-runs(TMAP 스윕 그리드) + 사이클 CLDGEN 풀 (N5 교정: 종전 CLDGEN만 카운트 → 스윕 그리드 누락 수정)",
+  "n_trials": 80,
+  "n_trials_runs": [
+    "theta_star_reeval_20260611",
+    "tmap_seed_full_train_20260611"
+  ],
+  "mc_block_bootstrap": {
+    "profit_mean": 10688634.1515,
+    "profit_p05": 6402644.9,
+    "profit_p50": 10628872.0,
+    "profit_p95": 15260767.549999999,
+    "p_positive": 1.0,
+    "mdd_p50": 966705.5,
+    "mdd_p95": 1544271.0499999998,
+    "n_days": 212,
+    "n_boot": 2000,
+    "block_len": 5,
+    "seed": 20260611,
+    "note": "block bootstrap on daily P&L — preserves regime clustering; advisory only"
+  },
+  "daily_correlation": {
+    "labels": [
+      "gen1:THETA cap_max=2500",
+      "gen2:THETA take_hard=9",
+      "gen3:THETA trail_start=4",
+      "gen4:THETA cap_max=2500+take_hard=9",
+      "gen5:THETA cap_max=2500+trail_start=4",
+      "gen6:THETA take_hard=9+trail_start=4",
+      "gen7:THETA cap_max=2500+take_hard=9+trail_start=4"
+    ],
+    "n_days": 234,
+    "matrix": [
+      [
+        1.0,
+        0.9109,
+        0.9116,
+        0.97,
+        0.9652,
+        0.878,
+        0.938
+      ],
+      [
+        0.9109,
+        1.0,
+        0.9421,
+        0.9456,
+        0.8834,
+        0.9714,
+        0.9167
+      ],
+      [
+        0.9116,
+        0.9421,
+        1.0,
+        0.8916,
+        0.9459,
+        0.9713,
+        0.9253
+      ],
+      [
+        0.97,
+        0.9456,
+        0.8916,
+        1.0,
+        0.9385,
+        0.9114,
+        0.9666
+      ],
+      [
+        0.9652,
+        0.8834,
+        0.9459,
+        0.9385,
+        1.0,
+        0.9113,
+        0.9723
+      ],
+      [
+        0.878,
+        0.9714,
+        0.9713,
+        0.9114,
+        0.9113,
+        1.0,
+        0.9443
+      ],
+      [
+        0.938,
+        0.9167,
+        0.9253,
+        0.9666,
+        0.9723,
+        0.9443,
+        1.0
+      ]
+    ]
+  },
+  "pool_independence": {
+    "n_candidates": 7,
+    "mean_pairwise_correlation": 0.9339,
+    "effective_independent_candidates": 1.06,
+    "pbo_reliability_warning": "후보 풀 평균 상관 0.93 > 0.7 — 후보들이 사실상 쌍둥이라 PBO가 과적합을 과소평가할 수 있음(유효 독립 후보 ≈ 1.1)"
+  }
+}

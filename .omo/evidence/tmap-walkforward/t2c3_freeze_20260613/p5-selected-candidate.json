@@ -1,0 +1,88 @@
+{
+  "selector_version": "seed_relative_v1",
+  "run_id": "t2c3_reeval_20260613",
+  "config_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\claude-condition-research-20260610\\train-config.json",
+  "config_hash": "a4bed0de8513d8cc28693ec48e482617ec0b82e024a87a3465e75f7b58bfe88a",
+  "seed_profile": {
+    "mdd": 17.44,
+    "trade_count": 307,
+    "profit": 8631199.0,
+    "source": "BASE_SEED gen0 of t2c3_reeval_20260613"
+  },
+  "mdd_limit": 20.0,
+  "selected": true,
+  "blocked": false,
+  "blocker": "",
+  "selected_candidate": {
+    "gen_no": 1,
+    "status": "ok",
+    "graded_score": 6.4264948797857055,
+    "gate_passed": true,
+    "gate_reason": "ok",
+    "profit": 9866240.0,
+    "total_profit_pct": 196.18,
+    "mdd": 11.3,
+    "trade_count": 356,
+    "daily_avg_trades": 0.5,
+    "payoff_ratio": 1.6579896938913554,
+    "max_hold_count": 0.0,
+    "buy_name": "T2C3_B",
+    "sell_name": "T2C3_S",
+    "csv_path": "backtest/csv\\stock_bt_T2C3_B_20260613112713.csv"
+  },
+  "selected_yearly": {
+    "years": [
+      [
+        "2023",
+        4078049.0
+      ],
+      [
+        "2024",
+        4369239.0
+      ],
+      [
+        "2025",
+        1418952.0
+      ]
+    ],
+    "positive_years": 3,
+    "observed_years": 3,
+    "meets_advisory": true
+  },
+  "eligible_candidates": [
+    {
+      "gen_no": 1,
+      "rank_key": [
+        -3.0,
+        -873118.5840707964,
+        11.3,
+        -1.6579896938913554,
+        1
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            4078049.0
+          ],
+          [
+            "2024",
+            4369239.0
+          ],
+          [
+            "2025",
+            1418952.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    }
+  ],
+  "rejected_candidates": [],
+  "selection_timestamp": "2026-06-13T02:28:19.231097+00:00",
+  "oos_excluded": true,
+  "diagnostic_only": false,
+  "forbidden_oos_fields_present": false
+}
