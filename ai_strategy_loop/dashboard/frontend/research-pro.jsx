@@ -1064,4 +1064,34 @@ function ResearchProPanel({ baseUrl, wsStatus, runId }) {
   );
 }
 
-Object.assign(window, { ResearchProPanel });
+/* Phase6.1(E7) — 메인 진화 탭용 독립 히트맵 패널: 적합도 추이와 같은 급(패널 카드)으로
+   시간대×시가총액 탐색 히트맵을 노출한다. _RpBigHeatmap 재사용(자체 /edge_ratio 조회). */
+function ResearchHeatmapPanel({ baseUrl, wsStatus, runId }) {
+  const isDemo =
+    typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--violet)" }}></span>
+          탐색 히트맵 — 시간대 × 시가총액
+          <span data-tip="진화 루프가 어느 시간대·어느 시가총액 구간에서 엣지(edge_ratio)를 찾고 있는지 보여줍니다. 1.0 초과(녹색) = 해당 구간에서 시드 대비 우위, 1.0 미만(적색) = 열위. 셀에 마우스를 올리면 상세 수치가 나옵니다."
+                style={{ marginLeft: 6, fontSize: 10, color: "var(--ink-3)", border: "1px solid var(--line-2)",
+                         borderRadius: "50%", width: 15, height: 15, display: "inline-flex",
+                         alignItems: "center", justifyContent: "center", cursor: "help" }}>?</span>
+        </div>
+      </div>
+      <div className="panel-bd">
+        {isDemo || !runId ? (
+          <div className="mono" style={{ fontSize: 12, color: "var(--ink-3)", padding: "18px 0", textAlign: "center" }}>
+            {isDemo ? "데모 모드 — 백엔드 연결 시 히트맵이 표시됩니다." : "run 데이터가 누적되면 히트맵이 표시됩니다."}
+          </div>
+        ) : (
+          <_RpBigHeatmap baseUrl={baseUrl} isDemo={isDemo} runId={runId} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { ResearchProPanel, ResearchHeatmapPanel });
