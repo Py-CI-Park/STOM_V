@@ -491,6 +491,9 @@ def time_heatmap(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
 
     매수시간이 YYYYMMDDHHMM(>=12자리)일 때만 시각 슬롯을 산출한다. 부족하면 건너뛴다.
     슬롯 인덱스: (HH*60+MM)//30 → 장중 09:00~15:30 범위를 충분히 덮는다.
+
+    셀 메트릭은 `수익률 합계(%)`(profit_pct_sum) 를 1차 지표로 둔다(수익금 절대액은
+    종목·금액 규모에 좌우되어 시간대 비교에 부적합). 수익금 합(profit_krw)도 함께 둔다.
     """
     cells: Dict[tuple[int, int], Dict[str, Any]] = {}
     for t in trades:
@@ -504,7 +507,10 @@ def time_heatmap(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
         weekday = dt.weekday()
         slot = (dt.hour * 60 + dt.minute) // 30
         key = (weekday, slot)
-        cell = cells.setdefault(key, {"weekday": weekday, "slot": slot, "profit_krw": 0.0, "trades": 0})
+        cell = cells.setdefault(
+            key, {"weekday": weekday, "slot": slot, "profit_pct_sum": 0.0, "profit_krw": 0.0, "trades": 0}
+        )
+        cell["profit_pct_sum"] += float(t.get("profit_pct", 0.0) or 0.0)
         cell["profit_krw"] += t["profit_krw"]
         cell["trades"] += 1
 
@@ -515,6 +521,7 @@ def time_heatmap(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
                 "weekday": int(c["weekday"]),
                 "slot": int(c["slot"]),
                 "slot_label": _slot_label(c["slot"]),
+                "profit_pct_sum": float(c["profit_pct_sum"]),
                 "profit_krw": float(c["profit_krw"]),
                 "trades": int(c["trades"]),
             }
