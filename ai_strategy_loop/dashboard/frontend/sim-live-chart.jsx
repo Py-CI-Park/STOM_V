@@ -695,7 +695,10 @@ function _drawNetDeltaStrip(ctx, view, xCenter, slot, L, right, top, n) {
   const mid = top + h / 2;
   const half = h / 2 - 2;
   let maxAbs = 1;
-  for (let i = 0; i < n; i++) maxAbs = Math.max(maxAbs, Math.abs(view[i].net_qty || 0));
+  // Phase12-A — null(데이터 없음)과 실제 0(순매수 균형)을 구분: 둘 다 막대 없음으로
+  //   그리되 || 0 (NaN 위험·의미 모호) 대신 유한값만 사용.
+  const _nq = (b) => (b && b.net_qty != null && isFinite(b.net_qty)) ? b.net_qty : 0;
+  for (let i = 0; i < n; i++) maxAbs = Math.max(maxAbs, Math.abs(_nq(view[i])));
   const barW = Math.max(1, slot * 0.7);
   // 0 기준선.
   ctx.save();
@@ -703,7 +706,7 @@ function _drawNetDeltaStrip(ctx, view, xCenter, slot, L, right, top, n) {
   ctx.beginPath(); ctx.moveTo(L.padL, mid); ctx.lineTo(right, mid); ctx.stroke();
   ctx.restore();
   for (let i = 0; i < n; i++) {
-    const nq = view[i].net_qty || 0;
+    const nq = _nq(view[i]);
     const bh = (Math.min(Math.abs(nq), maxAbs) / maxAbs) * half;
     const x = xCenter(i) - barW / 2;
     const y = nq >= 0 ? mid - bh : mid;

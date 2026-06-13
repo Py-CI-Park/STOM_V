@@ -593,6 +593,9 @@ function ProcessFlowDiagram({ currentStep, running, phaseElapsed, stepTimings })
         preserveAspectRatio="xMidYMid meet"
         width="100%"
         height={vbH}
+        // Phase12-A — 노드 라벨이 좁은 화면에서 뭉개지지 않도록 SVG 고유 최소폭을 유지.
+        //   컨테이너가 이보다 좁으면 .stom-flow-wrap(overflow-x:auto)가 실제로 가로 스크롤한다.
+        style={{ minWidth: vbW, display: "block" }}
         role="img"
         aria-label="진화 루프 프로세스 플로우"
       >

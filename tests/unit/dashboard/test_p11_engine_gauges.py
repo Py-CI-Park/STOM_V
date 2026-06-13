@@ -73,10 +73,11 @@ class TestGaugeMetrics:
         src = _read("engine.jsx")
         # 게이지 컴포넌트가 세 메트릭 모두에 사용.
         assert src.count("<GaugeRow") >= 3, "GaugeRow 사용이 3 미만"
-        # 라벨로 메트릭 식별(CPU/Mem/Progress).
+        # 라벨로 메트릭 식별(CPU/Mem/전체 진행). Phase12-A: 진행 게이지 라벨 'Progress'→'전체'
+        #   (숫자=세대 내 진행 vs 게이지=세대 누적 전체를 구분).
         assert 'label="CPU"' in src
         assert "Mem" in src
-        assert 'label="Progress"' in src
+        assert 'label="전체"' in src
 
     def test_cpu_thresholds_70_90(self) -> None:
         """CPU 게이지: warn ≥70, danger ≥90."""
@@ -103,10 +104,10 @@ class TestGaugeMetrics:
         """진행률 게이지는 항상 teal — warn/danger 미지정(기본 .stom-gauge-fill)."""
         src = _read("engine.jsx")
         prog_line = next(
-            (ln for ln in src.splitlines() if 'label="Progress"' in ln and "GaugeRow" in ln),
+            (ln for ln in src.splitlines() if 'label="전체"' in ln and "GaugeRow" in ln),
             "",
         )
-        assert prog_line, "Progress GaugeRow 라인 없음"
+        assert prog_line, "전체 진행 GaugeRow 라인 없음"
         assert "warn=" not in prog_line, "Progress 게이지에 warn 임계값이 있으면 안 됨"
         assert "danger=" not in prog_line, "Progress 게이지에 danger 임계값이 있으면 안 됨"
 

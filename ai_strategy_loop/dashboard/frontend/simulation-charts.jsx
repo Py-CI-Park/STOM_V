@@ -1060,7 +1060,7 @@ function SimNetDeltaStrip({ bars, compact }) {
   const innerW = W - padL - padR;
   const mid = H / 2;
   const half = mid - 3;
-  const maxAbs = Math.max(1, ...view.map(b => Math.abs(b.net_qty || 0)));
+  const maxAbs = Math.max(1, ...view.map(b => Math.abs(_simNq(b))));
   const slot = n > 0 ? innerW / n : innerW;
   const barW = Math.max(1, slot * 0.7);
 
@@ -1071,7 +1071,7 @@ function SimNetDeltaStrip({ bars, compact }) {
         {/* 0 기준선 */}
         <line x1={padL} x2={W - padR} y1={mid} y2={mid} stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
         {view.map((b, i) => {
-          const nq = b.net_qty || 0;
+          const nq = _simNq(b);
           const h = (Math.min(Math.abs(nq), maxAbs) / maxAbs) * half;
           const x = padL + slot * i + (slot - barW) / 2;
           const y = nq >= 0 ? mid - h : mid;
@@ -1313,7 +1313,7 @@ function SimOrderFlowTape({ bars, compact }) {
     [view]);
   if (!hasData) return null;
 
-  const maxAbs = Math.max(1, ...view.map(b => Math.abs(b.net_qty || 0)));
+  const maxAbs = Math.max(1, ...view.map(b => Math.abs(_simNq(b))));
   const H = compact ? 14 : 18;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
@@ -1322,7 +1322,7 @@ function SimOrderFlowTape({ bars, compact }) {
       </span>
       <div style={{ display: "flex", flex: 1, height: H, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" }}>
         {view.map((b, i) => {
-          const nq = b.net_qty || 0;
+          const nq = _simNq(b);
           const mag = Math.min(1, Math.abs(nq) / maxAbs);
           const a = (0.15 + mag * 0.75).toFixed(3);
           const bg = nq > 0 ? `rgba(76,214,179,${a})` : nq < 0 ? `rgba(255,93,108,${a})` : "rgba(150,158,170,0.12)";
@@ -1347,6 +1347,9 @@ function SimOrderFlowTape({ bars, compact }) {
          강도>100 → 매수 우세, <100 → 매도 우세. share = clamp(strength/200, 0..1).
        이 경우는 근사임을 행 상단 배지로 명시한다(허위 정밀 회피).
    가격 버킷: bar 종가를 틱 크기로 내림 정렬(추정 틱 = 가격대별 한국거래소 호가단위 근사). */
+// Phase12-A — net_qty 유한값만(null=데이터없음·실제 0 모두 막대 없음, NaN 위험 제거).
+function _simNq(b) { return (b && b.net_qty != null && isFinite(b.net_qty)) ? b.net_qty : 0; }
+
 function _hoga_tick(price) {
   // 한국거래소 호가단위 근사(2023 개편 기준 단순화). 정확값 아님 — footprint 버킷팅용.
   const p = Math.abs(Number(price) || 0);
@@ -1388,7 +1391,6 @@ function SimFootprint({ bars, compact }) {
     const view = arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
     if (view.length === 0) return { levels: [], real: true, curPrice: null, hasVol: false };
     const last = view[view.length - 1];
-    const tick = _hoga_tick(last.c);
     const map = new Map();     // bucketPrice → {buy, sell}
     let real = true;
     let hasVol = false;
@@ -1397,7 +1399,9 @@ function SimFootprint({ bars, compact }) {
       const bs = _barBuySell(b);
       if (!bs.real) real = false;
       if ((bs.buy + bs.sell) > 0) hasVol = true;
-      const key = _bucketPrice(b.c, tick);
+      // Phase12-A — 호가단위는 bar 자기 가격으로 산정(단일 last.c tick 으로 전 구간을
+      //   버킷하면 KRX 호가단위 경계(예: 50,000 전후 50→100)를 가로지를 때 정렬이 어긋남).
+      const key = _bucketPrice(b.c, _hoga_tick(b.c));
       const cur = map.get(key) || { buy: 0, sell: 0 };
       cur.buy += bs.buy; cur.sell += bs.sell;
       map.set(key, cur);
@@ -1406,7 +1410,7 @@ function SimFootprint({ bars, compact }) {
     const levels = Array.from(map.entries())
       .map(([price, v]) => ({ price, buy: v.buy, sell: v.sell, delta: v.buy - v.sell }))
       .sort((a, b) => b.price - a.price);
-    return { levels, real, curPrice: _bucketPrice(last.c, tick), hasVol };
+    return { levels, real, curPrice: _bucketPrice(last.c, _hoga_tick(last.c)), hasVol };
   }, [bars]);
 
   if (!agg.hasVol) return null;   // 체결량 데이터 전무 → 숨김(무예외).
