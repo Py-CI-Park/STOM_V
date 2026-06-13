@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_regime_exit2_earlyrange_break",
+  "run_id": "tmap_llmg15_smoke_q2_e32_20260613",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_regime_exit2_earlyrange_break_000_B",
+      "status": "ok",
+      "profit": -1927720.0,
+      "mdd": 26.16,
+      "trades": 166
+    }
+  ]
+}

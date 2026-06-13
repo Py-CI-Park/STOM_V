@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_f07_prevtime_shift1_reignite",
+  "run_id": "tmap_llmg14c_smoke_q2_e32_20260613",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_f07_prevtime_shift1_reignite_000_B",
+      "status": "ok",
+      "profit": -5657228.0,
+      "mdd": 39.91,
+      "trades": 308
+    }
+  ]
+}

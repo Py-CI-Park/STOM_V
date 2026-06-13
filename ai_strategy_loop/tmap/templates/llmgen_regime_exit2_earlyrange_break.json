@@ -1,0 +1,368 @@
+{
+  "name": "llmgen_regime_exit2_earlyrange_break",
+  "timeframe": "tick",
+  "source": "P5 LLM 가설 생성 (gen_template_hypothesis)",
+  "description": "09:02~09:05 시드창이 아니라 09:06 이후 첫 재돌파만 추격하고, 고변동 강모멘텀 종목에 한해 exit2 연장 청산을 켜는 레짐 조건부 청산 니치",
+  "buy_code": "if 시분초 >= {entry_start} and 시분초 <= {entry_end} and 초당거래대금 >= {sec_money_min} and 등락율 >= {rate_min} and 등락율 <= {rate_max} and 시가총액 <= {cap_max} and 당일거래대금 >= {day_money_min} and 체결강도 >= {strength_min} and 현재가 > 최고현재가({break_window}, {break_shift}) and 등락율각도({angle_window}, {angle_shift}) >= {angle_min}:\n    self.Buy()",
+  "sell_code": "regime_strong = 등락율 >= {regime_rate_min} and 체결강도 >= {regime_strength_min} and 당일거래대금각도({regime_money_angle_window}, {regime_shift}) >= {regime_money_angle_min}\nif regime_strong:\n    if 수익률 >= {loose_take} or 수익률 <= {loose_stop} or 보유시간 >= {loose_max_hold_sec} or (최고수익률 >= {be_trigger} and 수익률 <= {be_floor}) or (최고수익률 >= {trail_trigger} and 최고수익률 - 수익률 >= {trail_gap}):\n        self.Sell()\nelse:\n    if 수익률 >= {tight_take} or 수익률 <= {tight_stop} or 보유시간 >= {tight_max_hold_sec}:\n        self.Sell()",
+  "params": [
+    {
+      "name": "entry_start",
+      "default": 90600,
+      "values": [
+        90500,
+        90600,
+        90700,
+        90800,
+        90900
+      ],
+      "side": "buy",
+      "note": "시드 09:02~09:05 직후의 2차 초반 구간을 겨냥한다. 너무 늦추면 기존 후반 확장 실패 교훈과 충돌하므로 09:09까지만 탐색한다."
+    },
+    {
+      "name": "entry_end",
+      "default": 91100,
+      "values": [
+        91200,
+        91100,
+        91000,
+        90900
+      ],
+      "side": "buy",
+      "note": "기본값은 두 번째로 느슨한 09:11 종료다. 09:12까지는 초반 주도주 잔존 모멘텀을 허용하되, 후반 신호 가치 하락을 피하려고 09:09~09:12에 제한한다."
+    },
+    {
+      "name": "sec_money_min",
+      "default": 30,
+      "values": [
+        20,
+        30,
+        45,
+        65,
+        90
+      ],
+      "side": "buy",
+      "note": "초당거래대금 절대하한으로 신호 밀도를 연속 조절한다. 단위는 백만원이며, 값비싼 윈도우 함수 앞의 저렴한 1차 게이트다."
+    },
+    {
+      "name": "rate_min",
+      "default": 3.5,
+      "values": [
+        2.5,
+        3.5,
+        4.5,
+        5.5,
+        6.5
+      ],
+      "side": "buy",
+      "note": "첫 돌파 모멘텀이 실제 상승 종목에서만 발생하도록 하는 등락율 하한이다. 너무 높이면 0건 절벽이 생기므로 완만한 구간부터 둔다."
+    },
+    {
+      "name": "rate_max",
+      "default": 16,
+      "values": [
+        18,
+        16,
+        14,
+        12,
+        10
+      ],
+      "side": "buy",
+      "note": "이미 과열된 상한가 근접 추격을 배제한다. 느슨한 상단에서 시작해 과열 회피 강도를 스윕한다."
+    },
+    {
+      "name": "cap_max",
+      "default": 3000,
+      "values": [
+        4000,
+        3000,
+        2500,
+        2000,
+        1500
+      ],
+      "side": "buy",
+      "note": "시총 단위는 억이다. 시드 계열에서 소형화가 MDD를 낮춘 단서가 있었으므로 1500~4000억 범위로 둔다."
+    },
+    {
+      "name": "day_money_min",
+      "default": 5000,
+      "values": [
+        3000,
+        5000,
+        8000,
+        12000,
+        18000
+      ],
+      "side": "buy",
+      "note": "당일거래대금 단위는 백만원이다. 주도주 유동성은 확보하되, 지나친 대형주 폭주 구간을 피하기 위해 중소형 주도주 범위로 탐색한다."
+    },
+    {
+      "name": "strength_min",
+      "default": 115,
+      "values": [
+        105,
+        115,
+        125,
+        140,
+        160
+      ],
+      "side": "buy",
+      "note": "체결강도 하한으로 매수 주도 체결이 붙은 돌파만 허용한다. 단독 신호가 아니라 돌파 품질 보조 필터로만 쓴다."
+    },
+    {
+      "name": "break_window",
+      "default": 30,
+      "values": [
+        20,
+        30,
+        45,
+        60,
+        90
+      ],
+      "side": "buy",
+      "note": "현재가가 직전 N틱 고점을 돌파하는 첫 모멘텀 구조다. 시드의 09:02~09:05 창과 달리 09:06 이후 짧은 오프닝 레인지 재돌파를 본다."
+    },
+    {
+      "name": "break_shift",
+      "default": 1,
+      "values": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "side": "buy",
+      "note": "최고현재가 함수의 시프트다. 미래참조와 타임아웃을 피하기 위해 1 이상만 둔다."
+    },
+    {
+      "name": "angle_window",
+      "default": 9,
+      "values": [
+        6,
+        9,
+        12,
+        18,
+        24
+      ],
+      "side": "buy",
+      "note": "등락율각도 계산 틱 수다. 돌파 직전 기울기가 살아 있는지 확인하되, 윈도우 호출은 총 2개 이하로 제한한다."
+    },
+    {
+      "name": "angle_shift",
+      "default": 1,
+      "values": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "side": "buy",
+      "note": "등락율각도 함수의 시프트다. -1은 평가 타임아웃 교훈이 있으므로 배제하고 1 이상만 탐색한다."
+    },
+    {
+      "name": "angle_min",
+      "default": 30,
+      "values": [
+        20,
+        30,
+        40,
+        50,
+        60
+      ],
+      "side": "buy",
+      "note": "돌파 순간의 상승 각도 하한이다. 극단 각도 단독은 실패했으므로 단독 신호가 아니라 첫 고점 돌파 확인용으로 쓴다."
+    },
+    {
+      "name": "regime_rate_min",
+      "default": 7,
+      "values": [
+        5,
+        7,
+        9,
+        11,
+        13
+      ],
+      "side": "sell",
+      "note": "exit2 연장 청산을 켤 고변동 레짐의 등락율 크기 기준이다. 2022형 강세 레짐을 포착하되 과도한 희소화를 피한다."
+    },
+    {
+      "name": "regime_strength_min",
+      "default": 130,
+      "values": [
+        115,
+        130,
+        145,
+        160,
+        180
+      ],
+      "side": "sell",
+      "note": "보유 연장 허용 시 매수 체결 우위가 유지되는지 확인한다. 체결강도는 새 변수가 아니라 검증된 엔진 변수다."
+    },
+    {
+      "name": "regime_money_angle_window",
+      "default": 9,
+      "values": [
+        6,
+        9,
+        12,
+        18,
+        24
+      ],
+      "side": "sell",
+      "note": "당일거래대금각도 레짐 측정 윈도우다. 매도식 윈도우 집계 호출은 1회만 사용해 비용 한도를 지킨다."
+    },
+    {
+      "name": "regime_shift",
+      "default": 1,
+      "values": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "side": "sell",
+      "note": "당일거래대금각도 함수의 시프트다. 모든 후보를 1 이상으로 제한해 미래참조와 -1 타임아웃을 피한다."
+    },
+    {
+      "name": "regime_money_angle_min",
+      "default": 35,
+      "values": [
+        20,
+        35,
+        50,
+        65,
+        80
+      ],
+      "side": "sell",
+      "note": "거래대금이 상승 방향으로 기울어진 고변동 강모멘텀 레짐만 exit2를 허용하기 위한 하한이다."
+    },
+    {
+      "name": "loose_take",
+      "default": 7,
+      "values": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "side": "sell",
+      "note": "regime_strong일 때만 쓰는 높은 익절 슬롯이다. 2022형 고변동 강세에서 보유 연장이 유리했다는 가설을 검증한다."
+    },
+    {
+      "name": "loose_stop",
+      "default": -3,
+      "values": [
+        -4,
+        -3,
+        -2.5,
+        -2
+      ],
+      "side": "sell",
+      "note": "regime_strong일 때의 손절이다. 연장 청산을 쓰더라도 급락 실패는 제한한다."
+    },
+    {
+      "name": "loose_max_hold_sec",
+      "default": 180,
+      "values": [
+        120,
+        180,
+        240,
+        300,
+        420
+      ],
+      "side": "sell",
+      "note": "regime_strong일 때의 최대 보유 시간이다. 강모멘텀에서는 시드보다 오래 들고 가는 효과를 측정한다."
+    },
+    {
+      "name": "be_trigger",
+      "default": 3,
+      "values": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "side": "sell",
+      "note": "본전 보호를 켜기 위한 최고수익률 트리거다. 작은 이익 후 되돌림을 본전 근처에서 방어한다."
+    },
+    {
+      "name": "be_floor",
+      "default": 0.3,
+      "values": [
+        0,
+        0.3,
+        0.6,
+        1,
+        1.5
+      ],
+      "side": "sell",
+      "note": "BE 발동 후 허용하는 수익률 바닥이다. 너무 높으면 조기 청산, 너무 낮으면 2026형 손실 방어 실패가 날 수 있어 범위를 둔다."
+    },
+    {
+      "name": "trail_trigger",
+      "default": 5,
+      "values": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "side": "sell",
+      "note": "트레일링을 시작할 최고수익률 기준이다. 충분한 이익이 난 고변동 종목에서만 추세 연장을 허용한다."
+    },
+    {
+      "name": "trail_gap",
+      "default": 3,
+      "values": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "side": "sell",
+      "note": "최고수익률 대비 되돌림 폭이다. 2022형에서는 느슨한 트레일이 유리했으나 2026형에서 음전했으므로 레짐 게이트와 함께 측정한다."
+    },
+    {
+      "name": "tight_take",
+      "default": 4,
+      "values": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "side": "sell",
+      "note": "regime_strong이 아닐 때의 빠른 익절이다. 저변동 위축 레짐에서는 시드형 타이트 청산으로 전환한다."
+    },
+    {
+      "name": "tight_stop",
+      "default": -2.5,
+      "values": [
+        -3,
+        -2.5,
+        -2,
+        -1.5
+      ],
+      "side": "sell",
+      "note": "regime_strong이 아닐 때의 손절이다. 보유 연장 실패를 피하기 위해 약한 레짐에서는 손실을 빠르게 제한한다."
+    },
+    {
+      "name": "tight_max_hold_sec",
+      "default": 90,
+      "values": [
+        60,
+        90,
+        120,
+        180,
+        240
+      ],
+      "side": "sell",
+      "note": "regime_strong이 아닐 때의 최대 보유 시간이다. 저변동 2026형에서 오래 끌다 음전되는 문제를 줄이는 축이다."
+    }
+  ]
+}

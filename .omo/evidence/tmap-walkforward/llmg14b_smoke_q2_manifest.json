@@ -1,0 +1,14 @@
+{
+  "template": "llmgen_f07_prevtime_costdiet_reignite_break",
+  "run_id": "tmap_llmg14b_smoke_q2_20260613",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_f07_prevtime_costdiet_reignite_break_000_B",
+      "status": "error"
+    }
+  ]
+}
