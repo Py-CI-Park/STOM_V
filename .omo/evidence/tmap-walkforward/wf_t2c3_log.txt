@@ -1,0 +1,93 @@
+[WF] $ C:\Python\64\Python31313\python.exe -m ai_strategy_loop.scripts.tmap_sweep --template seed_902905_t2late --config-json .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w0_fit.json --run-id wf_t2c3_20260613_w0_fit_sweep --manifest-out .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w0_manifest.json --params ext_end,cap_lo_late,burst_late
+[SWEEP] template=seed_902905_t2late points=8/8
+[SWEEP] prepare status=ok back_count=1530 elapsed=120s
+[SWEEP] gen0 TMAP __default__ profit=1,319,297 mdd=16.29 trades=77 (46s)
+[SWEEP] gen1 TMAP ext_end=91000 profit=1,502,121 mdd=14.95 trades=65 (49s)
+[SWEEP] gen2 TMAP ext_end=91500 profit=1,382,400 mdd=16.23 trades=70 (48s)
+[SWEEP] gen3 TMAP ext_end=92500 profit=1,096,956 mdd=15.76 trades=84 (46s)
+[SWEEP] gen4 TMAP cap_lo_late=1500 profit=615,141 mdd=19.85 trades=113 (49s)
+[SWEEP] gen5 TMAP cap_lo_late=4000 profit=2,475,043 mdd=14.76 trades=61 (49s)
+[SWEEP] gen6 TMAP burst_late=3.0 profit=1,639,561 mdd=16.29 trades=76 (48s)
+[SWEEP] gen7 TMAP burst_late=4.0 profit=1,794,221 mdd=16.29 trades=74 (48s)
+[SWEEP] baseline profit=1,319,297 mdd=16.29
+[SWEEP] ext_end: plateau_score=3.0179 center=91500.0 width=3 positive=1.0
+[SWEEP] burst_late: plateau_score=2.6027 center=4.0 width=2 positive=1.0
+[SWEEP] cap_lo_late: plateau_score=2.3423 center=4000.0 width=2 positive=1.0
+[SWEEP] done
+[WF] $ C:\Python\64\Python31313\python.exe -m ai_strategy_loop.scripts.claude_candidate_batch_eval --pairs-json .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w0_pairs.json --config-json .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w0_eval.json --run-id wf_t2c3_20260613_w0_eval
+[BATCH] run_id=wf_t2c3_20260613_w0_eval pairs=2
+[BATCH] prepare status=ok back_count=1320 elapsed=107s
+[BATCH] gen0 WF_POLICY ok profit=4,345,935 mdd=4.96 trades=104 daily=0.90 payoff=1.7498776309348996 gate=True reason=ok (37s)
+[BATCH] gen1 WF_BASELINE ok profit=4,014,887 mdd=6.06 trades=118 daily=1.00 payoff=1.7490738102023369 gate=True reason=ok (37s)
+[BATCH] done
+[WF] w0 policy=4,345,935 baseline=4,014,887 theta={'ext_end': 91500.0}
+[WF] $ C:\Python\64\Python31313\python.exe -m ai_strategy_loop.scripts.tmap_sweep --template seed_902905_t2late --config-json .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w1_fit.json --run-id wf_t2c3_20260613_w1_fit_sweep --manifest-out .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w1_manifest.json --params ext_end,cap_lo_late,burst_late
+[SWEEP] template=seed_902905_t2late points=8/8
+[SWEEP] prepare status=ok back_count=2013 elapsed=189s
+[SWEEP] gen0 TMAP __default__ profit=4,589,267 mdd=11.27 trades=295 (85s)
+[SWEEP] gen1 TMAP ext_end=91000 profit=6,084,113 mdd=7.70 trades=227 (98s)
+[SWEEP] gen2 TMAP ext_end=91500 profit=5,251,721 mdd=11.30 trades=266 (97s)
+[SWEEP] gen3 TMAP ext_end=92500 profit=3,711,723 mdd=11.91 trades=325 (98s)
+[SWEEP] gen4 TMAP cap_lo_late=1500 profit=4,004,466 mdd=13.13 trades=405 (99s)
+[SWEEP] gen5 TMAP cap_lo_late=4000 profit=6,230,601 mdd=6.20 trades=205 (98s)
+[SWEEP] gen6 TMAP burst_late=3.0 profit=5,908,913 mdd=6.07 trades=276 (98s)
+[SWEEP] gen7 TMAP burst_late=4.0 profit=6,054,737 mdd=7.29 trades=262 (98s)
+[SWEEP] baseline profit=4,589,267 mdd=11.27
+[SWEEP] ext_end: plateau_score=3.2789 center=91500.0 width=3 positive=1.0
+[SWEEP] burst_late: plateau_score=2.6069 center=4.0 width=2 positive=1.0
+[SWEEP] cap_lo_late: plateau_score=2.2302 center=4000.0 width=2 positive=1.0
+[SWEEP] done
+[WF] $ C:\Python\64\Python31313\python.exe -m ai_strategy_loop.scripts.claude_candidate_batch_eval --pairs-json .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w1_pairs.json --config-json .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w1_eval.json --run-id wf_t2c3_20260613_w1_eval
+[BATCH] run_id=wf_t2c3_20260613_w1_eval pairs=2
+[BATCH] prepare status=ok back_count=1179 elapsed=91s
+[BATCH] gen0 WF_POLICY ok profit=1,897,623 mdd=13.11 trades=81 daily=0.70 payoff=2.3956047516198704 gate=True reason=ok (34s)
+[BATCH] gen1 WF_BASELINE ok profit=2,183,225 mdd=7.97 trades=97 daily=0.80 payoff=2.2724491471040342 gate=True reason=ok (34s)
+[BATCH] done
+[WF] w1 policy=1,897,623 baseline=2,183,225 theta={'ext_end': 91500.0}
+[WF] $ C:\Python\64\Python31313\python.exe -m ai_strategy_loop.scripts.tmap_sweep --template seed_902905_t2late --config-json .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w2_fit.json --run-id wf_t2c3_20260613_w2_fit_sweep --manifest-out .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w2_manifest.json --params ext_end,cap_lo_late,burst_late
+[SWEEP] template=seed_902905_t2late points=8/8
+[SWEEP] prepare status=ok back_count=2029 elapsed=200s
+[SWEEP] gen0 TMAP __default__ profit=6,929,563 mdd=12.45 trades=390 (103s)
+[SWEEP] gen1 TMAP ext_end=91000 profit=7,907,595 mdd=8.51 trades=287 (103s)
+[SWEEP] gen2 TMAP ext_end=91500 profit=6,817,383 mdd=12.36 trades=347 (104s)
+[SWEEP] gen3 TMAP ext_end=92500 profit=5,550,166 mdd=14.04 trades=428 (105s)
+[SWEEP] gen4 TMAP cap_lo_late=1500 profit=6,121,482 mdd=15.05 trades=545 (104s)
+[SWEEP] gen5 TMAP cap_lo_late=4000 profit=8,793,901 mdd=7.33 trades=267 (104s)
+[SWEEP] gen6 TMAP burst_late=3.0 profit=7,602,301 mdd=10.39 trades=360 (103s)
+[SWEEP] gen7 TMAP burst_late=4.0 profit=7,923,722 mdd=9.43 trades=340 (104s)
+[SWEEP] baseline profit=6,929,563 mdd=12.45
+[SWEEP] ext_end: plateau_score=2.9259 center=91500.0 width=3 positive=1.0
+[SWEEP] burst_late: plateau_score=2.2405 center=4.0 width=2 positive=1.0
+[SWEEP] cap_lo_late: plateau_score=2.1524 center=4000.0 width=2 positive=1.0
+[SWEEP] done
+[WF] $ C:\Python\64\Python31313\python.exe -m ai_strategy_loop.scripts.claude_candidate_batch_eval --pairs-json .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w2_pairs.json --config-json .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w2_eval.json --run-id wf_t2c3_20260613_w2_eval
+[BATCH] run_id=wf_t2c3_20260613_w2_eval pairs=2
+[BATCH] prepare status=ok back_count=1203 elapsed=85s
+[BATCH] gen0 WF_POLICY ok profit=1,730,765 mdd=18.03 trades=95 daily=0.80 payoff=1.730031482693362 gate=True reason=ok (32s)
+[BATCH] gen1 WF_BASELINE ok profit=956,062 mdd=13.24 trades=111 daily=0.90 payoff=1.620635660422276 gate=True reason=ok (33s)
+[BATCH] done
+[WF] w2 policy=1,730,765 baseline=956,062 theta={'burst_late': 4.0}
+[WF] $ C:\Python\64\Python31313\python.exe -m ai_strategy_loop.scripts.tmap_sweep --template seed_902905_t2late --config-json .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w3_fit.json --run-id wf_t2c3_20260613_w3_fit_sweep --manifest-out .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w3_manifest.json --params ext_end,cap_lo_late,burst_late
+[SWEEP] template=seed_902905_t2late points=8/8
+[SWEEP] prepare status=ok back_count=2011 elapsed=182s
+[SWEEP] gen0 TMAP __default__ profit=3,339,848 mdd=31.04 trades=394 (96s)
+[SWEEP] gen1 TMAP ext_end=91000 profit=4,214,348 mdd=23.66 trades=277 (96s)
+[SWEEP] gen2 TMAP ext_end=91500 profit=3,541,997 mdd=24.08 trades=340 (96s)
+[SWEEP] gen3 TMAP ext_end=92500 profit=2,714,796 mdd=22.87 trades=428 (81s)
+[SWEEP] gen4 TMAP cap_lo_late=1500 profit=2,820,329 mdd=22.23 trades=556 (69s)
+[SWEEP] gen5 TMAP cap_lo_late=4000 profit=5,958,419 mdd=16.03 trades=274 (67s)
+[SWEEP] gen6 TMAP burst_late=3.0 profit=4,298,473 mdd=23.34 trades=371 (68s)
+[SWEEP] gen7 TMAP burst_late=4.0 profit=5,205,346 mdd=17.76 trades=343 (67s)
+[SWEEP] baseline profit=3,339,848 mdd=31.04
+[SWEEP] ext_end: plateau_score=3.1352 center=91500.0 width=3 positive=1.0
+[SWEEP] burst_late: plateau_score=2.8456 center=4.0 width=2 positive=1.0
+[SWEEP] cap_lo_late: plateau_score=2.6285 center=4000.0 width=2 positive=1.0
+[SWEEP] done
+[WF] $ C:\Python\64\Python31313\python.exe -m ai_strategy_loop.scripts.claude_candidate_batch_eval --pairs-json .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w3_pairs.json --config-json .omo\evidence\tmap-walkforward\wf_t2c3_20260613\w3_eval.json --run-id wf_t2c3_20260613_w3_eval
+[BATCH] run_id=wf_t2c3_20260613_w3_eval pairs=2
+[BATCH] prepare status=ok back_count=587 elapsed=47s
+[BATCH] gen0 WF_POLICY ok profit=1,908,000 mdd=10.88 trades=27 daily=0.80 payoff=1.4350042783799202 gate=True reason=ok (13s)
+[BATCH] gen1 WF_BASELINE ok profit=1,779,656 mdd=10.96 trades=29 daily=0.90 payoff=1.5800890247143238 gate=True reason=ok (13s)
+[BATCH] done
+[WF] w3 policy=1,908,000 baseline=1,779,656 theta={'ext_end': 91500.0}
+[WF] TOTAL policy=9,882,323 baseline=8,933,830 -> .omo\evidence\tmap-walkforward\wf_t2c3_aggregate.json

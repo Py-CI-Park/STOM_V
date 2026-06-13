@@ -1,0 +1,4 @@
+[BATCH] run_id=smoke_m2_q3_20260613 pairs=1
+[BATCH] prepare status=ok back_count=448 elapsed=46s
+[BATCH] gen0 M2 strength_combo default ok profit=-803,805 mdd=20.33 trades=10 daily=0.50 payoff=1.6845904005774088 gate=False reason=total_profit -8.038e+05 <= 0 (12s)
+[BATCH] done
