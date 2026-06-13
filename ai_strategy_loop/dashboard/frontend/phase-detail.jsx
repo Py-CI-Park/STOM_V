@@ -565,6 +565,118 @@ function fmtClockFromEpoch(epochSec) {
   }
 }
 
+// =====================================================================
+// ProcessFlowDiagram — 5단계 프로세스를 SVG 노드+화살표로 그린다(평면 박스 대체).
+//   props: currentStep(-1~4) · running · phaseElapsed(활성 라이브 경과초|null) ·
+//          stepTimings(완료단계 소요초 dict, key=FLOW_STEPS[i].timingKey).
+//   노드 status by index vs currentStep: <done(teal) ===active(amber+glow) >pending(dim).
+//   노드 간 화살표는 활성 노드 직전까지(.lit=완료 경로). 좌→우 흐름.
+//   responsive: viewBox + preserveAspectRatio, 좁으면 .stom-flow-wrap 가로 스크롤.
+//   CSS 클래스(styles.css 소유): .stom-flow-wrap/-node-done/-node-active/-node-pend/
+//   -label/-sub/-arrow(.lit). 색은 클래스(토큰) 경유 — 하드코딩 컬러 없음.
+// =====================================================================
+function ProcessFlowDiagram({ currentStep, running, phaseElapsed, stepTimings }) {
+  const steps = FLOW_STEPS;
+  const n = steps.length;
+  // 고정 viewBox 좌표계(preserveAspectRatio 로 컨테이너 폭에 맞춰 스케일).
+  const NODE_W = 120, NODE_H = 56, GAP = 40, PAD_X = 16, PAD_Y = 14;
+  const ARROW_H = 8; // 화살표머리 폭/높이.
+  const vbW = PAD_X * 2 + n * NODE_W + (n - 1) * GAP;
+  const vbH = PAD_Y * 2 + NODE_H;
+  const cy = PAD_Y + NODE_H / 2; // 노드/화살표 수직 중심.
+  const nodeX = (i) => PAD_X + i * (NODE_W + GAP);
+
+  return (
+    <div className="stom-flow-wrap">
+      <svg
+        viewBox={`0 0 ${vbW} ${vbH}`}
+        preserveAspectRatio="xMidYMid meet"
+        width="100%"
+        height={vbH}
+        role="img"
+        aria-label="진화 루프 프로세스 플로우"
+      >
+        <defs>
+          {/* 활성 노드 미묘한 글로우(드롭섀도). 색은 currentColor 상속이 아니라
+              stroke 토큰을 그대로 번지게 두면 테마색을 따른다. */}
+          <filter id="stom-flow-glow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* 화살표(노드 사이). 활성 노드 직전까지 .lit(완료 경로). */}
+        {steps.slice(0, n - 1).map((_, i) => {
+          const x1 = nodeX(i) + NODE_W;
+          const x2 = nodeX(i + 1);
+          const tip = x2 - 2;            // 화살표머리 끝(노드 좌측 직전).
+          const lineEnd = tip - ARROW_H; // 선은 머리 직전까지.
+          // i번째 화살표는 노드 i→i+1. 노드 i+1 이 done/active(=완료 경로 진입)면 점등.
+          const lit = typeof currentStep === "number" && currentStep >= i + 1;
+          const cls = `stom-flow-arrow${lit ? " lit" : ""}`;
+          return (
+            <g key={`arrow-${i}`}>
+              <line className={cls} x1={x1} y1={cy} x2={lineEnd} y2={cy} />
+              <polygon
+                className={cls}
+                points={`${lineEnd},${cy - ARROW_H / 2} ${tip},${cy} ${lineEnd},${cy + ARROW_H / 2}`}
+                fill="currentColor"
+                stroke="none"
+                style={{ color: lit ? "var(--teal)" : "var(--line-2)" }}
+              />
+            </g>
+          );
+        })}
+
+        {/* 노드(rounded-rect + 라벨 + sub). */}
+        {steps.map((step, i) => {
+          const isActive = i === currentStep;
+          const isDone = typeof currentStep === "number" && currentStep > i;
+          const statusCls = isDone
+            ? "stom-flow-node-done"
+            : isActive
+              ? "stom-flow-node-active"
+              : "stom-flow-node-pend";
+          // sub 라인: 활성=라이브 경과(있으면) / 완료=step_timings 소요초 / 그 외=영문 sub.
+          const doneSec = stepTimings ? stepTimings[step.timingKey] : undefined;
+          let subText = step.sub;
+          if (isActive && running && phaseElapsed != null) {
+            subText = `경과 ${fmtElapsedSec(phaseElapsed)}`;
+          } else if (!isActive && typeof doneSec === "number" && doneSec >= 0) {
+            subText = fmtElapsedSec(doneSec);
+          }
+          const x = nodeX(i);
+          const labelX = x + NODE_W / 2;
+          return (
+            <g key={`node-${i}`}>
+              <rect
+                className={statusCls}
+                x={x}
+                y={PAD_Y}
+                width={NODE_W}
+                height={NODE_H}
+                rx={10}
+                ry={10}
+                strokeWidth={isActive ? 2.5 : 1.5}
+                filter={isActive ? "url(#stom-flow-glow)" : undefined}
+              />
+              <text className="stom-flow-label" x={labelX} y={cy - 2} textAnchor="middle">
+                {step.label}
+              </text>
+              <text className="stom-flow-sub" x={labelX} y={cy + 14} textAnchor="middle">
+                {subText}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
 function ProcessFlowPanel({ state }) {
   // current_step이 있으면 우선 사용, 없으면 phaseIndex() 폴백(하위호환).
   const rawStep = state?.latest?.current_step;
@@ -646,36 +758,16 @@ function ProcessFlowPanel({ state }) {
           background: "var(--amber)", transition: "width .3s ease",
         }}></div>
       </div>
-      <div className="process-flow-row">
-        {FLOW_STEPS.map((step, i) => {
-          const isActive = i === currentStep;
-          const isDone = typeof currentStep === "number" && currentStep > i;
-          // 완료된 단계는 step_timings[timingKey]로 소요초 배지. 활성 단계는 라이브 경과.
-          const doneSec = stepTimings ? stepTimings[step.timingKey] : undefined;
-          const showActiveElapsed = isActive && running && phaseElapsed != null;
-          const showDoneBadge = (typeof doneSec === "number" && doneSec >= 0) && !isActive;
-          return (
-            <div
-              key={i}
-              className={`process-box${isActive ? " active" : ""}`}
-            >
-              {step.label}
-              <span className="process-box-sub">{step.sub}</span>
-              {/* #64 — 활성 단계 라이브 경과 / 완료 단계 소요초 배지(둘 다 0/미발행이면 생략). */}
-              {showActiveElapsed && (
-                <span className="process-box-timing mono" style={{
-                  display: "block", fontSize: 9.5, color: "var(--amber)", marginTop: 2,
-                }}>경과 {fmtElapsedSec(phaseElapsed)}</span>
-              )}
-              {showDoneBadge && !showActiveElapsed && (
-                <span className="process-box-timing mono" style={{
-                  display: "block", fontSize: 9.5, color: "var(--ink-3)", marginTop: 2,
-                }}>{fmtElapsedSec(doneSec)}</span>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      {/* P11 — 평면 .process-box 행을 SVG 노드+화살표 플로우 다이어그램으로 교체.
+          노드 상태: index<current_step=done(teal) · ===active(amber+glow) · >pending(dim).
+          노드 sub 라인은 활성=라이브 경과 / 완료=step_timings 소요초. 활성 직전 화살표=.lit.
+          데이터/인덱스 로직(currentStep·stepTimings·phaseElapsed)은 기존 그대로 사용. */}
+      <ProcessFlowDiagram
+        currentStep={currentStep}
+        running={running}
+        phaseElapsed={phaseElapsed}
+        stepTimings={stepTimings}
+      />
       <div className="process-log-pane" ref={logRef}>
         {logs.length === 0
           ? <span className="process-log-empty">로그 대기중…</span>
@@ -690,6 +782,7 @@ Object.assign(window, {
   PhaseTimeline,
   PhaseDetailPanel,
   ProcessFlowPanel,
+  ProcessFlowDiagram,
   GenerationView, BacktestingView, ScoringView, AutopsyView,
   LiveBacktestChartInline,
   DemoBadge, LivePending,
