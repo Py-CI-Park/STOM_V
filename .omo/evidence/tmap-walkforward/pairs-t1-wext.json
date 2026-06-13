@@ -1,0 +1,27 @@
+[
+  {
+    "label": "BASE_SEED",
+    "buy": "Tick_B_902_905_Update_2",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "FROZEN_THETA(=90500)",
+    "buy": "THETA_seed_902905_06_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "T1 THETA+we90700",
+    "buy": "T1WE_90700_B",
+    "sell": "T1WE_90700_S"
+  },
+  {
+    "label": "T1 THETA+we91000",
+    "buy": "T1WE_91000_B",
+    "sell": "T1WE_91000_S"
+  },
+  {
+    "label": "T1 THETA+we91500",
+    "buy": "T1WE_91500_B",
+    "sell": "T1WE_91500_S"
+  }
+]
