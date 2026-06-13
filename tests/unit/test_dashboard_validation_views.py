@@ -443,22 +443,24 @@ class TestFrontendContract:
         assert "rl-run-options" in src
         assert "동결상관" in src
         assert "기권(시드 유지)" in src
+        # Phase9 — 사이드바·연구실 로직은 dashboard-pages.jsx(window.LabPage)로 단일화됐고
+        #   lab.html 은 그 전역을 마운트한다. verdict 로직도 window.VerdictPanel 로 이동.
         lab = (FRONTEND / "lab.html").read_text(encoding="utf-8")
         assert "research-lab.jsx?v=20260614a" in lab
-        assert "ResearchLabPanel" in lab
-        # Phase1/2(2026-06-11) — 사이드바·결정 페이지 계약.
-        assert "run 목록" in lab
-        assert "verdict.html" in lab
-        vd = (FRONTEND / "verdict.html").read_text(encoding="utf-8")
-        assert "/record_decision" in vd
-        assert "결정 이력" in vd
+        assert "window.LabPage" in lab
+        dp = (FRONTEND / "dashboard-pages.jsx").read_text(encoding="utf-8")
+        assert "ResearchLabPanel" in dp
+        assert "run 목록" in dp
+        assert "/record_decision" in dp
+        assert "결정 이력" in dp
 
     def test_app_jsx_shows_run_label(self):
         src = (FRONTEND / "app.jsx").read_text(encoding="utf-8")
         assert 'r.label ? " · " + r.label : ""' in src
-        # Phase3-lite(2026-06-12) — 공통 네비(운영|연구|결정) 계약.
-        assert '/ui/lab.html' in src
-        assert '/ui/verdict.html' in src
+        # Phase9 — SPA 6탭 통합: 연구실/분석프로/결정이 별도 HTML 하드링크가 아니라
+        #   인페이지 탭(STOM_TABS)으로 통합됐다. 하드링크 페이지네비는 제거됐다.
+        assert 'key: "lab"' in src and 'key: "pro"' in src and 'key: "verdict"' in src
+        assert "window.VerdictPanel" in src
 
     def test_phase4_track_a_tabnav_scale_up(self):
         """Phase4 트랙A(2026-06-12) — 전역 UX 스케일 업 계약.
@@ -487,8 +489,13 @@ class TestFrontendContract:
         assert "styles.css?v=20260613a" in src
         assert "chart.jsx?v=20260614b" in src
         assert "research-lab.jsx?v=20260614a" in src
-        assert "app.jsx?v=20260613b" in src
+        assert "app.jsx?v=20260614c" in src
         assert "evolution-analysis.jsx?v=20260614a" in src
+        # Phase9 — SPA 6탭 통합: dashboard-pages.jsx(LabPage/ProPage/VerdictPanel)는
+        #   research-lab/research-pro 이후·app.jsx 이전에 로드돼야 한다.
+        assert "dashboard-pages.jsx?v=20260614c" in src
+        assert src.index('src="research-pro.jsx') < src.index('src="dashboard-pages.jsx')
+        assert src.index('src="dashboard-pages.jsx') < src.index('src="app.jsx?')
         # Phase6-L — 리서치 프로 패널(별도 pro.html 에서도 로드).
         assert "research-pro.jsx?v=20260613b" in src
         assert "backtest-charts.jsx?v=20260614b" in src
@@ -607,7 +614,8 @@ class TestNewFrontendContract:
     """과업1~3(2026-06-12) — 새 엔드포인트·패널 프런트 계약."""
 
     def test_verdict_html_has_regime_and_revival_blocks(self):
-        src = (FRONTEND / "verdict.html").read_text(encoding="utf-8")
+        # Phase9 — verdict 로직은 dashboard-pages.jsx(window.VerdictPanel)로 이동, verdict.html 은 마운트만.
+        src = (FRONTEND / "dashboard-pages.jsx").read_text(encoding="utf-8")
         assert "/regime_report" in src
         assert "레짐 분해 (advisory)" in src
         assert "/revival_registry" in src
