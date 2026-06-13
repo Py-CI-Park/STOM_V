@@ -493,7 +493,7 @@ class TestFrontendContract:
         assert "evolution-analysis.jsx?v=20260614a" in src
         # Phase9 — SPA 6탭 통합: dashboard-pages.jsx(LabPage/ProPage/VerdictPanel)는
         #   research-lab/research-pro 이후·app.jsx 이전에 로드돼야 한다.
-        assert "dashboard-pages.jsx?v=20260614c" in src
+        assert "dashboard-pages.jsx?v=20260614d" in src
         assert src.index('src="research-pro.jsx') < src.index('src="dashboard-pages.jsx')
         assert src.index('src="dashboard-pages.jsx') < src.index('src="app.jsx?')
         # Phase6-L — 리서치 프로 패널(별도 pro.html 에서도 로드).
