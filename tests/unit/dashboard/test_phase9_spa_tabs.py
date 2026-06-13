@@ -92,6 +92,24 @@ class TestDashboardPages:
             assert not stripped.startswith("import "), f"import 금지: {stripped}"
             assert not stripped.startswith("export "), f"export 금지: {stripped}"
 
+    def test_verdict_has_systematic_subtabs(self) -> None:
+        """Phase10 — 결정 이력 탭을 다른 탭처럼 .research-tabs 하위 탭으로 체계화.
+        4개 하위 탭(검증 결산·레짐·부활·V6 포트폴리오·운용 결정)으로 분류돼야 한다."""
+        src = _read("dashboard-pages.jsx")
+        # 하위 탭 상태 + localStorage 유지.
+        assert "vsub" in src and "setVsub" in src
+        assert "stom_verdict_subtab" in src
+        # 연구실과 동일한 탭바 클래스/활성 표기.
+        assert 'className="research-tabs"' in src
+        assert '"research-tab" + (vsub === t.key ? " active" : "")' in src
+        # 4개 하위 탭 키 + 라벨.
+        for key in ('"summary"', '"regime"', '"portfolio"', '"decide"'):
+            assert key in src, f"하위 탭 키 누락: {key}"
+        assert "검증 결산" in src and "레짐·부활" in src and "운용 결정" in src
+        # 각 그룹은 자기 하위 탭에서만 렌더(분류).
+        assert 'vsub === "summary"' in src
+        assert 'vsub === "decide"' in src
+
 
 # =================================================================== app.jsx
 class TestAppTabs:
