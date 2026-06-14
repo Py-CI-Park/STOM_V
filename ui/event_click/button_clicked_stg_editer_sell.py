@@ -30,8 +30,8 @@ def sell_stg_save(ui):
     import random
     from PyQt5.QtCore import Qt
     from ui.create_widget.set_style import style_bc_st
-    from ui.create_widget.set_text import famous_saying
     from PyQt5.QtWidgets import QMessageBox, QApplication
+    from ui.create_widget.famous_saying import famous_saying
     from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.version_manager import stg_save_version
     from ui.event_click.button_clicked_backtest_engine import back_code_test1

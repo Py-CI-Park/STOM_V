@@ -27,8 +27,8 @@ def gavars_save(ui):
     """GA 변수 범위를 저장합니다."""
     import random
     from PyQt5.QtCore import Qt
-    from ui.create_widget.set_text import famous_saying
     from PyQt5.QtWidgets import QMessageBox, QApplication
+    from ui.create_widget.famous_saying import famous_saying
     from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.version_manager import stg_save_version
     from ui.event_click.button_clicked_backtest_engine import back_code_test2
@@ -80,7 +80,7 @@ def condbuy_save(ui):
     """조건 최적화 매수 전략을 저장합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
     from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.version_manager import stg_save_version
     from ui.event_click.button_clicked_backtest_engine import back_code_test3
@@ -132,7 +132,7 @@ def condsell_save(ui):
     """조건 최적화 매도 전략을 저장합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
     from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.version_manager import stg_save_version
     from ui.event_click.button_clicked_backtest_engine import back_code_test3

@@ -5,7 +5,6 @@ import pandas as pd
 from trade.restapi_ls import LsRestData
 from utility.settings.setting_base import UI_NUM
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
-from utility.static_method.builtin_print import set_builtin_print
 from utility.static_method.static_datetime import now, timedelta_sec, get_inthms
 from utility.static_method.static_etcetera import qtest_qwait, get_hogaunit_stock
 
@@ -119,8 +118,6 @@ class BaseReceiver:
         self.qtimer.setInterval(1 * 1000)
         self.qtimer.timeout.connect(self._scheduler)
         self.qtimer.start()
-
-        set_builtin_print(self.windowQ)
 
     def _get_code_info(self):
         """종목명 정보를 조회합니다.

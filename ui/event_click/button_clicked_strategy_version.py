@@ -116,7 +116,7 @@ def strategy_version_delete(ui):
     """버전 삭제 버튼 호출"""
     import random
     from PyQt5.QtWidgets import QMessageBox
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
     from utility.static_method.static_etcetera import qtest_qwait
 
     global SVM

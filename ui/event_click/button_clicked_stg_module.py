@@ -93,7 +93,7 @@ def button_clicked_strategy_delete(ui):
     """전략 버튼을 삭제합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
     from ui.create_widget.set_text_stg_button import dict_stg_button, dict_stg_name
 
     if ui.proc_chqs.is_alive():
@@ -118,7 +118,7 @@ def button_clicked_strategy_save(ui):
     """전략 버튼을 저장합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
     from utility.static_method.static_etcetera import send_query_data
 
     if ui.stg_btn_number <= 205:

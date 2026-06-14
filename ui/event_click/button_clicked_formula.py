@@ -41,9 +41,9 @@ def formula_button_clicked(ui):
     """수식관리자 버튼 클릭 이벤트를 처리합니다."""
     import random
     import sqlite3
-    from ui.create_widget.set_text import famous_saying
     from utility.settings.setting_base import DB_STRATEGY
     from PyQt5.QtWidgets import QMessageBox, QColorDialog
+    from ui.create_widget.famous_saying import famous_saying
     from utility.static_method.static_etcetera import qtest_qwait
     from ui.create_widget.set_text_stg_button import dict_stg_name
     from utility.static_method.static_etcetera import send_query_data

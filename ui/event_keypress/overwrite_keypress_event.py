@@ -11,6 +11,7 @@ from ui.event_click.button_clicked_stg_editer_opti import *
 from ui.event_keypress.extend_window import extend_window
 from ui.etcetera.process_alive import backtest_process_alive
 from ui.etcetera.etc import chart_screenshot, manual_save_and_exit
+from ui.event_click.button_clicked_stg_editer_bstart import backtest_start
 from ui.event_click.button_clicked_stg_editer_backlog import ssbutton_clicked_06
 from ui.event_click.button_clicked_stg_editer_buy import buy_stg_load, buy_stg_save
 from ui.event_click.button_clicked_stg_editer_sell import sell_stg_load, sell_stg_save

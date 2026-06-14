@@ -3,7 +3,6 @@ import sqlite3
 import pandas as pd
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from utility.settings.setting_base import DB_TRADELIST
-from utility.static_method.builtin_print import set_builtin_print
 from utility.static_method.static_etcetera import qtest_qwait, send_query_data
 from utility.settings.setting_base import UI_NUM, COLUMNS_JG, COLUMNS_JGF, COLUMNS_JGCF
 from utility.static_method.static_datetime import now, str_hms, str_ymd, dt_hms, timedelta_sec, get_inthms, \
@@ -127,7 +126,6 @@ class BaseTrader:
         self.updater.signal4.connect(self._update_string)
         self.updater.start()
 
-        set_builtin_print(self.windowQ)
         self._load_database()
 
     def _get_yesugm_for_paper_trading(self):

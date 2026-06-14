@@ -140,7 +140,7 @@ def stbutton_clicked_02(ui):
     """최적화 기준값 제한을 저장합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
 
     std_text1 = ui.st_lineEditttt_01.text()
     std_text2 = ui.st_lineEditttt_02.text()

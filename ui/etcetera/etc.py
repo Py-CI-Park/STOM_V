@@ -179,7 +179,7 @@ def chart_screenshot(ui):
     """차트 스크린샷을 찍습니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
 
     if ui.dialog_chart.isVisible():
         send_chart_screenshot(ui)
@@ -190,7 +190,7 @@ def chart_screenshot2(ui):
     """차트 스크린샷을 찍습니다 (다이얼로그 기준)."""
     import random
     from PyQt5.QtWidgets import QMessageBox
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
 
     if ui.dialog_chart.isVisible():
         send_chart_screenshot(ui)
@@ -268,7 +268,7 @@ def change_title_bar_color(window):
     import ctypes
     from ui.create_widget.set_style import color_bf_dk, color_fg_bc
 
-    hwnd = int(window.winId())
+    hwnd = ctypes.c_void_p(int(window.winId()))
     bg_color = (color_bf_dk.blue() << 16) | (color_bf_dk.green() << 8) | color_bf_dk.red()
     fg_color = (color_fg_bc.blue() << 16) | (color_fg_bc.green() << 8) | color_fg_bc.red()
 

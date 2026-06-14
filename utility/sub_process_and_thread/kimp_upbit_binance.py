@@ -14,7 +14,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from binance import AsyncClient, BinanceSocketManager
 from utility.static_method.static_etcetera import comma2float
 from utility.settings.setting_base import UI_NUM, COLUMNS_KIMP
-from utility.static_method.static_decorator import error_decorator, thread_decorator
+from utility.static_method.static_decorator import thread_decorator
 
 
 class Kimp:
@@ -47,14 +47,12 @@ class Kimp:
 
         app.exec_()
 
-    @error_decorator
     def _update_upbit_data(self, data):
         """업비트 데이터를 업데이트합니다."""
         code = data['code'].replace('KRW-', '')
         c = data['trade_price']
         self.df.loc[code, ['종목명', '업비트(원)']] = [code, c]
 
-    @error_decorator
     def _update_binance_data(self, data):
         """바이낸스 데이터를 업데이트합니다."""
         for x in data:
