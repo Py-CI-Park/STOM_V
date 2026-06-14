@@ -1,0 +1,17 @@
+{
+  "template": "min_session_0900_1500_rotation",
+  "run_id": "tmap_minrotation_default_20260614",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_min_session_0900_1500_rotation_000_B",
+      "status": "ok",
+      "profit": -46402639.0,
+      "mdd": 71.54,
+      "trades": 1353
+    }
+  ]
+}
