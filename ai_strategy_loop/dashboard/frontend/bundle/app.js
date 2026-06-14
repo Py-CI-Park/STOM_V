@@ -5274,63 +5274,6 @@ function _RpHistory({ baseUrl, isDemo, runList, onOpenWorkbench }) {
     }
   ) : /* @__PURE__ */ React.createElement("div", { className: "rp-empty" }, "\uC0C1\uC138 \uCC28\uD2B8 \uCEF4\uD3EC\uB10C\uD2B8(BtResultArea)\uB97C \uBD88\uB7EC\uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.")))))));
 }
-const RP_PIPELINE = [
-  {
-    key: "seed",
-    title: "\uC2DC\uB4DC \uC120\uD0DD",
-    icon: "\u{1F331}",
-    desc: "\uC0AC\uB78C\uC774 \uAC80\uC99D\uD55C \uCD9C\uBC1C \uC804\uB7B5(\uC2DC\uB4DC)\uC744 \uACE0\uB985\uB2C8\uB2E4. \uC774\uD6C4 \uBAA8\uB4E0 \uC9C4\uD654\uC758 \uAE30\uC900\uC810\uC774 \uB429\uB2C8\uB2E4.",
-    terms: [["\uC2DC\uB4DC", "\uC9C4\uD654\uC758 \uCD9C\uBC1C\uC774 \uB418\uB294 \uAE30\uC900 \uC804\uB7B5(\uC608: Tick_902)."]]
-  },
-  {
-    key: "gen",
-    title: "\uD6C4\uBCF4 \uC0DD\uC131 (LLM)",
-    icon: "\u{1F9EC}",
-    desc: "LLM\uC774 \uC9C1\uC804 \uC138\uB300\uC758 \uBD80\uAC80(\uC65C \uC84C\uB294\uC9C0)\uC744 \uCEE8\uD14D\uC2A4\uD2B8\uB85C \uC0C8 \uB9E4\uC218/\uB9E4\uB3C4 \uC870\uAC74\uC2DD\uC744 \uC0DD\uC131\uD569\uB2C8\uB2E4.",
-    terms: [["\uC138\uB300", "\uD55C \uBC88\uC758 \uC0DD\uC131\u2192\uD3C9\uAC00 \uC0AC\uC774\uD074. gen_00, gen_01 \u2026\uB85C \uBC88\uD638\uAC00 \uB9E4\uACA8\uC9D1\uB2C8\uB2E4."]]
-  },
-  {
-    key: "grid",
-    title: "\uACA9\uC790 \uD0D0\uC0C9",
-    icon: "\u25A6",
-    desc: "\uD30C\uB77C\uBBF8\uD130(\u03B8)\uB97C \uACA9\uC790(grid)\uB85C \uD6D1\uC5B4 \uC5B4\uB290 \uC870\uD569\uC774 \uACAC\uACE0\uD55C\uC9C0 \uC9C0\uD615\uC744 \uB9CC\uB4ED\uB2C8\uB2E4. \uB2E8\uC77C \uD53C\uD06C\uAC00 \uC544\uB2CC '\uACE0\uC6D0'\uC744 \uCC3E\uC2B5\uB2C8\uB2E4.",
-    terms: [
-      ["\uACA9\uC790", "\uC5EC\uB7EC \uD30C\uB77C\uBBF8\uD130 \uAC12\uC744 \uBC14\uB451\uD310\uCC98\uB7FC \uC870\uD569\uD574 \uC804\uC218 \uD0D0\uC0C9\uD558\uB294 \uBC29\uC2DD."],
-      ["\uACE0\uC6D0/mesa", "\uC774\uC6C3 \uD30C\uB77C\uBBF8\uD130\uB3C4 \uBAA8\uB450 \uD751\uC790\uC778 \uC548\uC815 \uC601\uC5ED \u2014 \uACFC\uCD5C\uC801\uD654\uAC00 \uC544\uB2CC \uC9C4\uC9DC \uC6B0\uC704."]
-    ]
-  },
-  {
-    key: "bt",
-    title: "\uBC31\uD14C\uC2A4\uD2B8 \uD3C9\uAC00",
-    icon: "\u{1F4CA}",
-    desc: "\uC9C0\uC815 \uAE30\uAC04\xB7\uC2DC\uAC04\uB2E8\uC704\uB85C \uC790\uBCF8\uACE1\uC120\xB7\uB099\uD3ED(MDD)\xB7\uB9E4\uB9E4\uB97C \uC2DC\uBBAC\uB808\uC774\uC158\uD574 \uC131\uACFC\uB97C \uCE21\uC815\uD569\uB2C8\uB2E4.",
-    terms: [["MDD", "\uCD5C\uB300 \uB099\uD3ED \u2014 \uACE0\uC810 \uB300\uBE44 \uAC00\uC7A5 \uD06C\uAC8C \uBE60\uC9C4 \uBE44\uC728. \uC791\uC744\uC218\uB85D \uC548\uC804."]]
-  },
-  {
-    key: "gate",
-    title: "\uC801\uD569\uB3C4 / \uD488\uC9C8 \uAC8C\uC774\uD2B8",
-    icon: "\u{1F6A6}",
-    desc: "\uC810\uC218 \u2265 \uBAA9\uD45C & MDD \u2264 \uC0C1\uD55C & \uAC70\uB798\uC218 \u2265 \uD558\uD55C\uC744 \uB3D9\uC2DC\uC5D0 \uB9CC\uC871\uD574\uC57C \uD1B5\uACFC\uD569\uB2C8\uB2E4. \uD488\uC9C8\uC740 \uACB0\uACFC\uC758 \uACAC\uACE0\uD568\uC744 \uBD05\uB2C8\uB2E4.",
-    terms: [
-      ["\uC801\uD569\uB3C4(fitness)", "\uC190\uC775\xB7MDD\xB7\uAC70\uB798\uC218\xB7\uC77C\uAD00\uC131\uC758 \uAC00\uC911\uD569 \uC810\uC218."],
-      ["\uB2C8\uCE58", "\uD2B9\uC815 \uD658\uACBD(\uC2DC\uAC04\uB300\xB7\uC2DC\uCD1D)\uC5D0 \uD2B9\uD654\uB41C \uC804\uB7B5 \uAD70\uC9D1."]
-    ]
-  },
-  {
-    key: "oos",
-    title: "OOS \uAC80\uC99D",
-    icon: "\u{1F52C}",
-    desc: "\uD559\uC2B5\uC5D0 \uC4F0\uC9C0 \uC54A\uC740 \uAE30\uAC04(Out-Of-Sample)\uC5D0\uC11C \uC131\uACFC\uAC00 \uC720\uC9C0\uB418\uB294\uC9C0 \uD655\uC778\uD569\uB2C8\uB2E4. \uACFC\uCD5C\uC801\uD654\uB97C \uAC70\uB974\uB294 \uD575\uC2EC \uAD00\uBB38.",
-    terms: [["OOS", "Out-Of-Sample \u2014 \uCD5C\uC801\uD654\uC5D0 \uC4F0\uC9C0 \uC54A\uC740 \uBBF8\uB798/\uBCC4\uB3C4 \uAD6C\uAC04. \uC9C4\uC9DC \uC77C\uBC18\uD654 \uAC80\uC99D."]]
-  },
-  {
-    key: "freeze",
-    title: "\uBA85\uC608\uC758 \uC804\uB2F9 / \uB3D9\uACB0",
-    icon: "\u{1F3C6}",
-    desc: "\uAC80\uC99D\uC744 \uD1B5\uACFC\uD55C \uC804\uB7B5\uC744 \uBA85\uC608\uC758 \uC804\uB2F9\uC5D0 \uC62C\uB9AC\uACE0, \uB354 \uC774\uC0C1 \uBC14\uB00C\uC9C0 \uC54A\uB3C4\uB85D \uB3D9\uACB0(freeze)\uD574 \uC6B4\uC601 \uD6C4\uBCF4\uB85C \uBCF4\uAD00\uD569\uB2C8\uB2E4.",
-    terms: [["\uB3D9\uACB0", "\uC804\uB7B5\uC744 \uACE0\uC815\xB7\uBC15\uC81C\uD574 \uC7AC\uD604 \uAC00\uB2A5\uD55C \uAE30\uC900\uC120\uC73C\uB85C \uBCF4\uC874\uD558\uB294 \uAC83."]]
-  }
-];
 function _rpActiveStage(liveState, ops) {
   const phase = liveState && (liveState.phase || liveState.latest && liveState.latest.phase) || "";
   const status = liveState && liveState.status || "";
@@ -5348,6 +5291,7 @@ function _rpActiveStage(liveState, ops) {
 }
 function _RpProcessFlowOverlay({ onClose, liveState, ops }) {
   const activeStage = _rpActiveStage(liveState, ops);
+  const PIPELINE = window.STOM_PIPELINE || [];
   useEffect_rp(() => {
     const onKey = (e) => {
       if (e.key === "Escape") onClose();
@@ -5355,9 +5299,9 @@ function _RpProcessFlowOverlay({ onClose, liveState, ops }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-  return /* @__PURE__ */ React.createElement("div", { className: "rp-overlay", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { className: "rp-overlay-card", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "rp-overlay-hd" }, /* @__PURE__ */ React.createElement("span", { className: "rp-card-title" }, "\uC9C4\uD654 \uD504\uB85C\uC138\uC2A4 \u2014 \uC804\uCCB4 \uD750\uB984"), activeStage >= 0 && /* @__PURE__ */ React.createElement("span", { className: "rp-card-sub" }, "\uD604\uC7AC \uB2E8\uACC4: ", RP_PIPELINE[activeStage].title), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", style: { marginLeft: "auto" }, onClick: onClose }, "\u2715 \uB2EB\uAE30 (Esc)")), /* @__PURE__ */ React.createElement("div", { className: "rp-flow" }, RP_PIPELINE.map((s, i) => {
+  return /* @__PURE__ */ React.createElement("div", { className: "rp-overlay", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { className: "rp-overlay-card", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "rp-overlay-hd" }, /* @__PURE__ */ React.createElement("span", { className: "rp-card-title" }, "\uC9C4\uD654 \uD504\uB85C\uC138\uC2A4 \u2014 \uC804\uCCB4 \uD750\uB984"), activeStage >= 0 && /* @__PURE__ */ React.createElement("span", { className: "rp-card-sub" }, "\uD604\uC7AC \uB2E8\uACC4: ", PIPELINE[activeStage].title), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", style: { marginLeft: "auto" }, onClick: onClose }, "\u2715 \uB2EB\uAE30 (Esc)")), /* @__PURE__ */ React.createElement("div", { className: "rp-flow" }, PIPELINE.map((s, i) => {
     const isActive = i === activeStage;
-    return /* @__PURE__ */ React.createElement(React.Fragment, { key: s.key }, /* @__PURE__ */ React.createElement("div", { className: "rp-flow-node" + (isActive ? " rp-flow-active" : "") }, /* @__PURE__ */ React.createElement("div", { className: "rp-flow-ico" }, s.icon), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-name" }, i + 1, ". ", s.title, isActive && /* @__PURE__ */ React.createElement("span", { className: "rp-flow-pulse" }, " \u25CF \uC9C4\uD589")), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-desc" }, s.desc), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-terms" }, s.terms.map(([t, d]) => /* @__PURE__ */ React.createElement("div", { key: t, className: "rp-flow-term" }, /* @__PURE__ */ React.createElement("b", null, t), " ", d)))), i < RP_PIPELINE.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "rp-flow-arrow" }, "\u2192"));
+    return /* @__PURE__ */ React.createElement(React.Fragment, { key: s.key }, /* @__PURE__ */ React.createElement("div", { className: "rp-flow-node" + (isActive ? " rp-flow-active" : "") }, /* @__PURE__ */ React.createElement("div", { className: "rp-flow-ico" }, s.icon), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-name" }, i + 1, ". ", s.title, isActive && /* @__PURE__ */ React.createElement("span", { className: "rp-flow-pulse" }, " \u25CF \uC9C4\uD589")), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-desc" }, s.desc), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-terms" }, s.terms.map(([t, d]) => /* @__PURE__ */ React.createElement("div", { key: t, className: "rp-flow-term" }, /* @__PURE__ */ React.createElement("b", null, t), " ", d)))), i < PIPELINE.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "rp-flow-arrow" }, "\u2192"));
   }))));
 }
 Object.assign(window, { ResearchProcessFlowOverlay: _RpProcessFlowOverlay });
@@ -5962,51 +5906,8 @@ function _McFanChart({ fan }) {
     )
   );
 }
-const _RL_PIPELINE = [
-  {
-    icon: "\u{1F331}",
-    title: "\uC2DC\uB4DC \uC120\uD0DD",
-    desc: "\uC0AC\uB78C\uC774 \uAC80\uC99D\uD55C \uCD9C\uBC1C \uC804\uB7B5(\uC2DC\uB4DC)\uC744 \uACE0\uB985\uB2C8\uB2E4. \uC774\uD6C4 \uC9C4\uD654\uC758 \uAE30\uC900\uC810\uC785\uB2C8\uB2E4.",
-    terms: [["\uC2DC\uB4DC", "\uC9C4\uD654\uC758 \uCD9C\uBC1C\uC774 \uB418\uB294 \uAE30\uC900 \uC804\uB7B5."]]
-  },
-  {
-    icon: "\u{1F9EC}",
-    title: "\uD6C4\uBCF4 \uC0DD\uC131 (LLM)",
-    desc: "\uC9C1\uC804 \uBD80\uAC80(\uC65C \uC84C\uB294\uC9C0)\uC744 \uCEE8\uD14D\uC2A4\uD2B8\uB85C \uC0C8 \uB9E4\uC218/\uB9E4\uB3C4 \uC870\uAC74\uC2DD\uC744 \uC0DD\uC131\uD569\uB2C8\uB2E4.",
-    terms: [["\uC138\uB300", "\uD55C \uBC88\uC758 \uC0DD\uC131\u2192\uD3C9\uAC00 \uC0AC\uC774\uD074(gen_00, gen_01 \u2026)."]]
-  },
-  {
-    icon: "\u25A6",
-    title: "\uACA9\uC790 \uD0D0\uC0C9",
-    desc: "\uD30C\uB77C\uBBF8\uD130(\u03B8)\uB97C \uACA9\uC790\uB85C \uD6D1\uC5B4 \uB2E8\uC77C \uD53C\uD06C\uAC00 \uC544\uB2CC '\uACE0\uC6D0'\uC744 \uCC3E\uC2B5\uB2C8\uB2E4.",
-    terms: [["\uACA9\uC790", "\uC5EC\uB7EC \uAC12\uC744 \uBC14\uB451\uD310\uCC98\uB7FC \uC870\uD569\uD574 \uC804\uC218 \uD0D0\uC0C9."], ["\uACE0\uC6D0/mesa", "\uC774\uC6C3 \uAC12\uB3C4 \uBAA8\uB450 \uD751\uC790\uC778 \uC548\uC815 \uC601\uC5ED."]]
-  },
-  {
-    icon: "\u{1F4CA}",
-    title: "\uBC31\uD14C\uC2A4\uD2B8 \uD3C9\uAC00",
-    desc: "\uC9C0\uC815 \uAE30\uAC04\xB7\uC2DC\uAC04\uB2E8\uC704\uB85C \uC790\uBCF8\uACE1\uC120\xB7\uB099\uD3ED(MDD)\xB7\uB9E4\uB9E4\uB97C \uC2DC\uBBAC\uB808\uC774\uC158\uD569\uB2C8\uB2E4.",
-    terms: [["MDD", "\uCD5C\uB300 \uB099\uD3ED \u2014 \uACE0\uC810 \uB300\uBE44 \uCD5C\uB300 \uD558\uB77D\uD3ED(\uC791\uC744\uC218\uB85D \uC548\uC804)."]]
-  },
-  {
-    icon: "\u{1F6A6}",
-    title: "\uC801\uD569\uB3C4/\uD488\uC9C8 \uAC8C\uC774\uD2B8",
-    desc: "\uC810\uC218\u2265\uBAA9\uD45C & MDD\u2264\uC0C1\uD55C & \uAC70\uB798\uC218\u2265\uD558\uD55C\uC744 \uB3D9\uC2DC\uC5D0 \uB9CC\uC871\uD574\uC57C \uD1B5\uACFC\uD569\uB2C8\uB2E4.",
-    terms: [["\uC801\uD569\uB3C4", "\uC190\uC775\xB7MDD\xB7\uAC70\uB798\uC218\xB7\uC77C\uAD00\uC131\uC758 \uAC00\uC911\uD569 \uC810\uC218."], ["\uB2C8\uCE58", "\uD2B9\uC815 \uD658\uACBD(\uC2DC\uAC04\uB300\xB7\uC2DC\uCD1D)\uC5D0 \uD2B9\uD654\uB41C \uAD70\uC9D1."]]
-  },
-  {
-    icon: "\u{1F52C}",
-    title: "OOS \uAC80\uC99D",
-    desc: "\uD559\uC2B5\uC5D0 \uC4F0\uC9C0 \uC54A\uC740 \uAE30\uAC04(OOS)\uC5D0\uC11C \uC131\uACFC\uAC00 \uC720\uC9C0\uB418\uB294\uC9C0 \uD655\uC778\uD569\uB2C8\uB2E4.",
-    terms: [["OOS", "Out-Of-Sample \u2014 \uCD5C\uC801\uD654\uC5D0 \uC548 \uC4F4 \uBCC4\uB3C4 \uAD6C\uAC04(\uC9C4\uC9DC \uC77C\uBC18\uD654 \uAC80\uC99D)."]]
-  },
-  {
-    icon: "\u{1F3C6}",
-    title: "\uBA85\uC608\uC758 \uC804\uB2F9/\uB3D9\uACB0",
-    desc: "\uAC80\uC99D \uD1B5\uACFC \uC804\uB7B5\uC744 \uBA85\uC608\uC758 \uC804\uB2F9\uC5D0 \uC62C\uB9AC\uACE0 \uB3D9\uACB0(\uACE0\uC815)\uD574 \uC6B4\uC601 \uD6C4\uBCF4\uB85C \uBCF4\uAD00\uD569\uB2C8\uB2E4.",
-    terms: [["\uB3D9\uACB0", "\uC804\uB7B5\uC744 \uBC15\uC81C\uD574 \uC7AC\uD604 \uAC00\uB2A5\uD55C \uAE30\uC900\uC120\uC73C\uB85C \uBCF4\uC874."]]
-  }
-];
 function _RlProcessFlowOverlay({ onClose, activeStage }) {
+  const PIPELINE = window.STOM_PIPELINE || [];
   useEffect_rl(() => {
     const onKey = (e) => {
       if (e.key === "Escape") onClose();
@@ -6015,7 +5916,7 @@ function _RlProcessFlowOverlay({ onClose, activeStage }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
   const ai = typeof activeStage === "number" ? activeStage : -1;
-  return /* @__PURE__ */ React.createElement("div", { className: "rp-overlay", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { className: "rp-overlay-card", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "rp-overlay-hd" }, /* @__PURE__ */ React.createElement("span", { className: "rp-card-title" }, "\uC9C4\uD654 \uD504\uB85C\uC138\uC2A4 \u2014 \uC804\uCCB4 \uD750\uB984"), ai >= 0 && /* @__PURE__ */ React.createElement("span", { className: "rp-card-sub" }, "\uD604\uC7AC \uB2E8\uACC4: ", _RL_PIPELINE[ai].title), /* @__PURE__ */ React.createElement("button", { type: "button", className: "btn ghost sm", style: { marginLeft: "auto" }, onClick: onClose }, "\u2715 \uB2EB\uAE30 (Esc)")), /* @__PURE__ */ React.createElement("div", { className: "rp-flow" }, _RL_PIPELINE.map((s, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key: s.title }, /* @__PURE__ */ React.createElement("div", { className: "rp-flow-node" + (i === ai ? " rp-flow-active" : "") }, /* @__PURE__ */ React.createElement("div", { className: "rp-flow-ico" }, s.icon), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-name" }, i + 1, ". ", s.title, i === ai && /* @__PURE__ */ React.createElement("span", { className: "rp-flow-pulse" }, " \u25CF \uC9C4\uD589")), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-desc" }, s.desc), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-terms" }, s.terms.map(([t, d]) => /* @__PURE__ */ React.createElement("div", { key: t, className: "rp-flow-term" }, /* @__PURE__ */ React.createElement("b", null, t), " ", d)))), i < _RL_PIPELINE.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "rp-flow-arrow" }, "\u2192"))))));
+  return /* @__PURE__ */ React.createElement("div", { className: "rp-overlay", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { className: "rp-overlay-card", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "rp-overlay-hd" }, /* @__PURE__ */ React.createElement("span", { className: "rp-card-title" }, "\uC9C4\uD654 \uD504\uB85C\uC138\uC2A4 \u2014 \uC804\uCCB4 \uD750\uB984"), ai >= 0 && /* @__PURE__ */ React.createElement("span", { className: "rp-card-sub" }, "\uD604\uC7AC \uB2E8\uACC4: ", PIPELINE[ai].title), /* @__PURE__ */ React.createElement("button", { type: "button", className: "btn ghost sm", style: { marginLeft: "auto" }, onClick: onClose }, "\u2715 \uB2EB\uAE30 (Esc)")), /* @__PURE__ */ React.createElement("div", { className: "rp-flow" }, PIPELINE.map((s, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key: s.title }, /* @__PURE__ */ React.createElement("div", { className: "rp-flow-node" + (i === ai ? " rp-flow-active" : "") }, /* @__PURE__ */ React.createElement("div", { className: "rp-flow-ico" }, s.icon), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-name" }, i + 1, ". ", s.title, i === ai && /* @__PURE__ */ React.createElement("span", { className: "rp-flow-pulse" }, " \u25CF \uC9C4\uD589")), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-desc" }, s.desc), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-terms" }, s.terms.map(([t, d]) => /* @__PURE__ */ React.createElement("div", { key: t, className: "rp-flow-term" }, /* @__PURE__ */ React.createElement("b", null, t), " ", d)))), i < PIPELINE.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "rp-flow-arrow" }, "\u2192"))))));
 }
 function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
   const [tab, setTab] = useState_rl("edge");
