@@ -13,6 +13,9 @@
   <script src="vendor-react.js?v=20260603a"></script>
   <script src="vendor-react-dom.js?v=20260603a"></script>
   <script src="vendor-babel.js?v=20260603a"></script>
+  <!-- Phase14.3: 빌드 번들(window.fmt*·_axisTicks). connection.jsx/chart.jsx de-dup 후
+       이 standalone 페이지도 번들이 있어야 전역이 채워진다(index.html 과 동일). -->
+  <script type="module" src="bundle/stom-ui.js?v=20260614h"></script>
 </head>
 <body>
   <!-- Phase9(2026-06-13) — SPA 6탭 통합: 리서치 프로 본문은 dashboard-pages.jsx 전역
@@ -30,8 +33,8 @@
   <!-- 의존: ProPage 가 참조하는 전역(ResearchProPanel=research-pro.jsx, 백테 차트
        전역=backtest-charts.jsx 등)을 먼저 로드한 뒤 dashboard-pages.jsx 를 마지막에
        로드한다(전역 정의 순서 보장). -->
-  <script type="text/babel" src="connection.jsx?v=20260612h"></script>
-  <script type="text/babel" src="chart.jsx?v=20260614b"></script>
+  <script type="text/babel" src="connection.jsx?v=20260614i"></script>
+  <script type="text/babel" src="chart.jsx?v=20260614j"></script>
   <script type="text/babel" src="analysis.jsx?v=20260603a"></script>
   <script type="text/babel" src="research-lab.jsx?v=20260614g"></script>
   <script type="text/babel" src="backtest-charts.jsx?v=20260614b"></script>

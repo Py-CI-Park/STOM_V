@@ -487,7 +487,7 @@ class TestFrontendContract:
         # Phase6(2026-06-13) — L(연구실 라벨·툴팁)·B(하위탭·GUI 패리티)·S(라이브 차트)·
         #   G1(폰트)·E3/E4(chart.jsx) 일괄 변경으로 관련 자산 전부 v20260613a 재범프.
         assert "styles.css?v=20260614f" in src
-        assert "chart.jsx?v=20260614b" in src
+        assert "chart.jsx?v=20260614j" in src  # Phase14.3: _axisTicks 번들 이전 de-dup
         assert "research-lab.jsx?v=20260614g" in src
         assert "app.jsx?v=20260614c" in src
         assert "evolution-analysis.jsx?v=20260614a" in src
