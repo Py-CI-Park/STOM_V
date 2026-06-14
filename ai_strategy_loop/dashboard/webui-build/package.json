@@ -3,13 +3,16 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "Phase14.1 — Vite 빌드 워크스페이스(served frontend/ 바깥). lib 산출물은 ../frontend/bundle/stom-ui.js 로 커밋.",
+  "description": "Phase14 — Vite/esbuild 빌드 워크스페이스(served frontend/ 바깥). 산출물 ../frontend/bundle/{stom-ui.js,app.js} 커밋.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node build-app.mjs",
+    "build:lib": "vite build",
+    "build:app": "node build-app.mjs",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "esbuild": "^0.21.5",
     "vite": "^5.4.0"
   }
 }

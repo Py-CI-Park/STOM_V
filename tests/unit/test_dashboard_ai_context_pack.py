@@ -153,7 +153,7 @@ def test_ai_context_pack_respects_zero_generation(monkeypatch, tmp_path: Path) -
 def test_ai_context_frontend_panel_contract() -> None:
     src = _read_front("ai-context.jsx")
     app = _read_front("app.jsx")
-    index = _read_front("index.html")
+    app_bundle = _read_front("bundle/app.js")  # Phase14.4: 단일 컴파일 번들(순서=마커)
 
     assert "function AIContextPanel(" in src
     assert "/ai_context_pack" in src
@@ -168,4 +168,4 @@ def test_ai_context_frontend_panel_contract() -> None:
     assert "summary_text" in src
     assert "Object.assign(window, { AIContextPanel" in src
     assert "<AIContextPanel" in app
-    assert index.index("ai-context.jsx") < index.index("app.jsx")
+    assert app_bundle.index("==== ai-context.jsx ====") < app_bundle.index("==== app.jsx ====")

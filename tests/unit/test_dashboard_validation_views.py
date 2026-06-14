@@ -484,33 +484,30 @@ class TestFrontendContract:
 
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
-        # Phase6(2026-06-13) — L(연구실 라벨·툴팁)·B(하위탭·GUI 패리티)·S(라이브 차트)·
-        #   G1(폰트)·E3/E4(chart.jsx) 일괄 변경으로 관련 자산 전부 v20260613a 재범프.
+        # index.html 에 직접 존재하는 자산(벤더/스타일/빌드 번들).
         assert "styles.css?v=20260614f" in src
-        assert "chart.jsx?v=20260614j" in src  # Phase14.3: _axisTicks 번들 이전 de-dup
-        assert "research-lab.jsx?v=20260614g" in src
-        assert "app.jsx?v=20260614c" in src
-        assert "evolution-analysis.jsx?v=20260614a" in src
-        # Phase9 — SPA 6탭 통합: dashboard-pages.jsx(LabPage/ProPage/VerdictPanel)는
-        #   research-lab/research-pro 이후·app.jsx 이전에 로드돼야 한다.
-        assert "dashboard-pages.jsx?v=20260614d" in src
-        assert src.index('src="research-pro.jsx') < src.index('src="dashboard-pages.jsx')
-        assert src.index('src="dashboard-pages.jsx') < src.index('src="app.jsx?')
-        # Phase6-L — 리서치 프로 패널(별도 pro.html 에서도 로드).
-        assert "research-pro.jsx?v=20260613b" in src
-        assert "backtest-charts.jsx?v=20260614b" in src
-        assert "backtest.jsx?v=20260614g" in src
-        # Phase6-S — Canvas 라이브 차트는 simulation.jsx 보다 먼저 로드돼야 한다.
-        assert "sim-live-chart.jsx?v=20260614f" in src
-        assert "simulation-charts.jsx?v=20260614g" in src
-        assert "simulation.jsx?v=20260614a" in src
-        # S3(2026-06-12) — lightweight-charts vendor 는 babel 이전 일반 script 로 로드.
         assert "vendor-lightweight-charts.js?v=20260612a" in src
-        # src= 속성 기준 비교(주석 내 파일명 언급에 걸리지 않게).
-        assert src.index('src="vendor-lightweight-charts.js') < src.index('src="sim-live-chart.jsx')
-        assert src.index('src="sim-live-chart.jsx') < src.index('src="simulation-charts.jsx')
-        assert src.index('src="simulation-charts.jsx') < src.index('src="simulation.jsx?')
-        assert src.index('src="backtest-charts.jsx') < src.index('src="backtest.jsx?')
+        # Phase14.4: 운영 컴포넌트 26개는 단일 컴파일 번들 bundle/app.js(+ stom-ui.js)로 로드(런타임 babel 제거).
+        assert "bundle/app.js?v=20260614k" in src
+        assert "bundle/stom-ui.js?v=" in src
+        # 정의/로드 순서는 app.js 의 "==== X.jsx ====" 마커(build-app.mjs ORDER)에 보존된다.
+        app_bundle = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
+        for name in (
+            "chart.jsx", "research-lab.jsx", "evolution-analysis.jsx", "dashboard-pages.jsx",
+            "research-pro.jsx", "backtest-charts.jsx", "backtest.jsx",
+            "sim-live-chart.jsx", "simulation-charts.jsx", "simulation.jsx", "app.jsx",
+        ):
+            assert f"==== {name} ====" in app_bundle, f"app.js 에 {name} 누락"
+
+        def _ord(n):
+            return app_bundle.index(f"==== {n} ====")
+
+        # Phase9 — dashboard-pages 는 research-pro 이후·app 이전.
+        assert _ord("research-pro.jsx") < _ord("dashboard-pages.jsx") < _ord("app.jsx")
+        # Phase6-S — Canvas 라이브 차트는 simulation 보다 먼저.
+        assert _ord("sim-live-chart.jsx") < _ord("simulation-charts.jsx") < _ord("simulation.jsx")
+        # PR2 — 차트 분리 모듈은 backtest 보다 먼저.
+        assert _ord("backtest-charts.jsx") < _ord("backtest.jsx")
 
 
 class TestRegimeReport:
