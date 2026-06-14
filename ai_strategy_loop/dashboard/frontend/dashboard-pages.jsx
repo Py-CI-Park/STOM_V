@@ -416,6 +416,14 @@ function VerdictPanel({ baseUrl }) {
       {/* ── 운용 결정: 결정 기록 폼(append-only) + 결정 이력 ── */}
       {vsub === "decide" && (
         <div>
+          {/* P2 결정 동선 크로스링크: 이 폼(REST /record_decision)은 운용 결정을 append-only로
+              남기는 기록부. 실제 전략 내보내기 승인은 진화 탭 승인·내보내기 다이얼로그(WS
+              final_approval)에서 처리 — 두 단계는 별개 계약. (decide 하위탭 — 기본 스냅샷 밖) */}
+          <div className="mono" style={{ fontSize: 11, color: "var(--ink-3)", lineHeight: 1.5, marginBottom: 8, padding: "6px 8px", border: "1px dashed var(--line-1)", borderRadius: 6 }}>
+            ℹ️ 운영 채택 동선: 우승 전략 <b>내보내기 승인</b>은 진화 탭의 <b>승인·내보내기 다이얼로그</b>에서
+            WS(<span className="mono">final_approval</span>)로 처리됩니다. 이 폼은 그 운용 <b>결정을 append-only</b>로
+            남기는 기록부입니다(REST <span className="mono">/record_decision</span>).
+          </div>
           <div style={{ padding: 12, border: "1px solid rgba(255,255,255,0.12)", borderRadius: 6 }}>
             <div className="research-empty">운용 결정 기록 (append-only — 번복도 새 레코드로 이력 보존)</div>
             <div style={{ display: "flex", gap: 12, alignItems: "center", margin: "8px 0", flexWrap: "wrap" }}>
