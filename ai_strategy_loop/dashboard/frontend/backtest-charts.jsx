@@ -43,16 +43,10 @@ function _btDateLabelY(d, prevD) {
   return s.slice(0, 4) + "-" + s.slice(4, 6) + "-" + s.slice(6, 8);
 }
 
-// 축 눈금 값 배열(min~max 를 cnt 등분, 양끝 포함). 중간 눈금 라벨용. 무예외.
-function _btAxisTicks(min, max, cnt) {
-  const lo = Number(min), hi = Number(max);
-  const n = Math.max(2, Math.floor(cnt || 5));
-  if (!isFinite(lo) || !isFinite(hi)) return [];
-  if (hi === lo) return [lo];
-  const out = [];
-  for (let i = 0; i < n; i++) out.push(lo + ((hi - lo) * i) / (n - 1));
-  return out;
-}
+// 축 눈금 값 배열 — P3 de-dup: 구현은 빌드 번들(stom-ui.js, format.ts)이 window._axisTicks 로
+//   제공한다(ESM 모듈이라 babel/app.js 보다 먼저 로드). chart.jsx 와 동일 패턴 — babel 스코프
+//   별칭만 둬서 기존 bare 호출(_btAxisTicks(...))이 그대로 해소되게 한다(call site 무변경).
+const _btAxisTicks = window._axisTicks;
 
 // ───────────────────────────────────────────────────────────────────────────
 // 결과 CSV 내보내기(P4) — 일별 수익곡선(날짜·일별손익·누적수익)을 클라이언트 Blob 으로

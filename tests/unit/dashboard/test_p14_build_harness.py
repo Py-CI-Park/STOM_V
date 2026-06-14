@@ -135,9 +135,11 @@ def test_chart_axisticks_dedup_to_bundle() -> None:
 
 
 def test_all_entrypoints_loading_deduped_jsx_also_load_bundle() -> None:
-    """de-dup 후 connection.jsx/chart.jsx 는 번들 전역(window.fmt*·_axisTicks)에 의존한다.
-    그 .jsx 를 로드하는 모든 HTML 엔트리는 bundle/stom-ui.js 도 로드해야 한다(누락 시 전역 미정의)."""
-    deduped = ("connection.jsx", "chart.jsx")
+    """de-dup 후 connection.jsx/chart.jsx(+P3: backtest-charts/simulation-charts/sim-live-chart)는
+    번들 전역(window.fmt*·_axisTicks·_priceTick·_hmsTimeLabel)에 의존한다. 그 .jsx 를 로드하는
+    모든 HTML 엔트리는 bundle/stom-ui.js 도 로드해야 한다(누락 시 전역 미정의)."""
+    deduped = ("connection.jsx", "chart.jsx",
+               "backtest-charts.jsx", "simulation-charts.jsx", "sim-live-chart.jsx")
     missing = []
     for html in FRONTEND.glob("*.html"):
         src = _read(html)
