@@ -151,17 +151,11 @@ function _simStrengthMa(bars, period) {
   return _simSma(bars, period || 5, b => b.strength);
 }
 
-// HHMMSS(int) → HH:MM:SS 라벨.
-function _simTimeLabel(hms) {
-  const s = String(hms).padStart(6, "0");
-  return s.slice(0, 2) + ":" + s.slice(2, 4) + ":" + s.slice(4, 6);
-}
-
-// 가격 축약(원). 큰 가격도 읽기 쉽게.
-function _simPriceTick(v) {
-  if (v == null) return "—";
-  return Math.round(v).toLocaleString("ko-KR");
-}
+// HHMMSS → HH:MM:SS · 가격 축약(원). P3 de-dup: 빌드 번들(stom-ui.js, format.ts)이
+//   window._hmsTimeLabel/_priceTick 로 단일 출처 제공(ESM 모듈이라 babel/app.js 보다 먼저 로드).
+//   babel 스코프 별칭만 둬서 기존 호출(_simTimeLabel/_simPriceTick)이 그대로 해소된다.
+const _simTimeLabel = window._hmsTimeLabel;
+const _simPriceTick = window._priceTick;
 
 // HHMMSS(int) → 자정 기준 초(LWC time 축의 단조 증가 UTCTimestamp 로 사용).
 function _hmsToSec(hms) {

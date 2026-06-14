@@ -6415,15 +6415,7 @@ function _btDateLabelY(d, prevD) {
   if (sameYear) return s.slice(4, 6) + "/" + s.slice(6, 8);
   return s.slice(0, 4) + "-" + s.slice(4, 6) + "-" + s.slice(6, 8);
 }
-function _btAxisTicks(min, max, cnt) {
-  const lo = Number(min), hi = Number(max);
-  const n = Math.max(2, Math.floor(cnt || 5));
-  if (!isFinite(lo) || !isFinite(hi)) return [];
-  if (hi === lo) return [lo];
-  const out = [];
-  for (let i = 0; i < n; i++) out.push(lo + (hi - lo) * i / (n - 1));
-  return out;
-}
+const _btAxisTicks = window._axisTicks;
 function _btCsvCell(v) {
   if (v == null) return "";
   const s = String(v);
@@ -10221,14 +10213,8 @@ function _slcSlot(innerW, n) {
 const _SLC_LERP_MS = 150;
 const _SLC_FLASH_MS = 220;
 const _SLC_MIN_FRAME_MS = 28;
-function _slcTimeLabel(hms) {
-  const s = String(hms == null ? 0 : hms).padStart(6, "0");
-  return s.slice(0, 2) + ":" + s.slice(2, 4) + ":" + s.slice(4, 6);
-}
-function _slcPriceTick(v) {
-  if (v == null || !isFinite(v)) return "\u2014";
-  return Math.round(v).toLocaleString("ko-KR");
-}
+const _slcTimeLabel = window._hmsTimeLabel;
+const _slcPriceTick = window._priceTick;
 function _lerp(from, to, t) {
   if (from == null || !isFinite(from)) return to;
   if (t >= 1) return to;
@@ -11106,14 +11092,8 @@ function _simVolMa(bars, periods) {
 function _simStrengthMa(bars, period) {
   return _simSma(bars, period || 5, (b) => b.strength);
 }
-function _simTimeLabel(hms) {
-  const s = String(hms).padStart(6, "0");
-  return s.slice(0, 2) + ":" + s.slice(2, 4) + ":" + s.slice(4, 6);
-}
-function _simPriceTick(v) {
-  if (v == null) return "\u2014";
-  return Math.round(v).toLocaleString("ko-KR");
-}
+const _simTimeLabel = window._hmsTimeLabel;
+const _simPriceTick = window._priceTick;
 function _hmsToSec(hms) {
   const s = String(hms).padStart(6, "0");
   return parseInt(s.slice(0, 2), 10) * 3600 + parseInt(s.slice(2, 4), 10) * 60 + parseInt(s.slice(4, 6), 10);

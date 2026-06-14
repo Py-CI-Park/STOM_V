@@ -40,16 +40,11 @@ const _SLC_FLASH_MS = 220;
 // 재드로우 최소 간격(ms) — 약 35fps 캡. 차트 다수 활성 재생 시 CPU 포화 방지.
 const _SLC_MIN_FRAME_MS = 28;
 
-// HHMMSS(int) → HH:MM:SS (simulation-charts 의 _simTimeLabel 과 동일 규칙 — 독립 정의로 결합 회피).
-function _slcTimeLabel(hms) {
-  const s = String(hms == null ? 0 : hms).padStart(6, "0");
-  return s.slice(0, 2) + ":" + s.slice(2, 4) + ":" + s.slice(4, 6);
-}
-
-function _slcPriceTick(v) {
-  if (v == null || !isFinite(v)) return "—";
-  return Math.round(v).toLocaleString("ko-KR");
-}
+// HHMMSS → HH:MM:SS · 가격 축약(원). P3 de-dup: 과거 "독립 정의로 결합 회피" 주석을 폐기하고
+//   빌드 번들(stom-ui.js, format.ts)의 window._hmsTimeLabel/_priceTick 단일 출처에 맞춘다(_axisTicks
+//   와 동일 패턴). babel 스코프 별칭만 둬서 기존 호출(_slcTimeLabel/_slcPriceTick)이 그대로 해소된다.
+const _slcTimeLabel = window._hmsTimeLabel;
+const _slcPriceTick = window._priceTick;
 
 // 선형 보간(현재→목표, 0..1 비율). t≥1 이면 목표 그대로.
 function _lerp(from, to, t) {

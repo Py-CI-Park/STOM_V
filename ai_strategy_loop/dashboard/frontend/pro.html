@@ -15,7 +15,7 @@
   <!-- Phase14.7: 런타임 babel 제거. 운영 컴포넌트는 index.html 과 동일한 컴파일 번들(bundle/app.js)
        을 공유한다(ProPage 포함 전 컴포넌트 정의). 이 페이지는 App 자동 마운트를 끄고 직접
        ProPage 를 마운트한다. stom-ui.js(모듈)가 window.fmt*·_axisTicks 를 먼저 세팅. -->
-  <script type="module" src="bundle/stom-ui.js?v=ac59ac0e"></script>
+  <script type="module" src="bundle/stom-ui.js?v=a142dbb8"></script>
   <script>window.__STOM_NO_AUTO_MOUNT__ = true;</script>
 </head>
 <body>
@@ -32,7 +32,7 @@
   </div>
 
   <!-- 컴파일 번들(defer) — stom-ui 모듈 뒤에 실행. 이후 DOMContentLoaded 에서 ProPage 마운트. -->
-  <script defer src="bundle/app.js?v=a22c7679"></script>
+  <script defer src="bundle/app.js?v=05695bcc"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       ReactDOM.createRoot(document.getElementById("root"))
