@@ -125,6 +125,19 @@ function LabPage({ baseUrl }) {
         {Panel
           ? <Panel baseUrl={base} wsStatus="na" runId={runId} />
           : <_DpLoading name="연구실 패널" />}
+        {/* P1(2026-06-14): ResearchWiki + AIContext 의 전용 홈 — 진화 사이드바 중복 제거(P2)의
+            선행 작업. 진화 사이드바와 동일 백엔드 컨텍스트 props(baseUrl/wsStatus/runId[+genNo])로
+            연구실 탭 본문에 가산 렌더. (가산 단계 — 사이드바는 P2 에서 제거.) */}
+        {window.ResearchWikiPanel && (
+          <div style={{ marginTop: 14 }}>
+            <ResearchWikiPanel baseUrl={base} wsStatus="na" runId={runId} />
+          </div>
+        )}
+        {window.AIContextPanel && (
+          <div style={{ marginTop: 14 }}>
+            <AIContextPanel baseUrl={base} wsStatus="na" runId={runId} genNo={null} />{/* null=gen 필터 없이 최신 컨텍스트(lab 탭엔 활성 세대 없음) */}
+          </div>
+        )}
       </div>
     </div>
   );
