@@ -487,8 +487,9 @@ class TestFrontendContract:
         # index.html 에 직접 존재하는 자산(벤더/스타일/빌드 번들).
         assert "styles.css?v=20260614f" in src
         assert "vendor-lightweight-charts.js?v=20260612a" in src
-        # Phase14.4: 운영 컴포넌트 26개는 단일 컴파일 번들 bundle/app.js(+ stom-ui.js)로 로드(런타임 babel 제거).
-        assert "bundle/app.js?v=20260614k" in src
+        # Phase14.4/14.5: 운영 컴포넌트는 단일 번들 bundle/app.js(+stom-ui.js)로 로드.
+        #   ?v= 는 content-hash(자동) — 값은 하드코딩하지 않는다(일관성은 test_p14 가 검증).
+        assert "bundle/app.js?v=" in src
         assert "bundle/stom-ui.js?v=" in src
         # 정의/로드 순서는 app.js 의 "==== X.jsx ====" 마커(build-app.mjs ORDER)에 보존된다.
         app_bundle = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
