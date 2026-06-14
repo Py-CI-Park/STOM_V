@@ -4,18 +4,23 @@ import { dirname, resolve } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Phase14.0 PoC 빌드 설정.
-//   - root: 이 디렉토리(webui-build/). 엔트리는 index.html.
-//   - outDir: ../frontend/poc → FastAPI StaticFiles(frontend, html=True)가 /ui/poc/ 로 자동 서빙.
-//     (백엔드 라우트/마운트 변경 0. app.py:3251 의 재귀 서빙에 얹힌다.)
-//   - base "./": /ui/poc/ 어느 경로에 놓여도 자산을 상대경로로 로드.
-//   - emptyOutDir: PoC 전용 디렉토리이므로 매 빌드 정리(우리가 소유한 frontend/poc/만 대상).
+// Phase14.1 — 정식 빌드 하네스(lib 모드).
+//   - 입력 src/format.mjs → 단일 ES 번들 ../frontend/bundle/stom-ui.js.
+//   - 고정 파일명: index.html이 정적 참조 가능(수동 ?v= 캐시 계약 유지). content-hash 자동화는 14.5.
+//   - 출력 dir = frontend/bundle: .gitignore가 build/·dist/·frontend/{build,dist}/는 무시하지만
+//     bundle/ 은 무시 대상이 아니다 → 산출물 커밋(런타임 npm-free).
+//   - 로드 시 format.mjs의 Object.assign(window,…) 부작용으로 window.fmt* 세팅.
+//     connection.jsx(babel)도 동일 전역을 세팅하므로 양립(babel = 폴백). de-dup은 14.2.
 export default defineConfig({
   root: __dirname,
-  base: "./",
   build: {
-    outDir: resolve(__dirname, "../frontend/poc"),
+    outDir: resolve(__dirname, "../frontend/bundle"),
     emptyOutDir: true,
     sourcemap: false,
+    lib: {
+      entry: resolve(__dirname, "src/format.mjs"),
+      formats: ["es"],
+      fileName: () => "stom-ui.js",
+    },
   },
 });

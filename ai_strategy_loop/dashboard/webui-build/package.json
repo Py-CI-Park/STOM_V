@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "Phase14.0 PoC — Vite 빌드 워크스페이스(served frontend/ 바깥). 산출물은 ../frontend/poc/ 로 커밋.",
+  "description": "Phase14.1 — Vite 빌드 워크스페이스(served frontend/ 바깥). lib 산출물은 ../frontend/bundle/stom-ui.js 로 커밋.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

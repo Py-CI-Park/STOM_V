@@ -103,4 +103,7 @@
 ## 진행 현황
 - ✅ **Phase 12(A 마감 + B 검증)** — PR #50 머지·라이브
 - ✅ **Phase 13(C 분석 기능 강화)** — PR #51 머지·라이브
-- ⏳ **Phase 14(D 기반 현대화)** — 14.0 스파이크부터(위험 낮은 PoC). 핸드오프 문서 참조.
+- ⏳ **Phase 14(D 기반 현대화)** — 진행 중:
+  - ✅ 14.0 스파이크(Vite 결정 + 격리 PoC) — PR #53 머지·라이브. `PHASE14_0_EXECUTION_PLAN.md`
+  - ✅ 14.1 빌드 하네스(lib 번들 `frontend/bundle/stom-ui.js` + index.html 로드, babel 폴백 양립) — `PHASE14_1_BUILD_HARNESS.md`
+  - ⏳ 14.2 리프/유틸 전환(connection.jsx de-dup) → 14.7 정리
