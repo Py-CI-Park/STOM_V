@@ -219,6 +219,30 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
 
+### 사이클 17 (2026-06-13): V3.33 흡수 (V3.32 tail fcc626a5 포함)
+
+- 사용자 선택: "흡수 진행해" (V3.33 신규 발표 흡수)
+- 실행 결과:
+  - wt-3 formal `32991b24` (V3.33, V3.32 tail fcc626a5 포함) — parity 일치
+  - wt-3u pyd-free `3a1c1a93`, 통합 게이트 8/8 PASS (pytest 49, attr critical=0)
+  - V3U 보정 0건 (순수 overlay) — 신규 파일 2개(bstart.py/famous_saying.py)는
+    기존 attr만 참조, 게이트가 market_infos false alarm 확정
+- 발견 신규 결함: 0건
+- lane 버전: V3.32 → **V3.33**, tail 잔여 0
+- 상세: docs/update_log/2026-06-13_v3u_v333_pyd_free_update.md
+- 다음: 3U_C `git merge STOM_Version_3U`로 따라잡기 (사이클 18 cross-link)
+
+### 사이클 16 (2026-06-13): 3U_C lane V3.19~V3.32 흡수 (cross-link)
+
+- 사용자 선택: "A 진행" (3U_C를 V3U lane으로 따라잡기)
+- 실행 위치: wt-3uc (STOM_Version_3U_C) — 3U_C lane 사이클 5
+- 방식: `git merge --no-ff STOM_Version_3U` (merge `32900141`), lane V3.18 → V3.32
+- 결과: 통합 게이트 8/8 PASS (pytest 49) + tests/v3uc 32, 충돌 0, invariant 만족
+- V3U lane 영향: 0건 (3U_C 단방향 흡수, V3U 안전망 그대로 상속)
+- 상세 진실 원천: 3U_C `docs/V3U_C_NEXT_STEPS.md` §5 사이클 5 +
+  `docs/update_log/2026-06-13_v3uc_v319_v332_absorption.md`
+- 명문화: V3공식→V3U는 overlay/E1, V3U→3U_C는 git merge (hop별 메커니즘 구분)
+
 ### 사이클 15 (2026-06-11): 업스트림 신선도 점검 + V3.30~V3.32 흡수 + 2U_C 백포트 검토
 
 - 사용자 선택: "공식 업데이트 업스트림 확인 + version별 업데이트 + 3U 추가 흡수 분석 + 2U_C 반영 상세 검토 커밋 (검토 문서 stom_v/wt-3u 동시 커밋)"

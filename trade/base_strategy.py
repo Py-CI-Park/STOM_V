@@ -11,7 +11,6 @@ from strategy.manager_formula import get_formula_data
 from strategy.analyzer_volume_spike import AnalyzerVolumeSpike
 from utility.static_method.static_etcetera import get_ema_list
 from utility.static_method.static_indicator import get_indicator
-from utility.static_method.builtin_print import set_builtin_print
 from strategy.analyzer_candle_pattern import AnalyzerCandlePattern
 from strategy.analyzer_volume_profile import AnalyzerVolumeProfile
 from strategy.analyzer_microstructure import AnalyzerMicrostructure
@@ -116,7 +115,6 @@ class BaseStrategy(StgGlobalsFunc):
         self.dict_findex['호가총잔량'] = self.dict_findex['매수총잔량']
         self.dict_findex['매도수호가잔량1'] = self.dict_findex['매수잔량1']
 
-        set_builtin_print(self.windowQ)
         self._set_formula_data()
         self._set_strategy_and_blacklist()
         self._main_loop()

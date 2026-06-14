@@ -9,7 +9,7 @@ from traceback import format_exc
 from PyQt5.QtWidgets import QMessageBox
 from typing import Tuple, List, Dict, Any
 from multiprocessing import Pool, cpu_count
-from ui.create_widget.set_text import famous_saying
+from ui.create_widget.famous_saying import famous_saying
 from utility.settings.setting_base import UI_NUM, DB_PATH
 from utility.static_method.static_decorator import thread_decorator
 from utility.static_method.static_datetime import now, dt_ymd, str_ymd, timedelta_day

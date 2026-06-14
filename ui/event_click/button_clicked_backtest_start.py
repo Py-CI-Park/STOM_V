@@ -1,4 +1,32 @@
 
+DICT_BACK_NAME = {
+    '조건 최적화': '최적화OC',
+    '검증 조건 최적화': '최적화OCV',
+    '교차검증 조건 최적화': '최적화OCVC',
+    'GA 최적화': '최적화OG',
+    '검증 GA 최적화': '최적화OGV',
+    '교차검증 GA 최적화': '최적화OGVC',
+    '그리드 최적화 전진분석': '전진분석OR',
+    '그리드 검증 최적화 전진분석': '전진분석ORV',
+    '그리드 교차검증 최적화 전진분석': '전진분석ORVC',
+    '베이지안 최적화 전진분석': '전진분석BR',
+    '베이지안 검증 최적화 전진분석': '전진분석BRV',
+    '베이지안 교차검증 최적화 전진분석': '전진분석BRVC',
+    '그리드 최적화': '최적화O',
+    '그리드 검증 최적화': '최적화OV',
+    '그리드 교차검증 최적화': '최적화OVC',
+    '베이지안 최적화': '최적화B',
+    '베이지안 검증 최적화': '최적화BV',
+    '베이지안 교차검증 최적화': '최적화BVC',
+    '그리드 최적화 테스트': '최적화OT',
+    '그리드 검증 최적화 테스트': '최적화OVT',
+    '그리드 교차검증 최적화 테스트': '최적화OVCT',
+    '베이지안 최적화 테스트': '최적화BT',
+    '베이지안 검증 최적화 테스트': '최적화BVT',
+    '베이지안 교차검증 최적화 테스트': '최적화BVCT'
+}
+
+
 def bebutton_clicked_01(ui):
     """백테스트 엔진 시작 버튼 클릭 이벤트를 처리합니다."""
     from PyQt5.QtWidgets import QMessageBox
@@ -93,10 +121,10 @@ def sdbutton_clicked_02(ui):
     from PyQt5.QtWidgets import QMessageBox, QApplication
     from backtest.optimiz_conditions import OptimizeConditions
     from ui.etcetera.process_alive import backtest_process_alive
-    from ui.event_click.button_clicked_stg_editer import backtest_log
     from backtest.rolling_walk_forward_test import RollingWalkForwardTest
     from backtest.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
     from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_01
+    from ui.event_click.button_clicked_stg_editer_bstart import _backtest_init
     from ui.event_click.button_clicked_backtest_engine import clear_backtestQ, backengine_show
 
     if backtest_process_alive(ui):
@@ -148,24 +176,13 @@ def sdbutton_clicked_02(ui):
                 for q in ui.back_eques:
                     q.put(('백테유형', '백테스트'))
 
-                if ui.market_gubun not in (5, 9):
-                    ui.proc_backtester_bs = Process(
-                        target=BackTest,
-                        args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
-                              ui.back_sques, back_name, ui.dict_set, ui.market_infos, betting, avgtime, startday,
-                              endday, starttime, endtime, buystg, sellstg, ui.back_count, bl, True, False)
-                    )
-                else:
-                    ui.proc_backtester_bs = Process(
-                        target=BackTest,
-                        args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
-                              ui.back_sques, back_name, ui.dict_set, ui.market_infos, betting, avgtime, startday,
-                              endday, starttime, endtime, buystg, sellstg, ui.back_count, bl, True, False)
-                    )
+                ui.proc_backtester_bs = Process(
+                    target=BackTest,
+                    args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                          ui.back_sques, ui.dict_set, ui.market_infos, betting, avgtime, startday,
+                          endday, starttime, endtime, buystg, sellstg, ui.back_count, bl, True, False)
+                )
                 ui.proc_backtester_bs.start()
-                backtest_log(ui)
-                ui.ss_progressBar_01.setValue(0)
-                ui.ssicon_alert = True
 
             elif '조건' in back_name:
                 starttime   = ui.list_slineEdittttt[ui.back_scount].text()
@@ -193,31 +210,21 @@ def sdbutton_clicked_02(ui):
                     bengineeday
                 ))
 
+                proc = Process(
+                    target=OptimizeConditions,
+                    args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                          ui.back_sques, ui.multi, DICT_BACK_NAME[back_name], ui.dict_set, ui.market_infos)
+                )
+
                 if back_name == '조건 최적화':
-                    ui.proc_backtester_oc = Process(
-                        target=OptimizeConditions,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
-                              ui.back_sques, ui.multi, '최적화OC', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_oc = proc
                     ui.proc_backtester_oc.start()
                 elif back_name == '검증 조건 최적화':
-                    ui.proc_backtester_ocv = Process(
-                        target=OptimizeConditions,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
-                              ui.back_sques, ui.multi, '최적화OCV', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_ocv = proc
                     ui.proc_backtester_ocv.start()
                 elif back_name == '교차검증 조건 최적화':
-                    ui.proc_backtester_ocvc = Process(
-                        target=OptimizeConditions,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
-                              ui.back_sques, ui.multi, '최적화OCVC', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_ocvc = proc
                     ui.proc_backtester_ocvc.start()
-
-                backtest_log(ui)
-                ui.ss_progressBar_01.setValue(0)
-                ui.ssicon_alert = True
 
             elif 'GA' in back_name:
                 starttime   = ui.list_slineEdittttt[ui.back_scount].text()
@@ -247,31 +254,21 @@ def sdbutton_clicked_02(ui):
                         optistd, ui.back_count, weeks_train, weeks_valid, weeks_test, benginesday, benginesday
                     ))
 
+                proc = Process(
+                    target=OptimizeGeneticAlgorithm,
+                    args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                          ui.back_sques, ui.multi, DICT_BACK_NAME[back_name], ui.dict_set, ui.market_infos)
+                )
+
                 if back_name == 'GA 최적화':
-                    ui.proc_backtester_og = Process(
-                        target=OptimizeGeneticAlgorithm,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
-                              ui.back_sques, ui.multi, '최적화OG', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_og = proc
                     ui.proc_backtester_og.start()
                 elif back_name == '검증 GA 최적화':
-                    ui.proc_backtester_ogv = Process(
-                        target=OptimizeGeneticAlgorithm,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
-                              ui.back_sques, ui.multi, '최적화OGV', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_ogv = proc
                     ui.proc_backtester_ogv.start()
                 elif back_name == '교차검증 GA 최적화':
-                    ui.proc_backtester_ogvc = Process(
-                        target=OptimizeGeneticAlgorithm,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
-                              ui.back_sques, ui.multi, '최적화OGVC', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_ogvc = proc
                     ui.proc_backtester_ogvc.start()
-
-                backtest_log(ui)
-                ui.ss_progressBar_01.setValue(0)
-                ui.ssicon_alert = True
 
             elif '전진분석' in back_name:
                 startday    = ui.list_sdateEdittttt[ui.back_scount].date().toString('yyyyMMdd')
@@ -310,52 +307,30 @@ def sdbutton_clicked_02(ui):
                         weeks_test, benginesday, bengineeday, optunasampl, optunafixv, optunacount, optunaautos, False
                     ))
 
+                proc = Process(
+                    target=RollingWalkForwardTest,
+                    args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                          ui.back_sques, ui.multi, DICT_BACK_NAME[back_name], ui.dict_set, ui.market_infos)
+                )
+
                 if back_name == '그리드 최적화 전진분석':
-                    ui.proc_backtester_or = Process(
-                        target=RollingWalkForwardTest,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '전진분석OR', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_or = proc
                     ui.proc_backtester_or.start()
                 elif back_name == '그리드 검증 최적화 전진분석':
-                    ui.proc_backtester_orv = Process(
-                        target=RollingWalkForwardTest,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '전진분석ORV', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_orv = proc
                     ui.proc_backtester_orv.start()
                 elif back_name == '그리드 교차검증 최적화 전진분석':
-                    ui.proc_backtester_orvc = Process(
-                        target=RollingWalkForwardTest,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '전진분석ORVC', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_orvc = proc
                     ui.proc_backtester_orvc.start()
                 elif back_name == '베이지안 최적화 전진분석':
-                    ui.proc_backtester_br = Process(
-                        target=RollingWalkForwardTest,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '전진분석BR', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_br = proc
                     ui.proc_backtester_br.start()
                 elif back_name == '베이지안 검증 최적화 전진분석':
-                    ui.proc_backtester_brv = Process(
-                        target=RollingWalkForwardTest,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '전진분석BRV', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_brv = proc
                     ui.proc_backtester_brv.start()
                 elif back_name == '베이지안 교차검증 최적화 전진분석':
-                    ui.proc_backtester_brvc = Process(
-                        target=RollingWalkForwardTest,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '전진분석BRVC', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_brvc = proc
                     ui.proc_backtester_brvc.start()
-
-                backtest_log(ui)
-                ui.ss_progressBar_01.setValue(0)
-                ui.ssicon_alert = True
 
             elif '최적화' in back_name:
                 starttime   = ui.list_slineEdittttt[ui.back_scount].text()
@@ -392,95 +367,50 @@ def sdbutton_clicked_02(ui):
                         optunasampl, optunafixv, optunacount, optunaautos, False, False, False
                     ))
 
+                proc = Process(
+                    target=Optimize,
+                    args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                          ui.back_sques, ui.multi, DICT_BACK_NAME[back_name], ui.dict_set, ui.market_infos)
+                )
+
                 if back_name == '그리드 최적화':
-                    ui.proc_backtester_o = Process(
-                        target=Optimize,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '최적화O', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_o = proc
                     ui.proc_backtester_o.start()
                 elif back_name == '그리드 검증 최적화':
-                    ui.proc_backtester_ov = Process(
-                        target=Optimize,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '최적화OV', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_ov = proc
                     ui.proc_backtester_ov.start()
                 elif back_name == '그리드 교차검증 최적화':
-                    ui.proc_backtester_ovc = Process(
-                        target=Optimize,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '최적화OVC', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_ovc = proc
                     ui.proc_backtester_ovc.start()
                 elif back_name == '베이지안 최적화':
-                    ui.proc_backtester_b = Process(
-                        target=Optimize,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '최적화B', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_b = proc
                     ui.proc_backtester_b.start()
                 elif back_name == '베이지안 검증 최적화':
-                    ui.proc_backtester_bv = Process(
-                        target=Optimize,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '최적화BV', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_bv = proc
                     ui.proc_backtester_bv.start()
                 elif back_name == '베이지안 교차검증 최적화':
-                    ui.proc_backtester_bvc = Process(
-                        target=Optimize,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '최적화BVC', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_bvc = proc
                     ui.proc_backtester_bvc.start()
                 elif back_name == '그리드 최적화 테스트':
-                    ui.proc_backtester_ot = Process(
-                        target=Optimize,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '최적화OT', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_ot = proc
                     ui.proc_backtester_ot.start()
                 elif back_name == '그리드 검증 최적화 테스트':
-                    ui.proc_backtester_ovt = Process(
-                        target=Optimize,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '최적화OVT', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_ovt = proc
                     ui.proc_backtester_ovt.start()
                 elif back_name == '그리드 교차검증 최적화 테스트':
-                    ui.proc_backtester_ovct = Process(
-                        target=Optimize,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '최적화OVCT', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_ovct = proc
                     ui.proc_backtester_ovct.start()
                 elif back_name == '베이지안 최적화 테스트':
-                    ui.proc_backtester_bt = Process(
-                        target=Optimize,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '최적화BT', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_bt = proc
                     ui.proc_backtester_bt.start()
                 elif back_name == '베이지안 검증 최적화 테스트':
-                    ui.proc_backtester_bvt = Process(
-                        target=Optimize,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '최적화BVT', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_bvt = proc
                     ui.proc_backtester_bvt.start()
                 elif back_name == '베이지안 교차검증 최적화 테스트':
-                    ui.proc_backtester_bvct = Process(
-                        target=Optimize,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, ui.multi, '최적화BVCT', ui.dict_set, ui.market_infos)
-                    )
+                    ui.proc_backtester_bvct = proc
                     ui.proc_backtester_bvct.start()
 
-                backtest_log(ui)
-                ui.ss_progressBar_01.setValue(0)
-                ui.ssicon_alert = True
-
+            _backtest_init(ui)
             ui.list_progressBarrr[ui.back_scount].setValue(0)
             ui.back_schedul = True
         else:
@@ -530,7 +460,7 @@ def sdbutton_clicked_05(ui):
     """백테스트 스케줄러 저장 버튼 클릭 이벤트를 처리합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
     from utility.static_method.static_etcetera import send_query_data
 
     schedule_name = ui.sd_dlineEditttt_01.text()

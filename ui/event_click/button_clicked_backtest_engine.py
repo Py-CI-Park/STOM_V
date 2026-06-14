@@ -109,7 +109,6 @@ def backengine_start(ui):
     with ThreadPoolExecutor(max_workers=multi) as executor:
         [executor.submit(create_backengine_process, i) for i in range(multi)]
 
-    dict_info, df_mt = None, None
     try:
         is_tick = ui.dict_set['타임프레임']
         con = sqlite3.connect(ui.market_info['백테디비'][is_tick])
@@ -126,14 +125,11 @@ def backengine_start(ui):
         df_mt.set_index('index', inplace=True)
         con.close()
     except Exception:
-        if ui.market_gubun not in (6, 7, 8) and len(dict_info) < 100:
-            ui.windowQ.put((UI_NUM['백테엔진'], '종목명 테이블이 갱신되지 않았습니다. 수동로그인(Alt + L)을 1회 실행하시오.'))
-        else:
-            ui.windowQ.put((UI_NUM['백테엔진'], '백테디비에 데이터가 존재하지 않습니다. 디비관리창(Alt + D)에서 백테디비를 생성하십시오.'))
+        ui.windowQ.put((UI_NUM['백테엔진'], '백테디비에 데이터가 존재하지 않습니다. 디비관리창(Alt + D)에서 백테디비를 생성하십시오.'))
         backtest_engine_kill(ui)
         return
 
-    if df_mt is None or df_mt.empty:
+    if df_mt.empty:
         ui.windowQ.put((UI_NUM['백테엔진'], '시작 또는 종료일자가 잘못 선택되었거나 해당 일자에 데이터가 존재하지 않습니다.'))
         backtest_engine_kill(ui)
         return
@@ -157,12 +153,12 @@ def backengine_start(ui):
         code_days[code] = {day for day, codes in day_codes.items() if code in codes}
 
     if divid_mode == '종목코드별 분류' and len(code_set) < multi:
-        ui.windowQ.put((UI_NUM['백테엔진'], '선택한 일자의 종목의 개수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
+        ui.windowQ.put((UI_NUM['백테엔진'], '선택한 일자의 종목의 개수가 멀티수보다 작습니다.'))
         backtest_engine_kill(ui)
         return
 
     if divid_mode == '일자별 분류' and len(day_list) < multi:
-        ui.windowQ.put((UI_NUM['백테엔진'], '선택한 일자의 수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
+        ui.windowQ.put((UI_NUM['백테엔진'], '선택한 일자의 수가 멀티수보다 작습니다.'))
         backtest_engine_kill(ui)
         return
 
@@ -172,7 +168,7 @@ def backengine_start(ui):
         return
 
     if divid_mode == '한종목 로딩' and len(code_days[one_code]) < multi:
-        ui.windowQ.put((UI_NUM['백테엔진'], f'{one_name} 선택한 종목의 일자의 수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
+        ui.windowQ.put((UI_NUM['백테엔진'], f'{one_name} 선택한 종목의 일자의 수가 멀티수보다 작습니다.'))
         backtest_engine_kill(ui)
         return
 
@@ -181,10 +177,8 @@ def backengine_start(ui):
     ui.windowQ.put((UI_NUM['백테엔진'], '거래대금순위 및 종목코드 추출 완료'))
 
     log_gubun = divid_mode.split()[0]
-    if log_gubun == '한종목':
-        log_gubun = f'{log_gubun} 일자별'
-
     ui.windowQ.put((UI_NUM['백테엔진'], f'{log_gubun} 데이터 로딩 시작'))
+
     data_list = code_set if log_gubun == '종목코드별' else (day_list if log_gubun == '일자별' else code_days[one_code])
     data_lists = []
     for i in range(multi):

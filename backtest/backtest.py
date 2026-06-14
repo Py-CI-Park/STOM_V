@@ -15,8 +15,8 @@ from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, UI_NUM, COLU
 class BackTest:
     """백테스트를 실행하는 클래스입니다.
     전략을 컴파일하고 데이터를 로드하여 백테스트를 실행합니다."""
-    def __init__(self, sc, wq, sq, tq, lq, teleQ, beq_list, bstq_list, backname, dict_set, market_infos, betting,
-                 avgtime, startday, endday, starttime, endtime, buystg_name, sellstg_name, back_count, blacklist,
+    def __init__(self, sc, wq, sq, tq, lq, teleQ, beq_list, bstq_list, dict_set, market_infos, betting, avgtime,
+                 startday, endday, starttime, endtime, buystg_name, sellstg_name, back_count, blacklist,
                  schedul, back_club):
         self.shared_cnt   = sc
         self.wq           = wq
@@ -26,10 +26,10 @@ class BackTest:
         self.teleQ        = teleQ
         self.beq_list     = beq_list
         self.bstq_list    = bstq_list
-        self.backname     = backname
         self.dict_set     = dict_set
         self.market_gubun = market_infos[0]
         self.market_info  = market_infos[1]
+        self.backname     = '백테스트'
 
         if self.market_gubun in (1, 2, 3, 5):
             self.betting  = float(betting) * 1000000
@@ -238,14 +238,14 @@ class BackTest:
                     sell_vars = f'{sell_vars}, {text}'
 
             self.wq.put((UI_NUM['백테스트'], '결과 그래프 생성 중 ...'))
-            plot_show('백테스트', self.is_tick, self.teleQ, df_tsg.copy(), df_bct, self.market_gubun, seed, mdd,
+            plot_show(self.backname, self.is_tick, self.teleQ, df_tsg.copy(), df_bct, self.market_gubun, seed, mdd,
                       self.startday, self.endday, self.starttime, self.endtime, None, self.backname, back_text,
                       label_text + bootstrap_text, save_file_name, self.schedul, False,
                       buy_vars=buy_vars, sell_vars=sell_vars)
         else:
             if not self.dict_set['그래프저장하지않기']:
                 self.wq.put((UI_NUM['백테스트'], '결과 그래프 생성 중 ...'))
-                plot_show('백테스트', self.is_tick, self.teleQ, df_tsg.copy(), df_bct, self.market_gubun, seed, mdd,
+                plot_show(self.backname, self.is_tick, self.teleQ, df_tsg.copy(), df_bct, self.market_gubun, seed, mdd,
                           self.startday, self.endday, self.starttime, self.endtime, None, self.backname, back_text,
                           label_text + bootstrap_text, save_file_name, self.schedul, self.dict_set['그래프띄우지않기'])
 
