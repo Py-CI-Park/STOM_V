@@ -33,6 +33,24 @@
 
   --sans: "IBM Plex Sans", "Malgun Gothic", "맑은 고딕", ui-sans-serif, system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "JetBrains Mono", "Malgun Gothic", "맑은 고딕", monospace;
+
+  /* P0(2026-06-14) 디자인 토큰 스캐폴딩 — 간격/모서리/타이포 스케일. ENABLING·PIXEL-NEUTRAL:
+     가산 전용(현행 어떤 호출부도 아직 참조하지 않음 → 픽셀 변화 0). 호출부 치환은 P6.
+     각 값은 현행 de-facto 리터럴과 byte-동일(px↔px, rem/em 변환 없음). 간격/모서리/폰트는
+     색이 아니라 테마 무관 → :root 에 1회 정의하면 [data-theme="light"] 로 캐스케이드된다.
+     --fs-prose:14px 만 한국어 가독 '목표값'(현행 미참조 → P6 적용 전까지 픽셀 불변). */
+  --space-1: 4px;    /* gap:4px(14회) */
+  --space-2: 6px;    /* gap:6px(13회) */
+  --space-3: 8px;    /* gap:8px(29회 — 최빈) */
+  --space-4: 10px;   /* gap:10px(12회) */
+  --space-5: 14px;   /* gap:14px(5회) */
+  --space-6: 16px;   /* gap:16px(4회) */
+  --radius-sm: 4px;  /* border-radius:4px(15회) */
+  --radius-md: 6px;  /* border-radius:6px(14회) */
+  --radius-lg: 10px; /* border-radius:10px(3회) */
+  --fs-prose: 14px;  /* 본문 가독 목표(P6 적용) — 현행 미참조 */
+  --fs-dense: 12px;  /* 밀집 표/수치(현행 존재값) */
+  --fs-label: 11px;  /* 라벨/캡션(현행 존재값) */
 }
 
 [data-theme="light"] {
