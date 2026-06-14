@@ -9,8 +9,8 @@
 
   --ink-0: #e8edf2;         /* primary text */
   --ink-1: #a8b3c0;         /* secondary */
-  --ink-2: #6a7686;         /* tertiary */
-  --ink-3: #45505e;         /* faint */
+  --ink-2: #778496;         /* tertiary — P6(2026-06-15) WCAG AA: #6a7686→#778496, 모든 bg에서 정상텍스트 ≥4.5:1 */
+  --ink-3: #45505e;         /* faint — 장식/대형(AA-large ≥3:1)용, 정상 본문 미사용 */
 
   --teal:    #4cd6b3;       /* gains / success */
   --teal-dim:#1f6e5d;
@@ -63,8 +63,8 @@
 
   --ink-0: #0e131a;
   --ink-1: #3c4655;
-  --ink-2: #6a7686;
-  --ink-3: #a4adba;
+  --ink-2: #5f6a79;         /* P6(2026-06-15) WCAG AA: #6a7686→#5f6a79, 모든 bg에서 정상텍스트 ≥4.5:1 */
+  --ink-3: #a4adba;         /* faint — 장식/대형(AA-large ≥3:1)용, 정상 본문 미사용 */
 
   --teal:    #0d9b78;
   --teal-dim:#a9e7d4;
@@ -93,7 +93,7 @@ body {
   background: var(--bg-0);
   color: var(--ink-0);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 14px;            /* P6(2026-06-15): prose 가독 14px(=--fs-prose). 명시 폰트크기 룰은 불변 → 밀집 표면 유지 */
   line-height: 1.45;
   letter-spacing: 0.005em;
   -webkit-font-smoothing: antialiased;
@@ -110,7 +110,10 @@ body {
 }
 
 /* Typography */
-.mono { font-family: var(--mono); font-feature-settings: "tnum" 1, "zero" 1; }
+/* P6(2026-06-15): body 14px 승격 시 명시크기 없는 bare .mono 수치/코드 셀이 14px로 잘못 커지는 것을 방지
+   (밀집 예외목록 #2 .mono 수치셀 → --fs-dense 12px). 인라인 fontSize 및 다른 클래스의 명시 폰트크기
+   (.stat-value/.summary-val/.input/.tag-slim 등, 소스순서상 후순위라 우선)는 그대로 보존된다. */
+.mono { font-family: var(--mono); font-feature-settings: "tnum" 1, "zero" 1; font-size: var(--fs-dense); }
 .tnum { font-variant-numeric: tabular-nums; }
 h1,h2,h3,h4 { margin: 0; font-weight: 500; letter-spacing: -0.01em; }
 
@@ -119,7 +122,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 input, select, textarea { font: inherit; color: inherit; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--line-1); border-radius: 6px; border: 2px solid var(--bg-0); }
+::-webkit-scrollbar-thumb { background: var(--line-1); border-radius: var(--radius-md); border: 2px solid var(--bg-0); }
 ::-webkit-scrollbar-thumb:hover { background: var(--line-2); }
 
 /* Layout primitives */
@@ -141,16 +144,16 @@ input, select, textarea { font: inherit; color: inherit; }
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-1);
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: var(--space-3);
 }
 .panel-hd-title .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); }
 .panel-bd { padding: 14px; }
 
 /* Badge */
 .badge {
-  display: inline-flex; align-items: center; gap: 6px;
+  display: inline-flex; align-items: center; gap: var(--space-2);
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 11px;
   font-family: var(--mono);
   letter-spacing: 0.04em;
@@ -169,7 +172,7 @@ input, select, textarea { font: inherit; color: inherit; }
 
 /* Buttons */
 .btn {
-  display: inline-flex; align-items: center; gap: 8px;
+  display: inline-flex; align-items: center; gap: var(--space-3);
   padding: 7px 12px;
   border-radius: 5px;
   border: 1px solid var(--line-2);
@@ -208,7 +211,7 @@ input, select, textarea { font: inherit; color: inherit; }
 .btn.sm { padding: 4px 8px; font-size: 11px; }
 
 /* Form controls */
-.field { display: flex; flex-direction: column; gap: 4px; }
+.field { display: flex; flex-direction: column; gap: var(--space-1); }
 .field label {
   font-size: 11px;
   color: var(--ink-1);
@@ -334,7 +337,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   max-height: calc(100vh - 64px);
   background: var(--bg-1);
   border: 1px solid var(--line-2);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   display: flex; flex-direction: column;
   box-shadow: 0 30px 60px rgba(0,0,0,0.5);
   overflow: hidden;
@@ -351,7 +354,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   padding: 14px 20px;
   border-top: 1px solid var(--line-1);
   background: var(--bg-2);
-  display: flex; justify-content: flex-end; gap: 8px;
+  display: flex; justify-content: flex-end; gap: var(--space-3);
 }
 
 /* Group header in form */
@@ -366,7 +369,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   margin-bottom: 10px;
 }
 .group + .group { margin-top: 22px; }
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
 @media (max-width: 560px) { .field-row { grid-template-columns: 1fr; } }
 
 /* Connection toolbar */
@@ -375,7 +378,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   font-size: 11px;
   background: var(--bg-0);
   border: 1px solid var(--line-1);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 4px 7px;
   color: var(--ink-1);
   width: 180px;
@@ -401,7 +404,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 
 /* Tag pills */
 .pill {
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: var(--space-1);
   padding: 2px 7px;
   border-radius: 3px;
   font-size: 10.5px;
@@ -416,7 +419,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .pill.error { color: var(--red); border-color: rgba(255,107,107,0.28); background: rgba(255,107,107,0.06); }
 
 /* Gauge */
-.gauge { position: relative; height: 8px; background: var(--bg-0); border-radius: 4px; overflow: hidden; border: 1px solid var(--line-1); }
+.gauge { position: relative; height: 8px; background: var(--bg-0); border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--line-1); }
 .gauge-fill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--teal), var(--blue)); transition: width .5s ease; }
 .gauge-fill.warn { background: linear-gradient(90deg, var(--amber), var(--red)); }
 
@@ -441,17 +444,17 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .grid-main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 14px;
+  gap: var(--space-5);
 }
 @media (max-width: 1180px) { .grid-main { grid-template-columns: 1fr; } }
 
-.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
 @media (max-width: 900px) { .row-2 { grid-template-columns: 1fr; } }
 
 /* Empty state */
 .empty {
   border: 1px dashed var(--line-2);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 40px 24px;
   text-align: center;
   color: var(--ink-2);
@@ -465,7 +468,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   content: attr(data-tip);
   position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
   background: var(--bg-3); color: var(--ink-0);
-  padding: 5px 8px; border-radius: 4px;
+  padding: 5px 8px; border-radius: var(--radius-sm);
   font-size: 11px; white-space: nowrap;
   border: 1px solid var(--line-2);
   z-index: 5;
@@ -475,10 +478,12 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 /* ====== Engine status panel ====== */
 .engine-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* P6(2026-06-15): repeat(4,1fr) → auto-fit minmax(180px,1fr). 중간폭에서 셀이 과도하게 좁아지지 않고
+     자연스럽게 줄바꿈(밀집 깨짐 없음). 좁은폭은 기존 @media(max-width:700px) 2열 폴백 유지. */
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1px;
   background: var(--line-1);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid var(--line-1);
 }
@@ -486,21 +491,21 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .engine-cell {
   background: var(--bg-1);
   padding: 11px 12px;
-  display: flex; flex-direction: column; gap: 4px;
+  display: flex; flex-direction: column; gap: var(--space-1);
 }
 .engine-cell .lbl {
   font-size: 10px;
   letter-spacing: .12em;
   text-transform: uppercase;
   color: var(--ink-2);
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: var(--space-2);
 }
 .engine-cell .val {
   font-family: var(--mono);
   font-size: 17px;
   color: var(--ink-0);
   font-feature-settings: "tnum" 1;
-  display: flex; align-items: baseline; gap: 4px;
+  display: flex; align-items: baseline; gap: var(--space-1);
 }
 .engine-cell .val .unit { font-size: 11px; color: var(--ink-2); }
 .engine-cell .sub {
@@ -528,7 +533,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 
 /* Workers row */
 .workers-row {
-  display: flex; gap: 4px; flex-wrap: wrap;
+  display: flex; gap: var(--space-1); flex-wrap: wrap;
   margin-top: 4px;
 }
 .worker-pip {
@@ -607,7 +612,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   font-size: 11px;
   color: var(--ink-2);
   border-radius: 3px;
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: var(--space-1);
 }
 .theme-toggle button.active {
   background: var(--bg-3);
@@ -628,7 +633,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 
 /* Slim tag */
 .tag-slim {
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: var(--space-1);
   padding: 1px 6px;
   border-radius: 3px;
   font-size: 10px;
@@ -644,9 +649,9 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   padding: 12px;
   border: 1px solid rgba(255,107,107,0.32);
   background: rgba(255,107,107,0.06);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   color: #ffd0d0;
-  font-size: 12px;
+  font-size: var(--fs-prose);   /* P6(2026-06-15): 경고 배너/모달 산문 → prose 14px(밀집 예외 아님, 문장형 안내) */
   line-height: 1.55;
 }
 [data-theme="light"] .alert-danger {
@@ -666,7 +671,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   position: relative;
 }
 .phase-step {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: var(--space-4);
   padding: 6px 8px;
   position: relative;
   flex-shrink: 0;
@@ -713,7 +718,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .phase-active-pulse {
   position: absolute;
   left: -2px; top: -2px; right: -2px; bottom: -2px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   pointer-events: none;
 }
 .phase-connector {
@@ -742,7 +747,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   padding: 4px 10px;
   background: var(--bg-2);
   border: 1px solid var(--line-1);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   white-space: nowrap;
 }
 
@@ -755,7 +760,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   padding: 8px 10px;
   background: var(--bg-2);
   border: 1px solid var(--line-1);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   max-height: 200px;
   overflow-y: auto;
   font-family: var(--mono);
@@ -780,7 +785,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .gen-side {
   padding: 14px 16px;
   border-right: 1px solid var(--line-1);
-  display: flex; flex-direction: column; gap: 16px;
+  display: flex; flex-direction: column; gap: var(--space-6);
 }
 @media (max-width: 900px) {
   .gen-side { border-right: none; border-bottom: 1px solid var(--line-1); }
@@ -796,20 +801,20 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .side-kv {
   display: grid;
   grid-template-columns: 70px 1fr;
-  gap: 4px 10px;
+  gap: var(--space-1) var(--space-4);
   font-size: 11.5px;
 }
 .side-kv .k { color: var(--ink-3); font-family: var(--mono); }
 .side-kv .v { color: var(--ink-0); }
 .side-list {
   margin: 0; padding: 0; list-style: none;
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex; flex-direction: column; gap: var(--space-2);
 }
 .side-list li {
   padding: 6px 8px;
   background: var(--bg-0);
   border: 1px solid var(--line-1);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: var(--ink-1);
   line-height: 1.5;
 }
@@ -818,7 +823,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   padding: 6px 0;
 }
 .gen-prog-row {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: var(--space-3);
   padding: 4px 0;
 }
 .gen-prog-dot {
@@ -836,7 +841,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   display: flex; flex-direction: column; min-width: 0;
 }
 .gen-code-header {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: var(--space-3);
   padding: 9px 14px;
   background: var(--bg-2);
   border-bottom: 1px solid var(--line-1);
@@ -858,7 +863,8 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 /* Backtesting view */
 .bt-view { display: flex; flex-direction: column; }
 .bt-summary-row {
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  /* P6(2026-06-15): repeat(4,1fr) → auto-fit minmax(150px,1fr). 좁은폭 @media(max-width:700px) 2열 폴백 유지. */
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1px;
   background: var(--line-1);
   border-bottom: 1px solid var(--line-1);
@@ -886,9 +892,9 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 }
 
 /* Scoring view */
-.score-view { padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }
+.score-view { padding: 14px 16px; display: flex; flex-direction: column; gap: var(--space-6); }
 .score-formula {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: var(--space-2);
   padding: 10px 12px;
   background: var(--bg-0);
   border: 1px solid var(--line-1);
@@ -896,7 +902,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   font-size: 12px;
 }
 .score-metrics {
-  display: flex; flex-direction: column; gap: 10px;
+  display: flex; flex-direction: column; gap: var(--space-4);
 }
 .score-metric {
   padding: 8px 10px;
@@ -918,7 +924,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   background: var(--bg-2); padding: 1px 6px; border-radius: 3px;
 }
 .metric-bar-wrap {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: var(--space-4);
 }
 .metric-bar {
   flex: 1;
@@ -945,7 +951,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   padding: 12px 14px;
   background: linear-gradient(180deg, rgba(76,214,179,0.05), transparent);
   border: 1px solid var(--line-2);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 .composite-label {
   font-size: 11px;
@@ -961,10 +967,10 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 /* Autopsy view */
 .autopsy-view {
   padding: 14px 16px;
-  display: flex; flex-direction: column; gap: 10px;
+  display: flex; flex-direction: column; gap: var(--space-4);
 }
 .autopsy-header {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: var(--space-2);
   padding-bottom: 6px;
   border-bottom: 1px dashed var(--line-1);
 }
@@ -990,12 +996,12 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .research-lab-shell {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
 }
 .research-tabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
+  gap: var(--space-2);
 }
 .research-tab {
   min-height: 30px;
@@ -1015,13 +1021,13 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .research-lab-panel {
   border: 1px solid var(--line-1);
   background: var(--bg-1);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 12px;
 }
 .research-glossary-panel .panel-bd {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-4);
 }
 .glossary-proof-note {
   color: var(--amber);
@@ -1032,12 +1038,12 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .glossary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 8px;
+  gap: var(--space-3);
 }
 .glossary-card {
   border: 1px solid var(--line-1);
   background: var(--bg-0);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 9px 10px;
   min-height: 82px;
 }
@@ -1057,13 +1063,13 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-3);
   margin-bottom: 10px;
 }
 .research-controls label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
   color: var(--ink-2);
   font-family: var(--mono);
   font-size: 10.5px;
@@ -1072,7 +1078,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   border: 1px solid var(--line-1);
   background: var(--bg-0);
   color: var(--ink-0);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 4px 6px;
   font-family: var(--mono);
   font-size: 11px;
@@ -1080,7 +1086,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .research-kpis {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-3);
   color: var(--ink-3);
   font-family: var(--mono);
   font-size: 10.5px;
@@ -1096,7 +1102,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .research-heatmap {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-  gap: 6px;
+  gap: var(--space-2);
 }
 .research-cell {
   min-height: 62px;
@@ -1133,7 +1139,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .research-combo-row {
   display: grid;
   grid-template-columns: minmax(70px, 1fr) 12px minmax(70px, 1fr) 56px 86px;
-  gap: 6px;
+  gap: var(--space-2);
   align-items: center;
   border-bottom: 1px solid var(--line-1);
   padding: 5px 0;
@@ -1144,7 +1150,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .strategy-inspector {
   margin-top: 10px;
   border: 1px solid var(--line-1);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--bg-1);
   overflow: hidden;
 }
@@ -1171,13 +1177,13 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
 }
 .strategy-kpis,
 .strategy-prompt-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-3);
   color: var(--ink-2);
   font-family: var(--mono);
   font-size: 10.5px;
@@ -1237,13 +1243,13 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .run-compare-shell {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
 }
 .run-compare-kpis,
 .run-compare-gen {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-3);
   color: var(--ink-2);
   font-family: var(--mono);
   font-size: 10.5px;
@@ -1288,7 +1294,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .engine-log-strip {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-3);
   margin: 8px 0 10px;
   color: var(--ink-2);
   font-family: var(--mono);
@@ -1301,7 +1307,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .engine-log-strip span {
   border: 1px solid var(--line-1);
   background: var(--bg-0);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 3px 6px;
 }
 .engine-summary-strip b,
@@ -1322,12 +1328,12 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .research-wiki-layout {
   display: grid;
   grid-template-columns: minmax(160px, 0.9fr) minmax(0, 1.6fr);
-  gap: 10px;
+  gap: var(--space-4);
 }
 .research-wiki-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
   max-height: 520px;
   overflow: auto;
 }
@@ -1356,7 +1362,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   align-items: flex-start;
   text-align: left;
   padding: 5px 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 .research-wiki-category button.active {
@@ -1418,13 +1424,13 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .ai-context-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
 }
 .ai-context-kpis,
 .ai-context-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-3);
   color: var(--ink-2);
   font-family: var(--mono);
   font-size: 10.5px;
@@ -1435,7 +1441,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .ai-context-actions strong {
   border: 1px solid var(--line-1);
   background: var(--bg-0);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 3px 6px;
 }
 .ai-context-actions strong {
@@ -1444,12 +1450,12 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .ai-context-pack {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2);
 }
 .ai-context-pack-head {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-3);
   align-items: center;
   color: var(--ink-2);
   font-family: var(--mono);
@@ -1458,7 +1464,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .ai-context-pack-head strong {
   border: 1px solid var(--line-1);
   background: var(--bg-0);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 3px 6px;
   color: var(--ink-0);
 }
@@ -1530,7 +1536,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .sim-bookmark {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-3);
   padding: 4px 7px;
   border-radius: 5px;
   border: 1px solid var(--line-1);
@@ -1571,11 +1577,11 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   position: relative;
   background: var(--bg-1);
   padding: 12px 14px;
-  display: flex; flex-direction: column; gap: 4px;
+  display: flex; flex-direction: column; gap: var(--space-1);
   overflow: hidden;
 }
 .bt-metric-card .summary-val { transition: color .25s ease; }
-.bt-gauge-wrap { display: flex; align-items: center; gap: 10px; }
+.bt-gauge-wrap { display: flex; align-items: center; gap: var(--space-4); }
 .bt-gauge-num { display: flex; flex-direction: column; gap: 2px; }
 .bt-spark { display: block; width: 100%; height: auto; }
 
@@ -1592,8 +1598,8 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 /* 브러시 선택 구간 하이라이트(SVG rect 위 오버레이). */
 .bt-brush-band { fill: rgba(76,214,179,0.12); stroke: var(--teal-dim); stroke-width: 1; stroke-dasharray: 3 3; }
 .bt-range-bar {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  padding: 7px 10px; border-radius: 6px;
+  display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;
+  padding: 7px 10px; border-radius: var(--radius-md);
   border: 1px solid var(--teal-dim); background: rgba(76,214,179,0.06);
 }
 
@@ -1602,7 +1608,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .bt-quadrant-label { font-size: 9.5px; fill: var(--ink-3); font-family: var(--mono); }
 
 /* 매도조건 가로 막대 미니 패널. */
-.bt-exit-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.bt-exit-row { display: flex; align-items: center; gap: var(--space-3); padding: 4px 0; }
 .bt-exit-track { position: relative; flex: 1; height: 14px; border-radius: 3px; background: var(--bg-0); border: 1px solid var(--line-1); overflow: hidden; }
 .bt-exit-fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 3px; }
 
@@ -1624,7 +1630,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .stom-tabnav {
   display: flex;
   align-items: stretch;
-  gap: 6px;
+  gap: var(--space-2);
   margin: 14px 0 18px;
   border-bottom: 1px solid var(--line-2);
   padding-bottom: 0;
@@ -1633,7 +1639,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   appearance: none;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-3);
   min-height: 48px;
   padding: 0 22px;
   font-family: var(--mono);
@@ -1713,7 +1719,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
      섹션 경계를 분명히 한다(장식 요소, 대비 규칙 무관). 패널/동작 변경 없음. */
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-3);
 }
 .stom-section-label::before {
   content: "";
@@ -1744,7 +1750,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .evo-group:not([open]) > .evo-group-summary::after { transform: rotate(-90deg); }
 .evo-group-summary:focus-visible { outline: 2px solid var(--teal-dim); outline-offset: 2px; }
 .evo-group-body {
-  display: flex; flex-direction: column; gap: 14px;
+  display: flex; flex-direction: column; gap: var(--space-5);
   margin-top: 14px;            /* summary 와 첫 패널 사이 기존 리듬 근사 */
 }
 
@@ -1777,12 +1783,12 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 
 /* E1 — 리서치랩 상단 상태 배지 바(평문 → 라벨+값+툴팁). */
 .research-statusbar {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2);
   margin: 4px 0 8px; font-size: 11px;
 }
 .research-badge {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 8px; border-radius: 6px;
+  padding: 3px 8px; border-radius: var(--radius-md);
   background: var(--bg-0); border: 1px solid var(--line-1);
   color: var(--ink-1); cursor: help; white-space: nowrap;
 }
@@ -1803,16 +1809,16 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 }
 .rp-topbar {
   position: sticky; top: 0; z-index: 20;
-  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap;
   padding: 12px 18px; background: var(--bg-1);
   border-bottom: 1px solid var(--line-2);
 }
-.rp-topbar-title { display: flex; align-items: center; gap: 10px; }
+.rp-topbar-title { display: flex; align-items: center; gap: var(--space-4); }
 .rp-topbar-mark { font-size: 22px; }
 .rp-topbar-h { font-size: 15px; font-weight: 600; letter-spacing: .01em; }
 .rp-topbar-sub { font-size: 11px; color: var(--ink-3); }
-.rp-topbar-controls { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.rp-ctl { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-2); }
+.rp-topbar-controls { margin-left: auto; display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+.rp-ctl { display: inline-flex; align-items: center; gap: var(--space-2); font-size: 11px; color: var(--ink-2); }
 .rp-select {
   font-size: 11px; background: var(--bg-0); color: var(--ink-0);
   border: 1px solid var(--line-2); border-radius: 5px; padding: 4px 7px; max-width: 280px;
@@ -1824,7 +1830,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 
 /* 분석 그리드 — 풀 뷰포트 폭 활용(대형 1열, 초광폭에서 2열). */
 .rp-grid {
-  display: grid; grid-template-columns: 1fr; gap: 16px;
+  display: grid; grid-template-columns: 1fr; gap: var(--space-6);
   padding: 16px 18px 40px;
 }
 @media (min-width: 1700px) {
@@ -1835,10 +1841,10 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 
 .rp-card {
   background: var(--bg-1); border: 1px solid var(--line-1);
-  border-radius: 10px; overflow: hidden;
+  border-radius: var(--radius-lg); overflow: hidden;
 }
 .rp-card-hd {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: var(--space-3);
   padding: 10px 14px; border-bottom: 1px solid var(--line-1);
   background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
 }
@@ -1858,17 +1864,17 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 
 /* 변수 칩 */
 .rp-chip {
-  font-size: 10px; padding: 2px 6px; border-radius: 4px;
-  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; padding: 2px 6px; border-radius: var(--radius-sm);
+  display: inline-flex; align-items: center; gap: var(--space-1);
 }
 
 /* 조건식 뷰어 */
-.rp-code-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.rp-code-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
 @media (max-width: 900px) { .rp-code-grid { grid-template-columns: 1fr; } }
 .rp-code-label { font-size: 11px; font-weight: 600; margin-bottom: 4px; font-family: var(--mono); }
 .rp-code-block {
   font-family: var(--mono); font-size: 11px; line-height: 1.5;
-  background: var(--bg-0); border: 1px solid var(--line-1); border-radius: 6px;
+  background: var(--bg-0); border: 1px solid var(--line-1); border-radius: var(--radius-md);
   padding: 8px 10px; margin: 0 0 6px; white-space: pre-wrap; word-break: break-word;
   max-height: 240px; overflow: auto; color: var(--ink-1);
 }
@@ -1886,7 +1892,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .rp-row-open td { background: rgba(106,166,255,0.06); }
 .rp-row-detail td { background: var(--bg-0); padding: 12px 14px; }
 .rp-kind {
-  display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 9.5px; font-weight: 600;
+  display: inline-block; padding: 1px 6px; border-radius: var(--radius-sm); font-size: 9.5px; font-weight: 600;
 }
 .rp-kind-ai { color: var(--violet); border: 1px solid rgba(165,148,255,0.4); }
 .rp-kind-seed { color: var(--blue); border: 1px solid rgba(106,166,255,0.4); }
@@ -1909,28 +1915,28 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .rp-heatmap-cell small { font-size: 8.5px; opacity: 0.7; }
 
 /* Run Compare 추가 바 */
-.rp-compare-add { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.rp-compare-add { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: 10px; }
 .rp-compare-sep { color: var(--ink-3); font-size: 11px; }
-.rp-compare-genlbl { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--ink-2); }
+.rp-compare-genlbl { display: inline-flex; align-items: center; gap: var(--space-1); font-size: 11px; color: var(--ink-2); }
 
 /* 히스토리(E9) */
-.rp-history-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-.rp-history-grid { display: grid; grid-template-columns: 220px 1fr; gap: 14px; }
+.rp-history-bar { display: flex; align-items: center; gap: var(--space-4); margin-bottom: 10px; flex-wrap: wrap; }
+.rp-history-grid { display: grid; grid-template-columns: 220px 1fr; gap: var(--space-5); }
 @media (max-width: 1100px) { .rp-history-grid { grid-template-columns: 1fr; } }
-.rp-history-genlist { display: flex; flex-direction: column; gap: 4px; max-height: 520px; overflow: auto; }
+.rp-history-genlist { display: flex; flex-direction: column; gap: var(--space-1); max-height: 520px; overflow: auto; }
 .rp-mini-label {
   font-size: 10px; color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase;
   font-family: var(--mono); margin-bottom: 4px;
 }
 .rp-gen-btn {
-  display: flex; align-items: center; gap: 8px; justify-content: space-between;
-  padding: 6px 8px; font-size: 11px; border-radius: 6px; cursor: pointer;
+  display: flex; align-items: center; gap: var(--space-3); justify-content: space-between;
+  padding: 6px 8px; font-size: 11px; border-radius: var(--radius-md); cursor: pointer;
   background: var(--bg-0); border: 1px solid var(--line-1); color: var(--ink-1);
 }
 .rp-gen-btn:hover { border-color: var(--line-2); }
 .rp-gen-btn.active { border-color: var(--blue); background: rgba(106,166,255,0.12); }
 .rp-history-detail { min-width: 0; }
-.rp-history-actions { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.rp-history-actions { display: flex; align-items: center; gap: var(--space-3); margin-bottom: 8px; }
 .rp-history-charts { margin-top: 12px; }
 
 /* E10 — 프로세스 플로우 오버레이 */
@@ -1945,18 +1951,18 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   box-shadow: 0 24px 60px rgba(0,0,0,0.5);
 }
 .rp-overlay-hd {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: var(--space-4);
   padding: 14px 18px; border-bottom: 1px solid var(--line-1);
   position: sticky; top: 0; background: var(--bg-1); z-index: 2;
 }
 .rp-flow {
-  display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap;
+  display: flex; align-items: stretch; gap: var(--space-3); flex-wrap: wrap;
   padding: 20px 18px; justify-content: center;
 }
 .rp-flow-node {
   flex: 1 1 220px; max-width: 280px; min-width: 200px;
   background: var(--bg-0); border: 1px solid var(--line-1); border-radius: 12px;
-  padding: 14px; display: flex; flex-direction: column; gap: 8px;
+  padding: 14px; display: flex; flex-direction: column; gap: var(--space-3);
   transition: border-color .25s ease, box-shadow .25s ease;
 }
 .rp-flow-active {
@@ -1968,7 +1974,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .rp-flow-pulse { color: var(--teal); font-size: 10.5px; animation: rpPulse 1.4s ease-in-out infinite; }
 @keyframes rpPulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
 .rp-flow-desc { font-size: 11.5px; line-height: 1.55; color: var(--ink-2); }
-.rp-flow-terms { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
+.rp-flow-terms { display: flex; flex-direction: column; gap: var(--space-1); margin-top: 2px; }
 .rp-flow-term { font-size: 10.5px; color: var(--ink-3); line-height: 1.4; }
 .rp-flow-term b { color: var(--blue); }
 .rp-flow-arrow {
@@ -1979,13 +1985,13 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 
 /* ── Phase6-E1 공통 페이지 네비 버튼 그룹 (2026-06-13, 메인 통합) ── */
 .stom-pagenav {
-  display: inline-flex; gap: 4px; margin-left: 14px; padding: 3px;
+  display: inline-flex; gap: var(--space-1); margin-left: 14px; padding: 3px;
   border: 1px solid var(--line-2); border-radius: 9px;
   background: rgba(255,255,255,0.02);
 }
 .stom-pagenav-item {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 5px 11px; border-radius: 6px; font-size: 12px;
+  padding: 5px 11px; border-radius: var(--radius-md); font-size: 12px;
   color: var(--ink-2); text-decoration: none; cursor: pointer;
   border: 1px solid transparent; white-space: nowrap;
 }
@@ -2002,14 +2008,14 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 
 /* 리소스/진척 게이지 바 (엔진 메트릭 — 텍스트 대신 그래픽). */
 .stom-gauge {
-  position: relative; height: 8px; border-radius: 4px;
+  position: relative; height: 8px; border-radius: var(--radius-sm);
   background: var(--bg-3); overflow: hidden; min-width: 60px;
 }
-.stom-gauge-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px;
+.stom-gauge-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--radius-sm);
   background: var(--teal); transition: width .3s ease, background .3s ease; }
 .stom-gauge-fill.warn { background: var(--amber); }
 .stom-gauge-fill.danger { background: var(--red); }
-.stom-gauge-row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+.stom-gauge-row { display: flex; align-items: center; gap: var(--space-3); margin: 3px 0; }
 .stom-gauge-label { font-family: var(--mono); font-size: 10.5px; color: var(--ink-2); min-width: 64px; }
 .stom-gauge-val { font-family: var(--mono); font-size: 10.5px; color: var(--ink-1); min-width: 52px; text-align: right; }
 
