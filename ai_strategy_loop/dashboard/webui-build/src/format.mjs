@@ -49,11 +49,23 @@ export function livePanelPending(wsStatus, state) {
   return !hasRich;                                     // 라이브인데 풍부 필드 없음 → 대기
 }
 
-// 동일 전역 계약 재현: 14.x 전환 시 connection.jsx 의 window 노출을 이 번들이
-//   대체할 수 있음을 증명한다(공존 단계에서는 production 경로가 별도로 동일 전역을 채움).
+// 축 눈금 값 배열(min~max 를 cnt 등분, 양끝 포함). 중간 눈금 라벨용. 무예외.
+//   Phase14.3: chart.jsx 의 순수 헬퍼를 빌드 번들로 이전(단일 출처). chart.jsx 는 window 별칭.
+export function _axisTicks(min, max, cnt) {
+  const lo = Number(min), hi = Number(max);
+  const n = Math.max(2, Math.floor(cnt || 5));
+  if (!isFinite(lo) || !isFinite(hi)) return [];
+  if (hi === lo) return [lo];
+  const out = [];
+  for (let i = 0; i < n; i++) out.push(lo + ((hi - lo) * i) / (n - 1));
+  return out;
+}
+
+// 빌드 번들이 window 전역으로 공유 순수 유틸을 제공(소비처는 babel/build 무관 동일 호출).
 if (typeof window !== "undefined") {
   Object.assign(window, {
     fmtScore, fmtPct, fmtMoney, fmtInt, fmtTime,
     STATUS_KR, isDemoSource, livePanelPending,
+    _axisTicks,
   });
 }

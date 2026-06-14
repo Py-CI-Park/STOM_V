@@ -115,6 +115,30 @@ def test_judgment_fns_still_dual() -> None:
         assert token in fmt, f"format.mjs 에 판정함수 토큰 누락(드리프트?): {token!r}"
 
 
+def test_chart_axisticks_dedup_to_bundle() -> None:
+    """14.3: chart.jsx 순수 헬퍼 _axisTicks 가 빌드 번들 단일 출처로 이전됨."""
+    chart = _read(FRONTEND / "chart.jsx")
+    fmt = _read(WEBUI_BUILD / "src" / "format.mjs")
+    bundle = _read(FRONTEND / "bundle" / "stom-ui.js")
+    # 정의는 format.mjs(정본)·번들에만, chart.jsx 에서는 제거 + window 별칭.
+    assert "export function _axisTicks" in fmt, "format.mjs(정본)에 _axisTicks 없음."
+    assert "_axisTicks" in bundle, "번들에 _axisTicks 노출 없음 — 재빌드 필요."
+    assert "function _axisTicks(" not in chart, "chart.jsx 에 _axisTicks 정의가 남아있음(de-dup 위반)."
+    assert "const _axisTicks = window._axisTicks" in chart, "chart.jsx 에 _axisTicks window 별칭 없음."
+
+
+def test_all_entrypoints_loading_deduped_jsx_also_load_bundle() -> None:
+    """de-dup 후 connection.jsx/chart.jsx 는 번들 전역(window.fmt*·_axisTicks)에 의존한다.
+    그 .jsx 를 로드하는 모든 HTML 엔트리는 bundle/stom-ui.js 도 로드해야 한다(누락 시 전역 미정의)."""
+    deduped = ("connection.jsx", "chart.jsx")
+    missing = []
+    for html in FRONTEND.glob("*.html"):
+        src = _read(html)
+        if any(j in src for j in deduped) and "bundle/stom-ui.js" not in src:
+            missing.append(html.name)
+    assert not missing, f"번들 미로드 엔트리(de-dup 전역 깨짐): {missing}"
+
+
 def test_throwaway_poc_retired() -> None:
     """14.0 일회용 PoC(frontend/poc/, webui-build/index.html)는 폐기되었다."""
     assert not (FRONTEND / "poc").exists(), "14.0 throwaway frontend/poc/ 가 남아 있습니다."
