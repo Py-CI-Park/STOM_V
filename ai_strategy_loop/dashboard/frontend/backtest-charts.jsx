@@ -54,6 +54,62 @@ function _btAxisTicks(min, max, cnt) {
   return out;
 }
 
+// ───────────────────────────────────────────────────────────────────────────
+// 결과 CSV 내보내기(P4) — 일별 수익곡선(날짜·일별손익·누적수익)을 클라이언트 Blob 으로
+//   다운로드한다. 백엔드 없이 a[download] 클릭(엑셀 한글 호환 위해 utf-8 BOM 선행).
+//   sim 체결로그 CSV(simulation-charts.jsx _simDownloadSignalLogCsv)와 동일 규약:
+//   utf-8 BOM · \r\n 줄바꿈 · RFC4180 따옴표 이스케이프. 자급자족 HTML 리포트(/bt/report)
+//   는 그대로 두고, 표 데이터(수익곡선)를 표계산 도구로 옮길 수 있게 보완하는 것이 목적.
+function _btCsvCell(v) {
+  if (v == null) return "";
+  const s = String(v);
+  // 쉼표/따옴표/개행 포함 시 큰따옴표로 감싸고 내부 따옴표는 2배(RFC4180).
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+// analysis.equity(daily/cumulative) → CSV 문자열. 컬럼: 날짜·일별손익(원)·누적수익(원).
+//   daily[i]={date,pnl} 와 cumulative[i]={date,cum_profit} 는 같은 거래일 인덱스로 정렬돼 있다.
+function _btAnalysisCsv(analysis) {
+  const eq = (analysis && analysis.equity) || {};
+  const daily = eq.daily || [];
+  const cumulative = eq.cumulative || [];
+  const header = ["날짜", "일별손익(원)", "누적수익(원)"];
+  const lines = [header.map(_btCsvCell).join(",")];
+  // daily/cumulative 는 같은 거래일 인덱스로 정렬돼 있다(BtEquityChart 와 동일 가정).
+  //   길이가 어긋나도 더 긴 쪽까지 안전하게 순회(누락 인덱스는 빈 칸).
+  const rowN = Math.max(daily.length, cumulative.length);
+  for (let i = 0; i < rowN; i++) {
+    const d = daily[i] || {};
+    const c = cumulative[i] || {};
+    lines.push([
+      _btCsvCell(d.date),
+      _btCsvCell(d.pnl != null ? Math.round(d.pnl) : ""),
+      _btCsvCell(c.cum_profit != null ? Math.round(c.cum_profit) : ""),
+    ].join(","));
+  }
+  return "﻿" + lines.join("\r\n");   // utf-8 BOM — 엑셀 한글 깨짐 방지.
+}
+
+// 클라이언트 Blob 다운로드 — 백엔드 없이 a[download] 클릭. 파일명 백테스트_YYYY-MM-DD.csv.
+function _btDownloadAnalysisCsv(analysis) {
+  const csv = _btAnalysisCsv(analysis);
+  const d = new Date();
+  const ymd = d.getFullYear() + "-"
+    + String(d.getMonth() + 1).padStart(2, "0") + "-"
+    + String(d.getDate()).padStart(2, "0");
+  const fname = "백테스트_" + ymd + ".csv";
+  try {
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e) {} }, 0);
+  } catch (e) { /* 브라우저 미지원/차단 시 조용히 무시. */ }
+}
+
 const _BT_WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"];
 
 // prefers-reduced-motion 존중 — 모션 비활성 시 즉시 최종값.
@@ -1215,6 +1271,10 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
                         try { window.open(u, "_blank", "noopener"); } catch (e) {}
                       }}
                       title="이 세대의 자급자족 HTML 리포트를 새 탭으로 열기">📄 리포트</button>
+            )}
+            {((analysis.equity || {}).daily || []).length > 0 && (
+              <button className="btn ghost sm" onClick={() => _btDownloadAnalysisCsv(analysis)}
+                      title="일별 수익곡선(날짜·일별손익·누적수익)을 CSV 로 내려받기 — 표계산 도구에서 추가 분석">⬇ CSV</button>
             )}
             <button className="btn ghost sm" onClick={() => setFullscreen(true)}
                     title="전체 화면에서 더 많은 분석 그래프를 한눈에 보기 (Esc 로 닫기)">⛶ 전체화면 분석</button>
