@@ -175,7 +175,11 @@ def test_content_hash_cache_consistency() -> None:
     manifest = json.loads((bundle / "manifest.json").read_text(encoding="utf-8"))
 
     def _h8(name: str) -> str:
-        return hashlib.sha256((bundle / name).read_bytes()).hexdigest()[:8]
+        # 줄끝 정규화(CRLF→LF) 후 해시: 빌드는 LF로 산출/해시하지만 git autocrlf=true 워크트리는
+        #   체크아웃 시 CRLF로 변환될 수 있다(예: wt-dev). content-hash 는 줄끝 인코딩이 아니라
+        #   내용의 함수여야 하므로 정규화해 worktree 간 일관성을 보장한다(.gitattributes 가 LF 고정도 병행).
+        raw = (bundle / name).read_bytes().replace(b"\r\n", b"\n")
+        return hashlib.sha256(raw).hexdigest()[:8]
 
     for name in ("app.js", "stom-ui.js"):
         actual = _h8(name)

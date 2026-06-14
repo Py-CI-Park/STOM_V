@@ -1,0 +1,9 @@
+# Phase14 빌드 산출물·소스는 LF 고정.
+#   이유: build-app.mjs 가 LF로 산출하고 그 LF 내용으로 content-hash(manifest/?v=)를 계산한다.
+#   core.autocrlf=true 환경에서 체크아웃 시 CRLF 로 변환되면 디스크 바이트가 달라져
+#   content-hash 일관성 테스트가 worktree 간 깨진다(wt-webbt=LF 통과, wt-dev=CRLF 실패).
+#   아래 경로를 LF 로 고정해 모든 worktree 에서 동일 바이트·동일 해시를 보장한다.
+ai_strategy_loop/dashboard/frontend/bundle/*.js   text eol=lf
+ai_strategy_loop/dashboard/frontend/bundle/*.json text eol=lf
+ai_strategy_loop/dashboard/webui-build/src/*.ts   text eol=lf
+ai_strategy_loop/dashboard/webui-build/src/*.mjs  text eol=lf
