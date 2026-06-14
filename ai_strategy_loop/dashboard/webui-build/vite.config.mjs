@@ -18,7 +18,7 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: false,
     lib: {
-      entry: resolve(__dirname, "src/format.mjs"),
+      entry: resolve(__dirname, "src/format.ts"),
       formats: ["es"],
       fileName: () => "stom-ui.js",
     },
