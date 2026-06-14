@@ -14,6 +14,14 @@ V3U lane의 `V3U_INFERENCE_LESSONS.md`가 pyd-free 추론 결함을 다룬다면
 
 ## 2. 사이클 인벤토리
 
+### 사이클 6 (2026-06-13): V3.33 흡수 (V3U lane 따라잡기) — 결함 0건
+
+- 산출: merge commit `705fb7fd` (`git merge --no-ff STOM_Version_3U`)
+- 흡수: V3.33 (전략탭 백테 시작 분리·명언 리스트 분리·빌트인 print 정리) + V3.32 tail fcc626a5
+- 테스트: tests/v3u 49 + tests/v3uc 32 = 81 PASS, 통합 게이트 8/8, lane V3.33
+- 발견 결함: 0건 (V3U 보정 0건 순수 overlay 상속, merge 충돌 0)
+- 사이클 5 hop 메커니즘 명문화 재사용 (V3U→3U_C는 git merge)
+
 ### 사이클 5 (2026-06-13): V3.19~V3.32 흡수 (V3U lane 따라잡기) — 결함 0건
 
 - 산출: merge commit `32900141` (`git merge --no-ff STOM_Version_3U`)
@@ -81,14 +89,14 @@ V3U lane의 `V3U_INFERENCE_LESSONS.md`가 pyd-free 추론 결함을 다룬다면
 
 ## 4. 통계 (지속 갱신)
 
-| 측정 | 값 (사이클 5 종료 시점, 2026-06-13) |
+| 측정 | 값 (사이클 6 종료 시점, 2026-06-13) |
 |---|---|
-| 총 발견 결함 | 2 (#1 argparse parents, #2 cp949 인코딩) — 사이클 5 신규 0건 |
+| 총 발견 결함 | 2 (#1 argparse parents, #2 cp949 인코딩) — 사이클 5·6 신규 0건 |
 | 자동 회귀 테스트 | 3U_C custom 32 + V3U 안전망 상속 49 = 81 |
 | 신규 자동 도구 | 4 (ingest_pipeline, db_compatibility_check, strategy_migration, cli) |
 | 신규 문서 | 6 + 흡수 감사 1 (2026-06-13_v3uc_v319_v332_absorption.md) |
 | 활성 custom 작업 | E1·E5·E7·E2 완료, E3/E4/E6 미진행 |
-| lane 버전 | **V3.32** (사이클 5에서 V3.18 → V3.32 따라잡기 완료) |
+| lane 버전 | **V3.33** (사이클 6, 사이클 5에서 V3.18 → V3.32 → V3.33) |
 | custom 작업 카테고리 카탈로그 | E1~E7 (V3U_C_NEXT_STEPS.md) |
 
 ## 5. 운영 규칙

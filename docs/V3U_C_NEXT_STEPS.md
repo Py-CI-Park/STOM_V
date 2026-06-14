@@ -13,8 +13,8 @@
 
 | 지표 | 값 |
 |---|---|
-| 활성 사이클 | 5 (V3.19~V3.32 흡수 — V3U lane 따라잡기) |
-| lane 버전 | **V3.32** (사이클 5에서 V3.18 → V3.32) |
+| 활성 사이클 | 6 (V3.33 흡수 — V3U lane 따라잡기) |
+| lane 버전 | **V3.33** (사이클 6, 사이클 5에서 V3.18 → V3.32 → V3.33) |
 | 결함 누적 | 2 (사이클 4 #1·#2) — 사이클 5 신규 0건 |
 | 회귀 테스트 | custom 32 + V3U 안전망 상속 49 = 81 |
 | 신규 자동 도구 | 4 (v3uc_ingest_pipeline / db_compatibility_check / strategy_migration / cli) |
@@ -96,6 +96,18 @@ V3U lane V3U_NEXT_STEPS.md 그룹 E의 V3U_C custom 작업 옵션 (E1~E4) + 3U_C
 - 본 문서 갱신: <§3·§4 변경 요약>
 - 다음 사이클 후보: <다음 우선순위 옵션>
 ```
+
+### 사이클 6 (2026-06-13): V3.33 흡수 (V3U lane 따라잡기)
+
+- 사용자 선택: "흡수 진행해" (V3.33 신규 발표 흡수)
+- 실행 결과:
+  - merge commit `705fb7fd` (`git merge --no-ff STOM_Version_3U`), lane V3.32 → **V3.33**
+  - V3.32 tail fcc626a5(윈도우 핸들) 포함, custom 보존, 충돌 0건
+  - 통합 게이트 8/8 PASS (pytest 49) + tests/v3uc 32 = 81 PASS, invariant 만족
+- 발견 신규 결함: 0건
+- 사이클 5에서 명문화한 hop별 메커니즘 그대로 적용 (V3U→3U_C는 git merge)
+- 본 문서 갱신: §2 상태표(V3.33) + 본 §5 항목
+- 다음 사이클 후보: 3U_C custom 작업(E3/E4) 또는 V3.34+ 발표 시 동일 패턴
 
 ### 사이클 5 (2026-06-13): V3.19~V3.32 흡수 (V3U lane 따라잡기)
 
