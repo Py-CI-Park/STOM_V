@@ -20,6 +20,13 @@
   <!-- 차트 시뮬레이션 캔들차트 엔진(TradingView lightweight-charts v4.2.0 standalone).
        window.LightweightCharts 전역 — 부재 시 simulation-charts.jsx 가 SVG 폴백. -->
   <script src="vendor-lightweight-charts.js?v=20260612a"></script>
+
+  <!-- Phase14.1 정식 빌드 하네스: Vite lib 번들(webui-build/src/format.mjs → bundle/stom-ui.js).
+       ESM 모듈이라 DOMContentLoaded(=babel가 .jsx 실행하는 시점) 이전에 실행되어
+       window.fmt*(fmtScore/fmtPct/fmtMoney/fmtInt/fmtTime/STATUS_KR/isDemoSource/livePanelPending)를 세팅한다.
+       connection.jsx(babel)도 동일 전역을 세팅하므로 양립(babel = 폴백). de-dup은 14.2.
+       산출물은 커밋되어 런타임 npm 불필요. -->
+  <script type="module" src="bundle/stom-ui.js?v=20260614h"></script>
 </head>
 <body>
   <!-- React 마운트 전/실패 시 보이는 폴백(검은 화면 대신 안내). 마운트 성공 시 교체됨. -->
