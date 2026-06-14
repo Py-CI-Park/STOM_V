@@ -208,7 +208,7 @@ def settings_save_completed(ui):
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.etcetera.etc import update_dictset
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
 
     _ = ui.testQ.get()
     update_dictset(ui, force=True)
@@ -866,7 +866,7 @@ def setting_all_app(ui):
     import random
     from PyQt5.QtWidgets import QMessageBox
     from utility.settings.setting_base import DB_PATH
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
 
     name = ui.sj_set_comBoxx_01.currentText()
     if name == '':
@@ -917,7 +917,7 @@ def setting_all_del(ui):
     import random
     from PyQt5.QtWidgets import QMessageBox
     from utility.settings.setting_base import DB_PATH
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
 
     name = ui.sj_set_comBoxx_01.currentText()
     if name == '':
@@ -936,7 +936,7 @@ def setting_all_save(ui):
     import shutil
     from PyQt5.QtWidgets import QMessageBox
     from utility.settings.setting_base import DB_PATH
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
 
     name = ui.sj_set_liEditt_01.text()
     if name == '':

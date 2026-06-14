@@ -28,7 +28,7 @@ def setting_passticks_save(ui):
     """경과틱수 설정을 저장합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
 
     data_list = []
     for lineedit1, lineedit2 in zip(ui.scn_lineedit_list, ui.scc_lineedit_list):

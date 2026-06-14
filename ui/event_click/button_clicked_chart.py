@@ -105,7 +105,7 @@ def indicator_setting_save(ui):
     """보조지표 설정을 데이터베이스에 저장합니다."""
     import random
     from PyQt5.QtWidgets import QMessageBox
-    from ui.create_widget.set_text import famous_saying
+    from ui.create_widget.famous_saying import famous_saying
 
     k_list = []
     for linedit in ui.factor_linedit_list:
