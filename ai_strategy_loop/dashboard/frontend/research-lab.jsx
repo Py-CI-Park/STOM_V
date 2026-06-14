@@ -1000,24 +1000,10 @@ function _McFanChart({ fan }) {
    메인 앱(index.html)에는 research-pro.jsx가 없으므로 리서치랩이 자체 오버레이를
    포함해 어느 페이지에서도 '프로세스' 버튼이 동작하게 한다. 단계별 한국어 설명 +
    용어 사전(세대/격자/니치/OOS/동결)을 카드+화살표로 보여준다. */
-const _RL_PIPELINE = [
-  { icon: "🌱", title: "시드 선택", desc: "사람이 검증한 출발 전략(시드)을 고릅니다. 이후 진화의 기준점입니다.",
-    terms: [["시드", "진화의 출발이 되는 기준 전략."]] },
-  { icon: "🧬", title: "후보 생성 (LLM)", desc: "직전 부검(왜 졌는지)을 컨텍스트로 새 매수/매도 조건식을 생성합니다.",
-    terms: [["세대", "한 번의 생성→평가 사이클(gen_00, gen_01 …)."]] },
-  { icon: "▦", title: "격자 탐색", desc: "파라미터(θ)를 격자로 훑어 단일 피크가 아닌 '고원'을 찾습니다.",
-    terms: [["격자", "여러 값을 바둑판처럼 조합해 전수 탐색."], ["고원/mesa", "이웃 값도 모두 흑자인 안정 영역."]] },
-  { icon: "📊", title: "백테스트 평가", desc: "지정 기간·시간단위로 자본곡선·낙폭(MDD)·매매를 시뮬레이션합니다.",
-    terms: [["MDD", "최대 낙폭 — 고점 대비 최대 하락폭(작을수록 안전)."]] },
-  { icon: "🚦", title: "적합도/품질 게이트", desc: "점수≥목표 & MDD≤상한 & 거래수≥하한을 동시에 만족해야 통과합니다.",
-    terms: [["적합도", "손익·MDD·거래수·일관성의 가중합 점수."], ["니치", "특정 환경(시간대·시총)에 특화된 군집."]] },
-  { icon: "🔬", title: "OOS 검증", desc: "학습에 쓰지 않은 기간(OOS)에서 성과가 유지되는지 확인합니다.",
-    terms: [["OOS", "Out-Of-Sample — 최적화에 안 쓴 별도 구간(진짜 일반화 검증)."]] },
-  { icon: "🏆", title: "명예의 전당/동결", desc: "검증 통과 전략을 명예의 전당에 올리고 동결(고정)해 운영 후보로 보관합니다.",
-    terms: [["동결", "전략을 박제해 재현 가능한 기준선으로 보존."]] },
-];
-
+// P4(2026-06-14): 진화 프로세스 7단계는 format.ts 의 정본 window.STOM_PIPELINE 로 통합(중복 제거).
+//   research-pro 와 동일 정본 공유 — 과거 로컬 사본(터서 문구)은 삭제, 더 풍부한 정본 채택.
 function _RlProcessFlowOverlay({ onClose, activeStage }) {
+  const PIPELINE = window.STOM_PIPELINE || [];
   useEffect_rl(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
@@ -1029,13 +1015,13 @@ function _RlProcessFlowOverlay({ onClose, activeStage }) {
       <div className="rp-overlay-card" onClick={(e) => e.stopPropagation()}>
         <div className="rp-overlay-hd">
           <span className="rp-card-title">진화 프로세스 — 전체 흐름</span>
-          {ai >= 0 && <span className="rp-card-sub">현재 단계: {_RL_PIPELINE[ai].title}</span>}
+          {ai >= 0 && <span className="rp-card-sub">현재 단계: {PIPELINE[ai].title}</span>}
           <button type="button" className="btn ghost sm" style={{ marginLeft: "auto" }} onClick={onClose}>
             ✕ 닫기 (Esc)
           </button>
         </div>
         <div className="rp-flow">
-          {_RL_PIPELINE.map((s, i) => (
+          {PIPELINE.map((s, i) => (
             <React.Fragment key={s.title}>
               <div className={"rp-flow-node" + (i === ai ? " rp-flow-active" : "")}>
                 <div className="rp-flow-ico">{s.icon}</div>
@@ -1050,7 +1036,7 @@ function _RlProcessFlowOverlay({ onClose, activeStage }) {
                   ))}
                 </div>
               </div>
-              {i < _RL_PIPELINE.length - 1 && <div className="rp-flow-arrow">→</div>}
+              {i < PIPELINE.length - 1 && <div className="rp-flow-arrow">→</div>}
             </React.Fragment>
           ))}
         </div>
