@@ -48,11 +48,12 @@ def test_run_compare_does_not_filter_negative_profit_rows() -> None:
 
 
 def test_index_loads_run_compare_override_before_app() -> None:
-    src = _read_front("index.html")
+    # Phase14.4: 단일 컴파일 번들 bundle/app.js 의 "==== X.jsx ====" 마커 순서로 검증.
+    src = _read_front("bundle/app.js")
 
-    panels_pos = src.index("panels.jsx")
-    compare_pos = src.index("run-compare.jsx")
-    app_pos = src.index("app.jsx")
+    panels_pos = src.index("==== panels.jsx ====")
+    compare_pos = src.index("==== run-compare.jsx ====")
+    app_pos = src.index("==== app.jsx ====")
     assert panels_pos < compare_pos < app_pos
 
 

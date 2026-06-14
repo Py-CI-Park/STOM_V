@@ -175,9 +175,10 @@ class TestStaticFrontendServing:
         assert resp.status_code == 200
         body = resp.text
         # index.html(= 대시보드 HTML)이 서빙되는지 핵심 마커로 확인.
+        #   Phase14.4: 운영 컴포넌트는 단일 컴파일 번들 bundle/app.js(+stom-ui.js)로 로드(런타임 babel 제거).
         assert '<div id="root">' in body
-        assert "connection.jsx" in body
-        assert "app.jsx" in body
+        assert "bundle/app.js" in body
+        assert "bundle/stom-ui.js" in body
 
     def test_ui_serves_static_assets(self, client):
         # 상대 경로로 로드되는 정적 자산이 /ui 하위에서 해석되는지 확인.

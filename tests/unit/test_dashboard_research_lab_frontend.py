@@ -51,11 +51,11 @@ def test_research_lab_exposes_window_symbol() -> None:
 
 
 def test_research_lab_is_loaded_before_app() -> None:
-    """Given index.html, When scripts load, Then research-lab is available before app.jsx."""
-    html = _read_front("index.html")
+    """Given app.js 번들, Then research-lab 이 app 보다 먼저 정의된다(Phase14.4 단일 번들)."""
+    app = _read_front("bundle/app.js")
 
-    assert "research-lab.jsx" in html
-    assert html.find("research-lab.jsx") < html.find("app.jsx")
+    assert "==== research-lab.jsx ====" in app
+    assert app.find("==== research-lab.jsx ====") < app.find("==== app.jsx ====")
 
 
 def test_app_jsx_wires_research_lab() -> None:

@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -83,11 +84,15 @@ def test_bundle_artifact_committed_and_complete() -> None:
 
 
 def test_index_html_loads_bundle_as_module() -> None:
-    """index.html 이 번들을 ESM 모듈로 로드(운영 경로) + connection.jsx(소비처)도 로드."""
+    """index.html 이 stom-ui(ESM 모듈) + 컴파일 번들 app.js(defer)를 로드하고, 런타임 babel 은 없다(14.4)."""
     html = _read(FRONTEND / "index.html")
     assert 'type="module"' in html, "index.html 에 ESM 모듈 스크립트가 없습니다."
     assert "bundle/stom-ui.js" in html, "index.html 이 bundle/stom-ui.js 를 로드하지 않습니다."
-    assert "connection.jsx" in html, "connection.jsx 로드가 사라졌습니다."
+    # Phase14.4: 운영 컴포넌트는 단일 컴파일 번들 app.js(defer)로 로드.
+    assert "bundle/app.js" in html, "index.html 이 bundle/app.js 를 로드하지 않습니다."
+    # 런타임 babel 제거: text/babel 스크립트도 vendor-babel 도 없어야 한다.
+    assert 'type="text/babel"' not in html, "index.html 에 런타임 babel 스크립트가 남아있습니다(14.4 위반)."
+    assert "vendor-babel.js" not in html, "index.html 에 vendor-babel.js 가 남아있습니다(14.4 위반)."
 
 
 def test_formatter_dedup_implementation_single_source() -> None:
@@ -137,6 +142,26 @@ def test_all_entrypoints_loading_deduped_jsx_also_load_bundle() -> None:
         if any(j in src for j in deduped) and "bundle/stom-ui.js" not in src:
             missing.append(html.name)
     assert not missing, f"번들 미로드 엔트리(de-dup 전역 깨짐): {missing}"
+
+
+def test_app_bundle_contains_all_ordered_sources() -> None:
+    """14.4: bundle/app.js 가 build-app.mjs ORDER 의 26개 .jsx 를 전부 마커로 포함(누락/stale 가드).
+
+    build-app.mjs 의 ORDER 배열을 직접 파싱해 산출물 app.js 와 대조한다. 새 .jsx 를 ORDER 에
+    추가하고 재빌드를 깜빡하면(또는 파일 누락) 실패한다. (완전 byte 동일 검증은 14.5 content-hash.)
+    """
+    build_src = (WEBUI_BUILD / "build-app.mjs").read_text(encoding="utf-8")
+    m = re.search(r"const ORDER = \[(.*?)\];", build_src, re.DOTALL)
+    assert m, "build-app.mjs 에서 ORDER 배열을 찾지 못했습니다."
+    order = re.findall(r'"([^"]+\.jsx)"', m.group(1))
+    assert len(order) >= 20, f"ORDER 파싱 비정상(개수 {len(order)})."
+
+    app_js = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
+    missing = [f for f in order if f"==== {f} ====" not in app_js]
+    assert not missing, f"app.js 에 누락된 소스(재빌드 필요): {missing}"
+    # 마지막 엔트리(app.jsx)는 ReactDOM 마운트를 포함해야 한다(엔트리 무결성).
+    assert order[-1] == "app.jsx"
+    assert "ReactDOM.createRoot" in app_js, "app.js 에 마운트 코드(ReactDOM.createRoot)가 없습니다."
 
 
 def test_throwaway_poc_retired() -> None:

@@ -135,5 +135,8 @@ class TestFrontendContract:
 
     def test_index_cache_bumped(self) -> None:
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
-        # Phase6(2026-06-13) — 연구실 라벨·툴팁·프로세스 플로우 추가로 v20260613a 재범프.
-        assert "research-lab.jsx?v=20260614g" in src
+        # Phase14.4: research-lab 등 운영 컴포넌트는 단일 컴파일 번들 bundle/app.js 로 캐시 버전된다.
+        assert "bundle/app.js?v=" in src
+        # 소스는 여전히 존재(빌드 입력) — 빌드 ORDER 에 포함됨을 산출물 마커로 확인.
+        app_bundle = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
+        assert "==== research-lab.jsx ====" in app_bundle
