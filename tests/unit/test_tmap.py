@@ -507,5 +507,8 @@ class TestFrontendContract:
         assert "/tmap_grid" in src
         assert "_GridHeatmap" in src
         assert "_CurveSpark" in src
+        # Phase14.4: research-lab 은 단일 컴파일 번들 bundle/app.js 로 로드(런타임 babel 제거).
         index = (frontend / "index.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260614g" in index
+        assert "bundle/app.js?v=" in index
+        app_bundle = (frontend / "bundle" / "app.js").read_text(encoding="utf-8")
+        assert "==== research-lab.jsx ====" in app_bundle

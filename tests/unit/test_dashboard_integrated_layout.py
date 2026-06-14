@@ -33,8 +33,11 @@ def test_operational_sections_are_named_and_ordered() -> None:
 
 
 def test_dashboard_bundle_loads_integrated_panels_before_app() -> None:
-    """Given index.html, When /ui/ loads, Then all integrated panels load before app.jsx."""
-    index = _read("index.html")
+    """Given app.js 번들, Then 통합 패널들이 app 보다 먼저 정의된다(Phase14.4 단일 번들).
+
+    순서는 app.js 의 "==== X.jsx ====" 마커(build-app.mjs ORDER)에 보존된다.
+    """
+    app = _read("bundle/app.js")
 
     panel_scripts = [
         "run-compare.jsx",
@@ -43,10 +46,11 @@ def test_dashboard_bundle_loads_integrated_panels_before_app() -> None:
         "research-wiki.jsx",
         "ai-context.jsx",
     ]
-    app_pos = index.index("app.jsx")
+    app_pos = app.index("==== app.jsx ====")
     for script in panel_scripts:
-        assert script in index
-        assert index.index(script) < app_pos
+        marker = f"==== {script} ===="
+        assert marker in app
+        assert app.index(marker) < app_pos
 
 
 def test_final_approval_remains_dialog_gated() -> None:

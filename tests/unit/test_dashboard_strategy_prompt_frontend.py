@@ -61,11 +61,12 @@ def test_code_viewer_has_vertical_expand_reader_mode() -> None:
 
 
 def test_index_loads_strategy_inspector_before_app() -> None:
-    src = _read_front("index.html")
+    # Phase14.4: 단일 컴파일 번들 bundle/app.js 의 "==== X.jsx ====" 마커 순서로 검증.
+    src = _read_front("bundle/app.js")
 
-    code_viewer_pos = src.index("code-viewer.jsx")
-    inspector_pos = src.index("strategy-inspector.jsx")
-    app_pos = src.index("app.jsx")
+    code_viewer_pos = src.index("==== code-viewer.jsx ====")
+    inspector_pos = src.index("==== strategy-inspector.jsx ====")
+    app_pos = src.index("==== app.jsx ====")
     assert code_viewer_pos < inspector_pos < app_pos
 
 

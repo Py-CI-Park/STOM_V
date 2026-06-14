@@ -31,10 +31,11 @@ def test_research_wiki_component_uses_docs_endpoints_and_safe_rendering() -> Non
 
 def test_research_wiki_exposed_and_loaded_before_app() -> None:
     wiki = _read_front("research-wiki.jsx")
-    index = _read_front("index.html")
+    # Phase14.4: 운영 컴포넌트는 단일 컴파일 번들 bundle/app.js — 순서는 "==== X.jsx ====" 마커.
+    app_bundle = _read_front("bundle/app.js")
 
     assert "Object.assign(window, { ResearchWikiPanel" in wiki
-    assert index.index("research-wiki.jsx") < index.index("app.jsx")
+    assert app_bundle.index("==== research-wiki.jsx ====") < app_bundle.index("==== app.jsx ====")
 
 
 def test_app_mounts_research_wiki_panel_with_backend_context() -> None:

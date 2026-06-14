@@ -108,4 +108,5 @@
   - ✅ 14.1 빌드 하네스(lib 번들 `frontend/bundle/stom-ui.js` + index.html 로드, babel 폴백 양립) — `PHASE14_1_BUILD_HARNESS.md`
   - ✅ 14.2 리프/유틸 전환(포매터 de-dup: connection.jsx 정의 제거→window 별칭, 번들 단일 출처) — `PHASE14_2_LEAF_DEDUP.md`
   - ✅ 14.3 차트 순수 헬퍼(_axisTicks) 번들 이전 — `PHASE14_3_CHART_HELPERS.md` (대형 컴포넌트 컴파일은 혼합타이밍 회피 위해 14.4로 통합)
-  - ⏳ 14.4 전체 컴포넌트 빌드 컴파일(런타임-babel 제거 준비) → 14.5 캐시 content-hash → 14.6 TS(선택) → 14.7 vendor-babel 제거
+  - ✅ 14.4 전체 컴포넌트 빌드 컴파일 — index.html 26 text/babel + vendor-babel → 단일 `bundle/app.js`(defer). 메인 페이지 런타임 babel 제거 — `PHASE14_4_APP_BUNDLE.md`
+  - ⏳ 14.5 캐시 content-hash + app.js 미니파이 → 14.6 TS(선택) → 14.7 lab/pro 전환 + vendor-babel 파일 제거

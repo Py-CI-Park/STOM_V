@@ -76,15 +76,19 @@ def test_static_ui_mount_unaffected(monkeypatch, tmp_path: Path) -> None:
 
 
 def test_index_html_loads_tab_scripts_before_app() -> None:
-    """Given index.html, Then backtest.jsx and simulation.jsx load before app.jsx."""
-    index = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    """Given app.js 번들, Then backtest/simulation 이 app 보다 먼저 정의된다.
 
-    assert "backtest.jsx" in index
-    assert "simulation.jsx" in index
-    assert index.index("backtest.jsx") < index.index("app.jsx")
-    assert index.index("simulation.jsx") < index.index("app.jsx")
-    # PR2: 차트 분리 모듈은 backtest.jsx 보다 먼저 로드돼야 한다(window 전역 공유 의존).
-    assert index.index("backtest-charts.jsx") < index.index("backtest.jsx?")
+    Phase14.4: 운영 컴포넌트는 단일 컴파일 번들 bundle/app.js 로 로드(런타임 babel 제거).
+    로드/정의 순서는 app.js 의 "==== X.jsx ====" 마커(build-app.mjs ORDER)에 보존된다.
+    """
+    app = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
+
+    assert "==== backtest.jsx ====" in app
+    assert "==== simulation.jsx ====" in app
+    assert app.index("==== backtest.jsx ====") < app.index("==== app.jsx ====")
+    assert app.index("==== simulation.jsx ====") < app.index("==== app.jsx ====")
+    # 차트 분리 모듈은 backtest.jsx 보다 먼저 정의돼야 한다(window 전역 공유 의존).
+    assert app.index("==== backtest-charts.jsx ====") < app.index("==== backtest.jsx ====")
 
 
 # --------------------------------------------------- Track C (즉시 체험) frontend
