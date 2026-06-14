@@ -1,32 +1,28 @@
-// format.mjs — Phase14.1 빌드 소스: connection.jsx 순수 포매터의 ESM 정본.
-//
-//   connection.jsx(909~941줄) 구현과 "바이트 동일"을 유지한다. 이 동일성이
-//   출력 동등성 게이트의 전제다(번들 출력 == 런타임-babel 출력). 14.x에서
-//   connection.jsx 가 이 모듈을 import 하도록 전환하면 중복이 사라진다.
-//
-//   포함: 순수 포매터/판정 함수만. DEFAULT_BASE 는 window.location 의존이라 제외.
+// format.ts — Phase14.6 TS 점진 시드: 공유 순수 유틸의 타입 명시 정본(빌드 입력).
+//   format.mjs 를 .ts 로 전환(타입 안전망). 런타임 동작·window 전역 계약은 불변.
+//   소비처(.jsx)는 여전히 window.fmt*/_axisTicks 로 호출(런타임 계약 동일).
 
-export const fmtScore = (v) => (typeof v === "number" ? v.toFixed(3) : "—");
+export const fmtScore = (v: unknown): string => (typeof v === "number" ? v.toFixed(3) : "—");
 
-export const fmtPct = (v) => (typeof v === "number" ? `${v.toFixed(2)}%` : "—");
+export const fmtPct = (v: unknown): string => (typeof v === "number" ? `${v.toFixed(2)}%` : "—");
 
-export const fmtMoney = (v) => {
+export const fmtMoney = (v: unknown): string => {
   if (typeof v !== "number") return "—";
   const sign = v > 0 ? "+" : v < 0 ? "−" : "";
   return sign + Math.abs(v).toLocaleString("ko-KR") + "원";
 };
 
-export const fmtInt = (v) => (typeof v === "number" ? v.toLocaleString("ko-KR") : "—");
+export const fmtInt = (v: unknown): string => (typeof v === "number" ? v.toLocaleString("ko-KR") : "—");
 
-export const fmtTime = (iso) => {
+export const fmtTime = (iso: unknown): string => {
   if (!iso) return "—";
   try {
-    const d = new Date(iso);
+    const d = new Date(iso as string | number | Date);
     return d.toLocaleTimeString("ko-KR", { hour12: false });
   } catch { return "—"; }
 };
 
-export const STATUS_KR = {
+export const STATUS_KR: Record<string, string> = {
   idle: "대기",
   running: "실행중",
   stopping: "정지중",
@@ -34,13 +30,20 @@ export const STATUS_KR = {
   error: "오류",
 };
 
-// 순수 판정 함수(테스트 가능): 현재 상태가 데모 시뮬레이터 출처인지.
-export function isDemoSource(wsStatus) {
+// 순수 판정 함수: 현재 상태가 데모 시뮬레이터 출처인지.
+export function isDemoSource(wsStatus: unknown): boolean {
   return wsStatus === "demo";
 }
 
-// 순수 판정 함수(테스트 가능): 라이브 상태인데 DEMO 전용 패널 데이터가 비었는지.
-export function livePanelPending(wsStatus, state) {
+interface RunStateLike {
+  current_run?: {
+    equity?: unknown[];
+    generation?: { buy_code_partial?: string; sell_code_partial?: string };
+  } | null;
+}
+
+// 순수 판정 함수: 라이브 상태인데 DEMO 전용 패널 데이터가 비었는지.
+export function livePanelPending(wsStatus: unknown, state: RunStateLike | null | undefined): boolean {
   if (isDemoSource(wsStatus)) return false;            // 데모는 자체 데이터로 채움
   const cr = state && state.current_run;
   const hasRich = !!(cr && ((cr.equity && cr.equity.length) ||
@@ -50,13 +53,12 @@ export function livePanelPending(wsStatus, state) {
 }
 
 // 축 눈금 값 배열(min~max 를 cnt 등분, 양끝 포함). 중간 눈금 라벨용. 무예외.
-//   Phase14.3: chart.jsx 의 순수 헬퍼를 빌드 번들로 이전(단일 출처). chart.jsx 는 window 별칭.
-export function _axisTicks(min, max, cnt) {
+export function _axisTicks(min: unknown, max: unknown, cnt?: unknown): number[] {
   const lo = Number(min), hi = Number(max);
-  const n = Math.max(2, Math.floor(cnt || 5));
+  const n = Math.max(2, Math.floor(Number(cnt) || 5));
   if (!isFinite(lo) || !isFinite(hi)) return [];
   if (hi === lo) return [lo];
-  const out = [];
+  const out: number[] = [];
   for (let i = 0; i < n; i++) out.push(lo + ((hi - lo) * i) / (n - 1));
   return out;
 }

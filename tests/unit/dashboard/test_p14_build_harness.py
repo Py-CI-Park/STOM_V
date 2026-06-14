@@ -100,7 +100,7 @@ def test_index_html_loads_bundle_as_module() -> None:
 def test_formatter_dedup_implementation_single_source() -> None:
     """14.2 de-dup: 포매터 구현은 format.mjs(정본)에만. connection.jsx 는 본문 제거 + window 별칭."""
     conn = _read(FRONTEND / "connection.jsx")
-    fmt = _read(WEBUI_BUILD / "src" / "format.mjs")
+    fmt = _read(WEBUI_BUILD / "src" / "format.ts")
     for token in DEDUP_BODY_TOKENS:
         assert token in fmt, f"format.mjs(정본)에 포매터 본문 누락: {token!r}"
         assert token not in conn, f"connection.jsx 에 포매터 본문이 되살아났습니다(de-dup 위반): {token!r}"
@@ -116,7 +116,7 @@ def test_formatter_dedup_implementation_single_source() -> None:
 def test_judgment_fns_still_dual() -> None:
     """판정 함수(isDemoSource/livePanelPending)는 아직 connection.jsx ↔ format.mjs 양쪽 유지."""
     conn = _read(FRONTEND / "connection.jsx")
-    fmt = _read(WEBUI_BUILD / "src" / "format.mjs")
+    fmt = _read(WEBUI_BUILD / "src" / "format.ts")
     for token in DUAL_TOKENS:
         assert token in conn, f"connection.jsx 에 판정함수 토큰 누락: {token!r}"
         assert token in fmt, f"format.mjs 에 판정함수 토큰 누락(드리프트?): {token!r}"
@@ -125,7 +125,7 @@ def test_judgment_fns_still_dual() -> None:
 def test_chart_axisticks_dedup_to_bundle() -> None:
     """14.3: chart.jsx 순수 헬퍼 _axisTicks 가 빌드 번들 단일 출처로 이전됨."""
     chart = _read(FRONTEND / "chart.jsx")
-    fmt = _read(WEBUI_BUILD / "src" / "format.mjs")
+    fmt = _read(WEBUI_BUILD / "src" / "format.ts")
     bundle = _read(FRONTEND / "bundle" / "stom-ui.js")
     # 정의는 format.mjs(정본)·번들에만, chart.jsx 에서는 제거 + window 별칭.
     assert "export function _axisTicks" in fmt, "format.mjs(정본)에 _axisTicks 없음."
