@@ -12,10 +12,11 @@
   <link rel="stylesheet" href="styles.css?v=20260614f" />
   <script src="vendor-react.js?v=20260603a"></script>
   <script src="vendor-react-dom.js?v=20260603a"></script>
-  <script src="vendor-babel.js?v=20260603a"></script>
-  <!-- Phase14.3: 빌드 번들(window.fmt*·_axisTicks). connection.jsx/chart.jsx de-dup 후
-       이 standalone 페이지도 번들이 있어야 전역이 채워진다(index.html 과 동일). -->
+  <!-- Phase14.7: 런타임 babel 제거. 운영 컴포넌트는 index.html 과 동일한 컴파일 번들(bundle/app.js)
+       을 공유한다(ProPage 포함 전 컴포넌트 정의). 이 페이지는 App 자동 마운트를 끄고 직접
+       ProPage 를 마운트한다. stom-ui.js(모듈)가 window.fmt*·_axisTicks 를 먼저 세팅. -->
   <script type="module" src="bundle/stom-ui.js?v=ac59ac0e"></script>
+  <script>window.__STOM_NO_AUTO_MOUNT__ = true;</script>
 </head>
 <body>
   <!-- Phase9(2026-06-13) — SPA 6탭 통합: 리서치 프로 본문은 dashboard-pages.jsx 전역
@@ -30,20 +31,13 @@
     </div>
   </div>
 
-  <!-- 의존: ProPage 가 참조하는 전역(ResearchProPanel=research-pro.jsx, 백테 차트
-       전역=backtest-charts.jsx 등)을 먼저 로드한 뒤 dashboard-pages.jsx 를 마지막에
-       로드한다(전역 정의 순서 보장). -->
-  <script type="text/babel" src="connection.jsx?v=20260614i"></script>
-  <script type="text/babel" src="chart.jsx?v=20260614j"></script>
-  <script type="text/babel" src="analysis.jsx?v=20260603a"></script>
-  <script type="text/babel" src="research-lab.jsx?v=20260614g"></script>
-  <script type="text/babel" src="backtest-charts.jsx?v=20260614b"></script>
-  <script type="text/babel" src="backtest.jsx?v=20260614g"></script>
-  <script type="text/babel" src="research-pro.jsx?v=20260613b"></script>
-  <script type="text/babel" src="dashboard-pages.jsx?v=20260614d"></script>
-  <script type="text/babel">
-    ReactDOM.createRoot(document.getElementById("root"))
-      .render(<window.ProPage baseUrl={window.location.origin} />);
+  <!-- 컴파일 번들(defer) — stom-ui 모듈 뒤에 실행. 이후 DOMContentLoaded 에서 ProPage 마운트. -->
+  <script defer src="bundle/app.js?v=fe6cec66"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      ReactDOM.createRoot(document.getElementById("root"))
+        .render(React.createElement(window.ProPage, { baseUrl: window.location.origin }));
+    });
   </script>
 </body>
 </html>

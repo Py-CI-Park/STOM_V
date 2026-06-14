@@ -129,16 +129,15 @@ class TestHypothesisPanelFrontend:
         assert "expected_direction" in src
 
     def test_html_loads_jsx_before_app(self):
-        # 신규 jsx가 app.jsx보다 먼저 정의돼야 한다(전역 공유).
-        #   레거시 STOM AI Dashboard.html 은 아직 text/babel(.jsx 직접 로드) → HTML 순서로 검증.
-        legacy = (FRONTEND / "STOM AI Dashboard.html").read_text(encoding="utf-8")
-        assert legacy.find("hypothesis.jsx") != -1, "레거시 HTML 에 hypothesis.jsx 누락"
-        assert legacy.find("app.jsx") != -1
-        assert legacy.find("hypothesis.jsx") < legacy.find("app.jsx")
-        # Phase14.4: index.html 은 단일 컴파일 번들 bundle/app.js — 순서는 "==== X.jsx ====" 마커.
+        # Phase14.7: 모든 엔트리(index 및 레거시 포함)가 단일 컴파일 번들 bundle/app.js 를 로드한다.
+        #   hypothesis.jsx 는 app.jsx 보다 먼저 정의돼야 한다(전역 공유) — app.js 마커 순서로 검증.
         app_bundle = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
         assert "==== hypothesis.jsx ====" in app_bundle, "app.js 에 hypothesis.jsx 누락"
         assert app_bundle.index("==== hypothesis.jsx ====") < app_bundle.index("==== app.jsx ====")
+        # 엔트리 HTML 들이 번들을 로드하는지(런타임 babel 없이).
+        for entry in ("index.html", "STOM AI Dashboard.html"):
+            html = (FRONTEND / entry).read_text(encoding="utf-8")
+            assert "bundle/app.js" in html, f"{entry} 가 컴파일 번들을 로드하지 않음"
 
     def test_app_wires_hypothesis_panel(self):
         src = (FRONTEND / "app.jsx").read_text(encoding="utf-8")

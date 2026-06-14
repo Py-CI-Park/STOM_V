@@ -668,6 +668,10 @@ class ErrorBoundary extends React.Component {
 
 Object.assign(window, { App, ErrorBoundary });
 
-// Mount
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<ErrorBoundary><App /></ErrorBoundary>);
+// Mount — Phase14.7: lab/pro/verdict 가 동일 app.js 를 로드해 다른 루트 컴포넌트를 마운트할 수
+//   있도록 자동 마운트를 플래그로 가드한다. window.__STOM_NO_AUTO_MOUNT__ 이면 해당 페이지가
+//   직접 (LabPage/ProPage/VerdictPanel 등) 마운트하므로 여기서는 App 을 마운트하지 않는다.
+if (typeof window === "undefined" || !window.__STOM_NO_AUTO_MOUNT__) {
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(<ErrorBoundary><App /></ErrorBoundary>);
+}

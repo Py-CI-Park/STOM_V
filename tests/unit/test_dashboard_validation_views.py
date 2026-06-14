@@ -446,7 +446,7 @@ class TestFrontendContract:
         # Phase9 — 사이드바·연구실 로직은 dashboard-pages.jsx(window.LabPage)로 단일화됐고
         #   lab.html 은 그 전역을 마운트한다. verdict 로직도 window.VerdictPanel 로 이동.
         lab = (FRONTEND / "lab.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260614g" in lab
+        assert "bundle/app.js" in lab  # Phase14.7: research-lab 포함 전 컴포넌트는 번들로 로드
         assert "window.LabPage" in lab
         dp = (FRONTEND / "dashboard-pages.jsx").read_text(encoding="utf-8")
         assert "ResearchLabPanel" in dp
@@ -628,7 +628,8 @@ class TestNewFrontendContract:
 
     def test_lab_html_cache_bumped(self):
         src = (FRONTEND / "lab.html").read_text(encoding="utf-8")
-        assert "research-lab.jsx?v=20260614g" in src
+        # Phase14.7: lab.html 은 content-hash 번들 bundle/app.js 로 캐시 버전됨(research-lab 포함).
+        assert "bundle/app.js?v=" in src
 
 
 class TestPortfolioVerdict:

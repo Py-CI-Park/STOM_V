@@ -103,7 +103,7 @@
 ## 진행 현황
 - ✅ **Phase 12(A 마감 + B 검증)** — PR #50 머지·라이브
 - ✅ **Phase 13(C 분석 기능 강화)** — PR #51 머지·라이브
-- ⏳ **Phase 14(D 기반 현대화)** — 진행 중:
+- ✅ **Phase 14(D 기반 현대화) — 완료**: 대시보드 프런트가 빌드 시점 컴파일 단일 번들로 동작(런타임 babel 의존 0). 화면·기능·백엔드·URL 불변.
   - ✅ 14.0 스파이크(Vite 결정 + 격리 PoC) — PR #53 머지·라이브. `PHASE14_0_EXECUTION_PLAN.md`
   - ✅ 14.1 빌드 하네스(lib 번들 `frontend/bundle/stom-ui.js` + index.html 로드, babel 폴백 양립) — `PHASE14_1_BUILD_HARNESS.md`
   - ✅ 14.2 리프/유틸 전환(포매터 de-dup: connection.jsx 정의 제거→window 별칭, 번들 단일 출처) — `PHASE14_2_LEAF_DEDUP.md`
@@ -111,4 +111,4 @@
   - ✅ 14.4 전체 컴포넌트 빌드 컴파일 — index.html 26 text/babel + vendor-babel → 단일 `bundle/app.js`(defer). 메인 페이지 런타임 babel 제거 — `PHASE14_4_APP_BUNDLE.md`
   - ✅ 14.5 캐시 content-hash 자동화 — build 가 sha256[:8] 로 ?v= 자동 주입 + manifest, 수동 bump 폐지·자기검증 테스트 — `PHASE14_5_CONTENT_HASH.md` (미니파이는 로컬툴이라 보류)
   - ✅ 14.6 TS 점진 시드(선택) — tsconfig+typecheck + format.mjs→format.ts(strict 통과) — `PHASE14_6_TS_SEED.md` (전면 타이핑은 ROI 낮아 시드만)
-  - ⏳ 14.7 lab/pro/legacy 전환 + vendor-babel 파일 완전 제거(완결)
+  - ✅ 14.7 런타임 babel 완전 제거(완결) — lab/pro/verdict/legacy 번들 전환 + vendor-babel.js 삭제, 테스트 babel→esbuild — `PHASE14_7_BABEL_REMOVAL.md`

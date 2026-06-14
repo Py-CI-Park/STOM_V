@@ -179,13 +179,16 @@ class TestStandaloneHtml:
 
         주석/프로즈가 아니라 실제 <script src="..."> 태그 위치로 로드 순서를 본다.
         """
+        # Phase14.7: lab/pro 는 단일 컴파일 번들 bundle/app.js 를 로드한다(런타임 babel 제거).
+        #   정의 순서(research-* 가 dashboard-pages 보다 먼저)는 app.js 의 "==== X.jsx ====" 마커로 검증.
+        app_bundle = _read("bundle/app.js")
+        pos_lab = app_bundle.find("==== research-lab.jsx ====")
+        pos_pro = app_bundle.find("==== research-pro.jsx ====")
+        pos_dp = app_bundle.find("==== dashboard-pages.jsx ====")
+        assert pos_dp > pos_lab > -1, "app.js: dashboard-pages 가 research-lab 뒤가 아님"
+        assert pos_dp > pos_pro > -1, "app.js: dashboard-pages 가 research-pro 뒤가 아님"
         for name in ("lab.html", "pro.html"):
-            src = _read(name)
-            pos_lab = src.find('src="research-lab.jsx')
-            pos_pro = src.find('src="research-pro.jsx')
-            pos_dp = src.find('src="dashboard-pages.jsx')
-            assert pos_dp > pos_lab > -1, f"{name}: dashboard-pages 가 research-lab 뒤가 아님"
-            assert pos_dp > pos_pro > -1, f"{name}: dashboard-pages 가 research-pro 뒤가 아님"
+            assert "bundle/app.js" in _read(name), f"{name}: 컴파일 번들 미로드"
 
 
 # ------------------------------------------------------------- vendor-babel 트랜스폼
@@ -198,11 +201,11 @@ def test_phase9_jsx_transforms_with_vendor_babel(tmp_path: Path) -> None:
 const fs = require('fs');
 const path = require('path');
 const dir = process.argv[2];
-const Babel = require(path.join(dir, 'vendor-babel.js'));
+const esbuild = require(path.join(dir, '..', 'webui-build', 'node_modules', 'esbuild'));
 const files = ['dashboard-pages.jsx', 'app.jsx'];
 let ok = true;
 for (const f of files) {
-  try { Babel.transform(fs.readFileSync(path.join(dir, f), 'utf8'), { presets: ['react'], filename: f }); }
+  try { esbuild.transformSync(fs.readFileSync(path.join(dir, f), 'utf8'), { loader: 'jsx', jsx: 'transform', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment' }); }
   catch (e) { ok = false; console.error('FAIL ' + f + ': ' + e.message); }
 }
 process.exit(ok ? 0 : 1);
