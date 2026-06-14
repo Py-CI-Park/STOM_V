@@ -108,6 +108,8 @@ def test_p11_phase_detail_transforms_with_vendor_babel(tmp_path: Path) -> None:
     node = shutil.which("node")
     if node is None:
         pytest.skip("node 미설치 — 브라우저 babel 트랜스폼 검증 생략")
+    if not (FRONTEND.parent / "webui-build" / "node_modules" / "esbuild").exists():
+        pytest.skip("esbuild 미설치(webui-build/node_modules gitignored) — 트랜스폼 검증 생략")
     script = r"""
 const fs = require('fs');
 const path = require('path');
