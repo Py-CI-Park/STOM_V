@@ -14828,5 +14828,7 @@ class ErrorBoundary extends React.Component {
   }
 }
 Object.assign(window, { App, ErrorBoundary });
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(/* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(App, null)));
+if (typeof window === "undefined" || !window.__STOM_NO_AUTO_MOUNT__) {
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(/* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(App, null)));
+}

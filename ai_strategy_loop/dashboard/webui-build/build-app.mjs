@@ -60,12 +60,16 @@ const stomV = hash8(stomPath);  // stom-ui.js 는 선행 `vite build` 산출물.
 // ---------- 3) HTML ?v= 자동 갱신(수동 핀 폐지) ----------
 //   대상: bundle/app.js (index 만), bundle/stom-ui.js (번들을 로드하는 모든 엔트리).
 const setV = (html, name, v) => {
-  // 파일명의 "."를 이스케이프(.map 등 오버매치 방지). src 속성의 ?v= 만 정밀 교체.
+  // src="bundle/NAME(?v=...)" 의 ?v= 만 정밀 교체. 파일명 "." 이스케이프(.map 오버매치 방지),
+  // src 속성 앵커(주석·문서 내 파일명 언급은 건드리지 않음).
   const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return html.replace(new RegExp(`bundle/${esc}(\\?v=[^"']*)?`, "g"), `bundle/${name}?v=${v}`);
+  return html.replace(
+    new RegExp(`(src=["'])bundle/${esc}(\\?v=[^"']*)?(["'])`, "g"),
+    `$1bundle/${name}?v=${v}$3`,
+  );
 };
 
-const htmlTargets = ["index.html", "lab.html", "pro.html", "STOM AI Dashboard.html"];
+const htmlTargets = ["index.html", "lab.html", "pro.html", "verdict.html", "STOM AI Dashboard.html"];
 const touched = [];
 for (const h of htmlTargets) {
   const p = resolve(FRONTEND, h);

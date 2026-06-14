@@ -115,11 +115,14 @@ class TestResearchProSource:
         #   이전됐다. pro.html 은 그 전역을 마운트하고, ResearchProPanel 의존(research-pro.jsx)과
         #   백테 차트 전역(backtest-charts.jsx)은 dashboard-pages.jsx 이전에 로드한다.
         html = _read_front("pro.html")
-        assert "<window.ProPage" in html
-        assert "dashboard-pages.jsx" in html
-        assert "research-pro.jsx" in html
-        # 백테 차트 전역 의존 로드(BtResultArea 재사용).
-        assert "backtest-charts.jsx" in html
+        # Phase14.7: pro.html 은 컴파일 번들 bundle/app.js(ProPage+의존 전부 포함)를 로드하고
+        #   window.ProPage 를 마운트한다(런타임 babel 제거, createElement 마운트).
+        assert "window.ProPage" in html
+        assert "bundle/app.js" in html
+        # ProPage 의존(ResearchProPanel·백테 차트 전역)은 app.js 번들에 포함된다.
+        app_bundle = _read_front("bundle/app.js")
+        assert "==== research-pro.jsx ====" in app_bundle
+        assert "==== backtest-charts.jsx ====" in app_bundle
 
     def test_styles_append_block_present(self):
         css = _read_front("styles.css")

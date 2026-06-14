@@ -158,11 +158,11 @@ def test_phase8_jsx_transforms_with_vendor_babel(tmp_path: Path) -> None:
 const fs = require('fs');
 const path = require('path');
 const dir = process.argv[2];
-const Babel = require(path.join(dir, 'vendor-babel.js'));
+const esbuild = require(path.join(dir, '..', 'webui-build', 'node_modules', 'esbuild'));
 const files = ['backtest-charts.jsx', 'chart.jsx'];
 let ok = true;
 for (const f of files) {
-  try { Babel.transform(fs.readFileSync(path.join(dir, f), 'utf8'), { presets: ['react'], filename: f }); }
+  try { esbuild.transformSync(fs.readFileSync(path.join(dir, f), 'utf8'), { loader: 'jsx', jsx: 'transform', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment' }); }
   catch (e) { ok = false; console.error('FAIL ' + f + ': ' + e.message); }
 }
 process.exit(ok ? 0 : 1);
