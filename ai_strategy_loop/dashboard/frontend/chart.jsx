@@ -1,16 +1,10 @@
 /* SVG chart for graded_score per generation. */
 const { useMemo: useMemo_c, useState: useState_c, useRef: useRef_c } = React;
 
-// 축 눈금 값 배열(min~max 를 cnt 등분, 양끝 포함). 중간 눈금 라벨용. 무예외.
-function _axisTicks(min, max, cnt) {
-  const lo = Number(min), hi = Number(max);
-  const n = Math.max(2, Math.floor(cnt || 5));
-  if (!isFinite(lo) || !isFinite(hi)) return [];
-  if (hi === lo) return [lo];
-  const out = [];
-  for (let i = 0; i < n; i++) out.push(lo + ((hi - lo) * i) / (n - 1));
-  return out;
-}
+// 축 눈금 값 배열 — Phase14.3 de-dup: 구현은 빌드 번들(bundle/stom-ui.js, 소스 format.mjs)이
+//   window._axisTicks 로 제공(ESM 모듈이라 babel 실행보다 먼저 로드). 여기서는 babel 스코프
+//   별칭만 둬서 기존 bare 호출(_axisTicks(...))이 계속 해소되게 한다.
+const _axisTicks = window._axisTicks;
 
 function MetricHelpStrip({ items }) {
   return (
