@@ -329,32 +329,14 @@ function LiveBacktestChartInline({ state }) {
 
   const W = 880, H = 200;
   const padL = 56, padR = 56, padT = 10, padB = 22;
-  const innerW = W - padL - padR;
   const innerH = H - padT - padB;
   const xMax = Math.max(60, equity.length ? equity[equity.length - 1].t : 60);
-  const eqVals = equity.map(p => p.value);
-  const maxEq = Math.max(baseline * 1.02, ...eqVals);
-  const minEq = Math.min(baseline * 0.98, ...eqVals);
-  const ddMax = Math.max(2, ...drawdown.map(p => p.value_pct), 8);
-
-  const x = (t) => padL + (t / xMax) * innerW;
-  const y = (v) => padT + innerH - ((v - minEq) / Math.max(1, (maxEq - minEq))) * innerH;
-  const yDD = (v) => padT + (v / ddMax) * innerH;
-
-  const eqPath = useMemo_ph(() => equity.length ? equity.map((p, i) => `${i === 0 ? "M" : "L"} ${x(p.t).toFixed(1)} ${y(p.value).toFixed(1)}`).join(" ") : "", [equity, xMax, maxEq, minEq]);
-  const eqAreaPath = useMemo_ph(() => {
-    if (equity.length < 2) return "";
-    const by = y(baseline);
-    return `M ${x(equity[0].t).toFixed(1)} ${by.toFixed(1)} ` +
-      equity.map(p => `L ${x(p.t).toFixed(1)} ${y(p.value).toFixed(1)}`).join(" ") +
-      ` L ${x(equity[equity.length - 1].t).toFixed(1)} ${by.toFixed(1)} Z`;
-  }, [equity, xMax, maxEq, minEq]);
-  const ddAreaPath = useMemo_ph(() => {
-    if (drawdown.length < 2) return "";
-    return `M ${x(drawdown[0].t).toFixed(1)} ${padT.toFixed(1)} ` +
-      drawdown.map(p => `L ${x(p.t).toFixed(1)} ${yDD(p.value_pct).toFixed(1)}`).join(" ") +
-      ` L ${x(drawdown[drawdown.length - 1].t).toFixed(1)} ${padT.toFixed(1)} Z`;
-  }, [drawdown, xMax, ddMax]);
+  // P2: 스케일·경로 수식은 engine.jsx 의 공유 _liveChartGeom 으로 위임(중복 제거, 픽셀 동일).
+  //   인라인본은 자체 치수(H=200·여백)·xMax 공식·시각 셸(2눈금·범례없음·하드코딩색)을 그대로 유지.
+  const { maxEq, minEq, ddMax, x, y, yDD, eqPath, eqAreaPath, ddAreaPath } = useMemo_ph(
+    () => _liveChartGeom({ equity, drawdown, baseline, W, H, padL, padR, padT, padB, xMax }),
+    [equity, drawdown, xMax]
+  );
 
   return (
     <div className="live-chart-wrap">
