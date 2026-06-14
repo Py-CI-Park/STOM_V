@@ -91,6 +91,15 @@ class TestDeferredConsolidationsUntouched:
         assert "function HallOfFamePanel(" in _readf("chart.jsx")
         assert "function _RpHallOfFame(" in _readf("research-pro.jsx")
 
-    def test_pipeline_consts_still_separate(self) -> None:
-        assert "_RL_PIPELINE" in _readf("research-lab.jsx")
-        assert "RP_PIPELINE" in _readf("research-pro.jsx")
+    def test_pipeline_consolidated_to_format_ts(self) -> None:
+        # 프로그램 P4(2026-06-14): PIPELINE 이연 해소 — _RL_PIPELINE/RP_PIPELINE 로컬 사본 삭제,
+        #   format.ts 의 정본 window.STOM_PIPELINE 단일 출처로 통합(field-diff: RP 가 RL 슈퍼셋).
+        fmt = _read(WEBUI_BUILD / "src" / "format.ts")
+        assert "export const STOM_PIPELINE" in fmt
+        assert "STOM_PIPELINE" in fmt[fmt.rfind("Object.assign(window"):]   # window 노출.
+        # 로컬 사본 최상위 선언 제거(중복 출처 0).
+        assert "const _RL_PIPELINE = [" not in _readf("research-lab.jsx")
+        assert "const RP_PIPELINE = [" not in _readf("research-pro.jsx")
+        # 두 소비처가 정본을 참조.
+        assert "window.STOM_PIPELINE" in _readf("research-lab.jsx")
+        assert "window.STOM_PIPELINE" in _readf("research-pro.jsx")

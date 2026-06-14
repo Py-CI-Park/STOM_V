@@ -60,10 +60,13 @@ class TestResearchProSource:
         assert "function _RpRunCompare(" in src
         assert "function _RpHistory(" in src
         assert "function _RpProcessFlowOverlay(" in src
-        # E10 — 7단계 파이프라인 정의(시드→…→동결)와 용어 사전.
+        # 프로그램 P4(2026-06-14): 7단계 파이프라인 정의는 format.ts 정본(window.STOM_PIPELINE)으로
+        #   통합됨 — research-pro 는 로컬 RP_PIPELINE 을 삭제하고 정본을 소비한다. 단계 문구는 정본에서 확인.
+        assert "window.STOM_PIPELINE" in src
+        fmt = (FRONTEND.parent / "webui-build" / "src" / "format.ts").read_text(encoding="utf-8")
         for stage in ("시드 선택", "후보 생성", "격자 탐색", "백테스트 평가",
                       "게이트", "OOS 검증", "동결"):
-            assert stage in src
+            assert stage in fmt
 
     def test_workbench_link_is_loosely_coupled(self):
         src = _read_front("research-pro.jsx")

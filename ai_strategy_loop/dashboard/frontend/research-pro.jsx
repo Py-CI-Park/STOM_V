@@ -778,63 +778,7 @@ function _RpHistory({ baseUrl, isDemo, runList, onOpenWorkbench }) {
 }
 
 /* ── E10: 프로세스 플로우 오버레이 — 전체 진화 파이프라인을 시각적 흐름으로. ── */
-const RP_PIPELINE = [
-  {
-    key: "seed",
-    title: "시드 선택",
-    icon: "🌱",
-    desc: "사람이 검증한 출발 전략(시드)을 고릅니다. 이후 모든 진화의 기준점이 됩니다.",
-    terms: [["시드", "진화의 출발이 되는 기준 전략(예: Tick_902)."]],
-  },
-  {
-    key: "gen",
-    title: "후보 생성 (LLM)",
-    icon: "🧬",
-    desc: "LLM이 직전 세대의 부검(왜 졌는지)을 컨텍스트로 새 매수/매도 조건식을 생성합니다.",
-    terms: [["세대", "한 번의 생성→평가 사이클. gen_00, gen_01 …로 번호가 매겨집니다."]],
-  },
-  {
-    key: "grid",
-    title: "격자 탐색",
-    icon: "▦",
-    desc: "파라미터(θ)를 격자(grid)로 훑어 어느 조합이 견고한지 지형을 만듭니다. 단일 피크가 아닌 '고원'을 찾습니다.",
-    terms: [
-      ["격자", "여러 파라미터 값을 바둑판처럼 조합해 전수 탐색하는 방식."],
-      ["고원/mesa", "이웃 파라미터도 모두 흑자인 안정 영역 — 과최적화가 아닌 진짜 우위."],
-    ],
-  },
-  {
-    key: "bt",
-    title: "백테스트 평가",
-    icon: "📊",
-    desc: "지정 기간·시간단위로 자본곡선·낙폭(MDD)·매매를 시뮬레이션해 성과를 측정합니다.",
-    terms: [["MDD", "최대 낙폭 — 고점 대비 가장 크게 빠진 비율. 작을수록 안전."]],
-  },
-  {
-    key: "gate",
-    title: "적합도 / 품질 게이트",
-    icon: "🚦",
-    desc: "점수 ≥ 목표 & MDD ≤ 상한 & 거래수 ≥ 하한을 동시에 만족해야 통과합니다. 품질은 결과의 견고함을 봅니다.",
-    terms: [
-      ["적합도(fitness)", "손익·MDD·거래수·일관성의 가중합 점수."],
-      ["니치", "특정 환경(시간대·시총)에 특화된 전략 군집."],
-    ],
-  },
-  {
-    key: "oos",
-    title: "OOS 검증",
-    icon: "🔬",
-    desc: "학습에 쓰지 않은 기간(Out-Of-Sample)에서 성과가 유지되는지 확인합니다. 과최적화를 거르는 핵심 관문.",
-    terms: [["OOS", "Out-Of-Sample — 최적화에 쓰지 않은 미래/별도 구간. 진짜 일반화 검증."]],
-  },
-  {
-    key: "freeze",
-    title: "명예의 전당 / 동결",
-    icon: "🏆",
-    desc: "검증을 통과한 전략을 명예의 전당에 올리고, 더 이상 바뀌지 않도록 동결(freeze)해 운영 후보로 보관합니다.",
-    terms: [["동결", "전략을 고정·박제해 재현 가능한 기준선으로 보존하는 것."]],
-  },
-];
+// P4(2026-06-14): 진화 7단계 정본은 format.ts 의 window.STOM_PIPELINE 로 통합(로컬 사본 삭제).
 
 /* live 상태/ops에서 현재 활성 단계를 휴리스틱으로 추정(불가하면 -1=정적 흐름). */
 function _rpActiveStage(liveState, ops) {
@@ -855,6 +799,7 @@ function _rpActiveStage(liveState, ops) {
 
 function _RpProcessFlowOverlay({ onClose, liveState, ops }) {
   const activeStage = _rpActiveStage(liveState, ops);
+  const PIPELINE = window.STOM_PIPELINE || [];
 
   useEffect_rp(() => {
     const onKey = (e) => {
@@ -870,14 +815,14 @@ function _RpProcessFlowOverlay({ onClose, liveState, ops }) {
         <div className="rp-overlay-hd">
           <span className="rp-card-title">진화 프로세스 — 전체 흐름</span>
           {activeStage >= 0 && (
-            <span className="rp-card-sub">현재 단계: {RP_PIPELINE[activeStage].title}</span>
+            <span className="rp-card-sub">현재 단계: {PIPELINE[activeStage].title}</span>
           )}
           <button className="btn ghost sm" style={{ marginLeft: "auto" }} onClick={onClose}>
             ✕ 닫기 (Esc)
           </button>
         </div>
         <div className="rp-flow">
-          {RP_PIPELINE.map((s, i) => {
+          {PIPELINE.map((s, i) => {
             const isActive = i === activeStage;
             return (
               <React.Fragment key={s.key}>
@@ -896,7 +841,7 @@ function _RpProcessFlowOverlay({ onClose, liveState, ops }) {
                     ))}
                   </div>
                 </div>
-                {i < RP_PIPELINE.length - 1 && <div className="rp-flow-arrow">→</div>}
+                {i < PIPELINE.length - 1 && <div className="rp-flow-arrow">→</div>}
               </React.Fragment>
             );
           })}
