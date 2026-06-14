@@ -1095,6 +1095,15 @@ function SimViewBar({ indicators, onToggleIndicator, chartMode, onChartMode,
                  m === "live" ? "Canvas 라이브 렌더(현재봉 성장·플래시·풀 오더플로우)"
                    : m === "lwc" ? "lightweight-charts(전문 줌/크로스헤어·체결강도 오버레이만)" : "순수 SVG 폴백(풀 오더플로우)"))}
         </div>
+        {/* LWC 비대칭 명시(P4): LWC 선택 시 일부 서브패인 미표시가 '고장'이 아니라 의도된
+            ASYMMETRIC PARITY 임을 토글 옆에 캡션으로 분명히 한다(ⓘ 팝오버 보강, 로직 변화 없음). */}
+        {engineMode === "lwc" && (
+          <span className="mono"
+                title="LWC(lightweight-charts)는 캔들 가독성을 위해 일부 하단 서브패인을 싣지 않습니다(의도된 비대칭). 전체 오더플로우/모멘텀은 라이브·SVG 엔진에서 보세요."
+                style={{ fontSize: 9.5, color: "var(--ink-3)" }}>
+            LWC 비대칭 — RSI·MACD·호가불균형·net-delta 미표시(라이브·SVG 전용)
+          </span>
+        )}
         <span className="mono" style={{ ..._SIM_VIEWBAR_LABEL, marginLeft: 6 }}>지표</span>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           {indGroups.map(([grp, defs]) => (

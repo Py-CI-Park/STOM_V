@@ -1123,10 +1123,27 @@ function _btNum(v, digits) {
   return n.toFixed(digits == null ? 2 : digits);
 }
 
+// 드릴다운 상세 한 줄(WFO·스윕 공용) — 라벨 + key=value 칩들. 빈 객체면 "—".
+//   numeric 이면 값에 _btNum(소수 2자리) 적용, 아니면 원문(파라미터 값 등).
+function _BtRowDetail({ label, data, numeric }) {
+  const keys = Object.keys(data || {});
+  return (
+    <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-2)", display: "flex", flexWrap: "wrap", gap: 14, marginTop: 4 }}>
+      <span style={{ color: "var(--ink-3)", minWidth: 80 }}>{label}</span>
+      {keys.length === 0
+        ? <span>—</span>
+        : keys.map(k => (
+            <span key={k}>{k}=<b style={{ color: "var(--ink-1)" }}>{numeric ? _btNum(data[k]) : String(data[k])}</b></span>
+          ))}
+    </div>
+  );
+}
+
 // wfo rounds → 정렬 가능 행. 각 round: {window:{round,train_*,test_*}, best_params, test_result:{metrics}}.
 function BtWfoTable({ result }) {
   const [sortKey, setSortKey] = useState_bt("round");
   const [sortAsc, setSortAsc] = useState_bt(true);
+  const [expanded, setExpanded] = useState_bt(null);   // 펼친 라운드 번호(드릴다운) 또는 null.
   const rounds = (result && result.rounds) || [];
   const summary = (result && result.summary) || {};
   const rows = useMemo_bt(() => rounds.map((r, i) => {
@@ -1140,6 +1157,8 @@ function BtWfoTable({ result }) {
       trade_count: tr.trade_count,
       total_profit_pct: tr.total_profit_pct,
       max_drawdown_pct: tr.max_drawdown_pct,
+      best_params: r.best_params || {},   // 드릴다운: 이 라운드가 훈련에서 고른 파라미터.
+      _metrics: tr,                       // 드릴다운: 표에 없는 전체 테스트 메트릭.
     };
   }), [rounds]);
   const sorted = useMemo_bt(() => rows.slice().sort((a, b) => {
@@ -1176,9 +1195,14 @@ function BtWfoTable({ result }) {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((r, i) => (
-              <tr key={i}>
-                <td style={{ padding: "4px 8px", color: "var(--ink-0)" }}>{r.round}</td>
+            {sorted.map((r, i) => {
+              const isOpen = expanded === r.round;
+              return (
+              <React.Fragment key={i}>
+              <tr onClick={() => setExpanded(isOpen ? null : r.round)}
+                  style={{ cursor: "pointer", background: isOpen ? "var(--bg-2)" : undefined }}
+                  title="클릭 — 이 라운드의 선택 파라미터·전체 메트릭 펼치기/접기">
+                <td style={{ padding: "4px 8px", color: "var(--ink-0)" }}>{isOpen ? "▾ " : "▸ "}{r.round}</td>
                 <td style={{ padding: "4px 8px", color: "var(--ink-3)" }}>{r.train}</td>
                 <td style={{ padding: "4px 8px", color: "var(--ink-3)" }}>{r.test}</td>
                 <td style={{ padding: "4px 8px" }}>
@@ -1191,7 +1215,17 @@ function BtWfoTable({ result }) {
                 </td>
                 <td style={{ padding: "4px 8px", textAlign: "right", color: "var(--red)" }}>{_btNum(r.max_drawdown_pct)}</td>
               </tr>
-            ))}
+              {isOpen && (
+                <tr>
+                  <td colSpan={cols.length} style={{ padding: "6px 12px 10px", background: "var(--bg-2)" }}>
+                    <_BtRowDetail label="선택 파라미터" data={r.best_params} />
+                    <_BtRowDetail label="전체 메트릭" data={r._metrics} numeric />
+                  </td>
+                </tr>
+              )}
+              </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -1203,6 +1237,7 @@ function BtWfoTable({ result }) {
 function BtSweepTable({ result }) {
   const [sortKey, setSortKey] = useState_bt("__idx");
   const [sortAsc, setSortAsc] = useState_bt(true);
+  const [expanded, setExpanded] = useState_bt(null);   // 펼친 조합 #(드릴다운) 또는 null.
   const raw = (result && result.results) || [];
   // 조합 키(combo)는 result/window 외 임의 키. 동적 컬럼을 수집한다.
   const rows = useMemo_bt(() => raw.map((item, i) => {
@@ -1218,6 +1253,7 @@ function BtSweepTable({ result }) {
       trade_count: m.trade_count,
       total_profit_pct: m.total_profit_pct,
       max_drawdown_pct: m.max_drawdown_pct,
+      _metrics: m,   // 드릴다운: 표 3컬럼 밖의 전체 메트릭(win_rate·sharpe·cagr…).
     };
   }), [raw]);
   const comboKeys = useMemo_bt(() => {
@@ -1266,9 +1302,15 @@ function BtSweepTable({ result }) {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((r, i) => (
-              <tr key={i}>
-                <td style={{ padding: "4px 8px", color: "var(--ink-3)" }}>{r.__idx}</td>
+            {sorted.map((r, i) => {
+              const isOpen = expanded === r.__idx;
+              const span = 1 + (hasWindow ? 1 : 0) + comboKeys.length + 3;
+              return (
+              <React.Fragment key={i}>
+              <tr onClick={() => setExpanded(isOpen ? null : r.__idx)}
+                  style={{ cursor: "pointer", background: isOpen ? "var(--bg-2)" : undefined }}
+                  title="클릭 — 이 조합의 전체 메트릭 펼치기/접기">
+                <td style={{ padding: "4px 8px", color: "var(--ink-3)" }}>{isOpen ? "▾ " : "▸ "}{r.__idx}</td>
                 {hasWindow && <td style={{ padding: "4px 8px", color: "var(--ink-3)" }}>{r.window || "—"}</td>}
                 {comboKeys.map(k => (
                   <td key={k} style={{ padding: "4px 8px", color: "var(--ink-0)" }}>
@@ -1281,7 +1323,17 @@ function BtSweepTable({ result }) {
                 </td>
                 <td style={{ padding: "4px 8px", textAlign: "right", color: "var(--red)" }}>{_btNum(r.max_drawdown_pct)}</td>
               </tr>
-            ))}
+              {isOpen && (
+                <tr>
+                  <td colSpan={span} style={{ padding: "6px 12px 10px", background: "var(--bg-2)" }}>
+                    <_BtRowDetail label="조합" data={r.__combo} />
+                    <_BtRowDetail label="전체 메트릭" data={r._metrics} numeric />
+                  </td>
+                </tr>
+              )}
+              </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
