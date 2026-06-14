@@ -161,9 +161,12 @@ class TestFrontendContracts:
     def test_lab_html_loads_research_lab_dependencies(self):
         # EdgeRatioPanel(analysis.jsx) 미로드 → ResearchLabPanel 렌더가 ReferenceError 로
         #   페이지 전체 크래시(pre-existing). 의존 스크립트 로드가 계약이다.
+        # Phase14.7: lab.html 은 컴파일 번들 bundle/app.js 로 모든 의존을 로드한다(런타임 babel 제거).
         src = (FRONTEND / "lab.html").read_text(encoding="utf-8")
+        assert "bundle/app.js" in src, "lab.html 이 컴파일 번들 app.js 를 로드해야 한다"
+        app_bundle = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
         for dep in ("connection.jsx", "chart.jsx", "analysis.jsx", "research-pro.jsx"):
-            assert f'src="{dep}' in src, f"lab.html 이 {dep} 를 로드해야 연구실이 렌더된다"
+            assert f"==== {dep} ====" in app_bundle, f"app.js 에 {dep} 가 포함돼야 연구실이 렌더된다"
 
     def test_research_pro_exports_heatmap_panel(self):
         src = (FRONTEND / "research-pro.jsx").read_text(encoding="utf-8")

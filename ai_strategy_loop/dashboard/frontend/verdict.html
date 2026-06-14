@@ -5,10 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>STOM Verdict · 검증 결산과 운용 결정</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260603a" />
+  <link rel="stylesheet" href="styles.css?v=20260614f" />
   <script src="vendor-react.js?v=20260603a"></script>
   <script src="vendor-react-dom.js?v=20260603a"></script>
-  <script src="vendor-babel.js?v=20260603a"></script>
+  <!-- Phase14.7: 런타임 babel 제거. 운영 컴포넌트는 index.html 과 동일한 컴파일 번들(bundle/app.js)
+       을 공유한다(VerdictPanel + 모든 의존 컴포넌트 정의 — 이전 verdict.html 은 dashboard-pages.jsx
+       만 로드해 의존 누락 위험이 있었으나, 이제 전체 번들로 안전). App 자동 마운트는 끄고 직접 마운트. -->
+  <script type="module" src="bundle/stom-ui.js?v=ac59ac0e"></script>
+  <script>window.__STOM_NO_AUTO_MOUNT__ = true;</script>
 </head>
 <body>
   <!-- Phase9(2026-06-13) — SPA 6탭 통합: 결정 페이지 본문은 dashboard-pages.jsx 전역
@@ -24,10 +28,13 @@
     </div>
   </div>
 
-  <script type="text/babel" src="dashboard-pages.jsx?v=20260614d"></script>
-  <script type="text/babel">
-    ReactDOM.createRoot(document.getElementById("root"))
-      .render(<window.VerdictPanel baseUrl={window.location.origin} />);
+  <!-- 컴파일 번들(defer) — stom-ui 모듈 뒤에 실행. 이후 DOMContentLoaded 에서 VerdictPanel 마운트. -->
+  <script defer src="bundle/app.js?v=fe6cec66"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      ReactDOM.createRoot(document.getElementById("root"))
+        .render(React.createElement(window.VerdictPanel, { baseUrl: window.location.origin }));
+    });
   </script>
 </body>
 </html>
