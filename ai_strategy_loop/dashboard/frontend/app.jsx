@@ -311,15 +311,13 @@ function App() {
               <ErrorBoundary>
                 <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
               </ErrorBoundary>
-              <SectionLabel text="Wiki" />
-              <ErrorBoundary>
-                <ResearchWikiPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
-              </ErrorBoundary>
-              <SectionLabel text="AI Context Pack" />
-              <ErrorBoundary>
-                <AIContextPanel baseUrl={baseUrl} wsStatus={wsStatus}
-                                runId={state.run_id || ""} genNo={state.current_gen} />
-              </ErrorBoundary>
+              {/* P2(2026-06-14): 연구 위키·AI 컨텍스트 팩은 연구실 탭으로 이전(진화 사이드바 중복 제거).
+                  진화 탭엔 발견용 링크만 둔다 — 홈은 dashboard-pages.jsx LabPage(P1). */}
+              <button className="btn ghost sm" onClick={() => setActiveTab("lab")}
+                      style={{ alignSelf: "flex-start", marginTop: 2 }}
+                      title="연구 위키 · AI 컨텍스트 팩은 연구실 탭으로 이동했습니다">
+                📚 연구 위키 · AI 컨텍스트 팩 → 연구실 탭
+              </button>
 
               {/* ── 분석 패널 묶음 (P1~P5 live page_data 소비, demo 배지 규약) ── */}
               <SectionLabel text="진화 분석 · P1~P5" />

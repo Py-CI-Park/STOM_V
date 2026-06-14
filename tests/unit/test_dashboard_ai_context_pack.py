@@ -152,7 +152,8 @@ def test_ai_context_pack_respects_zero_generation(monkeypatch, tmp_path: Path) -
 
 def test_ai_context_frontend_panel_contract() -> None:
     src = _read_front("ai-context.jsx")
-    app = _read_front("app.jsx")
+    # P2(2026-06-14): AIContextPanel 마운트 홈은 연구실 탭(dashboard-pages.jsx) — 진화 사이드바에서 제거.
+    dp = _read_front("dashboard-pages.jsx")
     app_bundle = _read_front("bundle/app.js")  # Phase14.4: 단일 컴파일 번들(순서=마커)
 
     assert "function AIContextPanel(" in src
@@ -167,5 +168,5 @@ def test_ai_context_frontend_panel_contract() -> None:
     assert "forbidden_actions" in src
     assert "summary_text" in src
     assert "Object.assign(window, { AIContextPanel" in src
-    assert "<AIContextPanel" in app
+    assert "<AIContextPanel" in dp
     assert app_bundle.index("==== ai-context.jsx ====") < app_bundle.index("==== app.jsx ====")

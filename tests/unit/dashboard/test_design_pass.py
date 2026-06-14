@@ -63,7 +63,9 @@ class TestResearchPanelsRetained:
 
     def test_all_four_research_panels_still_mounted(self) -> None:
         app = _read("app.jsx")
-        assert "<ResearchLabPanel" in app          # 통합 레이아웃 계약 락.
-        assert "<ResearchWikiPanel" in app          # 진화 전용(타 홈 없음).
-        assert "<AIContextPanel" in app             # 진화 전용(타 홈 없음).
-        assert "ResearchHeatmapPanel" in app        # 사용자 요청 + test_sim_phase6_1 계약.
+        dp = _read("dashboard-pages.jsx")
+        assert "<ResearchLabPanel" in app          # 진화 사이드바 + 연구실 탭 양쪽(통합 레이아웃 계약 락).
+        assert "ResearchHeatmapPanel" in app        # 사용자 요청 + test_sim_phase6_1 계약(진화 유지).
+        # P2(2026-06-14): Wiki/AIContext 는 진화 사이드바에서 제거 → 연구실 탭(dashboard-pages.jsx) 홈으로(P1).
+        assert "<ResearchWikiPanel" in dp           # 새 홈: LabPage.
+        assert "<AIContextPanel" in dp              # 새 홈: LabPage.
