@@ -15,6 +15,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import re
 import sys
@@ -162,6 +164,38 @@ def test_app_bundle_contains_all_ordered_sources() -> None:
     # 마지막 엔트리(app.jsx)는 ReactDOM 마운트를 포함해야 한다(엔트리 무결성).
     assert order[-1] == "app.jsx"
     assert "ReactDOM.createRoot" in app_js, "app.js 에 마운트 코드(ReactDOM.createRoot)가 없습니다."
+
+
+def test_content_hash_cache_consistency() -> None:
+    """14.5: ?v= 는 content-hash(자동). 매니페스트·실제파일해시·HTML ?v= 가 모두 일치해야 한다.
+
+    소스를 고치고 재빌드를 깜빡하면(stale 번들 또는 stale ?v=) 즉시 실패한다 → 수동 캐시 bump 폐지.
+    """
+    bundle = FRONTEND / "bundle"
+    manifest = json.loads((bundle / "manifest.json").read_text(encoding="utf-8"))
+
+    def _h8(name: str) -> str:
+        return hashlib.sha256((bundle / name).read_bytes()).hexdigest()[:8]
+
+    for name in ("app.js", "stom-ui.js"):
+        actual = _h8(name)
+        assert manifest["bundles"][name]["v"] == actual, (
+            f"manifest {name} 해시 불일치(재빌드 필요): manifest={manifest['bundles'][name]['v']} actual={actual}"
+        )
+
+    app_v = manifest["bundles"]["app.js"]["v"]
+    stom_v = manifest["bundles"]["stom-ui.js"]["v"]
+    index = _read(FRONTEND / "index.html")
+    assert f"bundle/app.js?v={app_v}" in index, "index.html app.js ?v= 가 content-hash 와 불일치(stale)."
+    assert f"bundle/stom-ui.js?v={stom_v}" in index, "index.html stom-ui.js ?v= 가 content-hash 와 불일치(stale)."
+    # 번들을 로드하는 다른 엔트리(lab/pro)도 stom-ui ?v= 일치.
+    for entry in ("lab.html", "pro.html"):
+        html = _read(FRONTEND / entry)
+        assert f"bundle/stom-ui.js?v={stom_v}" in html, f"{entry} stom-ui ?v= 불일치(stale)."
+
+    # 매니페스트 appSources 는 build-app.mjs ORDER 와 동일(완전성).
+    assert manifest["appSources"][-1] == "app.jsx"
+    assert len(manifest["appSources"]) == 26
 
 
 def test_throwaway_poc_retired() -> None:
