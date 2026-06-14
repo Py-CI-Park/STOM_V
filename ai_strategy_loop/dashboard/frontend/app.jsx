@@ -266,15 +266,16 @@ function App() {
           {/* 승인 export 결과 배너(final_approval 게이트는 ApprovalDialog가 유지) */}
           <ExportStatusBanner reply={lastReply} />
 
-          <SectionLabel text="Run Monitor" />
-          <CurrentGenPanel state={state} />
-          <ResearchCriteriaBanner state={state} baseUrl={baseUrl} />
-          <ResearchGlossaryPanel />
-          <ActiveStrategyPanel state={state} baseUrl={baseUrl} onViewCode={onViewCodeByGen} />
-          <PhaseTimeline state={state} />
-          <ProcessFlowPanel state={state} />
-          <PhaseDetailPanel state={state} wsStatus={wsStatus} />
-          <EnginePanel state={state} wsStatus={wsStatus} />
+          <_EvoSection storageKey="stom_evo_runmon" label={<SectionLabel text="Run Monitor" />}>
+            <CurrentGenPanel state={state} />
+            <ResearchCriteriaBanner state={state} baseUrl={baseUrl} />
+            <ResearchGlossaryPanel />
+            <ActiveStrategyPanel state={state} baseUrl={baseUrl} onViewCode={onViewCodeByGen} />
+            <PhaseTimeline state={state} />
+            <ProcessFlowPanel state={state} />
+            <PhaseDetailPanel state={state} wsStatus={wsStatus} />
+            <EnginePanel state={state} wsStatus={wsStatus} />
+          </_EvoSection>
 
           <div className="grid-main">
             <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
@@ -292,64 +293,70 @@ function App() {
               <QualityTrendChart state={state} />
               {/* 🏆 명예의 전당 — 인간 벤치마크(19전략) + AI 생성 통합(목표선 가시화) */}
               <HallOfFamePanel baseUrl={baseUrl} wsStatus={wsStatus} />
-              <SectionLabel text="Strategy / Prompt" />
-              <GenerationsTable state={state} mddCap={mddCap} minDailyTrades={minDailyTrades}
-                                onViewCode={(g) => setCodeViewGen(g)}
-                                onSelectDetail={(genNo) => setSelectedDetailGen(genNo)} />
+              <_EvoSection storageKey="stom_evo_strategy" label={<SectionLabel text="Strategy / Prompt" />}>
+                <GenerationsTable state={state} mddCap={mddCap} minDailyTrades={minDailyTrades}
+                                  onViewCode={(g) => setCodeViewGen(g)}
+                                  onSelectDetail={(genNo) => setSelectedDetailGen(genNo)} />
+              </_EvoSection>
               {/* 운영·관찰: run 비교 콘솔(REST /runs, loop_runs.db 직접) */}
-              <SectionLabel text="Compare" />
-              <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
+              <_EvoSection storageKey="stom_evo_compare" label={<SectionLabel text="Compare" />}>
+                <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
+              </_EvoSection>
               {/* 트랙 L — 진화 결과 분석 시각화(세대 멀티라인·산점도·상위표, GET /bt/evo_gens) */}
-              <SectionLabel text="Generation Analytics" />
-              <ErrorBoundary><EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} onOpenWorkbench={() => setActiveTab("backtest")} /></ErrorBoundary>
+              <_EvoSection storageKey="stom_evo_genanalytics" label={<SectionLabel text="Generation Analytics" />}>
+                <ErrorBoundary><EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} onOpenWorkbench={() => setActiveTab("backtest")} /></ErrorBoundary>
+              </_EvoSection>
             </div>
             <aside style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {/* #65 P0 — 분석 클러스터를 판정 카드 위로(인과 순서: 분석→가정→개선이
                   판정의 근거). 패널 자체 변경 없이 JSX 순서만 재배치. */}
               {/* ── AI 분석 패널 묶음 (edge / feature / correlation / combinations REST) ── */}
-              <SectionLabel text="Research Lab" />
-              <ErrorBoundary>
-                <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
-              </ErrorBoundary>
-              {/* P2(2026-06-14): 연구 위키·AI 컨텍스트 팩은 연구실 탭으로 이전(진화 사이드바 중복 제거).
-                  진화 탭엔 발견용 링크만 둔다 — 홈은 dashboard-pages.jsx LabPage(P1). */}
-              <button className="btn ghost sm" onClick={() => setActiveTab("lab")}
-                      style={{ alignSelf: "flex-start", marginTop: 2 }}
-                      title="연구 위키 · AI 컨텍스트 팩은 연구실 탭으로 이동했습니다">
-                📚 연구 위키 · AI 컨텍스트 팩 → 연구실 탭
-              </button>
+              <_EvoSection storageKey="stom_evo_researchlab" label={<SectionLabel text="Research Lab" />}>
+                <ErrorBoundary>
+                  <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
+                </ErrorBoundary>
+                {/* P2(2026-06-14): 연구 위키·AI 컨텍스트 팩은 연구실 탭으로 이전(진화 사이드바 중복 제거).
+                    진화 탭엔 발견용 링크만 둔다 — 홈은 dashboard-pages.jsx LabPage(P1). */}
+                <button className="btn ghost sm" onClick={() => setActiveTab("lab")}
+                        style={{ alignSelf: "flex-start", marginTop: 2 }}
+                        title="연구 위키 · AI 컨텍스트 팩은 연구실 탭으로 이동했습니다">
+                  📚 연구 위키 · AI 컨텍스트 팩 → 연구실 탭
+                </button>
+              </_EvoSection>
 
               {/* ── 분석 패널 묶음 (P1~P5 live page_data 소비, demo 배지 규약) ── */}
-              <SectionLabel text="진화 분석 · P1~P5" />
-              {/* P2b-2 — 가정 루프(세운 가정+채택/기각 판정) 가시화. 판정된 가정이
-                  있는 세대가 없으면(토글 OFF/구 상태) 패널이 null 반환해 미표시. */}
-              <HypothesisPanel state={state} />
-              <AutopsyPanel state={state} wsStatus={wsStatus} />
-              <PopulationPanel state={state} wsStatus={wsStatus} />
-              <LineagePanel state={state} wsStatus={wsStatus} />
-              <MetaPanel state={state} wsStatus={wsStatus} />
-              <HoldoutPanel state={state} wsStatus={wsStatus} />
+              <_EvoSection storageKey="stom_evo_analysis" label={<SectionLabel text="진화 분석 · P1~P5" />}>
+                {/* P2b-2 — 가정 루프(세운 가정+채택/기각 판정) 가시화. 판정된 가정이
+                    있는 세대가 없으면(토글 OFF/구 상태) 패널이 null 반환해 미표시. */}
+                <HypothesisPanel state={state} />
+                <AutopsyPanel state={state} wsStatus={wsStatus} />
+                <PopulationPanel state={state} wsStatus={wsStatus} />
+                <LineagePanel state={state} wsStatus={wsStatus} />
+                <MetaPanel state={state} wsStatus={wsStatus} />
+                <HoldoutPanel state={state} wsStatus={wsStatus} />
+              </_EvoSection>
 
               {/* ── 판정 카드(분석의 결론) ── */}
-              <SectionLabel text="판정 · Best / Winner" />
-              {/* #65 P1 — best.gen===winner.gen이면(게이트 통과한 best가 곧 winner) 한 카드로
-                  병합 표기(graded+score 동시). 다르면 기존 2카드(하위호환). */}
-              {(state.best && state.winner && state.best.gen === state.winner.gen) ? (
-                <MergedBestWinnerCard best={state.best} winner={state.winner}
-                                      onApprove={() => setApprovalOpen(true)}
-                                      onViewCode={onViewCodeByGen} />
-              ) : (
-                <>
-                  <BestCard best={state.best} onViewCode={onViewCodeByGen} />
-                  <WinnerCard winner={state.winner}
-                              onApprove={() => setApprovalOpen(true)}
-                              onViewCode={onViewCodeByGen} />
-                </>
-              )}
-              {/* R8 — 활성 설정/토글 스냅샷(LoopState.active_config) LIVE 노출 */}
-              <ActiveConfigPanel state={state} />
-              <CostPanel state={state} cap={50000} />
-              <FeedbackPanel state={state} />
+              <_EvoSection storageKey="stom_evo_verdict" label={<SectionLabel text="판정 · Best / Winner" />}>
+                {/* #65 P1 — best.gen===winner.gen이면(게이트 통과한 best가 곧 winner) 한 카드로
+                    병합 표기(graded+score 동시). 다르면 기존 2카드(하위호환). */}
+                {(state.best && state.winner && state.best.gen === state.winner.gen) ? (
+                  <MergedBestWinnerCard best={state.best} winner={state.winner}
+                                        onApprove={() => setApprovalOpen(true)}
+                                        onViewCode={onViewCodeByGen} />
+                ) : (
+                  <>
+                    <BestCard best={state.best} onViewCode={onViewCodeByGen} />
+                    <WinnerCard winner={state.winner}
+                                onApprove={() => setApprovalOpen(true)}
+                                onViewCode={onViewCodeByGen} />
+                  </>
+                )}
+                {/* R8 — 활성 설정/토글 스냅샷(LoopState.active_config) LIVE 노출 */}
+                <ActiveConfigPanel state={state} />
+                <CostPanel state={state} cap={50000} />
+                <FeedbackPanel state={state} />
+              </_EvoSection>
             </aside>
           </div>
         </main>
@@ -427,6 +434,28 @@ function TabNav({ activeTab, onSelect }) {
 //   해 "단일 30패널 스크롤"을 시각적으로 구획한다. 인라인(dim ink-3) 대비 가독성·위계 향상.
 function SectionLabel({ text }) {
   return <div className="stom-section-label">{text}</div>;
+}
+
+// P3(2026-06-14): 진화 탭 섹션 그룹 접이식 래퍼(IA 완화). 네이티브 <details> — 키보드 기본 동작 +
+//   aria-expanded + localStorage 영속. 기본 open(펼침) → 첫 페인트는 기존과 동일(작은 disclosure
+//   caret 만 추가). label 은 기존 <SectionLabel text="..."/> 엘리먼트를 그대로 받아 summary 에 렌더
+//   (text="..." 리터럴이 호출부에 보존되어 design_pass/integrated_layout 계약 유지). 패널 순서 불변.
+function _EvoSection({ storageKey, label, children }) {
+  const [open, setOpen] = useState_a(() => {
+    try { const v = window.localStorage.getItem(storageKey); return v === null ? true : v === "1"; }
+    catch (e) { return true; }
+  });
+  const onToggle = (e) => {
+    const o = e.currentTarget.open;
+    setOpen(o);
+    try { window.localStorage.setItem(storageKey, o ? "1" : "0"); } catch (e2) {}
+  };
+  return (
+    <details className="evo-group" open={open} onToggle={onToggle}>
+      <summary className="evo-group-summary" aria-expanded={open}>{label}</summary>
+      <div className="evo-group-body">{children}</div>
+    </details>
+  );
 }
 
 function ThemeToggle({ theme, onChange }) {

@@ -14613,7 +14613,7 @@ function App() {
       onRefresh: fetchRunState,
       disabled: isDemoSrc
     }
-  ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setSettingsOpen(true), disabled: running }, "\u25B8 \uC2DC\uC791"), /* @__PURE__ */ React.createElement("button", { className: "btn danger", onClick: onStop, disabled: !running }, "\u25FC \uC815\uC9C0")))), simVisited && /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "simulation" ? void 0 : "none" } }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(SimulationTab, { baseUrl, wsStatus }))), activeTab === "backtest" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(BacktestTab, { baseUrl, wsStatus })) : activeTab === "simulation" ? null : activeTab === "lab" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, window.LabPage ? /* @__PURE__ */ React.createElement(window.LabPage, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "12px 16px" } }, "\uC5F0\uAD6C\uC2E4 \uB85C\uB529 \uC911\u2026")) : activeTab === "pro" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, window.ProPage ? /* @__PURE__ */ React.createElement(window.ProPage, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "12px 16px" } }, "\uBD84\uC11D \uD504\uB85C \uB85C\uB529 \uC911\u2026")) : activeTab === "verdict" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, window.VerdictPanel ? /* @__PURE__ */ React.createElement(window.VerdictPanel, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "12px 16px" } }, "\uACB0\uC815 \uC774\uB825 \uB85C\uB529 \uC911\u2026")) : isIdle ? /* @__PURE__ */ React.createElement(IdleState, { onStart: () => setSettingsOpen(true), configSpec }) : /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(SectionLabel, { text: "Run Monitor" }), /* @__PURE__ */ React.createElement(CurrentGenPanel, { state }), /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state, baseUrl, onViewCode: onViewCodeByGen }), /* @__PURE__ */ React.createElement(PhaseTimeline, { state }), /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }), /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(EnginePanel, { state, wsStatus }), /* @__PURE__ */ React.createElement("div", { className: "grid-main" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, minWidth: 0 } }, window.ResearchHeatmapPanel ? /* @__PURE__ */ React.createElement(window.ResearchHeatmapPanel, { baseUrl, wsStatus, runId: state.run_id }) : null, /* @__PURE__ */ React.createElement(FitnessChart, { state, target: targetScore }), /* @__PURE__ */ React.createElement(ProfitChart, { state, targetPct: 0 }), /* @__PURE__ */ React.createElement(EquityOverlayChart, { baseUrl, wsStatus, runId: state.run_id }), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setSettingsOpen(true), disabled: running }, "\u25B8 \uC2DC\uC791"), /* @__PURE__ */ React.createElement("button", { className: "btn danger", onClick: onStop, disabled: !running }, "\u25FC \uC815\uC9C0")))), simVisited && /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "simulation" ? void 0 : "none" } }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(SimulationTab, { baseUrl, wsStatus }))), activeTab === "backtest" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(BacktestTab, { baseUrl, wsStatus })) : activeTab === "simulation" ? null : activeTab === "lab" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, window.LabPage ? /* @__PURE__ */ React.createElement(window.LabPage, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "12px 16px" } }, "\uC5F0\uAD6C\uC2E4 \uB85C\uB529 \uC911\u2026")) : activeTab === "pro" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, window.ProPage ? /* @__PURE__ */ React.createElement(window.ProPage, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "12px 16px" } }, "\uBD84\uC11D \uD504\uB85C \uB85C\uB529 \uC911\u2026")) : activeTab === "verdict" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, window.VerdictPanel ? /* @__PURE__ */ React.createElement(window.VerdictPanel, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "12px 16px" } }, "\uACB0\uC815 \uC774\uB825 \uB85C\uB529 \uC911\u2026")) : isIdle ? /* @__PURE__ */ React.createElement(IdleState, { onStart: () => setSettingsOpen(true), configSpec }) : /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_runmon", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "Run Monitor" }) }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state }), /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state, baseUrl, onViewCode: onViewCodeByGen }), /* @__PURE__ */ React.createElement(PhaseTimeline, { state }), /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }), /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(EnginePanel, { state, wsStatus })), /* @__PURE__ */ React.createElement("div", { className: "grid-main" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, minWidth: 0 } }, window.ResearchHeatmapPanel ? /* @__PURE__ */ React.createElement(window.ResearchHeatmapPanel, { baseUrl, wsStatus, runId: state.run_id }) : null, /* @__PURE__ */ React.createElement(FitnessChart, { state, target: targetScore }), /* @__PURE__ */ React.createElement(ProfitChart, { state, targetPct: 0 }), /* @__PURE__ */ React.createElement(EquityOverlayChart, { baseUrl, wsStatus, runId: state.run_id }), /* @__PURE__ */ React.createElement(
     BacktestDetailChart,
     {
       baseUrl,
@@ -14621,7 +14621,7 @@ function App() {
       state,
       externalSelGen: selectedDetailGen
     }
-  ), /* @__PURE__ */ React.createElement(QualityTrendChart, { state }), /* @__PURE__ */ React.createElement(HallOfFamePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(SectionLabel, { text: "Strategy / Prompt" }), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(QualityTrendChart, { state }), /* @__PURE__ */ React.createElement(HallOfFamePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_strategy", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "Strategy / Prompt" }) }, /* @__PURE__ */ React.createElement(
     GenerationsTable,
     {
       state,
@@ -14630,7 +14630,7 @@ function App() {
       onViewCode: (g) => setCodeViewGen(g),
       onSelectDetail: (genNo) => setSelectedDetailGen(genNo)
     }
-  ), /* @__PURE__ */ React.createElement(SectionLabel, { text: "Compare" }), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(SectionLabel, { text: "Generation Analytics" }), /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId: state.run_id || "", onOpenWorkbench: () => setActiveTab("backtest") }))), /* @__PURE__ */ React.createElement("aside", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(SectionLabel, { text: "Research Lab" }), /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(ResearchLabPanel, { baseUrl, wsStatus, runId: state.run_id || "" })), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_compare", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "Compare" }) }, /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus })), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_genanalytics", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "Generation Analytics" }) }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId: state.run_id || "", onOpenWorkbench: () => setActiveTab("backtest") })))), /* @__PURE__ */ React.createElement("aside", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_researchlab", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "Research Lab" }) }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(ResearchLabPanel, { baseUrl, wsStatus, runId: state.run_id || "" })), /* @__PURE__ */ React.createElement(
     "button",
     {
       className: "btn ghost sm",
@@ -14639,7 +14639,7 @@ function App() {
       title: "\uC5F0\uAD6C \uC704\uD0A4 \xB7 AI \uCEE8\uD14D\uC2A4\uD2B8 \uD329\uC740 \uC5F0\uAD6C\uC2E4 \uD0ED\uC73C\uB85C \uC774\uB3D9\uD588\uC2B5\uB2C8\uB2E4"
     },
     "\u{1F4DA} \uC5F0\uAD6C \uC704\uD0A4 \xB7 AI \uCEE8\uD14D\uC2A4\uD2B8 \uD329 \u2192 \uC5F0\uAD6C\uC2E4 \uD0ED"
-  ), /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC9C4\uD654 \uBD84\uC11D \xB7 P1~P5" }), /* @__PURE__ */ React.createElement(HypothesisPanel, { state }), /* @__PURE__ */ React.createElement(AutopsyPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(PopulationPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uD310\uC815 \xB7 Best / Winner" }), state.best && state.winner && state.best.gen === state.winner.gen ? /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_analysis", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC9C4\uD654 \uBD84\uC11D \xB7 P1~P5" }) }, /* @__PURE__ */ React.createElement(HypothesisPanel, { state }), /* @__PURE__ */ React.createElement(AutopsyPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(PopulationPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state, wsStatus })), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_verdict", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uD310\uC815 \xB7 Best / Winner" }) }, state.best && state.winner && state.best.gen === state.winner.gen ? /* @__PURE__ */ React.createElement(
     MergedBestWinnerCard,
     {
       best: state.best,
@@ -14654,7 +14654,7 @@ function App() {
       onApprove: () => setApprovalOpen(true),
       onViewCode: onViewCodeByGen
     }
-  )), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state }), /* @__PURE__ */ React.createElement(CostPanel, { state, cap: 5e4 }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state })))), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state }), /* @__PURE__ */ React.createElement(CostPanel, { state, cap: 5e4 }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state }))))), /* @__PURE__ */ React.createElement(
     SettingsModal,
     {
       open: settingsOpen,
@@ -14707,6 +14707,25 @@ function TabNav({ activeTab, onSelect }) {
 }
 function SectionLabel({ text }) {
   return /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, text);
+}
+function _EvoSection({ storageKey, label, children }) {
+  const [open, setOpen] = useState_a(() => {
+    try {
+      const v = window.localStorage.getItem(storageKey);
+      return v === null ? true : v === "1";
+    } catch (e) {
+      return true;
+    }
+  });
+  const onToggle = (e) => {
+    const o = e.currentTarget.open;
+    setOpen(o);
+    try {
+      window.localStorage.setItem(storageKey, o ? "1" : "0");
+    } catch (e2) {
+    }
+  };
+  return /* @__PURE__ */ React.createElement("details", { className: "evo-group", open, onToggle }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary", "aria-expanded": open }, label), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, children));
 }
 function ThemeToggle({ theme, onChange }) {
   return /* @__PURE__ */ React.createElement("div", { className: "theme-toggle", role: "group", "aria-label": "\uD14C\uB9C8" }, /* @__PURE__ */ React.createElement(
