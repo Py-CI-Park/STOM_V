@@ -39,9 +39,11 @@ def test_research_wiki_exposed_and_loaded_before_app() -> None:
 
 
 def test_app_mounts_research_wiki_panel_with_backend_context() -> None:
-    src = _read_front("app.jsx")
+    # P2(2026-06-14): ResearchWiki 의 홈은 연구실 탭(dashboard-pages.jsx LabPage) — 진화 사이드바에서 제거.
+    #   새 마운트 사이트는 _dpBase 정규화 baseUrl(base) + 무WS 탭의 wsStatus="na"(백엔드 컨텍스트 props).
+    src = _read_front("dashboard-pages.jsx")
 
     assert "<ResearchWikiPanel" in src
     snippet = src[src.find("<ResearchWikiPanel") : src.find("<ResearchWikiPanel") + 180]
-    assert "baseUrl={baseUrl}" in snippet
-    assert "wsStatus={wsStatus}" in snippet
+    assert "baseUrl={base}" in snippet
+    assert 'wsStatus="na"' in snippet

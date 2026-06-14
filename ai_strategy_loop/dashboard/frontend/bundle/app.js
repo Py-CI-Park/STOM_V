@@ -14630,15 +14630,16 @@ function App() {
       onViewCode: (g) => setCodeViewGen(g),
       onSelectDetail: (genNo) => setSelectedDetailGen(genNo)
     }
-  ), /* @__PURE__ */ React.createElement(SectionLabel, { text: "Compare" }), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(SectionLabel, { text: "Generation Analytics" }), /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId: state.run_id || "", onOpenWorkbench: () => setActiveTab("backtest") }))), /* @__PURE__ */ React.createElement("aside", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(SectionLabel, { text: "Research Lab" }), /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(ResearchLabPanel, { baseUrl, wsStatus, runId: state.run_id || "" })), /* @__PURE__ */ React.createElement(SectionLabel, { text: "Wiki" }), /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl, wsStatus, runId: state.run_id || "" })), /* @__PURE__ */ React.createElement(SectionLabel, { text: "AI Context Pack" }), /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(
-    AIContextPanel,
+  ), /* @__PURE__ */ React.createElement(SectionLabel, { text: "Compare" }), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(SectionLabel, { text: "Generation Analytics" }), /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId: state.run_id || "", onOpenWorkbench: () => setActiveTab("backtest") }))), /* @__PURE__ */ React.createElement("aside", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(SectionLabel, { text: "Research Lab" }), /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(ResearchLabPanel, { baseUrl, wsStatus, runId: state.run_id || "" })), /* @__PURE__ */ React.createElement(
+    "button",
     {
-      baseUrl,
-      wsStatus,
-      runId: state.run_id || "",
-      genNo: state.current_gen
-    }
-  )), /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC9C4\uD654 \uBD84\uC11D \xB7 P1~P5" }), /* @__PURE__ */ React.createElement(HypothesisPanel, { state }), /* @__PURE__ */ React.createElement(AutopsyPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(PopulationPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uD310\uC815 \xB7 Best / Winner" }), state.best && state.winner && state.best.gen === state.winner.gen ? /* @__PURE__ */ React.createElement(
+      className: "btn ghost sm",
+      onClick: () => setActiveTab("lab"),
+      style: { alignSelf: "flex-start", marginTop: 2 },
+      title: "\uC5F0\uAD6C \uC704\uD0A4 \xB7 AI \uCEE8\uD14D\uC2A4\uD2B8 \uD329\uC740 \uC5F0\uAD6C\uC2E4 \uD0ED\uC73C\uB85C \uC774\uB3D9\uD588\uC2B5\uB2C8\uB2E4"
+    },
+    "\u{1F4DA} \uC5F0\uAD6C \uC704\uD0A4 \xB7 AI \uCEE8\uD14D\uC2A4\uD2B8 \uD329 \u2192 \uC5F0\uAD6C\uC2E4 \uD0ED"
+  ), /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC9C4\uD654 \uBD84\uC11D \xB7 P1~P5" }), /* @__PURE__ */ React.createElement(HypothesisPanel, { state }), /* @__PURE__ */ React.createElement(AutopsyPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(PopulationPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uD310\uC815 \xB7 Best / Winner" }), state.best && state.winner && state.best.gen === state.winner.gen ? /* @__PURE__ */ React.createElement(
     MergedBestWinnerCard,
     {
       best: state.best,
