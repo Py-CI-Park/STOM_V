@@ -1,4 +1,4 @@
-// format.mjs — Phase14.0 PoC: connection.jsx 순수 포매터의 ESM 정본.
+// format.mjs — Phase14.1 빌드 소스: connection.jsx 순수 포매터의 ESM 정본.
 //
 //   connection.jsx(909~941줄) 구현과 "바이트 동일"을 유지한다. 이 동일성이
 //   출력 동등성 게이트의 전제다(번들 출력 == 런타임-babel 출력). 14.x에서
