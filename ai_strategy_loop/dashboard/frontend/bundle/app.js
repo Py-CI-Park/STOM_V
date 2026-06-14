@@ -14705,16 +14705,7 @@ function TabNav({ activeTab, onSelect }) {
   }));
 }
 function SectionLabel({ text }) {
-  return /* @__PURE__ */ React.createElement("div", { className: "mono", style: {
-    fontSize: 10.5,
-    color: "var(--ink-3)",
-    letterSpacing: ".12em",
-    textTransform: "uppercase",
-    padding: "2px 2px",
-    marginTop: 4,
-    borderTop: "1px solid var(--line-1)",
-    paddingTop: 10
-  } }, text);
+  return /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, text);
 }
 function ThemeToggle({ theme, onChange }) {
   return /* @__PURE__ */ React.createElement("div", { className: "theme-toggle", role: "group", "aria-label": "\uD14C\uB9C8" }, /* @__PURE__ */ React.createElement(

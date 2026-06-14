@@ -424,16 +424,11 @@ function TabNav({ activeTab, onSelect }) {
 }
 
 // 분석 패널 묶음을 시각적으로 구분하는 작은 섹션 라벨(레이아웃 정리용).
+// Design Pass(2026-06-14): 섹션 헤더를 styles.css .stom-section-label(ink-1·12px·teal accent)로
+//   승격 — 진화 탭의 논리 그룹(Run Monitor·Strategy·Compare·Research·분석·판정) 경계를 분명히
+//   해 "단일 30패널 스크롤"을 시각적으로 구획한다. 인라인(dim ink-3) 대비 가독성·위계 향상.
 function SectionLabel({ text }) {
-  return (
-    <div className="mono" style={{
-      fontSize: 10.5, color: "var(--ink-3)", letterSpacing: ".12em",
-      textTransform: "uppercase", padding: "2px 2px", marginTop: 4,
-      borderTop: "1px solid var(--line-1)", paddingTop: 10,
-    }}>
-      {text}
-    </div>
-  );
+  return <div className="stom-section-label">{text}</div>;
 }
 
 function ThemeToggle({ theme, onChange }) {
