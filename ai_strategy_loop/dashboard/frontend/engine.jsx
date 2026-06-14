@@ -238,6 +238,42 @@ function EnginePanel({ state, wsStatus }) {
   );
 }
 
+// 라이브 자본/낙폭 차트 기하(P2 공유) — equity/drawdown + 치수(W,H,pad*) + xMax 로
+//   스케일 함수(x/y/yDD)와 경로 문자열(eqPath/eqAreaPath/ddAreaPath)을 계산한다.
+//   engine 전폭본(LiveBacktestChart)·phase-detail 인라인본(LiveBacktestChartInline)이
+//   공유해 중복 수식을 제거한다. **픽셀 중립**: 호출부가 각자의 치수·xMax 를 그대로 넘기면
+//   기존과 byte-동일한 경로 문자열을 돌려준다(시각 셸은 호출부가 각자 유지 — 두 차트는
+//   눈금 수·범례·색 토큰/하드코딩·패널 래퍼가 의도적으로 다르므로 셸은 합치지 않는다).
+function _liveChartGeom({ equity, drawdown, baseline, W, H, padL, padR, padT, padB, xMax }) {
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const eqVals = equity.map(p => p.value);
+  const maxEq = Math.max(baseline * 1.02, ...eqVals);
+  const minEq = Math.min(baseline * 0.98, ...eqVals);
+  const ddMax = Math.max(2, ...drawdown.map(p => p.value_pct), 8);
+  const x = (t) => padL + (t / xMax) * innerW;
+  const y = (v) => padT + innerH - ((v - minEq) / Math.max(1, (maxEq - minEq))) * innerH;
+  const yDD = (v) => padT + (v / ddMax) * innerH;   // drawdown shown inverted from top
+  const eqPath = equity.length
+    ? equity.map((p, i) => `${i === 0 ? "M" : "L"} ${x(p.t).toFixed(1)} ${y(p.value).toFixed(1)}`).join(" ")
+    : "";
+  let eqAreaPath = "";
+  if (equity.length >= 2) {
+    const by = y(baseline);
+    eqAreaPath = `M ${x(equity[0].t).toFixed(1)} ${by.toFixed(1)} `
+      + equity.map(p => `L ${x(p.t).toFixed(1)} ${y(p.value).toFixed(1)}`).join(" ")
+      + ` L ${x(equity[equity.length - 1].t).toFixed(1)} ${by.toFixed(1)} Z`;
+  }
+  let ddAreaPath = "";
+  if (drawdown.length >= 2) {
+    ddAreaPath = `M ${x(drawdown[0].t).toFixed(1)} ${padT.toFixed(1)} `
+      + drawdown.map(p => `L ${x(p.t).toFixed(1)} ${yDD(p.value_pct).toFixed(1)}`).join(" ")
+      + ` L ${x(drawdown[drawdown.length - 1].t).toFixed(1)} ${padT.toFixed(1)} Z`;
+  }
+  // innerW/innerH 는 스케일 계산 전용(반환 안 함 — 호출부는 자체 innerH 로 축 셸을 그린다).
+  return { maxEq, minEq, ddMax, x, y, yDD, eqPath, eqAreaPath, ddAreaPath };
+}
+
 // ---------- Live equity / drawdown chart for current gen ----------
 function LiveBacktestChart({ state }) {
   const equity = state.current_run?.equity || [];
@@ -247,41 +283,14 @@ function LiveBacktestChart({ state }) {
 
   const W = 880, H = 240;
   const padL = 60, padR = 60, padT = 14, padB = 26;
-  const innerW = W - padL - padR;
   const innerH = H - padT - padB;
 
   const xMax = Math.max(60, equity.length, ...(equity[equity.length - 1] ? [equity[equity.length - 1].t] : [60]));
-  const eqVals = equity.map(p => p.value);
-  const maxEq = Math.max(baseline * 1.02, ...eqVals);
-  const minEq = Math.min(baseline * 0.98, ...eqVals);
-  const ddMax = Math.max(2, ...drawdown.map(p => p.value_pct), 8);
-
-  const x = (t) => padL + (t / xMax) * innerW;
-  const y = (v) => padT + innerH - ((v - minEq) / Math.max(1, (maxEq - minEq))) * innerH;
-  const yDD = (v) => padT + (v / ddMax) * innerH;   // drawdown shown inverted from top
-
-  const eqPath = useMemo_e(() => {
-    if (!equity.length) return "";
-    return equity.map((p, i) => `${i === 0 ? "M" : "L"} ${x(p.t).toFixed(1)} ${y(p.value).toFixed(1)}`).join(" ");
-  }, [equity, xMax, maxEq, minEq]);
-
-  const eqAreaPath = useMemo_e(() => {
-    if (equity.length < 2) return "";
-    const baselineY = y(baseline);
-    const start = `M ${x(equity[0].t).toFixed(1)} ${baselineY.toFixed(1)}`;
-    const mid = equity.map(p => `L ${x(p.t).toFixed(1)} ${y(p.value).toFixed(1)}`).join(" ");
-    const end = `L ${x(equity[equity.length - 1].t).toFixed(1)} ${baselineY.toFixed(1)} Z`;
-    return `${start} ${mid} ${end}`;
-  }, [equity, xMax, maxEq, minEq]);
-
-  const ddAreaPath = useMemo_e(() => {
-    if (drawdown.length < 2) return "";
-    const top = padT;
-    const start = `M ${x(drawdown[0].t).toFixed(1)} ${top.toFixed(1)}`;
-    const mid = drawdown.map(p => `L ${x(p.t).toFixed(1)} ${yDD(p.value_pct).toFixed(1)}`).join(" ");
-    const end = `L ${x(drawdown[drawdown.length - 1].t).toFixed(1)} ${top.toFixed(1)} Z`;
-    return `${start} ${mid} ${end}`;
-  }, [drawdown, xMax, ddMax]);
+  // P2: 스케일·경로 수식은 공유 _liveChartGeom 으로 위임(중복 제거, 픽셀 동일).
+  const { maxEq, minEq, ddMax, x, y, yDD, eqPath, eqAreaPath, ddAreaPath } = useMemo_e(
+    () => _liveChartGeom({ equity, drawdown, baseline, W, H, padL, padR, padT, padB, xMax }),
+    [equity, drawdown, xMax]
+  );
 
   const last = equity[equity.length - 1];
   const lastPnl = last ? (last.value - baseline) : 0;
@@ -420,4 +429,4 @@ function LiveBacktestChart({ state }) {
   );
 }
 
-Object.assign(window, { EnginePanel, LiveBacktestChart, fmtElapsed });
+Object.assign(window, { EnginePanel, LiveBacktestChart, fmtElapsed, _liveChartGeom });
