@@ -63,11 +63,25 @@ export function _axisTicks(min: unknown, max: unknown, cnt?: unknown): number[] 
   return out;
 }
 
+// 가격 축 눈금 라벨(원, 천단위 콤마). P3 de-dup: simulation-charts(_simPriceTick)·
+//   sim-live-chart(_slcPriceTick) 동일 로직의 단일 출처. null/비유한값 → "—"(슈퍼셋 가드).
+export function _priceTick(v: unknown): string {
+  const n = Number(v);
+  return (v == null || !isFinite(n)) ? "—" : Math.round(n).toLocaleString("ko-KR");
+}
+
+// HMS(HHMMSS) 시각 라벨 "HH:MM:SS". P3 de-dup: simulation-charts(_simTimeLabel)·
+//   sim-live-chart(_slcTimeLabel) 동일 로직의 단일 출처. null → 0 으로 안전 보정(슈퍼셋).
+export function _hmsTimeLabel(hms: unknown): string {
+  const s = String(hms == null ? 0 : hms).padStart(6, "0");
+  return s.slice(0, 2) + ":" + s.slice(2, 4) + ":" + s.slice(4, 6);
+}
+
 // 빌드 번들이 window 전역으로 공유 순수 유틸을 제공(소비처는 babel/build 무관 동일 호출).
 if (typeof window !== "undefined") {
   Object.assign(window, {
     fmtScore, fmtPct, fmtMoney, fmtInt, fmtTime,
     STATUS_KR, isDemoSource, livePanelPending,
-    _axisTicks,
+    _axisTicks, _priceTick, _hmsTimeLabel,
   });
 }
