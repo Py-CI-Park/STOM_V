@@ -485,7 +485,7 @@ class TestFrontendContract:
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # index.html 에 직접 존재하는 자산(벤더/스타일/빌드 번들).
-        assert "styles.css?v=20260614h" in src   # 프로그램 P0(2026-06-14): 디자인 토큰 스캐폴딩 — 캐시버스트 h.
+        assert "styles.css?v=20260614i" in src   # P3(2026-06-14): 진화 섹션 접이식 그룹 CSS — 캐시버스트 i.
         assert "vendor-lightweight-charts.js?v=20260612a" in src
         # Phase14.4/14.5: 운영 컴포넌트는 단일 번들 bundle/app.js(+stom-ui.js)로 로드.
         #   ?v= 는 content-hash(자동) — 값은 하드코딩하지 않는다(일관성은 test_p14 가 검증).
