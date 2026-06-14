@@ -15,12 +15,13 @@ def test_operational_sections_are_named_and_ordered() -> None:
     """Given app.jsx, When rendered, Then the major workbench sections are explicit."""
     src = _read("app.jsx")
 
+    # P2(2026-06-14): "Wiki"/"AI Context Pack" SectionLabel 은 진화 사이드바에서 제거(연구실 탭 이전).
+    #   나머지 진화 섹션 라벨/순서 계약은 그대로 유지(비-Wiki 단언만 검사).
     required = [
         'text="Run Monitor"',
         'text="Research Lab"',
         'text="Strategy / Prompt"',
         'text="Compare"',
-        'text="Wiki"',
     ]
     for marker in required:
         assert marker in src
@@ -29,7 +30,6 @@ def test_operational_sections_are_named_and_ordered() -> None:
     assert src.index('text="Strategy / Prompt"') < src.index("<GenerationsTable")
     assert src.index('text="Compare"') < src.index("<RunComparePanel")
     assert src.index('text="Research Lab"') < src.index("<ResearchLabPanel")
-    assert src.index('text="Wiki"') < src.index("<ResearchWikiPanel")
 
 
 def test_dashboard_bundle_loads_integrated_panels_before_app() -> None:
