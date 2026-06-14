@@ -907,35 +907,21 @@ function useBackend(baseUrl) {
 }
 
 // ---------- Formatting helpers ----------
-const fmtScore = (v) => (typeof v === "number" ? v.toFixed(3) : "—");
-const fmtPct = (v) => (typeof v === "number" ? `${v.toFixed(2)}%` : "—");
-const fmtMoney = (v) => {
-  if (typeof v !== "number") return "—";
-  const sign = v > 0 ? "+" : v < 0 ? "−" : "";
-  return sign + Math.abs(v).toLocaleString("ko-KR") + "원";
-};
-const fmtInt = (v) => (typeof v === "number" ? v.toLocaleString("ko-KR") : "—");
-const fmtTime = (iso) => {
-  if (!iso) return "—";
-  try {
-    const d = new Date(iso);
-    return d.toLocaleTimeString("ko-KR", { hour12: false });
-  } catch { return "—"; }
-};
-
-const STATUS_KR = {
-  idle: "대기",
-  running: "실행중",
-  stopping: "정지중",
-  complete: "완료",
-  error: "오류",
-};
+//   Phase14.2 de-dup: 포매터 구현은 빌드 번들(bundle/stom-ui.js, 소스 webui-build/src/format.mjs)이
+//   window 전역으로 제공한다(ESM 모듈이라 babel 실행보다 먼저 로드됨). 여기서는 babel 스코프
+//   별칭만 둬서 기존 bare-식별자 소비처(backtest-charts.jsx 등)가 계속 해소되게 한다.
+//   → 구현 중복 제거(window 단일 출처). 본래 정의는 format.mjs 가 정본.
+const fmtScore = window.fmtScore;
+const fmtPct = window.fmtPct;
+const fmtMoney = window.fmtMoney;
+const fmtInt = window.fmtInt;
+const fmtTime = window.fmtTime;
+const STATUS_KR = window.STATUS_KR;
 
 Object.assign(window, {
   useBackend,
-  fmtScore, fmtPct, fmtMoney, fmtInt, fmtTime,
-  STATUS_KR,
   DEFAULT_BASE,
-  // LIVE↔DEMO 경계 판정(테스트/패널 공용 순수 함수).
+  // 포매터·STATUS_KR 는 빌드 번들이 이미 window 에 세팅(중복 노출 제거).
+  // LIVE↔DEMO 경계 판정은 아직 connection.jsx 정의 유지(번들도 동일 제공) — 14.x에서 통합.
   isDemoSource, livePanelPending,
 });
