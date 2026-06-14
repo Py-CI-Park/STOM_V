@@ -63,7 +63,7 @@ function highlightPython(code) {
   return out;
 }
 
-function CodeBlock({ code }) {
+function CvCodeBlock({ code }) {
   const highlighted = useMemo_cv(() => highlightPython(code), [code]);
   if (!code) return (
     <div className="code-block" style={{ color: "var(--ink-3)" }}>
@@ -189,7 +189,7 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
               코드 조회 실패: {fetchErr}
             </div>
           ) : (
-            <CodeBlock code={code} />
+            <CvCodeBlock code={code} />
           )}
         </div>
 
@@ -220,4 +220,4 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
   );
 }
 
-Object.assign(window, { CodeViewer, CodeBlock, highlightPython });
+Object.assign(window, { CodeViewer, CvCodeBlock, highlightPython });

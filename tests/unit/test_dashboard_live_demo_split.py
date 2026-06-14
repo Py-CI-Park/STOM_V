@@ -96,23 +96,25 @@ class TestRunComparePanel:
     """P6 — run 비교 콘솔 구조 계약(/runs REST 조회 + LIVE/DEMO 규약)."""
 
     def test_run_compare_panel_defined_and_exposed(self):
-        src = _read("panels.jsx")
+        # P1(2026-06-14): 정본은 run-compare.jsx(ORDER상 panels.jsx 데드 버전을 덮어씀).
+        #   panels.jsx 의 중복 RunComparePanel 은 P1 에서 제거됨.
+        src = _read("run-compare.jsx")
         assert "function RunComparePanel(" in src
         tail = src[src.rfind("Object.assign(window"):]
         assert "RunComparePanel" in tail
 
     def test_run_compare_fetches_runs_endpoint(self):
         # page_data 라이브 발행이 아니라 REST /runs를 baseUrl로 조회한다.
-        src = _read("panels.jsx")
+        src = _read("run-compare.jsx")  # P1: 정본 run-compare.jsx
         assert '"/runs"' in src
         assert "baseUrl" in src
 
     def test_run_compare_demo_branch(self):
         # 데모/미접속이면 조회하지 않고 안내만(isDemoSource 분기).
-        src = _read("panels.jsx")
+        src = _read("run-compare.jsx")  # P1: 정본 run-compare.jsx
         rc = src[src.find("function RunComparePanel("):]
         assert "isDemoSource" in rc
-        assert "데모 모드" in rc
+        assert "Demo mode" in rc  # 정본 run-compare 의 데모 안내 문구(영문)
 
     def test_app_wires_run_compare_panel(self):
         src = _read("app.jsx")
