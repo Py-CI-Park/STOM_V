@@ -36,10 +36,17 @@
 - 브랜치 격리 → 문제 시 `frontend/poc/` + `webui-build/` 삭제로 **잔여 0** 복귀.
 - 게이트: 전체 pytest 신규 실패 0(pre-existing 7 제외) + 8771 `/health`·`/ui` 200 + pageerror 0.
 
-## 4. 결정·실측 기록 (착수 후 채움)
-- Vite 버전: ____
-- 빌드 산출물 크기/파일: ____
-- 출력 동등성 결과(테스트 벡터): ____
-- production 6탭 스냅샷 동등성: ____
-- pytest 신규 실패: ____ (기대 0)
-- 다음(14.1) 범위 메모: ____
+## 4. 결정·실측 기록 (2026-06-14 완료)
+- **Vite 버전**: 5.4.21 (devDep 11패키지, `npm install` 8s). 빌드 174~315ms.
+- **빌드 산출물**: `frontend/poc/index.html`(988B) + `frontend/poc/assets/index-<hash>.js`(~3.45KB, content-hash 파일명 — 14.5 캐시 자동화 미리보기). `emptyOutDir`로 이전 해시 자동 정리 확인.
+- **출력 동등성**: PoC 어서션 하네스 **24/24 PASS**(`data-poc-status=PASS`), pageerror 0. 포매터 8종 + 판정 2종 + STATUS_KR 5키 전수 일치. 코드리뷰가 소스 diff(U+2014/U+2212/ko-KR 로케일 포함)+Node 런타임 양쪽에서 바이트 동일 확인.
+- **production 무변경(공존 증명)**: `git diff b054644d -- index.html '*.jsx' styles.css app.py` **완전 비어있음**. 변경분=신규 디렉터리 2개(`frontend/poc/`·`webui-build/`)뿐. production `/ui/` 6탭 렌더 **pageerror 0**. → 픽셀 diff보다 강한 구조적 무변경 증거(동적 콘텐츠 노이즈 없음).
+- **서빙**: `/ui/poc/`·`/ui/poc/assets/*.js`·`/ui/` 모두 200. **백엔드 라우트/마운트 변경 0**(app.py:3251 StaticFiles 재귀 서빙에 얹음).
+- **pytest**: `7 failed, 3185 passed, 2 skipped` — 7건 모두 문서화된 pre-existing(신규 실패 **0**). 브랜치 게이트 `verify_nonrelease_sync.py` exit=0.
+- **node/npm 운영**: 산출물(`frontend/poc/`) 커밋, `node_modules`/`.vite` 무시 → **런타임 npm-free 유지**. devDep 취약점 2건은 빌드 도구 한정(운영 영향 0).
+- **코드리뷰**: APPROVE (CRITICAL/HIGH/MEDIUM 0, LOW 2 — STATUS_KR 3키 추가 검증·DOM 가드로 반영 완료 → 24/24).
+
+### 다음(14.1) 범위 메모
+- 빌드 하네스 정식화: `dist/` vs `poc/` 출력 컨벤션 확정, `frontend/dist/` 커밋 정책 결정(.gitignore 71줄 조정 여부).
+- 14.2에서 connection.jsx가 format.mjs를 소비하도록 전환(중복 제거) — 단, index.html 런타임-babel 경로와의 양립/순서 설계 필요.
+- 빌드 산출물 커밋이 PR 노이즈를 키우므로(해시 변경 시 diff) 빌드 재현성·CI 빌드 옵션도 14.1에서 검토.
