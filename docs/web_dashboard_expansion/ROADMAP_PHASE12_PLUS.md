@@ -110,4 +110,5 @@
   - ✅ 14.3 차트 순수 헬퍼(_axisTicks) 번들 이전 — `PHASE14_3_CHART_HELPERS.md` (대형 컴포넌트 컴파일은 혼합타이밍 회피 위해 14.4로 통합)
   - ✅ 14.4 전체 컴포넌트 빌드 컴파일 — index.html 26 text/babel + vendor-babel → 단일 `bundle/app.js`(defer). 메인 페이지 런타임 babel 제거 — `PHASE14_4_APP_BUNDLE.md`
   - ✅ 14.5 캐시 content-hash 자동화 — build 가 sha256[:8] 로 ?v= 자동 주입 + manifest, 수동 bump 폐지·자기검증 테스트 — `PHASE14_5_CONTENT_HASH.md` (미니파이는 로컬툴이라 보류)
-  - ⏳ 14.6 TS 점진(선택) → 14.7 lab/pro/legacy 전환 + vendor-babel 파일 제거
+  - ✅ 14.6 TS 점진 시드(선택) — tsconfig+typecheck + format.mjs→format.ts(strict 통과) — `PHASE14_6_TS_SEED.md` (전면 타이핑은 ROI 낮아 시드만)
+  - ⏳ 14.7 lab/pro/legacy 전환 + vendor-babel 파일 완전 제거(완결)

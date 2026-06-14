@@ -1,0 +1,15 @@
+{
+  "//": "Phase14.6 — TS 점진 시드. 현재는 빌드 소스(src/*.ts)만 타입체크(strict). 런타임 .jsx 는 대상 아님.",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2020", "DOM"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": false
+  },
+  "include": ["src/**/*.ts"]
+}
