@@ -1461,7 +1461,22 @@ function EnginePanel({ state, wsStatus }) {
   for (let i = 0; i < workers; i++) {
     pips.push(i < workersActive ? "active" : "idle");
   }
-  return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: running ? "var(--amber)" : "var(--ink-3)" } }), "\uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4 \u2014 Runtime", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(DemoBadge, null)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "tag-slim" }, btTimeframe), /* @__PURE__ */ React.createElement("span", { className: "tag-slim" }, "chunks ", e.chunks_done ?? 0, "/", e.chunks_total ?? 0))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "engine-summary-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Overall Progress"), " ", overallPct.toFixed(1), "%"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Elapsed"), " ", fmtElapsed(elapsedMs)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Remaining"), " ", remainingGens, " gen"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "ETA"), " ", fmtElapsed(etaMs)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Timeout"), " ", fmtElapsed(timeoutMs)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Deadline"), " ", fmtEpoch(timeoutDeadline)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Progress Source"), " ", progressSource), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Units"), " ", doneUnits, "/", totalUnits)), /* @__PURE__ */ React.createElement("div", { className: "engine-config-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Engine Config")), /* @__PURE__ */ React.createElement("span", null, "min/tick=", btTimeframe), /* @__PURE__ */ React.createElement("span", null, "mode=", engineMode), /* @__PURE__ */ React.createElement("span", null, "cpu=", cpuCount), /* @__PURE__ */ React.createElement("span", null, "engines=", effectiveEngineCount), /* @__PURE__ */ React.createElement("span", null, genModeLabel), /* @__PURE__ */ React.createElement("span", null, "Period ", periodStart, "~", periodEnd), /* @__PURE__ */ React.createElement("span", null, "bt_full_start=", periodStart), /* @__PURE__ */ React.createElement("span", null, "bt_full_end=", periodEnd), /* @__PURE__ */ React.createElement("span", null, "window=", windowStart, "~", windowEnd), /* @__PURE__ */ React.createElement("span", null, "bt_timeout=", coldTimeout), /* @__PURE__ */ React.createElement("span", null, "bt_warm_run_timeout=", warmTimeout)), /* @__PURE__ */ React.createElement("div", { className: "engine-log-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Recent Logs")), /* @__PURE__ */ React.createElement("span", null, progressInfo.phase || latest.phase || state.status || "-"), /* @__PURE__ */ React.createElement("span", null, progressInfo.message || latest.last_checkpoint || e.current_symbol || "waiting for engine event"), recentLogs.slice(-2).map((line, i) => /* @__PURE__ */ React.createElement("span", { key: i }, line))), liveNoEngine && typeof window.LivePending === "function" ? /* @__PURE__ */ React.createElement(LivePending, { note: "\uC5D4\uC9C4 \uB7F0\uD0C0\uC784 \uBA54\uD2B8\uB9AD(CPU/\uBA54\uBAA8\uB9AC/\uC6CC\uCEE4)\uC740 backend\uAC00 \uC544\uC9C1 \uBC1C\uD589\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." }) : /* @__PURE__ */ React.createElement("div", { className: "engine-grid" }, /* @__PURE__ */ React.createElement("div", { className: "engine-cell" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "CPU \uC0AC\uC6A9\uB960"), /* @__PURE__ */ React.createElement("div", { className: "val tnum" }, cpu.toFixed(1), /* @__PURE__ */ React.createElement("span", { className: "unit" }, "%")), /* @__PURE__ */ React.createElement(GaugeRow, { label: "CPU", value: cpuGauge, unit: "%", warn: 70, danger: 90 })), /* @__PURE__ */ React.createElement("div", { className: "engine-cell" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "\uBA54\uBAA8\uB9AC"), /* @__PURE__ */ React.createElement("div", { className: "val tnum" }, mem >= 1024 ? (mem / 1024).toFixed(2) : mem, /* @__PURE__ */ React.createElement("span", { className: "unit" }, mem >= 1024 ? "GB" : "MB")), /* @__PURE__ */ React.createElement(GaugeRow, { label: "Mem %", value: memPctGauge, unit: "%", warn: 75, danger: 90 }), /* @__PURE__ */ React.createElement("div", { className: "sub" }, "/ ", (memCap / 1024).toFixed(1), " GB cap")), /* @__PURE__ */ React.createElement("div", { className: "engine-cell" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "\uBCD1\uB82C \uC6CC\uCEE4"), /* @__PURE__ */ React.createElement("div", { className: "val tnum" }, workersActive, /* @__PURE__ */ React.createElement("span", { className: "unit" }, "/ ", workers)), /* @__PURE__ */ React.createElement("div", { className: "workers-row" }, pips.map((s, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: `worker-pip ${s}` })))), /* @__PURE__ */ React.createElement("div", { className: "engine-cell" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "\uCC98\uB9AC\uB7C9"), /* @__PURE__ */ React.createElement("div", { className: "val tnum" }, tput >= 1e3 ? (tput / 1e3).toFixed(1) : tput, /* @__PURE__ */ React.createElement("span", { className: "unit" }, tput >= 1e3 ? "k/s" : "candles/s")), /* @__PURE__ */ React.createElement("div", { className: "sub" }, tput.toLocaleString("ko-KR"), " candles/sec")), /* @__PURE__ */ React.createElement("div", { className: "engine-cell" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "\uACBD\uACFC \uC2DC\uAC04"), /* @__PURE__ */ React.createElement("div", { className: "val tnum mono", style: { fontSize: 15 } }, fmtElapsed(elapsedMs)), /* @__PURE__ */ React.createElement("div", { className: "sub" }, "ETA ", fmtElapsed(etaMs))), /* @__PURE__ */ React.createElement("div", { className: "engine-cell", style: { gridColumn: "span 2" } }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "\uCC98\uB9AC\uC911 \uC885\uBAA9"), /* @__PURE__ */ React.createElement("div", { className: "val mono", style: { fontSize: 14 } }, e.current_symbol || "\u2014"), /* @__PURE__ */ React.createElement("div", { className: "sub" }, "window ", e.current_window?.from || "\u2014", " \u2192 ", e.current_window?.to || "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "engine-cell" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "\uC138\uB300 \uBC31\uD14C \uC9C4\uD589"), /* @__PURE__ */ React.createElement("div", { className: "val tnum" }, (progress * 100).toFixed(0), /* @__PURE__ */ React.createElement("span", { className: "unit" }, "%"), /* @__PURE__ */ React.createElement("span", { className: "unit" }, " (\uC138\uB300 \uB0B4)")), /* @__PURE__ */ React.createElement(GaugeRow, { label: "\uC804\uCCB4", value: overallPct, unit: "%" })))));
+  return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: running ? "var(--amber)" : "var(--ink-3)" } }), "\uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4 \u2014 Runtime", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(DemoBadge, null)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "tag-slim" }, btTimeframe), /* @__PURE__ */ React.createElement("span", { className: "tag-slim" }, "chunks ", e.chunks_done ?? 0, "/", e.chunks_total ?? 0))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "engine-summary-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Overall Progress"), " ", overallPct.toFixed(1), "%"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Elapsed"), " ", fmtElapsed(elapsedMs)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Remaining"), " ", remainingGens, " gen"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "ETA"), " ", fmtElapsed(etaMs)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Timeout"), " ", fmtElapsed(timeoutMs)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Deadline"), " ", fmtEpoch(timeoutDeadline)), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Progress Source"), " ", progressSource), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Units"), " ", doneUnits, "/", totalUnits)), /* @__PURE__ */ React.createElement("div", { className: "engine-config-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Engine Config")), /* @__PURE__ */ React.createElement("span", null, "min/tick=", btTimeframe), /* @__PURE__ */ React.createElement("span", null, "mode=", engineMode), /* @__PURE__ */ React.createElement("span", null, "cpu=", cpuCount), /* @__PURE__ */ React.createElement("span", null, "engines=", effectiveEngineCount), /* @__PURE__ */ React.createElement("span", null, genModeLabel), /* @__PURE__ */ React.createElement("span", null, "Period ", periodStart, "~", periodEnd), /* @__PURE__ */ React.createElement("span", null, "bt_full_start=", periodStart), /* @__PURE__ */ React.createElement("span", null, "bt_full_end=", periodEnd), /* @__PURE__ */ React.createElement("span", null, "window=", windowStart, "~", windowEnd), /* @__PURE__ */ React.createElement("span", null, "bt_timeout=", coldTimeout), /* @__PURE__ */ React.createElement("span", null, "bt_warm_run_timeout=", warmTimeout)), /* @__PURE__ */ React.createElement("div", { className: "engine-log-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "Recent Logs")), /* @__PURE__ */ React.createElement("span", null, progressInfo.phase || latest.phase || state.status || "-"), /* @__PURE__ */ React.createElement("span", null, progressInfo.message || latest.last_checkpoint || e.current_symbol || "waiting for engine event"), recentLogs.slice(-2).map((line, i) => /* @__PURE__ */ React.createElement("span", { key: i }, line))), liveNoEngine && typeof window.LivePending === "function" ? /* @__PURE__ */ React.createElement(LivePending, { note: "\uC5D4\uC9C4 \uB7F0\uD0C0\uC784 \uBA54\uD2B8\uB9AD(CPU/\uBA54\uBAA8\uB9AC/\uC6CC\uCEE4)\uC740 backend\uAC00 \uC544\uC9C1 \uBC1C\uD589\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." }) : /* @__PURE__ */ React.createElement("div", { className: "engine-grid" }, isDemo && /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "mono",
+      title: "\uC774 \uB7F0\uD0C0\uC784 \uAC8C\uC774\uC9C0\uB294 \uB370\uBAA8 \uC2DC\uBBAC\uB808\uC774\uC158 \uAC12\uC785\uB2C8\uB2E4 \u2014 \uC2E4\uC81C \uC5D4\uC9C4\uC774 \uBC1C\uD589\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+      style: {
+        gridColumn: "1 / -1",
+        fontSize: 10.5,
+        color: "var(--ink-3)",
+        padding: "4px 8px",
+        border: "1px dashed var(--line-1)",
+        borderRadius: 4
+      }
+    },
+    "DEMO \uC2DC\uBBAC\uAC12 \u2014 CPU\xB7\uBA54\uBAA8\uB9AC\xB7\uC6CC\uCEE4\xB7\uCC98\uB9AC\uB7C9 \uAC8C\uC774\uC9C0\uB294 \uB370\uBAA8 \uC2DC\uBBAC\uB808\uC774\uC158 \uAC12\uC785\uB2C8\uB2E4(backend \uBBF8\uBC1C\uD589)"
+  ), /* @__PURE__ */ React.createElement("div", { className: "engine-cell" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "CPU \uC0AC\uC6A9\uB960"), /* @__PURE__ */ React.createElement("div", { className: "val tnum" }, cpu.toFixed(1), /* @__PURE__ */ React.createElement("span", { className: "unit" }, "%")), /* @__PURE__ */ React.createElement(GaugeRow, { label: "CPU", value: cpuGauge, unit: "%", warn: 70, danger: 90 })), /* @__PURE__ */ React.createElement("div", { className: "engine-cell" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "\uBA54\uBAA8\uB9AC"), /* @__PURE__ */ React.createElement("div", { className: "val tnum" }, mem >= 1024 ? (mem / 1024).toFixed(2) : mem, /* @__PURE__ */ React.createElement("span", { className: "unit" }, mem >= 1024 ? "GB" : "MB")), /* @__PURE__ */ React.createElement(GaugeRow, { label: "Mem %", value: memPctGauge, unit: "%", warn: 75, danger: 90 }), /* @__PURE__ */ React.createElement("div", { className: "sub" }, "/ ", (memCap / 1024).toFixed(1), " GB cap")), /* @__PURE__ */ React.createElement("div", { className: "engine-cell" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "\uBCD1\uB82C \uC6CC\uCEE4"), /* @__PURE__ */ React.createElement("div", { className: "val tnum" }, workersActive, /* @__PURE__ */ React.createElement("span", { className: "unit" }, "/ ", workers)), /* @__PURE__ */ React.createElement("div", { className: "workers-row" }, pips.map((s, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: `worker-pip ${s}` })))), /* @__PURE__ */ React.createElement("div", { className: "engine-cell" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "\uCC98\uB9AC\uB7C9"), /* @__PURE__ */ React.createElement("div", { className: "val tnum" }, tput >= 1e3 ? (tput / 1e3).toFixed(1) : tput, /* @__PURE__ */ React.createElement("span", { className: "unit" }, tput >= 1e3 ? "k/s" : "candles/s")), /* @__PURE__ */ React.createElement("div", { className: "sub" }, tput.toLocaleString("ko-KR"), " candles/sec")), /* @__PURE__ */ React.createElement("div", { className: "engine-cell" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "\uACBD\uACFC \uC2DC\uAC04"), /* @__PURE__ */ React.createElement("div", { className: "val tnum mono", style: { fontSize: 15 } }, fmtElapsed(elapsedMs)), /* @__PURE__ */ React.createElement("div", { className: "sub" }, "ETA ", fmtElapsed(etaMs))), /* @__PURE__ */ React.createElement("div", { className: "engine-cell", style: { gridColumn: "span 2" } }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "\uCC98\uB9AC\uC911 \uC885\uBAA9"), /* @__PURE__ */ React.createElement("div", { className: "val mono", style: { fontSize: 14 } }, e.current_symbol || "\u2014"), /* @__PURE__ */ React.createElement("div", { className: "sub" }, "window ", e.current_window?.from || "\u2014", " \u2192 ", e.current_window?.to || "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "engine-cell" }, /* @__PURE__ */ React.createElement("div", { className: "lbl" }, "\uC138\uB300 \uBC31\uD14C \uC9C4\uD589"), /* @__PURE__ */ React.createElement("div", { className: "val tnum" }, (progress * 100).toFixed(0), /* @__PURE__ */ React.createElement("span", { className: "unit" }, "%"), /* @__PURE__ */ React.createElement("span", { className: "unit" }, " (\uC138\uB300 \uB0B4)")), /* @__PURE__ */ React.createElement(GaugeRow, { label: "\uC804\uCCB4", value: overallPct, unit: "%" })))));
 }
 function LiveBacktestChart({ state }) {
   const equity = state.current_run?.equity || [];
@@ -6425,6 +6440,52 @@ function _btAxisTicks(min, max, cnt) {
   for (let i = 0; i < n; i++) out.push(lo + (hi - lo) * i / (n - 1));
   return out;
 }
+function _btCsvCell(v) {
+  if (v == null) return "";
+  const s = String(v);
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function _btAnalysisCsv(analysis) {
+  const eq = analysis && analysis.equity || {};
+  const daily = eq.daily || [];
+  const cumulative = eq.cumulative || [];
+  const header = ["\uB0A0\uC9DC", "\uC77C\uBCC4\uC190\uC775(\uC6D0)", "\uB204\uC801\uC218\uC775(\uC6D0)"];
+  const lines = [header.map(_btCsvCell).join(",")];
+  const rowN = Math.max(daily.length, cumulative.length);
+  for (let i = 0; i < rowN; i++) {
+    const d = daily[i] || {};
+    const c = cumulative[i] || {};
+    lines.push([
+      _btCsvCell(d.date),
+      _btCsvCell(d.pnl != null ? Math.round(d.pnl) : ""),
+      _btCsvCell(c.cum_profit != null ? Math.round(c.cum_profit) : "")
+    ].join(","));
+  }
+  return "\uFEFF" + lines.join("\r\n");
+}
+function _btDownloadAnalysisCsv(analysis) {
+  const csv = _btAnalysisCsv(analysis);
+  const d = /* @__PURE__ */ new Date();
+  const ymd = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  const fname = "\uBC31\uD14C\uC2A4\uD2B8_" + ymd + ".csv";
+  try {
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (e) {
+      }
+    }, 0);
+  } catch (e) {
+  }
+}
 const _BT_WEEKDAYS = ["\uC6D4", "\uD654", "\uC218", "\uBAA9", "\uAE08", "\uD1A0", "\uC77C"];
 function _btReducedMotion() {
   try {
@@ -7295,6 +7356,14 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
       title: "\uC774 \uC138\uB300\uC758 \uC790\uAE09\uC790\uC871 HTML \uB9AC\uD3EC\uD2B8\uB97C \uC0C8 \uD0ED\uC73C\uB85C \uC5F4\uAE30"
     },
     "\u{1F4C4} \uB9AC\uD3EC\uD2B8"
+  ), ((analysis.equity || {}).daily || []).length > 0 && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      className: "btn ghost sm",
+      onClick: () => _btDownloadAnalysisCsv(analysis),
+      title: "\uC77C\uBCC4 \uC218\uC775\uACE1\uC120(\uB0A0\uC9DC\xB7\uC77C\uBCC4\uC190\uC775\xB7\uB204\uC801\uC218\uC775)\uC744 CSV \uB85C \uB0B4\uB824\uBC1B\uAE30 \u2014 \uD45C\uACC4\uC0B0 \uB3C4\uAD6C\uC5D0\uC11C \uCD94\uAC00 \uBD84\uC11D"
+    },
+    "\u2B07 CSV"
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -9381,9 +9450,14 @@ function _btNum(v, digits) {
   if (v == null || isNaN(n)) return "\u2014";
   return n.toFixed(digits == null ? 2 : digits);
 }
+function _BtRowDetail({ label, data, numeric }) {
+  const keys = Object.keys(data || {});
+  return /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-2)", display: "flex", flexWrap: "wrap", gap: 14, marginTop: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", minWidth: 80 } }, label), keys.length === 0 ? /* @__PURE__ */ React.createElement("span", null, "\u2014") : keys.map((k) => /* @__PURE__ */ React.createElement("span", { key: k }, k, "=", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--ink-1)" } }, numeric ? _btNum(data[k]) : String(data[k])))));
+}
 function BtWfoTable({ result }) {
   const [sortKey, setSortKey] = useState_bt("round");
   const [sortAsc, setSortAsc] = useState_bt(true);
+  const [expanded, setExpanded] = useState_bt(null);
   const rounds = result && result.rounds || [];
   const summary = result && result.summary || {};
   const rows = useMemo_bt(() => rounds.map((r, i) => {
@@ -9396,7 +9470,11 @@ function BtWfoTable({ result }) {
       status: r.test_result && r.test_result.status || "\u2014",
       trade_count: tr.trade_count,
       total_profit_pct: tr.total_profit_pct,
-      max_drawdown_pct: tr.max_drawdown_pct
+      max_drawdown_pct: tr.max_drawdown_pct,
+      best_params: r.best_params || {},
+      // 드릴다운: 이 라운드가 훈련에서 고른 파라미터.
+      _metrics: tr
+      // 드릴다운: 표에 없는 전체 테스트 메트릭.
     };
   }), [rounds]);
   const sorted = useMemo_bt(() => rows.slice().sort((a, b) => {
@@ -9439,15 +9517,33 @@ function BtWfoTable({ result }) {
     },
     lbl,
     sortKey === k ? sortAsc ? " \u25B2" : " \u25BC" : ""
-  )))), /* @__PURE__ */ React.createElement("tbody", null, sorted.map((r, i) => /* @__PURE__ */ React.createElement("tr", { key: i }, /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", color: "var(--ink-0)" } }, r.round), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", color: "var(--ink-3)" } }, r.train), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", color: "var(--ink-3)" } }, r.test), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px" } }, /* @__PURE__ */ React.createElement("span", { className: (_BT_JOB_BADGE[r.status] || _BT_JOB_BADGE.pending).cls }, r.status)), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", textAlign: "right" } }, r.trade_count == null ? "\u2014" : r.trade_count), /* @__PURE__ */ React.createElement("td", { style: {
-    padding: "4px 8px",
-    textAlign: "right",
-    color: Number(r.total_profit_pct) >= 0 ? "var(--teal)" : "var(--red)"
-  } }, _btNum(r.total_profit_pct)), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", textAlign: "right", color: "var(--red)" } }, _btNum(r.max_drawdown_pct))))))));
+  )))), /* @__PURE__ */ React.createElement("tbody", null, sorted.map((r, i) => {
+    const isOpen = expanded === r.round;
+    return /* @__PURE__ */ React.createElement(React.Fragment, { key: i }, /* @__PURE__ */ React.createElement(
+      "tr",
+      {
+        onClick: () => setExpanded(isOpen ? null : r.round),
+        style: { cursor: "pointer", background: isOpen ? "var(--bg-2)" : void 0 },
+        title: "\uD074\uB9AD \u2014 \uC774 \uB77C\uC6B4\uB4DC\uC758 \uC120\uD0DD \uD30C\uB77C\uBBF8\uD130\xB7\uC804\uCCB4 \uBA54\uD2B8\uB9AD \uD3BC\uCE58\uAE30/\uC811\uAE30"
+      },
+      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", color: "var(--ink-0)" } }, isOpen ? "\u25BE " : "\u25B8 ", r.round),
+      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", color: "var(--ink-3)" } }, r.train),
+      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", color: "var(--ink-3)" } }, r.test),
+      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px" } }, /* @__PURE__ */ React.createElement("span", { className: (_BT_JOB_BADGE[r.status] || _BT_JOB_BADGE.pending).cls }, r.status)),
+      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", textAlign: "right" } }, r.trade_count == null ? "\u2014" : r.trade_count),
+      /* @__PURE__ */ React.createElement("td", { style: {
+        padding: "4px 8px",
+        textAlign: "right",
+        color: Number(r.total_profit_pct) >= 0 ? "var(--teal)" : "var(--red)"
+      } }, _btNum(r.total_profit_pct)),
+      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", textAlign: "right", color: "var(--red)" } }, _btNum(r.max_drawdown_pct))
+    ), isOpen && /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("td", { colSpan: cols.length, style: { padding: "6px 12px 10px", background: "var(--bg-2)" } }, /* @__PURE__ */ React.createElement(_BtRowDetail, { label: "\uC120\uD0DD \uD30C\uB77C\uBBF8\uD130", data: r.best_params }), /* @__PURE__ */ React.createElement(_BtRowDetail, { label: "\uC804\uCCB4 \uBA54\uD2B8\uB9AD", data: r._metrics, numeric: true }))));
+  })))));
 }
 function BtSweepTable({ result }) {
   const [sortKey, setSortKey] = useState_bt("__idx");
   const [sortAsc, setSortAsc] = useState_bt(true);
+  const [expanded, setExpanded] = useState_bt(null);
   const raw = result && result.results || [];
   const rows = useMemo_bt(() => raw.map((item, i) => {
     const m = item && item.result && item.result.metrics || item.metrics || {};
@@ -9461,7 +9557,9 @@ function BtSweepTable({ result }) {
       window: item.window ? Array.isArray(item.window) ? item.window.join("~") : String(item.window) : null,
       trade_count: m.trade_count,
       total_profit_pct: m.total_profit_pct,
-      max_drawdown_pct: m.max_drawdown_pct
+      max_drawdown_pct: m.max_drawdown_pct,
+      _metrics: m
+      // 드릴다운: 표 3컬럼 밖의 전체 메트릭(win_rate·sharpe·cagr…).
     };
   }), [raw]);
   const comboKeys = useMemo_bt(() => {
@@ -9486,7 +9584,24 @@ function BtSweepTable({ result }) {
   };
   if (raw.length === 0) return /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC2A4\uC715 \uACB0\uACFC\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.");
   const metricCols = [["trade_count", "\uAC70\uB798\uC218"], ["total_profit_pct", "\uC218\uC775%"], ["max_drawdown_pct", "MDD%"]];
-  return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)" } }, "\uCD1D ", result.total_combinations != null ? result.total_combinations : raw.length, "\uAC1C \uC870\uD569"), /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { borderCollapse: "collapse", fontSize: 11, width: "100%" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { onClick: () => setSort("__idx"), style: { padding: "5px 8px", textAlign: "left", cursor: "pointer", color: "var(--ink-3)", borderBottom: "1px solid var(--line-1)" } }, "#", sortKey === "__idx" ? sortAsc ? " \u25B2" : " \u25BC" : ""), hasWindow && /* @__PURE__ */ React.createElement("th", { onClick: () => setSort("window"), style: { padding: "5px 8px", textAlign: "left", cursor: "pointer", color: "var(--ink-3)", borderBottom: "1px solid var(--line-1)" } }, "\uC708\uB3C4\uC6B0", sortKey === "window" ? sortAsc ? " \u25B2" : " \u25BC" : ""), comboKeys.map((k) => /* @__PURE__ */ React.createElement("th", { key: k, onClick: () => setSort(k), style: { padding: "5px 8px", textAlign: "left", cursor: "pointer", color: "var(--ink-3)", borderBottom: "1px solid var(--line-1)", whiteSpace: "nowrap" } }, k, sortKey === k ? sortAsc ? " \u25B2" : " \u25BC" : "")), metricCols.map(([k, lbl]) => /* @__PURE__ */ React.createElement("th", { key: k, onClick: () => setSort(k), style: { padding: "5px 8px", textAlign: "right", cursor: "pointer", color: "var(--ink-3)", borderBottom: "1px solid var(--line-1)", whiteSpace: "nowrap" } }, lbl, sortKey === k ? sortAsc ? " \u25B2" : " \u25BC" : "")))), /* @__PURE__ */ React.createElement("tbody", null, sorted.map((r, i) => /* @__PURE__ */ React.createElement("tr", { key: i }, /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", color: "var(--ink-3)" } }, r.__idx), hasWindow && /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", color: "var(--ink-3)" } }, r.window || "\u2014"), comboKeys.map((k) => /* @__PURE__ */ React.createElement("td", { key: k, style: { padding: "4px 8px", color: "var(--ink-0)" } }, r.__combo[k] != null ? String(r.__combo[k]) : "\u2014")), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", textAlign: "right" } }, r.trade_count == null ? "\u2014" : r.trade_count), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", textAlign: "right", color: Number(r.total_profit_pct) >= 0 ? "var(--teal)" : "var(--red)" } }, _btNum(r.total_profit_pct)), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", textAlign: "right", color: "var(--red)" } }, _btNum(r.max_drawdown_pct))))))));
+  return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)" } }, "\uCD1D ", result.total_combinations != null ? result.total_combinations : raw.length, "\uAC1C \uC870\uD569"), /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "mono", style: { borderCollapse: "collapse", fontSize: 11, width: "100%" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { onClick: () => setSort("__idx"), style: { padding: "5px 8px", textAlign: "left", cursor: "pointer", color: "var(--ink-3)", borderBottom: "1px solid var(--line-1)" } }, "#", sortKey === "__idx" ? sortAsc ? " \u25B2" : " \u25BC" : ""), hasWindow && /* @__PURE__ */ React.createElement("th", { onClick: () => setSort("window"), style: { padding: "5px 8px", textAlign: "left", cursor: "pointer", color: "var(--ink-3)", borderBottom: "1px solid var(--line-1)" } }, "\uC708\uB3C4\uC6B0", sortKey === "window" ? sortAsc ? " \u25B2" : " \u25BC" : ""), comboKeys.map((k) => /* @__PURE__ */ React.createElement("th", { key: k, onClick: () => setSort(k), style: { padding: "5px 8px", textAlign: "left", cursor: "pointer", color: "var(--ink-3)", borderBottom: "1px solid var(--line-1)", whiteSpace: "nowrap" } }, k, sortKey === k ? sortAsc ? " \u25B2" : " \u25BC" : "")), metricCols.map(([k, lbl]) => /* @__PURE__ */ React.createElement("th", { key: k, onClick: () => setSort(k), style: { padding: "5px 8px", textAlign: "right", cursor: "pointer", color: "var(--ink-3)", borderBottom: "1px solid var(--line-1)", whiteSpace: "nowrap" } }, lbl, sortKey === k ? sortAsc ? " \u25B2" : " \u25BC" : "")))), /* @__PURE__ */ React.createElement("tbody", null, sorted.map((r, i) => {
+    const isOpen = expanded === r.__idx;
+    const span = 1 + (hasWindow ? 1 : 0) + comboKeys.length + 3;
+    return /* @__PURE__ */ React.createElement(React.Fragment, { key: i }, /* @__PURE__ */ React.createElement(
+      "tr",
+      {
+        onClick: () => setExpanded(isOpen ? null : r.__idx),
+        style: { cursor: "pointer", background: isOpen ? "var(--bg-2)" : void 0 },
+        title: "\uD074\uB9AD \u2014 \uC774 \uC870\uD569\uC758 \uC804\uCCB4 \uBA54\uD2B8\uB9AD \uD3BC\uCE58\uAE30/\uC811\uAE30"
+      },
+      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", color: "var(--ink-3)" } }, isOpen ? "\u25BE " : "\u25B8 ", r.__idx),
+      hasWindow && /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", color: "var(--ink-3)" } }, r.window || "\u2014"),
+      comboKeys.map((k) => /* @__PURE__ */ React.createElement("td", { key: k, style: { padding: "4px 8px", color: "var(--ink-0)" } }, r.__combo[k] != null ? String(r.__combo[k]) : "\u2014")),
+      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", textAlign: "right" } }, r.trade_count == null ? "\u2014" : r.trade_count),
+      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", textAlign: "right", color: Number(r.total_profit_pct) >= 0 ? "var(--teal)" : "var(--red)" } }, _btNum(r.total_profit_pct)),
+      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 8px", textAlign: "right", color: "var(--red)" } }, _btNum(r.max_drawdown_pct))
+    ), isOpen && /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("td", { colSpan: span, style: { padding: "6px 12px 10px", background: "var(--bg-2)" } }, /* @__PURE__ */ React.createElement(_BtRowDetail, { label: "\uC870\uD569", data: r.__combo }), /* @__PURE__ */ React.createElement(_BtRowDetail, { label: "\uC804\uCCB4 \uBA54\uD2B8\uB9AD", data: r._metrics, numeric: true }))));
+  })))));
 }
 function BtModeResultPanel({ baseUrl, isDemo, jobId, mode }) {
   const [data, setData] = useState_bt(null);
@@ -13573,7 +13688,15 @@ function SimViewBar({
     () => onEngineMode(m),
     "e" + m,
     m === "live" ? "Canvas \uB77C\uC774\uBE0C \uB80C\uB354(\uD604\uC7AC\uBD09 \uC131\uC7A5\xB7\uD50C\uB798\uC2DC\xB7\uD480 \uC624\uB354\uD50C\uB85C\uC6B0)" : m === "lwc" ? "lightweight-charts(\uC804\uBB38 \uC90C/\uD06C\uB85C\uC2A4\uD5E4\uC5B4\xB7\uCCB4\uACB0\uAC15\uB3C4 \uC624\uBC84\uB808\uC774\uB9CC)" : "\uC21C\uC218 SVG \uD3F4\uBC31(\uD480 \uC624\uB354\uD50C\uB85C\uC6B0)"
-  ))), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, marginLeft: 6 } }, "\uC9C0\uD45C"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" } }, indGroups.map(([grp, defs]) => /* @__PURE__ */ React.createElement("div", { key: grp, style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, grp), defs.map(([k, lbl]) => tbtn(!!indicators[k], lbl, () => onToggleIndicator(k), k))))), multi && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, marginLeft: 6 } }, "\uBCF4\uAE30"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4 } }, _SIM_CHART_MODES.map(([m, lbl]) => tbtn(
+  ))), engineMode === "lwc" && /* @__PURE__ */ React.createElement(
+    "span",
+    {
+      className: "mono",
+      title: "LWC(lightweight-charts)\uB294 \uCE94\uB4E4 \uAC00\uB3C5\uC131\uC744 \uC704\uD574 \uC77C\uBD80 \uD558\uB2E8 \uC11C\uBE0C\uD328\uC778\uC744 \uC2E3\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4(\uC758\uB3C4\uB41C \uBE44\uB300\uCE6D). \uC804\uCCB4 \uC624\uB354\uD50C\uB85C\uC6B0/\uBAA8\uBA58\uD140\uC740 \uB77C\uC774\uBE0C\xB7SVG \uC5D4\uC9C4\uC5D0\uC11C \uBCF4\uC138\uC694.",
+      style: { fontSize: 9.5, color: "var(--ink-3)" }
+    },
+    "LWC \uBE44\uB300\uCE6D \u2014 RSI\xB7MACD\xB7\uD638\uAC00\uBD88\uADE0\uD615\xB7net-delta \uBBF8\uD45C\uC2DC(\uB77C\uC774\uBE0C\xB7SVG \uC804\uC6A9)"
+  ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, marginLeft: 6 } }, "\uC9C0\uD45C"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" } }, indGroups.map(([grp, defs]) => /* @__PURE__ */ React.createElement("div", { key: grp, style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, grp), defs.map(([k, lbl]) => tbtn(!!indicators[k], lbl, () => onToggleIndicator(k), k))))), multi && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, marginLeft: 6 } }, "\uBCF4\uAE30"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4 } }, _SIM_CHART_MODES.map(([m, lbl]) => tbtn(
     chartMode === m,
     lbl,
     () => onChartMode(m),

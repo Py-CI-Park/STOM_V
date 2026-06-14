@@ -151,6 +151,15 @@ function EnginePanel({ state, wsStatus }) {
           <LivePending note="엔진 런타임 메트릭(CPU/메모리/워커)은 backend가 아직 발행하지 않습니다." />
         ) : (
         <div className="engine-grid">
+          {/* DEMO 명시(P4): 데모 소스면 런타임 게이지가 backend 미발행 시뮬값임을 분명히 표기
+              (전체화면 헤더 DemoBadge 와 별개로, 게이지 바로 위에 오해 방지 캡션). */}
+          {isDemo && (
+            <div className="mono" title="이 런타임 게이지는 데모 시뮬레이션 값입니다 — 실제 엔진이 발행하지 않습니다."
+                 style={{ gridColumn: "1 / -1", fontSize: 10.5, color: "var(--ink-3)",
+                          padding: "4px 8px", border: "1px dashed var(--line-1)", borderRadius: 4 }}>
+              DEMO 시뮬값 — CPU·메모리·워커·처리량 게이지는 데모 시뮬레이션 값입니다(backend 미발행)
+            </div>
+          )}
           {/* CPU — 게이지(warn ≥70 amber, danger ≥90 red), 텍스트 수치 병기 */}
           <div className="engine-cell">
             <div className="lbl">CPU 사용률</div>
