@@ -219,6 +219,13 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
 
+### 사이클 18 (2026-06-13): 3U_C lane V3.33 흡수 (cross-link)
+
+- 3U_C lane 사이클 6 — `git merge STOM_Version_3U` (merge `705fb7fd`), V3.32 → V3.33
+- 통합 게이트 8/8 PASS (pytest 49 + tests/v3uc 32), 충돌 0, invariant 만족
+- 상세 진실 원천: 3U_C `docs/V3U_C_NEXT_STEPS.md` §5 사이클 6
+- V3U lane 영향: 0건 (단방향 흡수)
+
 ### 사이클 17 (2026-06-13): V3.33 흡수 (V3.32 tail fcc626a5 포함)
 
 - 사용자 선택: "흡수 진행해" (V3.33 신규 발표 흡수)
