@@ -2,7 +2,7 @@
   "note": "Phase14.5 build manifest — content-hash 캐시 버전(수동 ?v= 폐지). 빌드 산출.",
   "bundles": {
     "app.js": {
-      "v": "f1f2f4e9"
+      "v": "5d10d7ab"
     },
     "stom-ui.js": {
       "v": "f41f5701"
