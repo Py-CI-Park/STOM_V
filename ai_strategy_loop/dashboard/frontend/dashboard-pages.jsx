@@ -174,8 +174,14 @@ function ProPage({ baseUrl }) {
 
 // =========================================================== VerdictPanel (결정 이력)
 // verdict.html 의 VerdictRoot 를 통째로 추출. props: {baseUrl}.
-//   ICON 맵과 append-only 의미(번복도 새 레코드)를 정확히 보존한다.
-const ICON = { pass: "✅", warn: "⚠️", fail: "❌", pending: "⏳" };
+//   append-only 의미(번복도 새 레코드)를 정확히 보존한다.
+//   (P7: 상태 아이콘 맵은 공유 VdtPromoteChecklist(_VDT_STATUS_ICON)로 이전 — 여기 ICON 은 제거.)
+
+// P7(2026-06-15) — freeze_verdict 공유 표시 블록(정본: research-lab.jsx 정의, ORDER 선행).
+//   주의: 여기서 `const VdtPromoteChecklist = window.VdtPromoteChecklist` 처럼 최상위 const 로
+//   별칭하면 단일 번들 스코프에서 research-lab 의 `function VdtPromoteChecklist` 와 이름 충돌
+//   ("already been declared" SyntaxError → 전 앱 크래시). 따라서 별칭 없이 JSX 에서 멤버표현식
+//   `<window.VdtPromoteChecklist .../>` 로 직접 참조한다(window.LabPage 패턴과 동일).
 
 function VerdictPanel({ baseUrl }) {
   const base = _dpBase(baseUrl);
@@ -269,18 +275,8 @@ function VerdictPanel({ baseUrl }) {
       {/* ── 검증 결산: PROMOTE 체크리스트 · OOS CI · 경보/요약 ── */}
       {vsub === "summary" && (
         <div>
-          {v && (v.promote_checklist || []).length > 0 ? (
-            <table className="mono" style={{ fontSize: 12, width: "100%", marginBottom: 8 }}>
-              <thead><tr><th>PROMOTE 조건</th><th>상태</th><th>근거</th></tr></thead>
-              <tbody>
-                {v.promote_checklist.map((c, i) => (
-                  <tr key={i}><td>{c.item}</td><td>{ICON[c.status] || "?"}</td><td>{c.detail || "—"}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div className="mono" style={{ fontSize: 11, opacity: 0.6 }}>PROMOTE 체크리스트: 데이터 없음</div>
-          )}
+          {/* P7 — 공유 PROMOTE 체크리스트(정본: research-lab 정의). window 멤버표현식 직접 참조(충돌 회피). */}
+          <window.VdtPromoteChecklist v={v} />
           {v && v.oos_diff_ci && Object.keys(v.oos_diff_ci).length > 0 && (
             <div style={{ marginTop: 8, marginBottom: 4 }}>
               <div className="mono" style={{ fontSize: 11, color: "#9fb0c0", marginBottom: 2 }}>
@@ -301,12 +297,9 @@ function VerdictPanel({ baseUrl }) {
               </table>
             </div>
           )}
-          {v && (v.alerts || []).map((a, i) => (
-            <div key={"a" + i} className="mono" style={{ fontSize: 12, color: "#c95" }}>⚠️ {a}</div>
-          ))}
-          {v && (v.lines || []).map((l, i) => (
-            <div key={"l" + i} className="mono" style={{ fontSize: 12 }}>{l}</div>
-          ))}
+          {/* P7 — 공유 경보·요약줄(정본: research-lab 정의). window 멤버표현식 직접 참조. alert 색 var(--amber) 토큰화. */}
+          <window.VdtAlerts v={v} />
+          <window.VdtSummaryLines v={v} />
         </div>
       )}
 

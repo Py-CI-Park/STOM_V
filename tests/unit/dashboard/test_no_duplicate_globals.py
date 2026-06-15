@@ -32,15 +32,18 @@ FRONTEND = Path(PROJECT_ROOT) / "ai_strategy_loop" / "dashboard" / "frontend"
 # 컬럼0(최상위) 선언만: function/const/let/class NAME. `const {`/`const [`(구조분해)는 식별자가
 #   아니므로 미매치 → 파일별 React 훅 별칭(const { useState: ... } = React)은 제외된다.
 _DECL = re.compile(r"^(?:export\s+)?(?:async\s+)?(?:function|const|let|class)\s+([A-Za-z_$][\w$]*)")
-# window 자기-재노출 별칭: `const NAME = window.NAME`(이름==속성). 무해한 passthrough → 제외.
-_SELF_ALIAS = re.compile(r"^const\s+([A-Za-z_$][\w$]*)\s*=\s*window\.\1\b")
 
-
+# P7(2026-06-15) 가드 강화 — 과거: window 자기-별칭(`const NAME = window.NAME`)을 "무해한 passthrough"
+#   로 보고 카운트에서 제외했다. 그러나 단일 번들(transform-not-bundle) 한 스코프에서는 같은 최상위
+#   이름이 두 번 선언되면(함수+const, const+const, 별칭+정의 무엇이든) "Identifier already declared"
+#   SyntaxError 로 **앱 전체가 크래시**한다. 즉 자기-별칭도 엄연한 최상위 선언이라 충돌 대상이다.
+#   (실제 사례: P7 에서 research-lab 의 `function VdtPromoteChecklist` 와 dashboard-pages 의
+#   `const VdtPromoteChecklist = window.VdtPromoteChecklist` 가 충돌해 전 탭이 깨졌다.)
+#   → 자기-별칭 제외를 폐기하고 모든 최상위 선언(별칭 포함)을 카운트한다. format.ts(.ts) 전역을
+#   .jsx 한 곳에서 별칭하는 정상 패턴은 이름이 그 파일에만 1회 등장하므로 여전히 통과한다.
 def _top_level_decls(src: str) -> list[str]:
     out = []
     for line in src.splitlines():
-        if _SELF_ALIAS.match(line):
-            continue
         m = _DECL.match(line)
         if m:
             out.append(m.group(1))
