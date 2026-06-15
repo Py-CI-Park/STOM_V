@@ -10,7 +10,7 @@
 //     소스가 바뀌면 해시가 바뀌고 HTML 이 자동 갱신된다(재현성: 해시는 내용만의 함수, 타임스탬프 없음).
 
 import esbuild from "esbuild";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
@@ -18,6 +18,69 @@ import { createHash } from "node:crypto";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const FRONTEND = resolve(__dirname, "../frontend");
 const BUNDLE = resolve(FRONTEND, "bundle");
+
+// ============================================================================
+// Track Z (PR-1) — FLAGGED esbuild `bundle:true` PILOT path (STOM_BUNDLE=1).
+//   This is a reversible, default-OFF no-op on production:
+//     - flag UNSET  → legacy transform-concat below runs unchanged → bundle/app.js byte-
+//       identical, manifest.json unchanged (appSources==26), HTML ?v= untouched.
+//     - flag SET    → ONLY the pilot bundle is built to webui-build/.track-z/app.pilot.js
+//       (a gitignored transient dir). The committed frontend/bundle/ tree is NOT touched.
+//   Mechanism (Driver-2 alias-to-virtual-shim): esbuild has no rollup `output.globals`,
+//   so map bare `react`/`react-dom` to shims that re-export window.React/window.ReactDOM
+//   (single React identity, no runtime `require("react")`, no second-React sentinel).
+// ============================================================================
+if (process.env.STOM_BUNDLE === "1") {
+  const TRACK_Z_DIR = resolve(__dirname, ".track-z");
+  mkdirSync(TRACK_Z_DIR, { recursive: true });
+  const entry = resolve(__dirname, "src/track-z-entry.pilot.js");
+  const pilotOut = resolve(TRACK_Z_DIR, "app.pilot.js");
+  const reactShim = resolve(__dirname, "src/react-shim.js");
+  const reactDomShim = resolve(__dirname, "src/react-dom-shim.js");
+
+  await esbuild.build({
+    entryPoints: [entry],
+    outfile: pilotOut,
+    bundle: true,
+    format: "iife",            // classic IIFE → app.js tag stays classic+defer (no type=module flip).
+    platform: "browser",
+    target: "es2018",
+    jsx: "transform",
+    jsxFactory: "React.createElement",
+    jsxFragment: "React.Fragment",
+    minify: false,
+    sourcemap: false,
+    loader: { ".jsx": "jsx" },
+    // Driver-2: resolve bare specifiers to the virtual shims (NOT bare `external`).
+    alias: {
+      react: reactShim,
+      "react-dom": reactDomShim,
+      "react-dom/client": reactDomShim,
+    },
+  });
+
+  // Pilot content-hash (parity with the legacy ?v= automation; proves hashing still works
+  //   on the bundle artifact). Written to a sidecar manifest in the transient dir ONLY.
+  const pilotV = createHash("sha256").update(readFileSync(pilotOut)).digest("hex").slice(0, 8);
+  const pilotManifest = {
+    note: "Track Z PR-1 pilot manifest (FLAGGED, transient — NOT committed, NOT served).",
+    model: "bundle",
+    entry: "src/track-z-entry.pilot.js",
+    externalizedGlobals: { react: "window.React", "react-dom": "window.ReactDOM" },
+    bundles: { "app.pilot.js": { v: pilotV } },
+  };
+  writeFileSync(resolve(TRACK_Z_DIR, "manifest.pilot.json"), JSON.stringify(pilotManifest, null, 2) + "\n", "utf8");
+  console.log(`[build-app][track-z] pilot bundle → .track-z/app.pilot.js v=${pilotV} (model=bundle, react via alias-to-shim)`);
+  // Flagged path is pilot-only: do NOT run the legacy concat / HTML rewrite below.
+  process.exit(0);
+}
+
+// Strip single-line top-level `export { ... };` statements so ESM dual-safe .jsx files
+//   (Track Z: phase-detail.jsx exports DemoBadge/LivePending for the flagged bundle) still
+//   compile as classic scripts in the DEFAULT concat path. The Object.assign(window, {...})
+//   in each file remains the publishing mechanism for the legacy single-scope model.
+const _stripTopLevelExports = (src) =>
+  src.replace(/^\s*export\s*\{[^}]*\}\s*;?\s*$/gm, "");
 
 // index.html 의 로드 순서와 동일해야 한다(전역 정의 순서 보존).
 const ORDER = [
@@ -37,7 +100,7 @@ const header =
 
 const parts = [header];
 for (const f of ORDER) {
-  const code = readFileSync(resolve(FRONTEND, f), "utf8");
+  const code = _stripTopLevelExports(readFileSync(resolve(FRONTEND, f), "utf8"));
   const res = await esbuild.transform(code, {
     loader: "jsx",
     jsx: "transform",
