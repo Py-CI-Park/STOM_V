@@ -776,3 +776,13 @@ Object.assign(window, {
   // #64 — 진행시간 포맷 순수 함수 + 단계 메타 노출(정적·단위 검증 가능).
   fmtElapsedSec, fmtClockFromEpoch, FLOW_STEPS,
 });
+
+// Track Z (PR-1) — ESM dual-safe export.
+//   The FLAGGED bundle path (STOM_BUNDLE=1) consumes these via `import` (real per-module
+//   scope). The DEFAULT concat path (build-app.mjs ORDER) strips the line below before
+//   esbuild transform (see build-app.mjs `_stripTopLevelExports`), so the legacy single-
+//   scope classic script stays a no-op SyntaxError-free (Object.assign above still
+//   publishes the FROZEN globals). KEEP this statement on ONE physical line — the concat
+//   stripper matches a single-line `export { ... };`.
+export { DemoBadge, LivePending };
+
