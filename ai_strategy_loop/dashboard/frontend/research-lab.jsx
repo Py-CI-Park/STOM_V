@@ -1,5 +1,7 @@
 /* ResearchLabPanel - compact analysis workspace for Edge, Feature, Correlation, and Variable Combinations. */
 
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { EdgeRatioPanel, FeatureImportancePanel } from "./analysis.jsx";
 const {
   useState: useState_rl,
   useEffect: useEffect_rl,
@@ -1266,3 +1268,6 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
 }
 
 Object.assign(window, { ResearchLabPanel });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { ResearchLabPanel, VdtAlerts, VdtPromoteChecklist, VdtSummaryLines };

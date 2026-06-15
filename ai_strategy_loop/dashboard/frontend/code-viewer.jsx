@@ -1,4 +1,6 @@
 /* Strategy code viewer modal: shows full buy/sell code per generation */
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { StrategyInspectorTabs } from "./strategy-inspector.jsx";
 const { useState: useState_cv, useMemo: useMemo_cv, useEffect: useEffect_cv } = React;
 
 // Lightweight Python-ish syntax highlighter
@@ -221,3 +223,6 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
 }
 
 Object.assign(window, { CodeViewer, CvCodeBlock, highlightPython });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { CodeViewer };

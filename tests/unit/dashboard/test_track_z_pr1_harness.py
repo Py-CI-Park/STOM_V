@@ -61,21 +61,44 @@ class TestTrackZSourceContract:
         assert "createRoot" in src
 
     def test_pilot_entry_republishes_symbols(self) -> None:
+        """Entry re-publishes the FROZEN/shared globals on window for HTML mounts.
+
+        UPDATED (Track Z PR-3): the entry grew from the PR-1 pilot (phase-detail only) into
+        the full app-graph root. It must still import phase-detail.jsx and republish
+        DemoBadge/LivePending; PR-3 additionally pulls in the converted modules and republishes
+        the FROZEN mount-by-name globals (App/ErrorBoundary/LabPage/ProPage/VerdictPanel) and
+        the defensively window-consumed shared components. Assert the durable invariants."""
         src = _read(SRC / "track-z-entry.pilot.js")
         assert 'from "../../frontend/phase-detail.jsx"' in src
-        assert "Object.assign(window, { DemoBadge, LivePending })" in src
+        # DemoBadge/LivePending still republished (PR-1 invariant, now within a larger set).
+        assert "DemoBadge" in src and "LivePending" in src
+        assert "Object.assign(window," in src
 
     def test_phase_detail_is_esm_dual_safe(self) -> None:
         """phase-detail.jsx keeps its legacy Object.assign(window,…) AND adds a single-line
-        export consumed by the flagged bundle (stripped by build-app.mjs for the concat path)."""
+        export consumed by the flagged bundle (stripped by build-app.mjs for the concat path).
+
+        UPDATED (Track Z PR-3): the export list grew from the PR-1 pilot pair
+        (DemoBadge/LivePending) to the full cross-consumed definer set (now also
+        PhaseDetailPanel/PhaseTimeline/ProcessFlowPanel, bare-consumed by app.jsx). Assert the
+        durable invariant: ONE top-level `export { … };` line that includes DemoBadge+LivePending,
+        rather than pinning the exact PR-1 two-symbol string."""
+        import re as _re
+
         src = _read(FRONTEND / "phase-detail.jsx")
         assert "Object.assign(window, {" in src  # legacy concat publishing preserved
-        assert "export { DemoBadge, LivePending };" in src  # flagged-bundle ESM export
+        m = _re.search(r"^export\s*\{([^}]*)\}\s*;?\s*$", src, _re.M)  # single-line dual-safe export
+        assert m is not None, "phase-detail.jsx missing a top-level `export { … };` line"
+        exported = {s.strip() for s in m.group(1).split(",") if s.strip()}
+        assert {"DemoBadge", "LivePending"} <= exported, f"export must include DemoBadge+LivePending: {exported}"
 
     def test_build_app_has_flag_path_and_export_stripper(self) -> None:
         src = _read(WEBUI / "build-app.mjs")
         assert 'process.env.STOM_BUNDLE === "1"' in src
-        assert "_stripTopLevelExports" in src
+        # RENAMED (Track Z PR-3): `_stripTopLevelExports` → `_stripTopLevelEsm` — the concat
+        #   stripper now removes BOTH dual-safe `import { … } from "./x.jsx";` AND `export { … };`
+        #   (PR-1 only stripped `export`). The flagged bundle keeps both (real module scope).
+        assert "_stripTopLevelEsm" in src
         # alias-to-shim (Driver-2), not bare external.
         assert "react-shim.js" in src and "react-dom-shim.js" in src
         assert 'bundle: true' in src and 'format: "iife"' in src
