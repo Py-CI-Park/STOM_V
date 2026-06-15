@@ -119,6 +119,12 @@ async function runV1() {
   const { window, errs } = makeDom();
   inject(window, read(resolve(FE, "vendor-react.js")));
   inject(window, read(resolve(FE, "vendor-react-dom.js")));
+  // PR-3: the pilot bundle is now the FULL app graph (the entry imports app.jsx). Its components
+  //   resolve bare stom-ui helpers (fmt*, _axisTicks, …) via the window globals, so load the
+  //   vendored chart lib + classic stom-ui first — same hosts the real index page provides. This
+  //   keeps V1 a CLEAN single-React-identity / no-require mechanism proof (no spurious fmt* refs).
+  inject(window, read(resolve(FE, "vendor-lightweight-charts.js")));
+  inject(window, read(resolve(TRACK_Z, "stom-ui.classic.js")));
   const reactIdentityBefore = window.React;
   inject(window, read(resolve(TRACK_Z, "app.pilot.js")));
   await wait(50);
@@ -166,6 +172,12 @@ async function runV1() {
 }
 
 // ---------------------------------------------------------------- V2: index path
+//   PR-3: V2 now loads the FLAGGED FULL bundle (.track-z/app.pilot.js — the real per-module-
+//   scope ESM graph of all 26 converted files), NOT the legacy concat bundle/app.js. This proves
+//   the flagged bundle is a working app: it auto-mounts App (app.jsx's guarded auto-mount runs on
+//   module eval), publishes the FROZEN globals, resolves bare stom-ui/connection helpers via the
+//   window globals (esbuild leaves undeclared bare reads as global lookups), keeps a SINGLE React
+//   identity (alias-to-shim), and renders with 0 errors / non-empty #root.
 async function runV2() {
   const { window, errs } = makeDom();
   inject(window, read(resolve(FE, "vendor-react.js")));
@@ -173,19 +185,35 @@ async function runV2() {
   inject(window, read(resolve(FE, "vendor-lightweight-charts.js")));
   inject(window, read(resolve(TRACK_Z, "stom-ui.classic.js")));  // window.fmt* etc.
   await wait(50);
+  const reactIdentityBefore = window.React;
   const fmtReady = typeof window.fmtTime === "function" && typeof window.fmtScore === "function";
-  // The legacy app.js auto-mounts App on load (no __STOM_NO_AUTO_MOUNT__ set).
-  inject(window, read(resolve(FE, "bundle", "app.js")));
+  const lwcReady = typeof window.LightweightCharts !== "undefined";
+  // The FLAGGED full bundle auto-mounts App on load (app.jsx guarded auto-mount; no
+  //   __STOM_NO_AUTO_MOUNT__ set) and resolves `react` via the alias-to-shim → window.React.
+  inject(window, read(resolve(TRACK_Z, "app.pilot.js")));
   await wait(400);
   const root = window.document.getElementById("root");
   const rootHtml = root.innerHTML;
   const appIsFn = typeof window.App === "function";
-  const pass = appIsFn && fmtReady && errs.length === 0 && rootHtml.trim().length > 0;
+  // FROZEN mount-by-name globals must be published by the bundle entry.
+  const frozenReady = ["App", "ErrorBoundary", "LabPage", "ProPage", "VerdictPanel"]
+    .every((n) => typeof window[n] === "function");
+  // Single React identity: the bundle's hooks ran through window.React (alias-to-shim), so the
+  //   one vendored React must be unchanged and an App render must have produced DOM.
+  const singleReactIdentity = window.React === reactIdentityBefore
+    && typeof window.React.version === "string" && window.React.version.length > 0;
+  const dynReq = errs.filter((e) => /Dynamic require|require is not/i.test(e));
+  const pass = appIsFn && frozenReady && fmtReady && lwcReady && singleReactIdentity
+    && dynReq.length === 0 && errs.length === 0 && rootHtml.trim().length > 0;
   return {
-    name: "V2_index_path",
+    name: "V2_flagged_full_bundle",
     pass,
     appIsFunction: appIsFn,
+    frozenGlobalsReady: frozenReady,
     fmtGlobalsReady: fmtReady,
+    lightweightChartsReady: lwcReady,
+    singleReactIdentity,
+    dynamicRequireErrors: dynReq,
     rootNonEmpty: rootHtml.trim().length > 0,
     rootHtmlLen: rootHtml.length,
     errorCount: errs.length,

@@ -1,4 +1,10 @@
 /* Backtest engine status panel + live equity/drawdown mini-chart */
+// Track Z (PR-3 spike) — ESM dual-safe import. The FLAGGED bundle path (STOM_BUNDLE=1)
+//   resolves these from phase-detail.jsx (real per-module scope). The DEFAULT concat path
+//   strips this line before esbuild transform (build-app.mjs `_stripTopLevelEsm`), so the
+//   legacy single-scope classic script keeps resolving DemoBadge/LivePending via the shared
+//   scope + defensive `typeof window.X === "function"` guards below. KEEP on ONE physical line.
+import { DemoBadge, LivePending } from "./phase-detail.jsx";
 const { useState: useState_e, useMemo: useMemo_e, useRef: useRef_e } = React;
 
 function fmtElapsed(ms) {
@@ -430,3 +436,9 @@ function LiveBacktestChart({ state }) {
 }
 
 Object.assign(window, { EnginePanel, LiveBacktestChart, fmtElapsed, _liveChartGeom });
+
+// Track Z (PR-3 spike) — ESM dual-safe export of engine's cross-consumed symbols.
+//   FLAGGED bundle: the pilot entry imports these (real module scope). DEFAULT concat: the
+//   line is stripped before transform (Object.assign above stays the legacy publisher).
+//   KEEP on ONE physical line — the concat stripper matches a single-line `export { ... };`.
+export { EnginePanel, LiveBacktestChart };

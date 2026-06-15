@@ -905,3 +905,6 @@ function ExportStatusBanner({ reply }) {
 }
 
 Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { ActiveConfigPanel, ActiveStrategyPanel, AutopsyPanel, ConnBadge, CostPanel, CurrentGenPanel, ExportStatusBanner, FeedbackPanel, HoldoutPanel, LineagePanel, MetaPanel, PopulationPanel, ResearchCriteriaBanner, StatusBadge };

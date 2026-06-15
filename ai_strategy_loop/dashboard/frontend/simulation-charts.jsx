@@ -1834,3 +1834,6 @@ Object.assign(window, {
   _simSma, _simEma, _simRsi, _simMacd, _simVolMa, _simStrengthMa,
   _SIM_DEFAULT_INDICATORS,
 });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { SimCandleChart, SimCandleChartLWC, SimCandleChartSVG, SimOverlayChart, SimSignalLog };

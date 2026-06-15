@@ -132,3 +132,6 @@ function ResearchWikiPanel({ baseUrl, wsStatus }) {
 }
 
 Object.assign(window, { ResearchWikiPanel });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { ResearchWikiPanel };

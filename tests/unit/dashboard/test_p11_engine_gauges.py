@@ -164,12 +164,34 @@ class TestNoHardcodedColors:
 # ============================================================ in-browser Babel 제약
 class TestInBrowserBabelConstraints:
     def test_no_import_export_no_ts(self) -> None:
-        """in-browser Babel JSX — import/export·TS 금지."""
+        """JSX 소스 계약 — TS 금지 + ESM 은 Track Z dual-safe 형태만 허용.
+
+        RELAXED (Track Z PR-3): build-app.mjs 의 `_stripTopLevelEsm` 가 concat 경로에서
+        제거하는 단일라인 dual-safe ESM(`import { … } from "./x.jsx";` / `export { … };`)
+        은 허용한다(FLAGGED 번들이 실 모듈 스코프로 사용, 기본 concat 은 strip → byte-unchanged).
+        가드의 실의도는 유지: (a) TypeScript 문법 금지, (b) dual-safe 외 모든 import/export
+        형태 금지(`import X from`, `import * as`, `export default`, `export const/function`,
+        `import type` 등). 즉 임의 ESM 으로의 확산을 계속 막되, Track Z 변환만 통과시킨다."""
+        import re as _re
+
         src = _read("engine.jsx")
+        # Track Z dual-safe 허용 패턴(단일 물리 라인; _stripTopLevelEsm 와 동일 표면).
+        _ALLOW_IMPORT = _re.compile(r"""^import\s*\{[^}]*\}\s*from\s*["']\./[^"']+\.jsx["']\s*;?\s*$""")
+        _ALLOW_EXPORT = _re.compile(r"""^export\s*\{[^}]*\}\s*;?\s*$""")
         for line in src.splitlines():
             stripped = line.strip()
-            assert not stripped.startswith("import "), f"import 금지: {stripped}"
-            assert not stripped.startswith("export "), f"export 금지: {stripped}"
+            if stripped.startswith("import "):
+                assert _ALLOW_IMPORT.match(stripped), (
+                    f"dual-safe 아닌 import 금지(Track Z 는 `import {{…}} from \"./x.jsx\";` 만 허용): {stripped}"
+                )
+            if stripped.startswith("export "):
+                assert _ALLOW_EXPORT.match(stripped), (
+                    f"dual-safe 아닌 export 금지(Track Z 는 `export {{ … }};` 만 허용): {stripped}"
+                )
+        # TS 문법 금지(가드의 핵심 의도 유지): 타입 주석/인터페이스/제네릭 선언 등.
+        assert "import type" not in src and "export type" not in src, "TS type import/export 금지"
+        assert not _re.search(r"\binterface\s+[A-Z]\w*\s*\{", src), "TS interface 선언 금지"
+        assert not _re.search(r"\benum\s+[A-Z]\w*\s*\{", src), "TS enum 선언 금지"
 
     def test_per_file_hook_aliases_preserved(self) -> None:
         """파일별 훅 별칭(전역 충돌 방지) — useState_e/useMemo_e/useRef_e 보존."""

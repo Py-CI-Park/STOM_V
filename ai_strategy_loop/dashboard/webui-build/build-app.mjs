@@ -75,12 +75,29 @@ if (process.env.STOM_BUNDLE === "1") {
   process.exit(0);
 }
 
-// Strip single-line top-level `export { ... };` statements so ESM dual-safe .jsx files
-//   (Track Z: phase-detail.jsx exports DemoBadge/LivePending for the flagged bundle) still
-//   compile as classic scripts in the DEFAULT concat path. The Object.assign(window, {...})
-//   in each file remains the publishing mechanism for the legacy single-scope model.
-const _stripTopLevelExports = (src) =>
-  src.replace(/^\s*export\s*\{[^}]*\}\s*;?\s*$/gm, "");
+// Strip top-level ESM `import`/`export { ... }` statements so dual-safe .jsx files (Track Z:
+//   files add `export {…}` for cross-consumed symbols and `import {…} from "./def.jsx"` for the
+//   cross-file symbols they consume) still compile as CLASSIC scripts in the DEFAULT concat path.
+//   The flagged bundle path (STOM_BUNDLE=1) KEEPS these lines (real per-module scope); only this
+//   legacy single-scope concat path strips them so flag-OFF output stays byte-identical. The
+//   Object.assign(window, {...}) in each file remains the publishing mechanism for the legacy model.
+//
+//   What is stripped (true top-level statements only, anchored at column 0):
+//     - `export { ... };`                          (single line)
+//     - `import "...";`                            (side-effect import, single line)
+//     - `import X from "...";` / `import * as X …`  (default/namespace, single line)
+//     - `import { a, b } from "...";`              (named, single line)
+//     - multi-line named import:                   `import {\n  a,\n  b,\n} from "...";`
+//   The leading `^` + `m` flag anchors at line start so indented `import(...)`/`export` inside
+//   function bodies (dynamic import(), object keys, etc.) are NOT matched.
+const _stripTopLevelEsm = (src) =>
+  src
+    // multi-line + single-line named/default/namespace import ending in `from "...";`
+    .replace(/^import\b[\s\S]*?\bfrom\s*["'][^"']*["']\s*;?\s*$/gm, "")
+    // side-effect import (no `from`): `import "...";`
+    .replace(/^import\s*["'][^"']*["']\s*;?\s*$/gm, "")
+    // top-level `export { ... };`
+    .replace(/^\s*export\s*\{[^}]*\}\s*;?\s*$/gm, "");
 
 // index.html 의 로드 순서와 동일해야 한다(전역 정의 순서 보존).
 const ORDER = [
@@ -100,7 +117,7 @@ const header =
 
 const parts = [header];
 for (const f of ORDER) {
-  const code = _stripTopLevelExports(readFileSync(resolve(FRONTEND, f), "utf8"));
+  const code = _stripTopLevelEsm(readFileSync(resolve(FRONTEND, f), "utf8"));
   const res = await esbuild.transform(code, {
     loader: "jsx",
     jsx: "transform",
