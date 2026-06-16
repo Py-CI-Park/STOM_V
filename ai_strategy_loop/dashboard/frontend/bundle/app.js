@@ -1,24 +1,13 @@
 "use strict";
 (() => {
-  // ../frontend/connection.jsx
-  var { useState, useEffect, useRef, useCallback, useMemo } = React;
-  var DEFAULT_BASE2 = typeof window !== "undefined" && window.location && window.location.origin && window.location.origin.startsWith("http") ? window.location.origin : "http://127.0.0.1:8770";
-  function isDemoSource(wsStatus) {
-    return wsStatus === "demo";
-  }
-  function livePanelPending(wsStatus, state) {
-    if (isDemoSource(wsStatus)) return false;
-    const cr = state && state.current_run;
-    const hasRich = !!(cr && (cr.equity && cr.equity.length || cr.generation && (cr.generation.buy_code_partial || cr.generation.sell_code_partial)));
-    return !hasRich;
-  }
+  // ../frontend/conn-demo-codegen.jsx
   function genBuyCode(tag, gen) {
     const seed = gen * 7 % 9 + 1;
     const map = {
       VWAP: `# BUY_VWAP_g${gen} \u2014 VWAP \xD7 \uAC70\uB798\uB7C9\uAC00\uC18D + RSI \uD544\uD130
 def signal_buy(bar, ind, book):
     # 1) \uAC00\uACA9\uC774 VWAP \uC704\uB85C ${(0.2 + seed * 0.05).toFixed(2)}% \uC774\uC0C1 \uC774\uACA9
-    if not (bar.close > ind.vwap * 1.00${seed}): 
+    if not (bar.close > ind.vwap * 1.00${seed}):
         return False
     # 2) 5\uBD84 \uAC70\uB798\uB7C9\uC774 20\uBD09 \uD3C9\uADE0\uC758 ${150 + seed * 10}% \uC774\uC0C1
     if ind.vol_5m < ind.vol_20m_avg * ${(1.5 + seed * 0.1).toFixed(1)}:
@@ -133,6 +122,10 @@ def signal_sell(pos, bar, ind):
     };
     return map[tag] || map.ATR;
   }
+
+  // ../frontend/conn-backend.jsx
+  var { useState: useState_cn1, useEffect: useEffect_cn1, useRef: useRef_cn1, useCallback: useCallback_cn1 } = React;
+  var DEFAULT_BASE2 = typeof window !== "undefined" && window.location && window.location.origin && window.location.origin.startsWith("http") ? window.location.origin : "http://127.0.0.1:8770";
   var DEFAULT_CONFIG_SPEC = [
     // 목표/제약
     {
@@ -352,16 +345,16 @@ def signal_sell(pos, bar, ind):
     updated_at: (/* @__PURE__ */ new Date()).toISOString()
   };
   function useBackend2(baseUrl) {
-    const [health, setHealth] = useState({ connected: false, contract_version: null });
-    const [wsStatus, setWsStatus] = useState("connecting");
-    const [state, setState] = useState(INITIAL_STATE);
-    const [configSpec, setConfigSpec] = useState(DEFAULT_CONFIG_SPEC);
-    const [lastReply, setLastReply] = useState(null);
-    const wsRef = useRef(null);
-    const reconnectAttempt = useRef(0);
-    const closedByUs = useRef(false);
-    const demoRef = useRef(null);
-    const startDemo = useCallback((config) => {
+    const [health, setHealth] = useState_cn1({ connected: false, contract_version: null });
+    const [wsStatus, setWsStatus] = useState_cn1("connecting");
+    const [state, setState] = useState_cn1(INITIAL_STATE);
+    const [configSpec, setConfigSpec] = useState_cn1(DEFAULT_CONFIG_SPEC);
+    const [lastReply, setLastReply] = useState_cn1(null);
+    const wsRef = useRef_cn1(null);
+    const reconnectAttempt = useRef_cn1(0);
+    const closedByUs = useRef_cn1(false);
+    const demoRef = useRef_cn1(null);
+    const startDemo = useCallback_cn1((config) => {
       var _a, _b, _c, _d, _e, _f, _g, _h;
       stopDemo();
       setWsStatus("demo");
@@ -789,14 +782,14 @@ def signal_sell(pos, bar, ind):
         demoRef.current = null;
       }
     };
-    const stopDemoSoft = useCallback(() => {
+    const stopDemoSoft = useCallback_cn1(() => {
       setState((s) => ({ ...s, status: "stopping", latest: { ...s.latest, message: "\uD604\uC7AC \uC138\uB300 \uC644\uB8CC \uD6C4 \uC815\uC9C0\uD569\uB2C8\uB2E4" } }));
       setTimeout(() => {
         stopDemo();
         setState((s) => ({ ...s, status: "complete", latest: { ...s.latest, phase: "\uC815\uC9C0\uB428", message: "\uC0AC\uC6A9\uC790 \uC694\uCCAD\uC73C\uB85C \uC815\uC9C0" } }));
       }, 1800);
     }, []);
-    const tryConnect = useCallback(async () => {
+    const tryConnect = useCallback_cn1(async () => {
       var _a;
       closedByUs.current = false;
       setWsStatus("connecting");
@@ -827,7 +820,7 @@ def signal_sell(pos, bar, ind):
         setWsStatus("demo");
       }
     }, [baseUrl]);
-    const openWs = useCallback(() => {
+    const openWs = useCallback_cn1(() => {
       try {
         const wsUrl = baseUrl.replace(/^http/, "ws") + "/ws";
         const ws = new WebSocket(wsUrl);
@@ -863,7 +856,7 @@ def signal_sell(pos, bar, ind):
         setWsStatus("reconnecting");
       }
     }, [baseUrl]);
-    useEffect(() => {
+    useEffect_cn1(() => {
       tryConnect();
       return () => {
         closedByUs.current = true;
@@ -871,7 +864,7 @@ def signal_sell(pos, bar, ind):
         stopDemo();
       };
     }, [tryConnect]);
-    const send = useCallback((msg) => {
+    const send = useCallback_cn1((msg) => {
       if (wsStatus === "demo" || !wsRef.current || wsRef.current.readyState !== 1) {
         if (msg.action === "start") {
           startDemo(msg.config);
@@ -909,6 +902,21 @@ def signal_sell(pos, bar, ind):
       lastReply,
       reconnect: tryConnect
     };
+  }
+  Object.assign(window, {
+    useBackend: useBackend2,
+    DEFAULT_BASE: DEFAULT_BASE2
+  });
+
+  // ../frontend/connection.jsx
+  function isDemoSource(wsStatus) {
+    return wsStatus === "demo";
+  }
+  function livePanelPending(wsStatus, state) {
+    if (isDemoSource(wsStatus)) return false;
+    const cr = state && state.current_run;
+    const hasRich = !!(cr && (cr.equity && cr.equity.length || cr.generation && (cr.generation.buy_code_partial || cr.generation.sell_code_partial)));
+    return !hasRich;
   }
   var fmtScore2 = window.fmtScore;
   var fmtPct2 = window.fmtPct;
