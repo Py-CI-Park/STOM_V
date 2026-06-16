@@ -38,10 +38,18 @@ def _read_front(name: str) -> str:
     return (FRONTEND / name).read_text(encoding="utf-8")
 
 
+# P5.6 분해: research-lab.jsx(1,273줄) → THIN BARREL + 4개 sibling. combo/correlation 본문 보조와
+#   차트 프리미티브는 rl-analysis.jsx, ResearchLabPanel/RESEARCH_TABS/프로세스 오버레이는 rl-panel.jsx,
+#   검증 탭은 rl-validation.jsx 로 이동. 정적 가드는 심볼이 실제 거주하는 파일을 읽는다(의도 보존).
+_RL_ANALYSIS = "rl-analysis.jsx"   # 상관/조합 본문 보조 + 차트 프리미티브 + 포맷/빈상태 유틸.
+_RL_PANEL = "rl-panel.jsx"         # ResearchLabPanel + RESEARCH_TABS + 프로세스 오버레이.
+_RL_VALIDATION = "rl-validation.jsx"  # _ValidationPanel.
+
+
 # --------------------------------------------------------------- 2-D 히트맵 정적 가드
 class TestComboHeatmapSource:
     def test_uses_2d_grid_classes_not_flat_list(self):
-        src = _read_front("research-lab.jsx")
+        src = _read_front(_RL_ANALYSIS)
         # 기존 styles.css 클래스로 2-D 히트맵을 렌더한다.
         assert ".stom-combo-grid" not in src  # CSS 셀렉터가 아니라 className 사용.
         assert "stom-combo-grid" in src
@@ -52,7 +60,7 @@ class TestComboHeatmapSource:
 
     def test_combolist_no_longer_flat_row_list(self):
         """_CombinationList 본문이 평면 .research-combo-row 목록이 아니다."""
-        src = _read_front("research-lab.jsx")
+        src = _read_front(_RL_ANALYSIS)
         # _CombinationList 블록만 추출.
         start = src.index("function _CombinationList(")
         end = src.index("function _RangeSummaryList(")
@@ -62,7 +70,7 @@ class TestComboHeatmapSource:
         assert "stom-combo-cell" in body
 
     def test_pivots_pairs_into_feature_matrix(self):
-        src = _read_front("research-lab.jsx")
+        src = _read_front(_RL_ANALYSIS)
         # 피벗 헬퍼와 대칭 cellMap·축 cap 존재.
         assert "_combinationMatrix" in src
         assert "_COMBO_MAX_FEATURES" in src
@@ -72,7 +80,7 @@ class TestComboHeatmapSource:
 
     def test_cell_background_uses_corr_color(self):
         """셀 BACKGROUND 가 _rlCorrColor 로 칠해진다(텍스트 색만이 아님)."""
-        src = _read_front("research-lab.jsx")
+        src = _read_front(_RL_ANALYSIS)
         start = src.index("function _CombinationList(")
         end = src.index("function _RangeSummaryList(")
         body = src[start:end]
@@ -81,7 +89,7 @@ class TestComboHeatmapSource:
             "셀 background 가 _rlCorrColor 로 칠해져야 한다"
 
     def test_cell_hover_title_present(self):
-        src = _read_front("research-lab.jsx")
+        src = _read_front(_RL_ANALYSIS)
         start = src.index("function _CombinationList(")
         end = src.index("function _RangeSummaryList(")
         body = src[start:end]
@@ -90,7 +98,7 @@ class TestComboHeatmapSource:
         assert "×" in body and "n=" in body
 
     def test_legend_and_empty_state_korean(self):
-        src = _read_front("research-lab.jsx")
+        src = _read_front(_RL_ANALYSIS)
         start = src.index("function _CombinationList(")
         end = src.index("function _RangeSummaryList(")
         body = src[start:end]
@@ -102,7 +110,7 @@ class TestComboHeatmapSource:
         assert "변수 조합이 부족합니다" in body
 
     def test_grid_template_columns_shape(self):
-        src = _read_front("research-lab.jsx")
+        src = _read_front(_RL_ANALYSIS)
         # 첫 칸=행 라벨, 이후 N개 균등 분할.
         assert "auto repeat(" in src
         assert "minmax(0,1fr)" in src
@@ -111,20 +119,20 @@ class TestComboHeatmapSource:
 # --------------------------------------------------------------- 토큰화(하드코딩 색 제거)
 class TestColorTokenization:
     def test_hardcoded_color_literals_removed(self):
-        src = _read_front("research-lab.jsx")
+        src = _read_front(_RL_ANALYSIS)
         assert "#c95" not in src, "#c95 → var(--amber) 로 치환돼야 한다"
         assert "#9ab" not in src, "#9ab → var(--ink-2) 로 치환돼야 한다"
         assert "#d4af37" not in src, "#d4af37 → var(--mesa-gold) 로 치환돼야 한다"
 
     def test_tokens_present(self):
-        src = _read_front("research-lab.jsx")
+        src = _read_front(_RL_ANALYSIS)
         assert "var(--amber)" in src
         assert "var(--ink-2)" in src
         assert "var(--mesa-gold)" in src
 
     def test_corr_color_diverging_semantics_preserved(self):
         """_rlCorrColor 의 발산(teal=양 / red=음) 의미는 그대로다."""
-        src = _read_front("research-lab.jsx")
+        src = _read_front(_RL_ANALYSIS)
         start = src.index("function _rlCorrColor(")
         end = src.index("function _ResearchEmptyState(")
         body = src[start:end]
@@ -143,20 +151,26 @@ class TestColorTokenization:
 # --------------------------------------------------------------- 다른 RESEARCH_TABS 보존
 class TestOtherResearchTabsIntact:
     def test_research_tabs_all_present(self):
-        src = _read_front("research-lab.jsx")
+        # RESEARCH_TABS 정의는 rl-panel.jsx(오케스트레이터)로 이동.
+        src = _read_front(_RL_PANEL)
         for tab in ("edge", "feature", "correlation", "combos", "validation"):
             assert f'id: "{tab}"' in src, f"RESEARCH_TABS 에 {tab} 누락"
 
     def test_other_tab_components_untouched(self):
-        src = _read_front("research-lab.jsx")
-        # edge/feature/correlation/validation 경로의 핵심 컴포넌트가 그대로다.
-        assert "EdgeRatioPanel" in src
-        assert "FeatureImportancePanel" in src
-        assert "_CorrelationHeatmap" in src
-        assert "_ValidationPanel" in src
+        # 핵심 컴포넌트는 분해 후에도 그대로 존재한다(파일만 이동): 패널/탭 디스패치는 rl-panel,
+        #   상관/조합 본문 보조는 rl-analysis.
+        panel = _read_front(_RL_PANEL)
+        analysis = _read_front(_RL_ANALYSIS)
+        combined = panel + analysis
+        # edge/feature/validation 경로의 핵심 컴포넌트(소비/디스패치: rl-panel).
+        assert "EdgeRatioPanel" in panel
+        assert "FeatureImportancePanel" in panel
+        assert "_ValidationPanel" in panel
+        # 상관/조합 본문 보조(정의: rl-analysis).
+        assert "_CorrelationHeatmap" in combined
         # correlation 탭의 평면 목록 보조(_RangeSummaryList/_SegmentSummaryList)는 유지.
-        assert "_RangeSummaryList" in src
-        assert "_SegmentSummaryList" in src
+        assert "_RangeSummaryList" in combined
+        assert "_SegmentSummaryList" in combined
 
 
 # --------------------------------------------------------------- vendor-babel 트랜스폼
@@ -171,7 +185,7 @@ const fs = require('fs');
 const path = require('path');
 const dir = process.argv[2];
 const esbuild = require(path.join(dir, '..', 'webui-build', 'node_modules', 'esbuild'));
-const files = ['research-lab.jsx'];
+const files = ['research-lab.jsx', 'rl-vdt-shell.jsx', 'rl-analysis.jsx', 'rl-validation.jsx', 'rl-panel.jsx'];
 let ok = true;
 for (const f of files) {
   try { esbuild.transformSync(fs.readFileSync(path.join(dir, f), 'utf8'), { loader: 'jsx', jsx: 'transform', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment' }); }

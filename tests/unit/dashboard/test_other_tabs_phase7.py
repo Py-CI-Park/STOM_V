@@ -50,16 +50,23 @@ def _has_hangul(text: str) -> bool:
 
 
 # =========================================================== research-lab.jsx
+# P5.6 분해: research-lab.jsx → THIN BARREL + rl-vdt-shell/rl-analysis/rl-validation/rl-panel.
+#   RESEARCH_TABS·ResearchLabPanel 은 rl-panel.jsx, _rlCorrColor 등 상관 보조는 rl-analysis.jsx.
+_RL_FILES = ("research-lab.jsx", "rl-vdt-shell.jsx", "rl-analysis.jsx",
+             "rl-validation.jsx", "rl-panel.jsx")
+
+
 class TestResearchLab:
     def test_no_insufficient_data_leak(self) -> None:
-        """하드 제약 — 'insufficient data' 문자열이 소스에 남지 않는다."""
-        src = _read("research-lab.jsx")
+        """하드 제약 — 'insufficient data' 문자열이 어느 rl-* 소스에도 남지 않는다."""
+        src = "".join(_read(f) for f in _RL_FILES)
         assert "insufficient data" not in src
         # 그 외 영문 빈상태 누수(insufficient*)도 전부 제거됐다.
         assert "insufficient" not in src
 
     def test_research_tabs_labels_are_korean(self) -> None:
-        src = _read("research-lab.jsx")
+        # RESEARCH_TABS 정의는 rl-panel.jsx 로 이동.
+        src = _read("rl-panel.jsx")
         # RESEARCH_TABS 블록을 잘라 라벨이 한국어인지 확인.
         block = src.split("const RESEARCH_TABS", 1)[1].split("]", 1)[0]
         # 이전 영문 라벨이 사라졌다.
@@ -74,7 +81,7 @@ class TestResearchLab:
 
     def test_corr_color_uses_tokens_not_raw_rgba(self) -> None:
         """_rlCorrColor 가 토큰 기반 color-mix 스케일을 쓰고 원시 rgba 리터럴이 없다."""
-        src = _read("research-lab.jsx")
+        src = _read("rl-analysis.jsx")  # _rlCorrColor 정의는 rl-analysis.jsx 로 이동.
         body = src.split("function _rlCorrColor", 1)[1].split("\n}", 1)[0]
         # 디자인 토큰 발산 스케일.
         assert "color-mix" in body
@@ -162,7 +169,7 @@ const fs = require('fs');
 const path = require('path');
 const dir = process.argv[2];
 const esbuild = require(path.join(dir, '..', 'webui-build', 'node_modules', 'esbuild'));
-const files = ['research-lab.jsx', 'backtest.jsx', 'bt-tab-utils.jsx', 'bt-tab-library.jsx', 'bt-tab-run.jsx', 'bt-tab-mode-results.jsx', 'bt-tab-analysis.jsx', 'bt-tab-root.jsx', 'evolution-analysis.jsx'];
+const files = ['research-lab.jsx', 'rl-vdt-shell.jsx', 'rl-analysis.jsx', 'rl-validation.jsx', 'rl-panel.jsx', 'backtest.jsx', 'bt-tab-utils.jsx', 'bt-tab-library.jsx', 'bt-tab-run.jsx', 'bt-tab-mode-results.jsx', 'bt-tab-analysis.jsx', 'bt-tab-root.jsx', 'evolution-analysis.jsx'];
 let ok = true;
 for (const f of files) {
   try { esbuild.transformSync(fs.readFileSync(path.join(dir, f), 'utf8'), { loader: 'jsx', jsx: 'transform', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment' }); }

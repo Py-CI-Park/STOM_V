@@ -91,7 +91,9 @@ class TestResearchProSource:
             assert ep in src
 
     def test_research_lab_surgical_edits(self):
-        src = _read_front("research-lab.jsx")
+        # P5.6 분해: research-lab.jsx → THIN BARREL + sibling. E1 상태배지·E4 도움말·E10 프로세스는
+        #   rl-panel.jsx, E3 기간/축 표기는 rl-validation.jsx 로 이동. 거주 파일을 합쳐 검증(의도 보존).
+        src = _read_front("rl-panel.jsx") + _read_front("rl-validation.jsx")
         # E1 — 상태 배지 바(라벨+값+툴팁).
         assert "research-statusbar" in src
         assert "research-badge" in src
