@@ -96,16 +96,24 @@ class TestTrackZSourceContract:
         exported = {s.strip() for s in m.group(1).split(",") if s.strip()}
         assert {"DemoBadge", "LivePending"} <= exported, f"export must include DemoBadge+LivePending: {exported}"
 
-    def test_build_app_has_flag_path_and_export_stripper(self) -> None:
+    def test_build_app_is_bundle_only(self) -> None:
+        """PR-7 RETIRE: build-app.mjs is now BUNDLE-ONLY. The concat fallback
+        (STOM_LEGACY_CONCAT=1, _stripTopLevelEsm, ORDER, ==== markers) and the redundant
+        STOM_BUNDLE=1 pilot path were removed to enable clean P5 decomposition. The single build
+        is the esbuild alias-to-shim bundle. Assert the bundle invariants AND that the retired
+        concat/pilot machinery is gone (so a regression that re-adds it fails)."""
         src = _read(WEBUI / "build-app.mjs")
-        assert 'process.env.STOM_BUNDLE === "1"' in src
-        # RENAMED (Track Z PR-3): `_stripTopLevelExports` → `_stripTopLevelEsm` — the concat
-        #   stripper now removes BOTH dual-safe `import { … } from "./x.jsx";` AND `export { … };`
-        #   (PR-1 only stripped `export`). The flagged bundle keeps both (real module scope).
-        assert "_stripTopLevelEsm" in src
-        # alias-to-shim (Driver-2), not bare external.
+        # The single bundle build: alias-to-shim (Driver-2, not bare external) + classic IIFE.
         assert "react-shim.js" in src and "react-dom-shim.js" in src
-        assert 'bundle: true' in src and 'format: "iife"' in src
+        assert "bundle: true" in src and 'format: "iife"' in src
+        # Retired machinery must be gone — assert on the CODE (not prose: the header comment still
+        #   names the retired flags to explain what PR-7 removed, so match runtime-access strings
+        #   and identifiers that only appear as live code, never as documentation).
+        assert "_stripTopLevelEsm" not in src, "PR-7: concat ESM-stripper must be removed."
+        assert "buildLegacyConcat" not in src, "PR-7: concat builder must be removed."
+        assert "const ORDER" not in src, "PR-7: hardcoded concat ORDER must be removed."
+        assert "process.env.STOM_LEGACY_CONCAT" not in src, "PR-7: concat fallback dispatch must be removed."
+        assert "process.env.STOM_BUNDLE" not in src, "PR-7: redundant pilot dispatch must be removed."
 
     def test_default_manifest_is_bundle_model(self) -> None:
         """PR-6 FLIP: the DEFAULT (no-env) build is now the esbuild bundle — the committed manifest
@@ -239,21 +247,59 @@ def test_track_z_v4_standalone_page_mounts() -> None:
     assert v4["pass"], f"V4 standalone page mounts failed: {v4}"
 
 
-def test_track_z_flagged_bundle_has_no_react_require() -> None:
-    """The flagged pilot artifact must NOT contain require('react') or a second-React
-    sentinel (proves alias-to-shim, single React identity at the source level)."""
+def test_served_bundle_has_no_react_require() -> None:
+    """The SERVED default bundle (frontend/bundle/app.js) must NOT contain require('react') or a
+    second-React sentinel (proves alias-to-shim, single React identity at the source level).
+
+    PR-7 RETIRE: the old version built a flagged pilot via STOM_BUNDLE=1 → .track-z/app.pilot.js.
+    That pilot path was removed (bundle-only), so this now asserts directly against the committed
+    served artifact (no node/build needed — pure source check)."""
+    body = _read(FRONTEND / "bundle" / "app.js")
+    assert 'require("react")' not in body, "served bundle contains require('react')"
+    assert "react.development" not in body, "served bundle contains a second-React sentinel"
+    assert "__SECRET_INTERNALS" not in body, "served bundle bundled a second React copy"
+
+
+def test_committed_bundle_in_sync_with_source() -> None:
+    """Harness freshness guard (architect nit #1): a FRESH `node build-app.mjs` must leave the
+    committed artifacts (bundle/app.js, the 5 HTMLs, manifest.json) byte-in-sync with source.
+
+    The build is deterministic (content-hash ?v=, no timestamp), so on a clean tree a rebuild
+    leaves NO diff. If someone edits a .jsx/source without rebuilding (or hand-edits a committed
+    artifact), the committed bundle drifts from source and this test fails — surfacing the stale
+    artifact at test time, not at deploy. Gated on node + esbuild (webui-build/node_modules is
+    gitignored; runtime stays npm-free). The build is reproducible so a fresh tree stays clean —
+    the guard does NOT leave a dirty tree on a synced repo."""
     node = _node_or_skip()
-    # Build the flagged pilot (writes to the gitignored .track-z transient dir). STOM_BUNDLE=1
-    #   selects the bundle path in build-app.mjs; we only need the return code + the artifact.
-    env: dict[str, str] = dict(os.environ, STOM_BUNDLE="1")
+    # build-app.mjs logs Korean (?v= 갱신); decode utf-8 so the Windows default codec (cp949)
+    #   doesn't raise UnicodeDecodeError in the subprocess reader thread.
     r = subprocess.run(
         [node, "build-app.mjs"],
-        cwd=str(WEBUI), capture_output=True, text=True, timeout=240, env=env,
+        cwd=str(WEBUI), capture_output=True, text=True,
+        encoding="utf-8", errors="replace", timeout=240,
     )
-    assert r.returncode == 0, f"flagged build failed: {r.stderr}"
-    pilot = WEBUI / ".track-z" / "app.pilot.js"
-    assert pilot.exists(), "flagged pilot artifact not produced"
-    body = pilot.read_text(encoding="utf-8")
-    assert 'require("react")' not in body, "flagged bundle contains require('react')"
-    assert "react.development" not in body, "flagged bundle contains a second-React sentinel"
-    assert "__SECRET_INTERNALS" not in body, "flagged bundle bundled a second React copy"
+    assert r.returncode == 0, f"build failed: {r.stderr}"
+    targets = [
+        "ai_strategy_loop/dashboard/frontend/bundle/app.js",
+        "ai_strategy_loop/dashboard/frontend/bundle/manifest.json",
+        "ai_strategy_loop/dashboard/frontend/index.html",
+        "ai_strategy_loop/dashboard/frontend/lab.html",
+        "ai_strategy_loop/dashboard/frontend/pro.html",
+        "ai_strategy_loop/dashboard/frontend/verdict.html",
+        "ai_strategy_loop/dashboard/frontend/STOM AI Dashboard.html",
+    ]
+    diff = subprocess.run(
+        ["git", "diff", "--quiet", "--", *targets],
+        cwd=PROJECT_ROOT, capture_output=True, text=True,
+        encoding="utf-8", errors="replace", timeout=60,
+    )
+    if diff.returncode != 0:
+        dirty = subprocess.run(
+            ["git", "diff", "--stat", "--", *targets],
+            cwd=PROJECT_ROOT, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=60,
+        )
+        pytest.fail(
+            "committed build artifacts are stale vs source — rebuild needed "
+            f"(node build-app.mjs):\n{dirty.stdout}"
+        )
