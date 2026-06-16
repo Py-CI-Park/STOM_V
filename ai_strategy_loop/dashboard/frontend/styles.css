@@ -1895,7 +1895,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   display: inline-block; padding: 1px 6px; border-radius: var(--radius-sm); font-size: 9.5px; font-weight: 600;
 }
 .rp-kind-ai { color: var(--violet); border: 1px solid rgba(165,148,255,0.4); }
-.rp-kind-seed { color: var(--blue); border: 1px solid rgba(106,166,255,0.4); }
+.rp-kind-seed { color: var(--amber); border: 1px solid rgba(240,179,90,0.4); }
 
 /* 대형 히트맵(E7) — 컨테이너 폭 추종 반응형 셀. */
 .rp-heatmap {
