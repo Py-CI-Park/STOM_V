@@ -132,8 +132,9 @@ class TestHypothesisPanelFrontend:
         # Phase14.7: 모든 엔트리(index 및 레거시 포함)가 단일 컴파일 번들 bundle/app.js 를 로드한다.
         #   hypothesis.jsx 는 app.jsx 보다 먼저 정의돼야 한다(전역 공유) — app.js 마커 순서로 검증.
         app_bundle = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
-        assert "==== hypothesis.jsx ====" in app_bundle, "app.js 에 hypothesis.jsx 누락"
-        assert app_bundle.index("==== hypothesis.jsx ====") < app_bundle.index("==== app.jsx ====")
+        # 모델-무관: concat 마커 존재 → hypothesis 가 정의하는 심볼 존재로 교체(concat·bundle 양쪽 통과).
+        #   텍스트 순서(hypothesis < app) DROP — 모듈 스코프에선 무의미.
+        assert "HypothesisPanel" in app_bundle, "app.js 에 hypothesis(HypothesisPanel) 누락"
         # 엔트리 HTML 들이 번들을 로드하는지(런타임 babel 없이).
         for entry in ("index.html", "STOM AI Dashboard.html"):
             html = (FRONTEND / entry).read_text(encoding="utf-8")

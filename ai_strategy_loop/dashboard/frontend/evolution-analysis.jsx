@@ -14,6 +14,8 @@
      CustomEvent("stom:bt-evo-select", {detail:{run_id, gen_no}})를 window 에 발행 + 선택을
      localStorage(stom_bt_evo_pending)에 적재한 뒤, app.jsx 가 내려준 onOpenWorkbench 로 탭만
      전환한다(직접 상태 결합 없음). */
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { LegendDot, Mini } from "./chart.jsx";
 const {
   useState: useState_ea, useEffect: useEffect_ea,
   useMemo: useMemo_ea, useRef: useRef_ea, useCallback: useCallback_ea,
@@ -541,3 +543,6 @@ function EvolutionAnalysisPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
 
 // 빌드 없는 text/babel 전역 등록(app.jsx 가 window 에서 참조).
 Object.assign(window, { EvolutionAnalysisPanel });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { EvolutionAnalysisPanel };

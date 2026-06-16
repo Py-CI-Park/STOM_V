@@ -5,6 +5,8 @@
    모든 fetch 는 무예외(실패→빈 상태+재시도), AbortSignal.timeout, 폴링은 running 중에만.
    차트(누적수익·히스토그램·히트맵·언더워터)는 backtest-charts.jsx 의 순수 SVG 컴포넌트 사용
    (window 전역, index.html 에서 이 파일보다 먼저 로드). 외부 차트 라이브러리 금지. */
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { BtResultArea } from "./backtest-charts.jsx";
 const {
   useState: useState_bt, useEffect: useEffect_bt,
   useCallback: useCallback_bt, useRef: useRef_bt, useMemo: useMemo_bt,
@@ -2202,3 +2204,6 @@ function BacktestTab({ baseUrl, wsStatus }) {
 }
 
 Object.assign(window, { BacktestTab });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { BacktestTab, BtVarChips };

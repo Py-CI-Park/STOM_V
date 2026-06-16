@@ -38,14 +38,13 @@ def test_research_glossary_defines_all_user_visible_terms() -> None:
 def test_research_glossary_is_loaded_before_app_and_rendered() -> None:
     """Given the UI shell, When loaded, Then the glossary component is available to app.jsx.
 
-    Phase14.4: 운영 컴포넌트는 단일 번들 bundle/app.js — 순서는 "==== X.jsx ====" 마커로 검증.
+    Phase14.4: 운영 컴포넌트는 단일 번들 bundle/app.js. 모델-무관 마이그레이션: concat 텍스트
+    순서(glossary < app)는 모듈 스코프에선 무의미하므로 DROP 하고, glossary 가 정의하는 심볼이
+    산출 번들에 존재함 + app.jsx 가 패널을 마운트함으로 검증한다(concat·bundle 양쪽 통과).
     """
     app_bundle = _read_front("bundle/app.js")
     app = _read_front("app.jsx")
 
-    glossary_pos = app_bundle.find("==== glossary.jsx ====")
-    app_pos = app_bundle.find("==== app.jsx ====")
-
-    assert glossary_pos > -1
-    assert app_pos > glossary_pos
+    # glossary.jsx → ResearchGlossaryPanel.
+    assert "ResearchGlossaryPanel" in app_bundle, "app.js 에 glossary(ResearchGlossaryPanel) 누락"
     assert "<ResearchGlossaryPanel" in app

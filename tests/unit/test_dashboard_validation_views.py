@@ -491,24 +491,24 @@ class TestFrontendContract:
         #   ?v= 는 content-hash(자동) — 값은 하드코딩하지 않는다(일관성은 test_p14 가 검증).
         assert "bundle/app.js?v=" in src
         assert "bundle/stom-ui.js?v=" in src
-        # 정의/로드 순서는 app.js 의 "==== X.jsx ====" 마커(build-app.mjs ORDER)에 보존된다.
+        # 모델-무관 마이그레이션: concat "==== X.jsx ====" 마커 존재 검사 → 각 모듈이 정의하는
+        #   심볼 존재로 교체(concat·bundle 양쪽 통과). 정의/로드 텍스트 순서(_ord index 비교)는
+        #   모듈 스코프에선 무의미하므로 DROP(런타임 정의-전 의존은 Track Z 하니스가 별도 검증).
         app_bundle = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
-        for name in (
-            "chart.jsx", "research-lab.jsx", "evolution-analysis.jsx", "dashboard-pages.jsx",
-            "research-pro.jsx", "backtest-charts.jsx", "backtest.jsx",
-            "sim-live-chart.jsx", "simulation-charts.jsx", "simulation.jsx", "app.jsx",
+        for sym in (
+            "FitnessChart",            # chart.jsx
+            "ResearchLabPanel",        # research-lab.jsx
+            "EvolutionAnalysisPanel",  # evolution-analysis.jsx
+            "LabPage",                 # dashboard-pages.jsx
+            "ResearchProPanel",        # research-pro.jsx
+            "BtResultArea",            # backtest-charts.jsx
+            "BacktestTab",             # backtest.jsx
+            "SimLiveChart",            # sim-live-chart.jsx
+            "SimCandleChart",          # simulation-charts.jsx
+            "SimulationTab",           # simulation.jsx
+            "function App(",           # app.jsx (엔트리)
         ):
-            assert f"==== {name} ====" in app_bundle, f"app.js 에 {name} 누락"
-
-        def _ord(n):
-            return app_bundle.index(f"==== {n} ====")
-
-        # Phase9 — dashboard-pages 는 research-pro 이후·app 이전.
-        assert _ord("research-pro.jsx") < _ord("dashboard-pages.jsx") < _ord("app.jsx")
-        # Phase6-S — Canvas 라이브 차트는 simulation 보다 먼저.
-        assert _ord("sim-live-chart.jsx") < _ord("simulation-charts.jsx") < _ord("simulation.jsx")
-        # PR2 — 차트 분리 모듈은 backtest 보다 먼저.
-        assert _ord("backtest-charts.jsx") < _ord("backtest.jsx")
+            assert sym in app_bundle, f"app.js 에 {sym} 누락"
 
 
 class TestRegimeReport:

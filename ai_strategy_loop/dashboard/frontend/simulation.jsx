@@ -5,6 +5,8 @@
    캔들 차트·체결 로그는 simulation-charts.jsx 의 순수 SVG 컴포넌트 사용
    (window 전역, index.html 에서 이 파일보다 먼저 로드). 외부 차트 라이브러리 금지.
    WS push 기반(폴링 없음) — meta→bars(배치)→done 프로토콜. 재연결·에러 빈상태 처리. */
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { SimOverlayChart, SimSignalLog } from "./simulation-charts.jsx";
 const {
   useState: useState_sim, useEffect: useEffect_sim,
   useCallback: useCallback_sim, useRef: useRef_sim, useMemo: useMemo_sim,
@@ -1488,3 +1490,6 @@ function SimVariableWatch({ codes, barsByCode, nameByCode }) {
 }
 
 Object.assign(window, { SimulationTab });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { SimulationTab };

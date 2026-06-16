@@ -9,6 +9,8 @@
      - BtHeatmap          : analysis.heatmap.cells (요일×30분 슬롯, 셀=수익률 합계(%))
      - BtUnderwaterChart  : analysis.underwater {series, max_drawdown}
 */
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { LegendDot, Mini, MetricHelpStrip } from "./chart.jsx";
 const {
   useState: useState_btc, useRef: useRef_btc, useMemo: useMemo_btc,
   useEffect: useEffect_btc, useCallback: useCallback_btc,
@@ -2866,3 +2868,6 @@ Object.assign(window, {
   BtMddRandomChart, BtDailyPnlChart, BtHourlyPnlChart, BtWeekdayPnlChart,
   BtHoldingCurveChart, BtTradeRollingChart, BtGuiParitySection,
 });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { BtResultArea };

@@ -78,3 +78,6 @@ function ResearchGlossaryPanel() {
 }
 
 Object.assign(window, { ResearchGlossaryPanel, RESEARCH_GLOSSARY_ITEMS });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { ResearchGlossaryPanel };

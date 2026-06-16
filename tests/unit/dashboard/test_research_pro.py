@@ -123,9 +123,11 @@ class TestResearchProSource:
         assert "window.ProPage" in html
         assert "bundle/app.js" in html
         # ProPage 의존(ResearchProPanel·백테 차트 전역)은 app.js 번들에 포함된다.
+        #   모델-무관: concat "==== X.jsx ====" 마커 대신 각 모듈이 실제 정의하는 심볼 존재로 검증
+        #   (concat·bundle 양쪽 모두에서 통과). research-pro→ResearchProPanel, backtest-charts→BtResultArea.
         app_bundle = _read_front("bundle/app.js")
-        assert "==== research-pro.jsx ====" in app_bundle
-        assert "==== backtest-charts.jsx ====" in app_bundle
+        assert "ResearchProPanel" in app_bundle, "app.js 에 research-pro(ResearchProPanel) 누락"
+        assert "BtResultArea" in app_bundle, "app.js 에 backtest-charts(BtResultArea) 누락"
 
     def test_styles_append_block_present(self):
         css = _read_front("styles.css")

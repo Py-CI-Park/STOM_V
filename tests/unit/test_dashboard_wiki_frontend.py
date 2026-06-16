@@ -31,11 +31,13 @@ def test_research_wiki_component_uses_docs_endpoints_and_safe_rendering() -> Non
 
 def test_research_wiki_exposed_and_loaded_before_app() -> None:
     wiki = _read_front("research-wiki.jsx")
-    # Phase14.4: 운영 컴포넌트는 단일 컴파일 번들 bundle/app.js — 순서는 "==== X.jsx ====" 마커.
+    # 모델-무관: concat 텍스트 순서(research-wiki < app) DROP — 모듈 스코프에선 무의미.
+    #   research-wiki 가 window 에 노출(소스 계약) + 정의 심볼이 산출 번들에 존재함으로 검증
+    #   (concat·bundle 양쪽 통과).
     app_bundle = _read_front("bundle/app.js")
 
     assert "Object.assign(window, { ResearchWikiPanel" in wiki
-    assert app_bundle.index("==== research-wiki.jsx ====") < app_bundle.index("==== app.jsx ====")
+    assert "ResearchWikiPanel" in app_bundle, "app.js 에 research-wiki(ResearchWikiPanel) 누락"
 
 
 def test_app_mounts_research_wiki_panel_with_backend_context() -> None:

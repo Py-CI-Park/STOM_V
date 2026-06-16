@@ -13,6 +13,8 @@
  * 전역이다 — 본 파일이 그보다 늦게 로드되더라도 마운트 시점엔 존재한다. 방어적으로
  * (부재 시 "로딩 중" 자리표시자) 참조해 절대 크래시하지 않는다. */
 
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { ResearchWikiPanel } from "./research-wiki.jsx";
 const { useState: useState_dp, useEffect: useEffect_dp } = React;
 
 // 의존 전역이 아직 로드되지 않았을 때(이론상) 크래시 대신 보이는 작은 자리표시자.
@@ -478,3 +480,6 @@ function VerdictPanel({ baseUrl }) {
 }
 
 Object.assign(window, { LabPage, ProPage, VerdictPanel });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { LabPage, ProPage, VerdictPanel };

@@ -1,4 +1,34 @@
 /* Main app composition */
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { ConnBadge, StatusBadge, CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner } from "./panels.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { RunComparePanel } from "./run-compare.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { EnginePanel } from "./engine.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { FitnessChart, ProfitChart, EquityOverlayChart, QualityTrendChart, BacktestDetailChart, HallOfFamePanel } from "./chart.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { HypothesisPanel } from "./hypothesis.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { GenerationsTable } from "./table.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./cards.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { CodeViewer } from "./code-viewer.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { PhaseDetailPanel, PhaseTimeline, ProcessFlowPanel } from "./phase-detail.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { SettingsModal } from "./settings.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { ResearchGlossaryPanel } from "./glossary.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { BacktestTab } from "./backtest.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { SimulationTab } from "./simulation.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { ResearchLabPanel } from "./research-lab.jsx";
 const { useState: useState_a, useEffect: useEffect_a, useCallback: useCallback_a } = React;
 
 function App() {
@@ -259,6 +289,14 @@ function App() {
             ? <window.VerdictPanel baseUrl={baseUrl} />
             : <div className="research-empty" style={{ padding: "12px 16px" }}>결정 이력 로딩 중…</div>}
         </ErrorBoundary>
+      ) : activeTab === "process" ? (
+        <ErrorBoundary>
+          <iframe
+            src={baseUrl + "/process_flow"}
+            title="프로세스 흐름"
+            style={{ width: "100%", height: "calc(100vh - 130px)", border: "none", borderRadius: 8, background: "#0d1117" }}
+          />
+        </ErrorBoundary>
       ) : isIdle ? (
         <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} />
       ) : (
@@ -404,6 +442,7 @@ const STOM_TABS = [
   { key: "lab", label: "연구실", icon: "🔬" },
   { key: "pro", label: "분석 프로", icon: "📊" },
   { key: "verdict", label: "결정 이력", icon: "⚖️" },
+  { key: "process", label: "프로세스 흐름", icon: "🗺️" },
 ];
 
 function TabNav({ activeTab, onSelect }) {
@@ -697,3 +736,6 @@ if (typeof window === "undefined" || !window.__STOM_NO_AUTO_MOUNT__) {
   const root = ReactDOM.createRoot(document.getElementById("root"));
   root.render(<ErrorBoundary><App /></ErrorBoundary>);
 }
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { App, ErrorBoundary };

@@ -279,3 +279,6 @@ function ApprovalDialog({ winner, onClose, onConfirm }) {
 }
 
 Object.assign(window, { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { ApprovalDialog, BestCard, MergedBestWinnerCard, WinnerCard };
