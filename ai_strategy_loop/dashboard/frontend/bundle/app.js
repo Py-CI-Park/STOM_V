@@ -6011,7 +6011,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { ResearchGlossaryPanel, RESEARCH_GLOSSARY_ITEMS });
 
-  // ../frontend/backtest-charts.jsx
+  // ../frontend/bt-chart-utils.jsx
   var {
     useState: useState_btc,
     useRef: useRef_btc,
@@ -6182,6 +6182,14 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       padding: "0 16px"
     } }, message || "\uBD84\uC11D \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4");
   }
+  function _gpMoney(v) {
+    const a = Math.abs(v || 0);
+    if (a >= 1e8) return ((v || 0) / 1e8).toFixed(1) + "\uC5B5";
+    if (a >= 1e4) return Math.round((v || 0) / 1e4) + "\uB9CC";
+    return Math.round(v || 0).toLocaleString("ko-KR");
+  }
+
+  // ../frontend/bt-equity-charts.jsx
   function BtEquityChart({ equity, onBrush, brushActive, onBrushClear }) {
     const daily = equity && equity.daily || [];
     const cumulative = equity && equity.cumulative || [];
@@ -6513,19 +6521,279 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       "%"
     ))), pts.length === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "MAE/MFE \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 (R_MAE\xB7R_MFE \uACB0\uCE21)" }))));
   }
-  function BtExitReasonPanel({ rows }) {
-    const items = Array.isArray(rows) ? rows : [];
-    const maxAbs = Math.max(1, ...items.map((r) => Math.abs(r.total_pnl || 0)));
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uB9E4\uB3C4\uC870\uAC74\uBCC4 \uC190\uC775 \uBD84\uD574"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uCCAD\uC0B0\uC0AC\uC720 \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, items.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uB9E4\uB3C4\uC870\uAC74 \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4") : /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4 } }, items.map((r, i) => {
-      const frac = Math.abs(r.total_pnl || 0) / maxAbs;
-      const pos = (r.total_pnl || 0) >= 0;
-      return /* @__PURE__ */ React.createElement("div", { key: i, className: "bt-exit-row" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-1)", width: 96, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 } }, r.reason), /* @__PURE__ */ React.createElement("div", { className: "bt-exit-track" }, /* @__PURE__ */ React.createElement("div", { className: "bt-exit-fill", style: {
-        width: (frac * 100).toFixed(1) + "%",
-        background: pos ? "var(--teal)" : "var(--red)",
-        opacity: 0.75
-      } })), /* @__PURE__ */ React.createElement("span", { className: "mono " + (pos ? "num-pos" : "num-neg"), style: { fontSize: 10.5, width: 88, textAlign: "right", flexShrink: 0 } }, fmtMoney(r.total_pnl)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", width: 78, textAlign: "right", flexShrink: 0 } }, r.count, "\uAC74\xB7", fmtPct(r.win_rate)));
-    }))));
+  function BtUnderwaterChart({ underwater }) {
+    const series = underwater && underwater.series || [];
+    const maxDd = underwater && underwater.max_drawdown;
+    const [hover, setHover] = useState_btc(null);
+    const svgRef = useRef_btc(null);
+    const W = 880, H = 240;
+    const padL = 58, padR = 24, padT = 18, padB = 30;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const n = series.length;
+    const x = (i) => n > 1 ? padL + i / (n - 1) * innerW : padL + innerW / 2;
+    const ddVals = series.map((d) => d.drawdown || 0);
+    const ddMax = Math.max(1, ...ddVals);
+    const y = (v) => padT + v / ddMax * innerH;
+    const areaPath = useMemo_btc(() => {
+      if (n < 2) return "";
+      const top = series.map((d, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(d.drawdown || 0).toFixed(1)}`).join(" ");
+      return `${top} L ${x(n - 1).toFixed(1)} ${padT.toFixed(1)} L ${x(0).toFixed(1)} ${padT.toFixed(1)} Z`;
+    }, [series, n, ddMax]);
+    const linePath = useMemo_btc(() => {
+      if (n < 2) return "";
+      return series.map((d, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(d.drawdown || 0).toFixed(1)}`).join(" ");
+    }, [series, n, ddMax]);
+    const xTickIdx = useMemo_btc(() => {
+      if (n <= 1) return n === 1 ? [0] : [];
+      const step = Math.max(1, Math.ceil(n / 8));
+      const idx = [];
+      for (let i = 0; i < n; i += step) idx.push(i);
+      if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
+      return idx;
+    }, [n]);
+    const onMove = (e) => {
+      if (!n || !svgRef.current) return;
+      const rect = svgRef.current.getBoundingClientRect();
+      const px = (e.clientX - rect.left) * (W / rect.width);
+      const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
+      const i = Math.round(frac * (n - 1));
+      if (i >= 0 && i < n) setHover(i);
+      else setHover(null);
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--red)" } }), "\uC5B8\uB354\uC6CC\uD130 \u2014 Drawdown"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uACE0\uC810 \uB300\uBE44 \uBC18\uB0A9\uC561(\uC6D0)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Mini, { label: "\uCD5C\uB300\uB099\uD3ED", value: maxDd ? fmtMoney(maxDd.drawdown) : "\u2014", color: maxDd ? "var(--red)" : void 0 }), maxDd && /* @__PURE__ */ React.createElement(
+      Mini,
+      {
+        label: "\uB099\uD3ED \uAD6C\uAC04",
+        value: `${_btDateLabel(maxDd.start_date)}~${_btDateLabel(maxDd.trough_date)}`,
+        sub: maxDd.recovery_date ? `\uD68C\uBCF5 ${_btDateLabel(maxDd.recovery_date)}` : "\uBBF8\uD68C\uBCF5"
+      }
+    )), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
+      "svg",
+      {
+        ref: svgRef,
+        viewBox: `0 0 ${W} ${H}`,
+        preserveAspectRatio: "none",
+        onMouseMove: onMove,
+        onMouseLeave: () => setHover(null)
+      },
+      /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "bt-uw-grad", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#ff6b6b", stopOpacity: "0" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#ff6b6b", stopOpacity: "0.42" }))),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT, y2: padT, stroke: "var(--line-2)", strokeWidth: "1" }),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: padT + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: padT + innerH + 3, textAnchor: "end", fill: "var(--red)" }, "\u2212", _btMoneyTick(ddMax)),
+      _btAxisTicks(0, ddMax, 5).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - ddMax) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `uyl${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: y(tv), y2: y(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(tv) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "\u2212", _btMoneyTick(tv)))),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      n > 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: areaPath, fill: "url(#bt-uw-grad)" }), /* @__PURE__ */ React.createElement("path", { d: linePath, fill: "none", stroke: "var(--red)", strokeWidth: "1.4", opacity: "0.85" })),
+      xTickIdx.map((i, k) => /* @__PURE__ */ React.createElement("text", { key: `ux${i}`, className: "chart-axis-text", x: x(i), y: H - 10, textAnchor: "middle" }, series[i] ? _btDateLabelY(series[i].date, k > 0 && series[xTickIdx[k - 1]] ? series[xTickIdx[k - 1]].date : null) : "")),
+      hover != null && series[hover] && /* @__PURE__ */ React.createElement(
+        "line",
+        {
+          x1: x(hover),
+          x2: x(hover),
+          y1: padT,
+          y2: padT + innerH,
+          stroke: "rgba(255,255,255,0.14)",
+          strokeWidth: "1"
+        }
+      )
+    ), hover != null && series[hover] && /* @__PURE__ */ React.createElement("div", { style: {
+      position: "absolute",
+      top: 16,
+      right: 16,
+      background: "var(--bg-0)",
+      border: "1px solid var(--line-2)",
+      borderRadius: 6,
+      padding: "8px 10px",
+      fontFamily: "var(--mono)",
+      fontSize: 11,
+      minWidth: 160,
+      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+      pointerEvents: "none"
+    } }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, _btDateLabel(series[hover].date)), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--red)" } }, "\u2212", _btMoneyTick(series[hover].drawdown)))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uAC70\uB798\uAC00 \uB204\uC801\uB418\uBA74 \uC5B8\uB354\uC6CC\uD130 \uACE1\uC120\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4" }))));
   }
+  function BtRollingChart({ rolling }) {
+    const series = rolling && rolling.series || [];
+    const window2 = rolling && rolling.window || 20;
+    const [hover, setHover] = useState_btc(null);
+    const svgRef = useRef_btc(null);
+    const W = 880, H = 260;
+    const padL = 48, padR = 52, padT = 18, padB = 30;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const n = series.length;
+    const x = (i) => n > 1 ? padL + i / (n - 1) * innerW : padL + innerW / 2;
+    const yWin = (v) => padT + innerH - Math.max(0, Math.min(100, v)) / 100 * innerH;
+    const payoffMax = Math.max(2, ...series.map((s) => s.payoff || 0));
+    const yPay = (v) => padT + innerH - Math.max(0, v) / payoffMax * innerH;
+    const winPath = useMemo_btc(
+      () => n < 2 ? "" : series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yWin(s.win_rate || 0).toFixed(1)}`).join(" "),
+      [series, n]
+    );
+    const payPath = useMemo_btc(
+      () => n < 2 ? "" : series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yPay(s.payoff || 0).toFixed(1)}`).join(" "),
+      [series, n, payoffMax]
+    );
+    const xTickIdx = useMemo_btc(() => {
+      if (n <= 1) return n === 1 ? [0] : [];
+      const step = Math.max(1, Math.ceil(n / 8));
+      const idx = [];
+      for (let i = 0; i < n; i += step) idx.push(i);
+      if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
+      return idx;
+    }, [n]);
+    const onMove = (e) => {
+      if (!n || !svgRef.current) return;
+      const rect = svgRef.current.getBoundingClientRect();
+      const px = (e.clientX - rect.left) * (W / rect.width);
+      const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
+      const i = Math.round(frac * (n - 1));
+      if (i >= 0 && i < n) setHover(i);
+      else setHover(null);
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uB864\uB9C1 \uC9C0\uD45C \u2014 \uC2B9\uB960 \xB7 Payoff"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "\uB864\uB9C1 \uC2B9\uB960 %" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--amber)", label: "\uB864\uB9C1 payoff \uBC30" }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
+      `${window2}\uAC70\uB798 \uC774\uB3D9\uCC3D \uAE30\uC900`,
+      "\uC88C\uCD95 = \uC2B9\uB960(%) \xB7 \uC6B0\uCD95 = payoff(\uD3C9\uADE0\uC774\uC775/\uD3C9\uADE0\uC190\uC2E4)",
+      "\uAD6C\uAC04\uBCC4 \uC804\uB7B5 \uC548\uC815\uC131 \uCD94\uC774 \uC9C4\uB2E8"
+    ] }), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
+      "svg",
+      {
+        ref: svgRef,
+        viewBox: `0 0 ${W} ${H}`,
+        preserveAspectRatio: "none",
+        onMouseMove: onMove,
+        onMouseLeave: () => setHover(null)
+      },
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yWin(50), y2: yWin(50), stroke: "rgba(255,255,255,0.18)", strokeWidth: "1", strokeDasharray: "2 3" }),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yWin(50) + 3, textAnchor: "end", fill: "var(--ink-2)" }, "50%"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yWin(100) + 3, textAnchor: "end", fill: "var(--teal)" }, "100%"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yWin(0) + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0%"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yPay(payoffMax) + 3, textAnchor: "start", fill: "var(--amber)" }, payoffMax.toFixed(1), "\xD7"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yPay(1) + 3, textAnchor: "start", fill: "var(--ink-3)" }, "1\xD7"),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yPay(1), y2: yPay(1), stroke: "rgba(240,179,90,0.2)", strokeWidth: "1", strokeDasharray: "4 4" }),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      n > 1 && /* @__PURE__ */ React.createElement("path", { d: winPath, fill: "none", stroke: "var(--teal)", strokeWidth: "2" }),
+      n > 1 && /* @__PURE__ */ React.createElement("path", { d: payPath, fill: "none", stroke: "var(--amber)", strokeWidth: "1.6", strokeDasharray: "5 3", opacity: "0.9" }),
+      xTickIdx.map((i) => /* @__PURE__ */ React.createElement("text", { key: `rx${i}`, className: "chart-axis-text", x: x(i), y: H - 10, textAnchor: "middle" }, series[i] ? `#${series[i].index + 1}` : "")),
+      hover != null && series[hover] && /* @__PURE__ */ React.createElement("line", { x1: x(hover), x2: x(hover), y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.22)", strokeWidth: "1" })
+    ), hover != null && series[hover] && /* @__PURE__ */ React.createElement("div", { style: {
+      position: "absolute",
+      top: 16,
+      right: 16,
+      background: "var(--bg-0)",
+      border: "1px solid var(--line-2)",
+      borderRadius: 6,
+      padding: "8px 10px",
+      fontFamily: "var(--mono)",
+      fontSize: 11,
+      minWidth: 160,
+      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+      pointerEvents: "none"
+    } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-2)", marginBottom: 4 } }, "\uAC70\uB798 #", series[hover].index + 1), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uC2B9\uB960"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--teal)" } }, fmtPct(series[hover].win_rate)), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "payoff"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--amber)" } }, (series[hover].payoff || 0).toFixed(2), "\xD7"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uD3C9\uADE0\uC190\uC775"), /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: series[hover].avg_pnl_pct > 0 ? "num-pos" : series[hover].avg_pnl_pct < 0 ? "num-neg" : "",
+        style: { textAlign: "right" }
+      },
+      series[hover].avg_pnl_pct.toFixed(2),
+      "%"
+    ))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: `\uAC70\uB798\uAC00 ${window2}\uAC74 \uC774\uC0C1 \uB204\uC801\uB418\uBA74 \uB864\uB9C1 \uC9C0\uD45C\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4` }))));
+  }
+  function BtCumulativeTradesChart({ data }) {
+    const series = data && data.series || [];
+    const [hover, setHover] = useState_btc(null);
+    const svgRef = useRef_btc(null);
+    const W = 880, H = 280;
+    const padL = 52, padR = 60, padT = 18, padB = 30;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const n = series.length;
+    const x = (i) => n > 1 ? padL + i / (n - 1) * innerW : padL + innerW / 2;
+    const maxTrades = Math.max(1, ...series.map((s) => s.cum_trades || 0));
+    const yTrades = (v) => padT + innerH - v / maxTrades * innerH;
+    const profits = series.map((s) => s.cum_profit_krw || 0);
+    const pMax = Math.max(0, ...profits);
+    const pMin = Math.min(0, ...profits);
+    const pRange = pMax - pMin || 1;
+    const yProfit = (v) => padT + innerH - (v - pMin) / pRange * innerH;
+    const tradesArea = useMemo_btc(() => {
+      if (n < 2) return "";
+      const top = series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yTrades(s.cum_trades || 0).toFixed(1)}`).join(" ");
+      return `${top} L ${x(n - 1).toFixed(1)} ${(padT + innerH).toFixed(1)} L ${x(0).toFixed(1)} ${(padT + innerH).toFixed(1)} Z`;
+    }, [series, n, maxTrades]);
+    const profitPath = useMemo_btc(
+      () => n < 2 ? "" : series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yProfit(s.cum_profit_krw || 0).toFixed(1)}`).join(" "),
+      [series, n, pMin, pRange]
+    );
+    const xTickIdx = useMemo_btc(() => {
+      if (n <= 1) return n === 1 ? [0] : [];
+      const step = Math.max(1, Math.ceil(n / 8));
+      const idx = [];
+      for (let i = 0; i < n; i += step) idx.push(i);
+      if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
+      return idx;
+    }, [n]);
+    const onMove = (e) => {
+      if (!n || !svgRef.current) return;
+      const rect = svgRef.current.getBoundingClientRect();
+      const px = (e.clientX - rect.left) * (W / rect.width);
+      const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
+      const i = Math.round(frac * (n - 1));
+      if (i >= 0 && i < n) setHover(i);
+      else setHover(null);
+    };
+    const profitZeroY = yProfit(0);
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uB204\uC801 \uAC70\uB798 \xB7 \uB204\uC801 \uC190\uC775"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--blue)", label: "\uB204\uC801 \uAC70\uB798\uC218" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--amber)", label: "\uB204\uC801 \uC190\uC775 \u20A9" }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
+      "x\uCD95 = \uAC70\uB798 \uC21C\uC11C(\uCCB4\uACB0 \uC21C)",
+      "\uC88C\uCD95 = \uB204\uC801 \uAC70\uB798\uC218 \xB7 \uC6B0\uCD95 = \uB204\uC801 \uC2E4\uD604\uC190\uC775",
+      "\uCCB4\uACB0 \uBE48\uB3C4\uC640 \uC790\uBCF8 \uC99D\uAC00\uB97C \uD55C \uD654\uBA74\uC5D0\uC11C \uBE44\uAD50"
+    ] }), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
+      "svg",
+      {
+        ref: svgRef,
+        viewBox: `0 0 ${W} ${H}`,
+        preserveAspectRatio: "none",
+        onMouseMove: onMove,
+        onMouseLeave: () => setHover(null)
+      },
+      /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "bt-ct-grad", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#5b8def", stopOpacity: "0.34" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#5b8def", stopOpacity: "0.02" }))),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: profitZeroY, y2: profitZeroY, stroke: "rgba(255,255,255,0.28)", strokeWidth: "1", strokeDasharray: "2 3" }),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: profitZeroY + 3, textAnchor: "start", fill: "var(--ink-2)" }, "0"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yTrades(maxTrades) + 3, textAnchor: "end", fill: "var(--blue)" }, maxTrades),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yTrades(0) + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yProfit(pMax) + 3, textAnchor: "start", fill: "var(--amber)" }, _btMoneyTick(pMax)),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yProfit(pMin) + 3, textAnchor: "start", fill: "var(--amber)" }, _btMoneyTick(pMin)),
+      _btAxisTicks(pMin, pMax, 5).map((tv, i) => Math.abs(tv - pMax) < 1e-9 || Math.abs(tv - pMin) < 1e-9 || Math.abs(tv) < 1e-9 ? null : /* @__PURE__ */ React.createElement("text", { key: `cyr${i}`, className: "chart-axis-text", x: W - padR + 6, y: yProfit(tv) + 3, textAnchor: "start", fill: "var(--ink-3)" }, _btMoneyTick(tv))),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      n > 1 && /* @__PURE__ */ React.createElement("path", { d: tradesArea, fill: "url(#bt-ct-grad)", stroke: "var(--blue)", strokeWidth: "1.2", opacity: "0.85" }),
+      n > 1 && /* @__PURE__ */ React.createElement("path", { d: profitPath, fill: "none", stroke: "var(--amber)", strokeWidth: "2" }),
+      xTickIdx.map((i) => /* @__PURE__ */ React.createElement("text", { key: `cx${i}`, className: "chart-axis-text", x: x(i), y: H - 10, textAnchor: "middle" }, series[i] ? `#${series[i].index}` : "")),
+      hover != null && series[hover] && /* @__PURE__ */ React.createElement("line", { x1: x(hover), x2: x(hover), y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.22)", strokeWidth: "1" })
+    ), hover != null && series[hover] && /* @__PURE__ */ React.createElement("div", { style: {
+      position: "absolute",
+      top: 16,
+      right: 16,
+      background: "var(--bg-0)",
+      border: "1px solid var(--line-2)",
+      borderRadius: 6,
+      padding: "8px 10px",
+      fontFamily: "var(--mono)",
+      fontSize: 11,
+      minWidth: 170,
+      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+      pointerEvents: "none"
+    } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-2)", marginBottom: 4 } }, "\uAC70\uB798 #", series[hover].index), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801 \uAC70\uB798"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--blue)" } }, series[hover].cum_trades, "\uAC74"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801 \uC190\uC775"), /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: series[hover].cum_profit_krw > 0 ? "num-pos" : series[hover].cum_profit_krw < 0 ? "num-neg" : "",
+        style: { textAlign: "right" }
+      },
+      fmtMoney(series[hover].cum_profit_krw)
+    ))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uAC70\uB798\uAC00 \uB204\uC801\uB418\uBA74 \uB204\uC801 \uAC70\uB798\xB7\uC190\uC775 \uACE1\uC120\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4" }))));
+  }
+
+  // ../frontend/bt-distribution-charts.jsx
   function BtDistributionChart({ distribution }) {
     const bins = distribution && distribution.pnl_histogram || [];
     const [hover, setHover] = useState_btc(null);
@@ -6710,400 +6978,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       );
     }))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, marginTop: 10, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(76,214,179,0.78)", label: "\uC774\uC775 \uC2AC\uB86F(\uC218\uC775\uB960 \uD569\uACC4 +)" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(255,107,107,0.78)", label: "\uC190\uC2E4 \uC2AC\uB86F(\uC218\uC775\uB960 \uD569\uACC4 \u2212)" }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, big ? "\uC140 = \uC218\uC775\uB960 \uD569\uACC4(%) \xB7 \uAC70\uB798 \uAC74\uC218" : "\uC140 = \uC218\uC775\uB960 \uD569\uACC4(%)"))))));
   }
-  function BtUnderwaterChart({ underwater }) {
-    const series = underwater && underwater.series || [];
-    const maxDd = underwater && underwater.max_drawdown;
-    const [hover, setHover] = useState_btc(null);
-    const svgRef = useRef_btc(null);
-    const W = 880, H = 240;
-    const padL = 58, padR = 24, padT = 18, padB = 30;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const n = series.length;
-    const x = (i) => n > 1 ? padL + i / (n - 1) * innerW : padL + innerW / 2;
-    const ddVals = series.map((d) => d.drawdown || 0);
-    const ddMax = Math.max(1, ...ddVals);
-    const y = (v) => padT + v / ddMax * innerH;
-    const areaPath = useMemo_btc(() => {
-      if (n < 2) return "";
-      const top = series.map((d, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(d.drawdown || 0).toFixed(1)}`).join(" ");
-      return `${top} L ${x(n - 1).toFixed(1)} ${padT.toFixed(1)} L ${x(0).toFixed(1)} ${padT.toFixed(1)} Z`;
-    }, [series, n, ddMax]);
-    const linePath = useMemo_btc(() => {
-      if (n < 2) return "";
-      return series.map((d, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(d.drawdown || 0).toFixed(1)}`).join(" ");
-    }, [series, n, ddMax]);
-    const xTickIdx = useMemo_btc(() => {
-      if (n <= 1) return n === 1 ? [0] : [];
-      const step = Math.max(1, Math.ceil(n / 8));
-      const idx = [];
-      for (let i = 0; i < n; i += step) idx.push(i);
-      if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
-      return idx;
-    }, [n]);
-    const onMove = (e) => {
-      if (!n || !svgRef.current) return;
-      const rect = svgRef.current.getBoundingClientRect();
-      const px = (e.clientX - rect.left) * (W / rect.width);
-      const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
-      const i = Math.round(frac * (n - 1));
-      if (i >= 0 && i < n) setHover(i);
-      else setHover(null);
-    };
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--red)" } }), "\uC5B8\uB354\uC6CC\uD130 \u2014 Drawdown"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uACE0\uC810 \uB300\uBE44 \uBC18\uB0A9\uC561(\uC6D0)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Mini, { label: "\uCD5C\uB300\uB099\uD3ED", value: maxDd ? fmtMoney(maxDd.drawdown) : "\u2014", color: maxDd ? "var(--red)" : void 0 }), maxDd && /* @__PURE__ */ React.createElement(
-      Mini,
-      {
-        label: "\uB099\uD3ED \uAD6C\uAC04",
-        value: `${_btDateLabel(maxDd.start_date)}~${_btDateLabel(maxDd.trough_date)}`,
-        sub: maxDd.recovery_date ? `\uD68C\uBCF5 ${_btDateLabel(maxDd.recovery_date)}` : "\uBBF8\uD68C\uBCF5"
-      }
-    )), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        ref: svgRef,
-        viewBox: `0 0 ${W} ${H}`,
-        preserveAspectRatio: "none",
-        onMouseMove: onMove,
-        onMouseLeave: () => setHover(null)
-      },
-      /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "bt-uw-grad", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#ff6b6b", stopOpacity: "0" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#ff6b6b", stopOpacity: "0.42" }))),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT, y2: padT, stroke: "var(--line-2)", strokeWidth: "1" }),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: padT + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: padT + innerH + 3, textAnchor: "end", fill: "var(--red)" }, "\u2212", _btMoneyTick(ddMax)),
-      _btAxisTicks(0, ddMax, 5).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - ddMax) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `uyl${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: y(tv), y2: y(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(tv) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "\u2212", _btMoneyTick(tv)))),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      n > 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: areaPath, fill: "url(#bt-uw-grad)" }), /* @__PURE__ */ React.createElement("path", { d: linePath, fill: "none", stroke: "var(--red)", strokeWidth: "1.4", opacity: "0.85" })),
-      xTickIdx.map((i, k) => /* @__PURE__ */ React.createElement("text", { key: `ux${i}`, className: "chart-axis-text", x: x(i), y: H - 10, textAnchor: "middle" }, series[i] ? _btDateLabelY(series[i].date, k > 0 && series[xTickIdx[k - 1]] ? series[xTickIdx[k - 1]].date : null) : "")),
-      hover != null && series[hover] && /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: x(hover),
-          x2: x(hover),
-          y1: padT,
-          y2: padT + innerH,
-          stroke: "rgba(255,255,255,0.14)",
-          strokeWidth: "1"
-        }
-      )
-    ), hover != null && series[hover] && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      top: 16,
-      right: 16,
-      background: "var(--bg-0)",
-      border: "1px solid var(--line-2)",
-      borderRadius: 6,
-      padding: "8px 10px",
-      fontFamily: "var(--mono)",
-      fontSize: 11,
-      minWidth: 160,
-      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
-      pointerEvents: "none"
-    } }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, _btDateLabel(series[hover].date)), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--red)" } }, "\u2212", _btMoneyTick(series[hover].drawdown)))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uAC70\uB798\uAC00 \uB204\uC801\uB418\uBA74 \uC5B8\uB354\uC6CC\uD130 \uACE1\uC120\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4" }))));
-  }
-  var _BT_METRIC_CARDS = [
-    { key: "trade_count", label: "\uAC70\uB798\uC218", fmt: (v) => fmtInt(v) },
-    { key: "win_rate", label: "\uC2B9\uB960", fmt: (v) => fmtPct(v) },
-    { key: "total_profit_pct", label: "\uC218\uC775\uB960\uD569\uACC4", fmt: (v) => fmtPct(v), signed: true },
-    { key: "total_profit_krw", label: "\uC218\uC775\uAE08", fmt: (v) => fmtMoney(v), signed: true },
-    { key: "mdd_pct", label: "MDD", fmt: (v) => fmtPct(v), risk: true },
-    { key: "cagr", label: "CAGR", fmt: (v) => fmtPct(v), signed: true }
-  ];
-  function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compareView, onCloseCompare }) {
-    const [result, setResult] = useState_btc(null);
-    const [loading, setLoading] = useState_btc(false);
-    const [err, setErr] = useState_btc("");
-    const [range, setRange] = useState_btc(null);
-    const [mc, setMc] = useState_btc(null);
-    const [mcLoading, setMcLoading] = useState_btc(false);
-    const [fullscreen, setFullscreen] = useState_btc(false);
-    useEffect_btc(() => {
-      if (!fullscreen) return void 0;
-      const onKey = (e) => {
-        if (e.key === "Escape") setFullscreen(false);
-      };
-      window.addEventListener("keydown", onKey);
-      const prevOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        window.removeEventListener("keydown", onKey);
-        document.body.style.overflow = prevOverflow;
-      };
-    }, [fullscreen]);
-    const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
-    const hasSource = !!jobId || isEvo;
-    const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
-    const load = useCallback_btc(() => {
-      if (isDemo || !baseUrl || !hasSource) {
-        setResult(null);
-        return;
-      }
-      setLoading(true);
-      setErr("");
-      let url;
-      if (jobId) {
-        url = baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId);
-        if (range) {
-          url += "&t_start=" + range.t_start + "&t_end=" + range.t_end;
-        }
-      } else {
-        url = baseUrl + "/bt/result?run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
-      }
-      _btFetchJson(url, 8e3).then((j) => {
-        setResult(j);
-        if (!(j && j.available)) setErr("\uACB0\uACFC\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4");
-      }).catch((e) => {
-        setResult(null);
-        setErr(String(e));
-      }).finally(() => setLoading(false));
-    }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
-    const loadMc = useCallback_btc(() => {
-      if (isDemo || !baseUrl || !jobId) {
-        setMc(null);
-        return;
-      }
-      setMcLoading(true);
-      let url = baseUrl + "/bt/analysis/montecarlo?job_id=" + encodeURIComponent(jobId) + "&n=2000";
-      if (range) {
-        url += "&t_start=" + range.t_start + "&t_end=" + range.t_end;
-      }
-      _btFetchJson(url, 12e3).then((j) => setMc(j && j.montecarlo || null)).catch(() => setMc(null)).finally(() => setMcLoading(false));
-    }, [baseUrl, isDemo, jobId, range]);
-    useEffect_btc(() => {
-      load();
-    }, [load]);
-    useEffect_btc(() => {
-      setRange(null);
-      setMc(null);
-    }, [sourceKey]);
-    useEffect_btc(() => {
-      if (jobId && result && result.available && result.status !== "no_trades") {
-        loadMc();
-      }
-    }, [result, loadMc, jobId]);
-    const onBrush = useCallback_btc((t_start, t_end) => {
-      if (!jobId) {
-        return;
-      }
-      setRange({ t_start, t_end });
-    }, [jobId]);
-    const onBrushClear = useCallback_btc(() => {
-      setRange(null);
-    }, []);
-    if (!hasSource) {
-      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uACB0\uACFC \xB7 \uBD84\uC11D")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC67C\uCABD\uC5D0\uC11C \uBC31\uD14C\uC2A4\uD2B8\uB97C \uC2E4\uD589\uD558\uAC70\uB098 \uC7A1 \uC774\uB825\uC744 \uC120\uD0DD\uD558\uBA74 \uACB0\uACFC\xB7\uBD84\uC11D\uC774 \uC5EC\uAE30\uC5D0 \uD45C\uC2DC\uB429\uB2C8\uB2E4.")));
-    }
-    if (loading && !result) {
-      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uACB0\uACFC \xB7 \uBD84\uC11D")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uACB0\uACFC \uB85C\uB529 \uC911\u2026")));
-    }
-    if (err || !result || !result.available) {
-      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uACB0\uACFC \xB7 \uBD84\uC11D")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: "var(--red)" } }, err || "\uACB0\uACFC \uC5C6\uC74C", /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: load }, "\uC7AC\uC2DC\uB3C4")))));
-    }
-    if (result.status === "no_trades") {
-      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uACB0\uACFC \xB7 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("span", { className: "badge warn" }, "\uAC70\uB798 0\uAC74")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "empty", style: { padding: "28px 24px" } }, /* @__PURE__ */ React.createElement("h2", { style: { color: "var(--amber)" } }, "\uAC70\uB798 0\uAC74"), /* @__PURE__ */ React.createElement("p", null, result.message || "\uC804\uB7B5\uC774 \uD574\uB2F9 \uAE30\uAC04\uC5D0 \uB9E4\uC218 \uC2E0\uD638\uB97C \uB0B4\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4. \uC5D0\uB7EC\uAC00 \uC544\uB2D9\uB2C8\uB2E4 \u2014 \uC870\uAC74\uC2DD/\uAE30\uAC04\uC744 \uC870\uC815\uD574 \uBCF4\uC138\uC694."))));
-    }
-    const analysis = result.analysis || {};
-    const metrics = result.metrics || {};
-    const summary = analysis.summary || {};
-    const metricVal = (key) => {
-      if (metrics[key] != null) return metrics[key];
-      const map = {
-        trade_count: summary.trade_count,
-        win_rate: summary.win_rate,
-        total_profit_pct: summary.total_profit_pct,
-        total_profit_krw: summary.total_profit_krw,
-        mdd_pct: summary.max_drawdown_pct,
-        cagr: void 0
-      };
-      return map[key];
-    };
-    const distribution = analysis.distribution || {};
-    const insights = analysis.insights || [];
-    const topC = distribution.top_contributors || [];
-    const botC = distribution.bottom_contributors || [];
-    const dailyPnl = ((analysis.equity || {}).daily || []).map((d) => d.pnl || 0);
-    const orderflow = analysis.orderflow || {};
-    const stats = analysis.stats || [];
-    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, range && /* @__PURE__ */ React.createElement("div", { className: "bt-range-bar" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911 \u2014 ", _btDateLabel(Math.floor(range.t_start / 1e6)), "~", _btDateLabel(Math.floor(range.t_end / 1e6)), result.ranged && analysis.trade_count != null ? ` \xB7 ${analysis.trade_count}\uAC70\uB798` : ""), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear, style: { marginLeft: "auto" } }, "\uC804\uCCB4\uB85C \uBCF5\uADC0")), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: isEvo ? "var(--violet)" : "var(--teal)" } }), isEvo ? "\uD575\uC2EC \uBA54\uD2B8\uB9AD \xB7 \uC9C4\uD654 \uC138\uB300" : "\uD575\uC2EC \uBA54\uD2B8\uB9AD", isEvo && /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: "mono tag-slim",
-        style: { fontSize: 9.5, color: "var(--violet)", marginLeft: 6 },
-        title: "\uC9C4\uD654 run \uC138\uB300 \uBD84\uC11D \u2014 loop_runs.db \uC77D\uAE30 \uC804\uC6A9"
-      },
-      evoSource.run_id,
-      "/g",
-      evoSource.gen_no
-    )), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, onSetCompareA && jobId && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        onClick: () => onSetCompareA(jobId),
-        title: "\uC774 \uC7A1\uC744 A/B \uBE44\uAD50\uC758 \uAE30\uC900(A)\uC73C\uB85C \uACE0\uC815"
-      },
-      "\u2295 \uBE44\uAD50 \uAE30\uC900(A)"
-    ), isEvo && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        onClick: () => {
-          const u = baseUrl + "/bt/report?run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
-          try {
-            window.open(u, "_blank", "noopener");
-          } catch (e) {
-          }
-        },
-        title: "\uC774 \uC138\uB300\uC758 \uC790\uAE09\uC790\uC871 HTML \uB9AC\uD3EC\uD2B8\uB97C \uC0C8 \uD0ED\uC73C\uB85C \uC5F4\uAE30"
-      },
-      "\u{1F4C4} \uB9AC\uD3EC\uD2B8"
-    ), ((analysis.equity || {}).daily || []).length > 0 && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        onClick: () => _btDownloadAnalysisCsv(analysis),
-        title: "\uC77C\uBCC4 \uC218\uC775\uACE1\uC120(\uB0A0\uC9DC\xB7\uC77C\uBCC4\uC190\uC775\xB7\uB204\uC801\uC218\uC775)\uC744 CSV \uB85C \uB0B4\uB824\uBC1B\uAE30 \u2014 \uD45C\uACC4\uC0B0 \uB3C4\uAD6C\uC5D0\uC11C \uCD94\uAC00 \uBD84\uC11D"
-      },
-      "\u2B07 CSV"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        onClick: () => setFullscreen(true),
-        title: "\uC804\uCCB4 \uD654\uBA74\uC5D0\uC11C \uB354 \uB9CE\uC740 \uBD84\uC11D \uADF8\uB798\uD504\uB97C \uD55C\uB208\uC5D0 \uBCF4\uAE30 (Esc \uB85C \uB2EB\uAE30)"
-      },
-      "\u26F6 \uC804\uCCB4\uD654\uBA74 \uBD84\uC11D"
-    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: load, disabled: loading }, loading ? "\uB85C\uB529\u2026" : "\u21BB"))), /* @__PURE__ */ React.createElement("div", { className: "bt-summary-row", style: { gridTemplateColumns: "repeat(6, 1fr)" } }, _BT_METRIC_CARDS.map((m) => {
-      const v = metricVal(m.key);
-      const num = typeof v === "number" ? v : null;
-      return /* @__PURE__ */ React.createElement(_BtMetricCard, { key: m.key, meta: m, num, dailyPnl });
-    }))), compareView && /* @__PURE__ */ React.createElement(BtCompareView, { cmp: compareView, onClose: onCloseCompare }), /* @__PURE__ */ React.createElement(
-      BtEquityChart,
-      {
-        equity: analysis.equity,
-        onBrush,
-        brushActive: !!range,
-        onBrushClear
-      }
-    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: loadMc }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 1 }), /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", open: false }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uCD94\uAC00 \uBD84\uC11D \uADF8\uB798\uD504 \u2014 \uB864\uB9C1 \uC9C0\uD45C \xB7 \uC6D4\uBCC4 \uCE98\uB9B0\uB354 \xB7 \uB204\uC801 \uAC70\uB798 (\uC804\uCCB4\uD654\uBA74 \uAD8C\uC7A5)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, marginTop: 10 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }))), (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC })))), /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights }), fullscreen && /* @__PURE__ */ React.createElement(
-      _BtFullscreenAnalysis,
-      {
-        analysis,
-        distribution,
-        orderflow,
-        stats,
-        insights,
-        mc,
-        mcLoading,
-        onRunMc: loadMc,
-        range,
-        onBrush,
-        onBrushClear,
-        onClose: () => setFullscreen(false)
-      }
-    ));
-  }
-  function _BtFullscreenAnalysis({
-    analysis,
-    distribution,
-    orderflow,
-    stats,
-    insights,
-    mc,
-    mcLoading,
-    onRunMc,
-    range,
-    onBrush,
-    onBrushClear,
-    onClose
-  }) {
-    return /* @__PURE__ */ React.createElement("div", { style: {
-      position: "fixed",
-      inset: 0,
-      zIndex: 4e3,
-      background: "var(--bg-1, #0d1117)",
-      overflowY: "auto",
-      padding: "16px 22px 40px"
-    } }, /* @__PURE__ */ React.createElement("div", { style: {
-      position: "sticky",
-      top: 0,
-      zIndex: 2,
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      padding: "10px 4px 12px",
-      marginBottom: 10,
-      background: "var(--bg-1, #0d1117)",
-      borderBottom: "1px solid var(--line-2)"
-    } }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), /* @__PURE__ */ React.createElement("strong", { style: { fontSize: 15, color: "var(--ink-0)" } }, "\uC804\uCCB4\uD654\uBA74 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uB354 \uB9CE\uC740 \uADF8\uB798\uD504\uB85C \uC778\uC0AC\uC774\uD2B8 \u2014 2~3\uCEEC\uB7FC \uD655\uB300 \uBC30\uCE58"), range && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911"), /* @__PURE__ */ React.createElement("div", { style: { marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" } }, range && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear }, "\uC804\uCCB4\uB85C \uBCF5\uADC0"), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn sm",
-        onClick: onClose,
-        style: { borderColor: "var(--teal-dim)", color: "var(--teal)" }
-      },
-      "\u2715 \uB2EB\uAE30 (Esc)"
-    ))), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights })), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(440px, 1fr))", gap: 14, marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(
-      BtEquityChart,
-      {
-        equity: analysis.equity,
-        onBrush,
-        brushActive: !!range,
-        onBrushClear
-      }
-    )), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 2 })), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 14 } }, /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats })));
-  }
-  function _BtMetricCard({ meta, num, dailyPnl }) {
-    const animated = _useCountUp(num != null ? num : 0, 600);
-    const shown = num != null ? animated : null;
-    let color;
-    if (meta.risk) color = "var(--red)";
-    else if (meta.signed && num != null) color = num > 0 ? "var(--teal)" : num < 0 ? "var(--red)" : void 0;
-    if ((meta.key === "win_rate" || meta.key === "mdd_pct") && num != null) {
-      const gaugeColor = meta.key === "mdd_pct" ? "var(--red)" : "var(--teal)";
-      return /* @__PURE__ */ React.createElement("div", { className: "bt-metric-card" }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement(
-        _BtArcGauge,
-        {
-          value: shown,
-          max: 100,
-          color: gaugeColor,
-          label: meta.fmt(shown != null ? shown : 0)
-        }
-      ));
-    }
-    if (meta.key === "total_profit_krw") {
-      return /* @__PURE__ */ React.createElement("div", { className: "bt-metric-card" }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement("span", { className: "summary-val", style: { color } }, shown != null ? meta.fmt(shown) : "\u2014"), /* @__PURE__ */ React.createElement(_BtSparkline, { values: dailyPnl }));
-    }
-    return /* @__PURE__ */ React.createElement("div", { className: "bt-metric-card" }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement("span", { className: "summary-val", style: { color } }, shown != null ? meta.fmt(shown) : "\u2014"));
-  }
-  function BtContribTable({ title, rows }) {
-    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", letterSpacing: ".1em", textTransform: "uppercase", marginBottom: 6 } }, title), !rows || rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uB370\uC774\uD130 \uC5C6\uC74C") : /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, rows.map((r, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { display: "flex", alignItems: "center", gap: 8, padding: "4px 6px", borderBottom: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-1)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, r.name), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", flexShrink: 0 } }, r.trades, "\uAC74"), /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: "mono " + (r.profit_krw > 0 ? "num-pos" : r.profit_krw < 0 ? "num-neg" : ""),
-        style: { fontSize: 11, flexShrink: 0, width: 96, textAlign: "right" }
-      },
-      fmtMoney(r.profit_krw)
-    )))));
-  }
-  var _BT_SEVERITY = {
-    critical: { color: "var(--red)", bg: "rgba(255,107,107,0.07)", border: "rgba(255,107,107,0.3)", label: "\uC704\uD5D8" },
-    warning: { color: "var(--amber)", bg: "rgba(240,179,90,0.07)", border: "rgba(240,179,90,0.3)", label: "\uC8FC\uC758" },
-    info: { color: "var(--teal)", bg: "rgba(76,214,179,0.06)", border: "rgba(76,214,179,0.28)", label: "\uC815\uBCF4" }
-  };
-  function BtInsightsPanel({ insights }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uC778\uC0AC\uC774\uD2B8"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uADDC\uCE59 \uAE30\uBC18 \uC790\uB3D9 \uC9C4\uB2E8")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 8 } }, !insights || insights.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC0DD\uC131\uB41C \uC778\uC0AC\uC774\uD2B8\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 (\uAC70\uB798 \uBD80\uC871 \uB610\uB294 \uD2B9\uC774\uC0AC\uD56D \uC5C6\uC74C).") : insights.map((ins, i) => {
-      const sev = _BT_SEVERITY[ins.severity] || _BT_SEVERITY.info;
-      const sevClass = "bt-insight-card sev-" + (_BT_SEVERITY[ins.severity] ? ins.severity : "info");
-      return /* @__PURE__ */ React.createElement("div", { key: i, className: sevClass, style: {
-        border: "1px solid " + sev.border,
-        background: sev.bg,
-        borderRadius: 6,
-        padding: "9px 11px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 3
-      } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("span", { className: "tag-slim", style: { color: sev.color, borderColor: sev.border } }, sev.label), /* @__PURE__ */ React.createElement("strong", { style: { fontSize: 12.5, color: "var(--ink-0)" } }, ins.title)), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, color: "var(--ink-1)", lineHeight: 1.5 } }, ins.detail));
-    })));
-  }
   function BtMonteCarloChart({ mc, loading, onRun }) {
     const fan = mc && mc.fan || [];
     const observed = mc && mc.observed;
@@ -7171,6 +7045,95 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       border: "1px solid rgba(255,107,107,0.5)"
     } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 4, height: 18, width: 2, background: "var(--red)", left: fx(mddPct.p50) + "%" } }), observedPct != null && /* @__PURE__ */ React.createElement("div", { title: "\uC2E4\uCE21 MDD", style: { position: "absolute", top: 2, height: 22, width: 2, background: "var(--amber)", left: Math.max(0, Math.min(100, fx(observedPct))) + "%" } })), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { display: "flex", justifyContent: "space-between", fontSize: 9.5, color: "var(--ink-3)", marginTop: 3 } }, /* @__PURE__ */ React.createElement("span", null, "p5 ", mddPct.p5.toFixed(1), "%"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--amber)" } }, observedPct != null ? `\uC2E4\uCE21 ${observedPct.toFixed(1)}%` : ""), /* @__PURE__ */ React.createElement("span", null, "p95 ", mddPct.p95.toFixed(1), "%")));
   }
+  var _BT_MONTHS = ["1\uC6D4", "2\uC6D4", "3\uC6D4", "4\uC6D4", "5\uC6D4", "6\uC6D4", "7\uC6D4", "8\uC6D4", "9\uC6D4", "10\uC6D4", "11\uC6D4", "12\uC6D4"];
+  function BtMonthlyCalendar({ monthly }) {
+    const years = monthly && monthly.years || [];
+    const cells = monthly && monthly.cells || [];
+    const [hover, setHover] = useState_btc(null);
+    const cellMap = useMemo_btc(() => {
+      const m = {};
+      for (const c of cells) m[c.year + "_" + c.month] = c;
+      return m;
+    }, [cells]);
+    const maxAbs = Math.max(1, ...cells.map((c) => Math.abs(c.profit_krw || 0)));
+    const cellColor = (c) => {
+      if (!c) return "var(--bg-0)";
+      const t = Math.min(1, Math.abs(c.profit_krw || 0) / maxAbs);
+      if ((c.profit_krw || 0) >= 0) return `rgba(76,214,179,${(0.12 + 0.66 * t).toFixed(3)})`;
+      return `rgba(255,107,107,${(0.12 + 0.66 * t).toFixed(3)})`;
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC6D4\uBCC4 \uC218\uC775 \uCE98\uB9B0\uB354"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uB9E4\uB3C4\uC77C \uAE30\uC900 \xB7 \uC6D4\uBCC4 \uC190\uC775 \uD569")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, cells.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { position: "relative", minHeight: 120 } }, /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uAC70\uB798\uAC00 \uB204\uC801\uB418\uBA74 \uC6D4\uBCC4 \uC218\uC775 \uCE98\uB9B0\uB354\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4" })) : /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { style: { borderCollapse: "separate", borderSpacing: 3, fontFamily: "var(--mono)" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { width: 44 } }), _BT_MONTHS.map((m, i) => /* @__PURE__ */ React.createElement("th", { key: i, style: { fontSize: 9.5, color: "var(--ink-3)", fontWeight: 400, padding: "0 1px", whiteSpace: "nowrap" } }, m)))), /* @__PURE__ */ React.createElement("tbody", null, years.map((yr) => /* @__PURE__ */ React.createElement("tr", { key: yr }, /* @__PURE__ */ React.createElement("td", { style: { fontSize: 11, color: "var(--ink-2)", textAlign: "center", paddingRight: 4 } }, yr), _BT_MONTHS.map((_, mi) => {
+      const month = mi + 1;
+      const key = yr + "_" + month;
+      const c = cellMap[key];
+      return /* @__PURE__ */ React.createElement(
+        "td",
+        {
+          key: mi,
+          onMouseEnter: () => c && setHover(key),
+          onMouseLeave: () => setHover(null),
+          title: c ? `${yr}\uB144 ${month}\uC6D4 \xB7 ${fmtMoney(c.profit_krw)} \xB7 ${c.trades}\uAC74 \xB7 ${fmtPct(c.win_rate)}` : "",
+          style: {
+            width: 48,
+            height: 30,
+            borderRadius: 4,
+            background: cellColor(c),
+            border: hover === key ? "1px solid var(--ink-0)" : "1px solid var(--line-1)",
+            textAlign: "center",
+            fontSize: 9,
+            lineHeight: 1.25,
+            color: c ? "var(--ink-0)" : "var(--ink-3)"
+          }
+        },
+        c ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9.5 } }, _btMoneyTick(c.profit_krw)), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 8, color: "var(--ink-2)" } }, c.trades, "\uAC74")) : ""
+      );
+    }))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, marginTop: 10, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(76,214,179,0.78)", label: "\uC774\uC775 \uC6D4" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(255,107,107,0.78)", label: "\uC190\uC2E4 \uC6D4" }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC140 = \uC190\uC775 \xB7 \uAC70\uB798\uC218")))));
+  }
+
+  // ../frontend/bt-stat-panels.jsx
+  function BtExitReasonPanel({ rows }) {
+    const items = Array.isArray(rows) ? rows : [];
+    const maxAbs = Math.max(1, ...items.map((r) => Math.abs(r.total_pnl || 0)));
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uB9E4\uB3C4\uC870\uAC74\uBCC4 \uC190\uC775 \uBD84\uD574"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uCCAD\uC0B0\uC0AC\uC720 \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, items.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uB9E4\uB3C4\uC870\uAC74 \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4") : /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4 } }, items.map((r, i) => {
+      const frac = Math.abs(r.total_pnl || 0) / maxAbs;
+      const pos = (r.total_pnl || 0) >= 0;
+      return /* @__PURE__ */ React.createElement("div", { key: i, className: "bt-exit-row" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-1)", width: 96, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 } }, r.reason), /* @__PURE__ */ React.createElement("div", { className: "bt-exit-track" }, /* @__PURE__ */ React.createElement("div", { className: "bt-exit-fill", style: {
+        width: (frac * 100).toFixed(1) + "%",
+        background: pos ? "var(--teal)" : "var(--red)",
+        opacity: 0.75
+      } })), /* @__PURE__ */ React.createElement("span", { className: "mono " + (pos ? "num-pos" : "num-neg"), style: { fontSize: 10.5, width: 88, textAlign: "right", flexShrink: 0 } }, fmtMoney(r.total_pnl)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", width: 78, textAlign: "right", flexShrink: 0 } }, r.count, "\uAC74\xB7", fmtPct(r.win_rate)));
+    }))));
+  }
+  function BtContribTable({ title, rows }) {
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", letterSpacing: ".1em", textTransform: "uppercase", marginBottom: 6 } }, title), !rows || rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uB370\uC774\uD130 \uC5C6\uC74C") : /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, rows.map((r, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { display: "flex", alignItems: "center", gap: 8, padding: "4px 6px", borderBottom: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-1)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, r.name), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", flexShrink: 0 } }, r.trades, "\uAC74"), /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: "mono " + (r.profit_krw > 0 ? "num-pos" : r.profit_krw < 0 ? "num-neg" : ""),
+        style: { fontSize: 11, flexShrink: 0, width: 96, textAlign: "right" }
+      },
+      fmtMoney(r.profit_krw)
+    )))));
+  }
+  var _BT_SEVERITY = {
+    critical: { color: "var(--red)", bg: "rgba(255,107,107,0.07)", border: "rgba(255,107,107,0.3)", label: "\uC704\uD5D8" },
+    warning: { color: "var(--amber)", bg: "rgba(240,179,90,0.07)", border: "rgba(240,179,90,0.3)", label: "\uC8FC\uC758" },
+    info: { color: "var(--teal)", bg: "rgba(76,214,179,0.06)", border: "rgba(76,214,179,0.28)", label: "\uC815\uBCF4" }
+  };
+  function BtInsightsPanel({ insights }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uC778\uC0AC\uC774\uD2B8"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uADDC\uCE59 \uAE30\uBC18 \uC790\uB3D9 \uC9C4\uB2E8")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 8 } }, !insights || insights.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC0DD\uC131\uB41C \uC778\uC0AC\uC774\uD2B8\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 (\uAC70\uB798 \uBD80\uC871 \uB610\uB294 \uD2B9\uC774\uC0AC\uD56D \uC5C6\uC74C).") : insights.map((ins, i) => {
+      const sev = _BT_SEVERITY[ins.severity] || _BT_SEVERITY.info;
+      const sevClass = "bt-insight-card sev-" + (_BT_SEVERITY[ins.severity] ? ins.severity : "info");
+      return /* @__PURE__ */ React.createElement("div", { key: i, className: sevClass, style: {
+        border: "1px solid " + sev.border,
+        background: sev.bg,
+        borderRadius: 6,
+        padding: "9px 11px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 3
+      } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("span", { className: "tag-slim", style: { color: sev.color, borderColor: sev.border } }, sev.label), /* @__PURE__ */ React.createElement("strong", { style: { fontSize: 12.5, color: "var(--ink-0)" } }, ins.title)), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, color: "var(--ink-1)", lineHeight: 1.5 } }, ins.detail));
+    })));
+  }
   function BtOrderflowPanel({ orderflow }) {
     const sep = orderflow && orderflow.separation || [];
     const wins = orderflow && orderflow.wins || {};
@@ -7228,231 +7191,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", width: 56 } }, r.kind === "weekday" ? "\uC694\uC77C" : "\uC2DC\uAC04\uB300"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-1)", width: 48 } }, r.label), /* @__PURE__ */ React.createElement("span", { className: pos ? "num-pos" : "num-neg", style: { width: 64, textAlign: "right" } }, r.mean > 0 ? "+" : "", r.mean.toFixed(2), "%"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", width: 56, textAlign: "right" } }, "n=", r.n), /* @__PURE__ */ React.createElement("span", { style: { flex: 1, textAlign: "right" } }, r.underpowered ? /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, "\uD45C\uBCF8 \uBD80\uC871") : r.significant ? /* @__PURE__ */ React.createElement("span", { style: { color: pos ? "var(--teal)" : "var(--red)" } }, "\uC720\uC758 (p=", r.p_value != null ? r.p_value.toFixed(3) : "\u2014", ")") : /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, "p=", r.p_value != null ? r.p_value.toFixed(3) : "\u2014")));
     })));
   }
-  function BtRollingChart({ rolling }) {
-    const series = rolling && rolling.series || [];
-    const window2 = rolling && rolling.window || 20;
-    const [hover, setHover] = useState_btc(null);
-    const svgRef = useRef_btc(null);
-    const W = 880, H = 260;
-    const padL = 48, padR = 52, padT = 18, padB = 30;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const n = series.length;
-    const x = (i) => n > 1 ? padL + i / (n - 1) * innerW : padL + innerW / 2;
-    const yWin = (v) => padT + innerH - Math.max(0, Math.min(100, v)) / 100 * innerH;
-    const payoffMax = Math.max(2, ...series.map((s) => s.payoff || 0));
-    const yPay = (v) => padT + innerH - Math.max(0, v) / payoffMax * innerH;
-    const winPath = useMemo_btc(
-      () => n < 2 ? "" : series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yWin(s.win_rate || 0).toFixed(1)}`).join(" "),
-      [series, n]
-    );
-    const payPath = useMemo_btc(
-      () => n < 2 ? "" : series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yPay(s.payoff || 0).toFixed(1)}`).join(" "),
-      [series, n, payoffMax]
-    );
-    const xTickIdx = useMemo_btc(() => {
-      if (n <= 1) return n === 1 ? [0] : [];
-      const step = Math.max(1, Math.ceil(n / 8));
-      const idx = [];
-      for (let i = 0; i < n; i += step) idx.push(i);
-      if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
-      return idx;
-    }, [n]);
-    const onMove = (e) => {
-      if (!n || !svgRef.current) return;
-      const rect = svgRef.current.getBoundingClientRect();
-      const px = (e.clientX - rect.left) * (W / rect.width);
-      const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
-      const i = Math.round(frac * (n - 1));
-      if (i >= 0 && i < n) setHover(i);
-      else setHover(null);
-    };
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uB864\uB9C1 \uC9C0\uD45C \u2014 \uC2B9\uB960 \xB7 Payoff"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "\uB864\uB9C1 \uC2B9\uB960 %" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--amber)", label: "\uB864\uB9C1 payoff \uBC30" }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
-      `${window2}\uAC70\uB798 \uC774\uB3D9\uCC3D \uAE30\uC900`,
-      "\uC88C\uCD95 = \uC2B9\uB960(%) \xB7 \uC6B0\uCD95 = payoff(\uD3C9\uADE0\uC774\uC775/\uD3C9\uADE0\uC190\uC2E4)",
-      "\uAD6C\uAC04\uBCC4 \uC804\uB7B5 \uC548\uC815\uC131 \uCD94\uC774 \uC9C4\uB2E8"
-    ] }), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        ref: svgRef,
-        viewBox: `0 0 ${W} ${H}`,
-        preserveAspectRatio: "none",
-        onMouseMove: onMove,
-        onMouseLeave: () => setHover(null)
-      },
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yWin(50), y2: yWin(50), stroke: "rgba(255,255,255,0.18)", strokeWidth: "1", strokeDasharray: "2 3" }),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yWin(50) + 3, textAnchor: "end", fill: "var(--ink-2)" }, "50%"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yWin(100) + 3, textAnchor: "end", fill: "var(--teal)" }, "100%"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yWin(0) + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0%"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yPay(payoffMax) + 3, textAnchor: "start", fill: "var(--amber)" }, payoffMax.toFixed(1), "\xD7"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yPay(1) + 3, textAnchor: "start", fill: "var(--ink-3)" }, "1\xD7"),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yPay(1), y2: yPay(1), stroke: "rgba(240,179,90,0.2)", strokeWidth: "1", strokeDasharray: "4 4" }),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      n > 1 && /* @__PURE__ */ React.createElement("path", { d: winPath, fill: "none", stroke: "var(--teal)", strokeWidth: "2" }),
-      n > 1 && /* @__PURE__ */ React.createElement("path", { d: payPath, fill: "none", stroke: "var(--amber)", strokeWidth: "1.6", strokeDasharray: "5 3", opacity: "0.9" }),
-      xTickIdx.map((i) => /* @__PURE__ */ React.createElement("text", { key: `rx${i}`, className: "chart-axis-text", x: x(i), y: H - 10, textAnchor: "middle" }, series[i] ? `#${series[i].index + 1}` : "")),
-      hover != null && series[hover] && /* @__PURE__ */ React.createElement("line", { x1: x(hover), x2: x(hover), y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.22)", strokeWidth: "1" })
-    ), hover != null && series[hover] && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      top: 16,
-      right: 16,
-      background: "var(--bg-0)",
-      border: "1px solid var(--line-2)",
-      borderRadius: 6,
-      padding: "8px 10px",
-      fontFamily: "var(--mono)",
-      fontSize: 11,
-      minWidth: 160,
-      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
-      pointerEvents: "none"
-    } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-2)", marginBottom: 4 } }, "\uAC70\uB798 #", series[hover].index + 1), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uC2B9\uB960"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--teal)" } }, fmtPct(series[hover].win_rate)), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "payoff"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--amber)" } }, (series[hover].payoff || 0).toFixed(2), "\xD7"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uD3C9\uADE0\uC190\uC775"), /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: series[hover].avg_pnl_pct > 0 ? "num-pos" : series[hover].avg_pnl_pct < 0 ? "num-neg" : "",
-        style: { textAlign: "right" }
-      },
-      series[hover].avg_pnl_pct.toFixed(2),
-      "%"
-    ))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: `\uAC70\uB798\uAC00 ${window2}\uAC74 \uC774\uC0C1 \uB204\uC801\uB418\uBA74 \uB864\uB9C1 \uC9C0\uD45C\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4` }))));
-  }
-  var _BT_MONTHS = ["1\uC6D4", "2\uC6D4", "3\uC6D4", "4\uC6D4", "5\uC6D4", "6\uC6D4", "7\uC6D4", "8\uC6D4", "9\uC6D4", "10\uC6D4", "11\uC6D4", "12\uC6D4"];
-  function BtMonthlyCalendar({ monthly }) {
-    const years = monthly && monthly.years || [];
-    const cells = monthly && monthly.cells || [];
-    const [hover, setHover] = useState_btc(null);
-    const cellMap = useMemo_btc(() => {
-      const m = {};
-      for (const c of cells) m[c.year + "_" + c.month] = c;
-      return m;
-    }, [cells]);
-    const maxAbs = Math.max(1, ...cells.map((c) => Math.abs(c.profit_krw || 0)));
-    const cellColor = (c) => {
-      if (!c) return "var(--bg-0)";
-      const t = Math.min(1, Math.abs(c.profit_krw || 0) / maxAbs);
-      if ((c.profit_krw || 0) >= 0) return `rgba(76,214,179,${(0.12 + 0.66 * t).toFixed(3)})`;
-      return `rgba(255,107,107,${(0.12 + 0.66 * t).toFixed(3)})`;
-    };
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC6D4\uBCC4 \uC218\uC775 \uCE98\uB9B0\uB354"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uB9E4\uB3C4\uC77C \uAE30\uC900 \xB7 \uC6D4\uBCC4 \uC190\uC775 \uD569")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, cells.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { position: "relative", minHeight: 120 } }, /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uAC70\uB798\uAC00 \uB204\uC801\uB418\uBA74 \uC6D4\uBCC4 \uC218\uC775 \uCE98\uB9B0\uB354\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4" })) : /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { style: { borderCollapse: "separate", borderSpacing: 3, fontFamily: "var(--mono)" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { width: 44 } }), _BT_MONTHS.map((m, i) => /* @__PURE__ */ React.createElement("th", { key: i, style: { fontSize: 9.5, color: "var(--ink-3)", fontWeight: 400, padding: "0 1px", whiteSpace: "nowrap" } }, m)))), /* @__PURE__ */ React.createElement("tbody", null, years.map((yr) => /* @__PURE__ */ React.createElement("tr", { key: yr }, /* @__PURE__ */ React.createElement("td", { style: { fontSize: 11, color: "var(--ink-2)", textAlign: "center", paddingRight: 4 } }, yr), _BT_MONTHS.map((_, mi) => {
-      const month = mi + 1;
-      const key = yr + "_" + month;
-      const c = cellMap[key];
-      return /* @__PURE__ */ React.createElement(
-        "td",
-        {
-          key: mi,
-          onMouseEnter: () => c && setHover(key),
-          onMouseLeave: () => setHover(null),
-          title: c ? `${yr}\uB144 ${month}\uC6D4 \xB7 ${fmtMoney(c.profit_krw)} \xB7 ${c.trades}\uAC74 \xB7 ${fmtPct(c.win_rate)}` : "",
-          style: {
-            width: 48,
-            height: 30,
-            borderRadius: 4,
-            background: cellColor(c),
-            border: hover === key ? "1px solid var(--ink-0)" : "1px solid var(--line-1)",
-            textAlign: "center",
-            fontSize: 9,
-            lineHeight: 1.25,
-            color: c ? "var(--ink-0)" : "var(--ink-3)"
-          }
-        },
-        c ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9.5 } }, _btMoneyTick(c.profit_krw)), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 8, color: "var(--ink-2)" } }, c.trades, "\uAC74")) : ""
-      );
-    }))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, marginTop: 10, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(76,214,179,0.78)", label: "\uC774\uC775 \uC6D4" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(255,107,107,0.78)", label: "\uC190\uC2E4 \uC6D4" }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC140 = \uC190\uC775 \xB7 \uAC70\uB798\uC218")))));
-  }
-  function BtCumulativeTradesChart({ data }) {
-    const series = data && data.series || [];
-    const [hover, setHover] = useState_btc(null);
-    const svgRef = useRef_btc(null);
-    const W = 880, H = 280;
-    const padL = 52, padR = 60, padT = 18, padB = 30;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const n = series.length;
-    const x = (i) => n > 1 ? padL + i / (n - 1) * innerW : padL + innerW / 2;
-    const maxTrades = Math.max(1, ...series.map((s) => s.cum_trades || 0));
-    const yTrades = (v) => padT + innerH - v / maxTrades * innerH;
-    const profits = series.map((s) => s.cum_profit_krw || 0);
-    const pMax = Math.max(0, ...profits);
-    const pMin = Math.min(0, ...profits);
-    const pRange = pMax - pMin || 1;
-    const yProfit = (v) => padT + innerH - (v - pMin) / pRange * innerH;
-    const tradesArea = useMemo_btc(() => {
-      if (n < 2) return "";
-      const top = series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yTrades(s.cum_trades || 0).toFixed(1)}`).join(" ");
-      return `${top} L ${x(n - 1).toFixed(1)} ${(padT + innerH).toFixed(1)} L ${x(0).toFixed(1)} ${(padT + innerH).toFixed(1)} Z`;
-    }, [series, n, maxTrades]);
-    const profitPath = useMemo_btc(
-      () => n < 2 ? "" : series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yProfit(s.cum_profit_krw || 0).toFixed(1)}`).join(" "),
-      [series, n, pMin, pRange]
-    );
-    const xTickIdx = useMemo_btc(() => {
-      if (n <= 1) return n === 1 ? [0] : [];
-      const step = Math.max(1, Math.ceil(n / 8));
-      const idx = [];
-      for (let i = 0; i < n; i += step) idx.push(i);
-      if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
-      return idx;
-    }, [n]);
-    const onMove = (e) => {
-      if (!n || !svgRef.current) return;
-      const rect = svgRef.current.getBoundingClientRect();
-      const px = (e.clientX - rect.left) * (W / rect.width);
-      const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
-      const i = Math.round(frac * (n - 1));
-      if (i >= 0 && i < n) setHover(i);
-      else setHover(null);
-    };
-    const profitZeroY = yProfit(0);
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uB204\uC801 \uAC70\uB798 \xB7 \uB204\uC801 \uC190\uC775"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--blue)", label: "\uB204\uC801 \uAC70\uB798\uC218" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--amber)", label: "\uB204\uC801 \uC190\uC775 \u20A9" }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
-      "x\uCD95 = \uAC70\uB798 \uC21C\uC11C(\uCCB4\uACB0 \uC21C)",
-      "\uC88C\uCD95 = \uB204\uC801 \uAC70\uB798\uC218 \xB7 \uC6B0\uCD95 = \uB204\uC801 \uC2E4\uD604\uC190\uC775",
-      "\uCCB4\uACB0 \uBE48\uB3C4\uC640 \uC790\uBCF8 \uC99D\uAC00\uB97C \uD55C \uD654\uBA74\uC5D0\uC11C \uBE44\uAD50"
-    ] }), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        ref: svgRef,
-        viewBox: `0 0 ${W} ${H}`,
-        preserveAspectRatio: "none",
-        onMouseMove: onMove,
-        onMouseLeave: () => setHover(null)
-      },
-      /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "bt-ct-grad", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#5b8def", stopOpacity: "0.34" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#5b8def", stopOpacity: "0.02" }))),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: profitZeroY, y2: profitZeroY, stroke: "rgba(255,255,255,0.28)", strokeWidth: "1", strokeDasharray: "2 3" }),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: profitZeroY + 3, textAnchor: "start", fill: "var(--ink-2)" }, "0"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yTrades(maxTrades) + 3, textAnchor: "end", fill: "var(--blue)" }, maxTrades),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yTrades(0) + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yProfit(pMax) + 3, textAnchor: "start", fill: "var(--amber)" }, _btMoneyTick(pMax)),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yProfit(pMin) + 3, textAnchor: "start", fill: "var(--amber)" }, _btMoneyTick(pMin)),
-      _btAxisTicks(pMin, pMax, 5).map((tv, i) => Math.abs(tv - pMax) < 1e-9 || Math.abs(tv - pMin) < 1e-9 || Math.abs(tv) < 1e-9 ? null : /* @__PURE__ */ React.createElement("text", { key: `cyr${i}`, className: "chart-axis-text", x: W - padR + 6, y: yProfit(tv) + 3, textAnchor: "start", fill: "var(--ink-3)" }, _btMoneyTick(tv))),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      n > 1 && /* @__PURE__ */ React.createElement("path", { d: tradesArea, fill: "url(#bt-ct-grad)", stroke: "var(--blue)", strokeWidth: "1.2", opacity: "0.85" }),
-      n > 1 && /* @__PURE__ */ React.createElement("path", { d: profitPath, fill: "none", stroke: "var(--amber)", strokeWidth: "2" }),
-      xTickIdx.map((i) => /* @__PURE__ */ React.createElement("text", { key: `cx${i}`, className: "chart-axis-text", x: x(i), y: H - 10, textAnchor: "middle" }, series[i] ? `#${series[i].index}` : "")),
-      hover != null && series[hover] && /* @__PURE__ */ React.createElement("line", { x1: x(hover), x2: x(hover), y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.22)", strokeWidth: "1" })
-    ), hover != null && series[hover] && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      top: 16,
-      right: 16,
-      background: "var(--bg-0)",
-      border: "1px solid var(--line-2)",
-      borderRadius: 6,
-      padding: "8px 10px",
-      fontFamily: "var(--mono)",
-      fontSize: 11,
-      minWidth: 170,
-      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
-      pointerEvents: "none"
-    } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-2)", marginBottom: 4 } }, "\uAC70\uB798 #", series[hover].index), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801 \uAC70\uB798"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--blue)" } }, series[hover].cum_trades, "\uAC74"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801 \uC190\uC775"), /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: series[hover].cum_profit_krw > 0 ? "num-pos" : series[hover].cum_profit_krw < 0 ? "num-neg" : "",
-        style: { textAlign: "right" }
-      },
-      fmtMoney(series[hover].cum_profit_krw)
-    ))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uAC70\uB798\uAC00 \uB204\uC801\uB418\uBA74 \uB204\uC801 \uAC70\uB798\xB7\uC190\uC775 \uACE1\uC120\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4" }))));
-  }
   var _BT_CMP_METRICS = [
     { key: "trade_count", label: "\uAC70\uB798\uC218", fmt: (v) => fmtInt(v), higher: true },
     { key: "win_rate", label: "\uC2B9\uB960", fmt: (v) => fmtPct(v), higher: true },
@@ -7503,12 +7241,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       return /* @__PURE__ */ React.createElement("tr", { key: m.key, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "left", padding: "5px 8px", color: "var(--ink-2)" } }, m.label), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px", color: aWin ? "var(--teal)" : "var(--ink-1)", fontWeight: aWin ? 700 : 400 } }, typeof va === "number" ? m.fmt(va) : "\u2014"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px", color: bWin ? "var(--violet)" : "var(--ink-1)", fontWeight: bWin ? 700 : 400 } }, typeof vb === "number" ? m.fmt(vb) : "\u2014"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px", color: dColor } }, d == null ? "\u2014" : (d > 0 ? "+" : "") + m.fmt(d)));
     }))))));
   }
-  function _gpMoney(v) {
-    const a = Math.abs(v || 0);
-    if (a >= 1e8) return ((v || 0) / 1e8).toFixed(1) + "\uC5B5";
-    if (a >= 1e4) return Math.round((v || 0) / 1e4) + "\uB9CC";
-    return Math.round(v || 0).toLocaleString("ko-KR");
-  }
+
+  // ../frontend/bt-gui-parity.jsx
   function BtMddRandomChart({ data }) {
     const d = data || {};
     const curves = d.curves || [];
@@ -7903,6 +7637,284 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     const grid = columns === 2;
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "GUI \uD328\uB9AC\uD2F0 \u2014 STOM \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC \uC774\uBBF8\uC9C0 2\uC7A5"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uBD80\uAC00\uC815\uBCF4 2\xD72 \xB7 \uACB0\uACFC 2\xD71")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: grid ? { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 14 } : { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(BtMddRandomChart, { data: gp.mdd_random }), /* @__PURE__ */ React.createElement(BtDailyPnlChart, { data: gp.daily }), /* @__PURE__ */ React.createElement(BtHourlyPnlChart, { data: gp.hourly }), /* @__PURE__ */ React.createElement(BtWeekdayPnlChart, { data: gp.weekday }), /* @__PURE__ */ React.createElement(BtHoldingCurveChart, { data: gp.holding }), /* @__PURE__ */ React.createElement(BtTradeRollingChart, { data: gp.trade_rolling }))));
   }
+
+  // ../frontend/bt-result-area.jsx
+  var _BT_METRIC_CARDS = [
+    { key: "trade_count", label: "\uAC70\uB798\uC218", fmt: (v) => fmtInt(v) },
+    { key: "win_rate", label: "\uC2B9\uB960", fmt: (v) => fmtPct(v) },
+    { key: "total_profit_pct", label: "\uC218\uC775\uB960\uD569\uACC4", fmt: (v) => fmtPct(v), signed: true },
+    { key: "total_profit_krw", label: "\uC218\uC775\uAE08", fmt: (v) => fmtMoney(v), signed: true },
+    { key: "mdd_pct", label: "MDD", fmt: (v) => fmtPct(v), risk: true },
+    { key: "cagr", label: "CAGR", fmt: (v) => fmtPct(v), signed: true }
+  ];
+  function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compareView, onCloseCompare }) {
+    const [result, setResult] = useState_btc(null);
+    const [loading, setLoading] = useState_btc(false);
+    const [err, setErr] = useState_btc("");
+    const [range, setRange] = useState_btc(null);
+    const [mc, setMc] = useState_btc(null);
+    const [mcLoading, setMcLoading] = useState_btc(false);
+    const [fullscreen, setFullscreen] = useState_btc(false);
+    useEffect_btc(() => {
+      if (!fullscreen) return void 0;
+      const onKey = (e) => {
+        if (e.key === "Escape") setFullscreen(false);
+      };
+      window.addEventListener("keydown", onKey);
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        window.removeEventListener("keydown", onKey);
+        document.body.style.overflow = prevOverflow;
+      };
+    }, [fullscreen]);
+    const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
+    const hasSource = !!jobId || isEvo;
+    const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
+    const load = useCallback_btc(() => {
+      if (isDemo || !baseUrl || !hasSource) {
+        setResult(null);
+        return;
+      }
+      setLoading(true);
+      setErr("");
+      let url;
+      if (jobId) {
+        url = baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId);
+        if (range) {
+          url += "&t_start=" + range.t_start + "&t_end=" + range.t_end;
+        }
+      } else {
+        url = baseUrl + "/bt/result?run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
+      }
+      _btFetchJson(url, 8e3).then((j) => {
+        setResult(j);
+        if (!(j && j.available)) setErr("\uACB0\uACFC\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4");
+      }).catch((e) => {
+        setResult(null);
+        setErr(String(e));
+      }).finally(() => setLoading(false));
+    }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
+    const loadMc = useCallback_btc(() => {
+      if (isDemo || !baseUrl || !jobId) {
+        setMc(null);
+        return;
+      }
+      setMcLoading(true);
+      let url = baseUrl + "/bt/analysis/montecarlo?job_id=" + encodeURIComponent(jobId) + "&n=2000";
+      if (range) {
+        url += "&t_start=" + range.t_start + "&t_end=" + range.t_end;
+      }
+      _btFetchJson(url, 12e3).then((j) => setMc(j && j.montecarlo || null)).catch(() => setMc(null)).finally(() => setMcLoading(false));
+    }, [baseUrl, isDemo, jobId, range]);
+    useEffect_btc(() => {
+      load();
+    }, [load]);
+    useEffect_btc(() => {
+      setRange(null);
+      setMc(null);
+    }, [sourceKey]);
+    useEffect_btc(() => {
+      if (jobId && result && result.available && result.status !== "no_trades") {
+        loadMc();
+      }
+    }, [result, loadMc, jobId]);
+    const onBrush = useCallback_btc((t_start, t_end) => {
+      if (!jobId) {
+        return;
+      }
+      setRange({ t_start, t_end });
+    }, [jobId]);
+    const onBrushClear = useCallback_btc(() => {
+      setRange(null);
+    }, []);
+    if (!hasSource) {
+      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uACB0\uACFC \xB7 \uBD84\uC11D")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC67C\uCABD\uC5D0\uC11C \uBC31\uD14C\uC2A4\uD2B8\uB97C \uC2E4\uD589\uD558\uAC70\uB098 \uC7A1 \uC774\uB825\uC744 \uC120\uD0DD\uD558\uBA74 \uACB0\uACFC\xB7\uBD84\uC11D\uC774 \uC5EC\uAE30\uC5D0 \uD45C\uC2DC\uB429\uB2C8\uB2E4.")));
+    }
+    if (loading && !result) {
+      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uACB0\uACFC \xB7 \uBD84\uC11D")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uACB0\uACFC \uB85C\uB529 \uC911\u2026")));
+    }
+    if (err || !result || !result.available) {
+      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uACB0\uACFC \xB7 \uBD84\uC11D")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: "var(--red)" } }, err || "\uACB0\uACFC \uC5C6\uC74C", /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: load }, "\uC7AC\uC2DC\uB3C4")))));
+    }
+    if (result.status === "no_trades") {
+      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uACB0\uACFC \xB7 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("span", { className: "badge warn" }, "\uAC70\uB798 0\uAC74")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "empty", style: { padding: "28px 24px" } }, /* @__PURE__ */ React.createElement("h2", { style: { color: "var(--amber)" } }, "\uAC70\uB798 0\uAC74"), /* @__PURE__ */ React.createElement("p", null, result.message || "\uC804\uB7B5\uC774 \uD574\uB2F9 \uAE30\uAC04\uC5D0 \uB9E4\uC218 \uC2E0\uD638\uB97C \uB0B4\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4. \uC5D0\uB7EC\uAC00 \uC544\uB2D9\uB2C8\uB2E4 \u2014 \uC870\uAC74\uC2DD/\uAE30\uAC04\uC744 \uC870\uC815\uD574 \uBCF4\uC138\uC694."))));
+    }
+    const analysis = result.analysis || {};
+    const metrics = result.metrics || {};
+    const summary = analysis.summary || {};
+    const metricVal = (key) => {
+      if (metrics[key] != null) return metrics[key];
+      const map = {
+        trade_count: summary.trade_count,
+        win_rate: summary.win_rate,
+        total_profit_pct: summary.total_profit_pct,
+        total_profit_krw: summary.total_profit_krw,
+        mdd_pct: summary.max_drawdown_pct,
+        cagr: void 0
+      };
+      return map[key];
+    };
+    const distribution = analysis.distribution || {};
+    const insights = analysis.insights || [];
+    const topC = distribution.top_contributors || [];
+    const botC = distribution.bottom_contributors || [];
+    const dailyPnl = ((analysis.equity || {}).daily || []).map((d) => d.pnl || 0);
+    const orderflow = analysis.orderflow || {};
+    const stats = analysis.stats || [];
+    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, range && /* @__PURE__ */ React.createElement("div", { className: "bt-range-bar" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911 \u2014 ", _btDateLabel(Math.floor(range.t_start / 1e6)), "~", _btDateLabel(Math.floor(range.t_end / 1e6)), result.ranged && analysis.trade_count != null ? ` \xB7 ${analysis.trade_count}\uAC70\uB798` : ""), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear, style: { marginLeft: "auto" } }, "\uC804\uCCB4\uB85C \uBCF5\uADC0")), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: isEvo ? "var(--violet)" : "var(--teal)" } }), isEvo ? "\uD575\uC2EC \uBA54\uD2B8\uB9AD \xB7 \uC9C4\uD654 \uC138\uB300" : "\uD575\uC2EC \uBA54\uD2B8\uB9AD", isEvo && /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: "mono tag-slim",
+        style: { fontSize: 9.5, color: "var(--violet)", marginLeft: 6 },
+        title: "\uC9C4\uD654 run \uC138\uB300 \uBD84\uC11D \u2014 loop_runs.db \uC77D\uAE30 \uC804\uC6A9"
+      },
+      evoSource.run_id,
+      "/g",
+      evoSource.gen_no
+    )), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, onSetCompareA && jobId && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: () => onSetCompareA(jobId),
+        title: "\uC774 \uC7A1\uC744 A/B \uBE44\uAD50\uC758 \uAE30\uC900(A)\uC73C\uB85C \uACE0\uC815"
+      },
+      "\u2295 \uBE44\uAD50 \uAE30\uC900(A)"
+    ), isEvo && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: () => {
+          const u = baseUrl + "/bt/report?run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
+          try {
+            window.open(u, "_blank", "noopener");
+          } catch (e) {
+          }
+        },
+        title: "\uC774 \uC138\uB300\uC758 \uC790\uAE09\uC790\uC871 HTML \uB9AC\uD3EC\uD2B8\uB97C \uC0C8 \uD0ED\uC73C\uB85C \uC5F4\uAE30"
+      },
+      "\u{1F4C4} \uB9AC\uD3EC\uD2B8"
+    ), ((analysis.equity || {}).daily || []).length > 0 && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: () => _btDownloadAnalysisCsv(analysis),
+        title: "\uC77C\uBCC4 \uC218\uC775\uACE1\uC120(\uB0A0\uC9DC\xB7\uC77C\uBCC4\uC190\uC775\xB7\uB204\uC801\uC218\uC775)\uC744 CSV \uB85C \uB0B4\uB824\uBC1B\uAE30 \u2014 \uD45C\uACC4\uC0B0 \uB3C4\uAD6C\uC5D0\uC11C \uCD94\uAC00 \uBD84\uC11D"
+      },
+      "\u2B07 CSV"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: () => setFullscreen(true),
+        title: "\uC804\uCCB4 \uD654\uBA74\uC5D0\uC11C \uB354 \uB9CE\uC740 \uBD84\uC11D \uADF8\uB798\uD504\uB97C \uD55C\uB208\uC5D0 \uBCF4\uAE30 (Esc \uB85C \uB2EB\uAE30)"
+      },
+      "\u26F6 \uC804\uCCB4\uD654\uBA74 \uBD84\uC11D"
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: load, disabled: loading }, loading ? "\uB85C\uB529\u2026" : "\u21BB"))), /* @__PURE__ */ React.createElement("div", { className: "bt-summary-row", style: { gridTemplateColumns: "repeat(6, 1fr)" } }, _BT_METRIC_CARDS.map((m) => {
+      const v = metricVal(m.key);
+      const num = typeof v === "number" ? v : null;
+      return /* @__PURE__ */ React.createElement(_BtMetricCard, { key: m.key, meta: m, num, dailyPnl });
+    }))), compareView && /* @__PURE__ */ React.createElement(BtCompareView, { cmp: compareView, onClose: onCloseCompare }), /* @__PURE__ */ React.createElement(
+      BtEquityChart,
+      {
+        equity: analysis.equity,
+        onBrush,
+        brushActive: !!range,
+        onBrushClear
+      }
+    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: loadMc }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 1 }), /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", open: false }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uCD94\uAC00 \uBD84\uC11D \uADF8\uB798\uD504 \u2014 \uB864\uB9C1 \uC9C0\uD45C \xB7 \uC6D4\uBCC4 \uCE98\uB9B0\uB354 \xB7 \uB204\uC801 \uAC70\uB798 (\uC804\uCCB4\uD654\uBA74 \uAD8C\uC7A5)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, marginTop: 10 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }))), (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC })))), /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights }), fullscreen && /* @__PURE__ */ React.createElement(
+      _BtFullscreenAnalysis,
+      {
+        analysis,
+        distribution,
+        orderflow,
+        stats,
+        insights,
+        mc,
+        mcLoading,
+        onRunMc: loadMc,
+        range,
+        onBrush,
+        onBrushClear,
+        onClose: () => setFullscreen(false)
+      }
+    ));
+  }
+  function _BtFullscreenAnalysis({
+    analysis,
+    distribution,
+    orderflow,
+    stats,
+    insights,
+    mc,
+    mcLoading,
+    onRunMc,
+    range,
+    onBrush,
+    onBrushClear,
+    onClose
+  }) {
+    return /* @__PURE__ */ React.createElement("div", { style: {
+      position: "fixed",
+      inset: 0,
+      zIndex: 4e3,
+      background: "var(--bg-1, #0d1117)",
+      overflowY: "auto",
+      padding: "16px 22px 40px"
+    } }, /* @__PURE__ */ React.createElement("div", { style: {
+      position: "sticky",
+      top: 0,
+      zIndex: 2,
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      padding: "10px 4px 12px",
+      marginBottom: 10,
+      background: "var(--bg-1, #0d1117)",
+      borderBottom: "1px solid var(--line-2)"
+    } }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), /* @__PURE__ */ React.createElement("strong", { style: { fontSize: 15, color: "var(--ink-0)" } }, "\uC804\uCCB4\uD654\uBA74 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uB354 \uB9CE\uC740 \uADF8\uB798\uD504\uB85C \uC778\uC0AC\uC774\uD2B8 \u2014 2~3\uCEEC\uB7FC \uD655\uB300 \uBC30\uCE58"), range && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911"), /* @__PURE__ */ React.createElement("div", { style: { marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" } }, range && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear }, "\uC804\uCCB4\uB85C \uBCF5\uADC0"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn sm",
+        onClick: onClose,
+        style: { borderColor: "var(--teal-dim)", color: "var(--teal)" }
+      },
+      "\u2715 \uB2EB\uAE30 (Esc)"
+    ))), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights })), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(440px, 1fr))", gap: 14, marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(
+      BtEquityChart,
+      {
+        equity: analysis.equity,
+        onBrush,
+        brushActive: !!range,
+        onBrushClear
+      }
+    )), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 2 })), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 14 } }, /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats })));
+  }
+  function _BtMetricCard({ meta, num, dailyPnl }) {
+    const animated = _useCountUp(num != null ? num : 0, 600);
+    const shown = num != null ? animated : null;
+    let color;
+    if (meta.risk) color = "var(--red)";
+    else if (meta.signed && num != null) color = num > 0 ? "var(--teal)" : num < 0 ? "var(--red)" : void 0;
+    if ((meta.key === "win_rate" || meta.key === "mdd_pct") && num != null) {
+      const gaugeColor = meta.key === "mdd_pct" ? "var(--red)" : "var(--teal)";
+      return /* @__PURE__ */ React.createElement("div", { className: "bt-metric-card" }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement(
+        _BtArcGauge,
+        {
+          value: shown,
+          max: 100,
+          color: gaugeColor,
+          label: meta.fmt(shown != null ? shown : 0)
+        }
+      ));
+    }
+    if (meta.key === "total_profit_krw") {
+      return /* @__PURE__ */ React.createElement("div", { className: "bt-metric-card" }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement("span", { className: "summary-val", style: { color } }, shown != null ? meta.fmt(shown) : "\u2014"), /* @__PURE__ */ React.createElement(_BtSparkline, { values: dailyPnl }));
+    }
+    return /* @__PURE__ */ React.createElement("div", { className: "bt-metric-card" }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement("span", { className: "summary-val", style: { color } }, shown != null ? meta.fmt(shown) : "\u2014"));
+  }
+
+  // ../frontend/backtest-charts.jsx
   Object.assign(window, {
     BtEquityChart,
     BtDistributionChart,

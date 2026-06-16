@@ -33,25 +33,27 @@ def _slice(src: str, start_marker: str, end_marker: str) -> str:
 class TestBacktestCsvExport:
     """backtest-charts.jsx — 일별 수익곡선 CSV(클라이언트 Blob, sim 규약 미러)."""
 
+    # P5.1 분해 — CSV 헬퍼 정의는 backtest-charts.jsx(배럴)에서 bt-chart-utils.jsx 로,
+    #   버튼 와이어링은 bt-result-area.jsx 로 이동(동작 불변, 코드 이동만).
     def test_csv_helpers_defined(self) -> None:
-        src = _read("backtest-charts.jsx")
+        src = _read("bt-chart-utils.jsx")
         assert "function _btCsvCell(" in src
         assert "function _btAnalysisCsv(" in src
         assert "function _btDownloadAnalysisCsv(" in src
 
     def test_csv_has_column_headers(self) -> None:
-        src = _read("backtest-charts.jsx")
+        src = _read("bt-chart-utils.jsx")
         csvfn = _slice(src, "function _btAnalysisCsv(", "function _btDownloadAnalysisCsv(")
         for col in ("날짜", "일별손익(원)", "누적수익(원)"):
             assert col in csvfn, f"누락된 CSV 컬럼: {col}"
 
     def test_csv_has_utf8_bom(self) -> None:
-        src = _read("backtest-charts.jsx")
+        src = _read("bt-chart-utils.jsx")
         csvfn = _slice(src, "function _btAnalysisCsv(", "function _btDownloadAnalysisCsv(")
         assert "﻿" in csvfn, "CSV 출력에 utf-8 BOM 이 없습니다"
 
     def test_csv_blob_download_clientside(self) -> None:
-        src = _read("backtest-charts.jsx")
+        src = _read("bt-chart-utils.jsx")
         # _btDownloadAnalysisCsv 본문(고정 오프셋 슬라이스 — 함수 직전 주석이 종료마커라 _slice 부적합).
         i = src.index("function _btDownloadAnalysisCsv(")
         dl = src[i:i + 900]
@@ -64,8 +66,8 @@ class TestBacktestCsvExport:
         assert '".csv"' in dl
 
     def test_csv_button_wired_and_gated(self) -> None:
-        src = _read("backtest-charts.jsx")
-        # BtAnalysis 헤더에서 호출 + 버튼 라벨 + equity daily 존재로 게이팅.
+        src = _read("bt-result-area.jsx")
+        # BtResultArea 헤더에서 호출 + 버튼 라벨 + equity daily 존재로 게이팅.
         assert "_btDownloadAnalysisCsv(analysis)" in src
         assert "⬇ CSV" in src
         assert "(analysis.equity || {}).daily || []).length > 0" in src
