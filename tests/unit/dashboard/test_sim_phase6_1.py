@@ -148,7 +148,8 @@ class TestSeekHistorySnapshot:
 
 class TestFrontendContracts:
     def test_simulation_jsx_handles_history_message(self):
-        src = (FRONTEND / "simulation.jsx").read_text(encoding="utf-8")
+        # P5.5 분해 — WS history 핸들러(SimulationTab)는 sim-tab-root.jsx 로 이동.
+        src = (FRONTEND / "sim-tab-root.jsx").read_text(encoding="utf-8")
         assert '"history"' in src
         assert "items_by_code" in src
         assert "_simWsBar" in src

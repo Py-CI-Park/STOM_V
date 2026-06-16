@@ -11485,7 +11485,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     _SIM_DEFAULT_INDICATORS
   });
 
-  // ../frontend/simulation.jsx
+  // ../frontend/sim-tab-utils.jsx
   var {
     useState: useState_sim,
     useEffect: useEffect_sim,
@@ -11615,6 +11615,82 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       return null;
     }
   }
+  function _simFmtDate(d) {
+    const s = String(d);
+    if (s.length === 8) return s.slice(0, 4) + "-" + s.slice(4, 6) + "-" + s.slice(6, 8);
+    return s;
+  }
+  function _simTileColor(pct) {
+    const v = Number(pct) || 0;
+    const mag = Math.min(1, Math.abs(v) / 12);
+    const a = 0.12 + mag * 0.7;
+    if (v > 0) return `rgba(255,93,108,${a.toFixed(3)})`;
+    if (v < 0) return `rgba(56,140,255,${a.toFixed(3)})`;
+    return "rgba(150,158,170,0.14)";
+  }
+  var _SIM_VIEWBAR_LABEL = {
+    fontSize: 11,
+    color: "var(--ink-1)",
+    fontWeight: 600,
+    letterSpacing: ".3px"
+  };
+  var _SIM_ENGINE_ROWS = [
+    ["\uB77C\uC774\uBE0C", "Canvas\xB7\uAE30\uBCF8\xB7\uCD5C\uACBD\uB7C9 \xB7 \uD480 \uC624\uB354\uD50C\uB85C\uC6B0(\uCCB4\uACB0\uAC15\uB3C4\xB7\uD638\uAC00\xB7net-delta)"],
+    ["SVG", "\uBB34\uC758\uC874 \uD3F4\uBC31 \xB7 \uD480 \uC624\uB354\uD50C\uB85C\uC6B0(\uCCB4\uACB0\uAC15\uB3C4\xB7\uD638\uAC00\xB7net-delta)"],
+    ["LWC", "\uC804\uBB38 \uC90C/\uD06C\uB85C\uC2A4\uD5E4\uC5B4 \xB7 \uCCB4\uACB0\uAC15\uB3C4 \uC624\uBC84\uB808\uC774\uB9CC"]
+  ];
+  function _flattenSignals(signals, codes) {
+    const out = [];
+    (codes || []).forEach((code) => {
+      (signals[code] || []).forEach((s) => out.push({ ...s, code }));
+    });
+    out.sort((a, b) => a.buy_hms - b.buy_hms);
+    return out;
+  }
+  function _simFmtNum(v, digits) {
+    if (v == null) return "\u2014";
+    const n = Number(v);
+    if (!isFinite(n)) return "\u2014";
+    return n.toLocaleString("ko-KR", { maximumFractionDigits: digits == null ? 0 : digits });
+  }
+  var _SIM_WATCH_VARS = [
+    { key: "c", label: "\uD604\uC7AC\uAC00", digits: 0 },
+    { key: "change", label: "\uB4F1\uB77D\uC728", digits: 2 },
+    { key: "strength", label: "\uCCB4\uACB0\uAC15\uB3C4", digits: 0 },
+    { key: "vwap", label: "VWAP", digits: 0 },
+    { key: "ma5", label: "MA5", digits: 0 },
+    { key: "ma20", label: "MA20", digits: 0 },
+    { key: "ma60", label: "MA60", digits: 0 },
+    { key: "net_qty", label: "\uC21C\uB9E4\uC218\uC218\uB7C9", digits: 0 },
+    { key: "imbalance", label: "\uD638\uAC00\uBD88\uADE0\uD615", digits: 2 },
+    { key: "buy_rest", label: "\uB9E4\uC218\uCD1D\uC794\uB7C9", digits: 0 },
+    { key: "sell_rest", label: "\uB9E4\uB3C4\uCD1D\uC794\uB7C9", digits: 0 }
+  ];
+  var _SIM_WATCH_LS_KEY = "stom.sim.watch.v1";
+  function _loadWatchThresholds() {
+    try {
+      const raw = window.localStorage.getItem(_SIM_WATCH_LS_KEY);
+      const obj = raw ? JSON.parse(raw) : null;
+      return obj && typeof obj === "object" ? obj : {};
+    } catch (e) {
+      return {};
+    }
+  }
+  function _saveWatchThresholds(map) {
+    try {
+      window.localStorage.setItem(_SIM_WATCH_LS_KEY, JSON.stringify(map || {}));
+    } catch (e) {
+    }
+  }
+  function _evalWatch(value, th) {
+    if (!th || th.value === "" || th.value == null) return null;
+    if (value == null) return null;
+    const v = Number(value), t = Number(th.value);
+    if (!isFinite(v) || !isFinite(t)) return null;
+    return th.op === "<=" ? v <= t : v >= t;
+  }
+
+  // ../frontend/sim-tab-controls.jsx
   function SimControlBar({
     baseUrl,
     isDemo,
@@ -11720,11 +11796,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       );
     })))));
   }
-  function _simFmtDate(d) {
-    const s = String(d);
-    if (s.length === 8) return s.slice(0, 4) + "-" + s.slice(4, 6) + "-" + s.slice(6, 8);
-    return s;
-  }
   function SimPresetBar({ isDemo, busy, onPreset }) {
     if (isDemo) return null;
     const presets = [
@@ -11744,14 +11815,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       "\u26A1 ",
       p.label
     )), busy && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uCD94\uCC9C \uC870\uD68C \uC911\u2026")));
-  }
-  function _simTileColor(pct) {
-    const v = Number(pct) || 0;
-    const mag = Math.min(1, Math.abs(v) / 12);
-    const a = 0.12 + mag * 0.7;
-    if (v > 0) return `rgba(255,93,108,${a.toFixed(3)})`;
-    if (v < 0) return `rgba(56,140,255,${a.toFixed(3)})`;
-    return "rgba(150,158,170,0.14)";
   }
   function SimMarketMinimap({ stocks, selected, onToggleStock, query, isDemo, date, loading }) {
     const tiles = useMemo_sim(() => {
@@ -11874,6 +11937,349 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       }
     ), /* @__PURE__ */ React.createElement("div", { className: "progress-track" }, /* @__PURE__ */ React.createElement("div", { className: "progress-fill " + (playing ? "running" : ""), style: { width: pct + "%" } }))));
   }
+  function SimEnginePopover({ onClose }) {
+    const ref = useRef_sim(null);
+    useEffect_sim(() => {
+      const onKey = (e) => {
+        if (e.key === "Escape") onClose();
+      };
+      const onDoc = (e) => {
+        if (ref.current && !ref.current.contains(e.target)) onClose();
+      };
+      document.addEventListener("keydown", onKey);
+      document.addEventListener("mousedown", onDoc);
+      if (ref.current) {
+        try {
+          ref.current.focus();
+        } catch (e) {
+        }
+      }
+      return () => {
+        document.removeEventListener("keydown", onKey);
+        document.removeEventListener("mousedown", onDoc);
+      };
+    }, [onClose]);
+    return /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        ref,
+        role: "dialog",
+        "aria-label": "\uC5D4\uC9C4 \uC124\uBA85",
+        tabIndex: -1,
+        onKeyDown: (e) => {
+          if (e.key === "Enter" || e.key === " ") onClose();
+        },
+        style: {
+          position: "absolute",
+          top: "100%",
+          left: 0,
+          marginTop: 6,
+          zIndex: 30,
+          minWidth: 320,
+          maxWidth: 420,
+          padding: "10px 12px",
+          background: "var(--bg-1)",
+          border: "1px solid var(--line-1)",
+          borderRadius: 8,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
+          color: "var(--ink-1)"
+        }
+      },
+      /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, fontWeight: 600, color: "var(--ink-1)", marginBottom: 6 } }, "\uC5D4\uC9C4\uBCC4 \uC5ED\uD560(\uBE44\uB300\uCE6D) \u2014 \uAC19\uC740 \uB370\uC774\uD130, \uB2E4\uB978 \uAC15\uC810"),
+      /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", fontSize: 10.5, color: "var(--ink-1)", borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("tbody", null, _SIM_ENGINE_ROWS.map(([name, desc]) => /* @__PURE__ */ React.createElement("tr", { key: name }, /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 8px 3px 0", color: "var(--teal)", whiteSpace: "nowrap", verticalAlign: "top" } }, name), /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 0", color: "var(--ink-1)" } }, desc))))),
+      /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8, textAlign: "right" } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose, style: { fontSize: 10.5, padding: "2px 10px" } }, "\uB2EB\uAE30"))
+    );
+  }
+  function SimViewBar({
+    indicators,
+    onToggleIndicator,
+    chartMode,
+    onChartMode,
+    splitCols,
+    onSplitCols,
+    splitRows,
+    onSplitRows,
+    colCap,
+    codeCount,
+    multi,
+    engineMode,
+    onEngineMode
+  }) {
+    const indGroups = [
+      ["\uAC00\uACA9", [["ma", "MA"], ["ema", "EMA"], ["vwap", "VWAP"], ["boll", "\uBCFC\uB9B0\uC800"], ["vwapband", "VWAP\uBC34\uB4DC"]]],
+      ["\uBAA8\uBA58\uD140", [["rsi", "RSI"], ["macd", "MACD"]]],
+      ["\uD750\uB984", [["strength", "\uCCB4\uACB0\uAC15\uB3C4"], ["imbalance", "\uD638\uAC00"], ["orderflow", "\uC624\uB354\uD50C\uB85C\uC6B0"], ["volma", "\uAC70\uB798\uB7C9MA"], ["strma", "\uCCB4\uACB0\uAC15\uB3C4MA"]]]
+    ];
+    const [engineInfoOpen, setEngineInfoOpen] = useState_sim(false);
+    const tbtn = (active, label, onClick, key, title) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key,
+        onClick,
+        className: "mono",
+        title,
+        style: {
+          padding: "3px 9px",
+          fontSize: 10.5,
+          borderRadius: 4,
+          border: "1px solid " + (active ? "var(--teal-dim)" : "var(--line-1)"),
+          background: active ? "rgba(76,214,179,0.10)" : "transparent",
+          color: active ? "var(--teal)" : "var(--ink-2)",
+          cursor: "pointer"
+        }
+      },
+      label
+    );
+    const colChoices = [];
+    for (let c = 1; c <= Math.max(1, colCap || 1); c += 1) colChoices.push(c);
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "7px 10px" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, display: "inline-flex", alignItems: "center", gap: 4, position: "relative" } }, "\uC5D4\uC9C4", /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "aria-label": "\uC5D4\uC9C4 \uC124\uBA85",
+        title: "\uC5D4\uC9C4\uBCC4 \uC5ED\uD560 \uC124\uBA85",
+        onClick: () => setEngineInfoOpen((v) => !v),
+        style: {
+          width: 16,
+          height: 16,
+          lineHeight: "14px",
+          padding: 0,
+          borderRadius: "50%",
+          border: "1px solid var(--line-1)",
+          background: "transparent",
+          color: "var(--ink-1)",
+          cursor: "pointer",
+          fontSize: 10,
+          fontWeight: 700
+        }
+      },
+      "\u24D8"
+    ), engineInfoOpen && /* @__PURE__ */ React.createElement(SimEnginePopover, { onClose: () => setEngineInfoOpen(false) })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4 } }, _SIM_ENGINE_MODES.map(([m, lbl]) => tbtn(
+      engineMode === m,
+      lbl,
+      () => onEngineMode(m),
+      "e" + m,
+      m === "live" ? "Canvas \uB77C\uC774\uBE0C \uB80C\uB354(\uD604\uC7AC\uBD09 \uC131\uC7A5\xB7\uD50C\uB798\uC2DC\xB7\uD480 \uC624\uB354\uD50C\uB85C\uC6B0)" : m === "lwc" ? "lightweight-charts(\uC804\uBB38 \uC90C/\uD06C\uB85C\uC2A4\uD5E4\uC5B4\xB7\uCCB4\uACB0\uAC15\uB3C4 \uC624\uBC84\uB808\uC774\uB9CC)" : "\uC21C\uC218 SVG \uD3F4\uBC31(\uD480 \uC624\uB354\uD50C\uB85C\uC6B0)"
+    ))), engineMode === "lwc" && /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: "mono",
+        title: "LWC(lightweight-charts)\uB294 \uCE94\uB4E4 \uAC00\uB3C5\uC131\uC744 \uC704\uD574 \uC77C\uBD80 \uD558\uB2E8 \uC11C\uBE0C\uD328\uC778\uC744 \uC2E3\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4(\uC758\uB3C4\uB41C \uBE44\uB300\uCE6D). \uC804\uCCB4 \uC624\uB354\uD50C\uB85C\uC6B0/\uBAA8\uBA58\uD140\uC740 \uB77C\uC774\uBE0C\xB7SVG \uC5D4\uC9C4\uC5D0\uC11C \uBCF4\uC138\uC694.",
+        style: { fontSize: 9.5, color: "var(--ink-3)" }
+      },
+      "LWC \uBE44\uB300\uCE6D \u2014 RSI\xB7MACD\xB7\uD638\uAC00\uBD88\uADE0\uD615\xB7net-delta \uBBF8\uD45C\uC2DC(\uB77C\uC774\uBE0C\xB7SVG \uC804\uC6A9)"
+    ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, marginLeft: 6 } }, "\uC9C0\uD45C"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" } }, indGroups.map(([grp, defs]) => /* @__PURE__ */ React.createElement("div", { key: grp, style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, grp), defs.map(([k, lbl]) => tbtn(!!indicators[k], lbl, () => onToggleIndicator(k), k))))), multi && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, marginLeft: 6 } }, "\uBCF4\uAE30"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4 } }, _SIM_CHART_MODES.map(([m, lbl]) => tbtn(
+      chartMode === m,
+      lbl,
+      () => onChartMode(m),
+      m,
+      m === "overlay" ? "\uC815\uADDC\uD654 \uD55C \uCC28\uD2B8 \uACB9\uCE68" : "\uC885\uBAA9\uBCC4 \uBD84\uD560 \uADF8\uB9AC\uB4DC"
+    ))), chartMode === "split" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, "\uC5F4"), colChoices.map((c) => tbtn(splitCols === c, String(c), () => onSplitCols(c), "c" + c, c + "\uC5F4\uB85C \uBD84\uD560"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, "\uD589"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "mono",
+        title: "\uC790\uB3D9 \uD589\uC218(\uC885\uBAA9\uC218/\uC5F4)",
+        onClick: () => onSplitRows(0),
+        style: {
+          padding: "3px 9px",
+          fontSize: 10.5,
+          borderRadius: 4,
+          border: "1px solid " + ((splitRows || 0) === 0 ? "var(--teal-dim)" : "var(--line-1)"),
+          background: (splitRows || 0) === 0 ? "rgba(76,214,179,0.10)" : "transparent",
+          color: (splitRows || 0) === 0 ? "var(--teal)" : "var(--ink-2)",
+          cursor: "pointer"
+        }
+      },
+      "\uC790\uB3D9"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "mono",
+        "aria-label": "\uD589 \uC904\uC774\uAE30",
+        title: "\uBCF4\uC774\uB294 \uD589 \uC904\uC774\uAE30",
+        onClick: () => onSplitRows(Math.max(1, (splitRows || 0) - 1)),
+        style: { padding: "3px 8px", fontSize: 11, borderRadius: 4, border: "1px solid var(--line-1)", background: "transparent", color: "var(--ink-2)", cursor: "pointer" }
+      },
+      "\u2212"
+    ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-1)", minWidth: 18, textAlign: "center" } }, (splitRows || 0) === 0 ? "\u2014" : splitRows), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "mono",
+        "aria-label": "\uD589 \uB298\uB9AC\uAE30",
+        title: "\uBCF4\uC774\uB294 \uD589 \uB298\uB9AC\uAE30",
+        onClick: () => onSplitRows(Math.min(_SIM_MAX_CODES, (splitRows || 0) + 1)),
+        style: { padding: "3px 8px", fontSize: 11, borderRadius: 4, border: "1px solid var(--line-1)", background: "transparent", color: "var(--ink-2)", cursor: "pointer" }
+      },
+      "\uFF0B"
+    ))))));
+  }
+
+  // ../frontend/sim-tab-panels.jsx
+  function SimChartByEngine({ engineMode, ...props }) {
+    const Live = window.SimLiveChart;
+    const Lwc = window.SimCandleChartLWC;
+    const Svg = window.SimCandleChartSVG;
+    const Auto = window.SimCandleChart;
+    if (engineMode === "live" && Live) return /* @__PURE__ */ React.createElement(Live, { ...props });
+    if (engineMode === "svg" && Svg) return /* @__PURE__ */ React.createElement(Svg, { ...props });
+    if (engineMode === "lwc" && Lwc) return /* @__PURE__ */ React.createElement(Lwc, { ...props });
+    return Auto ? /* @__PURE__ */ React.createElement(Auto, { ...props }) : null;
+  }
+  function SimIndicatorCell({ value, digits, prev, className }) {
+    const dir = prev == null || value == null || value === prev ? "" : value > prev ? "sim-flash-up" : "sim-flash-down";
+    return /* @__PURE__ */ React.createElement("td", { key: value + ":" + dir, className: (className || "") + " " + dir }, _simFmtNum(value, digits));
+  }
+  function SimIndicatorTable({ codes, barsByCode, nameByCode }) {
+    const prevRef = useRef_sim({});
+    const rows = (codes || []).map((code) => {
+      const arr = barsByCode[code] || [];
+      const last = arr.length ? arr[arr.length - 1] : null;
+      return { code, name: nameByCode[code] || code, bar: last };
+    });
+    const prev = prevRef.current;
+    useEffect_sim(() => {
+      const next = {};
+      rows.forEach((r) => {
+        if (r.bar) next[r.code] = r.bar;
+      });
+      prevRef.current = next;
+    });
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uC9C0\uD45C \uB77C\uC774\uBE0C"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uD604\uC7AC \uC2DC\uAC01 \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { overflowX: "auto", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("table", { className: "sim-live-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC885\uBAA9"), /* @__PURE__ */ React.createElement("th", null, "\uD604\uC7AC\uAC00"), /* @__PURE__ */ React.createElement("th", null, "\uB4F1\uB77D%"), /* @__PURE__ */ React.createElement("th", null, "\uAC15\uB3C4"), /* @__PURE__ */ React.createElement("th", null, "VWAP"), /* @__PURE__ */ React.createElement("th", null, "MA5"), /* @__PURE__ */ React.createElement("th", null, "MA20"), /* @__PURE__ */ React.createElement("th", null, "MA60"), /* @__PURE__ */ React.createElement("th", null, "\uD638\uAC00\uBD88\uADE0\uD615"))), /* @__PURE__ */ React.createElement("tbody", null, rows.map(({ code, name, bar }) => {
+      const p = prev[code] || {};
+      if (!bar) {
+        return /* @__PURE__ */ React.createElement("tr", { key: code }, /* @__PURE__ */ React.createElement("td", { title: name }, code), /* @__PURE__ */ React.createElement("td", { colSpan: 8, style: { color: "var(--ink-3)" } }, "\uB300\uAE30\u2026"));
+      }
+      return /* @__PURE__ */ React.createElement("tr", { key: code }, /* @__PURE__ */ React.createElement("td", { title: name, style: { color: "var(--ink-1)" } }, code), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.c, digits: 0, prev: p.c }), /* @__PURE__ */ React.createElement("td", { className: bar.change > 0 ? "num-pos" : bar.change < 0 ? "num-neg" : "" }, bar.change > 0 ? "+" : "", (bar.change || 0).toFixed(2)), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.strength, digits: 0, prev: p.strength }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.vwap, digits: 0, prev: p.vwap }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.ma5, digits: 0, prev: p.ma5 }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.ma20, digits: 0, prev: p.ma20 }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.ma60, digits: 0, prev: p.ma60 }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.imbalance, digits: 2, prev: p.imbalance }));
+    })))));
+  }
+  function SimLearningPanel({ autoPause, onToggleAutoPause, signals, curT, highlightSig, onSeek }) {
+    const rows = signals || [];
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD559\uC2B5 \uBAA8\uB4DC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 10, padding: "10px" } }, /* @__PURE__ */ React.createElement("label", { style: { display: "flex", alignItems: "center", gap: 8, cursor: "pointer" } }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "checkbox",
+        checked: autoPause,
+        onChange: onToggleAutoPause,
+        style: { accentColor: "var(--violet)" }
+      }
+    ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11.5, color: "var(--ink-1)" } }, "\uC2E0\uD638 \uC790\uB3D9 \uC77C\uC2DC\uC815\uC9C0"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)", marginLeft: "auto" } }, "\uB9E4\uC218 \uC2DC\uAC01 \uB3C4\uB2EC \uC2DC \uC815\uC9C0")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 10, color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "Space"), " \uC7AC\uC0DD/\uC815\uC9C0", /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "\u2190"), /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "\u2192"), " \uBC30\uC18D", /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "Esc"), " \uC815\uC9C0"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 3, maxHeight: 200, overflowY: "auto" } }, rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { fontSize: 10.5 } }, "\uB9E4\uB9E4 \uC2E0\uD638\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.") : rows.map((s, i) => {
+      const key = s.code + "@" + s.buy_hms;
+      const reached = curT != null && s.buy_hms <= curT;
+      const isHi = highlightSig === key;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: i,
+          className: "sim-bookmark " + (reached ? "reached" : "pending"),
+          onClick: () => onSeek(s.buy_hms),
+          style: isHi ? { borderColor: "var(--violet)", background: "rgba(124,108,240,0.12)" } : null
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--teal)", flexShrink: 0 } }, "\u25B2", window._simTimeLabel(s.buy_hms)),
+        /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)", flexShrink: 0 } }, s.code),
+        /* @__PURE__ */ React.createElement(
+          "span",
+          {
+            className: "mono " + (s.profit_pct >= 0 ? "num-pos" : "num-neg"),
+            style: { fontSize: 10.5, marginLeft: "auto", flexShrink: 0 }
+          },
+          s.profit_pct >= 0 ? "+" : "",
+          (s.profit_pct || 0).toFixed(1),
+          "%"
+        )
+      );
+    }))));
+  }
+  function SimVariableWatch({ codes, barsByCode, nameByCode }) {
+    const [thresholds, setThresholds] = useState_sim(_loadWatchThresholds);
+    const [watchCode, setWatchCode] = useState_sim(codes && codes[0] || "");
+    const prevMetRef = useRef_sim({});
+    useEffect_sim(() => {
+      if (!codes || codes.length === 0) return;
+      if (!codes.includes(watchCode)) setWatchCode(codes[0]);
+    }, [codes.join(",")]);
+    const setTh = useCallback_sim((key, patch) => {
+      setThresholds((prev) => {
+        const cur = prev[key] || { op: ">=", value: "" };
+        const next = { ...prev, [key]: { ...cur, ...patch } };
+        _saveWatchThresholds(next);
+        return next;
+      });
+    }, []);
+    const clearAll = useCallback_sim(() => {
+      setThresholds({});
+      _saveWatchThresholds({});
+      prevMetRef.current = {};
+    }, []);
+    const arr = barsByCode[watchCode] || [];
+    const bar = arr.length ? arr[arr.length - 1] : null;
+    useEffect_sim(() => {
+      const snap = {};
+      _SIM_WATCH_VARS.forEach((v) => {
+        snap[v.key] = bar ? _evalWatch(bar[v.key], thresholds[v.key]) : null;
+      });
+      prevMetRef.current = snap;
+    });
+    const prevMet = prevMetRef.current;
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uBCC0\uC218 \uC6CC\uCE58"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, codes && codes.length > 1 && /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        className: "select",
+        value: watchCode,
+        onChange: (e) => setWatchCode(e.target.value),
+        style: { fontSize: 10.5, padding: "2px 6px", height: "auto" }
+      },
+      codes.map((c) => /* @__PURE__ */ React.createElement("option", { key: c, value: c }, nameByCode[c] || c))
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: clearAll, style: { fontSize: 10, padding: "2px 7px" } }, "\uC784\uACC4 \uCD08\uAE30\uD654"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { padding: "6px 8px" } }, !bar ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { fontSize: 10.5 } }, "\uC7AC\uC0DD\uC744 \uC2DC\uC791\uD558\uBA74 \uD604\uC7AC \uAC12\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("table", { className: "sim-live-table", style: { width: "100%" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uBCC0\uC218"), /* @__PURE__ */ React.createElement("th", null, "\uD604\uC7AC\uAC12"), /* @__PURE__ */ React.createElement("th", { style: { width: 44 } }, "\uC870\uAC74"), /* @__PURE__ */ React.createElement("th", { style: { width: 76 } }, "\uC784\uACC4\uAC12"))), /* @__PURE__ */ React.createElement("tbody", null, _SIM_WATCH_VARS.map((v) => {
+      const value = bar[v.key];
+      const th = thresholds[v.key] || { op: ">=", value: "" };
+      const met = _evalWatch(value, th);
+      const was = prevMet[v.key];
+      const rowBg = met == null ? "transparent" : met ? "rgba(76,214,179,0.10)" : "rgba(255,93,108,0.10)";
+      const flash = met === true && was !== true ? "sim-flash-up" : "";
+      const valTxt = value == null ? "\u2014" : _simFmtNum(value, v.digits);
+      return /* @__PURE__ */ React.createElement("tr", { key: v.key, className: flash, style: { background: rowBg } }, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "left", color: "var(--ink-1)" } }, v.label), /* @__PURE__ */ React.createElement("td", { className: "mono", style: {
+        color: met == null ? "var(--ink-1)" : met ? "var(--teal)" : "var(--red)"
+      } }, valTxt), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          value: th.op,
+          onChange: (e) => setTh(v.key, { op: e.target.value }),
+          className: "mono",
+          style: {
+            fontSize: 11,
+            padding: "1px 2px",
+            background: "var(--bg-0)",
+            color: "var(--ink-1)",
+            border: "1px solid var(--line-1)",
+            borderRadius: 4
+          }
+        },
+        /* @__PURE__ */ React.createElement("option", { value: ">=" }, "\u2265"),
+        /* @__PURE__ */ React.createElement("option", { value: "<=" }, "\u2264")
+      )), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "number",
+          value: th.value,
+          onChange: (e) => setTh(v.key, { value: e.target.value }),
+          placeholder: "\u2014",
+          className: "mono",
+          style: {
+            width: "100%",
+            fontSize: 11,
+            padding: "2px 4px",
+            textAlign: "right",
+            background: "var(--bg-0)",
+            color: "var(--ink-1)",
+            border: "1px solid var(--line-1)",
+            borderRadius: 4
+          }
+        }
+      )));
+    }))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9.5, color: "var(--ink-3)", marginTop: 6, lineHeight: 1.5 } }, "\uC784\uACC4\uB294 \uD604\uC7AC \uD504\uB808\uC784 \uAC12\uACFC\uC758 \uB2E8\uC21C \uBE44\uAD50\uB2E4. \uC870\uAC74\uC2DD \uC5D4\uC9C4 \uC815\uD569 \uB9E4\uB9E4 \uC2E0\uD638\uB294 \uC704 ", /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)" } }, "\uB9E4\uC218/\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), " \uC120\uD0DD \uC2DC \uCC28\uD2B8\uC5D0 \uC624\uBC84\uB808\uC774\uB41C\uB2E4.")));
+  }
+
+  // ../frontend/sim-tab-root.jsx
   function SimulationTab({ baseUrl, wsStatus }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [health, setHealth] = useState_sim(null);
@@ -12413,406 +12819,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       }))
     ))));
   }
-  function SimChartByEngine({ engineMode, ...props }) {
-    const Live = window.SimLiveChart;
-    const Lwc = window.SimCandleChartLWC;
-    const Svg = window.SimCandleChartSVG;
-    const Auto = window.SimCandleChart;
-    if (engineMode === "live" && Live) return /* @__PURE__ */ React.createElement(Live, { ...props });
-    if (engineMode === "svg" && Svg) return /* @__PURE__ */ React.createElement(Svg, { ...props });
-    if (engineMode === "lwc" && Lwc) return /* @__PURE__ */ React.createElement(Lwc, { ...props });
-    return Auto ? /* @__PURE__ */ React.createElement(Auto, { ...props }) : null;
-  }
-  var _SIM_VIEWBAR_LABEL = {
-    fontSize: 11,
-    color: "var(--ink-1)",
-    fontWeight: 600,
-    letterSpacing: ".3px"
-  };
-  var _SIM_ENGINE_ROWS = [
-    ["\uB77C\uC774\uBE0C", "Canvas\xB7\uAE30\uBCF8\xB7\uCD5C\uACBD\uB7C9 \xB7 \uD480 \uC624\uB354\uD50C\uB85C\uC6B0(\uCCB4\uACB0\uAC15\uB3C4\xB7\uD638\uAC00\xB7net-delta)"],
-    ["SVG", "\uBB34\uC758\uC874 \uD3F4\uBC31 \xB7 \uD480 \uC624\uB354\uD50C\uB85C\uC6B0(\uCCB4\uACB0\uAC15\uB3C4\xB7\uD638\uAC00\xB7net-delta)"],
-    ["LWC", "\uC804\uBB38 \uC90C/\uD06C\uB85C\uC2A4\uD5E4\uC5B4 \xB7 \uCCB4\uACB0\uAC15\uB3C4 \uC624\uBC84\uB808\uC774\uB9CC"]
-  ];
-  function SimEnginePopover({ onClose }) {
-    const ref = useRef_sim(null);
-    useEffect_sim(() => {
-      const onKey = (e) => {
-        if (e.key === "Escape") onClose();
-      };
-      const onDoc = (e) => {
-        if (ref.current && !ref.current.contains(e.target)) onClose();
-      };
-      document.addEventListener("keydown", onKey);
-      document.addEventListener("mousedown", onDoc);
-      if (ref.current) {
-        try {
-          ref.current.focus();
-        } catch (e) {
-        }
-      }
-      return () => {
-        document.removeEventListener("keydown", onKey);
-        document.removeEventListener("mousedown", onDoc);
-      };
-    }, [onClose]);
-    return /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        ref,
-        role: "dialog",
-        "aria-label": "\uC5D4\uC9C4 \uC124\uBA85",
-        tabIndex: -1,
-        onKeyDown: (e) => {
-          if (e.key === "Enter" || e.key === " ") onClose();
-        },
-        style: {
-          position: "absolute",
-          top: "100%",
-          left: 0,
-          marginTop: 6,
-          zIndex: 30,
-          minWidth: 320,
-          maxWidth: 420,
-          padding: "10px 12px",
-          background: "var(--bg-1)",
-          border: "1px solid var(--line-1)",
-          borderRadius: 8,
-          boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
-          color: "var(--ink-1)"
-        }
-      },
-      /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, fontWeight: 600, color: "var(--ink-1)", marginBottom: 6 } }, "\uC5D4\uC9C4\uBCC4 \uC5ED\uD560(\uBE44\uB300\uCE6D) \u2014 \uAC19\uC740 \uB370\uC774\uD130, \uB2E4\uB978 \uAC15\uC810"),
-      /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", fontSize: 10.5, color: "var(--ink-1)", borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("tbody", null, _SIM_ENGINE_ROWS.map(([name, desc]) => /* @__PURE__ */ React.createElement("tr", { key: name }, /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 8px 3px 0", color: "var(--teal)", whiteSpace: "nowrap", verticalAlign: "top" } }, name), /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 0", color: "var(--ink-1)" } }, desc))))),
-      /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8, textAlign: "right" } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose, style: { fontSize: 10.5, padding: "2px 10px" } }, "\uB2EB\uAE30"))
-    );
-  }
-  function SimViewBar({
-    indicators,
-    onToggleIndicator,
-    chartMode,
-    onChartMode,
-    splitCols,
-    onSplitCols,
-    splitRows,
-    onSplitRows,
-    colCap,
-    codeCount,
-    multi,
-    engineMode,
-    onEngineMode
-  }) {
-    const indGroups = [
-      ["\uAC00\uACA9", [["ma", "MA"], ["ema", "EMA"], ["vwap", "VWAP"], ["boll", "\uBCFC\uB9B0\uC800"], ["vwapband", "VWAP\uBC34\uB4DC"]]],
-      ["\uBAA8\uBA58\uD140", [["rsi", "RSI"], ["macd", "MACD"]]],
-      ["\uD750\uB984", [["strength", "\uCCB4\uACB0\uAC15\uB3C4"], ["imbalance", "\uD638\uAC00"], ["orderflow", "\uC624\uB354\uD50C\uB85C\uC6B0"], ["volma", "\uAC70\uB798\uB7C9MA"], ["strma", "\uCCB4\uACB0\uAC15\uB3C4MA"]]]
-    ];
-    const [engineInfoOpen, setEngineInfoOpen] = useState_sim(false);
-    const tbtn = (active, label, onClick, key, title) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key,
-        onClick,
-        className: "mono",
-        title,
-        style: {
-          padding: "3px 9px",
-          fontSize: 10.5,
-          borderRadius: 4,
-          border: "1px solid " + (active ? "var(--teal-dim)" : "var(--line-1)"),
-          background: active ? "rgba(76,214,179,0.10)" : "transparent",
-          color: active ? "var(--teal)" : "var(--ink-2)",
-          cursor: "pointer"
-        }
-      },
-      label
-    );
-    const colChoices = [];
-    for (let c = 1; c <= Math.max(1, colCap || 1); c += 1) colChoices.push(c);
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "7px 10px" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, display: "inline-flex", alignItems: "center", gap: 4, position: "relative" } }, "\uC5D4\uC9C4", /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "aria-label": "\uC5D4\uC9C4 \uC124\uBA85",
-        title: "\uC5D4\uC9C4\uBCC4 \uC5ED\uD560 \uC124\uBA85",
-        onClick: () => setEngineInfoOpen((v) => !v),
-        style: {
-          width: 16,
-          height: 16,
-          lineHeight: "14px",
-          padding: 0,
-          borderRadius: "50%",
-          border: "1px solid var(--line-1)",
-          background: "transparent",
-          color: "var(--ink-1)",
-          cursor: "pointer",
-          fontSize: 10,
-          fontWeight: 700
-        }
-      },
-      "\u24D8"
-    ), engineInfoOpen && /* @__PURE__ */ React.createElement(SimEnginePopover, { onClose: () => setEngineInfoOpen(false) })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4 } }, _SIM_ENGINE_MODES.map(([m, lbl]) => tbtn(
-      engineMode === m,
-      lbl,
-      () => onEngineMode(m),
-      "e" + m,
-      m === "live" ? "Canvas \uB77C\uC774\uBE0C \uB80C\uB354(\uD604\uC7AC\uBD09 \uC131\uC7A5\xB7\uD50C\uB798\uC2DC\xB7\uD480 \uC624\uB354\uD50C\uB85C\uC6B0)" : m === "lwc" ? "lightweight-charts(\uC804\uBB38 \uC90C/\uD06C\uB85C\uC2A4\uD5E4\uC5B4\xB7\uCCB4\uACB0\uAC15\uB3C4 \uC624\uBC84\uB808\uC774\uB9CC)" : "\uC21C\uC218 SVG \uD3F4\uBC31(\uD480 \uC624\uB354\uD50C\uB85C\uC6B0)"
-    ))), engineMode === "lwc" && /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: "mono",
-        title: "LWC(lightweight-charts)\uB294 \uCE94\uB4E4 \uAC00\uB3C5\uC131\uC744 \uC704\uD574 \uC77C\uBD80 \uD558\uB2E8 \uC11C\uBE0C\uD328\uC778\uC744 \uC2E3\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4(\uC758\uB3C4\uB41C \uBE44\uB300\uCE6D). \uC804\uCCB4 \uC624\uB354\uD50C\uB85C\uC6B0/\uBAA8\uBA58\uD140\uC740 \uB77C\uC774\uBE0C\xB7SVG \uC5D4\uC9C4\uC5D0\uC11C \uBCF4\uC138\uC694.",
-        style: { fontSize: 9.5, color: "var(--ink-3)" }
-      },
-      "LWC \uBE44\uB300\uCE6D \u2014 RSI\xB7MACD\xB7\uD638\uAC00\uBD88\uADE0\uD615\xB7net-delta \uBBF8\uD45C\uC2DC(\uB77C\uC774\uBE0C\xB7SVG \uC804\uC6A9)"
-    ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, marginLeft: 6 } }, "\uC9C0\uD45C"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" } }, indGroups.map(([grp, defs]) => /* @__PURE__ */ React.createElement("div", { key: grp, style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, grp), defs.map(([k, lbl]) => tbtn(!!indicators[k], lbl, () => onToggleIndicator(k), k))))), multi && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, marginLeft: 6 } }, "\uBCF4\uAE30"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4 } }, _SIM_CHART_MODES.map(([m, lbl]) => tbtn(
-      chartMode === m,
-      lbl,
-      () => onChartMode(m),
-      m,
-      m === "overlay" ? "\uC815\uADDC\uD654 \uD55C \uCC28\uD2B8 \uACB9\uCE68" : "\uC885\uBAA9\uBCC4 \uBD84\uD560 \uADF8\uB9AC\uB4DC"
-    ))), chartMode === "split" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, "\uC5F4"), colChoices.map((c) => tbtn(splitCols === c, String(c), () => onSplitCols(c), "c" + c, c + "\uC5F4\uB85C \uBD84\uD560"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, "\uD589"), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "mono",
-        title: "\uC790\uB3D9 \uD589\uC218(\uC885\uBAA9\uC218/\uC5F4)",
-        onClick: () => onSplitRows(0),
-        style: {
-          padding: "3px 9px",
-          fontSize: 10.5,
-          borderRadius: 4,
-          border: "1px solid " + ((splitRows || 0) === 0 ? "var(--teal-dim)" : "var(--line-1)"),
-          background: (splitRows || 0) === 0 ? "rgba(76,214,179,0.10)" : "transparent",
-          color: (splitRows || 0) === 0 ? "var(--teal)" : "var(--ink-2)",
-          cursor: "pointer"
-        }
-      },
-      "\uC790\uB3D9"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "mono",
-        "aria-label": "\uD589 \uC904\uC774\uAE30",
-        title: "\uBCF4\uC774\uB294 \uD589 \uC904\uC774\uAE30",
-        onClick: () => onSplitRows(Math.max(1, (splitRows || 0) - 1)),
-        style: { padding: "3px 8px", fontSize: 11, borderRadius: 4, border: "1px solid var(--line-1)", background: "transparent", color: "var(--ink-2)", cursor: "pointer" }
-      },
-      "\u2212"
-    ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-1)", minWidth: 18, textAlign: "center" } }, (splitRows || 0) === 0 ? "\u2014" : splitRows), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "mono",
-        "aria-label": "\uD589 \uB298\uB9AC\uAE30",
-        title: "\uBCF4\uC774\uB294 \uD589 \uB298\uB9AC\uAE30",
-        onClick: () => onSplitRows(Math.min(_SIM_MAX_CODES, (splitRows || 0) + 1)),
-        style: { padding: "3px 8px", fontSize: 11, borderRadius: 4, border: "1px solid var(--line-1)", background: "transparent", color: "var(--ink-2)", cursor: "pointer" }
-      },
-      "\uFF0B"
-    ))))));
-  }
-  function _flattenSignals(signals, codes) {
-    const out = [];
-    (codes || []).forEach((code) => {
-      (signals[code] || []).forEach((s) => out.push({ ...s, code }));
-    });
-    out.sort((a, b) => a.buy_hms - b.buy_hms);
-    return out;
-  }
-  function _simFmtNum(v, digits) {
-    if (v == null) return "\u2014";
-    const n = Number(v);
-    if (!isFinite(n)) return "\u2014";
-    return n.toLocaleString("ko-KR", { maximumFractionDigits: digits == null ? 0 : digits });
-  }
-  function SimIndicatorCell({ value, digits, prev, className }) {
-    const dir = prev == null || value == null || value === prev ? "" : value > prev ? "sim-flash-up" : "sim-flash-down";
-    return /* @__PURE__ */ React.createElement("td", { key: value + ":" + dir, className: (className || "") + " " + dir }, _simFmtNum(value, digits));
-  }
-  function SimIndicatorTable({ codes, barsByCode, nameByCode }) {
-    const prevRef = useRef_sim({});
-    const rows = (codes || []).map((code) => {
-      const arr = barsByCode[code] || [];
-      const last = arr.length ? arr[arr.length - 1] : null;
-      return { code, name: nameByCode[code] || code, bar: last };
-    });
-    const prev = prevRef.current;
-    useEffect_sim(() => {
-      const next = {};
-      rows.forEach((r) => {
-        if (r.bar) next[r.code] = r.bar;
-      });
-      prevRef.current = next;
-    });
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uC9C0\uD45C \uB77C\uC774\uBE0C"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uD604\uC7AC \uC2DC\uAC01 \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { overflowX: "auto", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("table", { className: "sim-live-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC885\uBAA9"), /* @__PURE__ */ React.createElement("th", null, "\uD604\uC7AC\uAC00"), /* @__PURE__ */ React.createElement("th", null, "\uB4F1\uB77D%"), /* @__PURE__ */ React.createElement("th", null, "\uAC15\uB3C4"), /* @__PURE__ */ React.createElement("th", null, "VWAP"), /* @__PURE__ */ React.createElement("th", null, "MA5"), /* @__PURE__ */ React.createElement("th", null, "MA20"), /* @__PURE__ */ React.createElement("th", null, "MA60"), /* @__PURE__ */ React.createElement("th", null, "\uD638\uAC00\uBD88\uADE0\uD615"))), /* @__PURE__ */ React.createElement("tbody", null, rows.map(({ code, name, bar }) => {
-      const p = prev[code] || {};
-      if (!bar) {
-        return /* @__PURE__ */ React.createElement("tr", { key: code }, /* @__PURE__ */ React.createElement("td", { title: name }, code), /* @__PURE__ */ React.createElement("td", { colSpan: 8, style: { color: "var(--ink-3)" } }, "\uB300\uAE30\u2026"));
-      }
-      return /* @__PURE__ */ React.createElement("tr", { key: code }, /* @__PURE__ */ React.createElement("td", { title: name, style: { color: "var(--ink-1)" } }, code), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.c, digits: 0, prev: p.c }), /* @__PURE__ */ React.createElement("td", { className: bar.change > 0 ? "num-pos" : bar.change < 0 ? "num-neg" : "" }, bar.change > 0 ? "+" : "", (bar.change || 0).toFixed(2)), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.strength, digits: 0, prev: p.strength }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.vwap, digits: 0, prev: p.vwap }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.ma5, digits: 0, prev: p.ma5 }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.ma20, digits: 0, prev: p.ma20 }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.ma60, digits: 0, prev: p.ma60 }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.imbalance, digits: 2, prev: p.imbalance }));
-    })))));
-  }
-  function SimLearningPanel({ autoPause, onToggleAutoPause, signals, curT, highlightSig, onSeek }) {
-    const rows = signals || [];
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD559\uC2B5 \uBAA8\uB4DC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 10, padding: "10px" } }, /* @__PURE__ */ React.createElement("label", { style: { display: "flex", alignItems: "center", gap: 8, cursor: "pointer" } }, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "checkbox",
-        checked: autoPause,
-        onChange: onToggleAutoPause,
-        style: { accentColor: "var(--violet)" }
-      }
-    ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11.5, color: "var(--ink-1)" } }, "\uC2E0\uD638 \uC790\uB3D9 \uC77C\uC2DC\uC815\uC9C0"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)", marginLeft: "auto" } }, "\uB9E4\uC218 \uC2DC\uAC01 \uB3C4\uB2EC \uC2DC \uC815\uC9C0")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 10, color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "Space"), " \uC7AC\uC0DD/\uC815\uC9C0", /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "\u2190"), /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "\u2192"), " \uBC30\uC18D", /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "Esc"), " \uC815\uC9C0"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 3, maxHeight: 200, overflowY: "auto" } }, rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { fontSize: 10.5 } }, "\uB9E4\uB9E4 \uC2E0\uD638\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.") : rows.map((s, i) => {
-      const key = s.code + "@" + s.buy_hms;
-      const reached = curT != null && s.buy_hms <= curT;
-      const isHi = highlightSig === key;
-      return /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          key: i,
-          className: "sim-bookmark " + (reached ? "reached" : "pending"),
-          onClick: () => onSeek(s.buy_hms),
-          style: isHi ? { borderColor: "var(--violet)", background: "rgba(124,108,240,0.12)" } : null
-        },
-        /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--teal)", flexShrink: 0 } }, "\u25B2", window._simTimeLabel(s.buy_hms)),
-        /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)", flexShrink: 0 } }, s.code),
-        /* @__PURE__ */ React.createElement(
-          "span",
-          {
-            className: "mono " + (s.profit_pct >= 0 ? "num-pos" : "num-neg"),
-            style: { fontSize: 10.5, marginLeft: "auto", flexShrink: 0 }
-          },
-          s.profit_pct >= 0 ? "+" : "",
-          (s.profit_pct || 0).toFixed(1),
-          "%"
-        )
-      );
-    }))));
-  }
-  var _SIM_WATCH_VARS = [
-    { key: "c", label: "\uD604\uC7AC\uAC00", digits: 0 },
-    { key: "change", label: "\uB4F1\uB77D\uC728", digits: 2 },
-    { key: "strength", label: "\uCCB4\uACB0\uAC15\uB3C4", digits: 0 },
-    { key: "vwap", label: "VWAP", digits: 0 },
-    { key: "ma5", label: "MA5", digits: 0 },
-    { key: "ma20", label: "MA20", digits: 0 },
-    { key: "ma60", label: "MA60", digits: 0 },
-    { key: "net_qty", label: "\uC21C\uB9E4\uC218\uC218\uB7C9", digits: 0 },
-    { key: "imbalance", label: "\uD638\uAC00\uBD88\uADE0\uD615", digits: 2 },
-    { key: "buy_rest", label: "\uB9E4\uC218\uCD1D\uC794\uB7C9", digits: 0 },
-    { key: "sell_rest", label: "\uB9E4\uB3C4\uCD1D\uC794\uB7C9", digits: 0 }
-  ];
-  var _SIM_WATCH_LS_KEY = "stom.sim.watch.v1";
-  function _loadWatchThresholds() {
-    try {
-      const raw = window.localStorage.getItem(_SIM_WATCH_LS_KEY);
-      const obj = raw ? JSON.parse(raw) : null;
-      return obj && typeof obj === "object" ? obj : {};
-    } catch (e) {
-      return {};
-    }
-  }
-  function _saveWatchThresholds(map) {
-    try {
-      window.localStorage.setItem(_SIM_WATCH_LS_KEY, JSON.stringify(map || {}));
-    } catch (e) {
-    }
-  }
-  function _evalWatch(value, th) {
-    if (!th || th.value === "" || th.value == null) return null;
-    if (value == null) return null;
-    const v = Number(value), t = Number(th.value);
-    if (!isFinite(v) || !isFinite(t)) return null;
-    return th.op === "<=" ? v <= t : v >= t;
-  }
-  function SimVariableWatch({ codes, barsByCode, nameByCode }) {
-    const [thresholds, setThresholds] = useState_sim(_loadWatchThresholds);
-    const [watchCode, setWatchCode] = useState_sim(codes && codes[0] || "");
-    const prevMetRef = useRef_sim({});
-    useEffect_sim(() => {
-      if (!codes || codes.length === 0) return;
-      if (!codes.includes(watchCode)) setWatchCode(codes[0]);
-    }, [codes.join(",")]);
-    const setTh = useCallback_sim((key, patch) => {
-      setThresholds((prev) => {
-        const cur = prev[key] || { op: ">=", value: "" };
-        const next = { ...prev, [key]: { ...cur, ...patch } };
-        _saveWatchThresholds(next);
-        return next;
-      });
-    }, []);
-    const clearAll = useCallback_sim(() => {
-      setThresholds({});
-      _saveWatchThresholds({});
-      prevMetRef.current = {};
-    }, []);
-    const arr = barsByCode[watchCode] || [];
-    const bar = arr.length ? arr[arr.length - 1] : null;
-    useEffect_sim(() => {
-      const snap = {};
-      _SIM_WATCH_VARS.forEach((v) => {
-        snap[v.key] = bar ? _evalWatch(bar[v.key], thresholds[v.key]) : null;
-      });
-      prevMetRef.current = snap;
-    });
-    const prevMet = prevMetRef.current;
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uBCC0\uC218 \uC6CC\uCE58"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, codes && codes.length > 1 && /* @__PURE__ */ React.createElement(
-      "select",
-      {
-        className: "select",
-        value: watchCode,
-        onChange: (e) => setWatchCode(e.target.value),
-        style: { fontSize: 10.5, padding: "2px 6px", height: "auto" }
-      },
-      codes.map((c) => /* @__PURE__ */ React.createElement("option", { key: c, value: c }, nameByCode[c] || c))
-    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: clearAll, style: { fontSize: 10, padding: "2px 7px" } }, "\uC784\uACC4 \uCD08\uAE30\uD654"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { padding: "6px 8px" } }, !bar ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { fontSize: 10.5 } }, "\uC7AC\uC0DD\uC744 \uC2DC\uC791\uD558\uBA74 \uD604\uC7AC \uAC12\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("table", { className: "sim-live-table", style: { width: "100%" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uBCC0\uC218"), /* @__PURE__ */ React.createElement("th", null, "\uD604\uC7AC\uAC12"), /* @__PURE__ */ React.createElement("th", { style: { width: 44 } }, "\uC870\uAC74"), /* @__PURE__ */ React.createElement("th", { style: { width: 76 } }, "\uC784\uACC4\uAC12"))), /* @__PURE__ */ React.createElement("tbody", null, _SIM_WATCH_VARS.map((v) => {
-      const value = bar[v.key];
-      const th = thresholds[v.key] || { op: ">=", value: "" };
-      const met = _evalWatch(value, th);
-      const was = prevMet[v.key];
-      const rowBg = met == null ? "transparent" : met ? "rgba(76,214,179,0.10)" : "rgba(255,93,108,0.10)";
-      const flash = met === true && was !== true ? "sim-flash-up" : "";
-      const valTxt = value == null ? "\u2014" : _simFmtNum(value, v.digits);
-      return /* @__PURE__ */ React.createElement("tr", { key: v.key, className: flash, style: { background: rowBg } }, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "left", color: "var(--ink-1)" } }, v.label), /* @__PURE__ */ React.createElement("td", { className: "mono", style: {
-        color: met == null ? "var(--ink-1)" : met ? "var(--teal)" : "var(--red)"
-      } }, valTxt), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement(
-        "select",
-        {
-          value: th.op,
-          onChange: (e) => setTh(v.key, { op: e.target.value }),
-          className: "mono",
-          style: {
-            fontSize: 11,
-            padding: "1px 2px",
-            background: "var(--bg-0)",
-            color: "var(--ink-1)",
-            border: "1px solid var(--line-1)",
-            borderRadius: 4
-          }
-        },
-        /* @__PURE__ */ React.createElement("option", { value: ">=" }, "\u2265"),
-        /* @__PURE__ */ React.createElement("option", { value: "<=" }, "\u2264")
-      )), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          type: "number",
-          value: th.value,
-          onChange: (e) => setTh(v.key, { value: e.target.value }),
-          placeholder: "\u2014",
-          className: "mono",
-          style: {
-            width: "100%",
-            fontSize: 11,
-            padding: "2px 4px",
-            textAlign: "right",
-            background: "var(--bg-0)",
-            color: "var(--ink-1)",
-            border: "1px solid var(--line-1)",
-            borderRadius: 4
-          }
-        }
-      )));
-    }))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9.5, color: "var(--ink-3)", marginTop: 6, lineHeight: 1.5 } }, "\uC784\uACC4\uB294 \uD604\uC7AC \uD504\uB808\uC784 \uAC12\uACFC\uC758 \uB2E8\uC21C \uBE44\uAD50\uB2E4. \uC870\uAC74\uC2DD \uC5D4\uC9C4 \uC815\uD569 \uB9E4\uB9E4 \uC2E0\uD638\uB294 \uC704 ", /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)" } }, "\uB9E4\uC218/\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), " \uC120\uD0DD \uC2DC \uCC28\uD2B8\uC5D0 \uC624\uBC84\uB808\uC774\uB41C\uB2E4.")));
-  }
+
+  // ../frontend/simulation.jsx
   Object.assign(window, { SimulationTab });
 
   // ../frontend/evolution-analysis.jsx

@@ -160,10 +160,10 @@ class TestSpeed600:
         assert SA._clamp_speed(0) == 1         # 하한 클램프.
 
     def test_sim_speeds_source_has_600(self):
-        src = _read_frontend("simulation.jsx")
-        assert "_SIM_SPEEDS = [1, 5, 20, 60, 240, 600]" in src
+        # P5.5 분해 — _SIM_SPEEDS 상수는 sim-tab-utils.jsx, 600 라벨 렌더(SimPlaybackBar)는 sim-tab-controls.jsx.
+        assert "_SIM_SPEEDS = [1, 5, 20, 60, 240, 600]" in _read_frontend("sim-tab-utils.jsx")
         # 600 라벨 "초고속".
-        assert '"초고속"' in src
+        assert '"초고속"' in _read_frontend("sim-tab-controls.jsx")
 
 
 # --------------------------------- §acceptance #3 실측 페이싱 오라클(REAL elapsed)
@@ -248,7 +248,8 @@ def test_speed600_elapsed_is_tiny_fraction():
 class TestSimulationSource:
     def test_viewbar_labels_use_ink1_not_ink3(self):
         """SimViewBar 라벨 공통 스타일이 var(--ink-1)/fontWeight:600 이고, 그 스타일에 var(--ink-3) 없음."""
-        src = _read_frontend("simulation.jsx")
+        # P5.5 분해 — _SIM_VIEWBAR_LABEL 정의는 simulation.jsx(배럴)에서 sim-tab-utils.jsx 로 이동.
+        src = _read_frontend("sim-tab-utils.jsx")
         assert "_SIM_VIEWBAR_LABEL" in src
         # 공통 라벨 스타일 객체 본문을 추출해 토큰/굵기/자간 단언.
         marker = "const _SIM_VIEWBAR_LABEL = {"
@@ -264,7 +265,8 @@ class TestSimulationSource:
 
     def test_ind_defs_have_new_grouped_keys(self):
         """indGroups 에 새 지표 키(Track S 와 교차파일 계약)가 모두 있다."""
-        src = _read_frontend("simulation.jsx")
+        # P5.5 분해 — indGroups(SimViewBar)는 sim-tab-controls.jsx 로 이동.
+        src = _read_frontend("sim-tab-controls.jsx")
         assert "indGroups" in src
         for key in ("ema", "rsi", "macd", "volma", "strma", "vwapband",
                     "strength", "imbalance", "orderflow"):
@@ -274,29 +276,34 @@ class TestSimulationSource:
 
     def test_cols_selector_1_to_5_and_split_rows(self):
         """열 셀렉터 1~5 + splitRows 상태/지속이 배선되어 있다."""
-        src = _read_frontend("simulation.jsx")
-        assert "_SIM_MAX_SPLIT_COLS = 5" in src
-        assert "splitRows" in src
-        assert "_loadSplitRows" in src and "_saveSplitRows" in src
-        assert "setSplitRowsPersist" in src
+        # P5.5 분해 — 상수/로더는 sim-tab-utils.jsx, 그리드 파생/지속 핸들러는 sim-tab-root.jsx.
+        utils = _read_frontend("sim-tab-utils.jsx")
+        root = _read_frontend("sim-tab-root.jsx")
+        assert "_SIM_MAX_SPLIT_COLS = 5" in utils
+        assert "_loadSplitRows" in utils and "_saveSplitRows" in utils
+        assert "splitRows" in root
+        assert "setSplitRowsPersist" in root
         # 열 클램프(min(5, codes.length))·자동 행수.
-        assert "colCap" in src
-        assert "autoRows" in src
+        assert "colCap" in root
+        assert "autoRows" in root
         # 그리드에 행 캡 시 스크롤(overflowY) 적용.
-        assert "gridExtra" in src
+        assert "gridExtra" in root
 
     def test_engine_popover_wired(self):
         """SimEnginePopover 가 정의·배선되고, 비대칭(LWC=체결강도 오버레이만)을 설명한다."""
-        src = _read_frontend("simulation.jsx")
+        # P5.5 분해 — SimEnginePopover 정의·SimViewBar 배선은 sim-tab-controls.jsx 로 이동.
+        src = _read_frontend("sim-tab-controls.jsx")
         assert "function SimEnginePopover" in src
         assert "<SimEnginePopover" in src
-        # 3엔진 모두 + LWC 비대칭 문구.
-        assert "라이브" in src and "SVG" in src and "LWC" in src
-        assert "체결강도 오버레이만" in src
+        # 3엔진 모두 + LWC 비대칭 문구. "라이브"/"체결강도 오버레이만" 문구는 _SIM_ENGINE_ROWS(utils).
+        utils = _read_frontend("sim-tab-utils.jsx")
+        assert "라이브" in utils and "SVG" in utils and "LWC" in utils
+        assert "체결강도 오버레이만" in utils
         assert "var(--ink-1)" in src
 
     def test_vwap_band_carried_into_store_bar(self):
         """_simWsBar 매퍼가 서버 vwap_up/vwap_low 를 스토어 bar 로 전달한다(Track S 소비용)."""
-        src = _read_frontend("simulation.jsx")
+        # P5.5 분해 — _simWsBar 매퍼는 sim-tab-utils.jsx 로 이동.
+        src = _read_frontend("sim-tab-utils.jsx")
         assert "vwap_up: it.vwap_up" in src
         assert "vwap_low: it.vwap_low" in src

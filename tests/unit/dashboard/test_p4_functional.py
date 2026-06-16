@@ -132,7 +132,8 @@ class TestSimLwcAsymmetryCaption:
     """simulation.jsx — LWC 선택 시 미표시 서브패인을 토글 옆 캡션으로 명시(의도된 비대칭)."""
 
     def test_lwc_caption_present_and_gated(self) -> None:
-        src = _read("simulation.jsx")
+        # P5.5 분해 — LWC 비대칭 캡션(SimViewBar)은 sim-tab-controls.jsx 로 이동.
+        src = _read("sim-tab-controls.jsx")
         # engineMode === "lwc" 게이팅.
         assert 'engineMode === "lwc" && (' in src
         # 비대칭 캡션 — 미표시 지표 열거.
@@ -141,7 +142,9 @@ class TestSimLwcAsymmetryCaption:
             assert token in src, f"LWC 캡션에 {token} 누락"
 
     def test_caption_is_label_only_not_in_charts(self) -> None:
-        # 캡션은 simulation.jsx(토글 옆)에만 — sim 차트 컴포넌트 코드(배럴 + P5.3 sibling)는 무영향.
+        # 캡션은 sim-tab-controls.jsx(SimViewBar 토글 옆)에만 — sim 차트 컴포넌트 코드(배럴 + P5.3 sibling)와
+        #   다른 시뮬탭 sibling(utils/panels/root/배럴)은 무영향.
         for name in ("simulation-charts.jsx", "sim-chart-utils.jsx", "sim-chart-subpanes.jsx",
-                     "sim-chart-shell.jsx", "sim-chart-engines.jsx", "sim-signal-log.jsx"):
+                     "sim-chart-shell.jsx", "sim-chart-engines.jsx", "sim-signal-log.jsx",
+                     "simulation.jsx", "sim-tab-utils.jsx", "sim-tab-panels.jsx", "sim-tab-root.jsx"):
             assert "LWC 비대칭 —" not in _read(name), f"{name} 에 캡션 누출"
