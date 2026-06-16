@@ -38,7 +38,8 @@ class TestConnectionModeSeparation:
 
     def test_ws_onopen_stops_demo(self):
         # LIVE 연결이 열리면 데모 시뮬레이터를 중단(날조 혼입 차단)해야 한다.
-        src = _read("connection.jsx")
+        #   P5.8 분해: WS plumbing(openWs/onopen)은 conn-backend.jsx 로 이동(connection.jsx 는 배럴).
+        src = _read("conn-backend.jsx")
         onopen_idx = src.find("ws.onopen")
         assert onopen_idx != -1
         # onopen 핸들러 본문(다음 핸들러 전까지)에 stopDemo() 호출이 있어야 한다.
@@ -150,7 +151,8 @@ class TestExportStatusBanner:
 
     def test_connection_routes_control_reply(self):
         # WS 제어 echo(contract_version 없는 action 프레임)를 lastReply로 라우팅.
-        src = _read("connection.jsx")
+        #   P5.8 분해: useBackend(WS onmessage 라우팅)는 conn-backend.jsx 로 이동(connection.jsx 는 배럴).
+        src = _read("conn-backend.jsx")
         assert "lastReply" in src
         assert '"action" in data' in src
 
