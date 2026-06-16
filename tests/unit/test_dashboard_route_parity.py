@@ -32,10 +32,10 @@ FRONTEND_ROUTE_OWNERS = {
     "/strategy_diff": "strategy-inspector.jsx",
     "/prompts": "strategy-inspector.jsx",
     "/ai_context_pack": "ai-context.jsx",
-    "/research_criteria": "panels.jsx",
+    "/research_criteria": "panels-status.jsx",
     "/research_docs": "research-wiki.jsx",
     "/research_doc": "research-wiki.jsx",
-    "/variable_correlation": "research-lab.jsx",
+    "/variable_correlation": "rl-panel.jsx",
 }
 
 
