@@ -69,8 +69,9 @@ class TestDashboardPages:
         assert "promote_checklist" in src
         assert "window.VdtPromoteChecklist" in src
         # ICON 맵 보존(verdict.html 원본과 동일 의미) — P7: 공유 VdtPromoteChecklist 로 이전돼
-        #   research-lab.jsx 의 `_VDT_STATUS_ICON` 단일 정본이 됐다(dashboard-pages 의 ICON 제거).
-        lab_src = _read("research-lab.jsx")
+        #   `_VDT_STATUS_ICON` 단일 정본이 됐다(dashboard-pages 의 ICON 제거).
+        #   P5.6 분해: 공유 셸(Vdt* + _VDT_STATUS_ICON)은 rl-vdt-shell.jsx 로 이동.
+        lab_src = _read("rl-vdt-shell.jsx")
         assert "const _VDT_STATUS_ICON = {" in lab_src
         assert "pass:" in lab_src and "warn:" in lab_src and "fail:" in lab_src and "pending:" in lab_src
 

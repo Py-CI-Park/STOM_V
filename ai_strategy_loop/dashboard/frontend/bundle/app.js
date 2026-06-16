@@ -13196,6 +13196,25 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { EvolutionAnalysisPanel });
 
+  // ../frontend/rl-vdt-shell.jsx
+  var _VDT_STATUS_ICON = { pass: "\u2705", warn: "\u26A0\uFE0F", fail: "\u274C", pending: "\u23F3" };
+  function VdtPromoteChecklist({ v }) {
+    const checks = v && v.promote_checklist || [];
+    if (checks.length === 0) {
+      return /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, opacity: 0.6 } }, "PROMOTE \uCCB4\uD06C\uB9AC\uC2A4\uD2B8: \uB370\uC774\uD130 \uC5C6\uC74C");
+    }
+    return /* @__PURE__ */ React.createElement("table", { className: "mono", style: { fontSize: 12, width: "100%", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "PROMOTE \uC870\uAC74"), /* @__PURE__ */ React.createElement("th", null, "\uC0C1\uD0DC"), /* @__PURE__ */ React.createElement("th", null, "\uADFC\uAC70"))), /* @__PURE__ */ React.createElement("tbody", null, checks.map((c, i) => /* @__PURE__ */ React.createElement("tr", { key: "vdtc" + i }, /* @__PURE__ */ React.createElement("td", null, c.item), /* @__PURE__ */ React.createElement("td", null, _VDT_STATUS_ICON[c.status] || "?"), /* @__PURE__ */ React.createElement("td", null, c.detail || "\u2014")))));
+  }
+  function VdtAlerts({ v }) {
+    const alerts = v && v.alerts || [];
+    return alerts.map((a, i) => /* @__PURE__ */ React.createElement("div", { key: "vdta" + i, className: "mono", style: { fontSize: 12, color: "var(--amber)" } }, "\u26A0\uFE0F ", a));
+  }
+  function VdtSummaryLines({ v }) {
+    const lines = v && v.lines || [];
+    return lines.map((l, i) => /* @__PURE__ */ React.createElement("div", { key: "vdtl" + i, className: "mono", style: { fontSize: 12 } }, l));
+  }
+  Object.assign(window, { VdtPromoteChecklist, VdtAlerts, VdtSummaryLines });
+
   // ../frontend/analysis.jsx
   var {
     useState: useState_an,
@@ -13567,37 +13586,11 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { EdgeRatioPanel, FeatureImportancePanel });
 
-  // ../frontend/research-lab.jsx
+  // ../frontend/rl-analysis.jsx
   var {
-    useState: useState_rl,
-    useEffect: useEffect_rl,
-    useCallback: useCallback_rl,
-    useMemo: useMemo_rl
+    useState: useState_rla,
+    useEffect: useEffect_rla
   } = React;
-  var _VDT_STATUS_ICON = { pass: "\u2705", warn: "\u26A0\uFE0F", fail: "\u274C", pending: "\u23F3" };
-  function VdtPromoteChecklist({ v }) {
-    const checks = v && v.promote_checklist || [];
-    if (checks.length === 0) {
-      return /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, opacity: 0.6 } }, "PROMOTE \uCCB4\uD06C\uB9AC\uC2A4\uD2B8: \uB370\uC774\uD130 \uC5C6\uC74C");
-    }
-    return /* @__PURE__ */ React.createElement("table", { className: "mono", style: { fontSize: 12, width: "100%", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "PROMOTE \uC870\uAC74"), /* @__PURE__ */ React.createElement("th", null, "\uC0C1\uD0DC"), /* @__PURE__ */ React.createElement("th", null, "\uADFC\uAC70"))), /* @__PURE__ */ React.createElement("tbody", null, checks.map((c, i) => /* @__PURE__ */ React.createElement("tr", { key: "vdtc" + i }, /* @__PURE__ */ React.createElement("td", null, c.item), /* @__PURE__ */ React.createElement("td", null, _VDT_STATUS_ICON[c.status] || "?"), /* @__PURE__ */ React.createElement("td", null, c.detail || "\u2014")))));
-  }
-  function VdtAlerts({ v }) {
-    const alerts = v && v.alerts || [];
-    return alerts.map((a, i) => /* @__PURE__ */ React.createElement("div", { key: "vdta" + i, className: "mono", style: { fontSize: 12, color: "var(--amber)" } }, "\u26A0\uFE0F ", a));
-  }
-  function VdtSummaryLines({ v }) {
-    const lines = v && v.lines || [];
-    return lines.map((l, i) => /* @__PURE__ */ React.createElement("div", { key: "vdtl" + i, className: "mono", style: { fontSize: 12 } }, l));
-  }
-  Object.assign(window, { VdtPromoteChecklist, VdtAlerts, VdtSummaryLines });
-  var RESEARCH_TABS = [
-    { id: "edge", label: "\uC5E3\uC9C0(\uC2B9\uB960\xB7\uAE30\uB300\uAC12)" },
-    { id: "feature", label: "\uBCC0\uC218 \uC911\uC694\uB3C4" },
-    { id: "correlation", label: "\uC0C1\uAD00\uAD00\uACC4" },
-    { id: "combos", label: "\uBCC0\uC218 \uC870\uD569" },
-    { id: "validation", label: "\uAC80\uC99D" }
-  ];
   function _rlNum(value, digits) {
     if (typeof value !== "number" || !isFinite(value)) return "--";
     return value.toFixed(digits == null ? 3 : digits);
@@ -13701,7 +13694,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return { sign, strength, line, lowSample };
   }
   function _ComboPairPopover({ pair, onClose }) {
-    useEffect_rl(() => {
+    useEffect_rla(() => {
       const onKey = (e) => {
         if (e.key === "Escape") onClose();
       };
@@ -13714,7 +13707,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   function _CombinationList({ rows }) {
     const { features, cellMap } = _combinationMatrix(rows || []);
-    const [selected, setSelected] = useState_rl(null);
+    const [selected, setSelected] = useState_rla(null);
     if (features.length === 0) {
       return /* @__PURE__ */ React.createElement(_ResearchEmptyState, { message: "\uC120\uD0DD\uD55C run \uC5D0 \uBD84\uC11D\uD560 \uBCC0\uC218 \uC870\uD569\uC774 \uBD80\uC871\uD569\uB2C8\uB2E4." });
     }
@@ -13776,8 +13769,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return /* @__PURE__ */ React.createElement("div", { className: "research-empty", title: "research_score_not_promotion" }, "recency_research \xB7 ", recency.score_label || "research_score_not_promotion", " \xB7 score ", _rlNum(recency.research_score, 4));
   }
   function _PipelineCheckpointPanel({ baseUrl, isDemo }) {
-    const [items, setItems] = useState_rl(null);
-    useEffect_rl(() => {
+    const [items, setItems] = useState_rla(null);
+    useEffect_rla(() => {
       if (isDemo || !baseUrl) return;
       fetch(baseUrl + "/pipeline_status", { signal: AbortSignal.timeout(8e3) }).then((r) => r.ok ? r.json() : null).then((j) => setItems(j && Array.isArray(j.items) ? j.items : [])).catch(() => {
       });
@@ -13789,6 +13782,106 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       return /* @__PURE__ */ React.createElement("div", { key: i, className: "mono", style: { fontSize: 11, marginTop: 2 } }, /* @__PURE__ */ React.createElement("b", null, item.prefix), " \xB7 ", stageList.length === 0 ? "\uB2E8\uACC4 \uC5C6\uC74C" : stageList.map(([k, v]) => (v ? "\u2705" : "\xB7") + k).join("  "));
     }));
   }
+  function _GridHeatmap({ grid, metric }) {
+    const useMdd = metric === "mdd";
+    const cells = {};
+    (grid.cells || []).forEach((c) => {
+      cells[c.a + "|" + c.b] = c;
+    });
+    const maxAbs = Math.max(1, ...(grid.cells || []).map((c) => Math.abs(useMdd ? c.mdd : c.profit)));
+    const mesaSet = new Set((grid.mesa_cells || []).map((m) => m.a + "|" + m.b));
+    return /* @__PURE__ */ React.createElement("table", { className: "mono", style: { fontSize: 10, marginTop: 4 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, grid.param_a + " \\ " + grid.param_b), (grid.b_values || []).map((b) => /* @__PURE__ */ React.createElement("th", { key: b, style: { padding: "2px 6px" } }, b)))), /* @__PURE__ */ React.createElement("tbody", null, (grid.a_values || []).map((a) => /* @__PURE__ */ React.createElement("tr", { key: a }, /* @__PURE__ */ React.createElement("th", { style: { padding: "2px 6px" } }, a), (grid.b_values || []).map((b) => {
+      const c = cells[a + "|" + b];
+      if (!c) return /* @__PURE__ */ React.createElement("td", { key: b }, "\u2014");
+      const value = useMdd ? c.mdd : c.profit;
+      const pct = Math.round(15 + 70 * Math.abs(value) / maxAbs);
+      const token = useMdd ? "var(--red)" : c.profit > 0 ? "var(--teal)" : "var(--red)";
+      const bg = `color-mix(in srgb, ${token} ${pct}%, transparent)`;
+      const isMesa = mesaSet.has(a + "|" + b);
+      return /* @__PURE__ */ React.createElement(
+        "td",
+        {
+          key: b,
+          title: `${grid.param_a}=${a}, ${grid.param_b}=${b} \xB7 \uC190\uC775 ${Math.round(c.profit).toLocaleString()} \xB7 MDD ${_rlNum(c.mdd, 2)} \xB7 ${c.trades}\uAC74`,
+          style: {
+            background: bg,
+            textAlign: "right",
+            padding: "2px 6px",
+            outline: isMesa ? "2px solid var(--mesa-gold)" : "none"
+          }
+        },
+        useMdd ? _rlNum(c.mdd, 1) : Math.round(c.profit / 1e4).toLocaleString() + "\uB9CC",
+        isMesa ? "\u2605" : ""
+      );
+    })))));
+  }
+  function _EquityChart({ cum }) {
+    const pts = (cum || []).map(Number).filter((v) => isFinite(v));
+    if (pts.length < 2) return null;
+    const W = 620, H = 150, PAD = 6;
+    const min = Math.min(0, ...pts), max = Math.max(0, ...pts);
+    const span = Math.max(max - min, 1);
+    const x = (i) => PAD + i / (pts.length - 1) * (W - PAD * 2);
+    const y = (v) => H - PAD - (v - min) / span * (H - PAD * 2);
+    const path = pts.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+    const last = pts[pts.length - 1];
+    return /* @__PURE__ */ React.createElement("svg", { width: W, height: H, style: { background: "rgba(255,255,255,0.03)", borderRadius: 4 } }, /* @__PURE__ */ React.createElement("line", { x1: PAD, y1: y(0), x2: W - PAD, y2: y(0), stroke: "#777", strokeDasharray: "3,3", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("path", { d: path, fill: "none", stroke: last >= 0 ? "#4c9" : "#c66", strokeWidth: "1.8" }), /* @__PURE__ */ React.createElement("text", { x: W - PAD - 4, y: y(last) - 6, fill: "var(--ink-2)", fontSize: "10", textAnchor: "end" }, Math.round(last).toLocaleString()));
+  }
+  function _CurveSpark({ curve }) {
+    const pts = (curve || []).filter((p) => p && p.ok);
+    if (pts.length < 2) return null;
+    const W = 90, H = 22;
+    const profits = pts.map((p) => p.profit || 0);
+    const min = Math.min(0, ...profits), max = Math.max(0, ...profits);
+    const span = Math.max(max - min, 1);
+    const x = (i) => 2 + i / (pts.length - 1) * (W - 4);
+    const y = (v) => H - 2 - (v - min) / span * (H - 4);
+    const path = pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.profit || 0).toFixed(1)}`).join(" ");
+    return /* @__PURE__ */ React.createElement("svg", { width: W, height: H, style: { verticalAlign: "middle" } }, /* @__PURE__ */ React.createElement("line", { x1: "2", y1: y(0), x2: W - 2, y2: y(0), stroke: "#777", strokeDasharray: "2,2", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("path", { d: path, fill: "none", stroke: "#5b9", strokeWidth: "1.5" }));
+  }
+  function _McFanChart({ fan }) {
+    if (!fan || !Array.isArray(fan.x) || !fan.x.length) return null;
+    const W = 320, H = 90, PAD = 4;
+    const all = [].concat(fan.p05 || [], fan.p95 || [], fan.p50 || []);
+    const lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+    const span = hi - lo || 1;
+    const px = (i) => PAD + (W - 2 * PAD) * (fan.x[i] || 0);
+    const py = (v) => H - PAD - (H - 2 * PAD) * ((v - lo) / span);
+    const pts = (arr) => arr.map((v, i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(" ");
+    const band = (upper, lower) => pts(upper) + " " + lower.map((v, i) => `${px(lower.length - 1 - i).toFixed(1)},${py(lower[lower.length - 1 - i]).toFixed(1)}`).join(" ");
+    return /* @__PURE__ */ React.createElement(
+      "svg",
+      {
+        width: W,
+        height: H,
+        style: { display: "block", marginTop: 4 },
+        role: "img",
+        "aria-label": "MC fan chart"
+      },
+      /* @__PURE__ */ React.createElement("polygon", { points: band(fan.p95, fan.p05), fill: "rgba(80,140,200,0.18)", stroke: "none" }),
+      /* @__PURE__ */ React.createElement("polygon", { points: band(fan.p75, fan.p25), fill: "rgba(80,140,200,0.28)", stroke: "none" }),
+      /* @__PURE__ */ React.createElement("polyline", { points: pts(fan.p50), fill: "none", stroke: "rgba(120,190,255,0.95)", strokeWidth: "1.5" }),
+      /* @__PURE__ */ React.createElement(
+        "line",
+        {
+          x1: PAD,
+          y1: py(0),
+          x2: W - PAD,
+          y2: py(0),
+          stroke: "rgba(200,200,200,0.4)",
+          strokeDasharray: "3,3",
+          strokeWidth: "1"
+        }
+      )
+    );
+  }
+
+  // ../frontend/rl-validation.jsx
+  var {
+    useState: useState_rl,
+    useEffect: useEffect_rl,
+    useCallback: useCallback_rl
+  } = React;
   function _ValidationPanel({ baseUrl, runId, isDemo }) {
     const [selector, setSelector] = useState_rl("seed_relative_v1");
     const [yearly, setYearly] = useState_rl(null);
@@ -13981,102 +14074,24 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       }
     )), /* @__PURE__ */ React.createElement("button", { type: "button", className: "research-tab", onClick: fetchPsim }, "\uACB0\uD569 \uC2DC\uBBAC \uC2E4\uD589")), psim && !psim.error && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11 } }, "\uACB0\uD569 \uCD1D\uC190\uC775: ", /* @__PURE__ */ React.createElement("b", null, Math.round(psim.combined_total || 0).toLocaleString()), " \xB7 ", "\uACB0\uD569 MDD: ", /* @__PURE__ */ React.createElement("b", null, Math.round(psim.combined_mdd || 0).toLocaleString()), psim.diversification_gain != null ? ` \xB7 \uBD84\uC0B0\uC774\uB4DD: ${(psim.diversification_gain * 100).toFixed(1)}%` : ""), psim.correlation && Array.isArray(psim.correlation.labels) && /* @__PURE__ */ React.createElement("table", { className: "mono", style: { fontSize: 11, marginTop: 4 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC0C1\uAD00"), psim.correlation.labels.map((l) => /* @__PURE__ */ React.createElement("th", { key: l }, l.split(":")[0])))), /* @__PURE__ */ React.createElement("tbody", null, psim.correlation.labels.map((row, i) => /* @__PURE__ */ React.createElement("tr", { key: row }, /* @__PURE__ */ React.createElement("th", null, row.split(":")[0]), (psim.correlation.matrix[i] || []).map((v, j) => /* @__PURE__ */ React.createElement("td", { key: j }, v.toFixed(2)))))))), psim && psim.error && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--amber)" } }, psim.error)));
   }
-  function _GridHeatmap({ grid, metric }) {
-    const useMdd = metric === "mdd";
-    const cells = {};
-    (grid.cells || []).forEach((c) => {
-      cells[c.a + "|" + c.b] = c;
-    });
-    const maxAbs = Math.max(1, ...(grid.cells || []).map((c) => Math.abs(useMdd ? c.mdd : c.profit)));
-    const mesaSet = new Set((grid.mesa_cells || []).map((m) => m.a + "|" + m.b));
-    return /* @__PURE__ */ React.createElement("table", { className: "mono", style: { fontSize: 10, marginTop: 4 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, grid.param_a + " \\ " + grid.param_b), (grid.b_values || []).map((b) => /* @__PURE__ */ React.createElement("th", { key: b, style: { padding: "2px 6px" } }, b)))), /* @__PURE__ */ React.createElement("tbody", null, (grid.a_values || []).map((a) => /* @__PURE__ */ React.createElement("tr", { key: a }, /* @__PURE__ */ React.createElement("th", { style: { padding: "2px 6px" } }, a), (grid.b_values || []).map((b) => {
-      const c = cells[a + "|" + b];
-      if (!c) return /* @__PURE__ */ React.createElement("td", { key: b }, "\u2014");
-      const value = useMdd ? c.mdd : c.profit;
-      const pct = Math.round(15 + 70 * Math.abs(value) / maxAbs);
-      const token = useMdd ? "var(--red)" : c.profit > 0 ? "var(--teal)" : "var(--red)";
-      const bg = `color-mix(in srgb, ${token} ${pct}%, transparent)`;
-      const isMesa = mesaSet.has(a + "|" + b);
-      return /* @__PURE__ */ React.createElement(
-        "td",
-        {
-          key: b,
-          title: `${grid.param_a}=${a}, ${grid.param_b}=${b} \xB7 \uC190\uC775 ${Math.round(c.profit).toLocaleString()} \xB7 MDD ${_rlNum(c.mdd, 2)} \xB7 ${c.trades}\uAC74`,
-          style: {
-            background: bg,
-            textAlign: "right",
-            padding: "2px 6px",
-            outline: isMesa ? "2px solid var(--mesa-gold)" : "none"
-          }
-        },
-        useMdd ? _rlNum(c.mdd, 1) : Math.round(c.profit / 1e4).toLocaleString() + "\uB9CC",
-        isMesa ? "\u2605" : ""
-      );
-    })))));
-  }
-  function _EquityChart({ cum }) {
-    const pts = (cum || []).map(Number).filter((v) => isFinite(v));
-    if (pts.length < 2) return null;
-    const W = 620, H = 150, PAD = 6;
-    const min = Math.min(0, ...pts), max = Math.max(0, ...pts);
-    const span = Math.max(max - min, 1);
-    const x = (i) => PAD + i / (pts.length - 1) * (W - PAD * 2);
-    const y = (v) => H - PAD - (v - min) / span * (H - PAD * 2);
-    const path = pts.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
-    const last = pts[pts.length - 1];
-    return /* @__PURE__ */ React.createElement("svg", { width: W, height: H, style: { background: "rgba(255,255,255,0.03)", borderRadius: 4 } }, /* @__PURE__ */ React.createElement("line", { x1: PAD, y1: y(0), x2: W - PAD, y2: y(0), stroke: "#777", strokeDasharray: "3,3", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("path", { d: path, fill: "none", stroke: last >= 0 ? "#4c9" : "#c66", strokeWidth: "1.8" }), /* @__PURE__ */ React.createElement("text", { x: W - PAD - 4, y: y(last) - 6, fill: "var(--ink-2)", fontSize: "10", textAnchor: "end" }, Math.round(last).toLocaleString()));
-  }
-  function _CurveSpark({ curve }) {
-    const pts = (curve || []).filter((p) => p && p.ok);
-    if (pts.length < 2) return null;
-    const W = 90, H = 22;
-    const profits = pts.map((p) => p.profit || 0);
-    const min = Math.min(0, ...profits), max = Math.max(0, ...profits);
-    const span = Math.max(max - min, 1);
-    const x = (i) => 2 + i / (pts.length - 1) * (W - 4);
-    const y = (v) => H - 2 - (v - min) / span * (H - 4);
-    const path = pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.profit || 0).toFixed(1)}`).join(" ");
-    return /* @__PURE__ */ React.createElement("svg", { width: W, height: H, style: { verticalAlign: "middle" } }, /* @__PURE__ */ React.createElement("line", { x1: "2", y1: y(0), x2: W - 2, y2: y(0), stroke: "#777", strokeDasharray: "2,2", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("path", { d: path, fill: "none", stroke: "#5b9", strokeWidth: "1.5" }));
-  }
-  function _McFanChart({ fan }) {
-    if (!fan || !Array.isArray(fan.x) || !fan.x.length) return null;
-    const W = 320, H = 90, PAD = 4;
-    const all = [].concat(fan.p05 || [], fan.p95 || [], fan.p50 || []);
-    const lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
-    const span = hi - lo || 1;
-    const px = (i) => PAD + (W - 2 * PAD) * (fan.x[i] || 0);
-    const py = (v) => H - PAD - (H - 2 * PAD) * ((v - lo) / span);
-    const pts = (arr) => arr.map((v, i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(" ");
-    const band = (upper, lower) => pts(upper) + " " + lower.map((v, i) => `${px(lower.length - 1 - i).toFixed(1)},${py(lower[lower.length - 1 - i]).toFixed(1)}`).join(" ");
-    return /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        width: W,
-        height: H,
-        style: { display: "block", marginTop: 4 },
-        role: "img",
-        "aria-label": "MC fan chart"
-      },
-      /* @__PURE__ */ React.createElement("polygon", { points: band(fan.p95, fan.p05), fill: "rgba(80,140,200,0.18)", stroke: "none" }),
-      /* @__PURE__ */ React.createElement("polygon", { points: band(fan.p75, fan.p25), fill: "rgba(80,140,200,0.28)", stroke: "none" }),
-      /* @__PURE__ */ React.createElement("polyline", { points: pts(fan.p50), fill: "none", stroke: "rgba(120,190,255,0.95)", strokeWidth: "1.5" }),
-      /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: PAD,
-          y1: py(0),
-          x2: W - PAD,
-          y2: py(0),
-          stroke: "rgba(200,200,200,0.4)",
-          strokeDasharray: "3,3",
-          strokeWidth: "1"
-        }
-      )
-    );
-  }
+
+  // ../frontend/rl-panel.jsx
+  var {
+    useState: useState_rl2,
+    useEffect: useEffect_rl2,
+    useCallback: useCallback_rl2,
+    useMemo: useMemo_rl
+  } = React;
+  var RESEARCH_TABS = [
+    { id: "edge", label: "\uC5E3\uC9C0(\uC2B9\uB960\xB7\uAE30\uB300\uAC12)" },
+    { id: "feature", label: "\uBCC0\uC218 \uC911\uC694\uB3C4" },
+    { id: "correlation", label: "\uC0C1\uAD00\uAD00\uACC4" },
+    { id: "combos", label: "\uBCC0\uC218 \uC870\uD569" },
+    { id: "validation", label: "\uAC80\uC99D" }
+  ];
   function _RlProcessFlowOverlay({ onClose, activeStage }) {
     const PIPELINE = window.STOM_PIPELINE || [];
-    useEffect_rl(() => {
+    useEffect_rl2(() => {
       const onKey = (e) => {
         if (e.key === "Escape") onClose();
       };
@@ -14087,11 +14102,11 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     return /* @__PURE__ */ React.createElement("div", { className: "rp-overlay", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { className: "rp-overlay-card", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "rp-overlay-hd" }, /* @__PURE__ */ React.createElement("span", { className: "rp-card-title" }, "\uC9C4\uD654 \uD504\uB85C\uC138\uC2A4 \u2014 \uC804\uCCB4 \uD750\uB984"), ai >= 0 && /* @__PURE__ */ React.createElement("span", { className: "rp-card-sub" }, "\uD604\uC7AC \uB2E8\uACC4: ", PIPELINE[ai].title), /* @__PURE__ */ React.createElement("button", { type: "button", className: "btn ghost sm", style: { marginLeft: "auto" }, onClick: onClose }, "\u2715 \uB2EB\uAE30 (Esc)")), /* @__PURE__ */ React.createElement("div", { className: "rp-flow" }, PIPELINE.map((s, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key: s.title }, /* @__PURE__ */ React.createElement("div", { className: "rp-flow-node" + (i === ai ? " rp-flow-active" : "") }, /* @__PURE__ */ React.createElement("div", { className: "rp-flow-ico" }, s.icon), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-name" }, i + 1, ". ", s.title, i === ai && /* @__PURE__ */ React.createElement("span", { className: "rp-flow-pulse" }, " \u25CF \uC9C4\uD589")), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-desc" }, s.desc), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-terms" }, s.terms.map(([t, d]) => /* @__PURE__ */ React.createElement("div", { key: t, className: "rp-flow-term" }, /* @__PURE__ */ React.createElement("b", null, t), " ", d)))), i < PIPELINE.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "rp-flow-arrow" }, "\u2192"))))));
   }
   function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
-    const [tab, setTab] = useState_rl("edge");
-    const [fullscreen, setFullscreen] = useState_rl(false);
-    const [opsStrip, setOpsStrip] = useState_rl(null);
-    const [showFlow, setShowFlow] = useState_rl(false);
-    useEffect_rl(() => {
+    const [tab, setTab] = useState_rl2("edge");
+    const [fullscreen, setFullscreen] = useState_rl2(false);
+    const [opsStrip, setOpsStrip] = useState_rl2(null);
+    const [showFlow, setShowFlow] = useState_rl2(false);
+    useEffect_rl2(() => {
       if (!baseUrl) return void 0;
       const pull = () => fetch(baseUrl + "/ops_status", { signal: AbortSignal.timeout(8e3) }).then((r) => r.ok ? r.json() : null).then((j) => {
         setOpsStrip(j);
@@ -14107,14 +14122,14 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       const timer = setInterval(pull, 1e4);
       return () => clearInterval(timer);
     }, [baseUrl]);
-    const [method, setMethod] = useState_rl("spearman");
-    const [axis, setAxis] = useState_rl("time");
-    const [data, setData] = useState_rl(null);
-    const [loading, setLoading] = useState_rl(false);
-    const [err, setErr] = useState_rl(null);
+    const [method, setMethod] = useState_rl2("spearman");
+    const [axis, setAxis] = useState_rl2("time");
+    const [data, setData] = useState_rl2(null);
+    const [loading, setLoading] = useState_rl2(false);
+    const [err, setErr] = useState_rl2(null);
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const needsCorrelation = tab === "correlation" || tab === "combos";
-    const refreshCorrelation = useCallback_rl(() => {
+    const refreshCorrelation = useCallback_rl2(() => {
       if (!needsCorrelation || isDemo || !baseUrl || !runId) return;
       setLoading(true);
       const url = baseUrl + "/variable_correlation?run_id=" + encodeURIComponent(runId) + "&method=" + encodeURIComponent(method);
@@ -14123,7 +14138,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         setErr(null);
       }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
     }, [baseUrl, isDemo, method, needsCorrelation, runId]);
-    useEffect_rl(() => {
+    useEffect_rl2(() => {
       refreshCorrelation();
     }, [refreshCorrelation]);
     const matrixRows = data && Array.isArray(data.feature_matrix) ? data.feature_matrix : [];
@@ -14270,6 +14285,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       ops: opsStrip
     }) : /* @__PURE__ */ React.createElement(_RlProcessFlowOverlay, { onClose: () => setShowFlow(false), activeStage: flowActiveStage })));
   }
+  Object.assign(window, { ResearchLabPanel });
+
+  // ../frontend/research-lab.jsx
+  Object.assign(window, { VdtPromoteChecklist, VdtAlerts, VdtSummaryLines });
   Object.assign(window, { ResearchLabPanel });
 
   // ../frontend/app.jsx
