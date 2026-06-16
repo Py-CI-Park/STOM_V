@@ -303,8 +303,11 @@ const V3_TABS = [
   { tab: "lab", state: IDLE_STATE },
   { tab: "pro", state: IDLE_STATE },
   { tab: "verdict", state: IDLE_STATE },
+  // process(7번째): 본문이 <iframe src=/process_flow> 한 장. jsdom은 iframe 내용을 로드하지
+  //   않으므로 iframe 콘텐츠가 아니라 iframe 엘리먼트 존재 + React 에러 0 만 단언한다.
+  { tab: "process", state: IDLE_STATE, expectIframe: true },
 ];
-async function runTabOnce({ tab, state }) {
+async function runTabOnce({ tab, state, expectIframe }) {
   const { window, errs } = makeDom({ state, activeTab: tab });
   inject(window, read(resolve(FE, "vendor-react.js")));
   inject(window, read(resolve(FE, "vendor-react-dom.js")));
@@ -320,10 +323,15 @@ async function runTabOnce({ tab, state }) {
   const boundaryTripped = rootHtml.includes("대시보드 렌더 오류")
     || rootHtml.includes("Dashboard render error");
   const dynReq = errs.filter((e) => /Dynamic require|require is not/i.test(e));
-  const pass = errs.length === 0 && rootNonEmpty && !boundaryTripped && dynReq.length === 0;
+  // process 탭: iframe 엘리먼트 자체가 mount 됐는지(내용 로드 아님)만 확인. src 는 /process_flow.
+  const iframeEl = expectIframe ? root.querySelector('iframe[src$="/process_flow"]') : null;
+  const iframePresent = expectIframe ? iframeEl != null : undefined;
+  const iframeOk = expectIframe ? iframePresent === true : true;
+  const pass = errs.length === 0 && rootNonEmpty && !boundaryTripped && dynReq.length === 0 && iframeOk;
   return {
     tab, pass, rootNonEmpty, rootHtmlLen: rootHtml.length,
     errorBoundaryTripped: boundaryTripped, dynamicRequireErrors: dynReq,
+    ...(expectIframe ? { iframePresent } : {}),
     errorCount: errs.length, errors: errs.slice(0, 10),
   };
 }

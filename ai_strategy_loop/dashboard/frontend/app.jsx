@@ -289,6 +289,14 @@ function App() {
             ? <window.VerdictPanel baseUrl={baseUrl} />
             : <div className="research-empty" style={{ padding: "12px 16px" }}>결정 이력 로딩 중…</div>}
         </ErrorBoundary>
+      ) : activeTab === "process" ? (
+        <ErrorBoundary>
+          <iframe
+            src={baseUrl + "/process_flow"}
+            title="프로세스 흐름"
+            style={{ width: "100%", height: "calc(100vh - 130px)", border: "none", borderRadius: 8, background: "#0d1117" }}
+          />
+        </ErrorBoundary>
       ) : isIdle ? (
         <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} />
       ) : (
@@ -434,6 +442,7 @@ const STOM_TABS = [
   { key: "lab", label: "연구실", icon: "🔬" },
   { key: "pro", label: "분석 프로", icon: "📊" },
   { key: "verdict", label: "결정 이력", icon: "⚖️" },
+  { key: "process", label: "프로세스 흐름", icon: "🗺️" },
 ];
 
 function TabNav({ activeTab, onSelect }) {

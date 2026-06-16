@@ -128,7 +128,10 @@ def _run_harness() -> dict:
     node = _node_or_skip()
     result = subprocess.run(
         [node, "track-z-harness.mjs"],
-        cwd=str(WEBUI), capture_output=True, text=True, timeout=180,
+        # 300s: the harness now builds + jsdom-renders 7 tabs + 3 standalone pages (V1-V4);
+        #   under full-suite parallel load the node subprocess can exceed a tighter bound
+        #   (intermittent flake). Generous bound keeps the baseline deterministic.
+        cwd=str(WEBUI), capture_output=True, text=True, timeout=300,
     )
     # The harness prints exactly one ASCII-safe JSON object on stdout (console.error is
     #   captured, not forwarded; non-ASCII is \\u-escaped so cp949 text decoding is safe).
@@ -173,13 +176,15 @@ def test_track_z_v2_index_path_hosts() -> None:
 def test_track_z_v3_per_tab_render_sweep() -> None:
     """V3 (Story 4 entry gate): the FLAGGED bundle's App renders EVERY tab with 0 errors and a
     non-empty #root — evolution(NON-IDLE so its data components render), backtest, simulation,
-    lab, pro, verdict. Closes the gap V2 left open (V2 only proved the IDLE evolution shell), so a
-    latent missing cross-file import in a non-default tab surfaces NOW, not at the future flip."""
+    lab, pro, verdict, process. Closes the gap V2 left open (V2 only proved the IDLE evolution
+    shell), so a latent missing cross-file import in a non-default tab surfaces NOW, not at the
+    future flip. process(7번째)는 본문이 <iframe src=/process_flow> 한 장이라 jsdom 이 내용을
+    로드하지 않으므로 iframe 엘리먼트 존재 + React 에러 0 만 단언한다."""
     data = _run_harness()
     v3 = data["v3"]
     tabs = v3["tabs"]
-    expected = {"evolution", "backtest", "simulation", "lab", "pro", "verdict"}
-    assert set(tabs) == expected, f"V3 must sweep all 6 tabs, got {set(tabs)}"
+    expected = {"evolution", "backtest", "simulation", "lab", "pro", "verdict", "process"}
+    assert set(tabs) == expected, f"V3 must sweep all 7 tabs, got {set(tabs)}"
     for name in expected:
         r = tabs[name]
         assert r["rootNonEmpty"], f"tab {name}: #root empty after render"
@@ -187,6 +192,9 @@ def test_track_z_v3_per_tab_render_sweep() -> None:
         assert not r["dynamicRequireErrors"], f"tab {name}: dynamic-require {r['dynamicRequireErrors']}"
         assert r["errorCount"] == 0, f"tab {name} render errors: {r['errors']}"
         assert r["pass"], f"V3 tab {name} failed: {r}"
+    # process 탭: iframe 콘텐츠가 아니라 iframe 엘리먼트가 마운트됐는지만 확인.
+    assert tabs["process"].get("iframePresent") is True, (
+        f"process 탭 iframe 엘리먼트 부재: {tabs['process']}")
     assert v3["pass"], f"V3 per-tab sweep failed: {v3}"
 
 
@@ -219,7 +227,7 @@ def test_track_z_flagged_bundle_has_no_react_require() -> None:
     env: dict[str, str] = dict(os.environ, STOM_BUNDLE="1")
     r = subprocess.run(
         [node, "build-app.mjs"],
-        cwd=str(WEBUI), capture_output=True, text=True, timeout=120, env=env,
+        cwd=str(WEBUI), capture_output=True, text=True, timeout=240, env=env,
     )
     assert r.returncode == 0, f"flagged build failed: {r.stderr}"
     pilot = WEBUI / ".track-z" / "app.pilot.js"

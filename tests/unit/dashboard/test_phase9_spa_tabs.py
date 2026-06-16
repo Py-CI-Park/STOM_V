@@ -1,10 +1,10 @@
-"""Phase 9 — SPA 6탭 통합 소스 계약 테스트.
+"""Phase 9 — SPA 탭 통합 소스 계약 테스트(7탭: + 프로세스 흐름).
 
 빌드 없는 in-browser Babel JSX 라 텍스트(소스 grep) 계약 + 벤더 babel 트랜스폼으로
 검증한다(기존 dashboard 테스트 관행: 소스 substring 단언 + 문법 무결 확인).
 
 통합 목표(PHASE8_AUDIT_AND_IA.md §4):
-  별도 HTML(lab/pro/verdict) 풀 리로드 → 단일 SPA 6탭으로 통일. 본문 로직은
+  별도 HTML(lab/pro/verdict) 풀 리로드 → 단일 SPA 탭으로 통일. 본문 로직은
   dashboard-pages.jsx 전역(LabPage/ProPage/VerdictPanel)이 단일 정본으로 담당하고,
   app.jsx 는 그 전역을 인페이지 탭으로 마운트하며, 각 standalone HTML 은 같은 전역을
   마운트한다(로직 중복 제거·하드링크 제거).
@@ -12,9 +12,10 @@
 검증 대상:
   dashboard-pages.jsx
     - window.LabPage / window.ProPage / window.VerdictPanel 정의 + Object.assign 노출.
-    - VerdictPanel: append-only /record_decision POST + promote_checklist + ICON 맵 보존.
+    - VerdictPanel: append-only /record_decision POST + promote_checklist
+      (P7: 상태 아이콘 맵은 research-lab.jsx 의 _VDT_STATUS_ICON 단일 정본으로 이전).
   app.jsx
-    - STOM_TABS 6개(evolution/backtest/simulation + lab/pro/verdict).
+    - STOM_TABS 7개(evolution/backtest/simulation + lab/pro/verdict + process).
     - 새 3탭 전역 마운트(window.LabPage/ProPage/VerdictPanel).
     - stom-pagenav 에 lab.html/pro.html/verdict.html 하드링크 부재.
   verdict.html / lab.html / pro.html
@@ -64,12 +65,14 @@ class TestDashboardPages:
         assert "/record_decision" in src
         assert 'method: "POST"' in src
         assert "append-only" in src
-        # PROMOTE 체크리스트 렌더.
+        # PROMOTE 체크리스트 렌더 — P7: 공유 VdtPromoteChecklist 로 위임.
         assert "promote_checklist" in src
-        # ICON 맵 보존(verdict.html 원본과 동일 의미).
-        assert "const ICON = {" in src
-        assert '"pass"' not in src  # 키는 식별자형(pass/warn/fail/pending)
-        assert "pass:" in src and "warn:" in src and "fail:" in src and "pending:" in src
+        assert "window.VdtPromoteChecklist" in src
+        # ICON 맵 보존(verdict.html 원본과 동일 의미) — P7: 공유 VdtPromoteChecklist 로 이전돼
+        #   research-lab.jsx 의 `_VDT_STATUS_ICON` 단일 정본이 됐다(dashboard-pages 의 ICON 제거).
+        lab_src = _read("research-lab.jsx")
+        assert "const _VDT_STATUS_ICON = {" in lab_src
+        assert "pass:" in lab_src and "warn:" in lab_src and "fail:" in lab_src and "pending:" in lab_src
 
     def test_per_file_hook_aliases(self) -> None:
         """파일별 훅 별칭(다른 JSX 와 전역 충돌 방지) — useState_dp/useEffect_dp."""
@@ -133,15 +136,15 @@ class TestDashboardPages:
 
 # =================================================================== app.jsx
 class TestAppTabs:
-    def test_stom_tabs_has_six_entries(self) -> None:
+    def test_stom_tabs_has_seven_entries(self) -> None:
         src = _read("app.jsx")
         block = src.split("const STOM_TABS", 1)[1].split("];", 1)[0]
         for key in ('"evolution"', '"backtest"', '"simulation"',
-                    '"lab"', '"pro"', '"verdict"'):
+                    '"lab"', '"pro"', '"verdict"', '"process"'):
             assert key in block, f"STOM_TABS 누락: {key}"
-        # 6개 탭 엔트리(key: 줄 기준).
+        # 7개 탭 엔트리(key: 줄 기준) — 7번째 '프로세스 흐름'(process) 포함.
         key_lines = [ln for ln in block.splitlines() if "key:" in ln]
-        assert len(key_lines) == 6, f"탭 개수 6 아님: {len(key_lines)}"
+        assert len(key_lines) == 7, f"탭 개수 7 아님: {len(key_lines)}"
 
     def test_mounts_three_new_globals(self) -> None:
         src = _read("app.jsx")
