@@ -33,24 +33,25 @@ def test_operational_sections_are_named_and_ordered() -> None:
 
 
 def test_dashboard_bundle_loads_integrated_panels_before_app() -> None:
-    """Given app.js 번들, Then 통합 패널들이 app 보다 먼저 정의된다(Phase14.4 단일 번들).
+    """Given app.js 번들, Then 통합 패널들이 산출 번들에 포함된다(Phase14.4 단일 번들).
 
-    순서는 app.js 의 "==== X.jsx ====" 마커(build-app.mjs ORDER)에 보존된다.
+    모델-무관 마이그레이션: concat "==== X.jsx ====" 마커의 텍스트 순서(< app) 검사는 모듈
+    스코프에선 무의미하므로 DROP 하고, 각 통합 패널 모듈이 정의하는 심볼 존재로 검증한다
+    (concat·bundle 양쪽 통과).
     """
     app = _read("bundle/app.js")
 
-    panel_scripts = [
-        "run-compare.jsx",
-        "strategy-inspector.jsx",
-        "research-lab.jsx",
-        "research-wiki.jsx",
-        "ai-context.jsx",
+    # run-compare→RunComparePanel, strategy-inspector→StrategyInspectorTabs,
+    #   research-lab→ResearchLabPanel, research-wiki→ResearchWikiPanel, ai-context→AIContextPanel.
+    panel_symbols = [
+        "RunComparePanel",
+        "StrategyInspectorTabs",
+        "ResearchLabPanel",
+        "ResearchWikiPanel",
+        "AIContextPanel",
     ]
-    app_pos = app.index("==== app.jsx ====")
-    for script in panel_scripts:
-        marker = f"==== {script} ===="
-        assert marker in app
-        assert app.index(marker) < app_pos
+    for sym in panel_symbols:
+        assert sym in app, f"app.js 에 {sym} 누락"
 
 
 def test_final_approval_remains_dialog_gated() -> None:

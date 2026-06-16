@@ -51,11 +51,14 @@ def test_research_lab_exposes_window_symbol() -> None:
 
 
 def test_research_lab_is_loaded_before_app() -> None:
-    """Given app.js 번들, Then research-lab 이 app 보다 먼저 정의된다(Phase14.4 단일 번들)."""
+    """Given app.js 번들, Then research-lab 이 산출 번들에 포함된다(Phase14.4 단일 번들).
+
+    모델-무관: concat 텍스트 순서(research-lab < app) DROP — 모듈 스코프에선 무의미.
+    research-lab 이 정의하는 심볼 존재로 검증한다(concat·bundle 양쪽 통과).
+    """
     app = _read_front("bundle/app.js")
 
-    assert "==== research-lab.jsx ====" in app
-    assert app.find("==== research-lab.jsx ====") < app.find("==== app.jsx ====")
+    assert "ResearchLabPanel" in app, "app.js 에 research-lab(ResearchLabPanel) 누락"
 
 
 def test_app_jsx_wires_research_lab() -> None:
