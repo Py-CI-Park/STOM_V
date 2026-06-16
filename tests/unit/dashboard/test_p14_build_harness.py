@@ -18,7 +18,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import re
 import sys
 from pathlib import Path
 
@@ -182,43 +181,6 @@ def test_app_bundle_is_single_entry_graph() -> None:
     # manifest 가 bundle 모델 메타(엔트리 + 외부화 전역)를 기록.
     assert manifest.get("entry", "").endswith(".js"), "manifest 에 bundle entry 경로 누락."
     assert "externalizedGlobals" in manifest, "manifest 에 externalizedGlobals(react→window.React) 누락."
-
-
-def test_legacy_concat_fallback_still_26_sources() -> None:
-    """PR-6: 비상 롤백 경로(STOM_LEGACY_CONCAT=1)는 여전히 26-소스 concat 을 산출해야 한다.
-
-    flip 의 안전장치(즉시 롤백)가 살아있음을 가드한다. node/esbuild 가 없으면 skip(런타임 npm-free,
-    webui-build/node_modules gitignored). 폴백 실행 후 반드시 기본(bundle) 으로 재빌드해 트리를 flip
-    상태로 되돌린다(테스트가 산출물을 오염시키지 않도록)."""
-    import shutil
-    import subprocess
-
-    node = shutil.which("node")
-    if node is None or not (WEBUI_BUILD / "node_modules" / "esbuild").exists():
-        pytest.skip("node/esbuild 미설치(webui-build/node_modules gitignored) — concat 폴백 검증 생략")
-
-    build_src = (WEBUI_BUILD / "build-app.mjs").read_text(encoding="utf-8")
-    m = re.search(r"const ORDER = \[(.*?)\];", build_src, re.DOTALL)
-    assert m, "build-app.mjs 에서 ORDER 배열을 찾지 못했습니다."
-    order = re.findall(r'"([^"]+\.jsx)"', m.group(1))
-    assert len(order) == 26, f"ORDER 개수 비정상({len(order)})."
-
-    try:
-        # 폴백 빌드 → concat app.js + manifest model=="concat".
-        env = dict(os.environ, STOM_LEGACY_CONCAT="1")
-        r = subprocess.run([node, "build-app.mjs"], cwd=str(WEBUI_BUILD),
-                           capture_output=True, text=True, timeout=240, env=env)
-        assert r.returncode == 0, f"concat 폴백 빌드 실패: {r.stderr}"
-        app_js = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
-        missing = [f for f in order if f"==== {f} ====" not in app_js]
-        assert not missing, f"concat 폴백 app.js 에 누락된 소스: {missing}"
-        manifest = json.loads((FRONTEND / "bundle" / "manifest.json").read_text(encoding="utf-8"))
-        assert manifest.get("model") == "concat", "concat 폴백 manifest model 이 'concat' 이 아님."
-        assert len(manifest.get("appSources", [])) == 26, "concat 폴백 manifest appSources != 26."
-    finally:
-        # 트리를 flip 상태(기본=bundle)로 복원 — 폴백 산출물을 남기지 않는다.
-        subprocess.run([node, "build-app.mjs"], cwd=str(WEBUI_BUILD),
-                       capture_output=True, text=True, timeout=240)
 
 
 def test_content_hash_cache_consistency() -> None:
