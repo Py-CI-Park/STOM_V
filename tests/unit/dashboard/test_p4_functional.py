@@ -75,14 +75,18 @@ class TestBacktestCsvExport:
 
 # ============================================================ WFO/스윕 드릴다운
 class TestWfoSweepDrilldown:
-    """backtest.jsx — 결과표 행 클릭 → 선택 파라미터·전체 메트릭 펼침(백엔드 무변경, 프론트 전용)."""
+    """결과표 행 클릭 → 선택 파라미터·전체 메트릭 펼침(백엔드 무변경, 프론트 전용).
+
+    P5.2 분해 — _BtRowDetail 은 bt-tab-utils.jsx, BtWfoTable/BtSweepTable/BtModeResultPanel 은
+    bt-tab-mode-results.jsx 로 이동(backtest.jsx 는 THIN BARREL).
+    """
 
     def test_row_detail_component_defined(self) -> None:
-        src = _read("backtest.jsx")
+        src = _read("bt-tab-utils.jsx")
         assert "function _BtRowDetail(" in src
 
     def test_wfo_rows_expandable(self) -> None:
-        src = _read("backtest.jsx")
+        src = _read("bt-tab-mode-results.jsx")
         wfo = _slice(src, "function BtWfoTable(", "function BtSweepTable(")
         # 펼침 상태 + 행 클릭 토글 + 드릴다운 데이터(선택 파라미터·전체 메트릭).
         assert "const [expanded, setExpanded]" in wfo
@@ -92,7 +96,7 @@ class TestWfoSweepDrilldown:
         assert "<_BtRowDetail" in wfo
 
     def test_sweep_rows_expandable(self) -> None:
-        src = _read("backtest.jsx")
+        src = _read("bt-tab-mode-results.jsx")
         sweep = _slice(src, "function BtSweepTable(", "function BtModeResultPanel(")
         assert "const [expanded, setExpanded]" in sweep
         assert "setExpanded(isOpen ? null : r.__idx)" in sweep

@@ -7939,7 +7939,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     BtGuiParitySection
   });
 
-  // ../frontend/backtest.jsx
+  // ../frontend/bt-tab-utils.jsx
   var {
     useState: useState_bt,
     useEffect: useEffect_bt,
@@ -8000,6 +8000,33 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     if (sec < 60) return sec + "s";
     return Math.floor(sec / 60) + "m " + sec % 60 + "s";
   }
+  function _btNum(v, digits) {
+    const n = Number(v);
+    if (v == null || isNaN(n)) return "\u2014";
+    return n.toFixed(digits == null ? 2 : digits);
+  }
+  function _BtRowDetail({ label, data, numeric }) {
+    const keys = Object.keys(data || {});
+    return /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-2)", display: "flex", flexWrap: "wrap", gap: 14, marginTop: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", minWidth: 80 } }, label), keys.length === 0 ? /* @__PURE__ */ React.createElement("span", null, "\u2014") : keys.map((k) => /* @__PURE__ */ React.createElement("span", { key: k }, k, "=", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--ink-1)" } }, numeric ? _btNum(data[k]) : String(data[k])))));
+  }
+  var _BT_OVERLAY_COLORS = ["var(--teal)", "var(--amber)", "var(--violet)", "var(--blue)"];
+  function _btSweepRowCount(rows) {
+    if (!Array.isArray(rows)) return 0;
+    return rows.filter((r) => r && String(r.name || "").trim()).length;
+  }
+  function _btSweepValueCount(row) {
+    if (!row) return 0;
+    const lo = Number(row.min), hi = Number(row.max), step = Number(row.step);
+    if (!isFinite(lo) || !isFinite(hi)) return 0;
+    if (!isFinite(step) || step <= 0 || lo > hi) return 1;
+    return Math.min(64, Math.floor((hi - lo) / step + 1e-9) + 1);
+  }
+  function _pfFmtMoney(v) {
+    const n = Number(v) || 0;
+    return (n >= 0 ? "+" : "") + Math.round(n).toLocaleString() + "\uC6D0";
+  }
+
+  // ../frontend/bt-tab-library.jsx
   function BtLibraryPanel({ baseUrl, isDemo, kind, onKind, onPick, selectedName, reloadKey, lockKind }) {
     const [items, setItems] = useState_bt([]);
     const [query, setQuery] = useState_bt("");
@@ -8304,17 +8331,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       }
     ));
   }
-  function _btSweepRowCount(rows) {
-    if (!Array.isArray(rows)) return 0;
-    return rows.filter((r) => r && String(r.name || "").trim()).length;
-  }
-  function _btSweepValueCount(row) {
-    if (!row) return 0;
-    const lo = Number(row.min), hi = Number(row.max), step = Number(row.step);
-    if (!isFinite(lo) || !isFinite(hi)) return 0;
-    if (!isFinite(step) || step <= 0 || lo > hi) return 1;
-    return Math.min(64, Math.floor((hi - lo) / step + 1e-9) + 1);
-  }
+
+  // ../frontend/bt-tab-run.jsx
   function _SweepParamBuilder({ rows, onChange, disabled }) {
     const safeRows = Array.isArray(rows) ? rows : [];
     const setRow = (i, patch) => {
@@ -9056,15 +9074,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       );
     })))));
   }
-  function _btNum(v, digits) {
-    const n = Number(v);
-    if (v == null || isNaN(n)) return "\u2014";
-    return n.toFixed(digits == null ? 2 : digits);
-  }
-  function _BtRowDetail({ label, data, numeric }) {
-    const keys = Object.keys(data || {});
-    return /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-2)", display: "flex", flexWrap: "wrap", gap: 14, marginTop: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", minWidth: 80 } }, label), keys.length === 0 ? /* @__PURE__ */ React.createElement("span", null, "\u2014") : keys.map((k) => /* @__PURE__ */ React.createElement("span", { key: k }, k, "=", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--ink-1)" } }, numeric ? _btNum(data[k]) : String(data[k])))));
-  }
+
+  // ../frontend/bt-tab-mode-results.jsx
   function BtWfoTable({ result }) {
     const [sortKey, setSortKey] = useState_bt("round");
     const [sortAsc, setSortAsc] = useState_bt(true);
@@ -9241,7 +9252,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     const mr = data && data.mode_result;
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), mode === "wfo" ? "\uC804\uC9C4\uBD84\uC11D(WFO) \uACB0\uACFC" : "\uC2A4\uC715 \uACB0\uACFC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, err ? /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--red)" } }, err) : !mr ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uACB0\uACFC\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC774\uAC70\uB098 \uAD6C\uC870\uD654 \uACB0\uACFC\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.") : mode === "wfo" ? /* @__PURE__ */ React.createElement(BtWfoTable, { result: mr }) : /* @__PURE__ */ React.createElement(BtSweepTable, { result: mr })));
   }
-  var _BT_OVERLAY_COLORS = ["var(--teal)", "var(--amber)", "var(--violet)", "var(--blue)"];
+
+  // ../frontend/bt-tab-analysis.jsx
   function BtOverlayCurves({ series, normalize }) {
     if (!series || series.length === 0) return /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC624\uBC84\uB808\uC774\uD560 \uACE1\uC120\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.");
     const W = 680, H = 220, padL = 8, padR = 8, padT = 12, padB = 12;
@@ -9452,10 +9464,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       );
     })), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "run ", runs.length, "\uAC1C \xB7 \uC138\uB300 ", gens.length, "\uAC1C (\uC77D\uAE30 \uC804\uC6A9)"))));
   }
-  function _pfFmtMoney(v) {
-    const n = Number(v) || 0;
-    return (n >= 0 ? "+" : "") + Math.round(n).toLocaleString() + "\uC6D0";
-  }
   function BtPortfolioCurve({ equity }) {
     if (!equity || equity.length === 0) return /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uACB0\uD569 \uACE1\uC120 \uC5C6\uC74C");
     const W = 640, H = 180, padL = 8, padR = 8, padT = 12, padB = 12;
@@ -9571,6 +9579,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       gap: 5
     } }, p.label, /* @__PURE__ */ React.createElement("button", { onClick: () => removeAt(p.key), style: { background: "transparent", border: 0, color: "var(--ink-3)", cursor: "pointer", padding: 0 } }, "\u2715")))), picked.length < 2 && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uACB0\uD569 \uBD84\uC11D\uC5D0\uB294 2~6\uAC1C \uC804\uB7B5(\uC7A1/\uC138\uB300)\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."), err && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--red)" } }, err), result && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12, borderTop: "1px solid var(--line-1)", paddingTop: 10 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 16, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11 } }, "\uACB0\uD569 \uCD1D\uC190\uC775 ", /* @__PURE__ */ React.createElement("b", { style: { color: result.combined.total_profit_krw >= 0 ? "var(--teal)" : "var(--red)" } }, _pfFmtMoney(result.combined.total_profit_krw))), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11 } }, "\uACB0\uD569 MDD ", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--red)" } }, Math.round(result.combined.max_drawdown_krw).toLocaleString(), "\uC6D0")), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-3)" } }, result.combined.trading_days, "\uAC70\uB798\uC77C \xB7 ", result.count, "\uC804\uB7B5")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uACB0\uD569 \uB204\uC801\uC218\uC775\uACE1\uC120"), /* @__PURE__ */ React.createElement(BtPortfolioCurve, { equity: result.combined.equity })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uC804\uB7B5 \uAC04 \uC77C\uBCC4\uC190\uC775 \uC0C1\uAD00"), /* @__PURE__ */ React.createElement(BtPortfolioHeatmap, { correlation: result.correlation })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uAC1C\uBCC4 \uAE30\uC5EC"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, result.strategies.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { display: "flex", alignItems: "center", gap: 8, padding: "4px 6px", borderBottom: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, s.label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: s.total_profit_krw >= 0 ? "var(--teal)" : "var(--red)" } }, _pfFmtMoney(s.total_profit_krw)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", width: 64, textAlign: "right" } }, "\uAE30\uC5EC ", s.contribution_pct.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--red)", width: 90, textAlign: "right" } }, "MDD ", Math.round(s.max_drawdown_krw).toLocaleString())))))))));
   }
+
+  // ../frontend/bt-tab-root.jsx
   function BacktestTab({ baseUrl, wsStatus }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [health, setHealth] = useState_bt(null);
@@ -9825,6 +9835,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       }
     )), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uC9C4\uD654 \uC138\uB300 \uBD84\uC11D", accent: "var(--violet)", defaultOpen: false }, /* @__PURE__ */ React.createElement(BtEvoSelector, { baseUrl, isDemo, onPickGen, activeEvo: evoSource })), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uB2E4\uC911 \uC7A1 \uC624\uBC84\uB808\uC774(\uC218\uC775\uACE1\uC120 \uACB9\uCCD0\uBCF4\uAE30)", accent: "var(--teal)", defaultOpen: false }, /* @__PURE__ */ React.createElement(BtOverlayPanel, { baseUrl, isDemo, jobs: jobsList })), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uD3EC\uD2B8\uD3F4\uB9AC\uC624 \uACB0\uD569 \uBD84\uC11D", accent: "var(--blue)", defaultOpen: false }, /* @__PURE__ */ React.createElement(BtPortfolioPanel, { baseUrl, isDemo, jobs: jobsList, activeEvo: evoSource }))));
   }
+
+  // ../frontend/backtest.jsx
   Object.assign(window, { BacktestTab });
 
   // ../frontend/simulation-charts.jsx
