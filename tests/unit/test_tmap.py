@@ -511,4 +511,5 @@ class TestFrontendContract:
         index = (frontend / "index.html").read_text(encoding="utf-8")
         assert "bundle/app.js?v=" in index
         app_bundle = (frontend / "bundle" / "app.js").read_text(encoding="utf-8")
-        assert "==== research-lab.jsx ====" in app_bundle
+        # 모델-무관: concat 마커 대신 research-lab 이 실제 정의하는 심볼 존재로 검증(concat·bundle 양쪽 통과).
+        assert "ResearchLabPanel" in app_bundle

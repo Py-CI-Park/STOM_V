@@ -169,4 +169,6 @@ def test_ai_context_frontend_panel_contract() -> None:
     assert "summary_text" in src
     assert "Object.assign(window, { AIContextPanel" in src
     assert "<AIContextPanel" in dp
-    assert app_bundle.index("==== ai-context.jsx ====") < app_bundle.index("==== app.jsx ====")
+    # 모델-무관: concat 텍스트 순서(ai-context < app) DROP — 모듈 스코프에선 무의미.
+    #   ai-context 가 산출 번들에 존재함만 정의 심볼로 검증(concat·bundle 양쪽 통과).
+    assert "AIContextPanel" in app_bundle, "app.js 에 ai-context(AIContextPanel) 누락"

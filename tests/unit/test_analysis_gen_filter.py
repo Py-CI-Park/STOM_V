@@ -137,6 +137,7 @@ class TestFrontendContract:
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # Phase14.4: research-lab 등 운영 컴포넌트는 단일 컴파일 번들 bundle/app.js 로 캐시 버전된다.
         assert "bundle/app.js?v=" in src
-        # 소스는 여전히 존재(빌드 입력) — 빌드 ORDER 에 포함됨을 산출물 마커로 확인.
+        # 소스는 여전히 존재(빌드 입력) — 모델-무관: concat 마커 대신 research-lab 이 정의하는
+        #   심볼 존재로 산출물 포함을 확인(concat·bundle 양쪽 통과).
         app_bundle = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
-        assert "==== research-lab.jsx ====" in app_bundle
+        assert "ResearchLabPanel" in app_bundle

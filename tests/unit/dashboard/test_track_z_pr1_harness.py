@@ -105,7 +105,12 @@ class TestTrackZSourceContract:
 
     def test_default_concat_path_still_26_sources(self) -> None:
         """The default (flag-OFF) manifest must remain the legacy 26-source concat model —
-        PR-1 does not flip the default."""
+        PR-1 does not flip the default.
+
+        TODO(flip P4/5b): this is an INTENTIONAL build-model guard (flag-OFF concat invariant).
+        At the flip, the committed manifest gains a model field; replace these two asserts with a
+        model=="bundle" single-entry-graph invariant. Until then (default==concat, manifest has
+        no model field) it must keep asserting the 26-source concat reality (KEEP green)."""
         manifest = json.loads(_read(FRONTEND / "bundle" / "manifest.json"))
         assert manifest["appSources"][-1] == "app.jsx"
         assert len(manifest["appSources"]) == 26

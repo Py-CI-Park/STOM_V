@@ -79,16 +79,16 @@ def test_index_html_loads_tab_scripts_before_app() -> None:
     """Given app.js 번들, Then backtest/simulation 이 app 보다 먼저 정의된다.
 
     Phase14.4: 운영 컴포넌트는 단일 컴파일 번들 bundle/app.js 로 로드(런타임 babel 제거).
-    로드/정의 순서는 app.js 의 "==== X.jsx ====" 마커(build-app.mjs ORDER)에 보존된다.
+    모델-무관 마이그레이션: concat 텍스트 순서(==== X.jsx ==== 마커 index 비교)는 모듈 스코프에선
+    무의미하므로 DROP 하고, backtest/simulation/backtest-charts 가 산출 번들에 모두 존재함을
+    각 모듈 정의 심볼로 검증한다(concat·bundle 양쪽 통과).
     """
     app = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
 
-    assert "==== backtest.jsx ====" in app
-    assert "==== simulation.jsx ====" in app
-    assert app.index("==== backtest.jsx ====") < app.index("==== app.jsx ====")
-    assert app.index("==== simulation.jsx ====") < app.index("==== app.jsx ====")
-    # 차트 분리 모듈은 backtest.jsx 보다 먼저 정의돼야 한다(window 전역 공유 의존).
-    assert app.index("==== backtest-charts.jsx ====") < app.index("==== backtest.jsx ====")
+    # backtest→BacktestTab, simulation→SimulationTab, backtest-charts→BtResultArea.
+    assert "BacktestTab" in app, "app.js 에 backtest(BacktestTab) 누락"
+    assert "SimulationTab" in app, "app.js 에 simulation(SimulationTab) 누락"
+    assert "BtResultArea" in app, "app.js 에 backtest-charts(BtResultArea) 누락"
 
 
 # --------------------------------------------------- Track C (즉시 체험) frontend

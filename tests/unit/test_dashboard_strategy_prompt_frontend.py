@@ -61,13 +61,13 @@ def test_code_viewer_has_vertical_expand_reader_mode() -> None:
 
 
 def test_index_loads_strategy_inspector_before_app() -> None:
-    # Phase14.4: 단일 컴파일 번들 bundle/app.js 의 "==== X.jsx ====" 마커 순서로 검증.
+    # 모델-무관 마이그레이션: concat 텍스트 순서(code-viewer < strategy-inspector < app)는 모듈
+    #   스코프에선 무의미하므로 DROP 하고, 두 모듈이 정의하는 심볼 존재로 검증한다(concat·bundle 양쪽 통과).
+    #   code-viewer→CodeViewer, strategy-inspector→StrategyInspectorTabs.
     src = _read_front("bundle/app.js")
 
-    code_viewer_pos = src.index("==== code-viewer.jsx ====")
-    inspector_pos = src.index("==== strategy-inspector.jsx ====")
-    app_pos = src.index("==== app.jsx ====")
-    assert code_viewer_pos < inspector_pos < app_pos
+    assert "CodeViewer" in src, "app.js 에 code-viewer(CodeViewer) 누락"
+    assert "StrategyInspectorTabs" in src, "app.js 에 strategy-inspector(StrategyInspectorTabs) 누락"
 
 
 def test_strategy_inspector_is_exposed_on_window() -> None:

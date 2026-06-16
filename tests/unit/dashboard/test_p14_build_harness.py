@@ -161,6 +161,9 @@ def test_app_bundle_contains_all_ordered_sources() -> None:
     assert len(order) >= 20, f"ORDER 파싱 비정상(개수 {len(order)})."
 
     app_js = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
+    # TODO(flip P4/5b): "==== {f} ====" concat 마커 검사는 빌드-모델 가드다(concat 전용).
+    #   flip 후엔 single-entry-graph 불변식(엔트리가 모듈셋 import; manifest model=="bundle")으로 교체.
+    #   현재(기본=concat) 동안은 concat 산출 마커로 완전성을 검사한다(KEEP green).
     missing = [f for f in order if f"==== {f} ====" not in app_js]
     assert not missing, f"app.js 에 누락된 소스(재빌드 필요): {missing}"
     # 마지막 엔트리(app.jsx)는 ReactDOM 마운트를 포함해야 한다(엔트리 무결성).
@@ -199,6 +202,9 @@ def test_content_hash_cache_consistency() -> None:
         html = _read(FRONTEND / entry)
         assert f"bundle/stom-ui.js?v={stom_v}" in html, f"{entry} stom-ui ?v= 불일치(stale)."
 
+    # TODO(flip P4/5b): appSources==26 / [-1]=="app.jsx" 는 concat 모델 가드다(빌드-모델 차이).
+    #   manifest 에 model 필드가 추가되면 model=="bundle" 분기로 single-entry-graph 불변식으로 교체.
+    #   현재 manifest 에는 model 필드가 없으므로(기본=concat) 26-source concat 현실을 검사한다(KEEP green).
     # 매니페스트 appSources 는 build-app.mjs ORDER 와 동일(완전성).
     assert manifest["appSources"][-1] == "app.jsx"
     assert len(manifest["appSources"]) == 26

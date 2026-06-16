@@ -164,9 +164,12 @@ class TestFrontendContracts:
         # Phase14.7: lab.html 은 컴파일 번들 bundle/app.js 로 모든 의존을 로드한다(런타임 babel 제거).
         src = (FRONTEND / "lab.html").read_text(encoding="utf-8")
         assert "bundle/app.js" in src, "lab.html 이 컴파일 번들 app.js 를 로드해야 한다"
+        # 모델-무관: concat "==== X.jsx ====" 마커 대신 각 의존 모듈이 정의하는 심볼 존재로 검증
+        #   (concat·bundle 양쪽 통과). connection→isDemoSource, chart→FitnessChart,
+        #   analysis→EdgeRatioPanel, research-pro→ResearchProPanel.
         app_bundle = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
-        for dep in ("connection.jsx", "chart.jsx", "analysis.jsx", "research-pro.jsx"):
-            assert f"==== {dep} ====" in app_bundle, f"app.js 에 {dep} 가 포함돼야 연구실이 렌더된다"
+        for sym in ("isDemoSource", "FitnessChart", "EdgeRatioPanel", "ResearchProPanel"):
+            assert sym in app_bundle, f"app.js 에 {sym} 가 포함돼야 연구실이 렌더된다"
 
     def test_research_pro_exports_heatmap_panel(self):
         src = (FRONTEND / "research-pro.jsx").read_text(encoding="utf-8")

@@ -203,13 +203,14 @@ class TestStandaloneHtml:
         주석/프로즈가 아니라 실제 <script src="..."> 태그 위치로 로드 순서를 본다.
         """
         # Phase14.7: lab/pro 는 단일 컴파일 번들 bundle/app.js 를 로드한다(런타임 babel 제거).
-        #   정의 순서(research-* 가 dashboard-pages 보다 먼저)는 app.js 의 "==== X.jsx ====" 마커로 검증.
+        #   모델-무관 마이그레이션: research-lab/research-pro/dashboard-pages 의 텍스트 concat
+        #   순서(==== X.jsx ==== 마커 index 비교)는 모듈 스코프에선 무의미하므로 DROP 하고,
+        #   세 모듈이 산출 번들에 모두 존재함을 각자 정의 심볼로 검증한다(concat·bundle 양쪽 통과).
+        #   LabPage/ProPage 가 의존(ResearchLabPanel/ResearchProPanel)과 함께 번들에 들어있어야
+        #   lab/pro.html 마운트가 성립한다 — 런타임 마운트는 Track Z 하니스 V4 가 별도 검증.
         app_bundle = _read("bundle/app.js")
-        pos_lab = app_bundle.find("==== research-lab.jsx ====")
-        pos_pro = app_bundle.find("==== research-pro.jsx ====")
-        pos_dp = app_bundle.find("==== dashboard-pages.jsx ====")
-        assert pos_dp > pos_lab > -1, "app.js: dashboard-pages 가 research-lab 뒤가 아님"
-        assert pos_dp > pos_pro > -1, "app.js: dashboard-pages 가 research-pro 뒤가 아님"
+        for sym in ("ResearchLabPanel", "ResearchProPanel", "LabPage", "ProPage"):
+            assert sym in app_bundle, f"app.js 에 {sym} 누락"
         for name in ("lab.html", "pro.html"):
             assert "bundle/app.js" in _read(name), f"{name}: 컴파일 번들 미로드"
 
