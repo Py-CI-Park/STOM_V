@@ -142,12 +142,18 @@ def test_backtest_charts_axis_year_and_yticks() -> None:
 
 
 def test_chart_jsx_axis_year_and_yticks() -> None:
-    src = (FRONTEND / "chart.jsx").read_text(encoding="utf-8")
+    # P5.4: chart.jsx(1,742줄) 분해로 ProfitChart 는 chart-equity.jsx, BacktestDetailChart
+    #   는 chart-backtest-detail.jsx 로 이동. 연도 보강 포맷터(fmtDateY)·중간 눈금 헬퍼
+    #   (_axisTicks) 사용 불변식은 chart 패밀리 합본 기준으로 유지(렌더 동작 불변).
+    src = "".join(
+        (FRONTEND / name).read_text(encoding="utf-8")
+        for name in ("chart-equity.jsx", "chart-backtest-detail.jsx")
+    )
     # BacktestDetailChart 날짜 X축에 연도 보강 포맷터.
-    assert "fmtDateY" in src, "chart.jsx 연도 보강 날짜 포맷터 누락"
+    assert "fmtDateY" in src, "chart 패밀리 연도 보강 날짜 포맷터 누락"
     assert src.count("fmtDateY") >= 2, "fmtDateY 가 x축 렌더에 실제 사용돼야 한다"
     # 중간 눈금 헬퍼 + 실제 사용(ProfitChart·BacktestDetailChart 양 축).
-    assert "_axisTicks" in src, "chart.jsx 중간 눈금 헬퍼 누락"
+    assert "_axisTicks" in src, "chart 패밀리 중간 눈금 헬퍼 누락"
     assert src.count("_axisTicks") >= 3, "_axisTicks 가 여러 차트 축에 실제 사용돼야 한다"
     # 연도 포맷이 YYYY 를 만든다.
     assert "slice(0, 4)" in src
@@ -167,7 +173,7 @@ const fs = require('fs');
 const path = require('path');
 const dir = process.argv[2];
 const esbuild = require(path.join(dir, '..', 'webui-build', 'node_modules', 'esbuild'));
-const files = ['backtest-charts.jsx', 'chart.jsx'];
+const files = ['backtest-charts.jsx', 'chart.jsx', 'chart-primitives.jsx', 'chart-equity.jsx', 'chart-backtest-detail.jsx', 'chart-hall-of-fame.jsx'];
 let ok = true;
 for (const f of files) {
   try { esbuild.transformSync(fs.readFileSync(path.join(dir, f), 'utf8'), { loader: 'jsx', jsx: 'transform', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment' }); }
