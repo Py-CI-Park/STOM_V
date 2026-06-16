@@ -7673,6 +7673,93 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "GUI \uD328\uB9AC\uD2F0 \u2014 STOM \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC \uC774\uBBF8\uC9C0 2\uC7A5"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uBD80\uAC00\uC815\uBCF4 2\xD72 \xB7 \uACB0\uACFC 2\xD71")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: grid ? { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 14 } : { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(BtMddRandomChart, { data: gp.mdd_random }), /* @__PURE__ */ React.createElement(BtDailyPnlChart, { data: gp.daily }), /* @__PURE__ */ React.createElement(BtHourlyPnlChart, { data: gp.hourly }), /* @__PURE__ */ React.createElement(BtWeekdayPnlChart, { data: gp.weekday }), /* @__PURE__ */ React.createElement(BtHoldingCurveChart, { data: gp.holding }), /* @__PURE__ */ React.createElement(BtTradeRollingChart, { data: gp.trade_rolling }))));
   }
 
+  // ../frontend/bt-tab-utils.jsx
+  var {
+    useState: useState_bt,
+    useEffect: useEffect_bt,
+    useCallback: useCallback_bt,
+    useRef: useRef_bt,
+    useMemo: useMemo_bt
+  } = React;
+  function _btFetchJson(url, timeoutMs) {
+    return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 5e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+  }
+  function _btPostJson(url, body, timeoutMs) {
+    return fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body || {}),
+      signal: AbortSignal.timeout(timeoutMs || 8e3)
+    }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
+  }
+  function _btWsUrl(baseUrl, path) {
+    let origin = baseUrl || (window.location ? window.location.origin : "");
+    origin = origin.replace(/^http:/i, "ws:").replace(/^https:/i, "wss:");
+    if (!/^wss?:/i.test(origin)) {
+      const loc = window.location || {};
+      const proto = loc.protocol === "https:" ? "wss:" : "ws:";
+      origin = proto + "//" + (loc.host || "");
+    }
+    return origin.replace(/\/$/, "") + path;
+  }
+  var _BT_JOB_BADGE = {
+    pending: { txt: "\uB300\uAE30", cls: "badge idle" },
+    running: { txt: "\uC2E4\uD589\uC911", cls: "badge run" },
+    success: { txt: "\uC131\uACF5", cls: "badge done" },
+    no_trades: { txt: "\uAC70\uB798 0\uAC74", cls: "badge warn" },
+    error: { txt: "\uC624\uB958", cls: "badge err" },
+    timeout: { txt: "\uC2DC\uAC04\uCD08\uACFC", cls: "badge err" },
+    cancelled: { txt: "\uCDE8\uC18C\uB428", cls: "badge idle" }
+  };
+  var _BT_MODE_RUN_LABEL = {
+    backtest: "\uBC31\uD14C\uC2A4\uD2B8 \uC2E4\uD589",
+    optimize: "\uCD5C\uC801\uD654 \uC2E4\uD589",
+    wfo: "\uC804\uC9C4\uBD84\uC11D \uC2E4\uD589",
+    sweep: "\uC2A4\uC715 \uC2E4\uD589"
+  };
+  var _BT_MODE_TIP = {
+    backtest: "\uBC31\uD14C\uC2A4\uD2B8 \u2014 \uACE0\uB978 \uAE30\uAC04\uC5D0 \uB9E4\uC218/\uB9E4\uB3C4 \uC870\uAC74\uC2DD\uC744 1\uD68C \uC2DC\uBBAC\uB808\uC774\uC158\uD569\uB2C8\uB2E4.",
+    optimize: "\uCD5C\uC801\uD654 \u2014 \uD30C\uB77C\uBBF8\uD130 \uD0D0\uC0C9\uACF5\uAC04\uC744 \uACA9\uC790\uB85C \uD6D1\uC5B4 \uCD5C\uC801 \uC870\uD569\uC744 \uCC3E\uC2B5\uB2C8\uB2E4.",
+    wfo: "WFO(\uC804\uC9C4\uBD84\uC11D, Walk-Forward) \u2014 \uD6C8\uB828 \uAD6C\uAC04\uC5D0\uC11C \uD30C\uB77C\uBBF8\uD130\uB97C \uACE0\uB978 \uB4A4, \uBC14\uB85C \uB2E4\uC74C \uBBF8\uD559\uC2B5 \uAD6C\uAC04\uC5D0\uC11C \uAC80\uC99D\uD558\uAE30\uB97C \uAD74\uB824\uAC00\uBA70 \uBC18\uBCF5\uD569\uB2C8\uB2E4(\uACFC\uCD5C\uC801\uD654 \uC810\uAC80).",
+    sweep: "\uC2A4\uC715(sweep) \u2014 \uD30C\uB77C\uBBF8\uD130 \uC870\uD569 \uB610\uB294 \uB0A0\uC9DC \uC708\uB3C4\uC6B0\uB97C \uC77C\uAD04\uB85C \uC4F8\uC5B4\uAC00\uBA70 \uC131\uACFC \uC9C0\uD615(\uACE0\uC6D0/\uC808\uBCBD)\uC744 \uD3BC\uCCD0 \uBD05\uB2C8\uB2E4."
+  };
+  var _BT_YEAR = (/* @__PURE__ */ new Date()).getFullYear();
+  var _BT_START_EG = _BT_YEAR + "0101";
+  var _BT_END_EG = _BT_YEAR + "1231";
+  function _btElapsed(rec) {
+    const s = rec.started_at;
+    if (!s) return "\u2014";
+    const end = rec.finished_at || Date.now() / 1e3;
+    const sec = Math.max(0, Math.round(end - s));
+    if (sec < 60) return sec + "s";
+    return Math.floor(sec / 60) + "m " + sec % 60 + "s";
+  }
+  function _btNum(v, digits) {
+    const n = Number(v);
+    if (v == null || isNaN(n)) return "\u2014";
+    return n.toFixed(digits == null ? 2 : digits);
+  }
+  function _BtRowDetail({ label, data, numeric }) {
+    const keys = Object.keys(data || {});
+    return /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-2)", display: "flex", flexWrap: "wrap", gap: 14, marginTop: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", minWidth: 80 } }, label), keys.length === 0 ? /* @__PURE__ */ React.createElement("span", null, "\u2014") : keys.map((k) => /* @__PURE__ */ React.createElement("span", { key: k }, k, "=", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--ink-1)" } }, numeric ? _btNum(data[k]) : String(data[k])))));
+  }
+  var _BT_OVERLAY_COLORS = ["var(--teal)", "var(--amber)", "var(--violet)", "var(--blue)"];
+  function _btSweepRowCount(rows) {
+    if (!Array.isArray(rows)) return 0;
+    return rows.filter((r) => r && String(r.name || "").trim()).length;
+  }
+  function _btSweepValueCount(row) {
+    if (!row) return 0;
+    const lo = Number(row.min), hi = Number(row.max), step = Number(row.step);
+    if (!isFinite(lo) || !isFinite(hi)) return 0;
+    if (!isFinite(step) || step <= 0 || lo > hi) return 1;
+    return Math.min(64, Math.floor((hi - lo) / step + 1e-9) + 1);
+  }
+  function _pfFmtMoney(v) {
+    const n = Number(v) || 0;
+    return (n >= 0 ? "+" : "") + Math.round(n).toLocaleString() + "\uC6D0";
+  }
+
   // ../frontend/bt-result-area.jsx
   var _BT_METRIC_CARDS = [
     { key: "trade_count", label: "\uAC70\uB798\uC218", fmt: (v) => fmtInt(v) },
@@ -7974,93 +8061,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     BtGuiParitySection
   });
 
-  // ../frontend/bt-tab-utils.jsx
-  var {
-    useState: useState_bt,
-    useEffect: useEffect_bt,
-    useCallback: useCallback_bt,
-    useRef: useRef_bt,
-    useMemo: useMemo_bt
-  } = React;
-  function _btFetchJson2(url, timeoutMs) {
-    return fetch(url, { signal: AbortSignal.timeout(timeoutMs || 5e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
-  }
-  function _btPostJson(url, body, timeoutMs) {
-    return fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body || {}),
-      signal: AbortSignal.timeout(timeoutMs || 8e3)
-    }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
-  }
-  function _btWsUrl(baseUrl, path) {
-    let origin = baseUrl || (window.location ? window.location.origin : "");
-    origin = origin.replace(/^http:/i, "ws:").replace(/^https:/i, "wss:");
-    if (!/^wss?:/i.test(origin)) {
-      const loc = window.location || {};
-      const proto = loc.protocol === "https:" ? "wss:" : "ws:";
-      origin = proto + "//" + (loc.host || "");
-    }
-    return origin.replace(/\/$/, "") + path;
-  }
-  var _BT_JOB_BADGE = {
-    pending: { txt: "\uB300\uAE30", cls: "badge idle" },
-    running: { txt: "\uC2E4\uD589\uC911", cls: "badge run" },
-    success: { txt: "\uC131\uACF5", cls: "badge done" },
-    no_trades: { txt: "\uAC70\uB798 0\uAC74", cls: "badge warn" },
-    error: { txt: "\uC624\uB958", cls: "badge err" },
-    timeout: { txt: "\uC2DC\uAC04\uCD08\uACFC", cls: "badge err" },
-    cancelled: { txt: "\uCDE8\uC18C\uB428", cls: "badge idle" }
-  };
-  var _BT_MODE_RUN_LABEL = {
-    backtest: "\uBC31\uD14C\uC2A4\uD2B8 \uC2E4\uD589",
-    optimize: "\uCD5C\uC801\uD654 \uC2E4\uD589",
-    wfo: "\uC804\uC9C4\uBD84\uC11D \uC2E4\uD589",
-    sweep: "\uC2A4\uC715 \uC2E4\uD589"
-  };
-  var _BT_MODE_TIP = {
-    backtest: "\uBC31\uD14C\uC2A4\uD2B8 \u2014 \uACE0\uB978 \uAE30\uAC04\uC5D0 \uB9E4\uC218/\uB9E4\uB3C4 \uC870\uAC74\uC2DD\uC744 1\uD68C \uC2DC\uBBAC\uB808\uC774\uC158\uD569\uB2C8\uB2E4.",
-    optimize: "\uCD5C\uC801\uD654 \u2014 \uD30C\uB77C\uBBF8\uD130 \uD0D0\uC0C9\uACF5\uAC04\uC744 \uACA9\uC790\uB85C \uD6D1\uC5B4 \uCD5C\uC801 \uC870\uD569\uC744 \uCC3E\uC2B5\uB2C8\uB2E4.",
-    wfo: "WFO(\uC804\uC9C4\uBD84\uC11D, Walk-Forward) \u2014 \uD6C8\uB828 \uAD6C\uAC04\uC5D0\uC11C \uD30C\uB77C\uBBF8\uD130\uB97C \uACE0\uB978 \uB4A4, \uBC14\uB85C \uB2E4\uC74C \uBBF8\uD559\uC2B5 \uAD6C\uAC04\uC5D0\uC11C \uAC80\uC99D\uD558\uAE30\uB97C \uAD74\uB824\uAC00\uBA70 \uBC18\uBCF5\uD569\uB2C8\uB2E4(\uACFC\uCD5C\uC801\uD654 \uC810\uAC80).",
-    sweep: "\uC2A4\uC715(sweep) \u2014 \uD30C\uB77C\uBBF8\uD130 \uC870\uD569 \uB610\uB294 \uB0A0\uC9DC \uC708\uB3C4\uC6B0\uB97C \uC77C\uAD04\uB85C \uC4F8\uC5B4\uAC00\uBA70 \uC131\uACFC \uC9C0\uD615(\uACE0\uC6D0/\uC808\uBCBD)\uC744 \uD3BC\uCCD0 \uBD05\uB2C8\uB2E4."
-  };
-  var _BT_YEAR = (/* @__PURE__ */ new Date()).getFullYear();
-  var _BT_START_EG = _BT_YEAR + "0101";
-  var _BT_END_EG = _BT_YEAR + "1231";
-  function _btElapsed(rec) {
-    const s = rec.started_at;
-    if (!s) return "\u2014";
-    const end = rec.finished_at || Date.now() / 1e3;
-    const sec = Math.max(0, Math.round(end - s));
-    if (sec < 60) return sec + "s";
-    return Math.floor(sec / 60) + "m " + sec % 60 + "s";
-  }
-  function _btNum(v, digits) {
-    const n = Number(v);
-    if (v == null || isNaN(n)) return "\u2014";
-    return n.toFixed(digits == null ? 2 : digits);
-  }
-  function _BtRowDetail({ label, data, numeric }) {
-    const keys = Object.keys(data || {});
-    return /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-2)", display: "flex", flexWrap: "wrap", gap: 14, marginTop: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", minWidth: 80 } }, label), keys.length === 0 ? /* @__PURE__ */ React.createElement("span", null, "\u2014") : keys.map((k) => /* @__PURE__ */ React.createElement("span", { key: k }, k, "=", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--ink-1)" } }, numeric ? _btNum(data[k]) : String(data[k])))));
-  }
-  var _BT_OVERLAY_COLORS = ["var(--teal)", "var(--amber)", "var(--violet)", "var(--blue)"];
-  function _btSweepRowCount(rows) {
-    if (!Array.isArray(rows)) return 0;
-    return rows.filter((r) => r && String(r.name || "").trim()).length;
-  }
-  function _btSweepValueCount(row) {
-    if (!row) return 0;
-    const lo = Number(row.min), hi = Number(row.max), step = Number(row.step);
-    if (!isFinite(lo) || !isFinite(hi)) return 0;
-    if (!isFinite(step) || step <= 0 || lo > hi) return 1;
-    return Math.min(64, Math.floor((hi - lo) / step + 1e-9) + 1);
-  }
-  function _pfFmtMoney(v) {
-    const n = Number(v) || 0;
-    return (n >= 0 ? "+" : "") + Math.round(n).toLocaleString() + "\uC6D0";
-  }
-
   // ../frontend/bt-tab-library.jsx
   function BtLibraryPanel({ baseUrl, isDemo, kind, onKind, onPick, selectedName, reloadKey, lockKind }) {
     const [items, setItems] = useState_bt([]);
@@ -8074,7 +8074,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       }
       setLoading(true);
       setErr("");
-      _btFetchJson2(baseUrl + "/bt/strategies?kind=" + encodeURIComponent(kind), 4e3).then((j) => setItems(Array.isArray(j && j.items) ? j.items : [])).catch((e) => {
+      _btFetchJson(baseUrl + "/bt/strategies?kind=" + encodeURIComponent(kind), 4e3).then((j) => setItems(Array.isArray(j && j.items) ? j.items : [])).catch((e) => {
         setItems([]);
         setErr(String(e));
       }).finally(() => setLoading(false));
@@ -8217,7 +8217,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         }
         return;
       }
-      _btFetchJson2(baseUrl + "/bt/strategy?kind=" + encodeURIComponent(kind) + "&name=" + encodeURIComponent(name), 4e3).then((j) => {
+      _btFetchJson(baseUrl + "/bt/strategy?kind=" + encodeURIComponent(kind) + "&name=" + encodeURIComponent(name), 4e3).then((j) => {
         if (j && j.available) {
           setCode(j.code || "");
           setEditName(j.name || name);
@@ -8482,14 +8482,14 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         setRange(null);
         return;
       }
-      _btFetchJson2(baseUrl + "/bt/data_range", 5e3).then(setRange).catch(() => setRange(null));
+      _btFetchJson(baseUrl + "/bt/data_range", 5e3).then(setRange).catch(() => setRange(null));
     }, [baseUrl, isDemo]);
     const loadJobs = useCallback_bt(() => {
       if (isDemo || !baseUrl) {
         setJobs([]);
         return;
       }
-      _btFetchJson2(baseUrl + "/bt/jobs", 4e3).then((j) => setJobs(Array.isArray(j && j.jobs) ? j.jobs : [])).catch(() => {
+      _btFetchJson(baseUrl + "/bt/jobs", 4e3).then((j) => setJobs(Array.isArray(j && j.jobs) ? j.jobs : [])).catch(() => {
       });
     }, [baseUrl, isDemo]);
     useEffect_bt(() => {
@@ -8556,7 +8556,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       if (isDemo || !baseUrl || !trackId) return;
       const id = setInterval(() => {
         if (wsOkRef.current) return;
-        _btFetchJson2(baseUrl + "/bt/job?job_id=" + encodeURIComponent(trackId), 4e3).then((j) => {
+        _btFetchJson(baseUrl + "/bt/job?job_id=" + encodeURIComponent(trackId), 4e3).then((j) => {
           if (j && j.available) {
             setActiveJob(j);
             if (j.status !== "running" && j.status !== "pending") {
@@ -8667,7 +8667,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     const cancelJob = (jobId) => {
       if (isDemo || !jobId) return;
       _btPostJson(baseUrl + "/bt/job/cancel", { job_id: jobId }, 5e3).then(() => {
-        _btFetchJson2(baseUrl + "/bt/job?job_id=" + encodeURIComponent(jobId), 4e3).then((j) => {
+        _btFetchJson(baseUrl + "/bt/job?job_id=" + encodeURIComponent(jobId), 4e3).then((j) => {
           if (j && j.available) setActiveJob(j);
           loadJobs();
         }).catch(() => {
@@ -9269,7 +9269,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         return;
       }
       let cancelled = false;
-      _btFetchJson2(baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId), 12e3).then((j) => {
+      _btFetchJson(baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId), 12e3).then((j) => {
         if (!cancelled) {
           setData(j);
           setErr("");
@@ -9350,7 +9350,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       setBusy(true);
       setErr("");
       setResult(null);
-      _btFetchJson2(baseUrl + "/bt/overlay?job_ids=" + encodeURIComponent(picked.join(",")), 15e3).then((j) => {
+      _btFetchJson(baseUrl + "/bt/overlay?job_ids=" + encodeURIComponent(picked.join(",")), 15e3).then((j) => {
         if (j && j.status === "ok") setResult(j);
         else {
           setErr(j && j.message || "\uC624\uBC84\uB808\uC774 \uC2E4\uD328");
@@ -9460,7 +9460,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         return;
       }
       setLoadingRuns(true);
-      _btFetchJson2(baseUrl + "/runs", 6e3).then((j) => setRuns(Array.isArray(j && j.runs) ? j.runs : [])).catch(() => setRuns([])).finally(() => setLoadingRuns(false));
+      _btFetchJson(baseUrl + "/runs", 6e3).then((j) => setRuns(Array.isArray(j && j.runs) ? j.runs : [])).catch(() => setRuns([])).finally(() => setLoadingRuns(false));
     }, [baseUrl, isDemo]);
     useEffect_bt(() => {
       loadRuns();
@@ -9471,7 +9471,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         return;
       }
       setLoadingGens(true);
-      _btFetchJson2(baseUrl + "/bt/evo_gens?run_id=" + encodeURIComponent(runId), 6e3).then((j) => setGens(Array.isArray(j && j.items) ? j.items : [])).catch(() => setGens([])).finally(() => setLoadingGens(false));
+      _btFetchJson(baseUrl + "/bt/evo_gens?run_id=" + encodeURIComponent(runId), 6e3).then((j) => setGens(Array.isArray(j && j.items) ? j.items : [])).catch(() => setGens([])).finally(() => setLoadingGens(false));
     }, [baseUrl, isDemo, runId]);
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uC9C4\uD654 \uC138\uB300 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadRuns, disabled: isDemo || loadingRuns }, loadingRuns ? "\uB85C\uB529\u2026" : "\u21BB run")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 10 } }, isDemo ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uC9C4\uD654 run \uBAA9\uB85D\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uC9C4\uD654 run"), /* @__PURE__ */ React.createElement("select", { className: "select", value: runId, onChange: (e) => setRunId(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 run \uC120\uD0DD \u2014"), runs.map((r) => /* @__PURE__ */ React.createElement("option", { key: r.run_id, value: r.run_id }, r.run_id, r.label ? " \xB7 " + r.label : "", r.status ? " [" + r.status + "]" : "")))), runId && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 3, maxHeight: 280, overflowY: "auto" } }, loadingGens ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC138\uB300 \uB85C\uB529 \uC911\u2026") : gens.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC138\uB300\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4") : gens.map((g) => {
       const active = activeEvo && activeEvo.run_id === runId && activeEvo.gen_no === g.gen_no;
@@ -9683,7 +9683,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     const runCompare = useCallback_bt((jobB) => {
       if (isDemo || !baseUrl || !compareA || !jobB) return;
       const url = baseUrl + "/bt/compare?job_a=" + encodeURIComponent(compareA) + "&job_b=" + encodeURIComponent(jobB);
-      _btFetchJson2(url, 12e3).then((j) => setCompareView(j || null)).catch(() => setCompareView(null));
+      _btFetchJson(url, 12e3).then((j) => setCompareView(j || null)).catch(() => setCompareView(null));
     }, [baseUrl, isDemo, compareA]);
     const onSetCompareA = useCallback_bt((jobId) => {
       setCompareA(jobId);
@@ -9697,7 +9697,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         setHealth(null);
         return;
       }
-      _btFetchJson2(baseUrl + "/bt/health", 3e3).then(setHealth).catch(() => setHealth(null));
+      _btFetchJson(baseUrl + "/bt/health", 3e3).then(setHealth).catch(() => setHealth(null));
     }, [baseUrl, isDemo, reloadKey]);
     useEffect_bt(() => {
       if (isDemo || !baseUrl) {
@@ -9706,8 +9706,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       }
       let cancelled = false;
       Promise.all([
-        _btFetchJson2(baseUrl + "/bt/strategies?kind=buy", 4e3).catch(() => ({ items: [] })),
-        _btFetchJson2(baseUrl + "/bt/strategies?kind=sell", 4e3).catch(() => ({ items: [] }))
+        _btFetchJson(baseUrl + "/bt/strategies?kind=buy", 4e3).catch(() => ({ items: [] })),
+        _btFetchJson(baseUrl + "/bt/strategies?kind=sell", 4e3).catch(() => ({ items: [] }))
       ]).then(([b, s]) => {
         if (cancelled) return;
         setLibNames({

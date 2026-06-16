@@ -3,13 +3,15 @@
    각 차트/패널은 sibling 모듈(bt-equity-charts / bt-distribution-charts / bt-stat-panels / bt-gui-parity)
    에서 import 하고, 공용 헬퍼는 bt-chart-utils 에서 import 한다.
 
-   무예외 fetch 헬퍼(_btFetchJson)는 backtest.jsx 에 정의되어 window 전역으로 공유된다.
-     BtResultArea 의 load()는 렌더 시점에 호출되므로(모듈 평가 시점 아님) 그때면 이미 정의돼 있다.
+   무예외 fetch 헬퍼(_btFetchJson)는 bt-tab-utils.jsx 에 정의·export 된다. window 으로 재게시되지
+     않으므로(전역 fallback 없음) 반드시 import 해야 한다 — bare 참조 시 esbuild 번들에서 free-global
+     로 남아 load() 호출 시점에 `ReferenceError: _btFetchJson is not defined` 가 발생한다.
 */
 import {
   useState_btc, useEffect_btc, useCallback_btc,
   _btDateLabel, _btDownloadAnalysisCsv, _useCountUp, _BtArcGauge, _BtSparkline,
 } from "./bt-chart-utils.jsx";
+import { _btFetchJson } from "./bt-tab-utils.jsx";
 import {
   BtEquityChart, BtMaeMfeScatter, BtUnderwaterChart, BtRollingChart, BtCumulativeTradesChart,
 } from "./bt-equity-charts.jsx";
