@@ -141,6 +141,7 @@ class TestSimLwcAsymmetryCaption:
             assert token in src, f"LWC 캡션에 {token} 누락"
 
     def test_caption_is_label_only_not_in_charts(self) -> None:
-        # 캡션은 simulation.jsx(토글 옆)에만 — LWC 비대칭 가드(simulation-charts.jsx)는 무영향.
-        charts = _read("simulation-charts.jsx")
-        assert "LWC 비대칭 —" not in charts
+        # 캡션은 simulation.jsx(토글 옆)에만 — sim 차트 컴포넌트 코드(배럴 + P5.3 sibling)는 무영향.
+        for name in ("simulation-charts.jsx", "sim-chart-utils.jsx", "sim-chart-subpanes.jsx",
+                     "sim-chart-shell.jsx", "sim-chart-engines.jsx", "sim-signal-log.jsx"):
+            assert "LWC 비대칭 —" not in _read(name), f"{name} 에 캡션 누출"

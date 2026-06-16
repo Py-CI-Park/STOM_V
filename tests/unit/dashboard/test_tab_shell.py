@@ -107,16 +107,18 @@ def test_simulation_jsx_has_instant_experience_surface() -> None:
 
 
 def test_simulation_charts_jsx_has_visual_components() -> None:
-    """simulation-charts.jsx 가 등락 게이지·세션 링·신호 플래시 비주얼을 갖는다(Track C)."""
-    src = (FRONTEND / "simulation-charts.jsx").read_text(encoding="utf-8")
+    """sim 차트 셸이 등락 게이지·세션 링·신호 플래시 비주얼을 갖는다(Track C)."""
+    # P5.3 분해 — SimChangeGauge·SimSessionRing·SimChartShell 정의는 sim-chart-shell.jsx 로 이동.
+    src = (FRONTEND / "sim-chart-shell.jsx").read_text(encoding="utf-8")
     assert "SimChangeGauge" in src        # 등락율 반원 게이지.
     assert "SimSessionRing" in src        # 세션 진행 링.
     assert "_sessionProgress" in src      # 09:00~15:30 진행률.
     # 신호 도달 플래시 — 인라인 boxShadow(styles.css 불가)로 1회 점멸.
     assert "boxShadow" in src
     assert "window._simTimeLabel" not in src or "_simTimeLabel" in src
-    # 두 컴포넌트가 window 전역으로 노출돼 simulation.jsx 가 쓸 수 있어야 한다.
-    assert "SimChangeGauge, SimSessionRing" in src
+    # 두 컴포넌트가 window 전역으로 노출돼 simulation.jsx 가 쓸 수 있어야 한다(배럴 재게시).
+    barrel = (FRONTEND / "simulation-charts.jsx").read_text(encoding="utf-8")
+    assert "SimChangeGauge, SimSessionRing" in barrel
 
 
 def test_simulation_demo_route_returns_contract(monkeypatch, tmp_path: Path) -> None:

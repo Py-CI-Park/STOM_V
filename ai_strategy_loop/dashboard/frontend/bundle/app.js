@@ -9839,7 +9839,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   // ../frontend/backtest.jsx
   Object.assign(window, { BacktestTab });
 
-  // ../frontend/simulation-charts.jsx
+  // ../frontend/sim-chart-utils.jsx
   var {
     useState: useState_simc,
     useRef: useRef_simc,
@@ -10026,96 +10026,58 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     if (v < 0) return `rgba(56,140,255,${a})`;
     return "rgba(150,158,170,0.5)";
   }
-  function SimChangeGauge({ changePct, size }) {
-    const S = size || 56;
-    const v = Number(changePct) || 0;
-    const clamped = Math.max(-12, Math.min(12, v));
-    const angle = 180 - (clamped + 12) / 24 * 180;
-    const rad = angle * Math.PI / 180;
-    const r = S / 2 - 4;
-    const cx = S / 2, cy = S / 2;
-    const nx = cx + r * Math.cos(rad);
-    const ny = cy - r * Math.sin(rad);
-    const color = _changeColor(v);
-    return /* @__PURE__ */ React.createElement("svg", { width: S, height: S / 2 + 6, viewBox: `0 0 ${S} ${S / 2 + 6}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(
-      "path",
-      {
-        d: `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`,
-        fill: "none",
-        stroke: "var(--line-2)",
-        strokeWidth: "3",
-        strokeLinecap: "round"
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "line",
-      {
-        x1: cx,
-        y1: cy - r,
-        x2: cx,
-        y2: cy - r + 4,
-        stroke: "var(--ink-3)",
-        strokeWidth: "1"
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "line",
-      {
-        x1: cx,
-        y1: cy,
-        x2: nx.toFixed(2),
-        y2: ny.toFixed(2),
-        stroke: color,
-        strokeWidth: "2.4",
-        strokeLinecap: "round"
-      }
-    ), /* @__PURE__ */ React.createElement("circle", { cx, cy, r: "2.6", fill: color }), /* @__PURE__ */ React.createElement(
-      "text",
-      {
-        x: cx,
-        y: cy - 2,
-        textAnchor: "middle",
-        fontSize: "10",
-        className: "mono",
-        fill: color
-      },
-      v > 0 ? "+" : "",
-      v.toFixed(2),
-      "%"
-    ));
+  function _monotonicSecs(bars) {
+    const out = [];
+    let lastSec = -1;
+    for (let i = 0; i < bars.length; i++) {
+      let sec = _hmsToSec(bars[i].t);
+      if (sec <= lastSec) sec = lastSec + 1;
+      lastSec = sec;
+      out.push(sec);
+    }
+    return out;
   }
-  function SimSessionRing({ curT, size }) {
-    const S = size || 52;
-    const r = S / 2 - 5;
-    const cx = S / 2, cy = S / 2;
-    const circ = 2 * Math.PI * r;
-    const prog = _sessionProgress(curT);
-    const dash = (circ * prog).toFixed(2);
-    const label = curT != null ? _simTimeLabel(curT).slice(0, 5) : "--:--";
-    return /* @__PURE__ */ React.createElement("svg", { width: S, height: S, viewBox: `0 0 ${S} ${S}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("circle", { cx, cy, r, fill: "none", stroke: "var(--line-2)", strokeWidth: "3" }), /* @__PURE__ */ React.createElement(
-      "circle",
-      {
-        cx,
-        cy,
-        r,
-        fill: "none",
-        stroke: "var(--teal)",
-        strokeWidth: "3",
-        strokeLinecap: "round",
-        strokeDasharray: `${dash} ${(circ - dash).toFixed(2)}`,
-        transform: `rotate(-90 ${cx} ${cy})`
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "text",
-      {
-        x: cx,
-        y: cy + 3.2,
-        textAnchor: "middle",
-        fontSize: "10",
-        className: "mono",
-        fill: "var(--ink-1)"
-      },
-      label
-    ));
+  function _lineData(bars, secs, key) {
+    const out = [];
+    for (let i = 0; i < bars.length; i++) {
+      const v = bars[i][key];
+      if (v == null || !isFinite(v)) continue;
+      out.push({ time: secs[i], value: v });
+    }
+    return out;
   }
+  function _simNq(b) {
+    return b && b.net_qty != null && isFinite(b.net_qty) ? b.net_qty : 0;
+  }
+  function _hoga_tick(price) {
+    const p = Math.abs(Number(price) || 0);
+    if (p < 2e3) return 1;
+    if (p < 5e3) return 5;
+    if (p < 2e4) return 10;
+    if (p < 5e4) return 50;
+    if (p < 2e5) return 100;
+    if (p < 5e5) return 500;
+    return 1e3;
+  }
+  function _bucketPrice(price, tick) {
+    const t = tick || 1;
+    return Math.round(Math.floor((Number(price) || 0) / t) * t);
+  }
+  function _barBuySell(bar) {
+    const vol = bar.vol != null && isFinite(bar.vol) ? bar.vol : 0;
+    const nq = bar.net_qty;
+    if (nq != null && isFinite(nq)) {
+      const buy = (vol + nq) / 2;
+      const sell = (vol - nq) / 2;
+      return { buy: Math.max(0, buy), sell: Math.max(0, sell), real: true };
+    }
+    const s = bar.strength != null && isFinite(bar.strength) ? bar.strength : 100;
+    const buyShare = Math.max(0, Math.min(1, s / 200));
+    return { buy: vol * buyShare, sell: vol * (1 - buyShare), real: false };
+  }
+  var _SIM_OVERLAY_COLORS = ["#4cd6b3", "#ff5d6c", "#f0b35a", "#7c6cf0"];
+
+  // ../frontend/sim-chart-subpanes.jsx
   function SimHeatStrip({ bars, compact }) {
     const view = useMemo_simc(() => {
       const arr = bars || [];
@@ -10218,26 +10180,481 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       }
     ), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: mid - half + 8, textAnchor: "end", fill: "var(--teal)" }, "\uB9E4\uC218"), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: mid + half, textAnchor: "end", fill: "var(--red)" }, "\uB9E4\uB3C4"), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: mid + 3, textAnchor: "end", fill: "var(--ink-3)" }, _simPriceTick(maxRest)))));
   }
-  function _monotonicSecs(bars) {
-    const out = [];
-    let lastSec = -1;
-    for (let i = 0; i < bars.length; i++) {
-      let sec = _hmsToSec(bars[i].t);
-      if (sec <= lastSec) sec = lastSec + 1;
-      lastSec = sec;
-      out.push(sec);
+  function SimImbalancePane({ bars, compact }) {
+    const view = useMemo_simc(() => {
+      const arr = bars || [];
+      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+    }, [bars]);
+    const vals = useMemo_simc(() => view.map((b) => {
+      if (b.imbalance != null && isFinite(b.imbalance)) return b.imbalance;
+      const br = b.buy_rest != null && isFinite(b.buy_rest) ? b.buy_rest : null;
+      const sr = b.sell_rest != null && isFinite(b.sell_rest) ? b.sell_rest : null;
+      if (br != null && sr != null && sr > 0) return br / sr;
+      return null;
+    }), [view]);
+    const hasData = useMemo_simc(() => vals.some((v) => v != null), [vals]);
+    if (!hasData) return null;
+    const n = view.length;
+    const W = 880;
+    const H = compact ? 30 : 40;
+    const padL = 56, padR = 16, padT = 4, padB = 4;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const finite = vals.filter((v) => v != null && isFinite(v));
+    const vMax = Math.max(2, ...finite);
+    const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + innerW * i / (n - 1);
+    const yAt = (v) => padT + innerH - Math.min(v, vMax) / vMax * innerH;
+    let d = "", started = false;
+    for (let i = 0; i < n; i++) {
+      const v = vals[i];
+      if (v == null || !isFinite(v)) {
+        started = false;
+        continue;
+      }
+      d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
+      started = true;
     }
-    return out;
+    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, "\uD638\uAC00 \uBD88\uADE0\uD615(\uB808\uBCA81 \uCD1D\uC794\uB7C9\uBE44)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, /* @__PURE__ */ React.createElement(
+      "line",
+      {
+        x1: padL,
+        x2: W - padR,
+        y1: yAt(1),
+        y2: yAt(1),
+        stroke: "rgba(255,255,255,0.14)",
+        strokeWidth: "1",
+        strokeDasharray: "2 3"
+      }
+    ), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: yAt(1) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "1.0"), n > 1 && /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: "var(--teal)", strokeWidth: "1.2", opacity: "0.85" })));
   }
-  function _lineData(bars, secs, key) {
-    const out = [];
-    for (let i = 0; i < bars.length; i++) {
-      const v = bars[i][key];
-      if (v == null || !isFinite(v)) continue;
-      out.push({ time: secs[i], value: v });
+  function SimNetDeltaStrip({ bars, compact }) {
+    const view = useMemo_simc(() => {
+      const arr = bars || [];
+      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+    }, [bars]);
+    const hasData = useMemo_simc(
+      () => view.some((b) => b.net_qty != null && isFinite(b.net_qty) && b.net_qty !== 0),
+      [view]
+    );
+    if (!hasData) return null;
+    const n = view.length;
+    const W = 880;
+    const H = compact ? 28 : 38;
+    const padL = 56, padR = 16;
+    const innerW = W - padL - padR;
+    const mid = H / 2;
+    const half = mid - 3;
+    const maxAbs = Math.max(1, ...view.map((b) => Math.abs(_simNq(b))));
+    const slot = n > 0 ? innerW / n : innerW;
+    const barW = Math.max(1, slot * 0.7);
+    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)" } }, "net-delta(\uC21C\uB9E4\uC218\uC218\uB7C9)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: mid, y2: mid, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" }), view.map((b, i) => {
+      const nq = _simNq(b);
+      const h = Math.min(Math.abs(nq), maxAbs) / maxAbs * half;
+      const x = padL + slot * i + (slot - barW) / 2;
+      const y = nq >= 0 ? mid - h : mid;
+      const color = nq > 0 ? "var(--teal)" : nq < 0 ? "var(--red)" : "var(--ink-3)";
+      return /* @__PURE__ */ React.createElement(
+        "rect",
+        {
+          key: i,
+          x: x.toFixed(1),
+          y: y.toFixed(1),
+          width: barW.toFixed(1),
+          height: Math.max(0.5, h).toFixed(1),
+          fill: color,
+          opacity: "0.7"
+        }
+      );
+    })));
+  }
+  function SimRsiPane({ bars, compact }) {
+    const view = useMemo_simc(() => {
+      const arr = bars || [];
+      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+    }, [bars]);
+    const rsiVals = useMemo_simc(
+      () => typeof _simRsi === "function" ? _simRsi(view, 14) : [],
+      [view]
+    );
+    const hasData = useMemo_simc(() => rsiVals.some((v) => v != null), [rsiVals]);
+    if (!hasData) return null;
+    const n = view.length;
+    const W = 880;
+    const H = compact ? 30 : 40;
+    const padL = 56, padR = 16, padT = 4, padB = 4;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + innerW * i / (n - 1);
+    const yAt = (v) => padT + innerH - Math.max(0, Math.min(100, v)) / 100 * innerH;
+    let d = "", started = false;
+    for (let i = 0; i < n; i++) {
+      const v = rsiVals[i];
+      if (v == null || !isFinite(v)) {
+        started = false;
+        continue;
+      }
+      d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
+      started = true;
     }
-    return out;
+    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)" } }, "RSI(14)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, [30, 50, 70].map((lv) => /* @__PURE__ */ React.createElement(
+      "line",
+      {
+        key: lv,
+        x1: padL,
+        x2: W - padR,
+        y1: yAt(lv),
+        y2: yAt(lv),
+        stroke: "rgba(255,255,255,0.10)",
+        strokeWidth: "1",
+        strokeDasharray: "2 3"
+      }
+    )), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: yAt(70) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "70"), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: yAt(30) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "30"), n > 1 && /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: "var(--teal)", strokeWidth: "1.2", opacity: "0.85" })));
   }
+  function SimMacdPane({ bars, compact }) {
+    const view = useMemo_simc(() => {
+      const arr = bars || [];
+      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+    }, [bars]);
+    const macdData = useMemo_simc(
+      () => typeof _simMacd === "function" ? _simMacd(view) : { macd: [], signal: [], hist: [] },
+      [view]
+    );
+    const hasData = useMemo_simc(
+      () => (macdData.macd || []).some((v) => v != null),
+      [macdData]
+    );
+    if (!hasData) return null;
+    const n = view.length;
+    const W = 880;
+    const H = compact ? 30 : 42;
+    const padL = 56, padR = 16, padT = 4, padB = 4;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const mid = padT + innerH / 2;
+    const half = innerH / 2 - 1;
+    const hist = macdData.hist || [];
+    const macdLine = macdData.macd || [];
+    const signalLine = macdData.signal || [];
+    let maxAbs = 1;
+    for (let i = 0; i < n; i++) {
+      const v = hist[i];
+      if (v != null && isFinite(v)) maxAbs = Math.max(maxAbs, Math.abs(v));
+    }
+    const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + innerW * i / (n - 1);
+    const yAt = (v) => v == null || !isFinite(v) ? mid : mid - Math.max(-maxAbs, Math.min(maxAbs, v)) / maxAbs * half;
+    const slot = n > 1 ? innerW / n : innerW;
+    const barW = Math.max(1, slot * 0.55);
+    const linePath = (vals) => {
+      let d = "", started = false;
+      for (let i = 0; i < n; i++) {
+        const v = vals[i];
+        if (v == null || !isFinite(v)) {
+          started = false;
+          continue;
+        }
+        d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
+        started = true;
+      }
+      return d;
+    };
+    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)" } }, "MACD(12,26,9)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: mid, y2: mid, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" }), view.map((b, i) => {
+      const v = hist[i];
+      if (v == null || !isFinite(v)) return null;
+      const bh = Math.abs(yAt(v) - mid);
+      const x = xAt(i) - barW / 2;
+      const y = v >= 0 ? mid - bh : mid;
+      const color = v > 0 ? "var(--teal)" : "var(--red)";
+      return /* @__PURE__ */ React.createElement(
+        "rect",
+        {
+          key: i,
+          x: x.toFixed(1),
+          y: y.toFixed(1),
+          width: barW.toFixed(1),
+          height: Math.max(0.5, bh).toFixed(1),
+          fill: color,
+          opacity: "0.55"
+        }
+      );
+    }), n > 1 && /* @__PURE__ */ React.createElement("path", { d: linePath(macdLine), fill: "none", stroke: "var(--teal)", strokeWidth: "1.1", opacity: "0.9" }), n > 1 && /* @__PURE__ */ React.createElement("path", { d: linePath(signalLine), fill: "none", stroke: "var(--amber)", strokeWidth: "1", opacity: "0.8", strokeDasharray: "3 2" })));
+  }
+  function SimOrderFlowTape({ bars, compact }) {
+    const view = useMemo_simc(() => {
+      const arr = bars || [];
+      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+    }, [bars]);
+    const hasData = useMemo_simc(
+      () => view.some((b) => b.net_qty != null && isFinite(b.net_qty) && b.net_qty !== 0),
+      [view]
+    );
+    if (!hasData) return null;
+    const maxAbs = Math.max(1, ...view.map((b) => Math.abs(_simNq(b))));
+    const H = compact ? 14 : 18;
+    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)", flexShrink: 0, width: 48 } }, "\uC624\uB354\uD50C\uB85C\uC6B0"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flex: 1, height: H, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" } }, view.map((b, i) => {
+      const nq = _simNq(b);
+      const mag = Math.min(1, Math.abs(nq) / maxAbs);
+      const a = (0.15 + mag * 0.75).toFixed(3);
+      const bg = nq > 0 ? `rgba(76,214,179,${a})` : nq < 0 ? `rgba(255,93,108,${a})` : "rgba(150,158,170,0.12)";
+      return /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          key: i,
+          title: _simTimeLabel(b.t) + " \xB7 \uC21C\uB9E4\uC218 " + _simPriceTick(nq),
+          style: { flex: 1, background: bg }
+        }
+      );
+    })));
+  }
+  function SimFootprint({ bars, compact }) {
+    const [open, setOpen] = useState_simc(false);
+    const agg = useMemo_simc(() => {
+      const arr = bars || [];
+      const view = arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+      if (view.length === 0) return { levels: [], real: true, curPrice: null, hasVol: false };
+      const last = view[view.length - 1];
+      const map = /* @__PURE__ */ new Map();
+      let real = true;
+      let hasVol = false;
+      for (let i = 0; i < view.length; i++) {
+        const b = view[i];
+        const bs = _barBuySell(b);
+        if (!bs.real) real = false;
+        if (bs.buy + bs.sell > 0) hasVol = true;
+        const key = _bucketPrice(b.c, _hoga_tick(b.c));
+        const cur = map.get(key) || { buy: 0, sell: 0 };
+        cur.buy += bs.buy;
+        cur.sell += bs.sell;
+        map.set(key, cur);
+      }
+      const levels = Array.from(map.entries()).map(([price, v]) => ({ price, buy: v.buy, sell: v.sell, delta: v.buy - v.sell })).sort((a, b) => b.price - a.price);
+      return { levels, real, curPrice: _bucketPrice(last.c, _hoga_tick(last.c)), hasVol };
+    }, [bars]);
+    if (!agg.hasVol) return null;
+    const maxSide = Math.max(1, ...agg.levels.map((l) => Math.max(l.buy, l.sell)));
+    const rowH = compact ? 14 : 17;
+    const barW = compact ? 80 : 110;
+    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setOpen((o) => !o),
+        className: "mono",
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          width: "100%",
+          padding: "4px 8px",
+          background: "transparent",
+          border: "1px solid var(--line-1)",
+          borderRadius: 5,
+          color: "var(--ink-2)",
+          cursor: "pointer",
+          fontSize: 10
+        }
+      },
+      /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, open ? "\u25BC" : "\u25B6"),
+      "\uC624\uB354\uD50C\uB85C\uC6B0 footprint",
+      /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "auto", color: agg.real ? "var(--teal)" : "var(--amber)" } }, agg.real ? "\uC2E4\uB370\uC774\uD130" : "\uAC15\uB3C4 \uADFC\uC0AC")
+    ), open && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 4, display: "flex", flexDirection: "column", gap: 1 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { display: "flex", alignItems: "center", fontSize: 8.5, color: "var(--ink-3)", padding: "0 2px" } }, /* @__PURE__ */ React.createElement("span", { style: { width: barW, textAlign: "left", color: "var(--red)" } }, "\uB9E4\uB3C4\uCCB4\uACB0"), /* @__PURE__ */ React.createElement("span", { style: { flex: 1, textAlign: "center" } }, "\uAC00\uACA9"), /* @__PURE__ */ React.createElement("span", { style: { width: barW, textAlign: "right", color: "var(--teal)" } }, "\uB9E4\uC218\uCCB4\uACB0"), /* @__PURE__ */ React.createElement("span", { style: { width: compact ? 44 : 56, textAlign: "right" } }, "\uB378\uD0C0")), agg.levels.map((lv) => {
+      const isCur = lv.price === agg.curPrice;
+      const sellW = lv.sell / maxSide * barW;
+      const buyW = lv.buy / maxSide * barW;
+      const sellInt = Math.min(1, lv.sell / maxSide);
+      const buyInt = Math.min(1, lv.buy / maxSide);
+      return /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          key: lv.price,
+          className: "mono",
+          style: {
+            display: "flex",
+            alignItems: "center",
+            height: rowH,
+            fontSize: 9.5,
+            background: isCur ? "rgba(255,210,76,0.10)" : "transparent",
+            borderRadius: 3,
+            boxShadow: isCur ? "0 0 0 1px rgba(255,210,76,0.4) inset" : "none"
+          }
+        },
+        /* @__PURE__ */ React.createElement("div", { style: { width: barW, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", fontSize: 8.5 } }, lv.sell >= 1 ? _simPriceTick(lv.sell) : ""), /* @__PURE__ */ React.createElement("div", { style: { width: sellW, height: rowH - 5, background: `rgba(255,93,108,${(0.25 + sellInt * 0.6).toFixed(3)})`, borderRadius: 2 } })),
+        /* @__PURE__ */ React.createElement("span", { style: { flex: 1, textAlign: "center", color: isCur ? "var(--amber)" : "var(--ink-1)", fontWeight: isCur ? 600 : 400 } }, _simPriceTick(lv.price)),
+        /* @__PURE__ */ React.createElement("div", { style: { width: barW, display: "flex", justifyContent: "flex-start", alignItems: "center", gap: 4 } }, /* @__PURE__ */ React.createElement("div", { style: { width: buyW, height: rowH - 5, background: `rgba(76,214,179,${(0.25 + buyInt * 0.6).toFixed(3)})`, borderRadius: 2 } }), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", fontSize: 8.5 } }, lv.buy >= 1 ? _simPriceTick(lv.buy) : "")),
+        /* @__PURE__ */ React.createElement("span", { style: { width: compact ? 44 : 56, textAlign: "right", color: lv.delta >= 0 ? "var(--teal)" : "var(--red)" } }, lv.delta >= 0 ? "+" : "", _simPriceTick(lv.delta))
+      );
+    }), !agg.real && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 8.5, color: "var(--ink-3)", marginTop: 3, lineHeight: 1.4 } }, "\uC21C\uB9E4\uC218\uC218\uB7C9(net_qty) \uBD80\uC7AC\uB85C \uCCB4\uACB0\uAC15\uB3C4 \uAE30\uBC18 \uADFC\uC0AC \uBD84\uB9AC\uB2E4(\uC2E4 \uB9E4\uC218/\uB9E4\uB3C4 \uCCB4\uACB0\uB7C9 \uC544\uB2D8).")));
+  }
+  function SimOrderBook({ lastBar, compact }) {
+    const prevRef = useRef_simc({ bid1: null, ask1: null });
+    const [flash, setFlash] = useState_simc({ bid: false, ask: false });
+    const bid1 = lastBar && lastBar.bid1 != null && isFinite(lastBar.bid1) ? lastBar.bid1 : null;
+    const ask1 = lastBar && lastBar.ask1 != null && isFinite(lastBar.ask1) ? lastBar.ask1 : null;
+    useEffect_simc(() => {
+      const p = prevRef.current;
+      const bidChg = p.bid1 != null && bid1 != null && bid1 !== p.bid1;
+      const askChg = p.ask1 != null && ask1 != null && ask1 !== p.ask1;
+      if (bidChg || askChg) {
+        setFlash({ bid: bidChg, ask: askChg });
+        const id = setTimeout(() => setFlash({ bid: false, ask: false }), 280);
+        prevRef.current = { bid1, ask1 };
+        return () => clearTimeout(id);
+      }
+      prevRef.current = { bid1, ask1 };
+    }, [bid1, ask1]);
+    if (!lastBar) return null;
+    const buyRest = lastBar.buy_rest != null && isFinite(lastBar.buy_rest) ? lastBar.buy_rest : null;
+    const sellRest = lastBar.sell_rest != null && isFinite(lastBar.sell_rest) ? lastBar.sell_rest : null;
+    if (bid1 == null && ask1 == null && buyRest == null && sellRest == null) return null;
+    const cur = lastBar.c != null && isFinite(lastBar.c) ? lastBar.c : null;
+    const strength = lastBar.strength != null && isFinite(lastBar.strength) ? lastBar.strength : null;
+    const maxRest = Math.max(1, buyRest || 0, sellRest || 0);
+    const askW = sellRest != null ? sellRest / maxRest * 100 : 0;
+    const bidW = buyRest != null ? buyRest / maxRest * 100 : 0;
+    const spread = bid1 != null && ask1 != null ? ask1 - bid1 : null;
+    const mid = bid1 != null && ask1 != null ? (ask1 + bid1) / 2 : null;
+    const spreadBps = spread != null && mid && mid > 0 ? spread / mid * 1e4 : null;
+    const totRest = (buyRest || 0) + (sellRest || 0);
+    const buyShare = totRest > 0 ? (buyRest || 0) / totRest * 100 : null;
+    const sellShare = totRest > 0 ? (sellRest || 0) / totRest * 100 : null;
+    const stColor = strength == null ? "var(--ink-2)" : strength >= 100 ? "var(--teal)" : "var(--red)";
+    const rowH = compact ? 20 : 24;
+    const askBg = flash.ask ? "rgba(56,140,255,0.22)" : "rgba(56,140,255,0.06)";
+    const bidBg = flash.bid ? "rgba(255,93,108,0.22)" : "rgba(255,93,108,0.06)";
+    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3, gap: 6 } }, /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: "mono",
+        style: { fontSize: 9.5, color: "var(--ink-3)" },
+        title: "\uC77C\uC77C DB\uB294 \uCD5C\uC6B0\uC120\uD638\uAC00\xB7\uCD1D\uC794\uB7C9\uB9CC \uC81C\uACF5(\uB808\uBCA82~10 \uC5C6\uC74C)"
+      },
+      "\uD638\uAC00\uCC3D (\uB808\uBCA81 + \uCD1D\uC794\uB7C9)"
+    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } }, spread != null && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-2)" } }, "\uC2A4\uD504\uB808\uB4DC ", _simPriceTick(spread), spreadBps != null ? ` (${spreadBps.toFixed(1)}bp)` : ""), strength != null && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: stColor, padding: "1px 6px", borderRadius: 3, border: "1px solid " + (strength >= 100 ? "var(--teal-dim)" : "var(--line-1)") } }, "\uCCB4\uACB0\uAC15\uB3C4 ", strength.toFixed(0)))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", height: rowH, background: askBg, borderRadius: 3, marginBottom: 1, transition: "background 0.28s ease-out" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#5aa0ff", paddingRight: 8 } }, ask1 != null ? _simPriceTick(ask1) : "\u2014"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: rowH - 8, position: "relative", display: "flex", justifyContent: "flex-start" } }, /* @__PURE__ */ React.createElement("div", { style: { width: askW + "%", height: "100%", background: "rgba(56,140,255,0.30)", borderRadius: 2, transition: "width 0.2s ease-out" } })), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 60 : 74, textAlign: "right", fontSize: 9.5, color: "#5aa0ff", paddingRight: 4 } }, sellRest != null ? _simPriceTick(sellRest) : "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { textAlign: "center", fontSize: 11, color: "var(--amber)", padding: "2px 0", letterSpacing: ".04em" } }, "\u25B8 ", cur != null ? _simPriceTick(cur) : "\u2014", " \u25C2"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", height: rowH, background: bidBg, borderRadius: 3, marginTop: 1, transition: "background 0.28s ease-out" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#ff8088", paddingRight: 8 } }, bid1 != null ? _simPriceTick(bid1) : "\u2014"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: rowH - 8, display: "flex", justifyContent: "flex-start" } }, /* @__PURE__ */ React.createElement("div", { style: { width: bidW + "%", height: "100%", background: "rgba(255,93,108,0.28)", borderRadius: 2, transition: "width 0.2s ease-out" } })), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 60 : 74, textAlign: "right", fontSize: 9.5, color: "#ff8088", paddingRight: 4 } }, buyRest != null ? _simPriceTick(buyRest) : "\u2014")), buyShare != null && sellShare != null && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 5 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", height: 6, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("div", { style: { width: buyShare.toFixed(1) + "%", background: "var(--teal)", opacity: 0.7, transition: "width 0.25s ease-out" } }), /* @__PURE__ */ React.createElement("div", { style: { width: sellShare.toFixed(1) + "%", background: "var(--red)", opacity: 0.7, transition: "width 0.25s ease-out" } })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 2, fontSize: 9 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--teal)" } }, "\uB9E4\uC218 ", buyShare.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--red)" } }, "\uB9E4\uB3C4 ", sellShare.toFixed(0), "%"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 9.5 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "#5aa0ff" } }, "\uCD1D\uB9E4\uB3C4 ", sellRest != null ? _simPriceTick(sellRest) : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "#ff8088" } }, "\uCD1D\uB9E4\uC218 ", buyRest != null ? _simPriceTick(buyRest) : "\u2014")));
+  }
+
+  // ../frontend/sim-chart-shell.jsx
+  function SimChangeGauge({ changePct, size }) {
+    const S = size || 56;
+    const v = Number(changePct) || 0;
+    const clamped = Math.max(-12, Math.min(12, v));
+    const angle = 180 - (clamped + 12) / 24 * 180;
+    const rad = angle * Math.PI / 180;
+    const r = S / 2 - 4;
+    const cx = S / 2, cy = S / 2;
+    const nx = cx + r * Math.cos(rad);
+    const ny = cy - r * Math.sin(rad);
+    const color = _changeColor(v);
+    return /* @__PURE__ */ React.createElement("svg", { width: S, height: S / 2 + 6, viewBox: `0 0 ${S} ${S / 2 + 6}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(
+      "path",
+      {
+        d: `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`,
+        fill: "none",
+        stroke: "var(--line-2)",
+        strokeWidth: "3",
+        strokeLinecap: "round"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "line",
+      {
+        x1: cx,
+        y1: cy - r,
+        x2: cx,
+        y2: cy - r + 4,
+        stroke: "var(--ink-3)",
+        strokeWidth: "1"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "line",
+      {
+        x1: cx,
+        y1: cy,
+        x2: nx.toFixed(2),
+        y2: ny.toFixed(2),
+        stroke: color,
+        strokeWidth: "2.4",
+        strokeLinecap: "round"
+      }
+    ), /* @__PURE__ */ React.createElement("circle", { cx, cy, r: "2.6", fill: color }), /* @__PURE__ */ React.createElement(
+      "text",
+      {
+        x: cx,
+        y: cy - 2,
+        textAnchor: "middle",
+        fontSize: "10",
+        className: "mono",
+        fill: color
+      },
+      v > 0 ? "+" : "",
+      v.toFixed(2),
+      "%"
+    ));
+  }
+  function SimSessionRing({ curT, size }) {
+    const S = size || 52;
+    const r = S / 2 - 5;
+    const cx = S / 2, cy = S / 2;
+    const circ = 2 * Math.PI * r;
+    const prog = _sessionProgress(curT);
+    const dash = (circ * prog).toFixed(2);
+    const label = curT != null ? _simTimeLabel(curT).slice(0, 5) : "--:--";
+    return /* @__PURE__ */ React.createElement("svg", { width: S, height: S, viewBox: `0 0 ${S} ${S}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("circle", { cx, cy, r, fill: "none", stroke: "var(--line-2)", strokeWidth: "3" }), /* @__PURE__ */ React.createElement(
+      "circle",
+      {
+        cx,
+        cy,
+        r,
+        fill: "none",
+        stroke: "var(--teal)",
+        strokeWidth: "3",
+        strokeLinecap: "round",
+        strokeDasharray: `${dash} ${(circ - dash).toFixed(2)}`,
+        transform: `rotate(-90 ${cx} ${cy})`
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "text",
+      {
+        x: cx,
+        y: cy + 3.2,
+        textAnchor: "middle",
+        fontSize: "10",
+        className: "mono",
+        fill: "var(--ink-1)"
+      },
+      label
+    ));
+  }
+  function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engine, indicators, children }) {
+    const ind = indicators || _SIM_DEFAULT_INDICATORS;
+    const seenRef = useRef_simc(/* @__PURE__ */ new Set());
+    const [flash, setFlash] = useState_simc(null);
+    useEffect_simc(() => {
+      if (curT == null) seenRef.current = /* @__PURE__ */ new Set();
+    }, [curT]);
+    useEffect_simc(() => {
+      if (curT == null) return;
+      const seen = seenRef.current;
+      let kind = null;
+      (signals || []).forEach((sig) => {
+        const bk = code + "@b@" + sig.buy_hms;
+        if (sig.buy_hms != null && sig.buy_hms <= curT && !seen.has(bk)) {
+          seen.add(bk);
+          kind = "buy";
+        }
+        const sk = code + "@s@" + sig.sell_hms;
+        if (sig.sell_hms != null && sig.sell_hms <= curT && !seen.has(sk)) {
+          seen.add(sk);
+          kind = "sell";
+        }
+      });
+      if (kind) {
+        setFlash(kind);
+        const id = setTimeout(() => setFlash(null), 650);
+        return () => clearTimeout(id);
+      }
+    }, [curT, signals, code]);
+    const flashGlow = flash === "buy" ? "0 0 0 2px var(--teal), 0 0 16px 2px rgba(76,214,179,0.55)" : flash === "sell" ? "0 0 0 2px var(--red), 0 0 16px 2px rgba(255,93,108,0.55)" : "none";
+    return /* @__PURE__ */ React.createElement("div", { className: "panel", style: { minWidth: 0, boxShadow: flashGlow, transition: "box-shadow 0.45s ease-out" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: compact ? 11 : 12.5 } }, code, name ? " \xB7 " + name : ""), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9, color: "var(--ink-3)", marginLeft: 6 } }, engine === "lwc" ? "LWC" : "SVG")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, alignItems: "center" } }, lastBar && /* @__PURE__ */ React.createElement(SimChangeGauge, { changePct: lastBar.change, size: compact ? 48 : 56 }), /* @__PURE__ */ React.createElement(SimSessionRing, { curT, size: compact ? 44 : 52 }), lastBar && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-1)" } }, _simPriceTick(lastBar.c)))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, children, engine !== "lwc" && ind.imbalance && /* @__PURE__ */ React.createElement(SimImbalancePane, { bars, compact }), engine !== "lwc" && ind.orderflow && /* @__PURE__ */ React.createElement(SimNetDeltaStrip, { bars, compact }), engine !== "lwc" && ind.rsi && /* @__PURE__ */ React.createElement(SimRsiPane, { bars, compact }), engine !== "lwc" && ind.macd && /* @__PURE__ */ React.createElement(SimMacdPane, { bars, compact }), /* @__PURE__ */ React.createElement(SimOrderBook, { lastBar, compact }), /* @__PURE__ */ React.createElement(SimOrderFlowTape, { bars, compact }), /* @__PURE__ */ React.createElement(SimFootprint, { bars, compact }), /* @__PURE__ */ React.createElement(SimHeatStrip, { bars, compact }), /* @__PURE__ */ React.createElement(SimRestFlow, { bars, compact })));
+  }
+
+  // ../frontend/sim-chart-engines.jsx
   function SimCandleChartLWC({ bars, signals, curT, code, name, compact, indicators }) {
     const wrapRef = useRef_simc(null);
     const chartRef = useRef_simc(null);
@@ -10879,421 +11296,12 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       } }, "\uC7AC\uC0DD\uC744 \uC2DC\uC791\uD558\uBA74 \uCE94\uB4E4\uC774 \uC2E4\uC2DC\uAC04\uC73C\uB85C \uCC44\uC6CC\uC9D1\uB2C8\uB2E4"))
     );
   }
-  function SimImbalancePane({ bars, compact }) {
-    const view = useMemo_simc(() => {
-      const arr = bars || [];
-      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
-    }, [bars]);
-    const vals = useMemo_simc(() => view.map((b) => {
-      if (b.imbalance != null && isFinite(b.imbalance)) return b.imbalance;
-      const br = b.buy_rest != null && isFinite(b.buy_rest) ? b.buy_rest : null;
-      const sr = b.sell_rest != null && isFinite(b.sell_rest) ? b.sell_rest : null;
-      if (br != null && sr != null && sr > 0) return br / sr;
-      return null;
-    }), [view]);
-    const hasData = useMemo_simc(() => vals.some((v) => v != null), [vals]);
-    if (!hasData) return null;
-    const n = view.length;
-    const W = 880;
-    const H = compact ? 30 : 40;
-    const padL = 56, padR = 16, padT = 4, padB = 4;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const finite = vals.filter((v) => v != null && isFinite(v));
-    const vMax = Math.max(2, ...finite);
-    const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + innerW * i / (n - 1);
-    const yAt = (v) => padT + innerH - Math.min(v, vMax) / vMax * innerH;
-    let d = "", started = false;
-    for (let i = 0; i < n; i++) {
-      const v = vals[i];
-      if (v == null || !isFinite(v)) {
-        started = false;
-        continue;
-      }
-      d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
-      started = true;
-    }
-    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, "\uD638\uAC00 \uBD88\uADE0\uD615(\uB808\uBCA81 \uCD1D\uC794\uB7C9\uBE44)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, /* @__PURE__ */ React.createElement(
-      "line",
-      {
-        x1: padL,
-        x2: W - padR,
-        y1: yAt(1),
-        y2: yAt(1),
-        stroke: "rgba(255,255,255,0.14)",
-        strokeWidth: "1",
-        strokeDasharray: "2 3"
-      }
-    ), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: yAt(1) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "1.0"), n > 1 && /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: "var(--teal)", strokeWidth: "1.2", opacity: "0.85" })));
-  }
-  function SimNetDeltaStrip({ bars, compact }) {
-    const view = useMemo_simc(() => {
-      const arr = bars || [];
-      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
-    }, [bars]);
-    const hasData = useMemo_simc(
-      () => view.some((b) => b.net_qty != null && isFinite(b.net_qty) && b.net_qty !== 0),
-      [view]
-    );
-    if (!hasData) return null;
-    const n = view.length;
-    const W = 880;
-    const H = compact ? 28 : 38;
-    const padL = 56, padR = 16;
-    const innerW = W - padL - padR;
-    const mid = H / 2;
-    const half = mid - 3;
-    const maxAbs = Math.max(1, ...view.map((b) => Math.abs(_simNq(b))));
-    const slot = n > 0 ? innerW / n : innerW;
-    const barW = Math.max(1, slot * 0.7);
-    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)" } }, "net-delta(\uC21C\uB9E4\uC218\uC218\uB7C9)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: mid, y2: mid, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" }), view.map((b, i) => {
-      const nq = _simNq(b);
-      const h = Math.min(Math.abs(nq), maxAbs) / maxAbs * half;
-      const x = padL + slot * i + (slot - barW) / 2;
-      const y = nq >= 0 ? mid - h : mid;
-      const color = nq > 0 ? "var(--teal)" : nq < 0 ? "var(--red)" : "var(--ink-3)";
-      return /* @__PURE__ */ React.createElement(
-        "rect",
-        {
-          key: i,
-          x: x.toFixed(1),
-          y: y.toFixed(1),
-          width: barW.toFixed(1),
-          height: Math.max(0.5, h).toFixed(1),
-          fill: color,
-          opacity: "0.7"
-        }
-      );
-    })));
-  }
-  function SimRsiPane({ bars, compact }) {
-    const view = useMemo_simc(() => {
-      const arr = bars || [];
-      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
-    }, [bars]);
-    const rsiVals = useMemo_simc(
-      () => typeof _simRsi === "function" ? _simRsi(view, 14) : [],
-      [view]
-    );
-    const hasData = useMemo_simc(() => rsiVals.some((v) => v != null), [rsiVals]);
-    if (!hasData) return null;
-    const n = view.length;
-    const W = 880;
-    const H = compact ? 30 : 40;
-    const padL = 56, padR = 16, padT = 4, padB = 4;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + innerW * i / (n - 1);
-    const yAt = (v) => padT + innerH - Math.max(0, Math.min(100, v)) / 100 * innerH;
-    let d = "", started = false;
-    for (let i = 0; i < n; i++) {
-      const v = rsiVals[i];
-      if (v == null || !isFinite(v)) {
-        started = false;
-        continue;
-      }
-      d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
-      started = true;
-    }
-    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)" } }, "RSI(14)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, [30, 50, 70].map((lv) => /* @__PURE__ */ React.createElement(
-      "line",
-      {
-        key: lv,
-        x1: padL,
-        x2: W - padR,
-        y1: yAt(lv),
-        y2: yAt(lv),
-        stroke: "rgba(255,255,255,0.10)",
-        strokeWidth: "1",
-        strokeDasharray: "2 3"
-      }
-    )), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: yAt(70) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "70"), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: yAt(30) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "30"), n > 1 && /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: "var(--teal)", strokeWidth: "1.2", opacity: "0.85" })));
-  }
-  function SimMacdPane({ bars, compact }) {
-    const view = useMemo_simc(() => {
-      const arr = bars || [];
-      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
-    }, [bars]);
-    const macdData = useMemo_simc(
-      () => typeof _simMacd === "function" ? _simMacd(view) : { macd: [], signal: [], hist: [] },
-      [view]
-    );
-    const hasData = useMemo_simc(
-      () => (macdData.macd || []).some((v) => v != null),
-      [macdData]
-    );
-    if (!hasData) return null;
-    const n = view.length;
-    const W = 880;
-    const H = compact ? 30 : 42;
-    const padL = 56, padR = 16, padT = 4, padB = 4;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const mid = padT + innerH / 2;
-    const half = innerH / 2 - 1;
-    const hist = macdData.hist || [];
-    const macdLine = macdData.macd || [];
-    const signalLine = macdData.signal || [];
-    let maxAbs = 1;
-    for (let i = 0; i < n; i++) {
-      const v = hist[i];
-      if (v != null && isFinite(v)) maxAbs = Math.max(maxAbs, Math.abs(v));
-    }
-    const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + innerW * i / (n - 1);
-    const yAt = (v) => v == null || !isFinite(v) ? mid : mid - Math.max(-maxAbs, Math.min(maxAbs, v)) / maxAbs * half;
-    const slot = n > 1 ? innerW / n : innerW;
-    const barW = Math.max(1, slot * 0.55);
-    const linePath = (vals) => {
-      let d = "", started = false;
-      for (let i = 0; i < n; i++) {
-        const v = vals[i];
-        if (v == null || !isFinite(v)) {
-          started = false;
-          continue;
-        }
-        d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
-        started = true;
-      }
-      return d;
-    };
-    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)" } }, "MACD(12,26,9)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: mid, y2: mid, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" }), view.map((b, i) => {
-      const v = hist[i];
-      if (v == null || !isFinite(v)) return null;
-      const bh = Math.abs(yAt(v) - mid);
-      const x = xAt(i) - barW / 2;
-      const y = v >= 0 ? mid - bh : mid;
-      const color = v > 0 ? "var(--teal)" : "var(--red)";
-      return /* @__PURE__ */ React.createElement(
-        "rect",
-        {
-          key: i,
-          x: x.toFixed(1),
-          y: y.toFixed(1),
-          width: barW.toFixed(1),
-          height: Math.max(0.5, bh).toFixed(1),
-          fill: color,
-          opacity: "0.55"
-        }
-      );
-    }), n > 1 && /* @__PURE__ */ React.createElement("path", { d: linePath(macdLine), fill: "none", stroke: "var(--teal)", strokeWidth: "1.1", opacity: "0.9" }), n > 1 && /* @__PURE__ */ React.createElement("path", { d: linePath(signalLine), fill: "none", stroke: "var(--amber)", strokeWidth: "1", opacity: "0.8", strokeDasharray: "3 2" })));
-  }
-  function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engine, indicators, children }) {
-    const ind = indicators || _SIM_DEFAULT_INDICATORS;
-    const seenRef = useRef_simc(/* @__PURE__ */ new Set());
-    const [flash, setFlash] = useState_simc(null);
-    useEffect_simc(() => {
-      if (curT == null) seenRef.current = /* @__PURE__ */ new Set();
-    }, [curT]);
-    useEffect_simc(() => {
-      if (curT == null) return;
-      const seen = seenRef.current;
-      let kind = null;
-      (signals || []).forEach((sig) => {
-        const bk = code + "@b@" + sig.buy_hms;
-        if (sig.buy_hms != null && sig.buy_hms <= curT && !seen.has(bk)) {
-          seen.add(bk);
-          kind = "buy";
-        }
-        const sk = code + "@s@" + sig.sell_hms;
-        if (sig.sell_hms != null && sig.sell_hms <= curT && !seen.has(sk)) {
-          seen.add(sk);
-          kind = "sell";
-        }
-      });
-      if (kind) {
-        setFlash(kind);
-        const id = setTimeout(() => setFlash(null), 650);
-        return () => clearTimeout(id);
-      }
-    }, [curT, signals, code]);
-    const flashGlow = flash === "buy" ? "0 0 0 2px var(--teal), 0 0 16px 2px rgba(76,214,179,0.55)" : flash === "sell" ? "0 0 0 2px var(--red), 0 0 16px 2px rgba(255,93,108,0.55)" : "none";
-    return /* @__PURE__ */ React.createElement("div", { className: "panel", style: { minWidth: 0, boxShadow: flashGlow, transition: "box-shadow 0.45s ease-out" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: compact ? 11 : 12.5 } }, code, name ? " \xB7 " + name : ""), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9, color: "var(--ink-3)", marginLeft: 6 } }, engine === "lwc" ? "LWC" : "SVG")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, alignItems: "center" } }, lastBar && /* @__PURE__ */ React.createElement(SimChangeGauge, { changePct: lastBar.change, size: compact ? 48 : 56 }), /* @__PURE__ */ React.createElement(SimSessionRing, { curT, size: compact ? 44 : 52 }), lastBar && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-1)" } }, _simPriceTick(lastBar.c)))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, children, engine !== "lwc" && ind.imbalance && /* @__PURE__ */ React.createElement(SimImbalancePane, { bars, compact }), engine !== "lwc" && ind.orderflow && /* @__PURE__ */ React.createElement(SimNetDeltaStrip, { bars, compact }), engine !== "lwc" && ind.rsi && /* @__PURE__ */ React.createElement(SimRsiPane, { bars, compact }), engine !== "lwc" && ind.macd && /* @__PURE__ */ React.createElement(SimMacdPane, { bars, compact }), /* @__PURE__ */ React.createElement(SimOrderBook, { lastBar, compact }), /* @__PURE__ */ React.createElement(SimOrderFlowTape, { bars, compact }), /* @__PURE__ */ React.createElement(SimFootprint, { bars, compact }), /* @__PURE__ */ React.createElement(SimHeatStrip, { bars, compact }), /* @__PURE__ */ React.createElement(SimRestFlow, { bars, compact })));
-  }
   function SimCandleChart(props) {
     const useLwc = useMemo_simc(() => _lwcAvailable(), []);
     return useLwc ? /* @__PURE__ */ React.createElement(SimCandleChartLWC, { ...props }) : /* @__PURE__ */ React.createElement(SimCandleChartSVG, { ...props });
   }
-  function SimOrderFlowTape({ bars, compact }) {
-    const view = useMemo_simc(() => {
-      const arr = bars || [];
-      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
-    }, [bars]);
-    const hasData = useMemo_simc(
-      () => view.some((b) => b.net_qty != null && isFinite(b.net_qty) && b.net_qty !== 0),
-      [view]
-    );
-    if (!hasData) return null;
-    const maxAbs = Math.max(1, ...view.map((b) => Math.abs(_simNq(b))));
-    const H = compact ? 14 : 18;
-    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)", flexShrink: 0, width: 48 } }, "\uC624\uB354\uD50C\uB85C\uC6B0"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flex: 1, height: H, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" } }, view.map((b, i) => {
-      const nq = _simNq(b);
-      const mag = Math.min(1, Math.abs(nq) / maxAbs);
-      const a = (0.15 + mag * 0.75).toFixed(3);
-      const bg = nq > 0 ? `rgba(76,214,179,${a})` : nq < 0 ? `rgba(255,93,108,${a})` : "rgba(150,158,170,0.12)";
-      return /* @__PURE__ */ React.createElement(
-        "div",
-        {
-          key: i,
-          title: _simTimeLabel(b.t) + " \xB7 \uC21C\uB9E4\uC218 " + _simPriceTick(nq),
-          style: { flex: 1, background: bg }
-        }
-      );
-    })));
-  }
-  function _simNq(b) {
-    return b && b.net_qty != null && isFinite(b.net_qty) ? b.net_qty : 0;
-  }
-  function _hoga_tick(price) {
-    const p = Math.abs(Number(price) || 0);
-    if (p < 2e3) return 1;
-    if (p < 5e3) return 5;
-    if (p < 2e4) return 10;
-    if (p < 5e4) return 50;
-    if (p < 2e5) return 100;
-    if (p < 5e5) return 500;
-    return 1e3;
-  }
-  function _bucketPrice(price, tick) {
-    const t = tick || 1;
-    return Math.round(Math.floor((Number(price) || 0) / t) * t);
-  }
-  function _barBuySell(bar) {
-    const vol = bar.vol != null && isFinite(bar.vol) ? bar.vol : 0;
-    const nq = bar.net_qty;
-    if (nq != null && isFinite(nq)) {
-      const buy = (vol + nq) / 2;
-      const sell = (vol - nq) / 2;
-      return { buy: Math.max(0, buy), sell: Math.max(0, sell), real: true };
-    }
-    const s = bar.strength != null && isFinite(bar.strength) ? bar.strength : 100;
-    const buyShare = Math.max(0, Math.min(1, s / 200));
-    return { buy: vol * buyShare, sell: vol * (1 - buyShare), real: false };
-  }
-  function SimFootprint({ bars, compact }) {
-    const [open, setOpen] = useState_simc(false);
-    const agg = useMemo_simc(() => {
-      const arr = bars || [];
-      const view = arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
-      if (view.length === 0) return { levels: [], real: true, curPrice: null, hasVol: false };
-      const last = view[view.length - 1];
-      const map = /* @__PURE__ */ new Map();
-      let real = true;
-      let hasVol = false;
-      for (let i = 0; i < view.length; i++) {
-        const b = view[i];
-        const bs = _barBuySell(b);
-        if (!bs.real) real = false;
-        if (bs.buy + bs.sell > 0) hasVol = true;
-        const key = _bucketPrice(b.c, _hoga_tick(b.c));
-        const cur = map.get(key) || { buy: 0, sell: 0 };
-        cur.buy += bs.buy;
-        cur.sell += bs.sell;
-        map.set(key, cur);
-      }
-      const levels = Array.from(map.entries()).map(([price, v]) => ({ price, buy: v.buy, sell: v.sell, delta: v.buy - v.sell })).sort((a, b) => b.price - a.price);
-      return { levels, real, curPrice: _bucketPrice(last.c, _hoga_tick(last.c)), hasVol };
-    }, [bars]);
-    if (!agg.hasVol) return null;
-    const maxSide = Math.max(1, ...agg.levels.map((l) => Math.max(l.buy, l.sell)));
-    const rowH = compact ? 14 : 17;
-    const barW = compact ? 80 : 110;
-    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => setOpen((o) => !o),
-        className: "mono",
-        style: {
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          width: "100%",
-          padding: "4px 8px",
-          background: "transparent",
-          border: "1px solid var(--line-1)",
-          borderRadius: 5,
-          color: "var(--ink-2)",
-          cursor: "pointer",
-          fontSize: 10
-        }
-      },
-      /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, open ? "\u25BC" : "\u25B6"),
-      "\uC624\uB354\uD50C\uB85C\uC6B0 footprint",
-      /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "auto", color: agg.real ? "var(--teal)" : "var(--amber)" } }, agg.real ? "\uC2E4\uB370\uC774\uD130" : "\uAC15\uB3C4 \uADFC\uC0AC")
-    ), open && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 4, display: "flex", flexDirection: "column", gap: 1 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { display: "flex", alignItems: "center", fontSize: 8.5, color: "var(--ink-3)", padding: "0 2px" } }, /* @__PURE__ */ React.createElement("span", { style: { width: barW, textAlign: "left", color: "var(--red)" } }, "\uB9E4\uB3C4\uCCB4\uACB0"), /* @__PURE__ */ React.createElement("span", { style: { flex: 1, textAlign: "center" } }, "\uAC00\uACA9"), /* @__PURE__ */ React.createElement("span", { style: { width: barW, textAlign: "right", color: "var(--teal)" } }, "\uB9E4\uC218\uCCB4\uACB0"), /* @__PURE__ */ React.createElement("span", { style: { width: compact ? 44 : 56, textAlign: "right" } }, "\uB378\uD0C0")), agg.levels.map((lv) => {
-      const isCur = lv.price === agg.curPrice;
-      const sellW = lv.sell / maxSide * barW;
-      const buyW = lv.buy / maxSide * barW;
-      const sellInt = Math.min(1, lv.sell / maxSide);
-      const buyInt = Math.min(1, lv.buy / maxSide);
-      return /* @__PURE__ */ React.createElement(
-        "div",
-        {
-          key: lv.price,
-          className: "mono",
-          style: {
-            display: "flex",
-            alignItems: "center",
-            height: rowH,
-            fontSize: 9.5,
-            background: isCur ? "rgba(255,210,76,0.10)" : "transparent",
-            borderRadius: 3,
-            boxShadow: isCur ? "0 0 0 1px rgba(255,210,76,0.4) inset" : "none"
-          }
-        },
-        /* @__PURE__ */ React.createElement("div", { style: { width: barW, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", fontSize: 8.5 } }, lv.sell >= 1 ? _simPriceTick(lv.sell) : ""), /* @__PURE__ */ React.createElement("div", { style: { width: sellW, height: rowH - 5, background: `rgba(255,93,108,${(0.25 + sellInt * 0.6).toFixed(3)})`, borderRadius: 2 } })),
-        /* @__PURE__ */ React.createElement("span", { style: { flex: 1, textAlign: "center", color: isCur ? "var(--amber)" : "var(--ink-1)", fontWeight: isCur ? 600 : 400 } }, _simPriceTick(lv.price)),
-        /* @__PURE__ */ React.createElement("div", { style: { width: barW, display: "flex", justifyContent: "flex-start", alignItems: "center", gap: 4 } }, /* @__PURE__ */ React.createElement("div", { style: { width: buyW, height: rowH - 5, background: `rgba(76,214,179,${(0.25 + buyInt * 0.6).toFixed(3)})`, borderRadius: 2 } }), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", fontSize: 8.5 } }, lv.buy >= 1 ? _simPriceTick(lv.buy) : "")),
-        /* @__PURE__ */ React.createElement("span", { style: { width: compact ? 44 : 56, textAlign: "right", color: lv.delta >= 0 ? "var(--teal)" : "var(--red)" } }, lv.delta >= 0 ? "+" : "", _simPriceTick(lv.delta))
-      );
-    }), !agg.real && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 8.5, color: "var(--ink-3)", marginTop: 3, lineHeight: 1.4 } }, "\uC21C\uB9E4\uC218\uC218\uB7C9(net_qty) \uBD80\uC7AC\uB85C \uCCB4\uACB0\uAC15\uB3C4 \uAE30\uBC18 \uADFC\uC0AC \uBD84\uB9AC\uB2E4(\uC2E4 \uB9E4\uC218/\uB9E4\uB3C4 \uCCB4\uACB0\uB7C9 \uC544\uB2D8).")));
-  }
-  function SimOrderBook({ lastBar, compact }) {
-    const prevRef = useRef_simc({ bid1: null, ask1: null });
-    const [flash, setFlash] = useState_simc({ bid: false, ask: false });
-    const bid1 = lastBar && lastBar.bid1 != null && isFinite(lastBar.bid1) ? lastBar.bid1 : null;
-    const ask1 = lastBar && lastBar.ask1 != null && isFinite(lastBar.ask1) ? lastBar.ask1 : null;
-    useEffect_simc(() => {
-      const p = prevRef.current;
-      const bidChg = p.bid1 != null && bid1 != null && bid1 !== p.bid1;
-      const askChg = p.ask1 != null && ask1 != null && ask1 !== p.ask1;
-      if (bidChg || askChg) {
-        setFlash({ bid: bidChg, ask: askChg });
-        const id = setTimeout(() => setFlash({ bid: false, ask: false }), 280);
-        prevRef.current = { bid1, ask1 };
-        return () => clearTimeout(id);
-      }
-      prevRef.current = { bid1, ask1 };
-    }, [bid1, ask1]);
-    if (!lastBar) return null;
-    const buyRest = lastBar.buy_rest != null && isFinite(lastBar.buy_rest) ? lastBar.buy_rest : null;
-    const sellRest = lastBar.sell_rest != null && isFinite(lastBar.sell_rest) ? lastBar.sell_rest : null;
-    if (bid1 == null && ask1 == null && buyRest == null && sellRest == null) return null;
-    const cur = lastBar.c != null && isFinite(lastBar.c) ? lastBar.c : null;
-    const strength = lastBar.strength != null && isFinite(lastBar.strength) ? lastBar.strength : null;
-    const maxRest = Math.max(1, buyRest || 0, sellRest || 0);
-    const askW = sellRest != null ? sellRest / maxRest * 100 : 0;
-    const bidW = buyRest != null ? buyRest / maxRest * 100 : 0;
-    const spread = bid1 != null && ask1 != null ? ask1 - bid1 : null;
-    const mid = bid1 != null && ask1 != null ? (ask1 + bid1) / 2 : null;
-    const spreadBps = spread != null && mid && mid > 0 ? spread / mid * 1e4 : null;
-    const totRest = (buyRest || 0) + (sellRest || 0);
-    const buyShare = totRest > 0 ? (buyRest || 0) / totRest * 100 : null;
-    const sellShare = totRest > 0 ? (sellRest || 0) / totRest * 100 : null;
-    const stColor = strength == null ? "var(--ink-2)" : strength >= 100 ? "var(--teal)" : "var(--red)";
-    const rowH = compact ? 20 : 24;
-    const askBg = flash.ask ? "rgba(56,140,255,0.22)" : "rgba(56,140,255,0.06)";
-    const bidBg = flash.bid ? "rgba(255,93,108,0.22)" : "rgba(255,93,108,0.06)";
-    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3, gap: 6 } }, /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: "mono",
-        style: { fontSize: 9.5, color: "var(--ink-3)" },
-        title: "\uC77C\uC77C DB\uB294 \uCD5C\uC6B0\uC120\uD638\uAC00\xB7\uCD1D\uC794\uB7C9\uB9CC \uC81C\uACF5(\uB808\uBCA82~10 \uC5C6\uC74C)"
-      },
-      "\uD638\uAC00\uCC3D (\uB808\uBCA81 + \uCD1D\uC794\uB7C9)"
-    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } }, spread != null && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-2)" } }, "\uC2A4\uD504\uB808\uB4DC ", _simPriceTick(spread), spreadBps != null ? ` (${spreadBps.toFixed(1)}bp)` : ""), strength != null && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: stColor, padding: "1px 6px", borderRadius: 3, border: "1px solid " + (strength >= 100 ? "var(--teal-dim)" : "var(--line-1)") } }, "\uCCB4\uACB0\uAC15\uB3C4 ", strength.toFixed(0)))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", height: rowH, background: askBg, borderRadius: 3, marginBottom: 1, transition: "background 0.28s ease-out" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#5aa0ff", paddingRight: 8 } }, ask1 != null ? _simPriceTick(ask1) : "\u2014"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: rowH - 8, position: "relative", display: "flex", justifyContent: "flex-start" } }, /* @__PURE__ */ React.createElement("div", { style: { width: askW + "%", height: "100%", background: "rgba(56,140,255,0.30)", borderRadius: 2, transition: "width 0.2s ease-out" } })), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 60 : 74, textAlign: "right", fontSize: 9.5, color: "#5aa0ff", paddingRight: 4 } }, sellRest != null ? _simPriceTick(sellRest) : "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { textAlign: "center", fontSize: 11, color: "var(--amber)", padding: "2px 0", letterSpacing: ".04em" } }, "\u25B8 ", cur != null ? _simPriceTick(cur) : "\u2014", " \u25C2"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", height: rowH, background: bidBg, borderRadius: 3, marginTop: 1, transition: "background 0.28s ease-out" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#ff8088", paddingRight: 8 } }, bid1 != null ? _simPriceTick(bid1) : "\u2014"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: rowH - 8, display: "flex", justifyContent: "flex-start" } }, /* @__PURE__ */ React.createElement("div", { style: { width: bidW + "%", height: "100%", background: "rgba(255,93,108,0.28)", borderRadius: 2, transition: "width 0.2s ease-out" } })), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 60 : 74, textAlign: "right", fontSize: 9.5, color: "#ff8088", paddingRight: 4 } }, buyRest != null ? _simPriceTick(buyRest) : "\u2014")), buyShare != null && sellShare != null && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 5 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", height: 6, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("div", { style: { width: buyShare.toFixed(1) + "%", background: "var(--teal)", opacity: 0.7, transition: "width 0.25s ease-out" } }), /* @__PURE__ */ React.createElement("div", { style: { width: sellShare.toFixed(1) + "%", background: "var(--red)", opacity: 0.7, transition: "width 0.25s ease-out" } })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 2, fontSize: 9 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--teal)" } }, "\uB9E4\uC218 ", buyShare.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--red)" } }, "\uB9E4\uB3C4 ", sellShare.toFixed(0), "%"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 9.5 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "#5aa0ff" } }, "\uCD1D\uB9E4\uB3C4 ", sellRest != null ? _simPriceTick(sellRest) : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "#ff8088" } }, "\uCD1D\uB9E4\uC218 ", buyRest != null ? _simPriceTick(buyRest) : "\u2014")));
-  }
-  var _SIM_OVERLAY_COLORS = ["#4cd6b3", "#ff5d6c", "#f0b35a", "#7c6cf0"];
+
+  // ../frontend/sim-signal-log.jsx
   function SimOverlayChart({ codes, barsByCode, nameByCode, curT }) {
     const series = useMemo_simc(() => {
       return (codes || []).map((code, idx) => {
@@ -11434,6 +11442,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       ));
     }))));
   }
+
+  // ../frontend/simulation-charts.jsx
   Object.assign(window, {
     SimCandleChart,
     SimCandleChartLWC,
