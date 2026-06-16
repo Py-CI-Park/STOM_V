@@ -107,7 +107,8 @@ def test_heatmap_skips_unparseable_buy_time_no_raise() -> None:
 # TASK1 — 프런트: BtHeatmap 이 수익률 합계(%) 를 셀 지표로 사용.
 # ============================================================================
 def test_btheatmap_uses_return_pct_metric_and_label() -> None:
-    src = (FRONTEND / "backtest-charts.jsx").read_text(encoding="utf-8")
+    # P5.1 분해 — BtHeatmap 은 backtest-charts.jsx(배럴)에서 bt-distribution-charts.jsx 로 이동.
+    src = (FRONTEND / "bt-distribution-charts.jsx").read_text(encoding="utf-8")
     # 백엔드 새 필드를 1차 지표로 소비한다.
     assert "profit_pct_sum" in src, "BtHeatmap 이 profit_pct_sum 을 사용해야 한다"
     # 사용자 표현(수익률 합계) + % 단위 라벨이 노출된다.
@@ -123,7 +124,12 @@ def test_btheatmap_uses_return_pct_metric_and_label() -> None:
 # TASK2 — 프런트: 날짜 X축 연도 보강 + Y축 중간 눈금.
 # ============================================================================
 def test_backtest_charts_axis_year_and_yticks() -> None:
-    src = (FRONTEND / "backtest-charts.jsx").read_text(encoding="utf-8")
+    # P5.1 분해 — 축 헬퍼(_btDateLabelY/_btAxisTicks)는 bt-chart-utils.jsx 에 정의되고
+    #   bt-equity-charts.jsx·bt-distribution-charts.jsx 에서 사용된다. 정의+사용을 합쳐 검증.
+    src = "\n".join(
+        (FRONTEND / f).read_text(encoding="utf-8")
+        for f in ("bt-chart-utils.jsx", "bt-equity-charts.jsx", "bt-distribution-charts.jsx")
+    )
     # 연도 포함 날짜 포맷터(YYYY-MM-DD)와 그 호출.
     assert "_btDateLabelY" in src, "연도 보강 날짜 포맷터 누락"
     # 중간 눈금 헬퍼와 실제 사용(여러 y 눈금 라벨 렌더).

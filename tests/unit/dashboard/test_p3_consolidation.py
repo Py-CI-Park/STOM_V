@@ -56,8 +56,9 @@ class TestSharedHelpersInBundle:
 # ============================================================ 소비처 별칭(중복 제거)
 class TestConsumersAliasNotRedefine:
     def test_bt_axisticks_deduped(self) -> None:
-        src = _readf("backtest-charts.jsx")
-        assert "function _btAxisTicks(" not in src, "backtest-charts 에 _btAxisTicks 정의 잔존(de-dup 위반)."
+        # P5.1 분해 — _btAxisTicks 별칭은 backtest-charts.jsx(배럴)에서 bt-chart-utils.jsx 로 이동.
+        src = _readf("bt-chart-utils.jsx")
+        assert "function _btAxisTicks(" not in src, "bt-chart-utils 에 _btAxisTicks 정의 잔존(de-dup 위반)."
         assert "const _btAxisTicks = window._axisTicks" in src
 
     def test_sim_charts_tick_helpers_deduped(self) -> None:
