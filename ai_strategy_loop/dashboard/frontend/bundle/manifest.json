@@ -1,39 +1,17 @@
 {
-  "note": "Phase14.5 build manifest — content-hash 캐시 버전(수동 ?v= 폐지). 빌드 산출.",
+  "note": "Track Z PR-6 build manifest — content-hash 캐시 버전(수동 ?v= 폐지). 빌드 산출.",
   "bundles": {
     "app.js": {
-      "v": "d0f56818"
+      "v": "34ae83de"
     },
     "stom-ui.js": {
       "v": "f41f5701"
     }
   },
-  "appSources": [
-    "connection.jsx",
-    "panels.jsx",
-    "run-compare.jsx",
-    "engine.jsx",
-    "chart.jsx",
-    "hypothesis.jsx",
-    "table.jsx",
-    "cards.jsx",
-    "code-viewer.jsx",
-    "strategy-inspector.jsx",
-    "phase-detail.jsx",
-    "settings.jsx",
-    "analysis.jsx",
-    "research-pro.jsx",
-    "research-lab.jsx",
-    "research-wiki.jsx",
-    "ai-context.jsx",
-    "glossary.jsx",
-    "backtest-charts.jsx",
-    "backtest.jsx",
-    "sim-live-chart.jsx",
-    "simulation-charts.jsx",
-    "simulation.jsx",
-    "evolution-analysis.jsx",
-    "dashboard-pages.jsx",
-    "app.jsx"
-  ]
+  "model": "bundle",
+  "entry": "src/track-z-entry.pilot.js",
+  "externalizedGlobals": {
+    "react": "window.React",
+    "react-dom": "window.ReactDOM"
+  }
 }

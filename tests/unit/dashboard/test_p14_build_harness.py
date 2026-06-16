@@ -148,27 +148,77 @@ def test_all_entrypoints_loading_deduped_jsx_also_load_bundle() -> None:
     assert not missing, f"번들 미로드 엔트리(de-dup 전역 깨짐): {missing}"
 
 
-def test_app_bundle_contains_all_ordered_sources() -> None:
-    """14.4: bundle/app.js 가 build-app.mjs ORDER 의 26개 .jsx 를 전부 마커로 포함(누락/stale 가드).
+def test_app_bundle_is_single_entry_graph() -> None:
+    """PR-6 FLIP(Story 5b): 기본 빌드 모델이 esbuild bundle 로 전환됨 — bundle/app.js 는 단일
+    엔트리 그래프(per-module-scope ESM)다. concat 마커가 아니라 BUNDLE 불변식으로 빌드-모델 회귀를
+    가드한다. (이 가드의 보호 의도는 동일: 빌드-모델이 퇴행하면 실패해야 한다.)
 
-    build-app.mjs 의 ORDER 배열을 직접 파싱해 산출물 app.js 와 대조한다. 새 .jsx 를 ORDER 에
-    추가하고 재빌드를 깜빡하면(또는 파일 누락) 실패한다. (완전 byte 동일 검증은 14.5 content-hash.)
+    FLIP 이전(이 테스트의 옛 버전)은 26개 concat 마커(`==== X.jsx ====`)와 appSources==26 을
+    단언했다. 기본=concat 이었기 때문. 이제 기본=bundle 이므로:
+      - manifest model == "bundle" (concat 모델로 되돌아가면 실패)
+      - app.js 에 concat 마커(`==== `)가 없다(단일 엔트리 그래프; 파일-경계 concat 아님)
+      - 두 번째 React 가 번들되지 않았다(alias-to-shim, require("react")/센티넬 없음)
+      - 풀 앱이다(엔트리 무결성: ReactDOM.createRoot 마운트 + 핵심 컴포넌트 존재)
     """
+    manifest = json.loads((FRONTEND / "bundle" / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest.get("model") == "bundle", (
+        f"빌드 모델 회귀: 기본은 bundle 이어야 함(현재 model={manifest.get('model')!r}). "
+        "concat 으로 되돌아갔다면 STOM_LEGACY_CONCAT 폴백이 기본으로 새어든 것."
+    )
+
+    app_js = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
+    # 단일 엔트리 그래프: 파일-경계 concat 마커가 없어야 한다(있으면 concat 모델로 회귀).
+    assert "==== " not in app_js, (
+        "bundle/app.js 에 concat 마커(`==== `)가 있음 — 빌드가 concat 모델로 회귀했다."
+    )
+    # alias-to-shim 단일 React: require("react") / 두 번째 React 센티넬이 없어야 한다.
+    assert 'require("react")' not in app_js, "bundle/app.js 에 require(\"react\") 존재(단일 React 위반)."
+    assert "react.development" not in app_js, "bundle/app.js 에 두 번째 React 센티넬(react.development) 존재."
+    assert "__SECRET_INTERNALS" not in app_js, "bundle/app.js 에 두 번째 React 복사본이 번들됨."
+    # 엔트리 무결성: 풀 앱 + 마운트 코드. (concat 의 26-마커 완전성 가드를 대체.)
+    assert "ReactDOM.createRoot" in app_js, "app.js 에 마운트 코드(ReactDOM.createRoot)가 없습니다."
+    for sym in ("function App", "LabPage", "ProPage", "VerdictPanel"):
+        assert sym in app_js, f"app.js 에 핵심 컴포넌트 {sym!r} 누락(풀 앱 아님 — 재빌드 필요)."
+    # manifest 가 bundle 모델 메타(엔트리 + 외부화 전역)를 기록.
+    assert manifest.get("entry", "").endswith(".js"), "manifest 에 bundle entry 경로 누락."
+    assert "externalizedGlobals" in manifest, "manifest 에 externalizedGlobals(react→window.React) 누락."
+
+
+def test_legacy_concat_fallback_still_26_sources() -> None:
+    """PR-6: 비상 롤백 경로(STOM_LEGACY_CONCAT=1)는 여전히 26-소스 concat 을 산출해야 한다.
+
+    flip 의 안전장치(즉시 롤백)가 살아있음을 가드한다. node/esbuild 가 없으면 skip(런타임 npm-free,
+    webui-build/node_modules gitignored). 폴백 실행 후 반드시 기본(bundle) 으로 재빌드해 트리를 flip
+    상태로 되돌린다(테스트가 산출물을 오염시키지 않도록)."""
+    import shutil
+    import subprocess
+
+    node = shutil.which("node")
+    if node is None or not (WEBUI_BUILD / "node_modules" / "esbuild").exists():
+        pytest.skip("node/esbuild 미설치(webui-build/node_modules gitignored) — concat 폴백 검증 생략")
+
     build_src = (WEBUI_BUILD / "build-app.mjs").read_text(encoding="utf-8")
     m = re.search(r"const ORDER = \[(.*?)\];", build_src, re.DOTALL)
     assert m, "build-app.mjs 에서 ORDER 배열을 찾지 못했습니다."
     order = re.findall(r'"([^"]+\.jsx)"', m.group(1))
-    assert len(order) >= 20, f"ORDER 파싱 비정상(개수 {len(order)})."
+    assert len(order) == 26, f"ORDER 개수 비정상({len(order)})."
 
-    app_js = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
-    # TODO(flip P4/5b): "==== {f} ====" concat 마커 검사는 빌드-모델 가드다(concat 전용).
-    #   flip 후엔 single-entry-graph 불변식(엔트리가 모듈셋 import; manifest model=="bundle")으로 교체.
-    #   현재(기본=concat) 동안은 concat 산출 마커로 완전성을 검사한다(KEEP green).
-    missing = [f for f in order if f"==== {f} ====" not in app_js]
-    assert not missing, f"app.js 에 누락된 소스(재빌드 필요): {missing}"
-    # 마지막 엔트리(app.jsx)는 ReactDOM 마운트를 포함해야 한다(엔트리 무결성).
-    assert order[-1] == "app.jsx"
-    assert "ReactDOM.createRoot" in app_js, "app.js 에 마운트 코드(ReactDOM.createRoot)가 없습니다."
+    try:
+        # 폴백 빌드 → concat app.js + manifest model=="concat".
+        env = dict(os.environ, STOM_LEGACY_CONCAT="1")
+        r = subprocess.run([node, "build-app.mjs"], cwd=str(WEBUI_BUILD),
+                           capture_output=True, text=True, timeout=240, env=env)
+        assert r.returncode == 0, f"concat 폴백 빌드 실패: {r.stderr}"
+        app_js = (FRONTEND / "bundle" / "app.js").read_text(encoding="utf-8")
+        missing = [f for f in order if f"==== {f} ====" not in app_js]
+        assert not missing, f"concat 폴백 app.js 에 누락된 소스: {missing}"
+        manifest = json.loads((FRONTEND / "bundle" / "manifest.json").read_text(encoding="utf-8"))
+        assert manifest.get("model") == "concat", "concat 폴백 manifest model 이 'concat' 이 아님."
+        assert len(manifest.get("appSources", [])) == 26, "concat 폴백 manifest appSources != 26."
+    finally:
+        # 트리를 flip 상태(기본=bundle)로 복원 — 폴백 산출물을 남기지 않는다.
+        subprocess.run([node, "build-app.mjs"], cwd=str(WEBUI_BUILD),
+                       capture_output=True, text=True, timeout=240)
 
 
 def test_content_hash_cache_consistency() -> None:
@@ -202,12 +252,15 @@ def test_content_hash_cache_consistency() -> None:
         html = _read(FRONTEND / entry)
         assert f"bundle/stom-ui.js?v={stom_v}" in html, f"{entry} stom-ui ?v= 불일치(stale)."
 
-    # TODO(flip P4/5b): appSources==26 / [-1]=="app.jsx" 는 concat 모델 가드다(빌드-모델 차이).
-    #   manifest 에 model 필드가 추가되면 model=="bundle" 분기로 single-entry-graph 불변식으로 교체.
-    #   현재 manifest 에는 model 필드가 없으므로(기본=concat) 26-source concat 현실을 검사한다(KEEP green).
-    # 매니페스트 appSources 는 build-app.mjs ORDER 와 동일(완전성).
-    assert manifest["appSources"][-1] == "app.jsx"
-    assert len(manifest["appSources"]) == 26
+    # PR-6 FLIP: 기본 manifest 가 bundle 모델로 전환됨 → appSources(concat 전용) 대신 model=="bundle"
+    #   single-entry-graph 메타를 단언한다. content-hash 일관성(위)은 모델 무관(두 경로 공통 post-build).
+    assert manifest.get("model") == "bundle", (
+        f"기본 빌드 모델은 bundle 이어야 함(현재 {manifest.get('model')!r})."
+    )
+    assert manifest.get("entry", "").endswith(".js"), "bundle manifest 에 entry 경로 누락."
+    assert "appSources" not in manifest, (
+        "bundle manifest 에 concat 전용 appSources 가 남아있음 — 빌드-모델 회귀."
+    )
 
 
 def test_throwaway_poc_retired() -> None:

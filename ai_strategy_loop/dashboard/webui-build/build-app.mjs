@@ -1,13 +1,23 @@
-// build-app.mjs — Phase14.4/14.5: 운영 컴포넌트 26개 .jsx 를 빌드 시점에 JSX→JS 컴파일하여
-//   하나의 클래식 스크립트 ../frontend/bundle/app.js 로 연결하고(런타임 babel 대체),
-//   산출물 content-hash 를 계산해 HTML 의 ?v= 캐시 버전을 자동 갱신한다(14.5 수동 핀 폐지).
+// build-app.mjs — Track Z (PR-6 / Story 4+5b FLIP): the REAL esbuild `bundle:true` build is now
+//   the DEFAULT served artifact. The legacy transform-concat path is retained ONLY as an emergency
+//   instant-rollback behind STOM_LEGACY_CONCAT=1 (NOT deleted — safer revert than a git revert).
 //
-//   원칙:
-//   - 변환만(transform), 번들링 아님 → 전역 스코프 공유 모델 보존(파일 간 bare 식별자 해소).
-//   - jsxFactory=React.createElement (vendor-react 전역), import/export 미사용(전 파일 확인).
-//   - 식별자 리네임 금지(minifyIdentifiers=false): 파일 간 참조가 최상위 이름에 의존.
-//   - 산출물(app.js·stom-ui.js)은 커밋(런타임 npm-free). ?v= 는 content-hash 라 수동 bump 불필요.
-//     소스가 바뀌면 해시가 바뀌고 HTML 이 자동 갱신된다(재현성: 해시는 내용만의 함수, 타임스탬프 없음).
+//   DEFAULT (no env)  → esbuild bundle:true of src/track-z-entry.pilot.js (the full per-module-scope
+//     ESM app graph), alias-to-shim react/react-dom (single React identity, no require("react"),
+//     no second-React sentinel), classic IIFE → writes the REAL served frontend/bundle/app.js,
+//     then runs the SHARED post-build machinery (content-hash ?v= into all 5 HTMLs + manifest.json
+//     with model:"bundle"). The harness (track-z-harness.mjs) proves this served artifact renders
+//     all 7 tabs + 3 standalone pages, 0 errors, single React — the load-bearing safety proof.
+//   STOM_LEGACY_CONCAT=1 → the old transform-concat path (26 .jsx, _stripTopLevelEsm, ==== markers,
+//     manifest appSources:ORDER, model:"concat"). Emergency rollback only.
+//   STOM_BUNDLE=1 (legacy pilot flag) → builds the bundle to the transient gitignored .track-z dir
+//     ONLY (used by older tooling); does NOT touch the served tree. Kept for back-compat.
+//
+//   Principle (unchanged for users): behavior-invariant. The bundle renders identically to concat —
+//   the harness proves it. stom-ui.js stays separate/unchanged. app.js stays a classic+defer script
+//   in the 5 HTMLs (NOT type=module). Output is committed (runtime npm-free). ?v= is content-hash
+//   (no manual bump): a source change changes the hash and the HTML auto-updates (reproducible —
+//   hash is a function of content only, no timestamp).
 
 import esbuild from "esbuild";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
@@ -19,28 +29,23 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const FRONTEND = resolve(__dirname, "../frontend");
 const BUNDLE = resolve(FRONTEND, "bundle");
 
-// ============================================================================
-// Track Z (PR-1) — FLAGGED esbuild `bundle:true` PILOT path (STOM_BUNDLE=1).
-//   This is a reversible, default-OFF no-op on production:
-//     - flag UNSET  → legacy transform-concat below runs unchanged → bundle/app.js byte-
-//       identical, manifest.json unchanged (appSources==26), HTML ?v= untouched.
-//     - flag SET    → ONLY the pilot bundle is built to webui-build/.track-z/app.pilot.js
-//       (a gitignored transient dir). The committed frontend/bundle/ tree is NOT touched.
-//   Mechanism (Driver-2 alias-to-virtual-shim): esbuild has no rollup `output.globals`,
-//   so map bare `react`/`react-dom` to shims that re-export window.React/window.ReactDOM
-//   (single React identity, no runtime `require("react")`, no second-React sentinel).
-// ============================================================================
-if (process.env.STOM_BUNDLE === "1") {
-  const TRACK_Z_DIR = resolve(__dirname, ".track-z");
-  mkdirSync(TRACK_Z_DIR, { recursive: true });
-  const entry = resolve(__dirname, "src/track-z-entry.pilot.js");
-  const pilotOut = resolve(TRACK_Z_DIR, "app.pilot.js");
-  const reactShim = resolve(__dirname, "src/react-shim.js");
-  const reactDomShim = resolve(__dirname, "src/react-dom-shim.js");
+// Bundle entry + alias-to-virtual-shim wiring (shared by the DEFAULT bundle build and the legacy
+//   STOM_BUNDLE=1 pilot). esbuild has no rollup `output.globals`, so map bare `react`/`react-dom`
+//   to shims that re-export window.React/window.ReactDOM (single React identity, no runtime
+//   `require("react")`, no second-React sentinel).
+const ENTRY = resolve(__dirname, "src/track-z-entry.pilot.js");
+const ENTRY_REL = "src/track-z-entry.pilot.js";
+const REACT_SHIM = resolve(__dirname, "src/react-shim.js");
+const REACT_DOM_SHIM = resolve(__dirname, "src/react-dom-shim.js");
+const EXTERNALIZED_GLOBALS = { react: "window.React", "react-dom": "window.ReactDOM" };
 
+// buildServedBundle(outfile) — the esbuild bundle:true build that produces the REAL served app.js
+//   (DEFAULT) or a transient pilot artifact (legacy STOM_BUNDLE=1). Options are identical so the
+//   harness's transient build and the served build are byte-equivalent for a given source tree.
+async function buildServedBundle(outfile) {
   await esbuild.build({
-    entryPoints: [entry],
-    outfile: pilotOut,
+    entryPoints: [ENTRY],
+    outfile,
     bundle: true,
     format: "iife",            // classic IIFE → app.js tag stays classic+defer (no type=module flip).
     platform: "browser",
@@ -53,43 +58,90 @@ if (process.env.STOM_BUNDLE === "1") {
     loader: { ".jsx": "jsx" },
     // Driver-2: resolve bare specifiers to the virtual shims (NOT bare `external`).
     alias: {
-      react: reactShim,
-      "react-dom": reactDomShim,
-      "react-dom/client": reactDomShim,
+      react: REACT_SHIM,
+      "react-dom": REACT_DOM_SHIM,
+      "react-dom/client": REACT_DOM_SHIM,
     },
   });
+}
 
-  // Pilot content-hash (parity with the legacy ?v= automation; proves hashing still works
-  //   on the bundle artifact). Written to a sidecar manifest in the transient dir ONLY.
+// ============================================================================
+// LEGACY pilot path (STOM_BUNDLE=1) — transient .track-z build ONLY, served tree untouched.
+//   Kept for back-compat with older tooling that builds the pilot artifact directly. The flip
+//   makes the DEFAULT path do the real served bundle, so this is no longer the only bundle build.
+// ============================================================================
+if (process.env.STOM_BUNDLE === "1") {
+  const TRACK_Z_DIR = resolve(__dirname, ".track-z");
+  mkdirSync(TRACK_Z_DIR, { recursive: true });
+  const pilotOut = resolve(TRACK_Z_DIR, "app.pilot.js");
+  await buildServedBundle(pilotOut);
   const pilotV = createHash("sha256").update(readFileSync(pilotOut)).digest("hex").slice(0, 8);
   const pilotManifest = {
-    note: "Track Z PR-1 pilot manifest (FLAGGED, transient — NOT committed, NOT served).",
+    note: "Track Z legacy pilot manifest (FLAGGED, transient — NOT committed, NOT served).",
     model: "bundle",
-    entry: "src/track-z-entry.pilot.js",
-    externalizedGlobals: { react: "window.React", "react-dom": "window.ReactDOM" },
+    entry: ENTRY_REL,
+    externalizedGlobals: EXTERNALIZED_GLOBALS,
     bundles: { "app.pilot.js": { v: pilotV } },
   };
   writeFileSync(resolve(TRACK_Z_DIR, "manifest.pilot.json"), JSON.stringify(pilotManifest, null, 2) + "\n", "utf8");
   console.log(`[build-app][track-z] pilot bundle → .track-z/app.pilot.js v=${pilotV} (model=bundle, react via alias-to-shim)`);
-  // Flagged path is pilot-only: do NOT run the legacy concat / HTML rewrite below.
   process.exit(0);
 }
 
-// Strip top-level ESM `import`/`export { ... }` statements so dual-safe .jsx files (Track Z:
-//   files add `export {…}` for cross-consumed symbols and `import {…} from "./def.jsx"` for the
-//   cross-file symbols they consume) still compile as CLASSIC scripts in the DEFAULT concat path.
-//   The flagged bundle path (STOM_BUNDLE=1) KEEPS these lines (real per-module scope); only this
-//   legacy single-scope concat path strips them so flag-OFF output stays byte-identical. The
-//   Object.assign(window, {...}) in each file remains the publishing mechanism for the legacy model.
-//
-//   What is stripped (true top-level statements only, anchored at column 0):
-//     - `export { ... };`                          (single line)
-//     - `import "...";`                            (side-effect import, single line)
-//     - `import X from "...";` / `import * as X …`  (default/namespace, single line)
-//     - `import { a, b } from "...";`              (named, single line)
-//     - multi-line named import:                   `import {\n  a,\n  b,\n} from "...";`
-//   The leading `^` + `m` flag anchors at line start so indented `import(...)`/`export` inside
-//   function bodies (dynamic import(), object keys, etc.) are NOT matched.
+// ============================================================================
+// SHARED post-build machinery — runs for BOTH the DEFAULT bundle path and the legacy concat
+//   fallback, AFTER bundle/app.js has been written. content-hash ?v= injection into all 5 HTMLs
+//   (app.js + stom-ui.js) + manifest.json. The only model difference is the manifest body (model:
+//   "bundle" + entry/externalizedGlobals vs model:"concat" + appSources).
+// ============================================================================
+function runPostBuild(manifestModelFields) {
+  // ---------- content-hash 계산 ----------
+  const hash8 = (p) => createHash("sha256").update(readFileSync(p)).digest("hex").slice(0, 8);
+  const appPath = resolve(BUNDLE, "app.js");
+  const appV = hash8(appPath);
+  const stomPath = resolve(BUNDLE, "stom-ui.js");
+  const stomV = hash8(stomPath);  // stom-ui.js 는 선행 `vite build` 산출물(분리·불변).
+
+  // ---------- HTML ?v= 자동 갱신(수동 핀 폐지) ----------
+  //   대상: bundle/app.js + bundle/stom-ui.js (번들을 로드하는 모든 엔트리).
+  const setV = (html, name, v) => {
+    // src="bundle/NAME(?v=...)" 의 ?v= 만 정밀 교체. 파일명 "." 이스케이프(.map 오버매치 방지),
+    // src 속성 앵커(주석·문서 내 파일명 언급은 건드리지 않음).
+    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return html.replace(
+      new RegExp(`(src=["'])bundle/${esc}(\\?v=[^"']*)?(["'])`, "g"),
+      `$1bundle/${name}?v=${v}$3`,
+    );
+  };
+
+  const htmlTargets = ["index.html", "lab.html", "pro.html", "verdict.html", "STOM AI Dashboard.html"];
+  const touched = [];
+  for (const h of htmlTargets) {
+    const p = resolve(FRONTEND, h);
+    let s;
+    try { s = readFileSync(p, "utf8"); } catch { continue; }
+    let out = s;
+    if (out.includes("bundle/app.js")) out = setV(out, "app.js", appV);
+    if (out.includes("bundle/stom-ui.js")) out = setV(out, "stom-ui.js", stomV);
+    if (out !== s) { writeFileSync(p, out, "utf8"); touched.push(h); }
+  }
+
+  // ---------- 매니페스트(계약 검증용) ----------
+  const manifest = {
+    note: "Track Z PR-6 build manifest — content-hash 캐시 버전(수동 ?v= 폐지). 빌드 산출.",
+    bundles: { "app.js": { v: appV }, "stom-ui.js": { v: stomV } },
+    ...manifestModelFields,
+  };
+  writeFileSync(resolve(BUNDLE, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n", "utf8");
+  return { appV, stomV, touched };
+}
+
+// ============================================================================
+// EMERGENCY FALLBACK (STOM_LEGACY_CONCAT=1) — the old transform-concat path. Strip top-level ESM
+//   `import`/`export { ... }` from the dual-safe .jsx files so they compile as CLASSIC scripts in a
+//   single shared scope, concat the 26 files with `==== X.jsx ====` markers, write bundle/app.js,
+//   then run the shared post-build with model:"concat" + appSources:ORDER. Instant rollback only.
+// ============================================================================
 const _stripTopLevelEsm = (src) =>
   src
     // multi-line + single-line named/default/namespace import ending in `from "...";`
@@ -109,65 +161,44 @@ const ORDER = [
   "dashboard-pages.jsx", "app.jsx",
 ];
 
-// ---------- 1) app.js 컴파일·연결 ----------
-const header =
-  "/* GENERATED by webui-build/build-app.mjs (Phase14.4). DO NOT EDIT.\n" +
-  "   운영 컴포넌트 .jsx 를 빌드 시점에 컴파일한 단일 클래식 스크립트(런타임 babel 대체).\n" +
-  "   소스를 고치면 `npm run build` 로 재생성하라. 로드 순서는 build-app.mjs 의 ORDER. */\n";
+async function buildLegacyConcat() {
+  const header =
+    "/* GENERATED by webui-build/build-app.mjs (STOM_LEGACY_CONCAT FALLBACK). DO NOT EDIT.\n" +
+    "   운영 컴포넌트 .jsx 를 빌드 시점에 컴파일한 단일 클래식 스크립트(런타임 babel 대체).\n" +
+    "   비상 롤백 경로(기본은 esbuild bundle). 로드 순서는 build-app.mjs 의 ORDER. */\n";
+  const parts = [header];
+  for (const f of ORDER) {
+    const code = _stripTopLevelEsm(readFileSync(resolve(FRONTEND, f), "utf8"));
+    const res = await esbuild.transform(code, {
+      loader: "jsx",
+      jsx: "transform",
+      jsxFactory: "React.createElement",
+      jsxFragment: "React.Fragment",
+      minify: false,
+      sourcemap: false,
+    });
+    parts.push(`\n;/* ==== ${f} ==== */\n${res.code}`);
+  }
+  writeFileSync(resolve(BUNDLE, "app.js"), parts.join(""), "utf8");
+}
 
-const parts = [header];
-for (const f of ORDER) {
-  const code = _stripTopLevelEsm(readFileSync(resolve(FRONTEND, f), "utf8"));
-  const res = await esbuild.transform(code, {
-    loader: "jsx",
-    jsx: "transform",
-    jsxFactory: "React.createElement",
-    jsxFragment: "React.Fragment",
-    minify: false,
-    sourcemap: false,
+// ============================================================================
+// DISPATCH — default = bundle; STOM_LEGACY_CONCAT=1 = emergency concat fallback.
+// ============================================================================
+if (process.env.STOM_LEGACY_CONCAT === "1") {
+  await buildLegacyConcat();
+  const { appV, stomV, touched } = runPostBuild({ model: "concat", appSources: ORDER });
+  console.log(`[build-app][LEGACY concat] app.js v=${appV} (${ORDER.length} files) · stom-ui.js v=${stomV}`);
+  console.log(`[build-app][LEGACY concat] html ?v= 갱신: ${touched.join(", ") || "(변경 없음)"}`);
+} else {
+  // DEFAULT — the real served esbuild bundle.
+  mkdirSync(BUNDLE, { recursive: true });
+  await buildServedBundle(resolve(BUNDLE, "app.js"));
+  const { appV, stomV, touched } = runPostBuild({
+    model: "bundle",
+    entry: ENTRY_REL,
+    externalizedGlobals: EXTERNALIZED_GLOBALS,
   });
-  parts.push(`\n;/* ==== ${f} ==== */\n${res.code}`);
+  console.log(`[build-app][bundle] app.js v=${appV} (entry=${ENTRY_REL}, react via alias-to-shim) · stom-ui.js v=${stomV}`);
+  console.log(`[build-app][bundle] html ?v= 갱신: ${touched.join(", ") || "(변경 없음)"}`);
 }
-const appPath = resolve(BUNDLE, "app.js");
-writeFileSync(appPath, parts.join(""), "utf8");
-
-// ---------- 2) content-hash 계산 ----------
-const hash8 = (p) => createHash("sha256").update(readFileSync(p)).digest("hex").slice(0, 8);
-const appV = hash8(appPath);
-const stomPath = resolve(BUNDLE, "stom-ui.js");
-const stomV = hash8(stomPath);  // stom-ui.js 는 선행 `vite build` 산출물.
-
-// ---------- 3) HTML ?v= 자동 갱신(수동 핀 폐지) ----------
-//   대상: bundle/app.js (index 만), bundle/stom-ui.js (번들을 로드하는 모든 엔트리).
-const setV = (html, name, v) => {
-  // src="bundle/NAME(?v=...)" 의 ?v= 만 정밀 교체. 파일명 "." 이스케이프(.map 오버매치 방지),
-  // src 속성 앵커(주석·문서 내 파일명 언급은 건드리지 않음).
-  const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return html.replace(
-    new RegExp(`(src=["'])bundle/${esc}(\\?v=[^"']*)?(["'])`, "g"),
-    `$1bundle/${name}?v=${v}$3`,
-  );
-};
-
-const htmlTargets = ["index.html", "lab.html", "pro.html", "verdict.html", "STOM AI Dashboard.html"];
-const touched = [];
-for (const h of htmlTargets) {
-  const p = resolve(FRONTEND, h);
-  let s;
-  try { s = readFileSync(p, "utf8"); } catch { continue; }
-  let out = s;
-  if (out.includes("bundle/app.js")) out = setV(out, "app.js", appV);
-  if (out.includes("bundle/stom-ui.js")) out = setV(out, "stom-ui.js", stomV);
-  if (out !== s) { writeFileSync(p, out, "utf8"); touched.push(h); }
-}
-
-// ---------- 4) 매니페스트(계약 검증용) ----------
-const manifest = {
-  note: "Phase14.5 build manifest — content-hash 캐시 버전(수동 ?v= 폐지). 빌드 산출.",
-  bundles: { "app.js": { v: appV }, "stom-ui.js": { v: stomV } },
-  appSources: ORDER,
-};
-writeFileSync(resolve(BUNDLE, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n", "utf8");
-
-console.log(`[build-app] app.js v=${appV} (${ORDER.length} files) · stom-ui.js v=${stomV}`);
-console.log(`[build-app] html ?v= 갱신: ${touched.join(", ") || "(변경 없음)"}`);
