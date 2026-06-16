@@ -341,21 +341,23 @@ class TestExistingRoutesUnchanged:
 # =====================================================================
 class TestBacktestDetailChartStructure:
     def test_component_defined_in_chart_jsx(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-backtest-detail.jsx")
         assert "function BacktestDetailChart(" in src
 
     def test_component_exposed_on_window(self):
+        # window 재게시는 chart.jsx 배럴이 Object.assign 으로 수행한다(분해 후).
         src = _read_front("chart.jsx")
         tail = src[src.rfind("Object.assign(window"):]
         assert "BacktestDetailChart" in tail
+        # 함수 본문은 chart-backtest-detail.jsx 로 이동했다(window 노출은 배럴 책임).
 
     def test_component_uses_backtest_detail_endpoint(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-backtest-detail.jsx")
         bd = src[src.find("function BacktestDetailChart("):]
         assert "/backtest_detail" in bd
 
     def test_component_renders_daily_and_cumulative(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-backtest-detail.jsx")
         bd = src[src.find("function BacktestDetailChart("):]
         # 일별손익 막대 + 누적수익곡선 둘 다 소비해야 한다.
         assert "daily" in bd
@@ -364,7 +366,7 @@ class TestBacktestDetailChartStructure:
 
     def test_component_renders_holdings_panel(self):
         """상단 동시보유 종목수 sub-panel(holdings·peak_holdings)을 소비해야 한다(#66)."""
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-backtest-detail.jsx")
         bd = src[src.find("function BacktestDetailChart("):]
         # holdings 시계열·peak_holdings·계단 path·안내문(보유금액 대체) 존재.
         assert "holdings" in bd
@@ -375,7 +377,7 @@ class TestBacktestDetailChartStructure:
         assert "보유금액" in bd
 
     def test_component_flags_db_vs_csv_hold_discrepancy(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-backtest-detail.jsx")
         bd = src[src.find("function BacktestDetailChart("):]
 
         assert "dbMaxHold" in bd
@@ -384,7 +386,7 @@ class TestBacktestDetailChartStructure:
         assert "human corridor 6-12" in bd
 
     def test_component_empty_state(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-backtest-detail.jsx")
         bd = src[src.find("function BacktestDetailChart("):]
         # 빈 시계열일 때 빈 상태 안내(CSV 없음/토글).
         assert "CSV 없음" in bd

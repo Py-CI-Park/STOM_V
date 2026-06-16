@@ -345,26 +345,27 @@ class TestReferenceScreenshots:
 # =====================================================================
 class TestFrontendStructure:
     def test_component_defined_in_chart_jsx(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-hall-of-fame.jsx")
         assert "function HallOfFamePanel(" in src
 
     def test_component_exposed_on_window(self):
+        # window 재게시는 chart.jsx 배럴이 Object.assign 으로 수행한다(분해 후).
         src = _read_front("chart.jsx")
         tail = src[src.rfind("Object.assign(window"):]
         assert "HallOfFamePanel" in tail
 
     def test_component_uses_hall_of_fame_endpoint(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-hall-of-fame.jsx")
         hof = src[src.find("function HallOfFamePanel("):]
         assert "/hall_of_fame" in hof
 
     def test_component_has_title(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-hall-of-fame.jsx")
         hof = src[src.find("function HallOfFamePanel("):]
         assert "명예의 전당" in hof
 
     def test_component_distinguishes_human_and_ai(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-hall-of-fame.jsx")
         hof = src[src.find("function HallOfFamePanel("):]
         # human/ai 구분(뱃지·필터) + 운영금/연평균 표시.
         assert "인간" in hof and "AI" in hof
@@ -372,14 +373,14 @@ class TestFrontendStructure:
         assert "운영금" in hof
 
     def test_component_has_refresh_mechanism(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-hall-of-fame.jsx")
         hof = src[src.find("function HallOfFamePanel("):]
         assert "setInterval" in hof
         assert "새로고침" in hof
 
     def test_component_has_total_return_krw_and_period_columns(self):
         """총수익금(원) 컬럼 유지 + 백테 기간 컬럼 추가."""
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-hall-of-fame.jsx")
         hof = src[src.find("function HallOfFamePanel("):]
         assert "총수익금(원)" in hof   # 1) 총수익금 표기 유지
         assert "백테 기간" in hof       # 2) 백테 기간 컬럼 추가
@@ -387,7 +388,7 @@ class TestFrontendStructure:
 
     def test_component_can_sort_by_total_return_krw_and_scrolls_horizontally(self):
         """총수익금 기준 정렬 + 넓은 테이블 가로 스크롤 회귀 가드."""
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-hall-of-fame.jsx")
         hof = src[src.find("function HallOfFamePanel("):]
         assert 'key: "total_return_krw"' in hof
         assert "hof-scroll" in hof
@@ -395,7 +396,7 @@ class TestFrontendStructure:
 
     def test_component_has_short_window_tooltip_and_legend(self):
         """3) AI '단기' 라벨 tooltip + 범례 안내."""
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-hall-of-fame.jsx")
         hof = src[src.find("function HallOfFamePanel("):]
         # 단기 라벨에 설명 tooltip(data-tip/title) — 연평균 과대추정 경고.
         assert "과대추정" in hof
@@ -404,7 +405,7 @@ class TestFrontendStructure:
 
     def test_reference_gallery_defined_and_wired(self):
         """4) 인간 결과 스크린샷 갤러리 — 컴포넌트 정의·엔드포인트·버튼·이미지 경로."""
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-hall-of-fame.jsx")
         assert "function ReferenceGallery(" in src
         # /reference_screenshots 로 목록 fetch + /reference_img/ 로 이미지 src.
         assert "/reference_screenshots" in src
@@ -412,8 +413,9 @@ class TestFrontendStructure:
         # 패널 헤더 버튼 + 모달 패턴(modal-bd).
         assert "인간 결과 스크린샷" in src
         assert "modal-bd" in src
-        # window 노출(빌드 없는 text/babel 전역 등록).
-        tail = src[src.rfind("Object.assign(window"):]
+        # window 노출은 chart.jsx 배럴이 수행한다(분해 후 전역 재게시 책임 이동).
+        barrel = _read_front("chart.jsx")
+        tail = barrel[barrel.rfind("Object.assign(window"):]
         assert "ReferenceGallery" in tail
 
     def test_app_jsx_mounts_hall_of_fame_panel(self):

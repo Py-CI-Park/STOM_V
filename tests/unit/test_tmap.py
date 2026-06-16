@@ -499,7 +499,8 @@ class TestResume:
 class TestFrontendContract:
     def test_validation_panel_has_tmap_map(self) -> None:
         frontend = Path(PROJECT_ROOT) / "ai_strategy_loop" / "dashboard" / "frontend"
-        src = (frontend / "research-lab.jsx").read_text(encoding="utf-8")
+        # P5.6 분해: 검증 탭(TMAP 지도 포함) 본문은 rl-validation.jsx 로 이동(research-lab.jsx 는 배럴).
+        src = (frontend / "rl-validation.jsx").read_text(encoding="utf-8")
         assert "/tmap_map?run_id=" in src
         assert "TMAP 지도" in src
         assert "plateau score" in src

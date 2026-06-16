@@ -18,8 +18,12 @@ def _read_front(name: str) -> str:
 
 
 def test_research_lab_component_contract() -> None:
-    """Given research-lab.jsx, When scanning source, Then tabs and endpoint contracts exist."""
-    src = _read_front("research-lab.jsx")
+    """Given research-lab modules, When scanning source, Then tabs and endpoint contracts exist.
+
+    P5.6 분해: research-lab.jsx 는 배럴이 되고 본문은 rl-panel.jsx(오케스트레이터+탭)와
+    rl-analysis.jsx(상관/조합 보조)로 이동했다. 계약 검증은 두 모듈을 이어 수행한다.
+    """
+    src = _read_front("rl-panel.jsx") + "\n" + _read_front("rl-analysis.jsx")
 
     assert "function ResearchLabPanel(" in src
     assert "/variable_correlation" in src
@@ -29,7 +33,8 @@ def test_research_lab_component_contract() -> None:
     # Phase7 §7.7 — 탭 라벨은 한글화됨(영문 라벨 누수 제거). 분석 섹션 존재는 한글 라벨로 검증.
     assert "변수 중요도" in src
     assert "Correlation" in src
-    assert "Variable Combinations" in src
+    # 분해 후 combos 탭 라벨은 한글 "변수 조합"(영문 "Variable Combinations" 누수 제거).
+    assert "변수 조합" in src
     assert "데이터가 부족합니다" in src
     assert "feature_matrix" in src
     assert "sample count" in src
