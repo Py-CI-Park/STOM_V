@@ -107,7 +107,8 @@ def test_heatmap_skips_unparseable_buy_time_no_raise() -> None:
 # TASK1 — 프런트: BtHeatmap 이 수익률 합계(%) 를 셀 지표로 사용.
 # ============================================================================
 def test_btheatmap_uses_return_pct_metric_and_label() -> None:
-    src = (FRONTEND / "backtest-charts.jsx").read_text(encoding="utf-8")
+    # P5.1 분해 — BtHeatmap 은 backtest-charts.jsx(배럴)에서 bt-distribution-charts.jsx 로 이동.
+    src = (FRONTEND / "bt-distribution-charts.jsx").read_text(encoding="utf-8")
     # 백엔드 새 필드를 1차 지표로 소비한다.
     assert "profit_pct_sum" in src, "BtHeatmap 이 profit_pct_sum 을 사용해야 한다"
     # 사용자 표현(수익률 합계) + % 단위 라벨이 노출된다.
@@ -123,7 +124,12 @@ def test_btheatmap_uses_return_pct_metric_and_label() -> None:
 # TASK2 — 프런트: 날짜 X축 연도 보강 + Y축 중간 눈금.
 # ============================================================================
 def test_backtest_charts_axis_year_and_yticks() -> None:
-    src = (FRONTEND / "backtest-charts.jsx").read_text(encoding="utf-8")
+    # P5.1 분해 — 축 헬퍼(_btDateLabelY/_btAxisTicks)는 bt-chart-utils.jsx 에 정의되고
+    #   bt-equity-charts.jsx·bt-distribution-charts.jsx 에서 사용된다. 정의+사용을 합쳐 검증.
+    src = "\n".join(
+        (FRONTEND / f).read_text(encoding="utf-8")
+        for f in ("bt-chart-utils.jsx", "bt-equity-charts.jsx", "bt-distribution-charts.jsx")
+    )
     # 연도 포함 날짜 포맷터(YYYY-MM-DD)와 그 호출.
     assert "_btDateLabelY" in src, "연도 보강 날짜 포맷터 누락"
     # 중간 눈금 헬퍼와 실제 사용(여러 y 눈금 라벨 렌더).
@@ -136,12 +142,18 @@ def test_backtest_charts_axis_year_and_yticks() -> None:
 
 
 def test_chart_jsx_axis_year_and_yticks() -> None:
-    src = (FRONTEND / "chart.jsx").read_text(encoding="utf-8")
+    # P5.4: chart.jsx(1,742줄) 분해로 ProfitChart 는 chart-equity.jsx, BacktestDetailChart
+    #   는 chart-backtest-detail.jsx 로 이동. 연도 보강 포맷터(fmtDateY)·중간 눈금 헬퍼
+    #   (_axisTicks) 사용 불변식은 chart 패밀리 합본 기준으로 유지(렌더 동작 불변).
+    src = "".join(
+        (FRONTEND / name).read_text(encoding="utf-8")
+        for name in ("chart-equity.jsx", "chart-backtest-detail.jsx")
+    )
     # BacktestDetailChart 날짜 X축에 연도 보강 포맷터.
-    assert "fmtDateY" in src, "chart.jsx 연도 보강 날짜 포맷터 누락"
+    assert "fmtDateY" in src, "chart 패밀리 연도 보강 날짜 포맷터 누락"
     assert src.count("fmtDateY") >= 2, "fmtDateY 가 x축 렌더에 실제 사용돼야 한다"
     # 중간 눈금 헬퍼 + 실제 사용(ProfitChart·BacktestDetailChart 양 축).
-    assert "_axisTicks" in src, "chart.jsx 중간 눈금 헬퍼 누락"
+    assert "_axisTicks" in src, "chart 패밀리 중간 눈금 헬퍼 누락"
     assert src.count("_axisTicks") >= 3, "_axisTicks 가 여러 차트 축에 실제 사용돼야 한다"
     # 연도 포맷이 YYYY 를 만든다.
     assert "slice(0, 4)" in src
@@ -161,7 +173,7 @@ const fs = require('fs');
 const path = require('path');
 const dir = process.argv[2];
 const esbuild = require(path.join(dir, '..', 'webui-build', 'node_modules', 'esbuild'));
-const files = ['backtest-charts.jsx', 'chart.jsx'];
+const files = ['backtest-charts.jsx', 'chart.jsx', 'chart-primitives.jsx', 'chart-equity.jsx', 'chart-backtest-detail.jsx', 'chart-hall-of-fame.jsx'];
 let ok = true;
 for (const f of files) {
   try { esbuild.transformSync(fs.readFileSync(path.join(dir, f), 'utf8'), { loader: 'jsx', jsx: 'transform', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment' }); }

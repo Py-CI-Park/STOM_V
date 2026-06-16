@@ -1,24 +1,13 @@
 "use strict";
 (() => {
-  // ../frontend/connection.jsx
-  var { useState, useEffect, useRef, useCallback, useMemo } = React;
-  var DEFAULT_BASE2 = typeof window !== "undefined" && window.location && window.location.origin && window.location.origin.startsWith("http") ? window.location.origin : "http://127.0.0.1:8770";
-  function isDemoSource(wsStatus) {
-    return wsStatus === "demo";
-  }
-  function livePanelPending(wsStatus, state) {
-    if (isDemoSource(wsStatus)) return false;
-    const cr = state && state.current_run;
-    const hasRich = !!(cr && (cr.equity && cr.equity.length || cr.generation && (cr.generation.buy_code_partial || cr.generation.sell_code_partial)));
-    return !hasRich;
-  }
+  // ../frontend/conn-demo-codegen.jsx
   function genBuyCode(tag, gen) {
     const seed = gen * 7 % 9 + 1;
     const map = {
       VWAP: `# BUY_VWAP_g${gen} \u2014 VWAP \xD7 \uAC70\uB798\uB7C9\uAC00\uC18D + RSI \uD544\uD130
 def signal_buy(bar, ind, book):
     # 1) \uAC00\uACA9\uC774 VWAP \uC704\uB85C ${(0.2 + seed * 0.05).toFixed(2)}% \uC774\uC0C1 \uC774\uACA9
-    if not (bar.close > ind.vwap * 1.00${seed}): 
+    if not (bar.close > ind.vwap * 1.00${seed}):
         return False
     # 2) 5\uBD84 \uAC70\uB798\uB7C9\uC774 20\uBD09 \uD3C9\uADE0\uC758 ${150 + seed * 10}% \uC774\uC0C1
     if ind.vol_5m < ind.vol_20m_avg * ${(1.5 + seed * 0.1).toFixed(1)}:
@@ -133,6 +122,10 @@ def signal_sell(pos, bar, ind):
     };
     return map[tag] || map.ATR;
   }
+
+  // ../frontend/conn-backend.jsx
+  var { useState: useState_cn1, useEffect: useEffect_cn1, useRef: useRef_cn1, useCallback: useCallback_cn1 } = React;
+  var DEFAULT_BASE2 = typeof window !== "undefined" && window.location && window.location.origin && window.location.origin.startsWith("http") ? window.location.origin : "http://127.0.0.1:8770";
   var DEFAULT_CONFIG_SPEC = [
     // 목표/제약
     {
@@ -352,16 +345,16 @@ def signal_sell(pos, bar, ind):
     updated_at: (/* @__PURE__ */ new Date()).toISOString()
   };
   function useBackend2(baseUrl) {
-    const [health, setHealth] = useState({ connected: false, contract_version: null });
-    const [wsStatus, setWsStatus] = useState("connecting");
-    const [state, setState] = useState(INITIAL_STATE);
-    const [configSpec, setConfigSpec] = useState(DEFAULT_CONFIG_SPEC);
-    const [lastReply, setLastReply] = useState(null);
-    const wsRef = useRef(null);
-    const reconnectAttempt = useRef(0);
-    const closedByUs = useRef(false);
-    const demoRef = useRef(null);
-    const startDemo = useCallback((config) => {
+    const [health, setHealth] = useState_cn1({ connected: false, contract_version: null });
+    const [wsStatus, setWsStatus] = useState_cn1("connecting");
+    const [state, setState] = useState_cn1(INITIAL_STATE);
+    const [configSpec, setConfigSpec] = useState_cn1(DEFAULT_CONFIG_SPEC);
+    const [lastReply, setLastReply] = useState_cn1(null);
+    const wsRef = useRef_cn1(null);
+    const reconnectAttempt = useRef_cn1(0);
+    const closedByUs = useRef_cn1(false);
+    const demoRef = useRef_cn1(null);
+    const startDemo = useCallback_cn1((config) => {
       var _a, _b, _c, _d, _e, _f, _g, _h;
       stopDemo();
       setWsStatus("demo");
@@ -789,14 +782,14 @@ def signal_sell(pos, bar, ind):
         demoRef.current = null;
       }
     };
-    const stopDemoSoft = useCallback(() => {
+    const stopDemoSoft = useCallback_cn1(() => {
       setState((s) => ({ ...s, status: "stopping", latest: { ...s.latest, message: "\uD604\uC7AC \uC138\uB300 \uC644\uB8CC \uD6C4 \uC815\uC9C0\uD569\uB2C8\uB2E4" } }));
       setTimeout(() => {
         stopDemo();
         setState((s) => ({ ...s, status: "complete", latest: { ...s.latest, phase: "\uC815\uC9C0\uB428", message: "\uC0AC\uC6A9\uC790 \uC694\uCCAD\uC73C\uB85C \uC815\uC9C0" } }));
       }, 1800);
     }, []);
-    const tryConnect = useCallback(async () => {
+    const tryConnect = useCallback_cn1(async () => {
       var _a;
       closedByUs.current = false;
       setWsStatus("connecting");
@@ -827,7 +820,7 @@ def signal_sell(pos, bar, ind):
         setWsStatus("demo");
       }
     }, [baseUrl]);
-    const openWs = useCallback(() => {
+    const openWs = useCallback_cn1(() => {
       try {
         const wsUrl = baseUrl.replace(/^http/, "ws") + "/ws";
         const ws = new WebSocket(wsUrl);
@@ -863,7 +856,7 @@ def signal_sell(pos, bar, ind):
         setWsStatus("reconnecting");
       }
     }, [baseUrl]);
-    useEffect(() => {
+    useEffect_cn1(() => {
       tryConnect();
       return () => {
         closedByUs.current = true;
@@ -871,7 +864,7 @@ def signal_sell(pos, bar, ind):
         stopDemo();
       };
     }, [tryConnect]);
-    const send = useCallback((msg) => {
+    const send = useCallback_cn1((msg) => {
       if (wsStatus === "demo" || !wsRef.current || wsRef.current.readyState !== 1) {
         if (msg.action === "start") {
           startDemo(msg.config);
@@ -909,6 +902,21 @@ def signal_sell(pos, bar, ind):
       lastReply,
       reconnect: tryConnect
     };
+  }
+  Object.assign(window, {
+    useBackend: useBackend2,
+    DEFAULT_BASE: DEFAULT_BASE2
+  });
+
+  // ../frontend/connection.jsx
+  function isDemoSource(wsStatus) {
+    return wsStatus === "demo";
+  }
+  function livePanelPending(wsStatus, state) {
+    if (isDemoSource(wsStatus)) return false;
+    const cr = state && state.current_run;
+    const hasRich = !!(cr && (cr.equity && cr.equity.length || cr.generation && (cr.generation.buy_code_partial || cr.generation.sell_code_partial)));
+    return !hasRich;
   }
   var fmtScore2 = window.fmtScore;
   var fmtPct2 = window.fmtPct;
@@ -984,7 +992,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { AIContextPanel: AIContextPanel2 });
 
-  // ../frontend/research-pro.jsx
+  // ../frontend/rp-utils.jsx
   var {
     useState: useState_rp,
     useEffect: useEffect_rp,
@@ -1121,6 +1129,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     }
     return /* @__PURE__ */ React.createElement("div", { className: "rp-code-grid" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rp-code-label", style: { color: "var(--teal)" } }, "\uB9E4\uC218 \uC870\uAC74\uC2DD ", code.buy_name ? `\xB7 ${code.buy_name}` : ""), /* @__PURE__ */ React.createElement("pre", { className: "rp-code-block" }, buy || "(\uC5C6\uC74C)"), /* @__PURE__ */ React.createElement(_RpVarChips, { baseUrl, isDemo, code: buy })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rp-code-label", style: { color: "var(--blue)" } }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD ", code.sell_name ? `\xB7 ${code.sell_name}` : ""), /* @__PURE__ */ React.createElement("pre", { className: "rp-code-block" }, sell || "(\uC5C6\uC74C)"), /* @__PURE__ */ React.createElement(_RpVarChips, { baseUrl, isDemo, code: sell })));
   }
+
+  // ../frontend/rp-heatmap.jsx
   function _RpBigHeatmap({ baseUrl, isDemo, runId }) {
     const [data, setData] = useState_rp(null);
     const [loading, setLoading] = useState_rp(false);
@@ -1443,6 +1453,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     }))));
   }
   Object.assign(window, { ResearchProcessFlowOverlay: _RpProcessFlowOverlay });
+
+  // ../frontend/rp-panel.jsx
   function ResearchProPanel({ baseUrl, wsStatus, runId }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [runList, setRunList] = useState_rp([]);
@@ -1552,6 +1564,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       "?"
     ))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, isDemo || !runId ? /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 12, color: "var(--ink-3)", padding: "18px 0", textAlign: "center" } }, isDemo ? "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4." : "run \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement(_RpBigHeatmap, { baseUrl, isDemo, runId })));
   }
+
+  // ../frontend/research-pro.jsx
   Object.assign(window, { ResearchProPanel, ResearchHeatmapPanel });
 
   // ../frontend/research-wiki.jsx
@@ -2378,8 +2392,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { SimLiveChart, _slcTimeLabel, _slcPriceTick });
 
-  // ../frontend/panels.jsx
-  var { useState: useState_p, useEffect: useEffect_p, useMemo: useMemo_p } = React;
+  // ../frontend/panels-status.jsx
+  var { useState: useState_pst, useEffect: useEffect_pst } = React;
   function ConnBadge({ health, wsStatus }) {
     var _a;
     let cls = "badge idle", label = "\uD655\uC778\uC911";
@@ -2409,6 +2423,51 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     const m = map[status] || map.idle;
     return /* @__PURE__ */ React.createElement("span", { className: m.cls }, /* @__PURE__ */ React.createElement("span", { className: `dot ${status === "running" || status === "stopping" ? "pulse-dot" : ""}` }), m.txt);
   }
+  function ResearchCriteriaBanner({ state, baseUrl }) {
+    var _a;
+    const mode = ((_a = state.active_config) == null ? void 0 : _a.research_oos_mode) || "disabled";
+    const [payload, setPayload] = useState_pst(null);
+    const [error, setError] = useState_pst("");
+    useEffect_pst(() => {
+      if (!baseUrl) return;
+      let cancelled = false;
+      const url = `${baseUrl}/research_criteria?mode=${encodeURIComponent(mode)}`;
+      fetch(url, { signal: AbortSignal.timeout(2500) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("research_criteria HTTP " + r.status))).then((j) => {
+        if (!cancelled) {
+          setPayload(j);
+          setError("");
+        }
+      }).catch((e) => {
+        if (!cancelled) setError(String(e));
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [baseUrl, mode]);
+    const label = (payload == null ? void 0 : payload.label) || (mode === "disabled" ? "OOS disabled" : `OOS ${mode}`);
+    const warning = (payload == null ? void 0 : payload.warning) || "research/exploration only; not proof of human-level or production readiness.";
+    const explanation = (payload == null ? void 0 : payload.explanation_ko) || "OOS\uB97C \uD6C4\uBCF4 \uD0C8\uB77D\uC5D0 \uC4F0\uC9C0 \uC54A\uB294 \uC5F0\uAD6C \uD0D0\uC0C9 \uC0C1\uD0DC\uC785\uB2C8\uB2E4.";
+    return /* @__PURE__ */ React.createElement("div", { className: "panel", "data-testid": "research-criteria-banner" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Research Criteria"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--amber)" } }, "research_oos_mode=", mode)), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "badge warn" }, label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)" } }, warning)), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: "var(--ink-2)", lineHeight: 1.5 } }, explanation), error && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--red)" } }, "research criteria route unavailable: ", error)));
+  }
+  function ExportStatusBanner({ reply }) {
+    if (!reply || reply.action !== "final_approval") return null;
+    const ok = reply.status === "ok";
+    const buyName = reply.buy && reply.buy.name;
+    const sellName = reply.sell && reply.sell.name;
+    return /* @__PURE__ */ React.createElement("div", { style: {
+      padding: "10px 14px",
+      borderRadius: 6,
+      marginBottom: 4,
+      fontSize: 12.5,
+      border: `1px solid ${ok ? "rgba(46,204,113,0.4)" : "rgba(224,90,90,0.4)"}`,
+      background: ok ? "rgba(46,204,113,0.08)" : "rgba(224,90,90,0.08)",
+      color: "var(--ink-0)"
+    } }, ok ? /* @__PURE__ */ React.createElement("span", null, "\u2713 \uC6B4\uC601 strategy.db\uB85C export \uC644\uB8CC", reply.demo ? " (\uB370\uBAA8)" : "", " \u2014 \uB9E4\uC218 ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, buyName || "\u2014"), " \xB7 \uB9E4\uB3C4 ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, sellName || "\u2014"), reply.dest_db && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-3)" } }, ` \u2192 ${reply.dest_db}`)) : /* @__PURE__ */ React.createElement("span", { style: { color: "var(--red)" } }, "\u2717 export \uC2E4\uD328 \u2014 ", reply.message || "\uC54C \uC218 \uC5C6\uB294 \uC624\uB958"));
+  }
+  Object.assign(window, { ConnBadge, StatusBadge, ResearchCriteriaBanner, ExportStatusBanner });
+
+  // ../frontend/panels-config.jsx
+  var { useState: useState_pcf, useEffect: useEffect_pcf, useMemo: useMemo_pcf } = React;
   function CurrentGenPanel({ state }) {
     var _a, _b, _c;
     const running = state.status === "running" || state.status === "stopping";
@@ -2492,16 +2551,16 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return { source: "no_strategy", generation: null };
   }
   function ActiveStrategyPanel({ state, baseUrl, onViewCode }) {
-    const [expanded, setExpanded] = useState_p(false);
-    const [codePayload, setCodePayload] = useState_p(null);
-    const [diffPayload, setDiffPayload] = useState_p(null);
-    const [fetchError, setFetchError] = useState_p("");
-    const active = useMemo_p(() => _activeStrategyFromState(state || {}), [state]);
+    const [expanded, setExpanded] = useState_pcf(false);
+    const [codePayload, setCodePayload] = useState_pcf(null);
+    const [diffPayload, setDiffPayload] = useState_pcf(null);
+    const [fetchError, setFetchError] = useState_pcf("");
+    const active = useMemo_pcf(() => _activeStrategyFromState(state || {}), [state]);
     const generation = active.generation || {};
     const genNo = _activeStrategyGenNo(generation);
     const runId = state.run_id || "";
     const canFetch = Boolean(baseUrl && runId && genNo !== null && active.source !== "streaming_partial" && active.source !== "no_strategy");
-    useEffect_p(() => {
+    useEffect_pcf(() => {
       setCodePayload(null);
       setDiffPayload(null);
       setFetchError("");
@@ -2541,32 +2600,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       },
       "open full code"
     ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", alignSelf: "center" } }, "Previous Diff via /strategy_diff"))));
-  }
-  function ResearchCriteriaBanner({ state, baseUrl }) {
-    var _a;
-    const mode = ((_a = state.active_config) == null ? void 0 : _a.research_oos_mode) || "disabled";
-    const [payload, setPayload] = useState_p(null);
-    const [error, setError] = useState_p("");
-    useEffect_p(() => {
-      if (!baseUrl) return;
-      let cancelled = false;
-      const url = `${baseUrl}/research_criteria?mode=${encodeURIComponent(mode)}`;
-      fetch(url, { signal: AbortSignal.timeout(2500) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("research_criteria HTTP " + r.status))).then((j) => {
-        if (!cancelled) {
-          setPayload(j);
-          setError("");
-        }
-      }).catch((e) => {
-        if (!cancelled) setError(String(e));
-      });
-      return () => {
-        cancelled = true;
-      };
-    }, [baseUrl, mode]);
-    const label = (payload == null ? void 0 : payload.label) || (mode === "disabled" ? "OOS disabled" : `OOS ${mode}`);
-    const warning = (payload == null ? void 0 : payload.warning) || "research/exploration only; not proof of human-level or production readiness.";
-    const explanation = (payload == null ? void 0 : payload.explanation_ko) || "OOS\uB97C \uD6C4\uBCF4 \uD0C8\uB77D\uC5D0 \uC4F0\uC9C0 \uC54A\uB294 \uC5F0\uAD6C \uD0D0\uC0C9 \uC0C1\uD0DC\uC785\uB2C8\uB2E4.";
-    return /* @__PURE__ */ React.createElement("div", { className: "panel", "data-testid": "research-criteria-banner" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Research Criteria"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--amber)" } }, "research_oos_mode=", mode)), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "badge warn" }, label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)" } }, warning)), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: "var(--ink-2)", lineHeight: 1.5 } }, explanation), error && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--red)" } }, "research criteria route unavailable: ", error)));
   }
   function _fmtCfgVal(v) {
     if (v === true) return "ON";
@@ -2630,6 +2663,40 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       } }, _fmtCfgVal(v)));
     })))));
   }
+  function _PopBar({ frac }) {
+    const w = Math.max(0, Math.min(1, frac || 0)) * 100;
+    return /* @__PURE__ */ React.createElement("div", { style: { background: "var(--bg-2)", borderRadius: 3, height: 6, overflow: "hidden" } }, /* @__PURE__ */ React.createElement("div", { style: { width: `${w}%`, height: "100%", background: "var(--accent)" } }));
+  }
+  function PopulationPanel({ state, wsStatus }) {
+    var _a;
+    const pop = (_a = state.page_data) == null ? void 0 : _a.population;
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const members = pop && pop.members || [];
+    const maxGraded = members.reduce((m, x) => Math.max(m, x.graded || 0), 0) || 1;
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "GA Population", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, pop && pop.status === "ok" ? `K=${pop.k} \xB7 gate\uD1B5\uACFC ${pop.gate_passed_count} \xB7 \uAC00\uB4DC\uC2E4\uD328 ${pop.guardfail_count}` : "\uAC1C\uCCB4\uAD70 \uC9C4\uD654")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !pop || pop.status !== "ok" || members.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 } }, isDemo ? "\uB370\uBAA8 \uBAA8\uB4DC \u2014 GA population\uC740 \uB77C\uC774\uBE0C \uC2E4\uD589(evolution_mode=ga)\uC5D0\uC11C \uBC1C\uD589\uB429\uB2C8\uB2E4." : "\uC2E4\uC2DC\uAC04 \uB370\uC774\uD130 \uB300\uAE30 \u2014 GA \uBAA8\uB4DC \uC138\uB300 \uD3C9\uAC00 \uC2DC \uAC1C\uCCB4\uAD70\uC774 \uBC1C\uD589\uB429\uB2C8\uB2E4(hillclimb \uBAA8\uB4DC\uB294 \uBBF8\uBC1C\uD589).") : /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, members.map((m, i) => {
+      var _a2, _b, _c;
+      return /* @__PURE__ */ React.createElement("li", { key: i, style: { padding: "6px 0", borderBottom: "1px solid var(--bg-2)" } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", display: "flex", justifyContent: "space-between", marginBottom: 3 } }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { style: { color: m.gate_passed ? "var(--green)" : "var(--ink-2)" } }, "\u25CF"), ` graded ${((_a2 = m.graded) != null ? _a2 : 0).toFixed(3)}`, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, ` [${m.origin}]`)), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, `${m.trade_count}\uAC74 \xB7 MDD ${((_b = m.mdd) != null ? _b : 0).toFixed(1)} \xB7 ${((_c = m.profit) != null ? _c : 0).toLocaleString()}`)), /* @__PURE__ */ React.createElement(_PopBar, { frac: (m.graded || 0) / maxGraded }));
+    }))));
+  }
+  function MetaPanel({ state, wsStatus }) {
+    var _a, _b, _c, _d;
+    const meta = (_a = state.page_data) == null ? void 0 : _a.meta;
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const commonVars = meta && meta.common_pass_vars || [];
+    const changes = meta && meta.improving_changes || [];
+    const fp = meta && meta.failure_patterns || {};
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBA54\uD0C0\uBD84\uC11D \xB7 \uB204\uC801 \uD559\uC2B5", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, meta && meta.status === "ok" ? `\uB204\uC801 ${meta.total_generations}\uC138\uB300 \xB7 \uD1B5\uACFC ${meta.passing_count}` : "\uD1B5\uACFC \uC804\uB7B5 \uACF5\uD1B5 \uC870\uAC74")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !meta || meta.status !== "ok" ? /* @__PURE__ */ React.createElement("div", { style: { padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 } }, isDemo ? "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBA54\uD0C0\uBD84\uC11D\uC740 \uB77C\uC774\uBE0C \uC2E4\uD589\uC5D0\uC11C \uB204\uC801 \uBC1C\uD589\uB429\uB2C8\uB2E4." : "\uC2E4\uC2DC\uAC04 \uB370\uC774\uD130 \uB300\uAE30 \u2014 run \uC885\uB8CC \uC2DC \uB204\uC801 \uBA54\uD0C0 \uC778\uC0AC\uC774\uD2B8\uAC00 \uBC1C\uD589\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", null, commonVars.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD1B5\uACFC \uC804\uB7B5 \uACF5\uD1B5 \uBCC0\uC218"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6 } }, commonVars.map((v, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "mono", style: {
+      fontSize: 11,
+      color: "var(--ink-0)",
+      background: "var(--bg-2)",
+      borderRadius: 4,
+      padding: "2px 7px"
+    } }, `${v[0]} \xD7${v[1]}`)))), changes.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uAC1C\uC120\uC744 \uB0B3\uC740 \uBCC0\uACBD"), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, changes.map((c, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", padding: "2px 0" } }, `\xB7 ${c[0]} (\xD7${c[1]})`)))), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-2)" } }, `\uC2E4\uD328 \uD328\uD134 \u2014 \uACFC\uB9E4\uB9E4 ${(_b = fp.overtrade) != null ? _b : 0} \xB7 0\uAC70\uB798 ${(_c = fp.zero_trade) != null ? _c : 0} \xB7 \uACE0MDD ${(_d = fp.high_mdd) != null ? _d : 0}`))));
+  }
+  Object.assign(window, { CurrentGenPanel, ActiveStrategyPanel, ActiveConfigPanel, PopulationPanel, MetaPanel });
+
+  // ../frontend/panels-analysis.jsx
+  var { useMemo: useMemo_pan } = React;
   function CostPanel({ state, cap = 5e4 }) {
     var _a, _b, _c, _d;
     const tokens = (_b = (_a = state.cumulative) == null ? void 0 : _a.tokens) != null ? _b : 0;
@@ -2638,7 +2705,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBE44\uC6A9 \xB7 \uB204\uC801")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement("div", { className: "row-2", style: { gap: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "stat" }, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, "\uB204\uC801 \uD1A0\uD070"), /* @__PURE__ */ React.createElement("span", { className: "stat-value mono" }, fmtInt(tokens))), /* @__PURE__ */ React.createElement("div", { className: "stat" }, /* @__PURE__ */ React.createElement("span", { className: "stat-label" }, "\uBE44\uC6A9 / Count"), /* @__PURE__ */ React.createElement("span", { className: "stat-value mono" }, "$", cost.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 })))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginBottom: 6 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10.5, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase" } }, "\uD55C\uB3C4 \uC0AC\uC6A9\uB7C9"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: pct > 80 ? "var(--amber)" : "var(--ink-1)" } }, pct.toFixed(1), "% / ", fmtInt(cap))), /* @__PURE__ */ React.createElement("div", { className: "gauge" }, /* @__PURE__ */ React.createElement("div", { className: `gauge-fill ${pct > 80 ? "warn" : ""}`, style: { width: `${pct}%` } })))));
   }
   function FeedbackPanel({ state }) {
-    const history = useMemo_p(() => {
+    const history = useMemo_pan(() => {
       var _a;
       const items = [];
       if ((_a = state.latest) == null ? void 0 : _a.message) {
@@ -2691,21 +2758,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uC138\uADF8\uBA3C\uD2B8 \uBD80\uAC80", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uC190\uC2E4 \uC9D1\uC911 \uC138\uADF8\uBA3C\uD2B8 \xB7 \uAD6C\uCCB4 \uC784\uACC4\uAC12")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !autopsy || autopsy.status !== "ok" ? /* @__PURE__ */ React.createElement("div", { style: { padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 } }, isDemo ? "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uC138\uADF8\uBA3C\uD2B8 \uBD80\uAC80\uC740 \uB77C\uC774\uBE0C \uC2E4\uD589\uC5D0\uC11C \uBC1C\uD589\uB429\uB2C8\uB2E4." : "\uC2E4\uC2DC\uAC04 \uB370\uC774\uD130 \uB300\uAE30 \u2014 \uC138\uB300 \uC644\uB8CC \uC2DC \uC138\uADF8\uBA3C\uD2B8 \uBD80\uAC80\uC774 \uBC1C\uD589\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", marginBottom: 10 } }, "\uAC70\uB798 ", autopsy.trade_count, "\uAC74 \xB7 \uC804\uCCB4 \uC2B9\uB960 ", _pct(autopsy.overall_win_rate), " \xB7 \uD3C9\uADE0 ", _num(autopsy.overall_avg_return), "%"), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uC2DC\uAC04\uB300 \uC190\uC2E4 \uC9D1\uC911", rows: autopsy.time_segments }), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uC2DC\uCD1D \uBC34\uB4DC \uC190\uC2E4 \uC9D1\uC911", rows: autopsy.market_cap_segments }), /* @__PURE__ */ React.createElement(_SegRows, { title: "\uAD50\uCC28(\uC2DC\uAC04\uB300\xD7\uC2DC\uCD1D)", rows: autopsy.cross_segments }), autopsy.thresholds && autopsy.thresholds.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uAD6C\uCCB4 \uC784\uACC4\uAC12(\uC190\uC2E4 \uAD6C\uAC04)"), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, autopsy.thresholds.map((t, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", padding: "3px 0", lineHeight: 1.5 } }, `${_ThresholdCond(t)} \xB7 ${t.count}\uAC74 \xB7 \uC2B9\uB960 ${_pct(t.win_rate)} \xB7 \uD3C9\uADE0 ${_num(t.mean_return)}%`)))))));
   }
-  function _PopBar({ frac }) {
-    const w = Math.max(0, Math.min(1, frac || 0)) * 100;
-    return /* @__PURE__ */ React.createElement("div", { style: { background: "var(--bg-2)", borderRadius: 3, height: 6, overflow: "hidden" } }, /* @__PURE__ */ React.createElement("div", { style: { width: `${w}%`, height: "100%", background: "var(--accent)" } }));
-  }
-  function PopulationPanel({ state, wsStatus }) {
-    var _a;
-    const pop = (_a = state.page_data) == null ? void 0 : _a.population;
-    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
-    const members = pop && pop.members || [];
-    const maxGraded = members.reduce((m, x) => Math.max(m, x.graded || 0), 0) || 1;
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "GA Population", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, pop && pop.status === "ok" ? `K=${pop.k} \xB7 gate\uD1B5\uACFC ${pop.gate_passed_count} \xB7 \uAC00\uB4DC\uC2E4\uD328 ${pop.guardfail_count}` : "\uAC1C\uCCB4\uAD70 \uC9C4\uD654")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !pop || pop.status !== "ok" || members.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 } }, isDemo ? "\uB370\uBAA8 \uBAA8\uB4DC \u2014 GA population\uC740 \uB77C\uC774\uBE0C \uC2E4\uD589(evolution_mode=ga)\uC5D0\uC11C \uBC1C\uD589\uB429\uB2C8\uB2E4." : "\uC2E4\uC2DC\uAC04 \uB370\uC774\uD130 \uB300\uAE30 \u2014 GA \uBAA8\uB4DC \uC138\uB300 \uD3C9\uAC00 \uC2DC \uAC1C\uCCB4\uAD70\uC774 \uBC1C\uD589\uB429\uB2C8\uB2E4(hillclimb \uBAA8\uB4DC\uB294 \uBBF8\uBC1C\uD589).") : /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, members.map((m, i) => {
-      var _a2, _b, _c;
-      return /* @__PURE__ */ React.createElement("li", { key: i, style: { padding: "6px 0", borderBottom: "1px solid var(--bg-2)" } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", display: "flex", justifyContent: "space-between", marginBottom: 3 } }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { style: { color: m.gate_passed ? "var(--green)" : "var(--ink-2)" } }, "\u25CF"), ` graded ${((_a2 = m.graded) != null ? _a2 : 0).toFixed(3)}`, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, ` [${m.origin}]`)), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, `${m.trade_count}\uAC74 \xB7 MDD ${((_b = m.mdd) != null ? _b : 0).toFixed(1)} \xB7 ${((_c = m.profit) != null ? _c : 0).toLocaleString()}`)), /* @__PURE__ */ React.createElement(_PopBar, { frac: (m.graded || 0) / maxGraded }));
-    }))));
-  }
   function _lnNum(x) {
     return typeof x === "number" ? x.toFixed(2) : "\u2014";
   }
@@ -2718,21 +2770,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     const bestSet = new Set(bestPath);
     const ordered = [...nodes].sort((a, b) => a.gen_no - b.gen_no);
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uC804\uB7B5 \uACC4\uBCF4 \xB7 \uBC84\uC804 \uACBD\uACFC", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, lineage && lineage.status === "ok" ? `\uC2DC\uB4DC\u2192best \uACBD\uB85C ${bestPath.length}\uC138\uB300 \xB7 \uCD1D ${lineage.node_count}\uC138\uB300` : "\uC138\uB300 \uACC4\uBCF4/\uCD94\uC774")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !lineage || lineage.status !== "ok" || ordered.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 } }, isDemo ? "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uC804\uB7B5 \uACC4\uBCF4\uB294 \uB77C\uC774\uBE0C \uC2E4\uD589\uC5D0\uC11C \uBC1C\uD589\uB429\uB2C8\uB2E4." : "\uC2E4\uC2DC\uAC04 \uB370\uC774\uD130 \uB300\uAE30 \u2014 \uC138\uB300 \uC644\uB8CC \uC2DC \uACC4\uBCF4\uAC00 \uBC1C\uD589\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", marginBottom: 8 } }, "best \uC138\uB300 = gen_", String(lineage.best_gen).padStart(2, "0"), " \xB7 \uACBD\uB85C ", bestPath.map((g) => `g${g}`).join(" \u2192 ")), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, ordered.map((n, i) => /* @__PURE__ */ React.createElement("li", { key: i, style: { padding: "5px 0", borderBottom: "1px solid var(--bg-2)" } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", display: "flex", justifyContent: "space-between" } }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { style: { color: bestSet.has(n.gen_no) ? "var(--teal)" : "var(--ink-2)" } }, bestSet.has(n.gen_no) ? "\u2605" : "\xB7"), ` gen_${String(n.gen_no).padStart(2, "0")}`, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, n.parent_gen != null ? ` \u2190 gen_${String(n.parent_gen).padStart(2, "0")}` : " (\uB8E8\uD2B8)")), /* @__PURE__ */ React.createElement("span", { style: { color: n.gate_passed ? "var(--green)" : "var(--ink-3)" } }, `graded ${_lnNum(n.graded_score)} \xB7 ${n.trade_count}\uAC74 \xB7 MDD ${_lnNum(n.mdd)}`)), n.diff_from_parent && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginTop: 2, paddingLeft: 14 } }, n.diff_from_parent)))))));
-  }
-  function MetaPanel({ state, wsStatus }) {
-    var _a, _b, _c, _d;
-    const meta = (_a = state.page_data) == null ? void 0 : _a.meta;
-    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
-    const commonVars = meta && meta.common_pass_vars || [];
-    const changes = meta && meta.improving_changes || [];
-    const fp = meta && meta.failure_patterns || {};
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBA54\uD0C0\uBD84\uC11D \xB7 \uB204\uC801 \uD559\uC2B5", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, meta && meta.status === "ok" ? `\uB204\uC801 ${meta.total_generations}\uC138\uB300 \xB7 \uD1B5\uACFC ${meta.passing_count}` : "\uD1B5\uACFC \uC804\uB7B5 \uACF5\uD1B5 \uC870\uAC74")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !meta || meta.status !== "ok" ? /* @__PURE__ */ React.createElement("div", { style: { padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 } }, isDemo ? "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBA54\uD0C0\uBD84\uC11D\uC740 \uB77C\uC774\uBE0C \uC2E4\uD589\uC5D0\uC11C \uB204\uC801 \uBC1C\uD589\uB429\uB2C8\uB2E4." : "\uC2E4\uC2DC\uAC04 \uB370\uC774\uD130 \uB300\uAE30 \u2014 run \uC885\uB8CC \uC2DC \uB204\uC801 \uBA54\uD0C0 \uC778\uC0AC\uC774\uD2B8\uAC00 \uBC1C\uD589\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", null, commonVars.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uD1B5\uACFC \uC804\uB7B5 \uACF5\uD1B5 \uBCC0\uC218"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6 } }, commonVars.map((v, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "mono", style: {
-      fontSize: 11,
-      color: "var(--ink-0)",
-      background: "var(--bg-2)",
-      borderRadius: 4,
-      padding: "2px 7px"
-    } }, `${v[0]} \xD7${v[1]}`)))), changes.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 } }, "\uAC1C\uC120\uC744 \uB0B3\uC740 \uBCC0\uACBD"), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none" } }, changes.map((c, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", padding: "2px 0" } }, `\xB7 ${c[0]} (\xD7${c[1]})`)))), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-2)" } }, `\uC2E4\uD328 \uD328\uD134 \u2014 \uACFC\uB9E4\uB9E4 ${(_b = fp.overtrade) != null ? _b : 0} \xB7 0\uAC70\uB798 ${(_c = fp.zero_trade) != null ? _c : 0} \xB7 \uACE0MDD ${(_d = fp.high_mdd) != null ? _d : 0}`))));
   }
   function _hoNum(x) {
     return typeof x === "number" ? x.toFixed(2) : "\u2014";
@@ -2749,21 +2786,9 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       color: passed ? "var(--good, #2ecc71)" : "var(--warn, #e0a030)"
     } }, passed ? "holdout \uD1B5\uACFC \u2713" : "holdout \uBBF8\uD1B5\uACFC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !hasData ? /* @__PURE__ */ React.createElement("div", { style: { padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 } }, isDemo ? "\uB370\uBAA8 \uBAA8\uB4DC \u2014 holdout \uC878\uC5C5\uAC80\uC0AC\uB294 \uB77C\uC774\uBE0C \uC2E4\uD589(graduation_holdout=ON)\uC5D0\uC11C \uBC1C\uD589\uB429\uB2C8\uB2E4." : "holdout \uC878\uC5C5\uAC80\uC0AC OFF \uB610\uB294 \uB300\uAE30 \u2014 train \uAC8C\uC774\uD2B8 \uD1B5\uACFC \uD6C4\uBCF4\uC5D0 \uD55C\uD574 holdout \uD310\uC815\uC774 \uBC1C\uD589\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", padding: "2px 0" } }, `train \uAC70\uB798 ${holdout.train_trade_count} \xB7 holdout \uAC70\uB798 ${holdout.trade_count}`), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11.5, color: "var(--ink-0)", padding: "2px 0" } }, `holdout MDD ${_hoNum(holdout.mdd_pct)}% \xB7 holdout \uC218\uC775 ${typeof holdout.total_profit === "number" ? holdout.total_profit.toLocaleString() : "\u2014"}\uC6D0`), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-2)", marginTop: 4 } }, `\uD310\uC815: ${holdout.reason || holdout.status}`))));
   }
-  function ExportStatusBanner({ reply }) {
-    if (!reply || reply.action !== "final_approval") return null;
-    const ok = reply.status === "ok";
-    const buyName = reply.buy && reply.buy.name;
-    const sellName = reply.sell && reply.sell.name;
-    return /* @__PURE__ */ React.createElement("div", { style: {
-      padding: "10px 14px",
-      borderRadius: 6,
-      marginBottom: 4,
-      fontSize: 12.5,
-      border: `1px solid ${ok ? "rgba(46,204,113,0.4)" : "rgba(224,90,90,0.4)"}`,
-      background: ok ? "rgba(46,204,113,0.08)" : "rgba(224,90,90,0.08)",
-      color: "var(--ink-0)"
-    } }, ok ? /* @__PURE__ */ React.createElement("span", null, "\u2713 \uC6B4\uC601 strategy.db\uB85C export \uC644\uB8CC", reply.demo ? " (\uB370\uBAA8)" : "", " \u2014 \uB9E4\uC218 ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, buyName || "\u2014"), " \xB7 \uB9E4\uB3C4 ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, sellName || "\u2014"), reply.dest_db && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-3)" } }, ` \u2192 ${reply.dest_db}`)) : /* @__PURE__ */ React.createElement("span", { style: { color: "var(--red)" } }, "\u2717 export \uC2E4\uD328 \u2014 ", reply.message || "\uC54C \uC218 \uC5C6\uB294 \uC624\uB958"));
-  }
+  Object.assign(window, { AutopsyPanel, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel });
+
+  // ../frontend/panels.jsx
   Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner });
 
   // ../frontend/run-compare.jsx
@@ -3465,12 +3490,20 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { EnginePanel, LiveBacktestChart, fmtElapsed, _liveChartGeom: _liveChartGeom2 });
 
-  // ../frontend/chart.jsx
-  var { useMemo: useMemo_c, useState: useState_c, useRef: useRef_c } = React;
-  var _axisTicks = window._axisTicks;
+  // ../frontend/chart-primitives.jsx
   function MetricHelpStrip({ items }) {
     return /* @__PURE__ */ React.createElement("div", { className: "metric-help-strip" }, (items || []).map((item, i) => /* @__PURE__ */ React.createElement("span", { key: i }, item)));
   }
+  function LegendDot({ color, label, dashed, filled }) {
+    return /* @__PURE__ */ React.createElement("span", { style: { display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, color: "var(--ink-2)", fontFamily: "var(--mono)" } }, dashed ? /* @__PURE__ */ React.createElement("span", { style: { width: 14, height: 0, borderTop: `1px dashed ${color}` } }) : filled === "ring" ? /* @__PURE__ */ React.createElement("span", { style: { width: 9, height: 9, borderRadius: "50%", background: color, border: "1.5px solid #fff", boxSizing: "border-box" } }) : /* @__PURE__ */ React.createElement("span", { style: { width: 8, height: 8, borderRadius: "50%", background: color } }), label);
+  }
+  function Mini({ label, value, sub, color }) {
+    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase" } }, label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 17, color: color || "var(--ink-0)" } }, value), sub && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, sub));
+  }
+
+  // ../frontend/chart-equity.jsx
+  var { useMemo: useMemo_c, useState: useState_c, useRef: useRef_c } = React;
+  var _axisTicks = window._axisTicks;
   function FitnessChart({ state, target = 1 }) {
     const gens = state.generations || [];
     const bestSoFar = useMemo_c(() => {
@@ -3717,12 +3750,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       fontFamily: "var(--mono)"
     } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))));
   }
-  function LegendDot({ color, label, dashed, filled }) {
-    return /* @__PURE__ */ React.createElement("span", { style: { display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, color: "var(--ink-2)", fontFamily: "var(--mono)" } }, dashed ? /* @__PURE__ */ React.createElement("span", { style: { width: 14, height: 0, borderTop: `1px dashed ${color}` } }) : filled === "ring" ? /* @__PURE__ */ React.createElement("span", { style: { width: 9, height: 9, borderRadius: "50%", background: color, border: "1.5px solid #fff", boxSizing: "border-box" } }) : /* @__PURE__ */ React.createElement("span", { style: { width: 8, height: 8, borderRadius: "50%", background: color } }), label);
-  }
-  function Mini({ label, value, sub, color }) {
-    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase" } }, label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 17, color: color || "var(--ink-0)" } }, value), sub && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, sub));
-  }
   function ProfitChart({ state, targetPct = 0 }) {
     const gens = state.generations || [];
     const W = 880, H = 300;
@@ -3931,6 +3958,190 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       fontFamily: "var(--mono)"
     } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uC218\uC775 \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))));
   }
+  var _QUALITY_METRICS = [
+    { key: "calmar", label: "Calmar", color: "var(--teal)", fmt: (v) => v.toFixed(2), hint: "CAGR/MDD \uC704\uD5D8\uC870\uC815\uC218\uC775(\uB192\uC744\uC218\uB85D \uC6B0\uC218)" },
+    { key: "uptrend_r2", label: "\uC6B0\uC0C1\uD5A5 R\xB2", color: "var(--violet)", fmt: (v) => v.toFixed(3), hint: "\uB204\uC801\uACE1\uC120 \uC6B0\uC0C1\uD5A5 \uC801\uD569\uB3C4 0~1(\uB192\uC744\uC218\uB85D \uC6B0\uC218)" },
+    { key: "mdd", label: "MDD %", color: "var(--red)", fmt: (v) => fmtPct(v), hint: "\uCD5C\uB300\uB099\uD3ED(\uB0AE\uC744\uC218\uB85D \uC6B0\uC218) \u2014 \uBCF4\uACE0\uC11C 1.9~6.75%" },
+    { key: "daily_avg_trades", label: "\uC77C\uD3C9\uADE0\uAC70\uB798", color: "var(--amber)", fmt: (v) => v.toFixed(2), hint: "\uAC70\uB798\uC218/\uAC70\uB798\uC77C(\uBCF4\uACE0\uC11C 10~23)" },
+    { key: "max_hold_count", label: "\uB3D9\uC2DC\uBCF4\uC720", color: "var(--blue)", fmt: (v) => v.toFixed(0), hint: "\uCD5C\uB300 \uB3D9\uC2DC\uBCF4\uC720 \uC885\uBAA9\uC218(\uBCF4\uACE0\uC11C 6~12)" },
+    { key: "payoff_ratio", label: "\uC190\uC775\uBE44", color: "#73d673", fmt: (v) => v.toFixed(2), hint: "\uD3C9\uADE0\uC774\uC775/\uD3C9\uADE0\uC190\uC2E4(\uBCF4\uACE0\uC11C 1.15~1.47)" }
+  ];
+  function QualityTrendChart({ state }) {
+    const gens = state.generations || [];
+    const [enabled, setEnabled] = useState_c(() => ({
+      calmar: true,
+      uptrend_r2: true,
+      mdd: true,
+      daily_avg_trades: false,
+      max_hold_count: false,
+      payoff_ratio: false
+    }));
+    const toggle = (k) => setEnabled((s) => ({ ...s, [k]: !s[k] }));
+    const W = 880, H = 320;
+    const padL = 44, padR = 24, padT = 18, padB = 30;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const xMax = Math.max(state.max_generations, 8);
+    const x = (g) => padL + (g - 0.5) / xMax * innerW;
+    const okGens = useMemo_c(() => gens.filter((g) => g.status !== "error"), [gens]);
+    const ranges = useMemo_c(() => {
+      const r = {};
+      for (const m of _QUALITY_METRICS) {
+        const vals = okGens.map((g) => typeof g[m.key] === "number" ? g[m.key] : null).filter((v) => v != null);
+        if (!vals.length) {
+          r[m.key] = null;
+          continue;
+        }
+        let lo = Math.min(...vals), hi = Math.max(...vals);
+        if (hi === lo) hi = lo + 1;
+        r[m.key] = { lo, hi };
+      }
+      return r;
+    }, [okGens]);
+    const ny = (m, g) => {
+      const rg = ranges[m.key];
+      if (!rg || typeof g[m.key] !== "number" || g.status === "error") return null;
+      const t = (g[m.key] - rg.lo) / (rg.hi - rg.lo);
+      return padT + innerH - t * innerH;
+    };
+    const pathFor = (m) => {
+      let d = "", started = false;
+      for (const g of okGens) {
+        const yy = ny(m, g);
+        if (yy == null) continue;
+        d += `${started ? "L" : "M"} ${x(g.gen_no).toFixed(2)} ${yy.toFixed(2)} `;
+        started = true;
+      }
+      return d.trim();
+    };
+    const xStep = xMax <= 15 ? 1 : xMax <= 30 ? 2 : 5;
+    const xTicks = [];
+    for (let g = 1; g <= xMax; g++) if (g === 1 || g === xMax || g % xStep === 0) xTicks.push(g);
+    const [hover, setHover] = useState_c(null);
+    const svgRef = useRef_c(null);
+    const onMove = (e) => {
+      if (!okGens.length || !svgRef.current) return;
+      const rect = svgRef.current.getBoundingClientRect();
+      const px = (e.clientX - rect.left) * (W / rect.width);
+      let best = null, bestDist = Infinity;
+      for (const g of okGens) {
+        const d = Math.abs(x(g.gen_no) - px);
+        if (d < bestDist) {
+          bestDist = d;
+          best = g;
+        }
+      }
+      setHover(best && bestDist < 40 ? best : null);
+    };
+    const activeMetrics = _QUALITY_METRICS.filter((m) => enabled[m.key]);
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD488\uC9C8\uC9C0\uD45C \uCD94\uC774 \u2014 Quality Metrics", /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        "data-tip": "\uD488\uC9C8 = \uC218\uC775 \uD06C\uAE30\uC640 \uBCC4\uAC1C\uB85C '\uC804\uB7B5\uC774 \uC5BC\uB9C8\uB098 \uAC74\uAC15\uD55C\uAC00'\uB97C \uBCF4\uB294 \uC704\uD5D8\uC870\uC815 \uC9C0\uD45C \uBB36\uC74C(calmar\xB7\uC6B0\uC0C1\uD5A5 R\xB2\xB7MDD\xB7\uC77C\uD3C9\uADE0 \uAC70\uB798\xB7\uB3D9\uC2DC\uBCF4\uC720\xB7\uC190\uC775\uBE44). \uAC01 \uCE69\uC5D0 \uB9C8\uC6B0\uC2A4\uB97C \uC62C\uB9AC\uBA74 \uC9C0\uD45C\uBCC4 \uC124\uBA85\uC774 \uB098\uC624\uACE0, \uD074\uB9AD\uD558\uBA74 \uD45C\uC2DC\uB97C \uCF1C\uACE0 \uB055\uB2C8\uB2E4.",
+        style: {
+          marginLeft: 6,
+          fontSize: 10,
+          color: "var(--ink-3)",
+          border: "1px solid var(--line-2)",
+          borderRadius: "50%",
+          width: 15,
+          height: 15,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "help"
+        }
+      },
+      "?"
+    )), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" } }, _QUALITY_METRICS.map((m) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: m.key,
+        onClick: () => toggle(m.key),
+        "data-tip": m.hint,
+        style: {
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 5,
+          fontSize: 10.5,
+          fontFamily: "var(--mono)",
+          cursor: "pointer",
+          padding: "3px 7px",
+          borderRadius: 5,
+          border: `1px solid ${enabled[m.key] ? m.color : "var(--line-2)"}`,
+          background: enabled[m.key] ? "rgba(255,255,255,0.04)" : "transparent",
+          color: enabled[m.key] ? "var(--ink-0)" : "var(--ink-3)"
+        }
+      },
+      /* @__PURE__ */ React.createElement("span", { style: {
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        background: enabled[m.key] ? m.color : "var(--line-2)"
+      } }),
+      m.label
+    )))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)", marginBottom: 8 } }, "\uAC01 \uC9C0\uD45C\uB294 \uC790\uAE30 \uBC94\uC704\uB85C \uC815\uADDC\uD654\uD55C '\uCD94\uC138 \uBAA8\uC591' \u2014 \uC2E4\uC81C\uAC12\uC740 hover \uCC38\uC870. \uBCF4\uACE0\uC11C \uBAA9\uD45C: \uC77C\uD3C9\uADE010~23\xB7\uB3D9\uC2DC\uBCF4\uC7206~12\xB7MDD<7%\xB7\uC190\uC775\uBE44>1.25"), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
+      "svg",
+      {
+        ref: svgRef,
+        viewBox: `0 0 ${W} ${H}`,
+        preserveAspectRatio: "none",
+        onMouseMove: onMove,
+        onMouseLeave: () => setHover(null)
+      },
+      [0, 0.5, 1].map((t, i) => {
+        const yy = padT + innerH - t * innerH;
+        return /* @__PURE__ */ React.createElement("line", { key: `qg${i}`, className: "chart-grid-line", x1: padL, x2: W - padR, y1: yy, y2: yy });
+      }),
+      xTicks.map((g, i) => /* @__PURE__ */ React.createElement("text", { key: `qx${i}`, className: "chart-axis-text", x: x(g), y: H - 10, textAnchor: "middle" }, "gen_", g)),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      activeMetrics.map((m) => {
+        const d = pathFor(m);
+        if (!d) return null;
+        return /* @__PURE__ */ React.createElement("g", { key: m.key }, /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: m.color, strokeWidth: "1.8", opacity: "0.9" }), okGens.map((g, i) => {
+          const yy = ny(m, g);
+          if (yy == null) return null;
+          return /* @__PURE__ */ React.createElement("circle", { key: i, cx: x(g.gen_no), cy: yy, r: "2.4", fill: m.color });
+        }));
+      }),
+      hover && (() => {
+        const hx = x(hover.gen_no);
+        return /* @__PURE__ */ React.createElement("line", { x1: hx, x2: hx, y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" });
+      })()
+    ), hover && activeMetrics.length > 0 && /* @__PURE__ */ React.createElement("div", { style: {
+      position: "absolute",
+      top: 16,
+      right: 16,
+      background: "var(--bg-0)",
+      border: "1px solid var(--line-2)",
+      borderRadius: 6,
+      padding: "8px 10px",
+      fontFamily: "var(--mono)",
+      fontSize: 11,
+      minWidth: 170,
+      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+      pointerEvents: "none"
+    } }, /* @__PURE__ */ React.createElement("div", { style: {
+      fontSize: 10.5,
+      color: "var(--ink-2)",
+      letterSpacing: ".12em",
+      textTransform: "uppercase",
+      marginBottom: 4
+    } }, "gen_", String(hover.gen_no).padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, activeMetrics.map((m) => /* @__PURE__ */ React.createElement(React.Fragment, { key: m.key }, /* @__PURE__ */ React.createElement("span", { style: { color: m.color } }, m.label), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, typeof hover[m.key] === "number" ? m.fmt(hover[m.key]) : "\u2014"))))), okGens.length === 0 && /* @__PURE__ */ React.createElement("div", { style: {
+      position: "absolute",
+      inset: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "var(--ink-3)",
+      fontSize: 12,
+      fontFamily: "var(--mono)"
+    } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uD488\uC9C8\uC9C0\uD45C \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))));
+  }
+
+  // ../frontend/chart-backtest-detail.jsx
+  var _bdAxisTicks = window._axisTicks;
   var { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq, useRef: useRef_eq } = React;
   var _EQ_WINNER_COLORS = [
     "#4cd6b3",
@@ -4286,187 +4497,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         color: t.gate_passed ? "var(--teal)" : "var(--ink-2)"
       } }, /* @__PURE__ */ React.createElement("span", null, t.run_id.slice(-6), "/g", t.gen_no), /* @__PURE__ */ React.createElement("span", null, t.y >= 0 ? "+" : "", Math.round(t.y).toLocaleString()))), hover.tips.length > topTips.length && /* @__PURE__ */ React.createElement("div", { style: { color: "var(--ink-3)", fontSize: 10, marginTop: 3 } }, "\uC678 ", hover.tips.length - topTips.length, "\uAC1C\u2026"));
     })())));
-  }
-  var _QUALITY_METRICS = [
-    { key: "calmar", label: "Calmar", color: "var(--teal)", fmt: (v) => v.toFixed(2), hint: "CAGR/MDD \uC704\uD5D8\uC870\uC815\uC218\uC775(\uB192\uC744\uC218\uB85D \uC6B0\uC218)" },
-    { key: "uptrend_r2", label: "\uC6B0\uC0C1\uD5A5 R\xB2", color: "var(--violet)", fmt: (v) => v.toFixed(3), hint: "\uB204\uC801\uACE1\uC120 \uC6B0\uC0C1\uD5A5 \uC801\uD569\uB3C4 0~1(\uB192\uC744\uC218\uB85D \uC6B0\uC218)" },
-    { key: "mdd", label: "MDD %", color: "var(--red)", fmt: (v) => fmtPct(v), hint: "\uCD5C\uB300\uB099\uD3ED(\uB0AE\uC744\uC218\uB85D \uC6B0\uC218) \u2014 \uBCF4\uACE0\uC11C 1.9~6.75%" },
-    { key: "daily_avg_trades", label: "\uC77C\uD3C9\uADE0\uAC70\uB798", color: "var(--amber)", fmt: (v) => v.toFixed(2), hint: "\uAC70\uB798\uC218/\uAC70\uB798\uC77C(\uBCF4\uACE0\uC11C 10~23)" },
-    { key: "max_hold_count", label: "\uB3D9\uC2DC\uBCF4\uC720", color: "var(--blue)", fmt: (v) => v.toFixed(0), hint: "\uCD5C\uB300 \uB3D9\uC2DC\uBCF4\uC720 \uC885\uBAA9\uC218(\uBCF4\uACE0\uC11C 6~12)" },
-    { key: "payoff_ratio", label: "\uC190\uC775\uBE44", color: "#73d673", fmt: (v) => v.toFixed(2), hint: "\uD3C9\uADE0\uC774\uC775/\uD3C9\uADE0\uC190\uC2E4(\uBCF4\uACE0\uC11C 1.15~1.47)" }
-  ];
-  function QualityTrendChart({ state }) {
-    const gens = state.generations || [];
-    const [enabled, setEnabled] = useState_c(() => ({
-      calmar: true,
-      uptrend_r2: true,
-      mdd: true,
-      daily_avg_trades: false,
-      max_hold_count: false,
-      payoff_ratio: false
-    }));
-    const toggle = (k) => setEnabled((s) => ({ ...s, [k]: !s[k] }));
-    const W = 880, H = 320;
-    const padL = 44, padR = 24, padT = 18, padB = 30;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const xMax = Math.max(state.max_generations, 8);
-    const x = (g) => padL + (g - 0.5) / xMax * innerW;
-    const okGens = useMemo_c(() => gens.filter((g) => g.status !== "error"), [gens]);
-    const ranges = useMemo_c(() => {
-      const r = {};
-      for (const m of _QUALITY_METRICS) {
-        const vals = okGens.map((g) => typeof g[m.key] === "number" ? g[m.key] : null).filter((v) => v != null);
-        if (!vals.length) {
-          r[m.key] = null;
-          continue;
-        }
-        let lo = Math.min(...vals), hi = Math.max(...vals);
-        if (hi === lo) hi = lo + 1;
-        r[m.key] = { lo, hi };
-      }
-      return r;
-    }, [okGens]);
-    const ny = (m, g) => {
-      const rg = ranges[m.key];
-      if (!rg || typeof g[m.key] !== "number" || g.status === "error") return null;
-      const t = (g[m.key] - rg.lo) / (rg.hi - rg.lo);
-      return padT + innerH - t * innerH;
-    };
-    const pathFor = (m) => {
-      let d = "", started = false;
-      for (const g of okGens) {
-        const yy = ny(m, g);
-        if (yy == null) continue;
-        d += `${started ? "L" : "M"} ${x(g.gen_no).toFixed(2)} ${yy.toFixed(2)} `;
-        started = true;
-      }
-      return d.trim();
-    };
-    const xStep = xMax <= 15 ? 1 : xMax <= 30 ? 2 : 5;
-    const xTicks = [];
-    for (let g = 1; g <= xMax; g++) if (g === 1 || g === xMax || g % xStep === 0) xTicks.push(g);
-    const [hover, setHover] = useState_c(null);
-    const svgRef = useRef_c(null);
-    const onMove = (e) => {
-      if (!okGens.length || !svgRef.current) return;
-      const rect = svgRef.current.getBoundingClientRect();
-      const px = (e.clientX - rect.left) * (W / rect.width);
-      let best = null, bestDist = Infinity;
-      for (const g of okGens) {
-        const d = Math.abs(x(g.gen_no) - px);
-        if (d < bestDist) {
-          bestDist = d;
-          best = g;
-        }
-      }
-      setHover(best && bestDist < 40 ? best : null);
-    };
-    const activeMetrics = _QUALITY_METRICS.filter((m) => enabled[m.key]);
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD488\uC9C8\uC9C0\uD45C \uCD94\uC774 \u2014 Quality Metrics", /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        "data-tip": "\uD488\uC9C8 = \uC218\uC775 \uD06C\uAE30\uC640 \uBCC4\uAC1C\uB85C '\uC804\uB7B5\uC774 \uC5BC\uB9C8\uB098 \uAC74\uAC15\uD55C\uAC00'\uB97C \uBCF4\uB294 \uC704\uD5D8\uC870\uC815 \uC9C0\uD45C \uBB36\uC74C(calmar\xB7\uC6B0\uC0C1\uD5A5 R\xB2\xB7MDD\xB7\uC77C\uD3C9\uADE0 \uAC70\uB798\xB7\uB3D9\uC2DC\uBCF4\uC720\xB7\uC190\uC775\uBE44). \uAC01 \uCE69\uC5D0 \uB9C8\uC6B0\uC2A4\uB97C \uC62C\uB9AC\uBA74 \uC9C0\uD45C\uBCC4 \uC124\uBA85\uC774 \uB098\uC624\uACE0, \uD074\uB9AD\uD558\uBA74 \uD45C\uC2DC\uB97C \uCF1C\uACE0 \uB055\uB2C8\uB2E4.",
-        style: {
-          marginLeft: 6,
-          fontSize: 10,
-          color: "var(--ink-3)",
-          border: "1px solid var(--line-2)",
-          borderRadius: "50%",
-          width: 15,
-          height: 15,
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "help"
-        }
-      },
-      "?"
-    )), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" } }, _QUALITY_METRICS.map((m) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: m.key,
-        onClick: () => toggle(m.key),
-        "data-tip": m.hint,
-        style: {
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 5,
-          fontSize: 10.5,
-          fontFamily: "var(--mono)",
-          cursor: "pointer",
-          padding: "3px 7px",
-          borderRadius: 5,
-          border: `1px solid ${enabled[m.key] ? m.color : "var(--line-2)"}`,
-          background: enabled[m.key] ? "rgba(255,255,255,0.04)" : "transparent",
-          color: enabled[m.key] ? "var(--ink-0)" : "var(--ink-3)"
-        }
-      },
-      /* @__PURE__ */ React.createElement("span", { style: {
-        width: 8,
-        height: 8,
-        borderRadius: "50%",
-        background: enabled[m.key] ? m.color : "var(--line-2)"
-      } }),
-      m.label
-    )))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)", marginBottom: 8 } }, "\uAC01 \uC9C0\uD45C\uB294 \uC790\uAE30 \uBC94\uC704\uB85C \uC815\uADDC\uD654\uD55C '\uCD94\uC138 \uBAA8\uC591' \u2014 \uC2E4\uC81C\uAC12\uC740 hover \uCC38\uC870. \uBCF4\uACE0\uC11C \uBAA9\uD45C: \uC77C\uD3C9\uADE010~23\xB7\uB3D9\uC2DC\uBCF4\uC7206~12\xB7MDD<7%\xB7\uC190\uC775\uBE44>1.25"), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        ref: svgRef,
-        viewBox: `0 0 ${W} ${H}`,
-        preserveAspectRatio: "none",
-        onMouseMove: onMove,
-        onMouseLeave: () => setHover(null)
-      },
-      [0, 0.5, 1].map((t, i) => {
-        const yy = padT + innerH - t * innerH;
-        return /* @__PURE__ */ React.createElement("line", { key: `qg${i}`, className: "chart-grid-line", x1: padL, x2: W - padR, y1: yy, y2: yy });
-      }),
-      xTicks.map((g, i) => /* @__PURE__ */ React.createElement("text", { key: `qx${i}`, className: "chart-axis-text", x: x(g), y: H - 10, textAnchor: "middle" }, "gen_", g)),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      activeMetrics.map((m) => {
-        const d = pathFor(m);
-        if (!d) return null;
-        return /* @__PURE__ */ React.createElement("g", { key: m.key }, /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: m.color, strokeWidth: "1.8", opacity: "0.9" }), okGens.map((g, i) => {
-          const yy = ny(m, g);
-          if (yy == null) return null;
-          return /* @__PURE__ */ React.createElement("circle", { key: i, cx: x(g.gen_no), cy: yy, r: "2.4", fill: m.color });
-        }));
-      }),
-      hover && (() => {
-        const hx = x(hover.gen_no);
-        return /* @__PURE__ */ React.createElement("line", { x1: hx, x2: hx, y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" });
-      })()
-    ), hover && activeMetrics.length > 0 && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      top: 16,
-      right: 16,
-      background: "var(--bg-0)",
-      border: "1px solid var(--line-2)",
-      borderRadius: 6,
-      padding: "8px 10px",
-      fontFamily: "var(--mono)",
-      fontSize: 11,
-      minWidth: 170,
-      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
-      pointerEvents: "none"
-    } }, /* @__PURE__ */ React.createElement("div", { style: {
-      fontSize: 10.5,
-      color: "var(--ink-2)",
-      letterSpacing: ".12em",
-      textTransform: "uppercase",
-      marginBottom: 4
-    } }, "gen_", String(hover.gen_no).padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, activeMetrics.map((m) => /* @__PURE__ */ React.createElement(React.Fragment, { key: m.key }, /* @__PURE__ */ React.createElement("span", { style: { color: m.color } }, m.label), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, typeof hover[m.key] === "number" ? m.fmt(hover[m.key]) : "\u2014"))))), okGens.length === 0 && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      inset: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "var(--ink-3)",
-      fontSize: 12,
-      fontFamily: "var(--mono)"
-    } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uD488\uC9C8\uC9C0\uD45C \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))));
   }
   var {
     useState: useState_bd,
@@ -4831,7 +4861,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         },
         fmtMoneyShort(pnlMin)
       ),
-      _axisTicks(pnlMin, pnlMax, 5).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - pnlMax) < 1e-9 || Math.abs(tv - pnlMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `byl${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yPnl(tv), y2: yPnl(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yPnl(tv) + 3, textAnchor: "end", fill: "var(--ink-3)" }, fmtMoneyShort(tv)))),
+      _bdAxisTicks(pnlMin, pnlMax, 5).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - pnlMax) < 1e-9 || Math.abs(tv - pnlMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `byl${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yPnl(tv), y2: yPnl(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yPnl(tv) + 3, textAnchor: "end", fill: "var(--ink-3)" }, fmtMoneyShort(tv)))),
       /* @__PURE__ */ React.createElement(
         "text",
         {
@@ -4854,7 +4884,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         },
         fmtMoneyShort(cumMin)
       ),
-      _axisTicks(cumMin, cumMax, 5).map((tv, i) => Math.abs(tv - cumMax) < 1e-9 || Math.abs(tv - cumMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("text", { key: `byr${i}`, className: "chart-axis-text", x: W - padR + 6, y: yCum(tv) + 3, textAnchor: "start", fill: "var(--ink-3)" }, fmtMoneyShort(tv))),
+      _bdAxisTicks(cumMin, cumMax, 5).map((tv, i) => Math.abs(tv - cumMax) < 1e-9 || Math.abs(tv - cumMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("text", { key: `byr${i}`, className: "chart-axis-text", x: W - padR + 6, y: yCum(tv) + 3, textAnchor: "start", fill: "var(--ink-3)" }, fmtMoneyShort(tv))),
       /* @__PURE__ */ React.createElement(
         "line",
         {
@@ -4960,15 +4990,19 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       fmtMoney(daily[hover].daily_pnl)
     ), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--amber)" } }, cumulative[hover] ? fmtMoney(cumulative[hover].cum_profit) : "\u2014"), cumulative[hover] && cumulative[hover].cum_pct != null && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801%"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, fmtPct(cumulative[hover].cum_pct))), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uBC18\uB0A9\uC561"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--red)" } }, drawdown[hover] ? fmtMoney(drawdown[hover].drawdown) : "\u2014"))))));
   }
+
+  // ../frontend/chart-hall-of-fame.jsx
+  var { useState: useState_eq2, useEffect: useEffect_eq2, useCallback: useCallback_eq2 } = React;
+  var { useState: useState_rg, useEffect: useEffect_rg } = React;
   function HallOfFamePanel({ baseUrl, wsStatus }) {
-    const [data, setData] = useState_eq(null);
-    const [loading, setLoading] = useState_eq(false);
-    const [err, setErr] = useState_eq(null);
-    const [sortKey, setSortKey] = useState_eq("total_return_pct");
-    const [filter, setFilter] = useState_eq("all");
-    const [galleryOpen, setGalleryOpen] = useState_eq(false);
+    const [data, setData] = useState_eq2(null);
+    const [loading, setLoading] = useState_eq2(false);
+    const [err, setErr] = useState_eq2(null);
+    const [sortKey, setSortKey] = useState_eq2("total_return_pct");
+    const [filter, setFilter] = useState_eq2("all");
+    const [galleryOpen, setGalleryOpen] = useState_eq2(false);
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
-    const refresh = useCallback_eq(() => {
+    const refresh = useCallback_eq2(() => {
       if (isDemo || !baseUrl) return;
       setLoading(true);
       fetch(baseUrl + "/hall_of_fame", { signal: AbortSignal.timeout(4e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
@@ -4976,7 +5010,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         setErr(null);
       }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
     }, [baseUrl, isDemo]);
-    useEffect_eq(() => {
+    useEffect_eq2(() => {
       refresh();
       const id = setInterval(refresh, 3e4);
       return () => clearInterval(id);
@@ -5150,7 +5184,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       );
     }))))), galleryOpen && /* @__PURE__ */ React.createElement(ReferenceGallery, { baseUrl, onClose: () => setGalleryOpen(false) }));
   }
-  var { useState: useState_rg, useEffect: useEffect_rg } = React;
   function ReferenceGallery({ baseUrl, onClose }) {
     const [files, setFiles] = useState_rg(null);
     const [err, setErr] = useState_rg(null);
@@ -5262,6 +5295,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       )
     );
   }
+
+  // ../frontend/chart.jsx
   Object.assign(window, { FitnessChart, ProfitChart, EquityOverlayChart, QualityTrendChart, BacktestDetailChart, HallOfFamePanel, ReferenceGallery });
 
   // ../frontend/hypothesis.jsx
@@ -6011,7 +6046,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { ResearchGlossaryPanel, RESEARCH_GLOSSARY_ITEMS });
 
-  // ../frontend/backtest-charts.jsx
+  // ../frontend/bt-chart-utils.jsx
   var {
     useState: useState_btc,
     useRef: useRef_btc,
@@ -6182,6 +6217,14 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       padding: "0 16px"
     } }, message || "\uBD84\uC11D \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4");
   }
+  function _gpMoney(v) {
+    const a = Math.abs(v || 0);
+    if (a >= 1e8) return ((v || 0) / 1e8).toFixed(1) + "\uC5B5";
+    if (a >= 1e4) return Math.round((v || 0) / 1e4) + "\uB9CC";
+    return Math.round(v || 0).toLocaleString("ko-KR");
+  }
+
+  // ../frontend/bt-equity-charts.jsx
   function BtEquityChart({ equity, onBrush, brushActive, onBrushClear }) {
     const daily = equity && equity.daily || [];
     const cumulative = equity && equity.cumulative || [];
@@ -6513,19 +6556,279 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       "%"
     ))), pts.length === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "MAE/MFE \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 (R_MAE\xB7R_MFE \uACB0\uCE21)" }))));
   }
-  function BtExitReasonPanel({ rows }) {
-    const items = Array.isArray(rows) ? rows : [];
-    const maxAbs = Math.max(1, ...items.map((r) => Math.abs(r.total_pnl || 0)));
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uB9E4\uB3C4\uC870\uAC74\uBCC4 \uC190\uC775 \uBD84\uD574"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uCCAD\uC0B0\uC0AC\uC720 \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, items.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uB9E4\uB3C4\uC870\uAC74 \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4") : /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4 } }, items.map((r, i) => {
-      const frac = Math.abs(r.total_pnl || 0) / maxAbs;
-      const pos = (r.total_pnl || 0) >= 0;
-      return /* @__PURE__ */ React.createElement("div", { key: i, className: "bt-exit-row" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-1)", width: 96, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 } }, r.reason), /* @__PURE__ */ React.createElement("div", { className: "bt-exit-track" }, /* @__PURE__ */ React.createElement("div", { className: "bt-exit-fill", style: {
-        width: (frac * 100).toFixed(1) + "%",
-        background: pos ? "var(--teal)" : "var(--red)",
-        opacity: 0.75
-      } })), /* @__PURE__ */ React.createElement("span", { className: "mono " + (pos ? "num-pos" : "num-neg"), style: { fontSize: 10.5, width: 88, textAlign: "right", flexShrink: 0 } }, fmtMoney(r.total_pnl)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", width: 78, textAlign: "right", flexShrink: 0 } }, r.count, "\uAC74\xB7", fmtPct(r.win_rate)));
-    }))));
+  function BtUnderwaterChart({ underwater }) {
+    const series = underwater && underwater.series || [];
+    const maxDd = underwater && underwater.max_drawdown;
+    const [hover, setHover] = useState_btc(null);
+    const svgRef = useRef_btc(null);
+    const W = 880, H = 240;
+    const padL = 58, padR = 24, padT = 18, padB = 30;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const n = series.length;
+    const x = (i) => n > 1 ? padL + i / (n - 1) * innerW : padL + innerW / 2;
+    const ddVals = series.map((d) => d.drawdown || 0);
+    const ddMax = Math.max(1, ...ddVals);
+    const y = (v) => padT + v / ddMax * innerH;
+    const areaPath = useMemo_btc(() => {
+      if (n < 2) return "";
+      const top = series.map((d, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(d.drawdown || 0).toFixed(1)}`).join(" ");
+      return `${top} L ${x(n - 1).toFixed(1)} ${padT.toFixed(1)} L ${x(0).toFixed(1)} ${padT.toFixed(1)} Z`;
+    }, [series, n, ddMax]);
+    const linePath = useMemo_btc(() => {
+      if (n < 2) return "";
+      return series.map((d, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(d.drawdown || 0).toFixed(1)}`).join(" ");
+    }, [series, n, ddMax]);
+    const xTickIdx = useMemo_btc(() => {
+      if (n <= 1) return n === 1 ? [0] : [];
+      const step = Math.max(1, Math.ceil(n / 8));
+      const idx = [];
+      for (let i = 0; i < n; i += step) idx.push(i);
+      if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
+      return idx;
+    }, [n]);
+    const onMove = (e) => {
+      if (!n || !svgRef.current) return;
+      const rect = svgRef.current.getBoundingClientRect();
+      const px = (e.clientX - rect.left) * (W / rect.width);
+      const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
+      const i = Math.round(frac * (n - 1));
+      if (i >= 0 && i < n) setHover(i);
+      else setHover(null);
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--red)" } }), "\uC5B8\uB354\uC6CC\uD130 \u2014 Drawdown"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uACE0\uC810 \uB300\uBE44 \uBC18\uB0A9\uC561(\uC6D0)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Mini, { label: "\uCD5C\uB300\uB099\uD3ED", value: maxDd ? fmtMoney(maxDd.drawdown) : "\u2014", color: maxDd ? "var(--red)" : void 0 }), maxDd && /* @__PURE__ */ React.createElement(
+      Mini,
+      {
+        label: "\uB099\uD3ED \uAD6C\uAC04",
+        value: `${_btDateLabel(maxDd.start_date)}~${_btDateLabel(maxDd.trough_date)}`,
+        sub: maxDd.recovery_date ? `\uD68C\uBCF5 ${_btDateLabel(maxDd.recovery_date)}` : "\uBBF8\uD68C\uBCF5"
+      }
+    )), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
+      "svg",
+      {
+        ref: svgRef,
+        viewBox: `0 0 ${W} ${H}`,
+        preserveAspectRatio: "none",
+        onMouseMove: onMove,
+        onMouseLeave: () => setHover(null)
+      },
+      /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "bt-uw-grad", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#ff6b6b", stopOpacity: "0" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#ff6b6b", stopOpacity: "0.42" }))),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT, y2: padT, stroke: "var(--line-2)", strokeWidth: "1" }),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: padT + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: padT + innerH + 3, textAnchor: "end", fill: "var(--red)" }, "\u2212", _btMoneyTick(ddMax)),
+      _btAxisTicks(0, ddMax, 5).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - ddMax) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `uyl${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: y(tv), y2: y(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(tv) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "\u2212", _btMoneyTick(tv)))),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      n > 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: areaPath, fill: "url(#bt-uw-grad)" }), /* @__PURE__ */ React.createElement("path", { d: linePath, fill: "none", stroke: "var(--red)", strokeWidth: "1.4", opacity: "0.85" })),
+      xTickIdx.map((i, k) => /* @__PURE__ */ React.createElement("text", { key: `ux${i}`, className: "chart-axis-text", x: x(i), y: H - 10, textAnchor: "middle" }, series[i] ? _btDateLabelY(series[i].date, k > 0 && series[xTickIdx[k - 1]] ? series[xTickIdx[k - 1]].date : null) : "")),
+      hover != null && series[hover] && /* @__PURE__ */ React.createElement(
+        "line",
+        {
+          x1: x(hover),
+          x2: x(hover),
+          y1: padT,
+          y2: padT + innerH,
+          stroke: "rgba(255,255,255,0.14)",
+          strokeWidth: "1"
+        }
+      )
+    ), hover != null && series[hover] && /* @__PURE__ */ React.createElement("div", { style: {
+      position: "absolute",
+      top: 16,
+      right: 16,
+      background: "var(--bg-0)",
+      border: "1px solid var(--line-2)",
+      borderRadius: 6,
+      padding: "8px 10px",
+      fontFamily: "var(--mono)",
+      fontSize: 11,
+      minWidth: 160,
+      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+      pointerEvents: "none"
+    } }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, _btDateLabel(series[hover].date)), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--red)" } }, "\u2212", _btMoneyTick(series[hover].drawdown)))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uAC70\uB798\uAC00 \uB204\uC801\uB418\uBA74 \uC5B8\uB354\uC6CC\uD130 \uACE1\uC120\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4" }))));
   }
+  function BtRollingChart({ rolling }) {
+    const series = rolling && rolling.series || [];
+    const window2 = rolling && rolling.window || 20;
+    const [hover, setHover] = useState_btc(null);
+    const svgRef = useRef_btc(null);
+    const W = 880, H = 260;
+    const padL = 48, padR = 52, padT = 18, padB = 30;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const n = series.length;
+    const x = (i) => n > 1 ? padL + i / (n - 1) * innerW : padL + innerW / 2;
+    const yWin = (v) => padT + innerH - Math.max(0, Math.min(100, v)) / 100 * innerH;
+    const payoffMax = Math.max(2, ...series.map((s) => s.payoff || 0));
+    const yPay = (v) => padT + innerH - Math.max(0, v) / payoffMax * innerH;
+    const winPath = useMemo_btc(
+      () => n < 2 ? "" : series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yWin(s.win_rate || 0).toFixed(1)}`).join(" "),
+      [series, n]
+    );
+    const payPath = useMemo_btc(
+      () => n < 2 ? "" : series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yPay(s.payoff || 0).toFixed(1)}`).join(" "),
+      [series, n, payoffMax]
+    );
+    const xTickIdx = useMemo_btc(() => {
+      if (n <= 1) return n === 1 ? [0] : [];
+      const step = Math.max(1, Math.ceil(n / 8));
+      const idx = [];
+      for (let i = 0; i < n; i += step) idx.push(i);
+      if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
+      return idx;
+    }, [n]);
+    const onMove = (e) => {
+      if (!n || !svgRef.current) return;
+      const rect = svgRef.current.getBoundingClientRect();
+      const px = (e.clientX - rect.left) * (W / rect.width);
+      const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
+      const i = Math.round(frac * (n - 1));
+      if (i >= 0 && i < n) setHover(i);
+      else setHover(null);
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uB864\uB9C1 \uC9C0\uD45C \u2014 \uC2B9\uB960 \xB7 Payoff"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "\uB864\uB9C1 \uC2B9\uB960 %" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--amber)", label: "\uB864\uB9C1 payoff \uBC30" }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
+      `${window2}\uAC70\uB798 \uC774\uB3D9\uCC3D \uAE30\uC900`,
+      "\uC88C\uCD95 = \uC2B9\uB960(%) \xB7 \uC6B0\uCD95 = payoff(\uD3C9\uADE0\uC774\uC775/\uD3C9\uADE0\uC190\uC2E4)",
+      "\uAD6C\uAC04\uBCC4 \uC804\uB7B5 \uC548\uC815\uC131 \uCD94\uC774 \uC9C4\uB2E8"
+    ] }), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
+      "svg",
+      {
+        ref: svgRef,
+        viewBox: `0 0 ${W} ${H}`,
+        preserveAspectRatio: "none",
+        onMouseMove: onMove,
+        onMouseLeave: () => setHover(null)
+      },
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yWin(50), y2: yWin(50), stroke: "rgba(255,255,255,0.18)", strokeWidth: "1", strokeDasharray: "2 3" }),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yWin(50) + 3, textAnchor: "end", fill: "var(--ink-2)" }, "50%"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yWin(100) + 3, textAnchor: "end", fill: "var(--teal)" }, "100%"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yWin(0) + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0%"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yPay(payoffMax) + 3, textAnchor: "start", fill: "var(--amber)" }, payoffMax.toFixed(1), "\xD7"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yPay(1) + 3, textAnchor: "start", fill: "var(--ink-3)" }, "1\xD7"),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yPay(1), y2: yPay(1), stroke: "rgba(240,179,90,0.2)", strokeWidth: "1", strokeDasharray: "4 4" }),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      n > 1 && /* @__PURE__ */ React.createElement("path", { d: winPath, fill: "none", stroke: "var(--teal)", strokeWidth: "2" }),
+      n > 1 && /* @__PURE__ */ React.createElement("path", { d: payPath, fill: "none", stroke: "var(--amber)", strokeWidth: "1.6", strokeDasharray: "5 3", opacity: "0.9" }),
+      xTickIdx.map((i) => /* @__PURE__ */ React.createElement("text", { key: `rx${i}`, className: "chart-axis-text", x: x(i), y: H - 10, textAnchor: "middle" }, series[i] ? `#${series[i].index + 1}` : "")),
+      hover != null && series[hover] && /* @__PURE__ */ React.createElement("line", { x1: x(hover), x2: x(hover), y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.22)", strokeWidth: "1" })
+    ), hover != null && series[hover] && /* @__PURE__ */ React.createElement("div", { style: {
+      position: "absolute",
+      top: 16,
+      right: 16,
+      background: "var(--bg-0)",
+      border: "1px solid var(--line-2)",
+      borderRadius: 6,
+      padding: "8px 10px",
+      fontFamily: "var(--mono)",
+      fontSize: 11,
+      minWidth: 160,
+      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+      pointerEvents: "none"
+    } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-2)", marginBottom: 4 } }, "\uAC70\uB798 #", series[hover].index + 1), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uC2B9\uB960"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--teal)" } }, fmtPct(series[hover].win_rate)), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "payoff"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--amber)" } }, (series[hover].payoff || 0).toFixed(2), "\xD7"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uD3C9\uADE0\uC190\uC775"), /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: series[hover].avg_pnl_pct > 0 ? "num-pos" : series[hover].avg_pnl_pct < 0 ? "num-neg" : "",
+        style: { textAlign: "right" }
+      },
+      series[hover].avg_pnl_pct.toFixed(2),
+      "%"
+    ))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: `\uAC70\uB798\uAC00 ${window2}\uAC74 \uC774\uC0C1 \uB204\uC801\uB418\uBA74 \uB864\uB9C1 \uC9C0\uD45C\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4` }))));
+  }
+  function BtCumulativeTradesChart({ data }) {
+    const series = data && data.series || [];
+    const [hover, setHover] = useState_btc(null);
+    const svgRef = useRef_btc(null);
+    const W = 880, H = 280;
+    const padL = 52, padR = 60, padT = 18, padB = 30;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const n = series.length;
+    const x = (i) => n > 1 ? padL + i / (n - 1) * innerW : padL + innerW / 2;
+    const maxTrades = Math.max(1, ...series.map((s) => s.cum_trades || 0));
+    const yTrades = (v) => padT + innerH - v / maxTrades * innerH;
+    const profits = series.map((s) => s.cum_profit_krw || 0);
+    const pMax = Math.max(0, ...profits);
+    const pMin = Math.min(0, ...profits);
+    const pRange = pMax - pMin || 1;
+    const yProfit = (v) => padT + innerH - (v - pMin) / pRange * innerH;
+    const tradesArea = useMemo_btc(() => {
+      if (n < 2) return "";
+      const top = series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yTrades(s.cum_trades || 0).toFixed(1)}`).join(" ");
+      return `${top} L ${x(n - 1).toFixed(1)} ${(padT + innerH).toFixed(1)} L ${x(0).toFixed(1)} ${(padT + innerH).toFixed(1)} Z`;
+    }, [series, n, maxTrades]);
+    const profitPath = useMemo_btc(
+      () => n < 2 ? "" : series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yProfit(s.cum_profit_krw || 0).toFixed(1)}`).join(" "),
+      [series, n, pMin, pRange]
+    );
+    const xTickIdx = useMemo_btc(() => {
+      if (n <= 1) return n === 1 ? [0] : [];
+      const step = Math.max(1, Math.ceil(n / 8));
+      const idx = [];
+      for (let i = 0; i < n; i += step) idx.push(i);
+      if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
+      return idx;
+    }, [n]);
+    const onMove = (e) => {
+      if (!n || !svgRef.current) return;
+      const rect = svgRef.current.getBoundingClientRect();
+      const px = (e.clientX - rect.left) * (W / rect.width);
+      const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
+      const i = Math.round(frac * (n - 1));
+      if (i >= 0 && i < n) setHover(i);
+      else setHover(null);
+    };
+    const profitZeroY = yProfit(0);
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uB204\uC801 \uAC70\uB798 \xB7 \uB204\uC801 \uC190\uC775"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--blue)", label: "\uB204\uC801 \uAC70\uB798\uC218" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--amber)", label: "\uB204\uC801 \uC190\uC775 \u20A9" }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
+      "x\uCD95 = \uAC70\uB798 \uC21C\uC11C(\uCCB4\uACB0 \uC21C)",
+      "\uC88C\uCD95 = \uB204\uC801 \uAC70\uB798\uC218 \xB7 \uC6B0\uCD95 = \uB204\uC801 \uC2E4\uD604\uC190\uC775",
+      "\uCCB4\uACB0 \uBE48\uB3C4\uC640 \uC790\uBCF8 \uC99D\uAC00\uB97C \uD55C \uD654\uBA74\uC5D0\uC11C \uBE44\uAD50"
+    ] }), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
+      "svg",
+      {
+        ref: svgRef,
+        viewBox: `0 0 ${W} ${H}`,
+        preserveAspectRatio: "none",
+        onMouseMove: onMove,
+        onMouseLeave: () => setHover(null)
+      },
+      /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "bt-ct-grad", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#5b8def", stopOpacity: "0.34" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#5b8def", stopOpacity: "0.02" }))),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: profitZeroY, y2: profitZeroY, stroke: "rgba(255,255,255,0.28)", strokeWidth: "1", strokeDasharray: "2 3" }),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: profitZeroY + 3, textAnchor: "start", fill: "var(--ink-2)" }, "0"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yTrades(maxTrades) + 3, textAnchor: "end", fill: "var(--blue)" }, maxTrades),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yTrades(0) + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0"),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yProfit(pMax) + 3, textAnchor: "start", fill: "var(--amber)" }, _btMoneyTick(pMax)),
+      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yProfit(pMin) + 3, textAnchor: "start", fill: "var(--amber)" }, _btMoneyTick(pMin)),
+      _btAxisTicks(pMin, pMax, 5).map((tv, i) => Math.abs(tv - pMax) < 1e-9 || Math.abs(tv - pMin) < 1e-9 || Math.abs(tv) < 1e-9 ? null : /* @__PURE__ */ React.createElement("text", { key: `cyr${i}`, className: "chart-axis-text", x: W - padR + 6, y: yProfit(tv) + 3, textAnchor: "start", fill: "var(--ink-3)" }, _btMoneyTick(tv))),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      n > 1 && /* @__PURE__ */ React.createElement("path", { d: tradesArea, fill: "url(#bt-ct-grad)", stroke: "var(--blue)", strokeWidth: "1.2", opacity: "0.85" }),
+      n > 1 && /* @__PURE__ */ React.createElement("path", { d: profitPath, fill: "none", stroke: "var(--amber)", strokeWidth: "2" }),
+      xTickIdx.map((i) => /* @__PURE__ */ React.createElement("text", { key: `cx${i}`, className: "chart-axis-text", x: x(i), y: H - 10, textAnchor: "middle" }, series[i] ? `#${series[i].index}` : "")),
+      hover != null && series[hover] && /* @__PURE__ */ React.createElement("line", { x1: x(hover), x2: x(hover), y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.22)", strokeWidth: "1" })
+    ), hover != null && series[hover] && /* @__PURE__ */ React.createElement("div", { style: {
+      position: "absolute",
+      top: 16,
+      right: 16,
+      background: "var(--bg-0)",
+      border: "1px solid var(--line-2)",
+      borderRadius: 6,
+      padding: "8px 10px",
+      fontFamily: "var(--mono)",
+      fontSize: 11,
+      minWidth: 170,
+      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+      pointerEvents: "none"
+    } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-2)", marginBottom: 4 } }, "\uAC70\uB798 #", series[hover].index), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801 \uAC70\uB798"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--blue)" } }, series[hover].cum_trades, "\uAC74"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801 \uC190\uC775"), /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: series[hover].cum_profit_krw > 0 ? "num-pos" : series[hover].cum_profit_krw < 0 ? "num-neg" : "",
+        style: { textAlign: "right" }
+      },
+      fmtMoney(series[hover].cum_profit_krw)
+    ))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uAC70\uB798\uAC00 \uB204\uC801\uB418\uBA74 \uB204\uC801 \uAC70\uB798\xB7\uC190\uC775 \uACE1\uC120\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4" }))));
+  }
+
+  // ../frontend/bt-distribution-charts.jsx
   function BtDistributionChart({ distribution }) {
     const bins = distribution && distribution.pnl_histogram || [];
     const [hover, setHover] = useState_btc(null);
@@ -6710,400 +7013,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       );
     }))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, marginTop: 10, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(76,214,179,0.78)", label: "\uC774\uC775 \uC2AC\uB86F(\uC218\uC775\uB960 \uD569\uACC4 +)" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(255,107,107,0.78)", label: "\uC190\uC2E4 \uC2AC\uB86F(\uC218\uC775\uB960 \uD569\uACC4 \u2212)" }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, big ? "\uC140 = \uC218\uC775\uB960 \uD569\uACC4(%) \xB7 \uAC70\uB798 \uAC74\uC218" : "\uC140 = \uC218\uC775\uB960 \uD569\uACC4(%)"))))));
   }
-  function BtUnderwaterChart({ underwater }) {
-    const series = underwater && underwater.series || [];
-    const maxDd = underwater && underwater.max_drawdown;
-    const [hover, setHover] = useState_btc(null);
-    const svgRef = useRef_btc(null);
-    const W = 880, H = 240;
-    const padL = 58, padR = 24, padT = 18, padB = 30;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const n = series.length;
-    const x = (i) => n > 1 ? padL + i / (n - 1) * innerW : padL + innerW / 2;
-    const ddVals = series.map((d) => d.drawdown || 0);
-    const ddMax = Math.max(1, ...ddVals);
-    const y = (v) => padT + v / ddMax * innerH;
-    const areaPath = useMemo_btc(() => {
-      if (n < 2) return "";
-      const top = series.map((d, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(d.drawdown || 0).toFixed(1)}`).join(" ");
-      return `${top} L ${x(n - 1).toFixed(1)} ${padT.toFixed(1)} L ${x(0).toFixed(1)} ${padT.toFixed(1)} Z`;
-    }, [series, n, ddMax]);
-    const linePath = useMemo_btc(() => {
-      if (n < 2) return "";
-      return series.map((d, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(d.drawdown || 0).toFixed(1)}`).join(" ");
-    }, [series, n, ddMax]);
-    const xTickIdx = useMemo_btc(() => {
-      if (n <= 1) return n === 1 ? [0] : [];
-      const step = Math.max(1, Math.ceil(n / 8));
-      const idx = [];
-      for (let i = 0; i < n; i += step) idx.push(i);
-      if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
-      return idx;
-    }, [n]);
-    const onMove = (e) => {
-      if (!n || !svgRef.current) return;
-      const rect = svgRef.current.getBoundingClientRect();
-      const px = (e.clientX - rect.left) * (W / rect.width);
-      const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
-      const i = Math.round(frac * (n - 1));
-      if (i >= 0 && i < n) setHover(i);
-      else setHover(null);
-    };
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--red)" } }), "\uC5B8\uB354\uC6CC\uD130 \u2014 Drawdown"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uACE0\uC810 \uB300\uBE44 \uBC18\uB0A9\uC561(\uC6D0)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Mini, { label: "\uCD5C\uB300\uB099\uD3ED", value: maxDd ? fmtMoney(maxDd.drawdown) : "\u2014", color: maxDd ? "var(--red)" : void 0 }), maxDd && /* @__PURE__ */ React.createElement(
-      Mini,
-      {
-        label: "\uB099\uD3ED \uAD6C\uAC04",
-        value: `${_btDateLabel(maxDd.start_date)}~${_btDateLabel(maxDd.trough_date)}`,
-        sub: maxDd.recovery_date ? `\uD68C\uBCF5 ${_btDateLabel(maxDd.recovery_date)}` : "\uBBF8\uD68C\uBCF5"
-      }
-    )), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        ref: svgRef,
-        viewBox: `0 0 ${W} ${H}`,
-        preserveAspectRatio: "none",
-        onMouseMove: onMove,
-        onMouseLeave: () => setHover(null)
-      },
-      /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "bt-uw-grad", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#ff6b6b", stopOpacity: "0" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#ff6b6b", stopOpacity: "0.42" }))),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT, y2: padT, stroke: "var(--line-2)", strokeWidth: "1" }),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: padT + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: padT + innerH + 3, textAnchor: "end", fill: "var(--red)" }, "\u2212", _btMoneyTick(ddMax)),
-      _btAxisTicks(0, ddMax, 5).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - ddMax) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `uyl${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: y(tv), y2: y(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(tv) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "\u2212", _btMoneyTick(tv)))),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      n > 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: areaPath, fill: "url(#bt-uw-grad)" }), /* @__PURE__ */ React.createElement("path", { d: linePath, fill: "none", stroke: "var(--red)", strokeWidth: "1.4", opacity: "0.85" })),
-      xTickIdx.map((i, k) => /* @__PURE__ */ React.createElement("text", { key: `ux${i}`, className: "chart-axis-text", x: x(i), y: H - 10, textAnchor: "middle" }, series[i] ? _btDateLabelY(series[i].date, k > 0 && series[xTickIdx[k - 1]] ? series[xTickIdx[k - 1]].date : null) : "")),
-      hover != null && series[hover] && /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: x(hover),
-          x2: x(hover),
-          y1: padT,
-          y2: padT + innerH,
-          stroke: "rgba(255,255,255,0.14)",
-          strokeWidth: "1"
-        }
-      )
-    ), hover != null && series[hover] && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      top: 16,
-      right: 16,
-      background: "var(--bg-0)",
-      border: "1px solid var(--line-2)",
-      borderRadius: 6,
-      padding: "8px 10px",
-      fontFamily: "var(--mono)",
-      fontSize: 11,
-      minWidth: 160,
-      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
-      pointerEvents: "none"
-    } }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, _btDateLabel(series[hover].date)), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--red)" } }, "\u2212", _btMoneyTick(series[hover].drawdown)))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uAC70\uB798\uAC00 \uB204\uC801\uB418\uBA74 \uC5B8\uB354\uC6CC\uD130 \uACE1\uC120\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4" }))));
-  }
-  var _BT_METRIC_CARDS = [
-    { key: "trade_count", label: "\uAC70\uB798\uC218", fmt: (v) => fmtInt(v) },
-    { key: "win_rate", label: "\uC2B9\uB960", fmt: (v) => fmtPct(v) },
-    { key: "total_profit_pct", label: "\uC218\uC775\uB960\uD569\uACC4", fmt: (v) => fmtPct(v), signed: true },
-    { key: "total_profit_krw", label: "\uC218\uC775\uAE08", fmt: (v) => fmtMoney(v), signed: true },
-    { key: "mdd_pct", label: "MDD", fmt: (v) => fmtPct(v), risk: true },
-    { key: "cagr", label: "CAGR", fmt: (v) => fmtPct(v), signed: true }
-  ];
-  function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compareView, onCloseCompare }) {
-    const [result, setResult] = useState_btc(null);
-    const [loading, setLoading] = useState_btc(false);
-    const [err, setErr] = useState_btc("");
-    const [range, setRange] = useState_btc(null);
-    const [mc, setMc] = useState_btc(null);
-    const [mcLoading, setMcLoading] = useState_btc(false);
-    const [fullscreen, setFullscreen] = useState_btc(false);
-    useEffect_btc(() => {
-      if (!fullscreen) return void 0;
-      const onKey = (e) => {
-        if (e.key === "Escape") setFullscreen(false);
-      };
-      window.addEventListener("keydown", onKey);
-      const prevOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        window.removeEventListener("keydown", onKey);
-        document.body.style.overflow = prevOverflow;
-      };
-    }, [fullscreen]);
-    const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
-    const hasSource = !!jobId || isEvo;
-    const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
-    const load = useCallback_btc(() => {
-      if (isDemo || !baseUrl || !hasSource) {
-        setResult(null);
-        return;
-      }
-      setLoading(true);
-      setErr("");
-      let url;
-      if (jobId) {
-        url = baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId);
-        if (range) {
-          url += "&t_start=" + range.t_start + "&t_end=" + range.t_end;
-        }
-      } else {
-        url = baseUrl + "/bt/result?run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
-      }
-      _btFetchJson(url, 8e3).then((j) => {
-        setResult(j);
-        if (!(j && j.available)) setErr("\uACB0\uACFC\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4");
-      }).catch((e) => {
-        setResult(null);
-        setErr(String(e));
-      }).finally(() => setLoading(false));
-    }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
-    const loadMc = useCallback_btc(() => {
-      if (isDemo || !baseUrl || !jobId) {
-        setMc(null);
-        return;
-      }
-      setMcLoading(true);
-      let url = baseUrl + "/bt/analysis/montecarlo?job_id=" + encodeURIComponent(jobId) + "&n=2000";
-      if (range) {
-        url += "&t_start=" + range.t_start + "&t_end=" + range.t_end;
-      }
-      _btFetchJson(url, 12e3).then((j) => setMc(j && j.montecarlo || null)).catch(() => setMc(null)).finally(() => setMcLoading(false));
-    }, [baseUrl, isDemo, jobId, range]);
-    useEffect_btc(() => {
-      load();
-    }, [load]);
-    useEffect_btc(() => {
-      setRange(null);
-      setMc(null);
-    }, [sourceKey]);
-    useEffect_btc(() => {
-      if (jobId && result && result.available && result.status !== "no_trades") {
-        loadMc();
-      }
-    }, [result, loadMc, jobId]);
-    const onBrush = useCallback_btc((t_start, t_end) => {
-      if (!jobId) {
-        return;
-      }
-      setRange({ t_start, t_end });
-    }, [jobId]);
-    const onBrushClear = useCallback_btc(() => {
-      setRange(null);
-    }, []);
-    if (!hasSource) {
-      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uACB0\uACFC \xB7 \uBD84\uC11D")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC67C\uCABD\uC5D0\uC11C \uBC31\uD14C\uC2A4\uD2B8\uB97C \uC2E4\uD589\uD558\uAC70\uB098 \uC7A1 \uC774\uB825\uC744 \uC120\uD0DD\uD558\uBA74 \uACB0\uACFC\xB7\uBD84\uC11D\uC774 \uC5EC\uAE30\uC5D0 \uD45C\uC2DC\uB429\uB2C8\uB2E4.")));
-    }
-    if (loading && !result) {
-      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uACB0\uACFC \xB7 \uBD84\uC11D")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uACB0\uACFC \uB85C\uB529 \uC911\u2026")));
-    }
-    if (err || !result || !result.available) {
-      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uACB0\uACFC \xB7 \uBD84\uC11D")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: "var(--red)" } }, err || "\uACB0\uACFC \uC5C6\uC74C", /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: load }, "\uC7AC\uC2DC\uB3C4")))));
-    }
-    if (result.status === "no_trades") {
-      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uACB0\uACFC \xB7 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("span", { className: "badge warn" }, "\uAC70\uB798 0\uAC74")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "empty", style: { padding: "28px 24px" } }, /* @__PURE__ */ React.createElement("h2", { style: { color: "var(--amber)" } }, "\uAC70\uB798 0\uAC74"), /* @__PURE__ */ React.createElement("p", null, result.message || "\uC804\uB7B5\uC774 \uD574\uB2F9 \uAE30\uAC04\uC5D0 \uB9E4\uC218 \uC2E0\uD638\uB97C \uB0B4\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4. \uC5D0\uB7EC\uAC00 \uC544\uB2D9\uB2C8\uB2E4 \u2014 \uC870\uAC74\uC2DD/\uAE30\uAC04\uC744 \uC870\uC815\uD574 \uBCF4\uC138\uC694."))));
-    }
-    const analysis = result.analysis || {};
-    const metrics = result.metrics || {};
-    const summary = analysis.summary || {};
-    const metricVal = (key) => {
-      if (metrics[key] != null) return metrics[key];
-      const map = {
-        trade_count: summary.trade_count,
-        win_rate: summary.win_rate,
-        total_profit_pct: summary.total_profit_pct,
-        total_profit_krw: summary.total_profit_krw,
-        mdd_pct: summary.max_drawdown_pct,
-        cagr: void 0
-      };
-      return map[key];
-    };
-    const distribution = analysis.distribution || {};
-    const insights = analysis.insights || [];
-    const topC = distribution.top_contributors || [];
-    const botC = distribution.bottom_contributors || [];
-    const dailyPnl = ((analysis.equity || {}).daily || []).map((d) => d.pnl || 0);
-    const orderflow = analysis.orderflow || {};
-    const stats = analysis.stats || [];
-    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, range && /* @__PURE__ */ React.createElement("div", { className: "bt-range-bar" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911 \u2014 ", _btDateLabel(Math.floor(range.t_start / 1e6)), "~", _btDateLabel(Math.floor(range.t_end / 1e6)), result.ranged && analysis.trade_count != null ? ` \xB7 ${analysis.trade_count}\uAC70\uB798` : ""), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear, style: { marginLeft: "auto" } }, "\uC804\uCCB4\uB85C \uBCF5\uADC0")), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: isEvo ? "var(--violet)" : "var(--teal)" } }), isEvo ? "\uD575\uC2EC \uBA54\uD2B8\uB9AD \xB7 \uC9C4\uD654 \uC138\uB300" : "\uD575\uC2EC \uBA54\uD2B8\uB9AD", isEvo && /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: "mono tag-slim",
-        style: { fontSize: 9.5, color: "var(--violet)", marginLeft: 6 },
-        title: "\uC9C4\uD654 run \uC138\uB300 \uBD84\uC11D \u2014 loop_runs.db \uC77D\uAE30 \uC804\uC6A9"
-      },
-      evoSource.run_id,
-      "/g",
-      evoSource.gen_no
-    )), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, onSetCompareA && jobId && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        onClick: () => onSetCompareA(jobId),
-        title: "\uC774 \uC7A1\uC744 A/B \uBE44\uAD50\uC758 \uAE30\uC900(A)\uC73C\uB85C \uACE0\uC815"
-      },
-      "\u2295 \uBE44\uAD50 \uAE30\uC900(A)"
-    ), isEvo && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        onClick: () => {
-          const u = baseUrl + "/bt/report?run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
-          try {
-            window.open(u, "_blank", "noopener");
-          } catch (e) {
-          }
-        },
-        title: "\uC774 \uC138\uB300\uC758 \uC790\uAE09\uC790\uC871 HTML \uB9AC\uD3EC\uD2B8\uB97C \uC0C8 \uD0ED\uC73C\uB85C \uC5F4\uAE30"
-      },
-      "\u{1F4C4} \uB9AC\uD3EC\uD2B8"
-    ), ((analysis.equity || {}).daily || []).length > 0 && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        onClick: () => _btDownloadAnalysisCsv(analysis),
-        title: "\uC77C\uBCC4 \uC218\uC775\uACE1\uC120(\uB0A0\uC9DC\xB7\uC77C\uBCC4\uC190\uC775\xB7\uB204\uC801\uC218\uC775)\uC744 CSV \uB85C \uB0B4\uB824\uBC1B\uAE30 \u2014 \uD45C\uACC4\uC0B0 \uB3C4\uAD6C\uC5D0\uC11C \uCD94\uAC00 \uBD84\uC11D"
-      },
-      "\u2B07 CSV"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        onClick: () => setFullscreen(true),
-        title: "\uC804\uCCB4 \uD654\uBA74\uC5D0\uC11C \uB354 \uB9CE\uC740 \uBD84\uC11D \uADF8\uB798\uD504\uB97C \uD55C\uB208\uC5D0 \uBCF4\uAE30 (Esc \uB85C \uB2EB\uAE30)"
-      },
-      "\u26F6 \uC804\uCCB4\uD654\uBA74 \uBD84\uC11D"
-    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: load, disabled: loading }, loading ? "\uB85C\uB529\u2026" : "\u21BB"))), /* @__PURE__ */ React.createElement("div", { className: "bt-summary-row", style: { gridTemplateColumns: "repeat(6, 1fr)" } }, _BT_METRIC_CARDS.map((m) => {
-      const v = metricVal(m.key);
-      const num = typeof v === "number" ? v : null;
-      return /* @__PURE__ */ React.createElement(_BtMetricCard, { key: m.key, meta: m, num, dailyPnl });
-    }))), compareView && /* @__PURE__ */ React.createElement(BtCompareView, { cmp: compareView, onClose: onCloseCompare }), /* @__PURE__ */ React.createElement(
-      BtEquityChart,
-      {
-        equity: analysis.equity,
-        onBrush,
-        brushActive: !!range,
-        onBrushClear
-      }
-    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: loadMc }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 1 }), /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", open: false }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uCD94\uAC00 \uBD84\uC11D \uADF8\uB798\uD504 \u2014 \uB864\uB9C1 \uC9C0\uD45C \xB7 \uC6D4\uBCC4 \uCE98\uB9B0\uB354 \xB7 \uB204\uC801 \uAC70\uB798 (\uC804\uCCB4\uD654\uBA74 \uAD8C\uC7A5)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, marginTop: 10 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }))), (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC })))), /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights }), fullscreen && /* @__PURE__ */ React.createElement(
-      _BtFullscreenAnalysis,
-      {
-        analysis,
-        distribution,
-        orderflow,
-        stats,
-        insights,
-        mc,
-        mcLoading,
-        onRunMc: loadMc,
-        range,
-        onBrush,
-        onBrushClear,
-        onClose: () => setFullscreen(false)
-      }
-    ));
-  }
-  function _BtFullscreenAnalysis({
-    analysis,
-    distribution,
-    orderflow,
-    stats,
-    insights,
-    mc,
-    mcLoading,
-    onRunMc,
-    range,
-    onBrush,
-    onBrushClear,
-    onClose
-  }) {
-    return /* @__PURE__ */ React.createElement("div", { style: {
-      position: "fixed",
-      inset: 0,
-      zIndex: 4e3,
-      background: "var(--bg-1, #0d1117)",
-      overflowY: "auto",
-      padding: "16px 22px 40px"
-    } }, /* @__PURE__ */ React.createElement("div", { style: {
-      position: "sticky",
-      top: 0,
-      zIndex: 2,
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      padding: "10px 4px 12px",
-      marginBottom: 10,
-      background: "var(--bg-1, #0d1117)",
-      borderBottom: "1px solid var(--line-2)"
-    } }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), /* @__PURE__ */ React.createElement("strong", { style: { fontSize: 15, color: "var(--ink-0)" } }, "\uC804\uCCB4\uD654\uBA74 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uB354 \uB9CE\uC740 \uADF8\uB798\uD504\uB85C \uC778\uC0AC\uC774\uD2B8 \u2014 2~3\uCEEC\uB7FC \uD655\uB300 \uBC30\uCE58"), range && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911"), /* @__PURE__ */ React.createElement("div", { style: { marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" } }, range && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear }, "\uC804\uCCB4\uB85C \uBCF5\uADC0"), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn sm",
-        onClick: onClose,
-        style: { borderColor: "var(--teal-dim)", color: "var(--teal)" }
-      },
-      "\u2715 \uB2EB\uAE30 (Esc)"
-    ))), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights })), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(440px, 1fr))", gap: 14, marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(
-      BtEquityChart,
-      {
-        equity: analysis.equity,
-        onBrush,
-        brushActive: !!range,
-        onBrushClear
-      }
-    )), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 2 })), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 14 } }, /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats })));
-  }
-  function _BtMetricCard({ meta, num, dailyPnl }) {
-    const animated = _useCountUp(num != null ? num : 0, 600);
-    const shown = num != null ? animated : null;
-    let color;
-    if (meta.risk) color = "var(--red)";
-    else if (meta.signed && num != null) color = num > 0 ? "var(--teal)" : num < 0 ? "var(--red)" : void 0;
-    if ((meta.key === "win_rate" || meta.key === "mdd_pct") && num != null) {
-      const gaugeColor = meta.key === "mdd_pct" ? "var(--red)" : "var(--teal)";
-      return /* @__PURE__ */ React.createElement("div", { className: "bt-metric-card" }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement(
-        _BtArcGauge,
-        {
-          value: shown,
-          max: 100,
-          color: gaugeColor,
-          label: meta.fmt(shown != null ? shown : 0)
-        }
-      ));
-    }
-    if (meta.key === "total_profit_krw") {
-      return /* @__PURE__ */ React.createElement("div", { className: "bt-metric-card" }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement("span", { className: "summary-val", style: { color } }, shown != null ? meta.fmt(shown) : "\u2014"), /* @__PURE__ */ React.createElement(_BtSparkline, { values: dailyPnl }));
-    }
-    return /* @__PURE__ */ React.createElement("div", { className: "bt-metric-card" }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement("span", { className: "summary-val", style: { color } }, shown != null ? meta.fmt(shown) : "\u2014"));
-  }
-  function BtContribTable({ title, rows }) {
-    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", letterSpacing: ".1em", textTransform: "uppercase", marginBottom: 6 } }, title), !rows || rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uB370\uC774\uD130 \uC5C6\uC74C") : /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, rows.map((r, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { display: "flex", alignItems: "center", gap: 8, padding: "4px 6px", borderBottom: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-1)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, r.name), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", flexShrink: 0 } }, r.trades, "\uAC74"), /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: "mono " + (r.profit_krw > 0 ? "num-pos" : r.profit_krw < 0 ? "num-neg" : ""),
-        style: { fontSize: 11, flexShrink: 0, width: 96, textAlign: "right" }
-      },
-      fmtMoney(r.profit_krw)
-    )))));
-  }
-  var _BT_SEVERITY = {
-    critical: { color: "var(--red)", bg: "rgba(255,107,107,0.07)", border: "rgba(255,107,107,0.3)", label: "\uC704\uD5D8" },
-    warning: { color: "var(--amber)", bg: "rgba(240,179,90,0.07)", border: "rgba(240,179,90,0.3)", label: "\uC8FC\uC758" },
-    info: { color: "var(--teal)", bg: "rgba(76,214,179,0.06)", border: "rgba(76,214,179,0.28)", label: "\uC815\uBCF4" }
-  };
-  function BtInsightsPanel({ insights }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uC778\uC0AC\uC774\uD2B8"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uADDC\uCE59 \uAE30\uBC18 \uC790\uB3D9 \uC9C4\uB2E8")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 8 } }, !insights || insights.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC0DD\uC131\uB41C \uC778\uC0AC\uC774\uD2B8\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 (\uAC70\uB798 \uBD80\uC871 \uB610\uB294 \uD2B9\uC774\uC0AC\uD56D \uC5C6\uC74C).") : insights.map((ins, i) => {
-      const sev = _BT_SEVERITY[ins.severity] || _BT_SEVERITY.info;
-      const sevClass = "bt-insight-card sev-" + (_BT_SEVERITY[ins.severity] ? ins.severity : "info");
-      return /* @__PURE__ */ React.createElement("div", { key: i, className: sevClass, style: {
-        border: "1px solid " + sev.border,
-        background: sev.bg,
-        borderRadius: 6,
-        padding: "9px 11px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 3
-      } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("span", { className: "tag-slim", style: { color: sev.color, borderColor: sev.border } }, sev.label), /* @__PURE__ */ React.createElement("strong", { style: { fontSize: 12.5, color: "var(--ink-0)" } }, ins.title)), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, color: "var(--ink-1)", lineHeight: 1.5 } }, ins.detail));
-    })));
-  }
   function BtMonteCarloChart({ mc, loading, onRun }) {
     const fan = mc && mc.fan || [];
     const observed = mc && mc.observed;
@@ -7171,6 +7080,95 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       border: "1px solid rgba(255,107,107,0.5)"
     } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 4, height: 18, width: 2, background: "var(--red)", left: fx(mddPct.p50) + "%" } }), observedPct != null && /* @__PURE__ */ React.createElement("div", { title: "\uC2E4\uCE21 MDD", style: { position: "absolute", top: 2, height: 22, width: 2, background: "var(--amber)", left: Math.max(0, Math.min(100, fx(observedPct))) + "%" } })), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { display: "flex", justifyContent: "space-between", fontSize: 9.5, color: "var(--ink-3)", marginTop: 3 } }, /* @__PURE__ */ React.createElement("span", null, "p5 ", mddPct.p5.toFixed(1), "%"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--amber)" } }, observedPct != null ? `\uC2E4\uCE21 ${observedPct.toFixed(1)}%` : ""), /* @__PURE__ */ React.createElement("span", null, "p95 ", mddPct.p95.toFixed(1), "%")));
   }
+  var _BT_MONTHS = ["1\uC6D4", "2\uC6D4", "3\uC6D4", "4\uC6D4", "5\uC6D4", "6\uC6D4", "7\uC6D4", "8\uC6D4", "9\uC6D4", "10\uC6D4", "11\uC6D4", "12\uC6D4"];
+  function BtMonthlyCalendar({ monthly }) {
+    const years = monthly && monthly.years || [];
+    const cells = monthly && monthly.cells || [];
+    const [hover, setHover] = useState_btc(null);
+    const cellMap = useMemo_btc(() => {
+      const m = {};
+      for (const c of cells) m[c.year + "_" + c.month] = c;
+      return m;
+    }, [cells]);
+    const maxAbs = Math.max(1, ...cells.map((c) => Math.abs(c.profit_krw || 0)));
+    const cellColor = (c) => {
+      if (!c) return "var(--bg-0)";
+      const t = Math.min(1, Math.abs(c.profit_krw || 0) / maxAbs);
+      if ((c.profit_krw || 0) >= 0) return `rgba(76,214,179,${(0.12 + 0.66 * t).toFixed(3)})`;
+      return `rgba(255,107,107,${(0.12 + 0.66 * t).toFixed(3)})`;
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC6D4\uBCC4 \uC218\uC775 \uCE98\uB9B0\uB354"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uB9E4\uB3C4\uC77C \uAE30\uC900 \xB7 \uC6D4\uBCC4 \uC190\uC775 \uD569")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, cells.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { position: "relative", minHeight: 120 } }, /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uAC70\uB798\uAC00 \uB204\uC801\uB418\uBA74 \uC6D4\uBCC4 \uC218\uC775 \uCE98\uB9B0\uB354\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4" })) : /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { style: { borderCollapse: "separate", borderSpacing: 3, fontFamily: "var(--mono)" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { width: 44 } }), _BT_MONTHS.map((m, i) => /* @__PURE__ */ React.createElement("th", { key: i, style: { fontSize: 9.5, color: "var(--ink-3)", fontWeight: 400, padding: "0 1px", whiteSpace: "nowrap" } }, m)))), /* @__PURE__ */ React.createElement("tbody", null, years.map((yr) => /* @__PURE__ */ React.createElement("tr", { key: yr }, /* @__PURE__ */ React.createElement("td", { style: { fontSize: 11, color: "var(--ink-2)", textAlign: "center", paddingRight: 4 } }, yr), _BT_MONTHS.map((_, mi) => {
+      const month = mi + 1;
+      const key = yr + "_" + month;
+      const c = cellMap[key];
+      return /* @__PURE__ */ React.createElement(
+        "td",
+        {
+          key: mi,
+          onMouseEnter: () => c && setHover(key),
+          onMouseLeave: () => setHover(null),
+          title: c ? `${yr}\uB144 ${month}\uC6D4 \xB7 ${fmtMoney(c.profit_krw)} \xB7 ${c.trades}\uAC74 \xB7 ${fmtPct(c.win_rate)}` : "",
+          style: {
+            width: 48,
+            height: 30,
+            borderRadius: 4,
+            background: cellColor(c),
+            border: hover === key ? "1px solid var(--ink-0)" : "1px solid var(--line-1)",
+            textAlign: "center",
+            fontSize: 9,
+            lineHeight: 1.25,
+            color: c ? "var(--ink-0)" : "var(--ink-3)"
+          }
+        },
+        c ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9.5 } }, _btMoneyTick(c.profit_krw)), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 8, color: "var(--ink-2)" } }, c.trades, "\uAC74")) : ""
+      );
+    }))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, marginTop: 10, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(76,214,179,0.78)", label: "\uC774\uC775 \uC6D4" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(255,107,107,0.78)", label: "\uC190\uC2E4 \uC6D4" }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC140 = \uC190\uC775 \xB7 \uAC70\uB798\uC218")))));
+  }
+
+  // ../frontend/bt-stat-panels.jsx
+  function BtExitReasonPanel({ rows }) {
+    const items = Array.isArray(rows) ? rows : [];
+    const maxAbs = Math.max(1, ...items.map((r) => Math.abs(r.total_pnl || 0)));
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uB9E4\uB3C4\uC870\uAC74\uBCC4 \uC190\uC775 \uBD84\uD574"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uCCAD\uC0B0\uC0AC\uC720 \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, items.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uB9E4\uB3C4\uC870\uAC74 \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4") : /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4 } }, items.map((r, i) => {
+      const frac = Math.abs(r.total_pnl || 0) / maxAbs;
+      const pos = (r.total_pnl || 0) >= 0;
+      return /* @__PURE__ */ React.createElement("div", { key: i, className: "bt-exit-row" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-1)", width: 96, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 } }, r.reason), /* @__PURE__ */ React.createElement("div", { className: "bt-exit-track" }, /* @__PURE__ */ React.createElement("div", { className: "bt-exit-fill", style: {
+        width: (frac * 100).toFixed(1) + "%",
+        background: pos ? "var(--teal)" : "var(--red)",
+        opacity: 0.75
+      } })), /* @__PURE__ */ React.createElement("span", { className: "mono " + (pos ? "num-pos" : "num-neg"), style: { fontSize: 10.5, width: 88, textAlign: "right", flexShrink: 0 } }, fmtMoney(r.total_pnl)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", width: 78, textAlign: "right", flexShrink: 0 } }, r.count, "\uAC74\xB7", fmtPct(r.win_rate)));
+    }))));
+  }
+  function BtContribTable({ title, rows }) {
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", letterSpacing: ".1em", textTransform: "uppercase", marginBottom: 6 } }, title), !rows || rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uB370\uC774\uD130 \uC5C6\uC74C") : /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, rows.map((r, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { display: "flex", alignItems: "center", gap: 8, padding: "4px 6px", borderBottom: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-1)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, r.name), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", flexShrink: 0 } }, r.trades, "\uAC74"), /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: "mono " + (r.profit_krw > 0 ? "num-pos" : r.profit_krw < 0 ? "num-neg" : ""),
+        style: { fontSize: 11, flexShrink: 0, width: 96, textAlign: "right" }
+      },
+      fmtMoney(r.profit_krw)
+    )))));
+  }
+  var _BT_SEVERITY = {
+    critical: { color: "var(--red)", bg: "rgba(255,107,107,0.07)", border: "rgba(255,107,107,0.3)", label: "\uC704\uD5D8" },
+    warning: { color: "var(--amber)", bg: "rgba(240,179,90,0.07)", border: "rgba(240,179,90,0.3)", label: "\uC8FC\uC758" },
+    info: { color: "var(--teal)", bg: "rgba(76,214,179,0.06)", border: "rgba(76,214,179,0.28)", label: "\uC815\uBCF4" }
+  };
+  function BtInsightsPanel({ insights }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uC778\uC0AC\uC774\uD2B8"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uADDC\uCE59 \uAE30\uBC18 \uC790\uB3D9 \uC9C4\uB2E8")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 8 } }, !insights || insights.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC0DD\uC131\uB41C \uC778\uC0AC\uC774\uD2B8\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 (\uAC70\uB798 \uBD80\uC871 \uB610\uB294 \uD2B9\uC774\uC0AC\uD56D \uC5C6\uC74C).") : insights.map((ins, i) => {
+      const sev = _BT_SEVERITY[ins.severity] || _BT_SEVERITY.info;
+      const sevClass = "bt-insight-card sev-" + (_BT_SEVERITY[ins.severity] ? ins.severity : "info");
+      return /* @__PURE__ */ React.createElement("div", { key: i, className: sevClass, style: {
+        border: "1px solid " + sev.border,
+        background: sev.bg,
+        borderRadius: 6,
+        padding: "9px 11px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 3
+      } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("span", { className: "tag-slim", style: { color: sev.color, borderColor: sev.border } }, sev.label), /* @__PURE__ */ React.createElement("strong", { style: { fontSize: 12.5, color: "var(--ink-0)" } }, ins.title)), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, color: "var(--ink-1)", lineHeight: 1.5 } }, ins.detail));
+    })));
+  }
   function BtOrderflowPanel({ orderflow }) {
     const sep = orderflow && orderflow.separation || [];
     const wins = orderflow && orderflow.wins || {};
@@ -7228,231 +7226,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", width: 56 } }, r.kind === "weekday" ? "\uC694\uC77C" : "\uC2DC\uAC04\uB300"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-1)", width: 48 } }, r.label), /* @__PURE__ */ React.createElement("span", { className: pos ? "num-pos" : "num-neg", style: { width: 64, textAlign: "right" } }, r.mean > 0 ? "+" : "", r.mean.toFixed(2), "%"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", width: 56, textAlign: "right" } }, "n=", r.n), /* @__PURE__ */ React.createElement("span", { style: { flex: 1, textAlign: "right" } }, r.underpowered ? /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, "\uD45C\uBCF8 \uBD80\uC871") : r.significant ? /* @__PURE__ */ React.createElement("span", { style: { color: pos ? "var(--teal)" : "var(--red)" } }, "\uC720\uC758 (p=", r.p_value != null ? r.p_value.toFixed(3) : "\u2014", ")") : /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, "p=", r.p_value != null ? r.p_value.toFixed(3) : "\u2014")));
     })));
   }
-  function BtRollingChart({ rolling }) {
-    const series = rolling && rolling.series || [];
-    const window2 = rolling && rolling.window || 20;
-    const [hover, setHover] = useState_btc(null);
-    const svgRef = useRef_btc(null);
-    const W = 880, H = 260;
-    const padL = 48, padR = 52, padT = 18, padB = 30;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const n = series.length;
-    const x = (i) => n > 1 ? padL + i / (n - 1) * innerW : padL + innerW / 2;
-    const yWin = (v) => padT + innerH - Math.max(0, Math.min(100, v)) / 100 * innerH;
-    const payoffMax = Math.max(2, ...series.map((s) => s.payoff || 0));
-    const yPay = (v) => padT + innerH - Math.max(0, v) / payoffMax * innerH;
-    const winPath = useMemo_btc(
-      () => n < 2 ? "" : series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yWin(s.win_rate || 0).toFixed(1)}`).join(" "),
-      [series, n]
-    );
-    const payPath = useMemo_btc(
-      () => n < 2 ? "" : series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yPay(s.payoff || 0).toFixed(1)}`).join(" "),
-      [series, n, payoffMax]
-    );
-    const xTickIdx = useMemo_btc(() => {
-      if (n <= 1) return n === 1 ? [0] : [];
-      const step = Math.max(1, Math.ceil(n / 8));
-      const idx = [];
-      for (let i = 0; i < n; i += step) idx.push(i);
-      if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
-      return idx;
-    }, [n]);
-    const onMove = (e) => {
-      if (!n || !svgRef.current) return;
-      const rect = svgRef.current.getBoundingClientRect();
-      const px = (e.clientX - rect.left) * (W / rect.width);
-      const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
-      const i = Math.round(frac * (n - 1));
-      if (i >= 0 && i < n) setHover(i);
-      else setHover(null);
-    };
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uB864\uB9C1 \uC9C0\uD45C \u2014 \uC2B9\uB960 \xB7 Payoff"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "\uB864\uB9C1 \uC2B9\uB960 %" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--amber)", label: "\uB864\uB9C1 payoff \uBC30" }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
-      `${window2}\uAC70\uB798 \uC774\uB3D9\uCC3D \uAE30\uC900`,
-      "\uC88C\uCD95 = \uC2B9\uB960(%) \xB7 \uC6B0\uCD95 = payoff(\uD3C9\uADE0\uC774\uC775/\uD3C9\uADE0\uC190\uC2E4)",
-      "\uAD6C\uAC04\uBCC4 \uC804\uB7B5 \uC548\uC815\uC131 \uCD94\uC774 \uC9C4\uB2E8"
-    ] }), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        ref: svgRef,
-        viewBox: `0 0 ${W} ${H}`,
-        preserveAspectRatio: "none",
-        onMouseMove: onMove,
-        onMouseLeave: () => setHover(null)
-      },
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yWin(50), y2: yWin(50), stroke: "rgba(255,255,255,0.18)", strokeWidth: "1", strokeDasharray: "2 3" }),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yWin(50) + 3, textAnchor: "end", fill: "var(--ink-2)" }, "50%"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yWin(100) + 3, textAnchor: "end", fill: "var(--teal)" }, "100%"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yWin(0) + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0%"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yPay(payoffMax) + 3, textAnchor: "start", fill: "var(--amber)" }, payoffMax.toFixed(1), "\xD7"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yPay(1) + 3, textAnchor: "start", fill: "var(--ink-3)" }, "1\xD7"),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yPay(1), y2: yPay(1), stroke: "rgba(240,179,90,0.2)", strokeWidth: "1", strokeDasharray: "4 4" }),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      n > 1 && /* @__PURE__ */ React.createElement("path", { d: winPath, fill: "none", stroke: "var(--teal)", strokeWidth: "2" }),
-      n > 1 && /* @__PURE__ */ React.createElement("path", { d: payPath, fill: "none", stroke: "var(--amber)", strokeWidth: "1.6", strokeDasharray: "5 3", opacity: "0.9" }),
-      xTickIdx.map((i) => /* @__PURE__ */ React.createElement("text", { key: `rx${i}`, className: "chart-axis-text", x: x(i), y: H - 10, textAnchor: "middle" }, series[i] ? `#${series[i].index + 1}` : "")),
-      hover != null && series[hover] && /* @__PURE__ */ React.createElement("line", { x1: x(hover), x2: x(hover), y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.22)", strokeWidth: "1" })
-    ), hover != null && series[hover] && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      top: 16,
-      right: 16,
-      background: "var(--bg-0)",
-      border: "1px solid var(--line-2)",
-      borderRadius: 6,
-      padding: "8px 10px",
-      fontFamily: "var(--mono)",
-      fontSize: 11,
-      minWidth: 160,
-      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
-      pointerEvents: "none"
-    } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-2)", marginBottom: 4 } }, "\uAC70\uB798 #", series[hover].index + 1), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uC2B9\uB960"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--teal)" } }, fmtPct(series[hover].win_rate)), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "payoff"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--amber)" } }, (series[hover].payoff || 0).toFixed(2), "\xD7"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uD3C9\uADE0\uC190\uC775"), /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: series[hover].avg_pnl_pct > 0 ? "num-pos" : series[hover].avg_pnl_pct < 0 ? "num-neg" : "",
-        style: { textAlign: "right" }
-      },
-      series[hover].avg_pnl_pct.toFixed(2),
-      "%"
-    ))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: `\uAC70\uB798\uAC00 ${window2}\uAC74 \uC774\uC0C1 \uB204\uC801\uB418\uBA74 \uB864\uB9C1 \uC9C0\uD45C\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4` }))));
-  }
-  var _BT_MONTHS = ["1\uC6D4", "2\uC6D4", "3\uC6D4", "4\uC6D4", "5\uC6D4", "6\uC6D4", "7\uC6D4", "8\uC6D4", "9\uC6D4", "10\uC6D4", "11\uC6D4", "12\uC6D4"];
-  function BtMonthlyCalendar({ monthly }) {
-    const years = monthly && monthly.years || [];
-    const cells = monthly && monthly.cells || [];
-    const [hover, setHover] = useState_btc(null);
-    const cellMap = useMemo_btc(() => {
-      const m = {};
-      for (const c of cells) m[c.year + "_" + c.month] = c;
-      return m;
-    }, [cells]);
-    const maxAbs = Math.max(1, ...cells.map((c) => Math.abs(c.profit_krw || 0)));
-    const cellColor = (c) => {
-      if (!c) return "var(--bg-0)";
-      const t = Math.min(1, Math.abs(c.profit_krw || 0) / maxAbs);
-      if ((c.profit_krw || 0) >= 0) return `rgba(76,214,179,${(0.12 + 0.66 * t).toFixed(3)})`;
-      return `rgba(255,107,107,${(0.12 + 0.66 * t).toFixed(3)})`;
-    };
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC6D4\uBCC4 \uC218\uC775 \uCE98\uB9B0\uB354"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uB9E4\uB3C4\uC77C \uAE30\uC900 \xB7 \uC6D4\uBCC4 \uC190\uC775 \uD569")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, cells.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { position: "relative", minHeight: 120 } }, /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uAC70\uB798\uAC00 \uB204\uC801\uB418\uBA74 \uC6D4\uBCC4 \uC218\uC775 \uCE98\uB9B0\uB354\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4" })) : /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { style: { borderCollapse: "separate", borderSpacing: 3, fontFamily: "var(--mono)" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { width: 44 } }), _BT_MONTHS.map((m, i) => /* @__PURE__ */ React.createElement("th", { key: i, style: { fontSize: 9.5, color: "var(--ink-3)", fontWeight: 400, padding: "0 1px", whiteSpace: "nowrap" } }, m)))), /* @__PURE__ */ React.createElement("tbody", null, years.map((yr) => /* @__PURE__ */ React.createElement("tr", { key: yr }, /* @__PURE__ */ React.createElement("td", { style: { fontSize: 11, color: "var(--ink-2)", textAlign: "center", paddingRight: 4 } }, yr), _BT_MONTHS.map((_, mi) => {
-      const month = mi + 1;
-      const key = yr + "_" + month;
-      const c = cellMap[key];
-      return /* @__PURE__ */ React.createElement(
-        "td",
-        {
-          key: mi,
-          onMouseEnter: () => c && setHover(key),
-          onMouseLeave: () => setHover(null),
-          title: c ? `${yr}\uB144 ${month}\uC6D4 \xB7 ${fmtMoney(c.profit_krw)} \xB7 ${c.trades}\uAC74 \xB7 ${fmtPct(c.win_rate)}` : "",
-          style: {
-            width: 48,
-            height: 30,
-            borderRadius: 4,
-            background: cellColor(c),
-            border: hover === key ? "1px solid var(--ink-0)" : "1px solid var(--line-1)",
-            textAlign: "center",
-            fontSize: 9,
-            lineHeight: 1.25,
-            color: c ? "var(--ink-0)" : "var(--ink-3)"
-          }
-        },
-        c ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9.5 } }, _btMoneyTick(c.profit_krw)), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 8, color: "var(--ink-2)" } }, c.trades, "\uAC74")) : ""
-      );
-    }))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, marginTop: 10, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(76,214,179,0.78)", label: "\uC774\uC775 \uC6D4" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(255,107,107,0.78)", label: "\uC190\uC2E4 \uC6D4" }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC140 = \uC190\uC775 \xB7 \uAC70\uB798\uC218")))));
-  }
-  function BtCumulativeTradesChart({ data }) {
-    const series = data && data.series || [];
-    const [hover, setHover] = useState_btc(null);
-    const svgRef = useRef_btc(null);
-    const W = 880, H = 280;
-    const padL = 52, padR = 60, padT = 18, padB = 30;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const n = series.length;
-    const x = (i) => n > 1 ? padL + i / (n - 1) * innerW : padL + innerW / 2;
-    const maxTrades = Math.max(1, ...series.map((s) => s.cum_trades || 0));
-    const yTrades = (v) => padT + innerH - v / maxTrades * innerH;
-    const profits = series.map((s) => s.cum_profit_krw || 0);
-    const pMax = Math.max(0, ...profits);
-    const pMin = Math.min(0, ...profits);
-    const pRange = pMax - pMin || 1;
-    const yProfit = (v) => padT + innerH - (v - pMin) / pRange * innerH;
-    const tradesArea = useMemo_btc(() => {
-      if (n < 2) return "";
-      const top = series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yTrades(s.cum_trades || 0).toFixed(1)}`).join(" ");
-      return `${top} L ${x(n - 1).toFixed(1)} ${(padT + innerH).toFixed(1)} L ${x(0).toFixed(1)} ${(padT + innerH).toFixed(1)} Z`;
-    }, [series, n, maxTrades]);
-    const profitPath = useMemo_btc(
-      () => n < 2 ? "" : series.map((s, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${yProfit(s.cum_profit_krw || 0).toFixed(1)}`).join(" "),
-      [series, n, pMin, pRange]
-    );
-    const xTickIdx = useMemo_btc(() => {
-      if (n <= 1) return n === 1 ? [0] : [];
-      const step = Math.max(1, Math.ceil(n / 8));
-      const idx = [];
-      for (let i = 0; i < n; i += step) idx.push(i);
-      if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
-      return idx;
-    }, [n]);
-    const onMove = (e) => {
-      if (!n || !svgRef.current) return;
-      const rect = svgRef.current.getBoundingClientRect();
-      const px = (e.clientX - rect.left) * (W / rect.width);
-      const frac = Math.max(0, Math.min(1, (px - padL) / innerW));
-      const i = Math.round(frac * (n - 1));
-      if (i >= 0 && i < n) setHover(i);
-      else setHover(null);
-    };
-    const profitZeroY = yProfit(0);
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uB204\uC801 \uAC70\uB798 \xB7 \uB204\uC801 \uC190\uC775"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--blue)", label: "\uB204\uC801 \uAC70\uB798\uC218" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--amber)", label: "\uB204\uC801 \uC190\uC775 \u20A9" }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
-      "x\uCD95 = \uAC70\uB798 \uC21C\uC11C(\uCCB4\uACB0 \uC21C)",
-      "\uC88C\uCD95 = \uB204\uC801 \uAC70\uB798\uC218 \xB7 \uC6B0\uCD95 = \uB204\uC801 \uC2E4\uD604\uC190\uC775",
-      "\uCCB4\uACB0 \uBE48\uB3C4\uC640 \uC790\uBCF8 \uC99D\uAC00\uB97C \uD55C \uD654\uBA74\uC5D0\uC11C \uBE44\uAD50"
-    ] }), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        ref: svgRef,
-        viewBox: `0 0 ${W} ${H}`,
-        preserveAspectRatio: "none",
-        onMouseMove: onMove,
-        onMouseLeave: () => setHover(null)
-      },
-      /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "bt-ct-grad", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#5b8def", stopOpacity: "0.34" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#5b8def", stopOpacity: "0.02" }))),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: profitZeroY, y2: profitZeroY, stroke: "rgba(255,255,255,0.28)", strokeWidth: "1", strokeDasharray: "2 3" }),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: profitZeroY + 3, textAnchor: "start", fill: "var(--ink-2)" }, "0"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yTrades(maxTrades) + 3, textAnchor: "end", fill: "var(--blue)" }, maxTrades),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yTrades(0) + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0"),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yProfit(pMax) + 3, textAnchor: "start", fill: "var(--amber)" }, _btMoneyTick(pMax)),
-      /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR + 6, y: yProfit(pMin) + 3, textAnchor: "start", fill: "var(--amber)" }, _btMoneyTick(pMin)),
-      _btAxisTicks(pMin, pMax, 5).map((tv, i) => Math.abs(tv - pMax) < 1e-9 || Math.abs(tv - pMin) < 1e-9 || Math.abs(tv) < 1e-9 ? null : /* @__PURE__ */ React.createElement("text", { key: `cyr${i}`, className: "chart-axis-text", x: W - padR + 6, y: yProfit(tv) + 3, textAnchor: "start", fill: "var(--ink-3)" }, _btMoneyTick(tv))),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      n > 1 && /* @__PURE__ */ React.createElement("path", { d: tradesArea, fill: "url(#bt-ct-grad)", stroke: "var(--blue)", strokeWidth: "1.2", opacity: "0.85" }),
-      n > 1 && /* @__PURE__ */ React.createElement("path", { d: profitPath, fill: "none", stroke: "var(--amber)", strokeWidth: "2" }),
-      xTickIdx.map((i) => /* @__PURE__ */ React.createElement("text", { key: `cx${i}`, className: "chart-axis-text", x: x(i), y: H - 10, textAnchor: "middle" }, series[i] ? `#${series[i].index}` : "")),
-      hover != null && series[hover] && /* @__PURE__ */ React.createElement("line", { x1: x(hover), x2: x(hover), y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.22)", strokeWidth: "1" })
-    ), hover != null && series[hover] && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      top: 16,
-      right: 16,
-      background: "var(--bg-0)",
-      border: "1px solid var(--line-2)",
-      borderRadius: 6,
-      padding: "8px 10px",
-      fontFamily: "var(--mono)",
-      fontSize: 11,
-      minWidth: 170,
-      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
-      pointerEvents: "none"
-    } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-2)", marginBottom: 4 } }, "\uAC70\uB798 #", series[hover].index), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801 \uAC70\uB798"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--blue)" } }, series[hover].cum_trades, "\uAC74"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801 \uC190\uC775"), /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: series[hover].cum_profit_krw > 0 ? "num-pos" : series[hover].cum_profit_krw < 0 ? "num-neg" : "",
-        style: { textAlign: "right" }
-      },
-      fmtMoney(series[hover].cum_profit_krw)
-    ))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uAC70\uB798\uAC00 \uB204\uC801\uB418\uBA74 \uB204\uC801 \uAC70\uB798\xB7\uC190\uC775 \uACE1\uC120\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4" }))));
-  }
   var _BT_CMP_METRICS = [
     { key: "trade_count", label: "\uAC70\uB798\uC218", fmt: (v) => fmtInt(v), higher: true },
     { key: "win_rate", label: "\uC2B9\uB960", fmt: (v) => fmtPct(v), higher: true },
@@ -7503,12 +7276,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       return /* @__PURE__ */ React.createElement("tr", { key: m.key, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "left", padding: "5px 8px", color: "var(--ink-2)" } }, m.label), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px", color: aWin ? "var(--teal)" : "var(--ink-1)", fontWeight: aWin ? 700 : 400 } }, typeof va === "number" ? m.fmt(va) : "\u2014"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px", color: bWin ? "var(--violet)" : "var(--ink-1)", fontWeight: bWin ? 700 : 400 } }, typeof vb === "number" ? m.fmt(vb) : "\u2014"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px", color: dColor } }, d == null ? "\u2014" : (d > 0 ? "+" : "") + m.fmt(d)));
     }))))));
   }
-  function _gpMoney(v) {
-    const a = Math.abs(v || 0);
-    if (a >= 1e8) return ((v || 0) / 1e8).toFixed(1) + "\uC5B5";
-    if (a >= 1e4) return Math.round((v || 0) / 1e4) + "\uB9CC";
-    return Math.round(v || 0).toLocaleString("ko-KR");
-  }
+
+  // ../frontend/bt-gui-parity.jsx
   function BtMddRandomChart({ data }) {
     const d = data || {};
     const curves = d.curves || [];
@@ -7903,6 +7672,284 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     const grid = columns === 2;
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "GUI \uD328\uB9AC\uD2F0 \u2014 STOM \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC \uC774\uBBF8\uC9C0 2\uC7A5"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uBD80\uAC00\uC815\uBCF4 2\xD72 \xB7 \uACB0\uACFC 2\xD71")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: grid ? { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 14 } : { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(BtMddRandomChart, { data: gp.mdd_random }), /* @__PURE__ */ React.createElement(BtDailyPnlChart, { data: gp.daily }), /* @__PURE__ */ React.createElement(BtHourlyPnlChart, { data: gp.hourly }), /* @__PURE__ */ React.createElement(BtWeekdayPnlChart, { data: gp.weekday }), /* @__PURE__ */ React.createElement(BtHoldingCurveChart, { data: gp.holding }), /* @__PURE__ */ React.createElement(BtTradeRollingChart, { data: gp.trade_rolling }))));
   }
+
+  // ../frontend/bt-result-area.jsx
+  var _BT_METRIC_CARDS = [
+    { key: "trade_count", label: "\uAC70\uB798\uC218", fmt: (v) => fmtInt(v) },
+    { key: "win_rate", label: "\uC2B9\uB960", fmt: (v) => fmtPct(v) },
+    { key: "total_profit_pct", label: "\uC218\uC775\uB960\uD569\uACC4", fmt: (v) => fmtPct(v), signed: true },
+    { key: "total_profit_krw", label: "\uC218\uC775\uAE08", fmt: (v) => fmtMoney(v), signed: true },
+    { key: "mdd_pct", label: "MDD", fmt: (v) => fmtPct(v), risk: true },
+    { key: "cagr", label: "CAGR", fmt: (v) => fmtPct(v), signed: true }
+  ];
+  function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compareView, onCloseCompare }) {
+    const [result, setResult] = useState_btc(null);
+    const [loading, setLoading] = useState_btc(false);
+    const [err, setErr] = useState_btc("");
+    const [range, setRange] = useState_btc(null);
+    const [mc, setMc] = useState_btc(null);
+    const [mcLoading, setMcLoading] = useState_btc(false);
+    const [fullscreen, setFullscreen] = useState_btc(false);
+    useEffect_btc(() => {
+      if (!fullscreen) return void 0;
+      const onKey = (e) => {
+        if (e.key === "Escape") setFullscreen(false);
+      };
+      window.addEventListener("keydown", onKey);
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        window.removeEventListener("keydown", onKey);
+        document.body.style.overflow = prevOverflow;
+      };
+    }, [fullscreen]);
+    const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
+    const hasSource = !!jobId || isEvo;
+    const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
+    const load = useCallback_btc(() => {
+      if (isDemo || !baseUrl || !hasSource) {
+        setResult(null);
+        return;
+      }
+      setLoading(true);
+      setErr("");
+      let url;
+      if (jobId) {
+        url = baseUrl + "/bt/result?job_id=" + encodeURIComponent(jobId);
+        if (range) {
+          url += "&t_start=" + range.t_start + "&t_end=" + range.t_end;
+        }
+      } else {
+        url = baseUrl + "/bt/result?run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
+      }
+      _btFetchJson(url, 8e3).then((j) => {
+        setResult(j);
+        if (!(j && j.available)) setErr("\uACB0\uACFC\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4");
+      }).catch((e) => {
+        setResult(null);
+        setErr(String(e));
+      }).finally(() => setLoading(false));
+    }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
+    const loadMc = useCallback_btc(() => {
+      if (isDemo || !baseUrl || !jobId) {
+        setMc(null);
+        return;
+      }
+      setMcLoading(true);
+      let url = baseUrl + "/bt/analysis/montecarlo?job_id=" + encodeURIComponent(jobId) + "&n=2000";
+      if (range) {
+        url += "&t_start=" + range.t_start + "&t_end=" + range.t_end;
+      }
+      _btFetchJson(url, 12e3).then((j) => setMc(j && j.montecarlo || null)).catch(() => setMc(null)).finally(() => setMcLoading(false));
+    }, [baseUrl, isDemo, jobId, range]);
+    useEffect_btc(() => {
+      load();
+    }, [load]);
+    useEffect_btc(() => {
+      setRange(null);
+      setMc(null);
+    }, [sourceKey]);
+    useEffect_btc(() => {
+      if (jobId && result && result.available && result.status !== "no_trades") {
+        loadMc();
+      }
+    }, [result, loadMc, jobId]);
+    const onBrush = useCallback_btc((t_start, t_end) => {
+      if (!jobId) {
+        return;
+      }
+      setRange({ t_start, t_end });
+    }, [jobId]);
+    const onBrushClear = useCallback_btc(() => {
+      setRange(null);
+    }, []);
+    if (!hasSource) {
+      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uACB0\uACFC \xB7 \uBD84\uC11D")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC67C\uCABD\uC5D0\uC11C \uBC31\uD14C\uC2A4\uD2B8\uB97C \uC2E4\uD589\uD558\uAC70\uB098 \uC7A1 \uC774\uB825\uC744 \uC120\uD0DD\uD558\uBA74 \uACB0\uACFC\xB7\uBD84\uC11D\uC774 \uC5EC\uAE30\uC5D0 \uD45C\uC2DC\uB429\uB2C8\uB2E4.")));
+    }
+    if (loading && !result) {
+      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uACB0\uACFC \xB7 \uBD84\uC11D")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uACB0\uACFC \uB85C\uB529 \uC911\u2026")));
+    }
+    if (err || !result || !result.available) {
+      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uACB0\uACFC \xB7 \uBD84\uC11D")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: "var(--red)" } }, err || "\uACB0\uACFC \uC5C6\uC74C", /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: load }, "\uC7AC\uC2DC\uB3C4")))));
+    }
+    if (result.status === "no_trades") {
+      return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uACB0\uACFC \xB7 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("span", { className: "badge warn" }, "\uAC70\uB798 0\uAC74")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "empty", style: { padding: "28px 24px" } }, /* @__PURE__ */ React.createElement("h2", { style: { color: "var(--amber)" } }, "\uAC70\uB798 0\uAC74"), /* @__PURE__ */ React.createElement("p", null, result.message || "\uC804\uB7B5\uC774 \uD574\uB2F9 \uAE30\uAC04\uC5D0 \uB9E4\uC218 \uC2E0\uD638\uB97C \uB0B4\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4. \uC5D0\uB7EC\uAC00 \uC544\uB2D9\uB2C8\uB2E4 \u2014 \uC870\uAC74\uC2DD/\uAE30\uAC04\uC744 \uC870\uC815\uD574 \uBCF4\uC138\uC694."))));
+    }
+    const analysis = result.analysis || {};
+    const metrics = result.metrics || {};
+    const summary = analysis.summary || {};
+    const metricVal = (key) => {
+      if (metrics[key] != null) return metrics[key];
+      const map = {
+        trade_count: summary.trade_count,
+        win_rate: summary.win_rate,
+        total_profit_pct: summary.total_profit_pct,
+        total_profit_krw: summary.total_profit_krw,
+        mdd_pct: summary.max_drawdown_pct,
+        cagr: void 0
+      };
+      return map[key];
+    };
+    const distribution = analysis.distribution || {};
+    const insights = analysis.insights || [];
+    const topC = distribution.top_contributors || [];
+    const botC = distribution.bottom_contributors || [];
+    const dailyPnl = ((analysis.equity || {}).daily || []).map((d) => d.pnl || 0);
+    const orderflow = analysis.orderflow || {};
+    const stats = analysis.stats || [];
+    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, range && /* @__PURE__ */ React.createElement("div", { className: "bt-range-bar" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911 \u2014 ", _btDateLabel(Math.floor(range.t_start / 1e6)), "~", _btDateLabel(Math.floor(range.t_end / 1e6)), result.ranged && analysis.trade_count != null ? ` \xB7 ${analysis.trade_count}\uAC70\uB798` : ""), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear, style: { marginLeft: "auto" } }, "\uC804\uCCB4\uB85C \uBCF5\uADC0")), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: isEvo ? "var(--violet)" : "var(--teal)" } }), isEvo ? "\uD575\uC2EC \uBA54\uD2B8\uB9AD \xB7 \uC9C4\uD654 \uC138\uB300" : "\uD575\uC2EC \uBA54\uD2B8\uB9AD", isEvo && /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: "mono tag-slim",
+        style: { fontSize: 9.5, color: "var(--violet)", marginLeft: 6 },
+        title: "\uC9C4\uD654 run \uC138\uB300 \uBD84\uC11D \u2014 loop_runs.db \uC77D\uAE30 \uC804\uC6A9"
+      },
+      evoSource.run_id,
+      "/g",
+      evoSource.gen_no
+    )), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, onSetCompareA && jobId && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: () => onSetCompareA(jobId),
+        title: "\uC774 \uC7A1\uC744 A/B \uBE44\uAD50\uC758 \uAE30\uC900(A)\uC73C\uB85C \uACE0\uC815"
+      },
+      "\u2295 \uBE44\uAD50 \uAE30\uC900(A)"
+    ), isEvo && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: () => {
+          const u = baseUrl + "/bt/report?run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
+          try {
+            window.open(u, "_blank", "noopener");
+          } catch (e) {
+          }
+        },
+        title: "\uC774 \uC138\uB300\uC758 \uC790\uAE09\uC790\uC871 HTML \uB9AC\uD3EC\uD2B8\uB97C \uC0C8 \uD0ED\uC73C\uB85C \uC5F4\uAE30"
+      },
+      "\u{1F4C4} \uB9AC\uD3EC\uD2B8"
+    ), ((analysis.equity || {}).daily || []).length > 0 && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: () => _btDownloadAnalysisCsv(analysis),
+        title: "\uC77C\uBCC4 \uC218\uC775\uACE1\uC120(\uB0A0\uC9DC\xB7\uC77C\uBCC4\uC190\uC775\xB7\uB204\uC801\uC218\uC775)\uC744 CSV \uB85C \uB0B4\uB824\uBC1B\uAE30 \u2014 \uD45C\uACC4\uC0B0 \uB3C4\uAD6C\uC5D0\uC11C \uCD94\uAC00 \uBD84\uC11D"
+      },
+      "\u2B07 CSV"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: () => setFullscreen(true),
+        title: "\uC804\uCCB4 \uD654\uBA74\uC5D0\uC11C \uB354 \uB9CE\uC740 \uBD84\uC11D \uADF8\uB798\uD504\uB97C \uD55C\uB208\uC5D0 \uBCF4\uAE30 (Esc \uB85C \uB2EB\uAE30)"
+      },
+      "\u26F6 \uC804\uCCB4\uD654\uBA74 \uBD84\uC11D"
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: load, disabled: loading }, loading ? "\uB85C\uB529\u2026" : "\u21BB"))), /* @__PURE__ */ React.createElement("div", { className: "bt-summary-row", style: { gridTemplateColumns: "repeat(6, 1fr)" } }, _BT_METRIC_CARDS.map((m) => {
+      const v = metricVal(m.key);
+      const num = typeof v === "number" ? v : null;
+      return /* @__PURE__ */ React.createElement(_BtMetricCard, { key: m.key, meta: m, num, dailyPnl });
+    }))), compareView && /* @__PURE__ */ React.createElement(BtCompareView, { cmp: compareView, onClose: onCloseCompare }), /* @__PURE__ */ React.createElement(
+      BtEquityChart,
+      {
+        equity: analysis.equity,
+        onBrush,
+        brushActive: !!range,
+        onBrushClear
+      }
+    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: loadMc }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 1 }), /* @__PURE__ */ React.createElement("details", { className: "bt-extra-charts", open: false }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" } }, "\u25B8 \uCD94\uAC00 \uBD84\uC11D \uADF8\uB798\uD504 \u2014 \uB864\uB9C1 \uC9C0\uD45C \xB7 \uC6D4\uBCC4 \uCE98\uB9B0\uB354 \xB7 \uB204\uC801 \uAC70\uB798 (\uC804\uCCB4\uD654\uBA74 \uAD8C\uC7A5)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, marginTop: 10 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }))), (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC })))), /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights }), fullscreen && /* @__PURE__ */ React.createElement(
+      _BtFullscreenAnalysis,
+      {
+        analysis,
+        distribution,
+        orderflow,
+        stats,
+        insights,
+        mc,
+        mcLoading,
+        onRunMc: loadMc,
+        range,
+        onBrush,
+        onBrushClear,
+        onClose: () => setFullscreen(false)
+      }
+    ));
+  }
+  function _BtFullscreenAnalysis({
+    analysis,
+    distribution,
+    orderflow,
+    stats,
+    insights,
+    mc,
+    mcLoading,
+    onRunMc,
+    range,
+    onBrush,
+    onBrushClear,
+    onClose
+  }) {
+    return /* @__PURE__ */ React.createElement("div", { style: {
+      position: "fixed",
+      inset: 0,
+      zIndex: 4e3,
+      background: "var(--bg-1, #0d1117)",
+      overflowY: "auto",
+      padding: "16px 22px 40px"
+    } }, /* @__PURE__ */ React.createElement("div", { style: {
+      position: "sticky",
+      top: 0,
+      zIndex: 2,
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      padding: "10px 4px 12px",
+      marginBottom: 10,
+      background: "var(--bg-1, #0d1117)",
+      borderBottom: "1px solid var(--line-2)"
+    } }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), /* @__PURE__ */ React.createElement("strong", { style: { fontSize: 15, color: "var(--ink-0)" } }, "\uC804\uCCB4\uD654\uBA74 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uB354 \uB9CE\uC740 \uADF8\uB798\uD504\uB85C \uC778\uC0AC\uC774\uD2B8 \u2014 2~3\uCEEC\uB7FC \uD655\uB300 \uBC30\uCE58"), range && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911"), /* @__PURE__ */ React.createElement("div", { style: { marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" } }, range && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear }, "\uC804\uCCB4\uB85C \uBCF5\uADC0"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn sm",
+        onClick: onClose,
+        style: { borderColor: "var(--teal-dim)", color: "var(--teal)" }
+      },
+      "\u2715 \uB2EB\uAE30 (Esc)"
+    ))), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights })), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(440px, 1fr))", gap: 14, marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(
+      BtEquityChart,
+      {
+        equity: analysis.equity,
+        onBrush,
+        brushActive: !!range,
+        onBrushClear
+      }
+    )), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity, columns: 2 })), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 14 } }, /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats })));
+  }
+  function _BtMetricCard({ meta, num, dailyPnl }) {
+    const animated = _useCountUp(num != null ? num : 0, 600);
+    const shown = num != null ? animated : null;
+    let color;
+    if (meta.risk) color = "var(--red)";
+    else if (meta.signed && num != null) color = num > 0 ? "var(--teal)" : num < 0 ? "var(--red)" : void 0;
+    if ((meta.key === "win_rate" || meta.key === "mdd_pct") && num != null) {
+      const gaugeColor = meta.key === "mdd_pct" ? "var(--red)" : "var(--teal)";
+      return /* @__PURE__ */ React.createElement("div", { className: "bt-metric-card" }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement(
+        _BtArcGauge,
+        {
+          value: shown,
+          max: 100,
+          color: gaugeColor,
+          label: meta.fmt(shown != null ? shown : 0)
+        }
+      ));
+    }
+    if (meta.key === "total_profit_krw") {
+      return /* @__PURE__ */ React.createElement("div", { className: "bt-metric-card" }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement("span", { className: "summary-val", style: { color } }, shown != null ? meta.fmt(shown) : "\u2014"), /* @__PURE__ */ React.createElement(_BtSparkline, { values: dailyPnl }));
+    }
+    return /* @__PURE__ */ React.createElement("div", { className: "bt-metric-card" }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement("span", { className: "summary-val", style: { color } }, shown != null ? meta.fmt(shown) : "\u2014"));
+  }
+
+  // ../frontend/backtest-charts.jsx
   Object.assign(window, {
     BtEquityChart,
     BtDistributionChart,
@@ -7927,7 +7974,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     BtGuiParitySection
   });
 
-  // ../frontend/backtest.jsx
+  // ../frontend/bt-tab-utils.jsx
   var {
     useState: useState_bt,
     useEffect: useEffect_bt,
@@ -7988,6 +8035,33 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     if (sec < 60) return sec + "s";
     return Math.floor(sec / 60) + "m " + sec % 60 + "s";
   }
+  function _btNum(v, digits) {
+    const n = Number(v);
+    if (v == null || isNaN(n)) return "\u2014";
+    return n.toFixed(digits == null ? 2 : digits);
+  }
+  function _BtRowDetail({ label, data, numeric }) {
+    const keys = Object.keys(data || {});
+    return /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-2)", display: "flex", flexWrap: "wrap", gap: 14, marginTop: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", minWidth: 80 } }, label), keys.length === 0 ? /* @__PURE__ */ React.createElement("span", null, "\u2014") : keys.map((k) => /* @__PURE__ */ React.createElement("span", { key: k }, k, "=", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--ink-1)" } }, numeric ? _btNum(data[k]) : String(data[k])))));
+  }
+  var _BT_OVERLAY_COLORS = ["var(--teal)", "var(--amber)", "var(--violet)", "var(--blue)"];
+  function _btSweepRowCount(rows) {
+    if (!Array.isArray(rows)) return 0;
+    return rows.filter((r) => r && String(r.name || "").trim()).length;
+  }
+  function _btSweepValueCount(row) {
+    if (!row) return 0;
+    const lo = Number(row.min), hi = Number(row.max), step = Number(row.step);
+    if (!isFinite(lo) || !isFinite(hi)) return 0;
+    if (!isFinite(step) || step <= 0 || lo > hi) return 1;
+    return Math.min(64, Math.floor((hi - lo) / step + 1e-9) + 1);
+  }
+  function _pfFmtMoney(v) {
+    const n = Number(v) || 0;
+    return (n >= 0 ? "+" : "") + Math.round(n).toLocaleString() + "\uC6D0";
+  }
+
+  // ../frontend/bt-tab-library.jsx
   function BtLibraryPanel({ baseUrl, isDemo, kind, onKind, onPick, selectedName, reloadKey, lockKind }) {
     const [items, setItems] = useState_bt([]);
     const [query, setQuery] = useState_bt("");
@@ -8292,17 +8366,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       }
     ));
   }
-  function _btSweepRowCount(rows) {
-    if (!Array.isArray(rows)) return 0;
-    return rows.filter((r) => r && String(r.name || "").trim()).length;
-  }
-  function _btSweepValueCount(row) {
-    if (!row) return 0;
-    const lo = Number(row.min), hi = Number(row.max), step = Number(row.step);
-    if (!isFinite(lo) || !isFinite(hi)) return 0;
-    if (!isFinite(step) || step <= 0 || lo > hi) return 1;
-    return Math.min(64, Math.floor((hi - lo) / step + 1e-9) + 1);
-  }
+
+  // ../frontend/bt-tab-run.jsx
   function _SweepParamBuilder({ rows, onChange, disabled }) {
     const safeRows = Array.isArray(rows) ? rows : [];
     const setRow = (i, patch) => {
@@ -9044,15 +9109,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       );
     })))));
   }
-  function _btNum(v, digits) {
-    const n = Number(v);
-    if (v == null || isNaN(n)) return "\u2014";
-    return n.toFixed(digits == null ? 2 : digits);
-  }
-  function _BtRowDetail({ label, data, numeric }) {
-    const keys = Object.keys(data || {});
-    return /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-2)", display: "flex", flexWrap: "wrap", gap: 14, marginTop: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", minWidth: 80 } }, label), keys.length === 0 ? /* @__PURE__ */ React.createElement("span", null, "\u2014") : keys.map((k) => /* @__PURE__ */ React.createElement("span", { key: k }, k, "=", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--ink-1)" } }, numeric ? _btNum(data[k]) : String(data[k])))));
-  }
+
+  // ../frontend/bt-tab-mode-results.jsx
   function BtWfoTable({ result }) {
     const [sortKey, setSortKey] = useState_bt("round");
     const [sortAsc, setSortAsc] = useState_bt(true);
@@ -9229,7 +9287,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     const mr = data && data.mode_result;
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), mode === "wfo" ? "\uC804\uC9C4\uBD84\uC11D(WFO) \uACB0\uACFC" : "\uC2A4\uC715 \uACB0\uACFC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, err ? /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--red)" } }, err) : !mr ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uACB0\uACFC\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC774\uAC70\uB098 \uAD6C\uC870\uD654 \uACB0\uACFC\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.") : mode === "wfo" ? /* @__PURE__ */ React.createElement(BtWfoTable, { result: mr }) : /* @__PURE__ */ React.createElement(BtSweepTable, { result: mr })));
   }
-  var _BT_OVERLAY_COLORS = ["var(--teal)", "var(--amber)", "var(--violet)", "var(--blue)"];
+
+  // ../frontend/bt-tab-analysis.jsx
   function BtOverlayCurves({ series, normalize }) {
     if (!series || series.length === 0) return /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC624\uBC84\uB808\uC774\uD560 \uACE1\uC120\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.");
     const W = 680, H = 220, padL = 8, padR = 8, padT = 12, padB = 12;
@@ -9440,10 +9499,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       );
     })), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "run ", runs.length, "\uAC1C \xB7 \uC138\uB300 ", gens.length, "\uAC1C (\uC77D\uAE30 \uC804\uC6A9)"))));
   }
-  function _pfFmtMoney(v) {
-    const n = Number(v) || 0;
-    return (n >= 0 ? "+" : "") + Math.round(n).toLocaleString() + "\uC6D0";
-  }
   function BtPortfolioCurve({ equity }) {
     if (!equity || equity.length === 0) return /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uACB0\uD569 \uACE1\uC120 \uC5C6\uC74C");
     const W = 640, H = 180, padL = 8, padR = 8, padT = 12, padB = 12;
@@ -9559,6 +9614,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       gap: 5
     } }, p.label, /* @__PURE__ */ React.createElement("button", { onClick: () => removeAt(p.key), style: { background: "transparent", border: 0, color: "var(--ink-3)", cursor: "pointer", padding: 0 } }, "\u2715")))), picked.length < 2 && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uACB0\uD569 \uBD84\uC11D\uC5D0\uB294 2~6\uAC1C \uC804\uB7B5(\uC7A1/\uC138\uB300)\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."), err && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--red)" } }, err), result && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12, borderTop: "1px solid var(--line-1)", paddingTop: 10 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 16, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11 } }, "\uACB0\uD569 \uCD1D\uC190\uC775 ", /* @__PURE__ */ React.createElement("b", { style: { color: result.combined.total_profit_krw >= 0 ? "var(--teal)" : "var(--red)" } }, _pfFmtMoney(result.combined.total_profit_krw))), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11 } }, "\uACB0\uD569 MDD ", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--red)" } }, Math.round(result.combined.max_drawdown_krw).toLocaleString(), "\uC6D0")), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-3)" } }, result.combined.trading_days, "\uAC70\uB798\uC77C \xB7 ", result.count, "\uC804\uB7B5")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uACB0\uD569 \uB204\uC801\uC218\uC775\uACE1\uC120"), /* @__PURE__ */ React.createElement(BtPortfolioCurve, { equity: result.combined.equity })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uC804\uB7B5 \uAC04 \uC77C\uBCC4\uC190\uC775 \uC0C1\uAD00"), /* @__PURE__ */ React.createElement(BtPortfolioHeatmap, { correlation: result.correlation })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uAC1C\uBCC4 \uAE30\uC5EC"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, result.strategies.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { display: "flex", alignItems: "center", gap: 8, padding: "4px 6px", borderBottom: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, s.label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: s.total_profit_krw >= 0 ? "var(--teal)" : "var(--red)" } }, _pfFmtMoney(s.total_profit_krw)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", width: 64, textAlign: "right" } }, "\uAE30\uC5EC ", s.contribution_pct.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--red)", width: 90, textAlign: "right" } }, "MDD ", Math.round(s.max_drawdown_krw).toLocaleString())))))))));
   }
+
+  // ../frontend/bt-tab-root.jsx
   function BacktestTab({ baseUrl, wsStatus }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [health, setHealth] = useState_bt(null);
@@ -9813,9 +9870,11 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       }
     )), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uC9C4\uD654 \uC138\uB300 \uBD84\uC11D", accent: "var(--violet)", defaultOpen: false }, /* @__PURE__ */ React.createElement(BtEvoSelector, { baseUrl, isDemo, onPickGen, activeEvo: evoSource })), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uB2E4\uC911 \uC7A1 \uC624\uBC84\uB808\uC774(\uC218\uC775\uACE1\uC120 \uACB9\uCCD0\uBCF4\uAE30)", accent: "var(--teal)", defaultOpen: false }, /* @__PURE__ */ React.createElement(BtOverlayPanel, { baseUrl, isDemo, jobs: jobsList })), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uD3EC\uD2B8\uD3F4\uB9AC\uC624 \uACB0\uD569 \uBD84\uC11D", accent: "var(--blue)", defaultOpen: false }, /* @__PURE__ */ React.createElement(BtPortfolioPanel, { baseUrl, isDemo, jobs: jobsList, activeEvo: evoSource }))));
   }
+
+  // ../frontend/backtest.jsx
   Object.assign(window, { BacktestTab });
 
-  // ../frontend/simulation-charts.jsx
+  // ../frontend/sim-chart-utils.jsx
   var {
     useState: useState_simc,
     useRef: useRef_simc,
@@ -10002,96 +10061,58 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     if (v < 0) return `rgba(56,140,255,${a})`;
     return "rgba(150,158,170,0.5)";
   }
-  function SimChangeGauge({ changePct, size }) {
-    const S = size || 56;
-    const v = Number(changePct) || 0;
-    const clamped = Math.max(-12, Math.min(12, v));
-    const angle = 180 - (clamped + 12) / 24 * 180;
-    const rad = angle * Math.PI / 180;
-    const r = S / 2 - 4;
-    const cx = S / 2, cy = S / 2;
-    const nx = cx + r * Math.cos(rad);
-    const ny = cy - r * Math.sin(rad);
-    const color = _changeColor(v);
-    return /* @__PURE__ */ React.createElement("svg", { width: S, height: S / 2 + 6, viewBox: `0 0 ${S} ${S / 2 + 6}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(
-      "path",
-      {
-        d: `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`,
-        fill: "none",
-        stroke: "var(--line-2)",
-        strokeWidth: "3",
-        strokeLinecap: "round"
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "line",
-      {
-        x1: cx,
-        y1: cy - r,
-        x2: cx,
-        y2: cy - r + 4,
-        stroke: "var(--ink-3)",
-        strokeWidth: "1"
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "line",
-      {
-        x1: cx,
-        y1: cy,
-        x2: nx.toFixed(2),
-        y2: ny.toFixed(2),
-        stroke: color,
-        strokeWidth: "2.4",
-        strokeLinecap: "round"
-      }
-    ), /* @__PURE__ */ React.createElement("circle", { cx, cy, r: "2.6", fill: color }), /* @__PURE__ */ React.createElement(
-      "text",
-      {
-        x: cx,
-        y: cy - 2,
-        textAnchor: "middle",
-        fontSize: "10",
-        className: "mono",
-        fill: color
-      },
-      v > 0 ? "+" : "",
-      v.toFixed(2),
-      "%"
-    ));
+  function _monotonicSecs(bars) {
+    const out = [];
+    let lastSec = -1;
+    for (let i = 0; i < bars.length; i++) {
+      let sec = _hmsToSec(bars[i].t);
+      if (sec <= lastSec) sec = lastSec + 1;
+      lastSec = sec;
+      out.push(sec);
+    }
+    return out;
   }
-  function SimSessionRing({ curT, size }) {
-    const S = size || 52;
-    const r = S / 2 - 5;
-    const cx = S / 2, cy = S / 2;
-    const circ = 2 * Math.PI * r;
-    const prog = _sessionProgress(curT);
-    const dash = (circ * prog).toFixed(2);
-    const label = curT != null ? _simTimeLabel(curT).slice(0, 5) : "--:--";
-    return /* @__PURE__ */ React.createElement("svg", { width: S, height: S, viewBox: `0 0 ${S} ${S}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("circle", { cx, cy, r, fill: "none", stroke: "var(--line-2)", strokeWidth: "3" }), /* @__PURE__ */ React.createElement(
-      "circle",
-      {
-        cx,
-        cy,
-        r,
-        fill: "none",
-        stroke: "var(--teal)",
-        strokeWidth: "3",
-        strokeLinecap: "round",
-        strokeDasharray: `${dash} ${(circ - dash).toFixed(2)}`,
-        transform: `rotate(-90 ${cx} ${cy})`
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "text",
-      {
-        x: cx,
-        y: cy + 3.2,
-        textAnchor: "middle",
-        fontSize: "10",
-        className: "mono",
-        fill: "var(--ink-1)"
-      },
-      label
-    ));
+  function _lineData(bars, secs, key) {
+    const out = [];
+    for (let i = 0; i < bars.length; i++) {
+      const v = bars[i][key];
+      if (v == null || !isFinite(v)) continue;
+      out.push({ time: secs[i], value: v });
+    }
+    return out;
   }
+  function _simNq(b) {
+    return b && b.net_qty != null && isFinite(b.net_qty) ? b.net_qty : 0;
+  }
+  function _hoga_tick(price) {
+    const p = Math.abs(Number(price) || 0);
+    if (p < 2e3) return 1;
+    if (p < 5e3) return 5;
+    if (p < 2e4) return 10;
+    if (p < 5e4) return 50;
+    if (p < 2e5) return 100;
+    if (p < 5e5) return 500;
+    return 1e3;
+  }
+  function _bucketPrice(price, tick) {
+    const t = tick || 1;
+    return Math.round(Math.floor((Number(price) || 0) / t) * t);
+  }
+  function _barBuySell(bar) {
+    const vol = bar.vol != null && isFinite(bar.vol) ? bar.vol : 0;
+    const nq = bar.net_qty;
+    if (nq != null && isFinite(nq)) {
+      const buy = (vol + nq) / 2;
+      const sell = (vol - nq) / 2;
+      return { buy: Math.max(0, buy), sell: Math.max(0, sell), real: true };
+    }
+    const s = bar.strength != null && isFinite(bar.strength) ? bar.strength : 100;
+    const buyShare = Math.max(0, Math.min(1, s / 200));
+    return { buy: vol * buyShare, sell: vol * (1 - buyShare), real: false };
+  }
+  var _SIM_OVERLAY_COLORS = ["#4cd6b3", "#ff5d6c", "#f0b35a", "#7c6cf0"];
+
+  // ../frontend/sim-chart-subpanes.jsx
   function SimHeatStrip({ bars, compact }) {
     const view = useMemo_simc(() => {
       const arr = bars || [];
@@ -10194,26 +10215,481 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       }
     ), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: mid - half + 8, textAnchor: "end", fill: "var(--teal)" }, "\uB9E4\uC218"), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: mid + half, textAnchor: "end", fill: "var(--red)" }, "\uB9E4\uB3C4"), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: mid + 3, textAnchor: "end", fill: "var(--ink-3)" }, _simPriceTick(maxRest)))));
   }
-  function _monotonicSecs(bars) {
-    const out = [];
-    let lastSec = -1;
-    for (let i = 0; i < bars.length; i++) {
-      let sec = _hmsToSec(bars[i].t);
-      if (sec <= lastSec) sec = lastSec + 1;
-      lastSec = sec;
-      out.push(sec);
+  function SimImbalancePane({ bars, compact }) {
+    const view = useMemo_simc(() => {
+      const arr = bars || [];
+      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+    }, [bars]);
+    const vals = useMemo_simc(() => view.map((b) => {
+      if (b.imbalance != null && isFinite(b.imbalance)) return b.imbalance;
+      const br = b.buy_rest != null && isFinite(b.buy_rest) ? b.buy_rest : null;
+      const sr = b.sell_rest != null && isFinite(b.sell_rest) ? b.sell_rest : null;
+      if (br != null && sr != null && sr > 0) return br / sr;
+      return null;
+    }), [view]);
+    const hasData = useMemo_simc(() => vals.some((v) => v != null), [vals]);
+    if (!hasData) return null;
+    const n = view.length;
+    const W = 880;
+    const H = compact ? 30 : 40;
+    const padL = 56, padR = 16, padT = 4, padB = 4;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const finite = vals.filter((v) => v != null && isFinite(v));
+    const vMax = Math.max(2, ...finite);
+    const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + innerW * i / (n - 1);
+    const yAt = (v) => padT + innerH - Math.min(v, vMax) / vMax * innerH;
+    let d = "", started = false;
+    for (let i = 0; i < n; i++) {
+      const v = vals[i];
+      if (v == null || !isFinite(v)) {
+        started = false;
+        continue;
+      }
+      d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
+      started = true;
     }
-    return out;
+    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, "\uD638\uAC00 \uBD88\uADE0\uD615(\uB808\uBCA81 \uCD1D\uC794\uB7C9\uBE44)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, /* @__PURE__ */ React.createElement(
+      "line",
+      {
+        x1: padL,
+        x2: W - padR,
+        y1: yAt(1),
+        y2: yAt(1),
+        stroke: "rgba(255,255,255,0.14)",
+        strokeWidth: "1",
+        strokeDasharray: "2 3"
+      }
+    ), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: yAt(1) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "1.0"), n > 1 && /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: "var(--teal)", strokeWidth: "1.2", opacity: "0.85" })));
   }
-  function _lineData(bars, secs, key) {
-    const out = [];
-    for (let i = 0; i < bars.length; i++) {
-      const v = bars[i][key];
-      if (v == null || !isFinite(v)) continue;
-      out.push({ time: secs[i], value: v });
+  function SimNetDeltaStrip({ bars, compact }) {
+    const view = useMemo_simc(() => {
+      const arr = bars || [];
+      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+    }, [bars]);
+    const hasData = useMemo_simc(
+      () => view.some((b) => b.net_qty != null && isFinite(b.net_qty) && b.net_qty !== 0),
+      [view]
+    );
+    if (!hasData) return null;
+    const n = view.length;
+    const W = 880;
+    const H = compact ? 28 : 38;
+    const padL = 56, padR = 16;
+    const innerW = W - padL - padR;
+    const mid = H / 2;
+    const half = mid - 3;
+    const maxAbs = Math.max(1, ...view.map((b) => Math.abs(_simNq(b))));
+    const slot = n > 0 ? innerW / n : innerW;
+    const barW = Math.max(1, slot * 0.7);
+    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)" } }, "net-delta(\uC21C\uB9E4\uC218\uC218\uB7C9)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: mid, y2: mid, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" }), view.map((b, i) => {
+      const nq = _simNq(b);
+      const h = Math.min(Math.abs(nq), maxAbs) / maxAbs * half;
+      const x = padL + slot * i + (slot - barW) / 2;
+      const y = nq >= 0 ? mid - h : mid;
+      const color = nq > 0 ? "var(--teal)" : nq < 0 ? "var(--red)" : "var(--ink-3)";
+      return /* @__PURE__ */ React.createElement(
+        "rect",
+        {
+          key: i,
+          x: x.toFixed(1),
+          y: y.toFixed(1),
+          width: barW.toFixed(1),
+          height: Math.max(0.5, h).toFixed(1),
+          fill: color,
+          opacity: "0.7"
+        }
+      );
+    })));
+  }
+  function SimRsiPane({ bars, compact }) {
+    const view = useMemo_simc(() => {
+      const arr = bars || [];
+      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+    }, [bars]);
+    const rsiVals = useMemo_simc(
+      () => typeof _simRsi === "function" ? _simRsi(view, 14) : [],
+      [view]
+    );
+    const hasData = useMemo_simc(() => rsiVals.some((v) => v != null), [rsiVals]);
+    if (!hasData) return null;
+    const n = view.length;
+    const W = 880;
+    const H = compact ? 30 : 40;
+    const padL = 56, padR = 16, padT = 4, padB = 4;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + innerW * i / (n - 1);
+    const yAt = (v) => padT + innerH - Math.max(0, Math.min(100, v)) / 100 * innerH;
+    let d = "", started = false;
+    for (let i = 0; i < n; i++) {
+      const v = rsiVals[i];
+      if (v == null || !isFinite(v)) {
+        started = false;
+        continue;
+      }
+      d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
+      started = true;
     }
-    return out;
+    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)" } }, "RSI(14)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, [30, 50, 70].map((lv) => /* @__PURE__ */ React.createElement(
+      "line",
+      {
+        key: lv,
+        x1: padL,
+        x2: W - padR,
+        y1: yAt(lv),
+        y2: yAt(lv),
+        stroke: "rgba(255,255,255,0.10)",
+        strokeWidth: "1",
+        strokeDasharray: "2 3"
+      }
+    )), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: yAt(70) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "70"), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: yAt(30) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "30"), n > 1 && /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: "var(--teal)", strokeWidth: "1.2", opacity: "0.85" })));
   }
+  function SimMacdPane({ bars, compact }) {
+    const view = useMemo_simc(() => {
+      const arr = bars || [];
+      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+    }, [bars]);
+    const macdData = useMemo_simc(
+      () => typeof _simMacd === "function" ? _simMacd(view) : { macd: [], signal: [], hist: [] },
+      [view]
+    );
+    const hasData = useMemo_simc(
+      () => (macdData.macd || []).some((v) => v != null),
+      [macdData]
+    );
+    if (!hasData) return null;
+    const n = view.length;
+    const W = 880;
+    const H = compact ? 30 : 42;
+    const padL = 56, padR = 16, padT = 4, padB = 4;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const mid = padT + innerH / 2;
+    const half = innerH / 2 - 1;
+    const hist = macdData.hist || [];
+    const macdLine = macdData.macd || [];
+    const signalLine = macdData.signal || [];
+    let maxAbs = 1;
+    for (let i = 0; i < n; i++) {
+      const v = hist[i];
+      if (v != null && isFinite(v)) maxAbs = Math.max(maxAbs, Math.abs(v));
+    }
+    const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + innerW * i / (n - 1);
+    const yAt = (v) => v == null || !isFinite(v) ? mid : mid - Math.max(-maxAbs, Math.min(maxAbs, v)) / maxAbs * half;
+    const slot = n > 1 ? innerW / n : innerW;
+    const barW = Math.max(1, slot * 0.55);
+    const linePath = (vals) => {
+      let d = "", started = false;
+      for (let i = 0; i < n; i++) {
+        const v = vals[i];
+        if (v == null || !isFinite(v)) {
+          started = false;
+          continue;
+        }
+        d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
+        started = true;
+      }
+      return d;
+    };
+    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)" } }, "MACD(12,26,9)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: mid, y2: mid, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" }), view.map((b, i) => {
+      const v = hist[i];
+      if (v == null || !isFinite(v)) return null;
+      const bh = Math.abs(yAt(v) - mid);
+      const x = xAt(i) - barW / 2;
+      const y = v >= 0 ? mid - bh : mid;
+      const color = v > 0 ? "var(--teal)" : "var(--red)";
+      return /* @__PURE__ */ React.createElement(
+        "rect",
+        {
+          key: i,
+          x: x.toFixed(1),
+          y: y.toFixed(1),
+          width: barW.toFixed(1),
+          height: Math.max(0.5, bh).toFixed(1),
+          fill: color,
+          opacity: "0.55"
+        }
+      );
+    }), n > 1 && /* @__PURE__ */ React.createElement("path", { d: linePath(macdLine), fill: "none", stroke: "var(--teal)", strokeWidth: "1.1", opacity: "0.9" }), n > 1 && /* @__PURE__ */ React.createElement("path", { d: linePath(signalLine), fill: "none", stroke: "var(--amber)", strokeWidth: "1", opacity: "0.8", strokeDasharray: "3 2" })));
+  }
+  function SimOrderFlowTape({ bars, compact }) {
+    const view = useMemo_simc(() => {
+      const arr = bars || [];
+      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+    }, [bars]);
+    const hasData = useMemo_simc(
+      () => view.some((b) => b.net_qty != null && isFinite(b.net_qty) && b.net_qty !== 0),
+      [view]
+    );
+    if (!hasData) return null;
+    const maxAbs = Math.max(1, ...view.map((b) => Math.abs(_simNq(b))));
+    const H = compact ? 14 : 18;
+    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)", flexShrink: 0, width: 48 } }, "\uC624\uB354\uD50C\uB85C\uC6B0"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flex: 1, height: H, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" } }, view.map((b, i) => {
+      const nq = _simNq(b);
+      const mag = Math.min(1, Math.abs(nq) / maxAbs);
+      const a = (0.15 + mag * 0.75).toFixed(3);
+      const bg = nq > 0 ? `rgba(76,214,179,${a})` : nq < 0 ? `rgba(255,93,108,${a})` : "rgba(150,158,170,0.12)";
+      return /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          key: i,
+          title: _simTimeLabel(b.t) + " \xB7 \uC21C\uB9E4\uC218 " + _simPriceTick(nq),
+          style: { flex: 1, background: bg }
+        }
+      );
+    })));
+  }
+  function SimFootprint({ bars, compact }) {
+    const [open, setOpen] = useState_simc(false);
+    const agg = useMemo_simc(() => {
+      const arr = bars || [];
+      const view = arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
+      if (view.length === 0) return { levels: [], real: true, curPrice: null, hasVol: false };
+      const last = view[view.length - 1];
+      const map = /* @__PURE__ */ new Map();
+      let real = true;
+      let hasVol = false;
+      for (let i = 0; i < view.length; i++) {
+        const b = view[i];
+        const bs = _barBuySell(b);
+        if (!bs.real) real = false;
+        if (bs.buy + bs.sell > 0) hasVol = true;
+        const key = _bucketPrice(b.c, _hoga_tick(b.c));
+        const cur = map.get(key) || { buy: 0, sell: 0 };
+        cur.buy += bs.buy;
+        cur.sell += bs.sell;
+        map.set(key, cur);
+      }
+      const levels = Array.from(map.entries()).map(([price, v]) => ({ price, buy: v.buy, sell: v.sell, delta: v.buy - v.sell })).sort((a, b) => b.price - a.price);
+      return { levels, real, curPrice: _bucketPrice(last.c, _hoga_tick(last.c)), hasVol };
+    }, [bars]);
+    if (!agg.hasVol) return null;
+    const maxSide = Math.max(1, ...agg.levels.map((l) => Math.max(l.buy, l.sell)));
+    const rowH = compact ? 14 : 17;
+    const barW = compact ? 80 : 110;
+    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setOpen((o) => !o),
+        className: "mono",
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          width: "100%",
+          padding: "4px 8px",
+          background: "transparent",
+          border: "1px solid var(--line-1)",
+          borderRadius: 5,
+          color: "var(--ink-2)",
+          cursor: "pointer",
+          fontSize: 10
+        }
+      },
+      /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, open ? "\u25BC" : "\u25B6"),
+      "\uC624\uB354\uD50C\uB85C\uC6B0 footprint",
+      /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "auto", color: agg.real ? "var(--teal)" : "var(--amber)" } }, agg.real ? "\uC2E4\uB370\uC774\uD130" : "\uAC15\uB3C4 \uADFC\uC0AC")
+    ), open && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 4, display: "flex", flexDirection: "column", gap: 1 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { display: "flex", alignItems: "center", fontSize: 8.5, color: "var(--ink-3)", padding: "0 2px" } }, /* @__PURE__ */ React.createElement("span", { style: { width: barW, textAlign: "left", color: "var(--red)" } }, "\uB9E4\uB3C4\uCCB4\uACB0"), /* @__PURE__ */ React.createElement("span", { style: { flex: 1, textAlign: "center" } }, "\uAC00\uACA9"), /* @__PURE__ */ React.createElement("span", { style: { width: barW, textAlign: "right", color: "var(--teal)" } }, "\uB9E4\uC218\uCCB4\uACB0"), /* @__PURE__ */ React.createElement("span", { style: { width: compact ? 44 : 56, textAlign: "right" } }, "\uB378\uD0C0")), agg.levels.map((lv) => {
+      const isCur = lv.price === agg.curPrice;
+      const sellW = lv.sell / maxSide * barW;
+      const buyW = lv.buy / maxSide * barW;
+      const sellInt = Math.min(1, lv.sell / maxSide);
+      const buyInt = Math.min(1, lv.buy / maxSide);
+      return /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          key: lv.price,
+          className: "mono",
+          style: {
+            display: "flex",
+            alignItems: "center",
+            height: rowH,
+            fontSize: 9.5,
+            background: isCur ? "rgba(255,210,76,0.10)" : "transparent",
+            borderRadius: 3,
+            boxShadow: isCur ? "0 0 0 1px rgba(255,210,76,0.4) inset" : "none"
+          }
+        },
+        /* @__PURE__ */ React.createElement("div", { style: { width: barW, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", fontSize: 8.5 } }, lv.sell >= 1 ? _simPriceTick(lv.sell) : ""), /* @__PURE__ */ React.createElement("div", { style: { width: sellW, height: rowH - 5, background: `rgba(255,93,108,${(0.25 + sellInt * 0.6).toFixed(3)})`, borderRadius: 2 } })),
+        /* @__PURE__ */ React.createElement("span", { style: { flex: 1, textAlign: "center", color: isCur ? "var(--amber)" : "var(--ink-1)", fontWeight: isCur ? 600 : 400 } }, _simPriceTick(lv.price)),
+        /* @__PURE__ */ React.createElement("div", { style: { width: barW, display: "flex", justifyContent: "flex-start", alignItems: "center", gap: 4 } }, /* @__PURE__ */ React.createElement("div", { style: { width: buyW, height: rowH - 5, background: `rgba(76,214,179,${(0.25 + buyInt * 0.6).toFixed(3)})`, borderRadius: 2 } }), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", fontSize: 8.5 } }, lv.buy >= 1 ? _simPriceTick(lv.buy) : "")),
+        /* @__PURE__ */ React.createElement("span", { style: { width: compact ? 44 : 56, textAlign: "right", color: lv.delta >= 0 ? "var(--teal)" : "var(--red)" } }, lv.delta >= 0 ? "+" : "", _simPriceTick(lv.delta))
+      );
+    }), !agg.real && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 8.5, color: "var(--ink-3)", marginTop: 3, lineHeight: 1.4 } }, "\uC21C\uB9E4\uC218\uC218\uB7C9(net_qty) \uBD80\uC7AC\uB85C \uCCB4\uACB0\uAC15\uB3C4 \uAE30\uBC18 \uADFC\uC0AC \uBD84\uB9AC\uB2E4(\uC2E4 \uB9E4\uC218/\uB9E4\uB3C4 \uCCB4\uACB0\uB7C9 \uC544\uB2D8).")));
+  }
+  function SimOrderBook({ lastBar, compact }) {
+    const prevRef = useRef_simc({ bid1: null, ask1: null });
+    const [flash, setFlash] = useState_simc({ bid: false, ask: false });
+    const bid1 = lastBar && lastBar.bid1 != null && isFinite(lastBar.bid1) ? lastBar.bid1 : null;
+    const ask1 = lastBar && lastBar.ask1 != null && isFinite(lastBar.ask1) ? lastBar.ask1 : null;
+    useEffect_simc(() => {
+      const p = prevRef.current;
+      const bidChg = p.bid1 != null && bid1 != null && bid1 !== p.bid1;
+      const askChg = p.ask1 != null && ask1 != null && ask1 !== p.ask1;
+      if (bidChg || askChg) {
+        setFlash({ bid: bidChg, ask: askChg });
+        const id = setTimeout(() => setFlash({ bid: false, ask: false }), 280);
+        prevRef.current = { bid1, ask1 };
+        return () => clearTimeout(id);
+      }
+      prevRef.current = { bid1, ask1 };
+    }, [bid1, ask1]);
+    if (!lastBar) return null;
+    const buyRest = lastBar.buy_rest != null && isFinite(lastBar.buy_rest) ? lastBar.buy_rest : null;
+    const sellRest = lastBar.sell_rest != null && isFinite(lastBar.sell_rest) ? lastBar.sell_rest : null;
+    if (bid1 == null && ask1 == null && buyRest == null && sellRest == null) return null;
+    const cur = lastBar.c != null && isFinite(lastBar.c) ? lastBar.c : null;
+    const strength = lastBar.strength != null && isFinite(lastBar.strength) ? lastBar.strength : null;
+    const maxRest = Math.max(1, buyRest || 0, sellRest || 0);
+    const askW = sellRest != null ? sellRest / maxRest * 100 : 0;
+    const bidW = buyRest != null ? buyRest / maxRest * 100 : 0;
+    const spread = bid1 != null && ask1 != null ? ask1 - bid1 : null;
+    const mid = bid1 != null && ask1 != null ? (ask1 + bid1) / 2 : null;
+    const spreadBps = spread != null && mid && mid > 0 ? spread / mid * 1e4 : null;
+    const totRest = (buyRest || 0) + (sellRest || 0);
+    const buyShare = totRest > 0 ? (buyRest || 0) / totRest * 100 : null;
+    const sellShare = totRest > 0 ? (sellRest || 0) / totRest * 100 : null;
+    const stColor = strength == null ? "var(--ink-2)" : strength >= 100 ? "var(--teal)" : "var(--red)";
+    const rowH = compact ? 20 : 24;
+    const askBg = flash.ask ? "rgba(56,140,255,0.22)" : "rgba(56,140,255,0.06)";
+    const bidBg = flash.bid ? "rgba(255,93,108,0.22)" : "rgba(255,93,108,0.06)";
+    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3, gap: 6 } }, /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: "mono",
+        style: { fontSize: 9.5, color: "var(--ink-3)" },
+        title: "\uC77C\uC77C DB\uB294 \uCD5C\uC6B0\uC120\uD638\uAC00\xB7\uCD1D\uC794\uB7C9\uB9CC \uC81C\uACF5(\uB808\uBCA82~10 \uC5C6\uC74C)"
+      },
+      "\uD638\uAC00\uCC3D (\uB808\uBCA81 + \uCD1D\uC794\uB7C9)"
+    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } }, spread != null && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-2)" } }, "\uC2A4\uD504\uB808\uB4DC ", _simPriceTick(spread), spreadBps != null ? ` (${spreadBps.toFixed(1)}bp)` : ""), strength != null && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: stColor, padding: "1px 6px", borderRadius: 3, border: "1px solid " + (strength >= 100 ? "var(--teal-dim)" : "var(--line-1)") } }, "\uCCB4\uACB0\uAC15\uB3C4 ", strength.toFixed(0)))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", height: rowH, background: askBg, borderRadius: 3, marginBottom: 1, transition: "background 0.28s ease-out" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#5aa0ff", paddingRight: 8 } }, ask1 != null ? _simPriceTick(ask1) : "\u2014"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: rowH - 8, position: "relative", display: "flex", justifyContent: "flex-start" } }, /* @__PURE__ */ React.createElement("div", { style: { width: askW + "%", height: "100%", background: "rgba(56,140,255,0.30)", borderRadius: 2, transition: "width 0.2s ease-out" } })), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 60 : 74, textAlign: "right", fontSize: 9.5, color: "#5aa0ff", paddingRight: 4 } }, sellRest != null ? _simPriceTick(sellRest) : "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { textAlign: "center", fontSize: 11, color: "var(--amber)", padding: "2px 0", letterSpacing: ".04em" } }, "\u25B8 ", cur != null ? _simPriceTick(cur) : "\u2014", " \u25C2"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", height: rowH, background: bidBg, borderRadius: 3, marginTop: 1, transition: "background 0.28s ease-out" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#ff8088", paddingRight: 8 } }, bid1 != null ? _simPriceTick(bid1) : "\u2014"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: rowH - 8, display: "flex", justifyContent: "flex-start" } }, /* @__PURE__ */ React.createElement("div", { style: { width: bidW + "%", height: "100%", background: "rgba(255,93,108,0.28)", borderRadius: 2, transition: "width 0.2s ease-out" } })), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 60 : 74, textAlign: "right", fontSize: 9.5, color: "#ff8088", paddingRight: 4 } }, buyRest != null ? _simPriceTick(buyRest) : "\u2014")), buyShare != null && sellShare != null && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 5 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", height: 6, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("div", { style: { width: buyShare.toFixed(1) + "%", background: "var(--teal)", opacity: 0.7, transition: "width 0.25s ease-out" } }), /* @__PURE__ */ React.createElement("div", { style: { width: sellShare.toFixed(1) + "%", background: "var(--red)", opacity: 0.7, transition: "width 0.25s ease-out" } })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 2, fontSize: 9 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--teal)" } }, "\uB9E4\uC218 ", buyShare.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--red)" } }, "\uB9E4\uB3C4 ", sellShare.toFixed(0), "%"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 9.5 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "#5aa0ff" } }, "\uCD1D\uB9E4\uB3C4 ", sellRest != null ? _simPriceTick(sellRest) : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "#ff8088" } }, "\uCD1D\uB9E4\uC218 ", buyRest != null ? _simPriceTick(buyRest) : "\u2014")));
+  }
+
+  // ../frontend/sim-chart-shell.jsx
+  function SimChangeGauge({ changePct, size }) {
+    const S = size || 56;
+    const v = Number(changePct) || 0;
+    const clamped = Math.max(-12, Math.min(12, v));
+    const angle = 180 - (clamped + 12) / 24 * 180;
+    const rad = angle * Math.PI / 180;
+    const r = S / 2 - 4;
+    const cx = S / 2, cy = S / 2;
+    const nx = cx + r * Math.cos(rad);
+    const ny = cy - r * Math.sin(rad);
+    const color = _changeColor(v);
+    return /* @__PURE__ */ React.createElement("svg", { width: S, height: S / 2 + 6, viewBox: `0 0 ${S} ${S / 2 + 6}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(
+      "path",
+      {
+        d: `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`,
+        fill: "none",
+        stroke: "var(--line-2)",
+        strokeWidth: "3",
+        strokeLinecap: "round"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "line",
+      {
+        x1: cx,
+        y1: cy - r,
+        x2: cx,
+        y2: cy - r + 4,
+        stroke: "var(--ink-3)",
+        strokeWidth: "1"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "line",
+      {
+        x1: cx,
+        y1: cy,
+        x2: nx.toFixed(2),
+        y2: ny.toFixed(2),
+        stroke: color,
+        strokeWidth: "2.4",
+        strokeLinecap: "round"
+      }
+    ), /* @__PURE__ */ React.createElement("circle", { cx, cy, r: "2.6", fill: color }), /* @__PURE__ */ React.createElement(
+      "text",
+      {
+        x: cx,
+        y: cy - 2,
+        textAnchor: "middle",
+        fontSize: "10",
+        className: "mono",
+        fill: color
+      },
+      v > 0 ? "+" : "",
+      v.toFixed(2),
+      "%"
+    ));
+  }
+  function SimSessionRing({ curT, size }) {
+    const S = size || 52;
+    const r = S / 2 - 5;
+    const cx = S / 2, cy = S / 2;
+    const circ = 2 * Math.PI * r;
+    const prog = _sessionProgress(curT);
+    const dash = (circ * prog).toFixed(2);
+    const label = curT != null ? _simTimeLabel(curT).slice(0, 5) : "--:--";
+    return /* @__PURE__ */ React.createElement("svg", { width: S, height: S, viewBox: `0 0 ${S} ${S}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("circle", { cx, cy, r, fill: "none", stroke: "var(--line-2)", strokeWidth: "3" }), /* @__PURE__ */ React.createElement(
+      "circle",
+      {
+        cx,
+        cy,
+        r,
+        fill: "none",
+        stroke: "var(--teal)",
+        strokeWidth: "3",
+        strokeLinecap: "round",
+        strokeDasharray: `${dash} ${(circ - dash).toFixed(2)}`,
+        transform: `rotate(-90 ${cx} ${cy})`
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "text",
+      {
+        x: cx,
+        y: cy + 3.2,
+        textAnchor: "middle",
+        fontSize: "10",
+        className: "mono",
+        fill: "var(--ink-1)"
+      },
+      label
+    ));
+  }
+  function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engine, indicators, children }) {
+    const ind = indicators || _SIM_DEFAULT_INDICATORS;
+    const seenRef = useRef_simc(/* @__PURE__ */ new Set());
+    const [flash, setFlash] = useState_simc(null);
+    useEffect_simc(() => {
+      if (curT == null) seenRef.current = /* @__PURE__ */ new Set();
+    }, [curT]);
+    useEffect_simc(() => {
+      if (curT == null) return;
+      const seen = seenRef.current;
+      let kind = null;
+      (signals || []).forEach((sig) => {
+        const bk = code + "@b@" + sig.buy_hms;
+        if (sig.buy_hms != null && sig.buy_hms <= curT && !seen.has(bk)) {
+          seen.add(bk);
+          kind = "buy";
+        }
+        const sk = code + "@s@" + sig.sell_hms;
+        if (sig.sell_hms != null && sig.sell_hms <= curT && !seen.has(sk)) {
+          seen.add(sk);
+          kind = "sell";
+        }
+      });
+      if (kind) {
+        setFlash(kind);
+        const id = setTimeout(() => setFlash(null), 650);
+        return () => clearTimeout(id);
+      }
+    }, [curT, signals, code]);
+    const flashGlow = flash === "buy" ? "0 0 0 2px var(--teal), 0 0 16px 2px rgba(76,214,179,0.55)" : flash === "sell" ? "0 0 0 2px var(--red), 0 0 16px 2px rgba(255,93,108,0.55)" : "none";
+    return /* @__PURE__ */ React.createElement("div", { className: "panel", style: { minWidth: 0, boxShadow: flashGlow, transition: "box-shadow 0.45s ease-out" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: compact ? 11 : 12.5 } }, code, name ? " \xB7 " + name : ""), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9, color: "var(--ink-3)", marginLeft: 6 } }, engine === "lwc" ? "LWC" : "SVG")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, alignItems: "center" } }, lastBar && /* @__PURE__ */ React.createElement(SimChangeGauge, { changePct: lastBar.change, size: compact ? 48 : 56 }), /* @__PURE__ */ React.createElement(SimSessionRing, { curT, size: compact ? 44 : 52 }), lastBar && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-1)" } }, _simPriceTick(lastBar.c)))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, children, engine !== "lwc" && ind.imbalance && /* @__PURE__ */ React.createElement(SimImbalancePane, { bars, compact }), engine !== "lwc" && ind.orderflow && /* @__PURE__ */ React.createElement(SimNetDeltaStrip, { bars, compact }), engine !== "lwc" && ind.rsi && /* @__PURE__ */ React.createElement(SimRsiPane, { bars, compact }), engine !== "lwc" && ind.macd && /* @__PURE__ */ React.createElement(SimMacdPane, { bars, compact }), /* @__PURE__ */ React.createElement(SimOrderBook, { lastBar, compact }), /* @__PURE__ */ React.createElement(SimOrderFlowTape, { bars, compact }), /* @__PURE__ */ React.createElement(SimFootprint, { bars, compact }), /* @__PURE__ */ React.createElement(SimHeatStrip, { bars, compact }), /* @__PURE__ */ React.createElement(SimRestFlow, { bars, compact })));
+  }
+
+  // ../frontend/sim-chart-engines.jsx
   function SimCandleChartLWC({ bars, signals, curT, code, name, compact, indicators }) {
     const wrapRef = useRef_simc(null);
     const chartRef = useRef_simc(null);
@@ -10855,421 +11331,12 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       } }, "\uC7AC\uC0DD\uC744 \uC2DC\uC791\uD558\uBA74 \uCE94\uB4E4\uC774 \uC2E4\uC2DC\uAC04\uC73C\uB85C \uCC44\uC6CC\uC9D1\uB2C8\uB2E4"))
     );
   }
-  function SimImbalancePane({ bars, compact }) {
-    const view = useMemo_simc(() => {
-      const arr = bars || [];
-      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
-    }, [bars]);
-    const vals = useMemo_simc(() => view.map((b) => {
-      if (b.imbalance != null && isFinite(b.imbalance)) return b.imbalance;
-      const br = b.buy_rest != null && isFinite(b.buy_rest) ? b.buy_rest : null;
-      const sr = b.sell_rest != null && isFinite(b.sell_rest) ? b.sell_rest : null;
-      if (br != null && sr != null && sr > 0) return br / sr;
-      return null;
-    }), [view]);
-    const hasData = useMemo_simc(() => vals.some((v) => v != null), [vals]);
-    if (!hasData) return null;
-    const n = view.length;
-    const W = 880;
-    const H = compact ? 30 : 40;
-    const padL = 56, padR = 16, padT = 4, padB = 4;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const finite = vals.filter((v) => v != null && isFinite(v));
-    const vMax = Math.max(2, ...finite);
-    const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + innerW * i / (n - 1);
-    const yAt = (v) => padT + innerH - Math.min(v, vMax) / vMax * innerH;
-    let d = "", started = false;
-    for (let i = 0; i < n; i++) {
-      const v = vals[i];
-      if (v == null || !isFinite(v)) {
-        started = false;
-        continue;
-      }
-      d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
-      started = true;
-    }
-    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, "\uD638\uAC00 \uBD88\uADE0\uD615(\uB808\uBCA81 \uCD1D\uC794\uB7C9\uBE44)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, /* @__PURE__ */ React.createElement(
-      "line",
-      {
-        x1: padL,
-        x2: W - padR,
-        y1: yAt(1),
-        y2: yAt(1),
-        stroke: "rgba(255,255,255,0.14)",
-        strokeWidth: "1",
-        strokeDasharray: "2 3"
-      }
-    ), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: yAt(1) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "1.0"), n > 1 && /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: "var(--teal)", strokeWidth: "1.2", opacity: "0.85" })));
-  }
-  function SimNetDeltaStrip({ bars, compact }) {
-    const view = useMemo_simc(() => {
-      const arr = bars || [];
-      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
-    }, [bars]);
-    const hasData = useMemo_simc(
-      () => view.some((b) => b.net_qty != null && isFinite(b.net_qty) && b.net_qty !== 0),
-      [view]
-    );
-    if (!hasData) return null;
-    const n = view.length;
-    const W = 880;
-    const H = compact ? 28 : 38;
-    const padL = 56, padR = 16;
-    const innerW = W - padL - padR;
-    const mid = H / 2;
-    const half = mid - 3;
-    const maxAbs = Math.max(1, ...view.map((b) => Math.abs(_simNq(b))));
-    const slot = n > 0 ? innerW / n : innerW;
-    const barW = Math.max(1, slot * 0.7);
-    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)" } }, "net-delta(\uC21C\uB9E4\uC218\uC218\uB7C9)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: mid, y2: mid, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" }), view.map((b, i) => {
-      const nq = _simNq(b);
-      const h = Math.min(Math.abs(nq), maxAbs) / maxAbs * half;
-      const x = padL + slot * i + (slot - barW) / 2;
-      const y = nq >= 0 ? mid - h : mid;
-      const color = nq > 0 ? "var(--teal)" : nq < 0 ? "var(--red)" : "var(--ink-3)";
-      return /* @__PURE__ */ React.createElement(
-        "rect",
-        {
-          key: i,
-          x: x.toFixed(1),
-          y: y.toFixed(1),
-          width: barW.toFixed(1),
-          height: Math.max(0.5, h).toFixed(1),
-          fill: color,
-          opacity: "0.7"
-        }
-      );
-    })));
-  }
-  function SimRsiPane({ bars, compact }) {
-    const view = useMemo_simc(() => {
-      const arr = bars || [];
-      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
-    }, [bars]);
-    const rsiVals = useMemo_simc(
-      () => typeof _simRsi === "function" ? _simRsi(view, 14) : [],
-      [view]
-    );
-    const hasData = useMemo_simc(() => rsiVals.some((v) => v != null), [rsiVals]);
-    if (!hasData) return null;
-    const n = view.length;
-    const W = 880;
-    const H = compact ? 30 : 40;
-    const padL = 56, padR = 16, padT = 4, padB = 4;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + innerW * i / (n - 1);
-    const yAt = (v) => padT + innerH - Math.max(0, Math.min(100, v)) / 100 * innerH;
-    let d = "", started = false;
-    for (let i = 0; i < n; i++) {
-      const v = rsiVals[i];
-      if (v == null || !isFinite(v)) {
-        started = false;
-        continue;
-      }
-      d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
-      started = true;
-    }
-    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)" } }, "RSI(14)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, [30, 50, 70].map((lv) => /* @__PURE__ */ React.createElement(
-      "line",
-      {
-        key: lv,
-        x1: padL,
-        x2: W - padR,
-        y1: yAt(lv),
-        y2: yAt(lv),
-        stroke: "rgba(255,255,255,0.10)",
-        strokeWidth: "1",
-        strokeDasharray: "2 3"
-      }
-    )), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: yAt(70) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "70"), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: yAt(30) + 3, textAnchor: "end", fill: "var(--ink-3)" }, "30"), n > 1 && /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: "var(--teal)", strokeWidth: "1.2", opacity: "0.85" })));
-  }
-  function SimMacdPane({ bars, compact }) {
-    const view = useMemo_simc(() => {
-      const arr = bars || [];
-      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
-    }, [bars]);
-    const macdData = useMemo_simc(
-      () => typeof _simMacd === "function" ? _simMacd(view) : { macd: [], signal: [], hist: [] },
-      [view]
-    );
-    const hasData = useMemo_simc(
-      () => (macdData.macd || []).some((v) => v != null),
-      [macdData]
-    );
-    if (!hasData) return null;
-    const n = view.length;
-    const W = 880;
-    const H = compact ? 30 : 42;
-    const padL = 56, padR = 16, padT = 4, padB = 4;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const mid = padT + innerH / 2;
-    const half = innerH / 2 - 1;
-    const hist = macdData.hist || [];
-    const macdLine = macdData.macd || [];
-    const signalLine = macdData.signal || [];
-    let maxAbs = 1;
-    for (let i = 0; i < n; i++) {
-      const v = hist[i];
-      if (v != null && isFinite(v)) maxAbs = Math.max(maxAbs, Math.abs(v));
-    }
-    const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + innerW * i / (n - 1);
-    const yAt = (v) => v == null || !isFinite(v) ? mid : mid - Math.max(-maxAbs, Math.min(maxAbs, v)) / maxAbs * half;
-    const slot = n > 1 ? innerW / n : innerW;
-    const barW = Math.max(1, slot * 0.55);
-    const linePath = (vals) => {
-      let d = "", started = false;
-      for (let i = 0; i < n; i++) {
-        const v = vals[i];
-        if (v == null || !isFinite(v)) {
-          started = false;
-          continue;
-        }
-        d += `${started ? "L" : "M"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)} `;
-        started = true;
-      }
-      return d;
-    };
-    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)" } }, "MACD(12,26,9)"), /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: { width: "100%", height: H } }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: mid, y2: mid, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" }), view.map((b, i) => {
-      const v = hist[i];
-      if (v == null || !isFinite(v)) return null;
-      const bh = Math.abs(yAt(v) - mid);
-      const x = xAt(i) - barW / 2;
-      const y = v >= 0 ? mid - bh : mid;
-      const color = v > 0 ? "var(--teal)" : "var(--red)";
-      return /* @__PURE__ */ React.createElement(
-        "rect",
-        {
-          key: i,
-          x: x.toFixed(1),
-          y: y.toFixed(1),
-          width: barW.toFixed(1),
-          height: Math.max(0.5, bh).toFixed(1),
-          fill: color,
-          opacity: "0.55"
-        }
-      );
-    }), n > 1 && /* @__PURE__ */ React.createElement("path", { d: linePath(macdLine), fill: "none", stroke: "var(--teal)", strokeWidth: "1.1", opacity: "0.9" }), n > 1 && /* @__PURE__ */ React.createElement("path", { d: linePath(signalLine), fill: "none", stroke: "var(--amber)", strokeWidth: "1", opacity: "0.8", strokeDasharray: "3 2" })));
-  }
-  function SimChartShell({ code, name, lastBar, bars, signals, curT, compact, engine, indicators, children }) {
-    const ind = indicators || _SIM_DEFAULT_INDICATORS;
-    const seenRef = useRef_simc(/* @__PURE__ */ new Set());
-    const [flash, setFlash] = useState_simc(null);
-    useEffect_simc(() => {
-      if (curT == null) seenRef.current = /* @__PURE__ */ new Set();
-    }, [curT]);
-    useEffect_simc(() => {
-      if (curT == null) return;
-      const seen = seenRef.current;
-      let kind = null;
-      (signals || []).forEach((sig) => {
-        const bk = code + "@b@" + sig.buy_hms;
-        if (sig.buy_hms != null && sig.buy_hms <= curT && !seen.has(bk)) {
-          seen.add(bk);
-          kind = "buy";
-        }
-        const sk = code + "@s@" + sig.sell_hms;
-        if (sig.sell_hms != null && sig.sell_hms <= curT && !seen.has(sk)) {
-          seen.add(sk);
-          kind = "sell";
-        }
-      });
-      if (kind) {
-        setFlash(kind);
-        const id = setTimeout(() => setFlash(null), 650);
-        return () => clearTimeout(id);
-      }
-    }, [curT, signals, code]);
-    const flashGlow = flash === "buy" ? "0 0 0 2px var(--teal), 0 0 16px 2px rgba(76,214,179,0.55)" : flash === "sell" ? "0 0 0 2px var(--red), 0 0 16px 2px rgba(255,93,108,0.55)" : "none";
-    return /* @__PURE__ */ React.createElement("div", { className: "panel", style: { minWidth: 0, boxShadow: flashGlow, transition: "box-shadow 0.45s ease-out" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: compact ? 11 : 12.5 } }, code, name ? " \xB7 " + name : ""), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9, color: "var(--ink-3)", marginLeft: 6 } }, engine === "lwc" ? "LWC" : "SVG")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, alignItems: "center" } }, lastBar && /* @__PURE__ */ React.createElement(SimChangeGauge, { changePct: lastBar.change, size: compact ? 48 : 56 }), /* @__PURE__ */ React.createElement(SimSessionRing, { curT, size: compact ? 44 : 52 }), lastBar && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-1)" } }, _simPriceTick(lastBar.c)))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, children, engine !== "lwc" && ind.imbalance && /* @__PURE__ */ React.createElement(SimImbalancePane, { bars, compact }), engine !== "lwc" && ind.orderflow && /* @__PURE__ */ React.createElement(SimNetDeltaStrip, { bars, compact }), engine !== "lwc" && ind.rsi && /* @__PURE__ */ React.createElement(SimRsiPane, { bars, compact }), engine !== "lwc" && ind.macd && /* @__PURE__ */ React.createElement(SimMacdPane, { bars, compact }), /* @__PURE__ */ React.createElement(SimOrderBook, { lastBar, compact }), /* @__PURE__ */ React.createElement(SimOrderFlowTape, { bars, compact }), /* @__PURE__ */ React.createElement(SimFootprint, { bars, compact }), /* @__PURE__ */ React.createElement(SimHeatStrip, { bars, compact }), /* @__PURE__ */ React.createElement(SimRestFlow, { bars, compact })));
-  }
   function SimCandleChart(props) {
     const useLwc = useMemo_simc(() => _lwcAvailable(), []);
     return useLwc ? /* @__PURE__ */ React.createElement(SimCandleChartLWC, { ...props }) : /* @__PURE__ */ React.createElement(SimCandleChartSVG, { ...props });
   }
-  function SimOrderFlowTape({ bars, compact }) {
-    const view = useMemo_simc(() => {
-      const arr = bars || [];
-      return arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
-    }, [bars]);
-    const hasData = useMemo_simc(
-      () => view.some((b) => b.net_qty != null && isFinite(b.net_qty) && b.net_qty !== 0),
-      [view]
-    );
-    if (!hasData) return null;
-    const maxAbs = Math.max(1, ...view.map((b) => Math.abs(_simNq(b))));
-    const H = compact ? 14 : 18;
-    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 6 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--teal)", flexShrink: 0, width: 48 } }, "\uC624\uB354\uD50C\uB85C\uC6B0"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flex: 1, height: H, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" } }, view.map((b, i) => {
-      const nq = _simNq(b);
-      const mag = Math.min(1, Math.abs(nq) / maxAbs);
-      const a = (0.15 + mag * 0.75).toFixed(3);
-      const bg = nq > 0 ? `rgba(76,214,179,${a})` : nq < 0 ? `rgba(255,93,108,${a})` : "rgba(150,158,170,0.12)";
-      return /* @__PURE__ */ React.createElement(
-        "div",
-        {
-          key: i,
-          title: _simTimeLabel(b.t) + " \xB7 \uC21C\uB9E4\uC218 " + _simPriceTick(nq),
-          style: { flex: 1, background: bg }
-        }
-      );
-    })));
-  }
-  function _simNq(b) {
-    return b && b.net_qty != null && isFinite(b.net_qty) ? b.net_qty : 0;
-  }
-  function _hoga_tick(price) {
-    const p = Math.abs(Number(price) || 0);
-    if (p < 2e3) return 1;
-    if (p < 5e3) return 5;
-    if (p < 2e4) return 10;
-    if (p < 5e4) return 50;
-    if (p < 2e5) return 100;
-    if (p < 5e5) return 500;
-    return 1e3;
-  }
-  function _bucketPrice(price, tick) {
-    const t = tick || 1;
-    return Math.round(Math.floor((Number(price) || 0) / t) * t);
-  }
-  function _barBuySell(bar) {
-    const vol = bar.vol != null && isFinite(bar.vol) ? bar.vol : 0;
-    const nq = bar.net_qty;
-    if (nq != null && isFinite(nq)) {
-      const buy = (vol + nq) / 2;
-      const sell = (vol - nq) / 2;
-      return { buy: Math.max(0, buy), sell: Math.max(0, sell), real: true };
-    }
-    const s = bar.strength != null && isFinite(bar.strength) ? bar.strength : 100;
-    const buyShare = Math.max(0, Math.min(1, s / 200));
-    return { buy: vol * buyShare, sell: vol * (1 - buyShare), real: false };
-  }
-  function SimFootprint({ bars, compact }) {
-    const [open, setOpen] = useState_simc(false);
-    const agg = useMemo_simc(() => {
-      const arr = bars || [];
-      const view = arr.length > _SIM_WINDOW ? arr.slice(arr.length - _SIM_WINDOW) : arr;
-      if (view.length === 0) return { levels: [], real: true, curPrice: null, hasVol: false };
-      const last = view[view.length - 1];
-      const map = /* @__PURE__ */ new Map();
-      let real = true;
-      let hasVol = false;
-      for (let i = 0; i < view.length; i++) {
-        const b = view[i];
-        const bs = _barBuySell(b);
-        if (!bs.real) real = false;
-        if (bs.buy + bs.sell > 0) hasVol = true;
-        const key = _bucketPrice(b.c, _hoga_tick(b.c));
-        const cur = map.get(key) || { buy: 0, sell: 0 };
-        cur.buy += bs.buy;
-        cur.sell += bs.sell;
-        map.set(key, cur);
-      }
-      const levels = Array.from(map.entries()).map(([price, v]) => ({ price, buy: v.buy, sell: v.sell, delta: v.buy - v.sell })).sort((a, b) => b.price - a.price);
-      return { levels, real, curPrice: _bucketPrice(last.c, _hoga_tick(last.c)), hasVol };
-    }, [bars]);
-    if (!agg.hasVol) return null;
-    const maxSide = Math.max(1, ...agg.levels.map((l) => Math.max(l.buy, l.sell)));
-    const rowH = compact ? 14 : 17;
-    const barW = compact ? 80 : 110;
-    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => setOpen((o) => !o),
-        className: "mono",
-        style: {
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          width: "100%",
-          padding: "4px 8px",
-          background: "transparent",
-          border: "1px solid var(--line-1)",
-          borderRadius: 5,
-          color: "var(--ink-2)",
-          cursor: "pointer",
-          fontSize: 10
-        }
-      },
-      /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, open ? "\u25BC" : "\u25B6"),
-      "\uC624\uB354\uD50C\uB85C\uC6B0 footprint",
-      /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "auto", color: agg.real ? "var(--teal)" : "var(--amber)" } }, agg.real ? "\uC2E4\uB370\uC774\uD130" : "\uAC15\uB3C4 \uADFC\uC0AC")
-    ), open && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 4, display: "flex", flexDirection: "column", gap: 1 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { display: "flex", alignItems: "center", fontSize: 8.5, color: "var(--ink-3)", padding: "0 2px" } }, /* @__PURE__ */ React.createElement("span", { style: { width: barW, textAlign: "left", color: "var(--red)" } }, "\uB9E4\uB3C4\uCCB4\uACB0"), /* @__PURE__ */ React.createElement("span", { style: { flex: 1, textAlign: "center" } }, "\uAC00\uACA9"), /* @__PURE__ */ React.createElement("span", { style: { width: barW, textAlign: "right", color: "var(--teal)" } }, "\uB9E4\uC218\uCCB4\uACB0"), /* @__PURE__ */ React.createElement("span", { style: { width: compact ? 44 : 56, textAlign: "right" } }, "\uB378\uD0C0")), agg.levels.map((lv) => {
-      const isCur = lv.price === agg.curPrice;
-      const sellW = lv.sell / maxSide * barW;
-      const buyW = lv.buy / maxSide * barW;
-      const sellInt = Math.min(1, lv.sell / maxSide);
-      const buyInt = Math.min(1, lv.buy / maxSide);
-      return /* @__PURE__ */ React.createElement(
-        "div",
-        {
-          key: lv.price,
-          className: "mono",
-          style: {
-            display: "flex",
-            alignItems: "center",
-            height: rowH,
-            fontSize: 9.5,
-            background: isCur ? "rgba(255,210,76,0.10)" : "transparent",
-            borderRadius: 3,
-            boxShadow: isCur ? "0 0 0 1px rgba(255,210,76,0.4) inset" : "none"
-          }
-        },
-        /* @__PURE__ */ React.createElement("div", { style: { width: barW, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", fontSize: 8.5 } }, lv.sell >= 1 ? _simPriceTick(lv.sell) : ""), /* @__PURE__ */ React.createElement("div", { style: { width: sellW, height: rowH - 5, background: `rgba(255,93,108,${(0.25 + sellInt * 0.6).toFixed(3)})`, borderRadius: 2 } })),
-        /* @__PURE__ */ React.createElement("span", { style: { flex: 1, textAlign: "center", color: isCur ? "var(--amber)" : "var(--ink-1)", fontWeight: isCur ? 600 : 400 } }, _simPriceTick(lv.price)),
-        /* @__PURE__ */ React.createElement("div", { style: { width: barW, display: "flex", justifyContent: "flex-start", alignItems: "center", gap: 4 } }, /* @__PURE__ */ React.createElement("div", { style: { width: buyW, height: rowH - 5, background: `rgba(76,214,179,${(0.25 + buyInt * 0.6).toFixed(3)})`, borderRadius: 2 } }), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)", fontSize: 8.5 } }, lv.buy >= 1 ? _simPriceTick(lv.buy) : "")),
-        /* @__PURE__ */ React.createElement("span", { style: { width: compact ? 44 : 56, textAlign: "right", color: lv.delta >= 0 ? "var(--teal)" : "var(--red)" } }, lv.delta >= 0 ? "+" : "", _simPriceTick(lv.delta))
-      );
-    }), !agg.real && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 8.5, color: "var(--ink-3)", marginTop: 3, lineHeight: 1.4 } }, "\uC21C\uB9E4\uC218\uC218\uB7C9(net_qty) \uBD80\uC7AC\uB85C \uCCB4\uACB0\uAC15\uB3C4 \uAE30\uBC18 \uADFC\uC0AC \uBD84\uB9AC\uB2E4(\uC2E4 \uB9E4\uC218/\uB9E4\uB3C4 \uCCB4\uACB0\uB7C9 \uC544\uB2D8).")));
-  }
-  function SimOrderBook({ lastBar, compact }) {
-    const prevRef = useRef_simc({ bid1: null, ask1: null });
-    const [flash, setFlash] = useState_simc({ bid: false, ask: false });
-    const bid1 = lastBar && lastBar.bid1 != null && isFinite(lastBar.bid1) ? lastBar.bid1 : null;
-    const ask1 = lastBar && lastBar.ask1 != null && isFinite(lastBar.ask1) ? lastBar.ask1 : null;
-    useEffect_simc(() => {
-      const p = prevRef.current;
-      const bidChg = p.bid1 != null && bid1 != null && bid1 !== p.bid1;
-      const askChg = p.ask1 != null && ask1 != null && ask1 !== p.ask1;
-      if (bidChg || askChg) {
-        setFlash({ bid: bidChg, ask: askChg });
-        const id = setTimeout(() => setFlash({ bid: false, ask: false }), 280);
-        prevRef.current = { bid1, ask1 };
-        return () => clearTimeout(id);
-      }
-      prevRef.current = { bid1, ask1 };
-    }, [bid1, ask1]);
-    if (!lastBar) return null;
-    const buyRest = lastBar.buy_rest != null && isFinite(lastBar.buy_rest) ? lastBar.buy_rest : null;
-    const sellRest = lastBar.sell_rest != null && isFinite(lastBar.sell_rest) ? lastBar.sell_rest : null;
-    if (bid1 == null && ask1 == null && buyRest == null && sellRest == null) return null;
-    const cur = lastBar.c != null && isFinite(lastBar.c) ? lastBar.c : null;
-    const strength = lastBar.strength != null && isFinite(lastBar.strength) ? lastBar.strength : null;
-    const maxRest = Math.max(1, buyRest || 0, sellRest || 0);
-    const askW = sellRest != null ? sellRest / maxRest * 100 : 0;
-    const bidW = buyRest != null ? buyRest / maxRest * 100 : 0;
-    const spread = bid1 != null && ask1 != null ? ask1 - bid1 : null;
-    const mid = bid1 != null && ask1 != null ? (ask1 + bid1) / 2 : null;
-    const spreadBps = spread != null && mid && mid > 0 ? spread / mid * 1e4 : null;
-    const totRest = (buyRest || 0) + (sellRest || 0);
-    const buyShare = totRest > 0 ? (buyRest || 0) / totRest * 100 : null;
-    const sellShare = totRest > 0 ? (sellRest || 0) / totRest * 100 : null;
-    const stColor = strength == null ? "var(--ink-2)" : strength >= 100 ? "var(--teal)" : "var(--red)";
-    const rowH = compact ? 20 : 24;
-    const askBg = flash.ask ? "rgba(56,140,255,0.22)" : "rgba(56,140,255,0.06)";
-    const bidBg = flash.bid ? "rgba(255,93,108,0.22)" : "rgba(255,93,108,0.06)";
-    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3, gap: 6 } }, /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: "mono",
-        style: { fontSize: 9.5, color: "var(--ink-3)" },
-        title: "\uC77C\uC77C DB\uB294 \uCD5C\uC6B0\uC120\uD638\uAC00\xB7\uCD1D\uC794\uB7C9\uB9CC \uC81C\uACF5(\uB808\uBCA82~10 \uC5C6\uC74C)"
-      },
-      "\uD638\uAC00\uCC3D (\uB808\uBCA81 + \uCD1D\uC794\uB7C9)"
-    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } }, spread != null && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-2)" } }, "\uC2A4\uD504\uB808\uB4DC ", _simPriceTick(spread), spreadBps != null ? ` (${spreadBps.toFixed(1)}bp)` : ""), strength != null && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: stColor, padding: "1px 6px", borderRadius: 3, border: "1px solid " + (strength >= 100 ? "var(--teal-dim)" : "var(--line-1)") } }, "\uCCB4\uACB0\uAC15\uB3C4 ", strength.toFixed(0)))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", height: rowH, background: askBg, borderRadius: 3, marginBottom: 1, transition: "background 0.28s ease-out" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#5aa0ff", paddingRight: 8 } }, ask1 != null ? _simPriceTick(ask1) : "\u2014"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: rowH - 8, position: "relative", display: "flex", justifyContent: "flex-start" } }, /* @__PURE__ */ React.createElement("div", { style: { width: askW + "%", height: "100%", background: "rgba(56,140,255,0.30)", borderRadius: 2, transition: "width 0.2s ease-out" } })), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 60 : 74, textAlign: "right", fontSize: 9.5, color: "#5aa0ff", paddingRight: 4 } }, sellRest != null ? _simPriceTick(sellRest) : "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { textAlign: "center", fontSize: 11, color: "var(--amber)", padding: "2px 0", letterSpacing: ".04em" } }, "\u25B8 ", cur != null ? _simPriceTick(cur) : "\u2014", " \u25C2"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", height: rowH, background: bidBg, borderRadius: 3, marginTop: 1, transition: "background 0.28s ease-out" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#ff8088", paddingRight: 8 } }, bid1 != null ? _simPriceTick(bid1) : "\u2014"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: rowH - 8, display: "flex", justifyContent: "flex-start" } }, /* @__PURE__ */ React.createElement("div", { style: { width: bidW + "%", height: "100%", background: "rgba(255,93,108,0.28)", borderRadius: 2, transition: "width 0.2s ease-out" } })), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 60 : 74, textAlign: "right", fontSize: 9.5, color: "#ff8088", paddingRight: 4 } }, buyRest != null ? _simPriceTick(buyRest) : "\u2014")), buyShare != null && sellShare != null && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 5 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", height: 6, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("div", { style: { width: buyShare.toFixed(1) + "%", background: "var(--teal)", opacity: 0.7, transition: "width 0.25s ease-out" } }), /* @__PURE__ */ React.createElement("div", { style: { width: sellShare.toFixed(1) + "%", background: "var(--red)", opacity: 0.7, transition: "width 0.25s ease-out" } })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 2, fontSize: 9 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--teal)" } }, "\uB9E4\uC218 ", buyShare.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--red)" } }, "\uB9E4\uB3C4 ", sellShare.toFixed(0), "%"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 9.5 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "#5aa0ff" } }, "\uCD1D\uB9E4\uB3C4 ", sellRest != null ? _simPriceTick(sellRest) : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "#ff8088" } }, "\uCD1D\uB9E4\uC218 ", buyRest != null ? _simPriceTick(buyRest) : "\u2014")));
-  }
-  var _SIM_OVERLAY_COLORS = ["#4cd6b3", "#ff5d6c", "#f0b35a", "#7c6cf0"];
+
+  // ../frontend/sim-signal-log.jsx
   function SimOverlayChart({ codes, barsByCode, nameByCode, curT }) {
     const series = useMemo_simc(() => {
       return (codes || []).map((code, idx) => {
@@ -11410,6 +11477,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       ));
     }))));
   }
+
+  // ../frontend/simulation-charts.jsx
   Object.assign(window, {
     SimCandleChart,
     SimCandleChartLWC,
@@ -11441,7 +11510,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     _SIM_DEFAULT_INDICATORS
   });
 
-  // ../frontend/simulation.jsx
+  // ../frontend/sim-tab-utils.jsx
   var {
     useState: useState_sim,
     useEffect: useEffect_sim,
@@ -11571,6 +11640,82 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       return null;
     }
   }
+  function _simFmtDate(d) {
+    const s = String(d);
+    if (s.length === 8) return s.slice(0, 4) + "-" + s.slice(4, 6) + "-" + s.slice(6, 8);
+    return s;
+  }
+  function _simTileColor(pct) {
+    const v = Number(pct) || 0;
+    const mag = Math.min(1, Math.abs(v) / 12);
+    const a = 0.12 + mag * 0.7;
+    if (v > 0) return `rgba(255,93,108,${a.toFixed(3)})`;
+    if (v < 0) return `rgba(56,140,255,${a.toFixed(3)})`;
+    return "rgba(150,158,170,0.14)";
+  }
+  var _SIM_VIEWBAR_LABEL = {
+    fontSize: 11,
+    color: "var(--ink-1)",
+    fontWeight: 600,
+    letterSpacing: ".3px"
+  };
+  var _SIM_ENGINE_ROWS = [
+    ["\uB77C\uC774\uBE0C", "Canvas\xB7\uAE30\uBCF8\xB7\uCD5C\uACBD\uB7C9 \xB7 \uD480 \uC624\uB354\uD50C\uB85C\uC6B0(\uCCB4\uACB0\uAC15\uB3C4\xB7\uD638\uAC00\xB7net-delta)"],
+    ["SVG", "\uBB34\uC758\uC874 \uD3F4\uBC31 \xB7 \uD480 \uC624\uB354\uD50C\uB85C\uC6B0(\uCCB4\uACB0\uAC15\uB3C4\xB7\uD638\uAC00\xB7net-delta)"],
+    ["LWC", "\uC804\uBB38 \uC90C/\uD06C\uB85C\uC2A4\uD5E4\uC5B4 \xB7 \uCCB4\uACB0\uAC15\uB3C4 \uC624\uBC84\uB808\uC774\uB9CC"]
+  ];
+  function _flattenSignals(signals, codes) {
+    const out = [];
+    (codes || []).forEach((code) => {
+      (signals[code] || []).forEach((s) => out.push({ ...s, code }));
+    });
+    out.sort((a, b) => a.buy_hms - b.buy_hms);
+    return out;
+  }
+  function _simFmtNum(v, digits) {
+    if (v == null) return "\u2014";
+    const n = Number(v);
+    if (!isFinite(n)) return "\u2014";
+    return n.toLocaleString("ko-KR", { maximumFractionDigits: digits == null ? 0 : digits });
+  }
+  var _SIM_WATCH_VARS = [
+    { key: "c", label: "\uD604\uC7AC\uAC00", digits: 0 },
+    { key: "change", label: "\uB4F1\uB77D\uC728", digits: 2 },
+    { key: "strength", label: "\uCCB4\uACB0\uAC15\uB3C4", digits: 0 },
+    { key: "vwap", label: "VWAP", digits: 0 },
+    { key: "ma5", label: "MA5", digits: 0 },
+    { key: "ma20", label: "MA20", digits: 0 },
+    { key: "ma60", label: "MA60", digits: 0 },
+    { key: "net_qty", label: "\uC21C\uB9E4\uC218\uC218\uB7C9", digits: 0 },
+    { key: "imbalance", label: "\uD638\uAC00\uBD88\uADE0\uD615", digits: 2 },
+    { key: "buy_rest", label: "\uB9E4\uC218\uCD1D\uC794\uB7C9", digits: 0 },
+    { key: "sell_rest", label: "\uB9E4\uB3C4\uCD1D\uC794\uB7C9", digits: 0 }
+  ];
+  var _SIM_WATCH_LS_KEY = "stom.sim.watch.v1";
+  function _loadWatchThresholds() {
+    try {
+      const raw = window.localStorage.getItem(_SIM_WATCH_LS_KEY);
+      const obj = raw ? JSON.parse(raw) : null;
+      return obj && typeof obj === "object" ? obj : {};
+    } catch (e) {
+      return {};
+    }
+  }
+  function _saveWatchThresholds(map) {
+    try {
+      window.localStorage.setItem(_SIM_WATCH_LS_KEY, JSON.stringify(map || {}));
+    } catch (e) {
+    }
+  }
+  function _evalWatch(value, th) {
+    if (!th || th.value === "" || th.value == null) return null;
+    if (value == null) return null;
+    const v = Number(value), t = Number(th.value);
+    if (!isFinite(v) || !isFinite(t)) return null;
+    return th.op === "<=" ? v <= t : v >= t;
+  }
+
+  // ../frontend/sim-tab-controls.jsx
   function SimControlBar({
     baseUrl,
     isDemo,
@@ -11676,11 +11821,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       );
     })))));
   }
-  function _simFmtDate(d) {
-    const s = String(d);
-    if (s.length === 8) return s.slice(0, 4) + "-" + s.slice(4, 6) + "-" + s.slice(6, 8);
-    return s;
-  }
   function SimPresetBar({ isDemo, busy, onPreset }) {
     if (isDemo) return null;
     const presets = [
@@ -11700,14 +11840,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       "\u26A1 ",
       p.label
     )), busy && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uCD94\uCC9C \uC870\uD68C \uC911\u2026")));
-  }
-  function _simTileColor(pct) {
-    const v = Number(pct) || 0;
-    const mag = Math.min(1, Math.abs(v) / 12);
-    const a = 0.12 + mag * 0.7;
-    if (v > 0) return `rgba(255,93,108,${a.toFixed(3)})`;
-    if (v < 0) return `rgba(56,140,255,${a.toFixed(3)})`;
-    return "rgba(150,158,170,0.14)";
   }
   function SimMarketMinimap({ stocks, selected, onToggleStock, query, isDemo, date, loading }) {
     const tiles = useMemo_sim(() => {
@@ -11830,6 +11962,349 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       }
     ), /* @__PURE__ */ React.createElement("div", { className: "progress-track" }, /* @__PURE__ */ React.createElement("div", { className: "progress-fill " + (playing ? "running" : ""), style: { width: pct + "%" } }))));
   }
+  function SimEnginePopover({ onClose }) {
+    const ref = useRef_sim(null);
+    useEffect_sim(() => {
+      const onKey = (e) => {
+        if (e.key === "Escape") onClose();
+      };
+      const onDoc = (e) => {
+        if (ref.current && !ref.current.contains(e.target)) onClose();
+      };
+      document.addEventListener("keydown", onKey);
+      document.addEventListener("mousedown", onDoc);
+      if (ref.current) {
+        try {
+          ref.current.focus();
+        } catch (e) {
+        }
+      }
+      return () => {
+        document.removeEventListener("keydown", onKey);
+        document.removeEventListener("mousedown", onDoc);
+      };
+    }, [onClose]);
+    return /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        ref,
+        role: "dialog",
+        "aria-label": "\uC5D4\uC9C4 \uC124\uBA85",
+        tabIndex: -1,
+        onKeyDown: (e) => {
+          if (e.key === "Enter" || e.key === " ") onClose();
+        },
+        style: {
+          position: "absolute",
+          top: "100%",
+          left: 0,
+          marginTop: 6,
+          zIndex: 30,
+          minWidth: 320,
+          maxWidth: 420,
+          padding: "10px 12px",
+          background: "var(--bg-1)",
+          border: "1px solid var(--line-1)",
+          borderRadius: 8,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
+          color: "var(--ink-1)"
+        }
+      },
+      /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, fontWeight: 600, color: "var(--ink-1)", marginBottom: 6 } }, "\uC5D4\uC9C4\uBCC4 \uC5ED\uD560(\uBE44\uB300\uCE6D) \u2014 \uAC19\uC740 \uB370\uC774\uD130, \uB2E4\uB978 \uAC15\uC810"),
+      /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", fontSize: 10.5, color: "var(--ink-1)", borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("tbody", null, _SIM_ENGINE_ROWS.map(([name, desc]) => /* @__PURE__ */ React.createElement("tr", { key: name }, /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 8px 3px 0", color: "var(--teal)", whiteSpace: "nowrap", verticalAlign: "top" } }, name), /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 0", color: "var(--ink-1)" } }, desc))))),
+      /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8, textAlign: "right" } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose, style: { fontSize: 10.5, padding: "2px 10px" } }, "\uB2EB\uAE30"))
+    );
+  }
+  function SimViewBar({
+    indicators,
+    onToggleIndicator,
+    chartMode,
+    onChartMode,
+    splitCols,
+    onSplitCols,
+    splitRows,
+    onSplitRows,
+    colCap,
+    codeCount,
+    multi,
+    engineMode,
+    onEngineMode
+  }) {
+    const indGroups = [
+      ["\uAC00\uACA9", [["ma", "MA"], ["ema", "EMA"], ["vwap", "VWAP"], ["boll", "\uBCFC\uB9B0\uC800"], ["vwapband", "VWAP\uBC34\uB4DC"]]],
+      ["\uBAA8\uBA58\uD140", [["rsi", "RSI"], ["macd", "MACD"]]],
+      ["\uD750\uB984", [["strength", "\uCCB4\uACB0\uAC15\uB3C4"], ["imbalance", "\uD638\uAC00"], ["orderflow", "\uC624\uB354\uD50C\uB85C\uC6B0"], ["volma", "\uAC70\uB798\uB7C9MA"], ["strma", "\uCCB4\uACB0\uAC15\uB3C4MA"]]]
+    ];
+    const [engineInfoOpen, setEngineInfoOpen] = useState_sim(false);
+    const tbtn = (active, label, onClick, key, title) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key,
+        onClick,
+        className: "mono",
+        title,
+        style: {
+          padding: "3px 9px",
+          fontSize: 10.5,
+          borderRadius: 4,
+          border: "1px solid " + (active ? "var(--teal-dim)" : "var(--line-1)"),
+          background: active ? "rgba(76,214,179,0.10)" : "transparent",
+          color: active ? "var(--teal)" : "var(--ink-2)",
+          cursor: "pointer"
+        }
+      },
+      label
+    );
+    const colChoices = [];
+    for (let c = 1; c <= Math.max(1, colCap || 1); c += 1) colChoices.push(c);
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "7px 10px" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, display: "inline-flex", alignItems: "center", gap: 4, position: "relative" } }, "\uC5D4\uC9C4", /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "aria-label": "\uC5D4\uC9C4 \uC124\uBA85",
+        title: "\uC5D4\uC9C4\uBCC4 \uC5ED\uD560 \uC124\uBA85",
+        onClick: () => setEngineInfoOpen((v) => !v),
+        style: {
+          width: 16,
+          height: 16,
+          lineHeight: "14px",
+          padding: 0,
+          borderRadius: "50%",
+          border: "1px solid var(--line-1)",
+          background: "transparent",
+          color: "var(--ink-1)",
+          cursor: "pointer",
+          fontSize: 10,
+          fontWeight: 700
+        }
+      },
+      "\u24D8"
+    ), engineInfoOpen && /* @__PURE__ */ React.createElement(SimEnginePopover, { onClose: () => setEngineInfoOpen(false) })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4 } }, _SIM_ENGINE_MODES.map(([m, lbl]) => tbtn(
+      engineMode === m,
+      lbl,
+      () => onEngineMode(m),
+      "e" + m,
+      m === "live" ? "Canvas \uB77C\uC774\uBE0C \uB80C\uB354(\uD604\uC7AC\uBD09 \uC131\uC7A5\xB7\uD50C\uB798\uC2DC\xB7\uD480 \uC624\uB354\uD50C\uB85C\uC6B0)" : m === "lwc" ? "lightweight-charts(\uC804\uBB38 \uC90C/\uD06C\uB85C\uC2A4\uD5E4\uC5B4\xB7\uCCB4\uACB0\uAC15\uB3C4 \uC624\uBC84\uB808\uC774\uB9CC)" : "\uC21C\uC218 SVG \uD3F4\uBC31(\uD480 \uC624\uB354\uD50C\uB85C\uC6B0)"
+    ))), engineMode === "lwc" && /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: "mono",
+        title: "LWC(lightweight-charts)\uB294 \uCE94\uB4E4 \uAC00\uB3C5\uC131\uC744 \uC704\uD574 \uC77C\uBD80 \uD558\uB2E8 \uC11C\uBE0C\uD328\uC778\uC744 \uC2E3\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4(\uC758\uB3C4\uB41C \uBE44\uB300\uCE6D). \uC804\uCCB4 \uC624\uB354\uD50C\uB85C\uC6B0/\uBAA8\uBA58\uD140\uC740 \uB77C\uC774\uBE0C\xB7SVG \uC5D4\uC9C4\uC5D0\uC11C \uBCF4\uC138\uC694.",
+        style: { fontSize: 9.5, color: "var(--ink-3)" }
+      },
+      "LWC \uBE44\uB300\uCE6D \u2014 RSI\xB7MACD\xB7\uD638\uAC00\uBD88\uADE0\uD615\xB7net-delta \uBBF8\uD45C\uC2DC(\uB77C\uC774\uBE0C\xB7SVG \uC804\uC6A9)"
+    ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, marginLeft: 6 } }, "\uC9C0\uD45C"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" } }, indGroups.map(([grp, defs]) => /* @__PURE__ */ React.createElement("div", { key: grp, style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, grp), defs.map(([k, lbl]) => tbtn(!!indicators[k], lbl, () => onToggleIndicator(k), k))))), multi && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, marginLeft: 6 } }, "\uBCF4\uAE30"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4 } }, _SIM_CHART_MODES.map(([m, lbl]) => tbtn(
+      chartMode === m,
+      lbl,
+      () => onChartMode(m),
+      m,
+      m === "overlay" ? "\uC815\uADDC\uD654 \uD55C \uCC28\uD2B8 \uACB9\uCE68" : "\uC885\uBAA9\uBCC4 \uBD84\uD560 \uADF8\uB9AC\uB4DC"
+    ))), chartMode === "split" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, "\uC5F4"), colChoices.map((c) => tbtn(splitCols === c, String(c), () => onSplitCols(c), "c" + c, c + "\uC5F4\uB85C \uBD84\uD560"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, "\uD589"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "mono",
+        title: "\uC790\uB3D9 \uD589\uC218(\uC885\uBAA9\uC218/\uC5F4)",
+        onClick: () => onSplitRows(0),
+        style: {
+          padding: "3px 9px",
+          fontSize: 10.5,
+          borderRadius: 4,
+          border: "1px solid " + ((splitRows || 0) === 0 ? "var(--teal-dim)" : "var(--line-1)"),
+          background: (splitRows || 0) === 0 ? "rgba(76,214,179,0.10)" : "transparent",
+          color: (splitRows || 0) === 0 ? "var(--teal)" : "var(--ink-2)",
+          cursor: "pointer"
+        }
+      },
+      "\uC790\uB3D9"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "mono",
+        "aria-label": "\uD589 \uC904\uC774\uAE30",
+        title: "\uBCF4\uC774\uB294 \uD589 \uC904\uC774\uAE30",
+        onClick: () => onSplitRows(Math.max(1, (splitRows || 0) - 1)),
+        style: { padding: "3px 8px", fontSize: 11, borderRadius: 4, border: "1px solid var(--line-1)", background: "transparent", color: "var(--ink-2)", cursor: "pointer" }
+      },
+      "\u2212"
+    ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-1)", minWidth: 18, textAlign: "center" } }, (splitRows || 0) === 0 ? "\u2014" : splitRows), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "mono",
+        "aria-label": "\uD589 \uB298\uB9AC\uAE30",
+        title: "\uBCF4\uC774\uB294 \uD589 \uB298\uB9AC\uAE30",
+        onClick: () => onSplitRows(Math.min(_SIM_MAX_CODES, (splitRows || 0) + 1)),
+        style: { padding: "3px 8px", fontSize: 11, borderRadius: 4, border: "1px solid var(--line-1)", background: "transparent", color: "var(--ink-2)", cursor: "pointer" }
+      },
+      "\uFF0B"
+    ))))));
+  }
+
+  // ../frontend/sim-tab-panels.jsx
+  function SimChartByEngine({ engineMode, ...props }) {
+    const Live = window.SimLiveChart;
+    const Lwc = window.SimCandleChartLWC;
+    const Svg = window.SimCandleChartSVG;
+    const Auto = window.SimCandleChart;
+    if (engineMode === "live" && Live) return /* @__PURE__ */ React.createElement(Live, { ...props });
+    if (engineMode === "svg" && Svg) return /* @__PURE__ */ React.createElement(Svg, { ...props });
+    if (engineMode === "lwc" && Lwc) return /* @__PURE__ */ React.createElement(Lwc, { ...props });
+    return Auto ? /* @__PURE__ */ React.createElement(Auto, { ...props }) : null;
+  }
+  function SimIndicatorCell({ value, digits, prev, className }) {
+    const dir = prev == null || value == null || value === prev ? "" : value > prev ? "sim-flash-up" : "sim-flash-down";
+    return /* @__PURE__ */ React.createElement("td", { key: value + ":" + dir, className: (className || "") + " " + dir }, _simFmtNum(value, digits));
+  }
+  function SimIndicatorTable({ codes, barsByCode, nameByCode }) {
+    const prevRef = useRef_sim({});
+    const rows = (codes || []).map((code) => {
+      const arr = barsByCode[code] || [];
+      const last = arr.length ? arr[arr.length - 1] : null;
+      return { code, name: nameByCode[code] || code, bar: last };
+    });
+    const prev = prevRef.current;
+    useEffect_sim(() => {
+      const next = {};
+      rows.forEach((r) => {
+        if (r.bar) next[r.code] = r.bar;
+      });
+      prevRef.current = next;
+    });
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uC9C0\uD45C \uB77C\uC774\uBE0C"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uD604\uC7AC \uC2DC\uAC01 \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { overflowX: "auto", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("table", { className: "sim-live-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC885\uBAA9"), /* @__PURE__ */ React.createElement("th", null, "\uD604\uC7AC\uAC00"), /* @__PURE__ */ React.createElement("th", null, "\uB4F1\uB77D%"), /* @__PURE__ */ React.createElement("th", null, "\uAC15\uB3C4"), /* @__PURE__ */ React.createElement("th", null, "VWAP"), /* @__PURE__ */ React.createElement("th", null, "MA5"), /* @__PURE__ */ React.createElement("th", null, "MA20"), /* @__PURE__ */ React.createElement("th", null, "MA60"), /* @__PURE__ */ React.createElement("th", null, "\uD638\uAC00\uBD88\uADE0\uD615"))), /* @__PURE__ */ React.createElement("tbody", null, rows.map(({ code, name, bar }) => {
+      const p = prev[code] || {};
+      if (!bar) {
+        return /* @__PURE__ */ React.createElement("tr", { key: code }, /* @__PURE__ */ React.createElement("td", { title: name }, code), /* @__PURE__ */ React.createElement("td", { colSpan: 8, style: { color: "var(--ink-3)" } }, "\uB300\uAE30\u2026"));
+      }
+      return /* @__PURE__ */ React.createElement("tr", { key: code }, /* @__PURE__ */ React.createElement("td", { title: name, style: { color: "var(--ink-1)" } }, code), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.c, digits: 0, prev: p.c }), /* @__PURE__ */ React.createElement("td", { className: bar.change > 0 ? "num-pos" : bar.change < 0 ? "num-neg" : "" }, bar.change > 0 ? "+" : "", (bar.change || 0).toFixed(2)), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.strength, digits: 0, prev: p.strength }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.vwap, digits: 0, prev: p.vwap }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.ma5, digits: 0, prev: p.ma5 }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.ma20, digits: 0, prev: p.ma20 }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.ma60, digits: 0, prev: p.ma60 }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.imbalance, digits: 2, prev: p.imbalance }));
+    })))));
+  }
+  function SimLearningPanel({ autoPause, onToggleAutoPause, signals, curT, highlightSig, onSeek }) {
+    const rows = signals || [];
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD559\uC2B5 \uBAA8\uB4DC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 10, padding: "10px" } }, /* @__PURE__ */ React.createElement("label", { style: { display: "flex", alignItems: "center", gap: 8, cursor: "pointer" } }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "checkbox",
+        checked: autoPause,
+        onChange: onToggleAutoPause,
+        style: { accentColor: "var(--violet)" }
+      }
+    ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11.5, color: "var(--ink-1)" } }, "\uC2E0\uD638 \uC790\uB3D9 \uC77C\uC2DC\uC815\uC9C0"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)", marginLeft: "auto" } }, "\uB9E4\uC218 \uC2DC\uAC01 \uB3C4\uB2EC \uC2DC \uC815\uC9C0")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 10, color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "Space"), " \uC7AC\uC0DD/\uC815\uC9C0", /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "\u2190"), /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "\u2192"), " \uBC30\uC18D", /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "Esc"), " \uC815\uC9C0"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 3, maxHeight: 200, overflowY: "auto" } }, rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { fontSize: 10.5 } }, "\uB9E4\uB9E4 \uC2E0\uD638\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.") : rows.map((s, i) => {
+      const key = s.code + "@" + s.buy_hms;
+      const reached = curT != null && s.buy_hms <= curT;
+      const isHi = highlightSig === key;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: i,
+          className: "sim-bookmark " + (reached ? "reached" : "pending"),
+          onClick: () => onSeek(s.buy_hms),
+          style: isHi ? { borderColor: "var(--violet)", background: "rgba(124,108,240,0.12)" } : null
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--teal)", flexShrink: 0 } }, "\u25B2", window._simTimeLabel(s.buy_hms)),
+        /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)", flexShrink: 0 } }, s.code),
+        /* @__PURE__ */ React.createElement(
+          "span",
+          {
+            className: "mono " + (s.profit_pct >= 0 ? "num-pos" : "num-neg"),
+            style: { fontSize: 10.5, marginLeft: "auto", flexShrink: 0 }
+          },
+          s.profit_pct >= 0 ? "+" : "",
+          (s.profit_pct || 0).toFixed(1),
+          "%"
+        )
+      );
+    }))));
+  }
+  function SimVariableWatch({ codes, barsByCode, nameByCode }) {
+    const [thresholds, setThresholds] = useState_sim(_loadWatchThresholds);
+    const [watchCode, setWatchCode] = useState_sim(codes && codes[0] || "");
+    const prevMetRef = useRef_sim({});
+    useEffect_sim(() => {
+      if (!codes || codes.length === 0) return;
+      if (!codes.includes(watchCode)) setWatchCode(codes[0]);
+    }, [codes.join(",")]);
+    const setTh = useCallback_sim((key, patch) => {
+      setThresholds((prev) => {
+        const cur = prev[key] || { op: ">=", value: "" };
+        const next = { ...prev, [key]: { ...cur, ...patch } };
+        _saveWatchThresholds(next);
+        return next;
+      });
+    }, []);
+    const clearAll = useCallback_sim(() => {
+      setThresholds({});
+      _saveWatchThresholds({});
+      prevMetRef.current = {};
+    }, []);
+    const arr = barsByCode[watchCode] || [];
+    const bar = arr.length ? arr[arr.length - 1] : null;
+    useEffect_sim(() => {
+      const snap = {};
+      _SIM_WATCH_VARS.forEach((v) => {
+        snap[v.key] = bar ? _evalWatch(bar[v.key], thresholds[v.key]) : null;
+      });
+      prevMetRef.current = snap;
+    });
+    const prevMet = prevMetRef.current;
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uBCC0\uC218 \uC6CC\uCE58"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, codes && codes.length > 1 && /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        className: "select",
+        value: watchCode,
+        onChange: (e) => setWatchCode(e.target.value),
+        style: { fontSize: 10.5, padding: "2px 6px", height: "auto" }
+      },
+      codes.map((c) => /* @__PURE__ */ React.createElement("option", { key: c, value: c }, nameByCode[c] || c))
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: clearAll, style: { fontSize: 10, padding: "2px 7px" } }, "\uC784\uACC4 \uCD08\uAE30\uD654"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { padding: "6px 8px" } }, !bar ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { fontSize: 10.5 } }, "\uC7AC\uC0DD\uC744 \uC2DC\uC791\uD558\uBA74 \uD604\uC7AC \uAC12\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("table", { className: "sim-live-table", style: { width: "100%" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uBCC0\uC218"), /* @__PURE__ */ React.createElement("th", null, "\uD604\uC7AC\uAC12"), /* @__PURE__ */ React.createElement("th", { style: { width: 44 } }, "\uC870\uAC74"), /* @__PURE__ */ React.createElement("th", { style: { width: 76 } }, "\uC784\uACC4\uAC12"))), /* @__PURE__ */ React.createElement("tbody", null, _SIM_WATCH_VARS.map((v) => {
+      const value = bar[v.key];
+      const th = thresholds[v.key] || { op: ">=", value: "" };
+      const met = _evalWatch(value, th);
+      const was = prevMet[v.key];
+      const rowBg = met == null ? "transparent" : met ? "rgba(76,214,179,0.10)" : "rgba(255,93,108,0.10)";
+      const flash = met === true && was !== true ? "sim-flash-up" : "";
+      const valTxt = value == null ? "\u2014" : _simFmtNum(value, v.digits);
+      return /* @__PURE__ */ React.createElement("tr", { key: v.key, className: flash, style: { background: rowBg } }, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "left", color: "var(--ink-1)" } }, v.label), /* @__PURE__ */ React.createElement("td", { className: "mono", style: {
+        color: met == null ? "var(--ink-1)" : met ? "var(--teal)" : "var(--red)"
+      } }, valTxt), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          value: th.op,
+          onChange: (e) => setTh(v.key, { op: e.target.value }),
+          className: "mono",
+          style: {
+            fontSize: 11,
+            padding: "1px 2px",
+            background: "var(--bg-0)",
+            color: "var(--ink-1)",
+            border: "1px solid var(--line-1)",
+            borderRadius: 4
+          }
+        },
+        /* @__PURE__ */ React.createElement("option", { value: ">=" }, "\u2265"),
+        /* @__PURE__ */ React.createElement("option", { value: "<=" }, "\u2264")
+      )), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "number",
+          value: th.value,
+          onChange: (e) => setTh(v.key, { value: e.target.value }),
+          placeholder: "\u2014",
+          className: "mono",
+          style: {
+            width: "100%",
+            fontSize: 11,
+            padding: "2px 4px",
+            textAlign: "right",
+            background: "var(--bg-0)",
+            color: "var(--ink-1)",
+            border: "1px solid var(--line-1)",
+            borderRadius: 4
+          }
+        }
+      )));
+    }))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9.5, color: "var(--ink-3)", marginTop: 6, lineHeight: 1.5 } }, "\uC784\uACC4\uB294 \uD604\uC7AC \uD504\uB808\uC784 \uAC12\uACFC\uC758 \uB2E8\uC21C \uBE44\uAD50\uB2E4. \uC870\uAC74\uC2DD \uC5D4\uC9C4 \uC815\uD569 \uB9E4\uB9E4 \uC2E0\uD638\uB294 \uC704 ", /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)" } }, "\uB9E4\uC218/\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), " \uC120\uD0DD \uC2DC \uCC28\uD2B8\uC5D0 \uC624\uBC84\uB808\uC774\uB41C\uB2E4.")));
+  }
+
+  // ../frontend/sim-tab-root.jsx
   function SimulationTab({ baseUrl, wsStatus }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [health, setHealth] = useState_sim(null);
@@ -12369,406 +12844,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       }))
     ))));
   }
-  function SimChartByEngine({ engineMode, ...props }) {
-    const Live = window.SimLiveChart;
-    const Lwc = window.SimCandleChartLWC;
-    const Svg = window.SimCandleChartSVG;
-    const Auto = window.SimCandleChart;
-    if (engineMode === "live" && Live) return /* @__PURE__ */ React.createElement(Live, { ...props });
-    if (engineMode === "svg" && Svg) return /* @__PURE__ */ React.createElement(Svg, { ...props });
-    if (engineMode === "lwc" && Lwc) return /* @__PURE__ */ React.createElement(Lwc, { ...props });
-    return Auto ? /* @__PURE__ */ React.createElement(Auto, { ...props }) : null;
-  }
-  var _SIM_VIEWBAR_LABEL = {
-    fontSize: 11,
-    color: "var(--ink-1)",
-    fontWeight: 600,
-    letterSpacing: ".3px"
-  };
-  var _SIM_ENGINE_ROWS = [
-    ["\uB77C\uC774\uBE0C", "Canvas\xB7\uAE30\uBCF8\xB7\uCD5C\uACBD\uB7C9 \xB7 \uD480 \uC624\uB354\uD50C\uB85C\uC6B0(\uCCB4\uACB0\uAC15\uB3C4\xB7\uD638\uAC00\xB7net-delta)"],
-    ["SVG", "\uBB34\uC758\uC874 \uD3F4\uBC31 \xB7 \uD480 \uC624\uB354\uD50C\uB85C\uC6B0(\uCCB4\uACB0\uAC15\uB3C4\xB7\uD638\uAC00\xB7net-delta)"],
-    ["LWC", "\uC804\uBB38 \uC90C/\uD06C\uB85C\uC2A4\uD5E4\uC5B4 \xB7 \uCCB4\uACB0\uAC15\uB3C4 \uC624\uBC84\uB808\uC774\uB9CC"]
-  ];
-  function SimEnginePopover({ onClose }) {
-    const ref = useRef_sim(null);
-    useEffect_sim(() => {
-      const onKey = (e) => {
-        if (e.key === "Escape") onClose();
-      };
-      const onDoc = (e) => {
-        if (ref.current && !ref.current.contains(e.target)) onClose();
-      };
-      document.addEventListener("keydown", onKey);
-      document.addEventListener("mousedown", onDoc);
-      if (ref.current) {
-        try {
-          ref.current.focus();
-        } catch (e) {
-        }
-      }
-      return () => {
-        document.removeEventListener("keydown", onKey);
-        document.removeEventListener("mousedown", onDoc);
-      };
-    }, [onClose]);
-    return /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        ref,
-        role: "dialog",
-        "aria-label": "\uC5D4\uC9C4 \uC124\uBA85",
-        tabIndex: -1,
-        onKeyDown: (e) => {
-          if (e.key === "Enter" || e.key === " ") onClose();
-        },
-        style: {
-          position: "absolute",
-          top: "100%",
-          left: 0,
-          marginTop: 6,
-          zIndex: 30,
-          minWidth: 320,
-          maxWidth: 420,
-          padding: "10px 12px",
-          background: "var(--bg-1)",
-          border: "1px solid var(--line-1)",
-          borderRadius: 8,
-          boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
-          color: "var(--ink-1)"
-        }
-      },
-      /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, fontWeight: 600, color: "var(--ink-1)", marginBottom: 6 } }, "\uC5D4\uC9C4\uBCC4 \uC5ED\uD560(\uBE44\uB300\uCE6D) \u2014 \uAC19\uC740 \uB370\uC774\uD130, \uB2E4\uB978 \uAC15\uC810"),
-      /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", fontSize: 10.5, color: "var(--ink-1)", borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("tbody", null, _SIM_ENGINE_ROWS.map(([name, desc]) => /* @__PURE__ */ React.createElement("tr", { key: name }, /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 8px 3px 0", color: "var(--teal)", whiteSpace: "nowrap", verticalAlign: "top" } }, name), /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 0", color: "var(--ink-1)" } }, desc))))),
-      /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8, textAlign: "right" } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose, style: { fontSize: 10.5, padding: "2px 10px" } }, "\uB2EB\uAE30"))
-    );
-  }
-  function SimViewBar({
-    indicators,
-    onToggleIndicator,
-    chartMode,
-    onChartMode,
-    splitCols,
-    onSplitCols,
-    splitRows,
-    onSplitRows,
-    colCap,
-    codeCount,
-    multi,
-    engineMode,
-    onEngineMode
-  }) {
-    const indGroups = [
-      ["\uAC00\uACA9", [["ma", "MA"], ["ema", "EMA"], ["vwap", "VWAP"], ["boll", "\uBCFC\uB9B0\uC800"], ["vwapband", "VWAP\uBC34\uB4DC"]]],
-      ["\uBAA8\uBA58\uD140", [["rsi", "RSI"], ["macd", "MACD"]]],
-      ["\uD750\uB984", [["strength", "\uCCB4\uACB0\uAC15\uB3C4"], ["imbalance", "\uD638\uAC00"], ["orderflow", "\uC624\uB354\uD50C\uB85C\uC6B0"], ["volma", "\uAC70\uB798\uB7C9MA"], ["strma", "\uCCB4\uACB0\uAC15\uB3C4MA"]]]
-    ];
-    const [engineInfoOpen, setEngineInfoOpen] = useState_sim(false);
-    const tbtn = (active, label, onClick, key, title) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key,
-        onClick,
-        className: "mono",
-        title,
-        style: {
-          padding: "3px 9px",
-          fontSize: 10.5,
-          borderRadius: 4,
-          border: "1px solid " + (active ? "var(--teal-dim)" : "var(--line-1)"),
-          background: active ? "rgba(76,214,179,0.10)" : "transparent",
-          color: active ? "var(--teal)" : "var(--ink-2)",
-          cursor: "pointer"
-        }
-      },
-      label
-    );
-    const colChoices = [];
-    for (let c = 1; c <= Math.max(1, colCap || 1); c += 1) colChoices.push(c);
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "7px 10px" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, display: "inline-flex", alignItems: "center", gap: 4, position: "relative" } }, "\uC5D4\uC9C4", /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "aria-label": "\uC5D4\uC9C4 \uC124\uBA85",
-        title: "\uC5D4\uC9C4\uBCC4 \uC5ED\uD560 \uC124\uBA85",
-        onClick: () => setEngineInfoOpen((v) => !v),
-        style: {
-          width: 16,
-          height: 16,
-          lineHeight: "14px",
-          padding: 0,
-          borderRadius: "50%",
-          border: "1px solid var(--line-1)",
-          background: "transparent",
-          color: "var(--ink-1)",
-          cursor: "pointer",
-          fontSize: 10,
-          fontWeight: 700
-        }
-      },
-      "\u24D8"
-    ), engineInfoOpen && /* @__PURE__ */ React.createElement(SimEnginePopover, { onClose: () => setEngineInfoOpen(false) })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4 } }, _SIM_ENGINE_MODES.map(([m, lbl]) => tbtn(
-      engineMode === m,
-      lbl,
-      () => onEngineMode(m),
-      "e" + m,
-      m === "live" ? "Canvas \uB77C\uC774\uBE0C \uB80C\uB354(\uD604\uC7AC\uBD09 \uC131\uC7A5\xB7\uD50C\uB798\uC2DC\xB7\uD480 \uC624\uB354\uD50C\uB85C\uC6B0)" : m === "lwc" ? "lightweight-charts(\uC804\uBB38 \uC90C/\uD06C\uB85C\uC2A4\uD5E4\uC5B4\xB7\uCCB4\uACB0\uAC15\uB3C4 \uC624\uBC84\uB808\uC774\uB9CC)" : "\uC21C\uC218 SVG \uD3F4\uBC31(\uD480 \uC624\uB354\uD50C\uB85C\uC6B0)"
-    ))), engineMode === "lwc" && /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: "mono",
-        title: "LWC(lightweight-charts)\uB294 \uCE94\uB4E4 \uAC00\uB3C5\uC131\uC744 \uC704\uD574 \uC77C\uBD80 \uD558\uB2E8 \uC11C\uBE0C\uD328\uC778\uC744 \uC2E3\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4(\uC758\uB3C4\uB41C \uBE44\uB300\uCE6D). \uC804\uCCB4 \uC624\uB354\uD50C\uB85C\uC6B0/\uBAA8\uBA58\uD140\uC740 \uB77C\uC774\uBE0C\xB7SVG \uC5D4\uC9C4\uC5D0\uC11C \uBCF4\uC138\uC694.",
-        style: { fontSize: 9.5, color: "var(--ink-3)" }
-      },
-      "LWC \uBE44\uB300\uCE6D \u2014 RSI\xB7MACD\xB7\uD638\uAC00\uBD88\uADE0\uD615\xB7net-delta \uBBF8\uD45C\uC2DC(\uB77C\uC774\uBE0C\xB7SVG \uC804\uC6A9)"
-    ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, marginLeft: 6 } }, "\uC9C0\uD45C"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" } }, indGroups.map(([grp, defs]) => /* @__PURE__ */ React.createElement("div", { key: grp, style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, grp), defs.map(([k, lbl]) => tbtn(!!indicators[k], lbl, () => onToggleIndicator(k), k))))), multi && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { ..._SIM_VIEWBAR_LABEL, marginLeft: 6 } }, "\uBCF4\uAE30"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4 } }, _SIM_CHART_MODES.map(([m, lbl]) => tbtn(
-      chartMode === m,
-      lbl,
-      () => onChartMode(m),
-      m,
-      m === "overlay" ? "\uC815\uADDC\uD654 \uD55C \uCC28\uD2B8 \uACB9\uCE68" : "\uC885\uBAA9\uBCC4 \uBD84\uD560 \uADF8\uB9AC\uB4DC"
-    ))), chartMode === "split" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, "\uC5F4"), colChoices.map((c) => tbtn(splitCols === c, String(c), () => onSplitCols(c), "c" + c, c + "\uC5F4\uB85C \uBD84\uD560"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)" } }, "\uD589"), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "mono",
-        title: "\uC790\uB3D9 \uD589\uC218(\uC885\uBAA9\uC218/\uC5F4)",
-        onClick: () => onSplitRows(0),
-        style: {
-          padding: "3px 9px",
-          fontSize: 10.5,
-          borderRadius: 4,
-          border: "1px solid " + ((splitRows || 0) === 0 ? "var(--teal-dim)" : "var(--line-1)"),
-          background: (splitRows || 0) === 0 ? "rgba(76,214,179,0.10)" : "transparent",
-          color: (splitRows || 0) === 0 ? "var(--teal)" : "var(--ink-2)",
-          cursor: "pointer"
-        }
-      },
-      "\uC790\uB3D9"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "mono",
-        "aria-label": "\uD589 \uC904\uC774\uAE30",
-        title: "\uBCF4\uC774\uB294 \uD589 \uC904\uC774\uAE30",
-        onClick: () => onSplitRows(Math.max(1, (splitRows || 0) - 1)),
-        style: { padding: "3px 8px", fontSize: 11, borderRadius: 4, border: "1px solid var(--line-1)", background: "transparent", color: "var(--ink-2)", cursor: "pointer" }
-      },
-      "\u2212"
-    ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-1)", minWidth: 18, textAlign: "center" } }, (splitRows || 0) === 0 ? "\u2014" : splitRows), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "mono",
-        "aria-label": "\uD589 \uB298\uB9AC\uAE30",
-        title: "\uBCF4\uC774\uB294 \uD589 \uB298\uB9AC\uAE30",
-        onClick: () => onSplitRows(Math.min(_SIM_MAX_CODES, (splitRows || 0) + 1)),
-        style: { padding: "3px 8px", fontSize: 11, borderRadius: 4, border: "1px solid var(--line-1)", background: "transparent", color: "var(--ink-2)", cursor: "pointer" }
-      },
-      "\uFF0B"
-    ))))));
-  }
-  function _flattenSignals(signals, codes) {
-    const out = [];
-    (codes || []).forEach((code) => {
-      (signals[code] || []).forEach((s) => out.push({ ...s, code }));
-    });
-    out.sort((a, b) => a.buy_hms - b.buy_hms);
-    return out;
-  }
-  function _simFmtNum(v, digits) {
-    if (v == null) return "\u2014";
-    const n = Number(v);
-    if (!isFinite(n)) return "\u2014";
-    return n.toLocaleString("ko-KR", { maximumFractionDigits: digits == null ? 0 : digits });
-  }
-  function SimIndicatorCell({ value, digits, prev, className }) {
-    const dir = prev == null || value == null || value === prev ? "" : value > prev ? "sim-flash-up" : "sim-flash-down";
-    return /* @__PURE__ */ React.createElement("td", { key: value + ":" + dir, className: (className || "") + " " + dir }, _simFmtNum(value, digits));
-  }
-  function SimIndicatorTable({ codes, barsByCode, nameByCode }) {
-    const prevRef = useRef_sim({});
-    const rows = (codes || []).map((code) => {
-      const arr = barsByCode[code] || [];
-      const last = arr.length ? arr[arr.length - 1] : null;
-      return { code, name: nameByCode[code] || code, bar: last };
-    });
-    const prev = prevRef.current;
-    useEffect_sim(() => {
-      const next = {};
-      rows.forEach((r) => {
-        if (r.bar) next[r.code] = r.bar;
-      });
-      prevRef.current = next;
-    });
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uC9C0\uD45C \uB77C\uC774\uBE0C"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uD604\uC7AC \uC2DC\uAC01 \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { overflowX: "auto", padding: "6px 8px" } }, /* @__PURE__ */ React.createElement("table", { className: "sim-live-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC885\uBAA9"), /* @__PURE__ */ React.createElement("th", null, "\uD604\uC7AC\uAC00"), /* @__PURE__ */ React.createElement("th", null, "\uB4F1\uB77D%"), /* @__PURE__ */ React.createElement("th", null, "\uAC15\uB3C4"), /* @__PURE__ */ React.createElement("th", null, "VWAP"), /* @__PURE__ */ React.createElement("th", null, "MA5"), /* @__PURE__ */ React.createElement("th", null, "MA20"), /* @__PURE__ */ React.createElement("th", null, "MA60"), /* @__PURE__ */ React.createElement("th", null, "\uD638\uAC00\uBD88\uADE0\uD615"))), /* @__PURE__ */ React.createElement("tbody", null, rows.map(({ code, name, bar }) => {
-      const p = prev[code] || {};
-      if (!bar) {
-        return /* @__PURE__ */ React.createElement("tr", { key: code }, /* @__PURE__ */ React.createElement("td", { title: name }, code), /* @__PURE__ */ React.createElement("td", { colSpan: 8, style: { color: "var(--ink-3)" } }, "\uB300\uAE30\u2026"));
-      }
-      return /* @__PURE__ */ React.createElement("tr", { key: code }, /* @__PURE__ */ React.createElement("td", { title: name, style: { color: "var(--ink-1)" } }, code), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.c, digits: 0, prev: p.c }), /* @__PURE__ */ React.createElement("td", { className: bar.change > 0 ? "num-pos" : bar.change < 0 ? "num-neg" : "" }, bar.change > 0 ? "+" : "", (bar.change || 0).toFixed(2)), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.strength, digits: 0, prev: p.strength }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.vwap, digits: 0, prev: p.vwap }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.ma5, digits: 0, prev: p.ma5 }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.ma20, digits: 0, prev: p.ma20 }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.ma60, digits: 0, prev: p.ma60 }), /* @__PURE__ */ React.createElement(SimIndicatorCell, { value: bar.imbalance, digits: 2, prev: p.imbalance }));
-    })))));
-  }
-  function SimLearningPanel({ autoPause, onToggleAutoPause, signals, curT, highlightSig, onSeek }) {
-    const rows = signals || [];
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD559\uC2B5 \uBAA8\uB4DC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 10, padding: "10px" } }, /* @__PURE__ */ React.createElement("label", { style: { display: "flex", alignItems: "center", gap: 8, cursor: "pointer" } }, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "checkbox",
-        checked: autoPause,
-        onChange: onToggleAutoPause,
-        style: { accentColor: "var(--violet)" }
-      }
-    ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11.5, color: "var(--ink-1)" } }, "\uC2E0\uD638 \uC790\uB3D9 \uC77C\uC2DC\uC815\uC9C0"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)", marginLeft: "auto" } }, "\uB9E4\uC218 \uC2DC\uAC01 \uB3C4\uB2EC \uC2DC \uC815\uC9C0")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 10, color: "var(--ink-3)" } }, /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "Space"), " \uC7AC\uC0DD/\uC815\uC9C0", /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "\u2190"), /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "\u2192"), " \uBC30\uC18D", /* @__PURE__ */ React.createElement("span", { className: "sim-kbd" }, "Esc"), " \uC815\uC9C0"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 3, maxHeight: 200, overflowY: "auto" } }, rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { fontSize: 10.5 } }, "\uB9E4\uB9E4 \uC2E0\uD638\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.") : rows.map((s, i) => {
-      const key = s.code + "@" + s.buy_hms;
-      const reached = curT != null && s.buy_hms <= curT;
-      const isHi = highlightSig === key;
-      return /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          key: i,
-          className: "sim-bookmark " + (reached ? "reached" : "pending"),
-          onClick: () => onSeek(s.buy_hms),
-          style: isHi ? { borderColor: "var(--violet)", background: "rgba(124,108,240,0.12)" } : null
-        },
-        /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--teal)", flexShrink: 0 } }, "\u25B2", window._simTimeLabel(s.buy_hms)),
-        /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-3)", flexShrink: 0 } }, s.code),
-        /* @__PURE__ */ React.createElement(
-          "span",
-          {
-            className: "mono " + (s.profit_pct >= 0 ? "num-pos" : "num-neg"),
-            style: { fontSize: 10.5, marginLeft: "auto", flexShrink: 0 }
-          },
-          s.profit_pct >= 0 ? "+" : "",
-          (s.profit_pct || 0).toFixed(1),
-          "%"
-        )
-      );
-    }))));
-  }
-  var _SIM_WATCH_VARS = [
-    { key: "c", label: "\uD604\uC7AC\uAC00", digits: 0 },
-    { key: "change", label: "\uB4F1\uB77D\uC728", digits: 2 },
-    { key: "strength", label: "\uCCB4\uACB0\uAC15\uB3C4", digits: 0 },
-    { key: "vwap", label: "VWAP", digits: 0 },
-    { key: "ma5", label: "MA5", digits: 0 },
-    { key: "ma20", label: "MA20", digits: 0 },
-    { key: "ma60", label: "MA60", digits: 0 },
-    { key: "net_qty", label: "\uC21C\uB9E4\uC218\uC218\uB7C9", digits: 0 },
-    { key: "imbalance", label: "\uD638\uAC00\uBD88\uADE0\uD615", digits: 2 },
-    { key: "buy_rest", label: "\uB9E4\uC218\uCD1D\uC794\uB7C9", digits: 0 },
-    { key: "sell_rest", label: "\uB9E4\uB3C4\uCD1D\uC794\uB7C9", digits: 0 }
-  ];
-  var _SIM_WATCH_LS_KEY = "stom.sim.watch.v1";
-  function _loadWatchThresholds() {
-    try {
-      const raw = window.localStorage.getItem(_SIM_WATCH_LS_KEY);
-      const obj = raw ? JSON.parse(raw) : null;
-      return obj && typeof obj === "object" ? obj : {};
-    } catch (e) {
-      return {};
-    }
-  }
-  function _saveWatchThresholds(map) {
-    try {
-      window.localStorage.setItem(_SIM_WATCH_LS_KEY, JSON.stringify(map || {}));
-    } catch (e) {
-    }
-  }
-  function _evalWatch(value, th) {
-    if (!th || th.value === "" || th.value == null) return null;
-    if (value == null) return null;
-    const v = Number(value), t = Number(th.value);
-    if (!isFinite(v) || !isFinite(t)) return null;
-    return th.op === "<=" ? v <= t : v >= t;
-  }
-  function SimVariableWatch({ codes, barsByCode, nameByCode }) {
-    const [thresholds, setThresholds] = useState_sim(_loadWatchThresholds);
-    const [watchCode, setWatchCode] = useState_sim(codes && codes[0] || "");
-    const prevMetRef = useRef_sim({});
-    useEffect_sim(() => {
-      if (!codes || codes.length === 0) return;
-      if (!codes.includes(watchCode)) setWatchCode(codes[0]);
-    }, [codes.join(",")]);
-    const setTh = useCallback_sim((key, patch) => {
-      setThresholds((prev) => {
-        const cur = prev[key] || { op: ">=", value: "" };
-        const next = { ...prev, [key]: { ...cur, ...patch } };
-        _saveWatchThresholds(next);
-        return next;
-      });
-    }, []);
-    const clearAll = useCallback_sim(() => {
-      setThresholds({});
-      _saveWatchThresholds({});
-      prevMetRef.current = {};
-    }, []);
-    const arr = barsByCode[watchCode] || [];
-    const bar = arr.length ? arr[arr.length - 1] : null;
-    useEffect_sim(() => {
-      const snap = {};
-      _SIM_WATCH_VARS.forEach((v) => {
-        snap[v.key] = bar ? _evalWatch(bar[v.key], thresholds[v.key]) : null;
-      });
-      prevMetRef.current = snap;
-    });
-    const prevMet = prevMetRef.current;
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uBCC0\uC218 \uC6CC\uCE58"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, codes && codes.length > 1 && /* @__PURE__ */ React.createElement(
-      "select",
-      {
-        className: "select",
-        value: watchCode,
-        onChange: (e) => setWatchCode(e.target.value),
-        style: { fontSize: 10.5, padding: "2px 6px", height: "auto" }
-      },
-      codes.map((c) => /* @__PURE__ */ React.createElement("option", { key: c, value: c }, nameByCode[c] || c))
-    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: clearAll, style: { fontSize: 10, padding: "2px 7px" } }, "\uC784\uACC4 \uCD08\uAE30\uD654"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { padding: "6px 8px" } }, !bar ? /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { fontSize: 10.5 } }, "\uC7AC\uC0DD\uC744 \uC2DC\uC791\uD558\uBA74 \uD604\uC7AC \uAC12\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("table", { className: "sim-live-table", style: { width: "100%" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left" } }, "\uBCC0\uC218"), /* @__PURE__ */ React.createElement("th", null, "\uD604\uC7AC\uAC12"), /* @__PURE__ */ React.createElement("th", { style: { width: 44 } }, "\uC870\uAC74"), /* @__PURE__ */ React.createElement("th", { style: { width: 76 } }, "\uC784\uACC4\uAC12"))), /* @__PURE__ */ React.createElement("tbody", null, _SIM_WATCH_VARS.map((v) => {
-      const value = bar[v.key];
-      const th = thresholds[v.key] || { op: ">=", value: "" };
-      const met = _evalWatch(value, th);
-      const was = prevMet[v.key];
-      const rowBg = met == null ? "transparent" : met ? "rgba(76,214,179,0.10)" : "rgba(255,93,108,0.10)";
-      const flash = met === true && was !== true ? "sim-flash-up" : "";
-      const valTxt = value == null ? "\u2014" : _simFmtNum(value, v.digits);
-      return /* @__PURE__ */ React.createElement("tr", { key: v.key, className: flash, style: { background: rowBg } }, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "left", color: "var(--ink-1)" } }, v.label), /* @__PURE__ */ React.createElement("td", { className: "mono", style: {
-        color: met == null ? "var(--ink-1)" : met ? "var(--teal)" : "var(--red)"
-      } }, valTxt), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement(
-        "select",
-        {
-          value: th.op,
-          onChange: (e) => setTh(v.key, { op: e.target.value }),
-          className: "mono",
-          style: {
-            fontSize: 11,
-            padding: "1px 2px",
-            background: "var(--bg-0)",
-            color: "var(--ink-1)",
-            border: "1px solid var(--line-1)",
-            borderRadius: 4
-          }
-        },
-        /* @__PURE__ */ React.createElement("option", { value: ">=" }, "\u2265"),
-        /* @__PURE__ */ React.createElement("option", { value: "<=" }, "\u2264")
-      )), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          type: "number",
-          value: th.value,
-          onChange: (e) => setTh(v.key, { value: e.target.value }),
-          placeholder: "\u2014",
-          className: "mono",
-          style: {
-            width: "100%",
-            fontSize: 11,
-            padding: "2px 4px",
-            textAlign: "right",
-            background: "var(--bg-0)",
-            color: "var(--ink-1)",
-            border: "1px solid var(--line-1)",
-            borderRadius: 4
-          }
-        }
-      )));
-    }))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9.5, color: "var(--ink-3)", marginTop: 6, lineHeight: 1.5 } }, "\uC784\uACC4\uB294 \uD604\uC7AC \uD504\uB808\uC784 \uAC12\uACFC\uC758 \uB2E8\uC21C \uBE44\uAD50\uB2E4. \uC870\uAC74\uC2DD \uC5D4\uC9C4 \uC815\uD569 \uB9E4\uB9E4 \uC2E0\uD638\uB294 \uC704 ", /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)" } }, "\uB9E4\uC218/\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), " \uC120\uD0DD \uC2DC \uCC28\uD2B8\uC5D0 \uC624\uBC84\uB808\uC774\uB41C\uB2E4.")));
-  }
+
+  // ../frontend/simulation.jsx
   Object.assign(window, { SimulationTab });
 
   // ../frontend/evolution-analysis.jsx
@@ -13144,6 +13221,25 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { EvolutionAnalysisPanel });
 
+  // ../frontend/rl-vdt-shell.jsx
+  var _VDT_STATUS_ICON = { pass: "\u2705", warn: "\u26A0\uFE0F", fail: "\u274C", pending: "\u23F3" };
+  function VdtPromoteChecklist({ v }) {
+    const checks = v && v.promote_checklist || [];
+    if (checks.length === 0) {
+      return /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, opacity: 0.6 } }, "PROMOTE \uCCB4\uD06C\uB9AC\uC2A4\uD2B8: \uB370\uC774\uD130 \uC5C6\uC74C");
+    }
+    return /* @__PURE__ */ React.createElement("table", { className: "mono", style: { fontSize: 12, width: "100%", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "PROMOTE \uC870\uAC74"), /* @__PURE__ */ React.createElement("th", null, "\uC0C1\uD0DC"), /* @__PURE__ */ React.createElement("th", null, "\uADFC\uAC70"))), /* @__PURE__ */ React.createElement("tbody", null, checks.map((c, i) => /* @__PURE__ */ React.createElement("tr", { key: "vdtc" + i }, /* @__PURE__ */ React.createElement("td", null, c.item), /* @__PURE__ */ React.createElement("td", null, _VDT_STATUS_ICON[c.status] || "?"), /* @__PURE__ */ React.createElement("td", null, c.detail || "\u2014")))));
+  }
+  function VdtAlerts({ v }) {
+    const alerts = v && v.alerts || [];
+    return alerts.map((a, i) => /* @__PURE__ */ React.createElement("div", { key: "vdta" + i, className: "mono", style: { fontSize: 12, color: "var(--amber)" } }, "\u26A0\uFE0F ", a));
+  }
+  function VdtSummaryLines({ v }) {
+    const lines = v && v.lines || [];
+    return lines.map((l, i) => /* @__PURE__ */ React.createElement("div", { key: "vdtl" + i, className: "mono", style: { fontSize: 12 } }, l));
+  }
+  Object.assign(window, { VdtPromoteChecklist, VdtAlerts, VdtSummaryLines });
+
   // ../frontend/analysis.jsx
   var {
     useState: useState_an,
@@ -13515,37 +13611,11 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { EdgeRatioPanel, FeatureImportancePanel });
 
-  // ../frontend/research-lab.jsx
+  // ../frontend/rl-analysis.jsx
   var {
-    useState: useState_rl,
-    useEffect: useEffect_rl,
-    useCallback: useCallback_rl,
-    useMemo: useMemo_rl
+    useState: useState_rla,
+    useEffect: useEffect_rla
   } = React;
-  var _VDT_STATUS_ICON = { pass: "\u2705", warn: "\u26A0\uFE0F", fail: "\u274C", pending: "\u23F3" };
-  function VdtPromoteChecklist({ v }) {
-    const checks = v && v.promote_checklist || [];
-    if (checks.length === 0) {
-      return /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, opacity: 0.6 } }, "PROMOTE \uCCB4\uD06C\uB9AC\uC2A4\uD2B8: \uB370\uC774\uD130 \uC5C6\uC74C");
-    }
-    return /* @__PURE__ */ React.createElement("table", { className: "mono", style: { fontSize: 12, width: "100%", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "PROMOTE \uC870\uAC74"), /* @__PURE__ */ React.createElement("th", null, "\uC0C1\uD0DC"), /* @__PURE__ */ React.createElement("th", null, "\uADFC\uAC70"))), /* @__PURE__ */ React.createElement("tbody", null, checks.map((c, i) => /* @__PURE__ */ React.createElement("tr", { key: "vdtc" + i }, /* @__PURE__ */ React.createElement("td", null, c.item), /* @__PURE__ */ React.createElement("td", null, _VDT_STATUS_ICON[c.status] || "?"), /* @__PURE__ */ React.createElement("td", null, c.detail || "\u2014")))));
-  }
-  function VdtAlerts({ v }) {
-    const alerts = v && v.alerts || [];
-    return alerts.map((a, i) => /* @__PURE__ */ React.createElement("div", { key: "vdta" + i, className: "mono", style: { fontSize: 12, color: "var(--amber)" } }, "\u26A0\uFE0F ", a));
-  }
-  function VdtSummaryLines({ v }) {
-    const lines = v && v.lines || [];
-    return lines.map((l, i) => /* @__PURE__ */ React.createElement("div", { key: "vdtl" + i, className: "mono", style: { fontSize: 12 } }, l));
-  }
-  Object.assign(window, { VdtPromoteChecklist, VdtAlerts, VdtSummaryLines });
-  var RESEARCH_TABS = [
-    { id: "edge", label: "\uC5E3\uC9C0(\uC2B9\uB960\xB7\uAE30\uB300\uAC12)" },
-    { id: "feature", label: "\uBCC0\uC218 \uC911\uC694\uB3C4" },
-    { id: "correlation", label: "\uC0C1\uAD00\uAD00\uACC4" },
-    { id: "combos", label: "\uBCC0\uC218 \uC870\uD569" },
-    { id: "validation", label: "\uAC80\uC99D" }
-  ];
   function _rlNum(value, digits) {
     if (typeof value !== "number" || !isFinite(value)) return "--";
     return value.toFixed(digits == null ? 3 : digits);
@@ -13649,7 +13719,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return { sign, strength, line, lowSample };
   }
   function _ComboPairPopover({ pair, onClose }) {
-    useEffect_rl(() => {
+    useEffect_rla(() => {
       const onKey = (e) => {
         if (e.key === "Escape") onClose();
       };
@@ -13662,7 +13732,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   function _CombinationList({ rows }) {
     const { features, cellMap } = _combinationMatrix(rows || []);
-    const [selected, setSelected] = useState_rl(null);
+    const [selected, setSelected] = useState_rla(null);
     if (features.length === 0) {
       return /* @__PURE__ */ React.createElement(_ResearchEmptyState, { message: "\uC120\uD0DD\uD55C run \uC5D0 \uBD84\uC11D\uD560 \uBCC0\uC218 \uC870\uD569\uC774 \uBD80\uC871\uD569\uB2C8\uB2E4." });
     }
@@ -13724,8 +13794,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return /* @__PURE__ */ React.createElement("div", { className: "research-empty", title: "research_score_not_promotion" }, "recency_research \xB7 ", recency.score_label || "research_score_not_promotion", " \xB7 score ", _rlNum(recency.research_score, 4));
   }
   function _PipelineCheckpointPanel({ baseUrl, isDemo }) {
-    const [items, setItems] = useState_rl(null);
-    useEffect_rl(() => {
+    const [items, setItems] = useState_rla(null);
+    useEffect_rla(() => {
       if (isDemo || !baseUrl) return;
       fetch(baseUrl + "/pipeline_status", { signal: AbortSignal.timeout(8e3) }).then((r) => r.ok ? r.json() : null).then((j) => setItems(j && Array.isArray(j.items) ? j.items : [])).catch(() => {
       });
@@ -13737,6 +13807,106 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       return /* @__PURE__ */ React.createElement("div", { key: i, className: "mono", style: { fontSize: 11, marginTop: 2 } }, /* @__PURE__ */ React.createElement("b", null, item.prefix), " \xB7 ", stageList.length === 0 ? "\uB2E8\uACC4 \uC5C6\uC74C" : stageList.map(([k, v]) => (v ? "\u2705" : "\xB7") + k).join("  "));
     }));
   }
+  function _GridHeatmap({ grid, metric }) {
+    const useMdd = metric === "mdd";
+    const cells = {};
+    (grid.cells || []).forEach((c) => {
+      cells[c.a + "|" + c.b] = c;
+    });
+    const maxAbs = Math.max(1, ...(grid.cells || []).map((c) => Math.abs(useMdd ? c.mdd : c.profit)));
+    const mesaSet = new Set((grid.mesa_cells || []).map((m) => m.a + "|" + m.b));
+    return /* @__PURE__ */ React.createElement("table", { className: "mono", style: { fontSize: 10, marginTop: 4 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, grid.param_a + " \\ " + grid.param_b), (grid.b_values || []).map((b) => /* @__PURE__ */ React.createElement("th", { key: b, style: { padding: "2px 6px" } }, b)))), /* @__PURE__ */ React.createElement("tbody", null, (grid.a_values || []).map((a) => /* @__PURE__ */ React.createElement("tr", { key: a }, /* @__PURE__ */ React.createElement("th", { style: { padding: "2px 6px" } }, a), (grid.b_values || []).map((b) => {
+      const c = cells[a + "|" + b];
+      if (!c) return /* @__PURE__ */ React.createElement("td", { key: b }, "\u2014");
+      const value = useMdd ? c.mdd : c.profit;
+      const pct = Math.round(15 + 70 * Math.abs(value) / maxAbs);
+      const token = useMdd ? "var(--red)" : c.profit > 0 ? "var(--teal)" : "var(--red)";
+      const bg = `color-mix(in srgb, ${token} ${pct}%, transparent)`;
+      const isMesa = mesaSet.has(a + "|" + b);
+      return /* @__PURE__ */ React.createElement(
+        "td",
+        {
+          key: b,
+          title: `${grid.param_a}=${a}, ${grid.param_b}=${b} \xB7 \uC190\uC775 ${Math.round(c.profit).toLocaleString()} \xB7 MDD ${_rlNum(c.mdd, 2)} \xB7 ${c.trades}\uAC74`,
+          style: {
+            background: bg,
+            textAlign: "right",
+            padding: "2px 6px",
+            outline: isMesa ? "2px solid var(--mesa-gold)" : "none"
+          }
+        },
+        useMdd ? _rlNum(c.mdd, 1) : Math.round(c.profit / 1e4).toLocaleString() + "\uB9CC",
+        isMesa ? "\u2605" : ""
+      );
+    })))));
+  }
+  function _EquityChart({ cum }) {
+    const pts = (cum || []).map(Number).filter((v) => isFinite(v));
+    if (pts.length < 2) return null;
+    const W = 620, H = 150, PAD = 6;
+    const min = Math.min(0, ...pts), max = Math.max(0, ...pts);
+    const span = Math.max(max - min, 1);
+    const x = (i) => PAD + i / (pts.length - 1) * (W - PAD * 2);
+    const y = (v) => H - PAD - (v - min) / span * (H - PAD * 2);
+    const path = pts.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+    const last = pts[pts.length - 1];
+    return /* @__PURE__ */ React.createElement("svg", { width: W, height: H, style: { background: "rgba(255,255,255,0.03)", borderRadius: 4 } }, /* @__PURE__ */ React.createElement("line", { x1: PAD, y1: y(0), x2: W - PAD, y2: y(0), stroke: "#777", strokeDasharray: "3,3", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("path", { d: path, fill: "none", stroke: last >= 0 ? "#4c9" : "#c66", strokeWidth: "1.8" }), /* @__PURE__ */ React.createElement("text", { x: W - PAD - 4, y: y(last) - 6, fill: "var(--ink-2)", fontSize: "10", textAnchor: "end" }, Math.round(last).toLocaleString()));
+  }
+  function _CurveSpark({ curve }) {
+    const pts = (curve || []).filter((p) => p && p.ok);
+    if (pts.length < 2) return null;
+    const W = 90, H = 22;
+    const profits = pts.map((p) => p.profit || 0);
+    const min = Math.min(0, ...profits), max = Math.max(0, ...profits);
+    const span = Math.max(max - min, 1);
+    const x = (i) => 2 + i / (pts.length - 1) * (W - 4);
+    const y = (v) => H - 2 - (v - min) / span * (H - 4);
+    const path = pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.profit || 0).toFixed(1)}`).join(" ");
+    return /* @__PURE__ */ React.createElement("svg", { width: W, height: H, style: { verticalAlign: "middle" } }, /* @__PURE__ */ React.createElement("line", { x1: "2", y1: y(0), x2: W - 2, y2: y(0), stroke: "#777", strokeDasharray: "2,2", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("path", { d: path, fill: "none", stroke: "#5b9", strokeWidth: "1.5" }));
+  }
+  function _McFanChart({ fan }) {
+    if (!fan || !Array.isArray(fan.x) || !fan.x.length) return null;
+    const W = 320, H = 90, PAD = 4;
+    const all = [].concat(fan.p05 || [], fan.p95 || [], fan.p50 || []);
+    const lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+    const span = hi - lo || 1;
+    const px = (i) => PAD + (W - 2 * PAD) * (fan.x[i] || 0);
+    const py = (v) => H - PAD - (H - 2 * PAD) * ((v - lo) / span);
+    const pts = (arr) => arr.map((v, i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(" ");
+    const band = (upper, lower) => pts(upper) + " " + lower.map((v, i) => `${px(lower.length - 1 - i).toFixed(1)},${py(lower[lower.length - 1 - i]).toFixed(1)}`).join(" ");
+    return /* @__PURE__ */ React.createElement(
+      "svg",
+      {
+        width: W,
+        height: H,
+        style: { display: "block", marginTop: 4 },
+        role: "img",
+        "aria-label": "MC fan chart"
+      },
+      /* @__PURE__ */ React.createElement("polygon", { points: band(fan.p95, fan.p05), fill: "rgba(80,140,200,0.18)", stroke: "none" }),
+      /* @__PURE__ */ React.createElement("polygon", { points: band(fan.p75, fan.p25), fill: "rgba(80,140,200,0.28)", stroke: "none" }),
+      /* @__PURE__ */ React.createElement("polyline", { points: pts(fan.p50), fill: "none", stroke: "rgba(120,190,255,0.95)", strokeWidth: "1.5" }),
+      /* @__PURE__ */ React.createElement(
+        "line",
+        {
+          x1: PAD,
+          y1: py(0),
+          x2: W - PAD,
+          y2: py(0),
+          stroke: "rgba(200,200,200,0.4)",
+          strokeDasharray: "3,3",
+          strokeWidth: "1"
+        }
+      )
+    );
+  }
+
+  // ../frontend/rl-validation.jsx
+  var {
+    useState: useState_rl,
+    useEffect: useEffect_rl,
+    useCallback: useCallback_rl
+  } = React;
   function _ValidationPanel({ baseUrl, runId, isDemo }) {
     const [selector, setSelector] = useState_rl("seed_relative_v1");
     const [yearly, setYearly] = useState_rl(null);
@@ -13929,102 +14099,24 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       }
     )), /* @__PURE__ */ React.createElement("button", { type: "button", className: "research-tab", onClick: fetchPsim }, "\uACB0\uD569 \uC2DC\uBBAC \uC2E4\uD589")), psim && !psim.error && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11 } }, "\uACB0\uD569 \uCD1D\uC190\uC775: ", /* @__PURE__ */ React.createElement("b", null, Math.round(psim.combined_total || 0).toLocaleString()), " \xB7 ", "\uACB0\uD569 MDD: ", /* @__PURE__ */ React.createElement("b", null, Math.round(psim.combined_mdd || 0).toLocaleString()), psim.diversification_gain != null ? ` \xB7 \uBD84\uC0B0\uC774\uB4DD: ${(psim.diversification_gain * 100).toFixed(1)}%` : ""), psim.correlation && Array.isArray(psim.correlation.labels) && /* @__PURE__ */ React.createElement("table", { className: "mono", style: { fontSize: 11, marginTop: 4 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC0C1\uAD00"), psim.correlation.labels.map((l) => /* @__PURE__ */ React.createElement("th", { key: l }, l.split(":")[0])))), /* @__PURE__ */ React.createElement("tbody", null, psim.correlation.labels.map((row, i) => /* @__PURE__ */ React.createElement("tr", { key: row }, /* @__PURE__ */ React.createElement("th", null, row.split(":")[0]), (psim.correlation.matrix[i] || []).map((v, j) => /* @__PURE__ */ React.createElement("td", { key: j }, v.toFixed(2)))))))), psim && psim.error && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--amber)" } }, psim.error)));
   }
-  function _GridHeatmap({ grid, metric }) {
-    const useMdd = metric === "mdd";
-    const cells = {};
-    (grid.cells || []).forEach((c) => {
-      cells[c.a + "|" + c.b] = c;
-    });
-    const maxAbs = Math.max(1, ...(grid.cells || []).map((c) => Math.abs(useMdd ? c.mdd : c.profit)));
-    const mesaSet = new Set((grid.mesa_cells || []).map((m) => m.a + "|" + m.b));
-    return /* @__PURE__ */ React.createElement("table", { className: "mono", style: { fontSize: 10, marginTop: 4 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, grid.param_a + " \\ " + grid.param_b), (grid.b_values || []).map((b) => /* @__PURE__ */ React.createElement("th", { key: b, style: { padding: "2px 6px" } }, b)))), /* @__PURE__ */ React.createElement("tbody", null, (grid.a_values || []).map((a) => /* @__PURE__ */ React.createElement("tr", { key: a }, /* @__PURE__ */ React.createElement("th", { style: { padding: "2px 6px" } }, a), (grid.b_values || []).map((b) => {
-      const c = cells[a + "|" + b];
-      if (!c) return /* @__PURE__ */ React.createElement("td", { key: b }, "\u2014");
-      const value = useMdd ? c.mdd : c.profit;
-      const pct = Math.round(15 + 70 * Math.abs(value) / maxAbs);
-      const token = useMdd ? "var(--red)" : c.profit > 0 ? "var(--teal)" : "var(--red)";
-      const bg = `color-mix(in srgb, ${token} ${pct}%, transparent)`;
-      const isMesa = mesaSet.has(a + "|" + b);
-      return /* @__PURE__ */ React.createElement(
-        "td",
-        {
-          key: b,
-          title: `${grid.param_a}=${a}, ${grid.param_b}=${b} \xB7 \uC190\uC775 ${Math.round(c.profit).toLocaleString()} \xB7 MDD ${_rlNum(c.mdd, 2)} \xB7 ${c.trades}\uAC74`,
-          style: {
-            background: bg,
-            textAlign: "right",
-            padding: "2px 6px",
-            outline: isMesa ? "2px solid var(--mesa-gold)" : "none"
-          }
-        },
-        useMdd ? _rlNum(c.mdd, 1) : Math.round(c.profit / 1e4).toLocaleString() + "\uB9CC",
-        isMesa ? "\u2605" : ""
-      );
-    })))));
-  }
-  function _EquityChart({ cum }) {
-    const pts = (cum || []).map(Number).filter((v) => isFinite(v));
-    if (pts.length < 2) return null;
-    const W = 620, H = 150, PAD = 6;
-    const min = Math.min(0, ...pts), max = Math.max(0, ...pts);
-    const span = Math.max(max - min, 1);
-    const x = (i) => PAD + i / (pts.length - 1) * (W - PAD * 2);
-    const y = (v) => H - PAD - (v - min) / span * (H - PAD * 2);
-    const path = pts.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
-    const last = pts[pts.length - 1];
-    return /* @__PURE__ */ React.createElement("svg", { width: W, height: H, style: { background: "rgba(255,255,255,0.03)", borderRadius: 4 } }, /* @__PURE__ */ React.createElement("line", { x1: PAD, y1: y(0), x2: W - PAD, y2: y(0), stroke: "#777", strokeDasharray: "3,3", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("path", { d: path, fill: "none", stroke: last >= 0 ? "#4c9" : "#c66", strokeWidth: "1.8" }), /* @__PURE__ */ React.createElement("text", { x: W - PAD - 4, y: y(last) - 6, fill: "var(--ink-2)", fontSize: "10", textAnchor: "end" }, Math.round(last).toLocaleString()));
-  }
-  function _CurveSpark({ curve }) {
-    const pts = (curve || []).filter((p) => p && p.ok);
-    if (pts.length < 2) return null;
-    const W = 90, H = 22;
-    const profits = pts.map((p) => p.profit || 0);
-    const min = Math.min(0, ...profits), max = Math.max(0, ...profits);
-    const span = Math.max(max - min, 1);
-    const x = (i) => 2 + i / (pts.length - 1) * (W - 4);
-    const y = (v) => H - 2 - (v - min) / span * (H - 4);
-    const path = pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.profit || 0).toFixed(1)}`).join(" ");
-    return /* @__PURE__ */ React.createElement("svg", { width: W, height: H, style: { verticalAlign: "middle" } }, /* @__PURE__ */ React.createElement("line", { x1: "2", y1: y(0), x2: W - 2, y2: y(0), stroke: "#777", strokeDasharray: "2,2", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("path", { d: path, fill: "none", stroke: "#5b9", strokeWidth: "1.5" }));
-  }
-  function _McFanChart({ fan }) {
-    if (!fan || !Array.isArray(fan.x) || !fan.x.length) return null;
-    const W = 320, H = 90, PAD = 4;
-    const all = [].concat(fan.p05 || [], fan.p95 || [], fan.p50 || []);
-    const lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
-    const span = hi - lo || 1;
-    const px = (i) => PAD + (W - 2 * PAD) * (fan.x[i] || 0);
-    const py = (v) => H - PAD - (H - 2 * PAD) * ((v - lo) / span);
-    const pts = (arr) => arr.map((v, i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(" ");
-    const band = (upper, lower) => pts(upper) + " " + lower.map((v, i) => `${px(lower.length - 1 - i).toFixed(1)},${py(lower[lower.length - 1 - i]).toFixed(1)}`).join(" ");
-    return /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        width: W,
-        height: H,
-        style: { display: "block", marginTop: 4 },
-        role: "img",
-        "aria-label": "MC fan chart"
-      },
-      /* @__PURE__ */ React.createElement("polygon", { points: band(fan.p95, fan.p05), fill: "rgba(80,140,200,0.18)", stroke: "none" }),
-      /* @__PURE__ */ React.createElement("polygon", { points: band(fan.p75, fan.p25), fill: "rgba(80,140,200,0.28)", stroke: "none" }),
-      /* @__PURE__ */ React.createElement("polyline", { points: pts(fan.p50), fill: "none", stroke: "rgba(120,190,255,0.95)", strokeWidth: "1.5" }),
-      /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          x1: PAD,
-          y1: py(0),
-          x2: W - PAD,
-          y2: py(0),
-          stroke: "rgba(200,200,200,0.4)",
-          strokeDasharray: "3,3",
-          strokeWidth: "1"
-        }
-      )
-    );
-  }
+
+  // ../frontend/rl-panel.jsx
+  var {
+    useState: useState_rl2,
+    useEffect: useEffect_rl2,
+    useCallback: useCallback_rl2,
+    useMemo: useMemo_rl
+  } = React;
+  var RESEARCH_TABS = [
+    { id: "edge", label: "\uC5E3\uC9C0(\uC2B9\uB960\xB7\uAE30\uB300\uAC12)" },
+    { id: "feature", label: "\uBCC0\uC218 \uC911\uC694\uB3C4" },
+    { id: "correlation", label: "\uC0C1\uAD00\uAD00\uACC4" },
+    { id: "combos", label: "\uBCC0\uC218 \uC870\uD569" },
+    { id: "validation", label: "\uAC80\uC99D" }
+  ];
   function _RlProcessFlowOverlay({ onClose, activeStage }) {
     const PIPELINE = window.STOM_PIPELINE || [];
-    useEffect_rl(() => {
+    useEffect_rl2(() => {
       const onKey = (e) => {
         if (e.key === "Escape") onClose();
       };
@@ -14035,11 +14127,11 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     return /* @__PURE__ */ React.createElement("div", { className: "rp-overlay", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { className: "rp-overlay-card", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "rp-overlay-hd" }, /* @__PURE__ */ React.createElement("span", { className: "rp-card-title" }, "\uC9C4\uD654 \uD504\uB85C\uC138\uC2A4 \u2014 \uC804\uCCB4 \uD750\uB984"), ai >= 0 && /* @__PURE__ */ React.createElement("span", { className: "rp-card-sub" }, "\uD604\uC7AC \uB2E8\uACC4: ", PIPELINE[ai].title), /* @__PURE__ */ React.createElement("button", { type: "button", className: "btn ghost sm", style: { marginLeft: "auto" }, onClick: onClose }, "\u2715 \uB2EB\uAE30 (Esc)")), /* @__PURE__ */ React.createElement("div", { className: "rp-flow" }, PIPELINE.map((s, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key: s.title }, /* @__PURE__ */ React.createElement("div", { className: "rp-flow-node" + (i === ai ? " rp-flow-active" : "") }, /* @__PURE__ */ React.createElement("div", { className: "rp-flow-ico" }, s.icon), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-name" }, i + 1, ". ", s.title, i === ai && /* @__PURE__ */ React.createElement("span", { className: "rp-flow-pulse" }, " \u25CF \uC9C4\uD589")), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-desc" }, s.desc), /* @__PURE__ */ React.createElement("div", { className: "rp-flow-terms" }, s.terms.map(([t, d]) => /* @__PURE__ */ React.createElement("div", { key: t, className: "rp-flow-term" }, /* @__PURE__ */ React.createElement("b", null, t), " ", d)))), i < PIPELINE.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "rp-flow-arrow" }, "\u2192"))))));
   }
   function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
-    const [tab, setTab] = useState_rl("edge");
-    const [fullscreen, setFullscreen] = useState_rl(false);
-    const [opsStrip, setOpsStrip] = useState_rl(null);
-    const [showFlow, setShowFlow] = useState_rl(false);
-    useEffect_rl(() => {
+    const [tab, setTab] = useState_rl2("edge");
+    const [fullscreen, setFullscreen] = useState_rl2(false);
+    const [opsStrip, setOpsStrip] = useState_rl2(null);
+    const [showFlow, setShowFlow] = useState_rl2(false);
+    useEffect_rl2(() => {
       if (!baseUrl) return void 0;
       const pull = () => fetch(baseUrl + "/ops_status", { signal: AbortSignal.timeout(8e3) }).then((r) => r.ok ? r.json() : null).then((j) => {
         setOpsStrip(j);
@@ -14055,14 +14147,14 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       const timer = setInterval(pull, 1e4);
       return () => clearInterval(timer);
     }, [baseUrl]);
-    const [method, setMethod] = useState_rl("spearman");
-    const [axis, setAxis] = useState_rl("time");
-    const [data, setData] = useState_rl(null);
-    const [loading, setLoading] = useState_rl(false);
-    const [err, setErr] = useState_rl(null);
+    const [method, setMethod] = useState_rl2("spearman");
+    const [axis, setAxis] = useState_rl2("time");
+    const [data, setData] = useState_rl2(null);
+    const [loading, setLoading] = useState_rl2(false);
+    const [err, setErr] = useState_rl2(null);
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const needsCorrelation = tab === "correlation" || tab === "combos";
-    const refreshCorrelation = useCallback_rl(() => {
+    const refreshCorrelation = useCallback_rl2(() => {
       if (!needsCorrelation || isDemo || !baseUrl || !runId) return;
       setLoading(true);
       const url = baseUrl + "/variable_correlation?run_id=" + encodeURIComponent(runId) + "&method=" + encodeURIComponent(method);
@@ -14071,7 +14163,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         setErr(null);
       }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
     }, [baseUrl, isDemo, method, needsCorrelation, runId]);
-    useEffect_rl(() => {
+    useEffect_rl2(() => {
       refreshCorrelation();
     }, [refreshCorrelation]);
     const matrixRows = data && Array.isArray(data.feature_matrix) ? data.feature_matrix : [];
@@ -14218,6 +14310,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       ops: opsStrip
     }) : /* @__PURE__ */ React.createElement(_RlProcessFlowOverlay, { onClose: () => setShowFlow(false), activeStage: flowActiveStage })));
   }
+  Object.assign(window, { ResearchLabPanel });
+
+  // ../frontend/research-lab.jsx
+  Object.assign(window, { VdtPromoteChecklist, VdtAlerts, VdtSummaryLines });
   Object.assign(window, { ResearchLabPanel });
 
   // ../frontend/app.jsx

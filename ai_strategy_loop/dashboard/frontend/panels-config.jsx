@@ -1,0 +1,483 @@
+/* Reusable small panels — config / strategy panels (split from panels.jsx for the 800-line cap).
+   현재 세대(Live) · 활성 전략(코드/diff) · 활성 설정·토글 · GA 개체군 · 메타분석 누적학습 등
+   "지금 무슨 전략/설정으로 돌고 있나"를 LIVE 상태에서 직접 렌더하는 패널 묶음. app.jsx 와
+   panels.jsx(배럴)이 소비한다.
+
+   stom-ui 전역(fmtTime 등)은 절대 import-변환하지 않는다(window 전역으로 공유). DemoBadge·
+   isDemoSource 도 window 전역으로 소비한다. React 훅은 파일 고유 별칭(useState_pcf / …)으로
+   destructure 한다(단일 번들 dup-globals 가드).
+*/
+const { useState: useState_pcf, useEffect: useEffect_pcf, useMemo: useMemo_pcf } = React;
+
+// ---- Current generation panel ----
+function CurrentGenPanel({ state }) {
+  const running = state.status === "running" || state.status === "stopping";
+  const inProgress = state.generations.length < state.current_gen + (running ? 1 : 0);
+  // Active gen number for display
+  const activeGen = running ? state.current_gen + 1 : state.current_gen;
+  const phase = state.latest?.phase || "—";
+  const checkpoint = state.latest?.last_checkpoint || "—";
+  const message = state.latest?.message || "";
+
+  const phaseColor = {
+    // 데모 시뮬레이터(한국어) phase.
+    "생성중": "var(--blue)",
+    "백테스트중": "var(--amber)",
+    "채점중": "var(--violet)",
+    "완료": "var(--teal)",
+    "대기중": "var(--ink-2)",
+    "정지됨": "var(--ink-1)",
+    "승인 완료": "var(--teal)",
+    // R8 — LIVE(backend 영어) phase도 색을 매핑(이전엔 기본색으로만 표시됐다).
+    "loop_start": "var(--blue)",
+    "warm_prepare_start": "var(--blue)",
+    "warm_prepare_done": "var(--blue)",
+    "ga_init": "var(--blue)",
+    "backtest_start": "var(--amber)",
+    "ga_evaluate_start": "var(--amber)",
+    "backtest_end": "var(--violet)",
+    "generation_done": "var(--teal)",
+    "ga_generation_done": "var(--teal)",
+    "complete": "var(--teal)",
+    "stopping": "var(--ink-1)",
+  }[phase] || "var(--ink-1)";
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: running ? "var(--amber)" : "var(--ink-3)" }}></span>
+          현재 세대 — Live
+        </div>
+        <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
+          {fmtTime(state.updated_at)}
+        </span>
+      </div>
+      <div className="panel-bd">
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 22 }}>
+          <div className="stat">
+            <span className="stat-label">세대</span>
+            <span className="stat-value lg mono">
+              gen_{String(activeGen).padStart(2, "0")}
+              <span style={{ color: "var(--ink-3)", fontSize: 16 }}> / {state.max_generations}</span>
+            </span>
+          </div>
+          <div className="stat">
+            <span className="stat-label">페이즈</span>
+            <span className="stat-value mono" style={{ color: phaseColor, fontSize: 20 }}>
+              {phase}
+            </span>
+          </div>
+          <div className="stat" style={{ marginLeft: "auto", textAlign: "right" }}>
+            <span className="stat-label">체크포인트</span>
+            <span className="stat-sub" style={{ color: "var(--ink-1)" }}>{checkpoint}</span>
+          </div>
+        </div>
+
+        {running && (
+          <div style={{ marginTop: 14 }}>
+            <div className="scanbar"></div>
+          </div>
+        )}
+
+        <div style={{
+          marginTop: 14,
+          padding: "10px 12px",
+          background: "var(--bg-0)",
+          border: "1px solid var(--line-1)",
+          borderRadius: 6,
+          fontFamily: "var(--mono)",
+          fontSize: 12,
+          color: "var(--ink-1)",
+          minHeight: 38,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+        }}>
+          <span style={{ color: "var(--ink-3)" }}>›</span>
+          <span>{message || (state.status === "idle" ? "진화 시작 버튼으로 루프를 개시하세요" : "—")}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- Active config / toggles panel (R8) ----
+// LoopState.active_config(루프가 적용한 주요 설정·5종 안전토글 스냅샷)를 LIVE로 렌더한다.
+//   "지금 무슨 설정으로 돌고 있나"를 폼/상태가 아니라 실시간 상태에서 직접 보여준다.
+//   active_config.toggles(켜진 bool 토글 이름 목록)로 토글을 강조한다. 없으면 안내만.
+function _activeStrategyGenNo(item) {
+  if (!item) return null;
+  const raw = item.gen_no ?? item.gen;
+  return typeof raw === "number" ? raw : null;
+}
+
+function _activeStrategyFromState(state) {
+  const gens = Array.isArray(state.generations) ? state.generations : [];
+  if (state.status === "complete" && _activeStrategyGenNo(state.winner) !== null) {
+    return { source: "winner", generation: { ...state.winner, gen_no: _activeStrategyGenNo(state.winner) } };
+  }
+  if (_activeStrategyGenNo(state.best) !== null) {
+    return { source: "best", generation: { ...state.best, gen_no: _activeStrategyGenNo(state.best) } };
+  }
+  if (gens.length > 0) {
+    const latest = gens.slice().sort((a, b) => (_activeStrategyGenNo(b) ?? -1) - (_activeStrategyGenNo(a) ?? -1))[0];
+    return { source: "latest_generation", generation: { ...latest, gen_no: _activeStrategyGenNo(latest) } };
+  }
+  const streaming = state.current_run?.generation || {};
+  if (streaming.buy_code_partial || streaming.sell_code_partial) {
+    return {
+      source: "streaming_partial",
+      generation: {
+        gen_no: typeof state.current_gen === "number" ? state.current_gen : 0,
+        buy_name: streaming.buy_name || "",
+        sell_name: streaming.sell_name || "",
+        buy_code: streaming.buy_code_partial || "",
+        sell_code: streaming.sell_code_partial || "",
+      },
+    };
+  }
+  return { source: "no_strategy", generation: null };
+}
+
+function ActiveStrategyPanel({ state, baseUrl, onViewCode }) {
+  const [expanded, setExpanded] = useState_pcf(false);
+  const [codePayload, setCodePayload] = useState_pcf(null);
+  const [diffPayload, setDiffPayload] = useState_pcf(null);
+  const [fetchError, setFetchError] = useState_pcf("");
+  const active = useMemo_pcf(() => _activeStrategyFromState(state || {}), [state]);
+  const generation = active.generation || {};
+  const genNo = _activeStrategyGenNo(generation);
+  const runId = state.run_id || "";
+  const canFetch = Boolean(baseUrl && runId && genNo !== null && active.source !== "streaming_partial" && active.source !== "no_strategy");
+
+  useEffect_pcf(() => {
+    setCodePayload(null);
+    setDiffPayload(null);
+    setFetchError("");
+    if (!canFetch) return;
+    let cancelled = false;
+    const codeUrl = `${baseUrl}/strategy_code?run=${encodeURIComponent(runId)}&gen=${genNo}`;
+    const diffUrl = `${baseUrl}/strategy_diff?run_id=${encodeURIComponent(runId)}&gen_no=${genNo}&base_gen=previous`;
+    fetch(codeUrl, { signal: AbortSignal.timeout(2500) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("strategy_code HTTP " + r.status)))
+      .then(j => { if (!cancelled) setCodePayload(j); })
+      .catch(e => { if (!cancelled) setFetchError(String(e)); });
+    fetch(diffUrl, { signal: AbortSignal.timeout(2500) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("strategy_diff HTTP " + r.status)))
+      .then(j => { if (!cancelled) setDiffPayload(j); })
+      .catch(e => { if (!cancelled) setFetchError(String(e)); });
+    return () => { cancelled = true; };
+  }, [baseUrl, runId, genNo, canFetch]);
+
+  const buyName = codePayload?.buy_name || generation.buy_name || "";
+  const sellName = codePayload?.sell_name || generation.sell_name || "";
+  const buyCode = codePayload?.buy_code || generation.buy_code || "";
+  const sellCode = codePayload?.sell_code || generation.sell_code || "";
+  const codeStatus = active.source === "streaming_partial"
+    ? "streaming_partial"
+    : (codePayload?.code_status || (active.source === "no_strategy" ? "no_strategy" : "loading"));
+  const diffStatus = diffPayload?.diff_status || (canFetch ? "loading" : "unavailable");
+  const previewCode = [buyCode, sellCode].filter(Boolean).join("\n\n# sell\n");
+  const previewLines = (previewCode || "").split("\n");
+  const boundedPreview = previewLines.slice(0, expanded ? 80 : 10).join("\n");
+
+  return (
+    <div className="panel active-strategy-panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title"><span className="dot"></span>Active Strategy</div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+          source={active.source}
+        </span>
+      </div>
+      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
+          <div className="stat">
+            <span className="stat-label">buy_name</span>
+            <span className="stat-sub mono">{buyName || "empty"}</span>
+          </div>
+          <div className="stat">
+            <span className="stat-label">sell_name</span>
+            <span className="stat-sub mono">{sellName || "empty"}</span>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>run_id={runId || "none"}</span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>gen_no={genNo ?? "none"}</span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--teal)" }}>code_status={codeStatus}</span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--amber)" }}>diff_status={diffStatus}</span>
+        </div>
+        {fetchError && (
+          <div className="mono" style={{ fontSize: 11, color: "var(--red)" }}>
+            active strategy fetch error: {fetchError}
+          </div>
+        )}
+        <pre className="code-block" style={{ maxHeight: 170, overflow: "auto", margin: 0 }}>
+          {boundedPreview || `unavailable: ${codeStatus}`}
+        </pre>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button className="btn ghost sm" onClick={() => setExpanded(!expanded)}>
+            {expanded ? "collapse" : "expand"} preview
+          </button>
+          <button className="btn ghost sm" disabled={genNo === null || !onViewCode}
+                  onClick={() => onViewCode && onViewCode(genNo)}>
+            open full code
+          </button>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", alignSelf: "center" }}>
+            Previous Diff via /strategy_diff
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function _fmtCfgVal(v) {
+  if (v === true) return "ON";
+  if (v === false) return "OFF";
+  if (v == null) return "—";
+  return String(v);
+}
+
+// 사람이 읽는 라벨(없으면 키 그대로). 키→한국어 매핑(가시화 보조).
+const _CFG_LABELS = {
+  dispersion_prompt_enabled: "분산매매 프롬프트",
+  dispersion_enabled: "분산 적합도 보상",
+  min_hold_symbols: "분산 기준(동시보유 하한)",
+  target_daily_trades: "목표 일평균거래",
+  require_liquidity_gate: "거래대금 게이트 강제",
+  mdd_control_enabled: "MDD 제어 강화(매도)",
+  evolution_mode: "진화 모드",
+  winner_objective: "우승 목표",
+  profit_weight: "수익 가중치",
+  bt_engine_mode: "엔진 모드",
+  bt_scope: "백테 스코프",
+  bt_timeframe: "타임프레임",
+  bt_refine_from_best: "best 점진 개선",
+  freeze_buy_on_mdd_only: "MDD-only 매수 동결",
+  bt_full_start: "전체 시작일",
+  bt_full_end: "전체 종료일",
+  bt_betting: "종목당 배팅",
+  mdd_cap: "MDD 상한",
+  min_trades: "최소 거래수",
+  min_daily_trades: "일평균거래 하한",
+  overtrade_softcap: "과매매 softcap",
+  tpi_gate_enabled: "TPI 게이트",
+  tpi_gate: "TPI 하한",
+  exit_quality_enabled: "청산품질 보상",
+  target_score: "목표 점수",
+  max_generations: "최대 세대",
+};
+
+function ActiveConfigPanel({ state }) {
+  const cfg = state.active_config || {};
+  const toggleNames = new Set(cfg.toggles || []);
+  // toggles 메타 키는 표에서 제외하고 나머지를 정렬해 보여준다.
+  const entries = Object.keys(cfg)
+    .filter(k => k !== "toggles")
+    .map(k => [k, cfg[k]]);
+  // 켜진 토글을 위로(강조), 나머지는 키 순서 유지.
+  const onToggles = entries.filter(([k, v]) => toggleNames.has(k) && v === true);
+  const others = entries.filter(([k, v]) => !(toggleNames.has(k) && v === true));
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title"><span className="dot"></span>활성 설정 · 토글</div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+          {entries.length > 0 ? `${entries.length}개 설정 · 켜진 토글 ${onToggles.length}` : "현재 적용 설정"}
+        </span>
+      </div>
+      <div className="panel-bd" style={{ padding: entries.length === 0 ? 14 : 0 }}>
+        {entries.length === 0 ? (
+          <div style={{ color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+            실시간 데이터 대기 — 루프 시작 시 적용된 설정·토글 스냅샷이 발행됩니다.
+          </div>
+        ) : (
+          <div>
+            {onToggles.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "10px 12px" }}>
+                {onToggles.map(([k]) => (
+                  <span key={k} className="mono" style={{
+                    fontSize: 10.5, color: "var(--teal)", background: "rgba(76,214,179,0.10)",
+                    border: "1px solid rgba(76,214,179,0.35)", borderRadius: 4, padding: "2px 7px",
+                  }}>
+                    {(_CFG_LABELS[k] || k)} · ON
+                  </span>
+                ))}
+              </div>
+            )}
+            <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+              {others.map(([k, v], i) => {
+                const isToggle = toggleNames.has(k);
+                return (
+                  <li key={k} style={{
+                    display: "flex", justifyContent: "space-between", gap: 10,
+                    padding: "6px 12px",
+                    borderTop: i === 0 && onToggles.length > 0 ? "1px solid var(--line-1)" : "none",
+                    borderBottom: i < others.length - 1 ? "1px solid var(--bg-2)" : "none",
+                  }}>
+                    <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
+                      {_CFG_LABELS[k] || k}
+                    </span>
+                    <span className="mono" style={{
+                      fontSize: 11.5,
+                      color: isToggle ? (v === true ? "var(--teal)" : "var(--ink-3)") : "var(--ink-0)",
+                    }}>
+                      {_fmtCfgVal(v)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---- Population panel (P2 GA) ----
+// page_data.population(개체별 graded/거래/MDD/수익/gate)을 LIVE로 렌더한다.
+//   backend(GA 모드)가 발행하면 개체 테이블/막대를 보이고, 없으면(hillclimb 또는
+//   미발행) 출처를 명시한다. M1 LIVE↔DEMO 규약 준수.
+function _PopBar({ frac }) {
+  const w = Math.max(0, Math.min(1, frac || 0)) * 100;
+  return (
+    <div style={{ background: "var(--bg-2)", borderRadius: 3, height: 6, overflow: "hidden" }}>
+      <div style={{ width: `${w}%`, height: "100%", background: "var(--accent)" }}></div>
+    </div>
+  );
+}
+
+function PopulationPanel({ state, wsStatus }) {
+  const pop = state.page_data?.population;
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+
+  const members = (pop && pop.members) || [];
+  const maxGraded = members.reduce((m, x) => Math.max(m, x.graded || 0), 0) || 1;
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot"></span>GA Population
+          {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
+        </div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+          {pop && pop.status === "ok"
+            ? `K=${pop.k} · gate통과 ${pop.gate_passed_count} · 가드실패 ${pop.guardfail_count}`
+            : "개체군 진화"}
+        </span>
+      </div>
+      <div className="panel-bd">
+        {!pop || pop.status !== "ok" || members.length === 0 ? (
+          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+            {isDemo
+              ? "데모 모드 — GA population은 라이브 실행(evolution_mode=ga)에서 발행됩니다."
+              : "실시간 데이터 대기 — GA 모드 세대 평가 시 개체군이 발행됩니다(hillclimb 모드는 미발행)."}
+          </div>
+        ) : (
+          <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+            {members.map((m, i) => (
+              <li key={i} style={{ padding: "6px 0", borderBottom: "1px solid var(--bg-2)" }}>
+                <div className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                  <span>
+                    <span style={{ color: m.gate_passed ? "var(--green)" : "var(--ink-2)" }}>●</span>
+                    {` graded ${(m.graded ?? 0).toFixed(3)}`}
+                    <span style={{ color: "var(--ink-3)" }}>{` [${m.origin}]`}</span>
+                  </span>
+                  <span style={{ color: "var(--ink-3)" }}>
+                    {`${m.trade_count}건 · MDD ${(m.mdd ?? 0).toFixed(1)} · ${(m.profit ?? 0).toLocaleString()}`}
+                  </span>
+                </div>
+                <_PopBar frac={(m.graded || 0) / maxGraded} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---- Meta-analysis panel (P4 메타분석 엔진) ----
+// page_data.meta(누적 메타 인사이트: 통과 전략 공통 변수/개선 변경/실패 패턴)을
+//   LIVE로 렌더한다. 없으면(데모 또는 미발행) 출처를 명시한다. M1 규약 준수.
+function MetaPanel({ state, wsStatus }) {
+  const meta = state.page_data?.meta;
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+
+  const commonVars = (meta && meta.common_pass_vars) || [];
+  const changes = (meta && meta.improving_changes) || [];
+  const fp = (meta && meta.failure_patterns) || {};
+
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot"></span>메타분석 · 누적 학습
+          {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
+        </div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+          {meta && meta.status === "ok"
+            ? `누적 ${meta.total_generations}세대 · 통과 ${meta.passing_count}`
+            : "통과 전략 공통 조건"}
+        </span>
+      </div>
+      <div className="panel-bd">
+        {!meta || meta.status !== "ok" ? (
+          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+            {isDemo
+              ? "데모 모드 — 메타분석은 라이브 실행에서 누적 발행됩니다."
+              : "실시간 데이터 대기 — run 종료 시 누적 메타 인사이트가 발행됩니다."}
+          </div>
+        ) : (
+          <div>
+            {commonVars.length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>
+                  통과 전략 공통 변수
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {commonVars.map((v, i) => (
+                    <span key={i} className="mono" style={{
+                      fontSize: 11, color: "var(--ink-0)", background: "var(--bg-2)",
+                      borderRadius: 4, padding: "2px 7px",
+                    }}>
+                      {`${v[0]} ×${v[1]}`}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {changes.length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginBottom: 4 }}>
+                  개선을 낳은 변경
+                </div>
+                <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+                  {changes.map((c, i) => (
+                    <li key={i} className="mono" style={{ fontSize: 11.5, color: "var(--ink-0)", padding: "2px 0" }}>
+                      {`· ${c[0]} (×${c[1]})`}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-2)" }}>
+              {`실패 패턴 — 과매매 ${fp.overtrade ?? 0} · 0거래 ${fp.zero_trade ?? 0} · 고MDD ${fp.high_mdd ?? 0}`}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { CurrentGenPanel, ActiveStrategyPanel, ActiveConfigPanel, PopulationPanel, MetaPanel });
+
+// Track Z — dual-safe ESM export (stripped by build-app.mjs in the concat path; kept by the bundle for real module scope). KEEP on ONE physical line.
+export { CurrentGenPanel, ActiveStrategyPanel, ActiveConfigPanel, PopulationPanel, MetaPanel };

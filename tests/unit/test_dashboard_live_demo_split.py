@@ -38,7 +38,8 @@ class TestConnectionModeSeparation:
 
     def test_ws_onopen_stops_demo(self):
         # LIVE 연결이 열리면 데모 시뮬레이터를 중단(날조 혼입 차단)해야 한다.
-        src = _read("connection.jsx")
+        #   P5.8 분해: WS plumbing(openWs/onopen)은 conn-backend.jsx 로 이동(connection.jsx 는 배럴).
+        src = _read("conn-backend.jsx")
         onopen_idx = src.find("ws.onopen")
         assert onopen_idx != -1
         # onopen 핸들러 본문(다음 핸들러 전까지)에 stopDemo() 호출이 있어야 한다.
@@ -133,14 +134,17 @@ class TestExportStatusBanner:
     """P6 — export(final_approval) 결과 노출 배너 구조 계약."""
 
     def test_export_banner_defined_and_exposed(self):
-        src = _read("panels.jsx")
-        assert "function ExportStatusBanner(" in src
-        tail = src[src.rfind("Object.assign(window"):]
+        # P5.9 분해 — 정의는 panels-status.jsx, window 재노출은 panels.jsx(배럴)이 유지.
+        defn = _read("panels-status.jsx")
+        assert "function ExportStatusBanner(" in defn
+        barrel = _read("panels.jsx")
+        tail = barrel[barrel.rfind("Object.assign(window"):]
         assert "ExportStatusBanner" in tail
 
     def test_export_banner_reflects_final_approval(self):
         # final_approval 제어 결과만 표시(자동 export 아님 — 게이트는 ApprovalDialog).
-        src = _read("panels.jsx")
+        # P5.9 분해 — ExportStatusBanner 본문은 panels-status.jsx.
+        src = _read("panels-status.jsx")
         eb = src[src.find("function ExportStatusBanner("):]
         assert "final_approval" in eb
 
@@ -150,7 +154,8 @@ class TestExportStatusBanner:
 
     def test_connection_routes_control_reply(self):
         # WS 제어 echo(contract_version 없는 action 프레임)를 lastReply로 라우팅.
-        src = _read("connection.jsx")
+        #   P5.8 분해: useBackend(WS onmessage 라우팅)는 conn-backend.jsx 로 이동(connection.jsx 는 배럴).
+        src = _read("conn-backend.jsx")
         assert "lastReply" in src
         assert '"action" in data' in src
 
@@ -159,20 +164,22 @@ class TestAutopsyPanel:
     """P1 — 세그먼트 부검 패널 구조 계약(page_data.autopsy 소비 + LIVE/DEMO 규약)."""
 
     def test_autopsy_panel_defined_and_exposed(self):
-        src = _read("panels.jsx")
-        assert "function AutopsyPanel(" in src
+        # P5.9 분해 — 정의는 panels-analysis.jsx, window 재노출은 panels.jsx(배럴)이 유지.
+        defn = _read("panels-analysis.jsx")
+        assert "function AutopsyPanel(" in defn
         # window 노출 블록에 포함돼야 한다(app.jsx가 전역에서 참조).
-        tail = src[src.rfind("Object.assign(window"):]
+        barrel = _read("panels.jsx")
+        tail = barrel[barrel.rfind("Object.assign(window"):]
         assert "AutopsyPanel" in tail
 
     def test_autopsy_panel_consumes_page_data(self):
         # M1 page_data 패스스루를 소비해야 한다(부검 데이터는 page_data.autopsy).
-        src = _read("panels.jsx")
+        src = _read("panels-analysis.jsx")
         assert "page_data?.autopsy" in src
 
     def test_autopsy_panel_live_demo_branching(self):
         # M1 LIVE↔DEMO 규약: 데모면 DEMO 배지, 라이브 미발행이면 대기 안내.
-        src = _read("panels.jsx")
+        src = _read("panels-analysis.jsx")
         assert "isDemoSource" in src
         assert "DemoBadge" in src
         assert "실시간 데이터 대기" in src
@@ -186,20 +193,22 @@ class TestPopulationPanel:
     """P2 — GA population 패널 구조 계약(page_data.population 소비 + LIVE/DEMO 규약)."""
 
     def test_population_panel_defined_and_exposed(self):
-        src = _read("panels.jsx")
-        assert "function PopulationPanel(" in src
+        # P5.9 분해 — 정의는 panels-config.jsx, window 재노출은 panels.jsx(배럴)이 유지.
+        defn = _read("panels-config.jsx")
+        assert "function PopulationPanel(" in defn
         # window 노출 블록에 포함돼야 한다(app.jsx가 전역에서 참조).
-        tail = src[src.rfind("Object.assign(window"):]
+        barrel = _read("panels.jsx")
+        tail = barrel[barrel.rfind("Object.assign(window"):]
         assert "PopulationPanel" in tail
 
     def test_population_panel_consumes_page_data(self):
         # M1 page_data 패스스루를 소비해야 한다(개체군 데이터는 page_data.population).
-        src = _read("panels.jsx")
+        src = _read("panels-config.jsx")
         assert "page_data?.population" in src
 
     def test_population_panel_live_demo_branching(self):
         # M1 LIVE↔DEMO 규약: 데모면 DEMO 배지, 라이브 미발행이면 대기 안내.
-        src = _read("panels.jsx")
+        src = _read("panels-config.jsx")
         assert "isDemoSource" in src
         assert "DemoBadge" in src
         assert "실시간 데이터 대기" in src
@@ -213,18 +222,20 @@ class TestLineagePanel:
     """P3 — 전략 계보 패널 구조 계약(page_data.lineage 소비 + LIVE/DEMO 규약)."""
 
     def test_lineage_panel_defined_and_exposed(self):
-        src = _read("panels.jsx")
-        assert "function LineagePanel(" in src
-        tail = src[src.rfind("Object.assign(window"):]
+        # P5.9 분해 — 정의는 panels-analysis.jsx, window 재노출은 panels.jsx(배럴)이 유지.
+        defn = _read("panels-analysis.jsx")
+        assert "function LineagePanel(" in defn
+        barrel = _read("panels.jsx")
+        tail = barrel[barrel.rfind("Object.assign(window"):]
         assert "LineagePanel" in tail
 
     def test_lineage_panel_consumes_page_data(self):
         # 계보 데이터는 page_data.lineage.
-        src = _read("panels.jsx")
+        src = _read("panels-analysis.jsx")
         assert "page_data?.lineage" in src
 
     def test_lineage_panel_live_demo_branching(self):
-        src = _read("panels.jsx")
+        src = _read("panels-analysis.jsx")
         assert "isDemoSource" in src
         assert "DemoBadge" in src
         assert "실시간 데이터 대기" in src
@@ -238,18 +249,20 @@ class TestMetaPanel:
     """P4 — 메타분석 패널 구조 계약(page_data.meta 소비 + LIVE/DEMO 규약)."""
 
     def test_meta_panel_defined_and_exposed(self):
-        src = _read("panels.jsx")
-        assert "function MetaPanel(" in src
-        tail = src[src.rfind("Object.assign(window"):]
+        # P5.9 분해 — 정의는 panels-config.jsx, window 재노출은 panels.jsx(배럴)이 유지.
+        defn = _read("panels-config.jsx")
+        assert "function MetaPanel(" in defn
+        barrel = _read("panels.jsx")
+        tail = barrel[barrel.rfind("Object.assign(window"):]
         assert "MetaPanel" in tail
 
     def test_meta_panel_consumes_page_data(self):
         # 메타 데이터는 page_data.meta.
-        src = _read("panels.jsx")
+        src = _read("panels-config.jsx")
         assert "page_data?.meta" in src
 
     def test_meta_panel_live_demo_branching(self):
-        src = _read("panels.jsx")
+        src = _read("panels-config.jsx")
         assert "isDemoSource" in src
         assert "DemoBadge" in src
         assert "실시간 데이터 대기" in src

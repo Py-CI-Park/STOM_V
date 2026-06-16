@@ -349,13 +349,15 @@ class TestStrategyCodeEndpoint:
 # =====================================================================
 class TestProfitChartStructure:
     def test_profit_chart_defined_and_exposed(self):
-        src = _read_front("chart.jsx")
+        # 함수 본문은 chart-equity.jsx 로 이동, window 재게시는 chart.jsx 배럴이 수행(분해 후).
+        src = _read_front("chart-equity.jsx")
         assert "function ProfitChart(" in src
-        tail = src[src.rfind("Object.assign(window"):]
+        barrel = _read_front("chart.jsx")
+        tail = barrel[barrel.rfind("Object.assign(window"):]
         assert "ProfitChart" in tail
 
     def test_profit_chart_uses_profit_fields(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-equity.jsx")
         pc = src[src.find("function ProfitChart("):]
         # 수익률(%) + 수익금(원) 둘 다 그린다.
         assert "total_profit_pct" in pc

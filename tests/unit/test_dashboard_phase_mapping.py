@@ -122,13 +122,15 @@ class TestActiveConfigPanel:
     """R8 — 활성 설정/토글 패널(LoopState.active_config 소비) 구조 계약."""
 
     def test_panel_defined_and_exposed(self):
-        src = _read("panels.jsx")
-        assert "function ActiveConfigPanel(" in src
-        tail = src[src.rfind("Object.assign(window"):]
+        # P5.9 분해 — 정의는 panels-config.jsx, window 재노출은 panels.jsx(배럴)이 유지.
+        defn = _read("panels-config.jsx")
+        assert "function ActiveConfigPanel(" in defn
+        barrel = _read("panels.jsx")
+        tail = barrel[barrel.rfind("Object.assign(window"):]
         assert "ActiveConfigPanel" in tail
 
     def test_panel_consumes_active_config(self):
-        src = _read("panels.jsx")
+        src = _read("panels-config.jsx")
         assert "active_config" in src
         # 켜진 토글 강조용 toggles 메타를 사용한다.
         acp = src[src.find("function ActiveConfigPanel("):]
@@ -140,7 +142,8 @@ class TestActiveConfigPanel:
 
     def test_current_gen_panel_colors_live_phases(self):
         # CurrentGenPanel phaseColor 맵에 backend 영어 phase가 매핑돼야 한다(LIVE 색 표시).
-        src = _read("panels.jsx")
+        # P5.9 분해 — CurrentGenPanel 본문은 panels-config.jsx.
+        src = _read("panels-config.jsx")
         cg = src[src.find("function CurrentGenPanel("):]
         for live_phase in ("backtest_start", "backtest_end", "generation_done", "complete"):
             assert f'"{live_phase}"' in cg, f"CurrentGenPanel 색 맵에 {live_phase} 누락"

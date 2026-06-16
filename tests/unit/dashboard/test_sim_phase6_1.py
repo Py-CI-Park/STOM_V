@@ -148,7 +148,8 @@ class TestSeekHistorySnapshot:
 
 class TestFrontendContracts:
     def test_simulation_jsx_handles_history_message(self):
-        src = (FRONTEND / "simulation.jsx").read_text(encoding="utf-8")
+        # P5.5 분해 — WS history 핸들러(SimulationTab)는 sim-tab-root.jsx 로 이동.
+        src = (FRONTEND / "sim-tab-root.jsx").read_text(encoding="utf-8")
         assert '"history"' in src
         assert "items_by_code" in src
         assert "_simWsBar" in src
@@ -172,6 +173,9 @@ class TestFrontendContracts:
             assert sym in app_bundle, f"app.js 에 {sym} 가 포함돼야 연구실이 렌더된다"
 
     def test_research_pro_exports_heatmap_panel(self):
-        src = (FRONTEND / "research-pro.jsx").read_text(encoding="utf-8")
+        # P5.7 분해: research-pro.jsx → THIN BARREL + 3 sibling. ResearchHeatmapPanel 정의/UI 문구는
+        #   rp-panel.jsx 로 이동, 배럴은 동일 export/window 표면을 유지(의도 보존). 거주 파일을 합쳐 검증.
+        src = (FRONTEND / "research-pro.jsx").read_text(encoding="utf-8") + \
+            (FRONTEND / "rp-panel.jsx").read_text(encoding="utf-8")
         assert "ResearchHeatmapPanel" in src
         assert "탐색 히트맵" in src

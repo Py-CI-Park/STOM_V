@@ -127,7 +127,8 @@ class TestNewRoutes:
 
 class TestFrontendContract:
     def test_validation_panel_has_cf_and_mc(self) -> None:
-        src = (FRONTEND / "research-lab.jsx").read_text(encoding="utf-8")
+        # P5.6 분해: 검증 탭(_ValidationPanel) 본문은 rl-validation.jsx 로 이동(research-lab.jsx 는 배럴).
+        src = (FRONTEND / "rl-validation.jsx").read_text(encoding="utf-8")
         assert "/counterfactual" in src
         assert "/freeze_mc" in src
         assert "_McFanChart" in src

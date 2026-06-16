@@ -7,8 +7,8 @@
   - normalize 토글이 겹침/분할 양쪽에 동일 전달(BtSplitGrid·BtOverlayCurves 모두 normalize prop).
   - backtest.jsx 가 브라우저 동일 엔진(vendor-babel)으로 문법 무결하게 트랜스폼.
 
-오버레이/분할 컴포넌트는 backtest.jsx 에 산다(backtest-charts.jsx 아님 — 2026-06-13 실측:
-BtOverlayCurves·_BT_OVERLAY_COLORS·_btNum 이 backtest.jsx 스코프). 따라서 BtSplitGrid 도 동거.
+오버레이/분할 컴포넌트는 P5.2 분해 후 bt-tab-analysis.jsx 에 산다(backtest.jsx 는 THIN BARREL 로
+축소). BtOverlayCurves·BtSplitGrid·_btSplitCellPath·BtOverlayPanel 이 bt-tab-analysis 스코프.
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ class TestViewModeToggle:
     """BtOverlayPanel 의 겹침↔분할 보기 토글."""
 
     def test_view_mode_state_default_overlay(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-analysis.jsx")
         body = _component_body(src, "function BtOverlayPanel(")
         # viewMode 상태가 있고 기본값이 overlay 여야 한다.
         assert re.search(r'viewMode.*=.*useState_bt\(\s*"overlay"\s*\)', body), \
@@ -54,7 +54,7 @@ class TestViewModeToggle:
         assert "setViewMode" in body
 
     def test_header_has_overlay_and_split_buttons(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-analysis.jsx")
         body = _component_body(src, "function BtOverlayPanel(")
         assert '"overlay"' in body and '"split"' in body
         # 한글 라벨 [겹침|분할].
@@ -62,7 +62,7 @@ class TestViewModeToggle:
         assert "setViewMode(m)" in body or "setViewMode(" in body
 
     def test_render_branches_on_view_mode(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-analysis.jsx")
         body = _component_body(src, "function BtOverlayPanel(")
         # split 이면 BtSplitGrid, 아니면 BtOverlayCurves.
         assert 'viewMode === "split"' in body
@@ -70,7 +70,7 @@ class TestViewModeToggle:
         assert "BtOverlayCurves" in body
 
     def test_normalize_passed_to_both_modes(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-analysis.jsx")
         body = _component_body(src, "function BtOverlayPanel(")
         # 두 렌더 경로 모두 normalize 를 전달(정규화 토글이 양쪽 모드에서 동작).
         assert re.search(r"<BtSplitGrid[^>]*normalize=\{normalize\}", body), \
@@ -83,11 +83,11 @@ class TestBtSplitGrid:
     """BtSplitGrid small-multiple 그리드 컴포넌트."""
 
     def test_component_defined(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-analysis.jsx")
         assert "function BtSplitGrid(" in src
 
     def test_uses_responsive_grid(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-analysis.jsx")
         body = _component_body(src, "function BtSplitGrid(")
         # CSS grid 로 small-multiple 배치(2열).
         assert "display:" in body and "grid" in body
@@ -95,7 +95,7 @@ class TestBtSplitGrid:
         assert "repeat(2" in body
 
     def test_renders_per_job_cells(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-analysis.jsx")
         body = _component_body(src, "function BtSplitGrid(")
         # series 를 셀로 매핑 + 각 셀에 svg path.
         assert "series.map(" in body
@@ -105,7 +105,7 @@ class TestBtSplitGrid:
         assert "_BT_OVERLAY_COLORS" in body
 
     def test_reuses_normalize_first_point_logic(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-analysis.jsx")
         # 셀 경로 계산이 normalize 시 첫 포인트 기준 평행이동(BtOverlayCurves 와 동형).
         assert "_btSplitCellPath" in src
         body = _component_body(src, "function _btSplitCellPath(")
@@ -114,7 +114,7 @@ class TestBtSplitGrid:
         assert "cums[0]" in body
 
     def test_empty_state_korean(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-analysis.jsx")
         body = _component_body(src, "function BtSplitGrid(")
         assert "research-empty" in body
         assert "곡선이 없습니다" in body
@@ -132,7 +132,7 @@ const fs = require('fs');
 const path = require('path');
 const dir = process.argv[2];
 const esbuild = require(path.join(dir, '..', 'webui-build', 'node_modules', 'esbuild'));
-const files = ['backtest.jsx', 'backtest-charts.jsx'];
+const files = ['backtest.jsx', 'bt-tab-analysis.jsx', 'backtest-charts.jsx'];
 let ok = true;
 for (const f of files) {
   try { esbuild.transformSync(fs.readFileSync(path.join(dir, f), 'utf8'), { loader: 'jsx', jsx: 'transform', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment' }); }

@@ -33,25 +33,27 @@ def _slice(src: str, start_marker: str, end_marker: str) -> str:
 class TestBacktestCsvExport:
     """backtest-charts.jsx — 일별 수익곡선 CSV(클라이언트 Blob, sim 규약 미러)."""
 
+    # P5.1 분해 — CSV 헬퍼 정의는 backtest-charts.jsx(배럴)에서 bt-chart-utils.jsx 로,
+    #   버튼 와이어링은 bt-result-area.jsx 로 이동(동작 불변, 코드 이동만).
     def test_csv_helpers_defined(self) -> None:
-        src = _read("backtest-charts.jsx")
+        src = _read("bt-chart-utils.jsx")
         assert "function _btCsvCell(" in src
         assert "function _btAnalysisCsv(" in src
         assert "function _btDownloadAnalysisCsv(" in src
 
     def test_csv_has_column_headers(self) -> None:
-        src = _read("backtest-charts.jsx")
+        src = _read("bt-chart-utils.jsx")
         csvfn = _slice(src, "function _btAnalysisCsv(", "function _btDownloadAnalysisCsv(")
         for col in ("날짜", "일별손익(원)", "누적수익(원)"):
             assert col in csvfn, f"누락된 CSV 컬럼: {col}"
 
     def test_csv_has_utf8_bom(self) -> None:
-        src = _read("backtest-charts.jsx")
+        src = _read("bt-chart-utils.jsx")
         csvfn = _slice(src, "function _btAnalysisCsv(", "function _btDownloadAnalysisCsv(")
         assert "﻿" in csvfn, "CSV 출력에 utf-8 BOM 이 없습니다"
 
     def test_csv_blob_download_clientside(self) -> None:
-        src = _read("backtest-charts.jsx")
+        src = _read("bt-chart-utils.jsx")
         # _btDownloadAnalysisCsv 본문(고정 오프셋 슬라이스 — 함수 직전 주석이 종료마커라 _slice 부적합).
         i = src.index("function _btDownloadAnalysisCsv(")
         dl = src[i:i + 900]
@@ -64,8 +66,8 @@ class TestBacktestCsvExport:
         assert '".csv"' in dl
 
     def test_csv_button_wired_and_gated(self) -> None:
-        src = _read("backtest-charts.jsx")
-        # BtAnalysis 헤더에서 호출 + 버튼 라벨 + equity daily 존재로 게이팅.
+        src = _read("bt-result-area.jsx")
+        # BtResultArea 헤더에서 호출 + 버튼 라벨 + equity daily 존재로 게이팅.
         assert "_btDownloadAnalysisCsv(analysis)" in src
         assert "⬇ CSV" in src
         assert "(analysis.equity || {}).daily || []).length > 0" in src
@@ -73,14 +75,18 @@ class TestBacktestCsvExport:
 
 # ============================================================ WFO/스윕 드릴다운
 class TestWfoSweepDrilldown:
-    """backtest.jsx — 결과표 행 클릭 → 선택 파라미터·전체 메트릭 펼침(백엔드 무변경, 프론트 전용)."""
+    """결과표 행 클릭 → 선택 파라미터·전체 메트릭 펼침(백엔드 무변경, 프론트 전용).
+
+    P5.2 분해 — _BtRowDetail 은 bt-tab-utils.jsx, BtWfoTable/BtSweepTable/BtModeResultPanel 은
+    bt-tab-mode-results.jsx 로 이동(backtest.jsx 는 THIN BARREL).
+    """
 
     def test_row_detail_component_defined(self) -> None:
-        src = _read("backtest.jsx")
+        src = _read("bt-tab-utils.jsx")
         assert "function _BtRowDetail(" in src
 
     def test_wfo_rows_expandable(self) -> None:
-        src = _read("backtest.jsx")
+        src = _read("bt-tab-mode-results.jsx")
         wfo = _slice(src, "function BtWfoTable(", "function BtSweepTable(")
         # 펼침 상태 + 행 클릭 토글 + 드릴다운 데이터(선택 파라미터·전체 메트릭).
         assert "const [expanded, setExpanded]" in wfo
@@ -90,7 +96,7 @@ class TestWfoSweepDrilldown:
         assert "<_BtRowDetail" in wfo
 
     def test_sweep_rows_expandable(self) -> None:
-        src = _read("backtest.jsx")
+        src = _read("bt-tab-mode-results.jsx")
         sweep = _slice(src, "function BtSweepTable(", "function BtModeResultPanel(")
         assert "const [expanded, setExpanded]" in sweep
         assert "setExpanded(isOpen ? null : r.__idx)" in sweep
@@ -126,7 +132,8 @@ class TestSimLwcAsymmetryCaption:
     """simulation.jsx — LWC 선택 시 미표시 서브패인을 토글 옆 캡션으로 명시(의도된 비대칭)."""
 
     def test_lwc_caption_present_and_gated(self) -> None:
-        src = _read("simulation.jsx")
+        # P5.5 분해 — LWC 비대칭 캡션(SimViewBar)은 sim-tab-controls.jsx 로 이동.
+        src = _read("sim-tab-controls.jsx")
         # engineMode === "lwc" 게이팅.
         assert 'engineMode === "lwc" && (' in src
         # 비대칭 캡션 — 미표시 지표 열거.
@@ -135,6 +142,9 @@ class TestSimLwcAsymmetryCaption:
             assert token in src, f"LWC 캡션에 {token} 누락"
 
     def test_caption_is_label_only_not_in_charts(self) -> None:
-        # 캡션은 simulation.jsx(토글 옆)에만 — LWC 비대칭 가드(simulation-charts.jsx)는 무영향.
-        charts = _read("simulation-charts.jsx")
-        assert "LWC 비대칭 —" not in charts
+        # 캡션은 sim-tab-controls.jsx(SimViewBar 토글 옆)에만 — sim 차트 컴포넌트 코드(배럴 + P5.3 sibling)와
+        #   다른 시뮬탭 sibling(utils/panels/root/배럴)은 무영향.
+        for name in ("simulation-charts.jsx", "sim-chart-utils.jsx", "sim-chart-subpanes.jsx",
+                     "sim-chart-shell.jsx", "sim-chart-engines.jsx", "sim-signal-log.jsx",
+                     "simulation.jsx", "sim-tab-utils.jsx", "sim-tab-panels.jsx", "sim-tab-root.jsx"):
+            assert "LWC 비대칭 —" not in _read(name), f"{name} 에 캡션 누출"

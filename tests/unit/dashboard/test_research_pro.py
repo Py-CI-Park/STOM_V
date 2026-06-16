@@ -47,13 +47,17 @@ def _read_front(name: str) -> str:
 # --------------------------------------------------------------- 프론트 정적 가드
 class TestResearchProSource:
     def test_panel_defined_and_window_registered(self):
-        src = _read_front("research-pro.jsx")
-        assert "function ResearchProPanel(" in src
-        # 빌드 없는 text/babel 전역 등록.
-        assert "ResearchProPanel" in src.split("Object.assign(window")[-1]
+        # P5.7 분해: research-pro.jsx → THIN BARREL + 3 sibling(rp-utils/rp-heatmap/rp-panel).
+        #   ResearchProPanel 정의는 rp-panel.jsx 로 이동, window 등록(재게시)은 배럴이 유지(의도 보존).
+        panel = _read_front("rp-panel.jsx")
+        barrel = _read_front("research-pro.jsx")
+        assert "function ResearchProPanel(" in panel
+        # 빌드 없는 text/babel 전역 등록 — 배럴이 동일 표면을 Object.assign 으로 재게시.
+        assert "ResearchProPanel" in barrel.split("Object.assign(window")[-1]
 
     def test_core_components_present(self):
-        src = _read_front("research-pro.jsx")
+        # P5.7 분해: 핵심 분석 컴포넌트(E5/E6/E7/E9/E10)는 rp-heatmap.jsx 로 이동(동작 불변).
+        src = _read_front("rp-heatmap.jsx")
         # E7 히트맵 · E5 명예의전당 · E6 Run Compare · E9 히스토리 · E10 프로세스.
         assert "function _RpBigHeatmap(" in src
         assert "function _RpHallOfFame(" in src
@@ -61,7 +65,8 @@ class TestResearchProSource:
         assert "function _RpHistory(" in src
         assert "function _RpProcessFlowOverlay(" in src
         # 프로그램 P4(2026-06-14): 7단계 파이프라인 정의는 format.ts 정본(window.STOM_PIPELINE)으로
-        #   통합됨 — research-pro 는 로컬 RP_PIPELINE 을 삭제하고 정본을 소비한다. 단계 문구는 정본에서 확인.
+        #   통합됨 — research-pro 는 로컬 RP_PIPELINE 을 삭제하고 정본을 소비한다(소비처는 rp-heatmap).
+        #   단계 문구는 정본에서 확인.
         assert "window.STOM_PIPELINE" in src
         fmt = (FRONTEND.parent / "webui-build" / "src" / "format.ts").read_text(encoding="utf-8")
         for stage in ("시드 선택", "후보 생성", "격자 탐색", "백테스트 평가",
@@ -69,7 +74,9 @@ class TestResearchProSource:
             assert stage in fmt
 
     def test_workbench_link_is_loosely_coupled(self):
-        src = _read_front("research-pro.jsx")
+        # P5.7 분해: 느슨결합 디스패치(_rpOpenWorkbench)는 rp-utils.jsx, 소비처(HoF/Compare/History)는
+        #   rp-heatmap.jsx 로 이동. 거주 파일을 합쳐 검증(의도 보존).
+        src = _read_front("rp-utils.jsx") + _read_front("rp-heatmap.jsx")
         # backtest.jsx 직접 import 금지 — window 이벤트 + localStorage 로만 연동.
         assert "stom:bt-evo-select" in src
         assert "stom_bt_evo_pending" in src
@@ -79,7 +86,9 @@ class TestResearchProSource:
         assert 'from "./backtest' not in src
 
     def test_reuses_window_globals_and_endpoints(self):
-        src = _read_front("research-pro.jsx")
+        # P5.7 분해: 백테 전역/엔드포인트 소비는 rp-utils.jsx(_RpVarChips/_RpStrategyCode) +
+        #   rp-heatmap.jsx(_RpHistory/_RpBigHeatmap/_RpRunCompare) 로 이동. 거주 파일을 합쳐 검증.
+        src = _read_front("rp-utils.jsx") + _read_front("rp-heatmap.jsx")
         # 백테 차트 전역 재사용(히스토리 상세 시각화).
         assert "window.BtResultArea" in src
         # 변수 칩 — window.BtVarChips 우선, 없으면 /bt/extract_vars 자체 호출.
@@ -91,7 +100,9 @@ class TestResearchProSource:
             assert ep in src
 
     def test_research_lab_surgical_edits(self):
-        src = _read_front("research-lab.jsx")
+        # P5.6 분해: research-lab.jsx → THIN BARREL + sibling. E1 상태배지·E4 도움말·E10 프로세스는
+        #   rl-panel.jsx, E3 기간/축 표기는 rl-validation.jsx 로 이동. 거주 파일을 합쳐 검증(의도 보존).
+        src = _read_front("rl-panel.jsx") + _read_front("rl-validation.jsx")
         # E1 — 상태 배지 바(라벨+값+툴팁).
         assert "research-statusbar" in src
         assert "research-badge" in src

@@ -37,7 +37,8 @@ def _read(name: str) -> str:
 # ----------------------------------------------------------------- S1 결함 수정
 def test_s1_immutable_append_fixes_frozen_candles() -> None:
     """simulation.jsx bars 핸들러가 push() mutate 가 아닌 새 배열 참조로 append 한다."""
-    src = _read("simulation.jsx")
+    # P5.5 분해 — WS bars 핸들러(SimulationTab)는 sim-tab-root.jsx 로 이동.
+    src = _read("sim-tab-root.jsx")
     # 새 배열 참조 생성(불변 append) — LWC useEffect([bars]) 매 프레임 재실행 조건.
     #   Phase6.1 에서 bar 생성이 공용 매퍼 _simWsBar 로 추출됐다("history" 스냅샷과 공유).
     assert "store[it.code] = [...(store[it.code] || []), _simWsBar(it, m.t)]" in src
@@ -47,19 +48,21 @@ def test_s1_immutable_append_fixes_frozen_candles() -> None:
 
 # -------------------------------------------------------------------- S2 동시보기
 def test_s2_max_codes_is_ten() -> None:
-    src = _read("simulation.jsx")
+    # P5.5 분해 — _SIM_MAX_CODES 상수는 sim-tab-utils.jsx 로 이동.
+    src = _read("sim-tab-utils.jsx")
     assert "_SIM_MAX_CODES = 10" in src
 
 
 def test_s2_responsive_grid_helper() -> None:
-    src = _read("simulation.jsx")
-    assert "_responsiveCols" in src
+    # P5.5 분해 — _responsiveCols 헬퍼는 sim-tab-utils.jsx, 반응형 grid(repeat) 사용은 sim-tab-root.jsx.
+    assert "_responsiveCols" in _read("sim-tab-utils.jsx")
     # 개수→열 매핑(2~4→2 / 5~9→3 / 10→4) 의도가 코드에 있다.
-    assert "repeat(" in src
+    assert "repeat(" in _read("sim-tab-root.jsx")
 
 
 def test_s2_dense_compact_for_five_plus() -> None:
-    src = _read("simulation.jsx")
+    # P5.5 분해 — dense 컴팩트 분기(SimulationTab)는 sim-tab-root.jsx 로 이동.
+    src = _read("sim-tab-root.jsx")
     # 5개 이상 컴팩트 모드.
     assert "codes.length >= 5" in src
 
@@ -76,18 +79,20 @@ def test_s4_live_chart_file_exists_and_exposes_global() -> None:
 
 
 def test_s4_live_is_default_engine_mode() -> None:
-    src = _read("simulation.jsx")
+    # P5.5 분해 — 엔진 모드 상수/로더는 sim-tab-utils.jsx, 디스패처(SimChartByEngine)는 sim-tab-panels.jsx.
+    utils = _read("sim-tab-utils.jsx")
     # 엔진 모드 기본값 라이브(_loadEngineMode 기본 'live').
-    assert '_SIM_ENGINE_MODES' in src
-    assert '"라이브"' in src
-    assert 'return (v === "lwc" || v === "svg" || v === "live") ? v : "live"' in src
+    assert '_SIM_ENGINE_MODES' in utils
+    assert '"라이브"' in utils
+    assert 'return (v === "lwc" || v === "svg" || v === "live") ? v : "live"' in utils
     # 디스패처가 라이브 우선.
-    assert "SimChartByEngine" in src
+    assert "SimChartByEngine" in _read("sim-tab-panels.jsx")
 
 
 # ------------------------------------------------------------------- S3 footprint
 def test_s3_footprint_component() -> None:
-    src = _read("simulation-charts.jsx")
+    # P5.3 분해 — SimFootprint 정의는 simulation-charts.jsx(배럴)에서 sim-chart-subpanes.jsx 로 이동.
+    src = _read("sim-chart-subpanes.jsx")
     assert "function SimFootprint" in src
     # 매수/매도 체결 분리 — net_qty 실데이터 우선 + 강도 휴리스틱 폴백(정직 표기).
     assert "_barBuySell" in src
@@ -99,7 +104,8 @@ def test_s3_footprint_component() -> None:
 
 # --------------------------------------------------------------------- S5 호가창
 def test_s5_orderbook_replaces_quote_pressure() -> None:
-    src = _read("simulation-charts.jsx")
+    # P5.3 분해 — SimOrderBook 정의는 sim-chart-subpanes.jsx.
+    src = _read("sim-chart-subpanes.jsx")
     assert "function SimOrderBook" in src
     # 레벨1 + 총잔량 정직 표기(허위 다단 호가 금지).
     assert "레벨1 + 총잔량" in src
@@ -130,7 +136,7 @@ const fs = require('fs');
 const path = require('path');
 const dir = process.argv[2];
 const esbuild = require(path.join(dir, '..', 'webui-build', 'node_modules', 'esbuild'));
-const files = ['sim-live-chart.jsx', 'simulation.jsx', 'simulation-charts.jsx'];
+const files = ['sim-live-chart.jsx', 'simulation.jsx', 'simulation-charts.jsx', 'sim-chart-utils.jsx', 'sim-chart-subpanes.jsx', 'sim-chart-shell.jsx', 'sim-chart-engines.jsx', 'sim-signal-log.jsx', 'sim-tab-utils.jsx', 'sim-tab-controls.jsx', 'sim-tab-panels.jsx', 'sim-tab-root.jsx'];
 let ok = true;
 for (const f of files) {
   try { esbuild.transformSync(fs.readFileSync(path.join(dir, f), 'utf8'), { loader: 'jsx', jsx: 'transform', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment' }); }

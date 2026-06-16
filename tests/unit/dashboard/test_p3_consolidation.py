@@ -56,12 +56,14 @@ class TestSharedHelpersInBundle:
 # ============================================================ 소비처 별칭(중복 제거)
 class TestConsumersAliasNotRedefine:
     def test_bt_axisticks_deduped(self) -> None:
-        src = _readf("backtest-charts.jsx")
-        assert "function _btAxisTicks(" not in src, "backtest-charts 에 _btAxisTicks 정의 잔존(de-dup 위반)."
+        # P5.1 분해 — _btAxisTicks 별칭은 backtest-charts.jsx(배럴)에서 bt-chart-utils.jsx 로 이동.
+        src = _readf("bt-chart-utils.jsx")
+        assert "function _btAxisTicks(" not in src, "bt-chart-utils 에 _btAxisTicks 정의 잔존(de-dup 위반)."
         assert "const _btAxisTicks = window._axisTicks" in src
 
     def test_sim_charts_tick_helpers_deduped(self) -> None:
-        src = _readf("simulation-charts.jsx")
+        # P5.3 분해 — _simPriceTick/_simTimeLabel 별칭은 simulation-charts.jsx(배럴)에서 sim-chart-utils.jsx 로 이동.
+        src = _readf("sim-chart-utils.jsx")
         assert "function _simPriceTick(" not in src
         assert "function _simTimeLabel(" not in src
         assert "const _simPriceTick = window._priceTick" in src
@@ -88,8 +90,13 @@ class TestDeferredConsolidationsUntouched:
     """이연 대상은 P3 에서 손대지 않는다(병합이 픽셀/콘텐츠를 바꾸므로 Design Pass 로 이연)."""
 
     def test_hall_of_fame_components_still_separate(self) -> None:
-        assert "function HallOfFamePanel(" in _readf("chart.jsx")
-        assert "function _RpHallOfFame(" in _readf("research-pro.jsx")
+        # P5.4: chart.jsx(1,742줄) 분해로 HallOfFamePanel 은 chart-hall-of-fame.jsx 로
+        #   이동(byte-identical, field-diff DEFER 결정 유지). 두 컴포넌트가 여전히 별개로
+        #   존재(병합 안 됨)한다는 불변식은 그대로 — 단지 정의 파일만 옮겨졌다.
+        assert "function HallOfFamePanel(" in _readf("chart-hall-of-fame.jsx")
+        # P5.7: research-pro.jsx(1,045줄) 분해로 _RpHallOfFame 은 rp-heatmap.jsx 로 이동
+        #   (별개 유지 불변식 그대로 — 정의 파일만 옮겨졌다).
+        assert "function _RpHallOfFame(" in _readf("rp-heatmap.jsx")
 
     def test_pipeline_consolidated_to_format_ts(self) -> None:
         # 프로그램 P4(2026-06-14): PIPELINE 이연 해소 — _RL_PIPELINE/RP_PIPELINE 로컬 사본 삭제,
@@ -97,9 +104,10 @@ class TestDeferredConsolidationsUntouched:
         fmt = _read(WEBUI_BUILD / "src" / "format.ts")
         assert "export const STOM_PIPELINE" in fmt
         assert "STOM_PIPELINE" in fmt[fmt.rfind("Object.assign(window"):]   # window 노출.
-        # 로컬 사본 최상위 선언 제거(중복 출처 0).
-        assert "const _RL_PIPELINE = [" not in _readf("research-lab.jsx")
-        assert "const RP_PIPELINE = [" not in _readf("research-pro.jsx")
-        # 두 소비처가 정본을 참조.
-        assert "window.STOM_PIPELINE" in _readf("research-lab.jsx")
-        assert "window.STOM_PIPELINE" in _readf("research-pro.jsx")
+        # 로컬 사본 최상위 선언 제거(중복 출처 0). P5.6 분해: 프로세스 오버레이는 rl-panel.jsx 로,
+        #   P5.7 분해: research-pro 의 오버레이는 rp-heatmap.jsx 로 이동.
+        assert "const _RL_PIPELINE = [" not in _readf("rl-panel.jsx")
+        assert "const RP_PIPELINE = [" not in _readf("rp-heatmap.jsx")
+        # 두 소비처가 정본을 참조(research-lab 의 PIPELINE 소비는 rl-panel.jsx, research-pro 는 rp-heatmap.jsx).
+        assert "window.STOM_PIPELINE" in _readf("rl-panel.jsx")
+        assert "window.STOM_PIPELINE" in _readf("rp-heatmap.jsx")

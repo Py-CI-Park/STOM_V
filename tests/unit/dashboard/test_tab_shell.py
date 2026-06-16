@@ -94,29 +94,35 @@ def test_index_html_loads_tab_scripts_before_app() -> None:
 # --------------------------------------------------- Track C (즉시 체험) frontend
 def test_simulation_jsx_has_instant_experience_surface() -> None:
     """simulation.jsx 가 자동 데모·원클릭 프리셋 표면을 갖는다(Track C)."""
-    src = (FRONTEND / "simulation.jsx").read_text(encoding="utf-8")
+    # P5.5 분해 — 프리셋 바(SimPresetBar)는 sim-tab-controls.jsx, 자동 데모 로직(SimulationTab)은
+    #   sim-tab-root.jsx, demoSeen localStorage 키는 sim-tab-utils.jsx 로 이동.
+    controls = (FRONTEND / "sim-tab-controls.jsx").read_text(encoding="utf-8")
+    root = (FRONTEND / "sim-tab-root.jsx").read_text(encoding="utf-8")
+    utils = (FRONTEND / "sim-tab-utils.jsx").read_text(encoding="utf-8")
     # 원클릭 프리셋 바 + 두 모드.
-    assert "SimPresetBar" in src
-    assert "최근 거래일" in src
-    assert "최대 상승일" in src
+    assert "SimPresetBar" in controls
+    assert "최근 거래일" in controls
+    assert "최대 상승일" in controls
     # 자동 데모: /sim/demo 소비 + 예시 배지 + 해제 버튼 + localStorage 1회 기억.
-    assert "/sim/demo" in src
-    assert "예시 자동 재생" in src
-    assert "내가 선택하기" in src
-    assert "stom.sim.demoSeen" in src
+    assert "/sim/demo" in root
+    assert "예시 자동 재생" in root
+    assert "내가 선택하기" in root
+    assert "stom.sim.demoSeen" in utils
 
 
 def test_simulation_charts_jsx_has_visual_components() -> None:
-    """simulation-charts.jsx 가 등락 게이지·세션 링·신호 플래시 비주얼을 갖는다(Track C)."""
-    src = (FRONTEND / "simulation-charts.jsx").read_text(encoding="utf-8")
+    """sim 차트 셸이 등락 게이지·세션 링·신호 플래시 비주얼을 갖는다(Track C)."""
+    # P5.3 분해 — SimChangeGauge·SimSessionRing·SimChartShell 정의는 sim-chart-shell.jsx 로 이동.
+    src = (FRONTEND / "sim-chart-shell.jsx").read_text(encoding="utf-8")
     assert "SimChangeGauge" in src        # 등락율 반원 게이지.
     assert "SimSessionRing" in src        # 세션 진행 링.
     assert "_sessionProgress" in src      # 09:00~15:30 진행률.
     # 신호 도달 플래시 — 인라인 boxShadow(styles.css 불가)로 1회 점멸.
     assert "boxShadow" in src
     assert "window._simTimeLabel" not in src or "_simTimeLabel" in src
-    # 두 컴포넌트가 window 전역으로 노출돼 simulation.jsx 가 쓸 수 있어야 한다.
-    assert "SimChangeGauge, SimSessionRing" in src
+    # 두 컴포넌트가 window 전역으로 노출돼 simulation.jsx 가 쓸 수 있어야 한다(배럴 재게시).
+    barrel = (FRONTEND / "simulation-charts.jsx").read_text(encoding="utf-8")
+    assert "SimChangeGauge, SimSessionRing" in barrel
 
 
 def test_simulation_demo_route_returns_contract(monkeypatch, tmp_path: Path) -> None:
