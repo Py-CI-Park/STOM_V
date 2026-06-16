@@ -50,10 +50,13 @@ def _token_hex(css: str, name: str) -> str:
 
 def test_sim_viewbar_labels_use_legible_ink1_not_ink3():
     """엔진/지표/보기 라벨이 var(--ink-1)·fontWeight 600 을 쓰고 var(--ink-3) 을 쓰지 않는다."""
-    src = (FRONTEND / "simulation.jsx").read_text(encoding="utf-8")
+    # P5.5 분해 — 라벨 스타일 상수(_SIM_VIEWBAR_LABEL)는 sim-tab-utils.jsx, SimViewBar 마크업은 sim-tab-controls.jsx.
+    src = (FRONTEND / "sim-tab-controls.jsx").read_text(encoding="utf-8")
     # Phase7 Track B 가 도입한 라벨 스타일 상수/속성.
     assert "var(--ink-1)" in src
-    assert "fontWeight" in src and "600" in src
+    # _SIM_VIEWBAR_LABEL 정의(var(--ink-1)·fontWeight:600)는 utils 에 있다.
+    utils = (FRONTEND / "sim-tab-utils.jsx").read_text(encoding="utf-8")
+    assert "fontWeight" in utils and "600" in utils
     # SimViewBar 라벨 묶음(엔진/지표/보기)이 한 곳에서 ink-1 스타일을 공유한다.
     assert "엔진" in src and "지표" in src and "보기" in src
 
