@@ -5,29 +5,35 @@
 //   dep under the gitignored webui-build/node_modules, never served). If jsdom cannot host
 //   the index path, the pytest wrapper falls back to skip + the Playwright harness variant.
 //
+//   PR-6 FLIP: V2/V3/V4 now load the REAL DEFAULT served artifact frontend/bundle/app.js (the
+//     committed esbuild bundle written by `node build-app.mjs`), NOT the transient .track-z pilot.
+//     This makes the harness the load-bearing safety proof for the flip: it proves the artifact the
+//     browser actually downloads renders all 7 tabs + 3 standalone pages, 0 errors, single React.
+//     V1 keeps a transient pilot build (a clean single-React/no-require MECHANISM proof of the
+//     alias-to-shim entry — it asserts DemoBadge/LivePending republish, independent of the served
+//     file's freshness).
+//
 //   What it asserts:
-//     V1 (pilot bundle mechanism): builds .track-z/app.pilot.js (STOM_BUNDLE path output),
-//        loads vendored React + the pilot IIFE, asserts window.DemoBadge / window.LivePending
-//        are functions, single React identity (window.React === the React the bundle's hooks
-//        call — checked by rendering DemoBadge through the bundle and confirming it produced
-//        React elements off the SAME window.React), and zero "Dynamic require" / render error.
-//     V2 (harness capability — HARDEST path): loads vendored React + ReactDOM +
-//        lightweight-charts + a classic stom-ui (window.fmt* side-effects) + the FLAGGED full
-//        bundle (.track-z/app.pilot.js), mounts the index App via the file's own auto-mount at
+//     V1 (bundle MECHANISM proof): builds a transient .track-z/app.pilot.js (same esbuild options
+//        as the served build), loads vendored React + the IIFE, asserts window.DemoBadge /
+//        window.LivePending are functions, single React identity (window.React === the React the
+//        bundle's hooks call — checked by rendering DemoBadge through the bundle and confirming it
+//        produced React elements off the SAME window.React), and zero "Dynamic require" / render error.
+//     V2 (SERVED bundle — index path, HARDEST): loads vendored React + ReactDOM +
+//        lightweight-charts + a classic stom-ui (window.fmt* side-effects) + the SERVED DEFAULT
+//        bundle (frontend/bundle/app.js), mounts the index App via the file's own auto-mount at
 //        an IDLE /status, asserts 0 errors and non-empty #root (idle index shell only).
 //     V3 (Story 4 entry gate — PER-TAB render sweep): the gap V2 left open. V2 mounts the
-//        index App only at IDLE = just the default (evolution) tab's idle shell, so a latent
-//        missing cross-file import inside backtest/simulation/lab/pro/verdict tabs or the
-//        non-idle evolution data components would NOT surface until the (future) flip. V3
-//        closes it: load the FLAGGED bundle, then mount App once per tab driving `activeTab`
-//        through EACH of evolution(NON-IDLE /status so charts/cards/tables/HypothesisPanel
-//        render), backtest, simulation, lab, pro, verdict (the app reads the initial tab from
+//        index App only at IDLE = just the default (evolution) tab's idle shell. V3 closes it:
+//        load the SERVED bundle, then mount App once per tab driving `activeTab` through EACH of
+//        evolution(NON-IDLE /status so charts/cards/tables/HypothesisPanel render), backtest,
+//        simulation, lab, pro, verdict, process (the app reads the initial tab from
 //        localStorage["stom_active_tab"], so a fresh mount per preset key selects the tab the
 //        same way the app does). After each: assert 0 thrown/console errors AND #root non-empty.
 //     V4 (Story 4 entry gate — STANDALONE page mounts): lab/pro/verdict each have a standalone
-//        HTML that sets window.__STOM_NO_AUTO_MOUNT__=true, loads the SAME bundle, then mounts
-//        window.LabPage / ProPage / VerdictPanel directly. V4 replicates each HTML's mount and
-//        asserts each renders with 0 errors / non-empty #root.
+//        HTML that sets window.__STOM_NO_AUTO_MOUNT__=true, loads the SAME SERVED bundle, then
+//        mounts window.LabPage / ProPage / VerdictPanel directly. V4 replicates each HTML's mount
+//        and asserts each renders with 0 errors / non-empty #root.
 //
 //   Output: a single JSON object on stdout (the pytest wrapper parses it). Exit 0 iff
 //   V1 && V2 && V3 && V4 pass. Any host-unavailability is reported as {"hostError": ...}
@@ -46,8 +52,13 @@ mkdirSync(TRACK_Z, { recursive: true });
 
 const read = (p) => readFileSync(p, "utf8");
 
-// --- Build the artifacts the harness needs (idempotent; transient, gitignored) ---
-// Pilot bundle (same options as build-app.mjs STOM_BUNDLE path).
+// PR-6 FLIP: V2/V3/V4 load the REAL DEFAULT served artifact (committed by `node build-app.mjs`),
+//   proving the file the browser downloads renders. V1 still uses a transient pilot build below
+//   as a clean alias-to-shim MECHANISM proof. (Build the served bundle first with build-app.mjs.)
+const SERVED_APP = resolve(FE, "bundle/app.js");
+
+// --- Build the transient pilot the V1 mechanism proof needs (idempotent; gitignored) ---
+// Pilot bundle (same options as build-app.mjs default bundle path).
 const reactShim = resolve(__dirname, "src/react-shim.js");
 const reactDomShim = resolve(__dirname, "src/react-dom-shim.js");
 await esbuild.build({
@@ -240,9 +251,9 @@ async function runV1() {
 }
 
 // ---------------------------------------------------------------- V2: index path
-//   PR-3: V2 now loads the FLAGGED FULL bundle (.track-z/app.pilot.js — the real per-module-
-//   scope ESM graph of all 26 converted files), NOT the legacy concat bundle/app.js. This proves
-//   the flagged bundle is a working app: it auto-mounts App (app.jsx's guarded auto-mount runs on
+//   PR-6 FLIP: V2 now loads the REAL DEFAULT SERVED bundle (frontend/bundle/app.js — the committed
+//   esbuild artifact the browser downloads), NOT the transient .track-z pilot. This proves the
+//   served artifact is a working app: it auto-mounts App (app.jsx's guarded auto-mount runs on
 //   module eval), publishes the FROZEN globals, resolves bare stom-ui/connection helpers via the
 //   window globals (esbuild leaves undeclared bare reads as global lookups), keeps a SINGLE React
 //   identity (alias-to-shim), and renders with 0 errors / non-empty #root.
@@ -256,9 +267,9 @@ async function runV2() {
   const reactIdentityBefore = window.React;
   const fmtReady = typeof window.fmtTime === "function" && typeof window.fmtScore === "function";
   const lwcReady = typeof window.LightweightCharts !== "undefined";
-  // The FLAGGED full bundle auto-mounts App on load (app.jsx guarded auto-mount; no
+  // The SERVED bundle auto-mounts App on load (app.jsx guarded auto-mount; no
   //   __STOM_NO_AUTO_MOUNT__ set) and resolves `react` via the alias-to-shim → window.React.
-  inject(window, read(resolve(TRACK_Z, "app.pilot.js")));
+  inject(window, read(SERVED_APP));
   await wait(400);
   const root = window.document.getElementById("root");
   const rootHtml = root.innerHTML;
@@ -274,7 +285,7 @@ async function runV2() {
   const pass = appIsFn && frozenReady && fmtReady && lwcReady && singleReactIdentity
     && dynReq.length === 0 && errs.length === 0 && rootHtml.trim().length > 0;
   return {
-    name: "V2_flagged_full_bundle",
+    name: "V2_served_default_bundle",
     pass,
     appIsFunction: appIsFn,
     frozenGlobalsReady: frozenReady,
@@ -290,7 +301,7 @@ async function runV2() {
 }
 
 // ---------------------------------------------------------------- V3: per-tab render sweep
-//   Story 4 entry gate. For EACH tab, build a fresh jsdom with the FLAGGED bundle, preset the
+//   Story 4 entry gate. For EACH tab, build a fresh jsdom with the SERVED bundle, preset the
 //   initial tab (localStorage["stom_active_tab"]) + serve the matching /status (RUNNING for the
 //   evolution tab so its data components render; IDLE is enough for the others — they fetch their
 //   own data on demand, which our stubs answer with contract-shaped empties). The index App
@@ -314,7 +325,7 @@ async function runTabOnce({ tab, state, expectIframe }) {
   inject(window, read(resolve(FE, "vendor-lightweight-charts.js")));
   inject(window, read(resolve(TRACK_Z, "stom-ui.classic.js")));
   await wait(50);
-  inject(window, read(resolve(TRACK_Z, "app.pilot.js")));  // auto-mounts App at the preset tab
+  inject(window, read(SERVED_APP));  // auto-mounts App at the preset tab (real served artifact)
   await wait(450);  // useBackend fetch chain + WS open + per-tab on-demand fetches settle
   const root = window.document.getElementById("root");
   const rootHtml = root.innerHTML;
@@ -348,9 +359,9 @@ async function runV3() {
 
 // ---------------------------------------------------------------- V4: standalone page mounts
 //   Story 4 entry gate. lab.html/pro.html/verdict.html each set __STOM_NO_AUTO_MOUNT__=true, load
-//   the SAME bundle, then mount window.LabPage / ProPage / VerdictPanel directly. V4 replicates that
-//   mount: load the flagged bundle with auto-mount disabled, then createRoot(...).render(
-//   createElement(window.<Page>, {baseUrl})). Assert each renders 0 errors / non-empty #root.
+//   the SAME SERVED bundle, then mount window.LabPage / ProPage / VerdictPanel directly. V4
+//   replicates that mount: load the served bundle with auto-mount disabled, then createRoot(...)
+//   .render(createElement(window.<Page>, {baseUrl})). Assert each renders 0 errors / non-empty #root.
 const V4_PAGES = [
   { page: "lab", global: "LabPage" },
   { page: "pro", global: "ProPage" },
@@ -363,7 +374,7 @@ async function runPageOnce({ page, global: globalName }) {
   inject(window, read(resolve(FE, "vendor-lightweight-charts.js")));
   inject(window, read(resolve(TRACK_Z, "stom-ui.classic.js")));
   await wait(50);
-  inject(window, read(resolve(TRACK_Z, "app.pilot.js")));  // publishes globals, does NOT auto-mount
+  inject(window, read(SERVED_APP));  // served bundle: publishes globals, does NOT auto-mount
   await wait(50);
   const componentIsFn = typeof window[globalName] === "function";
   let mountError = null;

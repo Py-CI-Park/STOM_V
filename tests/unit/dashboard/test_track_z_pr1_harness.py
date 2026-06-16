@@ -1,21 +1,25 @@
-"""Track Z (PR-1) — flagged ESM-bundle pilot + runtime harness gate.
+"""Track Z — ESM-bundle runtime harness gate (PR-1 origin → PR-6 FLIPPED reality).
 
-PR-1 proves the bundle MECHANISM on a pilot (phase-detail.jsx) behind STOM_BUNDLE=1;
-it does NOT convert all 26 files and does NOT flip the default. This test gates the two
-PR-1 validations described in the plan (.omc/plans/track-z-esm-bundle-migration.md, Story 1):
+PR-1 first proved the bundle MECHANISM on a pilot (phase-detail.jsx) behind STOM_BUNDLE=1.
+PR-6 (Story 4+5b) FLIPPED the default: the esbuild bundle is now the REAL served artifact
+(frontend/bundle/app.js, manifest model=="bundle") and the legacy transform-concat path is an
+emergency rollback behind STOM_LEGACY_CONCAT=1. The harness validations now target that served
+artifact:
 
-  V1 — pilot bundle mechanism: a flagged esbuild bundle of {entry + phase-detail.jsx + the
-       react shims} builds clean, contains NO require("react") / NO second-React sentinel,
-       and at runtime exposes window.DemoBadge / window.LivePending as functions with a
-       SINGLE React identity and zero "Dynamic require".
-  V2 — harness capability: node+jsdom hosts the HARDEST path (vendored React + ReactDOM +
-       lightweight-charts + stom-ui + the LEGACY full app.js), mounts the index App, and
-       reports 0 errors / non-empty #root.
+  V1 — bundle MECHANISM proof: a transient esbuild bundle of the alias-to-shim entry builds clean,
+       contains NO require("react") / NO second-React sentinel, and at runtime exposes
+       window.DemoBadge / window.LivePending as functions with a SINGLE React identity and zero
+       "Dynamic require".
+  V2 — SERVED bundle index path (HARDEST): node+jsdom hosts vendored React + ReactDOM +
+       lightweight-charts + stom-ui + the REAL DEFAULT served frontend/bundle/app.js, mounts the
+       index App, and reports 0 errors / non-empty #root.
+  V3 — SERVED bundle per-tab sweep (Story 4 entry gate): the served App renders all 7 tabs.
+  V4 — SERVED bundle standalone mounts (Story 4 entry gate): lab/pro/verdict mount their own root.
 
-Source-contract assertions (pure-python, always run): the shims, the dual-safe export, the
-flag path, and the entry re-publish exist. The node harness run is GATED on node + esbuild +
-jsdom availability (same convention as test_phase9_spa_tabs: skip when build deps absent),
-because webui-build/node_modules is gitignored (runtime stays npm-free).
+Source-contract assertions (pure-python, always run): the shims, the dual-safe export, the flag
+path, the entry re-publish, and the DEFAULT bundle-model manifest exist. The node harness run is
+GATED on node + esbuild + jsdom availability (same convention as test_phase9_spa_tabs: skip when
+build deps absent), because webui-build/node_modules is gitignored (runtime stays npm-free).
 """
 
 from __future__ import annotations
@@ -103,17 +107,28 @@ class TestTrackZSourceContract:
         assert "react-shim.js" in src and "react-dom-shim.js" in src
         assert 'bundle: true' in src and 'format: "iife"' in src
 
-    def test_default_concat_path_still_26_sources(self) -> None:
-        """The default (flag-OFF) manifest must remain the legacy 26-source concat model —
-        PR-1 does not flip the default.
+    def test_default_manifest_is_bundle_model(self) -> None:
+        """PR-6 FLIP: the DEFAULT (no-env) build is now the esbuild bundle — the committed manifest
+        records model=="bundle" with the entry + externalized-globals meta, NOT the legacy
+        appSources concat list.
 
-        TODO(flip P4/5b): this is an INTENTIONAL build-model guard (flag-OFF concat invariant).
-        At the flip, the committed manifest gains a model field; replace these two asserts with a
-        model=="bundle" single-entry-graph invariant. Until then (default==concat, manifest has
-        no model field) it must keep asserting the 26-source concat reality (KEEP green)."""
+        FLIP history: this test was `test_default_concat_path_still_26_sources` (it asserted
+        appSources==26 with [-1]=="app.jsx" because the default WAS concat). Story 4+5b flipped the
+        default to bundle, so the protective intent inverts: it must now fail if the build model
+        regresses to concat (e.g. STOM_LEGACY_CONCAT leaking into the default)."""
         manifest = json.loads(_read(FRONTEND / "bundle" / "manifest.json"))
-        assert manifest["appSources"][-1] == "app.jsx"
-        assert len(manifest["appSources"]) == 26
+        assert manifest.get("model") == "bundle", (
+            f"default build model must be 'bundle' (got {manifest.get('model')!r}) — "
+            "a concat manifest means the legacy fallback leaked into the default."
+        )
+        assert manifest.get("entry", "").endswith(".js"), "bundle manifest missing entry path"
+        assert "externalizedGlobals" in manifest, (
+            "bundle manifest missing externalizedGlobals (react→window.React alias-to-shim meta)"
+        )
+        # concat-only key must be gone in the default manifest.
+        assert "appSources" not in manifest, (
+            "bundle manifest still carries concat-only appSources — build-model regression"
+        )
 
 
 # ============================================== node + jsdom runtime harness (gated)
@@ -168,7 +183,8 @@ def test_track_z_v1_pilot_mechanism() -> None:
 
 def test_track_z_v2_index_path_hosts() -> None:
     """V2: node+jsdom hosts the index path (vendored React+ReactDOM+lightweight-charts+
-    stom-ui+legacy app.js), App mounts with 0 errors and non-empty #root."""
+    stom-ui+the SERVED DEFAULT frontend/bundle/app.js), App mounts with 0 errors and
+    non-empty #root."""
     data = _run_harness()
     v2 = data["v2"]
     assert v2["appIsFunction"], "window.App is not a function"
