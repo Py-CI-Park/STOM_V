@@ -984,7 +984,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { AIContextPanel: AIContextPanel2 });
 
-  // ../frontend/research-pro.jsx
+  // ../frontend/rp-utils.jsx
   var {
     useState: useState_rp,
     useEffect: useEffect_rp,
@@ -1121,6 +1121,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     }
     return /* @__PURE__ */ React.createElement("div", { className: "rp-code-grid" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rp-code-label", style: { color: "var(--teal)" } }, "\uB9E4\uC218 \uC870\uAC74\uC2DD ", code.buy_name ? `\xB7 ${code.buy_name}` : ""), /* @__PURE__ */ React.createElement("pre", { className: "rp-code-block" }, buy || "(\uC5C6\uC74C)"), /* @__PURE__ */ React.createElement(_RpVarChips, { baseUrl, isDemo, code: buy })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rp-code-label", style: { color: "var(--blue)" } }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD ", code.sell_name ? `\xB7 ${code.sell_name}` : ""), /* @__PURE__ */ React.createElement("pre", { className: "rp-code-block" }, sell || "(\uC5C6\uC74C)"), /* @__PURE__ */ React.createElement(_RpVarChips, { baseUrl, isDemo, code: sell })));
   }
+
+  // ../frontend/rp-heatmap.jsx
   function _RpBigHeatmap({ baseUrl, isDemo, runId }) {
     const [data, setData] = useState_rp(null);
     const [loading, setLoading] = useState_rp(false);
@@ -1443,6 +1445,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     }))));
   }
   Object.assign(window, { ResearchProcessFlowOverlay: _RpProcessFlowOverlay });
+
+  // ../frontend/rp-panel.jsx
   function ResearchProPanel({ baseUrl, wsStatus, runId }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [runList, setRunList] = useState_rp([]);
@@ -1552,6 +1556,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       "?"
     ))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, isDemo || !runId ? /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 12, color: "var(--ink-3)", padding: "18px 0", textAlign: "center" } }, isDemo ? "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4." : "run \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement(_RpBigHeatmap, { baseUrl, isDemo, runId })));
   }
+
+  // ../frontend/research-pro.jsx
   Object.assign(window, { ResearchProPanel, ResearchHeatmapPanel });
 
   // ../frontend/research-wiki.jsx
