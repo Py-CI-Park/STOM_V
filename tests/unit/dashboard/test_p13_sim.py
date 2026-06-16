@@ -27,6 +27,9 @@ if PROJECT_ROOT not in sys.path:
 
 FRONTEND = Path(PROJECT_ROOT) / "ai_strategy_loop" / "dashboard" / "frontend"
 SIM_JSX = FRONTEND / "simulation-charts.jsx"
+# P5.3 분해 — LWC/SVG 엔진 컴포넌트는 sim-chart-engines.jsx, 체결로그/CSV 헬퍼는 sim-signal-log.jsx 로 이동.
+SIM_ENGINES_JSX = FRONTEND / "sim-chart-engines.jsx"
+SIM_SIGNAL_LOG_JSX = FRONTEND / "sim-signal-log.jsx"
 
 
 def _read(path: Path) -> str:
@@ -46,7 +49,7 @@ def _slice(src: str, start_marker: str, end_marker: str) -> str:
 
 def test_c3_lwc_marker_effect_builds_markers_from_signals() -> None:
     """SimCandleChartLWC 범위 안에서 signals 순회로 markers 를 채우고 setMarkers 로 전달한다."""
-    src = _read(SIM_JSX)
+    src = _read(SIM_ENGINES_JSX)
     lwc = _slice(src, "function SimCandleChartLWC", "function SimCandleChartSVG")
     # signals 순회 + markers 배열 push.
     assert "(signals || []).forEach" in lwc
@@ -57,7 +60,7 @@ def test_c3_lwc_marker_effect_builds_markers_from_signals() -> None:
 
 def test_c3_lwc_markers_gated_by_curt() -> None:
     """매수/매도 마커가 curT 도달분만(curT == null || hms <= curT) 그려진다 — SVG/live 와 동일 게이트."""
-    src = _read(SIM_JSX)
+    src = _read(SIM_ENGINES_JSX)
     lwc = _slice(src, "function SimCandleChartLWC", "function SimCandleChartSVG")
     assert "curT == null || sig.buy_hms <= curT" in lwc
     assert "curT == null || sig.sell_hms <= curT" in lwc
@@ -65,7 +68,7 @@ def test_c3_lwc_markers_gated_by_curt() -> None:
 
 def test_c3_lwc_marker_semantics_match_svg_live() -> None:
     """매수=belowBar/arrowUp/teal/매수, 매도=aboveBar/arrowDown/red — SVG(▲teal/▼red)·live 와 일치."""
-    src = _read(SIM_JSX)
+    src = _read(SIM_ENGINES_JSX)
     lwc = _slice(src, "function SimCandleChartLWC", "function SimCandleChartSVG")
     # 매수 마커.
     assert 'position: "belowBar"' in lwc
@@ -80,7 +83,7 @@ def test_c3_lwc_marker_semantics_match_svg_live() -> None:
 
 def test_c3_lwc_marker_setmarkers_is_not_only_empty() -> None:
     """죽은 분기 회귀 방지: setMarkers 가 항상 빈 배열([])만 받는 형태가 아니어야 한다."""
-    src = _read(SIM_JSX)
+    src = _read(SIM_ENGINES_JSX)
     lwc = _slice(src, "function SimCandleChartLWC", "function SimCandleChartSVG")
     # 빈-배열 clear(early-return)는 허용되지만, 채워진 markers 호출이 반드시 존재해야 한다.
     assert lwc.count("setMarkers(") >= 2  # 빈배열 clear + markers 전달 둘 다.
@@ -93,8 +96,8 @@ def test_c3_lwc_marker_setmarkers_is_not_only_empty() -> None:
 
 def test_c4_signal_log_has_csv_export_button() -> None:
     """SimSignalLog 범위 안에 'CSV 내보내기' 버튼이 존재하고 다운로드 핸들러에 연결된다."""
-    src = _read(SIM_JSX)
-    log = _slice(src, "function SimSignalLog", "Object.assign(window")
+    src = _read(SIM_SIGNAL_LOG_JSX)
+    log = _slice(src, "function SimSignalLog", "export {")
     assert "CSV 내보내기" in log
     assert "_simDownloadSignalLogCsv(rows)" in log
     # 0건일 때 버튼 숨김(rows.length > 0 게이트).
@@ -103,7 +106,7 @@ def test_c4_signal_log_has_csv_export_button() -> None:
 
 def test_c4_csv_blob_download_clientside() -> None:
     """백엔드 없이 Blob + a[download] 클릭으로 클라이언트 다운로드한다."""
-    src = _read(SIM_JSX)
+    src = _read(SIM_SIGNAL_LOG_JSX)
     dl = _slice(src, "function _simDownloadSignalLogCsv", "function SimSignalLog")
     assert "new Blob(" in dl
     assert "text/csv" in dl
@@ -117,7 +120,7 @@ def test_c4_csv_blob_download_clientside() -> None:
 
 def test_c4_csv_has_column_headers() -> None:
     """CSV 헤더 컬럼: 매수시간·매도시간·매수가·매도가·수익률(%) (+ 종목코드 조건부)."""
-    src = _read(SIM_JSX)
+    src = _read(SIM_SIGNAL_LOG_JSX)
     csvfn = _slice(src, "function _simSignalLogCsv", "function _simDownloadSignalLogCsv")
     for col in ("매수시간", "매도시간", "매수가", "매도가", "수익률(%)"):
         assert col in csvfn, f"누락된 CSV 컬럼: {col}"
@@ -128,14 +131,14 @@ def test_c4_csv_has_column_headers() -> None:
 
 def test_c4_csv_has_utf8_bom() -> None:
     """엑셀 한글 호환 위해 utf-8 BOM(\\ufeff) 을 선행한다."""
-    src = _read(SIM_JSX)
+    src = _read(SIM_SIGNAL_LOG_JSX)
     csvfn = _slice(src, "function _simSignalLogCsv", "function _simDownloadSignalLogCsv")
     assert "﻿" in csvfn, "CSV 출력에 utf-8 BOM 이 없습니다"
 
 
 def test_c4_csv_time_prefers_full_time_then_hms() -> None:
     """시각은 buy_time/sell_time(YYYYMMDDHHMMSS) 우선, 부재 시 hms 폴백(_simTimeLabel)."""
-    src = _read(SIM_JSX)
+    src = _read(SIM_SIGNAL_LOG_JSX)
     timefn = _slice(src, "function _simCsvTime", "function _simSignalLogCsv")
     assert "_simTimeLabel(hms)" in timefn
     # full(buy_time/sell_time) 우선 분기.

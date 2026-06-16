@@ -62,7 +62,8 @@ class TestConsumersAliasNotRedefine:
         assert "const _btAxisTicks = window._axisTicks" in src
 
     def test_sim_charts_tick_helpers_deduped(self) -> None:
-        src = _readf("simulation-charts.jsx")
+        # P5.3 분해 — _simPriceTick/_simTimeLabel 별칭은 simulation-charts.jsx(배럴)에서 sim-chart-utils.jsx 로 이동.
+        src = _readf("sim-chart-utils.jsx")
         assert "function _simPriceTick(" not in src
         assert "function _simTimeLabel(" not in src
         assert "const _simPriceTick = window._priceTick" in src

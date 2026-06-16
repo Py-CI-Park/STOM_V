@@ -53,24 +53,28 @@ def _read(name: str) -> str:
 # ============================================================================
 
 def test_client_helpers_defined_in_charts_source() -> None:
-    src = _read("simulation-charts.jsx")
+    # P5.3 분해 — 클라이언트 지표 헬퍼 정의는 simulation-charts.jsx(배럴)에서 sim-chart-utils.jsx 로 이동.
+    src = _read("sim-chart-utils.jsx")
     for fn in ("function _simEma", "function _simRsi", "function _simMacd",
                "function _simVolMa", "function _simStrengthMa", "function _simSma"):
         assert fn in src, f"missing helper: {fn}"
-    # window 전역 노출(다른 파일·라이브 차트가 window._simEma 등으로 참조).
-    assert "_simSma, _simEma, _simRsi, _simMacd, _simVolMa, _simStrengthMa" in src
+    # window 전역 노출(다른 파일·라이브 차트가 window._simEma 등으로 참조) — 재게시는 배럴 Object.assign.
+    barrel = _read("simulation-charts.jsx")
+    assert "_simSma, _simEma, _simRsi, _simMacd, _simVolMa, _simStrengthMa" in barrel
 
 
 def test_macd_helper_uses_12_26_9_constants() -> None:
     """MACD 헬퍼가 12/26 EMA + 9 signal 표준 상수를 쓴다(소스 fragment)."""
-    src = _read("simulation-charts.jsx")
+    # P5.3 분해 — 헬퍼는 sim-chart-utils.jsx.
+    src = _read("sim-chart-utils.jsx")
     assert "_simEma(bars, 12)" in src and "_simEma(bars, 26)" in src
     assert "2 / (9 + 1)" in src   # signal = MACD 의 9-기간 EMA.
 
 
 def test_rsi_helper_is_wilder() -> None:
     """RSI 가 Wilder 평활(avg*(p-1)+x)/p)을 쓴다 — 단순 SMA RSI 가 아님."""
-    src = _read("simulation-charts.jsx")
+    # P5.3 분해 — 헬퍼는 sim-chart-utils.jsx.
+    src = _read("sim-chart-utils.jsx")
     assert "avgGain * (p - 1)" in src and "avgLoss * (p - 1)" in src
     assert "100 - 100 / (1 + rs)" in src
 
@@ -174,14 +178,16 @@ def test_strength_drawn_in_live_chart() -> None:
 
 
 def test_strength_overlay_scale_in_lwc() -> None:
-    src = _read("simulation-charts.jsx")
+    # P5.3 분해 — LWC/SVG 엔진 컴포넌트는 sim-chart-engines.jsx.
+    src = _read("sim-chart-engines.jsx")
     # LWC 가 싣는 단 하나의 서브-시리즈 — priceScaleId "strength" + scaleMargins.
     assert 'priceScaleId: "strength"' in src
     assert 'chart.priceScale("strength").applyOptions' in src
 
 
 def test_strength_still_in_svg() -> None:
-    src = _read("simulation-charts.jsx")
+    # P5.3 분해 — SVG 엔진 컴포넌트는 sim-chart-engines.jsx.
+    src = _read("sim-chart-engines.jsx")
     # 기존 SVG 체결강도 폴리라인 유지(ind.strength 토글로 감쌈).
     assert "strPath" in src
     assert "ind.strength" in src
@@ -192,11 +198,13 @@ def test_strength_still_in_svg() -> None:
 # ============================================================================
 
 def test_imbalance_and_netdelta_wired_to_live_and_svg() -> None:
-    charts = _read("simulation-charts.jsx")
+    # P5.3 분해 — 서브패인 컴포넌트 정의는 sim-chart-subpanes.jsx, shell 결선은 sim-chart-shell.jsx.
+    panes = _read("sim-chart-subpanes.jsx")
+    shell = _read("sim-chart-shell.jsx")
     live = _read("sim-live-chart.jsx")
-    # SVG/shell 경로 — 컴포넌트 결선.
-    assert "SimImbalancePane" in charts
-    assert "SimNetDeltaStrip" in charts
+    # SVG/shell 경로 — 컴포넌트 정의 + shell 결선.
+    assert "SimImbalancePane" in panes and "SimImbalancePane" in shell
+    assert "SimNetDeltaStrip" in panes and "SimNetDeltaStrip" in shell
     # live(canvas) 경로 — 그리기 헬퍼.
     assert "_drawImbalanceStrip" in live
     assert "_drawNetDeltaStrip" in live
@@ -204,27 +212,31 @@ def test_imbalance_and_netdelta_wired_to_live_and_svg() -> None:
 
 def test_asymmetry_lwc_excludes_imbalance_and_netdelta() -> None:
     """비대칭 패리티 — 서브패인은 engine !== "lwc" 일 때만 렌더된다."""
-    charts = _read("simulation-charts.jsx")
-    assert 'engine !== "lwc" && ind.imbalance && <SimImbalancePane' in charts
-    assert 'engine !== "lwc" && ind.orderflow && <SimNetDeltaStrip' in charts
+    # P5.3 분해 — shell 결선은 sim-chart-shell.jsx, ASYMMETRIC PARITY 주석은 엔진 파일(sim-chart-engines.jsx).
+    shell = _read("sim-chart-shell.jsx")
+    engines = _read("sim-chart-engines.jsx")
+    assert 'engine !== "lwc" && ind.imbalance && <SimImbalancePane' in shell
+    assert 'engine !== "lwc" && ind.orderflow && <SimNetDeltaStrip' in shell
     # LWC 컴포넌트 자체에는 imbalance/net-delta 그리기 결선이 없다(strength 오버레이만).
     # ASYMMETRIC PARITY 결론 주석이 코드에 박혀 있다.
-    assert "ASYMMETRIC PARITY (FINAL)" in charts
+    assert "ASYMMETRIC PARITY (FINAL)" in engines
 
 
 def test_imbalance_honest_label() -> None:
-    charts = _read("simulation-charts.jsx")
+    # P5.3 분해 — SimImbalancePane 정의는 sim-chart-subpanes.jsx.
+    panes = _read("sim-chart-subpanes.jsx")
     live = _read("sim-live-chart.jsx")
-    assert "호가 불균형(레벨1 총잔량비)" in charts
+    assert "호가 불균형(레벨1 총잔량비)" in panes
     # 1.0 균형선(불균형 기준).
-    assert "yAt(1.0)" in charts
+    assert "yAt(1.0)" in panes
     assert "호가불균형" in live
 
 
 def test_netdelta_uses_net_qty() -> None:
-    charts = _read("simulation-charts.jsx")
+    # P5.3 분해 — net-delta 컴포넌트는 sim-chart-subpanes.jsx.
+    panes = _read("sim-chart-subpanes.jsx")
     live = _read("sim-live-chart.jsx")
-    assert "net_qty" in charts and "net-delta" in charts
+    assert "net_qty" in panes and "net-delta" in panes
     assert "net_qty" in live
 
 
@@ -233,7 +245,8 @@ def test_netdelta_uses_net_qty() -> None:
 # ============================================================================
 
 def test_default_indicators_has_new_keys() -> None:
-    src = _read("simulation-charts.jsx")
+    # P5.3 분해 — _SIM_DEFAULT_INDICATORS 상수는 sim-chart-utils.jsx.
+    src = _read("sim-chart-utils.jsx")
     # 신규 키 전부 존재.
     for key in ("ema", "rsi", "macd", "volma", "strma", "vwapband",
                 "strength", "imbalance", "orderflow"):
@@ -251,7 +264,8 @@ def test_default_indicators_has_new_keys() -> None:
 # ============================================================================
 
 def test_orderbook_computes_spread() -> None:
-    src = _read("simulation-charts.jsx")
+    # P5.3 분해 — SimOrderBook 정의는 sim-chart-subpanes.jsx.
+    src = _read("sim-chart-subpanes.jsx")
     assert "function SimOrderBook" in src
     # 스프레드 = ask1 - bid1, bps = spread/mid*10000.
     assert "ask1 - bid1" in src
@@ -260,7 +274,8 @@ def test_orderbook_computes_spread() -> None:
 
 
 def test_orderbook_honest_label_and_tooltip() -> None:
-    src = _read("simulation-charts.jsx")
+    # P5.3 분해 — SimOrderBook 정의는 sim-chart-subpanes.jsx.
+    src = _read("sim-chart-subpanes.jsx")
     assert "호가창 (레벨1 + 총잔량)" in src
     assert "일일 DB는 최우선호가·총잔량만 제공(레벨2~10 없음)" in src
     # 허위 다단 호가 생성 없음(레벨1 전용 — 구 SimQuotePressure 부재 유지).
@@ -268,7 +283,8 @@ def test_orderbook_honest_label_and_tooltip() -> None:
 
 
 def test_orderbook_ratio_depth_and_flash() -> None:
-    src = _read("simulation-charts.jsx")
+    # P5.3 분해 — SimOrderBook 정의는 sim-chart-subpanes.jsx.
+    src = _read("sim-chart-subpanes.jsx")
     # 잔량 점유율(buy_rest vs sell_rest 총합 대비) % 라벨.
     assert "buyShare" in src and "sellShare" in src
     # bid1/ask1 변동 플래시(CSS transition 배경).
@@ -319,33 +335,37 @@ def test_macd_drawn_in_live_chart() -> None:
 
 def test_rsi_and_macd_drawn_in_svg() -> None:
     """RSI / MACD 컴포넌트가 SVG 엔진에 정의되고 SimChartShell 에 결선된다."""
-    src = _read("simulation-charts.jsx")
-    assert "function SimRsiPane" in src
-    assert "function SimMacdPane" in src
+    # P5.3 분해 — 컴포넌트 정의는 sim-chart-subpanes.jsx, SimChartShell 결선은 sim-chart-shell.jsx.
+    panes = _read("sim-chart-subpanes.jsx")
+    shell = _read("sim-chart-shell.jsx")
+    assert "function SimRsiPane" in panes
+    assert "function SimMacdPane" in panes
     # SimChartShell 결선 — engine !== "lwc" 게이팅.
-    assert 'engine !== "lwc" && ind.rsi && <SimRsiPane' in src
-    assert 'engine !== "lwc" && ind.macd && <SimMacdPane' in src
+    assert 'engine !== "lwc" && ind.rsi && <SimRsiPane' in shell
+    assert 'engine !== "lwc" && ind.macd && <SimMacdPane' in shell
     # 30/50/70 가이드선.
-    assert "30, 50, 70" in src or "[30, 50, 70]" in src
+    assert "30, 50, 70" in panes or "[30, 50, 70]" in panes
     # MACD 히스토그램 + 시그널.
-    assert "hist" in src and "signal" in src
+    assert "hist" in panes and "signal" in panes
 
 
 def test_asymmetry_lwc_excludes_rsi_and_macd() -> None:
     """비대칭 패리티 — RSI/MACD 는 engine !== "lwc" 일 때만 렌더된다(LWC 에 없음)."""
-    charts = _read("simulation-charts.jsx")
+    # P5.3 분해 — SimChartShell 결선은 sim-chart-shell.jsx, LWC 엔진 컴포넌트는 sim-chart-engines.jsx.
+    shell = _read("sim-chart-shell.jsx")
+    engines = _read("sim-chart-engines.jsx")
     # LWC 컴포넌트(SimCandleChartLWC) 내에 SimRsiPane/SimMacdPane 직접 렌더 없음.
     # SimChartShell 결선이 engine != "lwc" 조건으로 감싸져 있는지 확인.
-    assert 'engine !== "lwc" && ind.rsi && <SimRsiPane' in charts
-    assert 'engine !== "lwc" && ind.macd && <SimMacdPane' in charts
+    assert 'engine !== "lwc" && ind.rsi && <SimRsiPane' in shell
+    assert 'engine !== "lwc" && ind.macd && <SimMacdPane' in shell
     # live 엔진도 lwc 가 아님을 확인(live 헬퍼는 sim-live-chart.jsx 에만 존재).
     live = _read("sim-live-chart.jsx")
     assert "_drawRsiPane" in live
     assert "_drawMacdPane" in live
-    # LWC JSX(SimChartShell engine="lwc")는 RSI/MACD draw 를 추가로 갖지 않는다.
-    # simulation-charts.jsx 의 LWC 컴포넌트 블록엔 _drawRsiPane/_drawMacdPane 참조 없음.
-    assert "_drawRsiPane" not in charts
-    assert "_drawMacdPane" not in charts
+    # LWC JSX(SimCandleChartLWC, sim-chart-engines.jsx)는 RSI/MACD draw 를 추가로 갖지 않는다.
+    # 엔진 파일의 LWC 컴포넌트 블록엔 _drawRsiPane/_drawMacdPane 참조 없음.
+    assert "_drawRsiPane" not in engines
+    assert "_drawMacdPane" not in engines
 
 
 # ============================================================================
@@ -363,7 +383,7 @@ const fs = require('fs');
 const path = require('path');
 const dir = process.argv[2];
 const esbuild = require(path.join(dir, '..', 'webui-build', 'node_modules', 'esbuild'));
-const files = ['sim-live-chart.jsx', 'simulation-charts.jsx'];
+const files = ['sim-live-chart.jsx', 'simulation-charts.jsx', 'sim-chart-utils.jsx', 'sim-chart-subpanes.jsx', 'sim-chart-shell.jsx', 'sim-chart-engines.jsx', 'sim-signal-log.jsx'];
 let ok = true;
 for (const f of files) {
   try { esbuild.transformSync(fs.readFileSync(path.join(dir, f), 'utf8'), { loader: 'jsx', jsx: 'transform', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment' }); }

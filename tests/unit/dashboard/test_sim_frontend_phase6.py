@@ -87,7 +87,8 @@ def test_s4_live_is_default_engine_mode() -> None:
 
 # ------------------------------------------------------------------- S3 footprint
 def test_s3_footprint_component() -> None:
-    src = _read("simulation-charts.jsx")
+    # P5.3 분해 — SimFootprint 정의는 simulation-charts.jsx(배럴)에서 sim-chart-subpanes.jsx 로 이동.
+    src = _read("sim-chart-subpanes.jsx")
     assert "function SimFootprint" in src
     # 매수/매도 체결 분리 — net_qty 실데이터 우선 + 강도 휴리스틱 폴백(정직 표기).
     assert "_barBuySell" in src
@@ -99,7 +100,8 @@ def test_s3_footprint_component() -> None:
 
 # --------------------------------------------------------------------- S5 호가창
 def test_s5_orderbook_replaces_quote_pressure() -> None:
-    src = _read("simulation-charts.jsx")
+    # P5.3 분해 — SimOrderBook 정의는 sim-chart-subpanes.jsx.
+    src = _read("sim-chart-subpanes.jsx")
     assert "function SimOrderBook" in src
     # 레벨1 + 총잔량 정직 표기(허위 다단 호가 금지).
     assert "레벨1 + 총잔량" in src
@@ -130,7 +132,7 @@ const fs = require('fs');
 const path = require('path');
 const dir = process.argv[2];
 const esbuild = require(path.join(dir, '..', 'webui-build', 'node_modules', 'esbuild'));
-const files = ['sim-live-chart.jsx', 'simulation.jsx', 'simulation-charts.jsx'];
+const files = ['sim-live-chart.jsx', 'simulation.jsx', 'simulation-charts.jsx', 'sim-chart-utils.jsx', 'sim-chart-subpanes.jsx', 'sim-chart-shell.jsx', 'sim-chart-engines.jsx', 'sim-signal-log.jsx'];
 let ok = true;
 for (const f of files) {
   try { esbuild.transformSync(fs.readFileSync(path.join(dir, f), 'utf8'), { loader: 'jsx', jsx: 'transform', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment' }); }
