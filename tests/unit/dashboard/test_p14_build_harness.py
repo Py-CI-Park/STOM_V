@@ -122,15 +122,27 @@ def test_judgment_fns_still_dual() -> None:
 
 
 def test_chart_axisticks_dedup_to_bundle() -> None:
-    """14.3: chart.jsx 순수 헬퍼 _axisTicks 가 빌드 번들 단일 출처로 이전됨."""
-    chart = _read(FRONTEND / "chart.jsx")
+    """14.3: chart 패밀리 순수 헬퍼 _axisTicks 가 빌드 번들 단일 출처로 이전됨.
+    P5.4: chart.jsx(1,742줄)는 chart-primitives/chart-equity/chart-backtest-detail/
+    chart-hall-of-fame + 배럴로 분해됨. _axisTicks 를 실제 쓰는 차트(ProfitChart·
+    BacktestDetailChart)는 chart-equity·chart-backtest-detail 로 이동했으므로 window
+    별칭도 그 sub-file 에 산다. de-dup 불변식(정의 없음 + window 별칭 사용)은 유지."""
+    chart_family = (
+        "chart.jsx", "chart-primitives.jsx", "chart-equity.jsx",
+        "chart-backtest-detail.jsx", "chart-hall-of-fame.jsx",
+    )
     fmt = _read(WEBUI_BUILD / "src" / "format.ts")
     bundle = _read(FRONTEND / "bundle" / "stom-ui.js")
-    # 정의는 format.mjs(정본)·번들에만, chart.jsx 에서는 제거 + window 별칭.
+    # 정의는 format.mjs(정본)·번들에만, chart 패밀리에서는 제거 + window 별칭.
     assert "export function _axisTicks" in fmt, "format.mjs(정본)에 _axisTicks 없음."
     assert "_axisTicks" in bundle, "번들에 _axisTicks 노출 없음 — 재빌드 필요."
-    assert "function _axisTicks(" not in chart, "chart.jsx 에 _axisTicks 정의가 남아있음(de-dup 위반)."
-    assert "const _axisTicks = window._axisTicks" in chart, "chart.jsx 에 _axisTicks window 별칭 없음."
+    srcs = {name: _read(FRONTEND / name) for name in chart_family}
+    for name, src in srcs.items():
+        assert "function _axisTicks(" not in src, f"{name} 에 _axisTicks 정의가 남아있음(de-dup 위반)."
+    # window 별칭은 _axisTicks 를 실제 쓰는 sub-file(들)에 존재해야 한다.
+    alias = "const _axisTicks = window._axisTicks"
+    assert any(alias in src for src in srcs.values()), \
+        "chart 패밀리 어디에도 _axisTicks window 별칭이 없음."
 
 
 def test_all_entrypoints_loading_deduped_jsx_also_load_bundle() -> None:

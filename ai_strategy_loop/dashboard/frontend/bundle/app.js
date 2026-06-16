@@ -3465,12 +3465,20 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { EnginePanel, LiveBacktestChart, fmtElapsed, _liveChartGeom: _liveChartGeom2 });
 
-  // ../frontend/chart.jsx
-  var { useMemo: useMemo_c, useState: useState_c, useRef: useRef_c } = React;
-  var _axisTicks = window._axisTicks;
+  // ../frontend/chart-primitives.jsx
   function MetricHelpStrip({ items }) {
     return /* @__PURE__ */ React.createElement("div", { className: "metric-help-strip" }, (items || []).map((item, i) => /* @__PURE__ */ React.createElement("span", { key: i }, item)));
   }
+  function LegendDot({ color, label, dashed, filled }) {
+    return /* @__PURE__ */ React.createElement("span", { style: { display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, color: "var(--ink-2)", fontFamily: "var(--mono)" } }, dashed ? /* @__PURE__ */ React.createElement("span", { style: { width: 14, height: 0, borderTop: `1px dashed ${color}` } }) : filled === "ring" ? /* @__PURE__ */ React.createElement("span", { style: { width: 9, height: 9, borderRadius: "50%", background: color, border: "1.5px solid #fff", boxSizing: "border-box" } }) : /* @__PURE__ */ React.createElement("span", { style: { width: 8, height: 8, borderRadius: "50%", background: color } }), label);
+  }
+  function Mini({ label, value, sub, color }) {
+    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase" } }, label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 17, color: color || "var(--ink-0)" } }, value), sub && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, sub));
+  }
+
+  // ../frontend/chart-equity.jsx
+  var { useMemo: useMemo_c, useState: useState_c, useRef: useRef_c } = React;
+  var _axisTicks = window._axisTicks;
   function FitnessChart({ state, target = 1 }) {
     const gens = state.generations || [];
     const bestSoFar = useMemo_c(() => {
@@ -3717,12 +3725,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       fontFamily: "var(--mono)"
     } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))));
   }
-  function LegendDot({ color, label, dashed, filled }) {
-    return /* @__PURE__ */ React.createElement("span", { style: { display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, color: "var(--ink-2)", fontFamily: "var(--mono)" } }, dashed ? /* @__PURE__ */ React.createElement("span", { style: { width: 14, height: 0, borderTop: `1px dashed ${color}` } }) : filled === "ring" ? /* @__PURE__ */ React.createElement("span", { style: { width: 9, height: 9, borderRadius: "50%", background: color, border: "1.5px solid #fff", boxSizing: "border-box" } }) : /* @__PURE__ */ React.createElement("span", { style: { width: 8, height: 8, borderRadius: "50%", background: color } }), label);
-  }
-  function Mini({ label, value, sub, color }) {
-    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase" } }, label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 17, color: color || "var(--ink-0)" } }, value), sub && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, sub));
-  }
   function ProfitChart({ state, targetPct = 0 }) {
     const gens = state.generations || [];
     const W = 880, H = 300;
@@ -3931,6 +3933,190 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       fontFamily: "var(--mono)"
     } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uC218\uC775 \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))));
   }
+  var _QUALITY_METRICS = [
+    { key: "calmar", label: "Calmar", color: "var(--teal)", fmt: (v) => v.toFixed(2), hint: "CAGR/MDD \uC704\uD5D8\uC870\uC815\uC218\uC775(\uB192\uC744\uC218\uB85D \uC6B0\uC218)" },
+    { key: "uptrend_r2", label: "\uC6B0\uC0C1\uD5A5 R\xB2", color: "var(--violet)", fmt: (v) => v.toFixed(3), hint: "\uB204\uC801\uACE1\uC120 \uC6B0\uC0C1\uD5A5 \uC801\uD569\uB3C4 0~1(\uB192\uC744\uC218\uB85D \uC6B0\uC218)" },
+    { key: "mdd", label: "MDD %", color: "var(--red)", fmt: (v) => fmtPct(v), hint: "\uCD5C\uB300\uB099\uD3ED(\uB0AE\uC744\uC218\uB85D \uC6B0\uC218) \u2014 \uBCF4\uACE0\uC11C 1.9~6.75%" },
+    { key: "daily_avg_trades", label: "\uC77C\uD3C9\uADE0\uAC70\uB798", color: "var(--amber)", fmt: (v) => v.toFixed(2), hint: "\uAC70\uB798\uC218/\uAC70\uB798\uC77C(\uBCF4\uACE0\uC11C 10~23)" },
+    { key: "max_hold_count", label: "\uB3D9\uC2DC\uBCF4\uC720", color: "var(--blue)", fmt: (v) => v.toFixed(0), hint: "\uCD5C\uB300 \uB3D9\uC2DC\uBCF4\uC720 \uC885\uBAA9\uC218(\uBCF4\uACE0\uC11C 6~12)" },
+    { key: "payoff_ratio", label: "\uC190\uC775\uBE44", color: "#73d673", fmt: (v) => v.toFixed(2), hint: "\uD3C9\uADE0\uC774\uC775/\uD3C9\uADE0\uC190\uC2E4(\uBCF4\uACE0\uC11C 1.15~1.47)" }
+  ];
+  function QualityTrendChart({ state }) {
+    const gens = state.generations || [];
+    const [enabled, setEnabled] = useState_c(() => ({
+      calmar: true,
+      uptrend_r2: true,
+      mdd: true,
+      daily_avg_trades: false,
+      max_hold_count: false,
+      payoff_ratio: false
+    }));
+    const toggle = (k) => setEnabled((s) => ({ ...s, [k]: !s[k] }));
+    const W = 880, H = 320;
+    const padL = 44, padR = 24, padT = 18, padB = 30;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const xMax = Math.max(state.max_generations, 8);
+    const x = (g) => padL + (g - 0.5) / xMax * innerW;
+    const okGens = useMemo_c(() => gens.filter((g) => g.status !== "error"), [gens]);
+    const ranges = useMemo_c(() => {
+      const r = {};
+      for (const m of _QUALITY_METRICS) {
+        const vals = okGens.map((g) => typeof g[m.key] === "number" ? g[m.key] : null).filter((v) => v != null);
+        if (!vals.length) {
+          r[m.key] = null;
+          continue;
+        }
+        let lo = Math.min(...vals), hi = Math.max(...vals);
+        if (hi === lo) hi = lo + 1;
+        r[m.key] = { lo, hi };
+      }
+      return r;
+    }, [okGens]);
+    const ny = (m, g) => {
+      const rg = ranges[m.key];
+      if (!rg || typeof g[m.key] !== "number" || g.status === "error") return null;
+      const t = (g[m.key] - rg.lo) / (rg.hi - rg.lo);
+      return padT + innerH - t * innerH;
+    };
+    const pathFor = (m) => {
+      let d = "", started = false;
+      for (const g of okGens) {
+        const yy = ny(m, g);
+        if (yy == null) continue;
+        d += `${started ? "L" : "M"} ${x(g.gen_no).toFixed(2)} ${yy.toFixed(2)} `;
+        started = true;
+      }
+      return d.trim();
+    };
+    const xStep = xMax <= 15 ? 1 : xMax <= 30 ? 2 : 5;
+    const xTicks = [];
+    for (let g = 1; g <= xMax; g++) if (g === 1 || g === xMax || g % xStep === 0) xTicks.push(g);
+    const [hover, setHover] = useState_c(null);
+    const svgRef = useRef_c(null);
+    const onMove = (e) => {
+      if (!okGens.length || !svgRef.current) return;
+      const rect = svgRef.current.getBoundingClientRect();
+      const px = (e.clientX - rect.left) * (W / rect.width);
+      let best = null, bestDist = Infinity;
+      for (const g of okGens) {
+        const d = Math.abs(x(g.gen_no) - px);
+        if (d < bestDist) {
+          bestDist = d;
+          best = g;
+        }
+      }
+      setHover(best && bestDist < 40 ? best : null);
+    };
+    const activeMetrics = _QUALITY_METRICS.filter((m) => enabled[m.key]);
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD488\uC9C8\uC9C0\uD45C \uCD94\uC774 \u2014 Quality Metrics", /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        "data-tip": "\uD488\uC9C8 = \uC218\uC775 \uD06C\uAE30\uC640 \uBCC4\uAC1C\uB85C '\uC804\uB7B5\uC774 \uC5BC\uB9C8\uB098 \uAC74\uAC15\uD55C\uAC00'\uB97C \uBCF4\uB294 \uC704\uD5D8\uC870\uC815 \uC9C0\uD45C \uBB36\uC74C(calmar\xB7\uC6B0\uC0C1\uD5A5 R\xB2\xB7MDD\xB7\uC77C\uD3C9\uADE0 \uAC70\uB798\xB7\uB3D9\uC2DC\uBCF4\uC720\xB7\uC190\uC775\uBE44). \uAC01 \uCE69\uC5D0 \uB9C8\uC6B0\uC2A4\uB97C \uC62C\uB9AC\uBA74 \uC9C0\uD45C\uBCC4 \uC124\uBA85\uC774 \uB098\uC624\uACE0, \uD074\uB9AD\uD558\uBA74 \uD45C\uC2DC\uB97C \uCF1C\uACE0 \uB055\uB2C8\uB2E4.",
+        style: {
+          marginLeft: 6,
+          fontSize: 10,
+          color: "var(--ink-3)",
+          border: "1px solid var(--line-2)",
+          borderRadius: "50%",
+          width: 15,
+          height: 15,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "help"
+        }
+      },
+      "?"
+    )), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" } }, _QUALITY_METRICS.map((m) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: m.key,
+        onClick: () => toggle(m.key),
+        "data-tip": m.hint,
+        style: {
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 5,
+          fontSize: 10.5,
+          fontFamily: "var(--mono)",
+          cursor: "pointer",
+          padding: "3px 7px",
+          borderRadius: 5,
+          border: `1px solid ${enabled[m.key] ? m.color : "var(--line-2)"}`,
+          background: enabled[m.key] ? "rgba(255,255,255,0.04)" : "transparent",
+          color: enabled[m.key] ? "var(--ink-0)" : "var(--ink-3)"
+        }
+      },
+      /* @__PURE__ */ React.createElement("span", { style: {
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        background: enabled[m.key] ? m.color : "var(--line-2)"
+      } }),
+      m.label
+    )))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)", marginBottom: 8 } }, "\uAC01 \uC9C0\uD45C\uB294 \uC790\uAE30 \uBC94\uC704\uB85C \uC815\uADDC\uD654\uD55C '\uCD94\uC138 \uBAA8\uC591' \u2014 \uC2E4\uC81C\uAC12\uC740 hover \uCC38\uC870. \uBCF4\uACE0\uC11C \uBAA9\uD45C: \uC77C\uD3C9\uADE010~23\xB7\uB3D9\uC2DC\uBCF4\uC7206~12\xB7MDD<7%\xB7\uC190\uC775\uBE44>1.25"), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
+      "svg",
+      {
+        ref: svgRef,
+        viewBox: `0 0 ${W} ${H}`,
+        preserveAspectRatio: "none",
+        onMouseMove: onMove,
+        onMouseLeave: () => setHover(null)
+      },
+      [0, 0.5, 1].map((t, i) => {
+        const yy = padT + innerH - t * innerH;
+        return /* @__PURE__ */ React.createElement("line", { key: `qg${i}`, className: "chart-grid-line", x1: padL, x2: W - padR, y1: yy, y2: yy });
+      }),
+      xTicks.map((g, i) => /* @__PURE__ */ React.createElement("text", { key: `qx${i}`, className: "chart-axis-text", x: x(g), y: H - 10, textAnchor: "middle" }, "gen_", g)),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
+      activeMetrics.map((m) => {
+        const d = pathFor(m);
+        if (!d) return null;
+        return /* @__PURE__ */ React.createElement("g", { key: m.key }, /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: m.color, strokeWidth: "1.8", opacity: "0.9" }), okGens.map((g, i) => {
+          const yy = ny(m, g);
+          if (yy == null) return null;
+          return /* @__PURE__ */ React.createElement("circle", { key: i, cx: x(g.gen_no), cy: yy, r: "2.4", fill: m.color });
+        }));
+      }),
+      hover && (() => {
+        const hx = x(hover.gen_no);
+        return /* @__PURE__ */ React.createElement("line", { x1: hx, x2: hx, y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" });
+      })()
+    ), hover && activeMetrics.length > 0 && /* @__PURE__ */ React.createElement("div", { style: {
+      position: "absolute",
+      top: 16,
+      right: 16,
+      background: "var(--bg-0)",
+      border: "1px solid var(--line-2)",
+      borderRadius: 6,
+      padding: "8px 10px",
+      fontFamily: "var(--mono)",
+      fontSize: 11,
+      minWidth: 170,
+      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+      pointerEvents: "none"
+    } }, /* @__PURE__ */ React.createElement("div", { style: {
+      fontSize: 10.5,
+      color: "var(--ink-2)",
+      letterSpacing: ".12em",
+      textTransform: "uppercase",
+      marginBottom: 4
+    } }, "gen_", String(hover.gen_no).padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, activeMetrics.map((m) => /* @__PURE__ */ React.createElement(React.Fragment, { key: m.key }, /* @__PURE__ */ React.createElement("span", { style: { color: m.color } }, m.label), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, typeof hover[m.key] === "number" ? m.fmt(hover[m.key]) : "\u2014"))))), okGens.length === 0 && /* @__PURE__ */ React.createElement("div", { style: {
+      position: "absolute",
+      inset: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "var(--ink-3)",
+      fontSize: 12,
+      fontFamily: "var(--mono)"
+    } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uD488\uC9C8\uC9C0\uD45C \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))));
+  }
+
+  // ../frontend/chart-backtest-detail.jsx
+  var _bdAxisTicks = window._axisTicks;
   var { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq, useRef: useRef_eq } = React;
   var _EQ_WINNER_COLORS = [
     "#4cd6b3",
@@ -4286,187 +4472,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         color: t.gate_passed ? "var(--teal)" : "var(--ink-2)"
       } }, /* @__PURE__ */ React.createElement("span", null, t.run_id.slice(-6), "/g", t.gen_no), /* @__PURE__ */ React.createElement("span", null, t.y >= 0 ? "+" : "", Math.round(t.y).toLocaleString()))), hover.tips.length > topTips.length && /* @__PURE__ */ React.createElement("div", { style: { color: "var(--ink-3)", fontSize: 10, marginTop: 3 } }, "\uC678 ", hover.tips.length - topTips.length, "\uAC1C\u2026"));
     })())));
-  }
-  var _QUALITY_METRICS = [
-    { key: "calmar", label: "Calmar", color: "var(--teal)", fmt: (v) => v.toFixed(2), hint: "CAGR/MDD \uC704\uD5D8\uC870\uC815\uC218\uC775(\uB192\uC744\uC218\uB85D \uC6B0\uC218)" },
-    { key: "uptrend_r2", label: "\uC6B0\uC0C1\uD5A5 R\xB2", color: "var(--violet)", fmt: (v) => v.toFixed(3), hint: "\uB204\uC801\uACE1\uC120 \uC6B0\uC0C1\uD5A5 \uC801\uD569\uB3C4 0~1(\uB192\uC744\uC218\uB85D \uC6B0\uC218)" },
-    { key: "mdd", label: "MDD %", color: "var(--red)", fmt: (v) => fmtPct(v), hint: "\uCD5C\uB300\uB099\uD3ED(\uB0AE\uC744\uC218\uB85D \uC6B0\uC218) \u2014 \uBCF4\uACE0\uC11C 1.9~6.75%" },
-    { key: "daily_avg_trades", label: "\uC77C\uD3C9\uADE0\uAC70\uB798", color: "var(--amber)", fmt: (v) => v.toFixed(2), hint: "\uAC70\uB798\uC218/\uAC70\uB798\uC77C(\uBCF4\uACE0\uC11C 10~23)" },
-    { key: "max_hold_count", label: "\uB3D9\uC2DC\uBCF4\uC720", color: "var(--blue)", fmt: (v) => v.toFixed(0), hint: "\uCD5C\uB300 \uB3D9\uC2DC\uBCF4\uC720 \uC885\uBAA9\uC218(\uBCF4\uACE0\uC11C 6~12)" },
-    { key: "payoff_ratio", label: "\uC190\uC775\uBE44", color: "#73d673", fmt: (v) => v.toFixed(2), hint: "\uD3C9\uADE0\uC774\uC775/\uD3C9\uADE0\uC190\uC2E4(\uBCF4\uACE0\uC11C 1.15~1.47)" }
-  ];
-  function QualityTrendChart({ state }) {
-    const gens = state.generations || [];
-    const [enabled, setEnabled] = useState_c(() => ({
-      calmar: true,
-      uptrend_r2: true,
-      mdd: true,
-      daily_avg_trades: false,
-      max_hold_count: false,
-      payoff_ratio: false
-    }));
-    const toggle = (k) => setEnabled((s) => ({ ...s, [k]: !s[k] }));
-    const W = 880, H = 320;
-    const padL = 44, padR = 24, padT = 18, padB = 30;
-    const innerW = W - padL - padR;
-    const innerH = H - padT - padB;
-    const xMax = Math.max(state.max_generations, 8);
-    const x = (g) => padL + (g - 0.5) / xMax * innerW;
-    const okGens = useMemo_c(() => gens.filter((g) => g.status !== "error"), [gens]);
-    const ranges = useMemo_c(() => {
-      const r = {};
-      for (const m of _QUALITY_METRICS) {
-        const vals = okGens.map((g) => typeof g[m.key] === "number" ? g[m.key] : null).filter((v) => v != null);
-        if (!vals.length) {
-          r[m.key] = null;
-          continue;
-        }
-        let lo = Math.min(...vals), hi = Math.max(...vals);
-        if (hi === lo) hi = lo + 1;
-        r[m.key] = { lo, hi };
-      }
-      return r;
-    }, [okGens]);
-    const ny = (m, g) => {
-      const rg = ranges[m.key];
-      if (!rg || typeof g[m.key] !== "number" || g.status === "error") return null;
-      const t = (g[m.key] - rg.lo) / (rg.hi - rg.lo);
-      return padT + innerH - t * innerH;
-    };
-    const pathFor = (m) => {
-      let d = "", started = false;
-      for (const g of okGens) {
-        const yy = ny(m, g);
-        if (yy == null) continue;
-        d += `${started ? "L" : "M"} ${x(g.gen_no).toFixed(2)} ${yy.toFixed(2)} `;
-        started = true;
-      }
-      return d.trim();
-    };
-    const xStep = xMax <= 15 ? 1 : xMax <= 30 ? 2 : 5;
-    const xTicks = [];
-    for (let g = 1; g <= xMax; g++) if (g === 1 || g === xMax || g % xStep === 0) xTicks.push(g);
-    const [hover, setHover] = useState_c(null);
-    const svgRef = useRef_c(null);
-    const onMove = (e) => {
-      if (!okGens.length || !svgRef.current) return;
-      const rect = svgRef.current.getBoundingClientRect();
-      const px = (e.clientX - rect.left) * (W / rect.width);
-      let best = null, bestDist = Infinity;
-      for (const g of okGens) {
-        const d = Math.abs(x(g.gen_no) - px);
-        if (d < bestDist) {
-          bestDist = d;
-          best = g;
-        }
-      }
-      setHover(best && bestDist < 40 ? best : null);
-    };
-    const activeMetrics = _QUALITY_METRICS.filter((m) => enabled[m.key]);
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uD488\uC9C8\uC9C0\uD45C \uCD94\uC774 \u2014 Quality Metrics", /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        "data-tip": "\uD488\uC9C8 = \uC218\uC775 \uD06C\uAE30\uC640 \uBCC4\uAC1C\uB85C '\uC804\uB7B5\uC774 \uC5BC\uB9C8\uB098 \uAC74\uAC15\uD55C\uAC00'\uB97C \uBCF4\uB294 \uC704\uD5D8\uC870\uC815 \uC9C0\uD45C \uBB36\uC74C(calmar\xB7\uC6B0\uC0C1\uD5A5 R\xB2\xB7MDD\xB7\uC77C\uD3C9\uADE0 \uAC70\uB798\xB7\uB3D9\uC2DC\uBCF4\uC720\xB7\uC190\uC775\uBE44). \uAC01 \uCE69\uC5D0 \uB9C8\uC6B0\uC2A4\uB97C \uC62C\uB9AC\uBA74 \uC9C0\uD45C\uBCC4 \uC124\uBA85\uC774 \uB098\uC624\uACE0, \uD074\uB9AD\uD558\uBA74 \uD45C\uC2DC\uB97C \uCF1C\uACE0 \uB055\uB2C8\uB2E4.",
-        style: {
-          marginLeft: 6,
-          fontSize: 10,
-          color: "var(--ink-3)",
-          border: "1px solid var(--line-2)",
-          borderRadius: "50%",
-          width: 15,
-          height: 15,
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "help"
-        }
-      },
-      "?"
-    )), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" } }, _QUALITY_METRICS.map((m) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: m.key,
-        onClick: () => toggle(m.key),
-        "data-tip": m.hint,
-        style: {
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 5,
-          fontSize: 10.5,
-          fontFamily: "var(--mono)",
-          cursor: "pointer",
-          padding: "3px 7px",
-          borderRadius: 5,
-          border: `1px solid ${enabled[m.key] ? m.color : "var(--line-2)"}`,
-          background: enabled[m.key] ? "rgba(255,255,255,0.04)" : "transparent",
-          color: enabled[m.key] ? "var(--ink-0)" : "var(--ink-3)"
-        }
-      },
-      /* @__PURE__ */ React.createElement("span", { style: {
-        width: 8,
-        height: 8,
-        borderRadius: "50%",
-        background: enabled[m.key] ? m.color : "var(--line-2)"
-      } }),
-      m.label
-    )))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)", marginBottom: 8 } }, "\uAC01 \uC9C0\uD45C\uB294 \uC790\uAE30 \uBC94\uC704\uB85C \uC815\uADDC\uD654\uD55C '\uCD94\uC138 \uBAA8\uC591' \u2014 \uC2E4\uC81C\uAC12\uC740 hover \uCC38\uC870. \uBCF4\uACE0\uC11C \uBAA9\uD45C: \uC77C\uD3C9\uADE010~23\xB7\uB3D9\uC2DC\uBCF4\uC7206~12\xB7MDD<7%\xB7\uC190\uC775\uBE44>1.25"), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        ref: svgRef,
-        viewBox: `0 0 ${W} ${H}`,
-        preserveAspectRatio: "none",
-        onMouseMove: onMove,
-        onMouseLeave: () => setHover(null)
-      },
-      [0, 0.5, 1].map((t, i) => {
-        const yy = padT + innerH - t * innerH;
-        return /* @__PURE__ */ React.createElement("line", { key: `qg${i}`, className: "chart-grid-line", x1: padL, x2: W - padR, y1: yy, y2: yy });
-      }),
-      xTicks.map((g, i) => /* @__PURE__ */ React.createElement("text", { key: `qx${i}`, className: "chart-axis-text", x: x(g), y: H - 10, textAnchor: "middle" }, "gen_", g)),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
-      activeMetrics.map((m) => {
-        const d = pathFor(m);
-        if (!d) return null;
-        return /* @__PURE__ */ React.createElement("g", { key: m.key }, /* @__PURE__ */ React.createElement("path", { d, fill: "none", stroke: m.color, strokeWidth: "1.8", opacity: "0.9" }), okGens.map((g, i) => {
-          const yy = ny(m, g);
-          if (yy == null) return null;
-          return /* @__PURE__ */ React.createElement("circle", { key: i, cx: x(g.gen_no), cy: yy, r: "2.4", fill: m.color });
-        }));
-      }),
-      hover && (() => {
-        const hx = x(hover.gen_no);
-        return /* @__PURE__ */ React.createElement("line", { x1: hx, x2: hx, y1: padT, y2: padT + innerH, stroke: "rgba(255,255,255,0.12)", strokeWidth: "1" });
-      })()
-    ), hover && activeMetrics.length > 0 && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      top: 16,
-      right: 16,
-      background: "var(--bg-0)",
-      border: "1px solid var(--line-2)",
-      borderRadius: 6,
-      padding: "8px 10px",
-      fontFamily: "var(--mono)",
-      fontSize: 11,
-      minWidth: 170,
-      boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
-      pointerEvents: "none"
-    } }, /* @__PURE__ */ React.createElement("div", { style: {
-      fontSize: 10.5,
-      color: "var(--ink-2)",
-      letterSpacing: ".12em",
-      textTransform: "uppercase",
-      marginBottom: 4
-    } }, "gen_", String(hover.gen_no).padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 10px" } }, activeMetrics.map((m) => /* @__PURE__ */ React.createElement(React.Fragment, { key: m.key }, /* @__PURE__ */ React.createElement("span", { style: { color: m.color } }, m.label), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, typeof hover[m.key] === "number" ? m.fmt(hover[m.key]) : "\u2014"))))), okGens.length === 0 && /* @__PURE__ */ React.createElement("div", { style: {
-      position: "absolute",
-      inset: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "var(--ink-3)",
-      fontSize: 12,
-      fontFamily: "var(--mono)"
-    } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uD488\uC9C8\uC9C0\uD45C \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))));
   }
   var {
     useState: useState_bd,
@@ -4831,7 +4836,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         },
         fmtMoneyShort(pnlMin)
       ),
-      _axisTicks(pnlMin, pnlMax, 5).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - pnlMax) < 1e-9 || Math.abs(tv - pnlMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `byl${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yPnl(tv), y2: yPnl(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yPnl(tv) + 3, textAnchor: "end", fill: "var(--ink-3)" }, fmtMoneyShort(tv)))),
+      _bdAxisTicks(pnlMin, pnlMax, 5).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - pnlMax) < 1e-9 || Math.abs(tv - pnlMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `byl${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: yPnl(tv), y2: yPnl(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yPnl(tv) + 3, textAnchor: "end", fill: "var(--ink-3)" }, fmtMoneyShort(tv)))),
       /* @__PURE__ */ React.createElement(
         "text",
         {
@@ -4854,7 +4859,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         },
         fmtMoneyShort(cumMin)
       ),
-      _axisTicks(cumMin, cumMax, 5).map((tv, i) => Math.abs(tv - cumMax) < 1e-9 || Math.abs(tv - cumMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("text", { key: `byr${i}`, className: "chart-axis-text", x: W - padR + 6, y: yCum(tv) + 3, textAnchor: "start", fill: "var(--ink-3)" }, fmtMoneyShort(tv))),
+      _bdAxisTicks(cumMin, cumMax, 5).map((tv, i) => Math.abs(tv - cumMax) < 1e-9 || Math.abs(tv - cumMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("text", { key: `byr${i}`, className: "chart-axis-text", x: W - padR + 6, y: yCum(tv) + 3, textAnchor: "start", fill: "var(--ink-3)" }, fmtMoneyShort(tv))),
       /* @__PURE__ */ React.createElement(
         "line",
         {
@@ -4960,15 +4965,19 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       fmtMoney(daily[hover].daily_pnl)
     ), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--amber)" } }, cumulative[hover] ? fmtMoney(cumulative[hover].cum_profit) : "\u2014"), cumulative[hover] && cumulative[hover].cum_pct != null && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801%"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, fmtPct(cumulative[hover].cum_pct))), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uBC18\uB0A9\uC561"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--red)" } }, drawdown[hover] ? fmtMoney(drawdown[hover].drawdown) : "\u2014"))))));
   }
+
+  // ../frontend/chart-hall-of-fame.jsx
+  var { useState: useState_eq2, useEffect: useEffect_eq2, useCallback: useCallback_eq2 } = React;
+  var { useState: useState_rg, useEffect: useEffect_rg } = React;
   function HallOfFamePanel({ baseUrl, wsStatus }) {
-    const [data, setData] = useState_eq(null);
-    const [loading, setLoading] = useState_eq(false);
-    const [err, setErr] = useState_eq(null);
-    const [sortKey, setSortKey] = useState_eq("total_return_pct");
-    const [filter, setFilter] = useState_eq("all");
-    const [galleryOpen, setGalleryOpen] = useState_eq(false);
+    const [data, setData] = useState_eq2(null);
+    const [loading, setLoading] = useState_eq2(false);
+    const [err, setErr] = useState_eq2(null);
+    const [sortKey, setSortKey] = useState_eq2("total_return_pct");
+    const [filter, setFilter] = useState_eq2("all");
+    const [galleryOpen, setGalleryOpen] = useState_eq2(false);
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
-    const refresh = useCallback_eq(() => {
+    const refresh = useCallback_eq2(() => {
       if (isDemo || !baseUrl) return;
       setLoading(true);
       fetch(baseUrl + "/hall_of_fame", { signal: AbortSignal.timeout(4e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
@@ -4976,7 +4985,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         setErr(null);
       }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
     }, [baseUrl, isDemo]);
-    useEffect_eq(() => {
+    useEffect_eq2(() => {
       refresh();
       const id = setInterval(refresh, 3e4);
       return () => clearInterval(id);
@@ -5150,7 +5159,6 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       );
     }))))), galleryOpen && /* @__PURE__ */ React.createElement(ReferenceGallery, { baseUrl, onClose: () => setGalleryOpen(false) }));
   }
-  var { useState: useState_rg, useEffect: useEffect_rg } = React;
   function ReferenceGallery({ baseUrl, onClose }) {
     const [files, setFiles] = useState_rg(null);
     const [err, setErr] = useState_rg(null);
@@ -5262,6 +5270,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       )
     );
   }
+
+  // ../frontend/chart.jsx
   Object.assign(window, { FitnessChart, ProfitChart, EquityOverlayChart, QualityTrendChart, BacktestDetailChart, HallOfFamePanel, ReferenceGallery });
 
   // ../frontend/hypothesis.jsx

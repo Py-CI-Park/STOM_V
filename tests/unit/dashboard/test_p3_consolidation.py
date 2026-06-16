@@ -90,7 +90,10 @@ class TestDeferredConsolidationsUntouched:
     """이연 대상은 P3 에서 손대지 않는다(병합이 픽셀/콘텐츠를 바꾸므로 Design Pass 로 이연)."""
 
     def test_hall_of_fame_components_still_separate(self) -> None:
-        assert "function HallOfFamePanel(" in _readf("chart.jsx")
+        # P5.4: chart.jsx(1,742줄) 분해로 HallOfFamePanel 은 chart-hall-of-fame.jsx 로
+        #   이동(byte-identical, field-diff DEFER 결정 유지). 두 컴포넌트가 여전히 별개로
+        #   존재(병합 안 됨)한다는 불변식은 그대로 — 단지 정의 파일만 옮겨졌다.
+        assert "function HallOfFamePanel(" in _readf("chart-hall-of-fame.jsx")
         assert "function _RpHallOfFame(" in _readf("research-pro.jsx")
 
     def test_pipeline_consolidated_to_format_ts(self) -> None:
