@@ -67,14 +67,17 @@ def client(monkeypatch, tmp_path: Path):
 
 # ============================================================ 프론트 정적 가드
 class TestSweepBuilderFrontend:
-    """_SweepParamBuilder 컴포넌트 + BtRunPanel 스레딩."""
+    """_SweepParamBuilder 컴포넌트 + BtRunPanel 스레딩.
+
+    P5.2 분해 — _SweepParamBuilder·BtRunPanel 은 backtest.jsx(THIN BARREL)에서 bt-tab-run.jsx 로 이동.
+    """
 
     def test_builder_component_defined(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-run.jsx")
         assert "function _SweepParamBuilder(" in src
 
     def test_builder_rows_have_name_min_max_step(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-run.jsx")
         start = src.find("function _SweepParamBuilder(")
         body = src[start:start + 4000]
         # 각 행이 변수명·min·max·step 필드를 다룬다(상태 패치 키).
@@ -84,7 +87,7 @@ class TestSweepBuilderFrontend:
         assert "변수명" in body
 
     def test_builder_add_remove_rows(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-run.jsx")
         start = src.find("function _SweepParamBuilder(")
         body = src[start:start + 4000]
         # 행 추가/삭제 핸들러.
@@ -94,28 +97,28 @@ class TestSweepBuilderFrontend:
 
     def test_builder_does_not_mutate_rows(self):
         """행 수정은 불변(map 으로 새 배열) — 변이 패턴(rows[i]=)이 없어야 한다."""
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-run.jsx")
         start = src.find("function _SweepParamBuilder(")
         body = src[start:start + 4000]
         assert ".map(" in body
         assert not re.search(r"rows\[\s*\w+\s*\]\s*=", body), "rows 배열을 직접 변이하면 안 됩니다"
 
     def test_run_panel_sends_sweep_spec(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-run.jsx")
         # submit 이 빌더 모드에서 sweep_spec(행 배열)을 페이로드로 보낸다.
         assert "sweep_spec" in src
         assert "sweepRows" in src
         assert "setSweepRows" in src
 
     def test_run_panel_keeps_file_path_fallback(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-run.jsx")
         # 파일 경로 입력이 폴백으로 남아있다(sweepInputMode == file → sweep_params).
         assert "sweepInputMode" in src
         assert "sweep_params" in src
         assert "sweep_params.json" in src  # 폴백 placeholder.
 
     def test_builder_uses_builder_component_tag(self):
-        src = _read_front("backtest.jsx")
+        src = _read_front("bt-tab-run.jsx")
         # BtRunPanel 이 빌더 컴포넌트를 마운트한다.
         assert "<_SweepParamBuilder" in src
 

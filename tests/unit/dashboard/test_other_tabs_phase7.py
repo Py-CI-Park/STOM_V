@@ -87,30 +87,38 @@ class TestResearchLab:
 
 
 # =============================================================== backtest.jsx
+# P5.2 분해 — backtest.jsx 는 THIN BARREL 로 축소되고 실제 코드는 bt-tab-* sibling 으로 이동.
+#   모드 팁 상수(_BT_MODE_TIP)·기간 예시(_BT_START_EG/_BT_END_EG) → bt-tab-utils.jsx,
+#   모드 토글/placeholder 사용처(BtRunPanel) → bt-tab-run.jsx, 데모 배지(BacktestTab) → bt-tab-root.jsx.
 class TestBacktest:
     def test_mode_tooltips_explain_wfo_and_sweep(self) -> None:
-        src = _read("backtest.jsx")
-        # WFO 전진분석 용어 설명 + Walk-Forward.
-        assert "전진분석" in src
-        assert "Walk-Forward" in src
+        utils = _read("bt-tab-utils.jsx")
+        run = _read("bt-tab-run.jsx")
+        # WFO 전진분석 용어 설명 + Walk-Forward (모드 팁 상수 정의: bt-tab-utils).
+        assert "전진분석" in utils
+        assert "Walk-Forward" in utils
         # 스윕(sweep) 용어 설명.
-        assert "스윕(sweep)" in src
-        # 모드 토글 버튼에 tooltip 매핑이 연결된다.
-        assert "_BT_MODE_TIP" in src
-        assert "title={_BT_MODE_TIP[m]}" in src
+        assert "스윕(sweep)" in utils
+        # 모드 토글 버튼에 tooltip 매핑이 연결된다(사용처: bt-tab-run).
+        assert "_BT_MODE_TIP" in run
+        assert "title={_BT_MODE_TIP[m]}" in run
 
     def test_no_hardcoded_2025_example_date(self) -> None:
-        src = _read("backtest.jsx")
-        assert "2025" not in src, "노후화되는 2025 하드코딩 예시 날짜 잔존"
-        # 현재 연도 동적 파생 예시(placeholder).
-        assert "getFullYear()" in src
-        assert "_BT_START_EG" in src and "_BT_END_EG" in src
-        assert "placeholder={_BT_START_EG}" in src
-        assert "placeholder={_BT_END_EG}" in src
+        # 노후화되는 2025 하드코딩 예시 날짜가 백테탭 소스 어디에도 없다(배럴+sibling 전부).
+        for name in ("backtest.jsx", "bt-tab-utils.jsx", "bt-tab-run.jsx", "bt-tab-root.jsx"):
+            assert "2025" not in _read(name), f"노후화되는 2025 하드코딩 예시 날짜 잔존: {name}"
+        # 현재 연도 동적 파생 예시(상수 정의: bt-tab-utils).
+        utils = _read("bt-tab-utils.jsx")
+        assert "getFullYear()" in utils
+        assert "_BT_START_EG" in utils and "_BT_END_EG" in utils
+        # placeholder 사용처(BtRunPanel: bt-tab-run).
+        run = _read("bt-tab-run.jsx")
+        assert "placeholder={_BT_START_EG}" in run
+        assert "placeholder={_BT_END_EG}" in run
 
     def test_demo_mode_badge_visible(self) -> None:
-        src = _read("backtest.jsx")
-        # isDemo 분기로 보이는 데모 배지/설명.
+        # isDemo 분기로 보이는 데모 배지/설명(탭 루트: bt-tab-root).
+        src = _read("bt-tab-root.jsx")
         assert "isDemo && (" in src
         assert "데모 모드" in src
         # 빈/예시 화면을 버그로 오인하지 않도록 설명.
@@ -154,7 +162,7 @@ const fs = require('fs');
 const path = require('path');
 const dir = process.argv[2];
 const esbuild = require(path.join(dir, '..', 'webui-build', 'node_modules', 'esbuild'));
-const files = ['research-lab.jsx', 'backtest.jsx', 'evolution-analysis.jsx'];
+const files = ['research-lab.jsx', 'backtest.jsx', 'bt-tab-utils.jsx', 'bt-tab-library.jsx', 'bt-tab-run.jsx', 'bt-tab-mode-results.jsx', 'bt-tab-analysis.jsx', 'bt-tab-root.jsx', 'evolution-analysis.jsx'];
 let ok = true;
 for (const f of files) {
   try { esbuild.transformSync(fs.readFileSync(path.join(dir, f), 'utf8'), { loader: 'jsx', jsx: 'transform', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment' }); }
