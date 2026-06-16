@@ -38,7 +38,7 @@ from typing import Any, Dict, List, Optional  # noqa: E402
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
-from fastapi.responses import RedirectResponse  # noqa: E402
+from fastapi.responses import HTMLResponse, RedirectResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
 
@@ -2679,6 +2679,28 @@ def create_app() -> FastAPI:
     @app.get("/health")
     def health() -> Dict[str, Any]:
         return {"status": "ok", "contract_version": C.CONTRACT_VERSION}
+
+    @app.get("/process_flow", response_class=HTMLResponse)
+    def process_flow() -> HTMLResponse:
+        """조건식 발굴 프로세스 시각화(인터랙티브). 요청 시 최신 라이브 데이터로 재생성.
+
+        프론트 '프로세스 흐름' 탭이 iframe으로 이 페이지를 띄운다. 읽기 전용·무예외:
+        재생성 실패해도 기존 파일을 서빙하고, 둘 다 없으면 안내 메시지를 돌려준다.
+        """
+        from pathlib import Path as _P  # noqa: PLC0415
+        out = _P(__file__).resolve().parents[2] / "docs/process_flow.html"
+        try:  # 최신 데이터로 재생성(베스트에포트 — 실패해도 기존 파일 서빙).
+            from ai_strategy_loop.scripts.build_process_flow_html import main as _bpf  # noqa: PLC0415
+            _bpf()
+        except Exception:
+            pass
+        try:
+            return HTMLResponse(out.read_text(encoding="utf-8"))
+        except Exception:
+            return HTMLResponse(
+                "<h1>프로세스 흐름 생성 전</h1><p>아직 생성되지 않았습니다. "
+                "<code>python -m ai_strategy_loop.scripts.build_process_flow_html</code> 실행 후 새로고침.</p>",
+                status_code=200)
 
     @app.get("/status")
     def status() -> Dict[str, Any]:
