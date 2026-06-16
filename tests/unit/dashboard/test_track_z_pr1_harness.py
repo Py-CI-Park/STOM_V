@@ -170,6 +170,46 @@ def test_track_z_v2_index_path_hosts() -> None:
     assert v2["pass"], f"V2 failed: {v2}"
 
 
+def test_track_z_v3_per_tab_render_sweep() -> None:
+    """V3 (Story 4 entry gate): the FLAGGED bundle's App renders EVERY tab with 0 errors and a
+    non-empty #root — evolution(NON-IDLE so its data components render), backtest, simulation,
+    lab, pro, verdict. Closes the gap V2 left open (V2 only proved the IDLE evolution shell), so a
+    latent missing cross-file import in a non-default tab surfaces NOW, not at the future flip."""
+    data = _run_harness()
+    v3 = data["v3"]
+    tabs = v3["tabs"]
+    expected = {"evolution", "backtest", "simulation", "lab", "pro", "verdict"}
+    assert set(tabs) == expected, f"V3 must sweep all 6 tabs, got {set(tabs)}"
+    for name in expected:
+        r = tabs[name]
+        assert r["rootNonEmpty"], f"tab {name}: #root empty after render"
+        assert not r["errorBoundaryTripped"], f"tab {name}: ErrorBoundary tripped (render threw)"
+        assert not r["dynamicRequireErrors"], f"tab {name}: dynamic-require {r['dynamicRequireErrors']}"
+        assert r["errorCount"] == 0, f"tab {name} render errors: {r['errors']}"
+        assert r["pass"], f"V3 tab {name} failed: {r}"
+    assert v3["pass"], f"V3 per-tab sweep failed: {v3}"
+
+
+def test_track_z_v4_standalone_page_mounts() -> None:
+    """V4 (Story 4 entry gate): each standalone page (lab/pro/verdict) mounts its own root
+    component from the SAME flagged bundle (window.__STOM_NO_AUTO_MOUNT__ + window.LabPage/
+    ProPage/VerdictPanel) with 0 errors and a non-empty #root — replicating lab/pro/verdict.html."""
+    data = _run_harness()
+    v4 = data["v4"]
+    pages = v4["pages"]
+    expected = {"lab", "pro", "verdict"}
+    assert set(pages) == expected, f"V4 must mount all 3 standalone pages, got {set(pages)}"
+    for name in expected:
+        r = pages[name]
+        assert r["componentIsFunction"], f"page {name}: window.{r['global']} is not a function"
+        assert r["mountError"] is None, f"page {name}: mount error {r['mountError']}"
+        assert r["rootNonEmpty"], f"page {name}: #root empty after mount"
+        assert not r["errorBoundaryTripped"], f"page {name}: ErrorBoundary tripped (render threw)"
+        assert r["errorCount"] == 0, f"page {name} render errors: {r['errors']}"
+        assert r["pass"], f"V4 page {name} failed: {r}"
+    assert v4["pass"], f"V4 standalone page mounts failed: {v4}"
+
+
 def test_track_z_flagged_bundle_has_no_react_require() -> None:
     """The flagged pilot artifact must NOT contain require('react') or a second-React
     sentinel (proves alias-to-shim, single React identity at the source level)."""

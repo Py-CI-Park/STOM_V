@@ -70,7 +70,8 @@ PR-1 파일럿(phase-detail만) → **full app-graph root**로 확장. 두 책�
 
 ## 하네스 V2 갱신 (`track-z-harness.mjs`)
 - V2: legacy `bundle/app.js` → **FLAGGED `.track-z/app.pilot.js`(전체 번들)** 로드. App 자동마운트 + FROZEN 전역(App/ErrorBoundary/LabPage/ProPage/VerdictPanel) + 단일 React 정체성 + lightweight-charts + dynamic-require 0 + errors 0 + #root 비어있지 않음 단언.
-  - ⚠️ **범위 한정(아키텍트 nit — 정직성)**: V2는 index App을 **IDLE 상태**로 마운트한다 = *기본 탭(진화)의 idle 셸*만 렌더. backtest/simulation/lab/pro/verdict 탭과 비-idle 데이터 컴포넌트는 렌더되지 않는다. 따라서 "V2 통과"는 "전체 cross-file 와이어링이 런타임에 실행됨"이 아니라 **"idle index 셸이 단일-React로 0-error 렌더됨"**을 의미한다. 정적 와이어링은 esbuild `bundle:true`(잘못된/미존재 export import면 빌드 실패) + 독립 bare-usage 스윕(누락 import 0 확인)으로 닫혔고, **런타임 탭별 커버리지는 아래 "Story 4 진입 게이트"로 이연**(flag OFF라 production 미도달).
+  - ⚠️ **범위 한정(아키텍트 nit — 정직성)**: V2는 index App을 **IDLE 상태**로 마운트한다 = *기본 탭(진화)의 idle 셸*만 렌더. backtest/simulation/lab/pro/verdict 탭과 비-idle 데이터 컴포넌트는 렌더되지 않는다. 따라서 "V2 통과"는 "전체 cross-file 와이어링이 런타임에 실행됨"이 아니라 **"idle index 셸이 단일-React로 0-error 렌더됨"**을 의미한다. 정적 와이어링은 esbuild `bundle:true`(잘못된/미존재 export import면 빌드 실패) + 독립 bare-usage 스윕(누락 import 0 확인)으로 닫혔고, **런타임 탭별 커버리지는 "Story 4 진입 게이트"로 이연**(flag OFF라 production 미도달).
+    - ✅ **2026-06-16 해소**: 그 갭을 **V3(per-tab 6/6) + V4(standalone 3/3)** 로 닫음 — 아래 "Story 4 진입 게이트" 참조. 이제 하네스는 비-idle 진화탭 데이터 컴포넌트 + 5개 비-기본 탭 + 3개 standalone 페이지를 **전부 런타임 0-error로 렌더 검증**한다.
 - V1: pilot 번들이 이제 full-graph라 stom-ui+lightweight-charts 선로드(전역 해소) → 깔끔한 단일-React/no-require 메커니즘 증명 유지.
 
 ---
@@ -104,9 +105,20 @@ PR-1 스파이크가 유발했던 3개 실패(engine guard + PR-1 스냅샷 2)�
 
 ## Story 4 진입 게이트 (flip 전 필수 — 아키텍트 합의)
 비가역 default-flip(Story 4) **착수 전에 반드시** 완료. PR-3의 유일한 잔여 리스크(비-기본탭 bare-consumer 누락 import → flip 시점에만 표면화)를 닫는다:
-1. **하네스 탭별/페이지별 렌더 커버리지**: `activeTab`을 backtest/simulation/lab/pro/verdict로 구동, 각 0 errors + 비어있지 않음 단언. 비-idle `/status` 픽스처로 진화탭 데이터 컴포넌트(charts/cards/tables/HypothesisPanel/CodeViewer)까지 렌더.
-2. **lab/pro/verdict standalone HTML 마운트**를 flagged 번들로 검증(현 V2는 index만).
-3. (선택) flagged 번들 esbuild metafile/no-undef 정적 넷 — bare ReferenceError 조기 포착.
+1. ✅ **DONE — 하네스 탭별 렌더 커버리지 (V3)**: `activeTab`을 evolution(비-idle)/backtest/simulation/lab/pro/verdict 6개 전부로 구동, 각 0 errors + #root 비어있지 않음 + ErrorBoundary 미발동 단언. 비-idle `/status` 픽스처(`RUNNING_STATE` — `controller/contract.py` LoopState/GenerationInfo/BestInfo/WinnerInfo/LatestInfo 정합)로 진화탭 데이터 컴포넌트(CurrentGenPanel·FitnessChart/ProfitChart/QualityTrendChart·GenerationsTable·BestCard/WinnerCard/MergedBestWinnerCard·HypothesisPanel 등)까지 실제 렌더. → **누락 import 0 발견**(전 탭 GREEN).
+2. ✅ **DONE — lab/pro/verdict standalone 마운트 (V4)**: `window.__STOM_NO_AUTO_MOUNT__=true` + flagged 번들 로드 후 `ReactDOM.createRoot(...).render(React.createElement(window.LabPage/ProPage/VerdictPanel,{baseUrl}))`로 각 HTML 마운트를 그대로 재현, 3개 전부 0 errors + #root 비어있지 않음 단언. → **전부 GREEN**.
+3. (선택·미착수) flagged 번들 esbuild metafile/no-undef 정적 넷 — bare ReferenceError 조기 포착. **V3/V4의 런타임 전탭 0-error 스윕으로 잔여 리스크는 실질 해소**(정적 넷은 보강용 옵션으로 남김).
+
+### Story 4 진입 게이트 증거 (2026-06-16 · `track-z-harness.mjs` V3/V4 추가)
+- **flag-OFF byte-unchanged**: `node build-app.mjs` → `git diff --stat bundle/app.js` **EMPTY**(운영 번들 불변).
+- **FLAGGED 하네스**: `STOM_BUNDLE=1 node build-app.mjs` → `node track-z-harness.mjs` → exit 0, **allPass=true**.
+  - V1 pass · V2 pass(idle index 셸).
+  - **V3 per-tab(6/6 GREEN)**: evolution(rootLen 72,033 = 데이터 컴포넌트 렌더 확인) · backtest(12,244) · simulation(9,579) · lab(8,439) · pro(6,994) · verdict(5,301). 전부 errs=0 · boundary 미발동.
+  - **V4 standalone(3/3 GREEN)**: lab(4,282) · pro(2,835) · verdict(1,142). 전부 errs=0 · mountError=None.
+- **pytest 래퍼**: `tests/unit/dashboard/test_track_z_pr1_harness.py` **11 passed**(기존 9 + V3 `test_track_z_v3_per_tab_render_sweep` + V4 `test_track_z_v4_standalone_page_mounts`; node/esbuild/jsdom 게이트는 기존과 동일).
+- **full `pytest tests/unit/`**: 신규 실패 0(8 사전존재 floor 유지).
+- **`python scripts/verify_nonrelease_sync.py`**: exit 0.
+- **변경 파일**: `webui-build/track-z-harness.mjs`(V3/V4 + `makeDom(opts)` 파라미터화 + `RUNNING_STATE` 픽스처) · `tests/unit/dashboard/test_track_z_pr1_harness.py`(V3/V4 래퍼 2건) · 본 실행 로그. **.jsx·app.py·번들 무변경**(번들은 테스트 대상이지 변경 대상 아님).
 
 ## STOP 조건
 **26/26 변환 + ALL 게이트 GREEN.** 워킹트리 GREEN 상태. 본 PR(Story 3) 범위 완료 — Story 4 flip/concat 은퇴는 범위 외이며 위 진입 게이트 충족 후 별도 PR. 아키텍트 검증 = APPROVE-WITH-NITS(정적 와이어링 정확·완전; 하네스 커버리지 갭은 Story 4 진입 게이트로 이연).
