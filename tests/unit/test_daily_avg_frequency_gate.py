@@ -295,7 +295,8 @@ def test_table_has_daily_avg_column():
 
 
 def test_chart_shows_daily_avg_metric():
-    src = _read_front("chart.jsx")
+    # 일평균 지표 소비는 chart-equity.jsx(세대 진화 추이)로 이동했다(chart.jsx 분해 후).
+    src = _read_front("chart-equity.jsx")
     assert "daily_avg_trades" in src
 
 

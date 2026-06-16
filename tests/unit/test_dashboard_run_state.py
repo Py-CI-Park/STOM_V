@@ -271,7 +271,8 @@ class TestTableDetailSync:
         assert "onSelectDetail" in src
 
     def test_chart_accepts_external_sel_gen(self):
-        src = _read_front("chart.jsx")
+        # externalSelGen 을 받는 BacktestDetailChart 는 chart-backtest-detail.jsx 로 이동(분해 후).
+        src = _read_front("chart-backtest-detail.jsx")
         assert "externalSelGen" in src
 
     def test_app_passes_external_sel_gen_to_chart(self):

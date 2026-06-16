@@ -403,8 +403,11 @@ class TestPortfolioSim:
         assert "error" in out
 
     def test_frontend_has_portfolio_sim_panel(self):
-        """research-lab.jsx에 결합 시뮬 패널·/portfolio_sim 라우트가 존재한다."""
-        src = (FRONTEND / "research-lab.jsx").read_text(encoding="utf-8")
+        """결합 시뮬 패널·/portfolio_sim 라우트가 존재한다.
+
+        P5.6 분해: 검증 탭(결합 시뮬 포함) 본문은 rl-validation.jsx 로 이동(research-lab.jsx 는 배럴).
+        """
+        src = (FRONTEND / "rl-validation.jsx").read_text(encoding="utf-8")
         assert "/portfolio_sim" in src
         assert "결합 시뮬" in src
         assert "combined_total" in src
@@ -413,7 +416,10 @@ class TestPortfolioSim:
 
 class TestFrontendContract:
     def test_research_lab_has_validation_tab_and_panel(self):
-        src = (FRONTEND / "research-lab.jsx").read_text(encoding="utf-8")
+        # P5.6 분해: 탭 정의(RESEARCH_TABS)는 rl-panel.jsx, _ValidationPanel 본문은 rl-validation.jsx.
+        src = (FRONTEND / "rl-panel.jsx").read_text(encoding="utf-8") + "\n" + (
+            FRONTEND / "rl-validation.jsx"
+        ).read_text(encoding="utf-8")
         assert '{ id: "validation", label: "검증" }' in src
         assert "function _ValidationPanel" in src
         assert "/run_yearly?run_id=" in src
@@ -621,7 +627,8 @@ class TestNewFrontendContract:
         assert "신규 데이터 도착 시 전수 자동 재검증" in src
 
     def test_research_lab_has_pipeline_checkpoint_panel(self):
-        src = (FRONTEND / "research-lab.jsx").read_text(encoding="utf-8")
+        # P5.6 분해: _PipelineCheckpointPanel 정의는 rl-analysis.jsx 로 이동(research-lab.jsx 는 배럴).
+        src = (FRONTEND / "rl-analysis.jsx").read_text(encoding="utf-8")
         assert "/pipeline_status" in src
         assert "파이프라인 체크포인트" in src
         assert "_PipelineCheckpointPanel" in src
