@@ -289,13 +289,22 @@ function App() {
             ? <window.VerdictPanel baseUrl={baseUrl} />
             : <div className="research-empty" style={{ padding: "12px 16px" }}>결정 이력 로딩 중…</div>}
         </ErrorBoundary>
+      ) : activeTab === "records" ? (
+        <ErrorBoundary>
+          {window.ResearchIndexPage
+            ? <window.ResearchIndexPage baseUrl={baseUrl} />
+            : <div className="research-empty" style={{ padding: "12px 16px" }}>연구 기록 인덱스 로딩 중…</div>}
+        </ErrorBoundary>
       ) : activeTab === "process" ? (
         <ErrorBoundary>
-          <iframe
-            src={baseUrl + "/process_flow"}
-            title="프로세스 흐름"
-            style={{ width: "100%", height: "calc(100vh - 130px)", border: "none", borderRadius: 8, background: "#0d1117" }}
-          />
+          <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <ProcessFlowPanel state={state} />
+            <iframe
+              src={baseUrl + "/process_flow"}
+              title="프로세스 흐름"
+              style={{ width: "100%", height: "calc(100vh - 300px)", minHeight: 420, border: "none", borderRadius: 8, background: "#0d1117" }}
+            />
+          </main>
         </ErrorBoundary>
       ) : isIdle ? (
         <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} />
@@ -440,6 +449,7 @@ const STOM_TABS = [
   { key: "backtest", label: "백테스트", icon: "📊" },
   { key: "simulation", label: "차트 시뮬레이션", icon: "📈" },
   { key: "lab", label: "연구실", icon: "🔬" },
+  { key: "records", label: "기록 인덱스", icon: "IDX" },
   { key: "pro", label: "분석 프로", icon: "📊" },
   { key: "verdict", label: "결정 이력", icon: "⚖️" },
   { key: "process", label: "프로세스 흐름", icon: "🗺️" },

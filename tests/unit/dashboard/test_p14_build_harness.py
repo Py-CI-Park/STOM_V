@@ -188,7 +188,7 @@ def test_app_bundle_is_single_entry_graph() -> None:
     assert "__SECRET_INTERNALS" not in app_js, "bundle/app.js 에 두 번째 React 복사본이 번들됨."
     # 엔트리 무결성: 풀 앱 + 마운트 코드. (concat 의 26-마커 완전성 가드를 대체.)
     assert "ReactDOM.createRoot" in app_js, "app.js 에 마운트 코드(ReactDOM.createRoot)가 없습니다."
-    for sym in ("function App", "LabPage", "ProPage", "VerdictPanel"):
+    for sym in ("function App", "LabPage", "ProPage", "VerdictPanel", "ResearchIndexPage"):
         assert sym in app_js, f"app.js 에 핵심 컴포넌트 {sym!r} 누락(풀 앱 아님 — 재빌드 필요)."
     # manifest 가 bundle 모델 메타(엔트리 + 외부화 전역)를 기록.
     assert manifest.get("entry", "").endswith(".js"), "manifest 에 bundle entry 경로 누락."

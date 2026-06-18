@@ -15,6 +15,7 @@
 
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
 import { ResearchWikiPanel } from "./research-wiki.jsx";
+import { ResearchIndexPanel } from "./research-index.jsx";
 const { useState: useState_dp, useEffect: useEffect_dp } = React;
 
 // 의존 전역이 아직 로드되지 않았을 때(이론상) 크래시 대신 보이는 작은 자리표시자.
@@ -135,12 +136,30 @@ function LabPage({ baseUrl }) {
             <ResearchWikiPanel baseUrl={base} wsStatus="na" runId={runId} />
           </div>
         )}
+        {window.ResearchIndexPanel && (
+          <div style={{ marginTop: 14 }}>
+            <ResearchIndexPanel baseUrl={base} wsStatus="na" />
+          </div>
+        )}
         {window.AIContextPanel && (
           <div style={{ marginTop: 14 }}>
             <AIContextPanel baseUrl={base} wsStatus="na" runId={runId} genNo={null} />{/* null=gen 필터 없이 최신 컨텍스트(lab 탭엔 활성 세대 없음) */}
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function ResearchIndexPage({ baseUrl }) {
+  const base = _dpBase(baseUrl);
+  return (
+    <div style={{ padding: "12px 0", minHeight: "60vh" }}>
+      <div className="research-index-page-head">
+        <b>STOM 연구 기록 인덱스</b>
+        <span className="mono">campaign · docs · update_log · registry lineage</span>
+      </div>
+      <ResearchIndexPanel baseUrl={base} wsStatus="na" />
     </div>
   );
 }
@@ -479,7 +498,7 @@ function VerdictPanel({ baseUrl }) {
   );
 }
 
-Object.assign(window, { LabPage, ProPage, VerdictPanel });
+Object.assign(window, { LabPage, ProPage, VerdictPanel, ResearchIndexPage });
 
 // Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
-export { LabPage, ProPage, VerdictPanel };
+export { LabPage, ProPage, VerdictPanel, ResearchIndexPage };

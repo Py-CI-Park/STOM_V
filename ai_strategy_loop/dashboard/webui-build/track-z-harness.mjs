@@ -123,6 +123,47 @@ const RUNNING_STATE = {
   page_data: {}, active_config: { evolution_mode: "tick", winner_objective: "graded" },
   updated_at: 0,
 };
+const RIX_HARNESS_ROWS = [
+  {
+    id: "doc:docs/research/condition_research/alpha.md",
+    kind: "doc",
+    title: "Alpha Doc",
+    source_path: "docs/research/condition_research/alpha.md",
+    updated_at: "2026-06-18T00:00:00Z",
+    canonicality: "canonical",
+    source_authority: "curated_doc",
+    detail_available: true,
+    tags: ["alpha", "oos"],
+    related_ids: ["registry:beta"],
+    summary: "Unsafe markdown fixture should stay inert.",
+  },
+  {
+    id: "doc:docs/research/condition_research/slow.md",
+    kind: "doc",
+    title: "Slow Doc",
+    source_path: "docs/research/condition_research/slow.md",
+    updated_at: "2026-06-18T00:01:00Z",
+    canonicality: "historical",
+    source_authority: "curated_doc",
+    detail_available: true,
+    tags: ["slow"],
+    related_ids: [],
+    summary: "Late detail fixture used to prove stale response guards.",
+  },
+  {
+    id: "registry:beta",
+    kind: "registry",
+    title: "Beta Registry",
+    source_path: ".omo/evidence/stom-reorg-20260618/research-registry.json",
+    updated_at: "2026-06-18T00:02:00Z",
+    canonicality: "candidate",
+    source_authority: "registry_entry",
+    detail_available: true,
+    tags: ["beta", "registry"],
+    related_ids: ["doc:docs/research/condition_research/alpha.md"],
+    summary: "Registry candidate fixture.",
+  },
+];
 
 // makeDom(opts) — opts.state: the /status (and /run_state) payload to serve (default IDLE_STATE).
 //   opts.noAutoMount: set window.__STOM_NO_AUTO_MOUNT__=true BEFORE the bundle loads so the index
@@ -158,19 +199,33 @@ function makeDom(opts = {}) {
     text: () => Promise.resolve(JSON.stringify(obj)),
     headers: { get: () => null },
   });
-  window.fetch = window.fetch || ((url) => {
+  const defaultFetch = (url) => {
     const u = String(url);
     if (u.includes("/health")) return jsonResp({ contract_version: 2, ok: true });
     if (u.includes("/config/spec")) return jsonResp([]);
     if (u.includes("/status")) return jsonResp(STATE);
     if (u.includes("/run_state")) return jsonResp(STATE);
     if (u.includes("/runs")) return jsonResp({ runs: [] });
-    // Lab/Pro/Verdict + backtest/sim on-demand GETs: contract-shaped benign empties.
+    // Lab/Records/Pro/Verdict + backtest/sim on-demand GETs: contract-shaped benign empties.
+    if (u.includes("/research_index/detail")) {
+      const detailId = new URL(u, "http://localhost").searchParams.get("id") || "";
+      if (detailId === "registry:beta") return jsonResp({ available: true, registry_entry: { machine_name: "beta" } });
+      return jsonResp({ available: true, markdown: "<script>alert(1)</script>\n# Alpha detail" });
+    }
+    if (u.includes("/research_index")) {
+      return jsonResp({
+        records: RIX_HARNESS_ROWS,
+        errors: [{ source_path: "bad.json", reason: "JSONDecodeError" }],
+        count: RIX_HARNESS_ROWS.length,
+        cache: { hit: false, sources: 3 },
+      });
+    }
     if (u.includes("/research_docs")) return jsonResp({ docs: [], count: 0 });
     if (u.includes("/bt/strategies")) return jsonResp({ strategies: [], count: 0 });
     if (u.includes("/verdict")) return jsonResp({ entries: [], count: 0, status: "unavailable" });
     return jsonResp({});
-  });
+  };
+  window.fetch = opts.fetch || window.fetch || defaultFetch;
   if (!window.WebSocket) {
     // Connect successfully (wsStatus -> "open") but deliver no messages: state stays the
     //   contract-valid /status payload. This avoids the demo-simulator fallback path.
@@ -275,7 +330,7 @@ async function runV2() {
   const rootHtml = root.innerHTML;
   const appIsFn = typeof window.App === "function";
   // FROZEN mount-by-name globals must be published by the bundle entry.
-  const frozenReady = ["App", "ErrorBoundary", "LabPage", "ProPage", "VerdictPanel"]
+  const frozenReady = ["App", "ErrorBoundary", "LabPage", "ProPage", "VerdictPanel", "ResearchIndexPage"]
     .every((n) => typeof window[n] === "function");
   // Single React identity: the bundle's hooks ran through window.React (alias-to-shim), so the
   //   one vendored React must be unchanged and an App render must have produced DOM.
@@ -303,10 +358,10 @@ async function runV2() {
 // ---------------------------------------------------------------- V3: per-tab render sweep
 //   Story 4 entry gate. For EACH tab, build a fresh jsdom with the SERVED bundle, preset the
 //   initial tab (localStorage["stom_active_tab"]) + serve the matching /status (RUNNING for the
-//   evolution tab so its data components render; IDLE is enough for the others — they fetch their
-//   own data on demand, which our stubs answer with contract-shaped empties). The index App
-//   auto-mounts (no __STOM_NO_AUTO_MOUNT__), reads the preset tab on init (app.jsx:52), and renders
-//   that tab's subtree. Assert: 0 thrown/console errors AND #root non-empty.
+//   evolution and process tabs so their data/live-flow components render; IDLE is enough for the
+//   others — they fetch their own data on demand, which our stubs answer with contract-shaped
+//   fixtures). The index App auto-mounts (no __STOM_NO_AUTO_MOUNT__), reads the preset tab on init
+//   (app.jsx:52), and renders that tab's subtree. Assert: 0 thrown/console errors AND #root non-empty.
 const V3_TABS = [
   { tab: "evolution", state: RUNNING_STATE },  // NON-IDLE: charts/cards/tables/HypothesisPanel
   { tab: "backtest", state: IDLE_STATE },
@@ -314,11 +369,10 @@ const V3_TABS = [
   { tab: "lab", state: IDLE_STATE },
   { tab: "pro", state: IDLE_STATE },
   { tab: "verdict", state: IDLE_STATE },
-  // process(7번째): 본문이 <iframe src=/process_flow> 한 장. jsdom은 iframe 내용을 로드하지
-  //   않으므로 iframe 콘텐츠가 아니라 iframe 엘리먼트 존재 + React 에러 0 만 단언한다.
-  { tab: "process", state: IDLE_STATE, expectIframe: true },
+  { tab: "records", state: IDLE_STATE, expectRecordsIndex: true },
+  { tab: "process", state: RUNNING_STATE, expectIframe: true, expectProcessLive: true },
 ];
-async function runTabOnce({ tab, state, expectIframe }) {
+async function runTabOnce({ tab, state, expectIframe, expectProcessLive, expectRecordsIndex }) {
   const { window, errs } = makeDom({ state, activeTab: tab });
   inject(window, read(resolve(FE, "vendor-react.js")));
   inject(window, read(resolve(FE, "vendor-react-dom.js")));
@@ -334,15 +388,30 @@ async function runTabOnce({ tab, state, expectIframe }) {
   const boundaryTripped = rootHtml.includes("대시보드 렌더 오류")
     || rootHtml.includes("Dashboard render error");
   const dynReq = errs.filter((e) => /Dynamic require|require is not/i.test(e));
-  // process 탭: iframe 엘리먼트 자체가 mount 됐는지(내용 로드 아님)만 확인. src 는 /process_flow.
   const iframeEl = expectIframe ? root.querySelector('iframe[src$="/process_flow"]') : null;
   const iframePresent = expectIframe ? iframeEl != null : undefined;
   const iframeOk = expectIframe ? iframePresent === true : true;
-  const pass = errs.length === 0 && rootNonEmpty && !boundaryTripped && dynReq.length === 0 && iframeOk;
+  const recordsIndexContent = expectRecordsIndex
+    ? rootHtml.includes("Governed Research Index")
+      && rootHtml.includes("Alpha Doc")
+      && rootHtml.includes("Beta Registry")
+      && root.querySelector(".research-index-warning") != null
+    : undefined;
+  const recordsOk = expectRecordsIndex ? recordsIndexContent === true : true;
+  const processLiveStripPresent = expectProcessLive ? root.querySelector(".process-live-strip") != null : undefined;
+  const processTimingGridPresent = expectProcessLive ? root.querySelector(".process-timing-grid") != null : undefined;
+  const processLatestLogVisible = expectProcessLive ? root.textContent.includes("[gen2] scored graded=1.2") : undefined;
+  const processOk = expectProcessLive
+    ? processLiveStripPresent === true && processTimingGridPresent === true && processLatestLogVisible === true
+    : true;
+  const pass = errs.length === 0 && rootNonEmpty && !boundaryTripped && dynReq.length === 0
+    && iframeOk && recordsOk && processOk;
   return {
     tab, pass, rootNonEmpty, rootHtmlLen: rootHtml.length,
     errorBoundaryTripped: boundaryTripped, dynamicRequireErrors: dynReq,
     ...(expectIframe ? { iframePresent } : {}),
+    ...(expectRecordsIndex ? { recordsIndexContent } : {}),
+    ...(expectProcessLive ? { processLiveStripPresent, processTimingGridPresent, processLatestLogVisible } : {}),
     errorCount: errs.length, errors: errs.slice(0, 10),
   };
 }
@@ -414,6 +483,239 @@ async function runV4() {
   return { name: "V4_standalone_pages", pass: allPass, pages };
 }
 
+// ---------------------------------------------------------------- V5: governed records behavior
+//   Directly mounts ResearchIndexPanel with controlled fetch timing.  This proves the user-facing
+//   controls, inert detail rendering, warning display, and stale detail guard against late responses.
+function setInputValue(window, el, value) {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+  setter.call(el, value);
+  el.dispatchEvent(new window.Event("input", { bubbles: true }));
+}
+function setSelectValue(window, el, value) {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, "value").set;
+  setter.call(el, value);
+  el.dispatchEvent(new window.Event("change", { bubbles: true }));
+}
+function jsonResponse(obj) {
+  return Promise.resolve({
+    ok: true, status: 200,
+    json: () => Promise.resolve(obj),
+    text: () => Promise.resolve(JSON.stringify(obj)),
+    headers: { get: () => null },
+  });
+}
+async function runV5() {
+  const calls = [];
+  const researchFetch = (url) => {
+    const u = String(url);
+    calls.push(u);
+    if (u.includes("/research_index/detail")) {
+      const id = new URL(u, "http://localhost").searchParams.get("id") || "";
+      if (id === "doc:docs/research/condition_research/slow.md") {
+        return new Promise((resolve) => setTimeout(() => resolve({
+          ok: true, status: 200,
+          json: () => Promise.resolve({ available: true, markdown: "SLOW_STALE_MARKER" }),
+          text: () => Promise.resolve("SLOW_STALE_MARKER"),
+          headers: { get: () => null },
+        }), 120));
+      }
+      if (id === "registry:beta") {
+        return jsonResponse({ available: true, registry_entry: { machine_name: "beta", detail: "registry detail" } });
+      }
+      return jsonResponse({ available: true, markdown: "<script>alert(1)</script>\n# Alpha detail" });
+    }
+    if (u.includes("/research_index")) {
+      return jsonResponse({
+        records: RIX_HARNESS_ROWS,
+        errors: [{ source_path: "bad.json", reason: "JSONDecodeError" }],
+        count: RIX_HARNESS_ROWS.length,
+        cache: { hit: false, sources: 3 },
+      });
+    }
+    return jsonResponse({});
+  };
+  const { window, errs } = makeDom({ noAutoMount: true, fetch: researchFetch });
+  inject(window, read(resolve(FE, "vendor-react.js")));
+  inject(window, read(resolve(FE, "vendor-react-dom.js")));
+  inject(window, read(resolve(FE, "vendor-lightweight-charts.js")));
+  inject(window, read(resolve(TRACK_Z, "stom-ui.classic.js")));
+  await wait(50);
+  inject(window, read(SERVED_APP));
+  await wait(50);
+  const componentIsFn = typeof window.ResearchIndexPanel === "function";
+  let mountError = null;
+  if (componentIsFn) {
+    inject(window, `(function(){try{
+      ReactDOM.createRoot(document.getElementById("root"))
+        .render(React.createElement(window.ResearchIndexPanel, { baseUrl: window.location.origin, initialLimit: 3 }));
+    }catch(e){window.__mountError=String((e&&e.stack)||e);}})();`);
+  } else {
+    mountError = "window.ResearchIndexPanel is not a function";
+  }
+  await wait(220);
+  mountError = mountError || window.__mountError || null;
+  const root = window.document.getElementById("root");
+  const initialText = root.textContent || "";
+  const badgesVisible = initialText.includes("Doc") && initialText.includes("canonical")
+    && initialText.includes("curated doc") && initialText.includes("Registry")
+    && initialText.includes("candidate") && root.querySelector(".research-index-warning") != null;
+  const filterLabelsVisible = initialText.includes("kind") && initialText.includes("canonicality");
+  const detailCallsBeforeSelection = calls.filter((u) => u.includes("/research_index/detail")).length;
+  const detailLazyOk = detailCallsBeforeSelection === 0
+    && root.querySelector(".research-index-pre") == null
+    && initialText.includes("Select a governed research record.");
+
+  const alphaBtn = root.querySelector('button[title="doc:docs/research/condition_research/alpha.md"]');
+  let inertDetail = false;
+  if (alphaBtn) {
+    alphaBtn.click();
+    await wait(80);
+    const inertPre = root.querySelector(".research-index-pre");
+    inertDetail = inertPre != null
+      && inertPre.textContent.includes("<script>alert(1)</script>")
+      && inertPre.querySelector("script") == null;
+  }
+
+  const search = root.querySelector('input[type="search"]');
+  const selects = root.querySelectorAll("select");
+  let searchFilterOk = false;
+  let noMatchOk = false;
+  let kindFilterOk = false;
+  let canonicalityFilterOk = false;
+  if (search && selects.length >= 2) {
+    setInputValue(window, search, "Beta");
+    await wait(230);
+    const listText = Array.from(root.querySelectorAll(".research-index-list button"))
+      .map((button) => button.textContent).join("\n");
+    searchFilterOk = listText.includes("Beta Registry") && !listText.includes("Slow Doc");
+    setInputValue(window, search, "no-such-record");
+    await wait(230);
+    noMatchOk = root.textContent.includes("No matching research records.");
+    setInputValue(window, search, "");
+    setSelectValue(window, selects[0], "registry");
+    await wait(230);
+    const filteredButtons = Array.from(root.querySelectorAll(".research-index-list button"));
+    kindFilterOk = filteredButtons.length === 1 && filteredButtons[0].getAttribute("title") === "registry:beta";
+    setSelectValue(window, selects[0], "all");
+    setSelectValue(window, selects[1], "historical");
+    await wait(230);
+    const historicalButtons = Array.from(root.querySelectorAll(".research-index-list button"));
+    const historicalOk = historicalButtons.length === 1
+      && historicalButtons[0].getAttribute("title") === "doc:docs/research/condition_research/slow.md";
+    setSelectValue(window, selects[1], "candidate");
+    await wait(230);
+    const candidateButtons = Array.from(root.querySelectorAll(".research-index-list button"));
+    const candidateOk = candidateButtons.length === 1 && candidateButtons[0].getAttribute("title") === "registry:beta";
+    canonicalityFilterOk = historicalOk && candidateOk;
+    setSelectValue(window, selects[1], "all");
+    await wait(80);
+  }
+
+  const slowBtn = root.querySelector('button[title="doc:docs/research/condition_research/slow.md"]');
+  const registryBtn = root.querySelector('button[title="registry:beta"]');
+  let staleDetailGuardOk = false;
+  if (slowBtn && registryBtn) {
+    slowBtn.click();
+    await wait(20);
+    registryBtn.click();
+    await wait(220);
+    const pre = root.querySelector(".research-index-pre");
+    const text = pre ? pre.textContent : "";
+    staleDetailGuardOk = text.includes('"machine_name": "beta"') && !text.includes("SLOW_STALE_MARKER");
+  }
+
+  const dynReq = errs.filter((e) => /Dynamic require|require is not/i.test(e));
+  const pass = componentIsFn && !mountError && errs.length === 0 && dynReq.length === 0
+    && badgesVisible && filterLabelsVisible && detailLazyOk && inertDetail
+    && searchFilterOk && noMatchOk && kindFilterOk && canonicalityFilterOk && staleDetailGuardOk;
+  return {
+    name: "V5_records_behavior",
+    pass,
+    componentIsFunction: componentIsFn,
+    mountError,
+    badgesVisible,
+    filterLabelsVisible,
+    detailLazyOk,
+    inertDetail,
+    searchFilterOk,
+    noMatchOk,
+    kindFilterOk,
+    canonicalityFilterOk,
+    staleDetailGuardOk,
+    fetchCallCount: calls.length,
+    dynamicRequireErrors: dynReq,
+    errorCount: errs.length,
+    errors: errs.slice(0, 10),
+  };
+}
+
+// ---------------------------------------------------------------- V6: process-flow edge states
+//   Mounts the process tab with malformed/idle/latest edge states.  This proves the realtime strip
+//   and timing grid fail safe beyond the single happy RUNNING_STATE used in the tab sweep.
+function stateWithLatest(latestPatch) {
+  const state = JSON.parse(JSON.stringify(RUNNING_STATE));
+  state.latest = { ...state.latest, ...latestPatch };
+  return state;
+}
+const PROCESS_EDGE_CASES = [
+  {
+    name: "idle_unknown_step",
+    state: stateWithLatest({ phase: "", message: "", recent_logs: [], current_step: -1, step_timings: {} }),
+  },
+  {
+    name: "missing_timings",
+    state: stateWithLatest({ phase: "score", message: "score phase without timings", recent_logs: [], current_step: null, step_timings: null }),
+  },
+  {
+    name: "out_of_range_step",
+    state: stateWithLatest({ phase: "iterate", message: "out of range step", recent_logs: [], current_step: 99, step_timings: { generate: 0.1 } }),
+  },
+];
+async function runProcessEdgeCase(spec) {
+  const { window, errs } = makeDom({ state: spec.state, activeTab: "process" });
+  inject(window, read(resolve(FE, "vendor-react.js")));
+  inject(window, read(resolve(FE, "vendor-react-dom.js")));
+  inject(window, read(resolve(FE, "vendor-lightweight-charts.js")));
+  inject(window, read(resolve(TRACK_Z, "stom-ui.classic.js")));
+  await wait(50);
+  inject(window, read(SERVED_APP));
+  await wait(450);
+  const root = window.document.getElementById("root");
+  const rootHtml = root.innerHTML;
+  const dynReq = errs.filter((e) => /Dynamic require|require is not/i.test(e));
+  const boundaryTripped = rootHtml.includes("대시보드 렌더 오류")
+    || rootHtml.includes("Dashboard render error");
+  const liveStrip = root.querySelector(".process-live-strip") != null;
+  const timingGrid = root.querySelector(".process-timing-grid") != null;
+  const iframePresent = root.querySelector('iframe[src$="/process_flow"]') != null;
+  const edgeText = root.textContent.includes("현재 노드") && root.textContent.includes("최근 로그");
+  const pass = errs.length === 0 && dynReq.length === 0 && !boundaryTripped
+    && rootHtml.trim().length > 0 && liveStrip && timingGrid && iframePresent && edgeText;
+  return {
+    name: spec.name,
+    pass,
+    liveStrip,
+    timingGrid,
+    iframePresent,
+    edgeText,
+    rootHtmlLen: rootHtml.length,
+    errorBoundaryTripped: boundaryTripped,
+    dynamicRequireErrors: dynReq,
+    errorCount: errs.length,
+    errors: errs.slice(0, 10),
+  };
+}
+async function runV6() {
+  const cases = {};
+  let allPass = true;
+  for (const spec of PROCESS_EDGE_CASES) {
+    const r = await runProcessEdgeCase(spec);
+    cases[spec.name] = r;
+    if (!r.pass) allPass = false;
+  }
+  return { name: "V6_process_edge_states", pass: allPass, cases };
+}
+
 // Emit ASCII-safe JSON: captured error strings may carry Korean (the app's console.error),
 //   and the Windows console default codec (cp949) would corrupt non-ASCII on the wrapper's
 //   stdout read. \uXXXX-escaping every non-ASCII char keeps stdout pure ASCII and parseable.
@@ -427,9 +729,11 @@ try {
   const v2 = await runV2();
   const v3 = await runV3();
   const v4 = await runV4();
+  const v5 = await runV5();
+  const v6 = await runV6();
   const result = {
-    host: "node+jsdom", v1, v2, v3, v4,
-    allPass: v1.pass && v2.pass && v3.pass && v4.pass,
+    host: "node+jsdom", v1, v2, v3, v4, v5, v6,
+    allPass: v1.pass && v2.pass && v3.pass && v4.pass && v5.pass && v6.pass,
   };
   process.stdout.write(asciiSafe(JSON.stringify(result, null, 2)) + "\n");
   process.exit(result.allPass ? 0 : 1);
