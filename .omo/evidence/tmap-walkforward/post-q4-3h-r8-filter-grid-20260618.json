@@ -1,0 +1,1781 @@
+{
+  "generated_at": "2026-06-18T16:58:02.903188+09:00",
+  "work_id": "post-q4-3h-bulk-research-20260618",
+  "method": "r8 entry filters separated from diagnostic-only post-exit cuts",
+  "candidate_count": 10,
+  "deployable_candidate_count": 9,
+  "diagnostic_only_count": 1,
+  "top_deployable_by_q4_profit": [
+    {
+      "filter": "r8_exclude_month_11",
+      "description": "exclude November",
+      "deployability": "deployable_calendar_rule_high_overfit_risk",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_exclude_month_11",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 17480033,
+          "return_pct_on_max_allocated_capital": 349.6007,
+          "annualized_return_pct_calendar": 46.4548,
+          "mdd_pct_daily_realized": 10.1356,
+          "mdd_krw_daily_realized": 1491510,
+          "trade_count": 497,
+          "weighted_trade_equivalent": 497.0,
+          "trading_days": 356,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -507545
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 17480033
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_exclude_month_11",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 4790020,
+          "return_pct_on_max_allocated_capital": 95.8004,
+          "annualized_return_pct_calendar": 79.0596,
+          "mdd_pct_daily_realized": 15.5405,
+          "mdd_krw_daily_realized": 1491510,
+          "trade_count": 160,
+          "weighted_trade_equivalent": 160.0,
+          "trading_days": 105,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -507545
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 4790020
+          }
+        },
+        "q4_2025": {
+          "label": "r8_exclude_month_11",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 386923,
+          "return_pct_on_max_allocated_capital": 7.7385,
+          "annualized_return_pct_calendar": 41.7355,
+          "mdd_pct_daily_realized": 13.1274,
+          "mdd_krw_daily_realized": 711211,
+          "trade_count": 16,
+          "weighted_trade_equivalent": 16.0,
+          "trading_days": 12,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-12-15",
+            "profit_krw": -227997
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 386923
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 1995287,
+        "2023": 5670640,
+        "2024": 5024086,
+        "2025": 4025753,
+        "2026": 764267
+      }
+    },
+    {
+      "filter": "r8_exclude_cap_lt_1500",
+      "description": "exclude cap <1500",
+      "deployability": "deployable_entry_filter",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_exclude_cap_lt_1500",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 10136984,
+          "return_pct_on_max_allocated_capital": 202.7397,
+          "annualized_return_pct_calendar": 32.4669,
+          "mdd_pct_daily_realized": 8.3176,
+          "mdd_krw_daily_realized": 994134,
+          "trade_count": 264,
+          "weighted_trade_equivalent": 264.0,
+          "trading_days": 216,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2022-12-21",
+            "profit_krw": -357194
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 10136984
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_exclude_cap_lt_1500",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 3180475,
+          "return_pct_on_max_allocated_capital": 63.6095,
+          "annualized_return_pct_calendar": 53.2387,
+          "mdd_pct_daily_realized": 11.5601,
+          "mdd_krw_daily_realized": 862508,
+          "trade_count": 93,
+          "weighted_trade_equivalent": 93.0,
+          "trading_days": 69,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-11-06",
+            "profit_krw": -229098
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 3180475
+          }
+        },
+        "q4_2025": {
+          "label": "r8_exclude_cap_lt_1500",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 310886,
+          "return_pct_on_max_allocated_capital": 6.2177,
+          "annualized_return_pct_calendar": 32.6137,
+          "mdd_pct_daily_realized": 9.0932,
+          "mdd_krw_daily_realized": 506393,
+          "trade_count": 19,
+          "weighted_trade_equivalent": 19.0,
+          "trading_days": 13,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-06",
+            "profit_krw": -229098
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 310886
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 1766684,
+        "2023": 2866690,
+        "2024": 2323135,
+        "2025": 2296263,
+        "2026": 884212
+      }
+    },
+    {
+      "filter": "r8_exclude_cap_lt_1500_or_before_0904",
+      "description": "exclude low cap or early",
+      "deployability": "deployable_entry_filter",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_exclude_cap_lt_1500_or_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 5758117,
+          "return_pct_on_max_allocated_capital": 115.1623,
+          "annualized_return_pct_calendar": 22.0768,
+          "mdd_pct_daily_realized": 6.2187,
+          "mdd_krw_daily_realized": 453616,
+          "trade_count": 132,
+          "weighted_trade_equivalent": 132.0,
+          "trading_days": 118,
+          "calendar_days": 1402,
+          "first_trade_date": "2022-04-21",
+          "last_trade_date": "2026-02-20",
+          "worst_day": {
+            "day": "2025-01-07",
+            "profit_krw": -262469
+          },
+          "best_day": {
+            "day": "2022-06-17",
+            "profit_krw": 427701
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 5758117
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_exclude_cap_lt_1500_or_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 1911544,
+          "return_pct_on_max_allocated_capital": 38.2309,
+          "annualized_return_pct_calendar": 33.0342,
+          "mdd_pct_daily_realized": 5.9234,
+          "mdd_krw_daily_realized": 360824,
+          "trade_count": 50,
+          "weighted_trade_equivalent": 50.0,
+          "trading_days": 40,
+          "calendar_days": 414,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-20",
+          "worst_day": {
+            "day": "2025-01-07",
+            "profit_krw": -262469
+          },
+          "best_day": {
+            "day": "2026-01-12",
+            "profit_krw": 372331
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 1911544
+          }
+        },
+        "q4_2025": {
+          "label": "r8_exclude_cap_lt_1500_or_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 208481,
+          "return_pct_on_max_allocated_capital": 4.1696,
+          "annualized_return_pct_calendar": 21.6757,
+          "mdd_pct_daily_realized": 4.3289,
+          "mdd_krw_daily_realized": 232467,
+          "trade_count": 9,
+          "weighted_trade_equivalent": 9.0,
+          "trading_days": 8,
+          "calendar_days": 76,
+          "first_trade_date": "2025-10-16",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-17",
+            "profit_krw": -155968
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 331893
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 208481
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 778981,
+        "2023": 1972262,
+        "2024": 1095330,
+        "2025": 1418040,
+        "2026": 493504
+      }
+    },
+    {
+      "filter": "r8_exclude_before_0904",
+      "description": "exclude before 09:04",
+      "deployability": "deployable_entry_filter",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_exclude_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 5259846,
+          "return_pct_on_max_allocated_capital": 105.1969,
+          "annualized_return_pct_calendar": 20.5468,
+          "mdd_pct_daily_realized": 13.3493,
+          "mdd_krw_daily_realized": 1398635,
+          "trade_count": 246,
+          "weighted_trade_equivalent": 246.0,
+          "trading_days": 204,
+          "calendar_days": 1404,
+          "first_trade_date": "2022-04-19",
+          "last_trade_date": "2026-02-20",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -495836
+          },
+          "best_day": {
+            "day": "2025-04-07",
+            "profit_krw": 529760
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 5259846
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_exclude_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 1919353,
+          "return_pct_on_max_allocated_capital": 38.3871,
+          "annualized_return_pct_calendar": 33.1667,
+          "mdd_pct_daily_realized": 19.5976,
+          "mdd_krw_daily_realized": 1398635,
+          "trade_count": 90,
+          "weighted_trade_equivalent": 90.0,
+          "trading_days": 65,
+          "calendar_days": 414,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-20",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -495836
+          },
+          "best_day": {
+            "day": "2025-04-07",
+            "profit_krw": 529760
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 1919353
+          }
+        },
+        "q4_2025": {
+          "label": "r8_exclude_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": -14542,
+          "return_pct_on_max_allocated_capital": -0.2908,
+          "annualized_return_pct_calendar": -1.3891,
+          "mdd_pct_daily_realized": 13.2876,
+          "mdd_krw_daily_realized": 693469,
+          "trade_count": 17,
+          "weighted_trade_equivalent": 17.0,
+          "trading_days": 15,
+          "calendar_days": 76,
+          "first_trade_date": "2025-10-16",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-10",
+            "profit_krw": -268980
+          },
+          "best_day": {
+            "day": "2025-12-30",
+            "profit_krw": 460019
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": -14542
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 40254,
+        "2023": 2988437,
+        "2024": 311802,
+        "2025": 1198146,
+        "2026": 721207
+      }
+    },
+    {
+      "filter": "r8_half_month_11",
+      "description": "half November",
+      "deployability": "deployable_calendar_rule_high_overfit_risk",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_half_month_11",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 17187042,
+          "return_pct_on_max_allocated_capital": 343.7409,
+          "annualized_return_pct_calendar": 45.9679,
+          "mdd_pct_daily_realized": 10.1356,
+          "mdd_krw_daily_realized": 1863376,
+          "trade_count": 550,
+          "weighted_trade_equivalent": 523.5,
+          "trading_days": 396,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -507545
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 17187042
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_half_month_11",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 4178819,
+          "return_pct_on_max_allocated_capital": 83.5764,
+          "annualized_return_pct_calendar": 69.3264,
+          "mdd_pct_daily_realized": 19.4151,
+          "mdd_krw_daily_realized": 1863376,
+          "trade_count": 179,
+          "weighted_trade_equivalent": 169.5,
+          "trading_days": 115,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -507545
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 4178819
+          }
+        },
+        "q4_2025": {
+          "label": "r8_half_month_11",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": -224278,
+          "return_pct_on_max_allocated_capital": -4.4856,
+          "annualized_return_pct_calendar": -19.3261,
+          "mdd_pct_daily_realized": 24.4088,
+          "mdd_krw_daily_realized": 1322412,
+          "trade_count": 35,
+          "weighted_trade_equivalent": 25.5,
+          "trading_days": 22,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-12-15",
+            "profit_krw": -227997
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": -224278
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 2098343,
+        "2023": 6143647,
+        "2024": 4766234,
+        "2025": 3414552,
+        "2026": 764267
+      }
+    },
+    {
+      "filter": "r8_half_cap_lt_1500",
+      "description": "half cap <1500",
+      "deployability": "deployable_allocation_filter",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_half_cap_lt_1500",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 13515518,
+          "return_pct_on_max_allocated_capital": 270.3104,
+          "annualized_return_pct_calendar": 39.4171,
+          "mdd_pct_daily_realized": 7.703,
+          "mdd_krw_daily_realized": 1437732,
+          "trade_count": 550,
+          "weighted_trade_equivalent": 407.0,
+          "trading_days": 396,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2022-12-21",
+            "profit_krw": -357194
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 13515518
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_half_cap_lt_1500",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 3374046,
+          "return_pct_on_max_allocated_capital": 67.4809,
+          "annualized_return_pct_calendar": 56.3775,
+          "mdd_pct_daily_realized": 16.8685,
+          "mdd_krw_daily_realized": 1437732,
+          "trade_count": 179,
+          "weighted_trade_equivalent": 136.0,
+          "trading_days": 115,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2026-01-28",
+            "profit_krw": -339285
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 3374046
+          }
+        },
+        "q4_2025": {
+          "label": "r8_half_cap_lt_1500",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": -262296,
+          "return_pct_on_max_allocated_capital": -5.2459,
+          "annualized_return_pct_calendar": -22.2876,
+          "mdd_pct_daily_realized": 22.2088,
+          "mdd_krw_daily_realized": 1220003,
+          "trade_count": 35,
+          "weighted_trade_equivalent": 27.0,
+          "trading_days": 22,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-06",
+            "profit_krw": -229098
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": -262296
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 1984042,
+        "2023": 4741672,
+        "2024": 3415758,
+        "2025": 2549807,
+        "2026": 824240
+      }
+    },
+    {
+      "filter": "r8_half_cap_lt_1500_or_before_0904",
+      "description": "half low cap or early",
+      "deployability": "deployable_allocation_filter",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_half_cap_lt_1500_or_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 11326084,
+          "return_pct_on_max_allocated_capital": 226.5217,
+          "annualized_return_pct_calendar": 35.0341,
+          "mdd_pct_daily_realized": 6.4714,
+          "mdd_krw_daily_realized": 1061602,
+          "trade_count": 550,
+          "weighted_trade_equivalent": 341.0,
+          "trading_days": 396,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -315102
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 548852
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 11326084
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_half_cap_lt_1500_or_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 2739581,
+          "return_pct_on_max_allocated_capital": 54.7916,
+          "annualized_return_pct_calendar": 46.0521,
+          "mdd_pct_daily_realized": 13.5788,
+          "mdd_krw_daily_realized": 1061602,
+          "trade_count": 179,
+          "weighted_trade_equivalent": 114.5,
+          "trading_days": 115,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -315102
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 548852
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 2739581
+          }
+        },
+        "q4_2025": {
+          "label": "r8_half_cap_lt_1500_or_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": -313499,
+          "return_pct_on_max_allocated_capital": -6.27,
+          "annualized_return_pct_calendar": -26.1404,
+          "mdd_pct_daily_realized": 19.6815,
+          "mdd_krw_daily_realized": 1061602,
+          "trade_count": 35,
+          "weighted_trade_equivalent": 22.0,
+          "trading_days": 22,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-12",
+            "profit_krw": -227667
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 548852
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": -313499
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 1490190,
+        "2023": 4294458,
+        "2024": 2801856,
+        "2025": 2110696,
+        "2026": 628886
+      }
+    },
+    {
+      "filter": "r8_half_before_0904",
+      "description": "half before 09:04",
+      "deployability": "deployable_allocation_filter",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_half_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 11076949,
+          "return_pct_on_max_allocated_capital": 221.539,
+          "annualized_return_pct_calendar": 34.5081,
+          "mdd_pct_daily_realized": 11.2105,
+          "mdd_krw_daily_realized": 1864092,
+          "trade_count": 550,
+          "weighted_trade_equivalent": 398.0,
+          "trading_days": 396,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -501690
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 548852
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 11076949
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_half_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 2743486,
+          "return_pct_on_max_allocated_capital": 54.8697,
+          "annualized_return_pct_calendar": 46.116,
+          "mdd_pct_daily_realized": 22.4734,
+          "mdd_krw_daily_realized": 1864092,
+          "trade_count": 179,
+          "weighted_trade_equivalent": 134.5,
+          "trading_days": 115,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -501690
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 548852
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 2743486
+          }
+        },
+        "q4_2025": {
+          "label": "r8_half_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": -425010,
+          "return_pct_on_max_allocated_capital": -8.5002,
+          "annualized_return_pct_calendar": -34.0119,
+          "mdd_pct_daily_realized": 24.6983,
+          "mdd_krw_daily_realized": 1313541,
+          "trade_count": 35,
+          "weighted_trade_equivalent": 26.0,
+          "trading_days": 22,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-10",
+            "profit_krw": -268980
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 548852
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": -425010
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 1120826,
+        "2023": 4802546,
+        "2024": 2410092,
+        "2025": 2000748,
+        "2026": 742737
+      }
+    }
+  ],
+  "diagnostic_only": [
+    {
+      "filter": "r8_diag_exclude_low_break_after_hold_exit",
+      "description": "diagnostic post-exit cut",
+      "deployability": "diagnostic_only_post_exit",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_diag_exclude_low_break_after_hold_exit",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 42433564,
+          "return_pct_on_max_allocated_capital": 848.6713,
+          "annualized_return_pct_calendar": 77.0175,
+          "mdd_pct_daily_realized": 4.0938,
+          "mdd_krw_daily_realized": 607140,
+          "trade_count": 360,
+          "weighted_trade_equivalent": 360.0,
+          "trading_days": 296,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -384885
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 42433564
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_diag_exclude_low_break_after_hold_exit",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 12064780,
+          "return_pct_on_max_allocated_capital": 241.2956,
+          "annualized_return_pct_calendar": 189.8781,
+          "mdd_pct_daily_realized": 4.0843,
+          "mdd_krw_daily_realized": 607140,
+          "trade_count": 120,
+          "weighted_trade_equivalent": 120.0,
+          "trading_days": 90,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -384885
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 12064780
+          }
+        },
+        "q4_2025": {
+          "label": "r8_diag_exclude_low_break_after_hold_exit",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 844330,
+          "return_pct_on_max_allocated_capital": 16.8866,
+          "annualized_return_pct_calendar": 107.5411,
+          "mdd_pct_daily_realized": 10.5291,
+          "mdd_krw_daily_realized": 607140,
+          "trade_count": 24,
+          "weighted_trade_equivalent": 24.0,
+          "trading_days": 17,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-10",
+            "profit_krw": -268980
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 844330
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 5440910,
+        "2023": 13320176,
+        "2024": 11607698,
+        "2025": 9943175,
+        "2026": 2121605
+      }
+    }
+  ],
+  "all_candidates": [
+    {
+      "filter": "r8_no_filter",
+      "description": "r8 full",
+      "deployability": "deployable_baseline",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_no_filter",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 16894052,
+          "return_pct_on_max_allocated_capital": 337.881,
+          "annualized_return_pct_calendar": 45.4762,
+          "mdd_pct_daily_realized": 10.7947,
+          "mdd_krw_daily_realized": 2474577,
+          "trade_count": 550,
+          "weighted_trade_equivalent": 550.0,
+          "trading_days": 396,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -507545
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 16894052
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_no_filter",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 3567618,
+          "return_pct_on_max_allocated_capital": 71.3524,
+          "annualized_return_pct_calendar": 59.5067,
+          "mdd_pct_daily_realized": 25.7834,
+          "mdd_krw_daily_realized": 2474577,
+          "trade_count": 179,
+          "weighted_trade_equivalent": 179.0,
+          "trading_days": 115,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -507545
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 3567618
+          }
+        },
+        "q4_2025": {
+          "label": "r8_no_filter",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": -835479,
+          "return_pct_on_max_allocated_capital": -16.7096,
+          "annualized_return_pct_calendar": -57.4964,
+          "mdd_pct_daily_realized": 35.6902,
+          "mdd_krw_daily_realized": 1933613,
+          "trade_count": 35,
+          "weighted_trade_equivalent": 35.0,
+          "trading_days": 22,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-12",
+            "profit_krw": -378835
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": -835479
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 2201399,
+        "2023": 6616654,
+        "2024": 4508381,
+        "2025": 2803351,
+        "2026": 764267
+      }
+    },
+    {
+      "filter": "r8_exclude_cap_lt_1500",
+      "description": "exclude cap <1500",
+      "deployability": "deployable_entry_filter",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_exclude_cap_lt_1500",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 10136984,
+          "return_pct_on_max_allocated_capital": 202.7397,
+          "annualized_return_pct_calendar": 32.4669,
+          "mdd_pct_daily_realized": 8.3176,
+          "mdd_krw_daily_realized": 994134,
+          "trade_count": 264,
+          "weighted_trade_equivalent": 264.0,
+          "trading_days": 216,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2022-12-21",
+            "profit_krw": -357194
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 10136984
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_exclude_cap_lt_1500",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 3180475,
+          "return_pct_on_max_allocated_capital": 63.6095,
+          "annualized_return_pct_calendar": 53.2387,
+          "mdd_pct_daily_realized": 11.5601,
+          "mdd_krw_daily_realized": 862508,
+          "trade_count": 93,
+          "weighted_trade_equivalent": 93.0,
+          "trading_days": 69,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-11-06",
+            "profit_krw": -229098
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 3180475
+          }
+        },
+        "q4_2025": {
+          "label": "r8_exclude_cap_lt_1500",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 310886,
+          "return_pct_on_max_allocated_capital": 6.2177,
+          "annualized_return_pct_calendar": 32.6137,
+          "mdd_pct_daily_realized": 9.0932,
+          "mdd_krw_daily_realized": 506393,
+          "trade_count": 19,
+          "weighted_trade_equivalent": 19.0,
+          "trading_days": 13,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-06",
+            "profit_krw": -229098
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 310886
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 1766684,
+        "2023": 2866690,
+        "2024": 2323135,
+        "2025": 2296263,
+        "2026": 884212
+      }
+    },
+    {
+      "filter": "r8_half_cap_lt_1500",
+      "description": "half cap <1500",
+      "deployability": "deployable_allocation_filter",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_half_cap_lt_1500",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 13515518,
+          "return_pct_on_max_allocated_capital": 270.3104,
+          "annualized_return_pct_calendar": 39.4171,
+          "mdd_pct_daily_realized": 7.703,
+          "mdd_krw_daily_realized": 1437732,
+          "trade_count": 550,
+          "weighted_trade_equivalent": 407.0,
+          "trading_days": 396,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2022-12-21",
+            "profit_krw": -357194
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 13515518
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_half_cap_lt_1500",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 3374046,
+          "return_pct_on_max_allocated_capital": 67.4809,
+          "annualized_return_pct_calendar": 56.3775,
+          "mdd_pct_daily_realized": 16.8685,
+          "mdd_krw_daily_realized": 1437732,
+          "trade_count": 179,
+          "weighted_trade_equivalent": 136.0,
+          "trading_days": 115,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2026-01-28",
+            "profit_krw": -339285
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 3374046
+          }
+        },
+        "q4_2025": {
+          "label": "r8_half_cap_lt_1500",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": -262296,
+          "return_pct_on_max_allocated_capital": -5.2459,
+          "annualized_return_pct_calendar": -22.2876,
+          "mdd_pct_daily_realized": 22.2088,
+          "mdd_krw_daily_realized": 1220003,
+          "trade_count": 35,
+          "weighted_trade_equivalent": 27.0,
+          "trading_days": 22,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-06",
+            "profit_krw": -229098
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": -262296
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 1984042,
+        "2023": 4741672,
+        "2024": 3415758,
+        "2025": 2549807,
+        "2026": 824240
+      }
+    },
+    {
+      "filter": "r8_exclude_before_0904",
+      "description": "exclude before 09:04",
+      "deployability": "deployable_entry_filter",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_exclude_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 5259846,
+          "return_pct_on_max_allocated_capital": 105.1969,
+          "annualized_return_pct_calendar": 20.5468,
+          "mdd_pct_daily_realized": 13.3493,
+          "mdd_krw_daily_realized": 1398635,
+          "trade_count": 246,
+          "weighted_trade_equivalent": 246.0,
+          "trading_days": 204,
+          "calendar_days": 1404,
+          "first_trade_date": "2022-04-19",
+          "last_trade_date": "2026-02-20",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -495836
+          },
+          "best_day": {
+            "day": "2025-04-07",
+            "profit_krw": 529760
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 5259846
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_exclude_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 1919353,
+          "return_pct_on_max_allocated_capital": 38.3871,
+          "annualized_return_pct_calendar": 33.1667,
+          "mdd_pct_daily_realized": 19.5976,
+          "mdd_krw_daily_realized": 1398635,
+          "trade_count": 90,
+          "weighted_trade_equivalent": 90.0,
+          "trading_days": 65,
+          "calendar_days": 414,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-20",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -495836
+          },
+          "best_day": {
+            "day": "2025-04-07",
+            "profit_krw": 529760
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 1919353
+          }
+        },
+        "q4_2025": {
+          "label": "r8_exclude_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": -14542,
+          "return_pct_on_max_allocated_capital": -0.2908,
+          "annualized_return_pct_calendar": -1.3891,
+          "mdd_pct_daily_realized": 13.2876,
+          "mdd_krw_daily_realized": 693469,
+          "trade_count": 17,
+          "weighted_trade_equivalent": 17.0,
+          "trading_days": 15,
+          "calendar_days": 76,
+          "first_trade_date": "2025-10-16",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-10",
+            "profit_krw": -268980
+          },
+          "best_day": {
+            "day": "2025-12-30",
+            "profit_krw": 460019
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": -14542
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 40254,
+        "2023": 2988437,
+        "2024": 311802,
+        "2025": 1198146,
+        "2026": 721207
+      }
+    },
+    {
+      "filter": "r8_half_before_0904",
+      "description": "half before 09:04",
+      "deployability": "deployable_allocation_filter",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_half_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 11076949,
+          "return_pct_on_max_allocated_capital": 221.539,
+          "annualized_return_pct_calendar": 34.5081,
+          "mdd_pct_daily_realized": 11.2105,
+          "mdd_krw_daily_realized": 1864092,
+          "trade_count": 550,
+          "weighted_trade_equivalent": 398.0,
+          "trading_days": 396,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -501690
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 548852
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 11076949
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_half_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 2743486,
+          "return_pct_on_max_allocated_capital": 54.8697,
+          "annualized_return_pct_calendar": 46.116,
+          "mdd_pct_daily_realized": 22.4734,
+          "mdd_krw_daily_realized": 1864092,
+          "trade_count": 179,
+          "weighted_trade_equivalent": 134.5,
+          "trading_days": 115,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -501690
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 548852
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 2743486
+          }
+        },
+        "q4_2025": {
+          "label": "r8_half_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": -425010,
+          "return_pct_on_max_allocated_capital": -8.5002,
+          "annualized_return_pct_calendar": -34.0119,
+          "mdd_pct_daily_realized": 24.6983,
+          "mdd_krw_daily_realized": 1313541,
+          "trade_count": 35,
+          "weighted_trade_equivalent": 26.0,
+          "trading_days": 22,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-10",
+            "profit_krw": -268980
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 548852
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": -425010
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 1120826,
+        "2023": 4802546,
+        "2024": 2410092,
+        "2025": 2000748,
+        "2026": 742737
+      }
+    },
+    {
+      "filter": "r8_exclude_cap_lt_1500_or_before_0904",
+      "description": "exclude low cap or early",
+      "deployability": "deployable_entry_filter",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_exclude_cap_lt_1500_or_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 5758117,
+          "return_pct_on_max_allocated_capital": 115.1623,
+          "annualized_return_pct_calendar": 22.0768,
+          "mdd_pct_daily_realized": 6.2187,
+          "mdd_krw_daily_realized": 453616,
+          "trade_count": 132,
+          "weighted_trade_equivalent": 132.0,
+          "trading_days": 118,
+          "calendar_days": 1402,
+          "first_trade_date": "2022-04-21",
+          "last_trade_date": "2026-02-20",
+          "worst_day": {
+            "day": "2025-01-07",
+            "profit_krw": -262469
+          },
+          "best_day": {
+            "day": "2022-06-17",
+            "profit_krw": 427701
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 5758117
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_exclude_cap_lt_1500_or_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 1911544,
+          "return_pct_on_max_allocated_capital": 38.2309,
+          "annualized_return_pct_calendar": 33.0342,
+          "mdd_pct_daily_realized": 5.9234,
+          "mdd_krw_daily_realized": 360824,
+          "trade_count": 50,
+          "weighted_trade_equivalent": 50.0,
+          "trading_days": 40,
+          "calendar_days": 414,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-20",
+          "worst_day": {
+            "day": "2025-01-07",
+            "profit_krw": -262469
+          },
+          "best_day": {
+            "day": "2026-01-12",
+            "profit_krw": 372331
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 1911544
+          }
+        },
+        "q4_2025": {
+          "label": "r8_exclude_cap_lt_1500_or_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 208481,
+          "return_pct_on_max_allocated_capital": 4.1696,
+          "annualized_return_pct_calendar": 21.6757,
+          "mdd_pct_daily_realized": 4.3289,
+          "mdd_krw_daily_realized": 232467,
+          "trade_count": 9,
+          "weighted_trade_equivalent": 9.0,
+          "trading_days": 8,
+          "calendar_days": 76,
+          "first_trade_date": "2025-10-16",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-17",
+            "profit_krw": -155968
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 331893
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 208481
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 778981,
+        "2023": 1972262,
+        "2024": 1095330,
+        "2025": 1418040,
+        "2026": 493504
+      }
+    },
+    {
+      "filter": "r8_half_cap_lt_1500_or_before_0904",
+      "description": "half low cap or early",
+      "deployability": "deployable_allocation_filter",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_half_cap_lt_1500_or_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 11326084,
+          "return_pct_on_max_allocated_capital": 226.5217,
+          "annualized_return_pct_calendar": 35.0341,
+          "mdd_pct_daily_realized": 6.4714,
+          "mdd_krw_daily_realized": 1061602,
+          "trade_count": 550,
+          "weighted_trade_equivalent": 341.0,
+          "trading_days": 396,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -315102
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 548852
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 11326084
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_half_cap_lt_1500_or_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 2739581,
+          "return_pct_on_max_allocated_capital": 54.7916,
+          "annualized_return_pct_calendar": 46.0521,
+          "mdd_pct_daily_realized": 13.5788,
+          "mdd_krw_daily_realized": 1061602,
+          "trade_count": 179,
+          "weighted_trade_equivalent": 114.5,
+          "trading_days": 115,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -315102
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 548852
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 2739581
+          }
+        },
+        "q4_2025": {
+          "label": "r8_half_cap_lt_1500_or_before_0904",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": -313499,
+          "return_pct_on_max_allocated_capital": -6.27,
+          "annualized_return_pct_calendar": -26.1404,
+          "mdd_pct_daily_realized": 19.6815,
+          "mdd_krw_daily_realized": 1061602,
+          "trade_count": 35,
+          "weighted_trade_equivalent": 22.0,
+          "trading_days": 22,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-12",
+            "profit_krw": -227667
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 548852
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": -313499
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 1490190,
+        "2023": 4294458,
+        "2024": 2801856,
+        "2025": 2110696,
+        "2026": 628886
+      }
+    },
+    {
+      "filter": "r8_exclude_month_11",
+      "description": "exclude November",
+      "deployability": "deployable_calendar_rule_high_overfit_risk",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_exclude_month_11",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 17480033,
+          "return_pct_on_max_allocated_capital": 349.6007,
+          "annualized_return_pct_calendar": 46.4548,
+          "mdd_pct_daily_realized": 10.1356,
+          "mdd_krw_daily_realized": 1491510,
+          "trade_count": 497,
+          "weighted_trade_equivalent": 497.0,
+          "trading_days": 356,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -507545
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 17480033
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_exclude_month_11",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 4790020,
+          "return_pct_on_max_allocated_capital": 95.8004,
+          "annualized_return_pct_calendar": 79.0596,
+          "mdd_pct_daily_realized": 15.5405,
+          "mdd_krw_daily_realized": 1491510,
+          "trade_count": 160,
+          "weighted_trade_equivalent": 160.0,
+          "trading_days": 105,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -507545
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 4790020
+          }
+        },
+        "q4_2025": {
+          "label": "r8_exclude_month_11",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 386923,
+          "return_pct_on_max_allocated_capital": 7.7385,
+          "annualized_return_pct_calendar": 41.7355,
+          "mdd_pct_daily_realized": 13.1274,
+          "mdd_krw_daily_realized": 711211,
+          "trade_count": 16,
+          "weighted_trade_equivalent": 16.0,
+          "trading_days": 12,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-12-15",
+            "profit_krw": -227997
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 386923
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 1995287,
+        "2023": 5670640,
+        "2024": 5024086,
+        "2025": 4025753,
+        "2026": 764267
+      }
+    },
+    {
+      "filter": "r8_half_month_11",
+      "description": "half November",
+      "deployability": "deployable_calendar_rule_high_overfit_risk",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_half_month_11",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 17187042,
+          "return_pct_on_max_allocated_capital": 343.7409,
+          "annualized_return_pct_calendar": 45.9679,
+          "mdd_pct_daily_realized": 10.1356,
+          "mdd_krw_daily_realized": 1863376,
+          "trade_count": 550,
+          "weighted_trade_equivalent": 523.5,
+          "trading_days": 396,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -507545
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 17187042
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_half_month_11",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 4178819,
+          "return_pct_on_max_allocated_capital": 83.5764,
+          "annualized_return_pct_calendar": 69.3264,
+          "mdd_pct_daily_realized": 19.4151,
+          "mdd_krw_daily_realized": 1863376,
+          "trade_count": 179,
+          "weighted_trade_equivalent": 169.5,
+          "trading_days": 115,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -507545
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 4178819
+          }
+        },
+        "q4_2025": {
+          "label": "r8_half_month_11",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": -224278,
+          "return_pct_on_max_allocated_capital": -4.4856,
+          "annualized_return_pct_calendar": -19.3261,
+          "mdd_pct_daily_realized": 24.4088,
+          "mdd_krw_daily_realized": 1322412,
+          "trade_count": 35,
+          "weighted_trade_equivalent": 25.5,
+          "trading_days": 22,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-12-15",
+            "profit_krw": -227997
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": -224278
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 2098343,
+        "2023": 6143647,
+        "2024": 4766234,
+        "2025": 3414552,
+        "2026": 764267
+      }
+    },
+    {
+      "filter": "r8_diag_exclude_low_break_after_hold_exit",
+      "description": "diagnostic post-exit cut",
+      "deployability": "diagnostic_only_post_exit",
+      "max_r8_weight": 1.0,
+      "segments": {
+        "all": {
+          "label": "r8_diag_exclude_low_break_after_hold_exit",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 42433564,
+          "return_pct_on_max_allocated_capital": 848.6713,
+          "annualized_return_pct_calendar": 77.0175,
+          "mdd_pct_daily_realized": 4.0938,
+          "mdd_krw_daily_realized": 607140,
+          "trade_count": 360,
+          "weighted_trade_equivalent": 360.0,
+          "trading_days": 296,
+          "calendar_days": 1438,
+          "first_trade_date": "2022-03-23",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -384885
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 42433564
+          }
+        },
+        "recent_2025_2026": {
+          "label": "r8_diag_exclude_low_break_after_hold_exit",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 12064780,
+          "return_pct_on_max_allocated_capital": 241.2956,
+          "annualized_return_pct_calendar": 189.8781,
+          "mdd_pct_daily_realized": 4.0843,
+          "mdd_krw_daily_realized": 607140,
+          "trade_count": 120,
+          "weighted_trade_equivalent": 120.0,
+          "trading_days": 90,
+          "calendar_days": 421,
+          "first_trade_date": "2025-01-03",
+          "last_trade_date": "2026-02-27",
+          "worst_day": {
+            "day": "2025-05-07",
+            "profit_krw": -384885
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 12064780
+          }
+        },
+        "q4_2025": {
+          "label": "r8_diag_exclude_low_break_after_hold_exit",
+          "max_allocated_capital_krw": 5000000,
+          "profit_krw": 844330,
+          "return_pct_on_max_allocated_capital": 16.8866,
+          "annualized_return_pct_calendar": 107.5411,
+          "mdd_pct_daily_realized": 10.5291,
+          "mdd_krw_daily_realized": 607140,
+          "trade_count": 24,
+          "weighted_trade_equivalent": 24.0,
+          "trading_days": 17,
+          "calendar_days": 78,
+          "first_trade_date": "2025-10-14",
+          "last_trade_date": "2025-12-30",
+          "worst_day": {
+            "day": "2025-11-10",
+            "profit_krw": -268980
+          },
+          "best_day": {
+            "day": "2025-10-30",
+            "profit_krw": 765810
+          },
+          "per_strategy_profit_krw": {
+            "r8_4": 844330
+          }
+        }
+      },
+      "yearly_profit_krw": {
+        "2022": 5440910,
+        "2023": 13320176,
+        "2024": 11607698,
+        "2025": 9943175,
+        "2026": 2121605
+      }
+    }
+  ]
+}
