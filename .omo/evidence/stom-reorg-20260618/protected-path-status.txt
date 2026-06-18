@@ -1,0 +1,14 @@
+STOM reorganization Page 1 protected-path status
+Captured: 2026-06-18T22:06:15+09:00
+Worktree: C:/System_Trading/STOM/STOM_V.wt-dev
+
+Command:
+git status --short -- _database/ _database_v3k_shadow/ _log/ backup/ ':(glob)**/*.db' backtest/graph/ .omx/reports/ ':(glob)v3k_settings*.json' _v3k_sidecar/v3k_gui_settings.json
+
+Output:
+<empty>
+
+Review:
+- No protected/runtime path change was reported by the project-approved protected path command.
+- No cleanup, reset, stash, restore, staging, branch creation, or push was performed.
+- Note: a broad string search for "_log/" can match docs/update_log paths; that is not the protected runtime `_log/` directory. The explicit git pathspec command above is the authority for this check.
