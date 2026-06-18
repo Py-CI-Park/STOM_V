@@ -1,0 +1,134 @@
+﻿Final manual QA run
+started_at=2026-06-18T23:27:42.5703551+09:00
+port=51998
+server_job_id=1
+ready=True
+
+endpoint=/ui/
+started_at=2026-06-18T23:27:51.7055387+09:00
+ended_at=2026-06-18T23:27:52.1015360+09:00
+duration_ms=396
+status=200
+bytes=2225
+preview=<!DOCTYPE html> <html lang="ko"> <head>   <meta charset="UTF-8" />   <meta name="viewport" content="width=device-width, initial-scale=1.0" />   <title>STOM AI · 조건식 자율 진화 대시보드</title>    <link rel="preconnect" href="https://fonts.googleapis.com" />   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />    <link rel="stylesheet" href="styles.css?v=20260617a" />    <!-- 로컬 번들(vendored) — unpkg CDN 의존 제거로 오프라인/캐시/SRI 문제 차단.        이전: unpkg react/react-dom/babel + SRI(...
+
+endpoint=/research_records
+started_at=2026-06-18T23:27:52.1231043+09:00
+ended_at=2026-06-18T23:27:52.4556538+09:00
+duration_ms=333
+status=200
+bytes=140196
+preview={"root":"C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\tmap-walkforward","count":17,"campaigns":[{"name":"post-q4-3h-bulk-research-20260618","updated_at":1781769563.7374113,"summary":{"rounds":15,"adopted_total":0,"finished_ts":1781769483.1140535,"best_overall":{"label":"r8_exclude_cap_lt_1500__exit2_skip_after_prior_exit2_loss_500k_else_full","profit":39402438,"mdd":7.6823,"annualized_return_pct":38.6826,"note":"robust primary; raw score winner is recorded separately because it uses a high-overfit calendar rule"},"step_results":{"baseline":{"annual":1373,"q4_official":83,"by_strategy_annual":{"r8_4":550,"r2full_mdd":456,"exit2_bal...
+
+endpoint=/evolution_gui_parity?run_id=&gen_no=-1
+started_at=2026-06-18T23:27:52.4623792+09:00
+ended_at=2026-06-18T23:27:52.6239818+09:00
+duration_ms=162
+status=200
+bytes=923
+preview={"available":false,"reason":"invalid_request","run_id":"","gen_no":-1,"csv_path_found":false,"gate_passed":false,"buy_name":null,"sell_name":null,"summary":{"trade_count":0,"win_count":0,"loss_count":0,"win_rate":0.0,"total_profit_krw":0.0,"total_profit_pct":0.0,"avg_profit_pct":0.0,"avg_win_krw":0.0,"avg_loss_krw":0.0,"payoff_ratio":0.0,"profit_factor":0.0,"max_drawdown_krw":0.0,"max_drawdown_pct":0.0,"max_consecutive_wins":0,"max_consecutive_losses":0,"avg_hold_min":0.0,"median_hold_min":0.0,"trading_days":0,"avg_trades_per_day":0.0,"sharpe":0.0,"calmar":0.0},"gui_parity":{"mdd_random":{"n":0,"actual":[],"curves":[],"actual_mdd_pct":0.0,"ra...
+
+endpoint=/research_docs
+started_at=2026-06-18T23:27:52.6274166+09:00
+ended_at=2026-06-18T23:27:53.3788235+09:00
+duration_ms=751
+status=200
+bytes=18197
+preview={"docs":[{"id":"docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md","title":"Wide v1 연구 흐름과 CLI 구조 리뷰","category":"condition_research","updated_at":"2026-04-24T13:40:23.640339+00:00","size":6750},{"id":"docs/research/condition_research/2026-06-10_measurement_calibration_audit.md","title":"측정계 보정 감사 (B2) — MDD·거래수 정의와 기준 이식성 (2026-06-10)","category":"condition_research","updated_at":"2026-06-10T11:42:49.604892+00:00","size":2259},{"id":"docs/research/condition_research/2026-06-11_f_principles_templating_roadmap.md","title":"F01~F20 전수 템플릿화 로드맵 — v5.0 보고서 재검토 (2026-06-11)","category":"condition_researc...
+
+browser_capture_begin
+browser_started_at=2026-06-18T23:27:53.3838432+09:00
+browser_ended_at=2026-06-18T23:28:18.0758517+09:00
+browser_duration_ms=24692
+browser_exit_code=0
+{
+  "started_at": "2026-06-18T14:27:58.718Z",
+  "baseUrl": "http://127.0.0.1:51998",
+  "chromePath": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "tabs": [
+    {
+      "key": "evolution",
+      "label": "진화 대시보드",
+      "html": "evolution.html",
+      "png": "evolution.png",
+      "htmlLength": 456949,
+      "rootTextLength": 500,
+      "duration_ms": 4033
+    },
+    {
+      "key": "backtest",
+      "label": "백테스트",
+      "html": "backtest.html",
+      "png": "backtest.png",
+      "htmlLength": 96527,
+      "rootTextLength": 500,
+      "duration_ms": 1247
+    },
+    {
+      "key": "simulation",
+      "label": "차트 시뮬레이션",
+      "html": "simulation.html",
+      "png": "simulation.png",
+      "htmlLength": 45263,
+      "rootTextLength": 500,
+      "duration_ms": 1201
+    },
+    {
+      "key": "lab",
+      "label": "연구실",
+      "html": "lab.html",
+      "png": "lab.png",
+      "htmlLength": 126030,
+      "rootTextLength": 500,
+      "duration_ms": 1098
+    },
+    {
+      "key": "pro",
+      "label": "분석 프로",
+      "html": "pro.html",
+      "png": "pro.png",
+      "htmlLength": 234163,
+      "rootTextLength": 500,
+      "duration_ms": 3156
+    },
+    {
+      "key": "verdict",
+      "label": "결정 이력",
+      "html": "verdict.html",
+      "png": "verdict.png",
+      "htmlLength": 106148,
+      "rootTextLength": 500,
+      "duration_ms": 1081
+    },
+    {
+      "key": "process",
+      "label": "프로세스 흐름",
+      "html": "process.html",
+      "png": "process.png",
+      "htmlLength": 102343,
+      "rootTextLength": 233,
+      "duration_ms": 1136
+    }
+  ],
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "pageErrors": [],
+  "processRoute": {
+    "html": "process-flow-route.html",
+    "png": "process-flow-route.png",
+    "htmlLength": 65662,
+    "duration_ms": 1319
+  },
+  "ended_at": "2026-06-18T14:28:18.049Z"
+}
+browser_capture_end
+
+cleanup_begin
+server_job_stopped=True
+cleanup_end
+ended_at=2026-06-18T23:29:19.8719510+09:00
+duration_ms=97302
