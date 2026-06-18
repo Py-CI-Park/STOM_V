@@ -1,0 +1,309 @@
+﻿Final automated verification
+generated_at=2026-06-18T23:24:55.8351783+09:00
+
+## json-tool research registry
+started_at=2026-06-18T23:24:56.0042214+09:00
+workdir=C:\System_Trading\STOM\STOM_V.wt-dev
+cmd=python -m json.tool .omo/evidence/stom-reorg-20260618/research-registry.json > $null
+ended_at=2026-06-18T23:24:56.9459260+09:00
+duration_ms=942
+exit_code=0
+output_begin
+output_end
+
+## git diff check
+started_at=2026-06-18T23:24:56.9625191+09:00
+workdir=C:\System_Trading\STOM\STOM_V.wt-dev
+cmd=git diff --check
+ended_at=2026-06-18T23:24:58.1756302+09:00
+duration_ms=1213
+exit_code=0
+output_begin
+warning: in the working copy of '.omo/boulder.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.omo/start-work/ledger.jsonl', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/app.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/research_api.py', LF will be replaced by CRLF the next time Git touches it
+output_end
+
+## protected path status
+started_at=2026-06-18T23:24:58.1824695+09:00
+workdir=C:\System_Trading\STOM\STOM_V.wt-dev
+cmd=git status --short -- _database/ _database_v3k_shadow/ _log/ backup/ ":(glob)**/*.db" backtest/graph/ .omx/reports/ ":(glob)v3k_settings*.json" _v3k_sidecar/v3k_gui_settings.json
+ended_at=2026-06-18T23:24:59.3643830+09:00
+duration_ms=1182
+exit_code=1
+output_begin
+glob : The term 'glob' is not recognized as the name of a cmd
+let, function, script file, or operable program. Check the sp
+elling of the name, or if a path was included, verify that th
+e path is correct and try again.
+At line:1 char:72
++ ... hort -- _database/ _database_v3k_shadow/ _log/ backup/ 
+:(glob)**/*.db ...
++                                                            
+  ~~~~
+    + CategoryInfo          : ObjectNotFound: (glob:String)  
+   [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+output_end
+
+## verify nonrelease sync
+started_at=2026-06-18T23:24:59.3718927+09:00
+workdir=C:\System_Trading\STOM\STOM_V.wt-dev
+cmd=python scripts/verify_nonrelease_sync.py
+ended_at=2026-06-18T23:25:01.5260789+09:00
+duration_ms=2154
+exit_code=0
+output_begin
+[OK] ��ũƮ���� .pyd ������ �����ϴ�.
+[OK] �ڷ��׷� qlist ����� ���� MainWindow ������ ��ġ�մϴ�.
+[OK] MainWindow�� �ڷ��׷� ��Ÿ���� �����մϴ�.
+[OK] ���� ���� ���İ� TelegramProcessAlive ��θ� ����մϴ�.
+[OK] �ڷ��׷� alive helper�� �����մϴ�.
+[OK] Jisu cleanup matches V2.70 removal.
+[OK] Shutdown cleanup matches current MainWindow runtime.
+[OK] Shutdown persists dialog geometry before closing dialogs.
+[OK] Shutdown hides Qt windows before bounded child cleanup.
+[OK] Shutdown does not raise SystemExit inside Qt closeEvent.
+[OK] Shutdown query/sound child wait is bounded with terminate fallback.
+[OK] Shutdown backtest stop acknowledgement wait is bounded with terminate fallback.
+[OK] BackTest ���μ��� �����ڰ� ���� ���� ���� ����� �����մϴ�.
+[OK] BackTest ���� ���ڰ� backQ ��ȸ ���޷� �������� �ʽ��ϴ�.
+[OK] WebCrawling runtime wiring matches QThread contract.
+[OK] static.py compatibility exports match runtime contract.
+[OK] WebCrawling stop contract includes timeout and cancellation guards.
+[OK] Key loading safety guard is present.
+[OK] Kiwoom P/L rounding matches expected loss math.
+[OK] ������ ��ũƮ������ �ø���Ű UI ������ ���ܵ˴ϴ�.
+[OK] ���� ������ ��ũƮ�� �ø���Ű ��å�� �����ϴ�.
+[OK] dict_set ���簡 ������ ��ũƮ�� �ø���Ű ��å�� �����ϴ�.
+[OK] legacy utility/setting.py�� ������ ��ũƮ�� �ø���Ű ��å�� �����ϴ�.
+
+��� ������ ��ũƮ�� ����ȭ ���巹�� �˻縦 ����߽��ϴ�.
+output_end
+
+## webui build app
+started_at=2026-06-18T23:25:01.5515548+09:00
+workdir=C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\dashboard\webui-build
+cmd=node build-app.mjs
+ended_at=2026-06-18T23:25:03.2100715+09:00
+duration_ms=1659
+exit_code=0
+output_begin
+[build-app][bundle] app.js v=b1f110fd (entry=src/track-z-entry.pilot.js, react via alias-to-shim) · stom-ui.js v=f41f5701
+[build-app][bundle] html ?v= 갱신: (변경 없음)
+output_end
+
+## webui track z harness
+started_at=2026-06-18T23:25:03.2131611+09:00
+workdir=C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\dashboard\webui-build
+cmd=node track-z-harness.mjs
+ended_at=2026-06-18T23:25:19.5967407+09:00
+duration_ms=16384
+exit_code=0
+output_begin
+{
+  "host": "node+jsdom",
+  "v1": {
+    "name": "V1_pilot",
+    "pass": true,
+    "demoBadgeIsFunction": true,
+    "livePendingIsFunction": true,
+    "singleReactIdentity": true,
+    "hookDispatchOk": true,
+    "renderError": null,
+    "dynamicRequireErrors": [],
+    "rootNonEmpty": true,
+    "rootHtmlLen": 300,
+    "errorCount": 0,
+    "errors": []
+  },
+  "v2": {
+    "name": "V2_served_default_bundle",
+    "pass": true,
+    "appIsFunction": true,
+    "frozenGlobalsReady": true,
+    "fmtGlobalsReady": true,
+    "lightweightChartsReady": true,
+    "singleReactIdentity": true,
+    "dynamicRequireErrors": [],
+    "rootNonEmpty": true,
+    "rootHtmlLen": 11086,
+    "errorCount": 0,
+    "errors": []
+  },
+  "v3": {
+    "name": "V3_per_tab_sweep",
+    "pass": true,
+    "tabs": {
+      "evolution": {
+        "tab": "evolution",
+        "pass": true,
+        "rootNonEmpty": true,
+        "rootHtmlLen": 87048,
+        "errorBoundaryTripped": false,
+        "dynamicRequireErrors": [],
+        "errorCount": 0,
+        "errors": []
+      },
+      "backtest": {
+        "tab": "backtest",
+        "pass": true,
+        "rootNonEmpty": true,
+        "rootHtmlLen": 12360,
+        "errorBoundaryTripped": false,
+        "dynamicRequireErrors": [],
+        "errorCount": 0,
+        "errors": []
+      },
+      "simulation": {
+        "tab": "simulation",
+        "pass": true,
+        "rootNonEmpty": true,
+        "rootHtmlLen": 9700,
+        "errorBoundaryTripped": false,
+        "dynamicRequireErrors": [],
+        "errorCount": 0,
+        "errors": []
+      },
+      "lab": {
+        "tab": "lab",
+        "pass": true,
+        "rootNonEmpty": true,
+        "rootHtmlLen": 8564,
+        "errorBoundaryTripped": false,
+        "dynamicRequireErrors": [],
+        "errorCount": 0,
+        "errors": []
+      },
+      "pro": {
+        "tab": "pro",
+        "pass": true,
+        "rootNonEmpty": true,
+        "rootHtmlLen": 7121,
+        "errorBoundaryTripped": false,
+        "dynamicRequireErrors": [],
+        "errorCount": 0,
+        "errors": []
+      },
+      "verdict": {
+        "tab": "verdict",
+        "pass": true,
+        "rootNonEmpty": true,
+        "rootHtmlLen": 5428,
+        "errorBoundaryTripped": false,
+        "dynamicRequireErrors": [],
+        "errorCount": 0,
+        "errors": []
+      },
+      "process": {
+        "tab": "process",
+        "pass": true,
+        "rootNonEmpty": true,
+        "rootHtmlLen": 4457,
+        "errorBoundaryTripped": false,
+        "dynamicRequireErrors": [],
+        "iframePresent": true,
+        "errorCount": 0,
+        "errors": []
+      }
+    }
+  },
+  "v4": {
+    "name": "V4_standalone_pages",
+    "pass": true,
+    "pages": {
+      "lab": {
+        "page": "lab",
+        "global": "LabPage",
+        "pass": true,
+        "componentIsFunction": true,
+        "mountError": null,
+        "rootNonEmpty": true,
+        "rootHtmlLen": 4280,
+        "errorBoundaryTripped": false,
+        "dynamicRequireErrors": [],
+        "errorCount": 0,
+        "errors": []
+      },
+      "pro": {
+        "page": "pro",
+        "global": "ProPage",
+        "pass": true,
+        "componentIsFunction": true,
+        "mountError": null,
+        "rootNonEmpty": true,
+        "rootHtmlLen": 2835,
+        "errorBoundaryTripped": false,
+        "dynamicRequireErrors": [],
+        "errorCount": 0,
+        "errors": []
+      },
+      "verdict": {
+        "page": "verdict",
+        "global": "VerdictPanel",
+        "pass": true,
+        "componentIsFunction": true,
+        "mountError": null,
+        "rootNonEmpty": true,
+        "rootHtmlLen": 1142,
+        "errorBoundaryTripped": false,
+        "dynamicRequireErrors": [],
+        "errorCount": 0,
+        "errors": []
+      }
+    }
+  },
+  "allPass": true
+}
+output_end
+
+## webui missing imports
+started_at=2026-06-18T23:25:19.6405230+09:00
+workdir=C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\dashboard\webui-build
+cmd=node check-missing-imports.mjs
+ended_at=2026-06-18T23:25:20.7903522+09:00
+duration_ms=1150
+exit_code=0
+output_begin
+[check-missing-imports] scanned 65 .jsx modules
+[check-missing-imports] cross-module exported symbols: 279
+[check-missing-imports] window-published symbols (global-lookup safe): 133
+[check-missing-imports] OK: ZERO missing cross-module imports.
+output_end
+
+## pytest research records parity frontend
+started_at=2026-06-18T23:25:20.7935417+09:00
+workdir=C:\System_Trading\STOM\STOM_V.wt-dev
+cmd=python -m pytest tests/unit/dashboard/test_research_records.py tests/unit/dashboard/test_evolution_gui_parity.py tests/unit/dashboard/test_research_records_frontend.py -q
+ended_at=2026-06-18T23:25:34.1022593+09:00
+duration_ms=13309
+exit_code=0
+output_begin
+..........                                                               [100%]
+10 passed in 9.27s
+output_end
+
+## pytest duplicate globals missing imports
+started_at=2026-06-18T23:25:34.1144277+09:00
+workdir=C:\System_Trading\STOM\STOM_V.wt-dev
+cmd=python -m pytest tests/unit/dashboard/test_no_duplicate_globals.py tests/unit/dashboard/test_no_missing_cross_module_imports.py -q
+ended_at=2026-06-18T23:25:39.5718431+09:00
+duration_ms=5457
+exit_code=0
+output_begin
+....                                                                     [100%]
+4 passed in 2.12s
+output_end
+
+## Summary
+json-tool research registry: exit=0 duration_ms=942
+git diff check: exit=0 duration_ms=1213
+protected path status: exit=1 duration_ms=1182
+verify nonrelease sync: exit=0 duration_ms=2154
+webui build app: exit=0 duration_ms=1659
+webui track z harness: exit=0 duration_ms=16384
+webui missing imports: exit=0 duration_ms=1150
+pytest research records parity frontend: exit=0 duration_ms=13309
+pytest duplicate globals missing imports: exit=0 duration_ms=5457

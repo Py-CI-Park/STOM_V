@@ -1,0 +1,6 @@
+[BATCH] run_id=r4_minimal_train_20260613 pairs=3
+[BATCH] prepare status=ok back_count=2285 elapsed=298s
+[BATCH] gen0 BASE_SEED ok profit=8,631,199 mdd=17.44 trades=307 daily=0.40 payoff=1.4861642479780424 gate=True reason=ok (147s)
+[BATCH] gen1 R4 M0 top5 ok profit=-13,210,006 mdd=97.28 trades=1504 daily=2.10 payoff=1.3395274760549087 gate=False reason=mdd 97.28 > mdd_cap 35 (147s)
+[BATCH] gen2 R4 M1 top9 ok profit=6,282,519 mdd=21.35 trades=383 daily=0.50 payoff=1.4539739302176191 gate=True reason=ok (147s)
+[BATCH] done

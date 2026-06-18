@@ -1,0 +1,66 @@
+﻿F2 Code Quality Review
+Timestamp: 2026-06-04T05:48:55
+
+
+## git diff check
+COMMAND: git diff --check
+
+warning: in the working copy of 'ai_strategy_loop/controller/lineage.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/controller/state.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/app.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/chart.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/code-viewer.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/engine.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/styles.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/table.jsx', LF will be replaced by CRLF the next time Git touches it
+EXIT_CODE: 0
+
+
+## verify nonrelease sync
+COMMAND: python scripts/verify_nonrelease_sync.py
+
+[OK] 워크트리에 .pyd 파일이 없습니다.
+[OK] 텔레그램 qlist 계약이 현재 MainWindow 순서와 일치합니다.
+[OK] MainWindow가 텔레그램 런타임을 시작합니다.
+[OK] 설정 변경 전파가 TelegramProcessAlive 경로를 사용합니다.
+[OK] 텔레그램 alive helper가 존재합니다.
+[OK] Jisu cleanup matches V2.70 removal.
+[OK] Shutdown cleanup matches current MainWindow runtime.
+[OK] Shutdown persists dialog geometry before closing dialogs.
+[OK] Shutdown hides Qt windows before bounded child cleanup.
+[OK] Shutdown does not raise SystemExit inside Qt closeEvent.
+[OK] Shutdown query/sound child wait is bounded with terminate fallback.
+[OK] Shutdown backtest stop acknowledgement wait is bounded with terminate fallback.
+[OK] BackTest 프로세스 생성자가 직접 인자 전달 계약을 유지합니다.
+[OK] BackTest 실행 인자가 backQ 우회 전달로 오염되지 않습니다.
+[OK] WebCrawling runtime wiring matches QThread contract.
+[OK] static.py compatibility exports match runtime contract.
+[OK] WebCrawling stop contract includes timeout and cancellation guards.
+[OK] Key loading safety guard is present.
+[OK] Kiwoom P/L rounding matches expected loss math.
+[OK] 비정식 워크트리에서 시리얼키 UI 생성이 차단됩니다.
+[OK] 설정 저장이 워크트리 시리얼키 정책을 따릅니다.
+[OK] dict_set 적재가 비정식 워크트리 시리얼키 정책을 따릅니다.
+[OK] legacy utility/setting.py도 비정식 워크트리 시리얼키 정책을 따릅니다.
+
+모든 비정식 워크트리 동기화 가드레일 검사를 통과했습니다.
+EXIT_CODE: 0
+
+
+## protected path status
+COMMAND: git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json
+
+EXIT_CODE: 0
+
+
+## focused pytest suite
+COMMAND: $env:PYTHONUTF8="1"; python -m pytest tests/unit/test_dashboard_backtest_detail.py tests/unit/test_dashboard_equity_curves.py tests/unit/test_dashboard_profit_codeview.py tests/unit/test_dashboard_run_state.py tests/unit/test_prompt_logging.py tests/unit/test_edge_ratio.py tests/unit/test_feature_importance.py tests/unit/test_adaptive_timing.py tests/unit/test_dashboard_hall_of_fame.py tests/unit/test_variable_correlation.py tests/unit/test_dashboard_strategy_diff.py tests/unit/test_dashboard_research_docs.py tests/unit/test_dashboard_ai_context_pack.py tests/unit/test_dashboard_research_lab_frontend.py tests/unit/test_dashboard_strategy_prompt_frontend.py tests/unit/test_dashboard_run_compare_frontend.py tests/unit/test_dashboard_chart_explanations.py tests/unit/test_dashboard_wiki_frontend.py tests/unit/test_dashboard_integrated_layout.py tests/unit/test_dashboard_table_sorting.py tests/unit/test_dashboard_runs_enriched.py tests/unit/test_dashboard_current_gen_detail.py -q
+
+........................................................................ [ 34%]
+........................................................................ [ 69%]
+................................................................         [100%]
+208 passed in 30.06s
+EXIT_CODE: 0
+

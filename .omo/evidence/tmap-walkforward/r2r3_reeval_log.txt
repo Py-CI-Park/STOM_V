@@ -1,0 +1,7 @@
+[BATCH] run_id=r2r3_reeval_20260613 pairs=4
+[BATCH] prepare status=ok back_count=2285 elapsed=286s
+[BATCH] gen0 BASE_SEED ok profit=8,631,199 mdd=17.44 trades=307 daily=0.40 payoff=1.4861642479780424 gate=True reason=ok (146s)
+[BATCH] gen1 R2R3_A {'burst_a': 2.0, 'ogap_lo_b': 2.0} ok profit=11,287,219 mdd=6.93 trades=337 daily=0.50 payoff=1.5484388697946645 gate=True reason=ok (148s)
+[BATCH] gen2 R2R3_B {'burst_a': 2.0, 'ogap_lo_b': 3.0} ok profit=11,134,657 mdd=6.78 trades=307 daily=0.40 payoff=1.5158503066141042 gate=True reason=ok (147s)
+[BATCH] gen3 R2R3_C {'burst_a': 3.0, 'ogap_lo_b': 2.0} ok profit=11,118,041 mdd=10.22 trades=302 daily=0.40 payoff=1.5684968513060025 gate=True reason=ok (147s)
+[BATCH] done

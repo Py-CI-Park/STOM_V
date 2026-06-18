@@ -1,0 +1,3 @@
+[DASHBOARD] starting on http://127.0.0.1:8794
+[DASHBOARD] health: http://127.0.0.1:8794/health
+INFO:     127.0.0.1:56719 - "GET /status HTTP/1.1" 200 OK

@@ -1,0 +1,95 @@
+ï»¿TASK 3: P1 smoke run
+timestamp_start=
+2026-06-03T19:55:43.6421920+09:00
+command=
+python -m ai_strategy_loop.controller.loop --config-json .omo/evidence/tick-oos-validation-20260603/p1-smoke-config.json --run-id tick_oos_p1_smoke_20260603
+
+python.exe : Traceback (most recent call last):
+At line:8 char:1
++ & python -m ai_strategy_loop.controller.loop --config-json 
+.omo/evide ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most 
+    recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop
+\controller\loop.py", line 2320, in <module>
+    raise SystemExit(_main())
+                     ~~~~~^^
+  File "C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop
+\controller\loop.py", line 2290, in _main
+    data = json.load(fh)
+  File "C:\Python\64\Python31313\Lib\json\__init__.py", line 
+298, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=obje
+ct_pairs_hook, **kw)
+  File "C:\Python\64\Python31313\Lib\json\__init__.py", line 
+341, in loads
+    raise JSONDecodeError("Unexpected UTF-8 BOM (decode using
+ utf-8-sig)",
+                          s, 0)
+json.decoder.JSONDecodeError: Unexpected UTF-8 BOM (decode us
+ing utf-8-sig): line 1 column 1 (char 0)
+
+timestamp_end=
+2026-06-03T19:55:54.1116726+09:00
+exit_code=
+1
+
+--- RETRY after removing UTF-8 BOM ---
+timestamp_retry_start=
+2026-06-03T19:56:38.7029199+09:00
+command=
+python -m ai_strategy_loop.controller.loop --config-json .omo/evidence/tick-oos-validation-20260603/p1-smoke-config.json --run-id tick_oos_p1_smoke_20260603
+
+[LOOP] loop DB        : C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\state\loop_strategies.db
+[LOOP] provider       : gpt_auth
+[LOOP] max_generations: 2
+[LOOP] bt_timeframe   : tick
+[LOOP] bt_engine_mode : warm
+[LOOP] warm prepare DÆÌ¸ (back_count=472)
+
+[LOOP] === generation 0 (run=tick_oos_p1_smoke_20260603) ===
+[LOOP] seed ¬À©Æ: buy=C_T_900_920_U2_B sell=C_T_900_920_U2_S
+[LOOP] backtest status=error elapsed=263.5s reason=warm backtest non-success: status=error message=1¼LÑ¤Â¸Ò ÜÂ¬ Íü¬ (240Í) csv=no
+
+[LOOP] === generation 1 (run=tick_oos_p1_smoke_20260603) ===
+[LOOP] generated buy=AILOOP_tick_oos_p1_smoke_20260603_g1_buy sell=AILOOP_tick_oos_p1_smoke_20260603_g1_sell (cum_tokens=27061)
+[LOOP] --- AILOOP_tick_oos_p1_smoke_20260603_g1_buy (first 6 lines) ---
+    È|Ç…È¬ = Ö¬Ç¬ / (1 + (ñ´}·(Ç / 100)) if (1 + (ñ´}·(Ç / 100)) != 0 else Ö¬Ç¬
+    ÜÂ¬ñ´}·(Ç = ((ÜÂ¬ - È|Ç…È¬) / È|Ç…È¬) * 100 if È|Ç…È¬ != 0 else 0
+    ÜÂ¬³D¾ñ´}·(Ç = ((Ö¬Ç¬ - ÜÂ¬) / ÜÂ¬) * 100 if ÜÂ¬ != 0 else 0
+    Íù²Âä¹Â®aÅ = (Íù²ä¹ÂÂÉ· - Íù²ä¹Ä³ÂÉ·) * Ö¬Ç¬ / 1000000
+    
+    ä¹Â = True
+[LOOP] --- /AILOOP_tick_oos_p1_smoke_20260603_g1_buy ---
+[LOOP] backtest status=success elapsed=15.3s reason=ok
+[LOOP] graded=8.98256 hard_composite=12.6702 calmar=20.11 r2=0.63 gate=True reason=ok mdd=3.53 profit=482,322 trades=36 gate_distance=ok (gate passed)
+
+[LOOP] === SUMMARY ===
+{
+  "run_id": "tick_oos_p1_smoke_20260603",
+  "generations": 2,
+  "best_gen": 1,
+  "best_score": 8.98255793091058,
+  "best_buy": "AILOOP_tick_oos_p1_smoke_20260603_g1_buy",
+  "best_sell": "AILOOP_tick_oos_p1_smoke_20260603_g1_sell",
+  "winner_gen": 1,
+  "winner_score": 0.6300279319547396,
+  "winner_buy": "AILOOP_tick_oos_p1_smoke_20260603_g1_buy",
+  "winner_sell": "AILOOP_tick_oos_p1_smoke_20260603_g1_sell",
+  "stop_reason": "max_generations Ä³ì²: gen_count 2 >= 2"
+}
+[LOOP] wall-clock: 392.4s
+
+timestamp_retry_end=
+2026-06-03T20:03:19.5339736+09:00
+retry_exit_code=
+0

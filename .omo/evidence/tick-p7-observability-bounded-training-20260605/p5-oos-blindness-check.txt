@@ -1,0 +1,5 @@
+Command:
+rg -n "oos_2022|oos_2026|seed_2022|seed_2026|ai_2022|ai_2026|post_oos" .omo/evidence/tick-p7-observability-bounded-training-20260605/p5-candidate-pools.json
+
+Result:
+No matches.

@@ -1,0 +1,62 @@
+[
+  {
+    "label": "PLACEBO R2 S0",
+    "buy": "PLACEBO_0611_R2_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "PLACEBO R2 S1",
+    "buy": "PLACEBO_0611_R2_S1_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "PLACEBO R2 S2",
+    "buy": "PLACEBO_0611_R2_S2_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "PLACEBO R5 S0",
+    "buy": "PLACEBO_0611_R5_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "PLACEBO R5 S1",
+    "buy": "PLACEBO_0611_R5_S1_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "PLACEBO R5 S2",
+    "buy": "PLACEBO_0611_R5_S2_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "PLACEBO R10 S0",
+    "buy": "PLACEBO_0611_R10_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "PLACEBO R10 S1",
+    "buy": "PLACEBO_0611_R10_S1_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "PLACEBO R10 S2",
+    "buy": "PLACEBO_0611_R10_S2_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "PLACEBO R20 S0",
+    "buy": "PLACEBO_0611_R20_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "PLACEBO R20 S1",
+    "buy": "PLACEBO_0611_R20_S1_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "PLACEBO R20 S2",
+    "buy": "PLACEBO_0611_R20_S2_B",
+    "sell": "THETA_seed_902905_06_S"
+  }
+]

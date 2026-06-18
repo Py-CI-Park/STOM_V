@@ -1,0 +1,41 @@
+{
+  "note": "advisory only — selection/판정에 미사용",
+  "pbo": null,
+  "dsr": {
+    "sharpe_hat": 0.20145245332368358,
+    "expected_max_sharpe_null": 0.15145784956909056,
+    "dsr": 0.8020071642845202,
+    "n_periods": 277.0,
+    "n_trials": 96.0,
+    "skew": 0.29430975624059086,
+    "kurtosis": 2.6533195006400154,
+    "var_sharpe": 0.0034691477590009507,
+    "definition": "선택 후보의 거래일 기준 일별 손익 DSR"
+  },
+  "pbo_blocked": "csv 보유 후보 1개(<2) — PBO 계산 불가",
+  "n_trials_definition": "이 선택을 낳은 평가 점 전체의 고유 매수 전략 수 = 선택 대상 run + trial-runs(TMAP 스윕 그리드) + 사이클 CLDGEN 풀 (N5 교정: 종전 CLDGEN만 카운트 → 스윕 그리드 누락 수정)",
+  "n_trials": 96,
+  "n_trials_runs": [
+    "t2c3_reeval_20260613",
+    "tmap_t2late_train_20260613",
+    "t2_corner_train_20260613",
+    "t1_wext_train_20260613",
+    "tmap_seed_full_train_20260611",
+    "tmap2_cap_take_train_20260611",
+    "theta_star_reeval_20260611"
+  ],
+  "mc_block_bootstrap": {
+    "profit_mean": 9203044.2885,
+    "profit_p05": 4200732.5,
+    "profit_p50": 9248694.5,
+    "profit_p95": 13654058.799999997,
+    "p_positive": 1.0,
+    "mdd_p50": 1348025.5,
+    "mdd_p95": 2327788.8499999996,
+    "n_days": 277,
+    "n_boot": 2000,
+    "block_len": 5,
+    "seed": 20260611,
+    "note": "block bootstrap on daily P&L — preserves regime clustering; advisory only"
+  }
+}

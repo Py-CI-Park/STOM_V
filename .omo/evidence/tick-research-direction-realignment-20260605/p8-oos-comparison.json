@@ -1,0 +1,13 @@
+{
+  "work_id": "tick-research-direction-realignment-20260605",
+  "phase": "P8",
+  "status": "blocked_not_run",
+  "reason": "No frozen promotion_candidate from P7.",
+  "oos_used": false,
+  "candidate_identity": null,
+  "seed_2022": null,
+  "seed_2026": null,
+  "ai_2022": null,
+  "ai_2026": null,
+  "promotion_allowed": false
+}

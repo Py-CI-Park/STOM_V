@@ -1,0 +1,36 @@
+{
+  "work_id": "tick-research-direction-realignment-20260605",
+  "phase": "P2",
+  "status": "implemented",
+  "training_period": "2023-01-01..2025-12-31",
+  "fixed_oos_periods": ["2022-01-01..2022-12-31", "2026 available window"],
+  "timeframe": "tick",
+  "diagnostics": {
+    "slippage_stress": {
+      "haircuts": [0.001, 0.002, 0.003],
+      "notional_source": "trade notional columns if present; otherwise proxy_round_trip_notional * trade_count",
+      "promotion_rule": "all stressed OOS rows must stay positive"
+    },
+    "pbo_cscv": {
+      "minimum_candidates": 2,
+      "minimum_common_months": 8,
+      "insufficient_data_blocks_promotion": true,
+      "research_pool_behavior": "label only"
+    },
+    "deflated_sharpe": {
+      "minimum_monthly_observations": 12,
+      "insufficient_data_blocks_promotion": true,
+      "research_pool_behavior": "label only"
+    }
+  },
+  "qa": {
+    "command": "python -m pytest tests/unit/test_promotion_diagnostics.py -q",
+    "evidence": ".omo/evidence/tick-research-direction-realignment-20260605/p2-diagnostics-tests.txt",
+    "result": "6 passed"
+  },
+  "guardrail": {
+    "compute_fitness_changed": false,
+    "insufficient_pbo_or_dsr_promotes": false,
+    "official_engine_changed": false
+  }
+}

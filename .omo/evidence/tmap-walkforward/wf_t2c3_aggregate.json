@@ -1,0 +1,147 @@
+{
+  "template": "seed_902905_t2late",
+  "windows": [
+    {
+      "fit_start": 20220101,
+      "fit_end": 20221231,
+      "eval_start": 20230103,
+      "eval_end": 20230630,
+      "status": "ok",
+      "theta": {
+        "ext_end": 91500.0
+      },
+      "theta_basis": {
+        "param": "ext_end",
+        "value": 91500.0,
+        "plateau_score": 3.0179,
+        "plateau": {
+          "width": 3,
+          "center_value": 91500.0,
+          "mean_profit": 1327159.0,
+          "min_profit": 1096956.0,
+          "values": [
+            91000.0,
+            91500.0,
+            92500.0
+          ]
+        },
+        "baseline_profit": 1319297.0
+      },
+      "policy": {
+        "profit": 4345935.0,
+        "trades": 104
+      },
+      "baseline": {
+        "profit": 4014887.0,
+        "trades": 118
+      }
+    },
+    {
+      "fit_start": 20220101,
+      "fit_end": 20231231,
+      "eval_start": 20240103,
+      "eval_end": 20240630,
+      "status": "ok",
+      "theta": {
+        "ext_end": 91500.0
+      },
+      "theta_basis": {
+        "param": "ext_end",
+        "value": 91500.0,
+        "plateau_score": 3.2789,
+        "plateau": {
+          "width": 3,
+          "center_value": 91500.0,
+          "mean_profit": 5015852.333333333,
+          "min_profit": 3711723.0,
+          "values": [
+            91000.0,
+            91500.0,
+            92500.0
+          ]
+        },
+        "baseline_profit": 4589267.0
+      },
+      "policy": {
+        "profit": 1897623.0,
+        "trades": 81
+      },
+      "baseline": {
+        "profit": 2183225.0,
+        "trades": 97
+      }
+    },
+    {
+      "fit_start": 20230101,
+      "fit_end": 20241231,
+      "eval_start": 20250103,
+      "eval_end": 20250630,
+      "status": "ok",
+      "theta": {
+        "burst_late": 4.0
+      },
+      "theta_basis": {
+        "param": "burst_late",
+        "value": 4.0,
+        "plateau_score": 2.2405,
+        "plateau": {
+          "width": 2,
+          "center_value": 4.0,
+          "mean_profit": 7763011.5,
+          "min_profit": 7602301.0,
+          "values": [
+            3.0,
+            4.0
+          ]
+        },
+        "baseline_profit": 6929563.0
+      },
+      "policy": {
+        "profit": 1730765.0,
+        "trades": 95
+      },
+      "baseline": {
+        "profit": 956062.0,
+        "trades": 111
+      }
+    },
+    {
+      "fit_start": 20240101,
+      "fit_end": 20251231,
+      "eval_start": 20260103,
+      "eval_end": 20260228,
+      "status": "ok",
+      "theta": {
+        "ext_end": 91500.0
+      },
+      "theta_basis": {
+        "param": "ext_end",
+        "value": 91500.0,
+        "plateau_score": 3.1352,
+        "plateau": {
+          "width": 3,
+          "center_value": 91500.0,
+          "mean_profit": 3490380.3333333335,
+          "min_profit": 2714796.0,
+          "values": [
+            91000.0,
+            91500.0,
+            92500.0
+          ]
+        },
+        "baseline_profit": 3339848.0
+      },
+      "policy": {
+        "profit": 1908000.0,
+        "trades": 27
+      },
+      "baseline": {
+        "profit": 1779656.0,
+        "trades": 29
+      }
+    }
+  ],
+  "washout_days": 0,
+  "policy_total": 9882323.0,
+  "baseline_total": 8933830.0
+}

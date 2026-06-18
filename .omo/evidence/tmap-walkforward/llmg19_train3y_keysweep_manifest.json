@@ -1,0 +1,248 @@
+{
+  "template": "llmgen_open_gap_oneway_flow_9001",
+  "run_id": "tmap_llmg19_train3y_keysweep_20260614",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_000_B",
+      "status": "ok",
+      "profit": -30034246.0,
+      "mdd": 151.72,
+      "trades": 2805
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP cap_max=4000",
+      "param": "cap_max",
+      "value": 4000,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_001_B",
+      "status": "ok",
+      "profit": -37853727.0,
+      "mdd": 189.32,
+      "trades": 3453
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP cap_max=2500",
+      "param": "cap_max",
+      "value": 2500,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_002_B",
+      "status": "ok",
+      "profit": -22360693.0,
+      "mdd": 151.4,
+      "trades": 2361
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP cap_max=2000",
+      "param": "cap_max",
+      "value": 2000,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_003_B",
+      "status": "ok",
+      "profit": -14157879.0,
+      "mdd": 143.71,
+      "trades": 1856
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP cap_max=1500",
+      "param": "cap_max",
+      "value": 1500,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_004_B",
+      "status": "ok",
+      "profit": -8045638.0,
+      "mdd": 86.88,
+      "trades": 1233
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP sec_money_min=30",
+      "param": "sec_money_min",
+      "value": 30,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_005_B",
+      "status": "ok",
+      "profit": -42705408.0,
+      "mdd": 214.44,
+      "trades": 3402
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP sec_money_min=80",
+      "param": "sec_money_min",
+      "value": 80,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_006_B",
+      "status": "ok",
+      "profit": -20519768.0,
+      "mdd": 135.41,
+      "trades": 2083
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP sec_money_min=120",
+      "param": "sec_money_min",
+      "value": 120,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_007_B",
+      "status": "ok",
+      "profit": -13557678.0,
+      "mdd": 128.5,
+      "trades": 1405
+    },
+    {
+      "gen_no": 8,
+      "label": "TMAP sec_money_min=180",
+      "param": "sec_money_min",
+      "value": 180,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_008_B",
+      "status": "ok",
+      "profit": -6169553.0,
+      "mdd": 117.48,
+      "trades": 837
+    },
+    {
+      "gen_no": 9,
+      "label": "TMAP sec_money_min=250",
+      "param": "sec_money_min",
+      "value": 250,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_009_B",
+      "status": "ok",
+      "profit": -4652776.0,
+      "mdd": 96.53,
+      "trades": 451
+    },
+    {
+      "gen_no": 10,
+      "label": "TMAP take_profit=2.5",
+      "param": "take_profit",
+      "value": 2.5,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_010_B",
+      "status": "ok",
+      "profit": -37312380.0,
+      "mdd": 248.6,
+      "trades": 2842
+    },
+    {
+      "gen_no": 11,
+      "label": "TMAP take_profit=5.5",
+      "param": "take_profit",
+      "value": 5.5,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_011_B",
+      "status": "ok",
+      "profit": -28801075.0,
+      "mdd": 145.66,
+      "trades": 2802
+    },
+    {
+      "gen_no": 12,
+      "label": "TMAP take_profit=7.0",
+      "param": "take_profit",
+      "value": 7.0,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_012_B",
+      "status": "ok",
+      "profit": -27215249.0,
+      "mdd": 137.79,
+      "trades": 2802
+    },
+    {
+      "gen_no": 13,
+      "label": "TMAP take_profit=9.0",
+      "param": "take_profit",
+      "value": 9.0,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_013_B",
+      "status": "ok",
+      "profit": -27031531.0,
+      "mdd": 136.88,
+      "trades": 2802
+    },
+    {
+      "gen_no": 14,
+      "label": "TMAP stop_loss=-1.5",
+      "param": "stop_loss",
+      "value": -1.5,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_014_B",
+      "status": "ok",
+      "profit": -27554788.0,
+      "mdd": 184.28,
+      "trades": 2856
+    },
+    {
+      "gen_no": 15,
+      "label": "TMAP stop_loss=-2.5",
+      "param": "stop_loss",
+      "value": -2.5,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_015_B",
+      "status": "ok",
+      "profit": -31843802.0,
+      "mdd": 160.38,
+      "trades": 2778
+    },
+    {
+      "gen_no": 16,
+      "label": "TMAP stop_loss=-3.5",
+      "param": "stop_loss",
+      "value": -3.5,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_016_B",
+      "status": "ok",
+      "profit": -31047045.0,
+      "mdd": 156.11,
+      "trades": 2763
+    },
+    {
+      "gen_no": 17,
+      "label": "TMAP stop_loss=-5.0",
+      "param": "stop_loss",
+      "value": -5.0,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_017_B",
+      "status": "ok",
+      "profit": -29593794.0,
+      "mdd": 148.9,
+      "trades": 2756
+    },
+    {
+      "gen_no": 18,
+      "label": "TMAP max_hold_sec=30",
+      "param": "max_hold_sec",
+      "value": 30,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_018_B",
+      "status": "ok",
+      "profit": -41691853.0,
+      "mdd": 282.17,
+      "trades": 2943
+    },
+    {
+      "gen_no": 19,
+      "label": "TMAP max_hold_sec=120",
+      "param": "max_hold_sec",
+      "value": 120,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_019_B",
+      "status": "ok",
+      "profit": -29574959.0,
+      "mdd": 150.61,
+      "trades": 2805
+    },
+    {
+      "gen_no": 20,
+      "label": "TMAP max_hold_sec=180",
+      "param": "max_hold_sec",
+      "value": 180,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_020_B",
+      "status": "ok",
+      "profit": -31915651.0,
+      "mdd": 162.87,
+      "trades": 2805
+    },
+    {
+      "gen_no": 21,
+      "label": "TMAP max_hold_sec=300",
+      "param": "max_hold_sec",
+      "value": 300,
+      "buy_name": "TMAP_llmgen_open_gap_oneway_flow_9001_021_B",
+      "status": "ok",
+      "profit": -29501169.0,
+      "mdd": 121.25,
+      "trades": 2805
+    }
+  ]
+}

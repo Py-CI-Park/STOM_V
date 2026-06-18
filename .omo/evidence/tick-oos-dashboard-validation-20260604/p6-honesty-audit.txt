@@ -1,0 +1,12 @@
+﻿timestamp=2026-06-04T11:37:59.3774117+09:00
+rg_verdict_and_forbidden_begin
+4:- Final Verdict: `REJECT_CANDIDATE`
+50:- Not satisfied. The AI candidate does not beat the seed reference across fixed OOS splits, so no human-level or seed-superior claim is allowed.
+65:- `final_approval`: not invoked.
+66:- `export_winner`: not invoked.
+71:## Final Verdict
+72:- Final Verdict: `REJECT_CANDIDATE`
+rg_verdict_and_forbidden_end
+protected_status_begin
+protected_status_end
+owned_resources=none spawned for P6

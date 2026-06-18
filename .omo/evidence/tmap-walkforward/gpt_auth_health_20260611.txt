@@ -1,0 +1,6 @@
+gpt_auth 충전/가용성 확인 (2026-06-11, ultragoal G007 선행 점검)
+- inject_env() + start_proxy_sync() -> proxy_started: True
+- chat(system+user, max_tokens=2000) -> reply: PONG
+- usage: prompt_tokens=28 completion_tokens=31 total_tokens=59
+- HTTP 429(usage_limit) 미발생 — 6/10 p0 정책의 차단 사유 해소 확인
+- 주의: 프록시는 system 메시지 없으면 HTTP 400 "Instructions are required"

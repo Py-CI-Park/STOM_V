@@ -1,0 +1,38 @@
+# Final Plan Compliance
+
+- Timestamp: `2026-06-04T09:38:11.649735+00:00`
+- Open checkboxes: `<empty>`
+- Boulder status: completed.
+- Final verdict: `REJECT_CANDIDATE`.
+
+## Evidence Map
+- P0: `p0-safety-snapshot.txt`, `p0-canonical-reread.txt`
+- P1: `p1-failure-taxonomy.md`, `p1-generation-quality-policy.md`, `p1-generation-quality-policy.json`
+- P2: source toggle implementation, `tests/unit/test_sparse_positive_prompt.py`, `p2-red-green-tests.txt`, `p2-regression-tests.txt`
+- P3: `p3-config-manifest.json`, `p3-smoke-off-config.json`, `p3-smoke-on-config.json`, `p3-train-config.json`, `p3-selector-freeze-procedure.md`
+- P4: `p4-smoke-off-log.txt`, `p4-smoke-on-log.txt`, `p4-smoke-comparison.json`, `p4-smoke-comparison.md`, `p4-prompt-logging-check.txt`
+- P5: `p5-train-log.txt`, `p5-selected-candidate.json`, `p5-selector-freeze.md`, `p5-train-summary.json`
+- P6: `p6-config-manifest.json`, `p6-run-exits.json`, `p6-oos-comparison.json`, `p6-oos-comparison.md`, `p6-identity-check.txt`
+- P7: `p7-decision-card.md`, `p7-verification.txt`, `p7-honesty-audit.txt`
+- F1: `final-plan-compliance.txt`
+- F2: `final-verification.txt`
+- F3: `final-dashboard-qa.txt`, `final-dashboard-cleanup.txt`
+- F4: `final-scope-fidelity.txt`
+
+## Result
+- Selected P5 candidate: gen `4`, bucket `sparse_positive`, profit `1,155,715`, MDD `9.12`, trades `124`.
+- OOS pass rule: `false`; combined AI profit `134,264` vs seed `2,032,445`.
+
+## Forbidden Action Absence
+- `final_approval`: not invoked.
+- `export_winner`: not invoked.
+- `USER_ACK`: not created.
+- `KHOPENAPI`: not connected/logged in.
+- `taskkill`: not used.
+- Hard-gate edits: none.
+- Official backtest engine edits: none.
+- `backtest/graph` edits: none.
+
+## Source Scope
+- Edited prompt/config/controller wiring only for default-OFF `sparse_positive_prompt_enabled` plus unit tests.
+- No commit was created by this start-work execution.

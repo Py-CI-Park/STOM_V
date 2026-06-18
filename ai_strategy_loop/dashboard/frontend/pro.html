@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STOM 리서치 프로 · 전체화면 분석</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css?v=20260617a" />
+  <script src="vendor-react.js?v=20260603a"></script>
+  <script src="vendor-react-dom.js?v=20260603a"></script>
+  <!-- Phase14.7: 런타임 babel 제거. 운영 컴포넌트는 index.html 과 동일한 컴파일 번들(bundle/app.js)
+       을 공유한다(ProPage 포함 전 컴포넌트 정의). 이 페이지는 App 자동 마운트를 끄고 직접
+       ProPage 를 마운트한다. stom-ui.js(모듈)가 window.fmt*·_axisTicks 를 먼저 세팅. -->
+  <script type="module" src="bundle/stom-ui.js?v=f41f5701"></script>
+  <script>window.__STOM_NO_AUTO_MOUNT__ = true;</script>
+</head>
+<body>
+  <!-- Phase9(2026-06-13) — SPA 6탭 통합: 리서치 프로 본문은 dashboard-pages.jsx 전역
+       window.ProPage 가 담당한다(app.jsx 의 인페이지 탭과 단일 정본). 직접 URL
+       (/ui/pro.html)도 같은 전역을 마운트해 로직 중복 없이 동작한다. -->
+  <div style="padding:8px 18px 0;font-family:'IBM Plex Sans',system-ui,sans-serif;">
+    <a href="/ui/" style="color:#7ab;font-size:12px;">← 운영 대시보드로</a>
+  </div>
+  <div id="root">
+    <div style="padding:40px;font-family:system-ui,sans-serif;color:#9fb0c0;background:#0c1014;min-height:100vh;">
+      리서치 프로 로딩 중… (지속 시 Ctrl+Shift+R)
+    </div>
+  </div>
+
+  <!-- 컴파일 번들(defer) — stom-ui 모듈 뒤에 실행. 이후 DOMContentLoaded 에서 ProPage 마운트. -->
+  <script defer src="bundle/app.js?v=17da3e52"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      ReactDOM.createRoot(document.getElementById("root"))
+        .render(React.createElement(window.ProPage, { baseUrl: window.location.origin }));
+    });
+  </script>
+</body>
+</html>

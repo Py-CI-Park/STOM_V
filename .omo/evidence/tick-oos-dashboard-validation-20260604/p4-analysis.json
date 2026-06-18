@@ -1,0 +1,492 @@
+{
+  "task": "P4 dashboard research analysis summary/index",
+  "timestamp": "2026-06-04T11:18:57.588792+09:00",
+  "base": "http://127.0.0.1:8799",
+  "owned_dashboard_pid": 48668,
+  "run_id": "tick_oos_dash_p3_train_2023_2025_20260604",
+  "selected_gen": 4,
+  "endpoint_statuses": [
+    {
+      "name": "health",
+      "status": 200,
+      "bytes": 36,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p4-raw/health.json"
+    },
+    {
+      "name": "run_state",
+      "status": 200,
+      "bytes": 4249,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p4-raw/run_state.json"
+    },
+    {
+      "name": "variable_correlation",
+      "status": 200,
+      "bytes": 16689,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p4-raw/variable_correlation.json"
+    },
+    {
+      "name": "edge_ratio",
+      "status": 200,
+      "bytes": 2747,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p4-raw/edge_ratio.json"
+    },
+    {
+      "name": "feature_importance",
+      "status": 200,
+      "bytes": 11368,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p4-raw/feature_importance.json"
+    },
+    {
+      "name": "strategy_diff",
+      "status": 200,
+      "bytes": 9755,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p4-raw/strategy_diff.json"
+    },
+    {
+      "name": "prompts",
+      "status": 200,
+      "bytes": 3134,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p4-raw/prompts.json"
+    },
+    {
+      "name": "research_docs",
+      "status": 200,
+      "bytes": 15254,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p4-raw/research_docs.json"
+    },
+    {
+      "name": "ai_context_pack",
+      "status": 200,
+      "bytes": 2124,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p4-raw/ai_context_pack.json"
+    }
+  ],
+  "raw_payload_dir": ".omo/evidence/tick-oos-dashboard-validation-20260604/p4-raw",
+  "run_summary": {
+    "status": "complete",
+    "current_gen": 5,
+    "max_generations": 6,
+    "best": {
+      "gen": 4,
+      "graded_score": 0.35558047094767675,
+      "gate_passed": false,
+      "buy_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_buy",
+      "sell_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_sell"
+    },
+    "winner": null,
+    "generation_count": 6
+  },
+  "selected_generation": {
+    "gen_no": 4,
+    "status": "ok",
+    "graded_score": 0.35558047094767675,
+    "gate_passed": false,
+    "gate_reason": "total_profit -6.719e+04 <= 0",
+    "trade_count": 287,
+    "daily_avg_trades": 0.4,
+    "mdd": 23.52,
+    "profit": -67190.0,
+    "total_profit_pct": -1.34,
+    "strategy_gist": "if 관심종목 != 1:",
+    "payoff_ratio": 1.2144322215703989,
+    "give_back_rate": 0.0,
+    "calmar": -0.0195578231292517,
+    "uptrend_r2": 0.15261388506794654,
+    "dispersion_term": 1.0,
+    "max_hold_count": 1.0,
+    "hypotheses": []
+  },
+  "global_edge": {
+    "count": 7967,
+    "win_rate": 0.4671771055604368,
+    "avg_return": -0.18197941508723484,
+    "total_profit": -72411833.0,
+    "mean_mfe": 1.252329609639764,
+    "mean_mae": 1.2402849253169326,
+    "edge_ratio": 1.0097112236688306,
+    "mae_efficiency": -0.14531271454931238,
+    "mean_mae_losers": 1.79527679623086,
+    "mean_mae_winners": 0.6073078989790436
+  },
+  "top_correlations": [
+    {
+      "feature": "B_회전율",
+      "correlation": -0.0715435806971795,
+      "abs_correlation": 0.0715435806971795,
+      "n": 7967
+    },
+    {
+      "feature": "B_체결강도",
+      "correlation": 0.06740604310511766,
+      "abs_correlation": 0.06740604310511766,
+      "n": 7967
+    },
+    {
+      "feature": "B_시분초",
+      "correlation": -0.052572466229684804,
+      "abs_correlation": 0.052572466229684804,
+      "n": 7967
+    },
+    {
+      "feature": "B_당일거래대금",
+      "correlation": -0.04745801016950903,
+      "abs_correlation": 0.04745801016950903,
+      "n": 7967
+    },
+    {
+      "feature": "B_등락율",
+      "correlation": -0.04300994324542054,
+      "abs_correlation": 0.04300994324542054,
+      "n": 7967
+    },
+    {
+      "feature": "B_시가총액",
+      "correlation": 0.038999570700554,
+      "abs_correlation": 0.038999570700554,
+      "n": 7967
+    },
+    {
+      "feature": "B_매도총잔량",
+      "correlation": 0.02198459740863762,
+      "abs_correlation": 0.02198459740863762,
+      "n": 7967
+    },
+    {
+      "feature": "B_매수총잔량",
+      "correlation": 0.01664810383056884,
+      "abs_correlation": 0.01664810383056884,
+      "n": 7967
+    }
+  ],
+  "top_features": [
+    {
+      "feature": "B_시분초",
+      "cohens_d": -0.07731948750955796,
+      "mean_win": 90827.59188608275,
+      "mean_lose": 90849.62779740871,
+      "win_rate_top_q": 0.44466700050075114,
+      "win_rate_bot_q": 0.5005015045135406,
+      "n": 7967
+    },
+    {
+      "feature": "B_체결강도",
+      "cohens_d": 0.06420142275556577,
+      "mean_win": 145.0923105857066,
+      "mean_lose": 142.89000942285043,
+      "win_rate_top_q": 0.4789156626506024,
+      "win_rate_bot_q": 0.4430506773707978,
+      "n": 7967
+    },
+    {
+      "feature": "B_거래대금증감",
+      "cohens_d": -0.06339785085433962,
+      "mean_win": -63981916100.51451,
+      "mean_lose": -58206399927.307655,
+      "win_rate_top_q": 0.44779116465863456,
+      "win_rate_bot_q": 0.48042168674698793,
+      "n": 7967
+    },
+    {
+      "feature": "B_시가총액",
+      "cohens_d": 0.0472147259283798,
+      "mean_win": 3651.532778076303,
+      "mean_lose": 3555.5828032979975,
+      "win_rate_top_q": 0.4807017543859649,
+      "win_rate_bot_q": 0.45582329317269077,
+      "n": 7967
+    },
+    {
+      "feature": "B_매도총잔량",
+      "cohens_d": -0.02218862986601175,
+      "mean_win": 52913.629500268675,
+      "mean_lose": 54832.76325088339,
+      "win_rate_top_q": 0.45883534136546184,
+      "win_rate_bot_q": 0.45532128514056225,
+      "n": 7967
+    },
+    {
+      "feature": "B_회전율",
+      "cohens_d": -0.016009500693034844,
+      "mean_win": 4.128825900053735,
+      "mean_lose": 4.203722025912839,
+      "win_rate_top_q": 0.45914786967418547,
+      "win_rate_bot_q": 0.47878182725911134,
+      "n": 7967
+    },
+    {
+      "feature": "B_전일동시간비",
+      "cohens_d": -0.01358455047202253,
+      "mean_win": 1790.3801746372917,
+      "mean_lose": 2133.038113074205,
+      "win_rate_top_q": 0.4806823883592574,
+      "win_rate_bot_q": 0.47666833918715507,
+      "n": 7967
+    },
+    {
+      "feature": "B_등락율",
+      "cohens_d": -0.006295058961115683,
+      "mean_win": 6.144344438473939,
+      "mean_lose": 6.160358068315666,
+      "win_rate_top_q": 0.4784569138276553,
+      "win_rate_bot_q": 0.4732366183091546,
+      "n": 7967
+    }
+  ],
+  "top_winning_segments": [
+    {
+      "segment_type": "change",
+      "label": "약상승",
+      "count": 873,
+      "win_rate": 0.4753722794959908,
+      "avg_return": -0.10670103092783506,
+      "total_profit": -4653501.0,
+      "edge_ratio": 1.0062596502942036,
+      "mean_mae": 1.0979610538373425
+    },
+    {
+      "segment_type": "cross",
+      "label": "0905-0910×중형",
+      "count": 2914,
+      "win_rate": 0.47803706245710365,
+      "avg_return": -0.13266643788606725,
+      "total_profit": -19295763.0,
+      "edge_ratio": 1.093974997591739,
+      "mean_mae": 1.1043548387096775
+    },
+    {
+      "segment_type": "time",
+      "label": "0905-0910",
+      "count": 5623,
+      "win_rate": 0.4746576560554864,
+      "avg_return": -0.13354081451182642,
+      "total_profit": -37490618.0,
+      "edge_ratio": 1.08606786258887,
+      "mean_mae": 1.1814209496709942
+    },
+    {
+      "segment_type": "cross",
+      "label": "0905-0910×소형",
+      "count": 2709,
+      "win_rate": 0.4710225175341454,
+      "avg_return": -0.1344813584348468,
+      "total_profit": -18194855.0,
+      "edge_ratio": 1.0786384976525822,
+      "mean_mae": 1.2643189368770764
+    },
+    {
+      "segment_type": "change",
+      "label": "상승",
+      "count": 3167,
+      "win_rate": 0.47552889169561097,
+      "avg_return": -0.15196400378907485,
+      "total_profit": -24053253.0,
+      "edge_ratio": 1.0227469031192942,
+      "mean_mae": 1.1552005052099779
+    }
+  ],
+  "top_losing_segments": [
+    {
+      "segment_type": "cross",
+      "label": "0910-0915×소형",
+      "count": 1116,
+      "win_rate": 0.44086021505376344,
+      "avg_return": -0.3366845878136201,
+      "total_profit": -18787429.0,
+      "edge_ratio": 0.8739785135058858,
+      "mean_mae": 1.4287544802867385
+    },
+    {
+      "segment_type": "change",
+      "label": "초급등",
+      "count": 755,
+      "win_rate": 0.4821192052980132,
+      "avg_return": -0.30796026490066225,
+      "total_profit": -11622718.0,
+      "edge_ratio": 1.0095734288505371,
+      "mean_mae": 1.4236423841059604
+    },
+    {
+      "segment_type": "time",
+      "label": "0910-0915",
+      "count": 2344,
+      "win_rate": 0.4492320819112628,
+      "avg_return": -0.29817832764505114,
+      "total_profit": -34921215.0,
+      "edge_ratio": 0.8530674259315302,
+      "mean_mae": 1.3814931740614336
+    },
+    {
+      "segment_type": "cross",
+      "label": "0910-0915×중형",
+      "count": 1228,
+      "win_rate": 0.4568403908794788,
+      "avg_return": -0.2631840390879479,
+      "total_profit": -16133786.0,
+      "edge_ratio": 0.8327827562920919,
+      "mean_mae": 1.338542345276873
+    },
+    {
+      "segment_type": "change",
+      "label": "급등",
+      "count": 3172,
+      "win_rate": 0.4530264817150063,
+      "avg_return": -0.2026796973518285,
+      "total_profit": -32082361.0,
+      "edge_ratio": 0.9991526354231812,
+      "mean_mae": 1.3207629255989912
+    }
+  ],
+  "prompt_status": {
+    "prompt_count": 2,
+    "reason": null,
+    "segment_feedback": "observed",
+    "prompt_ids": [
+      {
+        "prompt_id": 193,
+        "kind": "buy",
+        "attempt": 1,
+        "user_text_len": 6985,
+        "injected_features": {
+          "timeframe": "tick",
+          "has_base_code": true,
+          "has_crossover": false,
+          "has_meta_seed": false,
+          "dispersion_prompt_enabled": false,
+          "require_liquidity_gate": false,
+          "mdd_control_enabled": false,
+          "exit_edge_feedback_enabled": false,
+          "encourage_time_dispersion": true,
+          "require_filter_gates": true,
+          "classification_generation_enabled": true,
+          "target_daily_trades": null,
+          "min_filter_categories": 5,
+          "has_hypothesis_feedback": false,
+          "has_few_shot": true,
+          "has_segment_avoid": true,
+          "time_window_bounds": [
+            90500,
+            90800
+          ],
+          "time_window_span_sec": 180,
+          "time_window_noop": false
+        }
+      },
+      {
+        "prompt_id": 194,
+        "kind": "sell",
+        "attempt": 1,
+        "user_text_len": 10525,
+        "injected_features": {
+          "timeframe": "tick",
+          "has_base_code": true,
+          "has_crossover": false,
+          "has_meta_seed": false,
+          "dispersion_prompt_enabled": false,
+          "require_liquidity_gate": false,
+          "mdd_control_enabled": false,
+          "exit_edge_feedback_enabled": false,
+          "encourage_time_dispersion": true,
+          "require_filter_gates": true,
+          "classification_generation_enabled": true,
+          "target_daily_trades": null,
+          "min_filter_categories": 5,
+          "has_hypothesis_feedback": false,
+          "has_few_shot": true,
+          "has_segment_avoid": false,
+          "time_window_bounds": [
+            92800,
+            null
+          ],
+          "time_window_span_sec": 21720,
+          "time_window_noop": false
+        }
+      }
+    ]
+  },
+  "strategy_diff_status": {
+    "status": 200,
+    "bytes": 9755,
+    "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p4-raw/strategy_diff.json"
+  },
+  "ai_context": {
+    "period": "2023-01-01 ~ 2025-12-31",
+    "timeframe": "tick",
+    "best": {
+      "gen_no": 4,
+      "graded_score": 0.35558047094767675,
+      "profit": -67190.0
+    },
+    "winner": null,
+    "prompt_count": 2,
+    "verdict_note": "Final Verdict: REJECT_CANDIDATE; prior candidate remains rejected.",
+    "forbidden_actions": [
+      "Do not approve, deploy, or write production strategy storage from this context.",
+      "Do not place live orders or advance V3K gates.",
+      "Do not claim human-level or seed-superior performance without fresh OOS evidence."
+    ]
+  },
+  "research_docs": {
+    "count": 66,
+    "sample": [
+      {
+        "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
+        "title": "Wide v1 연구 흐름과 CLI 구조 리뷰",
+        "category": "condition_research",
+        "updated_at": "2026-04-24T13:40:23.640339+00:00",
+        "size": 6750
+      },
+      {
+        "id": "docs/research/condition_research/README.md",
+        "title": "Condition Research",
+        "category": "condition_research",
+        "updated_at": "2026-04-20T09:07:12.342015+00:00",
+        "size": 931
+      },
+      {
+        "id": "docs/research/condition_research/generated_conditions/2026-04-19_research_test_tick_wide_conditions.md",
+        "title": "Research Test Tick Wide Conditions",
+        "category": "condition_research",
+        "updated_at": "2026-04-20T09:07:12.344037+00:00",
+        "size": 1182
+      },
+      {
+        "id": "docs/research/condition_research/mvp/2026-04-26_wide_v1_mvp_freeze.md",
+        "title": "Wide v1 MVP freeze",
+        "category": "condition_research",
+        "updated_at": "2026-04-26T00:48:53.245841+00:00",
+        "size": 2239
+      },
+      {
+        "id": "docs/research/condition_research/mvp/2026-04-26_wide_v1_operational_reproduction.md",
+        "title": "Wide v1 operational reproduction",
+        "category": "condition_research",
+        "updated_at": "2026-04-26T00:48:53.247895+00:00",
+        "size": 3817
+      },
+      {
+        "id": "docs/research/condition_research/mvp/2026-04-26_wide_v1_post_mvp_risk_backlog.md",
+        "title": "Wide v1 post-MVP risk backlog",
+        "category": "condition_research",
+        "updated_at": "2026-04-26T10:43:38.302677+00:00",
+        "size": 3028
+      },
+      {
+        "id": "docs/research/condition_research/mvp/2026-04-26_wide_v1_post_mvp_roadmap.md",
+        "title": "Wide v1 post-MVP roadmap",
+        "category": "condition_research",
+        "updated_at": "2026-04-26T10:43:38.304188+00:00",
+        "size": 3632
+      },
+      {
+        "id": "docs/research/condition_research/mvp/2026-04-26_wide_v1_release_checklist.md",
+        "title": "Wide v1 release checklist",
+        "category": "condition_research",
+        "updated_at": "2026-04-26T00:48:53.248902+00:00",
+        "size": 1659
+      }
+    ]
+  },
+  "segment_feedback_classification": "observed",
+  "forbidden_actions_invoked": false,
+  "note": "API payloads are captured as raw UTF-8 files under p4-raw; this JSON is a valid index and extracted analysis summary."
+}

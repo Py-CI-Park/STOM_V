@@ -1,0 +1,20 @@
+{
+  "status": "ok",
+  "timeout": false,
+  "pid": 119376,
+  "returncode": 0,
+  "command": [
+    "C:\\Python\\64\\Python31313\\python.exe",
+    "-m",
+    "ai_strategy_loop.controller.loop",
+    "--config-json",
+    ".omo\\evidence\\tick-seed-warm-timeout-root-cause-20260605\\p5-control-902-905-config.json",
+    "--run-id",
+    "tick_seed_timeout_control_902_905_warm_20260605"
+  ],
+  "cwd": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+  "wall_cap": 210,
+  "elapsed_seconds": 54.436,
+  "stdout_path": ".omo\\evidence\\tick-seed-warm-timeout-root-cause-20260605\\p5-control-902-905-result.stdout.txt",
+  "stderr_path": ".omo\\evidence\\tick-seed-warm-timeout-root-cause-20260605\\p5-control-902-905-result.stderr.txt"
+}

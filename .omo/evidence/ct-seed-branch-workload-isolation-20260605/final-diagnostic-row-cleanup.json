@@ -1,0 +1,31 @@
+{
+  "status": "ok",
+  "loop_db": "ai_strategy_loop\\state\\loop_strategies.db",
+  "deleted": [
+    {
+      "table": "stockbuy",
+      "name": "CT_DIAG_CTB_902905_20260605",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "table": "stocksell",
+      "name": "CT_DIAG_CTS_902905_20260605",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "table": "stockbuy",
+      "name": "CT_DIAG_CTLB_902905_20260605",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "table": "stocksell",
+      "name": "CT_DIAG_CTLS_902905_20260605",
+      "before": 1,
+      "after": 0
+    }
+  ],
+  "remaining": []
+}

@@ -1,0 +1,39 @@
+[SWEEP] template=seed_902905_r2full points=23/23
+[SWEEP] resume: 평가 대상 23점 / 스킵 0점
+[SWEEP] prepare status=ok back_count=2285 elapsed=261s
+[SWEEP] gen0 TMAP __default__ profit=10,965,479 mdd=10.04 trades=272 (147s)
+[SWEEP] gen1 TMAP turnover_a=1.5 profit=9,915,546 mdd=7.72 trades=340 (147s)
+[SWEEP] gen2 TMAP turnover_a=3 profit=7,202,550 mdd=10.38 trades=232 (148s)
+[SWEEP] gen3 TMAP ogap_lo_a=0.0 profit=10,938,253 mdd=10.06 trades=273 (148s)
+[SWEEP] gen4 TMAP ogap_lo_a=1.0 profit=10,527,311 mdd=10.30 trades=269 (148s)
+[SWEEP] gen5 TMAP ogap_hi_a=4.0 profit=10,743,910 mdd=9.29 trades=261 (147s)
+[SWEEP] gen6 TMAP ogap_hi_a=9.0 profit=10,965,479 mdd=10.04 trades=272 (147s)
+[SWEEP] gen7 TMAP ogap_lo_b=2.0 profit=11,118,041 mdd=10.22 trades=302 (149s)
+[SWEEP] gen8 TMAP ogap_lo_b=4.0 profit=10,369,242 mdd=9.64 trades=237 (148s)
+[SWEEP] gen9 TMAP ogap_hi_b=6.0 profit=8,563,783 mdd=7.49 trades=201 (148s)
+[SWEEP] gen10 TMAP ogap_hi_b=12.0 profit=10,106,017 mdd=12.65 trades=306 (148s)
+[SWEEP] gen11 TMAP burst_a=2.0 profit=11,134,657 mdd=6.78 trades=307 (148s)
+[SWEEP] gen12 TMAP burst_a=4.5 profit=7,879,376 mdd=11.08 trades=248 (148s)
+[SWEEP] gen13 TMAP burst_b=1.5 profit=10,804,466 mdd=10.45 trades=287 (148s)
+[SWEEP] gen14 TMAP burst_b=3.0 profit=9,127,869 mdd=10.99 trades=239 (148s)
+[SWEEP] gen15 TMAP atk_a=0.1 profit=10,936,449 mdd=10.06 trades=275 (149s)
+[SWEEP] gen16 TMAP atk_a=0.35 profit=10,029,996 mdd=9.53 trades=265 (147s)
+[SWEEP] gen17 TMAP atk_b=0.15 profit=8,185,434 mdd=13.21 trades=366 (148s)
+[SWEEP] gen18 TMAP atk_b=0.5 profit=7,347,695 mdd=10.64 trades=195 (148s)
+[SWEEP] gen19 TMAP dmoney_a=250 profit=10,965,479 mdd=10.04 trades=272 (148s)
+[SWEEP] gen20 TMAP dmoney_a=1000 profit=10,965,479 mdd=10.04 trades=272 (147s)
+[SWEEP] gen21 TMAP dmoney_b=2500 profit=9,089,357 mdd=14.79 trades=395 (148s)
+[SWEEP] gen22 TMAP dmoney_b=10000 profit=6,691,573 mdd=10.73 trades=134 (148s)
+[SWEEP] baseline profit=10,965,479 mdd=10.04
+[SWEEP] dmoney_a: plateau_score=2.0 center=1000.0 width=2 positive=1.0
+[SWEEP] ogap_hi_a: plateau_score=1.9798 center=9.0 width=2 positive=1.0
+[SWEEP] ogap_lo_b: plateau_score=1.9595 center=4.0 width=2 positive=1.0
+[SWEEP] ogap_lo_a: plateau_score=1.9576 center=1.0 width=2 positive=1.0
+[SWEEP] atk_a: plateau_score=1.912 center=0.35 width=2 positive=1.0
+[SWEEP] burst_b: plateau_score=1.8177 center=3.0 width=2 positive=1.0
+[SWEEP] burst_a: plateau_score=1.734 center=4.5 width=2 positive=1.0
+[SWEEP] ogap_hi_b: plateau_score=1.7026 center=12.0 width=2 positive=1.0
+[SWEEP] turnover_a: plateau_score=1.5611 center=3.0 width=2 positive=1.0
+[SWEEP] dmoney_b: plateau_score=1.4391 center=10000.0 width=2 positive=1.0
+[SWEEP] atk_b: plateau_score=1.4165 center=0.5 width=2 positive=1.0
+[SWEEP] done

@@ -1,0 +1,202 @@
+﻿G001 C003 Regression and Safety Transcript
+timestamp=2026-06-06T09:46:02
+cleanup_scope=reused live dashboard PID 114272; no unscoped process kill; browser proof closed its browser session
+
+=== COMMAND: targeted pytest bundle ===
+python -m pytest tests/unit/test_prompt_logging.py tests/unit/test_dashboard_ai_context_pack.py tests/unit/test_dashboard_prompts.py tests/unit/test_dashboard_strategy_diff.py tests/unit/test_dashboard_strategy_prompt_frontend.py tests/unit/test_variable_correlation.py tests/unit/test_dashboard_route_parity.py -q
+......................................                                   [100%]
+38 passed in 12.87s
+EXIT_CODE: 0
+
+=== COMMAND: git diff --check ===
+git.exe : warning: in the working copy of '.omo/boulder.json'
+, LF will be replaced by CRLF the next time Git touches it
+At line:26 char:8
++ $out = & git diff --check 2>&1
++        ~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the 
+   ... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+warning: in the working copy of '.omo/plans/tick-sparse-posit
+ive-generation-improvement-20260604.md', LF will be replaced 
+by CRLF the next time Git touches it
+warning: in the working copy of '.omo/start-work/ledger.jsonl
+', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/brain/gener
+ator.py', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'ai_strategy_loop/brain/promp
+t.py', LF will be replaced by CRLF the next time Git touches 
+it
+warning: in the working copy of 'ai_strategy_loop/config.py',
+ LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/controller/
+_candidate_selection_artifact.py', LF will be replaced by CRL
+F the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/controller/
+_candidate_selection_core.py', LF will be replaced by CRLF th
+e next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/controller/
+candidate_selection.py', LF will be replaced by CRLF the next
+ time Git touches it
+warning: in the working copy of 'ai_strategy_loop/controller/
+contract.py', LF will be replaced by CRLF the next time Git t
+ouches it
+warning: in the working copy of 'ai_strategy_loop/controller/
+loop.py', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'ai_strategy_loop/controller/
+state.py', LF will be replaced by CRLF the next time Git touc
+hes it
+warning: in the working copy of 'ai_strategy_loop/dashboard/a
+pp.py', LF will be replaced by CRLF the next time Git touches
+ it
+warning: in the working copy of 'ai_strategy_loop/dashboard/f
+rontend/ai-context.jsx', LF will be replaced by CRLF the next
+ time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/f
+rontend/app.jsx', LF will be replaced by CRLF the next time G
+it touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/f
+rontend/chart.jsx', LF will be replaced by CRLF the next time
+ Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/f
+rontend/code-viewer.jsx', LF will be replaced by CRLF the nex
+t time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/f
+rontend/engine.jsx', LF will be replaced by CRLF the next tim
+e Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/f
+rontend/index.html', LF will be replaced by CRLF the next tim
+e Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/f
+rontend/panels.jsx', LF will be replaced by CRLF the next tim
+e Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/f
+rontend/phase-detail.jsx', LF will be replaced by CRLF the ne
+xt time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/f
+rontend/research-lab.jsx', LF will be replaced by CRLF the ne
+xt time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/f
+rontend/run-compare.jsx', LF will be replaced by CRLF the nex
+t time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/f
+rontend/strategy-inspector.jsx', LF will be replaced by CRLF 
+the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/f
+rontend/styles.css', LF will be replaced by CRLF the next tim
+e Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/f
+rontend/table.jsx', LF will be replaced by CRLF the next time
+ Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/r
+esearch_api.py', LF will be replaced by CRLF the next time Gi
+t touches it
+warning: in the working copy of 'ai_strategy_loop/fitness/cor
+relation.py', LF will be replaced by CRLF the next time Git t
+ouches it
+warning: in the working copy of 'ai_strategy_loop/launch_conf
+ig.py', LF will be replaced by CRLF the next time Git touches
+ it
+warning: in the working copy of 'docs/research/condition_rese
+arch/wiki/metrics_glossary.md', LF will be replaced by CRLF t
+he next time Git touches it
+warning: in the working copy of 'tests/unit/test_dashboard_ai
+_context_pack.py', LF will be replaced by CRLF the next time 
+Git touches it
+warning: in the working copy of 'tests/unit/test_dashboard_ba
+cktest_detail.py', LF will be replaced by CRLF the next time 
+Git touches it
+warning: in the working copy of 'tests/unit/test_dashboard_ch
+art_explanations.py', LF will be replaced by CRLF the next ti
+me Git touches it
+warning: in the working copy of 'tests/unit/test_dashboard_ha
+ll_of_fame.py', LF will be replaced by CRLF the next time Git
+ touches it
+warning: in the working copy of 'tests/unit/test_dashboard_ph
+ase_mapping.py', LF will be replaced by CRLF the next time Gi
+t touches it
+warning: in the working copy of 'tests/unit/test_dashboard_pr
+ofit_codeview.py', LF will be replaced by CRLF the next time 
+Git touches it
+warning: in the working copy of 'tests/unit/test_dashboard_re
+search_lab_frontend.py', LF will be replaced by CRLF the next
+ time Git touches it
+warning: in the working copy of 'tests/unit/test_dashboard_ru
+n_compare_frontend.py', LF will be replaced by CRLF the next 
+time Git touches it
+warning: in the working copy of 'tests/unit/test_dashboard_st
+rategy_diff.py', LF will be replaced by CRLF the next time Gi
+t touches it
+warning: in the working copy of 'tests/unit/test_dashboard_st
+rategy_prompt_frontend.py', LF will be replaced by CRLF the n
+ext time Git touches it
+warning: in the working copy of 'tests/unit/test_prompt_loggi
+ng.py', LF will be replaced by CRLF the next time Git touches
+ it
+warning: in the working copy of 'tests/unit/test_research_wik
+i_docs.py', LF will be replaced by CRLF the next time Git tou
+ches it
+warning: in the working copy of 'tests/unit/test_variable_cor
+relation.py', LF will be replaced by CRLF the next time Git t
+ouches it
+EXIT_CODE: 0
+
+=== COMMAND: python scripts/verify_nonrelease_sync.py ===
+[OK] ��ũƮ���� .pyd ������ �����ϴ�.
+[OK] �ڷ��׷� qlist ����� ���� MainWindow ������ ��ġ�մϴ�.
+[OK] MainWindow�� �ڷ��׷� ��Ÿ���� �����մϴ�.
+[OK] ���� ���� ���İ� TelegramProcessAlive ��θ� ����մϴ�.
+[OK] �ڷ��׷� alive helper�� �����մϴ�.
+[OK] Jisu cleanup matches V2.70 removal.
+[OK] Shutdown cleanup matches current MainWindow runtime.
+[OK] Shutdown persists dialog geometry before closing dialogs.
+[OK] Shutdown hides Qt windows before bounded child cleanup.
+[OK] Shutdown does not raise SystemExit inside Qt closeEvent.
+[OK] Shutdown query/sound child wait is bounded with terminate fallback.
+[OK] Shutdown backtest stop acknowledgement wait is bounded with terminate fallback.
+[OK] BackTest ���μ��� �����ڰ� ���� ���� ���� ����� �����մϴ�.
+[OK] BackTest ���� ���ڰ� backQ ��ȸ ���޷� �������� �ʽ��ϴ�.
+[OK] WebCrawling runtime wiring matches QThread contract.
+[OK] static.py compatibility exports match runtime contract.
+[OK] WebCrawling stop contract includes timeout and cancellation guards.
+[OK] Key loading safety guard is present.
+[OK] Kiwoom P/L rounding matches expected loss math.
+[OK] ������ ��ũƮ������ �ø���Ű UI ������ ���ܵ˴ϴ�.
+[OK] ���� ������ ��ũƮ�� �ø���Ű ��å�� �����ϴ�.
+[OK] dict_set ���簡 ������ ��ũƮ�� �ø���Ű ��å�� �����ϴ�.
+[OK] legacy utility/setting.py�� ������ ��ũƮ�� �ø���Ű ��å�� �����ϴ�.
+
+��� ������ ��ũƮ�� ����ȭ ���巹�� �˻縦 ����߽��ϴ�.
+EXIT_CODE: 0
+
+=== COMMAND: protected path git status ===
+git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json _v3k_sidecar/v3k_gui_settings.json
+(no protected path changes reported)
+EXIT_CODE: 0
+
+=== HTTP: prompts missing run_id graceful response ===
+http://127.0.0.1:8770/prompts
+HTTP_STATUS: 200
+{"error":"run_id required","prompts":[]}
+
+=== HTTP: strategy_diff missing run_id graceful response ===
+http://127.0.0.1:8770/strategy_diff?gen_no=1
+HTTP_STATUS: 200
+{"ok":true,"run_id":null,"gen_no":1,"buy_name":"","sell_name":"","buy_code":"","sell_code":"","base_gen":null,"base_buy_name":null,"base_sell_name":null,"base_buy_code":"","base_sell_code":"","buy_diff":[],"sell_diff":[],"prompts":[],"diff_status":"missing_run","reason":"missing_run"}
+
+=== HTTP: ai_context_pack missing run_id graceful response ===
+http://127.0.0.1:8770/ai_context_pack
+HTTP_STATUS: 200
+{"error":"run_id required"}
+
+=== HTTP: variable_correlation missing csv graceful response ===
+http://127.0.0.1:8770/variable_correlation?run_id=missing&gen_no=999
+HTTP_STATUS: 200
+{"error":"no csv_path for runs=['missing']"}
+
+=== CLEANUP RECEIPT ===
+No temporary dashboard process was spawned for C003. Existing dashboard PID 114272 remains running for the user-facing UI. HTTP checks used transient requests only.
+
+C003_STATUS: pass

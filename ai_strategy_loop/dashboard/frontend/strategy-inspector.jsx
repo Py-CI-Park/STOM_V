@@ -52,6 +52,19 @@ function DiffBlock({ title, lines }) {
   );
 }
 
+function CodeBlock({ title, code }) {
+  const text = code || "";
+  if (!text.trim()) {
+    return <div className="strategy-empty">{title}: no strategy code loaded</div>;
+  }
+  return (
+    <div className="strategy-diff-block">
+      <div className="strategy-section-title">{title}</div>
+      <pre className="strategy-diff-lines">{text}</pre>
+    </div>
+  );
+}
+
 function buildAiContext({ generation, runId, diffPayload, promptsPayload, buyCode, sellCode }) {
   const prompts = asList(promptsPayload && promptsPayload.prompts);
   const parts = [
@@ -69,6 +82,10 @@ function buildAiContext({ generation, runId, diffPayload, promptsPayload, buyCod
     `diff_reason: ${safeText(diffPayload && diffPayload.reason, "available")}`,
     `prompt_count: ${prompts.length}`,
     `prompt_reason: ${safeText(promptsPayload && promptsPayload.reason, "available")}`,
+    "buy_code:",
+    buyCode || "(empty)",
+    "sell_code:",
+    sellCode || "(empty)",
     "Forbidden actions: do not approve or deploy from this copied context.",
   ];
   return parts.join("\n");
@@ -79,7 +96,8 @@ function StrategyInspectorTabs({ generation, runId, baseUrl, buyCode, sellCode }
   const [diffPayload, setDiffPayload] = useState_si(null);
   const [promptsPayload, setPromptsPayload] = useState_si(null);
   const [loading, setLoading] = useState_si(false);
-  const [error, setError] = useState_si("");
+  const [diffError, setDiffError] = useState_si("");
+  const [promptsError, setPromptsError] = useState_si("");
   const [copied, setCopied] = useState_si(false);
 
   const genNo = generation && generation.gen_no;
@@ -87,26 +105,35 @@ function StrategyInspectorTabs({ generation, runId, baseUrl, buyCode, sellCode }
   useEffect_si(() => {
     setDiffPayload(null);
     setPromptsPayload(null);
-    setError("");
-    if (!generation || !baseUrl || !runId || genNo === undefined || genNo === null) return;
+    setDiffError("");
+    setPromptsError("");
+    if (!generation || !baseUrl || !runId || genNo === undefined || genNo === null) {
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
+    let pending = 2;
+    const finishOne = () => {
+      pending -= 1;
+      if (!cancelled && pending <= 0) setLoading(false);
+    };
     setLoading(true);
     const params = `run_id=${encodeURIComponent(runId)}&gen_no=${encodeURIComponent(genNo)}&base_gen=previous`;
-    Promise.all([
-      fetch(`${baseUrl}/strategy_diff?${params}`, { signal: AbortSignal.timeout(3000) })
-        .then(r => r.ok ? r.json() : Promise.reject(new Error("strategy_diff HTTP " + r.status))),
-      fetch(`${baseUrl}/prompts?run_id=${encodeURIComponent(runId)}&gen_no=${encodeURIComponent(genNo)}`,
-            { signal: AbortSignal.timeout(3000) })
-        .then(r => r.ok ? r.json() : Promise.reject(new Error("prompts HTTP " + r.status))),
-    ])
-      .then(([diff, prompts]) => {
-        if (!cancelled) {
-          setDiffPayload(diff || {});
-          setPromptsPayload(prompts || {});
-        }
+    fetch(`${baseUrl}/strategy_diff?${params}`, { signal: AbortSignal.timeout(3000) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      .then(diff => { if (!cancelled) setDiffPayload(diff || {}); })
+      .catch(e => {
+        if (!cancelled) setDiffError("strategy_diff route unavailable: " + String(e));
       })
-      .catch(e => { if (!cancelled) setError(String(e)); })
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .finally(finishOne);
+    fetch(`${baseUrl}/prompts?run_id=${encodeURIComponent(runId)}&gen_no=${encodeURIComponent(genNo)}`,
+          { signal: AbortSignal.timeout(3000) })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+      .then(prompts => { if (!cancelled) setPromptsPayload(prompts || {}); })
+      .catch(e => {
+        if (!cancelled) setPromptsError("prompts route unavailable: " + String(e));
+      })
+      .finally(finishOne);
     return () => { cancelled = true; };
   }, [generation, baseUrl, runId, genNo]);
 
@@ -129,10 +156,12 @@ function StrategyInspectorTabs({ generation, runId, baseUrl, buyCode, sellCode }
         <button className={tab === "diff" ? "active" : ""} onClick={() => setTab("diff")}>Previous Diff</button>
         <button className={tab === "prompts" ? "active" : ""} onClick={() => setTab("prompts")}>Prompt Timeline</button>
         <button className={tab === "context" ? "active" : ""} onClick={() => setTab("context")}>AI Context</button>
+        <button className={tab === "code" ? "active" : ""} onClick={() => setTab("code")}>Current Code</button>
       </div>
       {loading && <div className="strategy-empty">loading strategy inspector...</div>}
-      {error && <div className="strategy-empty danger">strategy inspector error: {error}</div>}
-      {!loading && !error && tab === "diff" && (
+      {diffError && <div className="strategy-empty danger">{diffError}</div>}
+      {promptsError && <div className="strategy-empty danger">{promptsError}</div>}
+      {!loading && tab === "diff" && (
         <div className="strategy-inspector-body">
           <div className="strategy-kpis">
             <span>base_gen={safeText(diffPayload && diffPayload.base_gen)}</span>
@@ -143,7 +172,7 @@ function StrategyInspectorTabs({ generation, runId, baseUrl, buyCode, sellCode }
           <DiffBlock title="sell_diff" lines={diffPayload && diffPayload.sell_diff} />
         </div>
       )}
-      {!loading && !error && tab === "prompts" && (
+      {!loading && tab === "prompts" && (
         <div className="strategy-inspector-body">
           <div className="strategy-kpis">
             <span>prompt_count={prompts.length}</span>
@@ -158,7 +187,7 @@ function StrategyInspectorTabs({ generation, runId, baseUrl, buyCode, sellCode }
           )}
         </div>
       )}
-      {!loading && !error && tab === "context" && (
+      {!loading && tab === "context" && (
         <div className="strategy-inspector-body">
           <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" }}>
             <div className="strategy-section-title">Safe current-run summary</div>
@@ -169,8 +198,18 @@ function StrategyInspectorTabs({ generation, runId, baseUrl, buyCode, sellCode }
           <pre className="strategy-context">{aiContext}</pre>
         </div>
       )}
+      {tab === "code" && (
+        <div className="strategy-inspector-body">
+          <div className="strategy-section-title">Current Strategy Code</div>
+          <CodeBlock title="buy_code" code={buyCode} />
+          <CodeBlock title="sell_code" code={sellCode} />
+        </div>
+      )}
     </div>
   );
 }
 
 Object.assign(window, { StrategyInspectorTabs });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { StrategyInspectorTabs };

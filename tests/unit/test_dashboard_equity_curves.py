@@ -218,26 +218,27 @@ class TestRunsRouteUnchanged:
 # =====================================================================
 class TestEquityOverlayChartStructure:
     def test_component_defined_in_chart_jsx(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-backtest-detail.jsx")
         assert "function EquityOverlayChart(" in src
 
     def test_component_exposed_on_window(self):
+        # window 재게시는 chart.jsx 배럴이 Object.assign 으로 수행한다(분해 후).
         src = _read_front("chart.jsx")
         tail = src[src.rfind("Object.assign(window"):]
         assert "EquityOverlayChart" in tail
 
     def test_component_uses_equity_curves_endpoint(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-backtest-detail.jsx")
         ec = src[src.find("function EquityOverlayChart("):]
         assert "/equity_curves" in ec
 
     def test_component_renders_winner_highlighted(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-backtest-detail.jsx")
         ec = src[src.find("function EquityOverlayChart("):]
         assert "gate_passed" in ec
 
     def test_component_has_refresh_mechanism(self):
-        src = _read_front("chart.jsx")
+        src = _read_front("chart-backtest-detail.jsx")
         ec = src[src.find("function EquityOverlayChart("):]
         # 자동 새로고침(setInterval) + 수동 새로고침 버튼.
         assert "setInterval" in ec

@@ -1,0 +1,21 @@
+{
+  "status": "ok",
+  "timeout": false,
+  "pid": 136420,
+  "returncode": 0,
+  "command": [
+    "C:\\Python\\64\\Python31313\\python.exe",
+    "-m",
+    "ai_strategy_loop.controller.loop",
+    "--config-json",
+    ".omo\\evidence\\tick-human-like-research-criteria-dashboard-20260605\\p2-timecap-900-920-config.json",
+    "--run-id",
+    "tick_p2_timecap_900_920_preflight_guarded2_20260606"
+  ],
+  "cwd": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+  "wall_cap": 600,
+  "elapsed_seconds": 155.381,
+  "stdout_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\tick-human-like-research-criteria-dashboard-20260605\\p2-timecap-900-920-guarded2-result.stdout.txt",
+  "stderr_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\tick-human-like-research-criteria-dashboard-20260605\\p2-timecap-900-920-guarded2-result.stderr.txt",
+  "cleanup": null
+}

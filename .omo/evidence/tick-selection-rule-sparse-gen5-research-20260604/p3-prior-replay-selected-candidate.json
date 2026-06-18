@@ -1,0 +1,92 @@
+{
+  "selector_version": "sparse_positive_v1",
+  "run_id": "tick_oos_dash_p3_train_2023_2025_20260604",
+  "config_path": ".omo\\evidence\\tick-oos-dashboard-validation-20260604\\p3-train-config.json",
+  "config_hash": "c26a5a165c2be24f33f6902fb0bbd97c23da688fded4686b656019653e59defb",
+  "selected": true,
+  "blocked": false,
+  "blocker": "",
+  "selected_bucket": "sparse_positive",
+  "gen_no": 5,
+  "buy_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g5_buy",
+  "sell_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g5_sell",
+  "metrics": {
+    "gen_no": 5,
+    "status": "ok",
+    "graded_score": 0.06515430387218038,
+    "gate_passed": false,
+    "gate_reason": "daily_avg_trades 0.1 < min_daily_trades 0.3",
+    "profit": 1432608.0,
+    "total_profit_pct": 28.65,
+    "mdd": 5.74,
+    "trade_count": 99,
+    "daily_avg_trades": 0.1,
+    "payoff_ratio": 1.5756902713170555,
+    "max_hold_count": 0.0,
+    "buy_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g5_buy",
+    "sell_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g5_sell"
+  },
+  "selection_timestamp": "2026-06-04T12:45:00+09:00",
+  "oos_excluded": true,
+  "diagnostic_only": true,
+  "eligible_candidates": [
+    {
+      "gen_no": 5,
+      "bucket": "sparse_positive",
+      "rank_key": [
+        1,
+        -249583.27526132404,
+        5.74,
+        -99,
+        -1.5756902713170555,
+        5
+      ]
+    }
+  ],
+  "rejected_candidates": [
+    {
+      "gen_no": 0,
+      "reasons": [
+        "status != ok",
+        "profit <= 0",
+        "trade_count < 20",
+        "daily_avg_trades < 0.05",
+        "payoff_ratio < 1.05"
+      ]
+    },
+    {
+      "gen_no": 1,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250",
+        "payoff_ratio < 1.05"
+      ]
+    },
+    {
+      "gen_no": 2,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250"
+      ]
+    },
+    {
+      "gen_no": 3,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250"
+      ]
+    },
+    {
+      "gen_no": 4,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250"
+      ]
+    }
+  ],
+  "forbidden_oos_fields_present": false
+}

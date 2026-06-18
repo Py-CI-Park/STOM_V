@@ -1,0 +1,39 @@
+# C6 지연계산판: 대형주 장초 추세 (09:05~09:20, 시총 2조 이상) — 시그널은 C6와 동일.
+매수 = True
+if not (90500 <= 시분초 < 92000):
+    매수 = False
+elif not (관심종목 == 1):
+    매수 = False
+elif not (데이터길이 >= 61):
+    매수 = False
+elif not (5000 <= 현재가 <= 500000):
+    매수 = False
+elif not (시가총액 >= 20000):
+    매수 = False
+elif not (1.0 <= 등락율 <= 10.0):
+    매수 = False
+elif not (당일거래대금 >= 5000):
+    매수 = False
+elif not (초당거래대금 > 100):
+    매수 = False
+elif not (체결강도 >= 110):
+    매수 = False
+elif not (호가단위 > 0 and (매도호가1 - 매수호가1) / 호가단위 <= 3.0):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (현재가 < VI가격 - VI호가단위 * 5):
+    매수 = False
+elif not (고저평균대비등락율 > 0):
+    매수 = False
+elif not (현재가 > 이동평균(60, 1)):
+    매수 = False
+elif not (현재가 > 최고현재가(20, 1)):
+    매수 = False
+elif not (초당거래대금평균(30, 1) > 0 and 초당거래대금 / 초당거래대금평균(30, 1) >= 1.6):
+    매수 = False
+elif not (누적초당매수수량(30) >= 누적초당매도수량(30) * 1.05):
+    매수 = False
+
+if 매수:
+    self.Buy()

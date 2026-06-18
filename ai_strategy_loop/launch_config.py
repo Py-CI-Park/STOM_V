@@ -14,7 +14,12 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
+from ai_strategy_loop.brain.time_cap_bucket import (
+    TimeCapBucketEndTimeParseError,
+    normalize_time_cap_bucket_end_time,
+)
 from ai_strategy_loop.config import LoopConfig
+from ai_strategy_loop.fitness.research_criteria import ResearchOosModeParseError, normalize_research_oos_mode
 
 
 def config_from_dict(data: Dict[str, Any] | None) -> LoopConfig:
@@ -44,6 +49,15 @@ def config_from_dict(data: Dict[str, Any] | None) -> LoopConfig:
         raise ValueError(f"mdd_cap은 0 이상이어야 합니다 (받음: {cfg.mdd_cap})")
     if int(cfg.min_trades) < 0:
         raise ValueError(f"min_trades는 0 이상이어야 합니다 (받음: {cfg.min_trades})")
+
+    try:
+        normalize_research_oos_mode(cfg.research_oos_mode)
+    except ResearchOosModeParseError as exc:
+        raise ValueError(str(exc)) from exc
+    try:
+        cfg.time_cap_bucket_end_time = normalize_time_cap_bucket_end_time(cfg.time_cap_bucket_end_time)
+    except TimeCapBucketEndTimeParseError as exc:
+        raise ValueError(str(exc)) from exc
 
     return cfg
 
@@ -100,6 +114,11 @@ def config_field_specs() -> List[Dict[str, Any]]:
         },
         # graduation_holdout / holdout_recent_days 는 run_loop 미배선(no-op)이라
         #   폼에서 제외한다 (위 docstring의 TODO 참조). LoopConfig 필드는 유지.
+        {
+            "name": "research_oos_mode", "label": "Research OOS Mode", "type": "select",
+            "choices": ["disabled", "advisory", "promotion_only"], "default": d.research_oos_mode,
+            "help": "disabled=OOS 없이 탐색, advisory=참고 표시만, promotion_only=후보 고정 후 최종 검증용.",
+        },
         {
             "name": "bt_timeframe", "label": "Backtest Timeframe", "type": "select",
             "choices": ["min", "tick"], "default": d.bt_timeframe,
@@ -234,6 +253,63 @@ def config_field_specs() -> List[Dict[str, Any]]:
                     "짝(넓게 고르되 좁게 게이트). 기본 OFF.",
         },
         # 생성 few-shot 샘플 주입 (#67) — 검증된 우수 전략을 K개 프롬프트에 주입(구조 학습).
+        {
+            "name": "time_cap_bucket_generation_enabled", "label": "5분 시간x시총 생성(매수)",
+            "type": "bool", "default": d.time_cap_bucket_generation_enabled,
+            "help": "켜면 매수 프롬프트에 09:00 기준 5분 시간버킷과 소형/중형/대형 시가총액 "
+                    "밴드 조합 탐색 가이드를 넣는다. 기본 OFF.",
+        },
+        {
+            "name": "time_cap_bucket_end_time", "label": "시간x시총 종료(HHMMSS)",
+            "type": "select", "choices": [92000, 93000], "default": d.time_cap_bucket_end_time,
+            "help": "92000=09:00~09:20 우선 탐색, 93000=09:20~09:30까지 확장. "
+                    "C_T timeout 방지를 위해 92000부터 검증한다.",
+        },
+        {
+            "name": "sparse_positive_prompt_enabled", "label": "Sparse-positive prompt", "type": "bool",
+            "default": d.sparse_positive_prompt_enabled,
+            "help": "Default-OFF sparse_positive_v1 generation guidance: profit > 0, MDD <= 10, trade_count 20-250, daily_avg_trades >= 0.05, payoff_ratio >= 1.05. It does not relax hard gates or selector rules.",
+        },
+        {
+            "name": "exec_budget_prompt_enabled", "label": "계산예산 프롬프트 지침", "type": "bool",
+            "default": d.exec_budget_prompt_enabled,
+            "help": "켜면 매수=싼 스칼라 게이트 선행·윈도우 함수 후행(지연계산), 매도=스칼라 우선·"
+                    "미갱신류는 보유시간 상한 필수 지침을 프롬프트에 추가한다(2026-06-10 실측: "
+                    "타임아웃 지배변수는 매도식). 기본 OFF.",
+        },
+        {
+            "name": "sell_exec_budget_guard_enabled", "label": "매도 계산예산 가드(PRE-SAVE)", "type": "bool",
+            "default": d.sell_exec_budget_guard_enabled,
+            "help": "켜면 매도 코드를 저장 전에 정적 검사해 비유계 스캔(고가/저가미갱신지속틱수, "
+                    "무조건 금지 — 보유시간 상한이 있어도 타임아웃 실측)과 윈도우 호출 수 초과를 "
+                    "reject→재생성한다. 기본 OFF.",
+        },
+        {
+            "name": "sell_max_window_calls", "label": "매도 윈도우 호출 상한", "type": "number",
+            "default": d.sell_max_window_calls,
+            "help": "매도식에 허용하는 윈도우/구간 집계 함수 호출 수 상한(실측: 타임아웃 매도 8개 vs "
+                    "고속 매도 2~3개). 가드 OFF면 무영향.",
+        },
+        {
+            "name": "report_principles_enabled", "label": "v5.0 리포트 원리 어휘", "type": "bool",
+            "default": d.report_principles_enabled,
+            "help": "켜면 오더플로우 연구 리포트의 원리 어휘(수급 우위·전일동시간비·위험 필터·"
+                    "시총별 동적 청산)를 프롬프트에 추가한다 — 임계값 직이식 금지·단위 보정"
+                    "(시총=억, 금액=백만원) 명시. 기본 OFF.",
+        },
+        {
+            "name": "quantile_feedback_enabled", "label": "부검 분위수 임계 환류(R1)", "type": "bool",
+            "default": d.quantile_feedback_enabled,
+            "help": "켜면 진입 부검의 '높여라/낮춰라'에 승자 분위수 임계 후보(Q25/중앙값/Q75)를 "
+                    "병기한다 — 방향만 주면 LLM이 임의 숫자를 찍는 문제(G1) 해소. 기본 OFF.",
+        },
+        {
+            "name": "counterfactual_feedback_enabled", "label": "반사실 필터 환류(R2)", "type": "bool",
+            "default": d.counterfactual_feedback_enabled,
+            "help": "켜면 직전 백테 CSV에 '강화 필터를 걸었다면'을 백테 0회로 평가해, 총손익이 "
+                    "깎이지 않는 필터 후보만 손익 영향 숫자와 함께 매수 피드백에 덧붙인다"
+                    "(인샘플 advisory). 기본 OFF.",
+        },
         {
             "name": "few_shot_enabled", "label": "few-shot 샘플 주입", "type": "bool",
             "default": d.few_shot_enabled,

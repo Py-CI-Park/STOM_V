@@ -1,0 +1,60 @@
+﻿Final Plan Compliance
+timestamp=2026-06-04T21:19:20.6477123+09:00
+
+Task to evidence map:
+P0: p0-safety-snapshot.txt, p0-canonical-reread.txt
+P1: p1-yearly-sparse-robust-policy.md/json, p1-policy-verification.txt
+P2: p2-red-green-tests.txt, p2-manual-qa.txt, p2-diff-check.txt
+P3: p3-smoke-config.json, p3-train-config.json, p3-config-manifest.json, p3-selector-freeze-procedure.md, p3-config-verification.txt
+P4: p4-smoke-log.txt, p4-smoke-summary.json/md, p4-prompt-logging-check.txt, p4-diagnostic-selection.json
+P5: p5-train-log.txt, p5-train-summary.json, p5-selected-candidate.json, p5-selector-blocked.md, p5-oos-blindness-check.txt
+P6: p6-oos-blocked.md/json, p6-oos-run-id-check.txt
+P7: p7-decision-card.md, p7-honesty-audit.txt, p7-verification.txt
+
+Current open top-level checkboxes before final wave marking:
+444:- [ ] F1. Plan compliance audit
+464:- [ ] F2. Code and branch safety verification
+487:- [ ] F3. Dashboard/read-only QA
+509:- [ ] F4. Final handoff
+
+Forbidden action evidence scan:
+.omo\evidence\tick-sparse-positive-oos-robustness-20260604\p3-config-verification.txt:27:23:- `final_approval` or `export_winner`.
+.omo\evidence\tick-sparse-positive-oos-robustness-20260604\p3-config-verification.txt:28:24:- hard-gate, official engine, or `backtest/graph` edits.
+.omo\evidence\tick-sparse-positive-oos-robustness-20260604\p3-selector-freeze-procedure.md:23:- `final_approval` or `export_winner`.
+.omo\evidence\tick-sparse-positive-oos-robustness-20260604\p3-selector-freeze-procedure.md:24:- hard-gate, official engine, or `backtest/graph` edits.
+.omo\evidence\tick-sparse-positive-oos-robustness-20260604\p7-decision-card.md:46:- final_approval invoked: false
+.omo\evidence\tick-sparse-positive-oos-robustness-20260604\p7-decision-card.md:47:- export_winner invoked: false
+.omo\evidence\tick-sparse-positive-oos-robustness-20260604\p7-decision-card.md:51:- backtest/graph edited: false
+.omo\evidence\tick-sparse-positive-oos-robustness-20260604\p7-decision-card.md:53:- blanket taskkill: false
+.omo\evidence\tick-sparse-positive-oos-robustness-20260604\p7-decision-card.md:54:- V3K gate/live/KHOPENAPI action: false
+.omo\evidence\tick-sparse-positive-oos-robustness-20260604\p7-honesty-audit.txt:4:46:- final_approval invoked: false
+.omo\evidence\tick-sparse-positive-oos-robustness-20260604\p7-honesty-audit.txt:5:47:- export_winner invoked: false
+.omo\evidence\tick-sparse-positive-oos-robustness-20260604\p7-honesty-audit.txt:6:53:- blanket taskkill: false
+
+Interpretation:
+- final_approval/export_winner only appear in policy/card as forbidden=false statements.
+- USER_ACK/KHOPENAPI do not appear in execution evidence.
+- taskkill only appears as forbidden=false/no blanket statement; no taskkill command was run.
+- backtest/graph appears only in forbidden-action statements; no protected path diff exists.
+
+Protected path status:
+<empty>
+
+Post-final update:
+timestamp=2026-06-04T21:30:48.1891026+09:00
+
+Final wave task to evidence map:
+F1: final-plan-compliance.txt
+F2: final-verification.txt
+F3: final-dashboard-qa.txt, final-dashboard-cleanup.txt, final-dashboard-uvicorn-stdout.txt, final-dashboard-uvicorn-stderr.txt
+F4: final-scope-fidelity.txt, .omo/boulder.json completed state
+
+Current open top-level checkboxes after final marking:
+<none>
+
+Protected path status after final marking:
+<empty>
+
+Post-review correction evidence:
+post-review-oos-csv-guard.txt records the CSV non-training-year guard, red/green evidence, and post-fix verification.
+post-review-verification.txt records focused pytest/dashboard/diff/protected-path commands after the fix.

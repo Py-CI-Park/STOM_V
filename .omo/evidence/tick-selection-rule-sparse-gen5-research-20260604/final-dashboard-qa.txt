@@ -1,0 +1,44 @@
+# Final Dashboard Read-Only QA
+timestamp: 2026-06-04T13:46:44.3945345+09:00
+selected_base_url: http://127.0.0.1:8770
+server_ownership: pre-existing dashboard server; no server spawned by F3; no server stopped by F3
+method_policy: GET read-only calls only
+
+## health
+url: http://127.0.0.1:8770/health
+status: 200 OK
+status_field: ok
+contract_version: 2
+
+## ui
+url: http://127.0.0.1:8770/ui/
+status: 200 OK
+content_type: text/html; charset=utf-8
+content_length: 2585
+content_preview: <!DOCTYPE html>  <html lang="ko">  <head>    <meta charset="UTF-8" />    <meta name="viewport" content="width=device-width, initial-scale=1.0" />    <title>STOM AI · 조건식 자율 진화 대시보드</title>      <link rel="preconnect" href="https://fonts.goo
+
+## runs
+url: http://127.0.0.1:8770/runs
+status: 200 OK
+count: 86
+run_id_preview: run_1779672477, run_1779675770, run_1779706512, run_1779710915, run_1779714844
+
+## runs compare p4
+url: http://127.0.0.1:8770/runs/compare?ids=tick_sel_sparse_p4_train_2023_2025_20260604
+status: 200 OK
+count: 1
+run_id_preview: tick_sel_sparse_p4_train_2023_2025_20260604
+
+## variable correlation p4
+url: http://127.0.0.1:8770/variable_correlation?run_id=tick_sel_sparse_p4_train_2023_2025_20260604
+status: ERROR
+error: 원격 서버에서 (404) 찾을 수 없음 오류를 반환했습니다.
+
+## Forbidden Dashboard Actions
+approval/export endpoints invoked: none
+final_approval invoked: no
+export_winner invoked: no
+production strategy DB writes invoked: no
+cleanup: no owned server/session to stop; pre-existing 8770 left running
+
+F3 PASS: dashboard was probed through read-only GET routes only and no approval/export action was invoked.

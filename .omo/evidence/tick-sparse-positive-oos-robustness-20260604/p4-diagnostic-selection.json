@@ -1,0 +1,47 @@
+{
+  "selector_version": "yearly_sparse_robust_v1",
+  "run_id": "tick_oosrob_p4_smoke_20260604",
+  "config_path": ".omo/evidence/tick-sparse-positive-oos-robustness-20260604/p3-smoke-config.json",
+  "config_hash": "c9ee59f337bb079197fb98f8360cc5417d1587c544ae5ea70bfe691f264390e0",
+  "policy_hash": "ae50a063b0945abaab6669c3498ec90200964018d60b76a4a4fed954fd500f73",
+  "selected": false,
+  "blocked": true,
+  "blocker": "no candidate qualified for yearly_sparse_robust_v1",
+  "selected_bucket": null,
+  "selected_generation": null,
+  "aggregate_checks": null,
+  "yearly_breakdown": [],
+  "uptrend_r2": null,
+  "selection_timestamp": "2026-06-04T12:00:00+00:00",
+  "oos_excluded": true,
+  "diagnostic_only": true,
+  "forbidden_oos_fields_present": false,
+  "eligible_candidates": [],
+  "rejected_candidates": [
+    {
+      "gen_no": 0,
+      "reasons": [
+        "status != ok",
+        "profit <= 0",
+        "trade_count < 20",
+        "daily_avg_trades < 0.05",
+        "payoff_ratio < 1.05"
+      ]
+    },
+    {
+      "gen_no": 1,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250"
+      ]
+    },
+    {
+      "gen_no": 2,
+      "reasons": [
+        "trade_count < 20",
+        "daily_avg_trades < 0.05"
+      ]
+    }
+  ]
+}

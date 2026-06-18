@@ -1,0 +1,5 @@
+[BATCH] run_id=cldgen_oos_2026_20260610 pairs=2
+[BATCH] prepare status=ok back_count=587 elapsed=50s
+[BATCH] gen0 FROZEN ok profit=-229,360 mdd=12.30 trades=5 daily=0.10 payoff=0.9854260089686098 gate=False reason=total_profit -2.294e+05 <= 0 (15s)
+[BATCH] gen1 BASE_SEED ok profit=-191,109 mdd=15.63 trades=10 daily=0.30 payoff=1.259748427672956 gate=False reason=total_profit -1.911e+05 <= 0 (15s)
+[BATCH] done

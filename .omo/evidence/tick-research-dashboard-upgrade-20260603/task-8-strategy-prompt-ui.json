@@ -1,0 +1,60 @@
+﻿{
+    "task":  "8.strategy_prompt_frontend",
+    "base":  "http://127.0.0.1:8791",
+    "timestamp":  "2026-06-04T04:57:40",
+    "server_owner":  "codex_task_8_temp_server",
+    "checks":  [
+                   {
+                       "path":  "/health",
+                       "status":  200,
+                       "length":  36,
+                       "sample":  "{\"status\":\"ok\",\"contract_version\":2}"
+                   },
+                   {
+                       "path":  "/ui/strategy-inspector.jsx?v=20260603a",
+                       "status":  200,
+                       "length":  7741,
+                       "sample":  "/* Read-only strategy diff, prompt, and AI context inspector */\nconst { useState: useState_si, useEffect: useEffect_si, useMemo: useMemo_si } = React;\n\nfunction asList(value) {\n  return Array.isArray(value) ? value : [];\n}\n\nfunction safeText(value, fallback = \"-\") {\n  if (value === null || value === undefined || value === \"\") return fallback;\n  return String(value);\n}\n\nfunction diffClass(line) {\n  if (line.startsWith(\"+\") \u0026\u0026 !line.startsWith(\"+++\")) return \"add\";\n  if (line.startsWith(\"-\") \u0026\u0026 !line.startsWith(\"---\")) return \"del\";\n  if (line.startsWith(\"@@\")) return \"meta\";\n  return \"\";\n}\n\nfunction PromptRow({ prompt }) {\n  const features = prompt \u0026\u0026 prompt.injected_features ? prompt.injected_features : {};\n  return (\n    \u003cdiv className=\"strategy-prompt-row\"\u003e\n      \u003cdiv className=\"strategy"
+                   },
+                   {
+                       "path":  "/strategy_diff?run_id=tick_oos_p2_train_2023_2025_20260603\u0026gen_no=1",
+                       "status":  200,
+                       "length":  49073,
+                       "sample":  "{\"run_id\":\"tick_oos_p2_train_2023_2025_20260603\",\"gen_no\":1,\"buy_name\":\"AILOOP_tick_oos_p2_train_2023_2025_20260603_g1_buy\",\"sell_name\":\"AILOOP_tick_oos_p2_train_2023_2025_20260603_g1_sell\",\"buy_code\":\"ì ì¼ì¢\u0085ê° = íì¬ê° / (1 + (ë±ë½ì¨ / 100))\\nìê°ë±ë½ì¨ = ((ìê° - ì ì¼ì¢\u0085ê°) / ì ì¼ì¢\u0085ê°) * 100\\nìê°ëë¹ë±ë½ì¨ = ((íì¬ê° - ìê°) / ìê°) * 100\\nì´ë¹ìë§¤ìê¸ì¡ = (ì´ë¹ë§¤ììë - ì´ë¹ë§¤ëìë) * íì¬ê° / 1000000\\n\\në§¤ì = True\\n\\nif ê´ì¬ì¢\u0085ëª© != 1:\\n    ë§¤ì = False\\nelif not (1000 \u003c= íì¬ê° \u003c= 50000):\\n    ë§¤ì = False\\nelif not (90500 \u003c= ìë¶ì´ \u003c 92000):\\n    ë§¤ì = False\\nelif not (1000 \u003c= ìê°ì´ì¡ \u003c 10000):\\n    ë§¤ì = False\\nelif not (ë¹ì¼ê±°ëëê¸ \u003e= 10000):\\n    ë§¤ì = False\\nelif ë¼ì´ëí¼ê²¨ì"
+                   },
+                   {
+                       "path":  "/prompts?run_id=tick_oos_p2_train_2023_2025_20260603\u0026gen_no=1",
+                       "status":  200,
+                       "length":  125,
+                       "sample":  "{\"run_id\":\"tick_oos_p2_train_2023_2025_20260603\",\"gen_no\":1,\"prompts\":[],\"reason\":\"prompt_logging_not_enabled_or_no_records\"}"
+                   },
+                   {
+                       "path":  "/strategy_diff?run_id=tick_oos_p2_train_2023_2025_20260603\u0026gen_no=0",
+                       "status":  200,
+                       "length":  21494,
+                       "sample":  "{\"run_id\":\"tick_oos_p2_train_2023_2025_20260603\",\"gen_no\":0,\"buy_name\":\"C_T_900_920_U2_B\",\"sell_name\":\"C_T_900_920_U2_S\",\"buy_code\":\"# ================================\\n#  ê³µíµ ê³ì° ì§í\\n# ================================\\nì ì¼ì¢\u0085ê°          = íì¬ê° / (1 + (ë±ë½ì¨ / 100))                      # ë¨ì: ì\\nìê°ë±ë½ì¨        = ((ìê° - ì ì¼ì¢\u0085ê°) / ì ì¼ì¢\u0085ê°) * 100                # ë¨ì: í¼ì¼í¸\\nìê°ëë¹ë±ë½ì¨    = ((íì¬ê° - ìê°) / ìê°) * 100                      # ë¨ì: í¼ì¼í¸\\nì´ë¹ìë§¤ìê¸ì¡    = (ì´ë¹ë§¤ììë - ì´ë¹ë§¤ëìë) * íì¬ê° / 1_000_000   # ë¨ì: ë°±ë§ì\\n# ------------------------------------------------\\n#  ì¶ê° ì§í (íì© ê°ë¥)\\n# ------------------------------------------------\\n# ë"
+                   },
+                   {
+                       "path":  "/prompts",
+                       "status":  200,
+                       "length":  40,
+                       "sample":  "{\"error\":\"run_id required\",\"prompts\":[]}"
+                   }
+               ],
+    "gen0_previous_diff_check":  {
+                                     "base_gen":  null,
+                                     "reason":  "no_previous_generation",
+                                     "buy_diff_count":  0,
+                                     "sell_diff_count":  0
+                                 },
+    "cleanup":  {
+                    "port":  8791,
+                    "stopped":  true,
+                    "result":  "The operation has timed out."
+                },
+    "notes":  [
+                  "Read-only UI file served from /ui/strategy-inspector.jsx.",
+                  "strategy_diff gen0 should expose no_previous_generation when run data is available.",
+                  "prompts without run_id should expose an explicit error payload."
+              ]
+}

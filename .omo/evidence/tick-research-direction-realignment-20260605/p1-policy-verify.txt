@@ -1,0 +1,24 @@
+﻿## JSON parse
+three_tier_candidate_policy_v2
+## keyword scan
+5:This policy prevents early overfit rejection from erasing useful research evidence while keeping final proof strict. It replaces a single strict `yearly_sparse_robust_v2` selector with three separate layers.
+7:## Layer 1: Exploration Pool v2
+9:Exploration Pool is loose and OOS-blind. Its job is to keep candidates available for analysis, not to prove quality.
+29:- PBO/DSR thresholds
+30:- sparse-positive promotion thresholds
+36:- `overfit_risk`
+53:## Layer 2: Research Pool v2
+55:Research Pool ranks candidates that deserve deeper inspection. It is also OOS-blind.
+59:- Exploration Pool only.
+69:- human morphology score:
+87:  - PBO, DSR, and slippage are labels here, not blockers
+89:Human-reference morphology is a research prior only. It is not promotion proof.
+91:## Layer 3: Promotion Gate v2
+93:Promotion Gate is strict. It decides whether a candidate can support a seed/human-level claim. Promotion Gate can select at most one frozen candidate for fixed OOS.
+115:- PBO < 0.20
+116:- DSR > 0
+117:- insufficient PBO or DSR data blocks promotion
+121:- Exploration Pool never uses OOS.
+122:- Research Pool never uses OOS for ranking.
+123:- Promotion Gate uses OOS only after one candidate is frozen.
+125:- If no Promotion Gate candidate exists, promotion OOS is skipped by default. Research Pool remains useful evidence.

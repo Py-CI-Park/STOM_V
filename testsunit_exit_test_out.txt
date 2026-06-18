@@ -1,0 +1,422 @@
+.......
+[REAL CSV EXIT AUTOPSY]
+  trade_count=91 win=13 loss=78
+  giveback_gap(winners)=0.4069%p avg_mfe_w=0.7892 avg_realized_w=0.3823
+  avg_mae_losers=-0.5318% worst_mae=-1.57%
+  hold_win=11.62 hold_loss=8.077
+  worst_sell_rule='if 수익률 <= -1.0:'
+  --- SELL FEEDBACK ---
+직전 백테스트 청산(매도) 부검: 거래 91건(수익 13/손실 78). 매도(SELL) 전략을 다음과 같이 개선하라:
+- 손실 집중 매도규칙: `if 수익률 <= -1.0:` (5건, 손실 5건, 평균 -1.3%) → 이 규칙이 너무 늦거나 손실을 키운다. 이 매도 조건을 재설계하라.
+..............
+[REAL CSV AUTOPSY]
+  trade_count=204 win=6 loss=198
+  B_매수총잔량: win_mean=1.503e+04 loss_mean=1.941e+04 smd=-0.7620
+  B_전일동시간비: win_mean=277.8 loss_mean=230.9 smd=+0.6337
+  B_매도총잔량: win_mean=2.943e+04 loss_mean=2.445e+04 smd=+0.4801
+  --- SUMMARY ---
+직전 백테스트 부검: 거래 204건(수익 6/손실 198). 수익과 손실을 가장 잘 가른 진입 조건은 다음과 같다. 이를 반영해 개선하라:
+- 손실 거래는 진입 시 B_매수총잔량가 높았다(손실 평균 19,407 vs 수익 평균 15,029) → 매수총잔량 진입 기준을 낮춰라.
+- 손실 거래는 진입 시 B_전일동시간비가 낮았다(손실 평균 230.9 vs 수익 평균 277.8) → 전일동시간비 진입 기준을 높여라.
+- 손실 거래는 진입 시 B_매도총잔량가 낮았다(손실 평균 24,451 vs 수익 평균 29,431) → 매도총잔량 진입 기준을 높여라.
+.FF                                                 [100%]
+================================== FAILURES ===================================
+____________ test_loop_feeds_autopsy_summary_into_next_generation _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000186A9EFDC70>
+tmp_path = WindowsPath('C:/Users/Public/Documents/ESTsoft/CreatorTemp/pytest-of-parkc/pytest-4451/test_loop_feeds_autopsy_summar0')
+
+    def test_loop_feeds_autopsy_summary_into_next_generation(monkeypatch, tmp_path):
+        """MOCK provider + stub 백테스트로 gen0의 부검 요약이 gen1 generate_strategy의
+        autopsy_feedback 인자로 들어가는지 검증한다 (네트워크/실백테스트 없음)."""
+        from ai_strategy_loop.controller import loop as L
+        from ai_strategy_loop.controller.state import LoopState
+        from ai_strategy_loop.fitness.score import FitnessResult, GradedResult
+    
+        # gen0이 분석할 CSV: B_체결강도가 수익/손실을 가르는 합성 데이터.
+        gen0_csv = _write_csv(
+            tmp_path / "gen0.csv",
+            _make_rows(n_win=20, n_loss=20, separating_col="B_체결강도"),
+        )
+    
+        # provider/엔진/strategy-head 무력화.
+        monkeypatch.setattr(L, "_make_provider_with_proxy", lambda cfg: (object(), False))
+        monkeypatch.setattr(L.bootstrap, "ensure_loop_db_engine_compat", lambda *a, **k: None)
+        monkeypatch.setattr(L, "_print_strategy_head", lambda *a, **k: None)
+        monkeypatch.setattr(L, "_strategy_gist", lambda *a, **k: "")
+    
+        # _generate_pair가 받은 autopsy_feedback(fb)을 세대별로 기록 — 이게 곧
+        # generate_strategy(autopsy_feedback=fb)로 흘러가는 값이다.
+        captured = {}
+    
+        def fake_generate_pair(provider, cfg, rid, gen, fb, history_summary=None):
+            captured[gen] = fb
+            return {
+                "status": "ok",
+                "buy_name": f"AILOOP_{rid}_g{gen}_buy",
+                "sell_name": f"AILOOP_{rid}_g{gen}_sell",
+                "tokens": 10,
+            }
+    
+        monkeypatch.setattr(L, "_generate_pair", fake_generate_pair)
+    
+        # 백테스트는 항상 gen0_csv를 반환(성공).
+        monkeypatch.setattr(
+            L, "run_backtest_for",
+            lambda cfg, b, s: L.BacktestOutcome(
+                True, "success", gen0_csv,
+                {"cagr": 1.0, "mdd_pct": 1.0, "trade_count": 40, "total_profit_krw": 100},
+                "ok",
+            ),
+        )
+        # fitness는 결정론적으로 stub (CSV equity 로드 회피). (fit, graded, err) 3-tuple.
+        monkeypatch.setattr(
+            L, "_score_outcome",
+            lambda outcome, cfg: (
+                FitnessResult(score=1.0, calmar=1.0, uptrend_r2=1.0, gate_passed=True,
+                              reason="ok", cagr=1.0, mdd=1.0, trade_count=40,
+                              total_profit=100.0),
+                GradedResult(graded=2.0, gate_passed=True, composite=1.0,
+                             trades_term=1.0, mdd_term=1.0, profit_term=1.0,
+                             uptrend_term=1.0, gate_distance="ok (gate passed)",
+                             cagr=1.0, mdd=1.0, trade_count=40, total_profit=100.0,
+                             uptrend_r2=1.0),
+                None,
+            ),
+        )
+    
+        config = LoopConfig(provider="openrouter", max_generations=2,
+                            cost_cap_generations=100, cost_cap_tokens=None,
+                            autopsy_enabled=True)
+        st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))
+>       L.run_loop(config, run_id="wirerun", state=st)
+
+tests\unit\test_autopsy.py:294: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+config = LoopConfig(provider='openrouter', model='gpt-5.5', base_url=None, api_key=None, max_retries=2, temperature=None, max_t...niverse=20, target_score=None, max_generations=2, cost_cap_generations=100, cost_cap_tokens=None, autopsy_enabled=True)
+
+    def run_loop(
+        config: LoopConfig,
+        *,
+        seed_buy: Optional[str] = None,
+        seed_sell: Optional[str] = None,
+        autopsy_fn: Optional[Callable[[str], Optional[str]]] = None,
+        run_id: Optional[str] = None,
+        state: Optional[LoopState] = None,
+    ) -> Dict[str, Any]:
+        """헤드리스 진화 루프를 끝까지 돌리고 요약을 반환한다.
+    
+        Args:
+            config: LoopConfig (bt_*, max_generations, target_score, cost_cap_* 포함).
+            seed_buy/seed_sell: gen-0에서 생성 대신 평가할 기존 전략 이름(루프 DB).
+            autopsy_fn: csv_path를 받아 다음 세대 프롬프트용 피드백 문자열을 만드는
+                훅. None이고 config.autopsy_enabled가 True면 US-006 기본 부검 훅
+                (_default_autopsy_fn: working-window 거래 통계 → NL 피드백)을 자동 사용.
+                명시 autopsy_fn이 항상 우선. 둘 다 비활성이면 US-005 경로와 동일.
+            run_id: 지정 시 resume.
+            state: 테스트가 주입할 LoopState (None이면 기본 경로로 생성).
+    
+        Returns:
+            {run_id, generations, best_gen, best_score, best_buy, best_sell, stop_reason}.
+        """
+        st = state or LoopState()
+        owns_state = state is None
+    
+        # 부검 피드백 훅 결정 (US-006): 명시 autopsy_fn이 우선, 없으면 config 플래그로
+        #   기본 훅을 켠다. None이면(둘 다 비활성) US-005 경로와 동일하게 동작한다.
+        effective_autopsy_fn = autopsy_fn
+        if effective_autopsy_fn is None and getattr(config, "autopsy_enabled", False):
+            effective_autopsy_fn = _default_autopsy_fn(config)
+    
+        # 매도(SELL) 측 청산 부검 훅: 명시 autopsy_fn이 주어지면 그것을 진입/청산 양쪽에
+        #   쓰던 기존 계약을 유지하기 위해 sell 측엔 별도 훅을 만들지 않는다(autopsy_fn이
+        #   곧 buy 피드백). autopsy_fn 미지정 + autopsy_enabled면 청산 부검 기본 훅을 켠다.
+        effective_exit_autopsy_fn: Optional[Callable[[str], Optional[str]]] = None
+        if autopsy_fn is None and getattr(config, "autopsy_enabled", False):
+            effective_exit_autopsy_fn = _default_exit_autopsy_fn(config)
+    
+        rid = st.resume_or_start(config, run_id=run_id)
+        start_gen = st.get_last_completed_gen(rid) + 1
+    
+        # provider 준비 (gpt_auth면 프록시 기동).
+        provider, proxy_active = _make_provider_with_proxy(config)
+    
+        # best는 GRADED 점수로 선택한다(선택 그래디언트). winner/졸업은 하드 게이트
+        #   통과 전략에서만 갱신한다(graduation 기준은 하드 게이트 유지).
+        best_gen = -1
+        best_score = None  # = best graded score
+        best_buy = None
+        best_sell = None
+        winner_gen = -1     # 하드 게이트를 통과한 최고 세대 (졸업/export 후보).
+        winner_buy = None
+        winner_sell = None
+        winner_score = None  # 통과 세대의 하드 composite 점수.
+        stop_reason = "continue"
+        cumulative_tokens = 0
+        next_autopsy_feedback: Optional[str] = None   # 진입(BUY) 측 다음 세대 피드백.
+        next_sell_feedback: Optional[str] = None      # 매도(SELL) 측 다음 세대 청산 피드백.
+        history_records: list = []  # CONVERGENCE — 누적 GenRecord.
+        summary: Optional[Dict[str, Any]] = None
+    
+        # resume 시 기존 best(graded) 복원.
+        existing = st.get_run(rid)
+        if existing is not None and existing.get("best_score") is not None:
+            best_score = float(existing["best_score"])
+            best_gen = int(existing["best_gen"]) if existing.get("best_gen") is not None else -1
+    
+        # US-007 — 루프 시작 시 잔여 정지 플래그 제거(이전 run 잔재 방지).
+        clear_stop_flag()
+        # 초기 idle→running 라이브 발행.
+        _publish_live(st, rid, config, status="running", current_gen=start_gen,
+                      cumulative_tokens=cumulative_tokens, phase="loop_start",
+                      message="loop started")
+    
+        try:
+            gen_no = start_gen
+            while True:
+                # --- US-007 정지 플래그 (세대 시작 전 깔끔히 종료) ---
+                if stop_requested():
+                    stop_reason = "stop_requested"
+                    _publish_live(st, rid, config, status="stopping", current_gen=gen_no,
+                                  cumulative_tokens=cumulative_tokens, phase="stopping",
+                                  message="stop flag observed; finishing cleanly",
+                                  best_gen=best_gen, best_score=best_score,
+                                  best_buy=best_buy, best_sell=best_sell,
+                                  winner_gen=winner_gen, winner_score=winner_score,
+                                  winner_buy=winner_buy, winner_sell=winner_sell)
+                    break
+    
+                # --- 종료 판정 (세대 시작 전) ---
+                # target_score(졸업 조기 종료)는 하드 게이트를 통과한 winner의 점수로만
+                #   판정한다(graded로 졸업하지 않는다). max-gen/cost-cap은 그대로.
+                stop, reason = should_terminate(
+                    {
+                        "best_score": winner_score,
+                        "gen_count": st.get_cumulative_generation_count(rid),
+                        "tokens": cumulative_tokens,
+                    },
+                    config,
+                )
+                if stop:
+                    stop_reason = reason
+                    break
+    
+                print(f"\n[LOOP] === generation {gen_no} (run={rid}) ===", flush=True)
+    
+                # --- a. 전략 확보 (생성 또는 seed) ---
+                use_seed = gen_no == 0 and seed_buy and seed_sell
+                if use_seed:
+                    buy_name = seed_buy
+                    sell_name = seed_sell
+                    print(f"[LOOP] seed 사용: buy={buy_name} sell={sell_name}", flush=True)
+                else:
+                    # CONVERGENCE — 누적 이력 요약을 매 세대 만들어 함께 전달한다.
+                    history_summary = build_history_summary(history_records)
+>                   gen_res = _generate_pair(
+                        provider, config, rid, gen_no, next_autopsy_feedback,
+                        history_summary=history_summary,
+                        sell_feedback=next_sell_feedback,
+                    )
+E                   TypeError: test_loop_feeds_autopsy_summary_into_next_generation.<locals>.fake_generate_pair() got an unexpected keyword argument 'sell_feedback'
+
+ai_strategy_loop\controller\loop.py:601: TypeError
+---------------------------- Captured stdout call -----------------------------
+
+[LOOP] === generation 0 (run=wirerun) ===
+_________________ test_loop_autopsy_fn_none_path_still_works __________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000186AA222580>
+tmp_path = WindowsPath('C:/Users/Public/Documents/ESTsoft/CreatorTemp/pytest-of-parkc/pytest-4451/test_loop_autopsy_fn_none_path1')
+
+    def test_loop_autopsy_fn_none_path_still_works(monkeypatch, tmp_path):
+        """US-005 보존: autopsy_enabled=False면 부검 피드백 없이 None 경로로 돈다."""
+        from ai_strategy_loop.controller import loop as L
+        from ai_strategy_loop.controller.state import LoopState
+        from ai_strategy_loop.fitness.score import FitnessResult, GradedResult
+    
+        monkeypatch.setattr(L, "_make_provider_with_proxy", lambda cfg: (object(), False))
+        monkeypatch.setattr(L.bootstrap, "ensure_loop_db_engine_compat", lambda *a, **k: None)
+        monkeypatch.setattr(L, "_print_strategy_head", lambda *a, **k: None)
+        monkeypatch.setattr(L, "_strategy_gist", lambda *a, **k: "")
+    
+        captured = {}
+    
+        def fake_generate_pair(provider, cfg, rid, gen, fb, history_summary=None):
+            captured[gen] = fb
+            return {
+                "status": "ok",
+                "buy_name": f"AILOOP_{rid}_g{gen}_buy",
+                "sell_name": f"AILOOP_{rid}_g{gen}_sell",
+                "tokens": 10,
+            }
+    
+        monkeypatch.setattr(L, "_generate_pair", fake_generate_pair)
+        monkeypatch.setattr(
+            L, "run_backtest_for",
+            lambda cfg, b, s: L.BacktestOutcome(
+                True, "success", "fake.csv",
+                {"cagr": 1.0, "mdd_pct": 1.0, "trade_count": 40, "total_profit_krw": 100},
+                "ok",
+            ),
+        )
+        monkeypatch.setattr(
+            L, "_score_outcome",
+            lambda outcome, cfg: (
+                FitnessResult(score=1.0, calmar=1.0, uptrend_r2=1.0, gate_passed=True,
+                              reason="ok", cagr=1.0, mdd=1.0, trade_count=40,
+                              total_profit=100.0),
+                GradedResult(graded=2.0, gate_passed=True, composite=1.0,
+                             trades_term=1.0, mdd_term=1.0, profit_term=1.0,
+                             uptrend_term=1.0, gate_distance="ok (gate passed)",
+                             cagr=1.0, mdd=1.0, trade_count=40, total_profit=100.0,
+                             uptrend_r2=1.0),
+                None,
+            ),
+        )
+    
+        # autopsy_enabled=False → 기본 부검 훅 비활성. autopsy_fn도 안 넘김.
+        config = LoopConfig(provider="openrouter", max_generations=2,
+                            cost_cap_generations=100, cost_cap_tokens=None,
+                            autopsy_enabled=False)
+        st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))
+>       summary = L.run_loop(config, run_id="noautopsy", state=st)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\unit\test_autopsy.py:357: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+config = LoopConfig(provider='openrouter', model='gpt-5.5', base_url=None, api_key=None, max_retries=2, temperature=None, max_t...iverse=20, target_score=None, max_generations=2, cost_cap_generations=100, cost_cap_tokens=None, autopsy_enabled=False)
+
+    def run_loop(
+        config: LoopConfig,
+        *,
+        seed_buy: Optional[str] = None,
+        seed_sell: Optional[str] = None,
+        autopsy_fn: Optional[Callable[[str], Optional[str]]] = None,
+        run_id: Optional[str] = None,
+        state: Optional[LoopState] = None,
+    ) -> Dict[str, Any]:
+        """헤드리스 진화 루프를 끝까지 돌리고 요약을 반환한다.
+    
+        Args:
+            config: LoopConfig (bt_*, max_generations, target_score, cost_cap_* 포함).
+            seed_buy/seed_sell: gen-0에서 생성 대신 평가할 기존 전략 이름(루프 DB).
+            autopsy_fn: csv_path를 받아 다음 세대 프롬프트용 피드백 문자열을 만드는
+                훅. None이고 config.autopsy_enabled가 True면 US-006 기본 부검 훅
+                (_default_autopsy_fn: working-window 거래 통계 → NL 피드백)을 자동 사용.
+                명시 autopsy_fn이 항상 우선. 둘 다 비활성이면 US-005 경로와 동일.
+            run_id: 지정 시 resume.
+            state: 테스트가 주입할 LoopState (None이면 기본 경로로 생성).
+    
+        Returns:
+            {run_id, generations, best_gen, best_score, best_buy, best_sell, stop_reason}.
+        """
+        st = state or LoopState()
+        owns_state = state is None
+    
+        # 부검 피드백 훅 결정 (US-006): 명시 autopsy_fn이 우선, 없으면 config 플래그로
+        #   기본 훅을 켠다. None이면(둘 다 비활성) US-005 경로와 동일하게 동작한다.
+        effective_autopsy_fn = autopsy_fn
+        if effective_autopsy_fn is None and getattr(config, "autopsy_enabled", False):
+            effective_autopsy_fn = _default_autopsy_fn(config)
+    
+        # 매도(SELL) 측 청산 부검 훅: 명시 autopsy_fn이 주어지면 그것을 진입/청산 양쪽에
+        #   쓰던 기존 계약을 유지하기 위해 sell 측엔 별도 훅을 만들지 않는다(autopsy_fn이
+        #   곧 buy 피드백). autopsy_fn 미지정 + autopsy_enabled면 청산 부검 기본 훅을 켠다.
+        effective_exit_autopsy_fn: Optional[Callable[[str], Optional[str]]] = None
+        if autopsy_fn is None and getattr(config, "autopsy_enabled", False):
+            effective_exit_autopsy_fn = _default_exit_autopsy_fn(config)
+    
+        rid = st.resume_or_start(config, run_id=run_id)
+        start_gen = st.get_last_completed_gen(rid) + 1
+    
+        # provider 준비 (gpt_auth면 프록시 기동).
+        provider, proxy_active = _make_provider_with_proxy(config)
+    
+        # best는 GRADED 점수로 선택한다(선택 그래디언트). winner/졸업은 하드 게이트
+        #   통과 전략에서만 갱신한다(graduation 기준은 하드 게이트 유지).
+        best_gen = -1
+        best_score = None  # = best graded score
+        best_buy = None
+        best_sell = None
+        winner_gen = -1     # 하드 게이트를 통과한 최고 세대 (졸업/export 후보).
+        winner_buy = None
+        winner_sell = None
+        winner_score = None  # 통과 세대의 하드 composite 점수.
+        stop_reason = "continue"
+        cumulative_tokens = 0
+        next_autopsy_feedback: Optional[str] = None   # 진입(BUY) 측 다음 세대 피드백.
+        next_sell_feedback: Optional[str] = None      # 매도(SELL) 측 다음 세대 청산 피드백.
+        history_records: list = []  # CONVERGENCE — 누적 GenRecord.
+        summary: Optional[Dict[str, Any]] = None
+    
+        # resume 시 기존 best(graded) 복원.
+        existing = st.get_run(rid)
+        if existing is not None and existing.get("best_score") is not None:
+            best_score = float(existing["best_score"])
+            best_gen = int(existing["best_gen"]) if existing.get("best_gen") is not None else -1
+    
+        # US-007 — 루프 시작 시 잔여 정지 플래그 제거(이전 run 잔재 방지).
+        clear_stop_flag()
+        # 초기 idle→running 라이브 발행.
+        _publish_live(st, rid, config, status="running", current_gen=start_gen,
+                      cumulative_tokens=cumulative_tokens, phase="loop_start",
+                      message="loop started")
+    
+        try:
+            gen_no = start_gen
+            while True:
+                # --- US-007 정지 플래그 (세대 시작 전 깔끔히 종료) ---
+                if stop_requested():
+                    stop_reason = "stop_requested"
+                    _publish_live(st, rid, config, status="stopping", current_gen=gen_no,
+                                  cumulative_tokens=cumulative_tokens, phase="stopping",
+                                  message="stop flag observed; finishing cleanly",
+                                  best_gen=best_gen, best_score=best_score,
+                                  best_buy=best_buy, best_sell=best_sell,
+                                  winner_gen=winner_gen, winner_score=winner_score,
+                                  winner_buy=winner_buy, winner_sell=winner_sell)
+                    break
+    
+                # --- 종료 판정 (세대 시작 전) ---
+                # target_score(졸업 조기 종료)는 하드 게이트를 통과한 winner의 점수로만
+                #   판정한다(graded로 졸업하지 않는다). max-gen/cost-cap은 그대로.
+                stop, reason = should_terminate(
+                    {
+                        "best_score": winner_score,
+                        "gen_count": st.get_cumulative_generation_count(rid),
+                        "tokens": cumulative_tokens,
+                    },
+                    config,
+                )
+                if stop:
+                    stop_reason = reason
+                    break
+    
+                print(f"\n[LOOP] === generation {gen_no} (run={rid}) ===", flush=True)
+    
+                # --- a. 전략 확보 (생성 또는 seed) ---
+                use_seed = gen_no == 0 and seed_buy and seed_sell
+                if use_seed:
+                    buy_name = seed_buy
+                    sell_name = seed_sell
+                    print(f"[LOOP] seed 사용: buy={buy_name} sell={sell_name}", flush=True)
+                else:
+                    # CONVERGENCE — 누적 이력 요약을 매 세대 만들어 함께 전달한다.
+                    history_summary = build_history_summary(history_records)
+>                   gen_res = _generate_pair(
+                        provider, config, rid, gen_no, next_autopsy_feedback,
+                        history_summary=history_summary,
+                        sell_feedback=next_sell_feedback,
+                    )
+E                   TypeError: test_loop_autopsy_fn_none_path_still_works.<locals>.fake_generate_pair() got an unexpected keyword argument 'sell_feedback'
+
+ai_strategy_loop\controller\loop.py:601: TypeError
+---------------------------- Captured stdout call -----------------------------
+
+[LOOP] === generation 0 (run=noautopsy) ===
+=========================== short test summary info ===========================
+FAILED tests/unit/test_autopsy.py::test_loop_feeds_autopsy_summary_into_next_generation
+FAILED tests/unit/test_autopsy.py::test_loop_autopsy_fn_none_path_still_works
+2 failed, 22 passed in 5.36s

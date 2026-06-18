@@ -1,0 +1,35 @@
+﻿P3 config verification
+timestamp=2026-06-04T19:53:01.9526705+09:00
+
+JSON parse and BOM:
+p3-config-manifest.json: parse=ok bom=False sha256=e90df4e4cc9697fd1bbe981aadec66e08a8a430de9fbdae22be2230f32ea21ba
+p3-smoke-config.json: parse=ok bom=False sha256=c9ee59f337bb079197fb98f8360cc5417d1587c544ae5ea70bfe691f264390e0
+p3-train-config.json: parse=ok bom=False sha256=62c8786c719544f0d6bdbfa887105383bf6e66a46ec57b26c29f21acf13b1132
+
+Manifest required hits:
+4:    "selector_version":  "yearly_sparse_robust_v1",
+22:                        "winner_objective":  "multiyear",
+23:                        "graduation_holdout":  true,
+33:                        "run_id":  "tick_oosrob_p5_train_2023_2025_20260604",
+36:                        "bt_full_start":  20230101,
+37:                        "bt_full_end":  20251231,
+42:                        "winner_objective":  "multiyear",
+43:                        "graduation_holdout":  true,
+45:                        "multiyear_min_years":  3,
+46:                        "multiyear_min_trades_per_year":  30,
+50:                        "selector_version":  "yearly_sparse_robust_v1",
+58:                                        "run_id":  "tick_oosrob_p6_seed_2022_20260604",
+85:                                        "run_id":  "tick_oosrob_p6_ai_2026_20260604",
+
+Freeze procedure required hits:
+15:5. Write `p5-selected-candidate.json` with `oos_excluded=true`, `diagnostic_only=false`, `policy_hash`, `config_hash`, aggregate checks, yearly breakdown, eligible candidates, and rejected candidates.
+22:- OOS-after-the-fact reselection.
+23:- `final_approval` or `export_winner`.
+24:- hard-gate, official engine, or `backtest/graph` edits.
+
+LoopConfig default/toggle check:
+default_sparse_positive_prompt_enabled=False
+train_sparse_positive_prompt_enabled=True
+
+Protected path status:
+<empty>

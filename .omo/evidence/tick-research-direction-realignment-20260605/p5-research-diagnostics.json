@@ -1,0 +1,45 @@
+{
+  "work_id": "tick-research-direction-realignment-20260605",
+  "phase": "P5",
+  "status": "diagnostics_ready_waiting_for_p7_candidate_csvs",
+  "training_period": "2023-01-01..2025-12-31",
+  "timeframe": "tick",
+  "oos_used": false,
+  "quant_methods": {
+    "variable_correlation": {
+      "module": "ai_strategy_loop.fitness.correlation",
+      "features": "numeric B_* entry variables only",
+      "segments": ["year", "time", "market_cap"],
+      "interactions": true,
+      "histograms": true,
+      "recency_research": "research-only 2025 emphasis, not promotion proof",
+      "empty_probe": {"insufficient": true, "pooled_trades": 0}
+    },
+    "feature_importance": {
+      "module": "ai_strategy_loop.fitness.feature_importance",
+      "methods": ["cohens_d", "top_bottom_quartile_win_rate", "market_cap_segment", "time_segment", "change_segment"],
+      "empty_probe": {"insufficient": true, "pooled_trades": 0}
+    },
+    "backfinder_principle": {
+      "module": "ai_strategy_loop.fitness.backfinder_principle",
+      "purpose": "mine pre-entry winner setup distributions by tick time and market-cap segment",
+      "status": "available_for_candidate_pool_analysis"
+    }
+  },
+  "candidate_data_status": {
+    "p7_candidate_csvs_available": false,
+    "reason": "P7 2023-2025 training run has not produced frozen pool CSVs yet",
+    "next_input": ".omo/evidence/tick-research-direction-realignment-20260605/p7-candidate-pools.json"
+  },
+  "qa": {
+    "command": "python -m pytest tests/unit/test_variable_correlation.py tests/unit/test_feature_importance.py tests/unit/test_backfinder_principle.py -q",
+    "evidence": ".omo/evidence/tick-research-direction-realignment-20260605/p5-research-tests.txt",
+    "result": "35 passed",
+    "empty_probe": ".omo/evidence/tick-research-direction-realignment-20260605/p5-empty-diagnostics-probe.txt"
+  },
+  "promotion_policy": {
+    "human_reference_similarity_is_proof": false,
+    "quant_diagnostics_override_promotion_gate": false,
+    "oos_blind_before_freeze": true
+  }
+}

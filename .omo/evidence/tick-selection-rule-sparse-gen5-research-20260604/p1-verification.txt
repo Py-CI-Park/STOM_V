@@ -1,0 +1,60 @@
+﻿## P1 Verification
+timestamp=2026-06-04T12:33:35.7612360+09:00
+
+## JSON parse
+selector_version=sparse_positive_v1
+max_mdd=10.0
+min_trade_count=20
+forbidden_fields=oos_2022,oos_2026,slippage,pbo,dsr,final_verdict,post_oos_analysis
+
+## rg selector terms
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:2:  "selector_version": "sparse_positive_v1",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:14:    "mdd",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:15:    "trade_count",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:16:    "daily_avg_trades",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:22:  "forbidden_fields": [
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:35:    "max_mdd_inclusive": 10.0,
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:36:    "min_trade_count_inclusive": 20,
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:37:    "max_trade_count_inclusive": 250,
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:38:    "min_daily_avg_trades_inclusive": 0.05,
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:54:      "allowed_gate_reason_pattern": "daily_avg_trades .* < min_daily_trades .*",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:60:      "key": "profit_div_max_mdd_1",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:64:      "key": "mdd",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:68:      "key": "min_trade_count_150",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:94:    "oos_excluded",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:95:    "diagnostic_only",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:98:    "forbidden_oos_fields_present"
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:103:    "ai_max_mdd_lte_seed_max_mdd": true,
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-oos-blindness-check.txt:17:Prior run replay is allowed only with `diagnostic_only=true`; it validates mechanics and cannot support an efficacy claim.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-oos-blindness-check.txt:19:Any selected candidate must be frozen to an artifact with `oos_excluded=true` before P5 starts.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:1:# P1 Selector Spec: sparse_positive_v1
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:4:- selector_version: `sparse_positive_v1`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:19:- `mdd`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:20:- `trade_count`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:21:- `daily_avg_trades`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:40:- `mdd <= 10.0`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:41:- `20 <= trade_count <= 250`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:42:- `daily_avg_trades >= 0.05`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:58:- `gate_reason` is exactly a daily-frequency failure, for example `daily_avg_trades 0.1 < min_daily_trades 0.3`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:66:1. Higher `profit / max(mdd, 1.0)`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:67:2. Lower `mdd`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:68:3. Higher `min(trade_count, 150)`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:89:- `oos_excluded: true`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:90:- `diagnostic_only` for prior-run replay
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:93:- `forbidden_oos_fields_present: false`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:96:`sparse_positive_v1` only selects a research candidate. It does not promote a strategy.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:110:- Prior P3 gen5 may be replayed only as `diagnostic_only=true`.
+
+## protected-path git status after P1
+
+
+## QA/adversarial classes for P1
+malformed_input=probed by JSON parse; valid JSON required
+prompt_injection=not applicable; no prompt/model call made
+cancel_resume=not applicable; no runtime process started
+stale_state=probed by predeclared_at and oos_excluded text before P5
+dirty_worktree=probed by protected-path status; unrelated dirty work preserved
+hung_or_long_commands=not applicable; no long command
+flaky_tests=not applicable; no test suite in P1
+misleading_success_output=probed by JSON parse plus rg term checks
+repeated_interruptions=not applicable; P1 is static evidence

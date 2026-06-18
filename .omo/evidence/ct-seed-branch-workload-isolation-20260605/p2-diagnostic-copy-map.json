@@ -1,0 +1,62 @@
+{
+  "status": "ok",
+  "loop_db": "ai_strategy_loop\\state\\loop_strategies.db",
+  "entries": [
+    {
+      "table": "stockbuy",
+      "source": "C_T_900_920_U2_B",
+      "diag": "CT_DIAG_CTB_902905_20260605",
+      "role": "ct_buy",
+      "source_exists": true,
+      "diag_exists": true,
+      "sha256": "902cb36b87f5828548531583cd4aa16ed4a5a2a597b3db3abba217cb0f86e2e3",
+      "copied_sha256": "902cb36b87f5828548531583cd4aa16ed4a5a2a597b3db3abba217cb0f86e2e3",
+      "length": 13178,
+      "line_count": 431,
+      "contains_self_buy": true,
+      "contains_self_sell": false
+    },
+    {
+      "table": "stocksell",
+      "source": "C_T_900_920_U2_S",
+      "diag": "CT_DIAG_CTS_902905_20260605",
+      "role": "ct_sell",
+      "source_exists": true,
+      "diag_exists": true,
+      "sha256": "e61d8ba393ae74de73d07e0cd291861bc3edeec1050cbc7d06a0750d67cba5c6",
+      "copied_sha256": "e61d8ba393ae74de73d07e0cd291861bc3edeec1050cbc7d06a0750d67cba5c6",
+      "length": 1945,
+      "line_count": 87,
+      "contains_self_buy": false,
+      "contains_self_sell": true
+    },
+    {
+      "table": "stockbuy",
+      "source": "Tick_B_902_905_Update_2",
+      "diag": "CT_DIAG_CTLB_902905_20260605",
+      "role": "control_buy",
+      "source_exists": true,
+      "diag_exists": true,
+      "sha256": "15feb9f96176a666f58fc2e7e5d32dad6f4779c01d7f0e2419bfad41a43f6afa",
+      "copied_sha256": "15feb9f96176a666f58fc2e7e5d32dad6f4779c01d7f0e2419bfad41a43f6afa",
+      "length": 3836,
+      "line_count": 128,
+      "contains_self_buy": true,
+      "contains_self_sell": false
+    },
+    {
+      "table": "stocksell",
+      "source": "Tick_S_902_905_Update_2",
+      "diag": "CT_DIAG_CTLS_902905_20260605",
+      "role": "control_sell",
+      "source_exists": true,
+      "diag_exists": true,
+      "sha256": "093ba24ee300691afb7e4e8ef48c4d85e4ea92356c4c73a7795d3e059254b8f1",
+      "copied_sha256": "093ba24ee300691afb7e4e8ef48c4d85e4ea92356c4c73a7795d3e059254b8f1",
+      "length": 1374,
+      "line_count": 47,
+      "contains_self_buy": false,
+      "contains_self_sell": true
+    }
+  ]
+}

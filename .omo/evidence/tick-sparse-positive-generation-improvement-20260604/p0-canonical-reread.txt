@@ -1,0 +1,486 @@
+﻿timestamp=2026-06-04T16:35:09.0280509+09:00
+## canonical files read
+
+### .omo/evidence/tick-selection-rule-sparse-gen5-research-20260604/p6-decision-card.md
+# P6 Decision Card
+
+## Executive Verdict
+NEEDS_MORE_EVIDENCE
+
+The predeclared `sparse_positive_v1` selector was implemented and replayed correctly, but the fresh 2023-2025 P4 run did not produce an eligible candidate. Therefore no fixed 2022/2026 OOS comparison was executed.
+
+## Selector Version
+- selector_version: `sparse_positive_v1`
+- predeclared evidence: `p1-selector-spec.md`, `p1-selector-spec.json`
+- OOS discipline: candidate selection uses training rows only and requires `oos_excluded=true`
+
+## Candidate Identity
+No candidate was selected.
+
+P4 selector artifact:
+- selected: false
+- blocked: true
+- blocker: `no candidate qualified for sparse_positive_v1`
+- eligible_candidates: 0
+- rejected_candidates: 6
+
+## Training Evidence
+Fresh P4 run:
+- run_id: `tick_sel_sparse_p4_train_2023_2025_20260604`
+- period: 2023-01-01 through 2025-12-31
+- timeframe: tick
+- window: 09:00-09:30
+- max_generations: 6
+- official loop exit: 0
+- wall clock: about 2704.2 seconds
+- winner: null
+
+Observed rows:
+- gen0: error, warm backtest timeout.
+- gen1: profit -35,206,257, MDD 167.56, trades 4212, gate fail.
+- gen2: profit -1,945,943, MDD 43.76, trades 688, gate fail.
+- gen3: error, no metrics CSV.
+- gen4: profit -2,153,502, MDD 39.05, trades 687, gate fail; existing graded-best but training-negative.
+- gen5: profit -353,764, MDD 13.4, trades 111, daily_avg_trades 0.2, gate fail on daily frequency; rejected because profit <= 0 and MDD > 10.0.
+
+## Replay Caveat
+Prior P3 replay selected prior gen5 under `sparse_positive_v1`, but that replay is `diagnostic_only=true`. It is mechanics evidence only, not efficacy evidence, because the old P5 failure was already known.
+
+## OOS Evidence
+P5 was skipped by rule because P4 did not freeze a candidate.
+
+OOS run-id row checks:
+- `tick_sel_sparse_p5_seed_2022_20260604`: 0 rows
+- `tick_sel_sparse_p5_seed_2026_20260604`: 0 rows
+- `tick_sel_sparse_p5_ai_2022_20260604`: 0 rows
+- `tick_sel_sparse_p5_ai_2026_20260604`: 0 rows
+
+## Seed Comparison
+No comparison was performed in this plan. Comparing without a frozen candidate would violate the predeclared process.
+
+## Trade-Count Sufficiency
+Not applicable. No AI OOS rows exist.
+
+## Slippage Status
+Not run. Slippage stress is blocked until a candidate exists and fixed 2022/2026 OOS rows exist.
+
+## PBO/DSR Status
+Not run. PBO/DSR is an advisory blocker until a candidate and OOS evidence exist.
+
+## Forbidden Actions Check
+- `final_approval`: not invoked.
+- `export_winner`: not invoked.
+- production strategy DB writes: not invoked.
+- live broker / KHOPENAPI / V3K gate advancement: not invoked.
+- `taskkill`: not used.
+- official backtest engine edits: not performed.
+- hard-gate edits: not performed.
+- `backtest/graph` edits: not performed.
+
+## Final Verdict
+NEEDS_MORE_EVIDENCE
+
+Rationale: the improved selection rule prevented a training-negative candidate from being sent to OOS, but the fresh research run did not find a positive eligible candidate. The process is safer and more honest, but it has not produced a candidate capable of challenging the human seed.
+
+
+### .omo/evidence/tick-selection-rule-sparse-gen5-research-20260604/p4-selected-candidate.json
+{
+  "selector_version": "sparse_positive_v1",
+  "run_id": "tick_sel_sparse_p4_train_2023_2025_20260604",
+  "config_path": ".omo\\evidence\\tick-selection-rule-sparse-gen5-research-20260604\\p4-train-config.json",
+  "config_hash": "64ef805703a388e3ed2abfaa8613d0ef5af92f9e08915f65e8db25913a1ab81b",
+  "selected": false,
+  "blocked": true,
+  "blocker": "no candidate qualified for sparse_positive_v1",
+  "selected_bucket": null,
+  "gen_no": null,
+  "buy_name": null,
+  "sell_name": null,
+  "metrics": null,
+  "selection_timestamp": "2026-06-04T13:35:00+09:00",
+  "oos_excluded": true,
+  "diagnostic_only": false,
+  "eligible_candidates": [],
+  "rejected_candidates": [
+    {
+      "gen_no": 0,
+      "reasons": [
+        "status != ok",
+        "profit <= 0",
+        "trade_count < 20",
+        "daily_avg_trades < 0.05",
+        "payoff_ratio < 1.05"
+      ]
+    },
+    {
+      "gen_no": 1,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250"
+      ]
+    },
+    {
+      "gen_no": 2,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250"
+      ]
+    },
+    {
+      "gen_no": 3,
+      "reasons": [
+        "status != ok",
+        "profit <= 0",
+        "trade_count < 20",
+        "daily_avg_trades < 0.05",
+        "payoff_ratio < 1.05"
+      ]
+    },
+    {
+      "gen_no": 4,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250"
+      ]
+    },
+    {
+      "gen_no": 5,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0"
+      ]
+    }
+  ],
+  "forbidden_oos_fields_present": false
+}
+
+### .omo/evidence/tick-selection-rule-sparse-gen5-research-20260604/p4-selector-blocked.md
+# P4 Selector Blocked
+
+## Verdict
+- selected: False
+- blocked: True
+- blocker: no candidate qualified for sparse_positive_v1
+- selector_version: sparse_positive_v1
+- run_id: tick_sel_sparse_p4_train_2023_2025_20260604
+- oos_excluded: True
+
+## Run Summary
+- Official loop exit: 0
+- Generations: 6
+- Winner: null
+- Best generation by existing graded score: gen4, but it is training-negative and gate-failed.
+- Wall clock: about 2704.2 seconds, from loop summary.
+
+## Generation Rows
+| gen | status | score | gate | reason | trades | daily_avg | mdd | profit | pct | payoff | max_hold |
+|---|---|---:|---|---|---:|---:|---:|---:|---:|---:|---:|
+| 0 | error | 0.0 | 0 | backtest failed/timeout: warm backtest non-success: status=error message=���׽�Ʈ �ð� �ʰ� (300��) csv=no | 0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 1 | ok | 0.016672959200214055 | 0 | mdd 167.6 > mdd_cap 35 | 4212 | 5.8 | 167.56 | -35206257.0 | -175.78 | 1.2712289213228511 | 4.0 |
+| 2 | ok | 0.16319728759236568 | 0 | mdd 43.76 > mdd_cap 35 | 688 | 0.9 | 43.76 | -1945943.0 | -19.51 | 1.3270414441556224 | 2.0 |
+| 3 | error | 0.0 | 0 | backtest failed/timeout: warm backtest non-success: status=error message=backtest completed without metrics csv=no | 0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 4 | ok | 0.16904957025100648 | 0 | mdd 39.05 > mdd_cap 35 | 687 | 0.9 | 39.05 | -2153502.0 | -21.61 | 1.253967211931151 | 2.0 |
+| 5 | ok | 0.15753391372194106 | 0 | daily_avg_trades 0.2 < min_daily_trades 0.3 | 111 | 0.2 | 13.4 | -353764.0 | -7.08 | 1.74679186756128 | 0.0 |
+
+## Selector Interpretation
+sparse_positive_v1 found no eligible candidate.
+
+Key rejection facts:
+- gen1: profit negative, MDD 167.56, trades 4212.
+- gen2: profit negative, MDD 43.76, trades 688.
+- gen4: profit negative, MDD 39.05, trades 687.
+- gen5: daily-frequency gate failure, but profit is negative (-353,764) and MDD is 13.4, so it is not sparse-positive under P1 thresholds.
+
+## Next-Step Effect
+P5 fixed OOS must be skipped/blocked. No OOS rows should be fabricated because no P4 candidate was frozen.
+
+### .omo/evidence/tick-selection-rule-sparse-gen5-research-20260604/final-verification.txt
+# Final Verification
+timestamp: 2026-06-04T13:44:47.6986614+09:00
+PYTHONUTF8=1
+
+## git diff --check
+started: 2026-06-04T13:44:47.7076804+09:00
+warning: in the working copy of 'ai_strategy_loop/controller/lineage.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/controller/state.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/app.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/chart.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/code-viewer.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/engine.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/styles.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/table.jsx', LF will be replaced by CRLF the next time Git touches it
+exit_code: 0
+finished: 2026-06-04T13:44:47.9509361+09:00
+
+## python scripts/verify_nonrelease_sync.py
+started: 2026-06-04T13:44:47.9543248+09:00
+[OK] ?뚰겕?몃━??.pyd ?뚯씪???놁뒿?덈떎.
+[OK] ?붾젅洹몃옩 qlist 怨꾩빟???꾩옱 MainWindow ?쒖꽌? ?쇱튂?⑸땲??
+[OK] MainWindow媛 ?붾젅洹몃옩 ?고??꾩쓣 ?쒖옉?⑸땲??
+[OK] ?ㅼ젙 蹂寃??꾪뙆媛 TelegramProcessAlive 寃쎈줈瑜??ъ슜?⑸땲??
+[OK] ?붾젅洹몃옩 alive helper媛 議댁옱?⑸땲??
+[OK] Jisu cleanup matches V2.70 removal.
+[OK] Shutdown cleanup matches current MainWindow runtime.
+[OK] Shutdown persists dialog geometry before closing dialogs.
+[OK] Shutdown hides Qt windows before bounded child cleanup.
+[OK] Shutdown does not raise SystemExit inside Qt closeEvent.
+[OK] Shutdown query/sound child wait is bounded with terminate fallback.
+[OK] Shutdown backtest stop acknowledgement wait is bounded with terminate fallback.
+[OK] BackTest ?꾨줈?몄뒪 ?앹꽦?먭? 吏곸젒 ?몄옄 ?꾨떖 怨꾩빟???좎??⑸땲??
+[OK] BackTest ?ㅽ뻾 ?몄옄媛 backQ ?고쉶 ?꾨떖濡??ㅼ뿼?섏? ?딆뒿?덈떎.
+[OK] WebCrawling runtime wiring matches QThread contract.
+[OK] static.py compatibility exports match runtime contract.
+[OK] WebCrawling stop contract includes timeout and cancellation guards.
+[OK] Key loading safety guard is present.
+[OK] Kiwoom P/L rounding matches expected loss math.
+[OK] 鍮꾩젙???뚰겕?몃━?먯꽌 ?쒕━?쇳궎 UI ?앹꽦??李⑤떒?⑸땲??
+[OK] ?ㅼ젙 ??μ씠 ?뚰겕?몃━ ?쒕━?쇳궎 ?뺤콉???곕쫭?덈떎.
+[OK] dict_set ?곸옱媛 鍮꾩젙???뚰겕?몃━ ?쒕━?쇳궎 ?뺤콉???곕쫭?덈떎.
+[OK] legacy utility/setting.py??鍮꾩젙???뚰겕?몃━ ?쒕━?쇳궎 ?뺤콉???곕쫭?덈떎.
+
+紐⑤뱺 鍮꾩젙???뚰겕?몃━ ?숆린??媛?쒕젅??寃?щ? ?듦낵?덉뒿?덈떎.
+exit_code: 0
+finished: 2026-06-04T13:44:48.7059051+09:00
+
+## protected path status
+started: 2026-06-04T13:44:48.7059051+09:00
+(no output)
+exit_code: 0
+finished: 2026-06-04T13:44:48.9427671+09:00
+
+## focused selector/research pytest
+started: 2026-06-04T13:44:48.9437665+09:00
+................................                                         [100%]
+32 passed in 2.41s
+exit_code: 0
+finished: 2026-06-04T13:44:53.0713477+09:00
+
+## focused dashboard/research pytest
+started: 2026-06-04T13:44:53.0713477+09:00
+.............................................                            [100%]
+45 passed in 7.99s
+exit_code: 0
+finished: 2026-06-04T13:45:03.2687947+09:00
+
+## Summary
+git_diff_check: exit_code=0
+verify_nonrelease_sync: exit_code=0
+protected_paths: exit_code=0
+selector_tests: exit_code=0
+dashboard_tests: exit_code=0
+F2 PASS: all verification commands exited 0.
+
+### docs/AGENT_HANDOFF.md
+# AGENT HANDOFF ??STOM AI 議곌굔???먯쑉吏꾪솕 (?먯씠?꾪듃 臾닿?쨌?먭린?꾧껐)
+
+> **??臾몄꽌???대뼡 AI ?먯씠?꾪듃(Claude쨌Codex쨌Gemini ???????묒뾽??肄쒕뱶濡??댁뼱諛쏄린 ?꾪븳 ?먭린?꾧껐???몃뱶?ㅽ봽??** Claude ?꾩슜 硫붾え由?`~/.claude/...`)???섏〈?섏? ?딅뒗?? ?곸꽭??`docs/update_log/`瑜?媛由ы궎?? ??臾몄꽌留뚯쑝濡?諛⑺뼢쨌?쒖빟쨌?꾪솴쨌?ㅼ쓬 ?④퀎瑜??뚯븙?????덈떎.
+>
+> **媛깆떊**: 2026-06-03 쨌 **釉뚮옖移?*: `STOM_Version_2U_C-ai-strategy-loop` 쨌 **?뚰겕?몃━**: `STOM_V.wt-dev` 쨌 **HEAD 洹쇱쿂**: `f63241c3`(?몃뱶?ㅽ봽 docs) ????`447febd3`(T2)쨌`d22efe89`(T3)쨌`8f1ea7fa`(T4)쨌`a4b8de59`(蹂댁쑀醫낅ぉ??쨌`b097aa7c`(T1)쨌`a45a7502`(T0).
+
+---
+
+## 0. ?꾨줈?앺듃 ?뺤껜??(?????묒뾽???덈굹)
+`ai_strategy_loop/`??**二쇱떇 ?⑦? 議곌굔??留ㅼ닔/留ㅻ룄 ?꾨왂 肄붾뱶)??LLM?쇰줈 ?먯쑉 ?앹꽦 ??STOM 怨듭떇 諛깊뀒 ?붿쭊?쇰줈 ?됯? ??梨꾩젏 ??遺寃 ??諛섎났**?섎뒗 ?먯쑉吏꾪솕 ?곌뎄 ?쒖뒪?쒖씠?? **遺곴레??= ?멸컙 怨좎닔媛 留뚮뱺 醫뗭? 議곌굔??`docs/reference/STOM_Good_Results/` 17媛??ㅽ겕由곗꺑, ?꾨? tick쨌09:00~09:30쨌?쇳룊洹?0~23쨌?숈떆蹂댁쑀6~12쨌MDD1.9~6.75%) ?섏? ?먮뒗 洹??댁긽???먯쑉濡?留뚮뱾怨? ?욎쑝濡쒕룄 ?먯쑉 媛쒖꽑?섎뒗 ?쒖뒪??**
+
+?듭떖 ?꾨찓???ъ떎:
+- **?쒕뱶 ?꾨왂 `Tick_B_902_905_Update_2`**(留ㅼ닔)+`Tick_S_902_905_Update_2`(留ㅻ룄) = 09:02~09:05(3遺? tick ?ㅼ틮?? ?댁쁺 DB `_database/strategy.db`??byte-?숈씪 議댁옱(?ㅻ같??媛???먯궛). **?ㅻ뀈(2022~2025) ?곗냽 ?묒옄쨌?꾩쟻 ?곗긽??r짼0.90 = 寃ш퀬??怨⑤뱶.**
+- **902=09:02(?쒕텇珥?90200)쨌905=09:05.** tick ?곗씠?곕뒗 09:00~09:30留?議댁옱(`_database/stock_tick_*.db`). 1遺꾨큺(min) ?곗씠?곕뒗 09:00~15:19(`_database/stock_min_back.db`).
+
+---
+
+## 1. ?뵶 ?대뼸寃??댁뼱諛쏅굹 (?먭린?꾧껐 ?ш컻)
+1. ??臾몄꽌 + `docs/update_log/2026-06-03_tick_program_complete_handoff.md`(吏곸쟾 ?몄뀡 ?곸꽭) + `docs/update_log/2026-06-02_comprehensive_review_and_redirection.md`(諛⑺뼢??醫낇빀寃?? ?쎄린.
+2. ?꾩옱 ?곹깭(짠3) + 遺덈???짠2) ?뺤씤.
+3. **?ㅼ쓬 ?묒뾽(짠6)**: ?좉? ON ?ㅻ뀈 ?곌뎄 run ?ㅺ???+ 2022/2026 OOS 遺꾨━寃利?= ?ㅼ젣 ?멸컙 reference ?κ? ?щ? ?뺤쭅 ?먯젙.
+4. 蹂寃쎈쭏??遺덈???짠2) 以??
+
+---
+
+## 2. ?뵏 ?섎뱶 遺덈???(?덈? ???꾨컲 湲덉?)
+| # | 遺덈???| ?댁쑀 |
+|---|---|---|
+| 1 | **?붿쭊 臾댁닔??*: `backtest/backengine_*.py`쨌`backtest/back_static.py`(`GetBuyStg`/`GetSellStg`) | 怨듭떇 諛깊뀒 ?붿쭊. ?꾨왂肄붾뱶???뺢퇋??`留ㅼ닔=True`??if not(cond): 留ㅼ닔=False` 泥댁씤)?쇰줈 as-is exec |
+| 2 | **?섎뱶寃뚯씠??臾댁닔??*: `ai_strategy_loop/fitness/score.py` `compute_fitness`(議몄뾽/?곗듅 PASS/FAIL) | ?됯? 湲곗??? ?좉퇋 吏?쒕뒗 `compute_graded_fitness`(gate-?ㅽ뙣 遺꾧린) 媛?곕쭔 |
+| 3 | **`backtest/graph/` 臾댁닔??* | 蹂댄샇??寃곌낵 ?곗씠???뚯뒪 ?꾨떂) |
+| 4 | **?좉퇋 湲곕뒫 = config ?좉? 湲곕낯 OFF, OFF????byte-identical** | ?댁쁺 ?숈옉 臾대?寃?蹂댁옣 |
+| 5 | **媛?蹂寃?= ?낅┰ code-reviewer APPROVE** (???寃??遺꾨━) | ?먭린?뱀씤 湲덉? |
+| 6 | **寃곗젙濡?baseline**: `PYTHONUTF8=1 python -m pytest tests/unit/ -p no:randomly -q` ??湲곗〈 **7 failed**(諛깊뀒 spawn/UI 怨꾩빟, 臾닿?) ??**?좉퇋 0** | ?뚭? 李⑤떒 |
+| 7 | **`python scripts/verify_nonrelease_sync.py` ?듦낵** | 鍮꾩젙???뚰겕?몃━ ?숆린??媛??|
+| 8 | **釉붾옲??`taskkill /F /IM python.exe` 湲덉?** | 臾닿? python ?꾨줈?몄뒪 ?곸＜(`.omc/research` ?뚯빱쨌MCP쨌web.main쨌??쒕낫?쑣룻? ?꾨줈?앺듃). ?멸낵??loop PID留? ?뺣━. ?대┛ exit? ?붿쭊 ?먮룞?뺣━ |
+| 9 | **V3 留덉씠洹몃젅?댁뀡 湲덉?쨌research/init ?꾪뙆 湲덉?** (`CLAUDE.md`) | ???덉씤? 2U_C 理쒖쥌 湲곗???|
+
+寃利??ъ씠利? `python` ?ъ슜(??癒몄떊? `python`??pandas ???섏〈?? `python3` ?꾨떂). `PYTHONUTF8=1` ?꾩닔(cp949 ?뚰뵾). git index.lock stale ??`rm -f C:/System_Trading/STOM/STOM_V/.git/worktrees/STOM_V.wt-dev/index.lock`.
+
+---
+
+## 3. ???꾩옱 ?곹깭 ??TICK ?곗꽑 ?꾨줈洹몃옩 T0~T4 ?꾨즺
+?멸컙 reference媛 ?꾨? tick?대씪 **tick 09:00~09:30 ?꾩껜 李?*?쇰줈 ?먯쑉吏꾪솕 ?명봽?쇰? 援ъ텞(猷⑦봽 ?쒕뱶 902??3遺꾨쭔 ??怨좎갑???덉뿀??. 6而ㅻ컠, 媛??④퀎 ?짣B ?ㅻえ?щ줈 ?ㅼ쬆, ?꾨? 遺덈???以??
+
+| ?④퀎 | 而ㅻ컠 | 臾댁뾿 | ?ㅼ쬆 |
+|---|---|---|---|
+| T0 李??쒕뱶 ?뺤옣 | `a45a7502` | classification ?꾨＼?꾪듃 ?쒓컙李?09:28??9:30쨌902 怨좎갑?댁젣 | ?앹꽦 gen1 91嫄곕옒 09:00~09:19 gate PASS쨌+685k쨌MDD6.59 |
+| T1 ??몃텇???쒓컖??| `b097aa7c` | ?깅씫瑜?遺꾩꽍 異?+ ??쒕낫???덊듃留?留됰?(`analysis.jsx`) | ?깅씫瑜?湲됰벑+490k/珥덇툒??674k vs ?곸듅(3~6%)??59k?곸옄쨌?쒓컙? 0905-0910 怨⑤뱺(?밸쪧57%) |
+| 蹂댁쑀醫낅ぉ??踰꾧렇?섏젙 | `a4b8de59` | 臾닿굅???몃? ?숈떆蹂댁쑀 0??嫄곕옒?놁쓬" 援щ텇 | ??쒕낫????뚮뜑 |
+| T4 諛섎났 ?뺤젣 ?먮（??| `8f1ea7fa` | ?⑤같 ?멸렇癒쇳듃 ???앹꽦 留ㅼ닔 ?꾨＼?꾪듃 avoid ?섎쪟(`segment_feedback.py`쨌?좉? `segment_feedback_enabled`) | ?ㅻ뜲?댄꽣 avoid 6?쇱씤(3~6% ?곸옄 ?? |
+| T3 ?볦??앹꽦 媛뺥솕 | `d22efe89` | ?쒓컙李?媛믩쾾??痢≪젙(`filter_gate.time_window_bounds/span_sec/is_noop`쨌?⑹쭛??envelope쨌?좉? `require_meaningful_time_window`) | g1=09:00~09:20쨌?쒕뱶902=09:02~09:05(醫곸븘??no-op ?꾨떂). **?ㅻえ?ш? 援먯쭛??諛섏쟾踰꾧렇 ?≪븘 ?⑹쭛???섏젙** |
+| T2 諛깊뙆?몃뜑 ?먮━ | `447febd3` | headless lookahead 梨꾧뎬(`backfinder_principle.py`)?믪듅由ъ뀑??遺꾪룷?묪andSpec ?쒕뱶 | ?짣B 24,229?됀?29?뱀옄쨌**理쒓퀬? lift 8.99**쨌?밸━?뗭뾽 ?깅씫??q25~q75=??.5~5.4쨌泥닿껐媛뺣룄 116~180 |
+
+異붽?: **S0 min ??몄뀡 ?좉?**(`8148467b`, `full_session_enabled`+`bt_min_universe_end_time=151900`, warm?ㅻえ??ON=40嫄곕옒 09:29~15:18/OFF=0嫄곕옒)??蹂댁〈.
+
+**?ㅼ쬆???먮（??*(?ъ슜??鍮꾩쟾): ?좊꼻??앹꽦(T0) ???좏???쒓컖???뺤젣(T1) ????갚?뚯씤???쒕뱶(T2) ??諛섎났 avoid ?섎쪟(T4), ?쒓컙李?痢≪젙(T3)濡?媛?쒗솕.
+
+**?좑툘 ?뺤쭅???쒓퀎**: ?명봽?쇰뒗 ?꾩꽦쨌?묐룞?섎굹, **???좉??ㅼ쓣 ON?쇰줈 耳??ㅻ뀈쨌??좊땲踰꾩뒪 ?곌뎄 run + OOS 寃利앹? ?꾩쭅 ????* = "?ㅼ젣濡??멸컙 reference瑜??κ??섎뒗吏" 誘명뙋?? ?좉퇋 ?좉? ?꾨? 湲곕낯 OFF??**???댁쁺 ?숈옉? 臾대?寃?*.
+
+---
+
+## 4. ?㎛ ?듭떖 ?곌뎄 GROUND-TRUTH (諛섎뱶???뚭퀬 ?쒖옉 ???쏆닔怨?諛⑹?)
+怨쇨굅 ?몄뀡?ㅼ씠 ?ㅼ쬆쨌諛섏쬆??鍮꾧????ъ떎?? ?닿구 紐⑤Ⅴ硫?媛숈? ?ㅽ뙣瑜?諛섎났?쒕떎.
+
+1. **?뺤쟻 肄붾뱶濡?"醫뗭? ?꾨왂"???먮퀎 遺덇?** (R7.4쨌짠3.14쨌짠3.15, 留ㅼ닔+留ㅻ룄 ?묒そ 諛섏쬆). ???곸쓣 媛瑜대뒗 嫄?肄붾뱶媛 ?꾨땲??**?쒖옣 ?덉쭚**. ???뺤쟻 ?덉쭏 寃뚯씠??reject濡?"?섏씡 蹂댁옣" ?쒕룄 湲덉?. 援ъ“ 寃뚯씠??怨쇰컻??李⑤떒쨌踰붿＜ ?샕톘o-op ?먯?)??OK, ?덉쭏 ?먯젙? 遺덇?.
+2. **?쒕뱶 Tick_902???ㅻ뀈媛뺢굔 怨⑤뱶** (2024 Q1 +1.55M쨌2025 Q1 +1.94M 2?꾩뿰??. AI refine? **?뺤쭅??1??OOS ?됯????쒕뱶瑜?紐??닿?**(??+318K쨌MDD36쨌calmar0.18). 1媛쒖썡 "蹂닿퀬?쒓툒"? ?고샇李?怨쇱쟻??
+3. **媛??諛고룷媛?ν븳 寃利?寃곌낵 = ?곸쓳???덉쭚??대컢**(?쒕뱶 ?먭린 ?먮낯怨≪꽑 異붿쥌: 吏곸쟾 lookback媛쒖썡<0?대㈃ OFF). ?ㅻ뀈 2022~2026 吏꾩쭨 OOS??**?꾪뿕議곗젙 3.5諛?*(MDD ??1%). ?멸낵?겶텮I遺덊븘?? ?좉? `adaptive_timing_enabled`(遺꾩꽍?꾩슜).
+4. **?꾨찓?몄＜?낆씠 fresh ?앹꽦??援ъ젣**: classification(?쒓컙횞?쒖킑횞?깅씫瑜? + filter_gate(踰붿＜ AND) + few_shot(seed_db ?멸컙?꾨왂)??諛깆?遺뺢눼(짠3.17)瑜?留됱븘 viable쨌?ㅼ뼇쨌媛뺢굔 ?꾨왂 ?먯쑉?앹궛. ??AI???덈룄???덉쭚 怨쇱쟻??援먯감?곕룄 ?ㅽ뙣)=?멸컙 怨듯넻 ?쒖옣援ъ“ ?쒖젣.
+5. **?숈긽釉?蹂댁셿**: AI???쒕뱶 *?泥?媛 ?꾨땲??*蹂댁셿*(?쒕뱶 ?쎌꽭??硫붿슦湲?. 2025 H1 ?숈긽釉?+79%/MDD??8%?대굹 **2024 OOS 怨좎젙?꾩씠 ?ㅽ뙣** ???꾨갑? ?곸쓳?뺣쭔 ?좏슚.
+6. **"?멸컙 珥덉썡"? ?먯깋?댁? 蹂댁옣 ?꾨떂**. ?덉쭚媛뺢굔? **holdout/?ㅻ뀈 OOS濡쒕쭔** ?뺣낫. 寃뚯씠?명넻怨????섏씡(遺덈?).
+7. **諛깊뙆?몃뜑(T2) ?쒕뱶??lookahead/survivorship ?명뼢** ???앹꽦 ?쒕뱶 ?꾩슜, OOS 寃利??꾩닔.
+8. **OOM**: 3????좊땲踰꾩뒪 ?⑥씪 warm ~5?몃? ?쒓퀎(怨쇰컻??per-run 硫붾え由???쬆). 1媛쒖썡 諛깊뀒 ~20s ?덉쟾. tick 30遺꾩갹? 媛踰쇱?. ?щ옒????怨좎븘 ?붿쭊 ?멸낵???뺣━ ?꾩닔.
+
+---
+
+## 5. ?뿺截??꾪궎?띿쿂 鍮좊Ⅸ 吏??- **CLI 吏꾩엯**: `python -m ai_strategy_loop.controller.loop --config-json <cfg.json> --run-id <id> --max-gen <N>`
+- **?앹꽦**: `brain/prompt.py`(?꾨＼?꾪듃쨌classification/avoid/dispersion 釉붾줉)쨌`brain/generator.py`(PRE-SAVE 寃뚯씠???ъ뒳)쨌`brain/filter_gate.py`(踰붿＜쨌?쒓컙李?痢≪젙)쨌`brain/variable_scope.py`(timeframe ?덉슜蹂??쨌`brain/segment_feedback.py`(T4)쨌`brain/band_compiler.py`+`seed_902_band.py`(諛대뱶 P0)
+- **梨꾩젏**: `fitness/score.py`(`compute_fitness` ?섎뱶寃뚯씠?맞?compute_graded_fitness`)쨌`fitness/edge_ratio.py`쨌`feature_importance.py`쨌`adaptive_timing.py`쨌`backfinder_principle.py`(T2)쨌`multiyear.py`쨌`holdout.py`(?꾨? 遺꾩꽍/媛?걔룰쾶?댄듃 臾댁쁺??
+- **猷⑦봽**: `controller/loop.py`(`run_loop`쨌`_build_warm_btconfig`쨌warm ?붿쭊)쨌`controller/state.py`(loop_runs.db쨌loop_strategies.db)쨌`config.py`(LoopConfig ?좉?)쨌`launch_config.py`(??쒕낫????
+
+## fact grep
+docs/AGENT_HANDOFF.md:10:`ai_strategy_loop/`는 **주식 단타 조건식(매수/매도 전략 코드)을 LLM으로 자율 생성 → STOM 공식 백테 엔진으로 평가 → 채점 → 부검 → 반복**하는 자율진화 연구 시스템이다. **북극성 = 인간 고수가 만든 좋은 조건식(`docs/reference/STOM_Good_Results/` 17개 스크린샷, 전부 tick·09:00~09:30·일평균10~23·동시보유6~12·MDD1.9~6.75%) 수준 또는 그 이상을 자율로 만들고, 앞으로도 자율 개선하는 시스템.**
+docs/AGENT_HANDOFF.md:21:3. **다음 작업(§6)**: 토글 ON 다년 연구 run 실가동 + 2022/2026 OOS 분리검증 = 실제 인간 reference 능가 여부 정직 판정.
+docs/AGENT_HANDOFF.md:48:| T0 창/시드 확장 | `a45a7502` | classification 프롬프트 시간창 09:28→09:30·902 고착해제 | 생성 gen1 91거래 09:00~09:19 gate PASS·+685k·MDD6.59 |
+docs/AGENT_HANDOFF.md:59:**⚠️ 정직한 한계**: 인프라는 완성·작동하나, **이 토글들을 ON으로 켠 다년·풀유니버스 연구 run + OOS 검증은 아직 안 함** = "실제로 인간 reference를 능가하는지" 미판정. 신규 토글 전부 기본 OFF라 **현 운영 동작은 무변경**.
+docs/AGENT_HANDOFF.md:67:2. **시드 Tick_902는 다년강건 골드** (2024 Q1 +1.55M·2025 Q1 +1.94M 2년연속). AI refine은 **정직한 1년/OOS 평가서 시드를 못 이김**(연 +318K·MDD36·calmar0.18). 1개월 "보고서급"은 우호창 과적합.
+docs/AGENT_HANDOFF.md:68:3. **가장 배포가능한 검증 결과 = 적응형 레짐타이밍**(시드 자기 자본곡선 추종: 직전 lookback개월<0이면 OFF). 다년 2022~2026 진짜 OOS서 **위험조정 3.5배**(MDD −71%). 인과적·AI불필요. 토글 `adaptive_timing_enabled`(분석전용).
+docs/AGENT_HANDOFF.md:70:5. **앙상블/보완**: AI는 시드 *대체*가 아니라 *보완*(시드 약세월 메우기). 2025 H1 앙상블 +79%/MDD−58%이나 **2024 OOS 고정전이 실패** → 전방은 적응형만 유효.
+docs/AGENT_HANDOFF.md:71:6. **"인간 초월"은 탐색이지 보장 아님**. 레짐강건은 **holdout/다년 OOS로만** 확보. 게이트통과 ≠ 수익(불변).
+docs/AGENT_HANDOFF.md:72:7. **백파인더(T2) 시드는 lookahead/survivorship 편향** → 생성 시드 전용, OOS 검증 필수.
+docs/AGENT_HANDOFF.md:89:1. **(최우선) 토글 ON 다년 연구 run + OOS**: `run_tickwide_config.json` 패턴으로 `classification_generation_enabled`+`require_filter_gates`+`encourage_time_dispersion`+`few_shot_enabled`(`few_shot_source=seed_db`)+`segment_feedback_enabled` ON, `bt_timeframe=tick`, 09:00~09:30, 다월(또는 2023~25 multiyear), `max_gen`↑. 진행 중 T1 대시보드 히트맵으로 패배구간 보고→T4 환류→재생성. **2022/2026 OOS 분리검증으로 인간 reference 능가 여부 정직 판정.** (OOM 주의: 풀유니버스 다세대는 거래수 캡·메모리 관찰; 1개월 탐색→OOS 분리 권장.)
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\final-plan-compliance.txt:17:P5 OOS comparison -> p5-oos-blocked.md, p5-verification.txt; OOS skipped because P4 selected=false
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\final-plan-compliance.txt:18:P6 decision card -> p6-decision-card.md, p6-verification.txt; verdict NEEDS_MORE_EVIDENCE
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\final-plan-compliance.txt:65:.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-verification.txt:5:command: rg -n "PROMOTE_CANDIDATE|REJECT_CANDIDATE|NEEDS_MORE_EVIDENCE|human|superior|slippage|PBO|DSR|final_approval|export_winner|taskkill" p6-decision-card.md
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\final-scope-fidelity.txt:70:4:NEEDS_MORE_EVIDENCE
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\final-scope-fidelity.txt:72:77:NEEDS_MORE_EVIDENCE
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\final-scope-fidelity.txt:84:Fresh P4 selected no candidate, so P5 OOS was intentionally skipped and the final verdict is NEEDS_MORE_EVIDENCE.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\final-scope-fidelity.txt:87:$ulw-plan TICK sparse-positive candidate generation prompt and constraint improvement plan. Use .omo/evidence/tick-selection-rule-sparse-gen5-research-20260604/p6-decision-card.md, p4-selected-candidate.json, p4-selector-blocked.md, final-verification.txt as canonical evidence. Keep hard gates, official engines, and backtest/graph unchanged; keep new toggles default OFF; forbid OOS-after-the-fact reselection; require predeclared selector freeze before any OOS.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p0-canonical-inputs.txt:11:- .omo/evidence/tick-oos-dashboard-validation-20260604/p5-oos-comparison.md: exists, read; prior fixed OOS comparison.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p0-canonical-inputs.txt:16:- Reason: fixed AI candidate failed the predeclared 2022/2026 OOS superiority rule.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p0-canonical-inputs.txt:26:- MDD: 23.52.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p0-canonical-inputs.txt:28:- Selection rule: highest completed pre-OOS generation by graded score from training run only; no 2022/2026 OOS data used.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p0-canonical-inputs.txt:32:- Gen5 metrics: profit +1,432,608; MDD 5.74; trades 99; daily_avg_trades 0.1.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p0-canonical-inputs.txt:46:## Prior P5 OOS facts
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p0-canonical-inputs.txt:47:- seed_2022: profit +2,223,554; pct +44.36; MDD 13.02; trades 58.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p0-canonical-inputs.txt:48:- seed_2026: profit -191,109; pct -3.82; MDD 15.63; trades 10.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p0-canonical-inputs.txt:49:- ai_2022: profit -531,523; pct -10.63; MDD 16.77; trades 99.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p0-canonical-inputs.txt:50:- ai_2026: profit +126,238; pct +2.52; MDD 2.52; trades 2.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p0-canonical-inputs.txt:59:- Do not reselect candidates after OOS.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-oos-blindness-check.txt:1:## P1 OOS-Blindness Check
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-oos-blindness-check.txt:5:The selector is fixed before fresh 2022/2026 OOS execution.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-oos-blindness-check.txt:10:- 2022 OOS metrics
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-oos-blindness-check.txt:11:- 2026 OOS metrics
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-oos-blindness-check.txt:15:- post-OOS analysis fields
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-oos-blindness-check.txt:19:Any selected candidate must be frozen to an artifact with `oos_excluded=true` before P5 starts.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p0-verification.txt:22:- .omo/evidence/tick-oos-dashboard-validation-20260604/p5-oos-comparison.md: exists, read; prior fixed OOS comparison.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:4:  "scope": "TICK training generations only; fixed before 2022/2026 OOS",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:94:    "oos_excluded",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:96:    "eligible_candidates",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:107:    "pbo_dsr_unavailable_verdict": "NEEDS_MORE_EVIDENCE"
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:8:- purpose: select a fixed research candidate before any 2022/2026 OOS run
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:10:## OOS-Blind Inputs
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:28:- 2022 OOS metrics
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:29:- 2026 OOS metrics
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:33:- any post-OOS analysis field
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:44:- profit, MDD, trade count, and strategy identity are present
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:60:Mixed failures do not qualify. Any gate reason involving profit, MDD, TPI, timeout, missing CSV, validation failure, or unknown failure is rejected.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:72:If no candidate qualifies, write a blocked selector artifact and skip OOS.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:89:- `oos_excluded: true`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:91:- `eligible_candidates`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:99:- AI profit is positive in both 2022 and 2026 OOS.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:101:- AI max MDD is less than or equal to seed max MDD.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:102:- Each AI OOS year has at least 20 trades.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:103:- Combined AI OOS has at least 50 trades.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:104:- Slippage-stressed OOS remains positive in both years.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:107:If any condition fails or is unavailable, final verdict is `REJECT_CANDIDATE` or `NEEDS_MORE_EVIDENCE`.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-verification.txt:24:.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.json:94:    "oos_excluded",
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-verification.txt:29:.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-oos-blindness-check.txt:19:Any selected candidate must be frozen to an artifact with `oos_excluded=true` before P5 starts.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-verification.txt:42:.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-selector-spec.md:89:- `oos_excluded: true`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p1-verification.txt:55:stale_state=probed by predeclared_at and oos_excluded text before P5
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p2-architectural-review.txt:10:- OOS-contaminated raw rows are parsed once by parse_candidate_generation.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p2-selector-tooling.txt:18:- OOS-contaminated input fields are rejected at parse boundary.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p2-selector-tooling.txt:19:- Written artifact contains selector_version, selected identity, oos_excluded, diagnostic_only, eligible/rejected candidates, and forbidden_oos_fields_present=false.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p2-verification.txt:26:stale_state=probed by OOS-blind parser and selector versioned artifact fields
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-selected-candidate.json:30:  "oos_excluded": true,
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-selected-candidate.json:32:  "eligible_candidates": [
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-verification.txt:7:oos_excluded=True
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-verification.txt:16:.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-selected-candidate.json:30:  "oos_excluded": true,
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-verification.txt:22:.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay.md:14:This replay applies the predeclared sparse_positive_v1 selector to the prior 2023~2025 training rows only. It is a mechanics check and not efficacy evidence, because the prior P5 OOS failure is already known.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-verification.txt:23:.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay.md:18:- Prior gen5 qualifies as sparse_positive because it is profitable, low MDD, has 99 trades, and its gate failure is only daily_avg_trades 0.1 < min_daily_trades 0.3.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-verification.txt:24:.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay.md:19:- Artifact has oos_excluded=true and diagnostic_only=true.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay-verification.txt:33:stale_state=probed by diagnostic_only/oos_excluded flags and prior-run caveat
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay.md:14:This replay applies the predeclared sparse_positive_v1 selector to the prior 2023~2025 training rows only. It is a mechanics check and not efficacy evidence, because the prior P5 OOS failure is already known.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay.md:18:- Prior gen5 qualifies as sparse_positive because it is profitable, low MDD, has 99 trades, and its gate failure is only daily_avg_trades 0.1 < min_daily_trades 0.3.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay.md:19:- Artifact has oos_excluded=true and diagnostic_only=true.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p3-prior-replay.md:22:Do not cite this replay as promotion, human-level, seed-superior, or OOS performance evidence. A fresh selector-frozen P4 run is still required before P5 OOS.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p4-selected-candidate.json:15:  "oos_excluded": true,
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p4-selected-candidate.json:17:  "eligible_candidates": [],
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p4-selector-blocked.md:9:- oos_excluded: True
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p4-selector-blocked.md:32:- gen1: profit negative, MDD 167.56, trades 4212.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p4-selector-blocked.md:33:- gen2: profit negative, MDD 43.76, trades 688.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p4-selector-blocked.md:34:- gen4: profit negative, MDD 39.05, trades 687.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p4-selector-blocked.md:35:- gen5: daily-frequency gate failure, but profit is negative (-353,764) and MDD is 13.4, so it is not sparse-positive under P1 thresholds.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p4-selector-blocked.md:38:P5 fixed OOS must be skipped/blocked. No OOS rows should be fabricated because no P4 candidate was frozen.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-oos-blocked.md:1:# P5 OOS Blocked
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-oos-blocked.md:4:P5 fixed 2022/2026 OOS was skipped.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-oos-blocked.md:11:- eligible_candidates: 0
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-oos-blocked.md:14:## OOS Discipline
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-oos-blocked.md:15:No AI/seed OOS rows are fabricated for this plan because the predeclared selector produced no candidate. Running P5 without a frozen candidate would violate the plan.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-oos-blocked.md:21:P6 final verdict must be REJECT_CANDIDATE or NEEDS_MORE_EVIDENCE, not PROMOTE_CANDIDATE.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-verification.txt:5:# P5 OOS Blocked
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-verification.txt:8:P5 fixed 2022/2026 OOS was skipped.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-verification.txt:15:- eligible_candidates: 0
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-verification.txt:18:## OOS Discipline
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-verification.txt:19:No AI/seed OOS rows are fabricated for this plan because the predeclared selector produced no candidate. Running P5 without a frozen candidate would violate the plan.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-verification.txt:25:P6 final verdict must be REJECT_CANDIDATE or NEEDS_MORE_EVIDENCE, not PROMOTE_CANDIDATE.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-verification.txt:32:prompt_injection=not applicable; no model prompt/OOS run executed
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-verification.txt:34:stale_state=probed by p4-selected-candidate selected=false and OOS run-id row counts
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-verification.txt:36:hung_or_long_commands=not applicable; no OOS process started
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p5-verification.txt:38:misleading_success_output=probed by DB row counts showing no P5 OOS rows for this plan
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:4:NEEDS_MORE_EVIDENCE
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:6:The predeclared `sparse_positive_v1` selector was implemented and replayed correctly, but the fresh 2023-2025 P4 run did not produce an eligible candidate. Therefore no fixed 2022/2026 OOS comparison was executed.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:11:- OOS discipline: candidate selection uses training rows only and requires `oos_excluded=true`
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:17:- selected: false
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:20:- eligible_candidates: 0
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:36:- gen1: profit -35,206,257, MDD 167.56, trades 4212, gate fail.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:37:- gen2: profit -1,945,943, MDD 43.76, trades 688, gate fail.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:39:- gen4: profit -2,153,502, MDD 39.05, trades 687, gate fail; existing graded-best but training-negative.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:40:- gen5: profit -353,764, MDD 13.4, trades 111, daily_avg_trades 0.2, gate fail on daily frequency; rejected because profit <= 0 and MDD > 10.0.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:45:## OOS Evidence
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:48:OOS run-id row checks:
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:58:Not applicable. No AI OOS rows exist.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:61:Not run. Slippage stress is blocked until a candidate exists and fixed 2022/2026 OOS rows exist.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:64:Not run. PBO/DSR is an advisory blocker until a candidate and OOS evidence exist.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:77:NEEDS_MORE_EVIDENCE
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:79:Rationale: the improved selection rule prevented a training-negative candidate from being sent to OOS, but the fresh research run did not find a positive eligible candidate. The process is safer and more honest, but it has not produced a candidate capable of challenging the human seed.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:82:- Do not run OOS for this P4 result.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-decision-card.md:83:- Investigate why the fresh 2023-2025 run collapses to high-MDD/negative candidates.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-verification.txt:5:command: rg -n "PROMOTE_CANDIDATE|REJECT_CANDIDATE|NEEDS_MORE_EVIDENCE|human|superior|slippage|PBO|DSR|final_approval|export_winner|taskkill" p6-decision-card.md
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-verification.txt:6:4:NEEDS_MORE_EVIDENCE
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-verification.txt:8:64:Not run. PBO/DSR is an advisory blocker until a candidate and OOS evidence exist.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-verification.txt:12:77:NEEDS_MORE_EVIDENCE
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-verification.txt:13:79:Rationale: the improved selection rule prevented a training-negative candidate from being sent to OOS, but the fresh research run did not find a positive eligible candidate. The process is safer and more honest, but it has not produced a candidate capable of challenging the human seed.
+.omo/evidence/tick-selection-rule-sparse-gen5-research-20260604\p6-verification.txt:20:P6 PASS: final verdict is NEEDS_MORE_EVIDENCE; no promotion claim; no OOS fabricated; slippage/PBO/DSR explicitly blocked until a candidate and OOS evidence exist.
+
+## P0 conclusion
+Prior state is NEEDS_MORE_EVIDENCE. Prior P4 selected no sparse_positive_v1 candidate, and P5 OOS was skipped before this plan. No OOS data is used for generation-policy tuning in P0.

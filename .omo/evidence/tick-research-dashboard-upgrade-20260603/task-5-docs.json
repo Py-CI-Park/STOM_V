@@ -1,0 +1,52 @@
+{
+  "task": "5. Safe wiki/docs and optional index comparison backend",
+  "timestamp": "2026-06-04T04:31:00+09:00",
+  "automated_verification": {
+    "red": "python -m pytest tests/unit/test_dashboard_research_docs.py tests/unit/test_dashboard_index_compare.py -q -> 4 failed, all new routes returned 404",
+    "green": "python -m pytest tests/unit/test_dashboard_research_docs.py tests/unit/test_dashboard_index_compare.py -q -> 4 passed in 2.19s",
+    "regression": "python -m pytest tests/unit/test_dashboard_research_docs.py tests/unit/test_dashboard_index_compare.py tests/unit/test_dashboard_hall_of_fame.py tests/unit/test_dashboard_run_state.py -q -> 64 passed in 5.50s"
+  },
+  "manual_qa": {
+    "tool": "curl.exe",
+    "owned_server": "python -m ai_strategy_loop --host 127.0.0.1 --port 8784",
+    "owned_server_pid": 135316,
+    "health_response": "HTTP/1.1 200 OK; {\"status\":\"ok\",\"contract_version\":2}",
+    "research_docs_response": {
+      "status": "HTTP/1.1 200 OK",
+      "count": 63,
+      "representative_ids": [
+        "docs/reference/STOM_Good_Results/backtest_analysis_report.md",
+        "docs/update_log/2026-06-03_tick_program_complete_handoff.md",
+        "docs/research/condition_research/README.md"
+      ],
+      "not_listed": "AGENTS.md"
+    },
+    "research_doc_response": {
+      "status": "HTTP/1.1 200 OK",
+      "id": "docs/reference/STOM_Good_Results/backtest_analysis_report.md",
+      "category": "good_results",
+      "available": true,
+      "markdown_prefix": "# STOM"
+    },
+    "traversal_response": "HTTP/1.1 200 OK; {\"id\":\"../AGENTS.md\",\"available\":false,\"error\":\"doc_not_allowed\"}",
+    "index_compare_response": "HTTP/1.1 200 OK; {\"available\":false,\"reason\":\"local_index_source_not_found\",\"run_id\":\"missing_run\",\"network_used\":false,\"source\":\"local\"}"
+  },
+  "adversarial": {
+    "malformed_input": "probed: traversal id ../AGENTS.md returns doc_not_allowed and no markdown.",
+    "prompt_injection": "not applicable: no prompt/model execution and markdown is returned as inert text.",
+    "cancel_resume": "evidence file written before plan checkbox update.",
+    "stale_state": "owned 8784 server imported current code; pre-existing 8770 was not stopped.",
+    "dirty_worktree": "P0 dirty state preserved; no cleanup/revert/staging.",
+    "hung_or_long_commands": "curl --max-time 10 used; pytest completed.",
+    "flaky_tests": "focused suite passed after red/green.",
+    "misleading_success_output": "HTTP headers/counts/raw traversal/index responses captured; index unavailable is explicit.",
+    "repeated_interruptions": "durable artifact and ledger entry precede checkbox update."
+  },
+  "cleanup": {
+    "owned_server_pid": 135316,
+    "owned_server_session": 60610,
+    "stop_method": "Ctrl-C via write_stdin",
+    "post_cleanup_probe": "curl.exe -i -sS --max-time 2 http://127.0.0.1:8784/health -> curl: (28) Connection timed out after 2003 milliseconds"
+  },
+  "cleanup_pending": "none"
+}

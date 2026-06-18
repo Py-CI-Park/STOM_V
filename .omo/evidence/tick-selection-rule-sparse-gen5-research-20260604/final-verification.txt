@@ -1,0 +1,76 @@
+# Final Verification
+timestamp: 2026-06-04T13:44:47.6986614+09:00
+PYTHONUTF8=1
+
+## git diff --check
+started: 2026-06-04T13:44:47.7076804+09:00
+warning: in the working copy of 'ai_strategy_loop/controller/lineage.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/controller/state.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/app.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/chart.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/code-viewer.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/engine.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/styles.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/table.jsx', LF will be replaced by CRLF the next time Git touches it
+exit_code: 0
+finished: 2026-06-04T13:44:47.9509361+09:00
+
+## python scripts/verify_nonrelease_sync.py
+started: 2026-06-04T13:44:47.9543248+09:00
+[OK] 워크트리에 .pyd 파일이 없습니다.
+[OK] 텔레그램 qlist 계약이 현재 MainWindow 순서와 일치합니다.
+[OK] MainWindow가 텔레그램 런타임을 시작합니다.
+[OK] 설정 변경 전파가 TelegramProcessAlive 경로를 사용합니다.
+[OK] 텔레그램 alive helper가 존재합니다.
+[OK] Jisu cleanup matches V2.70 removal.
+[OK] Shutdown cleanup matches current MainWindow runtime.
+[OK] Shutdown persists dialog geometry before closing dialogs.
+[OK] Shutdown hides Qt windows before bounded child cleanup.
+[OK] Shutdown does not raise SystemExit inside Qt closeEvent.
+[OK] Shutdown query/sound child wait is bounded with terminate fallback.
+[OK] Shutdown backtest stop acknowledgement wait is bounded with terminate fallback.
+[OK] BackTest 프로세스 생성자가 직접 인자 전달 계약을 유지합니다.
+[OK] BackTest 실행 인자가 backQ 우회 전달로 오염되지 않습니다.
+[OK] WebCrawling runtime wiring matches QThread contract.
+[OK] static.py compatibility exports match runtime contract.
+[OK] WebCrawling stop contract includes timeout and cancellation guards.
+[OK] Key loading safety guard is present.
+[OK] Kiwoom P/L rounding matches expected loss math.
+[OK] 비정식 워크트리에서 시리얼키 UI 생성이 차단됩니다.
+[OK] 설정 저장이 워크트리 시리얼키 정책을 따릅니다.
+[OK] dict_set 적재가 비정식 워크트리 시리얼키 정책을 따릅니다.
+[OK] legacy utility/setting.py도 비정식 워크트리 시리얼키 정책을 따릅니다.
+
+모든 비정식 워크트리 동기화 가드레일 검사를 통과했습니다.
+exit_code: 0
+finished: 2026-06-04T13:44:48.7059051+09:00
+
+## protected path status
+started: 2026-06-04T13:44:48.7059051+09:00
+(no output)
+exit_code: 0
+finished: 2026-06-04T13:44:48.9427671+09:00
+
+## focused selector/research pytest
+started: 2026-06-04T13:44:48.9437665+09:00
+................................                                         [100%]
+32 passed in 2.41s
+exit_code: 0
+finished: 2026-06-04T13:44:53.0713477+09:00
+
+## focused dashboard/research pytest
+started: 2026-06-04T13:44:53.0713477+09:00
+.............................................                            [100%]
+45 passed in 7.99s
+exit_code: 0
+finished: 2026-06-04T13:45:03.2687947+09:00
+
+## Summary
+git_diff_check: exit_code=0
+verify_nonrelease_sync: exit_code=0
+protected_paths: exit_code=0
+selector_tests: exit_code=0
+dashboard_tests: exit_code=0
+F2 PASS: all verification commands exited 0.

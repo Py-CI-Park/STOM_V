@@ -1,0 +1,14 @@
+﻿
+Plan                                        Unchecked Checked
+----                                        --------- -------
+condition-research-rereview-20260603.md             0      11
+tick-oos-dashboard-validation-20260604.md          11       0
+tick-oos-validation-20260603.md                     0      11
+tick-research-dashboard-upgrade-20260603.md         0      17
+
+
+
+
+Selected plan: tick-oos-dashboard-validation-20260604
+Reason: previous plans complete; user requested start-work based on next TICK/OOS plan context.
+

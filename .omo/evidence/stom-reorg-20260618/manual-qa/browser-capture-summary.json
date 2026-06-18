@@ -1,0 +1,84 @@
+{
+  "started_at": "2026-06-18T14:27:58.718Z",
+  "baseUrl": "http://127.0.0.1:51998",
+  "chromePath": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "tabs": [
+    {
+      "key": "evolution",
+      "label": "진화 대시보드",
+      "html": "evolution.html",
+      "png": "evolution.png",
+      "htmlLength": 456949,
+      "rootTextLength": 500,
+      "duration_ms": 4033
+    },
+    {
+      "key": "backtest",
+      "label": "백테스트",
+      "html": "backtest.html",
+      "png": "backtest.png",
+      "htmlLength": 96527,
+      "rootTextLength": 500,
+      "duration_ms": 1247
+    },
+    {
+      "key": "simulation",
+      "label": "차트 시뮬레이션",
+      "html": "simulation.html",
+      "png": "simulation.png",
+      "htmlLength": 45263,
+      "rootTextLength": 500,
+      "duration_ms": 1201
+    },
+    {
+      "key": "lab",
+      "label": "연구실",
+      "html": "lab.html",
+      "png": "lab.png",
+      "htmlLength": 126030,
+      "rootTextLength": 500,
+      "duration_ms": 1098
+    },
+    {
+      "key": "pro",
+      "label": "분석 프로",
+      "html": "pro.html",
+      "png": "pro.png",
+      "htmlLength": 234163,
+      "rootTextLength": 500,
+      "duration_ms": 3156
+    },
+    {
+      "key": "verdict",
+      "label": "결정 이력",
+      "html": "verdict.html",
+      "png": "verdict.png",
+      "htmlLength": 106148,
+      "rootTextLength": 500,
+      "duration_ms": 1081
+    },
+    {
+      "key": "process",
+      "label": "프로세스 흐름",
+      "html": "process.html",
+      "png": "process.png",
+      "htmlLength": 102343,
+      "rootTextLength": 233,
+      "duration_ms": 1136
+    }
+  ],
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "pageErrors": [],
+  "processRoute": {
+    "html": "process-flow-route.html",
+    "png": "process-flow-route.png",
+    "htmlLength": 65662,
+    "duration_ms": 1319
+  },
+  "ended_at": "2026-06-18T14:28:18.049Z"
+}

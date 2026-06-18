@@ -1,0 +1,236 @@
+{
+  "run_id": "tick_oosrob_p5_train_2023_2025_20260604",
+  "generation_count": 10,
+  "prompt_count": 18,
+  "parse_errors": [],
+  "selected": false,
+  "blocker": "no candidate qualified for yearly_sparse_robust_v1",
+  "selector_version": "yearly_sparse_robust_v1",
+  "config_hash": "62c8786c719544f0d6bdbfa887105383bf6e66a46ec57b26c29f21acf13b1132",
+  "policy_hash": "ae50a063b0945abaab6669c3498ec90200964018d60b76a4a4fed954fd500f73",
+  "generations": [
+    {
+      "gen_no": 0,
+      "status": "error",
+      "score": 0.0,
+      "gate_passed": false,
+      "reason": "backtest failed/timeout: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no",
+      "csv_path": null,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "mdd": 0.0,
+      "profit": 0.0,
+      "payoff_ratio": 0.0,
+      "max_hold_count": 0.0
+    },
+    {
+      "gen_no": 1,
+      "status": "ok",
+      "score": 0.17163253229128236,
+      "gate_passed": false,
+      "reason": "mdd 38.63 > mdd_cap 35",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_tick_oosrob_p5_train_2023_2025_20260604_g1_buy_20260604203133.csv",
+      "trade_count": 2408,
+      "daily_avg_trades": 3.3,
+      "mdd": 38.63,
+      "profit": -1864257.0,
+      "payoff_ratio": 1.4858367846307792,
+      "max_hold_count": 2.0
+    },
+    {
+      "gen_no": 2,
+      "status": "error",
+      "score": 0.0,
+      "gate_passed": false,
+      "reason": "backtest failed/timeout: warm backtest non-success: status=error message=backtest completed without metrics csv=no",
+      "csv_path": null,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "mdd": 0.0,
+      "profit": 0.0,
+      "payoff_ratio": 0.0,
+      "max_hold_count": 0.0
+    },
+    {
+      "gen_no": 3,
+      "status": "ok",
+      "score": 0.14864824308960572,
+      "gate_passed": false,
+      "reason": "mdd 73.39 > mdd_cap 35",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_tick_oosrob_p5_train_2023_2025_20260604_g3_buy_20260604204124.csv",
+      "trade_count": 1581,
+      "daily_avg_trades": 2.2,
+      "mdd": 73.39,
+      "profit": -2452476.0,
+      "payoff_ratio": 1.4901716728618237,
+      "max_hold_count": 1.0
+    },
+    {
+      "gen_no": 4,
+      "status": "ok",
+      "score": 0.03252054473507851,
+      "gate_passed": false,
+      "reason": "daily_avg_trades 0.1 < min_daily_trades 0.3",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_tick_oosrob_p5_train_2023_2025_20260604_g4_buy_20260604204623.csv",
+      "trade_count": 99,
+      "daily_avg_trades": 0.1,
+      "mdd": 21.17,
+      "profit": -777423.0,
+      "payoff_ratio": 1.6289040191319244,
+      "max_hold_count": 0.0
+    },
+    {
+      "gen_no": 5,
+      "status": "ok",
+      "score": 0.31090540317630305,
+      "gate_passed": false,
+      "reason": "mdd 36.01 > mdd_cap 35",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_tick_oosrob_p5_train_2023_2025_20260604_g5_buy_20260604205119.csv",
+      "trade_count": 452,
+      "daily_avg_trades": 0.6,
+      "mdd": 36.01,
+      "profit": -156193.0,
+      "payoff_ratio": 1.6101980773194913,
+      "max_hold_count": 1.0
+    },
+    {
+      "gen_no": 6,
+      "status": "ok",
+      "score": 0.28560947951781146,
+      "gate_passed": false,
+      "reason": "daily_avg_trades 0.2 < min_daily_trades 0.3",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_tick_oosrob_p5_train_2023_2025_20260604_g6_buy_20260604205608.csv",
+      "trade_count": 136,
+      "daily_avg_trades": 0.2,
+      "mdd": 7.6,
+      "profit": 1343705.0,
+      "payoff_ratio": 1.6440069620424393,
+      "max_hold_count": 0.0
+    },
+    {
+      "gen_no": 7,
+      "status": "ok",
+      "score": 0.06393936749203172,
+      "gate_passed": false,
+      "reason": "daily_avg_trades 0.1 < min_daily_trades 0.3",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_tick_oosrob_p5_train_2023_2025_20260604_g7_buy_20260604210110.csv",
+      "trade_count": 91,
+      "daily_avg_trades": 0.1,
+      "mdd": 10.32,
+      "profit": 1378444.0,
+      "payoff_ratio": 1.8523896416508132,
+      "max_hold_count": 0.0
+    },
+    {
+      "gen_no": 8,
+      "status": "ok",
+      "score": 0.1715059737252088,
+      "gate_passed": false,
+      "reason": "daily_avg_trades 0.2 < min_daily_trades 0.3",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_tick_oosrob_p5_train_2023_2025_20260604_g8_buy_20260604210607.csv",
+      "trade_count": 149,
+      "daily_avg_trades": 0.2,
+      "mdd": 19.56,
+      "profit": -313746.0,
+      "payoff_ratio": 1.479710691648154,
+      "max_hold_count": 0.0
+    },
+    {
+      "gen_no": 9,
+      "status": "ok",
+      "score": 0.12254556274730402,
+      "gate_passed": false,
+      "reason": "daily_avg_trades 0.2 < min_daily_trades 0.3",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_tick_oosrob_p5_train_2023_2025_20260604_g9_buy_20260604211111.csv",
+      "trade_count": 115,
+      "daily_avg_trades": 0.2,
+      "mdd": 33.75,
+      "profit": -1342087.0,
+      "payoff_ratio": 1.6343641695547853,
+      "max_hold_count": 0.0
+    }
+  ],
+  "eligible_candidates": [],
+  "rejected_candidates": [
+    {
+      "gen_no": 0,
+      "reasons": [
+        "status != ok",
+        "profit <= 0",
+        "trade_count < 20",
+        "daily_avg_trades < 0.05",
+        "payoff_ratio < 1.05"
+      ]
+    },
+    {
+      "gen_no": 1,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250"
+      ]
+    },
+    {
+      "gen_no": 2,
+      "reasons": [
+        "status != ok",
+        "profit <= 0",
+        "trade_count < 20",
+        "daily_avg_trades < 0.05",
+        "payoff_ratio < 1.05"
+      ]
+    },
+    {
+      "gen_no": 3,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250"
+      ]
+    },
+    {
+      "gen_no": 4,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0"
+      ]
+    },
+    {
+      "gen_no": 5,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250"
+      ]
+    },
+    {
+      "gen_no": 6,
+      "reasons": [
+        "trade_count < 150"
+      ]
+    },
+    {
+      "gen_no": 7,
+      "reasons": [
+        "mdd > 10.0"
+      ]
+    },
+    {
+      "gen_no": 8,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0"
+      ]
+    },
+    {
+      "gen_no": 9,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0"
+      ]
+    }
+  ],
+  "oos_excluded": true,
+  "diagnostic_only": false,
+  "forbidden_oos_fields_present": false
+}

@@ -111,6 +111,9 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
               // 일평균거래횟수가 빈도 하한 미달이면 경고색(빈도 게이트 탈락 신호).
               const dailyBad = typeof g.daily_avg_trades === "number"
                 && g.daily_avg_trades < minDailyTrades;
+              const sparseHoldSuspicious = typeof g.max_hold_count === "number"
+                && g.max_hold_count <= 1
+                && (g.trade_count || 0) >= 50;
               const isExp = expanded.has(g.gen_no);
               return (
                 <tr key={g.gen_no}>
@@ -143,9 +146,13 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
                       title="일평균거래횟수 (거래수/거래일수) — 빈도 게이트 주 기준">
                     {fmtDaily(g.daily_avg_trades)}
                   </td>
-                  <td className={`mono ${typeof g.max_hold_count === "number" && g.max_hold_count > 0 ? "" : "num-muted"}`}
-                      title="최대 동시보유 종목 수 — 다종목 분산 진입의 1차 근사(클수록 분산)">
-                    {typeof g.max_hold_count === "number" && g.max_hold_count > 0 ? g.max_hold_count.toFixed(0) : "—"}
+                  <td className={`mono ${sparseHoldSuspicious ? "num-neg" : typeof g.max_hold_count === "number" && g.max_hold_count > 0 ? "" : "num-muted"}`}
+                      title={sparseHoldSuspicious
+                        ? "Sparse hold warning: max_hold_count <= 1 with enough trades; compare Backtest Detail CSV peak_holdings. human corridor 6-12"
+                        : "최대 동시보유 종목 수 — 다종목 분산 진입의 1차 근사(클수록 분산)"}>
+                    {typeof g.max_hold_count === "number"
+                      ? `${g.max_hold_count.toFixed(0)}${sparseHoldSuspicious ? " !" : ""}`
+                      : "—"}
                   </td>
                   <td className={`mono ${typeof g.payoff_ratio === "number" && g.payoff_ratio > 0 ? "num-pos" : "num-muted"}`}
                       title="손익비 (평균이익/abs(평균손실)) — 1 초과일수록 우수">
@@ -204,3 +211,6 @@ function GenerationsTable({ state, mddCap = 15, minDailyTrades = 0.5, onViewCode
 }
 
 Object.assign(window, { GenerationsTable });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { GenerationsTable };

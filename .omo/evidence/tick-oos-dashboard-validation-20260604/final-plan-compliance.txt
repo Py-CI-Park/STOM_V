@@ -1,0 +1,73 @@
+﻿# F1 Plan Compliance Audit
+
+timestamp=2026-06-04T11:40:51.3963732+09:00
+plan=.omo/plans/tick-oos-dashboard-validation-20260604.md
+
+## Current unchecked top-level items before F1 completion
+245:- [ ] F1. Plan compliance audit
+265:- [ ] F2. Code and branch safety verification
+287:- [ ] F3. Real dashboard QA
+307:- [ ] F4. Scope fidelity and final handoff
+
+## Evidence Map
+### 1 P0 safety snapshot
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p0-safety-snapshot.txt
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p0-plan-selection.txt
+### 2 P1 dashboard readiness
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p1-dashboard-smoke.json
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p1-dashboard-base.txt
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p1-dashboard-pid.txt
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p1-cleanup-check.txt
+### 3 P2 smoke run
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p2-smoke-config.json
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p2-smoke-log.txt
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p2-smoke-api.json
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p2-smoke-summary.txt
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p2-cleanup-check.txt
+### 4 P3 train run
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p3-train-config.json
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p3-train-log.txt
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p3-api.json
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p3-selected-candidate.json
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p3-train-summary.txt
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p3-cleanup-check.txt
+### 5 P4 analysis
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p4-analysis.json
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p4-analysis.md
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p4-raw
+### 6 P5 OOS comparison
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p5-config-manifest.json
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p5-run-exits.json
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p5-oos-comparison.json
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p5-oos-comparison.md
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p5-raw
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p5-cleanup-check.txt
+### 7 P6 decision card
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p6-decision-card.md
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\p6-honesty-audit.txt
+### F1 compliance audit
+present: .omo\evidence\tick-oos-dashboard-validation-20260604\final-plan-compliance.txt
+### F2 code/branch safety
+pending_or_missing: .omo\evidence\tick-oos-dashboard-validation-20260604\final-verification.txt
+### F3 real dashboard QA
+pending_or_missing: .omo\evidence\tick-oos-dashboard-validation-20260604\final-dashboard-qa.txt
+### F4 scope fidelity
+pending_or_missing: .omo\evidence\tick-oos-dashboard-validation-20260604\final-scope-fidelity.txt
+
+## Forbidden action scan
+Scan command: rg -n "final_approval|export_winner|USER_ACK|KHOPENAPI|taskkill" evidence_root -g "!final-plan-compliance.txt"
+.omo/evidence/tick-oos-dashboard-validation-20260604\p1-dashboard-smoke.json:77:    "note":  "Read-only GET smoke only; no websocket final_approval and no export_winner invoked."
+.omo/evidence/tick-oos-dashboard-validation-20260604\p2-smoke-api.json:4303:    "note":  "Read-only GET capture only; no final_approval/export_winner."
+.omo/evidence/tick-oos-dashboard-validation-20260604\p2-smoke-summary.txt:27:forbidden_actions=none; no final_approval/export_winner
+.omo/evidence/tick-oos-dashboard-validation-20260604\p3-api.json:7868:    "note":  "Read-only GET capture only; no final_approval/export_winner."
+.omo/evidence/tick-oos-dashboard-validation-20260604\p4-analysis.md:8:- No new training run, no `final_approval`, no `export_winner`.
+.omo/evidence/tick-oos-dashboard-validation-20260604\p6-decision-card.md:65:- `final_approval`: not invoked.
+.omo/evidence/tick-oos-dashboard-validation-20260604\p6-decision-card.md:66:- `export_winner`: not invoked.
+.omo/evidence/tick-oos-dashboard-validation-20260604\p6-decision-card.md:68:- V3K/USER_ACK/KHOPENAPI/live order wiring: not invoked.
+.omo/evidence/tick-oos-dashboard-validation-20260604\p6-honesty-audit.txt:5:65:- `final_approval`: not invoked.
+.omo/evidence/tick-oos-dashboard-validation-20260604\p6-honesty-audit.txt:6:66:- `export_winner`: not invoked.
+
+## Interpretation
+- final_approval/export_winner hits are guardrail or not-invoked statements only.
+- USER_ACK/KHOPENAPI/taskkill: no execution evidence found in this plan evidence.
+- F2/F3/F4 artifacts are expected pending before their respective checkbox execution.

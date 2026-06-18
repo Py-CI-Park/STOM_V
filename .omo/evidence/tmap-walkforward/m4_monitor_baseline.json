@@ -1,0 +1,307 @@
+{
+  "champion": "PORTFOLIO(THETA+T2C3 균등가중)",
+  "challenger": "BASE_SEED(기존 운용)",
+  "weights": {
+    "THETA": 0.5,
+    "T2C3": 0.5
+  },
+  "data_basis": "백테스트 baseline(train 2023~25 + OOS 2022·2026) — 페이퍼 실측은 추후 누적",
+  "report": {
+    "months": [
+      {
+        "month": "202203",
+        "champion": 212683,
+        "challenger": 240582,
+        "winner": "challenger"
+      },
+      {
+        "month": "202204",
+        "champion": 305475,
+        "challenger": 66577,
+        "winner": "champion"
+      },
+      {
+        "month": "202205",
+        "champion": -77283,
+        "challenger": -79787,
+        "winner": "champion"
+      },
+      {
+        "month": "202206",
+        "champion": 559034,
+        "challenger": 564095,
+        "winner": "challenger"
+      },
+      {
+        "month": "202207",
+        "champion": 430847,
+        "challenger": 157218,
+        "winner": "champion"
+      },
+      {
+        "month": "202208",
+        "champion": 367403,
+        "challenger": 460993,
+        "winner": "challenger"
+      },
+      {
+        "month": "202209",
+        "champion": 148094,
+        "challenger": 290547,
+        "winner": "challenger"
+      },
+      {
+        "month": "202210",
+        "champion": 179682,
+        "challenger": 444878,
+        "winner": "challenger"
+      },
+      {
+        "month": "202211",
+        "champion": 352193,
+        "challenger": 47282,
+        "winner": "champion"
+      },
+      {
+        "month": "202212",
+        "champion": -132306,
+        "challenger": -82003,
+        "winner": "challenger"
+      },
+      {
+        "month": "202301",
+        "champion": 919979,
+        "challenger": 956423,
+        "winner": "challenger"
+      },
+      {
+        "month": "202302",
+        "champion": 382528,
+        "challenger": 106223,
+        "winner": "champion"
+      },
+      {
+        "month": "202303",
+        "champion": 499664,
+        "challenger": 372885,
+        "winner": "champion"
+      },
+      {
+        "month": "202304",
+        "champion": 173196,
+        "challenger": 177268,
+        "winner": "challenger"
+      },
+      {
+        "month": "202305",
+        "champion": 345466,
+        "challenger": 116052,
+        "winner": "champion"
+      },
+      {
+        "month": "202306",
+        "champion": 723180,
+        "challenger": 490180,
+        "winner": "champion"
+      },
+      {
+        "month": "202307",
+        "champion": 55231,
+        "challenger": 230441,
+        "winner": "challenger"
+      },
+      {
+        "month": "202308",
+        "champion": 79303,
+        "challenger": 376406,
+        "winner": "challenger"
+      },
+      {
+        "month": "202309",
+        "champion": -36816,
+        "challenger": 203097,
+        "winner": "challenger"
+      },
+      {
+        "month": "202310",
+        "champion": 221627,
+        "challenger": 279839,
+        "winner": "challenger"
+      },
+      {
+        "month": "202311",
+        "champion": 562448,
+        "challenger": 477107,
+        "winner": "champion"
+      },
+      {
+        "month": "202312",
+        "champion": 408254,
+        "challenger": 1093535,
+        "winner": "challenger"
+      },
+      {
+        "month": "202401",
+        "champion": -256296,
+        "challenger": 136795,
+        "winner": "challenger"
+      },
+      {
+        "month": "202402",
+        "champion": 1052873,
+        "challenger": 675401,
+        "winner": "champion"
+      },
+      {
+        "month": "202403",
+        "champion": 866720,
+        "challenger": 846627,
+        "winner": "champion"
+      },
+      {
+        "month": "202404",
+        "champion": 410397,
+        "challenger": 270912,
+        "winner": "champion"
+      },
+      {
+        "month": "202405",
+        "champion": 85149,
+        "challenger": 239957,
+        "winner": "challenger"
+      },
+      {
+        "month": "202406",
+        "champion": 266882,
+        "challenger": -90142,
+        "winner": "champion"
+      },
+      {
+        "month": "202407",
+        "champion": 227790,
+        "challenger": -72534,
+        "winner": "champion"
+      },
+      {
+        "month": "202408",
+        "champion": 733421,
+        "challenger": 521857,
+        "winner": "champion"
+      },
+      {
+        "month": "202409",
+        "champion": 475178,
+        "challenger": 604367,
+        "winner": "challenger"
+      },
+      {
+        "month": "202410",
+        "champion": -437704,
+        "challenger": -337015,
+        "winner": "challenger"
+      },
+      {
+        "month": "202411",
+        "champion": -160985,
+        "challenger": -276375,
+        "winner": "champion"
+      },
+      {
+        "month": "202412",
+        "champion": 1180402,
+        "challenger": 852481,
+        "winner": "champion"
+      },
+      {
+        "month": "202501",
+        "champion": 661738,
+        "challenger": 740353,
+        "winner": "challenger"
+      },
+      {
+        "month": "202502",
+        "champion": 121527,
+        "challenger": 115244,
+        "winner": "champion"
+      },
+      {
+        "month": "202503",
+        "champion": 1060184,
+        "challenger": 1168073,
+        "winner": "challenger"
+      },
+      {
+        "month": "202504",
+        "champion": 735522,
+        "challenger": 555524,
+        "winner": "champion"
+      },
+      {
+        "month": "202505",
+        "champion": -359050,
+        "challenger": -694072,
+        "winner": "champion"
+      },
+      {
+        "month": "202506",
+        "champion": 102249,
+        "challenger": -191291,
+        "winner": "champion"
+      },
+      {
+        "month": "202507",
+        "champion": 63128,
+        "challenger": -23094,
+        "winner": "champion"
+      },
+      {
+        "month": "202508",
+        "champion": 234797,
+        "challenger": -245912,
+        "winner": "champion"
+      },
+      {
+        "month": "202509",
+        "champion": -451063,
+        "challenger": -385924,
+        "winner": "challenger"
+      },
+      {
+        "month": "202510",
+        "champion": 234254,
+        "challenger": 212208,
+        "winner": "champion"
+      },
+      {
+        "month": "202511",
+        "champion": -516286,
+        "challenger": -761447,
+        "winner": "champion"
+      },
+      {
+        "month": "202512",
+        "champion": -249027,
+        "challenger": -110250,
+        "winner": "challenger"
+      },
+      {
+        "month": "202601",
+        "champion": 444698,
+        "challenger": 67758,
+        "winner": "champion"
+      },
+      {
+        "month": "202602",
+        "champion": -162046,
+        "challenger": -258867,
+        "winner": "champion"
+      }
+    ],
+    "champion_total": 13044334,
+    "challenger_total": 10550472,
+    "max_champion_negative_streak": 2,
+    "max_challenger_win_streak": 4,
+    "alerts": [],
+    "note": "advisory — 경보는 운용 재검토 트리거 제안일 뿐 자동 조치 없음"
+  }
+}

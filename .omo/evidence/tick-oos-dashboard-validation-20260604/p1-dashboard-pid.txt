@@ -1,0 +1,14 @@
+﻿owned_dashboard_base=http://127.0.0.1:8799
+owned_pid=71256
+start_command=python -m ai_strategy_loop --host 127.0.0.1 --port 8799
+cleanup=stop session 28353 with Ctrl-C after P1 smoke
+preexisting_8770=left_running_stale_from_P0
+
+
+cleanup_receipt:
+  timestamp=2026-06-04T10:10:27.7339701+09:00
+  owned_session=28353
+  owned_pid=71256
+  action=Ctrl-C sent through owned exec session only
+  result=uvicorn shutdown complete; 8799 stopped_or_unreachable; pre-existing 8770 still HTTP 200
+  protected_path_status=empty

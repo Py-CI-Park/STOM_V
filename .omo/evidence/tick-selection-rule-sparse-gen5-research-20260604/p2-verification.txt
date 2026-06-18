@@ -1,0 +1,31 @@
+﻿## P2 Verification
+timestamp=2026-06-04T12:41:55.6616326+09:00
+
+## pure LOC
+ai_strategy_loop/controller/candidate_selection.py pure_loc=28
+ai_strategy_loop/controller/_candidate_selection_core.py pure_loc=148
+ai_strategy_loop/controller/_candidate_selection_artifact.py pure_loc=147
+tests/unit/test_candidate_selection.py pure_loc=137
+
+## diff check
+
+
+## protected-path git status after P2
+
+
+## test artifacts
+p2-red-test.txt: expected ModuleNotFoundError red test captured.
+p2-selector-tests.txt: 5 passed.
+p2-related-tests.txt: 27 passed.
+p2-final-tests.txt: 32 passed.
+
+## QA/adversarial classes for P2
+malformed_input=probed by parse_candidate_generation_rejects_oos_fields and JSON artifact test
+prompt_injection=not applicable; no model prompt executed
+cancel_resume=not applicable; no long runtime started
+stale_state=probed by OOS-blind parser and selector versioned artifact fields
+dirty_worktree=probed by protected-path status; unrelated dirty state preserved
+hung_or_long_commands=probed by short focused pytest commands only
+flaky_tests=probed by deterministic focused pytest suite; no sleeps/randomness
+misleading_success_output=probed by red test, green tests, diff check, and LOC check
+repeated_interruptions=not applicable; static code/test task with boulder active

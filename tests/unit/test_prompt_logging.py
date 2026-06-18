@@ -103,6 +103,32 @@ def test_generate_strategy_invokes_on_prompt_callback():
     assert feats["encourage_time_dispersion"] is True
     assert feats["require_filter_gates"] is False
     assert feats["has_base_code"] is False
+    assert set(feats) >= {
+        "guide_context",
+        "diff_context",
+        "analysis_context",
+        "correlation_context",
+    }
+    assert feats["guide_context"] == {
+        "system_prompt_assets": "v1",
+        "timeframe": "min",
+        "few_shot_examples": 0,
+    }
+    assert feats["diff_context"] == {
+        "has_base_code": False,
+        "has_crossover": False,
+        "has_history_summary": False,
+    }
+    assert feats["analysis_context"] == {
+        "has_autopsy_feedback": False,
+        "has_meta_seed": False,
+        "has_hypothesis_feedback": False,
+        "has_segment_avoid": False,
+    }
+    assert feats["correlation_context"] == {
+        "available_route": "/variable_correlation",
+        "prompt_injected": False,
+    }
     # usage/model/response 전달.
     assert rec["usage"]["total_tokens"] == 33
     assert rec["model"] == "fake-model-1"

@@ -1,0 +1,22 @@
+{
+  "task": "P6 fixed 2022/2026 OOS blocked",
+  "selected": false,
+  "selector_version": "yearly_sparse_robust_v1",
+  "blocker": "no candidate qualified for yearly_sparse_robust_v1",
+  "oos_executed": false,
+  "predeclared_run_ids": [
+    "tick_oosrob_p6_seed_2022_20260604",
+    "tick_oosrob_p6_seed_2026_20260604",
+    "tick_oosrob_p6_ai_2022_20260604",
+    "tick_oosrob_p6_ai_2026_20260604"
+  ],
+  "found_runs": [],
+  "generation_counts": {
+    "tick_oosrob_p6_seed_2022_20260604": 0,
+    "tick_oosrob_p6_seed_2026_20260604": 0,
+    "tick_oosrob_p6_ai_2022_20260604": 0,
+    "tick_oosrob_p6_ai_2026_20260604": 0
+  },
+  "pass": true,
+  "reason": "P5 selected=false; fixed OOS is forbidden without a frozen yearly_sparse_robust_v1 candidate."
+}

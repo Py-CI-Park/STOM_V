@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_askwall_vanish_break906",
+  "run_id": "tmap_llmg20_q1_e32_20260613",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_askwall_vanish_break906_000_B",
+      "status": "ok",
+      "profit": -38059187.0,
+      "mdd": 76.12,
+      "trades": 1651
+    }
+  ]
+}

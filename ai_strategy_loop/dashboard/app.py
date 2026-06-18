@@ -32,17 +32,26 @@ import json  # noqa: E402
 import os  # noqa: E402
 import subprocess  # noqa: E402
 import sys  # noqa: E402
+import time  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 from typing import Any, Dict, List, Optional  # noqa: E402
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
-from fastapi.responses import RedirectResponse  # noqa: E402
+from fastapi.responses import HTMLResponse, RedirectResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
+from pydantic import ValidationError  # noqa: E402
 
 from ai_strategy_loop.controller import contract as C  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
+from ai_strategy_loop.controller.progress_contract import (  # noqa: E402
+    build_backtest_progress,
+    build_engine_state,
+)
 from ai_strategy_loop.dashboard.research_api import router as research_router  # noqa: E402
+from ai_strategy_loop.dashboard.backtest_api import backtest_router  # noqa: E402
+from ai_strategy_loop.dashboard.simulation_api import simulation_router  # noqa: E402
+from ai_strategy_loop.fitness.research_criteria import normalize_research_oos_mode, research_mode_payload  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -165,8 +174,52 @@ def _current_state_payload() -> Dict[str, Any]:
     """current_state.json을 읽어 dict로 반환 (없으면 idle 기본값)."""
     raw = S.read_current_state()
     if raw is not None:
-        return raw
+        try:
+            return _with_observability_defaults(C.LoopState.model_validate(raw).model_dump())
+        except ValidationError:
+            return raw
     return C.idle_state().model_dump()
+
+
+def _with_observability_defaults(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Fill dashboard-only observability fields for legacy current_state snapshots."""
+    latest = payload.get("latest")
+    if not isinstance(latest, dict):
+        return payload
+
+    active_config_raw = payload.get("active_config")
+    active_config = dict(active_config_raw) if isinstance(active_config_raw, dict) else {}
+    try:
+        config = config_from_dict(active_config)
+    except ValueError:
+        config = config_from_dict({})
+
+    status = str(payload.get("status") or "")
+    current_gen = int(payload.get("current_gen") or -1)
+    max_generations = int(payload.get("max_generations") or 0)
+    phase = str(latest.get("phase") or "")
+    bt_timeframe = str(payload.get("bt_timeframe") or getattr(config, "bt_timeframe", "") or "")
+
+    latest["backtest_progress"] = build_backtest_progress(
+        config=config,
+        latest=latest,
+        status=status,
+        current_gen=current_gen,
+        max_generations=max_generations,
+        phase=phase,
+        phase_started_at=float(latest.get("phase_started_at") or 0.0),
+        bt_timeframe=bt_timeframe,
+        now=time.time(),
+    )
+    latest["engine_state"] = build_engine_state(
+        config=config,
+        latest=latest,
+        active_config=active_config,
+        status=status,
+        current_gen=current_gen,
+        phase=phase,
+    )
+    return payload
 
 
 def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
@@ -182,6 +235,20 @@ def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
     try:
         st = LoopState()
         result = compare_runs(st, run_ids)
+        _attach_run_labels(result)
+        # 2026-06-11 — 최신 우선 + (최근 48h 내) running 최상단. 종전 오름차순은
+        #   당일 작업 13개가 132개 목록 맨 뒤에 묻혀 "운영 중인 게 안 보이는"
+        #   문제를 냈다. 48h 컷: 과거 세션 중단으로 running이 박제된 좀비 run이
+        #   상단을 점유하지 않게 한다(실가동 myr2~5 사례).
+        if isinstance(result.get("runs"), list):
+            _now = time.time()
+            result["runs"].sort(
+                key=lambda r: (
+                    0 if (r.get("status") == "running"
+                          and (r.get("started_at") or 0) > _now - 48 * 3600) else 1,
+                    -(r.get("started_at") or 0.0),
+                )
+            )
         return result
     except Exception as exc:  # noqa: BLE001 - run 비교 조회 실패는 빈 목록으로.
         return {"runs": [], "count": 0, "error": str(exc)}
@@ -191,6 +258,280 @@ def _runs_payload(run_ids: Optional[list]) -> Dict[str, Any]:
                 st.close()
             except Exception:  # noqa: BLE001
                 pass
+
+
+def _attach_run_labels(result: Dict[str, Any]) -> None:
+    """D5 — run 목록에 대표 라벨(strategy_gist)을 덧붙인다(읽기 전용·무예외).
+
+    배치 평가 run(예: cldgen_*)은 세대 라벨(BASE_SEED/C7_SEEDPLUS …)이 정체성이다.
+    run별 첫 비어있지 않은 gist를 label로, 고유 gist 목록(최대 8)을 labels로 노출한다.
+    실패는 조용히 무시한다(라벨은 장식 — 기존 응답 키 불변).
+    """
+    import sqlite3  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+    runs = result.get("runs") if isinstance(result, dict) else None
+    if not runs:
+        return
+    try:
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        try:
+            rows = con.execute(
+                "SELECT run_id, strategy_gist FROM generations"
+                " WHERE strategy_gist IS NOT NULL AND strategy_gist != ''"
+                " ORDER BY gen_no"
+            ).fetchall()
+        finally:
+            con.close()
+        first_gist: Dict[str, str] = {}
+        gists: Dict[str, list] = {}
+        for rid, gist in rows:
+            first_gist.setdefault(rid, gist)
+            bucket = gists.setdefault(rid, [])
+            if gist not in bucket:
+                bucket.append(gist)
+        for row in runs:
+            rid = row.get("run_id")
+            if rid in first_gist:
+                row["label"] = first_gist[rid]
+                row["labels"] = gists[rid][:8]
+    except Exception:  # noqa: BLE001 - 라벨 실패해도 목록은 그대로.
+        return
+
+
+def _row_for_gen(run_id: str, gen_no: int) -> Optional[Dict[str, Any]]:
+    """run/gen 한 행(csv_path 포함)을 dict로 읽는다(읽기 전용, 실패 None)."""
+    import sqlite3  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+    try:
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        try:
+            row = con.execute(
+                "SELECT gen_no, status, score, gate_passed, reason, profit,"
+                " total_profit_pct, mdd, trade_count, daily_avg_trades, payoff_ratio,"
+                " max_hold_count, buy_name, sell_name, csv_path, strategy_gist"
+                " FROM generations WHERE run_id=? AND gen_no=?",
+                (run_id, int(gen_no)),
+            ).fetchone()
+        finally:
+            con.close()
+        return dict(row) if row is not None else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _yearly_detail_from_csv(csv_path: str) -> list:
+    """per-trade CSV에서 연도별 {year, trades, profit, win_rate}를 만든다(graceful)."""
+    try:
+        import pandas as pd  # noqa: PLC0415
+
+        df = pd.read_csv(csv_path, encoding="utf-8-sig")
+        if "매수시간" not in df.columns or "수익금" not in df.columns:
+            return []
+        years = df["매수시간"].astype(str).str[:4]
+        result = []
+        for year, group in df.groupby(years):
+            profits = group["수익금"].astype(float)
+            wins = (group["수익률"].astype(float) > 0) if "수익률" in df.columns else (profits > 0)
+            result.append({
+                "year": str(year),
+                "trades": int(len(group)),
+                "profit": float(profits.sum()),
+                "win_rate": round(float(wins.mean()), 4),
+            })
+        return result
+    except Exception:  # noqa: BLE001
+        return []
+
+
+def _run_yearly_payload(run_id: str) -> Dict[str, Any]:
+    """D1 — run의 세대별 연도 분해(거래수·손익·승률)를 만든다(읽기 전용·무예외).
+
+    근거(2026-06-10 원인5): 시드 알파의 연도별 쇠퇴(+4.88M→+3.37M→+0.38M→2026 적자)는
+    합계만 봐서는 보이지 않는다. generations.csv_path의 per-trade CSV(매수시간·수익금·
+    수익률)를 연도로 집계한다 — 추가 백테 0회. CSV 부재/파싱 실패는 빈 분해로 표준화.
+    """
+    import sqlite3  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+    out: Dict[str, Any] = {"run_id": run_id, "generations": [], "count": 0}
+    if not run_id:
+        return out
+    try:
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        try:
+            rows = con.execute(
+                "SELECT gen_no, status, buy_name, strategy_gist, csv_path, profit,"
+                " trade_count FROM generations WHERE run_id=? ORDER BY gen_no",
+                (run_id,),
+            ).fetchall()
+        finally:
+            con.close()
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = str(exc)
+        return out
+
+    for row in rows:
+        d = dict(row)
+        entry: Dict[str, Any] = {
+            "gen_no": d["gen_no"],
+            "buy_name": d.get("buy_name"),
+            "label": d.get("strategy_gist") or "",
+            "status": d.get("status"),
+            "total_profit": d.get("profit"),
+            "trade_count": d.get("trade_count"),
+            "years": _yearly_detail_from_csv(d.get("csv_path") or "") if d.get("csv_path") else [],
+        }
+        out["generations"].append(entry)
+    out["count"] = len(out["generations"])
+    return out
+
+
+def _autopsy_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
+    """D2 — 세대 CSV에 공식 부검(진입/청산)을 적용해 NL 요약을 반환한다(읽기 전용·무예외).
+
+    autopsy.analyze_trades/analyze_exits + summarize — 루프가 프롬프트 환류로만 쓰던
+    분석을 사람이 대시보드에서 직접 본다("왜 졌는지"). 실패/부족은 status로 표준화.
+    """
+    out: Dict[str, Any] = {
+        "run_id": run_id, "gen_no": gen_no,
+        "entry_summary": "", "exit_summary": "", "status": "unavailable",
+    }
+    row = _row_for_gen(run_id, gen_no)
+    if row is None:
+        return out
+    out["buy_name"] = row.get("buy_name")
+    out["label"] = row.get("strategy_gist") or ""
+    csv_path = row.get("csv_path") or ""
+    if not csv_path:
+        out["status"] = "no_csv"
+        return out
+    try:
+        from ai_strategy_loop.autopsy.analyze import analyze_exits, analyze_trades  # noqa: PLC0415
+        from ai_strategy_loop.autopsy.summarize import summarize, summarize_exits  # noqa: PLC0415
+
+        entry = analyze_trades(csv_path)
+        exits = analyze_exits(csv_path)
+        out["entry_summary"] = summarize(entry) or ""
+        out["exit_summary"] = summarize_exits(exits) or ""
+        out["entry_status"] = getattr(entry, "status", "")
+        out["exit_status"] = getattr(exits, "status", "")
+        out["status"] = "ok"
+    except Exception as exc:  # noqa: BLE001
+        out["status"] = "error"
+        out["error"] = str(exc)
+    return out
+
+
+def _selector_preview_payload(run_id: str, selector: str) -> Dict[str, Any]:
+    """D4 — run 행에 선택기를 진단 적용해 동결 가능 후보를 미리 본다(읽기 전용·무예외).
+
+    근거(2026-06-10 원인1): 기준-목표 비정합(시드조차 탈락)을 눈으로 확인하는 도구.
+    sparse_positive_v1 | seed_relative_v1 지원. 베이스라인(BASE_*)은 후보에서 출처
+    기준으로 제외하되 seed_relative의 시드 프로파일로 쓴다. **진단 전용 — 아무것도
+    쓰지 않으며 동결 아티팩트가 아니다.**
+    """
+    import sqlite3  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+    out: Dict[str, Any] = {
+        "run_id": run_id, "selector": selector or "sparse_positive_v1",
+        "diagnostic_only": True, "selected": False, "eligible": [], "rejected": [],
+    }
+    if not run_id:
+        return out
+    try:
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        try:
+            rows = con.execute(
+                "SELECT gen_no, status, score, gate_passed, reason, profit,"
+                " total_profit_pct, mdd, trade_count, daily_avg_trades, payoff_ratio,"
+                " max_hold_count, buy_name, sell_name, csv_path, strategy_gist"
+                " FROM generations WHERE run_id=? ORDER BY gen_no",
+                (run_id,),
+            ).fetchall()
+        finally:
+            con.close()
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = str(exc)
+        return out
+
+    try:
+        from ai_strategy_loop.controller.candidate_selection import (  # noqa: PLC0415
+            SeedProfile,
+            parse_candidate_generation,
+            select_seed_relative_v1,
+            select_sparse_positive_v1,
+        )
+
+        candidates, labels = [], {}
+        seed_profile = None
+        for r in rows:
+            d = dict(r)
+            gist = d.pop("strategy_gist", "") or ""
+            labels[int(d.get("gen_no") or 0)] = gist
+            d["gate_passed"] = bool(d.get("gate_passed"))
+            for k in ("payoff_ratio", "max_hold_count", "profit", "mdd",
+                      "daily_avg_trades", "score"):
+                if d.get(k) is None:
+                    d[k] = 0.0
+            if d.get("csv_path") is None:
+                d["csv_path"] = ""
+            if gist == "BASE_SEED" and seed_profile is None and d.get("status") == "ok":
+                seed_profile = SeedProfile(
+                    mdd=float(d["mdd"]), trade_count=int(d["trade_count"]),
+                    profit=float(d["profit"]), source=f"BASE_SEED of {run_id}",
+                )
+            if gist.startswith("BASE_"):
+                continue
+            candidates.append(parse_candidate_generation(d))
+
+        if (selector or "") == "seed_relative_v1":
+            res = select_seed_relative_v1(
+                candidates, run_id=run_id, config_path="", config_hash="",
+                seed_profile=seed_profile, diagnostic_only=True,
+            )
+            out["selector"] = "seed_relative_v1"
+            out["mdd_limit"] = res.mdd_limit
+            out["seed_profile"] = (
+                {"mdd": seed_profile.mdd, "trade_count": seed_profile.trade_count}
+                if seed_profile else None
+            )
+        else:
+            out["selector"] = "sparse_positive_v1"
+            res = select_sparse_positive_v1(
+                candidates, run_id=run_id, config_path="", config_hash="",
+                diagnostic_only=True,
+            )
+        out["selected"] = bool(res.selected)
+        if res.selected_candidate is not None:
+            c = res.selected_candidate
+            out["selected_candidate"] = {
+                "gen_no": c.gen_no, "label": labels.get(c.gen_no, ""),
+                "buy_name": c.buy_name, "sell_name": c.sell_name,
+                "profit": c.profit, "mdd": c.mdd, "trade_count": c.trade_count,
+                "payoff_ratio": c.payoff_ratio,
+            }
+        out["eligible"] = [
+            {"gen_no": e.gen_no, "label": labels.get(e.gen_no, "")}
+            for e in res.eligible_candidates
+        ]
+        out["rejected"] = [
+            {"gen_no": rj.gen_no, "label": labels.get(rj.gen_no, ""),
+             "reasons": list(rj.reasons)}
+            for rj in res.rejected_candidates
+        ]
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = str(exc)
+    return out
 
 
 def _generation_durations_payload(run_id: Optional[str] = None) -> Dict[str, Any]:
@@ -629,12 +970,14 @@ def _strategy_code_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
 
     buy_name = f"AILOOP_{run_id}_g{gen_no}_buy"
     sell_name = f"AILOOP_{run_id}_g{gen_no}_sell"
+    generation_found = False
     # 세대 행에서 실제 전략 이름을 읽는다(시드 세대는 seed 이름일 수 있음).
     st: Optional[LoopState] = None
     try:
         st = LoopState()
         for row in st.get_generations(run_id):
             if int(row.get("gen_no", -1)) == int(gen_no):
+                generation_found = True
                 buy_name = row.get("buy_name") or buy_name
                 sell_name = row.get("sell_name") or sell_name
                 break
@@ -649,13 +992,26 @@ def _strategy_code_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
 
     buy_code = _read_strategy_code(buy_name, "buy") or ""
     sell_code = _read_strategy_code(sell_name, "sell") or ""
+    code_status = "ok"
+    reason: Optional[str] = None
+    if not buy_code and not sell_code:
+        if not generation_found:
+            code_status = "missing_generation"
+            reason = "missing_generation"
+        else:
+            code_status = "empty_code"
+            reason = "empty_code"
     return {
+        "ok": True,
         "run_id": run_id,
         "gen": int(gen_no),
+        "gen_no": int(gen_no),
         "buy_name": buy_name,
         "sell_name": sell_name,
         "buy_code": buy_code,
         "sell_code": sell_code,
+        "code_status": code_status,
+        "reason": reason,
     }
 
 
@@ -749,8 +1105,30 @@ def _strategy_diff_payload(
     current = _strategy_code_payload(run_id, int(gen_no))
     base_no = _parse_base_gen(int(gen_no), str(base_gen))
     prompts = _prompts_payload(run_id, int(gen_no)).get("prompts", [])
+    current_status = str(current.get("code_status") or "")
+    if current_status == "missing_generation":
+        return {
+            "ok": True,
+            "run_id": run_id,
+            "gen_no": int(gen_no),
+            "buy_name": current.get("buy_name"),
+            "sell_name": current.get("sell_name"),
+            "buy_code": current.get("buy_code", ""),
+            "sell_code": current.get("sell_code", ""),
+            "base_gen": base_no,
+            "base_buy_name": None,
+            "base_sell_name": None,
+            "base_buy_code": "",
+            "base_sell_code": "",
+            "buy_diff": [],
+            "sell_diff": [],
+            "prompts": prompts,
+            "diff_status": "missing_generation",
+            "reason": "missing_generation",
+        }
     if base_no is None:
         return {
+            "ok": True,
             "run_id": run_id,
             "gen_no": int(gen_no),
             "buy_name": current.get("buy_name"),
@@ -765,11 +1143,22 @@ def _strategy_diff_payload(
             "buy_diff": [],
             "sell_diff": [],
             "prompts": prompts,
+            "diff_status": "no_previous_generation",
             "reason": "no_previous_generation",
         }
 
     base = _strategy_code_payload(run_id, int(base_no))
+    base_status = str(base.get("code_status") or "")
+    diff_status = "ok"
+    reason: Optional[str] = None
+    if current_status == "empty_code" or base_status == "empty_code":
+        diff_status = "empty_code"
+        reason = "empty_code"
+    elif base_status == "missing_generation":
+        diff_status = "missing_generation"
+        reason = "missing_generation"
     return {
+        "ok": True,
         "run_id": run_id,
         "gen_no": int(gen_no),
         "buy_name": current.get("buy_name"),
@@ -794,7 +1183,8 @@ def _strategy_diff_payload(
             str(current.get("sell_name") or ""),
         ),
         "prompts": prompts,
-        "reason": None,
+        "diff_status": diff_status,
+        "reason": reason,
     }
 
 
@@ -863,13 +1253,56 @@ def _ai_context_pack_payload(run_id: Optional[str], gen_no: Optional[int] = None
     best = max(gens, key=lambda row: float(row.get("score", 0.0) or 0.0))
     winners = [g for g in gens if bool(g.get("gate_passed"))]
     winner = max(winners, key=lambda row: float(row.get("score", 0.0) or 0.0)) if winners else None
+    strategy_names = {"buy": gen.get("buy_name"), "sell": gen.get("sell_name")}
+
+    def _prompt_features(row: Dict[str, Any]) -> Dict[str, Any]:
+        raw = row.get("injected_features")
+        if isinstance(raw, dict):
+            return raw
+        if not raw:
+            return {}
+        try:
+            parsed = json.loads(str(raw))
+        except (TypeError, ValueError):
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
+
+    prompt_feature_rows = [_prompt_features(p) for p in gen_prompts]
+    first_features = next((f for f in prompt_feature_rows if f), {})
+    context_pack = {
+        "guide_context": {
+            "source": "utility/ai_agent/system_prompt/v1",
+            "prompt_count": len(gen_prompts),
+            "prompt_logging_enabled": bool(cfg.get("prompt_logging_enabled")),
+            "injected": first_features.get("guide_context"),
+        },
+        "diff_context": {
+            "selected_gen_no": gen_no_out,
+            "comparison_base_gen_no": gen_no_out - 1 if gen_no_out > 0 else None,
+            "has_current_strategy_names": bool(strategy_names["buy"] or strategy_names["sell"]),
+            "injected": first_features.get("diff_context"),
+        },
+        "analysis_context": {
+            "best_gen_no": int(best.get("gen_no", -1) or -1),
+            "winner_gen_no": (
+                None if winner is None else int(winner.get("gen_no", -1) or -1)
+            ),
+            "score": gen.get("score"),
+            "profit": gen.get("profit"),
+            "injected": first_features.get("analysis_context"),
+        },
+        "correlation_context": {
+            "source_route": "/variable_correlation",
+            "per_trade_csv_available": bool(gen.get("csv_path")),
+            "injected": first_features.get("correlation_context"),
+        },
+    }
 
     forbidden_actions = [
         "Do not approve, deploy, or write production strategy storage from this context.",
         "Do not place live orders or advance V3K gates.",
         "Do not claim human-level or seed-superior performance without fresh OOS evidence.",
     ]
-    strategy_names = {"buy": gen.get("buy_name"), "sell": gen.get("sell_name")}
     verdict_note = _p5_verdict_note()
     analysis = {
         "edge_ratio": "available via /edge_ratio when per-trade CSVs exist",
@@ -925,6 +1358,7 @@ def _ai_context_pack_payload(run_id: Optional[str], gen_no: Optional[int] = None
         ),
         "strategy_names": strategy_names,
         "prompt_count": len(gen_prompts),
+        "context_pack": context_pack,
         "analysis": analysis,
         "verdict_note": verdict_note,
         "verdict_refs": [
@@ -1175,7 +1609,8 @@ def _adaptive_timing_payload(run_id: Optional[str], lookback: int) -> Dict[str, 
 
 
 def _edge_ratio_payload(
-    run_id: Optional[str], run_ids: Optional[str], fine_time: bool
+    run_id: Optional[str], run_ids: Optional[str], fine_time: bool,
+    gen_no: Optional[int] = None,
 ) -> Dict[str, Any]:
     """run(들)의 세대 결과 CSV를 풀링해 MFE/MAE 엣지비율 + 파노라마 세그먼트를 반환한다(읽기 전용, 무예외).
 
@@ -1211,6 +1646,9 @@ def _edge_ratio_payload(
         st = LoopState()
         for rid in target_runs:
             for row in st.get_generations(rid):  # gen_no 오름차순.
+                # R4(2026-06-11) — gen_no 지정 시 그 세대만(G3: 이질 전략 혼합 풀링 방지).
+                if gen_no is not None and int(row.get("gen_no", -1)) != int(gen_no):
+                    continue
                 cp = row.get("csv_path")
                 if cp and cp not in seen:
                     seen.add(cp)
@@ -1236,11 +1674,13 @@ def _edge_ratio_payload(
     except Exception as exc:  # noqa: BLE001 - 풀링 집계 실패도 error로 흡수(무예외).
         return {"error": str(exc)}
 
-    return {"runs": target_runs, "fine_time": bool(fine_time), **report}
+    return {"runs": target_runs, "fine_time": bool(fine_time),
+            "gen_no": gen_no, **report}
 
 
 def _feature_importance_payload(
-    run_id: Optional[str], run_ids: Optional[str], axis: str, fine_time: bool
+    run_id: Optional[str], run_ids: Optional[str], axis: str, fine_time: bool,
+    gen_no: Optional[int] = None,
 ) -> Dict[str, Any]:
     """run(들)의 세대 결과 CSV를 풀링해 세그먼트별 승리-변수 피처 중요도를 반환한다(읽기 전용, 무예외).
 
@@ -1279,6 +1719,9 @@ def _feature_importance_payload(
         st = LoopState()
         for rid in target_runs:
             for row in st.get_generations(rid):  # gen_no 오름차순.
+                # R4(2026-06-11) — gen_no 지정 시 그 세대만(G3: 이질 전략 혼합 풀링 방지).
+                if gen_no is not None and int(row.get("gen_no", -1)) != int(gen_no):
+                    continue
                 cp = row.get("csv_path")
                 if cp and cp not in seen:
                     seen.add(cp)
@@ -1304,11 +1747,12 @@ def _feature_importance_payload(
     except Exception as exc:  # noqa: BLE001 - 풀링 집계 실패도 error로 흡수(무예외).
         return {"error": str(exc)}
 
-    return {"runs": target_runs, **report}
+    return {"runs": target_runs, "gen_no": gen_no, **report}
 
 
 def _variable_correlation_payload(
-    run_id: Optional[str], run_ids: Optional[str], method: str
+    run_id: Optional[str], run_ids: Optional[str], method: str,
+    gen_no: Optional[int] = None,
 ) -> Dict[str, Any]:
     """run(들)의 세대 결과 CSV를 풀링해 B_* 변수 상관도를 반환한다(읽기 전용, 무예외)."""
     from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
@@ -1332,6 +1776,9 @@ def _variable_correlation_payload(
         st = LoopState()
         for rid in target_runs:
             for row in st.get_generations(rid):
+                # R4(2026-06-11) — gen_no 지정 시 그 세대만(G3: 이질 전략 혼합 풀링 방지).
+                if gen_no is not None and int(row.get("gen_no", -1)) != int(gen_no):
+                    continue
                 cp = row.get("csv_path")
                 if cp and cp not in seen:
                     seen.add(cp)
@@ -1356,7 +1803,834 @@ def _variable_correlation_payload(
     except Exception as exc:  # noqa: BLE001 - 풀링 집계 실패도 error로 흡수(무예외).
         return {"error": str(exc)}
 
-    return {"runs": target_runs, **report}
+    return {"runs": target_runs, "gen_no": gen_no, **report}
+
+
+def _ops_status_payload(window_hours: int = 24) -> Dict[str, Any]:
+    """운영 현황(2026-06-11) — '지금 무엇이 돌고 있고 잘 돌고 있는가' 한 화면.
+
+    - active: status=running run + 마지막 세대 이후 경과초 → 활성/정체 판정
+      (한 점 평가 ~30~340초 실측 — 10분 무진행이면 stalled 의심 표시).
+    - recent: 최근 window_hours 내 완료 run + 최고 손익/세대 수.
+    - walkforward: 최신 aggregate.json의 정책-대-베이스라인 누적.
+    - evidence: 증거 디렉토리 최신 파일 5종(신선도 분).
+    읽기 전용·무예외 — 어떤 실패도 부분 결과로 흡수한다.
+    """
+    import glob as _glob  # noqa: PLC0415
+    import sqlite3  # noqa: PLC0415
+    import time as _time  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+    now = _time.time()
+    out: Dict[str, Any] = {"now": now, "active": [], "recent": [],
+                           "walkforward": None, "evidence": []}
+    try:
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        try:
+            rows = con.execute(
+                "SELECT r.run_id, r.status, r.started_at, r.finished_at,"
+                " (SELECT COUNT(*) FROM generations g WHERE g.run_id=r.run_id) AS gens,"
+                " (SELECT MAX(created_at) FROM generations g WHERE g.run_id=r.run_id)"
+                "   AS last_gen_at,"
+                " (SELECT strategy_gist FROM generations g WHERE g.run_id=r.run_id"
+                "   ORDER BY gen_no DESC LIMIT 1) AS last_label,"
+                " (SELECT MAX(profit) FROM generations g WHERE g.run_id=r.run_id"
+                "   AND g.status='ok') AS best_profit"
+                " FROM runs r WHERE r.started_at > ? ORDER BY r.started_at DESC",
+                (now - window_hours * 3600,),
+            ).fetchall()
+        finally:
+            con.close()
+        for r in rows:
+            d = {
+                "run_id": r["run_id"], "status": r["status"],
+                "gens": int(r["gens"] or 0),
+                "last_label": r["last_label"] or "",
+                "best_profit": float(r["best_profit"]) if r["best_profit"] is not None else None,
+                "elapsed_min": round((now - (r["started_at"] or now)) / 60, 1),
+            }
+            if r["status"] == "running":
+                idle = now - float(r["last_gen_at"] or r["started_at"] or now)
+                d["seconds_since_last_gen"] = round(idle)
+                d["health"] = "active" if idle < 600 else "stalled?"
+                out["active"].append(d)
+            else:
+                out["recent"].append(d)
+    except Exception as exc:  # noqa: BLE001 - 부분 결과 허용.
+        out["error_runs"] = str(exc)
+
+    try:  # walk-forward 최신 집계(있으면).
+        aggs = sorted(
+            _glob.glob(os.path.join(REPO_ROOT, ".omo/evidence/tmap-walkforward",
+                                    "*", "aggregate.json")),
+            key=os.path.getmtime, reverse=True,
+        )
+        if aggs:
+            with open(aggs[0], encoding="utf-8") as fh:
+                agg = json.load(fh)
+            out["walkforward"] = {
+                "path": os.path.basename(os.path.dirname(aggs[0])),
+                "windows_done": sum(1 for w in agg.get("windows", [])
+                                    if w.get("status") == "ok"),
+                "policy_total": agg.get("policy_total"),
+                "baseline_total": agg.get("baseline_total"),
+                "age_min": round((now - os.path.getmtime(aggs[0])) / 60, 1),
+            }
+    except Exception:  # noqa: BLE001
+        pass
+
+    try:  # F6(2026-06-11) — 배치 큐 스테이지: 최신 *queue*log* 휴리스틱 파싱.
+        qlogs = sorted(
+            _glob.glob(os.path.join(REPO_ROOT, ".omo/evidence/tmap-walkforward",
+                                    "*queue*log*.txt")),
+            key=os.path.getmtime, reverse=True,
+        )
+        if qlogs:
+            import re as _re  # noqa: PLC0415
+
+            with open(qlogs[0], encoding="utf-8", errors="ignore") as fh:
+                text = fh.read()
+            templates = _re.findall(r"template=(\S+)", text)
+            out["batch_queue"] = {
+                "log": os.path.basename(qlogs[0]),
+                "stages_done": text.count("] done"),
+                "current_template": templates[-1] if templates else None,
+                "age_min": round((now - os.path.getmtime(qlogs[0])) / 60, 1),
+            }
+    except Exception:  # noqa: BLE001
+        pass
+
+    try:  # 증거 신선도 — 두 증거 디렉토리의 최신 파일 5종.
+        files = []
+        for pattern in (".omo/evidence/tmap-walkforward/*",
+                        ".omo/evidence/claude-condition-research-20260610/*"):
+            files += [p for p in _glob.glob(os.path.join(REPO_ROOT, pattern))
+                      if os.path.isfile(p)]
+        files.sort(key=os.path.getmtime, reverse=True)
+        out["evidence"] = [
+            {"name": os.path.basename(p),
+             "age_min": round((now - os.path.getmtime(p)) / 60, 1)}
+            for p in files[:5]
+        ]
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
+def _freeze_verdict_payload() -> Dict[str, Any]:
+    """검증 결산(2026-06-11) — 동결 후보의 V1~V5+리스크 증거를 한 화면으로.
+
+    증거 JSON(동결·과적합·중복도·플라시보·슬리피지·리스크 advisory)과 OOS
+    run(loop_runs.db, 최신 *_oos_<year>* run)을 모아 사람이 읽는 lines와
+    경고(alerts)로 합성한다. 파일 부재/스키마 드리프트는 해당 항목만 생략
+    (무예외 — 부분 결과). 읽기 전용 · 판정 미사용(advisory 표시 전용).
+    """
+    base_t = os.path.join(REPO_ROOT, ".omo/evidence/tmap-walkforward")
+    base_r = os.path.join(REPO_ROOT, ".omo/evidence/claude-condition-research-20260610")
+
+    def _load(*parts):
+        try:
+            with open(os.path.join(*parts), encoding="utf-8") as fh:
+                return json.load(fh)
+        except Exception:  # noqa: BLE001
+            return None
+
+    out: Dict[str, Any] = {"lines": [], "alerts": [], "oos_diff_ci": {}}
+    lines, alerts = out["lines"], out["alerts"]
+
+    sel = _load(base_r, "p5-selected-candidate.json")
+    if sel and sel.get("selected_candidate"):
+        c = sel["selected_candidate"]
+        out["selected"] = c
+        lines.append(
+            f"동결 후보: gen{c.get('gen_no')} {c.get('buy_name')} — train 손익"
+            f" {(c.get('profit') or 0):,.0f} · MDD {c.get('mdd')}"
+            f" · {c.get('trade_count')}건 · payoff {round(c.get('payoff_ratio') or 0, 2)}"
+        )
+
+    ov = _load(base_r, "p5-overfit-advisory.json")
+    if ov:
+        dsr = (ov.get("dsr") or {}).get("dsr")
+        pbo = (ov.get("pbo") or {}).get("pbo")
+        mc = ov.get("mc_block_bootstrap") or {}
+        pool = ov.get("pool_independence") or {}
+        out["overfit"] = {"dsr": dsr, "pbo": pbo, "n_trials": ov.get("n_trials"),
+                          "p_positive": mc.get("p_positive"),
+                          "pool_independence": pool}
+        if dsr is not None:
+            lines.append(
+                f"V1 과적합: DSR {dsr:.3f} (n_trials {ov.get('n_trials')})"
+                f" · PBO {round(pbo, 3) if pbo is not None else '—'}"
+                f" · MC P(흑자) {mc.get('p_positive')}"
+            )
+        if pool.get("pbo_reliability_warning"):
+            alerts.append("V1: " + str(pool["pbo_reliability_warning"]))
+
+    # V3 — 최신 고정 OOS run 2개(연도별)에서 FROZEN vs BASE_SEED.
+    try:
+        import sqlite3  # noqa: PLC0415
+
+        from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        try:
+            # 2026-06-12 — OOS run을 '현재 동결 후보'에 바인딩: 도전자 기각 후
+            #   최신 OOS(기각자 것)가 챔피언 결산에 섞여 표시되던 혼선 수정.
+            cand_buy = (out.get("selected") or {}).get("buy_name")
+            for year in ("2022", "2026"):
+                rid_row = con.execute(
+                    "SELECT r.run_id FROM runs r WHERE r.run_id LIKE ?"
+                    " AND EXISTS (SELECT 1 FROM generations g"
+                    "   WHERE g.run_id = r.run_id AND g.strategy_gist='FROZEN'"
+                    "   AND (? IS NULL OR g.buy_name = ?))"
+                    " ORDER BY r.started_at DESC LIMIT 1",
+                    (f"%oos_{year}%", cand_buy, cand_buy),
+                ).fetchone()
+                if rid_row is None:
+                    continue
+                rows = {r["strategy_gist"]: r for r in con.execute(
+                    "SELECT strategy_gist, profit, mdd, trade_count, csv_path"
+                    " FROM generations WHERE run_id=? AND status='ok'",
+                    (rid_row["run_id"],),
+                )}
+                fz, bs = rows.get("FROZEN"), rows.get("BASE_SEED")
+                if fz and bs:
+                    out.setdefault("oos", {})[year] = {
+                        "frozen_profit": float(fz["profit"] or 0.0),
+                        "frozen_mdd": float(fz["mdd"] or 0.0),
+                        "frozen_trades": int(fz["trade_count"] or 0),
+                        "seed_profit": float(bs["profit"] or 0.0),
+                        "seed_mdd": float(bs["mdd"] or 0.0),
+                    }
+                    lines.append(
+                        f"V3 OOS {year}: 후보 {fz['profit']:,.0f}({fz['trade_count']}건"
+                        f"·MDD {fz['mdd']:.2f}) vs 시드 {bs['profit']:,.0f}"
+                        f"(MDD {bs['mdd']:.2f})"
+                    )
+                    # C1-OOS (2026-06-12) — 후보 vs 시드 OOS 차이 CI (advisory).
+                    # csv_path 부재·daily_pnl_series 실패·oos_diff_ci 실패는 None으로.
+                    try:
+                        from ai_strategy_loop.fitness.overfit_stats import (  # noqa: PLC0415
+                            daily_pnl_series,
+                            oos_diff_ci,
+                        )
+
+                        fz_csv = str(fz["csv_path"] or "")
+                        bs_csv = str(bs["csv_path"] or "")
+                        if fz_csv and bs_csv:
+                            fz_abs = fz_csv if os.path.isabs(fz_csv) else os.path.join(REPO_ROOT, fz_csv)
+                            bs_abs = bs_csv if os.path.isabs(bs_csv) else os.path.join(REPO_ROOT, bs_csv)
+                            fz_series = daily_pnl_series(fz_abs) or {}
+                            bs_series = daily_pnl_series(bs_abs) or {}
+                            ci = oos_diff_ci(fz_series, bs_series)
+                        else:
+                            ci = None
+                    except Exception:  # noqa: BLE001 - advisory: 어떤 예외도 기존 응답을 깨지 않는다.
+                        ci = None
+                    out["oos_diff_ci"][year] = ci
+        finally:
+            con.close()
+    except Exception:  # noqa: BLE001
+        pass
+
+    pl = _load(base_t, "placebo_position.json")
+    if pl and pl.get("position"):
+        pos = pl["position"]
+        out["placebo"] = pos
+        lines.append(
+            f"V2 플라시보: 표본 {pos.get('n_placebo')}종 전부 하회"
+            if pos.get("exceeds_all")
+            else f"V2 플라시보: 백분위 {pos.get('percentile')}"
+        )
+        lines[-1] += f" — {pos.get('interpretation')}"
+
+    sl = _load(base_t, "theta_slippage_stress.json")
+    if sl:
+        by_key = {(s.get("tick"), s.get("fee_bps")): s
+                  for s in (sl.get("scenarios") or []) if isinstance(s, dict)}
+        s1, s2 = by_key.get((1, 0.0)), by_key.get((2, 0.0))
+        if s1:
+            out["slippage_summary"] = {
+                "t1_retention": s1.get("profit_retention_ratio"),
+                "t2_retention": (s2 or {}).get("profit_retention_ratio"),
+                "t2_profit": (s2 or {}).get("total_profit"),
+                "breakeven_tick": s1.get("breakeven_tick"),
+            }
+            lines.append(
+                f"V5 슬리피지(합산 {sl.get('trade_count')}건): 1틱 유지"
+                f" {s1.get('profit_retention_ratio', 0) * 100:.0f}%"
+                + (f" · 2틱 {s2.get('profit_retention_ratio', 0) * 100:.0f}%" if s2 else "")
+                + f" · 손익분기 {round(s1.get('breakeven_tick') or 0, 2)}틱"
+            )
+        oos26 = _load(base_t, "theta_slippage_oos2026.json")
+        if oos26:
+            sc = next((s for s in (oos26.get("scenarios") or [])
+                       if s.get("tick") == 1 and not s.get("fee_bps")), None)
+            if sc and (sc.get("breakeven_tick") or 9) < 2:
+                alerts.append(
+                    f"V5: 2026 OOS 단독 손익분기 {round(sc['breakeven_tick'], 2)}틱 — 얇은 마진"
+                )
+
+    tov = _load(base_r, "p5-trade-overlap.json")
+    if tov:
+        out["trade_overlap"] = tov
+        lines.append(f"M1 중복도: jaccard {tov.get('jaccard')} — {tov.get('interpretation')}")
+
+    ra = _load(base_t, "theta_risk_advisories.json")
+    if ra:
+        ff = ra.get("fill_fragility_train") or {}
+        cb = ra.get("circuit_breaker_train") or {}
+        sz = ra.get("sizing_advisory") or {}
+        if ff:
+            lines.append(
+                f"C8 체결: 추격 의존 거래 {round((ff.get('fragile_trade_ratio') or 0) * 100, 1)}%"
+                f" · 의존 수익비중 {round((ff.get('fragile_profit_share') or 0) * 100, 1)}%"
+            )
+        if cb.get("best_rule"):
+            lines.append(f"M10 서킷: {cb['best_rule']} → x{cb.get('profit_ratio')}")
+        if sz.get("applied_scale"):
+            lines.append(f"M11 사이징: 권고 배수 x{sz['applied_scale']}")
+
+    try:  # V4 — 최신 walk-forward 집계(창별 행 포함).
+        import glob as _glob  # noqa: PLC0415
+
+        aggs = sorted(
+            _glob.glob(os.path.join(base_t, "*", "aggregate.json")),
+            key=os.path.getmtime, reverse=True,
+        )
+        if aggs:
+            agg = _load(aggs[0]) or {}
+            out["walkforward"] = agg
+            done = [w for w in agg.get("windows", []) if w.get("status") == "ok"]
+            if done:
+                lines.append(
+                    f"V4 walk-forward({len(done)}창): 정책 누적"
+                    f" {agg.get('policy_total', 0):,.0f} vs 시드"
+                    f" {agg.get('baseline_total', 0):,.0f}"
+                )
+    except Exception:  # noqa: BLE001
+        pass
+
+    # ── D2(2026-06-11): PROMOTE 조건 체크리스트 ────────────────────────────
+    #   사전선언 p0 §5(V3 4기준) + advisory 기준(V1·V2·V4·V5). 게이트가 아니라
+    #   표시 전용 — 'PROMOTE까지 무엇이 남았나'를 한눈에(상태: pass/warn/fail/pending).
+    checklist: List[Dict[str, str]] = []
+
+    def _check(item: str, status: str, detail: str = "") -> None:
+        checklist.append({"item": item, "status": status, "detail": detail})
+
+    oos = out.get("oos") or {}
+    o22, o26 = oos.get("2022"), oos.get("2026")
+    if o22 and o26:
+        both = o22["frozen_profit"] > 0 and o26["frozen_profit"] > 0
+        _check("V3 두 OOS 연도 모두 흑자", "pass" if both else "fail",
+               f"2022 {o22['frozen_profit']:,.0f} / 2026 {o26['frozen_profit']:,.0f}")
+        cand_sum = o22["frozen_profit"] + o26["frozen_profit"]
+        seed_sum = o22["seed_profit"] + o26["seed_profit"]
+        _check("V3 합산 후보 ≥ 합산 시드", "pass" if cand_sum >= seed_sum else "fail",
+               f"{cand_sum:,.0f} vs {seed_sum:,.0f}")
+        cand_mdd = max(o22["frozen_mdd"], o26["frozen_mdd"])
+        seed_mdd = max(o22["seed_mdd"], o26["seed_mdd"])
+        _check("V3 후보 maxMDD ≤ 시드", "pass" if cand_mdd <= seed_mdd else "fail",
+               f"{cand_mdd:.2f} vs {seed_mdd:.2f}")
+        trades_ok = o22["frozen_trades"] >= 20 and o26["frozen_trades"] >= 20
+        _check("V3 연 20거래", "pass" if trades_ok else "warn",
+               f"2022 {o22['frozen_trades']} / 2026 {o26['frozen_trades']}"
+               " — 2026 창 2개월 구조 한계(V4 표본으로 보강)")
+    else:
+        _check("V3 고정 OOS", "pending", "OOS run 미발견")
+
+    ovf = out.get("overfit") or {}
+    if ovf.get("dsr") is not None:
+        _check("V1 DSR ≥ 0.5 (advisory)", "pass" if ovf["dsr"] >= 0.5 else "warn",
+               f"{ovf['dsr']:.3f} (n_trials {ovf.get('n_trials')})")
+        if ovf.get("p_positive") is not None:
+            _check("V1 MC P(흑자) ≥ 0.95", "pass" if ovf["p_positive"] >= 0.95 else "warn",
+                   str(ovf["p_positive"]))
+    else:
+        _check("V1 과적합 통계", "pending", "")
+
+    plc = out.get("placebo")
+    if plc:
+        _check("V2 플라시보 전 표본 상회", "pass" if plc.get("exceeds_all") else "fail",
+               f"표본 {plc.get('n_placebo')}종 · 백분위 {plc.get('percentile')}")
+    else:
+        _check("V2 플라시보", "pending", "")
+
+    slp = out.get("slippage_summary")
+    if slp:
+        t2_pos = (slp.get("t2_profit") or 0) > 0
+        _check("V5 합산 2틱 불리에도 흑자", "pass" if t2_pos else "fail",
+               f"2틱 유지율 {round((slp.get('t2_retention') or 0) * 100)}%")
+        if any("얇은 마진" in a for a in alerts):
+            _check("V5 최신 구간 마진", "warn", "2026 단독 손익분기 < 2틱")
+    else:
+        _check("V5 슬리피지", "pending", "")
+
+    wf = out.get("walkforward") or {}
+    if wf.get("windows"):
+        ok_w = [w for w in wf["windows"] if w.get("status") == "ok"]
+        noninf = (wf.get("policy_total") or 0) >= (wf.get("baseline_total") or 0)
+        _check("V4 정책 누적 비열등", "pass" if noninf and ok_w else "fail",
+               f"{wf.get('policy_total', 0):,.0f} vs {wf.get('baseline_total', 0):,.0f} ({len(ok_w)}창)")
+    else:
+        _check("V4 walk-forward", "pending", "")
+    out["promote_checklist"] = checklist
+    return out
+
+
+def _portfolio_sim_payload(run_ids_str: str) -> Dict[str, Any]:
+    """과업2(2026-06-12) — 복수 run의 최신 ok 세대를 균등 가중 결합해 포트폴리오 리포트.
+
+    각 run_id의 최신 ok 세대(csv_path 보유)에서 daily_pnl_series를 구성하고
+    portfolio_report를 호출한다. 유효 시리즈 2개 미만이면 portfolio_report의
+    {"error": ...}를 그대로 200으로 반환한다(advisory — 판정 미사용).
+    읽기 전용·무예외: 모든 예외는 {"error": ...}로 흡수한다.
+    """
+    import sqlite3  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+    run_ids = [r.strip() for r in run_ids_str.split(",") if r.strip()]
+    if not run_ids:
+        return {"error": "run_ids 파라미터가 비어 있습니다."}
+
+    try:
+        from ai_strategy_loop.fitness.overfit_stats import daily_pnl_series  # noqa: PLC0415
+        from ai_strategy_loop.fitness.portfolio import portfolio_report  # noqa: PLC0415
+
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        series: Dict[str, Dict[str, float]] = {}
+        try:
+            for run_id in run_ids:
+                # 최신 ok 세대 중 csv_path 보유한 것 1개.
+                row = con.execute(
+                    "SELECT gen_no, buy_name, strategy_gist, csv_path"
+                    " FROM generations"
+                    " WHERE run_id=? AND status='ok' AND csv_path IS NOT NULL AND csv_path != ''"
+                    " ORDER BY gen_no DESC LIMIT 1",
+                    (run_id,),
+                ).fetchone()
+                if row is None:
+                    continue
+                csv_path = str(row["csv_path"])
+                abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+                s = daily_pnl_series(abs_csv)
+                if s:
+                    label = (
+                        str(row["strategy_gist"] or "")
+                        or str(row["buy_name"] or "")
+                        or run_id
+                    )
+                    # 같은 run_id를 중복 제출해도 키가 유일하도록 run_id를 접두로.
+                    key = f"{run_id}:{label}"
+                    series[key] = s
+        finally:
+            con.close()
+
+        return portfolio_report(series)
+    except Exception as exc:  # noqa: BLE001 - advisory: 어떤 예외도 200으로 흡수.
+        return {"error": str(exc)}
+
+
+def _equity_curve_payload(run_id: str, gen_no: int) -> Dict[str, Any]:
+    """E2/D4(2026-06-11) — 세대 누적 수익곡선(일별, ≤240점 다운샘플).
+
+    per-trade CSV의 일별 손익을 누적해 '우상향 그림'을 차트로 직접 렌더할
+    데이터를 만든다. 읽기 전용·무예외 — CSV 부재는 no_csv.
+    """
+    out: Dict[str, Any] = {"run_id": run_id, "gen_no": gen_no, "status": "unavailable"}
+    try:
+        row = _row_for_gen(run_id, gen_no)
+        if row is None:
+            return out
+        csv_path = row.get("csv_path") or ""
+        abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+        if not csv_path or not os.path.isfile(abs_csv):
+            out["status"] = "no_csv"
+            return out
+        from ai_strategy_loop.fitness.overfit_stats import daily_pnl_series  # noqa: PLC0415
+
+        series = daily_pnl_series(abs_csv)
+        if not series:
+            out["status"] = "no_csv"
+            return out
+        days = sorted(series)
+        cum, total = [], 0.0
+        for d in days:
+            total += float(series[d])
+            cum.append(round(total, 2))
+        step = max(1, len(days) // 240)
+        idx = list(range(0, len(days), step))
+        if idx and idx[-1] != len(days) - 1:
+            idx.append(len(days) - 1)
+        out.update({
+            "status": "ok",
+            "days": [days[i] for i in idx],
+            "cum": [cum[i] for i in idx],
+            "total": round(total, 2),
+            "n_days": len(days),
+            "label": row.get("strategy_gist") or "",
+        })
+    except Exception as exc:  # noqa: BLE001
+        out["status"] = "error"
+        out["error"] = str(exc)
+    return out
+
+
+def _niche_compare_payload(run_ids: str = "") -> Dict[str, Any]:
+    """D3(2026-06-11) — 니치 지도 비교: 여러 스윕 run을 한 표에(읽기 전용·무예외).
+
+    run_ids 미지정이면 최근 7일 'tmap%' run 최신 8개를 자동 발굴 — 밤샘 큐의
+    신규 니치 4종(exit2·F07·F10·min)을 아침에 나란히 비교하는 용도. run별:
+    베이스라인 · 최강 슬롯 고원(1-D) 또는 격자 요약(grid) · 최고 단일점 · 진행.
+    """
+    import sqlite3  # noqa: PLC0415
+    import time as _time  # noqa: PLC0415
+
+    from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+    from ai_strategy_loop.tmap.tendency import grid_summary, summarize_tendency  # noqa: PLC0415
+
+    ids = [s.strip() for s in run_ids.split(",") if s.strip()]
+    out: Dict[str, Any] = {"runs": [], "count": 0}
+    try:
+        con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+        con.row_factory = sqlite3.Row
+        try:
+            if not ids:
+                rows = con.execute(
+                    "SELECT run_id FROM runs WHERE run_id LIKE 'tmap%' AND started_at > ?"
+                    " ORDER BY started_at DESC LIMIT 8",
+                    (_time.time() - 7 * 86400,),
+                ).fetchall()
+                ids = [r["run_id"] for r in rows]
+            # F1(2026-06-11) — 상관 비교 기준: 최신 reeval run의 최고 손익 gen(동결 후보).
+            vs_series = None
+            try:
+                vs_row = con.execute(
+                    "SELECT g.csv_path FROM generations g JOIN runs r"
+                    " ON g.run_id = r.run_id"
+                    " WHERE g.run_id LIKE '%reeval%' AND g.status='ok'"
+                    " ORDER BY r.started_at DESC, g.profit DESC LIMIT 1"
+                ).fetchone()
+                if vs_row and vs_row["csv_path"]:
+                    from ai_strategy_loop.fitness.overfit_stats import (  # noqa: PLC0415
+                        daily_pnl_series as _dps,
+                    )
+
+                    p = vs_row["csv_path"]
+                    vs_series = _dps(p if os.path.isabs(p) else os.path.join(REPO_ROOT, p))
+            except Exception:  # noqa: BLE001
+                vs_series = None
+            for rid in ids:
+                entry: Dict[str, Any] = {"run_id": rid}
+                try:
+                    status = con.execute(
+                        "SELECT status FROM runs WHERE run_id=?", (rid,)).fetchone()
+                    entry["status"] = status["status"] if status else None
+                    agg = con.execute(
+                        "SELECT COUNT(*) AS c, MAX(profit) AS best FROM generations"
+                        " WHERE run_id=? AND status='ok'", (rid,)).fetchone()
+                    entry["gens_ok"] = int(agg["c"] or 0)
+                    entry["best_profit"] = (
+                        float(agg["best"]) if agg["best"] is not None else None)
+                    # F1 — 최고 손익 gen의 CSV로 시간버킷·곡선 형태·동결 상관(advisory).
+                    best_row = con.execute(
+                        "SELECT csv_path FROM generations WHERE run_id=? AND status='ok'"
+                        " ORDER BY profit DESC LIMIT 1", (rid,)).fetchone()
+                    csvp = (best_row["csv_path"] or "") if best_row else ""
+                    if csvp:
+                        abs_csv = csvp if os.path.isabs(csvp) else os.path.join(REPO_ROOT, csvp)
+                        buckets = sorted(_entry_time_buckets(abs_csv))
+                        if buckets:
+                            entry["time_buckets"] = buckets[:4]
+                        from ai_strategy_loop.fitness.overfit_stats import (  # noqa: PLC0415
+                            curve_shape_metrics,
+                            daily_pnl_series,
+                        )
+
+                        series = daily_pnl_series(abs_csv)
+                        shape = curve_shape_metrics(series) if series else None
+                        if shape:
+                            entry["shape_r2"] = shape["uptrend_r2"]
+                            entry["stagnation_days"] = shape["max_stagnation_days"]
+                        if series and vs_series:
+                            common = sorted(set(series) & set(vs_series))
+                            if len(common) >= 10:
+                                import numpy as _np  # noqa: PLC0415
+
+                                a = _np.asarray([series[d] for d in common], dtype=float)
+                                b = _np.asarray([vs_series[d] for d in common], dtype=float)
+                                if float(a.std()) > 0 and float(b.std()) > 0:
+                                    entry["corr_vs_frozen"] = round(
+                                        float(_np.corrcoef(a, b)[0, 1]), 3)
+                    summary = summarize_tendency(rid)
+                    entry["baseline"] = summary.get("baseline")
+                    params = summary.get("params") or {}
+                    if params:
+                        entry["type"] = "1d"
+                        name, m = max(params.items(),
+                                      key=lambda kv: kv[1].get("plateau_score") or 0.0)
+                        plateau = m.get("plateau") or {}
+                        entry["top_slot"] = {
+                            "param": name,
+                            "plateau_score": m.get("plateau_score"),
+                            "center": plateau.get("center_value"),
+                            "width": plateau.get("width"),
+                            "mean_profit": plateau.get("mean_profit"),
+                        }
+                    else:
+                        grid = grid_summary(rid)
+                        if grid.get("count"):
+                            entry["type"] = "grid"
+                            entry["grid"] = {
+                                "cells": grid["count"],
+                                "positive_ratio": grid.get("positive_ratio"),
+                                "mesa": len(grid.get("mesa_cells") or []),
+                                "best": grid.get("best_cell"),
+                            }
+                except Exception as exc:  # noqa: BLE001 - run 단위 부분 실패 허용.
+                    entry["error"] = str(exc)
+                out["runs"].append(entry)
+        finally:
+            con.close()
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = str(exc)
+    out["count"] = len(out["runs"])
+    return out
+
+
+DECISIONS_FILE = os.path.join(REPO_ROOT, ".omo", "evidence", "decisions.jsonl")
+
+
+def _decisions_payload() -> Dict[str, Any]:
+    """F3/P-D(2026-06-11) — V6 운용 결정 이력(append-only jsonl) 읽기. 무예외."""
+    out: Dict[str, Any] = {"decisions": []}
+    try:
+        with open(DECISIONS_FILE, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if line:
+                    out["decisions"].append(json.loads(line))
+    except FileNotFoundError:
+        pass
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = str(exc)
+    out["count"] = len(out["decisions"])
+    return out
+
+
+def _record_decision(verdict: str, note: str) -> Dict[str, Any]:
+    """F3/P-D — V6 운용 결정을 기록한다(연구 거버넌스 — 유일한 쓰기 라우트).
+
+    append-only: 수정·삭제 없음(결정 번복도 새 레코드로 — 이력 보존).
+    현재 동결 후보 스냅샷을 함께 박제해 '무엇에 대한 결정'인지 고정한다.
+    """
+    if verdict not in ("promote", "complement", "hold", "reject"):
+        return {"status": "invalid",
+                "allowed": ["promote", "complement", "hold", "reject"]}
+    try:
+        candidate = None
+        try:
+            sel_path = os.path.join(
+                REPO_ROOT, ".omo/evidence/claude-condition-research-20260610",
+                "p5-selected-candidate.json")
+            with open(sel_path, encoding="utf-8") as fh:
+                sel = json.load(fh)
+            c = sel.get("selected_candidate") or {}
+            candidate = {"buy_name": c.get("buy_name"), "profit": c.get("profit"),
+                         "mdd": c.get("mdd"), "trade_count": c.get("trade_count")}
+        except Exception:  # noqa: BLE001 - 후보 스냅샷은 보조.
+            pass
+        record = {"ts": time.time(), "verdict": verdict, "note": (note or "")[:500],
+                  "candidate": candidate}
+        os.makedirs(os.path.dirname(DECISIONS_FILE), exist_ok=True)
+        with open(DECISIONS_FILE, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+        return {"status": "ok", "recorded": record}
+    except Exception as exc:  # noqa: BLE001
+        return {"status": "error", "error": str(exc)}
+
+
+def _entry_time_buckets(csv_path: str) -> set:
+    """N6(2026-06-11) — per-trade CSV의 진입 시각 30분 버킷(HHMM) 집합.
+
+    포트폴리오 시간 분산 게이트 재료: 전 후보가 같은 버킷 1개면 결합이
+    무의미하다(같은 30분 창의 쌍둥이들). 어떤 실패도 빈 집합(advisory).
+    """
+    try:
+        import pandas as pd  # noqa: PLC0415
+
+        if not csv_path or not os.path.isfile(csv_path):
+            return set()
+        df = pd.read_csv(csv_path, encoding="utf-8-sig")
+        if "매수시간" not in df.columns:
+            return set()
+        hhmm = df["매수시간"].astype(str).str[8:12]
+        return {
+            f"{s[:2]}{'00' if s[2:4] < '30' else '30'}"
+            for s in hhmm if len(s) == 4 and s.isdigit()
+        }
+    except Exception:  # noqa: BLE001 - advisory.
+        return set()
+
+
+def _regime_report_payload() -> Dict[str, Any]:
+    """과업1(2026-06-12) — 레짐 분해 리포트(최신 regime_report_*.json 반환).
+
+    .omo/evidence/tmap-walkforward/regime_report_*.json 중 mtime 최신을 읽어
+    그대로 반환한다. 파일 없으면 {"status": "unavailable"}. 읽기 전용·무예외.
+    """
+    import glob as _glob  # noqa: PLC0415
+
+    pattern = os.path.join(REPO_ROOT, ".omo", "evidence", "tmap-walkforward",
+                           "regime_report_*.json")
+    try:
+        candidates = sorted(_glob.glob(pattern), key=os.path.getmtime, reverse=True)
+        if not candidates:
+            return {"status": "unavailable"}
+        with open(candidates[0], encoding="utf-8") as fh:
+            data = json.load(fh)
+        return data if isinstance(data, dict) else {"status": "unavailable"}
+    except Exception:  # noqa: BLE001
+        return {"status": "unavailable"}
+
+
+def _revival_registry_payload() -> Dict[str, Any]:
+    """과업2(2026-06-12) — 패자부활 레지스트리(rejected_registry.json 반환).
+
+    .omo/evidence/tmap-walkforward/rejected_registry.json을 읽어 그대로 반환한다.
+    파일 없으면 {"status": "unavailable"}. 읽기 전용·무예외.
+    """
+    path = os.path.join(REPO_ROOT, ".omo", "evidence", "tmap-walkforward",
+                        "rejected_registry.json")
+    try:
+        with open(path, encoding="utf-8") as fh:
+            data = json.load(fh)
+        return data if isinstance(data, dict) else {"status": "unavailable"}
+    except FileNotFoundError:
+        return {"status": "unavailable"}
+    except Exception:  # noqa: BLE001
+        return {"status": "unavailable"}
+
+
+def _pipeline_status_payload() -> Dict[str, Any]:
+    """과업3(2026-06-12) — 파이프라인 체크포인트 상태(state.json 순회).
+
+    .omo/evidence/pipeline/*/state.json 을 순회해 {prefix, stages, mtime} 목록을
+    mtime 최신순으로 반환한다. 디렉토리 없으면 빈 목록. 읽기 전용·무예외.
+    """
+    import glob as _glob  # noqa: PLC0415
+
+    pipeline_dir = os.path.join(REPO_ROOT, ".omo", "evidence", "pipeline")
+    out: Dict[str, Any] = {"items": [], "count": 0}
+    try:
+        state_files = _glob.glob(os.path.join(pipeline_dir, "*", "state.json"))
+        items: list = []
+        for sf in state_files:
+            try:
+                prefix = os.path.basename(os.path.dirname(sf))
+                mtime = os.path.getmtime(sf)
+                with open(sf, encoding="utf-8") as fh:
+                    stages = json.load(fh)
+                items.append({
+                    "prefix": prefix,
+                    "stages": stages if isinstance(stages, dict) else {},
+                    "mtime": round(mtime, 1),
+                })
+            except Exception:  # noqa: BLE001 - 개별 파일 실패는 skip.
+                continue
+        items.sort(key=lambda x: x["mtime"], reverse=True)
+        out["items"] = items
+        out["count"] = len(items)
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
+M4_MONITOR_BASELINE_FILE = os.path.join(
+    REPO_ROOT, ".omo", "evidence", "tmap-walkforward", "m4_monitor_baseline.json"
+)
+
+_T2C3_FINDINGS_DOC = os.path.join(
+    ".omo", "evidence", "tmap-walkforward", "t2c3_verdict_findings.md"
+)
+
+# V6 포트폴리오 구성(하드코딩 — V6 결정 불변).
+_V6_MEMBERS = [
+    {"name": "THETA", "weight": 0.5},
+    {"name": "T2C3", "weight": 0.5},
+]
+
+
+def _portfolio_verdict_payload() -> Dict[str, Any]:
+    """V6 채택 추천 포트폴리오 패널 데이터(읽기 전용, 무예외).
+
+    m4_monitor_baseline.json(포트폴리오 vs 시드 월별 M4 baseline) +
+    decisions.jsonl(최신 complement 결정) 을 읽어 반환한다.
+
+    반환:
+      {"adopted": true/false,
+       "members": [{"name":"THETA","weight":0.5},{"name":"T2C3","weight":0.5}],
+       "m4": {"champion_total":..., "challenger_total":..., "alerts":[...], "n_months":...},
+       "decision_note": "<complement 결정의 note>",
+       "findings_doc": "<t2c3_verdict_findings.md 상대경로>"}
+
+    파일 부재/오류 시 {"adopted": false, "status": "unavailable"}. 무예외 계약.
+    """
+    # decisions.jsonl 에서 최신 complement 레코드 탐색.
+    decision_note: Optional[str] = None
+    adopted = False
+    try:
+        with open(DECISIONS_FILE, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except (ValueError, TypeError):
+                    continue
+                if rec.get("verdict") == "complement":
+                    decision_note = str(rec.get("note") or "")
+                    adopted = True
+    except FileNotFoundError:
+        pass
+    except Exception:  # noqa: BLE001 - 무예외 계약.
+        pass
+
+    # m4_monitor_baseline.json 읽기.
+    m4: Optional[Dict[str, Any]] = None
+    try:
+        with open(M4_MONITOR_BASELINE_FILE, encoding="utf-8") as fh:
+            raw = json.load(fh)
+        report = (raw or {}).get("report") or {}
+        months = report.get("months") or []
+        m4 = {
+            "champion_total": report.get("champion_total"),
+            "challenger_total": report.get("challenger_total"),
+            "alerts": report.get("alerts") or [],
+            "n_months": len(months),
+        }
+    except FileNotFoundError:
+        pass
+    except Exception:  # noqa: BLE001 - 무예외 계약.
+        pass
+
+    if not adopted and m4 is None:
+        return {"adopted": False, "status": "unavailable"}
+
+    return {
+        "adopted": adopted,
+        "members": _V6_MEMBERS,
+        "m4": m4,
+        "decision_note": decision_note,
+        "findings_doc": _T2C3_FINDINGS_DOC,
+    }
 
 
 def create_app() -> FastAPI:
@@ -1382,8 +2656,20 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    @app.middleware("http")
+    async def _no_cache_html(request, call_next):
+        # 2026-06-11 — index.html 브라우저 캐시 박제 방지: HTML 응답은 매 로드마다
+        #   재검증(no-cache)시킨다. ETag 304로 비용은 없고, jsx 버전 범프(v=...)가
+        #   즉시 반영된다 ("새 기능이 안 보이는 옛 대시보드" 실사고 재발 방지).
+        response = await call_next(request)
+        if "text/html" in (response.headers.get("content-type") or ""):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
+
     app.state.loop_manager = manager
     app.include_router(research_router)
+    app.include_router(backtest_router)
+    app.include_router(simulation_router)
 
     @app.get("/")
     def root() -> RedirectResponse:
@@ -1394,6 +2680,28 @@ def create_app() -> FastAPI:
     def health() -> Dict[str, Any]:
         return {"status": "ok", "contract_version": C.CONTRACT_VERSION}
 
+    @app.get("/process_flow", response_class=HTMLResponse)
+    def process_flow() -> HTMLResponse:
+        """조건식 발굴 프로세스 시각화(인터랙티브). 요청 시 최신 라이브 데이터로 재생성.
+
+        프론트 '프로세스 흐름' 탭이 iframe으로 이 페이지를 띄운다. 읽기 전용·무예외:
+        재생성 실패해도 기존 파일을 서빙하고, 둘 다 없으면 안내 메시지를 돌려준다.
+        """
+        from pathlib import Path as _P  # noqa: PLC0415
+        out = _P(__file__).resolve().parents[2] / "docs/process_flow.html"
+        try:  # 최신 데이터로 재생성(베스트에포트 — 실패해도 기존 파일 서빙).
+            from ai_strategy_loop.scripts.build_process_flow_html import main as _bpf  # noqa: PLC0415
+            _bpf()
+        except Exception:
+            pass
+        try:
+            return HTMLResponse(out.read_text(encoding="utf-8"))
+        except Exception:
+            return HTMLResponse(
+                "<h1>프로세스 흐름 생성 전</h1><p>아직 생성되지 않았습니다. "
+                "<code>python -m ai_strategy_loop.scripts.build_process_flow_html</code> 실행 후 새로고침.</p>",
+                status_code=200)
+
     @app.get("/status")
     def status() -> Dict[str, Any]:
         return _current_state_payload()
@@ -1401,6 +2709,11 @@ def create_app() -> FastAPI:
     @app.get("/config/spec")
     def config_spec() -> Dict[str, Any]:
         return {"contract_version": C.CONTRACT_VERSION, "fields": config_field_specs()}
+
+    @app.get("/research_criteria")
+    def research_criteria(mode: Optional[str] = None) -> Dict[str, Any]:
+        active_mode = normalize_research_oos_mode(mode)
+        return {"contract_version": C.CONTRACT_VERSION, **research_mode_payload(active_mode)}
 
     @app.get("/equity_curves")
     def equity_curves(run_id: Optional[str] = None) -> Dict[str, Any]:
@@ -1439,8 +2752,92 @@ def create_app() -> FastAPI:
 
         lineage.compare_runs(run_ids=None)로 전 run을 요약한다. DB가 없거나
         조회 실패면 빈 목록을 돌려 대시보드가 깨지지 않게 한다(무예외 계약).
+        2026-06-11부터 최신 우선 정렬(running 최상단) — _runs_payload 참조.
         """
         return _runs_payload(None)
+
+    @app.get("/ops_status")
+    def ops_status(window_hours: int = 24) -> Dict[str, Any]:
+        """운영 현황(2026-06-11) — 실행 중 run 활성/정체·최근 완료·WF 집계·증거 신선도.
+
+        쿼리: ?window_hours=24. '지금 무엇이 돌고 있고 잘 돌고 있는가'를 한
+        호출로 — Validation 탭 Ops 패널이 10초 폴링한다. 읽기 전용·무예외.
+        """
+        return _ops_status_payload(window_hours)
+
+    @app.get("/freeze_verdict")
+    def freeze_verdict() -> Dict[str, Any]:
+        """검증 결산(2026-06-11) — 동결 후보의 V1~V5+리스크 증거 종합(읽기 전용).
+
+        결정 카드의 라이브 버전: 동결·DSR/PBO(+쌍둥이 경고)·OOS·플라시보·
+        슬리피지·중복도·체결/서킷/사이징·walk-forward를 lines/alerts로 합성.
+        """
+        return _freeze_verdict_payload()
+
+    @app.get("/portfolio_sim")
+    def portfolio_sim(runs: str = "") -> Dict[str, Any]:
+        """과업2(2026-06-12) — 복수 run 균등 가중 결합 시뮬(advisory).
+
+        쿼리: ?runs=run1,run2[,run3...]. 각 run의 최신 ok 세대 일별 손익으로
+        portfolio_report를 호출한다. 유효 시리즈 2개 미만이면 {"error": ...} 200.
+        읽기 전용·무예외·판정 미사용.
+        """
+        return _portfolio_sim_payload(runs)
+
+    @app.get("/regime_report")
+    def regime_report() -> Dict[str, Any]:
+        """과업1(2026-06-12) — 레짐 분해 리포트(최신 regime_report_*.json 반환). 읽기 전용·무예외."""
+        return _regime_report_payload()
+
+    @app.get("/revival_registry")
+    def revival_registry() -> Dict[str, Any]:
+        """과업2(2026-06-12) — 패자부활 레지스트리(rejected_registry.json 반환). 읽기 전용·무예외."""
+        return _revival_registry_payload()
+
+    @app.get("/pipeline_status")
+    def pipeline_status() -> Dict[str, Any]:
+        """과업3(2026-06-12) — 파이프라인 체크포인트 상태(.omo/evidence/pipeline/*/state.json). 읽기 전용·무예외."""
+        return _pipeline_status_payload()
+
+    @app.get("/portfolio_verdict")
+    def portfolio_verdict() -> Dict[str, Any]:
+        """V6 채택 추천 포트폴리오(2026-06-13) — m4 baseline + 최신 complement 결정. 읽기 전용·무예외."""
+        return _portfolio_verdict_payload()
+
+    @app.get("/niche_compare")
+    def niche_compare(run_ids: str = "") -> Dict[str, Any]:
+        """D3(2026-06-11) — 니치 지도 비교(미지정 시 최근 tmap run 자동 발굴)."""
+        return _niche_compare_payload(run_ids)
+
+    @app.get("/equity_curve")
+    def equity_curve(run_id: str = "", gen_no: int = 0) -> Dict[str, Any]:
+        """E2/D4(2026-06-11) — 세대 누적 수익곡선(일별·다운샘플). 읽기 전용·무예외."""
+        return _equity_curve_payload(run_id, gen_no)
+
+    @app.get("/decisions")
+    def decisions() -> Dict[str, Any]:
+        """F3/P-D — V6 운용 결정 이력. 읽기 전용·무예외."""
+        return _decisions_payload()
+
+    @app.post("/record_decision")
+    def record_decision(payload: Dict[str, Any]) -> Dict[str, Any]:
+        """F3/P-D — V6 운용 결정 기록(promote|complement|hold|reject, append-only)."""
+        return _record_decision(str(payload.get("verdict") or ""),
+                                str(payload.get("note") or ""))
+
+    @app.get("/tmap_grid")
+    def tmap_grid(run_id: str = "") -> Dict[str, Any]:
+        """C6/P1(2026-06-11) — 2-D 격자 지도(mesa·히트맵 데이터). 읽기 전용·무예외.
+
+        쿼리: ?run_id=<--grid 스윕 run>. 셀 행렬·흑자율·최강 셀·mesa(4-이웃
+        전부 흑자)를 반환 — 프런트가 히트맵으로 그린다.
+        """
+        try:
+            from ai_strategy_loop.tmap.tendency import grid_summary  # noqa: PLC0415
+
+            return grid_summary(run_id)
+        except Exception as exc:  # noqa: BLE001
+            return {"run_id": run_id, "cells": [], "count": 0, "error": str(exc)}
 
     @app.get("/run_state")
     def run_state(run_id: str = "") -> Dict[str, Any]:
@@ -1463,6 +2860,205 @@ def create_app() -> FastAPI:
         """
         return _generation_durations_payload(run_id)
 
+    @app.get("/run_yearly")
+    def run_yearly(run_id: str = "") -> Dict[str, Any]:
+        """D1 — run의 세대별 연도 분해(거래·손익·승률)를 반환한다(읽기 전용·무예외).
+
+        쿼리: ?run_id=<run_id>. 근거(2026-06-10 원인5): 연도별 쇠퇴는 합계로는 안 보인다.
+        per-trade CSV를 연 단위로 집계한다(추가 백테 0회). CSV 없으면 빈 분해.
+        """
+        return _run_yearly_payload(run_id)
+
+    @app.get("/autopsy")
+    def autopsy(run_id: str = "", gen_no: int = 0) -> Dict[str, Any]:
+        """D2 — 세대 결과 CSV의 공식 부검(진입/청산) NL 요약을 반환한다(읽기 전용·무예외).
+
+        쿼리: ?run_id=<run_id>&gen_no=<n>. 루프 프롬프트 환류로만 쓰이던 부검을 사람이
+        직접 본다(손실군집·MFE 반납·손실집중 매도규칙). CSV 없으면 status=no_csv.
+        """
+        return _autopsy_payload(run_id, gen_no)
+
+    @app.get("/selector_preview")
+    def selector_preview(run_id: str = "", selector: str = "sparse_positive_v1") -> Dict[str, Any]:
+        """D4 — run 행에 선택기를 진단 적용한 미리보기를 반환한다(읽기 전용·무예외).
+
+        쿼리: ?run_id=<run_id>&selector=sparse_positive_v1|seed_relative_v1.
+        근거(2026-06-10 원인1): 기준-목표 비정합을 눈으로 확인한다. **진단 전용** —
+        동결 아티팩트를 쓰지 않으며 OOS-blind 동결 절차를 대체하지 않는다.
+        """
+        return _selector_preview_payload(run_id, selector)
+
+    @app.get("/counterfactual")
+    def counterfactual(run_id: str = "", gen_no: int = 0, top_k: int = 5) -> Dict[str, Any]:
+        """R2(2026-06-11) — 세대 CSV의 반사실 필터 제안을 반환한다(백테 0회, 읽기 전용·무예외).
+
+        쿼리: ?run_id=<run_id>&gen_no=<n>&top_k=<k>. 부검 변별 변수+승자 분위수로 강화 필터
+        후보를 만들고 "총손익이 깎이지 않는" 것만 손익 영향·연도별 분해와 함께 반환한다.
+        **인샘플 advisory** — 채택 후보는 스모크→train→동결→OOS 규율로 검증해야 한다.
+        """
+        out: Dict[str, Any] = {"run_id": run_id, "gen_no": gen_no,
+                               "suggestions": [], "count": 0, "status": "unavailable"}
+        row = _row_for_gen(run_id, gen_no)
+        if row is None:
+            return out
+        out["label"] = row.get("strategy_gist") or ""
+        csv_path = row.get("csv_path") or ""
+        if not csv_path:
+            out["status"] = "no_csv"
+            return out
+        try:
+            from ai_strategy_loop.fitness.counterfactual import suggestions_payload  # noqa: PLC0415
+
+            abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+            payload = suggestions_payload(abs_csv, top_k=top_k)
+            out.update(payload)
+            out["status"] = "ok"
+        except Exception as exc:  # noqa: BLE001
+            out["status"] = "error"
+            out["error"] = str(exc)
+        return out
+
+    @app.get("/freeze_mc")
+    def freeze_mc(run_id: str = "", gen_no: int = 0,
+                  n_boot: int = 2000, block_len: int = 5) -> Dict[str, Any]:
+        """R3(2026-06-11) — 세대 일별 손익의 블록 부트스트랩 MC를 반환한다(읽기 전용·무예외).
+
+        쿼리: ?run_id=&gen_no=&n_boot=&block_len=. GUI 백테스트 MC(거래 iid 추출)의
+        헤드리스 대응물 — 단 일별 손익 **블록** 재추출로 레짐 군집을 보존하고 MDD(낙폭금액)
+        분포까지 산출한다(6/2 in-sample iid MC의 OOS 전이 실패 교훈 반영). advisory 전용.
+        """
+        out: Dict[str, Any] = {"run_id": run_id, "gen_no": gen_no, "status": "unavailable"}
+        row = _row_for_gen(run_id, gen_no)
+        if row is None:
+            return out
+        out["label"] = row.get("strategy_gist") or ""
+        csv_path = row.get("csv_path") or ""
+        if not csv_path:
+            out["status"] = "no_csv"
+            return out
+        try:
+            from ai_strategy_loop.fitness.overfit_stats import (  # noqa: PLC0415
+                block_bootstrap_daily,
+                daily_pnl_series,
+            )
+
+            abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+            series = daily_pnl_series(abs_csv)
+            if not series:
+                out["status"] = "no_daily_series"
+                return out
+            mc = block_bootstrap_daily(
+                list(series.values()), n_boot=min(int(n_boot), 10000),
+                block_len=max(int(block_len), 1),
+            )
+            if mc is None:
+                out["status"] = "insufficient_days"
+                out["n_days"] = len(series)
+                return out
+            out["mc"] = mc
+            out["status"] = "ok"
+        except Exception as exc:  # noqa: BLE001
+            out["status"] = "error"
+            out["error"] = str(exc)
+        return out
+
+    @app.get("/tmap_map")
+    def tmap_map(run_id: str = "", compare_run_id: str = "") -> Dict[str, Any]:
+        """TMAP G3(2026-06-11) — 스윕 run의 경향성 지도를 반환한다(읽기 전용·무예외).
+
+        쿼리: ?run_id=<tmap_sweep run_id>[&compare_run_id=<다른 스윕 run>].
+        변수별 응답 곡선·고원(중심/폭/평균손익)·절벽·plateau_score + 베이스라인.
+        compare_run_id(M12)를 주면 같은 슬롯의 다른 창(마이크로/본/연도) 지도를
+        compare 키로 병기 — 구간별 경향 발산(예: window_end 분기 +61% vs 3년
+        +12%)을 즉시 가시화한다. TMAP 라벨 행이 없으면 count=0(graceful).
+        피크가 아닌 고원을 고르는 것이 계약 — advisory 전용.
+        """
+        try:
+            from ai_strategy_loop.tmap.tendency import summarize_tendency  # noqa: PLC0415
+
+            out = summarize_tendency(run_id)
+            if compare_run_id:
+                try:
+                    out["compare"] = summarize_tendency(compare_run_id)
+                except Exception as exc:  # noqa: BLE001 - 비교 실패가 본 지도를 막지 않게.
+                    out["compare"] = {"run_id": compare_run_id, "error": str(exc)}
+            return out
+        except Exception as exc:  # noqa: BLE001
+            return {"run_id": run_id, "baseline": None, "params": {},
+                    "count": 0, "error": str(exc)}
+
+    @app.get("/portfolio_preview")
+    def portfolio_preview(run_id: str = "", gens: str = "",
+                          max_size: int = 4, corr_cap: float = 0.5) -> Dict[str, Any]:
+        """TMAP G5(2026-06-11) — 세대들의 일별손익 저상관 결합 미리보기(읽기 전용·무예외).
+
+        쿼리: ?run_id=&gens=<0,1,2>(비우면 status=ok 전 세대)&max_size=&corr_cap=.
+        일별손익 합산 근사(동시보유 자본 제약 무시 — 낙관 편향, note에 명시) —
+        채택 조합은 실백테 확인이 계약. advisory 전용.
+        """
+        import sqlite3  # noqa: PLC0415
+
+        from ai_strategy_loop.controller import state as _S  # noqa: PLC0415
+
+        out: Dict[str, Any] = {"run_id": run_id, "selection": [], "steps": [],
+                               "combined": None, "status": "unavailable"}
+        if not run_id:
+            return out
+        try:
+            con = sqlite3.connect(str(_S.LOOP_RUNS_DB))
+            con.row_factory = sqlite3.Row
+            try:
+                rows = con.execute(
+                    "SELECT gen_no, status, strategy_gist, buy_name, csv_path"
+                    " FROM generations WHERE run_id=? ORDER BY gen_no",
+                    (run_id,),
+                ).fetchall()
+            finally:
+                con.close()
+            wanted = {int(g) for g in gens.split(",") if g.strip()} if gens.strip() else None
+            from ai_strategy_loop.fitness.overfit_stats import daily_pnl_series  # noqa: PLC0415
+            from ai_strategy_loop.tmap.portfolio import greedy_portfolio  # noqa: PLC0415
+
+            series, csv_by_key = {}, {}
+            for r in rows:
+                d = dict(r)
+                if d.get("status") != "ok" or not d.get("csv_path"):
+                    continue
+                if wanted is not None and int(d["gen_no"]) not in wanted:
+                    continue
+                csv_path = d["csv_path"]
+                abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+                s = daily_pnl_series(abs_csv)
+                if s:
+                    label = d.get("strategy_gist") or d.get("buy_name") or f"gen{d['gen_no']}"
+                    key = f"gen{d['gen_no']}:{label}"
+                    series[key] = s
+                    csv_by_key[key] = abs_csv
+            if len(series) < 1:
+                out["status"] = "no_series"
+                return out
+            result = greedy_portfolio(series, max_size=max_size, corr_cap=corr_cap)
+            out.update(result)
+            # N6(2026-06-11) — 진입 시간대 분산 게이트: 전 후보가 같은 30분 창이면
+            #   상관 게이트와 무관하게 포트폴리오가 무의미하다(쌍둥이 풀 — 정직 공시).
+            selection = result.get("selection") or []
+            buckets = {k: sorted(_entry_time_buckets(csv_by_key.get(k, ""))) for k in selection}
+            union = set().union(*buckets.values()) if buckets else set()
+            out["time_dispersion"] = {
+                "buckets_by_candidate": buckets,
+                "union_bucket_count": len(union),
+            }
+            if selection and len(union) <= 1:
+                out["time_dispersion"]["warning"] = (
+                    "선택 후보 전원이 같은 30분 진입 창 — 시간 분산 0,"
+                    " 포트폴리오 결합 무의미(독립 니치 템플릿(A4)이 필요)"
+                )
+            out["status"] = "ok"
+        except Exception as exc:  # noqa: BLE001
+            out["status"] = "error"
+            out["error"] = str(exc)
+        return out
+
     @app.get("/runs/compare")
     def runs_compare(ids: str = "") -> Dict[str, Any]:
         """지정한 run id들을 지표/우승전략으로 비교한다(loop_runs.db 직접).
@@ -1482,9 +3078,14 @@ def create_app() -> FastAPI:
         (무예외 — 대시보드가 "코드가 없습니다"를 표시).
         """
         if not run or gen < 0:
+            reason = "missing_run" if not run else "missing_generation"
             return {
+                "ok": True,
                 "run_id": run, "gen": gen,
+                "gen_no": gen,
                 "buy_name": "", "sell_name": "", "buy_code": "", "sell_code": "",
+                "code_status": reason,
+                "reason": reason,
             }
         return _strategy_code_payload(run, gen)
 
@@ -1497,8 +3098,46 @@ def create_app() -> FastAPI:
     def strategy_diff(run_id: Optional[str] = None, gen_no: int = -1,
                       base_gen: str = "previous") -> Dict[str, Any]:
         """현재 세대와 이전/base 세대의 매수·매도 전략 코드 diff를 반환한다."""
+        if not run_id:
+            return {
+                "ok": True,
+                "run_id": run_id,
+                "gen_no": int(gen_no),
+                "buy_name": "",
+                "sell_name": "",
+                "buy_code": "",
+                "sell_code": "",
+                "base_gen": None,
+                "base_buy_name": None,
+                "base_sell_name": None,
+                "base_buy_code": "",
+                "base_sell_code": "",
+                "buy_diff": [],
+                "sell_diff": [],
+                "prompts": [],
+                "diff_status": "missing_run",
+                "reason": "missing_run",
+            }
         if int(gen_no) < 0:
-            return {"error": "gen_no required", "prompts": []}
+            return {
+                "ok": True,
+                "run_id": run_id,
+                "gen_no": int(gen_no),
+                "buy_name": "",
+                "sell_name": "",
+                "buy_code": "",
+                "sell_code": "",
+                "base_gen": None,
+                "base_buy_name": None,
+                "base_sell_name": None,
+                "base_buy_code": "",
+                "base_sell_code": "",
+                "buy_diff": [],
+                "sell_diff": [],
+                "prompts": [],
+                "diff_status": "missing_generation",
+                "reason": "missing_generation",
+            }
         return _strategy_diff_payload(run_id, int(gen_no), base_gen)
 
     @app.get("/ai_context_pack")
@@ -1538,7 +3177,8 @@ def create_app() -> FastAPI:
 
     @app.get("/edge_ratio")
     def edge_ratio(run_id: Optional[str] = None, run_ids: Optional[str] = None,
-                   fine_time: bool = False) -> Dict[str, Any]:
+                   fine_time: bool = False,
+                   gen_no: Optional[int] = None) -> Dict[str, Any]:
         """run(들)의 세대 결과 CSV를 풀링해 MFE/MAE 엣지비율 + 시간대×시총 파노라마 세그먼트를 반환한다.
 
         쿼리: ?run_ids=<a,b,c>(파노라마 다중 run 풀) 또는 ?run_id=<run_id>(단일 run 풀),
@@ -1548,11 +3188,12 @@ def create_app() -> FastAPI:
         run 식별자 미지정/없는 run/CSV 없음은 {"error": ...} 또는
         insufficient로 표준화한다(읽기 전용·무예외).
         """
-        return _edge_ratio_payload(run_id, run_ids, fine_time)
+        return _edge_ratio_payload(run_id, run_ids, fine_time, gen_no=gen_no)
 
     @app.get("/feature_importance")
     def feature_importance(run_id: Optional[str] = None, run_ids: Optional[str] = None,
-                           axis: str = "market_cap", fine_time: bool = False) -> Dict[str, Any]:
+                           axis: str = "market_cap", fine_time: bool = False,
+                           gen_no: Optional[int] = None) -> Dict[str, Any]:
         """run(들)의 세대 결과 CSV를 풀링해 세그먼트별 승리-변수 피처 중요도를 반환한다.
 
         쿼리: ?run_ids=<a,b,c>(파노라마 다중 run 풀) 또는 ?run_id=<run_id>(단일 run 풀),
@@ -1563,18 +3204,19 @@ def create_app() -> FastAPI:
         스코어 무영향·추가 백테 0회). run 식별자 미지정/없는 run/CSV 없음은 {"error": ...} 또는
         insufficient로 표준화한다(읽기 전용·무예외).
         """
-        return _feature_importance_payload(run_id, run_ids, axis, fine_time)
+        return _feature_importance_payload(run_id, run_ids, axis, fine_time, gen_no=gen_no)
 
     @app.get("/variable_correlation")
     def variable_correlation(run_id: Optional[str] = None, run_ids: Optional[str] = None,
-                             method: str = "pearson") -> Dict[str, Any]:
+                             method: str = "pearson",
+                             gen_no: Optional[int] = None) -> Dict[str, Any]:
         """run(들)의 세대 결과 CSV를 풀링해 변수별 outcome/feature 상관도를 반환한다.
 
         쿼리: ?run_ids=<a,b,c> 또는 ?run_id=<run_id>, &method=<pearson|spearman>.
         B_* 진입 변수만 분석하며, outcome은 수익률 컬럼이다. 분석 전용·읽기 전용으로
         엔진/하드게이트/스코어/생성/winner/export에는 영향이 없다.
         """
-        return _variable_correlation_payload(run_id, run_ids, method)
+        return _variable_correlation_payload(run_id, run_ids, method, gen_no=gen_no)
 
     @app.websocket("/ws")
     async def ws(websocket: WebSocket) -> None:

@@ -1,0 +1,108 @@
+{
+  "name": "llmgen_f07_prevtime_shift1_reignite",
+  "timeframe": "tick",
+  "source": "P5 LLM 가설(llmgen_f07_prevtime_costdiet_reignite_break) 14b의 shift 교정판(-1->1)",
+  "description": "14b와 동일한 F07 극발화 희소성 게이트 x 전일동시간비 판별 x 돌파순간 구조이나, 두 윈도우함수(초당거래대금평균/최고현재가)의 shift 인자를 -1에서 1로 교정했다. 14a/14b는 shift -1에서 양분기 ~356s 타임아웃(측정실패)했고, 측정 성공한 gen8/gen9/THETA는 shift 1을 썼다. shift 1은 직전 N틱(현재 제외)을 봐 돌파 의미도 정확하고 평가도 저렴하다.",
+  "buy_code": "if 시분초 >= {entry_start} and 시분초 <= {entry_end} and 초당거래대금 >= {sec_money_min} and 등락율 >= {rate_min} and 등락율 <= {rate_max} and 시가총액 <= {cap_max} and 당일거래대금 >= {day_money_min} and 초당거래대금 >= 초당거래대금평균({burst_avg_win}, 1) * {burst_mult} and 전일동시간비 >= {same_time_ratio_min} and 현재가 > 최고현재가({break_window}, 1): self.Buy()",
+  "sell_code": "if 수익률 >= {take_profit} or 수익률 <= {stop_loss} or 보유시간 >= {max_hold_sec}: self.Sell()",
+  "params": [
+    {
+      "name": "entry_start",
+      "default": 90700,
+      "values": [90600, 90700, 90800, 90900, 91000],
+      "side": "buy",
+      "note": "시드 09:02~09:05와 겹치지 않는 09:06 이후 재점화 창. 09:10까지만 시작점 탐색."
+    },
+    {
+      "name": "entry_end",
+      "default": 91800,
+      "values": [91200, 91400, 91600, 91800, 92000],
+      "side": "buy",
+      "note": "09:20 이후 신호가치 하락 교훈 반영해 상단 09:20 제한, default 09:18."
+    },
+    {
+      "name": "sec_money_min",
+      "default": 25,
+      "values": [15, 25, 40, 65, 100],
+      "side": "buy",
+      "note": "초당거래대금 절대 하한(백만원). 값비싼 윈도우 호출 전에 활성 틱만 통과시키는 비용 다이어트 핵심 + 빈도 연속 조절."
+    },
+    {
+      "name": "rate_min",
+      "default": 1.8,
+      "values": [1.0, 1.8, 2.6, 3.5, 5.0],
+      "side": "buy",
+      "note": "등락율 하한을 윈도우함수 앞에 배치해 평탄 종목 평가를 차단. 각도 극단은 미사용."
+    },
+    {
+      "name": "rate_max",
+      "default": 15,
+      "values": [8, 10, 12, 15, 20],
+      "side": "buy",
+      "note": "과열 상한 밴드. default는 두 번째로 느슨하게 두어 기본 렌더 0건 방지."
+    },
+    {
+      "name": "cap_max",
+      "default": 2500,
+      "values": [1000, 1500, 2000, 2500, 3200],
+      "side": "buy",
+      "note": "중소형 중심 비용·품질 게이트(억). cap 축소가 MDD를 줄인 응답곡선 반영, default 2500 이하."
+    },
+    {
+      "name": "day_money_min",
+      "default": 12000,
+      "values": [8000, 12000, 18000, 26000, 38000],
+      "side": "buy",
+      "note": "당일 누적 거래대금 하한(백만원). sec_money_min과 별도로 그날 주도성·빈도 연속 조절."
+    },
+    {
+      "name": "burst_avg_win",
+      "default": 8,
+      "values": [5, 8, 13, 21, 34],
+      "side": "buy",
+      "note": "초당거래대금 평균 비교 윈도우. 첫 인자 1 이상, shift 1로 직전 N틱(현재 제외) 평균 대비 발화 측정."
+    },
+    {
+      "name": "burst_mult",
+      "default": 8,
+      "values": [6, 8, 10, 12, 15],
+      "side": "buy",
+      "note": "극발화 희소성 게이트. alpha가 아니라 평균 대비 비정상 활성 틱만 남기는 필터, default 8배."
+    },
+    {
+      "name": "same_time_ratio_min",
+      "default": 220,
+      "values": [160, 220, 300, 400, 550],
+      "side": "buy",
+      "note": "전일동시간비 판별자. 단독 신호가 아니라 극발화와 교집합으로만 사용해 전일 동시각 대비 이례적 관심 판별."
+    },
+    {
+      "name": "break_window",
+      "default": 8,
+      "values": [5, 8, 13, 21, 34],
+      "side": "buy",
+      "note": "돌파 순간 진입용 직전 최고가 관찰 구간. shift 1로 직전 N틱 최고가 상회 시에만 매수(현재 제외 = 진짜 돌파)."
+    },
+    {
+      "name": "take_profit",
+      "default": 9,
+      "values": [5, 7, 9, 11, 13],
+      "side": "sell",
+      "note": "청산 다이얼이 수익을 지배했다는 실측 반영해 넓게 탐색."
+    },
+    {
+      "name": "stop_loss",
+      "default": -2.5,
+      "values": [-3.5, -3, -2.5, -2, -1.5],
+      "side": "sell",
+      "note": "급발화 실패 시 손실 제한. 음수 슬롯으로 직접 둠."
+    },
+    {
+      "name": "max_hold_sec",
+      "default": 120,
+      "values": [60, 90, 120, 180, 240],
+      "side": "sell",
+      "note": "틱 전략 시간가치 소멸 반영. 후반 신호가치 하락 교훈 때문에 짧은 검증 구간만 허용."
+    }
+  ]
+}

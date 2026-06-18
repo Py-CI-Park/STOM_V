@@ -1,0 +1,22 @@
+Command:
+rg -n "P0|P1|P2|P3|P4|P5|P6|P7|Final" .omo/evidence/tick-p7-observability-bounded-training-20260605/p7-decision-card.md
+
+Result:
+1:# P7 Decision Card
+7:The dashboard/engine observability part advanced meaningfully, but the bounded P7 training path is blocked before long 2023-2025 execution.
+9:P3 preflight showed that the system can now report the active period, tick timeframe, engine mode/count, CPU count, timeout, progress source, status phase, and recent logs through `/status` and the dashboard panel. It also showed the real blocker: the seed warm backtest timed out at `300s` and produced no CSV.
+11:Because the preflight timed out, P4 long training and P6 fixed 2022/2026 OOS were not run.
+49:## P7 Training Result Or Blocker
+51:P4 long training run `tick_p7_train_2023_2025_observable_20260605` was not started.
+54:- P3 seed warm backtest exceeded the configured `300s` timeout.
+71:- No P4 training rows exist.
+109:| P0 | Safety snapshot | done | `p0-safety-snapshot.txt` |
+110:| P1 | Backend progress and engine-state contract | done | `p1-observability-contract.md` |
+111:| P2 | Dashboard engine panel and status smoke | done | `p2-dashboard-observability-smoke.md` |
+112:| P3 | Bounded preflight smoke | blocked after execution | `p3-preflight-smoke-summary.md` |
+113:| P4 | 2023-2025 P7 training | not started | `p4-train-blocked.md` |
+114:| P5 | Candidate pools | blocked artifact written | `p5-candidate-pools.json` |
+115:| P6 | 2022/2026 OOS | blocked | `p6-oos-blocked.md` |
+116:| P7 | Decision card | done | this file |
+117:| Final | Verification wave | pending | run F1-F4 |
+139:$ulw-plan tick P7 preflight timeout unblock plan: reduce or segment the seed warm backtest workload before retrying 2023-2025 training. Use .omo/evidence/tick-p7-observability-bounded-training-20260605/p3-preflight-blocked.md and p4-train-blocked.md as the primary evidence, preserve official engines and hard gates, and do not run OOS until a frozen promotion candidate exists.

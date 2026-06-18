@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-06-18T22:45:47+09:00",
+  "scope": "STOM condition research canonical registry draft",
+  "source_policy": "Index over raw evidence only; raw JSON/CSV/log artifacts remain source of truth.",
+  "current_default_direction": "seed bank + official OOS + branch attribution + evidence lineage",
+  "schema": {
+    "campaign_fields": [
+      "campaign_id",
+      "display_alias",
+      "evidence_type",
+      "status",
+      "source_files",
+      "dashboard_record",
+      "next_action"
+    ],
+    "candidate_fields": [
+      "machine_name",
+      "display_alias",
+      "candidate_family",
+      "evidence_type",
+      "train_period",
+      "oos_period",
+      "result_metrics",
+      "gate_status",
+      "oos_status",
+      "promotion_status",
+      "source_files",
+      "related_dashboard_record",
+      "next_action"
+    ]
+  },
+  "campaigns": [
+    {
+      "campaign_id": "condition-research-current-state-rereview-20260618",
+      "display_alias": "조건식 연구 현황 재검토",
+      "evidence_type": "current_state_review",
+      "status": "canonical_current_baseline",
+      "source_files": [
+        "docs/update_log/2026-06-18_condition_research_current_state_rereview.md",
+        "docs/research/condition_research/2026-06-18_current_state_rereview_summary.md"
+      ],
+      "dashboard_record": null,
+      "next_action": "Use as score and direction baseline before official OOS work."
+    },
+    {
+      "campaign_id": "post-q4-3h-bulk-research-20260618",
+      "display_alias": "Q4 방어 후보 사전 선별",
+      "evidence_type": "csv_reanalysis",
+      "status": "candidate_queue_ready",
+      "source_files": [
+        "docs/update_log/2026-06-18_post_q4_3h_bulk_research.md",
+        ".omo/evidence/tmap-walkforward/post-q4-3h-official-oos-recommendations-20260618.json",
+        ".omo/evidence/tmap-walkforward/post-q4-3h-candidate-scoreboard-20260618.json"
+      ],
+      "dashboard_record": "post-q4-3h-bulk-research-20260618",
+      "next_action": "Run official OOS for robust primary, then shadow compare raw score winner."
+    },
+    {
+      "campaign_id": "q4-defense-prerule-halfexit-dashboard-20260618",
+      "display_alias": "Q4 방어와 선행 규칙 점검",
+      "evidence_type": "official_oos_and_portfolio_reanalysis",
+      "status": "dashboard_visible",
+      "source_files": [
+        "docs/update_log/2026-06-18_q4_defense_prerule_halfexit_dashboard.md",
+        ".omo/evidence/tmap-walkforward/q4-defense-prerule-halfexit-dashboard-20260618_summary.json"
+      ],
+      "dashboard_record": "q4-defense-prerule-halfexit-dashboard-20260618",
+      "next_action": "Use Q4 loss decomposition to prioritize low-cap and exit2 defense candidates."
+    },
+    {
+      "campaign_id": "oos-2023-2025-combo-experiments-20260618",
+      "display_alias": "2023~2025 조합 OOS",
+      "evidence_type": "official_oos",
+      "status": "complete",
+      "source_files": [
+        "docs/update_log/2026-06-18_oos_2023_2025_combo_experiment_log.md",
+        ".omo/evidence/tmap-walkforward/oos-2023-2025-r8-exit2-r2full-20260618.json"
+      ],
+      "dashboard_record": null,
+      "next_action": "Use annual evidence as portfolio baseline, not as final promotion by itself."
+    }
+  ],
+  "candidates": [
+    {
+      "machine_name": "r8_exclude_cap_lt_1500__exit2_skip_after_prior_exit2_loss_500k_else_full",
+      "display_alias": "저시총 제외 방어 조합",
+      "candidate_family": "robust_entry_filter_plus_portfolio_exit2",
+      "evidence_type": "csv_reanalysis",
+      "train_period": "derived from completed annual official OOS CSVs",
+      "oos_period": "official OOS pending",
+      "result_metrics": {
+        "score": 90.5884,
+        "all_profit_krw": 39402438,
+        "all_annualized_return_pct": 38.6826,
+        "all_mdd_pct": 7.6823,
+        "recent_profit_krw": 6941830,
+        "recent_mdd_pct": 12.6478,
+        "q4_profit_krw": 952502,
+        "q4_mdd_pct": 11.3583,
+        "trade_retention_vs_full_static": 0.7815,
+        "positive_year_count": 5
+      },
+      "gate_status": "preselected",
+      "oos_status": "official_oos_pending",
+      "promotion_status": "queued_not_promoted",
+      "source_files": [
+        ".omo/evidence/tmap-walkforward/post-q4-3h-official-oos-recommendations-20260618.json",
+        "docs/update_log/2026-06-18_condition_research_current_state_rereview.md",
+        "docs/research/2026-06-18_post_q4_official_oos_next_research.md"
+      ],
+      "related_dashboard_record": "post-q4-3h-bulk-research-20260618",
+      "next_action": "Implement candidate filter/config and run annual + 2025Q4 official OOS."
+    },
+    {
+      "machine_name": "r8_exclude_month_11__exit2_skip_after_prior_exit2_loss_500k_else_full",
+      "display_alias": "11월 제외 비교용",
+      "candidate_family": "calendar_exclusion_shadow",
+      "evidence_type": "csv_reanalysis_shadow",
+      "train_period": "derived from completed annual official OOS CSVs",
+      "oos_period": "shadow comparison pending",
+      "result_metrics": {
+        "score": 93.5087,
+        "all_profit_krw": 46745487,
+        "all_annualized_return_pct": 43.2118,
+        "all_mdd_pct": 10.9396,
+        "recent_profit_krw": 8551375,
+        "recent_mdd_pct": 15.3687,
+        "q4_profit_krw": 1028539,
+        "q4_mdd_pct": 12.7237,
+        "trade_retention_vs_full_static": 0.9512,
+        "positive_year_count": 5
+      },
+      "gate_status": "raw_score_rank_1",
+      "oos_status": "shadow_oos_pending",
+      "promotion_status": "watchlist_only_high_overfit_risk",
+      "source_files": [
+        ".omo/evidence/tmap-walkforward/post-q4-3h-official-oos-recommendations-20260618.json",
+        ".omo/evidence/tmap-walkforward/post-q4-3h-candidate-scoreboard-20260618.json"
+      ],
+      "related_dashboard_record": "post-q4-3h-bulk-research-20260618",
+      "next_action": "Run only as shadow comparison against robust low-cap candidate."
+    },
+    {
+      "machine_name": "exit2_full_after_prior_r8r2_loss_else_off",
+      "display_alias": "exit2 월별 ON/OFF",
+      "candidate_family": "portfolio_rule",
+      "evidence_type": "portfolio_rule_simulation",
+      "train_period": "derived from completed annual official OOS CSVs",
+      "oos_period": "portfolio report validation pending",
+      "result_metrics": {
+        "all_profit_krw": 35392509,
+        "all_annualized_return_pct": 36.01,
+        "all_mdd_pct": 8.94,
+        "recent_profit_krw": 7039427,
+        "q4_profit_krw": 132648,
+        "q4_mdd_pct": 18.23
+      },
+      "gate_status": "auxiliary",
+      "oos_status": "portfolio_layer_validation_pending",
+      "promotion_status": "auxiliary_rule_not_condition",
+      "source_files": [
+        "docs/research/2026-06-18_post_q4_official_oos_next_research.md",
+        ".omo/evidence/tmap-walkforward/post-q4-next4-20260618_summary.json"
+      ],
+      "related_dashboard_record": "post-q4-next4-20260618",
+      "next_action": "Validate as portfolio-layer official report, not as condition-expression promotion."
+    },
+    {
+      "machine_name": "r8_exclude_cap_lt_1500",
+      "display_alias": "r8 저시총 제외 단독",
+      "candidate_family": "entry_filter_isolation",
+      "evidence_type": "csv_reanalysis",
+      "train_period": "derived from Q4 loss decomposition",
+      "oos_period": "official OOS pending",
+      "result_metrics": {
+        "all_profit_krw": 9420419,
+        "all_annualized_return_pct": 32.47,
+        "all_mdd_pct": 7.68,
+        "recent_profit_krw": 2705797,
+        "q4_profit_krw": 310886,
+        "q4_mdd_pct": 9.09
+      },
+      "gate_status": "cause_isolation_candidate",
+      "oos_status": "official_oos_pending",
+      "promotion_status": "diagnostic_candidate",
+      "source_files": [
+        "docs/update_log/2026-06-18_post_q4_3h_bulk_research.md",
+        "docs/update_log/2026-06-18_post_q4_defense_next4.md"
+      ],
+      "related_dashboard_record": "post-q4-3h-bulk-research-20260618",
+      "next_action": "Run standalone r8 candidate pre-filter official OOS."
+    },
+    {
+      "machine_name": "r8_4",
+      "display_alias": "r8 기준 전략",
+      "candidate_family": "baseline_seed",
+      "evidence_type": "official_oos_baseline",
+      "train_period": "existing baseline",
+      "oos_period": "2022-2026 plus 2025Q4",
+      "result_metrics": {
+        "all_profit_krw": 16894052,
+        "q4_profit_krw": -835479,
+        "q4_mdd_pct": 35.60
+      },
+      "gate_status": "q4_failed",
+      "oos_status": "official_oos_available",
+      "promotion_status": "baseline_loss_source",
+      "source_files": [
+        "docs/update_log/2026-06-18_condition_research_current_state_rereview.md",
+        "docs/update_log/2026-06-18_q4_defense_prerule_halfexit_dashboard.md"
+      ],
+      "related_dashboard_record": "q4-defense-prerule-halfexit-dashboard-20260618",
+      "next_action": "Use as baseline and loss source for low-cap/early-slot defense."
+    },
+    {
+      "machine_name": "exit2_balance",
+      "display_alias": "exit2 방어",
+      "candidate_family": "defense_baseline",
+      "evidence_type": "official_oos_baseline",
+      "train_period": "existing baseline",
+      "oos_period": "2022-2026 plus 2025Q4",
+      "result_metrics": {
+        "q4_profit_krw": 640100,
+        "q4_mdd_pct": 16.43
+      },
+      "gate_status": "q4_passed",
+      "oos_status": "official_oos_available",
+      "promotion_status": "defensive_component",
+      "source_files": [
+        "docs/update_log/2026-06-18_dashboard_research_records_oos_followup.md",
+        "docs/update_log/2026-06-18_q4_defense_prerule_halfexit_dashboard.md"
+      ],
+      "related_dashboard_record": "q4-defense-prerule-halfexit-dashboard-20260618",
+      "next_action": "Use as defensive component in portfolio comparisons."
+    },
+    {
+      "machine_name": "r2full_mdd",
+      "display_alias": "r2full MDD 방어",
+      "candidate_family": "defense_baseline",
+      "evidence_type": "official_oos_baseline",
+      "train_period": "existing baseline",
+      "oos_period": "2022-2026 plus 2025Q4",
+      "result_metrics": {
+        "q4_profit_krw": 1516,
+        "q4_mdd_pct": 17.17
+      },
+      "gate_status": "q4_passed",
+      "oos_status": "official_oos_available",
+      "promotion_status": "defensive_component",
+      "source_files": [
+        "docs/update_log/2026-06-18_dashboard_research_records_oos_followup.md",
+        "docs/update_log/2026-06-18_oos_2023_2025_combo_experiment_log.md"
+      ],
+      "related_dashboard_record": "q4-defense-prerule-halfexit-dashboard-20260618",
+      "next_action": "Use as recent-regime defensive component and compare against exit2."
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+[LOOP] loop DB        : C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\state\loop_strategies.db
+[LOOP] provider       : gpt_auth
+[LOOP] max_generations: 2
+[LOOP] bt_timeframe   : tick
+[LOOP] bt_engine_mode : warm
+[LOOP] warm prepare 완료 (back_count=42)
+
+[LOOP] === generation 0 (run=tick_p3_split_0925_0930_20260606) ===
+[LOOP] seed 사용: buy=Tick_B_902_905_Update_2 sell=Tick_S_902_905_Update_2
+[LOOP] backtest status=error elapsed=11.5s reason=warm backtest non-success: status=error message=backtest completed without metrics csv=no
+
+[LOOP] === generation 1 (run=tick_p3_split_0925_0930_20260606) ===
+[LOOP] generation failed: buy 생성 실패: provider 호출 실패: gpt_auth 요청 한도 초과
+
+[LOOP] === SUMMARY ===
+{
+  "run_id": "tick_p3_split_0925_0930_20260606",
+  "generations": 2,
+  "best_gen": -1,
+  "best_score": null,
+  "best_buy": null,
+  "best_sell": null,
+  "winner_gen": -1,
+  "winner_score": null,
+  "winner_buy": null,
+  "winner_sell": null,
+  "stop_reason": "max_generations 도달: gen_count 2 >= 2"
+}
+[LOOP] wall-clock: 54.2s

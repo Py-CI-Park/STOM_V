@@ -1,0 +1,20 @@
+# P6 verification
+timestamp: 2026-06-04T13:40:39.2130951+09:00
+
+## Decision honesty rg
+command: rg -n "PROMOTE_CANDIDATE|REJECT_CANDIDATE|NEEDS_MORE_EVIDENCE|human|superior|slippage|PBO|DSR|final_approval|export_winner|taskkill" p6-decision-card.md
+4:NEEDS_MORE_EVIDENCE
+63:## PBO/DSR Status
+64:Not run. PBO/DSR is an advisory blocker until a candidate and OOS evidence exist.
+67:- `final_approval`: not invoked.
+68:- `export_winner`: not invoked.
+71:- `taskkill`: not used.
+77:NEEDS_MORE_EVIDENCE
+79:Rationale: the improved selection rule prevented a training-negative candidate from being sent to OOS, but the fresh research run did not find a positive eligible candidate. The process is safer and more honest, but it has not produced a candidate capable of challenging the human seed.
+
+## Protected path status
+command: git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json
+(empty)
+
+## Verdict
+P6 PASS: final verdict is NEEDS_MORE_EVIDENCE; no promotion claim; no OOS fabricated; slippage/PBO/DSR explicitly blocked until a candidate and OOS evidence exist.

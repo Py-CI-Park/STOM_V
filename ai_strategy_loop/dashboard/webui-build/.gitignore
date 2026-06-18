@@ -1,0 +1,5 @@
+# Phase14.1: 빌드 의존성은 커밋하지 않는다. 산출물(../frontend/bundle/)만 커밋해 런타임 npm-free 유지.
+node_modules/
+.vite/
+# Track Z (PR-1): FLAGGED pilot bundle is a transient build artifact (NOT served, NOT committed).
+.track-z/

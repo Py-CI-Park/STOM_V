@@ -224,6 +224,13 @@ function ApprovalDialog({ winner, onClose, onConfirm }) {
             <span className="mono"> live-deploy gate</span>로 내보냅니다. 실거래 자동매매에서 즉시 사용 가능하게 됩니다.
           </div>
 
+          {/* P2 결정 동선 크로스링크: 내보내기 승인(WS final_approval)과 운용 결정 기록
+              (REST /record_decision)을 한 흐름으로 안내. 라우트 무변경(모달 — 기본 스냅샷 밖). */}
+          <div className="mono" style={{ marginBottom: 14, fontSize: 11, color: "var(--ink-3)", lineHeight: 1.5 }}>
+            동선: 증거 → <b>내보내기 승인</b>(이 단계 · WS <span className="mono">final_approval</span>) →
+            <b> 결정 이력 → 운용 결정</b> 탭에서 채택 사유 기록(REST <span className="mono">/record_decision</span>, append-only).
+          </div>
+
           <div className="group">
             <div className="group-title">우승 전략 원본</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -272,3 +279,6 @@ function ApprovalDialog({ winner, onClose, onConfirm }) {
 }
 
 Object.assign(window, { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { ApprovalDialog, BestCard, MergedBestWinnerCard, WinnerCard };

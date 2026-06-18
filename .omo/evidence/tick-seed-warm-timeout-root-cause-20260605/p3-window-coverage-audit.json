@@ -1,0 +1,48 @@
+[
+  {
+    "label": "W1",
+    "start": 20250102090000,
+    "end": 20250102090100,
+    "moneytop_rows": 0,
+    "days": {},
+    "distinct_codes": 0,
+    "first_index": null,
+    "last_index": null
+  },
+  {
+    "label": "W2",
+    "start": 20250102090000,
+    "end": 20250102090500,
+    "moneytop_rows": 0,
+    "days": {},
+    "distinct_codes": 0,
+    "first_index": null,
+    "last_index": null
+  },
+  {
+    "label": "W3",
+    "start": 20250101090000,
+    "end": 20250103090100,
+    "moneytop_rows": 1860,
+    "days": {
+      "20250102": 1800,
+      "20250103": 60
+    },
+    "distinct_codes": 203,
+    "first_index": 20250102100001,
+    "last_index": 20250103090100
+  },
+  {
+    "label": "W4",
+    "start": 20250101090000,
+    "end": 20250103090500,
+    "moneytop_rows": 2100,
+    "days": {
+      "20250102": 1800,
+      "20250103": 300
+    },
+    "distinct_codes": 205,
+    "first_index": 20250102100001,
+    "last_index": 20250103090500
+  }
+]

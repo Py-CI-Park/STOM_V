@@ -79,6 +79,61 @@ def test_compute_variable_correlation_spearman_switch() -> None:
     assert row["correlation"] == pytest.approx(1.0)
 
 
+def test_compute_variable_correlation_adds_research_profile() -> None:
+    """Given buy-time variables, When correlation runs, Then research-only profile fields are returned."""
+    df = pd.DataFrame({
+        "일자": [20230102, 20230103, 20240102, 20240103, 20250102, 20250103, 20250104, 20250105],
+        "수익률": [-2.0, -1.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+        "B_시분초": [90100, 90200, 93000, 93100, 100000, 100100, 110000, 110100],
+        "B_시가총액": [100.0, 150.0, 200.0, 220.0, 1000.0, 1200.0, 2000.0, 2200.0],
+        "B_상승": [1.0, 1.2, 2.0, 2.2, 3.0, 3.2, 4.0, 4.2],
+        "B_역행": [4.2, 4.0, 3.2, 3.0, 2.2, 2.0, 1.2, 1.0],
+        "B_보완": [1.0, 2.0, 1.0, 2.0, 3.0, 1.0, 3.0, 2.0],
+    })
+
+    out = compute_variable_correlation(df, method="spearman", min_samples=2, top_n=5)
+
+    assert out["source"] == "pooled_trade_csv"
+    assert out["sample_count"] == 8
+    assert out["input_rows"] == 8
+    assert out["truncated"] is False
+
+    ranges = {row["feature"]: row for row in out["range_summaries"]}
+    assert ranges["B_상승"]["histogram"]
+    assert sum(bin_["count"] for bin_ in ranges["B_상승"]["histogram"]) == 8
+    assert ranges["B_상승"]["win_loss"]["mean_win"] > ranges["B_상승"]["win_loss"]["mean_loss"]
+
+    segments = out["segment_summaries"]
+    assert segments["time"]
+    assert segments["market_cap"]
+    assert {row["label"] for row in segments["year"]} == {"2023", "2024", "2025"}
+    assert all("feature_ranges" in row for row in segments["year"])
+
+    assert out["interaction_candidates"]
+    candidate = out["interaction_candidates"][0]
+    assert {"feature_a", "feature_b", "research_score", "sample_count"} <= set(candidate)
+
+    recency = out["recency_research"]
+    assert recency["research_only"] is True
+    assert recency["score_label"] == "research_score_not_promotion"
+    assert recency["weights"]["2025"] == pytest.approx(1.5)
+
+
+def test_compute_variable_correlation_row_limit_reports_truncation() -> None:
+    """Given too many rows, When row_limit is set, Then deterministic truncation is reported."""
+    df = pd.DataFrame({
+        "수익률": [1.0, 2.0, 3.0, 4.0],
+        "B_상승": [1.0, 2.0, 3.0, 4.0],
+    })
+
+    out = compute_variable_correlation(df, min_samples=2, row_limit=3)
+
+    assert out["input_rows"] == 4
+    assert out["sample_count"] == 3
+    assert out["row_limit"] == 3
+    assert out["truncated"] is True
+
+
 def test_compute_variable_correlation_insufficient_guards() -> None:
     """Given missing/low-sample inputs, When analysis runs, Then it returns insufficient."""
     missing_outcome = compute_variable_correlation(pd.DataFrame({"B_x": [1, 2, 3]}))

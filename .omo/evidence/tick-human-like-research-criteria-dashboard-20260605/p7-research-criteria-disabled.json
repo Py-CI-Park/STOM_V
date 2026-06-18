@@ -1,0 +1,1 @@
+{"contract_version":2,"research_oos_mode":"disabled","label":"OOS disabled","claim_status":"research-only","explanation_ko":"OOS를 실행하거나 후보 탈락에 쓰지 않는 탐색 모드입니다.","warning":"research/exploration only; not proof of human-level or production readiness.","available_modes":["disabled","advisory","promotion_only"]}

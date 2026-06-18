@@ -1,0 +1,12 @@
+[
+  {"label": "BASE_SEED",   "buy": "Tick_B_902_905_Update_2",                              "sell": "Tick_S_902_905_Update_2"},
+  {"label": "BASE_GEN4",   "buy": "AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_buy", "sell": "AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_sell"},
+  {"label": "C1_V5C",      "buy": "CLDGEN_0610_C1_V5C_B",                                 "sell": "CLDGEN_0610_S_DYN"},
+  {"label": "C2_F0520",    "buy": "CLDGEN_0610_C2_F0520_B",                               "sell": "CLDGEN_0610_S_DYN"},
+  {"label": "C3_OPEN",     "buy": "CLDGEN_0610_C3_OPEN_B",                                "sell": "CLDGEN_0610_S_FAST"},
+  {"label": "C4_MIDCAP",   "buy": "CLDGEN_0610_C4_MIDCAP_B",                              "sell": "CLDGEN_0610_S_DYN"},
+  {"label": "C5_PULLBACK", "buy": "CLDGEN_0610_C5_PULLBACK_B",                            "sell": "CLDGEN_0610_S_TREND"},
+  {"label": "C6_LARGE",    "buy": "CLDGEN_0610_C6_LARGE_B",                               "sell": "CLDGEN_0610_S_TREND"},
+  {"label": "C7_SEEDPLUS", "buy": "CLDGEN_0610_C7_SEEDPLUS_B",                            "sell": "Tick_S_902_905_Update_2"},
+  {"label": "C8_ABSORB",   "buy": "CLDGEN_0610_C8_ABSORB_B",                              "sell": "CLDGEN_0610_S_FAST"}
+]

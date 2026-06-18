@@ -1,0 +1,17 @@
+{
+  "note": "Track Z PR-6 build manifest — content-hash 캐시 버전(수동 ?v= 폐지). 빌드 산출.",
+  "bundles": {
+    "app.js": {
+      "v": "17da3e52"
+    },
+    "stom-ui.js": {
+      "v": "f41f5701"
+    }
+  },
+  "model": "bundle",
+  "entry": "src/track-z-entry.pilot.js",
+  "externalizedGlobals": {
+    "react": "window.React",
+    "react-dom": "window.ReactDOM"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "trade_count": 330,
+  "skipped_trades": 6,
+  "base_total_profit": 13272361.0,
+  "betting_krw": null,
+  "csv_paths": [
+    "backtest/csv/stock_bt_THETA_seed_902905_06_B_20260611141549.csv",
+    "backtest/csv/stock_bt_THETA_seed_902905_06_B_20260611142049.csv",
+    "backtest/csv/stock_bt_THETA_seed_902905_06_B_20260611142307.csv"
+  ],
+  "scenarios": [
+    {
+      "tick": 0,
+      "fee_bps": 0.0,
+      "total_profit": 13272361.0,
+      "profit_delta": 0.0,
+      "profit_retention_ratio": 1.0,
+      "mdd_amount": 1729010.0,
+      "trade_count": 330,
+      "breakeven_tick": 3.0338799721641734
+    },
+    {
+      "tick": 1,
+      "fee_bps": 0.0,
+      "total_profit": 8897645.743703173,
+      "profit_delta": -4374715.2562968265,
+      "profit_retention_ratio": 0.6703890697143615,
+      "mdd_amount": 2410968.250054512,
+      "trade_count": 330,
+      "breakeven_tick": 3.0338799721641734
+    },
+    {
+      "tick": 2,
+      "fee_bps": 0.0,
+      "total_profit": 4522930.487406347,
+      "profit_delta": -8749430.512593653,
+      "profit_retention_ratio": 0.3407781394287231,
+      "mdd_amount": 3203988.5001090234,
+      "trade_count": 330,
+      "breakeven_tick": 3.0338799721641734
+    },
+    {
+      "tick": 0,
+      "fee_bps": 5.0,
+      "total_profit": 11614998.5475,
+      "profit_delta": -1657362.4525000006,
+      "profit_retention_ratio": 0.8751267801938177,
+      "mdd_amount": 1968342.8790000044,
+      "trade_count": 330,
+      "breakeven_tick": 2.6550296115345424
+    },
+    {
+      "tick": 1,
+      "fee_bps": 5.0,
+      "total_profit": 7240283.291203174,
+      "profit_delta": -6032077.708796826,
+      "profit_retention_ratio": 0.5455158499081794,
+      "mdd_amount": 2695412.5490545128,
+      "trade_count": 330,
+      "breakeven_tick": 2.6550296115345424
+    },
+    {
+      "tick": 2,
+      "fee_bps": 5.0,
+      "total_profit": 2865568.0349063477,
+      "profit_delta": -10406792.965093652,
+      "profit_retention_ratio": 0.215904919622541,
+      "mdd_amount": 3488432.799109022,
+      "trade_count": 330,
+      "breakeven_tick": 2.6550296115345424
+    }
+  ]
+}

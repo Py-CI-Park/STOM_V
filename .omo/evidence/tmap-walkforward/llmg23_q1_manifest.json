@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_dual_window_confirm_break906",
+  "run_id": "tmap_llmg23_q1_e32_20260614",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_dual_window_confirm_break906_000_B",
+      "status": "ok",
+      "profit": -35500131.0,
+      "mdd": 54.6,
+      "trades": 1634
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+warning: in the working copy of '.omo/plans/tick-sparse-positive-generation-improvement-20260604.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.omo/start-work/ledger.jsonl', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/brain/generator.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/brain/prompt.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/config.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/controller/_candidate_selection_artifact.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/controller/_candidate_selection_core.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/controller/candidate_selection.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/controller/loop.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/controller/state.py', LF will be replaced by CRLF the next time Git touches it

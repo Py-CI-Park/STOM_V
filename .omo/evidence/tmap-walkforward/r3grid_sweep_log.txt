@@ -1,0 +1,16 @@
+[SWEEP] template=seed_902905_r2full points=10/10
+[SWEEP] resume: 평가 대상 10점 / 스킵 0점
+[SWEEP] prepare status=ok back_count=2285 elapsed=299s
+[SWEEP] gen0 TMAP __default__ profit=10,965,479 mdd=10.04 trades=272 (148s)
+[SWEEP] gen1 TMAP2 burst_a=2.0|ogap_lo_b=2.0 profit=11,287,219 mdd=6.93 trades=337 (148s)
+[SWEEP] gen2 TMAP2 burst_a=2.0|ogap_lo_b=3.0 profit=11,134,657 mdd=6.78 trades=307 (148s)
+[SWEEP] gen3 TMAP2 burst_a=2.0|ogap_lo_b=4.0 profit=10,642,297 mdd=8.54 trades=273 (148s)
+[SWEEP] gen4 TMAP2 burst_a=3.0|ogap_lo_b=2.0 profit=11,118,041 mdd=10.22 trades=302 (149s)
+[SWEEP] gen5 TMAP2 burst_a=3.0|ogap_lo_b=3.0 profit=10,965,479 mdd=10.04 trades=272 (148s)
+[SWEEP] gen6 TMAP2 burst_a=3.0|ogap_lo_b=4.0 profit=10,369,242 mdd=9.64 trades=237 (148s)
+[SWEEP] gen7 TMAP2 burst_a=4.5|ogap_lo_b=2.0 profit=8,031,938 mdd=11.28 trades=278 (148s)
+[SWEEP] gen8 TMAP2 burst_a=4.5|ogap_lo_b=3.0 profit=7,879,376 mdd=11.08 trades=248 (148s)
+[SWEEP] gen9 TMAP2 burst_a=4.5|ogap_lo_b=4.0 profit=7,314,015 mdd=10.62 trades=211 (154s)
+[SWEEP] grid burst_a×ogap_lo_b: cells=9 positive=1.0 best=(2.0,2.0)=11,287,219 mesa=9셀
+[SWEEP] baseline profit=10,965,479 mdd=10.04
+[SWEEP] done

@@ -1,0 +1,77 @@
+﻿TASK 1: P0 safety snapshot and execution isolation
+timestamp=2026-06-03T19:50:55.9518898+09:00
+
+## git status --short --branch
+## STOM_Version_2U_C-ai-strategy-loop
+ M AGENTS.md
+?? .claude/
+?? .omo/
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_min_buy.txt"
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_tick_buy.txt"
+?? "C\357\200\272Tempstom_postchange_full.txt"
+?? ai_strategy_loop/AGENTS.md
+?? backtest/AGENTS.md
+?? cli/AGENTS.md
+?? docs/AGENTS.md
+?? docs/reference/
+?? research/AGENTS.md
+?? scripts/AGENTS.md
+?? seed_strategy_output.txt
+?? strategy/AGENTS.md
+?? tests/AGENTS.md
+?? testsunit_exit_test_out.txt
+?? trade/AGENTS.md
+?? ui/AGENTS.md
+?? utility/ai_agent/AGENTS.md
+
+## git rev-parse HEAD
+710dd654317d599e699af7dcc30e8637a152aefc
+
+## git branch --show-current
+STOM_Version_2U_C-ai-strategy-loop
+
+## protected path status
+(empty)
+
+## dashboard health http://127.0.0.1:8770/health
+{"status":"ok","contract_version":2}
+
+## port 8770 PID/command line
+pid=71136 command=C:\Python\64\Python31313\python.exe -m ai_strategy_loop
+
+## .omo/boulder.json
+{
+  "schema_version": 2,
+  "active_work_id": "tick-oos-validation-20260603",
+  "works": {
+    "condition-research-rereview-20260603": {
+      "work_id": "condition-research-rereview-20260603",
+      "active_plan": ".omo/plans/condition-research-rereview-20260603.md",
+      "plan_name": "condition-research-rereview-20260603",
+      "session_ids": [
+        "codex:condition-research-rereview-20260603"
+      ],
+      "status": "completed",
+      "worktree_path": null
+    },
+    "tick-oos-validation-20260603": {
+      "work_id": "tick-oos-validation-20260603",
+      "active_plan": ".omo/plans/tick-oos-validation-20260603.md",
+      "plan_name": "tick-oos-validation-20260603",
+      "session_ids": [
+        "codex:tick-oos-validation-20260603"
+      ],
+      "status": "active",
+      "worktree_path": null
+    }
+  }
+}
+
+## loop_runs.db exists
+ai_strategy_loop/state/loop_runs.db exists=True
+
+## forbidden actions
+final_approval forbidden; export_winner forbidden; V3K gate advancement forbidden; blanket taskkill forbidden.
+
+## dirty worktree classification
+Dirty/untracked files above are pre-existing unless created under .omo for this start-work execution. No dirty files were removed or reverted.

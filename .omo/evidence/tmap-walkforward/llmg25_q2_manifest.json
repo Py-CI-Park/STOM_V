@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_strength_persistent_accel_break",
+  "run_id": "tmap_llmg25_q2_e32_20260614",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_strength_persistent_accel_break_000_B",
+      "status": "ok",
+      "profit": -4145721.0,
+      "mdd": 24.92,
+      "trades": 602
+    }
+  ]
+}

@@ -448,7 +448,23 @@ def _default_autopsy_fn(config: LoopConfig) -> Callable[[str], Optional[str]]:
             return None
         abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
         result = analyze_trades(abs_csv, min_trades=min_trades)
-        return summarize(result, config)
+        feedback = summarize(result, config)
+        # R2(2026-06-11) — 반사실 필터 환류(토글, 기본 OFF). 직전 백테 CSV에서
+        #   "강화 필터를 걸었다면"을 백테 0회로 평가해, 총손익이 깎이지 않는 필터만
+        #   손익 영향 숫자와 함께 매수 피드백에 덧붙인다(방향+숫자+증거 — G1·G2 해소).
+        #   실패/제안 없음은 조용히 기존 피드백만 반환(흡수 — byte-동일 하위호환).
+        if getattr(config, "counterfactual_feedback_enabled", False):
+            try:
+                from ai_strategy_loop.fitness.counterfactual import (  # noqa: PLC0415
+                    feedback_lines,
+                    suggest_filters,
+                )
+                cf_lines = feedback_lines(suggest_filters(abs_csv, top_k=3))
+                if cf_lines:
+                    feedback = (feedback or "") + "\n" + "\n".join(cf_lines)
+            except Exception:  # noqa: BLE001 - 보조 환류 실패가 부검을 막지 않게.
+                pass
+        return feedback
 
     return _fn
 
@@ -693,6 +709,19 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             # 생성 분류축 유도(매수) — build_messages가 kind=='buy'일 때만 분류축 블록을
             #   추가하므로 매도 경로엔 무영향. getattr 기본 False라 구버전 config도 무영향.
             classification_generation_enabled=getattr(config, "classification_generation_enabled", False),
+            time_cap_bucket_generation_enabled=getattr(config, "time_cap_bucket_generation_enabled", False),
+            time_cap_bucket_end_time=getattr(config, "time_cap_bucket_end_time", 92000),
+            sparse_positive_prompt_enabled=getattr(config, "sparse_positive_prompt_enabled", False),
+            # 계산예산 지침/가드(2026-06-10 원인3) — 프롬프트 지침은 buy/sell 분기 지침을
+            #   build_messages가 kind별로 적용하고, PRE-SAVE 가드는 generate_strategy가
+            #   kind=='sell'일 때만 적용한다. getattr 기본 False/8이라 구버전 config도
+            #   무영향(byte-동일, 하위호환).
+            exec_budget_prompt_enabled=getattr(config, "exec_budget_prompt_enabled", False),
+            sell_exec_budget_guard_enabled=getattr(config, "sell_exec_budget_guard_enabled", False),
+            sell_max_window_calls=getattr(config, "sell_max_window_calls", 8),
+            # v5.0 리포트 원리 어휘 주입 — build_messages가 kind별 어휘 블록을 추가한다.
+            #   getattr 기본 False라 구버전 config도 무영향(byte-동일, 하위호환).
+            report_principles_enabled=getattr(config, "report_principles_enabled", False),
             min_filter_categories=getattr(config, "min_filter_categories", 5),
             # P2b-1 가정 환류 — prev_judged_hypotheses가 없으면(토글 OFF/직전 미판정)
             #   None이라 build_messages가 미주입해 동작 byte-identical(하위호환).
@@ -1266,11 +1295,15 @@ def run_loop(
                 # 실패 세대: score=0, 계속. 단, '왜' 실패했는지를 구체적으로 분류해
                 #   다음 세대 피드백 + 이력에 남긴다(맹목 변이 차단).
                 err_history_line = _backtest_error_history_line(outcome.reason)
+                # D3(2026-06-10): error 행 reason에 경과시간을 병기해 대시보드에서
+                #   타임아웃(계산예산) 문제를 즉시 식별하게 한다. error 행은 선택기에서
+                #   status!='ok'로 이미 제외되므로 reason 장식이 버킷 판정을 깨지 않는다
+                #   (ok 행의 reason 원문 보존 계약과 구분 — tests/unit/test_record_reason_contract.py).
                 st.record_generation(
                     rid, gen_no,
                     buy_name=buy_name, sell_name=sell_name,
                     status="error", score=0.0, gate_passed=False,
-                    reason=f"backtest failed/timeout: {outcome.reason}",
+                    reason=f"backtest failed/timeout: {outcome.reason} (elapsed {bt_elapsed:.0f}s)",
                     csv_path=outcome.csv_path,
                 )
                 # 이력에 구체 실패 사유를 기록(CONVERGENCE — 회귀 회피 신호).

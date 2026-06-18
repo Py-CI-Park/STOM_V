@@ -1,0 +1,63 @@
+﻿{
+    "task":  "9.run_compare_frontend",
+    "base":  "http://127.0.0.1:8792",
+    "timestamp":  "2026-06-04T05:05:39",
+    "selected_ids":  [
+                         "run_1779672477",
+                         "run_1779675770"
+                     ],
+    "checks":  [
+                   {
+                       "path":  "/health",
+                       "status":  200,
+                       "length":  36,
+                       "sample":  "{\"status\":\"ok\",\"contract_version\":2}"
+                   },
+                   {
+                       "path":  "/ui/run-compare.jsx?v=20260603a",
+                       "status":  200,
+                       "length":  7818,
+                       "sample":  "/* Enriched run comparison console. Overrides the lean RunComparePanel from panels.jsx. */\nconst { useState: useState_rc, useEffect: useEffect_rc, useMemo: useMemo_rc } = React;\n\nfunction rcNum(value, digits = 2) {\n  return typeof value === \"number\" \u0026\u0026 Number.isFinite(value) ? value.toFixed(digits) : \"-\";\n}\n\nfunction rcMoney(value) {\n  return typeof value === \"number\" \u0026\u0026 Number.isFinite(value) ? value.toLocaleString(\"ko-KR\") : \"-\";\n}\n\nfunction rcPct(value) {\n  return typeof value === \"number\" \u0026\u0026 Number.isFinite(value) ? `${value.toFixed(2)}%` : \"-\";\n}\n\nfunction rcDuration(sec) {\n  if (typeof sec !== \"number\" || !Number.isFinite(sec)) return \"-\";\n  if (sec \u003c 60) return `${sec.toFixed(1)}s`;\n  const min = Math.floor(sec / 60);\n  const rem = Math.round(sec % 60);\n  if (min \u003c 60) return `${min}m ${rem}s`;\n  return `${Math.floor(min / 60)}h ${min % 60}m`;\n}\n\nfunction rcYears(run) {\n  if (Arra"
+                   },
+                   {
+                       "path":  "/runs",
+                       "status":  200,
+                       "length":  239316,
+                       "sample":  "{\"runs\":[{\"run_id\":\"run_1779672477\",\"status\":\"complete\",\"started_at\":1779672477.9032931,\"finished_at\":1779674489.9288542,\"elapsed_sec\":2012.026,\"period\":null,\"timeframe\":\"min\",\"bt_full_start\":null,\"bt_full_end\":null,\"bt_universe_start_time\":null,\"bt_universe_end_time\":null,\"start_year\":null,\"end_year\":null,\"years\":[],\"gen_count\":15,\"cost_or_count\":15.0,\"cost_or_count_text\":\"15.0\",\"best_graded\":0.851803,\"gate_passed_count\":0,\"final_profit\":-349869.0,\"total_profit_pct\":null,\"return_pct\":null,\"trade_count\":91,\"daily_avg_trades\":0.0,\"max_hold_count\":0.0,\"mdd\":19.18,\"payoff_ratio\":null,\"winner\":null},{\"run_id\":\"run_1779675770\",\"status\":\"complete\",\"started_at\":1779675770.304588,\"finished_at\":1779679653.9798372,\"elapsed_sec\":3883.675,\"period\":null,\"timeframe\":\"min\",\"bt_full_start\":null,\"bt_full_end\":null,\"bt_universe_start_time\":null,\"bt_universe_end_time\":null,\"start_year\":null,\"end_year\":null"
+                   },
+                   {
+                       "path":  "/runs/compare?ids=run_1779672477%2Crun_1779675770",
+                       "status":  200,
+                       "length":  15948,
+                       "sample":  "{\"runs\":[{\"run_id\":\"run_1779672477\",\"status\":\"complete\",\"started_at\":1779672477.9032931,\"finished_at\":1779674489.9288542,\"elapsed_sec\":2012.026,\"period\":null,\"timeframe\":\"min\",\"bt_full_start\":null,\"bt_full_end\":null,\"bt_universe_start_time\":null,\"bt_universe_end_time\":null,\"start_year\":null,\"end_year\":null,\"years\":[],\"gen_count\":15,\"cost_or_count\":15.0,\"cost_or_count_text\":\"15.0\",\"best_graded\":0.851803,\"gate_passed_count\":0,\"final_profit\":-349869.0,\"total_profit_pct\":null,\"return_pct\":null,\"trade_count\":91,\"daily_avg_trades\":0.0,\"max_hold_count\":0.0,\"mdd\":19.18,\"payoff_ratio\":null,\"winner\":null},{\"run_id\":\"run_1779675770\",\"status\":\"complete\",\"started_at\":1779675770.304588,\"finished_at\":1779679653.9798372,\"elapsed_sec\":3883.675,\"period\":null,\"timeframe\":\"min\",\"bt_full_start\":null,\"bt_full_end\":null,\"bt_universe_start_time\":null,\"bt_universe_end_time\":null,\"start_year\":null,\"end_year\":null"
+                   }
+               ],
+    "first_run_fields":  {
+                             "run_id":  "run_1779672477",
+                             "period":  null,
+                             "years":  [
+
+                                       ],
+                             "timeframe":  "min",
+                             "final_profit":  -349869.0,
+                             "total_profit_pct":  null,
+                             "trade_count":  91,
+                             "daily_avg_trades":  0.0,
+                             "mdd":  19.18,
+                             "payoff_ratio":  null,
+                             "max_hold_count":  0.0,
+                             "elapsed_sec":  2012.026,
+                             "cost_or_count_text":  "15.0"
+                         },
+    "compare_count":  2,
+    "generation_count":  35,
+    "cleanup":  {
+                    "port":  8792,
+                    "stopped":  true,
+                    "result":  "The operation has timed out."
+                },
+    "notes":  [
+                  "Negative rows are not filtered by frontend static contract.",
+                  "Sort default is final_profit; Seed vs AI button selects seed/ai run ids when present."
+              ]
+}

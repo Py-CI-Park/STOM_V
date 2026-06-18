@@ -1,0 +1,429 @@
+{
+  "name": "llmgen_min_close_accum_squeeze",
+  "timeframe": "min",
+  "source": "P5 LLM 가설 생성 (gen_template_hypothesis)",
+  "description": "09시 첫 돌파가 아니라 14시 이후 전일동시간비가 살아난 종목의 압축-누적매수-마감전 재가속을 노리는 분봉 전용 저상관 구조",
+  "buy_code": "if 데이터길이 >= {min_len} and 시분초 >= {entry_start} and 시분초 <= {entry_end} and 시가총액 <= {cap_max} and 당일거래대금 >= {day_money_min} and 전일동시간비 >= {prev_ratio_min} and 전일비 >= {day_chg_min} and 전일비 <= {day_chg_max} and 회전율 >= {turnover_min} and 횡보감지({flat_window}, {flat_band}) and 누적분당매수수량({cum_window}) >= 누적분당매도수량({cum_window}) * {cum_buy_dom} and 분당매수수량 >= 분당매도수량 * {minute_buy_dom} and 체결강도 >= 체결강도평균({strength_avg_window}, {avg_shift}) * {strength_reaccel} and 분당거래대금 >= 분당거래대금평균({money_avg_window}, {avg_shift}) * {money_reaccel} and 현재가 >= 이동평균({ma_window}, {ma_shift}) * {ma_reclaim} and 현재가 <= 최고현재가({high_window}, {high_shift}) * {high_proximity_max} and 등락율각도({angle_window}) >= {angle_floor} and 매수총잔량 >= 매도총잔량 * {book_bid_ratio}:\n    self.Buy()",
+  "sell_code": "if 수익률 >= {take_rate} or 수익률 <= {stop_rate} or (최고수익률 >= {trail_start} and 수익률 <= 최고수익률 - {trail_gap}) or 시분초 >= {force_exit_time}:\n    self.Sell()",
+  "params": [
+    {
+      "name": "min_len",
+      "default": 80,
+      "values": [
+        50,
+        80,
+        110,
+        140,
+        170
+      ],
+      "side": "buy",
+      "note": "분봉 장중 후반 구조이므로 당일 분봉 이력이 충분히 쌓인 뒤만 허용한다. 너무 짧으면 오전 신호와 중복되고, 너무 길면 표본이 급감한다."
+    },
+    {
+      "name": "entry_start",
+      "default": 140000,
+      "values": [
+        130000,
+        133000,
+        140000,
+        143000,
+        145000
+      ],
+      "side": "buy",
+      "note": "기존 09시 초반 시드와 분리하기 위한 후장 진입 시작 시각. 13시 이후부터 마감 전 수급 재집중 구간을 탐색한다."
+    },
+    {
+      "name": "entry_end",
+      "default": 151000,
+      "values": [
+        145000,
+        150000,
+        151000,
+        151500,
+        151800
+      ],
+      "side": "buy",
+      "note": "마감 동시호가 직전까지의 실거래 가능 구간을 탐색하되, 너무 늦은 진입의 청산 리스크를 함께 확인한다."
+    },
+    {
+      "name": "cap_max",
+      "default": 2500,
+      "values": [
+        1200,
+        1800,
+        2500,
+        3500,
+        5000
+      ],
+      "side": "buy",
+      "note": "분봉 후장 신호는 대형주에서 과다발화될 수 있어 중소형 주도주 중심으로 제한하되, 시총 민감도를 넓게 본다."
+    },
+    {
+      "name": "day_money_min",
+      "default": 8000,
+      "values": [
+        3000,
+        5000,
+        8000,
+        12000,
+        20000
+      ],
+      "side": "buy",
+      "note": "당일 거래대금 기준 유동성 필터. 후장 신호는 잔량 왜곡이 커질 수 있어 최소 거래대금으로 체결 가능성을 확보한다."
+    },
+    {
+      "name": "prev_ratio_min",
+      "default": 180,
+      "values": [
+        120,
+        150,
+        180,
+        230,
+        300,
+        400
+      ],
+      "side": "buy",
+      "note": "전일동시간비는 기존 응답곡선에서 강한 판별자로 관측된 축이다. 숫자는 이식하지 않고 후장 재집중 강도 슬롯으로 둔다."
+    },
+    {
+      "name": "day_chg_min",
+      "default": 0.5,
+      "values": [
+        -1.0,
+        0.0,
+        0.5,
+        1.5,
+        3.0
+      ],
+      "side": "buy",
+      "note": "완전 약세 종목을 배제하면서도 이미 과열된 종목만 잡지 않도록 당일 상승 하한을 완만하게 탐색한다."
+    },
+    {
+      "name": "day_chg_max",
+      "default": 18.0,
+      "values": [
+        8.0,
+        12.0,
+        18.0,
+        24.0,
+        30.0
+      ],
+      "side": "buy",
+      "note": "상한가 근접 과열 추격을 피하기 위한 당일 상승 상한. 후장 마감 기대감과 과열 리스크의 균형점을 찾는다."
+    },
+    {
+      "name": "turnover_min",
+      "default": 1.5,
+      "values": [
+        0.5,
+        1.0,
+        1.5,
+        2.5,
+        4.0
+      ],
+      "side": "buy",
+      "note": "시총 대비 실제 손바뀜이 있는 종목만 남기는 필터. 후장 누적매수 구조가 의미 있으려면 회전율이 일정 이상 필요하다."
+    },
+    {
+      "name": "flat_window",
+      "default": 8,
+      "values": [
+        4,
+        6,
+        8,
+        12,
+        16
+      ],
+      "side": "buy",
+      "note": "후장 압축 구간 길이. 짧으면 잡음, 길면 신호가 지나치게 늦어지므로 중단기 분봉 압축 범위를 탐색한다."
+    },
+    {
+      "name": "flat_band",
+      "default": 1.2,
+      "values": [
+        0.5,
+        0.8,
+        1.2,
+        1.8,
+        2.5
+      ],
+      "side": "buy",
+      "note": "횡보감지의 허용 폭. 마감 전 급등 직전 눌림/압축을 잡기 위한 변동성 폭 슬롯이다."
+    },
+    {
+      "name": "cum_window",
+      "default": 12,
+      "values": [
+        5,
+        8,
+        12,
+        20,
+        30
+      ],
+      "side": "buy",
+      "note": "누적분당매수/매도 우위 측정 길이. 단일 분봉 폭발이 아니라 후장 수급 누적을 보기 위한 핵심 창이다."
+    },
+    {
+      "name": "cum_buy_dom",
+      "default": 1.25,
+      "values": [
+        1.05,
+        1.15,
+        1.25,
+        1.4,
+        1.7,
+        2.0
+      ],
+      "side": "buy",
+      "note": "누적 매수수량이 누적 매도수량보다 얼마나 우위여야 하는지의 슬롯. 구조상 가격 돌파보다 수급 축적을 우선한다."
+    },
+    {
+      "name": "minute_buy_dom",
+      "default": 1.1,
+      "values": [
+        0.95,
+        1.05,
+        1.1,
+        1.25,
+        1.5
+      ],
+      "side": "buy",
+      "note": "현재 분봉에서도 매수 우위가 유지되는지 확인한다. 누적 우위가 과거 잔상인지 현재 진행형인지 구분한다."
+    },
+    {
+      "name": "strength_avg_window",
+      "default": 10,
+      "values": [
+        3,
+        5,
+        10,
+        15,
+        25
+      ],
+      "side": "buy",
+      "note": "체결강도 평균 기준 창. 후장 재가속이 평소 체결강도 대비 얼마나 강한지 비교하기 위한 분봉 전용 평균 축이다."
+    },
+    {
+      "name": "avg_shift",
+      "default": 1,
+      "values": [
+        1
+      ],
+      "side": "buy",
+      "note": "평균 비교는 직전 확정 분봉 기준으로 고정해 현재분 포함 자기참조를 줄인다. 엔진 제약상 허용되는 과거 방향 시프트다."
+    },
+    {
+      "name": "strength_reaccel",
+      "default": 1.15,
+      "values": [
+        1.0,
+        1.08,
+        1.15,
+        1.3,
+        1.6
+      ],
+      "side": "buy",
+      "note": "체결강도 재가속 배율. 가격 고점 돌파가 아니라 체결 질의 개선을 확인하는 축이다."
+    },
+    {
+      "name": "money_avg_window",
+      "default": 10,
+      "values": [
+        3,
+        5,
+        10,
+        15,
+        25
+      ],
+      "side": "buy",
+      "note": "분당거래대금 평균 기준 창. 후장 압축 후 거래대금 재유입을 보기 위해 짧은 창부터 중간 창까지 탐색한다."
+    },
+    {
+      "name": "money_reaccel",
+      "default": 1.8,
+      "values": [
+        1.1,
+        1.4,
+        1.8,
+        2.5,
+        3.5,
+        5.0
+      ],
+      "side": "buy",
+      "note": "분당거래대금이 직전 평균 대비 재확대되는 정도. F07류 초반 발화가 아니라 후장 압축 해소의 희소도를 조정한다."
+    },
+    {
+      "name": "ma_window",
+      "default": 8,
+      "values": [
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "side": "buy",
+      "note": "재상승 확인용 이동평균 창. 짧은 분봉 평균 회복을 통해 압축 후 상방 기울기 전환만 확인한다."
+    },
+    {
+      "name": "ma_shift",
+      "default": 1,
+      "values": [
+        1
+      ],
+      "side": "buy",
+      "note": "이동평균은 직전 확정 분봉 기준으로 비교해 현재가가 평균선을 회복하는 구조를 만든다."
+    },
+    {
+      "name": "ma_reclaim",
+      "default": 1.0,
+      "values": [
+        0.995,
+        1.0,
+        1.003,
+        1.006,
+        1.01
+      ],
+      "side": "buy",
+      "note": "현재가가 과거 이동평균 대비 어느 정도 위에 있어야 하는지의 회복 강도. 과도한 돌파 추격을 피하기 위해 좁은 범위로 둔다."
+    },
+    {
+      "name": "high_window",
+      "default": 60,
+      "values": [
+        20,
+        40,
+        60,
+        90,
+        120
+      ],
+      "side": "buy",
+      "note": "후장 기준 최근 고점과의 위치를 보는 창. 고점 돌파 추격이 아니라 고점 아래에서 누적되는 종목을 포함하기 위한 기준이다."
+    },
+    {
+      "name": "high_shift",
+      "default": 1,
+      "values": [
+        1
+      ],
+      "side": "buy",
+      "note": "최근 고점은 직전 확정 분봉까지의 값만 사용해 현재분 고점 자기참조를 피한다."
+    },
+    {
+      "name": "high_proximity_max",
+      "default": 0.995,
+      "values": [
+        0.97,
+        0.98,
+        0.99,
+        0.995,
+        1.0
+      ],
+      "side": "buy",
+      "note": "최근 고점 대비 너무 멀리 있거나 이미 고점 추격 상태인지를 조절한다. 후장 압축-재가속 구조의 진입 위치 민감도를 본다."
+    },
+    {
+      "name": "angle_window",
+      "default": 5,
+      "values": [
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "side": "buy",
+      "note": "등락율각도 측정 창. 완전 하락 중인 압축을 배제하고 짧은 상방 기울기 전환을 확인한다."
+    },
+    {
+      "name": "angle_floor",
+      "default": 0.0,
+      "values": [
+        -0.5,
+        0.0,
+        0.5,
+        1.0,
+        2.0
+      ],
+      "side": "buy",
+      "note": "상방 기울기의 최소값. 강한 모멘텀 추격이 아니라 하락 기울기 제거와 재상승 초입 확인에 초점을 둔다."
+    },
+    {
+      "name": "book_bid_ratio",
+      "default": 1.05,
+      "values": [
+        0.8,
+        0.95,
+        1.05,
+        1.2,
+        1.5
+      ],
+      "side": "buy",
+      "note": "매수총잔량이 매도총잔량 대비 지지되는지 확인한다. 후장 얇은 호가에서 매도벽 돌파보다 하방 지지 여부를 본다."
+    },
+    {
+      "name": "take_rate",
+      "default": 4.5,
+      "values": [
+        2.5,
+        3.5,
+        4.5,
+        6.0,
+        8.0
+      ],
+      "side": "sell",
+      "note": "후장 진입은 보유 시간이 짧으므로 익절 폭을 시드보다 별도 탐색한다. 마감 전 급등형의 꼬리 수익을 어느 정도 열어둘지 확인한다."
+    },
+    {
+      "name": "stop_rate",
+      "default": -2.0,
+      "values": [
+        -1.0,
+        -1.5,
+        -2.0,
+        -3.0,
+        -4.0
+      ],
+      "side": "sell",
+      "note": "압축 실패 시 빠르게 손절하기 위한 손실 한계. 후장 유동성 축소 리스크를 반영한다."
+    },
+    {
+      "name": "trail_start",
+      "default": 2.5,
+      "values": [
+        1.5,
+        2.0,
+        2.5,
+        3.5,
+        5.0
+      ],
+      "side": "sell",
+      "note": "수익이 발생한 뒤 되밀림을 관리하기 위한 트레일 시작 수익률. 마감 전 순간 급등 후 반락을 제어한다."
+    },
+    {
+      "name": "trail_gap",
+      "default": 1.2,
+      "values": [
+        0.6,
+        0.9,
+        1.2,
+        1.8,
+        2.5
+      ],
+      "side": "sell",
+      "note": "최고수익률 대비 허용 반납 폭. 후장 구조는 체결 공백이 생길 수 있어 좁은 값과 넓은 값을 모두 탐색한다."
+    },
+    {
+      "name": "force_exit_time",
+      "default": 151800,
+      "values": [
+        150500,
+        151000,
+        151500,
+        151800
+      ],
+      "side": "sell",
+      "note": "전 세션 데이터 경계 내 강제 청산 시각. 마감 직전 보유 리스크와 수익 연장 효과를 함께 측정한다."
+    }
+  ]
+}

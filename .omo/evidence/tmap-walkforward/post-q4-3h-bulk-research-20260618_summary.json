@@ -1,0 +1,95 @@
+{
+  "rounds": 15,
+  "adopted_total": 0,
+  "finished_ts": 1781769483.1140535,
+  "best_overall": {
+    "label": "r8_exclude_cap_lt_1500__exit2_skip_after_prior_exit2_loss_500k_else_full",
+    "profit": 39402438,
+    "mdd": 7.6823,
+    "annualized_return_pct": 38.6826,
+    "note": "robust primary; raw score winner is recorded separately because it uses a high-overfit calendar rule"
+  },
+  "step_results": {
+    "baseline": {
+      "annual": 1373,
+      "q4_official": 83,
+      "by_strategy_annual": {
+        "r8_4": 550,
+        "r2full_mdd": 456,
+        "exit2_balance": 367
+      },
+      "by_strategy_q4": {
+        "r8_4": 35,
+        "r2full_mdd": 25,
+        "exit2_balance": 23
+      }
+    },
+    "best_exit2_rule_by_q4": "exit2_full_after_prior_r8r2_loss_else_off",
+    "best_r8_filter_by_q4": "r8_exclude_month_11",
+    "best_combined_candidate": {
+      "rank": 1,
+      "candidate": "r8_exclude_month_11__exit2_skip_after_prior_exit2_loss_500k_else_full",
+      "score": 93.5087,
+      "all_profit_krw": 46745487,
+      "all_annualized_return_pct": 43.2118,
+      "all_mdd_pct": 10.9396,
+      "recent_profit_krw": 8551375,
+      "recent_annualized_return_pct": 47.8644,
+      "recent_mdd_pct": 15.3687,
+      "q4_profit_krw": 1028539,
+      "q4_annualized_return_pct": 36.3898,
+      "q4_mdd_pct": 12.7237,
+      "trade_retention_vs_full_static": 0.9512,
+      "positive_year_count": 5,
+      "worst_year_profit_krw": 1093795,
+      "deployability": "deployable_calendar_rule_high_overfit_risk;portfolio_causal_prior_month"
+    },
+    "recommendation_count": 4
+  },
+  "artifacts": [
+    "post-q4-3h-bulk-baseline-20260618.json",
+    "post-q4-3h-rule-grid-20260618.json",
+    "post-q4-3h-r8-filter-grid-20260618.json",
+    "post-q4-3h-combined-candidates-20260618.json",
+    "post-q4-3h-candidate-scoreboard-20260618.json",
+    "post-q4-3h-official-oos-recommendations-20260618.json",
+    "post-q4-3h-hourly-progress-20260618.jsonl",
+    "post-q4-3h-duration-20260618.json"
+  ],
+  "raw_score_winner": {
+    "rank": 1,
+    "candidate": "r8_exclude_month_11__exit2_skip_after_prior_exit2_loss_500k_else_full",
+    "score": 93.5087,
+    "all_profit_krw": 46745487,
+    "all_annualized_return_pct": 43.2118,
+    "all_mdd_pct": 10.9396,
+    "recent_profit_krw": 8551375,
+    "recent_annualized_return_pct": 47.8644,
+    "recent_mdd_pct": 15.3687,
+    "q4_profit_krw": 1028539,
+    "q4_annualized_return_pct": 36.3898,
+    "q4_mdd_pct": 12.7237,
+    "trade_retention_vs_full_static": 0.9512,
+    "positive_year_count": 5,
+    "worst_year_profit_krw": 1093795,
+    "deployability": "deployable_calendar_rule_high_overfit_risk;portfolio_causal_prior_month"
+  },
+  "robust_primary": {
+    "rank": 3,
+    "candidate": "r8_exclude_cap_lt_1500__exit2_skip_after_prior_exit2_loss_500k_else_full",
+    "score": 90.5884,
+    "all_profit_krw": 39402438,
+    "all_annualized_return_pct": 38.6826,
+    "all_mdd_pct": 7.6823,
+    "recent_profit_krw": 6941830,
+    "recent_annualized_return_pct": 39.0624,
+    "recent_mdd_pct": 12.6478,
+    "q4_profit_krw": 952502,
+    "q4_annualized_return_pct": 33.3884,
+    "q4_mdd_pct": 11.3583,
+    "trade_retention_vs_full_static": 0.7815,
+    "positive_year_count": 5,
+    "worst_year_profit_krw": 1213740,
+    "deployability": "deployable_entry_filter;portfolio_causal_prior_month"
+  }
+}

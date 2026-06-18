@@ -1,0 +1,8 @@
+[
+  {"label": "C1B_V5C",      "buy": "CLDGEN_0610_C1B_V5C_LAZY_B",      "sell": "CLDGEN_0610_S_DYN"},
+  {"label": "C2B_F0520",    "buy": "CLDGEN_0610_C2B_F0520_LAZY_B",    "sell": "CLDGEN_0610_S_DYN"},
+  {"label": "C4B_MIDCAP",   "buy": "CLDGEN_0610_C4B_MIDCAP_LAZY_B",   "sell": "CLDGEN_0610_S_DYN"},
+  {"label": "C5B_PULLBACK", "buy": "CLDGEN_0610_C5B_PULLBACK_LAZY_B", "sell": "CLDGEN_0610_S_TREND"},
+  {"label": "C6B_LARGE",    "buy": "CLDGEN_0610_C6B_LARGE_LAZY_B",    "sell": "CLDGEN_0610_S_TREND"},
+  {"label": "C8B_ABSORB",   "buy": "CLDGEN_0610_C8B_ABSORB_LAZY_B",   "sell": "CLDGEN_0610_S_FAST"}
+]

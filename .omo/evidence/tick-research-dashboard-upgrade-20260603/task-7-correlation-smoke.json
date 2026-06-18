@@ -1,0 +1,59 @@
+{
+  "task": "7. Frontend Research Lab for correlation, feature importance, and edge heatmaps",
+  "timestamp": "2026-06-04T04:46:00+09:00",
+  "automated_verification": {
+    "red": "python -m pytest tests/unit/test_dashboard_research_lab_frontend.py -q -> 4 failed because research-lab.jsx/index/app wiring missing",
+    "green": "python -m pytest tests/unit/test_dashboard_research_lab_frontend.py -q -> 5 passed in 0.33s",
+    "regression": "python -m pytest tests/unit/test_dashboard_research_lab_frontend.py tests/unit/test_dashboard_backtest_detail.py tests/unit/test_dashboard_hall_of_fame.py tests/unit/test_variable_correlation.py -q -> 68 passed in 8.38s"
+  },
+  "manual_qa": {
+    "tool": "curl.exe",
+    "owned_server": "python -m ai_strategy_loop --host 127.0.0.1 --port 8786",
+    "owned_server_pid": 124580,
+    "health_response": "HTTP/1.1 200 OK; {\"status\":\"ok\",\"contract_version\":2}",
+    "static_research_lab_response": {
+      "status": "HTTP/1.1 200 OK",
+      "content_length": 8006,
+      "contains": [
+        "function ResearchLabPanel(",
+        "/variable_correlation",
+        "Feature Importance",
+        "Variable Combinations"
+      ]
+    },
+    "variable_correlation_response": {
+      "status": "HTTP/1.1 200 OK",
+      "run_id": "tick_oos_p4_seed_2022_20260603",
+      "method": "spearman",
+      "pooled_trades": 58,
+      "feature_count": 14,
+      "feature_matrix_rows": 91,
+      "top_pairs_rows": 20,
+      "first_top_pair": {
+        "feature_a": "B_매도총잔량",
+        "feature_b": "B_매수총잔량",
+        "correlation": 0.8299547817527454,
+        "n": 58
+      }
+    },
+    "malformed_method_response": "HTTP/1.1 200 OK; {\"runs\":[\"tick_oos_p4_seed_2022_20260603\"],\"sources\":1,\"error\":\"method must be pearson or spearman\",\"method\":\"kendall\"}"
+  },
+  "adversarial": {
+    "malformed_input": "probed: method=kendall returns explicit JSON error without frontend/server crash.",
+    "prompt_injection": "not applicable: no prompt/model execution.",
+    "cancel_resume": "evidence file written before plan checkbox update.",
+    "stale_state": "owned 8786 server imported current frontend and backend code; pre-existing 8770 not stopped.",
+    "dirty_worktree": "P0 dirty state preserved; no cleanup/revert/staging.",
+    "hung_or_long_commands": "curl --max-time 10/15 used; pytest completed.",
+    "flaky_tests": "focused frontend/API suites passed after red/green.",
+    "misleading_success_output": "static file content, HTTP headers, data counts, and malformed response captured.",
+    "repeated_interruptions": "durable artifact and ledger entry precede checkbox update."
+  },
+  "cleanup": {
+    "owned_server_pid": 124580,
+    "owned_server_session": 33577,
+    "stop_method": "Ctrl-C via write_stdin",
+    "post_cleanup_probe": "curl.exe -i -sS --max-time 2 http://127.0.0.1:8786/health -> curl: (28) Connection timed out after 2014 milliseconds"
+  },
+  "cleanup_pending": "none"
+}

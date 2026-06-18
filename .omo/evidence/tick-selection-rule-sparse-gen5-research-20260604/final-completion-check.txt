@@ -1,0 +1,122 @@
+# Final Completion Check
+timestamp: 2026-06-04T13:49:13.7365071+09:00
+
+## unchecked top-level checkboxes
+(no output)
+exit_code: 1
+
+## git diff --check
+warning: in the working copy of 'ai_strategy_loop/controller/lineage.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/controller/state.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/app.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/app.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/chart.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/code-viewer.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/engine.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/styles.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/table.jsx', LF will be replaced by CRLF the next time Git touches it
+exit_code: 0
+
+## python scripts/verify_nonrelease_sync.py
+[OK] 워크트리에 .pyd 파일이 없습니다.
+[OK] 텔레그램 qlist 계약이 현재 MainWindow 순서와 일치합니다.
+[OK] MainWindow가 텔레그램 런타임을 시작합니다.
+[OK] 설정 변경 전파가 TelegramProcessAlive 경로를 사용합니다.
+[OK] 텔레그램 alive helper가 존재합니다.
+[OK] Jisu cleanup matches V2.70 removal.
+[OK] Shutdown cleanup matches current MainWindow runtime.
+[OK] Shutdown persists dialog geometry before closing dialogs.
+[OK] Shutdown hides Qt windows before bounded child cleanup.
+[OK] Shutdown does not raise SystemExit inside Qt closeEvent.
+[OK] Shutdown query/sound child wait is bounded with terminate fallback.
+[OK] Shutdown backtest stop acknowledgement wait is bounded with terminate fallback.
+[OK] BackTest 프로세스 생성자가 직접 인자 전달 계약을 유지합니다.
+[OK] BackTest 실행 인자가 backQ 우회 전달로 오염되지 않습니다.
+[OK] WebCrawling runtime wiring matches QThread contract.
+[OK] static.py compatibility exports match runtime contract.
+[OK] WebCrawling stop contract includes timeout and cancellation guards.
+[OK] Key loading safety guard is present.
+[OK] Kiwoom P/L rounding matches expected loss math.
+[OK] 비정식 워크트리에서 시리얼키 UI 생성이 차단됩니다.
+[OK] 설정 저장이 워크트리 시리얼키 정책을 따릅니다.
+[OK] dict_set 적재가 비정식 워크트리 시리얼키 정책을 따릅니다.
+[OK] legacy utility/setting.py도 비정식 워크트리 시리얼키 정책을 따릅니다.
+
+모든 비정식 워크트리 동기화 가드레일 검사를 통과했습니다.
+exit_code: 0
+
+## protected path status
+(no output)
+exit_code: 0
+
+## boulder completion state
+{
+    "schema_version":  2,
+    "active_work_id":  null,
+    "works":  {
+                  "condition-research-rereview-20260603":  {
+                                                               "work_id":  "condition-research-rereview-20260603",
+                                                               "active_plan":  ".omo/plans/condition-research-rereview-20260603.md",
+                                                               "plan_name":  "condition-research-rereview-20260603",
+                                                               "session_ids":  [
+                                                                                   "codex:condition-research-rereview-20260603"
+                                                                               ],
+                                                               "status":  "completed",
+                                                               "worktree_path":  null
+                                                           },
+                  "tick-oos-validation-20260603":  {
+                                                       "work_id":  "tick-oos-validation-20260603",
+                                                       "active_plan":  ".omo/plans/tick-oos-validation-20260603.md",
+                                                       "plan_name":  "tick-oos-validation-20260603",
+                                                       "session_ids":  [
+                                                                           "codex:tick-oos-validation-20260603",
+                                                                           "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
+                                                                       ],
+                                                       "status":  "completed",
+                                                       "worktree_path":  null
+                                                   },
+                  "tick-research-dashboard-upgrade-20260603":  {
+                                                                   "work_id":  "tick-research-dashboard-upgrade-20260603",
+                                                                   "active_plan":  ".omo/plans/tick-research-dashboard-upgrade-20260603.md",
+                                                                   "plan_name":  "tick-research-dashboard-upgrade-20260603",
+                                                                   "session_ids":  [
+                                                                                       "codex:tick-research-dashboard-upgrade-20260603"
+                                                                                   ],
+                                                                   "status":  "completed",
+                                                                   "worktree_path":  null
+                                                               },
+                  "tick-oos-dashboard-validation-20260604":  {
+                                                                 "work_id":  "tick-oos-dashboard-validation-20260604",
+                                                                 "active_plan":  ".omo/plans/tick-oos-dashboard-validation-20260604.md",
+                                                                 "plan_name":  "tick-oos-dashboard-validation-20260604",
+                                                                 "session_ids":  [
+                                                                                     "codex:tick-oos-dashboard-validation-20260604"
+                                                                                 ],
+                                                                 "status":  "completed",
+                                                                 "worktree_path":  null,
+                                                                 "completed_at":  "2026-06-04T11:48:55.6080517+09:00"
+                                                             },
+                  "tick-selection-rule-sparse-gen5-research-20260604":  {
+                                                                            "work_id":  "tick-selection-rule-sparse-gen5-research-20260604",
+                                                                            "active_plan":  ".omo/plans/tick-selection-rule-sparse-gen5-research-20260604.md",
+                                                                            "plan_name":  "tick-selection-rule-sparse-gen5-research-20260604",
+                                                                            "session_ids":  [
+                                                                                                "codex:tick-selection-rule-sparse-gen5-research-20260604"
+                                                                                            ],
+                                                                            "status":  "completed",
+                                                                            "worktree_path":  null,
+                                                                            "completed_at":  "2026-06-04T13:48:48.8255929+09:00"
+                                                                        }
+              }
+}
+exit_code: 0
+
+## Summary
+unchecked_plan_items: exit_code=1
+git_diff_check: exit_code=0
+verify_nonrelease_sync: exit_code=0
+protected_paths: exit_code=0
+boulder_state: exit_code=0
+Note: rg returns exit 1 when no unchecked items are found; this is expected and means all plan checkboxes are closed.
+ORCHESTRATION COMPLETE: plan closed, boulder completed, protected paths clean, nonrelease verifier passed.

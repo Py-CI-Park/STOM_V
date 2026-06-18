@@ -1,0 +1,12 @@
+﻿timestamp=2026-06-04T11:35:14.0693279+09:00
+p5_loop_batch_session=30095
+p5_loop_batch_exit=0
+p5_dashboard_base=http://127.0.0.1:8799
+p5_dashboard_session=92885
+p5_dashboard_pid=145044
+dashboard_cleanup_action=Ctrl-C sent through owned exec session only
+8799_status=stopped_or_unreachable
+8799_error=The operation has timed out.
+8770_status=200
+protected_status_begin
+protected_status_end

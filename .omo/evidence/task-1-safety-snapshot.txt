@@ -1,0 +1,61 @@
+Task 1 Safety Snapshot
+Date: 2026-06-03
+Plan: .omo/plans/condition-research-rereview-20260603.md
+Worktree: C:/System_Trading/STOM/STOM_V.wt-dev
+
+Command: git rev-parse --abbrev-ref HEAD
+Output:
+STOM_Version_2U_C-ai-strategy-loop
+
+Command: git rev-parse --short HEAD
+Output:
+710dd654
+
+Command: git log --oneline -3 --decorate
+Output:
+710dd654 (HEAD -> STOM_Version_2U_C-ai-strategy-loop) docs: 에이전트-무관 자기완결 핸드오프 (docs/AGENT_HANDOFF.md)
+f63241c3 docs: 세션 핸드오프 — TICK 우선 프로그램 T0~T4 완료 (다음=토글ON 다년 run+OOS)
+447febd3 feat(T2): 백파인더 원리 headless tick 채굴 — 승리셋업 분포 → 생성 시드
+
+Command: git status --short --branch
+Output:
+## STOM_Version_2U_C-ai-strategy-loop
+ M AGENTS.md
+?? .claude/
+?? .omo/
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_min_buy.txt"
+?? "C\357\200\272System_TradingSTOMSTOM_V.wt-dev_tmp_tick_buy.txt"
+?? "C\357\200\272Tempstom_postchange_full.txt"
+?? ai_strategy_loop/AGENTS.md
+?? backtest/AGENTS.md
+?? cli/AGENTS.md
+?? docs/AGENTS.md
+?? docs/reference/
+?? research/AGENTS.md
+?? scripts/AGENTS.md
+?? seed_strategy_output.txt
+?? strategy/AGENTS.md
+?? tests/AGENTS.md
+?? testsunit_exit_test_out.txt
+?? trade/AGENTS.md
+?? ui/AGENTS.md
+?? utility/ai_agent/AGENTS.md
+
+Command: git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json
+Output:
+(empty)
+
+Dashboard listener:
+127.0.0.1:8770 LISTEN OwningProcess=71136
+CommandLine: C:\Python\64\Python31313\python.exe -m ai_strategy_loop
+
+Scope guardrails captured:
+- Root AGENTS.md: 2U_C nonrelease lane, V3K gates stay 3/6, protected paths must not be edited, verify_nonrelease_sync.py is the lane verifier.
+- docs/AGENTS.md: docs are decision/history layer; no fake approvals or gate completion claims.
+- scripts/AGENTS.md: audit scripts stay read-only unless explicitly gated; do not weaken checks.
+- ai_strategy_loop/AGENTS.md: AI loop is research/control-plane; do not bypass dashboard final approval/export boundary into production DBs.
+
+Research-task classification:
+- Pre-existing dirty/untracked state is recorded above.
+- This task writes only .omo/boulder.json and .omo/evidence/.omo/start-work artifacts for start-work bookkeeping and research evidence.
+- Protected path check is empty before research evidence writing.

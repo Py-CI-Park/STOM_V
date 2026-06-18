@@ -1,12 +1,58 @@
 /* Main app composition */
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { ConnBadge, StatusBadge, CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner } from "./panels.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { RunComparePanel } from "./run-compare.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { EnginePanel } from "./engine.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { FitnessChart, ProfitChart, EquityOverlayChart, QualityTrendChart, BacktestDetailChart, HallOfFamePanel } from "./chart.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { HypothesisPanel } from "./hypothesis.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { GenerationsTable } from "./table.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./cards.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { CodeViewer } from "./code-viewer.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { PhaseDetailPanel, PhaseTimeline, ProcessFlowPanel } from "./phase-detail.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { SettingsModal } from "./settings.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { ResearchGlossaryPanel } from "./glossary.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { BacktestTab } from "./backtest.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { SimulationTab } from "./simulation.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { ResearchLabPanel } from "./research-lab.jsx";
 const { useState: useState_a, useEffect: useEffect_a, useCallback: useCallback_a } = React;
 
 function App() {
   const [baseUrl, setBaseUrl] = useState_a(() => {
-    return localStorage.getItem("stom_base_url") || DEFAULT_BASE;
+    // 캐시된 BASE가 현재 페이지 origin과 다른 cross-origin(예: 과거 8770 캐시인데
+    // 8771에서 서빙)이면 same-origin으로 마이그레이션한다 — 안 그러면 CORS로 데모모드.
+    const cached = localStorage.getItem("stom_base_url");
+    const here = (typeof window !== "undefined" && window.location && window.location.origin) || "";
+    if (cached && here.startsWith("http")) {
+      try {
+        if (new URL(cached).origin !== here) return DEFAULT_BASE;
+      } catch { return DEFAULT_BASE; }
+    }
+    return cached || DEFAULT_BASE;
   });
   const [pendingBase, setPendingBase] = useState_a(baseUrl);
   const [theme, setTheme] = useState_a(() => localStorage.getItem("stom_theme") || "dark");
+  // 상단 탭: "evolution"(진화 대시보드·기본) | "backtest" | "simulation".
+  //   localStorage 로 새로고침 후에도 마지막 탭 유지. useBackend(WS)는 App 레벨에
+  //   그대로 두어 어느 탭에 있어도 진화 상태 수신이 끊기지 않는다.
+  const [activeTab, setActiveTab] = useState_a(() => localStorage.getItem("stom_active_tab") || "evolution");
+  // Phase6.1 — 시뮬 탭 keep-alive: 한 번 방문하면 언마운트하지 않고 hidden 처리(상태 유지).
+  const [simVisited, setSimVisited] = useState_a(() => (localStorage.getItem("stom_active_tab") || "evolution") === "simulation");
+  useEffect_a(() => { if (activeTab === "simulation") setSimVisited(true); }, [activeTab]);
 
   const { state: liveState, health, wsStatus, configSpec, send, lastReply, reconnect } = useBackend(baseUrl);
 
@@ -75,6 +121,10 @@ function App() {
     localStorage.setItem("stom_theme", theme);
   }, [theme]);
 
+  useEffect_a(() => {
+    localStorage.setItem("stom_active_tab", activeTab);
+  }, [activeTab]);
+
   const onStart = useCallback_a((config) => {
     send({ action: "start", config });
     setSettingsOpen(false);
@@ -126,6 +176,18 @@ function App() {
                 autonomous_strategy_loop · contract_v{health.contract_version ?? state.contract_version ?? 1}
               </span>
             </div>
+            {/* Phase9(2026-06-13) — SPA 6탭 통합: 별도 HTML 풀 리로드 하드링크(연구실/
+                리서치프로/결정)를 제거. 네비는 아래 탭바(TabNav)가 전담하고, 여기는
+                "현재 위치"만 표시하는 브레드크럼으로 축소(이중 진입·명명 혼란 제거). */}
+            <nav className="stom-pagenav mono" aria-label="현재 위치">
+              <span className="stom-pagenav-item stom-pagenav-active"
+                    title="현재 보고 있는 탭(아래 탭바로 전환)">
+                {(() => {
+                  const cur = STOM_TABS.find(t => t.key === activeTab);
+                  return cur ? `${cur.icon} ${cur.label}` : "STOM";
+                })()}
+              </span>
+            </nav>
           </div>
 
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -141,6 +203,11 @@ function App() {
           </div>
         </div>
 
+        {/* ===== 탭 내비게이션 (전 탭 공통, 브랜드 행 바로 아래) ===== */}
+        <TabNav activeTab={activeTab} onSelect={setActiveTab} />
+
+        {/* 진화 컨트롤 스트립(진행도/run 셀렉터/시작·정지)은 진화 탭에서만 노출 */}
+        {activeTab === "evolution" && (
         <div style={{
           display: "flex", alignItems: "center", gap: 14,
           padding: "12px 16px",
@@ -184,25 +251,76 @@ function App() {
             </button>
           </div>
         </div>
+        )}
       </header>
 
       {/* ============= MAIN ============= */}
-      {isIdle ? (
+      {/* Phase6.1 — 시뮬 탭은 첫 방문 후 hidden 으로 유지(언마운트 금지): 탭을 오가도
+          리플레이 WS·재생 위치·종목 선택이 초기화되지 않는다(사용자 신고). */}
+      {simVisited && (
+        <div style={{ display: activeTab === "simulation" ? undefined : "none" }}>
+          <ErrorBoundary>
+            <SimulationTab baseUrl={baseUrl} wsStatus={wsStatus} />
+          </ErrorBoundary>
+        </div>
+      )}
+      {activeTab === "backtest" ? (
+        <ErrorBoundary>
+          <BacktestTab baseUrl={baseUrl} wsStatus={wsStatus} />
+        </ErrorBoundary>
+      ) : activeTab === "simulation" ? null
+        /* Phase9 — SPA 6탭: 연구실/분석 프로/결정 이력은 dashboard-pages.jsx 전역을
+           마운트. 전역 부재 시(로드 순서 이상) 크래시 대신 자리표시자. */
+        : activeTab === "lab" ? (
+        <ErrorBoundary>
+          {window.LabPage
+            ? <window.LabPage baseUrl={baseUrl} />
+            : <div className="research-empty" style={{ padding: "12px 16px" }}>연구실 로딩 중…</div>}
+        </ErrorBoundary>
+      ) : activeTab === "pro" ? (
+        <ErrorBoundary>
+          {window.ProPage
+            ? <window.ProPage baseUrl={baseUrl} />
+            : <div className="research-empty" style={{ padding: "12px 16px" }}>분석 프로 로딩 중…</div>}
+        </ErrorBoundary>
+      ) : activeTab === "verdict" ? (
+        <ErrorBoundary>
+          {window.VerdictPanel
+            ? <window.VerdictPanel baseUrl={baseUrl} />
+            : <div className="research-empty" style={{ padding: "12px 16px" }}>결정 이력 로딩 중…</div>}
+        </ErrorBoundary>
+      ) : activeTab === "process" ? (
+        <ErrorBoundary>
+          <iframe
+            src={baseUrl + "/process_flow"}
+            title="프로세스 흐름"
+            style={{ width: "100%", height: "calc(100vh - 130px)", border: "none", borderRadius: 8, background: "#0d1117" }}
+          />
+        </ErrorBoundary>
+      ) : isIdle ? (
         <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} />
       ) : (
         <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {/* 승인 export 결과 배너(final_approval 게이트는 ApprovalDialog가 유지) */}
           <ExportStatusBanner reply={lastReply} />
 
-          <SectionLabel text="Run Monitor" />
-          <CurrentGenPanel state={state} />
-          <PhaseTimeline state={state} />
-          <ProcessFlowPanel state={state} />
-          <PhaseDetailPanel state={state} wsStatus={wsStatus} />
-          <EnginePanel state={state} wsStatus={wsStatus} />
+          <_EvoSection storageKey="stom_evo_runmon" label={<SectionLabel text="Run Monitor" />}>
+            <CurrentGenPanel state={state} />
+            <ResearchCriteriaBanner state={state} baseUrl={baseUrl} />
+            <ResearchGlossaryPanel />
+            <ActiveStrategyPanel state={state} baseUrl={baseUrl} onViewCode={onViewCodeByGen} />
+            <PhaseTimeline state={state} />
+            <ProcessFlowPanel state={state} />
+            <PhaseDetailPanel state={state} wsStatus={wsStatus} />
+            <EnginePanel state={state} wsStatus={wsStatus} />
+          </_EvoSection>
 
           <div className="grid-main">
             <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
+              {/* Phase6.1(E7) — 탐색 히트맵을 적합도 추이 위에 동일 크기 패널로(사용자 요청). */}
+              {window.ResearchHeatmapPanel ? (
+                <window.ResearchHeatmapPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id} />
+              ) : null}
               <FitnessChart state={state} target={targetScore} />
               <ProfitChart state={state} targetPct={0} />
               <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id} />
@@ -213,63 +331,70 @@ function App() {
               <QualityTrendChart state={state} />
               {/* 🏆 명예의 전당 — 인간 벤치마크(19전략) + AI 생성 통합(목표선 가시화) */}
               <HallOfFamePanel baseUrl={baseUrl} wsStatus={wsStatus} />
-              <SectionLabel text="Strategy / Prompt" />
-              <GenerationsTable state={state} mddCap={mddCap} minDailyTrades={minDailyTrades}
-                                onViewCode={(g) => setCodeViewGen(g)}
-                                onSelectDetail={(genNo) => setSelectedDetailGen(genNo)} />
+              <_EvoSection storageKey="stom_evo_strategy" label={<SectionLabel text="Strategy / Prompt" />}>
+                <GenerationsTable state={state} mddCap={mddCap} minDailyTrades={minDailyTrades}
+                                  onViewCode={(g) => setCodeViewGen(g)}
+                                  onSelectDetail={(genNo) => setSelectedDetailGen(genNo)} />
+              </_EvoSection>
               {/* 운영·관찰: run 비교 콘솔(REST /runs, loop_runs.db 직접) */}
-              <SectionLabel text="Compare" />
-              <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
+              <_EvoSection storageKey="stom_evo_compare" label={<SectionLabel text="Compare" />}>
+                <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
+              </_EvoSection>
+              {/* 트랙 L — 진화 결과 분석 시각화(세대 멀티라인·산점도·상위표, GET /bt/evo_gens) */}
+              <_EvoSection storageKey="stom_evo_genanalytics" label={<SectionLabel text="Generation Analytics" />}>
+                <ErrorBoundary><EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} onOpenWorkbench={() => setActiveTab("backtest")} /></ErrorBoundary>
+              </_EvoSection>
             </div>
             <aside style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {/* #65 P0 — 분석 클러스터를 판정 카드 위로(인과 순서: 분석→가정→개선이
                   판정의 근거). 패널 자체 변경 없이 JSX 순서만 재배치. */}
               {/* ── AI 분석 패널 묶음 (edge / feature / correlation / combinations REST) ── */}
-              <SectionLabel text="Research Lab" />
-              <ErrorBoundary>
-                <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
-              </ErrorBoundary>
-              <SectionLabel text="Wiki" />
-              <ErrorBoundary>
-                <ResearchWikiPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
-              </ErrorBoundary>
-              <SectionLabel text="AI Context Pack" />
-              <ErrorBoundary>
-                <AIContextPanel baseUrl={baseUrl} wsStatus={wsStatus}
-                                runId={state.run_id || ""} genNo={state.current_gen} />
-              </ErrorBoundary>
+              <_EvoSection storageKey="stom_evo_researchlab" label={<SectionLabel text="Research Lab" />}>
+                <ErrorBoundary>
+                  <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
+                </ErrorBoundary>
+                {/* P2(2026-06-14): 연구 위키·AI 컨텍스트 팩은 연구실 탭으로 이전(진화 사이드바 중복 제거).
+                    진화 탭엔 발견용 링크만 둔다 — 홈은 dashboard-pages.jsx LabPage(P1). */}
+                <button className="btn ghost sm" onClick={() => setActiveTab("lab")}
+                        style={{ alignSelf: "flex-start", marginTop: 2 }}
+                        title="연구 위키 · AI 컨텍스트 팩은 연구실 탭으로 이동했습니다">
+                  📚 연구 위키 · AI 컨텍스트 팩 → 연구실 탭
+                </button>
+              </_EvoSection>
 
               {/* ── 분석 패널 묶음 (P1~P5 live page_data 소비, demo 배지 규약) ── */}
-              <SectionLabel text="진화 분석 · P1~P5" />
-              {/* P2b-2 — 가정 루프(세운 가정+채택/기각 판정) 가시화. 판정된 가정이
-                  있는 세대가 없으면(토글 OFF/구 상태) 패널이 null 반환해 미표시. */}
-              <HypothesisPanel state={state} />
-              <AutopsyPanel state={state} wsStatus={wsStatus} />
-              <PopulationPanel state={state} wsStatus={wsStatus} />
-              <LineagePanel state={state} wsStatus={wsStatus} />
-              <MetaPanel state={state} wsStatus={wsStatus} />
-              <HoldoutPanel state={state} wsStatus={wsStatus} />
+              <_EvoSection storageKey="stom_evo_analysis" label={<SectionLabel text="진화 분석 · P1~P5" />}>
+                {/* P2b-2 — 가정 루프(세운 가정+채택/기각 판정) 가시화. 판정된 가정이
+                    있는 세대가 없으면(토글 OFF/구 상태) 패널이 null 반환해 미표시. */}
+                <HypothesisPanel state={state} />
+                <AutopsyPanel state={state} wsStatus={wsStatus} />
+                <PopulationPanel state={state} wsStatus={wsStatus} />
+                <LineagePanel state={state} wsStatus={wsStatus} />
+                <MetaPanel state={state} wsStatus={wsStatus} />
+                <HoldoutPanel state={state} wsStatus={wsStatus} />
+              </_EvoSection>
 
               {/* ── 판정 카드(분석의 결론) ── */}
-              <SectionLabel text="판정 · Best / Winner" />
-              {/* #65 P1 — best.gen===winner.gen이면(게이트 통과한 best가 곧 winner) 한 카드로
-                  병합 표기(graded+score 동시). 다르면 기존 2카드(하위호환). */}
-              {(state.best && state.winner && state.best.gen === state.winner.gen) ? (
-                <MergedBestWinnerCard best={state.best} winner={state.winner}
-                                      onApprove={() => setApprovalOpen(true)}
-                                      onViewCode={onViewCodeByGen} />
-              ) : (
-                <>
-                  <BestCard best={state.best} onViewCode={onViewCodeByGen} />
-                  <WinnerCard winner={state.winner}
-                              onApprove={() => setApprovalOpen(true)}
-                              onViewCode={onViewCodeByGen} />
-                </>
-              )}
-              {/* R8 — 활성 설정/토글 스냅샷(LoopState.active_config) LIVE 노출 */}
-              <ActiveConfigPanel state={state} />
-              <CostPanel state={state} cap={50000} />
-              <FeedbackPanel state={state} />
+              <_EvoSection storageKey="stom_evo_verdict" label={<SectionLabel text="판정 · Best / Winner" />}>
+                {/* #65 P1 — best.gen===winner.gen이면(게이트 통과한 best가 곧 winner) 한 카드로
+                    병합 표기(graded+score 동시). 다르면 기존 2카드(하위호환). */}
+                {(state.best && state.winner && state.best.gen === state.winner.gen) ? (
+                  <MergedBestWinnerCard best={state.best} winner={state.winner}
+                                        onApprove={() => setApprovalOpen(true)}
+                                        onViewCode={onViewCodeByGen} />
+                ) : (
+                  <>
+                    <BestCard best={state.best} onViewCode={onViewCodeByGen} />
+                    <WinnerCard winner={state.winner}
+                                onApprove={() => setApprovalOpen(true)}
+                                onViewCode={onViewCodeByGen} />
+                  </>
+                )}
+                {/* R8 — 활성 설정/토글 스냅샷(LoopState.active_config) LIVE 노출 */}
+                <ActiveConfigPanel state={state} />
+                <CostPanel state={state} cap={50000} />
+                <FeedbackPanel state={state} />
+              </_EvoSection>
             </aside>
           </div>
         </main>
@@ -303,16 +428,72 @@ function App() {
   );
 }
 
-// 분석 패널 묶음을 시각적으로 구분하는 작은 섹션 라벨(레이아웃 정리용).
-function SectionLabel({ text }) {
+// 상단 탭 내비게이션. 브랜드 행 아래에 위치하며 전 탭 공통으로 항상 보인다.
+//   Phase4 트랙A(2026-06-12): 대형화·강한 활성 대비·탭 아이콘.
+//   크기/색/대비는 styles.css(.stom-tabnav / .stom-tab / .stom-tab-active)에서
+//   구동한다 — 인라인 스타일은 클래스를 덮으므로 사이즈 prop을 두지 않는다.
+// Phase9(2026-06-13) — SPA 6탭 통합: 별도 HTML(lab/pro/verdict)을 인페이지 탭으로
+//   승격해 풀 리로드·중복 진입을 제거. lab/pro/verdict 본문은 dashboard-pages.jsx
+//   전역(window.LabPage / ProPage / VerdictPanel)이 담당한다.
+const STOM_TABS = [
+  { key: "evolution", label: "진화 대시보드", icon: "🧬" },
+  { key: "backtest", label: "백테스트", icon: "📊" },
+  { key: "simulation", label: "차트 시뮬레이션", icon: "📈" },
+  { key: "lab", label: "연구실", icon: "🔬" },
+  { key: "pro", label: "분석 프로", icon: "📊" },
+  { key: "verdict", label: "결정 이력", icon: "⚖️" },
+  { key: "process", label: "프로세스 흐름", icon: "🗺️" },
+];
+
+function TabNav({ activeTab, onSelect }) {
   return (
-    <div className="mono" style={{
-      fontSize: 10.5, color: "var(--ink-3)", letterSpacing: ".12em",
-      textTransform: "uppercase", padding: "2px 2px", marginTop: 4,
-      borderTop: "1px solid var(--line-1)", paddingTop: 10,
-    }}>
-      {text}
-    </div>
+    <nav role="tablist" aria-label="대시보드 탭" className="stom-tabnav">
+      {STOM_TABS.map(tab => {
+        const active = activeTab === tab.key;
+        return (
+          <button
+            key={tab.key}
+            role="tab"
+            aria-selected={active}
+            className={"stom-tab" + (active ? " stom-tab-active" : "")}
+            onClick={() => onSelect(tab.key)}
+          >
+            <span className="stom-tab-ico" aria-hidden="true">{tab.icon}</span>
+            {tab.label}
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+// 분석 패널 묶음을 시각적으로 구분하는 작은 섹션 라벨(레이아웃 정리용).
+// Design Pass(2026-06-14): 섹션 헤더를 styles.css .stom-section-label(ink-1·12px·teal accent)로
+//   승격 — 진화 탭의 논리 그룹(Run Monitor·Strategy·Compare·Research·분석·판정) 경계를 분명히
+//   해 "단일 30패널 스크롤"을 시각적으로 구획한다. 인라인(dim ink-3) 대비 가독성·위계 향상.
+function SectionLabel({ text }) {
+  return <div className="stom-section-label">{text}</div>;
+}
+
+// P3(2026-06-14): 진화 탭 섹션 그룹 접이식 래퍼(IA 완화). 네이티브 <details> — 키보드 기본 동작 +
+//   aria-expanded + localStorage 영속. 기본 open(펼침) → 첫 페인트는 기존과 동일(작은 disclosure
+//   caret 만 추가). label 은 기존 <SectionLabel text="..."/> 엘리먼트를 그대로 받아 summary 에 렌더
+//   (text="..." 리터럴이 호출부에 보존되어 design_pass/integrated_layout 계약 유지). 패널 순서 불변.
+function _EvoSection({ storageKey, label, children }) {
+  const [open, setOpen] = useState_a(() => {
+    try { const v = window.localStorage.getItem(storageKey); return v === null ? true : v === "1"; }
+    catch (e) { return true; }
+  });
+  const onToggle = (e) => {
+    const o = e.currentTarget.open;
+    setOpen(o);
+    try { window.localStorage.setItem(storageKey, o ? "1" : "0"); } catch (e2) {}
+  };
+  return (
+    <details className="evo-group" open={open} onToggle={onToggle}>
+      <summary className="evo-group-summary" aria-expanded={open}>{label}</summary>
+      <div className="evo-group-body">{children}</div>
+    </details>
   );
 }
 
@@ -416,7 +597,8 @@ function RunSelector({ runList, selectedRun, onSelect, onRefresh, disabled }) {
         <option value="">LIVE(현재)</option>
         {(runList || []).map(r => (
           <option key={r.run_id} value={r.run_id}>
-            {r.run_id}{r.gate_passed_count > 0 ? " ✓" : ""}
+            {/* D5(2026-06-10): 배치 run은 세대 라벨(BASE_SEED/C7_…)이 정체성 — 대표 라벨 병기 */}
+            {r.run_id}{r.label ? " · " + r.label : ""}{r.gate_passed_count > 0 ? " ✓" : ""}
           </option>
         ))}
       </select>
@@ -547,6 +729,13 @@ class ErrorBoundary extends React.Component {
 
 Object.assign(window, { App, ErrorBoundary });
 
-// Mount
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<ErrorBoundary><App /></ErrorBoundary>);
+// Mount — Phase14.7: lab/pro/verdict 가 동일 app.js 를 로드해 다른 루트 컴포넌트를 마운트할 수
+//   있도록 자동 마운트를 플래그로 가드한다. window.__STOM_NO_AUTO_MOUNT__ 이면 해당 페이지가
+//   직접 (LabPage/ProPage/VerdictPanel 등) 마운트하므로 여기서는 App 을 마운트하지 않는다.
+if (typeof window === "undefined" || !window.__STOM_NO_AUTO_MOUNT__) {
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(<ErrorBoundary><App /></ErrorBoundary>);
+}
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { App, ErrorBoundary };

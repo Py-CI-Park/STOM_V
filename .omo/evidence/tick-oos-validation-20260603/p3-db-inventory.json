@@ -1,0 +1,42 @@
+{
+  "tables": [
+    {
+      "name": "equity_points",
+      "type": "table"
+    },
+    {
+      "name": "generations",
+      "type": "table"
+    },
+    {
+      "name": "prompts",
+      "type": "table"
+    },
+    {
+      "name": "runs",
+      "type": "table"
+    },
+    {
+      "name": "schema_meta",
+      "type": "table"
+    },
+    {
+      "name": "sqlite_sequence",
+      "type": "table"
+    }
+  ],
+  "counts": {
+    "equity_points": 1943,
+    "generations": 408,
+    "prompts": 184,
+    "runs": 75,
+    "schema_meta": 1,
+    "sqlite_sequence": 1
+  },
+  "p2_counts_by_run": {
+    "equity_points": 0,
+    "generations": 6,
+    "prompts": 0,
+    "runs": 1
+  }
+}

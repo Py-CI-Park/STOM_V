@@ -1,0 +1,89 @@
+{
+  "run_id": "tick_oosrob_p4_smoke_20260604",
+  "generation_count": 3,
+  "prompt_count": 4,
+  "prompt_text_sparse_positive_hits": 4,
+  "prompt_feature_sparse_positive_hits": 4,
+  "generations": [
+    {
+      "gen_no": 0,
+      "status": "error",
+      "score": 0.0,
+      "gate_passed": false,
+      "reason": "backtest failed/timeout: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no",
+      "csv_path": null,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "mdd": 0.0,
+      "profit": 0.0,
+      "payoff_ratio": 0.0,
+      "max_hold_count": 0.0
+    },
+    {
+      "gen_no": 1,
+      "status": "ok",
+      "score": 0.07028538110657961,
+      "gate_passed": false,
+      "reason": "total_profit -9.709e+06 <= 0",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_tick_oosrob_p4_smoke_20260604_g1_buy_20260604200306.csv",
+      "trade_count": 705,
+      "daily_avg_trades": 12.2,
+      "mdd": 29.93,
+      "profit": -9708723.0,
+      "payoff_ratio": 1.1912468637838656,
+      "max_hold_count": 7.0
+    },
+    {
+      "gen_no": 2,
+      "status": "ok",
+      "score": 0.0,
+      "gate_passed": false,
+      "reason": "daily_avg_trades 0 < min_daily_trades 0.3",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_tick_oosrob_p4_smoke_20260604_g2_buy_20260604200416.csv",
+      "trade_count": 1,
+      "daily_avg_trades": 0.0,
+      "mdd": 0.74,
+      "profit": 37127.0,
+      "payoff_ratio": 999.0,
+      "max_hold_count": 0.0
+    }
+  ],
+  "parse_errors": [],
+  "diagnostic_selector": {
+    "selector_version": "yearly_sparse_robust_v1",
+    "selected": false,
+    "blocked": true,
+    "blocker": "no candidate qualified for yearly_sparse_robust_v1",
+    "diagnostic_only": true,
+    "oos_excluded": true,
+    "rejected_candidates": [
+      {
+        "gen_no": 0,
+        "reasons": [
+          "status != ok",
+          "profit <= 0",
+          "trade_count < 20",
+          "daily_avg_trades < 0.05",
+          "payoff_ratio < 1.05"
+        ]
+      },
+      {
+        "gen_no": 1,
+        "reasons": [
+          "profit <= 0",
+          "mdd > 10.0",
+          "trade_count > 250"
+        ]
+      },
+      {
+        "gen_no": 2,
+        "reasons": [
+          "trade_count < 20",
+          "daily_avg_trades < 0.05"
+        ]
+      }
+    ]
+  },
+  "promotion_evidence": false,
+  "note": "P4 smoke is 2025 Q1 only; yearly_sparse_robust_v1 result is diagnostic and cannot promote or unlock OOS."
+}

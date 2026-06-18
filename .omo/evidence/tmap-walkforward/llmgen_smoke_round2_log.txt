@@ -1,0 +1,4 @@
+[BATCH] run_id=smoke_llmgmin1_20260612 pairs=1
+[BATCH] prepare status=ok back_count=416 elapsed=51s
+[BATCH] gen0 LLMGMIN1 default ERROR (13s) warm backtest non-success: status=error message=backtest completed without metrics csv=no
+[BATCH] done

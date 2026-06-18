@@ -1,0 +1,49 @@
+ULW LOOP BRIEF: Execute the full condition-research end-to-end master roadmap.
+
+Canonical sources:
+- docs/AGENT_HANDOFF.md
+- docs/update_log/2026-06-05_direction_review_through_84acb6cb.md
+- .omo/plans/condition-research-end-to-end-master-roadmap-20260606.md
+- .omo/plans/tick-human-like-research-criteria-dashboard-20260605.md
+
+Global objective:
+Run the entire master roadmap page by page until the condition-expression research system is improved end-to-end:
+prompt context pack, strategy generation, backtest analysis, dashboard visibility, 09:00-09:30 timeout reduction,
+2024-2026 recent-period review, fixed candidate selection, OOS validation, PBO/DSR/slippage/promotion-card/wiki reporting.
+
+New approved master-plan addition:
+Add "AI Prompt Context Pack strengthening" as a formal early master-roadmap step.
+
+Hard guardrails:
+- Do not modify official backtest engines, hard gates, backtest_graph, protected runtime paths, production export, final_approval, live trading, or V3K gate state.
+- New features must remain default OFF or research-config-only unless the existing plan explicitly says otherwise.
+- Do not claim human-level or human-superior performance before OOS proof.
+- Keep research candidates separate from proof/promoted candidates.
+
+Required work:
+1. Read utility/ai_agent/strategy.txt, utility/ai_agent/rules.txt, and utility/ai_agent/system_prompt/v1/*.
+   Produce a compact strategy-guide Context Pack suitable for AI prompts.
+2. Feed current and previous buy/sell strategy code, strategy diff, structure patterns, forbidden syntax, and selected few-shot examples into AI generation prompts.
+3. Feed backtest summary metrics into prompts: profit, return, MDD, trade_count, payoff, avg_hold, daily stats, generation history, failure reasons.
+4. Build and persist analysis snapshots for time bucket, market-cap bucket, variable correlation, histogram/range, and segment-level outcomes.
+5. Compress analysis into "what to improve in the next generation" prompt context, with strict token and complexity limits to prevent prompt bloat, if-node explosion, and backtest timeout.
+6. Make dashboard surfaces show active strategy, previous strategy diff, AI request prompt, used Context Pack, analysis summary, test period/year, time bucket, and market-cap bucket.
+7. Continue through the master plan order:
+   - reduce 09:00-09:30 generated-strategy timeout
+   - run 2024-2026 recent-period review
+   - freeze/select candidate only after evidence
+   - run OOS validation
+   - run PBO/DSR/slippage/promotion-card checks
+   - write wiki and dashboard documentation
+8. At each page or major checkpoint, report:
+   - master roadmap progress table
+   - current page progress
+   - results and evidence
+   - remaining risk
+   - next recommended command
+
+Verification requirements:
+- Prompt logs must prove injection flags/fields such as has_base_code, has_few_shot, guide_context, diff_context, analysis_context, and correlation_context.
+- Dashboard must show prompt, strategy, diff, and analysis summary with browser evidence.
+- Run targeted unit tests, git diff --check, python scripts/verify_nonrelease_sync.py, and protected-path status checks.
+- Use real observable evidence, not tests alone.

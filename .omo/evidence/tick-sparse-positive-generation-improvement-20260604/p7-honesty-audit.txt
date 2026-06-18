@@ -1,0 +1,8 @@
+P7 honesty audit
+has_reject=True
+has_no_promote=True
+has_human_claim_guard=True
+has_final_approval_guard=True
+has_export_guard=True
+has_slippage=True
+has_pbo_dsr=True

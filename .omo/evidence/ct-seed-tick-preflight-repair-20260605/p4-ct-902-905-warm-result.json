@@ -1,0 +1,21 @@
+{
+  "status": "ok",
+  "timeout": false,
+  "pid": 150396,
+  "returncode": 0,
+  "command": [
+    "C:\\Python\\64\\Python31313\\python.exe",
+    "-m",
+    "ai_strategy_loop.controller.loop",
+    "--config-json",
+    ".omo\\evidence\\ct-seed-tick-preflight-repair-20260605\\p4-ct-902-905-warm-config.json",
+    "--run-id",
+    "ct_preflight_ct_902_905_warm_20260605"
+  ],
+  "cwd": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+  "wall_cap": 240,
+  "elapsed_seconds": 174.767,
+  "stdout_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\ct-seed-tick-preflight-repair-20260605\\p4-ct-902-905-warm-result.stdout.txt",
+  "stderr_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\ct-seed-tick-preflight-repair-20260605\\p4-ct-902-905-warm-result.stderr.txt",
+  "cleanup": null
+}

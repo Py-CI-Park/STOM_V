@@ -1,0 +1,248 @@
+{
+  "template": "orderflow_f10_largecap_trend",
+  "run_id": "tmap_f10_train_20260611",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_000_B",
+      "status": "ok",
+      "profit": -387778408.0,
+      "mdd": 390.42,
+      "trades": 21037
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP window_end=91500",
+      "param": "window_end",
+      "value": 91500,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_001_B",
+      "status": "ok",
+      "profit": -223102163.0,
+      "mdd": 236.44,
+      "trades": 12238
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP window_end=92000",
+      "param": "window_end",
+      "value": 92000,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_002_B",
+      "status": "ok",
+      "profit": -331294147.0,
+      "mdd": 334.94,
+      "trades": 17988
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP cap_min=5000",
+      "param": "cap_min",
+      "value": 5000,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_003_B",
+      "status": "ok",
+      "profit": -523330689.0,
+      "mdd": 439.86,
+      "trades": 27902
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP cap_min=20000",
+      "param": "cap_min",
+      "value": 20000,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_004_B",
+      "status": "ok",
+      "profit": -261110008.0,
+      "mdd": 349.92,
+      "trades": 14112
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP chg_max=5",
+      "param": "chg_max",
+      "value": 5,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_005_B",
+      "status": "ok",
+      "profit": -304512231.0,
+      "mdd": 360.28,
+      "trades": 16554
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP chg_max=15",
+      "param": "chg_max",
+      "value": 15,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_006_B",
+      "status": "ok",
+      "profit": -404065068.0,
+      "mdd": 389.43,
+      "trades": 22045
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP ma_window=30",
+      "param": "ma_window",
+      "value": 30,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_007_B",
+      "status": "ok",
+      "profit": -390783147.0,
+      "mdd": 376.8,
+      "trades": 21540
+    },
+    {
+      "gen_no": 8,
+      "label": "TMAP ma_window=120",
+      "param": "ma_window",
+      "value": 120,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_008_B",
+      "status": "ok",
+      "profit": -372798868.0,
+      "mdd": 376.37,
+      "trades": 20256
+    },
+    {
+      "gen_no": 9,
+      "label": "TMAP ma_shift=10",
+      "param": "ma_shift",
+      "value": 10,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_009_B",
+      "status": "ok",
+      "profit": -390824710.0,
+      "mdd": 392.69,
+      "trades": 21424
+    },
+    {
+      "gen_no": 10,
+      "label": "TMAP ma_shift=60",
+      "param": "ma_shift",
+      "value": 60,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_010_B",
+      "status": "ok",
+      "profit": -374236325.0,
+      "mdd": 377.72,
+      "trades": 20481
+    },
+    {
+      "gen_no": 11,
+      "label": "TMAP flow_ratio=0.8",
+      "param": "flow_ratio",
+      "value": 0.8,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_011_B",
+      "status": "ok",
+      "profit": -395727567.0,
+      "mdd": 398.08,
+      "trades": 21200
+    },
+    {
+      "gen_no": 12,
+      "label": "TMAP flow_ratio=1.2",
+      "param": "flow_ratio",
+      "value": 1.2,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_012_B",
+      "status": "ok",
+      "profit": -382435108.0,
+      "mdd": 385.32,
+      "trades": 20894
+    },
+    {
+      "gen_no": 13,
+      "label": "TMAP flow_ratio=1.5",
+      "param": "flow_ratio",
+      "value": 1.5,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_013_B",
+      "status": "ok",
+      "profit": -371801891.0,
+      "mdd": 375.02,
+      "trades": 20632
+    },
+    {
+      "gen_no": 14,
+      "label": "TMAP strength_min=90",
+      "param": "strength_min",
+      "value": 90,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_014_B",
+      "status": "ok",
+      "profit": -435093441.0,
+      "mdd": 398.79,
+      "trades": 23232
+    },
+    {
+      "gen_no": 15,
+      "label": "TMAP strength_min=120",
+      "param": "strength_min",
+      "value": 120,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_015_B",
+      "status": "ok",
+      "profit": -287216184.0,
+      "mdd": 340.52,
+      "trades": 16715
+    },
+    {
+      "gen_no": 16,
+      "label": "TMAP take_hard=2",
+      "param": "take_hard",
+      "value": 2,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_016_B",
+      "status": "ok",
+      "profit": -410678795.0,
+      "mdd": 413.18,
+      "trades": 21869
+    },
+    {
+      "gen_no": 17,
+      "label": "TMAP take_hard=5",
+      "param": "take_hard",
+      "value": 5,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_017_B",
+      "status": "ok",
+      "profit": -375578530.0,
+      "mdd": 378.05,
+      "trades": 20620
+    },
+    {
+      "gen_no": 18,
+      "label": "TMAP stop_hard=-1.5",
+      "param": "stop_hard",
+      "value": -1.5,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_018_B",
+      "status": "ok",
+      "profit": -419588398.0,
+      "mdd": 443.38,
+      "trades": 22747
+    },
+    {
+      "gen_no": 19,
+      "label": "TMAP stop_hard=-3.0",
+      "param": "stop_hard",
+      "value": -3.0,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_019_B",
+      "status": "ok",
+      "profit": -360971853.0,
+      "mdd": 346.59,
+      "trades": 19922
+    },
+    {
+      "gen_no": 20,
+      "label": "TMAP max_hold_sec=300",
+      "param": "max_hold_sec",
+      "value": 300,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_020_B",
+      "status": "ok",
+      "profit": -550903010.0,
+      "mdd": 618.03,
+      "trades": 30452
+    },
+    {
+      "gen_no": 21,
+      "label": "TMAP max_hold_sec=1200",
+      "param": "max_hold_sec",
+      "value": 1200,
+      "buy_name": "TMAP_orderflow_f10_largecap_trend_021_B",
+      "status": "ok",
+      "profit": -304769559.0,
+      "mdd": 279.63,
+      "trades": 16291
+    }
+  ]
+}

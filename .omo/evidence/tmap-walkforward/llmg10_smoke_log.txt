@@ -1,0 +1,4 @@
+[BATCH] run_id=smoke_llmg10_q2_20260612 pairs=1
+[BATCH] prepare status=ok back_count=923 elapsed=73s
+[BATCH] gen0 LLMG10 extreme_angle default ok profit=-21,778,939 mdd=24.97 trades=1677 daily=27.50 payoff=1.2856621995533901 gate=False reason=total_profit -2.178e+07 <= 0 (34s)
+[BATCH] done

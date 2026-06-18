@@ -1,0 +1,4 @@
+[BATCH] run_id=smoke_llmg12_q2_20260613 pairs=1
+[BATCH] prepare status=ok back_count=923 elapsed=84s
+[BATCH] gen0 LLMG12 largecap singleavg ERROR (354s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] done

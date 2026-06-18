@@ -1,0 +1,21 @@
+{
+  "provider": "gpt_auth",
+  "bt_engine_mode": "warm",
+  "bt_warm_engine_count": 16,
+  "bt_betting": "5",
+  "bt_avg_time": 30,
+  "min_daily_trades": 0.3,
+  "mdd_cap": 35,
+  "winner_objective": "uptrend",
+  "autopsy_enabled": false,
+  "bt_full_start": 20220101,
+  "bt_full_end": 20231231,
+  "max_generations": 1,
+  "bt_timeout": 7200,
+  "bt_warm_run_timeout": 1200,
+  "equity_points_enabled": true,
+  "bt_timeframe": "tick",
+  "bt_universe_start_time": 90000,
+  "bt_universe_end_time": 93000,
+  "_comment": "cldgen train 2023-2025: zero-LLM batch eval. 6/4 p3-train과 동일 윈도우/배팅."
+}

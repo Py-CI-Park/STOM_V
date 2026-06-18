@@ -121,6 +121,9 @@ class LatestInfo(BaseModel):
     gen_started_at: float = 0.0    # 현재 세대 시작 epoch(초). 프론트가 now-이 값으로 세대 경과초.
     # 단계명(이산 5단계 generate/backtest/score/autopsy)→소요초. 완료된 단계 배지에 표시.
     step_timings: Dict[str, float] = Field(default_factory=dict)
+    # P1 대시보드 관측성: 진행률/엔진 상태 read-only payload. 구 상태는 빈 dict로 통과한다.
+    backtest_progress: Dict[str, Any] = Field(default_factory=dict)
+    engine_state: Dict[str, Any] = Field(default_factory=dict)
 
 
 class CumulativeInfo(BaseModel):

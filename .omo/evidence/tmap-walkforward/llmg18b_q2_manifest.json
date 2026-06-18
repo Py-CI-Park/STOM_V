@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_late_oversold_qty_flip_costdiet",
+  "run_id": "tmap_llmg18b_q2_e32_20260613",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_late_oversold_qty_flip_costdiet_000_B",
+      "status": "ok",
+      "profit": -7213394.0,
+      "mdd": 48.06,
+      "trades": 297
+    }
+  ]
+}

@@ -1,0 +1,912 @@
+STOM AI · 조건식 자율 진화 대시보드
+autonomous_strategy_loop · contract_v2
+Dark
+Light
+BASE
+적용
+↻
+백엔드 연결됨 · v2
+완료
+진행도
+2 / 2세대
+provider=gpt_auth
+tf=tick
+run_id=tick_p7_timecap_900_930_bounded_20260606
+100.0%
+RUN
+LIVE(현재)
+tick_p7_timecap_900_930_bounded_20260606 ✓
+tick_p2_timecap_900_920_preflight_guarded2_20260606 ✓
+tick_p2_timecap_900_920_preflight_guarded_20260606 ✓
+tick_p2_timecap_900_920_preflight_20260606 ✓
+ct_branch_controlbuy_ctsell_warm_20260605 ✓
+ct_branch_ctbuy_controlsell_warm_20260605
+ct_preflight_ct_902_905_warm_20260605
+ct_preflight_control_902_905_warm_20260605 ✓
+tick_seed_timeout_control_same_w1r_20260605
+tick_seed_timeout_control_w1r_20260605
+tick_seed_timeout_control_w1r_same_window_20260605
+tick_seed_timeout_control_902_905_warm_20260605 ✓
+tick_seed_timeout_warm_1d_1m_e1_20260605_r1
+tick_seed_timeout_warm_1d_1m_e1_20260605
+tick_p7_seed_diag_5m_20260605
+tick_p7_preflight_observable_20260605
+tick_realign_p6_smoke_20260605
+tick_oosrob_p5_train_2023_2025_20260604
+tick_oosrob_p4_smoke_20260604
+tick_spgen_p6_ai_2026_20260604 ✓
+tick_spgen_p6_ai_2022_20260604
+tick_spgen_p6_seed_2026_20260604
+tick_spgen_p6_seed_2022_20260604 ✓
+tick_spgen_p5_train_2023_2025_20260604
+tick_spgen_p4_smoke_on_20260604
+tick_spgen_p4_smoke_off_20260604
+tick_sel_sparse_p4_train_2023_2025_20260604
+tick_oos_dash_p5_ai_2026_20260604 ✓
+tick_oos_dash_p5_ai_2022_20260604
+tick_oos_dash_p5_seed_2026_20260604
+tick_oos_dash_p5_seed_2022_20260604 ✓
+tick_oos_dash_p3_train_2023_2025_20260604
+tick_oos_dash_p2_smoke_20260604
+tick_oos_p4_ai_2026_20260603
+tick_oos_p4_ai_2022_20260603 ✓
+tick_oos_p4_seed_2026_20260603
+tick_oos_p4_seed_2022_20260603 ✓
+tick_oos_p2_train_2023_2025_20260603
+tick_oos_p1_smoke_20260603 ✓
+tickwide_t0b ✓
+tickwide_t0
+minfull_s0_off
+minfull_s0
+p0_roundtrip ✓
+ens_seed_2026full
+ens_seed_2022full ✓
+ens_seed_2023full ✓
+ens_seed_2024full ✓
+ens_seed_2025full ✓
+ens_ai_2024h1
+ens_seed_2024h1 ✓
+campaign_ens_seed_h1 ✓
+campaign_e19_mixedlowfreq ✓
+campaign_e18_h1mixed
+campaign_e17_seed2024q1
+campaign_e16_discover2024
+campaign_e15_xyear
+campaign_e14_weak3mo
+campaign_e13_holdout_jun
+campaign_e12_seed_may
+campaign_e11_may_hardregime ✓
+campaign_e10_deepen ✓
+campaign_e9_holdout_apr ✓
+campaign_e8_seed3mo ✓
+campaign_e7_promote ✓
+campaign_e6_3mo ✓
+campaign_e5_purefresh_jan
+campaign_e4_fresh_mar
+campaign_e3_fresh_feb ✓
+campaign_e2_fresh_jan ✓
+campaign_e1_refine_jan ✓
+reframe1 ✓
+myr5 ✓
+myr4 ✓
+myr3 ✓
+myr2 ✓
+myr1 ✓
+seed3yr ✓
+yr1fresh
+yr1front ✓
+yr1evo
+yr1smoke
+fullevo5 ✓
+livecheck ✓
+trackb4 ✓
+trackb3 ✓
+trackb2 ✓
+trackb1 ✓
+fullevo3 ✓
+fullevo2_grad ✓
+fullevo2 ✓
+fullevo1
+fullsmoke1 ✓
+r4tick1
+run_1779918119
+run_1779914639
+run_1779857251 ✓
+run_1779851383
+run_1779849681
+run_1779847076
+run_1779839602
+run_1779830489
+run_1779828476 ✓
+run_1779805251
+run_1779803247
+run_1779784720
+run_1779754848 ✓
+run_1779714844 ✓
+run_1779710915
+run_1779706512
+run_1779675770
+run_1779672477
+▸ 시작
+◼ 정지
+RUN MONITOR
+현재 세대 — LIVE
+23시 38분 18초
+세대
+gen_02 / 2
+페이즈
+complete
+체크포인트
+—
+›
+loop complete: max_generations 도달: gen_count 2 >= 2
+RESEARCH CRITERIA
+research_oos_mode=disabled
+OOS disabled
+research/exploration only; not proof of human-level or production readiness.
+OOS를 실행하거나 후보 탈락에 쓰지 않는 탐색 모드입니다.
+METRIC GLOSSARY
+all
+research signal, not production proof · human-level claim blocked until multiyear holdout/OOS evidence exists.
+OOS
+Out-of-sample. 후보 선택과 튜닝에 쓰지 않은 기간 검증이다. OOS disabled는 탐색은 허용하지만 human-level claim blocked 상태다.
+overfit
+특정 구간에만 맞춘 과적합이다. 전체 기간 우상향이면 연구 신호로 볼 수 있지만 research signal, not production proof 이다.
+MDD
+Maximum Drawdown. 누적 수익곡선의 고점 대비 최대 하락폭이며, 손실 구간의 깊이를 본다.
+payoff
+payoff_ratio. 평균 이익을 평균 손실 절댓값으로 나눈 값이다. 승률이 낮아도 큰 이익 거래가 있으면 보완될 수 있다.
+edge ratio
+MFE를 MAE 절댓값으로 나눈 진입 품질 지표다. 1보다 높으면 유리한 움직임이 불리한 움직임보다 컸다는 뜻이다.
+MFE/MAE
+MFE는 보유 중 최대 유리 움직임, MAE는 최대 불리 움직임이다. 매수 타점과 매도 타이밍을 분리해 본다.
+ACTIVE STRATEGY
+source=winner
+BUY_NAME
+Tick_B_902_905_Update_2
+SELL_NAME
+Tick_S_902_905_Update_2
+run_id=tick_p7_timecap_900_930_bounded_20260606
+gen_no=0
+code_status=ok
+diff_status=no_previous_generation
+# ================================
+#  공통 계산 지표
+# ================================
+전일종가          = 현재가 / (1 + (등락율 / 100))                      # 단위: 원
+시가등락율        = ((시가 - 전일종가) / 전일종가) * 100                # 단위: 퍼센트
+시가대비등락율    = ((현재가 - 시가) / 시가) * 100                      # 단위: 퍼센트
+초당순매수금액    = (초당매수수량 - 초당매도수량) * 현재가 / 1_000_000   # 단위: 백만원
+# ------------------------------------------------
+#  New 지표 (미사용 시 주석 처리)
+#    · 누적거래대금비율 · 초당순매수비율 · 거래대금/체결강도 가속도 등
+expand preview
+open full code
+Previous Diff via /strategy_diff
+1
+생성
+LLM Code Gen
+2
+백테스트
+Backtest
+3
+채점
+Grading
+4
+부검
+Autopsy
+2세대 완료
+프로세스 플로우
+세대 소요 4m17s · 완료 7시 34분 45초
+생성
+Generate
+58s
+백테
+Backtest
+3m18s
+채점
+Score
+0s
+부검
+Autopsy
+0s
+반복
+Iterate
+0s
+[warm_prepare_start] warm session prepare 시작 (전체유니버스 엔진/데이터 로딩)
+[warm_prepare_done] warm session 준비 완료 (back_count=66)
+[loop_start] loop started
+[generate_start] gen 0 전략 생성 시작
+[backtest_start] backtest start gen 0
+[backtest_end] backtest end gen 0 status=success
+[score_start] gen 0 채점 시작
+[score_done] gen 0 채점 완료: gate=pass graded=1
+[autopsy_start] gen 0 부검 시작
+[autopsy_done] gen 0 부검 완료
+[generation_done] generation 0 recorded
+[generate_start] gen 1 전략 생성 시작
+[generate_done] gen 1 전략 생성 완료: buy=AILOOP_tick_p7_timecap_900_930_bounded_20260606_g1_buy
+[backtest_start] backtest start gen 1
+[backtest_end] backtest end gen 1 status=error
+[complete] loop complete: max_generations 도달: gen_count 2 >= 2
+페이즈 상세 — COMPLETE
+—
+실시간 데이터 대기 · Live data pending
+Waiting for a fresh live snapshot from backend; this panel is not a stale result.
+백테스트 엔진 — RUNTIME
+tick
+chunks 0/0
+Overall Progress 100.0%
+Elapsed 3m 18s
+Remaining 0 gen
+ETA 0.0s
+Timeout 3m 00s
+Deadline 2026. 6. 6. 7시 34분 27초
+Progress Source generation_level
+Units 2/2
+Engine Config
+min/tick=tick
+mode=warm
+cpu=64
+engines=1
+gen = generation
+Period 20250103~20250103
+bt_full_start=20250103
+bt_full_end=20250103
+window=90000~93000
+bt_timeout=600
+bt_warm_run_timeout=180
+Recent Logs
+complete
+loop complete: max_generations 도달: gen_count 2 >= 2
+[backtest_end] backtest end gen 1 status=error
+[complete] loop complete: max_generations 도달: gen_count 2 >= 2
+CPU 사용률
+0.0
+%
+메모리
+0
+MB
+/ 8.0 GB cap
+병렬 워커
+0
+/ 0
+처리량
+0
+candles/s
+0 candles/sec
+경과 시간
+3m 18s
+ETA 0.0s
+처리중 종목
+—
+window — → —
+세대 백테 진행
+100
+%
+적합도 추이 — FITNESS TRAJECTORY
+graded_score
+best-so-far
+gate-passed
+최신 점수
+0.000
+최고 점수
+1.000
+gen_0
+게이트 통과
+1 / 2
+목표
+1.000
+target_score
+graded_score = weighted fitness
+hard gate = target score plus MDD/trade rules
+Calmar = return divided by MDD
+uptrend_r2 = cumulative equity trend fit
+0.00
+0.20
+0.40
+0.60
+0.80
+1.00
+target 1.00
+gen_1
+gen_2
+gen_3
+gen_4
+gen_5
+gen_6
+gen_7
+gen_8
+수익 추이 — PROFIT TRAJECTORY
+수익률 %
+수익금 ₩
+최신 수익률
+0.00%
+최고 수익률
+4.59%
+gen_0
+최신 수익금
+0원
+payoff_ratio = avg win / abs(avg loss)
+total_profit_pct = operating-capital return
+profit line uses right-axis money scale
+0%
+4.6%
+0.0%
++229,983원
+0원
+gen_1
+gen_2
+gen_3
+gen_4
+gen_5
+gen_6
+gen_7
+gen_8
+전 전략 누적 수익곡선
+비우승
+우승(gate_passed)
+↻ 새로고침
+전체 곡선
+1
+우승 곡선
+1
+최고 수익률
++4.6%
+edge_ratio = segment edge density
+winner curves use a 12-color palette
+non-winner curves stay subdued for comparison
+0
+5만
+10만
+15만
+20만
+0
+0%
+25%
+50%
+75%
+100%
+백테 상세 — 동시보유 종목수 · 일별손익 · 누적수익곡선
+동시보유 종목수
+이익(일)
+손실(일)
+누적수익 ₩
+gen_0 ✓
+gen_1
+↻ 새로고침
+거래수
+1
+거래일
+1
+최대 동시보유
+1
+종목수
+DB MAX_HOLD_COUNT
+1
+저장값
+최종 누적수익
++229,983원
+최대 반납액
+0원
+고점 대비(원)
+run_id=tick_p7_timecap_900_930_bounded_20260606
+gen_no=0
+peak_holdings=0 can mean no overlap buy/sell timing data
+DB max_hold_count=1
+period/timeframe are inherited from the selected run
+0
+1
+peak 1
+동시보유 종목수(매수~매도 구간 중첩). 보유금액(원)은 엔진 전용이라 미표시 — 동시보유 종목수로 대체.
+0
+23만
+23만
+0
+01/03
+품질지표 추이 — QUALITY METRICS
+Calmar
+우상향 R²
+MDD %
+일평균거래
+동시보유
+손익비
+각 지표는 자기 범위로 정규화한 '추세 모양' — 실제값은 hover 참조. 보고서 목표: 일평균10~23·동시보유6~12·MDD<7%·손익비>1.25
+gen_1
+gen_2
+gen_3
+gen_4
+gen_5
+gen_6
+gen_7
+gen_8
+🏆 성과 명예의 전당 — 인간 벤치마크 & AI 생성
+👤 인간 벤치마크
+🌱 시드(Tick_902 인간튜닝)
+🤖 AI 생성(AILOOP)
+단기=연환산 신뢰낮음(짧은 백테)
+📷 인간 결과 스크린샷
+↻ 새로고침
+정렬
+총수익률
+총수익금
+연평균
+MDD
+payoff
+구분
+전체
+👤 인간
+🌱 시드
+🤖 AI
+인간 19 · 시드 15 · AI 15
+구분	이름	총수익금(원)	총수익률%	연평균%	MDD%	PAYOFF	일평균거래	동시보유	운영금(원)	백테 기간
+👤 인간	#1	+305,178,048원	+254.3%	+255.3%	3.17	1.34	13.3	6	120,000,000	2022-03-31 ~ 2023-03-31(249일)
+👤 인간	#8	+301,576,794원	+251.3%	+243.2%	3.57	1.47	10.6	6	120,000,000	2022-03-27 ~ 2023-03-27(248일)
+👤 인간	#11	+300,219,347원	+250.2%	+252.2%	4.51	1.27	15.5	6	120,000,000	2022-04-14 ~ 2023-04-14(248일)
+👤 인간	#17	+316,427,795원	+226.1%	+262.1%	6.63	1.32	16.2	7	140,000,000	2022-02-23 ~ 2023-01-31(207일)
+👤 인간	#2	+311,831,928원	+222.7%	+224.5%	3.54	1.31	18.7	7	160,000,000	2022-03-28 ~ 2023-03-27(248일)
+👤 인간	#15	+310,816,464원	+222.0%	+225.6%	1.90	1.27	14.7	7	140,000,000	2022-03-23 ~ 2023-03-23(246일)
+👤 인간	#13	+302,076,575원	+215.8%	+215.8%	3.26	1.26	14.0	7	140,000,000	2022-04-18 ~ 2023-04-19(250일)
+👤 인간	#6	+301,243,463원	+215.2%	+252.6%	5.87	1.30	21.0	7	160,000,000	2022-03-23 ~ 2023-01-31(213일)
+👤 인간	#4	+330,921,151원	+206.4%	+209.3%	4.73	1.24	14.8	8	160,000,000	2022-05-02 ~ 2023-04-28(247일)
+👤 인간	#5	+323,943,486원	+202.5%	+204.9%	6.12	1.23	20.2	8	160,000,000	2022-04-22 ~ 2023-04-23(247일)
+👤 인간	#16	+320,208,672원	+200.1%	+201.7%	4.23	1.28	16.5	8	180,000,000	2022-03-28 ~ 2023-03-28(248일)
+👤 인간	#10	+307,425,396원	+192.1%	+195.3%	3.43	1.23	16.9	8	160,000,000	2022-04-13 ~ 2023-04-13(246일)
+👤 인간	#3	+304,539,119원	+190.1%	+190.1%	2.68	1.23	19.0	8	160,000,000	2022-03-30 ~ 2023-03-31(250일)
+👤 인간	#14	+300,935,461원	+188.1%	+190.4%	4.14	1.28	10.6	8	160,000,000	2022-04-16 ~ 2023-04-16(247일)
+🌱 시드	seed3yr/g0	+8,266,552원	+164.4%	+54.8%	17.76	1.45	0.4	0	5,029,234	2023-01-01 ~ 2025-12-31
+🌱 시드	myr5/g0	+8,266,552원	+164.4%	+54.8%	17.76	1.45	0.4	0	5,029,234	2023-01-01 ~ 2025-12-31
+🌱 시드	myr4/g0	+8,266,552원	+164.4%	+54.8%	17.76	1.45	0.4	0	5,029,234	2023-01-01 ~ 2025-12-31
+🌱 시드	myr3/g0	+8,266,552원	+164.4%	+54.8%	17.76	1.45	0.4	0	5,029,234	2023-01-01 ~ 2025-12-31
+🌱 시드	myr2/g0	+8,266,552원	+164.4%	+54.8%	17.76	1.45	0.4	0	5,029,234	2023-01-01 ~ 2025-12-31
+🌱 시드	myr1/g0	+8,266,552원	+164.4%	+54.8%	17.76	1.45	0.4	0	5,029,234	2023-01-01 ~ 2025-12-31
+👤 인간	#12	+308,147,705원	+154.1%	+155.3%	6.75	1.22	19.0	11	200,000,000	2022-03-28 ~ 2023-03-27(248일)
+👤 인간	#18	+306,029,101원	+153.0%	+158.7%	4.29	1.18	21.7	10	200,000,000	2022-04-18 ~ 2023-04-18(241일)
+👤 인간	#9	+303,288,419원	+151.6%	+152.3%	3.80	1.15	23.2	10	200,000,000	2022-05-23 ~ 2023-05-24(249일)
+👤 인간	#19	+300,620,434원	+136.6%	+136.7%	3.60	1.25	18.9	11	220,000,000	2022-03-23 ~ 2023-03-24(250일)
+👤 인간	#7	+310,414,954원	+129.3%	+134.2%	2.87	1.21	21.7	12	240,000,000	2022-05-03 ~ 2024-05-03(241일)
+🌱 시드	ens_seed_2024full/g0	+3,221,506원	+64.2%	+64.2%	10.52	1.60	0.4	1	5,021,050	2024-01-01 ~ 2024-12-31
+🌱 시드	ens_seed_2023full/g0	+4,727,001원	+47.2%	+47.4%	5.89	1.57	0.5	2	10,006,353	2023-01-01 ~ 2023-12-31
+🌱 시드	tick_spgen_p6_seed_2022_20260604/g0	+2,223,554원	+44.4%	+44.5%	13.02	1.25	0.3	1	5,012,520	2022-01-01 ~ 2022-12-31
+🌱 시드	tick_oos_p4_seed_2022_20260603/g0	+2,223,554원	+44.4%	+44.5%	13.02	1.25	0.3	1	5,012,520	2022-01-01 ~ 2022-12-31
+🌱 시드	tick_oos_dash_p5_seed_2022_20260604/g0	+2,223,554원	+44.4%	+44.5%	13.02	1.25	0.3	1	5,012,520	2022-01-01 ~ 2022-12-31
+🌱 시드	ens_seed_2022full/g0	+2,223,554원	+44.4%	+44.5%	13.02	1.25	0.3	1	5,012,520	2022-01-01 ~ 2022-12-31
+🌱 시드	ens_seed_2024h1/g0	+1,942,646원	+38.8%	+78.3%	13.56	1.88	0.3	1	5,006,820	2024-01-01 ~ 2024-06-30
+🌱 시드	campaign_e8_seed3mo/g0	+1,944,536원	+38.8%	+159.2%단기	5.39	1.66	0.4	1	5,014,275	2025-01-01 ~ 2025-03-31
+🤖 AI	campaign_e19_mixedlowfreq/g0	+434,889원	+8.7%	+17.7%	4.65	1.52	0.2	1.0	4,998,724	2025-01-01 ~ 2025-06-30
+🤖 AI	tick_spgen_p6_ai_2026_20260604/g0	+356,664원	+7.1%	+44.9%단기	1.36	0.98	0.2	0.0	5,002,300	2026-01-01 ~ 2026-02-28
+🌱 시드	fullsmoke1/g0	+606,123원	+6.1%	+554.3%단기	6.07	0.00	0.8	0	9,985,552	2025-01-06 ~ 2025-01-10
+🤖 AI	campaign_e7_promote/g1	+257,237원	+5.1%	+21.1%단기	1.27	0.84	0.4	0.0	5,004,611	2025-01-01 ~ 2025-03-31
+🤖 AI	campaign_e10_deepen/g0	+257,237원	+5.1%	+21.1%단기	1.27	0.84	0.4	0.0	5,004,611	2025-01-01 ~ 2025-03-31
+🤖 AI	tick_oos_p1_smoke_20260603/g1	+482,322원	+4.8%	+80.2%단기	3.53	1.31	2.1	2.0	9,985,963	2025-04-08 ~ 2025-04-30
+🤖 AI	campaign_e10_deepen/g7	+220,194원	+4.4%	+18.1%단기	2.54	0.91	0.4	0.0	5,004,409	2025-01-01 ~ 2025-03-31
+🤖 AI	tickwide_t0b/g1	+685,127원	+3.4%	+56.9%단기	6.59	1.09	5.4	4.0	19,974,548	2025-04-08 ~ 2025-04-30
+🤖 AI	campaign_e10_deepen/g6	+144,900원	+2.9%	+11.9%단기	1.39	0.81	0.4	0.0	4,996,552	2025-01-01 ~ 2025-03-31
+🤖 AI	campaign_e10_deepen/g2	+135,482원	+2.7%	+11.1%단기	1.84	0.93	0.3	0.0	4,999,336	2025-01-01 ~ 2025-03-31
+🤖 AI	tick_oos_dash_p5_ai_2026_20260604/g0	+126,238원	+2.5%	+15.9%단기	2.52	999.00	0.1	0.0	5,009,444	2026-01-01 ~ 2026-02-28
+🤖 AI	campaign_e10_deepen/g8	+124,818원	+2.5%	+10.3%단기	2.76	0.90	0.4	0.0	4,992,720	2025-01-01 ~ 2025-03-31
+🤖 AI	campaign_e7_promote/g5	+119,255원	+2.4%	+9.8%단기	2.54	0.96	0.4	0.0	4,989,749	2025-01-01 ~ 2025-03-31
+🤖 AI	campaign_e7_promote/g7	+82,687원	+1.6%	+6.8%단기	1.40	0.66	0.3	0.0	5,011,333	2025-01-01 ~ 2025-03-31
+🤖 AI	campaign_e9_holdout_apr/g0	+35,686원	+0.7%	+8.9%단기	0.97	1.29	0.3	0.0	5,026,197	2025-04-01 ~ 2025-04-30
+🤖 AI	tick_p2_timecap_900_920_preflight_guarded2_20260606/g1	+76,127원	+0.5%	—	0.97	2.06	5.0	3.0	14,926,863	—
+STRATEGY / PROMPT
+세대 이력 — GENERATIONS
+2개 세대 누적
+Sort: Total Profit
+Sort: Gen
+세대	상태	등급점수	CALMAR	R²	게이트	거래수	일평균거래	동시보유	PAYOFF	GIVE-BACK%	MDD	수익률	수익금	사유 / 전략 요지	코드	백테상세
+gen_01	오류	0.000	0.00	0.00	✗	0	0.00	0	0.00	0.0%	0.00%	0.00%	0원	
+[backtest failed/timeout: warm backtest non-success: status=error message=백테스트 시간 초과 (180초) csv=no] —
+	</>	📊
+gen_00	success	1.000	250.15	0.00	✓ 통과	1	1.00	1	999.00	0.0%	4.59%	4.59%	+229,983원	
+[ok] if not (관심종목 == 1): # 공통 필터 – 관심종목
+	</>	📊
+COMPARE
+RUN COMPARE CONSOLE
+Sort: Total Profit
+Return %
+Seed vs AI
+refresh
+runs=112
+selected=6
+generation_rows=40
+sort=final_profit
+Pick	run_id	Status	Period	Years	min/tick	Universe Time	Total Profit	Return %	Trades	Daily	MDD	Payoff	Max Hold	Elapsed	Cost/Count	Winner
+	seed3yr	complete	2023-01-01 ~ 2025-12-31	2023, 2024, 2025	tick	90000~92800	8,266,552	164.37%	307	0.4	17.76%	1.45	0 !	6m 45s	1.0	gen_00 / 3.584
+	myr1	complete	2023-01-01 ~ 2025-12-31	2023, 2024, 2025	tick	90000~92800	8,266,552	164.37%	307	0.4	17.76%	1.45	0 !	16m 48s	3.0	gen_00 / 2.770
+	myr2	running	2023-01-01 ~ 2025-12-31	2023, 2024, 2025	tick	90000~92800	8,266,552	164.37%	307	0.4	17.76%	1.45	0 !	29m 50s	3.0	gen_00 / 2.770
+	myr3	running	2023-01-01 ~ 2025-12-31	2023, 2024, 2025	tick	90000~92800	8,266,552	164.37%	307	0.4	17.76%	1.45	0 !	8m 2s	1.0	gen_00 / 2.770
+	myr4	running	2023-01-01 ~ 2025-12-31	2023, 2024, 2025	tick	90000~92800	8,266,552	164.37%	307	0.4	17.76%	1.45	0 !	38m 7s	5.0	gen_00 / 2.770
+	myr5	running	2023-01-01 ~ 2025-12-31	2023, 2024, 2025	tick	90000~92800	8,266,552	164.37%	307	0.4	17.76%	1.45	0 !	21m 20s	3.0	gen_00 / 3.584
+	ens_seed_2023full	complete	2023-01-01 ~ 2023-12-31	2023	tick	90000~92800	4,727,001	47.24%	114	0.5	5.89%	1.57	2	3m 35s	1.0	gen_00 / 8.460
+	ens_seed_2024full	complete	2024-01-01 ~ 2024-12-31	2024	tick	90000~92800	3,221,506	64.16%	88	0.4	10.52%	1.60	1 !	3m 31s	1.0	gen_00 / 5.292
+	ens_seed_2022full	complete	2022-01-01 ~ 2022-12-31	2022	tick	90000~92800	2,223,554	44.36%	58	0.3	13.02%	1.25	1 !	3m 2s	1.0	gen_00 / 4.649
+	tick_oos_p4_seed_2022_20260603	complete	2022-01-01 ~ 2022-12-31	2022	tick	90000~92800	2,223,554	44.36%	58	0.3	13.02%	1.25	1 !	3m 6s	1.0	gen_00 / 4.649
+	tick_oos_dash_p5_seed_2022_20260604	complete	2022-01-01 ~ 2022-12-31	2022	tick	90000~92800	2,223,554	44.36%	58	0.3	13.02%	1.25	1 !	2m 35s	1.0	gen_00 / 4.649
+	tick_spgen_p6_seed_2022_20260604	complete	2022-01-01 ~ 2022-12-31	2022	tick	90000~92800	2,223,554	44.36%	58	0.3	13.02%	1.25	1 !	2m 31s	1.0	gen_00 / 4.649
+	fullevo3	complete	2025-01-01 ~ 2025-03-31	2025	tick	90000~92800	1,944,536	38.78%	24	0.4	5.39%	1.66	0	34m 16s	8.0	gen_00 / 1.746
+	trackb3	complete	2025-01-01 ~ 2025-03-31	2025	tick	90000~92800	1,944,536	38.78%	24	0.4	5.39%	1.66	0	32m 29s	8.0	gen_00 / 1.746
+	trackb4	complete	2025-01-01 ~ 2025-03-31	2025	tick	90000~92800	1,944,536	38.78%	24	0.4	5.39%	1.66	0	27m 15s	8.0	gen_00 / 1.746
+	campaign_e8_seed3mo	complete	2025-01-01 ~ 2025-03-31	2025	tick	90000~92800	1,944,536	38.78%	24	0.4	5.39%	1.66	1	2m 6s	1.0	gen_00 / 23.645
+	ens_seed_2024h1	complete	2024-01-01 ~ 2024-06-30	2024	tick	90000~92800	1,942,646	38.80%	40	0.3	13.56%	1.88	1	2m 23s	1.0	gen_00 / 5.482
+	campaign_ens_seed_h1	complete	2025-01-01 ~ 2025-06-30	2025	tick	90000~92800	1,562,301	31.20%	57	0.5	15.33%	1.39	1 !	2m 19s	1.0	gen_00 / 1.629
+	campaign_e17_seed2024q1	complete	2024-01-01 ~ 2024-03-31	2024	tick	90000~92800	1,550,238	30.97%	21	0.4	13.56%	1.86	1	2m 8s	1.0	-
+	tick_spgen_p5_train_2023_2025_20260604	complete	2023-01-01 ~ 2025-12-31	2023, 2024, 2025	tick	90000~93000	1,155,715	23.11%	124	0.2	9.12%	1.55	1 !	53m 16s	8.0	-
+	trackb2	complete	2025-01-01 ~ 2025-01-31	2025	tick	90000~92800	790,121	7.91%	49	2.7	5.12%	2.21	0	18m 15s	8.0	gen_02 / 1.642
+	fullevo2	running	2025-01-01 ~ 2025-01-31	2025	tick	90000~92800	740,353	7.41%	6	0.3	0.88%	1.74	0	28m 48s	6.0	gen_00 / 1.635
+	fullevo2_grad	complete	2025-01-01 ~ 2025-01-31	2025	tick	90000~92800	740,353	7.41%	6	0.3	0.88%	1.74	0	2m 4s	1.0	gen_00 / 1.635
+	trackb1	complete	2025-01-01 ~ 2025-01-31	2025	tick	90000~92800	740,353	7.41%	6	0.3	0.88%	1.74	0	29m 25s	8.0	gen_00 / 1.635
+	fullevo5	complete	2025-01-01 ~ 2025-01-31	2025	tick	90000~92800	740,353	7.41%	6	0.3	0.88%	1.74	0	32m 12s	8.0	gen_00 / 1.635
+	reframe1	complete	2025-01-01 ~ 2025-01-31	2025	tick	90000~92800	740,353	7.41%	6	0.3	0.88%	1.74	2	4m 24s	3.0	gen_00 / 1.724
+	campaign_e1_refine_jan	complete	2025-01-01 ~ 2025-01-31	2025	tick	90000~92800	740,353	7.41%	6	0.3	0.88%	1.74	2	8m 27s	5.0	gen_00 / 1.724
+	p0_roundtrip	complete	2025-01-01 ~ 2025-01-31	2025	tick	90000~92800	740,353	7.41%	6	0.3	0.88%	1.74	2	1m 48s	1.0	gen_00 / 1.724
+	tickwide_t0b	complete	2025-04-08 ~ 2025-04-30	2025	tick	90000~93000	685,127	3.43%	91	5.4	6.59%	1.09	4	8m 8s	3.0	gen_01 / 3.189
+	fullsmoke1	complete	2025-01-06 ~ 2025-01-10	2025	tick	90000~92800	606,123	6.07%	4	0.8	6.07%	0.00	0	1m 44s	1.0	gen_00 / 48.353
+	livecheck	complete	2025-01-01 ~ 2025-01-07	2025	tick	90000~92800	515,290	10.29%	3	0.8	10.29%	999.00	1	2m 12s	1.0	gen_00 / 1.602
+	tick_oos_p1_smoke_20260603	complete	2025-04-08 ~ 2025-04-30	2025	tick	90000~93000	482,322	4.83%	36	2.1	3.53%	1.31	2	6m 26s	2.0	gen_01 / 8.983
+	campaign_e19_mixedlowfreq	complete	2025-01-01 ~ 2025-06-30	2025	tick	90000~92800	434,889	8.70%	28	0.2	4.65%	1.52	1	7m 59s	6.0	gen_00 / 3.180
+	tick_spgen_p6_ai_2026_20260604	complete	2026-01-01 ~ 2026-02-28	2026	tick	90000~93000	356,664	7.13%	7	0.2	1.36%	0.98	0	1m 7s	1.0	gen_00 / 25.111
+	run_1779710915	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	318,045	-	105	0.0	36.38%	-	0 !	12m 58s	3.0	-
+	run_1779784720	running	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	318,045	-	105	0.0	36.38%	-	0 !	2h 3m	3.0	-
+	run_1779839602	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	318,045	6.34%	105	0.4	36.38%	-	0 !	26m 37s	8.0	-
+	run_1779847076	running	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	318,045	6.34%	105	0.4	36.38%	-	0 !	35m 9s	5.0	-
+	run_1779849681	running	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	318,045	6.34%	105	0.4	36.38%	-	0 !	24m 55s	5.0	-
+	run_1779851383	running	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	318,045	6.34%	105	0.4	36.38%	-	0 !	1h 4m	3.0	-
+	yr1smoke	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	318,045	6.34%	105	0.4	36.38%	1.20	0 !	3m 54s	1.0	-
+	yr1evo	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	318,045	6.34%	105	0.4	36.38%	1.20	1 !	45m 15s	8.0	-
+	yr1front	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	318,045	6.34%	105	0.4	36.38%	1.20	0 !	1h 6m	10.0	gen_00 / 1.037
+	ens_seed_2025full	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	318,045	6.34%	105	0.4	36.38%	1.20	1 !	2m 49s	1.0	gen_00 / 1.008
+	campaign_e3_fresh_feb	complete	2025-02-01 ~ 2025-02-28	2025	tick	90000~92800	315,833	6.32%	28	1.4	2.76%	0.79	1	10m 14s	8.0	gen_07 / 1.464
+	run_1779828476	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	303,240	6.06%	65	0.0	24.71%	-	0 !	31m 28s	8.0	gen_06 / 1.566
+	campaign_e7_promote	complete	2025-01-01 ~ 2025-03-31	2025	tick	90000~92800	257,237	5.14%	21	0.4	1.27%	0.84	0	9m 28s	8.0	gen_01 / 13.890
+	campaign_e10_deepen	complete	2025-01-01 ~ 2025-03-31	2025	tick	90000~92800	257,237	5.14%	21	0.4	1.27%	0.84	0	11m 41s	10.0	gen_00 / 13.890
+	run_1779857251	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	248,474	4.96%	104	0.4	32.62%	-	0 !	21m 7s	10.0	gen_02 / 1.555
+	tick_oos_p4_ai_2022_20260603	complete	2022-01-01 ~ 2022-12-31	2022	tick	90000~93000	248,274	4.97%	10	0.1	3.22%	1.89	0	2m 48s	1.0	gen_00 / 1.603
+	fullevo1	complete	2025-01-01 ~ 2025-01-31	2025	tick	90000~92800	234,362	4.67%	39	2.2	10.01%	1.69	0	20m 36s	8.0	-
+	tick_p2_timecap_900_920_preflight_20260606	complete	-	-	tick	90000~92000	229,983	4.59%	1	1.0	4.59%	999.00	1	3m 60s	2.0	gen_00 / 1.000
+	tick_p2_timecap_900_920_preflight_guarded_20260606	complete	-	-	tick	90000~92000	229,983	4.59%	1	1.0	4.59%	999.00	1	4m 39s	2.0	gen_00 / 1.000
+	tick_p7_timecap_900_930_bounded_20260606	complete	-	-	tick	90000~93000	229,983	4.59%	1	1.0	4.59%	999.00	1	5m 5s	2.0	gen_00 / 1.000
+	run_1779754848	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	229,805	-	39	0.0	12.14%	-	0	1h 0m	20.0	gen_13 / 1.037
+	run_1779714844	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	180,196	-	63	0.0	18.58%	-	0 !	34m 6s	10.0	gen_03 / 1.016
+	tick_seed_timeout_control_902_905_warm_20260605	complete	-	-	tick	90200~90500	149,567	2.99%	1	1.0	2.99%	999.00	1	41.9s	1.0	gen_00 / 1.000
+	ct_preflight_control_902_905_warm_20260605	complete	-	-	tick	90200~90500	149,567	2.99%	1	1.0	2.99%	999.00	1	39.1s	1.0	gen_00 / 1.000
+	ct_branch_controlbuy_ctsell_warm_20260605	complete	-	-	tick	90200~90500	149,567	2.99%	1	1.0	2.99%	999.00	1	39.8s	1.0	gen_00 / 1.000
+	campaign_e11_may_hardregime	complete	2025-05-01 ~ 2025-05-31	2025	tick	90000~92800	137,421	2.75%	10	0.5	1.42%	1.38	1	10m 15s	8.0	gen_02 / 1.626
+	campaign_e6_3mo	complete	2025-01-01 ~ 2025-03-31	2025	tick	90000~92800	126,367	2.53%	26	0.4	4.70%	1.25	1	8m 50s	6.0	gen_04 / 1.147
+	tick_oos_dash_p5_ai_2026_20260604	complete	2026-01-01 ~ 2026-02-28	2026	tick	90000~93000	126,238	2.52%	2	0.1	2.52%	999.00	0	1m 11s	1.0	gen_00 / 8.365
+	campaign_e2_fresh_jan	complete	2025-01-01 ~ 2025-01-31	2025	tick	90000~92800	79,138	1.58%	5	0.3	0.97%	1.45	1	9m 59s	8.0	gen_02 / 1.548
+	tick_p2_timecap_900_920_preflight_guarded2_20260606	complete	-	-	tick	90000~92000	76,127	0.51%	5	5.0	0.97%	2.06	3	2m 24s	2.0	gen_01 / 6.903
+	campaign_e9_holdout_apr	complete	2025-04-01 ~ 2025-04-30	2025	tick	90000~92800	35,686	0.71%	6	0.3	0.97%	1.29	0	1m 43s	1.0	gen_00 / 3.256
+	run_1779706512	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	0	-	0	0.0	0.00%	-	0	14m 17s	2.0	-
+	minfull_s0_off	complete	2025-04-08 ~ 2025-04-30	2025	min	90000~92800	0	0.00%	0	0.0	0.00%	0.00	0	1m 16s	1.0	-
+	tickwide_t0	complete	2025-04-08 ~ 2025-04-30	2025	tick	90000~93000	0	0.00%	0	0.0	0.00%	0.00	0	6m 5s	3.0	-
+	tick_p7_preflight_observable_20260605	complete	2025-01-01 ~ 2025-01-31	2025	tick	90000~93000	0	0.00%	0	0.0	0.00%	0.00	0	6m 17s	1.0	-
+	tick_p7_seed_diag_5m_20260605	complete	2025-01-01 ~ 2025-01-03	2025	tick	90000~90500	0	0.00%	0	0.0	0.00%	0.00	0	2m 43s	1.0	-
+	tick_seed_timeout_warm_1d_1m_e1_20260605	complete	-	-	tick	90000~90100	0	0.00%	0	0.0	0.00%	0.00	0	1m 47s	1.0	-
+	tick_seed_timeout_warm_1d_1m_e1_20260605_r1	complete	-	-	tick	90000~90100	0	0.00%	0	0.0	0.00%	0.00	0	42.8s	1.0	-
+	tick_seed_timeout_control_w1r_same_window_20260605	complete	-	-	tick	90000~90100	0	0.00%	0	0.0	0.00%	0.00	0	54.5s	1.0	-
+	tick_seed_timeout_control_w1r_20260605	complete	-	-	tick	90000~90100	0	0.00%	0	0.0	0.00%	0.00	0	51.5s	1.0	-
+	tick_seed_timeout_control_same_w1r_20260605	complete	-	-	tick	90000~90100	0	0.00%	0	0.0	0.00%	0.00	0	53.2s	1.0	-
+	ct_preflight_ct_902_905_warm_20260605	complete	-	-	tick	90200~90500	0	0.00%	0	0.0	0.00%	0.00	0	2m 43s	1.0	-
+	ct_branch_ctbuy_controlsell_warm_20260605	complete	-	-	tick	90200~90500	0	0.00%	0	0.0	0.00%	0.00	0	2m 45s	1.0	-
+	r4tick1	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	-35,071	-3.51%	17	3.4	3.68%	2.11	0	18m 18s	8.0	-
+	tick_oos_dash_p3_train_2023_2025_20260604	complete	2023-01-01 ~ 2025-12-31	2023, 2024, 2025	tick	90000~93000	-67,190	-1.34%	287	0.4	23.52%	1.21	1 !	43m 29s	6.0	-
+	run_1779918119	complete	2025-01-01 ~ 2025-12-31	2025	min	90000~92800	-69,297	-3.51%	41	2.0	6.26%	1.44	0	25m 21s	10.0	-
+	tick_oos_p4_ai_2026_20260603	complete	2026-01-01 ~ 2026-02-28	2026	tick	90000~93000	-80,344	-1.61%	1	0.0	1.61%	0.00	0	1m 26s	1.0	-
+	tick_oosrob_p5_train_2023_2025_20260604	complete	2023-01-01 ~ 2025-12-31	2023, 2024, 2025	tick	90000~93000	-156,193	-3.12%	452	0.6	36.01%	1.61	1 !	1h 2m	10.0	-
+	ens_seed_2026full	complete	2026-01-01 ~ 2026-02-28	2026	tick	90000~92800	-191,109	-3.82%	10	0.3	15.63%	1.26	1	1m 46s	1.0	-
+	tick_oos_p4_seed_2026_20260603	complete	2026-01-01 ~ 2026-02-28	2026	tick	90000~92800	-191,109	-3.82%	10	0.3	15.63%	1.26	1	1m 32s	1.0	-
+	tick_oos_dash_p5_seed_2026_20260604	complete	2026-01-01 ~ 2026-02-28	2026	tick	90000~92800	-191,109	-3.82%	10	0.3	15.63%	1.26	1	1m 9s	1.0	-
+	tick_spgen_p6_seed_2026_20260604	complete	2026-01-01 ~ 2026-02-28	2026	tick	90000~92800	-191,109	-3.82%	10	0.3	15.63%	1.26	1	1m 6s	1.0	-
+	campaign_e4_fresh_mar	complete	2025-03-01 ~ 2025-03-31	2025	tick	90000~92800	-192,786	-3.86%	20	1.0	5.06%	1.51	1	9m 39s	8.0	-
+	tick_spgen_p6_ai_2022_20260604	complete	2022-01-01 ~ 2022-12-31	2022	tick	90000~93000	-222,400	-4.45%	24	0.1	9.00%	1.88	0	2m 34s	1.0	-
+	run_1779914639	complete	2025-01-01 ~ 2025-12-31	2025	min	90000~92800	-286,576	-9.57%	52	2.6	13.30%	1.37	0 !	25m 42s	10.0	-
+	minfull_s0	complete	2025-04-08 ~ 2025-04-30	2025	min	90000~92800	-292,114	-1.95%	40	2.4	7.64%	1.35	3	1m 27s	1.0	-
+	campaign_e13_holdout_jun	complete	2025-06-01 ~ 2025-06-30	2025	tick	90000~92800	-292,577	-5.85%	15	0.8	5.48%	0.53	1	1m 48s	1.0	-
+	tick_spgen_p4_smoke_off_20260604	complete	2025-01-01 ~ 2025-03-31	2025	tick	90000~93000	-307,907	-6.15%	152	2.6	17.56%	1.66	1 !	10m 2s	3.0	-
+	run_1779672477	complete	-	-	min	-	-349,869	-	91	0.0	19.18%	-	0 !	33m 32s	15.0	-
+	campaign_e14_weak3mo	complete	2025-05-01 ~ 2025-07-31	2025	tick	90000~92800	-392,876	-7.86%	20	0.3	7.57%	1.21	0	7m 56s	6.0	-
+	run_1779805251	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	-419,404	-8.39%	17	0.0	7.72%	-	0	58m 6s	15.0	-
+	campaign_e16_discover2024	complete	2024-01-01 ~ 2024-03-31	2024	tick	90000~92800	-424,837	-8.50%	26	0.4	9.40%	0.77	0	7m 38s	6.0	-
+	tick_oos_dash_p5_ai_2022_20260604	complete	2022-01-01 ~ 2022-12-31	2022	tick	90000~93000	-531,523	-10.63%	99	0.5	16.77%	1.32	1 !	2m 43s	1.0	-
+	campaign_e5_purefresh_jan	complete	2025-01-01 ~ 2025-01-31	2025	tick	90000~92800	-605,552	-12.11%	35	1.9	13.97%	1.09	1	11m 1s	10.0	-
+	campaign_e18_h1mixed	complete	2025-01-01 ~ 2025-06-30	2025	tick	90000~92800	-638,724	-12.77%	77	0.7	17.28%	0.99	1 !	8m 30s	5.0	-
+	campaign_e12_seed_may	complete	2025-05-01 ~ 2025-05-31	2025	tick	90000~92800	-694,072	-13.81%	13	0.7	14.83%	1.56	1	1m 48s	1.0	-
+	tick_oos_p2_train_2023_2025_20260603	complete	2023-01-01 ~ 2025-12-31	2023, 2024, 2025	tick	90000~93000	-697,147	-13.94%	182	0.3	19.75%	1.42	1 !	43m 6s	6.0	-
+	run_1779675770	complete	-	-	min	-	-811,108	-	196	0.0	41.36%	-	0 !	1h 4m	20.0	-
+	tick_spgen_p4_smoke_on_20260604	complete	2025-01-01 ~ 2025-03-31	2025	tick	90000~93000	-900,989	-18.02%	29	0.5	16.96%	1.76	1	9m 35s	3.0	-
+	campaign_e15_xyear	complete	2024-01-01 ~ 2024-03-31	2024	tick	90000~92800	-1,000,397	-20.01%	47	0.8	20.59%	0.56	1	2m 3s	1.0	-
+	run_1779830489	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	-1,220,063	-24.40%	89	0.0	30.84%	-	0 !	11m 24s	8.0	-
+	ens_ai_2024h1	complete	2024-01-01 ~ 2024-06-30	2024	tick	90000~92800	-1,284,469	-25.69%	55	0.5	26.27%	0.82	1 !	2m 37s	1.0	-
+	tick_sel_sparse_p4_train_2023_2025_20260604	complete	2023-01-01 ~ 2025-12-31	2023, 2024, 2025	tick	90000~93000	-2,153,502	-21.61%	687	0.9	39.05%	1.25	2	44m 47s	6.0	-
+	tick_oos_dash_p2_smoke_20260604	complete	2025-04-08 ~ 2025-04-30	2025	tick	90000~93000	-3,703,913	-14.83%	179	10.5	14.86%	1.07	5	6m 30s	2.0	-
+	tick_realign_p6_smoke_20260605	complete	2025-01-01 ~ 2025-03-31	2025	tick	90000~93000	-4,343,533	-21.77%	269	4.6	22.96%	1.17	4	8m 17s	2.0	-
+	yr1fresh	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	-4,553,810	-91.08%	207	0.9	92.37%	1.05	0 !	35m 30s	12.0	-
+	tick_oosrob_p4_smoke_20260604	complete	2025-01-01 ~ 2025-03-31	2025	tick	90000~93000	-9,708,723	-27.75%	705	12.2	29.93%	1.19	7	9m 45s	3.0	-
+	run_1779803247	complete	2025-01-01 ~ 2025-12-31	2025	tick	90000~92800	-1,236,067,340	-	42691	0.0	603.12%	-	0 !	10m 47s	5.0	-
+Selected generation preview:
+seed3yr/g0: 8,266,552 (164.37%) 6m 45s
+campaign_e1_refine_jan/g0: 740,353 (7.41%) 1m 46s
+campaign_e1_refine_jan/g1: -183,052 (-3.64%) 2m 37s
+campaign_e1_refine_jan/g2: 0 (0.00%) 1m 25s
+campaign_e1_refine_jan/g3: -57,347 (-1.14%) 1m 20s
+campaign_e1_refine_jan/g4: 43,533 (0.87%) 1m 19s
+RESEARCH LAB
+Edge
+Feature Importance
+Correlation
+Variable Combinations
+EDGE RATIO 분석
+시간대×시총 히트맵 · 등락률 축
+↻ 새로고침
+글로벌 지표
+EDGE RATIO
+5.250
+MAE EFFICIENCY
+0.911
+승률
+100.0%
+WIKI
+RESEARCH WIKI
+refresh
+Good Results screenshots are reference only, not live proof. Markdown is displayed as plain text.
+METHODS
+Metrics Glossary
+3852 bytes
+Research Method Registry
+2965 bytes
+Tick OOS Failure Lesson
+1512 bytes
+GOOD RESULTS
+STOM 백테스팅 우수 전략 분석 보고서
+20782 bytes
+STOM 백테스팅 우수 전략 분석 보고서 v2
+19974 bytes
+METRICS
+Wide v1 연구 흐름과 CLI 구조 리뷰
+6750 bytes
+Condition Research
+931 bytes
+Research Test Tick Wide Conditions
+1182 bytes
+Wide v1 MVP freeze
+2239 bytes
+Wide v1 operational reproduction
+3817 bytes
+Wide v1 post-MVP risk backlog
+3028 bytes
+Wide v1 post-MVP roadmap
+3632 bytes
+Wide v1 release checklist
+1659 bytes
+2U to 2U_C custom inventory
+3020 bytes
+Wide v2 개발 정리
+2640 bytes
+Wide v2 MVP freeze
+2903 bytes
+Wide v2 operational reproduction
+4131 bytes
+FAILED CANDIDATES
+백테 분석 역량 전수 감사 (퀀트/통계/빅데이터 기법) — 2026-06-02
+2845 bytes
+밴드 파라미터화 전략 생성기 — 아키텍처 설계 (2026-06-02)
+5497 bytes
+AI 조건식 루프 — 세션 재개 컨텍스트 (2026-06-02)
+4158 bytes
+세션 핸드오프 — TICK 우선 연구 프로그램 (T0~T4) 완료 (2026-06-03)
+5133 bytes
+NEXT EXPERIMENTS
+no docs
+Metrics Glossary
+Methods / docs/research/condition_research/wiki/metrics_glossary.md
+# Metrics Glossary
+
+This glossary defines terms used by the condition research dashboard and agent workflow.
+
+## graded
+
+`graded` is the loop's scalar research score. It combines profit, drawdown, trade behavior, and gate status into a sortable value. A high graded score is useful for ranking candidates inside a run, but it is not enough to claim a robust or human-level condition.
+
+## hard gate
+
+A `hard gate` is a mandatory rule that a candidate must satisfy before it can be treated as a viable research winner. Examples include positive profit, acceptable drawdown, sufficient trade count, category coverage, and timeframe-safe variables.
+
+## payoff_ratio
+
+`payoff_ratio` compares average winning trade magnitude to average losing trade magnitude. It helps distinguish high-win-rate fragile systems from lower-win-rate systems with better reward-to-risk.
+
+## OOS
+
+`OOS` means out-of-sample: a period not used to select or tune the candidate. If OOS is disabled, the dashboard may still continue discovery, but the candidate remains research signal, not production proof.
+
+## overfit
+
+`overfit` means a rule is too closely fitted to the sampled period. The working criterion is intentionally looser than a production gate: a condition may remain useful for research if the full-period equity curve is upward and recent years improve, but a human-level claim remains blocked until multiyear holdout evidence exists.
+
+## MDD
+
+`MDD` means maximum drawdown, the largest peak-to-trough drop of the cumulative equity curve. It explains how deep the worst loss period became even when total profit is positive.
+
+## edge_ratio
+
+`edge_ratio` compares maximum favorable excursion against maximum adverse excursion. If edge_ratio is strong but realized profit is weak, exits or timing may be the main problem. If edge_ratio is weak, entry quality is likely poor.
+
+## MFE/MAE
+
+`MFE/MAE` separates entry quality from realized exit quality. `MFE` is the best favorable move while holding a trade, and `MAE` is the worst adverse move while holding it.
+
+## slippage
+
+`slippage` is the difference between the backtest assumed fill and realistic execution. It must be treated as a cost because order book depth, liquidity, and fast tick movement can reduce realized profit.
+
+## PBO
+
+`PBO` means Probability of Backtest Overfitting. It estimates the risk that a selected winner is mainly a product of repeated search rather than a stable condition edge.
+
+## DSR
+
+`DSR` means Deflated Sharpe Ratio. It adjusts Sharpe-style evidence for repeated trials and non-normal return distributions.
+
+## win-day ratio
+
+`win-day ratio` is the share of trading days with positive daily profit/loss. It is useful because a condition can have mixed intraday trades but still produce more profitable days than losing days.
+
+## recent-weighted score
+
+`recent-weighted score` gives stronger research weight to recent years such as 2024, 2025, and available 2026 data. It reflects market regime change, but it is not a standalone promotion rule.
+
+## feature_importance
+
+`feature_importance` measures how entry variables such as B_* columns separate winners from losers. In this project it is treated as a diagnostic for hypothesis generation, not as a promotion rule.
+
+## PBO/DSR advisory blocker
+
+`PBO/DSR advisory blocker` means Probability of Backtest Overfitting and Deflated Sharpe Ratio evidence is missing or insufficient. Until formal PBO and DSR runs exist, candidate promotion must remain blocked even if a short-window graded score looks attractive.
+
+## Reference Policy
+
+Human good-result screenshots and reports are a north-star reference corridor. The required policy sentence is: screenshots are reference, not live proof. Reference material can guide variables, time windows, and expectations, but only holdout and multiyear OOS evidence can support a robustness claim.
+
+AI CONTEXT PACK
+AI STATE CONTEXT
+refresh
+copy AI state
+run_id=tick_p7_timecap_900_930_bounded_20260606
+gen_no=1
+timeframe=tick
+prompt_count=3
+STOM AI condition research state
+run_id: tick_p7_timecap_900_930_bounded_20260606
+gen_no: 1
+timeframe: tick
+period: -
+strategy_buy: AILOOP_tick_p7_timecap_900_930_bounded_20260606_g1_buy
+strategy_sell: AILOOP_tick_p7_timecap_900_930_bounded_20260606_g1_sell
+graded_score: 0.0
+profit: 0.0
+return_pct: 0.0
+prompt_count: 3
+verdict: Final Verdict: REJECT_CANDIDATE; prior candidate remains rejected.
+forbidden: Do not approve, deploy, or write production strategy storage from this context. | Do not place live orders or advance V3K gates. | Do not claim human-level or seed-superior performance without fresh OOS evidence.
+forbidden_actions
+Do not approve, deploy, or write production strategy storage from this context.
+Do not place live orders or advance V3K gates.
+Do not claim human-level or seed-superior performance without fresh OOS evidence.
+진화 분석 · P1~P5
+세그먼트 부검
+손실 집중 세그먼트 · 구체 임계값
+실시간 데이터 대기 — 세대 완료 시 세그먼트 부검이 발행됩니다.
+GA POPULATION
+개체군 진화
+실시간 데이터 대기 — GA 모드 세대 평가 시 개체군이 발행됩니다(hillclimb 모드는 미발행).
+전략 계보 · 버전 경과
+세대 계보/추이
+실시간 데이터 대기 — 세대 완료 시 계보가 발행됩니다.
+메타분석 · 누적 학습
+통과 전략 공통 조건
+실시간 데이터 대기 — run 종료 시 누적 메타 인사이트가 발행됩니다.
+과적합 방어 · HOLDOUT 졸업검사
+holdout 졸업검사 OFF 또는 대기 — train 게이트 통과 후보에 한해 holdout 판정이 발행됩니다.
+판정 · BEST / WINNER
+🏆 BEST = WINNER — 게이트 통과 최고 세대
+gen_00
+1.000
+graded
+0.000
+winner_score
+✓ 게이트
+매수
+Tick_B_902_905_Update_2
+매도
+Tick_S_902_905_Update_2
+</> 전체 코드 검토 — gen_00
+실전 전략으로 승인 · 내보내기
+→
+
+승인 시 운영용 strategy.db로 export됩니다. 취소할 수 없으니 신중히 진행하세요.
+
+활성 설정 · 토글
+36개 설정 · 켜진 토글 6
+분산매매 프롬프트 · ON
+sparse_positive_prompt_enabled · ON
+time_cap_bucket_generation_enabled · ON
+best 점진 개선 · ON
+MDD-only 매수 동결 · ON
+청산품질 보상 · ON
+분산 적합도 보상
+OFF
+분산 기준(동시보유 하한)
+6
+목표 일평균거래
+—
+거래대금 게이트 강제
+OFF
+MDD 제어 강화(매도)
+OFF
+time_cap_bucket_end_time
+93000
+진화 모드
+hillclimb
+우승 목표
+uptrend
+수익 가중치
+0.5
+엔진 모드
+warm
+bt_engine_count
+1
+bt_warm_engine_count
+1
+bt_timeout
+600
+bt_warm_run_timeout
+180
+백테 스코프
+single_stock
+타임프레임
+tick
+research_oos_mode
+disabled
+전체 시작일
+20250103
+전체 종료일
+20250103
+bt_universe_start_time
+90000
+bt_universe_end_time
+93000
+종목당 배팅
+5
+MDD 상한
+35
+최소 거래수
+30
+일평균거래 하한
+0.3
+과매매 softcap
+150
+TPI 게이트
+OFF
+TPI 하한
+1.2
+목표 점수
+—
+최대 세대
+2
+비용 · 누적
+누적 토큰
+22,050
+비용 / COUNT
+$2.0000
+한도 사용량
+44.1% / 50,000
+피드백 · 부검
+다음 세대에 전달되는 컨텍스트
+→ LIVE
+loop complete: max_generations 도달: gen_count 2 >= 2
+gen_01
+gen_1: backtest failed/timeout: warm backtest non-success: status=error message=백테스트 시간 초과 (180초) csv=no
+gen_00
+gen_0: ok
+STOM AI · STATE_CONTRACT v2 · last_update 23시 38분 18초

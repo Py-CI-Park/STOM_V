@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_min_midday_strength_liquidity_break",
+  "run_id": "tmap_llmg16_smoke_m05_e32_20260613",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_min_midday_strength_liquidity_break_000_B",
+      "status": "ok",
+      "profit": -45039.0,
+      "mdd": 3.18,
+      "trades": 3
+    }
+  ]
+}

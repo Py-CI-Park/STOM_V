@@ -1,0 +1,94 @@
+{
+  "template": "seed_902905_t2late",
+  "run_id": "wf_t2c3_20260613_w0_fit_sweep",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_seed_902905_t2late_000_B",
+      "status": "ok",
+      "profit": 1319297.0,
+      "mdd": 16.29,
+      "trades": 77
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP ext_end=91000",
+      "param": "ext_end",
+      "value": 91000,
+      "buy_name": "TMAP_seed_902905_t2late_001_B",
+      "status": "ok",
+      "profit": 1502121.0,
+      "mdd": 14.95,
+      "trades": 65
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP ext_end=91500",
+      "param": "ext_end",
+      "value": 91500,
+      "buy_name": "TMAP_seed_902905_t2late_002_B",
+      "status": "ok",
+      "profit": 1382400.0,
+      "mdd": 16.23,
+      "trades": 70
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP ext_end=92500",
+      "param": "ext_end",
+      "value": 92500,
+      "buy_name": "TMAP_seed_902905_t2late_003_B",
+      "status": "ok",
+      "profit": 1096956.0,
+      "mdd": 15.76,
+      "trades": 84
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP cap_lo_late=1500",
+      "param": "cap_lo_late",
+      "value": 1500,
+      "buy_name": "TMAP_seed_902905_t2late_004_B",
+      "status": "ok",
+      "profit": 615141.0,
+      "mdd": 19.85,
+      "trades": 113
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP cap_lo_late=4000",
+      "param": "cap_lo_late",
+      "value": 4000,
+      "buy_name": "TMAP_seed_902905_t2late_005_B",
+      "status": "ok",
+      "profit": 2475043.0,
+      "mdd": 14.76,
+      "trades": 61
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP burst_late=3.0",
+      "param": "burst_late",
+      "value": 3.0,
+      "buy_name": "TMAP_seed_902905_t2late_006_B",
+      "status": "ok",
+      "profit": 1639561.0,
+      "mdd": 16.29,
+      "trades": 76
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP burst_late=4.0",
+      "param": "burst_late",
+      "value": 4.0,
+      "buy_name": "TMAP_seed_902905_t2late_007_B",
+      "status": "ok",
+      "profit": 1794221.0,
+      "mdd": 16.29,
+      "trades": 74
+    }
+  ]
+}

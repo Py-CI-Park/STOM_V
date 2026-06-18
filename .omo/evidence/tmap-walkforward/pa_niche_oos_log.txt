@@ -1,0 +1,5 @@
+[BATCH] run_id=pa_niche_oos_2026_20260612 pairs=2
+[BATCH] prepare status=ok back_count=587 elapsed=75s
+[BATCH] gen0 FROZEN ok profit=-309,706 mdd=8.39 trades=6 daily=0.20 payoff=0.5390070921985817 gate=False reason=total_profit -3.097e+05 <= 0 (20s)
+[BATCH] gen1 BASE_SEED ok profit=-191,109 mdd=15.63 trades=10 daily=0.30 payoff=1.259748427672956 gate=False reason=total_profit -1.911e+05 <= 0 (19s)
+[BATCH] done

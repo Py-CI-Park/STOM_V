@@ -1,0 +1,15 @@
+Command:
+rg -n "COMPLETED_TRAINING_WITH_POOLS|BLOCKED_WITH_TIMEOUT_EVIDENCE_NO_OOS|PROMOTION_CANDIDATE_READY_FOR_OOS|NEEDS_MORE_EVIDENCE|final_approval|export_winner|KHOPENAPI|taskkill|human-level|seed" .omo/evidence/tick-p7-observability-bounded-training-20260605/p7-decision-card.md
+
+Result:
+3:Verdict: `BLOCKED_WITH_TIMEOUT_EVIDENCE_NO_OOS`
+9:P3 preflight showed that the system can now report the active period, tick timeframe, engine mode/count, CPU count, timeout, progress source, status phase, and recent logs through `/status` and the dashboard panel. It also showed the real blocker: the seed warm backtest timed out at `300s` and produced no CSV.
+43:| gen0 seed | `C_T_900_920_U2_B` / `C_T_900_920_U2_S` |
+54:- P3 seed warm backtest exceeded the configured `300s` timeout.
+94:No human-level, seed-superior, or promotion-ready claim is supported.
+121:- `final_approval`: not invoked.
+122:- `export_winner`: not invoked.
+124:- Live broker/KHOPENAPI: not invoked.
+126:- Blanket `taskkill`: not used.
+134:The next work should target the seed warm-backtest timeout before retrying long training.
+139:$ulw-plan tick P7 preflight timeout unblock plan: reduce or segment the seed warm backtest workload before retrying 2023-2025 training. Use .omo/evidence/tick-p7-observability-bounded-training-20260605/p3-preflight-blocked.md and p4-train-blocked.md as the primary evidence, preserve official engines and hard gates, and do not run OOS until a frozen promotion candidate exists.

@@ -73,6 +73,12 @@ class Discriminator:
     win_mean: float
     loss_mean: float
     std_mean_diff: float  # (win_mean - loss_mean) / pooled_std (Cohen's-d 류)
+    # R1(2026-06-11) — 승자 분위수: "기준을 높여라/낮춰라"(방향)에 구체 임계 후보(숫자)를
+    #   더하기 위한 보조 필드. None이면 미산출(하위호환 — 기존 소비자 영향 없음).
+    #   근거: 직이식 임계 5/5 음수 실측 — LLM에 방향만 주면 임의 숫자를 찍는다(G1).
+    win_q25: Optional[float] = None
+    win_q50: Optional[float] = None
+    win_q75: Optional[float] = None
 
 
 @dataclass
@@ -203,10 +209,18 @@ def analyze_trades(
             smd = 0.0
         else:
             smd = (win_mean - loss_mean) / pooled
+        # R1 — 승자 분위수(임계값 제안 재료). 산출 실패는 None으로 흡수(보조 필드).
+        try:
+            win_q25 = float(win_vals.quantile(0.25))
+            win_q50 = float(win_vals.quantile(0.50))
+            win_q75 = float(win_vals.quantile(0.75))
+        except Exception:  # noqa: BLE001
+            win_q25 = win_q50 = win_q75 = None
         discriminators.append(
             Discriminator(
                 column=col, win_mean=win_mean, loss_mean=loss_mean,
                 std_mean_diff=float(smd),
+                win_q25=win_q25, win_q50=win_q50, win_q75=win_q75,
             )
         )
 

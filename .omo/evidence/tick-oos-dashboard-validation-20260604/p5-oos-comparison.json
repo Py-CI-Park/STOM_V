@@ -1,0 +1,243 @@
+{
+  "task": "P5 fixed 2022/2026 OOS seed-vs-AI comparison",
+  "timestamp": "2026-06-04T11:34:18.680866+09:00",
+  "base": "http://127.0.0.1:8799",
+  "owned_dashboard_pid": 145044,
+  "candidate_identity": {
+    "p3_run_id": "tick_oos_dash_p3_train_2023_2025_20260604",
+    "gen_no": 4,
+    "buy_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_buy",
+    "sell_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_sell",
+    "p3_gate_passed": false,
+    "p3_profit": -67190.0
+  },
+  "endpoint_statuses": [
+    {
+      "row": "seed_2022",
+      "endpoint": "run_state",
+      "status": 200,
+      "bytes": 2066,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-raw/seed_2022_run_state.json"
+    },
+    {
+      "row": "seed_2022",
+      "endpoint": "backtest_detail_gen0",
+      "status": 200,
+      "bytes": 13447,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-raw/seed_2022_backtest_detail_g0.json"
+    },
+    {
+      "row": "seed_2026",
+      "endpoint": "run_state",
+      "status": 200,
+      "bytes": 2007,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-raw/seed_2026_run_state.json"
+    },
+    {
+      "row": "seed_2026",
+      "endpoint": "backtest_detail_gen0",
+      "status": 200,
+      "bytes": 2567,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-raw/seed_2026_backtest_detail_g0.json"
+    },
+    {
+      "row": "ai_2022",
+      "endpoint": "run_state",
+      "status": 200,
+      "bytes": 1993,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-raw/ai_2022_run_state.json"
+    },
+    {
+      "row": "ai_2022",
+      "endpoint": "backtest_detail_gen0",
+      "status": 200,
+      "bytes": 18923,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-raw/ai_2022_backtest_detail_g0.json"
+    },
+    {
+      "row": "ai_2026",
+      "endpoint": "run_state",
+      "status": 200,
+      "bytes": 2099,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-raw/ai_2026_run_state.json"
+    },
+    {
+      "row": "ai_2026",
+      "endpoint": "backtest_detail_gen0",
+      "status": 200,
+      "bytes": 674,
+      "payload_path": ".omo/evidence/tick-oos-dashboard-validation-20260604/p5-raw/ai_2026_backtest_detail_g0.json"
+    }
+  ],
+  "rows": [
+    {
+      "row": "seed_2022",
+      "kind": "seed",
+      "year": 2022,
+      "run_id": "tick_oos_dash_p5_seed_2022_20260604",
+      "status": "complete",
+      "gen_no": 0,
+      "gen_status": "ok",
+      "gate_passed": true,
+      "gate_reason": "ok",
+      "graded_score": 4.649090284518312,
+      "profit": 2223554.0,
+      "total_profit_pct": 44.36,
+      "mdd": 13.02,
+      "trade_count": 58,
+      "daily_avg_trades": 0.3,
+      "payoff_ratio": 1.2548258225172206,
+      "max_hold_count": 1.0,
+      "winner": {
+        "gen": 0,
+        "score": 4.649090284518312,
+        "buy_name": "Tick_B_902_905_Update_2",
+        "sell_name": "Tick_S_902_905_Update_2"
+      },
+      "best": {
+        "gen": 0,
+        "graded_score": 4.649090284518312,
+        "gate_passed": true,
+        "buy_name": "Tick_B_902_905_Update_2",
+        "sell_name": "Tick_S_902_905_Update_2"
+      },
+      "seed_buy": "Tick_B_902_905_Update_2",
+      "seed_sell": "Tick_S_902_905_Update_2",
+      "bt_full_start": 20220101,
+      "bt_full_end": 20221231,
+      "bt_universe_start_time": 90000,
+      "bt_universe_end_time": 92800,
+      "bt_refine_from_best": false,
+      "max_generations": 1
+    },
+    {
+      "row": "seed_2026",
+      "kind": "seed",
+      "year": 2026,
+      "run_id": "tick_oos_dash_p5_seed_2026_20260604",
+      "status": "complete",
+      "gen_no": 0,
+      "gen_status": "ok",
+      "gate_passed": false,
+      "gate_reason": "total_profit -1.911e+05 <= 0",
+      "graded_score": 0.40809050955823045,
+      "profit": -191109.0,
+      "total_profit_pct": -3.82,
+      "mdd": 15.63,
+      "trade_count": 10,
+      "daily_avg_trades": 0.3,
+      "payoff_ratio": 1.259748427672956,
+      "max_hold_count": 1.0,
+      "winner": null,
+      "best": {
+        "gen": 0,
+        "graded_score": 0.40809050955823045,
+        "gate_passed": false,
+        "buy_name": "Tick_B_902_905_Update_2",
+        "sell_name": "Tick_S_902_905_Update_2"
+      },
+      "seed_buy": "Tick_B_902_905_Update_2",
+      "seed_sell": "Tick_S_902_905_Update_2",
+      "bt_full_start": 20260101,
+      "bt_full_end": 20260228,
+      "bt_universe_start_time": 90000,
+      "bt_universe_end_time": 92800,
+      "bt_refine_from_best": false,
+      "max_generations": 1
+    },
+    {
+      "row": "ai_2022",
+      "kind": "ai",
+      "year": 2022,
+      "run_id": "tick_oos_dash_p5_ai_2022_20260604",
+      "status": "complete",
+      "gen_no": 0,
+      "gen_status": "ok",
+      "gate_passed": false,
+      "gate_reason": "total_profit -5.315e+05 <= 0",
+      "graded_score": 0.3253677450863682,
+      "profit": -531523.0,
+      "total_profit_pct": -10.63,
+      "mdd": 16.77,
+      "trade_count": 99,
+      "daily_avg_trades": 0.5,
+      "payoff_ratio": 1.3211008370217803,
+      "max_hold_count": 1.0,
+      "winner": null,
+      "best": {
+        "gen": 0,
+        "graded_score": 0.3253677450863682,
+        "gate_passed": false,
+        "buy_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_buy",
+        "sell_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_sell"
+      },
+      "seed_buy": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_buy",
+      "seed_sell": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_sell",
+      "bt_full_start": 20220101,
+      "bt_full_end": 20221231,
+      "bt_universe_start_time": 90000,
+      "bt_universe_end_time": 93000,
+      "bt_refine_from_best": false,
+      "max_generations": 1
+    },
+    {
+      "row": "ai_2026",
+      "kind": "ai",
+      "year": 2026,
+      "run_id": "tick_oos_dash_p5_ai_2026_20260604",
+      "status": "complete",
+      "gen_no": 0,
+      "gen_status": "ok",
+      "gate_passed": true,
+      "gate_reason": "ok",
+      "graded_score": 8.365079365079364,
+      "profit": 126238.0,
+      "total_profit_pct": 2.52,
+      "mdd": 2.52,
+      "trade_count": 2,
+      "daily_avg_trades": 0.1,
+      "payoff_ratio": 999.0,
+      "max_hold_count": 0.0,
+      "winner": {
+        "gen": 0,
+        "score": 8.365079365079364,
+        "buy_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_buy",
+        "sell_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_sell"
+      },
+      "best": {
+        "gen": 0,
+        "graded_score": 8.365079365079364,
+        "gate_passed": true,
+        "buy_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_buy",
+        "sell_name": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_sell"
+      },
+      "seed_buy": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_buy",
+      "seed_sell": "AILOOP_tick_oos_dash_p3_train_2023_2025_20260604_g4_sell",
+      "bt_full_start": 20260101,
+      "bt_full_end": 20260228,
+      "bt_universe_start_time": 90000,
+      "bt_universe_end_time": 93000,
+      "bt_refine_from_best": false,
+      "max_generations": 1
+    }
+  ],
+  "superiority_rule": {
+    "predeclared": "AI must be positive in both OOS years, combined AI profit >= combined seed profit, combined AI max MDD <= combined seed max MDD, and trade/holding profile must be within or justified against human-reference corridor.",
+    "checks": {
+      "ai_positive_both_oos_years": false,
+      "combined_ai_profit_gte_seed": false,
+      "combined_ai_max_mdd_lte_seed": false,
+      "candidate_identity_matches_p3": true,
+      "no_oos_reselection": true
+    },
+    "passed": false,
+    "combined_seed_profit": 2032445.0,
+    "combined_ai_profit": -405285.0,
+    "seed_max_mdd": 15.63,
+    "ai_max_mdd": 16.77,
+    "seed_total_trades": 68,
+    "ai_total_trades": 101
+  },
+  "forbidden_actions_invoked": false,
+  "note": "Rows are fixed OOS executions. Candidate was not reselected after OOS."
+}

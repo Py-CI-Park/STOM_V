@@ -1,0 +1,192 @@
+{
+  "name": "llmgen_f07_prevtime_costdiet_reignite_break",
+  "timeframe": "tick",
+  "source": "P5 LLM 가설 생성 (gen_template_hypothesis)",
+  "description": "시드의 09:02~09:05 첫 모멘텀 추격이 아니라 09:06 이후 중소형 재점화 구간에서, 극발화는 희소성 게이트로만 쓰고 전일동시간비로 진짜 이례 관심을 판별하는 저비용 교집합 니치다.",
+  "buy_code": "if 시분초 >= {entry_start} and 시분초 <= {entry_end} and 초당거래대금 >= {sec_money_min} and 등락율 >= {rate_min} and 등락율 <= {rate_max} and 시가총액 <= {cap_max} and 당일거래대금 >= {day_money_min} and 초당거래대금 >= 초당거래대금평균({burst_avg_win}, -1) * {burst_mult} and 전일동시간비 >= {same_time_ratio_min} and 현재가 > 최고현재가({break_window}, -1): self.Buy()",
+  "sell_code": "if 수익률 >= {take_profit} or 수익률 <= {stop_loss} or 보유시간 >= {max_hold_sec}: self.Sell()",
+  "params": [
+    {
+      "name": "entry_start",
+      "default": 90700,
+      "values": [
+        90600,
+        90700,
+        90800,
+        90900,
+        91000
+      ],
+      "side": "buy",
+      "note": "시드 09:02~09:05와 겹치지 않는 09:06 이후 재점화 창. 너무 늦추면 F07 후반부 악화 교훈에 걸리므로 09:10까지만 시작점을 탐색한다."
+    },
+    {
+      "name": "entry_end",
+      "default": 91800,
+      "values": [
+        91200,
+        91400,
+        91600,
+        91800,
+        92000
+      ],
+      "side": "buy",
+      "note": "윈도우함수 평가 전 가장 싼 시간 게이트. 09:20 이후 신호 가치 하락 교훈을 반영해 상단을 09:20으로 제한하고 default는 두 번째로 느슨한 09:18."
+    },
+    {
+      "name": "sec_money_min",
+      "default": 25,
+      "values": [
+        15,
+        25,
+        40,
+        65,
+        100
+      ],
+      "side": "buy",
+      "note": "초당거래대금 절대 하한. 값비싼 초당거래대금평균 호출 전에 활성 틱만 통과시키는 비용 다이어트 핵심 축이며, 거래 빈도도 연속 조절한다. 단위는 백만원."
+    },
+    {
+      "name": "rate_min",
+      "default": 1.8,
+      "values": [
+        1.0,
+        1.8,
+        2.6,
+        3.5,
+        5.0
+      ],
+      "side": "buy",
+      "note": "등락율 하한을 윈도우함수 앞에 배치해 평탄 종목 평가를 차단한다. 각도 극단은 쓰지 않고 단순 가격 반응만 요구한다."
+    },
+    {
+      "name": "rate_max",
+      "default": 15,
+      "values": [
+        8,
+        10,
+        12,
+        15,
+        20
+      ],
+      "side": "buy",
+      "note": "과열 상한 밴드. 이미 지나치게 오른 종목의 추격을 줄이되, default는 두 번째로 느슨하게 두어 기본 렌더가 0건으로 죽지 않게 한다."
+    },
+    {
+      "name": "cap_max",
+      "default": 2500,
+      "values": [
+        1000,
+        1500,
+        2000,
+        2500,
+        3200
+      ],
+      "side": "buy",
+      "note": "중소형 중심 비용·품질 게이트. 시드 응답곡선에서 cap 축소가 MDD를 줄였고, 과제 요구대로 default를 2500억 이하로 둔다. 단위는 억."
+    },
+    {
+      "name": "day_money_min",
+      "default": 12000,
+      "values": [
+        8000,
+        12000,
+        18000,
+        26000,
+        38000
+      ],
+      "side": "buy",
+      "note": "당일 누적 거래대금 하한. sec_money_min과 별도로 그날의 주도성·빈도를 연속 조절하는 축이다. 단위는 백만원."
+    },
+    {
+      "name": "burst_avg_win",
+      "default": 8,
+      "values": [
+        5,
+        8,
+        13,
+        21,
+        34
+      ],
+      "side": "buy",
+      "note": "초당거래대금 평균 비교 윈도우. 첫 인자는 항상 1 이상이며 shift -1로 직전 평균만 본다. 짧은 창은 순간 발화, 긴 창은 배경 유동성 대비 발화를 본다."
+    },
+    {
+      "name": "burst_mult",
+      "default": 8,
+      "values": [
+        6,
+        8,
+        10,
+        12,
+        15
+      ],
+      "side": "buy",
+      "note": "극발화 희소성 게이트. alpha 자체가 아니라 평균 대비 비정상적인 활성 틱만 남기는 필터이며, 과제 요구대로 default를 8배에 둔다."
+    },
+    {
+      "name": "same_time_ratio_min",
+      "default": 220,
+      "values": [
+        160,
+        220,
+        300,
+        400,
+        550
+      ],
+      "side": "buy",
+      "note": "전일동시간비 판별자. 단독 신호가 아니라 극발화와 교집합으로만 사용해 전일 같은 시각 대비 이례적 관심인지 판별한다."
+    },
+    {
+      "name": "break_window",
+      "default": 8,
+      "values": [
+        5,
+        8,
+        13,
+        21,
+        34
+      ],
+      "side": "buy",
+      "note": "돌파 순간 진입용 직전 최고가 관찰 구간. 현재가가 직전 구간 최고현재가를 상회할 때만 매수해 돌파 전 준비단계 함정을 피한다."
+    },
+    {
+      "name": "take_profit",
+      "default": 9,
+      "values": [
+        5,
+        7,
+        9,
+        11,
+        13
+      ],
+      "side": "sell",
+      "note": "청산 다이얼이 수익을 지배했다는 기존 실측을 반영해 넓게 탐색한다. 구조 가설의 핵심은 매수 교집합이고 익절은 별도 지도 축이다."
+    },
+    {
+      "name": "stop_loss",
+      "default": -2.5,
+      "values": [
+        -3.5,
+        -3,
+        -2.5,
+        -2,
+        -1.5
+      ],
+      "side": "sell",
+      "note": "급발화 실패 시 손실 제한. 음수 슬롯으로 직접 두어 템플릿 안에 고정 숫자를 남기지 않는다."
+    },
+    {
+      "name": "max_hold_sec",
+      "default": 120,
+      "values": [
+        60,
+        90,
+        120,
+        180,
+        240
+      ],
+      "side": "sell",
+      "note": "틱 전략의 시간가치 소멸을 반영한 최대 보유 시간. 후반 신호 가치 하락 교훈 때문에 장기 보유가 아니라 짧은 검증 구간만 허용한다."
+    }
+  ]
+}

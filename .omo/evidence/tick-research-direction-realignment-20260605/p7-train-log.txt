@@ -1,0 +1,16 @@
+P7 official 2023-2025 training run was not started in this pass.
+
+Exact blocker:
+- P6 used the same tick 09:00-09:30 warm-engine family on a much shorter 2025-01-01..2025-03-31 window.
+- P6 gen0 seed evaluation exceeded bt_warm_run_timeout=300s and returned: warm backtest non-success, status=error, csv=no.
+- P7 would expand the date range to 2023-01-01..2025-12-31 and max_generations=10.
+- Starting that run now would likely consume an unbounded multi-hour session before producing stable evidence, and it would not address the observed missing progress/log visibility problem.
+
+Decision:
+- Do not run P7 until the next command either:
+  1. narrows the smoke/train engine scope enough to finish bounded, or
+  2. runs it as an explicitly long unattended train job with progress/log capture expectations.
+
+Guardrail:
+- No OOS was run.
+- No final_approval/export_winner/production DB/live broker action was invoked.

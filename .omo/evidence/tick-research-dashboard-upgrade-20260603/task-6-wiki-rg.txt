@@ -1,0 +1,32 @@
+Task 6 wiki sanity
+Timestamp: 2026-06-04T04:38:00+09:00
+
+Command:
+rg -n "REJECT_CANDIDATE|payoff_ratio|edge_ratio|feature_importance|PBO|DSR|segment feedback|screenshots are reference, not live proof" docs/research/condition_research/wiki
+
+Observed:
+docs/research/condition_research/wiki/research_method_registry.md:22:### feature_importance
+docs/research/condition_research/wiki/research_method_registry.md:23:feature_importance analysis ranks B_* entry features by how well they separate profitable and losing trades across segments such as time, market-cap bucket, and change bucket.
+docs/research/condition_research/wiki/research_method_registry.md:28:### segment feedback
+docs/research/condition_research/wiki/research_method_registry.md:29:segment feedback turns weak segment analysis into generation guidance. It should appear in prompt logging evidence before claiming that the model actually used the avoid or repair instruction.
+docs/research/condition_research/wiki/research_method_registry.md:36:BackFinder-derived seeds can contain lookahead or survivorship bias if interpreted as deployable rules. PBO and DSR are not implemented as hard promotion gates yet, so they remain advisory blockers.
+docs/research/condition_research/wiki/research_method_registry.md:40:1. Run toggles-ON tick research with generation, filter gates, time dispersion, few-shot seed examples, and segment feedback enabled.
+docs/research/condition_research/wiki/research_method_registry.md:42:3. Add formal PBO and DSR measurements as read-only diagnostics before any promotion workflow is considered.
+docs/research/condition_research/wiki/tick_oos_failure_lesson.md:7:Final evidence says `REJECT_CANDIDATE`.
+docs/research/condition_research/wiki/tick_oos_failure_lesson.md:22:4. PBO and DSR remain advisory blockers until implemented and run.
+docs/research/condition_research/wiki/tick_oos_failure_lesson.md:27:Run a toggles-ON multiyear tick campaign with explicit segment feedback evidence, bounded time dispersion, few-shot seed examples, and direct 2022/2026 OOS comparison against Tick_902.
+docs/research/condition_research/wiki/metrics_glossary.md:13:## payoff_ratio
+docs/research/condition_research/wiki/metrics_glossary.md:15:`payoff_ratio` compares average winning trade magnitude to average losing trade magnitude.
+docs/research/condition_research/wiki/metrics_glossary.md:17:## edge_ratio
+docs/research/condition_research/wiki/metrics_glossary.md:19:`edge_ratio` compares maximum favorable excursion against maximum adverse excursion.
+docs/research/condition_research/wiki/metrics_glossary.md:21:## feature_importance
+docs/research/condition_research/wiki/metrics_glossary.md:23:`feature_importance` measures how entry variables such as B_* columns separate winners from losers.
+docs/research/condition_research/wiki/metrics_glossary.md:25:## PBO/DSR advisory blocker
+docs/research/condition_research/wiki/metrics_glossary.md:27:`PBO/DSR advisory blocker` means Probability of Backtest Overfitting and Deflated Sharpe Ratio evidence is missing or insufficient.
+docs/research/condition_research/wiki/metrics_glossary.md:31:The required policy sentence is: screenshots are reference, not live proof.
+
+Command:
+rg -n "PROMOTE_CANDIDATE" docs/research/condition_research/wiki
+
+Observed:
+no matches; exit code 1

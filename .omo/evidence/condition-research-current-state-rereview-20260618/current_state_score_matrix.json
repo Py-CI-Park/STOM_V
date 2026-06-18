@@ -1,0 +1,203 @@
+{
+  "date": "2026-06-18",
+  "scope": "Current-state rereview after 2026-06-18 OOS, Q4 defense, portfolio, and dashboard research work",
+  "headline_scores": {
+    "overall_research_process_score": 72,
+    "overall_research_process_gap": 28,
+    "condition_generation_core_score": 67,
+    "condition_generation_core_gap": 33,
+    "validation_and_portfolio_research_score": 76,
+    "validation_and_portfolio_research_gap": 24,
+    "promotion_readiness_score": 56,
+    "promotion_readiness_gap": 44
+  },
+  "score_change_from_2026_06_17": {
+    "prior_generation_breadth_score": 66,
+    "current_overall_research_process_score": 72,
+    "delta_points": 6,
+    "interpretation": "OOS/portfolio/dashboard evidence improved materially, but cold condition generation and final promotion readiness remain the main gaps."
+  },
+  "raw_metrics": {
+    "generation_breadth": {
+      "template_total": 149,
+      "tick_templates": 111,
+      "min_templates": 38,
+      "default_valid_pct": 100.0,
+      "with_and_pct": 100.0,
+      "avg_and_count": 17.07,
+      "literal_or_count": 38,
+      "literal_or_pct": 25.5,
+      "elif_branch_count": 121,
+      "elif_branch_pct": 81.2,
+      "full_stateful_n40_promising": 0,
+      "full_stateful_n40_total": 40,
+      "anchor_adopted_total": 399,
+      "anchor_best_profit_krw": 13928386,
+      "anchor_best_mdd_pct": 9.62
+    },
+    "official_oos": {
+      "oos_2022_2026_followup_runs": 4,
+      "oos_2022_2026_gate_pass": 4,
+      "oos_2023_2025_runs": 9,
+      "oos_2023_2025_gate_pass": 9,
+      "q4_official_runs": 3,
+      "q4_gate_pass": 2,
+      "q4_gate_fail": 1,
+      "q4_failed_strategy": "r8_4",
+      "q4_r8_4_profit_krw": -835479,
+      "q4_r8_4_mdd_pct": 35.6,
+      "q4_exit2_balance_profit_krw": 640100,
+      "q4_exit2_balance_mdd_pct": 16.43,
+      "q4_r2full_mdd_profit_krw": 1516,
+      "q4_r2full_mdd_mdd_pct": 17.17
+    },
+    "portfolio_evidence": {
+      "r8_4_solo_total_profit_krw": 16894052,
+      "r8_4_plus_exit2_total_profit_krw": 31505991,
+      "r8_4_plus_r2full_total_profit_krw": 30605706,
+      "three_strategy_total_profit_krw": 45217645,
+      "positive_periods_each_major_combo": "5/5",
+      "two_strategy_total_profit_winner": "r8_4 + exit2",
+      "two_strategy_recent_2025_2026_winner": "r8_4 + r2full",
+      "capital_efficiency_winner": "r8_4 solo"
+    },
+    "bulk_candidate_selection": {
+      "combined_candidates": 64,
+      "raw_score_winner": "r8_exclude_month_11__exit2_skip_after_prior_exit2_loss_500k_else_full",
+      "raw_score_winner_score": 93.5087,
+      "raw_score_winner_all_profit_krw": 46745487,
+      "raw_score_winner_overfit_risk": "high_calendar_month_11_rule",
+      "robust_primary": "r8_exclude_cap_lt_1500__exit2_skip_after_prior_exit2_loss_500k_else_full",
+      "robust_primary_score": 90.5884,
+      "robust_primary_all_profit_krw": 39402438,
+      "robust_primary_all_mdd_pct": 7.6823,
+      "robust_primary_q4_profit_krw": 952502,
+      "robust_primary_q4_mdd_pct": 11.3583,
+      "robust_primary_official_oos_done": false
+    },
+    "dashboard_research_management": {
+      "research_records_campaign_visible": true,
+      "latest_campaign_rank": 1,
+      "latest_detail_status": 200,
+      "latest_detail_available": true,
+      "latest_campaign_count": 17,
+      "focused_dashboard_passed": 89,
+      "backtest_job_tests_passed": 12,
+      "extended_dashboard_tests_passed": 315,
+      "full_unit_passed": 3364,
+      "full_unit_skipped": 5,
+      "full_unit_failed_existing_contracts": 7
+    }
+  },
+  "axis_scores": [
+    {
+      "axis": "generation_breadth_and_syntax",
+      "score": 82,
+      "gap": 18,
+      "evidence": "149 templates, tick 111/min 38, 100% default render/validate.",
+      "remaining_gap": "Coverage ledger and duplicate/family balance are still weak.",
+      "improvement": "Keep template family registry with time/cap/logic/entry/exit quotas."
+    },
+    {
+      "axis": "and_or_human_style_coverage",
+      "score": 68,
+      "gap": 32,
+      "evidence": "AND 149/149, literal OR 38/149, if/elif branch 121/149; Q4 decomposition now uses month/time/cap/exit cases.",
+      "remaining_gap": "Branch-level P/L and human-case corpus are not fully linked to OOS lift.",
+      "improvement": "Add branch_id, setup_id, activation count, train lift, and OOS lift to each generated candidate."
+    },
+    {
+      "axis": "cold_llm_generation_effectiveness",
+      "score": 38,
+      "gap": 62,
+      "evidence": "full_stateful_n40 PROMISING 0/40; random/stateful broad generation did not produce OOS-ready candidates.",
+      "remaining_gap": "AI still struggles to create good formulas from a cold broad prompt.",
+      "improvement": "Use cold LLM as seed/template proposer only; route winning work through seed-bank mutation and strict OOS gates."
+    },
+    {
+      "axis": "seed_anchor_mutation_and_filtering",
+      "score": 84,
+      "gap": 16,
+      "evidence": "anchor mutation 399 adopted, best +13.93M/MDD 9.62; robust cap_lt_1500 filter selected from 64 post-Q4 candidates.",
+      "remaining_gap": "The newest robust filtered candidate has not completed official OOS.",
+      "improvement": "Run the deferred robust-primary official OOS and record pass/fail by seed basin."
+    },
+    {
+      "axis": "backtest_oos_evidence",
+      "score": 70,
+      "gap": 30,
+      "evidence": "4/4 2022/2026 follow-up OOS pass, 9/9 2023~2025 OOS pass, Q4 stress 2/3 pass and r8_4 failure identified.",
+      "remaining_gap": "Fixed candidates are well tested, but final selected robust combo is still CSV reanalysis/pre-selection.",
+      "improvement": "Separate fixed-candidate OOS, official robust-candidate OOS, and portfolio reanalysis labels in all reports."
+    },
+    {
+      "axis": "q4_stress_diagnosis",
+      "score": 78,
+      "gap": 22,
+      "evidence": "Q4 official OOS isolated r8_4 as -835,479 KRW / MDD 35.60; exit2_balance was +640,100 KRW.",
+      "remaining_gap": "r8_4 defense is still derived from decomposition, not final official candidate run.",
+      "improvement": "Officially test low-cap exclusion and early-slot filters as separate r8 defense candidates."
+    },
+    {
+      "axis": "portfolio_allocation_research",
+      "score": 79,
+      "gap": 21,
+      "evidence": "All major 2022~2026 combos are positive 5/5; 3-strategy total profit 45.22M, but r8 solo is capital-efficiency winner.",
+      "remaining_gap": "Capital efficiency, total profit, and recent-regime stability point to different winners.",
+      "improvement": "Define account objective profiles: total-profit account, recent-defense account, and capital-efficiency account."
+    },
+    {
+      "axis": "research_dashboard_management",
+      "score": 82,
+      "gap": 18,
+      "evidence": "Research Records and Evolution GUI parity panels/API exist; latest campaign visible rank 1, detail 200, campaign_count 17.",
+      "remaining_gap": "Latest markdown update_log auto-exposure and friendly candidate aliases remain incomplete.",
+      "improvement": "Implement recent update_log indexing and Korean alias labels for long internal candidate names."
+    },
+    {
+      "axis": "evidence_lineage_cleanliness",
+      "score": 70,
+      "gap": 30,
+      "evidence": "Plan/Boulder/evidence files are extensive, and dashboard campaign summaries are visible.",
+      "remaining_gap": "There are many untracked artifacts and earlier summary drift; canonical source of truth still needs tightening.",
+      "improvement": "Add consistency checks for summary/jsonl pairs and maintain a campaign registry index."
+    },
+    {
+      "axis": "promotion_readiness",
+      "score": 56,
+      "gap": 44,
+      "evidence": "Research-only/OOS/portfolio/deferred labels are documented, and no live/export claim is made.",
+      "remaining_gap": "Final robust candidate official OOS is not complete, and live/export approval remains intentionally blocked.",
+      "improvement": "Use statuses: research-only, fixed-candidate-OOS-passed, robust-candidate-OOS-pending, promotion-blocked."
+    },
+    {
+      "axis": "full_time_generalization",
+      "score": 58,
+      "gap": 42,
+      "evidence": "Weekday/hourly/5-minute slot analysis exists; Q4 loss concentrated in 09:00~09:04 and cap<1500.",
+      "remaining_gap": "Tick generation still centers on early-session behavior; full-day condition creation is not yet balanced.",
+      "improvement": "Create bucket quotas for open, mid-morning, midday, afternoon, and close, with separate survival/OOS cards."
+    },
+    {
+      "axis": "production_safety_governance",
+      "score": 82,
+      "gap": 18,
+      "evidence": "No backtest.py changes in research runs, no V3K/live/protected path edits claimed, deferred official OOS plan is guarded.",
+      "remaining_gap": "Full unit suite still has 7 existing contract failures outside this research lane.",
+      "improvement": "Keep backtest.py contract stabilization as a separate plan before any engine-level redesign."
+    }
+  ],
+  "largest_remaining_gaps": [
+    "Cold LLM generation effectiveness gap 62%",
+    "Promotion readiness gap 44%",
+    "Full-time generation generalization gap 42%",
+    "Final robust candidate official OOS gap 30%",
+    "Evidence lineage/canonical summary gap 30%",
+    "AND/OR branch attribution and human-case corpus gap 32%"
+  ],
+  "recommended_next_work": [
+    "$start-work .omo/plans/post-20260618-official-oos-dashboard-cleanup.md",
+    "$start-work condition-research-evidence-lineage-cleanup-20260618",
+    "$start-work condition-generation-branch-attribution-20260618"
+  ]
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "label": "BASE_SEED",
+    "buy": "Tick_B_902_905_Update_2",
+    "sell": "Tick_S_902_905_Update_2"
+  },
+  {
+    "label": "FROZEN_THETA",
+    "buy": "THETA_seed_902905_06_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "EXIT2_DEFAULT",
+    "buy": "TMAP_seed_902905_exit2_000_B",
+    "sell": "TMAP_seed_902905_exit2_000_S"
+  },
+  {
+    "label": "EXIT2C cap2500+e2def",
+    "buy": "EXIT2C_00_B",
+    "sell": "EXIT2C_00_S"
+  },
+  {
+    "label": "EXIT2C cap2500+e2take7",
+    "buy": "EXIT2C_01_B",
+    "sell": "EXIT2C_01_S"
+  },
+  {
+    "label": "EXIT2C cap2500+e2take9",
+    "buy": "EXIT2C_02_B",
+    "sell": "EXIT2C_02_S"
+  },
+  {
+    "label": "EXIT2C cap3000+e2take7",
+    "buy": "EXIT2C_03_B",
+    "sell": "EXIT2C_03_S"
+  }
+]

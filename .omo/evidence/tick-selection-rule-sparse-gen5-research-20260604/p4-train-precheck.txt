@@ -1,0 +1,34 @@
+﻿## P4 Train Precheck
+timestamp=2026-06-04T12:46:25.2351065+09:00
+run_id=tick_sel_sparse_p4_train_2023_2025_20260604
+config_path=.omo\evidence\tick-selection-rule-sparse-gen5-research-20260604\p4-train-config.json
+config_sha256=2d082cd7c8d2fb66ca340afb055d4950be8e286bde0770c94b68cf9b391f60a4
+
+## config summary
+bt_full_start=20230101
+bt_full_end=20251231
+bt_timeframe=tick
+bt_universe_start_time=90000
+bt_universe_end_time=93000
+max_generations=6
+bt_timeout=900
+bt_warm_run_timeout=300
+min_daily_trades=0.3
+mdd_cap=35
+prompt_logging_enabled=True
+equity_points_enabled=True
+segment_feedback_enabled=True
+segment_feedback_min_count=8
+bt_refine_from_best=True
+winner_objective=uptrend
+
+## existing run rows for run_id
+0
+
+## protected-path git status before P4
+
+
+## BOM fix note
+Initial p4-train-log.txt was moved to p4-train-log-bom-failure.txt because Python json.load rejected a UTF-8 BOM before loop runtime started.
+Current config hash after BOMless rewrite:
+64ef805703a388e3ed2abfaa8613d0ef5af92f9e08915f65e8db25913a1ab81b

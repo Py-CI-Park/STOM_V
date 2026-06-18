@@ -1,0 +1,35 @@
+﻿Scope fidelity check
+started_at=2026-06-18T23:29:55.5424955+09:00
+
+## branch
+current_branch=lazycodex/tick-sparse-positive-generation-improvement-20260604
+head=067ef184
+anchor=84acb6cb
+
+## protected-path-status
+
+## backtest status
+
+## source touched summary
+ M .omo/boulder.json
+ M .omo/start-work/ledger.jsonl
+ M ai_strategy_loop/dashboard/app.py
+ M "ai_strategy_loop/dashboard/frontend/STOM AI Dashboard.html"
+ M ai_strategy_loop/dashboard/frontend/app.jsx
+ M ai_strategy_loop/dashboard/frontend/bundle/app.js
+ M ai_strategy_loop/dashboard/frontend/bundle/manifest.json
+ M ai_strategy_loop/dashboard/frontend/index.html
+ M ai_strategy_loop/dashboard/frontend/lab.html
+ M ai_strategy_loop/dashboard/frontend/pro.html
+ M ai_strategy_loop/dashboard/frontend/verdict.html
+ M ai_strategy_loop/dashboard/research_api.py
+?? .omo/evidence/stom-reorg-20260618/
+?? .omo/plans/stom-condition-research-dashboard-reorganization-20260618.md
+?? ai_strategy_loop/dashboard/evolution_gui_parity.py
+?? ai_strategy_loop/dashboard/frontend/evolution-gui-parity-panel.jsx
+?? ai_strategy_loop/dashboard/frontend/research-records-panel.jsx
+?? ai_strategy_loop/dashboard/research_records.py
+
+## no live promotion/export invoked
+No commands in this run invoked export_winner, final approval, live order, KHOPENAPI login, strategy.db writes, or V3K gate changes.
+ended_at=2026-06-18T23:29:57.7127167+09:00

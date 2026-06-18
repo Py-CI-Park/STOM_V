@@ -1,0 +1,305 @@
+"""Track Z — ESM-bundle runtime harness gate (PR-1 origin → PR-6 FLIPPED reality).
+
+PR-1 first proved the bundle MECHANISM on a pilot (phase-detail.jsx) behind STOM_BUNDLE=1.
+PR-6 (Story 4+5b) FLIPPED the default: the esbuild bundle is now the REAL served artifact
+(frontend/bundle/app.js, manifest model=="bundle") and the legacy transform-concat path is an
+emergency rollback behind STOM_LEGACY_CONCAT=1. The harness validations now target that served
+artifact:
+
+  V1 — bundle MECHANISM proof: a transient esbuild bundle of the alias-to-shim entry builds clean,
+       contains NO require("react") / NO second-React sentinel, and at runtime exposes
+       window.DemoBadge / window.LivePending as functions with a SINGLE React identity and zero
+       "Dynamic require".
+  V2 — SERVED bundle index path (HARDEST): node+jsdom hosts vendored React + ReactDOM +
+       lightweight-charts + stom-ui + the REAL DEFAULT served frontend/bundle/app.js, mounts the
+       index App, and reports 0 errors / non-empty #root.
+  V3 — SERVED bundle per-tab sweep (Story 4 entry gate): the served App renders all 7 tabs.
+  V4 — SERVED bundle standalone mounts (Story 4 entry gate): lab/pro/verdict mount their own root.
+
+Source-contract assertions (pure-python, always run): the shims, the dual-safe export, the flag
+path, the entry re-publish, and the DEFAULT bundle-model manifest exist. The node harness run is
+GATED on node + esbuild + jsdom availability (same convention as test_phase9_spa_tabs: skip when
+build deps absent), because webui-build/node_modules is gitignored (runtime stays npm-free).
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+PROJECT_ROOT = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+DASH = Path(PROJECT_ROOT) / "ai_strategy_loop" / "dashboard"
+FRONTEND = DASH / "frontend"
+WEBUI = DASH / "webui-build"
+SRC = WEBUI / "src"
+
+
+def _read(p: Path) -> str:
+    return p.read_text(encoding="utf-8")
+
+
+# ====================================================== source-contract (no node)
+class TestTrackZSourceContract:
+    def test_react_shim_reexports_window_react(self) -> None:
+        src = _read(SRC / "react-shim.js")
+        assert "window.React" in src
+        assert "export default" in src
+        # The pilot path hooks must be re-exported as named bindings.
+        for hook in ("useState", "useEffect", "useMemo", "useRef", "Fragment", "createElement"):
+            assert hook in src, f"react-shim missing {hook}"
+
+    def test_react_dom_shim_reexports_window_reactdom(self) -> None:
+        src = _read(SRC / "react-dom-shim.js")
+        assert "window.ReactDOM" in src
+        assert "createRoot" in src
+
+    def test_pilot_entry_republishes_symbols(self) -> None:
+        """Entry re-publishes the FROZEN/shared globals on window for HTML mounts.
+
+        UPDATED (Track Z PR-3): the entry grew from the PR-1 pilot (phase-detail only) into
+        the full app-graph root. It must still import phase-detail.jsx and republish
+        DemoBadge/LivePending; PR-3 additionally pulls in the converted modules and republishes
+        the FROZEN mount-by-name globals (App/ErrorBoundary/LabPage/ProPage/VerdictPanel) and
+        the defensively window-consumed shared components. Assert the durable invariants."""
+        src = _read(SRC / "track-z-entry.pilot.js")
+        assert 'from "../../frontend/phase-detail.jsx"' in src
+        # DemoBadge/LivePending still republished (PR-1 invariant, now within a larger set).
+        assert "DemoBadge" in src and "LivePending" in src
+        assert "Object.assign(window," in src
+
+    def test_phase_detail_is_esm_dual_safe(self) -> None:
+        """phase-detail.jsx keeps its legacy Object.assign(window,…) AND adds a single-line
+        export consumed by the flagged bundle (stripped by build-app.mjs for the concat path).
+
+        UPDATED (Track Z PR-3): the export list grew from the PR-1 pilot pair
+        (DemoBadge/LivePending) to the full cross-consumed definer set (now also
+        PhaseDetailPanel/PhaseTimeline/ProcessFlowPanel, bare-consumed by app.jsx). Assert the
+        durable invariant: ONE top-level `export { … };` line that includes DemoBadge+LivePending,
+        rather than pinning the exact PR-1 two-symbol string."""
+        import re as _re
+
+        src = _read(FRONTEND / "phase-detail.jsx")
+        assert "Object.assign(window, {" in src  # legacy concat publishing preserved
+        m = _re.search(r"^export\s*\{([^}]*)\}\s*;?\s*$", src, _re.M)  # single-line dual-safe export
+        assert m is not None, "phase-detail.jsx missing a top-level `export { … };` line"
+        exported = {s.strip() for s in m.group(1).split(",") if s.strip()}
+        assert {"DemoBadge", "LivePending"} <= exported, f"export must include DemoBadge+LivePending: {exported}"
+
+    def test_build_app_is_bundle_only(self) -> None:
+        """PR-7 RETIRE: build-app.mjs is now BUNDLE-ONLY. The concat fallback
+        (STOM_LEGACY_CONCAT=1, _stripTopLevelEsm, ORDER, ==== markers) and the redundant
+        STOM_BUNDLE=1 pilot path were removed to enable clean P5 decomposition. The single build
+        is the esbuild alias-to-shim bundle. Assert the bundle invariants AND that the retired
+        concat/pilot machinery is gone (so a regression that re-adds it fails)."""
+        src = _read(WEBUI / "build-app.mjs")
+        # The single bundle build: alias-to-shim (Driver-2, not bare external) + classic IIFE.
+        assert "react-shim.js" in src and "react-dom-shim.js" in src
+        assert "bundle: true" in src and 'format: "iife"' in src
+        # Retired machinery must be gone — assert on the CODE (not prose: the header comment still
+        #   names the retired flags to explain what PR-7 removed, so match runtime-access strings
+        #   and identifiers that only appear as live code, never as documentation).
+        assert "_stripTopLevelEsm" not in src, "PR-7: concat ESM-stripper must be removed."
+        assert "buildLegacyConcat" not in src, "PR-7: concat builder must be removed."
+        assert "const ORDER" not in src, "PR-7: hardcoded concat ORDER must be removed."
+        assert "process.env.STOM_LEGACY_CONCAT" not in src, "PR-7: concat fallback dispatch must be removed."
+        assert "process.env.STOM_BUNDLE" not in src, "PR-7: redundant pilot dispatch must be removed."
+
+    def test_default_manifest_is_bundle_model(self) -> None:
+        """PR-6 FLIP: the DEFAULT (no-env) build is now the esbuild bundle — the committed manifest
+        records model=="bundle" with the entry + externalized-globals meta, NOT the legacy
+        appSources concat list.
+
+        FLIP history: this test was `test_default_concat_path_still_26_sources` (it asserted
+        appSources==26 with [-1]=="app.jsx" because the default WAS concat). Story 4+5b flipped the
+        default to bundle, so the protective intent inverts: it must now fail if the build model
+        regresses to concat (e.g. STOM_LEGACY_CONCAT leaking into the default)."""
+        manifest = json.loads(_read(FRONTEND / "bundle" / "manifest.json"))
+        assert manifest.get("model") == "bundle", (
+            f"default build model must be 'bundle' (got {manifest.get('model')!r}) — "
+            "a concat manifest means the legacy fallback leaked into the default."
+        )
+        assert manifest.get("entry", "").endswith(".js"), "bundle manifest missing entry path"
+        assert "externalizedGlobals" in manifest, (
+            "bundle manifest missing externalizedGlobals (react→window.React alias-to-shim meta)"
+        )
+        # concat-only key must be gone in the default manifest.
+        assert "appSources" not in manifest, (
+            "bundle manifest still carries concat-only appSources — build-model regression"
+        )
+
+
+# ============================================== node + jsdom runtime harness (gated)
+def _node_or_skip() -> str:
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("node 미설치 — Track Z 런타임 하네스 검증 생략")
+    if not (WEBUI / "node_modules" / "esbuild").exists():
+        pytest.skip("esbuild 미설치(webui-build/node_modules gitignored) — 하네스 검증 생략")
+    if not (WEBUI / "node_modules" / "jsdom").exists():
+        pytest.skip("jsdom 미설치(webui-build/node_modules gitignored, 테스트 전용) — 하네스 검증 생략")
+    assert node is not None  # narrow for the type checker (pytest.skip raises above)
+    return node
+
+
+def _run_harness() -> dict:
+    node = _node_or_skip()
+    result = subprocess.run(
+        [node, "track-z-harness.mjs"],
+        # 300s: the harness now builds + jsdom-renders 7 tabs + 3 standalone pages (V1-V4);
+        #   under full-suite parallel load the node subprocess can exceed a tighter bound
+        #   (intermittent flake). Generous bound keeps the baseline deterministic.
+        cwd=str(WEBUI), capture_output=True, text=True, timeout=300,
+    )
+    # The harness prints exactly one ASCII-safe JSON object on stdout (console.error is
+    #   captured, not forwarded; non-ASCII is \\u-escaped so cp949 text decoding is safe).
+    #   Take the first JSON block.
+    out = (result.stdout or "").strip()
+    stderr_text = result.stderr or ""
+    start = out.find("{")
+    payload = out[start:] if start != -1 else out
+    try:
+        data = json.loads(payload)
+    except json.JSONDecodeError:
+        pytest.fail(f"harness produced no parseable JSON.\nSTDOUT:\n{out}\nSTDERR:\n{stderr_text}")
+    if "hostError" in data:
+        pytest.skip(f"jsdom 호스트 불가(환경) — Playwright 폴백 필요: {data['hostError'][:200]}")
+    return data
+
+
+def test_track_z_v1_pilot_mechanism() -> None:
+    """V1: flagged pilot bundle exposes window.DemoBadge/LivePending with single React identity."""
+    data = _run_harness()
+    v1 = data["v1"]
+    assert v1["demoBadgeIsFunction"], "window.DemoBadge is not a function"
+    assert v1["livePendingIsFunction"], "window.LivePending is not a function"
+    assert v1["singleReactIdentity"], "single React identity not proven"
+    assert not v1["dynamicRequireErrors"], f"Dynamic require errors: {v1['dynamicRequireErrors']}"
+    assert v1["renderError"] is None, f"pilot render error: {v1['renderError']}"
+    assert v1["pass"], f"V1 failed: {v1}"
+
+
+def test_track_z_v2_index_path_hosts() -> None:
+    """V2: node+jsdom hosts the index path (vendored React+ReactDOM+lightweight-charts+
+    stom-ui+the SERVED DEFAULT frontend/bundle/app.js), App mounts with 0 errors and
+    non-empty #root."""
+    data = _run_harness()
+    v2 = data["v2"]
+    assert v2["appIsFunction"], "window.App is not a function"
+    assert v2["fmtGlobalsReady"], "stom-ui window.fmt* not ready in harness"
+    assert v2["rootNonEmpty"], "#root is empty after mount"
+    assert v2["errorCount"] == 0, f"index path errors: {v2['errors']}"
+    assert v2["pass"], f"V2 failed: {v2}"
+
+
+def test_track_z_v3_per_tab_render_sweep() -> None:
+    """V3 (Story 4 entry gate): the FLAGGED bundle's App renders EVERY tab with 0 errors and a
+    non-empty #root — evolution(NON-IDLE so its data components render), backtest, simulation,
+    lab, pro, verdict, process. Closes the gap V2 left open (V2 only proved the IDLE evolution
+    shell), so a latent missing cross-file import in a non-default tab surfaces NOW, not at the
+    future flip. process(7번째)는 본문이 <iframe src=/process_flow> 한 장이라 jsdom 이 내용을
+    로드하지 않으므로 iframe 엘리먼트 존재 + React 에러 0 만 단언한다."""
+    data = _run_harness()
+    v3 = data["v3"]
+    tabs = v3["tabs"]
+    expected = {"evolution", "backtest", "simulation", "lab", "pro", "verdict", "process"}
+    assert set(tabs) == expected, f"V3 must sweep all 7 tabs, got {set(tabs)}"
+    for name in expected:
+        r = tabs[name]
+        assert r["rootNonEmpty"], f"tab {name}: #root empty after render"
+        assert not r["errorBoundaryTripped"], f"tab {name}: ErrorBoundary tripped (render threw)"
+        assert not r["dynamicRequireErrors"], f"tab {name}: dynamic-require {r['dynamicRequireErrors']}"
+        assert r["errorCount"] == 0, f"tab {name} render errors: {r['errors']}"
+        assert r["pass"], f"V3 tab {name} failed: {r}"
+    # process 탭: iframe 콘텐츠가 아니라 iframe 엘리먼트가 마운트됐는지만 확인.
+    assert tabs["process"].get("iframePresent") is True, (
+        f"process 탭 iframe 엘리먼트 부재: {tabs['process']}")
+    assert v3["pass"], f"V3 per-tab sweep failed: {v3}"
+
+
+def test_track_z_v4_standalone_page_mounts() -> None:
+    """V4 (Story 4 entry gate): each standalone page (lab/pro/verdict) mounts its own root
+    component from the SAME flagged bundle (window.__STOM_NO_AUTO_MOUNT__ + window.LabPage/
+    ProPage/VerdictPanel) with 0 errors and a non-empty #root — replicating lab/pro/verdict.html."""
+    data = _run_harness()
+    v4 = data["v4"]
+    pages = v4["pages"]
+    expected = {"lab", "pro", "verdict"}
+    assert set(pages) == expected, f"V4 must mount all 3 standalone pages, got {set(pages)}"
+    for name in expected:
+        r = pages[name]
+        assert r["componentIsFunction"], f"page {name}: window.{r['global']} is not a function"
+        assert r["mountError"] is None, f"page {name}: mount error {r['mountError']}"
+        assert r["rootNonEmpty"], f"page {name}: #root empty after mount"
+        assert not r["errorBoundaryTripped"], f"page {name}: ErrorBoundary tripped (render threw)"
+        assert r["errorCount"] == 0, f"page {name} render errors: {r['errors']}"
+        assert r["pass"], f"V4 page {name} failed: {r}"
+    assert v4["pass"], f"V4 standalone page mounts failed: {v4}"
+
+
+def test_served_bundle_has_no_react_require() -> None:
+    """The SERVED default bundle (frontend/bundle/app.js) must NOT contain require('react') or a
+    second-React sentinel (proves alias-to-shim, single React identity at the source level).
+
+    PR-7 RETIRE: the old version built a flagged pilot via STOM_BUNDLE=1 → .track-z/app.pilot.js.
+    That pilot path was removed (bundle-only), so this now asserts directly against the committed
+    served artifact (no node/build needed — pure source check)."""
+    body = _read(FRONTEND / "bundle" / "app.js")
+    assert 'require("react")' not in body, "served bundle contains require('react')"
+    assert "react.development" not in body, "served bundle contains a second-React sentinel"
+    assert "__SECRET_INTERNALS" not in body, "served bundle bundled a second React copy"
+
+
+def test_committed_bundle_in_sync_with_source() -> None:
+    """Harness freshness guard (architect nit #1): a FRESH `node build-app.mjs` must leave the
+    committed artifacts (bundle/app.js, the 5 HTMLs, manifest.json) byte-in-sync with source.
+
+    The build is deterministic (content-hash ?v=, no timestamp), so on a clean tree a rebuild
+    leaves NO diff. If someone edits a .jsx/source without rebuilding (or hand-edits a committed
+    artifact), the committed bundle drifts from source and this test fails — surfacing the stale
+    artifact at test time, not at deploy. Gated on node + esbuild (webui-build/node_modules is
+    gitignored; runtime stays npm-free). The build is reproducible so a fresh tree stays clean —
+    the guard does NOT leave a dirty tree on a synced repo."""
+    node = _node_or_skip()
+    # build-app.mjs logs Korean (?v= 갱신); decode utf-8 so the Windows default codec (cp949)
+    #   doesn't raise UnicodeDecodeError in the subprocess reader thread.
+    r = subprocess.run(
+        [node, "build-app.mjs"],
+        cwd=str(WEBUI), capture_output=True, text=True,
+        encoding="utf-8", errors="replace", timeout=240,
+    )
+    assert r.returncode == 0, f"build failed: {r.stderr}"
+    targets = [
+        "ai_strategy_loop/dashboard/frontend/bundle/app.js",
+        "ai_strategy_loop/dashboard/frontend/bundle/manifest.json",
+        "ai_strategy_loop/dashboard/frontend/index.html",
+        "ai_strategy_loop/dashboard/frontend/lab.html",
+        "ai_strategy_loop/dashboard/frontend/pro.html",
+        "ai_strategy_loop/dashboard/frontend/verdict.html",
+        "ai_strategy_loop/dashboard/frontend/STOM AI Dashboard.html",
+    ]
+    diff = subprocess.run(
+        ["git", "diff", "--quiet", "--", *targets],
+        cwd=PROJECT_ROOT, capture_output=True, text=True,
+        encoding="utf-8", errors="replace", timeout=60,
+    )
+    if diff.returncode != 0:
+        dirty = subprocess.run(
+            ["git", "diff", "--stat", "--", *targets],
+            cwd=PROJECT_ROOT, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=60,
+        )
+        pytest.fail(
+            "committed build artifacts are stale vs source — rebuild needed "
+            f"(node build-app.mjs):\n{dirty.stdout}"
+        )

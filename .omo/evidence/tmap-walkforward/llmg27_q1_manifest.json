@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_roundfigure_breakout_flow906",
+  "run_id": "tmap_llmg27_q1_e32_20260614",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_roundfigure_breakout_flow906_000_B",
+      "status": "ok",
+      "profit": -808177.0,
+      "mdd": 17.41,
+      "trades": 17
+    }
+  ]
+}

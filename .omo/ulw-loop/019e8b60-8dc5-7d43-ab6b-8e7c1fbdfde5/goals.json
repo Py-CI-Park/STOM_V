@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "createdAt": "2026-06-06T00:16:59.415Z",
+  "updatedAt": "2026-06-06T00:46:54.437Z",
+  "briefPath": ".omo/ulw-loop/019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5/brief.md",
+  "goalsPath": ".omo/ulw-loop/019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5/goals.json",
+  "ledgerPath": ".omo/ulw-loop/019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5/ledger.jsonl",
+  "codexGoalMode": "aggregate",
+  "goals": [
+    {
+      "id": "G001-goal-1-build-ai-prompt-context-pack",
+      "title": "Goal 1: Build AI Prompt Context Pack from docs/AGENT_HANDOFF.md, docs...",
+      "objective": "Goal 1: Build AI Prompt Context Pack from docs/AGENT_HANDOFF.md, docs/update_log/2026-06-05_direction_review_through_84acb6cb.md, .omo/plans/condition-research-end-to-end-master-roadmap-20260606.md, .omo/plans/tick-human-like-research-criteria-dashboard-20260605.md, utility/ai_agent/strategy.txt, utility/ai_agent/rules.txt, and utility/ai_agent/system_prompt/v1/*; produce compact prompt guidance for strategy grammar, forbidden syntax, buy/sell structure, and safe examples without token bloat; guardrails: no official engine, hard gate, backtest_graph, protected path, production export, final_approval, live trading, or V3K gate edits. Goal 2: Inject strategy history and examples into generation prompts; prompts must be able to include current and previous buy/sell strategy code, strategy diff, structure patterns, forbidden syntax, selected few-shot examples, and bounded token/complexity metadata; new controls remain default OFF or research-config-only. Goal 3: Inject backtest and analysis feedback into prompts; prompts must be able to include compressed profit, return, MDD, trade_count, payoff, avg_hold, daily stats, generation history, failure reasons, time-bucket analysis, market-cap-bucket analysis, variable correlation, histograms/ranges, and segment feedback as next-generation guidance. Goal 4: Expose prompt context, strategy code, diffs, and analysis in the dashboard; dashboard must show active strategy, previous strategy diff, AI request prompt, used Context Pack, analysis summary, test period/year, time bucket, market-cap bucket, and clear research-vs-proof status with browser evidence. Goal 5: Reduce 09:00-09:30 generated-strategy timeout and complexity; generated strategies must stay within bounded if-node, token, time-window, and market-cap branch limits so backtests can complete within the existing timeout budget. Goal 6: Run evidence-bound recent-period and OOS research flow; continue through 2024-2026 recent-period review, candidate selection/freeze only after evidence, OOS validation, PBO/DSR/slippage/promotion-card checks, and wiki documentation; do not claim human-level or human-superior results unless OOS evidence proves it. Goal 7: Maintain master-roadmap reporting and final verification; at every page or major checkpoint report master roadmap progress, current page progress, results, evidence, risks, and next command; final verification must include prompt-log proof fields, browser evidence, targeted unit tests, git diff --check, python scripts/verify_nonrelease_sync.py, protected-path status, and real observable evidence beyond tests.",
+      "status": "in_progress",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "HTTP/API prompt-context proof: after implementation or bounded smoke, call dashboard prompt/context endpoints for the target run and parse JSON to verify prompt context fields include has_base_code, has_few_shot, guide_context or equivalent guide marker, diff_context, analysis_context, correlation_context, and bounded token/complexity metadata.",
+          "userModel": "happy",
+          "expectedEvidence": ".omo/ulw-loop/evidence/G001-C001-prompt-context-proof.json plus command transcript with HTTP 200 and parsed field assertions",
+          "capturedEvidence": ".omo/ulw-loop/evidence/G001-C001-prompt-context-proof.json; HTTP 200 for /ai_context_pack and /prompts; context_pack has guide_context/diff_context/analysis_context/correlation_context; prompts show has_base_code and has_few_shot; cleanup: no new process/temp resource, reused live dashboard PID 114272",
+          "status": "pass",
+          "capturedAt": "2026-06-06T00:39:41.552Z"
+        },
+        {
+          "id": "C002",
+          "scenario": "Browser dashboard proof: drive http://127.0.0.1:8770/ui/ in a real browser after implementation and verify the UI visibly exposes active buy/sell strategy, previous diff, AI request prompt/prompt timeline, used Context Pack or AI context summary, analysis summary, test period/year, time bucket, market-cap bucket, and research-vs-proof/OOS label without 404 UI errors.",
+          "userModel": "edge",
+          "expectedEvidence": ".omo/ulw-loop/evidence/G001-C002-dashboard-context-proof.png and .omo/ulw-loop/evidence/G001-C002-dashboard-context-proof-dom.txt with browser action log and screenshot",
+          "capturedEvidence": ".omo/ulw-loop/evidence/G001-C002-dashboard-context-proof.png and .omo/ulw-loop/evidence/G001-C002-dashboard-context-proof-dom.txt; browser proof found AI CONTEXT PACK, context_pack, guide_context, diff_context, analysis_context, correlation_context, STRATEGY / PROMPT, Previous Diff via /strategy_diff, OOS disabled; visual screenshot inspected; cleanup: browser.close() completed; live dashboard PID 114272 left running intentionally",
+          "status": "pass",
+          "capturedAt": "2026-06-06T00:45:08.408Z"
+        },
+        {
+          "id": "C003",
+          "scenario": "Regression and safety proof: run targeted unit tests for prompt logging/context pack/dashboard routes/frontend, run git diff --check, run python scripts/verify_nonrelease_sync.py, run protected-path git status, and issue malformed/missing-run HTTP calls to /prompts, /strategy_diff, /ai_context_pack, /variable_correlation to verify graceful non-crashing responses and no protected runtime writes.",
+          "userModel": "regression",
+          "expectedEvidence": ".omo/ulw-loop/evidence/G001-C003-regression-safety-transcript.txt containing command outputs, HTTP status/body snippets, protected-path status, and cleanup receipt",
+          "capturedEvidence": ".omo/ulw-loop/evidence/G001-C003-regression-safety-transcript.txt; targeted pytest bundle 38 passed; git diff --check exit 0; python scripts/verify_nonrelease_sync.py exit 0; protected path status reported no protected path changes; malformed/missing-run HTTP calls to /prompts, /strategy_diff, /ai_context_pack, /variable_correlation all returned HTTP 200 graceful bodies; cleanup: no temporary dashboard process spawned, live dashboard PID 114272 remains running intentionally",
+          "status": "pass",
+          "capturedAt": "2026-06-06T00:46:54.437Z"
+        }
+      ],
+      "attempt": 1,
+      "createdAt": "2026-06-06T00:16:59.415Z",
+      "updatedAt": "2026-06-06T00:46:54.437Z",
+      "startedAt": "2026-06-06T00:19:42.359Z"
+    }
+  ],
+  "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5/ledger.jsonl as the audit trail.",
+  "activeGoalId": "G001-goal-1-build-ai-prompt-context-pack"
+}

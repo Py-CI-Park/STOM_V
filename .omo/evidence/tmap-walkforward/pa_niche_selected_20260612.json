@@ -1,0 +1,182 @@
+{
+  "selector_version": "absolute_niche_v1",
+  "run_id": "multiseed_train_20260611",
+  "config_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\claude-condition-research-20260610\\train-config.json",
+  "config_hash": "a4bed0de8513d8cc28693ec48e482617ec0b82e024a87a3465e75f7b58bfe88a",
+  "selected": true,
+  "blocked": false,
+  "blocker": "",
+  "selected_generation": {
+    "gen_no": 9,
+    "status": "ok",
+    "graded_score": 0.2882263945239788,
+    "gate_passed": false,
+    "gate_reason": "daily_avg_trades 0.2 < min_daily_trades 0.3",
+    "profit": 1877320.0,
+    "total_profit_pct": 37.55,
+    "mdd": 9.62,
+    "trade_count": 165,
+    "daily_avg_trades": 0.2,
+    "payoff_ratio": 1.3358103907310792,
+    "max_hold_count": 0.0,
+    "buy_name": "AILOOP_run_1779754848_g12_buy",
+    "sell_name": "AILOOP_run_1779754848_g12_sell",
+    "csv_path": "backtest/csv\\stock_bt_AILOOP_run_1779754848_g12_buy_20260611221611.csv"
+  },
+  "selected_niche_metric": {
+    "corr_vs_frozen": 0.444,
+    "time_bucket_overlap": true
+  },
+  "selection_timestamp": "2026-06-12T02:35:10.991065+00:00",
+  "oos_excluded": true,
+  "diagnostic_only": false,
+  "forbidden_oos_fields_present": false,
+  "eligible_candidates": [
+    {
+      "gen_no": 9,
+      "graded_score": 0.2882263945239788,
+      "niche_metric": {
+        "corr_vs_frozen": 0.444,
+        "time_bucket_overlap": true
+      }
+    },
+    {
+      "gen_no": 13,
+      "graded_score": 0.28306552605732604,
+      "niche_metric": {
+        "corr_vs_frozen": 0.47,
+        "time_bucket_overlap": true
+      }
+    },
+    {
+      "gen_no": 20,
+      "graded_score": 0.2798388120364807,
+      "niche_metric": {
+        "corr_vs_frozen": 0.318,
+        "time_bucket_overlap": true
+      }
+    }
+  ],
+  "rejected_candidates": [
+    {
+      "gen_no": 1,
+      "reasons": [
+        "niche_disqualified: corr_vs_frozen=0.548 >= 0.5; time_bucket_overlap=True (not False)"
+      ]
+    },
+    {
+      "gen_no": 3,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 20.0 (absolute ceiling)",
+        "positive_years 1 < 2 (P2 yearly consistency)",
+        "niche_metric_missing: no entry for this gen_no"
+      ]
+    },
+    {
+      "gen_no": 4,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 20.0 (absolute ceiling)",
+        "positive_years 0 < 2 (P2 yearly consistency)",
+        "niche_metric_missing: no entry for this gen_no"
+      ]
+    },
+    {
+      "gen_no": 5,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 20.0 (absolute ceiling)",
+        "positive_years 0 < 2 (P2 yearly consistency)",
+        "niche_metric_missing: no entry for this gen_no"
+      ]
+    },
+    {
+      "gen_no": 6,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 20.0 (absolute ceiling)",
+        "positive_years 0 < 2 (P2 yearly consistency)",
+        "niche_metric_missing: no entry for this gen_no"
+      ]
+    },
+    {
+      "gen_no": 7,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 20.0 (absolute ceiling)",
+        "positive_years 0 < 2 (P2 yearly consistency)",
+        "niche_metric_missing: no entry for this gen_no"
+      ]
+    },
+    {
+      "gen_no": 8,
+      "reasons": [
+        "niche_disqualified: corr_vs_frozen=0.560 >= 0.5; time_bucket_overlap=True (not False)"
+      ]
+    },
+    {
+      "gen_no": 11,
+      "reasons": [
+        "mdd > 20.0 (absolute ceiling)",
+        "payoff_ratio < 1.05",
+        "niche_metric_missing: no entry for this gen_no"
+      ]
+    },
+    {
+      "gen_no": 12,
+      "reasons": [
+        "niche_disqualified: corr_vs_frozen=0.639 >= 0.5; time_bucket_overlap=True (not False)"
+      ]
+    },
+    {
+      "gen_no": 14,
+      "reasons": [
+        "niche_disqualified: corr_vs_frozen=0.547 >= 0.5; time_bucket_overlap=True (not False)"
+      ]
+    },
+    {
+      "gen_no": 15,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 20.0 (absolute ceiling)",
+        "positive_years 0 < 2 (P2 yearly consistency)",
+        "niche_metric_missing: no entry for this gen_no"
+      ]
+    },
+    {
+      "gen_no": 16,
+      "reasons": [
+        "niche_disqualified: corr_vs_frozen=0.636 >= 0.5; time_bucket_overlap=True (not False)"
+      ]
+    },
+    {
+      "gen_no": 17,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 20.0 (absolute ceiling)",
+        "payoff_ratio < 1.05",
+        "positive_years 0 < 2 (P2 yearly consistency)",
+        "niche_metric_missing: no entry for this gen_no"
+      ]
+    },
+    {
+      "gen_no": 18,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 20.0 (absolute ceiling)",
+        "positive_years 0 < 2 (P2 yearly consistency)",
+        "niche_metric_missing: no entry for this gen_no"
+      ]
+    },
+    {
+      "gen_no": 19,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 20.0 (absolute ceiling)",
+        "positive_years 0 < 2 (P2 yearly consistency)",
+        "niche_metric_missing: no entry for this gen_no"
+      ]
+    }
+  ]
+}

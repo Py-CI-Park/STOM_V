@@ -1,0 +1,187 @@
+{
+  "name": "min_p4_strength_combo",
+  "timeframe": "min",
+  "source": "M2 — M1 P4강도급등 코어 + 신고가 + 빈도축 결합",
+  "description": "min 11~14시 강도급등 결합 구조. 16θ, 강제청산 14:59.",
+  "buy_code": "# min P4강도급등 결합 — 11~14시, 강제청산은 매도부\n매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif not ({entry_start} <= 시분초 < {entry_end}):\n    매수 = False\nelif not (데이터길이 >= 31):\n    매수 = False\nelif not (1000 < 현재가 <= 100000):\n    매수 = False\nelif not ({rate_min} <= 등락율 <= {rate_max}):\n    매수 = False\nelif not (시가총액 <= {cap_max}):\n    매수 = False\nelif not (체결강도 > 체결강도평균({strength_win}, 1) * {strength_mult}):\n    매수 = False                                  # P4 코어 — 강도 급등\nelif not (분당매수수량 > 분당매도수량 * {buy_dom}):\n    매수 = False                                  # P4 코어 — 매수 우위\nelif not (현재가 > 최고현재가({high_win}, 1)):\n    매수 = False                                  # 보조 — 신고가 돌파\nelif not (분당거래대금 > 분당거래대금평균({money_win}, 1) * {money_mult}):\n    매수 = False                                  # 빈도축 — 대금 동반\n\nif 매수:\n    self.Buy()\n",
+  "sell_code": "매도 = False\nif 시분초 >= 145900:\n    매도 = True                                   # 강제청산 14:59\nelif 수익률 >= {take_rate} or 수익률 <= {stop_rate}:\n    매도 = True\nelif 보유시간 >= {hold_max}:\n    매도 = True\nelif 최고수익률 > {trail_arm} and 최고수익률 * {trail_keep} >= 수익률:\n    매도 = True\nif 매도:\n    self.Sell()\n",
+  "params": [
+    {
+      "name": "entry_start",
+      "default": 110000,
+      "values": [
+        100000,
+        110000,
+        120000,
+        130000
+      ],
+      "side": "buy",
+      "note": "진입창 시작(11~13시)"
+    },
+    {
+      "name": "entry_end",
+      "default": 143000,
+      "values": [
+        140000,
+        143000,
+        144500
+      ],
+      "side": "buy",
+      "note": "진입창 종료"
+    },
+    {
+      "name": "rate_min",
+      "default": 1.0,
+      "values": [
+        0.0,
+        1.0,
+        2.0
+      ],
+      "side": "buy",
+      "note": ""
+    },
+    {
+      "name": "rate_max",
+      "default": 20.0,
+      "values": [
+        12.0,
+        20.0,
+        28.0
+      ],
+      "side": "buy",
+      "note": ""
+    },
+    {
+      "name": "cap_max",
+      "default": 5000,
+      "values": [
+        2000,
+        5000,
+        20000
+      ],
+      "side": "buy",
+      "note": "시총 상한(억)"
+    },
+    {
+      "name": "strength_win",
+      "default": 20,
+      "values": [
+        10,
+        20,
+        30
+      ],
+      "side": "buy",
+      "note": "체결강도 평균 창"
+    },
+    {
+      "name": "strength_mult",
+      "default": 1.2,
+      "values": [
+        1.1,
+        1.2,
+        1.4
+      ],
+      "side": "buy",
+      "note": "P4 강도 급등 배수"
+    },
+    {
+      "name": "buy_dom",
+      "default": 1.2,
+      "values": [
+        1.0,
+        1.2,
+        1.5
+      ],
+      "side": "buy",
+      "note": "매수 우위 배수"
+    },
+    {
+      "name": "high_win",
+      "default": 30,
+      "values": [
+        15,
+        30,
+        60
+      ],
+      "side": "buy",
+      "note": "신고가 창(분)"
+    },
+    {
+      "name": "money_win",
+      "default": 20,
+      "values": [
+        10,
+        20,
+        30
+      ],
+      "side": "buy",
+      "note": "대금 평균 창"
+    },
+    {
+      "name": "money_mult",
+      "default": 2.0,
+      "values": [
+        1.5,
+        2.0,
+        3.0
+      ],
+      "side": "buy",
+      "note": "빈도축 — 대금 폭발 배수"
+    },
+    {
+      "name": "take_rate",
+      "default": 5.0,
+      "values": [
+        3.0,
+        5.0,
+        7.0
+      ],
+      "side": "sell",
+      "note": "익절"
+    },
+    {
+      "name": "stop_rate",
+      "default": -3.0,
+      "values": [
+        -2.0,
+        -3.0,
+        -4.0
+      ],
+      "side": "sell",
+      "note": "손절"
+    },
+    {
+      "name": "hold_max",
+      "default": 3600,
+      "values": [
+        1800,
+        3600,
+        7200
+      ],
+      "side": "sell",
+      "note": "보유 상한(초)"
+    },
+    {
+      "name": "trail_arm",
+      "default": 3.0,
+      "values": [
+        2.0,
+        3.0,
+        4.0
+      ],
+      "side": "sell",
+      "note": "트레일 발동 수익률"
+    },
+    {
+      "name": "trail_keep",
+      "default": 0.6,
+      "values": [
+        0.5,
+        0.6,
+        0.7
+      ],
+      "side": "sell",
+      "note": "트레일 유지 비율"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "generated_at": "2026-06-18T16:58:03.139791+09:00",
+  "work_id": "post-q4-3h-bulk-research-20260618",
+  "total_analysis_elapsed_seconds": 0.344,
+  "note": "Substeps ran in one deterministic local analysis process; detailed per-substep timing is sub-second.",
+  "durations": [
+    {
+      "step": 1,
+      "name": "plan boulder source registry hourly ledger",
+      "elapsed_seconds": 0.344,
+      "completed_at": "2026-06-18T16:58:03.139748+09:00"
+    },
+    {
+      "step": 2,
+      "name": "normalized dataset and baseline portfolio metrics",
+      "elapsed_seconds": 0.0,
+      "completed_at": "2026-06-18T16:58:03.139763+09:00"
+    },
+    {
+      "step": 3,
+      "name": "bulk exit2 allocation rule grid",
+      "elapsed_seconds": 0.0,
+      "completed_at": "2026-06-18T16:58:03.139765+09:00"
+    },
+    {
+      "step": 4,
+      "name": "bulk r8 pre-entry filter and diagnostic grid",
+      "elapsed_seconds": 0.0,
+      "completed_at": "2026-06-18T16:58:03.139767+09:00"
+    },
+    {
+      "step": 5,
+      "name": "combined r8 filter and exit2 allocation grid",
+      "elapsed_seconds": 0.0,
+      "completed_at": "2026-06-18T16:58:03.139769+09:00"
+    },
+    {
+      "step": 6,
+      "name": "candidate scoring and official OOS recommendations",
+      "elapsed_seconds": 0.0,
+      "completed_at": "2026-06-18T16:58:03.139772+09:00"
+    },
+    {
+      "step": 7,
+      "name": "research journal, dashboard check, final verification, boulder completion",
+      "elapsed_seconds": 0.0,
+      "completed_at": "2026-06-18T17:03:04.417664+09:00"
+    }
+  ],
+  "final_verification": {
+    "pytest_dashboard": "7 passed",
+    "dashboard_campaign_rank": 1,
+    "json_validation": "ok",
+    "protected_paths": "empty",
+    "oos_process": "no-oos-process"
+  }
+}

@@ -1,4 +1,6 @@
 /* Strategy code viewer modal: shows full buy/sell code per generation */
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { StrategyInspectorTabs } from "./strategy-inspector.jsx";
 const { useState: useState_cv, useMemo: useMemo_cv, useEffect: useEffect_cv } = React;
 
 // Lightweight Python-ish syntax highlighter
@@ -63,7 +65,7 @@ function highlightPython(code) {
   return out;
 }
 
-function CodeBlock({ code }) {
+function CvCodeBlock({ code }) {
   const highlighted = useMemo_cv(() => highlightPython(code), [code]);
   if (!code) return (
     <div className="code-block" style={{ color: "var(--ink-3)" }}>
@@ -87,6 +89,7 @@ function CodeBlock({ code }) {
 function CodeViewer({ generation, onClose, runId, baseUrl }) {
   const [tab, setTab] = useState_cv("buy");
   const [copied, setCopied] = useState_cv(false);
+  const [expandedCodeView, setExpandedCodeView] = useState_cv(false);
   // P10 — 세대 행(GenView)에는 코드가 없다. 인라인 코드(데모 소스)가 없으면
   //   /strategy_code?run=&gen= 로 fetch 해 채운다. {buy_code, sell_code} 또는 null.
   const [fetched, setFetched] = useState_cv(null);
@@ -121,6 +124,11 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
   const sellCode = generation.sell_code || (fetched && fetched.sell_code) || "";
   const code = tab === "buy" ? buyCode : sellCode;
   const name = tab === "buy" ? generation.buy_name : generation.sell_name;
+  const modalClass = `modal code-viewer-modal ${expandedCodeView ? "code-viewer-expanded" : ""}`;
+  const modalStyle = {
+    width: expandedCodeView ? "min(1320px, calc(100vw - 20px))" : "min(960px, calc(100vw - 32px))",
+    maxHeight: expandedCodeView ? "calc(100vh - 18px)" : undefined,
+  };
 
   const onCopy = async () => {
     try {
@@ -132,7 +140,7 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
 
   return (
     <div className="modal-bd" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="modal" style={{ width: "min(960px, calc(100vw - 32px))" }} onMouseDown={(e) => e.stopPropagation()}>
+      <div className={modalClass} style={modalStyle} onMouseDown={(e) => e.stopPropagation()}>
         <div className="modal-hd">
           <h2>
             전략 코드 보기
@@ -143,6 +151,15 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
             </span>
           </h2>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <button
+              className="btn ghost sm"
+              data-testid="code-viewer-height-toggle"
+              data-tip={expandedCodeView ? "조건식 보기 창을 기본 높이로 줄입니다." : "조건식 보기 창을 세로로 확대합니다."}
+              aria-pressed={expandedCodeView}
+              onClick={() => setExpandedCodeView(!expandedCodeView)}
+            >
+              {expandedCodeView ? "기본 높이" : "세로 확대"}
+            </button>
             <button className="btn ghost sm" onClick={onCopy}>
               {copied ? "복사됨 ✓" : "복사"}
             </button>
@@ -174,7 +191,7 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
               코드 조회 실패: {fetchErr}
             </div>
           ) : (
-            <CodeBlock code={code} />
+            <CvCodeBlock code={code} />
           )}
         </div>
 
@@ -205,4 +222,7 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
   );
 }
 
-Object.assign(window, { CodeViewer, CodeBlock, highlightPython });
+Object.assign(window, { CodeViewer, CvCodeBlock, highlightPython });
+
+// Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
+export { CodeViewer };

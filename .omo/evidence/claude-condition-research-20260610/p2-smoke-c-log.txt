@@ -1,0 +1,5 @@
+[BATCH] run_id=cldgen_smoke_c_2025q1_20260610 pairs=2
+[BATCH] prepare status=ok back_count=814 elapsed=54s
+[BATCH] gen0 C2C_F05_NICHE ERROR (350s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] gen1 C9_TURNOVER ERROR (352s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+[BATCH] done

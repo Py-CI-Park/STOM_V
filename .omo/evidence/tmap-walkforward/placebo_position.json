@@ -1,0 +1,76 @@
+{
+  "candidate": "THETA cap_max=2500+take_hard=9+trail_start=4",
+  "samples": [
+    {
+      "label": "PLACEBO R2 S0",
+      "profit": -957889031.0,
+      "trades": 37292
+    },
+    {
+      "label": "PLACEBO R2 S1",
+      "profit": -919110289.0,
+      "trades": 37089
+    },
+    {
+      "label": "PLACEBO R2 S2",
+      "profit": -926099184.0,
+      "trades": 37113
+    },
+    {
+      "label": "PLACEBO R5 S0",
+      "profit": -1644075427.0,
+      "trades": 63564
+    },
+    {
+      "label": "PLACEBO R5 S1",
+      "profit": -1619894732.0,
+      "trades": 63369
+    },
+    {
+      "label": "PLACEBO R5 S2",
+      "profit": -1624210952.0,
+      "trades": 63457
+    },
+    {
+      "label": "PLACEBO R10 S0",
+      "profit": -2003112348.0,
+      "trades": 77914
+    },
+    {
+      "label": "PLACEBO R10 S1",
+      "profit": -2005149947.0,
+      "trades": 77920
+    },
+    {
+      "label": "PLACEBO R10 S2",
+      "profit": -2011890841.0,
+      "trades": 78108
+    },
+    {
+      "label": "PLACEBO R20 S0",
+      "profit": -2251963964.0,
+      "trades": 84868
+    },
+    {
+      "label": "PLACEBO R20 S1",
+      "profit": -2244586282.0,
+      "trades": 84806
+    },
+    {
+      "label": "PLACEBO R20 S2",
+      "profit": -2244061628.0,
+      "trades": 84796
+    }
+  ],
+  "position": {
+    "n_placebo": 12,
+    "candidate_profit": 10965479.0,
+    "placebo_median": -1823593887.5,
+    "placebo_best": -919110289.0,
+    "placebo_worst": -2251963964.0,
+    "percentile": 1.0,
+    "exceeds_all": true,
+    "gap_to_best": 930075768.0,
+    "interpretation": "후보가 플라시보 전 표본 상회 + 플라시보 중앙값 음수 — 손익의 원천은 진입 신호(우연/매도식 단독 아님)"
+  }
+}

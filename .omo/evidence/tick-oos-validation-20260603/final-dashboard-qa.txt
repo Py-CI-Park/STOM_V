@@ -1,0 +1,39 @@
+# Final Dashboard QA
+
+- timestamp: 2026-06-03T21:30:43.349279+09:00
+- channel: read-only HTTP requests equivalent to curl.exe
+- forbidden_controls: no final approval/export endpoint or WebSocket action invoked
+
+## Checks
+
+- ui: ok=True status=200 url=`http://127.0.0.1:8770/ui/` body_len=2228`
+- runs: ok=True status=200 url=`http://127.0.0.1:8770/runs` body_len=19077`
+- run_state:tick_oos_p2_train_2023_2025_20260603: ok=True status=200 url=`http://127.0.0.1:8770/run_state?run_id=tick_oos_p2_train_2023_2025_20260603` body_len=4127`
+- edge_ratio:tick_oos_p2_train_2023_2025_20260603: ok=True status=200 url=`http://127.0.0.1:8770/edge_ratio?run_id=tick_oos_p2_train_2023_2025_20260603&fine_time=true` body_len=3250`
+- feature_importance:tick_oos_p2_train_2023_2025_20260603: ok=True status=200 url=`http://127.0.0.1:8770/feature_importance?run_id=tick_oos_p2_train_2023_2025_20260603&axis=change&fine_time=true` body_len=10812`
+- run_state:tick_oos_p4_seed_2022_20260603: ok=True status=200 url=`http://127.0.0.1:8770/run_state?run_id=tick_oos_p4_seed_2022_20260603` body_len=1975`
+- edge_ratio:tick_oos_p4_seed_2022_20260603: ok=True status=200 url=`http://127.0.0.1:8770/edge_ratio?run_id=tick_oos_p4_seed_2022_20260603&fine_time=true` body_len=1786`
+- feature_importance:tick_oos_p4_seed_2022_20260603: ok=True status=200 url=`http://127.0.0.1:8770/feature_importance?run_id=tick_oos_p4_seed_2022_20260603&axis=change&fine_time=true` body_len=3773`
+- run_state:tick_oos_p4_seed_2026_20260603: ok=True status=200 url=`http://127.0.0.1:8770/run_state?run_id=tick_oos_p4_seed_2026_20260603` body_len=1917`
+- edge_ratio:tick_oos_p4_seed_2026_20260603: ok=True status=200 url=`http://127.0.0.1:8770/edge_ratio?run_id=tick_oos_p4_seed_2026_20260603&fine_time=true` body_len=1069`
+- feature_importance:tick_oos_p4_seed_2026_20260603: ok=True status=200 url=`http://127.0.0.1:8770/feature_importance?run_id=tick_oos_p4_seed_2026_20260603&axis=change&fine_time=true` body_len=135`
+- run_state:tick_oos_p4_ai_2022_20260603: ok=True status=200 url=`http://127.0.0.1:8770/run_state?run_id=tick_oos_p4_ai_2022_20260603` body_len=2038`
+- edge_ratio:tick_oos_p4_ai_2022_20260603: ok=True status=200 url=`http://127.0.0.1:8770/edge_ratio?run_id=tick_oos_p4_ai_2022_20260603&fine_time=true` body_len=859`
+- feature_importance:tick_oos_p4_ai_2022_20260603: ok=True status=200 url=`http://127.0.0.1:8770/feature_importance?run_id=tick_oos_p4_ai_2022_20260603&axis=change&fine_time=true` body_len=133`
+- run_state:tick_oos_p4_ai_2026_20260603: ok=True status=200 url=`http://127.0.0.1:8770/run_state?run_id=tick_oos_p4_ai_2026_20260603` body_len=1859`
+- edge_ratio:tick_oos_p4_ai_2026_20260603: ok=True status=200 url=`http://127.0.0.1:8770/edge_ratio?run_id=tick_oos_p4_ai_2026_20260603&fine_time=true` body_len=346`
+- feature_importance:tick_oos_p4_ai_2026_20260603: ok=True status=200 url=`http://127.0.0.1:8770/feature_importance?run_id=tick_oos_p4_ai_2026_20260603&axis=change&fine_time=true` body_len=132`
+
+## Observables
+
+- `/ui/` reachable: True
+- `/runs` contains P2 run id: True
+- `tick_oos_p2_train_2023_2025_20260603` status=complete current_gen=5 best_gen=4 gate=False
+- `tick_oos_p4_seed_2022_20260603` status=complete current_gen=0 best_gen=0 gate=True
+- `tick_oos_p4_seed_2026_20260603` status=complete current_gen=0 best_gen=0 gate=False
+- `tick_oos_p4_ai_2022_20260603` status=complete current_gen=0 best_gen=0 gate=True
+- `tick_oos_p4_ai_2026_20260603` status=complete current_gen=0 best_gen=0 gate=False
+
+## Artifact
+
+- Full raw response capture: `.omo/evidence/tick-oos-validation-20260603/final-dashboard-api.json`

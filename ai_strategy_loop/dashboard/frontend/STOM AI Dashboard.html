@@ -9,25 +9,24 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=20260617a" />
 
-  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <!-- Phase14.7: CDN(unpkg)·런타임 babel 레거시 제거 → 로컬 벤더 + 컴파일 번들(index.html 과 동일).
+       기존엔 컴포넌트 일부(10개)만 로드해 누락 위험이 있었으나, 이제 전체 번들로 안전.
+       정식 진입점은 /ui/(index.html) — 이 파일은 동일 동작의 별칭. -->
+  <script src="vendor-react.js?v=20260603a"></script>
+  <script src="vendor-react-dom.js?v=20260603a"></script>
+  <script src="vendor-lightweight-charts.js?v=20260612a"></script>
+  <script type="module" src="bundle/stom-ui.js?v=f41f5701"></script>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <div style="padding:40px;font-family:system-ui,sans-serif;color:#9fb0c0;background:#0c1014;min-height:100vh;">
+      STOM AI 대시보드 로딩 중… (지속 시 Ctrl+Shift+R)
+    </div>
+  </div>
 
-  <script type="text/babel" src="connection.jsx"></script>
-  <script type="text/babel" src="panels.jsx"></script>
-  <script type="text/babel" src="engine.jsx"></script>
-  <script type="text/babel" src="chart.jsx"></script>
-  <script type="text/babel" src="hypothesis.jsx"></script>
-  <script type="text/babel" src="table.jsx"></script>
-  <script type="text/babel" src="cards.jsx"></script>
-  <script type="text/babel" src="code-viewer.jsx"></script>
-  <script type="text/babel" src="phase-detail.jsx"></script>
-  <script type="text/babel" src="settings.jsx"></script>
-  <script type="text/babel" src="app.jsx"></script>
+  <!-- 컴파일 번들(defer, 자동 App 마운트) — index.html 과 동일. -->
+  <script defer src="bundle/app.js?v=17da3e52"></script>
 </body>
 </html>

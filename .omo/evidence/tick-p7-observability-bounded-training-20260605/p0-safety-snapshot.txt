@@ -1,0 +1,82 @@
+P0 Safety Snapshot - tick-p7-observability-bounded-training-20260605
+Captured: 2026-06-05 KST
+
+Plan
+- .omo/plans/tick-p7-observability-bounded-training-20260605.md
+- Boulder work id: tick-p7-observability-bounded-training-20260605
+- Session id: codex:tick-p7-observability-bounded-training-20260605
+
+Branch and HEAD
+- Branch: lazycodex/tick-sparse-positive-generation-improvement-20260604
+- HEAD: 84acb6cbb0478fa1909a19e17ef214501cbd9a74
+
+Dashboard listener status
+- Get-NetTCPConnection for local ports 8770 and 8794 returned no active listener.
+- curl http://127.0.0.1:8770/status failed with connection refused.
+- Therefore the previously mentioned http://127.0.0.1:8770/ui/ dashboard is not live at P0 capture time.
+
+Protected path status
+- Command: git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json
+- Output: empty
+- Interpretation: no protected/runtime path modifications are visible to git at P0.
+
+Dirty worktree baseline
+- The branch already has broad dirty changes before this P7 execution. These are treated as baseline inputs and must not be reverted.
+- Modified tracked files:
+  - .omo/boulder.json
+  - .omo/plans/tick-sparse-positive-generation-improvement-20260604.md
+  - .omo/start-work/ledger.jsonl
+  - ai_strategy_loop/brain/generator.py
+  - ai_strategy_loop/brain/prompt.py
+  - ai_strategy_loop/config.py
+  - ai_strategy_loop/controller/_candidate_selection_artifact.py
+  - ai_strategy_loop/controller/_candidate_selection_core.py
+  - ai_strategy_loop/controller/candidate_selection.py
+  - ai_strategy_loop/controller/contract.py
+  - ai_strategy_loop/controller/loop.py
+  - ai_strategy_loop/controller/state.py
+  - ai_strategy_loop/dashboard/app.py
+  - ai_strategy_loop/dashboard/frontend/chart.jsx
+  - ai_strategy_loop/dashboard/frontend/engine.jsx
+  - ai_strategy_loop/dashboard/frontend/phase-detail.jsx
+  - ai_strategy_loop/dashboard/frontend/research-lab.jsx
+  - ai_strategy_loop/dashboard/frontend/run-compare.jsx
+  - ai_strategy_loop/dashboard/frontend/strategy-inspector.jsx
+  - ai_strategy_loop/dashboard/frontend/table.jsx
+  - ai_strategy_loop/fitness/correlation.py
+  - ai_strategy_loop/launch_config.py
+  - tests/unit/test_dashboard_backtest_detail.py
+  - tests/unit/test_dashboard_hall_of_fame.py
+  - tests/unit/test_dashboard_phase_mapping.py
+  - tests/unit/test_dashboard_research_lab_frontend.py
+  - tests/unit/test_dashboard_run_compare_frontend.py
+  - tests/unit/test_dashboard_strategy_prompt_frontend.py
+  - tests/unit/test_variable_correlation.py
+- Untracked notable files/directories:
+  - .claude/
+  - .omo/drafts/
+  - .omo/evidence/
+  - .omo/plans/tick-dashboard-observability-research-ux-20260604.md
+  - .omo/plans/tick-p7-observability-bounded-training-20260605.md
+  - .omo/plans/tick-research-direction-realignment-20260605.md
+  - .omo/plans/tick-sparse-positive-oos-robustness-20260604.md
+  - ai_strategy_loop/controller/_candidate_research_pool_artifact.py
+  - ai_strategy_loop/controller/_candidate_research_pool_v2.py
+  - ai_strategy_loop/controller/_yearly_sparse_robust_artifact.py
+  - ai_strategy_loop/controller/_yearly_sparse_robust_selection.py
+  - ai_strategy_loop/controller/progress_contract.py
+  - ai_strategy_loop/fitness/correlation_profile.py
+  - ai_strategy_loop/fitness/promotion_diagnostics.py
+  - docs/research/2026-06-04_condition_research_rereview_human_reference_graphs.md
+  - docs/update_log/2026-06-05_direction_review_through_84acb6cb.md
+  - tests/unit/test_candidate_research_pool_v2.py
+  - tests/unit/test_dashboard_engine_progress_contract.py
+  - tests/unit/test_dashboard_route_parity.py
+  - tests/unit/test_promotion_diagnostics.py
+  - tests/unit/test_sparse_positive_prompt.py
+  - tests/unit/test_yearly_sparse_robust_selection.py
+
+P0 scope result
+- Source code was not edited by P0.
+- Runtime/protected paths were not edited by P0.
+- Boulder state was activated for this plan and evidence files were created under .omo/evidence.

@@ -1,0 +1,5 @@
+[BATCH] run_id=t2c3_oos_2026_20260613 pairs=2
+[BATCH] prepare status=ok back_count=587 elapsed=72s
+[BATCH] gen0 FROZEN ok profit=400,701 mdd=13.71 trades=15 daily=0.40 payoff=1.4579919044328167 gate=True reason=ok (17s)
+[BATCH] gen1 BASE_SEED ok profit=-191,109 mdd=15.63 trades=10 daily=0.30 payoff=1.259748427672956 gate=False reason=total_profit -1.911e+05 <= 0 (16s)
+[BATCH] done

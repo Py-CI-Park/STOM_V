@@ -40,6 +40,7 @@ class CandidateGeneration:
     max_hold_count: float
     buy_name: str
     sell_name: str
+    csv_path: str = ""
 
 
 @dataclass(frozen=True, slots=True)

@@ -1,0 +1,3 @@
+업스트림 오류 (HTTP 429): {"error":{"type":"usage_limit_reached","message":"The usage limit has been reached","plan_type":"pro","resets_at":1781138513,"eligible_promo":null,"resets_in_seconds":428530}}
+업스트림 오류 (HTTP 429): {"error":{"type":"usage_limit_reached","message":"The usage limit has been reached","plan_type":"pro","resets_at":1781138514,"eligible_promo":null,"resets_in_seconds":428529}}
+업스트림 오류 (HTTP 429): {"error":{"type":"usage_limit_reached","message":"The usage limit has been reached","plan_type":"pro","resets_at":1781138513,"eligible_promo":null,"resets_in_seconds":428526}}

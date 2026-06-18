@@ -1,0 +1,26 @@
+[LOOP] loop DB        : C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\state\loop_strategies.db
+[LOOP] provider       : gpt_auth
+[LOOP] max_generations: 1
+[LOOP] bt_timeframe   : tick
+[LOOP] bt_engine_mode : warm
+[LOOP] warm prepare 실패 → cold 폴백: 시작 또는 종료일자가 잘못 선택되었거나 해당 일자에 데이터가 존재하지 않습니다.
+
+[LOOP] === generation 0 (run=tick_seed_timeout_warm_1d_1m_e1_20260605) ===
+[LOOP] seed 사용: buy=C_T_900_920_U2_B sell=C_T_900_920_U2_S
+[LOOP] backtest status=error elapsed=79.7s reason=backtest non-success: exit=2 status=error message=backtest completed without metrics last_checkpoint=csv_detected csv=no
+
+[LOOP] === SUMMARY ===
+{
+  "run_id": "tick_seed_timeout_warm_1d_1m_e1_20260605",
+  "generations": 1,
+  "best_gen": -1,
+  "best_score": null,
+  "best_buy": null,
+  "best_sell": null,
+  "winner_gen": -1,
+  "winner_score": null,
+  "winner_buy": null,
+  "winner_sell": null,
+  "stop_reason": "max_generations 도달: gen_count 1 >= 1"
+}
+[LOOP] wall-clock: 106.9s

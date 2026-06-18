@@ -1,0 +1,20 @@
+﻿task=10.graph_engine_progress_generations_ux
+timestamp=2026-06-04T05:13:34
+OK /health status=200 length=36 sample={"status":"ok","contract_version":2}
+OK /ui/ status=200 length=2440 sample=<!DOCTYPE html>  <html lang="ko">  <head>    <meta charset="UTF-8" />    <meta name="viewport" content="width=device-width, initial-scale=1.0" />    <title>STOM AI · 조건식 자율 진화 대시보드</title>      <link rel="preconnect" href="https://fonts.goo
+OK /ui/chart.jsx?v=20260603b status=200 length=74498 sample=/* SVG chart for graded_score per generation. */ const { useMemo: useMemo_c, useState: useState_c, useRef: useRef_c } = React;  function MetricHelpStrip({ items }) {   return (     <div className="metric-help-strip">       {(items || []).ma
+OK /ui/engine.jsx?v=20260603a status=200 length=14833 sample=/* Backtest engine status panel + live equity/drawdown mini-chart */ const { useState: useState_e, useMemo: useMemo_e, useRef: useRef_e } = React;  function fmtElapsed(ms) {   if (!ms || ms < 0) return "0.0s";   if (ms < 60_000) return (ms 
+OK /ui/table.jsx?v=20260603a status=200 length=10074 sample=/* Generations table - newest at top, current highlighted, expandable gist */  const { useState: useState_t, useMemo: useMemo_t } = React;    // fmtDaily: 일평균거래횟수를 소수 2자리로 표시(없으면 0.00). fmt 헬퍼가 없을 때 폴백.  function fmtDaily(v) {    const n = 
+backtest_detail.run_id=tick_oos_p4_ai_2026_20260603
+backtest_detail.gen_no=0
+backtest_detail.daily_count=1
+backtest_detail.holdings_count=2
+backtest_detail.peak_holdings=1
+backtest_detail.trade_count=1
+ui_contract=MetricHelpStrip, engine summary strips, generation table profit sort are static-tested.
+
+cleanup.port8793=stopped timeout
+protected_status=empty
+diff_check=warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/chart.jsx', LF will be replaced by CRLF the next time Git touches it | warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/engine.jsx', LF will be replaced by CRLF the next time Git touches it | warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/styles.css', LF will be replaced by CRLF the next time Git touches it | warning: in the working copy of 'ai_strategy_loop/dashboard/frontend/table.jsx', LF will be replaced by CRLF the next time Git touches it
+loc.tests/unit/test_dashboard_chart_explanations.py=47
+loc.tests/unit/test_dashboard_table_sorting.py=17

@@ -1,0 +1,12 @@
+[BATCH] run_id=t2c3_placebo_20260613 pairs=9
+[BATCH] prepare status=ok back_count=2285 elapsed=277s
+[BATCH] gen0 T2C3 train ref ok profit=9,866,240 mdd=11.30 trades=356 daily=0.50 payoff=1.6579896938913554 gate=True reason=ok (103s)
+[BATCH] gen1 PLACEBO R2 S0 ok profit=-728,544,726 mdd=661.86 trades=28648 daily=39.50 payoff=2.174277691087349 gate=False reason=mdd 661.9 > mdd_cap 35 (126s)
+[BATCH] gen2 PLACEBO R2 S3 ok profit=-738,901,650 mdd=674.63 trades=28625 daily=39.50 payoff=2.1549572778404533 gate=False reason=mdd 674.6 > mdd_cap 35 (125s)
+[BATCH] gen3 PLACEBO R5 S0 ok profit=-1,310,070,071 mdd=746.44 trades=50458 daily=69.60 payoff=2.0881562703361003 gate=False reason=mdd 746.4 > mdd_cap 35 (205s)
+[BATCH] gen4 PLACEBO R5 S3 ok profit=-1,283,795,613 mdd=734.18 trades=50261 daily=69.30 payoff=2.0918208252630532 gate=False reason=mdd 734.2 > mdd_cap 35 (226s)
+[BATCH] gen5 PLACEBO R10 S0 ok profit=-1,629,628,548 mdd=739.98 trades=63241 daily=87.20 payoff=2.0053741086599732 gate=False reason=mdd 740 > mdd_cap 35 (272s)
+[BATCH] gen6 PLACEBO R10 S3 ok profit=-1,644,917,471 mdd=746.86 trades=63558 daily=87.70 payoff=1.9979458432449735 gate=False reason=mdd 746.9 > mdd_cap 35 (267s)
+[BATCH] gen7 PLACEBO R20 S0 ok profit=-1,863,614,568 mdd=744.69 trades=69819 daily=96.30 payoff=1.8890801848802445 gate=False reason=mdd 744.7 > mdd_cap 35 (293s)
+[BATCH] gen8 PLACEBO R20 S3 ok profit=-1,854,757,367 mdd=741.69 trades=69730 daily=96.20 payoff=1.8829028604581857 gate=False reason=mdd 741.7 > mdd_cap 35 (295s)
+[BATCH] done

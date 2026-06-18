@@ -1,0 +1,88 @@
+{
+  "template": "seed_902905_r2full",
+  "windows": [
+    {
+      "fit_start": 20220101,
+      "fit_end": 20221231,
+      "eval_start": 20230103,
+      "eval_end": 20230630,
+      "status": "ok",
+      "theta": null,
+      "theta_basis": {
+        "reason": "no qualifying plateau — fallback to baseline",
+        "baseline_profit": 2097751.0
+      },
+      "policy": {
+        "profit": 2719623.0,
+        "trades": 51
+      },
+      "baseline": {
+        "profit": 2719623.0,
+        "trades": 51
+      }
+    },
+    {
+      "fit_start": 20220101,
+      "fit_end": 20231231,
+      "eval_start": 20240103,
+      "eval_end": 20240630,
+      "status": "ok",
+      "theta": null,
+      "theta_basis": {
+        "reason": "no qualifying plateau — fallback to baseline",
+        "baseline_profit": 6687824.0
+      },
+      "policy": {
+        "profit": 2615467.0,
+        "trades": 34
+      },
+      "baseline": {
+        "profit": 2615467.0,
+        "trades": 34
+      }
+    },
+    {
+      "fit_start": 20230101,
+      "fit_end": 20241231,
+      "eval_start": 20250103,
+      "eval_end": 20250630,
+      "status": "ok",
+      "theta": null,
+      "theta_basis": {
+        "reason": "no qualifying plateau — fallback to baseline",
+        "baseline_profit": 9108489.0
+      },
+      "policy": {
+        "profit": 2606984.0,
+        "trades": 49
+      },
+      "baseline": {
+        "profit": 2606984.0,
+        "trades": 49
+      }
+    },
+    {
+      "fit_start": 20240101,
+      "fit_end": 20251231,
+      "eval_start": 20260103,
+      "eval_end": 20260228,
+      "status": "ok",
+      "theta": null,
+      "theta_basis": {
+        "reason": "no qualifying plateau — fallback to baseline",
+        "baseline_profit": 6375406.0
+      },
+      "policy": {
+        "profit": 164602.0,
+        "trades": 9
+      },
+      "baseline": {
+        "profit": 164602.0,
+        "trades": 9
+      }
+    }
+  ],
+  "washout_days": 0,
+  "policy_total": 8106676.0,
+  "baseline_total": 8106676.0
+}

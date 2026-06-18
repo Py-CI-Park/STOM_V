@@ -1,0 +1,5 @@
+
+[PASS] 검증 통과: llmgen_min_close_accum_squeeze
+  params: 33θ
+[저장] C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\tmap\templates\llmgen_min_close_accum_squeeze.json
+[OK] 재로드 identity 확인 완료

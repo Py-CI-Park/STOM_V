@@ -9,14 +9,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=20260603a" />
+  <link rel="stylesheet" href="styles.css?v=20260617a" />
 
   <!-- 로컬 번들(vendored) — unpkg CDN 의존 제거로 오프라인/캐시/SRI 문제 차단.
        이전: unpkg react/react-dom/babel + SRI(integrity). 인터넷 불가/캐시 꼬임 시 검은 화면.
        이제: 같은 origin 로컬 파일. 버전 쿼리(?v=)로 브라우저 캐시 강제 무효화. -->
   <script src="vendor-react.js?v=20260603a"></script>
   <script src="vendor-react-dom.js?v=20260603a"></script>
-  <script src="vendor-babel.js?v=20260603a"></script>
+  <!-- 차트 시뮬레이션 캔들차트 엔진(TradingView lightweight-charts v4.2.0 standalone).
+       window.LightweightCharts 전역 — 부재 시 simulation-charts.jsx 가 SVG 폴백. -->
+  <script src="vendor-lightweight-charts.js?v=20260612a"></script>
+
+  <!-- 빌드 번들(webui-build → bundle/). 런타임 babel 없음(Phase14.4): 운영 컴포넌트는 사전 컴파일.
+       - stom-ui.js: 공유 순수 유틸(window.fmt*·_axisTicks). ESM 모듈이라 defer(아래 app.js)보다 먼저 실행.
+       - app.js: 26개 컴포넌트 .jsx 를 빌드 시점에 JSX→JS 컴파일한 단일 클래식 스크립트(<body> 끝, defer).
+       소스 .jsx 수정 시 webui-build `npm run build` 로 재생성. 산출물 커밋(런타임 npm 불필요). -->
+  <script type="module" src="bundle/stom-ui.js?v=f41f5701"></script>
 </head>
 <body>
   <!-- React 마운트 전/실패 시 보이는 폴백(검은 화면 대신 안내). 마운트 성공 시 교체됨. -->
@@ -29,22 +37,9 @@
     </div>
   </div>
 
-  <script type="text/babel" src="connection.jsx?v=20260603a"></script>
-  <script type="text/babel" src="panels.jsx?v=20260603a"></script>
-  <script type="text/babel" src="run-compare.jsx?v=20260603a"></script>
-  <script type="text/babel" src="engine.jsx?v=20260603a"></script>
-  <script type="text/babel" src="chart.jsx?v=20260603b"></script>
-  <script type="text/babel" src="hypothesis.jsx?v=20260603a"></script>
-  <script type="text/babel" src="table.jsx?v=20260603a"></script>
-  <script type="text/babel" src="cards.jsx?v=20260603a"></script>
-  <script type="text/babel" src="code-viewer.jsx?v=20260603a"></script>
-  <script type="text/babel" src="strategy-inspector.jsx?v=20260603a"></script>
-  <script type="text/babel" src="phase-detail.jsx?v=20260603a"></script>
-  <script type="text/babel" src="settings.jsx?v=20260603a"></script>
-  <script type="text/babel" src="analysis.jsx?v=20260603a"></script>
-  <script type="text/babel" src="research-lab.jsx?v=20260603a"></script>
-  <script type="text/babel" src="research-wiki.jsx?v=20260603a"></script>
-  <script type="text/babel" src="ai-context.jsx?v=20260603a"></script>
-  <script type="text/babel" src="app.jsx?v=20260603a"></script>
+  <!-- Phase14.4: 운영 컴포넌트 26개를 빌드 시점에 컴파일한 단일 클래식 스크립트.
+       런타임 babel 제거(index.html). defer 라서 stom-ui.js(모듈) 뒤에 실행 → window.fmt* 준비.
+       소스 .jsx 수정 시 webui-build `npm run build` 재생성. -->
+  <script defer src="bundle/app.js?v=17da3e52"></script>
 </body>
 </html>

@@ -1,0 +1,11 @@
+P6 identity check
+timestamp=2026-06-04T09:27:13.315546+00:00
+p5_buy=AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_buy
+p5_sell=AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_sell
+ai_2022_buy=AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_buy
+ai_2022_sell=AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_sell
+ai_2026_buy=AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_buy
+ai_2026_sell=AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_sell
+candidate_identity_matches_p5=True
+bt_refine_from_best=false for all P6 configs
+max_generations=1 for all P6 configs

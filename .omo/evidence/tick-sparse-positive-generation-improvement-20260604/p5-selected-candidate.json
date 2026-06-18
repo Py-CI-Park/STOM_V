@@ -1,0 +1,109 @@
+{
+  "selector_version": "sparse_positive_v1",
+  "run_id": "tick_spgen_p5_train_2023_2025_20260604",
+  "config_path": ".omo/evidence/tick-sparse-positive-generation-improvement-20260604/p3-train-config.json",
+  "config_hash": "73ecaf945b7cbe14132669f248f8ed1f2341472739fa6d9ab4fdb69986579b3f",
+  "selected": true,
+  "blocked": false,
+  "blocker": "",
+  "selected_bucket": "sparse_positive",
+  "gen_no": 4,
+  "buy_name": "AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_buy",
+  "sell_name": "AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_sell",
+  "metrics": {
+    "gen_no": 4,
+    "status": "ok",
+    "graded_score": 0.2612505484865876,
+    "gate_passed": false,
+    "gate_reason": "daily_avg_trades 0.2 < min_daily_trades 0.3",
+    "profit": 1155715.0,
+    "total_profit_pct": 23.11,
+    "mdd": 9.12,
+    "trade_count": 124,
+    "daily_avg_trades": 0.2,
+    "payoff_ratio": 1.5523029966703663,
+    "max_hold_count": 1.0,
+    "buy_name": "AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_buy",
+    "sell_name": "AILOOP_tick_spgen_p5_train_2023_2025_20260604_g4_sell"
+  },
+  "selection_timestamp": "2026-06-04T09:14:43.980185+00:00",
+  "oos_excluded": true,
+  "diagnostic_only": false,
+  "eligible_candidates": [
+    {
+      "gen_no": 4,
+      "bucket": "sparse_positive",
+      "rank_key": [
+        1,
+        -126723.13596491229,
+        9.12,
+        -124,
+        -1.5523029966703663,
+        4
+      ]
+    },
+    {
+      "gen_no": 5,
+      "bucket": "sparse_positive",
+      "rank_key": [
+        1,
+        -54870.2906350915,
+        9.29,
+        -91,
+        -1.6897270264638466,
+        5
+      ]
+    }
+  ],
+  "rejected_candidates": [
+    {
+      "gen_no": 0,
+      "reasons": [
+        "status != ok",
+        "profit <= 0",
+        "trade_count < 20",
+        "daily_avg_trades < 0.05",
+        "payoff_ratio < 1.05"
+      ]
+    },
+    {
+      "gen_no": 1,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250",
+        "payoff_ratio < 1.05"
+      ]
+    },
+    {
+      "gen_no": 2,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250",
+        "payoff_ratio < 1.05"
+      ]
+    },
+    {
+      "gen_no": 3,
+      "reasons": [
+        "profit <= 0",
+        "mdd > 10.0",
+        "trade_count > 250"
+      ]
+    },
+    {
+      "gen_no": 6,
+      "reasons": [
+        "daily_avg_trades < 0.05"
+      ]
+    },
+    {
+      "gen_no": 7,
+      "reasons": [
+        "mdd > 10.0"
+      ]
+    }
+  ],
+  "forbidden_oos_fields_present": false
+}

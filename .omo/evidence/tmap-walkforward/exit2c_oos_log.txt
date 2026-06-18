@@ -1,0 +1,11 @@
+[BATCH] run_id=exit2c_oos_2022_20260611 pairs=2
+[BATCH] run_id=exit2c_oos_2022_20260611 pairs=2
+[BATCH] prepare status=ok back_count=1530 elapsed=119s
+[BATCH] gen0 FROZEN ok profit=2,546,721 mdd=9.15 trades=55 daily=0.30 payoff=1.44262072036414 gate=True reason=ok (49s)
+[BATCH] gen1 BASE_SEED ok profit=2,110,382 mdd=13.11 trades=58 daily=0.30 payoff=1.2313837080192223 gate=True reason=ok (49s)
+[BATCH] done
+[BATCH] run_id=exit2c_oos_2026_20260611 pairs=2
+[BATCH] prepare status=ok back_count=587 elapsed=62s
+[BATCH] gen0 FROZEN ok profit=-70,903 mdd=20.14 trades=9 daily=0.30 payoff=1.1815799689440996 gate=False reason=total_profit -7.09e+04 <= 0 (17s)
+[BATCH] gen1 BASE_SEED ok profit=-191,109 mdd=15.63 trades=10 daily=0.30 payoff=1.259748427672956 gate=False reason=total_profit -1.911e+05 <= 0 (17s)
+[BATCH] done

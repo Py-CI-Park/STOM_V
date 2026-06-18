@@ -1,0 +1,218 @@
+........................................................................ [  3%]
+........................................................................ [  6%]
+..............
+[REAL CSV AUTOPSY]
+  trade_count=204 win=6 loss=198
+  B_매수총잔량: win_mean=1.503e+04 loss_mean=1.941e+04 smd=-0.7620
+  B_전일동시간비: win_mean=277.8 loss_mean=230.9 smd=+0.6337
+  B_매도총잔량: win_mean=2.943e+04 loss_mean=2.445e+04 smd=+0.4801
+  --- SUMMARY ---
+직전 백테스트 부검: 거래 204건(수익 6/손실 198). 수익과 손실을 가장 잘 가른 진입 조건은 다음과 같다. 이를 반영해 개선하라:
+- 손실 거래는 진입 시 B_매수총잔량가 높았다(손실 평균 19,407 vs 수익 평균 15,029) → 매수총잔량 진입 기준을 낮춰라.
+- 손실 거래는 진입 시 B_전일동시간비가 낮았다(손실 평균 230.9 vs 수익 평균 277.8) → 전일동시간비 진입 기준을 높여라.
+- 손실 거래는 진입 시 B_매도총잔량가 낮았다(손실 평균 24,451 vs 수익 평균 29,431) → 매도총잔량 진입 기준을 높여라.
+..........................F......FF.......FF.............. [  9%]
+........................................................................ [ 12%]
+........................................................................ [ 15%]
+........................................................................ [ 18%]
+........................................................................ [ 21%]
+........................................................................ [ 24%]
+........................................................................ [ 27%]
+........................................................................ [ 30%]
+........................................................................ [ 33%]
+..................
+[REAL CSV EXIT AUTOPSY]
+  trade_count=91 win=13 loss=78
+  giveback_gap(winners)=0.4069%p avg_mfe_w=0.7892 avg_realized_w=0.3823
+  avg_mae_losers=-0.5318% worst_mae=-1.57%
+  hold_win=11.62 hold_loss=8.077
+  worst_sell_rule='if 수익률 <= -1.0:'
+  --- SELL FEEDBACK ---
+직전 백테스트 청산(매도) 부검: 거래 91건(수익 13/손실 78). 매도(SELL) 전략을 다음과 같이 개선하라:
+- 손실 집중 매도규칙: `if 수익률 <= -1.0:` (5건, 손실 5건, 평균 -1.3%) → 이 규칙이 너무 늦거나 손실을 키운다. 이 매도 조건을 재설계하라.
+...................................................... [ 36%]
+........................................................................ [ 39%]
+........................................................................ [ 42%]
+........................................................................ [ 45%]
+........................................................................ [ 48%]
+........................................................................ [ 51%]
+........................................................................ [ 54%]
+........................................................................ [ 57%]
+........................................................................ [ 60%]
+........................................................................ [ 63%]
+........................................................................ [ 66%]
+........................................................................ [ 69%]
+........................................................................ [ 72%]
+........................................................................ [ 75%]
+...F.................................................................... [ 78%]
+........................................................................ [ 81%]
+........................................................................ [ 84%]
+........................................................................ [ 87%]
+........................................................................ [ 90%]
+........................................................................ [ 93%]
+...................................F.................................... [ 96%]
+........................................................................ [ 99%]
+.....                                                                    [100%]
+================================== FAILURES ===================================
+________ test_backtest_constructor_contract_is_small_and_queue_driven _________
+
+    def test_backtest_constructor_contract_is_small_and_queue_driven():
+        params = list(inspect.signature(BackTest.__init__).parameters)
+>       assert params == [
+            "self",
+            "sc",
+            "wq",
+            "bq",
+            "sq",
+            "tq",
+            "lq",
+            "teleQ",
+            "beq_list",
+            "bstq_list",
+            "backname",
+            "ui_gubun",
+            "dict_set",
+        ]
+E       AssertionError: assert ['self', 'sc'...q', 'lq', ...] == ['self', 'sc'...q', 'tq', ...]
+E         
+E         At index 3 diff: 'sq' != 'bq'
+E         Left contains 13 more items, first extra item: 'avgtime'
+E         Use -v to get more diff
+
+tests\unit\test_backtest_button_contract.py:9: AssertionError
+_____________ test_backtest_start_emits_key_protocol_checkpoints ______________
+
+    def test_backtest_start_emits_key_protocol_checkpoints():
+        content = (ROOT / 'backtest' / 'backtest.py').read_text(encoding='utf-8')
+    
+        for checkpoint in [
+            'backtest_child_started',
+            'backtest_child_config_received',
+            'backtest_child_moneytop_loaded',
+            'backtest_child_total_process_started',
+            'backtest_child_engine_start_sent',
+            'backtest_child_waiting_mq_first',
+            'backtest_child_mq_first_received',
+            'backtest_child_waiting_mq_second',
+            'backtest_child_completed',
+        ]:
+>           assert checkpoint in content
+E           assert 'backtest_child_started' in "\nimport json\nimport os\nimport re\nimport sys\nimport time\nimport sqlite3\nfrom pathlib import Path\nimport numpy ...elf.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} COMPLETE'))\n        time.sleep(1)\n        sys.exit()\n"
+
+tests\unit\test_backtest_process_protocol_diagnostics.py:53: AssertionError
+__________________ test_total_emits_key_protocol_checkpoints __________________
+
+    def test_total_emits_key_protocol_checkpoints():
+        content = (ROOT / 'backtest' / 'backtest.py').read_text(encoding='utf-8')
+    
+        for checkpoint in [
+            'total_process_started',
+            'total_info_received',
+            'total_engine_done_count',
+            'total_subtotal_collection_done_count',
+            'total_result_received',
+            'total_report_started',
+            'total_report_no_trades',
+            'total_report_db_written',
+            'total_report_csv_written',
+            'total_report_mq_sent',
+        ]:
+>           assert checkpoint in content
+E           assert 'total_process_started' in "\nimport json\nimport os\nimport re\nimport sys\nimport time\nimport sqlite3\nfrom pathlib import Path\nimport numpy ...elf.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} COMPLETE'))\n        time.sleep(1)\n        sys.exit()\n"
+
+tests\unit\test_backtest_process_protocol_diagnostics.py:71: AssertionError
+________ test_stock_backtest_spawn_does_not_pass_legacy_long_signature ________
+
+    def test_stock_backtest_spawn_does_not_pass_legacy_long_signature():
+        text = Path('ui/ui_button_clicked_editer_stock.py').read_text(encoding='utf-8')
+        block = _extract_backtest_spawn_block(text)
+    
+        assert "target=BackTest" in text
+        assert "ui.back_sques" in block
+        assert "ui.dict_set" in block
+>       assert "betting" not in block
+E       AssertionError: assert 'betting' not in 'ui.shared_c...e, back_club'
+E         
+E         'betting' is contained here:
+E           dict_set, betting, avgtime, startday, endday, starttime,
+E         ?           +++++++
+E                             endtime, buystg, sellstg, ui.dict_cn, ui.back_count, bl, False, back_club
+
+tests\unit\test_backtest_spawn_contract_audit.py:32: AssertionError
+________ test_coin_backtest_spawn_does_not_pass_legacy_long_signature _________
+
+    def test_coin_backtest_spawn_does_not_pass_legacy_long_signature():
+        text = Path('ui/ui_button_clicked_editer_coin.py').read_text(encoding='utf-8')
+        block = _extract_backtest_spawn_block(text)
+    
+        assert "target=BackTest" in text
+        assert "ui.back_sques" in block
+        assert "ui.dict_set" in block
+>       assert "betting" not in block
+E       AssertionError: assert 'betting' not in 'ui.shared_c...e, back_club'
+E         
+E         'betting' is contained here:
+E           dict_set, betting, avgtime, startday, endday, starttime,
+E         ?           +++++++
+E                             endtime, buystg, sellstg, None, ui.back_count, bl, False, back_club
+
+tests\unit\test_backtest_spawn_contract_audit.py:46: AssertionError
+_ TestCliDictSetProcessArgs.test_backtest_process_passes_dict_set_to_constructor _
+
+self = <tests.unit.test_runner_helpers.TestCliDictSetProcessArgs object at 0x000002ADE03BA2C0>
+
+    def test_backtest_process_passes_dict_set_to_constructor(self):
+        content = self._runner_source_without_space()
+    
+>       assert (
+            "args=(BackTest,dict(dict_set),"
+            "shared_cnt,windowQ,backQ,soundQ,totalQ,liveQ,teleQ,"
+            "back_eques,back_sques,'백테스트','S',dict(dict_set))"
+        ) in content
+E       assert "args=(BackTest,dict(dict_set),shared_cnt,windowQ,backQ,soundQ,totalQ,liveQ,teleQ,back_eques,back_sques,'백테스트','S',dict(dict_set))" in "importosimportsysimportjsonimportglobimporttimeimportsignalimportsqlite3importatexitimportpandasaspdfrommultiprocessi...time':float(row.get('평균보유기간',0.0)),'day_count':day_count,'bootstrap_avg':0.0,'bootstrap_min':0.0,'bootstrap_max':0.0,}"
+
+tests\unit\test_runner_helpers.py:231: AssertionError
+__________ test_v270_removed_jisu_chart_references_are_fully_cleaned __________
+
+    def test_v270_removed_jisu_chart_references_are_fully_cleaned():
+        mainwindow_text = Path('ui/ui_mainwindow.py').read_text(encoding='utf-8')
+        process_kill_text = Path('ui/ui_process_kill.py').read_text(encoding='utf-8')
+    
+        assert not Path('ui/ui_draw_jisuchart.py').exists(), 'V2.70 이후 지수차트 모듈은 삭제 상태여야 합니다.'
+        assert 'ui.ui_draw_jisuchart' not in mainwindow_text, '삭제된 지수차트 모듈 import가 남아 있습니다.'
+        assert 'DrawRealJisuChart' not in mainwindow_text, '삭제된 지수차트 드로어 객체 참조가 남아 있습니다.'
+        assert 'show_jisu(' not in mainwindow_text, '삭제된 지수차트 표시 함수 참조가 남아 있습니다.'
+        assert 'dialog_jisu' not in process_kill_text, '삭제된 지수차트 다이얼로그 종료/직렬화 참조가 남아 있습니다.'
+>       assert "ui.dict_set['창위치'][7]" in process_kill_text, 'dialog_info 창 위치 인덱스가 지수차트 제거 기준으로 재정렬되어야 합니다.'
+E       AssertionError: dialog_info 창 위치 인덱스가 지수차트 제거 기준으로 재정렬되어야 합니다.
+E       assert "ui.dict_set['창위치'][7]" in '\nfrom utility.setting_base import ui_num\nfrom queue import Empty\nfrom time import monotonic\nfrom PyQt5.QtWidgets ...qwait(1)\n    _process_qt_events()\n\n    app = QApplication.instance()\n    if app is not None:\n        app.quit()\n'
+
+tests\unit\test_ui_jisu_cleanup.py:18: AssertionError
+============================== warnings summary ===============================
+tests/unit/test_analyzer.py: 7 warnings
+tests/unit/test_autopsy.py: 2 warnings
+tests/unit/test_phase_c_segments.py: 3 warnings
+tests/unit/test_segment_autopsy.py: 21 warnings
+  C:\Python\64\Python31313\Lib\site-packages\scipy\stats\_axis_nan_policy.py:592: RuntimeWarning: Precision loss occurred in moment calculation due to catastrophic cancellation. This occurs when the data are nearly identical. Results may be unreliable.
+    res = hypotest_fun_out(*samples, **kwds)
+
+tests/unit/test_ui_jisu_cleanup.py::test_ui_mainwindow_import_succeeds_without_deleted_jisu_module
+tests/unit/test_ui_jisu_cleanup.py::test_ui_mainwindow_import_succeeds_without_deleted_jisu_module
+  C:\Python\64\Python31313\Lib\site-packages\binance\ws\websocket_api.py:4: DeprecationWarning: websockets.WebSocketClientProtocol is deprecated
+    from websockets import WebSocketClientProtocol  # type: ignore
+
+tests/unit/test_ui_jisu_cleanup.py::test_ui_mainwindow_import_succeeds_without_deleted_jisu_module
+  C:\Python\64\Python31313\Lib\site-packages\websockets\legacy\__init__.py:6: DeprecationWarning: websockets.legacy is deprecated; see https://websockets.readthedocs.io/en/stable/howto/upgrade.html for upgrade instructions
+    warnings.warn(  # deprecated in 14.0 - 2024-11-09
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/unit/test_backtest_button_contract.py::test_backtest_constructor_contract_is_small_and_queue_driven
+FAILED tests/unit/test_backtest_process_protocol_diagnostics.py::test_backtest_start_emits_key_protocol_checkpoints
+FAILED tests/unit/test_backtest_process_protocol_diagnostics.py::test_total_emits_key_protocol_checkpoints
+FAILED tests/unit/test_backtest_spawn_contract_audit.py::test_stock_backtest_spawn_does_not_pass_legacy_long_signature
+FAILED tests/unit/test_backtest_spawn_contract_audit.py::test_coin_backtest_spawn_does_not_pass_legacy_long_signature
+FAILED tests/unit/test_runner_helpers.py::TestCliDictSetProcessArgs::test_backtest_process_passes_dict_set_to_constructor
+FAILED tests/unit/test_ui_jisu_cleanup.py::test_v270_removed_jisu_chart_references_are_fully_cleaned
+7 failed, 2374 passed, 36 warnings in 122.94s (0:02:02)
+EXIT=1

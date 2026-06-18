@@ -1,0 +1,182 @@
+[
+  {
+    "label": "M1 P1신고가 B0900",
+    "buy": "M1_P1신고가_B0900_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P1신고가 B1000",
+    "buy": "M1_P1신고가_B1000_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P1신고가 B1100",
+    "buy": "M1_P1신고가_B1100_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P1신고가 B1200",
+    "buy": "M1_P1신고가_B1200_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P1신고가 B1330",
+    "buy": "M1_P1신고가_B1330_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P1신고가 B1430",
+    "buy": "M1_P1신고가_B1430_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P2이평재탈환 B0900",
+    "buy": "M1_P2이평재탈환_B0900_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P2이평재탈환 B1000",
+    "buy": "M1_P2이평재탈환_B1000_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P2이평재탈환 B1100",
+    "buy": "M1_P2이평재탈환_B1100_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P2이평재탈환 B1200",
+    "buy": "M1_P2이평재탈환_B1200_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P2이평재탈환 B1330",
+    "buy": "M1_P2이평재탈환_B1330_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P2이평재탈환 B1430",
+    "buy": "M1_P2이평재탈환_B1430_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P3대금급증 B0900",
+    "buy": "M1_P3대금급증_B0900_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P3대금급증 B1000",
+    "buy": "M1_P3대금급증_B1000_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P3대금급증 B1100",
+    "buy": "M1_P3대금급증_B1100_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P3대금급증 B1200",
+    "buy": "M1_P3대금급증_B1200_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P3대금급증 B1330",
+    "buy": "M1_P3대금급증_B1330_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P3대금급증 B1430",
+    "buy": "M1_P3대금급증_B1430_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P4강도급등 B0900",
+    "buy": "M1_P4강도급등_B0900_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P4강도급등 B1000",
+    "buy": "M1_P4강도급등_B1000_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P4강도급등 B1100",
+    "buy": "M1_P4강도급등_B1100_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P4강도급등 B1200",
+    "buy": "M1_P4강도급등_B1200_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P4강도급등 B1330",
+    "buy": "M1_P4강도급등_B1330_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P4강도급등 B1430",
+    "buy": "M1_P4강도급등_B1430_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P5동시간활성 B0900",
+    "buy": "M1_P5동시간활성_B0900_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P5동시간활성 B1000",
+    "buy": "M1_P5동시간활성_B1000_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P5동시간활성 B1100",
+    "buy": "M1_P5동시간활성_B1100_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P5동시간활성 B1200",
+    "buy": "M1_P5동시간활성_B1200_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P5동시간활성 B1330",
+    "buy": "M1_P5동시간활성_B1330_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P5동시간활성 B1430",
+    "buy": "M1_P5동시간활성_B1430_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P6연속양봉 B0900",
+    "buy": "M1_P6연속양봉_B0900_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P6연속양봉 B1000",
+    "buy": "M1_P6연속양봉_B1000_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P6연속양봉 B1100",
+    "buy": "M1_P6연속양봉_B1100_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P6연속양봉 B1200",
+    "buy": "M1_P6연속양봉_B1200_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P6연속양봉 B1330",
+    "buy": "M1_P6연속양봉_B1330_B",
+    "sell": "M1_COMMON_S"
+  },
+  {
+    "label": "M1 P6연속양봉 B1430",
+    "buy": "M1_P6연속양봉_B1430_B",
+    "sell": "M1_COMMON_S"
+  }
+]

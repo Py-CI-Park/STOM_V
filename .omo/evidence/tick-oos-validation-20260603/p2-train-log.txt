@@ -1,0 +1,98 @@
+TASK 4: P2 multiyear train run
+timestamp_start=2026-06-03T20:06:50.9117978+09:00
+command=python -m ai_strategy_loop.controller.loop --config-json .omo/evidence/tick-oos-validation-20260603/p2-train-config.json --run-id tick_oos_p2_train_2023_2025_20260603
+
+[LOOP] loop DB        : C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\state\loop_strategies.db
+[LOOP] provider       : gpt_auth
+[LOOP] max_generations: 6
+[LOOP] bt_timeframe   : tick
+[LOOP] bt_engine_mode : warm
+[LOOP] warm prepare 완료 (back_count=2285)
+
+[LOOP] === generation 0 (run=tick_oos_p2_train_2023_2025_20260603) ===
+[LOOP] seed 사용: buy=C_T_900_920_U2_B sell=C_T_900_920_U2_S
+[LOOP] backtest status=error elapsed=654.4s reason=warm backtest non-success: status=error message=백테스트 시간 초과 (300초) csv=no
+
+[LOOP] === generation 1 (run=tick_oos_p2_train_2023_2025_20260603) ===
+[LOOP] generated buy=AILOOP_tick_oos_p2_train_2023_2025_20260603_g1_buy sell=AILOOP_tick_oos_p2_train_2023_2025_20260603_g1_sell (cum_tokens=25854)
+[LOOP] --- AILOOP_tick_oos_p2_train_2023_2025_20260603_g1_buy (first 6 lines) ---
+    전일종가 = 현재가 / (1 + (등락율 / 100))
+    시가등락율 = ((시가 - 전일종가) / 전일종가) * 100
+    시가대비등락율 = ((현재가 - 시가) / 시가) * 100
+    초당순매수금액 = (초당매수수량 - 초당매도수량) * 현재가 / 1000000
+    
+    매수 = True
+[LOOP] --- /AILOOP_tick_oos_p2_train_2023_2025_20260603_g1_buy ---
+[LOOP] backtest status=success elapsed=276.7s reason=ok
+[LOOP] graded=0.0354519 hard_composite=-0 calmar=-0.3277 r2=0.8228 gate=False reason=mdd 84.49 > mdd_cap 35 mdd=84.49 profit=-16,043,382 trades=3451 gate_distance=거래 3451 과다(>softcap 150); MDD 84.49 is 2.4x cap(35); profit negative
+
+[LOOP] === generation 2 (run=tick_oos_p2_train_2023_2025_20260603) ===
+[LOOP] generated buy=AILOOP_tick_oos_p2_train_2023_2025_20260603_g2_buy sell=AILOOP_tick_oos_p2_train_2023_2025_20260603_g2_sell (cum_tokens=47721)
+[LOOP] --- AILOOP_tick_oos_p2_train_2023_2025_20260603_g2_buy (first 6 lines) ---
+    전일종가 = 현재가 / (1 + (등락율 / 100))
+    시가등락율 = ((시가 - 전일종가) / 전일종가) * 100
+    시가대비등락율 = ((현재가 - 시가) / 시가) * 100
+    초당순매수금액 = (초당매수수량 - 초당매도수량) * 현재가 / 1000000
+    
+    매수 = True
+[LOOP] --- /AILOOP_tick_oos_p2_train_2023_2025_20260603_g2_buy ---
+[LOOP] backtest status=success elapsed=270.9s reason=ok
+[LOOP] graded=0.219176 hard_composite=-0 calmar=-0.254 r2=0.3673 gate=False reason=mdd 36.03 > mdd_cap 35 mdd=36.03 profit=-1,327,373 trades=413 gate_distance=거래 413 과다(>softcap 150); MDD 36.03 is 1x cap(35); profit negative
+
+[LOOP] === generation 3 (run=tick_oos_p2_train_2023_2025_20260603) ===
+[LOOP] generated buy=AILOOP_tick_oos_p2_train_2023_2025_20260603_g3_buy sell=AILOOP_tick_oos_p2_train_2023_2025_20260603_g3_sell (cum_tokens=69619)
+[LOOP] --- AILOOP_tick_oos_p2_train_2023_2025_20260603_g3_buy (first 6 lines) ---
+    전일종가 = 현재가 / (1 + (등락율 / 100))
+    시가등락율 = ((시가 - 전일종가) / 전일종가) * 100
+    시가대비등락율 = ((현재가 - 시가) / 시가) * 100
+    초당순매수금액 = (초당매수수량 - 초당매도수량) * 현재가 / 1000000
+    
+    매수 = True
+[LOOP] --- /AILOOP_tick_oos_p2_train_2023_2025_20260603_g3_buy ---
+[LOOP] backtest status=success elapsed=269.0s reason=ok
+[LOOP] graded=0.0407075 hard_composite=0 calmar=0.1543 r2=0.01548 gate=False reason=daily_avg_trades 0.1 < min_daily_trades 0.3 mdd=11.15 profit=248,716 trades=58 gate_distance=일평균 0.1/0.3회(부족)
+
+[LOOP] === generation 4 (run=tick_oos_p2_train_2023_2025_20260603) ===
+[LOOP] generated buy=AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_buy sell=AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_sell (cum_tokens=91682)
+[LOOP] --- AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_buy (first 6 lines) ---
+    매수 = True
+    
+    if 관심종목 != 1:
+        매수 = False
+    elif not (1000 <= 현재가 <= 50000):
+        매수 = False
+[LOOP] --- /AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_buy ---
+[LOOP] backtest status=success elapsed=255.6s reason=ok
+[LOOP] graded=0.282929 hard_composite=-0 calmar=-0.2435 r2=0.0003327 gate=False reason=total_profit -6.971e+05 <= 0 mdd=19.75 profit=-697,147 trades=182 gate_distance=거래 182 과다(>softcap 150); profit negative
+
+[LOOP] === generation 5 (run=tick_oos_p2_train_2023_2025_20260603) ===
+[LOOP] generated buy=AILOOP_tick_oos_p2_train_2023_2025_20260603_g5_buy sell=AILOOP_tick_oos_p2_train_2023_2025_20260603_g5_sell (cum_tokens=113431)
+[LOOP] --- AILOOP_tick_oos_p2_train_2023_2025_20260603_g5_buy (first 6 lines) ---
+    매수 = True
+    
+    if 관심종목 != 1:
+        매수 = False
+    elif not (1000 <= 현재가 <= 50000):
+        매수 = False
+[LOOP] --- /AILOOP_tick_oos_p2_train_2023_2025_20260603_g5_buy ---
+[LOOP] backtest status=success elapsed=257.9s reason=ok
+[LOOP] graded=0.0659201 hard_composite=0 calmar=1.658 r2=0.7458 gate=False reason=daily_avg_trades 0.1 < min_daily_trades 0.3 mdd=6.93 profit=1,665,802 trades=62 gate_distance=일평균 0.1/0.3회(부족)
+
+[LOOP] === SUMMARY ===
+{
+  "run_id": "tick_oos_p2_train_2023_2025_20260603",
+  "generations": 6,
+  "best_gen": 4,
+  "best_score": 0.28292855129027067,
+  "best_buy": "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_buy",
+  "best_sell": "AILOOP_tick_oos_p2_train_2023_2025_20260603_g4_sell",
+  "winner_gen": -1,
+  "winner_score": null,
+  "winner_buy": null,
+  "winner_sell": null,
+  "stop_reason": "max_generations 도달: gen_count 6 >= 6"
+}
+[LOOP] wall-clock: 2603.7s
+
+timestamp_end=2026-06-03T20:53:08.3865534+09:00
+exit_code=0

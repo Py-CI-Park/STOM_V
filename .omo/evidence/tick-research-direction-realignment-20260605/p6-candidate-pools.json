@@ -1,0 +1,104 @@
+{
+  "selector_version": "candidate_research_pool_v2",
+  "run_id": "tick_realign_p6_smoke_20260605",
+  "config_path": ".omo/evidence/tick-research-direction-realignment-20260605/p6-smoke-config.json",
+  "config_hash": "5d071b7fb05050ffe2bb486f004d3a3a829b7b6e4103ee9d69658e99af2acb74",
+  "policy_hash": "65f1be866ed251beef99f2af4d784e6e310b48a96aa81e4105e7093728c3f403",
+  "oos_excluded": true,
+  "forbidden_oos_fields_detected": false,
+  "selection_timestamp": "2026-06-04T22:17:34.079389+00:00",
+  "promotion_candidate": null,
+  "exploration_pool": [
+    {
+      "gen_no": 1,
+      "candidate": {
+        "gen_no": 1,
+        "status": "ok",
+        "graded_score": 0.1379923707558449,
+        "gate_passed": false,
+        "gate_reason": "total_profit -4.344e+06 <= 0",
+        "profit": -4343533.0,
+        "total_profit_pct": -21.77,
+        "mdd": 22.96,
+        "trade_count": 269,
+        "daily_avg_trades": 4.6,
+        "payoff_ratio": 1.170653501783204,
+        "max_hold_count": 4.0,
+        "buy_name": "AILOOP_tick_realign_p6_smoke_20260605_g1_buy",
+        "sell_name": "AILOOP_tick_realign_p6_smoke_20260605_g1_sell",
+        "csv_path": "backtest/csv\\stock_bt_AILOOP_tick_realign_p6_smoke_20260605_g1_buy_20260605071608.csv"
+      },
+      "labels": [
+        "mdd_risk",
+        "max_hold_unknown"
+      ],
+      "diagnostics": null,
+      "research_score": -61.21299500000001,
+      "promotion_reasons": [
+        "base_sparse_positive_failed",
+        "mdd > 10.0",
+        "year 2023 missing",
+        "year 2024 missing",
+        "year 2025 profit <= 0"
+      ],
+      "yearly_breakdown": [
+        {
+          "year": 2025,
+          "trade_count": 269,
+          "profit": -4343533.0
+        }
+      ]
+    }
+  ],
+  "research_pool": [
+    {
+      "gen_no": 1,
+      "candidate": {
+        "gen_no": 1,
+        "status": "ok",
+        "graded_score": 0.1379923707558449,
+        "gate_passed": false,
+        "gate_reason": "total_profit -4.344e+06 <= 0",
+        "profit": -4343533.0,
+        "total_profit_pct": -21.77,
+        "mdd": 22.96,
+        "trade_count": 269,
+        "daily_avg_trades": 4.6,
+        "payoff_ratio": 1.170653501783204,
+        "max_hold_count": 4.0,
+        "buy_name": "AILOOP_tick_realign_p6_smoke_20260605_g1_buy",
+        "sell_name": "AILOOP_tick_realign_p6_smoke_20260605_g1_sell",
+        "csv_path": "backtest/csv\\stock_bt_AILOOP_tick_realign_p6_smoke_20260605_g1_buy_20260605071608.csv"
+      },
+      "labels": [
+        "mdd_risk",
+        "max_hold_unknown"
+      ],
+      "diagnostics": null,
+      "research_score": -61.21299500000001,
+      "promotion_reasons": [
+        "base_sparse_positive_failed",
+        "mdd > 10.0",
+        "year 2023 missing",
+        "year 2024 missing",
+        "year 2025 profit <= 0"
+      ],
+      "yearly_breakdown": [
+        {
+          "year": 2025,
+          "trade_count": 269,
+          "profit": -4343533.0
+        }
+      ]
+    }
+  ],
+  "rejected_structural": [
+    {
+      "gen_no": 0,
+      "reasons": [
+        "csv_path missing",
+        "trade_count < 10"
+      ]
+    }
+  ]
+}

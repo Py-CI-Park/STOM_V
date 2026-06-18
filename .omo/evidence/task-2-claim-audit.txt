@@ -1,0 +1,27 @@
+Task 2 Claim Audit Evidence
+Date: 2026-06-03
+
+Prior report:
+- `.omx/goals/autoresearch/condition-evolution-profit-research-20260602/research-report.md`
+- Mission/completion status: passed, read-only research completed.
+
+Root recheck:
+- Current portable handoff: `docs/AGENT_HANDOFF.md`
+- Tick detailed handoff: `docs/update_log/2026-06-03_tick_program_complete_handoff.md`
+- Comprehensive redirect: `docs/update_log/2026-06-02_comprehensive_review_and_redirection.md`
+- Runtime state counts are refreshed in Task 4. The old report's `equity_points=0` and `prompts=4` are stale.
+
+Material themes extracted:
+- Overfitting defense and PBO/DSR remain recommended and not fully wired as promotion gates.
+- Multi-horizon/OOS validation remains the decisive missing proof for human-level/superior claims.
+- Evidence persistence improved after the prior report: current DB has `equity_points=1943` and `prompts=184`.
+- Dashboard decision support improved with analysis panels, but still lacks a single enforceable promotion/rejection card with OOS/PBO/slippage badges.
+- Exit/MDD remains a critical improvement area; edge_ratio data shows entry edge exists but MAE/give-back efficiency is weak.
+- V3K analyzer boundaries remain intact; gates stay 3/6 and no live gate advancement is allowed.
+- ML leakage controls exist in B_* generation discipline, but purged/embargo and PBO/DSR-style statistical controls remain roadmap items.
+
+Weak-evidence warnings:
+- One-month or short-window winners are research leads, not deployable proof.
+- Backfinder seed mining is lookahead/survivorship-biased and must be seed-only until OOS validated.
+- A live dashboard and run history prove observability, not profitability.
+- "Human-level/superior" remains unproven until toggles are ON in multiyear research and evaluated on 2022/2026 OOS.

@@ -1,0 +1,23 @@
+﻿## P0 Verification
+timestamp=2026-06-04T12:31:41.6012234+09:00
+
+## artifact existence
+p0-safety-snapshot.txt=True
+p0-canonical-inputs.txt=True
+
+## protected-path git status after P0
+
+
+## manual QA readback
+## P0 Canonical Inputs
+
+timestamp=2026-06-04T12:30+09:00
+plan=.omo/plans/tick-selection-rule-sparse-gen5-research-20260604.md
+
+## Files read / existence
+- docs/AGENT_HANDOFF.md: exists, read; portable project handoff and guardrails.
+- docs/update_log/2026-06-03_tick_program_complete_handoff.md: exists, read; detailed TICK handoff.
+- .omo/evidence/tick-oos-dashboard-validation-20260604/p6-decision-card.md: exists, read; prior final verdict.
+- .omo/evidence/tick-oos-dashboard-validation-20260604/p4-analysis.md: exists, read; prior dashboard analysis.
+- .omo/evidence/tick-oos-dashboard-validation-20260604/p5-oos-comparison.md: exists, read; prior fixed OOS comparison.
+- .omo/evidence/tick-oos-dashboard-validation-20260604/p3-selected-candidate.json: exists, read; prior selected candidate and all generations.

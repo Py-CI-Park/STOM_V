@@ -1,0 +1,14 @@
+{
+  "template": "llmgen_oversold_flow_reversal_906",
+  "run_id": "tmap_llmg18_q1_e32_20260613",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_oversold_flow_reversal_906_000_B",
+      "status": "error"
+    }
+  ]
+}

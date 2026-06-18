@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_prevtime_extreme_sparse_break906",
+  "run_id": "tmap_llmg17_smoke_q1_e32_20260613",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_prevtime_extreme_sparse_break906_000_B",
+      "status": "ok",
+      "profit": -58313365.0,
+      "mdd": 68.71,
+      "trades": 1838
+    }
+  ]
+}

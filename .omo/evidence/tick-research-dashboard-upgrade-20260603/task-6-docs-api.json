@@ -1,0 +1,42 @@
+{
+  "task": "6. Research method registry and initial wiki content",
+  "timestamp": "2026-06-04T04:38:00+09:00",
+  "automated_verification": {
+    "red": "python -m pytest tests/unit/test_research_wiki_docs.py -q -> 3 failed; required wiki docs missing and API did not list wiki id",
+    "green": "python -m pytest tests/unit/test_research_wiki_docs.py tests/unit/test_dashboard_research_docs.py -q -> 6 passed in 2.61s"
+  },
+  "manual_qa": {
+    "tool": "curl.exe",
+    "owned_server": "python -m ai_strategy_loop --host 127.0.0.1 --port 8785",
+    "owned_server_pid": 88792,
+    "health_response": "HTTP/1.1 200 OK; {\"status\":\"ok\",\"contract_version\":2}",
+    "research_docs_response": {
+      "status": "HTTP/1.1 200 OK",
+      "count": 66,
+      "wiki_ids": [
+        "docs/research/condition_research/wiki/metrics_glossary.md",
+        "docs/research/condition_research/wiki/research_method_registry.md",
+        "docs/research/condition_research/wiki/tick_oos_failure_lesson.md"
+      ],
+      "wiki_category": "wiki"
+    }
+  },
+  "adversarial": {
+    "malformed_input": "not applicable: docs-only change; Task 5 traversal tests still cover doc route malformed ids.",
+    "prompt_injection": "not applicable: no prompt/model execution; docs warn prompt logging is evidence, not proof by itself.",
+    "cancel_resume": "evidence files written before plan checkbox update.",
+    "stale_state": "owned 8785 server imported current docs and returned wiki ids.",
+    "dirty_worktree": "P0 dirty state preserved; no cleanup/revert/staging.",
+    "hung_or_long_commands": "curl --max-time 10 used; pytest completed.",
+    "flaky_tests": "focused doc suite passed after red/green.",
+    "misleading_success_output": "REJECT_CANDIDATE recorded; forbidden PROMOTE_CANDIDATE string absent.",
+    "repeated_interruptions": "durable artifact and ledger entry precede checkbox update."
+  },
+  "cleanup": {
+    "owned_server_pid": 88792,
+    "owned_server_session": 8094,
+    "stop_method": "Ctrl-C via write_stdin",
+    "post_cleanup_probe": "curl.exe -i -sS --max-time 2 http://127.0.0.1:8785/health -> curl: (28) Connection timed out after 2007 milliseconds"
+  },
+  "cleanup_pending": "none"
+}

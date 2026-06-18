@@ -1,0 +1,262 @@
+{
+  "selector_version": "seed_relative_v1",
+  "run_id": "theta_star_reeval_20260611",
+  "config_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\claude-condition-research-20260610\\train-config.json",
+  "config_hash": "a4bed0de8513d8cc28693ec48e482617ec0b82e024a87a3465e75f7b58bfe88a",
+  "seed_profile": {
+    "mdd": 17.44,
+    "trade_count": 307,
+    "profit": 8631199.0,
+    "source": "BASE_SEED gen0 of theta_star_reeval_20260611"
+  },
+  "mdd_limit": 20.0,
+  "selected": true,
+  "blocked": false,
+  "blocker": "",
+  "selected_candidate": {
+    "gen_no": 7,
+    "status": "ok",
+    "graded_score": 7.849793006786826,
+    "gate_passed": true,
+    "gate_reason": "ok",
+    "profit": 10965479.0,
+    "total_profit_pct": 218.24,
+    "mdd": 10.04,
+    "trade_count": 272,
+    "daily_avg_trades": 0.4,
+    "payoff_ratio": 1.534815263812587,
+    "max_hold_count": 0.0,
+    "buy_name": "THETA_seed_902905_06_B",
+    "sell_name": "THETA_seed_902905_06_S",
+    "csv_path": "backtest/csv\\stock_bt_THETA_seed_902905_06_B_20260611141549.csv"
+  },
+  "selected_yearly": {
+    "years": [
+      [
+        "2023",
+        4590073.0
+      ],
+      [
+        "2024",
+        4518416.0
+      ],
+      [
+        "2025",
+        1856990.0
+      ]
+    ],
+    "positive_years": 3,
+    "observed_years": 3,
+    "meets_advisory": true
+  },
+  "eligible_candidates": [
+    {
+      "gen_no": 7,
+      "rank_key": [
+        -3.0,
+        -1092179.1832669324,
+        10.04,
+        -1.534815263812587,
+        7
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            4590073.0
+          ],
+          [
+            "2024",
+            4518416.0
+          ],
+          [
+            "2025",
+            1856990.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 5,
+      "rank_key": [
+        -3.0,
+        -864291.4986853637,
+        11.41,
+        -1.467328628478109,
+        5
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            4875248.0
+          ],
+          [
+            "2024",
+            3909879.0
+          ],
+          [
+            "2025",
+            1076439.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 2,
+      "rank_key": [
+        -3.0,
+        -854883.1460674157,
+        11.57,
+        -1.5579138479514798,
+        2
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            4754964.0
+          ],
+          [
+            "2024",
+            3902314.0
+          ],
+          [
+            "2025",
+            1233720.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 6,
+      "rank_key": [
+        -3.0,
+        -844638.8888888889,
+        12.78,
+        -1.533679914398516,
+        6
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            5118041.0
+          ],
+          [
+            "2024",
+            4117757.0
+          ],
+          [
+            "2025",
+            1558687.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 4,
+      "rank_key": [
+        -3.0,
+        -822653.2403609516,
+        12.19,
+        -1.5572687440692028,
+        4
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            4226996.0
+          ],
+          [
+            "2024",
+            4269124.0
+          ],
+          [
+            "2025",
+            1532023.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 1,
+      "rank_key": [
+        -3.0,
+        -657976.4275256223,
+        13.66,
+        -1.4922780934091997,
+        1
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            4510621.0
+          ],
+          [
+            "2024",
+            3725865.0
+          ],
+          [
+            "2025",
+            751472.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    },
+    {
+      "gen_no": 3,
+      "rank_key": [
+        -3.0,
+        -627631.4115308151,
+        15.09,
+        -1.4598760031777795,
+        3
+      ],
+      "yearly": {
+        "years": [
+          [
+            "2023",
+            5244083.0
+          ],
+          [
+            "2024",
+            3522496.0
+          ],
+          [
+            "2025",
+            704379.0
+          ]
+        ],
+        "positive_years": 3,
+        "observed_years": 3,
+        "meets_advisory": true
+      }
+    }
+  ],
+  "rejected_candidates": [],
+  "selection_timestamp": "2026-06-11T15:50:03.017742+00:00",
+  "oos_excluded": true,
+  "diagnostic_only": false,
+  "forbidden_oos_fields_present": false
+}

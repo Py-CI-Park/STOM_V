@@ -1,0 +1,27 @@
+﻿# Post-implementation review summary
+
+Initial review-work result:
+- Safety lane returned REJECTION: candidate CSV rows outside training years were not explicitly rejected before yearly breakdown/uptrend scoring.
+- Fix was implemented with a red/green regression test.
+
+Fix evidence:
+- ai_strategy_loop/controller/_yearly_sparse_robust_selection.py rejects CSV years outside 2023/2024/2025 before yearly breakdown or uptrend scoring.
+- tests/unit/test_yearly_sparse_robust_selection.py includes test_rejects_csv_containing_oos_year_rows for 2022 and 2026 contamination.
+
+Re-review result:
+- Code-quality re-review: PASS. Noted source is 242 pure LOC and should be split before the next substantive expansion.
+- Other subagent re-review lanes timed out and were closed as inconclusive, not counted as PASS.
+- Root verification was run after closing timed-out lanes.
+
+Root verification after fix:
+- selector/prompt focused pytest: 82 passed.
+- dashboard analysis pytest: 13 passed.
+- git diff --check: exit 0 with existing CRLF warnings only.
+- protected runtime path status: empty.
+- top-level plan open checkboxes: none.
+- Boulder active_work_id: null.
+
+Final review stance:
+- Blocking safety issue fixed and verified by tests/root checks.
+- Full five-lane review is not claimed as PASS because four re-review subagents timed out.
+- Final product verdict remains NEEDS_MORE_EVIDENCE; no human-level, seed-superior, or production-promotion claim.

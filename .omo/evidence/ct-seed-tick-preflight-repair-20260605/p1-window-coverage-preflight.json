@@ -1,0 +1,1466 @@
+{
+  "db_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database\\stock_tick_back.db",
+  "mode": "ro",
+  "windows": [
+    {
+      "day": 20250102,
+      "start_time": 90000,
+      "end_time": 90100,
+      "index_start": 20250102090000,
+      "index_end": 20250102090100,
+      "moneytop_rows": 0,
+      "moneytop_first_index": null,
+      "moneytop_last_index": null,
+      "distinct_codes": 0,
+      "sample_codes": [],
+      "sample_per_code_rows": [],
+      "candidate_active": false
+    },
+    {
+      "day": 20250102,
+      "start_time": 90000,
+      "end_time": 90300,
+      "index_start": 20250102090000,
+      "index_end": 20250102090300,
+      "moneytop_rows": 0,
+      "moneytop_first_index": null,
+      "moneytop_last_index": null,
+      "distinct_codes": 0,
+      "sample_codes": [],
+      "sample_per_code_rows": [],
+      "candidate_active": false
+    },
+    {
+      "day": 20250102,
+      "start_time": 90000,
+      "end_time": 90500,
+      "index_start": 20250102090000,
+      "index_end": 20250102090500,
+      "moneytop_rows": 0,
+      "moneytop_first_index": null,
+      "moneytop_last_index": null,
+      "distinct_codes": 0,
+      "sample_codes": [],
+      "sample_per_code_rows": [],
+      "candidate_active": false
+    },
+    {
+      "day": 20250102,
+      "start_time": 90100,
+      "end_time": 90200,
+      "index_start": 20250102090100,
+      "index_end": 20250102090200,
+      "moneytop_rows": 0,
+      "moneytop_first_index": null,
+      "moneytop_last_index": null,
+      "distinct_codes": 0,
+      "sample_codes": [],
+      "sample_per_code_rows": [],
+      "candidate_active": false
+    },
+    {
+      "day": 20250102,
+      "start_time": 90200,
+      "end_time": 90300,
+      "index_start": 20250102090200,
+      "index_end": 20250102090300,
+      "moneytop_rows": 0,
+      "moneytop_first_index": null,
+      "moneytop_last_index": null,
+      "distinct_codes": 0,
+      "sample_codes": [],
+      "sample_per_code_rows": [],
+      "candidate_active": false
+    },
+    {
+      "day": 20250102,
+      "start_time": 90200,
+      "end_time": 90500,
+      "index_start": 20250102090200,
+      "index_end": 20250102090500,
+      "moneytop_rows": 0,
+      "moneytop_first_index": null,
+      "moneytop_last_index": null,
+      "distinct_codes": 0,
+      "sample_codes": [],
+      "sample_per_code_rows": [],
+      "candidate_active": false
+    },
+    {
+      "day": 20250102,
+      "start_time": 90300,
+      "end_time": 90500,
+      "index_start": 20250102090300,
+      "index_end": 20250102090500,
+      "moneytop_rows": 0,
+      "moneytop_first_index": null,
+      "moneytop_last_index": null,
+      "distinct_codes": 0,
+      "sample_codes": [],
+      "sample_per_code_rows": [],
+      "candidate_active": false
+    },
+    {
+      "day": 20250102,
+      "start_time": 90400,
+      "end_time": 90500,
+      "index_start": 20250102090400,
+      "index_end": 20250102090500,
+      "moneytop_rows": 0,
+      "moneytop_first_index": null,
+      "moneytop_last_index": null,
+      "distinct_codes": 0,
+      "sample_codes": [],
+      "sample_per_code_rows": [],
+      "candidate_active": false
+    },
+    {
+      "day": 20250103,
+      "start_time": 90000,
+      "end_time": 90100,
+      "index_start": 20250103090000,
+      "index_end": 20250103090100,
+      "moneytop_rows": 60,
+      "moneytop_first_index": 20250103090001,
+      "moneytop_last_index": 20250103090100,
+      "distinct_codes": 134,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "000250",
+        "001380",
+        "002380",
+        "002630",
+        "002720",
+        "002760",
+        "003490",
+        "004380"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 43,
+          "first_index": 20250103090018,
+          "last_index": 20250103090100
+        },
+        {
+          "code": "000150",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        },
+        {
+          "code": "000250",
+          "rows": 48,
+          "first_index": 20250103090011,
+          "last_index": 20250103090100
+        },
+        {
+          "code": "001380",
+          "rows": 43,
+          "first_index": 20250103090018,
+          "last_index": 20250103090100
+        },
+        {
+          "code": "002380",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250103,
+      "start_time": 90000,
+      "end_time": 90300,
+      "index_start": 20250103090000,
+      "index_end": 20250103090300,
+      "moneytop_rows": 180,
+      "moneytop_first_index": 20250103090001,
+      "moneytop_last_index": 20250103090300,
+      "distinct_codes": 139,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "000250",
+        "001380",
+        "001570",
+        "002380",
+        "002630",
+        "002720",
+        "002760",
+        "003490"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 163,
+          "first_index": 20250103090018,
+          "last_index": 20250103090300
+        },
+        {
+          "code": "000150",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        },
+        {
+          "code": "000250",
+          "rows": 166,
+          "first_index": 20250103090011,
+          "last_index": 20250103090300
+        },
+        {
+          "code": "001380",
+          "rows": 163,
+          "first_index": 20250103090018,
+          "last_index": 20250103090300
+        },
+        {
+          "code": "001570",
+          "rows": 158,
+          "first_index": 20250103090023,
+          "last_index": 20250103090300
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250103,
+      "start_time": 90000,
+      "end_time": 90500,
+      "index_start": 20250103090000,
+      "index_end": 20250103090500,
+      "moneytop_rows": 300,
+      "moneytop_first_index": 20250103090001,
+      "moneytop_last_index": 20250103090500,
+      "distinct_codes": 139,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "000250",
+        "001380",
+        "001570",
+        "002380",
+        "002630",
+        "002720",
+        "002760",
+        "003490"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 283,
+          "first_index": 20250103090018,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "000150",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        },
+        {
+          "code": "000250",
+          "rows": 286,
+          "first_index": 20250103090011,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "001380",
+          "rows": 283,
+          "first_index": 20250103090018,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "001570",
+          "rows": 278,
+          "first_index": 20250103090023,
+          "last_index": 20250103090500
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250103,
+      "start_time": 90100,
+      "end_time": 90200,
+      "index_start": 20250103090100,
+      "index_end": 20250103090200,
+      "moneytop_rows": 61,
+      "moneytop_first_index": 20250103090100,
+      "moneytop_last_index": 20250103090200,
+      "distinct_codes": 39,
+      "sample_codes": [
+        "002720",
+        "004380",
+        "009830",
+        "010120",
+        "010620",
+        "011080",
+        "013360",
+        "025950",
+        "042700",
+        "047810"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "002720",
+          "rows": 61,
+          "first_index": 20250103090100,
+          "last_index": 20250103090200
+        },
+        {
+          "code": "004380",
+          "rows": 61,
+          "first_index": 20250103090100,
+          "last_index": 20250103090200
+        },
+        {
+          "code": "009830",
+          "rows": 61,
+          "first_index": 20250103090100,
+          "last_index": 20250103090200
+        },
+        {
+          "code": "010120",
+          "rows": 61,
+          "first_index": 20250103090100,
+          "last_index": 20250103090200
+        },
+        {
+          "code": "010620",
+          "rows": 61,
+          "first_index": 20250103090100,
+          "last_index": 20250103090200
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250103,
+      "start_time": 90200,
+      "end_time": 90300,
+      "index_start": 20250103090200,
+      "index_end": 20250103090300,
+      "moneytop_rows": 61,
+      "moneytop_first_index": 20250103090200,
+      "moneytop_last_index": 20250103090300,
+      "distinct_codes": 39,
+      "sample_codes": [
+        "001570",
+        "002720",
+        "004380",
+        "009830",
+        "010120",
+        "010620",
+        "011080",
+        "013360",
+        "018500",
+        "025950"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "001570",
+          "rows": 61,
+          "first_index": 20250103090200,
+          "last_index": 20250103090300
+        },
+        {
+          "code": "002720",
+          "rows": 61,
+          "first_index": 20250103090200,
+          "last_index": 20250103090300
+        },
+        {
+          "code": "004380",
+          "rows": 61,
+          "first_index": 20250103090200,
+          "last_index": 20250103090300
+        },
+        {
+          "code": "009830",
+          "rows": 61,
+          "first_index": 20250103090200,
+          "last_index": 20250103090300
+        },
+        {
+          "code": "010120",
+          "rows": 61,
+          "first_index": 20250103090200,
+          "last_index": 20250103090300
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250103,
+      "start_time": 90200,
+      "end_time": 90500,
+      "index_start": 20250103090200,
+      "index_end": 20250103090500,
+      "moneytop_rows": 181,
+      "moneytop_first_index": 20250103090200,
+      "moneytop_last_index": 20250103090500,
+      "distinct_codes": 43,
+      "sample_codes": [
+        "000250",
+        "001380",
+        "001570",
+        "002720",
+        "004380",
+        "009830",
+        "010120",
+        "010620",
+        "011080",
+        "013360"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000250",
+          "rows": 181,
+          "first_index": 20250103090200,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "001380",
+          "rows": 181,
+          "first_index": 20250103090200,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "001570",
+          "rows": 181,
+          "first_index": 20250103090200,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "002720",
+          "rows": 181,
+          "first_index": 20250103090200,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "004380",
+          "rows": 181,
+          "first_index": 20250103090200,
+          "last_index": 20250103090500
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250103,
+      "start_time": 90300,
+      "end_time": 90500,
+      "index_start": 20250103090300,
+      "index_end": 20250103090500,
+      "moneytop_rows": 121,
+      "moneytop_first_index": 20250103090300,
+      "moneytop_last_index": 20250103090500,
+      "distinct_codes": 37,
+      "sample_codes": [
+        "000250",
+        "001380",
+        "001570",
+        "002720",
+        "004380",
+        "009830",
+        "010120",
+        "010620",
+        "011080",
+        "017860"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000250",
+          "rows": 121,
+          "first_index": 20250103090300,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "001380",
+          "rows": 121,
+          "first_index": 20250103090300,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "001570",
+          "rows": 121,
+          "first_index": 20250103090300,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "002720",
+          "rows": 121,
+          "first_index": 20250103090300,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "004380",
+          "rows": 121,
+          "first_index": 20250103090300,
+          "last_index": 20250103090500
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250103,
+      "start_time": 90400,
+      "end_time": 90500,
+      "index_start": 20250103090400,
+      "index_end": 20250103090500,
+      "moneytop_rows": 61,
+      "moneytop_first_index": 20250103090400,
+      "moneytop_last_index": 20250103090500,
+      "distinct_codes": 35,
+      "sample_codes": [
+        "000250",
+        "001380",
+        "001570",
+        "002720",
+        "009830",
+        "010120",
+        "010620",
+        "017860",
+        "018500",
+        "042700"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000250",
+          "rows": 61,
+          "first_index": 20250103090400,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "001380",
+          "rows": 61,
+          "first_index": 20250103090400,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "001570",
+          "rows": 61,
+          "first_index": 20250103090400,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "002720",
+          "rows": 61,
+          "first_index": 20250103090400,
+          "last_index": 20250103090500
+        },
+        {
+          "code": "009830",
+          "rows": 61,
+          "first_index": 20250103090400,
+          "last_index": 20250103090500
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250106,
+      "start_time": 90000,
+      "end_time": 90100,
+      "index_start": 20250106090000,
+      "index_end": 20250106090100,
+      "moneytop_rows": 60,
+      "moneytop_first_index": 20250106090001,
+      "moneytop_last_index": 20250106090100,
+      "distinct_codes": 168,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "001440",
+        "002200",
+        "002410",
+        "002630",
+        "002760",
+        "003220",
+        "003490",
+        "003780"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 36,
+          "first_index": 20250106090025,
+          "last_index": 20250106090100
+        },
+        {
+          "code": "000150",
+          "rows": 59,
+          "first_index": 20250106090002,
+          "last_index": 20250106090100
+        },
+        {
+          "code": "001440",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        },
+        {
+          "code": "002200",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        },
+        {
+          "code": "002410",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250106,
+      "start_time": 90000,
+      "end_time": 90300,
+      "index_start": 20250106090000,
+      "index_end": 20250106090300,
+      "moneytop_rows": 180,
+      "moneytop_first_index": 20250106090001,
+      "moneytop_last_index": 20250106090300,
+      "distinct_codes": 175,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "001440",
+        "001570",
+        "002200",
+        "002410",
+        "002630",
+        "002760",
+        "003220",
+        "003230"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 156,
+          "first_index": 20250106090025,
+          "last_index": 20250106090300
+        },
+        {
+          "code": "000150",
+          "rows": 179,
+          "first_index": 20250106090002,
+          "last_index": 20250106090300
+        },
+        {
+          "code": "001440",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        },
+        {
+          "code": "001570",
+          "rows": 158,
+          "first_index": 20250106090023,
+          "last_index": 20250106090300
+        },
+        {
+          "code": "002200",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250106,
+      "start_time": 90000,
+      "end_time": 90500,
+      "index_start": 20250106090000,
+      "index_end": 20250106090500,
+      "moneytop_rows": 300,
+      "moneytop_first_index": 20250106090001,
+      "moneytop_last_index": 20250106090500,
+      "distinct_codes": 175,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "001440",
+        "001570",
+        "002200",
+        "002410",
+        "002630",
+        "002760",
+        "003220",
+        "003230"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 276,
+          "first_index": 20250106090025,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "000150",
+          "rows": 294,
+          "first_index": 20250106090002,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "001440",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        },
+        {
+          "code": "001570",
+          "rows": 277,
+          "first_index": 20250106090023,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "002200",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250106,
+      "start_time": 90100,
+      "end_time": 90200,
+      "index_start": 20250106090100,
+      "index_end": 20250106090200,
+      "moneytop_rows": 61,
+      "moneytop_first_index": 20250106090100,
+      "moneytop_last_index": 20250106090200,
+      "distinct_codes": 58,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "001570",
+        "003220",
+        "006260",
+        "007660",
+        "009150",
+        "010120",
+        "011790",
+        "017860"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 61,
+          "first_index": 20250106090100,
+          "last_index": 20250106090200
+        },
+        {
+          "code": "000150",
+          "rows": 61,
+          "first_index": 20250106090100,
+          "last_index": 20250106090200
+        },
+        {
+          "code": "001570",
+          "rows": 61,
+          "first_index": 20250106090100,
+          "last_index": 20250106090200
+        },
+        {
+          "code": "003220",
+          "rows": 61,
+          "first_index": 20250106090100,
+          "last_index": 20250106090200
+        },
+        {
+          "code": "006260",
+          "rows": 60,
+          "first_index": 20250106090100,
+          "last_index": 20250106090200
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250106,
+      "start_time": 90200,
+      "end_time": 90300,
+      "index_start": 20250106090200,
+      "index_end": 20250106090300,
+      "moneytop_rows": 61,
+      "moneytop_first_index": 20250106090200,
+      "moneytop_last_index": 20250106090300,
+      "distinct_codes": 60,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "001570",
+        "003220",
+        "003230",
+        "006260",
+        "007660",
+        "009150",
+        "010120",
+        "011790"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 61,
+          "first_index": 20250106090200,
+          "last_index": 20250106090300
+        },
+        {
+          "code": "000150",
+          "rows": 61,
+          "first_index": 20250106090200,
+          "last_index": 20250106090300
+        },
+        {
+          "code": "001570",
+          "rows": 61,
+          "first_index": 20250106090200,
+          "last_index": 20250106090300
+        },
+        {
+          "code": "003220",
+          "rows": 61,
+          "first_index": 20250106090200,
+          "last_index": 20250106090300
+        },
+        {
+          "code": "003230",
+          "rows": 60,
+          "first_index": 20250106090200,
+          "last_index": 20250106090300
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250106,
+      "start_time": 90200,
+      "end_time": 90500,
+      "index_start": 20250106090200,
+      "index_end": 20250106090500,
+      "moneytop_rows": 181,
+      "moneytop_first_index": 20250106090200,
+      "moneytop_last_index": 20250106090500,
+      "distinct_codes": 62,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "001570",
+        "003220",
+        "003230",
+        "006260",
+        "007660",
+        "009150",
+        "010120",
+        "011790"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 181,
+          "first_index": 20250106090200,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "000150",
+          "rows": 176,
+          "first_index": 20250106090200,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "001570",
+          "rows": 180,
+          "first_index": 20250106090200,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "003220",
+          "rows": 181,
+          "first_index": 20250106090200,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "003230",
+          "rows": 168,
+          "first_index": 20250106090200,
+          "last_index": 20250106090500
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250106,
+      "start_time": 90300,
+      "end_time": 90500,
+      "index_start": 20250106090300,
+      "index_end": 20250106090500,
+      "moneytop_rows": 121,
+      "moneytop_first_index": 20250106090300,
+      "moneytop_last_index": 20250106090500,
+      "distinct_codes": 57,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "003220",
+        "007660",
+        "009150",
+        "010120",
+        "017860",
+        "018290",
+        "031980",
+        "033320"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 121,
+          "first_index": 20250106090300,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "000150",
+          "rows": 116,
+          "first_index": 20250106090300,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "003220",
+          "rows": 121,
+          "first_index": 20250106090300,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "007660",
+          "rows": 121,
+          "first_index": 20250106090300,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "009150",
+          "rows": 121,
+          "first_index": 20250106090300,
+          "last_index": 20250106090500
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250106,
+      "start_time": 90400,
+      "end_time": 90500,
+      "index_start": 20250106090400,
+      "index_end": 20250106090500,
+      "moneytop_rows": 61,
+      "moneytop_first_index": 20250106090400,
+      "moneytop_last_index": 20250106090500,
+      "distinct_codes": 55,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "003220",
+        "007660",
+        "009150",
+        "010120",
+        "017860",
+        "018290",
+        "031980",
+        "033320"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 61,
+          "first_index": 20250106090400,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "000150",
+          "rows": 60,
+          "first_index": 20250106090400,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "003220",
+          "rows": 61,
+          "first_index": 20250106090400,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "007660",
+          "rows": 61,
+          "first_index": 20250106090400,
+          "last_index": 20250106090500
+        },
+        {
+          "code": "009150",
+          "rows": 61,
+          "first_index": 20250106090400,
+          "last_index": 20250106090500
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250107,
+      "start_time": 90000,
+      "end_time": 90100,
+      "index_start": 20250107090000,
+      "index_end": 20250107090100,
+      "moneytop_rows": 60,
+      "moneytop_first_index": 20250107090001,
+      "moneytop_last_index": 20250107090100,
+      "distinct_codes": 165,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "001380",
+        "001440",
+        "001450",
+        "003160",
+        "003220",
+        "003230",
+        "003530",
+        "004020"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 56,
+          "first_index": 20250107090004,
+          "last_index": 20250107090100
+        },
+        {
+          "code": "000150",
+          "rows": 55,
+          "first_index": 20250107090001,
+          "last_index": 20250107090100
+        },
+        {
+          "code": "001380",
+          "rows": 41,
+          "first_index": 20250107090013,
+          "last_index": 20250107090100
+        },
+        {
+          "code": "001440",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        },
+        {
+          "code": "001450",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250107,
+      "start_time": 90000,
+      "end_time": 90300,
+      "index_start": 20250107090000,
+      "index_end": 20250107090300,
+      "moneytop_rows": 180,
+      "moneytop_first_index": 20250107090001,
+      "moneytop_last_index": 20250107090300,
+      "distinct_codes": 171,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "001380",
+        "001440",
+        "001450",
+        "003160",
+        "003220",
+        "003230",
+        "003530",
+        "004020"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 176,
+          "first_index": 20250107090004,
+          "last_index": 20250107090300
+        },
+        {
+          "code": "000150",
+          "rows": 173,
+          "first_index": 20250107090001,
+          "last_index": 20250107090300
+        },
+        {
+          "code": "001380",
+          "rows": 146,
+          "first_index": 20250107090013,
+          "last_index": 20250107090300
+        },
+        {
+          "code": "001440",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        },
+        {
+          "code": "001450",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250107,
+      "start_time": 90000,
+      "end_time": 90500,
+      "index_start": 20250107090000,
+      "index_end": 20250107090500,
+      "moneytop_rows": 300,
+      "moneytop_first_index": 20250107090001,
+      "moneytop_last_index": 20250107090500,
+      "distinct_codes": 175,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "001380",
+        "001440",
+        "001450",
+        "003160",
+        "003220",
+        "003230",
+        "003530",
+        "004020"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 296,
+          "first_index": 20250107090004,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "000150",
+          "rows": 282,
+          "first_index": 20250107090001,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "001380",
+          "rows": 266,
+          "first_index": 20250107090013,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "001440",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        },
+        {
+          "code": "001450",
+          "rows": 0,
+          "first_index": null,
+          "last_index": null
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250107,
+      "start_time": 90100,
+      "end_time": 90200,
+      "index_start": 20250107090100,
+      "index_end": 20250107090200,
+      "moneytop_rows": 61,
+      "moneytop_first_index": 20250107090100,
+      "moneytop_last_index": 20250107090200,
+      "distinct_codes": 51,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "003160",
+        "003230",
+        "007660",
+        "008830",
+        "009150",
+        "010120",
+        "010620",
+        "011790"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 61,
+          "first_index": 20250107090100,
+          "last_index": 20250107090200
+        },
+        {
+          "code": "000150",
+          "rows": 59,
+          "first_index": 20250107090100,
+          "last_index": 20250107090200
+        },
+        {
+          "code": "003160",
+          "rows": 61,
+          "first_index": 20250107090100,
+          "last_index": 20250107090200
+        },
+        {
+          "code": "003230",
+          "rows": 60,
+          "first_index": 20250107090100,
+          "last_index": 20250107090200
+        },
+        {
+          "code": "007660",
+          "rows": 61,
+          "first_index": 20250107090100,
+          "last_index": 20250107090200
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250107,
+      "start_time": 90200,
+      "end_time": 90300,
+      "index_start": 20250107090200,
+      "index_end": 20250107090300,
+      "moneytop_rows": 61,
+      "moneytop_first_index": 20250107090200,
+      "moneytop_last_index": 20250107090300,
+      "distinct_codes": 52,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "003160",
+        "003230",
+        "007660",
+        "008830",
+        "009150",
+        "010120",
+        "010620",
+        "011790"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 61,
+          "first_index": 20250107090200,
+          "last_index": 20250107090300
+        },
+        {
+          "code": "000150",
+          "rows": 61,
+          "first_index": 20250107090200,
+          "last_index": 20250107090300
+        },
+        {
+          "code": "003160",
+          "rows": 61,
+          "first_index": 20250107090200,
+          "last_index": 20250107090300
+        },
+        {
+          "code": "003230",
+          "rows": 61,
+          "first_index": 20250107090200,
+          "last_index": 20250107090300
+        },
+        {
+          "code": "007660",
+          "rows": 61,
+          "first_index": 20250107090200,
+          "last_index": 20250107090300
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250107,
+      "start_time": 90200,
+      "end_time": 90500,
+      "index_start": 20250107090200,
+      "index_end": 20250107090500,
+      "moneytop_rows": 181,
+      "moneytop_first_index": 20250107090200,
+      "moneytop_last_index": 20250107090500,
+      "distinct_codes": 59,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "003160",
+        "003230",
+        "007660",
+        "008830",
+        "009150",
+        "010120",
+        "010620",
+        "011790"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 181,
+          "first_index": 20250107090200,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "000150",
+          "rows": 170,
+          "first_index": 20250107090200,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "003160",
+          "rows": 181,
+          "first_index": 20250107090200,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "003230",
+          "rows": 177,
+          "first_index": 20250107090200,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "007660",
+          "rows": 181,
+          "first_index": 20250107090200,
+          "last_index": 20250107090500
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250107,
+      "start_time": 90300,
+      "end_time": 90500,
+      "index_start": 20250107090300,
+      "index_end": 20250107090500,
+      "moneytop_rows": 121,
+      "moneytop_first_index": 20250107090300,
+      "moneytop_last_index": 20250107090500,
+      "distinct_codes": 56,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "003160",
+        "003230",
+        "007660",
+        "008830",
+        "009150",
+        "010120",
+        "010620",
+        "011790"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 121,
+          "first_index": 20250107090300,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "000150",
+          "rows": 110,
+          "first_index": 20250107090300,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "003160",
+          "rows": 121,
+          "first_index": 20250107090300,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "003230",
+          "rows": 117,
+          "first_index": 20250107090300,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "007660",
+          "rows": 121,
+          "first_index": 20250107090300,
+          "last_index": 20250107090500
+        }
+      ],
+      "candidate_active": true
+    },
+    {
+      "day": 20250107,
+      "start_time": 90400,
+      "end_time": 90500,
+      "index_start": 20250107090400,
+      "index_end": 20250107090500,
+      "moneytop_rows": 61,
+      "moneytop_first_index": 20250107090400,
+      "moneytop_last_index": 20250107090500,
+      "distinct_codes": 53,
+      "sample_codes": [
+        "000100",
+        "000150",
+        "003160",
+        "003230",
+        "007660",
+        "008830",
+        "009150",
+        "010120",
+        "010620",
+        "011790"
+      ],
+      "sample_per_code_rows": [
+        {
+          "code": "000100",
+          "rows": 61,
+          "first_index": 20250107090400,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "000150",
+          "rows": 55,
+          "first_index": 20250107090400,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "003160",
+          "rows": 61,
+          "first_index": 20250107090400,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "003230",
+          "rows": 58,
+          "first_index": 20250107090400,
+          "last_index": 20250107090500
+        },
+        {
+          "code": "007660",
+          "rows": 61,
+          "first_index": 20250107090400,
+          "last_index": 20250107090500
+        }
+      ],
+      "candidate_active": true
+    }
+  ],
+  "moneytop_columns": [
+    "index",
+    "거래대금순위"
+  ]
+}

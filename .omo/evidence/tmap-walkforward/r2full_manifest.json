@@ -1,0 +1,259 @@
+{
+  "template": "seed_902905_r2full",
+  "run_id": "tmap_r2full_train_20260613",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_seed_902905_r2full_000_B",
+      "status": "ok",
+      "profit": 10965479.0,
+      "mdd": 10.04,
+      "trades": 272
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP turnover_a=1.5",
+      "param": "turnover_a",
+      "value": 1.5,
+      "buy_name": "TMAP_seed_902905_r2full_001_B",
+      "status": "ok",
+      "profit": 9915546.0,
+      "mdd": 7.72,
+      "trades": 340
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP turnover_a=3",
+      "param": "turnover_a",
+      "value": 3,
+      "buy_name": "TMAP_seed_902905_r2full_002_B",
+      "status": "ok",
+      "profit": 7202550.0,
+      "mdd": 10.38,
+      "trades": 232
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP ogap_lo_a=0.0",
+      "param": "ogap_lo_a",
+      "value": 0.0,
+      "buy_name": "TMAP_seed_902905_r2full_003_B",
+      "status": "ok",
+      "profit": 10938253.0,
+      "mdd": 10.06,
+      "trades": 273
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP ogap_lo_a=1.0",
+      "param": "ogap_lo_a",
+      "value": 1.0,
+      "buy_name": "TMAP_seed_902905_r2full_004_B",
+      "status": "ok",
+      "profit": 10527311.0,
+      "mdd": 10.3,
+      "trades": 269
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP ogap_hi_a=4.0",
+      "param": "ogap_hi_a",
+      "value": 4.0,
+      "buy_name": "TMAP_seed_902905_r2full_005_B",
+      "status": "ok",
+      "profit": 10743910.0,
+      "mdd": 9.29,
+      "trades": 261
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP ogap_hi_a=9.0",
+      "param": "ogap_hi_a",
+      "value": 9.0,
+      "buy_name": "TMAP_seed_902905_r2full_006_B",
+      "status": "ok",
+      "profit": 10965479.0,
+      "mdd": 10.04,
+      "trades": 272
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP ogap_lo_b=2.0",
+      "param": "ogap_lo_b",
+      "value": 2.0,
+      "buy_name": "TMAP_seed_902905_r2full_007_B",
+      "status": "ok",
+      "profit": 11118041.0,
+      "mdd": 10.22,
+      "trades": 302
+    },
+    {
+      "gen_no": 8,
+      "label": "TMAP ogap_lo_b=4.0",
+      "param": "ogap_lo_b",
+      "value": 4.0,
+      "buy_name": "TMAP_seed_902905_r2full_008_B",
+      "status": "ok",
+      "profit": 10369242.0,
+      "mdd": 9.64,
+      "trades": 237
+    },
+    {
+      "gen_no": 9,
+      "label": "TMAP ogap_hi_b=6.0",
+      "param": "ogap_hi_b",
+      "value": 6.0,
+      "buy_name": "TMAP_seed_902905_r2full_009_B",
+      "status": "ok",
+      "profit": 8563783.0,
+      "mdd": 7.49,
+      "trades": 201
+    },
+    {
+      "gen_no": 10,
+      "label": "TMAP ogap_hi_b=12.0",
+      "param": "ogap_hi_b",
+      "value": 12.0,
+      "buy_name": "TMAP_seed_902905_r2full_010_B",
+      "status": "ok",
+      "profit": 10106017.0,
+      "mdd": 12.65,
+      "trades": 306
+    },
+    {
+      "gen_no": 11,
+      "label": "TMAP burst_a=2.0",
+      "param": "burst_a",
+      "value": 2.0,
+      "buy_name": "TMAP_seed_902905_r2full_011_B",
+      "status": "ok",
+      "profit": 11134657.0,
+      "mdd": 6.78,
+      "trades": 307
+    },
+    {
+      "gen_no": 12,
+      "label": "TMAP burst_a=4.5",
+      "param": "burst_a",
+      "value": 4.5,
+      "buy_name": "TMAP_seed_902905_r2full_012_B",
+      "status": "ok",
+      "profit": 7879376.0,
+      "mdd": 11.08,
+      "trades": 248
+    },
+    {
+      "gen_no": 13,
+      "label": "TMAP burst_b=1.5",
+      "param": "burst_b",
+      "value": 1.5,
+      "buy_name": "TMAP_seed_902905_r2full_013_B",
+      "status": "ok",
+      "profit": 10804466.0,
+      "mdd": 10.45,
+      "trades": 287
+    },
+    {
+      "gen_no": 14,
+      "label": "TMAP burst_b=3.0",
+      "param": "burst_b",
+      "value": 3.0,
+      "buy_name": "TMAP_seed_902905_r2full_014_B",
+      "status": "ok",
+      "profit": 9127869.0,
+      "mdd": 10.99,
+      "trades": 239
+    },
+    {
+      "gen_no": 15,
+      "label": "TMAP atk_a=0.1",
+      "param": "atk_a",
+      "value": 0.1,
+      "buy_name": "TMAP_seed_902905_r2full_015_B",
+      "status": "ok",
+      "profit": 10936449.0,
+      "mdd": 10.06,
+      "trades": 275
+    },
+    {
+      "gen_no": 16,
+      "label": "TMAP atk_a=0.35",
+      "param": "atk_a",
+      "value": 0.35,
+      "buy_name": "TMAP_seed_902905_r2full_016_B",
+      "status": "ok",
+      "profit": 10029996.0,
+      "mdd": 9.53,
+      "trades": 265
+    },
+    {
+      "gen_no": 17,
+      "label": "TMAP atk_b=0.15",
+      "param": "atk_b",
+      "value": 0.15,
+      "buy_name": "TMAP_seed_902905_r2full_017_B",
+      "status": "ok",
+      "profit": 8185434.0,
+      "mdd": 13.21,
+      "trades": 366
+    },
+    {
+      "gen_no": 18,
+      "label": "TMAP atk_b=0.5",
+      "param": "atk_b",
+      "value": 0.5,
+      "buy_name": "TMAP_seed_902905_r2full_018_B",
+      "status": "ok",
+      "profit": 7347695.0,
+      "mdd": 10.64,
+      "trades": 195
+    },
+    {
+      "gen_no": 19,
+      "label": "TMAP dmoney_a=250",
+      "param": "dmoney_a",
+      "value": 250,
+      "buy_name": "TMAP_seed_902905_r2full_019_B",
+      "status": "ok",
+      "profit": 10965479.0,
+      "mdd": 10.04,
+      "trades": 272
+    },
+    {
+      "gen_no": 20,
+      "label": "TMAP dmoney_a=1000",
+      "param": "dmoney_a",
+      "value": 1000,
+      "buy_name": "TMAP_seed_902905_r2full_020_B",
+      "status": "ok",
+      "profit": 10965479.0,
+      "mdd": 10.04,
+      "trades": 272
+    },
+    {
+      "gen_no": 21,
+      "label": "TMAP dmoney_b=2500",
+      "param": "dmoney_b",
+      "value": 2500,
+      "buy_name": "TMAP_seed_902905_r2full_021_B",
+      "status": "ok",
+      "profit": 9089357.0,
+      "mdd": 14.79,
+      "trades": 395
+    },
+    {
+      "gen_no": 22,
+      "label": "TMAP dmoney_b=10000",
+      "param": "dmoney_b",
+      "value": 10000,
+      "buy_name": "TMAP_seed_902905_r2full_022_B",
+      "status": "ok",
+      "profit": 6691573.0,
+      "mdd": 10.73,
+      "trades": 134
+    }
+  ]
+}
