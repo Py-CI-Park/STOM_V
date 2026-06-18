@@ -1,0 +1,34 @@
+Dashboard live curl smoke
+Generated: 2026-06-18T22:55:14+09:00
+Plan page: 11
+
+Server command:
+python -m uvicorn ai_strategy_loop.dashboard.app:app --host 127.0.0.1 --port <temporary-port> --log-level warning
+
+Observed temporary port:
+60395
+
+Readiness:
+GET /health -> 200
+
+Endpoint checks:
+
+endpoint=/ui/
+status=200
+bytes=2225
+preview=<!DOCTYPE html> <html lang="ko"> <head>   <meta charset="UTF-8" />   <meta name="viewport" content="width=device-width, initial-scale=1.0" />   <title>STOM AI · 조건식 자율 진화 대시보드</title> ...
+
+endpoint=/research_records
+status=200
+bytes=140196
+preview={"root":"C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omo\\evidence\\tmap-walkforward","count":17,"campaigns":[{"name":"post-q4-3h-bulk-research-20260618","updated_at":1781769563.7374113,"summary":{"rounds":15,"adopted_total":0,...
+
+endpoint=/evolution_gui_parity?run_id=&gen_no=-1
+status=200
+bytes=923
+preview={"available":false,"reason":"invalid_request","run_id":"","gen_no":-1,"csv_path_found":false,"gate_passed":false,"buy_name":null,"sell_name":null,"summary":{"trade_count":0,"win_count":0,"loss_count":0,...
+
+Smoke conclusion:
+- `/ui/`: PASS, dashboard HTML served.
+- `/research_records`: PASS, live research campaign index served.
+- `/evolution_gui_parity?run_id=&gen_no=-1`: PASS, invalid empty selection returns graceful JSON payload, not 500.

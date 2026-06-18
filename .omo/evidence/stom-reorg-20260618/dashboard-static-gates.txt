@@ -1,0 +1,61 @@
+Dashboard static gate capture
+Generated: 2026-06-18T22:55:14+09:00
+Plan page: 11
+
+Working directory:
+C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\dashboard\webui-build
+
+1) node build-app.mjs
+exit_code=0
+output:
+[build-app][bundle] app.js v=b1f110fd (entry=src/track-z-entry.pilot.js, react via alias-to-shim) · stom-ui.js v=f41f5701
+[build-app][bundle] html ?v= 갱신: (변경 없음)
+
+2) node track-z-harness.mjs, first attempt
+exit_code=1
+output:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'jsdom' imported from C:\System_Trading\STOM\STOM_V.wt-dev\ai_strategy_loop\dashboard\webui-build\track-z-harness.mjs
+Node.js v22.14.0
+
+Environment note:
+`webui-build/package.json` already declares `jsdom` as a devDependency, but local `node_modules` was missing it. Ran `npm install` in `webui-build` to install declared local build/test dependencies only.
+
+npm install output:
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+added 39 packages, and audited 52 packages in 9s
+10 packages are looking for funding
+2 vulnerabilities (1 moderate, 1 high)
+
+3) node track-z-harness.mjs, after declared dependency install
+exit_code=0
+summary:
+host=node+jsdom
+V1_pilot pass=true, rootNonEmpty=true, errorCount=0
+V2_served_default_bundle pass=true, rootNonEmpty=true, rootHtmlLen=11086, errorCount=0
+V3_per_tab_sweep pass=true
+  evolution pass=true rootHtmlLen=87048 errorCount=0
+  backtest pass=true rootHtmlLen=12360 errorCount=0
+  simulation pass=true rootHtmlLen=9700 errorCount=0
+  lab pass=true rootHtmlLen=8564 errorCount=0
+  pro pass=true rootHtmlLen=7121 errorCount=0
+  verdict pass=true rootHtmlLen=5428 errorCount=0
+  process pass=true rootHtmlLen=4457 iframePresent=true errorCount=0
+V4_standalone_pages pass=true
+  lab pass=true rootHtmlLen=4280 errorCount=0
+  pro pass=true rootHtmlLen=2835 errorCount=0
+  verdict pass=true rootHtmlLen=1142 errorCount=0
+allPass=true
+
+4) node check-missing-imports.mjs
+exit_code=0
+output:
+[check-missing-imports] scanned 65 .jsx modules
+[check-missing-imports] cross-module exported symbols: 279
+[check-missing-imports] window-published symbols (global-lookup safe): 133
+[check-missing-imports] OK: ZERO missing cross-module imports.
+
+Gate conclusion:
+- Build gate: PASS.
+- Track Z runtime/tab/page gate: PASS after installing declared devDependency.
+- Missing import gate: PASS.
+- Follow-up risk: npm audit reports 2 local devDependency vulnerabilities in the webui-build workspace. Treat as tooling backlog, not runtime dashboard failure.
