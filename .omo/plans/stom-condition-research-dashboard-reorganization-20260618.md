@@ -36,6 +36,26 @@
 - Restart target model: after dirty-state classification and required commits, push the local anchor branch and the current source branch, open a PR with `base: STOM_Version_2U_C-ai-strategy-loop` and `compare: lazycodex/tick-sparse-positive-generation-improvement-20260604`, merge it, then create the next development branch from the updated `STOM_Version_2U_C-ai-strategy-loop`.
 - `wt-webbt` is clean on `feature/webbt-followup-gates-20260618` at `19d82beb`, has no upstream, and remains reserved for future file-disjoint dashboard PR work that is later reflected back into `wt-dev`.
 
+### Completion Update - 2026-06-19
+
+- Plan status: all 16 main pages and final verification items F1-F4 are complete.
+- Evidence root: `.omo/evidence/stom-reorg-20260618/`.
+- Selected plan/evidence outputs were committed in five documentation commits:
+  - `63830329d` `docs(운영): AI 연구 브랜치 파생 관계 지도화`
+  - `6c669f0a2` `docs(연구): 조건식 연구 정본 레지스트리와 네이밍 규칙 추가`
+  - `b8e85b032` `docs(연구): 증거 계보와 공식 OOS 절차 정리`
+  - `20cd49219` `docs(대시보드): 정보구조와 중복 기능 전수 감사`
+  - `ee08ae1e` `docs(대시보드): QA 매트릭스와 PR 분리 전략 정리`
+- Catch-up PR: <https://github.com/Py-CI-Park/STOM_V/pull/97>.
+- PR #97 status: `MERGED`.
+- Merge commit: `6d544c53401765399b27cc2a125469c1eb4d45b3`.
+- Updated restart anchor: local and remote `STOM_Version_2U_C-ai-strategy-loop` both point to `6d544c53401765399b27cc2a125469c1eb4d45b3`.
+- Current `wt-dev` worktree remains on `lazycodex/tick-sparse-positive-generation-improvement-20260604` at `ee08ae1edaea7494f8bb3042ce32fcaaad78481c`.
+- Source branch was preserved after merge; it was not deleted.
+- Protected runtime path status remained empty after merge verification.
+- Remaining uncommitted/untracked research and dashboard artifacts are intentionally left untouched for later classification or follow-up work.
+- Next work starts from the updated `STOM_Version_2U_C-ai-strategy-loop` anchor by creating a new development branch, without resetting or cleaning the current dirty worktree.
+
 ### Research Findings
 
 - `docs/update_log/2026-06-18_condition_research_current_state_rereview.md:5` says the process improved substantially, but cold AI generation remains weak and seed/validated-candidate mutation plus official OOS is the realistic route.
@@ -179,9 +199,9 @@ Wave 5: Final verification, split commit/PR plan, handoff.
   - `docs/web_dashboard_expansion/CODEX_DEV_HANDOFF.md:94` - absolute no-go actions.
 
   **Acceptance Criteria**:
-  - [ ] `.omo/evidence/stom-reorg-20260618/safety-snapshot.txt` contains `git status --short --branch`, `git worktree list`, latest 12 commits, upstream ahead/behind, and protected-path status.
-  - [ ] Protected path status command is captured and reviewed.
-  - [ ] The snapshot states whether current `wt-dev` is dirty and explicitly says no cleanup was performed.
+  - [x] `.omo/evidence/stom-reorg-20260618/safety-snapshot.txt` contains `git status --short --branch`, `git worktree list`, latest 12 commits, upstream ahead/behind, and protected-path status.
+  - [x] Protected path status command is captured and reviewed.
+  - [x] The snapshot states whether current `wt-dev` is dirty and explicitly says no cleanup was performed.
 
   **QA Scenarios**:
   ```
@@ -223,10 +243,10 @@ Wave 5: Final verification, split commit/PR plan, handoff.
   - `docs/web_dashboard_expansion/CODEX_DEV_HANDOFF.md:188` - merge commit history preservation.
 
   **Acceptance Criteria**:
-  - [ ] `.omo/evidence/stom-reorg-20260618/branch-map.md` includes exact ahead/behind counts.
-  - [ ] `.omo/evidence/stom-reorg-20260618/pr-restart-strategy.md` includes the exact base/compare PR route and the required preconditions.
-  - [ ] `.omo/evidence/stom-reorg-20260618/pr-restart-strategy.md` describes when to use one catch-up PR versus wave replay branches.
-  - [ ] The strategy explicitly states that `STOM_Version_2U_C-ai-strategy-loop` is updated only by reviewed PR merge, not by force move, reset, rebase, or direct overwrite.
+  - [x] `.omo/evidence/stom-reorg-20260618/branch-map.md` includes exact ahead/behind counts.
+  - [x] `.omo/evidence/stom-reorg-20260618/pr-restart-strategy.md` includes the exact base/compare PR route and the required preconditions.
+  - [x] `.omo/evidence/stom-reorg-20260618/pr-restart-strategy.md` describes when to use one catch-up PR versus wave replay branches.
+  - [x] The strategy explicitly states that `STOM_Version_2U_C-ai-strategy-loop` is updated only by reviewed PR merge, not by force move, reset, rebase, or direct overwrite.
 
   **QA Scenarios**:
   ```
@@ -264,9 +284,9 @@ Wave 5: Final verification, split commit/PR plan, handoff.
   - `docs/web_dashboard_expansion/CODEX_DEV_HANDOFF.md:25` - research workstream must not be touched during dashboard sync.
 
   **Acceptance Criteria**:
-  - [ ] `.omo/evidence/stom-reorg-20260618/dirty-worktree-inventory.md` lists all current dirty files by bucket.
-  - [ ] Each bucket has proposed action: keep, stage later, ignore, investigate, or protected-do-not-touch.
-  - [ ] Generated bundle files are tied to source files that caused them.
+  - [x] `.omo/evidence/stom-reorg-20260618/dirty-worktree-inventory.md` lists all current dirty files by bucket.
+  - [x] Each bucket has proposed action: keep, stage later, ignore, investigate, or protected-do-not-touch.
+  - [x] Generated bundle files are tied to source files that caused them.
 
   **QA Scenarios**:
   ```
@@ -300,9 +320,9 @@ Wave 5: Final verification, split commit/PR plan, handoff.
   - `docs/research/condition_research/README.md` - research folder role.
 
   **Acceptance Criteria**:
-  - [ ] `.omo/evidence/stom-reorg-20260618/research-source-inventory.md` lists each source file, role, key facts, and whether it is canonical or historical.
-  - [ ] Conflicting facts are marked as conflict, not silently resolved.
-  - [ ] The inventory states the current default research direction: seed bank + official OOS + branch attribution, not cold mass generation.
+  - [x] `.omo/evidence/stom-reorg-20260618/research-source-inventory.md` lists each source file, role, key facts, and whether it is canonical or historical.
+  - [x] Conflicting facts are marked as conflict, not silently resolved.
+  - [x] The inventory states the current default research direction: seed bank + official OOS + branch attribution, not cold mass generation.
 
   **QA Scenarios**:
   ```
@@ -335,10 +355,10 @@ Wave 5: Final verification, split commit/PR plan, handoff.
   - `.omo/evidence/tmap-walkforward/post-q4-3h-official-oos-recommendations-20260618.json` - next official OOS recommendation source.
 
   **Acceptance Criteria**:
-  - [ ] `.omo/evidence/stom-reorg-20260618/research-registry.json` exists and validates with `python -m json.tool`.
-  - [ ] `.omo/evidence/stom-reorg-20260618/research-registry.md` contains a human-readable table.
-  - [ ] Every candidate has `machine_name`, `display_alias`, `evidence_type`, `oos_status`, `promotion_status`, and `next_action`.
-  - [ ] The robust candidate has a short alias such as `저시총 제외 방어 조합`.
+  - [x] `.omo/evidence/stom-reorg-20260618/research-registry.json` exists and validates with `python -m json.tool`.
+  - [x] `.omo/evidence/stom-reorg-20260618/research-registry.md` contains a human-readable table.
+  - [x] Every candidate has `machine_name`, `display_alias`, `evidence_type`, `oos_status`, `promotion_status`, and `next_action`.
+  - [x] The robust candidate has a short alias such as `저시총 제외 방어 조합`.
 
   **QA Scenarios**:
   ```
@@ -371,9 +391,9 @@ Wave 5: Final verification, split commit/PR plan, handoff.
   - `docs/web_dashboard_expansion/PROG_P7_FIELD_DIFF.md:39` - preserve divergent visual systems when merging would lose fields.
 
   **Acceptance Criteria**:
-  - [ ] `.omo/evidence/stom-reorg-20260618/naming-taxonomy.md` defines at least 8 categories: seed, mutation, OOS, shadow, portfolio, defense rule, docs-only, blocked.
-  - [ ] Each category has machine-name pattern, Korean display alias pattern, badge text, badge color, promotion meaning.
-  - [ ] The taxonomy includes examples for `r8_4`, `exit2 balance`, `r2full MDD`, robust low-cap exclusion, November exclusion shadow.
+  - [x] `.omo/evidence/stom-reorg-20260618/naming-taxonomy.md` defines at least 8 categories: seed, mutation, OOS, shadow, portfolio, defense rule, docs-only, blocked.
+  - [x] Each category has machine-name pattern, Korean display alias pattern, badge text, badge color, promotion meaning.
+  - [x] The taxonomy includes examples for `r8_4`, `exit2 balance`, `r2full MDD`, robust low-cap exclusion, November exclusion shadow.
 
   **QA Scenarios**:
   ```
@@ -406,9 +426,9 @@ Wave 5: Final verification, split commit/PR plan, handoff.
   - `ai_strategy_loop/dashboard/research_records.py:141` - current jsonl candidate parsing.
 
   **Acceptance Criteria**:
-  - [ ] `.omo/evidence/stom-reorg-20260618/evidence-lineage-rules.md` defines mandatory files for each campaign.
-  - [ ] Rules distinguish raw evidence, derived summary, dashboard index, and narrative report.
-  - [ ] Rules include a command-level drift check design and failure action.
+  - [x] `.omo/evidence/stom-reorg-20260618/evidence-lineage-rules.md` defines mandatory files for each campaign.
+  - [x] Rules distinguish raw evidence, derived summary, dashboard index, and narrative report.
+  - [x] Rules include a command-level drift check design and failure action.
 
   **QA Scenarios**:
   ```
@@ -440,9 +460,9 @@ Wave 5: Final verification, split commit/PR plan, handoff.
   - `docs/update_log/2026-06-18_post_20260618_research_dashboard_handoff.md:57` - next work moves to official backtest.
 
   **Acceptance Criteria**:
-  - [ ] `.omo/evidence/stom-reorg-20260618/research-management-process.md` defines page templates for preregistration, run log, result card, OOS decision, dashboard card, and next-action queue.
-  - [ ] The process includes explicit stop conditions: overfit risk, official OOS fail, MDD cap fail, summary drift, insufficient trades.
-  - [ ] The process defines how research output becomes a dashboard card and how dashboard gaps feed the next research task.
+  - [x] `.omo/evidence/stom-reorg-20260618/research-management-process.md` defines page templates for preregistration, run log, result card, OOS decision, dashboard card, and next-action queue.
+  - [x] The process includes explicit stop conditions: overfit risk, official OOS fail, MDD cap fail, summary drift, insufficient trades.
+  - [x] The process defines how research output becomes a dashboard card and how dashboard gaps feed the next research task.
 
   **QA Scenarios**:
   ```
@@ -792,7 +812,7 @@ Wave 5: Final verification, split commit/PR plan, handoff.
   - No protected runtime paths modified.
   - No `backtest.py` changes included.
   - No live strategy promotion/export/final approval invoked.
-  - `STOM_Version_2U_C-ai-strategy-loop` not mutated.
+  - During F4, `STOM_Version_2U_C-ai-strategy-loop` was not mutated; after PR #97 it was updated only by reviewed merge commit `6d544c53401765399b27cc2a125469c1eb4d45b3`.
   - Dashboard-only work remains separable from research evidence work.
   - Protected-path status command is captured with recursive DB pathspec and `_v3k_sidecar/v3k_gui_settings.json`.
 
