@@ -94,6 +94,22 @@ class TestConfigFromDictValidation:
     def test_negative_min_trades_raises(self):
         with pytest.raises(ValueError):
             config_from_dict({"min_trades": -1})
+    def test_phase3_bounds_and_dates_validate(self):
+        with pytest.raises(ValueError):
+            config_from_dict({"mdd_cap": 40.1})
+        with pytest.raises(ValueError):
+            config_from_dict({"min_daily_trades": -0.1})
+        with pytest.raises(ValueError):
+            config_from_dict({"reasoning_effort": "ultra"})
+        with pytest.raises(ValueError):
+            config_from_dict({"seed_mode": "unknown"})
+        with pytest.raises(ValueError):
+            config_from_dict({"bt_start": "20260132"})
+        with pytest.raises(ValueError):
+            config_from_dict({"bt_start": 20260102, "bt_end": 20260101})
+        cfg = config_from_dict({"bt_start": "", "bt_end": ""})
+        assert cfg.bt_start is None
+        assert cfg.bt_end is None
 
 
 class TestConfigFieldSpecs:
@@ -116,9 +132,11 @@ class TestConfigFieldSpecs:
         names = {s["name"] for s in config_field_specs()}
         # 경계값 + 데이터 스코프 + provider/model.
         for required in (
-            "provider", "model", "max_generations", "target_score",
-            "mdd_cap", "min_trades",
-            "bt_timeframe", "bt_scope",
+            "provider", "model", "reasoning_effort", "max_generations", "target_score",
+            "mdd_cap", "min_daily_trades", "min_trades",
+            "bt_timeframe", "bt_scope", "bt_start", "bt_end",
+            "engine_workers", "engine_mem_cap_mb", "engine_chunk_days",
+            "feedback_window", "seed_mode", "seed_source", "seed_buy", "seed_sell",
         ):
             assert required in names, f"missing field spec: {required}"
 
@@ -137,7 +155,10 @@ class TestConfigFieldSpecs:
 
     def test_defaults_match_loopconfig(self):
         d = LoopConfig()
+        host_advisory_defaults = {"engine_workers", "engine_mem_cap_mb", "engine_chunk_days"}
         for s in config_field_specs():
+            if s["name"] in host_advisory_defaults:
+                continue
             assert s["default"] == getattr(d, s["name"]), \
                 f"default mismatch for {s['name']}"
 
@@ -146,6 +167,18 @@ class TestConfigFieldSpecs:
             if s["type"] == "select":
                 assert "choices" in s and s["choices"], \
                     f"select field {s['name']} missing choices"
+    def test_phase3_defaults_and_help_explain_user_feedback(self):
+        specs = {s["name"]: s for s in config_field_specs()}
+        assert specs["model"]["default"] == "gpt-5.5"
+        assert specs["reasoning_effort"]["default"] == "xhigh"
+        assert specs["mdd_cap"]["default"] == 40.0
+        assert specs["mdd_cap"]["max"] == 40.0
+        assert "일평균" in specs["min_daily_trades"]["help"]
+        assert "폴백" in specs["min_trades"]["label"]
+        assert "DB 최대" in specs["bt_end"]["help"]
+        assert "90%" in specs["engine_workers"]["help"]
+        assert "피드백" in specs["feedback_window"]["help"]
+        assert specs["seed_mode"]["default"] == "best_refine"
 
     def test_covers_r8_safety_toggles(self):
         # R8 — 지금까지 폼·상태 어디에도 안 보이던 5종 안전/Track B 토글 + 진화/스코프 설정.

@@ -60,6 +60,30 @@ class TestHealthAndSpec:
         names = {f["name"] for f in body["fields"]}
         assert "provider" in names
         assert "max_generations" in names
+    def test_gpt_auth_test_reports_safe_probe_without_start(self, client, monkeypatch):
+        import requests
+
+        class FakeResponse:
+            status_code = 200
+
+        called = {}
+
+        def fake_post(url, **kwargs):
+            called["url"] = url
+            called["kwargs"] = kwargs
+            return FakeResponse()
+
+        monkeypatch.setattr(requests, "post", fake_post)
+        resp = client.post("/gpt_auth/test")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["status"] == "ok"
+        assert body["model"] == "gpt-5.5"
+        assert body["reasoning_effort"] == "xhigh"
+        assert body["safe"] is True
+        assert body["starts_evolution"] is False
+        assert "/chat/completions" in called["url"]
+        assert called["kwargs"]["json"]["model"] == "gpt-5.5"
 
     def test_status_idle_when_no_state_file(self, client):
         resp = client.get("/status")

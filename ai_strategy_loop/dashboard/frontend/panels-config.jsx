@@ -259,7 +259,7 @@ const _CFG_LABELS = {
   bt_full_end: "전체 종료일",
   bt_betting: "종목당 배팅",
   mdd_cap: "MDD 상한",
-  min_trades: "최소 거래수",
+  min_trades: "최소 거래수(폴백)",
   min_daily_trades: "일평균거래 하한",
   overtrade_softcap: "과매매 softcap",
   tpi_gate_enabled: "TPI 게이트",

@@ -190,34 +190,34 @@ th{background:#21262d}.mono{font-family:Consolas,monospace}
 💡 <b>지금 상태</b>: 아직 진짜 금(전체기간+미래 다 통과하는 새 조건식)은 못 찾았습니다. 하지만 <b>인간 트레이더는 찾으니 가능</b>하고, 우리는 채굴기(프로세스)를 계속 개량하는 중입니다 — "없다"가 아니라 "이 방법으론 아직".</div>
 <div class="note">🎨 <b>색상 범례</b>: <span style="color:var(--mag)">●보라=생성</span> · <span style="color:var(--acc)">●파랑=백테</span> · <span style="color:var(--ok)">●초록=게이트</span> · <span style="color:var(--warn)">●주황=환류</span></div>
 
-<h2>1. 전체 파이프라인 (데이터마이닝 폐루프)</h2>
+<h2>1. 전체 파이프라인 (쉽게 보는 조건식 발굴 루프)</h2>
 <div class="flow">
-<div class="node gen"><div class="tag">① 생성 · gen_template_hypothesis.py</div><div class="ttl">AI가 다밴드 조건식 생성</div>
-<div class="desc">시간대×시총 이산분기(시초/중반/후반) 조건식을 LLM이 생성. 직전 결과(회피/선호) 환류 + 검증 가드(밴드당≤10·비용·금지변수).</div></div>
+<div class="node gen"><div class="tag">① 만들기</div><div class="ttl">AI가 매수/매도 규칙을 만든다</div>
+<div class="desc">좋은 예시와 직전 실패 원인을 참고해 새 조건식을 만든다. 여기서 나온 코드는 아직 후보일 뿐이며 바로 운영에 쓰지 않는다.</div></div>
 <div class="arrow">↓</div>
-<div class="node bt"><div class="tag">② 스모크 백테 · tmap_sweep.py (32엔진)</div><div class="ttl">2분기 · 같은 좌표 양분기 흑자 게이트</div>
-<div class="desc">변수(θ)를 스윕하며 백테. q1∧q2 같은 좌표가 둘 다 흑자여야 통과(체리피킹 차단).</div></div>
+<div class="node bt"><div class="tag">② 빠른 검증</div><div class="ttl">짧은 기간으로 먼저 가짜를 걸러낸다</div>
+<div class="desc">과거 일부 구간에서 손익, MDD, 일평균 거래 빈도를 빠르게 계산한다. 한 구간만 우연히 맞은 후보는 다음 단계에서 더 강하게 검증한다.</div></div>
 <div class="arrow">↓</div>
-<div class="node bt"><div class="tag">③ 전체기간 백테 · 3년 train</div><div class="ttl">일반화 검증 (과적합 차단)</div>
-<div class="desc">2분기 통과분만 3년 전체기간 재백테. 여기서 음전(과적합)이면 탈락 = 착시 차단.</div></div>
+<div class="node bt"><div class="tag">③ 긴 기간 검증</div><div class="ttl">여러 해 전체 흐름에서도 버티는지 본다</div>
+<div class="desc">짧은 검증을 통과한 후보만 더 긴 기간으로 다시 확인한다. 여기서 적자가 나면 과거 일부에만 맞은 가짜 후보로 본다.</div></div>
 <div class="arrow">↓</div>
-<div class="node bt"><div class="tag">④ OOS · 2022·2026</div><div class="ttl">미래 재현성</div>
-<div class="desc">전체기간 통과분만 다른 해(OOS)로 최종 검증. ★PROMISING = 전부 흑자(THETA급 바).</div></div>
+<div class="node bt"><div class="tag">④ 다른 기간 확인</div><div class="ttl">처음 보지 않은 기간에서도 재현되는지 확인한다</div>
+<div class="desc">다른 해나 다른 구간에서 다시 계산해 우연·과적합을 줄인다. 목표는 한 번의 우승이 아니라 반복 가능한 규칙이다.</div></div>
 <div class="arrow">↓</div>
-<div class="node gate"><div class="tag">⑤ 게이트 · refine_gate.py (P0b)</div><div class="ttl">사후슬라이스 착시 REFUSE</div>
-<div class="desc">in-sample 흑자라도 재백테 음전이면 기각. 검증됨: known-good +2.17M PASS · 사후포켓 −1.15M REFUSE.</div></div>
-<div class="loop">↻ ⑥ 환류 (P2 build_feedback) — no-go=회피·과적합=회피·전체기간생존=선호 → <b>다음 생성(①)으로</b> · 무작위 추첨을 "학습하는 발굴"로</div>
+<div class="node gate"><div class="tag">⑤ 판정 기준</div><div class="ttl">수익·낙폭·거래 빈도 기준으로 통과/탈락을 정한다</div>
+<div class="desc">수익이 나도 MDD가 너무 크거나 일평균 거래가 너무 적으면 탈락한다. 어려운 공식은 아래 접힌 예시에 따로 둔다.</div></div>
+<div class="loop">↻ ⑥ 실패 원인 피드백 — 왜 탈락했는지 기록해 다음 생성이 같은 실수를 덜 하도록 만든다. 모든 단계는 읽기 전용 증거로 남기고 운영 승인과 분리한다.</div>
 </div>
-<div class="note">정직지표 = OOS 통과 후보 수(현재 baseline 0). 점수가 아니라 *일반화 생존*만 합격.</div>
+<div class="note">핵심 지표 = 여러 기간에서 살아남은 후보 수. 단기 점수보다 “다시 검증해도 버티는가”를 더 중요하게 본다.</div>
 
 <h2>2. 단계별 상세 (클릭하여 펼치기)</h2>
 <div class="cards">
-<details><summary>① 생성</summary><div class="note">LLM(gpt_auth)이 프롬프트+환류 받아 if/elif 다밴드 매수코드 생성 → 검증 가드(compile/scope/cost/밀도) 통과분만 템플릿 저장(llmgen_*).</div></details>
-<details><summary>② 스모크 게이트</summary><div class="note">tmap_sweep가 핵심축 5개·40점 스윕. 같은좌표 min(q1,q2)&gt;0 = smoke-pass. 선택편향 차단.</div></details>
-<details><summary>③ 전체기간</summary><div class="note">train-3y 재백테. smoke-pass의 ~전부가 여기서 −10~−21M 과적합으로 드러나 탈락(격상 게이트의 가치).</div></details>
-<details><summary>④ OOS</summary><div class="note">2022·2026 재현성. tick 한정(min은 OOS 오염). 전부 흑자라야 ★PROMISING.</div></details>
-<details><summary>⑤ 재백테 게이트(P0b)</summary><div class="note">claude_candidate_batch_eval 배선. 결정론 검증→1회 충분. 새 후보를 진짜 재백테로 흑/적 판정.</div></details>
-<details><summary>⑥ 환류 폐루프(P2)</summary><div class="note">ledger→회피(홍수/과적합)/선호(전체기간 생존) 조립해 다음 생성에 주입. --stateful 토글.</div></details>
+<details><summary>① 만들기</summary><div class="note">LLM(gpt_auth)이 좋은 예시·실패 원인·금지 규칙을 보고 새 조건식을 만든다. 숫자 임계값은 백테스트가 다시 검증한다.</div></details>
+<details><summary>② 빠른 검증</summary><div class="note">짧은 기간에서 먼저 돌려 시간을 아낀다. 한쪽 구간만 좋아 보이는 후보는 통과시키지 않는다.</div></details>
+<details><summary>③ 긴 기간 검증</summary><div class="note">여러 해 전체 데이터에서 다시 확인한다. 짧은 기간에서만 좋았던 후보는 여기서 대부분 걸러진다.</div></details>
+<details><summary>④ 다른 기간 확인</summary><div class="note">처음 고른 기간 밖에서도 비슷한 결과가 나는지 본다. 이 단계가 과적합 방지의 핵심이다.</div></details>
+<details><summary>⑤ 판정 기준</summary><div class="note">수익, MDD, 일평균 거래, 손익비, 우상향 정도를 함께 본다. 어려운 원식과 실증 예시는 아래 탭에 숨겨 둔다.</div></details>
+<details><summary>⑥ 다시 개선</summary><div class="note">탈락 이유를 다음 세대 프롬프트에 넣어 같은 실패를 줄인다. run·세대·백테스트 이름을 보존해 나중에 다시 조회한다.</div></details>
 </div>
 
 <h2>3. 실제 산출물 예시 (탭)</h2>
@@ -235,18 +235,18 @@ th{background:#21262d}.mono{font-family:Consolas,monospace}
 <div class="panel"><div class="note">한 변수(예: b1_cap_hi)를 바꾸면 수익·거래수가 어떻게 변하나 — loop_runs.db에 세대별 기록.</div>
 <table><tr><th>변수=값</th><th>수익(원)</th><th>거래수</th><th>MDD</th></tr>%%VAR_ROWS%%</table></div>
 <div class="panel"><div class="note">직전 결과로 조립된 환류(다음 생성에 주입). 회피=실패 구조, 선호=전체기간 생존.</div><pre>%%FEEDBACK%%</pre></div>
-<div class="panel"><div class="note">재백테 게이트가 사후슬라이스 착시를 거른 실증.</div>
-<pre>[게이트 로직] decide(in_sample_lift, rebacktest_profit)
-  · H사례: in-sample +1,070,000 → 재백테 −1,152,966  ⇒ REFUSE (부호반전=착시)
-  · known-good(THETA θ*): 재백테 +2,167,239 (2회 동일=결정론) ⇒ PASS
-  · 새 후보(야간 no-go): 재백테 −3,048,898 ⇒ REFUSE
-결론: 2분기만 흑자인 과적합 후보를 전체기간이 정확히 기각. 자기기만 0.</pre></div>
+<div class="panel"><div class="note">짧은 구간에서만 좋아 보이는 후보를 다시 검증해 거른 실제 예시.</div>
+<pre>[판정 로직] decide(short_window_lift, rebacktest_profit)
+  · H사례: 짧은 구간 +1,070,000 → 다시 검증 −1,152,966  ⇒ REFUSE (부호반전=착시)
+  · known-good(THETA θ*): 다시 검증 +2,167,239 (2회 동일=결정론) ⇒ PASS
+  · 새 후보(야간 no-go): 다시 검증 −3,048,898 ⇒ REFUSE
+결론: 짧은 구간만 흑자인 후보를 긴 기간 검증이 정확히 기각. 자기기만 0.</pre></div>
 
 <h2>🎬 4. 조건식 한 개의 "일생" (실제 사례로 따라가기)</h2>
 <div class="flow">
 <div class="node gen"><div class="tag">생성</div><div class="ttl">AI가 다밴드 조건식 생성</div><div class="desc">환류 지시("THETA 앵커 고정 + 다른 시간대 탐색")를 받아 → <span class="mono">llmgen_theta_anchor_midcap_upperlate</span> 같은 3밴드 조건식 생성.</div></div>
 <div class="arrow">↓</div>
-<div class="node bt"><div class="tag">2분기 스모크</div><div class="ttl">q1 +785,449 · q2 +1,402,966 → smoke-pass ✅</div><div class="desc">짧은 2분기에선 같은 좌표가 둘 다 흑자! "오, 금인가?" — <b>하지만 아직 모름.</b></div></div>
+<div class="node bt"><div class="tag">빠른 1차 검증</div><div class="ttl">q1 +785,449 · q2 +1,402,966 → 1차 통과 ✅</div><div class="desc">짧은 두 구간에선 같은 조건이 둘 다 흑자! "오, 금인가?" — <b>하지만 아직 모름.</b></div></div>
 <div class="arrow">↓</div>
 <div class="node bt"><div class="tag">3년 전체기간</div><div class="ttl">−10,470,576 ❌ 과적합 드러남</div><div class="desc">3년 전체로 보니 큰 적자 = 2분기에만 우연히 맞은 <b>가짜 금(과적합)</b>.</div></div>
 <div class="arrow">↓</div>
@@ -261,14 +261,14 @@ th{background:#21262d}.mono{font-family:Consolas,monospace}
 <div class="node"><div class="ttl">조건식</div><div class="desc">매수/매도 규칙 코드. <span class="mono">if 시간·시총·신호: 매수</span></div></div>
 <div class="node"><div class="ttl">다밴드</div><div class="desc">한 조건식에 <b>여러 시간대×시총</b> 분기(시초/중반/후반). 챔피언 T2C3가 이 구조.</div></div>
 <div class="node"><div class="ttl">θ(세타) 슬롯</div><div class="desc">조건식의 숫자(임계값)를 비워둔 자리 <span class="mono">{cap_max}</span> — 백테가 최적값을 찾음.</div></div>
-<div class="node"><div class="ttl">smoke-pass</div><div class="desc">짧은 2분기로 <b>빠른 1차</b> 통과. 같은 좌표가 양분기 흑자(체리피킹 방지).</div></div>
+<div class="node"><div class="ttl">빠른 1차 통과</div><div class="desc">짧은 두 구간에서 먼저 통과한 상태. 아직 최종 후보가 아니라 긴 기간 검증이 필요하다.</div></div>
 <div class="node"><div class="ttl">전체기간(train)</div><div class="desc">3년 전체로 검증 = <b>일반화</b> 됐나. 과적합을 여기서 잡음.</div></div>
 <div class="node"><div class="ttl">OOS</div><div class="desc">학습에 <b>안 쓴 다른 해</b>(2022·2026)로 미래 재현성 검증.</div></div>
 <div class="node"><div class="ttl">과적합</div><div class="desc">과거 일부에만 맞고 다른 기간엔 무너지는 <b>가짜 금</b>.</div></div>
 <div class="node"><div class="ttl">앵커(THETA)</div><div class="desc">이미 <b>검증된 챔피언</b> 조건식. 새 탐색의 기준점(밴드1 고정).</div></div>
 <div class="node"><div class="ttl">게이트(P0b)</div><div class="desc">가짜를 거르는 <b>검문소</b> — 재백테로 흑/적 판정.</div></div>
 <div class="node"><div class="ttl">환류(피드백)</div><div class="desc">직전 결과(회피/선호)로 <b>다음 생성을 개선</b>. 무작위→학습.</div></div>
-<div class="node"><div class="ttl">★PROMISING</div><div class="desc">스모크+전체기간+OOS <b>전부 통과</b>한 진짜 후보(목표).</div></div>
+<div class="node"><div class="ttl">★유망 후보</div><div class="desc">빠른 검증+전체기간+다른 기간 확인을 <b>전부 통과</b>한 진짜 후보(목표).</div></div>
 <div class="node"><div class="ttl">no-go</div><div class="desc">2분기부터 흑자 코너 없음 = 탈락(가장 흔함).</div></div>
 </div>
 

@@ -11,6 +11,9 @@ CLI 인자 파서와 GUI/REST 폼이 **같은 경로**로 LoopConfig를 만들�
 """
 
 from __future__ import annotations
+import ctypes
+import os
+from datetime import datetime
 
 from typing import Any, Dict, List
 
@@ -21,6 +24,57 @@ from ai_strategy_loop.brain.time_cap_bucket import (
 from ai_strategy_loop.config import LoopConfig
 from ai_strategy_loop.fitness.research_criteria import ResearchOosModeParseError, normalize_research_oos_mode
 
+
+_MDD_CAP_MAX = 40.0
+
+
+def _logical_cpu_count() -> int:
+    return max(1, int(os.cpu_count() or 1))
+
+
+def _default_worker_count() -> int:
+    return max(1, int(_logical_cpu_count() * 0.9))
+
+
+def _default_memory_cap_mb() -> int:
+    """Return a safe host-memory default in MB without adding dependencies."""
+    try:
+        class _MemoryStatus(ctypes.Structure):
+            _fields_ = [
+                ("dwLength", ctypes.c_ulong),
+                ("dwMemoryLoad", ctypes.c_ulong),
+                ("ullTotalPhys", ctypes.c_ulonglong),
+                ("ullAvailPhys", ctypes.c_ulonglong),
+                ("ullTotalPageFile", ctypes.c_ulonglong),
+                ("ullAvailPageFile", ctypes.c_ulonglong),
+                ("ullTotalVirtual", ctypes.c_ulonglong),
+                ("ullAvailVirtual", ctypes.c_ulonglong),
+                ("sullAvailExtendedVirtual", ctypes.c_ulonglong),
+            ]
+
+        status = _MemoryStatus()
+        status.dwLength = ctypes.sizeof(_MemoryStatus)
+        if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):  # type: ignore[attr-defined]
+            total_mb = int(status.ullTotalPhys // (1024 * 1024))
+            return max(1024, int(total_mb * 0.9))
+    except Exception:
+        pass
+    return 8192
+
+
+def _default_chunk_days(d: LoopConfig) -> int:
+    return max(1, int(getattr(d, "bt_window_days_universe", 20) or 20))
+
+
+def _with_bounds(spec: Dict[str, Any], *, minimum: Any | None = None,
+                 maximum: Any | None = None, step: Any | None = None) -> Dict[str, Any]:
+    if minimum is not None:
+        spec["min"] = minimum
+    if maximum is not None:
+        spec["max"] = maximum
+    if step is not None:
+        spec["step"] = step
+    return spec
 
 def config_from_dict(data: Dict[str, Any] | None) -> LoopConfig:
     """dict에서 LoopConfig를 만든다 (CLI 파서 + GUI 폼 공용 경로).
@@ -47,8 +101,47 @@ def config_from_dict(data: Dict[str, Any] | None) -> LoopConfig:
         raise ValueError(f"max_generations는 1 이상이어야 합니다 (받음: {cfg.max_generations})")
     if float(cfg.mdd_cap) < 0:
         raise ValueError(f"mdd_cap은 0 이상이어야 합니다 (받음: {cfg.mdd_cap})")
+    if float(cfg.mdd_cap) > _MDD_CAP_MAX:
+        raise ValueError(f"mdd_cap은 {_MDD_CAP_MAX:g} 이하이어야 합니다 (받음: {cfg.mdd_cap})")
     if int(cfg.min_trades) < 0:
         raise ValueError(f"min_trades는 0 이상이어야 합니다 (받음: {cfg.min_trades})")
+    if float(getattr(cfg, "min_daily_trades", 0.0) or 0.0) < 0:
+        raise ValueError(f"min_daily_trades는 0 이상이어야 합니다 (받음: {cfg.min_daily_trades})")
+    if int(getattr(cfg, "engine_workers", 0) or 0) < 0:
+        raise ValueError(f"engine_workers는 0 이상이어야 합니다 (받음: {cfg.engine_workers})")
+    if int(getattr(cfg, "engine_workers", 0) or 0) > _logical_cpu_count():
+        raise ValueError(
+            f"engine_workers는 논리 CPU 수({_logical_cpu_count()}) 이하이어야 합니다 "
+            f"(받음: {cfg.engine_workers})"
+        )
+    if int(getattr(cfg, "engine_mem_cap_mb", 0) or 0) < 0:
+        raise ValueError(f"engine_mem_cap_mb는 0 이상이어야 합니다 (받음: {cfg.engine_mem_cap_mb})")
+    if int(getattr(cfg, "engine_chunk_days", 0) or 0) < 0:
+        raise ValueError(f"engine_chunk_days는 0 이상이어야 합니다 (받음: {cfg.engine_chunk_days})")
+    if getattr(cfg, "reasoning_effort", "xhigh") not in ("xhigh", "high", "medium", "low"):
+        raise ValueError("reasoning_effort는 xhigh|high|medium|low 중 하나여야 합니다")
+    if getattr(cfg, "seed_mode", "best_refine") not in ("fresh", "manual_seed", "best_refine"):
+        raise ValueError("seed_mode는 fresh|manual_seed|best_refine 중 하나여야 합니다")
+    if getattr(cfg, "seed_source", "passing") not in ("passing", "seed_db", "manual"):
+        raise ValueError("seed_source는 passing|seed_db|manual 중 하나여야 합니다")
+    normalized_dates: Dict[str, str] = {}
+    for date_field in ("bt_start", "bt_end"):
+        value = getattr(cfg, date_field, None)
+        if value == "":
+            setattr(cfg, date_field, None)
+            continue
+        if value is None:
+            continue
+        text = str(value)
+        if len(text) != 8 or not text.isdigit():
+            raise ValueError(f"{date_field}는 YYYYMMDD 정수 또는 빈 값이어야 합니다 (받음: {value})")
+        try:
+            datetime.strptime(text, "%Y%m%d")
+        except ValueError as exc:
+            raise ValueError(f"{date_field}는 실제 달력 날짜여야 합니다 (받음: {value})") from exc
+        normalized_dates[date_field] = text
+    if "bt_start" in normalized_dates and "bt_end" in normalized_dates and int(normalized_dates["bt_start"]) > int(normalized_dates["bt_end"]):
+        raise ValueError(f"bt_start는 bt_end 이하이어야 합니다 ({cfg.bt_start}>{cfg.bt_end})")
 
     try:
         normalize_research_oos_mode(cfg.research_oos_mode)
@@ -85,33 +178,50 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "name": "provider", "label": "LLM Provider", "type": "select",
             "choices": ["gpt_auth", "openrouter", "codex_proxy"],
             "default": d.provider,
-            "help": "전략 생성에 쓸 LLM provider. gpt_auth는 로컬 OAuth 프록시 경유.",
+            "help": "전략 생성에 쓸 LLM provider. gpt_auth는 로컬 ChatGPT OAuth 프록시를 안전하게 점검한 뒤 사용한다.",
         },
         {
-            "name": "model", "label": "Model", "type": "text", "default": d.model,
-            "help": "provider별 모델명 (예: gpt-5.5).",
+            "name": "model", "label": "Model", "type": "select",
+            "choices": ["gpt-5.5", "gpt-5.5-mini", "openai-codex/gpt-5.5"],
+            "default": d.model,
+            "help": "기본 GPT 5.5. xhigh는 별도 reasoning_effort 필드로 표시하며, provider가 지원하지 않으면 상태 배지로 fallback을 알린다.",
         },
         {
-            "name": "max_generations", "label": "Max Generations", "type": "number",
+            "name": "reasoning_effort", "label": "Reasoning effort", "type": "select",
+            "choices": ["xhigh", "high", "medium", "low"],
+            "default": d.reasoning_effort,
+            "help": "gpt_auth/지원 provider에서 사용할 추론 강도 선호값. 기본 xhigh이며 미지원이면 모델 호출은 차단하지 않고 상태에 표시한다.",
+        },
+        _with_bounds({
+            "name": "max_generations", "label": "최대 세대", "type": "number",
             "default": d.max_generations,
-            "help": "생성 세대 수 상한. 이 세대 수에 도달하면 루프가 종료한다.",
-        },
-        {
-            "name": "target_score", "label": "Target Score", "type": "number",
+            "help": "생성 세대 수 상한. 장기 연구가 가능하도록 기본값을 크게 잡되, 검증 스모크는 1~2세대로 낮춰 실행한다.",
+        }, minimum=1, step=1),
+        _with_bounds({
+            "name": "target_score", "label": "목표 적합도", "type": "number",
             "default": d.target_score,
-            "help": "비우면 점수 기반 조기 종료 없음. 값이 있으면 하드 게이트 통과 "
-                    "winner 점수가 이 값 이상일 때 조기 졸업 종료.",
-        },
-        {
-            "name": "mdd_cap", "label": "MDD Cap (%)", "type": "number",
+            "help": "비우면 조기 종료 없음. 공식: gate 통과 winner_score >= 목표값이면 졸업. objective별 score는 risk_adjusted=Calmar×우상향R², multi=Calmar·R²·일평균거래·payoff 평균.",
+        }, minimum=0, step="any"),
+        _with_bounds({
+            "name": "mdd_cap", "label": "MDD 상한(%)", "type": "number",
             "default": d.mdd_cap,
-            "help": "하드 게이트 경계: MDD가 이 값을 넘으면 게이트 실패.",
-        },
-        {
-            "name": "min_trades", "label": "Min Trades", "type": "number",
+            "help": "하드 게이트: 최대 낙폭(MDD)이 이 값을 넘으면 탈락. 기본/최대 40%. 더 큰 값은 UI/백엔드에서 거부한다.",
+        }, minimum=0, maximum=_MDD_CAP_MAX, step="any"),
+        _with_bounds({
+            "name": "min_daily_trades", "label": "일평균 거래 하한", "type": "number",
+            "default": d.min_daily_trades,
+            "help": "일평균 거래 빈도 게이트의 주 기준. 공식: daily_avg_trades = 거래수 / 거래일수. 이 값 미만이면 과소거래로 탈락/감점한다.",
+        }, minimum=0, step="any"),
+        _with_bounds({
+            "name": "min_trades", "label": "최소 거래수(폴백)", "type": "number",
             "default": d.min_trades,
-            "help": "하드 게이트 경계: 거래 수가 이 값 미만이면 게이트 실패.",
-        },
+            "help": "구형 결과처럼 일평균 거래수가 없을 때만 쓰는 폴백 하한. 주 기준은 위의 일평균 거래 하한이다.",
+        }, minimum=0, step=1),
+        _with_bounds({
+            "name": "feedback_window", "label": "피드백 윈도우", "type": "number",
+            "default": d.feedback_window,
+            "help": "피드백 윈도우: 다음 세대 프롬프트에 참고할 최근 부검/실패 원인 개수. 많을수록 더 긴 연구 맥락을 보지만 토큰 비용이 늘어난다.",
+        }, minimum=0, step=1),
         # graduation_holdout / holdout_recent_days 는 run_loop 미배선(no-op)이라
         #   폼에서 제외한다 (위 docstring의 TODO 참조). LoopConfig 필드는 유지.
         {
@@ -146,6 +256,16 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "help": "단일 종목 백테스트 윈도우 거래일 수 (5일이 안전한 하한).",
         },
         {
+            "name": "bt_start", "label": "백테스트 시작일(YYYYMMDD)", "type": "text",
+            "default": d.bt_start,
+            "help": "비우면 사용 가능한 DB 최소 거래일을 자동 사용한다. 명시하면 YYYYMMDD 형식으로 검증한다.",
+        },
+        {
+            "name": "bt_end", "label": "백테스트 종료일(YYYYMMDD)", "type": "text",
+            "default": d.bt_end,
+            "help": "비우면 사용 가능한 DB 최대 거래일을 자동 사용한다. 시작일보다 앞서면 실행 전 거부한다.",
+        },
+        {
             "name": "bt_timeout", "label": "Backtest Timeout (s)", "type": "number",
             "default": d.bt_timeout,
             "help": "백테스트 1회 타임아웃(초). BOUNDED 스코프는 이 한참 아래에서 끝난다.",
@@ -174,6 +294,43 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "choices": ["warm", "cold"], "default": d.bt_engine_mode,
             "help": "warm=전체유니버스 엔진 1회 prepare 후 세대마다 run(빠름), "
                     "cold=세대마다 서브프로세스(폴백).",
+        },
+        _with_bounds({
+            "name": "engine_workers", "label": "병렬 워커수", "type": "number",
+            "default": _default_worker_count(),
+            "help": f"논리 CPU의 90%를 기본값으로 제안한다. 현재 감지 CPU={_logical_cpu_count()}, 기본={_default_worker_count()}. 0은 자동.",
+        }, minimum=0, maximum=_logical_cpu_count(), step=1),
+        _with_bounds({
+            "name": "engine_mem_cap_mb", "label": "메모리 상한(MB)", "type": "number",
+            "default": _default_memory_cap_mb(),
+            "help": "호스트 물리 메모리의 약 90%를 기본값으로 제안한다. 0은 자동이며, 실제 엔진 경로는 자체 안전 한도를 유지한다.",
+        }, minimum=0, step=1),
+        _with_bounds({
+            "name": "engine_chunk_days", "label": "청크 크기(일)", "type": "number",
+            "default": _default_chunk_days(d),
+            "help": "한 워커가 한 번에 처리하는 백테스트 날짜 청크. 기본은 현재 스코프의 최대 윈도우 기준이며 0은 자동.",
+        }, minimum=0, step=1),
+        {
+            "name": "seed_mode", "label": "시드 선택 방식", "type": "select",
+            "choices": ["fresh", "manual_seed", "best_refine"],
+            "default": d.seed_mode,
+            "help": "fresh=백지 생성, manual_seed=아래 seed_buy/seed_sell에서 시작, best_refine=현재 best를 점진 개선.",
+        },
+        {
+            "name": "seed_source", "label": "시드 출처", "type": "select",
+            "choices": ["passing", "seed_db", "manual"],
+            "default": d.seed_source,
+            "help": "passing=루프 통과 전략, seed_db=운영 DB 읽기 전용 후보, manual=직접 이름 입력. 저장/DB 쓰기는 하지 않는다.",
+        },
+        {
+            "name": "seed_buy", "label": "매수 시드 이름", "type": "text",
+            "default": d.seed_buy,
+            "help": "manual_seed일 때 gen-0 매수 전략 이름. 빈 값이면 fresh 또는 best_refine 흐름을 따른다.",
+        },
+        {
+            "name": "seed_sell", "label": "매도 시드 이름", "type": "text",
+            "default": d.seed_sell,
+            "help": "manual_seed일 때 gen-0 매도 전략 이름. 빈 값이면 fresh 또는 best_refine 흐름을 따른다.",
         },
         # R8 — 5종 안전/Track B 토글 (지금까지 폼·상태 어디에도 안 보이던 것).
         {

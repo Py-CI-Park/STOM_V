@@ -521,11 +521,11 @@ function IdlePhaseView() {
 //   (loop.py _STEP_NAME_BY_INDEX와 일치: 0생성 1백테 2채점 3부검 4반복). 완료된 단계는
 //   step_timings[timingKey]로 소요초 배지를 단다.
 const FLOW_STEPS = [
-  { label: "생성",   sub: "Generate", timingKey: "generate" },
-  { label: "백테",   sub: "Backtest", timingKey: "backtest" },
-  { label: "채점",   sub: "Score",    timingKey: "score" },
-  { label: "부검",   sub: "Autopsy",  timingKey: "autopsy" },
-  { label: "반복",   sub: "Iterate",  timingKey: "iterate" },
+  { label: "조건식", sub: "만들기", timingKey: "generate" },
+  { label: "검증",   sub: "과거데이터", timingKey: "backtest" },
+  { label: "점수",   sub: "적합도",    timingKey: "score" },
+  { label: "원인",   sub: "실패요약",  timingKey: "autopsy" },
+  { label: "개선",   sub: "다음세대",  timingKey: "iterate" },
 ];
 
 // #64 — 초 단위 경과를 사람이 읽는 짧은 라벨로(예: 45s, 2m03s). 음수/NaN은 0s.
@@ -738,7 +738,7 @@ function ProcessFlowPanel({ state }) {
       <div className="panel-hd" style={{ marginBottom: 8 }}>
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--amber)" }}></span>
-          프로세스 플로우
+          조건식 발굴 프로세스
         </div>
         {/* #64 — 세대 경과/완료 시각 + 이산 진행단계(N/5). running이면 라이브, complete면 정지. */}
         <span className="mono" style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--ink-3)" }}>
@@ -775,34 +775,34 @@ function ProcessFlowPanel({ state }) {
       </div>
       <div className="process-flow-cards" aria-label="프로세스 흐름 계약 요약">
         <div>
-          <span>flow source</span>
-          <b>state.latest.current_step</b>
-          <small>읽기 전용 라이브 상태를 다이어그램과 iframe에 동시 반영</small>
+          <span>데이터 출처</span>
+          <b>실시간 상태</b>
+          <small>현재 세대·현재 단계·백테스트 로그를 읽기 전용으로 표시</small>
         </div>
         <div>
-          <span>state mode</span>
+          <span>상태 구분</span>
           <b>{flowMode}</b>
-          <small>live/archive/idle 구분으로 상태 오해를 방지</small>
+          <small>live/archive/idle을 구분해 옛 결과를 실시간으로 오해하지 않게 함</small>
         </div>
         <div>
-          <span>active phase</span>
+          <span>현재 단계</span>
           <b>{activeStep ? `${currentStep + 1}. ${activeStep.label}` : "미정"}</b>
           <small>{phaseElapsed != null ? `현재 단계 경과 ${fmtElapsedSec(phaseElapsed)}` : "단계 경과 대기"}</small>
         </div>
         <div>
-          <span>discrete progress</span>
+          <span>단계 진행</span>
           <b>{progressLabel}</b>
-          <small>연속 예측이 아닌 current_step 기반 단계 진행률</small>
+          <small>예측값이 아니라 실제 current_step 기준</small>
         </div>
         <div>
-          <span>timing rows</span>
+          <span>소요시간</span>
           <b>{timingRows.filter(row => row.elapsed !== "—").length}/{totalSteps}</b>
-          <small>step_timings 누적 소요시간 표본</small>
+          <small>각 단계가 끝난 뒤 누적되는 실제 시간 표본</small>
         </div>
         <div>
-          <span>recent logs</span>
+          <span>로그</span>
           <b>{logs.length}</b>
-          <small>최근 {logWindow.length}줄을 하단 패널에서 자동 스크롤</small>
+          <small>엔진/백테스트 로그 최근 {logWindow.length}줄 자동 스크롤</small>
         </div>
       </div>
       {/* P11 — 평면 .process-box 행을 SVG 노드+화살표 플로우 다이어그램으로 교체.

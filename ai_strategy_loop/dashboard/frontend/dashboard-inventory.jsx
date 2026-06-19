@@ -6,7 +6,7 @@
  */
 const DASHBOARD_PAGE_OWNER_MATRIX = [
   { key: "evolution", owner: "운영 루프", owns: "실시간 생성·백테스트·채점 루프와 승인 대기 관찰", notOwner: "기록 검색·분석 워크벤치·운용 결정 이력", primarySurface: "App/evolution panels", emptyState: "진화 시작 전 안내와 설정 열기" },
-  { key: "process", owner: "프로세스 흐름", owns: "read-only current_step, step_timings, recent_logs, /process_flow 동시 확인", notOwner: "루프 제어·상태 변경·iframe 내부 소유권", primarySurface: "ProcessFlowPanel + /process_flow iframe", emptyState: "노드 미정·로그 대기" },
+  { key: "process", owner: "조건식 발굴 프로세스", owns: "read-only current_step, step_timings, recent_logs, /process_flow 동시 확인", notOwner: "루프 제어·상태 변경·final approval/export", primarySurface: "ProcessFlowPanel + /process_flow iframe", emptyState: "노드 미정·로그 대기" },
   { key: "backtest", owner: "검증 실행", owns: "조건식 백테스트 실행, 최적화, WFO, 결과 조회", notOwner: "진화 루프 최종 승인·운용 결정 기록", primarySurface: "BacktestTab", emptyState: "조건식/이력 없음" },
   { key: "simulation", owner: "차트 리플레이", owns: "일일 min DB 리플레이와 수동 신호 검토", notOwner: "실거래 주문·전략 DB 쓰기", primarySurface: "SimulationTab", emptyState: "날짜·종목 선택 대기" },
   { key: "records", owner: "전체 기록 조회", owns: "campaign/docs/update_log/registry lineage 검색과 inert 원문 확인", notOwner: "위키 큐레이션·분석 편집·결정 기록", primarySurface: "ResearchIndexPanel", emptyState: "필터/검색어 조정" },

@@ -27,12 +27,14 @@ const DEFAULT_BASE = (typeof window !== "undefined" &&
 // ---------- Default config spec (used if /config/spec is unavailable) ----------
 const DEFAULT_CONFIG_SPEC = [
   // 목표/제약
-  { name: "mdd_cap", label: "MDD 상한", type: "number", default: 15, group: "목표/제약",
-    help: "허용 가능한 최대 낙폭(%) 상한. 초과 시 게이트 탈락." },
-  { name: "min_trades", label: "최소 거래수", type: "number", default: 20, group: "목표/제약",
-    help: "유의미한 평가를 위한 최소 거래 횟수." },
-  { name: "target_score", label: "목표 적합도", type: "number", default: 1.0, group: "목표/제약",
-    help: "이 점수 이상이면 하드 게이트 통과(우승 후보)." },
+  { name: "mdd_cap", label: "MDD 상한(%)", type: "number", default: 40, group: "목표/제약",
+    min: 0, max: 40, help: "데모 기본값. 실제 LIVE 기본값은 /config/spec에서만 확정된다." },
+  { name: "min_daily_trades", label: "일평균 거래 하한", type: "number", default: 0.5, group: "목표/제약",
+    min: 0, help: "주 빈도 기준: daily_avg_trades = 거래수 / 거래일수." },
+  { name: "min_trades", label: "최소 거래수(폴백)", type: "number", default: 30, group: "목표/제약",
+    min: 0, help: "일평균 거래수가 없는 구형 결과에서만 쓰는 폴백." },
+  { name: "target_score", label: "목표 적합도", type: "number", default: "", group: "목표/제약",
+    min: 0, help: "비우면 조기 종료 없음. winner_score가 이 값 이상이면 졸업." },
 
   // 평가 스코프
   { name: "bt_timeframe", label: "백테스트 시간단위", type: "select", default: "min",
@@ -45,18 +47,18 @@ const DEFAULT_CONFIG_SPEC = [
     help: "bt_scope=one_code일 때 사용할 종목코드(KOSPI/KOSDAQ 6자리)." },
   { name: "bt_window_days", label: "백테스트 윈도우(일)", type: "number", default: 60, group: "평가 스코프",
     help: "최근 N일 데이터로 백테스트 수행." },
-  { name: "bt_start_date", label: "시작일", type: "text", default: "2025-03-01", group: "평가 스코프",
-    help: "백테스트 구간 시작일 (YYYY-MM-DD). 빈 값이면 최근 N일." },
+  { name: "bt_start", label: "시작일(YYYYMMDD)", type: "text", default: "", group: "평가 스코프",
+    help: "비우면 DB 최소 거래일." },
+  { name: "bt_end", label: "종료일(YYYYMMDD)", type: "text", default: "", group: "평가 스코프",
+    help: "비우면 DB 최대 거래일." },
 
   // 엔진 리소스
-  { name: "engine_workers", label: "병렬 워커수", type: "number", default: 8, group: "엔진 리소스",
-    help: "백테스트 병렬 실행 프로세스 수. 보통 CPU 코어수와 같거나 그 이하." },
-  { name: "engine_cpu_cap", label: "CPU 상한(%)", type: "number", default: 85, group: "엔진 리소스",
-    help: "전체 사용률이 이 값을 넘으면 새 작업을 큐잉. 0이면 무제한." },
+  { name: "engine_workers", label: "병렬 워커수", type: "number", default: 115, group: "엔진 리소스",
+    min: 0, max: 128, help: "현재 128 logical CPU 기준 90% 상한 기본값. 0이면 자동." },
   { name: "engine_mem_cap_mb", label: "메모리 상한(MB)", type: "number", default: 8192, group: "엔진 리소스",
-    help: "초과 시 가장 오래된 캐시부터 해제." },
-  { name: "engine_chunk_days", label: "청크 크기(일)", type: "number", default: 5, group: "엔진 리소스",
-    help: "한 워커가 한 번에 처리하는 백테스트 구간 크기." },
+    min: 0, help: "호스트 메모리 기반 자동 상한. 0이면 자동." },
+  { name: "engine_chunk_days", label: "청크 크기(일)", type: "number", default: 20, group: "엔진 리소스",
+    min: 0, help: "한 워커가 처리할 백테스트 날짜 청크. 0이면 자동." },
 
   // 과적합 가드
   { name: "graduation_holdout", label: "졸업 홀드아웃", type: "boolean", default: false, group: "과적합 가드",
@@ -64,24 +66,49 @@ const DEFAULT_CONFIG_SPEC = [
 
   // AI
   { name: "provider", label: "프로바이더", type: "select", default: "gpt_auth",
-    options: ["gpt_auth", "claude", "local"], group: "AI",
-    help: "전략 생성에 사용할 LLM 제공자." },
-  { name: "model", label: "모델", type: "text", default: "gpt-5-codex", group: "AI",
-    help: "사용할 모델 식별자." },
-  { name: "max_generations", label: "최대 세대", type: "number", default: 30, group: "AI",
-    help: "이 세대까지 도달하면 루프 종료." },
-  { name: "temperature", label: "Temperature", type: "number", default: 0.7, group: "AI",
-    help: "생성 다양성. 높을수록 탐험적, 낮을수록 보수적." },
-  { name: "feedback_window", label: "피드백 윈도우", type: "number", default: 3, group: "AI",
-    help: "다음 세대에 전달할 직전 부검(autopsy) 수." },
+    options: ["gpt_auth", "openrouter", "codex_proxy"], group: "AI",
+    help: "전략 생성에 사용할 LLM 제공자. LIVE에서는 /config/spec 값이 우선이다." },
+  { name: "model", label: "모델", type: "select", default: "gpt-5.5", group: "AI",
+    options: ["gpt-5.5", "gpt-5.5-mini", "openai-codex/gpt-5.5"],
+    help: "GPT 5.5 기본. xhigh는 reasoning_effort로 표시." },
+  { name: "reasoning_effort", label: "Reasoning effort", type: "select", default: "xhigh", group: "AI",
+    options: ["xhigh", "high", "medium", "low"], help: "기본 xhigh. provider 미지원 시 상태로 표시." },
+  { name: "max_generations", label: "최대 세대", type: "number", default: 200, group: "AI",
+    help: "장기 연구 기본값. 스모크 검증은 1~2로 낮춰 실행." },
+  { name: "feedback_window", label: "피드백 윈도우", type: "number", default: 8, group: "AI",
+    help: "다음 세대에 전달할 최근 부검/실패 원인 개수." },
 ];
+const CONFIG_SPEC_DEMO_STATUS = {
+  source: "fallback_demo",
+  live: false,
+  message: "데모/오프라인 기본 설정입니다. 실제 진화 시작에는 /config/spec 연결이 필요합니다.",
+};
+
+function normalizeConfigSpecPayload(payload) {
+  if (Array.isArray(payload) && payload.length) {
+    return { fields: payload, status: { source: "live", live: true, contract_version: null, message: "array spec" } };
+  }
+  if (payload && typeof payload === "object" && Array.isArray(payload.fields) && payload.fields.length) {
+    return {
+      fields: payload.fields,
+      status: {
+        source: "live",
+        live: true,
+        contract_version: payload.contract_version ?? null,
+        schema: payload.schema ?? "fields",
+        message: "config spec loaded",
+      },
+    };
+  }
+  return { fields: [], status: { source: "missing", live: false, message: "config spec payload has no fields" } };
+}
 
 const INITIAL_STATE = {
   contract_version: 1,
   run_id: null,
   status: "idle",
   current_gen: 0,
-  max_generations: 30,
+  max_generations: 200,
   provider: "gpt_auth",
   bt_timeframe: "min",
   best: null,
@@ -138,6 +165,7 @@ function useBackend(baseUrl) {
   const [wsStatus, setWsStatus] = useState_cn1("connecting"); // connecting | open | reconnecting | demo
   const [state, setState] = useState_cn1(INITIAL_STATE);
   const [configSpec, setConfigSpec] = useState_cn1(DEFAULT_CONFIG_SPEC);
+  const [configSpecStatus, setConfigSpecStatus] = useState_cn1(CONFIG_SPEC_DEMO_STATUS);
   // 제어 응답(start/stop/final_approval)의 마지막 결과. contract_version이 없는
   //   응답 프레임(=상태 스냅샷이 아닌 제어 echo)을 여기로 라우팅해 export 상태 등을
   //   UI가 표시할 수 있게 한다. final_approval(export) 게이트 결과 노출에 쓰인다.
@@ -154,13 +182,15 @@ function useBackend(baseUrl) {
     setWsStatus("demo");
     const cfg = config || {};
     const max = Number(cfg.max_generations ?? 12);
-    const target = Number(cfg.target_score ?? 1.0);
-    const mddCap = Number(cfg.mdd_cap ?? 15);
-    const minTrades = Number(cfg.min_trades ?? 20);
+    const target = Number((cfg.target_score === "" || cfg.target_score === null || cfg.target_score === undefined) ? 1.0 : cfg.target_score);
+    const mddCap = Number(cfg.mdd_cap ?? 40);
+    const minDailyTrades = Number(cfg.min_daily_trades ?? 0.5);
+    const minTrades = Number(cfg.min_trades ?? 30);
     const workers = Number(cfg.engine_workers ?? 8);
     const memCap = Number(cfg.engine_mem_cap_mb ?? 8192);
-    const startDate = cfg.bt_start_date || "2025-03-01";
-    const windowDays = Number(cfg.bt_window_days ?? 60);
+    const startDate = normalizeDemoDate(cfg.bt_start || cfg.bt_start_date, "2025-03-01");
+    const endDate = normalizeDemoDate(cfg.bt_end, null);
+    const windowDays = endDate ? Math.max(1, Math.ceil((Date.parse(endDate) - Date.parse(startDate)) / 86400000) + 1) : Number(cfg.bt_window_days ?? 60);
     const provider = cfg.provider || "gpt_auth";
     const chunkDays = Number(cfg.engine_chunk_days ?? 5);
 
@@ -247,6 +277,19 @@ function useBackend(baseUrl) {
       d.setDate(d.getDate() + days);
       return d.toISOString().slice(0, 10);
     }
+    function normalizeDemoDate(value, fallback) {
+      if (value === null || value === undefined || value === "") return fallback;
+      const text = String(value);
+      if (/^\d{8}$/.test(text)) return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)}`;
+      return text || fallback;
+    }
+    function dailyAvg(trades) {
+      return +(Number(trades || 0) / Math.max(1, Number(windowDays || 1))).toFixed(3);
+    }
+    function frequencyPass(trades) {
+      const daily = dailyAvg(trades);
+      return minDailyTrades > 0 ? daily >= minDailyTrades : Number(trades || 0) >= minTrades;
+    }
 
     function buildPlan(genNo) {
       const buyTag = ["VWAP","MOM","ORB","FLOW","RSI","OBV"][Math.floor(Math.random()*6)];
@@ -288,9 +331,9 @@ function useBackend(baseUrl) {
       const target_pnl = isErrorRoll ? 0 : Math.round((profit_factor - 0.4) * 3_500_000 + (Math.random() - 0.5) * 600_000);
 
       // Autopsy text
-      const willPass = !isErrorRoll && targetScore >= target && target_mdd_pct <= mddCap && target_trades >= minTrades;
+      const willPass = !isErrorRoll && targetScore >= target && target_mdd_pct <= mddCap && frequencyPass(target_trades);
       const autopsy_text = willPass
-        ? `gen_${genNo + 1} — 하드 게이트 통과. graded_score=${targetScore.toFixed(3)} (target ${target.toFixed(2)}), MDD ${target_mdd_pct.toFixed(2)}% ≤ ${mddCap}%, 거래 ${target_trades}회 ≥ ${minTrades}. 다음 세대는 동일 골격 유지하며 슬리피지 가정만 보수화.`
+        ? `gen_${genNo + 1} — 하드 게이트 통과. graded_score=${targetScore.toFixed(3)} (target ${target.toFixed(2)}), MDD ${target_mdd_pct.toFixed(2)}% ≤ ${mddCap}%, 일평균 거래 ${dailyAvg(target_trades)}회/일 ≥ ${minDailyTrades}. 다음 세대는 동일 골격 유지하며 슬리피지 가정만 보수화.`
         : isErrorRoll
           ? `gen_${genNo + 1} — 런타임 예외. 안전한 컬럼 접근 및 None-가드 보강 필요. 다음 세대는 fallback 분기 추가.`
           : feedbackPool[Math.floor(Math.random() * feedbackPool.length)];
@@ -536,12 +579,12 @@ function useBackend(baseUrl) {
       const mdd = +Math.min(40, Math.max(plan.target_mdd_pct, peakDD)).toFixed(2);
 
       const graded_score = isError ? 0 : (currentRun.scoring.composite ?? plan.target_score);
-      const gate_passed = !isError && graded_score >= target && mdd <= mddCap && trade_count >= minTrades;
+      const gate_passed = !isError && graded_score >= target && mdd <= mddCap && frequencyPass(trade_count);
 
       let gate_reason = "조건 충족";
       if (isError) gate_reason = "실행 오류";
       else if (trade_count === 0) gate_reason = "거래 0건";
-      else if (trade_count < minTrades) gate_reason = `거래수 부족(${trade_count}/${minTrades})`;
+      else if (!frequencyPass(trade_count)) gate_reason = minDailyTrades > 0 ? `일평균 거래 부족(${dailyAvg(trade_count)}/${minDailyTrades})` : `거래수 부족(${trade_count}/${minTrades})`;
       else if (mdd > mddCap) gate_reason = `MDD 초과(${mdd}% > ${mddCap}%)`;
       else if (graded_score < target) gate_reason = `점수 미달(${graded_score.toFixed(3)} < ${target})`;
 
@@ -553,6 +596,7 @@ function useBackend(baseUrl) {
         graded_score: +graded_score.toFixed(3),
         gate_passed, gate_reason,
         trade_count, mdd, profit,
+        daily_avg_trades: dailyAvg(trade_count),
         strategy_gist: gist,
         buy_name: plan.buyName, sell_name: plan.sellName,
         buy_code: plan.buy_code, sell_code: plan.sell_code,
@@ -638,9 +682,17 @@ function useBackend(baseUrl) {
         const cs = await fetch(baseUrl + "/config/spec", { signal: AbortSignal.timeout(1500) });
         if (cs.ok) {
           const csj = await cs.json();
-          if (Array.isArray(csj) && csj.length) setConfigSpec(csj);
+          const normalized = normalizeConfigSpecPayload(csj);
+          if (normalized.fields.length) {
+            setConfigSpec(normalized.fields);
+          }
+          setConfigSpecStatus(normalized.status);
+        } else {
+          setConfigSpecStatus({ source: "error", live: false, message: "config spec HTTP " + cs.status });
         }
-      } catch {}
+      } catch (e) {
+        setConfigSpecStatus({ source: "error", live: false, message: String(e && e.message ? e.message : e) });
+      }
 
       // Fetch current state
       try {
@@ -656,6 +708,7 @@ function useBackend(baseUrl) {
     } catch (e) {
       // Fall back to demo
       setHealth({ connected: false, contract_version: null });
+      setConfigSpecStatus(CONFIG_SPEC_DEMO_STATUS);
       setWsStatus("demo");
     }
   }, [baseUrl]); // eslint-disable-line
@@ -713,6 +766,15 @@ function useBackend(baseUrl) {
 
   // ---------- Send control messages ----------
   const send = useCallback_cn1((msg) => {
+    if (msg && msg.action === "start" && wsStatus !== "demo" && !(configSpecStatus && configSpecStatus.live)) {
+      setLastReply({
+        action: "start",
+        status: "error",
+        reason: "config_spec_unavailable",
+        message: "LIVE 진화 시작은 /config/spec가 정상 로드된 뒤에만 가능합니다.",
+      });
+      return false;
+    }
     if (wsStatus === "demo" || !wsRef.current || wsRef.current.readyState !== 1) {
       // Demo mode: handle locally
       if (msg.action === "start") {
@@ -738,13 +800,14 @@ function useBackend(baseUrl) {
     } catch {
       return false;
     }
-  }, [wsStatus, startDemo, stopDemoSoft]);
+  }, [wsStatus, startDemo, stopDemoSoft, configSpecStatus]);
 
   return {
     state,
     health,
     wsStatus,
     configSpec,
+    configSpecStatus,
     send,
     lastReply,
     reconnect: tryConnect,
@@ -757,4 +820,4 @@ Object.assign(window, {
 });
 
 // Track Z — dual-safe ESM export. KEEP on ONE physical line.
-export { useBackend, DEFAULT_BASE, INITIAL_STATE, DEFAULT_CONFIG_SPEC };
+export { useBackend, DEFAULT_BASE, INITIAL_STATE, DEFAULT_CONFIG_SPEC, normalizeConfigSpecPayload };

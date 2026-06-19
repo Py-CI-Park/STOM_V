@@ -36,7 +36,7 @@ th{background:#21262d}.mono{font-family:Consolas,monospace}
 .k{color:var(--mag)}.note{color:var(--mut);font-size:12px;margin-top:6px}
 </style></head><body>
 <header><h1>🔬 STOM 조건식 발굴 프로세스 — 라이브 흐름</h1>
-<div class="sub">생성일 2026-06-15 23:41:03 · <span class="b ok">iter 27/40</span><span class="b muted">전체기간 생존 0</span><span class="b">smoke-pass 0</span><span class="b run">진행중</span></div></header>
+<div class="sub">생성일 2026-06-20 08:09:12 · <span class="b ok">iter 0/40</span><span class="b muted">전체기간 생존 0</span><span class="b">smoke-pass 0</span><span class="b run">진행중</span></div></header>
 <div class="wrap">
 
 <div class="goal"><b>🎯 목표 &amp; 마인드셋</b> — 광산에서 <b>수익 나는 매수/매도 조건식(실매매용 per-stock if-Buy)</b>을 캐낸다.
@@ -54,34 +54,34 @@ th{background:#21262d}.mono{font-family:Consolas,monospace}
 💡 <b>지금 상태</b>: 아직 진짜 금(전체기간+미래 다 통과하는 새 조건식)은 못 찾았습니다. 하지만 <b>인간 트레이더는 찾으니 가능</b>하고, 우리는 채굴기(프로세스)를 계속 개량하는 중입니다 — "없다"가 아니라 "이 방법으론 아직".</div>
 <div class="note">🎨 <b>색상 범례</b>: <span style="color:var(--mag)">●보라=생성</span> · <span style="color:var(--acc)">●파랑=백테</span> · <span style="color:var(--ok)">●초록=게이트</span> · <span style="color:var(--warn)">●주황=환류</span></div>
 
-<h2>1. 전체 파이프라인 (데이터마이닝 폐루프)</h2>
+<h2>1. 전체 파이프라인 (쉽게 보는 조건식 발굴 루프)</h2>
 <div class="flow">
-<div class="node gen"><div class="tag">① 생성 · gen_template_hypothesis.py</div><div class="ttl">AI가 다밴드 조건식 생성</div>
-<div class="desc">시간대×시총 이산분기(시초/중반/후반) 조건식을 LLM이 생성. 직전 결과(회피/선호) 환류 + 검증 가드(밴드당≤10·비용·금지변수).</div></div>
+<div class="node gen"><div class="tag">① 만들기</div><div class="ttl">AI가 매수/매도 규칙을 만든다</div>
+<div class="desc">좋은 예시와 직전 실패 원인을 참고해 새 조건식을 만든다. 여기서 나온 코드는 아직 후보일 뿐이며 바로 운영에 쓰지 않는다.</div></div>
 <div class="arrow">↓</div>
-<div class="node bt"><div class="tag">② 스모크 백테 · tmap_sweep.py (32엔진)</div><div class="ttl">2분기 · 같은 좌표 양분기 흑자 게이트</div>
-<div class="desc">변수(θ)를 스윕하며 백테. q1∧q2 같은 좌표가 둘 다 흑자여야 통과(체리피킹 차단).</div></div>
+<div class="node bt"><div class="tag">② 빠른 검증</div><div class="ttl">짧은 기간으로 먼저 가짜를 걸러낸다</div>
+<div class="desc">과거 일부 구간에서 손익, MDD, 일평균 거래 빈도를 빠르게 계산한다. 한 구간만 우연히 맞은 후보는 다음 단계에서 더 강하게 검증한다.</div></div>
 <div class="arrow">↓</div>
-<div class="node bt"><div class="tag">③ 전체기간 백테 · 3년 train</div><div class="ttl">일반화 검증 (과적합 차단)</div>
-<div class="desc">2분기 통과분만 3년 전체기간 재백테. 여기서 음전(과적합)이면 탈락 = 착시 차단.</div></div>
+<div class="node bt"><div class="tag">③ 긴 기간 검증</div><div class="ttl">여러 해 전체 흐름에서도 버티는지 본다</div>
+<div class="desc">짧은 검증을 통과한 후보만 더 긴 기간으로 다시 확인한다. 여기서 적자가 나면 과거 일부에만 맞은 가짜 후보로 본다.</div></div>
 <div class="arrow">↓</div>
-<div class="node bt"><div class="tag">④ OOS · 2022·2026</div><div class="ttl">미래 재현성</div>
-<div class="desc">전체기간 통과분만 다른 해(OOS)로 최종 검증. ★PROMISING = 전부 흑자(THETA급 바).</div></div>
+<div class="node bt"><div class="tag">④ 다른 기간 확인</div><div class="ttl">처음 보지 않은 기간에서도 재현되는지 확인한다</div>
+<div class="desc">다른 해나 다른 구간에서 다시 계산해 우연·과적합을 줄인다. 목표는 한 번의 우승이 아니라 반복 가능한 규칙이다.</div></div>
 <div class="arrow">↓</div>
-<div class="node gate"><div class="tag">⑤ 게이트 · refine_gate.py (P0b)</div><div class="ttl">사후슬라이스 착시 REFUSE</div>
-<div class="desc">in-sample 흑자라도 재백테 음전이면 기각. 검증됨: known-good +2.17M PASS · 사후포켓 −1.15M REFUSE.</div></div>
-<div class="loop">↻ ⑥ 환류 (P2 build_feedback) — no-go=회피·과적합=회피·전체기간생존=선호 → <b>다음 생성(①)으로</b> · 무작위 추첨을 "학습하는 발굴"로</div>
+<div class="node gate"><div class="tag">⑤ 판정 기준</div><div class="ttl">수익·낙폭·거래 빈도 기준으로 통과/탈락을 정한다</div>
+<div class="desc">수익이 나도 MDD가 너무 크거나 일평균 거래가 너무 적으면 탈락한다. 어려운 공식은 아래 접힌 예시에 따로 둔다.</div></div>
+<div class="loop">↻ ⑥ 실패 원인 피드백 — 왜 탈락했는지 기록해 다음 생성이 같은 실수를 덜 하도록 만든다. 모든 단계는 읽기 전용 증거로 남기고 운영 승인과 분리한다.</div>
 </div>
-<div class="note">정직지표 = OOS 통과 후보 수(현재 baseline 0). 점수가 아니라 *일반화 생존*만 합격.</div>
+<div class="note">핵심 지표 = 여러 기간에서 살아남은 후보 수. 단기 점수보다 “다시 검증해도 버티는가”를 더 중요하게 본다.</div>
 
 <h2>2. 단계별 상세 (클릭하여 펼치기)</h2>
 <div class="cards">
-<details><summary>① 생성</summary><div class="note">LLM(gpt_auth)이 프롬프트+환류 받아 if/elif 다밴드 매수코드 생성 → 검증 가드(compile/scope/cost/밀도) 통과분만 템플릿 저장(llmgen_*).</div></details>
-<details><summary>② 스모크 게이트</summary><div class="note">tmap_sweep가 핵심축 5개·40점 스윕. 같은좌표 min(q1,q2)&gt;0 = smoke-pass. 선택편향 차단.</div></details>
-<details><summary>③ 전체기간</summary><div class="note">train-3y 재백테. smoke-pass의 ~전부가 여기서 −10~−21M 과적합으로 드러나 탈락(격상 게이트의 가치).</div></details>
-<details><summary>④ OOS</summary><div class="note">2022·2026 재현성. tick 한정(min은 OOS 오염). 전부 흑자라야 ★PROMISING.</div></details>
-<details><summary>⑤ 재백테 게이트(P0b)</summary><div class="note">claude_candidate_batch_eval 배선. 결정론 검증→1회 충분. 새 후보를 진짜 재백테로 흑/적 판정.</div></details>
-<details><summary>⑥ 환류 폐루프(P2)</summary><div class="note">ledger→회피(홍수/과적합)/선호(전체기간 생존) 조립해 다음 생성에 주입. --stateful 토글.</div></details>
+<details><summary>① 만들기</summary><div class="note">LLM(gpt_auth)이 좋은 예시·실패 원인·금지 규칙을 보고 새 조건식을 만든다. 숫자 임계값은 백테스트가 다시 검증한다.</div></details>
+<details><summary>② 빠른 검증</summary><div class="note">짧은 기간에서 먼저 돌려 시간을 아낀다. 한쪽 구간만 좋아 보이는 후보는 통과시키지 않는다.</div></details>
+<details><summary>③ 긴 기간 검증</summary><div class="note">여러 해 전체 데이터에서 다시 확인한다. 짧은 기간에서만 좋았던 후보는 여기서 대부분 걸러진다.</div></details>
+<details><summary>④ 다른 기간 확인</summary><div class="note">처음 고른 기간 밖에서도 비슷한 결과가 나는지 본다. 이 단계가 과적합 방지의 핵심이다.</div></details>
+<details><summary>⑤ 판정 기준</summary><div class="note">수익, MDD, 일평균 거래, 손익비, 우상향 정도를 함께 본다. 어려운 원식과 실증 예시는 아래 탭에 숨겨 둔다.</div></details>
+<details><summary>⑥ 다시 개선</summary><div class="note">탈락 이유를 다음 세대 프롬프트에 넣어 같은 실패를 줄인다. run·세대·백테스트 이름을 보존해 나중에 다시 조회한다.</div></details>
 </div>
 
 <h2>3. 실제 산출물 예시 (탭)</h2>
@@ -103,22 +103,9 @@ th{background:#21262d}.mono{font-family:Consolas,monospace}
   3000→2500이면 MDD -30% (청산 다이얼이 수익 지배).
 - THETA 3중 조합(시총2500+익절9%+트레일4%): 3년 +1,097만, 3/3년 흑자,
   OOS 2026에서 시드 적자를 흑자로 반전.
-- ★T2C3(다밴드 = 한 조건식에 여러 시간대): THETA(09:00~05 소형주 첫돌파)에
-  제3밴드(09:05~{ext_end} 시총 반전 대형주)를 if/elif로 더하니 OOS 2022 +24%·
-  OOS 2026 +143%·워크포워드 4창 전부 적격 — 단일밴드 THETA를 일반화에서 능가.
-  교훈: **시간대×시총 밴드를 하나 더 더하면 일반화가 좋아질 수 있다. 단 각
-  밴드가 독립적으로 깨끗한(자기 강한 게이트를 가진) 전략이어야 한다.**
-
 [실패 예시 — 반복 금지]
 - 보고서 임계값 직접 이식 5/5 음수: 숫자는 데이터 창마다 다르다.
   구조를 가져오고 숫자는 슬롯으로 비워라.
-- ★점수합산(build_v5): 20개 약한 플래그 점수를 더해 임계 넘으면 매수 →
-  -1.11억/4,989건 전멸. **&quot;신호 합의(점수 합산)&quot;는 품질 분별자가 아니다.**
-  다밴드는 점수합산이 아니라 if/elif **이산 분기**로 — 한 시점엔 한 밴드만
-  발화하고, 각 밴드는 자기 강한 AND 게이트를 갖는다. 약한 신호를 OR/합산으로
-  모으지 마라.
-- 시간 확장(window_end↑)은 일관되게 악화 — 후반부 밴드일수록 신호 가치가
-  낮으니, 후반 밴드는 더 강한 게이트(시총/체결강도/거래대금 폭발)로 좁혀라.
 - 고가미갱신지속틱수·저가미갱신지속틱수: 무한 역스캔 — 사용 금지(타임아웃).
 
 [엔진 계약 — 위반 시 자동 기각]
@@ -127,29 +114,18 @@ th{background:#21262d}.mono{font-family:Consolas,monospace}
 - 윈도우 함수(이동평균/등락율각도/초당거래대금평균 등)는 첫 인자(틱 수) &gt;= 1,
   시프트 인자 &gt;= -1 (그 외 음수는 미래참조로 기각).
 - 매도식의 윈도우 집계 호출 총수 8회 이하.
-- ★min(분봉) timeframe 전용 어휘만 사용(없는 변수 발명 시 즉시 기각):
-  · min 전용: 분당거래대금, 분당거래대금평균(N,1), 분당매수수량, 분당매도수량,
-    누적분당매수수량(N), 누적분당매도수량(N), 체결강도평균(N,1), 등락율각도(N), 이동평균(N,1)
-  · 공통: 현재가, 고가, 저가, 시가, 등락율, 체결강도, 시가총액, 전일동시간비, 회전율,
-    당일거래대금, 시분초, 데이터길이 / 매도: 수익률, 최고수익률, 보유시간
-  · **min에 없음(발명 금지)**: 직전분봉고가·누적분당거래대금·보유수익률·초당*(tick 전용).
-    &quot;직전 고가 돌파/재가속&quot;은 `현재가 &gt;= 이동평균(N,1) * 배수` 또는
-    `분당거래대금 &gt;= 분당거래대금평균(N,1) * 배수`로 표현하라.
 
-[과제] {principle_text} 원리를, 시드 902/905·T2C3처럼 **시간대×시가총액 이산
-분기 조건식(다밴드)**으로 설계하라. ★먼저 **가용 시간 전체를 의미 있는 구간으로
-나눠 여러 시간대를 적극 고려**하라:
-  - tick(09:00~09:30): 시초(09:00~05) / 중반(09:05~15) / 후반(09:15~30)
-  - min(09:00~15:00): 개장(09:00~10:00) / 오전(10:00~11:30) / 점심(11:30~13:00) / 오후(13:00~15:00)
-그 중 **시간대가 다른 2~3개 밴드**를 골라 한 조건식에 if/elif로 담되, 점수합산이
-아니라 한 시점엔 한 밴드만 발화한다(시간창 비중첩·시분초 경계 연속).
-- 밴드 수 **2~3개 권장**(단일 시간대에 머물지 말 것 — 여러 시간대 고려가 핵심).
-- 각 밴드는 자기 시간대 특성에 맞는 **시가총액 분기**(`if 시가총액 &lt; {{cap}}:` 등)와
-  신호로 **독립적으로 수익 가능한 깨끗한 전략**이어야 한다(시초=소형 급등, 중반/후반=
-  중대형 반전·재발화 등 시간대별로 다르게).
-- 밴드당 AND 조건 10개 이하(과조건은 신호 0건). 후반/오후 밴드는 신호가치가 낮으니
-  더 강한 게이트로 좁혀라.
-- 고정 숫자 금지: 모든 임계값은 {{slot_name}} 형태의 θ</pre></div>
+[과제] {principle_text} 원리를 표현하되, 기존 시드와 **다른 구조**의 매수
+템플릿 1개를 제안하라.
+- 고정 숫자 금지: 모든 임계값은 {{slot_name}} 형태의 θ 슬롯으로.
+- 슬롯마다 (default, 후보값 4~6개, 왜 그 범위인지 근거)를 명시.
+- 시드와 다른 시간 창 또는 다른 메커니즘을 노려라(포트폴리오 분산 가치).
+
+[출력 — JSON만]
+{&quot;name&quot;: &quot;...&quot;, &quot;buy_template&quot;: &quot;...&quot;, &quot;sell_template&quot;: &quot;...&quot;,
+ &quot;slots&quot;: [{&quot;name&quot;,&quot;default&quot;,&quot;values&quot;,&quot;side&quot;,&quot;note&quot;}],
+ &quot;principle_map&quot;: {&quot;F07&quot;: &quot;이 조건이 원리를 어떻게 표현하는지&quot;},
+ &quot;niche_claim&quot;: &quot;시드와 어디가 다른 니치인지 한 문장&quot;}</pre></div>
 <div class="panel"><div class="note">검증된 다밴드 챔피언 = 902 소형주 + 905 소형주 + 09:05~ 시총반전 3밴드. OOS에서 THETA 능가.</div><pre># ================================
 #  공통 계산 지표
 # ================================
@@ -237,51 +213,23 @@ elif 90200 &lt;= 시분초 &lt; 90500:
     else:
         if 시가총액 &lt; 2500:
             if not (0.0 &lt;= 시가등락율 &lt; 8.0</pre></div>
-<div class="panel"><div class="note">최근 AI 생성물: <span class="k mono">llmgen_tick_theta_anchor_small_midupper_value_density_reburst_discrete_v8</span></div><pre>매수 = True
-if not (관심종목 == {interest_flag}):
-    매수 = False
-elif not (데이터길이 &gt;= {min_len}):
-    매수 = False
-elif {b1_start} &lt;= 시분초 &lt; {b1_end}:
-    if 시가총액 &lt; {b1_cap_max}:
-        if not (등락율 &gt;= {b1_rate_min} and 등락율 &lt;= {b1_rate_max} and 당일거래대금 &gt;= {b1_day_money_min} and 초당거래대금 &gt;= {b1_sec_money_min} and 초당거래대금 &gt;= 초당거래대금평균({b1_burst_win}, 1) * {b1_burst_mult} and 체결강도 &gt;= {b1_strength_min} and 전일동시간비 &gt;= {b1_prev_ratio_min}):
-            매수 = False
-    else:
-        매수 = False
-elif {b1_end} &lt;= 시분초 &lt; {b2_end}:
-    if {b2_cap_lo} &lt;= 시가총액 &lt; {b2_cap_hi}:
-        if not (등락율 &gt;= {b2_rate_min} and 등락율 &lt;= {b2_rate_max} and 당일거래대금 &gt;= {b2_day_money_min} and 초당거래대금 &gt;= {b2_sec_money_min} and 현재가 &gt;= 이동평균({b2_ma_win}, 1) * {b2_ma_mult} and 초당거래대금 &gt;= 초당거래대금평균({b2_burst_win}, 1) * {b2_burst_mult} and 체결강도 &gt;= {b2_strength_min} and 전일동시간비 &gt;= {b2_prev_ratio_min} and 회전율 &gt;= {b2_turnover_min}):
-            매수 = False
-    else:
-        매수 = False
-elif {b2_end} &lt;= 시분초 &lt; {b3_end}:
-    if {b3_cap_lo} &lt;= 시가총액 &lt; {b3_cap_hi}:
-        if not (등락율 &gt;= {b3_rate_min} and 등락율 &lt;= {b3_rate_max} and 당일거래대금 &gt;= {b3_day_money_min} and 초당거래대금 &gt;= {b3_sec_money_min} and 현재가 &gt;= 이동평균({b3_ma_win}, 1) * {b3_ma_mult} and 초당거래대금 &gt;= 초당거래대금평균({b3_burst_win}, 1) * {b3_burst_mult} and 체결강도 &gt;= {b3_strength_min} and 전일동시간비 &gt;= {b3_prev_ratio_min} and 회전율 &gt;= {b3_turnover_min} and 현재가 &gt;= 고가 * {b3_high_near}):
-            매수 = False
-    else:
-        매수 = False
-else:
-    매수 = False
-if 매수:
+<div class="panel"><div class="note">최근 AI 생성물: <span class="k mono">llmgen_vi_magnet_realign_askvoid</span></div><pre>if 시분초 &gt;= {entry_start} and 시분초 &lt;= {entry_end} and ((VI가격 - 현재가) / VI호가단위) &gt;= {vi_dist_min} and ((VI가격 - 현재가) / VI호가단위) &lt;= {vi_dist_max} and ((매도잔량1 + 매도잔량2 + 매도잔량3 + 매도잔량4 + 매도잔량5) / (매수잔량1 + 매수잔량2 + 매수잔량3 + 매수잔량4 + 매수잔량5)) &lt;= {ask_bid_thin_max} and 초당매수수량 &gt; 초당매도수량 * {mkt_buy_ratio_min} and 당일거래대금 &gt;= {day_money_min} and 시가총액 &lt;= {cap_max} and 등락율 &gt;= {rate_min} and 등락율 &lt;= {rate_max}:
     self.Buy()</pre></div>
 <div class="panel"><div class="note">한 변수(예: b1_cap_hi)를 바꾸면 수익·거래수가 어떻게 변하나 — loop_runs.db에 세대별 기록.</div>
-<table><tr><th>변수=값</th><th>수익(원)</th><th>거래수</th><th>MDD</th></tr><tr><td>b1_sec_money_min=700</td><td>-4,885,252</td><td>149</td><td>24.74</td></tr><tr><td>b1_sec_money_min=1500</td><td>-4,967,478</td><td>143</td><td>25.15</td></tr><tr><td>b1_sec_money_min=300</td><td>-5,713,664</td><td>203</td><td>29.14</td></tr><tr><td>b1_sec_money_min=150</td><td>-6,435,113</td><td>279</td><td>35.08</td></tr><tr><td>b1_sec_money_min=50</td><td>-8,088,240</td><td>335</td><td>42.16</td></tr><tr><td>b1_sec_money_min=20</td><td>-8,858,418</td><td>350</td><td>38.12</td></tr><tr><td>b1_cap_max=1500</td><td>-30,450,223</td><td>1529</td><td>201.65</td></tr><tr><td>b2_sec_money_min=3000</td><td>-34,746,332</td><td>1703</td><td>115.8</td></tr></table></div>
-<div class="panel"><div class="note">직전 결과로 조립된 환류(다음 생성에 주입). 회피=실패 구조, 선호=전체기간 생존.</div><pre>누적 27후보 — no-go(홍수) 27, 2분기과적합 0, 전체기간생존 0.
-[회피-홍수] 재백테 음전(느슨 홍수형) 구조 재제출 금지: llmgen_tick_theta_anchor_midlate_capisolated_value_reburst, llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6, llmgen_min_am_midcap_flowpersist_pm_othercap_maproxy_discrete, llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7, llmgen_tick_theta_anchor_midlate_capfork_rehigh_turnover_guard, llmgen_min_open_midcap_persistent_buy_pm_othercap_ma_reburst_guarded, llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim, llmgen_tick_theta_anchor_multisession_highnear_valueburst_clean_v9, llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1, llmgen_tick_theta_anchor_boundary_midupper_reburst_strict_v1, llmgen_theta_anchor_conservative_midlate_capgap_reignite, llmgen_min_split_open_midcap_cumbuy_pm_uppercap_maproxy_flowonly_v1
-[선호] 아직 전체기간 생존 코너 없음 — 검증앵커(THETA: 09:00~09:05 소형주 cap≤2500·거래대금폭발·높은 체결강도)를 밴드1로 고정. ★탐색밴드는 2분기만 맞추는 과적합을 피하고 *전체기간 일반화*되게 더 보수적·좁은 게이트로.
-핵심: 홍수형 반복 금지 + **2분기 과적합 코너 추구 금지**. 앵커 고정 + 전체기간 일반화되는 보수적 탐색밴드를 노려라.</pre></div>
-<div class="panel"><div class="note">재백테 게이트가 사후슬라이스 착시를 거른 실증.</div>
-<pre>[게이트 로직] decide(in_sample_lift, rebacktest_profit)
-  · H사례: in-sample +1,070,000 → 재백테 −1,152,966  ⇒ REFUSE (부호반전=착시)
-  · known-good(THETA θ*): 재백테 +2,167,239 (2회 동일=결정론) ⇒ PASS
-  · 새 후보(야간 no-go): 재백테 −3,048,898 ⇒ REFUSE
-결론: 2분기만 흑자인 과적합 후보를 전체기간이 정확히 기각. 자기기만 0.</pre></div>
+<table><tr><th>변수=값</th><th>수익(원)</th><th>거래수</th><th>MDD</th></tr><tr><td>(데이터 없음)</td><td>—</td><td>—</td><td>—</td></tr></table></div>
+<div class="panel"><div class="note">직전 결과로 조립된 환류(다음 생성에 주입). 회피=실패 구조, 선호=전체기간 생존.</div><pre>(피드백 생성 오류: No module named &#x27;ai_strategy_loop.scripts.tmap_multiband_discovery&#x27;)</pre></div>
+<div class="panel"><div class="note">짧은 구간에서만 좋아 보이는 후보를 다시 검증해 거른 실제 예시.</div>
+<pre>[판정 로직] decide(short_window_lift, rebacktest_profit)
+  · H사례: 짧은 구간 +1,070,000 → 다시 검증 −1,152,966  ⇒ REFUSE (부호반전=착시)
+  · known-good(THETA θ*): 다시 검증 +2,167,239 (2회 동일=결정론) ⇒ PASS
+  · 새 후보(야간 no-go): 다시 검증 −3,048,898 ⇒ REFUSE
+결론: 짧은 구간만 흑자인 후보를 긴 기간 검증이 정확히 기각. 자기기만 0.</pre></div>
 
 <h2>🎬 4. 조건식 한 개의 "일생" (실제 사례로 따라가기)</h2>
 <div class="flow">
 <div class="node gen"><div class="tag">생성</div><div class="ttl">AI가 다밴드 조건식 생성</div><div class="desc">환류 지시("THETA 앵커 고정 + 다른 시간대 탐색")를 받아 → <span class="mono">llmgen_theta_anchor_midcap_upperlate</span> 같은 3밴드 조건식 생성.</div></div>
 <div class="arrow">↓</div>
-<div class="node bt"><div class="tag">2분기 스모크</div><div class="ttl">q1 +785,449 · q2 +1,402,966 → smoke-pass ✅</div><div class="desc">짧은 2분기에선 같은 좌표가 둘 다 흑자! "오, 금인가?" — <b>하지만 아직 모름.</b></div></div>
+<div class="node bt"><div class="tag">빠른 1차 검증</div><div class="ttl">q1 +785,449 · q2 +1,402,966 → 1차 통과 ✅</div><div class="desc">짧은 두 구간에선 같은 조건이 둘 다 흑자! "오, 금인가?" — <b>하지만 아직 모름.</b></div></div>
 <div class="arrow">↓</div>
 <div class="node bt"><div class="tag">3년 전체기간</div><div class="ttl">−10,470,576 ❌ 과적합 드러남</div><div class="desc">3년 전체로 보니 큰 적자 = 2분기에만 우연히 맞은 <b>가짜 금(과적합)</b>.</div></div>
 <div class="arrow">↓</div>
@@ -296,19 +244,19 @@ if 매수:
 <div class="node"><div class="ttl">조건식</div><div class="desc">매수/매도 규칙 코드. <span class="mono">if 시간·시총·신호: 매수</span></div></div>
 <div class="node"><div class="ttl">다밴드</div><div class="desc">한 조건식에 <b>여러 시간대×시총</b> 분기(시초/중반/후반). 챔피언 T2C3가 이 구조.</div></div>
 <div class="node"><div class="ttl">θ(세타) 슬롯</div><div class="desc">조건식의 숫자(임계값)를 비워둔 자리 <span class="mono">{cap_max}</span> — 백테가 최적값을 찾음.</div></div>
-<div class="node"><div class="ttl">smoke-pass</div><div class="desc">짧은 2분기로 <b>빠른 1차</b> 통과. 같은 좌표가 양분기 흑자(체리피킹 방지).</div></div>
+<div class="node"><div class="ttl">빠른 1차 통과</div><div class="desc">짧은 두 구간에서 먼저 통과한 상태. 아직 최종 후보가 아니라 긴 기간 검증이 필요하다.</div></div>
 <div class="node"><div class="ttl">전체기간(train)</div><div class="desc">3년 전체로 검증 = <b>일반화</b> 됐나. 과적합을 여기서 잡음.</div></div>
 <div class="node"><div class="ttl">OOS</div><div class="desc">학습에 <b>안 쓴 다른 해</b>(2022·2026)로 미래 재현성 검증.</div></div>
 <div class="node"><div class="ttl">과적합</div><div class="desc">과거 일부에만 맞고 다른 기간엔 무너지는 <b>가짜 금</b>.</div></div>
 <div class="node"><div class="ttl">앵커(THETA)</div><div class="desc">이미 <b>검증된 챔피언</b> 조건식. 새 탐색의 기준점(밴드1 고정).</div></div>
 <div class="node"><div class="ttl">게이트(P0b)</div><div class="desc">가짜를 거르는 <b>검문소</b> — 재백테로 흑/적 판정.</div></div>
 <div class="node"><div class="ttl">환류(피드백)</div><div class="desc">직전 결과(회피/선호)로 <b>다음 생성을 개선</b>. 무작위→학습.</div></div>
-<div class="node"><div class="ttl">★PROMISING</div><div class="desc">스모크+전체기간+OOS <b>전부 통과</b>한 진짜 후보(목표).</div></div>
+<div class="node"><div class="ttl">★유망 후보</div><div class="desc">빠른 검증+전체기간+다른 기간 확인을 <b>전부 통과</b>한 진짜 후보(목표).</div></div>
 <div class="node"><div class="ttl">no-go</div><div class="desc">2분기부터 흑자 코너 없음 = 탈락(가장 흔함).</div></div>
 </div>
 
 <h2>6. 현재 연구 상태 (라이브)</h2>
-<table><tr><th>판정</th><th>건수</th></tr><tr><td>no-go</td><td>27</td></tr></table>
+<table><tr><th>판정</th><th>건수</th></tr><tr><td>—</td><td>0</td></tr></table>
 <div class="note">전체기간 생존(train-pass+)이 1건이라도 나오면 = 일반화 금맥 발굴. 0이면 = 다음 프로세스 개선(P3: 조건별 기여도 분석·불필요 제거)이 필요하다는 신호. <b>"없다"가 아니라 "이 방법으론 아직".</b></div>
 
 <div class="note" style="margin-top:30px">↻ 갱신: <span class="mono">PYTHONUTF8=1 python -m ai_strategy_loop.scripts.build_process_flow_html</span></div>

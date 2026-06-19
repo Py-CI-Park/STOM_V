@@ -60,7 +60,7 @@ function WinnerCard({ winner, onApprove, onViewCode }) {
         <div className="panel-bd" style={{ color: "var(--ink-3)", fontSize: 12 }}>
           하드 게이트를 통과한 전략이 아직 없습니다.
           <div style={{ marginTop: 6, fontSize: 11, color: "var(--ink-3)" }}>
-            target_score 이상 + MDD 상한 이내 + 최소 거래수 이상
+            target_score 이상 + MDD 상한 이내 + 일평균 거래 하한 이상
           </div>
         </div>
       </div>
