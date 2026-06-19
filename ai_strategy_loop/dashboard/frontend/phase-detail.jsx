@@ -770,6 +770,28 @@ function ProcessFlowPanel({ state }) {
         <span><b>current_step</b> {currentStep >= 0 ? currentStep : "—"}</span>
         <span><b>최근 로그</b> {lastLog}</span>
       </div>
+      <div className="process-flow-cards" aria-label="프로세스 흐름 계약 요약">
+        <div>
+          <span>flow source</span>
+          <b>state.latest.current_step</b>
+          <small>읽기 전용 라이브 상태를 다이어그램과 iframe에 동시 반영</small>
+        </div>
+        <div>
+          <span>active phase</span>
+          <b>{activeStep ? `${currentStep + 1}. ${activeStep.label}` : "미정"}</b>
+          <small>{phaseElapsed != null ? `현재 단계 경과 ${fmtElapsedSec(phaseElapsed)}` : "단계 경과 대기"}</small>
+        </div>
+        <div>
+          <span>timing rows</span>
+          <b>{timingRows.filter(row => row.elapsed !== "—").length}/{totalSteps}</b>
+          <small>step_timings 누적 소요시간 표본</small>
+        </div>
+        <div>
+          <span>recent logs</span>
+          <b>{logs.length}</b>
+          <small>최근 로그는 하단 패널에서 자동 스크롤</small>
+        </div>
+      </div>
       {/* P11 — 평면 .process-box 행을 SVG 노드+화살표 플로우 다이어그램으로 교체.
           노드 상태: index<current_step=done(teal) · ===active(amber+glow) · >pending(dim).
           노드 sub 라인은 활성=라이브 경과 / 완료=step_timings 소요초. 활성 직전 화살표=.lit.

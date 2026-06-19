@@ -29,6 +29,9 @@ import { SimulationTab } from "./simulation.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
 import { ResearchLabPanel } from "./research-lab.jsx";
+import { LabPage, ProPage, VerdictPanel, ResearchIndexPage } from "./dashboard-pages.jsx";
+import { DASHBOARD_ROUTE_CONTRACTS, DASHBOARD_TAB_GROUPS, routeContract, normalizeDashboardTabKey } from "./ui-contract.jsx";
+import { UiStateBlock, MetricList } from "./ui-state.jsx";
 const { useState: useState_a, useEffect: useEffect_a, useCallback: useCallback_a } = React;
 
 function App() {
@@ -49,9 +52,9 @@ function App() {
   // 상단 탭: "evolution"(진화 대시보드·기본) | "backtest" | "simulation".
   //   localStorage 로 새로고침 후에도 마지막 탭 유지. useBackend(WS)는 App 레벨에
   //   그대로 두어 어느 탭에 있어도 진화 상태 수신이 끊기지 않는다.
-  const [activeTab, setActiveTab] = useState_a(() => localStorage.getItem("stom_active_tab") || "evolution");
+  const [activeTab, setActiveTab] = useState_a(() => normalizeDashboardTabKey(localStorage.getItem("stom_active_tab") || "evolution"));
   // Phase6.1 — 시뮬 탭 keep-alive: 한 번 방문하면 언마운트하지 않고 hidden 처리(상태 유지).
-  const [simVisited, setSimVisited] = useState_a(() => (localStorage.getItem("stom_active_tab") || "evolution") === "simulation");
+  const [simVisited, setSimVisited] = useState_a(() => normalizeDashboardTabKey(localStorage.getItem("stom_active_tab") || "evolution") === "simulation");
   useEffect_a(() => { if (activeTab === "simulation") setSimVisited(true); }, [activeTab]);
 
   const { state: liveState, health, wsStatus, configSpec, send, lastReply, reconnect } = useBackend(baseUrl);
@@ -159,38 +162,37 @@ function App() {
 
   const pct = state.max_generations > 0 ? Math.min(100, (state.current_gen / state.max_generations) * 100) : 0;
   const isIdle = state.status === "idle" && state.generations.length === 0 && !running;
+  const activeRoute = routeContract(activeTab);
+  const shellMetrics = [
+    { label: "route", value: activeRoute.badge || activeTab },
+    { label: "group", value: activeRoute.group || "—" },
+    { label: "status", value: state.status || "—" },
+    { label: "run", value: selectedRun ? "archive" : "LIVE" },
+  ];
 
   return (
-    <div style={{ minHeight: "100vh", padding: "16px", maxWidth: 1600, margin: "0 auto" }}>
+    <div className="stom-app-shell">
 
       {/* ============= TOP BAR ============= */}
-      <header style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <header className="stom-shell">
+        <div className="stom-shell-top">
+          <div className="stom-shell-brand">
             <Logo />
-            <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
-              <h1 style={{ fontSize: 15, letterSpacing: ".01em" }}>
-                STOM AI · 조건식 자율 진화 대시보드
-              </h1>
-              <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", letterSpacing: ".08em" }}>
+            <div className="stom-shell-title">
+              <h1>STOM AI · 조건식 자율 진화 대시보드</h1>
+              <span className="mono">
                 autonomous_strategy_loop · contract_v{health.contract_version ?? state.contract_version ?? 1}
               </span>
             </div>
-            {/* Phase9(2026-06-13) — SPA 6탭 통합: 별도 HTML 풀 리로드 하드링크(연구실/
-                리서치프로/결정)를 제거. 네비는 아래 탭바(TabNav)가 전담하고, 여기는
-                "현재 위치"만 표시하는 브레드크럼으로 축소(이중 진입·명명 혼란 제거). */}
             <nav className="stom-pagenav mono" aria-label="현재 위치">
               <span className="stom-pagenav-item stom-pagenav-active"
-                    title="현재 보고 있는 탭(아래 탭바로 전환)">
-                {(() => {
-                  const cur = STOM_TABS.find(t => t.key === activeTab);
-                  return cur ? `${cur.icon} ${cur.label}` : "STOM";
-                })()}
+                    title={activeRoute.contract || "현재 보고 있는 탭"}>
+                {activeRoute.icon} {activeRoute.label}
               </span>
             </nav>
           </div>
 
-          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <div className="stom-shell-controls">
             <ThemeToggle theme={theme} onChange={setTheme} />
             <BaseUrlControl
               value={pendingBase}
@@ -203,18 +205,19 @@ function App() {
           </div>
         </div>
 
+        <div className="stom-shell-context">
+          <UiStateBlock kind="info" compact title={activeRoute.group || "Dashboard"} detail={activeRoute.key || activeTab}>
+            {activeRoute.contract || "STOM dashboard route"}
+          </UiStateBlock>
+          <MetricList items={shellMetrics} />
+        </div>
+
         {/* ===== 탭 내비게이션 (전 탭 공통, 브랜드 행 바로 아래) ===== */}
         <TabNav activeTab={activeTab} onSelect={setActiveTab} />
 
         {/* 진화 컨트롤 스트립(진행도/run 셀렉터/시작·정지)은 진화 탭에서만 노출 */}
         {activeTab === "evolution" && (
-        <div style={{
-          display: "flex", alignItems: "center", gap: 14,
-          padding: "12px 16px",
-          background: "var(--bg-1)",
-          border: "1px solid var(--line-1)",
-          borderRadius: 8,
-        }}>
+        <div className="stom-run-strip">
           <div style={{ minWidth: 200 }}>
             <div className="stat-label" style={{ marginBottom: 4 }}>진행도</div>
             <div className="mono" style={{ fontSize: 15, color: "var(--ink-0)" }}>
@@ -269,31 +272,23 @@ function App() {
           <BacktestTab baseUrl={baseUrl} wsStatus={wsStatus} />
         </ErrorBoundary>
       ) : activeTab === "simulation" ? null
-        /* Phase9 — SPA 6탭: 연구실/분석 프로/결정 이력은 dashboard-pages.jsx 전역을
-           마운트. 전역 부재 시(로드 순서 이상) 크래시 대신 자리표시자. */
+        /* Phase9/Remodel — SPA 증거 워크스페이스 탭은 dashboard-pages.jsx 컴포넌트를
+           직접 import해 auto-mount 시점에도 Lab/Records/Pro/Verdict가 즉시 렌더된다. */
         : activeTab === "lab" ? (
         <ErrorBoundary>
-          {window.LabPage
-            ? <window.LabPage baseUrl={baseUrl} />
-            : <div className="research-empty" style={{ padding: "12px 16px" }}>연구실 로딩 중…</div>}
+          <LabPage baseUrl={baseUrl} onNavigate={setActiveTab} />
         </ErrorBoundary>
       ) : activeTab === "pro" ? (
         <ErrorBoundary>
-          {window.ProPage
-            ? <window.ProPage baseUrl={baseUrl} />
-            : <div className="research-empty" style={{ padding: "12px 16px" }}>분석 프로 로딩 중…</div>}
+          <ProPage baseUrl={baseUrl} onNavigate={setActiveTab} />
         </ErrorBoundary>
       ) : activeTab === "verdict" ? (
         <ErrorBoundary>
-          {window.VerdictPanel
-            ? <window.VerdictPanel baseUrl={baseUrl} />
-            : <div className="research-empty" style={{ padding: "12px 16px" }}>결정 이력 로딩 중…</div>}
+          <VerdictPanel baseUrl={baseUrl} onNavigate={setActiveTab} />
         </ErrorBoundary>
       ) : activeTab === "records" ? (
         <ErrorBoundary>
-          {window.ResearchIndexPage
-            ? <window.ResearchIndexPage baseUrl={baseUrl} />
-            : <div className="research-empty" style={{ padding: "12px 16px" }}>연구 기록 인덱스 로딩 중…</div>}
+          <ResearchIndexPage baseUrl={baseUrl} onNavigate={setActiveTab} />
         </ErrorBoundary>
       ) : activeTab === "process" ? (
         <ErrorBoundary>
@@ -444,35 +439,35 @@ function App() {
 // Phase9(2026-06-13) — SPA 6탭 통합: 별도 HTML(lab/pro/verdict)을 인페이지 탭으로
 //   승격해 풀 리로드·중복 진입을 제거. lab/pro/verdict 본문은 dashboard-pages.jsx
 //   전역(window.LabPage / ProPage / VerdictPanel)이 담당한다.
-const STOM_TABS = [
-  { key: "evolution", label: "진화 대시보드", icon: "🧬" },
-  { key: "backtest", label: "백테스트", icon: "📊" },
-  { key: "simulation", label: "차트 시뮬레이션", icon: "📈" },
-  { key: "lab", label: "연구실", icon: "🔬" },
-  { key: "records", label: "기록 인덱스", icon: "IDX" },
-  { key: "pro", label: "분석 프로", icon: "📊" },
-  { key: "verdict", label: "결정 이력", icon: "⚖️" },
-  { key: "process", label: "프로세스 흐름", icon: "🗺️" },
-];
+const STOM_TABS = DASHBOARD_ROUTE_CONTRACTS;
 
 function TabNav({ activeTab, onSelect }) {
   return (
     <nav role="tablist" aria-label="대시보드 탭" className="stom-tabnav">
-      {STOM_TABS.map(tab => {
-        const active = activeTab === tab.key;
-        return (
-          <button
-            key={tab.key}
-            role="tab"
-            aria-selected={active}
-            className={"stom-tab" + (active ? " stom-tab-active" : "")}
-            onClick={() => onSelect(tab.key)}
-          >
-            <span className="stom-tab-ico" aria-hidden="true">{tab.icon}</span>
-            {tab.label}
-          </button>
-        );
-      })}
+      {DASHBOARD_TAB_GROUPS.map(group => (
+        <div key={group.key} className="stom-tabgroup" data-group={group.key}>
+          <span className="stom-tabgroup-label mono">{group.label}</span>
+          <div className="stom-tabgroup-items">
+            {group.tabs.map(key => STOM_TABS.find(tab => tab.key === key)).filter(Boolean).map(tab => {
+              const active = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  role="tab"
+                  aria-selected={active}
+                  className={"stom-tab" + (active ? " stom-tab-active" : "")}
+                  onClick={() => onSelect(tab.key)}
+                  title={tab.contract}
+                >
+                  <span className="stom-tab-ico" aria-hidden="true">{tab.icon}</span>
+                  <span className="stom-tab-label">{tab.label}</span>
+                  <span className="stom-tab-badge mono">{tab.badge}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </nav>
   );
 }

@@ -58,7 +58,7 @@ class TestDashboardPages:
         assert "function VerdictPanel(" in src
         assert "function ResearchIndexPage(" in src
         # window 전역 노출.
-        assert "Object.assign(window, { LabPage, ProPage, VerdictPanel, ResearchIndexPage })" in src
+        assert "Object.assign(window, { LabPage, ProPage, VerdictPanel, ResearchIndexPage, normalizeVerdictSubtab })" in src
 
     def test_verdict_append_only_post_and_checklist(self) -> None:
         src = _read("dashboard-pages.jsx")
@@ -139,22 +139,22 @@ class TestDashboardPages:
 
 # =================================================================== app.jsx
 class TestAppTabs:
-    def test_stom_tabs_has_eight_entries(self) -> None:
-        src = _read("app.jsx")
-        block = src.split("const STOM_TABS", 1)[1].split("];", 1)[0]
+    def test_route_contract_has_eight_entries(self) -> None:
+        contract = _read("ui-contract.jsx")
         for key in ('"evolution"', '"backtest"', '"simulation"',
                     '"lab"', '"records"', '"pro"', '"verdict"', '"process"'):
-            assert key in block, f"STOM_TABS 누락: {key}"
-        # 8개 탭 엔트리(key: 줄 기준) — 기록 인덱스(records) 포함.
-        key_lines = [ln for ln in block.splitlines() if "key:" in ln]
+            assert key in contract, f"route contract 누락: {key}"
+        key_lines = [ln for ln in contract.split("const DASHBOARD_ROUTE_CONTRACTS = [", 1)[1].split("];", 1)[0].splitlines() if "key:" in ln]
         assert len(key_lines) == 8, f"탭 개수 8 아님: {len(key_lines)}"
+        assert "DASHBOARD_TAB_GROUPS" in contract and "EVIDENCE_WORKSPACE_LINKS" in contract
 
     def test_mounts_page_globals(self) -> None:
         src = _read("app.jsx")
-        assert "window.LabPage" in src
-        assert "window.ProPage" in src
-        assert "window.VerdictPanel" in src
-        assert "window.ResearchIndexPage" in src
+        assert 'from "./dashboard-pages.jsx"' in src
+        assert "<LabPage" in src
+        assert "<ProPage" in src
+        assert "<VerdictPanel" in src
+        assert "<ResearchIndexPage" in src
         # 각각 activeTab 조건으로 마운트.
         assert 'activeTab === "lab"' in src
         assert 'activeTab === "pro"' in src
