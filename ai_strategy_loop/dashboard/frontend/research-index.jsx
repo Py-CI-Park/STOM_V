@@ -30,6 +30,12 @@ const RIX_AUTHORITY_LABELS = {
   historical_planning_context: "historical context",
 };
 
+const RIX_SORT_LABELS = {
+  updated_desc: "updated ↓",
+  title_asc: "title A-Z",
+  kind_asc: "kind/source",
+};
+
 function _rixBase(baseUrl) {
   if (baseUrl) return baseUrl;
   return (typeof window !== "undefined" && window.location && window.location.origin) || "";
@@ -81,6 +87,8 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
   const [query, setQuery] = useState_rix("");
   const [kind, setKind] = useState_rix("all");
   const [canonicality, setCanonicality] = useState_rix("all");
+  const [sortKey, setSortKey] = useState_rix("updated_desc");
+  const [displayLimit, setDisplayLimit] = useState_rix(initialLimit);
   const detailRequestSeq = useRef_rix(0);
 
   useEffect_rix(() => {
@@ -122,10 +130,26 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
         .join("\n").toLowerCase();
       return hay.includes(q);
     });
+    rows.sort((a, b) => {
+      if (sortKey === "title_asc") return String(a.title || a.id).localeCompare(String(b.title || b.id), "ko-KR");
+      if (sortKey === "kind_asc") {
+        const ak = `${a.kind || ""}:${a.canonicality || ""}:${a.title || a.id}`;
+        const bk = `${b.kind || ""}:${b.canonicality || ""}:${b.title || b.id}`;
+        return ak.localeCompare(bk, "ko-KR");
+      }
+      const at = Date.parse(a.updated_at || "") || 0;
+      const bt = Date.parse(b.updated_at || "") || 0;
+      return bt - at;
+    });
     return rows;
-  }, [records, query, kind, canonicality]);
+  }, [records, query, kind, canonicality, sortKey]);
 
-  const visibleRows = useMemo_rix(() => filtered.slice(0, initialLimit), [filtered, initialLimit]);
+  useEffect_rix(() => {
+    setDisplayLimit(initialLimit);
+  }, [query, kind, canonicality, sortKey, initialLimit]);
+
+  const visibleRows = useMemo_rix(() => filtered.slice(0, displayLimit), [filtered, displayLimit]);
+
 
   useEffect_rix(() => {
     const requestId = detailRequestSeq.current + 1;
@@ -209,6 +233,13 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                   <option value="stale">stale</option>
                 </select>
               </label>
+              <label>sort
+                <select value={sortKey} onChange={e => setSortKey(e.target.value)}>
+                  {Object.entries(RIX_SORT_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </label>
             </div>
             <div className="research-index-kpis">
               <span>rows <b>{records.length}</b></span>
@@ -218,6 +249,7 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
               <span>update_log <b>{sourceCounts.update_log}</b></span>
               <span>registry <b>{sourceCounts.registry}</b></span>
               {cacheInfo && <span>cache <b>{cacheInfo.hit ? "hit" : "miss"}</b> · sources {cacheInfo.sources}</span>}
+              <span>cap <b>{displayLimit}</b>{filtered.length > displayLimit ? " windowed" : ""}</span>
             </div>
             {errors.length > 0 && (
               <div className="research-index-warning">
@@ -244,6 +276,12 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                   </button>
                 ))}
                 {visibleRows.length === 0 && <UiStateBlock kind="empty" compact title="No matching research records.">검색어와 필터를 조정하세요.</UiStateBlock>}
+                {visibleRows.length < filtered.length && (
+                  <button type="button" className="btn ghost sm research-index-more"
+                          onClick={() => setDisplayLimit(v => Math.min(filtered.length, v + initialLimit))}>
+                    더 보기 {visibleRows.length}/{filtered.length}
+                  </button>
+                )}
               </div>
               <div className="research-index-detail">
                 {selectedRow ? (

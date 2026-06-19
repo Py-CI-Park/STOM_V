@@ -713,6 +713,9 @@ function ProcessFlowPanel({ state }) {
   const activeStep = currentStep >= 0 ? FLOW_STEPS[currentStep] : null;
   const latestPhase = state?.latest?.phase || "—";
   const lastLog = logs.length ? logs[logs.length - 1] : "로그 대기중…";
+  const flowMode = running ? "live" : (state?.run_id ? "archive/read-only" : "idle");
+  const logWindow = logs.slice(-50);
+  const progressLabel = stepsDone > 0 ? `${stepsDone}/${totalSteps}` : "0/5";
   const timingRows = FLOW_STEPS.map((step, index) => {
     const status = flowStepStatus(index, currentStep);
     const doneSec = stepTimings ? stepTimings[step.timingKey] : undefined;
@@ -777,9 +780,19 @@ function ProcessFlowPanel({ state }) {
           <small>읽기 전용 라이브 상태를 다이어그램과 iframe에 동시 반영</small>
         </div>
         <div>
+          <span>state mode</span>
+          <b>{flowMode}</b>
+          <small>live/archive/idle 구분으로 상태 오해를 방지</small>
+        </div>
+        <div>
           <span>active phase</span>
           <b>{activeStep ? `${currentStep + 1}. ${activeStep.label}` : "미정"}</b>
           <small>{phaseElapsed != null ? `현재 단계 경과 ${fmtElapsedSec(phaseElapsed)}` : "단계 경과 대기"}</small>
+        </div>
+        <div>
+          <span>discrete progress</span>
+          <b>{progressLabel}</b>
+          <small>연속 예측이 아닌 current_step 기반 단계 진행률</small>
         </div>
         <div>
           <span>timing rows</span>
@@ -789,7 +802,7 @@ function ProcessFlowPanel({ state }) {
         <div>
           <span>recent logs</span>
           <b>{logs.length}</b>
-          <small>최근 로그는 하단 패널에서 자동 스크롤</small>
+          <small>최근 {logWindow.length}줄을 하단 패널에서 자동 스크롤</small>
         </div>
       </div>
       {/* P11 — 평면 .process-box 행을 SVG 노드+화살표 플로우 다이어그램으로 교체.
@@ -811,9 +824,9 @@ function ProcessFlowPanel({ state }) {
         ))}
       </div>
       <div className="process-log-pane" ref={logRef}>
-        {logs.length === 0
+        {logWindow.length === 0
           ? <span className="process-log-empty">로그 대기중…</span>
-          : logs.map((line, i) => <div key={i}>{line}</div>)
+          : logWindow.map((line, i) => <div key={i}>{line}</div>)
         }
       </div>
     </div>

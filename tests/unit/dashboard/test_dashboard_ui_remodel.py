@@ -58,14 +58,29 @@ def test_evidence_workspace_labels_each_owner_surface() -> None:
     src = _read("dashboard-pages.jsx")
     assert "EvidenceWorkspaceHeader" in src
     assert "EvidenceWorkspaceCards" in src
+    assert "OWNER MATRIX" in src
     assert "Records는 전체 조회" in src
-    assert "분석 프로는 워크벤치" in src
-    assert "append-only 감사 trail" in src
+    assert "분석 워크벤치는 후보 분석" in src
+    assert "append-only trail" in src
+    assert "workspace-owner-boundary" in src
     for active in ('activeKey="records"', 'activeKey="lab"', 'activeKey="pro"', 'activeKey="verdict"'):
         assert active in src
     assert "normalizeVerdictSubtab" in src
     assert 'VERDICT_SUBTAB_KEYS = ["summary", "regime", "portfolio", "decide"]' in src
 
+
+def test_phase2_inventory_gate_pins_owner_files_and_thresholds() -> None:
+    src = _read("dashboard-inventory.jsx")
+    for key in ('key: "evolution"', 'key: "process"', 'key: "records"', 'key: "pro"', 'key: "verdict"'):
+        assert key in src
+    for owner_file in ("research-index.jsx", "rp-panel.jsx", "chart-hall-of-fame.jsx", "table.jsx"):
+        assert owner_file in src
+    assert "PHASE2_SOURCE_INVENTORY" in src
+    assert "LARGE_LIST_PERF_TARGETS" in src
+    assert "visibleLimit: 80" in src
+    assert "duplicate_cleanup" in src
+    assert "Phase2InventoryPanel" in src
+    assert "pageOwnerContract" in src
 
 def test_hof_inventory_gate_blocks_merge_without_field_contract() -> None:
     gate = _read("hof-inventory.jsx")
@@ -94,6 +109,10 @@ def test_hof_inventory_gate_blocks_merge_without_field_contract() -> None:
     assert "HofInventoryGate" in chart
     assert "HofInventoryGate" in _read("dashboard-pages.jsx")
     assert "<HofInventoryGate />" in _read("dashboard-pages.jsx")
+    assert "HOF_FIELD_GROUPS" in gate
+    assert "HOF_WORKBENCH_ACTIONS" in gate
+    assert "조건 후보 열기" in gate
+    assert "즉시 백테스트 연결" in gate
 
 
 def test_visual_quality_surface_pins_baselines_and_perf_budgets() -> None:
@@ -104,6 +123,16 @@ def test_visual_quality_surface_pins_baselines_and_perf_budgets() -> None:
         assert surface in src
     assert "no-dependency windowing" in src
 
+def test_records_lookup_has_sort_and_windowing_controls() -> None:
+    src = _read("research-index.jsx")
+    assert "RIX_SORT_LABELS" in src
+    assert "updated_desc" in src and "title_asc" in src and "kind_asc" in src
+    assert "displayLimit" in src
+    assert "더 보기" in src
+    assert "detailRequestSeq" in src
+    assert "research-index-pre" in src
+
+
 
 def test_process_flow_growth_keeps_readonly_state_contract() -> None:
     src = _read("phase-detail.jsx")
@@ -112,3 +141,6 @@ def test_process_flow_growth_keeps_readonly_state_contract() -> None:
     assert "step_timings 누적" in src
     assert "ProcessFlowDiagram" in src
     assert "<iframe" not in src  # iframe remains app.jsx route chrome, not process component state mutation.
+    assert "state mode" in src
+    assert "discrete progress" in src
+    assert "logWindow = logs.slice(-50)" in src
