@@ -16,14 +16,18 @@
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
 import { ResearchWikiPanel } from "./research-wiki.jsx";
 import { ResearchIndexPanel } from "./research-index.jsx";
+import { EVIDENCE_WORKSPACE_LINKS } from "./ui-contract.jsx";
+import { UiStateBlock, WorkspaceCard, WorkspaceNav } from "./ui-state.jsx";
+import { VisualQualityPanel } from "./visual-quality.jsx";
+import { HofInventoryGate } from "./hof-inventory.jsx";
 const { useState: useState_dp, useEffect: useEffect_dp } = React;
 
 // 의존 전역이 아직 로드되지 않았을 때(이론상) 크래시 대신 보이는 작은 자리표시자.
 function _DpLoading({ name }) {
   return (
-    <div className="research-empty" style={{ padding: "12px 16px" }}>
-      {name} 로딩 중…
-    </div>
+    <UiStateBlock kind="loading" compact title={`${name} 로딩 중…`} detail="window global pending">
+      번들 로드 순서가 맞으면 곧 표시됩니다.
+    </UiStateBlock>
   );
 }
 
@@ -31,6 +35,59 @@ function _DpLoading({ name }) {
 function _dpBase(baseUrl) {
   if (baseUrl) return baseUrl;
   return (typeof window !== "undefined" && window.location && window.location.origin) || "";
+}
+function _dpNavigateToTab(key) {
+  try {
+    window.localStorage.setItem("stom_active_tab", key);
+    if (window.location && !window.location.pathname.endsWith("/ui/")) {
+      window.location.href = "/ui/";
+    }
+  } catch (e) {}
+}
+const VERDICT_SUBTAB_KEYS = ["summary", "regime", "portfolio", "decide"];
+function normalizeVerdictSubtab(value) {
+  return VERDICT_SUBTAB_KEYS.includes(value) ? value : "summary";
+}
+
+
+function EvidenceWorkspaceHeader({ activeKey, onSelect }) {
+  const nav = onSelect || _dpNavigateToTab;
+  return (
+    <div className="evidence-workspace-head">
+      <div>
+        <div className="workspace-kicker mono">EVIDENCE WORKSPACE</div>
+        <h2>기록 · 연구 · 분석 · 결정 역할 맵</h2>
+        <p>
+          Records는 전체 조회, 연구실은 위키/컨텍스트, 분석 프로는 워크벤치, 결정 이력은 append-only 감사 trail입니다.
+        </p>
+      </div>
+      <WorkspaceNav items={EVIDENCE_WORKSPACE_LINKS} activeKey={activeKey} onSelect={nav} />
+    </div>
+  );
+}
+
+function EvidenceWorkspaceCards({ onSelect }) {
+  const nav = onSelect || _dpNavigateToTab;
+  return (
+    <div className="evidence-workspace-grid">
+      <WorkspaceCard eyebrow="LOOKUP" title="기록 인덱스" badge="read-only" tone="info"
+                     action={<button className="btn ghost sm" onClick={() => nav("records")}>열기</button>}>
+        campaign, docs, update_log, registry lineage를 한 곳에서 검색합니다. Raw markdown은 inert text로만 표시합니다.
+      </WorkspaceCard>
+      <WorkspaceCard eyebrow="CURATED" title="연구실" badge="wiki/context" tone="success"
+                     action={<button className="btn ghost sm" onClick={() => nav("lab")}>열기</button>}>
+        연구 위키, AI 컨텍스트 팩, run 분석 홈을 담당합니다. 생성/판정 루프와 분리해 탐색 흐름을 안정화합니다.
+      </WorkspaceCard>
+      <WorkspaceCard eyebrow="WORKBENCH" title="분석 프로" badge="pro" tone="pending"
+                     action={<button className="btn ghost sm" onClick={() => nav("pro")}>열기</button>}>
+        조건 후보 분석과 워크벤치 액션을 담당합니다. 벤치마크 HoF와 병합하기 전에 필드 계약을 먼저 잠급니다.
+      </WorkspaceCard>
+      <WorkspaceCard eyebrow="AUDIT" title="결정 이력" badge="append-only" tone="demo"
+                     action={<button className="btn ghost sm" onClick={() => nav("verdict")}>열기</button>}>
+        운영 판단은 삭제/덮어쓰기 없이 append-only 이력으로 남깁니다. UI 정리는 감사 trail을 바꾸지 않습니다.
+      </WorkspaceCard>
+    </div>
+  );
 }
 
 /* G-3 — run 종류 뱃지(접두 휴리스틱). lab.html 에서 추출(동일 의미 유지). */
@@ -93,7 +150,7 @@ function _DpSidebar({ runs, runId, setRunId, ops, verdict }) {
   );
 }
 
-function LabPage({ baseUrl }) {
+function LabPage({ baseUrl, onNavigate }) {
   const base = _dpBase(baseUrl);
   const [runs, setRuns] = useState_dp([]);
   const [runId, setRunId] = useState_dp("");
@@ -118,43 +175,48 @@ function LabPage({ baseUrl }) {
 
   const Panel = window.ResearchLabPanel;
   return (
-    <div style={{ display: "flex", gap: 14, padding: "12px 0", minHeight: "60vh" }}>
-      <_DpSidebar runs={runs} runId={runId} setRunId={setRunId} ops={ops} verdict={verdict} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
-          <b style={{ fontSize: 15 }}>STOM Research Lab</b>
-          <span className="mono" style={{ marginLeft: 10, fontSize: 11, opacity: 0.7 }}>{runId}</span>
+    <div className="dashboard-page dashboard-page-lab">
+      <EvidenceWorkspaceHeader activeKey="lab" onSelect={onNavigate} />
+      <EvidenceWorkspaceCards onSelect={onNavigate} />
+      <div style={{ display: "flex", gap: 14, padding: "12px 0", minHeight: "60vh" }}>
+        <_DpSidebar runs={runs} runId={runId} setRunId={setRunId} ops={ops} verdict={verdict} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="dashboard-page-title">
+            <b>STOM Research Lab</b>
+            <span className="mono">{runId}</span>
+          </div>
+          {Panel
+            ? <Panel baseUrl={base} wsStatus="na" runId={runId} />
+            : <_DpLoading name="연구실 패널" />}
+          {window.ResearchWikiPanel && (
+            <div style={{ marginTop: 14 }}>
+              <ResearchWikiPanel baseUrl={base} wsStatus="na" runId={runId} />
+            </div>
+          )}
+          {window.ResearchIndexPanel && (
+            <div style={{ marginTop: 14 }}>
+              <ResearchIndexPanel baseUrl={base} wsStatus="na" />
+            </div>
+          )}
+          {window.AIContextPanel && (
+            <div style={{ marginTop: 14 }}>
+              <AIContextPanel baseUrl={base} wsStatus="na" runId={runId} genNo={null} />
+            </div>
+          )}
+          <div style={{ marginTop: 14 }}>
+            <VisualQualityPanel compact />
+          </div>
         </div>
-        {Panel
-          ? <Panel baseUrl={base} wsStatus="na" runId={runId} />
-          : <_DpLoading name="연구실 패널" />}
-        {/* P1(2026-06-14): ResearchWiki + AIContext 의 전용 홈 — 진화 사이드바 중복 제거(P2)의
-            선행 작업. 진화 사이드바와 동일 백엔드 컨텍스트 props(baseUrl/wsStatus/runId[+genNo])로
-            연구실 탭 본문에 가산 렌더. (가산 단계 — 사이드바는 P2 에서 제거.) */}
-        {window.ResearchWikiPanel && (
-          <div style={{ marginTop: 14 }}>
-            <ResearchWikiPanel baseUrl={base} wsStatus="na" runId={runId} />
-          </div>
-        )}
-        {window.ResearchIndexPanel && (
-          <div style={{ marginTop: 14 }}>
-            <ResearchIndexPanel baseUrl={base} wsStatus="na" />
-          </div>
-        )}
-        {window.AIContextPanel && (
-          <div style={{ marginTop: 14 }}>
-            <AIContextPanel baseUrl={base} wsStatus="na" runId={runId} genNo={null} />{/* null=gen 필터 없이 최신 컨텍스트(lab 탭엔 활성 세대 없음) */}
-          </div>
-        )}
       </div>
     </div>
   );
 }
 
-function ResearchIndexPage({ baseUrl }) {
+function ResearchIndexPage({ baseUrl, onNavigate }) {
   const base = _dpBase(baseUrl);
   return (
-    <div style={{ padding: "12px 0", minHeight: "60vh" }}>
+    <div className="dashboard-page dashboard-page-records" style={{ padding: "12px 0", minHeight: "60vh" }}>
+      <EvidenceWorkspaceHeader activeKey="records" onSelect={onNavigate} />
       <div className="research-index-page-head">
         <b>STOM 연구 기록 인덱스</b>
         <span className="mono">campaign · docs · update_log · registry lineage</span>
@@ -166,7 +228,7 @@ function ResearchIndexPage({ baseUrl }) {
 
 // ============================================================= ProPage (분석 프로)
 // pro.html 의 ProRoot 를 추출. props: {baseUrl}.
-function ProPage({ baseUrl }) {
+function ProPage({ baseUrl, onNavigate }) {
   const base = _dpBase(baseUrl);
   const [runId, setRunId] = useState_dp("");
   useEffect_dp(() => {
@@ -181,11 +243,13 @@ function ProPage({ baseUrl }) {
 
   const Panel = window.ResearchProPanel;
   return (
-    <div style={{ minHeight: "60vh" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0",
-                    borderBottom: "1px solid rgba(255,255,255,0.08)", marginBottom: 8 }}>
-        <b style={{ fontSize: 15 }}>STOM 리서치 프로</b>
+    <div className="dashboard-page dashboard-page-pro" style={{ minHeight: "60vh" }}>
+      <EvidenceWorkspaceHeader activeKey="pro" onSelect={onNavigate} />
+      <div className="dashboard-page-title">
+        <b>STOM 리서치 프로</b>
+        <span className="mono">analysis workbench · HoF actions</span>
       </div>
+      <HofInventoryGate />
       {Panel
         ? <Panel baseUrl={base} wsStatus="na" runId={runId} />
         : <_DpLoading name="리서치 프로 패널" />}
@@ -204,7 +268,7 @@ function ProPage({ baseUrl }) {
 //   ("already been declared" SyntaxError → 전 앱 크래시). 따라서 별칭 없이 JSX 에서 멤버표현식
 //   `<window.VdtPromoteChecklist .../>` 로 직접 참조한다(window.LabPage 패턴과 동일).
 
-function VerdictPanel({ baseUrl }) {
+function VerdictPanel({ baseUrl, onNavigate }) {
   const base = _dpBase(baseUrl);
   const [v, setV] = useState_dp(null);
   const [history, setHistory] = useState_dp([]);
@@ -217,7 +281,7 @@ function VerdictPanel({ baseUrl }) {
   // 하위 탭 — 다른 탭(연구실)과 동일한 .research-tabs 패턴으로 밀집된 결정 화면을 분류.
   //   summary(검증 결산)·regime(레짐·부활)·portfolio(V6 포트폴리오)·decide(운용 결정).
   const [vsub, setVsub] = useState_dp(() => {
-    try { return window.localStorage.getItem("stom_verdict_subtab") || "summary"; }
+    try { return normalizeVerdictSubtab(window.localStorage.getItem("stom_verdict_subtab") || "summary"); }
     catch (e) { return "summary"; }
   });
   const selectVsub = (k) => {
@@ -272,12 +336,11 @@ function VerdictPanel({ baseUrl }) {
   ];
 
   return (
-    <div style={{ padding: "14px 0", maxWidth: 980, margin: "0 auto", minHeight: "60vh" }}>
-      <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
-        <b style={{ fontSize: 16 }}>검증 결산과 운용 결정 (V6)</b>
-        <span className="mono" style={{ marginLeft: 10, fontSize: 11, color: "var(--ink-3)" }}>
-          증거 → 결정(append-only) 워크플로우
-        </span>
+    <div className="dashboard-page dashboard-page-verdict" style={{ padding: "14px 0", maxWidth: 980, margin: "0 auto", minHeight: "60vh" }}>
+      <EvidenceWorkspaceHeader activeKey="verdict" onSelect={onNavigate} />
+      <div className="dashboard-page-title">
+        <b>검증 결산과 운용 결정 (V6)</b>
+        <span className="mono">증거 → 결정(append-only) 워크플로우</span>
       </div>
 
       {/* 하위 탭바 — 다른 탭(연구실)과 동일한 .research-tabs 패턴으로 체계화. */}
@@ -498,7 +561,7 @@ function VerdictPanel({ baseUrl }) {
   );
 }
 
-Object.assign(window, { LabPage, ProPage, VerdictPanel, ResearchIndexPage });
+Object.assign(window, { LabPage, ProPage, VerdictPanel, ResearchIndexPage, normalizeVerdictSubtab });
 
 // Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
-export { LabPage, ProPage, VerdictPanel, ResearchIndexPage };
+export { LabPage, ProPage, VerdictPanel, ResearchIndexPage, normalizeVerdictSubtab };

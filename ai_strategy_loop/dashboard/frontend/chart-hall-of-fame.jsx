@@ -6,6 +6,7 @@
    - HallOfFamePanel 본문은 field-diff DEFER 결정에 따라 byte-identical 로 이동만 한다(병합/수정 금지).
 */
 import { LegendDot } from "./chart-primitives.jsx";
+import { HofInventoryGate } from "./hof-inventory.jsx";
 
 // HallOfFamePanel · ReferenceGallery 가 쓰는 React hook 별칭(이동 시 각 모듈이 자체 선언).
 const { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq } = React;
@@ -122,6 +123,7 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
           목적: 벤치마크 성과판입니다. 인간 reference·시드·AI 생성 전략을 한 테이블에서 비교하되,
           조건식 편집/즉시 백테스트 워크벤치는 분석 프로 명예의 전당이 담당합니다.
         </div>
+        <HofInventoryGate compact />
         {/* 정렬/필터 컨트롤 */}
         <div style={{ display: "flex", gap: 16, marginBottom: 12, flexWrap: "wrap", alignItems: "center" }}>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>

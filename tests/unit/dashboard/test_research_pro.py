@@ -117,11 +117,12 @@ class TestResearchProSource:
         assert "/ui/pro.html" in src
 
     def test_app_jsx_links_research_pro(self):
-        # Phase9(2026-06-13) — SPA 6탭 통합: app.jsx 의 pro.html 풀 리로드 하드링크는
-        #   제거됐다. 대신 인페이지 탭으로 window.ProPage 를 마운트한다(단일 SPA).
+        # Phase9/Remodel — pro.html 풀 리로드 하드링크는 제거됐고, app.jsx 는
+        #   dashboard-pages.jsx 의 ProPage 를 직접 import해 인페이지 탭으로 마운트한다.
         src = _read_front("app.jsx")
         assert "/ui/pro.html" not in src
-        assert "window.ProPage" in src
+        assert 'from "./dashboard-pages.jsx"' in src
+        assert "<ProPage" in src
         assert 'activeTab === "pro"' in src
 
     def test_pro_html_mounts_panel(self):

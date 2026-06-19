@@ -3,6 +3,7 @@
  * Read-only UI over /research_index + /research_index/detail.  The panel intentionally
  * renders markdown as inert <pre> text and loads row details only after selection.
  */
+import { UiStateBlock } from "./ui-state.jsx";
 const { useState: useState_rix, useEffect: useEffect_rix, useMemo: useMemo_rix, useRef: useRef_rix } = React;
 
 const RIX_KIND_LABELS = {
@@ -175,9 +176,9 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
           All-record lookup across campaigns, docs, update logs, and allowlisted registry rows. Raw evidence is linked by lineage only; markdown is rendered as inert text.
         </div>
         {isDemo ? (
-          <div className="research-wiki-empty">Backend connection required for governed research index.</div>
+          <UiStateBlock kind="demo" compact title="Backend connection required">Governed research index is available when the dashboard backend is connected.</UiStateBlock>
         ) : err ? (
-          <div className="research-wiki-empty danger">index query failed: {err}</div>
+          <UiStateBlock kind="error" compact title="index query failed" detail={err}>Refresh after checking backend connectivity.</UiStateBlock>
         ) : (
           <>
             <div className="research-index-controls">
@@ -242,7 +243,7 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                     <small>{_rixShortPath(row.source_path)}</small>
                   </button>
                 ))}
-                {visibleRows.length === 0 && <div className="research-wiki-empty">No matching research records.</div>}
+                {visibleRows.length === 0 && <UiStateBlock kind="empty" compact title="No matching research records.">검색어와 필터를 조정하세요.</UiStateBlock>}
               </div>
               <div className="research-index-detail">
                 {selectedRow ? (
@@ -271,17 +272,17 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                       </div>
                     )}
                     {detailLoading ? (
-                      <div className="research-wiki-empty">Detail loading…</div>
+                      <UiStateBlock kind="loading" compact title="Detail loading…">선택한 기록의 상세를 지연 조회 중입니다.</UiStateBlock>
                     ) : detail && detail.available ? (
                       <pre className="research-index-pre">{detailText}</pre>
                     ) : (
-                      <div className="research-wiki-empty">
-                        {detail ? `Detail unavailable: ${detail.reason || "unknown"}` : "Select a row to lazy-load detail."}
-                      </div>
+                      <UiStateBlock kind={detail ? "error" : "empty"} compact title={detail ? "Detail unavailable" : "Select a row to lazy-load detail"} detail={detail ? (detail.reason || "unknown") : "no selected detail"}>
+                        Raw evidence remains read-only and linked by lineage.
+                      </UiStateBlock>
                     )}
                   </>
                 ) : (
-                  <div className="research-wiki-empty">Select a governed research record.</div>
+                  <UiStateBlock kind="empty" compact title="Select a governed research record.">왼쪽 목록에서 행을 선택하면 상세를 지연 로딩합니다.</UiStateBlock>
                 )}
               </div>
             </div>

@@ -463,10 +463,12 @@ class TestFrontendContract:
     def test_app_jsx_shows_run_label(self):
         src = (FRONTEND / "app.jsx").read_text(encoding="utf-8")
         assert 'r.label ? " · " + r.label : ""' in src
-        # Phase9 — SPA 6탭 통합: 연구실/분석프로/결정이 별도 HTML 하드링크가 아니라
-        #   인페이지 탭(STOM_TABS)으로 통합됐다. 하드링크 페이지네비는 제거됐다.
-        assert 'key: "lab"' in src and 'key: "pro"' in src and 'key: "verdict"' in src
-        assert "window.VerdictPanel" in src
+        # Phase9/Remodel — SPA 탭은 ui-contract.jsx route contract로 통합되고,
+        #   app.jsx는 dashboard-pages.jsx 컴포넌트를 직접 import해 렌더한다.
+        contract = (FRONTEND / "ui-contract.jsx").read_text(encoding="utf-8")
+        assert 'key: "lab"' in contract and 'key: "pro"' in contract and 'key: "verdict"' in contract
+        assert 'from "./dashboard-pages.jsx"' in src
+        assert "<VerdictPanel" in src
 
     def test_phase4_track_a_tabnav_scale_up(self):
         """Phase4 트랙A(2026-06-12) — 전역 UX 스케일 업 계약.
