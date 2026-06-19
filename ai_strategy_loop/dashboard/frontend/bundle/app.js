@@ -1223,7 +1223,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         title: "\uAC8C\uC774\uD2B8\uB97C \uD1B5\uACFC\uD55C \uD751\uC790 \uC804\uB7B5\uC744 \uC810\uC218 \uB0B4\uB9BC\uCC28\uC21C\uC73C\uB85C \uBCF4\uC5EC\uC90D\uB2C8\uB2E4. \uD589\uC744 \uD3BC\uCE58\uBA74 \uB9E4\uC218\xB7\uB9E4\uB3C4 \uC870\uAC74\uC2DD\uACFC \uBCC0\uC218 \uCE69\uC744 \uD655\uC778\uD558\uACE0, '\uBC14\uB85C \uBC31\uD14C\uC2A4\uD2B8'\uB85C \uBC31\uD14C\uC2A4\uD2B8 \uD0ED\uC5D0 \uADF8\uB300\uB85C \uC801\uC7AC\uD569\uB2C8\uB2E4."
       },
       "?"
-    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", style: { marginLeft: "auto" }, onClick: refresh, disabled: isDemo || loading }, loading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "rp-card-bd" }, isDemo ? /* @__PURE__ */ React.createElement("div", { className: "rp-empty" }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uBA85\uC608\uC758 \uC804\uB2F9\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : ai.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "rp-empty" }, "\uAC8C\uC774\uD2B8 \uD1B5\uACFC \uC804\uB7B5\uC774 \uB204\uC801\uB418\uBA74 \uD45C\uC2DC\uB429\uB2C8\uB2E4.", loading ? " (\uB85C\uB529\uC911\u2026)" : "") : /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "rp-table mono" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC885\uB958"), /* @__PURE__ */ React.createElement("th", null, "\uC804\uB7B5(run/gen)"), /* @__PURE__ */ React.createElement("th", null, "\uBC31\uD14C \uAE30\uAC04"), /* @__PURE__ */ React.createElement("th", null, "\uC810\uC218"), /* @__PURE__ */ React.createElement("th", null, "\uCD1D\uC218\uC775"), /* @__PURE__ */ React.createElement("th", null, "\uC218\uC775\uB960"), /* @__PURE__ */ React.createElement("th", null, "\uC5F0\uD658\uC0B0"), /* @__PURE__ */ React.createElement("th", null, "MDD"), /* @__PURE__ */ React.createElement("th", null, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("th", null))), /* @__PURE__ */ React.createElement("tbody", null, ai.map((r) => {
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", style: { marginLeft: "auto" }, onClick: refresh, disabled: isDemo || loading }, loading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "research-index-note" }, "\uBAA9\uC801: Research Pro \uC6CC\uD06C\uBCA4\uCE58\uC6A9 HoF\uC785\uB2C8\uB2E4. \uD589\uC744 \uD3BC\uCCD0 \uC870\uAC74\uC2DD\xB7\uBCC0\uC218\uCE69\uC744 \uAC80\uD1A0\uD558\uACE0 \uBC14\uB85C \uBC31\uD14C\uC2A4\uD2B8\uB85C \uB118\uAE30\uB294 \uD654\uBA74\uC774\uBA70, \uBCA4\uCE58\uB9C8\uD06C \uC804\uCCB4 \uBE44\uAD50\uB294 \uC9C4\uD654 \uB300\uC2DC\uBCF4\uB4DC\uC758 \uC131\uACFC \uBA85\uC608\uC758 \uC804\uB2F9\uC774 \uB2F4\uB2F9\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "rp-card-bd" }, isDemo ? /* @__PURE__ */ React.createElement("div", { className: "rp-empty" }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uBA85\uC608\uC758 \uC804\uB2F9\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : ai.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "rp-empty" }, "\uAC8C\uC774\uD2B8 \uD1B5\uACFC \uC804\uB7B5\uC774 \uB204\uC801\uB418\uBA74 \uD45C\uC2DC\uB429\uB2C8\uB2E4.", loading ? " (\uB85C\uB529\uC911\u2026)" : "") : /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "rp-table mono" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC885\uB958"), /* @__PURE__ */ React.createElement("th", null, "\uC804\uB7B5(run/gen)"), /* @__PURE__ */ React.createElement("th", null, "\uBC31\uD14C \uAE30\uAC04"), /* @__PURE__ */ React.createElement("th", null, "\uC810\uC218"), /* @__PURE__ */ React.createElement("th", null, "\uCD1D\uC218\uC775"), /* @__PURE__ */ React.createElement("th", null, "\uC218\uC775\uB960"), /* @__PURE__ */ React.createElement("th", null, "\uC5F0\uD658\uC0B0"), /* @__PURE__ */ React.createElement("th", null, "MDD"), /* @__PURE__ */ React.createElement("th", null, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("th", null))), /* @__PURE__ */ React.createElement("tbody", null, ai.map((r) => {
       const key = r.run_id + "/" + r.gen_no;
       const isOpen = expanded === key;
       return /* @__PURE__ */ React.createElement(React.Fragment, { key }, /* @__PURE__ */ React.createElement("tr", { className: isOpen ? "rp-row-open" : "" }, /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("span", { className: "rp-kind rp-kind-" + (r.kind || "ai") }, r.kind === "seed" ? "\uC2DC\uB4DC" : "AI")), /* @__PURE__ */ React.createElement("td", { title: r.buy_name || "" }, r.label || key), /* @__PURE__ */ React.createElement("td", null, r.period || "\uAE30\uAC04 \uC815\uBCF4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("td", { style: { color: "var(--teal)" } }, _rpNum(r.score, 3)), /* @__PURE__ */ React.createElement("td", { className: r.total_return_krw > 0 ? "rp-pos" : "rp-neg" }, _rpMoney(r.total_return_krw)), /* @__PURE__ */ React.createElement("td", null, _rpPct(r.total_return_pct)), /* @__PURE__ */ React.createElement("td", { title: r.annual_unreliable ? "\uCC3D \uAE38\uC774 0.25\uB144 \uBBF8\uB9CC \u2014 \uC5F0\uD658\uC0B0 \uACFC\uB300 \uC8FC\uC758" : "" }, _rpPct(r.annual_return_pct), r.annual_unreliable ? " \u26A0" : ""), /* @__PURE__ */ React.createElement("td", { style: { color: "var(--red)" } }, _rpPct(r.mdd_pct)), /* @__PURE__ */ React.createElement("td", null, _rpInt(r.trades)), /* @__PURE__ */ React.createElement("td", { style: { whiteSpace: "nowrap" } }, /* @__PURE__ */ React.createElement(
@@ -3145,6 +3145,18 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       return "";
     }
   }
+  function normalizeFlowStepIndex(rawStep, phase) {
+    let value = Number(rawStep);
+    if (!Number.isInteger(value)) value = phaseIndex(phase);
+    if (!Number.isInteger(value) || value < 0) return -1;
+    return Math.min(FLOW_STEPS.length - 1, value);
+  }
+  function flowStepStatus(index, currentStep) {
+    if (!Number.isInteger(currentStep) || currentStep < 0) return "pending";
+    if (currentStep > index) return "done";
+    if (currentStep === index) return "active";
+    return "pending";
+  }
   function ProcessFlowDiagram({ currentStep, running, phaseElapsed, stepTimings }) {
     const steps = FLOW_STEPS;
     const n = steps.length;
@@ -3215,9 +3227,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     ));
   }
   function ProcessFlowPanel({ state }) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
-    const rawStep = (_a = state == null ? void 0 : state.latest) == null ? void 0 : _a.current_step;
-    const currentStep = rawStep !== void 0 && rawStep !== null ? rawStep : phaseIndex((_b = state == null ? void 0 : state.latest) == null ? void 0 : _b.phase);
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+    const currentStep = normalizeFlowStepIndex((_a = state == null ? void 0 : state.latest) == null ? void 0 : _a.current_step, (_b = state == null ? void 0 : state.latest) == null ? void 0 : _b.phase);
     const logs = (_d = (_c = state == null ? void 0 : state.latest) == null ? void 0 : _c.recent_logs) != null ? _d : [];
     const running = (state == null ? void 0 : state.status) === "running" || (state == null ? void 0 : state.status) === "stopping";
     const phaseStartedAt = (_f = (_e = state == null ? void 0 : state.latest) == null ? void 0 : _e.phase_started_at) != null ? _f : 0;
@@ -3237,6 +3248,15 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     const totalSteps = FLOW_STEPS.length;
     const stepsDone = typeof currentStep === "number" && currentStep >= 0 ? Math.min(totalSteps, currentStep + 1) : 0;
     const progressPct = stepsDone / totalSteps * 100;
+    const activeStep = currentStep >= 0 ? FLOW_STEPS[currentStep] : null;
+    const latestPhase = ((_l = state == null ? void 0 : state.latest) == null ? void 0 : _l.phase) || "\u2014";
+    const lastLog = logs.length ? logs[logs.length - 1] : "\uB85C\uADF8 \uB300\uAE30\uC911\u2026";
+    const timingRows = FLOW_STEPS.map((step, index) => {
+      const status = flowStepStatus(index, currentStep);
+      const doneSec = stepTimings ? stepTimings[step.timingKey] : void 0;
+      const elapsed = status === "active" && phaseElapsed != null ? fmtElapsedSec(phaseElapsed) : typeof doneSec === "number" && doneSec >= 0 ? fmtElapsedSec(doneSec) : "\u2014";
+      return { ...step, index, status, elapsed };
+    });
     const logRef = useRef_ph(null);
     useEffect_ph(() => {
       if (logRef.current) {
@@ -3254,7 +3274,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       height: "100%",
       background: "var(--amber)",
       transition: "width .3s ease"
-    } })), /* @__PURE__ */ React.createElement(
+    } })), /* @__PURE__ */ React.createElement("div", { className: "process-live-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "\uD604\uC7AC \uB178\uB4DC"), " ", activeStep ? activeStep.label : "\uBBF8\uC815"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "phase"), " ", latestPhase), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "current_step"), " ", currentStep >= 0 ? currentStep : "\u2014"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "\uCD5C\uADFC \uB85C\uADF8"), " ", lastLog)), /* @__PURE__ */ React.createElement(
       ProcessFlowDiagram,
       {
         currentStep,
@@ -3262,7 +3282,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         phaseElapsed,
         stepTimings
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "process-log-pane", ref: logRef }, logs.length === 0 ? /* @__PURE__ */ React.createElement("span", { className: "process-log-empty" }, "\uB85C\uADF8 \uB300\uAE30\uC911\u2026") : logs.map((line, i) => /* @__PURE__ */ React.createElement("div", { key: i }, line))));
+    ), /* @__PURE__ */ React.createElement("div", { className: "process-timing-grid", "aria-label": "\uD504\uB85C\uC138\uC2A4 \uB2E8\uACC4\uBCC4 \uC18C\uC694 \uC2DC\uAC04" }, timingRows.map((row) => /* @__PURE__ */ React.createElement("div", { key: row.timingKey, className: `process-timing-cell ${row.status}`, "data-status": row.status }, /* @__PURE__ */ React.createElement("span", { className: "process-timing-label" }, row.index + 1, ". ", row.label), /* @__PURE__ */ React.createElement("span", { className: "process-timing-value" }, row.elapsed)))), /* @__PURE__ */ React.createElement("div", { className: "process-log-pane", ref: logRef }, logs.length === 0 ? /* @__PURE__ */ React.createElement("span", { className: "process-log-empty" }, "\uB85C\uADF8 \uB300\uAE30\uC911\u2026") : logs.map((line, i) => /* @__PURE__ */ React.createElement("div", { key: i }, line))));
   }
   Object.assign(window, {
     PhaseTimeline,
@@ -3283,6 +3303,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     // #64 — 진행시간 포맷 순수 함수 + 단계 메타 노출(정적·단위 검증 가능).
     fmtElapsedSec,
     fmtClockFromEpoch,
+    normalizeFlowStepIndex,
+    flowStepStatus,
     FLOW_STEPS
   });
 
@@ -5072,7 +5094,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         "data-tip": "\uBA85\uC608\uC758 \uC804\uB2F9 \uC0C8\uB85C\uACE0\uCE68"
       },
       loading ? "\uB85C\uB529\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68"
-    ))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 16, marginBottom: 12, flexWrap: "wrap", alignItems: "center" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase" } }, "\uC815\uB82C"), SORTS.map((s) => /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-index-note" }, "\uBAA9\uC801: \uBCA4\uCE58\uB9C8\uD06C \uC131\uACFC\uD310\uC785\uB2C8\uB2E4. \uC778\uAC04 reference\xB7\uC2DC\uB4DC\xB7AI \uC0DD\uC131 \uC804\uB7B5\uC744 \uD55C \uD14C\uC774\uBE14\uC5D0\uC11C \uBE44\uAD50\uD558\uB418, \uC870\uAC74\uC2DD \uD3B8\uC9D1/\uC989\uC2DC \uBC31\uD14C\uC2A4\uD2B8 \uC6CC\uD06C\uBCA4\uCE58\uB294 \uBD84\uC11D \uD504\uB85C \uBA85\uC608\uC758 \uC804\uB2F9\uC774 \uB2F4\uB2F9\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 16, marginBottom: 12, flexWrap: "wrap", alignItems: "center" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase" } }, "\uC815\uB82C"), SORTS.map((s) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: s.key,
@@ -14459,14 +14481,14 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         onRefresh: fetchRunState,
         disabled: isDemoSrc
       }
-    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setSettingsOpen(true), disabled: running }, "\u25B8 \uC2DC\uC791"), /* @__PURE__ */ React.createElement("button", { className: "btn danger", onClick: onStop, disabled: !running }, "\u25FC \uC815\uC9C0")))), simVisited && /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "simulation" ? void 0 : "none" } }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(SimulationTab, { baseUrl, wsStatus }))), activeTab === "backtest" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(BacktestTab, { baseUrl, wsStatus })) : activeTab === "simulation" ? null : activeTab === "lab" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, window.LabPage ? /* @__PURE__ */ React.createElement(window.LabPage, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "12px 16px" } }, "\uC5F0\uAD6C\uC2E4 \uB85C\uB529 \uC911\u2026")) : activeTab === "pro" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, window.ProPage ? /* @__PURE__ */ React.createElement(window.ProPage, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "12px 16px" } }, "\uBD84\uC11D \uD504\uB85C \uB85C\uB529 \uC911\u2026")) : activeTab === "verdict" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, window.VerdictPanel ? /* @__PURE__ */ React.createElement(window.VerdictPanel, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "12px 16px" } }, "\uACB0\uC815 \uC774\uB825 \uB85C\uB529 \uC911\u2026")) : activeTab === "process" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setSettingsOpen(true), disabled: running }, "\u25B8 \uC2DC\uC791"), /* @__PURE__ */ React.createElement("button", { className: "btn danger", onClick: onStop, disabled: !running }, "\u25FC \uC815\uC9C0")))), simVisited && /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "simulation" ? void 0 : "none" } }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(SimulationTab, { baseUrl, wsStatus }))), activeTab === "backtest" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(BacktestTab, { baseUrl, wsStatus })) : activeTab === "simulation" ? null : activeTab === "lab" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, window.LabPage ? /* @__PURE__ */ React.createElement(window.LabPage, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "12px 16px" } }, "\uC5F0\uAD6C\uC2E4 \uB85C\uB529 \uC911\u2026")) : activeTab === "pro" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, window.ProPage ? /* @__PURE__ */ React.createElement(window.ProPage, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "12px 16px" } }, "\uBD84\uC11D \uD504\uB85C \uB85C\uB529 \uC911\u2026")) : activeTab === "verdict" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, window.VerdictPanel ? /* @__PURE__ */ React.createElement(window.VerdictPanel, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "12px 16px" } }, "\uACB0\uC815 \uC774\uB825 \uB85C\uB529 \uC911\u2026")) : activeTab === "records" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, window.ResearchIndexPage ? /* @__PURE__ */ React.createElement(window.ResearchIndexPage, { baseUrl }) : /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { padding: "12px 16px" } }, "\uC5F0\uAD6C \uAE30\uB85D \uC778\uB371\uC2A4 \uB85C\uB529 \uC911\u2026")) : activeTab === "process" ? /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }), /* @__PURE__ */ React.createElement(
       "iframe",
       {
         src: baseUrl + "/process_flow",
         title: "\uD504\uB85C\uC138\uC2A4 \uD750\uB984",
-        style: { width: "100%", height: "calc(100vh - 130px)", border: "none", borderRadius: 8, background: "#0d1117" }
+        style: { width: "100%", height: "calc(100vh - 300px)", minHeight: 420, border: "none", borderRadius: 8, background: "#0d1117" }
       }
-    )) : isIdle ? /* @__PURE__ */ React.createElement(IdleState, { onStart: () => setSettingsOpen(true), configSpec }) : /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_runmon", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "Run Monitor" }) }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state }), /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state, baseUrl, onViewCode: onViewCodeByGen }), /* @__PURE__ */ React.createElement(PhaseTimeline, { state }), /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }), /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(EnginePanel, { state, wsStatus })), /* @__PURE__ */ React.createElement("div", { className: "grid-main" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, minWidth: 0 } }, window.ResearchHeatmapPanel ? /* @__PURE__ */ React.createElement(window.ResearchHeatmapPanel, { baseUrl, wsStatus, runId: state.run_id }) : null, /* @__PURE__ */ React.createElement(FitnessChart, { state, target: targetScore }), /* @__PURE__ */ React.createElement(ProfitChart, { state, targetPct: 0 }), /* @__PURE__ */ React.createElement(EquityOverlayChart, { baseUrl, wsStatus, runId: state.run_id }), /* @__PURE__ */ React.createElement(
+    ))) : isIdle ? /* @__PURE__ */ React.createElement(IdleState, { onStart: () => setSettingsOpen(true), configSpec }) : /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_runmon", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "Run Monitor" }) }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state }), /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state, baseUrl, onViewCode: onViewCodeByGen }), /* @__PURE__ */ React.createElement(PhaseTimeline, { state }), /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }), /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(EnginePanel, { state, wsStatus })), /* @__PURE__ */ React.createElement("div", { className: "grid-main" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, minWidth: 0 } }, window.ResearchHeatmapPanel ? /* @__PURE__ */ React.createElement(window.ResearchHeatmapPanel, { baseUrl, wsStatus, runId: state.run_id }) : null, /* @__PURE__ */ React.createElement(FitnessChart, { state, target: targetScore }), /* @__PURE__ */ React.createElement(ProfitChart, { state, targetPct: 0 }), /* @__PURE__ */ React.createElement(EquityOverlayChart, { baseUrl, wsStatus, runId: state.run_id }), /* @__PURE__ */ React.createElement(
       BacktestDetailChart,
       {
         baseUrl,
@@ -14538,6 +14560,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "backtest", label: "\uBC31\uD14C\uC2A4\uD2B8", icon: "\u{1F4CA}" },
     { key: "simulation", label: "\uCC28\uD2B8 \uC2DC\uBBAC\uB808\uC774\uC158", icon: "\u{1F4C8}" },
     { key: "lab", label: "\uC5F0\uAD6C\uC2E4", icon: "\u{1F52C}" },
+    { key: "records", label: "\uAE30\uB85D \uC778\uB371\uC2A4", icon: "IDX" },
     { key: "pro", label: "\uBD84\uC11D \uD504\uB85C", icon: "\u{1F4CA}" },
     { key: "verdict", label: "\uACB0\uC815 \uC774\uB825", icon: "\u2696\uFE0F" },
     { key: "process", label: "\uD504\uB85C\uC138\uC2A4 \uD750\uB984", icon: "\u{1F5FA}\uFE0F" }
@@ -14758,6 +14781,164 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     root.render(/* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(App, null)));
   }
 
+  // ../frontend/research-index.jsx
+  var { useState: useState_rix, useEffect: useEffect_rix, useMemo: useMemo_rix, useRef: useRef_rix } = React;
+  var RIX_KIND_LABELS = {
+    campaign: "Campaign",
+    doc: "Doc",
+    update_log: "Update log",
+    registry: "Registry"
+  };
+  var RIX_CANONICALITY_LABELS = {
+    canonical: "canonical",
+    derived: "derived",
+    historical: "historical",
+    stale: "stale",
+    reference: "reference",
+    candidate: "candidate"
+  };
+  var RIX_AUTHORITY_LABELS = {
+    raw_campaign: "raw campaign",
+    curated_doc: "curated doc",
+    selected_update_log: "selected update_log",
+    registry_entry: "registry entry",
+    historical_planning_context: "historical context"
+  };
+  function _rixBase(baseUrl) {
+    if (baseUrl) return baseUrl;
+    return typeof window !== "undefined" && window.location && window.location.origin || "";
+  }
+  function _rixShortPath(path) {
+    if (!path) return "\u2014";
+    if (path.length <= 96) return path;
+    return "\u2026" + path.slice(-94);
+  }
+  function _rixFmtTime(value) {
+    if (!value) return "\u2014";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return value;
+    return d.toLocaleString("ko-KR", { hour12: false });
+  }
+  function ResearchBadge({ type, value }) {
+    const label = type === "kind" ? RIX_KIND_LABELS[value] || value || "\u2014" : type === "canonicality" ? RIX_CANONICALITY_LABELS[value] || value || "\u2014" : RIX_AUTHORITY_LABELS[value] || value || "\u2014";
+    return /* @__PURE__ */ React.createElement("span", { className: `research-index-badge research-index-badge-${type}` }, label);
+  }
+  function _rixDetailText(detail) {
+    if (!detail || !detail.available) return "";
+    if (detail.markdown) return detail.markdown;
+    if (detail.registry_entry) return JSON.stringify(detail.registry_entry, null, 2);
+    if (detail.campaign) return JSON.stringify(detail.campaign, null, 2);
+    return "";
+  }
+  function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
+    const base = _rixBase(baseUrl);
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const [records, setRecords] = useState_rix([]);
+    const [errors, setErrors] = useState_rix([]);
+    const [cacheInfo, setCacheInfo] = useState_rix(null);
+    const [selectedId, setSelectedId] = useState_rix("");
+    const [detail, setDetail] = useState_rix(null);
+    const [detailLoading, setDetailLoading] = useState_rix(false);
+    const [loading, setLoading] = useState_rix(false);
+    const [err, setErr] = useState_rix("");
+    const [queryInput, setQueryInput] = useState_rix("");
+    const [query, setQuery] = useState_rix("");
+    const [kind, setKind] = useState_rix("all");
+    const [canonicality, setCanonicality] = useState_rix("all");
+    const detailRequestSeq = useRef_rix(0);
+    useEffect_rix(() => {
+      const timer = setTimeout(() => setQuery(queryInput.trim().toLowerCase()), 180);
+      return () => clearTimeout(timer);
+    }, [queryInput]);
+    const loadIndex = React.useCallback(() => {
+      if (isDemo || !base) return;
+      const controller = new AbortController();
+      setLoading(true);
+      setErr("");
+      fetch(base + "/research_index", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        const rows = Array.isArray(j && j.records) ? j.records : [];
+        setRecords(rows);
+        setErrors(Array.isArray(j && j.errors) ? j.errors : []);
+        setCacheInfo(j && j.cache ? j.cache : null);
+        setSelectedId((prev) => rows.some((row) => row.id === prev) ? prev : "");
+      }).catch((e) => {
+        if (e.name !== "AbortError") setErr(String(e));
+      }).finally(() => setLoading(false));
+      return () => controller.abort();
+    }, [base, isDemo]);
+    useEffect_rix(() => {
+      const cancel = loadIndex();
+      return () => {
+        if (typeof cancel === "function") cancel();
+      };
+    }, [loadIndex]);
+    const filtered = useMemo_rix(() => {
+      const q = query;
+      const rows = records.filter((row) => {
+        if (kind !== "all" && row.kind !== kind) return false;
+        if (canonicality !== "all" && row.canonicality !== canonicality) return false;
+        if (!q) return true;
+        const hay = [row.id, row.title, row.source_path, row.summary, ...row.tags || [], ...row.related_ids || []].join("\n").toLowerCase();
+        return hay.includes(q);
+      });
+      return rows;
+    }, [records, query, kind, canonicality]);
+    const visibleRows = useMemo_rix(() => filtered.slice(0, initialLimit), [filtered, initialLimit]);
+    useEffect_rix(() => {
+      const requestId = detailRequestSeq.current + 1;
+      detailRequestSeq.current = requestId;
+      if (isDemo || !base || !selectedId) {
+        setDetail(null);
+        setDetailLoading(false);
+        return void 0;
+      }
+      const controller = new AbortController();
+      const isCurrent = () => detailRequestSeq.current === requestId;
+      setDetailLoading(true);
+      setDetail(null);
+      fetch(base + "/research_index/detail?id=" + encodeURIComponent(selectedId), { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (isCurrent()) setDetail(j || null);
+      }).catch((e) => {
+        if (e.name !== "AbortError" && isCurrent()) {
+          setDetail({ available: false, reason: String(e) });
+        }
+      }).finally(() => {
+        if (isCurrent()) setDetailLoading(false);
+      });
+      return () => controller.abort();
+    }, [base, isDemo, selectedId]);
+    const selectedRow = records.find((row) => row.id === selectedId) || null;
+    const detailText = _rixDetailText(detail);
+    const sourceCounts = useMemo_rix(() => {
+      const out = { campaign: 0, doc: 0, update_log: 0, registry: 0 };
+      for (const row of records) if (out[row.kind] != null) out[row.kind] += 1;
+      return out;
+    }, [records]);
+    return /* @__PURE__ */ React.createElement("div", { className: "panel research-index" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "Governed Research Index", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: loadIndex, disabled: isDemo || loading }, loading ? "loading" : "refresh")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-index-note" }, "All-record lookup across campaigns, docs, update logs, and allowlisted registry rows. Raw evidence is linked by lineage only; markdown is rendered as inert text."), isDemo ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, "Backend connection required for governed research index.") : err ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty danger" }, "index query failed: ", err) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "research-index-controls" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "search",
+        className: "research-index-search",
+        value: queryInput,
+        onChange: (e) => setQueryInput(e.target.value),
+        placeholder: "Search title, source path, tag, related id"
+      }
+    ), /* @__PURE__ */ React.createElement("label", null, "kind", /* @__PURE__ */ React.createElement("select", { value: kind, onChange: (e) => setKind(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "all"), /* @__PURE__ */ React.createElement("option", { value: "campaign" }, "campaign"), /* @__PURE__ */ React.createElement("option", { value: "doc" }, "doc"), /* @__PURE__ */ React.createElement("option", { value: "update_log" }, "update_log"), /* @__PURE__ */ React.createElement("option", { value: "registry" }, "registry"))), /* @__PURE__ */ React.createElement("label", null, "canonicality", /* @__PURE__ */ React.createElement("select", { value: canonicality, onChange: (e) => setCanonicality(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "all"), /* @__PURE__ */ React.createElement("option", { value: "canonical" }, "canonical"), /* @__PURE__ */ React.createElement("option", { value: "derived" }, "derived"), /* @__PURE__ */ React.createElement("option", { value: "historical" }, "historical"), /* @__PURE__ */ React.createElement("option", { value: "reference" }, "reference"), /* @__PURE__ */ React.createElement("option", { value: "candidate" }, "candidate"), /* @__PURE__ */ React.createElement("option", { value: "stale" }, "stale")))), /* @__PURE__ */ React.createElement("div", { className: "research-index-kpis" }, /* @__PURE__ */ React.createElement("span", null, "rows ", /* @__PURE__ */ React.createElement("b", null, records.length)), /* @__PURE__ */ React.createElement("span", null, "shown ", /* @__PURE__ */ React.createElement("b", null, visibleRows.length), filtered.length > visibleRows.length ? ` / ${filtered.length}` : ""), /* @__PURE__ */ React.createElement("span", null, "campaign ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.campaign)), /* @__PURE__ */ React.createElement("span", null, "doc ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.doc)), /* @__PURE__ */ React.createElement("span", null, "update_log ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.update_log)), /* @__PURE__ */ React.createElement("span", null, "registry ", /* @__PURE__ */ React.createElement("b", null, sourceCounts.registry)), cacheInfo && /* @__PURE__ */ React.createElement("span", null, "cache ", /* @__PURE__ */ React.createElement("b", null, cacheInfo.hit ? "hit" : "miss"), " \xB7 sources ", cacheInfo.sources)), errors.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "research-index-warning" }, errors.length, " index source warning(s); details remain read-only."), /* @__PURE__ */ React.createElement("div", { className: "research-index-layout" }, /* @__PURE__ */ React.createElement("div", { className: "research-index-list", role: "listbox", "aria-label": "research index records" }, visibleRows.map((row) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        key: row.id,
+        className: selectedId === row.id ? "active" : "",
+        onClick: () => setSelectedId(row.id),
+        title: row.id
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "research-index-row-title" }, row.title || row.id),
+      /* @__PURE__ */ React.createElement("span", { className: "research-index-row-badges" }, /* @__PURE__ */ React.createElement(ResearchBadge, { type: "kind", value: row.kind }), /* @__PURE__ */ React.createElement(ResearchBadge, { type: "canonicality", value: row.canonicality }), /* @__PURE__ */ React.createElement(ResearchBadge, { type: "authority", value: row.source_authority })),
+      /* @__PURE__ */ React.createElement("small", null, _rixShortPath(row.source_path))
+    )), visibleRows.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, "No matching research records.")), /* @__PURE__ */ React.createElement("div", { className: "research-index-detail" }, selectedRow ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "research-index-detail-head" }, /* @__PURE__ */ React.createElement("strong", null, selectedRow.title || selectedRow.id), /* @__PURE__ */ React.createElement("span", { className: "mono" }, selectedRow.id), /* @__PURE__ */ React.createElement("div", { className: "research-index-row-badges" }, /* @__PURE__ */ React.createElement(ResearchBadge, { type: "kind", value: selectedRow.kind }), /* @__PURE__ */ React.createElement(ResearchBadge, { type: "canonicality", value: selectedRow.canonicality }), /* @__PURE__ */ React.createElement(ResearchBadge, { type: "authority", value: selectedRow.source_authority }))), /* @__PURE__ */ React.createElement("div", { className: "research-index-meta mono" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "source"), " ", _rixShortPath(selectedRow.source_path)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "updated"), " ", _rixFmtTime(selectedRow.updated_at)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "tags"), " ", (selectedRow.tags || []).join(", ") || "\u2014"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "summary"), " ", selectedRow.summary || "\u2014")), (selectedRow.related_ids || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "research-index-related" }, /* @__PURE__ */ React.createElement("div", { className: "research-index-related-title" }, "Related lineage"), selectedRow.related_ids.map((id) => /* @__PURE__ */ React.createElement("button", { key: id, type: "button", onClick: () => setSelectedId(id) }, id))), detailLoading ? /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, "Detail loading\u2026") : detail && detail.available ? /* @__PURE__ */ React.createElement("pre", { className: "research-index-pre" }, detailText) : /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, detail ? `Detail unavailable: ${detail.reason || "unknown"}` : "Select a row to lazy-load detail.")) : /* @__PURE__ */ React.createElement("div", { className: "research-wiki-empty" }, "Select a governed research record."))))));
+  }
+  Object.assign(window, { ResearchIndexPanel });
+
   // ../frontend/dashboard-pages.jsx
   var { useState: useState_dp, useEffect: useEffect_dp } = React;
   function _DpLoading({ name }) {
@@ -14819,7 +15000,11 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       return () => clearInterval(timer);
     }, [base]);
     const Panel = window.ResearchLabPanel;
-    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, padding: "12px 0", minHeight: "60vh" } }, /* @__PURE__ */ React.createElement(_DpSidebar, { runs, runId, setRunId, ops, verdict }), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", marginBottom: 6 } }, /* @__PURE__ */ React.createElement("b", { style: { fontSize: 15 } }, "STOM Research Lab"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { marginLeft: 10, fontSize: 11, opacity: 0.7 } }, runId)), Panel ? /* @__PURE__ */ React.createElement(Panel, { baseUrl: base, wsStatus: "na", runId }) : /* @__PURE__ */ React.createElement(_DpLoading, { name: "\uC5F0\uAD6C\uC2E4 \uD328\uB110" }), window.ResearchWikiPanel && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl: base, wsStatus: "na", runId })), window.AIContextPanel && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(AIContextPanel, { baseUrl: base, wsStatus: "na", runId, genNo: null }))));
+    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, padding: "12px 0", minHeight: "60vh" } }, /* @__PURE__ */ React.createElement(_DpSidebar, { runs, runId, setRunId, ops, verdict }), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", marginBottom: 6 } }, /* @__PURE__ */ React.createElement("b", { style: { fontSize: 15 } }, "STOM Research Lab"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { marginLeft: 10, fontSize: 11, opacity: 0.7 } }, runId)), Panel ? /* @__PURE__ */ React.createElement(Panel, { baseUrl: base, wsStatus: "na", runId }) : /* @__PURE__ */ React.createElement(_DpLoading, { name: "\uC5F0\uAD6C\uC2E4 \uD328\uB110" }), window.ResearchWikiPanel && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl: base, wsStatus: "na", runId })), window.ResearchIndexPanel && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(ResearchIndexPanel, { baseUrl: base, wsStatus: "na" })), window.AIContextPanel && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(AIContextPanel, { baseUrl: base, wsStatus: "na", runId, genNo: null }))));
+  }
+  function ResearchIndexPage({ baseUrl }) {
+    const base = _dpBase(baseUrl);
+    return /* @__PURE__ */ React.createElement("div", { style: { padding: "12px 0", minHeight: "60vh" } }, /* @__PURE__ */ React.createElement("div", { className: "research-index-page-head" }, /* @__PURE__ */ React.createElement("b", null, "STOM \uC5F0\uAD6C \uAE30\uB85D \uC778\uB371\uC2A4"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "campaign \xB7 docs \xB7 update_log \xB7 registry lineage")), /* @__PURE__ */ React.createElement(ResearchIndexPanel, { baseUrl: base, wsStatus: "na" }));
   }
   function ProPage({ baseUrl }) {
     const base = _dpBase(baseUrl);
@@ -14943,7 +15128,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       }
     ), /* @__PURE__ */ React.createElement("button", { type: "button", className: "research-tab", onClick: submit }, "\uAE30\uB85D")), saved && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: saved.status === "ok" ? "#5b9" : "#c95" } }, saved.status === "ok" ? "\uAE30\uB85D\uB428" : `\uC2E4\uD328: ${saved.error || saved.status}`)), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uACB0\uC815 \uC774\uB825"), history.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11 } }, "\uAE30\uB85D \uC5C6\uC74C") : /* @__PURE__ */ React.createElement("table", { className: "mono", style: { fontSize: 11, width: "100%" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC2DC\uAC01"), /* @__PURE__ */ React.createElement("th", null, "\uACB0\uC815"), /* @__PURE__ */ React.createElement("th", null, "\uB300\uC0C1 \uD6C4\uBCF4"), /* @__PURE__ */ React.createElement("th", null, "\uBA54\uBAA8"))), /* @__PURE__ */ React.createElement("tbody", null, history.slice().reverse().map((d, i) => /* @__PURE__ */ React.createElement("tr", { key: i }, /* @__PURE__ */ React.createElement("td", null, new Date((d.ts || 0) * 1e3).toLocaleString("ko-KR")), /* @__PURE__ */ React.createElement("td", null, d.verdict), /* @__PURE__ */ React.createElement("td", null, d.candidate ? `${d.candidate.buy_name} (${Math.round(d.candidate.profit || 0).toLocaleString()})` : "\u2014"), /* @__PURE__ */ React.createElement("td", null, d.note || "\u2014"))))))));
   }
-  Object.assign(window, { LabPage, ProPage, VerdictPanel });
+  Object.assign(window, { LabPage, ProPage, VerdictPanel, ResearchIndexPage });
 
   // src/track-z-entry.pilot.js
   Object.assign(window, {
@@ -14953,6 +15138,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     LabPage,
     ProPage,
     VerdictPanel,
+    ResearchIndexPage,
     // TRACK_Z_DEPS §4 — shared components consumed via window.X across standalone pages.
     DemoBadge,
     LivePending,

@@ -50,14 +50,15 @@ def _read(name: str) -> str:
 
 # ====================================================== dashboard-pages.jsx (정본)
 class TestDashboardPages:
-    def test_defines_and_exports_three_globals(self) -> None:
+    def test_defines_and_exports_page_globals(self) -> None:
         src = _read("dashboard-pages.jsx")
         # 세 컴포넌트 정의.
         assert "function LabPage(" in src
         assert "function ProPage(" in src
         assert "function VerdictPanel(" in src
+        assert "function ResearchIndexPage(" in src
         # window 전역 노출.
-        assert "Object.assign(window, { LabPage, ProPage, VerdictPanel })" in src
+        assert "Object.assign(window, { LabPage, ProPage, VerdictPanel, ResearchIndexPage })" in src
 
     def test_verdict_append_only_post_and_checklist(self) -> None:
         src = _read("dashboard-pages.jsx")
@@ -87,6 +88,7 @@ class TestDashboardPages:
         assert "window.ResearchLabPanel" in src
         assert "window.ResearchProPanel" in src
         assert "_DpLoading" in src
+        assert "window.ResearchIndexPanel" in src
 
     def test_no_import_export_no_ts(self) -> None:
         """JSX 소스 계약 — TS 금지 + ESM 은 Track Z dual-safe 형태만 허용.
@@ -137,25 +139,27 @@ class TestDashboardPages:
 
 # =================================================================== app.jsx
 class TestAppTabs:
-    def test_stom_tabs_has_seven_entries(self) -> None:
+    def test_stom_tabs_has_eight_entries(self) -> None:
         src = _read("app.jsx")
         block = src.split("const STOM_TABS", 1)[1].split("];", 1)[0]
         for key in ('"evolution"', '"backtest"', '"simulation"',
-                    '"lab"', '"pro"', '"verdict"', '"process"'):
+                    '"lab"', '"records"', '"pro"', '"verdict"', '"process"'):
             assert key in block, f"STOM_TABS 누락: {key}"
-        # 7개 탭 엔트리(key: 줄 기준) — 7번째 '프로세스 흐름'(process) 포함.
+        # 8개 탭 엔트리(key: 줄 기준) — 기록 인덱스(records) 포함.
         key_lines = [ln for ln in block.splitlines() if "key:" in ln]
-        assert len(key_lines) == 7, f"탭 개수 7 아님: {len(key_lines)}"
+        assert len(key_lines) == 8, f"탭 개수 8 아님: {len(key_lines)}"
 
-    def test_mounts_three_new_globals(self) -> None:
+    def test_mounts_page_globals(self) -> None:
         src = _read("app.jsx")
         assert "window.LabPage" in src
         assert "window.ProPage" in src
         assert "window.VerdictPanel" in src
+        assert "window.ResearchIndexPage" in src
         # 각각 activeTab 조건으로 마운트.
         assert 'activeTab === "lab"' in src
         assert 'activeTab === "pro"' in src
         assert 'activeTab === "verdict"' in src
+        assert 'activeTab === "records"' in src
 
     def test_pagenav_no_hardlinks_to_standalone_html(self) -> None:
         """stom-pagenav 에서 lab.html/pro.html/verdict.html 하드링크 제거."""
@@ -210,7 +214,7 @@ class TestStandaloneHtml:
         #   LabPage/ProPage 가 의존(ResearchLabPanel/ResearchProPanel)과 함께 번들에 들어있어야
         #   lab/pro.html 마운트가 성립한다 — 런타임 마운트는 Track Z 하니스 V4 가 별도 검증.
         app_bundle = _read("bundle/app.js")
-        for sym in ("ResearchLabPanel", "ResearchProPanel", "LabPage", "ProPage"):
+        for sym in ("ResearchLabPanel", "ResearchProPanel", "ResearchIndexPanel", "ResearchIndexPage", "LabPage", "ProPage"):
             assert sym in app_bundle, f"app.js 에 {sym} 누락"
         for name in ("lab.html", "pro.html"):
             assert "bundle/app.js" in _read(name), f"{name}: 컴파일 번들 미로드"
@@ -229,7 +233,7 @@ const fs = require('fs');
 const path = require('path');
 const dir = process.argv[2];
 const esbuild = require(path.join(dir, '..', 'webui-build', 'node_modules', 'esbuild'));
-const files = ['dashboard-pages.jsx', 'app.jsx'];
+const files = ['dashboard-pages.jsx', 'app.jsx', 'research-index.jsx'];
 let ok = true;
 for (const f of files) {
   try { esbuild.transformSync(fs.readFileSync(path.join(dir, f), 'utf8'), { loader: 'jsx', jsx: 'transform', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment' }); }

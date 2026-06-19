@@ -9,6 +9,8 @@ from typing import Final, TypedDict
 
 from fastapi import APIRouter
 
+from ai_strategy_loop.dashboard import research_index
+from ai_strategy_loop.dashboard import research_records as records
 from ai_strategy_loop.dashboard.analysis_snapshot import analysis_router
 
 
@@ -140,6 +142,26 @@ def research_doc(id: str = "") -> ResearchDocResponse:
     path, summary = found
     markdown = path.read_text(encoding="utf-8", errors="replace")
     return {**summary, "available": True, "markdown": markdown, "size": len(markdown)}
+
+
+@router.get("/research_records")
+def research_records():
+    return records.list_research_records()
+
+
+@router.get("/research_records/detail")
+def research_record_detail(campaign: str = ""):
+    return records.research_record_detail(campaign)
+
+
+@router.get("/research_index")
+def research_index_route():
+    return research_index.list_research_index()
+
+
+@router.get("/research_index/detail")
+def research_index_detail(id: str = ""):
+    return research_index.research_index_detail(id)
 
 
 @router.get("/index_compare")

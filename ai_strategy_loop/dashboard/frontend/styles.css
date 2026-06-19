@@ -754,6 +754,65 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 /* ====== Process Flow Panel ====== */
 /* Phase12-A — .process-flow-row/.process-box* 룰 제거(죽은 CSS): Phase11 에서 박스행이
    SVG 노드+화살표 다이어그램(.stom-flow-*, styles.css 하단)으로 대체돼 더는 참조되지 않음. */
+.process-live-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 8px 0 10px;
+}
+.process-live-strip span {
+  min-width: 0;
+  border: 1px solid var(--line-1);
+  background: var(--bg-0);
+  border-radius: var(--radius-sm);
+  padding: 5px 7px;
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.process-live-strip b {
+  color: var(--ink-0);
+  font-weight: 600;
+}
+.process-timing-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-top: 8px;
+}
+.process-timing-cell {
+  border: 1px solid var(--line-1);
+  background: var(--bg-0);
+  border-radius: var(--radius-sm);
+  padding: 6px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.process-timing-cell.done { border-color: var(--teal-dim); }
+.process-timing-cell.active { border-color: rgba(210,160,70,0.45); background: rgba(210,160,70,0.07); }
+.process-timing-label {
+  color: var(--ink-2);
+  font-size: 10.5px;
+  font-family: var(--mono);
+}
+.process-timing-value {
+  color: var(--ink-0);
+  font-size: 12px;
+  font-family: var(--mono);
+  font-weight: 600;
+}
+@media (max-width: 980px) {
+  .process-live-strip,
+  .process-timing-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
 /* Log pane */
 .process-log-pane {
   margin-top: 8px;
@@ -1418,6 +1477,219 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 }
 .research-wiki-empty.danger {
   color: var(--red);
+}
+
+/* Governed research index */
+.research-index-page-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-1);
+  margin-bottom: 10px;
+}
+.research-index-page-head b {
+  font-size: 15px;
+  color: var(--ink-0);
+}
+.research-index-page-head span {
+  color: var(--ink-3);
+  font-size: 10.5px;
+}
+.research-index-note,
+.research-index-warning {
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.research-index-warning { color: var(--amber); }
+.research-index-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  margin-bottom: 10px;
+}
+.research-index-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 10.5px;
+}
+.research-index-search,
+.research-index-controls select {
+  border: 1px solid var(--line-1);
+  background: var(--bg-0);
+  color: var(--ink-0);
+  border-radius: var(--radius-sm);
+  padding: 5px 7px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.research-index-search {
+  min-width: min(480px, 100%);
+  flex: 1;
+}
+.research-index-kpis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: 10px;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 10.5px;
+}
+.research-index-kpis span {
+  border: 1px solid var(--line-1);
+  border-radius: var(--radius-sm);
+  background: var(--bg-0);
+  padding: 3px 6px;
+}
+.research-index-kpis b { color: var(--ink-0); }
+.research-index-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.95fr) minmax(0, 1.45fr);
+  gap: var(--space-4);
+}
+.research-index-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 620px;
+  overflow: auto;
+}
+.research-index-list button {
+  width: 100%;
+  border: 1px solid var(--line-1);
+  border-radius: var(--radius-sm);
+  background: var(--bg-0);
+  color: var(--ink-2);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+  padding: 7px 8px;
+  cursor: pointer;
+}
+.research-index-list button.active {
+  border-color: var(--teal-dim);
+  background: rgba(76,214,179,0.08);
+  color: var(--ink-0);
+}
+.research-index-row-title {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.research-index-row-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.research-index-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line-1);
+  padding: 1px 6px;
+  color: var(--ink-2);
+  background: var(--bg-1);
+  font-family: var(--mono);
+  font-size: 9.5px;
+}
+.research-index-badge-canonicality {
+  color: var(--teal);
+  border-color: var(--teal-dim);
+}
+.research-index-badge-authority {
+  color: var(--amber);
+  border-color: rgba(210,160,70,0.35);
+}
+.research-index-list small {
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 10px;
+  word-break: break-all;
+}
+.research-index-detail {
+  min-width: 0;
+  border: 1px solid var(--line-1);
+  border-radius: 5px;
+  background: var(--bg-0);
+  overflow: hidden;
+}
+.research-index-detail-head {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line-1);
+}
+.research-index-detail-head strong {
+  color: var(--ink-0);
+  font-size: 13px;
+}
+.research-index-detail-head span.mono {
+  color: var(--ink-3);
+  font-size: 10px;
+  word-break: break-all;
+}
+.research-index-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line-1);
+  color: var(--ink-2);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+.research-index-meta b { color: var(--ink-0); }
+.research-index-related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line-1);
+}
+.research-index-related-title {
+  width: 100%;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.research-index-related button {
+  border: 1px solid var(--line-1);
+  border-radius: var(--radius-sm);
+  background: var(--bg-1);
+  color: var(--teal);
+  font-family: var(--mono);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 3px 6px;
+}
+.research-index-pre {
+  margin: 0;
+  padding: 10px;
+  max-height: 520px;
+  overflow: auto;
+  white-space: pre-wrap;
+  color: var(--ink-1);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1.55;
+}
+@media (max-width: 980px) {
+  .research-index-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* AI context pack */

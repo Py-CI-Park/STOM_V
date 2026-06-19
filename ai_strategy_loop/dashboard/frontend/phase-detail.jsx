@@ -547,6 +547,20 @@ function fmtClockFromEpoch(epochSec) {
   }
 }
 
+function normalizeFlowStepIndex(rawStep, phase) {
+  let value = Number(rawStep);
+  if (!Number.isInteger(value)) value = phaseIndex(phase);
+  if (!Number.isInteger(value) || value < 0) return -1;
+  return Math.min(FLOW_STEPS.length - 1, value);
+}
+
+function flowStepStatus(index, currentStep) {
+  if (!Number.isInteger(currentStep) || currentStep < 0) return "pending";
+  if (currentStep > index) return "done";
+  if (currentStep === index) return "active";
+  return "pending";
+}
+
 // =====================================================================
 // ProcessFlowDiagram — 5단계 프로세스를 SVG 노드+화살표로 그린다(평면 박스 대체).
 //   props: currentStep(-1~4) · running · phaseElapsed(활성 라이브 경과초|null) ·
@@ -663,11 +677,7 @@ function ProcessFlowDiagram({ currentStep, running, phaseElapsed, stepTimings })
 }
 
 function ProcessFlowPanel({ state }) {
-  // current_step이 있으면 우선 사용, 없으면 phaseIndex() 폴백(하위호환).
-  const rawStep = state?.latest?.current_step;
-  const currentStep = (rawStep !== undefined && rawStep !== null)
-    ? rawStep
-    : phaseIndex(state?.latest?.phase);
+  const currentStep = normalizeFlowStepIndex(state?.latest?.current_step, state?.latest?.phase);
 
   const logs = state?.latest?.recent_logs ?? [];
   const running = state?.status === "running" || state?.status === "stopping";
@@ -700,6 +710,17 @@ function ProcessFlowPanel({ state }) {
   const stepsDone = (typeof currentStep === "number" && currentStep >= 0)
     ? Math.min(totalSteps, currentStep + 1) : 0;
   const progressPct = (stepsDone / totalSteps) * 100;
+  const activeStep = currentStep >= 0 ? FLOW_STEPS[currentStep] : null;
+  const latestPhase = state?.latest?.phase || "—";
+  const lastLog = logs.length ? logs[logs.length - 1] : "로그 대기중…";
+  const timingRows = FLOW_STEPS.map((step, index) => {
+    const status = flowStepStatus(index, currentStep);
+    const doneSec = stepTimings ? stepTimings[step.timingKey] : undefined;
+    const elapsed = status === "active" && phaseElapsed != null
+      ? fmtElapsedSec(phaseElapsed)
+      : (typeof doneSec === "number" && doneSec >= 0 ? fmtElapsedSec(doneSec) : "—");
+    return { ...step, index, status, elapsed };
+  });
 
   // 로그 패널 자동 스크롤.
   const logRef = useRef_ph(null);
@@ -743,6 +764,12 @@ function ProcessFlowPanel({ state }) {
           background: "var(--amber)", transition: "width .3s ease",
         }}></div>
       </div>
+      <div className="process-live-strip">
+        <span><b>현재 노드</b> {activeStep ? activeStep.label : "미정"}</span>
+        <span><b>phase</b> {latestPhase}</span>
+        <span><b>current_step</b> {currentStep >= 0 ? currentStep : "—"}</span>
+        <span><b>최근 로그</b> {lastLog}</span>
+      </div>
       {/* P11 — 평면 .process-box 행을 SVG 노드+화살표 플로우 다이어그램으로 교체.
           노드 상태: index<current_step=done(teal) · ===active(amber+glow) · >pending(dim).
           노드 sub 라인은 활성=라이브 경과 / 완료=step_timings 소요초. 활성 직전 화살표=.lit.
@@ -753,6 +780,14 @@ function ProcessFlowPanel({ state }) {
         phaseElapsed={phaseElapsed}
         stepTimings={stepTimings}
       />
+      <div className="process-timing-grid" aria-label="프로세스 단계별 소요 시간">
+        {timingRows.map(row => (
+          <div key={row.timingKey} className={`process-timing-cell ${row.status}`} data-status={row.status}>
+            <span className="process-timing-label">{row.index + 1}. {row.label}</span>
+            <span className="process-timing-value">{row.elapsed}</span>
+          </div>
+        ))}
+      </div>
       <div className="process-log-pane" ref={logRef}>
         {logs.length === 0
           ? <span className="process-log-empty">로그 대기중…</span>
@@ -774,7 +809,7 @@ Object.assign(window, {
   // R8 — phase 매핑 순수 함수/맵 노출(영/한 정규화). 정적·단위 검증 가능.
   phaseIndex, PHASES, LIVE_PHASE_INDEX,
   // #64 — 진행시간 포맷 순수 함수 + 단계 메타 노출(정적·단위 검증 가능).
-  fmtElapsedSec, fmtClockFromEpoch, FLOW_STEPS,
+  fmtElapsedSec, fmtClockFromEpoch, normalizeFlowStepIndex, flowStepStatus, FLOW_STEPS,
 });
 
 // Track Z (PR-1) — ESM dual-safe export.

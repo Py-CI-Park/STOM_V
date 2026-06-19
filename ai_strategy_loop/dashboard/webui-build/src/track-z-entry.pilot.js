@@ -40,7 +40,7 @@ import "../../frontend/sim-live-chart.jsx";// window.SimLiveChart
 
 // --- (2) named imports for explicit FROZEN + shared republish ---
 import { App, ErrorBoundary } from "../../frontend/app.jsx";
-import { LabPage, ProPage, VerdictPanel } from "../../frontend/dashboard-pages.jsx";
+import { LabPage, ProPage, VerdictPanel, ResearchIndexPage } from "../../frontend/dashboard-pages.jsx";
 import { DemoBadge, LivePending, PhaseDetailPanel, PhaseTimeline, ProcessFlowPanel } from "../../frontend/phase-detail.jsx";
 import { EnginePanel, LiveBacktestChart } from "../../frontend/engine.jsx";
 import { ResearchLabPanel, VdtAlerts, VdtPromoteChecklist, VdtSummaryLines } from "../../frontend/research-lab.jsx";
@@ -51,7 +51,7 @@ import { SimCandleChart, SimCandleChartLWC, SimCandleChartSVG } from "../../fron
 // FROZEN mount-by-name globals (HTML mounts) + the defensively window-consumed shared set.
 Object.assign(window, {
   // FROZEN — index.html / lab.html / pro.html / verdict.html mount these by name.
-  App, ErrorBoundary, LabPage, ProPage, VerdictPanel,
+  App, ErrorBoundary, LabPage, ProPage, VerdictPanel, ResearchIndexPage,
   // TRACK_Z_DEPS §4 — shared components consumed via window.X across standalone pages.
   DemoBadge, LivePending, LiveBacktestChart, EnginePanel,
   PhaseDetailPanel, PhaseTimeline, ProcessFlowPanel,

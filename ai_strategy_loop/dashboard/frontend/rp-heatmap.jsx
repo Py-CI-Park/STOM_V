@@ -185,6 +185,10 @@ function _RpHallOfFame({ baseUrl, isDemo, onOpenWorkbench }) {
           {loading ? "조회중…" : "↻ 새로고침"}
         </button>
       </div>
+      <div className="research-index-note">
+        목적: Research Pro 워크벤치용 HoF입니다. 행을 펼쳐 조건식·변수칩을 검토하고 바로 백테스트로
+        넘기는 화면이며, 벤치마크 전체 비교는 진화 대시보드의 성과 명예의 전당이 담당합니다.
+      </div>
       <div className="rp-card-bd">
         {isDemo ? (
           <div className="rp-empty">데모 모드 — 백엔드 연결 시 명예의 전당이 표시됩니다.</div>

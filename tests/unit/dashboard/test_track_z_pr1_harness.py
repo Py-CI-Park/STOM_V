@@ -13,8 +13,10 @@ artifact:
   V2 — SERVED bundle index path (HARDEST): node+jsdom hosts vendored React + ReactDOM +
        lightweight-charts + stom-ui + the REAL DEFAULT served frontend/bundle/app.js, mounts the
        index App, and reports 0 errors / non-empty #root.
-  V3 — SERVED bundle per-tab sweep (Story 4 entry gate): the served App renders all 7 tabs.
+  V3 — SERVED bundle per-tab sweep (Story 4 entry gate): the served App renders all 8 tabs.
   V4 — SERVED bundle standalone mounts (Story 4 entry gate): lab/pro/verdict mount their own root.
+  V5 — SERVED bundle governed-records behavior: search/filter/detail/inert/stale guards.
+  V6 — SERVED bundle process edge states: idle/missing/out-of-range latest flow inputs.
 
 Source-contract assertions (pure-python, always run): the shims, the dual-safe export, the flag
 path, the entry re-publish, and the DEFAULT bundle-model manifest exist. The node harness run is
@@ -70,8 +72,8 @@ class TestTrackZSourceContract:
         UPDATED (Track Z PR-3): the entry grew from the PR-1 pilot (phase-detail only) into
         the full app-graph root. It must still import phase-detail.jsx and republish
         DemoBadge/LivePending; PR-3 additionally pulls in the converted modules and republishes
-        the FROZEN mount-by-name globals (App/ErrorBoundary/LabPage/ProPage/VerdictPanel) and
-        the defensively window-consumed shared components. Assert the durable invariants."""
+        the FROZEN mount-by-name globals (App/ErrorBoundary/LabPage/ProPage/VerdictPanel/ResearchIndexPage)
+        and the defensively window-consumed shared components. Assert the durable invariants."""
         src = _read(SRC / "track-z-entry.pilot.js")
         assert 'from "../../frontend/phase-detail.jsx"' in src
         # DemoBadge/LivePending still republished (PR-1 invariant, now within a larger set).
@@ -204,16 +206,14 @@ def test_track_z_v2_index_path_hosts() -> None:
 
 def test_track_z_v3_per_tab_render_sweep() -> None:
     """V3 (Story 4 entry gate): the FLAGGED bundle's App renders EVERY tab with 0 errors and a
-    non-empty #root — evolution(NON-IDLE so its data components render), backtest, simulation,
-    lab, pro, verdict, process. Closes the gap V2 left open (V2 only proved the IDLE evolution
-    shell), so a latent missing cross-file import in a non-default tab surfaces NOW, not at the
-    future flip. process(7번째)는 본문이 <iframe src=/process_flow> 한 장이라 jsdom 이 내용을
-    로드하지 않으므로 iframe 엘리먼트 존재 + React 에러 0 만 단언한다."""
+    non-empty #root — evolution/process use NON-IDLE state so data/live-flow components render;
+    lab, records, pro, verdict, backtest, and simulation exercise their tab roots. Records must show
+    governed-index content and process must show both the realtime strip/grid and retained iframe."""
     data = _run_harness()
     v3 = data["v3"]
     tabs = v3["tabs"]
-    expected = {"evolution", "backtest", "simulation", "lab", "pro", "verdict", "process"}
-    assert set(tabs) == expected, f"V3 must sweep all 7 tabs, got {set(tabs)}"
+    expected = {"evolution", "backtest", "simulation", "lab", "records", "pro", "verdict", "process"}
+    assert set(tabs) == expected, f"V3 must sweep all 8 tabs, got {set(tabs)}"
     for name in expected:
         r = tabs[name]
         assert r["rootNonEmpty"], f"tab {name}: #root empty after render"
@@ -221,9 +221,16 @@ def test_track_z_v3_per_tab_render_sweep() -> None:
         assert not r["dynamicRequireErrors"], f"tab {name}: dynamic-require {r['dynamicRequireErrors']}"
         assert r["errorCount"] == 0, f"tab {name} render errors: {r['errors']}"
         assert r["pass"], f"V3 tab {name} failed: {r}"
-    # process 탭: iframe 콘텐츠가 아니라 iframe 엘리먼트가 마운트됐는지만 확인.
+    assert tabs["records"].get("recordsIndexContent") is True, (
+        f"records 탭 governed index 콘텐츠 부재: {tabs['records']}")
     assert tabs["process"].get("iframePresent") is True, (
         f"process 탭 iframe 엘리먼트 부재: {tabs['process']}")
+    assert tabs["process"].get("processLiveStripPresent") is True, (
+        f"process 탭 실시간 스트립 부재: {tabs['process']}")
+    assert tabs["process"].get("processTimingGridPresent") is True, (
+        f"process 탭 타이밍 그리드 부재: {tabs['process']}")
+    assert tabs["process"].get("processLatestLogVisible") is True, (
+        f"process 탭 최신 로그 렌더링 부재: {tabs['process']}")
     assert v3["pass"], f"V3 per-tab sweep failed: {v3}"
 
 
@@ -246,6 +253,41 @@ def test_track_z_v4_standalone_page_mounts() -> None:
         assert r["pass"], f"V4 page {name} failed: {r}"
     assert v4["pass"], f"V4 standalone page mounts failed: {v4}"
 
+
+def test_track_z_v5_records_behavior() -> None:
+    """V5: governed records UI behavior is runtime-proven, not only source-grepped."""
+    data = _run_harness()
+    v5 = data["v5"]
+    assert v5["componentIsFunction"], "window.ResearchIndexPanel is not a function"
+    assert v5["mountError"] is None, f"ResearchIndexPanel mount error: {v5['mountError']}"
+    assert v5["badgesVisible"], f"records badges/warning missing: {v5}"
+    assert v5["filterLabelsVisible"], f"records filter labels missing: {v5}"
+    assert v5["detailLazyOk"], f"detail loaded before explicit row selection: {v5}"
+    assert v5["inertDetail"], f"detail markdown was not inert: {v5}"
+    assert v5["searchFilterOk"], f"search filter failed: {v5}"
+    assert v5["noMatchOk"], f"no-match state failed: {v5}"
+    assert v5["kindFilterOk"], f"kind filter failed: {v5}"
+    assert v5["canonicalityFilterOk"], f"canonicality filter failed: {v5}"
+    assert v5["staleDetailGuardOk"], f"stale detail guard failed: {v5}"
+    assert v5["errorCount"] == 0, f"records behavior errors: {v5['errors']}"
+    assert v5["pass"], f"V5 records behavior failed: {v5}"
+
+def test_track_z_v6_process_edge_states() -> None:
+    """V6: process flow runtime handles idle/missing/out-of-range latest state safely."""
+    data = _run_harness()
+    v6 = data["v6"]
+    expected = {"idle_unknown_step", "missing_timings", "out_of_range_step"}
+    assert set(v6["cases"]) == expected, f"V6 edge cases changed: {v6}"
+    for name in expected:
+        case = v6["cases"][name]
+        assert case["liveStrip"], f"{name}: live strip missing"
+        assert case["timingGrid"], f"{name}: timing grid missing"
+        assert case["iframePresent"], f"{name}: retained iframe missing"
+        assert case["edgeText"], f"{name}: edge labels missing"
+        assert not case["errorBoundaryTripped"], f"{name}: ErrorBoundary tripped"
+        assert case["errorCount"] == 0, f"{name}: render errors {case['errors']}"
+        assert case["pass"], f"{name}: V6 case failed: {case}"
+    assert v6["pass"], f"V6 process edge states failed: {v6}"
 
 def test_served_bundle_has_no_react_require() -> None:
     """The SERVED default bundle (frontend/bundle/app.js) must NOT contain require('react') or a

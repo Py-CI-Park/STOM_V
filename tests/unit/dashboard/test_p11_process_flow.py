@@ -83,6 +83,7 @@ class TestProcessFlowSvg:
         block = src.split("function ProcessFlowDiagram", 1)[1].split("\nfunction ", 1)[0]
         assert "currentStep" in block
         assert "stepTimings" in block
+        assert "normalizeFlowStepIndex" in src
 
     def test_node_status_and_lit_arrow_branches(self) -> None:
         """노드 done/active/pending 분기 + 활성 직전 화살표 .lit 점등 로직 존재."""
@@ -95,6 +96,17 @@ class TestProcessFlowSvg:
         assert "lit" in block
         assert "stom-flow-arrow${lit" in block or '" lit"' in block
 
+    def test_live_strip_and_timing_grid_added(self) -> None:
+        """운영 콘솔용 현재 노드/phase/current_step/최근 로그와 단계별 timing grid를 노출한다."""
+        src = _read("phase-detail.jsx")
+        assert "process-live-strip" in src
+        assert "process-timing-grid" in src
+        assert "현재 노드" in src
+        assert "최근 로그" in src
+        assert "flowStepStatus" in src
+        css = _read("styles.css")
+        assert ".process-live-strip" in css
+        assert ".process-timing-cell.active" in css
     def test_no_hardcoded_amber_rgba_literal(self) -> None:
         """amber 하드코딩 rgba(240,179,90,...) 리터럴이 소스에 남지 않는다(토큰화)."""
         src = _read("phase-detail.jsx")
