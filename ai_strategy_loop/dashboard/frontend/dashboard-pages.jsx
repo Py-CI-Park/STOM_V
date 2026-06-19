@@ -20,6 +20,7 @@ import { EVIDENCE_WORKSPACE_LINKS } from "./ui-contract.jsx";
 import { UiStateBlock, WorkspaceCard, WorkspaceNav } from "./ui-state.jsx";
 import { VisualQualityPanel } from "./visual-quality.jsx";
 import { HofInventoryGate } from "./hof-inventory.jsx";
+import { Phase2InventoryPanel, pageOwnerContract } from "./dashboard-inventory.jsx";
 const { useState: useState_dp, useEffect: useEffect_dp } = React;
 
 // 의존 전역이 아직 로드되지 않았을 때(이론상) 크래시 대신 보이는 작은 자리표시자.
@@ -52,14 +53,20 @@ function normalizeVerdictSubtab(value) {
 
 function EvidenceWorkspaceHeader({ activeKey, onSelect }) {
   const nav = onSelect || _dpNavigateToTab;
+  const owner = pageOwnerContract(activeKey);
   return (
     <div className="evidence-workspace-head">
       <div>
-        <div className="workspace-kicker mono">EVIDENCE WORKSPACE</div>
+        <div className="workspace-kicker mono">EVIDENCE WORKSPACE · OWNER MATRIX</div>
         <h2>기록 · 연구 · 분석 · 결정 역할 맵</h2>
         <p>
-          Records는 전체 조회, 연구실은 위키/컨텍스트, 분석 프로는 워크벤치, 결정 이력은 append-only 감사 trail입니다.
+          Records는 전체 조회, 연구실은 위키/컨텍스트, 분석 워크벤치는 후보 분석과 HoF 비교,
+          결정 감사는 append-only trail만 소유합니다. 현재 표면: <b>{owner.owner}</b>
         </p>
+        <div className="workspace-owner-boundary mono">
+          <span>owns: {owner.owns}</span>
+          <span>not-owner: {owner.notOwner}</span>
+        </div>
       </div>
       <WorkspaceNav items={EVIDENCE_WORKSPACE_LINKS} activeKey={activeKey} onSelect={nav} />
     </div>
@@ -69,24 +76,27 @@ function EvidenceWorkspaceHeader({ activeKey, onSelect }) {
 function EvidenceWorkspaceCards({ onSelect }) {
   const nav = onSelect || _dpNavigateToTab;
   return (
-    <div className="evidence-workspace-grid">
-      <WorkspaceCard eyebrow="LOOKUP" title="기록 인덱스" badge="read-only" tone="info"
-                     action={<button className="btn ghost sm" onClick={() => nav("records")}>열기</button>}>
-        campaign, docs, update_log, registry lineage를 한 곳에서 검색합니다. Raw markdown은 inert text로만 표시합니다.
-      </WorkspaceCard>
-      <WorkspaceCard eyebrow="CURATED" title="연구실" badge="wiki/context" tone="success"
-                     action={<button className="btn ghost sm" onClick={() => nav("lab")}>열기</button>}>
-        연구 위키, AI 컨텍스트 팩, run 분석 홈을 담당합니다. 생성/판정 루프와 분리해 탐색 흐름을 안정화합니다.
-      </WorkspaceCard>
-      <WorkspaceCard eyebrow="WORKBENCH" title="분석 프로" badge="pro" tone="pending"
-                     action={<button className="btn ghost sm" onClick={() => nav("pro")}>열기</button>}>
-        조건 후보 분석과 워크벤치 액션을 담당합니다. 벤치마크 HoF와 병합하기 전에 필드 계약을 먼저 잠급니다.
-      </WorkspaceCard>
-      <WorkspaceCard eyebrow="AUDIT" title="결정 이력" badge="append-only" tone="demo"
-                     action={<button className="btn ghost sm" onClick={() => nav("verdict")}>열기</button>}>
-        운영 판단은 삭제/덮어쓰기 없이 append-only 이력으로 남깁니다. UI 정리는 감사 trail을 바꾸지 않습니다.
-      </WorkspaceCard>
-    </div>
+    <>
+      <div className="evidence-workspace-grid">
+        <WorkspaceCard eyebrow="LOOKUP" title="기록 검색" badge="read-only" tone="info"
+                       action={<button className="btn ghost sm" onClick={() => nav("records")}>열기</button>}>
+          campaign, docs, update_log, registry lineage를 한 곳에서 검색합니다. Raw markdown은 inert text로만 표시합니다.
+        </WorkspaceCard>
+        <WorkspaceCard eyebrow="CURATED" title="연구실" badge="wiki/context" tone="success"
+                       action={<button className="btn ghost sm" onClick={() => nav("lab")}>열기</button>}>
+          연구 위키, AI 컨텍스트 팩, run 분석 홈을 담당합니다. 생성/판정 루프와 분리해 탐색 흐름을 안정화합니다.
+        </WorkspaceCard>
+        <WorkspaceCard eyebrow="WORKBENCH" title="분석 워크벤치" badge="pro/hof" tone="pending"
+                       action={<button className="btn ghost sm" onClick={() => nav("pro")}>열기</button>}>
+          조건 후보 분석과 HoF 비교를 담당합니다. 워크벤치 액션과 벤치마크 증거를 섞어 잃지 않습니다.
+        </WorkspaceCard>
+        <WorkspaceCard eyebrow="AUDIT" title="결정 감사" badge="append-only" tone="demo"
+                       action={<button className="btn ghost sm" onClick={() => nav("verdict")}>열기</button>}>
+          운영 판단은 삭제/덮어쓰기 없이 append-only 이력으로 남깁니다. final approval과 분리합니다.
+        </WorkspaceCard>
+      </div>
+      <Phase2InventoryPanel compact />
+    </>
   );
 }
 
@@ -182,8 +192,8 @@ function LabPage({ baseUrl, onNavigate }) {
         <_DpSidebar runs={runs} runId={runId} setRunId={setRunId} ops={ops} verdict={verdict} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="dashboard-page-title">
-            <b>STOM Research Lab</b>
-            <span className="mono">{runId}</span>
+            <b>STOM 연구실</b>
+            <span className="mono">wiki · context · run analysis owner</span>
           </div>
           {Panel
             ? <Panel baseUrl={base} wsStatus="na" runId={runId} />
@@ -218,8 +228,8 @@ function ResearchIndexPage({ baseUrl, onNavigate }) {
     <div className="dashboard-page dashboard-page-records" style={{ padding: "12px 0", minHeight: "60vh" }}>
       <EvidenceWorkspaceHeader activeKey="records" onSelect={onNavigate} />
       <div className="research-index-page-head">
-        <b>STOM 연구 기록 인덱스</b>
-        <span className="mono">campaign · docs · update_log · registry lineage</span>
+        <b>STOM 기록 검색</b>
+        <span className="mono">campaign · docs · update_log · registry lineage · inert detail</span>
       </div>
       <ResearchIndexPanel baseUrl={base} wsStatus="na" />
     </div>
@@ -246,8 +256,8 @@ function ProPage({ baseUrl, onNavigate }) {
     <div className="dashboard-page dashboard-page-pro" style={{ minHeight: "60vh" }}>
       <EvidenceWorkspaceHeader activeKey="pro" onSelect={onNavigate} />
       <div className="dashboard-page-title">
-        <b>STOM 리서치 프로</b>
-        <span className="mono">analysis workbench · HoF actions</span>
+        <b>STOM 분석 워크벤치</b>
+        <span className="mono">candidate analysis · HoF field contract · workbench actions</span>
       </div>
       <HofInventoryGate />
       {Panel
@@ -339,8 +349,8 @@ function VerdictPanel({ baseUrl, onNavigate }) {
     <div className="dashboard-page dashboard-page-verdict" style={{ padding: "14px 0", maxWidth: 980, margin: "0 auto", minHeight: "60vh" }}>
       <EvidenceWorkspaceHeader activeKey="verdict" onSelect={onNavigate} />
       <div className="dashboard-page-title">
-        <b>검증 결산과 운용 결정 (V6)</b>
-        <span className="mono">증거 → 결정(append-only) 워크플로우</span>
+        <b>검증 결산과 결정 감사</b>
+        <span className="mono">증거 → 결정 기록 append-only · final approval 분리</span>
       </div>
 
       {/* 하위 탭바 — 다른 탭(연구실)과 동일한 .research-tabs 패턴으로 체계화. */}

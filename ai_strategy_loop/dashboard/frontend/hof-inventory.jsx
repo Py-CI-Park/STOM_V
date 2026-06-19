@@ -19,6 +19,20 @@ const HOF_INVENTORY_FIELDS = [
   { key: "workbench_actions", label: "워크벤치 액션", source: "ResearchProPanel", obligation: "분석 프로의 편집/즉시 백테스트 책임 분리 유지" },
 ];
 
+const HOF_FIELD_GROUPS = [
+  { key: "identity", label: "정체성", fields: ["kind", "name", "period"] },
+  { key: "return", label: "성과", fields: ["total_return_krw", "total_return_pct", "annual_return_pct"] },
+  { key: "risk", label: "위험·체결", fields: ["mdd_pct", "payoff", "daily_avg_trades", "max_hold", "operating_capital_krw"] },
+  { key: "evidence", label: "증거·액션", fields: ["screenshots", "workbench_actions"] },
+];
+
+const HOF_WORKBENCH_ACTIONS = [
+  "조건 후보 열기",
+  "즉시 백테스트 연결",
+  "HoF 비교 기준 확인",
+  "인간 reference screenshot 확인",
+];
+
 const HOF_MERGE_GATE_RULES = [
   "No HoF component merge before every inventory field has an assertion.",
   "Human, seed, and AI rows must remain visually distinguishable.",
@@ -41,22 +55,35 @@ function HofInventoryGate({ compact = false }) {
         이 표면은 벤치마크 성과판입니다. 시각 통합 전 아래 필드와 액션이 모두 보존되어야 하며,
         분석 프로 워크벤치 책임과 인간 reference 증거를 섞어 잃으면 안 됩니다.
       </div>
+      <div className="hof-inventory-actions">
+        {HOF_WORKBENCH_ACTIONS.map(action => <span key={action}>{action}</span>)}
+      </div>
       {!compact && (
-        <div className="hof-inventory-grid">
-          {HOF_INVENTORY_FIELDS.map(field => (
-            <div key={field.key} className="hof-inventory-field">
-              <span className="mono">{field.key}</span>
-              <b>{field.label}</b>
-              <small>{field.obligation}</small>
-            </div>
-          ))}
-        </div>
+        <>
+          <div className="hof-inventory-groups">
+            {HOF_FIELD_GROUPS.map(group => (
+              <div key={group.key}>
+                <b>{group.label}</b>
+                <small>{group.fields.join(" · ")}</small>
+              </div>
+            ))}
+          </div>
+          <div className="hof-inventory-grid">
+            {HOF_INVENTORY_FIELDS.map(field => (
+              <div key={field.key} className="hof-inventory-field">
+                <span className="mono">{field.key}</span>
+                <b>{field.label}</b>
+                <small>{field.obligation}</small>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
 }
 
-Object.assign(window, { HOF_INVENTORY_FIELDS, HOF_MERGE_GATE_RULES, HofInventoryGate });
+Object.assign(window, { HOF_INVENTORY_FIELDS, HOF_FIELD_GROUPS, HOF_WORKBENCH_ACTIONS, HOF_MERGE_GATE_RULES, HofInventoryGate });
 
 // Track Z — dual-safe ESM export. KEEP on ONE physical line.
-export { HOF_INVENTORY_FIELDS, HOF_MERGE_GATE_RULES, HofInventoryGate };
+export { HOF_INVENTORY_FIELDS, HOF_FIELD_GROUPS, HOF_WORKBENCH_ACTIONS, HOF_MERGE_GATE_RULES, HofInventoryGate };

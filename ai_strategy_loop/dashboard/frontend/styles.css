@@ -2794,6 +2794,123 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   font-size: 10.5px;
 }
 
+.stom-route-boundary {
+  display: block;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  margin-top: 2px;
+}
+
+.workspace-owner-boundary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+  color: var(--ink-3);
+  font-size: 10.5px;
+}
+
+.phase2-inventory-panel {
+  border: 1px solid rgba(106,166,255,0.24);
+  border-radius: var(--radius-md);
+  background: rgba(106,166,255,0.045);
+  padding: 10px;
+}
+
+.phase2-inventory-panel.compact {
+  margin-top: 10px;
+}
+
+.phase2-inventory-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.phase2-inventory-kicker {
+  color: var(--blue);
+  font-size: 9.5px;
+  letter-spacing: .12em;
+}
+
+.phase2-inventory-panel p {
+  color: var(--ink-2);
+  font-size: 11.5px;
+  line-height: 1.55;
+  margin: 6px 0 0;
+}
+
+.phase2-owner-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-top: 10px;
+}
+
+.phase2-owner-card {
+  border: 1px solid var(--line-1);
+  border-radius: var(--radius-sm);
+  background: var(--bg-0);
+  padding: 7px;
+}
+
+.phase2-owner-card span {
+  color: var(--ink-3);
+  font-size: 9.5px;
+}
+
+.phase2-owner-card b {
+  display: block;
+  color: var(--ink-0);
+  font-size: 12px;
+}
+
+.phase2-owner-card small {
+  display: block;
+  color: var(--ink-2);
+  font-size: 10.5px;
+  line-height: 1.4;
+  margin-top: 3px;
+}
+
+.research-index-more {
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+.hof-inventory-actions,
+.hof-inventory-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: 8px;
+}
+
+.hof-inventory-actions span,
+.hof-inventory-groups div {
+  border: 1px solid var(--line-1);
+  border-radius: 999px;
+  background: var(--bg-0);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 7px;
+}
+
+.hof-inventory-groups div {
+  border-radius: var(--radius-sm);
+}
+
+.hof-inventory-groups b {
+  color: var(--ink-0);
+  margin-right: 6px;
+}
+
+.hof-inventory-groups small {
+  color: var(--ink-3);
+}
 @media (max-width: 1180px) {
   .stom-shell-context,
   .evidence-workspace-head,
@@ -2801,7 +2918,8 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
     grid-template-columns: 1fr;
   }
   .metric-list,
-  .evidence-workspace-grid {
+  .evidence-workspace-grid,
+  .phase2-owner-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .workspace-nav {
@@ -2832,6 +2950,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   }
   .metric-list,
   .evidence-workspace-grid,
+  .phase2-owner-grid,
   .hof-inventory-grid {
     grid-template-columns: 1fr;
   }

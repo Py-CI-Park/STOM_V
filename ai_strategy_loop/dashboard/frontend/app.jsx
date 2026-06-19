@@ -32,6 +32,7 @@ import { ResearchLabPanel } from "./research-lab.jsx";
 import { LabPage, ProPage, VerdictPanel, ResearchIndexPage } from "./dashboard-pages.jsx";
 import { DASHBOARD_ROUTE_CONTRACTS, DASHBOARD_TAB_GROUPS, routeContract, normalizeDashboardTabKey } from "./ui-contract.jsx";
 import { UiStateBlock, MetricList } from "./ui-state.jsx";
+import { pageOwnerContract } from "./dashboard-inventory.jsx";
 const { useState: useState_a, useEffect: useEffect_a, useCallback: useCallback_a } = React;
 
 function App() {
@@ -163,9 +164,10 @@ function App() {
   const pct = state.max_generations > 0 ? Math.min(100, (state.current_gen / state.max_generations) * 100) : 0;
   const isIdle = state.status === "idle" && state.generations.length === 0 && !running;
   const activeRoute = routeContract(activeTab);
+  const activeOwner = pageOwnerContract(activeTab);
   const shellMetrics = [
     { label: "route", value: activeRoute.badge || activeTab },
-    { label: "group", value: activeRoute.group || "—" },
+    { label: "owner", value: activeOwner.owner || "—" },
     { label: "status", value: state.status || "—" },
     { label: "run", value: selectedRun ? "archive" : "LIVE" },
   ];
@@ -207,7 +209,8 @@ function App() {
 
         <div className="stom-shell-context">
           <UiStateBlock kind="info" compact title={activeRoute.group || "Dashboard"} detail={activeRoute.key || activeTab}>
-            {activeRoute.contract || "STOM dashboard route"}
+            <b>{activeOwner.owner || activeRoute.label}</b> · {activeRoute.contract || "STOM dashboard route"}
+            <span className="stom-route-boundary">비소유: {activeOwner.notOwner || "—"}</span>
           </UiStateBlock>
           <MetricList items={shellMetrics} />
         </div>
