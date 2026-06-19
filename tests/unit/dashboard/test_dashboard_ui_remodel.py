@@ -32,6 +32,8 @@ def test_route_contract_preserves_stable_keys_and_groups() -> None:
     assert 'tabs: ["records", "lab"]' in src
     assert 'tabs: ["pro", "verdict"]' in src
     assert "normalizeDashboardTabKey" in src
+    assert 'label: "프로세스"' in src
+    assert "writing-mode: vertical-rl" not in _read("styles.css").split(".stom-tabgroup-label", 1)[1].split("}", 1)[0]
 
 
 def test_app_shell_uses_grouped_nav_and_direct_page_imports() -> None:
@@ -43,6 +45,8 @@ def test_app_shell_uses_grouped_nav_and_direct_page_imports() -> None:
     assert "stom-tabgroup" in src
     assert "stom-tab-badge" in src
     assert "<LabPage" in src and "<ResearchIndexPage" in src
+    assert "phase3-home-links" in src
+    assert "configSpecStatus" in src
 
 
 def test_shared_ui_state_primitives_are_presentation_only_and_exported() -> None:
@@ -65,6 +69,8 @@ def test_evidence_workspace_labels_each_owner_surface() -> None:
     assert "workspace-owner-boundary" in src
     for active in ('activeKey="records"', 'activeKey="lab"', 'activeKey="pro"', 'activeKey="verdict"'):
         assert active in src
+    lab_section = src.split("function LabPage", 1)[1].split("function ResearchIndexPage", 1)[0]
+    assert "ResearchIndexPanel" not in lab_section
     assert "normalizeVerdictSubtab" in src
     assert 'VERDICT_SUBTAB_KEYS = ["summary", "regime", "portfolio", "decide"]' in src
 
@@ -121,6 +127,7 @@ def test_visual_quality_surface_pins_baselines_and_perf_budgets() -> None:
         assert route in src
     for surface in ('surface: "records"', 'surface: "generations"', 'surface: "hof"'):
         assert surface in src
+    assert "진화 홈" in src and "프로세스" in src
     assert "no-dependency windowing" in src
 
 def test_records_lookup_has_sort_and_windowing_controls() -> None:
@@ -137,10 +144,14 @@ def test_records_lookup_has_sort_and_windowing_controls() -> None:
 def test_process_flow_growth_keeps_readonly_state_contract() -> None:
     src = _read("phase-detail.jsx")
     assert "process-flow-cards" in src
-    assert "state.latest.current_step" in src
-    assert "step_timings 누적" in src
+    assert "실시간 상태" in src
+    assert "각 단계가 끝난 뒤 누적되는 실제 시간 표본" in src
     assert "ProcessFlowDiagram" in src
     assert "<iframe" not in src  # iframe remains app.jsx route chrome, not process component state mutation.
-    assert "state mode" in src
-    assert "discrete progress" in src
+    assert "상태 구분" in src
+    assert "단계 진행" in src
     assert "logWindow = logs.slice(-50)" in src
+    process_doc = (PROJECT_ROOT / "docs" / "process_flow.html").read_text(encoding="utf-8")
+    assert "쉽게 보는 조건식 발굴 루프" in process_doc
+    assert "같은 좌표 양분기" not in process_doc
+    assert "사후슬라이스 착시" not in process_doc

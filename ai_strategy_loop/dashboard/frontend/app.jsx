@@ -33,6 +33,7 @@ import { LabPage, ProPage, VerdictPanel, ResearchIndexPage } from "./dashboard-p
 import { DASHBOARD_ROUTE_CONTRACTS, DASHBOARD_TAB_GROUPS, routeContract, normalizeDashboardTabKey } from "./ui-contract.jsx";
 import { UiStateBlock, MetricList } from "./ui-state.jsx";
 import { pageOwnerContract } from "./dashboard-inventory.jsx";
+import { INITIAL_STATE } from "./conn-backend.jsx";
 const { useState: useState_a, useEffect: useEffect_a, useCallback: useCallback_a } = React;
 
 function App() {
@@ -58,13 +59,14 @@ function App() {
   const [simVisited, setSimVisited] = useState_a(() => normalizeDashboardTabKey(localStorage.getItem("stom_active_tab") || "evolution") === "simulation");
   useEffect_a(() => { if (activeTab === "simulation") setSimVisited(true); }, [activeTab]);
 
-  const { state: liveState, health, wsStatus, configSpec, send, lastReply, reconnect } = useBackend(baseUrl);
+  const { state: liveState, health, wsStatus, configSpec, configSpecStatus, send, lastReply, reconnect } = useBackend(baseUrl);
 
   const [settingsOpen, setSettingsOpen] = useState_a(false);
   const [approvalOpen, setApprovalOpen] = useState_a(false);
   const [codeViewGen, setCodeViewGen] = useState_a(null); // gen object
   // #65 P1 — 세대표 '백테상세' 클릭 시 BacktestDetailChart에 내려줄 선택 세대(드롭다운 대체).
   const [selectedDetailGen, setSelectedDetailGen] = useState_a(null);
+  const [gptAuthProbe, setGptAuthProbe] = useState_a(null);
 
   // #65 P0 — run 셀렉터. selectedRun이 null/''이면 LIVE(현재 state, WS), 아니면 그 run을
   //   /run_state로 재구성해 본다. 라이브 state가 합성 run(segrun)으로 오염돼도 실 run을 골라
@@ -133,6 +135,19 @@ function App() {
     send({ action: "start", config });
     setSettingsOpen(false);
   }, [send]);
+  const onGptAuthTest = useCallback_a(() => {
+    setGptAuthProbe({ status: "testing", message: "GPT auth proxy test running" });
+    fetch(baseUrl + "/gpt_auth/test", { method: "POST", signal: AbortSignal.timeout(8000) })
+      .then(r => r.json().then(j => ({ http_ok: r.ok, ...j })))
+      .then(j => setGptAuthProbe(j))
+      .catch(e => setGptAuthProbe({
+        status: "unavailable",
+        safe: true,
+        starts_evolution: false,
+        message: "GPT auth connection test failed without starting evolution",
+        reason: String(e && e.message ? e.message : e),
+      }));
+  }, [baseUrl]);
 
   const onStop = useCallback_a(() => {
     send({ action: "stop" });
@@ -155,11 +170,11 @@ function App() {
     if (g) setCodeViewGen(g);
   }, [state.generations]);
 
-  // Find mdd_cap from configSpec defaults to color MDDs in the table
-  const mddCap = (configSpec.find(f => f.name === "mdd_cap")?.default) ?? 15;
-  // 일평균거래횟수 하한(빈도 게이트 주 기준) — 테이블에서 미달 행을 경고색으로 표시.
-  const minDailyTrades = (configSpec.find(f => f.name === "min_daily_trades")?.default) ?? 0.5;
-  const targetScore = (configSpec.find(f => f.name === "target_score")?.default) ?? 1.0;
+  // Find config defaults for table/chart highlighting. Empty target_score means no early stop.
+  const mddCap = Number((configSpec.find(f => f.name === "mdd_cap")?.default) ?? 40);
+  const minDailyTrades = Number((configSpec.find(f => f.name === "min_daily_trades")?.default) ?? 0.5);
+  const targetScoreRaw = (configSpec.find(f => f.name === "target_score")?.default);
+  const targetScore = (targetScoreRaw === "" || targetScoreRaw === null || targetScoreRaw === undefined) ? 1.0 : Number(targetScoreRaw);
 
   const pct = state.max_generations > 0 ? Math.min(100, (state.current_gen / state.max_generations) * 100) : 0;
   const isIdle = state.status === "idle" && state.generations.length === 0 && !running;
@@ -305,7 +320,7 @@ function App() {
           </main>
         </ErrorBoundary>
       ) : isIdle ? (
-        <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} />
+        <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} state={state} onNavigate={setActiveTab} />
       ) : (
         <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {/* 승인 export 결과 배너(final_approval 게이트는 ApprovalDialog가 유지) */}
@@ -413,7 +428,10 @@ function App() {
         onClose={() => setSettingsOpen(false)}
         onStart={onStart}
         configSpec={configSpec}
-        disabled={running}
+        configSpecStatus={configSpecStatus}
+        onGptAuthTest={onGptAuthTest}
+        gptAuthProbe={gptAuthProbe}
+        disabled={running || (!isDemoSrc && configSpecStatus && !configSpecStatus.live)}
       />
       <ApprovalDialog
         winner={approvalOpen ? state.winner : null}
@@ -618,7 +636,7 @@ function RunSelector({ runList, selectedRun, onSelect, onRefresh, disabled }) {
   );
 }
 
-function IdleState({ onStart, configSpec }) {
+function IdleState({ onStart, configSpec, state, onNavigate }) {
   return (
     <>
       <div style={{
@@ -643,6 +661,30 @@ function IdleState({ onStart, configSpec }) {
           ▸ 시작
         </button>
       </div>
+      <div className="panel" style={{ marginBottom: 14 }}>
+        <div className="panel-hd">
+          <div className="panel-hd-title"><span className="dot" style={{ background: "var(--teal)" }}></span>조건식 발굴 프로세스</div>
+        </div>
+        <div className="panel-bd">
+          <ProcessFlowPanel state={state || INITIAL_STATE} />
+          <div className="phase3-home-links">
+            {[
+              { key: "backtest", label: "백테스트 검증", text: "개별 조건식 백테스트와 진화 중 백테스트 결과 확인" },
+              { key: "simulation", label: "차트 리플레이", text: "진입/청산 지점을 차트에서 다시 확인" },
+              { key: "records", label: "기록 검색", text: "모든 연구 기록과 update log 검색" },
+              { key: "lab", label: "리서치 Wiki", text: "위키·방법론·AI 컨텍스트 문서 탐색" },
+              { key: "pro", label: "분석 워크벤치", text: "후보 분석과 HoF 비교" },
+              { key: "verdict", label: "결정 감사", text: "append-only 결정 이력 확인" },
+            ].map(item => (
+              <button key={item.key} className="phase3-home-link" type="button"
+                      onClick={() => onNavigate && onNavigate(item.key)}>
+                <b>{item.label}</b>
+                <span>{item.text}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 8 }}>
       <div className="panel">
         <div className="panel-hd">
@@ -657,9 +699,9 @@ function IdleState({ onStart, configSpec }) {
             각 세대의 부검(autopsy)이 다음 세대 생성기에 피드백되어 조건식이 점진적으로 진화합니다.
             <br /><br />
             <span style={{ color: "var(--ink-2)" }}>
-              목표 점수와 MDD 상한을 동시에 만족하면 하드 게이트를 통과한 우승 전략으로 등록되고,
+              목표 점수와 MDD 상한을 동시에 만족하면 우승 후보로 표시되고,
               <br />
-              사용자의 명시적 승인 후에만 운영 strategy.db로 export 됩니다.
+              운영 export/final approval은 연구 확인 화면과 분리된 별도 승인 절차입니다.
             </span>
           </p>
           <button className="btn primary lg" onClick={onStart}>
@@ -675,12 +717,12 @@ function IdleState({ onStart, configSpec }) {
         <div className="panel-bd" style={{ padding: 0 }}>
           <ol style={{ margin: 0, padding: 0, listStyle: "none" }}>
             {[
-              { n: 1, k: "생성", d: "LLM이 직전 부검을 컨텍스트로 매수/매도 전략 코드를 생성 (실시간 스트리밍 표시)" },
-              { n: 2, k: "백테스트", d: "지정된 시간단위·스코프·윈도우로 자본곡선·낙폭·매매를 시뮬레이션" },
-              { n: 3, k: "채점", d: "graded_score = 손익·MDD·거래수·일관성의 가중합 (메트릭별 분해 표시)" },
-              { n: 4, k: "게이트", d: "score ≥ target & MDD ≤ cap & trades ≥ min → 통과" },
-              { n: 5, k: "부검", d: "탈락 원인을 자연어로 요약 → 다음 세대 컨텍스트에 주입" },
-              { n: 6, k: "승인", d: "통과 전략을 운영 DB로 export (사용자 명시적 확인 필요)" },
+              { n: 1, k: "조건식 만들기", d: "LLM이 이전 실패 원인과 좋은 예시를 참고해 매수/매도 규칙을 작성합니다." },
+              { n: 2, k: "과거 데이터로 검증", d: "백테스트 엔진이 지정 기간의 종목 데이터를 돌려 손익·낙폭·거래 빈도를 계산합니다." },
+              { n: 3, k: "점수 계산", d: "수익, 위험(MDD), 우상향, 일평균 거래, 손익비를 목표 공식에 맞춰 점수화합니다." },
+              { n: 4, k: "통과 기준 확인", d: "목표 적합도, MDD 상한, 일평균 거래 하한을 만족하는지 확인합니다." },
+              { n: 5, k: "실패 원인 요약", d: "왜 떨어졌는지 쉬운 말로 정리해 다음 세대 프롬프트에 넣습니다." },
+              { n: 6, k: "다시 개선", d: "이름이 붙은 run·세대·백테스트 결과를 저장해 나중에 다시 찾을 수 있게 합니다." },
             ].map((s, i, arr) => (
               <li key={s.n} style={{
                 padding: "12px 16px",

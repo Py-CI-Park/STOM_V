@@ -25,6 +25,7 @@ import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const PROJECT_ROOT = resolve(__dirname, "../../..");
 const FRONTEND = resolve(__dirname, "../frontend");
 const BUNDLE = resolve(FRONTEND, "bundle");
 
@@ -41,6 +42,7 @@ const EXTERNALIZED_GLOBALS = { react: "window.React", "react-dom": "window.React
 async function buildServedBundle(outfile) {
   await esbuild.build({
     entryPoints: [ENTRY],
+    absWorkingDir: PROJECT_ROOT,
     outfile,
     bundle: true,
     format: "iife",            // classic IIFE → app.js tag stays classic+defer (no type=module flip).

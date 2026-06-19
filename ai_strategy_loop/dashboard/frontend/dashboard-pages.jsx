@@ -203,11 +203,6 @@ function LabPage({ baseUrl, onNavigate }) {
               <ResearchWikiPanel baseUrl={base} wsStatus="na" runId={runId} />
             </div>
           )}
-          {window.ResearchIndexPanel && (
-            <div style={{ marginTop: 14 }}>
-              <ResearchIndexPanel baseUrl={base} wsStatus="na" />
-            </div>
-          )}
           {window.AIContextPanel && (
             <div style={{ marginTop: 14 }}>
               <AIContextPanel baseUrl={base} wsStatus="na" runId={runId} genNo={null} />
@@ -224,6 +219,7 @@ function LabPage({ baseUrl, onNavigate }) {
 
 function ResearchIndexPage({ baseUrl, onNavigate }) {
   const base = _dpBase(baseUrl);
+  const Panel = window.ResearchIndexPanel || ResearchIndexPanel;
   return (
     <div className="dashboard-page dashboard-page-records" style={{ padding: "12px 0", minHeight: "60vh" }}>
       <EvidenceWorkspaceHeader activeKey="records" onSelect={onNavigate} />
@@ -231,7 +227,7 @@ function ResearchIndexPage({ baseUrl, onNavigate }) {
         <b>STOM 기록 검색</b>
         <span className="mono">campaign · docs · update_log · registry lineage · inert detail</span>
       </div>
-      <ResearchIndexPanel baseUrl={base} wsStatus="na" />
+      <Panel baseUrl={base} wsStatus="na" />
     </div>
   );
 }

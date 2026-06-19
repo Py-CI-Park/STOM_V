@@ -1,6 +1,6 @@
 "use strict";
 (() => {
-  // ../frontend/conn-demo-codegen.jsx
+  // ai_strategy_loop/dashboard/frontend/conn-demo-codegen.jsx
   function genBuyCode(tag, gen) {
     const seed = gen * 7 % 9 + 1;
     const map = {
@@ -123,34 +123,47 @@ def signal_sell(pos, bar, ind):
     return map[tag] || map.ATR;
   }
 
-  // ../frontend/conn-backend.jsx
+  // ai_strategy_loop/dashboard/frontend/conn-backend.jsx
   var { useState: useState_cn1, useEffect: useEffect_cn1, useRef: useRef_cn1, useCallback: useCallback_cn1 } = React;
   var DEFAULT_BASE2 = typeof window !== "undefined" && window.location && window.location.origin && window.location.origin.startsWith("http") ? window.location.origin : "http://127.0.0.1:8770";
   var DEFAULT_CONFIG_SPEC = [
     // 목표/제약
     {
       name: "mdd_cap",
-      label: "MDD \uC0C1\uD55C",
+      label: "MDD \uC0C1\uD55C(%)",
       type: "number",
-      default: 15,
+      default: 40,
       group: "\uBAA9\uD45C/\uC81C\uC57D",
-      help: "\uD5C8\uC6A9 \uAC00\uB2A5\uD55C \uCD5C\uB300 \uB099\uD3ED(%) \uC0C1\uD55C. \uCD08\uACFC \uC2DC \uAC8C\uC774\uD2B8 \uD0C8\uB77D."
+      min: 0,
+      max: 40,
+      help: "\uB370\uBAA8 \uAE30\uBCF8\uAC12. \uC2E4\uC81C LIVE \uAE30\uBCF8\uAC12\uC740 /config/spec\uC5D0\uC11C\uB9CC \uD655\uC815\uB41C\uB2E4."
+    },
+    {
+      name: "min_daily_trades",
+      label: "\uC77C\uD3C9\uADE0 \uAC70\uB798 \uD558\uD55C",
+      type: "number",
+      default: 0.5,
+      group: "\uBAA9\uD45C/\uC81C\uC57D",
+      min: 0,
+      help: "\uC8FC \uBE48\uB3C4 \uAE30\uC900: daily_avg_trades = \uAC70\uB798\uC218 / \uAC70\uB798\uC77C\uC218."
     },
     {
       name: "min_trades",
-      label: "\uCD5C\uC18C \uAC70\uB798\uC218",
+      label: "\uCD5C\uC18C \uAC70\uB798\uC218(\uD3F4\uBC31)",
       type: "number",
-      default: 20,
+      default: 30,
       group: "\uBAA9\uD45C/\uC81C\uC57D",
-      help: "\uC720\uC758\uBBF8\uD55C \uD3C9\uAC00\uB97C \uC704\uD55C \uCD5C\uC18C \uAC70\uB798 \uD69F\uC218."
+      min: 0,
+      help: "\uC77C\uD3C9\uADE0 \uAC70\uB798\uC218\uAC00 \uC5C6\uB294 \uAD6C\uD615 \uACB0\uACFC\uC5D0\uC11C\uB9CC \uC4F0\uB294 \uD3F4\uBC31."
     },
     {
       name: "target_score",
       label: "\uBAA9\uD45C \uC801\uD569\uB3C4",
       type: "number",
-      default: 1,
+      default: "",
       group: "\uBAA9\uD45C/\uC81C\uC57D",
-      help: "\uC774 \uC810\uC218 \uC774\uC0C1\uC774\uBA74 \uD558\uB4DC \uAC8C\uC774\uD2B8 \uD1B5\uACFC(\uC6B0\uC2B9 \uD6C4\uBCF4)."
+      min: 0,
+      help: "\uBE44\uC6B0\uBA74 \uC870\uAE30 \uC885\uB8CC \uC5C6\uC74C. winner_score\uAC00 \uC774 \uAC12 \uC774\uC0C1\uC774\uBA74 \uC878\uC5C5."
     },
     // 평가 스코프
     {
@@ -188,29 +201,31 @@ def signal_sell(pos, bar, ind):
       help: "\uCD5C\uADFC N\uC77C \uB370\uC774\uD130\uB85C \uBC31\uD14C\uC2A4\uD2B8 \uC218\uD589."
     },
     {
-      name: "bt_start_date",
-      label: "\uC2DC\uC791\uC77C",
+      name: "bt_start",
+      label: "\uC2DC\uC791\uC77C(YYYYMMDD)",
       type: "text",
-      default: "2025-03-01",
+      default: "",
       group: "\uD3C9\uAC00 \uC2A4\uCF54\uD504",
-      help: "\uBC31\uD14C\uC2A4\uD2B8 \uAD6C\uAC04 \uC2DC\uC791\uC77C (YYYY-MM-DD). \uBE48 \uAC12\uC774\uBA74 \uCD5C\uADFC N\uC77C."
+      help: "\uBE44\uC6B0\uBA74 DB \uCD5C\uC18C \uAC70\uB798\uC77C."
+    },
+    {
+      name: "bt_end",
+      label: "\uC885\uB8CC\uC77C(YYYYMMDD)",
+      type: "text",
+      default: "",
+      group: "\uD3C9\uAC00 \uC2A4\uCF54\uD504",
+      help: "\uBE44\uC6B0\uBA74 DB \uCD5C\uB300 \uAC70\uB798\uC77C."
     },
     // 엔진 리소스
     {
       name: "engine_workers",
       label: "\uBCD1\uB82C \uC6CC\uCEE4\uC218",
       type: "number",
-      default: 8,
+      default: 115,
       group: "\uC5D4\uC9C4 \uB9AC\uC18C\uC2A4",
-      help: "\uBC31\uD14C\uC2A4\uD2B8 \uBCD1\uB82C \uC2E4\uD589 \uD504\uB85C\uC138\uC2A4 \uC218. \uBCF4\uD1B5 CPU \uCF54\uC5B4\uC218\uC640 \uAC19\uAC70\uB098 \uADF8 \uC774\uD558."
-    },
-    {
-      name: "engine_cpu_cap",
-      label: "CPU \uC0C1\uD55C(%)",
-      type: "number",
-      default: 85,
-      group: "\uC5D4\uC9C4 \uB9AC\uC18C\uC2A4",
-      help: "\uC804\uCCB4 \uC0AC\uC6A9\uB960\uC774 \uC774 \uAC12\uC744 \uB118\uC73C\uBA74 \uC0C8 \uC791\uC5C5\uC744 \uD050\uC789. 0\uC774\uBA74 \uBB34\uC81C\uD55C."
+      min: 0,
+      max: 128,
+      help: "\uD604\uC7AC 128 logical CPU \uAE30\uC900 90% \uC0C1\uD55C \uAE30\uBCF8\uAC12. 0\uC774\uBA74 \uC790\uB3D9."
     },
     {
       name: "engine_mem_cap_mb",
@@ -218,15 +233,17 @@ def signal_sell(pos, bar, ind):
       type: "number",
       default: 8192,
       group: "\uC5D4\uC9C4 \uB9AC\uC18C\uC2A4",
-      help: "\uCD08\uACFC \uC2DC \uAC00\uC7A5 \uC624\uB798\uB41C \uCE90\uC2DC\uBD80\uD130 \uD574\uC81C."
+      min: 0,
+      help: "\uD638\uC2A4\uD2B8 \uBA54\uBAA8\uB9AC \uAE30\uBC18 \uC790\uB3D9 \uC0C1\uD55C. 0\uC774\uBA74 \uC790\uB3D9."
     },
     {
       name: "engine_chunk_days",
       label: "\uCCAD\uD06C \uD06C\uAE30(\uC77C)",
       type: "number",
-      default: 5,
+      default: 20,
       group: "\uC5D4\uC9C4 \uB9AC\uC18C\uC2A4",
-      help: "\uD55C \uC6CC\uCEE4\uAC00 \uD55C \uBC88\uC5D0 \uCC98\uB9AC\uD558\uB294 \uBC31\uD14C\uC2A4\uD2B8 \uAD6C\uAC04 \uD06C\uAE30."
+      min: 0,
+      help: "\uD55C \uC6CC\uCEE4\uAC00 \uCC98\uB9AC\uD560 \uBC31\uD14C\uC2A4\uD2B8 \uB0A0\uC9DC \uCCAD\uD06C. 0\uC774\uBA74 \uC790\uB3D9."
     },
     // 과적합 가드
     {
@@ -243,49 +260,75 @@ def signal_sell(pos, bar, ind):
       label: "\uD504\uB85C\uBC14\uC774\uB354",
       type: "select",
       default: "gpt_auth",
-      options: ["gpt_auth", "claude", "local"],
+      options: ["gpt_auth", "openrouter", "codex_proxy"],
       group: "AI",
-      help: "\uC804\uB7B5 \uC0DD\uC131\uC5D0 \uC0AC\uC6A9\uD560 LLM \uC81C\uACF5\uC790."
+      help: "\uC804\uB7B5 \uC0DD\uC131\uC5D0 \uC0AC\uC6A9\uD560 LLM \uC81C\uACF5\uC790. LIVE\uC5D0\uC11C\uB294 /config/spec \uAC12\uC774 \uC6B0\uC120\uC774\uB2E4."
     },
     {
       name: "model",
       label: "\uBAA8\uB378",
-      type: "text",
-      default: "gpt-5-codex",
+      type: "select",
+      default: "gpt-5.5",
       group: "AI",
-      help: "\uC0AC\uC6A9\uD560 \uBAA8\uB378 \uC2DD\uBCC4\uC790."
+      options: ["gpt-5.5", "gpt-5.5-mini", "openai-codex/gpt-5.5"],
+      help: "GPT 5.5 \uAE30\uBCF8. xhigh\uB294 reasoning_effort\uB85C \uD45C\uC2DC."
+    },
+    {
+      name: "reasoning_effort",
+      label: "Reasoning effort",
+      type: "select",
+      default: "xhigh",
+      group: "AI",
+      options: ["xhigh", "high", "medium", "low"],
+      help: "\uAE30\uBCF8 xhigh. provider \uBBF8\uC9C0\uC6D0 \uC2DC \uC0C1\uD0DC\uB85C \uD45C\uC2DC."
     },
     {
       name: "max_generations",
       label: "\uCD5C\uB300 \uC138\uB300",
       type: "number",
-      default: 30,
+      default: 200,
       group: "AI",
-      help: "\uC774 \uC138\uB300\uAE4C\uC9C0 \uB3C4\uB2EC\uD558\uBA74 \uB8E8\uD504 \uC885\uB8CC."
-    },
-    {
-      name: "temperature",
-      label: "Temperature",
-      type: "number",
-      default: 0.7,
-      group: "AI",
-      help: "\uC0DD\uC131 \uB2E4\uC591\uC131. \uB192\uC744\uC218\uB85D \uD0D0\uD5D8\uC801, \uB0AE\uC744\uC218\uB85D \uBCF4\uC218\uC801."
+      help: "\uC7A5\uAE30 \uC5F0\uAD6C \uAE30\uBCF8\uAC12. \uC2A4\uBAA8\uD06C \uAC80\uC99D\uC740 1~2\uB85C \uB0AE\uCDB0 \uC2E4\uD589."
     },
     {
       name: "feedback_window",
       label: "\uD53C\uB4DC\uBC31 \uC708\uB3C4\uC6B0",
       type: "number",
-      default: 3,
+      default: 8,
       group: "AI",
-      help: "\uB2E4\uC74C \uC138\uB300\uC5D0 \uC804\uB2EC\uD560 \uC9C1\uC804 \uBD80\uAC80(autopsy) \uC218."
+      help: "\uB2E4\uC74C \uC138\uB300\uC5D0 \uC804\uB2EC\uD560 \uCD5C\uADFC \uBD80\uAC80/\uC2E4\uD328 \uC6D0\uC778 \uAC1C\uC218."
     }
   ];
+  var CONFIG_SPEC_DEMO_STATUS = {
+    source: "fallback_demo",
+    live: false,
+    message: "\uB370\uBAA8/\uC624\uD504\uB77C\uC778 \uAE30\uBCF8 \uC124\uC815\uC785\uB2C8\uB2E4. \uC2E4\uC81C \uC9C4\uD654 \uC2DC\uC791\uC5D0\uB294 /config/spec \uC5F0\uACB0\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."
+  };
+  function normalizeConfigSpecPayload(payload) {
+    var _a, _b;
+    if (Array.isArray(payload) && payload.length) {
+      return { fields: payload, status: { source: "live", live: true, contract_version: null, message: "array spec" } };
+    }
+    if (payload && typeof payload === "object" && Array.isArray(payload.fields) && payload.fields.length) {
+      return {
+        fields: payload.fields,
+        status: {
+          source: "live",
+          live: true,
+          contract_version: (_a = payload.contract_version) != null ? _a : null,
+          schema: (_b = payload.schema) != null ? _b : "fields",
+          message: "config spec loaded"
+        }
+      };
+    }
+    return { fields: [], status: { source: "missing", live: false, message: "config spec payload has no fields" } };
+  }
   var INITIAL_STATE = {
     contract_version: 1,
     run_id: null,
     status: "idle",
     current_gen: 0,
-    max_generations: 30,
+    max_generations: 200,
     provider: "gpt_auth",
     bt_timeframe: "min",
     best: null,
@@ -349,6 +392,7 @@ def signal_sell(pos, bar, ind):
     const [wsStatus, setWsStatus] = useState_cn1("connecting");
     const [state, setState] = useState_cn1(INITIAL_STATE);
     const [configSpec, setConfigSpec] = useState_cn1(DEFAULT_CONFIG_SPEC);
+    const [configSpecStatus, setConfigSpecStatus] = useState_cn1(CONFIG_SPEC_DEMO_STATUS);
     const [lastReply, setLastReply] = useState_cn1(null);
     const wsRef = useRef_cn1(null);
     const reconnectAttempt = useRef_cn1(0);
@@ -360,13 +404,15 @@ def signal_sell(pos, bar, ind):
       setWsStatus("demo");
       const cfg = config || {};
       const max = Number((_a = cfg.max_generations) != null ? _a : 12);
-      const target = Number((_b = cfg.target_score) != null ? _b : 1);
-      const mddCap = Number((_c = cfg.mdd_cap) != null ? _c : 15);
-      const minTrades = Number((_d = cfg.min_trades) != null ? _d : 20);
+      const target = Number(cfg.target_score === "" || cfg.target_score === null || cfg.target_score === void 0 ? 1 : cfg.target_score);
+      const mddCap = Number((_b = cfg.mdd_cap) != null ? _b : 40);
+      const minDailyTrades = Number((_c = cfg.min_daily_trades) != null ? _c : 0.5);
+      const minTrades = Number((_d = cfg.min_trades) != null ? _d : 30);
       const workers = Number((_e = cfg.engine_workers) != null ? _e : 8);
       const memCap = Number((_f = cfg.engine_mem_cap_mb) != null ? _f : 8192);
-      const startDate = cfg.bt_start_date || "2025-03-01";
-      const windowDays = Number((_g = cfg.bt_window_days) != null ? _g : 60);
+      const startDate = normalizeDemoDate(cfg.bt_start || cfg.bt_start_date, "2025-03-01");
+      const endDate = normalizeDemoDate(cfg.bt_end, null);
+      const windowDays = endDate ? Math.max(1, Math.ceil((Date.parse(endDate) - Date.parse(startDate)) / 864e5) + 1) : Number((_g = cfg.bt_window_days) != null ? _g : 60);
       const provider = cfg.provider || "gpt_auth";
       const chunkDays = Number((_h = cfg.engine_chunk_days) != null ? _h : 5);
       let gen = 0;
@@ -453,6 +499,19 @@ def signal_sell(pos, bar, ind):
         d.setDate(d.getDate() + days);
         return d.toISOString().slice(0, 10);
       }
+      function normalizeDemoDate(value, fallback) {
+        if (value === null || value === void 0 || value === "") return fallback;
+        const text = String(value);
+        if (/^\d{8}$/.test(text)) return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)}`;
+        return text || fallback;
+      }
+      function dailyAvg(trades) {
+        return +(Number(trades || 0) / Math.max(1, Number(windowDays || 1))).toFixed(3);
+      }
+      function frequencyPass(trades) {
+        const daily = dailyAvg(trades);
+        return minDailyTrades > 0 ? daily >= minDailyTrades : Number(trades || 0) >= minTrades;
+      }
       function buildPlan(genNo) {
         const buyTag = ["VWAP", "MOM", "ORB", "FLOW", "RSI", "OBV"][Math.floor(Math.random() * 6)];
         const sellTag = ["ATR", "TRAIL", "FIXED", "PIVOT", "TIME"][Math.floor(Math.random() * 5)];
@@ -483,8 +542,8 @@ def signal_sell(pos, bar, ind):
         const target_trades = isErrorRoll ? 0 : Math.max(0, Math.floor(profit_factor * 60 + (Math.random() - 0.3) * 20));
         const target_mdd_pct = isErrorRoll ? 0 : Math.max(2, Math.min(40, (1.4 - mdd_score) * 18 + (Math.random() - 0.5) * 4));
         const target_pnl = isErrorRoll ? 0 : Math.round((profit_factor - 0.4) * 35e5 + (Math.random() - 0.5) * 6e5);
-        const willPass = !isErrorRoll && targetScore >= target && target_mdd_pct <= mddCap && target_trades >= minTrades;
-        const autopsy_text = willPass ? `gen_${genNo + 1} \u2014 \uD558\uB4DC \uAC8C\uC774\uD2B8 \uD1B5\uACFC. graded_score=${targetScore.toFixed(3)} (target ${target.toFixed(2)}), MDD ${target_mdd_pct.toFixed(2)}% \u2264 ${mddCap}%, \uAC70\uB798 ${target_trades}\uD68C \u2265 ${minTrades}. \uB2E4\uC74C \uC138\uB300\uB294 \uB3D9\uC77C \uACE8\uACA9 \uC720\uC9C0\uD558\uBA70 \uC2AC\uB9AC\uD53C\uC9C0 \uAC00\uC815\uB9CC \uBCF4\uC218\uD654.` : isErrorRoll ? `gen_${genNo + 1} \u2014 \uB7F0\uD0C0\uC784 \uC608\uC678. \uC548\uC804\uD55C \uCEEC\uB7FC \uC811\uADFC \uBC0F None-\uAC00\uB4DC \uBCF4\uAC15 \uD544\uC694. \uB2E4\uC74C \uC138\uB300\uB294 fallback \uBD84\uAE30 \uCD94\uAC00.` : feedbackPool[Math.floor(Math.random() * feedbackPool.length)];
+        const willPass = !isErrorRoll && targetScore >= target && target_mdd_pct <= mddCap && frequencyPass(target_trades);
+        const autopsy_text = willPass ? `gen_${genNo + 1} \u2014 \uD558\uB4DC \uAC8C\uC774\uD2B8 \uD1B5\uACFC. graded_score=${targetScore.toFixed(3)} (target ${target.toFixed(2)}), MDD ${target_mdd_pct.toFixed(2)}% \u2264 ${mddCap}%, \uC77C\uD3C9\uADE0 \uAC70\uB798 ${dailyAvg(target_trades)}\uD68C/\uC77C \u2265 ${minDailyTrades}. \uB2E4\uC74C \uC138\uB300\uB294 \uB3D9\uC77C \uACE8\uACA9 \uC720\uC9C0\uD558\uBA70 \uC2AC\uB9AC\uD53C\uC9C0 \uAC00\uC815\uB9CC \uBCF4\uC218\uD654.` : isErrorRoll ? `gen_${genNo + 1} \u2014 \uB7F0\uD0C0\uC784 \uC608\uC678. \uC548\uC804\uD55C \uCEEC\uB7FC \uC811\uADFC \uBC0F None-\uAC00\uB4DC \uBCF4\uAC15 \uD544\uC694. \uB2E4\uC74C \uC138\uB300\uB294 fallback \uBD84\uAE30 \uCD94\uAC00.` : feedbackPool[Math.floor(Math.random() * feedbackPool.length)];
         const lastAutopsies = generations.slice(-2).map((g) => `gen_${g.gen_no}: ${g.gate_reason !== "\uC870\uAC74 \uCDA9\uC871" ? g.gate_reason : "\uD1B5\uACFC"} (score ${g.graded_score})`);
         return {
           buyTag,
@@ -708,11 +767,11 @@ def signal_sell(pos, bar, ind):
         const peakDD = currentRun.drawdown.length ? Math.max(0, ...currentRun.drawdown.map((p) => p.value_pct)) : plan.target_mdd_pct;
         const mdd = +Math.min(40, Math.max(plan.target_mdd_pct, peakDD)).toFixed(2);
         const graded_score = isError ? 0 : (_a2 = currentRun.scoring.composite) != null ? _a2 : plan.target_score;
-        const gate_passed = !isError && graded_score >= target && mdd <= mddCap && trade_count >= minTrades;
+        const gate_passed = !isError && graded_score >= target && mdd <= mddCap && frequencyPass(trade_count);
         let gate_reason = "\uC870\uAC74 \uCDA9\uC871";
         if (isError) gate_reason = "\uC2E4\uD589 \uC624\uB958";
         else if (trade_count === 0) gate_reason = "\uAC70\uB798 0\uAC74";
-        else if (trade_count < minTrades) gate_reason = `\uAC70\uB798\uC218 \uBD80\uC871(${trade_count}/${minTrades})`;
+        else if (!frequencyPass(trade_count)) gate_reason = minDailyTrades > 0 ? `\uC77C\uD3C9\uADE0 \uAC70\uB798 \uBD80\uC871(${dailyAvg(trade_count)}/${minDailyTrades})` : `\uAC70\uB798\uC218 \uBD80\uC871(${trade_count}/${minTrades})`;
         else if (mdd > mddCap) gate_reason = `MDD \uCD08\uACFC(${mdd}% > ${mddCap}%)`;
         else if (graded_score < target) gate_reason = `\uC810\uC218 \uBBF8\uB2EC(${graded_score.toFixed(3)} < ${target})`;
         const gist = plan.gist + " \u2014 " + (isError ? "\uB7F0\uD0C0\uC784 \uC608\uC678" : `\uC9C4\uC785 ${trade_count}\uD68C, MDD ${mdd}%`);
@@ -725,6 +784,7 @@ def signal_sell(pos, bar, ind):
           trade_count,
           mdd,
           profit,
+          daily_avg_trades: dailyAvg(trade_count),
           strategy_gist: gist,
           buy_name: plan.buyName,
           sell_name: plan.sellName,
@@ -802,9 +862,16 @@ def signal_sell(pos, bar, ind):
           const cs = await fetch(baseUrl + "/config/spec", { signal: AbortSignal.timeout(1500) });
           if (cs.ok) {
             const csj = await cs.json();
-            if (Array.isArray(csj) && csj.length) setConfigSpec(csj);
+            const normalized = normalizeConfigSpecPayload(csj);
+            if (normalized.fields.length) {
+              setConfigSpec(normalized.fields);
+            }
+            setConfigSpecStatus(normalized.status);
+          } else {
+            setConfigSpecStatus({ source: "error", live: false, message: "config spec HTTP " + cs.status });
           }
         } catch (e) {
+          setConfigSpecStatus({ source: "error", live: false, message: String(e && e.message ? e.message : e) });
         }
         try {
           const st = await fetch(baseUrl + "/status", { signal: AbortSignal.timeout(1500) });
@@ -817,6 +884,7 @@ def signal_sell(pos, bar, ind):
         openWs();
       } catch (e) {
         setHealth({ connected: false, contract_version: null });
+        setConfigSpecStatus(CONFIG_SPEC_DEMO_STATUS);
         setWsStatus("demo");
       }
     }, [baseUrl]);
@@ -865,6 +933,15 @@ def signal_sell(pos, bar, ind):
       };
     }, [tryConnect]);
     const send = useCallback_cn1((msg) => {
+      if (msg && msg.action === "start" && wsStatus !== "demo" && !(configSpecStatus && configSpecStatus.live)) {
+        setLastReply({
+          action: "start",
+          status: "error",
+          reason: "config_spec_unavailable",
+          message: "LIVE \uC9C4\uD654 \uC2DC\uC791\uC740 /config/spec\uAC00 \uC815\uC0C1 \uB85C\uB4DC\uB41C \uB4A4\uC5D0\uB9CC \uAC00\uB2A5\uD569\uB2C8\uB2E4."
+        });
+        return false;
+      }
       if (wsStatus === "demo" || !wsRef.current || wsRef.current.readyState !== 1) {
         if (msg.action === "start") {
           startDemo(msg.config);
@@ -892,12 +969,13 @@ def signal_sell(pos, bar, ind):
       } catch (e) {
         return false;
       }
-    }, [wsStatus, startDemo, stopDemoSoft]);
+    }, [wsStatus, startDemo, stopDemoSoft, configSpecStatus]);
     return {
       state,
       health,
       wsStatus,
       configSpec,
+      configSpecStatus,
       send,
       lastReply,
       reconnect: tryConnect
@@ -908,7 +986,7 @@ def signal_sell(pos, bar, ind):
     DEFAULT_BASE: DEFAULT_BASE2
   });
 
-  // ../frontend/connection.jsx
+  // ai_strategy_loop/dashboard/frontend/connection.jsx
   function isDemoSource(wsStatus) {
     return wsStatus === "demo";
   }
@@ -933,7 +1011,7 @@ def signal_sell(pos, bar, ind):
     livePanelPending
   });
 
-  // ../frontend/ai-context.jsx
+  // ai_strategy_loop/dashboard/frontend/ai-context.jsx
   var { useState: useState_ac, useEffect: useEffect_ac } = React;
   function packText(value, fallback = "-") {
     if (value === null || value === void 0 || value === "") return fallback;
@@ -992,7 +1070,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { AIContextPanel: AIContextPanel2 });
 
-  // ../frontend/rp-utils.jsx
+  // ai_strategy_loop/dashboard/frontend/rp-utils.jsx
   var {
     useState: useState_rp,
     useEffect: useEffect_rp,
@@ -1130,7 +1208,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return /* @__PURE__ */ React.createElement("div", { className: "rp-code-grid" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rp-code-label", style: { color: "var(--teal)" } }, "\uB9E4\uC218 \uC870\uAC74\uC2DD ", code.buy_name ? `\xB7 ${code.buy_name}` : ""), /* @__PURE__ */ React.createElement("pre", { className: "rp-code-block" }, buy || "(\uC5C6\uC74C)"), /* @__PURE__ */ React.createElement(_RpVarChips, { baseUrl, isDemo, code: buy })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rp-code-label", style: { color: "var(--blue)" } }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD ", code.sell_name ? `\xB7 ${code.sell_name}` : ""), /* @__PURE__ */ React.createElement("pre", { className: "rp-code-block" }, sell || "(\uC5C6\uC74C)"), /* @__PURE__ */ React.createElement(_RpVarChips, { baseUrl, isDemo, code: sell })));
   }
 
-  // ../frontend/rp-heatmap.jsx
+  // ai_strategy_loop/dashboard/frontend/rp-heatmap.jsx
   function _RpBigHeatmap({ baseUrl, isDemo, runId }) {
     const [data, setData] = useState_rp(null);
     const [loading, setLoading] = useState_rp(false);
@@ -1454,7 +1532,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { ResearchProcessFlowOverlay: _RpProcessFlowOverlay });
 
-  // ../frontend/rp-panel.jsx
+  // ai_strategy_loop/dashboard/frontend/rp-panel.jsx
   function ResearchProPanel({ baseUrl, wsStatus, runId }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [runList, setRunList] = useState_rp([]);
@@ -1565,10 +1643,10 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     ))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, isDemo || !runId ? /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 12, color: "var(--ink-3)", padding: "18px 0", textAlign: "center" } }, isDemo ? "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4." : "run \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement(_RpBigHeatmap, { baseUrl, isDemo, runId })));
   }
 
-  // ../frontend/research-pro.jsx
+  // ai_strategy_loop/dashboard/frontend/research-pro.jsx
   Object.assign(window, { ResearchProPanel, ResearchHeatmapPanel });
 
-  // ../frontend/research-wiki.jsx
+  // ai_strategy_loop/dashboard/frontend/research-wiki.jsx
   var { useState: useState_rw, useEffect: useEffect_rw, useMemo: useMemo_rw } = React;
   var RESEARCH_WIKI_CATEGORIES = [
     { key: "wiki", label: "Methods" },
@@ -1639,7 +1717,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { ResearchWikiPanel });
 
-  // ../frontend/sim-live-chart.jsx
+  // ai_strategy_loop/dashboard/frontend/sim-live-chart.jsx
   var {
     useRef: useRef_slc,
     useEffect: useEffect_slc,
@@ -2392,7 +2470,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { SimLiveChart, _slcTimeLabel, _slcPriceTick });
 
-  // ../frontend/panels-status.jsx
+  // ai_strategy_loop/dashboard/frontend/panels-status.jsx
   var { useState: useState_pst, useEffect: useEffect_pst } = React;
   function ConnBadge({ health, wsStatus }) {
     var _a;
@@ -2466,7 +2544,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { ConnBadge, StatusBadge, ResearchCriteriaBanner, ExportStatusBanner });
 
-  // ../frontend/panels-config.jsx
+  // ai_strategy_loop/dashboard/frontend/panels-config.jsx
   var { useState: useState_pcf, useEffect: useEffect_pcf, useMemo: useMemo_pcf } = React;
   function CurrentGenPanel({ state }) {
     var _a, _b, _c;
@@ -2626,7 +2704,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     bt_full_end: "\uC804\uCCB4 \uC885\uB8CC\uC77C",
     bt_betting: "\uC885\uBAA9\uB2F9 \uBC30\uD305",
     mdd_cap: "MDD \uC0C1\uD55C",
-    min_trades: "\uCD5C\uC18C \uAC70\uB798\uC218",
+    min_trades: "\uCD5C\uC18C \uAC70\uB798\uC218(\uD3F4\uBC31)",
     min_daily_trades: "\uC77C\uD3C9\uADE0\uAC70\uB798 \uD558\uD55C",
     overtrade_softcap: "\uACFC\uB9E4\uB9E4 softcap",
     tpi_gate_enabled: "TPI \uAC8C\uC774\uD2B8",
@@ -2695,7 +2773,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { CurrentGenPanel, ActiveStrategyPanel, ActiveConfigPanel, PopulationPanel, MetaPanel });
 
-  // ../frontend/panels-analysis.jsx
+  // ai_strategy_loop/dashboard/frontend/panels-analysis.jsx
   var { useMemo: useMemo_pan } = React;
   function CostPanel({ state, cap = 5e4 }) {
     var _a, _b, _c, _d;
@@ -2788,10 +2866,10 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { AutopsyPanel, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel });
 
-  // ../frontend/panels.jsx
+  // ai_strategy_loop/dashboard/frontend/panels.jsx
   Object.assign(window, { ConnBadge, StatusBadge, CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner });
 
-  // ../frontend/run-compare.jsx
+  // ai_strategy_loop/dashboard/frontend/run-compare.jsx
   var { useState: useState_rc, useEffect: useEffect_rc, useMemo: useMemo_rc } = React;
   function rcNum(value, digits = 2) {
     return typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : "-";
@@ -2881,7 +2959,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { RunComparePanel });
 
-  // ../frontend/phase-detail.jsx
+  // ai_strategy_loop/dashboard/frontend/phase-detail.jsx
   var { useState: useState_ph, useMemo: useMemo_ph, useEffect: useEffect_ph, useRef: useRef_ph } = React;
   function DemoBadge() {
     return /* @__PURE__ */ React.createElement("span", { className: "mono", style: {
@@ -3124,11 +3202,11 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     } }, "\uD398\uC774\uC988\uAC00 \uC9C4\uD589\uB418\uBA74 \uB2E8\uACC4\uBCC4 \uC0C1\uC138\uAC00 \uC5EC\uAE30\uC5D0 \uD45C\uC2DC\uB429\uB2C8\uB2E4");
   }
   var FLOW_STEPS = [
-    { label: "\uC0DD\uC131", sub: "Generate", timingKey: "generate" },
-    { label: "\uBC31\uD14C", sub: "Backtest", timingKey: "backtest" },
-    { label: "\uCC44\uC810", sub: "Score", timingKey: "score" },
-    { label: "\uBD80\uAC80", sub: "Autopsy", timingKey: "autopsy" },
-    { label: "\uBC18\uBCF5", sub: "Iterate", timingKey: "iterate" }
+    { label: "\uC870\uAC74\uC2DD", sub: "\uB9CC\uB4E4\uAE30", timingKey: "generate" },
+    { label: "\uAC80\uC99D", sub: "\uACFC\uAC70\uB370\uC774\uD130", timingKey: "backtest" },
+    { label: "\uC810\uC218", sub: "\uC801\uD569\uB3C4", timingKey: "score" },
+    { label: "\uC6D0\uC778", sub: "\uC2E4\uD328\uC694\uC57D", timingKey: "autopsy" },
+    { label: "\uAC1C\uC120", sub: "\uB2E4\uC74C\uC138\uB300", timingKey: "iterate" }
   ];
   function fmtElapsedSec(sec) {
     const s = typeof sec === "number" && isFinite(sec) && sec > 0 ? Math.floor(sec) : 0;
@@ -3266,7 +3344,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         logRef.current.scrollTop = logRef.current.scrollHeight;
       }
     }, [logs.length]);
-    return /* @__PURE__ */ React.createElement("div", { className: "panel", style: { padding: "12px 14px" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd", style: { marginBottom: 8 } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uD504\uB85C\uC138\uC2A4 \uD50C\uB85C\uC6B0"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { marginLeft: "auto", fontSize: 10.5, color: "var(--ink-3)" } }, genElapsedLive != null && /* @__PURE__ */ React.createElement("span", { "data-tip": "\uD604\uC7AC \uC138\uB300 \uACBD\uACFC \uC2DC\uAC04 (\uC138\uB300 \uC2DC\uC791 \uC774\uD6C4)" }, "\uC138\uB300 \uACBD\uACFC ", fmtElapsedSec(genElapsedLive)), genElapsedLive == null && genElapsedDone != null && /* @__PURE__ */ React.createElement("span", { "data-tip": "\uB9C8\uC9C0\uB9C9 \uC138\uB300 \uC18C\uC694 \uC2DC\uAC04" }, "\uC138\uB300 \uC18C\uC694 ", fmtElapsedSec(genElapsedDone), completionClock && ` \xB7 \uC644\uB8CC ${completionClock}`), stepsDone > 0 && /* @__PURE__ */ React.createElement("span", { style: { marginLeft: 8 } }, "\xB7 ", stepsDone, "/", totalSteps, " \uB2E8\uACC4"))), /* @__PURE__ */ React.createElement("div", { className: "process-progress-track", style: {
+    return /* @__PURE__ */ React.createElement("div", { className: "panel", style: { padding: "12px 14px" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd", style: { marginBottom: 8 } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uD504\uB85C\uC138\uC2A4"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { marginLeft: "auto", fontSize: 10.5, color: "var(--ink-3)" } }, genElapsedLive != null && /* @__PURE__ */ React.createElement("span", { "data-tip": "\uD604\uC7AC \uC138\uB300 \uACBD\uACFC \uC2DC\uAC04 (\uC138\uB300 \uC2DC\uC791 \uC774\uD6C4)" }, "\uC138\uB300 \uACBD\uACFC ", fmtElapsedSec(genElapsedLive)), genElapsedLive == null && genElapsedDone != null && /* @__PURE__ */ React.createElement("span", { "data-tip": "\uB9C8\uC9C0\uB9C9 \uC138\uB300 \uC18C\uC694 \uC2DC\uAC04" }, "\uC138\uB300 \uC18C\uC694 ", fmtElapsedSec(genElapsedDone), completionClock && ` \xB7 \uC644\uB8CC ${completionClock}`), stepsDone > 0 && /* @__PURE__ */ React.createElement("span", { style: { marginLeft: 8 } }, "\xB7 ", stepsDone, "/", totalSteps, " \uB2E8\uACC4"))), /* @__PURE__ */ React.createElement("div", { className: "process-progress-track", style: {
       height: 3,
       background: "var(--line-2)",
       borderRadius: 2,
@@ -3277,7 +3355,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       height: "100%",
       background: "var(--amber)",
       transition: "width .3s ease"
-    } })), /* @__PURE__ */ React.createElement("div", { className: "process-live-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "\uD604\uC7AC \uB178\uB4DC"), " ", activeStep ? activeStep.label : "\uBBF8\uC815"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "phase"), " ", latestPhase), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "current_step"), " ", currentStep >= 0 ? currentStep : "\u2014"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "\uCD5C\uADFC \uB85C\uADF8"), " ", lastLog)), /* @__PURE__ */ React.createElement("div", { className: "process-flow-cards", "aria-label": "\uD504\uB85C\uC138\uC2A4 \uD750\uB984 \uACC4\uC57D \uC694\uC57D" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "flow source"), /* @__PURE__ */ React.createElement("b", null, "state.latest.current_step"), /* @__PURE__ */ React.createElement("small", null, "\uC77D\uAE30 \uC804\uC6A9 \uB77C\uC774\uBE0C \uC0C1\uD0DC\uB97C \uB2E4\uC774\uC5B4\uADF8\uB7A8\uACFC iframe\uC5D0 \uB3D9\uC2DC \uBC18\uC601")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "state mode"), /* @__PURE__ */ React.createElement("b", null, flowMode), /* @__PURE__ */ React.createElement("small", null, "live/archive/idle \uAD6C\uBD84\uC73C\uB85C \uC0C1\uD0DC \uC624\uD574\uB97C \uBC29\uC9C0")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "active phase"), /* @__PURE__ */ React.createElement("b", null, activeStep ? `${currentStep + 1}. ${activeStep.label}` : "\uBBF8\uC815"), /* @__PURE__ */ React.createElement("small", null, phaseElapsed != null ? `\uD604\uC7AC \uB2E8\uACC4 \uACBD\uACFC ${fmtElapsedSec(phaseElapsed)}` : "\uB2E8\uACC4 \uACBD\uACFC \uB300\uAE30")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "discrete progress"), /* @__PURE__ */ React.createElement("b", null, progressLabel), /* @__PURE__ */ React.createElement("small", null, "\uC5F0\uC18D \uC608\uCE21\uC774 \uC544\uB2CC current_step \uAE30\uBC18 \uB2E8\uACC4 \uC9C4\uD589\uB960")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "timing rows"), /* @__PURE__ */ React.createElement("b", null, timingRows.filter((row) => row.elapsed !== "\u2014").length, "/", totalSteps), /* @__PURE__ */ React.createElement("small", null, "step_timings \uB204\uC801 \uC18C\uC694\uC2DC\uAC04 \uD45C\uBCF8")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "recent logs"), /* @__PURE__ */ React.createElement("b", null, logs.length), /* @__PURE__ */ React.createElement("small", null, "\uCD5C\uADFC ", logWindow.length, "\uC904\uC744 \uD558\uB2E8 \uD328\uB110\uC5D0\uC11C \uC790\uB3D9 \uC2A4\uD06C\uB864"))), /* @__PURE__ */ React.createElement(
+    } })), /* @__PURE__ */ React.createElement("div", { className: "process-live-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "\uD604\uC7AC \uB178\uB4DC"), " ", activeStep ? activeStep.label : "\uBBF8\uC815"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "phase"), " ", latestPhase), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "current_step"), " ", currentStep >= 0 ? currentStep : "\u2014"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "\uCD5C\uADFC \uB85C\uADF8"), " ", lastLog)), /* @__PURE__ */ React.createElement("div", { className: "process-flow-cards", "aria-label": "\uD504\uB85C\uC138\uC2A4 \uD750\uB984 \uACC4\uC57D \uC694\uC57D" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB370\uC774\uD130 \uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", null, "\uC2E4\uC2DC\uAC04 \uC0C1\uD0DC"), /* @__PURE__ */ React.createElement("small", null, "\uD604\uC7AC \uC138\uB300\xB7\uD604\uC7AC \uB2E8\uACC4\xB7\uBC31\uD14C\uC2A4\uD2B8 \uB85C\uADF8\uB97C \uC77D\uAE30 \uC804\uC6A9\uC73C\uB85C \uD45C\uC2DC")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC0C1\uD0DC \uAD6C\uBD84"), /* @__PURE__ */ React.createElement("b", null, flowMode), /* @__PURE__ */ React.createElement("small", null, "live/archive/idle\uC744 \uAD6C\uBD84\uD574 \uC61B \uACB0\uACFC\uB97C \uC2E4\uC2DC\uAC04\uC73C\uB85C \uC624\uD574\uD558\uC9C0 \uC54A\uAC8C \uD568")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uD604\uC7AC \uB2E8\uACC4"), /* @__PURE__ */ React.createElement("b", null, activeStep ? `${currentStep + 1}. ${activeStep.label}` : "\uBBF8\uC815"), /* @__PURE__ */ React.createElement("small", null, phaseElapsed != null ? `\uD604\uC7AC \uB2E8\uACC4 \uACBD\uACFC ${fmtElapsedSec(phaseElapsed)}` : "\uB2E8\uACC4 \uACBD\uACFC \uB300\uAE30")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB2E8\uACC4 \uC9C4\uD589"), /* @__PURE__ */ React.createElement("b", null, progressLabel), /* @__PURE__ */ React.createElement("small", null, "\uC608\uCE21\uAC12\uC774 \uC544\uB2C8\uB77C \uC2E4\uC81C current_step \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC18C\uC694\uC2DC\uAC04"), /* @__PURE__ */ React.createElement("b", null, timingRows.filter((row) => row.elapsed !== "\u2014").length, "/", totalSteps), /* @__PURE__ */ React.createElement("small", null, "\uAC01 \uB2E8\uACC4\uAC00 \uB05D\uB09C \uB4A4 \uB204\uC801\uB418\uB294 \uC2E4\uC81C \uC2DC\uAC04 \uD45C\uBCF8")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB85C\uADF8"), /* @__PURE__ */ React.createElement("b", null, logs.length), /* @__PURE__ */ React.createElement("small", null, "\uC5D4\uC9C4/\uBC31\uD14C\uC2A4\uD2B8 \uB85C\uADF8 \uCD5C\uADFC ", logWindow.length, "\uC904 \uC790\uB3D9 \uC2A4\uD06C\uB864"))), /* @__PURE__ */ React.createElement(
       ProcessFlowDiagram,
       {
         currentStep,
@@ -3311,7 +3389,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     FLOW_STEPS
   });
 
-  // ../frontend/engine.jsx
+  // ai_strategy_loop/dashboard/frontend/engine.jsx
   var { useState: useState_e, useMemo: useMemo_e, useRef: useRef_e } = React;
   function fmtElapsed(ms) {
     if (!ms || ms < 0) return "0.0s";
@@ -3515,7 +3593,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { EnginePanel, LiveBacktestChart, fmtElapsed, _liveChartGeom: _liveChartGeom2 });
 
-  // ../frontend/chart-primitives.jsx
+  // ai_strategy_loop/dashboard/frontend/chart-primitives.jsx
   function MetricHelpStrip({ items }) {
     return /* @__PURE__ */ React.createElement("div", { className: "metric-help-strip" }, (items || []).map((item, i) => /* @__PURE__ */ React.createElement("span", { key: i }, item)));
   }
@@ -3526,7 +3604,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, color: "var(--ink-2)", letterSpacing: ".12em", textTransform: "uppercase" } }, label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 17, color: color || "var(--ink-0)" } }, value), sub && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, sub));
   }
 
-  // ../frontend/chart-equity.jsx
+  // ai_strategy_loop/dashboard/frontend/chart-equity.jsx
   var { useMemo: useMemo_c, useState: useState_c, useRef: useRef_c } = React;
   var _axisTicks = window._axisTicks;
   function FitnessChart({ state, target = 1 }) {
@@ -4165,7 +4243,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     } }, "\uC138\uB300 \uB370\uC774\uD130\uAC00 \uB204\uC801\uB418\uBA74 \uD488\uC9C8\uC9C0\uD45C \uCD94\uC774\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4"))));
   }
 
-  // ../frontend/chart-backtest-detail.jsx
+  // ai_strategy_loop/dashboard/frontend/chart-backtest-detail.jsx
   var _bdAxisTicks = window._axisTicks;
   var { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq, useRef: useRef_eq } = React;
   var _EQ_WINNER_COLORS = [
@@ -5016,7 +5094,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     ), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--amber)" } }, cumulative[hover] ? fmtMoney(cumulative[hover].cum_profit) : "\u2014"), cumulative[hover] && cumulative[hover].cum_pct != null && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uB204\uC801%"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right" } }, fmtPct(cumulative[hover].cum_pct))), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uBC18\uB0A9\uC561"), /* @__PURE__ */ React.createElement("span", { style: { textAlign: "right", color: "var(--red)" } }, drawdown[hover] ? fmtMoney(drawdown[hover].drawdown) : "\u2014"))))));
   }
 
-  // ../frontend/hof-inventory.jsx
+  // ai_strategy_loop/dashboard/frontend/hof-inventory.jsx
   var HOF_INVENTORY_FIELDS = [
     { key: "kind", label: "\uAD6C\uBD84", source: "human.kind / ai.kind", obligation: "\uC778\uAC04\xB7\uC2DC\uB4DC\xB7AI \uAD6C\uBD84 \uC720\uC9C0" },
     { key: "name", label: "\uC774\uB984", source: "label/name", obligation: "\uD45C\uC2DC\uBA85 \uBC0F \uC804\uB7B5 \uC2DD\uBCC4 \uC720\uC9C0" },
@@ -5056,7 +5134,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { HOF_INVENTORY_FIELDS, HOF_FIELD_GROUPS, HOF_WORKBENCH_ACTIONS, HOF_MERGE_GATE_RULES, HofInventoryGate });
 
-  // ../frontend/chart-hall-of-fame.jsx
+  // ai_strategy_loop/dashboard/frontend/chart-hall-of-fame.jsx
   var { useState: useState_eq2, useEffect: useEffect_eq2, useCallback: useCallback_eq2 } = React;
   var { useState: useState_rg, useEffect: useEffect_rg } = React;
   function HallOfFamePanel({ baseUrl, wsStatus }) {
@@ -5361,10 +5439,10 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     );
   }
 
-  // ../frontend/chart.jsx
+  // ai_strategy_loop/dashboard/frontend/chart.jsx
   Object.assign(window, { FitnessChart, ProfitChart, EquityOverlayChart, QualityTrendChart, BacktestDetailChart, HallOfFamePanel, ReferenceGallery });
 
-  // ../frontend/hypothesis.jsx
+  // ai_strategy_loop/dashboard/frontend/hypothesis.jsx
   var _VERDICT_META = {
     accepted: { label: "\uCC44\uD0DD", color: "var(--teal)", tip: "\uC2E4\uCE21 \uB378\uD0C0 \uBD80\uD638\uAC00 \uAE30\uB300 \uBC29\uD5A5\uACFC \uC77C\uCE58(\uAC00\uC815\uC774 \uB9DE\uC558\uB2E4)" },
     rejected: { label: "\uAE30\uAC01", color: "var(--red)", tip: "\uC2E4\uCE21 \uB378\uD0C0 \uBD80\uD638\uAC00 \uAE30\uB300 \uBC29\uD5A5\uACFC \uBC18\uB300(\uAC00\uC815\uC774 \uBE57\uB098\uAC14\uB2E4)" },
@@ -5427,7 +5505,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { HypothesisPanel });
 
-  // ../frontend/table.jsx
+  // ai_strategy_loop/dashboard/frontend/table.jsx
   var { useState: useState_t, useMemo: useMemo_t } = React;
   function fmtDaily(v) {
     const n = typeof v === "number" ? v : 0;
@@ -5535,7 +5613,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { GenerationsTable });
 
-  // ../frontend/cards.jsx
+  // ai_strategy_loop/dashboard/frontend/cards.jsx
   var { useState: useState_card, useEffect: useEffect_card } = React;
   function BestCard({ best, onViewCode }) {
     return /* @__PURE__ */ React.createElement("div", { className: "panel", style: { borderColor: best ? "rgba(76,214,179,0.25)" : void 0 } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "Best (graded)"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uD604\uC7AC \uB204\uC801 \uCD5C\uACE0 \uC810\uC218")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !best ? /* @__PURE__ */ React.createElement("div", { style: { color: "var(--ink-3)", fontSize: 12, padding: "12px 0" } }, "\uC544\uC9C1 \uD3C9\uAC00\uB41C \uC138\uB300\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "baseline", gap: 14, marginBottom: 14 } }, /* @__PURE__ */ React.createElement("span", { className: "stat-value lg mono", style: { color: "var(--teal)" } }, fmtScore(best.graded_score)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 12, color: "var(--ink-2)" } }, "gen_", String(best.gen).padStart(2, "0")), best.gate_passed && /* @__PURE__ */ React.createElement("span", { className: "pill gate-pass", style: { marginLeft: "auto" } }, "\u2713 \uAC8C\uC774\uD2B8")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 } }, /* @__PURE__ */ React.createElement(NameRow, { label: "\uB9E4\uC218", value: best.buy_name }), /* @__PURE__ */ React.createElement(NameRow, { label: "\uB9E4\uB3C4", value: best.sell_name })), onViewCode && /* @__PURE__ */ React.createElement(
@@ -5551,7 +5629,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   function WinnerCard({ winner, onApprove, onViewCode }) {
     if (!winner) {
-      return /* @__PURE__ */ React.createElement("div", { className: "panel", style: { borderStyle: "dashed", borderColor: "var(--line-2)" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Winner \u2014 \uAC8C\uC774\uD2B8 \uD1B5\uACFC \uB300\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { color: "var(--ink-3)", fontSize: 12 } }, "\uD558\uB4DC \uAC8C\uC774\uD2B8\uB97C \uD1B5\uACFC\uD55C \uC804\uB7B5\uC774 \uC544\uC9C1 \uC5C6\uC2B5\uB2C8\uB2E4.", /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6, fontSize: 11, color: "var(--ink-3)" } }, "target_score \uC774\uC0C1 + MDD \uC0C1\uD55C \uC774\uB0B4 + \uCD5C\uC18C \uAC70\uB798\uC218 \uC774\uC0C1")));
+      return /* @__PURE__ */ React.createElement("div", { className: "panel", style: { borderStyle: "dashed", borderColor: "var(--line-2)" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Winner \u2014 \uAC8C\uC774\uD2B8 \uD1B5\uACFC \uB300\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { color: "var(--ink-3)", fontSize: 12 } }, "\uD558\uB4DC \uAC8C\uC774\uD2B8\uB97C \uD1B5\uACFC\uD55C \uC804\uB7B5\uC774 \uC544\uC9C1 \uC5C6\uC2B5\uB2C8\uB2E4.", /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6, fontSize: 11, color: "var(--ink-3)" } }, "target_score \uC774\uC0C1 + MDD \uC0C1\uD55C \uC774\uB0B4 + \uC77C\uD3C9\uADE0 \uAC70\uB798 \uD558\uD55C \uC774\uC0C1")));
     }
     return /* @__PURE__ */ React.createElement("div", { className: "panel", style: {
       borderColor: "rgba(165,148,255,0.35)",
@@ -5664,7 +5742,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog });
 
-  // ../frontend/strategy-inspector.jsx
+  // ai_strategy_loop/dashboard/frontend/strategy-inspector.jsx
   var { useState: useState_si, useEffect: useEffect_si, useMemo: useMemo_si } = React;
   function asList(value) {
     return Array.isArray(value) ? value : [];
@@ -5786,7 +5864,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { StrategyInspectorTabs });
 
-  // ../frontend/code-viewer.jsx
+  // ai_strategy_loop/dashboard/frontend/code-viewer.jsx
   var { useState: useState_cv, useMemo: useMemo_cv, useEffect: useEffect_cv } = React;
   function highlightPython(code) {
     if (!code) return [];
@@ -5965,9 +6043,18 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { CodeViewer, CvCodeBlock, highlightPython });
 
-  // ../frontend/settings.jsx
+  // ai_strategy_loop/dashboard/frontend/settings.jsx
   var { useState: useState_s, useMemo: useMemo_s, useEffect: useEffect_s } = React;
-  function SettingsModal({ open, onClose, onStart, configSpec, disabled }) {
+  function SettingsModal({
+    open,
+    onClose,
+    onStart,
+    configSpec,
+    configSpecStatus,
+    disabled,
+    onGptAuthTest,
+    gptAuthProbe
+  }) {
     const [values, setValues] = useState_s({});
     useEffect_s(() => {
       if (!open) return;
@@ -5977,7 +6064,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     }, [open, configSpec]);
     const groups = useMemo_s(() => {
       const g = {};
-      const order = ["\uBAA9\uD45C/\uC81C\uC57D", "\uD3C9\uAC00 \uC2A4\uCF54\uD504", "\uACFC\uC801\uD569 \uAC00\uB4DC", "AI"];
+      const order = ["\uBAA9\uD45C/\uC81C\uC57D", "\uD3C9\uAC00 \uC2A4\uCF54\uD504", "\uC5D4\uC9C4 \uB9AC\uC18C\uC2A4", "\uACFC\uC801\uD569 \uAC00\uB4DC", "AI"];
       for (const f of configSpec) {
         const grp = f.group || "\uAE30\uD0C0";
         if (!g[grp]) g[grp] = [];
@@ -5990,54 +6077,82 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     }, [configSpec]);
     if (!open) return null;
     const set = (name, v) => setValues((prev) => ({ ...prev, [name]: v }));
+    const sourceLive = !!(configSpecStatus && configSpecStatus.live);
+    const sourceLabel = sourceLive ? "LIVE /config/spec" : "DEMO/FALLBACK";
+    const sourceMessage = configSpecStatus && configSpecStatus.message || "config spec status unavailable";
+    const optionValue = (opt) => opt && typeof opt === "object" ? opt.value : opt;
+    const optionLabel = (opt) => {
+      var _a;
+      return opt && typeof opt === "object" ? (_a = opt.label) != null ? _a : opt.value : opt;
+    };
     const renderField = (f) => {
+      var _a, _b, _c;
       const val = values[f.name];
       const id = `cfg-${f.name}`;
-      if (f.type === "boolean") {
+      const fieldType = f.type || "text";
+      const boolType = fieldType === "boolean" || fieldType === "bool";
+      const choices = f.options || f.choices || [];
+      const help = f.help || f.description || "";
+      const min = (_a = f.min) != null ? _a : f.minimum;
+      const max = (_b = f.max) != null ? _b : f.maximum;
+      const step = (_c = f.step) != null ? _c : fieldType === "number" ? "any" : void 0;
+      if (boolType) {
         return /* @__PURE__ */ React.createElement("div", { key: f.name, className: "field", style: { gridColumn: "1 / -1" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 12 } }, /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
             className: `toggle ${val ? "on" : ""}`,
             onClick: () => set(f.name, !val),
-            "aria-label": f.label
+            "aria-label": f.label,
+            title: help
           }
         ), /* @__PURE__ */ React.createElement(
           "label",
           {
             htmlFor: id,
             style: { marginBottom: 0, cursor: "pointer" },
-            onClick: () => set(f.name, !val)
+            onClick: () => set(f.name, !val),
+            title: help
           },
           f.label
-        ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { marginLeft: "auto", fontSize: 11, color: val ? "var(--teal)" : "var(--ink-3)" } }, val ? "ON" : "OFF")), f.help && /* @__PURE__ */ React.createElement("span", { className: "help", style: { paddingLeft: 46 } }, f.help));
+        ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { marginLeft: "auto", fontSize: 11, color: val ? "var(--teal)" : "var(--ink-3)" } }, val ? "ON" : "OFF")), help && /* @__PURE__ */ React.createElement("span", { className: "help", style: { paddingLeft: 46 } }, help));
       }
-      if (f.type === "select" && f.options) {
-        return /* @__PURE__ */ React.createElement("div", { key: f.name, className: "field" }, /* @__PURE__ */ React.createElement("label", { htmlFor: id }, f.label), /* @__PURE__ */ React.createElement(
+      if (fieldType === "select" && choices.length) {
+        const numericChoices = choices.every((opt) => typeof optionValue(opt) === "number");
+        return /* @__PURE__ */ React.createElement("div", { key: f.name, className: "field" }, /* @__PURE__ */ React.createElement("label", { htmlFor: id, title: help }, f.label), /* @__PURE__ */ React.createElement(
           "select",
           {
             id,
             className: "select",
             value: val != null ? val : "",
-            onChange: (e) => set(f.name, e.target.value)
+            title: help,
+            onChange: (e) => set(f.name, numericChoices ? Number(e.target.value) : e.target.value)
           },
-          f.options.map((opt) => /* @__PURE__ */ React.createElement("option", { key: opt, value: opt }, opt))
-        ), f.help && /* @__PURE__ */ React.createElement("span", { className: "help" }, f.help));
+          choices.map((opt) => {
+            const ov = optionValue(opt);
+            return /* @__PURE__ */ React.createElement("option", { key: String(ov), value: ov }, optionLabel(opt));
+          })
+        ), help && /* @__PURE__ */ React.createElement("span", { className: "help" }, help));
       }
-      return /* @__PURE__ */ React.createElement("div", { key: f.name, className: "field" }, /* @__PURE__ */ React.createElement("label", { htmlFor: id }, f.label), /* @__PURE__ */ React.createElement(
+      return /* @__PURE__ */ React.createElement("div", { key: f.name, className: "field" }, /* @__PURE__ */ React.createElement("label", { htmlFor: id, title: help }, f.label), /* @__PURE__ */ React.createElement(
         "input",
         {
           id,
           className: "input",
-          type: f.type === "number" ? "number" : "text",
+          type: fieldType === "number" ? "number" : fieldType === "date" ? "date" : "text",
           value: val != null ? val : "",
-          step: f.type === "number" ? "any" : void 0,
+          min,
+          max,
+          step,
+          placeholder: f.placeholder || "",
+          title: help,
           onChange: (e) => {
-            const v = f.type === "number" ? e.target.value === "" ? "" : Number(e.target.value) : e.target.value;
+            const raw = e.target.value;
+            const v = fieldType === "number" ? raw === "" ? "" : Number(raw) : raw;
             set(f.name, v);
           }
         }
-      ), f.help && /* @__PURE__ */ React.createElement("span", { className: "help" }, f.help));
+      ), help && /* @__PURE__ */ React.createElement("span", { className: "help" }, help));
     };
     const submit = () => {
       const clean = {};
@@ -6050,13 +6165,13 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     };
     return /* @__PURE__ */ React.createElement("div", { className: "modal-bd", onMouseDown: (e) => {
       if (e.target === e.currentTarget) onClose();
-    } }, /* @__PURE__ */ React.createElement("div", { className: "modal", style: { width: "min(820px, calc(100vw - 32px))" }, onMouseDown: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "modal-hd" }, /* @__PURE__ */ React.createElement("h2", null, "\uC9C4\uD654 \uC2DC\uC791 \uC124\uC815", /* @__PURE__ */ React.createElement("span", { className: "sub" }, "\uBAA9\uD45C \xB7 \uC2A4\uCF54\uD504 \xB7 AI \uD30C\uB77C\uBBF8\uD130")), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\uB2EB\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "modal-bd-content" }, groups.map(([grp, fields]) => /* @__PURE__ */ React.createElement("div", { key: grp, className: "group" }, /* @__PURE__ */ React.createElement("div", { className: "group-title" }, grp), /* @__PURE__ */ React.createElement("div", { className: "field-row", style: {
+    } }, /* @__PURE__ */ React.createElement("div", { className: "modal", style: { width: "min(920px, calc(100vw - 32px))" }, onMouseDown: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "modal-hd" }, /* @__PURE__ */ React.createElement("h2", null, "\uC9C4\uD654 \uC2DC\uC791 \uC124\uC815", /* @__PURE__ */ React.createElement("span", { className: "sub" }, "\uBAA9\uD45C \xB7 \uBC31\uD14C\uC2A4\uD2B8 \uAE30\uAC04 \xB7 AI/GPT \uC778\uC99D \xB7 \uB9AC\uC18C\uC2A4 \xB7 \uC2DC\uB4DC")), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\uB2EB\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "modal-bd-content" }, /* @__PURE__ */ React.createElement("div", { className: "group" }, /* @__PURE__ */ React.createElement("div", { className: "group-title" }, "\uC124\uC815 \uC6D0\uBCF8\uACFC \uACF5\uC2DD"), /* @__PURE__ */ React.createElement("div", { className: "field-row", style: { gridTemplateColumns: "1fr 1fr" } }, /* @__PURE__ */ React.createElement("div", { className: "field", style: { gridColumn: "1 / -1" } }, /* @__PURE__ */ React.createElement("label", null, "\uC124\uC815 \uC6D0\uBCF8"), /* @__PURE__ */ React.createElement("div", { className: `pill ${sourceLive ? "ok" : "warn"}`, style: { width: "fit-content" } }, sourceLabel), /* @__PURE__ */ React.createElement("span", { className: "help" }, sourceMessage, ". LIVE \uC9C4\uD654 \uC2DC\uC791\uC740 `/config/spec`\uAC00 \uC815\uC0C1 \uB85C\uB4DC\uB41C \uB4A4\uC5D0\uB9CC \uD5C8\uC6A9\uB429\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uBAA9\uD45C \uC801\uD569\uB3C4 \uACF5\uC2DD"), /* @__PURE__ */ React.createElement("span", { className: "help" }, "winner_score\uAC00 \uBAA9\uD45C \uC801\uD569\uB3C4 \uC774\uC0C1\uC774\uBA74 \uC878\uC5C5\uD569\uB2C8\uB2E4. risk_adjusted=Calmar\xD7\uC6B0\uC0C1\uD5A5R\xB2, multi=Calmar\xB7R\xB2\xB7\uC77C\uD3C9\uADE0\uAC70\uB798\xB7payoff \uD3C9\uADE0\uC785\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "GPT auth \uC5F0\uACB0 \uD14C\uC2A4\uD2B8"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "btn ghost sm", onClick: onGptAuthTest, disabled: !onGptAuthTest }, "GPT 5.5 xhigh \uD14C\uC2A4\uD2B8"), /* @__PURE__ */ React.createElement("span", { className: "help" }, "\uC9C4\uD654 \uC2DC\uC791, \uB0B4\uBCF4\uB0B4\uAE30, \uC8FC\uBB38 \uC5C6\uC774 \uB85C\uCEEC GPT OAuth \uD504\uB85D\uC2DC \uC751\uB2F5\uB9CC \uC810\uAC80\uD569\uB2C8\uB2E4.", gptAuthProbe ? ` \uCD5C\uADFC \uACB0\uACFC: ${gptAuthProbe.status || "unknown"} ${gptAuthProbe.message || gptAuthProbe.reason || ""}` : "")))), groups.map(([grp, fields]) => /* @__PURE__ */ React.createElement("div", { key: grp, className: "group" }, /* @__PURE__ */ React.createElement("div", { className: "group-title" }, grp), /* @__PURE__ */ React.createElement("div", { className: "field-row", style: {
       gridTemplateColumns: fields.length === 1 ? "1fr" : "1fr 1fr"
-    } }, fields.map(renderField))))), /* @__PURE__ */ React.createElement("div", { className: "modal-ft" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: onClose }, "\uCDE8\uC18C"), /* @__PURE__ */ React.createElement("button", { className: "btn primary lg", onClick: submit, disabled }, "\u25B8 \uC9C4\uD654 \uC2DC\uC791"))));
+    } }, fields.map(renderField))))), /* @__PURE__ */ React.createElement("div", { className: "modal-ft" }, /* @__PURE__ */ React.createElement("span", { className: "help", style: { marginRight: "auto" } }, "\uBE48 \uC2DC\uC791\uC77C/\uC885\uB8CC\uC77C\uC740 DB \uCD5C\uC18C/\uCD5C\uB300 \uAC70\uB798\uC77C\uC744 \uC790\uB3D9 \uC0AC\uC6A9\uD569\uB2C8\uB2E4. MDD \uC0C1\uD55C\uC740 \uCD5C\uB300 40%\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: onClose }, "\uCDE8\uC18C"), /* @__PURE__ */ React.createElement("button", { className: "btn primary lg", onClick: submit, disabled }, "\uC9C4\uD654 \uC2DC\uC791"))));
   }
   Object.assign(window, { SettingsModal });
 
-  // ../frontend/glossary.jsx
+  // ai_strategy_loop/dashboard/frontend/glossary.jsx
   var { useState: useState_g } = React;
   var RESEARCH_GLOSSARY_ITEMS = [
     {
@@ -6111,7 +6226,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { ResearchGlossaryPanel, RESEARCH_GLOSSARY_ITEMS });
 
-  // ../frontend/bt-chart-utils.jsx
+  // ai_strategy_loop/dashboard/frontend/bt-chart-utils.jsx
   var {
     useState: useState_btc,
     useRef: useRef_btc,
@@ -6289,7 +6404,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return Math.round(v || 0).toLocaleString("ko-KR");
   }
 
-  // ../frontend/bt-equity-charts.jsx
+  // ai_strategy_loop/dashboard/frontend/bt-equity-charts.jsx
   function BtEquityChart({ equity, onBrush, brushActive, onBrushClear }) {
     const daily = equity && equity.daily || [];
     const cumulative = equity && equity.cumulative || [];
@@ -6893,7 +7008,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     ))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uAC70\uB798\uAC00 \uB204\uC801\uB418\uBA74 \uB204\uC801 \uAC70\uB798\xB7\uC190\uC775 \uACE1\uC120\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4" }))));
   }
 
-  // ../frontend/bt-distribution-charts.jsx
+  // ai_strategy_loop/dashboard/frontend/bt-distribution-charts.jsx
   function BtDistributionChart({ distribution }) {
     const bins = distribution && distribution.pnl_histogram || [];
     const [hover, setHover] = useState_btc(null);
@@ -7190,7 +7305,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     }))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, marginTop: 10, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(76,214,179,0.78)", label: "\uC774\uC775 \uC6D4" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(255,107,107,0.78)", label: "\uC190\uC2E4 \uC6D4" }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC140 = \uC190\uC775 \xB7 \uAC70\uB798\uC218")))));
   }
 
-  // ../frontend/bt-stat-panels.jsx
+  // ai_strategy_loop/dashboard/frontend/bt-stat-panels.jsx
   function BtExitReasonPanel({ rows }) {
     const items = Array.isArray(rows) ? rows : [];
     const maxAbs = Math.max(1, ...items.map((r) => Math.abs(r.total_pnl || 0)));
@@ -7342,7 +7457,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     }))))));
   }
 
-  // ../frontend/bt-gui-parity.jsx
+  // ai_strategy_loop/dashboard/frontend/bt-gui-parity.jsx
   function BtMddRandomChart({ data }) {
     const d = data || {};
     const curves = d.curves || [];
@@ -7738,7 +7853,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "GUI \uD328\uB9AC\uD2F0 \u2014 STOM \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC \uC774\uBBF8\uC9C0 2\uC7A5"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uBD80\uAC00\uC815\uBCF4 2\xD72 \xB7 \uACB0\uACFC 2\xD71")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: grid ? { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 14 } : { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(BtMddRandomChart, { data: gp.mdd_random }), /* @__PURE__ */ React.createElement(BtDailyPnlChart, { data: gp.daily }), /* @__PURE__ */ React.createElement(BtHourlyPnlChart, { data: gp.hourly }), /* @__PURE__ */ React.createElement(BtWeekdayPnlChart, { data: gp.weekday }), /* @__PURE__ */ React.createElement(BtHoldingCurveChart, { data: gp.holding }), /* @__PURE__ */ React.createElement(BtTradeRollingChart, { data: gp.trade_rolling }))));
   }
 
-  // ../frontend/bt-tab-utils.jsx
+  // ai_strategy_loop/dashboard/frontend/bt-tab-utils.jsx
   var {
     useState: useState_bt,
     useEffect: useEffect_bt,
@@ -7825,7 +7940,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return (n >= 0 ? "+" : "") + Math.round(n).toLocaleString() + "\uC6D0";
   }
 
-  // ../frontend/bt-result-area.jsx
+  // ai_strategy_loop/dashboard/frontend/bt-result-area.jsx
   var _BT_METRIC_CARDS = [
     { key: "trade_count", label: "\uAC70\uB798\uC218", fmt: (v) => fmtInt(v) },
     { key: "win_rate", label: "\uC2B9\uB960", fmt: (v) => fmtPct(v) },
@@ -8101,7 +8216,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return /* @__PURE__ */ React.createElement("div", { className: "bt-metric-card" }, /* @__PURE__ */ React.createElement("span", { className: "summary-lbl" }, meta.label), /* @__PURE__ */ React.createElement("span", { className: "summary-val", style: { color } }, shown != null ? meta.fmt(shown) : "\u2014"));
   }
 
-  // ../frontend/backtest-charts.jsx
+  // ai_strategy_loop/dashboard/frontend/backtest-charts.jsx
   Object.assign(window, {
     BtEquityChart,
     BtDistributionChart,
@@ -8126,7 +8241,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     BtGuiParitySection
   });
 
-  // ../frontend/bt-tab-library.jsx
+  // ai_strategy_loop/dashboard/frontend/bt-tab-library.jsx
   function BtLibraryPanel({ baseUrl, isDemo, kind, onKind, onPick, selectedName, reloadKey, lockKind }) {
     const [items, setItems] = useState_bt([]);
     const [query, setQuery] = useState_bt("");
@@ -8432,7 +8547,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     ));
   }
 
-  // ../frontend/bt-tab-run.jsx
+  // ai_strategy_loop/dashboard/frontend/bt-tab-run.jsx
   function _SweepParamBuilder({ rows, onChange, disabled }) {
     const safeRows = Array.isArray(rows) ? rows : [];
     const setRow = (i, patch) => {
@@ -9175,7 +9290,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     })))));
   }
 
-  // ../frontend/bt-tab-mode-results.jsx
+  // ai_strategy_loop/dashboard/frontend/bt-tab-mode-results.jsx
   function BtWfoTable({ result }) {
     const [sortKey, setSortKey] = useState_bt("round");
     const [sortAsc, setSortAsc] = useState_bt(true);
@@ -9353,7 +9468,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), mode === "wfo" ? "\uC804\uC9C4\uBD84\uC11D(WFO) \uACB0\uACFC" : "\uC2A4\uC715 \uACB0\uACFC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, err ? /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--red)" } }, err) : !mr ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uACB0\uACFC\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC774\uAC70\uB098 \uAD6C\uC870\uD654 \uACB0\uACFC\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.") : mode === "wfo" ? /* @__PURE__ */ React.createElement(BtWfoTable, { result: mr }) : /* @__PURE__ */ React.createElement(BtSweepTable, { result: mr })));
   }
 
-  // ../frontend/bt-tab-analysis.jsx
+  // ai_strategy_loop/dashboard/frontend/bt-tab-analysis.jsx
   function BtOverlayCurves({ series, normalize }) {
     if (!series || series.length === 0) return /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC624\uBC84\uB808\uC774\uD560 \uACE1\uC120\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.");
     const W = 680, H = 220, padL = 8, padR = 8, padT = 12, padB = 12;
@@ -9680,7 +9795,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     } }, p.label, /* @__PURE__ */ React.createElement("button", { onClick: () => removeAt(p.key), style: { background: "transparent", border: 0, color: "var(--ink-3)", cursor: "pointer", padding: 0 } }, "\u2715")))), picked.length < 2 && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uACB0\uD569 \uBD84\uC11D\uC5D0\uB294 2~6\uAC1C \uC804\uB7B5(\uC7A1/\uC138\uB300)\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."), err && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--red)" } }, err), result && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12, borderTop: "1px solid var(--line-1)", paddingTop: 10 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 16, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11 } }, "\uACB0\uD569 \uCD1D\uC190\uC775 ", /* @__PURE__ */ React.createElement("b", { style: { color: result.combined.total_profit_krw >= 0 ? "var(--teal)" : "var(--red)" } }, _pfFmtMoney(result.combined.total_profit_krw))), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11 } }, "\uACB0\uD569 MDD ", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--red)" } }, Math.round(result.combined.max_drawdown_krw).toLocaleString(), "\uC6D0")), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-3)" } }, result.combined.trading_days, "\uAC70\uB798\uC77C \xB7 ", result.count, "\uC804\uB7B5")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uACB0\uD569 \uB204\uC801\uC218\uC775\uACE1\uC120"), /* @__PURE__ */ React.createElement(BtPortfolioCurve, { equity: result.combined.equity })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uC804\uB7B5 \uAC04 \uC77C\uBCC4\uC190\uC775 \uC0C1\uAD00"), /* @__PURE__ */ React.createElement(BtPortfolioHeatmap, { correlation: result.correlation })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uAC1C\uBCC4 \uAE30\uC5EC"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, result.strategies.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { display: "flex", alignItems: "center", gap: 8, padding: "4px 6px", borderBottom: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, s.label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: s.total_profit_krw >= 0 ? "var(--teal)" : "var(--red)" } }, _pfFmtMoney(s.total_profit_krw)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", width: 64, textAlign: "right" } }, "\uAE30\uC5EC ", s.contribution_pct.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--red)", width: 90, textAlign: "right" } }, "MDD ", Math.round(s.max_drawdown_krw).toLocaleString())))))))));
   }
 
-  // ../frontend/bt-tab-root.jsx
+  // ai_strategy_loop/dashboard/frontend/bt-tab-root.jsx
   function BacktestTab({ baseUrl, wsStatus }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [health, setHealth] = useState_bt(null);
@@ -9936,10 +10051,10 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     )), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uC9C4\uD654 \uC138\uB300 \uBD84\uC11D", accent: "var(--violet)", defaultOpen: false }, /* @__PURE__ */ React.createElement(BtEvoSelector, { baseUrl, isDemo, onPickGen, activeEvo: evoSource })), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uB2E4\uC911 \uC7A1 \uC624\uBC84\uB808\uC774(\uC218\uC775\uACE1\uC120 \uACB9\uCCD0\uBCF4\uAE30)", accent: "var(--teal)", defaultOpen: false }, /* @__PURE__ */ React.createElement(BtOverlayPanel, { baseUrl, isDemo, jobs: jobsList })), /* @__PURE__ */ React.createElement(BtCollapsible, { title: "\uD3EC\uD2B8\uD3F4\uB9AC\uC624 \uACB0\uD569 \uBD84\uC11D", accent: "var(--blue)", defaultOpen: false }, /* @__PURE__ */ React.createElement(BtPortfolioPanel, { baseUrl, isDemo, jobs: jobsList, activeEvo: evoSource }))));
   }
 
-  // ../frontend/backtest.jsx
+  // ai_strategy_loop/dashboard/frontend/backtest.jsx
   Object.assign(window, { BacktestTab });
 
-  // ../frontend/sim-chart-utils.jsx
+  // ai_strategy_loop/dashboard/frontend/sim-chart-utils.jsx
   var {
     useState: useState_simc,
     useRef: useRef_simc,
@@ -10177,7 +10292,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   var _SIM_OVERLAY_COLORS = ["#4cd6b3", "#ff5d6c", "#f0b35a", "#7c6cf0"];
 
-  // ../frontend/sim-chart-subpanes.jsx
+  // ai_strategy_loop/dashboard/frontend/sim-chart-subpanes.jsx
   function SimHeatStrip({ bars, compact }) {
     const view = useMemo_simc(() => {
       const arr = bars || [];
@@ -10630,7 +10745,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } }, spread != null && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: "var(--ink-2)" } }, "\uC2A4\uD504\uB808\uB4DC ", _simPriceTick(spread), spreadBps != null ? ` (${spreadBps.toFixed(1)}bp)` : ""), strength != null && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9.5, color: stColor, padding: "1px 6px", borderRadius: 3, border: "1px solid " + (strength >= 100 ? "var(--teal-dim)" : "var(--line-1)") } }, "\uCCB4\uACB0\uAC15\uB3C4 ", strength.toFixed(0)))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", height: rowH, background: askBg, borderRadius: 3, marginBottom: 1, transition: "background 0.28s ease-out" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#5aa0ff", paddingRight: 8 } }, ask1 != null ? _simPriceTick(ask1) : "\u2014"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: rowH - 8, position: "relative", display: "flex", justifyContent: "flex-start" } }, /* @__PURE__ */ React.createElement("div", { style: { width: askW + "%", height: "100%", background: "rgba(56,140,255,0.30)", borderRadius: 2, transition: "width 0.2s ease-out" } })), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 60 : 74, textAlign: "right", fontSize: 9.5, color: "#5aa0ff", paddingRight: 4 } }, sellRest != null ? _simPriceTick(sellRest) : "\u2014")), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { textAlign: "center", fontSize: 11, color: "var(--amber)", padding: "2px 0", letterSpacing: ".04em" } }, "\u25B8 ", cur != null ? _simPriceTick(cur) : "\u2014", " \u25C2"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", height: rowH, background: bidBg, borderRadius: 3, marginTop: 1, transition: "background 0.28s ease-out" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 66 : 80, textAlign: "right", fontSize: 10.5, color: "#ff8088", paddingRight: 8 } }, bid1 != null ? _simPriceTick(bid1) : "\u2014"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: rowH - 8, display: "flex", justifyContent: "flex-start" } }, /* @__PURE__ */ React.createElement("div", { style: { width: bidW + "%", height: "100%", background: "rgba(255,93,108,0.28)", borderRadius: 2, transition: "width 0.2s ease-out" } })), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { width: compact ? 60 : 74, textAlign: "right", fontSize: 9.5, color: "#ff8088", paddingRight: 4 } }, buyRest != null ? _simPriceTick(buyRest) : "\u2014")), buyShare != null && sellShare != null && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 5 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", height: 6, borderRadius: 3, overflow: "hidden", border: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("div", { style: { width: buyShare.toFixed(1) + "%", background: "var(--teal)", opacity: 0.7, transition: "width 0.25s ease-out" } }), /* @__PURE__ */ React.createElement("div", { style: { width: sellShare.toFixed(1) + "%", background: "var(--red)", opacity: 0.7, transition: "width 0.25s ease-out" } })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 2, fontSize: 9 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--teal)" } }, "\uB9E4\uC218 ", buyShare.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--red)" } }, "\uB9E4\uB3C4 ", sellShare.toFixed(0), "%"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 9.5 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "#5aa0ff" } }, "\uCD1D\uB9E4\uB3C4 ", sellRest != null ? _simPriceTick(sellRest) : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "#ff8088" } }, "\uCD1D\uB9E4\uC218 ", buyRest != null ? _simPriceTick(buyRest) : "\u2014")));
   }
 
-  // ../frontend/sim-chart-shell.jsx
+  // ai_strategy_loop/dashboard/frontend/sim-chart-shell.jsx
   function SimChangeGauge({ changePct, size }) {
     const S = size || 56;
     const v = Number(changePct) || 0;
@@ -10754,7 +10869,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return /* @__PURE__ */ React.createElement("div", { className: "panel", style: { minWidth: 0, boxShadow: flashGlow, transition: "box-shadow 0.45s ease-out" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: compact ? 11 : 12.5 } }, code, name ? " \xB7 " + name : ""), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 9, color: "var(--ink-3)", marginLeft: 6 } }, engine === "lwc" ? "LWC" : "SVG")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, alignItems: "center" } }, lastBar && /* @__PURE__ */ React.createElement(SimChangeGauge, { changePct: lastBar.change, size: compact ? 48 : 56 }), /* @__PURE__ */ React.createElement(SimSessionRing, { curT, size: compact ? 44 : 52 }), lastBar && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-1)" } }, _simPriceTick(lastBar.c)))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, children, engine !== "lwc" && ind.imbalance && /* @__PURE__ */ React.createElement(SimImbalancePane, { bars, compact }), engine !== "lwc" && ind.orderflow && /* @__PURE__ */ React.createElement(SimNetDeltaStrip, { bars, compact }), engine !== "lwc" && ind.rsi && /* @__PURE__ */ React.createElement(SimRsiPane, { bars, compact }), engine !== "lwc" && ind.macd && /* @__PURE__ */ React.createElement(SimMacdPane, { bars, compact }), /* @__PURE__ */ React.createElement(SimOrderBook, { lastBar, compact }), /* @__PURE__ */ React.createElement(SimOrderFlowTape, { bars, compact }), /* @__PURE__ */ React.createElement(SimFootprint, { bars, compact }), /* @__PURE__ */ React.createElement(SimHeatStrip, { bars, compact }), /* @__PURE__ */ React.createElement(SimRestFlow, { bars, compact })));
   }
 
-  // ../frontend/sim-chart-engines.jsx
+  // ai_strategy_loop/dashboard/frontend/sim-chart-engines.jsx
   function SimCandleChartLWC({ bars, signals, curT, code, name, compact, indicators }) {
     const wrapRef = useRef_simc(null);
     const chartRef = useRef_simc(null);
@@ -11401,7 +11516,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return useLwc ? /* @__PURE__ */ React.createElement(SimCandleChartLWC, { ...props }) : /* @__PURE__ */ React.createElement(SimCandleChartSVG, { ...props });
   }
 
-  // ../frontend/sim-signal-log.jsx
+  // ai_strategy_loop/dashboard/frontend/sim-signal-log.jsx
   function SimOverlayChart({ codes, barsByCode, nameByCode, curT }) {
     const series = useMemo_simc(() => {
       return (codes || []).map((code, idx) => {
@@ -11543,7 +11658,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     }))));
   }
 
-  // ../frontend/simulation-charts.jsx
+  // ai_strategy_loop/dashboard/frontend/simulation-charts.jsx
   Object.assign(window, {
     SimCandleChart,
     SimCandleChartLWC,
@@ -11575,7 +11690,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     _SIM_DEFAULT_INDICATORS
   });
 
-  // ../frontend/sim-tab-utils.jsx
+  // ai_strategy_loop/dashboard/frontend/sim-tab-utils.jsx
   var {
     useState: useState_sim,
     useEffect: useEffect_sim,
@@ -11780,7 +11895,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     return th.op === "<=" ? v <= t : v >= t;
   }
 
-  // ../frontend/sim-tab-controls.jsx
+  // ai_strategy_loop/dashboard/frontend/sim-tab-controls.jsx
   function SimControlBar({
     baseUrl,
     isDemo,
@@ -12204,7 +12319,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     ))))));
   }
 
-  // ../frontend/sim-tab-panels.jsx
+  // ai_strategy_loop/dashboard/frontend/sim-tab-panels.jsx
   function SimChartByEngine({ engineMode, ...props }) {
     const Live = window.SimLiveChart;
     const Lwc = window.SimCandleChartLWC;
@@ -12369,7 +12484,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     }))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9.5, color: "var(--ink-3)", marginTop: 6, lineHeight: 1.5 } }, "\uC784\uACC4\uB294 \uD604\uC7AC \uD504\uB808\uC784 \uAC12\uACFC\uC758 \uB2E8\uC21C \uBE44\uAD50\uB2E4. \uC870\uAC74\uC2DD \uC5D4\uC9C4 \uC815\uD569 \uB9E4\uB9E4 \uC2E0\uD638\uB294 \uC704 ", /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)" } }, "\uB9E4\uC218/\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), " \uC120\uD0DD \uC2DC \uCC28\uD2B8\uC5D0 \uC624\uBC84\uB808\uC774\uB41C\uB2E4.")));
   }
 
-  // ../frontend/sim-tab-root.jsx
+  // ai_strategy_loop/dashboard/frontend/sim-tab-root.jsx
   function SimulationTab({ baseUrl, wsStatus }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [health, setHealth] = useState_sim(null);
@@ -12910,10 +13025,10 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     ))));
   }
 
-  // ../frontend/simulation.jsx
+  // ai_strategy_loop/dashboard/frontend/simulation.jsx
   Object.assign(window, { SimulationTab });
 
-  // ../frontend/evolution-analysis.jsx
+  // ai_strategy_loop/dashboard/frontend/evolution-analysis.jsx
   var {
     useState: useState_ea,
     useEffect: useEffect_ea,
@@ -13286,7 +13401,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { EvolutionAnalysisPanel });
 
-  // ../frontend/rl-vdt-shell.jsx
+  // ai_strategy_loop/dashboard/frontend/rl-vdt-shell.jsx
   var _VDT_STATUS_ICON = { pass: "\u2705", warn: "\u26A0\uFE0F", fail: "\u274C", pending: "\u23F3" };
   function VdtPromoteChecklist({ v }) {
     const checks = v && v.promote_checklist || [];
@@ -13305,7 +13420,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { VdtPromoteChecklist, VdtAlerts, VdtSummaryLines });
 
-  // ../frontend/analysis.jsx
+  // ai_strategy_loop/dashboard/frontend/analysis.jsx
   var {
     useState: useState_an,
     useEffect: useEffect_an,
@@ -13676,7 +13791,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   Object.assign(window, { EdgeRatioPanel, FeatureImportancePanel });
 
-  // ../frontend/rl-analysis.jsx
+  // ai_strategy_loop/dashboard/frontend/rl-analysis.jsx
   var {
     useState: useState_rla,
     useEffect: useEffect_rla
@@ -13966,7 +14081,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     );
   }
 
-  // ../frontend/rl-validation.jsx
+  // ai_strategy_loop/dashboard/frontend/rl-validation.jsx
   var {
     useState: useState_rl,
     useEffect: useEffect_rl,
@@ -14165,7 +14280,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     )), /* @__PURE__ */ React.createElement("button", { type: "button", className: "research-tab", onClick: fetchPsim }, "\uACB0\uD569 \uC2DC\uBBAC \uC2E4\uD589")), psim && !psim.error && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11 } }, "\uACB0\uD569 \uCD1D\uC190\uC775: ", /* @__PURE__ */ React.createElement("b", null, Math.round(psim.combined_total || 0).toLocaleString()), " \xB7 ", "\uACB0\uD569 MDD: ", /* @__PURE__ */ React.createElement("b", null, Math.round(psim.combined_mdd || 0).toLocaleString()), psim.diversification_gain != null ? ` \xB7 \uBD84\uC0B0\uC774\uB4DD: ${(psim.diversification_gain * 100).toFixed(1)}%` : ""), psim.correlation && Array.isArray(psim.correlation.labels) && /* @__PURE__ */ React.createElement("table", { className: "mono", style: { fontSize: 11, marginTop: 4 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC0C1\uAD00"), psim.correlation.labels.map((l) => /* @__PURE__ */ React.createElement("th", { key: l }, l.split(":")[0])))), /* @__PURE__ */ React.createElement("tbody", null, psim.correlation.labels.map((row, i) => /* @__PURE__ */ React.createElement("tr", { key: row }, /* @__PURE__ */ React.createElement("th", null, row.split(":")[0]), (psim.correlation.matrix[i] || []).map((v, j) => /* @__PURE__ */ React.createElement("td", { key: j }, v.toFixed(2)))))))), psim && psim.error && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--amber)" } }, psim.error)));
   }
 
-  // ../frontend/rl-panel.jsx
+  // ai_strategy_loop/dashboard/frontend/rl-panel.jsx
   var {
     useState: useState_rl2,
     useEffect: useEffect_rl2,
@@ -14377,11 +14492,11 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { ResearchLabPanel });
 
-  // ../frontend/research-lab.jsx
+  // ai_strategy_loop/dashboard/frontend/research-lab.jsx
   Object.assign(window, { VdtPromoteChecklist, VdtAlerts, VdtSummaryLines });
   Object.assign(window, { ResearchLabPanel });
 
-  // ../frontend/ui-state.jsx
+  // ai_strategy_loop/dashboard/frontend/ui-state.jsx
   var UI_STATE_KIND_META = {
     info: { icon: "\u2139", tone: "var(--blue)" },
     empty: { icon: "\u2205", tone: "var(--ink-2)" },
@@ -14421,7 +14536,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { UiStateBlock, UiInlinePill, WorkspaceCard, WorkspaceNav, MetricList });
 
-  // ../frontend/research-index.jsx
+  // ai_strategy_loop/dashboard/frontend/research-index.jsx
   var { useState: useState_rix, useEffect: useEffect_rix, useMemo: useMemo_rix, useRef: useRef_rix } = React;
   var RIX_KIND_LABELS = {
     campaign: "Campaign",
@@ -14611,7 +14726,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { ResearchIndexPanel });
 
-  // ../frontend/ui-contract.jsx
+  // ai_strategy_loop/dashboard/frontend/ui-contract.jsx
   var DASHBOARD_ROUTE_CONTRACTS = [
     { key: "evolution", label: "\uC9C4\uD654 \uD648", icon: "\u{1F9EC}", group: "\uC6B4\uC601 \uB8E8\uD504", badge: "LIVE", contract: "\uC2E4\uC2DC\uAC04 \uC0DD\uC131\xB7\uBC31\uD14C\uC2A4\uD2B8\xB7\uCC44\uC810\xB7\uC2B9\uC778 \uB300\uAE30 \uB8E8\uD504" },
     { key: "backtest", label: "\uBC31\uD14C\uC2A4\uD2B8 \uAC80\uC99D", icon: "\u{1F4CA}", group: "\uAC80\uC99D", badge: "BT", contract: "\uC870\uAC74\uC2DD \uBC31\uD14C\uC2A4\uD2B8 \uC2E4\uD589\xB7\uACB0\uACFC \uC870\uD68C" },
@@ -14620,7 +14735,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "lab", label: "\uC5F0\uAD6C\uC2E4", icon: "\u{1F52C}", group: "\uC5F0\uAD6C \uAE30\uB85D", badge: "LAB", contract: "\uC704\uD0A4\xB7AI \uCEE8\uD14D\uC2A4\uD2B8\xB7run \uBD84\uC11D \uD648" },
     { key: "pro", label: "\uBD84\uC11D \uC6CC\uD06C\uBCA4\uCE58", icon: "\u{1F4CA}", group: "\uD310\uC815", badge: "PRO", contract: "\uC870\uAC74 \uD6C4\uBCF4 \uBD84\uC11D\xB7\uBA85\uC608\uC758 \uC804\uB2F9 workbench" },
     { key: "verdict", label: "\uACB0\uC815 \uAC10\uC0AC", icon: "\u2696\uFE0F", group: "\uD310\uC815", badge: "LOG", contract: "append-only \uC6B4\uC6A9 \uACB0\uC815 \uC774\uB825" },
-    { key: "process", label: "\uD504\uB85C\uC138\uC2A4 \uD750\uB984", icon: "\u{1F5FA}\uFE0F", group: "\uD504\uB85C\uC138\uC2A4", badge: "FLOW", contract: "read-only current_step/step_timing/process_flow" }
+    { key: "process", label: "\uD504\uB85C\uC138\uC2A4", icon: "\u{1F5FA}\uFE0F", group: "\uC870\uAC74\uC2DD \uBC1C\uAD74", badge: "FLOW", contract: "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uB2E8\uACC4\xB7\uD604\uC7AC \uB178\uB4DC\xB7\uBC31\uD14C\uC2A4\uD2B8 \uC9C4\uD589\xB7\uC26C\uC6B4 \uC124\uBA85" }
   ];
   var DASHBOARD_TAB_GROUPS = [
     { key: "run", label: "\uC6B4\uC601 \uB8E8\uD504", tabs: ["evolution", "process"] },
@@ -14648,14 +14763,14 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     routeContract
   });
 
-  // ../frontend/visual-quality.jsx
+  // ai_strategy_loop/dashboard/frontend/visual-quality.jsx
   var VISUAL_BASELINE_TARGETS = [
-    { route: "evolution", label: "\uC9C4\uD654 \uB300\uC2DC\uBCF4\uB4DC", widths: [1440, 1180, 980], evidence: "run monitor + HoF + verdict cards" },
-    { route: "records", label: "\uAE30\uB85D \uC778\uB371\uC2A4", widths: [1440, 1180, 980], evidence: "search/filter/detail split" },
-    { route: "lab", label: "\uC5F0\uAD6C\uC2E4", widths: [1440, 1180, 980], evidence: "wiki/context/evidence workspace" },
-    { route: "pro", label: "\uBD84\uC11D \uD504\uB85C", widths: [1440, 1180, 980], evidence: "workbench and HoF responsibility" },
-    { route: "verdict", label: "\uACB0\uC815 \uC774\uB825", widths: [1440, 1180, 980], evidence: "append-only decision form/history" },
-    { route: "process", label: "\uD504\uB85C\uC138\uC2A4 \uD750\uB984", widths: [1440, 1180, 980], evidence: "live strip/timing/grid/iframe" },
+    { route: "evolution", label: "\uC9C4\uD654 \uD648", widths: [1440, 1180, 980], evidence: "run monitor + process + HoF + verdict cards" },
+    { route: "records", label: "\uAE30\uB85D \uAC80\uC0C9", widths: [1440, 1180, 980], evidence: "search/filter/detail split" },
+    { route: "lab", label: "\uB9AC\uC11C\uCE58 Wiki", widths: [1440, 1180, 980], evidence: "wiki/context/evidence workspace" },
+    { route: "pro", label: "\uBD84\uC11D \uC6CC\uD06C\uBCA4\uCE58", widths: [1440, 1180, 980], evidence: "workbench and HoF responsibility" },
+    { route: "verdict", label: "\uACB0\uC815 \uAC10\uC0AC", widths: [1440, 1180, 980], evidence: "append-only decision form/history" },
+    { route: "process", label: "\uD504\uB85C\uC138\uC2A4", widths: [1440, 1180, 980], evidence: "live strip/timing/grid/iframe" },
     { route: "hof", label: "\uBA85\uC608\uC758 \uC804\uB2F9", widths: [1440, 1180, 980], evidence: "inventory fields and screenshots" }
   ];
   var PERF_PROFILE_BUDGETS = [
@@ -14670,10 +14785,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { PERF_PROFILE_BUDGETS, VISUAL_BASELINE_TARGETS, VisualQualityPanel });
 
-  // ../frontend/dashboard-inventory.jsx
+  // ai_strategy_loop/dashboard/frontend/dashboard-inventory.jsx
   var DASHBOARD_PAGE_OWNER_MATRIX = [
     { key: "evolution", owner: "\uC6B4\uC601 \uB8E8\uD504", owns: "\uC2E4\uC2DC\uAC04 \uC0DD\uC131\xB7\uBC31\uD14C\uC2A4\uD2B8\xB7\uCC44\uC810 \uB8E8\uD504\uC640 \uC2B9\uC778 \uB300\uAE30 \uAD00\uCC30", notOwner: "\uAE30\uB85D \uAC80\uC0C9\xB7\uBD84\uC11D \uC6CC\uD06C\uBCA4\uCE58\xB7\uC6B4\uC6A9 \uACB0\uC815 \uC774\uB825", primarySurface: "App/evolution panels", emptyState: "\uC9C4\uD654 \uC2DC\uC791 \uC804 \uC548\uB0B4\uC640 \uC124\uC815 \uC5F4\uAE30" },
-    { key: "process", owner: "\uD504\uB85C\uC138\uC2A4 \uD750\uB984", owns: "read-only current_step, step_timings, recent_logs, /process_flow \uB3D9\uC2DC \uD655\uC778", notOwner: "\uB8E8\uD504 \uC81C\uC5B4\xB7\uC0C1\uD0DC \uBCC0\uACBD\xB7iframe \uB0B4\uBD80 \uC18C\uC720\uAD8C", primarySurface: "ProcessFlowPanel + /process_flow iframe", emptyState: "\uB178\uB4DC \uBBF8\uC815\xB7\uB85C\uADF8 \uB300\uAE30" },
+    { key: "process", owner: "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uD504\uB85C\uC138\uC2A4", owns: "read-only current_step, step_timings, recent_logs, /process_flow \uB3D9\uC2DC \uD655\uC778", notOwner: "\uB8E8\uD504 \uC81C\uC5B4\xB7\uC0C1\uD0DC \uBCC0\uACBD\xB7final approval/export", primarySurface: "ProcessFlowPanel + /process_flow iframe", emptyState: "\uB178\uB4DC \uBBF8\uC815\xB7\uB85C\uADF8 \uB300\uAE30" },
     { key: "backtest", owner: "\uAC80\uC99D \uC2E4\uD589", owns: "\uC870\uAC74\uC2DD \uBC31\uD14C\uC2A4\uD2B8 \uC2E4\uD589, \uCD5C\uC801\uD654, WFO, \uACB0\uACFC \uC870\uD68C", notOwner: "\uC9C4\uD654 \uB8E8\uD504 \uCD5C\uC885 \uC2B9\uC778\xB7\uC6B4\uC6A9 \uACB0\uC815 \uAE30\uB85D", primarySurface: "BacktestTab", emptyState: "\uC870\uAC74\uC2DD/\uC774\uB825 \uC5C6\uC74C" },
     { key: "simulation", owner: "\uCC28\uD2B8 \uB9AC\uD50C\uB808\uC774", owns: "\uC77C\uC77C min DB \uB9AC\uD50C\uB808\uC774\uC640 \uC218\uB3D9 \uC2E0\uD638 \uAC80\uD1A0", notOwner: "\uC2E4\uAC70\uB798 \uC8FC\uBB38\xB7\uC804\uB7B5 DB \uC4F0\uAE30", primarySurface: "SimulationTab", emptyState: "\uB0A0\uC9DC\xB7\uC885\uBAA9 \uC120\uD0DD \uB300\uAE30" },
     { key: "records", owner: "\uC804\uCCB4 \uAE30\uB85D \uC870\uD68C", owns: "campaign/docs/update_log/registry lineage \uAC80\uC0C9\uACFC inert \uC6D0\uBB38 \uD655\uC778", notOwner: "\uC704\uD0A4 \uD050\uB808\uC774\uC158\xB7\uBD84\uC11D \uD3B8\uC9D1\xB7\uACB0\uC815 \uAE30\uB85D", primarySurface: "ResearchIndexPanel", emptyState: "\uD544\uD130/\uAC80\uC0C9\uC5B4 \uC870\uC815" },
@@ -14706,7 +14821,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { DASHBOARD_PAGE_OWNER_MATRIX, PHASE2_SOURCE_INVENTORY, LARGE_LIST_PERF_TARGETS, pageOwnerContract, listPerfTarget, Phase2InventoryPanel });
 
-  // ../frontend/dashboard-pages.jsx
+  // ai_strategy_loop/dashboard/frontend/dashboard-pages.jsx
   var { useState: useState_dp, useEffect: useEffect_dp } = React;
   function _DpLoading({ name }) {
     return /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "loading", compact: true, title: `${name} \uB85C\uB529 \uC911\u2026`, detail: "window global pending" }, "\uBC88\uB4E4 \uB85C\uB4DC \uC21C\uC11C\uAC00 \uB9DE\uC73C\uBA74 \uACE7 \uD45C\uC2DC\uB429\uB2C8\uB2E4.");
@@ -14829,11 +14944,12 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       return () => clearInterval(timer);
     }, [base]);
     const Panel = window.ResearchLabPanel;
-    return /* @__PURE__ */ React.createElement("div", { className: "dashboard-page dashboard-page-lab" }, /* @__PURE__ */ React.createElement(EvidenceWorkspaceHeader, { activeKey: "lab", onSelect: onNavigate }), /* @__PURE__ */ React.createElement(EvidenceWorkspaceCards, { onSelect: onNavigate }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, padding: "12px 0", minHeight: "60vh" } }, /* @__PURE__ */ React.createElement(_DpSidebar, { runs, runId, setRunId, ops, verdict }), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { className: "dashboard-page-title" }, /* @__PURE__ */ React.createElement("b", null, "STOM \uC5F0\uAD6C\uC2E4"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "wiki \xB7 context \xB7 run analysis owner")), Panel ? /* @__PURE__ */ React.createElement(Panel, { baseUrl: base, wsStatus: "na", runId }) : /* @__PURE__ */ React.createElement(_DpLoading, { name: "\uC5F0\uAD6C\uC2E4 \uD328\uB110" }), window.ResearchWikiPanel && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl: base, wsStatus: "na", runId })), window.ResearchIndexPanel && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(ResearchIndexPanel, { baseUrl: base, wsStatus: "na" })), window.AIContextPanel && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(AIContextPanel, { baseUrl: base, wsStatus: "na", runId, genNo: null })), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(VisualQualityPanel, { compact: true })))));
+    return /* @__PURE__ */ React.createElement("div", { className: "dashboard-page dashboard-page-lab" }, /* @__PURE__ */ React.createElement(EvidenceWorkspaceHeader, { activeKey: "lab", onSelect: onNavigate }), /* @__PURE__ */ React.createElement(EvidenceWorkspaceCards, { onSelect: onNavigate }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, padding: "12px 0", minHeight: "60vh" } }, /* @__PURE__ */ React.createElement(_DpSidebar, { runs, runId, setRunId, ops, verdict }), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { className: "dashboard-page-title" }, /* @__PURE__ */ React.createElement("b", null, "STOM \uC5F0\uAD6C\uC2E4"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "wiki \xB7 context \xB7 run analysis owner")), Panel ? /* @__PURE__ */ React.createElement(Panel, { baseUrl: base, wsStatus: "na", runId }) : /* @__PURE__ */ React.createElement(_DpLoading, { name: "\uC5F0\uAD6C\uC2E4 \uD328\uB110" }), window.ResearchWikiPanel && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl: base, wsStatus: "na", runId })), window.AIContextPanel && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(AIContextPanel, { baseUrl: base, wsStatus: "na", runId, genNo: null })), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(VisualQualityPanel, { compact: true })))));
   }
   function ResearchIndexPage({ baseUrl, onNavigate }) {
     const base = _dpBase(baseUrl);
-    return /* @__PURE__ */ React.createElement("div", { className: "dashboard-page dashboard-page-records", style: { padding: "12px 0", minHeight: "60vh" } }, /* @__PURE__ */ React.createElement(EvidenceWorkspaceHeader, { activeKey: "records", onSelect: onNavigate }), /* @__PURE__ */ React.createElement("div", { className: "research-index-page-head" }, /* @__PURE__ */ React.createElement("b", null, "STOM \uAE30\uB85D \uAC80\uC0C9"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "campaign \xB7 docs \xB7 update_log \xB7 registry lineage \xB7 inert detail")), /* @__PURE__ */ React.createElement(ResearchIndexPanel, { baseUrl: base, wsStatus: "na" }));
+    const Panel = window.ResearchIndexPanel || ResearchIndexPanel;
+    return /* @__PURE__ */ React.createElement("div", { className: "dashboard-page dashboard-page-records", style: { padding: "12px 0", minHeight: "60vh" } }, /* @__PURE__ */ React.createElement(EvidenceWorkspaceHeader, { activeKey: "records", onSelect: onNavigate }), /* @__PURE__ */ React.createElement("div", { className: "research-index-page-head" }, /* @__PURE__ */ React.createElement("b", null, "STOM \uAE30\uB85D \uAC80\uC0C9"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "campaign \xB7 docs \xB7 update_log \xB7 registry lineage \xB7 inert detail")), /* @__PURE__ */ React.createElement(Panel, { baseUrl: base, wsStatus: "na" }));
   }
   function ProPage({ baseUrl, onNavigate }) {
     const base = _dpBase(baseUrl);
@@ -14952,10 +15068,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { LabPage, ProPage, VerdictPanel, ResearchIndexPage, normalizeVerdictSubtab });
 
-  // ../frontend/app.jsx
+  // ai_strategy_loop/dashboard/frontend/app.jsx
   var { useState: useState_a, useEffect: useEffect_a, useCallback: useCallback_a } = React;
   function App() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     const [baseUrl, setBaseUrl] = useState_a(() => {
       const cached = localStorage.getItem("stom_base_url");
       const here = typeof window !== "undefined" && window.location && window.location.origin || "";
@@ -14975,11 +15091,12 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     useEffect_a(() => {
       if (activeTab === "simulation") setSimVisited(true);
     }, [activeTab]);
-    const { state: liveState, health, wsStatus, configSpec, send, lastReply, reconnect } = useBackend(baseUrl);
+    const { state: liveState, health, wsStatus, configSpec, configSpecStatus, send, lastReply, reconnect } = useBackend(baseUrl);
     const [settingsOpen, setSettingsOpen] = useState_a(false);
     const [approvalOpen, setApprovalOpen] = useState_a(false);
     const [codeViewGen, setCodeViewGen] = useState_a(null);
     const [selectedDetailGen, setSelectedDetailGen] = useState_a(null);
+    const [gptAuthProbe, setGptAuthProbe] = useState_a(null);
     const [selectedRun, setSelectedRun] = useState_a("");
     const [runList, setRunList] = useState_a([]);
     const [fetchedRunState, setFetchedRunState] = useState_a(null);
@@ -15037,6 +15154,16 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       send({ action: "start", config });
       setSettingsOpen(false);
     }, [send]);
+    const onGptAuthTest = useCallback_a(() => {
+      setGptAuthProbe({ status: "testing", message: "GPT auth proxy test running" });
+      fetch(baseUrl + "/gpt_auth/test", { method: "POST", signal: AbortSignal.timeout(8e3) }).then((r) => r.json().then((j) => ({ http_ok: r.ok, ...j }))).then((j) => setGptAuthProbe(j)).catch((e) => setGptAuthProbe({
+        status: "unavailable",
+        safe: true,
+        starts_evolution: false,
+        message: "GPT auth connection test failed without starting evolution",
+        reason: String(e && e.message ? e.message : e)
+      }));
+    }, [baseUrl]);
     const onStop = useCallback_a(() => {
       send({ action: "stop" });
     }, [send]);
@@ -15055,9 +15182,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       const g = (state.generations || []).find((x) => x.gen_no === genNo);
       if (g) setCodeViewGen(g);
     }, [state.generations]);
-    const mddCap = (_b = (_a = configSpec.find((f) => f.name === "mdd_cap")) == null ? void 0 : _a.default) != null ? _b : 15;
-    const minDailyTrades = (_d = (_c = configSpec.find((f) => f.name === "min_daily_trades")) == null ? void 0 : _c.default) != null ? _d : 0.5;
-    const targetScore = (_f = (_e = configSpec.find((f) => f.name === "target_score")) == null ? void 0 : _e.default) != null ? _f : 1;
+    const mddCap = Number((_b = (_a = configSpec.find((f) => f.name === "mdd_cap")) == null ? void 0 : _a.default) != null ? _b : 40);
+    const minDailyTrades = Number((_d = (_c = configSpec.find((f) => f.name === "min_daily_trades")) == null ? void 0 : _c.default) != null ? _d : 0.5);
+    const targetScoreRaw = (_e = configSpec.find((f) => f.name === "target_score")) == null ? void 0 : _e.default;
+    const targetScore = targetScoreRaw === "" || targetScoreRaw === null || targetScoreRaw === void 0 ? 1 : Number(targetScoreRaw);
     const pct = state.max_generations > 0 ? Math.min(100, state.current_gen / state.max_generations * 100) : 0;
     const isIdle = state.status === "idle" && state.generations.length === 0 && !running;
     const activeRoute = routeContract(activeTab);
@@ -15068,7 +15196,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       { label: "status", value: state.status || "\u2014" },
       { label: "run", value: selectedRun ? "archive" : "LIVE" }
     ];
-    return /* @__PURE__ */ React.createElement("div", { className: "stom-app-shell" }, /* @__PURE__ */ React.createElement("header", { className: "stom-shell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-shell-top" }, /* @__PURE__ */ React.createElement("div", { className: "stom-shell-brand" }, /* @__PURE__ */ React.createElement(Logo, null), /* @__PURE__ */ React.createElement("div", { className: "stom-shell-title" }, /* @__PURE__ */ React.createElement("h1", null, "STOM AI \xB7 \uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \uB300\uC2DC\uBCF4\uB4DC"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "autonomous_strategy_loop \xB7 contract_v", (_h = (_g = health.contract_version) != null ? _g : state.contract_version) != null ? _h : 1)), /* @__PURE__ */ React.createElement("nav", { className: "stom-pagenav mono", "aria-label": "\uD604\uC7AC \uC704\uCE58" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "stom-app-shell" }, /* @__PURE__ */ React.createElement("header", { className: "stom-shell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-shell-top" }, /* @__PURE__ */ React.createElement("div", { className: "stom-shell-brand" }, /* @__PURE__ */ React.createElement(Logo, null), /* @__PURE__ */ React.createElement("div", { className: "stom-shell-title" }, /* @__PURE__ */ React.createElement("h1", null, "STOM AI \xB7 \uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \uB300\uC2DC\uBCF4\uB4DC"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "autonomous_strategy_loop \xB7 contract_v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("nav", { className: "stom-pagenav mono", "aria-label": "\uD604\uC7AC \uC704\uCE58" }, /* @__PURE__ */ React.createElement(
       "span",
       {
         className: "stom-pagenav-item stom-pagenav-active",
@@ -15101,7 +15229,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         title: "\uD504\uB85C\uC138\uC2A4 \uD750\uB984",
         style: { width: "100%", height: "calc(100vh - 300px)", minHeight: 420, border: "none", borderRadius: 8, background: "#0d1117" }
       }
-    ))) : isIdle ? /* @__PURE__ */ React.createElement(IdleState, { onStart: () => setSettingsOpen(true), configSpec }) : /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_runmon", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "Run Monitor" }) }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state }), /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state, baseUrl, onViewCode: onViewCodeByGen }), /* @__PURE__ */ React.createElement(PhaseTimeline, { state }), /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }), /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(EnginePanel, { state, wsStatus })), /* @__PURE__ */ React.createElement("div", { className: "grid-main" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, minWidth: 0 } }, window.ResearchHeatmapPanel ? /* @__PURE__ */ React.createElement(window.ResearchHeatmapPanel, { baseUrl, wsStatus, runId: state.run_id }) : null, /* @__PURE__ */ React.createElement(FitnessChart, { state, target: targetScore }), /* @__PURE__ */ React.createElement(ProfitChart, { state, targetPct: 0 }), /* @__PURE__ */ React.createElement(EquityOverlayChart, { baseUrl, wsStatus, runId: state.run_id }), /* @__PURE__ */ React.createElement(
+    ))) : isIdle ? /* @__PURE__ */ React.createElement(IdleState, { onStart: () => setSettingsOpen(true), configSpec, state, onNavigate: setActiveTab }) : /* @__PURE__ */ React.createElement("main", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_runmon", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "Run Monitor" }) }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state }), /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state, baseUrl, onViewCode: onViewCodeByGen }), /* @__PURE__ */ React.createElement(PhaseTimeline, { state }), /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state }), /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(EnginePanel, { state, wsStatus })), /* @__PURE__ */ React.createElement("div", { className: "grid-main" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, minWidth: 0 } }, window.ResearchHeatmapPanel ? /* @__PURE__ */ React.createElement(window.ResearchHeatmapPanel, { baseUrl, wsStatus, runId: state.run_id }) : null, /* @__PURE__ */ React.createElement(FitnessChart, { state, target: targetScore }), /* @__PURE__ */ React.createElement(ProfitChart, { state, targetPct: 0 }), /* @__PURE__ */ React.createElement(EquityOverlayChart, { baseUrl, wsStatus, runId: state.run_id }), /* @__PURE__ */ React.createElement(
       BacktestDetailChart,
       {
         baseUrl,
@@ -15149,7 +15277,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         onClose: () => setSettingsOpen(false),
         onStart,
         configSpec,
-        disabled: running
+        configSpecStatus,
+        onGptAuthTest,
+        gptAuthProbe,
+        disabled: running || !isDemoSrc && configSpecStatus && !configSpecStatus.live
       }
     ), /* @__PURE__ */ React.createElement(
       ApprovalDialog,
@@ -15166,7 +15297,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         runId: state.run_id,
         baseUrl
       }
-    ), /* @__PURE__ */ React.createElement("footer", { style: { marginTop: 24, padding: "12px 0", textAlign: "center", color: "var(--ink-3)", fontSize: 10.5, fontFamily: "var(--mono)" } }, "STOM AI \xB7 STATE_CONTRACT v", (_i = state.contract_version) != null ? _i : 1, " \xB7 last_update ", fmtTime(state.updated_at)));
+    ), /* @__PURE__ */ React.createElement("footer", { style: { marginTop: 24, padding: "12px 0", textAlign: "center", color: "var(--ink-3)", fontSize: 10.5, fontFamily: "var(--mono)" } }, "STOM AI \xB7 STATE_CONTRACT v", (_h = state.contract_version) != null ? _h : 1, " \xB7 last_update ", fmtTime(state.updated_at)));
   }
   var STOM_TABS = DASHBOARD_ROUTE_CONTRACTS;
   function TabNav({ activeTab, onSelect }) {
@@ -15316,7 +15447,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       "\u21BB"
     ));
   }
-  function IdleState({ onStart, configSpec }) {
+  function IdleState({ onStart, configSpec, state, onNavigate }) {
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: {
       padding: "10px 14px",
       background: "linear-gradient(90deg, rgba(240,179,90,0.10), rgba(240,179,90,0.02))",
@@ -15328,13 +15459,30 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       gap: 12,
       fontSize: 12,
       color: "var(--ink-1)"
-    } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 16 } }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", { style: { color: "var(--amber)" } }, "\uB300\uC2DC\uBCF4\uB4DC\uB294 \uC9C4\uD654 \uC2DC\uC791 \uD6C4 \uD65C\uC131\uD654\uB429\uB2C8\uB2E4."), " ", "\uC544\uB798 ", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-0)" } }, "\u25B8 \uC9C4\uD654 \uC2DC\uC791 \uC124\uC815 \uC5F4\uAE30"), "\uB97C \uB204\uB974\uBA74 \uD398\uC774\uC988 \uD0C0\uC784\uB77C\uC778(\uC0DD\uC131\u2192\uBC31\uD14C\u2192\uCC44\uC810\u2192\uBD80\uAC80), \uC5D4\uC9C4 \uBA54\uD2B8\uB9AD, \uC790\uBCF8\uACE1\uC120, \uC810\uC218 \uBD84\uD574, \uBD80\uAC80 \uC2A4\uD2B8\uB9AC\uBC0D\uC774 \uC2E4\uC2DC\uAC04\uC73C\uB85C \uBCF4\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("button", { className: "btn primary", style: { marginLeft: "auto" }, onClick: onStart }, "\u25B8 \uC2DC\uC791")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 8 } }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "Welcome")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { padding: "28px 24px" } }, /* @__PURE__ */ React.createElement("h2", { style: { fontSize: 22, marginBottom: 10, letterSpacing: "-0.01em" } }, "\uB8E8\uD504\uB97C \uC2DC\uC791\uD560 \uC900\uBE44\uAC00 \uB418\uC5C8\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("p", { style: { color: "var(--ink-1)", lineHeight: 1.6, marginBottom: 22, fontSize: 13 } }, "AI\uAC00 \uD55C\uAD6D \uC8FC\uC2DD \uB9E4\uC218/\uB9E4\uB3C4 \uC804\uB7B5 \uCF54\uB4DC\uB97C \uC790\uB3D9 \uC0DD\uC131\xB7\uBC31\uD14C\uC2A4\uD2B8\xB7\uCC44\uC810\xB7\uBC18\uBCF5\uD569\uB2C8\uB2E4. \uAC01 \uC138\uB300\uC758 \uBD80\uAC80(autopsy)\uC774 \uB2E4\uC74C \uC138\uB300 \uC0DD\uC131\uAE30\uC5D0 \uD53C\uB4DC\uBC31\uB418\uC5B4 \uC870\uAC74\uC2DD\uC774 \uC810\uC9C4\uC801\uC73C\uB85C \uC9C4\uD654\uD569\uB2C8\uB2E4.", /* @__PURE__ */ React.createElement("br", null), /* @__PURE__ */ React.createElement("br", null), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uBAA9\uD45C \uC810\uC218\uC640 MDD \uC0C1\uD55C\uC744 \uB3D9\uC2DC\uC5D0 \uB9CC\uC871\uD558\uBA74 \uD558\uB4DC \uAC8C\uC774\uD2B8\uB97C \uD1B5\uACFC\uD55C \uC6B0\uC2B9 \uC804\uB7B5\uC73C\uB85C \uB4F1\uB85D\uB418\uACE0,", /* @__PURE__ */ React.createElement("br", null), "\uC0AC\uC6A9\uC790\uC758 \uBA85\uC2DC\uC801 \uC2B9\uC778 \uD6C4\uC5D0\uB9CC \uC6B4\uC601 strategy.db\uB85C export \uB429\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("button", { className: "btn primary lg", onClick: onStart }, "\u25B8 \uC9C4\uD654 \uC2DC\uC791 \uC124\uC815 \uC5F4\uAE30"))), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uB8E8\uD504 \uAC1C\uC694")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { padding: 0 } }, /* @__PURE__ */ React.createElement("ol", { style: { margin: 0, padding: 0, listStyle: "none" } }, [
-      { n: 1, k: "\uC0DD\uC131", d: "LLM\uC774 \uC9C1\uC804 \uBD80\uAC80\uC744 \uCEE8\uD14D\uC2A4\uD2B8\uB85C \uB9E4\uC218/\uB9E4\uB3C4 \uC804\uB7B5 \uCF54\uB4DC\uB97C \uC0DD\uC131 (\uC2E4\uC2DC\uAC04 \uC2A4\uD2B8\uB9AC\uBC0D \uD45C\uC2DC)" },
-      { n: 2, k: "\uBC31\uD14C\uC2A4\uD2B8", d: "\uC9C0\uC815\uB41C \uC2DC\uAC04\uB2E8\uC704\xB7\uC2A4\uCF54\uD504\xB7\uC708\uB3C4\uC6B0\uB85C \uC790\uBCF8\uACE1\uC120\xB7\uB099\uD3ED\xB7\uB9E4\uB9E4\uB97C \uC2DC\uBBAC\uB808\uC774\uC158" },
-      { n: 3, k: "\uCC44\uC810", d: "graded_score = \uC190\uC775\xB7MDD\xB7\uAC70\uB798\uC218\xB7\uC77C\uAD00\uC131\uC758 \uAC00\uC911\uD569 (\uBA54\uD2B8\uB9AD\uBCC4 \uBD84\uD574 \uD45C\uC2DC)" },
-      { n: 4, k: "\uAC8C\uC774\uD2B8", d: "score \u2265 target & MDD \u2264 cap & trades \u2265 min \u2192 \uD1B5\uACFC" },
-      { n: 5, k: "\uBD80\uAC80", d: "\uD0C8\uB77D \uC6D0\uC778\uC744 \uC790\uC5F0\uC5B4\uB85C \uC694\uC57D \u2192 \uB2E4\uC74C \uC138\uB300 \uCEE8\uD14D\uC2A4\uD2B8\uC5D0 \uC8FC\uC785" },
-      { n: 6, k: "\uC2B9\uC778", d: "\uD1B5\uACFC \uC804\uB7B5\uC744 \uC6B4\uC601 DB\uB85C export (\uC0AC\uC6A9\uC790 \uBA85\uC2DC\uC801 \uD655\uC778 \uD544\uC694)" }
+    } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 16 } }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", { style: { color: "var(--amber)" } }, "\uB300\uC2DC\uBCF4\uB4DC\uB294 \uC9C4\uD654 \uC2DC\uC791 \uD6C4 \uD65C\uC131\uD654\uB429\uB2C8\uB2E4."), " ", "\uC544\uB798 ", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-0)" } }, "\u25B8 \uC9C4\uD654 \uC2DC\uC791 \uC124\uC815 \uC5F4\uAE30"), "\uB97C \uB204\uB974\uBA74 \uD398\uC774\uC988 \uD0C0\uC784\uB77C\uC778(\uC0DD\uC131\u2192\uBC31\uD14C\u2192\uCC44\uC810\u2192\uBD80\uAC80), \uC5D4\uC9C4 \uBA54\uD2B8\uB9AD, \uC790\uBCF8\uACE1\uC120, \uC810\uC218 \uBD84\uD574, \uBD80\uAC80 \uC2A4\uD2B8\uB9AC\uBC0D\uC774 \uC2E4\uC2DC\uAC04\uC73C\uB85C \uBCF4\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("button", { className: "btn primary", style: { marginLeft: "auto" }, onClick: onStart }, "\u25B8 \uC2DC\uC791")), /* @__PURE__ */ React.createElement("div", { className: "panel", style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uD504\uB85C\uC138\uC2A4")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state: state || INITIAL_STATE }), /* @__PURE__ */ React.createElement("div", { className: "phase3-home-links" }, [
+      { key: "backtest", label: "\uBC31\uD14C\uC2A4\uD2B8 \uAC80\uC99D", text: "\uAC1C\uBCC4 \uC870\uAC74\uC2DD \uBC31\uD14C\uC2A4\uD2B8\uC640 \uC9C4\uD654 \uC911 \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC \uD655\uC778" },
+      { key: "simulation", label: "\uCC28\uD2B8 \uB9AC\uD50C\uB808\uC774", text: "\uC9C4\uC785/\uCCAD\uC0B0 \uC9C0\uC810\uC744 \uCC28\uD2B8\uC5D0\uC11C \uB2E4\uC2DC \uD655\uC778" },
+      { key: "records", label: "\uAE30\uB85D \uAC80\uC0C9", text: "\uBAA8\uB4E0 \uC5F0\uAD6C \uAE30\uB85D\uACFC update log \uAC80\uC0C9" },
+      { key: "lab", label: "\uB9AC\uC11C\uCE58 Wiki", text: "\uC704\uD0A4\xB7\uBC29\uBC95\uB860\xB7AI \uCEE8\uD14D\uC2A4\uD2B8 \uBB38\uC11C \uD0D0\uC0C9" },
+      { key: "pro", label: "\uBD84\uC11D \uC6CC\uD06C\uBCA4\uCE58", text: "\uD6C4\uBCF4 \uBD84\uC11D\uACFC HoF \uBE44\uAD50" },
+      { key: "verdict", label: "\uACB0\uC815 \uAC10\uC0AC", text: "append-only \uACB0\uC815 \uC774\uB825 \uD655\uC778" }
+    ].map((item) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: item.key,
+        className: "phase3-home-link",
+        type: "button",
+        onClick: () => onNavigate && onNavigate(item.key)
+      },
+      /* @__PURE__ */ React.createElement("b", null, item.label),
+      /* @__PURE__ */ React.createElement("span", null, item.text)
+    ))))), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 8 } }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "Welcome")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { padding: "28px 24px" } }, /* @__PURE__ */ React.createElement("h2", { style: { fontSize: 22, marginBottom: 10, letterSpacing: "-0.01em" } }, "\uB8E8\uD504\uB97C \uC2DC\uC791\uD560 \uC900\uBE44\uAC00 \uB418\uC5C8\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("p", { style: { color: "var(--ink-1)", lineHeight: 1.6, marginBottom: 22, fontSize: 13 } }, "AI\uAC00 \uD55C\uAD6D \uC8FC\uC2DD \uB9E4\uC218/\uB9E4\uB3C4 \uC804\uB7B5 \uCF54\uB4DC\uB97C \uC790\uB3D9 \uC0DD\uC131\xB7\uBC31\uD14C\uC2A4\uD2B8\xB7\uCC44\uC810\xB7\uBC18\uBCF5\uD569\uB2C8\uB2E4. \uAC01 \uC138\uB300\uC758 \uBD80\uAC80(autopsy)\uC774 \uB2E4\uC74C \uC138\uB300 \uC0DD\uC131\uAE30\uC5D0 \uD53C\uB4DC\uBC31\uB418\uC5B4 \uC870\uAC74\uC2DD\uC774 \uC810\uC9C4\uC801\uC73C\uB85C \uC9C4\uD654\uD569\uB2C8\uB2E4.", /* @__PURE__ */ React.createElement("br", null), /* @__PURE__ */ React.createElement("br", null), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-2)" } }, "\uBAA9\uD45C \uC810\uC218\uC640 MDD \uC0C1\uD55C\uC744 \uB3D9\uC2DC\uC5D0 \uB9CC\uC871\uD558\uBA74 \uC6B0\uC2B9 \uD6C4\uBCF4\uB85C \uD45C\uC2DC\uB418\uACE0,", /* @__PURE__ */ React.createElement("br", null), "\uC6B4\uC601 export/final approval\uC740 \uC5F0\uAD6C \uD655\uC778 \uD654\uBA74\uACFC \uBD84\uB9AC\uB41C \uBCC4\uB3C4 \uC2B9\uC778 \uC808\uCC28\uC785\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("button", { className: "btn primary lg", onClick: onStart }, "\u25B8 \uC9C4\uD654 \uC2DC\uC791 \uC124\uC815 \uC5F4\uAE30"))), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uB8E8\uD504 \uAC1C\uC694")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { padding: 0 } }, /* @__PURE__ */ React.createElement("ol", { style: { margin: 0, padding: 0, listStyle: "none" } }, [
+      { n: 1, k: "\uC870\uAC74\uC2DD \uB9CC\uB4E4\uAE30", d: "LLM\uC774 \uC774\uC804 \uC2E4\uD328 \uC6D0\uC778\uACFC \uC88B\uC740 \uC608\uC2DC\uB97C \uCC38\uACE0\uD574 \uB9E4\uC218/\uB9E4\uB3C4 \uADDC\uCE59\uC744 \uC791\uC131\uD569\uB2C8\uB2E4." },
+      { n: 2, k: "\uACFC\uAC70 \uB370\uC774\uD130\uB85C \uAC80\uC99D", d: "\uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4\uC774 \uC9C0\uC815 \uAE30\uAC04\uC758 \uC885\uBAA9 \uB370\uC774\uD130\uB97C \uB3CC\uB824 \uC190\uC775\xB7\uB099\uD3ED\xB7\uAC70\uB798 \uBE48\uB3C4\uB97C \uACC4\uC0B0\uD569\uB2C8\uB2E4." },
+      { n: 3, k: "\uC810\uC218 \uACC4\uC0B0", d: "\uC218\uC775, \uC704\uD5D8(MDD), \uC6B0\uC0C1\uD5A5, \uC77C\uD3C9\uADE0 \uAC70\uB798, \uC190\uC775\uBE44\uB97C \uBAA9\uD45C \uACF5\uC2DD\uC5D0 \uB9DE\uCDB0 \uC810\uC218\uD654\uD569\uB2C8\uB2E4." },
+      { n: 4, k: "\uD1B5\uACFC \uAE30\uC900 \uD655\uC778", d: "\uBAA9\uD45C \uC801\uD569\uB3C4, MDD \uC0C1\uD55C, \uC77C\uD3C9\uADE0 \uAC70\uB798 \uD558\uD55C\uC744 \uB9CC\uC871\uD558\uB294\uC9C0 \uD655\uC778\uD569\uB2C8\uB2E4." },
+      { n: 5, k: "\uC2E4\uD328 \uC6D0\uC778 \uC694\uC57D", d: "\uC65C \uB5A8\uC5B4\uC84C\uB294\uC9C0 \uC26C\uC6B4 \uB9D0\uB85C \uC815\uB9AC\uD574 \uB2E4\uC74C \uC138\uB300 \uD504\uB86C\uD504\uD2B8\uC5D0 \uB123\uC2B5\uB2C8\uB2E4." },
+      { n: 6, k: "\uB2E4\uC2DC \uAC1C\uC120", d: "\uC774\uB984\uC774 \uBD99\uC740 run\xB7\uC138\uB300\xB7\uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uB97C \uC800\uC7A5\uD574 \uB098\uC911\uC5D0 \uB2E4\uC2DC \uCC3E\uC744 \uC218 \uC788\uAC8C \uD569\uB2C8\uB2E4." }
     ].map((s, i, arr) => /* @__PURE__ */ React.createElement("li", { key: s.n, style: {
       padding: "12px 16px",
       borderBottom: i < arr.length - 1 ? "1px solid var(--line-1)" : "none",
@@ -15387,7 +15535,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     root.render(/* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(App, null)));
   }
 
-  // src/track-z-entry.pilot.js
+  // ai_strategy_loop/dashboard/webui-build/src/track-z-entry.pilot.js
   Object.assign(window, {
     // FROZEN — index.html / lab.html / pro.html / verdict.html mount these by name.
     App,

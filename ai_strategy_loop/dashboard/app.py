@@ -2709,6 +2709,75 @@ def create_app() -> FastAPI:
     @app.get("/config/spec")
     def config_spec() -> Dict[str, Any]:
         return {"contract_version": C.CONTRACT_VERSION, "fields": config_field_specs()}
+    @app.get("/gpt_auth/status")
+    async def gpt_auth_status() -> Dict[str, Any]:
+        """Read-only ChatGPT OAuth status for the dashboard settings panel."""
+        try:
+            from ai_strategy_loop.provider.chatgpt_oauth import get_status  # noqa: PLC0415
+
+            status_payload = await get_status()
+            return {
+                "status": "ok",
+                "mode": "gpt_auth",
+                "safe": True,
+                "starts_evolution": False,
+                **status_payload,
+            }
+        except Exception as exc:  # noqa: BLE001 - auth status must not break dashboard.
+            return {
+                "status": "error",
+                "mode": "gpt_auth",
+                "safe": True,
+                "starts_evolution": False,
+                "reason": str(exc),
+            }
+
+    @app.post("/gpt_auth/test")
+    def gpt_auth_test() -> Dict[str, Any]:
+        """Probe the existing OAuth proxy without starting evolution or exporting anything."""
+        try:
+            import requests  # noqa: PLC0415
+            from ai_strategy_loop.provider.chatgpt_oauth.constants import (  # noqa: PLC0415
+                PROXY_OPENAI_API_KEY_PLACEHOLDER,
+                get_proxy_base_url,
+            )
+
+            response = requests.post(
+                f"{get_proxy_base_url()}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {PROXY_OPENAI_API_KEY_PLACEHOLDER}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": "gpt-5.5",
+                    "messages": [{"role": "user", "content": "OK"}],
+                    "max_tokens": 4,
+                    "stream": False,
+                },
+                timeout=5,
+            )
+            ok = response.status_code == 200
+            return {
+                "status": "ok" if ok else "unavailable",
+                "mode": "gpt_auth",
+                "model": "gpt-5.5",
+                "reasoning_effort": "xhigh",
+                "safe": True,
+                "starts_evolution": False,
+                "http_status": response.status_code,
+                "message": "GPT auth proxy responded" if ok else "GPT auth proxy unavailable or credential expired",
+            }
+        except Exception as exc:  # noqa: BLE001 - report safe failure.
+            return {
+                "status": "unavailable",
+                "mode": "gpt_auth",
+                "model": "gpt-5.5",
+                "reasoning_effort": "xhigh",
+                "safe": True,
+                "starts_evolution": False,
+                "message": "GPT auth connection test failed without starting evolution",
+                "reason": str(exc),
+            }
 
     @app.get("/research_criteria")
     def research_criteria(mode: Optional[str] = None) -> Dict[str, Any]:

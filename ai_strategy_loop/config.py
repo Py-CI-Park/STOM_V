@@ -20,6 +20,7 @@ class LoopConfig:
     # --- provider 레이어 (US-002에서 사용) ---
     provider: str = "gpt_auth"  # gpt_auth | openrouter | codex_proxy
     model: str = "gpt-5.5"
+    reasoning_effort: str = "xhigh"  # xhigh | high | medium | low; provider may capability-gate
     base_url: Optional[str] = None  # None이면 provider 기본값 사용
     api_key: Optional[str] = None  # None이면 provider별 env에서 로드
     max_retries: int = 2
@@ -27,7 +28,7 @@ class LoopConfig:
     max_tokens: Optional[int] = None
 
     # --- 루프 파라미터 placeholder (이후 단계용, 아직 미사용) ---
-    mdd_cap: float = 35.0
+    mdd_cap: float = 40.0
     min_trades: int = 30
     # min_daily_trades: 일평균거래횟수(거래수/거래일수) 하한 — 빈도 게이트의 주 기준.
     #   일일 시스템 트레이딩 기준 2~3일에 1회 이상(>=0.5)이 정상 빈도다. 절대
@@ -168,12 +169,21 @@ class LoopConfig:
     #   best_score >= target_score 일 때 루프가 조기 종료한다.
     target_score: Optional[float] = None
     # max_generations: 생성 세대 수 상한. 이 세대 수에 도달하면 종료한다.
-    max_generations: int = 20
+    max_generations: int = 200
     # cost_cap_generations: gpt_auth(불투명 $ 과금)처럼 토큰 비용을 합산할 수
     #   없는 provider의 비용 안전장치. 누적 LLM 호출이 (세대 단위로 본)
     #   이 한도에 도달하면 종료한다. 토큰 cap을 쓸 수 있는 provider에서는
     #   cost_cap_tokens가 우선한다.
-    cost_cap_generations: int = 50
+    cost_cap_generations: int = 200
+    # feedback_window: 다음 세대 프롬프트에 설명/요약으로 전달할 최근 부검 개수.
+    # 실제 autopsy_fn 구현이 더 좁은 경로를 쓰더라도 설정 UI는 이 값을 "피드백 참고 창"으로
+    # 설명해 사용자가 피드백 윈도우 의미를 이해하게 한다.
+    feedback_window: int = 8
+    # Dashboard resource defaults. These are advisory/config-snapshot fields; concrete warm engine
+    # paths keep their own safe engine counters unless explicitly wired.
+    engine_workers: int = 0  # 0이면 launch_config가 logical CPU * 90% 기본값을 제안
+    engine_mem_cap_mb: int = 0  # 0이면 launch_config가 host total memory 기반 기본값을 제안
+    engine_chunk_days: int = 0  # 0이면 bt_window_days_universe 기반 최대 청크 기본값을 제안
     # cost_cap_tokens: None이면 토큰 기반 cap 없음 (gpt_auth 기본 경로).
     #   값이 있으면 누적 total_tokens >= cost_cap_tokens 일 때 종료한다.
     cost_cap_tokens: Optional[int] = None
@@ -205,6 +215,8 @@ class LoopConfig:
     #   점진 개선한다. None이면 gen-0도 fresh 생성한다(하위호환).
     seed_buy: Optional[str] = None
     seed_sell: Optional[str] = None
+    seed_mode: str = "best_refine"  # fresh | manual_seed | best_refine
+    seed_source: str = "passing"  # passing | seed_db | manual
     # bt_refine_from_best: True면 gen1+가 현재 best 전략 코드를 출발점으로
     #   점진 개선한다(seed-and-refine hill-climb). best가 갱신되면 새 best 코드가
     #   다음 세대의 출발점이 된다. False면 매 세대 백지에서 fresh 생성(기존 동작).

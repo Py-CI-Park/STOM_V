@@ -417,6 +417,8 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .pill.gate-fail { color: var(--ink-2); }
 .pill.success { color: var(--teal); }
 .pill.error { color: var(--red); border-color: rgba(255,107,107,0.28); background: rgba(255,107,107,0.06); }
+.pill.ok { color: var(--teal); border-color: rgba(76,214,179,0.32); background: rgba(76,214,179,0.08); }
+.pill.warn { color: var(--amber); border-color: rgba(240,179,90,0.32); background: rgba(240,179,90,0.08); }
 
 /* Gauge */
 .gauge { position: relative; height: 8px; background: var(--bg-0); border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--line-1); }
@@ -1935,9 +1937,8 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
    오버라이드한다(진화 탭 회귀 위험 최소화). 모든 규칙은 신규다.
    ============================================================ */
 
-/* ---- A1. 탭 내비게이션 대형화 (.stom-tabnav / .stom-tab) ----
-   목표: 높이 ~48px · 폰트 15px+ · 활성 탭 강한 대비(배경+보더+글로우).
-   app.jsx 탭바에서 인라인 사이즈 prop을 제거하고 이 클래스로 구동한다. */
+/* ---- A1. 탭 내비게이션 (.stom-tabnav / .stom-tab) ----
+   Phase3: 탭을 과대 버튼이 아니라 진화 홈 하위 작업 입구처럼 compact하게 유지한다. */
 .stom-tabnav {
   display: flex;
   align-items: stretch;
@@ -1950,11 +1951,11 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   appearance: none;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   min-height: 48px;
-  padding: 0 22px;
+  padding: 0 14px;
   font-family: var(--mono);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: .03em;
   color: var(--ink-2);
@@ -2079,8 +2080,7 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   .chart-wrap svg, .live-chart-wrap svg { min-height: 240px; }
   /* 패널 본문 여백을 늘려 와이드에서 답답함 완화. */
   .panel-bd { padding: 18px; }
-  /* 탭을 와이드에서 한 단계 더 크게. */
-  .stom-tab { min-height: 52px; font-size: 16px; padding: 0 26px; }
+  .stom-tab { min-height: 42px; font-size: 13.5px; padding: 0 16px; }
 }
 @media (min-width: 2200px) {
   body { font-size: 14px; }
@@ -2330,15 +2330,23 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .stom-gauge-label { font-family: var(--mono); font-size: 10.5px; color: var(--ink-2); min-width: 64px; }
 .stom-gauge-val { font-family: var(--mono); font-size: 10.5px; color: var(--ink-1); min-width: 52px; text-align: right; }
 
-/* 프로세스 플로우 — SVG 노드+화살표(진화 루프 단계). 활성 단계 글로우. */
+/* 프로세스 플로우 — SVG 노드+화살표(진화 루프 단계). 활성 단계 글로우+맥박 애니메이션. */
 .stom-flow-wrap { width: 100%; overflow-x: auto; }
 .stom-flow-node-done   { fill: var(--teal-bg);  stroke: var(--teal); }
-.stom-flow-node-active { fill: var(--amber-bg); stroke: var(--amber); }
+.stom-flow-node-active { fill: var(--amber-bg); stroke: var(--amber); animation: stom-flow-node-pulse 1.4s ease-in-out infinite; }
 .stom-flow-node-pend   { fill: var(--bg-2);     stroke: var(--line-2); }
 .stom-flow-label { fill: var(--ink-0); font-family: var(--sans); font-size: 12px; font-weight: 600; }
 .stom-flow-sub   { fill: var(--ink-2); font-family: var(--mono); font-size: 9.5px; }
 .stom-flow-arrow { stroke: var(--line-2); stroke-width: 2; fill: none; }
-.stom-flow-arrow.lit { stroke: var(--teal); }
+.stom-flow-arrow.lit { stroke: var(--teal); animation: stom-flow-arrow-flow 1.2s linear infinite; }
+@keyframes stom-flow-node-pulse {
+  0%, 100% { stroke-width: 2.5; opacity: 0.92; }
+  50% { stroke-width: 3.5; opacity: 1; }
+}
+@keyframes stom-flow-arrow-flow {
+  0% { stroke-dasharray: 4 5; stroke-dashoffset: 0; }
+  100% { stroke-dasharray: 4 5; stroke-dashoffset: -18; }
+}
 
 /* 콤보 변수 상호작용 히트맵 — 2D 그리드(셀 배경 = 상관 색). */
 .stom-combo-grid { display: grid; gap: 2px; font-family: var(--mono); font-size: 10px; }
@@ -2432,10 +2440,12 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   align-self: center;
   color: var(--ink-3);
   font-size: 9.5px;
-  letter-spacing: .12em;
+  letter-spacing: .08em;
   text-transform: uppercase;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
+  writing-mode: horizontal-tb;
+  transform: none;
+  white-space: nowrap;
+  min-width: 58px;
 }
 .stom-tabgroup-items {
   display: flex;
@@ -2456,6 +2466,38 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 .stom-tab-active .stom-tab-badge {
   color: var(--teal);
   border-color: rgba(76,214,179,0.35);
+}
+.phase3-home-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.phase3-home-link {
+  appearance: none;
+  text-align: left;
+  border: 1px solid var(--line-1);
+  border-radius: var(--radius-sm);
+  background: var(--bg-0);
+  color: var(--ink-2);
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.phase3-home-link:hover {
+  border-color: var(--teal-dim);
+  background: rgba(76,214,179,0.08);
+}
+.phase3-home-link b {
+  display: block;
+  color: var(--ink-0);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.phase3-home-link span {
+  display: block;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--ink-3);
 }
 
 .ui-state {

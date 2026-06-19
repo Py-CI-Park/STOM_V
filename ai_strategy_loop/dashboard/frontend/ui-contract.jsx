@@ -11,7 +11,7 @@ const DASHBOARD_ROUTE_CONTRACTS = [
   { key: "lab", label: "연구실", icon: "🔬", group: "연구 기록", badge: "LAB", contract: "위키·AI 컨텍스트·run 분석 홈" },
   { key: "pro", label: "분석 워크벤치", icon: "📊", group: "판정", badge: "PRO", contract: "조건 후보 분석·명예의 전당 workbench" },
   { key: "verdict", label: "결정 감사", icon: "⚖️", group: "판정", badge: "LOG", contract: "append-only 운용 결정 이력" },
-  { key: "process", label: "프로세스 흐름", icon: "🗺️", group: "프로세스", badge: "FLOW", contract: "read-only current_step/step_timing/process_flow" },
+  { key: "process", label: "프로세스", icon: "🗺️", group: "조건식 발굴", badge: "FLOW", contract: "조건식 발굴 단계·현재 노드·백테스트 진행·쉬운 설명" },
 ];
 
 const DASHBOARD_TAB_GROUPS = [
