@@ -36,6 +36,10 @@ const ENTRY = resolve(__dirname, "src/track-z-entry.pilot.js");
 const ENTRY_REL = "src/track-z-entry.pilot.js";
 const REACT_SHIM = resolve(__dirname, "src/react-shim.js");
 const REACT_DOM_SHIM = resolve(__dirname, "src/react-dom-shim.js");
+const REACT_JSX_RUNTIME_SHIM = resolve(__dirname, "src/react-jsx-runtime-shim.js");
+const WEBUI_NODE_MODULES = resolve(__dirname, "node_modules");
+const REACT_FLOW_ENTRY = resolve(__dirname, "node_modules/@xyflow/react/dist/esm/index.js");
+const DAGRE_ENTRY = resolve(__dirname, "node_modules/dagre/index.js");
 const EXTERNALIZED_GLOBALS = { react: "window.React", "react-dom": "window.ReactDOM" };
 
 // buildServedBundle(outfile) — the esbuild bundle:true build that produces the REAL served app.js.
@@ -54,11 +58,16 @@ async function buildServedBundle(outfile) {
     minify: false,
     sourcemap: false,
     loader: { ".jsx": "jsx" },
+    nodePaths: [WEBUI_NODE_MODULES],
     // Driver-2: resolve bare specifiers to the virtual shims (NOT bare `external`).
     alias: {
+      "react/jsx-runtime": REACT_JSX_RUNTIME_SHIM,
+      "react/jsx-dev-runtime": REACT_JSX_RUNTIME_SHIM,
       react: REACT_SHIM,
       "react-dom": REACT_DOM_SHIM,
       "react-dom/client": REACT_DOM_SHIM,
+      "@xyflow/react": REACT_FLOW_ENTRY,
+      dagre: DAGRE_ENTRY,
     },
   });
 }
@@ -78,12 +87,13 @@ function runPostBuild(manifestModelFields) {
   // ---------- HTML ?v= 자동 갱신(수동 핀 폐지) ----------
   //   대상: bundle/app.js + bundle/stom-ui.js (번들을 로드하는 모든 엔트리).
   const setV = (html, name, v) => {
-    // src="bundle/NAME(?v=...)" 의 ?v= 만 정밀 교체. 파일명 "." 이스케이프(.map 오버매치 방지),
-    // src 속성 앵커(주석·문서 내 파일명 언급은 건드리지 않음).
+    // src="/ui/bundle/NAME(?v=...)" 또는 옛 상대경로 src="bundle/NAME(?v=...)" 의 ?v= 만
+    // 정밀 교체. 깊은 SPA 링크(/ui/evolution/*)에서도 자산 경로가 흔들리지 않도록 /ui
+    // 절대경로를 보존/승격한다.
     const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     return html.replace(
-      new RegExp(`(src=["'])bundle/${esc}(\\?v=[^"']*)?(["'])`, "g"),
-      `$1bundle/${name}?v=${v}$3`,
+      new RegExp(`(src=["'])(?:/ui/)?bundle/${esc}(\\?v=[^"']*)?(["'])`, "g"),
+      `$1/ui/bundle/${name}?v=${v}$3`,
     );
   };
 

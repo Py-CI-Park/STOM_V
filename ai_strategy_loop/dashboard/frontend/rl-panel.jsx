@@ -25,6 +25,30 @@ const RESEARCH_TABS = [
   { id: "combos", label: "변수 조합" },
   { id: "validation", label: "검증" },
 ];
+function _rlPipelineState() {
+  const raw = Array.isArray(window.STOM_PIPELINE) && window.STOM_PIPELINE.length ? window.STOM_PIPELINE : null;
+  if (!raw) {
+    return {
+      pipeline: [],
+      error: "window.STOM_PIPELINE 정본을 불러오지 못했습니다. 오래된 로컬 fallback 프로세스는 표시하지 않습니다.",
+    };
+  }
+  return {
+    pipeline: raw.map((s, i) => ({
+      key: s && s.key ? String(s.key) : `stage-${i}`,
+      icon: s && s.icon ? String(s.icon) : "•",
+      title: s && s.title ? String(s.title) : `단계 ${i + 1}`,
+      desc: s && s.desc ? String(s.desc) : "단계 설명 없음",
+      terms: Array.isArray(s && s.terms)
+        ? s.terms
+            .filter((pair) => Array.isArray(pair) && pair.length >= 2)
+            .map(([t, d]) => [String(t || ""), String(d || "")])
+            .filter(([t, d]) => t && d)
+        : [],
+    })),
+    error: null,
+  };
+}
 
 /* E10(2026-06-13) — 진화 프로세스 플로우 오버레이(자족형).
    research-pro.jsx가 로드되면 더 풍부한 window.ResearchProcessFlowOverlay를 쓰지만,
@@ -34,23 +58,28 @@ const RESEARCH_TABS = [
 // P4(2026-06-14): 진화 프로세스 7단계는 format.ts 의 정본 window.STOM_PIPELINE 로 통합(중복 제거).
 //   research-pro 와 동일 정본 공유 — 과거 로컬 사본(터서 문구)은 삭제, 더 풍부한 정본 채택.
 function _RlProcessFlowOverlay({ onClose, activeStage }) {
-  const PIPELINE = window.STOM_PIPELINE || [];
+  const { pipeline: PIPELINE, error: pipelineError } = _rlPipelineState();
   useEffect_rl(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-  const ai = typeof activeStage === "number" ? activeStage : -1;
+  const ai = typeof activeStage === "number" && activeStage >= 0 && activeStage < PIPELINE.length ? activeStage : -1;
   return (
     <div className="rp-overlay" onClick={onClose}>
       <div className="rp-overlay-card" onClick={(e) => e.stopPropagation()}>
         <div className="rp-overlay-hd">
           <span className="rp-card-title">진화 프로세스 — 전체 흐름</span>
-          {ai >= 0 && <span className="rp-card-sub">현재 단계: {PIPELINE[ai].title}</span>}
+          {pipelineError ? <span className="rp-card-sub">프로세스 정본 로드 실패</span> : ai >= 0 && <span className="rp-card-sub">현재 단계: {PIPELINE[ai].title}</span>}
           <button type="button" className="btn ghost sm" style={{ marginLeft: "auto" }} onClick={onClose}>
             ✕ 닫기 (Esc)
           </button>
         </div>
+        {pipelineError && (
+          <div className="rp-flow-error" role="alert">
+            <_ResearchEmptyState message={pipelineError} />
+          </div>
+        )}
         <div className="rp-flow">
           {PIPELINE.map((s, i) => (
             <React.Fragment key={s.title}>
@@ -76,25 +105,27 @@ function _RlProcessFlowOverlay({ onClose, activeStage }) {
   );
 }
 
-function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
+function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
   const [tab, setTab] = useState_rl("edge");
   const [fullscreen, setFullscreen] = useState_rl(false);  /* 전체 화면 토글. */
   const [opsStrip, setOpsStrip] = useState_rl(null);       /* 탭 공통 운영 띠. */
   const [showFlow, setShowFlow] = useState_rl(false);      /* E10 — 프로세스 흐름 오버레이. */
+  const [opsError, setOpsError] = useState_rl(null);
 
   useEffect_rl(() => {
     if (!baseUrl) return undefined;
     const pull = () => fetch(baseUrl + "/ops_status", { signal: AbortSignal.timeout(8000) })
-      .then(r => (r.ok ? r.json() : null))
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
       .then(j => {
         setOpsStrip(j);
+        setOpsError(null);
         try {  /* F7 — 정체 의심 시 브라우저 탭 제목 경고(자리 비움 감지용). */
           const stalled = ((j && j.active) || []).some(a => a.health !== "active");
           const base = document.title.replace(/^⚠️ /, "");
           document.title = (stalled ? "⚠️ " : "") + base;
         } catch (e) { /* 제목 갱신 실패는 무시. */ }
       })
-      .catch(() => {});
+      .catch((e) => { setOpsStrip(null); setOpsError(String(e)); });
     pull();
     const timer = setInterval(pull, 10000);
     return () => clearInterval(timer);
@@ -133,12 +164,12 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
   const pairRows = useMemo_rl(() => {
     const raw = (data && Array.isArray(data.interaction_candidates) && data.interaction_candidates.length)
       ? data.interaction_candidates
-      : ((data && Array.isArray(data.top_pairs) && data.top_pairs.length) ? data.top_pairs : matrixRows);
+      : ((data && Array.isArray(data.top_pairs) && data.top_pairs.length) ? data.top_pairs : []);
     return [...raw].sort((a, b) => (
       (b.research_score || b.abs_correlation || Math.abs(b.correlation || 0))
       - (a.research_score || a.abs_correlation || Math.abs(a.correlation || 0))
     ));
-  }, [data, matrixRows]);
+  }, [data]);
 
   let body = null;
   if (tab === "edge") {
@@ -178,7 +209,9 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
         <_CorrelationControls method={method} setMethod={setMethod} axis={axis} setAxis={setAxis}
                               loading={loading} pooledTrades={data && data.pooled_trades}
                               featureCount={data && data.feature_count} />
-        <_CombinationList rows={pairRows} />
+        {pairRows.length
+          ? <_CombinationList rows={pairRows} />
+          : <_ResearchEmptyState message="명시적 변수 조합 후보가 없습니다. interaction_candidates 또는 top_pairs 응답이 필요합니다." />}
       </div>
     );
   }
@@ -187,41 +220,71 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
     ? { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999,
         background: "#0d1117", overflow: "auto", padding: "12px 18px" }
     : undefined;
-  const activeOps = (opsStrip && opsStrip.active) || [];
-  const recentOps = (opsStrip && opsStrip.recent) || [];
+  const activeOps = !opsError && opsStrip ? (opsStrip.active || []) : [];
+  const recentOps = !opsError && opsStrip ? (opsStrip.recent || []) : [];
   /* E1 — '모드/대상' 라벨을 명시(이전엔 "운영 연구 결과"류 평문이라 의미 불명). */
-  const labMode = activeOps.length ? "운영(실행 중)" : "연구(분석)";
+  const labMode = opsError ? "상태 오류" : (activeOps.length ? "운영(실행 중)" : "연구(분석)");
   /* E10 — 활성 단계 추정: 실행 중 작업이 있으면 백테 평가(3) 단계로 강조, 없으면 정적(-1). */
   const flowActiveStage = activeOps.length ? 3 : -1;
+  const openWorkbench = useCallback_rl(() => {
+    if (typeof onOpenWorkbench === "function") {
+      onOpenWorkbench();
+      return;
+    }
+    try {
+      window.localStorage.setItem("stom_active_tab", "evolution");
+      window.localStorage.setItem("stom_active_evolution_tab", "workbench");
+      window.location.href = "/ui/evolution/workbench";
+    } catch (e) {
+      if (window.location) window.location.href = "/ui/evolution/workbench";
+    }
+  }, [onOpenWorkbench]);
   return (
     <div className="research-lab-shell" style={shellStyle}>
-      <div className="research-tabs" role="tablist" aria-label="Research Lab"
-           style={{ display: "flex", alignItems: "center" }}>
+      <div className="research-section-filter" aria-label="연구실 섹션 필터">
         {RESEARCH_TABS.map(item => (
           <button key={item.id}
                   type="button"
-                  className={"research-tab" + (tab === item.id ? " active" : "")}
+                  className={"research-filter-chip" + (tab === item.id ? " active" : "")}
+                  aria-pressed={tab === item.id}
                   onClick={() => setTab(item.id)}>
             {item.label}
           </button>
         ))}
         {/* E10 — 진화 전체 프로세스를 흐름으로 보는 오버레이(자족형, 어느 페이지에서도 동작). */}
-        <button type="button" className="research-tab" style={{ marginLeft: "auto" }}
+        <button type="button" className="research-filter-action"
                 title="시드→생성→격자→백테→게이트→OOS→동결 전체 흐름과 용어 보기"
                 onClick={() => setShowFlow(true)}>
-          🧭 프로세스
+          🧭 프로세스 설명
         </button>
-        {/* E2 — 리서치 프로(전체화면 분석)를 새 탭으로. */}
-        <a className="research-tab" href="/ui/pro.html" target="_blank" rel="noopener"
-           style={{ textDecoration: "none" }}
-           title="화면 전체를 쓰는 상세 분석 워크스페이스(히트맵·명예의전당·비교·히스토리)">
-          🔬 리서치 프로
-        </a>
-        <button type="button" className="research-tab"
+        {/* E2 — 분석 워크벤치로 SPA 전환(standalone pro.html 풀리로드 하드링크 금지). */}
+        <button type="button" className="research-filter-action"
+                title="진화 홈 하위 분석 워크벤치로 전환해 히트맵·명예의전당·비교·히스토리를 봅니다."
+                onClick={openWorkbench}>
+          🔬 상세 워크벤치
+        </button>
+        <button type="button" className="research-filter-action"
                 onClick={() => setFullscreen(!fullscreen)}>
           {fullscreen ? "✕ 전체 화면 닫기" : "⛶ 전체 화면"}
         </button>
       </div>
+      <div className="readability-note lab-readability-note">
+        연구실 내부 메뉴는 하위 탭이 아니라 분석 종류를 고르는 필터입니다. 위키·컨텍스트·run 분석은 같은 연구실 화면 안에서 유지됩니다.
+      </div>
+      <div className="lab-glossary" aria-label="연구실 용어 설명">
+        <span><b>엣지</b> 조건이 실제로 유리한 구간</span>
+        <span><b>변수 중요도</b> 성과 차이를 크게 만든 입력 변수</span>
+        <span><b>상관관계</b> 변수와 결과가 같이 움직인 정도</span>
+        <span><b>검증</b> 후보를 다른 기간·조건으로 다시 확인하는 단계</span>
+      </div>
+      <details className="lab-example">
+        <summary>예시 보기: 연구실에서 결과를 해석하는 순서</summary>
+        <ol>
+          <li>엣지에서 시간·시총·회전율별 승률/기대값을 봅니다.</li>
+          <li>변수 중요도와 상관관계로 왜 좋아졌는지 확인합니다.</li>
+          <li>검증 섹션에서 다른 기간에서도 유지되는지 확인합니다.</li>
+        </ol>
+      </details>
       {/* E1 — 평문 대신 라벨+값+툴팁 상태 배지 바. */}
       <div className="research-statusbar mono">
         <span className="research-badge" title="현재 리서치랩 모드 — 실행 중 run이 있으면 '운영', 없으면 '연구(분석)'.">
@@ -237,12 +300,21 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId }) {
                 <b>{a.health === "active" ? "🔄 진행" : "⚠️ 정체"}</b> {a.run_id} · {a.gens}세대
               </span>
             ))
-          : (
+          : opsError ? (
+            <span className="research-badge research-badge-error" title="운영 상태 endpoint 로드 실패 — 실행 없음으로 표시하지 않습니다.">
+              <b>상태</b> 로드 실패
+            </span>
+          ) : (
             <span className="research-badge" title="현재 실행 중인 진화 작업이 없습니다(분석 전용).">
               <b>상태</b> 실행 중 작업 없음
             </span>
           )}
       </div>
+      {opsError && (
+        <div className="research-lab-panel research-lab-error">
+          <_ResearchEmptyState message={"운영 상태를 불러오지 못했습니다: " + opsError} />
+        </div>
+      )}
       {body}
       {/* E10 — research-pro.jsx가 로드된 페이지면 더 풍부한 전역 오버레이를, 아니면 자족형. */}
       {showFlow && (typeof window.ResearchProcessFlowOverlay === "function"

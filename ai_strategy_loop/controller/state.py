@@ -935,6 +935,10 @@ def to_loop_state(
         build_backtest_progress,
         build_engine_state,
     )
+    from ai_strategy_loop.controller.telemetry import (  # noqa: PLC0415
+        normalize_telemetry_events,
+        telemetry_contract,
+    )
 
     latest_dict = latest or {}
     provider = str(getattr(config, "provider", "") or "")
@@ -1055,6 +1059,8 @@ def to_loop_state(
             current_gen=current_gen,
             phase=phase_value,
         ),
+        telemetry_events=normalize_telemetry_events(latest_dict.get("telemetry_events", [])),
+        telemetry_contract=telemetry_contract(),
     )
 
     return C.LoopState(

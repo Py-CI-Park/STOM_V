@@ -125,3 +125,6 @@ function AIContextPanel({ baseUrl, wsStatus, runId, genNo }) {
 }
 
 Object.assign(window, { AIContextPanel });
+
+// Track Z (PR-3) — dual-safe ESM export for bundled module imports.
+export { AIContextPanel };

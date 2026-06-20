@@ -1,4 +1,4 @@
-"""Phase 9 — SPA 탭 통합 소스 계약 테스트(7탭: + 프로세스 흐름).
+"""Phase 9/Phase 4 correction — SPA tabs with Evolution nested workspaces.
 
 빌드 없는 in-browser Babel JSX 라 텍스트(소스 grep) 계약 + 벤더 babel 트랜스폼으로
 검증한다(기존 dashboard 테스트 관행: 소스 substring 단언 + 문법 무결 확인).
@@ -15,8 +15,8 @@
     - VerdictPanel: append-only /record_decision POST + promote_checklist
       (P7: 상태 아이콘 맵은 research-lab.jsx 의 _VDT_STATUS_ICON 단일 정본으로 이전).
   app.jsx
-    - STOM_TABS 7개(evolution/backtest/simulation + lab/pro/verdict + process).
-    - 새 3탭 전역 마운트(window.LabPage/ProPage/VerdictPanel).
+    - top-level STOM_TABS exposes exactly 3 pages: evolution/backtest/simulation.
+    - Evolution subtabs mount process/records/lab/workbench/verdict under `/ui/evolution/*`.
     - stom-pagenav 에 lab.html/pro.html/verdict.html 하드링크 부재.
   verdict.html / lab.html / pro.html
     - 공유 전역(VerdictPanel/LabPage/ProPage) 마운트 + dashboard-pages.jsx 로드.
@@ -58,7 +58,7 @@ class TestDashboardPages:
         assert "function VerdictPanel(" in src
         assert "function ResearchIndexPage(" in src
         # window 전역 노출.
-        assert "Object.assign(window, { LabPage, ProPage, VerdictPanel, ResearchIndexPage, normalizeVerdictSubtab })" in src
+        assert "Object.assign(window, { LabPage, ProPage, VerdictPanel, ResearchIndexPage })" in src
 
     def test_verdict_append_only_post_and_checklist(self) -> None:
         src = _read("dashboard-pages.jsx")
@@ -118,49 +118,53 @@ class TestDashboardPages:
         assert not _re.search(r"\binterface\s+[A-Z]\w*\s*\{", src), "TS interface 선언 금지"
         assert not _re.search(r"\benum\s+[A-Z]\w*\s*\{", src), "TS enum 선언 금지"
 
-    def test_verdict_has_systematic_subtabs(self) -> None:
-        """Phase10 — 결정 이력 탭을 다른 탭처럼 .research-tabs 하위 탭으로 체계화.
-        4개 하위 탭(검증 결산·레짐·부활·V6 포트폴리오·운용 결정)으로 분류돼야 한다."""
+    def test_verdict_has_systematic_sections_not_nested_tabs(self) -> None:
+        """G006 — 결정 감사는 중첩 하위 탭 대신 한 화면의 감사 섹션으로 체계화한다."""
         src = _read("dashboard-pages.jsx")
-        # 하위 탭 상태 + localStorage 유지.
-        assert "vsub" in src and "setVsub" in src
-        assert "stom_verdict_subtab" in src
-        # 연구실과 동일한 탭바 클래스/활성 표기.
-        assert 'className="research-tabs"' in src
-        assert '"research-tab" + (vsub === t.key ? " active" : "")' in src
-        # 4개 하위 탭 키 + 라벨.
+        assert "VERDICT_SECTION_KEYS" in src
+        assert "VSECTIONS.map" in src
+        assert "verdict-section-index" in src
+        assert 'role="tablist" aria-label="결정 이력 하위 탭"' not in src
+        assert "stom_verdict_subtab" not in src
+        assert "vsub" not in src and "setVsub" not in src
         for key in ('"summary"', '"regime"', '"portfolio"', '"decide"'):
-            assert key in src, f"하위 탭 키 누락: {key}"
+            assert key in src, f"결정 섹션 키 누락: {key}"
+        for anchor in ('id="verdict-summary"', 'id="verdict-regime"', 'id="verdict-portfolio"', 'id="verdict-decide"'):
+            assert anchor in src, f"결정 섹션 anchor 누락: {anchor}"
         assert "검증 결산" in src and "레짐·부활" in src and "운용 결정" in src
-        # 각 그룹은 자기 하위 탭에서만 렌더(분류).
-        assert 'vsub === "summary"' in src
-        assert 'vsub === "decide"' in src
+        assert "verdict-glossary" in src and "verdict-example" in src
 
 
 # =================================================================== app.jsx
 class TestAppTabs:
-    def test_route_contract_has_eight_entries(self) -> None:
+    def test_route_contract_has_three_top_tabs_and_evolution_subtabs(self) -> None:
         contract = _read("ui-contract.jsx")
-        for key in ('"evolution"', '"backtest"', '"simulation"',
-                    '"lab"', '"records"', '"pro"', '"verdict"', '"process"'):
-            assert key in contract, f"route contract 누락: {key}"
-        key_lines = [ln for ln in contract.split("const DASHBOARD_ROUTE_CONTRACTS = [", 1)[1].split("];", 1)[0].splitlines() if "key:" in ln]
-        assert len(key_lines) == 8, f"탭 개수 8 아님: {len(key_lines)}"
-        assert "DASHBOARD_TAB_GROUPS" in contract and "EVIDENCE_WORKSPACE_LINKS" in contract
+        top_block = contract.split("const DASHBOARD_ROUTE_CONTRACTS = [", 1)[1].split("];", 1)[0]
+        for key in ('"evolution"', '"backtest"', '"simulation"'):
+            assert key in top_block, f"top route contract 누락: {key}"
+        top_key_lines = [ln for ln in top_block.splitlines() if "key:" in ln]
+        assert len(top_key_lines) == 3, f"상단 탭 개수 3 아님: {len(top_key_lines)}"
 
-    def test_mounts_page_globals(self) -> None:
+        sub_block = contract.split("const EVOLUTION_SUBTAB_CONTRACTS = [", 1)[1].split("];", 1)[0]
+        for key in ('"overview"', '"process"', '"records"', '"lab"', '"workbench"', '"verdict"'):
+            assert key in sub_block, f"진화 하위 탭 누락: {key}"
+        assert 'pro: "workbench"' in contract
+        assert "dashboardRouteFromLocation" in contract and "dashboardPathFor" in contract
+
+    def test_mounts_page_globals_under_evolution_subtabs(self) -> None:
         src = _read("app.jsx")
         assert 'from "./dashboard-pages.jsx"' in src
         assert "<LabPage" in src
         assert "<ProPage" in src
         assert "<VerdictPanel" in src
         assert "<ResearchIndexPage" in src
-        # 각각 activeTab 조건으로 마운트.
-        assert 'activeTab === "lab"' in src
-        assert 'activeTab === "pro"' in src
-        assert 'activeTab === "verdict"' in src
-        assert 'activeTab === "records"' in src
-
+        assert "function EvolutionSubtabNav" in src
+        assert 'activeTab === "evolution" && activeEvolutionTab === "lab"' in src
+        assert 'activeTab === "evolution" && activeEvolutionTab === "workbench"' in src
+        assert 'activeTab === "evolution" && activeEvolutionTab === "verdict"' in src
+        assert 'activeTab === "evolution" && activeEvolutionTab === "records"' in src
+        assert 'activeTab === "lab"' not in src
+        assert 'activeTab === "pro"' not in src
     def test_pagenav_no_hardlinks_to_standalone_html(self) -> None:
         """stom-pagenav 에서 lab.html/pro.html/verdict.html 하드링크 제거."""
         src = _read("app.jsx")

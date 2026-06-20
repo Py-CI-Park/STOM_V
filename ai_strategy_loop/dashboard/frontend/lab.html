@@ -9,13 +9,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=20260617a" />
-  <script src="vendor-react.js?v=20260603a"></script>
-  <script src="vendor-react-dom.js?v=20260603a"></script>
+  <link rel="stylesheet" href="/ui/styles.css?v=20260620g004" />
+  <script src="/ui/vendor-react.js?v=20260603a"></script>
+  <script src="/ui/vendor-react-dom.js?v=20260603a"></script>
   <!-- Phase14.7: 런타임 babel 제거. 운영 컴포넌트는 index.html 과 동일한 컴파일 번들(bundle/app.js)
        을 공유한다(LabPage 포함 전 컴포넌트 정의). 이 페이지는 App 자동 마운트를 끄고(아래 플래그)
        직접 LabPage 를 마운트한다. stom-ui.js(모듈)가 window.fmt*·_axisTicks 를 먼저 세팅. -->
-  <script type="module" src="bundle/stom-ui.js?v=f41f5701"></script>
+  <script type="module" src="/ui/bundle/stom-ui.js?v=f41f5701"></script>
   <script>window.__STOM_NO_AUTO_MOUNT__ = true;</script>
 </head>
 <body>
@@ -32,7 +32,7 @@
   </div>
 
   <!-- 컴파일 번들(defer) — stom-ui 모듈 뒤에 실행. 이후 DOMContentLoaded 에서 LabPage 마운트. -->
-  <script defer src="bundle/app.js?v=089ac794"></script>
+  <script defer src="/ui/bundle/app.js?v=a23f2c08"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       ReactDOM.createRoot(document.getElementById("root"))

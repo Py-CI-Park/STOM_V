@@ -205,15 +205,14 @@ def test_track_z_v2_index_path_hosts() -> None:
 
 
 def test_track_z_v3_per_tab_render_sweep() -> None:
-    """V3 (Story 4 entry gate): the FLAGGED bundle's App renders EVERY tab with 0 errors and a
-    non-empty #root — evolution/process use NON-IDLE state so data/live-flow components render;
-    lab, records, pro, verdict, backtest, and simulation exercise their tab roots. Records must show
-    governed-index content and process must show both the realtime strip/grid and retained iframe."""
+    """V3 (Story 4 entry gate): the served bundle renders every canonical top-level route and
+    Evolution nested route with 0 errors and non-empty #root. Stale localStorage is preseeded in
+    the harness, so this also proves URL-first routing."""
     data = _run_harness()
     v3 = data["v3"]
     tabs = v3["tabs"]
-    expected = {"evolution", "backtest", "simulation", "lab", "records", "pro", "verdict", "process"}
-    assert set(tabs) == expected, f"V3 must sweep all 8 tabs, got {set(tabs)}"
+    expected = {"evolution-overview", "backtest", "chart-replay", "lab", "records", "workbench", "verdict", "process"}
+    assert set(tabs) == expected, f"V3 must sweep all canonical routes, got {set(tabs)}"
     for name in expected:
         r = tabs[name]
         assert r["rootNonEmpty"], f"tab {name}: #root empty after render"
@@ -268,6 +267,7 @@ def test_track_z_v5_records_behavior() -> None:
     assert v5["noMatchOk"], f"no-match state failed: {v5}"
     assert v5["kindFilterOk"], f"kind filter failed: {v5}"
     assert v5["canonicalityFilterOk"], f"canonicality filter failed: {v5}"
+    assert v5["traceFilterOk"], f"trace filter failed: {v5}"
     assert v5["staleDetailGuardOk"], f"stale detail guard failed: {v5}"
     assert v5["errorCount"] == 0, f"records behavior errors: {v5['errors']}"
     assert v5["pass"], f"V5 records behavior failed: {v5}"
@@ -303,24 +303,13 @@ def test_served_bundle_has_no_react_require() -> None:
 
 
 def test_committed_bundle_in_sync_with_source() -> None:
-    """Harness freshness guard (architect nit #1): a FRESH `node build-app.mjs` must leave the
-    committed artifacts (bundle/app.js, the 5 HTMLs, manifest.json) byte-in-sync with source.
+    """A fresh `node build-app.mjs` must be a no-op for served build artifacts.
 
-    The build is deterministic (content-hash ?v=, no timestamp), so on a clean tree a rebuild
-    leaves NO diff. If someone edits a .jsx/source without rebuilding (or hand-edits a committed
-    artifact), the committed bundle drifts from source and this test fails — surfacing the stale
-    artifact at test time, not at deploy. Gated on node + esbuild (webui-build/node_modules is
-    gitignored; runtime stays npm-free). The build is reproducible so a fresh tree stays clean —
-    the guard does NOT leave a dirty tree on a synced repo."""
+    This checks byte stability before/after the deterministic build, not `git diff` against HEAD.
+    That keeps the guard useful inside active worktrees where source and generated artifacts are
+    intentionally modified together, while still failing when a rebuild would change stale output.
+    """
     node = _node_or_skip()
-    # build-app.mjs logs Korean (?v= 갱신); decode utf-8 so the Windows default codec (cp949)
-    #   doesn't raise UnicodeDecodeError in the subprocess reader thread.
-    r = subprocess.run(
-        [node, "build-app.mjs"],
-        cwd=str(WEBUI), capture_output=True, text=True,
-        encoding="utf-8", errors="replace", timeout=240,
-    )
-    assert r.returncode == 0, f"build failed: {r.stderr}"
     targets = [
         "ai_strategy_loop/dashboard/frontend/bundle/app.js",
         "ai_strategy_loop/dashboard/frontend/bundle/manifest.json",
@@ -330,18 +319,17 @@ def test_committed_bundle_in_sync_with_source() -> None:
         "ai_strategy_loop/dashboard/frontend/verdict.html",
         "ai_strategy_loop/dashboard/frontend/STOM AI Dashboard.html",
     ]
-    diff = subprocess.run(
-        ["git", "diff", "--quiet", "--", *targets],
-        cwd=PROJECT_ROOT, capture_output=True, text=True,
-        encoding="utf-8", errors="replace", timeout=60,
+    before = {rel: (Path(PROJECT_ROOT) / rel).read_bytes() for rel in targets}
+    # build-app.mjs logs Korean (?v= 갱신); decode utf-8 so the Windows default codec (cp949)
+    #   doesn't raise UnicodeDecodeError in the subprocess reader thread.
+    r = subprocess.run(
+        [node, "build-app.mjs"],
+        cwd=str(WEBUI), capture_output=True, text=True,
+        encoding="utf-8", errors="replace", timeout=240,
     )
-    if diff.returncode != 0:
-        dirty = subprocess.run(
-            ["git", "diff", "--stat", "--", *targets],
-            cwd=PROJECT_ROOT, capture_output=True, text=True,
-            encoding="utf-8", errors="replace", timeout=60,
-        )
-        pytest.fail(
-            "committed build artifacts are stale vs source — rebuild needed "
-            f"(node build-app.mjs):\n{dirty.stdout}"
-        )
+    assert r.returncode == 0, f"build failed: {r.stderr}"
+    changed = [
+        rel for rel in targets
+        if (Path(PROJECT_ROOT) / rel).read_bytes() != before[rel]
+    ]
+    assert not changed, "served build artifacts changed after rebuild: " + ", ".join(changed)

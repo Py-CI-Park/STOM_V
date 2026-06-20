@@ -112,18 +112,20 @@ class TestResearchProSource:
         # E4 — 품질/적합도 도움말.
         assert "research-help" in src
         assert "적합도" in src and "품질" in src
-        # E10 — 프로세스 버튼 + 리서치 프로 새탭 링크.
+        # E10 — 프로세스 버튼 + SPA 분석 워크벤치 전환.
         assert "프로세스" in src
-        assert "/ui/pro.html" in src
+        assert "/ui/pro.html" not in src
+        assert "/ui/evolution/workbench" in src
+        assert "onOpenWorkbench" in src
 
     def test_app_jsx_links_research_pro(self):
-        # Phase9/Remodel — pro.html 풀 리로드 하드링크는 제거됐고, app.jsx 는
-        #   dashboard-pages.jsx 의 ProPage 를 직접 import해 인페이지 탭으로 마운트한다.
+        # Phase4 correction — pro.html 풀 리로드 하드링크는 제거됐고, 분석 워크벤치는
+        #   진화 홈 하위 workbench subtab에서 ProPage를 마운트한다.
         src = _read_front("app.jsx")
         assert "/ui/pro.html" not in src
         assert 'from "./dashboard-pages.jsx"' in src
         assert "<ProPage" in src
-        assert 'activeTab === "pro"' in src
+        assert 'activeTab === "evolution" && activeEvolutionTab === "workbench"' in src
 
     def test_pro_html_mounts_panel(self):
         # Phase9 — pro.html 본문 정본은 dashboard-pages.jsx 전역 window.ProPage 로

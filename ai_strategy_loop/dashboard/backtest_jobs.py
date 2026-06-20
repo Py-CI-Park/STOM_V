@@ -24,6 +24,7 @@ import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
+from ai_strategy_loop.controller.telemetry import dashboard_telemetry
 
 # 패키지 루트(.../ai_strategy_loop) 기준 경로. CWD 무관.
 _PACKAGE_DIR = Path(__file__).resolve().parent.parent
@@ -112,6 +113,40 @@ class BacktestJobRecord:
 
 def _now() -> float:
     return time.time()
+
+def _telemetry(
+    event_type: str,
+    record: Optional["BacktestJobRecord"] = None,
+    *,
+    spec: Optional[BacktestJobSpec] = None,
+    stage: str = "",
+    message: str = "",
+    percent: Optional[float] = None,
+    processed: Optional[int] = None,
+    total: Optional[int] = None,
+) -> None:
+    """Emit bounded in-memory telemetry for the official backtest CLI wrapper only."""
+
+    try:
+        current_spec = spec or (BacktestJobSpec(**record.spec) if record is not None else None)
+        job_id = record.job_id if record is not None else ""
+        dashboard_telemetry().append(
+            event_type,
+            run_id=job_id,
+            gen_no=-1,
+            seed="",
+            stage=stage,
+            message=message,
+            source="official_backtest_cli",
+            trace_id=f"bt:{job_id}:{stage}:{event_type}",
+            percent=percent,
+            processed=processed,
+            total=total,
+            symbol=getattr(current_spec, "one_code", None),
+            code=getattr(current_spec, "buy", None),
+        )
+    except Exception:
+        pass
 
 
 def _safe_name(value: str) -> bool:
@@ -281,6 +316,13 @@ class BacktestJobManager:
             self._records[job_id] = record
             self._queue.append(job_id)
             self._persist(record)
+            _telemetry(
+                "backtest_queued",
+                record,
+                stage="queued",
+                message=f"{spec.mode} queued",
+                percent=0.0,
+            )
             self._ensure_worker()
         return {"status": "ok", "job_id": job_id}
 
@@ -318,6 +360,13 @@ class BacktestJobManager:
                 record.finished_at = _now()
                 record.message = "큐에서 취소됨"
                 self._persist(record)
+                _telemetry(
+                    "error",
+                    record,
+                    stage="cancelled",
+                    message="queued job cancelled",
+                    percent=0.0,
+                )
                 return {"status": "ok", "job_id": job_id, "cancelled": "queued"}
             running_proc = self._proc if self._current_job == job_id else None
         # 실행 중인 프로세스 회수는 락 밖에서(긴 wait 회피).
@@ -395,6 +444,13 @@ class BacktestJobManager:
                     record.message = f"job runner failed: {exc}"
                     record.finished_at = _now()
                     self._persist(record)
+                    _telemetry(
+                        "error",
+                        record,
+                        stage="error",
+                        message=record.message,
+                        percent=0.0,
+                    )
             finally:
                 with self._lock:
                     self._current_job = None
@@ -422,6 +478,13 @@ class BacktestJobManager:
             record.started_at = run_start
             record.progress = 0.05
             self._persist(record)
+            _telemetry(
+                "backtest_started",
+                record,
+                stage="running",
+                message=f"{spec.mode} started",
+                percent=5.0,
+            )
 
         try:
             log_fh = open(log_path, "w", encoding="utf-8")
@@ -431,6 +494,13 @@ class BacktestJobManager:
                 record.message = f"로그 파일 생성 실패: {exc}"
                 record.finished_at = _now()
                 self._persist(record)
+                _telemetry(
+                    "error",
+                    record,
+                    stage="error",
+                    message=record.message,
+                    percent=0.0,
+                )
             return
 
         stdout_buf: List[str] = []
@@ -447,6 +517,13 @@ class BacktestJobManager:
                 record.message = f"서브프로세스 기동 실패: {exc}"
                 record.finished_at = _now()
                 self._persist(record)
+                _telemetry(
+                    "error",
+                    record,
+                    stage="error",
+                    message=record.message,
+                    percent=0.0,
+                )
             return
 
         with self._lock:
@@ -537,6 +614,14 @@ class BacktestJobManager:
                 record.message = f"non-success: exit={returncode} status={status} {msg} {checkpoint}".strip()
             self._cancel_requested.discard(record.job_id)
             self._persist(record)
+            final_event = "backtest_done" if record.status in ("success", "no_trades") else "error"
+            _telemetry(
+                final_event,
+                record,
+                stage=record.phase,
+                message=record.message or record.status,
+                percent=100.0,
+            )
 
     def _update_progress(
         self, record: BacktestJobRecord, line: str, run_start: float, timeout: int
@@ -553,6 +638,13 @@ class BacktestJobManager:
             if est > record.progress:
                 record.progress = est
                 self._persist(record)
+                _telemetry(
+                    "backtest_progress",
+                    record,
+                    stage=record.phase,
+                    message=line.strip() or "backtest progress",
+                    percent=round(record.progress * 100.0, 4),
+                )
 
     # ----------------------------------------------------------- process kill
     def _hard_stop(self, proc: subprocess.Popen, *, grace: float = 10.0) -> bool:

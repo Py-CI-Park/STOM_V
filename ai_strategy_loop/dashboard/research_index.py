@@ -14,7 +14,7 @@ from ai_strategy_loop.dashboard import research_records
 JsonScalar = str | int | float | bool | None
 JsonValue = JsonScalar | list["JsonValue"] | dict[str, "JsonValue"]
 JsonObject = dict[str, JsonValue]
-IndexKind = Literal["campaign", "doc", "update_log", "registry"]
+IndexKind = Literal["campaign", "doc", "update_log", "registry", "hof", "loop_run", "decision", "evidence"]
 Canonicality = Literal["canonical", "derived", "historical", "stale", "reference", "candidate"]
 SourceAuthority = Literal[
     "raw_campaign",
@@ -22,7 +22,12 @@ SourceAuthority = Literal[
     "selected_update_log",
     "registry_entry",
     "historical_planning_context",
+    "hall_of_fame",
+    "loop_runs_db",
+    "decision_log",
+    "evidence_artifact",
 ]
+TraceStatus = Literal["linked", "unlinked", "unknown"]
 
 CANONICALITY_VALUES: Final[tuple[str, ...]] = (
     "canonical",
@@ -38,7 +43,12 @@ SOURCE_AUTHORITY_VALUES: Final[tuple[str, ...]] = (
     "selected_update_log",
     "registry_entry",
     "historical_planning_context",
+    "hall_of_fame",
+    "loop_runs_db",
+    "decision_log",
+    "evidence_artifact",
 )
+TRACE_STATUS_VALUES: Final[tuple[str, ...]] = ("linked", "unlinked", "unknown")
 
 
 class ResearchIndexError(TypedDict):
@@ -57,6 +67,8 @@ class ResearchIndexRow(TypedDict):
     detail_available: bool
     tags: list[str]
     related_ids: list[str]
+    trace_status: TraceStatus
+    exact_link: str
     summary: str
 
 
@@ -91,7 +103,12 @@ DOC_ROOTS: Final[tuple[tuple[str, str], ...]] = (
     ("good_results", "docs/reference/STOM_Good_Results"),
 )
 UPDATE_LOG_ROOT: Final[str] = "docs/update_log"
-_SAFE_NAMESPACE = re.compile(r"^(campaign|doc|update_log|registry):(.{1,240})$")
+REFERENCE_STRATEGIES_JSON: Final[str] = "ai_strategy_loop/dashboard/reference_strategies.json"
+DECISIONS_JSONL: Final[str] = ".omo/evidence/decisions.jsonl"
+LOOP_RUNS_DB: Final[str] = "ai_strategy_loop/state/loop_runs.db"
+EVIDENCE_ROOT_REL: Final[str] = ".omo/evidence"
+EVIDENCE_ARTIFACT_SUFFIXES: Final[tuple[str, ...]] = (".json", ".jsonl", ".md", ".txt")
+_SAFE_NAMESPACE = re.compile(r"^(campaign|doc|update_log|registry|hof|loop_run|decision|evidence):(.{1,240})$")
 _CACHE: dict[str, tuple[tuple[tuple[str, int, int], ...], ResearchIndexResponse]] = {}
 
 
@@ -195,16 +212,61 @@ def _campaign_source_files(repo_root: Path, evidence_root: Path) -> list[_Source
     return rows
 
 
+def _static_governance_sources(repo_root: Path) -> list[_SourceFile]:
+    rows: list[_SourceFile] = []
+    for rel_path in (REFERENCE_STRATEGIES_JSON, DECISIONS_JSONL, LOOP_RUNS_DB):
+        path = _repo_path(repo_root, rel_path)
+        if path.is_file():
+            rows.append(_SourceFile(path, rel_path))
+    return rows
+
+
+def _evidence_artifact_sources(repo_root: Path) -> list[_SourceFile]:
+    root = _repo_path(repo_root, EVIDENCE_ROOT_REL)
+    if not root.is_dir():
+        return []
+    rows: list[_SourceFile] = []
+    for path in sorted(root.rglob("*")):
+        if path.is_file() and path.suffix.lower() in EVIDENCE_ARTIFACT_SUFFIXES:
+            try:
+                rel = _relative(repo_root, path)
+            except ValueError:
+                continue
+            rows.append(_SourceFile(path, rel))
+    return rows
+
+
 def _collect_sources(repo_root: Path, evidence_root: Path) -> list[_SourceFile]:
     sources = [source for source, _, _ in _doc_sources(repo_root)]
     sources.extend(_campaign_source_files(repo_root, evidence_root))
+    sources.extend(_evidence_artifact_sources(repo_root))
+    sources.extend(_static_governance_sources(repo_root))
     registry = _registry_source(repo_root)
     if registry is not None:
         sources.append(registry)
     source_inventory = _source_inventory(repo_root)
     if source_inventory is not None:
         sources.append(source_inventory)
-    return sources
+    return _dedupe_sources(sources)
+
+
+def _dedupe_sources(sources: list[_SourceFile]) -> list[_SourceFile]:
+    seen: set[str] = set()
+    out: list[_SourceFile] = []
+    for source in sources:
+        if source.rel_path in seen:
+            continue
+        seen.add(source.rel_path)
+        out.append(source)
+    return out
+
+
+def _trace_status(kind: IndexKind, related_ids: list[str]) -> TraceStatus:
+    if related_ids:
+        return "linked"
+    if kind in {"campaign", "registry", "loop_run", "decision", "evidence"}:
+        return "unlinked"
+    return "unknown"
 
 
 def _row(
@@ -220,7 +282,10 @@ def _row(
     tags: list[str] | None = None,
     related_ids: list[str] | None = None,
     summary: str = "",
+    trace_status: TraceStatus | None = None,
 ) -> ResearchIndexRow:
+    related = sorted(set(related_ids or []))
+    resolved_trace = trace_status or _trace_status(kind, related)
     return {
         "id": id,
         "kind": kind,
@@ -231,7 +296,9 @@ def _row(
         "source_authority": source_authority,
         "detail_available": detail_available,
         "tags": sorted(set(tags or [])),
-        "related_ids": sorted(set(related_ids or [])),
+        "related_ids": related,
+        "trace_status": resolved_trace,
+        "exact_link": f"research-index://{id}",
         "summary": summary,
     }
 
@@ -292,6 +359,191 @@ def _doc_rows(repo_root: Path) -> list[ResearchIndexRow]:
             tags=[category, kind],
             related_ids=[],
             summary=markdown[:240].replace("\n", " "),
+        ))
+    return rows
+
+
+def _summary_from_file(path: Path, max_chars: int = 240) -> str:
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+    if path.suffix.lower() == ".json":
+        try:
+            parsed = json.loads(text)
+        except json.JSONDecodeError:
+            parsed = None
+        if isinstance(parsed, dict):
+            keys = ", ".join(str(key) for key in list(parsed.keys())[:8])
+            return f"JSON object keys: {keys}" if keys else "JSON object"
+        if isinstance(parsed, list):
+            return f"JSON list rows: {len(parsed)}"
+    first_lines = " ".join(line.strip() for line in text.splitlines()[:4] if line.strip())
+    return (first_lines or text[:max_chars]).replace("\n", " ")[:max_chars]
+
+
+def _hof_rows(repo_root: Path) -> list[ResearchIndexRow]:
+    rows: list[ResearchIndexRow] = []
+    path = _repo_path(repo_root, REFERENCE_STRATEGIES_JSON)
+    if path.is_file():
+        summary = _summary_from_file(path)
+        rows.append(_row(
+            id="hof:reference-strategies",
+            kind="hof",
+            source_path=REFERENCE_STRATEGIES_JSON,
+            title="Hall of Fame reference strategies",
+            updated_at=_iso_from_mtime(path),
+            canonicality="reference",
+            source_authority="hall_of_fame",
+            tags=["hof", "reference_strategies"],
+            related_ids=[],
+            summary=summary,
+        ))
+    db_path = _repo_path(repo_root, LOOP_RUNS_DB)
+    if db_path.is_file():
+        rows.append(_row(
+            id="hof:loop-runs-ai",
+            kind="hof",
+            source_path=LOOP_RUNS_DB,
+            title="Hall of Fame AI candidates from loop_runs.db",
+            updated_at=_iso_from_mtime(db_path),
+            canonicality="derived",
+            source_authority="hall_of_fame",
+            tags=["hof", "ai", "loop_runs"],
+            related_ids=["loop_run:loop_runs.db"],
+            summary="AI Hall of Fame rows are projected from loop_runs.db gate-passed generations.",
+        ))
+    return rows
+
+
+def _loop_run_rows(repo_root: Path) -> tuple[list[ResearchIndexRow], list[ResearchIndexError]]:
+    db_path = _repo_path(repo_root, LOOP_RUNS_DB)
+    if not db_path.is_file():
+        return [], []
+    rows: list[ResearchIndexRow] = []
+    errors: list[ResearchIndexError] = []
+    try:
+        from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+
+        state = LoopState(readonly=True)
+        try:
+            runs = state.list_runs()
+            generations = state.get_all_generations()
+        finally:
+            state.close()
+    except Exception as exc:  # noqa: BLE001 - DB absent/schema drift must not break index.
+        return [], [{"source_path": LOOP_RUNS_DB, "reason": exc.__class__.__name__}]
+    if not runs:
+        rows.append(_row(
+            id="loop_run:loop_runs.db",
+            kind="loop_run",
+            source_path=LOOP_RUNS_DB,
+            title="loop_runs.db (0 runs)",
+            updated_at=_iso_from_mtime(db_path),
+            canonicality="historical",
+            source_authority="loop_runs_db",
+            tags=["loop_runs", "db", "empty"],
+            related_ids=[],
+            summary="loop_runs.db exists but has no run rows in this worktree.",
+        ))
+        return rows, errors
+    gen_counts: dict[str, int] = {}
+    for generation in generations:
+        run_id = _as_text(generation.get("run_id"))
+        if run_id:
+            gen_counts[run_id] = gen_counts.get(run_id, 0) + 1
+    for run in runs:
+        run_id = _as_text(run.get("run_id"))
+        if not run_id:
+            continue
+        started = float(run.get("started_at") or 0.0)
+        rows.append(_row(
+            id=f"loop_run:{run_id}",
+            kind="loop_run",
+            source_path=LOOP_RUNS_DB,
+            title=f"Loop run {run_id}",
+            updated_at=_iso_from_epoch(started or db_path.stat().st_mtime),
+            canonicality="historical",
+            source_authority="loop_runs_db",
+            tags=["loop_runs", _as_text(run.get("status")), f"gens:{gen_counts.get(run_id, 0)}"],
+            related_ids=[],
+            summary=f"status={run.get('status')}; generations={gen_counts.get(run_id, 0)}; best_gen={run.get('best_gen')}; best_score={run.get('best_score')}",
+        ))
+    return rows, errors
+
+
+def _decision_rows(repo_root: Path) -> tuple[list[ResearchIndexRow], list[ResearchIndexError]]:
+    path = _repo_path(repo_root, DECISIONS_JSONL)
+    if not path.is_file():
+        return [], []
+    rows: list[ResearchIndexRow] = []
+    errors: list[ResearchIndexError] = []
+    try:
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError as exc:
+        return [], [{"source_path": DECISIONS_JSONL, "reason": exc.__class__.__name__}]
+    for idx, line in enumerate(lines, start=1):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        try:
+            payload = json.loads(stripped)
+        except json.JSONDecodeError:
+            payload = {"raw": stripped}
+        item = _as_object(payload)
+        title = (
+            _as_text(item.get("title"))
+            or _as_text(item.get("decision"))
+            or _as_text(item.get("action"))
+            or f"Decision {idx}"
+        )
+        timestamp = _as_text(item.get("ts")) or _as_text(item.get("timestamp")) or _as_text(item.get("created_at"))
+        rows.append(_row(
+            id=f"decision:{idx}",
+            kind="decision",
+            source_path=DECISIONS_JSONL,
+            title=title,
+            updated_at=timestamp if timestamp else _iso_from_mtime(path),
+            canonicality="historical",
+            source_authority="decision_log",
+            tags=["decision", "append_only"],
+            related_ids=_related_source_ids(item.get("source_files")),
+            summary=stripped[:240],
+        ))
+    if not rows:
+        rows.append(_row(
+            id="decision:decisions.jsonl",
+            kind="decision",
+            source_path=DECISIONS_JSONL,
+            title="Decisions log (empty)",
+            updated_at=_iso_from_mtime(path),
+            canonicality="historical",
+            source_authority="decision_log",
+            tags=["decision", "append_only", "empty"],
+            related_ids=[],
+            summary="Append-only decisions log exists but has no records.",
+        ))
+    return rows, errors
+
+
+def _evidence_artifact_rows(repo_root: Path) -> list[ResearchIndexRow]:
+    rows: list[ResearchIndexRow] = []
+    for source in _evidence_artifact_sources(repo_root):
+        if source.rel_path in {REGISTRY_JSON, SOURCE_INVENTORY, DECISIONS_JSONL}:
+            continue
+        summary = _summary_from_file(source.path)
+        tags = ["evidence", source.path.suffix.lower().lstrip("."), source.path.parent.name]
+        rows.append(_row(
+            id=f"evidence:{source.rel_path}",
+            kind="evidence",
+            source_path=source.rel_path,
+            title=source.path.stem.replace("_", " ").replace("-", " "),
+            updated_at=_iso_from_mtime(source.path),
+            canonicality="derived" if source.path.suffix.lower() in {".json", ".jsonl"} else "historical",
+            source_authority="evidence_artifact",
+            tags=tags,
+            related_ids=[],
+            summary=summary,
         ))
     return rows
 
@@ -370,6 +622,8 @@ def _related_source_ids(value: JsonValue | None) -> list[str]:
             related.append(f"update_log:{item}")
         elif item.startswith("docs/"):
             related.append(f"doc:{item}")
+        elif item.startswith(".omo/evidence/"):
+            related.append(f"evidence:{item}")
     return related
 
 
@@ -382,6 +636,23 @@ def _normalize_rows(rows: list[ResearchIndexRow]) -> list[ResearchIndexRow]:
         seen.add(row["id"])
         out.append(row)
     return out
+
+
+def _resolve_row_links(rows: list[ResearchIndexRow]) -> list[ResearchIndexRow]:
+    valid_ids = {row["id"] for row in rows}
+    resolved: list[ResearchIndexRow] = []
+    for row in rows:
+        related = [item for item in row["related_ids"] if item in valid_ids and item != row["id"]]
+        if related == row["related_ids"] and row["trace_status"] == _trace_status(row["kind"], related):
+            resolved.append(row)
+            continue
+        resolved_row: ResearchIndexRow = {
+            **row,
+            "related_ids": related,
+            "trace_status": _trace_status(row["kind"], related),
+        }
+        resolved.append(resolved_row)
+    return resolved
 
 
 def list_research_index(repo_root: Path | None = None, evidence_root: Path | None = None) -> ResearchIndexResponse:
@@ -399,11 +670,20 @@ def list_research_index(repo_root: Path | None = None, evidence_root: Path | Non
     errors: list[ResearchIndexError] = []
     campaign_rows, campaign_errors = _campaign_rows(root, evidence)
     registry_rows, registry_errors = _registry_rows(root)
+    loop_rows, loop_errors = _loop_run_rows(root)
+    decision_rows, decision_errors = _decision_rows(root)
     rows.extend(campaign_rows)
     rows.extend(_doc_rows(root))
+    rows.extend(_evidence_artifact_rows(root))
+    rows.extend(_hof_rows(root))
+    rows.extend(loop_rows)
+    rows.extend(decision_rows)
     rows.extend(registry_rows)
+    rows = _resolve_row_links(rows)
     errors.extend(campaign_errors)
     errors.extend(registry_errors)
+    errors.extend(loop_errors)
+    errors.extend(decision_errors)
     response: ResearchIndexResponse = {
         "count": len(_normalize_rows(rows)),
         "records": _normalize_rows(rows),
@@ -421,7 +701,7 @@ def research_index_detail(id: str, repo_root: Path | None = None, evidence_root:
     if match is None:
         return {"available": False, "reason": "invalid_id"}
     namespace, payload = match.groups()
-    if not _safe_rel(payload) and namespace in {"doc", "update_log"}:
+    if not _safe_rel(payload) and namespace in {"doc", "update_log", "evidence"}:
         return {"available": False, "reason": "invalid_id"}
     index = list_research_index(root, evidence)
     row = next((item for item in index["records"] if item["id"] == id), None)
@@ -432,7 +712,7 @@ def research_index_detail(id: str, repo_root: Path | None = None, evidence_root:
     if namespace == "campaign":
         detail = research_records.research_record_detail(payload, evidence)
         return {"available": bool(detail.get("available")), "row": row, "campaign": _as_object(detail.get("campaign"))}
-    if namespace in {"doc", "update_log"}:
+    if namespace in {"doc", "update_log", "evidence"}:
         path = _repo_path(root, row["source_path"])
         if not path.is_file() or not path.resolve().is_relative_to(root):
             return {"available": False, "reason": "disallowed_path", "row": row}
@@ -440,6 +720,15 @@ def research_index_detail(id: str, repo_root: Path | None = None, evidence_root:
         return {"available": True, "row": row, "markdown": markdown}
     if namespace == "registry":
         entry = _registry_entry(payload, root)
+        return {"available": entry is not None, "row": row, "registry_entry": entry or {}}
+    if namespace == "hof":
+        entry = _hof_entry(payload, root)
+        return {"available": entry is not None, "row": row, "registry_entry": entry or {}}
+    if namespace == "loop_run":
+        entry = _loop_run_entry(payload, root)
+        return {"available": entry is not None, "row": row, "registry_entry": entry or {}}
+    if namespace == "decision":
+        entry = _decision_entry(payload, root)
         return {"available": entry is not None, "row": row, "registry_entry": entry or {}}
     return {"available": False, "reason": "invalid_id"}
 
@@ -466,3 +755,65 @@ def _registry_entry(payload: str, repo_root: Path) -> JsonObject | None:
         if row.get("machine_name") == payload:
             return row
     return None
+
+
+def _hof_entry(payload: str, repo_root: Path) -> JsonObject | None:
+    if payload == "reference-strategies":
+        path = _repo_path(repo_root, REFERENCE_STRATEGIES_JSON)
+        if not path.is_file():
+            return None
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError, UnicodeError):
+            data = []
+        return {
+            "source_path": REFERENCE_STRATEGIES_JSON,
+            "kind": "reference_strategies",
+            "row_count": len(data) if isinstance(data, list) else None,
+            "items": data if isinstance(data, list) else [],
+        }
+    if payload == "loop-runs-ai":
+        return {
+            "source_path": LOOP_RUNS_DB,
+            "kind": "loop_runs_hof_projection",
+            "note": "AI Hall of Fame rows are derived from read-only loop_runs.db gate-passed generations.",
+        }
+    return None
+
+
+def _loop_run_entry(payload: str, repo_root: Path) -> JsonObject | None:
+    if payload == "loop_runs.db":
+        path = _repo_path(repo_root, LOOP_RUNS_DB)
+        return {"source_path": LOOP_RUNS_DB, "exists": path.is_file(), "note": "loop_runs.db summary row"}
+    try:
+        from ai_strategy_loop.controller.state import LoopState  # noqa: PLC0415
+
+        state = LoopState(readonly=True)
+        try:
+            row = state.get_run(payload)
+            generations = state.get_generations(payload) if row is not None else []
+        finally:
+            state.close()
+    except Exception:  # noqa: BLE001
+        return None
+    if row is None:
+        return None
+    return {"run": row, "generations": generations}
+
+
+def _decision_entry(payload: str, repo_root: Path) -> JsonObject | None:
+    path = _repo_path(repo_root, DECISIONS_JSONL)
+    if not path.is_file():
+        return None
+    try:
+        idx = int(payload)
+        lines = [line.strip() for line in path.read_text(encoding="utf-8", errors="replace").splitlines() if line.strip()]
+    except (OSError, ValueError):
+        return {"source_path": DECISIONS_JSONL, "note": "decisions.jsonl summary row"} if payload == "decisions.jsonl" else None
+    if idx < 1 or idx > len(lines):
+        return None
+    try:
+        parsed = json.loads(lines[idx - 1])
+    except json.JSONDecodeError:
+        parsed = {"raw": lines[idx - 1]}
+    return _as_object(parsed)
