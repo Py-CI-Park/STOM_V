@@ -11,6 +11,10 @@ const RIX_KIND_LABELS = {
   doc: "Doc",
   update_log: "Update log",
   registry: "Registry",
+  hof: "Hall of Fame",
+  loop_run: "Loop run",
+  decision: "Decision",
+  evidence: "Evidence",
 };
 
 const RIX_CANONICALITY_LABELS = {
@@ -28,7 +32,18 @@ const RIX_AUTHORITY_LABELS = {
   selected_update_log: "selected update_log",
   registry_entry: "registry entry",
   historical_planning_context: "historical context",
+  hall_of_fame: "hall of fame",
+  loop_runs_db: "loop_runs.db",
+  decision_log: "decision log",
+  evidence_artifact: "evidence artifact",
 };
+
+const RIX_TRACE_LABELS = {
+  linked: "linked",
+  unlinked: "unlinked",
+  unknown: "unknown",
+};
+
 
 const RIX_SORT_LABELS = {
   updated_desc: "updated ↓",
@@ -59,7 +74,9 @@ function ResearchBadge({ type, value }) {
     ? (RIX_KIND_LABELS[value] || value || "—")
     : type === "canonicality"
       ? (RIX_CANONICALITY_LABELS[value] || value || "—")
-      : (RIX_AUTHORITY_LABELS[value] || value || "—");
+      : type === "trace"
+        ? (RIX_TRACE_LABELS[value] || value || "—")
+        : (RIX_AUTHORITY_LABELS[value] || value || "—");
   return <span className={`research-index-badge research-index-badge-${type}`}>{label}</span>;
 }
 
@@ -87,6 +104,7 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
   const [query, setQuery] = useState_rix("");
   const [kind, setKind] = useState_rix("all");
   const [canonicality, setCanonicality] = useState_rix("all");
+  const [traceStatus, setTraceStatus] = useState_rix("all");
   const [sortKey, setSortKey] = useState_rix("updated_desc");
   const [displayLimit, setDisplayLimit] = useState_rix(initialLimit);
   const detailRequestSeq = useRef_rix(0);
@@ -125,16 +143,17 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
     const rows = records.filter(row => {
       if (kind !== "all" && row.kind !== kind) return false;
       if (canonicality !== "all" && row.canonicality !== canonicality) return false;
+      if (traceStatus !== "all" && row.trace_status !== traceStatus) return false;
       if (!q) return true;
-      const hay = [row.id, row.title, row.source_path, row.summary, ...(row.tags || []), ...(row.related_ids || [])]
+      const hay = [row.id, row.title, row.source_path, row.summary, row.exact_link, row.trace_status, ...(row.tags || []), ...(row.related_ids || [])]
         .join("\n").toLowerCase();
       return hay.includes(q);
     });
     rows.sort((a, b) => {
       if (sortKey === "title_asc") return String(a.title || a.id).localeCompare(String(b.title || b.id), "ko-KR");
       if (sortKey === "kind_asc") {
-        const ak = `${a.kind || ""}:${a.canonicality || ""}:${a.title || a.id}`;
-        const bk = `${b.kind || ""}:${b.canonicality || ""}:${b.title || b.id}`;
+        const ak = `${a.kind || ""}:${a.canonicality || ""}:${a.trace_status || ""}:${a.title || a.id}`;
+        const bk = `${b.kind || ""}:${b.canonicality || ""}:${b.trace_status || ""}:${b.title || b.id}`;
         return ak.localeCompare(bk, "ko-KR");
       }
       const at = Date.parse(a.updated_at || "") || 0;
@@ -142,11 +161,11 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
       return bt - at;
     });
     return rows;
-  }, [records, query, kind, canonicality, sortKey]);
+  }, [records, query, kind, canonicality, traceStatus, sortKey]);
 
   useEffect_rix(() => {
     setDisplayLimit(initialLimit);
-  }, [query, kind, canonicality, sortKey, initialLimit]);
+  }, [query, kind, canonicality, traceStatus, sortKey, initialLimit]);
 
   const visibleRows = useMemo_rix(() => filtered.slice(0, displayLimit), [filtered, displayLimit]);
 
@@ -178,10 +197,17 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
   const selectedRow = records.find(row => row.id === selectedId) || null;
   const detailText = _rixDetailText(detail);
   const sourceCounts = useMemo_rix(() => {
-    const out = { campaign: 0, doc: 0, update_log: 0, registry: 0 };
+    const out = { campaign: 0, doc: 0, update_log: 0, registry: 0, hof: 0, loop_run: 0, decision: 0, evidence: 0 };
     for (const row of records) if (out[row.kind] != null) out[row.kind] += 1;
     return out;
   }, [records]);
+  const traceCounts = useMemo_rix(() => {
+    const out = { linked: 0, unlinked: 0, unknown: 0 };
+    for (const row of records) if (out[row.trace_status] != null) out[row.trace_status] += 1;
+    return out;
+  }, [records]);
+  const timelineRows = useMemo_rix(() => visibleRows.slice(0, 12), [visibleRows]);
+
 
   return (
     <div className="panel research-index">
@@ -197,7 +223,7 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
       </div>
       <div className="panel-bd">
         <div className="research-index-note">
-          All-record lookup across campaigns, docs, update logs, and allowlisted registry rows. Raw evidence is linked by lineage only; markdown is rendered as inert text.
+          Governed exact-link timeline across campaigns, docs, update logs, HOF, loop_runs, evidence artifacts, decisions, and allowlisted registry rows. Badges use closed source_authority, canonicality, and trace_status values; unknown/unlinked lineage stays visible instead of being hidden.
         </div>
         {isDemo ? (
           <UiStateBlock kind="demo" compact title="Backend connection required">Governed research index is available when the dashboard backend is connected.</UiStateBlock>
@@ -220,6 +246,10 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                   <option value="doc">doc</option>
                   <option value="update_log">update_log</option>
                   <option value="registry">registry</option>
+                  <option value="hof">hof</option>
+                  <option value="loop_run">loop_run</option>
+                  <option value="decision">decision</option>
+                  <option value="evidence">evidence</option>
                 </select>
               </label>
               <label>canonicality
@@ -231,6 +261,14 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                   <option value="reference">reference</option>
                   <option value="candidate">candidate</option>
                   <option value="stale">stale</option>
+                </select>
+              </label>
+              <label>trace
+                <select value={traceStatus} onChange={e => setTraceStatus(e.target.value)}>
+                  <option value="all">all</option>
+                  <option value="linked">linked</option>
+                  <option value="unlinked">unlinked</option>
+                  <option value="unknown">unknown</option>
                 </select>
               </label>
               <label>sort
@@ -248,6 +286,13 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
               <span>doc <b>{sourceCounts.doc}</b></span>
               <span>update_log <b>{sourceCounts.update_log}</b></span>
               <span>registry <b>{sourceCounts.registry}</b></span>
+              <span>hof <b>{sourceCounts.hof}</b></span>
+              <span>loop_runs <b>{sourceCounts.loop_run}</b></span>
+              <span>decisions <b>{sourceCounts.decision}</b></span>
+              <span>evidence <b>{sourceCounts.evidence}</b></span>
+              <span>linked <b>{traceCounts.linked}</b></span>
+              <span>unlinked <b>{traceCounts.unlinked}</b></span>
+              <span>unknown <b>{traceCounts.unknown}</b></span>
               {cacheInfo && <span>cache <b>{cacheInfo.hit ? "hit" : "miss"}</b> · sources {cacheInfo.sources}</span>}
               <span>cap <b>{displayLimit}</b>{filtered.length > displayLimit ? " windowed" : ""}</span>
             </div>
@@ -256,6 +301,33 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                 {errors.length} index source warning(s); details remain read-only.
               </div>
             )}
+            <div className="research-index-timeline" aria-label="governed exact-link research timeline">
+              <div className="research-index-timeline-head">
+                <b>Governed Exact-Link Timeline</b>
+                <span className="mono">source_authority · canonicality · trace_status · exact_link</span>
+              </div>
+              <div className="research-index-timeline-rail">
+                {timelineRows.map(row => (
+                  <button
+                    type="button"
+                    key={`tl-${row.id}`}
+                    className={selectedId === row.id ? "active" : ""}
+                    onClick={() => setSelectedId(row.id)}
+                    title={row.exact_link || row.id}
+                  >
+                    <span className="research-index-timeline-time">{_rixFmtTime(row.updated_at)}</span>
+                    <strong>{row.title || row.id}</strong>
+                    <span className="research-index-row-badges">
+                      <ResearchBadge type="trace" value={row.trace_status} />
+                      <ResearchBadge type="canonicality" value={row.canonicality} />
+                      <ResearchBadge type="authority" value={row.source_authority} />
+                    </span>
+                    <small>{row.exact_link || row.id}</small>
+                  </button>
+                ))}
+                {timelineRows.length === 0 && <UiStateBlock kind="empty" compact title="No timeline records.">필터를 조정하면 exact-link 타임라인이 다시 표시됩니다.</UiStateBlock>}
+              </div>
+            </div>
             <div className="research-index-layout">
               <div className="research-index-list" role="listbox" aria-label="research index records">
                 {visibleRows.map(row => (
@@ -271,6 +343,7 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                       <ResearchBadge type="kind" value={row.kind} />
                       <ResearchBadge type="canonicality" value={row.canonicality} />
                       <ResearchBadge type="authority" value={row.source_authority} />
+                      <ResearchBadge type="trace" value={row.trace_status} />
                     </span>
                     <small>{_rixShortPath(row.source_path)}</small>
                   </button>
@@ -293,10 +366,13 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                         <ResearchBadge type="kind" value={selectedRow.kind} />
                         <ResearchBadge type="canonicality" value={selectedRow.canonicality} />
                         <ResearchBadge type="authority" value={selectedRow.source_authority} />
+                        <ResearchBadge type="trace" value={selectedRow.trace_status} />
                       </div>
                     </div>
                     <div className="research-index-meta mono">
                       <div><b>source</b> {_rixShortPath(selectedRow.source_path)}</div>
+                      <div><b>exact_link</b> {selectedRow.exact_link || selectedRow.id}</div>
+                      <div><b>trace_status</b> {selectedRow.trace_status || "unknown"}</div>
                       <div><b>updated</b> {_rixFmtTime(selectedRow.updated_at)}</div>
                       <div><b>tags</b> {(selectedRow.tags || []).join(", ") || "—"}</div>
                       <div><b>summary</b> {selectedRow.summary || "—"}</div>
@@ -307,6 +383,11 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                         {selectedRow.related_ids.map(id => (
                           <button key={id} type="button" onClick={() => setSelectedId(id)}>{id}</button>
                         ))}
+                      </div>
+                    )}
+                    {(!selectedRow.related_ids || selectedRow.related_ids.length === 0) && (
+                      <div className="research-index-related research-index-related-muted">
+                        Trace lineage: {selectedRow.trace_status === "unlinked" ? "unlinked source" : "unknown lineage"}
                       </div>
                     )}
                     {detailLoading ? (

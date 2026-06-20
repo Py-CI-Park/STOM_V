@@ -1,3 +1,5 @@
+import { ReactFlow, Background, Controls, MarkerType, Position } from "@xyflow/react";
+import dagre from "dagre";
 /* Phase timeline + phase-aware detail panel that switches by current phase */
 const { useState: useState_ph, useMemo: useMemo_ph, useEffect: useEffect_ph, useRef: useRef_ph } = React;
 
@@ -562,116 +564,102 @@ function flowStepStatus(index, currentStep) {
 }
 
 // =====================================================================
-// ProcessFlowDiagram — 5단계 프로세스를 SVG 노드+화살표로 그린다(평면 박스 대체).
+// ProcessFlowDiagram — React Flow + Dagre 기반 프로세스 그래프.
 //   props: currentStep(-1~4) · running · phaseElapsed(활성 라이브 경과초|null) ·
 //          stepTimings(완료단계 소요초 dict, key=FLOW_STEPS[i].timingKey).
-//   노드 status by index vs currentStep: <done(teal) ===active(amber+glow) >pending(dim).
-//   노드 간 화살표는 활성 노드 직전까지(.lit=완료 경로). 좌→우 흐름.
-//   responsive: viewBox + preserveAspectRatio, 좁으면 .stom-flow-wrap 가로 스크롤.
-//   CSS 클래스(styles.css 소유): .stom-flow-wrap/-node-done/-node-active/-node-pend/
-//   -label/-sub/-arrow(.lit). 색은 클래스(토큰) 경유 — 하드코딩 컬러 없음.
-// =====================================================================
+//   노드 status by index vs currentStep: done(teal) / active(amber pulse) / pending(dim).
+//   Dagre가 좌→우 레이아웃을 계산하고, active path edge만 animated 처리한다.
+// ============================================================================
 function ProcessFlowDiagram({ currentStep, running, phaseElapsed, stepTimings }) {
-  const steps = FLOW_STEPS;
-  const n = steps.length;
-  // 고정 viewBox 좌표계(preserveAspectRatio 로 컨테이너 폭에 맞춰 스케일).
-  const NODE_W = 120, NODE_H = 56, GAP = 40, PAD_X = 16, PAD_Y = 14;
-  const ARROW_H = 8; // 화살표머리 폭/높이.
-  const vbW = PAD_X * 2 + n * NODE_W + (n - 1) * GAP;
-  const vbH = PAD_Y * 2 + NODE_H;
-  const cy = PAD_Y + NODE_H / 2; // 노드/화살표 수직 중심.
-  const nodeX = (i) => PAD_X + i * (NODE_W + GAP);
+  const graph = useMemo_ph(() => {
+    const NODE_W = 172;
+    const NODE_H = 86;
+    const dagreGraph = new dagre.graphlib.Graph();
+    dagreGraph.setDefaultEdgeLabel(() => ({}));
+    dagreGraph.setGraph({ rankdir: "LR", nodesep: 34, ranksep: 76, marginx: 22, marginy: 22 });
+
+    FLOW_STEPS.forEach((step, index) => {
+      dagreGraph.setNode(step.timingKey, { width: NODE_W, height: NODE_H, index });
+    });
+    FLOW_STEPS.slice(0, -1).forEach((step, index) => {
+      dagreGraph.setEdge(step.timingKey, FLOW_STEPS[index + 1].timingKey);
+    });
+    dagre.layout(dagreGraph);
+
+    const nodes = FLOW_STEPS.map((step, index) => {
+      const status = flowStepStatus(index, currentStep);
+      const doneSec = stepTimings ? stepTimings[step.timingKey] : undefined;
+      let subText = step.sub;
+      if (status === "active" && running && phaseElapsed != null) {
+        subText = `경과 ${fmtElapsedSec(phaseElapsed)}`;
+      } else if (status === "done" && typeof doneSec === "number" && doneSec >= 0) {
+        subText = `완료 ${fmtElapsedSec(doneSec)}`;
+      }
+      const positioned = dagreGraph.node(step.timingKey);
+      return {
+        id: step.timingKey,
+        type: "default",
+        position: {
+          x: positioned.x - NODE_W / 2,
+          y: positioned.y - NODE_H / 2,
+        },
+        sourcePosition: Position.Right,
+        targetPosition: Position.Left,
+        draggable: false,
+        selectable: false,
+        className: `stom-rf-node stom-rf-node-${status}`,
+        data: {
+          label: (
+            <div className="stom-rf-node-label">
+              <span className="stom-rf-node-step">{index + 1}</span>
+              <b>{step.label}</b>
+              <small>{subText}</small>
+            </div>
+          ),
+        },
+        style: { width: NODE_W, height: NODE_H },
+        initialWidth: NODE_W,
+        initialHeight: NODE_H,
+      };
+    });
+
+    const edges = FLOW_STEPS.slice(0, -1).map((step, index) => {
+      const next = FLOW_STEPS[index + 1];
+      const lit = typeof currentStep === "number" && currentStep >= index + 1;
+      return {
+        id: `${step.timingKey}-${next.timingKey}`,
+        source: step.timingKey,
+        target: next.timingKey,
+        type: "smoothstep",
+        animated: lit && running,
+        className: lit ? "stom-rf-edge-lit" : "stom-rf-edge",
+        markerEnd: { type: MarkerType.ArrowClosed },
+        label: lit ? "진행" : "",
+      };
+    });
+    return { nodes, edges };
+  }, [currentStep, running, phaseElapsed, stepTimings]);
 
   return (
-    <div className="stom-flow-wrap">
-      <svg
-        viewBox={`0 0 ${vbW} ${vbH}`}
-        preserveAspectRatio="xMidYMid meet"
-        width="100%"
-        height={vbH}
-        // Phase12-A — 노드 라벨이 좁은 화면에서 뭉개지지 않도록 SVG 고유 최소폭을 유지.
-        //   컨테이너가 이보다 좁으면 .stom-flow-wrap(overflow-x:auto)가 실제로 가로 스크롤한다.
-        style={{ minWidth: vbW, display: "block" }}
-        role="img"
-        aria-label="진화 루프 프로세스 플로우"
+    <div className="stom-rf-wrap" aria-label="React Flow Dagre 프로세스 그래프">
+      <ReactFlow
+        nodes={graph.nodes}
+        edges={graph.edges}
+        fitView
+        fitViewOptions={{ padding: 0.12 }}
+        minZoom={0.55}
+        maxZoom={1.35}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        panOnScroll={false}
+        zoomOnScroll={false}
+        preventScrolling={false}
+        proOptions={{ hideAttribution: true }}
       >
-        <defs>
-          {/* 활성 노드 미묘한 글로우(드롭섀도). 색은 currentColor 상속이 아니라
-              stroke 토큰을 그대로 번지게 두면 테마색을 따른다. */}
-          <filter id="stom-flow-glow" x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        {/* 화살표(노드 사이). 활성 노드 직전까지 .lit(완료 경로). */}
-        {steps.slice(0, n - 1).map((_, i) => {
-          const x1 = nodeX(i) + NODE_W;
-          const x2 = nodeX(i + 1);
-          const tip = x2 - 2;            // 화살표머리 끝(노드 좌측 직전).
-          const lineEnd = tip - ARROW_H; // 선은 머리 직전까지.
-          // i번째 화살표는 노드 i→i+1. 노드 i+1 이 done/active(=완료 경로 진입)면 점등.
-          const lit = typeof currentStep === "number" && currentStep >= i + 1;
-          const cls = `stom-flow-arrow${lit ? " lit" : ""}`;
-          return (
-            <g key={`arrow-${i}`}>
-              <line className={cls} x1={x1} y1={cy} x2={lineEnd} y2={cy} />
-              <polygon
-                className={cls}
-                points={`${lineEnd},${cy - ARROW_H / 2} ${tip},${cy} ${lineEnd},${cy + ARROW_H / 2}`}
-                fill="currentColor"
-                stroke="none"
-                style={{ color: lit ? "var(--teal)" : "var(--line-2)" }}
-              />
-            </g>
-          );
-        })}
-
-        {/* 노드(rounded-rect + 라벨 + sub). */}
-        {steps.map((step, i) => {
-          const isActive = i === currentStep;
-          const isDone = typeof currentStep === "number" && currentStep > i;
-          const statusCls = isDone
-            ? "stom-flow-node-done"
-            : isActive
-              ? "stom-flow-node-active"
-              : "stom-flow-node-pend";
-          // sub 라인: 활성=라이브 경과(있으면) / 완료=step_timings 소요초 / 그 외=영문 sub.
-          const doneSec = stepTimings ? stepTimings[step.timingKey] : undefined;
-          let subText = step.sub;
-          if (isActive && running && phaseElapsed != null) {
-            subText = `경과 ${fmtElapsedSec(phaseElapsed)}`;
-          } else if (!isActive && typeof doneSec === "number" && doneSec >= 0) {
-            subText = fmtElapsedSec(doneSec);
-          }
-          const x = nodeX(i);
-          const labelX = x + NODE_W / 2;
-          return (
-            <g key={`node-${i}`}>
-              <rect
-                className={statusCls}
-                x={x}
-                y={PAD_Y}
-                width={NODE_W}
-                height={NODE_H}
-                rx={10}
-                ry={10}
-                strokeWidth={isActive ? 2.5 : 1.5}
-                filter={isActive ? "url(#stom-flow-glow)" : undefined}
-              />
-              <text className="stom-flow-label" x={labelX} y={cy - 2} textAnchor="middle">
-                {step.label}
-              </text>
-              <text className="stom-flow-sub" x={labelX} y={cy + 14} textAnchor="middle">
-                {subText}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
+        <Background gap={18} size={0.8} />
+        <Controls showInteractive={false} position="bottom-right" />
+      </ReactFlow>
     </div>
   );
 }
@@ -805,16 +793,31 @@ function ProcessFlowPanel({ state }) {
           <small>엔진/백테스트 로그 최근 {logWindow.length}줄 자동 스크롤</small>
         </div>
       </div>
-      {/* P11 — 평면 .process-box 행을 SVG 노드+화살표 플로우 다이어그램으로 교체.
-          노드 상태: index<current_step=done(teal) · ===active(amber+glow) · >pending(dim).
-          노드 sub 라인은 활성=라이브 경과 / 완료=step_timings 소요초. 활성 직전 화살표=.lit.
-          데이터/인덱스 로직(currentStep·stepTimings·phaseElapsed)은 기존 그대로 사용. */}
+      {/* G004 — React Flow + Dagre 그래프. active path만 animated 처리해 시각적 생동감과 성능을 같이 지킨다. */}
       <ProcessFlowDiagram
         currentStep={currentStep}
         running={running}
         phaseElapsed={phaseElapsed}
         stepTimings={stepTimings}
       />
+      <div className="process-explain-grid" aria-label="프로세스 쉬운 설명과 용어">
+        <div>
+          <b>한눈에 보는 흐름</b>
+          <p>조건식을 만들고, 과거 데이터로 검증한 뒤, 점수와 실패 원인을 보고 다음 세대를 개선합니다.</p>
+        </div>
+        <div>
+          <b>현재 세대</b>
+          <p>지금 실행 중인 후보 묶음입니다. current_step이 바뀌면 그래프의 활성 노드와 로그가 같이 움직입니다.</p>
+        </div>
+        <div>
+          <b>적합도</b>
+          <p>수익·손실폭·거래 빈도 같은 기준을 합쳐 후보를 비교하는 점수입니다. 높을수록 다음 후보로 남기 쉽습니다.</p>
+        </div>
+        <details>
+          <summary>예시 보기</summary>
+          <p>검증 노드가 켜져 있으면 백테스트 엔진이 후보 조건식을 과거 데이터에 적용 중이라는 뜻입니다.</p>
+        </details>
+      </div>
       <div className="process-timing-grid" aria-label="프로세스 단계별 소요 시간">
         {timingRows.map(row => (
           <div key={row.timingKey} className={`process-timing-cell ${row.status}`} data-status={row.status}>

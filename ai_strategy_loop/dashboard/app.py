@@ -48,6 +48,10 @@ from ai_strategy_loop.controller.progress_contract import (  # noqa: E402
     build_backtest_progress,
     build_engine_state,
 )
+from ai_strategy_loop.controller.telemetry import (  # noqa: E402
+    attach_telemetry_to_status,
+    dashboard_telemetry,
+)
 from ai_strategy_loop.dashboard.research_api import router as research_router  # noqa: E402
 from ai_strategy_loop.dashboard.backtest_api import backtest_router  # noqa: E402
 from ai_strategy_loop.dashboard.simulation_api import simulation_router  # noqa: E402
@@ -171,14 +175,16 @@ class LoopProcessManager:
 
 
 def _current_state_payload() -> Dict[str, Any]:
-    """current_state.json을 읽어 dict로 반환 (없으면 idle 기본값)."""
+    """current_state.json을 읽어 dict로 반환하고 dashboard-only telemetry를 병합한다."""
     raw = S.read_current_state()
     if raw is not None:
         try:
-            return _with_observability_defaults(C.LoopState.model_validate(raw).model_dump())
+            payload = _with_observability_defaults(C.LoopState.model_validate(raw).model_dump())
         except ValidationError:
-            return raw
-    return C.idle_state().model_dump()
+            payload = raw
+    else:
+        payload = C.idle_state().model_dump()
+    return attach_telemetry_to_status(payload, dashboard_telemetry().snapshot())
 
 
 def _with_observability_defaults(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -2676,24 +2682,67 @@ def create_app() -> FastAPI:
         # 단일 진입점: 루트로 들어오면 정적 대시보드(/ui/)로 보낸다.
         return RedirectResponse(url="/ui/")
 
+    def _dashboard_index_response() -> HTMLResponse:
+        index_path = os.path.join(_FRONTEND_DIR, "index.html")
+        try:
+            with open(index_path, encoding="utf-8") as fh:
+                return HTMLResponse(fh.read())
+        except Exception:  # noqa: BLE001
+            return HTMLResponse("<h1>Dashboard frontend not available</h1>", status_code=503)
+
+    @app.get("/ui/evolution", response_class=HTMLResponse)
+    @app.get("/ui/evolution/{subtab}", response_class=HTMLResponse)
+    def ui_evolution(subtab: str = "overview") -> Any:
+        allowed = {"overview", "process", "records", "lab", "workbench", "verdict"}
+        if subtab not in allowed:
+            return RedirectResponse(url="/ui/evolution", status_code=307)
+        return _dashboard_index_response()
+
+    @app.get("/ui/backtest", response_class=HTMLResponse)
+    def ui_backtest() -> HTMLResponse:
+        return _dashboard_index_response()
+
+    @app.get("/ui/chart-replay", response_class=HTMLResponse)
+    def ui_chart_replay() -> HTMLResponse:
+        return _dashboard_index_response()
+
+    @app.get("/ui/simulation")
+    def ui_simulation_alias() -> RedirectResponse:
+        return RedirectResponse(url="/ui/chart-replay", status_code=307)
+
+    @app.get("/ui/process")
+    def ui_process_alias() -> RedirectResponse:
+        return RedirectResponse(url="/ui/evolution/process", status_code=307)
+
+    @app.get("/ui/records")
+    def ui_records_alias() -> RedirectResponse:
+        return RedirectResponse(url="/ui/evolution/records", status_code=307)
+
+    @app.get("/ui/lab")
+    def ui_lab_alias() -> RedirectResponse:
+        return RedirectResponse(url="/ui/evolution/lab", status_code=307)
+
+    @app.get("/ui/pro")
+    def ui_pro_alias() -> RedirectResponse:
+        return RedirectResponse(url="/ui/evolution/workbench", status_code=307)
+
+    @app.get("/ui/verdict")
+    def ui_verdict_alias() -> RedirectResponse:
+        return RedirectResponse(url="/ui/evolution/verdict", status_code=307)
+
     @app.get("/health")
     def health() -> Dict[str, Any]:
         return {"status": "ok", "contract_version": C.CONTRACT_VERSION}
 
     @app.get("/process_flow", response_class=HTMLResponse)
     def process_flow() -> HTMLResponse:
-        """조건식 발굴 프로세스 시각화(인터랙티브). 요청 시 최신 라이브 데이터로 재생성.
+        """조건식 발굴 프로세스 정적 참고 자료를 읽기 전용으로 서빙한다.
 
-        프론트 '프로세스 흐름' 탭이 iframe으로 이 페이지를 띄운다. 읽기 전용·무예외:
-        재생성 실패해도 기존 파일을 서빙하고, 둘 다 없으면 안내 메시지를 돌려준다.
+        프론트 Process subtab의 실시간 그래프가 정본이고, 이 legacy HTML은 별도 보관된
+        정적 설명 자료다. GET 요청에서는 파일 재생성이나 디스크 쓰기를 절대 하지 않는다.
         """
         from pathlib import Path as _P  # noqa: PLC0415
         out = _P(__file__).resolve().parents[2] / "docs/process_flow.html"
-        try:  # 최신 데이터로 재생성(베스트에포트 — 실패해도 기존 파일 서빙).
-            from ai_strategy_loop.scripts.build_process_flow_html import main as _bpf  # noqa: PLC0415
-            _bpf()
-        except Exception:
-            pass
         try:
             return HTMLResponse(out.read_text(encoding="utf-8"))
         except Exception:

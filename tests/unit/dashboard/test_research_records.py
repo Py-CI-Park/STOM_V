@@ -78,6 +78,21 @@ def _write_docs(repo_root: Path) -> None:
     update.write_text("# Alpha Update\nBody", encoding="utf-8")
 
 
+def _write_governance_sources(repo_root: Path) -> None:
+    ref = repo_root / "ai_strategy_loop" / "dashboard" / "reference_strategies.json"
+    ref.parent.mkdir(parents=True, exist_ok=True)
+    ref.write_text(json.dumps([{"label": "Human Champion", "total_return_krw": 1000}], ensure_ascii=False), encoding="utf-8")
+    decisions = repo_root / ".omo" / "evidence" / "decisions.jsonl"
+    decisions.parent.mkdir(parents=True, exist_ok=True)
+    decisions.write_text(
+        json.dumps({"decision": "Approve alpha", "source_files": ["docs/update_log/2026-01-01_alpha.md"]}, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    artifact = repo_root / ".omo" / "evidence" / "tmap-walkforward" / "manual_evidence.json"
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    artifact.write_text(json.dumps({"artifact": "manual"}, ensure_ascii=False), encoding="utf-8")
+
+
 def test_research_records_lists_campaigns(tmp_path: Path) -> None:
     evidence = tmp_path / "evidence"
     _write_campaign(evidence)
@@ -101,6 +116,7 @@ def test_governed_index_has_namespaced_rows_and_safe_detail(tmp_path: Path) -> N
     _write_campaign(evidence)
     _write_docs(repo)
     _write_registry(repo)
+    _write_governance_sources(repo)
 
     payload = research_index.list_research_index(repo, evidence)
     ids = {row["id"] for row in payload["records"]}
@@ -110,10 +126,25 @@ def test_governed_index_has_namespaced_rows_and_safe_detail(tmp_path: Path) -> N
     assert "update_log:docs/update_log/2026-01-01_alpha.md" in ids
     assert "registry:alpha_candidate" in ids
     assert "registry:campaign:campaign_alpha" in ids
+    assert "hof:reference-strategies" in ids
+    assert "decision:1" in ids
+    assert any(row_id.startswith("evidence:") for row_id in ids)
     candidate = next(row for row in payload["records"] if row["id"] == "registry:alpha_candidate")
     assert candidate["canonicality"] == "candidate"
     assert candidate["source_authority"] == "registry_entry"
     assert "campaign:campaign_alpha" in candidate["related_ids"]
+    assert candidate["trace_status"] == "linked"
+    assert candidate["exact_link"] == "research-index://registry:alpha_candidate"
+    campaign = next(row for row in payload["records"] if row["id"] == "campaign:campaign_alpha")
+    assert campaign["trace_status"] == "unlinked"
+    doc = next(row for row in payload["records"] if row["id"] == "doc:docs/research/condition_research/alpha.md")
+    assert doc["trace_status"] == "unknown"
+    assert all(row["trace_status"] in research_index.TRACE_STATUS_VALUES for row in payload["records"])
+    decision = next(row for row in payload["records"] if row["id"] == "decision:1")
+    assert decision["trace_status"] == "linked"
+    assert "update_log:docs/update_log/2026-01-01_alpha.md" in decision["related_ids"]
+    hof = next(row for row in payload["records"] if row["id"] == "hof:reference-strategies")
+    assert hof["source_authority"] == "hall_of_fame"
 
     assert research_index.research_index_detail("doc:../secret", repo, evidence)["reason"] == "invalid_id"
     assert research_index.research_index_detail("unknown:thing", repo, evidence)["reason"] == "invalid_id"

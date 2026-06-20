@@ -1,14 +1,14 @@
-"""Phase 11 — 프로세스 플로우 SVG 다이어그램 전환 소스 계약 테스트.
+"""Phase 11 — 프로세스 플로우 React Flow + Dagre 전환 소스 계약 테스트.
 
 빌드 없는 in-browser Babel JSX 라 텍스트(소스 grep) 계약 + 벤더 babel 트랜스폼으로
 검증한다(기존 dashboard 테스트 관행: 소스 substring 단언 + 문법 무결 확인).
 
 검증 대상(phase-detail.jsx, ProcessFlowPanel/ProcessFlowDiagram):
-  - 평면 .process-box 행을 SVG 노드+화살표 플로우로 교체:
-      · styles.css 가 소유한 .stom-flow-* 클래스 사용(노드 상태/라벨/sub/화살표).
-      · 플로우용 <svg> 를 렌더(viewBox + preserveAspectRatio 반응형).
+  - 평면 .process-box 행을 React Flow + Dagre 그래프로 교체:
+      · styles.css 가 소유한 .stom-rf-* 클래스 사용(노드 상태/라벨/엣지).
+      · ReactFlow 렌더 + Background/Controls + Dagre LR 레이아웃을 사용한다.
   - 데이터/인덱스 로직 보존: current_step + step_timings 를 여전히 읽는다.
-  - 노드 상태 분기(done/active/pending) + 활성 직전 화살표 .lit 점등.
+  - 노드 상태 분기(done/active/pending) + 완료/활성 경로 edge 점등/animation.
   - 하드코딩 amber rgba(240,179,90,...) 리터럴 부재(토큰화).
 
 phase-detail.jsx 가 vendor-babel(브라우저와 동일 엔진) 로 문법 오류 없이 트랜스폼된다.
@@ -40,32 +40,31 @@ def _read(name: str) -> str:
 # ============================================================ phase-detail.jsx
 class TestProcessFlowSvg:
     def test_uses_stom_flow_classes(self) -> None:
-        """평면 박스 대신 .stom-flow-* SVG 플로우 클래스를 쓴다(styles.css 소유)."""
+        """평면 박스 대신 .stom-rf-* React Flow 그래프 클래스를 쓴다(styles.css 소유)."""
         src = _read("phase-detail.jsx")
         # 노드 상태별 클래스.
-        assert "stom-flow-node-done" in src
-        assert "stom-flow-node-active" in src
-        assert "stom-flow-node-pend" in src
-        # 컨테이너 + 라벨/sub + 화살표.
-        assert "stom-flow-wrap" in src
-        assert "stom-flow-label" in src
-        assert "stom-flow-sub" in src
-        assert "stom-flow-arrow" in src
+        assert "stom-rf-node-${status}" in src
+        assert "stom-rf-node-label" in src
+        assert "stom-rf-node-step" in src
+        # 컨테이너 + 엣지 상태.
+        assert "stom-rf-wrap" in src
+        assert "stom-rf-edge-lit" in src
+        assert "stom-rf-edge" in src
 
-    def test_renders_svg_for_flow(self) -> None:
-        """플로우 다이어그램이 <svg>(viewBox + preserveAspectRatio)로 렌더된다."""
+    def test_renders_react_flow_dagre_graph(self) -> None:
+        """플로우 다이어그램이 React Flow + Dagre 그래프로 렌더된다."""
         src = _read("phase-detail.jsx")
         # 전용 다이어그램 컴포넌트.
         assert "ProcessFlowDiagram" in src
         block = src.split("function ProcessFlowDiagram", 1)[1].split("\nfunction ", 1)[0]
-        # SVG 요소 + 반응형 속성.
-        assert "<svg" in block
-        assert "viewBox" in block
-        assert "preserveAspectRatio" in block
-        # 노드는 rounded-rect(rx), 연결은 line + 화살표머리 polygon.
-        assert "<rect" in block and "rx" in block
-        assert "<line" in block
-        assert "<polygon" in block
+        # React Flow 렌더 + Dagre 자동 레이아웃.
+        assert "<ReactFlow" in block
+        assert "dagre.graphlib.Graph" in block
+        assert 'rankdir: "LR"' in block
+        assert "<Background" in block
+        assert "<Controls" in block
+        assert "MarkerType.ArrowClosed" in block
+        assert "fitView" in block
 
     def test_flat_process_box_row_removed(self) -> None:
         """평면 .process-flow-row / .process-box 노드 렌더 블록이 사라졌다."""
@@ -90,11 +89,12 @@ class TestProcessFlowSvg:
         src = _read("phase-detail.jsx")
         block = src.split("function ProcessFlowDiagram", 1)[1].split("\nfunction ", 1)[0]
         # 상태 분기.
-        assert "i === currentStep" in block  # active
-        assert "currentStep > i" in block    # done
-        # 완료 경로 화살표 점등(.lit).
-        assert "lit" in block
-        assert "stom-flow-arrow${lit" in block or '" lit"' in block
+        assert "flowStepStatus(index, currentStep)" in block
+        assert 'status === "active"' in block
+        assert 'status === "done"' in block
+        # 완료/활성 경로 edge 점등/animation.
+        assert "stom-rf-edge-lit" in block
+        assert "animated: lit && running" in block
 
     def test_live_strip_and_timing_grid_added(self) -> None:
         """운영 콘솔용 현재 노드/phase/current_step/최근 로그와 단계별 timing grid를 노출한다."""

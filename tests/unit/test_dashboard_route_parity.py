@@ -28,6 +28,26 @@ READ_ONLY_ROUTE_PROBES = {
     "/variable_correlation": {},
 }
 
+UI_DEEP_LINKS = {
+    "/ui/evolution": 200,
+    "/ui/evolution/process": 200,
+    "/ui/evolution/records": 200,
+    "/ui/evolution/lab": 200,
+    "/ui/evolution/workbench": 200,
+    "/ui/evolution/verdict": 200,
+    "/ui/backtest": 200,
+    "/ui/chart-replay": 200,
+}
+
+UI_LEGACY_ALIASES = {
+    "/ui/process": "/ui/evolution/process",
+    "/ui/records": "/ui/evolution/records",
+    "/ui/lab": "/ui/evolution/lab",
+    "/ui/pro": "/ui/evolution/workbench",
+    "/ui/verdict": "/ui/evolution/verdict",
+    "/ui/simulation": "/ui/chart-replay",
+}
+
 FRONTEND_ROUTE_OWNERS = {
     "/strategy_diff": "strategy-inspector.jsx",
     "/prompts": "strategy-inspector.jsx",
@@ -74,3 +94,29 @@ def test_dashboard_frontend_called_read_only_routes_do_not_404(monkeypatch, tmp_
     for route, params in READ_ONLY_ROUTE_PROBES.items():
         response = client.get(route, params=params)
         assert response.status_code != 404
+
+def test_dashboard_ui_deep_links_serve_spa_without_broad_catchall(monkeypatch, tmp_path: Path) -> None:
+    """Given explicit dashboard UI deep links, Then only named routes serve the SPA shell."""
+    client = _client(monkeypatch, tmp_path)
+
+    for route, status_code in UI_DEEP_LINKS.items():
+        response = client.get(route)
+        assert response.status_code == status_code
+        assert "STOM AI" in response.text
+        assert 'href="/ui/styles.css' in response.text
+        assert 'src="/ui/vendor-react.js' in response.text
+        assert 'src="/ui/bundle/app.js' in response.text
+        assert 'src="bundle/app.js' not in response.text
+
+    missing = client.get("/ui/not-a-real-dashboard-route.js")
+    assert missing.status_code == 404
+
+
+def test_dashboard_legacy_ui_aliases_redirect_to_evolution_subtabs(monkeypatch, tmp_path: Path) -> None:
+    """Given old route keys, Then they canonicalize to Evolution nested subtab URLs."""
+    client = _client(monkeypatch, tmp_path)
+
+    for route, target in UI_LEGACY_ALIASES.items():
+        response = client.get(route, follow_redirects=False)
+        assert response.status_code in {307, 308}
+        assert response.headers["location"] == target

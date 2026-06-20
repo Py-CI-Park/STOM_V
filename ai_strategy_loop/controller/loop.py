@@ -58,6 +58,11 @@ from ai_strategy_loop.controller.state import (  # noqa: E402
     to_loop_state,
 )
 from ai_strategy_loop.controller.termination import should_terminate  # noqa: E402
+from ai_strategy_loop.controller.telemetry import (  # noqa: E402
+    TelemetryRing,
+    event_type_for_stage,
+    telemetry_log_line,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -831,6 +836,7 @@ def _publish_live(
     page_data: Optional[Dict[str, Any]] = None,
     _log_buf: Optional[Deque[str]] = None,
     _timing: Optional[Dict[str, Any]] = None,
+    _telemetry_buf: Optional[TelemetryRing] = None,
 ) -> None:
     """현재 루프 진행 상태를 contract.LoopState로 만들어 current_state.json에 발행.
 
@@ -856,6 +862,30 @@ def _publish_live(
     # 로그 버퍼에 이 이벤트 한 줄을 추가한다(버퍼가 없으면 조용히 건너뜀).
     if _log_buf is not None and phase:
         _log_buf.append(f"[{phase}] {message}" if message else f"[{phase}]")
+    telemetry_events: List[Dict[str, Any]] = []
+    if _telemetry_buf is None and isinstance(_timing, dict):
+        candidate = _timing.get("telemetry_buf")
+        if isinstance(candidate, TelemetryRing):
+            _telemetry_buf = candidate
+    if _telemetry_buf is not None and phase:
+        event_type = event_type_for_stage(phase, status=status)
+        if event_type is not None:
+            try:
+                event = _telemetry_buf.append(
+                    event_type,
+                    run_id=rid,
+                    gen_no=current_gen,
+                    seed="",
+                    stage=phase,
+                    message=message,
+                    source="ai_evolution_loop",
+                    trace_id=f"{rid}:{current_gen}:{phase}",
+                )
+                if _log_buf is not None:
+                    _log_buf.append(telemetry_log_line(event))
+            except ValueError:
+                pass
+        telemetry_events = _telemetry_buf.snapshot()
 
     # #64 — phase 경계 진행시간 갱신(컨텍스트가 있을 때만). 발행 보조 경로라 실패해도
     #   루프를 막지 않으므로 try로 감싼다(시계 이상/타입 오류 흡수).
@@ -916,6 +946,7 @@ def _publish_live(
             "phase_started_at": phase_started_at,
             "gen_started_at": gen_started_at,
             "step_timings": dict(step_timings or {}),
+            "telemetry_events": telemetry_events,
         },
         cumulative_tokens=cumulative_tokens,
         page_data=page_data,
@@ -1056,7 +1087,12 @@ def run_loop(
     # #64 — run-scoped 진행시간 컨텍스트(_publish_live가 phase 경계에서 갱신·발행).
     #   phase_t0=현재 단계 시작 epoch, gen_t0=현재 세대 시작 epoch, timings={단계명: 소요초}.
     #   run마다 새로 생성해 세션 간 누수를 막는다(_live_log_buf와 동형). 발행 보조라 graded/DB 무관.
-    _timing: Dict[str, Any] = {"phase_t0": 0.0, "gen_t0": 0.0, "timings": {}}
+    _timing: Dict[str, Any] = {
+        "phase_t0": 0.0,
+        "gen_t0": 0.0,
+        "timings": {},
+        "telemetry_buf": TelemetryRing(),
+    }
 
     # warm 엔진 모드: 전체유니버스 엔진/데이터를 1회 prepare하고 세대마다 run()만 호출한다.
     #   prepare 실패(데이터 부재 등)는 cold(run_backtest_for) 경로로 자동 폴백한다.

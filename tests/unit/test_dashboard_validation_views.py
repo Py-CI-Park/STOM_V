@@ -463,12 +463,12 @@ class TestFrontendContract:
     def test_app_jsx_shows_run_label(self):
         src = (FRONTEND / "app.jsx").read_text(encoding="utf-8")
         assert 'r.label ? " · " + r.label : ""' in src
-        # Phase9/Remodel — SPA 탭은 ui-contract.jsx route contract로 통합되고,
-        #   app.jsx는 dashboard-pages.jsx 컴포넌트를 직접 import해 렌더한다.
+        # Phase4 correction — 연구실/워크벤치/결정/기록은 상단 탭이 아니라 진화 홈 하위 탭이다.
         contract = (FRONTEND / "ui-contract.jsx").read_text(encoding="utf-8")
-        assert 'key: "lab"' in contract and 'key: "pro"' in contract and 'key: "verdict"' in contract
+        assert 'key: "workbench"' in contract and 'key: "records"' in contract and 'key: "verdict"' in contract
+        assert 'pro: "workbench"' in contract
         assert 'from "./dashboard-pages.jsx"' in src
-        assert "<VerdictPanel" in src
+        assert "<VerdictPanel" in src and "EvolutionSubtabNav" in src
 
     def test_phase4_track_a_tabnav_scale_up(self):
         """Phase4 트랙A(2026-06-12) — 전역 UX 스케일 업 계약.
@@ -493,7 +493,7 @@ class TestFrontendContract:
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # index.html 에 직접 존재하는 자산(벤더/스타일/빌드 번들).
-        assert "styles.css?v=20260617a" in src   # P6(2026-06-15): 디자인시스템 랜딩(타이포·토큰·반응형·대비) — 캐시버스트 j.
+        assert "styles.css?v=20260620g004" in src   # G006/G007: readability/design tokens cache bust.
         assert "vendor-lightweight-charts.js?v=20260612a" in src
         # Phase14.4/14.5: 운영 컴포넌트는 단일 번들 bundle/app.js(+stom-ui.js)로 로드.
         #   ?v= 는 content-hash(자동) — 값은 하드코딩하지 않는다(일관성은 test_p14 가 검증).

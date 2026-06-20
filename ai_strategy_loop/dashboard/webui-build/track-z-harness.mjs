@@ -23,13 +23,12 @@
 //        lightweight-charts + a classic stom-ui (window.fmt* side-effects) + the SERVED DEFAULT
 //        bundle (frontend/bundle/app.js), mounts the index App via the file's own auto-mount at
 //        an IDLE /status, asserts 0 errors and non-empty #root (idle index shell only).
-//     V3 (Story 4 entry gate — PER-TAB render sweep): the gap V2 left open. V2 mounts the
-//        index App only at IDLE = just the default (evolution) tab's idle shell. V3 closes it:
-//        load the SERVED bundle, then mount App once per tab driving `activeTab` through EACH of
-//        evolution(NON-IDLE /status so charts/cards/tables/HypothesisPanel render), backtest,
-//        simulation, lab, pro, verdict, process (the app reads the initial tab from
-//        localStorage["stom_active_tab"], so a fresh mount per preset key selects the tab the
-//        same way the app does). After each: assert 0 thrown/console errors AND #root non-empty.
+//     V3 (Story 4 entry gate — PER-ROUTE render sweep): the gap V2 left open. V2 mounts the
+//        index App only at IDLE = just the default (evolution) route's idle shell. V3 closes it:
+//        load the SERVED bundle, then mount App once per canonical URL path for the three
+//        top-level pages plus the Evolution nested subtabs. Stale localStorage is preseeded on
+//        purpose: URL must be canonical over storage. After each route: assert 0 thrown/console
+//        errors, #root non-empty, and the expected selected tab labels are active.
 //     V4 (Story 4 entry gate — STANDALONE page mounts): lab/pro/verdict each have a standalone
 //        HTML that sets window.__STOM_NO_AUTO_MOUNT__=true, loads the SAME SERVED bundle, then
 //        mounts window.LabPage / ProPage / VerdictPanel directly. V4 replicates each HTML's mount
@@ -61,13 +60,26 @@ const SERVED_APP = resolve(FE, "bundle/app.js");
 // Pilot bundle (same options as build-app.mjs default bundle path).
 const reactShim = resolve(__dirname, "src/react-shim.js");
 const reactDomShim = resolve(__dirname, "src/react-dom-shim.js");
+const reactJsxRuntimeShim = resolve(__dirname, "src/react-jsx-runtime-shim.js");
+const webuiNodeModules = resolve(__dirname, "node_modules");
+const reactFlowEntry = resolve(__dirname, "node_modules/@xyflow/react/dist/esm/index.js");
+const dagreEntry = resolve(__dirname, "node_modules/dagre/index.js");
 await esbuild.build({
   entryPoints: [resolve(__dirname, "src/track-z-entry.pilot.js")],
   outfile: resolve(TRACK_Z, "app.pilot.js"),
   bundle: true, format: "iife", platform: "browser", target: "es2018",
   jsx: "transform", jsxFactory: "React.createElement", jsxFragment: "React.Fragment",
   minify: false, sourcemap: false, loader: { ".jsx": "jsx" },
-  alias: { react: reactShim, "react-dom": reactDomShim, "react-dom/client": reactDomShim },
+  nodePaths: [webuiNodeModules],
+  alias: {
+    "react/jsx-runtime": reactJsxRuntimeShim,
+    "react/jsx-dev-runtime": reactJsxRuntimeShim,
+    react: reactShim,
+    "react-dom": reactDomShim,
+    "react-dom/client": reactDomShim,
+    "@xyflow/react": reactFlowEntry,
+    dagre: dagreEntry,
+  },
 });
 // Classic stom-ui (window.fmt* side-effects) for the harness — jsdom does not run ESM <script>.
 await esbuild.build({
@@ -136,6 +148,8 @@ const RIX_HARNESS_ROWS = [
     tags: ["alpha", "oos"],
     related_ids: ["registry:beta"],
     summary: "Unsafe markdown fixture should stay inert.",
+    trace_status: "linked",
+    exact_link: "research-index://doc:docs/research/condition_research/alpha.md",
   },
   {
     id: "doc:docs/research/condition_research/slow.md",
@@ -149,6 +163,8 @@ const RIX_HARNESS_ROWS = [
     tags: ["slow"],
     related_ids: [],
     summary: "Late detail fixture used to prove stale response guards.",
+    trace_status: "unknown",
+    exact_link: "research-index://doc:docs/research/condition_research/slow.md",
   },
   {
     id: "registry:beta",
@@ -162,6 +178,53 @@ const RIX_HARNESS_ROWS = [
     tags: ["beta", "registry"],
     related_ids: ["doc:docs/research/condition_research/alpha.md"],
     summary: "Registry candidate fixture.",
+    trace_status: "linked",
+    exact_link: "research-index://registry:beta",
+  },
+  {
+    id: "hof:reference-strategies",
+    kind: "hof",
+    title: "Hall of Fame Reference",
+    source_path: "ai_strategy_loop/dashboard/reference_strategies.json",
+    updated_at: "2026-06-17T00:03:00Z",
+    canonicality: "reference",
+    source_authority: "hall_of_fame",
+    detail_available: true,
+    tags: ["hof"],
+    related_ids: ["registry:beta"],
+    summary: "HOF fixture.",
+    trace_status: "linked",
+    exact_link: "research-index://hof:reference-strategies",
+  },
+  {
+    id: "decision:1",
+    kind: "decision",
+    title: "Decision Audit Fixture",
+    source_path: ".omo/evidence/decisions.jsonl",
+    updated_at: "2026-06-17T00:04:00Z",
+    canonicality: "historical",
+    source_authority: "decision_log",
+    detail_available: true,
+    tags: ["decision"],
+    related_ids: ["doc:docs/research/condition_research/alpha.md"],
+    summary: "Decision fixture.",
+    trace_status: "linked",
+    exact_link: "research-index://decision:1",
+  },
+  {
+    id: "evidence:.omo/evidence/tmap-walkforward/manual_evidence.json",
+    kind: "evidence",
+    title: "Manual Evidence",
+    source_path: ".omo/evidence/tmap-walkforward/manual_evidence.json",
+    updated_at: "2026-06-17T00:05:00Z",
+    canonicality: "derived",
+    source_authority: "evidence_artifact",
+    detail_available: true,
+    tags: ["evidence"],
+    related_ids: [],
+    summary: "Evidence fixture.",
+    trace_status: "unlinked",
+    exact_link: "research-index://evidence:.omo/evidence/tmap-walkforward/manual_evidence.json",
   },
 ];
 
@@ -172,9 +235,10 @@ const RIX_HARNESS_ROWS = [
 //     tab the same way the app does (app.jsx:52 reads it on init) — V3.
 function makeDom(opts = {}) {
   const STATE = opts.state || IDLE_STATE;
+  const domUrl = opts.url || `http://localhost${opts.path || "/ui/"}`;
   const dom = new JSDOM(
     "<!DOCTYPE html><html><body><div id=root></div></body></html>",
-    { runScripts: "dangerously", pretendToBeVisual: true, url: "http://localhost/" },
+    { runScripts: "dangerously", pretendToBeVisual: true, url: domUrl },
   );
   const { window } = dom;
   const errs = [];
@@ -182,6 +246,7 @@ function makeDom(opts = {}) {
   // Capture console.error into `errs` only — do NOT forward to the real process stdout/
   //   stderr, so the harness's single JSON result on stdout stays parseable by the wrapper.
   window.console.error = (...a) => { errs.push("console.error: " + a.map(String).join(" ")); };
+  window.console.warn = (...a) => { window.__HARNESS_WARNINGS__ = [...(window.__HARNESS_WARNINGS__ || []), a.map(String).join(" ")]; };
   // Minimal browser shims jsdom lacks (used by chart/animation paths).
   window.matchMedia = window.matchMedia || (() => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} }));
   window.requestAnimationFrame = window.requestAnimationFrame || ((cb) => setTimeout(() => cb(Date.now()), 0));
@@ -239,8 +304,10 @@ function makeDom(opts = {}) {
     const store = {};
     window.localStorage = { getItem: (k) => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }, removeItem: (k) => { delete store[k]; }, clear: () => { for (const k in store) delete store[k]; } };
   }
-  // V3 — preset the initial tab the way the app reads it (app.jsx:52, localStorage on init).
+  // V3 — preset stale storage values before mount. Current G002 contract requires the URL path to
+  //   win over localStorage, so these values must not select the rendered route.
   if (opts.activeTab) window.localStorage.setItem("stom_active_tab", opts.activeTab);
+  if (opts.activeEvolutionTab) window.localStorage.setItem("stom_active_evolution_tab", opts.activeEvolutionTab);
   // V4 — disable the index App auto-mount so the standalone page mounts its own root.
   if (opts.noAutoMount) window.__STOM_NO_AUTO_MOUNT__ = true;
   return { dom, window, errs };
@@ -355,32 +422,30 @@ async function runV2() {
   };
 }
 
-// ---------------------------------------------------------------- V3: per-tab render sweep
-//   Story 4 entry gate. For EACH tab, build a fresh jsdom with the SERVED bundle, preset the
-//   initial tab (localStorage["stom_active_tab"]) + serve the matching /status (RUNNING for the
-//   evolution and process tabs so their data/live-flow components render; IDLE is enough for the
-//   others — they fetch their own data on demand, which our stubs answer with contract-shaped
-//   fixtures). The index App auto-mounts (no __STOM_NO_AUTO_MOUNT__), reads the preset tab on init
-//   (app.jsx:52), and renders that tab's subtree. Assert: 0 thrown/console errors AND #root non-empty.
+// ---------------------------------------------------------------- V3: per-route render sweep
+//   Story 4 entry gate. For EACH canonical path, build a fresh jsdom with the SERVED bundle, preset
+//   stale localStorage tab keys, and serve the matching /status (RUNNING for Evolution overview and
+//   process so their data/live-flow components render; IDLE is enough for the others). The index App
+//   auto-mounts and must derive its route from location.pathname, not stale storage.
 const V3_TABS = [
-  { tab: "evolution", state: RUNNING_STATE },  // NON-IDLE: charts/cards/tables/HypothesisPanel
-  { tab: "backtest", state: IDLE_STATE },
-  { tab: "simulation", state: IDLE_STATE },
-  { tab: "lab", state: IDLE_STATE },
-  { tab: "pro", state: IDLE_STATE },
-  { tab: "verdict", state: IDLE_STATE },
-  { tab: "records", state: IDLE_STATE, expectRecordsIndex: true },
-  { tab: "process", state: RUNNING_STATE, expectIframe: true, expectProcessLive: true },
+  { tab: "evolution-overview", path: "/ui/evolution", state: RUNNING_STATE, selectedNeedles: ["진화 홈", "개요"] },
+  { tab: "backtest", path: "/ui/backtest", state: IDLE_STATE, selectedNeedles: ["백테스트"] },
+  { tab: "chart-replay", path: "/ui/chart-replay", state: IDLE_STATE, selectedNeedles: ["차트 리플레이"] },
+  { tab: "records", path: "/ui/evolution/records", state: IDLE_STATE, selectedNeedles: ["진화 홈", "기록 검색"], expectRecordsIndex: true },
+  { tab: "lab", path: "/ui/evolution/lab", state: IDLE_STATE, selectedNeedles: ["진화 홈", "연구실"] },
+  { tab: "workbench", path: "/ui/evolution/workbench", state: IDLE_STATE, selectedNeedles: ["진화 홈", "분석 워크벤치"] },
+  { tab: "verdict", path: "/ui/evolution/verdict", state: IDLE_STATE, selectedNeedles: ["진화 홈", "결정 감사"] },
+  { tab: "process", path: "/ui/evolution/process", state: RUNNING_STATE, selectedNeedles: ["진화 홈", "프로세스"], expectIframe: true, expectProcessLive: true },
 ];
-async function runTabOnce({ tab, state, expectIframe, expectProcessLive, expectRecordsIndex }) {
-  const { window, errs } = makeDom({ state, activeTab: tab });
+async function runTabOnce({ tab, path, state, selectedNeedles, expectIframe, expectProcessLive, expectRecordsIndex }) {
+  const { window, errs } = makeDom({ state, path, activeTab: "backtest", activeEvolutionTab: "verdict" });
   inject(window, read(resolve(FE, "vendor-react.js")));
   inject(window, read(resolve(FE, "vendor-react-dom.js")));
   inject(window, read(resolve(FE, "vendor-lightweight-charts.js")));
   inject(window, read(resolve(TRACK_Z, "stom-ui.classic.js")));
   await wait(50);
   inject(window, read(SERVED_APP));  // auto-mounts App at the preset tab (real served artifact)
-  await wait(450);  // useBackend fetch chain + WS open + per-tab on-demand fetches settle
+  await wait(900);  // useBackend fetch chain + WS open + per-route on-demand fetches settle
   const root = window.document.getElementById("root");
   const rootHtml = root.innerHTML;
   const rootNonEmpty = rootHtml.trim().length > 0;
@@ -388,7 +453,11 @@ async function runTabOnce({ tab, state, expectIframe, expectProcessLive, expectR
   const boundaryTripped = rootHtml.includes("대시보드 렌더 오류")
     || rootHtml.includes("Dashboard render error");
   const dynReq = errs.filter((e) => /Dynamic require|require is not/i.test(e));
-  const iframeEl = expectIframe ? root.querySelector('iframe[src$="/process_flow"]') : null;
+  const selectedTabs = Array.from(root.querySelectorAll('[aria-selected="true"]'))
+    .map((el) => (el.textContent || "").replace(/\s+/g, " ").trim());
+  const selectedJoined = selectedTabs.join(" / ");
+  const selectedOk = (selectedNeedles || []).every((needle) => selectedJoined.includes(needle));
+  const iframeEl = expectIframe ? root.querySelector('iframe[src*="/process_flow"]') : null;
   const iframePresent = expectIframe ? iframeEl != null : undefined;
   const iframeOk = expectIframe ? iframePresent === true : true;
   const recordsIndexContent = expectRecordsIndex
@@ -405,10 +474,11 @@ async function runTabOnce({ tab, state, expectIframe, expectProcessLive, expectR
     ? processLiveStripPresent === true && processTimingGridPresent === true && processLatestLogVisible === true
     : true;
   const pass = errs.length === 0 && rootNonEmpty && !boundaryTripped && dynReq.length === 0
-    && iframeOk && recordsOk && processOk;
+    && selectedOk && iframeOk && recordsOk && processOk;
   return {
-    tab, pass, rootNonEmpty, rootHtmlLen: rootHtml.length,
+    tab, path, pass, rootNonEmpty, rootHtmlLen: rootHtml.length,
     errorBoundaryTripped: boundaryTripped, dynamicRequireErrors: dynReq,
+    selectedTabs, selectedOk,
     ...(expectIframe ? { iframePresent } : {}),
     ...(expectRecordsIndex ? { recordsIndexContent } : {}),
     ...(expectProcessLive ? { processLiveStripPresent, processTimingGridPresent, processLatestLogVisible } : {}),
@@ -559,7 +629,7 @@ async function runV5() {
   const badgesVisible = initialText.includes("Doc") && initialText.includes("canonical")
     && initialText.includes("curated doc") && initialText.includes("Registry")
     && initialText.includes("candidate") && root.querySelector(".research-index-warning") != null;
-  const filterLabelsVisible = initialText.includes("kind") && initialText.includes("canonicality");
+  const filterLabelsVisible = initialText.includes("kind") && initialText.includes("canonicality") && initialText.includes("trace");
   const detailCallsBeforeSelection = calls.filter((u) => u.includes("/research_index/detail")).length;
   const detailLazyOk = detailCallsBeforeSelection === 0
     && root.querySelector(".research-index-pre") == null
@@ -582,7 +652,8 @@ async function runV5() {
   let noMatchOk = false;
   let kindFilterOk = false;
   let canonicalityFilterOk = false;
-  if (search && selects.length >= 2) {
+  let traceFilterOk = false;
+  if (search && selects.length >= 3) {
     setInputValue(window, search, "Beta");
     await wait(230);
     const listText = Array.from(root.querySelectorAll(".research-index-list button"))
@@ -600,14 +671,21 @@ async function runV5() {
     setSelectValue(window, selects[1], "historical");
     await wait(230);
     const historicalButtons = Array.from(root.querySelectorAll(".research-index-list button"));
-    const historicalOk = historicalButtons.length === 1
-      && historicalButtons[0].getAttribute("title") === "doc:docs/research/condition_research/slow.md";
+    const historicalTitles = historicalButtons.map((button) => button.getAttribute("title"));
+    const historicalOk = historicalButtons.length === 2
+      && historicalTitles.includes("doc:docs/research/condition_research/slow.md")
+      && historicalTitles.includes("decision:1");
     setSelectValue(window, selects[1], "candidate");
     await wait(230);
     const candidateButtons = Array.from(root.querySelectorAll(".research-index-list button"));
     const candidateOk = candidateButtons.length === 1 && candidateButtons[0].getAttribute("title") === "registry:beta";
     canonicalityFilterOk = historicalOk && candidateOk;
     setSelectValue(window, selects[1], "all");
+    setSelectValue(window, selects[2], "unknown");
+    await wait(230);
+    const unknownButtons = Array.from(root.querySelectorAll(".research-index-list button"));
+    traceFilterOk = unknownButtons.length === 1 && unknownButtons[0].getAttribute("title") === "doc:docs/research/condition_research/slow.md";
+    setSelectValue(window, selects[2], "all");
     await wait(80);
   }
 
@@ -627,7 +705,7 @@ async function runV5() {
   const dynReq = errs.filter((e) => /Dynamic require|require is not/i.test(e));
   const pass = componentIsFn && !mountError && errs.length === 0 && dynReq.length === 0
     && badgesVisible && filterLabelsVisible && detailLazyOk && inertDetail
-    && searchFilterOk && noMatchOk && kindFilterOk && canonicalityFilterOk && staleDetailGuardOk;
+    && searchFilterOk && noMatchOk && kindFilterOk && canonicalityFilterOk && traceFilterOk && staleDetailGuardOk;
   return {
     name: "V5_records_behavior",
     pass,
@@ -641,6 +719,7 @@ async function runV5() {
     noMatchOk,
     kindFilterOk,
     canonicalityFilterOk,
+    traceFilterOk,
     staleDetailGuardOk,
     fetchCallCount: calls.length,
     dynamicRequireErrors: dynReq,
@@ -672,7 +751,7 @@ const PROCESS_EDGE_CASES = [
   },
 ];
 async function runProcessEdgeCase(spec) {
-  const { window, errs } = makeDom({ state: spec.state, activeTab: "process" });
+  const { window, errs } = makeDom({ state: spec.state, path: "/ui/evolution/process", activeTab: "backtest", activeEvolutionTab: "verdict" });
   inject(window, read(resolve(FE, "vendor-react.js")));
   inject(window, read(resolve(FE, "vendor-react-dom.js")));
   inject(window, read(resolve(FE, "vendor-lightweight-charts.js")));
@@ -687,10 +766,12 @@ async function runProcessEdgeCase(spec) {
     || rootHtml.includes("Dashboard render error");
   const liveStrip = root.querySelector(".process-live-strip") != null;
   const timingGrid = root.querySelector(".process-timing-grid") != null;
-  const iframePresent = root.querySelector('iframe[src$="/process_flow"]') != null;
+  const iframePresent = root.querySelector('iframe[src*="/process_flow"]') != null;
   const edgeText = root.textContent.includes("현재 노드") && root.textContent.includes("최근 로그");
+  const selectedJoined = Array.from(root.querySelectorAll('[aria-selected="true"]')).map((el) => el.textContent || "").join(" ");
+  const selectedOk = selectedJoined.includes("진화 홈") && selectedJoined.includes("프로세스");
   const pass = errs.length === 0 && dynReq.length === 0 && !boundaryTripped
-    && rootHtml.trim().length > 0 && liveStrip && timingGrid && iframePresent && edgeText;
+    && rootHtml.trim().length > 0 && liveStrip && timingGrid && iframePresent && edgeText && selectedOk;
   return {
     name: spec.name,
     pass,
@@ -698,6 +779,7 @@ async function runProcessEdgeCase(spec) {
     timingGrid,
     iframePresent,
     edgeText,
+    selectedOk,
     rootHtmlLen: rootHtml.length,
     errorBoundaryTripped: boundaryTripped,
     dynamicRequireErrors: dynReq,

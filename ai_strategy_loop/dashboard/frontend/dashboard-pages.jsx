@@ -16,18 +16,19 @@
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
 import { ResearchWikiPanel } from "./research-wiki.jsx";
 import { ResearchIndexPanel } from "./research-index.jsx";
-import { EVIDENCE_WORKSPACE_LINKS } from "./ui-contract.jsx";
+import { AIContextPanel } from "./ai-context.jsx";
+import { EVIDENCE_WORKSPACE_LINKS, dashboardPathFor, normalizeEvolutionSubtabKey } from "./ui-contract.jsx";
 import { UiStateBlock, WorkspaceCard, WorkspaceNav } from "./ui-state.jsx";
 import { VisualQualityPanel } from "./visual-quality.jsx";
 import { HofInventoryGate } from "./hof-inventory.jsx";
 import { Phase2InventoryPanel, pageOwnerContract } from "./dashboard-inventory.jsx";
 const { useState: useState_dp, useEffect: useEffect_dp } = React;
 
-// 의존 전역이 아직 로드되지 않았을 때(이론상) 크래시 대신 보이는 작은 자리표시자.
+// 필수 전역이 누락되면 무한 로딩처럼 숨기지 않고 진단 가능한 오류로 표시한다.
 function _DpLoading({ name }) {
   return (
-    <UiStateBlock kind="loading" compact title={`${name} 로딩 중…`} detail="window global pending">
-      번들 로드 순서가 맞으면 곧 표시됩니다.
+    <UiStateBlock kind="error" compact title={`${name} 로드 실패`} detail="required dashboard component global missing">
+      번들 로드 순서 또는 빌드 산출물에 문제가 있습니다. 이 표면은 대체 데이터 없이 중단됩니다.
     </UiStateBlock>
   );
 }
@@ -38,22 +39,25 @@ function _dpBase(baseUrl) {
   return (typeof window !== "undefined" && window.location && window.location.origin) || "";
 }
 function _dpNavigateToTab(key) {
+  const subtab = normalizeEvolutionSubtabKey(key === "pro" ? "workbench" : key);
   try {
-    window.localStorage.setItem("stom_active_tab", key);
-    if (window.location && !window.location.pathname.endsWith("/ui/")) {
-      window.location.href = "/ui/";
-    }
+    window.localStorage.setItem("stom_active_tab", "evolution");
+    window.localStorage.setItem("stom_active_evolution_tab", subtab);
   } catch (e) {}
+  if (window.location) window.location.href = dashboardPathFor("evolution", subtab);
 }
-const VERDICT_SUBTAB_KEYS = ["summary", "regime", "portfolio", "decide"];
-function normalizeVerdictSubtab(value) {
-  return VERDICT_SUBTAB_KEYS.includes(value) ? value : "summary";
-}
+const VERDICT_SECTION_KEYS = ["summary", "regime", "portfolio", "decide"];
+const VERDICT_SECTION_META = {
+  summary: { label: "검증 결산", ico: "📋", anchor: "verdict-summary", hint: "승격 체크리스트와 OOS 신뢰구간" },
+  regime: { label: "레짐·부활", ico: "🌐", anchor: "verdict-regime", hint: "상황별 성과와 재검증 후보" },
+  portfolio: { label: "V6 포트폴리오", ico: "★", anchor: "verdict-portfolio", hint: "채택 추천 조합과 기준선 비교" },
+  decide: { label: "운용 결정", ico: "⚖️", anchor: "verdict-decide", hint: "append-only 결정 기록" },
+};
 
 
 function EvidenceWorkspaceHeader({ activeKey, onSelect }) {
   const nav = onSelect || _dpNavigateToTab;
-  const owner = pageOwnerContract(activeKey);
+  const owner = pageOwnerContract(activeKey === "workbench" ? "pro" : activeKey);
   return (
     <div className="evidence-workspace-head">
       <div>
@@ -87,7 +91,7 @@ function EvidenceWorkspaceCards({ onSelect }) {
           연구 위키, AI 컨텍스트 팩, run 분석 홈을 담당합니다. 생성/판정 루프와 분리해 탐색 흐름을 안정화합니다.
         </WorkspaceCard>
         <WorkspaceCard eyebrow="WORKBENCH" title="분석 워크벤치" badge="pro/hof" tone="pending"
-                       action={<button className="btn ghost sm" onClick={() => nav("pro")}>열기</button>}>
+                       action={<button className="btn ghost sm" onClick={() => nav("workbench")}>열기</button>}>
           조건 후보 분석과 HoF 비교를 담당합니다. 워크벤치 액션과 벤치마크 증거를 섞어 잃지 않습니다.
         </WorkspaceCard>
         <WorkspaceCard eyebrow="AUDIT" title="결정 감사" badge="append-only" tone="demo"
@@ -166,24 +170,29 @@ function LabPage({ baseUrl, onNavigate }) {
   const [runId, setRunId] = useState_dp("");
   const [ops, setOps] = useState_dp(null);
   const [verdict, setVerdict] = useState_dp(null);
+  const [labErrors, setLabErrors] = useState_dp([]);
   useEffect_dp(() => {
+    const markLabError = (label) => setLabErrors(prev => prev.includes(label) ? prev : [...prev, label]);
     fetch(base + "/runs", { signal: AbortSignal.timeout(10000) })
-      .then(r => (r.ok ? r.json() : null))
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
       .then(d => {
         const list = ((d && d.runs) || []).slice(0, 40);
         setRuns(list);
         if (list.length) setRunId(prev => prev || list[0].run_id);
-      }).catch(() => {});
+      }).catch(() => markLabError("runs"));
     fetch(base + "/freeze_verdict", { signal: AbortSignal.timeout(12000) })
-      .then(r => (r.ok ? r.json() : null)).then(j => setVerdict(j)).catch(() => {});
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))).then(j => setVerdict(j)).catch(() => markLabError("freeze_verdict"));
     const pull = () => fetch(base + "/ops_status", { signal: AbortSignal.timeout(8000) })
-      .then(r => (r.ok ? r.json() : null)).then(j => setOps(j)).catch(() => {});
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))).then(j => setOps(j)).catch(() => markLabError("ops_status"));
     pull();
     const timer = setInterval(pull, 10000);
     return () => clearInterval(timer);
   }, [base]);
 
   const Panel = window.ResearchLabPanel;
+  const WikiPanel = window.ResearchWikiPanel || ResearchWikiPanel;
+  const ContextPanel = window.AIContextPanel || AIContextPanel;
+
   return (
     <div className="dashboard-page dashboard-page-lab">
       <EvidenceWorkspaceHeader activeKey="lab" onSelect={onNavigate} />
@@ -195,19 +204,24 @@ function LabPage({ baseUrl, onNavigate }) {
             <b>STOM 연구실</b>
             <span className="mono">wiki · context · run analysis owner</span>
           </div>
+          {labErrors.length > 0 && (
+            <UiStateBlock kind="error" compact title="연구실 데이터 일부 로드 실패" detail={labErrors.join(" · ")}>
+              실패한 endpoint를 빈 데이터로 숨기지 않습니다. 연결 또는 백엔드 상태를 확인하세요.
+            </UiStateBlock>
+          )}
           {Panel
-            ? <Panel baseUrl={base} wsStatus="na" runId={runId} />
+            ? <Panel baseUrl={base} wsStatus="na" runId={runId} onOpenWorkbench={() => (onNavigate || _dpNavigateToTab)("workbench")} />
             : <_DpLoading name="연구실 패널" />}
-          {window.ResearchWikiPanel && (
+          {WikiPanel ? (
             <div style={{ marginTop: 14 }}>
               <ResearchWikiPanel baseUrl={base} wsStatus="na" runId={runId} />
             </div>
-          )}
-          {window.AIContextPanel && (
+          ) : <_DpLoading name="리서치 위키 패널" />}
+          {ContextPanel ? (
             <div style={{ marginTop: 14 }}>
               <AIContextPanel baseUrl={base} wsStatus="na" runId={runId} genNo={null} />
             </div>
-          )}
+          ) : <_DpLoading name="AI 컨텍스트 패널" />}
           <div style={{ marginTop: 14 }}>
             <VisualQualityPanel compact />
           </div>
@@ -237,25 +251,31 @@ function ResearchIndexPage({ baseUrl, onNavigate }) {
 function ProPage({ baseUrl, onNavigate }) {
   const base = _dpBase(baseUrl);
   const [runId, setRunId] = useState_dp("");
+  const [proErrors, setProErrors] = useState_dp([]);
   useEffect_dp(() => {
     fetch(base + "/runs", { signal: AbortSignal.timeout(10000) })
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
       .then((d) => {
         const list = ((d && d.runs) || []).slice(0, 40);
         if (list.length) setRunId((prev) => prev || list[0].run_id);
       })
-      .catch(() => {});
+      .catch(() => setProErrors(prev => prev.includes("runs") ? prev : [...prev, "runs"]));
   }, [base]);
 
   const Panel = window.ResearchProPanel;
   return (
     <div className="dashboard-page dashboard-page-pro" style={{ minHeight: "60vh" }}>
-      <EvidenceWorkspaceHeader activeKey="pro" onSelect={onNavigate} />
+      <EvidenceWorkspaceHeader activeKey="workbench" onSelect={onNavigate} />
       <div className="dashboard-page-title">
         <b>STOM 분석 워크벤치</b>
         <span className="mono">candidate analysis · HoF field contract · workbench actions</span>
       </div>
       <HofInventoryGate />
+      {proErrors.length > 0 && (
+        <UiStateBlock kind="error" compact title="분석 워크벤치 데이터 일부 로드 실패" detail={proErrors.join(" · ")}>
+          실패한 endpoint를 빈 워크벤치처럼 숨기지 않습니다. 연결 또는 백엔드 상태를 확인하세요.
+        </UiStateBlock>
+      )}
       {Panel
         ? <Panel baseUrl={base} wsStatus="na" runId={runId} />
         : <_DpLoading name="리서치 프로 패널" />}
@@ -278,37 +298,33 @@ function VerdictPanel({ baseUrl, onNavigate }) {
   const base = _dpBase(baseUrl);
   const [v, setV] = useState_dp(null);
   const [history, setHistory] = useState_dp([]);
+  const [historyFailed, setHistoryFailed] = useState_dp(false);
   const [choice, setChoice] = useState_dp("hold");
   const [note, setNote] = useState_dp("");
   const [saved, setSaved] = useState_dp(null);
   const [regime, setRegime] = useState_dp(null);
   const [revival, setRevival] = useState_dp(null);
   const [portfolio, setPortfolio] = useState_dp(null);  // 부모 Phase3 — V6 채택 추천 포트폴리오.
-  // 하위 탭 — 다른 탭(연구실)과 동일한 .research-tabs 패턴으로 밀집된 결정 화면을 분류.
-  //   summary(검증 결산)·regime(레짐·부활)·portfolio(V6 포트폴리오)·decide(운용 결정).
-  const [vsub, setVsub] = useState_dp(() => {
-    try { return normalizeVerdictSubtab(window.localStorage.getItem("stom_verdict_subtab") || "summary"); }
-    catch (e) { return "summary"; }
-  });
-  const selectVsub = (k) => {
-    setVsub(k);
-    try { window.localStorage.setItem("stom_verdict_subtab", k); } catch (e) {}
-  };
+  const [verdictErrors, setVerdictErrors] = useState_dp([]);
+  const markVerdictError = (label) => setVerdictErrors(prev => prev.includes(label) ? prev : [...prev, label]);
+  // G006 — 결정 감사는 하위 탭이 아니라 한 페이지에서 읽는 섹션 묶음이다.
+  //   검증 결산·레짐·포트폴리오·운용 결정은 같은 감사 문맥의 일부이므로
+  //   숨겨진 tab state/localStorage 없이 앵커 섹션과 요약 필터만 제공한다.
 
   const loadHistory = () =>
     fetch(base + "/decisions", { signal: AbortSignal.timeout(8000) })
-      .then(r => (r.ok ? r.json() : null))
-      .then(d => setHistory((d && d.decisions) || []))
-      .catch(() => {});
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+      .then(d => { setHistory((d && d.decisions) || []); setHistoryFailed(false); })
+      .catch(() => { markVerdictError("decisions"); setHistoryFailed(true); });
   useEffect_dp(() => {
     fetch(base + "/freeze_verdict", { signal: AbortSignal.timeout(12000) })
-      .then(r => (r.ok ? r.json() : null)).then(j => setV(j)).catch(() => {});
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))).then(j => setV(j)).catch(() => markVerdictError("freeze_verdict"));
     fetch(base + "/regime_report", { signal: AbortSignal.timeout(10000) })
-      .then(r => (r.ok ? r.json() : null)).then(j => setRegime(j)).catch(() => {});
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))).then(j => setRegime(j)).catch(() => markVerdictError("regime_report"));
     fetch(base + "/revival_registry", { signal: AbortSignal.timeout(10000) })
-      .then(r => (r.ok ? r.json() : null)).then(j => setRevival(j)).catch(() => {});
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))).then(j => setRevival(j)).catch(() => markVerdictError("revival_registry"));
     fetch(base + "/portfolio_verdict", { signal: AbortSignal.timeout(10000) })
-      .then(r => (r.ok ? r.json() : null)).then(j => setPortfolio(j)).catch(() => {});
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))).then(j => setPortfolio(j)).catch(() => markVerdictError("portfolio_verdict"));
     loadHistory();
   }, [base]);
 
@@ -318,12 +334,14 @@ function VerdictPanel({ baseUrl, onNavigate }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ verdict: choice, note }),
     })
-      .then(r => r.json())
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
       .then(d => { setSaved(d); setNote(""); loadHistory(); })
       .catch(e => setSaved({ status: "error", error: String(e) }));
   };
+  const missingVerdictGlobals = ["VdtPromoteChecklist", "VdtAlerts", "VdtSummaryLines"]
+    .filter(name => typeof window[name] !== "function");
 
-  // 하위 탭 정의 — 라벨 옆에 현황 배지(개수/상태)를 달아 한눈에 분류되게 한다.
+  // 섹션 인덱스 배지 — 라벨 옆에 현황(개수/상태)을 보여 한눈에 분류한다.
   const _vBadge = (() => {
     const checks = (v && v.promote_checklist) || [];
     const alerts = ((v && v.alerts) || []).length;
@@ -334,12 +352,7 @@ function VerdictPanel({ baseUrl, onNavigate }) {
       decide: history.length ? String(history.length) : "",
     };
   })();
-  const VSUBS = [
-    { key: "summary", label: "검증 결산", ico: "📋" },
-    { key: "regime", label: "레짐·부활", ico: "🌐" },
-    { key: "portfolio", label: "V6 포트폴리오", ico: "★" },
-    { key: "decide", label: "운용 결정", ico: "⚖️" },
-  ];
+  const VSECTIONS = VERDICT_SECTION_KEYS.map(key => ({ key, ...VERDICT_SECTION_META[key] }));
 
   return (
     <div className="dashboard-page dashboard-page-verdict" style={{ padding: "14px 0", maxWidth: 980, margin: "0 auto", minHeight: "60vh" }}>
@@ -349,52 +362,86 @@ function VerdictPanel({ baseUrl, onNavigate }) {
         <span className="mono">증거 → 결정 기록 append-only · final approval 분리</span>
       </div>
 
-      {/* 하위 탭바 — 다른 탭(연구실)과 동일한 .research-tabs 패턴으로 체계화. */}
-      <div className="research-tabs" role="tablist" aria-label="결정 이력 하위 탭" style={{ marginBottom: 12 }}>
-        {VSUBS.map(t => (
-          <button key={t.key} type="button" role="tab" aria-selected={vsub === t.key}
-                  className={"research-tab" + (vsub === t.key ? " active" : "")}
-                  onClick={() => selectVsub(t.key)}>
-            <span aria-hidden="true" style={{ marginRight: 4 }}>{t.ico}</span>
-            {t.label}
-            {_vBadge[t.key] ? <span style={{ marginLeft: 5, opacity: 0.7 }}>{_vBadge[t.key]}</span> : null}
-          </button>
+      {/* G006 — 하위 탭 제거: 같은 페이지 안에서 모두 보이는 감사 섹션 인덱스. */}
+      <div className="verdict-section-index" aria-label="결정 감사 섹션 바로가기">
+        {VSECTIONS.map(t => (
+          <a key={t.key} href={`#${t.anchor}`} className="verdict-section-link">
+            <span aria-hidden="true">{t.ico}</span>
+            <b>{t.label}</b>
+            {_vBadge[t.key] ? <span className="verdict-section-badge">{_vBadge[t.key]}</span> : null}
+            <small>{t.hint}</small>
+          </a>
         ))}
       </div>
-
-      {/* ── 검증 결산: PROMOTE 체크리스트 · OOS CI · 경보/요약 ── */}
-      {vsub === "summary" && (
-        <div>
-          {/* P7 — 공유 PROMOTE 체크리스트(정본: research-lab 정의). window 멤버표현식 직접 참조(충돌 회피). */}
-          <window.VdtPromoteChecklist v={v} />
-          {v && v.oos_diff_ci && Object.keys(v.oos_diff_ci).length > 0 && (
-            <div style={{ marginTop: 8, marginBottom: 4 }}>
-              <div className="mono" style={{ fontSize: 11, color: "#9fb0c0", marginBottom: 2 }}>
-                OOS 차이 신뢰구간 (advisory) — CI가 0을 걸치면 표본 부족 신호 — 판정 미사용
-              </div>
-              <table className="mono" style={{ fontSize: 11, width: "100%" }}>
-                <thead><tr><th>OOS 연도</th><th>total_diff</th><th>CI 95%</th><th>P(diff≤0)</th></tr></thead>
-                <tbody>
-                  {Object.entries(v.oos_diff_ci).map(([year, ci]) => (
-                    <tr key={year}>
-                      <td>{year}</td>
-                      <td>{ci ? Math.round(ci.total_diff).toLocaleString() : "—"}</td>
-                      <td>{ci ? `[${Math.round(ci.ci_low).toLocaleString()}, ${Math.round(ci.ci_high).toLocaleString()}]` : "—"}</td>
-                      <td>{ci ? ci.p_diff_le_0 : "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {/* P7 — 공유 경보·요약줄(정본: research-lab 정의). window 멤버표현식 직접 참조. alert 색 var(--amber) 토큰화. */}
-          <window.VdtAlerts v={v} />
-          <window.VdtSummaryLines v={v} />
-        </div>
+      <div className="readability-note verdict-readability-note">
+        결정 감사는 탭을 다시 숨기지 않고 한 화면에서 검증 → 상황 해석 → 포트폴리오 → 운용 기록 순서로 읽습니다.
+        final approval은 전략 내보내기 승인이고, 이 페이지는 근거와 운용 판단을 append-only로 남기는 감사 장부입니다.
+      </div>
+      <div className="verdict-glossary" aria-label="결정 감사 용어 설명">
+        <span><b>PROMOTE</b> 실매매 후보로 승격 가능한지 보는 체크리스트</span>
+        <span><b>OOS</b> 학습에 쓰지 않은 기간의 검증 결과</span>
+        <span><b>레짐</b> 시장 상황별 성과 차이</span>
+        <span><b>append-only</b> 수정·삭제 대신 새 기록을 추가해 이력을 보존</span>
+      </div>
+      <details className="verdict-example">
+        <summary>예시 보기: 결정을 남기는 흐름</summary>
+        <ol>
+          <li>검증 결산에서 경보와 OOS 신뢰구간을 확인합니다.</li>
+          <li>레짐·부활에서 특정 상황에만 좋은 후보인지 확인합니다.</li>
+          <li>포트폴리오 기준선 비교 후 운용 결정에 근거 메모를 남깁니다.</li>
+        </ol>
+      </details>
+      {verdictErrors.length > 0 && (
+        <UiStateBlock kind="error" compact title="결정 감사 데이터 일부 로드 실패" detail={verdictErrors.join(" · ")}>
+          실패한 endpoint를 빈 기록처럼 숨기지 않습니다. 연결 또는 백엔드 상태를 확인하세요.
+        </UiStateBlock>
       )}
 
-      {/* ── 레짐·부활: 레짐 분해 · 패자부활 레지스트리 (둘 다 advisory) ── */}
-      {vsub === "regime" && (
+      <section id="verdict-summary" className="verdict-section">
+        <div className="verdict-section-head">
+          <h3>📋 검증 결산</h3>
+          <p>PROMOTE 체크리스트, OOS 차이 신뢰구간, 경보와 요약을 한 번에 확인합니다.</p>
+        </div>
+        <div>
+          {missingVerdictGlobals.length > 0 ? (
+            <UiStateBlock kind="error" compact title="결정 감사 공용 컴포넌트 로드 실패" detail={missingVerdictGlobals.join(" · ")}>
+              PROMOTE 체크리스트와 요약 컴포넌트가 번들에 없습니다. 대체 판정 없이 오류로 표시합니다.
+            </UiStateBlock>
+          ) : (
+            <>
+              <window.VdtPromoteChecklist v={v} />
+              {v && v.oos_diff_ci && Object.keys(v.oos_diff_ci).length > 0 && (
+                <div style={{ marginTop: 8, marginBottom: 4 }}>
+                  <div className="mono" style={{ fontSize: 11, color: "#9fb0c0", marginBottom: 2 }}>
+                    OOS 차이 신뢰구간 (advisory) — CI가 0을 걸치면 표본 부족 신호 — 판정 미사용
+                  </div>
+                  <table className="mono" style={{ fontSize: 11, width: "100%" }}>
+                    <thead><tr><th>OOS 연도</th><th>total_diff</th><th>CI 95%</th><th>P(diff≤0)</th></tr></thead>
+                    <tbody>
+                      {Object.entries(v.oos_diff_ci).map(([year, ci]) => (
+                        <tr key={year}>
+                          <td>{year}</td>
+                          <td>{ci ? Math.round(ci.total_diff).toLocaleString() : "—"}</td>
+                          <td>{ci ? `[${Math.round(ci.ci_low).toLocaleString()}, ${Math.round(ci.ci_high).toLocaleString()}]` : "—"}</td>
+                          <td>{ci ? ci.p_diff_le_0 : "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <window.VdtAlerts v={v} />
+              <window.VdtSummaryLines v={v} />
+            </>
+          )}
+        </div>
+      </section>
+
+      <section id="verdict-regime" className="verdict-section">
+        <div className="verdict-section-head">
+          <h3>🌐 레짐·부활</h3>
+          <p>시장 상황별 성과 차이와 재검증 대기 후보를 advisory 정보로 분리해 봅니다.</p>
+        </div>
         <div>
           {regime && regime.status !== "unavailable" && (
             <div>
@@ -445,10 +492,13 @@ function VerdictPanel({ baseUrl, onNavigate }) {
             <div className="mono" style={{ fontSize: 11, marginTop: 14, opacity: 0.6 }}>패자부활 레지스트리: 데이터 없음</div>
           )}
         </div>
-      )}
+      </section>
 
-      {/* ── V6 포트폴리오: 채택 추천 포트폴리오 (부모 Phase3 — /portfolio_verdict) ── */}
-      {vsub === "portfolio" && (
+      <section id="verdict-portfolio" className="verdict-section">
+        <div className="verdict-section-head">
+          <h3>★ V6 포트폴리오</h3>
+          <p>채택 추천 포트폴리오와 M4 기준선 비교를 운용 결정 전에 확인합니다.</p>
+        </div>
         <div>
           {portfolio && portfolio.adopted && (
             <div style={{ padding: 12, border: "1px solid rgba(90,180,100,0.35)", borderRadius: 6, background: "rgba(50,120,60,0.08)" }}>
@@ -503,18 +553,24 @@ function VerdictPanel({ baseUrl, onNavigate }) {
           {portfolio && portfolio.status === "unavailable" && (
             <div className="mono" style={{ fontSize: 11, opacity: 0.6 }}>V6 포트폴리오: 데이터 없음</div>
           )}
-          {!portfolio && (
+          {!portfolio && !verdictErrors.includes("portfolio_verdict") && (
             <div className="mono" style={{ fontSize: 11, opacity: 0.6 }}>V6 포트폴리오: 로딩 중…</div>
           )}
+          {!portfolio && verdictErrors.includes("portfolio_verdict") && (
+            <div className="mono" style={{ fontSize: 11, color: "var(--amber)" }}>V6 포트폴리오: 로드 실패</div>
+          )}
         </div>
-      )}
+      </section>
 
-      {/* ── 운용 결정: 결정 기록 폼(append-only) + 결정 이력 ── */}
-      {vsub === "decide" && (
+      <section id="verdict-decide" className="verdict-section">
+        <div className="verdict-section-head">
+          <h3>⚖️ 운용 결정</h3>
+          <p>결정과 근거 메모를 append-only 이력으로 남깁니다. 번복도 삭제가 아니라 새 기록입니다.</p>
+        </div>
         <div>
           {/* P2 결정 동선 크로스링크: 이 폼(REST /record_decision)은 운용 결정을 append-only로
               남기는 기록부. 실제 전략 내보내기 승인은 진화 탭 승인·내보내기 다이얼로그(WS
-              final_approval)에서 처리 — 두 단계는 별개 계약. (decide 하위탭 — 기본 스냅샷 밖) */}
+              final_approval)에서 처리 — 두 단계는 별개 계약. */}
           <div className="mono" style={{ fontSize: 11, color: "var(--ink-3)", lineHeight: 1.5, marginBottom: 8, padding: "6px 8px", border: "1px dashed var(--line-1)", borderRadius: 6 }}>
             ℹ️ 운영 채택 동선: 우승 전략 <b>내보내기 승인</b>은 진화 탭의 <b>승인·내보내기 다이얼로그</b>에서
             WS(<span className="mono">final_approval</span>)로 처리됩니다. 이 폼은 그 운용 <b>결정을 append-only</b>로
@@ -532,7 +588,7 @@ function VerdictPanel({ baseUrl, onNavigate }) {
               <input type="text" value={note} placeholder="결정 근거 메모"
                      onChange={e => setNote(e.target.value)}
                      className="mono" style={{ flex: 1, minWidth: 220, fontSize: 12 }} />
-              <button type="button" className="research-tab" onClick={submit}>기록</button>
+              <button type="button" className="btn primary sm" onClick={submit}>기록</button>
             </div>
             {saved && (
               <div className="mono" style={{ fontSize: 11, color: saved.status === "ok" ? "#5b9" : "#c95" }}>
@@ -543,9 +599,11 @@ function VerdictPanel({ baseUrl, onNavigate }) {
 
           <div style={{ marginTop: 12 }}>
             <div className="research-empty">결정 이력</div>
-            {history.length === 0
-              ? <div className="mono" style={{ fontSize: 11 }}>기록 없음</div>
-              : (
+            {historyFailed
+              ? <div className="mono" style={{ fontSize: 11, color: "var(--warn)" }}>결정 이력 로드 실패 — endpoint 오류를 빈 기록으로 숨기지 않습니다.</div>
+              : history.length === 0
+                ? <div className="mono" style={{ fontSize: 11 }}>기록 없음</div>
+                : (
                 <table className="mono" style={{ fontSize: 11, width: "100%" }}>
                   <thead><tr><th>시각</th><th>결정</th><th>대상 후보</th><th>메모</th></tr></thead>
                   <tbody>
@@ -562,12 +620,12 @@ function VerdictPanel({ baseUrl, onNavigate }) {
               )}
           </div>
         </div>
-      )}
+      </section>
     </div>
   );
 }
 
-Object.assign(window, { LabPage, ProPage, VerdictPanel, ResearchIndexPage, normalizeVerdictSubtab });
+Object.assign(window, { LabPage, ProPage, VerdictPanel, ResearchIndexPage });
 
 // Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
-export { LabPage, ProPage, VerdictPanel, ResearchIndexPage, normalizeVerdictSubtab };
+export { LabPage, ProPage, VerdictPanel, ResearchIndexPage };

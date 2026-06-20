@@ -19,6 +19,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from ai_strategy_loop.controller.telemetry import telemetry_contract
 
 # 계약 버전. 깨는 변경(필드 제거/타입 변경) 시 +1. seam의 단일 진실원.
 #   v2: page_data 패스스루 한 필드 추가(가산적·하위호환). 후속 페이지(P1~P6)가
@@ -124,6 +125,9 @@ class LatestInfo(BaseModel):
     # P1 대시보드 관측성: 진행률/엔진 상태 read-only payload. 구 상태는 빈 dict로 통과한다.
     backtest_progress: Dict[str, Any] = Field(default_factory=dict)
     engine_state: Dict[str, Any] = Field(default_factory=dict)
+    # G005 대시보드 전용 텔레메트리: 폐쇄 enum/소스 allowlist로 검증된 bounded memory projection.
+    telemetry_events: List[Dict[str, Any]] = Field(default_factory=list)
+    telemetry_contract: Dict[str, Any] = Field(default_factory=telemetry_contract)
 
 
 class CumulativeInfo(BaseModel):

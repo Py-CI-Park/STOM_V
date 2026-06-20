@@ -30,13 +30,14 @@ import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
 import { ResearchLabPanel } from "./research-lab.jsx";
 import { LabPage, ProPage, VerdictPanel, ResearchIndexPage } from "./dashboard-pages.jsx";
-import { DASHBOARD_ROUTE_CONTRACTS, DASHBOARD_TAB_GROUPS, routeContract, normalizeDashboardTabKey } from "./ui-contract.jsx";
+import { DASHBOARD_ROUTE_CONTRACTS, DASHBOARD_TAB_GROUPS, EVOLUTION_SUBTAB_CONTRACTS, dashboardPathFor, dashboardRouteFromLocation, evolutionSubtabContract, normalizeDashboardTabKey, normalizeEvolutionSubtabKey, routeContract } from "./ui-contract.jsx";
 import { UiStateBlock, MetricList } from "./ui-state.jsx";
 import { pageOwnerContract } from "./dashboard-inventory.jsx";
 import { INITIAL_STATE } from "./conn-backend.jsx";
 const { useState: useState_a, useEffect: useEffect_a, useCallback: useCallback_a } = React;
 
 function App() {
+  const initialDashboardRoute = dashboardRouteFromLocation();
   const [baseUrl, setBaseUrl] = useState_a(() => {
     // 캐시된 BASE가 현재 페이지 origin과 다른 cross-origin(예: 과거 8770 캐시인데
     // 8771에서 서빙)이면 same-origin으로 마이그레이션한다 — 안 그러면 CORS로 데모모드.
@@ -51,12 +52,12 @@ function App() {
   });
   const [pendingBase, setPendingBase] = useState_a(baseUrl);
   const [theme, setTheme] = useState_a(() => localStorage.getItem("stom_theme") || "dark");
-  // 상단 탭: "evolution"(진화 대시보드·기본) | "backtest" | "simulation".
-  //   localStorage 로 새로고침 후에도 마지막 탭 유지. useBackend(WS)는 App 레벨에
-  //   그대로 두어 어느 탭에 있어도 진화 상태 수신이 끊기지 않는다.
-  const [activeTab, setActiveTab] = useState_a(() => normalizeDashboardTabKey(localStorage.getItem("stom_active_tab") || "evolution"));
+  // 상단 탭은 진화 홈·백테스트·차트 리플레이 3개만 노출한다. 연구/프로세스/
+  // 결정 감사 워크스페이스는 진화 홈 하위 canonical URL(/ui/evolution/*)로만 이동한다.
+  const [activeTab, setActiveTab] = useState_a(() => initialDashboardRoute.tab);
+  const [activeEvolutionTab, setActiveEvolutionTab] = useState_a(() => initialDashboardRoute.evolutionSubtab);
   // Phase6.1 — 시뮬 탭 keep-alive: 한 번 방문하면 언마운트하지 않고 hidden 처리(상태 유지).
-  const [simVisited, setSimVisited] = useState_a(() => normalizeDashboardTabKey(localStorage.getItem("stom_active_tab") || "evolution") === "simulation");
+  const [simVisited, setSimVisited] = useState_a(() => initialDashboardRoute.tab === "simulation");
   useEffect_a(() => { if (activeTab === "simulation") setSimVisited(true); }, [activeTab]);
 
   const { state: liveState, health, wsStatus, configSpec, configSpecStatus, send, lastReply, reconnect } = useBackend(baseUrl);
@@ -130,6 +131,71 @@ function App() {
   useEffect_a(() => {
     localStorage.setItem("stom_active_tab", activeTab);
   }, [activeTab]);
+  useEffect_a(() => {
+    localStorage.setItem("stom_active_evolution_tab", activeEvolutionTab);
+  }, [activeEvolutionTab]);
+
+  const syncBrowserRoute = useCallback_a((tab, evolutionSubtab, replace = false) => {
+    if (typeof window === "undefined" || !window.history) return;
+    const path = dashboardPathFor(tab, evolutionSubtab);
+    const payload = {
+      stomTab: normalizeDashboardTabKey(tab),
+      stomEvolutionSubtab: normalizeEvolutionSubtabKey(evolutionSubtab),
+    };
+    if (replace || window.location.pathname === path) {
+      window.history.replaceState(payload, "", path);
+    } else {
+      window.history.pushState(payload, "", path);
+    }
+  }, []);
+
+  const onEvolutionSubtabSelect = useCallback_a((key) => {
+    const next = normalizeEvolutionSubtabKey(key === "pro" ? "workbench" : key);
+    setActiveTab("evolution");
+    setActiveEvolutionTab(next);
+    syncBrowserRoute("evolution", next);
+  }, [syncBrowserRoute]);
+
+  const onTopTabSelect = useCallback_a((key) => {
+    const next = normalizeDashboardTabKey(key);
+    setActiveTab(next);
+    if (next === "simulation") setSimVisited(true);
+    syncBrowserRoute(next, activeEvolutionTab);
+  }, [activeEvolutionTab, syncBrowserRoute]);
+
+  const onDashboardNavigate = useCallback_a((key) => {
+    const top = normalizeDashboardTabKey(key);
+    if (top === key && key !== "evolution") {
+      onTopTabSelect(top);
+      return;
+    }
+    if (key === "evolution") {
+      onTopTabSelect("evolution");
+      return;
+    }
+    onEvolutionSubtabSelect(key);
+  }, [onTopTabSelect, onEvolutionSubtabSelect]);
+
+  useEffect_a(() => {
+    const route = dashboardRouteFromLocation();
+    if (route.canonicalPath && (route.legacy || window.location.pathname !== route.canonicalPath)) {
+      setActiveTab(route.tab);
+      setActiveEvolutionTab(route.evolutionSubtab);
+      syncBrowserRoute(route.tab, route.evolutionSubtab, true);
+    }
+  }, [syncBrowserRoute]);
+
+  useEffect_a(() => {
+    if (typeof window === "undefined") return undefined;
+    const onPopState = () => {
+      const route = dashboardRouteFromLocation();
+      setActiveTab(route.tab);
+      setActiveEvolutionTab(route.evolutionSubtab);
+      if (route.tab === "simulation") setSimVisited(true);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   const onStart = useCallback_a((config) => {
     send({ action: "start", config });
@@ -179,9 +245,15 @@ function App() {
   const pct = state.max_generations > 0 ? Math.min(100, (state.current_gen / state.max_generations) * 100) : 0;
   const isIdle = state.status === "idle" && state.generations.length === 0 && !running;
   const activeRoute = routeContract(activeTab);
-  const activeOwner = pageOwnerContract(activeTab);
+  const activeEvolutionRoute = activeTab === "evolution" ? evolutionSubtabContract(activeEvolutionTab) : null;
+  const ownerKey = activeTab === "evolution" && activeEvolutionTab !== "overview"
+    ? (activeEvolutionTab === "workbench" ? "pro" : activeEvolutionTab)
+    : activeTab;
+  const activeOwner = pageOwnerContract(ownerKey);
+  const shellRouteLabel = activeEvolutionRoute ? `${activeRoute.label} / ${activeEvolutionRoute.label}` : activeRoute.label;
+  const shellDetailKey = activeEvolutionRoute ? `evolution/${activeEvolutionRoute.key}` : (activeRoute.key || activeTab);
   const shellMetrics = [
-    { label: "route", value: activeRoute.badge || activeTab },
+    { label: "route", value: activeEvolutionRoute ? activeEvolutionRoute.badge : (activeRoute.badge || activeTab) },
     { label: "owner", value: activeOwner.owner || "—" },
     { label: "status", value: state.status || "—" },
     { label: "run", value: selectedRun ? "archive" : "LIVE" },
@@ -204,7 +276,7 @@ function App() {
             <nav className="stom-pagenav mono" aria-label="현재 위치">
               <span className="stom-pagenav-item stom-pagenav-active"
                     title={activeRoute.contract || "현재 보고 있는 탭"}>
-                {activeRoute.icon} {activeRoute.label}
+                {activeRoute.icon} {shellRouteLabel}
               </span>
             </nav>
           </div>
@@ -223,7 +295,7 @@ function App() {
         </div>
 
         <div className="stom-shell-context">
-          <UiStateBlock kind="info" compact title={activeRoute.group || "Dashboard"} detail={activeRoute.key || activeTab}>
+          <UiStateBlock kind="info" compact title={activeRoute.group || "Dashboard"} detail={shellDetailKey}>
             <b>{activeOwner.owner || activeRoute.label}</b> · {activeRoute.contract || "STOM dashboard route"}
             <span className="stom-route-boundary">비소유: {activeOwner.notOwner || "—"}</span>
           </UiStateBlock>
@@ -231,7 +303,10 @@ function App() {
         </div>
 
         {/* ===== 탭 내비게이션 (전 탭 공통, 브랜드 행 바로 아래) ===== */}
-        <TabNav activeTab={activeTab} onSelect={setActiveTab} />
+        <TabNav activeTab={activeTab} onSelect={onTopTabSelect} />
+        {activeTab === "evolution" && (
+          <EvolutionSubtabNav activeSubtab={activeEvolutionTab} onSelect={onEvolutionSubtabSelect} />
+        )}
 
         {/* 진화 컨트롤 스트립(진행도/run 셀렉터/시작·정지)은 진화 탭에서만 노출 */}
         {activeTab === "evolution" && (
@@ -290,37 +365,35 @@ function App() {
           <BacktestTab baseUrl={baseUrl} wsStatus={wsStatus} />
         </ErrorBoundary>
       ) : activeTab === "simulation" ? null
-        /* Phase9/Remodel — SPA 증거 워크스페이스 탭은 dashboard-pages.jsx 컴포넌트를
-           직접 import해 auto-mount 시점에도 Lab/Records/Pro/Verdict가 즉시 렌더된다. */
-        : activeTab === "lab" ? (
-        <ErrorBoundary>
-          <LabPage baseUrl={baseUrl} onNavigate={setActiveTab} />
-        </ErrorBoundary>
-      ) : activeTab === "pro" ? (
-        <ErrorBoundary>
-          <ProPage baseUrl={baseUrl} onNavigate={setActiveTab} />
-        </ErrorBoundary>
-      ) : activeTab === "verdict" ? (
-        <ErrorBoundary>
-          <VerdictPanel baseUrl={baseUrl} onNavigate={setActiveTab} />
-        </ErrorBoundary>
-      ) : activeTab === "records" ? (
-        <ErrorBoundary>
-          <ResearchIndexPage baseUrl={baseUrl} onNavigate={setActiveTab} />
-        </ErrorBoundary>
-      ) : activeTab === "process" ? (
+        : activeTab === "evolution" && activeEvolutionTab === "process" ? (
         <ErrorBoundary>
           <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <ProcessFlowPanel state={state} />
             <iframe
               src={baseUrl + "/process_flow"}
-              title="프로세스 흐름"
+              title="레거시 프로세스 정적 참고"
               style={{ width: "100%", height: "calc(100vh - 300px)", minHeight: 420, border: "none", borderRadius: 8, background: "#0d1117" }}
             />
           </main>
         </ErrorBoundary>
+      ) : activeTab === "evolution" && activeEvolutionTab === "records" ? (
+        <ErrorBoundary>
+          <ResearchIndexPage baseUrl={baseUrl} onNavigate={onDashboardNavigate} />
+        </ErrorBoundary>
+      ) : activeTab === "evolution" && activeEvolutionTab === "lab" ? (
+        <ErrorBoundary>
+          <LabPage baseUrl={baseUrl} onNavigate={onDashboardNavigate} />
+        </ErrorBoundary>
+      ) : activeTab === "evolution" && activeEvolutionTab === "workbench" ? (
+        <ErrorBoundary>
+          <ProPage baseUrl={baseUrl} onNavigate={onDashboardNavigate} />
+        </ErrorBoundary>
+      ) : activeTab === "evolution" && activeEvolutionTab === "verdict" ? (
+        <ErrorBoundary>
+          <VerdictPanel baseUrl={baseUrl} onNavigate={onDashboardNavigate} />
+        </ErrorBoundary>
       ) : isIdle ? (
-        <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} state={state} onNavigate={setActiveTab} />
+        <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} state={state} onNavigate={onDashboardNavigate} />
       ) : (
         <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {/* 승인 export 결과 배너(final_approval 게이트는 ApprovalDialog가 유지) */}
@@ -377,7 +450,7 @@ function App() {
                 </ErrorBoundary>
                 {/* P2(2026-06-14): 연구 위키·AI 컨텍스트 팩은 연구실 탭으로 이전(진화 사이드바 중복 제거).
                     진화 탭엔 발견용 링크만 둔다 — 홈은 dashboard-pages.jsx LabPage(P1). */}
-                <button className="btn ghost sm" onClick={() => setActiveTab("lab")}
+                <button className="btn ghost sm" onClick={() => onEvolutionSubtabSelect("lab")}
                         style={{ alignSelf: "flex-start", marginTop: 2 }}
                         title="연구 위키 · AI 컨텍스트 팩은 연구실 탭으로 이동했습니다">
                   📚 연구 위키 · AI 컨텍스트 팩 → 연구실 탭
@@ -489,6 +562,29 @@ function TabNav({ activeTab, onSelect }) {
           </div>
         </div>
       ))}
+    </nav>
+  );
+}
+function EvolutionSubtabNav({ activeSubtab, onSelect }) {
+  return (
+    <nav role="tablist" aria-label="진화 홈 하위 탭" className="evolution-subtabnav">
+      {EVOLUTION_SUBTAB_CONTRACTS.map(tab => {
+        const active = activeSubtab === tab.key;
+        return (
+          <button
+            key={tab.key}
+            role="tab"
+            aria-selected={active}
+            className={"evolution-subtab" + (active ? " active" : "")}
+            onClick={() => onSelect(tab.key)}
+            title={tab.contract}
+          >
+            <span className="stom-tab-ico" aria-hidden="true">{tab.icon}</span>
+            <span>{tab.label}</span>
+            <span className="stom-tab-badge mono">{tab.badge}</span>
+          </button>
+        );
+      })}
     </nav>
   );
 }
@@ -669,11 +765,11 @@ function IdleState({ onStart, configSpec, state, onNavigate }) {
           <ProcessFlowPanel state={state || INITIAL_STATE} />
           <div className="phase3-home-links">
             {[
-              { key: "backtest", label: "백테스트 검증", text: "개별 조건식 백테스트와 진화 중 백테스트 결과 확인" },
+              { key: "backtest", label: "백테스트", text: "개별 조건식 백테스트와 진화 중 백테스트 결과 확인" },
               { key: "simulation", label: "차트 리플레이", text: "진입/청산 지점을 차트에서 다시 확인" },
               { key: "records", label: "기록 검색", text: "모든 연구 기록과 update log 검색" },
               { key: "lab", label: "리서치 Wiki", text: "위키·방법론·AI 컨텍스트 문서 탐색" },
-              { key: "pro", label: "분석 워크벤치", text: "후보 분석과 HoF 비교" },
+              { key: "workbench", label: "분석 워크벤치", text: "후보 분석과 HoF 비교" },
               { key: "verdict", label: "결정 감사", text: "append-only 결정 이력 확인" },
             ].map(item => (
               <button key={item.key} className="phase3-home-link" type="button"
