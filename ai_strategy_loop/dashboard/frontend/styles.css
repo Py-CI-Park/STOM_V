@@ -1496,8 +1496,8 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 }
 .edge-heatmap-scroll {
   max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
+  max-height: 360px;
+  overflow: auto;
   border: 1px solid var(--line-1);
   border-radius: var(--radius-sm);
   background: rgba(6, 9, 13, 0.34);

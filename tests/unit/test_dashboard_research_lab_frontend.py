@@ -68,16 +68,37 @@ def test_research_lab_is_loaded_before_app() -> None:
     assert "ResearchLabPanel" in app, "app.js 에 research-lab(ResearchLabPanel) 누락"
 
 
-def test_app_jsx_wires_research_lab() -> None:
-    """Given app.jsx, When dashboard renders analysis, Then ResearchLabPanel receives run context."""
-    src = _read_front("app.jsx")
-    idx = src.find("<ResearchLabPanel")
+def test_lab_page_wires_research_lab_with_selected_run() -> None:
+    """Given LabPage, When dashboard renders Lab, Then ResearchLabPanel receives selected run context."""
+    src = _read_front("dashboard-pages.jsx")
+    idx = src.find("<LabPanel")
     snippet = src[idx: idx + 220]
 
     assert idx >= 0
-    assert "baseUrl={baseUrl}" in snippet
-    assert "wsStatus={wsStatus}" in snippet
-    assert "runId={state.run_id || \"\"}" in snippet
+    assert "baseUrl={base}" in snippet
+    assert 'wsStatus="na"' in snippet
+    assert "runId={runId}" in snippet
+
+
+def test_research_lab_shows_edge_panel_before_guidance() -> None:
+    """Given LabPage layout, Then the active heatmap panel appears before explanatory guidance blocks."""
+    src = _read_front("rl-panel.jsx")
+
+    assert src.index('className="research-statusbar mono"') < src.index("{body}")
+    assert src.index("{body}") < src.index('className="lab-glossary"')
+    assert src.index("{body}") < src.index('className="lab-example"')
+
+
+def test_edge_heatmap_uses_intrinsic_bounded_scroll_size() -> None:
+    """Given the edge heatmap, Then small grids do not stretch to the full panel width."""
+    src = _read_front("analysis.jsx")
+    css = _read_front("styles.css")
+
+    assert 'style={{ width: W, height: H, display: "block" }}' in src
+    assert 'width: "100%", minWidth: W' not in src
+    heatmap_scroll = css.split(".edge-heatmap-scroll {", 1)[1].split("}", 1)[0]
+    assert "max-height: 360px" in heatmap_scroll
+    assert "overflow: auto" in heatmap_scroll
 
 
 def test_existing_edge_and_feature_panels_still_exported() -> None:

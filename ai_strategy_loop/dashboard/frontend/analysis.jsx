@@ -286,7 +286,7 @@ function _Heatmap({ heatmap }) {
       </div>
       <div className="edge-heatmap-scroll">
         <svg viewBox={`0 0 ${W} ${H}`}
-             style={{ width: "100%", minWidth: W, maxHeight: 460, display: "block" }}
+             style={{ width: W, height: H, display: "block" }}
              preserveAspectRatio="xMinYMin meet">
           {/* 열 라벨 (시총) */}
           {capLabels.map((cl, ci) => (
