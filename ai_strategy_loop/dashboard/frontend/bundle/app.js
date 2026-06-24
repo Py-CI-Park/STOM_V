@@ -8083,27 +8083,40 @@ def signal_sell(pos, bar, ind):
     // 목표/제약
     {
       name: "mdd_cap",
-      label: "MDD \uC0C1\uD55C",
+      label: "MDD \uC0C1\uD55C(%)",
       type: "number",
-      default: 15,
+      default: 40,
       group: "\uBAA9\uD45C/\uC81C\uC57D",
-      help: "\uD5C8\uC6A9 \uAC00\uB2A5\uD55C \uCD5C\uB300 \uB099\uD3ED(%) \uC0C1\uD55C. \uCD08\uACFC \uC2DC \uAC8C\uC774\uD2B8 \uD0C8\uB77D."
+      min: 0,
+      max: 40,
+      help: "\uB370\uBAA8 \uAE30\uBCF8\uAC12. \uC2E4\uC81C LIVE \uAE30\uBCF8\uAC12\uC740 /config/spec\uC5D0\uC11C\uB9CC \uD655\uC815\uB41C\uB2E4."
+    },
+    {
+      name: "min_daily_trades",
+      label: "\uC77C\uD3C9\uADE0 \uAC70\uB798 \uD558\uD55C",
+      type: "number",
+      default: 0.5,
+      group: "\uBAA9\uD45C/\uC81C\uC57D",
+      min: 0,
+      help: "\uC8FC \uBE48\uB3C4 \uAE30\uC900: daily_avg_trades = \uAC70\uB798\uC218 / \uAC70\uB798\uC77C\uC218."
     },
     {
       name: "min_trades",
-      label: "\uCD5C\uC18C \uAC70\uB798\uC218",
+      label: "\uCD5C\uC18C \uAC70\uB798\uC218(\uD3F4\uBC31)",
       type: "number",
-      default: 20,
+      default: 30,
       group: "\uBAA9\uD45C/\uC81C\uC57D",
-      help: "\uC720\uC758\uBBF8\uD55C \uD3C9\uAC00\uB97C \uC704\uD55C \uCD5C\uC18C \uAC70\uB798 \uD69F\uC218."
+      min: 0,
+      help: "\uC77C\uD3C9\uADE0 \uAC70\uB798\uC218\uAC00 \uC5C6\uB294 \uAD6C\uD615 \uACB0\uACFC\uC5D0\uC11C\uB9CC \uC4F0\uB294 \uD3F4\uBC31."
     },
     {
       name: "target_score",
       label: "\uBAA9\uD45C \uC801\uD569\uB3C4",
       type: "number",
-      default: 1,
+      default: "",
       group: "\uBAA9\uD45C/\uC81C\uC57D",
-      help: "\uC774 \uC810\uC218 \uC774\uC0C1\uC774\uBA74 \uD558\uB4DC \uAC8C\uC774\uD2B8 \uD1B5\uACFC(\uC6B0\uC2B9 \uD6C4\uBCF4)."
+      min: 0,
+      help: "\uBE44\uC6B0\uBA74 \uC870\uAE30 \uC885\uB8CC \uC5C6\uC74C. winner_score\uAC00 \uC774 \uAC12 \uC774\uC0C1\uC774\uBA74 \uC878\uC5C5."
     },
     // 평가 스코프
     {
@@ -8141,29 +8154,31 @@ def signal_sell(pos, bar, ind):
       help: "\uCD5C\uADFC N\uC77C \uB370\uC774\uD130\uB85C \uBC31\uD14C\uC2A4\uD2B8 \uC218\uD589."
     },
     {
-      name: "bt_start_date",
-      label: "\uC2DC\uC791\uC77C",
+      name: "bt_start",
+      label: "\uC2DC\uC791\uC77C(YYYYMMDD)",
       type: "text",
-      default: "2025-03-01",
+      default: "",
       group: "\uD3C9\uAC00 \uC2A4\uCF54\uD504",
-      help: "\uBC31\uD14C\uC2A4\uD2B8 \uAD6C\uAC04 \uC2DC\uC791\uC77C (YYYY-MM-DD). \uBE48 \uAC12\uC774\uBA74 \uCD5C\uADFC N\uC77C."
+      help: "\uBE44\uC6B0\uBA74 DB \uCD5C\uC18C \uAC70\uB798\uC77C."
+    },
+    {
+      name: "bt_end",
+      label: "\uC885\uB8CC\uC77C(YYYYMMDD)",
+      type: "text",
+      default: "",
+      group: "\uD3C9\uAC00 \uC2A4\uCF54\uD504",
+      help: "\uBE44\uC6B0\uBA74 DB \uCD5C\uB300 \uAC70\uB798\uC77C."
     },
     // 엔진 리소스
     {
       name: "engine_workers",
       label: "\uBCD1\uB82C \uC6CC\uCEE4\uC218",
       type: "number",
-      default: 8,
+      default: 115,
       group: "\uC5D4\uC9C4 \uB9AC\uC18C\uC2A4",
-      help: "\uBC31\uD14C\uC2A4\uD2B8 \uBCD1\uB82C \uC2E4\uD589 \uD504\uB85C\uC138\uC2A4 \uC218. \uBCF4\uD1B5 CPU \uCF54\uC5B4\uC218\uC640 \uAC19\uAC70\uB098 \uADF8 \uC774\uD558."
-    },
-    {
-      name: "engine_cpu_cap",
-      label: "CPU \uC0C1\uD55C(%)",
-      type: "number",
-      default: 85,
-      group: "\uC5D4\uC9C4 \uB9AC\uC18C\uC2A4",
-      help: "\uC804\uCCB4 \uC0AC\uC6A9\uB960\uC774 \uC774 \uAC12\uC744 \uB118\uC73C\uBA74 \uC0C8 \uC791\uC5C5\uC744 \uD050\uC789. 0\uC774\uBA74 \uBB34\uC81C\uD55C."
+      min: 0,
+      max: 128,
+      help: "\uD604\uC7AC 128 logical CPU \uAE30\uC900 90% \uC0C1\uD55C \uAE30\uBCF8\uAC12. 0\uC774\uBA74 \uC790\uB3D9."
     },
     {
       name: "engine_mem_cap_mb",
@@ -8171,15 +8186,17 @@ def signal_sell(pos, bar, ind):
       type: "number",
       default: 8192,
       group: "\uC5D4\uC9C4 \uB9AC\uC18C\uC2A4",
-      help: "\uCD08\uACFC \uC2DC \uAC00\uC7A5 \uC624\uB798\uB41C \uCE90\uC2DC\uBD80\uD130 \uD574\uC81C."
+      min: 0,
+      help: "\uD638\uC2A4\uD2B8 \uBA54\uBAA8\uB9AC \uAE30\uBC18 \uC790\uB3D9 \uC0C1\uD55C. 0\uC774\uBA74 \uC790\uB3D9."
     },
     {
       name: "engine_chunk_days",
       label: "\uCCAD\uD06C \uD06C\uAE30(\uC77C)",
       type: "number",
-      default: 5,
+      default: 20,
       group: "\uC5D4\uC9C4 \uB9AC\uC18C\uC2A4",
-      help: "\uD55C \uC6CC\uCEE4\uAC00 \uD55C \uBC88\uC5D0 \uCC98\uB9AC\uD558\uB294 \uBC31\uD14C\uC2A4\uD2B8 \uAD6C\uAC04 \uD06C\uAE30."
+      min: 0,
+      help: "\uD55C \uC6CC\uCEE4\uAC00 \uCC98\uB9AC\uD560 \uBC31\uD14C\uC2A4\uD2B8 \uB0A0\uC9DC \uCCAD\uD06C. 0\uC774\uBA74 \uC790\uB3D9."
     },
     // 과적합 가드
     {
@@ -8196,49 +8213,75 @@ def signal_sell(pos, bar, ind):
       label: "\uD504\uB85C\uBC14\uC774\uB354",
       type: "select",
       default: "gpt_auth",
-      options: ["gpt_auth", "claude", "local"],
+      options: ["gpt_auth", "openrouter", "codex_proxy"],
       group: "AI",
-      help: "\uC804\uB7B5 \uC0DD\uC131\uC5D0 \uC0AC\uC6A9\uD560 LLM \uC81C\uACF5\uC790."
+      help: "\uC804\uB7B5 \uC0DD\uC131\uC5D0 \uC0AC\uC6A9\uD560 LLM \uC81C\uACF5\uC790. LIVE\uC5D0\uC11C\uB294 /config/spec \uAC12\uC774 \uC6B0\uC120\uC774\uB2E4."
     },
     {
       name: "model",
       label: "\uBAA8\uB378",
-      type: "text",
-      default: "gpt-5-codex",
+      type: "select",
+      default: "gpt-5.5",
       group: "AI",
-      help: "\uC0AC\uC6A9\uD560 \uBAA8\uB378 \uC2DD\uBCC4\uC790."
+      options: ["gpt-5.5", "gpt-5.5-mini", "openai-codex/gpt-5.5"],
+      help: "GPT 5.5 \uAE30\uBCF8. xhigh\uB294 reasoning_effort\uB85C \uD45C\uC2DC."
+    },
+    {
+      name: "reasoning_effort",
+      label: "Reasoning effort",
+      type: "select",
+      default: "xhigh",
+      group: "AI",
+      options: ["xhigh", "high", "medium", "low"],
+      help: "\uAE30\uBCF8 xhigh. provider \uBBF8\uC9C0\uC6D0 \uC2DC \uC0C1\uD0DC\uB85C \uD45C\uC2DC."
     },
     {
       name: "max_generations",
       label: "\uCD5C\uB300 \uC138\uB300",
       type: "number",
-      default: 30,
+      default: 200,
       group: "AI",
-      help: "\uC774 \uC138\uB300\uAE4C\uC9C0 \uB3C4\uB2EC\uD558\uBA74 \uB8E8\uD504 \uC885\uB8CC."
-    },
-    {
-      name: "temperature",
-      label: "Temperature",
-      type: "number",
-      default: 0.7,
-      group: "AI",
-      help: "\uC0DD\uC131 \uB2E4\uC591\uC131. \uB192\uC744\uC218\uB85D \uD0D0\uD5D8\uC801, \uB0AE\uC744\uC218\uB85D \uBCF4\uC218\uC801."
+      help: "\uC7A5\uAE30 \uC5F0\uAD6C \uAE30\uBCF8\uAC12. \uC2A4\uBAA8\uD06C \uAC80\uC99D\uC740 1~2\uB85C \uB0AE\uCDB0 \uC2E4\uD589."
     },
     {
       name: "feedback_window",
       label: "\uD53C\uB4DC\uBC31 \uC708\uB3C4\uC6B0",
       type: "number",
-      default: 3,
+      default: 8,
       group: "AI",
-      help: "\uB2E4\uC74C \uC138\uB300\uC5D0 \uC804\uB2EC\uD560 \uC9C1\uC804 \uBD80\uAC80(autopsy) \uC218."
+      help: "\uB2E4\uC74C \uC138\uB300\uC5D0 \uC804\uB2EC\uD560 \uCD5C\uADFC \uBD80\uAC80/\uC2E4\uD328 \uC6D0\uC778 \uAC1C\uC218."
     }
   ];
+  var CONFIG_SPEC_DEMO_STATUS = {
+    source: "fallback_demo",
+    live: false,
+    message: "\uB370\uBAA8/\uC624\uD504\uB77C\uC778 \uAE30\uBCF8 \uC124\uC815\uC785\uB2C8\uB2E4. \uC2E4\uC81C \uC9C4\uD654 \uC2DC\uC791\uC5D0\uB294 /config/spec \uC5F0\uACB0\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."
+  };
+  function normalizeConfigSpecPayload(payload) {
+    var _a, _b;
+    if (Array.isArray(payload) && payload.length) {
+      return { fields: payload, status: { source: "live", live: true, contract_version: null, message: "array spec" } };
+    }
+    if (payload && typeof payload === "object" && Array.isArray(payload.fields) && payload.fields.length) {
+      return {
+        fields: payload.fields,
+        status: {
+          source: "live",
+          live: true,
+          contract_version: (_a = payload.contract_version) != null ? _a : null,
+          schema: (_b = payload.schema) != null ? _b : "fields",
+          message: "config spec loaded"
+        }
+      };
+    }
+    return { fields: [], status: { source: "missing", live: false, message: "config spec payload has no fields" } };
+  }
   var INITIAL_STATE = {
     contract_version: 1,
     run_id: null,
     status: "idle",
     current_gen: 0,
-    max_generations: 30,
+    max_generations: 200,
     provider: "gpt_auth",
     bt_timeframe: "min",
     best: null,
@@ -8302,6 +8345,7 @@ def signal_sell(pos, bar, ind):
     const [wsStatus, setWsStatus] = useState_cn1("connecting");
     const [state, setState] = useState_cn1(INITIAL_STATE);
     const [configSpec, setConfigSpec] = useState_cn1(DEFAULT_CONFIG_SPEC);
+    const [configSpecStatus, setConfigSpecStatus] = useState_cn1(CONFIG_SPEC_DEMO_STATUS);
     const [lastReply, setLastReply] = useState_cn1(null);
     const wsRef = useRef_cn1(null);
     const reconnectAttempt = useRef_cn1(0);
@@ -8313,13 +8357,15 @@ def signal_sell(pos, bar, ind):
       setWsStatus("demo");
       const cfg = config || {};
       const max = Number((_a = cfg.max_generations) != null ? _a : 12);
-      const target = Number((_b = cfg.target_score) != null ? _b : 1);
-      const mddCap = Number((_c = cfg.mdd_cap) != null ? _c : 15);
-      const minTrades = Number((_d = cfg.min_trades) != null ? _d : 20);
+      const target = Number(cfg.target_score === "" || cfg.target_score === null || cfg.target_score === void 0 ? 1 : cfg.target_score);
+      const mddCap = Number((_b = cfg.mdd_cap) != null ? _b : 40);
+      const minDailyTrades = Number((_c = cfg.min_daily_trades) != null ? _c : 0.5);
+      const minTrades = Number((_d = cfg.min_trades) != null ? _d : 30);
       const workers = Number((_e = cfg.engine_workers) != null ? _e : 8);
       const memCap = Number((_f = cfg.engine_mem_cap_mb) != null ? _f : 8192);
-      const startDate = cfg.bt_start_date || "2025-03-01";
-      const windowDays = Number((_g = cfg.bt_window_days) != null ? _g : 60);
+      const startDate = normalizeDemoDate(cfg.bt_start || cfg.bt_start_date, "2025-03-01");
+      const endDate = normalizeDemoDate(cfg.bt_end, null);
+      const windowDays = endDate ? Math.max(1, Math.ceil((Date.parse(endDate) - Date.parse(startDate)) / 864e5) + 1) : Number((_g = cfg.bt_window_days) != null ? _g : 60);
       const provider = cfg.provider || "gpt_auth";
       const chunkDays = Number((_h = cfg.engine_chunk_days) != null ? _h : 5);
       let gen = 0;
@@ -8406,6 +8452,19 @@ def signal_sell(pos, bar, ind):
         d.setDate(d.getDate() + days);
         return d.toISOString().slice(0, 10);
       }
+      function normalizeDemoDate(value, fallback) {
+        if (value === null || value === void 0 || value === "") return fallback;
+        const text = String(value);
+        if (/^\d{8}$/.test(text)) return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)}`;
+        return text || fallback;
+      }
+      function dailyAvg(trades) {
+        return +(Number(trades || 0) / Math.max(1, Number(windowDays || 1))).toFixed(3);
+      }
+      function frequencyPass(trades) {
+        const daily = dailyAvg(trades);
+        return minDailyTrades > 0 ? daily >= minDailyTrades : Number(trades || 0) >= minTrades;
+      }
       function buildPlan(genNo) {
         const buyTag = ["VWAP", "MOM", "ORB", "FLOW", "RSI", "OBV"][Math.floor(Math.random() * 6)];
         const sellTag = ["ATR", "TRAIL", "FIXED", "PIVOT", "TIME"][Math.floor(Math.random() * 5)];
@@ -8436,8 +8495,8 @@ def signal_sell(pos, bar, ind):
         const target_trades = isErrorRoll ? 0 : Math.max(0, Math.floor(profit_factor * 60 + (Math.random() - 0.3) * 20));
         const target_mdd_pct = isErrorRoll ? 0 : Math.max(2, Math.min(40, (1.4 - mdd_score) * 18 + (Math.random() - 0.5) * 4));
         const target_pnl = isErrorRoll ? 0 : Math.round((profit_factor - 0.4) * 35e5 + (Math.random() - 0.5) * 6e5);
-        const willPass = !isErrorRoll && targetScore >= target && target_mdd_pct <= mddCap && target_trades >= minTrades;
-        const autopsy_text = willPass ? `gen_${genNo + 1} \u2014 \uD558\uB4DC \uAC8C\uC774\uD2B8 \uD1B5\uACFC. graded_score=${targetScore.toFixed(3)} (target ${target.toFixed(2)}), MDD ${target_mdd_pct.toFixed(2)}% \u2264 ${mddCap}%, \uAC70\uB798 ${target_trades}\uD68C \u2265 ${minTrades}. \uB2E4\uC74C \uC138\uB300\uB294 \uB3D9\uC77C \uACE8\uACA9 \uC720\uC9C0\uD558\uBA70 \uC2AC\uB9AC\uD53C\uC9C0 \uAC00\uC815\uB9CC \uBCF4\uC218\uD654.` : isErrorRoll ? `gen_${genNo + 1} \u2014 \uB7F0\uD0C0\uC784 \uC608\uC678. \uC548\uC804\uD55C \uCEEC\uB7FC \uC811\uADFC \uBC0F None-\uAC00\uB4DC \uBCF4\uAC15 \uD544\uC694. \uB2E4\uC74C \uC138\uB300\uB294 fallback \uBD84\uAE30 \uCD94\uAC00.` : feedbackPool[Math.floor(Math.random() * feedbackPool.length)];
+        const willPass = !isErrorRoll && targetScore >= target && target_mdd_pct <= mddCap && frequencyPass(target_trades);
+        const autopsy_text = willPass ? `gen_${genNo + 1} \u2014 \uD558\uB4DC \uAC8C\uC774\uD2B8 \uD1B5\uACFC. graded_score=${targetScore.toFixed(3)} (target ${target.toFixed(2)}), MDD ${target_mdd_pct.toFixed(2)}% \u2264 ${mddCap}%, \uC77C\uD3C9\uADE0 \uAC70\uB798 ${dailyAvg(target_trades)}\uD68C/\uC77C \u2265 ${minDailyTrades}. \uB2E4\uC74C \uC138\uB300\uB294 \uB3D9\uC77C \uACE8\uACA9 \uC720\uC9C0\uD558\uBA70 \uC2AC\uB9AC\uD53C\uC9C0 \uAC00\uC815\uB9CC \uBCF4\uC218\uD654.` : isErrorRoll ? `gen_${genNo + 1} \u2014 \uB7F0\uD0C0\uC784 \uC608\uC678. \uC548\uC804\uD55C \uCEEC\uB7FC \uC811\uADFC \uBC0F None-\uAC00\uB4DC \uBCF4\uAC15 \uD544\uC694. \uB2E4\uC74C \uC138\uB300\uB294 fallback \uBD84\uAE30 \uCD94\uAC00.` : feedbackPool[Math.floor(Math.random() * feedbackPool.length)];
         const lastAutopsies = generations.slice(-2).map((g) => `gen_${g.gen_no}: ${g.gate_reason !== "\uC870\uAC74 \uCDA9\uC871" ? g.gate_reason : "\uD1B5\uACFC"} (score ${g.graded_score})`);
         return {
           buyTag,
@@ -8661,11 +8720,11 @@ def signal_sell(pos, bar, ind):
         const peakDD = currentRun.drawdown.length ? Math.max(0, ...currentRun.drawdown.map((p) => p.value_pct)) : plan.target_mdd_pct;
         const mdd = +Math.min(40, Math.max(plan.target_mdd_pct, peakDD)).toFixed(2);
         const graded_score = isError ? 0 : (_a2 = currentRun.scoring.composite) != null ? _a2 : plan.target_score;
-        const gate_passed = !isError && graded_score >= target && mdd <= mddCap && trade_count >= minTrades;
+        const gate_passed = !isError && graded_score >= target && mdd <= mddCap && frequencyPass(trade_count);
         let gate_reason = "\uC870\uAC74 \uCDA9\uC871";
         if (isError) gate_reason = "\uC2E4\uD589 \uC624\uB958";
         else if (trade_count === 0) gate_reason = "\uAC70\uB798 0\uAC74";
-        else if (trade_count < minTrades) gate_reason = `\uAC70\uB798\uC218 \uBD80\uC871(${trade_count}/${minTrades})`;
+        else if (!frequencyPass(trade_count)) gate_reason = minDailyTrades > 0 ? `\uC77C\uD3C9\uADE0 \uAC70\uB798 \uBD80\uC871(${dailyAvg(trade_count)}/${minDailyTrades})` : `\uAC70\uB798\uC218 \uBD80\uC871(${trade_count}/${minTrades})`;
         else if (mdd > mddCap) gate_reason = `MDD \uCD08\uACFC(${mdd}% > ${mddCap}%)`;
         else if (graded_score < target) gate_reason = `\uC810\uC218 \uBBF8\uB2EC(${graded_score.toFixed(3)} < ${target})`;
         const gist = plan.gist + " \u2014 " + (isError ? "\uB7F0\uD0C0\uC784 \uC608\uC678" : `\uC9C4\uC785 ${trade_count}\uD68C, MDD ${mdd}%`);
@@ -8678,6 +8737,7 @@ def signal_sell(pos, bar, ind):
           trade_count,
           mdd,
           profit,
+          daily_avg_trades: dailyAvg(trade_count),
           strategy_gist: gist,
           buy_name: plan.buyName,
           sell_name: plan.sellName,
@@ -8755,9 +8815,16 @@ def signal_sell(pos, bar, ind):
           const cs = await fetch(baseUrl + "/config/spec", { signal: AbortSignal.timeout(1500) });
           if (cs.ok) {
             const csj = await cs.json();
-            if (Array.isArray(csj) && csj.length) setConfigSpec(csj);
+            const normalized = normalizeConfigSpecPayload(csj);
+            if (normalized.fields.length) {
+              setConfigSpec(normalized.fields);
+            }
+            setConfigSpecStatus(normalized.status);
+          } else {
+            setConfigSpecStatus({ source: "error", live: false, message: "config spec HTTP " + cs.status });
           }
         } catch (e) {
+          setConfigSpecStatus({ source: "error", live: false, message: String(e && e.message ? e.message : e) });
         }
         try {
           const st = await fetch(baseUrl + "/status", { signal: AbortSignal.timeout(1500) });
@@ -8770,6 +8837,7 @@ def signal_sell(pos, bar, ind):
         openWs();
       } catch (e) {
         setHealth({ connected: false, contract_version: null });
+        setConfigSpecStatus(CONFIG_SPEC_DEMO_STATUS);
         setWsStatus("demo");
       }
     }, [baseUrl]);
@@ -8818,6 +8886,15 @@ def signal_sell(pos, bar, ind):
       };
     }, [tryConnect]);
     const send = useCallback_cn1((msg) => {
+      if (msg && msg.action === "start" && wsStatus !== "demo" && !(configSpecStatus && configSpecStatus.live)) {
+        setLastReply({
+          action: "start",
+          status: "error",
+          reason: "config_spec_unavailable",
+          message: "LIVE \uC9C4\uD654 \uC2DC\uC791\uC740 /config/spec\uAC00 \uC815\uC0C1 \uB85C\uB4DC\uB41C \uB4A4\uC5D0\uB9CC \uAC00\uB2A5\uD569\uB2C8\uB2E4."
+        });
+        return false;
+      }
       if (wsStatus === "demo" || !wsRef.current || wsRef.current.readyState !== 1) {
         if (msg.action === "start") {
           startDemo(msg.config);
@@ -8845,12 +8922,13 @@ def signal_sell(pos, bar, ind):
       } catch (e) {
         return false;
       }
-    }, [wsStatus, startDemo, stopDemoSoft]);
+    }, [wsStatus, startDemo, stopDemoSoft, configSpecStatus]);
     return {
       state,
       health,
       wsStatus,
       configSpec,
+      configSpecStatus,
       send,
       lastReply,
       reconnect: tryConnect
@@ -9176,7 +9254,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         title: "\uAC8C\uC774\uD2B8\uB97C \uD1B5\uACFC\uD55C \uD751\uC790 \uC804\uB7B5\uC744 \uC810\uC218 \uB0B4\uB9BC\uCC28\uC21C\uC73C\uB85C \uBCF4\uC5EC\uC90D\uB2C8\uB2E4. \uD589\uC744 \uD3BC\uCE58\uBA74 \uB9E4\uC218\xB7\uB9E4\uB3C4 \uC870\uAC74\uC2DD\uACFC \uBCC0\uC218 \uCE69\uC744 \uD655\uC778\uD558\uACE0, '\uBC14\uB85C \uBC31\uD14C\uC2A4\uD2B8'\uB85C \uBC31\uD14C\uC2A4\uD2B8 \uD0ED\uC5D0 \uADF8\uB300\uB85C \uC801\uC7AC\uD569\uB2C8\uB2E4."
       },
       "?"
-    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", style: { marginLeft: "auto" }, onClick: refresh, disabled: isDemo || loading }, loading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "rp-card-bd" }, isDemo ? /* @__PURE__ */ React.createElement("div", { className: "rp-empty" }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uBA85\uC608\uC758 \uC804\uB2F9\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : ai.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "rp-empty" }, "\uAC8C\uC774\uD2B8 \uD1B5\uACFC \uC804\uB7B5\uC774 \uB204\uC801\uB418\uBA74 \uD45C\uC2DC\uB429\uB2C8\uB2E4.", loading ? " (\uB85C\uB529\uC911\u2026)" : "") : /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "rp-table mono" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC885\uB958"), /* @__PURE__ */ React.createElement("th", null, "\uC804\uB7B5(run/gen)"), /* @__PURE__ */ React.createElement("th", null, "\uBC31\uD14C \uAE30\uAC04"), /* @__PURE__ */ React.createElement("th", null, "\uC810\uC218"), /* @__PURE__ */ React.createElement("th", null, "\uCD1D\uC218\uC775"), /* @__PURE__ */ React.createElement("th", null, "\uC218\uC775\uB960"), /* @__PURE__ */ React.createElement("th", null, "\uC5F0\uD658\uC0B0"), /* @__PURE__ */ React.createElement("th", null, "MDD"), /* @__PURE__ */ React.createElement("th", null, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("th", null))), /* @__PURE__ */ React.createElement("tbody", null, ai.map((r) => {
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", style: { marginLeft: "auto" }, onClick: refresh, disabled: isDemo || loading }, loading ? "\uC870\uD68C\uC911\u2026" : "\u21BB \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("div", { className: "research-index-note" }, "\uBAA9\uC801: Research Pro \uC6CC\uD06C\uBCA4\uCE58\uC6A9 HoF\uC785\uB2C8\uB2E4. \uD589\uC744 \uD3BC\uCCD0 \uC870\uAC74\uC2DD\xB7\uBCC0\uC218\uCE69\uC744 \uAC80\uD1A0\uD558\uACE0 \uBC14\uB85C \uBC31\uD14C\uC2A4\uD2B8\uB85C \uB118\uAE30\uB294 \uD654\uBA74\uC774\uBA70, \uBCA4\uCE58\uB9C8\uD06C \uC804\uCCB4 \uBE44\uAD50\uB294 \uC9C4\uD654 \uB300\uC2DC\uBCF4\uB4DC\uC758 \uC131\uACFC \uBA85\uC608\uC758 \uC804\uB2F9\uC774 \uB2F4\uB2F9\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "rp-card-bd" }, isDemo ? /* @__PURE__ */ React.createElement("div", { className: "rp-empty" }, "\uB370\uBAA8 \uBAA8\uB4DC \u2014 \uBC31\uC5D4\uB4DC \uC5F0\uACB0 \uC2DC \uBA85\uC608\uC758 \uC804\uB2F9\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : ai.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "rp-empty" }, "\uAC8C\uC774\uD2B8 \uD1B5\uACFC \uC804\uB7B5\uC774 \uB204\uC801\uB418\uBA74 \uD45C\uC2DC\uB429\uB2C8\uB2E4.", loading ? " (\uB85C\uB529\uC911\u2026)" : "") : /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { className: "rp-table mono" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC885\uB958"), /* @__PURE__ */ React.createElement("th", null, "\uC804\uB7B5(run/gen)"), /* @__PURE__ */ React.createElement("th", null, "\uBC31\uD14C \uAE30\uAC04"), /* @__PURE__ */ React.createElement("th", null, "\uC810\uC218"), /* @__PURE__ */ React.createElement("th", null, "\uCD1D\uC218\uC775"), /* @__PURE__ */ React.createElement("th", null, "\uC218\uC775\uB960"), /* @__PURE__ */ React.createElement("th", null, "\uC5F0\uD658\uC0B0"), /* @__PURE__ */ React.createElement("th", null, "MDD"), /* @__PURE__ */ React.createElement("th", null, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("th", null))), /* @__PURE__ */ React.createElement("tbody", null, ai.map((r) => {
       const key = r.run_id + "/" + r.gen_no;
       const isOpen = expanded === key;
       return /* @__PURE__ */ React.createElement(React.Fragment, { key }, /* @__PURE__ */ React.createElement("tr", { className: isOpen ? "rp-row-open" : "" }, /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("span", { className: "rp-kind rp-kind-" + (r.kind || "ai") }, r.kind === "seed" ? "\uC2DC\uB4DC" : "AI")), /* @__PURE__ */ React.createElement("td", { title: r.buy_name || "" }, r.label || key), /* @__PURE__ */ React.createElement("td", null, r.period || "\uAE30\uAC04 \uC815\uBCF4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("td", { style: { color: "var(--teal)" } }, _rpNum(r.score, 3)), /* @__PURE__ */ React.createElement("td", { className: r.total_return_krw > 0 ? "rp-pos" : "rp-neg" }, _rpMoney(r.total_return_krw)), /* @__PURE__ */ React.createElement("td", null, _rpPct(r.total_return_pct)), /* @__PURE__ */ React.createElement("td", { title: r.annual_unreliable ? "\uCC3D \uAE38\uC774 0.25\uB144 \uBBF8\uB9CC \u2014 \uC5F0\uD658\uC0B0 \uACFC\uB300 \uC8FC\uC758" : "" }, _rpPct(r.annual_return_pct), r.annual_unreliable ? " \u26A0" : ""), /* @__PURE__ */ React.createElement("td", { style: { color: "var(--red)" } }, _rpPct(r.mdd_pct)), /* @__PURE__ */ React.createElement("td", null, _rpInt(r.trades)), /* @__PURE__ */ React.createElement("td", { style: { whiteSpace: "nowrap" } }, /* @__PURE__ */ React.createElement(
@@ -10576,7 +10654,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     bt_full_end: "\uC804\uCCB4 \uC885\uB8CC\uC77C",
     bt_betting: "\uC885\uBAA9\uB2F9 \uBC30\uD305",
     mdd_cap: "MDD \uC0C1\uD55C",
-    min_trades: "\uCD5C\uC18C \uAC70\uB798\uC218",
+    min_trades: "\uCD5C\uC18C \uAC70\uB798\uC218(\uD3F4\uBC31)",
     min_daily_trades: "\uC77C\uD3C9\uADE0\uAC70\uB798 \uD558\uD55C",
     overtrade_softcap: "\uACFC\uB9E4\uB9E4 softcap",
     tpi_gate_enabled: "TPI \uAC8C\uC774\uD2B8",
@@ -22564,7 +22642,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   function WinnerCard({ winner, onApprove, onViewCode }) {
     if (!winner) {
-      return /* @__PURE__ */ React.createElement("div", { className: "panel", style: { borderStyle: "dashed", borderColor: "var(--line-2)" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Winner \u2014 \uAC8C\uC774\uD2B8 \uD1B5\uACFC \uB300\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { color: "var(--ink-3)", fontSize: 12 } }, "\uD558\uB4DC \uAC8C\uC774\uD2B8\uB97C \uD1B5\uACFC\uD55C \uC804\uB7B5\uC774 \uC544\uC9C1 \uC5C6\uC2B5\uB2C8\uB2E4.", /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6, fontSize: 11, color: "var(--ink-3)" } }, "target_score \uC774\uC0C1 + MDD \uC0C1\uD55C \uC774\uB0B4 + \uCD5C\uC18C \uAC70\uB798\uC218 \uC774\uC0C1")));
+      return /* @__PURE__ */ React.createElement("div", { className: "panel", style: { borderStyle: "dashed", borderColor: "var(--line-2)" } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Winner \u2014 \uAC8C\uC774\uD2B8 \uD1B5\uACFC \uB300\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { color: "var(--ink-3)", fontSize: 12 } }, "\uD558\uB4DC \uAC8C\uC774\uD2B8\uB97C \uD1B5\uACFC\uD55C \uC804\uB7B5\uC774 \uC544\uC9C1 \uC5C6\uC2B5\uB2C8\uB2E4.", /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6, fontSize: 11, color: "var(--ink-3)" } }, "target_score \uC774\uC0C1 + MDD \uC0C1\uD55C \uC774\uB0B4 + \uC77C\uD3C9\uADE0 \uAC70\uB798 \uD558\uD55C \uC774\uC0C1")));
     }
     return /* @__PURE__ */ React.createElement("div", { className: "panel", style: {
       borderColor: "rgba(165,148,255,0.35)",
@@ -22980,7 +23058,16 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
 
   // ai_strategy_loop/dashboard/frontend/settings.jsx
   var { useState: useState_s, useMemo: useMemo_s, useEffect: useEffect_s } = React;
-  function SettingsModal({ open, onClose, onStart, configSpec, disabled }) {
+  function SettingsModal({
+    open,
+    onClose,
+    onStart,
+    configSpec,
+    configSpecStatus,
+    disabled,
+    onGptAuthTest,
+    gptAuthProbe
+  }) {
     const [values, setValues] = useState_s({});
     useEffect_s(() => {
       if (!open) return;
@@ -22990,7 +23077,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     }, [open, configSpec]);
     const groups = useMemo_s(() => {
       const g = {};
-      const order = ["\uBAA9\uD45C/\uC81C\uC57D", "\uD3C9\uAC00 \uC2A4\uCF54\uD504", "\uACFC\uC801\uD569 \uAC00\uB4DC", "AI"];
+      const order = ["\uBAA9\uD45C/\uC81C\uC57D", "\uD3C9\uAC00 \uC2A4\uCF54\uD504", "\uC5D4\uC9C4 \uB9AC\uC18C\uC2A4", "\uACFC\uC801\uD569 \uAC00\uB4DC", "AI"];
       for (const f of configSpec) {
         const grp = f.group || "\uAE30\uD0C0";
         if (!g[grp]) g[grp] = [];
@@ -23003,54 +23090,82 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     }, [configSpec]);
     if (!open) return null;
     const set3 = (name, v) => setValues((prev) => ({ ...prev, [name]: v }));
+    const sourceLive = !!(configSpecStatus && configSpecStatus.live);
+    const sourceLabel = sourceLive ? "LIVE /config/spec" : "DEMO/FALLBACK";
+    const sourceMessage = configSpecStatus && configSpecStatus.message || "config spec status unavailable";
+    const optionValue = (opt) => opt && typeof opt === "object" ? opt.value : opt;
+    const optionLabel = (opt) => {
+      var _a;
+      return opt && typeof opt === "object" ? (_a = opt.label) != null ? _a : opt.value : opt;
+    };
     const renderField = (f) => {
+      var _a, _b, _c;
       const val = values[f.name];
       const id2 = `cfg-${f.name}`;
-      if (f.type === "boolean") {
+      const fieldType = f.type || "text";
+      const boolType = fieldType === "boolean" || fieldType === "bool";
+      const choices = f.options || f.choices || [];
+      const help = f.help || f.description || "";
+      const min = (_a = f.min) != null ? _a : f.minimum;
+      const max = (_b = f.max) != null ? _b : f.maximum;
+      const step = (_c = f.step) != null ? _c : fieldType === "number" ? "any" : void 0;
+      if (boolType) {
         return /* @__PURE__ */ React.createElement("div", { key: f.name, className: "field", style: { gridColumn: "1 / -1" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 12 } }, /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
             className: `toggle ${val ? "on" : ""}`,
             onClick: () => set3(f.name, !val),
-            "aria-label": f.label
+            "aria-label": f.label,
+            title: help
           }
         ), /* @__PURE__ */ React.createElement(
           "label",
           {
             htmlFor: id2,
             style: { marginBottom: 0, cursor: "pointer" },
-            onClick: () => set3(f.name, !val)
+            onClick: () => set3(f.name, !val),
+            title: help
           },
           f.label
-        ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { marginLeft: "auto", fontSize: 11, color: val ? "var(--teal)" : "var(--ink-3)" } }, val ? "ON" : "OFF")), f.help && /* @__PURE__ */ React.createElement("span", { className: "help", style: { paddingLeft: 46 } }, f.help));
+        ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { marginLeft: "auto", fontSize: 11, color: val ? "var(--teal)" : "var(--ink-3)" } }, val ? "ON" : "OFF")), help && /* @__PURE__ */ React.createElement("span", { className: "help", style: { paddingLeft: 46 } }, help));
       }
-      if (f.type === "select" && f.options) {
-        return /* @__PURE__ */ React.createElement("div", { key: f.name, className: "field" }, /* @__PURE__ */ React.createElement("label", { htmlFor: id2 }, f.label), /* @__PURE__ */ React.createElement(
+      if (fieldType === "select" && choices.length) {
+        const numericChoices = choices.every((opt) => typeof optionValue(opt) === "number");
+        return /* @__PURE__ */ React.createElement("div", { key: f.name, className: "field" }, /* @__PURE__ */ React.createElement("label", { htmlFor: id2, title: help }, f.label), /* @__PURE__ */ React.createElement(
           "select",
           {
             id: id2,
             className: "select",
             value: val != null ? val : "",
-            onChange: (e) => set3(f.name, e.target.value)
+            title: help,
+            onChange: (e) => set3(f.name, numericChoices ? Number(e.target.value) : e.target.value)
           },
-          f.options.map((opt) => /* @__PURE__ */ React.createElement("option", { key: opt, value: opt }, opt))
-        ), f.help && /* @__PURE__ */ React.createElement("span", { className: "help" }, f.help));
+          choices.map((opt) => {
+            const ov = optionValue(opt);
+            return /* @__PURE__ */ React.createElement("option", { key: String(ov), value: ov }, optionLabel(opt));
+          })
+        ), help && /* @__PURE__ */ React.createElement("span", { className: "help" }, help));
       }
-      return /* @__PURE__ */ React.createElement("div", { key: f.name, className: "field" }, /* @__PURE__ */ React.createElement("label", { htmlFor: id2 }, f.label), /* @__PURE__ */ React.createElement(
+      return /* @__PURE__ */ React.createElement("div", { key: f.name, className: "field" }, /* @__PURE__ */ React.createElement("label", { htmlFor: id2, title: help }, f.label), /* @__PURE__ */ React.createElement(
         "input",
         {
           id: id2,
           className: "input",
-          type: f.type === "number" ? "number" : "text",
+          type: fieldType === "number" ? "number" : fieldType === "date" ? "date" : "text",
           value: val != null ? val : "",
-          step: f.type === "number" ? "any" : void 0,
+          min,
+          max,
+          step,
+          placeholder: f.placeholder || "",
+          title: help,
           onChange: (e) => {
-            const v = f.type === "number" ? e.target.value === "" ? "" : Number(e.target.value) : e.target.value;
+            const raw = e.target.value;
+            const v = fieldType === "number" ? raw === "" ? "" : Number(raw) : raw;
             set3(f.name, v);
           }
         }
-      ), f.help && /* @__PURE__ */ React.createElement("span", { className: "help" }, f.help));
+      ), help && /* @__PURE__ */ React.createElement("span", { className: "help" }, help));
     };
     const submit = () => {
       const clean = {};
@@ -23063,9 +23178,9 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     };
     return /* @__PURE__ */ React.createElement("div", { className: "modal-bd", onMouseDown: (e) => {
       if (e.target === e.currentTarget) onClose();
-    } }, /* @__PURE__ */ React.createElement("div", { className: "modal", style: { width: "min(820px, calc(100vw - 32px))" }, onMouseDown: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "modal-hd" }, /* @__PURE__ */ React.createElement("h2", null, "\uC9C4\uD654 \uC2DC\uC791 \uC124\uC815", /* @__PURE__ */ React.createElement("span", { className: "sub" }, "\uBAA9\uD45C \xB7 \uC2A4\uCF54\uD504 \xB7 AI \uD30C\uB77C\uBBF8\uD130")), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\uB2EB\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "modal-bd-content" }, groups.map(([grp, fields]) => /* @__PURE__ */ React.createElement("div", { key: grp, className: "group" }, /* @__PURE__ */ React.createElement("div", { className: "group-title" }, grp), /* @__PURE__ */ React.createElement("div", { className: "field-row", style: {
+    } }, /* @__PURE__ */ React.createElement("div", { className: "modal", style: { width: "min(920px, calc(100vw - 32px))" }, onMouseDown: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "modal-hd" }, /* @__PURE__ */ React.createElement("h2", null, "\uC9C4\uD654 \uC2DC\uC791 \uC124\uC815", /* @__PURE__ */ React.createElement("span", { className: "sub" }, "\uBAA9\uD45C \xB7 \uBC31\uD14C\uC2A4\uD2B8 \uAE30\uAC04 \xB7 AI/GPT \uC778\uC99D \xB7 \uB9AC\uC18C\uC2A4 \xB7 \uC2DC\uB4DC")), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\uB2EB\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "modal-bd-content" }, /* @__PURE__ */ React.createElement("div", { className: "group" }, /* @__PURE__ */ React.createElement("div", { className: "group-title" }, "\uC124\uC815 \uC6D0\uBCF8\uACFC \uACF5\uC2DD"), /* @__PURE__ */ React.createElement("div", { className: "field-row", style: { gridTemplateColumns: "1fr 1fr" } }, /* @__PURE__ */ React.createElement("div", { className: "field", style: { gridColumn: "1 / -1" } }, /* @__PURE__ */ React.createElement("label", null, "\uC124\uC815 \uC6D0\uBCF8"), /* @__PURE__ */ React.createElement("div", { className: `pill ${sourceLive ? "ok" : "warn"}`, style: { width: "fit-content" } }, sourceLabel), /* @__PURE__ */ React.createElement("span", { className: "help" }, sourceMessage, ". LIVE \uC9C4\uD654 \uC2DC\uC791\uC740 `/config/spec`\uAC00 \uC815\uC0C1 \uB85C\uB4DC\uB41C \uB4A4\uC5D0\uB9CC \uD5C8\uC6A9\uB429\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uBAA9\uD45C \uC801\uD569\uB3C4 \uACF5\uC2DD"), /* @__PURE__ */ React.createElement("span", { className: "help" }, "winner_score\uAC00 \uBAA9\uD45C \uC801\uD569\uB3C4 \uC774\uC0C1\uC774\uBA74 \uC878\uC5C5\uD569\uB2C8\uB2E4. risk_adjusted=Calmar\xD7\uC6B0\uC0C1\uD5A5R\xB2, multi=Calmar\xB7R\xB2\xB7\uC77C\uD3C9\uADE0\uAC70\uB798\xB7payoff \uD3C9\uADE0\uC785\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "GPT auth \uC5F0\uACB0 \uD14C\uC2A4\uD2B8"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "btn ghost sm", onClick: onGptAuthTest, disabled: !onGptAuthTest }, "GPT 5.5 xhigh \uD14C\uC2A4\uD2B8"), /* @__PURE__ */ React.createElement("span", { className: "help" }, "\uC9C4\uD654 \uC2DC\uC791, \uB0B4\uBCF4\uB0B4\uAE30, \uC8FC\uBB38 \uC5C6\uC774 \uB85C\uCEEC GPT OAuth \uD504\uB85D\uC2DC \uC751\uB2F5\uB9CC \uC810\uAC80\uD569\uB2C8\uB2E4.", gptAuthProbe ? ` \uCD5C\uADFC \uACB0\uACFC: ${gptAuthProbe.status || "unknown"} ${gptAuthProbe.message || gptAuthProbe.reason || ""}` : "")))), groups.map(([grp, fields]) => /* @__PURE__ */ React.createElement("div", { key: grp, className: "group" }, /* @__PURE__ */ React.createElement("div", { className: "group-title" }, grp), /* @__PURE__ */ React.createElement("div", { className: "field-row", style: {
       gridTemplateColumns: fields.length === 1 ? "1fr" : "1fr 1fr"
-    } }, fields.map(renderField))))), /* @__PURE__ */ React.createElement("div", { className: "modal-ft" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: onClose }, "\uCDE8\uC18C"), /* @__PURE__ */ React.createElement("button", { className: "btn primary lg", onClick: submit, disabled }, "\u25B8 \uC9C4\uD654 \uC2DC\uC791"))));
+    } }, fields.map(renderField))))), /* @__PURE__ */ React.createElement("div", { className: "modal-ft" }, /* @__PURE__ */ React.createElement("span", { className: "help", style: { marginRight: "auto" } }, "\uBE48 \uC2DC\uC791\uC77C/\uC885\uB8CC\uC77C\uC740 DB \uCD5C\uC18C/\uCD5C\uB300 \uAC70\uB798\uC77C\uC744 \uC790\uB3D9 \uC0AC\uC6A9\uD569\uB2C8\uB2E4. MDD \uC0C1\uD55C\uC740 \uCD5C\uB300 40%\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: onClose }, "\uCDE8\uC18C"), /* @__PURE__ */ React.createElement("button", { className: "btn primary lg", onClick: submit, disabled }, "\uC9C4\uD654 \uC2DC\uC791"))));
   }
   Object.assign(window, { SettingsModal });
 
@@ -33080,6 +33195,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     LabPage,
     ProPage,
     VerdictPanel,
+    ResearchIndexPage,
     // TRACK_Z_DEPS §4 — shared components consumed via window.X across standalone pages.
     DemoBadge,
     LivePending,
