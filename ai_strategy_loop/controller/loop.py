@@ -443,6 +443,31 @@ def _warm_to_outcome(result: dict) -> BacktestOutcome:
         "warm backtest non-success: " + " ".join(detail_parts),
     )
 
+def _warm_session_page_data(*, prepare: Optional[dict] = None, last_run: Optional[dict] = None) -> Dict[str, Any]:
+    """warm prepare/run timing metadata를 dashboard page_data용으로 안전하게 투영한다."""
+    payload: Dict[str, Any] = {}
+    if isinstance(prepare, dict):
+        timing = prepare.get("timing")
+        if isinstance(timing, dict):
+            prepare_timing = dict(timing)
+            payload["prepare"] = prepare_timing
+            if "prepare_elapsed" in prepare_timing:
+                payload["prepare_elapsed_sec"] = prepare_timing["prepare_elapsed"]
+            for key in ("engine_count", "back_count"):
+                if key in prepare_timing:
+                    payload.setdefault(key, prepare_timing[key])
+    if isinstance(last_run, dict):
+        timing = last_run.get("timing")
+        if isinstance(timing, dict):
+            run_timing = dict(timing)
+            payload["last_run"] = run_timing
+            if "run_elapsed" in run_timing:
+                payload["last_run_elapsed_sec"] = run_timing["run_elapsed"]
+                payload["run_elapsed_sec"] = run_timing["run_elapsed"]
+            for key in ("engine_count", "back_count", "timeout_count", "recovery_attempts", "status"):
+                if key in run_timing:
+                    payload[key] = run_timing[key]
+    return {"warm_session": payload} if payload else {}
 
 # =====================================================================
 # 부검 피드백 (US-006 Phase 3) — csv_path → 다음 세대 NL 피드백.
@@ -1199,6 +1224,7 @@ def run_loop(
     #   cold 모드면 warm_session은 None으로 두어 기존 subprocess 경로를 그대로 탄다.
     #   (cumulative_tokens 등 상태 변수 초기화 뒤에 둔다 — _publish_live가 참조.)
     warm_session = None
+    warm_prepare_result = None
     if getattr(config, "bt_engine_mode", "warm") == "warm":
         _publish_live(st, rid, config, status="running", current_gen=start_gen,
                       cumulative_tokens=cumulative_tokens, phase="warm_prepare_start",
@@ -1206,6 +1232,7 @@ def run_loop(
                       _log_buf=_live_log_buf, _timing=_timing)
         warm_session = WarmBacktestSession(_build_warm_btconfig(config))
         prep = warm_session.prepare()
+        warm_prepare_result = prep
         if prep.get("status") != "ok":
             print(f"[LOOP] warm prepare 실패 → cold 폴백: {prep.get('message')}", flush=True)
             warm_session = None
@@ -1215,6 +1242,7 @@ def run_loop(
             _publish_live(st, rid, config, status="running", current_gen=start_gen,
                           cumulative_tokens=cumulative_tokens, phase="warm_prepare_done",
                           message=f"warm session 준비 완료 (back_count={back_count})",
+                          page_data=_warm_session_page_data(prepare=prep),
                           _log_buf=_live_log_buf, _timing=_timing)
 
     # resume 시 기존 best(graded) 복원.
@@ -1403,17 +1431,19 @@ def run_loop(
                     #   over-firing 전략은 120초에 컷되고 리셋+재로딩 후 다음 run으로 넘어간다.
                     #   이 인자는 BackTest join에만 쓰이며, 데이터로딩(BacktestConfig.timeout)은
                     #   _build_warm_btconfig에서 별도로 높게 유지되므로 재로딩이 잘리지 않는다.
-                    outcome = _warm_to_outcome(
-                        warm_session.run(buy_name, sell_name,
-                                         timeout=config.bt_warm_run_timeout)
+                    warm_run_result = warm_session.run(
+                        buy_name, sell_name, timeout=config.bt_warm_run_timeout
                     )
+                    outcome = _warm_to_outcome(warm_run_result)
                 else:
                     # cold: 세대마다 stom_backtest.py 서브프로세스 (폴백/기존 경로).
                     outcome = run_backtest_for(config, buy_name, sell_name)
+                    warm_run_result = None
             except Exception as exc:  # noqa: BLE001 - 어떤 예외든 흡수, 루프 유지.
                 outcome = BacktestOutcome(
                     False, "error", None, None, f"backtest raised: {exc}"
                 )
+                warm_run_result = None
             bt_elapsed = time.time() - t0
             # US-007 — 백테스트 종료 라이브 발행.
             _publish_live(st, rid, config, status="running", current_gen=gen_no,
@@ -1423,6 +1453,9 @@ def run_loop(
                           best_buy=best_buy, best_sell=best_sell,
                           winner_gen=winner_gen, winner_score=winner_score,
                           winner_buy=winner_buy, winner_sell=winner_sell,
+                          page_data=_warm_session_page_data(
+                              prepare=warm_prepare_result, last_run=warm_run_result
+                          ),
                           _log_buf=_live_log_buf, _timing=_timing)
             print(f"[LOOP] backtest status={outcome.status} "
                   f"elapsed={bt_elapsed:.1f}s reason={outcome.reason}", flush=True)

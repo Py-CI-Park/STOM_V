@@ -20209,6 +20209,114 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       detail: "\uC774\uBC88 \uC791\uC5C5 \uBC94\uC704\uC5D0\uC11C\uB294 \uAD6C\uD604\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uBCC4\uB3C4 \uC5F0\uAD6C\uB85C \uC608\uCE21/\uD30C\uB77C\uBBF8\uD130\uD654 \uAC00\uB2A5\uC131\uB9CC \uCD94\uC801\uD569\uB2C8\uB2E4."
     }
   ];
+  var PROCESS_FALLBACK_CATALOG = [
+    {
+      number: 1,
+      code: "fast",
+      name: "fast-discovery",
+      label: "Fast discovery",
+      authority: "advisory research",
+      capability: { can_promote: false, can_export: false, can_live: false },
+      detail: "\uBE60\uB978 \uC870\uAC74 \uD0D0\uC0C9\uC6A9 projection\uC785\uB2C8\uB2E4. \uD6C4\uBCF4 \uC124\uBA85\uACFC \uC815\uB82C\uB9CC \uD558\uBA70 \uC2B9\uACA9 \uAD8C\uD55C\uC740 \uC5C6\uC2B5\uB2C8\uB2E4."
+    },
+    {
+      number: 2,
+      code: "research",
+      name: "process-research",
+      label: "Process research",
+      authority: "advisory research",
+      capability: { can_promote: false, can_export: false, can_live: false },
+      detail: "full-period research_validation\uACFC advisory_split evidence\uB97C \uBCF4\uC874\uD558\uB294 \uC5F0\uAD6C projection\uC785\uB2C8\uB2E4."
+    },
+    {
+      number: 3,
+      code: "promotion",
+      name: "promotion-review",
+      label: "Promotion review",
+      authority: "separate frozen promotion review",
+      capability: { can_promote: false, can_export: false, can_live: false },
+      detail: "\uB3D9\uACB0 \uD6C4\uBCF4\uB97C \uBCC4\uB3C4 \uB9AC\uBDF0\uB85C \uAC80\uD1A0\uD558\uB294 projection\uC785\uB2C8\uB2E4. hard gate\xB7evidence health\xB7\uC778\uAC04 \uC2B9\uC778\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."
+    }
+  ];
+  var FULL_PIPELINE_STEPS = [
+    {
+      key: "condition-generation",
+      title: "1. condition generation",
+      body: "\uC870\uAC74\uC2DD \uD6C4\uBCF4\uB97C \uC0DD\uC131\uD558\uACE0 STOM \uBB38\uBC95/\uBCC0\uC218 \uACBD\uACC4\uB97C \uBA3C\uC800 \uD655\uC778\uD569\uB2C8\uB2E4."
+    },
+    {
+      key: "research-validation",
+      title: "2. full-period / research_validation",
+      body: "\uC804\uCCB4 \uAE30\uAC04 \uAC80\uC99D\uACFC research_validation \uACB0\uACFC\uB97C advisory_split evidence\uB85C \uBD84\uB9AC\uD574 \uAE30\uB85D\uD569\uB2C8\uB2E4."
+    },
+    {
+      key: "scoring-evidence",
+      title: "3. scoring / evidence",
+      body: "\uC131\uACFC\xB7\uC0DD\uC131\uD488\uC9C8 100\uC810, hard gate, evidence health\uB97C \uD568\uAED8 \uBCF4\uB418 \uC810\uC218\uB294 advisory-only\uC785\uB2C8\uB2E4."
+    },
+    {
+      key: "autopsy-analysis",
+      title: "4. autopsy / analysis",
+      body: "\uC2E4\uD328 \uC6D0\uC778, hypothesis, \uD328\uD134 \uCE74\uB4DC\uB97C \uBD84\uC11D\uD574 \uB2E4\uC74C \uC138\uB300 \uB9E5\uB77D\uC73C\uB85C \uD658\uB958\uD569\uB2C8\uB2E4."
+    },
+    {
+      key: "improvement",
+      title: "5. improvement",
+      body: "\uCC44\uD0DD/\uAC70\uC808/\uBCF4\uB958\uB41C \uADFC\uAC70\uB97C \uC774\uC6A9\uD574 \uD6C4\uBCF4 \uC0DD\uC131 \uBC29\uD5A5\uC744 \uAC1C\uC120\uD569\uB2C8\uB2E4."
+    },
+    {
+      key: "frozen-promotion-review",
+      title: "6. separate frozen promotion review",
+      body: "\uC2B9\uACA9\uC740 \uBCC4\uB3C4 \uB3D9\uACB0 \uB9AC\uBDF0\uC5D0\uC11C\uB9CC \uD310\uB2E8\uD569\uB2C8\uB2E4. promote/export/live \uAD8C\uD55C\uC740 \uC5EC\uAE30\uC11C \uC0DD\uAE30\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."
+    }
+  ];
+  function _processCatalogRows(pageData) {
+    const discovery = (pageData == null ? void 0 : pageData.condition_discovery) || {};
+    const raw = discovery.process_catalog || (pageData == null ? void 0 : pageData.process_catalog);
+    const rows = Array.isArray(raw) ? raw : raw && typeof raw === "object" ? Object.values(raw) : [];
+    const normalized = rows.map((row, i) => {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+      return {
+        number: Number((_c = (_b = (_a = row.number) != null ? _a : row.id) != null ? _b : row.order) != null ? _c : i + 1),
+        code: String((_g = (_f = (_e = (_d = row.code) != null ? _d : row.preset) != null ? _e : row.key) != null ? _f : row.name) != null ? _g : "").trim(),
+        name: String((_k = (_j = (_i = (_h = row.name) != null ? _h : row.slug) != null ? _i : row.code) != null ? _j : row.preset) != null ? _k : "").trim(),
+        label: row.label || row.title || row.name || row.code || `process-${i + 1}`,
+        authority: row.authority || row.mode || row.capability_label || "advisory research",
+        capability: row.capability || row.capabilities || row.authority_guard || row,
+        detail: row.detail || row.description || row.purpose || "metadata-provided process projection"
+      };
+    }).filter((row) => row.code || row.name || Number.isFinite(row.number));
+    return normalized.length ? normalized : PROCESS_FALLBACK_CATALOG;
+  }
+  function _selectedProcessMeta(pageData) {
+    var _a;
+    const discovery = (pageData == null ? void 0 : pageData.condition_discovery) || {};
+    const selected2 = discovery.process || discovery.current_process || discovery.preset || (pageData == null ? void 0 : pageData.process);
+    const rows = _processCatalogRows(pageData);
+    const selectedCode = typeof selected2 === "string" ? selected2 : (selected2 == null ? void 0 : selected2.code) || (selected2 == null ? void 0 : selected2.preset) || (selected2 == null ? void 0 : selected2.name) || (selected2 == null ? void 0 : selected2.label) || (selected2 == null ? void 0 : selected2.title) || (selected2 == null ? void 0 : selected2.slug) || (selected2 == null ? void 0 : selected2.key);
+    const selectedNumber = typeof selected2 === "number" ? selected2 : Number((_a = selected2 == null ? void 0 : selected2.number) != null ? _a : selected2 == null ? void 0 : selected2.id);
+    const match = rows.find((row) => Number.isFinite(selectedNumber) && row.number === selectedNumber || selectedCode && [row.code, row.name, row.label].filter(Boolean).includes(selectedCode)) || rows[0] || PROCESS_FALLBACK_CATALOG[0];
+    const selectedObject = selected2 && typeof selected2 === "object" ? selected2 : {};
+    const capability = discovery.capabilities || selectedObject.capability || selectedObject.capabilities || match.capability || {};
+    return {
+      selected: { ...match, ...selectedObject, capability },
+      rows,
+      source: discovery.process_catalog || (pageData == null ? void 0 : pageData.process_catalog) ? "metadata" : "static fallback"
+    };
+  }
+  function _capabilityValue(capability, key) {
+    return (capability == null ? void 0 : capability[key]) === true;
+  }
+  function _warmValue(warm, keys, fallback = "\u2014") {
+    for (const key of keys) {
+      const value = warm == null ? void 0 : warm[key];
+      if (value !== void 0 && value !== null && value !== "") return value;
+    }
+    return fallback;
+  }
+  function CapabilityPill({ label, value }) {
+    return /* @__PURE__ */ React.createElement("span", { className: `process-capability-pill ${value ? "on" : "off"}` }, label, "=", String(value === true));
+  }
   function fmtElapsedSec(sec) {
     const s = typeof sec === "number" && isFinite(sec) && sec > 0 ? Math.floor(sec) : 0;
     if (s < 60) return `${s}s`;
@@ -20351,6 +20459,16 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       const elapsed = status === "active" && phaseElapsed != null ? fmtElapsedSec(phaseElapsed) : typeof doneSec === "number" && doneSec >= 0 ? fmtElapsedSec(doneSec) : "\u2014";
       return { ...step, index: index2, status, elapsed };
     });
+    const pageData = (state == null ? void 0 : state.page_data) || {};
+    const processMeta = _selectedProcessMeta(pageData);
+    const selectedProcess = processMeta.selected;
+    const selectedCapability = selectedProcess.capability || {};
+    const warmSession = (pageData == null ? void 0 : pageData.warm_session) || {};
+    const warmHasMetadata = Object.keys(warmSession).length > 0;
+    const warmPrepare = _warmValue(warmSession, ["prepare_elapsed_sec", "prepare_seconds", "warm_prepare_seconds"]);
+    const warmRun = _warmValue(warmSession, ["last_run_elapsed_sec", "run_elapsed_sec", "bt_warm_run_timeout", "run_timeout_sec"]);
+    const warmEngines = _warmValue(warmSession, ["engine_count", "back_count", "bt_warm_engine_count"]);
+    const warmMode = _warmValue(warmSession, ["mode", "status", "engine_mode"], "metadata pending");
     const logRef = useRef_ph(null);
     useEffect_ph(() => {
       if (logRef.current) {
@@ -20368,7 +20486,10 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       height: "100%",
       background: "var(--amber)",
       transition: "width .3s ease"
-    } })), /* @__PURE__ */ React.createElement("div", { className: "process-detail-callout", "aria-label": "\uC0C1\uC138 \uD504\uB85C\uC138\uC2A4 \uC548\uB0B4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "\uC0C1\uC138 \uD504\uB85C\uC138\uC2A4"), /* @__PURE__ */ React.createElement("small", null, "\uC544\uB798 \uB124\uC774\uD2F0\uBE0C \uADF8\uB798\uD504\xB7\uD0C0\uC774\uBC0D\xB7\uB85C\uADF8\uAC00 \uD604\uC7AC \uC815\uBCF8\uC785\uB2C8\uB2E4. \uC804\uCCB4 \uC124\uBA85 \uBB38\uC11C\uB294 \uC77D\uAE30 \uC804\uC6A9 \uCC38\uACE0 \uC790\uB8CC\uB85C \uBCC4\uB3C4 \uD655\uC778\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("a", { className: "btn", href: "/process_flow", target: "_blank", rel: "noreferrer" }, "\uC0C1\uC138 \uD504\uB85C\uC138\uC2A4 \uBB38\uC11C \uC5F4\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "process-live-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "\uD604\uC7AC \uB178\uB4DC"), " ", activeStep ? activeStep.label : "\uBBF8\uC815"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "phase"), " ", latestPhase), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "current_step"), " ", currentStep >= 0 ? currentStep : "\u2014"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "\uCD5C\uADFC \uB85C\uADF8"), " ", lastLog)), /* @__PURE__ */ React.createElement("div", { className: "process-flow-cards", "aria-label": "\uD504\uB85C\uC138\uC2A4 \uD750\uB984 \uACC4\uC57D \uC694\uC57D" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB370\uC774\uD130 \uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", null, "\uC2E4\uC2DC\uAC04 \uC0C1\uD0DC"), /* @__PURE__ */ React.createElement("small", null, "\uD604\uC7AC \uC138\uB300\xB7\uD604\uC7AC \uB2E8\uACC4\xB7\uBC31\uD14C\uC2A4\uD2B8 \uB85C\uADF8\uB97C \uC77D\uAE30 \uC804\uC6A9\uC73C\uB85C \uD45C\uC2DC")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC0C1\uD0DC \uAD6C\uBD84"), /* @__PURE__ */ React.createElement("b", null, flowMode), /* @__PURE__ */ React.createElement("small", null, "live/archive/idle\uC744 \uAD6C\uBD84\uD574 \uC61B \uACB0\uACFC\uB97C \uC2E4\uC2DC\uAC04\uC73C\uB85C \uC624\uD574\uD558\uC9C0 \uC54A\uAC8C \uD568")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uD604\uC7AC \uB2E8\uACC4"), /* @__PURE__ */ React.createElement("b", null, activeStep ? `${currentStep + 1}. ${activeStep.label}` : "\uBBF8\uC815"), /* @__PURE__ */ React.createElement("small", null, phaseElapsed != null ? `\uD604\uC7AC \uB2E8\uACC4 \uACBD\uACFC ${fmtElapsedSec(phaseElapsed)}` : "\uB2E8\uACC4 \uACBD\uACFC \uB300\uAE30")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB2E8\uACC4 \uC9C4\uD589"), /* @__PURE__ */ React.createElement("b", null, progressLabel), /* @__PURE__ */ React.createElement("small", null, "\uC608\uCE21\uAC12\uC774 \uC544\uB2C8\uB77C \uC2E4\uC81C current_step \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC18C\uC694\uC2DC\uAC04"), /* @__PURE__ */ React.createElement("b", null, timingRows.filter((row) => row.elapsed !== "\u2014").length, "/", totalSteps), /* @__PURE__ */ React.createElement("small", null, "\uAC01 \uB2E8\uACC4\uAC00 \uB05D\uB09C \uB4A4 \uB204\uC801\uB418\uB294 \uC2E4\uC81C \uC2DC\uAC04 \uD45C\uBCF8")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB85C\uADF8"), /* @__PURE__ */ React.createElement("b", null, logs.length), /* @__PURE__ */ React.createElement("small", null, "\uC5D4\uC9C4/\uBC31\uD14C\uC2A4\uD2B8 \uB85C\uADF8 \uCD5C\uADFC ", logWindow.length, "\uC904 \uC790\uB3D9 \uC2A4\uD06C\uB864"))), /* @__PURE__ */ React.createElement(
+    } })), /* @__PURE__ */ React.createElement("div", { className: "process-detail-callout", "aria-label": "\uC0C1\uC138 \uD504\uB85C\uC138\uC2A4 \uC548\uB0B4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "\uC0C1\uC138 \uD504\uB85C\uC138\uC2A4"), /* @__PURE__ */ React.createElement("small", null, "\uC544\uB798 \uB124\uC774\uD2F0\uBE0C \uADF8\uB798\uD504\xB7\uD0C0\uC774\uBC0D\xB7\uB85C\uADF8\uAC00 \uD604\uC7AC \uC815\uBCF8\uC785\uB2C8\uB2E4. \uC804\uCCB4 \uC124\uBA85 \uBB38\uC11C\uB294 \uC77D\uAE30 \uC804\uC6A9 \uCC38\uACE0 \uC790\uB8CC\uB85C \uBCC4\uB3C4 \uD655\uC778\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("a", { className: "btn", href: "/process_flow", target: "_blank", rel: "noreferrer" }, "\uC0C1\uC138 \uD504\uB85C\uC138\uC2A4 \uBB38\uC11C \uC5F4\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "process-live-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "\uD604\uC7AC \uB178\uB4DC"), " ", activeStep ? activeStep.label : "\uBBF8\uC815"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "phase"), " ", latestPhase), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "current_step"), " ", currentStep >= 0 ? currentStep : "\u2014"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "\uCD5C\uADFC \uB85C\uADF8"), " ", lastLog)), /* @__PURE__ */ React.createElement("div", { className: "process-selector-panel", "aria-label": "\uD504\uB85C\uC138\uC2A4 \uC120\uD0DD \uC0C1\uD0DC" }, /* @__PURE__ */ React.createElement("div", { className: "process-selector-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "Process selector"), /* @__PURE__ */ React.createElement("small", null, "state.page_data.condition_discovery.process \xB7 process_catalog projection (", processMeta.source, ")")), /* @__PURE__ */ React.createElement("span", { className: "process-authority-chip" }, selectedProcess.authority)), /* @__PURE__ */ React.createElement("div", { className: "process-selector-row" }, processMeta.rows.map((row) => {
+      const active = row === selectedProcess || row.code === selectedProcess.code;
+      return /* @__PURE__ */ React.createElement("div", { key: `${row.number}-${row.code || row.name}`, className: `process-selector-option ${active ? "active" : ""}` }, /* @__PURE__ */ React.createElement("span", { className: "process-selector-num" }, row.number), /* @__PURE__ */ React.createElement("b", null, row.name || row.code), /* @__PURE__ */ React.createElement("small", null, row.code, " \xB7 ", row.label));
+    })), /* @__PURE__ */ React.createElement("div", { className: "process-readout-grid" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC120\uD0DD process"), /* @__PURE__ */ React.createElement("b", null, selectedProcess.number, " \xB7 ", selectedProcess.name || selectedProcess.code), /* @__PURE__ */ React.createElement("small", null, selectedProcess.detail)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "validation names"), /* @__PURE__ */ React.createElement("b", null, "research_validation"), /* @__PURE__ */ React.createElement("small", null, "research evidence is reported as advisory_split, not clean promotion OOS")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "capability"), /* @__PURE__ */ React.createElement("div", { className: "process-capability-row" }, /* @__PURE__ */ React.createElement(CapabilityPill, { label: "can_promote", value: _capabilityValue(selectedCapability, "can_promote") }), /* @__PURE__ */ React.createElement(CapabilityPill, { label: "can_export", value: _capabilityValue(selectedCapability, "can_export") }), /* @__PURE__ */ React.createElement(CapabilityPill, { label: "can_live", value: _capabilityValue(selectedCapability, "can_live") })), /* @__PURE__ */ React.createElement("small", null, "fast/research are advisory; promotion still requires frozen review and human approval")))), /* @__PURE__ */ React.createElement("div", { className: "process-pipeline-panel", "aria-label": "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uC804\uCCB4 \uD30C\uC774\uD504\uB77C\uC778" }, /* @__PURE__ */ React.createElement("div", { className: "process-pipeline-head" }, /* @__PURE__ */ React.createElement("b", null, "Full pipeline \xB7 advisory research \u2192 frozen promotion review"), /* @__PURE__ */ React.createElement("small", null, "\uAE30\uC874 5-step \uADF8\uB798\uD504\uB294 \uC2E4\uD589 \uC0C1\uD0DC \uC694\uC57D\uC774\uACE0, \uC774 \uC139\uC158\uC740 \uC804\uCCB4 \uC5F0\uAD6C/\uAC80\uD1A0 \uACC4\uC57D\uC785\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "process-pipeline-steps" }, FULL_PIPELINE_STEPS.map((step) => /* @__PURE__ */ React.createElement("div", { key: step.key, className: "process-pipeline-step" }, /* @__PURE__ */ React.createElement("b", null, step.title), /* @__PURE__ */ React.createElement("small", null, step.body))))), /* @__PURE__ */ React.createElement("div", { className: "process-warm-panel", "aria-label": "warm session timing metadata" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "Warm timing metadata"), /* @__PURE__ */ React.createElement("small", null, warmHasMetadata ? "state.page_data.warm_session" : "warm metadata pending \u2014 existing display remains valid")), /* @__PURE__ */ React.createElement("div", { className: "process-warm-grid" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "mode/status"), warmMode), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "engines"), warmEngines), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "prepare"), typeof warmPrepare === "number" ? fmtElapsedSec(warmPrepare) : warmPrepare), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "run/timeout"), typeof warmRun === "number" ? fmtElapsedSec(warmRun) : warmRun))), /* @__PURE__ */ React.createElement("div", { className: "process-flow-cards", "aria-label": "\uD504\uB85C\uC138\uC2A4 \uD750\uB984 \uACC4\uC57D \uC694\uC57D" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB370\uC774\uD130 \uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", null, "\uC2E4\uC2DC\uAC04 \uC0C1\uD0DC"), /* @__PURE__ */ React.createElement("small", null, "\uD604\uC7AC \uC138\uB300\xB7\uD604\uC7AC \uB2E8\uACC4\xB7\uBC31\uD14C\uC2A4\uD2B8 \uB85C\uADF8\uB97C \uC77D\uAE30 \uC804\uC6A9\uC73C\uB85C \uD45C\uC2DC")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC0C1\uD0DC \uAD6C\uBD84"), /* @__PURE__ */ React.createElement("b", null, flowMode), /* @__PURE__ */ React.createElement("small", null, "live/archive/idle\uC744 \uAD6C\uBD84\uD574 \uC61B \uACB0\uACFC\uB97C \uC2E4\uC2DC\uAC04\uC73C\uB85C \uC624\uD574\uD558\uC9C0 \uC54A\uAC8C \uD568")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uD604\uC7AC \uB2E8\uACC4"), /* @__PURE__ */ React.createElement("b", null, activeStep ? `${currentStep + 1}. ${activeStep.label}` : "\uBBF8\uC815"), /* @__PURE__ */ React.createElement("small", null, phaseElapsed != null ? `\uD604\uC7AC \uB2E8\uACC4 \uACBD\uACFC ${fmtElapsedSec(phaseElapsed)}` : "\uB2E8\uACC4 \uACBD\uACFC \uB300\uAE30")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB2E8\uACC4 \uC9C4\uD589"), /* @__PURE__ */ React.createElement("b", null, progressLabel), /* @__PURE__ */ React.createElement("small", null, "\uC608\uCE21\uAC12\uC774 \uC544\uB2C8\uB77C \uC2E4\uC81C current_step \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC18C\uC694\uC2DC\uAC04"), /* @__PURE__ */ React.createElement("b", null, timingRows.filter((row) => row.elapsed !== "\u2014").length, "/", totalSteps), /* @__PURE__ */ React.createElement("small", null, "\uAC01 \uB2E8\uACC4\uAC00 \uB05D\uB09C \uB4A4 \uB204\uC801\uB418\uB294 \uC2E4\uC81C \uC2DC\uAC04 \uD45C\uBCF8")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB85C\uADF8"), /* @__PURE__ */ React.createElement("b", null, logs.length), /* @__PURE__ */ React.createElement("small", null, "\uC5D4\uC9C4/\uBC31\uD14C\uC2A4\uD2B8 \uB85C\uADF8 \uCD5C\uADFC ", logWindow.length, "\uC904 \uC790\uB3D9 \uC2A4\uD06C\uB864"))), /* @__PURE__ */ React.createElement(
       ProcessFlowDiagram,
       {
         currentStep,
@@ -20399,7 +20520,10 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     fmtClockFromEpoch,
     normalizeFlowStepIndex,
     flowStepStatus,
-    FLOW_STEPS
+    FLOW_STEPS,
+    PROCESS_FALLBACK_CATALOG,
+    FULL_PIPELINE_STEPS,
+    _selectedProcessMeta
   });
 
   // ai_strategy_loop/dashboard/frontend/engine.jsx

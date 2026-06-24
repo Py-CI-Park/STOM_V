@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="/ui/styles.css?v=20260624u001" />
+  <link rel="stylesheet" href="/ui/styles.css?v=20260624u002" />
 
   <!-- 로컬 번들(vendored) — unpkg CDN 의존 제거로 오프라인/캐시/SRI 문제 차단.
        이전: unpkg react/react-dom/babel + SRI(integrity). 인터넷 불가/캐시 꼬임 시 검은 화면.
@@ -40,6 +40,6 @@
   <!-- Phase14.4: 운영 컴포넌트 26개를 빌드 시점에 컴파일한 단일 클래식 스크립트.
        런타임 babel 제거(index.html). defer 라서 stom-ui.js(모듈) 뒤에 실행 → window.fmt* 준비.
        소스 .jsx 수정 시 webui-build `npm run build` 재생성. -->
-  <script defer src="/ui/bundle/app.js?v=aeb961d2"></script>
+  <script defer src="/ui/bundle/app.js?v=91fec92d"></script>
 </body>
 </html>

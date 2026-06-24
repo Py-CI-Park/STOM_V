@@ -107,6 +107,40 @@ class TestProcessFlowSvg:
         css = _read("styles.css")
         assert ".process-live-strip" in css
         assert ".process-timing-cell.active" in css
+    def test_process_slice_adds_selector_pipeline_and_authority_markers(self) -> None:
+        """프로세스 projection selector, full pipeline, advisory/promotion authority labels를 고정한다."""
+        src = _read("phase-detail.jsx")
+        css = _read("styles.css")
+        for marker in (
+            "process-selector-panel",
+            "process-selector-option",
+            "process-readout-grid",
+            "process-pipeline-panel",
+            "process-warm-panel",
+            "PROCESS_FALLBACK_CATALOG",
+            "FULL_PIPELINE_STEPS",
+            "state.page_data.condition_discovery.process",
+            "process_catalog projection",
+            "research_validation",
+            "advisory_split",
+            "can_promote",
+            "selected?.label",
+            "selected?.title",
+            "can_export",
+            "can_live",
+        ):
+            assert marker in src
+        assert "score_can_promote" not in src
+        assert "score_can_export" not in src
+        assert "score_can_live" not in src
+        for marker in (
+            ".process-selector-panel",
+            ".process-selector-option.active",
+            ".process-pipeline-steps",
+            ".process-capability-pill",
+            ".process-warm-grid",
+        ):
+            assert marker in css
     def test_no_hardcoded_amber_rgba_literal(self) -> None:
         """amber 하드코딩 rgba(240,179,90,...) 리터럴이 소스에 남지 않는다(토큰화)."""
         src = _read("phase-detail.jsx")

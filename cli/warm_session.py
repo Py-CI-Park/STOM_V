@@ -117,8 +117,55 @@ class WarmBacktestSession:
         # 정리 대상(엔진 + 서브토탈만 보관; BackTest 프로세스는 run마다 따로 reap)
         self._procs = []
         self.drainer = None
+        self._warm_timeout_count = 0
+        self._warm_recovery_attempts = 0
+        self._warm_recovery_success_count = 0
+        self._warm_recovery_failure_count = 0
+        self._warm_nuclear_fallback_count = 0
+
 
     # ------------------------------------------------------------------
+    def _elapsed(self, started_at):
+        """monotonic 기준 경과초를 음수 없이 반환한다(관측 메타데이터 전용)."""
+        return max(0.0, time.perf_counter() - started_at)
+
+    def _timing_common(self, status):
+        return {
+            'engine_count': int(getattr(self.config, 'engine_count', 0) or 0),
+            'back_count': int(self.back_count or 0),
+            'status': status,
+        }
+
+    def _prepare_timing(self, status, started_at, stage_elapsed):
+        timing = self._timing_common(status)
+        timing.update({
+            'prepare_elapsed': self._elapsed(started_at),
+            'spawn_subtotals_elapsed': max(0.0, stage_elapsed.get('spawn_subtotals', 0.0)),
+            'spawn_engines_elapsed': max(0.0, stage_elapsed.get('spawn_engines', 0.0)),
+            'market_data_load_elapsed': max(0.0, stage_elapsed.get('market_data_load', 0.0)),
+            'engine_data_send_elapsed': max(0.0, stage_elapsed.get('engine_data_send', 0.0)),
+        })
+        return timing
+
+    def _run_timing(self, status, started_at, timeout_hit=False):
+        timing = self._timing_common(status)
+        timing.update({
+            'run_elapsed': self._elapsed(started_at),
+            'timeout': bool(timeout_hit),
+            'timeout_count': int(self._warm_timeout_count),
+            'recovery_attempts': int(self._warm_recovery_attempts),
+            'recovery_success_count': int(self._warm_recovery_success_count),
+            'recovery_failure_count': int(self._warm_recovery_failure_count),
+            'nuclear_fallback_count': int(self._warm_nuclear_fallback_count),
+        })
+        return timing
+
+    @staticmethod
+    def _with_timing(result, timing):
+        result = dict(result)
+        result['timing'] = timing
+        return result
+
     # prepare: 워밍업 (runner.py Step1~5)
     # ------------------------------------------------------------------
     def prepare(self):
@@ -127,8 +174,11 @@ class WarmBacktestSession:
         반환: 성공 시 {'status':'ok','back_count':N},
               실패 시 {'status':'error','message':...}.
         """
+        started_at = time.perf_counter()
+        stage_elapsed = {}
         if self._prepared:
-            return {'status': 'ok', 'back_count': self.back_count}
+            result = {'status': 'ok', 'back_count': self.back_count}
+            return self._with_timing(result, self._prepare_timing('ok', started_at, stage_elapsed))
 
         _register_signals()
         _ensure_cli_db_env()
@@ -139,24 +189,42 @@ class WarmBacktestSession:
         self.drainer.start()
 
         try:
+            stage_t0 = time.perf_counter()
             self._spawn_subtotals()
+            stage_elapsed['spawn_subtotals'] = self._elapsed(stage_t0)
+
+            stage_t0 = time.perf_counter()
             self._spawn_engines()
+            stage_elapsed['spawn_engines'] = self._elapsed(stage_t0)
+
+            stage_t0 = time.perf_counter()
             data = self._load_market_data()
+            stage_elapsed['market_data_load'] = self._elapsed(stage_t0)
             if data.get('status') != 'ok':
                 self.close()
-                return data
+                return self._with_timing(
+                    data, self._prepare_timing(data.get('status', 'error'), started_at, stage_elapsed)
+                )
             # 엔진 리셋 후 재로딩 시 DB를 다시 쿼리하지 않도록 보관한다.
             self._market_data = data
+
+            stage_t0 = time.perf_counter()
             send_result = self._send_engine_data(data)
+            stage_elapsed['engine_data_send'] = self._elapsed(stage_t0)
             if send_result.get('status') != 'ok':
                 self.close()
-                return send_result
+                return self._with_timing(
+                    send_result,
+                    self._prepare_timing(send_result.get('status', 'error'), started_at, stage_elapsed),
+                )
         except Exception as e:
             self.close()
-            return {'status': 'error', 'message': f'prepare 실패: {e}'}
+            result = {'status': 'error', 'message': f'prepare 실패: {e}'}
+            return self._with_timing(result, self._prepare_timing('error', started_at, stage_elapsed))
 
         self._prepared = True
-        return {'status': 'ok', 'back_count': self.back_count}
+        result = {'status': 'ok', 'back_count': self.back_count}
+        return self._with_timing(result, self._prepare_timing('ok', started_at, stage_elapsed))
 
     def _create_queues(self):
         """큐 및 공유 객체 생성(runner.py Step1)."""
@@ -355,8 +423,10 @@ class WarmBacktestSession:
         반환: run_backtest와 동일한 result dict 구조
               (status/metrics/csv_path/config/message).
         """
+        timing_started_at = time.perf_counter()
         if not self._prepared:
-            return {'status': 'error', 'message': 'prepare()가 먼저 호출되어야 합니다.'}
+            result = {'status': 'error', 'message': 'prepare()가 먼저 호출되어야 합니다.'}
+            return self._with_timing(result, self._run_timing('error', timing_started_at))
 
         config = self.config
         if betting is None:
@@ -378,17 +448,25 @@ class WarmBacktestSession:
 
         if proc.is_alive():
             # timeout: 하드 kill 전에 협조적 취소를 먼저 시도해 BackTest/엔진을 정상 종료시킨다.
-            return self._recover_after_failure(
+            self._warm_timeout_count += 1
+            result = self._recover_after_failure(
                 proc, timeout_hit=True,
                 error_message=f'백테스트 시간 초과 ({timeout}초)')
+            return self._with_timing(
+                result, self._run_timing(result.get('status', 'error'), timing_started_at, timeout_hit=True)
+            )
 
         if proc.exitcode not in (0, None):
             # 비정상 종료: 엔진이 오염됐을 수 있으므로 동일하게 협조적 취소 + 재로딩으로 복구한다.
-            return self._recover_after_failure(
+            result = self._recover_after_failure(
                 proc, timeout_hit=False,
                 error_message=f'백테스트 child process exited with code {proc.exitcode}')
+            return self._with_timing(
+                result, self._run_timing(result.get('status', 'error'), timing_started_at)
+            )
 
-        return self._collect_run_result(proc, buy_strategy, sell_strategy, watermark, run_start_time)
+        result = self._collect_run_result(proc, buy_strategy, sell_strategy, watermark, run_start_time)
+        return self._with_timing(result, self._run_timing(result.get('status', 'error'), timing_started_at))
 
     def _clear_run_queues(self):
         """run 직전 backQ/totalQ를 drain(clear_backtestQ 방식)한다.
@@ -470,6 +548,7 @@ class WarmBacktestSession:
         반환: 항상 result dict({'status':'error', ...}).
         """
         reset_ok = False
+        self._warm_recovery_attempts += 1
         try:
             reset_ok = self._reset_engines()
         except Exception:
@@ -485,10 +564,12 @@ class WarmBacktestSession:
             except Exception:
                 reload_ok = False
             if reload_ok:
+                self._warm_recovery_success_count += 1
                 # 협조적 취소 + 재로딩 성공 → 엔진 웜 유지. error 결과만 반환.
                 return {'status': 'error', 'message': error_message, 'metrics': None}
 
         # 여기까지 오면 reset 실패 또는 reload 실패 → nuclear fallback(full 재구동).
+        self._warm_recovery_failure_count += 1
         return self._nuclear_fallback(error_message)
 
     def _finalize_backtest_proc(self, proc, timeout_hit, reset_ok):
@@ -517,6 +598,7 @@ class WarmBacktestSession:
         재구동 실패면 세션을 unhealthy(_prepared=False)로 두고 error 결과를 반환해
         상위 루프가 cold 폴백/중단을 판단하게 한다.
         """
+        self._warm_nuclear_fallback_count += 1
         try:
             self.close()
         except Exception:

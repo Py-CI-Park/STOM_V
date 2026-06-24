@@ -15,6 +15,14 @@ PRESET_FAST = "fast"
 PRESET_RESEARCH = "research"
 PRESET_PROMOTION = "promotion"
 VALID_PRESETS = (PRESET_FAST, PRESET_RESEARCH, PRESET_PROMOTION)
+PROCESS_FAST_DISCOVERY = "fast-discovery"
+PROCESS_RESEARCH = "process-research"
+PROCESS_PROMOTION_REVIEW = "promotion-review"
+PROCESS_NUMERIC_ALIASES = {
+    "1": PROCESS_FAST_DISCOVERY,
+    "2": PROCESS_RESEARCH,
+    "3": PROCESS_PROMOTION_REVIEW,
+}
 
 TIMEFRAME_TICK = "tick"
 TIMEFRAME_MIN = "min"
@@ -88,6 +96,27 @@ class PresetPolicy:
         }
 
 
+@dataclass(frozen=True)
+class ProcessCatalogEntry:
+    """Single-authority projection from a user-facing process selector to a preset."""
+
+    number: int
+    code: str
+    preset: str
+    label: str
+    description: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "number": self.number,
+            "code": self.code,
+            "preset": self.preset,
+            "label": self.label,
+            "description": self.description,
+            "aliases": [str(self.number), self.code],
+        }
+
+
 _PRESET_POLICIES: Dict[str, PresetPolicy] = {
     PRESET_FAST: PresetPolicy(
         preset=PRESET_FAST,
@@ -131,6 +160,37 @@ _PRESET_POLICIES: Dict[str, PresetPolicy] = {
 }
 
 
+PROCESS_CATALOG = (
+    ProcessCatalogEntry(
+        number=1,
+        code=PROCESS_FAST_DISCOVERY,
+        preset=PRESET_FAST,
+        label="Fast discovery",
+        description="Fast advisory discovery over the existing fast preset.",
+    ),
+    ProcessCatalogEntry(
+        number=2,
+        code=PROCESS_RESEARCH,
+        preset=PRESET_RESEARCH,
+        label="Process research",
+        description="Evidence-preserving advisory research over the existing research preset.",
+    ),
+    ProcessCatalogEntry(
+        number=3,
+        code=PROCESS_PROMOTION_REVIEW,
+        preset=PRESET_PROMOTION,
+        label="Promotion review",
+        description="Frozen promotion-review projection over the existing promotion preset.",
+    ),
+)
+_PROCESS_BY_CODE = {entry.code: entry for entry in PROCESS_CATALOG}
+_PROCESS_BY_PRESET = {entry.preset: entry for entry in PROCESS_CATALOG}
+_PROCESS_SELECTOR_ALIASES = {
+    **PROCESS_NUMERIC_ALIASES,
+    **{entry.code: entry.code for entry in PROCESS_CATALOG},
+}
+
+
 def normalize_condition_discovery_preset(value: Any) -> str:
     """Return a supported preset name or raise ValueError."""
 
@@ -141,6 +201,52 @@ def normalize_condition_discovery_preset(value: Any) -> str:
             f"{VALID_PRESETS} 중 하나여야 합니다 (받음: {value!r})"
         )
     return preset
+
+
+def normalize_condition_discovery_process(value: Any) -> str:
+    """Return canonical process code from numeric alias or code name."""
+
+    selector = str(value or PROCESS_FAST_DISCOVERY).strip().lower()
+    code = _PROCESS_SELECTOR_ALIASES.get(selector)
+    if code is None:
+        raise ValueError(
+            "condition_discovery_process는 "
+            "1|2|3 또는 fast-discovery|process-research|promotion-review 중 하나여야 "
+            f"합니다 (받음: {value!r})"
+        )
+    return code
+
+
+def process_entry_for_preset(preset: Any) -> ProcessCatalogEntry:
+    return _PROCESS_BY_PRESET[normalize_condition_discovery_preset(preset)]
+
+
+def process_entry_for_selector(selector: Any) -> ProcessCatalogEntry:
+    return _PROCESS_BY_CODE[normalize_condition_discovery_process(selector)]
+
+
+def resolve_condition_discovery_process_projection(
+    selector: Any = None,
+    preset: Any = None,
+) -> Dict[str, str]:
+    """Resolve selector and preset as one authority, rejecting mismatches."""
+
+    has_selector = selector is not None and str(selector).strip() != ""
+    has_preset = preset is not None and str(preset).strip() != ""
+    if has_selector:
+        process = process_entry_for_selector(selector)
+        if has_preset:
+            normalized_preset = normalize_condition_discovery_preset(preset)
+            if process.preset != normalized_preset:
+                raise ValueError(
+                    "condition_discovery_process와 condition_discovery_preset이 일치해야 합니다 "
+                    f"(process={process.code!r}->{process.preset!r}, preset={normalized_preset!r})"
+                )
+        return {"process": process.code, "preset": process.preset}
+
+    normalized_preset = normalize_condition_discovery_preset(preset if has_preset else PRESET_FAST)
+    process = process_entry_for_preset(normalized_preset)
+    return {"process": process.code, "preset": normalized_preset}
 
 
 def preset_policy(preset: Any) -> PresetPolicy:
@@ -256,6 +362,34 @@ def build_evidence_health(
     }
 
 
+def _capability_flags(process: ProcessCatalogEntry, evidence_health: Mapping[str, Any]) -> Dict[str, Any]:
+    promotion_process = process.preset == PRESET_PROMOTION
+    blockers = []
+    if not promotion_process:
+        blockers.append("advisory_process_only")
+    blockers.extend([
+        "requires_frozen_snapshot",
+        "requires_hard_gates",
+        "requires_human_approval",
+    ])
+    if evidence_health.get("overall") != "complete":
+        blockers.append("requires_complete_evidence_health")
+    return {
+        "can_promote": False,
+        "can_export": False,
+        "can_live": False,
+        "promotion_review_allowed": promotion_process,
+        "promotion_requirements": {
+            "frozen_snapshot_required": promotion_process,
+            "evidence_health_required": promotion_process,
+            "hard_gates_required": promotion_process,
+            "human_approval_required": promotion_process,
+        },
+        "blockers": blockers,
+        "authority": "advisory_until_frozen_review_evidence_hard_gates_and_human_approval",
+    }
+
+
 def effective_condition_discovery_runtime_config(config: Any) -> Any:
     """Return a config clone with condition-discovery hard policy applied.
 
@@ -265,9 +399,13 @@ def effective_condition_discovery_runtime_config(config: Any) -> Any:
     """
 
     effective = replace(config) if is_dataclass(config) else copy.copy(config)
-    preset = normalize_condition_discovery_preset(
-        getattr(config, "condition_discovery_preset", PRESET_FAST)
+    projection = resolve_condition_discovery_process_projection(
+        getattr(config, "condition_discovery_process", None),
+        getattr(config, "condition_discovery_preset", PRESET_FAST),
     )
+    preset = projection["preset"]
+    setattr(effective, "condition_discovery_process", projection["process"])
+    setattr(effective, "condition_discovery_preset", preset)
     policy = preset_policy(preset)
 
     configured_mdd = max(0.0, float(getattr(config, "mdd_cap", policy.staged_mdd_cap) or 0.0))
@@ -312,7 +450,12 @@ def resolve_condition_discovery_policy(
 ) -> Dict[str, Any]:
     """Build the additive condition-discovery payload for status/page_data."""
 
-    preset = normalize_condition_discovery_preset(getattr(config, "condition_discovery_preset", PRESET_FAST))
+    projection = resolve_condition_discovery_process_projection(
+        getattr(config, "condition_discovery_process", None),
+        getattr(config, "condition_discovery_preset", PRESET_FAST),
+    )
+    preset = projection["preset"]
+    process = process_entry_for_selector(projection["process"])
     policy = preset_policy(preset).to_dict(
         configured_mdd_cap=getattr(config, "condition_discovery_configured_mdd_cap", getattr(config, "mdd_cap", None))
     )
@@ -340,6 +483,10 @@ def resolve_condition_discovery_policy(
             },
         },
         "evidence_health": evidence_health,
+        "process_catalog": [entry.to_dict() for entry in PROCESS_CATALOG],
+        "current_process": process.to_dict(),
+        "process": process.to_dict(),
+        "capabilities": _capability_flags(process, evidence_health),
         "authority": {
             "performance_score_100": "advisory_only",
             "condition_quality_score_100": "advisory_only",
@@ -368,11 +515,19 @@ __all__ = [
     "PRESET_PROMOTION",
     "PRESET_RESEARCH",
     "VALID_PRESETS",
+    "PROCESS_CATALOG",
+    "PROCESS_FAST_DISCOVERY",
+    "PROCESS_PROMOTION_REVIEW",
+    "PROCESS_RESEARCH",
     "effective_condition_discovery_runtime_config",
     "build_evidence_health",
     "merge_condition_discovery_page_data",
     "normalize_condition_discovery_preset",
+    "normalize_condition_discovery_process",
+    "process_entry_for_preset",
+    "process_entry_for_selector",
     "preset_policy",
+    "resolve_condition_discovery_process_projection",
     "resolve_condition_discovery_policy",
     "resolve_time_window_policy",
 ]

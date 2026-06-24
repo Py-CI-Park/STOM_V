@@ -852,6 +852,7 @@ _ACTIVE_CONFIG_FIELDS = (
     "bt_timeframe",
     "research_oos_mode",
     "condition_discovery_preset",
+    "condition_discovery_process",
     "bt_refine_from_best",
     "freeze_buy_on_mdd_only",
     "bt_full_start",

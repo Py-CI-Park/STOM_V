@@ -477,6 +477,7 @@ class LoopConfig:
     # fast: broad exploration, research: evidence-preserving research, promotion: frozen review.
     # It does not export/live-wire anything; policy helpers keep scores advisory and evidence authoritative.
     condition_discovery_preset: str = "fast"  # 'fast' | 'research' | 'promotion'
+    condition_discovery_process: Optional[str] = None  # optional canonical selector: 1/2/3 or fast-discovery/process-research/promotion-review
     # Sparse-positive prompt guidance for TICK candidate generation.
     # Default OFF keeps the existing prompt, hard gates, and selector behavior unchanged.
     sparse_positive_prompt_enabled: bool = False

@@ -493,7 +493,7 @@ class TestFrontendContract:
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # index.html 에 직접 존재하는 자산(벤더/스타일/빌드 번들).
-        assert "styles.css?v=20260624u001" in src   # Ultragoal remaining-parity CSS cache bust.
+        assert "styles.css?v=20260624u002" in src   # Process research CSS cache bust.
         assert "vendor-lightweight-charts.js?v=20260612a" in src
         # Phase14.4/14.5: 운영 컴포넌트는 단일 번들 bundle/app.js(+stom-ui.js)로 로드.
         #   ?v= 는 content-hash(자동) — 값은 하드코딩하지 않는다(일관성은 test_p14 가 검증).
@@ -514,6 +514,8 @@ class TestFrontendContract:
             "SimLiveChart",            # sim-live-chart.jsx
             "SimCandleChart",          # simulation-charts.jsx
             "SimulationTab",           # simulation.jsx
+            "ProcessFlowPanel",          # phase-detail.jsx
+            "FULL_PIPELINE_STEPS",       # process research pipeline
             "function App(",           # app.jsx (엔트리)
         ):
             assert sym in app_bundle, f"app.js 에 {sym} 누락"

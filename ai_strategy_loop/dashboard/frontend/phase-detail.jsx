@@ -597,6 +597,121 @@ const PROCESS_DEFAULT_ROWS = [
     detail: "이번 작업 범위에서는 구현하지 않습니다. 별도 연구로 예측/파라미터화 가능성만 추적합니다.",
   },
 ];
+const PROCESS_FALLBACK_CATALOG = [
+  {
+    number: 1,
+    code: "fast",
+    name: "fast-discovery",
+    label: "Fast discovery",
+    authority: "advisory research",
+    capability: { can_promote: false, can_export: false, can_live: false },
+    detail: "빠른 조건 탐색용 projection입니다. 후보 설명과 정렬만 하며 승격 권한은 없습니다.",
+  },
+  {
+    number: 2,
+    code: "research",
+    name: "process-research",
+    label: "Process research",
+    authority: "advisory research",
+    capability: { can_promote: false, can_export: false, can_live: false },
+    detail: "full-period research_validation과 advisory_split evidence를 보존하는 연구 projection입니다.",
+  },
+  {
+    number: 3,
+    code: "promotion",
+    name: "promotion-review",
+    label: "Promotion review",
+    authority: "separate frozen promotion review",
+    capability: { can_promote: false, can_export: false, can_live: false },
+    detail: "동결 후보를 별도 리뷰로 검토하는 projection입니다. hard gate·evidence health·인간 승인이 필요합니다.",
+  },
+];
+
+const FULL_PIPELINE_STEPS = [
+  {
+    key: "condition-generation",
+    title: "1. condition generation",
+    body: "조건식 후보를 생성하고 STOM 문법/변수 경계를 먼저 확인합니다.",
+  },
+  {
+    key: "research-validation",
+    title: "2. full-period / research_validation",
+    body: "전체 기간 검증과 research_validation 결과를 advisory_split evidence로 분리해 기록합니다.",
+  },
+  {
+    key: "scoring-evidence",
+    title: "3. scoring / evidence",
+    body: "성과·생성품질 100점, hard gate, evidence health를 함께 보되 점수는 advisory-only입니다.",
+  },
+  {
+    key: "autopsy-analysis",
+    title: "4. autopsy / analysis",
+    body: "실패 원인, hypothesis, 패턴 카드를 분석해 다음 세대 맥락으로 환류합니다.",
+  },
+  {
+    key: "improvement",
+    title: "5. improvement",
+    body: "채택/거절/보류된 근거를 이용해 후보 생성 방향을 개선합니다.",
+  },
+  {
+    key: "frozen-promotion-review",
+    title: "6. separate frozen promotion review",
+    body: "승격은 별도 동결 리뷰에서만 판단합니다. promote/export/live 권한은 여기서 생기지 않습니다.",
+  },
+];
+
+function _processCatalogRows(pageData) {
+  const discovery = pageData?.condition_discovery || {};
+  const raw = discovery.process_catalog || pageData?.process_catalog;
+  const rows = Array.isArray(raw)
+    ? raw
+    : (raw && typeof raw === "object" ? Object.values(raw) : []);
+  const normalized = rows.map((row, i) => ({
+    number: Number(row.number ?? row.id ?? row.order ?? i + 1),
+    code: String(row.code ?? row.preset ?? row.key ?? row.name ?? "").trim(),
+    name: String(row.name ?? row.slug ?? row.code ?? row.preset ?? "").trim(),
+    label: row.label || row.title || row.name || row.code || `process-${i + 1}`,
+    authority: row.authority || row.mode || row.capability_label || "advisory research",
+    capability: row.capability || row.capabilities || row.authority_guard || row,
+    detail: row.detail || row.description || row.purpose || "metadata-provided process projection",
+  })).filter(row => row.code || row.name || Number.isFinite(row.number));
+  return normalized.length ? normalized : PROCESS_FALLBACK_CATALOG;
+}
+
+function _selectedProcessMeta(pageData) {
+  const discovery = pageData?.condition_discovery || {};
+  const selected = discovery.process || discovery.current_process || discovery.preset || pageData?.process;
+  const rows = _processCatalogRows(pageData);
+  const selectedCode = typeof selected === "string" ? selected : (selected?.code || selected?.preset || selected?.name || selected?.label || selected?.title || selected?.slug || selected?.key);
+  const selectedNumber = typeof selected === "number" ? selected : Number(selected?.number ?? selected?.id);
+  const match = rows.find(row => (
+    (Number.isFinite(selectedNumber) && row.number === selectedNumber)
+    || (selectedCode && [row.code, row.name, row.label].filter(Boolean).includes(selectedCode))
+  )) || rows[0] || PROCESS_FALLBACK_CATALOG[0];
+  const selectedObject = selected && typeof selected === "object" ? selected : {};
+  const capability = discovery.capabilities || selectedObject.capability || selectedObject.capabilities || match.capability || {};
+  return {
+    selected: { ...match, ...selectedObject, capability },
+    rows,
+    source: (discovery.process_catalog || pageData?.process_catalog) ? "metadata" : "static fallback",
+  };
+}
+
+function _capabilityValue(capability, key) {
+  return capability?.[key] === true;
+}
+
+function _warmValue(warm, keys, fallback = "—") {
+  for (const key of keys) {
+    const value = warm?.[key];
+    if (value !== undefined && value !== null && value !== "") return value;
+  }
+  return fallback;
+}
+
+function CapabilityPill({ label, value }) {
+  return <span className={`process-capability-pill ${value ? "on" : "off"}`}>{label}={String(value === true)}</span>;
+}
 
 // #64 — 초 단위 경과를 사람이 읽는 짧은 라벨로(예: 45s, 2m03s). 음수/NaN은 0s.
 function fmtElapsedSec(sec) {
@@ -780,6 +895,16 @@ function ProcessFlowPanel({ state }) {
       : (typeof doneSec === "number" && doneSec >= 0 ? fmtElapsedSec(doneSec) : "—");
     return { ...step, index, status, elapsed };
   });
+  const pageData = state?.page_data || {};
+  const processMeta = _selectedProcessMeta(pageData);
+  const selectedProcess = processMeta.selected;
+  const selectedCapability = selectedProcess.capability || {};
+  const warmSession = pageData?.warm_session || {};
+  const warmHasMetadata = Object.keys(warmSession).length > 0;
+  const warmPrepare = _warmValue(warmSession, ["prepare_elapsed_sec", "prepare_seconds", "warm_prepare_seconds"]);
+  const warmRun = _warmValue(warmSession, ["last_run_elapsed_sec", "run_elapsed_sec", "bt_warm_run_timeout", "run_timeout_sec"]);
+  const warmEngines = _warmValue(warmSession, ["engine_count", "back_count", "bt_warm_engine_count"]);
+  const warmMode = _warmValue(warmSession, ["mode", "status", "engine_mode"], "metadata pending");
 
   // 로그 패널 자동 스크롤.
   const logRef = useRef_ph(null);
@@ -837,6 +962,74 @@ function ProcessFlowPanel({ state }) {
         <span><b>phase</b> {latestPhase}</span>
         <span><b>current_step</b> {currentStep >= 0 ? currentStep : "—"}</span>
         <span><b>최근 로그</b> {lastLog}</span>
+      </div>
+      <div className="process-selector-panel" aria-label="프로세스 선택 상태">
+        <div className="process-selector-head">
+          <div>
+            <b>Process selector</b>
+            <small>state.page_data.condition_discovery.process · process_catalog projection ({processMeta.source})</small>
+          </div>
+          <span className="process-authority-chip">{selectedProcess.authority}</span>
+        </div>
+        <div className="process-selector-row">
+          {processMeta.rows.map(row => {
+            const active = row === selectedProcess || row.code === selectedProcess.code;
+            return (
+              <div key={`${row.number}-${row.code || row.name}`} className={`process-selector-option ${active ? "active" : ""}`}>
+                <span className="process-selector-num">{row.number}</span>
+                <b>{row.name || row.code}</b>
+                <small>{row.code} · {row.label}</small>
+              </div>
+            );
+          })}
+        </div>
+        <div className="process-readout-grid">
+          <div>
+            <span>선택 process</span>
+            <b>{selectedProcess.number} · {selectedProcess.name || selectedProcess.code}</b>
+            <small>{selectedProcess.detail}</small>
+          </div>
+          <div>
+            <span>validation names</span>
+            <b>research_validation</b>
+            <small>research evidence is reported as advisory_split, not clean promotion OOS</small>
+          </div>
+          <div>
+            <span>capability</span>
+            <div className="process-capability-row">
+              <CapabilityPill label="can_promote" value={_capabilityValue(selectedCapability, "can_promote")} />
+              <CapabilityPill label="can_export" value={_capabilityValue(selectedCapability, "can_export")} />
+              <CapabilityPill label="can_live" value={_capabilityValue(selectedCapability, "can_live")} />
+            </div>
+            <small>fast/research are advisory; promotion still requires frozen review and human approval</small>
+          </div>
+        </div>
+      </div>
+      <div className="process-pipeline-panel" aria-label="조건식 발굴 전체 파이프라인">
+        <div className="process-pipeline-head">
+          <b>Full pipeline · advisory research → frozen promotion review</b>
+          <small>기존 5-step 그래프는 실행 상태 요약이고, 이 섹션은 전체 연구/검토 계약입니다.</small>
+        </div>
+        <div className="process-pipeline-steps">
+          {FULL_PIPELINE_STEPS.map(step => (
+            <div key={step.key} className="process-pipeline-step">
+              <b>{step.title}</b>
+              <small>{step.body}</small>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="process-warm-panel" aria-label="warm session timing metadata">
+        <div>
+          <b>Warm timing metadata</b>
+          <small>{warmHasMetadata ? "state.page_data.warm_session" : "warm metadata pending — existing display remains valid"}</small>
+        </div>
+        <div className="process-warm-grid">
+          <span><b>mode/status</b>{warmMode}</span>
+          <span><b>engines</b>{warmEngines}</span>
+          <span><b>prepare</b>{typeof warmPrepare === "number" ? fmtElapsedSec(warmPrepare) : warmPrepare}</span>
+          <span><b>run/timeout</b>{typeof warmRun === "number" ? fmtElapsedSec(warmRun) : warmRun}</span>
+        </div>
       </div>
       <div className="process-flow-cards" aria-label="프로세스 흐름 계약 요약">
         <div>
@@ -951,6 +1144,7 @@ Object.assign(window, {
   phaseIndex, PHASES, LIVE_PHASE_INDEX,
   // #64 — 진행시간 포맷 순수 함수 + 단계 메타 노출(정적·단위 검증 가능).
   fmtElapsedSec, fmtClockFromEpoch, normalizeFlowStepIndex, flowStepStatus, FLOW_STEPS,
+  PROCESS_FALLBACK_CATALOG, FULL_PIPELINE_STEPS, _selectedProcessMeta,
 });
 
 // Track Z (PR-1) — ESM dual-safe export.

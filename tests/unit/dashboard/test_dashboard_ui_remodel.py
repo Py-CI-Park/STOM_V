@@ -229,6 +229,34 @@ def test_process_tab_documents_condition_discovery_defaults() -> None:
     assert ".process-defaults-panel" in css
     assert "상세 프로세스" in src
     assert ".process-detail-callout" in css
+    for marker in (
+        "PROCESS_FALLBACK_CATALOG",
+        "FULL_PIPELINE_STEPS",
+        "fast-discovery",
+        "process-research",
+        "promotion-review",
+        "research_validation",
+        "advisory_split",
+        "can_promote",
+        "can_export",
+        "can_live",
+        "state.page_data.condition_discovery.process",
+        "state.page_data.warm_session",
+        "warm metadata pending — existing display remains valid",
+        "separate frozen promotion review",
+    ):
+        assert marker in src
+    for css_marker in (
+        ".process-selector-panel",
+        ".process-selector-option.active",
+        ".process-readout-grid",
+        ".process-capability-pill.off",
+        ".process-pipeline-panel",
+        ".process-pipeline-step",
+        ".process-warm-panel",
+        ".process-warm-grid",
+    ):
+        assert css_marker in css
 
 
 def test_g004_editor_legacy_tools_and_variable_influence_contracts() -> None:

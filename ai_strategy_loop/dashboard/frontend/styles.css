@@ -816,6 +816,163 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   color: var(--ink-0);
   font-weight: 600;
 }
+.process-selector-panel,
+.process-pipeline-panel,
+.process-warm-panel {
+  border: 1px solid var(--line-1);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, rgba(76,214,179,0.045), var(--bg-0));
+  margin: 8px 0 10px;
+  padding: 10px 12px;
+}
+.process-selector-head,
+.process-pipeline-head,
+.process-warm-panel {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.process-selector-head b,
+.process-pipeline-head b,
+.process-warm-panel > div > b {
+  display: block;
+  color: var(--ink-0);
+  font-size: 12.5px;
+}
+.process-selector-head small,
+.process-pipeline-head small,
+.process-warm-panel > div > small {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-2);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+.process-authority-chip {
+  align-self: flex-start;
+  border: 1px solid rgba(165,148,255,0.34);
+  border-radius: 999px;
+  color: var(--violet);
+  background: rgba(165,148,255,0.09);
+  padding: 3px 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.process-selector-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-top: 9px;
+}
+.process-selector-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  align-items: center;
+  border: 1px solid var(--line-1);
+  border-radius: var(--radius-sm);
+  background: var(--bg-1);
+  padding: 7px 8px;
+  color: var(--ink-2);
+}
+.process-selector-option.active {
+  border-color: rgba(76,214,179,0.42);
+  background: rgba(76,214,179,0.08);
+}
+.process-selector-num {
+  grid-row: 1 / span 2;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--bg-2);
+  color: var(--teal);
+  font-family: var(--mono);
+  font-size: 10.5px;
+}
+.process-selector-option b,
+.process-readout-grid b,
+.process-pipeline-step b,
+.process-warm-grid b {
+  color: var(--ink-0);
+  font-family: var(--mono);
+  font-size: 11.5px;
+}
+.process-selector-option small,
+.process-readout-grid small,
+.process-pipeline-step small {
+  color: var(--ink-2);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+.process-readout-grid,
+.process-pipeline-steps,
+.process-warm-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-top: 9px;
+}
+.process-readout-grid > div,
+.process-pipeline-step,
+.process-warm-grid span {
+  min-width: 0;
+  border: 1px solid var(--line-1);
+  border-radius: var(--radius-sm);
+  background: var(--bg-1);
+  padding: 7px 8px;
+}
+.process-readout-grid span {
+  display: block;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.process-capability-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 3px 0;
+}
+.process-capability-pill {
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  padding: 2px 6px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+}
+.process-capability-pill.on {
+  color: var(--amber);
+  border-color: rgba(210,160,70,0.42);
+  background: rgba(210,160,70,0.08);
+}
+.process-capability-pill.off {
+  color: var(--ink-2);
+  background: var(--bg-2);
+}
+.process-pipeline-steps {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.process-warm-panel {
+  align-items: flex-start;
+}
+.process-warm-grid {
+  flex: 1;
+  margin-top: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.process-warm-grid span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 10.5px;
+}
 .process-flow-cards {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1113,10 +1270,16 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   .process-live-strip,
   .process-flow-cards,
   .process-explain-grid,
-  .process-timing-grid {
+  .process-timing-grid,
+  .process-selector-row,
+  .process-readout-grid,
+  .process-pipeline-steps,
+  .process-warm-grid {
     grid-template-columns: 1fr 1fr;
   }
-  .process-detail-callout {
+  .process-detail-callout,
+  .process-selector-head,
+  .process-warm-panel {
     align-items: flex-start;
     flex-direction: column;
   }

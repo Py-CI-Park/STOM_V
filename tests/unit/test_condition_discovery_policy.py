@@ -14,9 +14,12 @@ from ai_strategy_loop.controller.condition_discovery import (  # noqa: E402
     effective_condition_discovery_runtime_config,
     merge_condition_discovery_page_data,
     normalize_condition_discovery_preset,
+    normalize_condition_discovery_process,
+    resolve_condition_discovery_process_projection,
     resolve_condition_discovery_policy,
     resolve_time_window_policy,
 )
+from ai_strategy_loop.controller.state import build_active_config  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
 
@@ -33,6 +36,50 @@ def test_condition_discovery_preset_validation_and_field_spec():
     assert specs["condition_discovery_preset"]["choices"] == ["fast", "research", "promotion"]
     assert specs["condition_discovery_preset"]["default"] == LoopConfig().condition_discovery_preset
 
+    assert normalize_condition_discovery_process("1") == "fast-discovery"
+    assert normalize_condition_discovery_process("process-research") == "process-research"
+    assert resolve_condition_discovery_process_projection("3") == {
+        "process": "promotion-review",
+        "preset": "promotion",
+    }
+    assert specs["condition_discovery_process"]["choices"] == [
+        "fast-discovery",
+        "process-research",
+        "promotion-review",
+    ]
+    assert specs["condition_discovery_process"]["default"] is None
+
+
+def test_condition_discovery_process_selector_and_preset_projection():
+    preset_only = config_from_dict({"condition_discovery_preset": "research"})
+    assert preset_only.condition_discovery_process == "process-research"
+    assert preset_only.condition_discovery_preset == "research"
+
+    selector_only = config_from_dict({"condition_discovery_process": "2"})
+    assert selector_only.condition_discovery_process == "process-research"
+    assert selector_only.condition_discovery_preset == "research"
+
+    code_selector = config_from_dict({"condition_discovery_process": "promotion-review"})
+    assert code_selector.condition_discovery_process == "promotion-review"
+    assert code_selector.condition_discovery_preset == "promotion"
+
+    explicit_match = config_from_dict({
+        "condition_discovery_process": "1",
+        "condition_discovery_preset": "fast",
+    })
+    assert explicit_match.condition_discovery_process == "fast-discovery"
+    assert explicit_match.condition_discovery_preset == "fast"
+
+    with pytest.raises(ValueError, match="condition_discovery_process"):
+        config_from_dict({
+            "condition_discovery_process": "1",
+            "condition_discovery_preset": "research",
+        })
+
+    snapshot = build_active_config(selector_only)
+    assert snapshot["condition_discovery_process"] == "process-research"
+    assert snapshot["condition_discovery_preset"] == "research"
+
 
 def test_research_tick_policy_uses_opening_window_and_staged_mdd():
     cfg = LoopConfig(condition_discovery_preset="research", bt_timeframe="tick", mdd_cap=40.0)
@@ -42,6 +89,16 @@ def test_research_tick_policy_uses_opening_window_and_staged_mdd():
     assert payload["time_window"]["end_time"] == 92800
     assert payload["hard_gates"]["mdd"]["cap"] == 25.0
     assert payload["authority"]["performance_score_100"] == "advisory_only"
+    assert payload["current_process"]["code"] == "process-research"
+    assert payload["process"]["code"] == "process-research"
+    assert payload["capabilities"]["can_promote"] is False
+    assert payload["capabilities"]["can_export"] is False
+    assert payload["capabilities"]["can_live"] is False
+    assert [entry["code"] for entry in payload["process_catalog"]] == [
+        "fast-discovery",
+        "process-research",
+        "promotion-review",
+    ]
 
 def test_fast_policy_and_stricter_configured_mdd_are_pinned():
     fast = resolve_condition_discovery_policy(
@@ -76,6 +133,17 @@ def test_promotion_min_policy_requires_full_session_boundary_candidate():
     payload = resolve_condition_discovery_policy(cfg)
     assert payload["hard_gates"]["mdd"]["cap"] == 15.0
     assert payload["policy"]["human_approval_required"] is True
+    assert payload["current_process"]["code"] == "promotion-review"
+    assert payload["capabilities"]["can_promote"] is False
+    assert payload["capabilities"]["promotion_review_allowed"] is True
+    assert payload["capabilities"]["promotion_requirements"] == {
+        "frozen_snapshot_required": True,
+        "evidence_health_required": True,
+        "hard_gates_required": True,
+        "human_approval_required": True,
+    }
+    assert "requires_frozen_snapshot" in payload["capabilities"]["blockers"]
+    assert "requires_human_approval" in payload["capabilities"]["blockers"]
 def test_effective_runtime_policy_applies_staged_mdd_oos_and_min_full_session():
     raw = LoopConfig(
         condition_discovery_preset="promotion",

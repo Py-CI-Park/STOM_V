@@ -24,7 +24,8 @@ from ai_strategy_loop.brain.time_cap_bucket import (
 from ai_strategy_loop.config import LoopConfig
 from ai_strategy_loop.controller.condition_discovery import (
     VALID_PRESETS as CONDITION_DISCOVERY_PRESETS,
-    normalize_condition_discovery_preset,
+    PROCESS_CATALOG as CONDITION_DISCOVERY_PROCESS_CATALOG,
+    resolve_condition_discovery_process_projection,
 )
 from ai_strategy_loop.fitness.research_criteria import ResearchOosModeParseError, normalize_research_oos_mode
 
@@ -90,7 +91,8 @@ def config_from_dict(data: Dict[str, Any] | None) -> LoopConfig:
         ValueError: provider가 허용 목록 밖이거나, max_generations < 1 등
             명백한 경계 위반 시.
     """
-    cfg = LoopConfig.from_dict(data or {})
+    raw_data = data or {}
+    cfg = LoopConfig.from_dict(raw_data)
 
     valid_providers = ("gpt_auth", "openrouter", "codex_proxy")
     if cfg.provider not in valid_providers:
@@ -152,9 +154,17 @@ def config_from_dict(data: Dict[str, Any] | None) -> LoopConfig:
     except ResearchOosModeParseError as exc:
         raise ValueError(str(exc)) from exc
     try:
-        cfg.condition_discovery_preset = normalize_condition_discovery_preset(
-            getattr(cfg, "condition_discovery_preset", "fast")
+        provided_process = raw_data.get("condition_discovery_process")
+        provided_preset = raw_data.get("condition_discovery_preset")
+        has_process = provided_process is not None and str(provided_process).strip() != ""
+        has_preset = provided_preset is not None and str(provided_preset).strip() != ""
+        projection = resolve_condition_discovery_process_projection(
+            provided_process if has_process else None,
+            provided_preset if has_preset else (None if has_process else getattr(cfg, "condition_discovery_preset", "fast")),
         )
+        cfg.condition_discovery_preset = projection["preset"]
+        if has_process or has_preset:
+            cfg.condition_discovery_process = projection["process"]
     except ValueError as exc:
         raise ValueError(str(exc)) from exc
     try:
@@ -243,6 +253,12 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "name": "condition_discovery_preset", "label": "Condition Discovery Preset", "type": "select",
             "choices": list(CONDITION_DISCOVERY_PRESETS), "default": d.condition_discovery_preset,
             "help": "fast=빠른 탐색, research=프롬프트/equity/evidence 보존 연구, promotion=동결 후보 승격 검토. 점수는 advisory이고 evidence/hard gate/인간 승인 우선.",
+        },
+        {
+            "name": "condition_discovery_process", "label": "Condition Discovery Process", "type": "select",
+            "choices": [entry.code for entry in CONDITION_DISCOVERY_PROCESS_CATALOG],
+            "default": d.condition_discovery_process,
+            "help": "선택 표시용 프로세스 번호/코드. 1 fast-discovery→fast, 2 process-research→research, 3 promotion-review→promotion. preset과 함께 오면 불일치 시 거부한다.",
         },
         {
             "name": "bt_timeframe", "label": "Backtest Timeframe", "type": "select",
