@@ -117,9 +117,11 @@ class TestRunComparePanel:
         assert "isDemoSource" in rc
         assert "Demo mode" in rc  # 정본 run-compare 의 데모 안내 문구(영문)
 
-    def test_app_wires_run_compare_panel(self):
+    def test_app_routes_compare_to_history_owner(self):
         src = _read("app.jsx")
-        assert "<RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus}" in src
+        assert "<RunComparePanel" not in src
+        assert "History owns Compare" in src
+        assert "히스토리에서 Compare 열기" in src
 
 
 class TestHoldoutPanelWired:

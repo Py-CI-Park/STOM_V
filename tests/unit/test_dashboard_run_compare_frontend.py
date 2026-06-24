@@ -47,16 +47,15 @@ def test_run_compare_does_not_filter_negative_profit_rows() -> None:
     assert "num-neg" in src
 
 
-def test_index_loads_run_compare_override_before_app() -> None:
-    # 모델-무관 마이그레이션: concat 텍스트 순서(panels < run-compare < app)는 lean→enriched
-    #   RunComparePanel 오버라이드를 텍스트 순서로 인코딩했으나, 모듈 스코프에선 무의미하므로 DROP.
-    #   대신 panels(CurrentGenPanel)·run-compare 의 enriched RunComparePanel(num-neg 시그니처)이
-    #   산출 번들에 존재함으로 검증한다(concat·bundle 양쪽 통과).
+def test_primary_bundle_keeps_compare_out_of_home_owner() -> None:
+    # Dashboard remodel: Compare remains available as source code and History-owned
+    # navigation, but the primary Home bundle must not render RunComparePanel directly.
     src = _read_front("bundle/app.js")
 
     assert "CurrentGenPanel" in src, "app.js 에 panels(CurrentGenPanel) 누락"
-    assert "RunComparePanel" in src, "app.js 에 run-compare(RunComparePanel) 누락"
-    assert "num-neg" in src, "app.js 에 enriched run-compare(num-neg) 누락"
+    assert "ResearchRecordsPanel" in src, "app.js 에 records owner 누락"
+    assert "ResearchIndexPage" in src, "app.js 에 history route 누락"
+    assert "RunComparePanel" not in src, "Home bundle must not duplicate Compare owner"
 
 
 def test_run_compare_component_exposed_on_window() -> None:

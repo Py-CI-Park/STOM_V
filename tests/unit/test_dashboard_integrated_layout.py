@@ -12,24 +12,26 @@ def _read(name: str) -> str:
 
 
 def test_operational_sections_are_named_and_ordered() -> None:
-    """Given app.jsx, When rendered, Then the major workbench sections are explicit."""
+    """Given app.jsx, When rendered, Then the canonical research owners are explicit."""
     src = _read("app.jsx")
 
-    # P2(2026-06-14): "Wiki"/"AI Context Pack" SectionLabel 은 진화 사이드바에서 제거(연구실 탭 이전).
-    #   나머지 진화 섹션 라벨/순서 계약은 그대로 유지(비-Wiki 단언만 검사).
+    # Dashboard remodel: Home summarizes and navigates; Lab/History/Workbench own
+    # their internal panels. Compare/ResultDetail must not be duplicated on Home.
     required = [
-        'text="Run Monitor"',
-        'text="Research Lab"',
+        'text="조건식 AI Live Monitor"',
+        'text="설정 · 게이트 · 백테스트 엔진 요약"',
+        'text="연구실 종합 · 탐색/변수/검증"',
         'text="Strategy / Prompt"',
-        'text="Compare"',
+        'text="History / Compare"',
     ]
     for marker in required:
         assert marker in src
 
-    assert src.index('text="Run Monitor"') < src.index("<CurrentGenPanel")
+    assert src.index('text="조건식 AI Live Monitor"') < src.index("<CurrentGenPanel")
     assert src.index('text="Strategy / Prompt"') < src.index("<GenerationsTable")
-    assert src.index('text="Compare"') < src.index("<RunComparePanel")
-    assert src.index('text="Research Lab"') < src.index("<ResearchLabPanel")
+    assert src.index('text="History / Compare"') < src.index("히스토리에서 Compare 열기")
+    assert "Home은 요약/이동만 제공하고 Lab/History/Workbench 내부 화면은 중복 렌더링하지 않습니다." in src
+    assert "<RunComparePanel" not in src
 
 
 def test_dashboard_bundle_loads_integrated_panels_before_app() -> None:
@@ -41,14 +43,15 @@ def test_dashboard_bundle_loads_integrated_panels_before_app() -> None:
     """
     app = _read("bundle/app.js")
 
-    # run-compare→RunComparePanel, strategy-inspector→StrategyInspectorTabs,
-    #   research-lab→ResearchLabPanel, research-wiki→ResearchWikiPanel, ai-context→AIContextPanel.
+    # History owns Compare/records now; primary app bundle still carries the canonical
+    # routed panels needed by Lab/History/Workbench without rendering Compare on Home.
     panel_symbols = [
-        "RunComparePanel",
         "StrategyInspectorTabs",
         "ResearchLabPanel",
         "ResearchWikiPanel",
         "AIContextPanel",
+        "ResearchRecordsPanel",
+        "ResearchIndexPage",
     ]
     for sym in panel_symbols:
         assert sym in app, f"app.js 에 {sym} 누락"
