@@ -16,7 +16,7 @@ const HOF_INVENTORY_FIELDS = [
   { key: "operating_capital_krw", label: "운영금", source: "operating_capital_krw", obligation: "운영금 대비 비교 유지" },
   { key: "period", label: "백테 기간", source: "start/end/days", obligation: "기간과 표본 길이 유지" },
   { key: "screenshots", label: "스크린샷", source: "ReferenceGallery", obligation: "인간 결과 증거 갤러리 유지" },
-  { key: "workbench_actions", label: "워크벤치 액션", source: "ResearchProPanel", obligation: "분석 프로의 편집/즉시 백테스트 책임 분리 유지" },
+  { key: "workbench_actions", label: "워크벤치 액션", source: "ResearchProPanel", obligation: "분석 프로 워크벤치 책임 분리 유지" },
 ];
 
 const HOF_FIELD_GROUPS = [

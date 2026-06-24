@@ -59,7 +59,7 @@ function _ResearchEmptyState({ message }) {
   );
 }
 
-function _CorrelationControls({ method, setMethod, axis, setAxis, loading, pooledTrades, featureCount }) {
+function _CorrelationControls({ method, setMethod, axis, setAxis, loading, pooledTrades, featureCount, runId }) {
   return (
     <div className="research-controls">
       <label>
@@ -78,33 +78,82 @@ function _CorrelationControls({ method, setMethod, axis, setAxis, loading, poole
         </select>
       </label>
       <div className="research-kpis">
+        <span>run {runId || "—"}</span>
         <span>sample count {_rlNum(pooledTrades, 0)}</span>
         <span>features {_rlNum(featureCount, 0)}</span>
+        <span>advisory only · HOF/final approval separate</span>
       </div>
     </div>
   );
 }
 
 function _CorrelationHeatmap({ rows }) {
+  const [mode, setMode] = useState_rla("heatmap");
+  const [query, setQuery] = useState_rla("");
+  const [topN, setTopN] = useState_rla(36);
   if (!rows || rows.length === 0) {
     return <_ResearchEmptyState message="상관 히트맵을 그릴 feature_matrix 행이 부족합니다." />;
   }
+  const sorted = [...rows].sort((a, b) => Math.abs(b.correlation || 0) - Math.abs(a.correlation || 0));
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? sorted.filter(row => ([row.feature_a, row.feature_b, row.feature].filter(Boolean).join(" / ").toLowerCase().includes(q)))
+    : sorted;
+  const visible = filtered.slice(0, topN);
+  const renderLabel = (row, i) => [row.feature_a, row.feature_b].filter(Boolean).join(" / ") || row.feature || ("feature_" + i);
+
   return (
-    <div className="research-heatmap">
-      {rows.slice(0, 36).map((row, i) => {
-        const label = [row.feature_a, row.feature_b].filter(Boolean).join(" / ") || row.feature || ("feature_" + i);
-        const corr = typeof row.correlation === "number" ? row.correlation : null;
-        return (
-          <div key={i}
-               className="research-cell"
-               style={{ background: _rlCorrColor(corr) }}
-               title={`${label} | correlation ${_rlNum(corr, 4)} | sample count ${row.n || 0}`}>
-            <strong>{label}</strong>
-            <span>{_rlNum(corr, 3)}</span>
-            <small>n={row.n || 0}</small>
-          </div>
-        );
-      })}
+    <div className="research-correlation-panel">
+      <div className="research-controls" aria-label="상관관계 표시 옵션">
+        <label>
+          <span>filter</span>
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="feature 검색" />
+        </label>
+        <div className="research-kpis">
+          <span>shown {visible.length}/{filtered.length}</span>
+          <span>sorted by |correlation|</span>
+          <span>cell tooltip includes sample count</span>
+        </div>
+        <button className="btn ghost sm" type="button" onClick={() => setMode(mode === "heatmap" ? "list" : "heatmap")}>
+          {mode === "heatmap" ? "리스트 보기" : "히트맵 보기"}
+        </button>
+        {filtered.length > topN && (
+          <button className="btn ghost sm" type="button" onClick={() => setTopN(topN + 36)}>더 보기</button>
+        )}
+      </div>
+      {visible.length === 0 ? (
+        <_ResearchEmptyState message="필터에 맞는 상관관계 행이 없습니다." />
+      ) : mode === "list" ? (
+        <div className="research-combo-list">
+          {visible.map((row, i) => {
+            const corr = typeof row.correlation === "number" ? row.correlation : null;
+            return (
+              <div key={i} className="research-combo-row" title={`${renderLabel(row, i)} | correlation ${_rlNum(corr, 4)} | sample count ${row.n || 0}`}>
+                <span className="mono">{renderLabel(row, i)}</span>
+                <span style={{ color: corr >= 0 ? "var(--teal)" : "var(--red)" }}>corr {_rlNum(corr, 4)}</span>
+                <small>sample count {row.n || 0}</small>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="research-heatmap">
+          {visible.map((row, i) => {
+            const label = renderLabel(row, i);
+            const corr = typeof row.correlation === "number" ? row.correlation : null;
+            return (
+              <div key={i}
+                   className="research-cell"
+                   style={{ background: _rlCorrColor(corr) }}
+                   title={`${label} | correlation ${_rlNum(corr, 4)} | sample count ${row.n || 0}`}>
+                <strong>{label}</strong>
+                <span>{_rlNum(corr, 3)}</span>
+                <small>n={row.n || 0}</small>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

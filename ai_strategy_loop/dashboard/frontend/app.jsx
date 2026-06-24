@@ -1,8 +1,6 @@
 /* Main app composition */
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
-import { ConnBadge, StatusBadge, CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner } from "./panels.jsx";
-// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
-import { RunComparePanel } from "./run-compare.jsx";
+import { ConnBadge, StatusBadge, CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel, AutopsyPanel, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner } from "./panels.jsx";
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
 import { EnginePanel } from "./engine.jsx";
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
@@ -28,8 +26,11 @@ import { SimulationTab } from "./simulation.jsx";
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
-import { ResearchLabPanel } from "./research-lab.jsx";
+import { ResearchRecordsPanel } from "./research-records-panel.jsx";
+// Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
+import { EvolutionGuiParityPanel } from "./evolution-gui-parity-panel.jsx";
 import { LabPage, ProPage, VerdictPanel, ResearchIndexPage } from "./dashboard-pages.jsx";
+import { ResearchLabPanel } from "./research-lab.jsx";
 import { DASHBOARD_ROUTE_CONTRACTS, DASHBOARD_TAB_GROUPS, EVOLUTION_SUBTAB_CONTRACTS, dashboardPathFor, dashboardRouteFromLocation, evolutionSubtabContract, normalizeDashboardTabKey, normalizeEvolutionSubtabKey, routeContract } from "./ui-contract.jsx";
 import { UiStateBlock, MetricList } from "./ui-state.jsx";
 import { pageOwnerContract } from "./dashboard-inventory.jsx";
@@ -52,8 +53,8 @@ function App() {
   });
   const [pendingBase, setPendingBase] = useState_a(baseUrl);
   const [theme, setTheme] = useState_a(() => localStorage.getItem("stom_theme") || "dark");
-  // 상단 탭은 진화 홈·백테스트·차트 리플레이 3개만 노출한다. 연구/프로세스/
-  // 결정 감사 워크스페이스는 진화 홈 하위 canonical URL(/ui/evolution/*)로만 이동한다.
+  // 상단 탭은 조건식 AI·백테스트·차트 리플레이 3개만 노출한다. 연구/프로세스/
+  // 결정 감사 워크스페이스는 조건식 AI 하위 canonical URL(/ui/evolution/*)로만 이동한다.
   const [activeTab, setActiveTab] = useState_a(() => initialDashboardRoute.tab);
   const [activeEvolutionTab, setActiveEvolutionTab] = useState_a(() => initialDashboardRoute.evolutionSubtab);
   // Phase6.1 — 시뮬 탭 keep-alive: 한 번 방문하면 언마운트하지 않고 hidden 처리(상태 유지).
@@ -268,7 +269,7 @@ function App() {
           <div className="stom-shell-brand">
             <Logo />
             <div className="stom-shell-title">
-              <h1>STOM AI · 조건식 자율 진화 대시보드</h1>
+              <h1>STOM AI · 조건식 AI 연구 대시보드</h1>
               <span className="mono">
                 autonomous_strategy_loop · contract_v{health.contract_version ?? state.contract_version ?? 1}
               </span>
@@ -367,18 +368,16 @@ function App() {
       ) : activeTab === "simulation" ? null
         : activeTab === "evolution" && activeEvolutionTab === "process" ? (
         <ErrorBoundary>
-          <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <main className="native-process-page" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <ProcessFlowPanel state={state} />
-            <iframe
-              src={baseUrl + "/process_flow"}
-              title="레거시 프로세스 정적 참고"
-              style={{ width: "100%", height: "calc(100vh - 300px)", minHeight: 420, border: "none", borderRadius: 8, background: "#0d1117" }}
-            />
           </main>
         </ErrorBoundary>
       ) : activeTab === "evolution" && activeEvolutionTab === "records" ? (
         <ErrorBoundary>
-          <ResearchIndexPage baseUrl={baseUrl} onNavigate={onDashboardNavigate} />
+          <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} />
+            <ResearchIndexPage baseUrl={baseUrl} onNavigate={onDashboardNavigate} />
+          </main>
         </ErrorBoundary>
       ) : activeTab === "evolution" && activeEvolutionTab === "lab" ? (
         <ErrorBoundary>
@@ -392,30 +391,41 @@ function App() {
         <ErrorBoundary>
           <VerdictPanel baseUrl={baseUrl} onNavigate={onDashboardNavigate} />
         </ErrorBoundary>
-      ) : isIdle ? (
-        <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} state={state} onNavigate={onDashboardNavigate} />
       ) : (
         <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {/* 승인 export 결과 배너(final_approval 게이트는 ApprovalDialog가 유지) */}
           <ExportStatusBanner reply={lastReply} />
 
-          <_EvoSection storageKey="stom_evo_runmon" label={<SectionLabel text="Run Monitor" />}>
+          <_EvoSection storageKey="stom_evo_live" label={<SectionLabel text="조건식 AI Live Monitor" />}>
             <CurrentGenPanel state={state} />
-            <ResearchCriteriaBanner state={state} baseUrl={baseUrl} />
-            <ResearchGlossaryPanel />
             <ActiveStrategyPanel state={state} baseUrl={baseUrl} onViewCode={onViewCodeByGen} />
             <PhaseTimeline state={state} />
             <ProcessFlowPanel state={state} />
             <PhaseDetailPanel state={state} wsStatus={wsStatus} />
-            <EnginePanel state={state} wsStatus={wsStatus} />
           </_EvoSection>
+          <_EvoSection storageKey="stom_evo_gate_engine" label={<SectionLabel text="설정 · 게이트 · 백테스트 엔진 요약" />}>
+            <ResearchCriteriaBanner state={state} baseUrl={baseUrl} />
+            <ResearchGlossaryPanel />
+            <ActiveConfigPanel state={state} />
+            <EnginePanel state={state} wsStatus={wsStatus} />
+            <CostPanel state={state} cap={50000} />
+          </_EvoSection>
+          {isIdle && (
+            <IdleState onStart={() => setSettingsOpen(true)} configSpec={configSpec} state={state} onNavigate={onDashboardNavigate} />
+          )}
+          <_EvoSection storageKey="stom_evo_researchnav" label={<SectionLabel text="연구실 종합 · 탐색/변수/검증" />}>
+            {/* <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} /> is mounted only inside LabPage; Home keeps summary/nav cards to avoid duplicate Lab ownership. */}
+            <ResearchSuiteCards
+              state={state}
+              onNavigate={onDashboardNavigate}
+              onOpenWorkbench={() => onEvolutionSubtabSelect("workbench")}
+            />
+          </_EvoSection>
+
 
           <div className="grid-main">
             <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
-              {/* Phase6.1(E7) — 탐색 히트맵을 적합도 추이 위에 동일 크기 패널로(사용자 요청). */}
-              {window.ResearchHeatmapPanel ? (
-                <window.ResearchHeatmapPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id} />
-              ) : null}
+
               <FitnessChart state={state} target={targetScore} />
               <ProfitChart state={state} targetPct={0} />
               <EquityOverlayChart baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id} />
@@ -423,6 +433,8 @@ function App() {
               {/* #65 P1 — externalSelGen: 세대표 '백테상세' 클릭이 선택 세대를 여기로 동기화 */}
               <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={state}
                                    externalSelGen={selectedDetailGen} />
+              <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={state}
+                                       externalSelGen={selectedDetailGen} />
               <QualityTrendChart state={state} />
               {/* 🏆 명예의 전당 — 인간 벤치마크(19전략) + AI 생성 통합(목표선 가시화) */}
               <HallOfFamePanel baseUrl={baseUrl} wsStatus={wsStatus} />
@@ -431,37 +443,28 @@ function App() {
                                   onViewCode={(g) => setCodeViewGen(g)}
                                   onSelectDetail={(genNo) => setSelectedDetailGen(genNo)} />
               </_EvoSection>
-              {/* 운영·관찰: run 비교 콘솔(REST /runs, loop_runs.db 직접) */}
-              <_EvoSection storageKey="stom_evo_compare" label={<SectionLabel text="Compare" />}>
-                <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
+              {/* History owns Compare; overview keeps navigation only to avoid duplicate result owners. */}
+              <_EvoSection storageKey="stom_evo_historynav" label={<SectionLabel text="History / Compare" />}>
+                <div className="research-empty" style={{ textAlign: "left" }}>
+                  Compare와 run/gen ResultDetail은 히스토리 탭에서만 렌더링합니다.
+                  <div style={{ marginTop: 10 }}>
+                    <button className="btn ghost sm" onClick={() => onEvolutionSubtabSelect("records")}>히스토리에서 Compare 열기</button>
+                  </div>
+                </div>
               </_EvoSection>
               {/* 트랙 L — 진화 결과 분석 시각화(세대 멀티라인·산점도·상위표, GET /bt/evo_gens) */}
               <_EvoSection storageKey="stom_evo_genanalytics" label={<SectionLabel text="Generation Analytics" />}>
-                <ErrorBoundary><EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} onOpenWorkbench={() => setActiveTab("backtest")} /></ErrorBoundary>
+                <ErrorBoundary><EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} onOpenWorkbench={() => onEvolutionSubtabSelect("workbench")} /></ErrorBoundary>
               </_EvoSection>
             </div>
             <aside style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              {/* #65 P0 — 분석 클러스터를 판정 카드 위로(인과 순서: 분석→가정→개선이
-                  판정의 근거). 패널 자체 변경 없이 JSX 순서만 재배치. */}
-              {/* ── AI 분석 패널 묶음 (edge / feature / correlation / combinations REST) ── */}
-              <_EvoSection storageKey="stom_evo_researchlab" label={<SectionLabel text="Research Lab" />}>
-                <ErrorBoundary>
-                  <ResearchLabPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={state.run_id || ""} />
-                </ErrorBoundary>
-                {/* P2(2026-06-14): 연구 위키·AI 컨텍스트 팩은 연구실 탭으로 이전(진화 사이드바 중복 제거).
-                    진화 탭엔 발견용 링크만 둔다 — 홈은 dashboard-pages.jsx LabPage(P1). */}
-                <button className="btn ghost sm" onClick={() => onEvolutionSubtabSelect("lab")}
-                        style={{ alignSelf: "flex-start", marginTop: 2 }}
-                        title="연구 위키 · AI 컨텍스트 팩은 연구실 탭으로 이동했습니다">
-                  📚 연구 위키 · AI 컨텍스트 팩 → 연구실 탭
-                </button>
-              </_EvoSection>
 
               {/* ── 분석 패널 묶음 (P1~P5 live page_data 소비, demo 배지 규약) ── */}
               <_EvoSection storageKey="stom_evo_analysis" label={<SectionLabel text="진화 분석 · P1~P5" />}>
                 {/* P2b-2 — 가정 루프(세운 가정+채택/기각 판정) 가시화. 판정된 가정이
                     있는 세대가 없으면(토글 OFF/구 상태) 패널이 null 반환해 미표시. */}
                 <HypothesisPanel state={state} />
+                <ConditionDiscoveryPanel state={state} wsStatus={wsStatus} />
                 <AutopsyPanel state={state} wsStatus={wsStatus} />
                 <PopulationPanel state={state} wsStatus={wsStatus} />
                 <LineagePanel state={state} wsStatus={wsStatus} />
@@ -485,9 +488,6 @@ function App() {
                                 onViewCode={onViewCodeByGen} />
                   </>
                 )}
-                {/* R8 — 활성 설정/토글 스냅샷(LoopState.active_config) LIVE 노출 */}
-                <ActiveConfigPanel state={state} />
-                <CostPanel state={state} cap={50000} />
                 <FeedbackPanel state={state} />
               </_EvoSection>
             </aside>
@@ -567,7 +567,7 @@ function TabNav({ activeTab, onSelect }) {
 }
 function EvolutionSubtabNav({ activeSubtab, onSelect }) {
   return (
-    <nav role="tablist" aria-label="진화 홈 하위 탭" className="evolution-subtabnav">
+    <nav role="tablist" aria-label="조건식 AI 하위 탭" className="evolution-subtabnav">
       {EVOLUTION_SUBTAB_CONTRACTS.map(tab => {
         const active = activeSubtab === tab.key;
         return (
@@ -589,6 +589,44 @@ function EvolutionSubtabNav({ activeSubtab, onSelect }) {
   );
 }
 
+function ResearchSuiteCards({ state, onNavigate, onOpenWorkbench }) {
+  const cards = [
+    { key: "lab", label: "연구실", badge: "LAB", body: "탐색 히트맵·Edge Ratio·변수 중요도·상관관계·변수 조합·검증의 단일 소유 화면" },
+    { key: "records", label: "히스토리", badge: "HISTORY", body: "모든 run/gen 백테스트 결과, 조건식, ResultDetail, Compare, 연구 기록 검색" },
+    { key: "workbench", label: "분석 워크벤치", badge: "WORK", body: "후보 조건식 정밀 분석과 명예의 전당 후보 확인" },
+    { key: "hof", label: "명예의 전당", badge: "HOF", body: "실시간/과거 백테스트에서 좋은 결과를 Workbench/HOF 기준으로 재검토" },
+    { key: "backtest", label: "백테스트", badge: "BT", body: "조건식 실행·최적화·WFO·결과 라이브러리 확인" },
+    { key: "simulation", label: "차트 리플레이", badge: "SIM", body: "조건식 신호와 실제 차트 흐름을 재생해 진입/청산 맥락 점검" },
+  ];
+  const runLabel = state?.run_id || "LIVE";
+  return (
+    <div className="research-suite-cards" aria-label="조건식 AI 연구 기능 네비게이션">
+      <div className="research-suite-head">
+        <b>연구 기능 위치 요약</b>
+        <span className="mono">run={runLabel} · Home은 요약/이동만 제공하고 Lab/History/Workbench 내부 화면은 중복 렌더링하지 않습니다.</span>
+      </div>
+      <div className="research-suite-grid">
+        {cards.map((card) => {
+          const open = () => {
+            if (card.key === "hof" || card.key === "workbench") {
+              if (typeof onOpenWorkbench === "function") onOpenWorkbench();
+              else if (typeof onNavigate === "function") onNavigate("workbench");
+              return;
+            }
+            if (typeof onNavigate === "function") onNavigate(card.key);
+          };
+          return (
+            <button key={card.key} type="button" className="research-suite-card" onClick={open}>
+              <span className="mono research-suite-badge">{card.badge}</span>
+              <b>{card.label}</b>
+              <span>{card.body}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 // 분석 패널 묶음을 시각적으로 구분하는 작은 섹션 라벨(레이아웃 정리용).
 // Design Pass(2026-06-14): 섹션 헤더를 styles.css .stom-section-label(ink-1·12px·teal accent)로
 //   승격 — 진화 탭의 논리 그룹(Run Monitor·Strategy·Compare·Research·분석·판정) 경계를 분명히
@@ -749,9 +787,9 @@ function IdleState({ onStart, configSpec, state, onNavigate }) {
       }}>
         <span style={{ fontSize: 16 }}>💡</span>
         <span>
-          <strong style={{ color: "var(--amber)" }}>대시보드는 진화 시작 후 활성화됩니다.</strong>
-          {" "}아래 <span className="mono" style={{ color: "var(--ink-0)" }}>▸ 진화 시작 설정 열기</span>를 누르면
-          페이즈 타임라인(생성→백테→채점→부검), 엔진 메트릭, 자본곡선, 점수 분해, 부검 스트리밍이 실시간으로 보입니다.
+          <strong style={{ color: "var(--amber)" }}>조건식 AI는 시작 전에도 핵심 구조를 보여줍니다.</strong>
+          {" "}아래 <span className="mono" style={{ color: "var(--ink-0)" }}>▸ 조건식 AI 시작 설정 열기</span>를 누르면
+          생성→백테스트→채점→부검 흐름, 엔진 메트릭, 자본곡선, 점수 분해, 부검 스트리밍이 실시간으로 보입니다.
         </span>
         <button className="btn primary" style={{ marginLeft: "auto" }} onClick={onStart}>
           ▸ 시작
@@ -767,8 +805,8 @@ function IdleState({ onStart, configSpec, state, onNavigate }) {
             {[
               { key: "backtest", label: "백테스트", text: "개별 조건식 백테스트와 진화 중 백테스트 결과 확인" },
               { key: "simulation", label: "차트 리플레이", text: "진입/청산 지점을 차트에서 다시 확인" },
-              { key: "records", label: "기록 검색", text: "모든 연구 기록과 update log 검색" },
-              { key: "lab", label: "리서치 Wiki", text: "위키·방법론·AI 컨텍스트 문서 탐색" },
+              { key: "records", label: "히스토리", text: "모든 run/gen 결과·Compare·기록 검색" },
+              { key: "lab", label: "연구실", text: "탐색 히트맵·Edge Ratio·변수 분석·검증을 한 화면에서 확인" },
               { key: "workbench", label: "분석 워크벤치", text: "후보 분석과 HoF 비교" },
               { key: "verdict", label: "결정 감사", text: "append-only 결정 이력 확인" },
             ].map(item => (
@@ -788,7 +826,7 @@ function IdleState({ onStart, configSpec, state, onNavigate }) {
         </div>
         <div className="panel-bd" style={{ padding: "28px 24px" }}>
           <h2 style={{ fontSize: 22, marginBottom: 10, letterSpacing: "-0.01em" }}>
-            루프를 시작할 준비가 되었습니다.
+            조건식 AI 루프를 시작할 준비가 되었습니다.
           </h2>
           <p style={{ color: "var(--ink-1)", lineHeight: 1.6, marginBottom: 22, fontSize: 13 }}>
             AI가 한국 주식 매수/매도 전략 코드를 자동 생성·백테스트·채점·반복합니다.
@@ -801,7 +839,7 @@ function IdleState({ onStart, configSpec, state, onNavigate }) {
             </span>
           </p>
           <button className="btn primary lg" onClick={onStart}>
-            ▸ 진화 시작 설정 열기
+            ▸ 조건식 AI 시작 설정 열기
           </button>
         </div>
       </div>

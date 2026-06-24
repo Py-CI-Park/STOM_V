@@ -21,10 +21,10 @@ import { BtEquityChart, BtMaeMfeScatter, BtUnderwaterChart, BtRollingChart, BtCu
 import { BtDistributionChart, BtHeatmap, BtMonteCarloChart, BtMonthlyCalendar } from "./bt-distribution-charts.jsx";
 import { BtExitReasonPanel, BtContribTable, BtInsightsPanel, BtOrderflowPanel, BtStatTestPanel, BtCompareView } from "./bt-stat-panels.jsx";
 import { BtMddRandomChart, BtDailyPnlChart, BtHourlyPnlChart, BtWeekdayPnlChart, BtHoldingCurveChart, BtTradeRollingChart, BtGuiParitySection } from "./bt-gui-parity.jsx";
-import { BtResultArea } from "./bt-result-area.jsx";
+import { BtResultArea, ResultDetailBody } from "./bt-result-area.jsx";
 
 Object.assign(window, {
-  BtEquityChart, BtDistributionChart, BtHeatmap, BtUnderwaterChart, BtResultArea,
+  BtEquityChart, BtDistributionChart, BtHeatmap, BtUnderwaterChart, BtResultArea, ResultDetailBody,
   BtMaeMfeScatter, BtExitReasonPanel,
   BtMonteCarloChart, BtOrderflowPanel, BtStatTestPanel, BtCompareView,
   BtRollingChart, BtMonthlyCalendar, BtCumulativeTradesChart,
@@ -33,4 +33,4 @@ Object.assign(window, {
 });
 
 // Track Z (PR-3) — dual-safe ESM export (kept by the flagged bundle for real module scope). KEEP on ONE physical line.
-export { BtResultArea };
+export { BtResultArea, ResultDetailBody };

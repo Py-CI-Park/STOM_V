@@ -2693,10 +2693,13 @@ def create_app() -> FastAPI:
     @app.get("/ui/evolution", response_class=HTMLResponse)
     @app.get("/ui/evolution/{subtab}", response_class=HTMLResponse)
     def ui_evolution(subtab: str = "overview") -> Any:
+        if subtab == "history":
+            return RedirectResponse(url="/ui/evolution/records", status_code=307)
         allowed = {"overview", "process", "records", "lab", "workbench", "verdict"}
         if subtab not in allowed:
             return RedirectResponse(url="/ui/evolution", status_code=307)
         return _dashboard_index_response()
+
 
     @app.get("/ui/backtest", response_class=HTMLResponse)
     def ui_backtest() -> HTMLResponse:
@@ -2716,6 +2719,10 @@ def create_app() -> FastAPI:
 
     @app.get("/ui/records")
     def ui_records_alias() -> RedirectResponse:
+        return RedirectResponse(url="/ui/evolution/records", status_code=307)
+
+    @app.get("/ui/history")
+    def ui_history_alias() -> RedirectResponse:
         return RedirectResponse(url="/ui/evolution/records", status_code=307)
 
     @app.get("/ui/lab")
@@ -3282,6 +3289,13 @@ def create_app() -> FastAPI:
                 },
             }
         return _backtest_detail_payload(run_id, gen_no)
+
+    @app.get("/evolution_gui_parity")
+    def evolution_gui_parity(run_id: str = "", gen_no: int = -1) -> Dict[str, Any]:
+        """Return GUI-parity hourly/weekday analysis for one evolution generation."""
+        from ai_strategy_loop.dashboard.evolution_gui_parity import evolution_gui_parity_payload  # noqa: PLC0415
+
+        return evolution_gui_parity_payload(run_id, int(gen_no))
 
     @app.get("/adaptive_timing")
     def adaptive_timing(run_id: Optional[str] = None, lookback: int = 2) -> Dict[str, Any]:

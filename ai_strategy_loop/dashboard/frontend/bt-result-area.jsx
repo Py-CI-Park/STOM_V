@@ -149,169 +149,200 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
     );
   }
 
-  // no_trades → 안내 카드(에러 아님).
-  if (result.status === "no_trades") {
-    return (
-      <div className="panel">
-        <div className="panel-hd">
-          <div className="panel-hd-title"><span className="dot" style={{ background: "var(--amber)" }}></span>결과 · 분석</div>
-          <span className="badge warn">거래 0건</span>
-        </div>
-        <div className="panel-bd">
-          <div className="empty" style={{ padding: "28px 24px" }}>
-            <h2 style={{ color: "var(--amber)" }}>거래 0건</h2>
-            <p>{result.message || "전략이 해당 기간에 매수 신호를 내지 않았습니다. 에러가 아닙니다 — 조건식/기간을 조정해 보세요."}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const analysis = result.analysis || {};
-  // 메트릭 우선순위: CLI metrics(브리핑 필드) → 없으면 analysis.summary 매핑.
-  const metrics = result.metrics || {};
-  const summary = analysis.summary || {};
-  const metricVal = (key) => {
-    if (metrics[key] != null) return metrics[key];
-    // analysis.summary 폴백 매핑(cagr 은 summary 에 없음).
-    const map = {
-      trade_count: summary.trade_count, win_rate: summary.win_rate,
-      total_profit_pct: summary.total_profit_pct, total_profit_krw: summary.total_profit_krw,
-      mdd_pct: summary.max_drawdown_pct, cagr: undefined,
-    };
-    return map[key];
-  };
-
-  const distribution = analysis.distribution || {};
-  const insights = analysis.insights || [];
-  const topC = distribution.top_contributors || [];
-  const botC = distribution.bottom_contributors || [];
-  const dailyPnl = ((analysis.equity || {}).daily || []).map(d => d.pnl || 0);
-  const orderflow = analysis.orderflow || {};
-  const stats = analysis.stats || [];
-
+  const sourceContext = { isEvo, evoSource, jobId, baseUrl };
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      {/* 구간 분석 상태 배너 */}
-      {range && (
-        <div className="bt-range-bar">
-          <span className="mono" style={{ fontSize: 11, color: "var(--teal)" }}>
-            ◧ 구간 분석 적용 중 — {_btDateLabel(Math.floor(range.t_start / 1000000))}
-            ~{_btDateLabel(Math.floor(range.t_end / 1000000))}
-            {result.ranged && analysis.trade_count != null ? ` · ${analysis.trade_count}거래` : ""}
-          </span>
-          <button className="btn ghost sm" onClick={onBrushClear} style={{ marginLeft: "auto" }}>전체로 복귀</button>
-        </div>
-      )}
+    <ResultDetailBody
+      result={result}
+      sourceContext={sourceContext}
+      range={range}
+      loading={loading}
+      mc={mc}
+      mcLoading={mcLoading}
+      compareView={compareView}
+      onSetCompareA={onSetCompareA}
+      onCloseCompare={onCloseCompare}
+      onBrush={onBrush}
+      onBrushClear={onBrushClear}
+      onRunMc={loadMc}
+      onReload={load}
+      onFullscreen={() => setFullscreen(true)}
+      onCloseFullscreen={() => setFullscreen(false)}
+      fullscreen={fullscreen}
+    />
+  );
+}
 
-      {/* 메트릭 카드 행 — 카운트업 + 게이지 */}
-      <div className="panel">
-        <div className="panel-hd">
-          <div className="panel-hd-title">
-            <span className="dot" style={{ background: isEvo ? "var(--violet)" : "var(--teal)" }}></span>
-            {isEvo ? "핵심 메트릭 · 진화 세대" : "핵심 메트릭"}
-            {isEvo && (
-              <span className="mono tag-slim" style={{ fontSize: 9.5, color: "var(--violet)", marginLeft: 6 }}
-                    title="진화 run 세대 분석 — loop_runs.db 읽기 전용">
-                {evoSource.run_id}/g{evoSource.gen_no}
-              </span>
-            )}
-          </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {/* 비교 기준(A) 는 잡 전용(진화 세대는 A/B 비교 미지원). */}
-            {onSetCompareA && jobId && (
-              <button className="btn ghost sm" onClick={() => onSetCompareA(jobId)}
-                      title="이 잡을 A/B 비교의 기준(A)으로 고정">⊕ 비교 기준(A)</button>
-            )}
-            {isEvo && (
-              <button className="btn ghost sm"
-                      onClick={() => {
-                        const u = baseUrl + "/bt/report?run_id=" + encodeURIComponent(evoSource.run_id)
-                                + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
-                        try { window.open(u, "_blank", "noopener"); } catch (e) {}
-                      }}
-                      title="이 세대의 자급자족 HTML 리포트를 새 탭으로 열기">📄 리포트</button>
-            )}
-            {((analysis.equity || {}).daily || []).length > 0 && (
-              <button className="btn ghost sm" onClick={() => _btDownloadAnalysisCsv(analysis)}
-                      title="일별 수익곡선(날짜·일별손익·누적수익)을 CSV 로 내려받기 — 표계산 도구에서 추가 분석">⬇ CSV</button>
-            )}
-            <button className="btn ghost sm" onClick={() => setFullscreen(true)}
-                    title="전체 화면에서 더 많은 분석 그래프를 한눈에 보기 (Esc 로 닫기)">⛶ 전체화면 분석</button>
-            <button className="btn ghost sm" onClick={load} disabled={loading}>{loading ? "로딩…" : "↻"}</button>
-          </div>
-        </div>
-        <div className="bt-summary-row" style={{ gridTemplateColumns: "repeat(6, 1fr)" }}>
-          {_BT_METRIC_CARDS.map(m => {
-            const v = metricVal(m.key);
-            const num = typeof v === "number" ? v : null;
-            return <_BtMetricCard key={m.key} meta={m} num={num} dailyPnl={dailyPnl} />;
-          })}
+
+function ResultDetailBody({
+  result, sourceContext, range, loading, mc, mcLoading, compareView,
+  onSetCompareA, onCloseCompare, onBrush, onBrushClear, onRunMc, onReload,
+  onFullscreen, onCloseFullscreen, fullscreen,
+}) {
+  const { isEvo, evoSource, jobId, baseUrl } = sourceContext || {};
+// no_trades → 안내 카드(에러 아님).
+if (result.status === "no_trades") {
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title"><span className="dot" style={{ background: "var(--amber)" }}></span>결과 · 분석</div>
+        <span className="badge warn">거래 0건</span>
+      </div>
+      <div className="panel-bd">
+        <div className="empty" style={{ padding: "28px 24px" }}>
+          <h2 style={{ color: "var(--amber)" }}>거래 0건</h2>
+          <p>{result.message || "전략이 해당 기간에 매수 신호를 내지 않았습니다. 에러가 아닙니다 — 조건식/기간을 조정해 보세요."}</p>
         </div>
       </div>
-
-      {/* A/B 비교 뷰(활성 시 최상단) */}
-      {compareView && <BtCompareView cmp={compareView} onClose={onCloseCompare} />}
-
-      {/* 차트 — 수익곡선(인터랙션+브러시) → 분포 → 히트맵 → 언더워터 → MAE/MFE → 매도조건 */}
-      <BtEquityChart equity={analysis.equity} onBrush={onBrush}
-                     brushActive={!!range} onBrushClear={onBrushClear} />
-      <BtDistributionChart distribution={distribution} />
-      <BtHeatmap heatmap={analysis.heatmap} />
-      <BtUnderwaterChart underwater={analysis.underwater} />
-      <BtMaeMfeScatter points={analysis.mae_mfe} />
-      <BtExitReasonPanel rows={analysis.exit_reasons} />
-
-      {/* 2단계 — 몬테카를로 · 오더플로우 · 통계검정 */}
-      <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={loadMc} />
-      <BtOrderflowPanel orderflow={orderflow} />
-      <BtStatTestPanel stats={stats} />
-
-      {/* B3 — STOM GUI 결과 이미지 2장 패리티(MDD 랜덤·일별·시간대·요일·보유금액·거래롤링) */}
-      <BtGuiParitySection guiParity={analysis.gui_parity} columns={1} />
-
-      {/* 트랙 D — 추가 분석 그래프(일반 모드에선 접이식, 전체화면에선 우선 배치) */}
-      <details className="bt-extra-charts" open={false}>
-        <summary style={{ cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" }}>
-          ▸ 추가 분석 그래프 — 롤링 지표 · 월별 캘린더 · 누적 거래 (전체화면 권장)
-        </summary>
-        <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 10 }}>
-          <BtRollingChart rolling={analysis.rolling} />
-          <BtMonthlyCalendar monthly={analysis.monthly} />
-          <BtCumulativeTradesChart data={analysis.cumulative_trades} />
-        </div>
-      </details>
-
-      {/* 종목 기여 Top/Bottom */}
-      {(topC.length > 0 || botC.length > 0) && (
-        <div className="panel">
-          <div className="panel-hd">
-            <div className="panel-hd-title"><span className="dot" style={{ background: "var(--blue)" }}></span>종목 기여</div>
-          </div>
-          <div className="panel-bd">
-            <div className="row-2">
-              <BtContribTable title="상위 기여" rows={topC} />
-              <BtContribTable title="하위 기여" rows={botC} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 인사이트 패널 */}
-      <BtInsightsPanel insights={insights} />
-
-      {/* 전체화면 분석 모드 오버레이(트랙 D) — position:fixed 풀스크린, 2~3컬럼 그리드 */}
-      {fullscreen && (
-        <_BtFullscreenAnalysis
-          analysis={analysis} distribution={distribution} orderflow={orderflow}
-          stats={stats} insights={insights} mc={mc} mcLoading={mcLoading} onRunMc={loadMc}
-          range={range} onBrush={onBrush} onBrushClear={onBrushClear}
-          onClose={() => setFullscreen(false)}
-        />
-      )}
     </div>
   );
 }
+
+const analysis = result.analysis || {};
+// 메트릭 우선순위: CLI metrics(브리핑 필드) → 없으면 analysis.summary 매핑.
+const metrics = result.metrics || {};
+const summary = analysis.summary || {};
+const metricVal = (key) => {
+  if (metrics[key] != null) return metrics[key];
+  // analysis.summary 폴백 매핑(cagr 은 summary 에 없음).
+  const map = {
+    trade_count: summary.trade_count, win_rate: summary.win_rate,
+    total_profit_pct: summary.total_profit_pct, total_profit_krw: summary.total_profit_krw,
+    mdd_pct: summary.max_drawdown_pct, cagr: undefined,
+  };
+  return map[key];
+};
+
+const distribution = analysis.distribution || {};
+const insights = analysis.insights || [];
+const topC = distribution.top_contributors || [];
+const botC = distribution.bottom_contributors || [];
+const dailyPnl = ((analysis.equity || {}).daily || []).map(d => d.pnl || 0);
+const orderflow = analysis.orderflow || {};
+const stats = analysis.stats || [];
+
+return (
+  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    {/* 구간 분석 상태 배너 */}
+    {range && (
+      <div className="bt-range-bar">
+        <span className="mono" style={{ fontSize: 11, color: "var(--teal)" }}>
+          ◧ 구간 분석 적용 중 — {_btDateLabel(Math.floor(range.t_start / 1000000))}
+          ~{_btDateLabel(Math.floor(range.t_end / 1000000))}
+          {result.ranged && analysis.trade_count != null ? ` · ${analysis.trade_count}거래` : ""}
+        </span>
+        <button className="btn ghost sm" onClick={onBrushClear} style={{ marginLeft: "auto" }}>전체로 복귀</button>
+      </div>
+    )}
+
+    {/* 메트릭 카드 행 — 카운트업 + 게이지 */}
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: isEvo ? "var(--violet)" : "var(--teal)" }}></span>
+          {isEvo ? "핵심 메트릭 · 진화 세대" : "핵심 메트릭"}
+          {isEvo && (
+            <span className="mono tag-slim" style={{ fontSize: 9.5, color: "var(--violet)", marginLeft: 6 }}
+                  title="진화 run 세대 분석 — loop_runs.db 읽기 전용">
+              {evoSource.run_id}/g{evoSource.gen_no}
+            </span>
+          )}
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {/* 비교 기준(A) 는 잡 전용(진화 세대는 A/B 비교 미지원). */}
+          {onSetCompareA && jobId && (
+            <button className="btn ghost sm" onClick={() => onSetCompareA(jobId)}
+                    title="이 잡을 A/B 비교의 기준(A)으로 고정">⊕ 비교 기준(A)</button>
+          )}
+          {isEvo && (
+            <button className="btn ghost sm"
+                    onClick={() => {
+                      const u = baseUrl + "/bt/report?run_id=" + encodeURIComponent(evoSource.run_id)
+                              + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
+                      try { window.open(u, "_blank", "noopener"); } catch (e) {}
+                    }}
+                    title="이 세대의 자급자족 HTML 리포트를 새 탭으로 열기">📄 리포트</button>
+          )}
+          {((analysis.equity || {}).daily || []).length > 0 && (
+            <button className="btn ghost sm" onClick={() => _btDownloadAnalysisCsv(analysis)}
+                    title="일별 수익곡선(날짜·일별손익·누적수익)을 CSV 로 내려받기 — 표계산 도구에서 추가 분석">⬇ CSV</button>
+          )}
+          <button className="btn ghost sm" onClick={() => onFullscreen()}
+                  title="전체 화면에서 더 많은 분석 그래프를 한눈에 보기 (Esc 로 닫기)">⛶ 전체화면 분석</button>
+          <button className="btn ghost sm" onClick={onReload} disabled={loading}>{loading ? "로딩…" : "↻"}</button>
+        </div>
+      </div>
+      <div className="bt-summary-row" style={{ gridTemplateColumns: "repeat(6, 1fr)" }}>
+        {_BT_METRIC_CARDS.map(m => {
+          const v = metricVal(m.key);
+          const num = typeof v === "number" ? v : null;
+          return <_BtMetricCard key={m.key} meta={m} num={num} dailyPnl={dailyPnl} />;
+        })}
+      </div>
+    </div>
+
+    {/* A/B 비교 뷰(활성 시 최상단) */}
+    {compareView && <BtCompareView cmp={compareView} onClose={onCloseCompare} />}
+
+    {/* 차트 — 수익곡선(인터랙션+브러시) → 분포 → 히트맵 → 언더워터 → MAE/MFE → 매도조건 */}
+    <BtEquityChart equity={analysis.equity} onBrush={onBrush}
+                   brushActive={!!range} onBrushClear={onBrushClear} />
+    <BtDistributionChart distribution={distribution} />
+    <BtHeatmap heatmap={analysis.heatmap} />
+    <BtUnderwaterChart underwater={analysis.underwater} />
+    <BtMaeMfeScatter points={analysis.mae_mfe} />
+    <BtExitReasonPanel rows={analysis.exit_reasons} />
+
+    {/* 2단계 — 몬테카를로 · 오더플로우 · 통계검정 */}
+    <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
+    <BtOrderflowPanel orderflow={orderflow} />
+    <BtStatTestPanel stats={stats} />
+
+    {/* B3 — STOM GUI 결과 이미지 2장 패리티(MDD 랜덤·일별·시간대·요일·보유금액·거래롤링) */}
+    <BtGuiParitySection guiParity={analysis.gui_parity} columns={1} />
+
+    {/* 트랙 D — 추가 분석 그래프(일반 모드에선 접이식, 전체화면에선 우선 배치) */}
+    <details className="bt-extra-charts" open={false}>
+      <summary style={{ cursor: "pointer", padding: "10px 14px", fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-2)", userSelect: "none" }}>
+        ▸ 추가 분석 그래프 — 롤링 지표 · 월별 캘린더 · 누적 거래 (전체화면 권장)
+      </summary>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 10 }}>
+        <BtRollingChart rolling={analysis.rolling} />
+        <BtMonthlyCalendar monthly={analysis.monthly} />
+        <BtCumulativeTradesChart data={analysis.cumulative_trades} />
+      </div>
+    </details>
+
+    {/* 종목 기여 Top/Bottom */}
+    {(topC.length > 0 || botC.length > 0) && (
+      <div className="panel">
+        <div className="panel-hd">
+          <div className="panel-hd-title"><span className="dot" style={{ background: "var(--blue)" }}></span>종목 기여</div>
+        </div>
+        <div className="panel-bd">
+          <div className="row-2">
+            <BtContribTable title="상위 기여" rows={topC} />
+            <BtContribTable title="하위 기여" rows={botC} />
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* 인사이트 패널 */}
+    <BtInsightsPanel insights={insights} />
+
+    {/* 전체화면 분석 모드 오버레이(트랙 D) — position:fixed 풀스크린, 2~3컬럼 그리드 */}
+    {fullscreen && (
+      <_BtFullscreenAnalysis
+        analysis={analysis} distribution={distribution} orderflow={orderflow}
+        stats={stats} insights={insights} mc={mc} mcLoading={mcLoading} onRunMc={onRunMc}
+        range={range} onBrush={onBrush} onBrushClear={onBrushClear}
+        onClose={onCloseFullscreen}
+      />
+    )}
+  </div>
+);
+}
+
 
 // 전체화면 분석 오버레이 — 차트를 2~3컬럼 그리드로 크게 배치(인사이트 우선 노출).
 //   인라인 스타일 풀스크린(position:fixed). 닫기: ✕ 버튼 또는 Esc(상위에서 처리).
@@ -420,4 +451,4 @@ function _BtMetricCard({ meta, num, dailyPnl }) {
   );
 }
 
-export { BtResultArea };
+export { BtResultArea, ResultDetailBody };

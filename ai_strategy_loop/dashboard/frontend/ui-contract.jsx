@@ -4,18 +4,18 @@
  * the research/process/decision workspaces as nested, canonical deep-link subtabs.
  */
 const DASHBOARD_ROUTE_CONTRACTS = [
-  { key: "evolution", label: "진화 홈", icon: "🧬", group: "주요 페이지", badge: "LIVE", contract: "실시간 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스" },
+  { key: "evolution", label: "조건식 AI", icon: "🧬", group: "주요 페이지", badge: "LIVE", contract: "조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스" },
   { key: "backtest", label: "백테스트", icon: "📊", group: "주요 페이지", badge: "BT", contract: "조건식 백테스트 실행·결과 조회" },
   { key: "simulation", label: "차트 리플레이", icon: "📈", group: "주요 페이지", badge: "SIM", contract: "차트 리플레이·수동 신호 검토" },
 ];
 
 const EVOLUTION_SUBTAB_CONTRACTS = [
-  { key: "overview", label: "개요", icon: "🏠", group: "진화 홈", badge: "HOME", contract: "진화 루프 시작·실시간 진행·핵심 연구 요약" },
-  { key: "process", label: "프로세스", icon: "🗺️", group: "진화 홈", badge: "FLOW", contract: "조건식 발굴 단계·현재 노드·백테스트 진행·쉬운 설명" },
-  { key: "records", label: "기록 검색", icon: "IDX", group: "진화 홈", badge: "INDEX", contract: "campaign/docs/update_log/registry 전체 governed lookup" },
-  { key: "lab", label: "연구실·위키", icon: "🔬", group: "진화 홈", badge: "LAB", contract: "위키·AI 컨텍스트·run 분석 홈" },
-  { key: "workbench", label: "분석 워크벤치", icon: "📊", group: "진화 홈", badge: "WORK", contract: "조건 후보 분석·명예의 전당 workbench" },
-  { key: "verdict", label: "결정 감사", icon: "⚖️", group: "진화 홈", badge: "AUDIT", contract: "append-only 운용 결정 이력" },
+  { key: "overview", label: "조건식 AI", icon: "🏠", group: "조건식 AI", badge: "HOME", contract: "조건식 AI 루프 시작·실시간 진행·핵심 연구 요약" },
+  { key: "process", label: "프로세스", icon: "🗺️", group: "조건식 AI", badge: "FLOW", contract: "조건식 발굴 단계·현재 노드·백테스트 진행·쉬운 설명" },
+  { key: "records", label: "히스토리", icon: "IDX", group: "조건식 AI", badge: "HISTORY", contract: "run/gen 결과 아카이브·ResultDetail·Compare·문서 기록 검색" },
+  { key: "lab", label: "연구실", icon: "🔬", group: "조건식 AI", badge: "LAB", contract: "탐색 히트맵·Edge Ratio·변수 연구·검증·위키/컨텍스트" },
+  { key: "workbench", label: "분석 워크벤치", icon: "📊", group: "조건식 AI", badge: "WORK", contract: "조건 후보 분석·명예의 전당 workbench" },
+  { key: "verdict", label: "결정 감사", icon: "⚖️", group: "조건식 AI", badge: "AUDIT", contract: "append-only 운용 결정 이력" },
 ];
 
 const DASHBOARD_TAB_GROUPS = [
@@ -23,8 +23,8 @@ const DASHBOARD_TAB_GROUPS = [
 ];
 
 const EVIDENCE_WORKSPACE_LINKS = [
-  { key: "records", label: "기록 검색", icon: "IDX", badge: "lookup", contract: "전체 기록 검색·라인리지" },
-  { key: "lab", label: "연구실·위키", icon: "🔬", badge: "wiki", contract: "위키·컨텍스트·run 분석" },
+  { key: "records", label: "히스토리", icon: "IDX", badge: "history", contract: "전체 run/gen 결과·Compare·기록 검색" },
+  { key: "lab", label: "연구실", icon: "🔬", badge: "lab", contract: "탐색 히트맵·변수 연구·위키/컨텍스트" },
   { key: "workbench", label: "분석 워크벤치", icon: "📊", badge: "workbench", contract: "후보 분석·HoF 비교" },
   { key: "verdict", label: "결정 감사", icon: "⚖️", badge: "append-only", contract: "운용 결정 감사 trail" },
 ];
@@ -32,6 +32,7 @@ const EVIDENCE_WORKSPACE_LINKS = [
 const EVOLUTION_LEGACY_ALIASES = {
   process: "process",
   records: "records",
+  history: "records",
   lab: "lab",
   pro: "workbench",
   verdict: "verdict",
@@ -57,7 +58,8 @@ function normalizeDashboardTabKey(value) {
 }
 
 function normalizeEvolutionSubtabKey(value) {
-  return EVOLUTION_SUBTAB_CONTRACTS.some(item => item.key === value) ? value : "overview";
+  const canonical = EVOLUTION_LEGACY_ALIASES[value] || value;
+  return EVOLUTION_SUBTAB_CONTRACTS.some(item => item.key === canonical) ? canonical : "overview";
 }
 
 function dashboardPathFor(tab, evolutionSubtab) {

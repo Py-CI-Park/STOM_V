@@ -1,0 +1,403 @@
+{
+  "name": "llmgen_theta_small_midcap_rebreak_discrete",
+  "timeframe": "tick",
+  "source": "P5 LLM 가설 생성 (gen_template_hypothesis)",
+  "description": "검증된 09:00~09:05 소형 THETA 첫돌파를 밴드1로 고정하고, 09:05 이후는 중형주 직전고가 재돌파만 독립 강게이트로 분리한 시간대×시총 이산분기 니치",
+  "buy_code": "매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif 시분초 < {b1_end}:\n    if 시가총액 <= {b1_cap_max}:\n        if not (등락율 >= {b1_rate_min} and 등락율 <= {b1_rate_max} and 초당거래대금 >= {b1_sec_money_min} and 초당거래대금 / 초당거래대금평균({b1_burst_win}, {win_shift}) >= {b1_burst_mult} and 체결강도 >= {b1_strength_min} and 전일동시간비 >= {b1_prev_ratio_min} and 현재가 > 최고현재가({b1_break_win}, {win_shift})):\n            매수 = False\n    else:\n        매수 = False\nelif {b2_start} <= 시분초 < {b2_end}:\n    if 시가총액 >= {b2_cap_min} and 시가총액 < {b2_cap_max}:\n        if not (등락율 >= {b2_rate_min} and 등락율 <= {b2_rate_max} and 당일거래대금 >= {b2_day_money_min} and 초당거래대금 >= {b2_sec_money_min} and 초당거래대금 / 초당거래대금평균({b2_burst_win}, {win_shift}) >= {b2_burst_mult} and 체결강도 >= {b2_strength_min} and 등락율각도({b2_angle_win}, {win_shift}) >= {b2_angle_min} and 현재가 > 최고현재가({b2_break_win}, {win_shift})):\n            매수 = False\n    else:\n        매수 = False\nelse:\n    매수 = False\nif 매수:\n    self.Buy()",
+  "sell_code": "매도 = False\nif 수익률 >= {take_profit}:\n    매도 = True\nelif 수익률 <= -{stop_loss}:\n    매도 = True\nelif 최고수익률 >= {trail_start} and 수익률 <= 최고수익률 - {trail_gap}:\n    매도 = True\nelif 시분초 >= {force_exit_time}:\n    매도 = True\nif 매도:\n    self.Sell()",
+  "params": [
+    {
+      "name": "b1_end",
+      "default": 90500,
+      "values": [
+        90330,
+        90400,
+        90500,
+        90600,
+        90700
+      ],
+      "side": "buy",
+      "note": "밴드1 종료시각. THETA의 09:00~09:05 코어를 중심으로 전후 1~2분만 탐색해 시간확장 악화를 확인한다."
+    },
+    {
+      "name": "b1_cap_max",
+      "default": 2500,
+      "values": [
+        1800,
+        2200,
+        2500,
+        3000,
+        3500
+      ],
+      "side": "buy",
+      "note": "밴드1 소형주 시총 상한(억). 기존 THETA에서 2500억 부근 MDD 개선 단서가 있어 그 주변 고원을 탐색한다."
+    },
+    {
+      "name": "b1_rate_min",
+      "default": 1.5,
+      "values": [
+        1.0,
+        1.5,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "side": "buy",
+      "note": "밴드1 최소 등락율. 개장 직후 이미 양의 모멘텀이 붙은 종목만 허용하되 기본값은 두 번째로 느슨하게 둔다."
+    },
+    {
+      "name": "b1_rate_max",
+      "default": 18.0,
+      "values": [
+        12.0,
+        15.0,
+        18.0,
+        22.0,
+        26.0
+      ],
+      "side": "buy",
+      "note": "밴드1 과열 상한. 너무 높은 급등 후 추격을 줄이되 상한 민감도를 확인한다."
+    },
+    {
+      "name": "b1_sec_money_min",
+      "default": 120,
+      "values": [
+        80,
+        120,
+        180,
+        250,
+        350
+      ],
+      "side": "buy",
+      "note": "밴드1 초당거래대금 절대 하한(백만원). 밀도 조절축이며 기본값은 실제 신호가 나오도록 관대하게 설정한다."
+    },
+    {
+      "name": "b1_burst_win",
+      "default": 30,
+      "values": [
+        10,
+        20,
+        30,
+        45,
+        60
+      ],
+      "side": "buy",
+      "note": "밴드1 초당거래대금 평균 기준 틱수. THETA의 거래대금 폭발을 짧은/긴 기준선으로 비교한다."
+    },
+    {
+      "name": "b1_burst_mult",
+      "default": 2.5,
+      "values": [
+        2.0,
+        2.5,
+        3.0,
+        4.0,
+        5.5,
+        7.0
+      ],
+      "side": "buy",
+      "note": "밴드1 현재 초당거래대금/평균 배수. 개장 소형주 첫 발화의 핵심 품질 게이트다."
+    },
+    {
+      "name": "b1_strength_min",
+      "default": 135,
+      "values": [
+        120,
+        135,
+        145,
+        160,
+        180,
+        210
+      ],
+      "side": "buy",
+      "note": "밴드1 체결강도 하한. 거래대금 폭발이 매수 주도인지 확인하는 THETA 보조 필터다."
+    },
+    {
+      "name": "b1_prev_ratio_min",
+      "default": 200,
+      "values": [
+        150,
+        200,
+        250,
+        350,
+        500,
+        800
+      ],
+      "side": "buy",
+      "note": "밴드1 전일동시간비 하한. 단독 신호가 아니라 개장 발화 품질 판별자로만 사용한다."
+    },
+    {
+      "name": "b1_break_win",
+      "default": 20,
+      "values": [
+        8,
+        12,
+        20,
+        30,
+        45
+      ],
+      "side": "buy",
+      "note": "밴드1 직전고가 돌파 확인 틱수. 현재가가 직전 구간 최고가를 넘어서는 첫돌파 순간을 포착한다."
+    },
+    {
+      "name": "b2_start",
+      "default": 90500,
+      "values": [
+        90500
+      ],
+      "side": "buy",
+      "note": "밴드2 시작시각. 밴드1과 시간창을 겹치지 않게 09:05 이후로 고정한다."
+    },
+    {
+      "name": "b2_end",
+      "default": 91500,
+      "values": [
+        91200,
+        91500,
+        92000,
+        92500,
+        93000
+      ],
+      "side": "buy",
+      "note": "밴드2 종료시각. 후반부 신호 가치가 낮아지는지 보기 위해 09:12~09:30을 단계적으로 확장한다."
+    },
+    {
+      "name": "b2_cap_min",
+      "default": 3000,
+      "values": [
+        2500,
+        3000,
+        4000,
+        6000,
+        8000
+      ],
+      "side": "buy",
+      "note": "밴드2 시총 하한(억). 밴드1 소형주와 분리해 09:05 이후 중형 이상 재발화 니치를 탐색한다."
+    },
+    {
+      "name": "b2_cap_max",
+      "default": 12000,
+      "values": [
+        7000,
+        9000,
+        12000,
+        18000,
+        30000
+      ],
+      "side": "buy",
+      "note": "밴드2 시총 상한(억). 대형주 과다발화 실패를 피하면서 중형~중대형 범위를 지도화한다."
+    },
+    {
+      "name": "b2_rate_min",
+      "default": 2.0,
+      "values": [
+        1.5,
+        2.0,
+        3.0,
+        4.5,
+        6.0
+      ],
+      "side": "buy",
+      "note": "밴드2 최소 등락율. 09:05 이후에도 당일 양의 추세가 유지된 종목만 허용한다."
+    },
+    {
+      "name": "b2_rate_max",
+      "default": 16.0,
+      "values": [
+        10.0,
+        13.0,
+        16.0,
+        20.0,
+        25.0
+      ],
+      "side": "buy",
+      "note": "밴드2 과열 상한. 후반 재돌파에서 이미 너무 멀리 간 종목의 추격 리스크를 줄인다."
+    },
+    {
+      "name": "b2_day_money_min",
+      "default": 9000,
+      "values": [
+        6000,
+        9000,
+        12000,
+        18000,
+        30000
+      ],
+      "side": "buy",
+      "note": "밴드2 당일거래대금 하한(백만원). 후반 밴드는 더 강한 유동성 게이트가 필요하므로 절대 거래대금을 추가한다."
+    },
+    {
+      "name": "b2_sec_money_min",
+      "default": 140,
+      "values": [
+        100,
+        140,
+        180,
+        260,
+        400,
+        650
+      ],
+      "side": "buy",
+      "note": "밴드2 초당거래대금 절대 하한(백만원). 후반 재발화의 신호 밀도와 비용을 직접 조절한다."
+    },
+    {
+      "name": "b2_burst_win",
+      "default": 45,
+      "values": [
+        20,
+        30,
+        45,
+        60,
+        90
+      ],
+      "side": "buy",
+      "note": "밴드2 초당거래대금 평균 기준 틱수. 09:05 이후 재발화는 개장 직후보다 기준선을 길게 잡아 일시 노이즈를 줄인다."
+    },
+    {
+      "name": "b2_burst_mult",
+      "default": 3.0,
+      "values": [
+        2.5,
+        3.0,
+        3.5,
+        4.5,
+        6.0,
+        8.0
+      ],
+      "side": "buy",
+      "note": "밴드2 거래대금 폭발 배수. 후반 밴드이므로 밴드1보다 강한 기본 게이트를 둔다."
+    },
+    {
+      "name": "b2_strength_min",
+      "default": 145,
+      "values": [
+        130,
+        145,
+        160,
+        180,
+        210,
+        250
+      ],
+      "side": "buy",
+      "note": "밴드2 체결강도 하한. 직전고가 재돌파가 매수 주도 재발화인지 확인한다."
+    },
+    {
+      "name": "b2_angle_win",
+      "default": 20,
+      "values": [
+        8,
+        12,
+        20,
+        30,
+        45
+      ],
+      "side": "buy",
+      "note": "밴드2 등락율각도 산출 틱수. 후반 재돌파 직전의 기울기 회복을 확인한다."
+    },
+    {
+      "name": "b2_angle_min",
+      "default": 18,
+      "values": [
+        10,
+        18,
+        25,
+        40,
+        60,
+        85
+      ],
+      "side": "buy",
+      "note": "밴드2 등락율각도 하한. 후반 신호는 가치가 낮으므로 가격 기울기까지 동반될 때만 진입한다."
+    },
+    {
+      "name": "b2_break_win",
+      "default": 45,
+      "values": [
+        20,
+        30,
+        45,
+        60,
+        90
+      ],
+      "side": "buy",
+      "note": "밴드2 직전고가 돌파 기준 틱수. 09:05 이후 첫 고점 회복/재돌파를 포착하되 너무 짧은 노이즈 돌파를 피한다."
+    },
+    {
+      "name": "win_shift",
+      "default": 1,
+      "values": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "side": "buy",
+      "note": "모든 윈도우 함수의 시프트. 미래참조 및 -1 비용폭탄을 피하기 위해 1 이상만 탐색한다."
+    },
+    {
+      "name": "take_profit",
+      "default": 5.0,
+      "values": [
+        0.5,
+        2.5,
+        5.0,
+        7.0,
+        9.0,
+        12.0
+      ],
+      "side": "sell",
+      "note": "익절 수익률(%). 최솟값은 왕복비용과 슬리피지 마진을 넘는 0.3% 이상으로 두며 THETA의 늦은 익절 개선 단서를 포함한다."
+    },
+    {
+      "name": "stop_loss",
+      "default": 2.0,
+      "values": [
+        0.8,
+        1.2,
+        2.0,
+        3.0,
+        4.5
+      ],
+      "side": "sell",
+      "note": "손절 수익률(%). 개장 틱 단타의 급락 리스크를 제한하되 너무 타이트한 비용 잠식을 비교한다."
+    },
+    {
+      "name": "trail_start",
+      "default": 3.0,
+      "values": [
+        1.0,
+        2.0,
+        3.0,
+        5.0,
+        7.0
+      ],
+      "side": "sell",
+      "note": "트레일링 활성화 수익률(%). 수익이 충분히 난 뒤에만 추세 연장을 허용한다."
+    },
+    {
+      "name": "trail_gap",
+      "default": 3.0,
+      "values": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        6.0
+      ],
+      "side": "sell",
+      "note": "최고수익률 대비 반납 허용폭(%). THETA 계열의 트레일 민감도를 청산 다이얼로 탐색한다."
+    },
+    {
+      "name": "force_exit_time",
+      "default": 92900,
+      "values": [
+        91000,
+        91500,
+        92000,
+        92500,
+        92900
+      ],
+      "side": "sell",
+      "note": "강제청산 시각. tick 데이터 경계 09:30 이전에서 보유 리스크를 종료한다."
+    }
+  ]
+}

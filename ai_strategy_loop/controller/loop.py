@@ -249,6 +249,9 @@ def run_backtest_for(config: LoopConfig, buy_name: str, sell_name: str) -> Backt
 
     예외를 던지지 않고 항상 BacktestOutcome을 반환한다(여기서 1차 방어).
     """
+    from ai_strategy_loop.controller.condition_discovery import effective_condition_discovery_runtime_config  # noqa: PLC0415
+
+    config = effective_condition_discovery_runtime_config(config)
     env = dict(os.environ)
     env["STOM_ALLOW_MINIMAL_SETTING"] = "1"
     env["STOM_CLI_DB_STRATEGY"] = str(bootstrap.LOOP_DB_STRATEGY)
@@ -297,6 +300,8 @@ def run_backtest_for(config: LoopConfig, buy_name: str, sell_name: str) -> Backt
             "--start", str(bt_start),
             "--end", str(bt_end),
             "--timeframe", config.bt_timeframe,  # subset back-DB의 타임프레임.
+            "--start-time", str(config.bt_universe_start_time),
+            "--end-time", str(config.bt_universe_end_time),
             "--divid-mode", "종목코드별 분류",  # moneytop의 모든(=N개) 코드 로딩.
             "--engines", str(config.bt_engine_count),
             "--timeout", str(config.bt_timeout),
@@ -331,6 +336,8 @@ def run_backtest_for(config: LoopConfig, buy_name: str, sell_name: str) -> Backt
             "--timeframe", config.bt_timeframe,
             "--divid-mode", "한종목 로딩",
             "--one-code", str(bt_one),
+            "--start-time", str(config.bt_universe_start_time),
+            "--end-time", str(config.bt_universe_end_time),
             "--engines", str(config.bt_engine_count),
             "--timeout", str(config.bt_timeout),
             "--format", "json",
@@ -382,6 +389,9 @@ def _build_warm_btconfig(config: LoopConfig) -> BacktestConfig:
     buy/sell는 빈 문자열로 둔다(run마다 WarmBacktestSession.run에 지정).
     스코프는 전체유니버스('종목코드별 분류') + 사용자 검증 baseline 파라미터다.
     """
+    from ai_strategy_loop.controller.condition_discovery import effective_condition_discovery_runtime_config  # noqa: PLC0415
+
+    config = effective_condition_discovery_runtime_config(config)
     # min 타임프레임 + full_session_enabled일 때만 장중 윈도우를 풀세션까지 연다.
     #   OFF(기본) 또는 tick → bt_universe_end_time(92800) = 기존과 byte-identical.
     #   tick은 데이터 09:30 캡이라 토글과 무관하게 항상 bt_universe_end_time.
@@ -539,7 +549,55 @@ def _backtest_error_history_line(reason: str) -> str:
 
     return backtest_error_history_line(reason)
 
+def _condition_pattern_cards_from_examples(kind: str, examples: Optional[list]) -> list:
+    """Convert read-only few-shot examples into anti-copy pattern cards."""
 
+    if not examples:
+        return []
+    from ai_strategy_loop.controller.condition_discovery_feedback import build_pattern_card  # noqa: PLC0415
+
+    cards = []
+    for idx, code in enumerate(examples[:5], start=1):
+        compact = str(code or "").strip()
+        if not compact:
+            continue
+        cards.append(build_pattern_card(
+            card_id=f"{kind}-pattern-{idx}",
+            source_label="seed_db:few_shot",
+            side=kind,
+            expression=compact,
+            pattern_summary="human DB composition grammar sample; thresholds stripped",
+            variable_families=["human_db", "composition", kind],
+            composition_tags=["few_shot", "anti_copy"],
+        ))
+    return cards
+
+def _condition_pattern_cards_for_config(config: LoopConfig) -> list:
+    """Build read-only human DB pattern cards when seed-db few-shot is active."""
+
+    if not getattr(config, "few_shot_enabled", False):
+        return []
+    if getattr(config, "few_shot_source", "passing") != "seed_db":
+        return []
+    try:
+        from ai_strategy_loop.brain.exemplar_pool import select_exemplars  # noqa: PLC0415
+
+        k = max(0, min(int(getattr(config, "few_shot_k", 3) or 0), 5))
+        if k <= 0:
+            return []
+        cards = []
+        for kind in ("buy", "sell"):
+            examples = select_exemplars(
+                kind=kind,
+                timeframe=getattr(config, "bt_timeframe", "min"),
+                k=k,
+                source="seed_db",
+            )
+            cards.extend(_condition_pattern_cards_from_examples(kind, examples))
+        return cards
+    except Exception as exc:  # noqa: BLE001 - page-data helper must not block loop.
+        logger.info("pattern card page_data build 실패(무시): %s", exc)
+        return []
 # =====================================================================
 # 전략 생성 (한 세대 = buy 1 + sell 1).
 # =====================================================================
@@ -668,6 +726,7 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
         #   무예외(실패 시 빈 리스트)라 루프를 막지 않고, 빈 리스트면 build_messages가 미주입해
         #   동작이 byte-identical 하다(하위호환). OFF(기본)면 select_exemplars를 호출조차 안 한다.
         few_shot: Optional[list] = None
+        pattern_cards: Optional[list] = None
         if getattr(config, "few_shot_enabled", False):
             from ai_strategy_loop.brain.exemplar_pool import select_exemplars  # noqa: PLC0415
 
@@ -677,6 +736,8 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
                 k=getattr(config, "few_shot_k", 3),
                 source=getattr(config, "few_shot_source", "passing"),
             ) or None
+            if getattr(config, "few_shot_source", "passing") == "seed_db":
+                pattern_cards = _condition_pattern_cards_from_examples(kind, few_shot)
         res = generate_strategy(
             provider, kind, name, db,
             timeframe=config.bt_timeframe,
@@ -724,6 +785,7 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             exec_budget_prompt_enabled=getattr(config, "exec_budget_prompt_enabled", False),
             sell_exec_budget_guard_enabled=getattr(config, "sell_exec_budget_guard_enabled", False),
             sell_max_window_calls=getattr(config, "sell_max_window_calls", 8),
+            pattern_cards=pattern_cards,
             # v5.0 리포트 원리 어휘 주입 — build_messages가 kind별 어휘 블록을 추가한다.
             #   getattr 기본 False라 구버전 config도 무영향(byte-동일, 하위호환).
             report_principles_enabled=getattr(config, "report_principles_enabled", False),
@@ -932,6 +994,41 @@ def _publish_live(
         "winner_buy": winner_buy,
         "winner_sell": winner_sell,
     }
+    page_data_payload = dict(page_data or {})
+    # Condition-discovery governance is sticky across phase publishes. Without this,
+    # generation_done can show policy/score/evidence and the next phase publish can erase it
+    # by omitting page_data. Keep the projection additive and failure-safe. Also repair
+    # partial caller-supplied governance payloads so condition_discovery cannot suppress
+    # the advisory score or feedback sections.
+    condition_section_keys = ("condition_discovery", "advisory_scores", "condition_feedback")
+    if any(key not in page_data_payload for key in condition_section_keys):
+        try:
+            page_data_payload = _build_condition_discovery_page_sections(st, rid, config, page_data_payload)
+        except Exception as exc:  # noqa: BLE001 - dashboard projection must fail closed.
+            reason = str(exc)
+            logger.info("condition discovery page_data publish 실패(상태 발행): %s", reason)
+            page_data_payload.setdefault("condition_discovery", {
+                "schema_version": 1,
+                "status": "error",
+                "reason": reason,
+                "authority": "condition_discovery_projection_failed_no_promotion_authority",
+            })
+            page_data_payload.setdefault("advisory_scores", {
+                "schema_version": 1,
+                "status": "error",
+                "reason": reason,
+                "authority_guard": {
+                    "score_can_promote": False,
+                    "score_can_export": False,
+                    "score_can_select_winner": False,
+                },
+            })
+            page_data_payload.setdefault("condition_feedback", {
+                "schema_version": 1,
+                "status": "error",
+                "reason": reason,
+                "pattern_cards": {"status": "unavailable", "items": []},
+            })
     current_step = _PHASE_STEP.get(phase, -1)
     snapshot = to_loop_state(
         summary, gens, config=config, status=status, current_gen=current_gen,
@@ -949,7 +1046,7 @@ def _publish_live(
             "telemetry_events": telemetry_events,
         },
         cumulative_tokens=cumulative_tokens,
-        page_data=page_data,
+        page_data=page_data_payload,
     )
     publish_loop_state(snapshot)
 
@@ -981,6 +1078,9 @@ def run_loop(
     Returns:
         {run_id, generations, best_gen, best_score, best_buy, best_sell, stop_reason}.
     """
+    from ai_strategy_loop.controller.condition_discovery import effective_condition_discovery_runtime_config  # noqa: PLC0415
+
+    config = effective_condition_discovery_runtime_config(config)
     # P6 — cross-process single-writer 락 획득. CLI/GUI 어느 진입점이든 같은
     #   current_state.json/loop_runs.db에 쓰므로, 살아있는 다른 루프가 락을 잡고
     #   있으면 즉시 거부한다(동시 쓰기 차단). stale 락(크래시 잔존)은 runlock이
@@ -1815,6 +1915,165 @@ def _refresh_meta_insights(st: LoopState) -> None:
         logger.info("메타 인사이트 재집계 실패(무시): %s", exc)
 
 
+def _latest_generation_row(st: LoopState, rid: str) -> Optional[Dict[str, Any]]:
+    """Return latest generation row for dashboard-only page_data assembly."""
+
+    try:
+        rows = st.get_generations(rid)
+    except Exception as exc:  # noqa: BLE001 - dashboard projection must not stop the loop.
+        logger.info("condition discovery latest generation 조회 실패(무시): %s", exc)
+        return None
+    return dict(rows[-1]) if rows else None
+
+
+def _count_prompt_records(st: LoopState, rid: str, gen_no: int) -> Optional[int]:
+    try:
+        return sum(1 for row in st.get_prompts(rid) if int(row.get("gen_no", -1)) == int(gen_no))
+    except Exception as exc:  # noqa: BLE001 - status page evidence only.
+        logger.info("condition discovery prompt count 조회 실패(무시): %s", exc)
+        return None
+
+
+def _count_equity_points(st: LoopState, rid: str, gen_no: int) -> Optional[int]:
+    try:
+        return len(st.get_equity_points(rid, gen_no))
+    except Exception as exc:  # noqa: BLE001 - status page evidence only.
+        logger.info("condition discovery equity count 조회 실패(무시): %s", exc)
+        return None
+
+
+def _evidence_status(present: bool, unavailable: bool = False) -> str:
+    if unavailable:
+        return "unavailable"
+    return "present" if present else "missing"
+
+
+def _condition_discovery_evidence(
+    latest_gen: Optional[Dict[str, Any]],
+    *,
+    prompt_records: Optional[int],
+    equity_points: Optional[int],
+) -> Dict[str, str]:
+    """Build CSV/trade/equity/prompt/validation evidence state from existing run records."""
+
+    if latest_gen is None:
+        return {
+            "csv": "missing",
+            "trades": "missing",
+            "equity": "unavailable" if equity_points is None else "missing",
+            "prompt": "unavailable" if prompt_records is None else "missing",
+            "validation": "missing",
+        }
+
+    status = str(latest_gen.get("status", "") or "").strip().lower()
+    trade_count = int(latest_gen.get("trade_count", 0) or 0)
+    return {
+        "csv": _evidence_status(bool(latest_gen.get("csv_path"))),
+        "trades": _evidence_status(trade_count > 0),
+        "equity": _evidence_status((equity_points or 0) > 0, unavailable=equity_points is None),
+        "prompt": _evidence_status((prompt_records or 0) > 0, unavailable=prompt_records is None),
+        "validation": "failed" if status in {"error", "failed"} else _evidence_status(bool(status)),
+    }
+
+
+def _quality_features_for_condition(latest_gen: Optional[Dict[str, Any]], config: LoopConfig) -> Dict[str, Any]:
+    """Derive safe, prompt-quality score inputs without reading strategy bodies or DB truth."""
+
+    if latest_gen is None:
+        return {"syntax_valid": False, "forbidden_token_count": 1, "variable_categories": []}
+
+    status = str(latest_gen.get("status", "") or "").strip().lower()
+    gist = str(latest_gen.get("strategy_gist", "") or "")
+    categories: List[str] = []
+    category_markers = (
+        ("time", ("시분초", "시간", "분봉", "tick")),
+        ("liquidity", ("거래대금", "거래량", "체결금액")),
+        ("orderflow", ("체결강도", "호가", "매수잔량", "매도잔량")),
+        ("return", ("등락", "수익률", "변동률")),
+        ("trend", ("이평", "이동평균", "추세", "돌파")),
+    )
+    for name, markers in category_markers:
+        if any(marker in gist for marker in markers):
+            categories.append(name)
+
+    timeframe = str(getattr(config, "bt_timeframe", "") or "").lower()
+    market_niche = "opening_tick_research" if timeframe == "tick" else "min_full_session_research"
+    return {
+        "syntax_valid": status not in {"error", "failed"},
+        "forbidden_token_count": 0 if status not in {"error", "failed"} else 1,
+        "variable_categories": categories,
+        "composition_patterns": [],
+        "market_niche": market_niche,
+        "always_true_flags": [],
+        "execution_cost_risk": "low",
+        "window_call_count": 0,
+        "max_window_calls": getattr(config, "sell_max_window_calls", 8),
+        "exit_structure": {},
+    }
+
+
+def _build_condition_discovery_page_sections(
+    st: LoopState,
+    rid: str,
+    config: LoopConfig,
+    page_data: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Attach condition-discovery sections to LIVE page_data."""
+
+    from ai_strategy_loop.controller.advisory_scores import build_advisory_score_payload  # noqa: PLC0415
+    from ai_strategy_loop.controller.condition_discovery import merge_condition_discovery_page_data, normalize_condition_discovery_preset  # noqa: PLC0415
+    from ai_strategy_loop.controller.condition_discovery_feedback import build_feedback_page_data  # noqa: PLC0415
+
+    latest_gen = _latest_generation_row(st, rid)
+    gen_no = int(latest_gen.get("gen_no", -1) if latest_gen else -1)
+    prompt_records = _count_prompt_records(st, rid, gen_no) if gen_no >= 0 else 0
+    equity_points = _count_equity_points(st, rid, gen_no) if gen_no >= 0 else 0
+    evidence = _condition_discovery_evidence(
+        latest_gen,
+        prompt_records=prompt_records,
+        equity_points=equity_points,
+    )
+    merged = merge_condition_discovery_page_data(page_data, config, evidence=evidence)
+    preset = normalize_condition_discovery_preset(getattr(config, "condition_discovery_preset", "fast"))
+
+    metrics = dict(latest_gen or {})
+    metrics["total_profit"] = metrics.get("profit")
+    metrics["mdd_pct"] = metrics.get("mdd")
+    metrics["total_profit_pct"] = metrics.get("total_profit_pct")
+    hard_gate_passed = bool(latest_gen.get("gate_passed")) if latest_gen else False
+    mdd_cap = float(merged["condition_discovery"]["hard_gates"]["mdd"]["cap"])
+    min_daily_trades = float(merged["condition_discovery"]["hard_gates"]["minimum_daily_trades"]["value"])
+    merged["advisory_scores"] = build_advisory_score_payload(
+        metrics=metrics,
+        quality_features=_quality_features_for_condition(latest_gen, config),
+        evidence=evidence,
+        preset=preset,
+        hard_gate_passed=hard_gate_passed,
+        human_approved=False,
+        mdd_cap=mdd_cap,
+        min_daily_trades=min_daily_trades,
+    )
+
+    hypotheses = []
+    if latest_gen and latest_gen.get("hypotheses_json"):
+        try:
+            parsed = json.loads(str(latest_gen.get("hypotheses_json")))
+            if isinstance(parsed, list):
+                hypotheses = parsed
+        except (TypeError, ValueError):
+            hypotheses = []
+    pattern_cards = _condition_pattern_cards_for_config(config)
+    merged["condition_feedback"] = build_feedback_page_data(
+        config,
+        prompt_records=prompt_records,
+        equity_points=equity_points,
+        hypotheses=hypotheses,
+        pattern_cards=pattern_cards,
+    )
+    merged["condition_feedback"]["source"] = "live_loop_page_data"
+    return merged
+
+
 def _build_live_page_data(
     st: LoopState,
     rid: str,
@@ -2103,6 +2362,9 @@ def _score_outcome(outcome: BacktestOutcome, config: LoopConfig):
     반환: (fit, graded, err). 실패 시 (None, None, err).
     하드 게이트 fit은 졸업/우승 판정에, graded는 best 선택/방향에 쓴다.
     """
+    from ai_strategy_loop.controller.condition_discovery import effective_condition_discovery_runtime_config  # noqa: PLC0415
+
+    config = effective_condition_discovery_runtime_config(config)
     from ai_strategy_loop.fitness import (  # noqa: PLC0415
         compute_fitness,
         compute_graded_fitness,

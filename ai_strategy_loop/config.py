@@ -473,6 +473,10 @@ class LoopConfig:
     # Research OOS policy for discovery dashboards and candidate pool artifacts.
     # disabled: no OOS rejection; advisory: reference only; promotion_only: strict frozen review only.
     research_oos_mode: str = "disabled"
+    # Condition-discovery preset is an additive research-governance selector.
+    # fast: broad exploration, research: evidence-preserving research, promotion: frozen review.
+    # It does not export/live-wire anything; policy helpers keep scores advisory and evidence authoritative.
+    condition_discovery_preset: str = "fast"  # 'fast' | 'research' | 'promotion'
     # Sparse-positive prompt guidance for TICK candidate generation.
     # Default OFF keeps the existing prompt, hard gates, and selector behavior unchanged.
     sparse_positive_prompt_enabled: bool = False
@@ -522,6 +526,34 @@ class LoopConfig:
     #   손익 영향 숫자 포함)을 덧붙인다. 분석 전용·인샘플 advisory이며 어떤 게이트/선택도
     #   바꾸지 않는다. 기본 OFF면 피드백이 기존과 byte-동일하다(하위호환).
     counterfactual_feedback_enabled: bool = False
+
+    # --- P3: 세그먼트별 feature_importance 환류 (매수 프롬프트 토글) ---
+    # 데이터 근거: fitness/feature_importance(현재 대시보드 전용)는 결과 CSV의 B_* 진입
+    #   피처가 **시간대×시총 세그먼트마다** 승/패를 얼마나 가르나(분위 승률 격차)를 산출한다.
+    #   기존 부검(autopsy)은 전역 단변량만 봐서 "어느 시간대×시총에서 어느 변수가 결정적인가"
+    #   라는 세그먼트별 신호가 빠졌다(예: 초소형에서 거래대금증감이 강하게 가르지만 소형에선
+    #   약해지거나 뒤집힘). 이를 다음 세대 매수 프롬프트에 'prefer 힌트'로 환류한다.
+    # feature_importance_feedback_enabled: True면 loop가 직전(또는 best) 세대 train CSV를
+    #   feature_importance_by_segment로 분석해, 분위 승률 격차가 큰 셀×피처를 매수(kind=='buy')
+    #   프롬프트에 한국어 힌트 라인으로 추가한다(build_segment_avoid와 동일 채널 재사용,
+    #   매도 무영향). 신호는 train CSV에서만 산출한다(holdout 가드). 기본 OFF면 분석/주입이
+    #   평가조차 안 돼 생성 프롬프트가 기존과 byte-동일하다(하위호환). 데이터 없음/부족은 빈
+    #   힌트로 흡수(graceful).
+    feature_importance_feedback_enabled: bool = False
+    # feature_importance_feedback_min_cell: 한 세그먼트 셀이 힌트로 채택되려면 필요한 최소
+    #   거래 수(잡음 셀 배제). feature_importance_feedback_enabled=False면 평가되지 않는다.
+    feature_importance_feedback_min_cell: int = 20
+
+    # --- P5: 청산 포렌식 환류 (매도 프롬프트 토글) ---
+    # 데이터 근거: analyze_exits가 R_MFE/R_MAE로 산출하는 Exit Regret(조기청산 후회 —
+    #   익절기회 있던 수익거래가 고점 절반도 못 지킴)·False-Break(가짜 돌파 — 손실거래가
+    #   진입 후 한 번도 못 오름)는 give-back/MAE보다 한 겹 깊은 포렌식이다. 전자는 청산
+    #   타이밍(트레일링/부분익절), 후자는 진입 품질을 가리킨다.
+    # exit_forensics_feedback_enabled: True면 summarize_exits가 후회율·가짜돌파율이 경보
+    #   문턱 이상일 때 매도(SELL) 프롬프트에 포렌식 라인을 덧붙인다. 기본 OFF면 평가조차
+    #   안 돼 summarize_exits 출력이 기존과 byte-동일하다(하위호환). analyze_exits의 필드
+    #   산출은 토글과 무관하게 항상 가법 수행(기존 소비자는 신규 필드 무시 → byte-동일).
+    exit_forensics_feedback_enabled: bool = False
 
     # --- 프롬프트 영속화 (P1c): LLM 호출별 프롬프트를 loop_runs.db에 기록 ---
     # 데이터 근거(재현성): 현재 LLM 호출별 프롬프트(system+user 메시지)가 어디에도

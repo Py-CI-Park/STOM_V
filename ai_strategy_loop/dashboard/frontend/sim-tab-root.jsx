@@ -9,7 +9,7 @@
 */
 // Track Z — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
 import { SimOverlayChart, SimSignalLog } from "./simulation-charts.jsx";
-import { useState_sim, useEffect_sim, useCallback_sim, useRef_sim, useMemo_sim, _simFetchJson, _SIM_SPEEDS, _simWsBar, _SIM_MAX_CODES, _SIM_DEMO_SPEED, _SIM_MAX_SPLIT_COLS, _loadIndicators, _saveIndicators, _loadSplitCols, _saveSplitCols, _loadSplitRows, _saveSplitRows, _loadEngineMode, _saveEngineMode, _wsUrl, _simDemoSeen, _simMarkDemoSeen, _flattenSignals } from "./sim-tab-utils.jsx";
+import { useState_sim, useEffect_sim, useCallback_sim, useRef_sim, useMemo_sim, _simFetchJson, _SIM_SPEEDS, _simWsBar, _SIM_MAX_CODES, _SIM_DEMO_SPEED, _SIM_MAX_SPLIT_COLS, _loadIndicators, _saveIndicators, _loadSplitCols, _saveSplitCols, _loadSplitRows, _saveSplitRows, _loadEngineMode, _saveEngineMode, _wsUrl, _simDemoSeen, _simMarkDemoSeen, _flattenSignals, _simRenderBudget, _simRenderBars } from "./sim-tab-utils.jsx";
 import { SimControlBar, SimPresetBar, SimMarketMinimap, SimPlaybackBar, SimViewBar } from "./sim-tab-controls.jsx";
 import { SimChartByEngine, SimIndicatorTable, SimLearningPanel, SimVariableWatch } from "./sim-tab-panels.jsx";
 
@@ -41,6 +41,7 @@ function SimulationTab({ baseUrl, wsStatus }) {
   const [curT, setCurT] = useState_sim(null);
   const [wsErr, setWsErr] = useState_sim("");
   const [signals, setSignals] = useState_sim({});      // code → [signal...]
+  const [signalErr, setSignalErr] = useState_sim("");
 
   // 즉시 체험 — 자동 데모 진행 중 여부·프리셋 조회 busy·자동재생 대기 플래그.
   const [demoActive, setDemoActive] = useState_sim(false);   // 예시 자동 재생 배지 노출.
@@ -50,13 +51,14 @@ function SimulationTab({ baseUrl, wsStatus }) {
 
   // 보조지표 토글(MA·VWAP·볼린저) — localStorage 보존. 차트 라인 오버레이 제어.
   const [indicators, setIndicators] = useState_sim(_loadIndicators);
-  // 멀티차트 보기 모드(split/overlay) + 분할 컬럼 수(1/2 — 강제 토글, auto=반응형).
+  // 멀티차트 보기 모드(split/overlay) + 분할 컬럼 수(1~5).
   const [chartMode, setChartMode] = useState_sim("split");
   const [splitCols, setSplitCols] = useState_sim(_loadSplitCols);
   // 분할 행 캡(0=자동·무제한). 종목수/열 기반 자동 행을 사용자가 줄여 스크롤 그리드로 만든다.
   const [splitRows, setSplitRows] = useState_sim(_loadSplitRows);
   // 차트 엔진 모드(live/lwc/svg) — 기본 라이브(S4). localStorage 보존.
   const [engineMode, setEngineMode] = useState_sim(_loadEngineMode);
+  const [viewportTick, setViewportTick] = useState_sim(0);
 
   // 학습 모드 — 신호 자동 일시정지 토글 + 하이라이트 신호 키.
   const [autoPause, setAutoPause] = useState_sim(false);
@@ -143,14 +145,22 @@ function SimulationTab({ baseUrl, wsStatus }) {
   const setEngineModePersist = useCallback_sim((v) => {
     setEngineMode(v); _saveEngineMode(v);
   }, []);
+  useEffect_sim(() => {
+    if (typeof window === "undefined") return undefined;
+    const onResize = () => setViewportTick(v => v + 1);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
 
   // 신호 로드(buy/sell + 선택 종목 변경 시). 종목별로 1일·1종목 백테 신호를 받는다.
   useEffect_sim(() => {
     if (isDemo || !baseUrl || !date || !buy || !sell || selected.length === 0) {
-      setSignals({}); return;
+      setSignals({}); setSignalErr(""); return;
     }
     let cancelled = false;
     const next = {};
+    const failedCodes = [];
     Promise.all(selected.map(code =>
       _simFetchJson(
         baseUrl + "/sim/signals?date=" + encodeURIComponent(date) + "&src=" + src +
@@ -158,8 +168,12 @@ function SimulationTab({ baseUrl, wsStatus }) {
         "&buy=" + encodeURIComponent(buy) + "&sell=" + encodeURIComponent(sell),
         200000
       ).then(j => { next[code] = (j && Array.isArray(j.trades)) ? j.trades : []; })
-       .catch(() => { next[code] = []; })
-    )).then(() => { if (!cancelled) setSignals(next); });
+       .catch(e => { next[code] = []; failedCodes.push(code + ": " + String(e && e.message ? e.message : e)); })
+    )).then(() => {
+      if (cancelled) return;
+      setSignals(next);
+      setSignalErr(failedCodes.length ? "신호 로드 실패: " + failedCodes.join(", ") : "");
+    });
     return () => { cancelled = true; };
   }, [baseUrl, isDemo, date, src, buy, sell, selected.join(",")]);
 
@@ -197,7 +211,16 @@ function SimulationTab({ baseUrl, wsStatus }) {
     };
     ws.onmessage = (ev) => {
       let m;
-      try { m = JSON.parse(ev.data); } catch (e) { return; }
+      try { m = JSON.parse(ev.data); } catch (e) {
+        setWsErr("리플레이 프레임 해석 실패: " + String(e && e.message ? e.message : e));
+        setStatus("error");
+        return;
+      }
+      if (!m || !m.type) {
+        setWsErr("리플레이 프로토콜 오류: type 누락");
+        setStatus("error");
+        return;
+      }
       if (m.type === "meta") {
         setMeta({ codes: m.codes || [], bars_total: m.bars_total || 0, session_range: m.session_range || [0, 0] });
         setCursor(0);
@@ -230,6 +253,9 @@ function SimulationTab({ baseUrl, wsStatus }) {
         setStatus(s => (s === "playing" || s === "paused") ? "done" : s);
       } else if (m.type === "error") {
         setWsErr(m.message || "리플레이 오류"); setStatus("error");
+      } else {
+        setWsErr("리플레이 프로토콜 오류: 알 수 없는 frame type " + String(m.type));
+        setStatus("error");
       }
     };
     ws.onerror = () => { setWsErr("WebSocket 연결 오류"); setStatus("error"); };
@@ -245,12 +271,7 @@ function SimulationTab({ baseUrl, wsStatus }) {
   const pauseReplay = () => { _wsSend({ action: "pause" }); setStatus("paused"); };
   const resumeReplay = () => { _wsSend({ action: "resume" }); setStatus("playing"); };
   const changeSpeed = (sp) => { setSpeed(sp); _wsSend({ action: "speed", value: sp }); };
-  const seekTo = (idx) => {
-    setCursor(idx);
-    if (meta && meta.session_range) {
-      _wsSend({ action: "seek", t: idx });  // 서버는 t(HHMMSS) 기대 — 아래 보정.
-    }
-  };
+
 
   // seek 슬라이더는 frame 인덱스 기준 — 서버 seek 은 t(HHMMSS) 이므로 인덱스→t 변환이 필요.
   //   meta 만으로는 frame t 목록을 모르므로, 누적 수신된 bar 의 t 를 참조하거나(앞쪽)
@@ -405,6 +426,12 @@ function SimulationTab({ baseUrl, wsStatus }) {
 
   // 렌더용 코드별 bar 시계열(barsVersion 의존).
   const barsByCode = useMemo_sim(() => ({ ...barsRef.current }), [barsVersion]);
+  const renderBudget = useMemo_sim(() => _simRenderBudget(codes.length), [codes.length, viewportTick]);
+  const renderBarsByCode = useMemo_sim(() => {
+    const out = {};
+    codes.forEach(code => { out[code] = _simRenderBars(barsByCode[code] || [], renderBudget); });
+    return out;
+  }, [barsByCode, codes.join(","), renderBudget]);
   // 7.6 분할 그리드 — 사용자가 열(1~5)을 직접 고른다. 단일 종목은 항상 1열.
   //   effCols = clamp(userCols, 1, min(5, codes.length)). 종목수보다 많은 열은 빈칸 방지로 클램프.
   const colCap = Math.min(_SIM_MAX_SPLIT_COLS, Math.max(1, codes.length));
@@ -524,6 +551,13 @@ function SimulationTab({ baseUrl, wsStatus }) {
               </div>
             </div></div>
           )}
+          {signalErr && (
+            <div className="panel"><div className="panel-bd">
+              <div className="research-empty" style={{ color: "var(--amber)" }}>
+                {signalErr}
+              </div>
+            </div></div>
+          )}
 
           {selected.length === 0 ? (
             <div className="panel"><div className="panel-bd">
@@ -534,15 +568,18 @@ function SimulationTab({ baseUrl, wsStatus }) {
             </div></div>
           ) : (chartMode === "overlay" && codes.length > 1) ? (
             // 오버레이 모드 — 정규화(시작=100) 한 차트 겹침 비교.
-            <SimOverlayChart codes={codes} barsByCode={barsByCode}
+            <SimOverlayChart codes={codes} barsByCode={renderBarsByCode}
               nameByCode={nameByCode} curT={curT} />
           ) : (
             // 분할 모드 — 종목별 차트 그리드(반응형 열). 엔진 모드(라이브/LWC/SVG)로 컴포넌트 선택.
             <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: dense ? 10 : 14, ...gridExtra }}>
               {codes.map(code => {
+                const fullBars = barsByCode[code] || [];
+                const renderedBars = renderBarsByCode[code] || [];
                 const chartProps = {
                   code, name: nameByCode[code],
-                  bars: barsByCode[code] || [], signals: signals[code] || [],
+                  bars: renderedBars, fullBarCount: fullBars.length,
+                  renderBudget, signals: signals[code] || [],
                   curT, compact: (codes.length > 1 && effCols > 1) || dense,
                   indicators,
                 };

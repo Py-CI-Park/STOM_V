@@ -250,6 +250,7 @@ def build_messages(
     hypothesis_feedback: Optional[str] = None,
     few_shot_examples: Optional[List[str]] = None,
     segment_avoid_lines: Optional[List[str]] = None,
+    feature_hint_lines: Optional[List[str]] = None,
 ) -> List[Dict[str, str]]:
     """OpenAI Chat Completions 메시지 리스트를 만든다.
 
@@ -499,6 +500,17 @@ def build_messages(
                 "직전 백테에서 적자/저승률로 드러난 '불필요한 구간'이다. 이 구간 진입을 "
                 "피하거나 더 엄격히 게이트해 다음 세대를 재생성하라(반대 임계값/필터로 "
                 "이 구간을 배제):\n" + "\n".join(segment_avoid_lines)
+            )
+        # P3 feature_importance prefer 힌트(매수 전용): 직전/best 세대 train 결과에서
+        #   시총×시간대 셀별로 승패를 강하게 가른 진입 피처와 방향(상단/하단)을 환류해,
+        #   루프가 그 구간에서 해당 변수를 우선 게이트하도록 유도한다(avoid의 양 짝).
+        #   None/빈 리스트면 미추가(byte 보존). 호출부가 매수일 때만 채운다.
+        if feature_hint_lines:
+            user_lines.append(
+                "최근 백테 구간별 결정 피처(prefer 힌트 — 세그먼트별 우위 변수): 아래는 "
+                "직전 백테에서 시총/시간대 구간마다 승패를 강하게 가른 진입 변수와 방향이다. "
+                "해당 구간 진입 조건에 이 변수의 제시된 방향(상단/하단)을 우선 반영하라:\n"
+                + "\n".join(feature_hint_lines)
             )
         fb_text = autopsy_feedback or ""
         if ("0건" in fb_text) or ("0거래" in fb_text) or ("거래가" in fb_text and "적" in fb_text):

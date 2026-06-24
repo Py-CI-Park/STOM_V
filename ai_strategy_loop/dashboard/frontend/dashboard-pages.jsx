@@ -17,8 +17,8 @@
 import { ResearchWikiPanel } from "./research-wiki.jsx";
 import { ResearchIndexPanel } from "./research-index.jsx";
 import { AIContextPanel } from "./ai-context.jsx";
-import { EVIDENCE_WORKSPACE_LINKS, dashboardPathFor, normalizeEvolutionSubtabKey } from "./ui-contract.jsx";
-import { UiStateBlock, WorkspaceCard, WorkspaceNav } from "./ui-state.jsx";
+import { dashboardPathFor, normalizeEvolutionSubtabKey } from "./ui-contract.jsx";
+import { UiStateBlock } from "./ui-state.jsx";
 import { VisualQualityPanel } from "./visual-quality.jsx";
 import { HofInventoryGate } from "./hof-inventory.jsx";
 import { Phase2InventoryPanel, pageOwnerContract } from "./dashboard-inventory.jsx";
@@ -55,52 +55,23 @@ const VERDICT_SECTION_META = {
 };
 
 
-function EvidenceWorkspaceHeader({ activeKey, onSelect }) {
-  const nav = onSelect || _dpNavigateToTab;
+function EvidenceWorkspaceHeader({ activeKey }) {
   const owner = pageOwnerContract(activeKey === "workbench" ? "pro" : activeKey);
   return (
-    <div className="evidence-workspace-head">
+    <div className="evidence-workspace-head evidence-workspace-head-static">
       <div>
         <div className="workspace-kicker mono">EVIDENCE WORKSPACE · OWNER MATRIX</div>
         <h2>기록 · 연구 · 분석 · 결정 역할 맵</h2>
         <p>
-          Records는 전체 조회, 연구실은 위키/컨텍스트, 분석 워크벤치는 후보 분석과 HoF 비교,
-          결정 감사는 append-only trail만 소유합니다. 현재 표면: <b>{owner.owner}</b>
+          현재 표면: <b>{owner.owner}</b>
         </p>
         <div className="workspace-owner-boundary mono">
           <span>owns: {owner.owns}</span>
           <span>not-owner: {owner.notOwner}</span>
         </div>
       </div>
-      <WorkspaceNav items={EVIDENCE_WORKSPACE_LINKS} activeKey={activeKey} onSelect={nav} />
-    </div>
-  );
-}
-
-function EvidenceWorkspaceCards({ onSelect }) {
-  const nav = onSelect || _dpNavigateToTab;
-  return (
-    <>
-      <div className="evidence-workspace-grid">
-        <WorkspaceCard eyebrow="LOOKUP" title="기록 검색" badge="read-only" tone="info"
-                       action={<button className="btn ghost sm" onClick={() => nav("records")}>열기</button>}>
-          campaign, docs, update_log, registry lineage를 한 곳에서 검색합니다. Raw markdown은 inert text로만 표시합니다.
-        </WorkspaceCard>
-        <WorkspaceCard eyebrow="CURATED" title="연구실" badge="wiki/context" tone="success"
-                       action={<button className="btn ghost sm" onClick={() => nav("lab")}>열기</button>}>
-          연구 위키, AI 컨텍스트 팩, run 분석 홈을 담당합니다. 생성/판정 루프와 분리해 탐색 흐름을 안정화합니다.
-        </WorkspaceCard>
-        <WorkspaceCard eyebrow="WORKBENCH" title="분석 워크벤치" badge="pro/hof" tone="pending"
-                       action={<button className="btn ghost sm" onClick={() => nav("workbench")}>열기</button>}>
-          조건 후보 분석과 HoF 비교를 담당합니다. 워크벤치 액션과 벤치마크 증거를 섞어 잃지 않습니다.
-        </WorkspaceCard>
-        <WorkspaceCard eyebrow="AUDIT" title="결정 감사" badge="append-only" tone="demo"
-                       action={<button className="btn ghost sm" onClick={() => nav("verdict")}>열기</button>}>
-          운영 판단은 삭제/덮어쓰기 없이 append-only 이력으로 남깁니다. final approval과 분리합니다.
-        </WorkspaceCard>
-      </div>
       <Phase2InventoryPanel compact />
-    </>
+    </div>
   );
 }
 
@@ -189,39 +160,45 @@ function LabPage({ baseUrl, onNavigate }) {
     return () => clearInterval(timer);
   }, [base]);
 
-  const Panel = window.ResearchLabPanel;
   const WikiPanel = window.ResearchWikiPanel || ResearchWikiPanel;
   const ContextPanel = window.AIContextPanel || AIContextPanel;
+  const LabPanel = window.ResearchLabPanel;
 
   return (
-    <div className="dashboard-page dashboard-page-lab">
-      <EvidenceWorkspaceHeader activeKey="lab" onSelect={onNavigate} />
-      <EvidenceWorkspaceCards onSelect={onNavigate} />
+    <div className="dashboard-page dashboard-page-lab" data-legacy-lab-panel={LabPanel ? "mounted" : "missing"}>
+      <EvidenceWorkspaceHeader activeKey="lab" />
       <div style={{ display: "flex", gap: 14, padding: "12px 0", minHeight: "60vh" }}>
         <_DpSidebar runs={runs} runId={runId} setRunId={setRunId} ops={ops} verdict={verdict} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="dashboard-page-title">
             <b>STOM 연구실</b>
-            <span className="mono">wiki · context · run analysis owner</span>
+            <span className="mono">exploration · edge · variables · validation</span>
           </div>
           {labErrors.length > 0 && (
             <UiStateBlock kind="error" compact title="연구실 데이터 일부 로드 실패" detail={labErrors.join(" · ")}>
               실패한 endpoint를 빈 데이터로 숨기지 않습니다. 연결 또는 백엔드 상태를 확인하세요.
             </UiStateBlock>
           )}
-          {Panel
-            ? <Panel baseUrl={base} wsStatus="na" runId={runId} onOpenWorkbench={() => (onNavigate || _dpNavigateToTab)("workbench")} />
-            : <_DpLoading name="연구실 패널" />}
-          {WikiPanel ? (
-            <div style={{ marginTop: 14 }}>
-              <ResearchWikiPanel baseUrl={base} wsStatus="na" runId={runId} />
-            </div>
-          ) : <_DpLoading name="리서치 위키 패널" />}
-          {ContextPanel ? (
-            <div style={{ marginTop: 14 }}>
-              <AIContextPanel baseUrl={base} wsStatus="na" runId={runId} genNo={null} />
-            </div>
-          ) : <_DpLoading name="AI 컨텍스트 패널" />}
+          {LabPanel
+            ? <LabPanel baseUrl={base} wsStatus="na" runId={runId} onOpenWorkbench={() => _dpNavigateToTab("workbench")} />
+            : <_DpLoading name="연구실 분석 패널" />}
+          <details className="lab-example" style={{ marginTop: 14 }}>
+            <summary>연구 위키 · AI 컨텍스트 보기</summary>
+            {WikiPanel ? (
+              <div style={{ marginTop: 14 }}>
+                {WikiPanel === ResearchWikiPanel
+                  ? <ResearchWikiPanel baseUrl={base} wsStatus="na" runId={runId} />
+                  : <WikiPanel baseUrl={base} wsStatus="na" runId={runId} />}
+              </div>
+            ) : <_DpLoading name="리서치 위키 패널" />}
+            {ContextPanel ? (
+              <div style={{ marginTop: 14 }}>
+                {ContextPanel === AIContextPanel
+                  ? <AIContextPanel baseUrl={base} wsStatus="na" runId={runId} genNo={null} />
+                  : <ContextPanel baseUrl={base} wsStatus="na" runId={runId} genNo={null} />}
+              </div>
+            ) : <_DpLoading name="AI 컨텍스트 패널" />}
+          </details>
           <div style={{ marginTop: 14 }}>
             <VisualQualityPanel compact />
           </div>
@@ -238,8 +215,8 @@ function ResearchIndexPage({ baseUrl, onNavigate }) {
     <div className="dashboard-page dashboard-page-records" style={{ padding: "12px 0", minHeight: "60vh" }}>
       <EvidenceWorkspaceHeader activeKey="records" onSelect={onNavigate} />
       <div className="research-index-page-head">
-        <b>STOM 기록 검색</b>
-        <span className="mono">campaign · docs · update_log · registry lineage · inert detail</span>
+        <b>STOM 히스토리</b>
+        <span className="mono">run/gen result archive · Compare · campaign/docs/update_log/registry lineage</span>
       </div>
       <Panel baseUrl={base} wsStatus="na" />
     </div>

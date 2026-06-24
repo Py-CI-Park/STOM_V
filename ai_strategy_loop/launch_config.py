@@ -22,6 +22,10 @@ from ai_strategy_loop.brain.time_cap_bucket import (
     normalize_time_cap_bucket_end_time,
 )
 from ai_strategy_loop.config import LoopConfig
+from ai_strategy_loop.controller.condition_discovery import (
+    VALID_PRESETS as CONDITION_DISCOVERY_PRESETS,
+    normalize_condition_discovery_preset,
+)
 from ai_strategy_loop.fitness.research_criteria import ResearchOosModeParseError, normalize_research_oos_mode
 
 
@@ -148,6 +152,12 @@ def config_from_dict(data: Dict[str, Any] | None) -> LoopConfig:
     except ResearchOosModeParseError as exc:
         raise ValueError(str(exc)) from exc
     try:
+        cfg.condition_discovery_preset = normalize_condition_discovery_preset(
+            getattr(cfg, "condition_discovery_preset", "fast")
+        )
+    except ValueError as exc:
+        raise ValueError(str(exc)) from exc
+    try:
         cfg.time_cap_bucket_end_time = normalize_time_cap_bucket_end_time(cfg.time_cap_bucket_end_time)
     except TimeCapBucketEndTimeParseError as exc:
         raise ValueError(str(exc)) from exc
@@ -228,6 +238,11 @@ def config_field_specs() -> List[Dict[str, Any]]:
             "name": "research_oos_mode", "label": "Research OOS Mode", "type": "select",
             "choices": ["disabled", "advisory", "promotion_only"], "default": d.research_oos_mode,
             "help": "disabled=OOS 없이 탐색, advisory=참고 표시만, promotion_only=후보 고정 후 최종 검증용.",
+        },
+        {
+            "name": "condition_discovery_preset", "label": "Condition Discovery Preset", "type": "select",
+            "choices": list(CONDITION_DISCOVERY_PRESETS), "default": d.condition_discovery_preset,
+            "help": "fast=빠른 탐색, research=프롬프트/equity/evidence 보존 연구, promotion=동결 후보 승격 검토. 점수는 advisory이고 evidence/hard gate/인간 승인 우선.",
         },
         {
             "name": "bt_timeframe", "label": "Backtest Timeframe", "type": "select",

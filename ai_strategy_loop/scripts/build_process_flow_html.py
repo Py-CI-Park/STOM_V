@@ -105,6 +105,56 @@ def var_to_profit_rows() -> str:
         return ""
 
 
+def _fmt_won(v) -> str:
+    try:
+        return f"{float(v):,.0f}"
+    except Exception:  # noqa: BLE001
+        return "—"
+
+
+def overnight_tree() -> str:
+    """밤샘 앵커변이 발굴(ovn_anchor.jsonl)을 hill-climb 트리 HTML로 렌더(없으면 안내)."""
+    p = EVID / "ovn_anchor.jsonl"
+    if not p.is_file():
+        return '<div class="note">아직 밤샘 발굴 데이터가 없습니다(런 시작 직후).</div>'
+    rounds: dict = {}
+    for line in p.read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            o = json.loads(line)
+        except Exception:  # noqa: BLE001
+            continue
+        ev = o.get("event")
+        if ev == "cand":
+            rounds.setdefault(o.get("round"), {"cands": []})["cands"].append(o)
+        elif ev == "round_done":
+            rounds.setdefault(o.get("round"), {"cands": []})["done"] = o
+    keys = sorted(k for k in rounds if isinstance(k, int))
+    if not keys:
+        return '<div class="note">발굴 진행 중 — 첫 라운드 백테 중(결과 집계 전, ~40분).</div>'
+    rows = []
+    for r in keys:
+        cands = rounds[r].get("cands", [])
+        npass = sum(1 for c in cands if c.get("gate"))
+        passers = [c for c in cands if c.get("gate") and float(c.get("profit") or 0) > 0]
+        best = (max(passers, key=lambda c: float(c.get("profit") or 0)) if passers
+                else (max(cands, key=lambda c: float(c.get("profit") or -1e18)) if cands else None))
+        dots = "".join(
+            f'<i class="dot {"pass" if c.get("gate") else "fail"}" '
+            f'title="{_esc(str(c.get("label")))} · profit {_fmt_won(c.get("profit"))} · mdd {c.get("mdd")}"></i>'
+            for c in cands)
+        if best:
+            bmark = "✅" if best.get("gate") else "·"
+            bsum = (f'best {bmark} <b>{_esc(str(best.get("label")))}</b> '
+                    f'+{_fmt_won(best.get("profit"))} (mdd {best.get("mdd")})')
+        else:
+            bsum = "집계 중"
+        rows.append(
+            f'<div class="trow"><span class="rbadge">R{r}</span>'
+            f'<span class="dots">{dots}</span>'
+            f'<span class="bsum">통과 <b>{npass}</b>/{len(cands)} → {bsum}</span></div>')
+    return '<div class="tree">' + "".join(rows) + "</div>"
+
+
 def main() -> int:
     st = run_status()
     badge = (f'<span class="b ok">iter {st["iter"]}/40</span>'
@@ -125,6 +175,7 @@ def main() -> int:
         "%%SAMPLE%%": _esc(spname_buy),
         "%%FEEDBACK%%": _esc(feedback_now()),
         "%%VAR_ROWS%%": var_to_profit_rows() or "<tr><td>(데이터 없음)</td><td>—</td><td>—</td><td>—</td></tr>",
+        "%%TREE%%": overnight_tree(),
     }
     for k, v in repl.items():
         html_doc = html_doc.replace(k, v)
@@ -136,7 +187,7 @@ def main() -> int:
 
 _TEMPLATE = r"""<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>STOM 조건식 발굴 프로세스</title>
+<title>STOM 조건식 발굴 프로세스 — 쉽게 보는 조건식 발굴 루프</title>
 <style>
 :root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--mut:#8b949e;--acc:#58a6ff;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--mag:#bc8cff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:'Segoe UI',Malgun Gothic,sans-serif;line-height:1.5}
@@ -170,14 +221,40 @@ pre{background:#010409;border:1px solid var(--bd);border-radius:6px;padding:12px
 table{width:100%;border-collapse:collapse;font-size:13px}td,th{border:1px solid var(--bd);padding:6px 9px;text-align:left}
 th{background:#21262d}.mono{font-family:Consolas,monospace}
 .k{color:var(--mag)}.note{color:var(--mut);font-size:12px;margin-top:6px}
+.verdict{background:linear-gradient(90deg,#10331c,#161b22);border:1px solid var(--ok);border-radius:10px;padding:14px 18px;margin:14px 0}
+.verdict b{color:var(--ok)}
+.stage{background:var(--card);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin:10px 0}
+.stage .h{display:flex;align-items:center;gap:10px;padding:9px 14px;font-weight:600;border-bottom:1px solid var(--bd);font-size:14px}
+.stage .num{display:inline-flex;width:24px;height:24px;border-radius:50%;align-items:center;justify-content:center;font-size:12px;background:#21262d;border:1px solid var(--bd);flex:0 0 auto}
+.stage .h .tagm{margin-left:auto;font-size:11px;color:var(--mut);font-family:Consolas,monospace}
+.stage .body{padding:10px 14px;font-size:13px;color:var(--fg)}
+.stage .ex{font-family:Consolas,monospace;font-size:12px;color:#c9d1d9;background:#010409;border:1px solid var(--bd);border-radius:6px;padding:7px 10px;margin-top:8px;white-space:pre-wrap}
+.stage.gen{border-left:4px solid var(--mag)}.stage.bt{border-left:4px solid var(--acc)}
+.stage.gate{border-left:4px solid var(--ok)}.stage.fb{border-left:4px solid var(--warn)}
+.hm td.pos{background:rgba(63,185,80,.18)}.hm td.neg{background:rgba(248,81,73,.16)}.hm td.s{font-weight:700}
+.pass{color:var(--ok);font-weight:700}.fail{color:var(--bad);font-weight:700}
+.v2 .node.an{border-left:4px solid var(--mag)}.v2 .node.dec{border-left:4px solid #d2a8ff}
+.flow{position:relative}
+.flowtok{position:absolute;left:3px;top:0;width:11px;height:11px;border-radius:50%;background:var(--acc);box-shadow:0 0 12px 4px var(--acc);animation:flowdown 7s cubic-bezier(.6,0,.4,1) infinite;z-index:5}
+@keyframes flowdown{0%{top:0;opacity:0}6%{opacity:1}90%{opacity:1}100%{top:calc(100% - 11px);opacity:0}}
+.flowcap{font-size:12px;color:var(--acc);margin:2px 0 6px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.tree{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.trow{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 11px;font-size:12px;flex-wrap:wrap;animation:fadein .4s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.rbadge{flex:0 0 auto;font-weight:700;color:var(--acc);font-family:Consolas,monospace}
+.dots{display:flex;gap:3px;flex-wrap:wrap}
+.dot{width:11px;height:11px;border-radius:3px;display:inline-block;cursor:help}
+.dot.pass{background:var(--ok);box-shadow:0 0 4px var(--ok)}.dot.fail{background:#5a2a2a;border:1px solid #6e3030}
+.bsum{margin-left:auto;color:var(--mut)}.bsum b{color:var(--ok)}
 </style></head><body>
-<header><h1>🔬 STOM 조건식 발굴 프로세스 — 라이브 흐름</h1>
+<header><h1>🔬 STOM 조건식 발굴 프로세스 — 쉽게 보는 조건식 발굴 루프</h1>
 <div class="sub">생성일 %%GEN_TIME%% · %%BADGES%%</div></header>
 <div class="wrap">
 
 <div class="goal"><b>🎯 목표 &amp; 마인드셋</b> — 광산에서 <b>수익 나는 매수/매도 조건식(실매매용 per-stock if-Buy)</b>을 캐낸다.
-<b>아직 답을 못 찾았고 프로세스도 미완성</b>이다. 인간은 고빈도 우상향 백테를 찾는다 = <b>가능하다</b>.
-"데이터 천장"이 아니라 <b>프로세스를 계속 발전</b>시켜 찾는 게 목표. 엔진/CLI 무수정.</div>
+<b>데이터에 알파는 실재</b>한다 — 검증 챔피언이 발굴 게이트로 +9.5~11M을 재현(§1.5). "데이터 천장"이 아니다.
+병목은 <b>콜드 LLM 생성</b>이고, 다음은 검증 앵커를 변이하는 <b>v2 레짐인식 루프</b>(§1.6). 엔진/CLI 무수정.</div>
 
 <h2>🪙 이게 무슨 연구인가요? (아주 쉬운 설명)</h2>
 <div class="cards">
@@ -187,38 +264,81 @@ th{background:#21262d}.mono{font-family:Consolas,monospace}
 </div>
 <div class="note" style="font-size:14px;line-height:1.7">
 <b>한눈에 흐름</b> — ① AI가 규칙을 만든다 → ② 과거 2분기로 <b>빠르게</b> 본다 → ③ 통과하면 <b>3년 전체</b>로 본다 → ④ <b>다른 해(미래)</b>로도 본다 → ⑤ 가짜면 <b>검문소(게이트)</b>가 막는다 → ⑥ 실패를 <b>기억</b>해 다음엔 안 만든다 → <b>↻ 반복</b>.<br>
-💡 <b>지금 상태</b>: 아직 진짜 금(전체기간+미래 다 통과하는 새 조건식)은 못 찾았습니다. 하지만 <b>인간 트레이더는 찾으니 가능</b>하고, 우리는 채굴기(프로세스)를 계속 개량하는 중입니다 — "없다"가 아니라 "이 방법으론 아직".</div>
+💡 <b>지금 상태(2026-06-16)</b>: P0~P5 폐루프 구현완료. 양성대조 진단으로 <b>알파 실재·게이트 정상·병목=콜드 생성</b> 확정(§1.5). 콜드 LLM 신규 발굴은 0이지만 검증 챔피언은 게이트 통과 → <b>다음 = 앵커 변이(v2)로 ①생성 단계 교체</b>. "없다"가 아니라 "콜드 생성으론 아직".</div>
 <div class="note">🎨 <b>색상 범례</b>: <span style="color:var(--mag)">●보라=생성</span> · <span style="color:var(--acc)">●파랑=백테</span> · <span style="color:var(--ok)">●초록=게이트</span> · <span style="color:var(--warn)">●주황=환류</span></div>
 
-<h2>1. 전체 파이프라인 (쉽게 보는 조건식 발굴 루프)</h2>
+<h2>1. 전체 파이프라인 (데이터마이닝 폐루프)</h2>
+<div class="flowcap">🔵 조건식 한 개가 단계를 따라 흐르는 모습(애니메이션) — 탈락 시 그 단계서 멈춤</div>
 <div class="flow">
-<div class="node gen"><div class="tag">① 만들기</div><div class="ttl">AI가 매수/매도 규칙을 만든다</div>
-<div class="desc">좋은 예시와 직전 실패 원인을 참고해 새 조건식을 만든다. 여기서 나온 코드는 아직 후보일 뿐이며 바로 운영에 쓰지 않는다.</div></div>
+<div class="flowtok"></div>
+<div class="node gen"><div class="tag">① 생성 · gen_template_hypothesis.py</div><div class="ttl">AI가 다밴드 조건식 생성</div>
+<div class="desc">시간대×시총 이산분기(시초/중반/후반) 조건식을 LLM이 생성. 직전 결과(회피/선호) 환류 + 검증 가드(밴드당≤10·비용·금지변수).</div></div>
 <div class="arrow">↓</div>
-<div class="node bt"><div class="tag">② 빠른 검증</div><div class="ttl">짧은 기간으로 먼저 가짜를 걸러낸다</div>
-<div class="desc">과거 일부 구간에서 손익, MDD, 일평균 거래 빈도를 빠르게 계산한다. 한 구간만 우연히 맞은 후보는 다음 단계에서 더 강하게 검증한다.</div></div>
+<div class="node bt"><div class="tag">② 스모크 백테 · tmap_sweep.py (32엔진)</div><div class="ttl">2분기 동시 흑자 게이트</div>
+<div class="desc">변수(θ)를 스윕하며 백테. q1∧q2 같은 좌표가 둘 다 흑자여야 통과(체리피킹 차단).</div></div>
 <div class="arrow">↓</div>
-<div class="node bt"><div class="tag">③ 긴 기간 검증</div><div class="ttl">여러 해 전체 흐름에서도 버티는지 본다</div>
-<div class="desc">짧은 검증을 통과한 후보만 더 긴 기간으로 다시 확인한다. 여기서 적자가 나면 과거 일부에만 맞은 가짜 후보로 본다.</div></div>
+<div class="node bt"><div class="tag">③ 전체기간 백테 · 3년 train</div><div class="ttl">일반화 검증 (과적합 차단)</div>
+<div class="desc">2분기 통과분만 3년 전체기간 재백테. 여기서 음전(과적합)이면 탈락 = 착시 차단.</div></div>
 <div class="arrow">↓</div>
-<div class="node bt"><div class="tag">④ 다른 기간 확인</div><div class="ttl">처음 보지 않은 기간에서도 재현되는지 확인한다</div>
-<div class="desc">다른 해나 다른 구간에서 다시 계산해 우연·과적합을 줄인다. 목표는 한 번의 우승이 아니라 반복 가능한 규칙이다.</div></div>
+<div class="node bt"><div class="tag">④ OOS · 2022·2026</div><div class="ttl">미래 재현성</div>
+<div class="desc">전체기간 통과분만 다른 해(OOS)로 최종 검증. ★PROMISING = 전부 흑자(THETA급 바).</div></div>
 <div class="arrow">↓</div>
-<div class="node gate"><div class="tag">⑤ 판정 기준</div><div class="ttl">수익·낙폭·거래 빈도 기준으로 통과/탈락을 정한다</div>
-<div class="desc">수익이 나도 MDD가 너무 크거나 일평균 거래가 너무 적으면 탈락한다. 어려운 공식은 아래 접힌 예시에 따로 둔다.</div></div>
-<div class="loop">↻ ⑥ 실패 원인 피드백 — 왜 탈락했는지 기록해 다음 생성이 같은 실수를 덜 하도록 만든다. 모든 단계는 읽기 전용 증거로 남기고 운영 승인과 분리한다.</div>
+<div class="node gate"><div class="tag">⑤ 게이트 · refine_gate.py (P0b)</div><div class="ttl">재백테 음전 REFUSE</div>
+<div class="desc">in-sample 흑자라도 재백테 음전이면 기각. 검증됨: known-good +2.17M PASS · 사후포켓 −1.15M REFUSE.</div></div>
+<div class="loop">↻ ⑥ 환류 (P2 build_feedback) — no-go=회피·과적합=회피·전체기간생존=선호 → <b>다음 생성(①)으로</b> · 무작위 추첨을 "학습하는 발굴"로</div>
 </div>
-<div class="note">핵심 지표 = 여러 기간에서 살아남은 후보 수. 단기 점수보다 “다시 검증해도 버티는가”를 더 중요하게 본다.</div>
+<div class="note">정직지표 = OOS 통과 후보 수(현재 baseline 0). 점수가 아니라 *일반화 생존*만 합격.</div>
 
-<h2>2. 단계별 상세 (클릭하여 펼치기)</h2>
-<div class="cards">
-<details><summary>① 만들기</summary><div class="note">LLM(gpt_auth)이 좋은 예시·실패 원인·금지 규칙을 보고 새 조건식을 만든다. 숫자 임계값은 백테스트가 다시 검증한다.</div></details>
-<details><summary>② 빠른 검증</summary><div class="note">짧은 기간에서 먼저 돌려 시간을 아낀다. 한쪽 구간만 좋아 보이는 후보는 통과시키지 않는다.</div></details>
-<details><summary>③ 긴 기간 검증</summary><div class="note">여러 해 전체 데이터에서 다시 확인한다. 짧은 기간에서만 좋았던 후보는 여기서 대부분 걸러진다.</div></details>
-<details><summary>④ 다른 기간 확인</summary><div class="note">처음 고른 기간 밖에서도 비슷한 결과가 나는지 본다. 이 단계가 과적합 방지의 핵심이다.</div></details>
-<details><summary>⑤ 판정 기준</summary><div class="note">수익, MDD, 일평균 거래, 손익비, 우상향 정도를 함께 본다. 어려운 원식과 실증 예시는 아래 탭에 숨겨 둔다.</div></details>
-<details><summary>⑥ 다시 개선</summary><div class="note">탈락 이유를 다음 세대 프롬프트에 넣어 같은 실패를 줄인다. run·세대·백테스트 이름을 보존해 나중에 다시 조회한다.</div></details>
+<h2>⚡ 1.5 최신 진단 — "천장이 아니라 생성기가 병목" (2026-06-16)</h2>
+<div class="verdict"><b>✅ 양성대조 확정</b> — 검증된 챔피언 4종을 발굴 게이트(mdd&lt;20·daily≥0.05)로 그대로 재백테 → <b>4/4 전원 통과</b>.
+즉 데이터에 알파는 <b>실재</b>하고(+9.5~11M 재현), 게이트도 <b>정상 교정</b>됨. ∴ 자동발굴 gate-pass=0은 천장·게이트가 아니라 <b>콜드 LLM 생성기가 약한 것</b>이다.</div>
+<table><tr><th>챔피언</th><th>profit</th><th>MDD (&lt;20)</th><th>daily (≥0.05)</th><th>거래</th><th>판정</th></tr>
+<tr><td>FROZEN_THETA</td><td>+10,965,479</td><td>10.04</td><td>0.40</td><td>272</td><td class="pass">✓ 통과</td></tr>
+<tr><td>T2C1</td><td>+9,550,593</td><td>13.76</td><td>0.40</td><td>317</td><td class="pass">✓ 통과</td></tr>
+<tr><td>T2C2</td><td>+9,642,207</td><td>13.89</td><td>0.40</td><td>322</td><td class="pass">✓ 통과</td></tr>
+<tr><td>T2C3 (다밴드 챔피언)</td><td>+9,866,240</td><td>11.30</td><td>0.50</td><td>356</td><td class="pass">✓ 통과</td></tr></table>
+
+<h2>📉 1.5b 경향성은 레짐(상황)마다 변한다 — 챔피언 거래 연도별</h2>
+<table class="hm"><tr><th>변수</th><th>2023</th><th>2024</th><th>2025</th><th>해석</th></tr>
+<tr><td>시가총액</td><td class="neg">−34%p</td><td class="neg s">−41%p</td><td class="neg">−25%p</td><td>작은 시총 유리 — 방향 유지·강도 변동</td></tr>
+<tr><td>시간(시분초)</td><td class="neg">−16%p</td><td class="neg s">−44%p</td><td class="neg">−11%p</td><td>빨리 진입 유리 — 2024 압도→2025 거의 소멸</td></tr>
+<tr><td>회전율</td><td>+3%p</td><td class="pos">+22%p</td><td class="pos s">+34%p</td><td>★2023 무의미 → 2025 최강 신호로 <b>부상</b></td></tr></table>
+<div class="note">(격차 = 그 변수 상위25% 승률 − 하위25% 승률) → "빨리·작게가 이긴다"는 <b>항상 참이 아님</b>. 회전율처럼 <b>때에 따라 부상</b>하는 변수가 있어, 오늘의 top만 좇는 greedy는 놓친다. 그래서 v2는 <b>넓게·레짐별로</b> 본다.</div>
+
+<h2>🔁 1.6 다음 방향 — v2 레짐 인식 폐루프 (콜드 생성 → 앵커 변이)</h2>
+<div class="flow v2">
+<div class="node an"><div class="tag">① 레짐별 분석</div><div class="ttl">변수 영향성을 레짐(연도·변동성·시총/시간)별로</div>
+<div class="desc">feature_importance/히트맵/상관으로 변수별 영향·<b>안정성</b>·<b>부상/소멸</b>(회전율型) 탐지. 전역 1장이 아니라 레짐별.</div></div>
+<div class="arrow">↓</div>
+<div class="node dec"><div class="tag">② 타겟 결정 = 탐색 + 활용</div><div class="ttl">AI 질문 + 사람 사전지식</div>
+<div class="desc"><b>활용</b>(영향 크고 안정적 변수→고원 중심) + <b>탐색</b>(예산 일부를 약하지만 부상 가능·더 넓은 범위·미검증 상호작용·레짐별 경향에 의무 배정).</div></div>
+<div class="arrow">↓</div>
+<div class="node gen"><div class="tag">③ 다축 변이 (mutator + grid)</div><div class="ttl">시간·시총·익절·트레일… 여러 축 동시</div>
+<div class="desc">앵커(검증 챔피언)에서 출발해 한 칸씩 + 2축 grid. <b>전 범위 형태</b> 탐색(방향 단정 X). 신규 컬럼·횡단면 항 0.</div></div>
+<div class="arrow">↓</div>
+<div class="node gate"><div class="tag">④ 레짐-robust 게이트</div><div class="ttl">넓힌 만큼 강하게: WF + OOS + 다중검정보정</div>
+<div class="desc">채택 = <b>여러 레짐에서 robust</b>한 것만(한 해 최고는 기각). 탐색 폭↑ → 검증 강도↑ (과적합 비례 차단).</div></div>
+<div class="loop">↻ ⑤ 반복 — 영향성 지도 갱신(부상 변수 재포착) → ②로. 사장님 수동법("조금씩 바꿔보고 영향 큰 것 찾아 바꾸기")의 자동화.</div>
 </div>
+<div class="note"><b>v2는 별도 프로세스가 아니라 위 폐루프의 ①생성 단계 업그레이드</b>(콜드 LLM → 검증 앵커 변이) — ②~⑥ 게이트·OOS·환류는 그대로 재사용. v1(greedy)과 차이: 분석=레짐별·타겟=탐색+활용·방향=전범위·채택=레짐robust. <b>"넓은 탐색 ↔ 강한 검증"은 한 쌍.</b></div>
+
+<h2>2. 단계별 상세 (시각)</h2>
+<div class="stage gen"><div class="h"><span class="num">①</span>생성<span class="tagm">gen_template_hypothesis.py</span></div>
+<div class="body">LLM(gpt_auth)이 프롬프트+직전 환류를 받아 if/elif <b>다밴드 매수코드</b> 생성 → 검증 가드(compile·scope·cost·밴드밀도) 통과분만 템플릿 저장.
+<div class="ex">환류 주입 예: "THETA 앵커 고정 + 다른 시간대 탐색, 밴드당 조건 ≤10"</div></div></div>
+<div class="stage bt"><div class="h"><span class="num">②</span>스모크 백테 (2분기)<span class="tagm">tmap_sweep.py · 32엔진</span></div>
+<div class="body">θ를 스윕하며 백테. <b>같은 좌표</b>가 q1∧q2 둘 다 흑자여야 통과 = 체리피킹 차단.
+<div class="ex">예: q1 +785,449 · q2 +1,402,966 → smoke-pass ✅ (단, 아직 진짜인지 모름)</div></div></div>
+<div class="stage bt"><div class="h"><span class="num">③</span>전체기간 (3년 train)<span class="tagm">일반화 검증</span></div>
+<div class="body">2분기 통과분만 3년 전체 재백테. <b>여기서 과적합이 드러남</b> — smoke-pass의 대부분이 −10~−21M로 탈락.
+<div class="ex">예: 위 후보 → 3년 전체 −10,470,576 ❌ = 2분기에만 맞은 가짜 금</div></div></div>
+<div class="stage bt"><div class="h"><span class="num">④</span>OOS (2022·2026)<span class="tagm">미래 재현성</span></div>
+<div class="body">전체기간 통과분만 학습에 안 쓴 다른 해로 최종 검증. tick 한정(min은 OOS 오염). <b>전부 흑자라야 ★PROMISING</b>.</div></div>
+<div class="stage gate"><div class="h"><span class="num">⑤</span>재백테 게이트 (P0b)<span class="tagm">refine_gate.py</span></div>
+<div class="body">in-sample 흑자라도 <b>진짜 재백테가 음전이면 기각</b>(사후 포켓 편향 차단).
+<div class="ex">검증: known-good +2,167,239 ⇒ PASS / 사후포켓 −1,152,966 ⇒ REFUSE</div></div></div>
+<div class="stage fb"><div class="h"><span class="num">⑥</span>환류 폐루프 (P2~P5)<span class="tagm">build_feedback · --stateful</span></div>
+<div class="body">결과 ledger → <b>회피</b>(과적합 코너)·<b>선호</b>(전체기간 생존) + FDR·feature_importance·Exit Regret/False-Break를 다음 생성에 주입. 무작위 추첨 → <b>학습하는 발굴</b>.</div></div>
 
 <h2>3. 실제 산출물 예시 (탭)</h2>
 <div class="tabs">
@@ -235,18 +355,18 @@ th{background:#21262d}.mono{font-family:Consolas,monospace}
 <div class="panel"><div class="note">한 변수(예: b1_cap_hi)를 바꾸면 수익·거래수가 어떻게 변하나 — loop_runs.db에 세대별 기록.</div>
 <table><tr><th>변수=값</th><th>수익(원)</th><th>거래수</th><th>MDD</th></tr>%%VAR_ROWS%%</table></div>
 <div class="panel"><div class="note">직전 결과로 조립된 환류(다음 생성에 주입). 회피=실패 구조, 선호=전체기간 생존.</div><pre>%%FEEDBACK%%</pre></div>
-<div class="panel"><div class="note">짧은 구간에서만 좋아 보이는 후보를 다시 검증해 거른 실제 예시.</div>
-<pre>[판정 로직] decide(short_window_lift, rebacktest_profit)
-  · H사례: 짧은 구간 +1,070,000 → 다시 검증 −1,152,966  ⇒ REFUSE (부호반전=착시)
-  · known-good(THETA θ*): 다시 검증 +2,167,239 (2회 동일=결정론) ⇒ PASS
-  · 새 후보(야간 no-go): 다시 검증 −3,048,898 ⇒ REFUSE
-결론: 짧은 구간만 흑자인 후보를 긴 기간 검증이 정확히 기각. 자기기만 0.</pre></div>
+<div class="panel"><div class="note">재백테 게이트가 사후 포켓 편향을 거른 실증.</div>
+<pre>[게이트 로직] decide(in_sample_lift, rebacktest_profit)
+  · H사례: in-sample +1,070,000 → 재백테 −1,152,966  ⇒ REFUSE (부호반전=착시)
+  · known-good(THETA θ*): 재백테 +2,167,239 (2회 동일=결정론) ⇒ PASS
+  · 새 후보(야간 no-go): 재백테 −3,048,898 ⇒ REFUSE
+결론: 2분기만 흑자인 과적합 후보를 전체기간이 정확히 기각. 자기기만 0.</pre></div>
 
 <h2>🎬 4. 조건식 한 개의 "일생" (실제 사례로 따라가기)</h2>
 <div class="flow">
 <div class="node gen"><div class="tag">생성</div><div class="ttl">AI가 다밴드 조건식 생성</div><div class="desc">환류 지시("THETA 앵커 고정 + 다른 시간대 탐색")를 받아 → <span class="mono">llmgen_theta_anchor_midcap_upperlate</span> 같은 3밴드 조건식 생성.</div></div>
 <div class="arrow">↓</div>
-<div class="node bt"><div class="tag">빠른 1차 검증</div><div class="ttl">q1 +785,449 · q2 +1,402,966 → 1차 통과 ✅</div><div class="desc">짧은 두 구간에선 같은 조건이 둘 다 흑자! "오, 금인가?" — <b>하지만 아직 모름.</b></div></div>
+<div class="node bt"><div class="tag">2분기 스모크</div><div class="ttl">q1 +785,449 · q2 +1,402,966 → smoke-pass ✅</div><div class="desc">짧은 2분기에선 같은 좌표가 둘 다 흑자! "오, 금인가?" — <b>하지만 아직 모름.</b></div></div>
 <div class="arrow">↓</div>
 <div class="node bt"><div class="tag">3년 전체기간</div><div class="ttl">−10,470,576 ❌ 과적합 드러남</div><div class="desc">3년 전체로 보니 큰 적자 = 2분기에만 우연히 맞은 <b>가짜 금(과적합)</b>.</div></div>
 <div class="arrow">↓</div>
@@ -261,22 +381,27 @@ th{background:#21262d}.mono{font-family:Consolas,monospace}
 <div class="node"><div class="ttl">조건식</div><div class="desc">매수/매도 규칙 코드. <span class="mono">if 시간·시총·신호: 매수</span></div></div>
 <div class="node"><div class="ttl">다밴드</div><div class="desc">한 조건식에 <b>여러 시간대×시총</b> 분기(시초/중반/후반). 챔피언 T2C3가 이 구조.</div></div>
 <div class="node"><div class="ttl">θ(세타) 슬롯</div><div class="desc">조건식의 숫자(임계값)를 비워둔 자리 <span class="mono">{cap_max}</span> — 백테가 최적값을 찾음.</div></div>
-<div class="node"><div class="ttl">빠른 1차 통과</div><div class="desc">짧은 두 구간에서 먼저 통과한 상태. 아직 최종 후보가 아니라 긴 기간 검증이 필요하다.</div></div>
+<div class="node"><div class="ttl">smoke-pass</div><div class="desc">짧은 2분기로 <b>빠른 1차</b> 통과. 같은 좌표가 양분기 흑자(체리피킹 방지).</div></div>
 <div class="node"><div class="ttl">전체기간(train)</div><div class="desc">3년 전체로 검증 = <b>일반화</b> 됐나. 과적합을 여기서 잡음.</div></div>
 <div class="node"><div class="ttl">OOS</div><div class="desc">학습에 <b>안 쓴 다른 해</b>(2022·2026)로 미래 재현성 검증.</div></div>
 <div class="node"><div class="ttl">과적합</div><div class="desc">과거 일부에만 맞고 다른 기간엔 무너지는 <b>가짜 금</b>.</div></div>
 <div class="node"><div class="ttl">앵커(THETA)</div><div class="desc">이미 <b>검증된 챔피언</b> 조건식. 새 탐색의 기준점(밴드1 고정).</div></div>
 <div class="node"><div class="ttl">게이트(P0b)</div><div class="desc">가짜를 거르는 <b>검문소</b> — 재백테로 흑/적 판정.</div></div>
 <div class="node"><div class="ttl">환류(피드백)</div><div class="desc">직전 결과(회피/선호)로 <b>다음 생성을 개선</b>. 무작위→학습.</div></div>
-<div class="node"><div class="ttl">★유망 후보</div><div class="desc">빠른 검증+전체기간+다른 기간 확인을 <b>전부 통과</b>한 진짜 후보(목표).</div></div>
+<div class="node"><div class="ttl">★PROMISING</div><div class="desc">스모크+전체기간+OOS <b>전부 통과</b>한 진짜 후보(목표).</div></div>
 <div class="node"><div class="ttl">no-go</div><div class="desc">2분기부터 흑자 코너 없음 = 탈락(가장 흔함).</div></div>
 </div>
 
 <h2>6. 현재 연구 상태 (라이브)</h2>
 <table><tr><th>판정</th><th>건수</th></tr>%%VERD_ROWS%%</table>
-<div class="note">전체기간 생존(train-pass+)이 1건이라도 나오면 = 일반화 금맥 발굴. 0이면 = 다음 프로세스 개선(P3: 조건별 기여도 분석·불필요 제거)이 필요하다는 신호. <b>"없다"가 아니라 "이 방법으론 아직".</b></div>
+<div class="note"><b>진행: P0~P5 전 단계 구현완료(7/7)</b> + 양성대조 진단으로 <b>"천장 아님 = 생성기 병목"</b> 확정(§1.5). 콜드 생성(A·P5 런)은 gate-pass 0이었으나 검증 챔피언은 4/4 통과 → <b>다음 = v2 레짐인식 앵커변이 루프</b>(§1.6). <b>"없다"가 아니라 "콜드 생성으론 아직 — 앵커 변이로 전환".</b></div>
 
-<div class="note" style="margin-top:30px">↻ 갱신: <span class="mono">PYTHONUTF8=1 python -m ai_strategy_loop.scripts.build_process_flow_html</span></div>
+<h2>🌳 7. 밤샘 발굴 라이브 트리 (앵커 변이 hill-climb)</h2>
+<div class="note">검증 앵커(seed)에서 변이를 가지치며 — <span style="color:var(--ok)">■초록=게이트 통과</span> · <span style="color:#8a4a4a">■빨강=탈락</span>. 라운드마다 최선(best)이 다음 앵커가 되어 트리가 아래로 자란다. 이 페이지를 새로고침하면 밤새 자라는 발굴이 그대로 보인다(LLM 0회·진짜 재백테 게이트).</div>
+%%TREE%%
+<div class="note">각 점에 마우스를 올리면 변이 라벨·profit·MDD. best가 ✅(게이트 통과)면 그 조건식이 다음 라운드의 출발 앵커가 된다 = "성공한 자리 옆을 더 판다".</div>
+
+<div class="note" style="margin-top:30px">↻ 갱신: <span class="mono">PYTHONUTF8=1 python -m ai_strategy_loop.scripts.build_process_flow_html</span> · 밤샘 런: <span class="mono">overnight_anchor_mutation.py</span></div>
 </div>
 <script>
 function sw(i){document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',i===j));

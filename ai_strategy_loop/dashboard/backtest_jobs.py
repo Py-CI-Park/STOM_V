@@ -51,6 +51,8 @@ class BacktestJobSpec:
     sell: str
     start: int
     end: int
+    buy_code: Optional[str] = None
+    sell_code: Optional[str] = None
     timeframe: str = "min"
     engines: int = 4
     timeout: int = 600

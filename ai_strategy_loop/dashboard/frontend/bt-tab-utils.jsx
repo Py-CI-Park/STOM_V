@@ -41,13 +41,17 @@ function _btWsUrl(baseUrl, path) {
 }
 
 const _BT_JOB_BADGE = {
-  pending:   { txt: "대기", cls: "badge idle" },
-  running:   { txt: "실행중", cls: "badge run" },
-  success:   { txt: "성공", cls: "badge done" },
-  no_trades: { txt: "거래 0건", cls: "badge warn" },
-  error:     { txt: "오류", cls: "badge err" },
-  timeout:   { txt: "시간초과", cls: "badge err" },
-  cancelled: { txt: "취소됨", cls: "badge idle" },
+  pending:          { txt: "대기", cls: "badge idle" },
+  running:          { txt: "실행중", cls: "badge run" },
+  success:          { txt: "성공", cls: "badge done" },
+  no_trades:        { txt: "거래 0건", cls: "badge warn" },
+  error:            { txt: "오류", cls: "badge err" },
+  failed:           { txt: "실패", cls: "badge err" },
+  timeout:          { txt: "시간초과", cls: "badge err" },
+  cancelled:        { txt: "취소됨", cls: "badge idle" },
+  stale:            { txt: "추적불가", cls: "badge warn" },
+  artifact_missing: { txt: "결과없음", cls: "badge warn" },
+  recoverable:      { txt: "복구가능", cls: "badge done" },
 };
 
 // 모드별 대형 실행 버튼 라벨.

@@ -7,6 +7,110 @@
 // Track Z — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
 import { useState_bt, useEffect_bt, useMemo_bt, _btFetchJson, _BT_JOB_BADGE, _btNum, _BtRowDetail } from "./bt-tab-utils.jsx";
 
+function _btModeMetric(row) {
+  const n = Number(row && row.total_profit_pct);
+  return isFinite(n) ? n : null;
+}
+
+function _btSweepCombo(item) {
+  const params = item && item.params;
+  if (params && typeof params === "object" && !Array.isArray(params)) {
+    const combo = {};
+    Object.keys(params).forEach(name => { combo[name] = params[name]; });
+    return combo;
+  }
+  const combo = {};
+  Object.keys(item || {}).forEach(name => {
+    if (name === "result" || name === "metrics" || name === "window" || name === "status" || name === "params") return;
+    combo[name] = item[name];
+  });
+  return combo;
+}
+
+
+function _btVariableInfluenceRows(result, mode) {
+  const groups = {};
+  const push = (name, value, metric) => {
+    if (!name || metric == null) return;
+    const key = String(name);
+    const val = String(value == null ? "—" : value);
+    if (!groups[key]) groups[key] = {};
+    if (!groups[key][val]) groups[key][val] = [];
+    groups[key][val].push(metric);
+  };
+
+  if (mode === "wfo") {
+    ((result && result.rounds) || []).forEach((round) => {
+      const params = round && round.best_params;
+      const metric = _btModeMetric((round && round.test_result && round.test_result.metrics) || {});
+      if (!params || typeof params !== "object") return;
+      Object.keys(params).forEach(name => push(name, params[name], metric));
+    });
+  } else {
+    ((result && result.results) || []).forEach((item) => {
+      const metric = _btModeMetric((item && item.result && item.result.metrics) || item.metrics || {});
+      const combo = _btSweepCombo(item);
+      Object.keys(combo).forEach(name => push(name, combo[name], metric));
+    });
+  }
+
+  return Object.keys(groups).map(name => {
+    const values = Object.keys(groups[name]).map(value => {
+      const vals = groups[name][value];
+      const avg = vals.reduce((a, b) => a + b, 0) / Math.max(1, vals.length);
+      return { value, avg, samples: vals.length };
+    }).sort((a, b) => b.avg - a.avg);
+    const best = values[0] || null;
+    const worst = values[values.length - 1] || null;
+    const impact = best && worst ? best.avg - worst.avg : 0;
+    return { name, impact, best, worst, values, samples: values.reduce((a, v) => a + v.samples, 0) };
+  }).filter(row => row.values.length >= 2)
+    .sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact));
+}
+
+function BtVariableInfluencePanel({ result, mode }) {
+  const rows = useMemo_bt(() => _btVariableInfluenceRows(result, mode), [result, mode]);
+  return (
+    <div style={{ border: "1px solid var(--line-1)", borderRadius: 8, padding: 10, background: "var(--bg-0)", display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span className="dot" style={{ background: "var(--violet)" }}></span>
+        <span className="panel-hd-title" style={{ border: 0, padding: 0 }}>변수 영향도 자동 분석</span>
+        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>
+          {mode === "wfo" ? "WFO 선택 파라미터별 OOS 수익률 영향" : "스윕 조합별 수익률 분산 영향"}
+        </span>
+      </div>
+      {rows.length === 0 ? (
+        <div className="research-empty" style={{ padding: 10 }}>
+          비교 가능한 변수 값이 2개 이상 있어야 영향도를 계산할 수 있습니다.
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 8 }}>
+          {rows.slice(0, 8).map(row => (
+            <div key={row.name} style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 8, display: "flex", flexDirection: "column", gap: 5 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <b className="mono" style={{ fontSize: 12, color: "var(--ink-0)", flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>{row.name}</b>
+                <span className="mono" style={{ fontSize: 11, color: Math.abs(row.impact) > 0 ? "var(--amber)" : "var(--ink-3)" }}>
+                  Δ {_btNum(row.impact)}%p
+                </span>
+              </div>
+              <div className="mono" style={{ fontSize: 10.5, color: "var(--teal)" }}>
+                best {row.best.value} · avg {_btNum(row.best.avg)}%
+              </div>
+              <div className="mono" style={{ fontSize: 10.5, color: "var(--red)" }}>
+                worst {row.worst.value} · avg {_btNum(row.worst.avg)}%
+              </div>
+              <div className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)" }}>
+                samples {row.samples} · values {row.values.length}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 // wfo rounds → 정렬 가능 행. 각 round: {window:{round,train_*,test_*}, best_params, test_result:{metrics}}.
 function BtWfoTable({ result }) {
   const [sortKey, setSortKey] = useState_bt("round");
@@ -110,10 +214,7 @@ function BtSweepTable({ result }) {
   // 조합 키(combo)는 result/window 외 임의 키. 동적 컬럼을 수집한다.
   const rows = useMemo_bt(() => raw.map((item, i) => {
     const m = (item && item.result && item.result.metrics) || item.metrics || {};
-    const combo = {};
-    Object.keys(item || {}).forEach(k => {
-      if (k !== "result" && k !== "metrics" && k !== "window" && k !== "status") combo[k] = item[k];
-    });
+    const combo = _btSweepCombo(item);
     return {
       __idx: i + 1,
       __combo: combo,
@@ -229,15 +330,20 @@ function BtModeResultPanel({ baseUrl, isDemo, jobId, mode }) {
           {mode === "wfo" ? "전진분석(WFO) 결과" : "스윕 결과"}
         </div>
       </div>
-      <div className="panel-bd">
+      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {err ? (
           <div className="mono" style={{ fontSize: 11, color: "var(--red)" }}>{err}</div>
         ) : !mr ? (
           <div className="research-empty">결과를 불러오는 중이거나 구조화 결과가 없습니다.</div>
-        ) : mode === "wfo" ? (
-          <BtWfoTable result={mr} />
         ) : (
-          <BtSweepTable result={mr} />
+          <>
+            <BtVariableInfluencePanel result={mr} mode={mode} />
+            {mode === "wfo" ? (
+              <BtWfoTable result={mr} />
+            ) : (
+              <BtSweepTable result={mr} />
+            )}
+          </>
         )}
       </div>
     </div>
@@ -245,4 +351,4 @@ function BtModeResultPanel({ baseUrl, isDemo, jobId, mode }) {
 }
 
 // Track Z — dual-safe ESM export. KEEP on ONE physical line.
-export { BtWfoTable, BtSweepTable, BtModeResultPanel };
+export { _btVariableInfluenceRows, _btSweepCombo, BtVariableInfluencePanel, BtWfoTable, BtSweepTable, BtModeResultPanel };

@@ -45,6 +45,8 @@ def test_research_lab_component_contract() -> None:
     assert "win/loss" in src
     assert "recency_research" in src
     assert "research_score_not_promotion" in src
+    assert "fullscreen" not in src
+    assert "전체 화면" not in src
 
 
 def test_research_lab_exposes_window_symbol() -> None:

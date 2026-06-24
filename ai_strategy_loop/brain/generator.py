@@ -85,7 +85,9 @@ def generate_strategy(
     sell_max_window_calls: int = 8,
     hypothesis_feedback: Optional[str] = None,
     few_shot_examples: Optional[list] = None,
+    pattern_cards: Optional[list] = None,
     segment_avoid_lines: Optional[list] = None,
+    feature_hint_lines: Optional[list] = None,
     on_prompt: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
     """LLM으로 STOM 전략을 생성하고 게이트 통과 시 DB에 저장한다.
@@ -149,6 +151,8 @@ def generate_strategy(
         few_shot_examples: 검증된 우수 전략 few-shot 코드 샘플 리스트(#67). build_messages로
             전달돼 "구조 학습·복제 금지" 헤더와 함께 코드펜스로 주입된다(§3.14 과적합 방지).
             None/빈 리스트=주입 안 함, byte-identical(하위호환). 호출부가 토글 ON일 때만 채운다.
+        pattern_cards: human DB composition cards whose thresholds/expressions must not be
+            copied. Validation is pre-save and advisory-source only; blockers trigger retry.
         segment_avoid_lines: 직전/best 세대 세그먼트 분석에서 추출한 '패배 구간' avoid 라인
             리스트(T4 반복 정제 폐루프). build_messages로 전달돼 kind=='buy'일 때만 매수
             프롬프트에 avoid 가이드 블록으로 주입된다(매도 무영향). None/빈 리스트=주입 안 함,
@@ -200,6 +204,7 @@ def generate_strategy(
             hypothesis_feedback=hypothesis_feedback,
             few_shot_examples=few_shot_examples,
             segment_avoid_lines=segment_avoid_lines,
+            feature_hint_lines=feature_hint_lines,
         )
 
         # --- 1) LLM 호출 ---
@@ -414,6 +419,25 @@ def generate_strategy(
                 logger.info("attempt %d: 매도 계산예산 위반", attempt)
                 continue
 
+        if pattern_cards:
+            try:
+                from ai_strategy_loop.controller.condition_discovery_feedback import validate_pattern_card_usage  # noqa: PLC0415
+
+                guard_blockers = []
+                for card in pattern_cards:
+                    verdict = validate_pattern_card_usage(code, card)
+                    guard_blockers.extend(verdict.get("blockers") or [])
+                if guard_blockers:
+                    prior_error = (
+                        "human DB pattern-card anti-copy guard blocked generation: "
+                        + ", ".join(sorted(set(str(b) for b in guard_blockers)))
+                    )
+                    logger.info("attempt %d: %s", attempt, prior_error)
+                    continue
+            except Exception as exc:  # noqa: BLE001 - guard errors must fail closed.
+                prior_error = f"pattern-card guard failed closed: {exc}"
+                logger.info("attempt %d: %s", attempt, prior_error)
+                continue
         # --- 5) dedup ---
         if dedup is not None and dedup.is_duplicate(code):
             prior_error = "직전 전략과 구조가 동일(중복). 다른 조건으로 작성하라."

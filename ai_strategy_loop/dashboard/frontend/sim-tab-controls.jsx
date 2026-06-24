@@ -142,8 +142,16 @@ function SimControlBar({
 function SimPresetBar({ isDemo, busy, onPreset }) {
   if (isDemo) return null;
   const presets = [
-    { mode: "latest", label: "최근 거래일", hint: "마지막 거래일·등락 1위" },
-    { mode: "top_gainer", label: "최대 상승일", hint: "최근 중 등락 최대일" },
+    {
+      mode: "latest",
+      label: "최근 거래일",
+      hint: "보유한 일일 DB 중 가장 최근 거래일을 고르고 그날 등락률 1위 종목을 자동 재생합니다.",
+    },
+    {
+      mode: "top_gainer",
+      label: "최대 상승일",
+      hint: "최근 거래일 후보 전체에서 일중 최대 상승률이 가장 큰 날짜·종목을 찾아 자동 재생합니다.",
+    },
   ];
   return (
     <div className="panel">
@@ -159,6 +167,13 @@ function SimPresetBar({ isDemo, busy, onPreset }) {
           </button>
         ))}
         {busy && <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>추천 조회 중…</span>}
+        <div className="mono" style={{ flexBasis: "100%", fontSize: 10, color: "var(--ink-3)", lineHeight: 1.5 }}>
+          최근 거래일: 보유한 일일 DB 중 가장 최근 거래일을 고르고 그날 등락률 1위 종목을 자동 재생합니다. ·
+          최대 상승일: 최근 거래일 후보 전체에서 일중 최대 상승률이 가장 큰 날짜·종목을 찾아 자동 재생합니다.
+        </div>
+        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>
+          버튼에 마우스를 올리면 선택 기준 설명이 표시됩니다.
+        </span>
       </div>
     </div>
   );

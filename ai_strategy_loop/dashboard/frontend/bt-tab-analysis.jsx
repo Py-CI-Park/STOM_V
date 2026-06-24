@@ -582,5 +582,75 @@ function BtPortfolioPanel({ baseUrl, isDemo, jobs, activeEvo }) {
   );
 }
 
+function BtBackFinderPreflightPanel({ baseUrl, isDemo, buyName }) {
+  const [data, setData] = useState_bt(null);
+  const [busy, setBusy] = useState_bt(false);
+  const [err, setErr] = useState_bt("");
+
+  const load = useCallback_bt(() => {
+    if (isDemo || !baseUrl || !buyName) {
+      setData(null);
+      setErr("");
+      return;
+    }
+    setBusy(true);
+    setErr("");
+    _btFetchJson(baseUrl + "/bt/backfinder/preflight?kind=buy&name=" + encodeURIComponent(buyName), 6000)
+      .then(j => setData(j || null))
+      .catch(e => { setData(null); setErr(String(e)); })
+      .finally(() => setBusy(false));
+  }, [baseUrl, isDemo, buyName]);
+
+  useEffect_bt(() => { load(); }, [load]);
+
+  const ok = data && data.precondition_ok;
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: ok ? "var(--teal)" : "var(--amber)" }}></span>
+          백파인더 사전 점검
+          <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 6 }}>
+            self.tickcols · self.tickdata
+          </span>
+        </div>
+        <button className="btn ghost sm" onClick={load} disabled={isDemo || busy || !buyName}>
+          {busy ? "점검…" : "↻ 점검"}
+        </button>
+      </div>
+      <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {!buyName ? (
+          <div className="research-empty">매수 조건식을 선택하면 백파인더 사전 조건을 점검합니다.</div>
+        ) : err ? (
+          <div className="mono" style={{ fontSize: 11, color: "var(--red)" }}>점검 실패: {err}</div>
+        ) : !data ? (
+          <div className="research-empty">백파인더 사전 점검 대기 중…</div>
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <span className={ok ? "badge done" : "badge warn"}>{ok ? "조건 통과" : "조건 미충족"}</span>
+              <span className="mono" style={{ fontSize: 10.5, color: data.has_tickcols ? "var(--teal)" : "var(--red)" }}>
+                self.tickcols {data.has_tickcols ? "있음" : "없음"} · {data.cols_count == null ? "?" : data.cols_count}
+              </span>
+              <span className="mono" style={{ fontSize: 10.5, color: data.has_tickdata ? "var(--teal)" : "var(--red)" }}>
+                self.tickdata {data.has_tickdata ? "있음" : "없음"} · {data.data_count == null ? "?" : data.data_count}
+              </span>
+              <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+                run_enabled={String(!!data.run_enabled)}
+              </span>
+            </div>
+            <div className="mono" style={{ fontSize: 11, color: ok ? "var(--teal)" : "var(--ink-2)", lineHeight: 1.5 }}>
+              {data.message}
+            </div>
+            <div className="readability-note">
+              현재 웹 대시보드는 원본 GUI BackFinder 실행을 연결하지 않고, 안전한 preflight/staging만 제공합니다.
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Track Z — dual-safe ESM export. KEEP on ONE physical line.
-export { BtOverlayCurves, _btSplitCellPath, BtSplitGrid, BtOverlayPanel, BtCollapsible, BtEvoSelector, BtPortfolioCurve, BtPortfolioHeatmap, BtPortfolioPanel };
+export { BtOverlayCurves, _btSplitCellPath, BtSplitGrid, BtOverlayPanel, BtCollapsible, BtEvoSelector, BtPortfolioCurve, BtPortfolioHeatmap, BtPortfolioPanel, BtBackFinderPreflightPanel };

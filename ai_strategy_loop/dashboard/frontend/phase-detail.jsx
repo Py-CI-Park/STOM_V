@@ -530,6 +530,74 @@ const FLOW_STEPS = [
   { label: "개선",   sub: "다음세대",  timingKey: "iterate" },
 ];
 
+const PROCESS_DEFAULT_ROWS = [
+  {
+    area: "Preset",
+    value: "fast / research / promotion",
+    detail: "fast=빠른 탐색, research=프롬프트·equity·evidence 보존 연구, promotion=동결 후보 승격 검토. 모두 점수는 advisory-only입니다.",
+  },
+  {
+    area: "Tick 기본 연구",
+    value: "09:00:00~09:28:00",
+    detail: "Tick 후보 연구/promotion은 장초반 28분 opening window를 기본으로 봅니다.",
+  },
+  {
+    area: "MIN 풀세션",
+    value: "09:00~15:18/15:19",
+    detail: "research/promotion MIN은 풀세션을 요구합니다. 15:18과 15:19는 DB 경계 후보로 표시하고 명시 검증합니다.",
+  },
+  {
+    area: "백테스트 1회 제한",
+    value: "최대 300초",
+    detail: "bt_timeout 기본값입니다. warm run은 이보다 빨라야 하며, 과발화/비용 큰 매도식은 fail-fast 대상입니다.",
+  },
+  {
+    area: "단계별 MDD gate",
+    value: "fast 35% · research 25% · promotion 15%",
+    detail: "설정 mdd_cap이 더 낮으면 더 엄격한 값이 적용됩니다. hard gate가 점수보다 우선합니다.",
+  },
+  {
+    area: "거래 빈도/과매매",
+    value: "일평균 ≥0.5 · softcap 150",
+    detail: "과매매 자체는 금지가 아니라 soft penalty입니다. 빈도 부족은 hard/fitness 경계로 다룹니다.",
+  },
+  {
+    area: "TPI",
+    value: "매매성능지수 · gate 기본 OFF",
+    detail: "TPI는 거래 품질/수익 효율을 보조로 보는 매매성능지수입니다. tpi_gate_enabled=false가 기본이며 승격권한을 만들지 않습니다.",
+  },
+  {
+    area: "성과 점수 100점",
+    value: "수익·MDD·Calmar·우상향·빈도·청산·안정성",
+    detail: "후보 설명/정렬용 advisory score입니다. promotion/export/winner 선택권은 없습니다.",
+  },
+  {
+    area: "생성품질 100점",
+    value: "문법·변수다양성·니치·창의성·과발화·비용·매도구조",
+    detail: "조건식 생성 품질을 설명하는 점수입니다. 성과를 보증하지 않고 hard gate를 대체하지 않습니다.",
+  },
+  {
+    area: "Prompt / Equity 저장",
+    value: "fast 선택 · research/promotion evidence",
+    detail: "기본 토글은 OFF입니다. research/promotion 검토에서는 프롬프트·손익곡선 evidence가 없으면 blocker로 표시합니다.",
+  },
+  {
+    area: "부검 hypothesis",
+    value: "accepted/rejected/deferred/inconclusive",
+    detail: "부검 가정은 다음 프롬프트 맥락으로 환류하되 advisory-only provenance를 유지합니다.",
+  },
+  {
+    area: "인간 DB pattern cards",
+    value: "조합 문법/창의성 전용",
+    detail: "성과 복사·전체식 복사·임계값 복사는 금지합니다. few-shot은 구조 학습용으로만 씁니다.",
+  },
+  {
+    area: "Transformer/ML",
+    value: "추후 연구 과제",
+    detail: "이번 작업 범위에서는 구현하지 않습니다. 별도 연구로 예측/파라미터화 가능성만 추적합니다.",
+  },
+];
+
 // #64 — 초 단위 경과를 사람이 읽는 짧은 라벨로(예: 45s, 2m03s). 음수/NaN은 0s.
 function fmtElapsedSec(sec) {
   const s = typeof sec === "number" && isFinite(sec) && sec > 0 ? Math.floor(sec) : 0;
@@ -817,6 +885,32 @@ function ProcessFlowPanel({ state }) {
           <summary>예시 보기</summary>
           <p>검증 노드가 켜져 있으면 백테스트 엔진이 후보 조건식을 과거 데이터에 적용 중이라는 뜻입니다.</p>
         </details>
+      </div>
+      <div className="process-defaults-panel" aria-label="조건식 발굴 기본 설정과 게이트 표">
+        <div className="process-defaults-head">
+          <b>기본 설정 · 게이트 · 채점 기준</b>
+          <small>사용자 협의 기준을 한 표로 고정합니다. 모든 점수는 설명/연구용이며 hard gate·evidence·인간 승인이 우선합니다.</small>
+        </div>
+        <div className="process-defaults-table-wrap">
+          <table className="process-defaults-table">
+            <thead>
+              <tr>
+                <th>구분</th>
+                <th>기본값/정책</th>
+                <th>설명</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PROCESS_DEFAULT_ROWS.map(row => (
+                <tr key={row.area}>
+                  <td>{row.area}</td>
+                  <td>{row.value}</td>
+                  <td>{row.detail}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
       <div className="process-timing-grid" aria-label="프로세스 단계별 소요 시간">
         {timingRows.map(row => (

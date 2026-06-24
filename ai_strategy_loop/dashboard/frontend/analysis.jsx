@@ -45,6 +45,8 @@ function _cohensColor(d) {
   if (typeof d !== "number" || !isFinite(d)) return "var(--ink-3)";
   return d >= 0 ? "var(--teal)" : "var(--amber)";
 }
+const _FEATURE_MIN_SAMPLE = 30;
+
 
 /* ── 빈 상태 공통 컴포넌트 ──────────────────────────────────────────────── */
 function _EmptyState({ msg }) {
@@ -107,42 +109,46 @@ function EdgeRatioPanel({ baseUrl, wsStatus, runId }) {
   const timeSegs = (segs.time) || [];
   const capSegs = (segs.market_cap) || [];
 
-  /* 히트맵: time 행 × market_cap 열 교차 grid.
-     cross 세그먼트 label 은 "<time>×<cap>" 형식으로 온다(백엔드 관행).
-     파싱 실패 시 cross를 단순 목록으로 fallback. */
+  /* 히트맵: canonical time 행 × market_cap 열 교차 grid.
+     segments.time / segments.market_cap 이 있으면 축 순서를 정본으로 쓰고, cross 값이 없는
+     sparse cell 은 빈칸으로 남긴다. cross 세그먼트 label 은 "<time>×<cap>" 형식으로 온다. */
   const heatmap = useMemo_an(() => {
     if (!crossSegs.length) return null;
-    const timeLabels = [];
-    const capLabels = [];
+    const canonicalTime = timeSegs.map(s => String((s && s.label) || "")).filter(Boolean);
+    const canonicalCap = capSegs.map(s => String((s && s.label) || "")).filter(Boolean);
+    const parsedTime = [];
+    const parsedCap = [];
     const cellMap = {};
     for (const c of crossSegs) {
-      const parts = (c.label || "").split("×");
-      const tl = parts[0] ? parts[0].trim() : c.label;
+      const parts = String((c && c.label) || "").split("×");
+      const tl = parts[0] ? parts[0].trim() : "";
       const cl = parts[1] ? parts[1].trim() : "";
-      if (!timeLabels.includes(tl)) timeLabels.push(tl);
-      if (cl && !capLabels.includes(cl)) capLabels.push(cl);
+      if (!tl || !cl) continue;
+      if (!parsedTime.includes(tl)) parsedTime.push(tl);
+      if (!parsedCap.includes(cl)) parsedCap.push(cl);
       cellMap[tl + "×" + cl] = c;
     }
-    // fallback: cross label에 "×" 없으면 단순 목록으로
-    if (capLabels.length === 0) return null;
+    const timeLabels = canonicalTime.length ? canonicalTime : parsedTime;
+    const capLabels = canonicalCap.length ? canonicalCap : parsedCap;
+    if (timeLabels.length === 0 || capLabels.length === 0) return null;
     return { timeLabels, capLabels, cellMap };
-  }, [crossSegs]);
+  }, [crossSegs, timeSegs, capSegs]);
 
   const hasData = data && (
     typeof global_.edge_ratio === "number" || crossSegs.length > 0 || changeSegs.length > 0
   );
 
   return (
-    <div className="panel">
+    <div className="panel edge-ratio-panel-wide">
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--teal)" }}></span>
-          Edge Ratio 분석
+          탐색 히트맵 · Edge Ratio 통합 분석
           {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
-            시간대×시총 히트맵 · 등락률 축
+            시간대×시가총액 탐색 히트맵과 edge_ratio 세그먼트를 한 화면에서 통합
           </span>
           <button className="btn ghost sm" onClick={refresh}
                   disabled={isDemo || loading || !runId}
@@ -155,7 +161,7 @@ function EdgeRatioPanel({ baseUrl, wsStatus, runId }) {
         {isDemo ? (
           <_EmptyState msg="데모 모드 — Edge Ratio 분석은 라이브 실행에서 발행됩니다." />
         ) : !runId ? (
-          <_EmptyState msg="run을 선택하거나 루프를 시작하면 Edge Ratio 분석이 표시됩니다." />
+          <_EmptyState msg="run을 선택하거나 루프를 시작하면 시간대×시가총액 Edge Ratio 통합 분석이 전체 폭으로 표시됩니다." />
         ) : err ? (
           <_EmptyState msg={"조회 실패 — " + err} />
         ) : !hasData ? (
@@ -263,65 +269,78 @@ function _EdgeStat({ label, value, color, hint }) {
 /* 히트맵 SVG(시간대행 × 시총열) */
 function _Heatmap({ heatmap }) {
   const { timeLabels, capLabels, cellMap } = heatmap;
-  const cellW = 72, cellH = 30;
-  const labelColW = 80, labelRowH = 26;
+  const capCount = Math.max(1, capLabels.length);
+  const timeCount = Math.max(1, timeLabels.length);
+  const cellW = Math.max(72, Math.min(104, capCount > 8 ? 78 : 96));
+  const cellH = Math.max(34, Math.min(42, timeCount > 8 ? 34 : 40));
+  const labelColW = 104, labelRowH = 32;
   const W = labelColW + capLabels.length * cellW;
   const H = labelRowH + timeLabels.length * cellH;
 
   return (
-    <div style={{ overflowX: "auto" }}>
-      <svg viewBox={`0 0 ${W} ${H}`}
-           style={{ width: "100%", maxWidth: W, display: "block" }}
-           preserveAspectRatio="xMinYMin meet">
-        {/* 열 라벨 (시총) */}
-        {capLabels.map((cl, ci) => (
-          <text key={"ch" + ci}
-                x={labelColW + ci * cellW + cellW / 2}
-                y={labelRowH - 6}
-                textAnchor="middle"
-                style={{ fontSize: 9, fill: "var(--ink-3)", fontFamily: "var(--mono)" }}>
-            {cl.length > 8 ? cl.slice(0, 8) + "…" : cl}
-          </text>
-        ))}
-        {/* 행 라벨 + 셀 */}
-        {timeLabels.map((tl, ti) => (
-          <g key={"tr" + ti}>
-            {/* 행 라벨 (시간대) */}
-            <text x={labelColW - 4}
-                  y={labelRowH + ti * cellH + cellH / 2 + 4}
-                  textAnchor="end"
-                  style={{ fontSize: 9.5, fill: "var(--ink-2)", fontFamily: "var(--mono)" }}>
-              {tl.length > 9 ? tl.slice(0, 9) + "…" : tl}
+    <div className="edge-heatmap-shell" aria-label="시간대와 시가총액 교차 Edge Ratio 히트맵">
+      <div className="edge-heatmap-legend mono">
+        <span><b>색상</b> red/amber &lt; 1.0 · neutral = 1.0 · teal &gt; 1.0</span>
+        <span><b>축</b> {timeLabels.length} time × {capLabels.length} market-cap</span>
+        <span><b>빈칸</b> 해당 교차 표본 없음</span>
+      </div>
+      <div className="edge-heatmap-scroll">
+        <svg viewBox={`0 0 ${W} ${H}`}
+             style={{ width: "100%", minWidth: W, maxHeight: 460, display: "block" }}
+             preserveAspectRatio="xMinYMin meet">
+          {/* 열 라벨 (시총) */}
+          {capLabels.map((cl, ci) => (
+            <text key={"ch" + ci}
+                  x={labelColW + ci * cellW + cellW / 2}
+                  y={labelRowH - 8}
+                  textAnchor="middle"
+                  style={{ fontSize: 10.5, fill: "var(--ink-3)", fontFamily: "var(--mono)" }}>
+              {cl.length > 9 ? cl.slice(0, 9) + "…" : cl}
             </text>
-            {capLabels.map((cl, ci) => {
-              const cell = cellMap[tl + "×" + cl];
-              const er = cell ? cell.edge_ratio : null;
-              const bg = er != null ? _edgeColor(er, 0.82) : "rgba(40,50,60,0.4)";
-              const textColor = er != null ? (Math.abs(er - 1) > 0.15 ? "#fff" : "var(--ink-1)") : "var(--ink-3)";
-              const cx = labelColW + ci * cellW;
-              const cy = labelRowH + ti * cellH;
-              return (
-                <g key={"c" + ci}>
-                  <rect x={cx + 1} y={cy + 1} width={cellW - 2} height={cellH - 2}
-                        rx="3" fill={bg} />
-                  <text x={cx + cellW / 2} y={cy + cellH / 2 + 4}
-                        textAnchor="middle"
-                        style={{ fontSize: 9.5, fill: textColor, fontFamily: "var(--mono)", fontWeight: 600 }}>
-                    {er != null ? _anNum(er, 2) : "—"}
-                  </text>
-                  {cell && typeof cell.count === "number" && (
-                    <text x={cx + cellW / 2} y={cy + cellH - 4}
+          ))}
+          {/* 행 라벨 + 셀 */}
+          {timeLabels.map((tl, ti) => (
+            <g key={"tr" + ti}>
+              {/* 행 라벨 (시간대) */}
+              <text x={labelColW - 6}
+                    y={labelRowH + ti * cellH + cellH / 2 + 4}
+                    textAnchor="end"
+                    style={{ fontSize: 10.5, fill: "var(--ink-2)", fontFamily: "var(--mono)" }}>
+                {tl.length > 10 ? tl.slice(0, 10) + "…" : tl}
+              </text>
+              {capLabels.map((cl, ci) => {
+                const cell = cellMap[tl + "×" + cl];
+                const er = cell ? cell.edge_ratio : null;
+                const bg = er != null ? _edgeColor(er, 0.82) : "rgba(40,50,60,0.28)";
+                const textColor = er != null ? (Math.abs(er - 1) > 0.15 ? "#fff" : "var(--ink-1)") : "var(--ink-3)";
+                const cx = labelColW + ci * cellW;
+                const cy = labelRowH + ti * cellH;
+                const title = `${tl} × ${cl} · edge_ratio ${er != null ? _anNum(er, 3) : "no sample"} · count ${cell && typeof cell.count === "number" ? cell.count : 0}`;
+                return (
+                  <g key={"c" + ci}>
+                    <rect x={cx + 1} y={cy + 1} width={cellW - 2} height={cellH - 2}
+                          rx="3" fill={bg}>
+                      <title>{title}</title>
+                    </rect>
+                    <text x={cx + cellW / 2} y={cy + cellH / 2 + 3}
                           textAnchor="middle"
-                          style={{ fontSize: 7.5, fill: "rgba(255,255,255,0.45)", fontFamily: "var(--mono)" }}>
-                      {cell.count}건
+                          style={{ fontSize: 12.5, fill: textColor, fontFamily: "var(--mono)", fontWeight: 700 }}>
+                      {er != null ? _anNum(er, 2) : "—"}
                     </text>
-                  )}
-                </g>
-              );
-            })}
-          </g>
-        ))}
-      </svg>
+                    {cell && typeof cell.count === "number" && (
+                      <text x={cx + cellW / 2} y={cy + cellH - 5}
+                            textAnchor="middle"
+                            style={{ fontSize: 9, fill: "rgba(255,255,255,0.58)", fontFamily: "var(--mono)" }}>
+                        {cell.count}건
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+            </g>
+          ))}
+        </svg>
+      </div>
     </div>
   );
 }
@@ -387,6 +406,7 @@ function FeatureImportancePanel({ baseUrl, wsStatus, runId }) {
   const [err, setErr] = useState_an(null);
   const [axis, setAxis] = useState_an("time");       // time | market_cap | change
   const [selSeg, setSelSeg] = useState_an(null);      // 선택된 세그먼트 라벨(null=global)
+  const [topN, setTopN] = useState_an(12);          // 표시 상위 N
 
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
@@ -418,8 +438,14 @@ function FeatureImportancePanel({ baseUrl, wsStatus, runId }) {
     const raw = (selSeg && bySeg[selSeg]) ? bySeg[selSeg] : globalFeats;
     return [...raw].sort((a, b) => Math.abs(b.cohens_d || 0) - Math.abs(a.cohens_d || 0));
   }, [selSeg, bySeg, globalFeats]);
+  const visibleFeats = activeFeats.slice(0, topN);
 
-  const maxAbsD = activeFeats.reduce((m, f) => Math.max(m, Math.abs(f.cohens_d || 0)), 0.01);
+  const maxAbsD = visibleFeats.reduce((m, f) => Math.max(m, Math.abs(f.cohens_d || 0)), 0.01);
+  const lowSampleCount = visibleFeats.filter((f) => {
+    const n = f.sample_count || f.n || f.count || 0;
+    return n > 0 && n < _FEATURE_MIN_SAMPLE;
+  }).length;
+
 
   const hasData = data && (globalFeats.length > 0 || segKeys.length > 0);
 
@@ -483,34 +509,39 @@ function FeatureImportancePanel({ baseUrl, wsStatus, runId }) {
                     border: selSeg === null ? "1px solid var(--violet)" : "1px solid var(--line-2)",
                     color: selSeg === null ? "var(--violet)" : "var(--ink-3)",
                   }}>
-                  전체
+                  전체 ({globalFeats.length})
                 </button>
                 {segKeys.map(k => (
                   <button key={k}
                     onClick={() => setSelSeg(k)}
                     className="btn ghost sm"
+                    title={`${k} · ${(bySeg[k] || []).length} features`}
                     style={{
                       fontFamily: "var(--mono)", fontSize: 10.5, padding: "2px 8px",
                       background: selSeg === k ? "rgba(165,148,255,0.12)" : "transparent",
                       border: selSeg === k ? "1px solid var(--violet)" : "1px solid var(--line-2)",
                       color: selSeg === k ? "var(--violet)" : "var(--ink-3)",
                     }}>
-                    {k.length > 14 ? k.slice(0, 14) + "…" : k}
+                    {(k.length > 14 ? k.slice(0, 14) + "…" : k) + ` (${(bySeg[k] || []).length})`}
                   </button>
                 ))}
               </div>
             )}
 
             {/* 안내 문구 */}
-            <div style={{ fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)" }}>
-              Cohen's d: 통과/탈락 세대 간 피처 분포 차이. 양(teal)=통과세대 더 높음, 음(amber)=낮을수록 통과. |d|↓ 정렬.
+            <div style={{ fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+              <span>Cohen's d: 통과/탈락 세대 간 피처 분포 차이. 양(teal)=통과세대 더 높음, 음(amber)=낮을수록 통과. |d|↓ 정렬 · 표본 &lt; {_FEATURE_MIN_SAMPLE} 경고.</span>
+              <span>segment={selSeg || "global"} · shown={Math.min(topN, activeFeats.length)}/{activeFeats.length} · low_sample={lowSampleCount}</span>
+              {activeFeats.length > topN && (
+                <button className="btn ghost sm" type="button" onClick={() => setTopN(topN + 12)}>더 보기</button>
+              )}
             </div>
 
             {/* 수평 막대 차트 */}
             {activeFeats.length === 0 ? (
               <_EmptyState msg="이 세그먼트에 피처 데이터가 없습니다." />
             ) : (
-              <_FeatureBarChart feats={activeFeats} maxAbsD={maxAbsD} />
+              <_FeatureBarChart feats={visibleFeats} maxAbsD={maxAbsD} />
             )}
 
           </div>
@@ -587,6 +618,14 @@ function _FeatureBarChart({ feats, maxAbsD }) {
                 통과 {_anNum(f.mean_pass, 2)} / 탈락 {_anNum(f.mean_fail, 2)}
               </span>
             )}
+            {(() => {
+              const n = f.sample_count || f.n || f.count || 0;
+              return n ? (
+                <span className="mono" style={{ fontSize: 10, color: n < _FEATURE_MIN_SAMPLE ? "var(--amber)" : "var(--ink-3)" }}>
+                  n={n}{n < _FEATURE_MIN_SAMPLE ? " · 표본 부족" : ""}
+                </span>
+              ) : null;
+            })()}
           </div>
         );
       })}

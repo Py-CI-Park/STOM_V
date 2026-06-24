@@ -57,6 +57,11 @@ function _SweepParamBuilder({ rows, onChange, disabled }) {
             <input className="input" type="number" value={r.step == null ? "" : r.step} disabled={disabled}
                    onChange={e => setRow(i, { step: e.target.value })}
                    placeholder="step" style={{ width: 64, fontSize: 11 }} />
+            {(r.index != null || r.default != null) && (
+              <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)", minWidth: 92 }}>
+                {r.index != null ? `#${r.index}` : ""}{r.default != null ? ` 기본 ${r.default}` : ""}
+              </span>
+            )}
             <button className="btn ghost sm" onClick={() => removeRow(i)} disabled={disabled}
                     title="이 변수 행 삭제" style={{ padding: "2px 8px" }}>✕</button>
           </div>
@@ -101,6 +106,8 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
   const [runErr, setRunErr] = useState_bt("");
   const [showLog, setShowLog] = useState_bt(false);
   const [selectedJobId, setSelectedJobId] = useState_bt("");
+  const [legacyVars, setLegacyVars] = useState_bt(null);
+  const [legacyVarsBusy, setLegacyVarsBusy] = useState_bt(false);
 
   // 데이터 가용 범위 로드.
   useEffect_bt(() => {
@@ -148,7 +155,12 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
         job_id: m.job_id, status: m.status, progress: m.progress,
         phase: m.phase, message: m.message, log_tail: m.log_tail || (prev && prev.log_tail) || [],
       }));
-      if (m.terminal) { loadJobs(); }
+      if (m.terminal) {
+        loadJobs();
+        _btFetchJson(baseUrl + "/bt/job?job_id=" + encodeURIComponent(m.job_id), 4000)
+          .then(j => { if (j && j.available) setActiveJob(j); })
+          .catch(() => {});
+      }
     };
     ws.onerror = () => { wsOkRef.current = false; };
     ws.onclose = () => { if (!closedByUs) { /* 폴링 폴백이 이어받음 */ } };
@@ -172,12 +184,23 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
     return () => clearInterval(id);
   }, [baseUrl, isDemo, trackId, loadJobs]);
 
-  // B2 — 잡이 성공으로 종결되면 결과를 자동 선택(부모가 결과 분석 탭으로 전환).
+  // B2 — 잡이 성공/거래0건으로 종결되면 결과를 자동 선택(부모가 결과 분석 탭으로 전환).
   //   같은 잡을 두 번 자동선택하지 않도록 마지막 자동선택 id 를 기억한다.
   const autoPickedRef = useRef_bt("");
   useEffect_bt(() => {
     if (!activeJob || isDemo) return;
-    if (activeJob.status === "success" && activeJob.job_id && autoPickedRef.current !== activeJob.job_id) {
+    const actions = Array.isArray(activeJob.open_actions) ? activeJob.open_actions : [];
+    const hasActionTaxonomy = actions.length > 0 || activeJob.openable != null
+      || activeJob.status_kind || activeJob.artifact_state;
+    const statusKind = activeJob.status_kind || activeJob.status;
+    const successAutoOpen = statusKind === "success" || statusKind === "no_trades";
+    const legacySuccessAutoOpen = !hasActionTaxonomy
+      && (activeJob.status === "success" || activeJob.status === "no_trades");
+    const canOpenByTaxonomy = actions.includes("open_result") || activeJob.openable === true;
+    const autoOpen = activeJob.job_id
+      && ((hasActionTaxonomy && successAutoOpen && canOpenByTaxonomy) || legacySuccessAutoOpen)
+      && autoPickedRef.current !== activeJob.job_id;
+    if (autoOpen) {
       autoPickedRef.current = activeJob.job_id;
       onResult && onResult(activeJob.job_id);
     }
@@ -277,8 +300,42 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
     try { window.open(url, "_blank", "noopener"); } catch (e) {}
   };
 
+  const importSelfVars = () => {
+    if (isDemo || !baseUrl || !buy) {
+      setRunErr("self.vars를 가져올 매수 조건식을 선택하세요.");
+      return;
+    }
+    setLegacyVarsBusy(true);
+    setRunErr("");
+    _btFetchJson(baseUrl + "/bt/legacy/self_vars?kind=buy&name=" + encodeURIComponent(buy), 6000)
+      .then(j => {
+        setLegacyVars(j || null);
+        if (j && Array.isArray(j.rows) && j.rows.length > 0) {
+          setMode("sweep");
+          setSweepAction("param");
+          setSweepInputMode("builder");
+          setSweepRows(j.rows.map(r => ({ name: r.name, min: r.min, max: r.max, step: r.step, index: r.index, default: r.default })));
+        } else {
+          setRunErr((j && j.message) || "self.vars 범위를 찾지 못했습니다.");
+        }
+      })
+      .catch(e => setRunErr("self.vars 해석 실패: " + e))
+      .finally(() => setLegacyVarsBusy(false));
+  };
+
   const pct = activeJob ? Math.round((activeJob.progress || 0) * 100) : 0;
   const tracking = activeJob && (activeJob.status === "running" || activeJob.status === "pending");
+  const activeActions = Array.isArray(activeJob && activeJob.open_actions) ? activeJob.open_actions : [];
+  const activeHasActionTaxonomy = activeJob && (activeActions.length > 0 || activeJob.openable != null
+    || activeJob.status_kind || activeJob.artifact_state);
+  const activeStatusKind = activeJob ? (activeJob.status_kind || activeJob.status) : "pending";
+  const activeBadge = activeJob
+    ? (_BT_JOB_BADGE[activeStatusKind] || _BT_JOB_BADGE[activeJob.status] || _BT_JOB_BADGE.pending)
+    : _BT_JOB_BADGE.pending;
+  const activeCanOpen = activeJob && (activeActions.includes("open_result") || activeJob.openable === true
+    || (!activeHasActionTaxonomy && (activeJob.status === "success" || activeJob.status === "no_trades")));
+  const activeCanReport = activeJob && (activeActions.includes("open_report")
+    || (!activeHasActionTaxonomy && activeJob.status === "success"));
 
   return (
     <div className="panel" style={{ background: "var(--bg-1)" }}>
@@ -346,6 +403,11 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
             ▸ {_BT_MODE_RUN_LABEL[mode] || "백테스트 실행"}
           </button>
           <button className="btn ghost sm" onClick={loadJobs} disabled={isDemo}>↻ 이력</button>
+          <button className="btn ghost sm" onClick={importSelfVars}
+                  disabled={isDemo || legacyVarsBusy || !buy}
+                  title="선택된 매수 조건식의 legacy self.vars 범위를 실행 없이 스윕 빌더 행으로 변환">
+            {legacyVarsBusy ? "self.vars 해석…" : "self.vars → 스윕 빌더"}
+          </button>
         </div>
 
         {/* optimize 전용 — 파라미터 탐색공간 JSON 경로 */}
@@ -460,6 +522,11 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
             </span>
           )}
           {runErr && <span className="mono" style={{ fontSize: 11, color: "var(--red)" }}>{runErr}</span>}
+          {legacyVars && (
+            <span className="mono" style={{ fontSize: 10.5, color: legacyVars.available ? "var(--teal)" : "var(--ink-3)" }}>
+              {legacyVars.adapter || "self.vars"} · {(legacyVars.rows || []).length}개 행 · 실행 없이 미리보기
+            </span>
+          )}
           {compareA && (
             <span className="mono tag-slim" style={{ fontSize: 9.5, color: "var(--amber)", marginLeft: "auto" }}
                   title="비교 기준(A) 고정됨 — 결과 라이브러리에서 다른 잡의 '비교(B)' 를 누르세요">
@@ -472,9 +539,9 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
         {activeJob && (
           <div style={{ border: "1px solid var(--line-1)", borderRadius: 6, padding: 10, background: "var(--bg-0)", display: "flex", flexDirection: "column", gap: 8 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <span className={(_BT_JOB_BADGE[activeJob.status] || _BT_JOB_BADGE.pending).cls}>
+              <span className={activeBadge.cls}>
                 <span className={"dot " + (activeJob.status === "running" ? "pulse-dot" : "")}></span>
-                {(_BT_JOB_BADGE[activeJob.status] || _BT_JOB_BADGE.pending).txt}
+                {activeBadge.txt}
               </span>
               <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>{activeJob.job_id}</span>
               <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-2)", marginLeft: "auto" }}>
@@ -491,10 +558,10 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
               {tracking && (
                 <button className="btn danger sm" onClick={() => cancelJob(activeJob.job_id)}>◼ 중지</button>
               )}
-              {(activeJob.status === "success" || activeJob.status === "no_trades") && (
+              {activeCanOpen && (
                 <button className="btn ghost sm" onClick={() => pickJob(activeJob.job_id)}>결과 보기</button>
               )}
-              {(activeJob.status === "success" || activeJob.status === "no_trades") && (
+              {activeCanReport && (
                 <button className="btn ghost sm" onClick={() => openReport(activeJob.job_id)}
                         title="자급자족 HTML 리포트를 새 탭으로 열기">📄 리포트</button>
               )}
@@ -533,6 +600,26 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
     if (isDemo || !baseUrl || !jobId) return;
     try { window.open(baseUrl + "/bt/report?job_id=" + encodeURIComponent(jobId), "_blank", "noopener"); } catch (e) {}
   };
+
+  const rerunJob = (j) => {
+    if (isDemo || !baseUrl || !j) return;
+    const spec = j.rerun_spec || j.spec || {};
+    if (!spec.buy || !spec.sell || !spec.start || !spec.end) return;
+    _btPostJson(baseUrl + "/bt/run", spec, 8000)
+      .then(() => { onReload && onReload(); })
+      .catch(() => {});
+  };
+  const recoverJob = (j) => {
+    if (isDemo || !j || !j.job_id) return;
+    const actions = Array.isArray(j.open_actions) ? j.open_actions : [];
+    const hasOpenableArtifact = actions.includes("open_result") || j.openable === true;
+    if (hasOpenableArtifact && onResult) {
+      onResult(j.job_id);
+      return;
+    }
+    rerunJob(j);
+  };
+
 
   const saveMeta = (jobId, patch) => {
     if (isDemo || !baseUrl || !jobId) return;
@@ -620,8 +707,12 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 360, overflowY: "auto" }}>
                 {filtered.map(j => {
-                  const b = _BT_JOB_BADGE[j.status] || _BT_JOB_BADGE.pending;
-                  const clickable = j.status === "success" || j.status === "no_trades";
+                  const statusKind = j.status_kind || j.status;
+                  const b = _BT_JOB_BADGE[statusKind] || _BT_JOB_BADGE[j.status] || _BT_JOB_BADGE.pending;
+                  const actions = Array.isArray(j.open_actions) ? j.open_actions : [];
+                  const hasActionTaxonomy = actions.length > 0 || j.openable != null || j.status_kind || j.artifact_state;
+                  const clickable = actions.includes("open_result") || j.openable === true
+                    || (!hasActionTaxonomy && (j.status === "success" || j.status === "no_trades"));
                   const active = j.job_id === selectedJobId;
                   const canCompare = clickable && compareA && onCompareB && j.job_id !== compareA;
                   const isEditing = editing === j.job_id;
@@ -640,6 +731,7 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
                           {j.favorite ? "★" : "☆"}
                         </button>
                         <button onClick={() => clickable && onResult(j.job_id)} disabled={!clickable}
+                          title={clickable ? "결과 상세 열기" : (j.artifact_state || j.message || "열 수 있는 결과 아티팩트가 없습니다")}
                           style={{
                             display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0,
                             background: "transparent", border: 0, padding: 0, textAlign: "left",
@@ -651,9 +743,17 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
                           </span>
                           <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", flexShrink: 0 }}>{_btElapsed(j)}</span>
                         </button>
-                        {clickable && (
+                        {actions.includes("open_report") && (
                           <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
                                   onClick={() => openReport(j.job_id)} title="HTML 리포트 새 탭">📄</button>
+                        )}
+                        {actions.includes("recover_result") && (
+                          <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
+                                  onClick={() => recoverJob(j)} title="아티팩트가 남아 있으면 열고, 없으면 같은 조건으로 재실행">복구</button>
+                        )}
+                        {actions.includes("rerun_same_condition") && (
+                          <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
+                                  onClick={() => rerunJob(j)} title="같은 조건으로 새 백테스트 실행">재실행</button>
                         )}
                         {clickable && onSetCompareA && (
                           <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
@@ -666,6 +766,13 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
                         <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
                                 onClick={() => (isEditing ? setEditing("") : beginEdit(j))} title="태그·메모 편집">🏷</button>
                       </div>
+                      {j.artifact_state && !isEditing && (
+                        <div className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)" }}>
+                          evidence {j.evidence_id || "—"} · {j.artifact_state}
+                          {j.condition_identity && j.condition_identity.confidence
+                            ? " · condition " + j.condition_identity.confidence : ""}
+                        </div>
+                      )}
                       {/* 태그·메모 표시 */}
                       {!isEditing && ((j.tags && j.tags.length > 0) || j.memo) && (
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 4, alignItems: "center" }}>

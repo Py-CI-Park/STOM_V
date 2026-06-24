@@ -2,7 +2,7 @@
    라이브러리 목록 + SSOT 변수 칩 + 단일/듀얼 코드 에디터(로드/검증/저장/삭제). 디자인 언어:
    다크 테마(var(--bg-1)/var(--line-1)) · mono 라벨 · panel/btn 클래스 재사용.
 
-   모든 fetch 는 무예외(실패→빈 상태+재시도), AbortSignal.timeout.
+   fetch 실패와 DB 오류는 빈 상태로 숨기지 않고 오류 메시지+재시도로 표시한다.
 */
 // Track Z — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
 import { useState_bt, useEffect_bt, useCallback_bt, useMemo_bt, _btFetchJson, _btPostJson } from "./bt-tab-utils.jsx";
@@ -20,7 +20,14 @@ function BtLibraryPanel({ baseUrl, isDemo, kind, onKind, onPick, selectedName, r
     if (isDemo || !baseUrl) { setItems([]); return; }
     setLoading(true); setErr("");
     _btFetchJson(baseUrl + "/bt/strategies?kind=" + encodeURIComponent(kind), 4000)
-      .then(j => setItems(Array.isArray(j && j.items) ? j.items : []))
+      .then(j => {
+        if (j && j.status === "error") {
+          setItems([]);
+          setErr(((j.message || "조건식 목록 조회 실패") + (j.reason ? " · " + j.reason : "")));
+          return;
+        }
+        setItems(Array.isArray(j && j.items) ? j.items : []);
+      })
       .catch(e => { setItems([]); setErr(String(e)); })
       .finally(() => setLoading(false));
   }, [baseUrl, isDemo, kind, reloadKey]);
@@ -176,7 +183,7 @@ function BtVarChips({ baseUrl, isDemo, code }) {
 // ===========================================================================
 // 2c. 단일 코드 에디터(매수/매도 한 쪽) — 로드/검증/저장/변수칩. 듀얼 에디터의 한 패널.
 // ===========================================================================
-function BtCodeEditor({ baseUrl, isDemo, kind, label, accent, name, onSaved, onDeleted }) {
+function BtCodeEditor({ baseUrl, isDemo, kind, label, accent, name, onSaved, onDeleted, large }) {
   const [code, setCode] = useState_bt("");
   const [editName, setEditName] = useState_bt("");
   const [loadedName, setLoadedName] = useState_bt("");
@@ -192,14 +199,23 @@ function BtCodeEditor({ baseUrl, isDemo, kind, label, accent, name, onSaved, onD
     }
     _btFetchJson(baseUrl + "/bt/strategy?kind=" + encodeURIComponent(kind) + "&name=" + encodeURIComponent(name), 4000)
       .then(j => {
-        if (j && j.available) { setCode(j.code || ""); setEditName(j.name || name); setLoadedName(j.name || name); }
-        else { setCode(""); setEditName(name); setLoadedName(""); }
-        setValidate(null); setMsg(null);
+        setValidate(null);
+        if (j && j.available) {
+          setCode(j.code || ""); setEditName(j.name || name); setLoadedName(j.name || name); setMsg(null);
+        } else {
+          setCode(""); setEditName(name); setLoadedName("");
+          if (j && j.status === "error") {
+            setMsg({ kind: "error", text: ((j.message || "조건식 로드 실패") + (j.reason ? " · " + j.reason : "")) });
+          } else {
+            setMsg(null);
+          }
+        }
       })
       .catch(() => setMsg({ kind: "error", text: "조건식 로드 실패" }));
   }, [baseUrl, isDemo, kind, name]);
 
   const lineCount = useMemo_bt(() => code.split("\n").length, [code]);
+  const editorMinHeight = large ? 560 : 320;
 
   const runValidate = () => {
     if (isDemo) return;
@@ -251,7 +267,7 @@ function BtCodeEditor({ baseUrl, isDemo, kind, label, accent, name, onSaved, onD
   };
 
   return (
-    <div className="panel" style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
+    <div className="panel" style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1, flexBasis: large ? "100%" : 0 }}>
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: accent }}></span>
@@ -265,7 +281,7 @@ function BtCodeEditor({ baseUrl, isDemo, kind, label, accent, name, onSaved, onD
         <textarea className="input mono" value={code}
           onChange={e => { setCode(e.target.value); setValidate(null); }}
           spellCheck={false} disabled={isDemo}
-          style={{ minHeight: 200, resize: "vertical", lineHeight: 1.5, whiteSpace: "pre", tabSize: 4, fontSize: 12 }}
+          style={{ minHeight: editorMinHeight, resize: "vertical", lineHeight: 1.55, whiteSpace: "pre", tabSize: 4, fontSize: large ? 13.5 : 12 }}
           placeholder={"# " + label + " 전략 코드 (Python)"} />
         <BtVarChips baseUrl={baseUrl} isDemo={isDemo} code={code} />
         {validate && (
@@ -321,12 +337,41 @@ function BtCodeEditor({ baseUrl, isDemo, kind, label, accent, name, onSaved, onD
 //   각 패널은 독립 라이브러리 선택(buyName/sellName)에서 코드를 로드한다.
 // ===========================================================================
 function BtDualEditor({ baseUrl, isDemo, buyName, sellName, onSaved, onDeletedBuy, onDeletedSell }) {
+  const [editorFocus, setEditorFocus] = useState_bt("both");  // both | buy | sell.
+  const showBuy = editorFocus === "both" || editorFocus === "buy";
+  const showSell = editorFocus === "both" || editorFocus === "sell";
+  const oneSide = editorFocus !== "both";
+  const focusBtn = (id, label, title) => (
+    <button key={id} className="mono" onClick={() => setEditorFocus(id)} title={title}
+      style={{
+        padding: "5px 10px", fontSize: 11, borderRadius: 5, cursor: "pointer",
+        border: "1px solid " + (editorFocus === id ? "var(--teal-dim)" : "var(--line-1)"),
+        background: editorFocus === id ? "rgba(76,214,179,0.10)" : "transparent",
+        color: editorFocus === id ? "var(--teal)" : "var(--ink-2)",
+      }}>
+      {label}
+    </button>
+  );
   return (
-    <div style={{ display: "flex", gap: 12, minWidth: 0, flexWrap: "wrap" }}>
-      <BtCodeEditor baseUrl={baseUrl} isDemo={isDemo} kind="buy" label="매수" accent="var(--teal)"
-                    name={buyName} onSaved={onSaved} onDeleted={onDeletedBuy} />
-      <BtCodeEditor baseUrl={baseUrl} isDemo={isDemo} kind="sell" label="매도" accent="var(--red)"
-                    name={sellName} onSaved={onSaved} onDeleted={onDeletedSell} />
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginRight: 2 }}>
+          에디터 보기
+        </span>
+        {focusBtn("both", "매수·매도 동시", "두 조건식을 나란히 편집합니다.")}
+        {focusBtn("buy", "매수만 크게", "매수 조건식만 전폭·고높이로 크게 봅니다.")}
+        {focusBtn("sell", "매도만 크게", "매도 조건식만 전폭·고높이로 크게 봅니다.")}
+      </div>
+      <div style={{ display: "flex", gap: 12, minWidth: 0, flexWrap: oneSide ? "nowrap" : "wrap" }}>
+        <div style={{ display: showBuy ? "flex" : "none", flex: oneSide ? "1 1 100%" : "1 1 0", minWidth: 0 }}>
+          <BtCodeEditor baseUrl={baseUrl} isDemo={isDemo} kind="buy" label="매수" accent="var(--teal)"
+                        name={buyName} onSaved={onSaved} onDeleted={onDeletedBuy} large={editorFocus === "buy"} />
+        </div>
+        <div style={{ display: showSell ? "flex" : "none", flex: oneSide ? "1 1 100%" : "1 1 0", minWidth: 0 }}>
+          <BtCodeEditor baseUrl={baseUrl} isDemo={isDemo} kind="sell" label="매도" accent="var(--red)"
+                        name={sellName} onSaved={onSaved} onDeleted={onDeletedSell} large={editorFocus === "sell"} />
+        </div>
+      </div>
     </div>
   );
 }

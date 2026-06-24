@@ -109,6 +109,177 @@ function FeedbackPanel({ state }) {
   );
 }
 
+function _cdTime(value) {
+  const raw = String(value == null ? "" : value).padStart(6, "0");
+  if (raw.length < 6) return "—";
+  return `${raw.slice(0, 2)}:${raw.slice(2, 4)}:${raw.slice(4, 6)}`;
+}
+
+function _cdScore(score) {
+  const n = Number(score);
+  return Number.isFinite(n) ? n.toFixed(1) : "—";
+}
+
+function _CdPill({ label, tone = "info", title }) {
+  return <span className={`condition-discovery-pill ${tone}`} title={title}>{label}</span>;
+}
+
+function ConditionDiscoveryPanel({ state, wsStatus }) {
+  const discovery = state.page_data?.condition_discovery;
+  const scores = state.page_data?.advisory_scores;
+  const feedback = state.page_data?.condition_feedback;
+  const isDemo = typeof window.isDemoSource === "function"
+    ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
+
+  if (!discovery) {
+    return (
+      <div className="panel condition-discovery-panel">
+        <div className="panel-hd">
+          <div className="panel-hd-title">
+            <span className="dot" style={{ background: "var(--teal)" }}></span>조건식 발굴 거버넌스
+            {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
+          </div>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>preset · hard gates · evidence</span>
+        </div>
+        <div className="panel-bd">
+          <div style={{ padding: 14, color: "var(--ink-3)", fontSize: 12, lineHeight: 1.6 }}>
+            {isDemo
+              ? "데모 모드 — 조건식 발굴 정책/점수는 라이브 상태에서 발행됩니다."
+              : "실시간 데이터 대기 — 세대 완료 시 condition_discovery page_data가 발행됩니다."}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const policy = discovery.policy || {};
+  const gate = discovery.hard_gates || {};
+  const mddGate = gate.mdd || {};
+  const tradeGate = gate.minimum_daily_trades || {};
+  const timeWindow = discovery.time_window || {};
+  const evidenceRows = (discovery.evidence_health && discovery.evidence_health.components) || [];
+  const perf = scores?.performance_score_100 || {};
+  const quality = scores?.condition_quality_score_100 || {};
+  const authority = scores?.authority_guard || {};
+  const blockedBy = authority.blocked_by || [];
+  const persistenceRows = (feedback?.persistence?.items) || [];
+  const hypotheses = (feedback?.hypotheses?.items) || [];
+  const patternCards = (feedback?.pattern_cards?.items) || [];
+
+  return (
+    <div className="panel condition-discovery-panel">
+      <div className="panel-hd">
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--teal)" }}></span>조건식 발굴 거버넌스
+          {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
+        </div>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
+          {discovery.preset || "fast"} · 점수는 advisory-only
+        </span>
+      </div>
+      <div className="panel-bd condition-discovery-body">
+        <div className="condition-discovery-hero">
+          <div>
+            <span className="stat-label">preset</span>
+            <b>{policy.label || discovery.preset}</b>
+            <small>{policy.purpose || "조건식 발굴 기본 정책"}</small>
+          </div>
+          <div>
+            <span className="stat-label">time window</span>
+            <b>{timeWindow.timeframe || "—"} · {_cdTime(timeWindow.start_time)}~{_cdTime(timeWindow.end_time)}</b>
+            <small>{timeWindow.notes || timeWindow.source || "window policy"}</small>
+          </div>
+          <div>
+            <span className="stat-label">MDD gate</span>
+            <b>{mddGate.cap ?? "—"}%</b>
+            <small>preset cap {mddGate.preset_cap ?? "—"} · configured {mddGate.configured_cap ?? "—"}</small>
+          </div>
+          <div>
+            <span className="stat-label">trade gate</span>
+            <b>{tradeGate.value ?? "—"} / day</b>
+            <small>{tradeGate.authority || "hard gate"}</small>
+          </div>
+        </div>
+
+        <div className="condition-discovery-score-row" aria-label="100점 advisory score cards">
+          <div className="condition-score-card">
+            <span>성과 점수</span>
+            <b>{_cdScore(perf.score)}</b>
+            <small>{perf.scale || "0-100"} · promotion authority 없음</small>
+          </div>
+          <div className="condition-score-card">
+            <span>생성품질 점수</span>
+            <b>{_cdScore(quality.score)}</b>
+            <small>{quality.scale || "0-100"} · 문법/다양성/비용/매도구조</small>
+          </div>
+          <div className="condition-score-card authority">
+            <span>승격/Export</span>
+            <b>{authority.promotion_review_ready ? "review-ready" : "blocked"}</b>
+            <small>score_can_promote={String(authority.score_can_promote === true)}</small>
+          </div>
+        </div>
+
+        <div className="condition-discovery-grid">
+          <section>
+            <h4>Evidence health</h4>
+            <div className="condition-discovery-pillrow">
+              {evidenceRows.map(row => (
+                <_CdPill key={row.name}
+                         label={`${row.name}:${row.status}`}
+                         tone={row.blocker_reason ? "danger" : (row.status === "present" ? "success" : "info")}
+                         title={row.blocker_reason || (row.required ? "required" : "optional")} />
+              ))}
+            </div>
+            {blockedBy.length > 0 && (
+              <div className="condition-discovery-note danger">
+                authority blocked: {blockedBy.join(" · ")}
+              </div>
+            )}
+          </section>
+
+          <section>
+            <h4>Prompt / Equity 저장</h4>
+            {persistenceRows.length === 0 ? (
+              <div className="condition-discovery-note">persistence rows pending</div>
+            ) : persistenceRows.map(row => (
+              <div className="condition-discovery-row" key={row.kind}>
+                <span>{row.kind}</span>
+                <b>{row.status}</b>
+                <small>{row.count == null ? "count unavailable" : `${row.count} records`}</small>
+              </div>
+            ))}
+          </section>
+
+          <section>
+            <h4>부검 hypothesis</h4>
+            {hypotheses.length === 0 ? (
+              <div className="condition-discovery-note">가정 환류 대기</div>
+            ) : hypotheses.slice(0, 3).map(row => (
+              <div className="condition-discovery-row" key={row.id}>
+                <span>{row.status}</span>
+                <b>{row.id}</b>
+                <small>{row.hypothesis}</small>
+              </div>
+            ))}
+          </section>
+
+          <section>
+            <h4>Human DB pattern cards</h4>
+            <div className="condition-discovery-row">
+              <span>cards</span>
+              <b>{patternCards.length}</b>
+              <small>{feedback?.pattern_cards?.authority || "creativity only"}</small>
+            </div>
+            <div className="condition-discovery-note">
+              임계값·전체식·성과 복사는 anti-copy guard가 차단합니다.
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ---- Segment autopsy panel (P1) ----
 // page_data.autopsy(세그먼트 강화 부검 요약)를 LIVE로 렌더한다. backend가 발행하면
 //   세그먼트/임계값 테이블을 보이고, 없으면(데모 또는 미발행) 출처를 명시한다.
@@ -336,7 +507,7 @@ function _rcTime(ts) {
   catch { return "—"; }
 }
 
-Object.assign(window, { AutopsyPanel, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel });
+Object.assign(window, { AutopsyPanel, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel });
 
 // Track Z — dual-safe ESM export (stripped by build-app.mjs in the concat path; kept by the bundle for real module scope). KEEP on ONE physical line.
-export { AutopsyPanel, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel };
+export { AutopsyPanel, LineagePanel, HoldoutPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel };

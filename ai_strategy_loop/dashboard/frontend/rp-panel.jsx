@@ -8,7 +8,7 @@
 
 // Track Z (PR-3) — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
 import { useState_rp, useEffect_rp, useCallback_rp, useMemo_rp, _rpFetchJson } from "./rp-utils.jsx";
-import { _RpBigHeatmap, _RpHallOfFame, _RpRunCompare, _RpHistory, _RpProcessFlowOverlay } from "./rp-heatmap.jsx";
+import { _RpBigHeatmap, _RpHallOfFame, _RpProcessFlowOverlay } from "./rp-heatmap.jsx";
 
 /* ── 메인: ResearchProPanel — 풀스크린 워크스페이스. ── */
 function ResearchProPanel({ baseUrl, wsStatus, runId }) {
@@ -94,7 +94,7 @@ function ResearchProPanel({ baseUrl, wsStatus, runId }) {
         <div className="rp-topbar-title">
           <span className="rp-topbar-mark">🔬</span>
           <div>
-            <div className="rp-topbar-h">리서치 프로 — 전체화면 분석 워크스페이스</div>
+            <div className="rp-topbar-h">분석 워크벤치 — 후보 심층 분석</div>
             <div className="rp-topbar-sub mono">
               {selRun ? selRun : "run 미선택"}
               {activeRunLabel ? " · " + activeRunLabel : ""}
@@ -141,21 +141,33 @@ function ResearchProPanel({ baseUrl, wsStatus, runId }) {
 
       {isDemo ? (
         <div className="rp-empty" style={{ margin: 24 }}>
-          데모(미연결) 모드 — 실 run에 연결하면 리서치 프로 분석이 표시됩니다.
+          데모(미연결) 모드 — 실 run에 연결하면 분석 워크벤치가 표시됩니다.
         </div>
       ) : (
         <div className="rp-grid">
-          <_RpBigHeatmap baseUrl={baseUrl} isDemo={isDemo} runId={selRun} key={"hm" + refreshKey} />
           <_RpHallOfFame baseUrl={baseUrl} isDemo={isDemo} onOpenWorkbench={onOpenWorkbench} key={"hof" + refreshKey} />
-          <_RpRunCompare
-            baseUrl={baseUrl}
-            isDemo={isDemo}
-            runList={runList}
-            currentRunId={selRun}
-            currentGenNo={selGen}
-            onOpenWorkbench={onOpenWorkbench}
-          />
-          <_RpHistory baseUrl={baseUrl} isDemo={isDemo} runList={runList} onOpenWorkbench={onOpenWorkbench} />
+          <div className="rp-card">
+            <div className="rp-card-hd">
+              <span className="rp-card-title">히스토리 · Compare는 히스토리 탭 소유</span>
+            </div>
+            <div className="rp-card-bd">
+              <div className="rp-empty" style={{ textAlign: "left" }}>
+                과거 run/gen 재열람과 Compare는 중복을 막기 위해 히스토리 탭으로 이동했습니다.
+                Workbench는 현재 선택 run의 깊은 분석과 명예의 전당 후보 확인만 담당합니다.
+                <div style={{ marginTop: 10 }}>
+                  <button className="btn ghost sm" onClick={() => {
+                    try {
+                      localStorage.setItem("stom_active_tab", "evolution");
+                      localStorage.setItem("stom_active_evolution_tab", "records");
+                      window.location.href = "/ui/evolution/records";
+                    } catch (e) {}
+                  }}>
+                    히스토리에서 열기
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

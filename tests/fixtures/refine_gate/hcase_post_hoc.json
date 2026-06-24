@@ -1,0 +1,18 @@
+{
+  "description": "P0a 오프라인 픽스처 — refine_gate.decide 판정 로직 회귀. 백테 미실행(문서 숫자 암기).",
+  "source": "docs/update_log/2026-06-14_analysis_driven_loop_breakthrough.md 하드교훈 a: min 중형주 포켓 in-sample +1.07M(사후 슬라이스) → 조각 재백테 -1,152,966(MIN_MIDCAP_REFINED). 부호 반전 = 사후슬라이스≠엣지.",
+  "hcase_post_hoc": {
+    "label": "min_midcap_pocket",
+    "in_sample_lift": 1070000.0,
+    "rebacktest_profit": -1152966.0,
+    "expected_passed": false,
+    "note": "사후 슬라이스 흑자가 재백테서 부호 반전 → 반드시 기각(REFUSE)"
+  },
+  "known_good": {
+    "label": "theta_like_holds",
+    "in_sample_lift": 2100000.0,
+    "rebacktest_profit": 2000000.0,
+    "expected_passed": true,
+    "note": "재백테가 흑자 재현(엣지 유지) → 채택(PASS). THETA형 대조군."
+  }
+}

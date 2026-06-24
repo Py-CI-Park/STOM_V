@@ -1,0 +1,483 @@
+{
+  "name": "llmgen_min_open_flowpersist_afternoon_caporthogonal_maproxy_buyqtyonly_v2",
+  "timeframe": "min",
+  "source": "P5 LLM 가설 생성 (gen_template_hypothesis)",
+  "description": "분봉에서 09~10 중형 수급 지속과 13~15 이종 시총 MA-돌파 재가속을 점수합산 없이 분리해, 기존 tick 시드와 시간·타임프레임·분당수급축이 다른 보수적 다밴드 니치.",
+  "buy_code": "매수 = True\nif 데이터길이 < {min_len}:\n    매수 = False\nelif {b1_start} <= 시분초 < {b1_end}:\n    if {b1_cap_lo} <= 시가총액 < {b1_cap_hi}:\n        if not (등락율 >= {b1_rate_min} and 등락율 <= {b1_rate_max} and 당일거래대금 >= {b1_day_money_min} and 분당거래대금 >= {b1_min_money} and 분당거래대금 >= 분당거래대금평균({b1_money_avg_win}, 1) * {b1_money_burst} and 분당매수수량 >= {b1_buyqty_min} and 누적분당매수수량({b1_cumbuy_win}) >= 분당매수수량 * {b1_cumbuy_mult}):\n            매수 = False\n    else:\n        매수 = False\nelif {b2_start} <= 시분초 < {b2_end}:\n    if {b2_cap_lo} <= 시가총액 < {b2_cap_hi}:\n        if not (등락율 >= {b2_rate_min} and 등락율 <= {b2_rate_max} and 당일거래대금 >= {b2_day_money_min} and 분당거래대금 >= {b2_min_money} and 분당거래대금 >= 분당거래대금평균({b2_money_avg_win}, 1) * {b2_money_burst} and 현재가 >= 이동평균({b2_ma_win}, 1) * {b2_ma_mult} and 분당매수수량 >= {b2_buyqty_min} and 누적분당매수수량({b2_cumbuy_win}) >= 분당매수수량 * {b2_cumbuy_mult}):\n            매수 = False\n    else:\n        매수 = False\nelse:\n    매수 = False\nif 매수:\n    self.Buy()",
+  "sell_code": "매도 = False\nif 수익률 >= {take_profit}:\n    매도 = True\nelif 수익률 <= -{stop_loss}:\n    매도 = True\nelif 보유시간 >= {max_hold_min}:\n    매도 = True\nelif 최고수익률 >= {trail_start} and 수익률 <= 최고수익률 - {trail_gap}:\n    매도 = True\nif 매도:\n    self.Sell()",
+  "params": [
+    {
+      "name": "min_len",
+      "default": 5,
+      "values": [
+        3,
+        5,
+        8,
+        13,
+        21,
+        34
+      ],
+      "side": "buy",
+      "note": "분봉 지표 안정화용 최소 데이터길이. 너무 길면 개장 밴드가 죽으므로 3~34분으로 넓게 탐색."
+    },
+    {
+      "name": "b1_start",
+      "default": 90000,
+      "values": [
+        90000,
+        90100,
+        90300,
+        90500,
+        91000
+      ],
+      "side": "buy",
+      "note": "밴드1 개장 수급 지속 시작. 09:00 직후부터 약간 늦춘 시작까지 탐색."
+    },
+    {
+      "name": "b1_end",
+      "default": 100000,
+      "values": [
+        93000,
+        94500,
+        100000,
+        101500,
+        103000
+      ],
+      "side": "buy",
+      "note": "밴드1 종료. 기본은 10:00이며, 09:30 조기 절단부터 10:30 완화까지 측정."
+    },
+    {
+      "name": "b1_cap_lo",
+      "default": 1500,
+      "values": [
+        500,
+        1500,
+        2500,
+        4000,
+        6000,
+        9000
+      ],
+      "side": "buy",
+      "note": "개장 밴드 중형주 하한. 소형 혼입부터 순수 중형 이상까지 넓게 분기."
+    },
+    {
+      "name": "b1_cap_hi",
+      "default": 8000,
+      "values": [
+        3000,
+        5000,
+        8000,
+        12000,
+        20000,
+        35000
+      ],
+      "side": "buy",
+      "note": "개장 밴드 중형주 상한. 3000억 타이트부터 3.5조 상단까지 지도 탐색."
+    },
+    {
+      "name": "b1_rate_min",
+      "default": 0.5,
+      "values": [
+        0.0,
+        0.5,
+        1.0,
+        2.0,
+        3.5,
+        5.0
+      ],
+      "side": "buy",
+      "note": "개장 수급 지속의 최소 등락률. 보합권 수급부터 강한 상승 지속까지 포함."
+    },
+    {
+      "name": "b1_rate_max",
+      "default": 18.0,
+      "values": [
+        8.0,
+        12.0,
+        18.0,
+        25.0,
+        35.0,
+        50.0
+      ],
+      "side": "buy",
+      "note": "과열 상한. 비용 대비 추격 위험을 조절하되 상한을 넓혀 급등장 코너도 측정."
+    },
+    {
+      "name": "b1_day_money_min",
+      "default": 3000,
+      "values": [
+        1000,
+        3000,
+        7000,
+        15000,
+        30000,
+        60000
+      ],
+      "side": "buy",
+      "note": "당일 누적 유동성 하한(백만원). 분봉 홍수 방지를 위한 연속 밀도 조절축."
+    },
+    {
+      "name": "b1_min_money",
+      "default": 200,
+      "values": [
+        80,
+        200,
+        500,
+        1000,
+        2000,
+        4000
+      ],
+      "side": "buy",
+      "note": "현재 분당거래대금 하한(백만원). 느슨한 유동성부터 고유동성만 남기는 영역까지 탐색."
+    },
+    {
+      "name": "b1_money_avg_win",
+      "default": 5,
+      "values": [
+        3,
+        5,
+        8,
+        13,
+        21,
+        34
+      ],
+      "side": "buy",
+      "note": "분당거래대금 재가속 기준 평균 길이. 짧은 재발화와 완만한 지속을 모두 측정."
+    },
+    {
+      "name": "b1_money_burst",
+      "default": 2.0,
+      "values": [
+        1.2,
+        2.0,
+        3.0,
+        4.5,
+        6.0,
+        8.0
+      ],
+      "side": "buy",
+      "note": "분당거래대금 평균 대비 폭발 배수. 1.2 완만 지속부터 8배 극단 발화까지 넓게."
+    },
+    {
+      "name": "b1_buyqty_min",
+      "default": 5000,
+      "values": [
+        1000,
+        5000,
+        15000,
+        40000,
+        100000,
+        250000
+      ],
+      "side": "buy",
+      "note": "현재 분당매수수량 절대 하한. 가격대 차이를 감수하고 느슨↔엄격 밀도 축으로 사용."
+    },
+    {
+      "name": "b1_cumbuy_win",
+      "default": 5,
+      "values": [
+        2,
+        5,
+        8,
+        13,
+        21,
+        34
+      ],
+      "side": "buy",
+      "note": "누적분당매수수량 지속성 확인 창. 단발 분당매수와 누적 지속을 분리하기 위한 창."
+    },
+    {
+      "name": "b1_cumbuy_mult",
+      "default": 2.0,
+      "values": [
+        1.2,
+        2.0,
+        3.0,
+        5.0,
+        8.0,
+        13.0
+      ],
+      "side": "buy",
+      "note": "누적분당매수수량이 현재 분당매수수량 대비 얼마나 쌓였는지 보는 지속성 배수."
+    },
+    {
+      "name": "b2_start",
+      "default": 130000,
+      "values": [
+        123000,
+        130000,
+        133000,
+        140000,
+        143000
+      ],
+      "side": "buy",
+      "note": "밴드2 오후 재가속 시작. 점심 직후 오탐을 포함해 13시 이후 보수적 시작까지 탐색."
+    },
+    {
+      "name": "b2_end",
+      "default": 150000,
+      "values": [
+        143000,
+        150000,
+        151000,
+        151500,
+        151900
+      ],
+      "side": "buy",
+      "note": "밴드2 종료. 기본 15:00, 마감 전 15:19 데이터 경계 근처까지 후보 포함."
+    },
+    {
+      "name": "b2_cap_lo",
+      "default": 5000,
+      "values": [
+        1000,
+        5000,
+        10000,
+        20000,
+        50000,
+        100000
+      ],
+      "side": "buy",
+      "note": "오후 밴드 이종 시총 하한. 개장 중형과 다른 상위 시총 재가속을 겨냥."
+    },
+    {
+      "name": "b2_cap_hi",
+      "default": 50000,
+      "values": [
+        8000,
+        20000,
+        50000,
+        100000,
+        200000,
+        500000
+      ],
+      "side": "buy",
+      "note": "오후 밴드 시총 상한. 중대형부터 초대형까지 폭넓게 측정해 밀도 절벽을 피함."
+    },
+    {
+      "name": "b2_rate_min",
+      "default": 0.3,
+      "values": [
+        -2.0,
+        0.3,
+        1.0,
+        2.5,
+        5.0,
+        8.0
+      ],
+      "side": "buy",
+      "note": "오후 재가속 최소 등락률. 약한 재상승부터 이미 강한 주도주까지 탐색."
+    },
+    {
+      "name": "b2_rate_max",
+      "default": 12.0,
+      "values": [
+        5.0,
+        8.0,
+        12.0,
+        18.0,
+        25.0,
+        40.0
+      ],
+      "side": "buy",
+      "note": "오후 추격 과열 상한. 후반부 신호가치 저하를 감안해 상한 민감도를 측정."
+    },
+    {
+      "name": "b2_day_money_min",
+      "default": 10000,
+      "values": [
+        3000,
+        10000,
+        30000,
+        70000,
+        150000,
+        300000
+      ],
+      "side": "buy",
+      "note": "오후 종목 유동성 하한(백만원). 후반 밴드는 더 강한 유동성 게이트로 좁힘."
+    },
+    {
+      "name": "b2_min_money",
+      "default": 500,
+      "values": [
+        100,
+        500,
+        1200,
+        3000,
+        7000,
+        15000
+      ],
+      "side": "buy",
+      "note": "오후 현재 분당거래대금 하한. 느슨한 재가속부터 기관급 거래 폭발까지 연속 조절."
+    },
+    {
+      "name": "b2_money_avg_win",
+      "default": 8,
+      "values": [
+        3,
+        5,
+        8,
+        13,
+        21,
+        34
+      ],
+      "side": "buy",
+      "note": "오후 분당거래대금 재가속 평균 창. 짧은 펄스와 긴 침묵 후 재발화를 모두 측정."
+    },
+    {
+      "name": "b2_money_burst",
+      "default": 2.5,
+      "values": [
+        1.5,
+        2.5,
+        3.5,
+        5.0,
+        7.0,
+        10.0
+      ],
+      "side": "buy",
+      "note": "오후는 신호가치가 낮으므로 밴드1보다 엄격한 폭발 배수 후보를 포함."
+    },
+    {
+      "name": "b2_ma_win",
+      "default": 5,
+      "values": [
+        2,
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "side": "buy",
+      "note": "직전 분봉고가 돌파 대용 MA 창. min 전용 어휘 제약상 이동평균 상단 회복으로 표현."
+    },
+    {
+      "name": "b2_ma_mult",
+      "default": 1.003,
+      "values": [
+        1.0,
+        1.003,
+        1.006,
+        1.01,
+        1.02,
+        1.035
+      ],
+      "side": "buy",
+      "note": "MA 돌파 강도. 비용을 감안해 약한 회복부터 확실한 상단 돌파까지 탐색."
+    },
+    {
+      "name": "b2_buyqty_min",
+      "default": 10000,
+      "values": [
+        2000,
+        10000,
+        30000,
+        80000,
+        200000,
+        500000
+      ],
+      "side": "buy",
+      "note": "오후 분당매수수량 절대 하한. 후반 홍수 방지를 위해 밴드1보다 넓고 높은 축."
+    },
+    {
+      "name": "b2_cumbuy_win",
+      "default": 8,
+      "values": [
+        2,
+        5,
+        8,
+        13,
+        21,
+        34
+      ],
+      "side": "buy",
+      "note": "오후 누적 매수 지속성 창. 단발 급등이 아닌 재가속 누적을 확인."
+    },
+    {
+      "name": "b2_cumbuy_mult",
+      "default": 3.0,
+      "values": [
+        1.5,
+        3.0,
+        5.0,
+        8.0,
+        13.0,
+        21.0
+      ],
+      "side": "buy",
+      "note": "오후 누적분당매수수량 지속성 배수. 후반부라 밴드1보다 엄격 후보를 포함."
+    },
+    {
+      "name": "take_profit",
+      "default": 1.2,
+      "values": [
+        0.3,
+        0.7,
+        1.2,
+        2.0,
+        3.5,
+        5.0,
+        8.0
+      ],
+      "side": "sell",
+      "note": "익절률(%). 왕복비용 0.21%와 슬리피지를 감안해 최솟값 0.3 이상."
+    },
+    {
+      "name": "stop_loss",
+      "default": 1.2,
+      "values": [
+        0.5,
+        0.8,
+        1.2,
+        1.8,
+        2.5,
+        4.0
+      ],
+      "side": "sell",
+      "note": "손절률(%). 분봉 후행성을 감안해 타이트 손절부터 넓은 손절까지 측정."
+    },
+    {
+      "name": "max_hold_min",
+      "default": 20,
+      "values": [
+        5,
+        10,
+        20,
+        40,
+        70,
+        120
+      ],
+      "side": "sell",
+      "note": "최대 보유시간(분 단위 엔진값 가정). 분봉 다밴드의 시간가치 소멸을 통제."
+    },
+    {
+      "name": "trail_start",
+      "default": 1.5,
+      "values": [
+        0.5,
+        1.0,
+        1.5,
+        2.5,
+        4.0,
+        7.0
+      ],
+      "side": "sell",
+      "note": "트레일링 활성화 최고수익률(%). 작은 이익 보호부터 큰 추세 추종까지 탐색."
+    },
+    {
+      "name": "trail_gap",
+      "default": 0.8,
+      "values": [
+        0.3,
+        0.5,
+        0.8,
+        1.2,
+        2.0,
+        3.5
+      ],
+      "side": "sell",
+      "note": "최고수익률 대비 반납 허용폭(%). 비용 이상 여유를 두고 청산 민감도를 측정."
+    }
+  ]
+}

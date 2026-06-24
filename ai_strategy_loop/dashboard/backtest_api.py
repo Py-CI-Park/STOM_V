@@ -14,6 +14,8 @@ PR1 의 헬스 골격 위에 GUI 백테스트의 웹 이관(조건식 CRUD, 잡 
 from __future__ import annotations
 
 import asyncio
+import ast
+import hashlib
 import os
 import re
 import sqlite3
@@ -30,7 +32,7 @@ from ai_strategy_loop.dashboard.backtest_jobs import BacktestJobSpec, get_job_ma
 # 라이브 잡 WS push 간격(초)·로그 테일 줄 수.
 _WS_JOB_INTERVAL_SEC = 1.0
 _WS_JOB_LOG_TAIL = 10
-_JOB_TERMINAL = ("success", "no_trades", "error", "timeout", "cancelled", "stale")
+_JOB_TERMINAL = ("success", "no_trades", "error", "failed", "timeout", "cancelled", "stale")
 
 # 패키지 루트(.../ai_strategy_loop) 기준 경로.
 _PACKAGE_DIR = Path(__file__).resolve().parent.parent
@@ -55,6 +57,187 @@ _KIND_TABLES: Dict[str, tuple[str, str, str]] = {
     "sell": ("stocksell", "index", "전략코드"),
     "formula": ("formula", "수식명", "수식코드"),
 }
+
+# ---------------------------------------------------------------- result identity
+_RESULT_OPEN_STATUSES = {"success", "no_trades"}
+_RESULT_PROBLEM_STATUSES = {"error", "failed", "timeout", "cancelled", "stale"}
+
+def _normalize_condition_code(code: Any) -> str:
+    """조건식 identity용 코드 정규화: 개행/공백 차이로 해시가 흔들리지 않게 한다."""
+    text = str(code or "").replace("\r\n", "\n").replace("\r", "\n")
+    return "\n".join(line.rstrip() for line in text.strip().split("\n"))
+
+def _condition_code_hash(code: Any) -> Optional[str]:
+    normalized = _normalize_condition_code(code)
+    if not normalized:
+        return None
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+def _lookup_strategy_code(kind: str, name: Any) -> Optional[str]:
+    """strategy.db에서 현재 이름에 대응하는 코드를 읽는다. 실패/부재는 None(무예외)."""
+    if not name:
+        return None
+    spec = _KIND_TABLES.get(kind)
+    if spec is None:
+        return None
+    table, name_col, code_col = spec
+    con = _connect_strategy(readonly=True)
+    if con is None:
+        return None
+    try:
+        row = con.execute(
+            f'SELECT "{code_col}" FROM {table} WHERE "{name_col}" = ? LIMIT 1',
+            (str(name),),
+        ).fetchone()
+        return str(row[0]) if row and row[0] is not None else None
+    except sqlite3.Error:
+        return None
+    finally:
+        con.close()
+
+def _condition_identity(
+    buy_name: Any = "",
+    sell_name: Any = "",
+    *,
+    buy_code: Any = None,
+    sell_code: Any = None,
+    artifact_note: str = "",
+) -> Dict[str, Any]:
+    """code-hash-first condition identity. 이름만 있는 legacy evidence는 낮은 신뢰도로 표시한다."""
+    resolved_buy = buy_code
+    resolved_sell = sell_code
+    buy_hash = _condition_code_hash(resolved_buy)
+    sell_hash = _condition_code_hash(resolved_sell)
+    if buy_hash and sell_hash:
+        kind = "code_hash"
+        confidence = "high"
+        note = artifact_note or "provided_code_snapshot"
+    elif buy_hash or sell_hash:
+        kind = "code_hash"
+        confidence = "medium"
+        note = artifact_note or "partial_provided_code_snapshot"
+    else:
+        kind = "name_only_legacy"
+        confidence = "low"
+        note = artifact_note or "code_snapshot_missing_name_only_legacy"
+    return {
+        "kind": kind,
+        "buy_name": str(buy_name or ""),
+        "sell_name": str(sell_name or ""),
+        "buy_hash": buy_hash,
+        "sell_hash": sell_hash,
+        "display_name": " / ".join(x for x in (str(buy_name or ""), str(sell_name or "")) if x),
+        "confidence": confidence,
+        "artifact_note": note,
+    }
+
+def _resolve_artifact_path(raw: Any) -> Optional[str]:
+    if not raw:
+        return None
+    path = Path(str(raw))
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    try:
+        return str(path) if path.is_file() else None
+    except OSError:
+        return None
+
+def _rerun_spec_from_job(record: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    spec = record.get("spec") if isinstance(record, dict) else None
+    if not isinstance(spec, dict):
+        return None
+    allowed = {
+        "buy", "sell", "start", "end", "timeframe", "engines", "timeout", "divid_mode",
+        "one_code", "back_db_override", "mode", "param_space", "opt_method", "opt_objective",
+        "train_window_days", "test_window_days", "step_days", "sweep_action", "sweep_params",
+        "window_days",
+    }
+    return {k: v for k, v in spec.items() if k in allowed and v not in (None, "")}
+
+def _status_taxonomy(record: Dict[str, Any]) -> Dict[str, Any]:
+    """UI가 상태별 open/recover/rerun affordance를 일관되게 그리도록 파생 taxonomy를 만든다."""
+    status = str(record.get("status") or "pending")
+    phase = str(record.get("phase") or "")
+    mode = str((record.get("spec") or {}).get("mode", "backtest") or "backtest")
+    csv_exists = _resolve_artifact_path(record.get("csv_path")) is not None
+    mode_result = isinstance(record.get("mode_result"), dict) and bool(record.get("mode_result"))
+    openable = status == "no_trades" or csv_exists or mode_result
+    if phase == "stale" or status == "stale":
+        status_kind = "stale"
+        artifact_state = "lost_tracking"
+    elif openable and status not in _RESULT_OPEN_STATUSES:
+        status_kind = "recoverable"
+        artifact_state = "artifact_present_status_not_success"
+    elif status == "success" and not openable:
+        status_kind = "artifact_missing"
+        artifact_state = "success_without_openable_artifact"
+    elif status in _RESULT_OPEN_STATUSES:
+        status_kind = status
+        artifact_state = "openable" if openable else "empty_result"
+    elif status in _RESULT_PROBLEM_STATUSES:
+        status_kind = status
+        artifact_state = "terminal_without_openable_artifact"
+    else:
+        status_kind = status
+        artifact_state = "in_progress" if status in ("pending", "running") else "unknown"
+    actions: List[str] = []
+    if openable:
+        actions.append("open_result")
+    if csv_exists and status != "no_trades":
+        actions.append("open_report")
+    if status_kind in {"artifact_missing", "error", "failed", "timeout", "cancelled", "stale", "recoverable"}:
+        actions.append("rerun_same_condition")
+    if status_kind in {"artifact_missing", "stale", "recoverable"}:
+        actions.append("recover_result")
+    return {
+        "status_kind": status_kind,
+        "artifact_state": artifact_state,
+        "openable": openable,
+        "recoverable": "recover_result" in actions,
+        "open_actions": actions,
+        "source_type": "job",
+        "evidence_id": f"job:{record.get('job_id', '')}",
+        "rerun_spec": _rerun_spec_from_job(record),
+        "mode": mode,
+    }
+
+def _augment_job_payload(record: Dict[str, Any]) -> Dict[str, Any]:
+    if not isinstance(record, dict):
+        return record
+    spec = record.get("spec") or {}
+    out = dict(record)
+    out.update(_status_taxonomy(record))
+    out["condition_identity"] = _condition_identity(
+        spec.get("buy", ""), spec.get("sell", ""),
+        buy_code=spec.get("buy_code"),
+        sell_code=spec.get("sell_code"),
+        artifact_note="job_strategy_code_snapshot" if (spec.get("buy_code") or spec.get("sell_code")) else "job_record_name_only_legacy",
+    )
+    return out
+
+def _augment_job_listing(payload: Dict[str, Any]) -> Dict[str, Any]:
+    out = dict(payload or {})
+    out["jobs"] = [_augment_job_payload(j) for j in out.get("jobs", []) if isinstance(j, dict)]
+    out["count"] = len(out["jobs"])
+    return out
+
+def _augment_job_result(payload: Dict[str, Any], record: Dict[str, Any]) -> Dict[str, Any]:
+    out = dict(payload)
+    enriched = _augment_job_payload(record)
+    for key in (
+        "evidence_id", "source_type", "condition_identity", "status_kind", "artifact_state",
+        "openable", "recoverable", "open_actions", "rerun_spec",
+    ):
+        out[key] = enriched.get(key)
+    return out
+
+def _run_condition_identity(row: Dict[str, Any]) -> Dict[str, Any]:
+    return _condition_identity(
+        row.get("buy_name") or "", row.get("sell_name") or "",
+        buy_code=row.get("buy_code"),
+        sell_code=row.get("sell_code"),
+        artifact_note="run_generation_code_snapshot" if (row.get("buy_code") or row.get("sell_code")) else "run_generation_name_only_legacy",
+    )
 
 
 class HealthResponse(TypedDict):
@@ -244,7 +427,14 @@ def list_strategies(kind: str = "buy") -> Dict[str, Any]:
     table, name_col, code_col = spec
     con = _connect_strategy(readonly=True)
     if con is None:
-        return {"items": [], "count": 0, "kind": kind}
+        return {
+            "status": "error",
+            "reason": "strategy_db_unavailable",
+            "message": "전략 DB 조회 실패: strategy.db 연결 실패",
+            "items": [],
+            "count": 0,
+            "kind": kind,
+        }
     items: List[Dict[str, Any]] = []
     try:
         rows = con.execute(f'SELECT "{name_col}", "{code_col}" FROM {table}').fetchall()
@@ -257,12 +447,19 @@ def list_strategies(kind: str = "buy") -> Dict[str, Any]:
                 "length": len(str(code)),
                 "is_ailoop": _looks_ailoop(str(name)),
             })
-    except sqlite3.Error:
-        return {"items": [], "count": 0, "kind": kind}
+    except sqlite3.Error as exc:
+        return {
+            "status": "error",
+            "reason": f"strategy_list_failed: {exc}",
+            "message": "전략 DB 조회 실패: 조건식 목록을 읽을 수 없습니다.",
+            "items": [],
+            "count": 0,
+            "kind": kind,
+        }
     finally:
         con.close()
     items.sort(key=lambda r: r["name"])
-    return {"items": items, "count": len(items), "kind": kind}
+    return {"status": "ok", "items": items, "count": len(items), "kind": kind}
 
 
 def _looks_ailoop(name: str) -> bool:
@@ -276,22 +473,53 @@ def get_strategy(kind: str = "buy", name: str = "") -> Dict[str, Any]:
     """단일 조건식 코드 전문을 반환한다. 없으면 available=False."""
     spec = _KIND_TABLES.get(kind)
     if spec is None or not name:
-        return {"available": False, "name": name, "code": ""}
+        return {
+            "available": False,
+            "status": "error",
+            "reason": "invalid_kind_or_name",
+            "message": "조건식 종류와 이름이 필요합니다.",
+            "name": name,
+            "code": "",
+        }
     table, name_col, code_col = spec
     con = _connect_strategy(readonly=True)
     if con is None:
-        return {"available": False, "name": name, "code": ""}
+        return {
+            "available": False,
+            "status": "error",
+            "reason": "strategy_db_unavailable",
+            "message": "전략 DB 조회 실패: strategy.db 연결 실패",
+            "name": name,
+            "code": "",
+            "kind": kind,
+        }
     try:
         row = con.execute(
             f'SELECT "{code_col}" FROM {table} WHERE "{name_col}" = ?', (name,)
         ).fetchone()
-    except sqlite3.Error:
-        return {"available": False, "name": name, "code": ""}
+    except sqlite3.Error as exc:
+        return {
+            "available": False,
+            "status": "error",
+            "reason": f"strategy_lookup_failed: {exc}",
+            "message": "전략 DB 조회 실패: 조건식 코드를 읽을 수 없습니다.",
+            "name": name,
+            "code": "",
+            "kind": kind,
+        }
     finally:
         con.close()
     if row is None:
-        return {"available": False, "name": name, "code": ""}
-    return {"available": True, "name": name, "code": str(row[0] or ""), "kind": kind}
+        return {
+            "available": False,
+            "status": "missing",
+            "reason": "strategy_not_found",
+            "message": "조건식을 찾을 수 없습니다.",
+            "name": name,
+            "code": "",
+            "kind": kind,
+        }
+    return {"available": True, "status": "ok", "reason": "", "name": name, "code": str(row[0] or ""), "kind": kind}
 
 
 @backtest_router.post("/strategy/validate")
@@ -376,6 +604,322 @@ def extract_variables(payload: Dict[str, Any] = Body(default={})) -> Dict[str, A
         entry = {"name": name, "count": counts[name]}
         (known if name in vocab else unknown).append(entry)
     return {"known": known, "unknown": unknown, "total": len(counts)}
+
+
+def _safe_literal_eval_node(node: ast.AST) -> Any:
+    """Return ast.literal_eval(node) or None without executing strategy code."""
+    try:
+        return ast.literal_eval(node)
+    except (ValueError, SyntaxError, TypeError, MemoryError, RecursionError):
+        return None
+
+
+def _self_vars_row(index: Any, entry: Any) -> Optional[Dict[str, Any]]:
+    """Convert one legacy self.vars entry into a semantic sweep-builder row.
+
+    Legacy GUI optimization stores values like ``self.vars[0] = [[10, 30, 5], 20]``
+    or ``self.vars = {0: [[10, 30, 5], 20]}``. The web dashboard previews that
+    structure only; it never exec()'s arbitrary strategy code.
+    """
+    if isinstance(index, bool):
+        return None
+    try:
+        idx = int(index)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(entry, (list, tuple)) or len(entry) != 2:
+        return None
+    rng, default = entry
+    if not isinstance(rng, (list, tuple)) or len(rng) != 3:
+        return None
+    try:
+        lo, hi, step = (float(rng[0]), float(rng[1]), float(rng[2]))
+    except (TypeError, ValueError):
+        return None
+    if step == 0:
+        return None
+
+    def norm(v: float) -> Any:
+        return int(v) if float(v).is_integer() else v
+
+    return {
+        "index": idx,
+        "name": f"self.vars[{idx}]",
+        "min": norm(lo),
+        "max": norm(hi),
+        "step": norm(step),
+        "default": default,
+    }
+
+
+def _self_vars_roundtrip_code(rows: List[Dict[str, Any]]) -> str:
+    payload = {
+        int(r["index"]): [[r["min"], r["max"], r["step"]], r.get("default")]
+        for r in rows
+        if isinstance(r, dict) and r.get("index") is not None
+    }
+    return "self.vars = " + repr(payload) if payload else ""
+
+
+def _extract_self_vars_rows(code: str) -> Dict[str, Any]:
+    """Safely parse legacy self.vars range declarations for sweep preview."""
+    rows: Dict[int, Dict[str, Any]] = {}
+    refs: List[str] = []
+    try:
+        tree = ast.parse(str(code or ""))
+    except SyntaxError as exc:
+        return {
+            "available": False,
+            "adapter": "self.vars-range-preview",
+            "rows": [],
+            "refs": [],
+            "message": f"전략 코드 구문 오류로 self.vars를 해석할 수 없습니다: {exc}",
+            "reversible": False,
+            "roundtrip_available": False,
+            "roundtrip_code": "",
+            "exec_used": False,
+        }
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if (
+                isinstance(target, ast.Attribute)
+                and isinstance(target.value, ast.Name)
+                and target.value.id == "self"
+                and target.attr == "vars"
+            ):
+                literal = _safe_literal_eval_node(node.value)
+                if isinstance(literal, dict):
+                    for k, v in literal.items():
+                        row = _self_vars_row(k, v)
+                        if row:
+                            rows[int(row["index"])] = row
+                            refs.append(f"self.vars[{row['index']}]")
+            elif (
+                isinstance(target, ast.Subscript)
+                and isinstance(target.value, ast.Attribute)
+                and isinstance(target.value.value, ast.Name)
+                and target.value.value.id == "self"
+                and target.value.attr == "vars"
+            ):
+                idx_node = target.slice
+                if isinstance(idx_node, ast.Index):  # pragma: no cover - py<3.9 compatibility.
+                    idx_node = idx_node.value
+                idx = _safe_literal_eval_node(idx_node)
+                entry = _safe_literal_eval_node(node.value)
+                row = _self_vars_row(idx, entry)
+                if row:
+                    rows[int(row["index"])] = row
+                    refs.append(f"self.vars[{row['index']}]")
+
+    ordered = [rows[k] for k in sorted(rows)]
+    roundtrip_code = _self_vars_roundtrip_code(ordered)
+    return {
+        "available": bool(ordered),
+        "adapter": "self.vars-range-preview",
+        "rows": ordered,
+        "refs": sorted(set(refs)),
+        "message": (
+            f"self.vars {len(ordered)}개를 스윕 빌더 행으로 변환할 수 있습니다."
+            if ordered else "실행 없이 해석 가능한 self.vars 범위 선언이 없습니다."
+        ),
+        "reversible": bool(roundtrip_code),
+        "roundtrip_available": bool(roundtrip_code),
+        "roundtrip_code": roundtrip_code,
+        "exec_used": False,
+    }
+
+
+def _strategy_lookup_for_name(kind: str, name: str) -> Dict[str, Any]:
+    """Read one strategy code with explicit lookup status for legacy preview tools."""
+    spec = _KIND_TABLES.get(kind)
+    if spec is None or not name:
+        return {"available": False, "status": "error", "reason": "invalid_kind_or_name", "code": ""}
+    table, name_col, code_col = spec
+    con = _connect_strategy(readonly=True)
+    if con is None:
+        return {"available": False, "status": "error", "reason": "strategy_db_unavailable", "code": ""}
+    try:
+        row = con.execute(
+            f'SELECT "{code_col}" FROM {table} WHERE "{name_col}" = ? LIMIT 1',
+            (str(name),),
+        ).fetchone()
+    except sqlite3.Error as exc:
+        return {"available": False, "status": "error", "reason": f"strategy_lookup_failed: {exc}", "code": ""}
+    finally:
+        con.close()
+    if not row:
+        return {"available": False, "status": "missing", "reason": "strategy_not_found", "code": ""}
+    code = str(row[0] or "")
+    if not code.strip():
+        return {"available": False, "status": "empty_code", "reason": "strategy_code_empty", "code": ""}
+    return {"available": True, "status": "ok", "reason": "", "code": code}
+
+
+def _strategy_code_for_name(kind: str, name: str) -> str:
+    got = _strategy_lookup_for_name(kind, name)
+    return str(got.get("code", "") or "") if got.get("available") else ""
+
+
+@backtest_router.get("/legacy/self_vars")
+def legacy_self_vars(kind: str = "buy", name: str = "") -> Dict[str, Any]:
+    """Preview legacy self.vars ranges with semantic round-trip metadata."""
+    if kind not in ("buy", "sell") or not name:
+        return {
+            "available": False,
+            "adapter": "self.vars-range-preview",
+            "rows": [],
+            "refs": [],
+            "message": "매수/매도 조건식 이름이 필요합니다.",
+            "reversible": False,
+            "exec_used": False,
+            "roundtrip_available": False,
+            "roundtrip_code": "",
+        }
+    lookup = _strategy_lookup_for_name(kind, name)
+    if lookup.get("status") != "ok":
+        return {
+            "available": False,
+            "status": lookup.get("status"),
+            "reason": lookup.get("reason"),
+            "adapter": "self.vars-range-preview",
+            "rows": [],
+            "refs": [],
+            "message": (
+                "전략 DB 조회 실패로 self.vars를 해석할 수 없습니다."
+                if lookup.get("status") == "error" else "조건식을 찾을 수 없거나 코드가 비어 있습니다."
+            ),
+            "reversible": False,
+            "exec_used": False,
+            "roundtrip_available": False,
+            "roundtrip_code": "",
+            "kind": kind,
+            "name": name,
+        }
+    out = _extract_self_vars_rows(str(lookup.get("code", "")))
+    out.update({"kind": kind, "name": name, "status": "ok"})
+    return out
+
+
+def _literal_list_count(node: ast.AST) -> Optional[int]:
+    if isinstance(node, (ast.List, ast.Tuple)):
+        return len(node.elts)
+    value = _safe_literal_eval_node(node)
+    if isinstance(value, (list, tuple)):
+        return len(value)
+    return None
+
+
+def _extract_backfinder_preconditions(code: str) -> Dict[str, Any]:
+    """Check BackFinder-only self.tickcols/self.tickdata declarations without running code."""
+    has_cols = False
+    has_data = False
+    cols_count: Optional[int] = None
+    data_count: Optional[int] = None
+    try:
+        tree = ast.parse(str(code or ""))
+    except SyntaxError as exc:
+        return {
+            "precondition_ok": False,
+            "has_tickcols": False,
+            "has_tickdata": False,
+            "cols_count": None,
+            "data_count": None,
+            "run_enabled": False,
+            "message": f"전략 코드 구문 오류로 백파인더 사전 점검을 할 수 없습니다: {exc}",
+        }
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if (
+                isinstance(target, ast.Attribute)
+                and isinstance(target.value, ast.Name)
+                and target.value.id == "self"
+            ):
+                if target.attr == "tickcols":
+                    has_cols = True
+                    cols_count = _literal_list_count(node.value)
+                elif target.attr == "tickdata":
+                    has_data = True
+                    data_count = _literal_list_count(node.value)
+
+    if not has_cols or not has_data:
+        return {
+            "precondition_ok": False,
+            "has_tickcols": has_cols,
+            "has_tickdata": has_data,
+            "cols_count": cols_count,
+            "data_count": data_count,
+            "run_enabled": False,
+            "message": "self.tickcols와 self.tickdata가 모두 있어야 백파인더용 전략입니다.",
+        }
+    if cols_count is None or data_count is None:
+        return {
+            "precondition_ok": False,
+            "has_tickcols": has_cols,
+            "has_tickdata": has_data,
+            "cols_count": cols_count,
+            "data_count": data_count,
+            "run_enabled": False,
+            "message": "self.tickcols/self.tickdata는 실행 없이 해석 가능한 리스트 리터럴이어야 합니다.",
+        }
+    ok = cols_count == data_count
+    return {
+        "precondition_ok": ok,
+        "has_tickcols": has_cols,
+        "has_tickdata": has_data,
+        "cols_count": cols_count,
+        "data_count": data_count,
+        "run_enabled": False,
+        "message": (
+            "백파인더 사전 조건 통과 — 현재 웹 UI는 안전 점검만 제공하고 원본 GUI 실행은 연결하지 않습니다."
+            if ok else "self.tickcols의 개수와 self.tickdata의 개수가 일치하지 않습니다."
+        ),
+    }
+
+
+@backtest_router.get("/backfinder/preflight")
+def backfinder_preflight(kind: str = "buy", name: str = "") -> Dict[str, Any]:
+    """BackFinder staged UI preflight; validates self.tickcols/tickdata before any run wiring."""
+    if kind not in ("buy", "sell") or not name:
+        return {
+            "available": False,
+            "kind": kind,
+            "name": name,
+            "precondition_ok": False,
+            "has_tickcols": False,
+            "has_tickdata": False,
+            "cols_count": None,
+            "data_count": None,
+            "run_enabled": False,
+            "message": "매수/매도 조건식 이름이 필요합니다.",
+        }
+    lookup = _strategy_lookup_for_name(kind, name)
+    if lookup.get("status") != "ok":
+        return {
+            "available": False,
+            "status": lookup.get("status"),
+            "reason": lookup.get("reason"),
+            "kind": kind,
+            "name": name,
+            "precondition_ok": False,
+            "has_tickcols": False,
+            "has_tickdata": False,
+            "cols_count": None,
+            "data_count": None,
+            "run_enabled": False,
+            "message": (
+                "전략 DB 조회 실패로 백파인더 사전 점검을 할 수 없습니다."
+                if lookup.get("status") == "error" else "조건식을 찾을 수 없거나 코드가 비어 있습니다."
+            ),
+        }
+    out = _extract_backfinder_preconditions(str(lookup.get("code", "")))
+    out.update({"available": True, "status": "ok", "kind": kind, "name": name})
+    return out
 
 
 def _compile_check(code: str) -> Dict[str, Any]:
@@ -569,11 +1113,15 @@ def run_backtest(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
                     "status": "error",
                     "message": "sweep 스펙 임시 파일 생성에 실패했습니다.",
                 }
+        buy_name = str(payload.get("buy", "") or "").strip()
+        sell_name = str(payload.get("sell", "") or "").strip()
         spec = BacktestJobSpec(
-            buy=str(payload.get("buy", "") or "").strip(),
-            sell=str(payload.get("sell", "") or "").strip(),
+            buy=buy_name,
+            sell=sell_name,
             start=int(payload.get("start", 0) or 0),
             end=int(payload.get("end", 0) or 0),
+            buy_code=_lookup_strategy_code("buy", buy_name),
+            sell_code=_lookup_strategy_code("sell", sell_name),
             timeframe=str(payload.get("timeframe", "min") or "min"),
             engines=int(payload.get("engines", 4) or 4),
             timeout=int(payload.get("timeout", 600) or 600),
@@ -599,7 +1147,7 @@ def run_backtest(payload: Dict[str, Any] = Body(default={})) -> Dict[str, Any]:
 @backtest_router.get("/jobs")
 def list_jobs() -> Dict[str, Any]:
     """모든 잡(최신순)."""
-    return get_job_manager().list_jobs()
+    return _augment_job_listing(get_job_manager().list_jobs())
 
 
 @backtest_router.get("/job")
@@ -607,7 +1155,7 @@ def get_job(job_id: str = "") -> Dict[str, Any]:
     """잡 상태 + 진행률 + 로그 테일(마지막 50줄)."""
     if not job_id:
         return {"available": False, "job_id": job_id}
-    return get_job_manager().get(job_id)
+    return _augment_job_payload(get_job_manager().get(job_id))
 
 
 @backtest_router.post("/job/cancel")
@@ -679,27 +1227,27 @@ def get_result(
     mode = str(spec.get("mode", "backtest") or "backtest")
     # wfo/sweep 모드 — csv 단일 분석 대신 구조화 결과(윈도우별/조합별 표)를 반환한다.
     if mode in ("wfo", "sweep"):
-        return {
+        return _augment_job_result({
             "available": True,
             "job_id": job_id,
             "status": status,
             "mode": mode,
             "mode_result": record.get("mode_result"),
             "message": record.get("message", ""),
-        }
+        }, record)
     # no_trades 는 csv_path 없이 정상 종결 — 빈 분석 구조를 반환한다.
     if status == "no_trades":
-        return {
+        return _augment_job_result({
             "available": True,
             "job_id": job_id,
             "status": status,
             "metrics": None,
             "analysis": analysis.full_analysis(None),
             "message": record.get("message", ""),
-        }
+        }, record)
     bundle = analysis.full_analysis(csv_path, t_start, t_end)
     ranged = t_start is not None or t_end is not None
-    return {
+    return _augment_job_result({
         "available": True,
         "job_id": job_id,
         "status": status,
@@ -707,7 +1255,7 @@ def get_result(
         "metrics": bundle["summary"] if ranged else record.get("metrics"),
         "analysis": bundle,
         "ranged": ranged,
-    }
+    }, record)
 
 
 def _analysis_for_job(
@@ -832,7 +1380,16 @@ def _result_for_run(run_id: str, gen_no: int) -> Dict[str, Any]:
             "available": True,
             "run_id": run_id,
             "gen_no": gen_no,
+            "evidence_id": f"gen:{run_id}:{int(gen_no)}",
+            "source_type": "generation",
+            "condition_identity": _run_condition_identity(row),
             "status": row.get("status"),
+            "status_kind": row.get("status") or "generation",
+            "artifact_state": "openable",
+            "openable": True,
+            "recoverable": False,
+            "open_actions": ["open_result"],
+            "rerun_spec": None,
             "metrics": bundle["summary"],
             "analysis": bundle,
             "has_csv": True,
@@ -850,7 +1407,16 @@ def _result_for_run(run_id: str, gen_no: int) -> Dict[str, Any]:
         "available": True,
         "run_id": run_id,
         "gen_no": gen_no,
+        "evidence_id": f"gen:{run_id}:{int(gen_no)}",
+        "source_type": "generation",
+        "condition_identity": _run_condition_identity(row),
         "status": row.get("status"),
+        "status_kind": row.get("status") or "generation",
+        "artifact_state": "metrics_only_csv_missing",
+        "openable": True,
+        "recoverable": False,
+        "open_actions": ["open_result"],
+        "rerun_spec": None,
         "metrics": fallback_metrics,
         "analysis": analysis.full_analysis(None),
         "has_csv": False,
@@ -968,6 +1534,17 @@ def _demo_result() -> Dict[str, Any]:
         "is_demo": True,
         "job_id": "",
         "status": "success",
+        "evidence_id": f"demo:{_DEMO_JOB_ID}",
+        "source_type": "demo",
+        "condition_identity": _condition_identity(
+            "demo_buy", "demo_sell", artifact_note="synthetic_demo_name_only"
+        ),
+        "status_kind": "success",
+        "artifact_state": "openable" if csv_path else "synthetic_metrics_only",
+        "openable": True,
+        "recoverable": False,
+        "open_actions": ["open_result"],
+        "rerun_spec": None,
         "metrics": bundle["summary"],
         "analysis": bundle,
         "message": "예시 데이터 — 실제 백테스트를 실행하면 이 자리에 결과가 표시됩니다.",

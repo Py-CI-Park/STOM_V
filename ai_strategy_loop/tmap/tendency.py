@@ -12,9 +12,19 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from ai_strategy_loop.tmap.template import parse_point_label
+
+# P4 — 1-D 경향성 분석 후 2차 grid로 교차검증할 표준 상호작용 쌍(역할 기준 사전선언).
+#   계획 P4: cap×take, cap×trail, take×trail. 두 1-D 고원의 교차가 면(mesa)으로도
+#   안정적인지 확인할 후보다. seed_902905 슬롯명 기준이며, 템플릿에 해당 슬롯이 없거나
+#   해당 변수의 plateau_score가 약하면 refine_candidates가 자동으로 건너뛴다(graceful).
+INTERACTION_PAIRS: Tuple[Tuple[str, str], ...] = (
+    ("cap_max", "take_hard"),
+    ("cap_max", "trail_start"),
+    ("take_hard", "trail_keep"),
+)
 
 
 def _runs_db_path() -> Path:
@@ -297,3 +307,71 @@ def grid_summary(run_id: str, db_path: Optional[str] = None) -> Dict[str, Any]:
         "mesa_cells": sorted(mesa, key=lambda c: -c["profit"]),
     })
     return out
+
+
+def refine_candidates(
+    summary: Dict[str, Any],
+    *,
+    template: Optional[Any] = None,
+    interaction_pairs: Sequence[Tuple[str, str]] = INTERACTION_PAIRS,
+    min_plateau_score: float = 0.0,
+) -> Dict[str, Any]:
+    """P4 coarse-to-fine의 'fine' 진입점 — 1-D 경향성 요약에서 2차 grid 후보를 추천한다.
+
+    coarse(1-D coordinate_points 스윕)가 변수별 plateau_score를 냈을 때, 그 다음 어느
+    두 변수를 grid_points로 면(2-D) 검증할지 고른다(순수·advisory):
+      1. plateau_score 내림차순으로 변수를 랭크한다.
+      2. strong(plateau_score > min_plateau_score) 변수만 후보로 본다 — 적자/고원 없는
+         변수는 grid 낭비라 배제한다.
+      3. 사전선언 interaction_pairs 중 **두 변수가 모두 strong**인 첫 쌍을 우선 추천한다
+         (cap×take 등 알려진 상호작용 — 도메인 사전지식 반영).
+      4. 해당 쌍이 없으면 상위 2개 strong 변수의 쌍을 fallback 추천한다.
+
+    추천 쌍의 변수는 항상 summary에 존재하므로 grid_points(template, a, b)가 KeyError 없이
+    돈다. **백엔드/게이트/선택 규율을 일절 바꾸지 않는다**(advisory 계약 — summarize_tendency·
+    grid_summary와 동일). 데이터 부족(strong < 2)이면 recommended_grid=None.
+
+    Args:
+        summary: summarize_tendency 출력({"params": {name: {"plateau_score": ...}}}).
+        template: (선택) TemplateSpec. 주어지면 strong 변수를 템플릿 슬롯명으로 교차검증해
+            recommended_grid가 항상 grid_points로 KeyError 없이 도는 것을 보장한다(향후 live
+            배선 시 안전판). 미지정 시 summary가 같은 템플릿의 summarize_tendency 출력이라는
+            전제에서만 grid_points 안전이 보장된다.
+        interaction_pairs: 우선 검토할 사전선언 쌍(기본 INTERACTION_PAIRS). 자기쌍(a==b)은 무시.
+        min_plateau_score: 이 값 초과 plateau_score만 strong으로 본다(기본 0.0=흑자 고원).
+
+    Returns:
+        {
+          "ranked": [(param, plateau_score), ...],   # plateau_score 내림차순(동률은 이름순=결정론).
+          "recommended_grid": (param_a, param_b) | None,
+          "source": "interaction_pair" | "top2" | None,
+          "passed_threshold": bool,                   # strong 변수가 2개 이상인가.
+        }
+    """
+    params = (summary or {}).get("params") or {}
+    # plateau_score 내림차순, 동률은 이름 오름차순으로 결정론적 정렬(재현성).
+    ranked: List[Tuple[str, float]] = sorted(
+        ((name, float((info or {}).get("plateau_score") or 0.0)) for name, info in params.items()),
+        key=lambda kv: (-kv[1], kv[0]),
+    )
+    if template is not None:
+        valid = {p.name for p in getattr(template, "params", ())}
+        ranked = [(n, s) for n, s in ranked if n in valid]
+    strong = [name for name, score in ranked if score > min_plateau_score]
+    strong_set = set(strong)
+
+    recommended: Optional[Tuple[str, str]] = None
+    source: Optional[str] = None
+    for a, b in interaction_pairs:
+        if a != b and a in strong_set and b in strong_set:  # 자기쌍 방어.
+            recommended, source = (a, b), "interaction_pair"
+            break
+    if recommended is None and len(strong) >= 2:
+        recommended, source = (strong[0], strong[1]), "top2"
+
+    return {
+        "ranked": ranked,
+        "recommended_grid": recommended,
+        "source": source,
+        "passed_threshold": len(strong) >= 2,
+    }

@@ -20,6 +20,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.brain.generator import generate_strategy  # noqa: E402
 from ai_strategy_loop.brain.token_check import DedupTracker  # noqa: E402
+from ai_strategy_loop.controller.condition_discovery_feedback import build_pattern_card  # noqa: E402
 
 BAD_BUY = "```python\nimport os\n매수 = True\nif 매수:\n    self.Buy()\n```"
 GOOD_BUY = (
@@ -147,3 +148,44 @@ def test_generator_dedup_rejects_then_succeeds():
         assert result["status"] == "ok", result
         assert result["attempts"] == 2
         assert "현재가 < 500" in result["code"]
+def test_generator_pattern_card_guard_retries_before_save():
+    copied = GOOD_BUY
+    other_good = (
+        "```python\n"
+        "매수 = True\n"
+        "if 현재가 < 500:\n"
+        "    매수 = False\n"
+        "if 매수:\n"
+        "    self.Buy()\n"
+        "```"
+    )
+    card = build_pattern_card(
+        card_id="seed-copy",
+        source_label="seed_db:test",
+        side="buy",
+        expression="매수 = True\nif not (3 <= 등락율 <= 25):\n    매수 = False\nelif not (체결강도 >= 100):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+        pattern_summary="copy candidate",
+        variable_families=["return", "orderflow"],
+    )
+    provider = _ScriptedProvider([copied, other_good])
+    with tempfile.TemporaryDirectory() as tmp:
+        db_path = os.path.join(tmp, "s.db")
+        result = generate_strategy(
+            provider,
+            "buy",
+            "X",
+            db_path,
+            retry_max=2,
+            pattern_cards=[card],
+        )
+        assert result["status"] == "ok", result
+        assert result["attempts"] == 2
+        assert "현재가 < 500" in result["code"]
+
+        con = sqlite3.connect(db_path)
+        try:
+            rows = con.execute('SELECT "전략코드" FROM stockbuy WHERE "index" = ?', ("X",)).fetchall()
+        finally:
+            con.close()
+        assert len(rows) == 1
+        assert "현재가 < 500" in rows[0][0]

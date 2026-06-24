@@ -19,7 +19,7 @@ const {
 } = React;
 
 const RESEARCH_TABS = [
-  { id: "edge", label: "엣지(승률·기대값)" },
+  { id: "edge", label: "탐색 히트맵 · Edge Ratio" },
   { id: "feature", label: "변수 중요도" },
   { id: "correlation", label: "상관관계" },
   { id: "combos", label: "변수 조합" },
@@ -107,9 +107,7 @@ function _RlProcessFlowOverlay({ onClose, activeStage }) {
 
 function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
   const [tab, setTab] = useState_rl("edge");
-  const [fullscreen, setFullscreen] = useState_rl(false);  /* 전체 화면 토글. */
   const [opsStrip, setOpsStrip] = useState_rl(null);       /* 탭 공통 운영 띠. */
-  const [showFlow, setShowFlow] = useState_rl(false);      /* E10 — 프로세스 흐름 오버레이. */
   const [opsError, setOpsError] = useState_rl(null);
 
   useEffect_rl(() => {
@@ -181,7 +179,7 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
       <div>
         <_CorrelationControls method={method} setMethod={setMethod} axis={axis} setAxis={setAxis}
                               loading={loading} pooledTrades={data && data.pooled_trades}
-                              featureCount={data && data.feature_count} />
+                              featureCount={data && data.feature_count} runId={runId} />
         <FeatureImportancePanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
       </div>
     );
@@ -196,7 +194,7 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
       <div className="research-lab-panel">
         <_CorrelationControls method={method} setMethod={setMethod} axis={axis} setAxis={setAxis}
                               loading={loading} pooledTrades={data && data.pooled_trades}
-                              featureCount={data && data.feature_count} />
+                              featureCount={data && data.feature_count} runId={runId} />
         <_CorrelationHeatmap rows={matrixRows.length ? matrixRows : outcomeRows} />
         <_RangeSummaryList rows={rangeRows} />
         <_SegmentSummaryList summary={segmentSummary} axis={axis} />
@@ -208,7 +206,7 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
       <div className="research-lab-panel">
         <_CorrelationControls method={method} setMethod={setMethod} axis={axis} setAxis={setAxis}
                               loading={loading} pooledTrades={data && data.pooled_trades}
-                              featureCount={data && data.feature_count} />
+                              featureCount={data && data.feature_count} runId={runId} />
         {pairRows.length
           ? <_CombinationList rows={pairRows} />
           : <_ResearchEmptyState message="명시적 변수 조합 후보가 없습니다. interaction_candidates 또는 top_pairs 응답이 필요합니다." />}
@@ -216,16 +214,10 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
     );
   }
 
-  const shellStyle = fullscreen
-    ? { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999,
-        background: "#0d1117", overflow: "auto", padding: "12px 18px" }
-    : undefined;
   const activeOps = !opsError && opsStrip ? (opsStrip.active || []) : [];
   const recentOps = !opsError && opsStrip ? (opsStrip.recent || []) : [];
   /* E1 — '모드/대상' 라벨을 명시(이전엔 "운영 연구 결과"류 평문이라 의미 불명). */
   const labMode = opsError ? "상태 오류" : (activeOps.length ? "운영(실행 중)" : "연구(분석)");
-  /* E10 — 활성 단계 추정: 실행 중 작업이 있으면 백테 평가(3) 단계로 강조, 없으면 정적(-1). */
-  const flowActiveStage = activeOps.length ? 3 : -1;
   const openWorkbench = useCallback_rl(() => {
     if (typeof onOpenWorkbench === "function") {
       onOpenWorkbench();
@@ -240,7 +232,7 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
     }
   }, [onOpenWorkbench]);
   return (
-    <div className="research-lab-shell" style={shellStyle}>
+    <div className="research-lab-shell">
       <div className="research-section-filter" aria-label="연구실 섹션 필터">
         {RESEARCH_TABS.map(item => (
           <button key={item.id}
@@ -251,25 +243,12 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
             {item.label}
           </button>
         ))}
-        {/* E10 — 진화 전체 프로세스를 흐름으로 보는 오버레이(자족형, 어느 페이지에서도 동작). */}
-        <button type="button" className="research-filter-action"
-                title="시드→생성→격자→백테→게이트→OOS→동결 전체 흐름과 용어 보기"
-                onClick={() => setShowFlow(true)}>
-          🧭 프로세스 설명
-        </button>
         {/* E2 — 분석 워크벤치로 SPA 전환(standalone pro.html 풀리로드 하드링크 금지). */}
         <button type="button" className="research-filter-action"
                 title="진화 홈 하위 분석 워크벤치로 전환해 히트맵·명예의전당·비교·히스토리를 봅니다."
                 onClick={openWorkbench}>
           🔬 상세 워크벤치
         </button>
-        <button type="button" className="research-filter-action"
-                onClick={() => setFullscreen(!fullscreen)}>
-          {fullscreen ? "✕ 전체 화면 닫기" : "⛶ 전체 화면"}
-        </button>
-      </div>
-      <div className="readability-note lab-readability-note">
-        연구실 내부 메뉴는 하위 탭이 아니라 분석 종류를 고르는 필터입니다. 위키·컨텍스트·run 분석은 같은 연구실 화면 안에서 유지됩니다.
       </div>
       <div className="lab-glossary" aria-label="연구실 용어 설명">
         <span><b>엣지</b> 조건이 실제로 유리한 구간</span>
@@ -316,14 +295,6 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
         </div>
       )}
       {body}
-      {/* E10 — research-pro.jsx가 로드된 페이지면 더 풍부한 전역 오버레이를, 아니면 자족형. */}
-      {showFlow && (typeof window.ResearchProcessFlowOverlay === "function"
-        ? React.createElement(window.ResearchProcessFlowOverlay, {
-            onClose: () => setShowFlow(false),
-            liveState: activeOps.length ? { status: "running" } : null,
-            ops: opsStrip,
-          })
-        : <_RlProcessFlowOverlay onClose={() => setShowFlow(false)} activeStage={flowActiveStage} />)}
     </div>
   );
 }

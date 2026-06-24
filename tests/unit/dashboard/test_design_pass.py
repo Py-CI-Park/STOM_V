@@ -32,8 +32,8 @@ class TestSectionLabelPromotion:
     def test_section_label_call_sites_preserved(self) -> None:
         # 통합 레이아웃 계약(연구패널 순서) 유지 — 호출부 text= 단언 보존.
         app = _read("app.jsx")
-        assert 'text="Research Lab"' in app
-        assert 'text="Run Monitor"' in app
+        assert 'text="연구실 종합 · 탐색/변수/검증"' in app
+        assert 'text="조건식 AI Live Monitor"' in app
 
     def test_section_label_css_visual_hierarchy(self) -> None:
         css = _read("styles.css")
@@ -64,8 +64,8 @@ class TestResearchPanelsRetained:
     def test_all_four_research_panels_still_mounted(self) -> None:
         app = _read("app.jsx")
         dp = _read("dashboard-pages.jsx")
-        assert "<ResearchLabPanel" in app          # 진화 사이드바 + 연구실 탭 양쪽(통합 레이아웃 계약 락).
-        assert "ResearchHeatmapPanel" in app        # 사용자 요청 + test_sim_phase6_1 계약(진화 유지).
-        # P2(2026-06-14): Wiki/AIContext 는 진화 사이드바에서 제거 → 연구실 탭(dashboard-pages.jsx) 홈으로(P1).
-        assert "<ResearchWikiPanel" in dp           # 새 홈: LabPage.
-        assert "<AIContextPanel" in dp              # 새 홈: LabPage.
+        assert "ResearchLabPanel" in app           # 조건식 AI 홈에 연구실 분석 전체를 직접 통합.
+        assert "LabPanel = window.ResearchLabPanel" in dp
+        assert '<LabPanel baseUrl={base} wsStatus="na" runId={runId}' in dp
+        assert "<ResearchWikiPanel" in dp           # 연구실 하단 접힘 위키/컨텍스트 유지.
+        assert "<AIContextPanel" in dp              # 연구실 하단 접힘 위키/컨텍스트 유지.

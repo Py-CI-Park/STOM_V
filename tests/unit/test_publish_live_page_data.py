@@ -1,9 +1,9 @@
 """M1 — `_publish_live`가 contract v2 page_data를 운반하는지 단위 테스트.
 
 검증:
-  - `_publish_live(..., page_data={...})` 호출 시 발행되는 LoopState에 그 page_data가
-    실린다.
-  - page_data 무인자(기존 호출부)면 빈 dict로 발행된다(하위호환).
+  - `_publish_live(..., page_data={...})` 호출 시 발행되는 LoopState가 기존 page_data를
+    보존하고 condition-discovery 거버넌스 섹션을 가산한다.
+  - page_data 무인자(기존 호출부)여도 condition-discovery 거버넌스 섹션은 발행된다.
   - 발행은 publish_loop_state를 통하므로, 그 함수를 가로채 발행 페이로드를 검사한다.
 
 네트워크/실DB 미사용: 인메모리 tmp DB에 세대 1개만 기록하고 _publish_live를 직접 호출한다.
@@ -36,7 +36,7 @@ def _make_state_with_one_gen(tmp_path):
 
 
 def test_publish_live_carries_page_data(monkeypatch, tmp_path):
-    """page_data를 주면 발행 LoopState.page_data에 그대로 실린다."""
+    """page_data를 주면 기존 키를 보존하고 condition_discovery를 가산한다."""
     st, rid = _make_state_with_one_gen(tmp_path)
     captured = {}
     # publish_loop_state를 가로채 발행 객체를 캡처(파일 IO 회피).
@@ -53,12 +53,15 @@ def test_publish_live_carries_page_data(monkeypatch, tmp_path):
 
     snap = captured.get("snap")
     assert snap is not None
-    assert snap.page_data == page_data
+    assert snap.page_data["autopsy"] == page_data["autopsy"]
+    assert snap.page_data["meta"] == page_data["meta"]
+    assert snap.page_data["condition_discovery"]["schema_version"] == 1
+    assert snap.page_data["advisory_scores"]["authority_guard"]["score_can_promote"] is False
     assert snap.contract_version == 2
 
 
 def test_publish_live_defaults_page_data_empty(monkeypatch, tmp_path):
-    """page_data 무인자(기존 호출부) → 빈 dict로 발행(하위호환)."""
+    """page_data 무인자(기존 호출부) → condition-discovery 거버넌스 page_data 발행."""
     st, rid = _make_state_with_one_gen(tmp_path)
     captured = {}
     monkeypatch.setattr(L, "publish_loop_state", lambda snapshot: captured.update(snap=snapshot))
@@ -73,7 +76,50 @@ def test_publish_live_defaults_page_data_empty(monkeypatch, tmp_path):
 
     snap = captured.get("snap")
     assert snap is not None
-    assert snap.page_data == {}
+    assert snap.page_data["condition_discovery"]["schema_version"] == 1
+    assert snap.page_data["condition_feedback"]["pattern_cards"]["status"] == "empty"
+
+def test_publish_live_repairs_partial_condition_discovery_page_data(monkeypatch, tmp_path):
+    """partial governance page_data must not suppress advisory/feedback sections."""
+    st, rid = _make_state_with_one_gen(tmp_path)
+    captured = {}
+    monkeypatch.setattr(L, "publish_loop_state", lambda snapshot: captured.update(snap=snapshot))
+
+    L._publish_live(
+        st, rid, LoopConfig(provider="gpt_auth", max_generations=3),
+        status="running", current_gen=0, cumulative_tokens=10,
+        phase="채점중",
+        page_data={"condition_discovery": {"schema_version": 1, "status": "caller_partial"}},
+    )
+    st.close()
+
+    snap = captured["snap"]
+    assert snap.page_data["condition_discovery"]["status"] == "ok"
+    assert snap.page_data["advisory_scores"]["authority_guard"]["score_can_promote"] is False
+    assert snap.page_data["condition_feedback"]["pattern_cards"]["status"] == "empty"
+
+
+def test_publish_live_condition_discovery_projection_fails_closed(monkeypatch, tmp_path):
+    st, rid = _make_state_with_one_gen(tmp_path)
+    captured = {}
+    monkeypatch.setattr(L, "publish_loop_state", lambda snapshot: captured.update(snap=snapshot))
+
+    def boom(*args, **kwargs):
+        raise TypeError("bad hypothesis payload")
+
+    monkeypatch.setattr(L, "_build_condition_discovery_page_sections", boom)
+    config = LoopConfig(provider="gpt_auth", max_generations=3)
+    L._publish_live(
+        st, rid, config,
+        status="running", current_gen=0, cumulative_tokens=10,
+        phase="채점중",
+    )
+    st.close()
+
+    snap = captured["snap"]
+    assert snap.page_data["condition_discovery"]["status"] == "error"
+    assert snap.page_data["advisory_scores"]["authority_guard"]["score_can_promote"] is False
+    assert snap.page_data["condition_feedback"]["pattern_cards"]["status"] == "unavailable"
 
 
 def test_publish_live_page_data_survives_json_serialization(monkeypatch, tmp_path):
@@ -97,4 +143,5 @@ def test_publish_live_page_data_survives_json_serialization(monkeypatch, tmp_pat
     snap = captured["snap"]
     # current_state.json → WS가 하는 직렬화/역직렬화를 재현.
     revalidated = C.LoopState.model_validate(json.loads(snap.model_dump_json()))
-    assert revalidated.page_data == page_data
+    assert revalidated.page_data["lineage"] == page_data["lineage"]
+    assert revalidated.page_data["condition_discovery"]["schema_version"] == 1

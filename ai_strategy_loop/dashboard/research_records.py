@@ -60,7 +60,7 @@ class ResearchRecordDetailResponse(TypedDict):
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EVIDENCE_ROOT = REPO_ROOT / ".omo" / "evidence" / "tmap-walkforward"
-_SAFE_CAMPAIGN = re.compile(r"^[A-Za-z0-9_.-]{1,160}$")
+_SAFE_CAMPAIGN = re.compile(r"^[A-Za-z0-9_.-]{1,120}$")
 
 
 def _empty_artifacts() -> CampaignArtifacts:

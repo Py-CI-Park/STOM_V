@@ -428,16 +428,16 @@ async function runV2() {
 //   process so their data/live-flow components render; IDLE is enough for the others). The index App
 //   auto-mounts and must derive its route from location.pathname, not stale storage.
 const V3_TABS = [
-  { tab: "evolution-overview", path: "/ui/evolution", state: RUNNING_STATE, selectedNeedles: ["진화 홈", "개요"] },
+  { tab: "evolution-overview", path: "/ui/evolution", state: RUNNING_STATE, selectedNeedles: ["조건식 AI"] },
   { tab: "backtest", path: "/ui/backtest", state: IDLE_STATE, selectedNeedles: ["백테스트"] },
   { tab: "chart-replay", path: "/ui/chart-replay", state: IDLE_STATE, selectedNeedles: ["차트 리플레이"] },
-  { tab: "records", path: "/ui/evolution/records", state: IDLE_STATE, selectedNeedles: ["진화 홈", "기록 검색"], expectRecordsIndex: true },
-  { tab: "lab", path: "/ui/evolution/lab", state: IDLE_STATE, selectedNeedles: ["진화 홈", "연구실"] },
-  { tab: "workbench", path: "/ui/evolution/workbench", state: IDLE_STATE, selectedNeedles: ["진화 홈", "분석 워크벤치"] },
-  { tab: "verdict", path: "/ui/evolution/verdict", state: IDLE_STATE, selectedNeedles: ["진화 홈", "결정 감사"] },
-  { tab: "process", path: "/ui/evolution/process", state: RUNNING_STATE, selectedNeedles: ["진화 홈", "프로세스"], expectIframe: true, expectProcessLive: true },
+  { tab: "records", path: "/ui/evolution/records", state: IDLE_STATE, selectedNeedles: ["조건식 AI", "히스토리"], expectRecordsIndex: true },
+  { tab: "lab", path: "/ui/evolution/lab", state: IDLE_STATE, selectedNeedles: ["조건식 AI", "연구실"] },
+  { tab: "workbench", path: "/ui/evolution/workbench", state: IDLE_STATE, selectedNeedles: ["조건식 AI", "분석 워크벤치"] },
+  { tab: "verdict", path: "/ui/evolution/verdict", state: IDLE_STATE, selectedNeedles: ["조건식 AI", "결정 감사"] },
+  { tab: "process", path: "/ui/evolution/process", state: RUNNING_STATE, selectedNeedles: ["조건식 AI", "프로세스"], expectNoIframe: true, expectProcessLive: true },
 ];
-async function runTabOnce({ tab, path, state, selectedNeedles, expectIframe, expectProcessLive, expectRecordsIndex }) {
+async function runTabOnce({ tab, path, state, selectedNeedles, expectNoIframe, expectProcessLive, expectRecordsIndex }) {
   const { window, errs } = makeDom({ state, path, activeTab: "backtest", activeEvolutionTab: "verdict" });
   inject(window, read(resolve(FE, "vendor-react.js")));
   inject(window, read(resolve(FE, "vendor-react-dom.js")));
@@ -457,9 +457,8 @@ async function runTabOnce({ tab, path, state, selectedNeedles, expectIframe, exp
     .map((el) => (el.textContent || "").replace(/\s+/g, " ").trim());
   const selectedJoined = selectedTabs.join(" / ");
   const selectedOk = (selectedNeedles || []).every((needle) => selectedJoined.includes(needle));
-  const iframeEl = expectIframe ? root.querySelector('iframe[src*="/process_flow"]') : null;
-  const iframePresent = expectIframe ? iframeEl != null : undefined;
-  const iframeOk = expectIframe ? iframePresent === true : true;
+  const processIframeAbsent = expectNoIframe ? root.querySelector('iframe[src*="/process_flow"]') == null : undefined;
+  const iframeOk = expectNoIframe ? processIframeAbsent === true : true;
   const recordsIndexContent = expectRecordsIndex
     ? rootHtml.includes("Governed Research Index")
       && rootHtml.includes("Alpha Doc")
@@ -479,7 +478,7 @@ async function runTabOnce({ tab, path, state, selectedNeedles, expectIframe, exp
     tab, path, pass, rootNonEmpty, rootHtmlLen: rootHtml.length,
     errorBoundaryTripped: boundaryTripped, dynamicRequireErrors: dynReq,
     selectedTabs, selectedOk,
-    ...(expectIframe ? { iframePresent } : {}),
+    ...(expectNoIframe ? { processIframeAbsent } : {}),
     ...(expectRecordsIndex ? { recordsIndexContent } : {}),
     ...(expectProcessLive ? { processLiveStripPresent, processTimingGridPresent, processLatestLogVisible } : {}),
     errorCount: errs.length, errors: errs.slice(0, 10),
@@ -766,18 +765,18 @@ async function runProcessEdgeCase(spec) {
     || rootHtml.includes("Dashboard render error");
   const liveStrip = root.querySelector(".process-live-strip") != null;
   const timingGrid = root.querySelector(".process-timing-grid") != null;
-  const iframePresent = root.querySelector('iframe[src*="/process_flow"]') != null;
+  const processIframeAbsent = root.querySelector('iframe[src*="/process_flow"]') == null;
   const edgeText = root.textContent.includes("현재 노드") && root.textContent.includes("최근 로그");
   const selectedJoined = Array.from(root.querySelectorAll('[aria-selected="true"]')).map((el) => el.textContent || "").join(" ");
-  const selectedOk = selectedJoined.includes("진화 홈") && selectedJoined.includes("프로세스");
+  const selectedOk = selectedJoined.includes("조건식 AI") && selectedJoined.includes("프로세스");
   const pass = errs.length === 0 && dynReq.length === 0 && !boundaryTripped
-    && rootHtml.trim().length > 0 && liveStrip && timingGrid && iframePresent && edgeText && selectedOk;
+    && rootHtml.trim().length > 0 && liveStrip && timingGrid && processIframeAbsent && edgeText && selectedOk;
   return {
     name: spec.name,
     pass,
     liveStrip,
     timingGrid,
-    iframePresent,
+    processIframeAbsent,
     edgeText,
     selectedOk,
     rootHtmlLen: rootHtml.length,

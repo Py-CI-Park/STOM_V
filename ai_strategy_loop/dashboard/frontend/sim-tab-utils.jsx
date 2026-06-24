@@ -110,6 +110,28 @@ function _responsiveCols(count) {
   if (count <= 9) return 3;
   return 4;
 }
+// 렌더 전용 bar 예산 — 데이터 저장·seek·export·신호 계산은 full bars 를 유지하고,
+//   차트 컴포넌트에 넘기는 배열만 viewport/종목수 기반으로 잘라 렉을 줄인다.
+function _simRenderBudget(codeCount) {
+  const count = Math.max(1, Number(codeCount) || 1);
+  let width = 1280;
+  let dpr = 1;
+  try {
+    width = Math.max(320, Number(window.innerWidth) || 1280);
+    dpr = Math.max(1, Number(window.devicePixelRatio) || 1);
+  } catch (e) {}
+  const widthFactor = width >= 1800 ? 1.25 : width >= 1280 ? 1 : 0.72;
+  const countFactor = count >= 8 ? 0.35 : count >= 5 ? 0.5 : count >= 3 ? 0.75 : 1;
+  const dprFactor = dpr >= 2 ? 0.85 : 1;
+  return Math.max(80, Math.round(1600 * widthFactor * countFactor * dprFactor));
+}
+
+function _simRenderBars(bars, budget) {
+  const arr = Array.isArray(bars) ? bars : [];
+  const n = Math.max(1, Number(budget) || arr.length || 1);
+  return arr.length > n ? arr.slice(arr.length - n) : arr;
+}
+
 
 // baseUrl(http) → ws(ws/wss) URL.
 function _wsUrl(baseUrl, path) {
@@ -211,4 +233,4 @@ function _evalWatch(value, th) {
 }
 
 // Track Z — dual-safe ESM export. KEEP on ONE physical line.
-export { useState_sim, useEffect_sim, useCallback_sim, useRef_sim, useMemo_sim, _simFetchJson, _SIM_SPEEDS, _simWsBar, _SIM_MAX_CODES, _SIM_DEMO_SPEED, _SIM_ENGINE_MODES, _SIM_ENGINE_LS_KEY, _SIM_CHART_MODES, _SIM_SPLIT_LS_KEY, _SIM_ROWS_LS_KEY, _SIM_MAX_SPLIT_COLS, _SIM_IND_LS_KEY, _SIM_DEMO_LS_KEY, _simDemoSeen, _simMarkDemoSeen, _loadIndicators, _saveIndicators, _loadSplitCols, _saveSplitCols, _loadSplitRows, _saveSplitRows, _loadEngineMode, _saveEngineMode, _responsiveCols, _wsUrl, _simFmtDate, _simTileColor, _SIM_VIEWBAR_LABEL, _SIM_ENGINE_ROWS, _flattenSignals, _simFmtNum, _SIM_WATCH_VARS, _SIM_WATCH_LS_KEY, _loadWatchThresholds, _saveWatchThresholds, _evalWatch };
+export { useState_sim, useEffect_sim, useCallback_sim, useRef_sim, useMemo_sim, _simFetchJson, _SIM_SPEEDS, _simWsBar, _SIM_MAX_CODES, _SIM_DEMO_SPEED, _SIM_ENGINE_MODES, _SIM_ENGINE_LS_KEY, _SIM_CHART_MODES, _SIM_SPLIT_LS_KEY, _SIM_ROWS_LS_KEY, _SIM_MAX_SPLIT_COLS, _SIM_IND_LS_KEY, _SIM_DEMO_LS_KEY, _simDemoSeen, _simMarkDemoSeen, _loadIndicators, _saveIndicators, _loadSplitCols, _saveSplitCols, _loadSplitRows, _saveSplitRows, _loadEngineMode, _saveEngineMode, _responsiveCols, _simRenderBudget, _simRenderBars, _wsUrl, _simFmtDate, _simTileColor, _SIM_VIEWBAR_LABEL, _SIM_ENGINE_ROWS, _flattenSignals, _simFmtNum, _SIM_WATCH_VARS, _SIM_WATCH_LS_KEY, _loadWatchThresholds, _saveWatchThresholds, _evalWatch };

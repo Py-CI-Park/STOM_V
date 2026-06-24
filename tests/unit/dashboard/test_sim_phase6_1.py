@@ -157,7 +157,7 @@ class TestFrontendContracts:
     def test_app_jsx_keeps_simulation_mounted(self):
         src = (FRONTEND / "app.jsx").read_text(encoding="utf-8")
         assert "simVisited" in src
-        assert "ResearchHeatmapPanel" in src
+        assert "ResearchLabPanel" in src
 
     def test_lab_html_loads_research_lab_dependencies(self):
         # EdgeRatioPanel(analysis.jsx) 미로드 → ResearchLabPanel 렌더가 ReferenceError 로

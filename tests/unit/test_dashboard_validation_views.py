@@ -439,8 +439,8 @@ class TestFrontendContract:
         assert "promote_checklist" in src
         assert "/niche_compare" in src
         assert "니치 비교" in src
-        # 2026-06-11 — 전체 화면 토글·탭 공통 운영 띠 계약.
-        assert "전체 화면" in src
+        # 2026-06-24 — ResearchLabPanel fullscreen action was removed; only ops status strip remains.
+        assert "전체 화면" not in src
         assert "opsStrip" in src
         # E1/E2/E5(2026-06-11) — 전용 lab 페이지·수익곡선·히트맵 토글 계약.
         assert "/equity_curve" in src
@@ -493,7 +493,7 @@ class TestFrontendContract:
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # index.html 에 직접 존재하는 자산(벤더/스타일/빌드 번들).
-        assert "styles.css?v=20260620g004" in src   # G006/G007: readability/design tokens cache bust.
+        assert "styles.css?v=20260624u001" in src   # Ultragoal remaining-parity CSS cache bust.
         assert "vendor-lightweight-charts.js?v=20260612a" in src
         # Phase14.4/14.5: 운영 컴포넌트는 단일 번들 bundle/app.js(+stom-ui.js)로 로드.
         #   ?v= 는 content-hash(자동) — 값은 하드코딩하지 않는다(일관성은 test_p14 가 검증).

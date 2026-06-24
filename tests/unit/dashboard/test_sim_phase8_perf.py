@@ -60,3 +60,25 @@ def test_dirty_marked_on_data_indicator_hover_resize():
     assert "markDirty();   // 새 배치" in src or "markDirty();" in src
     assert "ResizeObserver" in src
     assert "markDirty()" in src
+
+
+def test_phase4_render_budget_is_render_only_and_preserves_full_store():
+    utils = (FRONTEND / "sim-tab-utils.jsx").read_text(encoding="utf-8")
+    root = (FRONTEND / "sim-tab-root.jsx").read_text(encoding="utf-8")
+
+    assert "function _simRenderBudget" in utils
+    assert "function _simRenderBars" in utils
+    assert "return arr.length > n ? arr.slice(arr.length - n) : arr" in utils
+
+    assert "const barsByCode = useMemo_sim(() => ({ ...barsRef.current }), [barsVersion]);" in root
+    assert "renderBarsByCode" in root
+    assert "barsByCode={renderBarsByCode}" in root
+    assert "const fullBars = barsByCode[code] || [];" in root
+    assert "bars: renderedBars" in root
+    assert "fullBarCount: fullBars.length" in root
+    assert "SimIndicatorTable codes={codes} barsByCode={barsByCode}" in root
+    assert "SimVariableWatch codes={codes} barsByCode={barsByCode}" in root
+    assert "signalErr" in root
+    assert "신호 로드 실패" in root
+    assert "리플레이 프레임 해석 실패" in root
+    assert "리플레이 프로토콜 오류" in root

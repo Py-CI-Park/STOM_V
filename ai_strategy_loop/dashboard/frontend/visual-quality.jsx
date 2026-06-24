@@ -1,11 +1,11 @@
 /* Visual regression and performance profiling surface for dashboard remodel work. */
 const VISUAL_BASELINE_TARGETS = [
-  { route: "evolution", label: "진화 홈", widths: [1440, 1180, 980], evidence: "run monitor + process + HoF + verdict cards" },
-  { route: "records", label: "기록 검색", widths: [1440, 1180, 980], evidence: "search/filter/detail split" },
+  { route: "evolution", label: "조건식 AI", widths: [1440, 1180, 980], evidence: "run monitor + process + HoF + verdict cards" },
+  { route: "records", label: "히스토리", widths: [1440, 1180, 980], evidence: "search/filter/detail split" },
   { route: "lab", label: "리서치 Wiki", widths: [1440, 1180, 980], evidence: "wiki/context/evidence workspace" },
   { route: "pro", label: "분석 워크벤치", widths: [1440, 1180, 980], evidence: "workbench and HoF responsibility" },
   { route: "verdict", label: "결정 감사", widths: [1440, 1180, 980], evidence: "append-only decision form/history" },
-  { route: "process", label: "프로세스", widths: [1440, 1180, 980], evidence: "live strip/timing/grid/iframe" },
+  { route: "process", label: "프로세스", widths: [1440, 1180, 980], evidence: "native live strip/timing/grid/log/default gates" },
   { route: "hof", label: "명예의 전당", widths: [1440, 1180, 980], evidence: "inventory fields and screenshots" },
 ];
 

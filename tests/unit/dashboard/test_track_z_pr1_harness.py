@@ -222,8 +222,8 @@ def test_track_z_v3_per_tab_render_sweep() -> None:
         assert r["pass"], f"V3 tab {name} failed: {r}"
     assert tabs["records"].get("recordsIndexContent") is True, (
         f"records 탭 governed index 콘텐츠 부재: {tabs['records']}")
-    assert tabs["process"].get("iframePresent") is True, (
-        f"process 탭 iframe 엘리먼트 부재: {tabs['process']}")
+    assert tabs["process"].get("processIframeAbsent") is True, (
+        f"process 탭은 /process_flow iframe 없이 네이티브로 렌더되어야 함: {tabs['process']}")
     assert tabs["process"].get("processLiveStripPresent") is True, (
         f"process 탭 실시간 스트립 부재: {tabs['process']}")
     assert tabs["process"].get("processTimingGridPresent") is True, (
@@ -282,7 +282,7 @@ def test_track_z_v6_process_edge_states() -> None:
         case = v6["cases"][name]
         assert case["liveStrip"], f"{name}: live strip missing"
         assert case["timingGrid"], f"{name}: timing grid missing"
-        assert case["iframePresent"], f"{name}: retained iframe missing"
+        assert case["processIframeAbsent"], f"{name}: legacy iframe should be absent"
         assert case["edgeText"], f"{name}: edge labels missing"
         assert not case["errorBoundaryTripped"], f"{name}: ErrorBoundary tripped"
         assert case["errorCount"] == 0, f"{name}: render errors {case['errors']}"

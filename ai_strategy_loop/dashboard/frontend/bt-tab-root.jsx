@@ -11,7 +11,7 @@ import { useState_bt, useEffect_bt, useCallback_bt, useMemo_bt, _btFetchJson } f
 import { BtDualEditor, BtLibraryPanel } from "./bt-tab-library.jsx";
 import { BtRunPanel, BtResultLibrary } from "./bt-tab-run.jsx";
 import { BtModeResultPanel } from "./bt-tab-mode-results.jsx";
-import { BtOverlayPanel, BtCollapsible, BtEvoSelector, BtPortfolioPanel } from "./bt-tab-analysis.jsx";
+import { BtOverlayPanel, BtCollapsible, BtEvoSelector, BtPortfolioPanel, BtBackFinderPreflightPanel } from "./bt-tab-analysis.jsx";
 
 // ===========================================================================
 // 탭 루트 — 헬스 배지 + 좌(라이브러리·에디터·실행) / 우(결과) 레이아웃.
@@ -220,6 +220,9 @@ function BacktestTab({ baseUrl, wsStatus }) {
               <BtLibraryPanel baseUrl={baseUrl} isDemo={isDemo} kind="sell" onKind={() => {}} lockKind
                               onPick={setSellName} selectedName={sellName} reloadKey={reloadKey} />
             </div>
+          </BtCollapsible>
+          <BtCollapsible title="백파인더 사전 점검(실행 전용 준비)" accent="var(--amber)" defaultOpen={false}>
+            <BtBackFinderPreflightPanel baseUrl={baseUrl} isDemo={isDemo} buyName={buyName} />
           </BtCollapsible>
         </div>
       )}

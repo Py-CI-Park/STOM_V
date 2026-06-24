@@ -42,6 +42,8 @@ UI_DEEP_LINKS = {
 UI_LEGACY_ALIASES = {
     "/ui/process": "/ui/evolution/process",
     "/ui/records": "/ui/evolution/records",
+    "/ui/history": "/ui/evolution/records",
+    "/ui/evolution/history": "/ui/evolution/records",
     "/ui/lab": "/ui/evolution/lab",
     "/ui/pro": "/ui/evolution/workbench",
     "/ui/verdict": "/ui/evolution/verdict",

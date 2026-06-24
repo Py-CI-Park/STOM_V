@@ -221,6 +221,15 @@ def test_content_hash_cache_consistency() -> None:
     index = _read(FRONTEND / "index.html")
     assert f"bundle/app.js?v={app_v}" in index, "index.html app.js ?v= 가 content-hash 와 불일치(stale)."
     assert f"bundle/stom-ui.js?v={stom_v}" in index, "index.html stom-ui.js ?v= 가 content-hash 와 불일치(stale)."
+    # CSS is not inside the JS manifest, but every served HTML entry must carry the same explicit
+    # cache pin so a styles.css edit cannot leave one route stale.
+    style_pins = {}
+    for entry in ("index.html", "lab.html", "pro.html", "verdict.html", "STOM AI Dashboard.html"):
+        html = _read(FRONTEND / entry)
+        marker = '/ui/styles.css?v='
+        assert marker in html, f"{entry} styles.css cache pin missing."
+        style_pins[entry] = html.split(marker, 1)[1].split('"', 1)[0]
+    assert len(set(style_pins.values())) == 1, f"styles.css cache pins diverged: {style_pins}"
     # 번들을 로드하는 다른 엔트리(lab/pro)도 stom-ui ?v= 일치.
     for entry in ("lab.html", "pro.html"):
         html = _read(FRONTEND / entry)

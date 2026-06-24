@@ -28,6 +28,7 @@ from ai_strategy_loop.scripts.gen_template_hypothesis import (  # noqa: E402
     build_prompt,
     registry_summary,
     main,
+    _CALLABLE_WHITELIST,
 )
 from ai_strategy_loop.tmap.template import TEMPLATE_DIR, load_template, render  # noqa: E402
 
@@ -121,6 +122,54 @@ class TestValidateHypothesis:
         del payload["params"][0]["note"]
         errors = validate_hypothesis(payload)
         assert errors, "params 키 누락이 감지되지 않음"
+
+
+# =====================================================================
+# 다밴드(여러 시간대×시총) 생성 역량 — 2026-06-14
+# =====================================================================
+
+class TestMultiBandGeneration:
+    """검증기·프롬프트가 시간대×시총 이산 분기(다밴드) 조건식을 지원하는지.
+
+    근거: 챔피언 THETA·T2C3(seed_902905 계열)가 곧 다밴드 구조다. 검증기가
+    이를 통과시켜야 생성기가 다밴드 시드를 재현·확장할 수 있다(2026-06-14
+    감사: 화이트리스트 누락으로 검증된 시드조차 재현 못 하던 것을 보강).
+    """
+
+    @pytest.mark.parametrize("tmpl_name", [
+        "seed_902905",          # 2밴드(902/905)
+        "seed_902905_t2late",   # 3밴드(T2C3 — 후반 시총 반전)
+        "seed_902905_r2full",
+    ])
+    def test_proven_multiband_seed_passes(self, tmpl_name: str) -> None:
+        """검증된 다밴드 시드를 LLM payload로 위장 → 오류 0(구조·어휘 통과)."""
+        t = load_template(tmpl_name)
+        payload = {
+            "name": f"llmgen_probe_{tmpl_name}",
+            "timeframe": t.timeframe,
+            "buy_template": t.buy_code,
+            "sell_template": t.sell_code,
+            "params": [
+                {"name": p.name, "default": p.default, "values": list(p.values),
+                 "side": p.side, "note": p.note}
+                for p in t.params
+            ],
+        }
+        errors = validate_hypothesis(payload)
+        assert errors == [], f"{tmpl_name} 다밴드 검증 실패: {errors}"
+
+    def test_shifted_scalar_accessors_whitelisted(self) -> None:
+        """검증된 시드가 쓰는 <스칼라>N(시프트) 접근자가 화이트리스트에 있어야."""
+        for name in ("초당거래대금N", "매수총잔량N", "매도총잔량N", "현재가N"):
+            assert name in _CALLABLE_WHITELIST, f"{name} 누락 — 검증된 시드 어휘"
+
+    def test_prompt_instructs_multiband(self) -> None:
+        """p5 프롬프트가 다밴드 생성을 지시하고 시드/T2C3 샘플·build_v5 실패를 포함."""
+        p = build_prompt("테스트 원리", registry_summary(), lessons_text="")
+        assert "시간대×시가총액 이산" in p           # 다밴드 과제 지시
+        assert "T2C3" in p                           # 다밴드 성공 예시
+        assert ("점수합산(build_v5)" in p or "점수 합산" in p)  # 합산 실패 예시
+        assert "self.Buy()" in p                     # 골격 샘플
 
 
 # =====================================================================

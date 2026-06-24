@@ -1,0 +1,561 @@
+{
+  "name": "llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1",
+  "timeframe": "min",
+  "source": "P5 LLM 가설 생성 (gen_template_hypothesis)",
+  "description": "분봉 전세션을 개장·오전·점심·오후로 나눈 뒤, 개장 09:00~10:00 중형주 누적매수 지속과 오후 13:00~15:00 다른 시총 재가속 MA돌파만 이산 분기로 분리해 홍수형 분봉 추격을 억제하는 구조.",
+  "buy_code": "매수 = False\n\nif 데이터길이 >= {min_len}:\n    if {b1_start} <= 시분초 < {b1_end}:\n        if {b1_cap_lo} <= 시가총액 < {b1_cap_hi}:\n            if (등락율 >= {b1_rate_min} and 등락율 <= {b1_rate_max}\n                and 당일거래대금 >= {b1_day_money_min}\n                and 분당거래대금 >= {b1_min_money_min}\n                and 분당거래대금 >= 분당거래대금평균({b1_money_avg_win}, 1) * {b1_money_burst}\n                and 분당매수수량 >= 누적분당매수수량({b1_buyqty_win}) / {b1_buyqty_win} * {b1_buyqty_accel}\n                and 누적분당매수수량({b1_cum_fast_win}) >= 누적분당매수수량({b1_cum_slow_win}) * {b1_cum_share}\n                and 현재가 >= 이동평균({b1_ma_win}, 1) * {b1_ma_mult}):\n                매수 = True\n    elif {b2_start} <= 시분초 < {b2_end}:\n        if {b2_cap_lo} <= 시가총액 < {b2_cap_hi}:\n            if (등락율 >= {b2_rate_min} and 등락율 <= {b2_rate_max}\n                and 당일거래대금 >= {b2_day_money_min}\n                and 분당거래대금 >= {b2_min_money_min}\n                and 분당거래대금 >= 분당거래대금평균({b2_money_avg_win}, 1) * {b2_money_burst}\n                and 분당매수수량 >= 누적분당매수수량({b2_buyqty_win}) / {b2_buyqty_win} * {b2_buyqty_accel}\n                and 누적분당매수수량({b2_cum_fast_win}) >= 누적분당매수수량({b2_cum_slow_win}) * {b2_cum_share}\n                and 현재가 >= 이동평균({b2_ma_win}, 1) * {b2_ma_mult}):\n                매수 = True\n\nif 매수:\n    self.Buy()",
+  "sell_code": "매도 = False\n\nif 수익률 >= {take_profit}:\n    매도 = True\nelif 수익률 <= -{stop_loss}:\n    매도 = True\nelif 최고수익률 >= {trail_start} and 수익률 <= 최고수익률 - {trail_gap}:\n    매도 = True\nelif 보유시간 >= {max_hold_sec}:\n    매도 = True\n\nif 매도:\n    self.Sell()",
+  "params": [
+    {
+      "name": "min_len",
+      "default": 20,
+      "values": [
+        5,
+        10,
+        20,
+        40,
+        60,
+        90
+      ],
+      "side": "buy",
+      "note": "분봉 지표가 충분히 형성된 뒤만 평가한다. 5~90분으로 초기 신호 허용부터 안정화 후 진입까지 넓게 탐색한다."
+    },
+    {
+      "name": "b1_start",
+      "default": 90000,
+      "values": [
+        90000,
+        90100,
+        90300,
+        90500,
+        91000
+      ],
+      "side": "buy",
+      "note": "밴드1 시작. 개장 구간 내부에서 첫 분봉 노이즈를 포함할지 배제할지 측정한다."
+    },
+    {
+      "name": "b1_end",
+      "default": 100000,
+      "values": [
+        93000,
+        94500,
+        100000,
+        101500,
+        103000
+      ],
+      "side": "buy",
+      "note": "밴드1 종료. 개장 09:00~10:00을 중심으로 약간의 오전 연장 여부까지 확인한다."
+    },
+    {
+      "name": "b1_cap_lo",
+      "default": 1000,
+      "values": [
+        300,
+        700,
+        1000,
+        1500,
+        2500,
+        4000
+      ],
+      "side": "buy",
+      "note": "밴드1 중형주 하한. 초소형 잡음을 제외하는 정도를 넓게 탐색한다."
+    },
+    {
+      "name": "b1_cap_hi",
+      "default": 12000,
+      "values": [
+        3000,
+        5000,
+        8000,
+        12000,
+        20000,
+        35000
+      ],
+      "side": "buy",
+      "note": "밴드1 중형주 상한. 기존 소형 시드와 겹치지 않게 3천억~3.5조까지 폭넓게 둔다."
+    },
+    {
+      "name": "b1_rate_min",
+      "default": 1.0,
+      "values": [
+        0.0,
+        0.5,
+        1.0,
+        2.0,
+        3.5,
+        5.0
+      ],
+      "side": "buy",
+      "note": "개장 수급 지속에 필요한 최소 상승률. 보합권 수급부터 강한 추세까지 포함한다."
+    },
+    {
+      "name": "b1_rate_max",
+      "default": 18.0,
+      "values": [
+        6.0,
+        9.0,
+        12.0,
+        18.0,
+        24.0,
+        30.0
+      ],
+      "side": "buy",
+      "note": "과열 상한. 너무 오른 분봉 추격을 피할지, 강한 주도주를 허용할지 측정한다."
+    },
+    {
+      "name": "b1_day_money_min",
+      "default": 3000,
+      "values": [
+        500,
+        1500,
+        3000,
+        7000,
+        15000,
+        30000
+      ],
+      "side": "buy",
+      "note": "당일거래대금 하한. 분봉 홍수형 신호를 줄이는 연속 밀도 조절축이다."
+    },
+    {
+      "name": "b1_min_money_min",
+      "default": 300,
+      "values": [
+        50,
+        150,
+        300,
+        700,
+        1500,
+        3000
+      ],
+      "side": "buy",
+      "note": "현재 분당거래대금 절대 하한. 느슨한 50백만원부터 강한 30억원 분봉까지 탐색한다."
+    },
+    {
+      "name": "b1_money_avg_win",
+      "default": 5,
+      "values": [
+        2,
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "side": "buy",
+      "note": "분당거래대금 재가속 기준 평균 창. 짧은 급증과 완만한 지속을 모두 포착한다."
+    },
+    {
+      "name": "b1_money_burst",
+      "default": 2.0,
+      "values": [
+        1.2,
+        1.5,
+        2.0,
+        3.0,
+        5.0,
+        7.0
+      ],
+      "side": "buy",
+      "note": "분당거래대금 재가속 배수. 1.2배 완만 재가속부터 7배 극단 발화까지 넓게 둔다."
+    },
+    {
+      "name": "b1_buyqty_win",
+      "default": 5,
+      "values": [
+        2,
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "side": "buy",
+      "note": "현재 분당매수수량을 비교할 누적 평균 창. 수급 가속의 시간 스케일을 측정한다."
+    },
+    {
+      "name": "b1_buyqty_accel",
+      "default": 1.5,
+      "values": [
+        1.0,
+        1.2,
+        1.5,
+        2.0,
+        3.0,
+        5.0
+      ],
+      "side": "buy",
+      "note": "현재 분당매수수량이 최근 평균 대비 얼마나 강해야 하는지의 배수다."
+    },
+    {
+      "name": "b1_cum_fast_win",
+      "default": 3,
+      "values": [
+        2,
+        3,
+        5,
+        8,
+        13
+      ],
+      "side": "buy",
+      "note": "누적 매수 지속의 빠른 창. 최근 몇 분 매수 집중을 볼지 정한다."
+    },
+    {
+      "name": "b1_cum_slow_win",
+      "default": 13,
+      "values": [
+        5,
+        8,
+        13,
+        21,
+        34
+      ],
+      "side": "buy",
+      "note": "누적 매수 지속의 느린 창. 오전 전체 수급 기반과 비교하기 위한 기준이다."
+    },
+    {
+      "name": "b1_cum_share",
+      "default": 0.35,
+      "values": [
+        0.2,
+        0.28,
+        0.35,
+        0.45,
+        0.6,
+        0.8
+      ],
+      "side": "buy",
+      "note": "빠른 누적매수수량이 느린 누적매수수량에서 차지해야 하는 비중. 최근 매수 집중도를 표현한다."
+    },
+    {
+      "name": "b1_ma_win",
+      "default": 5,
+      "values": [
+        2,
+        3,
+        5,
+        8,
+        13,
+        21
+      ],
+      "side": "buy",
+      "note": "개장 밴드 가격 재가속 확인용 이동평균 창. 직전 고가 대용의 짧은 MA 프록시다."
+    },
+    {
+      "name": "b1_ma_mult",
+      "default": 1.003,
+      "values": [
+        1.0,
+        1.001,
+        1.003,
+        1.006,
+        1.01,
+        1.02
+      ],
+      "side": "buy",
+      "note": "현재가가 이동평균 위에 있어야 하는 정도. 비용을 고려해 미세 돌파부터 강돌파까지 둔다."
+    },
+    {
+      "name": "b2_start",
+      "default": 130000,
+      "values": [
+        123000,
+        130000,
+        133000,
+        140000
+      ],
+      "side": "buy",
+      "note": "밴드2 시작. 점심 이후 재가속을 기본으로 하되 12:30 조기 재개 가능성도 확인한다."
+    },
+    {
+      "name": "b2_end",
+      "default": 150000,
+      "values": [
+        143000,
+        150000,
+        151000,
+        151500
+      ],
+      "side": "buy",
+      "note": "밴드2 종료. 오후 신호 가치 저하를 감안해 14:30 종료부터 15:15 근처까지 비교한다."
+    },
+    {
+      "name": "b2_cap_lo",
+      "default": 5000,
+      "values": [
+        1000,
+        3000,
+        5000,
+        8000,
+        12000,
+        20000
+      ],
+      "side": "buy",
+      "note": "오후 밴드 시총 하한. 밴드1과 다른 시총 니치를 만들기 위해 중대형 쪽으로 이동시킨다."
+    },
+    {
+      "name": "b2_cap_hi",
+      "default": 50000,
+      "values": [
+        8000,
+        12000,
+        20000,
+        50000,
+        100000,
+        200000
+      ],
+      "side": "buy",
+      "note": "오후 밴드 시총 상한. 중형 반전부터 초대형 재가속까지 넓게 열어 지도 스윕에 맡긴다."
+    },
+    {
+      "name": "b2_rate_min",
+      "default": 0.5,
+      "values": [
+        -2.0,
+        0.0,
+        0.5,
+        1.5,
+        3.0,
+        5.0
+      ],
+      "side": "buy",
+      "note": "오후 재가속의 상승률 하한. 보합 재점화와 이미 오른 종목의 재돌파를 모두 탐색한다."
+    },
+    {
+      "name": "b2_rate_max",
+      "default": 12.0,
+      "values": [
+        4.0,
+        7.0,
+        12.0,
+        18.0,
+        24.0,
+        30.0
+      ],
+      "side": "buy",
+      "note": "오후 과열 상한. 늦은 추격 손실을 막는 축이다."
+    },
+    {
+      "name": "b2_day_money_min",
+      "default": 7000,
+      "values": [
+        1000,
+        3000,
+        7000,
+        15000,
+        30000,
+        70000
+      ],
+      "side": "buy",
+      "note": "오후는 신호 가치가 낮으므로 밴드1보다 높은 유동성 하한을 기본으로 둔다."
+    },
+    {
+      "name": "b2_min_money_min",
+      "default": 700,
+      "values": [
+        100,
+        300,
+        700,
+        1500,
+        3000,
+        7000
+      ],
+      "side": "buy",
+      "note": "오후 현재 분당거래대금 하한. 후반 밴드 홍수 방지를 위한 핵심 밀도 축이다."
+    },
+    {
+      "name": "b2_money_avg_win",
+      "default": 8,
+      "values": [
+        3,
+        5,
+        8,
+        13,
+        21,
+        34
+      ],
+      "side": "buy",
+      "note": "오후 재가속 평균 창. 점심 이후 느려진 거래 리듬을 반영해 밴드1보다 길게 둔다."
+    },
+    {
+      "name": "b2_money_burst",
+      "default": 2.5,
+      "values": [
+        1.5,
+        2.0,
+        2.5,
+        3.5,
+        5.0,
+        7.0
+      ],
+      "side": "buy",
+      "note": "오후 분당거래대금 재폭발 배수. 후반부는 더 강한 게이트가 필요해 기본을 높인다."
+    },
+    {
+      "name": "b2_buyqty_win",
+      "default": 8,
+      "values": [
+        3,
+        5,
+        8,
+        13,
+        21,
+        34
+      ],
+      "side": "buy",
+      "note": "오후 분당매수수량 평균 비교 창. 느린 수급 재개와 급격한 재진입을 모두 측정한다."
+    },
+    {
+      "name": "b2_buyqty_accel",
+      "default": 2.0,
+      "values": [
+        1.0,
+        1.5,
+        2.0,
+        3.0,
+        5.0,
+        7.0
+      ],
+      "side": "buy",
+      "note": "오후 현재 매수수량 가속 배수. 후반 신호 품질을 위해 밴드1보다 엄격한 기본값을 둔다."
+    },
+    {
+      "name": "b2_cum_fast_win",
+      "default": 5,
+      "values": [
+        2,
+        3,
+        5,
+        8,
+        13
+      ],
+      "side": "buy",
+      "note": "오후 최근 누적매수 집중 창. 재가속이 실제 수급 동반인지 확인한다."
+    },
+    {
+      "name": "b2_cum_slow_win",
+      "default": 21,
+      "values": [
+        8,
+        13,
+        21,
+        34,
+        55
+      ],
+      "side": "buy",
+      "note": "오후 기준 누적매수 창. 점심 이후 긴 베이스 대비 최근 집중을 비교한다."
+    },
+    {
+      "name": "b2_cum_share",
+      "default": 0.35,
+      "values": [
+        0.15,
+        0.25,
+        0.35,
+        0.5,
+        0.7,
+        0.9
+      ],
+      "side": "buy",
+      "note": "오후 빠른 누적매수가 느린 누적매수에서 차지하는 비중. 느슨한 재개부터 강한 쏠림까지 탐색한다."
+    },
+    {
+      "name": "b2_ma_win",
+      "default": 8,
+      "values": [
+        3,
+        5,
+        8,
+        13,
+        21,
+        34
+      ],
+      "side": "buy",
+      "note": "오후 직전 분봉고가 돌파 대용 이동평균 창. 분봉에 없는 직전고가 변수를 쓰지 않기 위한 프록시다."
+    },
+    {
+      "name": "b2_ma_mult",
+      "default": 1.006,
+      "values": [
+        1.0,
+        1.003,
+        1.006,
+        1.01,
+        1.02,
+        1.035
+      ],
+      "side": "buy",
+      "note": "오후 현재가가 이동평균을 얼마나 상회해야 하는지. 후반 밴드라 기본을 더 엄격하게 둔다."
+    },
+    {
+      "name": "take_profit",
+      "default": 1.2,
+      "values": [
+        0.3,
+        0.6,
+        1.2,
+        2.0,
+        3.5,
+        5.0,
+        8.0
+      ],
+      "side": "sell",
+      "note": "익절률. 왕복비용과 슬리피지를 감안해 최솟값을 0.3% 이상으로 둔다."
+    },
+    {
+      "name": "stop_loss",
+      "default": 1.2,
+      "values": [
+        0.5,
+        0.8,
+        1.2,
+        1.8,
+        2.5,
+        4.0
+      ],
+      "side": "sell",
+      "note": "손절률. 분봉 후행 진입의 MDD 폭주를 제한하는 축이다."
+    },
+    {
+      "name": "trail_start",
+      "default": 1.5,
+      "values": [
+        0.5,
+        1.0,
+        1.5,
+        2.5,
+        4.0,
+        6.0
+      ],
+      "side": "sell",
+      "note": "트레일링 시작 수익률. 작은 반등 보존부터 큰 추세 허용까지 측정한다."
+    },
+    {
+      "name": "trail_gap",
+      "default": 0.8,
+      "values": [
+        0.3,
+        0.5,
+        0.8,
+        1.2,
+        2.0,
+        3.5
+      ],
+      "side": "sell",
+      "note": "최고수익률 대비 반납 허용폭. 분봉 전략의 청산 민감도를 조절한다."
+    },
+    {
+      "name": "max_hold_sec",
+      "default": 3600,
+      "values": [
+        300,
+        900,
+        1800,
+        3600,
+        7200,
+        10800
+      ],
+      "side": "sell",
+      "note": "최대 보유시간. 단타 구조를 유지하되 분봉 재가속이 이어지는 경우를 일부 허용한다."
+    }
+  ]
+}

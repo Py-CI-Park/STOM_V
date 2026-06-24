@@ -14,13 +14,20 @@ working/train 거래에서만 돌아야 하므로 is_holdout=True 면 ValueError
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import pandas as pd
 
 # 수익률 컬럼: >0 이면 수익(win), <=0 이면 손실(loss).
 RETURN_COLUMN = "수익률"
+
+# FDR(다중검정 보정) 유의수준 — 동결값(P3 §Q7). 한 부검에서 존재하는 B_* 피처
+#   전수를 family로 보고 Benjamini-Hochberg로 보정한다. 잡음 피처의 임계 후보가
+#   생성 프롬프트에 주입되는 선택편향(R1)을 차단하기 위한 진행 게이트일 뿐,
+#   하드게이트·엔진·스코어와 무관하다. 0.10은 발견지향(연구) 표준값.
+_FDR_ALPHA = 0.10
 
 # 진입시점(B_*) 컬럼 — backtest/back_static.py TRADE_RESULT_B_COLUMNS 와 동일.
 B_COLUMNS = [
@@ -64,6 +71,13 @@ SELL_RULE_COLUMN = "매도조건"        # 발화한 매도 규칙 원문(어떤
 # give-back 판정 기준: MFE가 이 값(%) 이상이었던 거래만 "익절 기회가 있었다"로 본다.
 DEFAULT_GIVEBACK_MFE_THRESHOLD = 1.0
 
+# P5 Exit Regret(조기청산 후회): 익절기회 있던 수익거래 중 실현이 MFE의 이 비율 미만이면
+#   '고점을 못 지킨 조기청산'으로 본다(기본 0.5 = 고점 절반도 못 지킴).
+DEFAULT_EXIT_REGRET_KEEP = 0.5
+# P5 False-Break(가짜 돌파): 손실거래의 MFE가 이 값(%) 미만이면 '진입 후 한 번도 의미있게
+#   못 오른' 가짜 돌파로 본다(되돌림이 아니라 애초에 진입 신호가 틀렸음).
+DEFAULT_FALSE_BREAK_MFE = 0.5
+
 
 @dataclass
 class Discriminator:
@@ -79,6 +93,12 @@ class Discriminator:
     win_q25: Optional[float] = None
     win_q50: Optional[float] = None
     win_q75: Optional[float] = None
+    # P3 FDR(다중검정 보정) — 이 피처의 승/패 변별이 우연일 확률(p_value)과 family
+    #   전체에 Benjamini-Hochberg를 적용한 보정 q_value, 그리고 _FDR_ALPHA 통과 여부.
+    #   None이면 미산출(하위호환 — 기존 소비자 영향 없음). 가법 필드라 OFF 경로 byte-동일.
+    p_value: Optional[float] = None
+    q_value: Optional[float] = None
+    fdr_pass: Optional[bool] = None
 
 
 @dataclass
@@ -114,6 +134,65 @@ def _pooled_std(win_vals: pd.Series, loss_vals: pd.Series) -> float:
         return 0.0
     var = num / den
     return float(var ** 0.5)
+
+
+def _two_sample_p(std_mean_diff: float, n_win: int, n_loss: int) -> float:
+    """승/패 두 그룹 평균차의 양측 p값(정규근사). 표준라이브러리만 사용(scipy 불요).
+
+    표준화 평균차(std_mean_diff = (mw-ml)/pooled)와 두 표본수로 t통계량을 복원한다:
+        t = std_mean_diff / sqrt(1/n_win + 1/n_loss)
+    충분표본에서 t≈z로 보고 양측 p = 2*(1 - Φ(|t|))를 math.erf로 계산한다. 효과 0·표본
+    부족·비유한 입력은 p=1.0(가장 보수적)으로 흡수한다(무예외). 정밀 검정이 목적이
+    아니라 잡음 피처를 거르는 진행 게이트라 정규근사로 충분하다.
+    """
+    if n_win < 2 or n_loss < 2:
+        return 1.0
+    if not math.isfinite(std_mean_diff) or std_mean_diff == 0.0:
+        return 1.0
+    se = math.sqrt(1.0 / n_win + 1.0 / n_loss)
+    if se <= 0.0:
+        return 1.0
+    t = abs(std_mean_diff) / se
+    # 표준정규 생존함수: 1 - Φ(t) = 0.5 * erfc(t / sqrt(2)).
+    p = math.erfc(t / math.sqrt(2.0))
+    return float(min(1.0, max(0.0, p)))
+
+
+def _benjamini_hochberg(
+    p_values: List[float], alpha: float = _FDR_ALPHA
+) -> Tuple[List[float], List[bool]]:
+    """Benjamini-Hochberg FDR 보정. p값 리스트 → (q값 리스트, 통과여부 리스트)(순수·무예외).
+
+    입력 순서를 보존해 (q_values, pass_flags)를 돌려준다. 절차:
+      1. p를 오름차순 정렬, rank i(1-based)마다 q_i = p_(i) * m / i (m=family 크기).
+      2. 큰 rank부터 누적 최소로 단조성 보정(q는 비감소가 되도록).
+      3. 가장 큰 통과 rank k* = max{i : p_(i) <= (i/m)*alpha}; rank<=k*면 통과.
+    빈 입력은 ([], [])를 돌린다. 어떤 입력에도 예외를 던지지 않는다.
+    """
+    m = len(p_values)
+    if m == 0:
+        return [], []
+    # (원래 인덱스, p) 오름차순.
+    order = sorted(range(m), key=lambda i: p_values[i])
+    # 단조 보정된 q값(작은 rank 방향으로 누적 최소).
+    q_sorted = [0.0] * m
+    prev = 1.0
+    for rank in range(m, 0, -1):  # m..1
+        idx_in_order = rank - 1
+        raw_q = p_values[order[idx_in_order]] * m / rank
+        prev = min(prev, raw_q)
+        q_sorted[idx_in_order] = min(1.0, prev)
+    # 가장 큰 통과 rank.
+    k_star = 0
+    for rank in range(1, m + 1):
+        if p_values[order[rank - 1]] <= (rank / m) * alpha:
+            k_star = rank
+    q_values = [0.0] * m
+    pass_flags = [False] * m
+    for pos, orig_idx in enumerate(order):
+        q_values[orig_idx] = q_sorted[pos]
+        pass_flags[orig_idx] = (pos + 1) <= k_star
+    return q_values, pass_flags
 
 
 def analyze_trades(
@@ -221,8 +300,22 @@ def analyze_trades(
                 column=col, win_mean=win_mean, loss_mean=loss_mean,
                 std_mean_diff=float(smd),
                 win_q25=win_q25, win_q50=win_q50, win_q75=win_q75,
+                p_value=_two_sample_p(float(smd), len(win_vals), len(loss_vals)),
             )
         )
+
+    # --- P3 FDR(다중검정 보정): 존재한 B_* 피처 전수를 family로 BH 보정 ---
+    #   여러 피처를 동시에 검정하면 우연히 "잘 가르는" 잡음 피처가 나온다. BH로
+    #   q값·통과여부를 매겨 잡음 피처의 임계 후보 주입(R1 선택편향)을 차단한다.
+    #   가법 필드만 채우므로 기존 소비자(기본 summarize) 출력은 byte-동일하다.
+    if discriminators:
+        q_values, pass_flags = _benjamini_hochberg(
+            [d.p_value if d.p_value is not None else 1.0 for d in discriminators],
+            alpha=_FDR_ALPHA,
+        )
+        for d, q, ok in zip(discriminators, q_values, pass_flags):
+            d.q_value = q
+            d.fdr_pass = bool(ok)
 
     # |std_mean_diff| 내림차순 정렬 (가장 잘 가른 조건 먼저).
     discriminators.sort(key=lambda d: abs(d.std_mean_diff), reverse=True)
@@ -283,6 +376,13 @@ class ExitAutopsyResult:
     # MAE depth (손실 거래 기준).
     avg_mae_losers: float = 0.0      # 손실 거래 평균 MAE(%, 보통 음수).
     worst_mae_losers: float = 0.0    # 손실 거래 최악 MAE(%).
+    # P5 Exit Regret(조기청산 후회) — 익절기회 있던 수익거래가 고점을 못 지킨 정도.
+    exit_regret_eligible: int = 0    # MFE>=threshold 였던 수익거래 수(후회 모집단).
+    exit_regret_ratio: float = 0.0   # 그중 실현<MFE*KEEP(고점 절반도 못 지킴) 비율.
+    avg_exit_regret: float = 0.0     # 모집단 평균 (MFE - 실현) = 후회 폭(%p).
+    # P5 False-Break(가짜 돌파) — 손실거래가 진입 후 한 번도 못 오른(MFE<문턱) 비율.
+    false_break_losers: int = 0      # MFE<DEFAULT_FALSE_BREAK_MFE 인 손실거래 수.
+    false_break_ratio: float = 0.0   # false_break_losers / 손실거래 수.
     # holding time.
     avg_hold_winners: float = 0.0
     avg_hold_losers: float = 0.0
@@ -300,6 +400,7 @@ def analyze_exits(
     *,
     min_trades: int = DEFAULT_MIN_TRADES,
     giveback_mfe_threshold: float = DEFAULT_GIVEBACK_MFE_THRESHOLD,
+    exit_regret_keep: float = DEFAULT_EXIT_REGRET_KEEP,
     is_holdout: bool = False,
 ) -> ExitAutopsyResult:
     """거래 CSV를 읽어 **청산(매도)** 측 신호를 분석한다(수익성 직결).
@@ -402,6 +503,26 @@ def analyze_exits(
         if len(loss_mae) > 0:
             res.avg_mae_losers = float(loss_mae.mean())
             res.worst_mae_losers = float(loss_mae.min())
+
+    # P5 Exit Regret(조기청산 후회) — 익절기회(MFE>=threshold) 있던 수익거래가 고점을
+    #   얼마나 못 지켰나. 실현 < MFE*KEEP 면 '고점 절반도 못 지킨' 조기청산으로 본다.
+    if mfe is not None and win_count > 0:
+        elig_mask = (is_win & (mfe >= giveback_mfe_threshold)).fillna(False)
+        n_elig = int(elig_mask.sum())
+        res.exit_regret_eligible = n_elig
+        if n_elig > 0:
+            elig_mfe = mfe[elig_mask]
+            elig_ret = returns[elig_mask]
+            kept_little = elig_ret < (exit_regret_keep * elig_mfe)
+            res.exit_regret_ratio = round(float(kept_little.sum()) / n_elig, 4)
+            res.avg_exit_regret = float((elig_mfe - elig_ret).mean())
+
+    # P5 False-Break(가짜 돌파) — 손실거래가 진입 후 한 번도 의미있게(MFE>=문턱) 못 오른
+    #   비율. 되돌림(give-back)이 아니라 애초에 진입 신호가 틀렸다는 신호(진입 품질 문제).
+    if mfe is not None and loss_count > 0:
+        fb_mask = (mfe[~is_win] < DEFAULT_FALSE_BREAK_MFE).fillna(False)
+        res.false_break_losers = int(fb_mask.sum())
+        res.false_break_ratio = round(res.false_break_losers / loss_count, 4)
 
     # 보유시간 (수익 vs 손실).
     if HOLD_COLUMN in df.columns:

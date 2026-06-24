@@ -33,6 +33,51 @@ def test_route_contract_preserves_stable_keys_and_groups() -> None:
     assert "writing-mode: vertical-rl" not in _read("styles.css").split(".stom-tabgroup-label", 1)[1].split("}", 1)[0]
 
 
+def test_phase2_history_owns_result_detail_and_compare() -> None:
+    result_area = _read("bt-result-area.jsx")
+    charts = _read("backtest-charts.jsx")
+    records = _read("research-records-panel.jsx")
+    workbench = _read("rp-panel.jsx")
+    contract = _read("ui-contract.jsx")
+    app = _read("app.jsx")
+
+    assert "function ResultDetailBody" in result_area
+    body_block = result_area.split("function ResultDetailBody", 1)[1].split("function _BtFullscreenAnalysis", 1)[0]
+    assert "_btFetchJson" not in body_block
+    assert "sourceContext" in body_block
+    assert "ResultDetailBody" in charts.split("Object.assign(window", 1)[1]
+
+    records_history = records.split("히스토리 ResultDetail · Compare", 1)[1].split("{errors.length > 0", 1)[0]
+    assert "<_RpRunCompare" in records_history
+    assert "<_RpHistory" in records_history
+    assert "History가 과거 run/gen 아카이브와 Compare를 소유합니다" in records_history
+
+    workbench_panel = workbench.split("function ResearchProPanel", 1)[1].split("function ResearchHeatmapPanel", 1)[0]
+    assert "<_RpRunCompare" not in workbench_panel
+    assert "<_RpHistory" not in workbench_panel
+    assert "히스토리 탭 소유" in workbench_panel
+    assert "<_RpBigHeatmap" not in workbench_panel
+    assert "탐색 히트맵은 연구실 소유" not in workbench_panel
+    assert "RunComparePanel" not in app
+    assert "ResearchLabPanel" in app
+    assert "Compare와 run/gen ResultDetail은 히스토리 탭에서만 렌더링합니다" in app
+    assert "연구실 종합 · 탐색/변수/검증" in app
+
+    assert 'label: "히스토리"' in contract
+    assert 'history: "records"' in contract
+    assert "const canonical = EVOLUTION_LEGACY_ALIASES[value] || value" in contract
+    assert "dashboardPathFor(\"evolution\", sub)" in contract
+    assert 'label: "조건식 AI"' in contract
+    assert 'group: "조건식 AI"' in contract
+    assert "조건식 AI Live Monitor" in app
+    assert "설정 · 게이트 · 백테스트 엔진 요약" in app
+    assert "조건식 AI 하위 탭" in app
+    assert "ResearchLabPanel" in app
+    assert ") : isIdle ? (" not in app
+    assert "조건식 AI 시작 설정 열기" in app
+    assert "STOM AI · 조건식 AI 연구 대시보드" in app
+    assert '{ key: "records", label: "히스토리"' in app
+
 def test_app_shell_uses_grouped_nav_and_direct_page_imports() -> None:
     src = _read("app.jsx")
     assert 'from "./dashboard-pages.jsx"' in src
@@ -46,6 +91,13 @@ def test_app_shell_uses_grouped_nav_and_direct_page_imports() -> None:
     assert "<LabPage" in src and "<ResearchIndexPage" in src
     assert "phase3-home-links" in src
     assert "configSpecStatus" in src
+    assert "연구실 종합 · 탐색/변수/검증" in src
+    assert "ResearchLabPanel" in src
+    assert "연구 위키 · AI 컨텍스트 팩 → 연구실 탭" not in src
+    research_nav = src.split('storageKey="stom_evo_researchnav"', 1)[1].split('storageKey="stom_evo_historynav"', 1)[0]
+    assert 'onEvolutionSubtabSelect("workbench")' in research_nav
+    assert 'onOpenWorkbench={() => setActiveTab("backtest")}' not in src
+    assert "window.ResearchHeatmapPanel" not in src
 
 
 def test_shared_ui_state_primitives_are_presentation_only_and_exported() -> None:
@@ -60,11 +112,28 @@ def test_shared_ui_state_primitives_are_presentation_only_and_exported() -> None
 def test_evidence_workspace_labels_each_owner_surface() -> None:
     src = _read("dashboard-pages.jsx")
     assert "EvidenceWorkspaceHeader" in src
-    assert "EvidenceWorkspaceCards" in src
-    assert "OWNER MATRIX" in src
-    assert "Records는 전체 조회" in src
-    assert "분석 워크벤치는 후보 분석" in src
-    assert "append-only trail" in src
+    assert "EvidenceWorkspaceCards" not in src
+    assert "WorkspaceNav" not in src
+    assert "WorkspaceCard" not in src
+    assert "EVIDENCE_WORKSPACE_LINKS" not in src
+    assert "evidence-workspace-head-static" in src
+    assert "현재 표면: <b>{owner.owner}</b>" in src
+    assert "이 표면은 현재 하위탭의 책임과 비소유 범위만 설명합니다" not in src
+    assert "같은 기능 버튼이 화면 안에 다시 생기지 않도록 합니다" not in src
+    assert "<Phase2InventoryPanel compact />" in src
+    assert "STOM 연구실" in src
+    assert "연구 위키 · AI 컨텍스트 보기" in src
+    assert "연구실 내부 메뉴는 하위 탭이 아니라 분석 종류를 고르는 필터입니다" not in _read("rl-panel.jsx")
+    assert "탐색 히트맵 · Edge Ratio" in _read("rl-panel.jsx")
+    assert "탐색 히트맵 · Edge Ratio 통합 분석" in _read("analysis.jsx")
+    assert "ResearchHeatmapPanel" not in _read("rl-panel.jsx")
+    panels = _read("panels-analysis.jsx")
+    app = _read("app.jsx")
+    assert "function ConditionDiscoveryPanel" in panels
+    assert "조건식 발굴 거버넌스" in panels
+    assert "생성품질 점수" in panels
+    assert "Human DB pattern cards" in panels
+    assert "<ConditionDiscoveryPanel state={state} wsStatus={wsStatus} />" in app
     assert "workspace-owner-boundary" in src
     for active in ('activeKey="records"', 'activeKey="lab"', 'activeKey="workbench"', 'activeKey="verdict"'):
         assert active in src
@@ -136,6 +205,77 @@ def test_g006_removes_duplicate_inner_tabs_and_pins_readability() -> None:
         assert "font-size: var(--fs-prose)" in css.split(selector, 1)[1].split("}", 1)[0]
     assert ".stom-shell-title span" in css and "font-size: var(--fs-dense)" in css
 
+def test_process_tab_documents_condition_discovery_defaults() -> None:
+    src = _read("phase-detail.jsx")
+    css = _read("styles.css")
+
+    assert "PROCESS_DEFAULT_ROWS" in src
+    for marker in (
+        "09:00:00~09:28:00",
+        "09:00~15:18/15:19",
+        "최대 300초",
+        "fast 35% · research 25% · promotion 15%",
+        "TPI",
+        "매매성능지수",
+        "성과 점수 100점",
+        "생성품질 100점",
+        "Prompt / Equity 저장",
+        "부검 hypothesis",
+        "인간 DB pattern cards",
+        "Transformer/ML",
+    ):
+        assert marker in src
+    assert "process-defaults-table" in src
+    assert ".process-defaults-panel" in css
+
+
+def test_g004_editor_legacy_tools_and_variable_influence_contracts() -> None:
+    library = _read("bt-tab-library.jsx")
+    run = _read("bt-tab-run.jsx")
+    analysis = _read("bt-tab-analysis.jsx")
+    root = _read("bt-tab-root.jsx")
+    mode_results = _read("bt-tab-mode-results.jsx")
+
+    assert "editorFocus" in library
+    assert "매수만 크게" in library
+    assert "매도만 크게" in library
+    assert "editorMinHeight = large ? 560 : 320" in library
+    assert "large={editorFocus === \"buy\"}" in library and "large={editorFocus === \"sell\"}" in library
+    assert "display: showBuy ? \"flex\" : \"none\"" in library
+    assert "조건식 목록 조회 실패" in library
+    assert "조건식 로드 실패" in library and "j && j.status === \"error\"" in library
+
+    assert "/bt/legacy/self_vars" in run
+    assert "self.vars → 스윕 빌더" in run
+    assert 'setMode("sweep")' in run
+    assert "setSweepRows" in run
+    assert "실행 없이 미리보기" in run
+    assert "index: r.index, default: r.default" in run
+    assert "기본 ${r.default}" in run
+
+    assert "/bt/backfinder/preflight" in analysis
+    assert "BtBackFinderPreflightPanel" in analysis
+    assert "self.tickcols" in analysis
+    assert "self.tickdata" in analysis
+    assert "run_enabled={String(!!data.run_enabled)}" in analysis
+    assert "<BtBackFinderPreflightPanel" in root
+
+    assert "function _btVariableInfluenceRows" in mode_results
+    assert "function BtVariableInfluencePanel" in mode_results
+    assert "변수 영향도 자동 분석" in mode_results
+    assert "<BtVariableInfluencePanel result={mr} mode={mode} />" in mode_results
+    assert "function _btSweepCombo" in mode_results
+    assert "const params = item && item.params" in mode_results
+    assert "return combo;" in mode_results.split("if (params && typeof params === \"object\" && !Array.isArray(params))", 1)[1].split("Object.keys(item || {})", 1)[0]
+    assert 'name === "params"' in mode_results
+    assert "const combo = _btSweepCombo(item)" in mode_results
+    assert "_btSweepCombo" in mode_results.split("export {", 1)[1]
+
+def test_g004_quick_start_help_texts_are_explicit() -> None:
+    controls = _read("sim-tab-controls.jsx")
+    assert "보유한 일일 DB 중 가장 최근 거래일을 고르고 그날 등락률 1위 종목을 자동 재생합니다." in controls
+    assert "최근 거래일 후보 전체에서 일중 최대 상승률이 가장 큰 날짜·종목을 찾아 자동 재생합니다." in controls
+    assert "버튼에 마우스를 올리면 선택 기준 설명이 표시됩니다." in controls
 def test_phase2_inventory_gate_pins_owner_files_and_thresholds() -> None:
     src = _read("dashboard-inventory.jsx")
     for key in ('key: "evolution"', 'key: "process"', 'key: "records"', 'key: "pro"', 'key: "verdict"'):
@@ -188,7 +328,7 @@ def test_visual_quality_surface_pins_baselines_and_perf_budgets() -> None:
         assert route in src
     for surface in ('surface: "records"', 'surface: "generations"', 'surface: "hof"'):
         assert surface in src
-    assert "진화 홈" in src and "프로세스" in src
+    assert "조건식 AI" in src and "프로세스" in src
     assert "no-dependency windowing" in src
 
 def test_records_lookup_has_sort_and_windowing_controls() -> None:
@@ -212,7 +352,7 @@ def test_process_flow_growth_keeps_readonly_state_contract() -> None:
     assert 'from "dagre"' in src
     assert "ReactFlow" in src and "dagre.layout" in src
     assert "process-explain-grid" in src
-    assert "<iframe" not in src  # iframe remains app.jsx route chrome, not process component state mutation.
+    assert "<iframe" not in src  # Process state component must remain native; app route also owns no iframe after remaining parity closure.
     assert "상태 구분" in src
     assert "단계 진행" in src
     assert "logWindow = logs.slice(-50)" in src

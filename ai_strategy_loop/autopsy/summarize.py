@@ -14,6 +14,8 @@ from __future__ import annotations
 from typing import Any, List, Optional
 
 from .analyze import (
+    DEFAULT_EXIT_REGRET_KEEP,
+    DEFAULT_FALSE_BREAK_MFE,
     STATUS_INSUFFICIENT,
     STATUS_OK,
     STATUS_SINGLE_CLASS,
@@ -168,10 +170,17 @@ def _discriminator_line(d: Discriminator, quantile_feedback: bool = False) -> st
     5/5 음수 실측). quantile_feedback=True면 승자 분위수로 구체 임계 후보를 병기한다 —
     높여라 → 하한 후보(승자 Q25·중앙값), 낮춰라 → 상한 후보(승자 Q75·중앙값).
     기본 False면 출력이 기존과 byte-동일하다(하위호환).
+
+    P3 FDR 게이트: 임계 후보는 **FDR을 통과한 피처(d.fdr_pass)**에만 병기한다. 다중검정
+    보정(Benjamini-Hochberg)으로 잡음 피처(우연히 잘 가른 듯 보이는 변수)의 임계 후보가
+    프롬프트로 새는 선택편향(R1)을 차단한다. fdr_pass가 None(미산출)이면 보정 정보가
+    없는 것이라 기존 동작대로 후보를 병기한다(하위호환). 방향 줄 자체는 FDR과 무관하게
+    항상 그대로다(byte-동일 보존 — OFF 경로엔 영향 없음).
     """
     stom_var = B_TO_STOM_VAR.get(d.column, d.column)
     win_s = _fmt(d.win_mean)
     loss_s = _fmt(d.loss_mean)
+    fdr_ok = d.fdr_pass is not False  # None(미산출)→허용, True→허용, False→차단.
     if d.std_mean_diff > 0:
         # 수익 거래에서 더 컸다 → 손실 거래는 이 값이 낮았다 → 기준을 높여라.
         line = (
@@ -179,7 +188,7 @@ def _discriminator_line(d: Discriminator, quantile_feedback: bool = False) -> st
             f"(손실 평균 {loss_s} vs 수익 평균 {win_s})"
             f" → {stom_var} 진입 기준을 높여라."
         )
-        if quantile_feedback and d.win_q25 is not None and d.win_q50 is not None:
+        if quantile_feedback and fdr_ok and d.win_q25 is not None and d.win_q50 is not None:
             line += (
                 f" (하한 후보: ≥ {_fmt(d.win_q25)} 보수적(승자 Q25)"
                 f" 또는 ≥ {_fmt(d.win_q50)} 공격적(승자 중앙값))"
@@ -191,7 +200,7 @@ def _discriminator_line(d: Discriminator, quantile_feedback: bool = False) -> st
         f"(손실 평균 {loss_s} vs 수익 평균 {win_s})"
         f" → {stom_var} 진입 기준을 낮춰라."
     )
-    if quantile_feedback and d.win_q75 is not None and d.win_q50 is not None:
+    if quantile_feedback and fdr_ok and d.win_q75 is not None and d.win_q50 is not None:
         line += (
             f" (상한 후보: ≤ {_fmt(d.win_q75)} 보수적(승자 Q75)"
             f" 또는 ≤ {_fmt(d.win_q50)} 공격적(승자 중앙값))"
@@ -306,6 +315,10 @@ _GIVEBACK_ALERT_PCT = 1.0
 _MAE_ALERT_PCT = -2.0
 # 손실 거래 보유시간이 수익 거래의 이 배수 이상이면 "시간 청산 추가"를 권한다.
 _HOLD_RATIO_ALERT = 1.3
+# P5 — Exit Regret(조기청산 후회)율이 이 값 이상이면 청산 타이밍 경보를 띄운다.
+_EXIT_REGRET_ALERT = 0.3
+# P5 — False-Break(가짜 돌파)율이 이 값 이상이면 진입 품질 경보를 띄운다.
+_FALSE_BREAK_ALERT = 0.3
 
 
 def _short_rule(rule: str, max_len: int = 60) -> str:
@@ -376,6 +389,23 @@ def summarize_exits(result: ExitAutopsyResult, config: Any = None) -> str:
                 f"- 손실 집중 매도규칙: `{_short_rule(worst.rule)}` "
                 f"({worst.count}건, 손실 {worst.loss_count}건, 평균 {worst.avg_return:.2g}%) "
                 f"→ 이 규칙이 너무 늦거나 손실을 키운다. 이 매도 조건을 재설계하라."
+            )
+
+    # 5) P5 청산 포렌식(Exit Regret·False-Break) — 토글 ON일 때만 덧붙인다.
+    #   기본 OFF면 이 블록이 평가조차 안 돼 출력이 기존과 byte-동일하다(하위호환).
+    if getattr(config, "exit_forensics_feedback_enabled", False):
+        if result.exit_regret_eligible > 0 and result.exit_regret_ratio >= _EXIT_REGRET_ALERT:
+            lines.append(
+                f"- 조기청산 후회: 익절기회 있던 수익거래의 "
+                f"{result.exit_regret_ratio * 100:.0f}%가 고점의 {DEFAULT_EXIT_REGRET_KEEP * 100:.0f}%도 "
+                f"못 지키고 반납(평균 {result.avg_exit_regret:.2g}%p) → 트레일링/부분익절로 고점 "
+                f"수익을 더 확정하라(하드 익절을 낮추기보다 트레일링 폭을 좁혀라)."
+            )
+        if result.loss_count > 0 and result.false_break_ratio >= _FALSE_BREAK_ALERT:
+            lines.append(
+                f"- 가짜 돌파: 손실거래의 {result.false_break_ratio * 100:.0f}%가 진입 후 "
+                f"한 번도 +{DEFAULT_FALSE_BREAK_MFE:g}% 못 올랐다(되돌림이 아니라 애초에 안 됨) → "
+                f"진입 신호 품질을 높여라(돌파 확인봉·체결강도/거래대금 게이트 강화로 가짜 돌파를 거른다)."
             )
 
     # give-back/MAE/시간/규칙 어느 것도 경보가 안 잡힌 경우(드묾) — 일반 가이드.

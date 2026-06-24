@@ -37,6 +37,18 @@ def _make_strategy_db(path: Path) -> None:
     cur = con.cursor()
     cur.execute('CREATE TABLE stockbuy ("index" TEXT PRIMARY KEY, "전략코드" TEXT)')
     cur.execute('INSERT INTO stockbuy VALUES (?, ?)', ("기존매수", "매수 = True"))
+    cur.execute(
+        'INSERT INTO stockbuy VALUES (?, ?)',
+        ("Vars매수", "self.vars = {0: [[10, 30, 10], 20], 1: [[1.5, 2.5, 0.5], 2.0]}"),
+    )
+    cur.execute(
+        'INSERT INTO stockbuy VALUES (?, ?)',
+        ("BackFinderOK", "self.tickcols = ['현재가', '등락율']\nself.tickdata = [현재가, 등락율]"),
+    )
+    cur.execute(
+        'INSERT INTO stockbuy VALUES (?, ?)',
+        ("BackFinderBad", "self.tickcols = ['현재가', '등락율']\nself.tickdata = [현재가]"),
+    )
     cur.execute('CREATE TABLE stocksell ("index" TEXT PRIMARY KEY, "전략코드" TEXT)')
     cur.execute('INSERT INTO stocksell VALUES (?, ?)', ("기존매도", "self.sell_cond = 1"))
     cur.execute(
@@ -253,3 +265,109 @@ def test_extract_vars_counts_repeats(client: TestClient):
     body = r.json()
     hit = next(k for k in body["known"] if k["name"] == "현재가")
     assert hit["count"] == 3
+
+
+# -------------------------------------------------------- legacy self.vars / BackFinder
+def test_legacy_self_vars_preview_route_is_reversible_and_no_exec(client: TestClient):
+    r = client.get("/bt/legacy/self_vars", params={"kind": "buy", "name": "Vars매수"})
+    body = r.json()
+    assert body["available"] is True
+    assert body["adapter"] == "self.vars-range-preview"
+    assert body["reversible"] is True
+    assert body["exec_used"] is False
+    assert body["refs"] == ["self.vars[0]", "self.vars[1]"]
+    assert body["rows"][0] == {"index": 0, "name": "self.vars[0]", "min": 10, "max": 30, "step": 10, "default": 20}
+    assert body["rows"][1]["min"] == 1.5
+    assert body["rows"][1]["max"] == 2.5
+    assert body["rows"][1]["step"] == 0.5
+    assert body["roundtrip_available"] is True
+    assert body["roundtrip_code"] == "self.vars = {0: [[10, 30, 10], 20], 1: [[1.5, 2.5, 0.5], 2.0]}"
+
+def test_legacy_self_vars_preview_rejects_nonliteral_without_exec(client: TestClient, tmp_path: Path, monkeypatch):
+    db_path = tmp_path / "strategy_malicious.db"
+    _make_strategy_db(db_path)
+    con = sqlite3.connect(str(db_path))
+    con.execute(
+        'INSERT INTO stockbuy VALUES (?, ?)',
+        ("Vars악성", "self.vars = {0: __import__('os').system('echo should-not-run')}"),
+    )
+    con.commit()
+    con.close()
+    monkeypatch.setenv("STOM_WEBBT_STRATEGY_DB", str(db_path))
+
+    body = client.get("/bt/legacy/self_vars", params={"kind": "buy", "name": "Vars악성"}).json()
+    assert body["available"] is False
+    assert body["exec_used"] is False
+    assert body["reversible"] is False
+    assert body["roundtrip_available"] is False
+    assert body["roundtrip_code"] == ""
+    assert body["rows"] == []
+
+
+def test_legacy_self_vars_preview_missing_or_invalid_is_no_raise(client: TestClient):
+    r = client.get("/bt/legacy/self_vars", params={"kind": "buy", "name": "기존매수"})
+    body = r.json()
+    assert r.status_code == 200
+    assert body["available"] is False
+    assert body["rows"] == []
+    assert body["exec_used"] is False
+
+
+def test_backfinder_preflight_ok_and_mismatch_are_staged_only(client: TestClient):
+    ok = client.get("/bt/backfinder/preflight", params={"kind": "buy", "name": "BackFinderOK"}).json()
+    assert ok["available"] is True
+    assert ok["precondition_ok"] is True
+    assert ok["has_tickcols"] is True
+    assert ok["has_tickdata"] is True
+    assert ok["cols_count"] == 2
+    assert ok["data_count"] == 2
+    assert ok["run_enabled"] is False
+    assert "안전 점검만 제공" in ok["message"]
+
+    bad = client.get("/bt/backfinder/preflight", params={"kind": "buy", "name": "BackFinderBad"}).json()
+    assert bad["available"] is True
+    assert bad["precondition_ok"] is False
+    assert bad["cols_count"] == 2
+    assert bad["data_count"] == 1
+    assert bad["run_enabled"] is False
+    assert "일치하지 않습니다" in bad["message"]
+
+
+def test_backfinder_preflight_missing_strategy_is_no_raise(client: TestClient):
+    body = client.get("/bt/backfinder/preflight", params={"kind": "buy", "name": "없음"}).json()
+    assert body["available"] is False
+    assert body["status"] == "missing"
+    assert body["reason"] == "strategy_not_found"
+    assert body["precondition_ok"] is False
+    assert body["run_enabled"] is False
+
+
+def test_legacy_preview_routes_report_db_lookup_failures(client: TestClient, monkeypatch, tmp_path: Path):
+    monkeypatch.setenv("STOM_WEBBT_STRATEGY_DB", str(tmp_path / "missing" / "strategy.db"))
+
+    vars_body = client.get("/bt/legacy/self_vars", params={"kind": "buy", "name": "Vars매수"}).json()
+    assert vars_body["available"] is False
+    assert vars_body["status"] == "error"
+    assert vars_body["reason"] == "strategy_db_unavailable"
+    assert "전략 DB 조회 실패" in vars_body["message"]
+
+    bf_body = client.get("/bt/backfinder/preflight", params={"kind": "buy", "name": "BackFinderOK"}).json()
+    assert bf_body["available"] is False
+    assert bf_body["status"] == "error"
+    assert bf_body["reason"] == "strategy_db_unavailable"
+    assert "전략 DB 조회 실패" in bf_body["message"]
+
+def test_strategy_library_routes_report_db_lookup_failures(client: TestClient, monkeypatch, tmp_path: Path):
+    monkeypatch.setenv("STOM_WEBBT_STRATEGY_DB", str(tmp_path / "missing" / "strategy.db"))
+
+    list_body = client.get("/bt/strategies", params={"kind": "buy"}).json()
+    assert list_body["status"] == "error"
+    assert list_body["reason"] == "strategy_db_unavailable"
+    assert "전략 DB 조회 실패" in list_body["message"]
+    assert list_body["items"] == []
+
+    one_body = client.get("/bt/strategy", params={"kind": "buy", "name": "기존매수"}).json()
+    assert one_body["available"] is False
+    assert one_body["status"] == "error"
+    assert one_body["reason"] == "strategy_db_unavailable"
+    assert "전략 DB 조회 실패" in one_body["message"]

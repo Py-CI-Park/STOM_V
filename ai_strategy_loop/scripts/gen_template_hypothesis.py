@@ -71,7 +71,7 @@ def registry_summary() -> str:
 # =====================================================================
 
 def build_prompt(principles_text: str, registry_summary_text: str,
-                 lessons_text: str = "") -> str:
+                 lessons_text: str = "", feedback_text: str = "") -> str:
     """P5 프롬프트 자산에 컨텍스트(기존 템플릿 이름·축 요약, 실패 교훈)를 결합.
 
     Args:
@@ -79,6 +79,8 @@ def build_prompt(principles_text: str, registry_summary_text: str,
         registry_summary_text: registry_summary()의 반환값.
         lessons_text: 누적 실패 교훈 문서 본문(있으면 컨텍스트에 추가 —
             기각된 8계열의 응답곡선 교훈을 주입해 같은 벽에 부딪히지 않게 한다).
+        feedback_text: [P2] 직전 결과 환류(회피/선호) — 야간 유상태 루프가 직전
+            ledger에서 조립한 데이터 주도 컨텍스트. 빈 문자열이면 무상태(기존 동작).
 
     Returns:
         LLM에 전달할 완성된 사용자 프롬프트 문자열.
@@ -102,6 +104,11 @@ def build_prompt(principles_text: str, registry_summary_text: str,
     if lessons_text:
         context_block += "\n\n[누적 기각 이력과 교훈 — 같은 가설 재제출 금지]\n" + lessons_text
 
+    # [P2] 직전 결과 환류 — 야간 유상태 루프가 ledger에서 조립한 회피/선호 컨텍스트.
+    #   무작위 추첨을 "학습하는 발굴"로 바꾸는 핵심(누수6 해소). 빈 값이면 무상태.
+    if feedback_text:
+        context_block += "\n\n[직전 결과 환류 — 회피/선호 (데이터 주도, 반드시 반영)]\n" + feedback_text
+
     # 출력 스키마 강제(2026-06-12 — 실전 1회차에서 params 누락/문자열 배열
     # 형식 위반 관측): 정확한 JSON 형태를 예시로 못박는다.
     context_block += (
@@ -114,10 +121,10 @@ def build_prompt(principles_text: str, registry_summary_text: str,
         '"side": "buy"|"sell", "note": "설명"}, ...]}\n'
         "params는 반드시 객체 배열(문자열 배열 금지). buy/sell_template의 모든"
         " {슬롯}은 params에 정의돼야 한다.\n"
-        "[신호 밀도 규칙 — 2026-06-12 실측 교훈] and 조건은 10개 이하로 하라."
-        " 조건 15개+의 교집합은 기본값에서 신호 0건이었다(생성물 2종 실측)."
-        " default는 각 축의 두 번째로 느슨한 값으로 잡아 기본값 렌더가 실제"
-        " 신호를 내게 하라 — 엄격화는 스윕 축이 담당한다.\n"
+        "[신호 밀도 규칙 — 2026-06-12 실측 교훈] (다밴드면 밴드당) and 조건은"
+        " 10개 이하로 하라. 조건 15개+의 교집합은 기본값에서 신호 0건이었다"
+        "(생성물 2종 실측). default는 각 축의 두 번째로 느슨한 값으로 잡아"
+        " 기본값 렌더가 실제 신호를 내게 하라 — 엄격화는 스윕 축이 담당한다.\n"
         "[엔진 비용 규칙 — 2026-06-12 실측] 누적초당·누적분당 계열 변수는"
         " 반드시 (N) 윈도우 인자를 붙여라 — 무인자형은 평가 시간 초과(352초"
         " 타임아웃 vs 윈도우형 31초 실측). 거래 빈도를 연속적으로 조절할 수"
@@ -150,7 +157,11 @@ _CALLABLE_WHITELIST = frozenset(
      "누적초당매수수량", "누적초당매도수량", "누적분당매수수량", "누적분당매도수량",
      "초당거래대금평균", "분당거래대금평균", "체결강도평균",
      "등락율각도", "횡보감지", "거래대금급증", "체결강도급등", "호가하락압력",
-     "호가갭발생", "구간호가총잔량비율", "전일비각도", "당일거래대금각도"]
+     "호가갭발생", "구간호가총잔량비율", "전일비각도", "당일거래대금각도",
+     # 검증된 시드(THETA/T2C3 = seed_902905 계열)·v5_composite가 실제로 쓰는
+     # <스칼라>N(시프트) 시프트 접근자 — 현재가N과 동일 계열. 2026-06-14 감사로
+     # "검증기가 검증된 시드조차 재현 못 함" 누락 보강(다밴드 생성 전제조건).
+     "초당거래대금N", "매수총잔량N", "매도총잔량N"]
     + [f"{side}잔량{i}{sfx}" for side in ("매도", "매수")
        for i in range(1, 6) for sfx in ("", "N")]
 )
@@ -424,6 +435,11 @@ def main(
         default="오더플로우 원리: 거래대금·체결강도·잔량 흡수의 조합으로 단기 방향성을 잡는다.",
         help="원리 설명 텍스트 ({principle_text} 슬롯에 삽입)",
     )
+    parser.add_argument(
+        "--feedback-file", type=str, default="",
+        help="[P2] 직전 결과 환류(회피/선호) 텍스트 파일 경로. 주면 유상태 생성, "
+             "없으면 무상태(기존 동작).",
+    )
 
     args = parser.parse_args(argv)
 
@@ -438,7 +454,11 @@ def main(
     lessons = ""
     if _LESSONS_PATH.is_file():
         lessons = _LESSONS_PATH.read_text(encoding="utf-8")
-    prompt_text = build_prompt(args.principles, reg_summary, lessons_text=lessons)
+    feedback = ""
+    if args.feedback_file and Path(args.feedback_file).is_file():
+        feedback = Path(args.feedback_file).read_text(encoding="utf-8")
+    prompt_text = build_prompt(args.principles, reg_summary, lessons_text=lessons,
+                               feedback_text=feedback)
 
     last_errors: List[str] = []
     payload: Optional[Dict[str, Any]] = None

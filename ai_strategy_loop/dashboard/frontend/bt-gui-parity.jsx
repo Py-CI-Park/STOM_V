@@ -532,22 +532,24 @@ function BtTradeRollingChart({ data }) {
 }
 
 // GUI 패리티 섹션 — 6 차트를 묶어 결과 분석 영역·전체화면에 배치(접이식 헤더 포함 선택).
-function BtGuiParitySection({ guiParity, columns }) {
+function BtGuiParitySection({ guiParity, columns, layoutMode }) {
   const gp = guiParity || {};
-  const grid = columns === 2;
+  const largeOneColumn = layoutMode === "large-one-column";
+  const grid = columns === 2 && !largeOneColumn;
+  const layoutLabel = largeOneColumn ? "Evolution large one-column · 6 stacked graphs" : "부가정보 2×2 · 결과 2×1";
   return (
-    <div className="panel">
+    <div className={"panel" + (largeOneColumn ? " bt-gui-parity-large" : "")}>
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--amber)" }}></span>
           GUI 패리티 — STOM 백테스트 결과 이미지 2장
         </div>
-        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>부가정보 2×2 · 결과 2×1</span>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>{layoutLabel}</span>
       </div>
       <div className="panel-bd">
         <div style={grid
           ? { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 14 }
-          : { display: "flex", flexDirection: "column", gap: 14 }}>
+          : { display: "flex", flexDirection: "column", gap: largeOneColumn ? 18 : 14 }}>
           <BtMddRandomChart data={gp.mdd_random} />
           <BtDailyPnlChart data={gp.daily} />
           <BtHourlyPnlChart data={gp.hourly} />
