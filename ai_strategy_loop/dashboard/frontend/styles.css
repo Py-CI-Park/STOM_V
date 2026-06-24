@@ -769,6 +769,29 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
 /* ====== Process Flow Panel ====== */
 /* Phase12-A — .process-flow-row/.process-box* 룰 제거(죽은 CSS): Phase11 에서 박스행이
    SVG 노드+화살표 다이어그램(.stom-flow-*, styles.css 하단)으로 대체돼 더는 참조되지 않음. */
+.process-detail-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 8px 0 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(76, 214, 179, 0.32);
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, rgba(76, 214, 179, 0.11), rgba(210, 160, 70, 0.05), var(--bg-0));
+}
+.process-detail-callout b {
+  display: block;
+  color: var(--ink-0);
+  font-size: 13px;
+}
+.process-detail-callout small {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 1.45;
+}
 .process-live-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1092,6 +1115,10 @@ table.gens tbody tr.current td:first-child { box-shadow: inset 2px 0 0 var(--amb
   .process-explain-grid,
   .process-timing-grid {
     grid-template-columns: 1fr 1fr;
+  }
+  .process-detail-callout {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 /* Log pane */

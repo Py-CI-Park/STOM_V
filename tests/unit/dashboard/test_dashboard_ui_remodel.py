@@ -227,6 +227,8 @@ def test_process_tab_documents_condition_discovery_defaults() -> None:
         assert marker in src
     assert "process-defaults-table" in src
     assert ".process-defaults-panel" in css
+    assert "상세 프로세스" in src
+    assert ".process-detail-callout" in css
 
 
 def test_g004_editor_legacy_tools_and_variable_influence_contracts() -> None:

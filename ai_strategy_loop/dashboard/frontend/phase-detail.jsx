@@ -823,6 +823,15 @@ function ProcessFlowPanel({ state }) {
           background: "var(--amber)", transition: "width .3s ease",
         }}></div>
       </div>
+      <div className="process-detail-callout" aria-label="상세 프로세스 안내">
+        <div>
+          <b>상세 프로세스</b>
+          <small>아래 네이티브 그래프·타이밍·로그가 현재 정본입니다. 전체 설명 문서는 읽기 전용 참고 자료로 별도 확인할 수 있습니다.</small>
+        </div>
+        <a className="btn" href="/process_flow" target="_blank" rel="noreferrer">
+          상세 프로세스 문서 열기
+        </a>
+      </div>
       <div className="process-live-strip">
         <span><b>현재 노드</b> {activeStep ? activeStep.label : "미정"}</span>
         <span><b>phase</b> {latestPhase}</span>
