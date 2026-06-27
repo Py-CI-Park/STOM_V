@@ -47,6 +47,12 @@ def test_condition_discovery_preset_validation_and_field_spec():
         "process-research",
         "promotion-review",
     ]
+    fast_entry = next(entry for entry in resolve_condition_discovery_policy(LoopConfig())["process_catalog"] if entry["number"] == 1)
+    research_entry = next(entry for entry in resolve_condition_discovery_policy(LoopConfig())["process_catalog"] if entry["number"] == 2)
+    assert "smoke_or_full_period_backtest" in fast_entry["research_actions"]
+    assert "full_period_validation" in research_entry["research_actions"]
+    assert "production_promote" in research_entry["blocked_actions"]
+    assert "전체기간" in research_entry["quick_start"]
     assert specs["condition_discovery_process"]["default"] is None
 
 
@@ -94,6 +100,10 @@ def test_research_tick_policy_uses_opening_window_and_staged_mdd():
     assert payload["capabilities"]["can_promote"] is False
     assert payload["capabilities"]["can_export"] is False
     assert payload["capabilities"]["can_live"] is False
+    assert payload["capabilities"]["research_execution_allowed"] is True
+    assert payload["capabilities"]["full_period_research_allowed"] is True
+    assert payload["capabilities"]["condition_generation_allowed"] is True
+    assert payload["capabilities"]["condition_improvement_allowed"] is True
     assert [entry["code"] for entry in payload["process_catalog"]] == [
         "fast-discovery",
         "process-research",
@@ -136,6 +146,8 @@ def test_promotion_min_policy_requires_full_session_boundary_candidate():
     assert payload["current_process"]["code"] == "promotion-review"
     assert payload["capabilities"]["can_promote"] is False
     assert payload["capabilities"]["promotion_review_allowed"] is True
+    assert payload["capabilities"]["research_execution_allowed"] is False
+    assert payload["capabilities"]["full_period_research_allowed"] is False
     assert payload["capabilities"]["promotion_requirements"] == {
         "frozen_snapshot_required": True,
         "evidence_health_required": True,

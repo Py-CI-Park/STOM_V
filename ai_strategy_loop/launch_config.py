@@ -252,13 +252,13 @@ def config_field_specs() -> List[Dict[str, Any]]:
         {
             "name": "condition_discovery_preset", "label": "Condition Discovery Preset", "type": "select",
             "choices": list(CONDITION_DISCOVERY_PRESETS), "default": d.condition_discovery_preset,
-            "help": "fast=빠른 탐색, research=프롬프트/equity/evidence 보존 연구, promotion=동결 후보 승격 검토. 점수는 advisory이고 evidence/hard gate/인간 승인 우선.",
+            "help": "fast/research는 생성·백테스트·전체기간 분석·개선 루프를 바로 연구로 실행한다. promotion은 동결 후보 승격 검토 전용이다. 점수는 advisory이고 export/live/final promotion은 별도 승인 전 차단.",
         },
         {
             "name": "condition_discovery_process", "label": "Condition Discovery Process", "type": "select",
             "choices": [entry.code for entry in CONDITION_DISCOVERY_PROCESS_CATALOG],
             "default": d.condition_discovery_process,
-            "help": "선택 표시용 프로세스 번호/코드. 1 fast-discovery→fast, 2 process-research→research, 3 promotion-review→promotion. preset과 함께 오면 불일치 시 거부한다.",
+            "help": "프로세스 번호/코드 선택. 1 fast-discovery=빠른 연구 시작, 2 process-research=전체기간 분석·조건식 개선 루프, 3 promotion-review=동결 승격 검토. preset과 불일치하면 거부한다.",
         },
         {
             "name": "bt_timeframe", "label": "Backtest Timeframe", "type": "select",

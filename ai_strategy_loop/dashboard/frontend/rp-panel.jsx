@@ -145,6 +145,7 @@ function ResearchProPanel({ baseUrl, wsStatus, runId }) {
         </div>
       ) : (
         <div className="rp-grid">
+          <_RpBigHeatmap baseUrl={baseUrl} isDemo={isDemo} runId={selRun} key={"heatmap" + selRun + refreshKey} />
           <_RpHallOfFame baseUrl={baseUrl} isDemo={isDemo} onOpenWorkbench={onOpenWorkbench} key={"hof" + refreshKey} />
           <div className="rp-card">
             <div className="rp-card-hd">

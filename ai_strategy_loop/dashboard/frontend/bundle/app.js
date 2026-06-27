@@ -9162,6 +9162,19 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
 
   // ai_strategy_loop/dashboard/frontend/rp-heatmap.jsx
+  function _rpSplitCrossLabel(c) {
+    const directTime = c && (c.time || c.time_label || c.time_segment || c._time_segment);
+    const directCap = c && (c.market_cap || c.market_cap_label || c.market_cap_segment || c._market_cap_segment || c.cap || c.cap_label);
+    if (directTime && directCap) return [String(directTime).trim(), String(directCap).trim()];
+    const label = String(c && c.label || "");
+    for (const sep of ["\xD7", " x ", " X ", "|", "/", "\xB7", " - "]) {
+      if (label.includes(sep)) {
+        const parts = label.split(sep);
+        return [parts[0] ? parts[0].trim() : "", parts.slice(1).join(sep).trim()];
+      }
+    }
+    return ["", ""];
+  }
   function _RpBigHeatmap({ baseUrl, isDemo, runId }) {
     const [data, setData] = useState_rp(null);
     const [loading, setLoading] = useState_rp(false);
@@ -9190,9 +9203,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       const capLabels = [];
       const cellMap = {};
       for (const c of cross) {
-        const parts = (c.label || "").split("\xD7");
-        const tl = parts[0] ? parts[0].trim() : c.label;
-        const cl = parts[1] ? parts[1].trim() : "";
+        const [tl, cl] = _rpSplitCrossLabel(c);
+        if (!tl || !cl) continue;
         if (!timeLabels.includes(tl)) timeLabels.push(tl);
         if (cl && !capLabels.includes(cl)) capLabels.push(cl);
         cellMap[tl + "\xD7" + cl] = c;
@@ -9212,8 +9224,8 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
   }
   function _RpHeatmapGrid({ grid }) {
     const { timeLabels, capLabels, cellMap } = grid;
-    const cols = `120px repeat(${capLabels.length}, minmax(64px, 1fr))`;
-    return /* @__PURE__ */ React.createElement("div", { className: "rp-heatmap", style: { gridTemplateColumns: cols } }, /* @__PURE__ */ React.createElement("div", { className: "rp-heatmap-corner mono" }, "\uC2DC\uAC04\uB300 \\ \uC2DC\uCD1D"), capLabels.map((cl) => /* @__PURE__ */ React.createElement("div", { key: "h" + cl, className: "rp-heatmap-colhd mono", title: cl }, cl)), timeLabels.map((tl) => /* @__PURE__ */ React.createElement(React.Fragment, { key: "r" + tl }, /* @__PURE__ */ React.createElement("div", { className: "rp-heatmap-rowhd mono", title: tl }, tl), capLabels.map((cl) => {
+    const cols = `112px repeat(${capLabels.length}, minmax(58px, 96px))`;
+    return /* @__PURE__ */ React.createElement("div", { className: "rp-heatmap-scroll" }, /* @__PURE__ */ React.createElement("div", { className: "rp-heatmap", style: { gridTemplateColumns: cols } }, /* @__PURE__ */ React.createElement("div", { className: "rp-heatmap-corner mono" }, "\uC2DC\uAC04\uB300 \\ \uC2DC\uCD1D"), capLabels.map((cl) => /* @__PURE__ */ React.createElement("div", { key: "h" + cl, className: "rp-heatmap-colhd mono", title: cl }, cl)), timeLabels.map((tl) => /* @__PURE__ */ React.createElement(React.Fragment, { key: "r" + tl }, /* @__PURE__ */ React.createElement("div", { className: "rp-heatmap-rowhd mono", title: tl }, tl), capLabels.map((cl) => {
       const cell = cellMap[tl + "\xD7" + cl];
       const er = cell ? cell.edge_ratio : null;
       const bg = _rpEdgeColor(er, 0.85);
@@ -9229,7 +9241,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         /* @__PURE__ */ React.createElement("strong", null, er != null ? _rpNum(er, 2) : "\u2014"),
         cell && typeof cell.count === "number" && /* @__PURE__ */ React.createElement("small", null, cell.count, "\uAC74")
       );
-    }))));
+    })))));
   }
   function _RpHallOfFame({ baseUrl, isDemo, onOpenWorkbench }) {
     const [hof, setHof] = useState_rp(null);
@@ -9560,7 +9572,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         onChange: (e) => setSelGen(Number(e.target.value) || 0),
         className: "rp-num-input mono"
       }
-    )), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onRefresh, disabled: isDemo }, "\u21BB \uC0C8\uB85C\uACE0\uCE68"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setShowFlow(true), "data-tip": "\uC9C4\uD654 \uC804\uCCB4 \uD504\uB85C\uC138\uC2A4 \uBCF4\uAE30" }, "\u{1F9ED} \uD504\uB85C\uC138\uC2A4"))), isDemo ? /* @__PURE__ */ React.createElement("div", { className: "rp-empty", style: { margin: 24 } }, "\uB370\uBAA8(\uBBF8\uC5F0\uACB0) \uBAA8\uB4DC \u2014 \uC2E4 run\uC5D0 \uC5F0\uACB0\uD558\uBA74 \uBD84\uC11D \uC6CC\uD06C\uBCA4\uCE58\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", { className: "rp-grid" }, /* @__PURE__ */ React.createElement(_RpHallOfFame, { baseUrl, isDemo, onOpenWorkbench, key: "hof" + refreshKey }), /* @__PURE__ */ React.createElement("div", { className: "rp-card" }, /* @__PURE__ */ React.createElement("div", { className: "rp-card-hd" }, /* @__PURE__ */ React.createElement("span", { className: "rp-card-title" }, "\uD788\uC2A4\uD1A0\uB9AC \xB7 Compare\uB294 \uD788\uC2A4\uD1A0\uB9AC \uD0ED \uC18C\uC720")), /* @__PURE__ */ React.createElement("div", { className: "rp-card-bd" }, /* @__PURE__ */ React.createElement("div", { className: "rp-empty", style: { textAlign: "left" } }, "\uACFC\uAC70 run/gen \uC7AC\uC5F4\uB78C\uACFC Compare\uB294 \uC911\uBCF5\uC744 \uB9C9\uAE30 \uC704\uD574 \uD788\uC2A4\uD1A0\uB9AC \uD0ED\uC73C\uB85C \uC774\uB3D9\uD588\uC2B5\uB2C8\uB2E4. Workbench\uB294 \uD604\uC7AC \uC120\uD0DD run\uC758 \uAE4A\uC740 \uBD84\uC11D\uACFC \uBA85\uC608\uC758 \uC804\uB2F9 \uD6C4\uBCF4 \uD655\uC778\uB9CC \uB2F4\uB2F9\uD569\uB2C8\uB2E4.", /* @__PURE__ */ React.createElement("div", { style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => {
+    )), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onRefresh, disabled: isDemo }, "\u21BB \uC0C8\uB85C\uACE0\uCE68"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setShowFlow(true), "data-tip": "\uC9C4\uD654 \uC804\uCCB4 \uD504\uB85C\uC138\uC2A4 \uBCF4\uAE30" }, "\u{1F9ED} \uD504\uB85C\uC138\uC2A4"))), isDemo ? /* @__PURE__ */ React.createElement("div", { className: "rp-empty", style: { margin: 24 } }, "\uB370\uBAA8(\uBBF8\uC5F0\uACB0) \uBAA8\uB4DC \u2014 \uC2E4 run\uC5D0 \uC5F0\uACB0\uD558\uBA74 \uBD84\uC11D \uC6CC\uD06C\uBCA4\uCE58\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("div", { className: "rp-grid" }, /* @__PURE__ */ React.createElement(_RpBigHeatmap, { baseUrl, isDemo, runId: selRun, key: "heatmap" + selRun + refreshKey }), /* @__PURE__ */ React.createElement(_RpHallOfFame, { baseUrl, isDemo, onOpenWorkbench, key: "hof" + refreshKey }), /* @__PURE__ */ React.createElement("div", { className: "rp-card" }, /* @__PURE__ */ React.createElement("div", { className: "rp-card-hd" }, /* @__PURE__ */ React.createElement("span", { className: "rp-card-title" }, "\uD788\uC2A4\uD1A0\uB9AC \xB7 Compare\uB294 \uD788\uC2A4\uD1A0\uB9AC \uD0ED \uC18C\uC720")), /* @__PURE__ */ React.createElement("div", { className: "rp-card-bd" }, /* @__PURE__ */ React.createElement("div", { className: "rp-empty", style: { textAlign: "left" } }, "\uACFC\uAC70 run/gen \uC7AC\uC5F4\uB78C\uACFC Compare\uB294 \uC911\uBCF5\uC744 \uB9C9\uAE30 \uC704\uD574 \uD788\uC2A4\uD1A0\uB9AC \uD0ED\uC73C\uB85C \uC774\uB3D9\uD588\uC2B5\uB2C8\uB2E4. Workbench\uB294 \uD604\uC7AC \uC120\uD0DD run\uC758 \uAE4A\uC740 \uBD84\uC11D\uACFC \uBA85\uC608\uC758 \uC804\uB2F9 \uD6C4\uBCF4 \uD655\uC778\uB9CC \uB2F4\uB2F9\uD569\uB2C8\uB2E4.", /* @__PURE__ */ React.createElement("div", { style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => {
       try {
         localStorage.setItem("stom_active_tab", "evolution");
         localStorage.setItem("stom_active_evolution_tab", "records");
@@ -20217,7 +20229,10 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       label: "Fast discovery",
       authority: "advisory research",
       capability: { can_promote: false, can_export: false, can_live: false },
-      detail: "\uBE60\uB978 \uC870\uAC74 \uD0D0\uC0C9\uC6A9 projection\uC785\uB2C8\uB2E4. \uD6C4\uBCF4 \uC124\uBA85\uACFC \uC815\uB82C\uB9CC \uD558\uBA70 \uC2B9\uACA9 \uAD8C\uD55C\uC740 \uC5C6\uC2B5\uB2C8\uB2E4."
+      detail: "\uBE60\uB978 \uC870\uAC74 \uD0D0\uC0C9\uC6A9 projection\uC785\uB2C8\uB2E4. \uD6C4\uBCF4 \uC124\uBA85\uACFC \uC815\uB82C\uB9CC \uD558\uBA70 \uC2B9\uACA9 \uAD8C\uD55C\uC740 \uC5C6\uC2B5\uB2C8\uB2E4.",
+      researchActions: ["candidate_generation", "smoke_or_full_period_backtest", "edge_ratio_analysis", "condition_improvement_loop"],
+      blockedActions: ["production_promote", "export", "live"],
+      quickStart: "1\uBC88\uC740 \uBE60\uB974\uAC8C \uD6C4\uBCF4\uB97C \uB9CC\uB4E4\uACE0 \uACE7\uBC14\uB85C \uC804\uCCB4\uAE30\uAC04/\uC2A4\uBAA8\uD06C \uC5F0\uAD6C\uB97C \uBC18\uBCF5\uD569\uB2C8\uB2E4."
     },
     {
       number: 2,
@@ -20226,7 +20241,10 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       label: "Process research",
       authority: "advisory research",
       capability: { can_promote: false, can_export: false, can_live: false },
-      detail: "full-period research_validation\uACFC advisory_split evidence\uB97C \uBCF4\uC874\uD558\uB294 \uC5F0\uAD6C projection\uC785\uB2C8\uB2E4."
+      detail: "full-period research_validation\uACFC advisory_split evidence\uB97C \uBCF4\uC874\uD558\uB294 \uC5F0\uAD6C projection\uC785\uB2C8\uB2E4.",
+      researchActions: ["full_period_validation", "candidate_generation", "evidence_preservation", "edge_ratio_segment_analysis", "condition_improvement_loop"],
+      blockedActions: ["clean_oos_promotion_claim", "production_promote", "export", "live"],
+      quickStart: "2\uBC88\uC740 \uC804\uCCB4\uAE30\uAC04 \uBC31\uD14C\uC2A4\uD2B8\u2192\uBD84\uC11D\u2192\uC870\uAC74\uC2DD \uAC1C\uC120\uC744 \uBC18\uBCF5\uD558\uB294 \uC5F0\uAD6C \uB8E8\uD2F4\uC785\uB2C8\uB2E4."
     },
     {
       number: 3,
@@ -20235,7 +20253,10 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       label: "Promotion review",
       authority: "separate frozen promotion review",
       capability: { can_promote: false, can_export: false, can_live: false },
-      detail: "\uB3D9\uACB0 \uD6C4\uBCF4\uB97C \uBCC4\uB3C4 \uB9AC\uBDF0\uB85C \uAC80\uD1A0\uD558\uB294 projection\uC785\uB2C8\uB2E4. hard gate\xB7evidence health\xB7\uC778\uAC04 \uC2B9\uC778\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."
+      detail: "\uB3D9\uACB0 \uD6C4\uBCF4\uB97C \uBCC4\uB3C4 \uB9AC\uBDF0\uB85C \uAC80\uD1A0\uD558\uB294 projection\uC785\uB2C8\uB2E4. hard gate\xB7evidence health\xB7\uC778\uAC04 \uC2B9\uC778\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.",
+      researchActions: ["frozen_candidate_review", "evidence_health_review", "hard_gate_review"],
+      blockedActions: ["final_promotion_without_human_approval", "export_without_approval", "live_without_approval"],
+      quickStart: "3\uBC88\uC740 \uC5F0\uAD6C \uC2E4\uD589\uC774 \uC544\uB2C8\uB77C \uB3D9\uACB0 \uD6C4\uBCF4\uC758 \uC2B9\uACA9 \uAC00\uB2A5\uC131\uC744 \uB530\uB85C \uAC80\uD1A0\uD569\uB2C8\uB2E4."
     }
   ];
   var FULL_PIPELINE_STEPS = [
@@ -20270,6 +20291,11 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       body: "\uC2B9\uACA9\uC740 \uBCC4\uB3C4 \uB3D9\uACB0 \uB9AC\uBDF0\uC5D0\uC11C\uB9CC \uD310\uB2E8\uD569\uB2C8\uB2E4. promote/export/live \uAD8C\uD55C\uC740 \uC5EC\uAE30\uC11C \uC0DD\uAE30\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."
     }
   ];
+  function _listText(value, fallback = "\u2014") {
+    if (Array.isArray(value)) return value.filter(Boolean).join(" \xB7 ") || fallback;
+    if (typeof value === "string" && value.trim()) return value.trim();
+    return fallback;
+  }
   function _processCatalogRows(pageData) {
     const discovery = (pageData == null ? void 0 : pageData.condition_discovery) || {};
     const raw = discovery.process_catalog || (pageData == null ? void 0 : pageData.process_catalog);
@@ -20283,7 +20309,10 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         label: row.label || row.title || row.name || row.code || `process-${i + 1}`,
         authority: row.authority || row.mode || row.capability_label || "advisory research",
         capability: row.capability || row.capabilities || row.authority_guard || row,
-        detail: row.detail || row.description || row.purpose || "metadata-provided process projection"
+        detail: row.detail || row.description || row.purpose || "metadata-provided process projection",
+        researchActions: row.research_actions || row.researchActions || row.allowed_research_actions || row.allowedActions,
+        blockedActions: row.blocked_actions || row.blockedActions || row.production_blockers || row.blockedActions,
+        quickStart: row.quick_start || row.quickStart || row.operator_hint || ""
       };
     }).filter((row) => row.code || row.name || Number.isFinite(row.number));
     return normalized.length ? normalized : PROCESS_FALLBACK_CATALOG;
@@ -20461,8 +20490,16 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     });
     const pageData = (state == null ? void 0 : state.page_data) || {};
     const processMeta = _selectedProcessMeta(pageData);
-    const selectedProcess = processMeta.selected;
+    const selectedProcessFromState = processMeta.selected;
+    const selectedProcessCodeFromState = selectedProcessFromState.code || "";
+    const [selectedProcessCode, setSelectedProcessCode] = useState_ph(selectedProcessCodeFromState);
+    useEffect_ph(() => {
+      setSelectedProcessCode(selectedProcessCodeFromState);
+    }, [selectedProcessCodeFromState]);
+    const selectedProcess = processMeta.rows.find((row) => row.code === selectedProcessCode) || selectedProcessFromState;
     const selectedCapability = selectedProcess.capability || {};
+    const selectedResearchActions = Array.isArray(selectedProcess.researchActions) ? selectedProcess.researchActions : [];
+    const processAllowsResearch = selectedResearchActions.some((action) => action === "candidate_generation" || action === "smoke_or_full_period_backtest" || action === "full_period_validation" || action === "condition_improvement_loop");
     const warmSession = (pageData == null ? void 0 : pageData.warm_session) || {};
     const warmHasMetadata = Object.keys(warmSession).length > 0;
     const warmPrepare = _warmValue(warmSession, ["prepare_elapsed_sec", "prepare_seconds", "warm_prepare_seconds"]);
@@ -20488,8 +20525,28 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       transition: "width .3s ease"
     } })), /* @__PURE__ */ React.createElement("div", { className: "process-detail-callout", "aria-label": "\uC0C1\uC138 \uD504\uB85C\uC138\uC2A4 \uC548\uB0B4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "\uC0C1\uC138 \uD504\uB85C\uC138\uC2A4"), /* @__PURE__ */ React.createElement("small", null, "\uC544\uB798 \uB124\uC774\uD2F0\uBE0C \uADF8\uB798\uD504\xB7\uD0C0\uC774\uBC0D\xB7\uB85C\uADF8\uAC00 \uD604\uC7AC \uC815\uBCF8\uC785\uB2C8\uB2E4. \uC804\uCCB4 \uC124\uBA85 \uBB38\uC11C\uB294 \uC77D\uAE30 \uC804\uC6A9 \uCC38\uACE0 \uC790\uB8CC\uB85C \uBCC4\uB3C4 \uD655\uC778\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("a", { className: "btn", href: "/process_flow", target: "_blank", rel: "noreferrer" }, "\uC0C1\uC138 \uD504\uB85C\uC138\uC2A4 \uBB38\uC11C \uC5F4\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "process-live-strip" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "\uD604\uC7AC \uB178\uB4DC"), " ", activeStep ? activeStep.label : "\uBBF8\uC815"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "phase"), " ", latestPhase), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "current_step"), " ", currentStep >= 0 ? currentStep : "\u2014"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "\uCD5C\uADFC \uB85C\uADF8"), " ", lastLog)), /* @__PURE__ */ React.createElement("div", { className: "process-selector-panel", "aria-label": "\uD504\uB85C\uC138\uC2A4 \uC120\uD0DD \uC0C1\uD0DC" }, /* @__PURE__ */ React.createElement("div", { className: "process-selector-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "Process selector"), /* @__PURE__ */ React.createElement("small", null, "state.page_data.condition_discovery.process \xB7 process_catalog projection (", processMeta.source, ")")), /* @__PURE__ */ React.createElement("span", { className: "process-authority-chip" }, selectedProcess.authority)), /* @__PURE__ */ React.createElement("div", { className: "process-selector-row" }, processMeta.rows.map((row) => {
       const active = row === selectedProcess || row.code === selectedProcess.code;
-      return /* @__PURE__ */ React.createElement("div", { key: `${row.number}-${row.code || row.name}`, className: `process-selector-option ${active ? "active" : ""}` }, /* @__PURE__ */ React.createElement("span", { className: "process-selector-num" }, row.number), /* @__PURE__ */ React.createElement("b", null, row.name || row.code), /* @__PURE__ */ React.createElement("small", null, row.code, " \xB7 ", row.label));
-    })), /* @__PURE__ */ React.createElement("div", { className: "process-readout-grid" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC120\uD0DD process"), /* @__PURE__ */ React.createElement("b", null, selectedProcess.number, " \xB7 ", selectedProcess.name || selectedProcess.code), /* @__PURE__ */ React.createElement("small", null, selectedProcess.detail)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "validation names"), /* @__PURE__ */ React.createElement("b", null, "research_validation"), /* @__PURE__ */ React.createElement("small", null, "research evidence is reported as advisory_split, not clean promotion OOS")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "capability"), /* @__PURE__ */ React.createElement("div", { className: "process-capability-row" }, /* @__PURE__ */ React.createElement(CapabilityPill, { label: "can_promote", value: _capabilityValue(selectedCapability, "can_promote") }), /* @__PURE__ */ React.createElement(CapabilityPill, { label: "can_export", value: _capabilityValue(selectedCapability, "can_export") }), /* @__PURE__ */ React.createElement(CapabilityPill, { label: "can_live", value: _capabilityValue(selectedCapability, "can_live") })), /* @__PURE__ */ React.createElement("small", null, "fast/research are advisory; promotion still requires frozen review and human approval")))), /* @__PURE__ */ React.createElement("div", { className: "process-pipeline-panel", "aria-label": "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uC804\uCCB4 \uD30C\uC774\uD504\uB77C\uC778" }, /* @__PURE__ */ React.createElement("div", { className: "process-pipeline-head" }, /* @__PURE__ */ React.createElement("b", null, "Full pipeline \xB7 advisory research \u2192 frozen promotion review"), /* @__PURE__ */ React.createElement("small", null, "\uAE30\uC874 5-step \uADF8\uB798\uD504\uB294 \uC2E4\uD589 \uC0C1\uD0DC \uC694\uC57D\uC774\uACE0, \uC774 \uC139\uC158\uC740 \uC804\uCCB4 \uC5F0\uAD6C/\uAC80\uD1A0 \uACC4\uC57D\uC785\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "process-pipeline-steps" }, FULL_PIPELINE_STEPS.map((step) => /* @__PURE__ */ React.createElement("div", { key: step.key, className: "process-pipeline-step" }, /* @__PURE__ */ React.createElement("b", null, step.title), /* @__PURE__ */ React.createElement("small", null, step.body))))), /* @__PURE__ */ React.createElement("div", { className: "process-warm-panel", "aria-label": "warm session timing metadata" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "Warm timing metadata"), /* @__PURE__ */ React.createElement("small", null, warmHasMetadata ? "state.page_data.warm_session" : "warm metadata pending \u2014 existing display remains valid")), /* @__PURE__ */ React.createElement("div", { className: "process-warm-grid" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "mode/status"), warmMode), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "engines"), warmEngines), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "prepare"), typeof warmPrepare === "number" ? fmtElapsedSec(warmPrepare) : warmPrepare), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "run/timeout"), typeof warmRun === "number" ? fmtElapsedSec(warmRun) : warmRun))), /* @__PURE__ */ React.createElement("div", { className: "process-flow-cards", "aria-label": "\uD504\uB85C\uC138\uC2A4 \uD750\uB984 \uACC4\uC57D \uC694\uC57D" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB370\uC774\uD130 \uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", null, "\uC2E4\uC2DC\uAC04 \uC0C1\uD0DC"), /* @__PURE__ */ React.createElement("small", null, "\uD604\uC7AC \uC138\uB300\xB7\uD604\uC7AC \uB2E8\uACC4\xB7\uBC31\uD14C\uC2A4\uD2B8 \uB85C\uADF8\uB97C \uC77D\uAE30 \uC804\uC6A9\uC73C\uB85C \uD45C\uC2DC")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC0C1\uD0DC \uAD6C\uBD84"), /* @__PURE__ */ React.createElement("b", null, flowMode), /* @__PURE__ */ React.createElement("small", null, "live/archive/idle\uC744 \uAD6C\uBD84\uD574 \uC61B \uACB0\uACFC\uB97C \uC2E4\uC2DC\uAC04\uC73C\uB85C \uC624\uD574\uD558\uC9C0 \uC54A\uAC8C \uD568")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uD604\uC7AC \uB2E8\uACC4"), /* @__PURE__ */ React.createElement("b", null, activeStep ? `${currentStep + 1}. ${activeStep.label}` : "\uBBF8\uC815"), /* @__PURE__ */ React.createElement("small", null, phaseElapsed != null ? `\uD604\uC7AC \uB2E8\uACC4 \uACBD\uACFC ${fmtElapsedSec(phaseElapsed)}` : "\uB2E8\uACC4 \uACBD\uACFC \uB300\uAE30")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB2E8\uACC4 \uC9C4\uD589"), /* @__PURE__ */ React.createElement("b", null, progressLabel), /* @__PURE__ */ React.createElement("small", null, "\uC608\uCE21\uAC12\uC774 \uC544\uB2C8\uB77C \uC2E4\uC81C current_step \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC18C\uC694\uC2DC\uAC04"), /* @__PURE__ */ React.createElement("b", null, timingRows.filter((row) => row.elapsed !== "\u2014").length, "/", totalSteps), /* @__PURE__ */ React.createElement("small", null, "\uAC01 \uB2E8\uACC4\uAC00 \uB05D\uB09C \uB4A4 \uB204\uC801\uB418\uB294 \uC2E4\uC81C \uC2DC\uAC04 \uD45C\uBCF8")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB85C\uADF8"), /* @__PURE__ */ React.createElement("b", null, logs.length), /* @__PURE__ */ React.createElement("small", null, "\uC5D4\uC9C4/\uBC31\uD14C\uC2A4\uD2B8 \uB85C\uADF8 \uCD5C\uADFC ", logWindow.length, "\uC904 \uC790\uB3D9 \uC2A4\uD06C\uB864"))), /* @__PURE__ */ React.createElement(
+      const selectRow = () => setSelectedProcessCode(row.code || "");
+      return /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          key: `${row.number}-${row.code || row.name}`,
+          className: `process-selector-option ${active ? "active" : ""}`,
+          role: "button",
+          tabIndex: 0,
+          "aria-pressed": active ? "true" : "false",
+          onClick: selectRow,
+          onKeyDown: (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              selectRow();
+            }
+          }
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "process-selector-num" }, row.number),
+        /* @__PURE__ */ React.createElement("b", null, row.name || row.code),
+        /* @__PURE__ */ React.createElement("small", null, row.code, " \xB7 ", row.label)
+      );
+    })), /* @__PURE__ */ React.createElement("div", { className: "process-readout-grid" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC120\uD0DD process"), /* @__PURE__ */ React.createElement("b", null, selectedProcess.number, " \xB7 ", selectedProcess.name || selectedProcess.code), /* @__PURE__ */ React.createElement("small", null, selectedProcess.detail)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "validation names"), /* @__PURE__ */ React.createElement("b", null, "research_validation"), /* @__PURE__ */ React.createElement("small", null, "research evidence is reported as advisory_split, not clean promotion OOS")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "capability"), /* @__PURE__ */ React.createElement("div", { className: "process-capability-row" }, /* @__PURE__ */ React.createElement(CapabilityPill, { label: "can_promote", value: _capabilityValue(selectedCapability, "can_promote") }), /* @__PURE__ */ React.createElement(CapabilityPill, { label: "can_export", value: _capabilityValue(selectedCapability, "can_export") }), /* @__PURE__ */ React.createElement(CapabilityPill, { label: "can_live", value: _capabilityValue(selectedCapability, "can_live") })), /* @__PURE__ */ React.createElement("small", null, "fast/research are advisory; promotion still requires frozen review and human approval")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, processAllowsResearch ? "research allowed" : "review only"), /* @__PURE__ */ React.createElement("b", null, processAllowsResearch ? "\uC989\uC2DC \uC5F0\uAD6C \uAC00\uB2A5" : "\uC2B9\uACA9 \uAC80\uD1A0 \uC804\uC6A9"), /* @__PURE__ */ React.createElement("small", null, _listText(selectedProcess.researchActions, processAllowsResearch ? "candidate_generation \xB7 full_period_backtest \xB7 condition_improvement_loop" : "frozen_candidate_review \xB7 evidence_health_review \xB7 hard_gate_review"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "still blocked"), /* @__PURE__ */ React.createElement("b", null, "\uC6B4\uC601 \uBC18\uC601 \uCC28\uB2E8"), /* @__PURE__ */ React.createElement("small", null, _listText(selectedProcess.blockedActions, "production_promote \xB7 export \xB7 live"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "quick start"), /* @__PURE__ */ React.createElement("b", null, selectedProcess.number, "\uBC88 \uC120\uD0DD \uC548\uB0B4"), /* @__PURE__ */ React.createElement("small", null, selectedProcess.quickStart || "\uC120\uD0DD\uD55C \uD504\uB85C\uC138\uC2A4\uC758 \uC5F0\uAD6C/\uAC80\uD1A0 \uBC94\uC704\uB97C \uD655\uC778\uD55C \uB4A4 \uC2DC\uC791\uD569\uB2C8\uB2E4.")))), /* @__PURE__ */ React.createElement("div", { className: "process-pipeline-panel", "aria-label": "\uC870\uAC74\uC2DD \uBC1C\uAD74 \uC804\uCCB4 \uD30C\uC774\uD504\uB77C\uC778" }, /* @__PURE__ */ React.createElement("div", { className: "process-pipeline-head" }, /* @__PURE__ */ React.createElement("b", null, "Full pipeline \xB7 advisory research \u2192 frozen promotion review"), /* @__PURE__ */ React.createElement("small", null, "\uAE30\uC874 5-step \uADF8\uB798\uD504\uB294 \uC2E4\uD589 \uC0C1\uD0DC \uC694\uC57D\uC774\uACE0, \uC774 \uC139\uC158\uC740 \uC804\uCCB4 \uC5F0\uAD6C/\uAC80\uD1A0 \uACC4\uC57D\uC785\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "process-pipeline-steps" }, FULL_PIPELINE_STEPS.map((step) => /* @__PURE__ */ React.createElement("div", { key: step.key, className: "process-pipeline-step" }, /* @__PURE__ */ React.createElement("b", null, step.title), /* @__PURE__ */ React.createElement("small", null, step.body))))), /* @__PURE__ */ React.createElement("div", { className: "process-warm-panel", "aria-label": "warm session timing metadata" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "Warm timing metadata"), /* @__PURE__ */ React.createElement("small", null, warmHasMetadata ? "state.page_data.warm_session" : "warm metadata pending \u2014 existing display remains valid")), /* @__PURE__ */ React.createElement("div", { className: "process-warm-grid" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "mode/status"), warmMode), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "engines"), warmEngines), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "prepare"), typeof warmPrepare === "number" ? fmtElapsedSec(warmPrepare) : warmPrepare), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, "run/timeout"), typeof warmRun === "number" ? fmtElapsedSec(warmRun) : warmRun))), /* @__PURE__ */ React.createElement("div", { className: "process-flow-cards", "aria-label": "\uD504\uB85C\uC138\uC2A4 \uD750\uB984 \uACC4\uC57D \uC694\uC57D" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB370\uC774\uD130 \uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", null, "\uC2E4\uC2DC\uAC04 \uC0C1\uD0DC"), /* @__PURE__ */ React.createElement("small", null, "\uD604\uC7AC \uC138\uB300\xB7\uD604\uC7AC \uB2E8\uACC4\xB7\uBC31\uD14C\uC2A4\uD2B8 \uB85C\uADF8\uB97C \uC77D\uAE30 \uC804\uC6A9\uC73C\uB85C \uD45C\uC2DC")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC0C1\uD0DC \uAD6C\uBD84"), /* @__PURE__ */ React.createElement("b", null, flowMode), /* @__PURE__ */ React.createElement("small", null, "live/archive/idle\uC744 \uAD6C\uBD84\uD574 \uC61B \uACB0\uACFC\uB97C \uC2E4\uC2DC\uAC04\uC73C\uB85C \uC624\uD574\uD558\uC9C0 \uC54A\uAC8C \uD568")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uD604\uC7AC \uB2E8\uACC4"), /* @__PURE__ */ React.createElement("b", null, activeStep ? `${currentStep + 1}. ${activeStep.label}` : "\uBBF8\uC815"), /* @__PURE__ */ React.createElement("small", null, phaseElapsed != null ? `\uD604\uC7AC \uB2E8\uACC4 \uACBD\uACFC ${fmtElapsedSec(phaseElapsed)}` : "\uB2E8\uACC4 \uACBD\uACFC \uB300\uAE30")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB2E8\uACC4 \uC9C4\uD589"), /* @__PURE__ */ React.createElement("b", null, progressLabel), /* @__PURE__ */ React.createElement("small", null, "\uC608\uCE21\uAC12\uC774 \uC544\uB2C8\uB77C \uC2E4\uC81C current_step \uAE30\uC900")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uC18C\uC694\uC2DC\uAC04"), /* @__PURE__ */ React.createElement("b", null, timingRows.filter((row) => row.elapsed !== "\u2014").length, "/", totalSteps), /* @__PURE__ */ React.createElement("small", null, "\uAC01 \uB2E8\uACC4\uAC00 \uB05D\uB09C \uB4A4 \uB204\uC801\uB418\uB294 \uC2E4\uC81C \uC2DC\uAC04 \uD45C\uBCF8")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uB85C\uADF8"), /* @__PURE__ */ React.createElement("b", null, logs.length), /* @__PURE__ */ React.createElement("small", null, "\uC5D4\uC9C4/\uBC31\uD14C\uC2A4\uD2B8 \uB85C\uADF8 \uCD5C\uADFC ", logWindow.length, "\uC904 \uC790\uB3D9 \uC2A4\uD06C\uB864"))), /* @__PURE__ */ React.createElement(
       ProcessFlowDiagram,
       {
         currentStep,
@@ -31712,6 +31769,19 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       textAlign: "center"
     } }, msg);
   }
+  function _splitCrossLabel(c) {
+    const directTime = c && (c.time || c.time_label || c.time_segment || c._time_segment);
+    const directCap = c && (c.market_cap || c.market_cap_label || c.market_cap_segment || c._market_cap_segment || c.cap || c.cap_label);
+    if (directTime && directCap) return [String(directTime).trim(), String(directCap).trim()];
+    const label = String(c && c.label || "");
+    for (const sep of ["\xD7", " x ", " X ", "|", "/", "\xB7", " - "]) {
+      if (label.includes(sep)) {
+        const parts = label.split(sep);
+        return [parts[0] ? parts[0].trim() : "", parts.slice(1).join(sep).trim()];
+      }
+    }
+    return ["", ""];
+  }
   function EdgeRatioPanel({ baseUrl, wsStatus, runId }) {
     const [data, setData] = useState_an(null);
     const [loading, setLoading] = useState_an(false);
@@ -31745,9 +31815,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       const parsedCap = [];
       const cellMap = {};
       for (const c of crossSegs) {
-        const parts = String(c && c.label || "").split("\xD7");
-        const tl = parts[0] ? parts[0].trim() : "";
-        const cl = parts[1] ? parts[1].trim() : "";
+        const [tl, cl] = _splitCrossLabel(c);
         if (!tl || !cl) continue;
         if (!parsedTime.includes(tl)) parsedTime.push(tl);
         if (!parsedCap.includes(cl)) parsedCap.push(cl);
@@ -31758,7 +31826,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       if (timeLabels.length === 0 || capLabels.length === 0) return null;
       return { timeLabels, capLabels, cellMap };
     }, [crossSegs, timeSegs, capSegs]);
-    const hasData = data && (typeof global_.edge_ratio === "number" || crossSegs.length > 0 || changeSegs.length > 0);
+    const hasData = data && (typeof global_.edge_ratio === "number" || crossSegs.length > 0 || changeSegs.length > 0 || timeSegs.length > 0 || capSegs.length > 0);
     return /* @__PURE__ */ React.createElement("div", { className: "panel edge-ratio-panel-wide" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 Edge Ratio \uD1B5\uD569 \uBD84\uC11D", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uC2DC\uAC04\uB300\xD7\uC2DC\uAC00\uCD1D\uC561 \uD0D0\uC0C9 \uD788\uD2B8\uB9F5\uACFC edge_ratio \uC138\uADF8\uBA3C\uD2B8\uB97C \uD55C \uD654\uBA74\uC5D0\uC11C \uD1B5\uD569"), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -31794,7 +31862,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     ), typeof global_.trade_count === "number" && /* @__PURE__ */ React.createElement(_EdgeStat, { label: "\uAC70\uB798\uC218", value: String(global_.trade_count), color: "var(--ink-2)" }))), heatmap ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 8, letterSpacing: ".1em", textTransform: "uppercase" } }, "\uC2DC\uAC04\uB300 \xD7 \uC2DC\uCD1D \uAD50\uCC28 \uD788\uD2B8\uB9F5 (edge_ratio \xB7 1.0 \uAE30\uC900 \uBC1C\uC0B0\uC0C9)"), /* @__PURE__ */ React.createElement(_Heatmap, { heatmap })) : crossSegs.length > 0 ? (
       /* fallback: cross 목록 */
       /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6, letterSpacing: ".1em", textTransform: "uppercase" } }, "\uAD50\uCC28 \uC138\uADF8\uBA3C\uD2B8"), /* @__PURE__ */ React.createElement(_SegBarList, { segs: crossSegs }))
-    ) : null, changeSegs.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6, letterSpacing: ".1em", textTransform: "uppercase" } }, "\uB4F1\uB77D\uB960 \uAD6C\uAC04\uBCC4 edge_ratio"), /* @__PURE__ */ React.createElement(_SegBarList, { segs: changeSegs })), !crossSegs.length && timeSegs.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6, letterSpacing: ".1em", textTransform: "uppercase" } }, "\uC2DC\uAC04\uB300\uBCC4 edge_ratio"), /* @__PURE__ */ React.createElement(_SegBarList, { segs: timeSegs })), !crossSegs.length && capSegs.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6, letterSpacing: ".1em", textTransform: "uppercase" } }, "\uC2DC\uCD1D \uBC34\uB4DC\uBCC4 edge_ratio"), /* @__PURE__ */ React.createElement(_SegBarList, { segs: capSegs })))));
+    ) : hasData ? /* @__PURE__ */ React.createElement("div", { className: "edge-heatmap-missing" }, /* @__PURE__ */ React.createElement(_EmptyState, { msg: "Edge Ratio \uC804\uC5ED \uB370\uC774\uD130\uB294 \uC788\uC73C\uB098 \uC2DC\uAC04\uB300\xD7\uC2DC\uCD1D \uAD50\uCC28 \uD788\uD2B8\uB9F5 \uC140\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. CSV\uC5D0 B_\uC2DC\uBD84\uCD08/B_\uC2DC\uAC00\uCD1D\uC561 \uAD50\uCC28 \uD45C\uBCF8\uC774 \uB204\uC801\uB418\uBA74 \uD788\uD2B8\uB9F5\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4." })) : null, changeSegs.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6, letterSpacing: ".1em", textTransform: "uppercase" } }, "\uB4F1\uB77D\uB960 \uAD6C\uAC04\uBCC4 edge_ratio"), /* @__PURE__ */ React.createElement(_SegBarList, { segs: changeSegs })), !crossSegs.length && timeSegs.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6, letterSpacing: ".1em", textTransform: "uppercase" } }, "\uC2DC\uAC04\uB300\uBCC4 edge_ratio"), /* @__PURE__ */ React.createElement(_SegBarList, { segs: timeSegs })), !crossSegs.length && capSegs.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginBottom: 6, letterSpacing: ".1em", textTransform: "uppercase" } }, "\uC2DC\uCD1D \uBC34\uB4DC\uBCC4 edge_ratio"), /* @__PURE__ */ React.createElement(_SegBarList, { segs: capSegs })))));
   }
   function _EdgeStat({ label, value, color: color2, hint }) {
     return /* @__PURE__ */ React.createElement(

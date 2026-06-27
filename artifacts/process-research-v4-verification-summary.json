@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "kind": "process-research-v4-verification-summary",
+  "createdAt": "2026-06-27T05:25:47.693956Z",
+  "commands": [
+    {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/unit/test_benchmark_warm_engines.py",
+        "-q"
+      ],
+      "status": "passed",
+      "summary": "7 passed in 8.56s"
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/unit/test_benchmark_warm_engines.py",
+        "tests/unit/test_launch_config.py",
+        "tests/unit/test_condition_discovery_policy.py",
+        "tests/unit/test_dashboard_validation_views.py",
+        "tests/unit/test_warm_session_window.py",
+        "tests/unit/dashboard/test_dashboard_ui_remodel.py",
+        "tests/unit/dashboard/test_p11_process_flow.py",
+        "-q"
+      ],
+      "status": "passed",
+      "summary": "110 passed in 16.19s"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "build:app"
+      ],
+      "cwd": "ai_strategy_loop/dashboard/webui-build",
+      "status": "passed",
+      "summary": "app.js v=ea4b6150, stom-ui.js v=f41f5701"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "harness"
+      ],
+      "cwd": "ai_strategy_loop/dashboard/webui-build",
+      "status": "passed",
+      "summary": "allPass true"
+    },
+    {
+      "command": [
+        "python",
+        "-c",
+        "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8770/health', timeout=5).read().decode())"
+      ],
+      "status": "passed",
+      "summary": "{\"status\":\"ok\",\"contract_version\":2}"
+    },
+    {
+      "command": [
+        "browser",
+        "automation"
+      ],
+      "status": "passed",
+      "summary": "artifacts/process-research-v4-browser-verification.json pass=true buildVersion=ea4b6150"
+    },
+    {
+      "command": [
+        "python",
+        "scripts/verify_nonrelease_sync.py"
+      ],
+      "status": "passed",
+      "summary": "OK"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "status": "passed",
+      "summary": "no whitespace errors; CRLF warnings only"
+    },
+    {
+      "command": [
+        "git",
+        "status",
+        "--short",
+        "--",
+        "_database",
+        "_database_v3k_shadow",
+        "_log",
+        "backup",
+        "*.db",
+        "backtest/graph",
+        ".omx/reports",
+        "v3k_settings*.json"
+      ],
+      "status": "passed",
+      "summary": "no protected runtime path output"
+    }
+  ],
+  "reviewEvidence": {
+    "benchmarkBackendReview": "agent://147-BenchmarkBackendReview CLEAR/APPROVE",
+    "dashboardUiReview": "agent://148-DashboardUiReview CLEAR/APPROVE",
+    "docsArtifactReview": "agent://149-DocsArtifactReview CLEAR/APPROVE",
+    "qaRedTeamReview": "agent://150-QaRedTeamReview passed"
+  }
+}

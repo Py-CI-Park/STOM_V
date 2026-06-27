@@ -105,6 +105,9 @@ class ProcessCatalogEntry:
     preset: str
     label: str
     description: str
+    research_actions: tuple[str, ...] = ()
+    blocked_actions: tuple[str, ...] = ()
+    quick_start: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -114,6 +117,10 @@ class ProcessCatalogEntry:
             "label": self.label,
             "description": self.description,
             "aliases": [str(self.number), self.code],
+            "authority": "advisory_research" if self.preset != PRESET_PROMOTION else "separate_frozen_promotion_review",
+            "research_actions": list(self.research_actions),
+            "blocked_actions": list(self.blocked_actions),
+            "quick_start": self.quick_start,
         }
 
 
@@ -166,21 +173,41 @@ PROCESS_CATALOG = (
         code=PROCESS_FAST_DISCOVERY,
         preset=PRESET_FAST,
         label="Fast discovery",
-        description="Fast advisory discovery over the existing fast preset.",
+        description="빠른 후보 발굴과 즉시 연구 시작용 projection입니다. 전체기간 테스트·분석·개선 루프는 research advisory로 허용됩니다.",
+        research_actions=(
+            "candidate_generation",
+            "smoke_or_full_period_backtest",
+            "edge_ratio_analysis",
+            "condition_improvement_loop",
+        ),
+        blocked_actions=("production_promote", "export", "live"),
+        quick_start="1번은 빠르게 후보를 만들고 곧바로 전체기간/스모크 연구를 반복합니다.",
     ),
     ProcessCatalogEntry(
         number=2,
         code=PROCESS_RESEARCH,
         preset=PRESET_RESEARCH,
         label="Process research",
-        description="Evidence-preserving advisory research over the existing research preset.",
+        description="전체기간 분석과 evidence 보존을 중심으로 조건식을 연구·개선하는 projection입니다.",
+        research_actions=(
+            "full_period_validation",
+            "candidate_generation",
+            "evidence_preservation",
+            "edge_ratio_segment_analysis",
+            "condition_improvement_loop",
+        ),
+        blocked_actions=("clean_oos_promotion_claim", "production_promote", "export", "live"),
+        quick_start="2번은 전체기간 백테스트→분석→조건식 개선을 반복하는 연구 루틴입니다.",
     ),
     ProcessCatalogEntry(
         number=3,
         code=PROCESS_PROMOTION_REVIEW,
         preset=PRESET_PROMOTION,
         label="Promotion review",
-        description="Frozen promotion-review projection over the existing promotion preset.",
+        description="동결 후보를 운영 승격 전 별도 리뷰로 검토하는 projection입니다.",
+        research_actions=("frozen_candidate_review", "evidence_health_review", "hard_gate_review"),
+        blocked_actions=("final_promotion_without_human_approval", "export_without_approval", "live_without_approval"),
+        quick_start="3번은 연구 실행이 아니라 동결 후보의 승격 가능성을 따로 검토합니다.",
     ),
 )
 _PROCESS_BY_CODE = {entry.code: entry for entry in PROCESS_CATALOG}
@@ -378,6 +405,10 @@ def _capability_flags(process: ProcessCatalogEntry, evidence_health: Mapping[str
         "can_promote": False,
         "can_export": False,
         "can_live": False,
+        "research_execution_allowed": not promotion_process,
+        "full_period_research_allowed": not promotion_process,
+        "condition_generation_allowed": not promotion_process,
+        "condition_improvement_allowed": not promotion_process,
         "promotion_review_allowed": promotion_process,
         "promotion_requirements": {
             "frozen_snapshot_required": promotion_process,

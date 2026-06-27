@@ -1,0 +1,458 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "base": "http://127.0.0.1:8770",
+  "startedAt": "2026-06-27T05:21:09.253Z",
+  "buildVersion": "ea4b6150",
+  "pages": [
+    {
+      "id": "overview",
+      "url": "http://127.0.0.1:8770/ui/evolution?fresh=ea4b6150",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "required": [
+        {
+          "needle": "조건식 AI",
+          "present": true
+        },
+        {
+          "needle": "프로세스",
+          "present": true
+        },
+        {
+          "needle": "연구실",
+          "present": true
+        }
+      ],
+      "nonEmptyBody": true
+    },
+    {
+      "id": "process",
+      "url": "http://127.0.0.1:8770/ui/evolution/process?fresh=ea4b6150",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "nonEmptyBody": true,
+      "selectorCount": 3,
+      "activeText": "3\npromotion-review\npromotion · Promotion review",
+      "processResearchActiveText": "2\nprocess-research\nresearch · Process research",
+      "required": [
+        {
+          "needle": "즉시 연구 가능",
+          "present": true
+        },
+        {
+          "needle": "운영 반영 차단",
+          "present": true
+        },
+        {
+          "needle": "QUICK START",
+          "present": true
+        },
+        {
+          "needle": "condition_improvement_loop",
+          "present": true
+        },
+        {
+          "needle": "full_period_validation",
+          "present": true
+        },
+        {
+          "needle": "Full pipeline",
+          "present": true
+        },
+        {
+          "needle": "REVIEW ONLY",
+          "present": true
+        },
+        {
+          "needle": "승격 검토 전용",
+          "present": true
+        },
+        {
+          "needle": "frozen_candidate_review",
+          "present": true
+        },
+        {
+          "needle": "final_promotion_without_human_approval",
+          "present": true
+        }
+      ]
+    },
+    {
+      "id": "lab",
+      "url": "http://127.0.0.1:8770/ui/evolution/lab?fresh=ea4b6150",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "nonEmptyBody": true,
+      "counts": {
+        "edgeHeatmapScroll": 1,
+        "edgeHeatmapMissing": 0,
+        "edgeHeatmapShell": 1,
+        "edgeWide": 1
+      },
+      "required": [
+        {
+          "needle": "연구실",
+          "present": true
+        },
+        {
+          "needle": "탐색 히트맵",
+          "present": true
+        },
+        {
+          "needle": "Edge Ratio",
+          "present": true
+        }
+      ]
+    },
+    {
+      "id": "workbench",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench?fresh=ea4b6150",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "nonEmptyBody": true,
+      "counts": {
+        "dashboardPagePro": 1,
+        "rpHeatmapScroll": 1,
+        "rpHeatmap": 1,
+        "rpEmpty": 1,
+        "rpCard": 3,
+        "cssMaxContent": true
+      },
+      "required": [
+        {
+          "needle": "STOM 분석 워크벤치",
+          "present": true
+        },
+        {
+          "needle": "candidate analysis",
+          "present": true
+        },
+        {
+          "needle": "HOF FIELD CONTRACT",
+          "present": true
+        },
+        {
+          "needle": "시간대 × 시가총액 탐색 히트맵",
+          "present": true
+        }
+      ]
+    },
+    {
+      "id": "backtest",
+      "url": "http://127.0.0.1:8770/ui/backtest?fresh=ea4b6150",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "nonEmptyBody": true,
+      "required": [
+        {
+          "needle": "백테스트 워크벤치",
+          "present": true
+        },
+        {
+          "needle": "매수 조건식",
+          "present": true
+        }
+      ]
+    },
+    {
+      "id": "records",
+      "url": "http://127.0.0.1:8770/ui/evolution/records?fresh=ea4b6150",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "nonEmptyBody": true,
+      "required": [
+        {
+          "needle": "히스토리",
+          "present": true
+        },
+        {
+          "needle": "RUN",
+          "present": true
+        },
+        {
+          "needle": "LIVE",
+          "present": true
+        }
+      ]
+    },
+    {
+      "id": "verdict",
+      "url": "http://127.0.0.1:8770/ui/evolution/verdict?fresh=ea4b6150",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "nonEmptyBody": true,
+      "required": [
+        {
+          "needle": "결정 감사",
+          "present": true
+        },
+        {
+          "needle": "append-only",
+          "present": true
+        }
+      ]
+    },
+    {
+      "id": "chartReplay",
+      "url": "http://127.0.0.1:8770/ui/chart-replay",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "nonEmptyBody": true,
+      "required": [
+        {
+          "needle": "차트 리플레이",
+          "present": true
+        },
+        {
+          "needle": "리플레이 설정",
+          "present": true
+        }
+      ]
+    }
+  ],
+  "completedAt": "2026-06-27T05:21:30.687Z",
+  "pass": true,
+  "screenshots": [
+    "artifacts/process-research-v4-process-page.png",
+    "artifacts/process-research-v4-lab-page.png",
+    "artifacts/process-research-v4-workbench-page.png"
+  ],
+  "tool": "browser",
+  "actions": [
+    {
+      "index": 1,
+      "timestamp": "2026-06-27T05:21:09.253000Z",
+      "verb": "navigate+assert",
+      "url": "http://127.0.0.1:8770/ui/evolution?fresh=ea4b6150",
+      "pageId": "overview",
+      "selectors": [
+        "body"
+      ],
+      "requiredNeedles": [
+        "조건식 AI",
+        "프로세스",
+        "연구실"
+      ],
+      "type": "navigate+assert",
+      "selector": "body",
+      "assertions": [
+        {
+          "selector": "body",
+          "type": "text-includes",
+          "needles": [
+            "조건식 AI",
+            "프로세스",
+            "연구실"
+          ]
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "timestamp": "2026-06-27T05:21:10.253000Z",
+      "verb": "navigate+assert",
+      "url": "http://127.0.0.1:8770/ui/evolution/process?fresh=ea4b6150",
+      "pageId": "process",
+      "selectors": [
+        "body"
+      ],
+      "requiredNeedles": [
+        "즉시 연구 가능",
+        "운영 반영 차단",
+        "QUICK START",
+        "condition_improvement_loop",
+        "full_period_validation",
+        "Full pipeline",
+        "REVIEW ONLY",
+        "승격 검토 전용",
+        "frozen_candidate_review",
+        "final_promotion_without_human_approval"
+      ],
+      "type": "navigate+assert",
+      "selector": "body",
+      "assertions": [
+        {
+          "selector": "body",
+          "type": "text-includes",
+          "needles": [
+            "즉시 연구 가능",
+            "운영 반영 차단",
+            "QUICK START",
+            "condition_improvement_loop",
+            "full_period_validation",
+            "Full pipeline",
+            "REVIEW ONLY",
+            "승격 검토 전용",
+            "frozen_candidate_review",
+            "final_promotion_without_human_approval"
+          ]
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "timestamp": "2026-06-27T05:21:11.253000Z",
+      "verb": "navigate+assert",
+      "url": "http://127.0.0.1:8770/ui/evolution/lab?fresh=ea4b6150",
+      "pageId": "lab",
+      "selectors": [
+        "body"
+      ],
+      "requiredNeedles": [
+        "연구실",
+        "탐색 히트맵",
+        "Edge Ratio"
+      ],
+      "type": "navigate+assert",
+      "selector": "body",
+      "assertions": [
+        {
+          "selector": "body",
+          "type": "text-includes",
+          "needles": [
+            "연구실",
+            "탐색 히트맵",
+            "Edge Ratio"
+          ]
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "timestamp": "2026-06-27T05:21:12.253000Z",
+      "verb": "navigate+assert",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench?fresh=ea4b6150",
+      "pageId": "workbench",
+      "selectors": [
+        "body"
+      ],
+      "requiredNeedles": [
+        "STOM 분석 워크벤치",
+        "candidate analysis",
+        "HOF FIELD CONTRACT",
+        "시간대 × 시가총액 탐색 히트맵"
+      ],
+      "type": "navigate+assert",
+      "selector": "body",
+      "assertions": [
+        {
+          "selector": "body",
+          "type": "text-includes",
+          "needles": [
+            "STOM 분석 워크벤치",
+            "candidate analysis",
+            "HOF FIELD CONTRACT",
+            "시간대 × 시가총액 탐색 히트맵"
+          ]
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "timestamp": "2026-06-27T05:21:13.253000Z",
+      "verb": "navigate+assert",
+      "url": "http://127.0.0.1:8770/ui/backtest?fresh=ea4b6150",
+      "pageId": "backtest",
+      "selectors": [
+        "body"
+      ],
+      "requiredNeedles": [
+        "백테스트 워크벤치",
+        "매수 조건식"
+      ],
+      "type": "navigate+assert",
+      "selector": "body",
+      "assertions": [
+        {
+          "selector": "body",
+          "type": "text-includes",
+          "needles": [
+            "백테스트 워크벤치",
+            "매수 조건식"
+          ]
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "timestamp": "2026-06-27T05:21:14.253000Z",
+      "verb": "navigate+assert",
+      "url": "http://127.0.0.1:8770/ui/evolution/records?fresh=ea4b6150",
+      "pageId": "records",
+      "selectors": [
+        "body"
+      ],
+      "requiredNeedles": [
+        "히스토리",
+        "RUN",
+        "LIVE"
+      ],
+      "type": "navigate+assert",
+      "selector": "body",
+      "assertions": [
+        {
+          "selector": "body",
+          "type": "text-includes",
+          "needles": [
+            "히스토리",
+            "RUN",
+            "LIVE"
+          ]
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "timestamp": "2026-06-27T05:21:15.253000Z",
+      "verb": "navigate+assert",
+      "url": "http://127.0.0.1:8770/ui/evolution/verdict?fresh=ea4b6150",
+      "pageId": "verdict",
+      "selectors": [
+        "body"
+      ],
+      "requiredNeedles": [
+        "결정 감사",
+        "append-only"
+      ],
+      "type": "navigate+assert",
+      "selector": "body",
+      "assertions": [
+        {
+          "selector": "body",
+          "type": "text-includes",
+          "needles": [
+            "결정 감사",
+            "append-only"
+          ]
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "timestamp": "2026-06-27T05:21:16.253000Z",
+      "verb": "navigate+assert",
+      "url": "http://127.0.0.1:8770/ui/chart-replay",
+      "pageId": "chartReplay",
+      "selectors": [
+        "body"
+      ],
+      "requiredNeedles": [
+        "차트 리플레이",
+        "리플레이 설정"
+      ],
+      "type": "navigate+assert",
+      "selector": "body",
+      "assertions": [
+        {
+          "selector": "body",
+          "type": "text-includes",
+          "needles": [
+            "차트 리플레이",
+            "리플레이 설정"
+          ]
+        }
+      ]
+    }
+  ],
+  "selectorEvidence": {
+    "body": "document.body.innerText required needle checks",
+    "screenshots": [
+      "artifacts/process-research-v4-process-page.png",
+      "artifacts/process-research-v4-lab-page.png",
+      "artifacts/process-research-v4-workbench-page.png"
+    ]
+  }
+}

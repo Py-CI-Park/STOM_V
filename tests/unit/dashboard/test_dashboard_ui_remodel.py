@@ -56,7 +56,7 @@ def test_phase2_history_owns_result_detail_and_compare() -> None:
     assert "<_RpRunCompare" not in workbench_panel
     assert "<_RpHistory" not in workbench_panel
     assert "히스토리 탭 소유" in workbench_panel
-    assert "<_RpBigHeatmap" not in workbench_panel
+    assert "<_RpBigHeatmap" in workbench_panel
     assert "탐색 히트맵은 연구실 소유" not in workbench_panel
     assert "RunComparePanel" not in app
     assert "ResearchLabPanel" in app
@@ -244,6 +244,13 @@ def test_process_tab_documents_condition_discovery_defaults() -> None:
         "state.page_data.warm_session",
         "warm metadata pending — existing display remains valid",
         "separate frozen promotion review",
+        "research allowed",
+        "still blocked",
+        "quick start",
+        "condition_improvement_loop",
+        "full_period_validation",
+        "review only",
+        "승격 검토 전용",
     ):
         assert marker in src
     for css_marker in (
@@ -257,6 +264,39 @@ def test_process_tab_documents_condition_discovery_defaults() -> None:
         ".process-warm-grid",
     ):
         assert css_marker in css
+
+
+def test_process_research_heatmap_visibility_and_sizing_contracts() -> None:
+    analysis = _read("analysis.jsx")
+    rp_heatmap = _read("rp-heatmap.jsx")
+    css = _read("styles.css")
+
+    for marker in (
+        "function _splitCrossLabel",
+        "edge-heatmap-missing",
+        "edge-heatmap-scroll",
+        "B_시분초/B_시가총액",
+        "시간대×시총 교차 히트맵",
+    ):
+        assert marker in analysis
+    for marker in (
+        "function _rpSplitCrossLabel",
+        "rp-heatmap-scroll",
+        "minmax(58px, 96px)",
+        "시간대 \\ 시총",
+    ):
+        assert marker in rp_heatmap
+    edge_scroll = css.split(".edge-heatmap-scroll", 1)[1].split("}", 1)[0]
+    assert "max-height: 360px" in edge_scroll
+    assert "overflow: auto" in edge_scroll
+    assert ".edge-heatmap-missing" in css
+    rp_scroll = css.split(".rp-heatmap-scroll", 1)[1].split("}", 1)[0]
+    assert "max-height: 420px" in rp_scroll
+    assert "overflow: auto" in rp_scroll
+    rp_grid = css.split(".rp-heatmap {", 1)[1].split("}", 1)[0]
+    assert "width: max-content" in rp_grid
+    rp_cell = css.split(".rp-heatmap-cell {", 1)[1].split("}", 1)[0]
+    assert "max-height: 48px" in rp_cell
 
 
 def test_g004_editor_legacy_tools_and_variable_influence_contracts() -> None:

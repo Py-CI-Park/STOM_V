@@ -63,6 +63,20 @@ function _EmptyState({ msg }) {
     </div>
   );
 }
+function _splitCrossLabel(c) {
+  const directTime = c && (c.time || c.time_label || c.time_segment || c._time_segment);
+  const directCap = c && (c.market_cap || c.market_cap_label || c.market_cap_segment || c._market_cap_segment || c.cap || c.cap_label);
+  if (directTime && directCap) return [String(directTime).trim(), String(directCap).trim()];
+  const label = String((c && c.label) || "");
+  for (const sep of ["×", " x ", " X ", "|", "/", "·", " - "]) {
+    if (label.includes(sep)) {
+      const parts = label.split(sep);
+      return [parts[0] ? parts[0].trim() : "", parts.slice(1).join(sep).trim()];
+    }
+  }
+  return ["", ""];
+}
+
 
 /* ── EdgeRatioPanel ─────────────────────────────────────────────────────── */
 /*
@@ -120,9 +134,7 @@ function EdgeRatioPanel({ baseUrl, wsStatus, runId }) {
     const parsedCap = [];
     const cellMap = {};
     for (const c of crossSegs) {
-      const parts = String((c && c.label) || "").split("×");
-      const tl = parts[0] ? parts[0].trim() : "";
-      const cl = parts[1] ? parts[1].trim() : "";
+      const [tl, cl] = _splitCrossLabel(c);
       if (!tl || !cl) continue;
       if (!parsedTime.includes(tl)) parsedTime.push(tl);
       if (!parsedCap.includes(cl)) parsedCap.push(cl);
@@ -135,7 +147,11 @@ function EdgeRatioPanel({ baseUrl, wsStatus, runId }) {
   }, [crossSegs, timeSegs, capSegs]);
 
   const hasData = data && (
-    typeof global_.edge_ratio === "number" || crossSegs.length > 0 || changeSegs.length > 0
+    typeof global_.edge_ratio === "number"
+    || crossSegs.length > 0
+    || changeSegs.length > 0
+    || timeSegs.length > 0
+    || capSegs.length > 0
   );
 
   return (
@@ -211,6 +227,10 @@ function EdgeRatioPanel({ baseUrl, wsStatus, runId }) {
                   교차 세그먼트
                 </div>
                 <_SegBarList segs={crossSegs} />
+              </div>
+            ) : hasData ? (
+              <div className="edge-heatmap-missing">
+                <_EmptyState msg="Edge Ratio 전역 데이터는 있으나 시간대×시총 교차 히트맵 셀이 없습니다. CSV에 B_시분초/B_시가총액 교차 표본이 누적되면 히트맵이 표시됩니다." />
               </div>
             ) : null}
 

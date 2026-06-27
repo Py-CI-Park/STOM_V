@@ -13,6 +13,20 @@
 // Track Z (PR-3) — dual-safe ESM imports from the in-bundle definer. KEEP on ONE physical line.
 import { useState_rp, useEffect_rp, useCallback_rp, useMemo_rp, _rpFetchJson, _rpMoney, _rpInt, _rpNum, _rpPct, _rpOpenWorkbench, _rpEdgeColor, _RpStrategyCode } from "./rp-utils.jsx";
 
+function _rpSplitCrossLabel(c) {
+  const directTime = c && (c.time || c.time_label || c.time_segment || c._time_segment);
+  const directCap = c && (c.market_cap || c.market_cap_label || c.market_cap_segment || c._market_cap_segment || c.cap || c.cap_label);
+  if (directTime && directCap) return [String(directTime).trim(), String(directCap).trim()];
+  const label = String((c && c.label) || "");
+  for (const sep of ["×", " x ", " X ", "|", "/", "·", " - "]) {
+    if (label.includes(sep)) {
+      const parts = label.split(sep);
+      return [parts[0] ? parts[0].trim() : "", parts.slice(1).join(sep).trim()];
+    }
+  }
+  return ["", ""];
+}
+
 /* ── E7: 시간대×시가총액 대형 히트맵 — /edge_ratio segments.cross 재사용, 반응형 큰 셀. ── */
 function _RpBigHeatmap({ baseUrl, isDemo, runId }) {
   const [data, setData] = useState_rp(null);
@@ -48,9 +62,8 @@ function _RpBigHeatmap({ baseUrl, isDemo, runId }) {
     const capLabels = [];
     const cellMap = {};
     for (const c of cross) {
-      const parts = (c.label || "").split("×");
-      const tl = parts[0] ? parts[0].trim() : c.label;
-      const cl = parts[1] ? parts[1].trim() : "";
+      const [tl, cl] = _rpSplitCrossLabel(c);
+      if (!tl || !cl) continue;
       if (!timeLabels.includes(tl)) timeLabels.push(tl);
       if (cl && !capLabels.includes(cl)) capLabels.push(cl);
       cellMap[tl + "×" + cl] = c;
@@ -101,9 +114,10 @@ function _RpBigHeatmap({ baseUrl, isDemo, runId }) {
 /* 반응형 대형 히트맵 그리드 — CSS grid로 컨테이너 폭을 채우는 큰 셀(트렌드 차트 급 크기). */
 function _RpHeatmapGrid({ grid }) {
   const { timeLabels, capLabels, cellMap } = grid;
-  const cols = `120px repeat(${capLabels.length}, minmax(64px, 1fr))`;
+  const cols = `112px repeat(${capLabels.length}, minmax(58px, 96px))`;
   return (
-    <div className="rp-heatmap" style={{ gridTemplateColumns: cols }}>
+    <div className="rp-heatmap-scroll">
+      <div className="rp-heatmap" style={{ gridTemplateColumns: cols }}>
       {/* 헤더 행 */}
       <div className="rp-heatmap-corner mono">시간대 \ 시총</div>
       {capLabels.map((cl) => (
@@ -143,6 +157,7 @@ function _RpHeatmapGrid({ grid }) {
           })}
         </React.Fragment>
       ))}
+      </div>
     </div>
   );
 }

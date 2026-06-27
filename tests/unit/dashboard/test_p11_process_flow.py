@@ -128,6 +128,11 @@ class TestProcessFlowSvg:
             "selected?.title",
             "can_export",
             "can_live",
+            "research allowed",
+            "still blocked",
+            "quick start",
+            "condition_improvement_loop",
+            "full_period_validation",
         ):
             assert marker in src
         assert "score_can_promote" not in src
