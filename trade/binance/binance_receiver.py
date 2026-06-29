@@ -69,6 +69,10 @@ class BinanceReceiver(BaseReceiver):
                 self.dict_data[code] = [c, o, h, low, per, dm, 0, 0, 0, 0, 0, c, c, c]
                 self.dict_prec[code] = [ymd, prec]
 
+        if self.dict_set['바낸감시종목제한']:
+            rank = self.dict_set['바낸감시종목개수']
+            self.dict_data = dict(sorted(self.dict_data.items(), key=lambda x: x[1][5], reverse=True)[:rank])
+
         self.codes = list(self.dict_data)
 
     @error_decorator

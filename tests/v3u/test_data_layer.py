@@ -13,6 +13,30 @@ import pytest
 
 
 pytestmark = pytest.mark.integration
+def _run_database_check_in_tmp(tmp_path, monkeypatch):
+    """runtime DB를 건드리지 않도록 database_check 경로를 tmp_path로 격리 실행한다."""
+    from utility.db_control import database_check as dbc
+
+    db_dir = tmp_path / "database"
+    log_dir = tmp_path / "log"
+    graph_dir = tmp_path / "graph"
+    back_temp_dir = tmp_path / "back_temp"
+
+    monkeypatch.setattr(dbc, "DB_PATH", str(db_dir))
+    monkeypatch.setattr(dbc, "LOG_PATH", str(log_dir))
+    monkeypatch.setattr(dbc, "GRAPH_PATH", str(graph_dir))
+    monkeypatch.setattr(dbc, "BACK_TEMP", str(back_temp_dir))
+    monkeypatch.setattr(dbc, "DB_SETTING", str(db_dir / "setting.db"))
+    monkeypatch.setattr(dbc, "DB_CODE_INFO", str(db_dir / "code_info.db"))
+    monkeypatch.setattr(dbc, "DB_STRATEGY", str(db_dir / "strategy.db"))
+    monkeypatch.setattr(dbc, "DB_TRADELIST", str(db_dir / "tradelist.db"))
+    monkeypatch.setattr(dbc, "read_key", lambda: "test-key")
+    monkeypatch.setattr(dbc, "write_key", lambda: None)
+
+    ok, message = dbc.database_check()
+    assert ok, message
+    return dbc
+
 
 
 def test_b5_balance_dt_guard_simulation() -> None:
@@ -53,60 +77,63 @@ def test_b5_balance_dt_guard_pattern_in_source() -> None:
     assert jango_put >= 3, f"잔고갱신 큐 push 3회 이상 기대, {jango_put}회"
 
 
-def test_d2_18_exchanges_baseline() -> None:
+def test_d2_18_exchanges_baseline(tmp_path, monkeypatch) -> None:
     """D2: ACCOUNT/TELE/STG/BACT 데이터가 모두 18개 거래소 기반이다."""
-    from utility.db_control import database_check as dbc
+    _run_database_check_in_tmp(tmp_path, monkeypatch)
 
-    counts = {
-        "ACCOUNT_DATA": len(dbc.ACCOUNT_DATA),
-        "TELE_DATA": len(dbc.TELE_DATA),
-        "STG_DATA": len(dbc.STG_DATA),
-        "BACT_DATA": len(dbc.BACT_DATA),
-    }
+    db = tmp_path / "database" / "setting.db"
+    conn = sqlite3.connect(str(db))
+    counts = {}
+    for table in ("account", "telegram", "strategy", "back"):
+        cur = conn.execute(f'SELECT COUNT(*) FROM "{table}"')
+        counts[table] = cur.fetchone()[0]
+    conn.close()
+
     for name, cnt in counts.items():
         assert cnt == 18, f"{name} 행 수 mismatch: {cnt} (기대 18)"
 
 
-def test_d2_bact_data_index_unique_1_to_18() -> None:
-    """D2: BACT_DATA의 index 컬럼이 1~18 unique."""
-    from utility.db_control import database_check as dbc
+def test_d2_bact_data_index_unique_1_to_18(tmp_path, monkeypatch) -> None:
+    """D2: back 테이블의 index 컬럼이 1~18 unique."""
+    _run_database_check_in_tmp(tmp_path, monkeypatch)
 
-    indices = [row[0] for row in dbc.BACT_DATA]
-    assert len(set(indices)) == 18, "BACT index 중복 발견"
-    assert min(indices) == 1, f"BACT index 최솟값 1 기대, {min(indices)}"
-    assert max(indices) == 18, f"BACT index 최댓값 18 기대, {max(indices)}"
+    db = tmp_path / "database" / "setting.db"
+    conn = sqlite3.connect(str(db))
+    cur = conn.execute('SELECT "index" FROM back ORDER BY "index"')
+    indices = [row[0] for row in cur.fetchall()]
+    conn.close()
+
+    assert len(set(indices)) == 18, "back index 중복 발견"
+    assert min(indices) == 1, f"back index 최솟값 1 기대, {min(indices)}"
+    assert max(indices) == 18, f"back index 최댓값 18 기대, {max(indices)}"
 
 
-def test_d3_database_check_callable() -> None:
-    """D3: database_check 함수가 호출 가능 시그니처를 가진다.
-
-    실제 DB 생성 호출은 사용자 환경(D1)에 영향을 주므로 callable 검증까지만.
-    """
+def test_d3_database_check_callable(tmp_path, monkeypatch) -> None:
+    """D3: database_check 함수가 tmp_path 격리 상태에서 호출 가능하다."""
     from utility.db_control import database_check as dbc
 
     assert callable(dbc.database_check), "database_check는 callable이어야 함"
-    # 모듈 상수 노출
-    assert hasattr(dbc, "MAIN_CLOUMNS")
-    assert hasattr(dbc, "MAIN_DATA")
-    assert hasattr(dbc, "ACCOUNT_CLOUMNS")
-    assert hasattr(dbc, "ACCOUNT_DATA")
+    _run_database_check_in_tmp(tmp_path, monkeypatch)
 
 
-def test_d3_temp_sqlite_supports_18_row_insert(tmp_path) -> None:
-    """D3: 18거래소 row가 sqlite에 INSERT 가능한 구조다 (스키마 검증)."""
-    from utility.db_control import database_check as dbc
+def test_d3_temp_sqlite_supports_18_row_insert(tmp_path, monkeypatch) -> None:
+    """D3: database_check가 생성한 18거래소 account row 구조를 재삽입할 수 있다."""
+    _run_database_check_in_tmp(tmp_path, monkeypatch)
+
+    setting_db = tmp_path / "database" / "setting.db"
+    conn = sqlite3.connect(str(setting_db))
+    rows = conn.execute('SELECT * FROM account ORDER BY "index"').fetchall()
+    columns = [row[1] for row in conn.execute('PRAGMA table_info(account)').fetchall()]
+    conn.close()
 
     db = tmp_path / "test_18_exchanges.db"
     conn = sqlite3.connect(str(db))
-    cur = conn.cursor()
-
-    # ACCOUNT 테이블 스키마 추론
-    cols = ", ".join(f'"{c}"' for c in dbc.ACCOUNT_CLOUMNS)
-    placeholders = ", ".join(["?"] * len(dbc.ACCOUNT_CLOUMNS))
-    cur.execute(f"CREATE TABLE accounts ({cols})")
-    cur.executemany(f"INSERT INTO accounts VALUES ({placeholders})", dbc.ACCOUNT_DATA)
+    cols = ", ".join(f'"{c}"' for c in columns)
+    placeholders = ", ".join(["?"] * len(columns))
+    conn.execute(f"CREATE TABLE accounts ({cols})")
+    conn.executemany(f"INSERT INTO accounts VALUES ({placeholders})", rows)
     conn.commit()
 
-    cur.execute("SELECT COUNT(*) FROM accounts")
+    cur = conn.execute("SELECT COUNT(*) FROM accounts")
     assert cur.fetchone()[0] == 18, "18행 INSERT 후 카운트 불일치"
     conn.close()

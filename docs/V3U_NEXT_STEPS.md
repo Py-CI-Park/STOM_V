@@ -15,18 +15,18 @@ V3U lane 진행 중 매 사이클 종료 시점에 **다음 사이클의 옵션�
 
 ---
 
-## 2. 현재 사이클 상태 (사이클 15, 2026-06-11)
+## 2. 현재 사이클 상태 (사이클 19, 2026-06-29)
 
 | 지표 | 값 |
 |---|---|
 | 결함 누적 (LESSONS.md §7) | 20 + #12 잔여 완결(A5) + 게이트 사전 차단 1건(homepg) |
 | 자동 회귀 테스트 (pytest tests/v3u) | 49 |
 | 신규 자동 도구 | 1 (`scripts/v3u_attr_inventory_diff.py`) + A3 verifier 8 stage UX |
-| 수정 커밋 누적 | 17 (V3.30~32 흡수 3 + 기록 포함) |
-| 재발 방지 액션 | 5/5 적용 + §5-2 read-before-write 한계 기록 (보강 옵션 A7) |
-| CRITICAL drift baseline | 0 (strict 모드) — V3.32 흡수에서 첫 실전 차단 입증 |
-| 사용자 시각 검증 사이클 | 7회 (사이클 15 B1: V3.32 + #16 + A5 + TTS 동시 검증, 결함 0건) |
-| V3 lane 버전 | V3.32 (`3dea3b94`, tail `fcc626a5` 1건 차기 흡수 예정) |
+| 수정 커밋 누적 | 20+ (V3.34 overlay + test/data-layer 기록 포함) |
+| 재발 방지 액션 | 5/5 적용 + V3.34 `database_check` local seed 구조 대응 테스트 보정 |
+| CRITICAL drift baseline | 0 (strict 모드) |
+| 사용자 시각 검증 사이클 | 7회 (사이클 15 B1 이후 V3.33/V3.34는 자동 게이트 기준, 사용자 직접 확인 대기) |
+| V3 lane 버전 | V3.34 (`25680a83`, upstream `c3db5f9c`) |
 | stom.py 활성 상태 | 사이클 15 B1 정상 종료 (2026-06-11, traceback 0건·exit 0) |
 
 ### 미해결 사용자 잔여 작업 (선행 핸드오프 §3 기준)
@@ -218,6 +218,26 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - LESSONS.md 갱신: §6 결함 #14 통합 항목 + §7 통계 (45/19/8/baseline **0**, 결함 18건)
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
+
+### 사이클 19 (2026-06-29): V3.34 흡수
+
+- 사용자 선택: "올바른 프로세스로 1,2,3 진행 후 4 5 안내"
+- 실행 결과:
+  - wt-3 formal `25680a83` (`STOM V3.34`, upstream `c3db5f9c`) — changed-path parity 일치
+  - wt-3u pyd-free `e6dcab91`, 통합 게이트 8/8 PASS (pytest 49, attr critical=0)
+  - V3U runtime 보정 0건 (순수 overlay), 테스트 보정 1건:
+    `tests/v3u/test_data_layer.py`가 `database_check.py` local seed 구조를 tmp_path 격리 실행으로 검증
+- 발견 신규 결함: 0건 (테스트 전제 drift 1건은 V3U 안전망 보정으로 처리)
+- lane 버전: V3.33 → **V3.34**
+- 상세: docs/update_log/2026-06-29_v3u_v334_pyd_free_update.md
+- 다음: 3U_C `git merge STOM_Version_3U`로 따라잡기
+
+### 사이클 18 (2026-06-13): 3U_C lane V3.33 흡수 (cross-link)
+
+- 3U_C lane 사이클 6 — `git merge STOM_Version_3U` (merge `705fb7fd`), V3.32 → V3.33
+- 통합 게이트 8/8 PASS (pytest 49 + tests/v3uc 32), 충돌 0, invariant 만족
+- 상세 진실 원천: 3U_C `docs/V3U_C_NEXT_STEPS.md` §5 사이클 6
+- V3U lane 영향: 0건 (단방향 흡수)
 
 ### 사이클 17 (2026-06-13): V3.33 흡수 (V3.32 tail fcc626a5 포함)
 
