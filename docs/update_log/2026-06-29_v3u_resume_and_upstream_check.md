@@ -95,3 +95,4 @@ python -m pytest tests/v3uc -q → 32 passed
 |---:|---|---|
 | 4 | 사용자 직접 GUI 확인 | 해외주식 주문체결 처리, 바이낸스선물 감시종목제한 설정 저장/적용, V3.33 잔여 항목(백테 시작·명언·타이틀바 색상)을 실제 GUI에서 확인 |
 | 5 | V3U backup 디렉터리 정리 | `_database_backup_2026-05-22/`는 사용자/runtime 백업으로 보존 중이다. 삭제·이동은 사용자 판단 후 별도 처리 |
+| 참고 | late review watch | G001 architect background result가 upstream inherited watch로 `sj_main_liEdit_02` 숫자 변환(`바낸감시종목개수`)의 비숫자 입력 가능성을 지적했다. 공식/V3U/3U_C 흡수 blocker는 아니며, 4번 GUI 확인 시 감시종목 제한 개수 입력은 숫자값 저장/적용 중심으로 확인한다. |
