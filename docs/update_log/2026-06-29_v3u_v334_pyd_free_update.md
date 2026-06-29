@@ -13,7 +13,7 @@
 | 반영 범위 | `bc23a067..c3db5f9c` |
 | V3 formal | `25680a83 STOM V3.34` |
 | V3U overlay commit | `e6dcab91` |
-| V3U gate/test adjustment | pending commit (본 기록 커밋) |
+| V3U gate/test adjustment | `a179f4bf` |
 | 제외 | runtime DB/log, upstream pyd 변경 없음 |
 
 ## V3.34 변경 (2026-06-24)
