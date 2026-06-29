@@ -15,14 +15,14 @@ V3U lane 진행 중 매 사이클 종료 시점에 **다음 사이클의 옵션�
 
 ---
 
-## 2. 현재 사이클 상태 (사이클 19, 2026-06-29)
+## 2. 현재 사이클 상태 (사이클 20, 2026-06-29)
 
 | 지표 | 값 |
 |---|---|
 | 결함 누적 (LESSONS.md §7) | 20 + #12 잔여 완결(A5) + 게이트 사전 차단 1건(homepg) |
 | 자동 회귀 테스트 (pytest tests/v3u) | 49 |
 | 신규 자동 도구 | 1 (`scripts/v3u_attr_inventory_diff.py`) + A3 verifier 8 stage UX |
-| 수정 커밋 누적 | 20+ (V3.34 overlay + test/data-layer 기록 포함) |
+| 수정 커밋 누적 | 20+ (V3.34 overlay + test/data-layer 기록 + 3U_C cross-link 포함) |
 | 재발 방지 액션 | 5/5 적용 + V3.34 `database_check` local seed 구조 대응 테스트 보정 |
 | CRITICAL drift baseline | 0 (strict 모드) |
 | 사용자 시각 검증 사이클 | 7회 (사이클 15 B1 이후 V3.33/V3.34는 자동 게이트 기준, 사용자 직접 확인 대기) |
@@ -218,6 +218,14 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - LESSONS.md 갱신: §6 결함 #14 통합 항목 + §7 통계 (45/19/8/baseline **0**, 결함 18건)
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
+
+### 사이클 20 (2026-06-29): 3U_C lane V3.34 흡수 (cross-link)
+
+- 3U_C lane 사이클 7 — `git merge STOM_Version_3U` (merge `352a3838`, record `3ec6dc66`), V3.33 → V3.34
+- 통합 게이트 8/8 PASS (pytest 49 + tests/v3uc 32), 충돌 0, invariant 만족
+- 상세 진실 원천: 3U_C `docs/V3U_C_NEXT_STEPS.md` §5 사이클 7
+- V3U lane 영향: 0건 (단방향 흡수)
+- 다음: 안내 4 사용자 GUI 확인, 안내 5 `_database_backup_2026-05-22/` 정리 판단
 
 ### 사이클 19 (2026-06-29): V3.34 흡수
 
