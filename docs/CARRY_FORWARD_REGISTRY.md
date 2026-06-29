@@ -157,6 +157,16 @@ This rule does not loosen the 2U rule: `STOM_Version_2U` remains the pyd-to-py i
   - backtest.db / code_info.db / setting.db schema 변환 (별도 사이클)
   - 분석 시스템 학습 DB(volume_spike·pattern 등) 폴리시 자동화
 
+### 사이클 7 (2026-06-29): V3.34 흡수 (V3U lane 따라잡기)
+
+- 신규 custom 파일: 없음 (흡수 사이클)
+- merge: `352a3838` (`git merge --no-ff STOM_Version_3U`), lane V3.33 → V3.34
+- 상속: V3.34 (해외주식 주문체결 처리 오류 수정, 바이낸스선물 감시종목제한 설정 추가) + V3U data-layer test adjustment
+- invariant 재확인: 3U_C vs V3U diff = custom 파일만 (허용 외 0건)
+- carry-forward 위험: 없음 (충돌 0 + 통합 게이트 8/8 + tests/v3uc 32)
+- 메커니즘: 사이클 5 명문화 준수 (V3U→3U_C는 git merge)
+- 잔여: 사용자 GUI 확인(안내 4), V3U backup 정리 판단(안내 5), V3.35+ 발표 시 동일 패턴
+
 ### 사이클 6 (2026-06-13): V3.33 흡수 (V3U lane 따라잡기)
 
 - 신규 custom 파일: 없음 (흡수 사이클)
