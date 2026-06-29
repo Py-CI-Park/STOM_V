@@ -51,8 +51,8 @@ def load_settings():
             '바이낸스선물고정레버리지':   df_m['바이낸스선물고정레버리지'][0],
             '바이낸스선물고정레버리지값': df_m['바이낸스선물고정레버리지값'][0],
             '바이낸스선물변동레버리지값': binance_leverage_,
-            '바이낸스선물마진타입':     df_m['바이낸스선물마진타입'][0],
-            '바이낸스선물포지션':       df_m['바이낸스선물포지션'][0],
+            '바낸감시종목제한':         df_m['바낸감시종목제한'][0],
+            '바낸감시종목개수':         df_m['바낸감시종목개수'][0],
 
             'access_key': de_text(EN_KEY, df_a['access_key'][no])  if df_a_not_empty and df_a['access_key'][no] else None,
             'secret_key': de_text(EN_KEY, df_a['secret_key'][no]) if df_a_not_empty and df_a['secret_key'][no] else None,

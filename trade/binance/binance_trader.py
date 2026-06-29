@@ -118,11 +118,11 @@ class BinanceTrader(BaseTrader):
                         self.binance.futures_change_leverage(symbol=code, leverage=self.dict_set['바이낸스선물고정레버리지값'])
                     else:
                         self.binance.futures_change_leverage(symbol=code, leverage=1)
-                    self.binance.futures_change_margin_type(symbol=code, marginType=self.dict_set['바이낸스선물마진타입'])
+                    self.binance.futures_change_margin_type(symbol=code, marginType='ISOLATED')
                 except Exception:
                     pass
             try:
-                self.binance.futures_change_position_mode(dualSidePosition=self.dict_set['바이낸스선물포지션'])
+                self.binance.futures_change_position_mode(dualSidePosition='false')
             except Exception:
                 pass
 

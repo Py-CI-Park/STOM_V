@@ -7,12 +7,12 @@ def setting_load_01(ui):
     ui.sj_main_comBox_01.setCurrentText(df['거래소'][0])
     ui.sj_main_cheBox_01.setChecked(True if df['모의투자'][0] else False)
     ui.sj_main_cheBox_02.setChecked(True if df['데이터저장'][0] else False)
-    ui.sj_main_cheBox_03.setChecked(True if df['알림소리'][0] else False)
+    ui.sj_main_cheBox_04.setChecked(True if df['알림소리'][0] else False)
     ui.sj_main_comBox_02.setCurrentText('1초스냅샷' if df['타임프레임'][0] else '1분봉')
     ui.sj_main_liEdit_01.setText(de_text(ui.dict_set['키'], df['프로그램비밀번호'][0]) if df['프로그램비밀번호'][0] else '')
-    ui.sj_main_comBox_03.setCurrentText('격리' if df['바이낸스선물마진타입'][0] == 'ISOLATED' else '교차')
-    ui.sj_main_comBox_04.setCurrentText('단방향' if df['바이낸스선물포지션'][0] == 'false' else '양방향')
-    ui.sj_main_comBox_05.setCurrentText(str(df['읽기속도'][0]))
+    ui.sj_main_cheBox_03.setChecked(True if df['바낸감시종목제한'][0] else False)
+    ui.sj_main_liEdit_02.setText(str(df['바낸감시종목개수'][0]))
+    ui.sj_main_comBox_03.setCurrentText(str(df['읽기속도'][0]))
 
 
 def setting_load_02(ui):
@@ -227,21 +227,21 @@ def setting_save_01(ui, mbox=True):
     거래소 = ui.sj_main_comBox_01.currentText()
     모의투자 = 1 if ui.sj_main_cheBox_01.isChecked() else 0
     데이터저장 = 1 if ui.sj_main_cheBox_02.isChecked() else 0
-    알림소리 = 1 if ui.sj_main_cheBox_03.isChecked() else 0
     타임프레임 = 1 if ui.sj_main_comBox_02.currentText() == '1초스냅샷' else 0
-
-    if ui.trading and 이전거래소 != 거래소:
-        QMessageBox.critical(ui, '오류 알림', '매매 중에는 거래소 설정을 변경할 수 없습니다.\n')
-        return
-
-    if ui.trading and 이전타임프레임 != 타임프레임:
-        QMessageBox.critical(ui, '오류 알림', '매매 중에는 타임프레임 설정을 변경할 수 없습니다.\n')
-        return
-
     프로그램비밀번호_ = ui.sj_main_liEdit_01.text()
-    바이낸스선물마진타입 = 'ISOLATED' if ui.sj_main_comBox_03.currentText() == '격리' else 'CROSSED'
-    바이낸스선물포지션 = 'false' if ui.sj_main_comBox_04.currentText() == '단방향' else 'true'
-    읽기속도 = int(ui.sj_main_comBox_05.currentText())
+    바낸감시종목제한 = 1 if ui.sj_main_cheBox_03.isChecked() else 0
+    바낸감시종목개수 = int(ui.sj_main_liEdit_02.text())
+    알림소리 = 1 if ui.sj_main_cheBox_04.isChecked() else 0
+    읽기속도 = int(ui.sj_main_comBox_03.currentText())
+
+    if ui.trading:
+        if 이전거래소 != 거래소:
+            QMessageBox.critical(ui, '오류 알림', '매매 중에는 거래소 설정을 변경할 수 없습니다.\n')
+            return
+
+        if 이전타임프레임 != 타임프레임:
+            QMessageBox.critical(ui, '오류 알림', '매매 중에는 타임프레임 설정을 변경할 수 없습니다.\n')
+            return
 
     pass_check = True
     if ui.dict_set['프로그램비밀번호'] != '' and ui.dict_set['프로그램비밀번호'] != 프로그램비밀번호_:
@@ -257,7 +257,7 @@ def setting_save_01(ui, mbox=True):
         if ui.proc_chqs.is_alive():
             프로그램비밀번호 = en_text(ui.dict_set['키'], 프로그램비밀번호_) if 프로그램비밀번호_ else ''
             columns = ['거래소', '타임프레임', '데이터저장', '모의투자', '알림소리', '읽기속도', '프로그램비밀번호',
-                       '바이낸스선물마진타입', '바이낸스선물포지션']
+                       '바낸감시종목제한', '바낸감시종목개수']
             set_txt = ', '.join([f'{col} = ?' for col in columns])
             query = f'UPDATE main SET {set_txt}'
             localvs = locals()
