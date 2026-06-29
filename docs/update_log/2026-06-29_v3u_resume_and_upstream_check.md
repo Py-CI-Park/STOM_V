@@ -8,9 +8,9 @@
 
 | lane | branch | HEAD | origin 동기화 | 작업트리 상태 | 판정 |
 |---|---|---:|---|---|---|
-| V3 공식 | `STOM_Version_3` | `25680a83` | local ahead 1 | clean | V3.34 공식 반영 완료 |
-| V3U | `STOM_Version_3U` | `e63d5b62` | local ahead 4 | `_database_backup_2026-05-22/`, `.gjc/` runtime state 존재 | V3.34 pyd-free 반영 및 3U_C cross-link 완료 |
-| 3U_C | `STOM_Version_3U_C` | `3ec6dc66` | local ahead 6 | clean | V3.34 custom lane 흡수 완료 |
+| V3 공식 | `STOM_Version_3` | `25680a83` | origin 일치 (`0/0`) | clean | V3.34 공식 반영 완료 |
+| V3U | `STOM_Version_3U` | final sync doc commit | origin 일치 (`0/0`) | `_database_backup_2026-05-22/`, `.gjc/` runtime state 존재 | V3.34 pyd-free 반영 및 3U_C cross-link 완료 |
+| 3U_C | `STOM_Version_3U_C` | `3ec6dc66` | origin 일치 (`0/0`) | clean | V3.34 custom lane 흡수 완료 |
 
 ## 이전 작업 진행률 — V3.33
 
