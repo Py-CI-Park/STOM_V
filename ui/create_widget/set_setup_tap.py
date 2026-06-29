@@ -4,9 +4,9 @@ from ui.event_change.changed_checkbox import *
 from ui.create_widget.set_style import style_bc_dk
 from ui.event_click.button_clicked_settings import *
 from PyQt5.QtWidgets import QLabel, QTabWidget, QWidget
+from ui.event_activate.activated_etc import mactivated_01
 from ui.event_activate import activated_etc, activated_stg
 from ui.event_click.button_clicked_etc import lvbutton_clicked_01
-from ui.event_activate.activated_etc import mactivated_01, mactivated_02, mactivated_03
 from ui.event_click.button_clicked_show_dialog import show_pattern_dialog, show_passticks_dialog
 
 
@@ -49,19 +49,18 @@ class SetSetupTap:
         self.ui.sj_main_labell_01 = QLabel('▣  거래소 선택', self.ui.sj_bs_groupBox_01)
         self.ui.sj_main_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=list(DICT_MARKET_GUBUN.keys()), activated=lambda: mactivated_01(self.ui), tip='사용할 거래소를 선택하십시오.')
         self.ui.sj_main_cheBox_01 = self.wc.setCheckBox('모의투자', self.ui.sj_bs_groupBox_01, changed=lambda state: checkbox_changed_01(self.ui, state), tip='체크 해제 시 실매매')
-        self.ui.sj_main_cheBox_02 = self.wc.setCheckBox('데이터저장', self.ui.sj_bs_groupBox_01, tip='전략종료 후 데이터 저장 여부를 설정한다.')
-        self.ui.sj_main_labell_02 = QLabel('▣  타임프레임 선택                                          ▣  프로그램 비밀번호', self.ui.sj_bs_groupBox_01)
+        self.ui.sj_main_cheBox_02 = self.wc.setCheckBox('데이터 저장', self.ui.sj_bs_groupBox_01, tip='전략종료 후 데이터 저장 여부를 설정한다.')
+        self.ui.sj_main_labell_02 = QLabel('▣  타임프레임 선택                                              ▣  프로그램 비밀번호', self.ui.sj_bs_groupBox_01)
         self.ui.sj_main_comBox_02 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['1초스냅샷', '1분봉'], tip='사용할 타임프레임을 설정한다.')
         self.ui.sj_main_liEdit_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_01, passhide=True)
 
-        self.ui.sj_main_labell_03 = QLabel('▣  바이낸스선물                                                     마진타입                            포지션', self.ui.sj_bs_groupBox_01)
-        self.ui.sj_lvrg_Button_01 = self.wc.setPushbutton('레버리지 유형 설정', parent=self.ui.sj_bs_groupBox_01, bounced=True, click=lambda: lvbutton_clicked_01(self.ui), tip='바이낸스 선물 레버리지를 고정, 변동 형태 중 선택하여 설정한다.')
-        self.ui.sj_main_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['격리', '교차'], activated=lambda: mactivated_02(self.ui))
-        self.ui.sj_main_comBox_04 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['단방향', '양방향'], activated=lambda: mactivated_03(self.ui))
+        self.ui.sj_main_cheBox_03 = self.wc.setCheckBox('바이낸스선물 감시종목수 제한', self.ui.sj_bs_groupBox_01, tip='전일 거래대금 기준 감시할 종목의 개수를 제한한다.\n미설정 시 700여개의 전체 종목 감시')
+        self.ui.sj_main_liEdit_02 = self.wc.setLineedit(self.ui.sj_bs_groupBox_01)
+        self.ui.sj_main_Button_01 = self.wc.setPushbutton('바이낸스선물 레버리지 설정', parent=self.ui.sj_bs_groupBox_01, bounced=True, click=lambda: lvbutton_clicked_01(self.ui), tip='바이낸스 선물 레버리지를 고정, 변동 형태 중 선택하여 설정한다.')
 
-        self.ui.sj_main_cheBox_03 = self.wc.setCheckBox('알림소리   |   읽기속도', self.ui.sj_bs_groupBox_01, tip='시스템 이벤트를 tts를 통해 소리로 알려준다.')
-        self.ui.sj_main_comBox_05 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['0', '1', '2', '3', '4', '5'])
-        self.ui.sj_main_Button_01 = self.wc.setPushbutton('테스트', parent=self.ui.sj_bs_groupBox_01, bounced=True, click=lambda: tts_sound_test(self.ui), tip='선택한 읽기속도를 테스트한다.')
+        self.ui.sj_main_cheBox_04 = self.wc.setCheckBox('알림소리   |   읽기속도', self.ui.sj_bs_groupBox_01, tip='시스템 이벤트를 tts를 통해 소리로 알려준다.')
+        self.ui.sj_main_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['0', '1', '2', '3', '4', '5'])
+        self.ui.sj_main_Button_02 = self.wc.setPushbutton('알림소리 테스트', parent=self.ui.sj_bs_groupBox_01, bounced=True, click=lambda: tts_sound_test(self.ui), tip='선택한 읽기속도를 테스트한다.')
 
         # --------------------------------------------------------------------------------------------------------------
 
@@ -229,20 +228,20 @@ class SetSetupTap:
         self.ui.sj_bs_groupBox_06.setGeometry(5, 565, 1326, 143)
 
         self.ui.sj_main_labell_01.setGeometry(10, 30, 90, 20)
-        self.ui.sj_main_comBox_01.setGeometry(110, 30, 120, 20)
-        self.ui.sj_main_cheBox_01.setGeometry(250, 30, 90, 20)
-        self.ui.sj_main_cheBox_02.setGeometry(345, 30, 90, 20)
-        self.ui.sj_main_labell_02.setGeometry(562, 30, 500, 20)
-        self.ui.sj_main_comBox_02.setGeometry(672, 30, 100, 20)
-        self.ui.sj_main_liEdit_01.setGeometry(910, 30, 165, 20)
+        self.ui.sj_main_comBox_01.setGeometry(100, 30, 140, 20)
+        self.ui.sj_main_cheBox_01.setGeometry(265, 30, 90, 20)
+        self.ui.sj_main_cheBox_02.setGeometry(355, 30, 90, 20)
+        self.ui.sj_main_labell_02.setGeometry(462, 30, 500, 20)
+        self.ui.sj_main_comBox_02.setGeometry(572, 30, 100, 20)
+        self.ui.sj_main_liEdit_01.setGeometry(820, 30, 100, 20)
 
-        self.ui.sj_main_labell_03.setGeometry(10, 55, 500, 20)
-        self.ui.sj_lvrg_Button_01.setGeometry(110, 55, 120, 20)
-        self.ui.sj_main_comBox_03.setGeometry(300, 55, 60, 20)
-        self.ui.sj_main_comBox_04.setGeometry(420, 55, 85, 20)
-        self.ui.sj_main_cheBox_03.setGeometry(562, 55, 200, 20)
-        self.ui.sj_main_comBox_05.setGeometry(702, 55, 70, 20)
-        self.ui.sj_main_Button_01.setGeometry(785, 55, 70, 20)
+        self.ui.sj_main_cheBox_03.setGeometry(10, 55, 180, 20)
+        self.ui.sj_main_liEdit_02.setGeometry(190, 55, 50, 20)
+        self.ui.sj_main_Button_01.setGeometry(265, 55, 175, 20)
+
+        self.ui.sj_main_cheBox_04.setGeometry(462, 55, 200, 20)
+        self.ui.sj_main_comBox_03.setGeometry(602, 55, 70, 20)
+        self.ui.sj_main_Button_02.setGeometry(695, 55, 100, 20)
 
         self.ui.sj_accc_labell_01.setGeometry(10, 30, 1000, 20)
         self.ui.sj_accc_liEdit_01.setGeometry(110, 30, 425, 20)

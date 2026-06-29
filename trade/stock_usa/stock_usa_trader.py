@@ -102,8 +102,8 @@ class StockUsaTrader(BaseTrader):
             return
 
         체결유형 = body['sOrdxctPtnCode']
-        if 체결유형 in (11, 12, 13):
-            매매구분 = body['sOrdPtnCode']
+        if 체결유형 in ('11', '12', '13'):
+            매매구분 = body['sBnsTp']
             주문구분 = LsRestData.해외주식주문체결코드[매매구분]
             체결구분 = LsRestData.해외주식주문체결코드[체결유형]
             종목코드 = body['sShtnIsuNo']
