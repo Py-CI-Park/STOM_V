@@ -4,7 +4,7 @@
 
 이 디렉터리는 STOM 조건식 연구에 필요한 원본 보고서, 요약, 전략 설계 근거, 실험 로그를 보존하기 위한 공간이다.
 
-이번 Task 1에서는 외부 원본 보고서를 그대로 보존하고, tick 연구 baseline 조건을 만들 때 참고할 핵심 내용을 요약한다.
+이 디렉터리는 원본 보고서 보존, tick 연구 baseline, process-research v2 실행 기록, Condition Passport, 연구 계획/관리/결과 보고서를 함께 묶어 사람이 읽는 wiki와 AI가 재사용하는 context source 역할을 한다.
 
 ## 전체 흐름
 

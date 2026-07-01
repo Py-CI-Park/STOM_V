@@ -267,10 +267,11 @@ promotion-review는 조건식 생성이 아니다. 다음 조건을 만족할 �
 
 ## 9. 현재 완료 검증
 
+이 문서의 `process_research_v2_validation_20260701` 실전 검증 run은 완료 상태다. 이후 별도로 시작된 "커밋/핸드오프 정리" Ultragoal은 이 문서 작성 시점에 leader-owned checkpoint를 진행 중일 수 있으므로, 아래 표는 **직전 연구 검증 run의 evidence**에만 적용한다.
+
 | 검증 | 결과 |
 |---|---|
-| `gjc ultragoal status --json` | complete, G001/G002/G003 모두 complete |
-| `goal({"op":"get"})` | complete |
+| 직전 연구 검증 Ultragoal quality gates | `artifacts/process-research-validation-20260701/quality_gate_G001.json`, `quality_gate_G002.json`, `quality_gate_G003.json` 존재 |
 | artifact validation | 통과 |
 | `python -m py_compile artifacts/process-research-validation-20260701/run_process_research_validation.py` | 통과 |
 | `git diff --check` 관련 문서/스크립트/HTML | 통과 |

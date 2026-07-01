@@ -1,17 +1,17 @@
-# 2026-07-01 커밋 전 파일 인벤토리와 정리 계획
+# 2026-07-01 파일 인벤토리와 커밋 정리 기록
 
 ## 상태 요약
 
-이 문서는 현재 worktree에 남아 있는 커밋되지 않은 파일을 연구/개발/증거/세션 상태로 분류한다. 목적은 `git add -A` 없이 안전하게 선별 커밋하거나 별도 보관 판단을 할 수 있게 하는 것이다.
+이 문서는 커밋 전 인벤토리와 커밋 후 남은 파일 처분을 함께 기록한다. 목적은 `git add -A` 없이 안전하게 선별 커밋한 근거와, 최종 worktree에 남긴 세션/OMO evidence의 이유를 한 곳에서 확인하게 하는 것이다.
 
-| 항목 | 개수 | 판단 |
-|---|---:|---|
-| current branch | `loop/process-research-pipeline` | 로컬 `STOM_Version_2U_C-ai-strategy-loop` 기준 4 commits ahead |
-| current HEAD | `a57a61a93` | 커밋 전 기준 HEAD |
-| modified tracked files | 12 | 이번 process-research v2 프로세스 개선 코드/테스트/문서 인덱스 후보 |
-| untracked files/groups | 442 | 연구 문서, artifacts, `.omo` 과거 evidence, `.gjc` 세션 상태가 혼재 |
-| top-level untracked groups | 5 | `.gjc`, `.omo`, `artifacts`, `docs`, `tests` |
-| protected runtime path 변경 | 0 | 별도 protected path check에서 변경 없음 |
+| 항목 | 상태 | 판단 |
+|---|---|---|
+| current branch | `loop/process-research-pipeline` | `STOM_Version_2U_C-ai-strategy-loop` 흐름의 연구/개발 정리 브랜치 |
+| 완료 커밋 | `332106f2`, `833bc650`, `942e8b28` | 코드/테스트, 연구 문서, evidence artifacts를 분리 커밋 |
+| 최종 HEAD 확인 | `git log -1 --oneline` 사용 | 이 문서 자체의 freshness 보강 커밋이 추가될 수 있어 명령 결과를 권위값으로 둔다 |
+| committed tracked changes | 코드/테스트/문서/artifacts | 이번 process-research v2 프로세스 개선과 연구 검증 evidence |
+| remaining untracked groups | `.gjc`, `.omo` | GJC session state와 OMO 과거/별도 evidence라 일반 커밋 제외 |
+| protected runtime path 변경 | 0 | protected path check에서 변경 없음 |
 
 ## Modified tracked files — 커밋 후보 A
 
@@ -32,15 +32,15 @@
 | `tests/unit/test_condition_generator.py` | candidate pack / strict validation tests | 테스트 커밋 후보 |
 | `tests/unit/test_research_loop.py` | orchestration/receipt tests | 테스트 커밋 후보 |
 
-## Untracked groups — 커밋 전 분류
+## Post-commit remaining groups — 최종 보류 분류
 
-| 그룹 | 개수 | 예시 | 권장 처리 |
-|---|---:|---|---|
-| `.gjc` | 1 | `.gjc/` | GJC workflow/session state. 일반 코드 커밋 제외 |
-| `.omo` | 252 | `.omo/evidence/tmap-walkforward/...`, `.omo/plans/...` | 이번 run과 직접 무관한 과거/별도 evidence가 대량 섞임. 별도 inventory 전까지 커밋 제외 |
-| `artifacts` | 147 | `artifacts/process-research-validation-20260701/`, `artifacts/g001-*` 등 | evidence 커밋 여부를 선별 판단. `__pycache__` 제외 |
-| `docs` | 40 | condition research docs, update logs | durable 연구 문서는 문서 커밋 후보. update_log는 별도 검토 |
-| `tests` | 1 | `tests/unit/test_research_prompt_contracts.py` | 코드 커밋 후보 |
+| 그룹 | 현재 상태 | 판단 |
+|---|---|---|
+| `.gjc` | untracked session/workflow state | GJC runtime state이므로 일반 소스 커밋 제외. Ultragoal ledger/checkpoint는 runtime audit trail로 유지 |
+| `.omo` | untracked drafts/evidence/plans 대량 | 일부 연구 맥락은 유용하지만 sqlite WAL/로그/스크린샷/과거 evidence가 섞여 있어 별도 OMO inventory 없이는 커밋하지 않음 |
+| `artifacts` | committed | `942e8b28`에서 연구/검증 산출물 보존 커밋 완료 |
+| `docs` | committed + 이 freshness patch | `833bc650`에서 문서 정리 커밋 완료, 이후 stale wording만 보강 |
+| `tests` | committed | `332106f2`에서 테스트 커밋 완료 |
 
 ## 이번 연구와 직접 관련 있는 신규 문서
 
@@ -70,7 +70,7 @@
 | `artifacts/process-research-validation-20260701/process_research_validation_report.html` | HTML 보고서 | evidence 커밋 후보 |
 | `artifacts/process-research-validation-20260701/process_research_validation_report.png` | 브라우저 검증 screenshot | evidence 커밋 후보 |
 | `artifacts/process-research-validation-20260701/quality_gate_G001.json` 등 | Ultragoal quality gate | evidence 커밋 후보 |
-| `artifacts/process-research-validation-20260701/__pycache__/` | Python bytecode | 커밋 제외 |
+| `artifacts/process-research-validation-20260701/__pycache__/` | Python bytecode | 정리 완료, 커밋 제외 |
 
 ## 커밋 분리 추천
 
@@ -139,19 +139,24 @@ artifacts/process-research-validation-20260701/__pycache__/
 | 연구 프로세스/실행 결과 문서화 | 완료 |
 | 매도 조건식 연구 방향 문서화 | 완료 |
 | 커밋되지 않은 파일 그룹 분류 | 완료 |
-| 실제 git staging/commit | 미수행 |
-| 대량 `.omo` evidence 선별 | 미수행, 별도 inventory 필요 |
-| artifacts 중 `__pycache__` 제거/무시 처리 | 미수행 |
+| 코드/테스트 커밋 | 완료: `332106f2 조건식 연구 컨텍스트팩과 다중 후보 루프 개선` |
+| 연구 문서 커밋 | 완료: `833bc650 조건식 연구 기록과 핸드오프 문서 정리` |
+| 연구 evidence artifacts 커밋 | 완료: `942e8b28 조건식 연구 검증 산출물 보존` |
+| 대량 `.omo` evidence 선별 | 보류, 별도 inventory 필요 |
+| artifacts 중 `__pycache__` 제거/무시 처리 | 완료 |
+| `.gjc` runtime state | 커밋 제외, Ultragoal runtime audit trail로 유지 |
 
-## 권장 다음 조치
-
-1. 위 Commit 1/2/3 순서로 선별 staging한다.
-2. `.gjc/`, `.omo/`, `__pycache__/`는 바로 커밋하지 않는다.
-3. 커밋 전 검증을 다시 실행한다.
+## 최종 검증 명령
 
 ```powershell
 pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q
-python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py cli/research_ranking.py
+python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py cli/research_ranking.py tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py
 git diff --check
 git status --short -- _database _database_v3k_shadow _log backup "*.db" backtest/graph .omx/reports "v3k_settings*.json" _v3k_sidecar/v3k_gui_settings.json
 ```
+
+## 남은 untracked 처리 방침
+
+- `.gjc/`: 현재 세션 Ultragoal 상태와 ledger이므로 커밋하지 않는다.
+- `.omo/`: 대량 과거 evidence와 WAL/로그/스크린샷이 섞여 있다. 별도 OMO evidence inventory를 만든 뒤 필요한 일부만 선별 커밋한다.
+- protected runtime paths: 변경 없음. 계속 커밋 금지.

@@ -2,36 +2,37 @@
 
 ## 목적
 
-`STOM_Version_2U_C`에서 파생된 `STOM_Version_2U_C-ai-strategy-loop` 흐름 이후 진행된 process-research 조건식 연구/개발/문서화/검증 산출물을 커밋 가능한 단위로 정리한다. 현재 실제 작업 브랜치는 `loop/process-research-pipeline`이며, `STOM_Version_2U_C-ai-strategy-loop` 로컬 브랜치의 `45c7e8d46916af03dd3e739ff54962b54b8492c9` 이후 4개 커밋이 선행된 상태에서 추가 미커밋 작업이 존재한다.
+`STOM_Version_2U_C`에서 파생된 `STOM_Version_2U_C-ai-strategy-loop` 흐름 이후 진행된 process-research 조건식 연구/개발/문서화/검증 산출물을 커밋 가능한 단위로 정리한다. 실제 작업 브랜치는 `loop/process-research-pipeline`이며, 이번 정리에서 코드/테스트, 연구 문서, evidence artifacts를 분리 커밋했다. 이 문서 자체의 freshness 보강 커밋이 추가될 수 있으므로 최종 HEAD는 `git log -1 --oneline` 결과를 권위값으로 둔다.
 
 ## 브랜치 관계
 
 | 기준 | 값 |
 |---|---|
 | 현재 브랜치 | `loop/process-research-pipeline` |
-| 현재 HEAD | `a57a61a93` |
+| 최종 HEAD 확인 | `git log -1 --oneline` |
 | 로컬 `STOM_Version_2U_C-ai-strategy-loop` merge-base | `45c7e8d46916af03dd3e739ff54962b54b8492c9` |
-| 로컬 ai-strategy-loop 대비 ahead/behind | `0/4` = 현재 브랜치가 4 commits ahead |
+| 로컬 ai-strategy-loop 대비 ahead/behind | `git rev-list --left-right --count STOM_Version_2U_C-ai-strategy-loop...HEAD`로 최종 확인 |
 | `origin/STOM_Version_2U_C-ai-strategy-loop` merge-base | `17cae9046fbb1bca1c08983d0ddbfe92858c9ecc` |
-| origin ai-strategy-loop 대비 ahead/behind | `0/5` = 현재 브랜치가 5 commits ahead |
+| origin ai-strategy-loop 대비 ahead/behind | `git rev-list --left-right --count origin/STOM_Version_2U_C-ai-strategy-loop...HEAD`로 최종 확인 |
 | `STOM_Version_2U_C` merge-base | `8006cd937611e917b08dd28f8add2e2c5aed7dba` |
 
 ## 최근 커밋 맥락
 
 | Commit | 제목 | 의미 |
 |---|---|---|
+| `942e8b28` | 조건식 연구 검증 산출물 보존 | process-research v2 실전 검증 artifacts, receipts, HTML/screenshot, quality gates 보존 |
+| `833bc650` | 조건식 연구 기록과 핸드오프 문서 정리 | condition research docs, passports, research run reports, branch handoff docs 보존 |
+| `332106f2` | 조건식 연구 컨텍스트팩과 다중 후보 루프 개선 | Research Prompt Context Pack, Analysis Card v2, multi-hypothesis loop, dashboard/tests 개선 |
 | `a57a61a93` | 울트라골 최종 스냅샷 갱신 | 이전 Ultragoal/연구 상태 snapshot 정리 |
 | `47798adce` | 프로세스 연구 벤치마크 우선 실행 | process-research 실행/검증 기반 |
-| `5a68e2ad6` | 프로세스 연구 중간 점검 문서화 | 중간 연구 기록 |
-| `5dd626ded` | 프로세스 연구 파이프라인 대시보드 확장 | dashboard/process 관측 확장 |
-| `45c7e8d46` | AI 루프 워크트리 정리 메모 추가 | 로컬 `STOM_Version_2U_C-ai-strategy-loop` 기준점 |
 
-## 현재 미커밋 상태 요약
+## 최종 worktree 상태 요약
 
-| 분류 | 개수 | 처리 방침 |
-|---|---:|---|
-| modified tracked files | 12 | 코드/테스트/문서 인덱스 커밋 후보 |
-| untracked groups | 442 | docs/artifacts/tests 일부는 커밋 후보, `.gjc`/대량 `.omo`/`__pycache__`는 제외 또는 별도 검토 |
+| 분류 | 상태 | 처리 방침 |
+|---|---|---|
+| committed code/tests/docs/artifacts | `332106f2`, `833bc650`, `942e8b28` | 이번 연구/개발/검증 산출물로 보존 |
+| remaining `.gjc` | untracked runtime state | GJC session/Ultragoal runtime audit trail, 일반 커밋 제외 |
+| remaining `.omo` | untracked drafts/evidence/plans 대량 | WAL/로그/스크린샷/과거 evidence가 섞여 별도 inventory 전까지 커밋 제외 |
 | protected runtime paths | 0 변경 | 커밋 금지 경로 변경 없음 |
 
 상세 인벤토리는 `docs/research/condition_research/2026-07-01_uncommitted_inventory_and_commit_plan.md`가 기준이다.
@@ -91,29 +92,18 @@
 5. 단독 효과 확인 전 buy/sell paired repair 금지.
 6. promotion-review는 생성 없이 frozen/fresh holdout, OOS/WF, slippage advisory, evidence health만 검토.
 
-## 커밋 방침
+## 커밋 결과
 
-1. 코드/테스트 커밋: process-research v2 기능과 검증 테스트.
-2. 연구 문서 커밋: condition research docs, passports, research run docs, handoff docs.
-3. evidence artifacts 커밋: 이번 run의 핵심 JSON/JSONL/MD/HTML/PNG/TXT artifacts.
-4. 제외: `.gjc/`, `.omo/` 대량 evidence, `__pycache__/`, protected runtime paths.
+1. 코드/테스트 커밋 완료: `332106f2 조건식 연구 컨텍스트팩과 다중 후보 루프 개선`.
+2. 연구 문서 커밋 완료: `833bc650 조건식 연구 기록과 핸드오프 문서 정리`.
+3. evidence artifacts 커밋 완료: `942e8b28 조건식 연구 검증 산출물 보존`.
+4. 제외 유지: `.gjc/`, `.omo/` 대량 evidence, `__pycache__/`, protected runtime paths.
 
-## 검증 게이트
-
-커밋 전 다음을 통과해야 한다.
-
-```powershell
-pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q
-python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py cli/research_ranking.py
-git diff --check
-git status --short -- _database _database_v3k_shadow _log backup "*.db" backtest/graph .omx/reports "v3k_settings*.json" _v3k_sidecar/v3k_gui_settings.json
-```
-
-## 커밋 전 검증 결과
+## 최종 검증 결과
 
 | 검증 | 결과 |
 |---|---|
-| `pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q` | 149 passed in 9.02s |
-| `python -m py_compile ...` | 통과 |
-| `git diff --check` | 통과, LF→CRLF 경고만 표시 |
+| `pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q` | 149 passed in 11.46s |
+| `python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py cli/research_ranking.py tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py` | 통과 |
+| `git diff --check` | 통과 |
 | protected path status | 출력 없음, 변경 없음 |
