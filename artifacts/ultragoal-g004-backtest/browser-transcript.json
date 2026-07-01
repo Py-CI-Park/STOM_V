@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "browser",
+  "surface": "web",
+  "goalId": "G004",
+  "startedAt": "2026-06-28T02:05:00Z",
+  "target": "http://127.0.0.1:8776/ui/remodel/backtest",
+  "actions": [
+    {"timestamp":"2026-06-28T02:05:01Z","type":"navigate","selector":"document","url":"/ui/remodel/backtest?demo=reference","result":"contracts=24 matrixRows=24 fetch=0 ws=0 storage=0 inert=true screenshot=g004-backtest-reference.png"},
+    {"timestamp":"2026-06-28T02:05:02Z","type":"screenshot","selector":"document","url":"/ui/remodel/backtest?demo=reference","result":"artifacts/ultragoal-g004-backtest/g004-backtest-reference.png"},
+    {"timestamp":"2026-06-28T02:05:03Z","type":"navigate","selector":"document","url":"/ui/remodel/backtest","result":"contracts=24 matrixRows=24 live-read-adapter=true"},
+    {"timestamp":"2026-06-28T02:05:04Z","type":"probe","selector":"Backtest API Contract Matrix","url":"/ui/remodel/backtest","result":"safe GETs live OK; report HTML OK; mutating POSTs MANUAL-GATED; ws_job NOT-USED user-gated; evo_gens NOT-USED no run_id"},
+    {"timestamp":"2026-06-28T02:05:05Z","type":"screenshot","selector":"document","url":"/ui/remodel/backtest","result":"artifacts/ultragoal-g004-backtest/g004-backtest-live.png"}
+  ],
+  "verdict": "passed"
+}

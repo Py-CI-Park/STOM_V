@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "kind": "g002-backtest-tranche-verification-report",
+  "generatedAt": "2026-06-30T07:42:07.312409+00:00",
+  "summary": {
+    "status": "PASS",
+    "scope": "Shared V3 UX IA primitives plus Backtest-first redesign only; Chart Replay not redesigned.",
+    "meanV3Score": 97.3,
+    "meanNamedDelta": 13.06,
+    "v2v3Compare": "PASS averageCorrectedTotalScore=100.0 failures=[]",
+    "safetyAudit": "PASS averageSafetyScore=100.0 failures=[]",
+    "focusedPytest": "32 passed",
+    "jsSyntax": "PASS",
+    "protectedPaths": "clean"
+  },
+  "commands": [
+    "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+    "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_human_ux_rubric.py tests/unit/test_dashboard_route_parity.py -q",
+    "python scripts/verify_dashboard_human_ux_rubric.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-1-backtest --storyboard artifacts/dashboard-human-ux-v3/storyboards/storyboards.json --viewports 1440x900,1920x1080,1280x720 --tranche c --pages backtest --min-v3-score 86 --min-delta 5",
+    "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-1-v2-v3-compare --timeout-ms 60000",
+    "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-1-safety-audit --timeout-ms 60000",
+    "git diff --check -- ai_strategy_loop/dashboard/frontend/remodel/src/app.js ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css tests/unit/test_dashboard_remodel_static.py",
+    "git status --short -- _database _database_v3k_shadow _log backup \"*.db\" backtest/graph .omx/reports \"v3k_settings*.json\""
+  ],
+  "artifactRefs": [
+    {
+      "id": "browser-backtest-transcript",
+      "kind": "browser-automation",
+      "path": "artifacts/dashboard-human-ux-v3/tranche-1-backtest/browser-backtest-evidence.json",
+      "description": "Browser automation transcript for /ui/remodel/backtest?demo=reference capturing task frame, safety strip, Backtest steps, condition editors, validation, drawer, and forbiddenLiveControls=0.",
+      "tool": "browser",
+      "surface": "web",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "actions": [
+        {
+          "timestamp": "2026-06-30T07:25:50.000Z",
+          "type": "navigate",
+          "selector": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+          "waitUntil": "networkidle2"
+        },
+        {
+          "timestamp": "2026-06-30T07:25:54.000Z",
+          "type": "evaluate",
+          "selector": "[data-ux-primary-canvas=\"backtest\"]",
+          "description": "Capture required G002 Backtest selectors and forbidden live controls"
+        },
+        {
+          "timestamp": "2026-06-30T07:25:55.000Z",
+          "type": "screenshot",
+          "selector": "body",
+          "path": "artifacts/dashboard-human-ux-v3/tranche-1-backtest/browser-backtest-viewport.png",
+          "fullPage": false
+        }
+      ],
+      "screenshotPath": "artifacts/dashboard-human-ux-v3/tranche-1-backtest/browser-backtest-viewport.png"
+    },
+    {
+      "id": "browser-backtest-screenshot",
+      "kind": "screenshot",
+      "path": "artifacts/dashboard-human-ux-v3/tranche-1-backtest/browser-backtest-viewport.png",
+      "description": "Non-uniform screenshot of the redesigned V3 Backtest first fold with task frame and compact safety strip.",
+      "surface": "web",
+      "nonUniform": true,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "id": "human-ux-scorecard",
+      "kind": "test-report",
+      "path": "artifacts/dashboard-human-ux-v3/tranche-1-backtest/scorecard.json",
+      "description": "Human UX rubric scorecard for Backtest route: PASS, mean V3 score 97.3, mean named V3-V2 delta 13.06, no hard failures."
+    },
+    {
+      "id": "v2-v3-compare-scorecard",
+      "kind": "test-report",
+      "path": "artifacts/dashboard-human-ux-v3/tranche-1-v2-v3-compare/compare-scorecard.json",
+      "description": "V2/V3 route compare scorecard: PASS, average corrected total 100.0, Backtest and Chart Replay route preservation verified."
+    },
+    {
+      "id": "safety-audit-scorecard",
+      "kind": "test-report",
+      "path": "artifacts/dashboard-human-ux-v3/tranche-1-safety-audit/safety-scorecard.json",
+      "description": "Dashboard safety audit scorecard: PASS, average safety score 100.0, no forbidden network/source/DOM failures."
+    },
+    {
+      "id": "static-unit-tests",
+      "kind": "test-report",
+      "path": "artifact://1123",
+      "description": "Focused pytest raw output for dashboard remodel/static/human UX/route parity tests; final run reported 32 passed."
+    },
+    {
+      "id": "adversarial-qa",
+      "kind": "failure-mode-test",
+      "path": "agent://137-G002BacktestQaAbs",
+      "description": "Executor QA/red-team matrix covering missing selectors, unsafe auto-mutation, condition editor regression, drawer evidence hiding, and replay scope creep; all passed with blockers []."
+    },
+    {
+      "id": "architect-review",
+      "kind": "architecture-review",
+      "path": "agent://138-G002BacktestArchAbs",
+      "description": "Architect review with architecture/product/code CLEAR, recommendation APPROVE, blockers []."
+    }
+  ],
+  "architectReview": "agent://138-G002BacktestArchAbs",
+  "executorQa": "agent://137-G002BacktestQaAbs",
+  "qualityGate": "artifacts/dashboard-human-ux-v3/tranche-1-quality-gate.json"
+}

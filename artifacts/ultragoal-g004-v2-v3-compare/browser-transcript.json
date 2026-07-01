@@ -1,0 +1,228 @@
+{
+  "actions": [
+    {
+      "assertion": "v2 condition route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution",
+      "timestamp": "2026-06-28T22:46:10.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "v3 condition route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "timestamp": "2026-06-28T22:46:11.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "01_condition_ai totalCorrectedScore=100.0, hardFailures=0",
+      "selector": "compare-scorecard",
+      "status": "passed",
+      "timestamp": "2026-06-28T22:46:12.183216+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "v2 process route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution/process",
+      "timestamp": "2026-06-28T22:46:13.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "v3 process route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "timestamp": "2026-06-28T22:46:14.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "02_process totalCorrectedScore=100.0, hardFailures=0",
+      "selector": "compare-scorecard",
+      "status": "passed",
+      "timestamp": "2026-06-28T22:46:15.183216+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "v2 history route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution/records",
+      "timestamp": "2026-06-28T22:46:16.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "v3 history route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "timestamp": "2026-06-28T22:46:17.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "03_history totalCorrectedScore=100.0, hardFailures=0",
+      "selector": "compare-scorecard",
+      "status": "passed",
+      "timestamp": "2026-06-28T22:46:18.183216+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "v2 lab route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution/lab",
+      "timestamp": "2026-06-28T22:46:19.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "v3 lab route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "timestamp": "2026-06-28T22:46:20.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "04_lab totalCorrectedScore=100.0, hardFailures=0",
+      "selector": "compare-scorecard",
+      "status": "passed",
+      "timestamp": "2026-06-28T22:46:21.183216+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "v2 workbench route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution/workbench",
+      "timestamp": "2026-06-28T22:46:22.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "v3 workbench route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "timestamp": "2026-06-28T22:46:23.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "05_workbench totalCorrectedScore=100.0, hardFailures=0",
+      "selector": "compare-scorecard",
+      "status": "passed",
+      "timestamp": "2026-06-28T22:46:24.183216+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "v2 audit route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/evolution/verdict",
+      "timestamp": "2026-06-28T22:46:25.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "v3 audit route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "timestamp": "2026-06-28T22:46:26.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "06_decision_audit totalCorrectedScore=100.0, hardFailures=0",
+      "selector": "compare-scorecard",
+      "status": "passed",
+      "timestamp": "2026-06-28T22:46:27.183216+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "v2 backtest route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/backtest",
+      "timestamp": "2026-06-28T22:46:28.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "v3 backtest route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "timestamp": "2026-06-28T22:46:29.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "07_backtest totalCorrectedScore=100.0, hardFailures=0",
+      "selector": "compare-scorecard",
+      "status": "passed",
+      "timestamp": "2026-06-28T22:46:30.183216+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "v2 chart_replay route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8770/ui/chart-replay",
+      "timestamp": "2026-06-28T22:46:31.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "v3 chart_replay route loaded with non-uniform screenshot and expected asset ownership",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "timestamp": "2026-06-28T22:46:32.183216+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "08_chart_replay totalCorrectedScore=100.0, hardFailures=0",
+      "selector": "compare-scorecard",
+      "status": "passed",
+      "timestamp": "2026-06-28T22:46:33.183216+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "route matrix status PASS; failures=0",
+      "selector": "route-version-matrix",
+      "status": "passed",
+      "timestamp": "2026-06-28T22:46:34.183216+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "V3 forbidden network scan PASS; V2 legacy observations=1",
+      "selector": "forbidden-network-scan",
+      "status": "passed",
+      "timestamp": "2026-06-28T22:46:35.183216+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "V3 reference visual average=97.93, failures=0",
+      "selector": "v3-reference-visual-gate",
+      "status": "passed",
+      "timestamp": "2026-06-28T22:46:36.183216+00:00",
+      "type": "assert"
+    }
+  ],
+  "artifactRefs": [
+    "compare-scorecard.json",
+    "route-version-matrix.json",
+    "dom-inventory.json",
+    "forbidden-network-scan.json",
+    "side-by-side-contact-sheet.png",
+    "../ultragoal-g004-v3-reference-visual/scorecard.json"
+  ],
+  "baseUrls": {
+    "v2": "http://127.0.0.1:8770",
+    "v3": "http://127.0.0.1:8776"
+  },
+  "endedAt": "2026-06-28T22:46:37.183216+00:00",
+  "kind": "browser-automation",
+  "schemaVersion": 1,
+  "startedAt": "2026-06-28T22:46:10.183216+00:00",
+  "surface": "web",
+  "tool": "playwright+verify_dashboard_v2_v3_compare",
+  "verdict": "passed"
+}

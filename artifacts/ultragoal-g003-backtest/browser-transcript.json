@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "capturedAt": "2026-06-27T15:14:12.253Z",
+  "route": "/ui/remodel/backtest",
+  "title": "STOM AI · 조건식 AI 연구 대시보드 · Remodel",
+  "editState": {
+    "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+    "activeTab": "backtest",
+    "btSubtab": "edit",
+    "textSample": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n📊 백테스트\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n검증 실행 · 조건식 백테스트 실행·결과 조회\n비소유: 진화 루프 최종 승인·운용 결정 기록\nbacktest\nROUTE\nBT\nOWNER\n검증 실행\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n백테스트 워크벤치\n● connected · api v1\n모드\n백테스트\n최적화\nWFO\n스윕\n매수 조건식\n— 선택 —\n매도 조건식\n— 선택 —\n시작 (YYYYMMDD)\n종료 (YYYYMMDD)\n시간단위\n분봉 (min)\n틱 (tick)\n엔진 수\n▸ 백테스트 실행\n↻ 이력\nself.vars → 스윕 빌더\n가용 min: 일일DB 0일\n조건식 편집\n결과 분석\n에디터 보기\n매수·매도 동시\n매수만 크게\n매도만 크게\n매수 에디터\n1줄\n사용 변수 칩 — 코드 입력 시 한글 변수가 SSOT 대조되어 표시됩니다.\n검증\n저장\n다른 이름으로\n매도 에디터\n1줄\n사용 변수 칩 — 코드 입력 시 한글 변수가 SSOT 대조되어 표시됩니다.\n검증\n저장\n다른 이름으로\n조건식 라이브러리(빠른 선택)\n▾ 접기\n조건식 라이브러리\n매수\n↻\n조회 실패: 전략 DB 조회 실패: 조건식 목록을 읽을 수 없습니다. · strategy_list_failed: no such table: stockbuy\n재시도\n0개 표시 / 전체 0개\n조건식 라이브러리\n매도\n↻\n조회 실패: 전략 DB 조회 실패: 조건식 목록을 읽을 수 없습니다. · strategy_list_failed: no such table: stocksell\n재시도\n0개 표시 / 전체 0개\n백파인더 사전 점검(실행 전용 준비)\n▸ 펼치기\nSTOM AI · STATE_CONTRACT v2 · last_update —",
+    "markers": {
+      "workbench": true,
+      "edit": true,
+      "buyEditor": true,
+      "sellEditor": true,
+      "library": true,
+      "backfinder": true,
+      "variables": true,
+      "sweepBuilder": true
+    },
+    "forbidden": []
+  },
+  "resultState": {
+    "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+    "activeTab": "backtest",
+    "btSubtab": "result",
+    "textSample": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n📊 백테스트\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n검증 실행 · 조건식 백테스트 실행·결과 조회\n비소유: 진화 루프 최종 승인·운용 결정 기록\nbacktest\nROUTE\nBT\nOWNER\n검증 실행\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n백테스트 워크벤치\n● connected · api v1\n모드\n백테스트\n최적화\nWFO\n스윕\n매수 조건식\n— 선택 —\n매도 조건식\n— 선택 —\n시작 (YYYYMMDD)\n종료 (YYYYMMDD)\n시간단위\n분봉 (min)\n틱 (tick)\n엔진 수\n▸ 백테스트 실행\n↻ 이력\nself.vars → 스윕 빌더\n가용 min: 일일DB 0일\n조건식 편집\n결과 분석\n결과 라이브러리\n6/6\n↻\n★ 즐겨찾기\n☆\n취소됨\n20260628_000058_기존매수_58526\n—\n재실행\n🏷\nevidence job:20260628_000058_기존매수_58526 · terminal_without_openable_artifact · condition high\n☆\n추적불가\n20260628_000056_기존매수_56343\n13m 14s\n복구\n재실행\n🏷\nevidence job:20260628_000056_기존매수_56343 · lost_tracking · condition high\n☆\n취소됨\n20260627_133018_기존매수_18105\n11s\n재실행\n🏷\nevidence job:20260627_133018_기존매수_18105 · terminal_without_openable_artifact · condition high\n☆\n취소됨\n20260627_133006_기존매수_6430\n12s\n재실행\n🏷\nevidence job:20260627_133006_기존매수_6430 · terminal_without_openable_artifact · condition high\n☆\n취소됨\n20260627_132536_기존매수_36160\n12s\n재실행\n🏷\nevidence job:20260627_132536_기존매수_36160 · terminal_without_openable_artifact · condition high\n☆\n취소됨\n20260627_132523_기존매수_23936\n12s\n재실행\n🏷\nevidence job:20260627_132523_기존매수_23936 · terminal_without_openable_artifact · condition high\n예시 데이터\n핵심 메트릭\n⊕ 비교 기준(A)\n⬇ CSV\n⛶ 전체화면 분석\n↻\n거래수\n180\n승률\n55.00%\n수익률합계\n38.65%\n수익금\n+1,707,840원\nMDD\n417.60%\nCAGR\n—\n누적수익곡선 · 일별손익\n일이익 ₩\n일손실 ₩\n누적수익 ₩\n휠 = 시간축 줌 · 드래그 = 팬\nShift+드래그 = 구간 선택 → 구간 분석\n크로스헤어로 일별 값 확인\n최종 누적\n+1,707,840원\n누적 고점\n+1,707,840원\n거래일수\n80\n0\n28만\n-11만\n-2만\n8만\n18만\n171만\n-34만\n17만\n68만\n120만\n2025-04-07\n04/21\n05/05\n05/19\n06/02\n06/16\n06/30\n07/14\n07/25\n손익 분포 — HISTOGRAM\n이익 bin\n손실 bin\nx축 = 거래 수익률(%) 구간\ny축 = 해당 구간 거래 수\n0% 경계선 좌=손실 / 우=이익\n0\n5\n10\n14\n19\n0%\n-1.6%\n2.2%\n요일 × 시간대 히트맵\n매수시각 기준 · 수익률 합계(%)\n\t09:00\t09:30\t10:00\t10:30\t11:00\t11:30\t12:00\t12:30\t13:00\t13:30\t14:00\t14:30\n월\t\n+0.9%\n2건\n\t\n+1.4%\n4건\n\t\n+2.2%\n1건\n\t\n+0.2%\n1건\n\t\n+1.4%\n1건\n\t\n-0.8%\n3건\n\t\n+0.3%\n2건\n\t\n-0.9%\n2건\n\t\n-0.9%\n2건\n\t\n-0.3%\n6건\n\t\n+3.3%\n2건\n\t\n+2.2%\n2건\n\n화\t\n+1.6%\n5건\n\t\n-0.2%\n3건\n\t\n+1.8%\n3건\n\t\n-0.3%\n1건\n\t\n-1.5%\n4건\n\t\n+0.9%\n4건\n\t\n+1.9%\n5건\n\t\n-0.6%\n1건\n\t\n+0.8%\n4건\n\t\n-0.6%\n6건\n\t\n+3.0%\n4건\n\t\n-1.9%\n2건\n\n수\t\n-0.9%\n3건\n\t\n-1.0%\n1건\n\t\n-0.5%\n3건\n\t\n-0.7%\n2건\n\t\n+5.4%\n7건\n\t\n+1.5%\n7건\n\t\n-1.4%\n1건\n\t\n-1.2%\n1건\n\t\n+2.1%\n2건\n\t\n+3.1%\n2건\n\t\n+3.5%\n3건\n\t\n+0.7%\n5건\n\n목\t\n+2.5%\n2건\n\t\n-2.3%\n2건\n\t\n+0.4%\n3건\n\t\n+0.5%\n2건\n\t\n+2.3%\n2건\n\t\n-1.3%\n4건\n\t\n+3.1%\n4건\n\t\n-2.4%\n2건\n\t\n+0.5%\n4건\n\t\n-0.6%\n2건\n\t\n-2.0%\n6건\n\t\n+2.2%\n3건\n\n금\t\n-1.9%\n4건\n\t\n+1.4%\n3건\n\t\n+0.3%\n3건\n\t\n+0.4%\n5건\n\t\t\n-0.4%\n4건\n\t\n+3.5%\n3건\n\t\n+0.8%\n2건\n\t\n+4.0%\n4건\n\t\n+0.8%\n2건\n\t\n+1.5%\n4건\n\t\n+0.6%\n3건\n이익 슬롯(수익률 합계 +)\n손실 슬롯(수익률 합계 −)\n셀 = 수익률 합계(%) · 거래 건수\n언더워터 — DRAWDOWN\n고점 대비 반납액(원)\n최대낙폭\n+449,966원\n낙폭 구간\n04/08~04/22\n회복 05/01\n0\n−45만\n−11만\n−22만\n−34만\n2025-04-07\n04/21\n05/05\n05/19\n06/02\n06/16\n06/30\n07/14\n07/25\nMAE / MFE 산점도\n이익 거래\n손실 거래\nx = R_MAE(매수후 최저수익률, %)\ny = R_MFE(매수후 최고수익률, %)\n좌상=잠재이익 큼/낙폭 큼 · 점색=실현손익\n-2.1%\n0.0%\n3.5%\n0.0%\nMFE↑\nMAE↓\n매도조건별 손익 분해\n청산사유 기준\n목표가도달\n+2,941,175원\n85건·80.00%\n추세이탈\n+67,028원\n18건·44.44%\n시간청산\n−275,949원\n19건·31.58%\n손절\n−350,456원\n37건·29.73%\n변동성청산\n−673,958원\n21건·28.57%\n몬테카를로 — 누적손익 팬\n미실행\n↻ 재계산\n일별 손익을 무작위 재배열한 분포\n밴드 = p5~p95 / 진한선 = 중앙값(p50)\n거래 순서가 결과에 준 영향(운) 진단\n기대 MDD P95\n0.00%\nMDD 중앙값\n0.00%\n최종손익 P50\n0원\n파산확률\n0.00%\n0\n0\n0\n몬테카를로를 실행하면 손익 분포 팬이 표시됩니다 (거래일 2일 이상 필요)\n오더플로우 — 이기는 진입 프로파일\n승 진입\n패 진입\n변수별 승/패 진입 분포(p10~p90) 비교\n박스 = p25~p75 · 세로선 = 중앙값(p50)\n분리력 = 승패 중앙값 차 절대값 순위\n체결강도\n승 n=99 · 패 n=81\n승\n패\n등락율\n승 n=99 · 패 n=81\n승\n패\n전일동시간비\n승 n=99 · 패 n=81\n승\n패\n호가불균형\n승 n=99 · 패 n=81\n승\n패\n분리력 순위\n1.\n체결강도\n159.10\nvs\n160.20\n-1.10\n2.\n등락율\n3.68\nvs\n2.75\n+0.93\n3.\n전일동시간비\n1.64\nvs\n1.82\n-0.18\n4.\n호가불균형\n1.08\nvs\n0.93\n+0.15\n통계 검정\n유의 0건 / 전체 17버킷\n요일\n월\n+0.32%\nn=28\n표본 부족\n요일\n화\n+0.12%\nn=42\np=0.552\n요일\n수\n+0.29%\nn=37\np=0.680\n요일\n목\n+0.08%\nn=36\np=0.427\n요일\n금\n+0.30%\nn=37\np=0.614\n시간대\n09:00\n+0.14%\nn=16\n표본 부족\n시간대\n09:30\n-0.05%\nn=13\n표본 부족\n시간대\n10:00\n+0.33%\nn=13\n표본 부족\n시간대\n10:30\n+0.01%\nn=11\n표본 부족\n시간대\n11:00\n+0.54%\nn=14\n표본 부족\n시간대\n11:30\n-0.01%\nn=22\n표본 부족\n시간대\n12:00\n+0.49%\nn=15\n표본 부족\n시간대\n12:30\n-0.54%\nn=8\n표본 부족\n시간대\n13:00\n+0.41%\nn=16\n표본 부족\n시간대\n13:30\n+0.13%\nn=18\n표본 부족\n시간대\n14:00\n+0.49%\nn=19\n표본 부족\n시간대\n14:30\n+0.26%\nn=15\n표본 부족\nGUI 패리티 — STOM 백테스트 결과 이미지 2장\n부가정보 2×2 · 결과 2×1\nMDD 랜덤 곡선 — 거래순서 무작위 30회 VS 실제\n셔플 누적\n실제 누적\n거래별 손익 순서를 무작위로 섞은 30개 누적곡선\n실제 곡선이 셔플 분포 안쪽이면 운(순서) 의존이 낮음\n실제 MDD 8.9% · 셔플 MDD 평균 9.2%\n실제 MDD\n8.9%\n셔플 MDD 최대\n25.7%\n셔플 MDD 평균\n9.2%\n셔플 MDD 최소\n5.5%\n0\n231만\n-65만\n일별 수익 · 누적\n일이익 ₩\n일손실 ₩\n누적 ₩\n일별 실현손익(막대) + 그날까지 누적(라인)\n시장지수 비교는 per-trade CSV 에 데이터 없음 — 미표시\n크로스헤어로 일자별 값 확인\n0\n28만\n-11만\n171만\n-34만\n04/07\n04/21\n05/05\n05/19\n06/02\n06/16\n06/30\n07/14\n07/25\n시간대별 손익 (30분 슬롯)\n이익 ₩\n손실 ₩\n매수시각 30분 슬롯별 이익/손실 분리 합\n위=이익 · 아래=손실\n강한 손실 시간대 회피 후보 진단\n0\n65만\n-54만\n09:00\n09:30\n10:00\n10:30\n11:00\n11:30\n12:00\n12:30\n13:00\n13:30\n14:00\n14:30\n요일별 손익\n이익 ₩\n손실 ₩\n요일별 이익/손실 분리 합(매수시각 기준)\n특정 요일 편향 진단\n막대 위 숫자 = 순손익\n0\n123만\n-96만\n48만\n월\n27만\n화\n46만\n수\n1만\n목\n49만\n금\n보유금액 곡선\n최대 보유\n+17,819,918원\n진입 시 +매수금액 · 청산 시 -매수금액으로 재구성한 보유 원금 합\nGUI 보유금액의 정직 근사(평가손익·수수료 미반영, 진입원가 기준)\n180 거래 전부 반영\n1782만\n0\n04/07 12:20\n05/27 12:28\n07/25 15:31\n거래별 손익 · 롤링 평균\n누적 ₩\nMA20\nMA60\nMA120\nMA240\nMA480\n거래별 실현손익(막대) + 누적손익(주황) + 누적손익 이동평균(창 20/60/120/240/480)\n롤링 라인이",
+    "markers": {
+      "resultLibrary": true,
+      "jobLifecycle": true,
+      "metrics": true,
+      "equity": true,
+      "distribution": true,
+      "heatmap": true,
+      "underwater": true,
+      "maeMfe": true,
+      "orderflow": true,
+      "guiParity": true,
+      "evo": true,
+      "overlay": true,
+      "portfolio": true
+    },
+    "forbidden": []
+  },
+  "responses": [
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=91fec92d",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/remodel-bootstrap.js?v=20260627g002",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/jobs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/strategies?kind=buy",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/strategies?kind=sell",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/status",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/result?job_id=__demo__",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/strategies?kind=buy",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/strategies?kind=sell",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/data_range",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/result?job_id=__demo__",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+      "status": 200,
+      "ok": true
+    }
+  ],
+  "screenshots": [
+    "artifacts/ultragoal-g003-backtest/backtest-edit-tab-live.png",
+    "artifacts/ultragoal-g003-backtest/backtest-result-tab-live-2.png"
+  ]
+}

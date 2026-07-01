@@ -1,0 +1,707 @@
+{
+  "schemaVersion": 1,
+  "kind": "g006-safety-api-smoke",
+  "capturedAt": "2026-06-27T16:16:44Z",
+  "liveServerBase": "http://127.0.0.1:8776",
+  "liveChecks": [
+    {
+      "path": "/decisions",
+      "method": "GET",
+      "httpStatus": 200,
+      "ok": true,
+      "body": {
+        "decisions": [
+          {
+            "ts": 1781326034.070054,
+            "verdict": "complement",
+            "note": "V6 포트폴리오(complement): THETA(과거적합 train+10.97M) + T2C3(09:25 시간확장, OOS/WF/슬리피지 THETA 능가) 2-전략 운용. train 상관 0.92·분산이득 7.3% 미미 — 근거는 레짐 상보성: 2026형 저거래장 T2C3 +400,701 vs THETA +164,602(+143%). 평상시 동행+위축장 T2C3 헤지. 둘 다 V1~V5 완주. 카드: 2026-06-13_v6_portfolio_decision_card.md",
+            "candidate": {
+              "buy_name": "THETA_seed_902905_06_B",
+              "profit": 10965479.0,
+              "mdd": 10.04,
+              "trade_count": 272
+            }
+          }
+        ],
+        "count": 1
+      }
+    },
+    {
+      "path": "/config/spec",
+      "method": "GET",
+      "httpStatus": 200,
+      "ok": true,
+      "body": {
+        "contract_version": 2,
+        "fields": [
+          {
+            "name": "provider",
+            "label": "LLM Provider",
+            "type": "select",
+            "choices": [
+              "gpt_auth",
+              "openrouter",
+              "codex_proxy"
+            ],
+            "default": "gpt_auth",
+            "help": "전략 생성에 쓸 LLM provider. gpt_auth는 로컬 ChatGPT OAuth 프록시를 안전하게 점검한 뒤 사용한다."
+          },
+          {
+            "name": "model",
+            "label": "Model",
+            "type": "select",
+            "choices": [
+              "gpt-5.5",
+              "gpt-5.5-mini",
+              "openai-codex/gpt-5.5"
+            ],
+            "default": "gpt-5.5",
+            "help": "기본 GPT 5.5. xhigh는 별도 reasoning_effort 필드로 표시하며, provider가 지원하지 않으면 상태 배지로 fallback을 알린다."
+          },
+          {
+            "name": "reasoning_effort",
+            "label": "Reasoning effort",
+            "type": "select",
+            "choices": [
+              "xhigh",
+              "high",
+              "medium",
+              "low"
+            ],
+            "default": "xhigh",
+            "help": "gpt_auth/지원 provider에서 사용할 추론 강도 선호값. 기본 xhigh이며 미지원이면 모델 호출은 차단하지 않고 상태에 표시한다."
+          },
+          {
+            "name": "max_generations",
+            "label": "최대 세대",
+            "type": "number",
+            "default": 200,
+            "help": "생성 세대 수 상한. 장기 연구가 가능하도록 기본값을 크게 잡되, 검증 스모크는 1~2세대로 낮춰 실행한다.",
+            "min": 1,
+            "step": 1
+          },
+          {
+            "name": "target_score",
+            "label": "목표 적합도",
+            "type": "number",
+            "default": null,
+            "help": "비우면 조기 종료 없음. 공식: gate 통과 winner_score >= 목표값이면 졸업. objective별 score는 risk_adjusted=Calmar×우상향R², multi=Calmar·R²·일평균거래·payoff 평균.",
+            "min": 0,
+            "step": "any"
+          },
+          {
+            "name": "mdd_cap",
+            "label": "MDD 상한(%)",
+            "type": "number",
+            "default": 40.0,
+            "help": "하드 게이트: 최대 낙폭(MDD)이 이 값을 넘으면 탈락. 기본/최대 40%. 더 큰 값은 UI/백엔드에서 거부한다.",
+            "min": 0,
+            "max": 40.0,
+            "step": "any"
+          },
+          {
+            "name": "min_daily_trades",
+            "label": "일평균 거래 하한",
+            "type": "number",
+            "default": 0.5,
+            "help": "일평균 거래 빈도 게이트의 주 기준. 공식: daily_avg_trades = 거래수 / 거래일수. 이 값 미만이면 과소거래로 탈락/감점한다.",
+            "min": 0,
+            "step": "any"
+          },
+          {
+            "name": "min_trades",
+            "label": "최소 거래수(폴백)",
+            "type": "number",
+            "default": 30,
+            "help": "구형 결과처럼 일평균 거래수가 없을 때만 쓰는 폴백 하한. 주 기준은 위의 일평균 거래 하한이다.",
+            "min": 0,
+            "step": 1
+          },
+          {
+            "name": "feedback_window",
+            "label": "피드백 윈도우",
+            "type": "number",
+            "default": 8,
+            "help": "피드백 윈도우: 다음 세대 프롬프트에 참고할 최근 부검/실패 원인 개수. 많을수록 더 긴 연구 맥락을 보지만 토큰 비용이 늘어난다.",
+            "min": 0,
+            "step": 1
+          },
+          {
+            "name": "research_oos_mode",
+            "label": "Research OOS Mode",
+            "type": "select",
+            "choices": [
+              "disabled",
+              "advisory",
+              "promotion_only"
+            ],
+            "default": "disabled",
+            "help": "disabled=OOS 없이 탐색, advisory=참고 표시만, promotion_only=후보 고정 후 최종 검증용."
+          },
+          {
+            "name": "condition_discovery_preset",
+            "label": "Condition Discovery Preset",
+            "type": "select",
+            "choices": [
+              "fast",
+              "research",
+              "promotion"
+            ],
+            "default": "fast",
+            "help": "fast=빠른 탐색, research=프롬프트/equity/evidence 보존 연구, promotion=동결 후보 승격 검토. 점수는 advisory이고 evidence/hard gate/인간 승인 우선."
+          },
+          {
+            "name": "condition_discovery_process",
+            "label": "Condition Discovery Process",
+            "type": "select",
+            "choices": [
+              "fast-discovery",
+              "process-research",
+              "promotion-review"
+            ],
+            "default": null,
+            "help": "선택 표시용 프로세스 번호/코드. 1 fast-discovery→fast, 2 process-research→research, 3 promotion-review→promotion. preset과 함께 오면 불일치 시 거부한다."
+          },
+          {
+            "name": "bt_timeframe",
+            "label": "Backtest Timeframe",
+            "type": "select",
+            "choices": [
+              "min",
+              "tick"
+            ],
+            "default": "min",
+            "help": "세대별 평가 백테스트 타임프레임. min(분봉)이 검증된 빠른 기본값."
+          },
+          {
+            "name": "full_session_enabled",
+            "label": "MIN 풀세션(15시까지)",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 min(분봉) 백테 장중 윈도우를 시초 28분이 아니라 풀세션(bt_min_universe_end_time)까지 연다. tick은 데이터 09:30 캡이라 무영향. 기본 OFF."
+          },
+          {
+            "name": "bt_min_universe_end_time",
+            "label": "MIN 풀세션 종료(HHMMSS)",
+            "type": "number",
+            "default": 151900,
+            "help": "full_session_enabled+min일 때 장중 윈도우 종료 시각(HHMMSS). 기본 151900(15:19)."
+          },
+          {
+            "name": "bt_scope",
+            "label": "Backtest Scope",
+            "type": "select",
+            "choices": [
+              "single_stock",
+              "universe"
+            ],
+            "default": "single_stock",
+            "help": "single_stock=MVP 빠른 평가(단일 종목), universe=느린 전체 유니버스."
+          },
+          {
+            "name": "bt_window_days",
+            "label": "Backtest Window (days)",
+            "type": "number",
+            "default": 5,
+            "help": "단일 종목 백테스트 윈도우 거래일 수 (5일이 안전한 하한)."
+          },
+          {
+            "name": "bt_start",
+            "label": "백테스트 시작일(YYYYMMDD)",
+            "type": "text",
+            "default": null,
+            "help": "비우면 사용 가능한 DB 최소 거래일을 자동 사용한다. 명시하면 YYYYMMDD 형식으로 검증한다."
+          },
+          {
+            "name": "bt_end",
+            "label": "백테스트 종료일(YYYYMMDD)",
+            "type": "text",
+            "default": null,
+            "help": "비우면 사용 가능한 DB 최대 거래일을 자동 사용한다. 시작일보다 앞서면 실행 전 거부한다."
+          },
+          {
+            "name": "bt_timeout",
+            "label": "Backtest Timeout (s)",
+            "type": "number",
+            "default": 300,
+            "help": "백테스트 1회 타임아웃(초). BOUNDED 스코프는 이 한참 아래에서 끝난다."
+          },
+          {
+            "name": "autopsy_enabled",
+            "label": "Autopsy Feedback",
+            "type": "bool",
+            "default": true,
+            "help": "켜면 매 세대 거래 통계를 분석해 다음 세대 프롬프트에 NL 피드백을 준다."
+          },
+          {
+            "name": "evolution_mode",
+            "label": "Evolution Mode",
+            "type": "select",
+            "choices": [
+              "hillclimb",
+              "ga"
+            ],
+            "default": "hillclimb",
+            "help": "hillclimb=best 1개 점진 개선, ga=population 기반 진화(선택/교배/변이)."
+          },
+          {
+            "name": "winner_objective",
+            "label": "Winner Objective",
+            "type": "select",
+            "choices": [
+              "risk_adjusted",
+              "profit",
+              "balanced",
+              "multi",
+              "uptrend",
+              "multiyear"
+            ],
+            "default": "risk_adjusted",
+            "help": "best/winner 선택 목표. risk_adjusted=Calmar×R², profit=절대수익, balanced=둘의 블렌드(profit_weight), multi=calmar·R²·빈도·payoff 동일가중, uptrend=우상향 R²(Calmar×R²×R²), multiyear=연도교차 안정성(②, composite×stability)."
+          },
+          {
+            "name": "bt_engine_mode",
+            "label": "Engine Mode",
+            "type": "select",
+            "choices": [
+              "warm",
+              "cold"
+            ],
+            "default": "warm",
+            "help": "warm=전체유니버스 엔진 1회 prepare 후 세대마다 run(빠름), cold=세대마다 서브프로세스(폴백)."
+          },
+          {
+            "name": "engine_workers",
+            "label": "병렬 워커수",
+            "type": "number",
+            "default": 57,
+            "help": "논리 CPU의 90%를 기본값으로 제안한다. 현재 감지 CPU=64, 기본=57. 0은 자동.",
+            "min": 0,
+            "max": 64,
+            "step": 1
+          },
+          {
+            "name": "engine_mem_cap_mb",
+            "label": "메모리 상한(MB)",
+            "type": "number",
+            "default": 234675,
+            "help": "호스트 물리 메모리의 약 90%를 기본값으로 제안한다. 0은 자동이며, 실제 엔진 경로는 자체 안전 한도를 유지한다.",
+            "min": 0,
+            "step": 1
+          },
+          {
+            "name": "engine_chunk_days",
+            "label": "청크 크기(일)",
+            "type": "number",
+            "default": 20,
+            "help": "한 워커가 한 번에 처리하는 백테스트 날짜 청크. 기본은 현재 스코프의 최대 윈도우 기준이며 0은 자동.",
+            "min": 0,
+            "step": 1
+          },
+          {
+            "name": "seed_mode",
+            "label": "시드 선택 방식",
+            "type": "select",
+            "choices": [
+              "fresh",
+              "manual_seed",
+              "best_refine"
+            ],
+            "default": "best_refine",
+            "help": "fresh=백지 생성, manual_seed=아래 seed_buy/seed_sell에서 시작, best_refine=현재 best를 점진 개선."
+          },
+          {
+            "name": "seed_source",
+            "label": "시드 출처",
+            "type": "select",
+            "choices": [
+              "passing",
+              "seed_db",
+              "manual"
+            ],
+            "default": "passing",
+            "help": "passing=루프 통과 전략, seed_db=운영 DB 읽기 전용 후보, manual=직접 이름 입력. 저장/DB 쓰기는 하지 않는다."
+          },
+          {
+            "name": "seed_buy",
+            "label": "매수 시드 이름",
+            "type": "text",
+            "default": null,
+            "help": "manual_seed일 때 gen-0 매수 전략 이름. 빈 값이면 fresh 또는 best_refine 흐름을 따른다."
+          },
+          {
+            "name": "seed_sell",
+            "label": "매도 시드 이름",
+            "type": "text",
+            "default": null,
+            "help": "manual_seed일 때 gen-0 매도 전략 이름. 빈 값이면 fresh 또는 best_refine 흐름을 따른다."
+          },
+          {
+            "name": "dispersion_prompt_enabled",
+            "label": "분산매매 프롬프트",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 매수 프롬프트의 저빈도 압력을 다종목 분산(종목 수↑·종목당 발화↓) 유도로 치환한다. 기본 OFF."
+          },
+          {
+            "name": "dispersion_enabled",
+            "label": "분산 적합도 보상",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 게이트-실패 graded 분기에 동시보유(max_hold_count) 분산 보상항을 가산한다. 기본 OFF."
+          },
+          {
+            "name": "min_hold_symbols",
+            "label": "분산 보상 기준(동시보유 하한)",
+            "type": "number",
+            "default": 6.0,
+            "help": "분산 보상 기준 동시보유 종목 수(보고서 6~12). 이 값 이상이면 보상항 1.0 포화."
+          },
+          {
+            "name": "require_liquidity_gate",
+            "label": "거래대금 유동성 게이트 강제",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 매수 전략 저장 전 거래대금 계열 변수+비교 조건 존재를 검증하고 없으면 재생성. 기본 OFF."
+          },
+          {
+            "name": "mdd_control_enabled",
+            "label": "MDD 제어 강화(매도)",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 매도 프롬프트에 MDD 억제 최우선 블록(타이트 손절·트레일링·시간 손절)을 추가한다. 기본 OFF."
+          },
+          {
+            "name": "exit_edge_feedback_enabled",
+            "label": "청산 효율 환류(매도)",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 매도 프롬프트에 edge_ratio 부검 발견(손실 MAE가 승리 대비 ~2.6배 깊음·최고평가익의 ~20%만 실현)을 환류하는 블록(손실 빠르게 끊기·트레일 익절)을 추가한다. 기본 OFF."
+          },
+          {
+            "name": "freeze_buy_on_mdd_only",
+            "label": "MDD-only 시 매수 동결",
+            "type": "bool",
+            "default": true,
+            "help": "best가 MDD만 부족(빈도·수익 통과)할 때 매수를 동결하고 매도(청산)만 재생성. 기본 ON."
+          },
+          {
+            "name": "segment_fine_time",
+            "label": "시초 5분 시간대 세분(부검)",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 세그먼트 부검의 시간축을 5분 시초 셀(0900-0905…0920+)로 세분한다. 비-시드 생성 전략의 시초 시간대 신호 측정용. 기본 OFF(30분 coarse)."
+          },
+          {
+            "name": "encourage_time_dispersion",
+            "label": "진입 시간 분산 유도(매수)",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 매수 프롬프트에 진입을 09:00~09:20에 분산하라는 소프트 가이드를 추가한다 (reject 아닌 넛지). 기본 OFF."
+          },
+          {
+            "name": "require_filter_gates",
+            "label": "필터 범주 게이트 강제(매수)",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 매수 전략 저장 전 서로 다른 필터 범주를 최소 N개(아래) 비교 조건으로 결합했는지 검증하고 부족하면 재생성한다(과발화 방지). 매수 프롬프트에 시드 게이팅 가이드도 주입한다. 기본 OFF."
+          },
+          {
+            "name": "min_filter_categories",
+            "label": "최소 필터 범주 수",
+            "type": "number",
+            "default": 5,
+            "help": "필터 범주 게이트 강제 ON일 때 매수 진입에 요구하는 최소 필터 범주 수(시드는 9). 높일수록 게이팅이 엄격해진다."
+          },
+          {
+            "name": "classification_generation_enabled",
+            "label": "분류축 유도 생성(매수)",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 매수 프롬프트에 3개 분류축(시가총액 구분·등락률 구분·넓은 시간창 09:00~09:30)에서 일관된 니치를 골라 설계하라는 가이드를 추가한다(시드 5분 고착 탈피). 필터 범주 게이트와 짝(넓게 고르되 좁게 게이트). 기본 OFF."
+          },
+          {
+            "name": "time_cap_bucket_generation_enabled",
+            "label": "5분 시간x시총 생성(매수)",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 매수 프롬프트에 09:00 기준 5분 시간버킷과 소형/중형/대형 시가총액 밴드 조합 탐색 가이드를 넣는다. 기본 OFF."
+          },
+          {
+            "name": "time_cap_bucket_end_time",
+            "label": "시간x시총 종료(HHMMSS)",
+            "type": "select",
+            "choices": [
+              92000,
+              93000
+            ],
+            "default": 92000,
+            "help": "92000=09:00~09:20 우선 탐색, 93000=09:20~09:30까지 확장. C_T timeout 방지를 위해 92000부터 검증한다."
+          },
+          {
+            "name": "sparse_positive_prompt_enabled",
+            "label": "Sparse-positive prompt",
+            "type": "bool",
+            "default": false,
+            "help": "Default-OFF sparse_positive_v1 generation guidance: profit > 0, MDD <= 10, trade_count 20-250, daily_avg_trades >= 0.05, payoff_ratio >= 1.05. It does not relax hard gates or selector rules."
+          },
+          {
+            "name": "exec_budget_prompt_enabled",
+            "label": "계산예산 프롬프트 지침",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 매수=싼 스칼라 게이트 선행·윈도우 함수 후행(지연계산), 매도=스칼라 우선·미갱신류는 보유시간 상한 필수 지침을 프롬프트에 추가한다(2026-06-10 실측: 타임아웃 지배변수는 매도식). 기본 OFF."
+          },
+          {
+            "name": "sell_exec_budget_guard_enabled",
+            "label": "매도 계산예산 가드(PRE-SAVE)",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 매도 코드를 저장 전에 정적 검사해 비유계 스캔(고가/저가미갱신지속틱수, 무조건 금지 — 보유시간 상한이 있어도 타임아웃 실측)과 윈도우 호출 수 초과를 reject→재생성한다. 기본 OFF."
+          },
+          {
+            "name": "sell_max_window_calls",
+            "label": "매도 윈도우 호출 상한",
+            "type": "number",
+            "default": 8,
+            "help": "매도식에 허용하는 윈도우/구간 집계 함수 호출 수 상한(실측: 타임아웃 매도 8개 vs 고속 매도 2~3개). 가드 OFF면 무영향."
+          },
+          {
+            "name": "report_principles_enabled",
+            "label": "v5.0 리포트 원리 어휘",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 오더플로우 연구 리포트의 원리 어휘(수급 우위·전일동시간비·위험 필터·시총별 동적 청산)를 프롬프트에 추가한다 — 임계값 직이식 금지·단위 보정(시총=억, 금액=백만원) 명시. 기본 OFF."
+          },
+          {
+            "name": "quantile_feedback_enabled",
+            "label": "부검 분위수 임계 환류(R1)",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 진입 부검의 '높여라/낮춰라'에 승자 분위수 임계 후보(Q25/중앙값/Q75)를 병기한다 — 방향만 주면 LLM이 임의 숫자를 찍는 문제(G1) 해소. 기본 OFF."
+          },
+          {
+            "name": "counterfactual_feedback_enabled",
+            "label": "반사실 필터 환류(R2)",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 직전 백테 CSV에 '강화 필터를 걸었다면'을 백테 0회로 평가해, 총손익이 깎이지 않는 필터 후보만 손익 영향 숫자와 함께 매수 피드백에 덧붙인다(인샘플 advisory). 기본 OFF."
+          },
+          {
+            "name": "few_shot_enabled",
+            "label": "few-shot 샘플 주입",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 검증된 우수 전략(통과/인간 study) K개를 생성 프롬프트에 few-shot 코드로 주입해 변수조합·필터 게이팅 구조를 학습시킨다(변수값 복제는 금지하도록 명시). 기본 OFF."
+          },
+          {
+            "name": "few_shot_k",
+            "label": "few-shot 샘플 수(K)",
+            "type": "number",
+            "default": 3,
+            "help": "주입할 few-shot 샘플 최대 개수(토큰/다양성 균형, 3 권장). few-shot 주입 OFF면 무영향."
+          },
+          {
+            "name": "few_shot_source",
+            "label": "few-shot 출처",
+            "type": "select",
+            "choices": [
+              "passing",
+              "seed_db"
+            ],
+            "default": "passing",
+            "help": "passing=루프 게이트 통과 전략, seed_db=운영 strategy.db 인간 study 전략(읽기 전용). few-shot 주입 OFF면 무영향."
+          },
+          {
+            "name": "prompt_logging_enabled",
+            "label": "프롬프트 DB 영속화",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 매 LLM 호출의 프롬프트(system 해시+user 전문+주입 피처+토큰/응답 해시)를 loop_runs.db prompts 테이블에 기록해 사후 재현을 가능하게 한다. 기본 OFF."
+          },
+          {
+            "name": "equity_points_enabled",
+            "label": "백테 시계열 DB 영속화",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 세대마다 결과 CSV(이미 디스크에 있는 파일)의 누적수익곡선·일별손익·낙폭을 다운샘플해 loop_runs.db equity_points 테이블에 영속한다(추가 백테 없음). CSV 삭제 후에도 곡선이 보존되고 SQL 분석이 가능해진다. 기본 OFF."
+          },
+          {
+            "name": "hypothesis_tracking_enabled",
+            "label": "가정 추적(채택/기각)",
+            "type": "bool",
+            "default": false,
+            "help": "켜면 부검 방향성 예측(MDD↓/진입품질↑/진입완화 등)을 1급 가정으로 방출하고 다음 세대의 부모 대비 델타로 자동 채택/기각해 generations.hypotheses_json에 기록한다(추가 백테 없음). 기본 OFF."
+          }
+        ]
+      }
+    },
+    {
+      "path": "/gpt_auth/status",
+      "method": "GET",
+      "httpStatus": 200,
+      "ok": true,
+      "body": {
+        "status": "ok",
+        "mode": "chatgpt_oauth",
+        "safe": true,
+        "starts_evolution": false,
+        "env_injected": false,
+        "proxy_running": false,
+        "proxy_url": null,
+        "token": {
+          "loaded": false,
+          "expired": true,
+          "has_refresh_token": false,
+          "expires_in_seconds": 0,
+          "access_token_preview": "***"
+        }
+      }
+    },
+    {
+      "path": "/gpt_auth/test",
+      "method": "POST",
+      "httpStatus": 200,
+      "ok": true,
+      "body": {
+        "status": "unavailable",
+        "mode": "gpt_auth",
+        "model": "gpt-5.5",
+        "reasoning_effort": "xhigh",
+        "safe": true,
+        "starts_evolution": false,
+        "message": "GPT auth connection test failed without starting evolution",
+        "reason": "HTTPConnectionPool(host='127.0.0.1', port=18761): Max retries exceeded with url: /v1/chat/completions (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=18761): Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다\"))"
+      }
+    }
+  ],
+  "recordDecisionTestClient": {
+    "decisionsFile": "artifacts/ultragoal-g006-safety/record-decision-smoke.jsonl",
+    "checks": [
+      {
+        "name": "initial_decisions",
+        "response": {
+          "decisions": [],
+          "count": 0
+        }
+      },
+      {
+        "name": "invalid_verdict",
+        "response": {
+          "status": "invalid",
+          "allowed": [
+            "promote",
+            "complement",
+            "hold",
+            "reject"
+          ]
+        }
+      },
+      {
+        "name": "after_invalid",
+        "response": {
+          "decisions": [],
+          "count": 0
+        }
+      },
+      {
+        "name": "hold_append",
+        "response": {
+          "status": "ok",
+          "recorded": {
+            "ts": 1782577004.352642,
+            "verdict": "hold",
+            "note": "G006 verification hold append-only smoke",
+            "candidate": {
+              "buy_name": "THETA_seed_902905_06_B",
+              "profit": 10965479.0,
+              "mdd": 10.04,
+              "trade_count": 272
+            }
+          }
+        }
+      },
+      {
+        "name": "reject_append",
+        "response": {
+          "status": "ok",
+          "recorded": {
+            "ts": 1782577004.3653715,
+            "verdict": "reject",
+            "note": "G006 verification reject reversal appends new record",
+            "candidate": {
+              "buy_name": "THETA_seed_902905_06_B",
+              "profit": 10965479.0,
+              "mdd": 10.04,
+              "trade_count": 272
+            }
+          }
+        }
+      },
+      {
+        "name": "final_decisions",
+        "response": {
+          "decisions": [
+            {
+              "ts": 1782577004.352642,
+              "verdict": "hold",
+              "note": "G006 verification hold append-only smoke",
+              "candidate": {
+                "buy_name": "THETA_seed_902905_06_B",
+                "profit": 10965479.0,
+                "mdd": 10.04,
+                "trade_count": 272
+              }
+            },
+            {
+              "ts": 1782577004.3653715,
+              "verdict": "reject",
+              "note": "G006 verification reject reversal appends new record",
+              "candidate": {
+                "buy_name": "THETA_seed_902905_06_B",
+                "profit": 10965479.0,
+                "mdd": 10.04,
+                "trade_count": 272
+              }
+            }
+          ],
+          "count": 2
+        }
+      }
+    ],
+    "assertions": {
+      "invalidRejected": true,
+      "appendOnlyOrder": true,
+      "recordsHaveTimestamps": true
+    }
+  },
+  "finalApprovalWsTestClient": {
+    "initialFrameStatus": "running",
+    "reply": {
+      "action": "final_approval",
+      "status": "ok",
+      "dest_db": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database\\strategy.db",
+      "winner_buy": "AILOOP_run_x_g2_buy",
+      "winner_sell": "AILOOP_run_x_g2_sell",
+      "user_buy": "사용자_buy",
+      "user_sell": "사용자_sell"
+    },
+    "capturedExportCall": {
+      "winner_buy": "AILOOP_run_x_g2_buy",
+      "winner_sell": "AILOOP_run_x_g2_sell",
+      "dest": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database\\strategy.db",
+      "user_buy": "사용자_buy",
+      "user_sell": "사용자_sell"
+    },
+    "assertions": {
+      "maliciousDestIgnored": true,
+      "wsReplyOk": true
+    }
+  },
+  "assertions": {
+    "liveAllHttpOk": true,
+    "configSpecHasFields": true,
+    "gptAuthStatusSafe": true,
+    "gptAuthTestSafe": true
+  }
+}

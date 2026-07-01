@@ -1,0 +1,2300 @@
+{
+  "artifacts": {
+    "contactSheet": {
+      "path": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition\\side-by-side-contact-sheet.png",
+      "status": "PASS",
+      "viewport": "1440x900"
+    },
+    "outDir": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition"
+  },
+  "categoryScoreMeans": {
+    "v2": {
+      "accessibilityResponsive": 93.88,
+      "chartHeatmapReadability": 78.12,
+      "cognitiveLoad": 100.0,
+      "safetyHierarchy": 100.0,
+      "taskOrientation": 98.5,
+      "v2PreservationEvidence": 100.0,
+      "visualHierarchy": 100.0,
+      "workflowQuality": 76.67
+    },
+    "v3": {
+      "accessibilityResponsive": 100.0,
+      "chartHeatmapReadability": 100.0,
+      "cognitiveLoad": 91.25,
+      "safetyHierarchy": 100.0,
+      "taskOrientation": 94.0,
+      "v2PreservationEvidence": 100.0,
+      "visualHierarchy": 94.33,
+      "workflowQuality": 100.0
+    }
+  },
+  "categoryWeights": {
+    "accessibilityResponsive": 8,
+    "chartHeatmapReadability": 15,
+    "cognitiveLoad": 12,
+    "safetyHierarchy": 10,
+    "taskOrientation": 20,
+    "v2PreservationEvidence": 5,
+    "visualHierarchy": 15,
+    "workflowQuality": 15
+  },
+  "deltaCategories": [
+    "taskOrientation",
+    "chartHeatmapReadability",
+    "workflowQuality",
+    "cognitiveLoad"
+  ],
+  "deltaRows": [
+    {
+      "categoryDelta": {
+        "accessibilityResponsive": 0.0,
+        "chartHeatmapReadability": 7.5,
+        "cognitiveLoad": 0.0,
+        "safetyHierarchy": 0.0,
+        "taskOrientation": -9.0,
+        "v2PreservationEvidence": 0.0,
+        "visualHierarchy": 0.0,
+        "workflowQuality": 23.33
+      },
+      "page": "condition",
+      "scenarioId": "UX-S01",
+      "totalDelta": 2.82,
+      "v2Total": 95.38,
+      "v3Total": 98.2,
+      "viewport": "1280x720"
+    },
+    {
+      "categoryDelta": {
+        "accessibilityResponsive": 0.0,
+        "chartHeatmapReadability": 7.5,
+        "cognitiveLoad": 0.0,
+        "safetyHierarchy": 0.0,
+        "taskOrientation": -9.0,
+        "v2PreservationEvidence": 0.0,
+        "visualHierarchy": 0.0,
+        "workflowQuality": 23.33
+      },
+      "page": "condition",
+      "scenarioId": "UX-S01",
+      "totalDelta": 2.82,
+      "v2Total": 95.38,
+      "v3Total": 98.2,
+      "viewport": "1440x900"
+    },
+    {
+      "categoryDelta": {
+        "accessibilityResponsive": 0.0,
+        "chartHeatmapReadability": 7.5,
+        "cognitiveLoad": -10.5,
+        "safetyHierarchy": 0.0,
+        "taskOrientation": 0.0,
+        "v2PreservationEvidence": 0.0,
+        "visualHierarchy": -7.0,
+        "workflowQuality": 23.33
+      },
+      "page": "condition",
+      "scenarioId": "UX-S01",
+      "totalDelta": 2.31,
+      "v2Total": 95.38,
+      "v3Total": 97.69,
+      "viewport": "1920x1080"
+    },
+    {
+      "categoryDelta": {
+        "accessibilityResponsive": 12.25,
+        "chartHeatmapReadability": 36.25,
+        "cognitiveLoad": 0.0,
+        "safetyHierarchy": 0.0,
+        "taskOrientation": -9.0,
+        "v2PreservationEvidence": 0.0,
+        "visualHierarchy": 0.0,
+        "workflowQuality": 23.33
+      },
+      "page": "lab",
+      "scenarioId": "UX-S04",
+      "totalDelta": 8.12,
+      "v2Total": 90.08,
+      "v3Total": 98.2,
+      "viewport": "1280x720"
+    },
+    {
+      "categoryDelta": {
+        "accessibilityResponsive": 12.25,
+        "chartHeatmapReadability": 36.25,
+        "cognitiveLoad": -15.75,
+        "safetyHierarchy": 0.0,
+        "taskOrientation": -4.5,
+        "v2PreservationEvidence": 0.0,
+        "visualHierarchy": -10.0,
+        "workflowQuality": 23.33
+      },
+      "page": "lab",
+      "scenarioId": "UX-S04",
+      "totalDelta": 5.63,
+      "v2Total": 89.18,
+      "v3Total": 94.81,
+      "viewport": "1440x900"
+    },
+    {
+      "categoryDelta": {
+        "accessibilityResponsive": 12.25,
+        "chartHeatmapReadability": 36.25,
+        "cognitiveLoad": -26.25,
+        "safetyHierarchy": 0.0,
+        "taskOrientation": 4.5,
+        "v2PreservationEvidence": 0.0,
+        "visualHierarchy": -17.0,
+        "workflowQuality": 23.33
+      },
+      "page": "lab",
+      "scenarioId": "UX-S04",
+      "totalDelta": 5.12,
+      "v2Total": 89.18,
+      "v3Total": 94.3,
+      "viewport": "1920x1080"
+    }
+  ],
+  "generatedAt": "2026-06-30T11:38:07.260211+00:00",
+  "hardFailures": [],
+  "kind": "dashboard-human-ux-rubric",
+  "meanNamedDelta": 7.99,
+  "meanV3Score": 96.9,
+  "routes": [
+    {
+      "label": "Condition review",
+      "page": "condition",
+      "scenarioId": "UX-S01",
+      "task": "Review current generation, candidate quality, provenance, and gated export state.",
+      "v2Route": "/ui/evolution",
+      "v3Route": "/ui/remodel/condition?demo=reference"
+    },
+    {
+      "label": "Lab heatmap",
+      "page": "lab",
+      "scenarioId": "UX-S04",
+      "task": "Read factor heatmap, inspect selected cell meaning, and connect it to holdout proof.",
+      "v2Route": "/ui/evolution/lab",
+      "v3Route": "/ui/remodel/lab?demo=reference"
+    }
+  ],
+  "schemaVersion": 1,
+  "scoreDocumentation": {
+    "hardFailureCap": "Route/default/safety failures cap affected V3 score at 69 and fail the run.",
+    "purpose": "Tranche 0 human-centered UX baseline. Baseline may fail final UX thresholds; route/safety hard failures still fail.",
+    "v2Delta": "Deltas are computed from the same route/scenario/viewport score rows for V2 and explicit V3."
+  },
+  "scoreRows": [
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 100.0,
+        "chartHeatmapReadability": 92.5,
+        "cognitiveLoad": 100.0,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 100.0,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 100.0,
+        "workflowQuality": 76.67
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 조건식 AI\nDark\nLight\nV3 Preview\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n운영 루프 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 히스토리·분석 워크벤치·운용 결정 이력\nevolution/overview\nROUTE\nHOME\nOWNER\n운영 루프\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\n조건식 AI LIVE MONITOR\n현재 세대 — LIVE\n—\n세대\ngen_-1 / 0\n페이즈\n—\n체크포인트\n—\n›\n진화 시작 버튼으로 루프를 개시하세요\nACTIVE STRATEGY\nsource=best\nBUY_NAME\nempty\nSELL_NAME\nempty\nrun_id=none\ngen_no=-1\ncode_status=loading\ndiff_status=unavailable\nunavailabl",
+        "chartLikeCount": 23,
+        "dataContractMarkerCount": 0,
+        "dataManualGateCount": 0,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 1,
+        "firstFoldElementCount": 192,
+        "focusableFirstFoldCount": 20,
+        "hasEvidenceDrawerSelector": false,
+        "hasFutureTaskSelector": false,
+        "hasPrimaryCanvasSelector": false,
+        "heatmaps": [],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 386784,
+          "cls": "chart-wrap",
+          "firstFold": false,
+          "h": 407,
+          "tag": "DIV",
+          "text": "거래가 누적되면 요일별 손익이 표시됩니다 0 0 0",
+          "w": 950
+        },
+        "panelCountFirstFold": 7,
+        "primaryActionText": "🧬 조건식 AI LIVE",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 2,
+        "scrollHeight": 13556,
+        "scrollWidth": 1440,
+        "taskHeaderTopRatio": 0.018,
+        "termHits": {
+          "BEST": true,
+          "Equity": true,
+          "Export": true,
+          "Fitness": false,
+          "Human": true,
+          "Human Approval": true,
+          "Profit": true,
+          "Strategy Inspector": false,
+          "백테스트": true,
+          "조건식 AI": true,
+          "현재 세대": true
+        },
+        "textLength": 16771,
+        "viewportHeight": 900,
+        "viewportWidth": 1440,
+        "visibleCount": 192
+      },
+      "hardFailures": [],
+      "htmlHash": "a4cf3fb596b2fab7a3a29c80ecf917a560ce25ac519df817c777aef3d99e525f",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 15.96,
+        "lumaStddev": 9.38,
+        "nonUniform": true,
+        "size": [
+          1440,
+          900
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "condition",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_criteria?mode=disabled"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/equity_curves"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/hall_of_fame"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S01",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition\\screenshots\\UX-S01-condition-v2-1440x900.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 75.0,
+        "primary": 100.0,
+        "workflow": 66.67
+      },
+      "textHash": "fd9d557aa8bf99aff8adfd103df80ff8e48b56e7d5e4a801b5403025633301e5",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "totalScore": 95.38,
+      "uncappedTotalScore": 95.38,
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "version": "v2",
+      "viewport": "1440x900",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 100.0,
+        "chartHeatmapReadability": 100.0,
+        "cognitiveLoad": 100.0,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 91.0,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 100.0,
+        "workflowQuality": 100.0
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\nTask-first V3\n조건식 AI · 현재 세대와 BEST 후보를 먼저 판단하는 V3\n\n작은 카드보다 현재 세대, 후보 품질, 큰 증거 차트, Human-gated export 상태를 먼저 보여줍니다.\n\npurpose\n현재 세대 · 후보 품질 · provenance · g",
+        "chartLikeCount": 40,
+        "dataContractMarkerCount": 0,
+        "dataManualGateCount": 7,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 0,
+        "firstFoldElementCount": 122,
+        "focusableFirstFoldCount": 18,
+        "hasEvidenceDrawerSelector": false,
+        "hasFutureTaskSelector": true,
+        "hasPrimaryCanvasSelector": true,
+        "heatmaps": [
+          {
+            "cells": 12,
+            "h": 70,
+            "text": "axis 09 10 11 12 13 14 시간대 요일",
+            "values": 12,
+            "w": 119
+          }
+        ],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 1548162,
+          "cls": "condition-chart-grid",
+          "firstFold": false,
+          "h": 1117,
+          "tag": "DIV",
+          "text": "Fitness Score 추이 · primary Fitness Score 추이 0.812 ↑ 0.032 status=CURRENT run_id=R-250518-1421-7XQ9 f",
+          "w": 1386
+        },
+        "panelCountFirstFold": 4,
+        "primaryActionText": "조건식 AI",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 0,
+        "scrollHeight": 6951,
+        "scrollWidth": 1440,
+        "taskHeaderTopRatio": 0.359,
+        "termHits": {
+          "BEST": true,
+          "Equity": true,
+          "Export": true,
+          "Fitness": true,
+          "Human": true,
+          "Human Approval": true,
+          "Profit": true,
+          "Strategy Inspector": true,
+          "백테스트": true,
+          "조건식 AI": true,
+          "현재 세대": true
+        },
+        "textLength": 8944,
+        "viewportHeight": 900,
+        "viewportWidth": 1440,
+        "visibleCount": 122
+      },
+      "hardFailures": [],
+      "htmlHash": "ac6509ddaf2072fdc8de9ff3d2d33106879f6fa557d5ada3c2450a3232ef7902",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 26.29,
+        "lumaStddev": 19.02,
+        "nonUniform": true,
+        "size": [
+          1440,
+          900
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "condition",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S01",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition\\screenshots\\UX-S01-condition-v3-1440x900.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 100.0,
+        "primary": 100.0,
+        "workflow": 100.0
+      },
+      "textHash": "54f9d9d42d5cc8149acdb6f521209609907d854cd0ae1a7a4ac975677caa830e",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "totalScore": 98.2,
+      "uncappedTotalScore": 98.2,
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "version": "v3",
+      "viewport": "1440x900",
+      "websockets": []
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 87.75,
+        "chartHeatmapReadability": 63.75,
+        "cognitiveLoad": 100.0,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 95.5,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 100.0,
+        "workflowQuality": 76.67
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 연구실\nDark\nLight\nV3 Preview\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n연구실 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 전체 기록 인덱스 정본·Workbench 중복 렌더\nevolution/lab\nROUTE\nLAB\nOWNER\n연구실\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\nEVIDENCE WORKSPACE · OWNER MATRIX\n기록 · 연구 · 분석 · 결정 역할 맵\n\n현재 표면: 연구실\n\nowns: 탐색 히트맵, Edge Ratio, 변수 중요도, 상관관계, 변수 조합, 검증, 위키, AI 컨텍스트\nnot-owner: 전체 기록 인덱스 정본·Workbench 중복 렌더\nPHASE 2 INVENTORY GATE\n페이지 역할 · 소스 소유권 · 성능 기준\n8 pages",
+        "chartLikeCount": 1,
+        "dataContractMarkerCount": 0,
+        "dataManualGateCount": 0,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 1,
+        "firstFoldElementCount": 186,
+        "focusableFirstFoldCount": 25,
+        "hasEvidenceDrawerSelector": false,
+        "hasFutureTaskSelector": false,
+        "hasPrimaryCanvasSelector": false,
+        "heatmaps": [],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 1296,
+          "cls": "[object SVGAnimatedString]",
+          "firstFold": true,
+          "h": 36,
+          "tag": "svg",
+          "text": "",
+          "w": 36
+        },
+        "panelCountFirstFold": 4,
+        "primaryActionText": "🔬 연구실 LAB",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 4,
+        "scrollHeight": 1550,
+        "scrollWidth": 1440,
+        "taskHeaderTopRatio": 0.018,
+        "termHits": {
+          "Edge Ratio": true,
+          "Holdout": false,
+          "검증": true,
+          "누적 수익률": false,
+          "변수 조합": true,
+          "변수 중요도": true,
+          "상관관계": true,
+          "연구실": true,
+          "컨텍스트": true,
+          "히트맵": true
+        },
+        "textLength": 2225,
+        "viewportHeight": 900,
+        "viewportWidth": 1440,
+        "visibleCount": 186
+      },
+      "hardFailures": [],
+      "htmlHash": "a473ca4b36f3c8643757fbbbac41fe3ebaa551f5d3ea16c68b51724723047e35",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 17.02,
+        "lumaStddev": 11.73,
+        "nonUniform": true,
+        "size": [
+          1440,
+          900
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "lab",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/lab"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_docs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/freeze_verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_docs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_doc?id=docs%2Fresearch%2Fcondition_research%2Fwiki%2Fmetrics_glossary.md"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S04",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition\\screenshots\\UX-S04-lab-v2-1440x900.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 66.67,
+        "primary": 100.0,
+        "workflow": 66.67
+      },
+      "textHash": "1203a2e82f8349cae60726ec8b298b60fd7cdabc9e95e3953c5cb8b8dced6d88",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "totalScore": 89.18,
+      "uncappedTotalScore": 89.18,
+      "url": "http://127.0.0.1:8776/ui/evolution/lab",
+      "version": "v2",
+      "viewport": "1440x900",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 100.0,
+        "chartHeatmapReadability": 100.0,
+        "cognitiveLoad": 84.25,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 91.0,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 90.0,
+        "workflowQuality": 100.0
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\nTask-first V3\n연구실 · 히트맵과 검증을 먼저 읽는 V3\n\n값 없는 색상 블록과 작은 카드 과밀을 줄이고, 선택 셀 의미와 Holdout 검증을 첫 작업 영역에 배치합니다.\n\npurpose\nEdge Ratio 히트맵 · 변수 중요도 · 상관관계 · Holdout 검",
+        "chartLikeCount": 10,
+        "dataContractMarkerCount": 1,
+        "dataManualGateCount": 5,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 0,
+        "firstFoldElementCount": 138,
+        "focusableFirstFoldCount": 18,
+        "hasEvidenceDrawerSelector": true,
+        "hasFutureTaskSelector": true,
+        "hasPrimaryCanvasSelector": true,
+        "heatmaps": [
+          {
+            "cells": 96,
+            "h": 258,
+            "text": "axis mom_5 mom_10 mom_20 vol_5 vol_20 turn_5 turn_20 cb_ratio bp_20 oc_10 oc_20 rs_14 rsi_14 macd_12_26 adx_14 cci_20 Ret 1D 0.04 0.17 0.19 ",
+            "values": 96,
+            "w": 1336
+          },
+          {
+            "cells": 100,
+            "h": 262,
+            "text": "axis mom_20 vol_20 turn_20 rs_14 rsi_14 cb_ratio bp_20 oc_20 adx_14 macd_12_26 mom_20 1 0.5 0.68 0.55 -0.08 -0.2 -0.35 -0.16 -0.3 -0.35 vol_",
+            "values": 100,
+            "w": 1386
+          }
+        ],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 560485,
+          "cls": "lab-step-card lab-heatmap-card",
+          "firstFold": false,
+          "h": 404,
+          "tag": "SECTION",
+          "text": "1. 탐색 히트맵 · Edge Ratio values visible axis mom_5 mom_10 mom_20 vol_5 vol_20 turn_5 turn_20 cb_ratio ",
+          "w": 1386
+        },
+        "panelCountFirstFold": 8,
+        "primaryActionText": "연구실",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 6,
+        "scrollHeight": 4056,
+        "scrollWidth": 1440,
+        "taskHeaderTopRatio": 0.359,
+        "termHits": {
+          "Edge Ratio": true,
+          "Holdout": true,
+          "검증": true,
+          "누적 수익률": true,
+          "변수 조합": true,
+          "변수 중요도": true,
+          "상관관계": true,
+          "연구실": true,
+          "컨텍스트": true,
+          "히트맵": true
+        },
+        "textLength": 4918,
+        "viewportHeight": 900,
+        "viewportWidth": 1440,
+        "visibleCount": 138
+      },
+      "hardFailures": [],
+      "htmlHash": "e58ecdaba595ad8594090d5e9e135a17cb5616b4ee89c0205e2c2a04164d508d",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 26.19,
+        "lumaStddev": 18.92,
+        "nonUniform": true,
+        "size": [
+          1440,
+          900
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "lab",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S04",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition\\screenshots\\UX-S04-lab-v3-1440x900.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 100.0,
+        "primary": 100.0,
+        "workflow": 100.0
+      },
+      "textHash": "5336540ca6f4db5645f102ef0809f61a16743d45541c6fe19534099dfc39ee22",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "totalScore": 94.81,
+      "uncappedTotalScore": 94.81,
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "version": "v3",
+      "viewport": "1440x900",
+      "websockets": []
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 100.0,
+        "chartHeatmapReadability": 92.5,
+        "cognitiveLoad": 100.0,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 100.0,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 100.0,
+        "workflowQuality": 76.67
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 조건식 AI\nDark\nLight\nV3 Preview\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n운영 루프 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 히스토리·분석 워크벤치·운용 결정 이력\nevolution/overview\nROUTE\nHOME\nOWNER\n운영 루프\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\n조건식 AI LIVE MONITOR\n현재 세대 — LIVE\n—\n세대\ngen_-1 / 0\n페이즈\n—\n체크포인트\n—\n›\n진화 시작 버튼으로 루프를 개시하세요\nACTIVE STRATEGY\nsource=best\nBUY_NAME\nempty\nSELL_NAME\nempty\nrun_id=none\ngen_no=-1\ncode_status=loading\ndiff_status=unavailable\nunavailabl",
+        "chartLikeCount": 27,
+        "dataContractMarkerCount": 0,
+        "dataManualGateCount": 0,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 1,
+        "firstFoldElementCount": 202,
+        "focusableFirstFoldCount": 21,
+        "hasEvidenceDrawerSelector": false,
+        "hasFutureTaskSelector": false,
+        "hasPrimaryCanvasSelector": false,
+        "heatmaps": [],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 543365,
+          "cls": "chart-wrap",
+          "firstFold": false,
+          "h": 483,
+          "tag": "DIV",
+          "text": "거래가 누적되면 요일별 손익이 표시됩니다 0 0 0",
+          "w": 1126
+        },
+        "panelCountFirstFold": 9,
+        "primaryActionText": "🧬 조건식 AI LIVE",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 3,
+        "scrollHeight": 13782,
+        "scrollWidth": 1920,
+        "taskHeaderTopRatio": 0.015,
+        "termHits": {
+          "BEST": true,
+          "Equity": true,
+          "Export": true,
+          "Fitness": false,
+          "Human": true,
+          "Human Approval": true,
+          "Profit": true,
+          "Strategy Inspector": false,
+          "백테스트": true,
+          "조건식 AI": true,
+          "현재 세대": true
+        },
+        "textLength": 16771,
+        "viewportHeight": 1080,
+        "viewportWidth": 1920,
+        "visibleCount": 202
+      },
+      "hardFailures": [],
+      "htmlHash": "bbf02472e88fd663ac38fe988d8209f09ee35aaf61ba05bb1711c0e857c4b255",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 15.57,
+        "lumaStddev": 8.44,
+        "nonUniform": true,
+        "size": [
+          1920,
+          1080
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "condition",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_criteria?mode=disabled"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/equity_curves"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/hall_of_fame"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S01",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition\\screenshots\\UX-S01-condition-v2-1920x1080.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 75.0,
+        "primary": 100.0,
+        "workflow": 66.67
+      },
+      "textHash": "fd9d557aa8bf99aff8adfd103df80ff8e48b56e7d5e4a801b5403025633301e5",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "totalScore": 95.38,
+      "uncappedTotalScore": 95.38,
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "version": "v2",
+      "viewport": "1920x1080",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 100.0,
+        "chartHeatmapReadability": 100.0,
+        "cognitiveLoad": 89.5,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 100.0,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 93.0,
+        "workflowQuality": 100.0
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\nTask-first V3\n조건식 AI · 현재 세대와 BEST 후보를 먼저 판단하는 V3\n\n작은 카드보다 현재 세대, 후보 품질, 큰 증거 차트, Human-gated export 상태를 먼저 보여줍니다.\n\npurpose\n현재 세대 · 후보 품질 · provenance · g",
+        "chartLikeCount": 40,
+        "dataContractMarkerCount": 0,
+        "dataManualGateCount": 7,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 11,
+        "firstFoldElementCount": 323,
+        "focusableFirstFoldCount": 23,
+        "hasEvidenceDrawerSelector": false,
+        "hasFutureTaskSelector": true,
+        "hasPrimaryCanvasSelector": true,
+        "heatmaps": [
+          {
+            "cells": 12,
+            "h": 70,
+            "text": "axis 09 10 11 12 13 14 시간대 요일",
+            "values": 12,
+            "w": 110
+          }
+        ],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 776256,
+          "cls": "condition-chart-grid",
+          "firstFold": true,
+          "h": 416,
+          "tag": "DIV",
+          "text": "Fitness Score 추이 · primary Fitness Score 추이 0.812 ↑ 0.032 status=CURRENT run_id=R-250518-1421-7XQ9 f",
+          "w": 1866
+        },
+        "panelCountFirstFold": 14,
+        "primaryActionText": "조건식 AI",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 4,
+        "scrollHeight": 4089,
+        "scrollWidth": 1920,
+        "taskHeaderTopRatio": 0.231,
+        "termHits": {
+          "BEST": true,
+          "Equity": true,
+          "Export": true,
+          "Fitness": true,
+          "Human": true,
+          "Human Approval": true,
+          "Profit": true,
+          "Strategy Inspector": true,
+          "백테스트": true,
+          "조건식 AI": true,
+          "현재 세대": true
+        },
+        "textLength": 8944,
+        "viewportHeight": 1080,
+        "viewportWidth": 1920,
+        "visibleCount": 323
+      },
+      "hardFailures": [],
+      "htmlHash": "ac6509ddaf2072fdc8de9ff3d2d33106879f6fa557d5ada3c2450a3232ef7902",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 26.64,
+        "lumaStddev": 17.37,
+        "nonUniform": true,
+        "size": [
+          1920,
+          1080
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "condition",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S01",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition\\screenshots\\UX-S01-condition-v3-1920x1080.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 100.0,
+        "primary": 100.0,
+        "workflow": 100.0
+      },
+      "textHash": "54f9d9d42d5cc8149acdb6f521209609907d854cd0ae1a7a4ac975677caa830e",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "totalScore": 97.69,
+      "uncappedTotalScore": 97.69,
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "version": "v3",
+      "viewport": "1920x1080",
+      "websockets": []
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 87.75,
+        "chartHeatmapReadability": 63.75,
+        "cognitiveLoad": 100.0,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 95.5,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 100.0,
+        "workflowQuality": 76.67
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 연구실\nDark\nLight\nV3 Preview\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n연구실 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 전체 기록 인덱스 정본·Workbench 중복 렌더\nevolution/lab\nROUTE\nLAB\nOWNER\n연구실\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\nEVIDENCE WORKSPACE · OWNER MATRIX\n기록 · 연구 · 분석 · 결정 역할 맵\n\n현재 표면: 연구실\n\nowns: 탐색 히트맵, Edge Ratio, 변수 중요도, 상관관계, 변수 조합, 검증, 위키, AI 컨텍스트\nnot-owner: 전체 기록 인덱스 정본·Workbench 중복 렌더\nPHASE 2 INVENTORY GATE\n페이지 역할 · 소스 소유권 · 성능 기준\n8 pages",
+        "chartLikeCount": 1,
+        "dataContractMarkerCount": 0,
+        "dataManualGateCount": 0,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 1,
+        "firstFoldElementCount": 210,
+        "focusableFirstFoldCount": 26,
+        "hasEvidenceDrawerSelector": false,
+        "hasFutureTaskSelector": false,
+        "hasPrimaryCanvasSelector": false,
+        "heatmaps": [],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 1296,
+          "cls": "[object SVGAnimatedString]",
+          "firstFold": true,
+          "h": 36,
+          "tag": "svg",
+          "text": "",
+          "w": 36
+        },
+        "panelCountFirstFold": 10,
+        "primaryActionText": "🔬 연구실 LAB",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 5,
+        "scrollHeight": 1533,
+        "scrollWidth": 1920,
+        "taskHeaderTopRatio": 0.015,
+        "termHits": {
+          "Edge Ratio": true,
+          "Holdout": false,
+          "검증": true,
+          "누적 수익률": false,
+          "변수 조합": true,
+          "변수 중요도": true,
+          "상관관계": true,
+          "연구실": true,
+          "컨텍스트": true,
+          "히트맵": true
+        },
+        "textLength": 2225,
+        "viewportHeight": 1080,
+        "viewportWidth": 1920,
+        "visibleCount": 210
+      },
+      "hardFailures": [],
+      "htmlHash": "a473ca4b36f3c8643757fbbbac41fe3ebaa551f5d3ea16c68b51724723047e35",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 15.09,
+        "lumaStddev": 9.89,
+        "nonUniform": true,
+        "size": [
+          1920,
+          1080
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "lab",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/lab"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_docs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/freeze_verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_docs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_doc?id=docs%2Fresearch%2Fcondition_research%2Fwiki%2Fmetrics_glossary.md"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S04",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition\\screenshots\\UX-S04-lab-v2-1920x1080.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 66.67,
+        "primary": 100.0,
+        "workflow": 66.67
+      },
+      "textHash": "1203a2e82f8349cae60726ec8b298b60fd7cdabc9e95e3953c5cb8b8dced6d88",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "totalScore": 89.18,
+      "uncappedTotalScore": 89.18,
+      "url": "http://127.0.0.1:8776/ui/evolution/lab",
+      "version": "v2",
+      "viewport": "1920x1080",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 100.0,
+        "chartHeatmapReadability": 100.0,
+        "cognitiveLoad": 73.75,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 100.0,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 83.0,
+        "workflowQuality": 100.0
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\nTask-first V3\n연구실 · 히트맵과 검증을 먼저 읽는 V3\n\n값 없는 색상 블록과 작은 카드 과밀을 줄이고, 선택 셀 의미와 Holdout 검증을 첫 작업 영역에 배치합니다.\n\npurpose\nEdge Ratio 히트맵 · 변수 중요도 · 상관관계 · Holdout 검",
+        "chartLikeCount": 10,
+        "dataContractMarkerCount": 1,
+        "dataManualGateCount": 5,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 2,
+        "firstFoldElementCount": 346,
+        "focusableFirstFoldCount": 18,
+        "hasEvidenceDrawerSelector": true,
+        "hasFutureTaskSelector": true,
+        "hasPrimaryCanvasSelector": true,
+        "heatmaps": [
+          {
+            "cells": 96,
+            "h": 258,
+            "text": "axis mom_5 mom_10 mom_20 vol_5 vol_20 turn_5 turn_20 cb_ratio bp_20 oc_10 oc_20 rs_14 rsi_14 macd_12_26 adx_14 cci_20 Ret 1D 0.04 0.17 0.19 ",
+            "values": 96,
+            "w": 729
+          },
+          {
+            "cells": 100,
+            "h": 262,
+            "text": "axis mom_20 vol_20 turn_20 rs_14 rsi_14 cb_ratio bp_20 oc_20 adx_14 macd_12_26 mom_20 1 0.5 0.68 0.55 -0.08 -0.2 -0.35 -0.16 -0.3 -0.35 vol_",
+            "values": 100,
+            "w": 651
+          }
+        ],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 446125,
+          "cls": "lab-step-card lab-heatmap-card",
+          "firstFold": true,
+          "h": 573,
+          "tag": "SECTION",
+          "text": "1. 탐색 히트맵 · Edge Ratio values visible axis mom_5 mom_10 mom_20 vol_5 vol_20 turn_5 turn_20 cb_ratio ",
+          "w": 779
+        },
+        "panelCountFirstFold": 24,
+        "primaryActionText": "연구실",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 9,
+        "scrollHeight": 2171,
+        "scrollWidth": 1920,
+        "taskHeaderTopRatio": 0.231,
+        "termHits": {
+          "Edge Ratio": true,
+          "Holdout": true,
+          "검증": true,
+          "누적 수익률": true,
+          "변수 조합": true,
+          "변수 중요도": true,
+          "상관관계": true,
+          "연구실": true,
+          "컨텍스트": true,
+          "히트맵": true
+        },
+        "textLength": 4918,
+        "viewportHeight": 1080,
+        "viewportWidth": 1920,
+        "visibleCount": 346
+      },
+      "hardFailures": [],
+      "htmlHash": "e58ecdaba595ad8594090d5e9e135a17cb5616b4ee89c0205e2c2a04164d508d",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 29.66,
+        "lumaStddev": 23.75,
+        "nonUniform": true,
+        "size": [
+          1920,
+          1080
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "lab",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S04",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition\\screenshots\\UX-S04-lab-v3-1920x1080.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 100.0,
+        "primary": 100.0,
+        "workflow": 100.0
+      },
+      "textHash": "5336540ca6f4db5645f102ef0809f61a16743d45541c6fe19534099dfc39ee22",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "totalScore": 94.3,
+      "uncappedTotalScore": 94.3,
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "version": "v3",
+      "viewport": "1920x1080",
+      "websockets": []
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 100.0,
+        "chartHeatmapReadability": 92.5,
+        "cognitiveLoad": 100.0,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 100.0,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 100.0,
+        "workflowQuality": 76.67
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 조건식 AI\nDark\nLight\nV3 Preview\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n운영 루프 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 히스토리·분석 워크벤치·운용 결정 이력\nevolution/overview\nROUTE\nHOME\nOWNER\n운영 루프\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\n조건식 AI LIVE MONITOR\n현재 세대 — LIVE\n—\n세대\ngen_-1 / 0\n페이즈\n—\n체크포인트\n—\n›\n진화 시작 버튼으로 루프를 개시하세요\nACTIVE STRATEGY\nsource=best\nBUY_NAME\nempty\nSELL_NAME\nempty\nrun_id=none\ngen_no=-1\ncode_status=loading\ndiff_status=unavailable\nunavailabl",
+        "chartLikeCount": 27,
+        "dataContractMarkerCount": 0,
+        "dataManualGateCount": 0,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 1,
+        "firstFoldElementCount": 153,
+        "focusableFirstFoldCount": 18,
+        "hasEvidenceDrawerSelector": false,
+        "hasFutureTaskSelector": false,
+        "hasPrimaryCanvasSelector": false,
+        "heatmaps": [],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 325888,
+          "cls": "[object SVGAnimatedString]",
+          "firstFold": false,
+          "h": 268,
+          "tag": "svg",
+          "text": "",
+          "w": 1216
+        },
+        "panelCountFirstFold": 7,
+        "primaryActionText": "🧬 조건식 AI LIVE",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 3,
+        "scrollHeight": 13746,
+        "scrollWidth": 1280,
+        "taskHeaderTopRatio": 0.022,
+        "termHits": {
+          "BEST": true,
+          "Equity": true,
+          "Export": true,
+          "Fitness": false,
+          "Human": true,
+          "Human Approval": true,
+          "Profit": true,
+          "Strategy Inspector": false,
+          "백테스트": true,
+          "조건식 AI": true,
+          "현재 세대": true
+        },
+        "textLength": 16771,
+        "viewportHeight": 720,
+        "viewportWidth": 1280,
+        "visibleCount": 153
+      },
+      "hardFailures": [],
+      "htmlHash": "68b763f49481cc5da794c120cf180d8a0a8881faa83a55e2abff4c266432b152",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 16.28,
+        "lumaStddev": 10.78,
+        "nonUniform": true,
+        "size": [
+          1280,
+          720
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "condition",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_criteria?mode=disabled"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/equity_curves"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/hall_of_fame"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S01",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition\\screenshots\\UX-S01-condition-v2-1280x720.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 75.0,
+        "primary": 100.0,
+        "workflow": 66.67
+      },
+      "textHash": "fd9d557aa8bf99aff8adfd103df80ff8e48b56e7d5e4a801b5403025633301e5",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "totalScore": 95.38,
+      "uncappedTotalScore": 95.38,
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "version": "v2",
+      "viewport": "1280x720",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 100.0,
+        "chartHeatmapReadability": 100.0,
+        "cognitiveLoad": 100.0,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 91.0,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 100.0,
+        "workflowQuality": 100.0
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\nTask-first V3\n조건식 AI · 현재 세대와 BEST 후보를 먼저 판단하는 V3\n\n작은 카드보다 현재 세대, 후보 품질, 큰 증거 차트, Human-gated export 상태를 먼저 보여줍니다.\n\npurpose\n현재 세대 · 후보 품질 · provenance · g",
+        "chartLikeCount": 40,
+        "dataContractMarkerCount": 0,
+        "dataManualGateCount": 7,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 0,
+        "firstFoldElementCount": 112,
+        "focusableFirstFoldCount": 18,
+        "hasEvidenceDrawerSelector": false,
+        "hasFutureTaskSelector": true,
+        "hasPrimaryCanvasSelector": true,
+        "heatmaps": [
+          {
+            "cells": 12,
+            "h": 70,
+            "text": "axis 09 10 11 12 13 14 시간대 요일",
+            "values": 12,
+            "w": 103
+          }
+        ],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 1369442,
+          "cls": "condition-chart-grid",
+          "firstFold": false,
+          "h": 1117,
+          "tag": "DIV",
+          "text": "Fitness Score 추이 · primary Fitness Score 추이 0.812 ↑ 0.032 status=CURRENT run_id=R-250518-1421-7XQ9 f",
+          "w": 1226
+        },
+        "panelCountFirstFold": 2,
+        "primaryActionText": "조건식 AI",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 0,
+        "scrollHeight": 7025,
+        "scrollWidth": 1280,
+        "taskHeaderTopRatio": 0.449,
+        "termHits": {
+          "BEST": true,
+          "Equity": true,
+          "Export": true,
+          "Fitness": true,
+          "Human": true,
+          "Human Approval": true,
+          "Profit": true,
+          "Strategy Inspector": true,
+          "백테스트": true,
+          "조건식 AI": true,
+          "현재 세대": true
+        },
+        "textLength": 8944,
+        "viewportHeight": 720,
+        "viewportWidth": 1280,
+        "visibleCount": 112
+      },
+      "hardFailures": [],
+      "htmlHash": "ac6509ddaf2072fdc8de9ff3d2d33106879f6fa557d5ada3c2450a3232ef7902",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 26.33,
+        "lumaStddev": 21.17,
+        "nonUniform": true,
+        "size": [
+          1280,
+          720
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "condition",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S01",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition\\screenshots\\UX-S01-condition-v3-1280x720.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 100.0,
+        "primary": 100.0,
+        "workflow": 100.0
+      },
+      "textHash": "54f9d9d42d5cc8149acdb6f521209609907d854cd0ae1a7a4ac975677caa830e",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "totalScore": 98.2,
+      "uncappedTotalScore": 98.2,
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "version": "v3",
+      "viewport": "1280x720",
+      "websockets": []
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 87.75,
+        "chartHeatmapReadability": 63.75,
+        "cognitiveLoad": 100.0,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 100.0,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 100.0,
+        "workflowQuality": 76.67
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 연구실\nDark\nLight\nV3 Preview\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n연구실 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 전체 기록 인덱스 정본·Workbench 중복 렌더\nevolution/lab\nROUTE\nLAB\nOWNER\n연구실\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\nEVIDENCE WORKSPACE · OWNER MATRIX\n기록 · 연구 · 분석 · 결정 역할 맵\n\n현재 표면: 연구실\n\nowns: 탐색 히트맵, Edge Ratio, 변수 중요도, 상관관계, 변수 조합, 검증, 위키, AI 컨텍스트\nnot-owner: 전체 기록 인덱스 정본·Workbench 중복 렌더\nPHASE 2 INVENTORY GATE\n페이지 역할 · 소스 소유권 · 성능 기준\n8 pages",
+        "chartLikeCount": 1,
+        "dataContractMarkerCount": 0,
+        "dataManualGateCount": 0,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 1,
+        "firstFoldElementCount": 165,
+        "focusableFirstFoldCount": 24,
+        "hasEvidenceDrawerSelector": false,
+        "hasFutureTaskSelector": false,
+        "hasPrimaryCanvasSelector": false,
+        "heatmaps": [],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 1296,
+          "cls": "[object SVGAnimatedString]",
+          "firstFold": true,
+          "h": 36,
+          "tag": "svg",
+          "text": "",
+          "w": 36
+        },
+        "panelCountFirstFold": 1,
+        "primaryActionText": "🔬 연구실 LAB",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 1,
+        "scrollHeight": 1598,
+        "scrollWidth": 1280,
+        "taskHeaderTopRatio": 0.022,
+        "termHits": {
+          "Edge Ratio": true,
+          "Holdout": false,
+          "검증": true,
+          "누적 수익률": false,
+          "변수 조합": true,
+          "변수 중요도": true,
+          "상관관계": true,
+          "연구실": true,
+          "컨텍스트": true,
+          "히트맵": true
+        },
+        "textLength": 2225,
+        "viewportHeight": 720,
+        "viewportWidth": 1280,
+        "visibleCount": 165
+      },
+      "hardFailures": [],
+      "htmlHash": "a473ca4b36f3c8643757fbbbac41fe3ebaa551f5d3ea16c68b51724723047e35",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 16.97,
+        "lumaStddev": 12.83,
+        "nonUniform": true,
+        "size": [
+          1280,
+          720
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "lab",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/evolution/lab"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_docs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/freeze_verdict"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/ops_status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_docs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/research_doc?id=docs%2Fresearch%2Fcondition_research%2Fwiki%2Fmetrics_glossary.md"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S04",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition\\screenshots\\UX-S04-lab-v2-1280x720.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 66.67,
+        "primary": 100.0,
+        "workflow": 66.67
+      },
+      "textHash": "1203a2e82f8349cae60726ec8b298b60fd7cdabc9e95e3953c5cb8b8dced6d88",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "totalScore": 90.08,
+      "uncappedTotalScore": 90.08,
+      "url": "http://127.0.0.1:8776/ui/evolution/lab",
+      "version": "v2",
+      "viewport": "1280x720",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 100.0,
+        "chartHeatmapReadability": 100.0,
+        "cognitiveLoad": 100.0,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 91.0,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 100.0,
+        "workflowQuality": 100.0
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\nTask-first V3\n연구실 · 히트맵과 검증을 먼저 읽는 V3\n\n값 없는 색상 블록과 작은 카드 과밀을 줄이고, 선택 셀 의미와 Holdout 검증을 첫 작업 영역에 배치합니다.\n\npurpose\nEdge Ratio 히트맵 · 변수 중요도 · 상관관계 · Holdout 검",
+        "chartLikeCount": 10,
+        "dataContractMarkerCount": 1,
+        "dataManualGateCount": 5,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 0,
+        "firstFoldElementCount": 112,
+        "focusableFirstFoldCount": 18,
+        "hasEvidenceDrawerSelector": true,
+        "hasFutureTaskSelector": true,
+        "hasPrimaryCanvasSelector": true,
+        "heatmaps": [
+          {
+            "cells": 96,
+            "h": 258,
+            "text": "axis mom_5 mom_10 mom_20 vol_5 vol_20 turn_5 turn_20 cb_ratio bp_20 oc_10 oc_20 rs_14 rsi_14 macd_12_26 adx_14 cci_20 Ret 1D 0.04 0.17 0.19 ",
+            "values": 96,
+            "w": 1176
+          },
+          {
+            "cells": 100,
+            "h": 262,
+            "text": "axis mom_20 vol_20 turn_20 rs_14 rsi_14 cb_ratio bp_20 oc_20 adx_14 macd_12_26 mom_20 1 0.5 0.68 0.55 -0.08 -0.2 -0.35 -0.16 -0.3 -0.35 vol_",
+            "values": 100,
+            "w": 1226
+          }
+        ],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 495783,
+          "cls": "lab-step-card lab-heatmap-card",
+          "firstFold": false,
+          "h": 404,
+          "tag": "SECTION",
+          "text": "1. 탐색 히트맵 · Edge Ratio values visible axis mom_5 mom_10 mom_20 vol_5 vol_20 turn_5 turn_20 cb_ratio ",
+          "w": 1226
+        },
+        "panelCountFirstFold": 2,
+        "primaryActionText": "연구실",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 0,
+        "scrollHeight": 4107,
+        "scrollWidth": 1280,
+        "taskHeaderTopRatio": 0.449,
+        "termHits": {
+          "Edge Ratio": true,
+          "Holdout": true,
+          "검증": true,
+          "누적 수익률": true,
+          "변수 조합": true,
+          "변수 중요도": true,
+          "상관관계": true,
+          "연구실": true,
+          "컨텍스트": true,
+          "히트맵": true
+        },
+        "textLength": 4918,
+        "viewportHeight": 720,
+        "viewportWidth": 1280,
+        "visibleCount": 112
+      },
+      "hardFailures": [],
+      "htmlHash": "e58ecdaba595ad8594090d5e9e135a17cb5616b4ee89c0205e2c2a04164d508d",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 26.25,
+        "lumaStddev": 20.44,
+        "nonUniform": true,
+        "size": [
+          1280,
+          720
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "lab",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S04",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-3-lab-condition\\screenshots\\UX-S04-lab-v3-1280x720.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 100.0,
+        "primary": 100.0,
+        "workflow": 100.0
+      },
+      "textHash": "5336540ca6f4db5645f102ef0809f61a16743d45541c6fe19534099dfc39ee22",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "totalScore": 98.2,
+      "uncappedTotalScore": 98.2,
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "version": "v3",
+      "viewport": "1280x720",
+      "websockets": []
+    }
+  ],
+  "status": "PASS",
+  "storyboardValidation": {
+    "failures": [],
+    "pages": [
+      "backtest",
+      "chart_replay",
+      "condition"
+    ],
+    "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\storyboards\\storyboards.json",
+    "requiredPages": [
+      "condition"
+    ],
+    "scenarioCount": 3,
+    "status": "PASS"
+  },
+  "thresholdFailures": [],
+  "thresholds": {
+    "minDelta": 5.0,
+    "minV3Score": 82.0,
+    "viewports": [
+      "1440x900",
+      "1920x1080",
+      "1280x720"
+    ]
+  },
+  "tranche": "b"
+}

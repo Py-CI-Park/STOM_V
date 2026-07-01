@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "generatedAt": "2026-06-29T05:49:21.656279+00:00",
+  "commands": [
+    {
+      "command": "python scripts/verify_dashboard_v2_v3_compare.py ... artifacts/ultragoal-recheck-g003-v2-v3-compare-final",
+      "status": "PASS",
+      "evidence": "average 100.0 failures []"
+    },
+    {
+      "command": "python scripts/verify_dashboard_remodel_visual_gate.py ... artifacts/ultragoal-recheck-g002-v3-reference-visual",
+      "status": "PASS",
+      "evidence": "average 97.93 failures []"
+    },
+    {
+      "command": "browser layout audit over 8 V3 pages",
+      "status": "PASS",
+      "evidence": "items 77 failures 0"
+    },
+    {
+      "command": "python scripts/verify_dashboard_runtime_depth.py ...",
+      "status": "PASS",
+      "evidence": "average 100.0 failures []"
+    },
+    {
+      "command": "python scripts/verify_dashboard_safety_audit.py ...",
+      "status": "PASS",
+      "evidence": "average 100.0 failures []"
+    },
+    {
+      "command": "focused pytest/node/py_compile/git diff/protected paths",
+      "status": "PASS",
+      "evidence": "29 passed; syntax/compile/diff/protected path checks clean"
+    }
+  ],
+  "artifacts": {
+    "visualScorecard": "artifacts/ultragoal-recheck-g002-v3-reference-visual/scorecard.json",
+    "visualContactSheet": "artifacts/ultragoal-recheck-g002-v3-reference-visual/side-by-side-contact-sheet.png",
+    "layoutAudit": "artifacts/ultragoal-recheck-g002-graph-layout/layout-audit.json",
+    "runtimeDepth": "artifacts/ultragoal-recheck-g003-runtime-depth/runtime-depth-scorecard.json",
+    "safetyAudit": "artifacts/ultragoal-recheck-g003-safety-audit/safety-scorecard.json",
+    "v2v3Compare": "artifacts/ultragoal-recheck-g003-v2-v3-compare-final/compare-scorecard.json",
+    "inventoryGate": "artifacts/ultragoal-recheck-g003-inventory-final/gate-result.json",
+    "finalScorecard": "artifacts/ultragoal-recheck-final/final-recheck-scorecard.json"
+  }
+}

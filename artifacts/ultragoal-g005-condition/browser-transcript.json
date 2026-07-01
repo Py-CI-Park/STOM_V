@@ -1,0 +1,493 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "browser",
+  "url": "http://127.0.0.1:8776/ui/remodel/condition",
+  "capturedAt": "2026-06-27T15:52:59.046Z",
+  "pages": [
+    {
+      "key": "condition",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition",
+      "activeTab": "evolution",
+      "activeEvolutionTab": "overview",
+      "text": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 조건식 AI\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n운영 루프 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 히스토리·분석 워크벤치·운용 결정 이력\nevolution/overview\nROUTE\nHOME\nOWNER\n운영 루프\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\n조건식 AI LIVE MONITOR\n현재 세대 — LIVE\n—\n세대\ngen_-1 / 0\n페이즈\n—\n체크포인트\n—\n›\n진화 시작 버튼으로 루프를 개시하세요\nACTIVE STRATEGY\nsource=best\nBUY_NAME\nempty\nSELL_NAME\nempty\nrun_id=none\ngen_no=-1\ncode_status=loading\ndiff_status=unavailable\nunavailable: loading\nexpand preview\nopen full code\nPrevious Diff via /strategy_diff\n1\n생성\nLLM Code Gen\n2\n백테스트\nBacktest\n3\n채점\nGrading\n4\n부검\nAutopsy\n대기중\n조건식 발굴 프로세스\n상세 프로세스\n아래 네이티브 그래프·타이밍·로그가 현재 정본입니다. 전체 설명 문서는 읽기 전용 참고 자료로 별도 확인할 수 있습니다.\n상세 프로세스 문서 열기\n현재 노드 미정\nphase —\ncurrent_step —\n최근 로그 로그 대기중…\nProcess selector\nstate.page_data.condition_discovery.process · process_catalog projection (static fallback)\nadvisory research\n1\nfast-discovery\nfast · Fast discovery\n2\nprocess-research\nresearch · Process research\n3\npromotion-review\npromotion · Promotion review\n선택 PROCESS\n1 · fast-discovery빠른 조건 탐색용 projection입니다. 후보 설명과 정렬만 하며 승격 권한은 없습니다.\nVALIDATION NAMES\nresearch_validationresearch evidence is reported as advisory_split, not clean promotion OOS\nCAPABILITY\nCAN_PROMOTE=FALSE\nCAN_EXPORT=FALSE\nCAN_LIVE=FALSE\nfast/research are advisory; promotion still requires frozen review and human approval\nFull pipeline · advisory research → frozen promotion review\n기존 5-step 그래프는 실행 상태 요약이고, 이 섹션은 전체 연구/검토 계약입니다.\n1. condition generation조건식 후보를 생성하고 STOM 문법/변수 경계를 먼저 확인합니다.\n2. full-period / research_validation전체 기간 검증과 research_validation 결과를 advisory_split evidence로 분리해 기록합니다.\n3. scoring / evidence성과·생성품질 100점, hard gate, evidence health를 함께 보되 점수는 advisory-only입니다.\n4. autopsy / analysis실패 원인, hypothesis, 패턴 카드를 분석해 다음 세대 맥락으로 환류합니다.\n5. improvement채택/거절/보류된 근거를 이용해 후보 생성 방향을 개선합니다.\n6. separate frozen promotion review승격은 별도 동결 리뷰에서만 판단합니다. promote/export/live 권한은 여기서 생기지 않습니다.\nWarm timing metadata\nwarm metadata pending — existing display remains valid\nmode/status\nmetadata pending\nengines\n—\nprepare\n—\nrun/timeout\n—\n데이터 출처\n실시간 상태\n현재 세대·현재 단계·백테스트 로그를 읽기 전용으로 표시\n상태 구분\nidle\nlive/archive/idle을 구분해 옛 결과를 실시간으로 오해하지 않게 함\n현재 단계\n미정\n단계 경과 대기\n단계 진행\n0/5\n예측값이 아니라 실제 current_step 기준\n소요시간\n0/5\n각 단계가 끝난 뒤 누적되는 실제 시간 표본\n로그\n0\n엔진/백테스트 로그 최근 0줄 자동 스크롤\n1\n조건식\n만들기\n2\n검증\n과거데이터\n3\n점수\n적합도\n4\n원인\n실패요약\n5\n개선\n다음세대\n한눈에 보는 흐름\n\n조건식을 만들고, 과거 데이터로 검증한 뒤, 점수와 실패 원인을 보고 다음 세대를 개선합니다.\n\n현재 세대\n\n지금 실행 중인 후보 묶음입니다. current_step이 바뀌면 그래프의 활성 노드와 로그가 같이 움직입니다.\n\n적합도\n\n수익·손실폭·거래 빈도 같은 기준을 합쳐 후보를 비교하는 점수입니다. 높을수록 다음 후보로 남기 쉽습니다.\n\n예시 보기\n기본 설정 · 게이트 · 채점 기준\n사용자 협의 기준을 한 표로 고정합니다. 모든 점수는 설명/연구용이며 hard gate·evidence·인간 승인이 우선합니다.\n구분\t기본값/정책\t설명\nPreset\tfast / research / promotion\tfast=빠른 탐색, research=프롬프트·equity·evidence 보존 연구, promotion=동결 후보 승격 검토. 모두 점수는 advisory-only입니다.\nTick 기본 연구\t09:00:00~09:28:00\tTick 후보 연구/promotion은 장초반 28분 opening window를 기본으로 봅니다.\nMIN 풀세션\t09:00~15:18/15:19\tresearch/promotion MIN은 풀세션을 요구합니다. 15:18과 15:19는 DB 경계 후보로 표시하고 명시 검증합니다.\n백테스트 1회 제한\t최대 300초\tbt_timeout 기본값입니다. warm run은 이보다 빨라야 하며, 과발화/비용 큰 매도식은 fail-fast 대상입니다.\n단계별 MDD gate\tfast 35% · research 25% · promotion 15%\t설정 mdd_cap이 더 낮으면 더 엄격한 값이 적용됩니다. hard gate가 점수보다 우선합니다.\n거래 빈도/과매매\t일평균 ≥0.5 · softcap 150\t과매매 자체는 금지가 아니라 soft penalty입니다. 빈도 부족은 hard/fitness 경계로 다룹니다.\nTPI\t매매성능지수 · gate 기본 OFF\tTPI는 거래 품질/수익 효율을 보조로 보는 매매성능지수입니다. tpi_gate_enabled=false가 기본이며 승격권한을 만들지 않습니다.\n성과 점수 100점\t수익·MDD·Calmar·우상향·빈도·청산·안정성\t후보 설명/정렬용 advisory score입니다. promotion/export/winner 선택권은 없습니다.\n생성품질 100점\t문법·변수다양성·니치·창의성·과발화·비용·매도구조\t조건식 생성 품질을 설명하는 점수입니다. 성과를 보증하지 않고 hard gate를 대체하지 않습니다.\nPrompt / Equity 저장\tfast 선택 · research/promotion evidence\t기본 토글은 OFF입니다. research/promotion 검토에서는 프롬프트·손익곡선 evidence가 없으면 blocker로 표시합니다.\n부검 hypothesis\taccepted/rejected/deferred/inconclusive\t부검 가정은 다음 프롬프트 맥락으로 환류하되 advisory-only provenance를 유지합니다.\n인간 DB pattern cards\t조합 문법/창의성 전용\t성과 복사·전체식 복사·임계값 복사는 금지합니다. few-shot은 구조 학습용으로만 씁니다.\nTransformer/ML\t추후 연구 과제\t이번 작업 범위에서는 구현하지 않습니다. 별도 연구로 예측/파라미터화 가능성만 추적합니다.\n1. 조건식\n—\n2. 검증\n—\n3. 점수\n—\n4. 원인\n—\n5. 개선\n—\n로그 대기중…\n페이즈 상세 — —\n—\n실시간 데이터 대기 · Live data pending\nWaiting for a fresh live snapshot from backend; this panel is not a stale result.\n설정 · 게이트 · 백테스트 엔진 요약\nRESEARCH CRITERIA\nresearch_oos_mode=disabled\nOOS disabled\nresearch/exploration only; not proof of human-level or production readiness.\nOOS를 실행하거나 후보 탈락에 쓰지 않는 탐색 모드입니다.\nMETRIC GLOSSARY\nall\nresearch signal, not production proof · human-level claim blocked until multiyear holdout/OOS evidence exists.\nOOS\nOut-of-sample. 후보 선택과 튜닝에 쓰지 않은 기간 검증이다. OOS disabled는 탐색은 허용하지만 human-level claim blocked 상태다.\noverfit\n특정 구간에만 맞춘 과적합이다. 전체 기간 우상향이면 연구 신호로 볼 수 있지만 research signal, not production proof 이다.\nMDD\nMaximum Drawdown. 누적 수익곡선의 고점 대비 최대 하락폭이며, 손실 구간의 깊이를 본다.\npayoff\npayoff_ratio. 평균 이익을 평균 손실 절댓값으로 나",
+      "markers": {
+        "condition": true,
+        "process": true,
+        "history": true,
+        "lab": true,
+        "workbench": true,
+        "audit": true,
+        "codePrompt": true,
+        "charts": true,
+        "safety": false
+      },
+      "forbiddenControls": 0,
+      "forbiddenTextControls": [],
+      "screenshot": "artifacts/ultragoal-g005-condition/condition-condition.png"
+    },
+    {
+      "key": "process",
+      "url": "http://127.0.0.1:8776/ui/remodel/process",
+      "activeTab": "evolution",
+      "activeEvolutionTab": "process",
+      "text": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 프로세스\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n조건식 발굴 프로세스 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 루프 제어·상태 변경·final approval/export·/process_flow 정적 참고 본문\nevolution/process\nROUTE\nFLOW\nOWNER\n조건식 발굴 프로세스\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\n조건식 발굴 프로세스\n상세 프로세스\n아래 네이티브 그래프·타이밍·로그가 현재 정본입니다. 전체 설명 문서는 읽기 전용 참고 자료로 별도 확인할 수 있습니다.\n상세 프로세스 문서 열기\n현재 노드 미정\nphase —\ncurrent_step —\n최근 로그 로그 대기중…\nProcess selector\nstate.page_data.condition_discovery.process · process_catalog projection (static fallback)\nadvisory research\n1\nfast-discovery\nfast · Fast discovery\n2\nprocess-research\nresearch · Process research\n3\npromotion-review\npromotion · Promotion review\n선택 PROCESS\n1 · fast-discovery빠른 조건 탐색용 projection입니다. 후보 설명과 정렬만 하며 승격 권한은 없습니다.\nVALIDATION NAMES\nresearch_validationresearch evidence is reported as advisory_split, not clean promotion OOS\nCAPABILITY\nCAN_PROMOTE=FALSE\nCAN_EXPORT=FALSE\nCAN_LIVE=FALSE\nfast/research are advisory; promotion still requires frozen review and human approval\nFull pipeline · advisory research → frozen promotion review\n기존 5-step 그래프는 실행 상태 요약이고, 이 섹션은 전체 연구/검토 계약입니다.\n1. condition generation조건식 후보를 생성하고 STOM 문법/변수 경계를 먼저 확인합니다.\n2. full-period / research_validation전체 기간 검증과 research_validation 결과를 advisory_split evidence로 분리해 기록합니다.\n3. scoring / evidence성과·생성품질 100점, hard gate, evidence health를 함께 보되 점수는 advisory-only입니다.\n4. autopsy / analysis실패 원인, hypothesis, 패턴 카드를 분석해 다음 세대 맥락으로 환류합니다.\n5. improvement채택/거절/보류된 근거를 이용해 후보 생성 방향을 개선합니다.\n6. separate frozen promotion review승격은 별도 동결 리뷰에서만 판단합니다. promote/export/live 권한은 여기서 생기지 않습니다.\nWarm timing metadata\nwarm metadata pending — existing display remains valid\nmode/status\nmetadata pending\nengines\n—\nprepare\n—\nrun/timeout\n—\n데이터 출처\n실시간 상태\n현재 세대·현재 단계·백테스트 로그를 읽기 전용으로 표시\n상태 구분\nidle\nlive/archive/idle을 구분해 옛 결과를 실시간으로 오해하지 않게 함\n현재 단계\n미정\n단계 경과 대기\n단계 진행\n0/5\n예측값이 아니라 실제 current_step 기준\n소요시간\n0/5\n각 단계가 끝난 뒤 누적되는 실제 시간 표본\n로그\n0\n엔진/백테스트 로그 최근 0줄 자동 스크롤\n1\n조건식\n만들기\n2\n검증\n과거데이터\n3\n점수\n적합도\n4\n원인\n실패요약\n5\n개선\n다음세대\n한눈에 보는 흐름\n\n조건식을 만들고, 과거 데이터로 검증한 뒤, 점수와 실패 원인을 보고 다음 세대를 개선합니다.\n\n현재 세대\n\n지금 실행 중인 후보 묶음입니다. current_step이 바뀌면 그래프의 활성 노드와 로그가 같이 움직입니다.\n\n적합도\n\n수익·손실폭·거래 빈도 같은 기준을 합쳐 후보를 비교하는 점수입니다. 높을수록 다음 후보로 남기 쉽습니다.\n\n예시 보기\n기본 설정 · 게이트 · 채점 기준\n사용자 협의 기준을 한 표로 고정합니다. 모든 점수는 설명/연구용이며 hard gate·evidence·인간 승인이 우선합니다.\n구분\t기본값/정책\t설명\nPreset\tfast / research / promotion\tfast=빠른 탐색, research=프롬프트·equity·evidence 보존 연구, promotion=동결 후보 승격 검토. 모두 점수는 advisory-only입니다.\nTick 기본 연구\t09:00:00~09:28:00\tTick 후보 연구/promotion은 장초반 28분 opening window를 기본으로 봅니다.\nMIN 풀세션\t09:00~15:18/15:19\tresearch/promotion MIN은 풀세션을 요구합니다. 15:18과 15:19는 DB 경계 후보로 표시하고 명시 검증합니다.\n백테스트 1회 제한\t최대 300초\tbt_timeout 기본값입니다. warm run은 이보다 빨라야 하며, 과발화/비용 큰 매도식은 fail-fast 대상입니다.\n단계별 MDD gate\tfast 35% · research 25% · promotion 15%\t설정 mdd_cap이 더 낮으면 더 엄격한 값이 적용됩니다. hard gate가 점수보다 우선합니다.\n거래 빈도/과매매\t일평균 ≥0.5 · softcap 150\t과매매 자체는 금지가 아니라 soft penalty입니다. 빈도 부족은 hard/fitness 경계로 다룹니다.\nTPI\t매매성능지수 · gate 기본 OFF\tTPI는 거래 품질/수익 효율을 보조로 보는 매매성능지수입니다. tpi_gate_enabled=false가 기본이며 승격권한을 만들지 않습니다.\n성과 점수 100점\t수익·MDD·Calmar·우상향·빈도·청산·안정성\t후보 설명/정렬용 advisory score입니다. promotion/export/winner 선택권은 없습니다.\n생성품질 100점\t문법·변수다양성·니치·창의성·과발화·비용·매도구조\t조건식 생성 품질을 설명하는 점수입니다. 성과를 보증하지 않고 hard gate를 대체하지 않습니다.\nPrompt / Equity 저장\tfast 선택 · research/promotion evidence\t기본 토글은 OFF입니다. research/promotion 검토에서는 프롬프트·손익곡선 evidence가 없으면 blocker로 표시합니다.\n부검 hypothesis\taccepted/rejected/deferred/inconclusive\t부검 가정은 다음 프롬프트 맥락으로 환류하되 advisory-only provenance를 유지합니다.\n인간 DB pattern cards\t조합 문법/창의성 전용\t성과 복사·전체식 복사·임계값 복사는 금지합니다. few-shot은 구조 학습용으로만 씁니다.\nTransformer/ML\t추후 연구 과제\t이번 작업 범위에서는 구현하지 않습니다. 별도 연구로 예측/파라미터화 가능성만 추적합니다.\n1. 조건식\n—\n2. 검증\n—\n3. 점수\n—\n4. 원인\n—\n5. 개선\n—\n로그 대기중…\nSTOM AI · STATE_CONTRACT v2 · last_update —",
+      "markers": {
+        "condition": true,
+        "process": true,
+        "history": true,
+        "lab": true,
+        "workbench": true,
+        "audit": true,
+        "codePrompt": false,
+        "charts": true,
+        "safety": false
+      },
+      "forbiddenControls": 0,
+      "forbiddenTextControls": [],
+      "screenshot": "artifacts/ultragoal-g005-condition/condition-process.png"
+    },
+    {
+      "key": "history",
+      "url": "http://127.0.0.1:8776/ui/remodel/history",
+      "activeTab": "evolution",
+      "activeEvolutionTab": "records",
+      "text": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 히스토리\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n히스토리 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 위키 큐레이션·분석 편집·결정 기록·Workbench 중복 렌더\nevolution/records\nROUTE\nHISTORY\nOWNER\n히스토리\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\nRESEARCH RECORDS\n2 campaigns\nRefresh\nCampaign\tCandidates\tBest PnL\tMDD\tArtifacts\tUpdated\ntheta_star\t0\t-\t-\t0 pairs / summary / -\t2026. 6. 27. 오전 8:55:25\npost-q4-3h-bulk-research-20260618\t10\t+39,402,438\t7.68%\t0 pairs / summary / log\t2026. 6. 27. 오전 8:55:25\nSELECTED\ntheta_star\nbest=-\nroot=C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\.omo\\evidence\\tmap-walkforward\nTOP CANDIDATES\nNo candidate rows\n히스토리 RESULTDETAIL · COMPARE\nrun 새로고침\nHistory가 과거 run/gen 아카이브와 Compare를 소유합니다. Workbench는 깊은 분석으로 연결만 제공합니다.\nRun Compare 프로 — 좋은 결과를 바로 사용\n?\n+ 현재 선택 추가 (—/g0)\n또는\nrun 선택\ngen\n+ 추가\n비교할 run/세대를 추가하세요.\n히스토리 — 과거 연구 재열람\n?\n과거 run 선택…\n과거 run을 선택하면 세대·조건식·상세 결과가 표시됩니다.\nEVIDENCE WORKSPACE · OWNER MATRIX\n기록 · 연구 · 분석 · 결정 역할 맵\n\n현재 표면: 히스토리\n\nowns: run/gen 결과 아카이브, ResultDetail, Compare, campaign/docs/update_log/registry lineage 검색\nnot-owner: 위키 큐레이션·분석 편집·결정 기록·Workbench 중복 렌더\nPHASE 2 INVENTORY GATE\n페이지 역할 · 소스 소유권 · 성능 기준\n8 pages · 4 source groups\n\nUI 대공사는 라벨을 먼저 바꾸는 작업이 아니라, 각 페이지가 무엇을 소유하고 무엇을 소유하지 않는지 고정한 뒤 안전하게 재배치하는 작업입니다.\n\nSTOM 히스토리\nrun/gen result archive · Compare · campaign/docs/update_log/registry lineage\nGOVERNED RESEARCH INDEX\nloading\nGoverned exact-link timeline across campaigns, docs, update logs, HOF, loop_runs, evidence artifacts, decisions, and allowlisted registry rows. Badges use closed source_authority, canonicality, and trace_status values; unknown/unlinked lineage stays visible instead of being hidden.\nkind\nall\ncampaign\ndoc\nupdate_log\nregistry\nhof\nloop_run\ndecision\nevidence\ncanonicality\nall\ncanonical\nderived\nhistorical\nreference\ncandidate\nstale\ntrace\nall\nlinked\nunlinked\nunknown\nsort\nupdated ↓\ntitle A-Z\nkind/source\nrows 0\nshown 0\ncampaign 0\ndoc 0\nupdate_log 0\nregistry 0\nhof 0\nloop_runs 0\ndecisions 0\nevidence 0\nlinked 0\nunlinked 0\nunknown 0\ncap 80\nGoverned Exact-Link Timeline\nsource_authority · canonicality · trace_status · exact_link\n∅\nNo timeline records.\n필터를 조정하면 exact-link 타임라인이 다시 표시됩니다.\n∅\nNo matching research records.\n검색어와 필터를 조정하세요.\n∅\nSelect a governed research record.\n왼쪽 목록에서 행을 선택하면 상세를 지연 로딩합니다.\nSTOM AI · STATE_CONTRACT v2 · last_update —",
+      "markers": {
+        "condition": true,
+        "process": true,
+        "history": true,
+        "lab": true,
+        "workbench": true,
+        "audit": true,
+        "codePrompt": false,
+        "charts": true,
+        "safety": false
+      },
+      "forbiddenControls": 0,
+      "forbiddenTextControls": [],
+      "screenshot": "artifacts/ultragoal-g005-condition/condition-history.png"
+    },
+    {
+      "key": "lab",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab",
+      "activeTab": "evolution",
+      "activeEvolutionTab": "lab",
+      "text": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 연구실\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n연구실 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 전체 기록 인덱스 정본·Workbench 중복 렌더\nevolution/lab\nROUTE\nLAB\nOWNER\n연구실\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\nEVIDENCE WORKSPACE · OWNER MATRIX\n기록 · 연구 · 분석 · 결정 역할 맵\n\n현재 표면: 연구실\n\nowns: 탐색 히트맵, Edge Ratio, 변수 중요도, 상관관계, 변수 조합, 검증, 위키, AI 컨텍스트\nnot-owner: 전체 기록 인덱스 정본·Workbench 중복 렌더\nPHASE 2 INVENTORY GATE\n페이지 역할 · 소스 소유권 · 성능 기준\n8 pages · 4 source groups\n\nUI 대공사는 라벨을 먼저 바꾸는 작업이 아니라, 각 페이지가 무엇을 소유하고 무엇을 소유하지 않는지 고정한 뒤 안전하게 재배치하는 작업입니다.\n\n실행 중\n없음\n큐: 7단계 완료 · min_afternoon_pullback\n검증 결산 요약 · ⚠️2\n동결 후보: gen7 THETA_seed_902905_06_B — train 손익 10,965,479 · MDD 10.04 · 272건 · payoff 1.53\nV1 과적합: DSR 0.945 (n_trials 80) · PBO 0.343 · MC P(흑자) 1.0\nrun 목록 (최신순)\nSTOM 연구실\nexploration · edge · variables · validation\n탐색 히트맵 · Edge Ratio\n변수 중요도\n상관관계\n변수 조합\n검증\n🔬 상세 워크벤치\n모드\n연구(분석)\n대상\n실행 0건 · 최근완료 0건\n상태\n실행 중 작업 없음\n탐색 히트맵 · EDGE RATIO 통합 분석\n시간대×시가총액 탐색 히트맵과 edge_ratio 세그먼트를 한 화면에서 통합\n↻ 새로고침\nrun을 선택하거나 루프를 시작하면 시간대×시가총액 Edge Ratio 통합 분석이 전체 폭으로 표시됩니다.\n엣지 조건이 실제로 유리한 구간\n변수 중요도 성과 차이를 크게 만든 입력 변수\n상관관계 변수와 결과가 같이 움직인 정도\n검증 후보를 다른 기간·조건으로 다시 확인하는 단계\n예시 보기: 연구실에서 결과를 해석하는 순서\n연구 위키 · AI 컨텍스트 보기\nUI 품질 게이트\nvisual · perf · no-dependency\n대공사 UI 변경은 스크린샷 기준과 성능 임계값을 먼저 고정한 뒤 진행합니다. 새 의존성 없이 현재 bundle/Track Z/pytest 계약 안에서 측정하고, 임계값을 넘을 때만 no-dependency windowing을 설계합니다.\nVisual baseline\n조건식 AI\n1440/1180/980 px\n히스토리\n1440/1180/980 px\n리서치 Wiki\n1440/1180/980 px\n분석 워크벤치\n1440/1180/980 px\n결정 감사\n1440/1180/980 px\n프로세스\n1440/1180/980 px\n명예의 전당\n1440/1180/980 px\nPerformance profile\nrecords\n500 rows before windowing review\ngenerations\n300 rows before windowing review\nhof\n150 rows before windowing review\nverdict\n300 decisions before windowing review\nprocess\n50 visible lines\nSTOM AI · STATE_CONTRACT v2 · last_update —",
+      "markers": {
+        "condition": true,
+        "process": true,
+        "history": true,
+        "lab": true,
+        "workbench": true,
+        "audit": true,
+        "codePrompt": false,
+        "charts": true,
+        "safety": false
+      },
+      "forbiddenControls": 0,
+      "forbiddenTextControls": [],
+      "screenshot": "artifacts/ultragoal-g005-condition/condition-lab.png"
+    },
+    {
+      "key": "workbench",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench",
+      "activeTab": "evolution",
+      "activeEvolutionTab": "workbench",
+      "text": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 분석 워크벤치\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n분석 워크벤치 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 연구실 분석·append-only 운용 결정·final approval\nevolution/workbench\nROUTE\nWORK\nOWNER\n분석 워크벤치\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\nEVIDENCE WORKSPACE · OWNER MATRIX\n기록 · 연구 · 분석 · 결정 역할 맵\n\n현재 표면: 분석 워크벤치\n\nowns: 조건 후보 심층 분석과 워크벤치 액션\nnot-owner: 연구실 분석·append-only 운용 결정·final approval\nPHASE 2 INVENTORY GATE\n페이지 역할 · 소스 소유권 · 성능 기준\n8 pages · 4 source groups\n\nUI 대공사는 라벨을 먼저 바꾸는 작업이 아니라, 각 페이지가 무엇을 소유하고 무엇을 소유하지 않는지 고정한 뒤 안전하게 재배치하는 작업입니다.\n\nSTOM 분석 워크벤치\ncandidate analysis · HoF field contract · workbench actions\nHOF FIELD CONTRACT\n명예의 전당 병합 전 인벤토리 게이트\n13 fields locked\n이 표면은 벤치마크 성과판입니다. 시각 통합 전 아래 필드와 액션이 모두 보존되어야 하며, 분석 프로 워크벤치 책임과 인간 reference 증거를 섞어 잃으면 안 됩니다.\n조건 후보 열기\n즉시 백테스트 연결\nHoF 비교 기준 확인\n인간 reference screenshot 확인\n정체성kind · name · period\n성과total_return_krw · total_return_pct · annual_return_pct\n위험·체결mdd_pct · payoff · daily_avg_trades · max_hold · operating_capital_krw\n증거·액션screenshots · workbench_actions\nkind\n구분\n인간·시드·AI 구분 유지\nname\n이름\n표시명 및 전략 식별 유지\ntotal_return_krw\n총수익금\n원 단위 성과 비교 유지\ntotal_return_pct\n총수익률\n운영금 대비 수익률 유지\nannual_return_pct\n연평균\n단기 연환산 신뢰 경고 유지\nmdd_pct\nMDD\n손실위험 비교 유지\npayoff\npayoff\n손익비 비교 유지\ndaily_avg_trades\n일평균거래\n빈도/체결 현실성 판단 유지\nmax_hold\n동시보유\n인간/AI 필드 정규화 유지\noperating_capital_krw\n운영금\n운영금 대비 비교 유지\nperiod\n백테 기간\n기간과 표본 길이 유지\nscreenshots\n스크린샷\n인간 결과 증거 갤러리 유지\nworkbench_actions\n워크벤치 액션\n분석 프로 워크벤치 책임 분리 유지\n🔬\n분석 워크벤치 — 후보 심층 분석\nrun 미선택\nrun\n선택…\ngen\n↻ 새로고침\n🧭 프로세스\n🏆 명예의 전당 프로 — 조건식 · 바로 사용\n?\n↻ 새로고침\n목적: Research Pro 워크벤치용 HoF입니다. 행을 펼쳐 조건식·변수칩을 검토하고 바로 백테스트로 넘기는 화면이며, 벤치마크 전체 비교는 진화 대시보드의 성과 명예의 전당이 담당합니다.\n게이트 통과 전략이 누적되면 표시됩니다.\n히스토리 · Compare는 히스토리 탭 소유\n과거 run/gen 재열람과 Compare는 중복을 막기 위해 히스토리 탭으로 이동했습니다. Workbench는 현재 선택 run의 깊은 분석과 명예의 전당 후보 확인만 담당합니다.\n히스토리에서 열기\nSTOM AI · STATE_CONTRACT v2 · last_update —",
+      "markers": {
+        "condition": true,
+        "process": true,
+        "history": true,
+        "lab": true,
+        "workbench": true,
+        "audit": true,
+        "codePrompt": false,
+        "charts": true,
+        "safety": false
+      },
+      "forbiddenControls": 0,
+      "forbiddenTextControls": [],
+      "screenshot": "artifacts/ultragoal-g005-condition/condition-workbench.png"
+    },
+    {
+      "key": "audit",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit",
+      "activeTab": "evolution",
+      "activeEvolutionTab": "verdict",
+      "text": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 결정 감사\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n결정 이력 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 전략 내보내기 승인(final_approval)\nevolution/verdict\nROUTE\nAUDIT\nOWNER\n결정 이력\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\nEVIDENCE WORKSPACE · OWNER MATRIX\n기록 · 연구 · 분석 · 결정 역할 맵\n\n현재 표면: 결정 이력\n\nowns: 검증 결산, 레짐/포트폴리오 advisory, append-only 결정 기록\nnot-owner: 전략 내보내기 승인(final_approval)\nPHASE 2 INVENTORY GATE\n페이지 역할 · 소스 소유권 · 성능 기준\n8 pages · 4 source groups\n\nUI 대공사는 라벨을 먼저 바꾸는 작업이 아니라, 각 페이지가 무엇을 소유하고 무엇을 소유하지 않는지 고정한 뒤 안전하게 재배치하는 작업입니다.\n\n검증 결산과 결정 감사\n증거 → 결정 기록 append-only · final approval 분리\n📋\n검증 결산\n⚠️2\n승격 체크리스트와 OOS 신뢰구간\n🌐\n레짐·부활\n상황별 성과와 재검증 후보\n★\nV6 포트폴리오\n★\n채택 추천 조합과 기준선 비교\n⚖️\n운용 결정\n1\nappend-only 결정 기록\n결정 감사는 탭을 다시 숨기지 않고 한 화면에서 검증 → 상황 해석 → 포트폴리오 → 운용 기록 순서로 읽습니다. final approval은 전략 내보내기 승인이고, 이 페이지는 근거와 운용 판단을 append-only로 남기는 감사 장부입니다.\nPROMOTE 실매매 후보로 승격 가능한지 보는 체크리스트\nOOS 학습에 쓰지 않은 기간의 검증 결과\n레짐 시장 상황별 성과 차이\nappend-only 수정·삭제 대신 새 기록을 추가해 이력을 보존\n예시 보기: 결정을 남기는 흐름\n📋 검증 결산\n\nPROMOTE 체크리스트, OOS 차이 신뢰구간, 경보와 요약을 한 번에 확인합니다.\n\nPROMOTE 조건\t상태\t근거\nV3 고정 OOS\t⏳\tOOS run 미발견\nV1 DSR ≥ 0.5 (advisory)\t✅\t0.945 (n_trials 80)\nV1 MC P(흑자) ≥ 0.95\t✅\t1.0\nV2 플라시보 전 표본 상회\t✅\t표본 12종 · 백분위 1.0\nV5 합산 2틱 불리에도 흑자\t✅\t2틱 유지율 34%\nV5 최신 구간 마진\t⚠️\t2026 단독 손익분기 < 2틱\nV4 정책 누적 비열등\t✅\t5,766,611 vs 5,687,429 (4창)\n⚠️ V1: 후보 풀 평균 상관 0.93 > 0.7 — 후보들이 사실상 쌍둥이라 PBO가 과적합을 과소평가할 수 있음(유효 독립 후보 ≈ 1.1)\n⚠️ V5: 2026 OOS 단독 손익분기 1.21틱 — 얇은 마진\n동결 후보: gen7 THETA_seed_902905_06_B — train 손익 10,965,479 · MDD 10.04 · 272건 · payoff 1.53\nV1 과적합: DSR 0.945 (n_trials 80) · PBO 0.343 · MC P(흑자) 1.0\nV2 플라시보: 표본 12종 전부 하회 — 후보가 플라시보 전 표본 상회 + 플라시보 중앙값 음수 — 손익의 원천은 진입 신호(우연/매도식 단독 아님)\nV5 슬리피지(합산 330건): 1틱 유지 67% · 2틱 34% · 손익분기 3.03틱\nM1 중복도: jaccard 0.8882 — 사실상 동일 거래 — '보완'은 동일 베팅 2배와 같음(대체 검토)\nC8 체결: 추격 의존 거래 5.1% · 의존 수익비중 20.1%\nM10 서킷: 당일 손실 2건 도달 시 잔여 거래 중단 → x1.0238\nM11 사이징: 권고 배수 x1.471\nV4 walk-forward(4창): 정책 누적 5,766,611 vs 시드 5,687,429\n🌐 레짐·부활\n\n시장 상황별 성과 차이와 재검증 대기 후보를 advisory 정보로 분리해 봅니다.\n\n레짐 분해 (advisory) — 판정 미사용\nTHETA · 활성장 +6,503,770 (137일) · 위축장 +6,724,062 (138일) · 집중도 50.8% ✓ 레짐 균형\nSEED · 활성장 +5,356,448 (152일) · 위축장 +5,194,024 (149일) · 집중도 50.8% ✓ 레짐 균형\n패자부활 레지스트리 — 등재 4건\nREVIVAL C7 SEEDPLUS · 기각 2026-06-10 · 고정 OOS 2026 -229,360(시드 -191,109보다 약함) — 프로그램 최초 대형 OOS 흑자(2022 +1,712,130)였으나 REJECT. 레지스트리 신설(6/12) 시 누락돼 보완 등재\nREVIVAL EXIT2C take9 · 기각 2026-06-11 · 고정 OOS 2026 -70,903 + maxMDD 20.14 위배 (결정 카드 §7b)\nREVIVAL PA-NICHE g9 · 기각 2026-06-12 · 고정 OOS 2022 +174,771(시드의 8%, payoff 0.91<1.05) + 2026 -309,706(시드 열위) — P-A absolute_niche_v1 1호 동결자. 저MDD는 일반화·수익은 붕괴(M5 생존편향 4번째 실증)\nREVIVAL EXIT2NA take6 · 기각 2026-06-12 · 고정 OOS 2026 -288,237(시드 열위) + maxMDD 20.87 + payoff 0.97 (결정 카드 §7c)\n신규 데이터 도착 시 전수 자동 재검증\n★ V6 포트폴리오\n\n채택 추천 포트폴리오와 M4 기준선 비교를 운용 결정 전에 확인합니다.\n\n★ V6 채택 추천 포트폴리오\nTHETA 50%T2C3 50%\nM4 baseline (포트폴리오 vs 시드 — 48개월)\n포트폴리오 합계: 13,044,334 · 시드 합계: 10,550,472(+23.6% 우위)\n경보 없음\n결정 노트: V6 포트폴리오(complement): THETA(과거적합 train+10.97M) + T2C3(09:25 시간확장, OOS/WF/슬리피지 THETA 능가) 2-전략 운용. train 상관 0.92·분산이득 7.3% 미미 — 근거는 레짐 상보성: 2026형 저거래장 T2C3 +400,701 vs THETA +164,602(+143%). 평상시 동행+위축장 T2C3 헤지. 둘 다 V1~V5 완주. 카드: 2026-06-13_v6_portfolio_decision_card.md\n검증 문서: .omo\\evidence\\tmap-walkforward\\t2c3_verdict_findings.md\n⚖️ 운용 결정\n\n결정과 근거 메모를 append-only 이력으로 남깁니다. 번복도 삭제가 아니라 새 기록입니다.\n\nℹ️ 운영 채택 동선: 우승 전략 내보내기 승인은 진화 탭의 승인·내보내기 다이얼로그에서 WS(final_approval)로 처리됩니다. 이 폼은 그 운용 결정을 append-only로 남기는 기록부입니다(REST /record_decision).\n운용 결정 기록 (append-only — 번복도 새 레코드로 이력 보존)\n promote\n complement\n hold\n reject\n기록\n결정 이력\n시각\t결정\t대상 후보\t메모\n2026. 6. 13. 오후 1:47:14\tcomplement\tTHETA_seed_902905_06_B (10,965,479)\tV6 포트폴리오(complement): THETA(과거적합 train+10.97M) + T2C3(09:25 시간확장, OOS/WF/슬리피지 THETA 능가) 2-전략 운용. train 상관 0.92·분산이득 7.3% 미미 — 근거는 레짐 상보성: 2026형 저거래장 T2C3 +400,701 vs THETA +164,602(+143%). 평상시 동행+위축장 T2C3 헤지. 둘 다 V1~V5 완주. 카드: 2026-06-13_v6_portfolio_decision_card.md\nSTOM AI · STATE_CONTRACT v2 · last_update —",
+      "markers": {
+        "condition": true,
+        "process": true,
+        "history": true,
+        "lab": true,
+        "workbench": true,
+        "audit": true,
+        "codePrompt": true,
+        "charts": true,
+        "safety": false
+      },
+      "forbiddenControls": 0,
+      "forbiddenTextControls": [],
+      "screenshot": "artifacts/ultragoal-g005-condition/condition-audit.png"
+    }
+  ],
+  "responses": [
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/condition",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=91fec92d",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/remodel-bootstrap.js?v=20260627g002",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/equity_curves",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/hall_of_fame",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/status",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/process",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=91fec92d",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/remodel-bootstrap.js?v=20260627g002",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/status",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/history",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=91fec92d",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/remodel-bootstrap.js?v=20260627g002",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/status",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/lab",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=91fec92d",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/remodel-bootstrap.js?v=20260627g002",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/status",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/freeze_verdict",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=91fec92d",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/remodel-bootstrap.js?v=20260627g002",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/status",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/status",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/hall_of_fame",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/audit",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=91fec92d",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/remodel-bootstrap.js?v=20260627g002",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/decisions",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/freeze_verdict",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/status",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    }
+  ],
+  "actions": [
+    {
+      "type": "navigate+screenshot",
+      "timestamp": "2026-06-27T15:55:00Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "captured condition",
+      "path": "artifacts/ultragoal-g005-condition/condition-condition.png"
+    },
+    {
+      "type": "navigate+screenshot",
+      "timestamp": "2026-06-27T15:55:01Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/process",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "captured process",
+      "path": "artifacts/ultragoal-g005-condition/condition-process.png"
+    },
+    {
+      "type": "navigate+screenshot",
+      "timestamp": "2026-06-27T15:55:02Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/history",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "captured history",
+      "path": "artifacts/ultragoal-g005-condition/condition-history.png"
+    },
+    {
+      "type": "navigate+screenshot",
+      "timestamp": "2026-06-27T15:55:03Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "captured lab",
+      "path": "artifacts/ultragoal-g005-condition/condition-lab.png"
+    },
+    {
+      "type": "navigate+screenshot",
+      "timestamp": "2026-06-27T15:55:04Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "captured workbench",
+      "path": "artifacts/ultragoal-g005-condition/condition-workbench.png"
+    },
+    {
+      "type": "navigate+screenshot",
+      "timestamp": "2026-06-27T15:55:05Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "captured audit",
+      "path": "artifacts/ultragoal-g005-condition/condition-audit.png"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+G002 adversarial preview-control report
+
+PASS: V2 default bundle exposes a visible passive V3 Preview link.
+PASS: Link target is query-only dashboard_version=v3 and does not write dashboard/version/remodel localStorage, sessionStorage, or cookies.
+PASS: Browser flow returns to V2 default after V3 preview selection.
+PASS: V3 selected response loads remodel bundle and does not load V2 bundle.
+PASS: focused tests, py_compile, node checks, build-app, and git diff --check passed.

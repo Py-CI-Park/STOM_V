@@ -1,0 +1,414 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G001",
+  "artifact": "route-version-matrix",
+  "summary": {
+    "rows": 50,
+    "failures": 0,
+    "v2DefaultRoutes": 9,
+    "v3HardRoutes": 13,
+    "aliasRoutes": 8,
+    "persistenceChecks": 9
+  },
+  "rows": [
+    {
+      "route": "/ui/",
+      "selector": "default",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/",
+      "selector": "dashboard_version=v3",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/",
+      "selector": "default-after-v3-selector",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution",
+      "selector": "default",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution",
+      "selector": "dashboard_version=v3",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution",
+      "selector": "default-after-v3-selector",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/process",
+      "selector": "default",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/process",
+      "selector": "dashboard_version=v3",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/process",
+      "selector": "default-after-v3-selector",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/records",
+      "selector": "default",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/records",
+      "selector": "dashboard_version=v3",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/records",
+      "selector": "default-after-v3-selector",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/lab",
+      "selector": "default",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/lab",
+      "selector": "dashboard_version=v3",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/lab",
+      "selector": "default-after-v3-selector",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/workbench",
+      "selector": "default",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/workbench",
+      "selector": "dashboard_version=v3",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/workbench",
+      "selector": "default-after-v3-selector",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/verdict",
+      "selector": "default",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/verdict",
+      "selector": "dashboard_version=v3",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/verdict",
+      "selector": "default-after-v3-selector",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/backtest",
+      "selector": "default",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/backtest",
+      "selector": "dashboard_version=v3",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/backtest",
+      "selector": "default-after-v3-selector",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/chart-replay",
+      "selector": "default",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/chart-replay",
+      "selector": "dashboard_version=v3",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/chart-replay",
+      "selector": "default-after-v3-selector",
+      "expected": "v2",
+      "status": 200,
+      "header": "v2",
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/",
+      "selector": "hard-remodel",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/condition",
+      "selector": "hard-remodel",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/process",
+      "selector": "hard-remodel",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/history",
+      "selector": "hard-remodel",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/records",
+      "selector": "hard-remodel",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/lab",
+      "selector": "hard-remodel",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/workbench",
+      "selector": "hard-remodel",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/audit",
+      "selector": "hard-remodel",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/verdict",
+      "selector": "hard-remodel",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/backtest",
+      "selector": "hard-remodel",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/chart-replay",
+      "selector": "hard-remodel",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/simulation",
+      "selector": "hard-remodel",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/settings",
+      "selector": "hard-remodel",
+      "expected": "v3-remodel",
+      "status": 200,
+      "header": "v3-remodel",
+      "ok": true
+    },
+    {
+      "route": "/ui/process",
+      "selector": "alias dashboard_version=v3",
+      "expected_redirect": "/ui/evolution/process?dashboard_version=v3",
+      "status": 307,
+      "location": "/ui/evolution/process?dashboard_version=v3",
+      "ok": true
+    },
+    {
+      "route": "/ui/records",
+      "selector": "alias dashboard_version=v3",
+      "expected_redirect": "/ui/evolution/records?dashboard_version=v3",
+      "status": 307,
+      "location": "/ui/evolution/records?dashboard_version=v3",
+      "ok": true
+    },
+    {
+      "route": "/ui/history",
+      "selector": "alias dashboard_version=v3",
+      "expected_redirect": "/ui/evolution/records?dashboard_version=v3",
+      "status": 307,
+      "location": "/ui/evolution/records?dashboard_version=v3",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/history",
+      "selector": "alias dashboard_version=v3",
+      "expected_redirect": "/ui/evolution/records?dashboard_version=v3",
+      "status": 307,
+      "location": "/ui/evolution/records?dashboard_version=v3",
+      "ok": true
+    },
+    {
+      "route": "/ui/lab",
+      "selector": "alias dashboard_version=v3",
+      "expected_redirect": "/ui/evolution/lab?dashboard_version=v3",
+      "status": 307,
+      "location": "/ui/evolution/lab?dashboard_version=v3",
+      "ok": true
+    },
+    {
+      "route": "/ui/pro",
+      "selector": "alias dashboard_version=v3",
+      "expected_redirect": "/ui/evolution/workbench?dashboard_version=v3",
+      "status": 307,
+      "location": "/ui/evolution/workbench?dashboard_version=v3",
+      "ok": true
+    },
+    {
+      "route": "/ui/verdict",
+      "selector": "alias dashboard_version=v3",
+      "expected_redirect": "/ui/evolution/verdict?dashboard_version=v3",
+      "status": 307,
+      "location": "/ui/evolution/verdict?dashboard_version=v3",
+      "ok": true
+    },
+    {
+      "route": "/ui/simulation",
+      "selector": "alias dashboard_version=v3",
+      "expected_redirect": "/ui/chart-replay?dashboard_version=v3",
+      "status": 307,
+      "location": "/ui/chart-replay?dashboard_version=v3",
+      "ok": true
+    },
+    {
+      "route": "/ui/evolution/not-real",
+      "selector": "unknown",
+      "expected": 404,
+      "status": 404,
+      "ok": true
+    },
+    {
+      "route": "/ui/remodel/not-real",
+      "selector": "unknown",
+      "expected": 404,
+      "status": 404,
+      "ok": true
+    }
+  ],
+  "failures": []
+}

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G005",
+  "screenshots": [
+    {
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/g005-chart-replay-reference.png",
+      "width": 1920,
+      "height": 2844,
+      "sampleUniqueColors": 1347,
+      "nonUniform": true
+    },
+    {
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/g005-chart-replay-live.png",
+      "width": 1920,
+      "height": 2859,
+      "sampleUniqueColors": 1377,
+      "nonUniform": true
+    }
+  ]
+}

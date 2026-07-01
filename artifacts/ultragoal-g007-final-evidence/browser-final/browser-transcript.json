@@ -1,0 +1,1163 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "tool": "browser",
+  "surface": "web",
+  "page": "g007-final",
+  "url": "http://127.0.0.1:8777/ui/remodel/condition?demo=reference&g007=final",
+  "generatedAt": "2026-06-29T19:46:59.595Z",
+  "actions": [
+    {
+      "timestamp": "2026-06-29T19:46:37.054Z",
+      "index": 1,
+      "type": "final-route-check",
+      "label": "condition",
+      "selector": "condition",
+      "url": "http://127.0.0.1:8777/ui/remodel/condition?demo=reference&g007=final",
+      "facts": {
+        "pageId": "condition",
+        "mode": "reference",
+        "liveBackend": false,
+        "baseInput": "http://127.0.0.1:9200",
+        "chartCount": 7,
+        "tableCount": 2,
+        "uxPanelPresent": true,
+        "pageStatesVisible": true,
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": false,
+          "tooltipVisible": true,
+          "ariaLiveText": ""
+        },
+        "processModalPresent": false,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T19:46:34.590Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/condition?demo=reference&g007=final",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:34.622Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:34.623Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:34.623Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "pageId": "condition",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\condition.png",
+        "bytes": 1252891,
+        "sha256": "6feeba03bab6b7122c834a2ee2b3c32bdf5bbc06da2a5e7b359803b58aa42ae8"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:46:39.177Z",
+      "index": 2,
+      "type": "final-route-check",
+      "label": "process",
+      "selector": "process",
+      "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g007=final",
+      "facts": {
+        "pageId": "process",
+        "mode": "reference",
+        "liveBackend": false,
+        "baseInput": "http://127.0.0.1:9200",
+        "chartCount": 0,
+        "tableCount": 3,
+        "uxPanelPresent": true,
+        "pageStatesVisible": true,
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "chartInteraction": {
+          "attempted": false,
+          "activeDatumChanged": false,
+          "tooltipVisible": false,
+          "ariaLiveText": ""
+        },
+        "processModalPresent": true,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T19:46:37.072Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g007=final",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:37.095Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:37.096Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:37.096Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "pageId": "process",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\process.png",
+        "bytes": 728162,
+        "sha256": "b917f2037c8427463a0425a631fb078c0aff2608263ada2502f69d85b95e9da0"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:46:41.949Z",
+      "index": 3,
+      "type": "final-route-check",
+      "label": "history",
+      "selector": "history",
+      "url": "http://127.0.0.1:8777/ui/remodel/history?demo=reference&g007=final",
+      "facts": {
+        "pageId": "history",
+        "mode": "reference",
+        "liveBackend": false,
+        "baseInput": "http://127.0.0.1:9200",
+        "chartCount": 6,
+        "tableCount": 1,
+        "uxPanelPresent": true,
+        "pageStatesVisible": true,
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": true,
+          "tooltipVisible": true,
+          "ariaLiveText": "PnL · T+13 · Series: 12.97 · source=reference fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-static · status=CURRENT"
+        },
+        "processModalPresent": false,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T19:46:39.192Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/history?demo=reference&g007=final",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:39.212Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:39.212Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:39.212Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "pageId": "history",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\history.png",
+        "bytes": 987655,
+        "sha256": "e61362e67ea34a02d2b32102ee6ae39f92a79fb0dfc441f5ce80f42e3a4ebe3a"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:46:44.629Z",
+      "index": 4,
+      "type": "final-route-check",
+      "label": "lab",
+      "selector": "lab",
+      "url": "http://127.0.0.1:8777/ui/remodel/lab?demo=reference&g007=final",
+      "facts": {
+        "pageId": "lab",
+        "mode": "reference",
+        "liveBackend": false,
+        "baseInput": "http://127.0.0.1:9200",
+        "chartCount": 2,
+        "tableCount": 0,
+        "uxPanelPresent": true,
+        "pageStatesVisible": true,
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": true,
+          "tooltipVisible": true,
+          "ariaLiveText": "누적 수익률 · T+56 · Series: 17.15 · source=reference fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-static · status=CURRENT"
+        },
+        "processModalPresent": false,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T19:46:41.968Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/lab?demo=reference&g007=final",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:41.991Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:41.991Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:41.991Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "pageId": "lab",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\lab.png",
+        "bytes": 765141,
+        "sha256": "3aa7f3bd1f21ee096ada9041047cdb731483dc38aeb2a38934f8deeaff3a36c8"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:46:47.409Z",
+      "index": 5,
+      "type": "final-route-check",
+      "label": "workbench",
+      "selector": "workbench",
+      "url": "http://127.0.0.1:8777/ui/remodel/workbench?demo=reference&g007=final",
+      "facts": {
+        "pageId": "workbench",
+        "mode": "reference",
+        "liveBackend": false,
+        "baseInput": "http://127.0.0.1:9200",
+        "chartCount": 9,
+        "tableCount": 1,
+        "uxPanelPresent": true,
+        "pageStatesVisible": true,
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": false,
+          "tooltipVisible": true,
+          "ariaLiveText": ""
+        },
+        "processModalPresent": false,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T19:46:44.649Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/workbench?demo=reference&g007=final",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:44.675Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:44.675Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:44.675Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "pageId": "workbench",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\workbench.png",
+        "bytes": 827985,
+        "sha256": "245a725eb83d21fda4ab444e867c1a0839e922f5d926169118da257d6ca4c64d"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:46:50.075Z",
+      "index": 6,
+      "type": "final-route-check",
+      "label": "audit",
+      "selector": "audit",
+      "url": "http://127.0.0.1:8777/ui/remodel/audit?demo=reference&g007=final",
+      "facts": {
+        "pageId": "audit",
+        "mode": "reference",
+        "liveBackend": false,
+        "baseInput": "http://127.0.0.1:9200",
+        "chartCount": 8,
+        "tableCount": 4,
+        "uxPanelPresent": true,
+        "pageStatesVisible": true,
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": false,
+          "tooltipVisible": true,
+          "ariaLiveText": ""
+        },
+        "processModalPresent": false,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T19:46:47.425Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/audit?demo=reference&g007=final",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:47.447Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:47.447Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:47.448Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "pageId": "audit",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\audit.png",
+        "bytes": 797840,
+        "sha256": "eb91d0b3c035ee223f2e336986eb669117533e57117b01ec1ef4cc93b41da1b2"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:46:52.486Z",
+      "index": 7,
+      "type": "final-route-check",
+      "label": "backtest",
+      "selector": "backtest",
+      "url": "http://127.0.0.1:8777/ui/remodel/backtest?demo=reference&g007=final",
+      "facts": {
+        "pageId": "backtest",
+        "mode": "reference",
+        "liveBackend": false,
+        "baseInput": "http://127.0.0.1:9200",
+        "chartCount": 2,
+        "tableCount": 3,
+        "uxPanelPresent": true,
+        "pageStatesVisible": true,
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": false,
+          "tooltipVisible": true,
+          "ariaLiveText": ""
+        },
+        "processModalPresent": false,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T19:46:50.094Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/backtest?demo=reference&g007=final",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:50.117Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:50.117Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:50.117Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "pageId": "backtest",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\backtest.png",
+        "bytes": 1110822,
+        "sha256": "d9cb866b3abd8e47714fe3360dc7c820991f635d7f88cb6432cefb2ecf35be51"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.022Z",
+      "index": 8,
+      "type": "final-route-check",
+      "label": "replay",
+      "selector": "replay",
+      "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?demo=reference&g007=final",
+      "facts": {
+        "pageId": "replay",
+        "mode": "reference",
+        "liveBackend": false,
+        "baseInput": "http://127.0.0.1:9200",
+        "chartCount": 3,
+        "tableCount": 5,
+        "uxPanelPresent": true,
+        "pageStatesVisible": true,
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": true,
+          "tooltipVisible": true,
+          "ariaLiveText": "리플레이 차트 005930 · bar-34 · Close: 79229 · source=reference replay fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-replay-static · status=CURRENT"
+        },
+        "processModalPresent": false,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T19:46:52.499Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?demo=reference&g007=final",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:52.521Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:52.522Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:52.522Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        }
+      ],
+      "websocketDelta": [],
+      "screenshot": {
+        "pageId": "replay",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\replay.png",
+        "bytes": 1242160,
+        "sha256": "228b10cd0529de1021251063ee383abc91c451f3c9b37ddbaa63318c2e516769"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.284Z",
+      "index": 9,
+      "type": "final-route-check",
+      "label": "live-backtest",
+      "selector": "live-backtest",
+      "url": "http://127.0.0.1:8777/ui/remodel/backtest?backend=http%3A%2F%2F127.0.0.1%3A8777&g007=final-live",
+      "facts": {
+        "pageId": "live-backtest",
+        "mode": "live",
+        "liveBackend": true,
+        "baseInput": "http://127.0.0.1:8777",
+        "chartCount": 2,
+        "tableCount": 3,
+        "uxPanelPresent": true,
+        "pageStatesVisible": true,
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": false,
+          "tooltipVisible": true,
+          "ariaLiveText": ""
+        },
+        "processModalPresent": false,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T19:46:55.039Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/backtest?backend=http%3A%2F%2F127.0.0.1%3A8777&g007=final-live",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:55.060Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:55.060Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:55.060Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:55.091Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/bt/health",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:55.091Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/bt/strategies?kind=buy",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:55.092Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/bt/strategies?kind=sell",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:55.092Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/bt/data_range",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:55.092Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/bt/jobs",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:55.092Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/bt/result?job_id=__demo__",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:55.092Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:55.092Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/health",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:55.152Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/status",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:55.152Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/runs",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:56.145Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/bt/job?job_id=20260629_204434_20250715Study_74071",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:56.146Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/bt/report?job_id=20260629_204434_20250715Study_74071",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:56.146Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/bt/overlay?job_ids=20260629_204434_20250715Study_74071,20260629_203629_20250715Study_89570,20260629_144452_20250715Study_92023",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:56.146Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/bt/compare?job_a=20260629_204434_20250715Study_74071&job_b=20260629_203629_20250715Study_89570",
+          "resourceType": "fetch"
+        }
+      ],
+      "websocketDelta": [
+        {
+          "timestamp": "2026-06-29T19:46:55.193Z",
+          "url": "ws://127.0.0.1:8777/ws",
+          "requestId": "74104.81"
+        }
+      ],
+      "screenshot": {
+        "pageId": "live-backtest",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\live-backtest.png",
+        "bytes": 1149664,
+        "sha256": "3ee725044cef8298dc1fc3eec16a583a855ff4aa83ac96f154615c9d8459e6d3"
+      }
+    },
+    {
+      "timestamp": "2026-06-29T19:46:59.594Z",
+      "index": 10,
+      "type": "final-route-check",
+      "label": "live-replay",
+      "selector": "live-replay",
+      "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?backend=http%3A%2F%2F127.0.0.1%3A8777&g007=final-live",
+      "facts": {
+        "pageId": "live-replay",
+        "mode": "live",
+        "liveBackend": true,
+        "baseInput": "http://127.0.0.1:8777",
+        "chartCount": 3,
+        "tableCount": 5,
+        "uxPanelPresent": true,
+        "pageStatesVisible": true,
+        "safetyLabels": true,
+        "horizontalOverflow": false,
+        "chartInteraction": {
+          "attempted": true,
+          "activeDatumChanged": true,
+          "tooltipVisible": true,
+          "ariaLiveText": "리플레이 차트 005930 · bar-34 · Close: 79229 · source=fixture fallback · sim probe not driving chart · run_id=R-250518-1421-7XQ9 · freshness=stale-replay-fixture-fall"
+        },
+        "processModalPresent": false,
+        "forbiddenVisibleText": []
+      },
+      "requestDelta": [
+        {
+          "timestamp": "2026-06-29T19:46:57.301Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?backend=http%3A%2F%2F127.0.0.1%3A8777&g007=final-live",
+          "resourceType": "document"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:57.334Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:57.335Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:57.335Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:57.353Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/sim/health",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:57.354Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/sim/days?src=min",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:57.354Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/sim/demo?src=min&mode=latest",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:57.354Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/bt/strategies?kind=buy",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:57.354Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/bt/strategies?kind=sell",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:57.354Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/health",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:57.423Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/status",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:57.423Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/runs",
+          "resourceType": "fetch"
+        },
+        {
+          "timestamp": "2026-06-29T19:46:57.648Z",
+          "method": "GET",
+          "url": "http://127.0.0.1:8777/sim/stocks?date=20250509&src=min",
+          "resourceType": "fetch"
+        }
+      ],
+      "websocketDelta": [
+        {
+          "timestamp": "2026-06-29T19:46:57.449Z",
+          "url": "ws://127.0.0.1:8777/ws",
+          "requestId": "74104.101"
+        }
+      ],
+      "screenshot": {
+        "pageId": "live-replay",
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final-evidence\\browser-final\\live-replay.png",
+        "bytes": 1237370,
+        "sha256": "a3a25de361e43a68979cbbf4267dbe9ed2d043ec9fb76554ee0e43209b8e0e95"
+      }
+    }
+  ],
+  "requests": [
+    {
+      "timestamp": "2026-06-29T19:46:34.590Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/condition?demo=reference&g007=final",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:34.622Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:34.623Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:34.623Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:37.072Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/process?demo=reference&g007=final",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:37.095Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:37.096Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:37.096Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:39.192Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/history?demo=reference&g007=final",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:39.212Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:39.212Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:39.212Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:41.968Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/lab?demo=reference&g007=final",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:41.991Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:41.991Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:41.991Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:44.649Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/workbench?demo=reference&g007=final",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:44.675Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:44.675Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:44.675Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:47.425Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/audit?demo=reference&g007=final",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:47.447Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:47.447Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:47.448Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:50.094Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/backtest?demo=reference&g007=final",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:50.117Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:50.117Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:50.117Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:52.499Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?demo=reference&g007=final",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:52.521Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:52.522Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:52.522Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.039Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/backtest?backend=http%3A%2F%2F127.0.0.1%3A8777&g007=final-live",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.060Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.060Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.060Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.091Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/bt/health",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.091Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/bt/strategies?kind=buy",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.092Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/bt/strategies?kind=sell",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.092Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/bt/data_range",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.092Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/bt/jobs",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.092Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/bt/result?job_id=__demo__",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.092Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.092Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/health",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.152Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/status",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:55.152Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/runs",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:56.145Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/bt/job?job_id=20260629_204434_20250715Study_74071",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:56.146Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/bt/report?job_id=20260629_204434_20250715Study_74071",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:56.146Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/bt/overlay?job_ids=20260629_204434_20250715Study_74071,20260629_203629_20250715Study_89570,20260629_144452_20250715Study_92023",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:56.146Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/bt/compare?job_a=20260629_204434_20250715Study_74071&job_b=20260629_203629_20250715Study_89570",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.301Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/chart-replay?backend=http%3A%2F%2F127.0.0.1%3A8777&g007=final-live",
+      "resourceType": "document"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.334Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/styles/theme.css?v=20260628canonical",
+      "resourceType": "stylesheet"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.335Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/data.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.335Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/ui/remodel/src/app.js?v=20260628canonical",
+      "resourceType": "script"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.353Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/sim/health",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.354Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/sim/days?src=min",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.354Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/sim/demo?src=min&mode=latest",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.354Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/bt/strategies?kind=buy",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.354Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/bt/strategies?kind=sell",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.354Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/health",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.423Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/status",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.423Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/runs",
+      "resourceType": "fetch"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.648Z",
+      "method": "GET",
+      "url": "http://127.0.0.1:8777/sim/stocks?date=20250509&src=min",
+      "resourceType": "fetch"
+    }
+  ],
+  "websockets": [
+    {
+      "timestamp": "2026-06-29T19:46:55.193Z",
+      "url": "ws://127.0.0.1:8777/ws",
+      "requestId": "74104.81"
+    },
+    {
+      "timestamp": "2026-06-29T19:46:57.449Z",
+      "url": "ws://127.0.0.1:8777/ws",
+      "requestId": "74104.101"
+    }
+  ]
+}

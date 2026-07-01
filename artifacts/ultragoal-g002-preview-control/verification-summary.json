@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G002",
+  "status": "passed",
+  "commands": [
+    "npm ci (webui-build dependencies were missing; installed local build deps)",
+    "npm run build:app",
+    "python -m pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+    "python -m py_compile ai_strategy_loop/dashboard/app.py tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py",
+    "node --check ai_strategy_loop/dashboard/frontend/bundle/app.js",
+    "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+    "git diff --check"
+  ],
+  "artifacts": [
+    "artifacts/ultragoal-g002-preview-control/browser-transcript.json",
+    "artifacts/ultragoal-g002-preview-control/v2-preview-control.png",
+    "artifacts/ultragoal-g002-preview-control/v3-preview-selected.png",
+    "artifacts/ultragoal-g002-preview-control/v2-after-preview.png",
+    "artifacts/ultragoal-g002-preview-control/preview-control-report.json"
+  ],
+  "failures": []
+}

@@ -1,0 +1,192 @@
+{
+  "endpointDocumentationHits": [
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "{ id: 'sim-ws', kind: 'WS endpoint', method: 'WS', endpoint: '/sim/ws', owner: 'Manual researcher action', modeBehavior: 'reference/demo inert fixture · live-only WebSocket never auto-opened; user-gated manual start', reason: 'Long-lived replay stream must not auto-open from page load.' },"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "{ id: 'ws-action-start', kind: 'WS action', method: 'ACTION', endpoint: 'start', owner: 'Manual researcher action', modeBehavior: 'reference/demo inert fixture · live user-gated /sim/ws action', reason: 'Starts a replay stream; explicit user action required.' },"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "{ id: 'ws-action-pause', kind: 'WS action', method: 'ACTION', endpoint: 'pause', owner: 'Manual researcher action', modeBehavior: 'reference/demo inert fixture · live user-gated /sim/ws action', reason: 'Pauses an existing replay stream only after manual connection.' },"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "{ id: 'ws-action-resume', kind: 'WS action', method: 'ACTION', endpoint: 'resume', owner: 'Manual researcher action', modeBehavior: 'reference/demo inert fixture · live user-gated /sim/ws action', reason: 'Resumes an existing replay stream only after manual connection.' },"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "{ id: 'ws-action-speed', kind: 'WS action', method: 'ACTION', endpoint: 'speed', owner: 'Manual researcher action', modeBehavior: 'reference/demo inert fixture · live user-gated /sim/ws action', reason: 'Changes replay speed on a manual session only.' },"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "{ id: 'ws-action-seek', kind: 'WS action', method: 'ACTION', endpoint: 'seek', owner: 'Manual researcher action', modeBehavior: 'reference/demo inert fixture · live user-gated /sim/ws action', reason: 'Moves replay cursor on a manual session only.' },"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "{ id: 'ws-action-stop', kind: 'WS action', method: 'ACTION', endpoint: 'stop', owner: 'Manual researcher action', modeBehavior: 'reference/demo inert fixture · live user-gated /sim/ws action', reason: 'Stops a manual replay session; no hidden stream control.' },"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "{ id: 'ws-message-meta', kind: 'WS message', method: 'MESSAGE', endpoint: 'meta', owner: 'ReplayAdapter.protocolMatrix', modeBehavior: 'reference/demo inert fixture · live protocol message documented; no fake stream success', reason: 'Server metadata frame expected after manual /sim/ws start.' },"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "const INERT_REPLAY_STATUS = 'reference/demo inert · no fetch, no /sim/ws, no extra localStorage beyond G002 baseline';"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "markReplayEvidence(c.id, 'USER-GATED', c.reason || '/sim/ws protocol is live-only and never auto-opened.');"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "replay: ['no bars/signals', 'loading safe REST probes', 'stale replay fixture', 'malformed candle', '/sim/ws manual retry error'],"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "replay: 'select historical replay → inspect OHLCV/crosshair → user-gated /sim/ws controls',"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "? 'LIVE mode: ReplayAdapter probes safe REST reads only; /sim/ws stays user-gated/manual and exposes start, pause, resume, speed, seek, stop plus meta, bars, history, done, error protocol.'"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "<div class=\"panel-header\"><span>재생 컨트롤 · /sim/ws 수동 게이트 · sticky timeline</span>${badge('/sim/ws manual gate', 'amber')}</div>"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "<div class=\"panel-header\"><span>재생 컨트롤 · /sim/ws 수동 게이트 · sticky timeline</span>${badge('/sim/ws manual gate', 'amber')}</div>"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "<div class=\"muted\">Timeline 09:00:00 → 15:30:00 · cursor 10:23:18 · /sim/ws는 manual user-gated; never auto-opened; 사용자 수동 시작만 허용</div>"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "const evidence = `${renderReplayContractMatrix()}${renderUxSweepPanel('replay', 'primary candle chart + signal log + market heatmap')}${panel('사용 가능 일자 / 종목 원장', `<div class=\"grid cols-7\">${Array.from({length:23},(_,i)=>`<span class=\"tile\" style=\"min-height:28px;text-align:center;padding:4px\">${i+1}</span>`).join('')}</div>${table(stockCols, r.stocks)}`)}${panel('17 /sim/ws 수동 게이트', infoList([['연결 상태','미연결 · user-gated','amber'],['프로토콜','WS /sim/ws'],['자동 오픈','금지'],['지원 액션','start · pause · resume · speed · seek · stop'],['수신 메시지','meta · bars · history · done · error'],['복구','error 표시 후 fixture 차트 유지 · 수동 재시도']]) + `<div style=\"display:flex;gap:6px;flex-wrap:wrap;margin-top:8px\">${simGateButtons}</div><div class=\"notice warn\">/sim/ws is live-only and manual; ReplayAdapter never calls new WebSocket for this stream on page load.</div>`)}${panel('세션 노트 / 오류 복구', `<ul><li>모멘텀 전략 리플레이 학습 세션</li><li>1초 집계 기반 신호 검증</li><li>리플레이 전용</li></ul><div class=\"notice danger\">데이터 경고는 차트 아래에 보존하고 fixture 차트를 fake-success로 덮지 않습니다.</div><div class=\"notice warn\">Live probe failure recovery: surface LIVE ERROR, preserve static replay chart, allow manual retry without fake success.</div>`)}`;"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "const evidence = `${renderReplayContractMatrix()}${renderUxSweepPanel('replay', 'primary candle chart + signal log + market heatmap')}${panel('사용 가능 일자 / 종목 원장', `<div class=\"grid cols-7\">${Array.from({length:23},(_,i)=>`<span class=\"tile\" style=\"min-height:28px;text-align:center;padding:4px\">${i+1}</span>`).join('')}</div>${table(stockCols, r.stocks)}`)}${panel('17 /sim/ws 수동 게이트', infoList([['연결 상태','미연결 · user-gated','amber'],['프로토콜','WS /sim/ws'],['자동 오픈','금지'],['지원 액션','start · pause · resume · speed · seek · stop'],['수신 메시지','meta · bars · history · done · error'],['복구','error 표시 후 fixture 차트 유지 · 수동 재시도']]) + `<div style=\"display:flex;gap:6px;flex-wrap:wrap;margin-top:8px\">${simGateButtons}</div><div class=\"notice warn\">/sim/ws is live-only and manual; ReplayAdapter never calls new WebSocket for this stream on page load.</div>`)}${panel('세션 노트 / 오류 복구', `<ul><li>모멘텀 전략 리플레이 학습 세션</li><li>1초 집계 기반 신호 검증</li><li>리플레이 전용</li></ul><div class=\"notice danger\">데이터 경고는 차트 아래에 보존하고 fixture 차트를 fake-success로 덮지 않습니다.</div><div class=\"notice warn\">Live probe failure recovery: surface LIVE ERROR, preserve static replay chart, allow manual retry without fake success.</div>`)}`;"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "const evidence = `${renderReplayContractMatrix()}${renderUxSweepPanel('replay', 'primary candle chart + signal log + market heatmap')}${panel('사용 가능 일자 / 종목 원장', `<div class=\"grid cols-7\">${Array.from({length:23},(_,i)=>`<span class=\"tile\" style=\"min-height:28px;text-align:center;padding:4px\">${i+1}</span>`).join('')}</div>${table(stockCols, r.stocks)}`)}${panel('17 /sim/ws 수동 게이트', infoList([['연결 상태','미연결 · user-gated','amber'],['프로토콜','WS /sim/ws'],['자동 오픈','금지'],['지원 액션','start · pause · resume · speed · seek · stop'],['수신 메시지','meta · bars · history · done · error'],['복구','error 표시 후 fixture 차트 유지 · 수동 재시도']]) + `<div style=\"display:flex;gap:6px;flex-wrap:wrap;margin-top:8px\">${simGateButtons}</div><div class=\"notice warn\">/sim/ws is live-only and manual; ReplayAdapter never calls new WebSocket for this stream on page load.</div>`)}${panel('세션 노트 / 오류 복구', `<ul><li>모멘텀 전략 리플레이 학습 세션</li><li>1초 집계 기반 신호 검증</li><li>리플레이 전용</li></ul><div class=\"notice danger\">데이터 경고는 차트 아래에 보존하고 fixture 차트를 fake-success로 덮지 않습니다.</div><div class=\"notice warn\">Live probe failure recovery: surface LIVE ERROR, preserve static replay chart, allow manual retry without fake success.</div>`)}`;"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "risk: 'no live order · no auto /sim/ws · user-gated playback',"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/sim/ws",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "${compactSafetyStrip('chart_replay', ['Replay is historical only', '/sim/ws never auto-opens', 'manual-gated playback actions only'])}"
+    },
+    {
+      "allowedDocumentedManualOnly": true,
+      "endpoint": "/bt/ws_job",
+      "file": "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "line": "{ id: 'bt-ws-job', method: 'GET', endpoint: '/bt/ws_job?job_id=', owner: 'Manual live observer action', modeBehavior: 'reference/demo inert fixture · live WS/read stream not opened automatically', reason: 'WebSocket/job stream is live-only and user-gated to avoid hidden long-lived connections.' },"
+    }
+  ],
+  "failures": [],
+  "files": [
+    "ai_strategy_loop\\dashboard\\frontend\\remodel\\index.html",
+    "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+    "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\data.js",
+    "ai_strategy_loop\\dashboard\\frontend\\remodel\\styles\\theme.css"
+  ],
+  "forbiddenHits": [],
+  "generatedAt": "2026-06-30T13:10:52.845216+00:00",
+  "safetyCueHits": {
+    "Append-Only": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js"
+    ],
+    "Append-Only Audit": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js"
+    ],
+    "Human Approval Gate": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js"
+    ],
+    "Human Gate Required": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js"
+    ],
+    "No Account Trading": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js"
+    ],
+    "No Broker Login": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js"
+    ],
+    "No Live Order": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js"
+    ],
+    "Research Only": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js"
+    ],
+    "local-only": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\data.js"
+    ],
+    "research-only": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js",
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\data.js"
+    ],
+    "계좌/자산 연동 없음": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js"
+    ],
+    "브로커 로그인 없음": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js"
+    ],
+    "실거래/주문 기능 없음": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js"
+    ],
+    "연구 전용": [
+      "ai_strategy_loop\\dashboard\\frontend\\remodel\\src\\app.js"
+    ]
+  },
+  "status": "PASS"
+}

@@ -1,0 +1,763 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G001",
+  "title": "Phase 0 gate matrices and scoring selectors",
+  "generatedAt": "2026-06-29T12:57:36Z",
+  "planPath": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/.gjc/_session-019f05e9-d676-7000-9c61-3c206a2d4031/plans/ralplan/019f05e9-d676-7000-9c61-3c206a2d4031/pending-approval.md",
+  "status": "ready_for_review_before_product_source_mutation",
+  "hardRules": [
+    "HTTP 200 alone never satisfies a live dashboard check; required fields must visibly drive DOM assertions.",
+    "Reference/demo fixture data is allowed only when explicitly labeled and must never pass as live evidence.",
+    "No mutating POST, export, protected write, /sim/ws connection, or outbound WS control frame may occur on page load.",
+    "V2 remains default until all deterministic V3 UX/UI gates pass 100/100 with no zero category.",
+    "No live order, broker login, account trading, hidden production export, or serial-key behavior may be introduced."
+  ],
+  "processDataSourceMatrix": [
+    {
+      "id": "shell-health",
+      "surface": "global shell",
+      "endpointOrFeed": [
+        "GET /health",
+        "GET /status"
+      ],
+      "currentEvidenceRefs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js:825-845 refreshBackend",
+        "ai_strategy_loop/dashboard/app.py:2875-2877 /health",
+        "ai_strategy_loop/dashboard/app.py:2904-2906 /status"
+      ],
+      "requiredFields": [
+        "health.status",
+        "health.contract_version",
+        "status.status",
+        "status.run_id",
+        "status.provider",
+        "status.bt_timeframe"
+      ],
+      "targetDomAssertions": [
+        {
+          "selector": "[data-testid=\"shell-rest-health\"]",
+          "assertion": "text and badge tone reflect health.status; HTTP 200 alone is insufficient"
+        },
+        {
+          "selector": "[data-testid=\"shell-run-status\"]",
+          "assertion": "text reflects status.status or explicit stale/error label"
+        },
+        {
+          "selector": "[data-testid=\"shell-run-id\"]",
+          "assertion": "run id is populated from status.run_id or shows unavailable, never fixture-as-live"
+        }
+      ],
+      "fallbackLabel": "backend unavailable / stale status",
+      "missingFieldFailureRule": "fail Phase 0C data provenance and block completion until DOM shows honest unavailable state"
+    },
+    {
+      "id": "loop-status",
+      "surface": "condition overview live monitor",
+      "endpointOrFeed": [
+        "GET /status",
+        "WS /ws inbound state frames"
+      ],
+      "currentEvidenceRefs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js:736-797 mapLoopState",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js:848-872 connectStateSocket"
+      ],
+      "requiredFields": [
+        "status.status",
+        "status.run_id",
+        "status.current_gen",
+        "status.max_generations",
+        "status.generations[]",
+        "status.latest.message",
+        "status.latest.phase"
+      ],
+      "targetDomAssertions": [
+        {
+          "selector": "[data-testid=\"condition-generation-progress\"]",
+          "assertion": "progress value equals current_gen/max_generations and changes when payload changes"
+        },
+        {
+          "selector": "[data-testid=\"condition-live-message\"]",
+          "assertion": "message text comes from latest.message or explicit missing label"
+        },
+        {
+          "selector": "[data-testid=\"condition-generation-table\"]",
+          "assertion": "row count equals validated generations length, not fixture length in live mode"
+        }
+      ],
+      "fallbackLabel": "loop payload missing required generation fields",
+      "missingFieldFailureRule": "show stale/malformed payload banner; do not reuse DATA.overview fixture values as live success"
+    },
+    {
+      "id": "process-nodes",
+      "surface": "process page cockpit",
+      "endpointOrFeed": [
+        "GET /status",
+        "GET /runs",
+        "target: derived process model from validated phase/status fields"
+      ],
+      "currentEvidenceRefs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js:977-991 renderProcess currently uses vm.data nodes",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/data.js process fixture"
+      ],
+      "requiredFields": [
+        "process.nodes[].id",
+        "process.nodes[].title",
+        "process.nodes[].status",
+        "process.nodes[].started_at|updated_at",
+        "process.nodes[].items|count",
+        "process.nodes[].source"
+      ],
+      "targetDomAssertions": [
+        {
+          "selector": "[data-testid=\"process-node\"]",
+          "assertion": "node count and each status derive from validated payload or explicit reference model label"
+        },
+        {
+          "selector": "[data-testid=\"process-node-active\"]",
+          "assertion": "active node matches current phase/status from live payload"
+        },
+        {
+          "selector": "[data-testid=\"process-provenance\"]",
+          "assertion": "shows source=live|reference|demo and payload timestamp"
+        }
+      ],
+      "fallbackLabel": "process model unavailable; live phase cannot be inferred",
+      "missingFieldFailureRule": "do not render fixed Generation/Backtest/Scoring poster as live; mark as reference/static and score process reality 0 until fixed"
+    },
+    {
+      "id": "process-logs",
+      "surface": "process page logs/drilldown",
+      "endpointOrFeed": [
+        "GET /status latest/error fields",
+        "GET /runs",
+        "target: future logs feed if exposed"
+      ],
+      "currentEvidenceRefs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js:983-986 static logs panels"
+      ],
+      "requiredFields": [
+        "logs[].time",
+        "logs[].level",
+        "logs[].message",
+        "logs[].source",
+        "selected_node.id"
+      ],
+      "targetDomAssertions": [
+        {
+          "selector": "[data-testid=\"process-log-row\"]",
+          "assertion": "row text and level come from payload; empty log state is explicit"
+        },
+        {
+          "selector": "[data-testid=\"process-node-drilldown\"]",
+          "assertion": "clicking a node filters or annotates logs for that node"
+        },
+        {
+          "selector": "[data-testid=\"process-log-stale-state\"]",
+          "assertion": "stale/no-log states are visible and not hidden behind fixture text"
+        }
+      ],
+      "fallbackLabel": "no live logs available",
+      "missingFieldFailureRule": "logs panel must show no-live-logs state; fixture logs cannot satisfy live monitoring completion"
+    },
+    {
+      "id": "queues-workers",
+      "surface": "process resource/queue monitoring",
+      "endpointOrFeed": [
+        "GET /status resources if present",
+        "GET /ops_status",
+        "target: queue/worker payload"
+      ],
+      "currentEvidenceRefs": [
+        "ai_strategy_loop/dashboard/app.py:3027-3035 /ops_status",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js:990 settings preview is static"
+      ],
+      "requiredFields": [
+        "workers.total",
+        "workers.active",
+        "workers.idle",
+        "queue.depth",
+        "queue.throughput",
+        "resource.cpu|memory optional"
+      ],
+      "targetDomAssertions": [
+        {
+          "selector": "[data-testid=\"process-worker-summary\"]",
+          "assertion": "worker counts equal payload or unavailable label"
+        },
+        {
+          "selector": "[data-testid=\"process-queue-depth\"]",
+          "assertion": "queue depth equals payload and changes under fixture-injection test"
+        },
+        {
+          "selector": "[data-testid=\"process-resource-health\"]",
+          "assertion": "health cards cite source endpoint and timestamp"
+        }
+      ],
+      "fallbackLabel": "worker/queue telemetry unavailable",
+      "missingFieldFailureRule": "mark telemetry unavailable; do not invent 16 workers / queue 1000 in live mode"
+    },
+    {
+      "id": "boundary-contracts",
+      "surface": "process and global safety contracts",
+      "endpointOrFeed": [
+        "static contract matrix artifact",
+        "frontend runtime assertions"
+      ],
+      "currentEvidenceRefs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js:58-112 BacktestContracts/ReplayContracts",
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js:1059-1074,1089-1104 contract matrix renderers"
+      ],
+      "requiredFields": [
+        "contract.id",
+        "method",
+        "endpoint",
+        "autoLoadPolicy",
+        "owner",
+        "modeBehavior",
+        "reason for gated actions"
+      ],
+      "targetDomAssertions": [
+        {
+          "selector": "[data-testid=\"contract-matrix-row\"]",
+          "assertion": "every gated endpoint has owner/reason/mode behavior"
+        },
+        {
+          "selector": "[data-testid=\"contract-mode-note\"]",
+          "assertion": "reference/demo/live behavior is visible"
+        },
+        {
+          "selector": "[data-testid=\"contract-autoload-verdict\"]",
+          "assertion": "auto-load allowed only for safe GET/read endpoints"
+        }
+      ],
+      "fallbackLabel": "contract matrix unavailable",
+      "missingFieldFailureRule": "block safety/governance score until matrix is visible and machine-checked"
+    },
+    {
+      "id": "runs-archive",
+      "surface": "history/run selector",
+      "endpointOrFeed": [
+        "GET /runs",
+        "GET /run_state?run_id=",
+        "GET /runs/compare?ids="
+      ],
+      "currentEvidenceRefs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js:799-818 mapRuns",
+        "ai_strategy_loop/dashboard/app.py:3017-3025 /runs",
+        "ai_strategy_loop/dashboard/app.py:3110-3119 /run_state"
+      ],
+      "requiredFields": [
+        "runs[].run_id",
+        "runs[].status",
+        "runs[].started_at|created_at",
+        "runs[].best_graded|profit|mdd optional but labeled"
+      ],
+      "targetDomAssertions": [
+        {
+          "selector": "[data-testid=\"history-run-row\"]",
+          "assertion": "rows reflect /runs, not fixed data, and preserve selected run id"
+        },
+        {
+          "selector": "[data-testid=\"run-selector\"]",
+          "assertion": "selection drives dependent detail/chart panels"
+        },
+        {
+          "selector": "[data-testid=\"run-compare-launcher\"]",
+          "assertion": "compare controls require selected real run ids"
+        }
+      ],
+      "fallbackLabel": "runs unavailable",
+      "missingFieldFailureRule": "history page shows empty/error state and cannot pass V2 parity if rows are fixture-only in live mode"
+    },
+    {
+      "id": "stale-error-loading",
+      "surface": "all V3 pages",
+      "endpointOrFeed": [
+        "fetchJson/fetchText failures",
+        "malformed payload injection",
+        "timestamp freshness check"
+      ],
+      "currentEvidenceRefs": [
+        "ai_strategy_loop/dashboard/frontend/remodel/src/app.js:820-845 applyBackendError/refreshBackend"
+      ],
+      "requiredFields": [
+        "source",
+        "mode",
+        "backendUrl",
+        "fetchedAt|payloadTimestamp",
+        "error.message when failed"
+      ],
+      "targetDomAssertions": [
+        {
+          "selector": "[data-testid=\"page-loading-state\"]",
+          "assertion": "visible while required reads are pending"
+        },
+        {
+          "selector": "[data-testid=\"page-stale-state\"]",
+          "assertion": "visible when freshness threshold is exceeded"
+        },
+        {
+          "selector": "[data-testid=\"page-error-state\"]",
+          "assertion": "visible with actionable endpoint/message on failed/malformed data"
+        }
+      ],
+      "fallbackLabel": "explicit loading/stale/error",
+      "missingFieldFailureRule": "no page can substitute fixture values without a visible source/fallback label"
+    }
+  ],
+  "actionWebSocketSafetyMatrix": [
+    {
+      "id": "shell-start",
+      "surface": "global shell Start button",
+      "trigger": "user click [data-action=\"start\"]",
+      "currentEvidenceRefs": [
+        "app.js:465",
+        "app.py:3561-3575"
+      ],
+      "allowedAutoOnLoad": false,
+      "allowedWhen": "live mode + explicit user click only",
+      "forbidden": [
+        "auto start on page load",
+        "reference/demo control frame"
+      ],
+      "targetAssertions": [
+        "no outbound WS frame before click",
+        "button disabled/inert outside live",
+        "visible pending/error response"
+      ],
+      "completionBlockerIf": "any start frame is observed during load or reference/demo"
+    },
+    {
+      "id": "shell-stop",
+      "surface": "global shell Stop button",
+      "trigger": "user click [data-action=\"stop\"]",
+      "currentEvidenceRefs": [
+        "app.js:466",
+        "app.py:3561-3575"
+      ],
+      "allowedAutoOnLoad": false,
+      "allowedWhen": "live mode + explicit user click only",
+      "forbidden": [
+        "auto stop on load",
+        "hidden STOP flag write"
+      ],
+      "targetAssertions": [
+        "no outbound WS frame before click",
+        "visible stopping/status response"
+      ],
+      "completionBlockerIf": "stop frame or STOP write occurs without user action"
+    },
+    {
+      "id": "state-ws",
+      "surface": "global status WebSocket /ws",
+      "trigger": "live page load may open receive-only status socket",
+      "currentEvidenceRefs": [
+        "app.js:848-872",
+        "app.py:3496-3528"
+      ],
+      "allowedAutoOnLoad": true,
+      "allowedWhen": "live mode receive-only; outbound control frames only after explicit user actions",
+      "forbidden": [
+        "final_approval/start/stop sent on load",
+        "reference/demo /ws connection"
+      ],
+      "targetAssertions": [
+        "reference/demo no WS",
+        "live initial WS has no client control messages",
+        "incoming frames map to visible DOM"
+      ],
+      "completionBlockerIf": "control frame sent before user action or reference/demo opens /ws"
+    },
+    {
+      "id": "final-approval-export",
+      "surface": "winner approval/export",
+      "trigger": "explicit approval modal action with required names/check/note",
+      "currentEvidenceRefs": [
+        "app.js:963-968",
+        "app.py:3573-3607"
+      ],
+      "allowedAutoOnLoad": false,
+      "allowedWhen": "manual human approval only; export destination not client-selectable",
+      "forbidden": [
+        "hidden export",
+        "client-selected dest_strategy_db",
+        "export without approval"
+      ],
+      "targetAssertions": [
+        "approval button does not send final_approval on load",
+        "checkbox/note/name validation required",
+        "Human Approval Gate visible"
+      ],
+      "completionBlockerIf": "export/final_approval occurs without explicit validated user action"
+    },
+    {
+      "id": "record-decision",
+      "surface": "audit decision append-only route",
+      "trigger": "manual audit note submit",
+      "currentEvidenceRefs": [
+        "app.py:3090-3094",
+        "app.py:2440-2443"
+      ],
+      "allowedAutoOnLoad": false,
+      "allowedWhen": "manual append-only governance record",
+      "forbidden": [
+        "auto decision write",
+        "edit/delete ledger",
+        "fake USER_ACK"
+      ],
+      "targetAssertions": [
+        "POST /record_decision absent on load",
+        "note/verdict validation visible",
+        "append-only status shown"
+      ],
+      "completionBlockerIf": "record_decision POST observed without user submit"
+    },
+    {
+      "id": "generic-exports",
+      "surface": "CSV/Parquet/JSON/report/download affordances",
+      "trigger": "explicit user action behind human gate",
+      "currentEvidenceRefs": [
+        "plan safety constraint",
+        "app.js approval/export labels"
+      ],
+      "allowedAutoOnLoad": false,
+      "allowedWhen": "read-only report download if non-production; production export only after human approval",
+      "forbidden": [
+        "hidden production export",
+        "protected runtime writes",
+        "auto file write"
+      ],
+      "targetAssertions": [
+        "no export network/write on load",
+        "export status clearly says approval required",
+        "download/export destinations are fixed and safe"
+      ],
+      "completionBlockerIf": "hidden export or protected path write occurs"
+    },
+    {
+      "id": "backtest-post-endpoints",
+      "surface": "/bt/* mutating endpoints",
+      "trigger": "manual researcher action",
+      "currentEvidenceRefs": [
+        "app.js:63-81 BacktestContracts POST entries"
+      ],
+      "allowedAutoOnLoad": false,
+      "allowedWhen": "explicit user action only after parameter validation; never reference/demo",
+      "forbidden": [
+        "POST /bt/run on load",
+        "POST /bt/job/cancel on load",
+        "POST strategy save/delete/portfolio/meta on load"
+      ],
+      "targetAssertions": [
+        "network trace contains safe GETs only on page load",
+        "POST controls are labeled manual/gated",
+        "reference/demo inert"
+      ],
+      "completionBlockerIf": "any /bt POST is observed during load or hidden probe"
+    },
+    {
+      "id": "replay-sim-ws",
+      "surface": "chart replay /sim/ws",
+      "trigger": "manual replay start/connect",
+      "currentEvidenceRefs": [
+        "app.js:91-112 ReplayContracts",
+        "app.js:1112-1120 replay page"
+      ],
+      "allowedAutoOnLoad": false,
+      "allowedWhen": "manual live replay only; reference/demo never opens stream",
+      "forbidden": [
+        "auto /sim/ws on page load",
+        "fake stream success in reference/demo"
+      ],
+      "targetAssertions": [
+        "network trace has no /sim/ws before manual start",
+        "manual gate visible",
+        "error/done/meta/bars protocol states visible"
+      ],
+      "completionBlockerIf": "/sim/ws opens on page load or reference/demo"
+    },
+    {
+      "id": "settings-localStorage",
+      "surface": "backend base URL and local UI settings",
+      "trigger": "explicit input change",
+      "currentEvidenceRefs": [
+        "app.js:26-37",
+        "app.js:452-461"
+      ],
+      "allowedAutoOnLoad": false,
+      "allowedWhen": "live mode explicit user change only for stom_remodel_base_url",
+      "forbidden": [
+        "credential storage",
+        "strategy/export state stored in localStorage",
+        "reference/demo writes"
+      ],
+      "targetAssertions": [
+        "no localStorage writes on reference/demo load",
+        "only allowed key changes after user edit",
+        "value visible and reconnect explicit"
+      ],
+      "completionBlockerIf": "unexpected key write or protected data in localStorage"
+    },
+    {
+      "id": "theme-local-ui",
+      "surface": "theme toggle",
+      "trigger": "user click [data-action=\"theme\"]",
+      "currentEvidenceRefs": [
+        "app.js:462"
+      ],
+      "allowedAutoOnLoad": true,
+      "allowedWhen": "local class toggle only; no backend/network mutation",
+      "forbidden": [
+        "backend call",
+        "protected write"
+      ],
+      "targetAssertions": [
+        "theme click changes local class only",
+        "no network generated"
+      ],
+      "completionBlockerIf": "theme action calls backend or writes protected data"
+    }
+  ],
+  "deterministicUxUiRubric": [
+    {
+      "id": "visual-hierarchy",
+      "points": 10,
+      "selectors": [
+        "[data-testid=\"page-root\"]",
+        "[data-testid=\"panel\"]",
+        "[data-testid=\"chart-container\"]"
+      ],
+      "evidence": [
+        "per-route screenshot",
+        "no overlap detector",
+        "readability/density checklist"
+      ],
+      "zeroBlocks": true
+    },
+    {
+      "id": "interaction-depth",
+      "points": 16,
+      "selectors": [
+        "[data-testid=\"interactive-chart\"]",
+        "[data-testid=\"chart-tooltip\"]",
+        "[data-testid=\"chart-crosshair\"]",
+        "[data-testid=\"process-node\"]"
+      ],
+      "evidence": [
+        "hover/focus/click transcript",
+        "keyboard navigation transcript"
+      ],
+      "zeroBlocks": true
+    },
+    {
+      "id": "data-provenance",
+      "points": 14,
+      "selectors": [
+        "[data-testid=\"provenance-cue\"]",
+        "[data-testid=\"source-mode\"]",
+        "[data-testid=\"freshness\"]"
+      ],
+      "evidence": [
+        "payload-to-DOM assertion report",
+        "source/mode/backend/run/timestamp screenshot"
+      ],
+      "zeroBlocks": true
+    },
+    {
+      "id": "v2-parity-plus-improvement",
+      "points": 12,
+      "selectors": [
+        "[data-testid=\"v2-parity-row\"]"
+      ],
+      "evidence": [
+        "V2/V3 comparison table",
+        "inherited/improved behavior list"
+      ],
+      "zeroBlocks": true
+    },
+    {
+      "id": "process-monitoring-reality",
+      "points": 14,
+      "selectors": [
+        "[data-testid=\"process-node\"]",
+        "[data-testid=\"process-log-row\"]",
+        "[data-testid=\"process-worker-summary\"]"
+      ],
+      "evidence": [
+        "process payload injection test",
+        "node drilldown transcript",
+        "stale/error state screenshots"
+      ],
+      "zeroBlocks": true
+    },
+    {
+      "id": "safety-governance",
+      "points": 14,
+      "selectors": [
+        "[data-testid=\"safety-footer\"]",
+        "[data-testid=\"human-approval-gate\"]",
+        "[data-testid=\"append-only-audit\"]"
+      ],
+      "evidence": [
+        "network denylist report",
+        "no protected write report",
+        "manual gate screenshots"
+      ],
+      "zeroBlocks": true
+    },
+    {
+      "id": "accessibility",
+      "points": 8,
+      "selectors": [
+        "[tabindex]",
+        "[aria-label]",
+        "[role]"
+      ],
+      "evidence": [
+        "keyboard focus transcript",
+        "contrast report",
+        "non-hover value audit"
+      ],
+      "zeroBlocks": true
+    },
+    {
+      "id": "performance-responsiveness",
+      "points": 4,
+      "selectors": [
+        "[data-testid=\"interaction-performance\"]"
+      ],
+      "evidence": [
+        "large dataset hover/render timing report"
+      ],
+      "zeroBlocks": false
+    },
+    {
+      "id": "failure-state-quality",
+      "points": 4,
+      "selectors": [
+        "[data-testid=\"page-loading-state\"]",
+        "[data-testid=\"page-stale-state\"]",
+        "[data-testid=\"page-error-state\"]"
+      ],
+      "evidence": [
+        "empty/loading/stale/malformed/network state screenshots"
+      ],
+      "zeroBlocks": true
+    },
+    {
+      "id": "evidence-package",
+      "points": 4,
+      "selectors": [
+        "artifact manifest"
+      ],
+      "evidence": [
+        "screenshots",
+        "trace artifacts",
+        "scorecard",
+        "V2/V3 compare",
+        "network assertions"
+      ],
+      "zeroBlocks": true
+    }
+  ],
+  "routeCoverageTargets": [
+    {
+      "id": "condition",
+      "v3Route": "/ui/remodel/condition",
+      "v2Route": "/ui/evolution",
+      "requiredSurfaces": [
+        "overview charts",
+        "generation table",
+        "strategy inspector",
+        "approval gate"
+      ]
+    },
+    {
+      "id": "process",
+      "v3Route": "/ui/remodel/process",
+      "v2Route": "/ui/evolution/process",
+      "requiredSurfaces": [
+        "process nodes",
+        "logs",
+        "queue/workers",
+        "contracts",
+        "run selector"
+      ]
+    },
+    {
+      "id": "history",
+      "v3Route": "/ui/remodel/history",
+      "v2Route": "/ui/evolution/records",
+      "requiredSurfaces": [
+        "run table",
+        "filters",
+        "details",
+        "compare"
+      ]
+    },
+    {
+      "id": "lab",
+      "v3Route": "/ui/remodel/lab",
+      "v2Route": "/ui/evolution/lab",
+      "requiredSurfaces": [
+        "research docs",
+        "criteria",
+        "glossary",
+        "experiment output"
+      ]
+    },
+    {
+      "id": "workbench",
+      "v3Route": "/ui/remodel/workbench",
+      "v2Route": "/ui/evolution/workbench",
+      "requiredSurfaces": [
+        "candidate grid",
+        "heatmap",
+        "metric compare",
+        "review queue"
+      ]
+    },
+    {
+      "id": "audit",
+      "v3Route": "/ui/remodel/audit",
+      "v2Route": "/ui/evolution/verdict",
+      "requiredSurfaces": [
+        "append-only ledger",
+        "hashes",
+        "note validation",
+        "approval/export separation"
+      ]
+    },
+    {
+      "id": "backtest",
+      "v3Route": "/ui/remodel/backtest",
+      "v2Route": "/ui/backtest",
+      "requiredSurfaces": [
+        "jobs",
+        "result",
+        "report",
+        "compare",
+        "overlay",
+        "montecarlo"
+      ]
+    },
+    {
+      "id": "chart-replay",
+      "v3Route": "/ui/remodel/chart-replay",
+      "v2Route": "/ui/chart-replay",
+      "requiredSurfaces": [
+        "OHLCV tooltip",
+        "signals",
+        "seek",
+        "crosshair",
+        "manual /sim/ws gate"
+      ]
+    }
+  ],
+  "phase0ExitCriteria": [
+    "Every process matrix row has endpoint/feed, required fields, target DOM assertions, fallback label, and missing-field failure rule.",
+    "Every safety row has trigger, auto-load decision, forbidden behavior, target assertions, and blocker rule.",
+    "The rubric totals 100 points and every zero-blocking category is explicit.",
+    "Later implementation may mutate product frontend only after these matrices are used as selectors for tests/reviews."
+  ]
+}

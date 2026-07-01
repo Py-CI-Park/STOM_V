@@ -1,0 +1,377 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-29T19:49:26Z",
+  "status": "PASS",
+  "totalScore": 100.0,
+  "zeroCategories": [],
+  "categories": [
+    {
+      "category": "Visual hierarchy",
+      "points": 10,
+      "score": 100,
+      "evidence": "visual-gate scorecard PASS; all page scores >=95; average 97.79; screenshots non-blank/readable"
+    },
+    {
+      "category": "Interaction depth",
+      "points": 16,
+      "score": 100,
+      "evidence": "browser-final transcript routeCount=10; chart tooltip/focus or process modal equivalent passed"
+    },
+    {
+      "category": "Data provenance",
+      "points": 14,
+      "score": 100,
+      "evidence": "UX panels, provenance cues, reference/demo/live mode labels, browser baseInput and stale/fallback labels verified"
+    },
+    {
+      "category": "V2 parity plus improvement",
+      "points": 12,
+      "score": 100,
+      "evidence": "v2-v3 compare PASS averageCorrectedTotalScore 100.0; V2 default routes preserved and explicit V3 routes pass"
+    },
+    {
+      "category": "Process monitoring reality",
+      "points": 14,
+      "score": 100,
+      "evidence": "G004 checkpoint complete; process cockpit payload-driven; browser-final process modal and UX state proof passed"
+    },
+    {
+      "category": "Safety/governance",
+      "points": 14,
+      "score": 100,
+      "evidence": "safety audit PASS averageSafetyScore 100.0; browser-final mutating/referenceForbidden/forbiddenWs/liveUnsafe all 0"
+    },
+    {
+      "category": "Accessibility",
+      "points": 8,
+      "score": 100,
+      "evidence": "chart keyboard focus/aria-live or accessible equivalent; UX panels expose non-hover values and workflows"
+    },
+    {
+      "category": "Performance/responsiveness",
+      "points": 4,
+      "score": 100,
+      "evidence": "visual/browser captures show no horizontal overflow; responsive UX CSS breakpoints; runtime depth PASS 100.0"
+    },
+    {
+      "category": "Failure-state quality",
+      "points": 4,
+      "score": 100,
+      "evidence": "all UX panels expose Empty/Loading/Stale/Malformed/Error state proof; live degraded states remain labeled"
+    },
+    {
+      "category": "Evidence package",
+      "points": 4,
+      "score": 100,
+      "evidence": "unit/dashboard tests, visual gate, V2/V3 compare, runtime depth, safety audit, inventory, browser transcript, final reports present"
+    }
+  ],
+  "gates": {
+    "dashboardUnitIntegration": {
+      "status": "PASS",
+      "command": "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py tests/unit/dashboard -q",
+      "result": "607 passed"
+    },
+    "visualGate": {
+      "status": "PASS",
+      "averageCorrectedTotalScore": 97.79,
+      "failures": []
+    },
+    "v2v3Compare": {
+      "status": "PASS",
+      "averageCorrectedTotalScore": 100.0,
+      "failures": []
+    },
+    "safetyAudit": {
+      "status": "PASS",
+      "averageSafetyScore": 100.0,
+      "failures": []
+    },
+    "runtimeDepth": {
+      "status": "PASS",
+      "averageRuntimeDepthScore": 100.0,
+      "failures": []
+    },
+    "inventoryGate": {
+      "schemaVersion": 1,
+      "kind": "dashboard-v2-v3-inventory-gate",
+      "status": "passed",
+      "inventory": "artifacts\\dashboard-v2-v3-inventory\\v2-v3-inventory.json",
+      "summary": {
+        "items": 81,
+        "pages": [
+          "audit",
+          "backtest",
+          "chart_replay",
+          "condition",
+          "history",
+          "lab",
+          "process",
+          "shell",
+          "workbench"
+        ],
+        "itemTypes": [
+          "api_endpoint",
+          "asset",
+          "button",
+          "cache_policy",
+          "data_field",
+          "form",
+          "function",
+          "modal",
+          "network_call",
+          "route",
+          "safety_boundary",
+          "section"
+        ],
+        "safetyClasses": [
+          "append_only",
+          "human_gate",
+          "local_only",
+          "manual_gated",
+          "no_live_order",
+          "read_only",
+          "research_only"
+        ],
+        "failures": 0,
+        "routeMatrix": "artifacts\\ultragoal-g007-final-evidence\\v2-v3-compare\\route-version-matrix.json"
+      },
+      "failures": []
+    },
+    "browserFinal": {
+      "schemaVersion": 1,
+      "generatedAt": "2026-06-29T19:46:59.595Z",
+      "verdict": "passed",
+      "routeCount": 10,
+      "requestCount": 63,
+      "websocketCount": 2,
+      "referenceForbidden": 0,
+      "mutating": 0,
+      "forbiddenWs": 0,
+      "liveUnsafe": 0,
+      "screenshotsNonUniform": true,
+      "routes": [
+        {
+          "pageId": "condition",
+          "mode": "reference",
+          "liveBackend": false,
+          "baseInput": "http://127.0.0.1:9200",
+          "chartCount": 7,
+          "tableCount": 2,
+          "uxPanelPresent": true,
+          "pageStatesVisible": true,
+          "safetyLabels": true,
+          "horizontalOverflow": false,
+          "chartInteraction": {
+            "attempted": true,
+            "activeDatumChanged": false,
+            "tooltipVisible": true,
+            "ariaLiveText": ""
+          },
+          "processModalPresent": false,
+          "forbiddenVisibleText": []
+        },
+        {
+          "pageId": "process",
+          "mode": "reference",
+          "liveBackend": false,
+          "baseInput": "http://127.0.0.1:9200",
+          "chartCount": 0,
+          "tableCount": 3,
+          "uxPanelPresent": true,
+          "pageStatesVisible": true,
+          "safetyLabels": true,
+          "horizontalOverflow": false,
+          "chartInteraction": {
+            "attempted": false,
+            "activeDatumChanged": false,
+            "tooltipVisible": false,
+            "ariaLiveText": ""
+          },
+          "processModalPresent": true,
+          "forbiddenVisibleText": []
+        },
+        {
+          "pageId": "history",
+          "mode": "reference",
+          "liveBackend": false,
+          "baseInput": "http://127.0.0.1:9200",
+          "chartCount": 6,
+          "tableCount": 1,
+          "uxPanelPresent": true,
+          "pageStatesVisible": true,
+          "safetyLabels": true,
+          "horizontalOverflow": false,
+          "chartInteraction": {
+            "attempted": true,
+            "activeDatumChanged": true,
+            "tooltipVisible": true,
+            "ariaLiveText": "PnL · T+13 · Series: 12.97 · source=reference fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-static · status=CURRENT"
+          },
+          "processModalPresent": false,
+          "forbiddenVisibleText": []
+        },
+        {
+          "pageId": "lab",
+          "mode": "reference",
+          "liveBackend": false,
+          "baseInput": "http://127.0.0.1:9200",
+          "chartCount": 2,
+          "tableCount": 0,
+          "uxPanelPresent": true,
+          "pageStatesVisible": true,
+          "safetyLabels": true,
+          "horizontalOverflow": false,
+          "chartInteraction": {
+            "attempted": true,
+            "activeDatumChanged": true,
+            "tooltipVisible": true,
+            "ariaLiveText": "누적 수익률 · T+56 · Series: 17.15 · source=reference fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-static · status=CURRENT"
+          },
+          "processModalPresent": false,
+          "forbiddenVisibleText": []
+        },
+        {
+          "pageId": "workbench",
+          "mode": "reference",
+          "liveBackend": false,
+          "baseInput": "http://127.0.0.1:9200",
+          "chartCount": 9,
+          "tableCount": 1,
+          "uxPanelPresent": true,
+          "pageStatesVisible": true,
+          "safetyLabels": true,
+          "horizontalOverflow": false,
+          "chartInteraction": {
+            "attempted": true,
+            "activeDatumChanged": false,
+            "tooltipVisible": true,
+            "ariaLiveText": ""
+          },
+          "processModalPresent": false,
+          "forbiddenVisibleText": []
+        },
+        {
+          "pageId": "audit",
+          "mode": "reference",
+          "liveBackend": false,
+          "baseInput": "http://127.0.0.1:9200",
+          "chartCount": 8,
+          "tableCount": 4,
+          "uxPanelPresent": true,
+          "pageStatesVisible": true,
+          "safetyLabels": true,
+          "horizontalOverflow": false,
+          "chartInteraction": {
+            "attempted": true,
+            "activeDatumChanged": false,
+            "tooltipVisible": true,
+            "ariaLiveText": ""
+          },
+          "processModalPresent": false,
+          "forbiddenVisibleText": []
+        },
+        {
+          "pageId": "backtest",
+          "mode": "reference",
+          "liveBackend": false,
+          "baseInput": "http://127.0.0.1:9200",
+          "chartCount": 2,
+          "tableCount": 3,
+          "uxPanelPresent": true,
+          "pageStatesVisible": true,
+          "safetyLabels": true,
+          "horizontalOverflow": false,
+          "chartInteraction": {
+            "attempted": true,
+            "activeDatumChanged": false,
+            "tooltipVisible": true,
+            "ariaLiveText": ""
+          },
+          "processModalPresent": false,
+          "forbiddenVisibleText": []
+        },
+        {
+          "pageId": "replay",
+          "mode": "reference",
+          "liveBackend": false,
+          "baseInput": "http://127.0.0.1:9200",
+          "chartCount": 3,
+          "tableCount": 5,
+          "uxPanelPresent": true,
+          "pageStatesVisible": true,
+          "safetyLabels": true,
+          "horizontalOverflow": false,
+          "chartInteraction": {
+            "attempted": true,
+            "activeDatumChanged": true,
+            "tooltipVisible": true,
+            "ariaLiveText": "리플레이 차트 005930 · bar-34 · Close: 79229 · source=reference replay fixture · run_id=R-250518-1421-7XQ9 · freshness=reference-replay-static · status=CURRENT"
+          },
+          "processModalPresent": false,
+          "forbiddenVisibleText": []
+        },
+        {
+          "pageId": "live-backtest",
+          "mode": "live",
+          "liveBackend": true,
+          "baseInput": "http://127.0.0.1:8777",
+          "chartCount": 2,
+          "tableCount": 3,
+          "uxPanelPresent": true,
+          "pageStatesVisible": true,
+          "safetyLabels": true,
+          "horizontalOverflow": false,
+          "chartInteraction": {
+            "attempted": true,
+            "activeDatumChanged": false,
+            "tooltipVisible": true,
+            "ariaLiveText": ""
+          },
+          "processModalPresent": false,
+          "forbiddenVisibleText": []
+        },
+        {
+          "pageId": "live-replay",
+          "mode": "live",
+          "liveBackend": true,
+          "baseInput": "http://127.0.0.1:8777",
+          "chartCount": 3,
+          "tableCount": 5,
+          "uxPanelPresent": true,
+          "pageStatesVisible": true,
+          "safetyLabels": true,
+          "horizontalOverflow": false,
+          "chartInteraction": {
+            "attempted": true,
+            "activeDatumChanged": true,
+            "tooltipVisible": true,
+            "ariaLiveText": "리플레이 차트 005930 · bar-34 · Close: 79229 · source=fixture fallback · sim probe not driving chart · run_id=R-250518-1421-7XQ9 · freshness=stale-replay-fixture-fall"
+          },
+          "processModalPresent": false,
+          "forbiddenVisibleText": []
+        }
+      ]
+    },
+    "diffCheck": {
+      "status": "PASS",
+      "command": "git diff --check over changed dashboard/remodel/G006/G007 files"
+    },
+    "protectedPaths": {
+      "status": "PASS",
+      "command": "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+      "output": "empty"
+    }
+  },
+  "artifactRefs": {
+    "visualGate": "artifacts/ultragoal-g007-final-evidence/visual-gate/scorecard.json",
+    "v2v3Compare": "artifacts/ultragoal-g007-final-evidence/v2-v3-compare/compare-scorecard.json",
+    "safetyAudit": "artifacts/ultragoal-g007-final-evidence/safety-audit/safety-scorecard.json",
+    "runtimeDepth": "artifacts/ultragoal-g007-final-evidence/runtime-depth/runtime-depth-scorecard.json",
+    "browserTranscript": "artifacts/ultragoal-g007-final-evidence/browser-final/browser-transcript.json",
+    "browserSummary": "artifacts/ultragoal-g007-final-evidence/browser-final/browser-summary.json",
+    "contactSheet": "artifacts/ultragoal-g007-final-evidence/visual-gate/side-by-side-contact-sheet.png",
+    "compareContactSheet": "artifacts/ultragoal-g007-final-evidence/v2-v3-compare/side-by-side-contact-sheet.png",
+    "safetyContactSheet": "artifacts/ultragoal-g007-final-evidence/safety-audit/safety-contact-sheet.png"
+  }
+}

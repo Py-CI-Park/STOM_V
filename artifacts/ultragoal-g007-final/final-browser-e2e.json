@@ -1,0 +1,300 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "browser",
+  "surface": "web",
+  "goalId": "G007",
+  "baseUrl": "http://127.0.0.1:8776",
+  "viewport": "1920x1080",
+  "verdict": "passed",
+  "generatedAt": "2026-06-28T03:02:00+00:00",
+  "routes": [
+    {
+      "id": "01_condition_ai_overview",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "mode": "reference",
+      "hasSafety": true,
+      "hasPrimaryTabs": true,
+      "hasForbiddenActions": false,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-01_condition_ai_overview.png"
+    },
+    {
+      "id": "02_process",
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "mode": "reference",
+      "hasSafety": true,
+      "hasPrimaryTabs": true,
+      "hasForbiddenActions": false,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-02_process.png"
+    },
+    {
+      "id": "03_history",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "mode": "reference",
+      "hasSafety": true,
+      "hasPrimaryTabs": true,
+      "hasForbiddenActions": false,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-03_history.png"
+    },
+    {
+      "id": "04_lab",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "mode": "reference",
+      "hasSafety": true,
+      "hasPrimaryTabs": true,
+      "hasForbiddenActions": false,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-04_lab.png"
+    },
+    {
+      "id": "05_workbench",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "mode": "reference",
+      "hasSafety": true,
+      "hasPrimaryTabs": true,
+      "hasForbiddenActions": false,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-05_workbench.png"
+    },
+    {
+      "id": "06_decision_audit",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "mode": "reference",
+      "hasSafety": true,
+      "hasPrimaryTabs": true,
+      "hasForbiddenActions": false,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-06_decision_audit.png"
+    },
+    {
+      "id": "07_backtest",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "mode": "reference",
+      "hasSafety": true,
+      "hasPrimaryTabs": true,
+      "hasForbiddenActions": false,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-07_backtest.png"
+    },
+    {
+      "id": "08_chart_replay",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "mode": "reference",
+      "hasSafety": true,
+      "hasPrimaryTabs": true,
+      "hasForbiddenActions": false,
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-08_chart_replay.png"
+    }
+  ],
+  "modalResults": [
+    {
+      "name": "settings",
+      "selector": "[data-action=\"settings\"]",
+      "opened": true
+    },
+    {
+      "name": "inspector",
+      "selector": "[data-action=\"inspector\"]",
+      "opened": true
+    },
+    {
+      "name": "approval",
+      "selector": "[data-action=\"approval\"]",
+      "opened": true
+    }
+  ],
+  "consoleEvents": [],
+  "pageErrors": [],
+  "actions": [
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "result": "loaded reference route"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "result": "mode=reference; safety=true; primary tabs=true; forbiddenActions=false"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-01_condition_ai_overview.png",
+      "result": "non-uniform screenshot saved"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "result": "loaded reference route"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "result": "mode=reference; safety=true; primary tabs=true; forbiddenActions=false"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-02_process.png",
+      "result": "non-uniform screenshot saved"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "result": "loaded reference route"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "result": "mode=reference; safety=true; primary tabs=true; forbiddenActions=false"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-03_history.png",
+      "result": "non-uniform screenshot saved"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "result": "loaded reference route"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "result": "mode=reference; safety=true; primary tabs=true; forbiddenActions=false"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-04_lab.png",
+      "result": "non-uniform screenshot saved"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "result": "loaded reference route"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "result": "mode=reference; safety=true; primary tabs=true; forbiddenActions=false"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-05_workbench.png",
+      "result": "non-uniform screenshot saved"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "result": "loaded reference route"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "result": "mode=reference; safety=true; primary tabs=true; forbiddenActions=false"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-06_decision_audit.png",
+      "result": "non-uniform screenshot saved"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "result": "loaded reference route"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "result": "mode=reference; safety=true; primary tabs=true; forbiddenActions=false"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-07_backtest.png",
+      "result": "non-uniform screenshot saved"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "result": "loaded reference route"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "result": "mode=reference; safety=true; primary tabs=true; forbiddenActions=false"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-final\\g007-08_chart_replay.png",
+      "result": "non-uniform screenshot saved"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "click",
+      "selector": "[data-action=\"settings\"]",
+      "result": "settings modal opened"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "click",
+      "selector": "[data-action=\"inspector\"]",
+      "result": "inspector modal opened"
+    },
+    {
+      "timestamp": "2026-06-28T03:02:00+00:00",
+      "type": "click",
+      "selector": "[data-action=\"approval\"]",
+      "result": "approval modal opened"
+    }
+  ]
+}

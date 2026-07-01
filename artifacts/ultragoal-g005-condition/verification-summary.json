@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G005",
+  "title": "Condition AI pages full parity",
+  "status": "verification-passed-before-review",
+  "commands": [
+    "pytest condition/research/dashboard focused suite -> 151 passed, 7 skipped",
+    "browser captured /ui/remodel/condition, process, history, lab, workbench, audit -> all 200 and screenshots saved",
+    "direct condition API smoke -> 29/29 HTTP 200",
+    "G004 syntax/remodel checks after latest source state: py_compile app/simulation_api, node bootstrap, remodel tests 10 passed, git diff --check passed"
+  ],
+  "artifactRefs": [
+    "artifacts/ultragoal-g005-condition/browser-transcript.json",
+    "artifacts/ultragoal-g005-condition/api-smoke.json",
+    "artifacts/ultragoal-g005-condition/condition-condition.png",
+    "artifacts/ultragoal-g005-condition/condition-process.png",
+    "artifacts/ultragoal-g005-condition/condition-history.png",
+    "artifacts/ultragoal-g005-condition/condition-lab.png",
+    "artifacts/ultragoal-g005-condition/condition-workbench.png",
+    "artifacts/ultragoal-g005-condition/condition-audit.png"
+  ],
+  "notes": [
+    "/ui/remodel condition subpages are production evolution routes seeded through remodel-bootstrap and stayed under /ui/remodel/* deep links.",
+    "Browser response transcript includes status/runs/equity/hof/freeze/decisions calls with HTTP 200."
+  ]
+}

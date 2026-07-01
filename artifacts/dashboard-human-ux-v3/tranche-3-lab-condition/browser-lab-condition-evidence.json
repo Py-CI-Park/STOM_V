@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "browser",
+  "surface": "web",
+  "generatedAt": "2026-06-30T11:40:09.436Z",
+  "actions": [
+    {
+      "type": "navigate",
+      "action": "navigate",
+      "page": "condition",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "ts": 1782819608190,
+      "timestamp": "2026-06-30T11:40:08.190000Z",
+      "timestampMs": 1782819608190,
+      "selector": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference"
+    },
+    {
+      "type": "screenshot",
+      "action": "screenshot",
+      "page": "condition",
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/browser-condition-viewport.png",
+      "ts": 1782819608568,
+      "timestamp": "2026-06-30T11:40:08.568000Z",
+      "timestampMs": 1782819608568,
+      "selector": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/browser-condition-viewport.png"
+    },
+    {
+      "type": "navigate",
+      "action": "navigate",
+      "page": "lab",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "ts": 1782819609192,
+      "timestamp": "2026-06-30T11:40:09.192000Z",
+      "timestampMs": 1782819609192,
+      "selector": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference"
+    },
+    {
+      "type": "screenshot",
+      "action": "screenshot",
+      "page": "lab",
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/browser-lab-viewport.png",
+      "ts": 1782819609436,
+      "timestamp": "2026-06-30T11:40:09.436000Z",
+      "timestampMs": 1782819609436,
+      "selector": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/browser-lab-viewport.png"
+    }
+  ],
+  "pages": [
+    {
+      "page": "condition",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/browser-condition-viewport.png",
+      "selectors": {
+        "[data-ux-task-header=\"condition\"]": true,
+        "[data-ux-primary-canvas=\"condition\"]": true,
+        "[data-safety-boundary=\"condition\"]": true,
+        "[data-chart-active-value]": true
+      },
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "textSample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\nTask-first V3\n조건식 AI · 현재 세대와 BEST 후보를 먼저 판단하는 V3\n\n작은 카드보다 현재 세대, 후보 품질, 큰 증거 차트, Human-gated export 상태를 먼저 보여줍니다.\n\npurpose\n현재 세대 · 후보 품질 · provenance · gated export 검토\nstate\nREFERENCE · run R-250518-1421-7XQ9\nprimary-action\nBEST 후보 검사와 승인 대기 확인\nrisk\nno live order · human-gated export · append-only audit\nmode\nREFERENCE · reference/demo inert\nBEST 후보 검사\nNo Live Order\n실거래 주문 없음\nNo Broker Login\n브로커 로그인 없음\nNo Account Trading\n계좌/자산 연동 없음\nResearch Only\n연구 전용\nHuman Approval Gate\n수동 승인 게이트\nAppend-Only Audit\n불변 감사\nExport is human-gated · Audit is append-only · research-only candidate review\nCURRENT GENERATION\n현재 세대 라이브 상태\nPhase\nBACKTEST\nCheckpoint\n7 / 10\nMessage\n백테스트 실행 중 (7/10) - 1H · OOS Split 70/30\nElapsed\n02:14:38\nETA\n~01:02:11\n생성 전략\n32 / 80\n게이트 통과\n14 (43.8%)\nBEST CANDIDATE\nBEST · MeanRev_Adaptive_v9\nID\nS137-0321\nName\nMeanRev_Adaptive_v9\nGrade\nA-\n",
+      "primaryRect": {
+        "x": 14,
+        "y": 773,
+        "w": 1412,
+        "h": 1883
+      },
+      "heatmapCells": 12,
+      "heatmapValues": 0,
+      "forbiddenLiveControls": 0,
+      "manualGateCount": 7,
+      "safetyText": [
+        "No Live Order",
+        "No Broker Login",
+        "No Account Trading",
+        "Research Only",
+        "Human Approval Gate",
+        "Append-Only Audit"
+      ]
+    },
+    {
+      "page": "lab",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/browser-lab-viewport.png",
+      "selectors": {
+        "[data-ux-task-header=\"lab\"]": true,
+        "[data-ux-primary-canvas=\"lab\"]": true,
+        "[data-safety-boundary=\"lab\"]": true,
+        "[data-lab-step=\"heatmap\"]": true,
+        "[data-lab-selected-cell]": true,
+        "[data-heatmap-selected-narrative]": true,
+        "[data-heatmap-legend]": true,
+        "[data-ux-evidence-drawer=\"lab\"]": true
+      },
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "textSample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\nTask-first V3\n연구실 · 히트맵과 검증을 먼저 읽는 V3\n\n값 없는 색상 블록과 작은 카드 과밀을 줄이고, 선택 셀 의미와 Holdout 검증을 첫 작업 영역에 배치합니다.\n\npurpose\nEdge Ratio 히트맵 · 변수 중요도 · 상관관계 · Holdout 검증\nstate\nREFERENCE · 10 variables · 5 combos\nprimary-action\n선택 셀 해석과 검증 요약 확인\nrisk\nresearch-only · no export · no live order\nmode\nREFERENCE · reference/demo inert\n선택 셀 확인\nNo Live Order\n실거래 주문 없음\nNo Broker Login\n브로커 로그인 없음\nNo Account Trading\n계좌/자산 연동 없음\nResearch Only\n연구 전용\nHuman Approval Gate\n수동 승인 게이트\nAppend-Only Audit\n불변 감사\nLab output is research-only · Context pack export is inert/manual · No live trading decision\n연구 흐름 요약\n1 Criteria\nEdge Ratio · IC · Holdout\n2 Primary heatmap\n값/축/범례 먼저 확인\n3 Importance\nmom_20\n4 Validation\nHoldout +18.23%\n5 Context\n5 combos packaged\n정체/큐 compact\nLAB-2025-05-21-008 정체 12m · stale factor snapshot은 라벨링\n대기\n5\nFreeze strong\n12 (18.8%)\nFreeze weak\n27 (42.2%)\n연구실 pr",
+      "primaryRect": {
+        "x": 14,
+        "y": 1279,
+        "w": 1412,
+        "h": 1376
+      },
+      "heatmapCells": 196,
+      "heatmapValues": 196,
+      "forbiddenLiveControls": 0,
+      "manualGateCount": 5,
+      "safetyText": [
+        "No Live Order",
+        "No Broker Login",
+        "No Account Trading",
+        "Research Only",
+        "Human Approval Gate",
+        "Append-Only Audit"
+      ]
+    }
+  ]
+}

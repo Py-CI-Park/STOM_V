@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G005",
+  "surface": "web",
+  "capturedAt": "2026-06-28T02:10:00Z",
+  "reference": {
+    "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+    "mode": "reference",
+    "contracts": 19,
+    "endpointRows": 19,
+    "fetches": [],
+    "websockets": [],
+    "timers": 0,
+    "storage": [],
+    "hasMatrix": true,
+    "hasManualWsGate": true,
+    "hasRecovery": true,
+    "hasSafetyFooter": true,
+    "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/g005-chart-replay-reference.png",
+    "verdict": "passed"
+  },
+  "live": {
+    "url": "http://127.0.0.1:8776/ui/remodel/chart-replay",
+    "mode": "live",
+    "contracts": 19,
+    "safeFetches": [
+      "http://127.0.0.1:8776/sim/health",
+      "http://127.0.0.1:8776/sim/days?src=min",
+      "http://127.0.0.1:8776/sim/demo?src=min&mode=latest",
+      "http://127.0.0.1:8776/bt/strategies?kind=buy",
+      "http://127.0.0.1:8776/bt/strategies?kind=sell",
+      "http://127.0.0.1:8776/health",
+      "http://127.0.0.1:8776/status",
+      "http://127.0.0.1:8776/runs",
+      "http://127.0.0.1:8776/sim/stocks?date=20250509&src=min",
+      "http://127.0.0.1:8776/sim/signals?date=20250509&src=min&code=256940&buy=20250715_Study&sell=20250715_Study_S"
+    ],
+    "websockets": [
+      "ws://127.0.0.1:8776/ws"
+    ],
+    "simWsOpened": false,
+    "statuses": {
+      "liveOkRows": 7,
+      "userGatedRows": 12,
+      "liveErrors": 0
+    },
+    "hasMatrix": true,
+    "hasManualWsGate": true,
+    "hasRecovery": true,
+    "hasSafetyFooter": true,
+    "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/g005-chart-replay-live.png",
+    "verdict": "passed"
+  },
+  "safety": {
+    "noLiveOrder": true,
+    "noBrokerLogin": true,
+    "noAccountTrading": true,
+    "researchOnly": true,
+    "humanApprovalGate": true,
+    "appendOnlyAudit": true,
+    "simWsAutoOpen": false
+  },
+  "commands": [
+    "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q",
+    "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+    "git diff --check",
+    "browser: reference and live chart-replay probes at 1920x1080"
+  ]
+}

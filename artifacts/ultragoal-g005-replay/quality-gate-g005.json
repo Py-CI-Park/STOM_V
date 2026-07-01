@@ -1,0 +1,252 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 49-G005ArchitectReview approved G005. It verified 19 ReplayContracts covering required /sim REST endpoints, /bt/strategies, /sim/ws actions/messages, reference/demo inert mode, live read-only probes, user-gated /sim/ws, visible recovery, safety cues, and non-uniform screenshots.",
+    "commands": [
+      "architect review subagent 49-G005ArchitectReview"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 51-G005ExecutorQaFixed passed after absolute artifact refs were fixed. Evidence proves reference mode has 19 contracts and zero fetch/ws/timer/storage; live mode probes safe REST reads for /sim/health, /sim/days, /sim/demo, /bt/strategies, /sim/stocks, /sim/signals; /sim/ws remains simWsOpened=false with 12 USER-GATED rows; screenshots are non-uniform and safety cues are present. Parent ran focused pytest (22 passed), node --check, git diff --check, and browser probes/captures.",
+    "e2eCommands": [
+      "browser automation probe/capture for /ui/remodel/chart-replay?demo=reference and /ui/remodel/chart-replay live"
+    ],
+    "redTeamCommands": [
+      "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "git diff --check",
+      "executor QA subagent 51-G005ExecutorQaFixed"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/browser-transcript.json",
+        "description": "Automation transcript for reference and live Chart Replay page with timestamps, selectors, assertions, screenshots, and passed verdict"
+      },
+      {
+        "id": "browser-probe-json",
+        "kind": "failure-mode-test",
+        "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/browser-evidence.json",
+        "description": "Structured browser evidence for 19 ReplayContracts, inert reference mode, live read-only /sim probes, /sim/ws user gate, safety cues, and no fake success"
+      },
+      {
+        "id": "screenshot-reference",
+        "kind": "screenshot",
+        "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/g005-chart-replay-reference.png",
+        "description": "Non-uniform reference-mode Chart Replay screenshot with API/WS matrix, /sim/ws manual gate, charts, recovery, and safety footer"
+      },
+      {
+        "id": "screenshot-live",
+        "kind": "screenshot",
+        "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/g005-chart-replay-live.png",
+        "description": "Non-uniform live-mode Chart Replay screenshot with live read evidence, /sim/ws USER-GATED rows, charts, recovery, and safety footer"
+      },
+      {
+        "id": "screenshot-stats",
+        "kind": "failure-mode-test",
+        "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/screenshot-stats.json",
+        "description": "Screenshot dimension and non-uniformity evidence for both G005 browser captures"
+      },
+      {
+        "id": "cli-replay",
+        "kind": "command-replay",
+        "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g005-replay/cli-replay-g005.json",
+        "description": "Replay-safe CLI receipt for G005 Chart Replay adapter checkpoint"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-replay-matrix",
+        "contractRef": "G005 objective: approved /sim/* endpoint-action-WS matrix",
+        "obligation": "ReplayContracts covers health, days, demo, stocks, strategies, signals, /sim/ws, actions start/pause/resume/speed/seek/stop, and messages meta/bars/history/done/error.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-reference",
+          "surface-web-live",
+          "surface-cli-static"
+        ],
+        "adversarialCaseRefs": [
+          "case-matrix-complete"
+        ]
+      },
+      {
+        "id": "contract-reference-inert",
+        "contractRef": "G005 objective: reference mode inert/no-network",
+        "obligation": "Reference/demo Chart Replay page renders all replay contracts with no fetch, no /sim/ws, no timers, no storage, and explicit inert status.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-reference"
+        ],
+        "adversarialCaseRefs": [
+          "case-reference-side-effects"
+        ]
+      },
+      {
+        "id": "contract-live-read-evidence",
+        "contractRef": "G005 objective: live mode replay API/WS evidence",
+        "obligation": "Live mode probes safe read-only /sim and /bt endpoints, conditionally reads stocks/signals only after discovery, and shows no fake success.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-live"
+        ],
+        "adversarialCaseRefs": [
+          "case-conditional-no-fake-success"
+        ]
+      },
+      {
+        "id": "contract-sim-ws-manual",
+        "contractRef": "G005 objective: /sim/ws actions/messages",
+        "obligation": "/sim/ws, start/pause/resume/speed/seek/stop, and meta/bars/history/done/error are documented and visibly USER-GATED; page load never auto-opens /sim/ws.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-live",
+          "surface-cli-static"
+        ],
+        "adversarialCaseRefs": [
+          "case-sim-ws-hidden"
+        ]
+      },
+      {
+        "id": "contract-safety",
+        "contractRef": "Approved plan safety boundary",
+        "obligation": "No live order, broker login, account trading, or hidden export is introduced; research-only, Human Approval Gate, and Append-Only Audit remain visible.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-reference",
+          "surface-web-live"
+        ],
+        "adversarialCaseRefs": [
+          "case-hidden-trading-controls"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-reference",
+        "contractRef": "Reference Chart Replay browser surface",
+        "surface": "web",
+        "invocation": "Browser opened /ui/remodel/chart-replay?demo=reference with probe wrappers before document scripts",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "screenshot-reference",
+          "screenshot-stats"
+        ]
+      },
+      {
+        "id": "surface-web-live",
+        "contractRef": "Live Chart Replay browser surface",
+        "surface": "web",
+        "invocation": "Browser opened /ui/remodel/chart-replay and observed live /sim read probes, /sim/ws user gate, and screenshot",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "screenshot-live",
+          "screenshot-stats"
+        ]
+      },
+      {
+        "id": "surface-cli-static",
+        "contractRef": "Static source/test contract surface",
+        "surface": "cli",
+        "invocation": "Focused pytest, node syntax check, git diff check, and replay-safe CLI receipt",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-matrix-complete",
+        "contractRef": "19 replay endpoint/action/message matrix completeness",
+        "scenario": "A required /sim endpoint, /sim/ws action, or message type is omitted from the Chart Replay matrix.",
+        "expectedBehavior": "19 contracts include every required endpoint/action/message and browser evidence reports 19 rows.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json",
+          "cli-replay"
+        ]
+      },
+      {
+        "id": "case-reference-side-effects",
+        "contractRef": "Reference/demo inertness",
+        "scenario": "Reference Chart Replay page secretly fetches /sim APIs, opens WS, schedules timers, or touches storage.",
+        "expectedBehavior": "Reference probe arrays are empty and matrix rows are INERT.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json"
+        ]
+      },
+      {
+        "id": "case-sim-ws-hidden",
+        "contractRef": "No hidden long-lived /sim/ws stream",
+        "scenario": "Chart Replay page opens /sim/ws automatically when live mode loads.",
+        "expectedBehavior": "/sim/ws and all actions/messages are USER-GATED; browser websocket list contains only shell /ws and simWsOpened=false.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json"
+        ]
+      },
+      {
+        "id": "case-conditional-no-fake-success",
+        "contractRef": "Conditional reads without context",
+        "scenario": "Stocks/signals rows fake success when no date/code/strategy context is discovered.",
+        "expectedBehavior": "Rows become LIVE OK only after discovered keys produce real GET URLs, otherwise NOT-USED with explicit reasons.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json"
+        ]
+      },
+      {
+        "id": "case-hidden-trading-controls",
+        "contractRef": "Safety controls",
+        "scenario": "Replay page introduces hidden order, broker login, account trading, or export control handlers.",
+        "expectedBehavior": "Forbidden controls absent and safety footer remains visible.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json",
+          "screenshot-reference",
+          "screenshot-live"
+        ]
+      },
+      {
+        "id": "case-artifact-self-contained",
+        "contractRef": "Quality evidence portability",
+        "scenario": "Browser artifacts refer to cwd-relative screenshots and cannot be independently resolved.",
+        "expectedBehavior": "All screenshot/path/artifactRefs are absolute and readable under the remodel worktree.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "screenshot-stats"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "G005 implementation, focused static tests, node check, diff check, browser reference/live captures, architect review 49, initial QA blocker on relative artifact paths, artifact path fix, and executor QA 51 rerun all passed with blockers empty. Full verification loop reran after artifact fix.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "git diff --check",
+      "browser automation probe/capture for chart replay reference and live",
+      "architect review subagent 49-G005ArchitectReview",
+      "executor QA subagent 51-G005ExecutorQaFixed"
+    ],
+    "blockers": []
+  }
+}

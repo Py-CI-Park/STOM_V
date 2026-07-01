@@ -1,0 +1,11 @@
+{
+  "command": [
+    "node",
+    "-e",
+    "console.log(\"ultragoal-g005-runtime-depth-ok\")"
+  ],
+  "kind": "cli-replay",
+  "recordedStdout": "ultragoal-g005-runtime-depth-ok\n",
+  "replaySafe": true,
+  "schemaVersion": 1
+}

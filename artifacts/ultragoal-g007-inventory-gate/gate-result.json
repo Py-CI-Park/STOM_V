@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "dashboard-v2-v3-inventory-gate",
+  "status": "passed",
+  "inventory": "artifacts\\dashboard-v2-v3-inventory\\v2-v3-inventory.json",
+  "summary": {
+    "items": 81,
+    "pages": [
+      "audit",
+      "backtest",
+      "chart_replay",
+      "condition",
+      "history",
+      "lab",
+      "process",
+      "shell",
+      "workbench"
+    ],
+    "itemTypes": [
+      "api_endpoint",
+      "asset",
+      "button",
+      "cache_policy",
+      "data_field",
+      "form",
+      "function",
+      "modal",
+      "network_call",
+      "route",
+      "safety_boundary",
+      "section"
+    ],
+    "safetyClasses": [
+      "append_only",
+      "human_gate",
+      "local_only",
+      "manual_gated",
+      "no_live_order",
+      "read_only",
+      "research_only"
+    ],
+    "failures": 0,
+    "routeMatrix": "artifacts\\ultragoal-g007-v2-v3-compare\\route-version-matrix.json"
+  },
+  "failures": []
+}

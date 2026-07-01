@@ -1,0 +1,6 @@
+AI SLOP CLEANUP REPORT
+Goal: G004 Chart replay full parity
+Scope: no new G004 product-source edits; runtime evidence uses production SimulationTab through the G002 remodel shell and user-approved wt-dev DB hardlinks for visual replay proof.
+Blocking findings: 0
+Advisory findings: 0
+Result: passed/no-op for active story changed source; production SimulationTab reuse avoids duplicate static implementation.

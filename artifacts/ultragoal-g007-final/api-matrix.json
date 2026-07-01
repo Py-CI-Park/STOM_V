@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "kind": "final-api-smoke",
+  "capturedAt": "2026-06-27T16:38:29Z",
+  "base": "http://127.0.0.1:8776",
+  "checks": [
+    {
+      "method": "GET",
+      "path": "/health",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "ok": true,
+      "sample": "{\"status\":\"ok\",\"contract_version\":2}"
+    },
+    {
+      "method": "GET",
+      "path": "/favicon.ico",
+      "httpStatus": 200,
+      "contentType": "image/svg+xml",
+      "ok": true,
+      "sample": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='28' fill='#081624'/><circle cx='32' cy='32' r='16' fill='#0fb5ff'/></svg>"
+    },
+    {
+      "method": "GET",
+      "path": "/config/spec",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "ok": true,
+      "sample": "{\"contract_version\":2,\"fields\":[{\"name\":\"provider\",\"label\":\"LLM Provider\",\"type\":\"select\",\"choices\":[\"gpt_auth\",\"openrouter\",\"codex_proxy\"],\"default\":\"gpt_auth\",\"help\":\"전략 생성에 쓸 LLM provider. gpt_auth는 로컬 ChatGPT OAuth 프록시를 안전하게 점검한 뒤 사용한다.\"},{\"name\":\"model\",\"label\":\"Model\",\"type\":\"select\",\"choices\""
+    },
+    {
+      "method": "GET",
+      "path": "/status",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "ok": true,
+      "sample": "{\"contract_version\":2,\"run_id\":null,\"status\":\"idle\",\"current_gen\":-1,\"max_generations\":0,\"provider\":\"\",\"bt_timeframe\":\"\",\"best\":{\"gen\":-1,\"graded_score\":null,\"gate_passed\":false,\"buy_name\":null,\"sell_name\":null},\"winner\":null,\"generations\":[],\"latest\":{\"phase\":\"\",\"last_checkpoint\":\"\",\"message\":\"\",\"r"
+    },
+    {
+      "method": "GET",
+      "path": "/runs",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "ok": true,
+      "sample": "{\"runs\":[],\"generation_rows\":[],\"count\":0,\"generation_count\":0}"
+    },
+    {
+      "method": "GET",
+      "path": "/decisions",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "ok": true,
+      "sample": "{\"decisions\":[{\"ts\":1781326034.070054,\"verdict\":\"complement\",\"note\":\"V6 포트폴리오(complement): THETA(과거적합 train+10.97M) + T2C3(09:25 시간확장, OOS/WF/슬리피지 THETA 능가) 2-전략 운용. train 상관 0.92·분산이득 7.3% 미미 — 근거는 레짐 상보성: 2026형 저거래장 T2C3 +400,701 vs THETA +164,602(+143%). 평상시 동행+위축장 T2C3 헤지. 둘 다 V1~V5 완주. 카드: 2026"
+    },
+    {
+      "method": "GET",
+      "path": "/gpt_auth/status",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "ok": true,
+      "sample": "{\"status\":\"ok\",\"mode\":\"chatgpt_oauth\",\"safe\":true,\"starts_evolution\":false,\"env_injected\":false,\"proxy_running\":false,\"proxy_url\":null,\"token\":{\"loaded\":false,\"expired\":true,\"has_refresh_token\":false,\"expires_in_seconds\":0,\"access_token_preview\":\"***\"}}"
+    },
+    {
+      "method": "GET",
+      "path": "/bt/strategy",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "ok": true,
+      "sample": "{\"available\":false,\"status\":\"error\",\"reason\":\"invalid_kind_or_name\",\"message\":\"조건식 종류와 이름이 필요합니다.\",\"name\":\"\",\"code\":\"\"}"
+    },
+    {
+      "method": "GET",
+      "path": "/sim/health",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "ok": true,
+      "sample": "{\"status\":\"ok\",\"module\":\"simulation_api\",\"api_version\":1}"
+    },
+    {
+      "method": "GET",
+      "path": "/sim/days?src=min",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "ok": true,
+      "sample": "{\"days\":[20250509],\"count\":1,\"src\":\"min\"}"
+    },
+    {
+      "method": "GET",
+      "path": "/sim/days?src=tick",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "ok": true,
+      "sample": "{\"days\":[20250627],\"count\":1,\"src\":\"tick\"}"
+    },
+    {
+      "method": "GET",
+      "path": "/freeze_verdict",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "ok": true,
+      "sample": "{\"lines\":[\"동결 후보: gen7 THETA_seed_902905_06_B — train 손익 10,965,479 · MDD 10.04 · 272건 · payoff 1.53\",\"V1 과적합: DSR 0.945 (n_trials 80) · PBO 0.343 · MC P(흑자) 1.0\",\"V2 플라시보: 표본 12종 전부 하회 — 후보가 플라시보 전 표본 상회 + 플라시보 중앙값 음수 — 손익의 원천은 진입 신호(우연/매도식 단독 아님)\",\"V5 슬리피지(합산 330건): 1틱 유지 67% · 2틱 34% · 손익분기 3.03틱"
+    },
+    {
+      "method": "GET",
+      "path": "/ops_status",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "ok": true,
+      "sample": "{\"now\":1782578307.6003978,\"active\":[],\"recent\":[],\"walkforward\":{\"path\":\"wf_scenarioD_20260611\",\"windows_done\":4,\"policy_total\":5766611.0,\"baseline_total\":5687429.0,\"age_min\":1003.0},\"evidence\":[{\"name\":\"_discovery_feedback.txt\",\"age_min\":730.9},{\"name\":\"wf_t2c3_log.txt\",\"age_min\":1003.0},{\"name\":\"w"
+    },
+    {
+      "method": "GET",
+      "path": "/pipeline_status",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "ok": true,
+      "sample": "{\"items\":[],\"count\":0}"
+    },
+    {
+      "method": "POST",
+      "path": "/gpt_auth/test",
+      "httpStatus": 200,
+      "ok": true,
+      "safe": true,
+      "starts_evolution": false,
+      "status": "unavailable"
+    }
+  ],
+  "assertions": {
+    "allHttpOk": true,
+    "faviconServed": true,
+    "gptProbeSafe": true
+  }
+}

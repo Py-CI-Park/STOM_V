@@ -1,0 +1,269 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review subagent 7-G002ArchitectReview found G002 satisfies remodel namespace/deep links, production bundle bootstrap, bundle manifest guard, canonical route preservation, scoped CSS boundary, and safety boundaries for this shell/bootstrap story. G003+ parity remains explicitly out of scope.",
+    "commands": [
+      "architect review subagent 7-G002ArchitectReview"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA subagent 8-G002ExecutorQa found no blockers. It validated /ui/remodel/backtest and /ui/remodel/chart-replay stay under remodel paths and render production-looking surfaces, canonical routes remain preserved, bundle manifest/version guard exists, safety/source guard is plausible, and G003-G007 full parity is not overclaimed.",
+    "e2eCommands": [
+      "browser automation via browser tool on /ui/remodel/condition, /ui/remodel/backtest, /ui/remodel/chart-replay, /ui/remodel/process"
+    ],
+    "redTeamCommands": [
+      "pytest tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+      "pytest tests/unit/test_dashboard* -q",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/remodel-bootstrap.js",
+      "python -m py_compile ai_strategy_loop/dashboard/app.py",
+      "git diff --check"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-transcript",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g002-shell/browser-transcript.json",
+        "description": "Valid browser transcript with remodel deep-link navigation actions and screenshot refs",
+        "tool": "browser",
+        "url": "http://127.0.0.1:8774/",
+        "actions": [
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T14:45:00Z",
+            "url": "http://127.0.0.1:8774/ui/remodel/condition",
+            "selector": "document",
+            "verdict": "passed",
+            "result": "remained under /ui/remodel/condition"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T14:45:01Z",
+            "path": "artifacts/ultragoal-g002-shell/condition.png",
+            "selector": "viewport",
+            "verdict": "passed"
+          },
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T14:45:02Z",
+            "url": "http://127.0.0.1:8774/ui/remodel/backtest",
+            "selector": "document",
+            "verdict": "passed",
+            "result": "production BacktestTab visible and route stayed /ui/remodel/backtest"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T14:45:03Z",
+            "path": "artifacts/ultragoal-g002-shell/backtest.png",
+            "selector": "viewport",
+            "verdict": "passed"
+          },
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T14:45:04Z",
+            "url": "http://127.0.0.1:8774/ui/remodel/chart-replay",
+            "selector": "document",
+            "verdict": "passed",
+            "result": "production SimulationTab visible and route stayed /ui/remodel/chart-replay"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T14:45:05Z",
+            "path": "artifacts/ultragoal-g002-shell/chart-replay.png",
+            "selector": "viewport",
+            "verdict": "passed"
+          },
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T14:45:06Z",
+            "url": "http://127.0.0.1:8774/ui/remodel/process",
+            "selector": "document",
+            "verdict": "passed",
+            "result": "process subpage visible and route stayed /ui/remodel/process"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T14:45:07Z",
+            "path": "artifacts/ultragoal-g002-shell/process.png",
+            "selector": "viewport",
+            "verdict": "passed"
+          }
+        ]
+      },
+      {
+        "id": "gui-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g002-shell/g002-contact-sheet.png",
+        "description": "Non-uniform contact sheet from browser-captured remodel condition/backtest/chart-replay/process screenshots"
+      },
+      {
+        "id": "verification-summary",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g002-shell/verification-summary.json",
+        "description": "G002 command verification summary"
+      },
+      {
+        "id": "slop-cleaner",
+        "kind": "cleanup-report",
+        "path": "artifacts/ultragoal-g002-shell/ai-slop-cleanup-report.txt",
+        "description": "AI slop cleanup report with zero blocking findings"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-g002-namespace",
+        "contractRef": "Gate A remodel namespace/deep links",
+        "obligation": "/ui/remodel condition/process/backtest/chart-replay deep links return remodel index, render production surfaces, and stay under /ui/remodel paths.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-remodel"
+        ],
+        "adversarialCaseRefs": [
+          "case-route-escape"
+        ]
+      },
+      {
+        "id": "contract-g002-bootstrap",
+        "contractRef": "Gate B production bootstrap and manifest guard",
+        "obligation": "Remodel root loads production /ui/bundle app/stom-ui with versions matching bundle manifest and no longer loads static src/app.js as production renderer.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-source-bootstrap"
+        ],
+        "adversarialCaseRefs": [
+          "case-static-renderer-leak"
+        ]
+      },
+      {
+        "id": "contract-g002-preserved-routes",
+        "contractRef": "Preserved canonical route contract",
+        "obligation": "Existing /ui/evolution, /ui/backtest, and /ui/chart-replay remain separate and tested.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-canonical-regression"
+        ]
+      },
+      {
+        "id": "contract-g002-safety",
+        "contractRef": "Gate C safety",
+        "obligation": "No hidden final_approval, automatic export, live order, broker, account, or account-trading controls are added.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-source-safety"
+        ],
+        "adversarialCaseRefs": [
+          "case-forbidden-actions"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-remodel",
+        "contractRef": "remodel namespace web surface",
+        "surface": "web",
+        "invocation": "Browser navigated to /ui/remodel/condition, /ui/remodel/backtest, /ui/remodel/chart-replay, /ui/remodel/process and captured screenshots.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "gui-screenshot"
+        ]
+      },
+      {
+        "id": "surface-source-bootstrap",
+        "contractRef": "remodel bootstrap source",
+        "surface": "package",
+        "invocation": "Unit tests inspect remodel index, bootstrap script, and bundle manifest versions; node --check validates bootstrap syntax.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "surface-tests",
+        "contractRef": "canonical route tests",
+        "surface": "api",
+        "invocation": "TestClient tests verify canonical routes and remodel deep-link responses.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "surface-source-safety",
+        "contractRef": "source/DOM safety guard",
+        "surface": "package",
+        "invocation": "Unit tests scan remodel index/bootstrap/static source for forbidden markers and required safety cues.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-route-escape",
+        "contractRef": "Gate A route isolation",
+        "scenario": "Production app attempts to push canonical /ui/backtest or /ui/chart-replay while running under remodel.",
+        "expectedBehavior": "remodel-bootstrap remaps same-origin canonical history URLs to /ui/remodel/backtest or /ui/remodel/chart-replay.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary",
+          "browser-transcript"
+        ]
+      },
+      {
+        "id": "case-static-renderer-leak",
+        "contractRef": "Gate B single renderer",
+        "scenario": "/ui/remodel/ continues loading static src/app.js as production renderer.",
+        "expectedBehavior": "remodel index loads production bundle and does not include ./src/app.js.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-canonical-regression",
+        "contractRef": "preserved routes",
+        "scenario": "G002 remodel mount breaks /ui/evolution, /ui/backtest, or /ui/chart-replay.",
+        "expectedBehavior": "canonical routes remain 200 and separate from frontend/remodel.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-forbidden-actions",
+        "contractRef": "Gate C safety",
+        "scenario": "remodel shell introduces hidden final_approval/export/live-order/broker/account marker.",
+        "expectedBehavior": "forbidden markers absent and safety cues present.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI SLOP CLEANUP REPORT: zero blocking findings. Full rerun after cleanup/review passed: 10 focused tests, 330 dashboard tests, node syntax, app py_compile, git diff --check. Architect and executor QA blockers are empty.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q",
+      "pytest tests/unit/test_dashboard* -q",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/remodel-bootstrap.js",
+      "python -m py_compile ai_strategy_loop/dashboard/app.py",
+      "git diff --check"
+    ],
+    "blockers": []
+  }
+}

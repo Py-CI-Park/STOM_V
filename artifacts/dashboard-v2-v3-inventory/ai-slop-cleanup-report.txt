@@ -1,0 +1,6 @@
+AI SLOP CLEANUP REPORT — G003 stable inventory gate
+
+Blocking findings: 0
+Advisory findings: 0
+
+Verifier is read-only, deterministic, and fails closed on missing fields, duplicate IDs, missing required pages/types/stable IDs, weak evidence, unsafe parity status, and missing safety classes. Inventory is machine-readable and does not mutate product/runtime/protected paths.

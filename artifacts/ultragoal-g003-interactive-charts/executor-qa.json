@@ -1,0 +1,320 @@
+{
+  "status": "passed",
+  "e2eStatus": "passed",
+  "redTeamStatus": "passed",
+  "evidence": "Read-only QA over the assigned files confirms G003 evidence remains sufficient after the fallback provenance fix. `current-live-probe.json` status is PASS and includes `condition_live_fallback` with `status=STALE/FALLBACK`, `freshness=stale-fixture-fallback`, and ARIA text `source=fixture fallback · backend not driving chart`; it also includes `chart_replay_live_fallback` with `status=STALE/FALLBACK`, `freshness=stale-replay-fixture-fallback`, and ARIA text `source=fixture fallback · sim probe not driving chart`. `verification-summary.json` is PASS, records 37 interactive charts, 8 non-uniform screenshots, passing hover/keyboard coverage, and `liveFallbackProvenance`/`replayFallbackProvenance` true. Source inspection confirms live default mode derives STALE/FALLBACK from stale/fallback provenance and replay candlesticks use the sim-probe fallback label in live mode. Static tests lock the provenance, interaction, legend, CSS, and safety markers. No blockers found.",
+  "e2eCommands": [],
+  "redTeamCommands": [],
+  "artifactRefs": [
+    {
+      "id": "art-browser-transcript",
+      "kind": "browser-automation-transcript",
+      "path": "artifacts/ultragoal-g003-interactive-charts/browser-transcript.json",
+      "description": "Browser transcript over eight remodel routes with hover and keyboard chart probes; verdict passed."
+    },
+    {
+      "id": "art-image-evidence",
+      "kind": "browser-screenshot-image-evidence",
+      "path": "artifacts/ultragoal-g003-interactive-charts/image-evidence.json",
+      "description": "Eight route screenshots are present, 1920x1080, non-uniform, and status PASS."
+    },
+    {
+      "id": "art-verification-summary",
+      "kind": "test-report-verification-summary",
+      "path": "artifacts/ultragoal-g003-interactive-charts/verification-summary.json",
+      "description": "Summary records node check, focused pytest, browser automation, current live probe, image scan, artifact validator, and diff check as passing."
+    },
+    {
+      "id": "art-current-live-probe",
+      "kind": "browser-automation-current-probe",
+      "path": "artifacts/ultragoal-g003-interactive-charts/current-live-probe.json",
+      "description": "Current probe verifies reference legend/state badges plus live fallback STALE/FALLBACK provenance for default condition and chart replay routes."
+    },
+    {
+      "id": "art-cleanup-report",
+      "kind": "qa-review-report",
+      "path": "artifacts/ultragoal-g003-interactive-charts/ai-slop-cleanup-report.md",
+      "description": "Cleanup review reports no blocking or advisory findings for the G003 interactive-chart story."
+    },
+    {
+      "id": "doc-update-log",
+      "kind": "implementation-log",
+      "path": "docs/update_log/2026-06-29_ultragoal_g003_interactive_chart_primitives.md",
+      "description": "Update log documents scope, browser evidence, live-mode fallback provenance, commands, and result."
+    },
+    {
+      "id": "src-app",
+      "kind": "source-inspection",
+      "path": "ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "description": "Source defines chart provenance, badges, interactive events, legend highlight, empty states, and replay fallback labels."
+    },
+    {
+      "id": "src-theme",
+      "kind": "source-inspection",
+      "path": "ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css",
+      "description": "CSS defines chart badges, tooltip, crosshair, focus, legend highlight, dimming, empty state, and candle chart affordances."
+    },
+    {
+      "id": "test-static",
+      "kind": "test-source-inspection",
+      "path": "tests/unit/test_dashboard_remodel_static.py",
+      "description": "Static tests lock G003 provenance/interactivity markers and safety constraints."
+    }
+  ],
+  "contractCoverage": [
+    {
+      "id": "cc-interactive-primitives",
+      "contractRef": "G003 interactive chart primitives",
+      "obligation": "Charts expose datum-aware hover, keyboard navigation, ARIA labels/live active values, crosshair/tooltip, and legend highlighting without static-poster behavior.",
+      "status": "passed",
+      "reason": "Browser transcript shows passed hover/keyboard probes across condition, history, lab, workbench, audit, backtest, and chart replay; source and CSS contain the required registry/event/style primitives.",
+      "surfaceEvidenceRefs": [
+        "se-browser-routes",
+        "se-source-primitives",
+        "se-css-affordances"
+      ],
+      "adversarialCaseRefs": [
+        "adv-keyboard",
+        "adv-legend"
+      ]
+    },
+    {
+      "id": "cc-provenance-labels",
+      "contractRef": "G003 honest provenance/state labels",
+      "obligation": "Rendered chart labels, badges, tooltip/ARIA text include source, run_id, freshness, status, and malformed count.",
+      "status": "passed",
+      "reason": "Source `datumLabel` and `chartStateBadges` include the provenance fields; transcript/probe evidence shows them in active text, state badges, and ARIA.",
+      "surfaceEvidenceRefs": [
+        "se-current-probe",
+        "se-source-provenance"
+      ],
+      "adversarialCaseRefs": [
+        "adv-live-condition-fallback",
+        "adv-live-replay-fallback"
+      ]
+    },
+    {
+      "id": "cc-live-fallback-condition",
+      "contractRef": "G003 live default condition fallback provenance",
+      "obligation": "When live default condition charts are fixture-driven, the UI must state STALE/FALLBACK instead of implying backend-owned data.",
+      "status": "passed",
+      "reason": "`current-live-probe.json` `condition_live_fallback` shows `status=STALE/FALLBACK`, `freshness=stale-fixture-fallback`, and ARIA `source=fixture fallback · backend not driving chart`.",
+      "surfaceEvidenceRefs": [
+        "se-current-probe"
+      ],
+      "adversarialCaseRefs": [
+        "adv-live-condition-fallback"
+      ]
+    },
+    {
+      "id": "cc-live-fallback-replay",
+      "contractRef": "G003 chart replay fixture-driven fallback provenance",
+      "obligation": "Replay candlestick charts must explicitly label fixture fallback when the sim probe is not driving the chart.",
+      "status": "passed",
+      "reason": "`current-live-probe.json` `chart_replay_live_fallback` shows `status=STALE/FALLBACK`, `freshness=stale-replay-fixture-fallback`, and ARIA `source=fixture fallback · sim probe not driving chart`; source uses the same live-mode replay provenance.",
+      "surfaceEvidenceRefs": [
+        "se-current-probe",
+        "se-source-replay"
+      ],
+      "adversarialCaseRefs": [
+        "adv-live-replay-fallback"
+      ]
+    },
+    {
+      "id": "cc-safety",
+      "contractRef": "G003 safety constraints",
+      "obligation": "Interactive charts must not introduce broker/order/account/export affordances, endpoints, dependencies, or fake-success masking.",
+      "status": "passed",
+      "reason": "Static test source checks safety cues and forbidden controls; cleanup report says no unsafe abstraction, duplicated chart stack, or safety-boundary violation remains.",
+      "surfaceEvidenceRefs": [
+        "se-static-tests",
+        "se-cleanup-report"
+      ],
+      "adversarialCaseRefs": [
+        "adv-safety-controls"
+      ]
+    }
+  ],
+  "surfaceEvidence": [
+    {
+      "id": "se-browser-routes",
+      "contractRef": "G003 interactive chart primitives",
+      "surface": "Browser automation transcript over condition/process/history/lab/workbench/audit/backtest/chart_replay",
+      "invocation": "Recorded in browser-transcript.json; no new command run in this read-only QA pass.",
+      "verdict": "passed: 37 interactive charts; process not_applicable; hover and keyboard probes passed on chart-bearing routes including chart_replay.",
+      "artifactRefs": [
+        "art-browser-transcript",
+        "art-verification-summary"
+      ],
+      "status": "passed",
+      "reason": "Transcript verdict is passed and summary records totalInteractiveCharts=37."
+    },
+    {
+      "id": "se-current-probe",
+      "contractRef": "G003 honest provenance/state labels",
+      "surface": "Current live probe over reference condition/replay plus live fallback condition/replay routes",
+      "invocation": "Recorded in current-live-probe.json; no new command run in this read-only QA pass.",
+      "verdict": "passed: status PASS; condition live fallback and replay live fallback both report STALE/FALLBACK with explicit fixture fallback sources.",
+      "artifactRefs": [
+        "art-current-live-probe",
+        "art-verification-summary"
+      ],
+      "status": "passed",
+      "reason": "Probe directly covers the fallback provenance fix requested by the assignment."
+    },
+    {
+      "id": "se-images",
+      "contractRef": "G003 browser visual evidence",
+      "surface": "Screenshot evidence scan for browser captures",
+      "invocation": "Recorded in image-evidence.json; no new command run in this read-only QA pass.",
+      "verdict": "passed: 8 screenshots exist, 1920x1080, non-uniform, no failures.",
+      "artifactRefs": [
+        "art-image-evidence"
+      ],
+      "status": "passed",
+      "reason": "Non-uniform screenshots support the browser transcript as live UI evidence."
+    },
+    {
+      "id": "se-source-primitives",
+      "contractRef": "G003 interactive chart primitives",
+      "surface": "ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "invocation": "Read-only source inspection of chart registry, `attachChartEvents`, line/bar/candle rendering.",
+      "verdict": "passed: registry, datum labels, tooltip/crosshair, keyboard Home/End/Arrow keys, legend highlight, ARIA, active-datum, and empty-state paths are present.",
+      "artifactRefs": [
+        "src-app"
+      ],
+      "status": "passed",
+      "reason": "Implementation markers align with transcript behavior and static tests."
+    },
+    {
+      "id": "se-source-provenance",
+      "contractRef": "G003 honest provenance/state labels",
+      "surface": "ai_strategy_loop/dashboard/frontend/remodel/src/app.js provenance helpers",
+      "invocation": "Read-only source inspection of `chartProvenance`, `chartStateBadges`, and `datumLabel`.",
+      "verdict": "passed: live non-reference/default path uses fixture fallback/backend-not-driving source, stale freshness, STALE/FALLBACK status, run_id and malformed badges.",
+      "artifactRefs": [
+        "src-app"
+      ],
+      "status": "passed",
+      "reason": "The code derives stale/fallback status from fallback source/freshness and emits it in badges and ARIA labels."
+    },
+    {
+      "id": "se-source-replay",
+      "contractRef": "G003 chart replay fixture-driven fallback provenance",
+      "surface": "ai_strategy_loop/dashboard/frontend/remodel/src/app.js replay candle rendering",
+      "invocation": "Read-only source inspection of `candleSvg`.",
+      "verdict": "passed: live replay mode uses `fixture fallback · sim probe not driving chart` and `stale-replay-fixture-fallback`; reference mode uses `reference replay fixture`.",
+      "artifactRefs": [
+        "src-app"
+      ],
+      "status": "passed",
+      "reason": "The replay fallback fix is present at the chart primitive source."
+    },
+    {
+      "id": "se-css-affordances",
+      "contractRef": "G003 interactive chart primitives",
+      "surface": "ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css",
+      "invocation": "Read-only CSS inspection of chart selectors.",
+      "verdict": "passed: state badge warn/ok, tooltip visible state, focus ring, crosshair, series highlight/dim, empty state, and candle chart styles are present.",
+      "artifactRefs": [
+        "src-theme"
+      ],
+      "status": "passed",
+      "reason": "CSS affordances support visible interaction and fallback state labels."
+    },
+    {
+      "id": "se-static-tests",
+      "contractRef": "G003 static regression coverage",
+      "surface": "tests/unit/test_dashboard_remodel_static.py",
+      "invocation": "Read-only test source inspection.",
+      "verdict": "passed: tests assert G003 provenance/interactivity markers, fallback strings, replay fallback source, CSS affordances, and safety forbidden controls.",
+      "artifactRefs": [
+        "test-static"
+      ],
+      "status": "passed",
+      "reason": "Focused tests lock the relevant source and safety markers."
+    },
+    {
+      "id": "se-cleanup-report",
+      "contractRef": "G003 final QA cleanup",
+      "surface": "ai-slop-cleanup-report.md",
+      "invocation": "Read-only report inspection.",
+      "verdict": "passed: no blocking or advisory findings; conclusion says no fallback-like masking, dead code, unsafe abstraction, duplicated chart stack, or safety-boundary violation remains.",
+      "artifactRefs": [
+        "art-cleanup-report"
+      ],
+      "status": "passed",
+      "reason": "Independent cleanup report is consistent with the inspected artifacts."
+    }
+  ],
+  "adversarialCases": [
+    {
+      "id": "adv-live-condition-fallback",
+      "contractRef": "G003 live default condition fallback provenance",
+      "scenario": "Live/default condition route has no `demo=reference`; fixture data still drives charts.",
+      "expectedBehavior": "Visible badges and ARIA must say STALE/FALLBACK with source `fixture fallback · backend not driving chart`, stale fixture freshness, run_id, and malformed count.",
+      "verdict": "passed: current-live-probe condition_live_fallback records `status=STALE/FALLBACK`, `freshness=stale-fixture-fallback`, `malformed=0`, and matching ARIA/source text.",
+      "artifactRefs": [
+        "art-current-live-probe",
+        "src-app"
+      ]
+    },
+    {
+      "id": "adv-live-replay-fallback",
+      "contractRef": "G003 chart replay fixture-driven fallback provenance",
+      "scenario": "Live/default chart replay route is not driven by the sim probe and uses replay fixture candles.",
+      "expectedBehavior": "Candlestick charts must say STALE/FALLBACK with source `fixture fallback · sim probe not driving chart` and stale replay fixture freshness.",
+      "verdict": "passed: current-live-probe chart_replay_live_fallback records `status=STALE/FALLBACK`, `freshness=stale-replay-fixture-fallback`, and matching ARIA/source text; source uses the same live-mode strings.",
+      "artifactRefs": [
+        "art-current-live-probe",
+        "src-app"
+      ]
+    },
+    {
+      "id": "adv-keyboard",
+      "contractRef": "G003 interactive chart primitives",
+      "scenario": "Mouse-only charts would exclude keyboard users and fail accessibility expectations.",
+      "expectedBehavior": "Focused charts support Home/End/ArrowLeft/ArrowRight and update active datum/ARIA labels.",
+      "verdict": "passed: transcript records keyboardHome and keyboardRight values on chart-bearing routes; source handles the required key events.",
+      "artifactRefs": [
+        "art-browser-transcript",
+        "src-app"
+      ]
+    },
+    {
+      "id": "adv-legend",
+      "contractRef": "G003 interactive chart primitives",
+      "scenario": "Multi-series legends remain passive labels and do not affect chart state.",
+      "expectedBehavior": "Legend hover/focus/click highlights selected series, dims peers, and updates active datum text/aria-pressed state.",
+      "verdict": "passed: current probe shows legendActive true with highlighted/dimmed elements; source implements `setLegendHighlight`, `series-highlighted`, `series-dimmed`, and `aria-pressed`.",
+      "artifactRefs": [
+        "art-current-live-probe",
+        "src-app",
+        "src-theme"
+      ]
+    },
+    {
+      "id": "adv-empty-malformed",
+      "contractRef": "G003 honest provenance/state labels",
+      "scenario": "Missing or malformed chart data would otherwise be hidden by fake geometry or silent success.",
+      "expectedBehavior": "Empty states are explicit and malformed counts are surfaced in state badges/labels.",
+      "verdict": "passed: source renders `chart-empty` with source/run_id/freshness/status/malformed and diagnostics; static tests assert empty-state and malformed markers.",
+      "artifactRefs": [
+        "src-app",
+        "test-static"
+      ]
+    },
+    {
+      "id": "adv-safety-controls",
+      "contractRef": "G003 safety constraints",
+      "scenario": "Interactive dashboard adds unauthorized broker/login/order/account controls or fake export affordances.",
+      "expectedBehavior": "No live order, broker login, account trade, or unsafe export controls appear; safety cues remain present.",
+      "verdict": "passed: static tests assert required safety cues and forbid live-order, broker-login, account-trade, order execution, and account-login patterns; cleanup report finds no safety-boundary violation.",
+      "artifactRefs": [
+        "test-static",
+        "art-cleanup-report"
+      ]
+    }
+  ],
+  "blockers": []
+}

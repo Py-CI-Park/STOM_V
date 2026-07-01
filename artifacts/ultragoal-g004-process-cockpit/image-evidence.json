@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G004",
+  "images": [
+    {
+      "id": "process-cockpit",
+      "kind": "screenshot",
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g004-process-cockpit/process-cockpit.png",
+      "width": 2000,
+      "height": 2755,
+      "mode": "RGB",
+      "mean": [
+        14.61,
+        25.07,
+        32.46
+      ],
+      "extrema": [
+        [
+          3,
+          255
+        ],
+        [
+          5,
+          255
+        ],
+        [
+          8,
+          255
+        ]
+      ],
+      "nonUniform": true,
+      "sha256": "152e86e4abd91806ab20e2a9321bba9d126d5ac543f61436d3537ea8a0ebb24a",
+      "description": "G004 reference/demo Process cockpit screenshot after run selector change, honest fixture label and all required payload sections"
+    },
+    {
+      "id": "process-node-modal",
+      "kind": "screenshot",
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g004-process-cockpit/process-node-modal.png",
+      "width": 2000,
+      "height": 2755,
+      "mode": "RGB",
+      "mean": [
+        10.64,
+        17.79,
+        23.65
+      ],
+      "extrema": [
+        [
+          1,
+          255
+        ],
+        [
+          2,
+          246
+        ],
+        [
+          3,
+          255
+        ]
+      ],
+      "nonUniform": true,
+      "sha256": "ac98f6b09d728fa988b7b901cacf548b97307f3be70091c5e77225c9e9f04c6a",
+      "description": "G004 reference/demo Process node drilldown modal screenshot proving node click and required-field DOM detail"
+    },
+    {
+      "id": "process-cockpit-live",
+      "kind": "screenshot",
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g004-process-cockpit/process-cockpit-live.png",
+      "width": 2000,
+      "height": 2768,
+      "mode": "RGB",
+      "mean": [
+        14.19,
+        24.63,
+        32.39
+      ],
+      "extrema": [
+        [
+          3,
+          255
+        ],
+        [
+          5,
+          255
+        ],
+        [
+          8,
+          255
+        ]
+      ],
+      "nonUniform": true,
+      "sha256": "daee2f0e9837d381f57515ff14149a82912dff514aeec50cc78db6218299045d",
+      "description": "G004 live-mode Process cockpit screenshot proving backend /status derived live payload, neutral idle state, non-forced contracts, and no negative generation display"
+    }
+  ],
+  "allNonUniform": true
+}

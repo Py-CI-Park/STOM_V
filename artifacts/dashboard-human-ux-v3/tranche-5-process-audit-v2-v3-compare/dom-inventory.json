@@ -1,0 +1,2313 @@
+{
+  "generatedAt": "2026-06-30T12:38:20.584327+00:00",
+  "inventorySource": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-v2-v3-inventory\\v2-v3-inventory.json",
+  "rows": [
+    {
+      "id": "01_condition_ai",
+      "page": "condition",
+      "v2": {
+        "actions": [],
+        "buttons": [
+          "Dark",
+          "Light",
+          "적용",
+          "↻",
+          "🧬\n조건식 AI\nLIVE",
+          "📊\n백테스트\nBT",
+          "📈\n차트 리플레이\nSIM",
+          "🏠\n조건식 AI\nHOME",
+          "🗺️\n프로세스\nFLOW",
+          "IDX\n히스토리\nHISTORY",
+          "🔬\n연구실\nLAB",
+          "📊\n분석 워크벤치\nWORK",
+          "⚖️\n결정 감사\nAUDIT",
+          "▸ 시작",
+          "◼ 정지",
+          "expand preview",
+          "open full code",
+          "Zoom In",
+          "Zoom Out",
+          "Fit View",
+          "all",
+          "▸ 시작",
+          "Zoom In",
+          "Zoom Out",
+          "Fit View",
+          "백테스트\n개별 조건식 백테스트와 진화 중 백테스트 결과 확인",
+          "차트 리플레이\n진입/청산 지점을 차트에서 다시 확인",
+          "히스토리\n모든 run/gen 결과·Compare·기록 검색",
+          "연구실\n탐색 히트맵·Edge Ratio·변수 분석·검증을 한 화면에서 확인",
+          "분석 워크벤치\n후보 분석과 HoF 비교",
+          "결정 감사\nappend-only 결정 이력 확인",
+          "▸ 조건식 AI 시작 설정 열기",
+          "LAB\n연구실\n탐색 히트맵·Edge Ratio·변수 중요도·상관관계·변수 조합·검증의 단일 소유 화면",
+          "HISTORY\n히스토리\n모든 run/gen 백테스트 결과, 조건식, ResultDetail, Compare, 연구 기록 검색",
+          "WORK\n분석 워크벤치\n후보 조건식 정밀 분석과 명예의 전당 후보 확인",
+          "HOF\n명예의 전당\n실시간/과거 백테스트에서 좋은 결과를 Workbench/HOF 기준으로 재검토",
+          "BT\n백테스트\n조건식 실행·최적화·WFO·결과 라이브러리 확인",
+          "SIM\n차트 리플레이\n조건식 신호와 실제 차트 흐름을 재생해 진입/청산 맥락 점검",
+          "↻ 새로고침",
+          "↻ 새로고침",
+          "Refresh",
+          "Calmar",
+          "우상향 R²",
+          "MDD %",
+          "일평균거래",
+          "동시보유",
+          "손익비",
+          "📷 인간 결과 스크린샷",
+          "↻ 새로고침",
+          "총수익률",
+          "총수익금",
+          "연평균",
+          "MDD",
+          "payoff",
+          "전체",
+          "👤 인간",
+          "🌱 시드",
+          "🤖 AI",
+          "Sort: Total Profit",
+          "Sort: Gen",
+          "히스토리에서 Compare 열기",
+          "</> 코드 보기 — gen_-1"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-cache",
+          "x-stom-dashboard-version": "v2"
+        },
+        "htmlHash": "4fbc771c091409f8aa66db8a1eb2577e7df168e88273f71c1f08ba3364bad2b2",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 15.57,
+          "lumaStddev": 8.44,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_theme",
+          "stom_active_evolution_tab",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/evolution",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/styles.css?v=20260624u002",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react-dom.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-lightweight-charts.js?v=20260612a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/stom-ui.js?v=f41f5701",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/app.js?v=f6d376db",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/research_criteria?mode=disabled",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/equity_curves",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/hall_of_fame",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/runs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/health",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/runs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/config/spec",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/status",
+            "resourceType": "fetch"
+          }
+        ],
+        "routeId": "01_condition_ai",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\01_condition_ai-v2.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+          "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+          "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        ],
+        "statusCode": 200,
+        "textHash": "fd9d557aa8bf99aff8adfd103df80ff8e48b56e7d5e4a801b5403025633301e5",
+        "textLength": 16735,
+        "title": "STOM AI · 조건식 자율 진화 대시보드",
+        "url": "http://127.0.0.1:8776/ui/evolution",
+        "version": "v2",
+        "websockets": [
+          "ws://127.0.0.1:8776/ws"
+        ]
+      },
+      "v3": {
+        "actions": [
+          "reconnect",
+          "theme",
+          "settings",
+          "start",
+          "stop",
+          "inspector",
+          "approval",
+          "inspector",
+          "inspector",
+          "inspector",
+          "inspector",
+          "inspector",
+          "inspector",
+          "inspector",
+          "inspector",
+          "inspector",
+          "inspector",
+          "inspector",
+          "inspector",
+          "inspector",
+          "approval",
+          "approval",
+          "inspector"
+        ],
+        "buttons": [
+          "재연결",
+          "테마 ◐",
+          "조건식 AI",
+          "백테스트",
+          "차트 리플레이",
+          "LIVE",
+          "ARCHIVE",
+          "⚙ 설정",
+          "Start ▶",
+          "Stop ■",
+          "조건식 AI",
+          "프로세스",
+          "히스토리",
+          "연구실",
+          "분석 워크벤치",
+          "결정 감사",
+          "BEST 후보 검사",
+          "Strategy Inspector",
+          "Human Approval Export 검토",
+          "승인 상태 보기",
+          "인스펙터",
+          "우승 후보 승인",
+          "승인 및 내보내기",
+          "복사",
+          "높이 확장",
+          "전체 인스펙터 열기"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-store, max-age=0, must-revalidate",
+          "expires": "0",
+          "pragma": "no-cache",
+          "x-stom-dashboard-version": "v3-remodel"
+        },
+        "htmlHash": "ac6509ddaf2072fdc8de9ff3d2d33106879f6fa557d5ada3c2450a3232ef7902",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 26.64,
+          "lumaStddev": 17.37,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/remodel/condition?demo=reference",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/data.js?v=20260628canonical",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/app.js?v=20260628canonical",
+            "resourceType": "script"
+          }
+        ],
+        "routeId": "01_condition_ai",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\01_condition_ai-v3.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+          "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        ],
+        "statusCode": 200,
+        "textHash": "54f9d9d42d5cc8149acdb6f521209609907d854cd0ae1a7a4ac975677caa830e",
+        "textLength": 8938,
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+        "version": "v3",
+        "websockets": []
+      }
+    },
+    {
+      "id": "02_process",
+      "page": "process",
+      "v2": {
+        "actions": [],
+        "buttons": [
+          "Dark",
+          "Light",
+          "적용",
+          "↻",
+          "🧬\n조건식 AI\nLIVE",
+          "📊\n백테스트\nBT",
+          "📈\n차트 리플레이\nSIM",
+          "🏠\n조건식 AI\nHOME",
+          "🗺️\n프로세스\nFLOW",
+          "IDX\n히스토리\nHISTORY",
+          "🔬\n연구실\nLAB",
+          "📊\n분석 워크벤치\nWORK",
+          "⚖️\n결정 감사\nAUDIT",
+          "▸ 시작",
+          "◼ 정지",
+          "Zoom In",
+          "Zoom Out",
+          "Fit View"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-cache",
+          "x-stom-dashboard-version": "v2"
+        },
+        "htmlHash": "0cc474ecb90cd725e1e3a4113f77fc4683653051b3552dc8d6d3d8c644a50460",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 17.99,
+          "lumaStddev": 11.08,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/evolution/process",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/styles.css?v=20260624u002",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react-dom.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-lightweight-charts.js?v=20260612a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/stom-ui.js?v=f41f5701",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/app.js?v=f6d376db",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/health",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/runs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/config/spec",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/status",
+            "resourceType": "fetch"
+          }
+        ],
+        "routeId": "02_process",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\02_process-v2.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+          "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+          "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        ],
+        "statusCode": 200,
+        "textHash": "f4e217e7e0d3c93ce2487cfa08353f63ba80a51247a72be9b5d4424efe2005d1",
+        "textLength": 4149,
+        "title": "STOM AI · 조건식 자율 진화 대시보드",
+        "url": "http://127.0.0.1:8776/ui/evolution/process",
+        "version": "v2",
+        "websockets": [
+          "ws://127.0.0.1:8776/ws"
+        ]
+      },
+      "v3": {
+        "actions": [
+          "reconnect",
+          "theme",
+          "settings",
+          "start",
+          "stop",
+          "process-node",
+          "process-node",
+          "process-node",
+          "process-node",
+          "process-node",
+          "process-node"
+        ],
+        "buttons": [
+          "재연결",
+          "테마 ◐",
+          "조건식 AI",
+          "백테스트",
+          "차트 리플레이",
+          "LIVE",
+          "ARCHIVE",
+          "⚙ 설정",
+          "Start ▶",
+          "Stop ■",
+          "조건식 AI",
+          "프로세스",
+          "히스토리",
+          "연구실",
+          "분석 워크벤치",
+          "결정 감사",
+          "현재 노드 보기",
+          "노드 JSON 보기",
+          "1 완료\nGeneration\n아이디어/가설 생성\nitems\n32\ntime\n1.32s",
+          "2 완료\nBacktest\n시뮬레이터 검증\nitems\n32\ntime\n3.28s",
+          "3 완료\nScoring\n다중 지표 랭킹\nitems\n10\ntime\n0.76s",
+          "4 진행 중\nAutopsy\n성과 원인 분석\nitems\n4/10\ntime\n1.46s",
+          "5 대기\nRepeat\n인사이트 반영\nitems\n10\ntime\nETA 00:00:48"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-store, max-age=0, must-revalidate",
+          "expires": "0",
+          "pragma": "no-cache",
+          "x-stom-dashboard-version": "v3-remodel"
+        },
+        "htmlHash": "9dcfbebbf1e044db32233677922e1febbce05679b6e406d1d3efd18ffbf524c4",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 25.54,
+          "lumaStddev": 19.98,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/remodel/process?demo=reference",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/data.js?v=20260628canonical",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/app.js?v=20260628canonical",
+            "resourceType": "script"
+          }
+        ],
+        "routeId": "02_process",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\02_process-v3.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+          "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        ],
+        "statusCode": 200,
+        "textHash": "93b136dea21d106df808bc3360da6a0a0dee86aa301b04f743233dcb38bdd082",
+        "textLength": 4427,
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+        "version": "v3",
+        "websockets": []
+      }
+    },
+    {
+      "id": "03_history",
+      "page": "history",
+      "v2": {
+        "actions": [],
+        "buttons": [
+          "Dark",
+          "Light",
+          "적용",
+          "↻",
+          "🧬\n조건식 AI\nLIVE",
+          "📊\n백테스트\nBT",
+          "📈\n차트 리플레이\nSIM",
+          "🏠\n조건식 AI\nHOME",
+          "🗺️\n프로세스\nFLOW",
+          "IDX\n히스토리\nHISTORY",
+          "🔬\n연구실\nLAB",
+          "📊\n분석 워크벤치\nWORK",
+          "⚖️\n결정 감사\nAUDIT",
+          "▸ 시작",
+          "◼ 정지",
+          "Refresh",
+          "theta_star",
+          "post-q4-3h-bulk-research-20260618",
+          "run 새로고침",
+          "+ 현재 선택 추가 (—/g0)",
+          "+ 추가",
+          "refresh",
+          "2026. 6. 30. 21시 37분 43초\nloop_runs.db (0 runs)\nunlinked\nhistorical\nloop_runs.db\nresearch-index://loop_run:loop_runs.db",
+          "2026. 6. 30. 21시 37분 43초\nHall of Fame AI candidates from loop_runs.db\nlinked\nderived\nhall of fame\nresearch-index://hof:loop-runs-ai",
+          "2026. 6. 30. 4시 50분 0초\nUltragoal G007 — Deterministic verification and final evidence\nunknown\nhistorical\nselected update_log\nresearch-index://update_log:docs/update_log/2026-06-29_ultragoal_g007_final_evidence.md",
+          "2026. 6. 30. 4시 29분 56초\ndiscovery feedback\nunlinked\nhistorical\nevidence artifact\nresearch-index://evidence:.omo/evidence/tmap-walkforward/_discovery_feedback.txt",
+          "2026. 6. 30. 4시 8분 50초\nUltragoal G006 — Eight-page UX/UI sweep\nunknown\nhistorical\nselected update_log\nresearch-index://update_log:docs/update_log/2026-06-29_ultragoal_g006_eight_page_ux_sweep.md",
+          "2026. 6. 30. 3시 46분 44초\nUltragoal G005 — Safety and provenance hardening\nunknown\nhistorical\nselected update_log\nresearch-index://update_log:docs/update_log/2026-06-29_ultragoal_g005_safety_provenance.md",
+          "2026. 6. 30. 3시 2분 9초\nUltragoal G004 — Process monitoring cockpit rebuild\nunknown\nhistorical\nselected update_log\nresearch-index://update_log:docs/update_log/2026-06-29_ultragoal_g004_process_cockpit.md",
+          "2026. 6. 29. 23시 41분 54초\n2026-06-29 Ultragoal G003 interactive chart primitives\nunknown\nhistorical\nselected update_log\nresearch-index://update_log:docs/update_log/2026-06-29_ultragoal_g003_interactive_chart_primitives.md",
+          "2026. 6. 29. 22시 31분 2초\n2026-06-29 Ultragoal G002 V2/V3 baseline inventory\nunknown\nhistorical\nselected update_log\nresearch-index://update_log:docs/update_log/2026-06-29_ultragoal_g002_v2_v3_inventory.md",
+          "2026. 6. 29. 21시 57분 36초\n2026-06-29 Ultragoal G001 Phase 0 Gate Matrices\nunknown\nhistorical\nselected update_log\nresearch-index://update_log:docs/update_log/2026-06-29_ultragoal_g001_phase0_gate_matrices.md",
+          "2026. 6. 28. 9시 50분 56초\nUltragoal G001 — 100점 재도전 기준/인벤토리\nunknown\nhistorical\nselected update_log\nresearch-index://update_log:docs/update_log/2026-06-28_ultragoal_g001_100point_inventory.md",
+          "2026. 6. 28. 8시 13분 27초\n대시보드 리모델 100점 미달 원인 분석 및 재도전 기준\nunknown\nhistorical\nselected update_log\nresearch-index://update_log:docs/update_log/2026-06-27_dashboard_remodel_100_point_postmortem.md",
+          "loop_runs.db (0 runs)\nLoop run\nhistorical\nloop_runs.db\nunlinked\nai_strategy_loop/state/loop_runs.db",
+          "Hall of Fame AI candidates from loop_runs.db\nHall of Fame\nderived\nhall of fame\nlinked\nai_strategy_loop/state/loop_runs.db",
+          "Ultragoal G007 — Deterministic verification and final evidence\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-29_ultragoal_g007_final_evidence.md",
+          "discovery feedback\nEvidence\nhistorical\nevidence artifact\nunlinked\n.omo/evidence/tmap-walkforward/_discovery_feedback.txt",
+          "Ultragoal G006 — Eight-page UX/UI sweep\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-29_ultragoal_g006_eight_page_ux_sweep.md",
+          "Ultragoal G005 — Safety and provenance hardening\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-29_ultragoal_g005_safety_provenance.md",
+          "Ultragoal G004 — Process monitoring cockpit rebuild\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-29_ultragoal_g004_process_cockpit.md",
+          "2026-06-29 Ultragoal G003 interactive chart primitives\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-29_ultragoal_g003_interactive_chart_primitives.md",
+          "2026-06-29 Ultragoal G002 V2/V3 baseline inventory\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-29_ultragoal_g002_v2_v3_inventory.md",
+          "2026-06-29 Ultragoal G001 Phase 0 Gate Matrices\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-29_ultragoal_g001_phase0_gate_matrices.md",
+          "Ultragoal G001 — 100점 재도전 기준/인벤토리\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-28_ultragoal_g001_100point_inventory.md",
+          "대시보드 리모델 100점 미달 원인 분석 및 재도전 기준\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-27_dashboard_remodel_100_point_postmortem.md",
+          "대시보드 리모델 캡처 반영도 재채점\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-27_dashboard_remodel_capture_parity_recheck.md",
+          "대시보드 리모델 Ultragoal 완료 기록\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-27_dashboard_remodel_ultragoal_completion.md",
+          "Ultragoal G002 — 리모델 namespace shell과 production bootstrap\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-27_ultragoal_g002_remodel_shell_bootstrap.md",
+          "Ultragoal G001 — 대시보드 리모델 기준선·인벤토리\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-27_ultragoal_g001_baseline_inventory.md",
+          "대시보드 리모델 100점 기준 상세 채점표와 전체 페이지 개선안\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-27_dashboard_remodel_detailed_100_point_scorecard.md",
+          "대시보드 리모델 기능 패리티 평가\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-27_dashboard_remodel_parity_assessment.md",
+          "대시보드 리모델 워크트리 인수·구현 계획\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-26_dashboard_remodel_worktree_intake.md",
+          "Process Research Pipeline 중간 점검 Q&A\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-25_process_research_pipeline_midcheck_qa.md",
+          "AI Loop Worktree Inventory and Cleanup Note\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-24_ai_loop_worktree_inventory_and_cleanup_note.md",
+          "Dashboard Phase 4 Ultragoal Final Report\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-20_dashboard_phase4_ultragoal_final_report.md",
+          "Dashboard Phase 3 Feedback Execution\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-19_dashboard_phase3_feedback_execution.md",
+          "2026-06-18 Post-Q4 3H Bulk Research\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-18_post_q4_3h_bulk_research.md",
+          "2026-06-18 Post-Session Research and Dashboard Handoff\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-18_post_20260618_research_dashboard_handoff.md",
+          "2026-06-18 조건식 연구 전체 재검토\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-18_condition_research_current_state_rereview.md",
+          "세션 핸드오프 — 분석 주도 조건식 개선 루프로 전환 (2026-06-14)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-14_session_handoff_analysis_driven_pivot.md",
+          "엔진 보호 횡단면 랭킹 시뮬레이터 — 설계 제안서 (2026-06-14)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-14_ranking_simulator_design_proposal.md",
+          "아침 핸드오프 — Ralph 야간 루프 결산 (2026-06-14 ~01:50)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-14_morning_ralph_loop_handoff.md",
+          "분석 주도 조건식 개선 루프 — 흑자 포켓 발견 (2026-06-14)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-14_analysis_driven_loop_breakthrough.md",
+          "D 운영 규모화 분석 — 포지션 사이징이 \"수익금 작음\"의 답 (2026-06-14)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-14_D_operational_scaling_analysis.md",
+          "V6 운용 결정 카드 — 2-전략 포트폴리오 (2026-06-13)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-13_v6_portfolio_decision_card.md",
+          "페이퍼 운용 + M4 모니터링 준비 (2026-06-13) — V6 포트폴리오 운용 전환\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-13_paper_operation_setup.md",
+          "밤 LLM 14~17세대 결산 — 단서 소진·동결 (2026-06-13 23:05)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-13_night_gen14_17_exhaustion.md",
+          "전체 핸드오프 (2026-06-13 밤 21:20) — compact 후 어디서든 재개\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-13_night_full_handoff.md",
+          "전체 핸드오프 (2026-06-13 새벽) — 이 문서 하나로 어디서든 재개\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-13_dawn_handoff.md",
+          "핸드오프 (2026-06-13 오후) — T2C3 신규 최강 후보 등장\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-13_afternoon_t2c3_handoff.md",
+          "연구 결과 보고 + 세션 핸드오프(전체) — 2026-06-11~12 집중 사이클\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-12_research_results_and_handoff.md",
+          "전체 핸드오프 (2026-06-12 밤) — 이 문서 하나로 어디서든 재개\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-12_evening_full_handoff.md",
+          "V5 슬리피지 스트레스 도구 구현 (2026-06-11)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-11_v5_slippage_stress_tool.md",
+          "TMAP 원리 타당성 검토와 프로세스 개선 제안 (2026-06-11)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-11_tmap_validity_review_and_process_improvements.md",
+          "TMAP — 경향성 지도 기반 조건식 발굴 프로세스 재설계 (2026-06-11)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-11_tmap_process_redesign.md",
+          "세션 핸드오프(전체) — 조건식 자율탐색 6/10~6/11 집중 개발 (2026-06-11)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-11_session_handoff_full.md",
+          "조건식 자율탐색 프로그램 — 전체 현황·진행률·달성 가능성·로드맵 (2026-06-11)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-11_program_status_progress_and_roadmap.md",
+          "개발 대장(Ledger) — 2026-06-11 누적 개발 확인 + 승인된 다음 큐 (저녁 기록)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-11_evening_dev_ledger_and_next_queue.md",
+          "백테스트 분석→조건식 환류 프로세스 상세 검토 (2026-06-11, 전부 실측 기반)\nUpdate log\nhistorical\nselected update_log\nunknown\ndocs/update_log/2026-06-11_analysis_feedback_process_review.md"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-cache",
+          "x-stom-dashboard-version": "v2"
+        },
+        "htmlHash": "acac8a6a19f4ed07244f4f13e390ef23da8c4f0c4b5b8731ceca9e7a0a840b1f",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 16.07,
+          "lumaStddev": 7.94,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/evolution/records",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/styles.css?v=20260624u002",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react-dom.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-lightweight-charts.js?v=20260612a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/stom-ui.js?v=f41f5701",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/app.js?v=f6d376db",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/research_records",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/runs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/research_index",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/health",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/runs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/config/spec",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/status",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/research_records",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/research_records/detail?campaign=theta_star",
+            "resourceType": "fetch"
+          }
+        ],
+        "routeId": "03_history",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\03_history-v2.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+          "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+          "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        ],
+        "statusCode": 200,
+        "textHash": "30832a23ce42779795513774f3de6ecc8e09f27ce1b1689ce04f5b6b08d16854",
+        "textLength": 17195,
+        "title": "STOM AI · 조건식 자율 진화 대시보드",
+        "url": "http://127.0.0.1:8776/ui/evolution/records",
+        "version": "v2",
+        "websockets": [
+          "ws://127.0.0.1:8776/ws"
+        ]
+      },
+      "v3": {
+        "actions": [
+          "reconnect",
+          "theme",
+          "settings",
+          "start",
+          "stop"
+        ],
+        "buttons": [
+          "재연결",
+          "테마 ◐",
+          "조건식 AI",
+          "백테스트",
+          "차트 리플레이",
+          "LIVE",
+          "ARCHIVE",
+          "⚙ 설정",
+          "Start ▶",
+          "Stop ■",
+          "조건식 AI",
+          "프로세스",
+          "히스토리",
+          "연구실",
+          "분석 워크벤치",
+          "결정 감사",
+          "Compare 보기",
+          "필터 저장",
+          "Compare 후보 고정",
+          "비교 하기",
+          "내보내기 요청"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-store, max-age=0, must-revalidate",
+          "expires": "0",
+          "pragma": "no-cache",
+          "x-stom-dashboard-version": "v3-remodel"
+        },
+        "htmlHash": "b65ed35be73399ccb3f7115c9c172d0e0f8dcba609acb6b7e8e5874a429b6fa1",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 28.45,
+          "lumaStddev": 20.37,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/remodel/history?demo=reference",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/data.js?v=20260628canonical",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/app.js?v=20260628canonical",
+            "resourceType": "script"
+          }
+        ],
+        "routeId": "03_history",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\03_history-v3.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+          "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        ],
+        "statusCode": 200,
+        "textHash": "b7432e9caf3c62bfd1e75a11d82aa8477a72a62f67525fa29cd9c4466b7d9e55",
+        "textLength": 5363,
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+        "version": "v3",
+        "websockets": []
+      }
+    },
+    {
+      "id": "04_lab",
+      "page": "lab",
+      "v2": {
+        "actions": [],
+        "buttons": [
+          "Dark",
+          "Light",
+          "적용",
+          "↻",
+          "🧬\n조건식 AI\nLIVE",
+          "📊\n백테스트\nBT",
+          "📈\n차트 리플레이\nSIM",
+          "🏠\n조건식 AI\nHOME",
+          "🗺️\n프로세스\nFLOW",
+          "IDX\n히스토리\nHISTORY",
+          "🔬\n연구실\nLAB",
+          "📊\n분석 워크벤치\nWORK",
+          "⚖️\n결정 감사\nAUDIT",
+          "▸ 시작",
+          "◼ 정지",
+          "탐색 히트맵 · Edge Ratio",
+          "변수 중요도",
+          "상관관계",
+          "변수 조합",
+          "검증",
+          "🔬 상세 워크벤치",
+          "↻ 새로고침"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-cache",
+          "x-stom-dashboard-version": "v2"
+        },
+        "htmlHash": "a473ca4b36f3c8643757fbbbac41fe3ebaa551f5d3ea16c68b51724723047e35",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 15.09,
+          "lumaStddev": 9.89,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/evolution/lab",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/styles.css?v=20260624u002",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react-dom.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-lightweight-charts.js?v=20260612a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/stom-ui.js?v=f41f5701",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/app.js?v=f6d376db",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ops_status",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/research_docs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/runs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/freeze_verdict",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/ops_status",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/health",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/runs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/config/spec",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/status",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/research_docs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/research_doc?id=docs%2Fresearch%2Fcondition_research%2Fwiki%2Fmetrics_glossary.md",
+            "resourceType": "fetch"
+          }
+        ],
+        "routeId": "04_lab",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\04_lab-v2.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+          "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+          "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        ],
+        "statusCode": 200,
+        "textHash": "1203a2e82f8349cae60726ec8b298b60fd7cdabc9e95e3953c5cb8b8dced6d88",
+        "textLength": 2216,
+        "title": "STOM AI · 조건식 자율 진화 대시보드",
+        "url": "http://127.0.0.1:8776/ui/evolution/lab",
+        "version": "v2",
+        "websockets": [
+          "ws://127.0.0.1:8776/ws"
+        ]
+      },
+      "v3": {
+        "actions": [
+          "reconnect",
+          "theme",
+          "settings",
+          "start",
+          "stop"
+        ],
+        "buttons": [
+          "재연결",
+          "테마 ◐",
+          "조건식 AI",
+          "백테스트",
+          "차트 리플레이",
+          "LIVE",
+          "ARCHIVE",
+          "⚙ 설정",
+          "Start ▶",
+          "Stop ■",
+          "조건식 AI",
+          "프로세스",
+          "히스토리",
+          "연구실",
+          "분석 워크벤치",
+          "결정 감사",
+          "선택 셀 확인",
+          "컨텍스트 팩 내보내기 (ZIP)"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-store, max-age=0, must-revalidate",
+          "expires": "0",
+          "pragma": "no-cache",
+          "x-stom-dashboard-version": "v3-remodel"
+        },
+        "htmlHash": "e58ecdaba595ad8594090d5e9e135a17cb5616b4ee89c0205e2c2a04164d508d",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 29.66,
+          "lumaStddev": 23.75,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/remodel/lab?demo=reference",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/data.js?v=20260628canonical",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/app.js?v=20260628canonical",
+            "resourceType": "script"
+          }
+        ],
+        "routeId": "04_lab",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\04_lab-v3.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+          "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        ],
+        "statusCode": 200,
+        "textHash": "5336540ca6f4db5645f102ef0809f61a16743d45541c6fe19534099dfc39ee22",
+        "textLength": 4912,
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+        "version": "v3",
+        "websockets": []
+      }
+    },
+    {
+      "id": "05_workbench",
+      "page": "workbench",
+      "v2": {
+        "actions": [],
+        "buttons": [
+          "Dark",
+          "Light",
+          "적용",
+          "↻",
+          "🧬\n조건식 AI\nLIVE",
+          "📊\n백테스트\nBT",
+          "📈\n차트 리플레이\nSIM",
+          "🏠\n조건식 AI\nHOME",
+          "🗺️\n프로세스\nFLOW",
+          "IDX\n히스토리\nHISTORY",
+          "🔬\n연구실\nLAB",
+          "📊\n분석 워크벤치\nWORK",
+          "⚖️\n결정 감사\nAUDIT",
+          "▸ 시작",
+          "◼ 정지",
+          "↻ 새로고침",
+          "🧭 프로세스",
+          "↻ 새로고침",
+          "히스토리에서 열기"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-cache",
+          "x-stom-dashboard-version": "v2"
+        },
+        "htmlHash": "d8cb1374ee1368bbad3aefef0aa711b29423532db4a26aa4422d45431aa5071d",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 15.06,
+          "lumaStddev": 9.56,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/evolution/workbench",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/styles.css?v=20260624u002",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react-dom.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-lightweight-charts.js?v=20260612a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/stom-ui.js?v=f41f5701",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/app.js?v=f6d376db",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/hall_of_fame",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/runs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/ops_status",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/status",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/runs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/health",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/runs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/config/spec",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/status",
+            "resourceType": "fetch"
+          }
+        ],
+        "routeId": "05_workbench",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\05_workbench-v2.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+          "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+          "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        ],
+        "statusCode": 200,
+        "textHash": "4820963d92dfdc45d5fc7783bc907ecf49b186b76bde6b9462f06734e966c18c",
+        "textLength": 2268,
+        "title": "STOM AI · 조건식 자율 진화 대시보드",
+        "url": "http://127.0.0.1:8776/ui/evolution/workbench",
+        "version": "v2",
+        "websockets": [
+          "ws://127.0.0.1:8776/ws"
+        ]
+      },
+      "v3": {
+        "actions": [
+          "reconnect",
+          "theme",
+          "settings",
+          "start",
+          "stop"
+        ],
+        "buttons": [
+          "재연결",
+          "테마 ◐",
+          "조건식 AI",
+          "백테스트",
+          "차트 리플레이",
+          "LIVE",
+          "ARCHIVE",
+          "⚙ 설정",
+          "Start ▶",
+          "Stop ■",
+          "조건식 AI",
+          "프로세스",
+          "히스토리",
+          "연구실",
+          "분석 워크벤치",
+          "결정 감사",
+          "리뷰 handoff 확인",
+          "#1 G-0018\n87.4\nIC\n0.123\nAnn.Ret\n29.6%\nSharpe\n1.74",
+          "#2 G-0009\n84.1\nIC\n0.108\nAnn.Ret\n25.1%\nSharpe\n1.58",
+          "#3 G-0012\n81.3\nIC\n0.096\nAnn.Ret\n22.3%\nSharpe\n1.42",
+          "#4 G-0015\n79.8\nIC\n0.091\nAnn.Ret\n21.7%\nSharpe\n1.37",
+          "#5 G-0007\n78.2\nIC\n0.089\nAnn.Ret\n19.6%\nSharpe\n1.28",
+          "History Compare",
+          "Backtest Result Review"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-store, max-age=0, must-revalidate",
+          "expires": "0",
+          "pragma": "no-cache",
+          "x-stom-dashboard-version": "v3-remodel"
+        },
+        "htmlHash": "9ad1e3dd431b3594a25f77ff9bf592781c1772cebeef15281a1d6a3b2b0ebab6",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 29.11,
+          "lumaStddev": 19.29,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/remodel/workbench?demo=reference",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/data.js?v=20260628canonical",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/app.js?v=20260628canonical",
+            "resourceType": "script"
+          }
+        ],
+        "routeId": "05_workbench",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\05_workbench-v3.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+          "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        ],
+        "statusCode": 200,
+        "textHash": "e9de3aea60c1994b4f1136f79b312d4324c3cf36dfc76d32f7e3a78592292742",
+        "textLength": 4487,
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+        "version": "v3",
+        "websockets": []
+      }
+    },
+    {
+      "id": "06_decision_audit",
+      "page": "audit",
+      "v2": {
+        "actions": [],
+        "buttons": [
+          "Dark",
+          "Light",
+          "적용",
+          "↻",
+          "🧬\n조건식 AI\nLIVE",
+          "📊\n백테스트\nBT",
+          "📈\n차트 리플레이\nSIM",
+          "🏠\n조건식 AI\nHOME",
+          "🗺️\n프로세스\nFLOW",
+          "IDX\n히스토리\nHISTORY",
+          "🔬\n연구실\nLAB",
+          "📊\n분석 워크벤치\nWORK",
+          "⚖️\n결정 감사\nAUDIT",
+          "▸ 시작",
+          "◼ 정지",
+          "기록"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-cache",
+          "x-stom-dashboard-version": "v2"
+        },
+        "htmlHash": "34e4c7b2e53cfaa3dfe5ba4a5ec762206b4a61f7904258d40bf6d143685ac1de",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 14.54,
+          "lumaStddev": 10.57,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/evolution/verdict",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/styles.css?v=20260624u002",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react-dom.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-lightweight-charts.js?v=20260612a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/stom-ui.js?v=f41f5701",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/app.js?v=f6d376db",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/freeze_verdict",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/regime_report",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/revival_registry",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/portfolio_verdict",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/decisions",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/health",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/runs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/config/spec",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/status",
+            "resourceType": "fetch"
+          }
+        ],
+        "routeId": "06_decision_audit",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\06_decision_audit-v2.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+          "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+          "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        ],
+        "statusCode": 200,
+        "textHash": "21948945ac311220bcb28aa884fb93cd858b2f4a570fdf71cef6a2c9de689aff",
+        "textLength": 4322,
+        "title": "STOM AI · 조건식 자율 진화 대시보드",
+        "url": "http://127.0.0.1:8776/ui/evolution/verdict",
+        "version": "v2",
+        "websockets": [
+          "ws://127.0.0.1:8776/ws"
+        ]
+      },
+      "v3": {
+        "actions": [
+          "reconnect",
+          "theme",
+          "settings",
+          "start",
+          "stop"
+        ],
+        "buttons": [
+          "재연결",
+          "테마 ◐",
+          "조건식 AI",
+          "백테스트",
+          "차트 리플레이",
+          "LIVE",
+          "ARCHIVE",
+          "⚙ 설정",
+          "Start ▶",
+          "Stop ■",
+          "조건식 AI",
+          "프로세스",
+          "히스토리",
+          "연구실",
+          "분석 워크벤치",
+          "결정 감사",
+          "결정 상태 확인",
+          "결정 제출 (Append-Only 기록)",
+          "내보내기 CSV 요청"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-store, max-age=0, must-revalidate",
+          "expires": "0",
+          "pragma": "no-cache",
+          "x-stom-dashboard-version": "v3-remodel"
+        },
+        "htmlHash": "4aadc8988604d70760a946a41c3376319712d4d87c632eed3e47aec7c032e2e8",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 28.11,
+          "lumaStddev": 20.52,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/remodel/audit?demo=reference",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/data.js?v=20260628canonical",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/app.js?v=20260628canonical",
+            "resourceType": "script"
+          }
+        ],
+        "routeId": "06_decision_audit",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\06_decision_audit-v3.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+          "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        ],
+        "statusCode": 200,
+        "textHash": "682758fcd9d345833a23290bf6a42c13a3bae0cfaffdfbf48bcd7035c16f3d17",
+        "textLength": 4449,
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+        "version": "v3",
+        "websockets": []
+      }
+    },
+    {
+      "id": "07_backtest",
+      "page": "backtest",
+      "v2": {
+        "actions": [],
+        "buttons": [
+          "Dark",
+          "Light",
+          "적용",
+          "↻",
+          "🧬\n조건식 AI\nLIVE",
+          "📊\n백테스트\nBT",
+          "📈\n차트 리플레이\nSIM",
+          "백테스트",
+          "최적화",
+          "WFO",
+          "스윕",
+          "▸ 백테스트 실행",
+          "↻ 이력",
+          "self.vars → 스윕 빌더",
+          "조건식 편집",
+          "결과 분석",
+          "매수·매도 동시",
+          "매수만 크게",
+          "매도만 크게",
+          "검증",
+          "저장",
+          "다른 이름으로",
+          "검증",
+          "저장",
+          "다른 이름으로",
+          "조건식 라이브러리(빠른 선택)\n▾ 접기",
+          "↻",
+          "재시도",
+          "↻",
+          "재시도",
+          "백파인더 사전 점검(실행 전용 준비)\n▸ 펼치기"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-cache",
+          "x-stom-dashboard-version": "v2"
+        },
+        "htmlHash": "c59665d3b8a91a5ef40442338f6abc22a3f354f184cd52ff8c7778320f06c0f4",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 13.35,
+          "lumaStddev": 7.55,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/backtest",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/styles.css?v=20260624u002",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react-dom.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-lightweight-charts.js?v=20260612a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/stom-ui.js?v=f41f5701",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/app.js?v=f6d376db",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/bt/data_range",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/bt/jobs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/bt/strategies?kind=buy",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/bt/strategies?kind=sell",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/bt/health",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/bt/strategies?kind=buy",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/bt/strategies?kind=sell",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/health",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/runs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/config/spec",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/status",
+            "resourceType": "fetch"
+          }
+        ],
+        "routeId": "07_backtest",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\07_backtest-v2.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+          "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+          "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        ],
+        "statusCode": 200,
+        "textHash": "63150e80dc6fd4ad8ce3975fd0e2fd483aaa82d3d0f640b31688905c3eb6eee1",
+        "textLength": 1131,
+        "title": "STOM AI · 조건식 자율 진화 대시보드",
+        "url": "http://127.0.0.1:8776/ui/backtest",
+        "version": "v2",
+        "websockets": [
+          "ws://127.0.0.1:8776/ws"
+        ]
+      },
+      "v3": {
+        "actions": [
+          "reconnect",
+          "theme",
+          "settings",
+          "start",
+          "stop"
+        ],
+        "buttons": [
+          "재연결",
+          "테마 ◐",
+          "조건식 AI",
+          "백테스트",
+          "차트 리플레이",
+          "LIVE",
+          "ARCHIVE",
+          "⚙ 설정",
+          "Start ▶",
+          "Stop ■",
+          "검증 상태 확인",
+          "설정 저장",
+          "검증",
+          "변수 추출",
+          "저장",
+          "삭제",
+          "백테스트 실행 검토",
+          "작업 취소"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-store, max-age=0, must-revalidate",
+          "expires": "0",
+          "pragma": "no-cache",
+          "x-stom-dashboard-version": "v3-remodel"
+        },
+        "htmlHash": "5969a3fb4226f2bc74a22ac7373c34053278153a1143c41ea05e0766d9f02939",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 26.16,
+          "lumaStddev": 16.92,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/remodel/backtest?demo=reference",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/data.js?v=20260628canonical",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/app.js?v=20260628canonical",
+            "resourceType": "script"
+          }
+        ],
+        "routeId": "07_backtest",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\07_backtest-v3.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+          "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        ],
+        "statusCode": 200,
+        "textHash": "7924b1efafac5a5da992cf3d5ab35c97ded11ed4f0b2ca73feef955c2f787459",
+        "textLength": 2440,
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+        "version": "v3",
+        "websockets": []
+      }
+    },
+    {
+      "id": "08_chart_replay",
+      "page": "chart_replay",
+      "v2": {
+        "actions": [],
+        "buttons": [
+          "Dark",
+          "Light",
+          "적용",
+          "↻",
+          "🧬\n조건식 AI\nLIVE",
+          "📊\n백테스트\nBT",
+          "📈\n차트 리플레이\nSIM",
+          "⚡ 최근 거래일",
+          "⚡ 최대 상승일",
+          "틱",
+          "분봉",
+          "256940\n킵스파마\n+29.98%",
+          "014970\n삼륭물산\n+29.96%",
+          "377480\n마음AI\n+29.71%",
+          "010770\n평화홀딩스\n+21.02%",
+          "225190\nLK삼양\n+16.06%",
+          "355390\n크라우드웍스\n+15.47%",
+          "285130\nSK케미칼\n+14.34%",
+          "251270\n넷마블\n+14.13%",
+          "448280\n에코아이\n+13.89%",
+          "439580\n블루엠텍\n+11.33%",
+          "053300\n한국정보인증\n+11.21%",
+          "082740\n한화엔진\n+10.41%",
+          "122870\n와이지엔터테인먼트\n+10.07%",
+          "046970\n우리로\n+9.61%",
+          "000050\n경방\n+8.57%",
+          "240550\n동방메디컬\n+8.33%",
+          "079550\nLIG디펜스앤에어로스페이스\n+7.79%",
+          "090080\n평화산업\n+7.66%",
+          "047560\n이스트소프트\n+7.37%",
+          "042940\n상지건설\n+5.76%",
+          "047810\n한국항공우주\n+5.55%",
+          "161890\n한국콜마\n+5.53%",
+          "071970\nHD현대마린엔진\n+5.43%",
+          "200130\n콜마비앤에이치\n+5.23%",
+          "008970\nKBI동양철관\n+4.71%",
+          "128940\n한미약품\n+4.62%",
+          "000150\n두산\n+4.54%",
+          "226590\n엠디바이스\n+4.44%",
+          "033500\n동성화인텍\n+4.31%",
+          "278470\n에이피알\n+4.17%",
+          "304100\n솔트룩스\n+4.08%",
+          "041190\n우리기술투자\n+3.91%",
+          "272210\n한화시스템\n+3.76%",
+          "000880\n한화\n+3.70%",
+          "007660\n이수페타시스\n+3.40%",
+          "257720\n실리콘투\n+3.27%",
+          "456010\n아이씨티케이\n+2.93%",
+          "003230\n삼양식품\n+2.37%",
+          "014160\n대영포장\n+2.26%",
+          "062970\n한국첨단소재\n+1.72%",
+          "448900\n한국피아이엠\n+1.51%",
+          "083650\n비에이치아이\n+1.47%",
+          "094480\n갤럭시아머니트리\n+1.41%",
+          "009830\n한화솔루션\n+1.40%",
+          "064260\n다날\n+1.04%",
+          "328130\n루닛\n+0.97%",
+          "389470\n인벤티지랩\n+0.95%",
+          "036930\n주성엔지니어링\n+0.59%",
+          "394800\n쓰리빌리언\n+0.29%",
+          "006340\n대원전선\n+0.18%",
+          "010120\nLS ELECTRIC\n0.00%",
+          "207760\n미스터블루\n-0.06%",
+          "112610\n씨에스윈드\n-0.12%",
+          "382150\n온코크로스\n-0.15%",
+          "115500\n케이씨에스\n-0.18%",
+          "489790\n한화비전\n-0.32%",
+          "053580\n웹케시\n-0.45%",
+          "098460\n고영\n-0.52%",
+          "042700\n한미반도체\n-1.27%",
+          "010620\n010620\n-1.60%",
+          "141080\n리가켐바이오\n-1.69%",
+          "459510\n나우로보틱스\n-1.69%",
+          "059210\n메타바이오메드\n-2.08%",
+          "021040\n대호특수강\n-2.26%",
+          "242040\n나무기술\n-2.50%",
+          "063170\n서울옥션\n-2.57%",
+          "430690\n한싹\n-2.81%",
+          "163730\n핑거\n-2.98%",
+          "013580\n계룡건설\n-3.92%"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-cache",
+          "x-stom-dashboard-version": "v2"
+        },
+        "htmlHash": "b2d17a562134fd46ce1d4b3e8e952d1a4ebd0b8930ab6fcb40d7594488d46149",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 15.52,
+          "lumaStddev": 15.9,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom.sim.demoSeen.v1",
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom_base_url"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/chart-replay",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/styles.css?v=20260624u002",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-react-dom.js?v=20260603a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/vendor-lightweight-charts.js?v=20260612a",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/stom-ui.js?v=f41f5701",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/bundle/app.js?v=f6d376db",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/sim/health",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/sim/days?src=min",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/bt/strategies?kind=buy",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/bt/strategies?kind=sell",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/sim/demo?src=min&mode=latest",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/health",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/runs",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/config/spec",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/status",
+            "resourceType": "fetch"
+          },
+          {
+            "method": "GET",
+            "path": "/sim/stocks?date=20250509&src=min",
+            "resourceType": "fetch"
+          }
+        ],
+        "routeId": "08_chart_replay",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\08_chart_replay-v2.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a",
+          "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a",
+          "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+          "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        ],
+        "statusCode": 200,
+        "textHash": "cd9f00fa75b0100b8e65c309fa4beb8d15d7b2e10c4b78b19a785e1085de3ad6",
+        "textLength": 3640,
+        "title": "STOM AI · 조건식 자율 진화 대시보드",
+        "url": "http://127.0.0.1:8776/ui/chart-replay",
+        "version": "v2",
+        "websockets": [
+          "ws://127.0.0.1:8776/ws"
+        ]
+      },
+      "v3": {
+        "actions": [
+          "reconnect",
+          "theme",
+          "settings",
+          "start",
+          "stop"
+        ],
+        "buttons": [
+          "재연결",
+          "테마 ◐",
+          "조건식 AI",
+          "백테스트",
+          "차트 리플레이",
+          "LIVE",
+          "ARCHIVE",
+          "⚙ 설정",
+          "Start ▶",
+          "Stop ■",
+          "수동 재생 준비",
+          "최근 거래일",
+          "최대 상승일",
+          "내가 선택하기",
+          "즉시 시작",
+          "▶ 재생",
+          "Ⅱ 일시정지",
+          "▶ 재개",
+          "1x",
+          "5x",
+          "20x",
+          "60x",
+          "seek",
+          "■ 정지"
+        ],
+        "consoleErrors": [],
+        "forms": [],
+        "headers": {
+          "cache-control": "no-store, max-age=0, must-revalidate",
+          "expires": "0",
+          "pragma": "no-cache",
+          "x-stom-dashboard-version": "v3-remodel"
+        },
+        "htmlHash": "0886f9333bdc4872fccdb9037d14b210d57d99e9ffacc57ddbfe6c07e45f4503",
+        "imageMetrics": {
+          "available": true,
+          "lumaMean": 29.91,
+          "lumaStddev": 23.23,
+          "nonUniform": true,
+          "size": [
+            1920,
+            1080
+          ],
+          "status": "PASS"
+        },
+        "localStorageKeys": [
+          "stom_base_url",
+          "stom_evo_gate_engine",
+          "stom_evo_strategy",
+          "stom_evo_historynav",
+          "stom_evo_live",
+          "stom_evo_analysis",
+          "stom_active_evolution_tab",
+          "stom_theme",
+          "stom_evo_researchnav",
+          "stom_active_tab",
+          "stom_evo_genanalytics",
+          "stom_evo_verdict",
+          "stom.sim.demoSeen.v1"
+        ],
+        "pageErrors": [],
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/ui/remodel/chart-replay?demo=reference",
+            "resourceType": "document"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+            "resourceType": "stylesheet"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/data.js?v=20260628canonical",
+            "resourceType": "script"
+          },
+          {
+            "method": "GET",
+            "path": "/ui/remodel/src/app.js?v=20260628canonical",
+            "resourceType": "script"
+          }
+        ],
+        "routeId": "08_chart_replay",
+        "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-5-process-audit-v2-v3-compare\\08_chart_replay-v3.png",
+        "scripts": [
+          "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical",
+          "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        ],
+        "statusCode": 200,
+        "textHash": "fa3d1f1e2f6d42040a134b80eae9d9ce897e14eb7caf25de54f5762124cfe974",
+        "textLength": 2783,
+        "title": "STOM AI · 조건식 AI 연구 대시보드",
+        "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+        "version": "v3",
+        "websockets": []
+      }
+    }
+  ],
+  "status": "PASS"
+}

@@ -1,0 +1,107 @@
+{
+  "status": "passed",
+  "e2eStatus": "passed",
+  "redTeamStatus": "passed",
+  "contractCoverage": [
+    {
+      "contractRef": "8-page browser/web coverage",
+      "status": "passed",
+      "evidence": "compare-scorecard.json has 8 PASS rows for condition/process/history/lab/workbench/audit/backtest/chart_replay with V2+V3 statusCode 200 and totalCorrectedScore 100."
+    },
+    {
+      "contractRef": "screenshots/contact sheet existence and non-uniformity",
+      "status": "passed",
+      "evidence": "image-evidence.json status PASS, totalImages 17, failures [], each PNG exists, sizeBytes > 0, valid dimensions, nonUniform true."
+    },
+    {
+      "contractRef": "forbidden network absence",
+      "status": "passed",
+      "evidence": "forbidden-network-scan.json status PASS/findings []; compare-scorecard rows have forbiddenFindings []."
+    },
+    {
+      "contractRef": "V2/V3 route separation",
+      "status": "passed",
+      "evidence": "route-version-matrix.json and compare-scorecard show V2 routes load /ui/bundle/app.js with header/version v2 and forbid remodel asset; V3 routes load /ui/remodel/src/app.js with header/version v3-remodel and forbid V2 bundle; violations []."
+    },
+    {
+      "contractRef": "unknown remodel routes fail closed",
+      "status": "passed",
+      "evidence": "route-version-matrix.json row unknown_remodel_404 has expectedStatus 404, statusCode 404, scripts [], status PASS, violations []."
+    },
+    {
+      "contractRef": "safety/provenance labels preserved",
+      "status": "passed",
+      "evidence": "inventory-gate-result.json status passed with safetyClasses append_only/human_gate/local_only/manual_gated/no_live_order/read_only/research_only; scorecard v3SafetyText 100 and missing.v3SafetyText [] for all rows."
+    }
+  ],
+  "surfaceEvidence": [
+    {
+      "surface": "browser/web 8 pages",
+      "status": "passed",
+      "artifactRefs": ["compare-scorecard.json", "route-version-matrix.json"]
+    },
+    {
+      "surface": "screenshots and contact sheet",
+      "status": "passed",
+      "artifactRefs": ["manifest.json", "image-evidence.json"]
+    },
+    {
+      "surface": "forbidden network scan",
+      "status": "passed",
+      "artifactRefs": ["forbidden-network-scan.json", "compare-scorecard.json"]
+    },
+    {
+      "surface": "inventory gate",
+      "status": "passed",
+      "artifactRefs": ["inventory-gate-result.json"]
+    },
+    {
+      "surface": "unknown route fail-closed",
+      "status": "passed",
+      "artifactRefs": ["route-version-matrix.json"]
+    }
+  ],
+  "adversarialCases": [
+    {
+      "case": "V2 route silently serves V3 remodel app",
+      "status": "passed",
+      "evidence": "All V2 rows use v2 header/version, /ui/bundle/app.js, and violations []."
+    },
+    {
+      "case": "Explicit V3 route falls back to V2 bundle",
+      "status": "passed",
+      "evidence": "All V3 rows use v3-remodel header/version, /ui/remodel/src/app.js, and violations []."
+    },
+    {
+      "case": "Unknown remodel route masks broken link with shell",
+      "status": "passed",
+      "evidence": "unknown_remodel_404 returned 404 with scripts [] and status PASS."
+    },
+    {
+      "case": "Screenshots/contact sheet missing, empty, invalid, or blank",
+      "status": "passed",
+      "evidence": "image-evidence verifies 17/17 PNGs exist, non-empty, valid dimensions, non-uniform."
+    },
+    {
+      "case": "Forbidden live/trading/backtest endpoints are called",
+      "status": "passed",
+      "evidence": "forbidden-network-scan findings [] for forbidden patterns and per-page forbiddenFindings []."
+    },
+    {
+      "case": "Safety/provenance labels dropped",
+      "status": "passed",
+      "evidence": "inventory safetyClasses present and scorecard v3SafetyText complete."
+    }
+  ],
+  "artifactRefs": [
+    "artifacts/ultragoal-g002-baseline-compare/manifest.json",
+    "artifacts/ultragoal-g002-baseline-compare/compare-scorecard.json",
+    "artifacts/ultragoal-g002-baseline-compare/forbidden-network-scan.json",
+    "artifacts/ultragoal-g002-baseline-compare/inventory-gate-result.json",
+    "artifacts/ultragoal-g002-baseline-compare/route-version-matrix.json",
+    "artifacts/ultragoal-g002-baseline-compare/image-evidence.json",
+    "docs/update_log/2026-06-29_ultragoal_g002_v2_v3_inventory.md"
+  ],
+  "blockers": [],
+  "agentId": "100-G002ExecutorQa"
+}

@@ -1,0 +1,52 @@
+{
+  "failures": [],
+  "finalGateScore": 100.0,
+  "focusedChecks": {
+    "gitDiffCheck": "PASS",
+    "nodeCheck": "PASS",
+    "protectedPaths": "clean",
+    "pyCompile": "PASS",
+    "pytest": "29 passed",
+    "status": "PASS"
+  },
+  "gates": {
+    "runtimeDepth": {
+      "artifact": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-runtime-depth\\runtime-depth-scorecard.json",
+      "average": 100.0,
+      "status": "PASS"
+    },
+    "safetyAudit": {
+      "artifact": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-safety-audit\\safety-scorecard.json",
+      "average": 100.0,
+      "status": "PASS"
+    },
+    "stableInventory": {
+      "artifact": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-inventory-gate\\gate-result.json",
+      "items": 81,
+      "status": "passed"
+    },
+    "v2DefaultSelectable": {
+      "artifact": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v2-v3-compare\\route-version-matrix.json",
+      "status": "PASS"
+    },
+    "v3ExplicitSelectable": {
+      "artifact": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v2-v3-compare\\compare-scorecard.json",
+      "status": "PASS"
+    },
+    "visualReference": {
+      "artifact": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g007-v3-reference-visual\\scorecard.json",
+      "average": 97.93,
+      "status": "PASS"
+    }
+  },
+  "generatedAt": "2026-06-28T23:46:24.780575+00:00",
+  "interpretation": "100점 완료 판정은 모든 승인 게이트가 pass/fail 기준으로 clean-pass 했다는 뜻입니다. 참조 시각 평균은 독립 원점수로 97.93이며, 요구 기준(페이지 95+, 평균 97+)을 초과합니다.",
+  "inventoryStatus": "passed",
+  "kind": "dashboard-remodel-final-100point-scorecard",
+  "runtimeDepthAverage": 100.0,
+  "safetyAverage": 100.0,
+  "schemaVersion": 1,
+  "status": "PASS",
+  "v2v3CompareAverage": 100.0,
+  "visualReferenceAverage": 97.93
+}

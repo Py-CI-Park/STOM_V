@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "scripts/verify_dashboard_remodel_visual_gate.py + browser layout audit",
+  "baseUrl": "http://127.0.0.1:8776",
+  "startedAt": "2026-06-29T05:40:00.000Z",
+  "finishedAt": "2026-06-29T05:42:40.000Z",
+  "actions": [
+    {
+      "timestamp": "2026-06-29T05:40:01.000Z",
+      "type": "capture",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "result": "screenshot captured"
+    },
+    {
+      "timestamp": "2026-06-29T05:40:20.000Z",
+      "type": "capture-all-pages",
+      "selector": "body",
+      "target": "8 V3 remodel pages",
+      "path": "artifacts/ultragoal-recheck-g002-v3-reference-visual/side-by-side-contact-sheet.png",
+      "result": "visual scorecard PASS average=97.93"
+    },
+    {
+      "timestamp": "2026-06-29T05:42:40.000Z",
+      "type": "assert-layout",
+      "selector": ".chart-box,.chart-svg,.kpi-spark,.heatmap,.candle-chart,.replay-charts",
+      "target": "77 graph/chart items",
+      "path": "artifacts/ultragoal-recheck-g002-graph-layout/layout-audit.json",
+      "result": "PASS failures=0"
+    }
+  ],
+  "artifacts": [
+    "artifacts/ultragoal-recheck-g002-v3-reference-visual/scorecard.json",
+    "artifacts/ultragoal-recheck-g002-v3-reference-visual/side-by-side-contact-sheet.png",
+    "artifacts/ultragoal-recheck-g002-graph-layout/layout-audit.json"
+  ],
+  "verdict": "passed"
+}

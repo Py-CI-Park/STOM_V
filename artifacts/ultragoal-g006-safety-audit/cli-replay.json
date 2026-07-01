@@ -1,0 +1,11 @@
+{
+  "command": [
+    "node",
+    "-e",
+    "console.log('g006-safety-audit-ok')"
+  ],
+  "kind": "cli-replay",
+  "recordedStdout": "g006-safety-audit-ok\n",
+  "replaySafe": true,
+  "schemaVersion": 1
+}

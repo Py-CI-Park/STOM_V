@@ -1,0 +1,638 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-28T00:36:29.792964+00:00",
+  "worktree": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel",
+  "approvedPlan": ".gjc/_session-019f05e9-d676-7000-9c61-3c206a2d4031/plans/ralplan/019f05e9-d676-7000-9c61-3c206a2d4031/pending-approval.md",
+  "approvedPlanSha256": "025ce85e3302fd542abb2a7be8a213af8b645da8b1bcc63f416045d2e96c0646",
+  "currentBaseline": {
+    "visualCaptureAverage": 71.5,
+    "structureAverage": 89.9,
+    "functionalAverage": 79.8,
+    "correctedTotalAverage": 79.6,
+    "lowestPages": [
+      {
+        "page": "차트 리플레이",
+        "total": 76.0,
+        "visual": 70.2
+      },
+      {
+        "page": "백테스트",
+        "total": 77.4,
+        "visual": 71.5
+      },
+      {
+        "page": "히스토리",
+        "total": 79.4,
+        "visual": 70.0
+      }
+    ]
+  },
+  "thresholds": {
+    "pageWeightedVisualMin": 95,
+    "avgWeightedVisualMin": 97,
+    "pageCorrectedTotalMin": 95,
+    "avgCorrectedTotalMin": 97,
+    "consoleErrorsMax": 0,
+    "unexpectedRequestFailuresMax": 0
+  },
+  "remodelRoutes": [
+    "/ui/remodel/condition?demo=reference",
+    "/ui/remodel/process?demo=reference",
+    "/ui/remodel/history?demo=reference",
+    "/ui/remodel/lab?demo=reference",
+    "/ui/remodel/workbench?demo=reference",
+    "/ui/remodel/audit?demo=reference",
+    "/ui/remodel/backtest?demo=reference",
+    "/ui/remodel/chart-replay?demo=reference"
+  ],
+  "canonicalControls": [
+    "/ui/evolution",
+    "/ui/backtest",
+    "/ui/chart-replay"
+  ],
+  "referenceCaptures": [
+    "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/01_condition_ai_overview.png",
+    "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/02_process.png",
+    "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/03_history.png",
+    "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/04_lab.png",
+    "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/05_workbench.png",
+    "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/06_decision_audit.png",
+    "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/07_backtest.png",
+    "ai_strategy_loop/dashboard/frontend/remodel/docs/captures/08_chart_replay.png"
+  ],
+  "currentCapturesDir": "artifacts/runtime/zip-parity-current/",
+  "compareArtifacts": {
+    "contactSheet": "artifacts/runtime/zip-parity-compare/side-by-side-contact-sheet.png",
+    "detailedScorecard": "artifacts/runtime/zip-parity-compare/detailed-scorecard.json",
+    "visualReport": "artifacts/runtime/zip-parity-compare/visual-parity-report.json"
+  },
+  "entryFiles": [
+    {
+      "path": "ai_strategy_loop/dashboard/frontend/remodel/index.html",
+      "sha256": "f8b27eb69ba4b42abbf0cdb55a7d6eae37aa140e333a8d38b68e90fe5c6b61ae"
+    },
+    {
+      "path": "ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css",
+      "sha256": "4698372d17046f8c4e7f8cc03854463e76ed8dd96daaff7b63ebc80c39f282d3"
+    },
+    {
+      "path": "ai_strategy_loop/dashboard/frontend/remodel/src/data.js",
+      "sha256": "2a64d5aaca65dfd5c2a2c9f47b7fd416d779397ac4d5a9f874824f33c7def2f8"
+    },
+    {
+      "path": "ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "sha256": "f4d79efd95473014180aaf4ed5c944c5771802ebfefcdfd722fb322f8ebeb073"
+    }
+  ],
+  "currentAppSignals": {
+    "hasRouteToState": true,
+    "callsReconnectBackend": true,
+    "usesFetchJson": true,
+    "constructsWebSocket": true,
+    "usesLocalStorage": true,
+    "usesMathRandom": true,
+    "needsFailClosedReferenceMode": true
+  },
+  "apiContracts": {
+    "backtest": [
+      {
+        "method": "GET",
+        "path": "/health"
+      },
+      {
+        "method": "GET",
+        "path": "/strategies"
+      },
+      {
+        "method": "GET",
+        "path": "/strategy"
+      },
+      {
+        "method": "POST",
+        "path": "/strategy/validate"
+      },
+      {
+        "method": "GET",
+        "path": "/variables"
+      },
+      {
+        "method": "POST",
+        "path": "/extract_vars"
+      },
+      {
+        "method": "GET",
+        "path": "/legacy/self_vars"
+      },
+      {
+        "method": "GET",
+        "path": "/backfinder/preflight"
+      },
+      {
+        "method": "POST",
+        "path": "/strategy"
+      },
+      {
+        "method": "POST",
+        "path": "/strategy/delete"
+      },
+      {
+        "method": "GET",
+        "path": "/data_range"
+      },
+      {
+        "method": "POST",
+        "path": "/run"
+      },
+      {
+        "method": "GET",
+        "path": "/jobs"
+      },
+      {
+        "method": "GET",
+        "path": "/job"
+      },
+      {
+        "method": "POST",
+        "path": "/job/cancel"
+      },
+      {
+        "method": "POST",
+        "path": "/job/meta"
+      },
+      {
+        "method": "GET",
+        "path": "/result"
+      },
+      {
+        "method": "GET",
+        "path": "/evo_gens"
+      },
+      {
+        "method": "GET",
+        "path": "/analysis/summary"
+      },
+      {
+        "method": "GET",
+        "path": "/analysis/equity"
+      },
+      {
+        "method": "GET",
+        "path": "/analysis/distribution"
+      },
+      {
+        "method": "GET",
+        "path": "/analysis/heatmap"
+      },
+      {
+        "method": "GET",
+        "path": "/analysis/underwater"
+      },
+      {
+        "method": "GET",
+        "path": "/analysis/insights"
+      },
+      {
+        "method": "GET",
+        "path": "/analysis/mae_mfe"
+      },
+      {
+        "method": "GET",
+        "path": "/analysis/exit_reasons"
+      },
+      {
+        "method": "GET",
+        "path": "/analysis/montecarlo"
+      },
+      {
+        "method": "GET",
+        "path": "/analysis/orderflow"
+      },
+      {
+        "method": "GET",
+        "path": "/analysis/gui_parity"
+      },
+      {
+        "method": "GET",
+        "path": "/compare"
+      },
+      {
+        "method": "GET",
+        "path": "/overlay"
+      },
+      {
+        "method": "POST",
+        "path": "/portfolio"
+      },
+      {
+        "method": "GET",
+        "path": "/report"
+      },
+      {
+        "method": "WS",
+        "path": "/ws_job"
+      }
+    ],
+    "simulation": [
+      {
+        "method": "GET",
+        "path": "/health"
+      },
+      {
+        "method": "GET",
+        "path": "/days"
+      },
+      {
+        "method": "GET",
+        "path": "/demo"
+      },
+      {
+        "method": "GET",
+        "path": "/stocks"
+      },
+      {
+        "method": "GET",
+        "path": "/signals"
+      },
+      {
+        "method": "WS",
+        "path": "/ws"
+      }
+    ],
+    "coreDashboard": [
+      {
+        "method": "GET",
+        "path": "/"
+      },
+      {
+        "method": "GET",
+        "path": "/ui/remodel/{remodel_page}"
+      },
+      {
+        "method": "GET",
+        "path": "/ui/evolution"
+      },
+      {
+        "method": "GET",
+        "path": "/ui/evolution/{subtab}"
+      },
+      {
+        "method": "GET",
+        "path": "/ui/backtest"
+      },
+      {
+        "method": "GET",
+        "path": "/ui/chart-replay"
+      },
+      {
+        "method": "GET",
+        "path": "/ui/simulation"
+      },
+      {
+        "method": "GET",
+        "path": "/ui/process"
+      },
+      {
+        "method": "GET",
+        "path": "/ui/records"
+      },
+      {
+        "method": "GET",
+        "path": "/ui/history"
+      },
+      {
+        "method": "GET",
+        "path": "/ui/lab"
+      },
+      {
+        "method": "GET",
+        "path": "/ui/pro"
+      },
+      {
+        "method": "GET",
+        "path": "/ui/verdict"
+      },
+      {
+        "method": "GET",
+        "path": "/health"
+      },
+      {
+        "method": "GET",
+        "path": "/favicon.ico"
+      },
+      {
+        "method": "GET",
+        "path": "/process_flow"
+      },
+      {
+        "method": "GET",
+        "path": "/status"
+      },
+      {
+        "method": "GET",
+        "path": "/config/spec"
+      },
+      {
+        "method": "GET",
+        "path": "/gpt_auth/status"
+      },
+      {
+        "method": "POST",
+        "path": "/gpt_auth/test"
+      },
+      {
+        "method": "GET",
+        "path": "/research_criteria"
+      },
+      {
+        "method": "GET",
+        "path": "/equity_curves"
+      },
+      {
+        "method": "GET",
+        "path": "/hall_of_fame"
+      },
+      {
+        "method": "GET",
+        "path": "/reference_screenshots"
+      },
+      {
+        "method": "GET",
+        "path": "/runs"
+      },
+      {
+        "method": "GET",
+        "path": "/ops_status"
+      },
+      {
+        "method": "GET",
+        "path": "/freeze_verdict"
+      },
+      {
+        "method": "GET",
+        "path": "/portfolio_sim"
+      },
+      {
+        "method": "GET",
+        "path": "/regime_report"
+      },
+      {
+        "method": "GET",
+        "path": "/revival_registry"
+      },
+      {
+        "method": "GET",
+        "path": "/pipeline_status"
+      },
+      {
+        "method": "GET",
+        "path": "/portfolio_verdict"
+      },
+      {
+        "method": "GET",
+        "path": "/niche_compare"
+      },
+      {
+        "method": "GET",
+        "path": "/equity_curve"
+      },
+      {
+        "method": "GET",
+        "path": "/decisions"
+      },
+      {
+        "method": "POST",
+        "path": "/record_decision"
+      },
+      {
+        "method": "GET",
+        "path": "/tmap_grid"
+      },
+      {
+        "method": "GET",
+        "path": "/run_state"
+      },
+      {
+        "method": "GET",
+        "path": "/generation_durations"
+      },
+      {
+        "method": "GET",
+        "path": "/run_yearly"
+      },
+      {
+        "method": "GET",
+        "path": "/autopsy"
+      },
+      {
+        "method": "GET",
+        "path": "/selector_preview"
+      },
+      {
+        "method": "GET",
+        "path": "/counterfactual"
+      },
+      {
+        "method": "GET",
+        "path": "/freeze_mc"
+      },
+      {
+        "method": "GET",
+        "path": "/tmap_map"
+      },
+      {
+        "method": "GET",
+        "path": "/portfolio_preview"
+      },
+      {
+        "method": "GET",
+        "path": "/runs/compare"
+      },
+      {
+        "method": "GET",
+        "path": "/strategy_code"
+      },
+      {
+        "method": "GET",
+        "path": "/prompts"
+      },
+      {
+        "method": "GET",
+        "path": "/strategy_diff"
+      },
+      {
+        "method": "GET",
+        "path": "/ai_context_pack"
+      },
+      {
+        "method": "GET",
+        "path": "/backtest_detail"
+      },
+      {
+        "method": "GET",
+        "path": "/evolution_gui_parity"
+      },
+      {
+        "method": "GET",
+        "path": "/adaptive_timing"
+      },
+      {
+        "method": "GET",
+        "path": "/edge_ratio"
+      },
+      {
+        "method": "GET",
+        "path": "/feature_importance"
+      },
+      {
+        "method": "GET",
+        "path": "/variable_correlation"
+      },
+      {
+        "method": "WS",
+        "path": "/ws"
+      }
+    ]
+  },
+  "safetyTerms": {
+    "forbidden": [
+      "live-order",
+      "broker-login",
+      "account-trade",
+      "account-balance",
+      "automatic production export",
+      "자동 프로덕션 Export",
+      "final_approval",
+      "주문 실행",
+      "계좌 로그인",
+      "브로커 로그인 버튼",
+      "hidden export",
+      "hidden-export",
+      "mutable audit",
+      "audit edit",
+      "audit delete",
+      "decision edit",
+      "decision delete",
+      "broker runtime",
+      "broker login",
+      "account balance",
+      "account trading",
+      "account-trading",
+      "account connect",
+      "live order"
+    ],
+    "presentForbiddenTerms": [],
+    "requiredCues": [
+      "실거래/주문 기능 없음",
+      "브로커 로그인 없음",
+      "계좌/자산 연동 없음",
+      "Human Approval Gate",
+      "Append-Only Audit",
+      "연구 전용"
+    ],
+    "presentRequiredCues": [
+      "실거래/주문 기능 없음",
+      "브로커 로그인 없음",
+      "계좌/자산 연동 없음",
+      "Human Approval Gate",
+      "Append-Only Audit",
+      "연구 전용"
+    ],
+    "lexicalSafetyTermHits": [
+      "hidden export",
+      "broker login",
+      "account trading",
+      "live order"
+    ],
+    "scanInterpretation": "presentForbiddenTerms is reserved for actionable forbidden controls/handlers; lexicalSafetyTermHits records prohibition/safety vocabulary appearing in text and is not itself a blocker."
+  },
+  "tests": {
+    "baselineFocused": "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q -> 11 passed",
+    "dashboardTestGlobs": [
+      "tests/unit/test_dashboard*.py",
+      "tests/unit/dashboard/**/*.py"
+    ],
+    "requiredFinalCommands": [
+      "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q",
+      "pytest tests/unit/test_dashboard* tests/unit/dashboard -q",
+      "python -m py_compile ai_strategy_loop/dashboard/app.py ai_strategy_loop/dashboard/backtest_api.py ai_strategy_loop/dashboard/simulation_api.py",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/remodel-bootstrap.js",
+      "git diff --check"
+    ]
+  },
+  "executionMatrix": [
+    {
+      "story": "G002",
+      "gap": "live side effects contaminate reference captures",
+      "requiredChange": "fail-closed ?demo=reference mode, no REST/WS/timers/random/localStorage writes/mutations",
+      "evidence": "reference no-network proof and mode unit tests"
+    },
+    {
+      "story": "G003",
+      "gap": "six condition-suite pages partly static/live-mixed",
+      "requiredChange": "mode-aware selectors/adapters and page model fixtures/live mappings",
+      "evidence": "page markers, reference captures, live smoke for core endpoints"
+    },
+    {
+      "story": "G004",
+      "gap": "Backtest static depth below production",
+      "requiredChange": "implement /bt/* endpoint/action/WS matrix in zip shell",
+      "evidence": "live /bt API/WS manifest, inert reference proof"
+    },
+    {
+      "story": "G005",
+      "gap": "Chart Replay static depth below production",
+      "requiredChange": "implement /sim/* endpoint/action/WS matrix in zip shell",
+      "evidence": "live /sim API/WS transcript, inert reference proof"
+    },
+    {
+      "story": "G006",
+      "gap": "no hard visual/evidence gate",
+      "requiredChange": "capture all 8 pages, score, contact sheet, manifest, forbidden scan",
+      "evidence": "manifest thresholds all passed"
+    },
+    {
+      "story": "G007",
+      "gap": "no final 100-point proof package",
+      "requiredChange": "run full command/browser/API/WS/architect/QA gate",
+      "evidence": "clean quality gate and final checkpoint"
+    }
+  ],
+  "approvalProvenance": {
+    "status": "user-approved-after-pending-plan",
+    "userApprovalPhrase": "울트라골 명령어 승인 계획 진행 승인",
+    "approvedPlanStatusLine": "pending approval in file; approved by current user message before ultragoal create-goals",
+    "executionCommand": "/skill:ultragoal \"execute approved pending plan for STOM dashboard remodel 100-point completion: C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/.gjc/_session-019f05e9-d676-7000-9c61-3c206a2d4031/plans/ralplan/019f05e9-d676-7000-9c61-3c206a2d4031/pending-approval.md\""
+  },
+  "replayWsMatrix": {
+    "restEndpoints": [
+      "/sim/health",
+      "/sim/days?src=tick|min",
+      "/sim/demo?src&mode",
+      "/sim/stocks?date&src",
+      "/sim/signals?date&src&code&buy&sell"
+    ],
+    "backtestDependency": [
+      "/bt/strategies?kind=buy|sell"
+    ],
+    "websocket": "/sim/ws",
+    "clientActions": [
+      "start",
+      "pause",
+      "resume",
+      "speed",
+      "seek",
+      "stop"
+    ],
+    "serverMessages": [
+      "meta",
+      "bars",
+      "history",
+      "done",
+      "error"
+    ],
+    "referenceRequirement": "zero /sim/* and /bt/strategies network calls; controls inert with reference-mode message",
+    "liveRequirement": "API evidence plus websocket transcript covering start/pause/resume/speed/seek/stop and meta/bars/history/done/error handling or explicit recoverable-error case"
+  },
+  "updatedAt": "2026-06-28T00:50:56.432953+00:00"
+}

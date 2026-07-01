@@ -1,0 +1,381 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 17-G005ArchitectReview2: six /ui/remodel condition/evolution pages captured with HTTP 200 and visible evidence; API smoke 29/29 HTTP 200 with acceptable labelled structured empty states for missing run_id; canonical route preservation and safety boundaries are present; no blockers remain.",
+    "commands": [
+      "architect subagent 17-G005ArchitectReview2 read-only review"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 16-G005ExecutorQa passed: browser evidence covers /ui/remodel/condition, process, history, lab, workbench, and audit; direct API smoke covers 29/29 condition/evolution endpoints; no route escape, no static prototype replacement, no unsafe controls, screenshots are non-uniform, and empty/no-run states are labelled rather than silent failures.",
+    "e2eCommands": [
+      "browser automation via artifacts/ultragoal-g005-condition/browser-transcript.json",
+      "pytest condition/research/dashboard focused suite -> 151 passed, 7 skipped"
+    ],
+    "redTeamCommands": [
+      "executor QA red-team subagent 16-G005ExecutorQa route/static/API/safety/empty-state checks"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-transcript",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g005-condition/browser-transcript.json",
+        "description": "Browser automation transcript for six condition AI remodel pages with route state, marker checks, forbidden control checks, network responses, and screenshots.",
+        "tool": "browser",
+        "url": "http://127.0.0.1:8776/ui/remodel/condition",
+        "actions": [
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T15:52:59.046Z",
+            "url": "http://127.0.0.1:8776/ui/remodel/condition",
+            "selector": "document",
+            "verdict": "passed",
+            "result": "condition loaded under remodel route with activeEvolutionTab=overview"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T15:52:59.046Z",
+            "selector": "viewport",
+            "path": "artifacts/ultragoal-g005-condition/condition-condition.png",
+            "verdict": "passed"
+          },
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T15:52:59.046Z",
+            "url": "http://127.0.0.1:8776/ui/remodel/process",
+            "selector": "document",
+            "verdict": "passed",
+            "result": "process loaded under remodel route with activeEvolutionTab=process"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T15:52:59.046Z",
+            "selector": "viewport",
+            "path": "artifacts/ultragoal-g005-condition/condition-process.png",
+            "verdict": "passed"
+          },
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T15:52:59.046Z",
+            "url": "http://127.0.0.1:8776/ui/remodel/history",
+            "selector": "document",
+            "verdict": "passed",
+            "result": "history loaded under remodel route with activeEvolutionTab=records"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T15:52:59.046Z",
+            "selector": "viewport",
+            "path": "artifacts/ultragoal-g005-condition/condition-history.png",
+            "verdict": "passed"
+          },
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T15:52:59.046Z",
+            "url": "http://127.0.0.1:8776/ui/remodel/lab",
+            "selector": "document",
+            "verdict": "passed",
+            "result": "lab loaded under remodel route with activeEvolutionTab=lab"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T15:52:59.046Z",
+            "selector": "viewport",
+            "path": "artifacts/ultragoal-g005-condition/condition-lab.png",
+            "verdict": "passed"
+          },
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T15:52:59.046Z",
+            "url": "http://127.0.0.1:8776/ui/remodel/workbench",
+            "selector": "document",
+            "verdict": "passed",
+            "result": "workbench loaded under remodel route with activeEvolutionTab=workbench"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T15:52:59.046Z",
+            "selector": "viewport",
+            "path": "artifacts/ultragoal-g005-condition/condition-workbench.png",
+            "verdict": "passed"
+          },
+          {
+            "type": "navigate",
+            "timestamp": "2026-06-27T15:52:59.046Z",
+            "url": "http://127.0.0.1:8776/ui/remodel/audit",
+            "selector": "document",
+            "verdict": "passed",
+            "result": "audit loaded under remodel route with activeEvolutionTab=verdict"
+          },
+          {
+            "type": "screenshot",
+            "timestamp": "2026-06-27T15:52:59.046Z",
+            "selector": "viewport",
+            "path": "artifacts/ultragoal-g005-condition/condition-audit.png",
+            "verdict": "passed"
+          }
+        ]
+      },
+      {
+        "id": "screenshot-condition",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g005-condition/condition-condition.png",
+        "description": "Non-uniform screenshot for /ui/remodel/condition overview with live monitor, process, criteria, glossary, charts, and code/diff panels."
+      },
+      {
+        "id": "screenshot-process",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g005-condition/condition-process.png",
+        "description": "Non-uniform screenshot for /ui/remodel/process with process selector, pipeline, timing, logs, and research criteria."
+      },
+      {
+        "id": "screenshot-history",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g005-condition/condition-history.png",
+        "description": "Non-uniform screenshot for /ui/remodel/history with records, compare, governed research index, and lineage surfaces."
+      },
+      {
+        "id": "screenshot-lab",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g005-condition/condition-lab.png",
+        "description": "Non-uniform screenshot for /ui/remodel/lab with edge ratio, feature/variable analysis, validation, and wiki/context surfaces."
+      },
+      {
+        "id": "screenshot-workbench",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g005-condition/condition-workbench.png",
+        "description": "Non-uniform screenshot for /ui/remodel/workbench with HoF field contract, candidate analysis, and handoff controls."
+      },
+      {
+        "id": "screenshot-audit",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g005-condition/condition-audit.png",
+        "description": "Non-uniform screenshot for /ui/remodel/audit with verdict, regime, portfolio, append-only decision history, and final approval separation labels."
+      },
+      {
+        "id": "api-smoke",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g005-condition/api-smoke.json",
+        "description": "REST API smoke covering 29 condition/evolution/status/research/decision endpoints with HTTP 200 responses."
+      },
+      {
+        "id": "verification-summary",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g005-condition/verification-summary.json",
+        "description": "Leader-run test, browser, and API verification summary for G005."
+      },
+      {
+        "id": "ai-slop-cleanup",
+        "kind": "cleanup-report",
+        "path": "artifacts/ultragoal-g005-condition/ai-slop-cleanup-report.txt",
+        "description": "AI slop cleanup report with zero blocking or advisory findings for active story source scope."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-condition-routes",
+        "contractRef": "Approved G005 /ui/remodel condition AI pages",
+        "obligation": "Render production condition/evolution pages for overview, process, history, lab, workbench, and audit under the remodel namespace without route escape or static prototype fallback.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser"
+        ],
+        "adversarialCaseRefs": [
+          "case-route-escape",
+          "case-static-fallback",
+          "case-missing-subpage",
+          "case-blank-screenshot"
+        ]
+      },
+      {
+        "id": "contract-condition-apis",
+        "contractRef": "Approved G005 condition/evolution API inventory",
+        "obligation": "Status/ws/runs/run state/durations/code/diff/prompts/context/equity/backtest/gui parity/HoF/reference/autopsy/counterfactual/freeze/TMAP/edge/feature/correlation/decisions endpoints respond without 404/5xx.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-api",
+          "surface-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-api-404-5xx",
+          "case-empty-state-labels"
+        ]
+      },
+      {
+        "id": "contract-analysis-surfaces",
+        "contractRef": "Approved G005 analysis and handoff panels",
+        "obligation": "Expose strategy code/diff/prompts/context, equity/backtest detail, HoF/reference, autopsy, counterfactual, freeze/MC, TMAP, edge ratio, feature importance, variable correlation, process, history, lab, workbench, and audit handoff surfaces.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser",
+          "surface-api"
+        ],
+        "adversarialCaseRefs": [
+          "case-missing-analysis-surface"
+        ]
+      },
+      {
+        "id": "contract-safety",
+        "contractRef": "Approved G005 research-only safety boundary",
+        "obligation": "Keep condition AI pages local/research-only with no hidden live order/broker/account/export authority and labelled final approval separation.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser"
+        ],
+        "adversarialCaseRefs": [
+          "case-unsafe-controls"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-browser",
+        "contractRef": "/ui/remodel condition AI browser UI",
+        "surface": "web",
+        "invocation": "Browser navigated to condition, process, history, lab, workbench, and audit remodel deep links, verified active tabs/markers/forbidden controls, and captured screenshots.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "screenshot-condition",
+          "screenshot-process",
+          "screenshot-history",
+          "screenshot-lab",
+          "screenshot-workbench",
+          "screenshot-audit"
+        ]
+      },
+      {
+        "id": "surface-api",
+        "contractRef": "condition/evolution REST APIs",
+        "surface": "api",
+        "invocation": "Direct smoke covered 29 condition/evolution/status/research/decision endpoints with HTTP 200 responses.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-smoke"
+        ]
+      },
+      {
+        "id": "surface-tests",
+        "contractRef": "condition/research dashboard unit and integration tests",
+        "surface": "api",
+        "invocation": "Focused condition/research/dashboard pytest suite passed 151 tests with 7 intentional skips.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-route-escape",
+        "contractRef": "Remodel namespace",
+        "scenario": "Condition subpage navigation escapes to canonical /ui/evolution or old static route.",
+        "expectedBehavior": "Every route remains /ui/remodel/* with activeTab=evolution and expected activeEvolutionTab.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript"
+        ]
+      },
+      {
+        "id": "case-static-fallback",
+        "contractRef": "Production condition/evolution graph",
+        "scenario": "Static reviewed prototype replaces the production React components.",
+        "expectedBehavior": "Production evolution shell, status/runs, process/history/lab/workbench/audit panels, API calls, and bundle assets are visible.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "screenshot-condition"
+        ]
+      },
+      {
+        "id": "case-missing-subpage",
+        "contractRef": "Six condition AI subpages",
+        "scenario": "One or more approved condition pages are absent or misrouted.",
+        "expectedBehavior": "condition, process, history, lab, workbench, and audit all return HTTP 200 and capture non-empty screenshots.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript"
+        ]
+      },
+      {
+        "id": "case-missing-analysis-surface",
+        "contractRef": "Analysis API/panel inventory",
+        "scenario": "Analysis panels lose code/diff/prompts/context, equity/backtest, HoF/reference, autopsy, counterfactual, freeze, TMAP, edge, feature, correlation, or decisions surfaces.",
+        "expectedBehavior": "Browser markers plus API smoke prove the full condition/evolution inventory is present or labelled as structured empty-state when no run_id is selected.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "api-smoke"
+        ]
+      },
+      {
+        "id": "case-api-404-5xx",
+        "contractRef": "Condition API inventory",
+        "scenario": "An approved endpoint returns 404 or 5xx under the remodel server.",
+        "expectedBehavior": "29/29 direct smoke checks return HTTP 200.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-smoke"
+        ]
+      },
+      {
+        "id": "case-unsafe-controls",
+        "contractRef": "Research-only safety boundary",
+        "scenario": "Hidden or visible controls enable live order, broker account, or unapproved export/final approval authority.",
+        "expectedBehavior": "Forbidden actionable control scan returns zero on all six pages and audit labels append-only/final approval separation.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "screenshot-audit"
+        ]
+      },
+      {
+        "id": "case-blank-screenshot",
+        "contractRef": "Visual evidence",
+        "scenario": "Screenshots are blank/uniform and do not prove the UI.",
+        "expectedBehavior": "Six non-uniform screenshots were saved for the six condition AI pages.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "screenshot-condition",
+          "screenshot-process",
+          "screenshot-history",
+          "screenshot-lab",
+          "screenshot-workbench",
+          "screenshot-audit"
+        ]
+      },
+      {
+        "id": "case-empty-state-labels",
+        "contractRef": "No selected run empty states",
+        "scenario": "Missing run_id/error/unavailable payloads are shown as silent failures.",
+        "expectedBehavior": "Empty/no-run states are structured and labelled as unavailable/loading/idle, not a broken 404/5xx or stale success.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "api-smoke"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "G005 had no product-source edits beyond G002 shell reuse; cleanup report is clean, focused condition/research tests passed, browser/API verification passed, architect review 17 approved, and executor QA 16 passed. Full G005 verification loop was rerun cleanly after review routing corrected the initial WATCH/COMMENT review.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest condition/research/dashboard focused suite -> 151 passed, 7 skipped",
+      "browser automation for six condition pages",
+      "direct condition API smoke -> 29/29 HTTP 200",
+      "architect subagent 17-G005ArchitectReview2",
+      "executor QA subagent 16-G005ExecutorQa"
+    ],
+    "blockers": []
+  }
+}

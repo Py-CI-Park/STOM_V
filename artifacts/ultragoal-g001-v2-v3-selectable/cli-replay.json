@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "node",
+    "-e",
+    "console.log(\"g001-route-selector-ok\")"
+  ],
+  "recordedStdout": "g001-route-selector-ok\n"
+}

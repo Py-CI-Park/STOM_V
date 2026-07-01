@@ -1,0 +1,188 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "agent://147-G004LabCondArchAbs reviewed target-worktree source and artifacts: Condition task frame, primary current-generation/BEST-candidate canvas, tall evidence charts, export/audit separation, Lab task frame, large value-bearing Edge Ratio heatmap, selected-cell narrative, variable importance, holdout validation, compact safety, evidence drawer, browser transcript+screenshot, V2/V3 compare PASS, safety PASS.",
+    "commands": [
+      "architect review: agent://147-G004LabCondArchAbs"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "agent://148-G004LabCondQaAbs inspected source, static tests, scorecards, browser transcript, and screenshots. It found no blockers: required Condition/Lab selectors present, Lab heatmap has values/legend/narrative, forbidden live controls count is zero, safety markers visible, compare/safety/UX scorecards pass.",
+    "e2eCommands": [
+      "browser evidence captured for /ui/remodel/condition?demo=reference and /ui/remodel/lab?demo=reference",
+      "python scripts/verify_dashboard_human_ux_rubric.py --pages condition,lab --min-v3-score 82 --min-delta 5"
+    ],
+    "redTeamCommands": [
+      "executor QA red-team: agent://148-G004LabCondQaAbs",
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-3-lab-condition-v2-v3-compare --timeout-ms 60000",
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-3-lab-condition-safety-audit --timeout-ms 60000"
+    ],
+    "artifactRefs": [
+      {
+        "id": "lab-condition-ux-scorecard",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/scorecard.json",
+        "description": "Human UX Condition/Lab scorecard PASS, mean V3 score 96.9 and mean named delta 7.99."
+      },
+      {
+        "id": "lab-condition-browser-run",
+        "kind": "browser-automation-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/browser-lab-condition-evidence.json",
+        "description": "Browser automation transcript with navigate/screenshot actions, selectors, safety text, manual gates, Lab heatmap values, and forbiddenLiveControls 0."
+      },
+      {
+        "id": "condition-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/browser-condition-viewport.png",
+        "description": "Non-uniform screenshot evidence for the Condition V3 task-first surface."
+      },
+      {
+        "id": "lab-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-3-lab-condition/browser-lab-viewport.png",
+        "description": "Non-uniform screenshot evidence for the Lab V3 heatmap/holdout surface."
+      },
+      {
+        "id": "lab-condition-compare",
+        "kind": "route-compare-test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-3-lab-condition-v2-v3-compare/compare-scorecard.json",
+        "description": "V2/V3 compare PASS, average corrected total 100.0."
+      },
+      {
+        "id": "lab-condition-safety",
+        "kind": "safety-test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-3-lab-condition-safety-audit/safety-scorecard.json",
+        "description": "Safety audit PASS, average safety score 100.0."
+      },
+      {
+        "id": "lab-condition-verification-report",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-3-lab-condition-verification-report.json",
+        "description": "G004 verification summary with commands, artifacts, and clean review ids."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-condition-primary-canvas",
+        "contractRef": "G004 Condition redesign",
+        "obligation": "Expose current generation, BEST candidate, large evidence charts, and human-gated export/audit separation in explicit V3.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-web-condition"],
+        "adversarialCaseRefs": ["case-condition-export-confusion", "case-route-regression"]
+      },
+      {
+        "id": "contract-lab-readable-heatmap",
+        "contractRef": "G004 Lab redesign",
+        "obligation": "Expose readable Edge Ratio heatmap with values, axes, legend, selected-cell narrative, variable importance, and Holdout proof.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-web-lab"],
+        "adversarialCaseRefs": ["case-lab-blank-heatmap"]
+      },
+      {
+        "id": "contract-g004-safety",
+        "contractRef": "G004 dashboard safety",
+        "obligation": "Preserve no live order, no broker login, no account trading, manual gates, V2 default, and explicit V3 routing.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-web-condition", "surface-web-lab", "surface-safety-audit"],
+        "adversarialCaseRefs": ["case-live-controls", "case-route-regression"]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-condition",
+        "contractRef": "G004 Condition web surface",
+        "surface": "web",
+        "invocation": "Browser opened http://127.0.0.1:8776/ui/remodel/condition?demo=reference, evaluated required selectors, and saved screenshot.",
+        "verdict": "passed",
+        "artifactRefs": ["lab-condition-browser-run", "condition-screenshot"]
+      },
+      {
+        "id": "surface-web-lab",
+        "contractRef": "G004 Lab web surface",
+        "surface": "web",
+        "invocation": "Browser opened http://127.0.0.1:8776/ui/remodel/lab?demo=reference, evaluated required selectors, heatmap values, and saved screenshot.",
+        "verdict": "passed",
+        "artifactRefs": ["lab-condition-browser-run", "lab-screenshot"]
+      },
+      {
+        "id": "surface-ux-rubric",
+        "contractRef": "G004 human UX rubric",
+        "surface": "api/package",
+        "invocation": "python scripts/verify_dashboard_human_ux_rubric.py --pages condition,lab --min-v3-score 82 --min-delta 5",
+        "verdict": "passed",
+        "artifactRefs": ["lab-condition-ux-scorecard"]
+      },
+      {
+        "id": "surface-v2-v3-compare",
+        "contractRef": "V2 default / V3 explicit route contract",
+        "surface": "api/package",
+        "invocation": "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-3-lab-condition-v2-v3-compare --timeout-ms 60000",
+        "verdict": "passed",
+        "artifactRefs": ["lab-condition-compare"]
+      },
+      {
+        "id": "surface-safety-audit",
+        "contractRef": "Dashboard safety contract",
+        "surface": "api/package",
+        "invocation": "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-3-lab-condition-safety-audit --timeout-ms 60000",
+        "verdict": "passed",
+        "artifactRefs": ["lab-condition-safety"]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-lab-blank-heatmap",
+        "contractRef": "G004 Lab heatmap information design",
+        "scenario": "Lab heatmap is only decorative color blocks with no values, legend, selected-cell explanation, or axis context.",
+        "expectedBehavior": "Browser evidence shows data-heatmap-cell count 196, heatmapValues 196, selected-cell narrative and heatmap legend present.",
+        "verdict": "passed",
+        "artifactRefs": ["lab-condition-browser-run", "lab-screenshot"]
+      },
+      {
+        "id": "case-condition-export-confusion",
+        "contractRef": "G004 Condition export/audit separation",
+        "scenario": "Condition surface makes export look completed or conflates export with append-only audit.",
+        "expectedBehavior": "Condition shows Human-gated export review and explicit Export/Audit separation before any production export path.",
+        "verdict": "passed",
+        "artifactRefs": ["lab-condition-browser-run", "condition-screenshot"]
+      },
+      {
+        "id": "case-live-controls",
+        "contractRef": "G004 forbidden live controls",
+        "scenario": "Condition/Lab UI exposes live order, broker login, or account trade controls.",
+        "expectedBehavior": "Forbidden live controls count is zero and safety markers remain visible.",
+        "verdict": "passed",
+        "artifactRefs": ["lab-condition-browser-run", "lab-condition-safety"]
+      },
+      {
+        "id": "case-route-regression",
+        "contractRef": "V2/V3 route identity",
+        "scenario": "V2 loads V3 assets or explicit V3 loads V2 assets.",
+        "expectedBehavior": "Compare gate reports route/assets clean and no hard failures.",
+        "verdict": "passed",
+        "artifactRefs": ["lab-condition-compare"]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Initial path-based review blockers were caused by reviewers inspecting a different checkout; absolute-path Architect/QA reviews reran cleanly. Source syntax, focused tests, G004 human UX gate, V2/V3 compare, safety audit, browser transcript/screenshots, diff check, protected-path check, and final reviews are clean.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_human_ux_rubric.py tests/unit/test_dashboard_route_parity.py -q",
+      "python scripts/verify_dashboard_human_ux_rubric.py --pages condition,lab --min-v3-score 82 --min-delta 5",
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-3-lab-condition-v2-v3-compare --timeout-ms 60000",
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-3-lab-condition-safety-audit --timeout-ms 60000"
+    ],
+    "blockers": []
+  }
+}

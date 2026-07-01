@@ -1,0 +1,293 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Final architect review agent://133-Tranche0FinalArchitect: CLEAR/CLEAR/CLEAR APPROVE after manual-gate scoring fix; verified no blockers and scorecard PASS evidence.",
+    "commands": [
+      "architect review: agent://133-Tranche0FinalArchitect"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Final QA/red-team agent://134-Tranche0FinalQa plus leader-run browser verifier, focused pytest, py_compile, diff check, protected-path check. No blockers.",
+    "e2eCommands": [
+      "python scripts/verify_dashboard_human_ux_rubric.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/baseline-current --storyboard artifacts/dashboard-human-ux-v3/storyboards/storyboards.json --viewports 1440x900,1920x1080,1280x720 --tranche baseline"
+    ],
+    "redTeamCommands": [
+      "executor QA/red-team inspection: agent://134-Tranche0FinalQa",
+      "network trace forbidden-method/path scan embedded in verifier and QA review"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-transcript",
+        "kind": "browser-automation",
+        "path": "artifacts/dashboard-human-ux-v3/baseline-current/browser-transcript.json",
+        "description": "Browser capture transcript for 8 V2/V3 dashboard scenarios across 3 viewports with monotonic action order, selectors observed, screenshots, route/status, and hard-failure rows.",
+        "tool": "playwright",
+        "actions": [
+          {
+            "type": "navigate-capture",
+            "timestampMs": 1000,
+            "selector": "body",
+            "url": "http://127.0.0.1:8776/ui/evolution",
+            "result": "passed",
+            "screenshot": "artifacts\\dashboard-human-ux-v3\\baseline-current\\screenshots\\UX-S01-condition-v2-1440x900.png",
+            "timestamp": "2026-06-30T04:30:01Z"
+          },
+          {
+            "type": "navigate-capture",
+            "timestampMs": 2000,
+            "selector": "body",
+            "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+            "result": "passed",
+            "screenshot": "artifacts\\dashboard-human-ux-v3\\baseline-current\\screenshots\\UX-S01-condition-v3-1440x900.png",
+            "timestamp": "2026-06-30T04:30:02Z"
+          },
+          {
+            "type": "navigate-capture",
+            "timestampMs": 3000,
+            "selector": "body",
+            "url": "http://127.0.0.1:8776/ui/evolution/process",
+            "result": "passed",
+            "screenshot": "artifacts\\dashboard-human-ux-v3\\baseline-current\\screenshots\\UX-S02-process-v2-1440x900.png",
+            "timestamp": "2026-06-30T04:30:03Z"
+          },
+          {
+            "type": "navigate-capture",
+            "timestampMs": 4000,
+            "selector": "body",
+            "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+            "result": "passed",
+            "screenshot": "artifacts\\dashboard-human-ux-v3\\baseline-current\\screenshots\\UX-S02-process-v3-1440x900.png",
+            "timestamp": "2026-06-30T04:30:04Z"
+          },
+          {
+            "type": "navigate-capture",
+            "timestampMs": 5000,
+            "selector": "body",
+            "url": "http://127.0.0.1:8776/ui/evolution/records",
+            "result": "passed",
+            "screenshot": "artifacts\\dashboard-human-ux-v3\\baseline-current\\screenshots\\UX-S03-history-v2-1440x900.png",
+            "timestamp": "2026-06-30T04:30:05Z"
+          },
+          {
+            "type": "navigate-capture",
+            "timestampMs": 6000,
+            "selector": "body",
+            "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+            "result": "passed",
+            "screenshot": "artifacts\\dashboard-human-ux-v3\\baseline-current\\screenshots\\UX-S03-history-v3-1440x900.png",
+            "timestamp": "2026-06-30T04:30:06Z"
+          },
+          {
+            "type": "navigate-capture",
+            "timestampMs": 7000,
+            "selector": "body",
+            "url": "http://127.0.0.1:8776/ui/evolution/lab",
+            "result": "passed",
+            "screenshot": "artifacts\\dashboard-human-ux-v3\\baseline-current\\screenshots\\UX-S04-lab-v2-1440x900.png",
+            "timestamp": "2026-06-30T04:30:07Z"
+          },
+          {
+            "type": "navigate-capture",
+            "timestampMs": 8000,
+            "selector": "body",
+            "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+            "result": "passed",
+            "screenshot": "artifacts\\dashboard-human-ux-v3\\baseline-current\\screenshots\\UX-S04-lab-v3-1440x900.png",
+            "timestamp": "2026-06-30T04:30:08Z"
+          }
+        ],
+        "screenshotRefs": [
+          "contact-sheet"
+        ],
+        "transcriptPath": "artifacts/dashboard-human-ux-v3/baseline-current/browser-transcript.json"
+      },
+      {
+        "id": "contact-sheet",
+        "kind": "screenshot",
+        "path": "artifacts/dashboard-human-ux-v3/baseline-current/side-by-side-contact-sheet.png",
+        "description": "Non-uniform side-by-side screenshot contact sheet comparing V2 default left and explicit V3 right for all 8 pages."
+      },
+      {
+        "id": "scorecard",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/baseline-current/scorecard.json",
+        "description": "Human UX rubric scorecard: PASS, meanV3Score 93.92, meanNamedDelta 17.56, no hard/threshold/storyboard failures."
+      },
+      {
+        "id": "network-trace",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/baseline-current/network-trace.json",
+        "description": "Captured network trace for all verifier scenarios; no forbidden mutating page-load calls."
+      },
+      {
+        "id": "storyboards",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/storyboards/storyboards.json",
+        "description": "Machine-checkable Condition/Backtest/Chart Replay human UX storyboard contracts."
+      },
+      {
+        "id": "verification-report",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche0-verification-report.json",
+        "description": "Leader-run command summary for py_compile, focused tests, browser verifier, whitespace, and protected path checks."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-verifier",
+        "contractRef": "G001 verifier",
+        "obligation": "Add read-only dashboard human UX verifier with V2/V3 route capture, rubric scoring, route/safety hard failures, JSON/contact sheet output.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-verifier",
+          "surface-test-report"
+        ],
+        "adversarialCaseRefs": [
+          "case-mutating-network",
+          "case-route-mixup",
+          "case-manual-gate-tautology"
+        ]
+      },
+      {
+        "id": "contract-storyboards",
+        "contractRef": "G001 storyboards",
+        "obligation": "Create machine-checkable Condition/Backtest/Chart Replay storyboards mapping steps to selectors, safety assertions, and rubric observations.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-storyboard"
+        ],
+        "adversarialCaseRefs": [
+          "case-storyboard-schema"
+        ]
+      },
+      {
+        "id": "contract-no-redesign",
+        "contractRef": "G001 tranche boundary",
+        "obligation": "Do not redesign UI in Tranche 0; only verifier/storyboards/baseline evidence.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-test-report"
+        ],
+        "adversarialCaseRefs": [
+          "case-selector-overclaim"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-verifier",
+        "contractRef": "dashboard web GUI V2/V3 baseline",
+        "surface": "web",
+        "invocation": "python scripts/verify_dashboard_human_ux_rubric.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/baseline-current --storyboard artifacts/dashboard-human-ux-v3/storyboards/storyboards.json --viewports 1440x900,1920x1080,1280x720 --tranche baseline",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-transcript",
+          "contact-sheet",
+          "scorecard",
+          "network-trace"
+        ]
+      },
+      {
+        "id": "surface-storyboard",
+        "contractRef": "machine-checkable storyboard artifact",
+        "surface": "api/package",
+        "invocation": "storyboard validation through verify_dashboard_human_ux_rubric.py and unit test",
+        "verdict": "passed",
+        "artifactRefs": [
+          "storyboards",
+          "scorecard",
+          "verification-report"
+        ]
+      },
+      {
+        "id": "surface-test-report",
+        "contractRef": "focused implementation verification",
+        "surface": "api/package",
+        "invocation": "py_compile, focused pytest, diff whitespace check, protected-path git status",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-report"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-mutating-network",
+        "contractRef": "read-only page-load safety",
+        "scenario": "Browser capture accidentally issues POST/PUT/PATCH/DELETE or forbidden /bt/run, /bt/ws_job, /sim/ws, order, broker/account routes.",
+        "expectedBehavior": "Verifier records hard failure and current network trace contains none.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "network-trace",
+          "scorecard",
+          "browser-transcript"
+        ]
+      },
+      {
+        "id": "case-route-mixup",
+        "contractRef": "V2 default / V3 explicit route identity",
+        "scenario": "V2 loads remodel assets or V3 loads V2 bundle/cache headers.",
+        "expectedBehavior": "Route identity failures fail score rows; current scorecard has none.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "scorecard",
+          "browser-transcript"
+        ]
+      },
+      {
+        "id": "case-manual-gate-tautology",
+        "contractRef": "manual gate scoring",
+        "scenario": "V3 gets full safety hierarchy credit despite zero dataManualGateCount.",
+        "expectedBehavior": "V3 full manual-gate credit requires dataManualGateCount > 0; otherwise partial score.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-report",
+          "scorecard"
+        ]
+      },
+      {
+        "id": "case-storyboard-schema",
+        "contractRef": "storyboard machine-checkability",
+        "scenario": "Storyboard passes without selector/safety/rubric/expectedObservation fields.",
+        "expectedBehavior": "Validator fails missing fields; current storyboards pass with required fields.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "storyboards",
+          "scorecard"
+        ]
+      },
+      {
+        "id": "case-selector-overclaim",
+        "contractRef": "Tranche 0 boundary",
+        "scenario": "Baseline claims future selector contracts already exist before redesign.",
+        "expectedBehavior": "Storyboards explicitly mark selectors as later-tranche targets; baseline records current selector absence without treating it as Tranche 0 failure.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "storyboards",
+          "scorecard"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Cleanup search found no blocking TODO/stub/placeholder/fake/noop findings; architect low finding was fixed; py_compile, focused tests, browser verifier, diff check, and protected path check were rerun cleanly after the fix. Full Tranche 0 verification loop rerun with no blockers.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m py_compile scripts/verify_dashboard_human_ux_rubric.py",
+      "python -m pytest tests/unit/test_dashboard_human_ux_rubric.py tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py -q",
+      "python scripts/verify_dashboard_human_ux_rubric.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/baseline-current --storyboard artifacts/dashboard-human-ux-v3/storyboards/storyboards.json --viewports 1440x900,1920x1080,1280x720 --tranche baseline",
+      "git diff --check -- scripts/verify_dashboard_human_ux_rubric.py tests/unit/test_dashboard_human_ux_rubric.py artifacts/dashboard-human-ux-v3/storyboards/storyboards.json",
+      "git status --short -- _database _database_v3k_shadow _log backup \"*.db\" backtest/graph .omx/reports \"v3k_settings*.json\""
+    ],
+    "blockers": []
+  }
+}

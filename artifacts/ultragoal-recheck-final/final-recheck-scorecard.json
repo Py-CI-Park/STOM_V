@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "kind": "dashboard-v2-v3-recheck-final-scorecard",
+  "generatedAt": "2026-06-29T05:49:21.656279+00:00",
+  "status": "PASS",
+  "failures": [],
+  "scores": {
+    "v2v3RouteFunctionAverage": 100.0,
+    "v3VisualAverage": 97.93,
+    "graphLayout": 100.0,
+    "runtimeDepth": 100.0,
+    "safety": 100.0,
+    "inventoryItems": 81,
+    "focusedChecks": "29 passed; node --check PASS; py_compile PASS; git diff --check PASS; protected paths clean"
+  },
+  "pageScores": [
+    {
+      "id": "01_condition_ai_overview",
+      "route": "/ui/remodel/condition?demo=reference",
+      "visualScore": 98.3,
+      "requiredTextScore": 100.0,
+      "safetyTextScore": 100.0,
+      "graphLayoutStatus": "PASS",
+      "graphItemCount": 15,
+      "graphFailures": 0,
+      "v2v3FunctionScore": 100.0,
+      "status": "PASS"
+    },
+    {
+      "id": "02_process",
+      "route": "/ui/remodel/process?demo=reference",
+      "visualScore": 98.41,
+      "requiredTextScore": 100.0,
+      "safetyTextScore": 100.0,
+      "graphLayoutStatus": "PASS",
+      "graphItemCount": 0,
+      "graphFailures": 0,
+      "v2v3FunctionScore": 100.0,
+      "status": "PASS"
+    },
+    {
+      "id": "03_history",
+      "route": "/ui/remodel/history?demo=reference",
+      "visualScore": 98.05,
+      "requiredTextScore": 100.0,
+      "safetyTextScore": 100.0,
+      "graphLayoutStatus": "PASS",
+      "graphItemCount": 12,
+      "graphFailures": 0,
+      "v2v3FunctionScore": 100.0,
+      "status": "PASS"
+    },
+    {
+      "id": "04_lab",
+      "route": "/ui/remodel/lab?demo=reference",
+      "visualScore": 97.71,
+      "requiredTextScore": 100.0,
+      "safetyTextScore": 100.0,
+      "graphLayoutStatus": "PASS",
+      "graphItemCount": 6,
+      "graphFailures": 0,
+      "v2v3FunctionScore": 100.0,
+      "status": "PASS"
+    },
+    {
+      "id": "05_workbench",
+      "route": "/ui/remodel/workbench?demo=reference",
+      "visualScore": 97.96,
+      "requiredTextScore": 100.0,
+      "safetyTextScore": 100.0,
+      "graphLayoutStatus": "PASS",
+      "graphItemCount": 19,
+      "graphFailures": 0,
+      "v2v3FunctionScore": 100.0,
+      "status": "PASS"
+    },
+    {
+      "id": "06_decision_audit",
+      "route": "/ui/remodel/audit?demo=reference",
+      "visualScore": 98.28,
+      "requiredTextScore": 100.0,
+      "safetyTextScore": 100.0,
+      "graphLayoutStatus": "PASS",
+      "graphItemCount": 16,
+      "graphFailures": 0,
+      "v2v3FunctionScore": 100.0,
+      "status": "PASS"
+    },
+    {
+      "id": "07_backtest",
+      "route": "/ui/remodel/backtest?demo=reference",
+      "visualScore": 97.33,
+      "requiredTextScore": 100.0,
+      "safetyTextScore": 100.0,
+      "graphLayoutStatus": "PASS",
+      "graphItemCount": 4,
+      "graphFailures": 0,
+      "v2v3FunctionScore": 100.0,
+      "status": "PASS"
+    },
+    {
+      "id": "08_chart_replay",
+      "route": "/ui/remodel/chart-replay?demo=reference",
+      "visualScore": 97.38,
+      "requiredTextScore": 100.0,
+      "safetyTextScore": 100.0,
+      "graphLayoutStatus": "PASS",
+      "graphItemCount": 5,
+      "graphFailures": 0,
+      "v2v3FunctionScore": 100.0,
+      "status": "PASS"
+    }
+  ],
+  "runtimeCoverage": {
+    "backtest": {
+      "contractCount": 24,
+      "missingEndpointsOrActions": [],
+      "missingManualGateIds": [],
+      "missingUserGatedIds": [],
+      "status": "PASS",
+      "unsafeAutoContracts": []
+    },
+    "chartReplay": {
+      "contractCount": 19,
+      "missingEndpointsOrActions": [],
+      "missingManualGateIds": [],
+      "missingUserGatedIds": [],
+      "status": "PASS",
+      "unsafeAutoContracts": []
+    }
+  },
+  "safetyScores": {
+    "auditExportSeparation": 100.0,
+    "domSafety": 100.0,
+    "runtimeNetwork": 100.0,
+    "sourceSafety": 100.0,
+    "visualEvidence": 100.0
+  },
+  "artifacts": {
+    "visualScorecard": "artifacts/ultragoal-recheck-g002-v3-reference-visual/scorecard.json",
+    "visualContactSheet": "artifacts/ultragoal-recheck-g002-v3-reference-visual/side-by-side-contact-sheet.png",
+    "layoutAudit": "artifacts/ultragoal-recheck-g002-graph-layout/layout-audit.json",
+    "runtimeDepth": "artifacts/ultragoal-recheck-g003-runtime-depth/runtime-depth-scorecard.json",
+    "safetyAudit": "artifacts/ultragoal-recheck-g003-safety-audit/safety-scorecard.json",
+    "v2v3Compare": "artifacts/ultragoal-recheck-g003-v2-v3-compare-final/compare-scorecard.json",
+    "inventoryGate": "artifacts/ultragoal-recheck-g003-inventory-final/gate-result.json"
+  },
+  "notes": [
+    "Sparkline graph sizing was corrected to 34px container/svg height and rerun through layout audit.",
+    "V2 remains default; V3 remains explicit through dashboard_version=v3 or /ui/remodel/*.",
+    "No live order, broker login, account trading, or hidden export was introduced."
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "artifacts": {
+    "auditExportSeparation": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-safety-audit\\audit-export-separation.json",
+    "browserTranscript": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-safety-audit\\browser-transcript.json",
+    "contactSheet": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-safety-audit\\safety-contact-sheet.png",
+    "domSafetyScan": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-safety-audit\\dom-safety-scan.json",
+    "runtimeNetworkScan": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-safety-audit\\runtime-network-scan.json",
+    "scorecard": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-safety-audit\\safety-scorecard.json",
+    "sourceSafetyScan": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-safety-audit\\source-safety-scan.json"
+  },
+  "generatedAt": "2026-06-30T11:57:04.056197+00:00",
+  "kind": "dashboard-safety-audit-manifest",
+  "schemaVersion": 1,
+  "status": "PASS"
+}

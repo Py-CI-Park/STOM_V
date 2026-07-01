@@ -1,0 +1,1451 @@
+{
+  "failures": [],
+  "generatedAt": "2026-06-29T05:44:54.642776+00:00",
+  "kind": "dashboard-dom-safety-scan",
+  "schemaVersion": 1,
+  "status": "PASS",
+  "surfaces": [
+    {
+      "bodyTextExcerpt": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 조건식 AI\nDark\nLight\nV3 Preview\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n운영 루프 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 히스토리·분석 워크벤치·운용 결정 이력\nevolution/overview\nROUTE\nHOME\nOWNER\n운영 루프\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\n조건식 AI LIVE MONITOR\n현재 세대 — LIVE\n—\n세대\ngen_-1 / 0\n페이즈\n—\n체크포인트\n—\n›\n진화 시작 버튼으로 루프를 개시하세요\nACTIVE STRATEGY\nsource=best\nBUY_NAME\nempty\nSELL_NAME\nempty\nrun_id=none\ngen_no=-1\ncode_status=loading\ndiff_status=unavailable\nunavailable: loading\nexpand preview\nopen full code\nPrevious Diff via /strategy_diff\n1\n생성\nLLM Code Gen\n2\n백테스트\nBacktest\n3\n채점\nGrading\n4\n부검\nAutopsy\n대기중\n조건식 발굴 프로세스\n상세 프로세스\n아래 네이티브 그래프·타이밍·로그가 현재 정본입니다. 전체 설명 문서는 읽기 전용 참고 자료로 별도 확인할 수 있습니다.\n상세 프로세스 문서 열기\n현재 노드 미정\nphase —\ncurrent_step —\n최근 로그 로그 대기중…\nProcess selector\nstate.page_data.condition_discovery.process · process_catalog projection (static fallback)\nadvisory research\n1\nfast-discovery\nfast · Fast discovery\n2\nprocess-research\nresearch · Process research\n3\npromotion-review\npromotion · Promotion review\n선택 PROCESS\n1 · fast-discovery빠른 조건 탐색용 projection입니다. 후보 설명과 정렬만 하며 승격 권한은 없습니다.\nVALIDATION NAMES\nresearch_validationresearch evidence is reported as advisory_split, not clean promotion OOS\nCAPABILITY\nCAN_PROMOTE=FALSE\nCAN_EXPORT=FALSE\nCAN_LIVE=FALSE\nfast/research are advisory; promotion still requires frozen review and human approval\nFull pipeline · advisory research → frozen promotion review\n기존 5-step 그래프는 실행 상태 요약이고, 이 섹션은 전체 연구/검토 계약입니다.\n1. condition generation조건식 후보를 생성하고 STOM 문법/변수 경계를 먼저 확인합니다.\n2. full-period / research_validation전체 기간 검증과 research_validation 결과를 advisory_split evidence로 분리해 기록합니다.\n3. scoring / evidence성과·생성품질 100점, hard gate, evidence health를 함께 보되 점수는 advisory-only입니다.\n4. autopsy / analysis실패 원인, hypothesis, 패턴 카드를 분석해 다음 세대 맥락으로 환류합니다.\n5. improvement채택/거절/보류된 근거를 이용해 후보 생성 방향을 개선합니다.\n6. separate frozen promotion review승격은 별도 동결 리뷰에서만 판단합니다. promote/export/live 권한은 여기서 생기지 않습니다.\nWarm timing metadata\nwarm metadata pending — existing display remains valid\nmode/status\nmetadata pending\nengines\n—\nprepare\n—\nrun/timeout\n—\n데이터 출처\n실시간 상태\n현재 세대·현재 단계·백테스트 로그를 읽기 전용으로 표시\n상태 구분\nidle\nlive/archive/idle을 구분해 옛 결과를 실시간으로 오해하지 않게 함\n현재 단계\n미정\n단계 경과 대기\n단계 진행\n0/5\n예측값이 아니라 실제 current_step 기준\n소요시간\n0/5\n각 단계가 끝난 뒤 누적되는 실제 시간 표본\n로그\n0\n엔진/백테스트 로그 최근 0줄 자동 스크롤\n1\n조건식\n만들기\n2\n검증\n과거데이터\n3\n점수\n적합도\n4\n원인\n실패요약\n5\n개선\n다음세대\n한눈에 보는 흐름\n\n조건식을 만들고, 과거 데이터로 검증한 뒤, 점수와 실패 원인을 보고 다음 세대를 개선합니다.\n\n현재 세대\n\n지금 실행 중인 후보 묶음입니다. current_step이 바뀌면 그래프의 활성 노드와 로그가 같이 움직입니다.\n\n적합도\n\n수익·손실폭·거래 빈도 같은 기준을 합쳐 후보를 비교하는 점수입니다. 높을수록 다음 후보로 남기 쉽습니다.\n\n예시 보기\n기본 설정 · 게이트 · 채점 기준\n사용자 협의 기준을 한 표로 고정합니다. 모든 점수는 설명/연구용이며 hard gate·evidence·인간 승인이 우선합니다.\n구분\t기본값/정책\t설명\nPreset\tfast / research / promotion\tfast=빠른 탐색, research=프롬프트·equity·evidence 보존 연구, promotion=동결 후보 승격 검토. 모두 점수는 advisory-only입니다.\nTick 기본 연구\t09:00:00~09:28:00\tTick 후보 연구/promotion은 장초반 28분 opening window를 기본으로 봅니다.\nMIN 풀세션\t09:00~15:18/15:19\tresearch/promotion MIN은 풀세션을 요구합니다. 15:18과 15:19는 DB 경계 후보로 표시하고 명시 검증합니다.\n백테스트 1회 제한\t최대 300초\tbt_timeout 기본값입니다. warm run은 이보다 빨라야 하며, 과발화/비용 큰 매도식은 fail-fast 대상입니다.\n단계별 MDD gate\tfast 35% · research 25% · promotion 15%\t설정 mdd_cap이 더 낮으면 더 엄격한 값이 적용됩니다. hard gate가 점수보다 우선합니다.\n거래 빈도/과매매\t일평균 ≥0.5 · softcap 150\t과매매 자체는 금지가 아니라 soft penalty입니다. 빈도 부족은 hard/fitness 경계로 다룹니다.\nTPI\t매매성능지수 · gate 기본 OFF\tTPI는 거래 품질/수익 효율을 보조로 보는 매매성능지수입니다. tpi_gate_enabled=false가 기본이며 승격권한을 만들지 않습니다.\n성과 점수 100점\t수익·MDD·Calmar·우상향·빈도·청산·안정성\t후보 설명/정렬용 advisory score입니다. promotion/export/winner 선택권은 없습니다.\n생성품질 100점\t문법·변수다양성·니치·창의성·과발화·비용·매도구조\t조건식 생성 품질을 설명하는 점수입니다. 성과를 보증하지 않고 hard gate를 대체하지 않습니다.\nPrompt / Equity 저장\tfast 선택 · research/promotion evidence\t기본 토글은 OFF입니다. research/promotion 검토에서는 프롬프트·손익곡선 evidence가 없으면 blocker로 표시합니다.\n부검 hypothesis\taccepted/rejected/deferred/inconclusive\t부검 가정은 다음 프롬프트 맥락으로 환류하되 advisory-only provenance를 유지합니다.\n인간 DB pattern cards\t조합 문법/창의성 전용\t성과 복사·전체식 복사·임계값 복사는 금지합니다. few-shot은 구조 학습용으로만 씁니다.\nTransformer/ML\t추후 연구 과제\t이번 작업 범위에서는 구현하지 않습니다. 별도 연구로 예측/파라미터화 가능성만 추적합니다.\n1. 조건식\n—\n2. 검증\n—\n3. 점수\n—\n4. 원인\n—\n5. 개선\n—\n로그 대기중…\n페이즈 상세 — —\n—\n실시간 데이터 대기 · Live data pending\nWaiting for a fresh live snapshot from backend; this panel is not a stale result.\n설정 · 게이트 · 백테스트 엔진 요약\nRESEARCH CRITERIA\nresearch_oos_mode=disabled\nOOS disabled\nresearch/exploration only; not proof of human-level or production readiness.\nOOS를 실행하거나 후보 탈락에 쓰지 않는 탐색 모드입니다.\nMETRIC GLOSSARY\nall\nresearch signal, not production proof · human-level claim blocked until multiyear holdout/OOS evidence exists.\nOOS\nOut-of-sample. 후보 선택과 튜닝에 쓰지 않은 기간 검증이다. OOS disabled는 탐색은 허용하지만 human-level claim blocked 상태다.\noverfit\n특정 구간에만 맞춘 과적합이다. 전체 기간 우상향이면 연구 신호로 볼 수 있지만 research signal, not production proof 이다.\nMDD\nMaximum Drawdown. 누적 수익곡선의 고점 대비 최대 하락폭이며, 손실 구간의 깊이를 본다.\npayoff\npayoff_ratio. 평균 이익을 평균 손실 절댓값으로 나눈 값이다. 승률이 낮아도 큰 이익 거래가 있으면 보완될 수 있다.\nedge ratio\nMFE를 MAE 절댓값으로 나눈 진입 품질 지표다. 1보다 높으면 유리한 움직임이 불리한 움직임보다 컸다는 뜻이다.\nMFE/MAE\nMFE는 보유 중 최대 유리 움직임, MAE는 최대 불리 움직임이다. 매수 타점과 매도 타이밍을 분리해 본다.\n활성 설정 · 토글\n현재 적용 설정\n실시간 데이터 대기 — 루프 시작 시 적용된 설정·토글 스냅샷이 발행됩니다.\n백테스트 엔진 — RUNTIME\nmin\nchunks 0/0\nOverall Progress 0.0%\nElapsed 0.0s\nRemaining 1 gen\nETA 0.0s\nTimeout 0.0s\nDeadline -\nProgress Source counter unavailable\nUnits -1/0\nEngine Config\nmin/tick=min\nmode=-\ncpu=-\nengines=0\ngen = generation\nPeriod -~-\nbt_full_start=-\nbt_full_end=-\nwindow=-~-\nbt_timeout=-\nbt_warm_run_timeout=-\nRecent Logs\nidle\nwaiting for engine event\nCPU 사용률\n0.0\n%\nCPU\n—\n메모리\n0\nMB\nMem %\n—\n/ 8.0 GB cap\n병렬 워커\n0\n/ 0\n처리량\n0\ncandles/s\n0 candles/sec\n경과 시간\n0.0s\nETA 0.0s\n처리중 종목\n—\nwindow — → —\n세대 백테 진행\n0\n%\n(세대 내)\n전체\n0.0%\n비용 · 누적\n누적 토큰\n0\n비용 / COUNT\n$0.0000\n한도 사용량\n0.0% / 50,000\n💡\n조건식 AI는 시작 전에도 핵심 구조를 보여줍니다. 아래 ▸ 조건식 AI 시작 설정 열기를 누르면 생성→백테스트→채점→부검 흐름, 엔진 메트릭, 자본곡선, 점수 분해, 부검 스트리밍이 실시간으로 보입니다.\n▸ 시작\n조건식 발굴 프로세스\n조건식 발굴 프로세스\n상세 프로세스\n아래 네이티브 그래프·타이밍·로그가 현재 정본입니다. 전체 설명 문서는 읽기 전용 참고 자료로 별도 확인할 수 있습니다.\n상세 프로세스 문서 열기\n현재 노드 미정\nphase —\ncurrent_step —\n최근 로그 로그 대기중…\nProcess selector\nstate.page_data.condition_discovery.process · process_catalog projection (static fallback)\nadvisory research\n1\nfast-discovery\nfast · Fast discovery\n2\nprocess-research\nresearch · Process research\n3\npromotion-review\npromotion · Promotion review\n선택 PROCESS\n1 · fast-discovery빠른 조건 탐색용 projection입니다. 후보 설명과 정렬만 하며 승격 권한은 없습니다.\nVALIDATION NAMES\nresearch_validationresearch evidence is reported as advisory_split, not clean promotion OOS\nCAPABILITY\nCAN_PROMOTE=FALSE\nCAN_EXPORT=FALSE\nCAN_LIVE=FALSE\nfast/research are advisory; promotion still requires frozen review and human approval\nFull pipeline · advisory research → frozen promotion review\n기존 5-step 그래프는 실행 상태 요약이고, 이 섹션은 전체 연구/검토 계약입니다.\n1. condition generation조건식 후보를 생성하고 STOM 문법/변수 경계를 먼저 확인합니다.\n2. full-period / research_validation전체 기간 검증과 research_validation 결과를 advisory_split evidence로 분리해 기록합니다.\n3. scoring / evidence성과·생성품질 100점, hard gate, evidence health를 함께 보되 점수는 advisory-only입니다.\n4. autopsy / analysis실패 원인, hypothesis, 패턴 카드를 분석해 다음 세대 맥락으로 환류합니다.\n5. improvement채택/거절/보류된 근거를 이용해 후보 생성 방향을 개선합니다.\n6. separate frozen promotion review승격은 별도 동결 리뷰에서만 판단합니다. promote/export/live 권한은 여기서 생기지 않습니다.\nWarm timing metadata\nwarm metadata pending — existing display remains valid\nmode/status\nmetadata pending\nengines\n—\nprepare\n—\nrun/timeout\n—\n데이터 출처\n실시간 상태\n현재 세대·현재 단계·백테스트 로그를 읽기 전용으로 표시\n상태 구분\nidle\nlive/archive/idle을 구분해 옛 결과를 실시간으로 오해하지 않게 함\n현재 단계\n미정\n단계 경과 대기\n단계 진행\n0/5\n예측값이 아니라 실제 current_step 기준\n소요시간\n0/5\n각 단계가 끝난 뒤 누적되는 실제 시간 표본\n로그\n0\n엔진/백테스트 로그 최근 0줄 자동 스크롤\n1\n조건식\n만들기\n2\n검증\n과거데이터\n3\n점수\n적합도\n4\n원인\n실패요약\n5\n개선\n다음세대\n한눈에 보는 흐름\n\n조건식을 만들고, 과거 데이터로 검증한 뒤, 점수와 실패 원인을 보고 다음 세대를 개선합니다.\n\n현재 세대\n\n지금 실행 중인 후보 묶음입니다. current_step이 바뀌면 그래프의 활성 노드와 로그가 같이 움직입니다.\n\n적합도\n\n수익·손실폭·거래 빈도 같은 기준을 합쳐 후보를 비교하는 점수입니다. 높을수록 다음 후보로 남기 쉽습니다.\n\n예시 보기\n기본 설정 · 게이트 · 채점 기준\n사용자 협의 기준을 한 표로 고정합니다. 모든 점수는 설명/연구용이며 hard gate·evidence·인간 승인이 우선합니다.\n구분\t기본값/정책\t설명\nPreset\tfast / research / promotion\tfast=빠른 탐색, research=프롬프트·equity·evidence 보존 연구, promotion=동결 후보 승격 검토. 모두 점수는 advisory-only입니다.\nTick 기본 연구\t09:00:00~09:28:00\tTick 후보 연구/promotion은 장초반 28분 opening window를 기본으로 봅니다.\nMIN 풀세션\t09:00~15:18/15:19\tresearch/promotion MIN은 풀세션을 요구합니다. 15:18과 15:19는 DB 경계 후보로 표시하고 명시 검증합니다.\n백테스트 1회 제한\t최대 300초\tbt_timeout 기본값입니다. warm run은 이보다 빨라야 하며, 과발화/비용 큰 매도식은 fail-fast 대상입니다.\n단계별 MDD gate\tfast 35% · research 25% · promotion 15%\t설정 mdd_cap이 더 낮으면 더 엄격한 값이 적용됩니다. hard gate가 점수보다 우선합니다.\n거래 빈도/과매매\t일평균 ≥0.5 · softcap 150\t과매매 자체는 금지가 아니라 soft penalty입니다. 빈도 부족은 hard/fitness 경계로 다룹니다.\nTPI\t매매성능지수 · gate 기본 OFF\tTPI는 거래 품질/수익 효율을 보조로 보는 매매성능지수입니다. tpi_gate_enabled=false가 기본이며 승격권한을 만들지 않습니다.\n성과 점수 100점\t수익·MDD·Calmar·우상향·빈도·청산·안정성\t후보 설명/정렬용 advisory score입니다. promotion/export/winner 선택권은 없습니다.\n생성품질 100점\t문법·변수다양성·니치·창의성·과발화·비용·매도구조\t조건식 생성 품질을 설명하는 점수입니다. 성과를 보증하지 않고 hard gate를 대체하지 않습니다.\nPrompt / Equity 저장\tfast 선택 · research/promotion evidence\t기본 토글은 OFF입니다. research/promotion 검토에서는 프롬프트·손익곡선 evidence가 없으면 blocker로 표시합니다.\n부검 hypothesis\taccepted/rejected/deferred/inconclusive\t부검 가정은 다음 프롬프트 맥락으로 환류하되 advisory-only provenance를 유지합니다.\n인간 DB pattern cards\t조합 문법/창의성 전용\t성과 복사·전체식 복사·임계값 복사는 금지합니다. few-shot은 구조 학습용으로만 씁니다.\nTransformer/ML\t추후 연구 과제\t이번 작업 범위에서는 구현하지 않습니다. 별도 연구로 예측/파라미터화 가능성만 추적합니다.\n1. 조건식\n—\n2. 검증\n—\n3. 점수\n—\n4. 원인\n—\n5. 개선\n—\n로그 대기중…\n백테스트\n개별 조건식 백테스트와 진화 중 백테스트 결과 확인\n차트 리플레이\n진입/청산 지점을 차트에서 다시 확인\n히스토리\n모든 run/gen 결과·Compare·기록 검색\n연구실\n탐색 히트맵·Edge Ratio·변수 분석·검증을 한 화면에서 확인\n분석 워크벤치\n후보 분석과 HoF 비교\n결정 감사\nappend-only 결정 이력 확인\nWELCOME\n조건식 AI 루프를 시작할 준비가 되었습니다.\n\nAI가 한국 주식 매수/매도 전략 코드를 자동 생성·백테스트·채점·반복합니다. 각 세대의 부검(autopsy)이 다음 세대 생성기에 피드백되어 조건식이 점진적으로 진화합니다.\n\n목표 점수와 MDD 상한을 동시에 만족하면 우승 후보로 표시되고,\n운영 export/final approval은 연구 확인 화면과 분리된 별도 승인 절차입니다.\n\n▸ 조건식 AI 시작 설정 열기\n루프 개요\n1\n조건식 만들기\nLLM이 이전 실패 원인과 좋은 예시를 참고해 매수/매도 규칙을 작성합니다.\n2\n과거 데이터로 검증\n백테스트 엔진이 지정 기간의 종목 데이터를 돌려 손익·낙폭·거래 빈도를 계산합니다.\n3\n점수 계산\n수익, 위험(MDD), 우상향, 일평균 거래, 손익비를 목표 공식에 맞춰 점수화합니다.\n4\n통과 기준 확인\n목표 적합도, MDD 상한, 일평균 거래 하한을 만족하는지 확인합니다.\n5\n실패 원인 요약\n왜 떨어졌는지 쉬운 말로 정리해 다음 세대 프롬프트에 넣습니다.\n6\n다시 개선\n이름이 붙은 run·세대·백테스트 결과를 저장해 나중에 다시 찾을 수 있게 합니다.\n연구실 종합 · 탐색/변수/검증\n연구 기능 위치 요약\nrun=LIVE · Home은 요약/이동만 제공하고 Lab/History/Workbench 내부 화면은 중복 렌더링하지 않습니다.\nLAB\n연구실\n탐색 히트맵·Edge Ratio·변수 중요도·상관관계·변수 조합·검증의 단일 소유 화면\nHISTORY\n히스토리\n모든 run/gen 백테스트 결과, 조건식, ResultDetail, Compare, 연구 기록 검색\nWORK\n분석 워크벤치\n후보 조건식 정밀 분석과 명예의 전당 후보 확인\nHOF\n명예의 전당\n실시간/과거 백테스트에서 좋은 결과를 Workbench/HOF 기준으로 재검토\nBT\n백테스트\n조건식 실행·최적화·WFO·결과 라이브러리 확인\nSIM\n차트 리플레이\n조건식 신호와 실제 차트 흐름을 재생해 진입/청산 맥락 점검\n적합도 추이 — FITNESS TRAJECTORY\n?\ngraded_score\nbest-so-far\ngate-passed\n최신 점수\n—\n최고 점수\n—\n게이트 통과\n0 / 0\n목표\n1.000\ntarget_score\ngraded_score = weighted fitness\nhard gate = target score plus MDD/trade rules\nCalmar = return divided by MDD\nuptrend_r2 = cumulative equity trend fit\n0.00\n0.20\n0.40\n0.60\n0.80\n1.00\ntarget 1.00\ngen_1\ngen_2\ngen_3\ngen_4\ngen_5\ngen_6\ngen_7\ngen_8\n세대 데이터가 누적되면 추이가 표시됩니다\n수익 추이 — PROFIT TRAJECTORY\n수익률 %\n수익금 ₩\n최신 수익률\n—\n최고 수익률\n—\n최신 수익금\n—\npayoff_ratio = avg win / abs(avg loss)\ntotal_profit_pct = operating-capital return\nprofit line uses right-axis money scale\n0%\n1.0%\n0.0%\n0.3%\n0.5%\n0.8%\n0원\n0원\ngen_1\ngen_2\ngen_3\ngen_4\ngen_5\ngen_6\ngen_7\ngen_8\n세대 데이터가 누적되면 수익 추이가 표시됩니다\n전 전략 누적 수익곡선\n?\n비우승\n우승(gate_passed)\n↻ 새로고침\n전체 곡선\n—\n우승 곡선\n—\n최고 수익률\n—\n백테 기간\n기간 정보 없음\nX축 = 거래 진행률 0~100%(전략마다 거래 수가 달라 정규화) · Y축 = 누적 수익금(원) · 회색 = 비우승 · 색 = 우승(gate 통과)\nedge_ratio = segment edge density\nwinner curves use a 12-color palette\nnon-winner curves stay subdued for comparison\n세대 데이터가 누적되면 수익곡선이 표시됩니다\n백테 상세 — 동시보유 종목수 · 일별손익 · 누적수익곡선\n동시보유 종목수\n이익(일)\n손실(일)\n누적수익 ₩\n↻ 새로고침\n거래수\n—\n거래일\n—\n최대 동시보유\n거래없음\n종목수\nDB MAX_HOLD_COUNT\n—\n저장값\n최종 누적수익\n—\n최대 반납액\n—\n고점 대비(원)\nrun_id=-\ngen_no=-\npeak_holdings=0 can mean no overlap buy/sell timing data\nDB max_hold_count=-\nperiod/timeframe are inherited from the selected run\n백테 결과 시계열이 없습니다(CSV 없음/토글)\nEVOLUTION GUI PARITY\nrun=- / gen=-\nRefresh\nstatus=pending\ncsv=missing\ngate=-\nexternalSelGen=-\nTRADES\n-\nPROFIT\n-\nMDD\n-\nGUI 패리티 — STOM 백테스트",
+      "buttons": [
+        "Dark",
+        "Light",
+        "적용",
+        "↻",
+        "🧬\n조건식 AI\nLIVE",
+        "📊\n백테스트\nBT",
+        "📈\n차트 리플레이\nSIM",
+        "🏠\n조건식 AI\nHOME",
+        "🗺️\n프로세스\nFLOW",
+        "IDX\n히스토리\nHISTORY",
+        "🔬\n연구실\nLAB",
+        "📊\n분석 워크벤치\nWORK",
+        "⚖️\n결정 감사\nAUDIT",
+        "▸ 시작",
+        "◼ 정지",
+        "expand preview",
+        "open full code",
+        "all",
+        "▸ 시작",
+        "백테스트\n개별 조건식 백테스트와 진화 중 백테스트 결과 확인",
+        "차트 리플레이\n진입/청산 지점을 차트에서 다시 확인",
+        "히스토리\n모든 run/gen 결과·Compare·기록 검색",
+        "연구실\n탐색 히트맵·Edge Ratio·변수 분석·검증을 한 화면에서 확인",
+        "분석 워크벤치\n후보 분석과 HoF 비교",
+        "결정 감사\nappend-only 결정 이력 확인",
+        "▸ 조건식 AI 시작 설정 열기",
+        "LAB\n연구실\n탐색 히트맵·Edge Ratio·변수 중요도·상관관계·변수 조합·검증의 단일 소유 화면",
+        "HISTORY\n히스토리\n모든 run/gen 백테스트 결과, 조건식, ResultDetail, Compare, 연구 기록 검색",
+        "WORK\n분석 워크벤치\n후보 조건식 정밀 분석과 명예의 전당 후보 확인",
+        "HOF\n명예의 전당\n실시간/과거 백테스트에서 좋은 결과를 Workbench/HOF 기준으로 재검토",
+        "BT\n백테스트\n조건식 실행·최적화·WFO·결과 라이브러리 확인",
+        "SIM\n차트 리플레이\n조건식 신호와 실제 차트 흐름을 재생해 진입/청산 맥락 점검",
+        "↻ 새로고침",
+        "↻ 새로고침",
+        "Refresh",
+        "Calmar",
+        "우상향 R²",
+        "MDD %",
+        "일평균거래",
+        "동시보유",
+        "손익비",
+        "📷 인간 결과 스크린샷",
+        "↻ 새로고침",
+        "총수익률",
+        "총수익금",
+        "연평균",
+        "MDD",
+        "payoff",
+        "전체",
+        "👤 인간",
+        "🌱 시드",
+        "🤖 AI",
+        "Sort: Total Profit",
+        "Sort: Gen",
+        "히스토리에서 Compare 열기",
+        "</> 코드 보기 — gen_-1"
+      ],
+      "consoleErrors": [],
+      "headers": {
+        "cache-control": "no-cache",
+        "x-stom-dashboard-version": "v2"
+      },
+      "htmlForbiddenMarkers": [],
+      "imageMetrics": {
+        "available": true,
+        "lumaStddev": 8.44,
+        "nonUniform": true,
+        "size": [
+          1920,
+          1080
+        ],
+        "status": "PASS"
+      },
+      "inputs": [
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "",
+          "value": "http://127.0.0.1:8770"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": ""
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": ""
+        }
+      ],
+      "pageErrors": [],
+      "path": "/ui/evolution",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/ui/evolution",
+          "resourceType": "document"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/styles.css?v=20260624u002",
+          "resourceType": "stylesheet"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/vendor-react.js?v=20260603a",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/vendor-react-dom.js?v=20260603a",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/vendor-lightweight-charts.js?v=20260612a",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/bundle/stom-ui.js?v=f41f5701",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/bundle/app.js?v=217c310d",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/research_criteria?mode=disabled",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/equity_curves",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/hall_of_fame",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/runs",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/runs",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/config/spec",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "resourceType": "fetch"
+        }
+      ],
+      "routeId": "v2_condition",
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-recheck-g003-safety-audit\\v2_condition.png",
+      "statusCode": 200,
+      "textCoverage": {
+        "missing": [],
+        "required": [
+          "No Live Order",
+          "No Broker Login",
+          "No Account Trading",
+          "Research Only",
+          "Human Approval Gate",
+          "Append-Only Audit",
+          "V3 Preview"
+        ],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "url": "http://127.0.0.1:8770/ui/evolution",
+      "version": "v2",
+      "websockets": [
+        "ws://127.0.0.1:8770/ws"
+      ]
+    },
+    {
+      "bodyTextExcerpt": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n📊 백테스트\nDark\nLight\nV3 Preview\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n검증 실행 · 조건식 백테스트 실행·결과 조회\n비소유: 진화 루프 최종 승인·운용 결정 기록\nbacktest\nROUTE\nBT\nOWNER\n검증 실행\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n백테스트 워크벤치\n● connected · api v1\n모드\n백테스트\n최적화\nWFO\n스윕\n매수 조건식\n— 선택 —\n매도 조건식\n— 선택 —\n시작 (YYYYMMDD)\n종료 (YYYYMMDD)\n시간단위\n분봉 (min)\n틱 (tick)\n엔진 수\n▸ 백테스트 실행\n↻ 이력\nself.vars → 스윕 빌더\n가용 min: 일일DB 1일\n조건식 편집\n결과 분석\n에디터 보기\n매수·매도 동시\n매수만 크게\n매도만 크게\n매수 에디터\n1줄\n사용 변수 칩 — 코드 입력 시 한글 변수가 SSOT 대조되어 표시됩니다.\n검증\n저장\n다른 이름으로\n매도 에디터\n1줄\n사용 변수 칩 — 코드 입력 시 한글 변수가 SSOT 대조되어 표시됩니다.\n검증\n저장\n다른 이름으로\n조건식 라이브러리(빠른 선택)\n▾ 접기\n조건식 라이브러리\n매수\n↻\n조회 실패: 전략 DB 조회 실패: 조건식 목록을 읽을 수 없습니다. · strategy_list_failed: no such table: stockbuy\n재시도\n0개 표시 / 전체 0개\n조건식 라이브러리\n매도\n↻\n조회 실패: 전략 DB 조회 실패: 조건식 목록을 읽을 수 없습니다. · strategy_list_failed: no such table: stocksell\n재시도\n0개 표시 / 전체 0개\n백파인더 사전 점검(실행 전용 준비)\n▸ 펼치기\n실거래/주문 기능 없음\nNo Live Order\n브로커 로그인 없음\nNo Broker Login\n계좌/자산 연동 없음\nNo Account Trading\n연구 전용\nResearch Only\nHuman Approval Gate\n승인 후 Export\nAppend-Only Audit\n불변 감사 로그\nSTOM AI · STATE_CONTRACT v2 · last_update —",
+      "buttons": [
+        "Dark",
+        "Light",
+        "적용",
+        "↻",
+        "🧬\n조건식 AI\nLIVE",
+        "📊\n백테스트\nBT",
+        "📈\n차트 리플레이\nSIM",
+        "백테스트",
+        "최적화",
+        "WFO",
+        "스윕",
+        "▸ 백테스트 실행",
+        "↻ 이력",
+        "self.vars → 스윕 빌더",
+        "조건식 편집",
+        "결과 분석",
+        "매수·매도 동시",
+        "매수만 크게",
+        "매도만 크게",
+        "검증",
+        "저장",
+        "다른 이름으로",
+        "검증",
+        "저장",
+        "다른 이름으로",
+        "조건식 라이브러리(빠른 선택)\n▾ 접기",
+        "↻",
+        "재시도",
+        "↻",
+        "재시도",
+        "백파인더 사전 점검(실행 전용 준비)\n▸ 펼치기"
+      ],
+      "consoleErrors": [],
+      "headers": {
+        "cache-control": "no-cache",
+        "x-stom-dashboard-version": "v2"
+      },
+      "htmlForbiddenMarkers": [],
+      "imageMetrics": {
+        "available": true,
+        "lumaStddev": 7.55,
+        "nonUniform": true,
+        "size": [
+          1920,
+          1080
+        ],
+        "status": "PASS"
+      },
+      "inputs": [
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "",
+          "value": "http://127.0.0.1:8770"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": ""
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": ""
+        },
+        {
+          "label": "",
+          "placeholder": "20260101",
+          "tag": "input",
+          "type": "",
+          "value": ""
+        },
+        {
+          "label": "",
+          "placeholder": "20261231",
+          "tag": "input",
+          "type": "",
+          "value": ""
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": "min"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "number",
+          "value": "4"
+        },
+        {
+          "label": "",
+          "placeholder": "매수 조건식 이름",
+          "tag": "input",
+          "type": "",
+          "value": ""
+        },
+        {
+          "label": "",
+          "placeholder": "# 매수 전략 코드 (Python)",
+          "tag": "textarea",
+          "type": "",
+          "value": ""
+        },
+        {
+          "label": "",
+          "placeholder": "매도 조건식 이름",
+          "tag": "input",
+          "type": "",
+          "value": ""
+        },
+        {
+          "label": "",
+          "placeholder": "# 매도 전략 코드 (Python)",
+          "tag": "textarea",
+          "type": "",
+          "value": ""
+        },
+        {
+          "label": "",
+          "placeholder": "이름 검색…",
+          "tag": "input",
+          "type": "",
+          "value": ""
+        },
+        {
+          "label": "",
+          "placeholder": "이름 검색…",
+          "tag": "input",
+          "type": "",
+          "value": ""
+        }
+      ],
+      "pageErrors": [],
+      "path": "/ui/backtest",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/ui/backtest",
+          "resourceType": "document"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/styles.css?v=20260624u002",
+          "resourceType": "stylesheet"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/vendor-react.js?v=20260603a",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/vendor-react-dom.js?v=20260603a",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/vendor-lightweight-charts.js?v=20260612a",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/bundle/stom-ui.js?v=f41f5701",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/bundle/app.js?v=217c310d",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/data_range",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/jobs",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/strategies?kind=buy",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/strategies?kind=sell",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/health",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/strategies?kind=buy",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/strategies?kind=sell",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/runs",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/config/spec",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "resourceType": "fetch"
+        }
+      ],
+      "routeId": "v2_backtest",
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-recheck-g003-safety-audit\\v2_backtest.png",
+      "statusCode": 200,
+      "textCoverage": {
+        "missing": [],
+        "required": [
+          "No Live Order",
+          "No Broker Login",
+          "No Account Trading",
+          "Research Only",
+          "Human Approval Gate",
+          "Append-Only Audit",
+          "백테스트"
+        ],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "url": "http://127.0.0.1:8770/ui/backtest",
+      "version": "v2",
+      "websockets": [
+        "ws://127.0.0.1:8770/ws"
+      ]
+    },
+    {
+      "bodyTextExcerpt": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n📈 차트 리플레이\nDark\nLight\nV3 Preview\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n차트 리플레이 · 차트 리플레이·수동 신호 검토\n비소유: 실거래 주문·전략 DB 쓰기\nsimulation\nROUTE\nSIM\nOWNER\n차트 리플레이\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n차트 시뮬레이션\n일일 min DB 리플레이 · 엔진 정합 신호 오버레이\n● connected · api v1\n빠른 시작\n⚡ 최근 거래일\n⚡ 최대 상승일\n최근 거래일: 보유한 일일 DB 중 가장 최근 거래일을 고르고 그날 등락률 1위 종목을 자동 재생합니다. · 최대 상승일: 최근 거래일 후보 전체에서 일중 최대 상승률이 가장 큰 날짜·종목을 찾아 자동 재생합니다.\n버튼에 마우스를 올리면 선택 기준 설명이 표시됩니다.\n리플레이 설정\n시간단위\n틱\n분봉\n날짜 (1일)\n— 선택 —\n2025-05-09\n매수 조건식 (신호 오버레이)\n— 없음 —\n매도 조건식\n— 없음 —\n종목 선택 (최대 10 · 등락순)0/10 선택\n256940\n킵스파마\n+29.98%\n014970\n삼륭물산\n+29.96%\n377480\n마음AI\n+29.71%\n010770\n평화홀딩스\n+21.02%\n225190\nLK삼양\n+16.06%\n355390\n크라우드웍스\n+15.47%\n285130\nSK케미칼\n+14.34%\n251270\n넷마블\n+14.13%\n448280\n에코아이\n+13.89%\n439580\n블루엠텍\n+11.33%\n053300\n한국정보인증\n+11.21%\n082740\n한화엔진\n+10.41%\n122870\n와이지엔터테인먼트\n+10.07%\n046970\n우리로\n+9.61%\n000050\n경방\n+8.57%\n240550\n동방메디컬\n+8.33%\n079550\nLIG디펜스앤에어로스페이스\n+7.79%\n090080\n평화산업\n+7.66%\n047560\n이스트소프트\n+7.37%\n042940\n상지건설\n+5.76%\n047810\n한국항공우주\n+5.55%\n161890\n한국콜마\n+5.53%\n071970\nHD현대마린엔진\n+5.43%\n200130\n콜마비앤에이치\n+5.23%\n008970\nKBI동양철관\n+4.71%\n128940\n한미약품\n+4.62%\n000150\n두산\n+4.54%\n226590\n엠디바이스\n+4.44%\n033500\n동성화인텍\n+4.31%\n278470\n에이피알\n+4.17%\n304100\n솔트룩스\n+4.08%\n041190\n우리기술투자\n+3.91%\n272210\n한화시스템\n+3.76%\n000880\n한화\n+3.70%\n007660\n이수페타시스\n+3.40%\n257720\n실리콘투\n+3.27%\n456010\n아이씨티케이\n+2.93%\n003230\n삼양식품\n+2.37%\n014160\n대영포장\n+2.26%\n062970\n한국첨단소재\n+1.72%\n448900\n한국피아이엠\n+1.51%\n083650\n비에이치아이\n+1.47%\n094480\n갤럭시아머니트리\n+1.41%\n009830\n한화솔루션\n+1.40%\n064260\n다날\n+1.04%\n328130\n루닛\n+0.97%\n389470\n인벤티지랩\n+0.95%\n036930\n주성엔지니어링\n+0.59%\n394800\n쓰리빌리언\n+0.29%\n006340\n대원전선\n+0.18%\n010120\nLS ELECTRIC\n0.00%\n207760\n미스터블루\n-0.06%\n112610\n씨에스윈드\n-0.12%\n382150\n온코크로스\n-0.15%\n115500\n케이씨에스\n-0.18%\n489790\n한화비전\n-0.32%\n053580\n웹케시\n-0.45%\n098460\n고영\n-0.52%\n042700\n한미반도체\n-1.27%\n010620\n010620\n-1.60%\n141080\n리가켐바이오\n-1.69%\n459510\n나우로보틱스\n-1.69%\n059210\n메타바이오메드\n-2.08%\n021040\n대호특수강\n-2.26%\n242040\n나무기술\n-2.50%\n063170\n서울옥션\n-2.57%\n430690\n한싹\n-2.81%\n163730\n핑거\n-2.98%\n013580\n계룡건설\n-3.92%\n002630\n오리엔트바이오\n-4.13%\n389140\n포바이포\n-4.28%\n011790\nSKC\n-4.54%\n011080\n형지I&C\n-7.03%\n065500\n오리엔트정공\n-7.58%\n417180\n핑거스토리\n-8.44%\n011780\n금호석유화학\n-10.28%\n020710\n시공테크\n-13.63%\n289010\n아이스크림에듀\n-19.64%\n215090\n솔디펜스\n-20.00%\n시장 미니맵\n0/10 선택 · 등락순\n킵스파마\n+29.98%\n삼륭물산\n+29.96%\n마음AI\n+29.71%\n평화홀딩스\n+21.02%\nLK삼양\n+16.06%\n크라우드웍스\n+15.47%\nSK케미칼\n+14.34%\n넷마블\n+14.13%\n에코아이\n+13.89%\n블루엠텍\n+11.33%\n한국정보인증\n+11.21%\n한화엔진\n+10.41%\n와이지엔터테인먼트\n+10.07%\n우리로\n+9.61%\n경방\n+8.57%\n동방메디컬\n+8.33%\nLIG디펜스앤에어로스페이스\n+7.79%\n평화산업\n+7.66%\n이스트소프트\n+7.37%\n상지건설\n+5.76%\n한국항공우주\n+5.55%\n한국콜마\n+5.53%\nHD현대마린엔진\n+5.43%\n콜마비앤에이치\n+5.23%\nKBI동양철관\n+4.71%\n한미약품\n+4.62%\n두산\n+4.54%\n엠디바이스\n+4.44%\n동성화인텍\n+4.31%\n에이피알\n+4.17%\n솔트룩스\n+4.08%\n우리기술투자\n+3.91%\n한화시스템\n+3.76%\n한화\n+3.70%\n이수페타시스\n+3.40%\n실리콘투\n+3.27%\n아이씨티케이\n+2.93%\n삼양식품\n+2.37%\n대영포장\n+2.26%\n한국첨단소재\n+1.72%\n한국피아이엠\n+1.51%\n비에이치아이\n+1.47%\n갤럭시아머니트리\n+1.41%\n한화솔루션\n+1.40%\n다날\n+1.04%\n루닛\n+0.97%\n인벤티지랩\n+0.95%\n주성엔지니어링\n+0.59%\n쓰리빌리언\n+0.29%\n대원전선\n+0.18%\nLS ELECTRIC\n0.00%\n미스터블루\n-0.06%\n씨에스윈드\n-0.12%\n온코크로스\n-0.15%\n케이씨에스\n-0.18%\n한화비전\n-0.32%\n웹케시\n-0.45%\n고영\n-0.52%\n한미반도체\n-1.27%\n010620\n-1.60%\n리가켐바이오\n-1.69%\n나우로보틱스\n-1.69%\n메타바이오메드\n-2.08%\n대호특수강\n-2.26%\n나무기술\n-2.50%\n서울옥션\n-2.57%\n한싹\n-2.81%\n핑거\n-2.98%\n계룡건설\n-3.92%\n오리엔트바이오\n-4.13%\n포바이포\n-4.28%\nSKC\n-4.54%\n형지I&C\n-7.03%\n오리엔트정공\n-7.58%\n핑거스토리\n-8.44%\n금호석유화학\n-10.28%\n시공테크\n-13.63%\n아이스크림에듀\n-19.64%\n솔디펜스\n-20.00%\n예시 추천 준비\n준비된 데이터를 선택했습니다 · 재생은 사용자 게이트 후 시작\n내가 선택하기\n▶ 재생\n1x\n5x\n20x\n60x\n240x\n초고속\n⏱ 20x 페이싱\n--:--:-- · 0/0\n왼쪽에서 날짜·종목(최대 10)을 선택하고 ▶ 재생을 누르면 캔들 차트가 실시간으로 리플레이됩니다.\n실거래/주문 기능 없음\nNo Live Order\n브로커 로그인 없음\nNo Broker Login\n계좌/자산 연동 없음\nNo Account Trading\n연구 전용\nResearch Only\nHuman Approval Gate\n승인 후 Export\nAppend-Only Audit\n불변 감사 로그\nSTOM AI · STATE_CONTRACT v2 · last_update —",
+      "buttons": [
+        "Dark",
+        "Light",
+        "적용",
+        "↻",
+        "🧬\n조건식 AI\nLIVE",
+        "📊\n백테스트\nBT",
+        "📈\n차트 리플레이\nSIM",
+        "⚡ 최근 거래일",
+        "⚡ 최대 상승일",
+        "틱",
+        "분봉",
+        "256940\n킵스파마\n+29.98%",
+        "014970\n삼륭물산\n+29.96%",
+        "377480\n마음AI\n+29.71%",
+        "010770\n평화홀딩스\n+21.02%",
+        "225190\nLK삼양\n+16.06%",
+        "355390\n크라우드웍스\n+15.47%",
+        "285130\nSK케미칼\n+14.34%",
+        "251270\n넷마블\n+14.13%",
+        "448280\n에코아이\n+13.89%",
+        "439580\n블루엠텍\n+11.33%",
+        "053300\n한국정보인증\n+11.21%",
+        "082740\n한화엔진\n+10.41%",
+        "122870\n와이지엔터테인먼트\n+10.07%",
+        "046970\n우리로\n+9.61%",
+        "000050\n경방\n+8.57%",
+        "240550\n동방메디컬\n+8.33%",
+        "079550\nLIG디펜스앤에어로스페이스\n+7.79%",
+        "090080\n평화산업\n+7.66%",
+        "047560\n이스트소프트\n+7.37%",
+        "042940\n상지건설\n+5.76%",
+        "047810\n한국항공우주\n+5.55%",
+        "161890\n한국콜마\n+5.53%",
+        "071970\nHD현대마린엔진\n+5.43%",
+        "200130\n콜마비앤에이치\n+5.23%",
+        "008970\nKBI동양철관\n+4.71%",
+        "128940\n한미약품\n+4.62%",
+        "000150\n두산\n+4.54%",
+        "226590\n엠디바이스\n+4.44%",
+        "033500\n동성화인텍\n+4.31%",
+        "278470\n에이피알\n+4.17%",
+        "304100\n솔트룩스\n+4.08%",
+        "041190\n우리기술투자\n+3.91%",
+        "272210\n한화시스템\n+3.76%",
+        "000880\n한화\n+3.70%",
+        "007660\n이수페타시스\n+3.40%",
+        "257720\n실리콘투\n+3.27%",
+        "456010\n아이씨티케이\n+2.93%",
+        "003230\n삼양식품\n+2.37%",
+        "014160\n대영포장\n+2.26%",
+        "062970\n한국첨단소재\n+1.72%",
+        "448900\n한국피아이엠\n+1.51%",
+        "083650\n비에이치아이\n+1.47%",
+        "094480\n갤럭시아머니트리\n+1.41%",
+        "009830\n한화솔루션\n+1.40%",
+        "064260\n다날\n+1.04%",
+        "328130\n루닛\n+0.97%",
+        "389470\n인벤티지랩\n+0.95%",
+        "036930\n주성엔지니어링\n+0.59%",
+        "394800\n쓰리빌리언\n+0.29%",
+        "006340\n대원전선\n+0.18%",
+        "010120\nLS ELECTRIC\n0.00%",
+        "207760\n미스터블루\n-0.06%",
+        "112610\n씨에스윈드\n-0.12%",
+        "382150\n온코크로스\n-0.15%",
+        "115500\n케이씨에스\n-0.18%",
+        "489790\n한화비전\n-0.32%",
+        "053580\n웹케시\n-0.45%",
+        "098460\n고영\n-0.52%",
+        "042700\n한미반도체\n-1.27%",
+        "010620\n010620\n-1.60%",
+        "141080\n리가켐바이오\n-1.69%",
+        "459510\n나우로보틱스\n-1.69%",
+        "059210\n메타바이오메드\n-2.08%",
+        "021040\n대호특수강\n-2.26%",
+        "242040\n나무기술\n-2.50%",
+        "063170\n서울옥션\n-2.57%",
+        "430690\n한싹\n-2.81%",
+        "163730\n핑거\n-2.98%",
+        "013580\n계룡건설\n-3.92%"
+      ],
+      "consoleErrors": [],
+      "headers": {
+        "cache-control": "no-cache",
+        "x-stom-dashboard-version": "v2"
+      },
+      "htmlForbiddenMarkers": [],
+      "imageMetrics": {
+        "available": true,
+        "lumaStddev": 15.9,
+        "nonUniform": true,
+        "size": [
+          1920,
+          1080
+        ],
+        "status": "PASS"
+      },
+      "inputs": [
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "",
+          "value": "http://127.0.0.1:8770"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": "20250509"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": ""
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": ""
+        },
+        {
+          "label": "",
+          "placeholder": "코드/이름 검색…",
+          "tag": "input",
+          "type": "",
+          "value": ""
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "range",
+          "value": "0"
+        }
+      ],
+      "pageErrors": [],
+      "path": "/ui/chart-replay",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/ui/chart-replay",
+          "resourceType": "document"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/styles.css?v=20260624u002",
+          "resourceType": "stylesheet"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/vendor-react.js?v=20260603a",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/vendor-react-dom.js?v=20260603a",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/vendor-lightweight-charts.js?v=20260612a",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/bundle/stom-ui.js?v=f41f5701",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/bundle/app.js?v=217c310d",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/sim/health",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/sim/days?src=min",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/strategies?kind=buy",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/strategies?kind=sell",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/sim/demo?src=min&mode=latest",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/runs",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/config/spec",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/sim/stocks?date=20250509&src=min",
+          "resourceType": "fetch"
+        }
+      ],
+      "routeId": "v2_chart_replay",
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-recheck-g003-safety-audit\\v2_chart_replay.png",
+      "statusCode": 200,
+      "textCoverage": {
+        "missing": [],
+        "required": [
+          "No Live Order",
+          "No Broker Login",
+          "No Account Trading",
+          "Research Only",
+          "Human Approval Gate",
+          "Append-Only Audit",
+          "차트 리플레이"
+        ],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "url": "http://127.0.0.1:8770/ui/chart-replay",
+      "version": "v2",
+      "websockets": [
+        "ws://127.0.0.1:8770/ws"
+      ]
+    },
+    {
+      "bodyTextExcerpt": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST UP\nWebSocket 연결됨\nRun Status idle\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen -1 / 목표 0\n0.0%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\n조건식 AI provenance · source: backend-derived live payload · mode: LIVE · backend: http://127.0.0.1:8776 · loop payload stored\nLive payload\ngeneration: -1 · strategyCount: 12 · gatePassed: 0\nⓘ Export Status: Gen 136 스냅샷이 CSV/Parquet/JSON으로 내보내기 완료되었습니다. Winner 최종 승인 필요.\n상세 보기\n1. 코어 헬스\nCPU\n18.5%\nMEM\n42.3%\nDISK\n31.2%\nGPU\n12.1%\nWS\n128 msg/s\nREST\n36 req/s\n2. 히스토리 요약\n총 세대\n137\n총 전략\n5,480\n게이트 통과\n812\n우승\n7\n아카이브\n42\n3. 성과 스냅샷\n총 순이익\n+18.742%\n승률(트레이드)\n54.21%\n샤프\n1.36\n칼마\n1.12\nMDD\n-12.34%\n4. 게이트 통과율\n41.8%\n명예 인스펙터\nS136-0321 (MeanRev_Adaptive_v9)\n# STOM CONDITION SCRIPT v1.0\n# Strategy: MeanRev_Adaptive_v9\n# BUY CONDITION\ncond = (\n    close < sma(close, 20) - 1.5 * atr(14)\n    and rsi(14) < 35\n현재 세대 라이브 상태\nLIVE\nPhase\nidle\nCheckpoint\n7 / 10\nMessage\n백테스트 실행 중 (7/10) - 1H · OOS Split 70/30\nElapsed\n02:14:38\nETA\n~01:02:11\n생성 전략\n0 / 0\n게이트 통과\n0\n활성 전략 (현재 평가 중)\n인스펙터\nID\nGEN--1\nName\nMeanRev_Adaptive_v9\nGrade\nA-\nScore\n0.812\nProfit\n+18.742%\nMDD\n-12.34%\nTrades\n412\n프로세스 / 페이즈 타임라인\nPhase 1\n탐색\n완료\nPhase 2\n평가\n완료\nPhase 3\n필터/게이트\n진행 중\nPhase 4\n교차/변이\n대기\nPhase 5\n검증/보강\n대기\n현재 페이즈 상세\nPhase 3\n필터/게이트\n진행도\n64%\n소요\n00:18:22\n예상\n00:10:28\n완료\n51 / 80\n연구 기준 (Research Criteria)\n목표 샤프 ≥ 1.00\nMDD ≤ 15.00%\n최소 거래수 ≥ 150\n게이트 통과율 ≥ 30%\n홀드아웃 안정성 ≥ 1.00\n용어 사전 (Glossary)\nSharpe Ratio\n위험 대비 수익률\nMDD\n최대 낙폭\nProfit Factor\n총익/총손실 비율\nTrade Count\n전체 거래 수\nQuality Score\n다중 지표 종합 점수\nActive Config\n데이터 소스\nOHLCV (KRX + NYSE)\n기간\n2015-01-01 ~ 2024-12-31\n수수료\n0.015%\n슬리피지\n0.005%\n초기 자본\n100,000,000 KRW\nEngine Summary\nAI 엔진\nSTOM-AI Engine v2.3.1\n모델\ngpt-4o-mini\n전략 생성\nTop-K 64\n평가 워커\n16 / 16\nGPU\n12.1%\nCost / Tokens\n총 비용\n$214.317\n이번 세대\n$1.842\n입력 토큰\n1.28M\n출력 토큰\n0.49M\n캐시 적중률\n48.2%\nFitness Score 추이\n0.812 ↑ 0.032\nProfit 추이\n+18.742%\nEquity Overlay (Top 5)\nW1(Gen132)\nW2(Gen129)\nHuman Ref\nBuy&Hold\n백테스트 상세\n+22.13%\nDaily Profit\nCumulative\nGUI Parity / 품질\n09\n10\n11\n12\n13\n14\n시간대\n요일\nQuality Trend\n0.78\n세대 테이블 (Generation Table)\ngen\tstatus\tgraded_score\tgate_passed\tgate_reason\ttrade_count\tdaily_avg_trades\tMDD\tprofit\tstrategy_gist\tactions\n137\t\nrunning\t—\t—\t평가 중\t—\t—\t—\t—\t변동성 적응형 평균회귀 + 거래량 확인\t코드백테스트\n136\t\ngate_passed\t0.808\t✓ 통과\tAll criteria passed\t302\t4.3\t-8.45%\t+14.05%\t이동평균 정배열 + ATR 필터 + 거래량 급증\t코드백테스트\n135\t\ngate_passed\t0.748\t✓ 통과\tAll criteria passed\t490\t5.6\t-21.33%\t+20.00%\tEMA 추세 + RSI 모멘텀 + 볼린저 확장\t코드백테스트\n134\t\nrejected\t0.716\t✕ 실패\tSharpe < 1.0\t201\t6.3\t-11.94%\t+19.12%\tDonchian Breakout + 필터(ADX)\t코드백테스트\n133\t\ngate_passed\t0.729\t✓ 통과\tAll criteria passed\t417\t6.4\t-20.62%\t+17.23%\tMACD 골든크로스 + 거래량 확인\t코드백테스트\n132\t\ngate_passed\t0.707\t✓ 통과\tAll criteria passed\t404\t5.2\t-8.12%\t+25.73%\tRSI 반전 + 추세 확인 필터\t코드백테스트\n131\t\nrejected\t0.639\t✕ 실패\tMDD > 25%\t235\t5.4\t-25.23%\t+15.41%\t과매수 구간 반전 전략\t코드백테스트\n130\t\ngate_passed\t0.624\t✓ 통과\tAll criteria passed\t210\t7.1\t-14.19%\t+13.82%\t체결강도 급등 + VI 직전 필터\t코드백테스트\n129\t\ngate_passed\t0.606\t✓ 통과\tAll criteria passed\t470\t5\t-25.52%\t+16.33%\t변동성 적응형 평균회귀 + 거래량 확인\t코드백테스트\n128\t\nrejected\t0.584\t✕ 실패\tSharpe < 1.0\t286\t7\t-23.94%\t+15.96%\t이동평균 정배열 + ATR 필터 + 거래량 급증\t코드백테스트\n127\t\ngate_passed\t0.521\t✓ 통과\tAll criteria passed\t228\t7.7\t-12.10%\t+14.37%\tEMA 추세 + RSI 모멘텀 + 볼린저 확장\t코드백테스트\n126\t\ngate_passed\t0.542\t✓ 통과\tAll criteria passed\t374\t4.4\t-14.84%\t+17.98%\tDonchian Breakout + 필터(ADX)\t코드백테스트\nHall of Fame (상위 전략 비교)\nrank\ttype\tname\tprofit\tmdd\tsharpe\tpf\tscore\n1\tAI\tS136-0321\t+22.13%\t-9.84%\t1.28\t1.87\t0.821\n2\tHuman Ref\tHuman_Trend_MA\t+21.12%\t-13.44%\t1.61\t2.02\t0.756\n3\tAI\tS129-0044\t+28.17%\t-9.34%\t1.67\t1.95\t0.721\n4\tAI\tS118-0833\t+21.36%\t-11.01%\t1.46\t1.74\t0.681\nGeneration Analytics\n다중 지표 진화 추이\nGraded\nProfit\nQuality\nTop Gen\nGen 136\nscore 0.821\nWorkbench\n전달 가능\n선택 후보 분석\nBEST / WINNER + Approval\nWINNER\nS136-0321\nMeanRev_Adaptive_v9\n세대\n136 | A Grade\nSharpe\n1.28\n수익률\n+22.13%\nMDD\n-9.84%\nPF\n1.87\n거래수\n412\n우승 후보 승인\n승인 전 내보내기 불가\nBuy 조건식 명Sell 조건식 명\n명시적으로 승인합니다.\n승인 및 내보내기\n전략 인스펙터 (Strategy Inspector) 미리보기\nBuy Code\nSell Code\nPrevious Diff\nPrompt Timeline\nAI Context\nCurrent Code\n# STOM CONDITION SCRIPT v1.0\n# Strategy: MeanRev_Adaptive_v9\n# BUY CONDITION\ncond = (\n    close < sma(close, 20) - 1.5 * atr(14)\n    and rsi(14) < 35\n    and volume > sma(volume, 20) * 1.2\n    and regime_volatility() == \"LOW\"\n)\nsignal = cond\nsize = min(1.0, risk_parity())\n전략 ID\nS136-0321\n문법 검사\n정상\n라인\n1-28 / 28\n복사 옵션\n전체/코드/변수\n복사\n높이 확장\n전체 인스펙터 열기\n지원 분석 패널\n가설 (Hypothesis)\n3건\n평균회귀 강화 0.78 · 모멘텀 필터 0.62\n조건식 발견 (Discovery)\nNew 23\nRSI Regime / Volatility Regime / Volume Spike\n사후 분석 (Autopsy)\nAnalyzed 18\n과최적화 38%, 거래 과다 27%\n인구 분포 (Population)\n300\nFitness × Complexity\n계보 (Lineage)\nView Tree\n부모→자식 생존율 52.1%\n메타 지표 (Meta)\n36 Metrics\nLookback, Vol Filter, RSI Thresh\n홀드아웃 (Holdout)\nPass\nSharpe 1.18 · 수익률 +16.43%\n세대 분석 (Gen Analytics)\n43.8%\n생성 80 · 통과 14\nFeedback / Autopsy\n실패 원인: MDD 과다 · 거래 집중 구간 취약\n변동성 필터 추가\nATR 기반 손절 도입\n포지션 스케일 조정\n0.42 / 1.00\nContract (Local Backend)\nREST\nhttp://127.0.0.1:9200\nWebSocket\nws://127.0.0.1:8765/ws\nData\nRead-only\nExport\nHuman Gate Required\n🚫\n실거래/주문 기능 없음\nNo Live Order\n🚫\n브로커 로그인 없음\nNo Broker Login\n🚫\n계좌/자산 연동 없음\nNo Account Trading\n🛡\n연구 전용\nResearch Only\n🔐\nHuman Approval Gate\n승인 후 Export\n🧾\nAppend-Only Audit\n불변 감사 로그",
+      "buttons": [
+        "재연결",
+        "테마 ◐",
+        "조건식 AI",
+        "백테스트",
+        "차트 리플레이",
+        "LIVE",
+        "ARCHIVE",
+        "⚙ 설정",
+        "Start ▶",
+        "Stop ■",
+        "조건식 AI",
+        "프로세스",
+        "히스토리",
+        "연구실",
+        "분석 워크벤치",
+        "결정 감사",
+        "상세 보기",
+        "인스펙터",
+        "우승 후보 승인",
+        "승인 및 내보내기",
+        "복사",
+        "높이 확장",
+        "전체 인스펙터 열기"
+      ],
+      "consoleErrors": [],
+      "headers": {
+        "cache-control": "no-store, max-age=0, must-revalidate",
+        "x-stom-dashboard-version": "v3-remodel"
+      },
+      "htmlForbiddenMarkers": [],
+      "imageMetrics": {
+        "available": true,
+        "lumaStddev": 18.53,
+        "nonUniform": true,
+        "size": [
+          1920,
+          1080
+        ],
+        "status": "PASS"
+      },
+      "inputs": [
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "",
+          "value": "http://127.0.0.1:8776"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": "S136-0321 (MeanRev_Adaptive_v9)"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "",
+          "value": "MeanRev_Adaptive_v9_BUY"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "",
+          "value": "MeanRev_Adaptive_v9_SELL"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "checkbox",
+          "value": "on"
+        }
+      ],
+      "pageErrors": [],
+      "path": "/ui/remodel/condition",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/ui/remodel/condition",
+          "resourceType": "document"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/runs",
+          "resourceType": "fetch"
+        }
+      ],
+      "routeId": "v3_condition",
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-recheck-g003-safety-audit\\v3_condition.png",
+      "statusCode": 200,
+      "textCoverage": {
+        "missing": [],
+        "required": [
+          "No Live Order",
+          "No Broker Login",
+          "No Account Trading",
+          "Research Only",
+          "Human Approval Gate",
+          "Append-Only Audit",
+          "BEST / WINNER",
+          "승인 전 내보내기 불가"
+        ],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition",
+      "version": "v3",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "bodyTextExcerpt": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST UP\nWebSocket 연결됨\nRun Status idle\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen -1 / 목표 0\n0.0%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\n1 모니터링\n상태\n정상\n이상\n0건\n2 리스크\n상태\n정상\n이상\n0건\n3 연구실\n상태\n정상\n이상\n0건\n4 전략 저장소\n상태\n정상\n이상\n0건\n5 알림 & 로그\n상태\n정상\n이상\n0건\n6 시스템 상태\n상태\n정상\n이상\n0건\n7 접근 & 감사\n상태\n정상\n이상\n0건\n결정 감사 provenance · source: backend-derived live payload · mode: LIVE · backend: http://127.0.0.1:8776 · loop payload stored\nLive payload\ndecisionCount: 5 · checklistCount: 10 · appendOnly: true\n최종 전략 추출(Export) 승인과 결정 감사(Decision Audit)는 별개입니다.\nEvidence → Validation → Human Decision 과정을 Append-Only 불변 원장으로 기록합니다.\nAppend-Only Ledger\n결정 대기\n7\nSLA 48h 이내\n감사 완료\n26\n평균 검토 2h 37m\n거절/보류\n5\n거절률 16.1%\n이번주 결정\n38\n승인 55% / 보완 29%\n불변 기록 상태\nAPPEND-ONLY\n해시체인 정상\n마지막 기록\n2025-05-20 14:18\nby 김연구\nPROMOTE 체크리스트\n데이터 무결성\n통과\n백테스트 신뢰성\n통과\nOOS 성능 우위\n통과\nOOS 일관성\n통과\n리스크 프로파일\n통과\n비용 반영 성과\n통과\n해석 가능성\n통과\n규정/정책 적합\n통과\n문서/증거 완비\n통과\n이해상충 검토\n검토 필요\n체크 완료: 9/10 · 최종 권고: 보완 필요\nOOS 성과 차이 신뢰구간\nWindow\t기간\tSharpe Diff\t95% CI Low\t95% CI High\tp-value\t결론\nW1\t2023-01 ~ 2023-06\t0.24\t0.08\t0.41\t0.003\t\n우위\nW2\t2023-07 ~ 2023-12\t0.31\t0.12\t0.51\t0.001\t\n우위\nW3\t2024-01 ~ 2024-06\t0.17\t-0.02\t0.36\t0.076\t\n보완\nW4\t2024-07 ~ 2024-12\t0.22\t0.05\t0.4\t0.011\t\n우위\n전체\t2023-01 ~ 2025-05\t0.24\t0.12\t0.35\t<0.001\t\n우위\nOOS Sharpe 비교\n알림 & 요약 / 레짐 분해\n경고 2 · 정보 8 · OOS W3 보완 필요\n레짐\t비중\tSharpe V6\tSharpe M4\tDiff\nTrend-Strong\t28%\t1.76\t1.41\t0.35\nSideways\t25%\t0.72\t0.79\t-0.07\nHigh-Vol\t15%\t0.41\t0.62\t-0.21\nRevival Registry / Baseline 비교\n전략ID\t원본 버전\t만료일\t상태\nstrat_20240112_A\tv5.3.1\t2025-05-23\tD-3\nstrat_20240305_B\tv5.4.0\t2025-06-02\tD-13\nV6 Sharpe\n1.42\nM4 Sharpe\n1.08\nCAGR Diff\n+5.9%\n증거 & 링크\n🔗 백테스트 리포트\npdf/json\n🔗 OOS 성과 리포트\npdf/json\n🔗 레짐 분석 리포트\npdf/json\n🔗 비용/민감도 분석\npdf/json\n🔗 리스크 리포트\npdf/json\n🔗 데이터 무결성 리포트\npdf/json\n🔗 코드/파이프라인\npdf/json\n결정 입력 (Human Decision)\n PROMOTE\n정식 전략 추출 대상\n COMPLEMENT\n보완 후 추출 고려\n HOLD\n추가 검증 필요\n REJECT\n추출 비권고\n결정 노트 (필수)결정 제출 (Append-Only 기록)\n결정 히스토리 (Append-Only Ledger)\n내보내기 CSV\nDecision ID\t결정일시\t결정\t전략ID\t요약 노트\t결정자\t역할\t증거 링크\t레코드 해시\t검증\ndec_20250520_141809_7b1a4\t2025-05-20 14:18:09\t\nCOMPLEMENT\tstrat_20250520_v6 (v6.1.0)\tOOS W3 보완 필요. 비용 민감도 테스트 추가 권고\t김연구\tResearch Lead\t7개\td8c0ab41e0c0…\t✓ 검증됨\ndec_20250519_110575_e8c72\t2025-05-19 13:19:09\t\nPROMOTE\tstrat_20250519_v6 (v6.0.1)\t모든 기준 충족, 리스크 적정\t이성훈\tPM\t6개\t014ea2ee2fda…\t✓ 검증됨\ndec_20250518_079341_7b1a4\t2025-05-18 12:20:09\t\nHOLD\tstrat_20250518_v6 (v6.0.2)\t추가 데이터 확보 후 재검토\t박지원\tRisk Analyst\t5개\ta514af2be7dc…\t✓ 검증됨\ndec_20250517_048107_c2bfa\t2025-05-17 11:21:09\t\nREJECT\tstrat_20250517_v6 (v6.0.3)\tRegime Sideways 구간 열위 지속\t최민수\tCIO\t4개\t85d81b38ab96…\t✓ 검증됨\ndec_20250516_016873_c2bfa\t2025-05-16 10:22:09\t\nPROMOTE\tstrat_20250516_v6 (v6.0.4)\t성과 우수, 리스크 허용 범위\t김연구\tResearch Lead\t3개\td98cc4ece246…\t✓ 검증됨\n감사 메타데이터\n페이지\n결정 감사\n버전\nUI 2.2.0\n환경\ndev/reference\n사용자\nkim.research\n불변 원장\nON\n해시 체인\nOK\nWORM 보존\n7년\n🚫\n실거래/주문 기능 없음\nNo Live Order\n🚫\n브로커 로그인 없음\nNo Broker Login\n🚫\n계좌/자산 연동 없음\nNo Account Trading\n🛡\n연구 전용\nResearch Only\n🔐\nHuman Approval Gate\n승인 후 Export\n🧾\nAppend-Only Audit\n불변 감사 로그",
+      "buttons": [
+        "재연결",
+        "테마 ◐",
+        "조건식 AI",
+        "백테스트",
+        "차트 리플레이",
+        "LIVE",
+        "ARCHIVE",
+        "⚙ 설정",
+        "Start ▶",
+        "Stop ■",
+        "조건식 AI",
+        "프로세스",
+        "히스토리",
+        "연구실",
+        "분석 워크벤치",
+        "결정 감사",
+        "결정 제출 (Append-Only 기록)",
+        "내보내기 CSV"
+      ],
+      "consoleErrors": [],
+      "headers": {
+        "cache-control": "no-store, max-age=0, must-revalidate",
+        "x-stom-dashboard-version": "v3-remodel"
+      },
+      "htmlForbiddenMarkers": [],
+      "imageMetrics": {
+        "available": true,
+        "lumaStddev": 18.48,
+        "nonUniform": true,
+        "size": [
+          1920,
+          1080
+        ],
+        "status": "PASS"
+      },
+      "inputs": [
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "",
+          "value": "http://127.0.0.1:8776"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "radio",
+          "value": "on"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "radio",
+          "value": "on"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "radio",
+          "value": "on"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "radio",
+          "value": "on"
+        },
+        {
+          "label": "",
+          "placeholder": "근거 및 보완 사항을 구체적으로 입력하세요.",
+          "tag": "textarea",
+          "type": "",
+          "value": ""
+        }
+      ],
+      "pageErrors": [],
+      "path": "/ui/remodel/audit",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/ui/remodel/audit",
+          "resourceType": "document"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/runs",
+          "resourceType": "fetch"
+        }
+      ],
+      "routeId": "v3_audit",
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-recheck-g003-safety-audit\\v3_audit.png",
+      "statusCode": 200,
+      "textCoverage": {
+        "missing": [],
+        "required": [
+          "No Live Order",
+          "No Broker Login",
+          "No Account Trading",
+          "Research Only",
+          "Human Approval Gate",
+          "Append-Only Audit",
+          "최종 전략 추출(Export) 승인과 결정 감사(Decision Audit)는 별개입니다.",
+          "Evidence → Validation → Human Decision",
+          "Append-Only",
+          "PROMOTE",
+          "Human Decision",
+          "결정 히스토리",
+          "dev/reference"
+        ],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit",
+      "version": "v3",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "bodyTextExcerpt": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST UP\nWebSocket 연결됨\nRun Status idle\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen -1 / 목표 0\n0.0%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n1 시스템 상태\nAPI Health\nOK\nData Pack\nKRX + US\nDemo Mode\nON\nUptime\n3d 14h\n2 마켓 요약\n지표\t현재가\t등락률\nKOSPI\t2,610.42\t+0.58%\nKOSDAQ\t859.12\t+0.74%\nUSD/KRW\t1,349.20\t-0.22%\n최근 백테스트\nID\t전략명\t상태\t수익률\n#10235\tBreakOut_v2\t\n실행중\t—\n#10234\tBreakOut_v2\t\n완료\t+23.41%\n#10233\tRSI_MA_Cross\t\n완료\t+12.88%\n#10232\tMeanRev_1h\t\n완료\t-3.21%\nLIVE READ-ONLY MODE\n본 시스템은 연구/백테스트 용도이며 실거래 주문을 전송하지 않습니다. /bt/* mutating endpoints are not auto-invoked.\nLIVE read adapter\nBacktest API Contract Matrix\nLIVE mode: BacktestAdapter may call safe GET/read endpoints only; mutating POST endpoints stay manual-gated/not-auto-invoked.\nEvidence settled\nEndpoint\tMethod\tMode behavior\tLive evidence/status\tAction owner / reason\n/bt/health\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nLIVE OK\nstatus ok\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategies?kind=buy\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nLIVE OK\nstatus ok\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategies?kind=sell\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nLIVE OK\nstatus ok\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategy?kind=&name=\t\nGET\treference/demo inert fixture · live optional read only after a strategy name is discovered\t\nLIVE OK\nstatus ok\n\tBacktestAdapter.strategyDetailEvidence\nconditional read; no fake success without IDs\n\n/bt/strategy/validate\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nValidation accepts user-authored strategy text; manual gate required.\n\tManual researcher action\nValidation accepts user-authored strategy text; manual gate required.\n\n/bt/strategy\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nMutates strategy storage; never auto-run from remodel load.\n\tManual researcher action\nMutates strategy storage; never auto-run from remodel load.\n\n/bt/strategy/delete\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nDeletes strategy storage; destructive and manual-gated.\n\tManual researcher action\nDeletes strategy storage; destructive and manual-gated.\n\n/bt/extract_vars\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nReads submitted code body; user action only, no automatic payload fabrication.\n\tManual researcher action\nReads submitted code body; user action only, no automatic payload fabrication.\n\n/bt/legacy/self_vars?kind=&name=\t\nGET\treference/demo inert fixture · live optional read only after a strategy name is discovered\t\nLIVE OK\nstatus ok\n\tBacktestAdapter.strategyDetailEvidence\nconditional read; no fake success without IDs\n\n/bt/backfinder/preflight?kind=&name=\t\nGET\treference/demo inert fixture · live optional read only after a strategy name is discovered\t\nLIVE OK\nstatus ok\n\tBacktestAdapter.strategyDetailEvidence\nconditional read; no fake success without IDs\n\n/bt/data_range\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nLIVE OK\ntick, min\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/run\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nStarts a backtest job; run creation must be explicit.\n\tManual researcher action\nStarts a backtest job; run creation must be explicit.\n\n/bt/jobs\t\nGET\treference/demo inert fixture · live safe read on Backtest page load\t\nLIVE OK\n27 jobs\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/job?job_id=\t\nGET\treference/demo inert fixture · live optional read only when an existing job_id is available\t\nLIVE OK\nstatus error\n\tBacktestAdapter.jobEvidence\nconditional read; no fake success without IDs\n\n/bt/job/cancel\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nCancels active work; destructive and manual-gated.\n\tManual researcher action\nCancels active work; destructive and manual-gated.\n\n/bt/job/meta\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nMutates job metadata; not auto-invoked.\n\tManual researcher action\nMutates job metadata; not auto-invoked.\n\n/bt/ws_job?job_id=\t\nGET\treference/demo inert fixture · live WS/read stream not opened automatically\t\nNOT-USED\nWebSocket/job stream is live-only and user-gated to avoid hidden long-lived connections.\n\tManual live observer action\nWebSocket/job stream is live-only and user-gated to avoid hidden long-lived connections.\n\n/bt/result?job_id=__demo__\t\nGET\treference/demo inert fixture · live safe demo read on Backtest page load\t\nLIVE OK\nstatus success\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/evo_gens?run_id=\t\nGET\treference/demo inert fixture · live optional read only when an existing run_id is available\t\nNOT-USED\nNo existing run_id returned by /bt/jobs.\n\tBacktestAdapter.jobEvidence\nconditional read; no fake success without IDs\n\n/bt/analysis/montecarlo?job_id=__demo__&n=2000\t\nGET\treference/demo inert fixture · live safe demo analysis read on Backtest page load\t\nLIVE OK\njob_id, montecarlo\n\tBacktestAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/compare?job_a=&job_b=\t\nGET\treference/demo inert fixture · live optional read only when two existing job ids are available\t\nLIVE OK\na, b, delta\n\tBacktestAdapter.jobEvidence\nconditional read; no fake success without IDs\n\n/bt/overlay?job_ids=\t\nGET\treference/demo inert fixture · live optional read only when existing job ids are available\t\nLIVE OK\nstatus ok\n\tBacktestAdapter.jobEvidence\nconditional read; no fake success without IDs\n\n/bt/portfolio\t\nPOST\treference/demo inert fixture · live not auto-invoked\t\nMANUAL-GATED\nPortfolio construction is a mutating/action endpoint; manual gate required.\n\tManual researcher action\nPortfolio construction is a mutating/action endpoint; manual gate required.\n\n/bt/report?job_id=\t\nGET\treference/demo inert fixture · live optional read only when an existing job_id is available\t\nLIVE OK\nHTML report 5663 chars\n\tBacktestAdapter.jobEvidence\nconditional read; no fake success without IDs\n실행 파라미터 (항상 표시)\n매수 전략\nBreakOut_v2 (v1.4)\n매도 전략\nBreakOut_Exit_v1 (v1.2)\n시작일\n종료일\nTimeframe\n1분(1m)\nTick\nEngine Count\n설정 저장\n최적화 JSON\n{\n  \"fastLen\": {\"min\": 5, \"max\": 50, \"step\": 5},\n  \"slowLen\": {\"min\": 20, \"max\": 200, \"step\": 10},\n  \"atrMult\": {\"min\": 1.0, \"max\": 3.0, \"step\": 0.1}\n}\nWFO 설정\n학습(Train)\n2년\n검증(Test)\n6개월\n스텝\n1개월\n겹침 사용\nON\n예상 WFO 구간\n28\nWFO 미리보기\n스윕 / self.vars 빌더\n+ 파라미터 추가self.vars 파싱\n추출된 변수 (0) · 변수가 없습니다.\n진행 중인 작업\n#10235 BreakOut_v2 백테스트 (1m)\n실행중\n진행률\n63.4%\n경과\n00:18:42\n남은시간\n00:10:48\nBars\n6,342,112 / 10,000,000\n작업 취소\n결과 미리보기 보고서 HTML\n[09:31:10] Engine[1] Progress: 62.9% (6,290,000/10,000,000 bars)\n[09:31:11] Engine[2] Progress: 63.1% (6,325,000/10,000,000 bars)\n[09:31:12] Engine[3] Progress: 63.3% (6,360,000/10,000,000 bars)\n[09:31:13] Engine[4] Progress: 63.5% (6,395,000/10,000,000 bars)\n[09:31:14] Engine[5] Progress: 63.7% (6,430,000/10,000,000 bars)\n[09:31:15] Engine[6] Progress: 63.9% (6,465,000/10,000,000 bars)\n[09:31:16] Engine[1] Progress: 64.1% (6,500,000/10,000,000 bars)\n[09:31:17] Engine[2] Progress: 64.3% (6,535,000/10,000,000 bars)\n조건식 편집\n매수 전략식 (Long Entry)\n//@version=5\nindicator(\"BreakOut_v2 - Long Entry\", overlay=true)\nfastLen = input.int(20, \"Fast Length\")\nslowLen = input.int(60, \"Slow Length\")\natr = ta.atr(14)\nlongCond = ta.crossover(ta.sma(close, fastLen), ta.sma(close, slowLen))\n매도 전략식 (Exit/Short)\n//@version=5\nindicator(\"BreakOut_v2 - Exit\", overlay=true)\ntrailAtr = ta.atr(14) * 1.8\ntrailStop = ta.highest(high, 10) - trailAtr\nexitCond = close < trailStop\n검증 저장 삭제\n결과 분석\n주요 지표\nprofit\n+23.41%\nann\n+11.23%\nsharpe\n1.87\nsortino\n2.45\nmdd\n-14.42%\nwin\n56.73%\npf\n1.86\ntrades\n312\n에쿼티 곡선\n+23.41%\n포지션 분포 / 최근 거래\n롱 78.4%\n숏 21.6%\nLONG Exit +0.68%\nLONG Entry\nLONG Exit -0.21%\nA/B 비교\n상세 패널 구현\n멀티 잡 에쿼티 오버레이\n상세 패널 구현\n포트폴리오 조합\n상세 패널 구현\nWFO/스윕 결과 표\n상세 패널 구현\n독립 HTML 보고서 생성 (Standalone Report)\n🚫\n실거래/주문 기능 없음\nNo Live Order\n🚫\n브로커 로그인 없음\nNo Broker Login\n🚫\n계좌/자산 연동 없음\nNo Account Trading\n🛡\n연구 전용\nResearch Only\n🔐\nHuman Approval Gate\n승인 후 Export\n🧾\nAppend-Only Audit\n불변 감사 로그",
+      "buttons": [
+        "재연결",
+        "테마 ◐",
+        "조건식 AI",
+        "백테스트",
+        "차트 리플레이",
+        "LIVE",
+        "ARCHIVE",
+        "⚙ 설정",
+        "Start ▶",
+        "Stop ■",
+        "설정 저장",
+        "WFO 미리보기",
+        "+ 파라미터 추가",
+        "self.vars 파싱",
+        "작업 취소",
+        "결과 미리보기",
+        "보고서 HTML",
+        "검증",
+        "저장",
+        "삭제",
+        "독립 HTML 보고서 생성 (Standalone Report)"
+      ],
+      "consoleErrors": [],
+      "headers": {
+        "cache-control": "no-store, max-age=0, must-revalidate",
+        "x-stom-dashboard-version": "v3-remodel"
+      },
+      "htmlForbiddenMarkers": [],
+      "imageMetrics": {
+        "available": true,
+        "lumaStddev": 18.34,
+        "nonUniform": true,
+        "size": [
+          1920,
+          1080
+        ],
+        "status": "PASS"
+      },
+      "inputs": [
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "",
+          "value": "http://127.0.0.1:8776"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": "BreakOut_v2 (v1.4)"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": "BreakOut_Exit_v1 (v1.2)"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "",
+          "value": "2022-01-01"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "",
+          "value": "2025-05-16"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": "1분(1m)"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "",
+          "value": "8 (Auto)"
+        }
+      ],
+      "pageErrors": [],
+      "path": "/ui/remodel/backtest",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/ui/remodel/backtest",
+          "resourceType": "document"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/health",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/strategies?kind=buy",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/strategies?kind=sell",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/data_range",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/jobs",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/result?job_id=__demo__",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/runs",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/strategy?kind=sell&name=20250715_Study_S",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/legacy/self_vars?kind=sell&name=20250715_Study_S",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/backfinder/preflight?kind=sell&name=20250715_Study_S",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/strategy?kind=buy&name=20250715_Study",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/legacy/self_vars?kind=buy&name=20250715_Study",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/backfinder/preflight?kind=buy&name=20250715_Study",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/job?job_id=20260629_144430_20250715Study_70037",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/report?job_id=20260629_144430_20250715Study_70037",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/overlay?job_ids=20260629_144430_20250715Study_70037,20260629_084440_20250715Study_80307,20260629_084410_20250715Study_50646",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/compare?job_a=20260629_144430_20250715Study_70037&job_b=20260629_084440_20250715Study_80307",
+          "resourceType": "fetch"
+        }
+      ],
+      "routeId": "v3_backtest",
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-recheck-g003-safety-audit\\v3_backtest.png",
+      "statusCode": 200,
+      "textCoverage": {
+        "missing": [],
+        "required": [
+          "No Live Order",
+          "No Broker Login",
+          "No Account Trading",
+          "Research Only",
+          "Human Approval Gate",
+          "Append-Only Audit",
+          "LIVE READ-ONLY MODE",
+          "/bt/* mutating endpoints are not auto-invoked"
+        ],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+      "version": "v3",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "bodyTextExcerpt": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST UP\nWebSocket 연결됨\nRun Status idle\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen -1 / 목표 0\n0.0%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n1 데이터 소스 (Tick/Min)\n소스 유형\nTick\n데이터 소스\nSTOM Tick DB (Local)\n서버 시간\n2025-05-27 14:23:18\n지연 시간\n23 ms\n2 사용 가능 일자\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n32\n33\n34\n35\n사용 가능 일수: 23일\n3 종목 리스트\n코드\t종목명\t최근가\t변동률\n005930\t삼성전자\t78600\t-0.25%\n000660\tSK하이닉스\t203000\t+1.35%\n373220\tLG에너지솔루션\t382500\t-1.04%\nLIVE READ-ONLY REPLAY MODE\n실거래/주문 기능 없음 · 과거 틱/분 데이터 재생 · /sim/ws는 자동 연결하지 않고 사용자 시작으로만 동작\nLIVE read adapter\nReplay API/WS Contract Matrix\nLIVE mode: ReplayAdapter probes safe REST reads only; /sim/ws stays user-gated/manual and exposes start, pause, resume, speed, seek, stop plus meta, bars, history, done, error protocol.\nEvidence settled\nEndpoint / action / message\tMethod / type\tMode behavior\tLive evidence/status\tOwner / reason / recovery\n/sim/health\t\nGET · REST endpoint\treference/demo inert fixture · live safe read on Chart Replay page load\t\nLIVE OK\nstatus ok\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/days?src=min|tick\t\nGET · REST endpoint\treference/demo inert fixture · live safe min-days read on Chart Replay page load\t\nLIVE OK\ndays, count, src\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/demo?src=min&mode=latest\t\nGET · REST endpoint\treference/demo inert fixture · live safe demo discovery read on Chart Replay page load\t\nLIVE OK\ndate, code, name, change_pct\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/stocks?date=&src=\t\nGET · REST endpoint\treference/demo inert fixture · live conditional read only after demo date is discovered\t\nLIVE OK\nstocks, count, date, src\n\tReplayAdapter.discoveryEvidence\nconditional or protocol contract; do not fake success\n\n/bt/strategies?kind=buy\t\nGET · REST endpoint\treference/demo inert fixture · live safe buy strategy read on Chart Replay page load\t\nLIVE OK\nstatus ok\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/bt/strategies?kind=sell\t\nGET · REST endpoint\treference/demo inert fixture · live safe sell strategy read on Chart Replay page load\t\nLIVE OK\nstatus ok\n\tReplayAdapter.readOnlyProbe\nsafe read-only GET auto-probe in live mode only\n\n/sim/signals?date=&src=&code=&buy=&sell=\t\nGET · REST endpoint\treference/demo inert fixture · live conditional read only after demo date/code and buy/sell names are discovered\t\nLIVE OK\nstatus error\n\tReplayAdapter.discoveryEvidence\nconditional or protocol contract; do not fake success\n\n/sim/ws\t\nWS · WS endpoint\treference/demo inert fixture · live-only WebSocket never auto-opened; user-gated manual start\t\nUSER-GATED\nLong-lived replay stream must not auto-open from page load.\n\tManual researcher action\nLong-lived replay stream must not auto-open from page load.\n\nstart\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nUSER-GATED\nStarts a replay stream; explicit user action required.\n\tManual researcher action\nStarts a replay stream; explicit user action required.\n\npause\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nUSER-GATED\nPauses an existing replay stream only after manual connection.\n\tManual researcher action\nPauses an existing replay stream only after manual connection.\n\nresume\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nUSER-GATED\nResumes an existing replay stream only after manual connection.\n\tManual researcher action\nResumes an existing replay stream only after manual connection.\n\nspeed\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nUSER-GATED\nChanges replay speed on a manual session only.\n\tManual researcher action\nChanges replay speed on a manual session only.\n\nseek\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nUSER-GATED\nMoves replay cursor on a manual session only.\n\tManual researcher action\nMoves replay cursor on a manual session only.\n\nstop\t\nACTION · WS action\treference/demo inert fixture · live user-gated /sim/ws action\t\nUSER-GATED\nStops a manual replay session; no hidden stream control.\n\tManual researcher action\nStops a manual replay session; no hidden stream control.\n\nmeta\t\nMESSAGE · WS message\treference/demo inert fixture · live protocol message documented; no fake stream success\t\nUSER-GATED\nServer metadata frame expected after manual /sim/ws start.\n\tReplayAdapter.protocolMatrix\nServer metadata frame expected after manual /sim/ws start.\n\nbars\t\nMESSAGE · WS message\treference/demo inert fixture · live protocol message documented; no fake stream success\t\nUSER-GATED\nBar batch frame expected during manual replay.\n\tReplayAdapter.protocolMatrix\nBar batch frame expected during manual replay.\n\nhistory\t\nMESSAGE · WS message\treference/demo inert fixture · live protocol message documented; no fake stream success\t\nUSER-GATED\nHistory/bootstrap frame expected during manual replay.\n\tReplayAdapter.protocolMatrix\nHistory/bootstrap frame expected during manual replay.\n\ndone\t\nMESSAGE · WS message\treference/demo inert fixture · live protocol message documented; no fake stream success\t\nUSER-GATED\nTerminal completion frame for manual replay.\n\tReplayAdapter.protocolMatrix\nTerminal completion frame for manual replay.\n\nerror\t\nMESSAGE · WS message\treference/demo inert fixture · live protocol message documented; no fake stream success\t\nUSER-GATED\nVisible recovery path: show server error, keep chart fixture, and allow manual retry.\n\tReplayAdapter.protocolMatrix\nVisible recovery path: show server error, keep chart fixture, and allow manual retry.\n4 선택 종목\n005930 삼성전자 \n000660 SK하이닉스 \n373220 LG에너지솔루션 +\n5 전략\n매수 전략\nSTOM_AI_MOMENTUM_V1\n매도 전략\nSTOM_AI_EXIT_V1\n6 집계\n초(sec)\n1\n데이터 보간\nLast Price\n7 데모 프리셋\n모멘텀 추세 추종 데모\n저장 관리\n8 즉시 리플레이\n즉시 시작\n9 재생 컨트롤\n|◀\n◀◀\n▶ 재생\nⅡ 일시정지\n▶ 재개\n■ 정지\nx1.0\nx2\nx5\nSeek: 2025-05-27 09:00:00.000 → 15:30:00.000 · 커서 10:23:18 · Space 재생/일시정지\n10 차트 모드\n분할 Split \n오버레이 Overlay\n11 레이아웃\nColumns\n3\nRows\n1\n12 차트 엔진\nLive Engine \nLWC \nSVG\n13 지표 표시\nMA \nVWAP \nBollinger 지표 설정\n16 실시간 리플레이 차트 · 005930 삼성전자 78,600 -0.25%\n005930 삼성전자\n16 실시간 리플레이 차트 · 000660 SK하이닉스 203,000 +1.35%\n000660 SK하이닉스\n16 실시간 리플레이 차트 · 373220 LG에너지솔루션 382,500 -1.04%\n373220 LG에너지솔루션\n19 전략 신호 로그\n시간\t종목\t신호\t전략\t가격\t수량\t사유\n10:23:17.000\t005930 삼성전자\t\nSELL\tSTOM_AI_MOMENTUM_V1\t78,600\t100\tMA20 하향 돌파\n10:23:16.000\t000660 SK하이닉스\t\nBUY\tSTOM_AI_MOMENTUM_V1\t203,000\t100\t모멘텀 강도 상승\n10:22:59.000\t373220 LG에너지솔루션\t\nSELL\tSTOM_AI_EXIT_V1\t382,500\t100\tVWAP 하향 이탈\n20 자동 일시정지 (학습 모드)\n 활성화\n신호 발생 시\nON\n큰 변동률 발생 시\n1.0%\n일시정지 횟수\n12회\n브레이크포인트 추가\n21 지표 테이블\n지표\t현재값\t이전값\t변화율\nMA(20)\t78,650\t78,630\t+0.03%\nVWAP\t78,512\t78,498\t+0.02%\nRSI(14)\t54.21\t53.87\t+0.63%\n22 변수 감시 (Watch)\n변수명\t종목\t현재값\t변화\nclose_price\t005930\t78,600\t+50\nmomentum_score\t005930\t0.72\t+0.07\nvolume_ratio\t005930\t1.35\t+0.23\n리플레이 메타데이터 / 진행률 / 세션 노트\n세션 ID\nREPLAY_20250527_090000\n데이터 소스\nSTOM Tick DB\n선택 종목\n3개\n21.21%\n경과 01:23:18 · 남은 05:06:42\n연구 및 학습을 위한 과거 데이터 리플레이 전용입니다. 실거래/주문/계좌 연동 없음.\n14 시장 미니맵 (KOSPI)\nA\nB\nC\nD\nE\n전기전자\n금융\n서비스\n운수장비\nKOSPI\n2,646.81 -0.18%\nKOSDAQ\n721.03 +0.36%\n원/달러\n1,368.20 -0.29%\n15 세션 노트\n모멘텀 전략 리플레이 학습 세션\n1초 집계 기반 신호 검증\n리플레이 전용\n노트 저장\n17 /sim/ws 수동 게이트\n연결 상태\n미연결 · user-gated\n프로토콜\nWS /sim/ws\n자동 오픈\n금지\n지원 액션\nstart · pause · resume · speed · seek · stop\n수신 메시지\nmeta · bars · history · done · error\n복구\nerror 표시 후 fixture 차트 유지 · 수동 재시도\nstart\npause\nresume\nspeed\nseek\nstop\n/sim/ws is live-only and manual; ReplayAdapter never calls new WebSocket for this stream on page load.\n18 에러 / 경고\n데이터 경고 (10:12:45)\n일부 틱 데이터 시간 역행 감지 · 종목 373220 · 12건\nLive probe failure recovery: surface LIVE ERROR, preserve static replay chart, allow manual retry without fake success.\n🚫\n실거래/주문 기능 없음\nNo Live Order\n🚫\n브로커 로그인 없음\nNo Broker Login\n🚫\n계좌/자산 연동 없음\nNo Account Trading\n🛡\n연구 전용\nResearch Only\n🔐\nHuman Approval Gate\n승인 후 Export\n🧾\nAppend-Only Audit\n불변 감사 로그",
+      "buttons": [
+        "재연결",
+        "테마 ◐",
+        "조건식 AI",
+        "백테스트",
+        "차트 리플레이",
+        "LIVE",
+        "ARCHIVE",
+        "⚙ 설정",
+        "Start ▶",
+        "Stop ■",
+        "+",
+        "저장",
+        "관리",
+        "즉시 시작",
+        "|◀",
+        "◀◀",
+        "▶ 재생",
+        "Ⅱ 일시정지",
+        "▶ 재개",
+        "■ 정지",
+        "지표 설정",
+        "브레이크포인트 추가",
+        "노트 저장",
+        "start",
+        "pause",
+        "resume",
+        "speed",
+        "seek",
+        "stop"
+      ],
+      "consoleErrors": [],
+      "headers": {
+        "cache-control": "no-store, max-age=0, must-revalidate",
+        "x-stom-dashboard-version": "v3-remodel"
+      },
+      "htmlForbiddenMarkers": [],
+      "imageMetrics": {
+        "available": true,
+        "lumaStddev": 19.25,
+        "nonUniform": true,
+        "size": [
+          1920,
+          1080
+        ],
+        "status": "PASS"
+      },
+      "inputs": [
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "",
+          "value": "http://127.0.0.1:8776"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": "모멘텀 추세 추종 데모"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "",
+          "value": "2025-05-27 09:00:00"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "select",
+          "type": "",
+          "value": "x1.0"
+        },
+        {
+          "label": "",
+          "placeholder": "",
+          "tag": "input",
+          "type": "checkbox",
+          "value": "on"
+        }
+      ],
+      "pageErrors": [],
+      "path": "/ui/remodel/chart-replay",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/ui/remodel/chart-replay",
+          "resourceType": "document"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/remodel/styles/theme.css?v=20260628canonical",
+          "resourceType": "stylesheet"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/remodel/src/data.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/ui/remodel/src/app.js?v=20260628canonical",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "path": "/sim/health",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/sim/days?src=min",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/sim/demo?src=min&mode=latest",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/strategies?kind=buy",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/bt/strategies?kind=sell",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/runs",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/sim/stocks?date=20250509&src=min",
+          "resourceType": "fetch"
+        },
+        {
+          "method": "GET",
+          "path": "/sim/signals?date=20250509&src=min&code=256940&buy=20250715_Study&sell=20250715_Study_S",
+          "resourceType": "fetch"
+        }
+      ],
+      "routeId": "v3_chart_replay",
+      "screenshot": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-recheck-g003-safety-audit\\v3_chart_replay.png",
+      "statusCode": 200,
+      "textCoverage": {
+        "missing": [],
+        "required": [
+          "No Live Order",
+          "No Broker Login",
+          "No Account Trading",
+          "Research Only",
+          "Human Approval Gate",
+          "Append-Only Audit",
+          "LIVE READ-ONLY REPLAY MODE",
+          "/sim/ws 수동 게이트"
+        ],
+        "score": 100.0,
+        "status": "PASS"
+      },
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay",
+      "version": "v3",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    }
+  ]
+}

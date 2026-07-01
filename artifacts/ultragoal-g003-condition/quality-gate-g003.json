@@ -1,0 +1,315 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 43-G003ArchitectReview approved G003. It verified RemodelAdapters and PageControllers for overview/process/history/lab/workbench/audit, provenanceFor fields, live payload storage from existing /status and /runs mappers, condition controller routing, six provenance cues, preserved Strategy Inspector/Human Confirm/Append-Only/safety footer, intact G002 fail-closed behavior, and no safety regression.",
+    "commands": [
+      "architect review subagent 43-G003ArchitectReview"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 44-G003ExecutorQa passed. Browser evidence covers condition/process/history/lab/workbench/audit in reference mode with adapter/controller markers, provenance cues, fixture/static source, six safety cards, Human Approval, Append-Only, and non-empty screenshots. Parent ran focused pytest (16 passed), node --check, git diff --check, and browser captures.",
+    "e2eCommands": [
+      "browser automation capture/probe for six condition pages on http://127.0.0.1:8776 with ?demo=reference"
+    ],
+    "redTeamCommands": [
+      "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "git diff --check",
+      "executor QA subagent 44-G003ExecutorQa"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g003-condition/browser-transcript.json",
+        "description": "Automation transcript for six condition pages with monotonic timestamps, selectors, route actions, provenance checks, screenshot refs, and passed verdict"
+      },
+      {
+        "id": "browser-probe-json",
+        "kind": "failure-mode-test",
+        "path": "artifacts/ultragoal-g003-condition/browser-evidence.json",
+        "description": "Structured browser evidence for adapter/provenance/safety coverage across the six condition pages"
+      },
+      {
+        "id": "screenshot-condition",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g003-condition/g003-condition.png",
+        "description": "Non-uniform reference-mode condition overview screenshot with provenance and safety footer"
+      },
+      {
+        "id": "screenshot-process",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g003-condition/g003-process.png",
+        "description": "Non-uniform reference-mode process screenshot with provenance and safety footer"
+      },
+      {
+        "id": "screenshot-history",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g003-condition/g003-history.png",
+        "description": "Non-uniform reference-mode history screenshot with provenance and safety footer"
+      },
+      {
+        "id": "screenshot-lab",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g003-condition/g003-lab.png",
+        "description": "Non-uniform reference-mode lab screenshot with provenance and safety footer"
+      },
+      {
+        "id": "screenshot-workbench",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g003-condition/g003-workbench.png",
+        "description": "Non-uniform reference-mode workbench screenshot with provenance and safety footer"
+      },
+      {
+        "id": "screenshot-audit",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g003-condition/g003-audit.png",
+        "description": "Non-uniform reference-mode audit screenshot with provenance and safety footer"
+      },
+      {
+        "id": "cli-replay",
+        "kind": "command-replay",
+        "path": "artifacts/ultragoal-g003-condition/cli-replay-g003.json",
+        "description": "Replay-safe CLI receipt for G003 adapter checkpoint"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-adapter-controller-seams",
+        "contractRef": "G003 objective: bounded view-model adapters and small controllers for six condition pages",
+        "obligation": "RemodelAdapters/PageControllers exist for condition overview, process, history, lab, workbench, and audit, routing each page through an explicit view model/controller seam.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-cli-static",
+          "surface-web-condition",
+          "surface-web-process",
+          "surface-web-history",
+          "surface-web-lab",
+          "surface-web-workbench",
+          "surface-web-audit"
+        ],
+        "adversarialCaseRefs": [
+          "case-route-completeness"
+        ]
+      },
+      {
+        "id": "contract-provenance-live-payload",
+        "contractRef": "G003 objective: production-depth core/evolution data where required",
+        "obligation": "View models expose source/mode/reference/live/backend/payload status and store live /status and /runs payloads without adding new endpoints.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-cli-static",
+          "surface-web-condition",
+          "surface-web-history"
+        ],
+        "adversarialCaseRefs": [
+          "case-source-confusion"
+        ]
+      },
+      {
+        "id": "contract-visual-safety-preservation",
+        "contractRef": "G003 objective: preserve zip visual layout, modals, safety cues",
+        "obligation": "Six pages keep zip-style sections while showing provenance, Strategy Inspector, Human Approval, Append-Only, and six-card safety footer; forbidden controls absent.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-condition",
+          "surface-web-process",
+          "surface-web-history",
+          "surface-web-lab",
+          "surface-web-workbench",
+          "surface-web-audit"
+        ],
+        "adversarialCaseRefs": [
+          "case-safety-footer",
+          "case-forbidden-controls"
+        ]
+      },
+      {
+        "id": "contract-g002-intact",
+        "contractRef": "G003 objective must not regress G002 mode gate",
+        "obligation": "Reference/demo remain inert, no Math.random, live bridge remains available.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-cli-static"
+        ],
+        "adversarialCaseRefs": [
+          "case-randomness"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-condition",
+        "contractRef": "Condition overview page",
+        "surface": "web",
+        "invocation": "Browser opened /ui/remodel/condition?demo=reference and checked adapter/provenance/safety signals",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "screenshot-condition"
+        ]
+      },
+      {
+        "id": "surface-web-process",
+        "contractRef": "Process page",
+        "surface": "web",
+        "invocation": "Browser opened /ui/remodel/process?demo=reference and checked adapter/provenance/safety signals",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "screenshot-process"
+        ]
+      },
+      {
+        "id": "surface-web-history",
+        "contractRef": "History page",
+        "surface": "web",
+        "invocation": "Browser opened /ui/remodel/history?demo=reference and checked adapter/provenance/safety signals",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "screenshot-history"
+        ]
+      },
+      {
+        "id": "surface-web-lab",
+        "contractRef": "Lab page",
+        "surface": "web",
+        "invocation": "Browser opened /ui/remodel/lab?demo=reference and checked adapter/provenance/safety signals",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "screenshot-lab"
+        ]
+      },
+      {
+        "id": "surface-web-workbench",
+        "contractRef": "Workbench page",
+        "surface": "web",
+        "invocation": "Browser opened /ui/remodel/workbench?demo=reference and checked adapter/provenance/safety signals",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "screenshot-workbench"
+        ]
+      },
+      {
+        "id": "surface-web-audit",
+        "contractRef": "Decision audit page",
+        "surface": "web",
+        "invocation": "Browser opened /ui/remodel/audit?demo=reference and checked adapter/provenance/safety signals",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "browser-probe-json",
+          "screenshot-audit"
+        ]
+      },
+      {
+        "id": "surface-cli-static",
+        "contractRef": "Static source/test contract surface",
+        "surface": "cli",
+        "invocation": "Focused pytest, node syntax check, git diff check, and replay-safe CLI receipt",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-route-completeness",
+        "contractRef": "Six condition page adapter coverage",
+        "scenario": "A condition page bypasses adapters/controllers or lacks a provenance cue.",
+        "expectedBehavior": "All six routes report hasAdapter=true and expectedProvenancePresent=true.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json"
+        ]
+      },
+      {
+        "id": "case-source-confusion",
+        "contractRef": "Mode/provenance clarity",
+        "scenario": "Reference/demo/live source labels confuse fixture data with backend-derived payloads.",
+        "expectedBehavior": "Reference pages show reference fixture/static data and Fixture/static; live payload storage is explicit in source/tests.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json",
+          "cli-replay"
+        ]
+      },
+      {
+        "id": "case-safety-footer",
+        "contractRef": "Safety UI preservation",
+        "scenario": "Adding provenance/controller seams drops safety footer, Human Approval, or Append-Only cues.",
+        "expectedBehavior": "Each page has six safety footer cards, Human Approval, and Append-Only cues.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-probe-json"
+        ]
+      },
+      {
+        "id": "case-forbidden-controls",
+        "contractRef": "Forbidden controls",
+        "scenario": "Live order, broker login, account trading/connect, hidden export, automatic export, or mutable audit controls are introduced.",
+        "expectedBehavior": "Static tests and source review find no forbidden control markers.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay"
+        ]
+      },
+      {
+        "id": "case-randomness",
+        "contractRef": "G002 determinism preserved",
+        "scenario": "Randomized lineage or new random values compromise reference capture repeatability.",
+        "expectedBehavior": "Math.random is absent and deterministicLineageValue remains present.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay"
+        ]
+      },
+      {
+        "id": "case-shallow-screenshots",
+        "contractRef": "Web evidence strength",
+        "scenario": "Screenshots are blank, uniform, or unrelated to the six pages.",
+        "expectedBehavior": "All six screenshots are non-empty, non-uniform, and route-specific.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "screenshot-condition",
+          "screenshot-process",
+          "screenshot-history",
+          "screenshot-lab",
+          "screenshot-workbench",
+          "screenshot-audit"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "G003 implementation, static tests, node check, diff check, browser captures, architect review 43, and executor QA 44 all passed with blockers empty. Full verification loop reran after adapter/controller edits.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q",
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "git diff --check",
+      "browser captures for six condition pages",
+      "architect review 43-G003ArchitectReview",
+      "executor QA 44-G003ExecutorQa"
+    ],
+    "blockers": []
+  }
+}

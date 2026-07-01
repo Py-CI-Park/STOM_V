@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "goalId": "G002",
+  "startedAt": "2026-06-28T01:12:00Z",
+  "actions": [
+    {
+      "t": 1,
+      "action": "navigate",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "waitUntil": "networkidle2",
+      "timestamp": "2026-06-28T01:12:01Z",
+      "type": "navigate",
+      "selector": "document"
+    },
+    {
+      "t": 2,
+      "action": "evaluate",
+      "selector": "window.__STOM_REMODEL_MODE__",
+      "result": "reference",
+      "timestamp": "2026-06-28T01:12:02Z",
+      "type": "evaluate"
+    },
+    {
+      "t": 3,
+      "action": "probe",
+      "result": "fetchCalls=0 wsCalls=0 timeoutDelays=0 storageGets=0 storageSets=0 storageRemoves=0",
+      "timestamp": "2026-06-28T01:12:03Z",
+      "type": "probe",
+      "selector": "document"
+    },
+    {
+      "t": 4,
+      "action": "screenshot",
+      "path": "artifacts/ultragoal-g002-reference/g002-reference-condition.png",
+      "timestamp": "2026-06-28T01:12:04Z",
+      "type": "screenshot",
+      "selector": "document"
+    },
+    {
+      "t": 5,
+      "action": "navigate",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=fixture",
+      "waitUntil": "networkidle2",
+      "timestamp": "2026-06-28T01:12:05Z",
+      "type": "navigate",
+      "selector": "document"
+    },
+    {
+      "t": 6,
+      "action": "probe",
+      "result": "demo fetchCalls=0 wsCalls=0 timeoutDelays=0 storageGets=0 storageSets=0",
+      "timestamp": "2026-06-28T01:12:06Z",
+      "type": "probe",
+      "selector": "document"
+    },
+    {
+      "t": 7,
+      "action": "navigate",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition",
+      "waitUntil": "networkidle2",
+      "timestamp": "2026-06-28T01:12:07Z",
+      "type": "navigate",
+      "selector": "document"
+    },
+    {
+      "t": 8,
+      "action": "probe",
+      "result": "live fetch=/health,/status,/runs ws=/ws localStorageGet=stom_remodel_base_url",
+      "timestamp": "2026-06-28T01:12:08Z",
+      "type": "probe",
+      "selector": "document"
+    }
+  ],
+  "verdict": "passed",
+  "tool": "browser",
+  "surface": "web",
+  "target": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference"
+}

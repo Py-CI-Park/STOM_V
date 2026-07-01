@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G006",
+  "generatedAt": "2026-06-28T02:36:48+00:00",
+  "averageCorrectedTotalScore": 97.93,
+  "screenshots": [
+    {
+      "id": "01_condition_ai_overview",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\01_condition_ai_overview.png",
+      "width": 1920,
+      "height": 1080,
+      "sampleUniqueColors": 1568,
+      "nonUniform": true,
+      "score": 98.3
+    },
+    {
+      "id": "02_process",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\02_process.png",
+      "width": 1920,
+      "height": 1080,
+      "sampleUniqueColors": 1341,
+      "nonUniform": true,
+      "score": 98.41
+    },
+    {
+      "id": "03_history",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\03_history.png",
+      "width": 1920,
+      "height": 1080,
+      "sampleUniqueColors": 1570,
+      "nonUniform": true,
+      "score": 98.05
+    },
+    {
+      "id": "04_lab",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\04_lab.png",
+      "width": 1920,
+      "height": 1080,
+      "sampleUniqueColors": 1756,
+      "nonUniform": true,
+      "score": 97.71
+    },
+    {
+      "id": "05_workbench",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\05_workbench.png",
+      "width": 1920,
+      "height": 1080,
+      "sampleUniqueColors": 1687,
+      "nonUniform": true,
+      "score": 97.99
+    },
+    {
+      "id": "06_decision_audit",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\06_decision_audit.png",
+      "width": 1920,
+      "height": 1080,
+      "sampleUniqueColors": 1501,
+      "nonUniform": true,
+      "score": 98.23
+    },
+    {
+      "id": "07_backtest",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\07_backtest.png",
+      "width": 1920,
+      "height": 1080,
+      "sampleUniqueColors": 1342,
+      "nonUniform": true,
+      "score": 97.36
+    },
+    {
+      "id": "08_chart_replay",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\08_chart_replay.png",
+      "width": 1920,
+      "height": 1080,
+      "sampleUniqueColors": 1468,
+      "nonUniform": true,
+      "score": 97.38
+    }
+  ],
+  "contactSheet": {
+    "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\side-by-side-contact-sheet.png",
+    "width": 768,
+    "height": 1728,
+    "sampleUniqueColors": 1776,
+    "nonUniform": true
+  }
+}

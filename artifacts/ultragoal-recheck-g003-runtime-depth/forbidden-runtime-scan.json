@@ -1,0 +1,25 @@
+{
+  "allowedWebSocketPaths": [
+    "/ws"
+  ],
+  "findings": [],
+  "forbiddenAutoPaths": [
+    "/bt/run",
+    "/bt/strategy/validate",
+    "/bt/strategy/delete",
+    "/bt/extract_vars",
+    "/bt/job/cancel",
+    "/bt/job/meta",
+    "/bt/portfolio",
+    "/bt/ws_job",
+    "/sim/ws",
+    "/order",
+    "/orders",
+    "/broker/login",
+    "/account/trade",
+    "/live_order"
+  ],
+  "generatedAt": "2026-06-29T05:44:33.884024+00:00",
+  "readOnly": true,
+  "status": "PASS"
+}

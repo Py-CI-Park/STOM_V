@@ -1,0 +1,123 @@
+{
+  "actions": [
+    {
+      "assertion": "v2_condition loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/evolution",
+      "timestamp": "2026-06-30T13:11:56.079082+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v2_condition",
+      "timestamp": "2026-06-30T13:11:56.079116+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "v2_backtest loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/backtest",
+      "timestamp": "2026-06-30T13:11:58.866566+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v2_backtest",
+      "timestamp": "2026-06-30T13:11:58.866589+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "v2_chart_replay loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/chart-replay",
+      "timestamp": "2026-06-30T13:12:01.586375+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v2_chart_replay",
+      "timestamp": "2026-06-30T13:12:01.586403+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "v3_condition loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/condition",
+      "timestamp": "2026-06-30T13:12:04.367889+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v3_condition",
+      "timestamp": "2026-06-30T13:12:04.367920+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "v3_audit loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/audit",
+      "timestamp": "2026-06-30T13:12:07.399939+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v3_audit",
+      "timestamp": "2026-06-30T13:12:07.399965+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "v3_backtest loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/backtest",
+      "timestamp": "2026-06-30T13:12:10.171330+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v3_backtest",
+      "timestamp": "2026-06-30T13:12:10.171356+00:00",
+      "type": "assert"
+    },
+    {
+      "assertion": "v3_chart_replay loaded with status 200",
+      "selector": "browser-url",
+      "status": "passed",
+      "target": "http://127.0.0.1:8776/ui/remodel/chart-replay",
+      "timestamp": "2026-06-30T13:12:13.203210+00:00",
+      "type": "navigate"
+    },
+    {
+      "assertion": "safety text missing=[]",
+      "selector": "body",
+      "status": "passed",
+      "target": "v3_chart_replay",
+      "timestamp": "2026-06-30T13:12:13.203231+00:00",
+      "type": "assert"
+    }
+  ],
+  "endedAt": "2026-06-30T13:12:13.413878+00:00",
+  "kind": "browser-automation",
+  "schemaVersion": 1,
+  "startedAt": "2026-06-30T13:11:52.265757+00:00",
+  "surface": "web",
+  "tool": "playwright+verify_dashboard_safety_audit",
+  "verdict": "passed"
+}

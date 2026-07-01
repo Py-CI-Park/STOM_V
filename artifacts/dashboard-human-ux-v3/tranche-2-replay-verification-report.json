@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G003",
+  "status": "passed",
+  "summary": "Chart Replay redesign complete: V2-like quick-start/date/symbol/strategy/playback/timeline flow, data-replay selectors, primary candle chart, selected bar synchronized with signal log, compact safety strip, collapsed API/WS evidence drawer, no auto /sim/ws, V2 default/V3 explicit preserved.",
+  "commands": [
+    "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+    "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_human_ux_rubric.py tests/unit/test_dashboard_route_parity.py -q",
+    "python scripts/verify_dashboard_human_ux_rubric.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-2-replay --storyboard artifacts/dashboard-human-ux-v3/storyboards/storyboards.json --viewports 1440x900,1920x1080,1280x720 --tranche c --pages chart_replay --min-v3-score 86 --min-delta 5",
+    "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-2-replay-v2-v3-compare --timeout-ms 60000",
+    "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-2-replay-safety-audit --timeout-ms 60000"
+  ],
+  "artifacts": [
+    "artifacts/dashboard-human-ux-v3/tranche-2-replay/scorecard.json",
+    "artifacts/dashboard-human-ux-v3/tranche-2-replay/browser-replay-evidence.json",
+    "artifacts/dashboard-human-ux-v3/tranche-2-replay/browser-replay-viewport.png",
+    "artifacts/dashboard-human-ux-v3/tranche-2-replay-v2-v3-compare/compare-scorecard.json",
+    "artifacts/dashboard-human-ux-v3/tranche-2-replay-safety-audit/safety-scorecard.json"
+  ],
+  "review": {
+    "architect": "agent://143-G003ReplayArchArtifacts",
+    "qa": "agent://144-G003ReplayQaArtifacts"
+  }
+}

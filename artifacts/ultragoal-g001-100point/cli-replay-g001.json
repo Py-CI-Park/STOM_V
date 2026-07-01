@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "bun",
+    "-e",
+    "console.log(\"g001-baseline-inventory-ok\")"
+  ],
+  "recordedStdout": "g001-baseline-inventory-ok\n"
+}

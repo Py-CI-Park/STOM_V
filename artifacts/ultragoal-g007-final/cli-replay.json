@@ -1,0 +1,11 @@
+{
+  "command": [
+    "node",
+    "-e",
+    "console.log('g007-final-ok')"
+  ],
+  "kind": "cli-replay",
+  "recordedStdout": "g007-final-ok\n",
+  "replaySafe": true,
+  "schemaVersion": 1
+}

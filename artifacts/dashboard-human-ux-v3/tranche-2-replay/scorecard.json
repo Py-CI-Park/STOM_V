@@ -1,0 +1,1191 @@
+{
+  "artifacts": {
+    "contactSheet": {
+      "path": "artifacts\\dashboard-human-ux-v3\\tranche-2-replay\\side-by-side-contact-sheet.png",
+      "status": "PASS",
+      "viewport": "1440x900"
+    },
+    "outDir": "artifacts\\dashboard-human-ux-v3\\tranche-2-replay"
+  },
+  "categoryScoreMeans": {
+    "v2": {
+      "accessibilityResponsive": 87.75,
+      "chartHeatmapReadability": 53.75,
+      "cognitiveLoad": 84.25,
+      "safetyHierarchy": 100.0,
+      "taskOrientation": 84.25,
+      "v2PreservationEvidence": 100.0,
+      "visualHierarchy": 87.67,
+      "workflowQuality": 30.0
+    },
+    "v3": {
+      "accessibilityResponsive": 100.0,
+      "chartHeatmapReadability": 100.0,
+      "cognitiveLoad": 100.0,
+      "safetyHierarchy": 100.0,
+      "taskOrientation": 92.5,
+      "v2PreservationEvidence": 100.0,
+      "visualHierarchy": 100.0,
+      "workflowQuality": 100.0
+    }
+  },
+  "categoryWeights": {
+    "accessibilityResponsive": 8,
+    "chartHeatmapReadability": 15,
+    "cognitiveLoad": 12,
+    "safetyHierarchy": 10,
+    "taskOrientation": 20,
+    "v2PreservationEvidence": 5,
+    "visualHierarchy": 15,
+    "workflowQuality": 15
+  },
+  "deltaCategories": [
+    "taskOrientation",
+    "chartHeatmapReadability",
+    "workflowQuality",
+    "cognitiveLoad"
+  ],
+  "deltaRows": [
+    {
+      "categoryDelta": {
+        "accessibilityResponsive": 12.25,
+        "chartHeatmapReadability": 46.25,
+        "cognitiveLoad": 15.75,
+        "safetyHierarchy": 0.0,
+        "taskOrientation": 6.75,
+        "v2PreservationEvidence": 0.0,
+        "visualHierarchy": 10.0,
+        "workflowQuality": 70.0
+      },
+      "page": "chart_replay",
+      "scenarioId": "UX-S08",
+      "totalDelta": 23.16,
+      "v2Total": 75.04,
+      "v3Total": 98.2,
+      "viewport": "1280x720"
+    },
+    {
+      "categoryDelta": {
+        "accessibilityResponsive": 12.25,
+        "chartHeatmapReadability": 46.25,
+        "cognitiveLoad": 15.75,
+        "safetyHierarchy": 0.0,
+        "taskOrientation": 6.75,
+        "v2PreservationEvidence": 0.0,
+        "visualHierarchy": 10.0,
+        "workflowQuality": 70.0
+      },
+      "page": "chart_replay",
+      "scenarioId": "UX-S08",
+      "totalDelta": 23.16,
+      "v2Total": 75.04,
+      "v3Total": 98.2,
+      "viewport": "1440x900"
+    },
+    {
+      "categoryDelta": {
+        "accessibilityResponsive": 12.25,
+        "chartHeatmapReadability": 46.25,
+        "cognitiveLoad": 15.75,
+        "safetyHierarchy": 0.0,
+        "taskOrientation": 11.25,
+        "v2PreservationEvidence": 0.0,
+        "visualHierarchy": 17.0,
+        "workflowQuality": 70.0
+      },
+      "page": "chart_replay",
+      "scenarioId": "UX-S08",
+      "totalDelta": 25.11,
+      "v2Total": 73.99,
+      "v3Total": 99.1,
+      "viewport": "1920x1080"
+    }
+  ],
+  "generatedAt": "2026-06-30T11:11:44.088710+00:00",
+  "hardFailures": [],
+  "kind": "dashboard-human-ux-rubric",
+  "meanNamedDelta": 35.06,
+  "meanV3Score": 98.5,
+  "routes": [
+    {
+      "label": "Replay investigate signal",
+      "page": "chart_replay",
+      "scenarioId": "UX-S08",
+      "task": "Choose source/date/symbol, preview bars/signals, manually start replay, and inspect the signal log.",
+      "v2Route": "/ui/chart-replay",
+      "v3Route": "/ui/remodel/chart-replay?demo=reference"
+    }
+  ],
+  "schemaVersion": 1,
+  "scoreDocumentation": {
+    "hardFailureCap": "Route/default/safety failures cap affected V3 score at 69 and fail the run.",
+    "purpose": "Tranche 0 human-centered UX baseline. Baseline may fail final UX thresholds; route/safety hard failures still fail.",
+    "v2Delta": "Deltas are computed from the same route/scenario/viewport score rows for V2 and explicit V3."
+  },
+  "scoreRows": [
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 87.75,
+        "chartHeatmapReadability": 53.75,
+        "cognitiveLoad": 84.25,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 84.25,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 90.0,
+        "workflowQuality": 30.0
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n📈 차트 리플레이\nDark\nLight\nV3 Preview\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n차트 리플레이 · 차트 리플레이·수동 신호 검토\n비소유: 실거래 주문·전략 DB 쓰기\nsimulation\nROUTE\nSIM\nOWNER\n차트 리플레이\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n차트 시뮬레이션\n일일 min DB 리플레이 · 엔진 정합 신호 오버레이\n● connected · api v1\n빠른 시작\n⚡ 최근 거래일\n⚡ 최대 상승일\n최근 거래일: 보유한 일일 DB 중 가장 최근 거래일을 고르고 그날 등락률 1위 종목을 자동 재생합니다. · 최대 상승일: 최근 거래일 후보 전체에서 일중 최대 상승률이 가장 큰 날짜·종목을 찾아 자동 재생합니다.\n버튼에 마우스를 올리면 선택 기준 설명이 표시됩니다.\n리플레이 설정\n시간단위\n틱\n분봉\n날짜 (1일)\n— 선택 —\n2025-05-09\n매수 조건식 (신호 오버레이)\n— 없음 —\n매도 조건식\n— 없음 —\n종목 선택 (최대 10 · 등락순)0/10 선택\n256940\n킵스파마\n+29.98%\n014970\n삼륭물산\n+29.96%\n377480\n마음AI\n+29.71%\n010770\n평화홀딩스",
+        "chartLikeCount": 1,
+        "dataContractMarkerCount": 0,
+        "dataManualGateCount": 0,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 1,
+        "firstFoldElementCount": 175,
+        "focusableFirstFoldCount": 34,
+        "hasEvidenceDrawerSelector": false,
+        "hasFutureTaskSelector": false,
+        "hasPrimaryCanvasSelector": false,
+        "heatmaps": [],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 1296,
+          "cls": "[object SVGAnimatedString]",
+          "firstFold": true,
+          "h": 36,
+          "tag": "svg",
+          "text": "",
+          "w": 36
+        },
+        "panelCountFirstFold": 10,
+        "primaryActionText": "📈 차트 리플레이 SIM",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 7,
+        "scrollHeight": 1380,
+        "scrollWidth": 1440,
+        "taskHeaderTopRatio": 0.018,
+        "termHits": {
+          "/sim/ws": false,
+          "candle": false,
+          "데이터 소스": false,
+          "리플레이 차트": false,
+          "시장 미니맵": true,
+          "재생": true,
+          "재생 컨트롤": false,
+          "전략 신호 로그": false,
+          "종목": true,
+          "차트 리플레이": true
+        },
+        "textLength": 3644,
+        "viewportHeight": 900,
+        "viewportWidth": 1440,
+        "visibleCount": 175
+      },
+      "hardFailures": [],
+      "htmlHash": "b2d17a562134fd46ce1d4b3e8e952d1a4ebd0b8930ab6fcb40d7594488d46149",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 15.43,
+        "lumaStddev": 10.72,
+        "nonUniform": true,
+        "size": [
+          1440,
+          900
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "chart_replay",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/chart-replay"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/days?src=min"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/demo?src=min&mode=latest"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/stocks?date=20250509&src=min"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S08",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-2-replay\\screenshots\\UX-S08-chart_replay-v2-1440x900.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 33.33,
+        "primary": 75.0,
+        "workflow": 0.0
+      },
+      "textHash": "cd9f00fa75b0100b8e65c309fa4beb8d15d7b2e10c4b78b19a785e1085de3ad6",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "totalScore": 75.04,
+      "uncappedTotalScore": 75.04,
+      "url": "http://127.0.0.1:8776/ui/chart-replay",
+      "version": "v2",
+      "viewport": "1440x900",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 100.0,
+        "chartHeatmapReadability": 100.0,
+        "cognitiveLoad": 100.0,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 91.0,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 100.0,
+        "workflowQuality": 100.0
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\nTask-first V3\n차트 리플레이 · 선택에서 재생까지 바로 이어지는 V3\n\nV2의 빠른 시작·날짜·종목·재생·타임라인 흐름을 계승하고, API/WS 계약 증거는 접힌 drawer로 내립니다.\n\npurpose\n데이터 소스·거래일·종목·전략 선택 후 신호를 조사\nstate\nDEMO / REFERENCE REPLAY INERT MODE",
+        "chartLikeCount": 14,
+        "dataContractMarkerCount": 1,
+        "dataManualGateCount": 23,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 7,
+        "firstFoldElementCount": 154,
+        "focusableFirstFoldCount": 16,
+        "hasEvidenceDrawerSelector": true,
+        "hasFutureTaskSelector": true,
+        "hasPrimaryCanvasSelector": true,
+        "heatmaps": [
+          {
+            "cells": 20,
+            "h": 118,
+            "text": "axis A B C D E 전기전자 0.2 0.5 0.7 0.3 0.4 금융 0.1 0.8 0.4 0.5 0.3 서비스 0.9 0.2 0.5 0.6 0.1 운수장비 0.3 0.7 0.2 0.4 0.8",
+            "values": 20,
+            "w": 490
+          }
+        ],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 2521303,
+          "cls": "replay-task-layout",
+          "firstFold": true,
+          "h": 1786,
+          "tag": "DIV",
+          "text": "Task-first V3 차트 리플레이 · 선택에서 재생까지 바로 이어지는 V3 V2의 빠른 시작·날짜·종목·재생·타임라인 흐름을 계승하고, API/WS 계약 증거는 접힌 draw",
+          "w": 1412
+        },
+        "panelCountFirstFold": 4,
+        "primaryActionText": "차트 리플레이",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 1,
+        "scrollHeight": 2235,
+        "scrollWidth": 1440,
+        "taskHeaderTopRatio": 0.299,
+        "termHits": {
+          "/sim/ws": true,
+          "candle": true,
+          "데이터 소스": true,
+          "리플레이 차트": true,
+          "시장 미니맵": true,
+          "재생": true,
+          "재생 컨트롤": true,
+          "전략 신호 로그": true,
+          "종목": true,
+          "차트 리플레이": true
+        },
+        "textLength": 2789,
+        "viewportHeight": 900,
+        "viewportWidth": 1440,
+        "visibleCount": 154
+      },
+      "hardFailures": [],
+      "htmlHash": "0886f9333bdc4872fccdb9037d14b210d57d99e9ffacc57ddbfe6c07e45f4503",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 29.56,
+        "lumaStddev": 25.16,
+        "nonUniform": true,
+        "size": [
+          1440,
+          900
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "chart_replay",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S08",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-2-replay\\screenshots\\UX-S08-chart_replay-v3-1440x900.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 100.0,
+        "primary": 100.0,
+        "workflow": 100.0
+      },
+      "textHash": "fa3d1f1e2f6d42040a134b80eae9d9ce897e14eb7caf25de54f5762124cfe974",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "totalScore": 98.2,
+      "uncappedTotalScore": 98.2,
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "version": "v3",
+      "viewport": "1440x900",
+      "websockets": []
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 87.75,
+        "chartHeatmapReadability": 53.75,
+        "cognitiveLoad": 84.25,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 84.25,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 83.0,
+        "workflowQuality": 30.0
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n📈 차트 리플레이\nDark\nLight\nV3 Preview\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n차트 리플레이 · 차트 리플레이·수동 신호 검토\n비소유: 실거래 주문·전략 DB 쓰기\nsimulation\nROUTE\nSIM\nOWNER\n차트 리플레이\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n차트 시뮬레이션\n일일 min DB 리플레이 · 엔진 정합 신호 오버레이\n● connected · api v1\n빠른 시작\n⚡ 최근 거래일\n⚡ 최대 상승일\n최근 거래일: 보유한 일일 DB 중 가장 최근 거래일을 고르고 그날 등락률 1위 종목을 자동 재생합니다. · 최대 상승일: 최근 거래일 후보 전체에서 일중 최대 상승률이 가장 큰 날짜·종목을 찾아 자동 재생합니다.\n버튼에 마우스를 올리면 선택 기준 설명이 표시됩니다.\n리플레이 설정\n시간단위\n틱\n분봉\n날짜 (1일)\n— 선택 —\n2025-05-09\n매수 조건식 (신호 오버레이)\n— 없음 —\n매도 조건식\n— 없음 —\n종목 선택 (최대 10 · 등락순)0/10 선택\n256940\n킵스파마\n+29.98%\n014970\n삼륭물산\n+29.96%\n377480\n마음AI\n+29.71%\n010770\n평화홀딩스",
+        "chartLikeCount": 1,
+        "dataContractMarkerCount": 0,
+        "dataManualGateCount": 0,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 1,
+        "firstFoldElementCount": 238,
+        "focusableFirstFoldCount": 52,
+        "hasEvidenceDrawerSelector": false,
+        "hasFutureTaskSelector": false,
+        "hasPrimaryCanvasSelector": false,
+        "heatmaps": [],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 1296,
+          "cls": "[object SVGAnimatedString]",
+          "firstFold": true,
+          "h": 36,
+          "tag": "svg",
+          "text": "",
+          "w": 36
+        },
+        "panelCountFirstFold": 13,
+        "primaryActionText": "📈 차트 리플레이 SIM",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 9,
+        "scrollHeight": 1381,
+        "scrollWidth": 1920,
+        "taskHeaderTopRatio": 0.015,
+        "termHits": {
+          "/sim/ws": false,
+          "candle": false,
+          "데이터 소스": false,
+          "리플레이 차트": false,
+          "시장 미니맵": true,
+          "재생": true,
+          "재생 컨트롤": false,
+          "전략 신호 로그": false,
+          "종목": true,
+          "차트 리플레이": true
+        },
+        "textLength": 3644,
+        "viewportHeight": 1080,
+        "viewportWidth": 1920,
+        "visibleCount": 238
+      },
+      "hardFailures": [],
+      "htmlHash": "b2d17a562134fd46ce1d4b3e8e952d1a4ebd0b8930ab6fcb40d7594488d46149",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 15.52,
+        "lumaStddev": 15.9,
+        "nonUniform": true,
+        "size": [
+          1920,
+          1080
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "chart_replay",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/chart-replay"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/days?src=min"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/demo?src=min&mode=latest"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/stocks?date=20250509&src=min"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S08",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-2-replay\\screenshots\\UX-S08-chart_replay-v2-1920x1080.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 33.33,
+        "primary": 75.0,
+        "workflow": 0.0
+      },
+      "textHash": "cd9f00fa75b0100b8e65c309fa4beb8d15d7b2e10c4b78b19a785e1085de3ad6",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "totalScore": 73.99,
+      "uncappedTotalScore": 73.99,
+      "url": "http://127.0.0.1:8776/ui/chart-replay",
+      "version": "v2",
+      "viewport": "1920x1080",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 100.0,
+        "chartHeatmapReadability": 100.0,
+        "cognitiveLoad": 100.0,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 95.5,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 100.0,
+        "workflowQuality": 100.0
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\nTask-first V3\n차트 리플레이 · 선택에서 재생까지 바로 이어지는 V3\n\nV2의 빠른 시작·날짜·종목·재생·타임라인 흐름을 계승하고, API/WS 계약 증거는 접힌 drawer로 내립니다.\n\npurpose\n데이터 소스·거래일·종목·전략 선택 후 신호를 조사\nstate\nDEMO / REFERENCE REPLAY INERT MODE",
+        "chartLikeCount": 13,
+        "dataContractMarkerCount": 1,
+        "dataManualGateCount": 23,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 13,
+        "firstFoldElementCount": 239,
+        "focusableFirstFoldCount": 30,
+        "hasEvidenceDrawerSelector": true,
+        "hasFutureTaskSelector": true,
+        "hasPrimaryCanvasSelector": true,
+        "heatmaps": [
+          {
+            "cells": 20,
+            "h": 118,
+            "text": "axis A B C D E 전기전자 0.2 0.5 0.7 0.3 0.4 금융 0.1 0.8 0.4 0.5 0.3 서비스 0.9 0.2 0.5 0.6 0.1 운수장비 0.3 0.7 0.2 0.4 0.8",
+            "values": 20,
+            "w": 670
+          }
+        ],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 2860349,
+          "cls": "replay-task-layout",
+          "firstFold": true,
+          "h": 1512,
+          "tag": "DIV",
+          "text": "Task-first V3 차트 리플레이 · 선택에서 재생까지 바로 이어지는 V3 V2의 빠른 시작·날짜·종목·재생·타임라인 흐름을 계승하고, API/WS 계약 증거는 접힌 draw",
+          "w": 1892
+        },
+        "panelCountFirstFold": 8,
+        "primaryActionText": "차트 리플레이",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 4,
+        "scrollHeight": 1810,
+        "scrollWidth": 1920,
+        "taskHeaderTopRatio": 0.181,
+        "termHits": {
+          "/sim/ws": true,
+          "candle": true,
+          "데이터 소스": true,
+          "리플레이 차트": true,
+          "시장 미니맵": true,
+          "재생": true,
+          "재생 컨트롤": true,
+          "전략 신호 로그": true,
+          "종목": true,
+          "차트 리플레이": true
+        },
+        "textLength": 2789,
+        "viewportHeight": 1080,
+        "viewportWidth": 1920,
+        "visibleCount": 239
+      },
+      "hardFailures": [],
+      "htmlHash": "0886f9333bdc4872fccdb9037d14b210d57d99e9ffacc57ddbfe6c07e45f4503",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 29.91,
+        "lumaStddev": 23.23,
+        "nonUniform": true,
+        "size": [
+          1920,
+          1080
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "chart_replay",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S08",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-2-replay\\screenshots\\UX-S08-chart_replay-v3-1920x1080.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 100.0,
+        "primary": 100.0,
+        "workflow": 100.0
+      },
+      "textHash": "fa3d1f1e2f6d42040a134b80eae9d9ce897e14eb7caf25de54f5762124cfe974",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "totalScore": 99.1,
+      "uncappedTotalScore": 99.1,
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "version": "v3",
+      "viewport": "1920x1080",
+      "websockets": []
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 87.75,
+        "chartHeatmapReadability": 53.75,
+        "cognitiveLoad": 84.25,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 84.25,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 90.0,
+        "workflowQuality": 30.0
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n📈 차트 리플레이\nDark\nLight\nV3 Preview\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n차트 리플레이 · 차트 리플레이·수동 신호 검토\n비소유: 실거래 주문·전략 DB 쓰기\nsimulation\nROUTE\nSIM\nOWNER\n차트 리플레이\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n차트 시뮬레이션\n일일 min DB 리플레이 · 엔진 정합 신호 오버레이\n● connected · api v1\n빠른 시작\n⚡ 최근 거래일\n⚡ 최대 상승일\n최근 거래일: 보유한 일일 DB 중 가장 최근 거래일을 고르고 그날 등락률 1위 종목을 자동 재생합니다. · 최대 상승일: 최근 거래일 후보 전체에서 일중 최대 상승률이 가장 큰 날짜·종목을 찾아 자동 재생합니다.\n버튼에 마우스를 올리면 선택 기준 설명이 표시됩니다.\n리플레이 설정\n시간단위\n틱\n분봉\n날짜 (1일)\n— 선택 —\n2025-05-09\n매수 조건식 (신호 오버레이)\n— 없음 —\n매도 조건식\n— 없음 —\n종목 선택 (최대 10 · 등락순)0/10 선택\n256940\n킵스파마\n+29.98%\n014970\n삼륭물산\n+29.96%\n377480\n마음AI\n+29.71%\n010770\n평화홀딩스",
+        "chartLikeCount": 1,
+        "dataContractMarkerCount": 0,
+        "dataManualGateCount": 0,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 1,
+        "firstFoldElementCount": 142,
+        "focusableFirstFoldCount": 26,
+        "hasEvidenceDrawerSelector": false,
+        "hasFutureTaskSelector": false,
+        "hasPrimaryCanvasSelector": false,
+        "heatmaps": [],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 1296,
+          "cls": "[object SVGAnimatedString]",
+          "firstFold": true,
+          "h": 36,
+          "tag": "svg",
+          "text": "",
+          "w": 36
+        },
+        "panelCountFirstFold": 10,
+        "primaryActionText": "📈 차트 리플레이 SIM",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 7,
+        "scrollHeight": 1428,
+        "scrollWidth": 1280,
+        "taskHeaderTopRatio": 0.022,
+        "termHits": {
+          "/sim/ws": false,
+          "candle": false,
+          "데이터 소스": false,
+          "리플레이 차트": false,
+          "시장 미니맵": true,
+          "재생": true,
+          "재생 컨트롤": false,
+          "전략 신호 로그": false,
+          "종목": true,
+          "차트 리플레이": true
+        },
+        "textLength": 3644,
+        "viewportHeight": 720,
+        "viewportWidth": 1280,
+        "visibleCount": 142
+      },
+      "hardFailures": [],
+      "htmlHash": "b2d17a562134fd46ce1d4b3e8e952d1a4ebd0b8930ab6fcb40d7594488d46149",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 16.83,
+        "lumaStddev": 12.15,
+        "nonUniform": true,
+        "size": [
+          1280,
+          720
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "chart_replay",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/chart-replay"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/styles.css?v=20260624u002"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-react-dom.js?v=20260603a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/vendor-lightweight-charts.js?v=20260612a"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=f6d376db"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/days?src=min"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=buy"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/bt/strategies?kind=sell"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/demo?src=min&mode=latest"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/health"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/runs"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/config/spec"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/status"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "fetch",
+          "url": "http://127.0.0.1:8776/sim/stocks?date=20250509&src=min"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S08",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-2-replay\\screenshots\\UX-S08-chart_replay-v2-1280x720.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 33.33,
+        "primary": 75.0,
+        "workflow": 0.0
+      },
+      "textHash": "cd9f00fa75b0100b8e65c309fa4beb8d15d7b2e10c4b78b19a785e1085de3ad6",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "totalScore": 75.04,
+      "uncappedTotalScore": 75.04,
+      "url": "http://127.0.0.1:8776/ui/chart-replay",
+      "version": "v2",
+      "viewport": "1280x720",
+      "websockets": [
+        "ws://127.0.0.1:8776/ws"
+      ]
+    },
+    {
+      "categoryScores": {
+        "accessibilityResponsive": 100.0,
+        "chartHeatmapReadability": 100.0,
+        "cognitiveLoad": 100.0,
+        "safetyHierarchy": 100.0,
+        "taskOrientation": 91.0,
+        "v2PreservationEvidence": 100.0,
+        "visualHierarchy": 100.0,
+        "workflowQuality": 100.0
+      },
+      "categoryWeights": {
+        "accessibilityResponsive": 8,
+        "chartHeatmapReadability": 15,
+        "cognitiveLoad": 12,
+        "safetyHierarchy": 10,
+        "taskOrientation": 20,
+        "v2PreservationEvidence": 5,
+        "visualHierarchy": 15,
+        "workflowQuality": 15
+      },
+      "consoleErrors": [],
+      "domMetrics": {
+        "bodySample": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nREFERENCE mode\nREST INERT\nWebSocket 정적 fixture\nRun Status reference\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode REFERENCE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen 137 / 목표 200\n68.5%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\nTask-first V3\n차트 리플레이 · 선택에서 재생까지 바로 이어지는 V3\n\nV2의 빠른 시작·날짜·종목·재생·타임라인 흐름을 계승하고, API/WS 계약 증거는 접힌 drawer로 내립니다.\n\npurpose\n데이터 소스·거래일·종목·전략 선택 후 신호를 조사\nstate\nDEMO / REFERENCE REPLAY INERT MODE",
+        "chartLikeCount": 14,
+        "dataContractMarkerCount": 1,
+        "dataManualGateCount": 23,
+        "dataSafetyBoundaryCount": 1,
+        "firstFoldChartCount": 1,
+        "firstFoldElementCount": 107,
+        "focusableFirstFoldCount": 12,
+        "hasEvidenceDrawerSelector": true,
+        "hasFutureTaskSelector": true,
+        "hasPrimaryCanvasSelector": true,
+        "heatmaps": [
+          {
+            "cells": 20,
+            "h": 118,
+            "text": "axis A B C D E 전기전자 0.2 0.5 0.7 0.3 0.4 금융 0.1 0.8 0.4 0.5 0.3 서비스 0.9 0.2 0.5 0.6 0.1 운수장비 0.3 0.7 0.2 0.4 0.8",
+            "values": 20,
+            "w": 430
+          }
+        ],
+        "horizontalOverflow": false,
+        "maxChart": {
+          "area": 2231847,
+          "cls": "replay-task-layout",
+          "firstFold": true,
+          "h": 1783,
+          "tag": "DIV",
+          "text": "Task-first V3 차트 리플레이 · 선택에서 재생까지 바로 이어지는 V3 V2의 빠른 시작·날짜·종목·재생·타임라인 흐름을 계승하고, API/WS 계약 증거는 접힌 draw",
+          "w": 1252
+        },
+        "panelCountFirstFold": 2,
+        "primaryActionText": "차트 리플레이",
+        "primaryActionVisible": true,
+        "sameWeightPanelCount": 0,
+        "scrollHeight": 2232,
+        "scrollWidth": 1280,
+        "taskHeaderTopRatio": 0.374,
+        "termHits": {
+          "/sim/ws": true,
+          "candle": true,
+          "데이터 소스": true,
+          "리플레이 차트": true,
+          "시장 미니맵": true,
+          "재생": true,
+          "재생 컨트롤": true,
+          "전략 신호 로그": true,
+          "종목": true,
+          "차트 리플레이": true
+        },
+        "textLength": 2789,
+        "viewportHeight": 720,
+        "viewportWidth": 1280,
+        "visibleCount": 107
+      },
+      "hardFailures": [],
+      "htmlHash": "0886f9333bdc4872fccdb9037d14b210d57d99e9ffacc57ddbfe6c07e45f4503",
+      "imageMetrics": {
+        "available": true,
+        "lumaMean": 27.67,
+        "lumaStddev": 21.7,
+        "nonUniform": true,
+        "size": [
+          1280,
+          720
+        ],
+        "status": "PASS"
+      },
+      "missingSafetyText": [],
+      "page": "chart_replay",
+      "pageErrors": [],
+      "requests": [
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "document",
+          "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/data.js?v=20260628canonical"
+        },
+        {
+          "kind": "request",
+          "method": "GET",
+          "resourceType": "script",
+          "url": "http://127.0.0.1:8776/ui/remodel/src/app.js?v=20260628canonical"
+        }
+      ],
+      "routeIdentityFailures": [],
+      "scenarioId": "UX-S08",
+      "screenshot": "artifacts\\dashboard-human-ux-v3\\tranche-2-replay\\screenshots\\UX-S08-chart_replay-v3-1280x720.png",
+      "statusCode": 200,
+      "termScores": {
+        "chart": 100.0,
+        "primary": 100.0,
+        "workflow": 100.0
+      },
+      "textHash": "fa3d1f1e2f6d42040a134b80eae9d9ce897e14eb7caf25de54f5762124cfe974",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "totalScore": 98.2,
+      "uncappedTotalScore": 98.2,
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "version": "v3",
+      "viewport": "1280x720",
+      "websockets": []
+    }
+  ],
+  "status": "PASS",
+  "storyboardValidation": {
+    "failures": [],
+    "pages": [
+      "backtest",
+      "chart_replay",
+      "condition"
+    ],
+    "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\storyboards\\storyboards.json",
+    "requiredPages": [
+      "chart_replay"
+    ],
+    "scenarioCount": 3,
+    "status": "PASS"
+  },
+  "thresholdFailures": [],
+  "thresholds": {
+    "minDelta": 5.0,
+    "minV3Score": 86.0,
+    "viewports": [
+      "1440x900",
+      "1920x1080",
+      "1280x720"
+    ]
+  },
+  "tranche": "c"
+}

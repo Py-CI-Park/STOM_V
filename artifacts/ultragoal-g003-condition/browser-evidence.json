@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G003",
+  "routes": [
+    {"route":"condition","mode":"reference","hasAdapter":true,"expectedProvenancePresent":true,"fixturePresent":true,"safetyFooterCards":6,"humanApproval":true,"appendOnly":true,"bodyLength":5503,"screenshot":"artifacts/ultragoal-g003-condition/g003-condition.png"},
+    {"route":"process","mode":"reference","hasAdapter":true,"expectedProvenancePresent":true,"fixturePresent":true,"safetyFooterCards":6,"humanApproval":true,"appendOnly":true,"bodyLength":2491,"screenshot":"artifacts/ultragoal-g003-condition/g003-process.png"},
+    {"route":"history","mode":"reference","hasAdapter":true,"expectedProvenancePresent":true,"fixturePresent":true,"safetyFooterCards":6,"humanApproval":true,"appendOnly":true,"bodyLength":4465,"screenshot":"artifacts/ultragoal-g003-condition/g003-history.png"},
+    {"route":"lab","mode":"reference","hasAdapter":true,"expectedProvenancePresent":true,"fixturePresent":true,"safetyFooterCards":6,"humanApproval":true,"appendOnly":true,"bodyLength":3334,"screenshot":"artifacts/ultragoal-g003-condition/g003-lab.png"},
+    {"route":"workbench","mode":"reference","hasAdapter":true,"expectedProvenancePresent":true,"fixturePresent":true,"safetyFooterCards":6,"humanApproval":true,"appendOnly":true,"bodyLength":3169,"screenshot":"artifacts/ultragoal-g003-condition/g003-workbench.png"},
+    {"route":"audit","mode":"reference","hasAdapter":true,"expectedProvenancePresent":true,"fixturePresent":true,"safetyFooterCards":6,"humanApproval":true,"appendOnly":true,"bodyLength":3325,"screenshot":"artifacts/ultragoal-g003-condition/g003-audit.png"}
+  ],
+  "allPassed": true,
+  "sourceMarkers": ["RemodelAdapters", "PageControllers", "provenanceCue", "latestLoopPayload", "latestRunsPayload"],
+  "verification": {
+    "pytest": "pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_remodel_baseline_contract.py -q => 16 passed",
+    "nodeCheck": "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js => passed",
+    "diffCheck": "git diff --check => passed"
+  }
+}

@@ -1,0 +1,372 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Final architect review 118-G005ArchitectFinal returned CLEAR/CLEAR/CLEAR APPROVE with blockers []. Source and browser evidence prove reference/demo inertness, disabled inert manual controls, loopback-only backend query parsing, live GET-only page-load behavior, no auto /sim/ws or /bt/ws_job, and visible safety/provenance labels.",
+    "commands": [
+      "architect review agent 118-G005ArchitectFinal",
+      "recorded node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "recorded pytest dashboard static + route parity => 25 passed",
+      "recorded browser network/DOM capture => verification-summary verdict passed",
+      "recorded git diff --check over G005 files => PASS"
+    ],
+    "blockers": [],
+    "advisoryConcerns": [],
+    "exactEvidence": [
+      "app.js parses live backend= only for loopback http/https origins and gates localStorage/fetch/WebSocket paths outside live mode.",
+      "Reference/demo shell badges normalize to REST INERT/WebSocket 정적 fixture/Run Status reference or demo.",
+      "manualGateAttrs/manualBtn mark live manual controls data-manual-gate and non-live manual controls disabled aria-disabled data-inert-control.",
+      "Browser transcript proves reference pages enabledManualCount=0, websocketDelta=[], safetyLabels=true, and forbidden visible text absent.",
+      "Live backtest/replay transcript proves baseInput http://localhost:8777 and GET-only /bt/*, /sim/*, /health requests with websocketDelta=[].",
+      "verification-summary pass criteria all true."
+    ]
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Final executor QA 119-G005ExecutorQaFinal passed/passed/passed. Browser transcript and source markers prove no reference/demo backend calls or WebSockets, no mutating/export/order/broker/account page-load requests, disabled inert manual controls, live human-gated controls, visible Human Approval Gate/Append-Only Audit/research-only labels, and non-uniform screenshots.",
+    "e2eCommands": [
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js => PASS",
+      "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py -q => 25 passed",
+      "git diff --check -- ai_strategy_loop/dashboard/frontend/remodel/src/app.js ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css ai_strategy_loop/dashboard/frontend/remodel/src/data.js tests/unit/test_dashboard_remodel_static.py docs/update_log/2026-06-29_ultragoal_g005_safety_provenance.md artifacts/ultragoal-g005-safety-hardening/ai-slop-cleanup-report.md => PASS",
+      "browser automation reference/live safety recapture; transcript browser-transcript.json => verdict passed",
+      "screenshot metadata/hash/non-uniform evidence; image-evidence.json => allNonUniform true"
+    ],
+    "redTeamCommands": [
+      "reference backend fetch/WS denial => passed",
+      "mutating page-load request scan => passed",
+      "auto /sim/ws and /bt/ws_job scan => passed",
+      "live unsafe mutation/export/order/broker/account scan => passed",
+      "reference shell inert badge check => passed",
+      "inert manual controls disabled check => passed",
+      "loopback backend query evidence check => passed",
+      "forbidden visible affordance scan => passed"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-g005-safety-hardening/browser-transcript.json",
+        "description": "Browser automation transcript for reference condition/backtest/replay/audit and live backtest/replay safety/network capture.",
+        "tool": "browser"
+      },
+      {
+        "id": "reference-condition-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g005-safety-hardening/reference-condition.png",
+        "description": "Reference condition safety/provenance screenshot."
+      },
+      {
+        "id": "reference-backtest-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g005-safety-hardening/reference-backtest.png",
+        "description": "Reference backtest inert/manual-disabled screenshot."
+      },
+      {
+        "id": "reference-replay-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g005-safety-hardening/reference-replay.png",
+        "description": "Reference chart replay inert /sim/ws manual gate screenshot."
+      },
+      {
+        "id": "reference-audit-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g005-safety-hardening/reference-audit.png",
+        "description": "Reference audit Human Approval Gate / Append-Only Audit screenshot."
+      },
+      {
+        "id": "live-backtest-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g005-safety-hardening/live-backtest.png",
+        "description": "Live backtest GET-only/manual-gated screenshot."
+      },
+      {
+        "id": "live-replay-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-g005-safety-hardening/live-replay.png",
+        "description": "Live chart replay GET-only/manual-gated screenshot."
+      },
+      {
+        "id": "image-evidence",
+        "kind": "test-report",
+        "path": "artifacts/ultragoal-g005-safety-hardening/image-evidence.json",
+        "description": "Screenshot hash/byte/non-uniform evidence."
+      },
+      {
+        "id": "verification-summary",
+        "kind": "web-test-report",
+        "path": "artifacts/ultragoal-g005-safety-hardening/verification-summary.json",
+        "description": "G005 browser/network/DOM pass criteria summary."
+      },
+      {
+        "id": "cleanup-report",
+        "kind": "cleanup-review-report",
+        "path": "artifacts/ultragoal-g005-safety-hardening/ai-slop-cleanup-report.md",
+        "description": "AI slop cleanup report with zero open advisories after hardening."
+      },
+      {
+        "id": "architect-review",
+        "kind": "architect-review-report",
+        "path": "artifacts/ultragoal-g005-safety-hardening/architect-review.json",
+        "description": "Final architect review: CLEAR/CLEAR/CLEAR APPROVE, blockers []."
+      },
+      {
+        "id": "executor-qa",
+        "kind": "executor-qa-report",
+        "path": "artifacts/ultragoal-g005-safety-hardening/executor-qa.json",
+        "description": "Final executor QA/red-team matrix: passed/passed/passed, blockers []."
+      },
+      {
+        "id": "update-log",
+        "kind": "implementation-log",
+        "path": "docs/update_log/2026-06-29_ultragoal_g005_safety_provenance.md",
+        "description": "Dated implementation and verification log for G005."
+      }
+    ],
+    "blockers": [],
+    "watchNotes": [
+      "Condition overview still retains the normal live /ws bridge when /health succeeds; G005 scope forbids page-load mutating/export/control frames and auto /sim/ws or /bt/ws_job, which passed."
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-reference-demo-inert",
+        "contractRef": "G005 objective: live/reference/demo separation",
+        "obligation": "Reference/demo routes must not call backend APIs, open WebSockets, or write backend localStorage; shell must not imply live connectivity.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-reference-web",
+          "surface-focused-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-reference-no-backend",
+          "case-reference-shell-inert",
+          "case-inert-controls"
+        ]
+      },
+      {
+        "id": "contract-live-safe-page-load",
+        "contractRef": "G005 objective: no mutating POST/export/WS control frame on page load",
+        "obligation": "Live page load may perform safe GET/read probes only; no mutating/export/order/broker/account requests or /sim/ws and /bt/ws_job auto-open.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-live-web",
+          "surface-focused-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-live-get-only",
+          "case-no-auto-ws",
+          "case-no-unsafe-affordance"
+        ]
+      },
+      {
+        "id": "contract-human-gate-provenance",
+        "contractRef": "G005 objective: clear Human Approval Gate / Append-Only Audit / research-only labels",
+        "obligation": "Safety/provenance labels must remain visible on every captured route and manual controls must be disabled in inert modes or human-gated in live mode.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-reference-web",
+          "surface-live-web",
+          "surface-screenshots"
+        ],
+        "adversarialCaseRefs": [
+          "case-labels",
+          "case-inert-controls"
+        ]
+      },
+      {
+        "id": "contract-backend-query",
+        "contractRef": "G005 hardening from architect WATCH",
+        "obligation": "Live backend= query must be parsed only for loopback origins and reflected in DOM/network evidence.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-live-web",
+          "surface-focused-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-loopback-query"
+        ]
+      },
+      {
+        "id": "contract-cli-out-of-scope",
+        "contractRef": "CLI surface",
+        "obligation": "G005 ships browser dashboard safety only; no CLI behavior changed.",
+        "status": "not_applicable",
+        "reason": "No CLI user-facing behavior is part of G005."
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-reference-web",
+        "contractRef": "Reference/demo inert routes",
+        "surface": "web",
+        "invocation": "Browser automation at reference condition, backtest, chart-replay, and audit routes with network/DOM assertions",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "reference-condition-screenshot",
+          "reference-backtest-screenshot",
+          "reference-replay-screenshot",
+          "reference-audit-screenshot"
+        ]
+      },
+      {
+        "id": "surface-live-web",
+        "contractRef": "Live safe read-only backtest/replay routes",
+        "surface": "web",
+        "invocation": "Browser automation at live backtest and chart-replay with backend=http://localhost:8777 query and network/DOM assertions",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "live-backtest-screenshot",
+          "live-replay-screenshot"
+        ]
+      },
+      {
+        "id": "surface-screenshots",
+        "contractRef": "G005 visual/safety evidence",
+        "surface": "web",
+        "invocation": "Screenshot metadata/hash/non-uniform scan over six screenshots",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "image-evidence",
+          "reference-condition-screenshot",
+          "reference-backtest-screenshot",
+          "reference-replay-screenshot",
+          "reference-audit-screenshot",
+          "live-backtest-screenshot",
+          "live-replay-screenshot"
+        ]
+      },
+      {
+        "id": "surface-focused-tests",
+        "contractRef": "G005 static/source regression",
+        "surface": "api/package",
+        "invocation": "node --check; focused pytest dashboard static + route parity; git diff --check",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary",
+          "cleanup-report",
+          "architect-review",
+          "executor-qa"
+        ]
+      },
+      {
+        "id": "surface-cli-out-of-scope",
+        "contractRef": "CLI surface",
+        "surface": "cli",
+        "status": "not_applicable",
+        "reason": "G005 has no CLI-facing behavior."
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-reference-no-backend",
+        "contractRef": "G005 reference/demo separation",
+        "scenario": "Reference/demo route silently fetches /status, /bt/*, /sim/*, or opens a WebSocket.",
+        "expectedBehavior": "Only static /ui/* assets load and websocketDelta is empty.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-reference-shell-inert",
+        "contractRef": "G005 provenance honesty",
+        "scenario": "Reference shell shows REST UP, WebSocket connected, or running state from fixture text.",
+        "expectedBehavior": "Reference shell shows REST INERT, WebSocket 정적 fixture, and Run Status reference.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "reference-condition-screenshot"
+        ]
+      },
+      {
+        "id": "case-inert-controls",
+        "contractRef": "G005 manual controls",
+        "scenario": "Reference/demo Start/Stop, backtest, replay, export, or /sim/ws controls are enabled and look live.",
+        "expectedBehavior": "Reference/demo manual controls are disabled/aria-disabled and marked data-inert-control; enabledManualCount is 0.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "reference-backtest-screenshot",
+          "reference-replay-screenshot"
+        ]
+      },
+      {
+        "id": "case-live-get-only",
+        "contractRef": "G005 live page-load safety",
+        "scenario": "Live page load sends mutating POST/PUT/PATCH/DELETE or export/order/broker/account requests.",
+        "expectedBehavior": "Live request deltas are GET-only safe read probes; liveUnsafe is 0.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-no-auto-ws",
+        "contractRef": "G005 WebSocket safety",
+        "scenario": "Backtest/replay opens /bt/ws_job or /sim/ws automatically on page load.",
+        "expectedBehavior": "websocketCount and forbiddenWs are 0; /sim/ws remains documented as user-gated/manual.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-no-unsafe-affordance",
+        "contractRef": "Dashboard safety constraints",
+        "scenario": "V3 exposes live order, broker login, account trading, hidden export, final approval, or record_decision affordance as active page-load behavior.",
+        "expectedBehavior": "Forbidden visible text and unsafe network/action patterns are absent while safety labels remain visible.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-labels",
+        "contractRef": "G005 visible safety labels",
+        "scenario": "A captured route lacks Human Approval Gate, Append-Only Audit, research-only, No Live Order, No Broker Login, or No Account Trading labels.",
+        "expectedBehavior": "safetyLabelsOnEveryRoute is true.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "image-evidence"
+        ]
+      },
+      {
+        "id": "case-loopback-query",
+        "contractRef": "G005 backend query hardening",
+        "scenario": "Live backend= query is ignored or permits non-loopback origins.",
+        "expectedBehavior": "Source limits backend query to loopback origins; transcript proves baseInput http://localhost:8777 and request host evidence.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "verification-summary"
+        ]
+      }
+    ]
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "G005 blocking loop reran cleanly after architect WATCH concerns: reference shell inertness, disabled inert controls, live human-gate labels, and loopback backend query parsing were implemented; browser summary verdict=passed requestCount=38 websocketCount=0 mutating=0 referenceForbidden=0 liveUnsafe=0; focused tests 25 passed; architect 118 CLEAR/CLEAR/CLEAR APPROVE; executor QA 119 passed/passed/passed.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_route_parity.py -q => 25 passed",
+      "git diff --check -- ai_strategy_loop/dashboard/frontend/remodel/src/app.js ai_strategy_loop/dashboard/frontend/remodel/styles/theme.css ai_strategy_loop/dashboard/frontend/remodel/src/data.js tests/unit/test_dashboard_remodel_static.py docs/update_log/2026-06-29_ultragoal_g005_safety_provenance.md artifacts/ultragoal-g005-safety-hardening/ai-slop-cleanup-report.md => PASS",
+      "browser automation reference/live safety recapture",
+      "image-evidence screenshot hash/non-uniform report",
+      "architect review 118-G005ArchitectFinal => CLEAR/CLEAR/CLEAR APPROVE",
+      "executor QA 119-G005ExecutorQaFinal => passed/passed/passed"
+    ],
+    "blockers": []
+  }
+}

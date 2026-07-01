@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "playwright-chromium via scripts/verify_dashboard_remodel_visual_gate.py",
+  "surface": "web",
+  "goalId": "G006",
+  "baseUrl": "http://127.0.0.1:8776",
+  "viewport": "1920x1080",
+  "actions": [
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "result": "HTTP 200 loaded 01_condition_ai_overview"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "result": "score=98.3; required=100.0; safety=100.0; hardFailures=[]"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\01_condition_ai_overview.png",
+      "result": "1920x1080 non-uniform reference capture saved"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "result": "HTTP 200 loaded 02_process"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "result": "score=98.41; required=100.0; safety=100.0; hardFailures=[]"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/process?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\02_process.png",
+      "result": "1920x1080 non-uniform reference capture saved"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "result": "HTTP 200 loaded 03_history"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "result": "score=98.05; required=100.0; safety=100.0; hardFailures=[]"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/history?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\03_history.png",
+      "result": "1920x1080 non-uniform reference capture saved"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "result": "HTTP 200 loaded 04_lab"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "result": "score=97.71; required=100.0; safety=100.0; hardFailures=[]"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/lab?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\04_lab.png",
+      "result": "1920x1080 non-uniform reference capture saved"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "result": "HTTP 200 loaded 05_workbench"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "result": "score=97.99; required=100.0; safety=100.0; hardFailures=[]"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/workbench?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\05_workbench.png",
+      "result": "1920x1080 non-uniform reference capture saved"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "result": "HTTP 200 loaded 06_decision_audit"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "result": "score=98.23; required=100.0; safety=100.0; hardFailures=[]"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/audit?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\06_decision_audit.png",
+      "result": "1920x1080 non-uniform reference capture saved"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "result": "HTTP 200 loaded 07_backtest"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "result": "score=97.36; required=100.0; safety=100.0; hardFailures=[]"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\07_backtest.png",
+      "result": "1920x1080 non-uniform reference capture saved"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "navigate",
+      "selector": "url",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "result": "HTTP 200 loaded 08_chart_replay"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "assert",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "result": "score=97.38; required=100.0; safety=100.0; hardFailures=[]"
+    },
+    {
+      "timestamp": "2026-06-28T02:36:48+00:00",
+      "type": "screenshot",
+      "selector": "viewport",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\08_chart_replay.png",
+      "result": "1920x1080 non-uniform reference capture saved"
+    }
+  ],
+  "verdict": "passed",
+  "artifactRefs": [
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\visual-gate-manifest.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\scorecard.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\side-by-side-contact-sheet.png",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\01_condition_ai_overview.png",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\02_process.png",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\03_history.png",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\04_lab.png",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\05_workbench.png",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\06_decision_audit.png",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\07_backtest.png",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\08_chart_replay.png",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\source-safety-scan.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\dom-safety-scan.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\modal-coverage.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\api-live-evidence.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\screenshot-stats.json",
+    "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-visual-gate\\cli-replay-g006.json"
+  ]
+}

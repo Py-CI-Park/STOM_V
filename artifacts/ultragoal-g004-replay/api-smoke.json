@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "kind": "simulation-api-smoke",
+  "capturedAt": "2026-06-27T15:44:32Z",
+  "directServerBase": "http://127.0.0.1:8776",
+  "testDbLinks": [
+    "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/_database/stock_min_20250509.db hardlinked from wt-dev",
+    "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/_database/stock_tick_20250627.db hardlinked from wt-dev",
+    "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/_database/code_info.db hardlinked from wt-dev"
+  ],
+  "checks": [
+    {
+      "path": "/sim/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "path": "/sim/days?src=tick",
+      "status": 200,
+      "ok": true,
+      "count": 1
+    },
+    {
+      "path": "/sim/days?src=min",
+      "status": 200,
+      "ok": true,
+      "count": 1
+    },
+    {
+      "path": "/sim/demo?src=tick",
+      "status": 200,
+      "ok": true,
+      "available": true,
+      "code": "203400"
+    },
+    {
+      "path": "/sim/demo?src=min",
+      "status": 200,
+      "ok": true,
+      "available": true,
+      "code": "256940"
+    },
+    {
+      "path": "/sim/stocks?src=min&date=20250509",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "path": "/sim/signals?src=min&date=20250509&code=256940&buy=20250715_Study&sell=20250715_Study_S",
+      "status": 200,
+      "ok": true,
+      "note": "endpoint returned structured error status for non-success one-stock signal backtest without 5xx"
+    }
+  ],
+  "allOk": true
+}

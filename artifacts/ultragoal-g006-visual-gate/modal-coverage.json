@@ -1,0 +1,52 @@
+{
+  "failures": [],
+  "generatedAt": "2026-06-28T02:35:49.380469+00:00",
+  "rows": [
+    {
+      "domButtonMarkers": [
+        "설정"
+      ],
+      "missingDomButtonMarkers": [],
+      "missingSourceMarkers": [],
+      "name": "settings",
+      "sourceMarkers": [
+        "data-action=\"settings\"",
+        "openSettingsModal"
+      ],
+      "status": "PASS"
+    },
+    {
+      "domButtonMarkers": [
+        "인스펙터",
+        "Inspector"
+      ],
+      "missingDomButtonMarkers": [],
+      "missingSourceMarkers": [],
+      "name": "inspector",
+      "sourceMarkers": [
+        "data-action=\"inspector\"",
+        "openInspectorModal",
+        "Strategy Inspector"
+      ],
+      "status": "PASS"
+    },
+    {
+      "domButtonMarkers": [
+        "승인",
+        "Export",
+        "내보내기"
+      ],
+      "missingDomButtonMarkers": [],
+      "missingSourceMarkers": [],
+      "name": "approval_export",
+      "sourceMarkers": [
+        "data-action=\"approval\"",
+        "openApprovalModal",
+        "Winner 승인 / Export",
+        "Human Confirm"
+      ],
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS"
+}

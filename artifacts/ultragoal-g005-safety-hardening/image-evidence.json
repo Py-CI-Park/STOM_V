@@ -1,0 +1,44 @@
+{
+  "kind": "test-report",
+  "tool": "browser",
+  "generatedAt": "2026-06-29T18:46:35.075Z",
+  "screenshots": [
+    {
+      "key": "reference-condition",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-safety-hardening\\reference-condition.png",
+      "bytes": 1217744,
+      "sha256": "09b4017a4579d5222bf9c0209a77512a73f53b131ad87f07e688cac480f43206"
+    },
+    {
+      "key": "reference-backtest",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-safety-hardening\\reference-backtest.png",
+      "bytes": 1040768,
+      "sha256": "d9bae2b356536f57113ac952597289ab5a1bd52d56afcc765a77a925a7441e80"
+    },
+    {
+      "key": "reference-replay",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-safety-hardening\\reference-replay.png",
+      "bytes": 1170451,
+      "sha256": "85f35ffce292ec7ae8a9f35b7e20b868ca48042d1db449f4e6f0142ec312d042"
+    },
+    {
+      "key": "reference-audit",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-safety-hardening\\reference-audit.png",
+      "bytes": 703607,
+      "sha256": "4d93ccc78360f5183b49b6916a928333b373b9c6a51a9abb9ab8448542254954"
+    },
+    {
+      "key": "live-backtest",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-safety-hardening\\live-backtest.png",
+      "bytes": 1044160,
+      "sha256": "641fccef93002672c74aeec5c3da651682f7fd300395dfbaf59ca22385d8eb26"
+    },
+    {
+      "key": "live-replay",
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g005-safety-hardening\\live-replay.png",
+      "bytes": 1172382,
+      "sha256": "2579c304d22b2ef7ee4a11776f61155e800aaf83ec1f39ae281bd3e3fccee19a"
+    }
+  ],
+  "allNonUniform": true
+}

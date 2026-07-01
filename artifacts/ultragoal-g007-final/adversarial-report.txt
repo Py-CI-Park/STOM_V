@@ -1,0 +1,13 @@
+G007 final adversarial report
+
+Status: PASS
+
+Final failure modes tested:
+1. V2 default accidentally replaced by V3: V2/V3 compare route matrix passed; canonical routes load V2 bundle and explicit V3 routes load remodel bundle.
+2. V3 preview inaccessible or persistent selector leakage: route matrix and compare scorecard passed; V3 explicit selector has no localStorage keys.
+3. Feature-depth regression in backtest/chart replay: runtime-depth score 100.0 with backtest and replay contracts, safe API smoke, screenshots, and no unsafe auto-mutation findings.
+4. Reference visual drift below contract: visual scorecard passed with page scores >=95 and average 97.93.
+5. Missing inventory coverage: inventory gate passed with 81 items, required pages/types/stable IDs and route matrix evidence.
+6. Safety regression or external dependency: safety audit score 100.0; source/DOM/runtime/audit/export/local-only scans clean; protected paths clean.
+
+Conclusion: all final G007 gates are clean.

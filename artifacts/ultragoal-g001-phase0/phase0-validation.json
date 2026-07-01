@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G001",
+  "validatedAt": "2026-06-29T12:57:36Z",
+  "checks": [
+    {
+      "id": "process-row-count",
+      "passed": true,
+      "observed": 8
+    },
+    {
+      "id": "safety-row-count",
+      "passed": true,
+      "observed": 10
+    },
+    {
+      "id": "rubric-total",
+      "passed": true,
+      "observed": 100
+    },
+    {
+      "id": "route-count",
+      "passed": true,
+      "observed": 8
+    },
+    {
+      "id": "required-fields-present",
+      "passed": true,
+      "observed": "all process rows checked"
+    },
+    {
+      "id": "safety-hard-rules-present",
+      "passed": true,
+      "observed": "all safety rows checked"
+    }
+  ],
+  "passed": true
+}

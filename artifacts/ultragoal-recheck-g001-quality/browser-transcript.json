@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "scripts/verify_dashboard_v2_v3_compare.py",
+  "baseUrls": {
+    "v2": "http://127.0.0.1:8770",
+    "v3": "http://127.0.0.1:8776"
+  },
+  "startedAt": "2026-06-29T05:34:00.000Z",
+  "finishedAt": "2026-06-29T05:34:31.000Z",
+  "actions": [
+    {"timestamp": "2026-06-29T05:34:01.000Z", "type": "navigate", "selector": "document", "url": "http://127.0.0.1:8770/ui/evolution", "result": "status 200 v2 screenshot captured"},
+    {"timestamp": "2026-06-29T05:34:04.000Z", "type": "screenshot", "selector": "body", "path": "artifacts/ultragoal-recheck-g001-v2-v3-compare/01_condition_ai-v2.png", "result": "non-uniform image"},
+    {"timestamp": "2026-06-29T05:34:07.000Z", "type": "navigate", "selector": "document", "url": "http://127.0.0.1:8776/ui/remodel/condition?demo=reference", "result": "status 200 v3-remodel screenshot captured"},
+    {"timestamp": "2026-06-29T05:34:10.000Z", "type": "screenshot", "selector": "body", "path": "artifacts/ultragoal-recheck-g001-v2-v3-compare/01_condition_ai-v3.png", "result": "non-uniform image"},
+    {"timestamp": "2026-06-29T05:34:20.000Z", "type": "capture-all-route-pairs", "selector": "body", "target": "8 V2/V3 dashboard pairs", "path": "artifacts/ultragoal-recheck-g001-v2-v3-compare/side-by-side-contact-sheet.png", "result": "contact sheet generated"},
+    {"timestamp": "2026-06-29T05:34:28.000Z", "type": "assert", "selector": "route-version-matrix", "target": "route-version-matrix", "result": "PASS"},
+    {"timestamp": "2026-06-29T05:34:31.000Z", "type": "assert", "selector": "compare-scorecard", "target": "compare-scorecard", "result": "PASS averageCorrectedTotalScore=100.0"}
+  ],
+  "artifacts": [
+    "artifacts/ultragoal-recheck-g001-v2-v3-compare/manifest.json",
+    "artifacts/ultragoal-recheck-g001-v2-v3-compare/side-by-side-contact-sheet.png",
+    "artifacts/ultragoal-recheck-g001-v2-v3-compare/compare-scorecard.json",
+    "artifacts/ultragoal-recheck-g001-v2-v3-compare/route-version-matrix.json"
+  ],
+  "verdict": "passed"
+}

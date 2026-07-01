@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-06-29T19:43:51.046163+00:00",
+  "readOnly": true,
+  "rows": [
+    {
+      "artifactRefs": [
+        "artifacts\\ultragoal-g004-backtest\\browser-evidence.json",
+        "artifacts\\ultragoal-g004-backtest\\browser-transcript.json",
+        "artifacts\\ultragoal-g004-backtest\\cli-replay-g004.json",
+        "artifacts\\ultragoal-g004-backtest\\g004-backtest-live.png",
+        "artifacts\\ultragoal-g004-backtest\\g004-backtest-reference.png",
+        "artifacts\\ultragoal-g004-backtest\\quality-gate-g004.json"
+      ],
+      "directory": "artifacts\\ultragoal-g004-backtest",
+      "label": "G004_BACKTEST",
+      "note": "Linked read-only prior live evidence when present; this G006 gate does not call live order, broker, account, export, or WebSocket start paths.",
+      "status": "LINKED"
+    },
+    {
+      "artifactRefs": [
+        "artifacts\\ultragoal-g005-replay\\browser-evidence.json",
+        "artifacts\\ultragoal-g005-replay\\browser-transcript.json",
+        "artifacts\\ultragoal-g005-replay\\cli-replay-g005.json",
+        "artifacts\\ultragoal-g005-replay\\g005-chart-replay-live.png",
+        "artifacts\\ultragoal-g005-replay\\g005-chart-replay-reference.png",
+        "artifacts\\ultragoal-g005-replay\\goal-snapshot-g005.json",
+        "artifacts\\ultragoal-g005-replay\\quality-gate-g005.json",
+        "artifacts\\ultragoal-g005-replay\\screenshot-stats.json"
+      ],
+      "directory": "artifacts\\ultragoal-g005-replay",
+      "label": "G005_REPLAY",
+      "note": "Linked read-only prior live evidence when present; this G006 gate does not call live order, broker, account, export, or WebSocket start paths.",
+      "status": "LINKED"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "artifacts": {
+    "compareScorecard": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\compare-scorecard.json",
+    "contactSheet": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\side-by-side-contact-sheet.png",
+    "domInventory": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\dom-inventory.json",
+    "forbiddenNetworkScan": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\forbidden-network-scan.json",
+    "routeVersionMatrix": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\route-version-matrix.json"
+  },
+  "generatedAt": "2026-06-30T11:56:35.175686+00:00",
+  "kind": "dashboard-v2-v3-compare-manifest",
+  "readOnly": true,
+  "schemaVersion": 1,
+  "screenshots": {
+    "01_condition_ai": {
+      "v2": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\01_condition_ai-v2.png",
+      "v3": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\01_condition_ai-v3.png"
+    },
+    "02_process": {
+      "v2": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\02_process-v2.png",
+      "v3": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\02_process-v3.png"
+    },
+    "03_history": {
+      "v2": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\03_history-v2.png",
+      "v3": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\03_history-v3.png"
+    },
+    "04_lab": {
+      "v2": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\04_lab-v2.png",
+      "v3": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\04_lab-v3.png"
+    },
+    "05_workbench": {
+      "v2": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\05_workbench-v2.png",
+      "v3": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\05_workbench-v3.png"
+    },
+    "06_decision_audit": {
+      "v2": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\06_decision_audit-v2.png",
+      "v3": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\06_decision_audit-v3.png"
+    },
+    "07_backtest": {
+      "v2": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\07_backtest-v2.png",
+      "v3": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\07_backtest-v3.png"
+    },
+    "08_chart_replay": {
+      "v2": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\08_chart_replay-v2.png",
+      "v3": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\dashboard-human-ux-v3\\tranche-4-workbench-history-v2-v3-compare\\08_chart_replay-v3.png"
+    }
+  },
+  "status": "PASS"
+}

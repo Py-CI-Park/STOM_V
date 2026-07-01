@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "kind": "api-package-test-report",
+  "goalId": "G002",
+  "verdict": "passed",
+  "checks": {
+    "sourceHasPreviewLink": true,
+    "bundleHasPreviewLink": true,
+    "indexUsesNewBundle": true,
+    "noDashboardVersionStorage": true
+  },
+  "failures": []
+}

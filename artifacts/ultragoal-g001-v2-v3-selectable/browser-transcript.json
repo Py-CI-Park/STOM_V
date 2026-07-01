@@ -1,0 +1,314 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "browser",
+  "surface": "web",
+  "goalId": "G001",
+  "baseUrl": "http://127.0.0.1:8776",
+  "viewport": "1365x768",
+  "verdict": "passed",
+  "generatedAt": "2026-06-28T21:54:21.965259+00:00",
+  "transcript": [
+    {
+      "label": "v2-default-evolution",
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "expect": "v2",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "version": "v2",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "bodyPreview": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 조건식 AI\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n운영 루프 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 히스토리·분석 워크벤치·운용 결정 이력\nevolution/overview\nROUTE\nHOME\nOWNER\n운영 루프\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\n조건식 AI LIVE MONITOR\n현재 세대 — LIVE\n—\n세대\ngen_-1 / 0\n페이즈\n—\n체크포인트\n—\n›\n진화 시작 버튼으로 루프를 개시하세요\nACTIVE STRATEGY\nsource=best\nBUY_NAME\nempty\nSEL",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v2-default-evolution.png",
+      "started": 1782683249196,
+      "ended": 1782683250355,
+      "verdict": "passed"
+    },
+    {
+      "label": "v3-selector-evolution",
+      "url": "http://127.0.0.1:8776/ui/evolution?dashboard_version=v3",
+      "expect": "v3-remodel",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "version": "v3-remodel",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "bodyPreview": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST UP\nWebSocket 연결됨\nRun Status idle\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen -1 / 목표 0\n0.0%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\n조건식 AI provenance · source: backend-derived live payload · mode: LIVE · backend: ht",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v3-selector-evolution.png",
+      "started": 1782683250355,
+      "ended": 1782683251623,
+      "verdict": "passed"
+    },
+    {
+      "label": "v2-default-after-v3-selector",
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "expect": "v2",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "version": "v2",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "bodyPreview": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 조건식 AI\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n운영 루프 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 히스토리·분석 워크벤치·운용 결정 이력\nevolution/overview\nROUTE\nHOME\nOWNER\n운영 루프\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\n조건식 AI LIVE MONITOR\n현재 세대 — LIVE\n—\n세대\ngen_-1 / 0\n페이즈\n—\n체크포인트\n—\n›\n진화 시작 버튼으로 루프를 개시하세요\nACTIVE STRATEGY\nsource=best\nBUY_NAME\nempty\nSEL",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v2-default-after-v3-selector.png",
+      "started": 1782683251623,
+      "ended": 1782683252750,
+      "verdict": "passed"
+    },
+    {
+      "label": "v3-hard-remodel-root",
+      "url": "http://127.0.0.1:8776/ui/remodel/",
+      "expect": "v3-remodel",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "version": "v3-remodel",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "bodyPreview": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST UP\nWebSocket 연결됨\nRun Status idle\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen -1 / 목표 0\n0.0%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\n조건식 AI provenance · source: backend-derived live payload · mode: LIVE · backend: ht",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v3-hard-remodel-root.png",
+      "started": 1782683252750,
+      "ended": 1782683253679,
+      "verdict": "passed"
+    },
+    {
+      "label": "v3-hard-remodel-condition",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition",
+      "expect": "v3-remodel",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "version": "v3-remodel",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "bodyPreview": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST UP\nWebSocket 연결됨\nRun Status idle\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen -1 / 목표 0\n0.0%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\n조건식 AI provenance · source: backend-derived live payload · mode: LIVE · backend: ht",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v3-hard-remodel-condition.png",
+      "started": 1782683253679,
+      "ended": 1782683254955,
+      "verdict": "passed"
+    },
+    {
+      "label": "unknown-remodel-route",
+      "url": "http://127.0.0.1:8776/ui/remodel/not-a-real-dashboard-route",
+      "expect": 404,
+      "status": 404,
+      "title": "",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/unknown-remodel-route.png",
+      "started": 1782683254955,
+      "ended": 1782683255832,
+      "verdict": "passed"
+    }
+  ],
+  "steps": [
+    {
+      "label": "v2-default-evolution",
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "expect": "v2",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "version": "v2",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "bodyPreview": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 조건식 AI\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n운영 루프 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 히스토리·분석 워크벤치·운용 결정 이력\nevolution/overview\nROUTE\nHOME\nOWNER\n운영 루프\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\n조건식 AI LIVE MONITOR\n현재 세대 — LIVE\n—\n세대\ngen_-1 / 0\n페이즈\n—\n체크포인트\n—\n›\n진화 시작 버튼으로 루프를 개시하세요\nACTIVE STRATEGY\nsource=best\nBUY_NAME\nempty\nSEL",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v2-default-evolution.png",
+      "started": 1782683249196,
+      "ended": 1782683250355,
+      "verdict": "passed"
+    },
+    {
+      "label": "v3-selector-evolution",
+      "url": "http://127.0.0.1:8776/ui/evolution?dashboard_version=v3",
+      "expect": "v3-remodel",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "version": "v3-remodel",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "bodyPreview": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST UP\nWebSocket 연결됨\nRun Status idle\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen -1 / 목표 0\n0.0%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\n조건식 AI provenance · source: backend-derived live payload · mode: LIVE · backend: ht",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v3-selector-evolution.png",
+      "started": 1782683250355,
+      "ended": 1782683251623,
+      "verdict": "passed"
+    },
+    {
+      "label": "v2-default-after-v3-selector",
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "expect": "v2",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "version": "v2",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "bodyPreview": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 조건식 AI\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n운영 루프 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 히스토리·분석 워크벤치·운용 결정 이력\nevolution/overview\nROUTE\nHOME\nOWNER\n운영 루프\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\n조건식 AI LIVE MONITOR\n현재 세대 — LIVE\n—\n세대\ngen_-1 / 0\n페이즈\n—\n체크포인트\n—\n›\n진화 시작 버튼으로 루프를 개시하세요\nACTIVE STRATEGY\nsource=best\nBUY_NAME\nempty\nSEL",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v2-default-after-v3-selector.png",
+      "started": 1782683251623,
+      "ended": 1782683252750,
+      "verdict": "passed"
+    },
+    {
+      "label": "v3-hard-remodel-root",
+      "url": "http://127.0.0.1:8776/ui/remodel/",
+      "expect": "v3-remodel",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "version": "v3-remodel",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "bodyPreview": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST UP\nWebSocket 연결됨\nRun Status idle\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen -1 / 목표 0\n0.0%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\n조건식 AI provenance · source: backend-derived live payload · mode: LIVE · backend: ht",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v3-hard-remodel-root.png",
+      "started": 1782683252750,
+      "ended": 1782683253679,
+      "verdict": "passed"
+    },
+    {
+      "label": "v3-hard-remodel-condition",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition",
+      "expect": "v3-remodel",
+      "title": "STOM AI · 조건식 AI 연구 대시보드",
+      "version": "v3-remodel",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "bodyPreview": "✺\nSTOM AI · 조건식 AI 연구 대시보드\nBackend Base URL\n재연결\nLIVE mode\nREST UP\nWebSocket 연결됨\nRun Status idle\n테마 ◐\n경계선 내 조건식 엔진 · 연구 전용\nRoute Owner Quant-Research\nBoundary local-only\nRoute Owner Quant-Research\nBoundary local-only · research-only · no live order\nEnv dev\nMode LIVE\nContract REST + WebSocket (Local)\nApproval Human Gate Required\nAudit Append-Only\n조건식 AI\n백테스트\n차트 리플레이\nLIVE\nARCHIVE\nGen -1 / 목표 0\n0.0%\nProvider STOM-AI Engine v2.3.1\nTF 1D\nrun_id R-250518-1421-7XQ9\n⚙ 설정\nStart ▶\nStop ■\n조건식 AI\n프로세스\n히스토리\n연구실\n분석 워크벤치\n결정 감사\n조건식 AI provenance · source: backend-derived live payload · mode: LIVE · backend: ht",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v3-hard-remodel-condition.png",
+      "started": 1782683253679,
+      "ended": 1782683254955,
+      "verdict": "passed"
+    },
+    {
+      "label": "unknown-remodel-route",
+      "url": "http://127.0.0.1:8776/ui/remodel/not-a-real-dashboard-route",
+      "expect": 404,
+      "status": 404,
+      "title": "",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/unknown-remodel-route.png",
+      "started": 1782683254955,
+      "ended": 1782683255832,
+      "verdict": "passed"
+    }
+  ],
+  "failures": [],
+  "persistenceProof": {
+    "selectorIsQueryOnly": true,
+    "defaultAfterSelector": {
+      "label": "v2-default-after-v3-selector",
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "expect": "v2",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "version": "v2",
+      "storage": {
+        "localStorage": {},
+        "sessionStorage": {},
+        "cookie": ""
+      },
+      "bodyPreview": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 조건식 AI\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n운영 루프 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 히스토리·분석 워크벤치·운용 결정 이력\nevolution/overview\nROUTE\nHOME\nOWNER\n운영 루프\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n-1 / 0세대\nprovider=\ntf=\nrun_id=—\n0.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\n조건식 AI LIVE MONITOR\n현재 세대 — LIVE\n—\n세대\ngen_-1 / 0\n페이즈\n—\n체크포인트\n—\n›\n진화 시작 버튼으로 루프를 개시하세요\nACTIVE STRATEGY\nsource=best\nBUY_NAME\nempty\nSEL",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v2-default-after-v3-selector.png",
+      "started": 1782683251623,
+      "ended": 1782683252750,
+      "verdict": "passed"
+    }
+  },
+  "actions": [
+    {
+      "type": "navigate",
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "started": 1782683249196,
+      "ended": 1782683250355,
+      "verdict": "passed",
+      "version": "v2",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v2-default-evolution.png",
+      "timestamp": "2026-06-28T21:47:29.196000+00:00",
+      "selector": "script[src*=\"/ui/bundle/app.js\"]",
+      "assertion": "V2 bundle present and V3 remodel script absent",
+      "statusText": "passed",
+      "status": "passed"
+    },
+    {
+      "type": "navigate",
+      "url": "http://127.0.0.1:8776/ui/evolution?dashboard_version=v3",
+      "started": 1782683250355,
+      "ended": 1782683251623,
+      "verdict": "passed",
+      "version": "v3-remodel",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v3-selector-evolution.png",
+      "timestamp": "2026-06-28T21:47:30.355000+00:00",
+      "selector": "script[src*=\"/ui/remodel/src/app.js\"]",
+      "assertion": "V3 remodel script present and V2 bundle absent",
+      "statusText": "passed",
+      "status": "passed"
+    },
+    {
+      "type": "navigate",
+      "url": "http://127.0.0.1:8776/ui/evolution",
+      "started": 1782683251623,
+      "ended": 1782683252750,
+      "verdict": "passed",
+      "version": "v2",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v2-default-after-v3-selector.png",
+      "timestamp": "2026-06-28T21:47:31.623000+00:00",
+      "selector": "script[src*=\"/ui/bundle/app.js\"]",
+      "assertion": "V2 bundle present and V3 remodel script absent",
+      "statusText": "passed",
+      "status": "passed"
+    },
+    {
+      "type": "navigate",
+      "url": "http://127.0.0.1:8776/ui/remodel/",
+      "started": 1782683252750,
+      "ended": 1782683253679,
+      "verdict": "passed",
+      "version": "v3-remodel",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v3-hard-remodel-root.png",
+      "timestamp": "2026-06-28T21:47:32.750000+00:00",
+      "selector": "script[src*=\"/ui/remodel/src/app.js\"]",
+      "assertion": "V3 remodel script present and V2 bundle absent",
+      "statusText": "passed",
+      "status": "passed"
+    },
+    {
+      "type": "navigate",
+      "url": "http://127.0.0.1:8776/ui/remodel/condition",
+      "started": 1782683253679,
+      "ended": 1782683254955,
+      "verdict": "passed",
+      "version": "v3-remodel",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/v3-hard-remodel-condition.png",
+      "timestamp": "2026-06-28T21:47:33.679000+00:00",
+      "selector": "script[src*=\"/ui/remodel/src/app.js\"]",
+      "assertion": "V3 remodel script present and V2 bundle absent",
+      "statusText": "passed",
+      "status": "passed"
+    },
+    {
+      "type": "navigate",
+      "url": "http://127.0.0.1:8776/ui/remodel/not-a-real-dashboard-route",
+      "started": 1782683254955,
+      "ended": 1782683255832,
+      "verdict": "passed",
+      "screenshot": "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/artifacts/ultragoal-g001-v2-v3-selectable/unknown-remodel-route.png",
+      "timestamp": "2026-06-28T21:47:34.955000+00:00",
+      "selector": "body",
+      "assertion": "unknown route returns 404 page",
+      "statusText": "passed",
+      "httpStatus": 404,
+      "status": "passed"
+    }
+  ]
+}

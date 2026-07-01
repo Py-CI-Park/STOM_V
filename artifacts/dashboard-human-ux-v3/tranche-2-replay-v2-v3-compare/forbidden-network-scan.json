@@ -1,0 +1,20 @@
+{
+  "allowedWebSocketPaths": [
+    "/ws"
+  ],
+  "findings": [],
+  "forbiddenUrlPatterns": [
+    "/bt/run",
+    "/bt/ws_job",
+    "/sim/ws",
+    "/order",
+    "/orders",
+    "/broker/login",
+    "/account/trade",
+    "/live_order"
+  ],
+  "generatedAt": "2026-06-30T11:09:03.371690+00:00",
+  "legacyV2Observations": [],
+  "readOnly": true,
+  "status": "PASS"
+}

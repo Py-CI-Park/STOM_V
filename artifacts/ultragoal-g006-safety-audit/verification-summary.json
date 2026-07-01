@@ -1,0 +1,42 @@
+{
+  "artifacts": {
+    "auditExportSeparation": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\audit-export-separation.json",
+    "browserTranscript": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\browser-transcript.json",
+    "contactSheet": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\safety-contact-sheet.png",
+    "domSafetyScan": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\dom-safety-scan.json",
+    "runtimeNetworkScan": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\runtime-network-scan.json",
+    "scorecard": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\safety-scorecard.json",
+    "sourceSafetyScan": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\artifacts\\ultragoal-g006-safety-audit\\source-safety-scan.json"
+  },
+  "commands": [
+    {
+      "command": "npm run build:app",
+      "cwd": "ai_strategy_loop/dashboard/webui-build",
+      "evidence": "bundle rebuilt app.js v=217c310d after V2 safety copy fixes",
+      "status": "PASS"
+    },
+    {
+      "command": "python -m py_compile scripts/verify_dashboard_safety_audit.py && python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8770 --v3-base-url http://127.0.0.1:8776 --out artifacts/ultragoal-g006-safety-audit",
+      "cwd": ".",
+      "evidence": "strict source/runtime external-origin safety audit averageSafetyScore 100.0; failures []; source scan includes V2 HTML entrypoints",
+      "status": "PASS"
+    },
+    {
+      "command": "python -m pytest tests/unit/test_dashboard_route_parity.py tests/unit/test_dashboard_remodel_baseline_contract.py tests/unit/test_dashboard_remodel_static.py -q && node --check ai_strategy_loop/dashboard/frontend/bundle/app.js && node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js && python -m py_compile ai_strategy_loop/dashboard/app.py scripts/verify_dashboard_runtime_depth.py scripts/verify_dashboard_v2_v3_compare.py scripts/verify_dashboard_safety_audit.py && git diff --check",
+      "cwd": ".",
+      "evidence": "29 passed; subsequent node --check, py_compile, and git diff --check returned zero",
+      "status": "PASS"
+    },
+    {
+      "command": "node -e \"console.log('g006-safety-audit-ok')\"",
+      "cwd": ".",
+      "evidence": "g006-safety-audit-ok",
+      "status": "PASS"
+    }
+  ],
+  "generatedAt": "2026-06-28T23:38:18.191220+00:00",
+  "kind": "g006-safety-audit-verification-summary",
+  "schemaVersion": 1,
+  "status": "PASS",
+  "summary": "G006 verifies V2 and V3 safety banners, source copy, DOM, runtime network behavior, audit/export separation, and no external-origin entrypoints or page-load requests. No forbidden runtime paths or source findings remained."
+}

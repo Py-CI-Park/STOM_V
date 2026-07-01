@@ -1,0 +1,158 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "agent://143-G003ReplayArchArtifacts reviewed target-worktree source and artifacts: quick-start controls, manual /sim/ws gating, task frame, compact safety strip, primary candle chart, selected-bar/signal-log synchronization, browser transcript+screenshot, V2/V3 compare PASS, safety PASS.",
+    "commands": [
+      "architect review: agent://143-G003ReplayArchArtifacts"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "agent://144-G003ReplayQaArtifacts inspected source, static tests, scorecards, browser transcript, and screenshot. It found no remaining blockers: all replay selectors present, selected-bar and signal-log agree, /sim/ws has no auto-open, forbidden live controls count is zero, safety markers visible, compare/safety/UX scorecards pass.",
+    "e2eCommands": [
+      "browser evidence captured for /ui/remodel/chart-replay?demo=reference",
+      "python scripts/verify_dashboard_human_ux_rubric.py --pages chart_replay --min-v3-score 86 --min-delta 5"
+    ],
+    "redTeamCommands": [
+      "executor QA red-team: agent://144-G003ReplayQaArtifacts",
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-2-replay-v2-v3-compare --timeout-ms 60000",
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-2-replay-safety-audit --timeout-ms 60000"
+    ],
+    "artifactRefs": [
+      {
+        "id": "replay-ux-scorecard",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-2-replay/scorecard.json",
+        "description": "Human UX replay scorecard PASS, mean V3 score 98.5 and mean named delta 35.06."
+      },
+      {
+        "id": "replay-browser-run",
+        "kind": "browser-automation-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-2-replay/browser-replay-evidence.json",
+        "description": "Browser automation transcript with navigate/evaluate/screenshot actions, monotonic timestamps, selectors, and forbiddenLiveControls 0."
+      },
+      {
+        "id": "replay-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-2-replay/browser-replay-viewport.png",
+        "description": "Non-uniform screenshot evidence for the Chart Replay V3 primary surface."
+      },
+      {
+        "id": "replay-compare",
+        "kind": "route-compare-test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-2-replay-v2-v3-compare/compare-scorecard.json",
+        "description": "V2/V3 compare PASS, average corrected total 100.0, chart replay route/assets clean."
+      },
+      {
+        "id": "replay-safety",
+        "kind": "safety-test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-2-replay-safety-audit/safety-scorecard.json",
+        "description": "Safety audit PASS, average safety score 100.0."
+      },
+      {
+        "id": "replay-verification-report",
+        "kind": "test-report",
+        "path": "artifacts/dashboard-human-ux-v3/tranche-2-replay-verification-report.json",
+        "description": "G003 verification summary with commands, artifacts, and review ids."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-replay-quick-start",
+        "contractRef": "G003 Chart Replay redesign",
+        "obligation": "Expose V2-like quick-start/date/symbol/strategy/playback/timeline flow in explicit V3.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-web-replay"],
+        "adversarialCaseRefs": ["case-route-regression"]
+      },
+      {
+        "id": "contract-replay-safety",
+        "contractRef": "G003 replay safety",
+        "obligation": "No auto /sim/ws, no live order, no broker login, no account trading; replay controls manual-gated.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-web-replay", "surface-safety-audit"],
+        "adversarialCaseRefs": ["case-auto-sim-ws", "case-live-controls"]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-replay",
+        "contractRef": "G003 Chart Replay web surface",
+        "surface": "web",
+        "invocation": "Browser opened http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference, evaluated required selectors, and saved screenshot.",
+        "verdict": "passed",
+        "artifactRefs": ["replay-browser-run", "replay-screenshot"]
+      },
+      {
+        "id": "surface-ux-rubric",
+        "contractRef": "G003 human UX rubric",
+        "surface": "api/package",
+        "invocation": "python scripts/verify_dashboard_human_ux_rubric.py --pages chart_replay --min-v3-score 86 --min-delta 5",
+        "verdict": "passed",
+        "artifactRefs": ["replay-ux-scorecard"]
+      },
+      {
+        "id": "surface-v2-v3-compare",
+        "contractRef": "V2 default / V3 explicit route contract",
+        "surface": "api/package",
+        "invocation": "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-2-replay-v2-v3-compare --timeout-ms 60000",
+        "verdict": "passed",
+        "artifactRefs": ["replay-compare"]
+      },
+      {
+        "id": "surface-safety-audit",
+        "contractRef": "Dashboard safety contract",
+        "surface": "api/package",
+        "invocation": "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-2-replay-safety-audit --timeout-ms 60000",
+        "verdict": "passed",
+        "artifactRefs": ["replay-safety"]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-auto-sim-ws",
+        "contractRef": "G003 /sim/ws safety",
+        "scenario": "Replay route automatically opens /sim/ws or starts live playback on page load.",
+        "expectedBehavior": "No /sim/ws WebSocket/request appears; controls are manual-gated only.",
+        "verdict": "passed",
+        "artifactRefs": ["replay-browser-run", "replay-safety"]
+      },
+      {
+        "id": "case-live-controls",
+        "contractRef": "G003 forbidden live controls",
+        "scenario": "Replay UI exposes live order, broker login, or account trade controls.",
+        "expectedBehavior": "Forbidden live controls count is zero and safety markers remain visible.",
+        "verdict": "passed",
+        "artifactRefs": ["replay-browser-run", "replay-safety"]
+      },
+      {
+        "id": "case-route-regression",
+        "contractRef": "V2/V3 route identity",
+        "scenario": "V2 loads V3 assets or explicit V3 loads V2 assets.",
+        "expectedBehavior": "Compare gate reports route/assets clean and no hard failures.",
+        "verdict": "passed",
+        "artifactRefs": ["replay-compare"]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Initial review blockers were resolved: quick-start controls were added, selected-bar time/price now derive from selectedSignal, candle labels use time or t, browser transcript and screenshot were copied into the target worktree, focused tests and G003 gates were rerun cleanly, and final architect/QA reviews are clean.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+      "python -m pytest tests/unit/test_dashboard_remodel_static.py tests/unit/test_dashboard_human_ux_rubric.py tests/unit/test_dashboard_route_parity.py -q",
+      "python scripts/verify_dashboard_human_ux_rubric.py --pages chart_replay --min-v3-score 86 --min-delta 5",
+      "python scripts/verify_dashboard_v2_v3_compare.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-2-replay-v2-v3-compare --timeout-ms 60000",
+      "python scripts/verify_dashboard_safety_audit.py --v2-base-url http://127.0.0.1:8776 --v3-base-url http://127.0.0.1:8776 --out artifacts/dashboard-human-ux-v3/tranche-2-replay-safety-audit --timeout-ms 60000"
+    ],
+    "blockers": []
+  }
+}

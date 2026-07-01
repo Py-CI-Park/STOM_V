@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "capturedAt": "2026-06-27T15:15:36.963Z",
+  "route": "/ui/remodel/backtest",
+  "title": "STOM AI · 조건식 AI 연구 대시보드 · Remodel",
+  "strategyDb": "C:/System_Trading/STOM/STOM_V.wt-dev/_database/strategy.db (read-only evidence server env)",
+  "editState": {
+    "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+    "activeTab": "backtest",
+    "btSubtab": "edit",
+    "textSample": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n📊 백테스트\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n검증 실행 · 조건식 백테스트 실행·결과 조회\n비소유: 진화 루프 최종 승인·운용 결정 기록\nbacktest\nROUTE\nBT\nOWNER\n검증 실행\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n백테스트 워크벤치\n● connected · api v1\n모드\n백테스트\n최적화\nWFO\n스윕\n매수 조건식\n— 선택 —\n20250715_Study\n20250715_Study_B_2\n20250720_Study_B\n20250720_Study_B_2\nAutoResearchBaselineCompare_20260418_T6\nAutoResearchInspect_20260418_T6\nAuto_B_Generalize_aggressive_top2_single_round_1773392300\nAuto_B_Generalize_balanced_top1_multi_round_1773392368\nAuto_B_Generalize_control_aggressive_top1_single_round_1773392228\nAuto_B_MergedPilot_1773391663\nAuto_B_Pilot01\nAuto_B_PilotSlice01\nAuto_B_TestRun_20260315\nC_S_3_B_902_Min\nC_T_900_920_STUDY_B\nC_T_900_920_U2_B\nC_T_900_920_U2_B_FS\nC_T_902_905_U3_B\nMin_B_Study_250824\nMin_B_Study_250831\nMin_B_Study_250907\nMin_B_Study_251225\nMin_B_Study_251227\nMin_B_Study_251227_Filter\nMin_B_Study_251227_Filtered\nMin_B_Study_251227_Filtered2\nMin_B_Study_251227_ICOS_Filtered\nMin_B_Study_251229\nResearchTest_Tick_B_090000_092800_Wide_20260419\nTest_Min_B_20250713_2\nTick_B_902\nTick_B_902_905\nTick_B_902_905_2\nTick_B_902_905_Study\nTick_B_902_905_Study_2\nTick_B_902_905_Update\nTick_B_902_905_Update_2\nTick_B_902_905_Update_2_Study\nTick_B_902_Study\nTick_B_902_Study_2\nTick_B_902_Update\nTick_B_902_Update_2\nTick_B_902_v2_Study\nTick_B_905\nTick_B_905910_Study\nTick_B_905_915_LT\nTick_B_905_Study\nTick_B_905_Update\nTick_B_910\nTick_B_910_930_RB\nTick_B_930_Dev\nWideV1Final_B_20260425\nWideV1IterationV2_20260423__cand005\nWideV1IterationV3_20260423__cand001\nWideV1IterationV5CheckpointSmoke_20260425__cand001\nWideV1IterationV5Recovery_20260425__cand001\nWideV1IterationV5Recovery_20260425__cand002\nWideV1IterationV5Recovery_20260425__cand003\nWideV1IterationV5Recovery_20260425__cand004\nWideV1IterationV5Recovery_20260425__cand005\nWideV1IterationV5Recovery_20260425__cand006\nWideV1IterationV5Recovery_20260425__cand007\nWideV1IterationV5Recovery_20260425__cand008\nWideV1IterationV5Recovery_20260425__cand009\nWideV1IterationV5Recovery_20260425__cand010\nWideV1IterationV5Recovery_20260425__cand011\nWideV1IterationV5Recovery_20260425__cand012\nWideV1IterationV5Recovery_20260425__cand013\nWideV1IterationV5Recovery_20260425__cand014\nWideV1IterationV5Recovery_20260425__cand015\nWideV1IterationV5Recovery_20260425__cand016\nWideV1IterationV5Recovery_20260425__cand017\nWideV1IterationV5_20260424__cand001\nWideV1IterationV5_20260424__cand002\nWideV1IterationV5_20260424__cand003\nWideV1IterationV5_20260424__cand004\nWideV1IterationV5_20260424__cand005\nWideV1IterationV5_20260424__cand006\nWideV1IterationV5_20260424__cand008\nWideV1RetentionCand5_20260422__cand003\nWideV2Final_B_20260428\nWideV2V5DirectV4ShortfallRecovery_20260428__round001__cand007\nWideV2V5NextSeedRecoverySmoke_20260428__round001__cand003\nWideV2V5NextSeedRecoverySmoke_20260428__round002__cand003\nWideV2V5RecoverySmoke_20260428__round001__cand003\n__AUTO_TMP__Auto_B_Pilot01_1773230899792\n__AUTO_TMP__Auto_B_Pilot01_1773231079685\n__AUTO_TMP__Auto_B_PilotSlice01_1773231391970\n매도 조건식\n— 선택 —\n20250715_Study_S\n20250715_Study_S_2\n20250720_Study_S\n20250720_Study_S_2\nC_S_3_S_902_Min\nC_T_900_920_STUDY_S\nC_T_900_920_U2_S\nC_T_900_920_U2_S_FS\nC_T_902_905_U3_S\nMin_S_Study_250824\nMin_S_Study_250831\nMin_S_Study_250907\nMin_S_Study_251225\nMin_S_Study_251226\nMin_S_Study_251227\nMin_S_Study_251227_Filtered\nResearchTest_Tick_S_090000_092800_Wide_20260419\nTest_Min_S_20250713_2\nTick_S_902\nTick_S_902_905\nTick_S_902_905_2\nTick_S_902_905_Study\nTick_S_902_905_Update\nTick_S_902_905_Update_2\nTick_S_902_905_Update_2_Study\nTick_S_902_Study\nTick_S_902_Update\nTick_S_902_v2_Study\nTick_S_905\nTick_S_905910_Study\nTick_S_905_915_LT\nTick_S_905_Study\nTick_S_905_Update\nTick_S_910\nTick_S_910_930_RB\nTick_S_930_Dev\n시작 (YYYYMMDD)\n종료 (YYYYMMDD)\n시간단위\n분봉 (min)\n틱 (tick)\n엔진 수\n▸ 백테스트 실행\n↻ 이력\nself.vars → 스윕 빌더\n가용 min: 일일DB 0일\n조건식 편집\n결과 분석\n에디터 보기\n매수·매도 동시\n매수만 크게\n매도만 크게\n매수 에디터\n1줄\n사용 변수 칩 — 코드 입력 시 한글 변수가 SSOT 대조되어 표시됩니다.\n검증\n저장\n다른 이름으로\n매도 에디터\n1줄\n사용 변수 칩 — 코드 입력 시 한글 변수가 SSOT 대조되어 표시됩니다.\n검증\n저장\n다른 이름으로\n조건식 라이브러리(빠른 선택)\n▾ 접기\n조건식 라이브러리\n매수\n↻\n20250715_Study\nAILOOP\n# 장초 30분 이내, 이동평균 정배열, RSI 반등, 체결강도 증가, 거래대금 급등 시 매수\n20250715_Study_B_2\nAILOOP\n# 장중 급등 전략 - 20분봉 최고가 돌파, RSI 상승, 체결강도 증가, 거래대금 급등 시 매수\n20250720_Study_B\nAILOOP\n# 분봉 기반 변수 정의\n20250720_Study_B_2\nAILOOP\n# 분봉 기반 변수 정의\nAutoResearchBaselineCompare_20260418_T6\n# 분봉 기반 변수 정의\nAutoResearchInspect_20260418_T6\n# 분봉 기반 변수 정의\nAuto_B_Generalize_aggressive_top2_single_round_1773392300\nAILOOP\n# 분봉 기반 변수 정의\nAuto_B_Generalize_balanced_top1_multi_round_1773392368\nAILOOP\n# 분봉 기반 변수 정의\nAuto_B_Generalize_control_aggressive_top1_single_round_1773392228\nAILOOP\n# 분봉 기반 변수 정의\nAuto_B_MergedPilot_1773391663\nAILOOP\n# 분봉 기반 변수 정의\nAuto_B_Pilot01\nAILOOP\n# Auto_B_Pilot01 - 자동 생성 분봉 매수 전략\nAuto_B_PilotSlice01\nAILOOP\n# Auto_B_PilotSlice01 - 자동 생성 분봉 매수 전략\nAuto_B_TestRun_20260315\nAILOOP\n# 분봉 기반 변수 정의\nC_S_3_B_902_Min\n# 분봉 기반 변수 정의\nC_T_900_920_STUDY_B\n# ================================\nC_T_900_92",
+    "markers": {
+      "workbench": true,
+      "edit": true,
+      "buyEditor": true,
+      "sellEditor": true,
+      "library": true,
+      "backfinder": true,
+      "variables": true,
+      "sweepBuilder": true,
+      "hasBuyStrategies": true,
+      "hasSellStrategies": true
+    },
+    "forbidden": []
+  },
+  "resultState": {
+    "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+    "activeTab": "backtest",
+    "btSubtab": "result",
+    "textSample": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n📊 백테스트\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n검증 실행 · 조건식 백테스트 실행·결과 조회\n비소유: 진화 루프 최종 승인·운용 결정 기록\nbacktest\nROUTE\nBT\nOWNER\n검증 실행\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n백테스트 워크벤치\n● connected · api v1\n모드\n백테스트\n최적화\nWFO\n스윕\n매수 조건식\n— 선택 —\n20250715_Study\n20250715_Study_B_2\n20250720_Study_B\n20250720_Study_B_2\nAutoResearchBaselineCompare_20260418_T6\nAutoResearchInspect_20260418_T6\nAuto_B_Generalize_aggressive_top2_single_round_1773392300\nAuto_B_Generalize_balanced_top1_multi_round_1773392368\nAuto_B_Generalize_control_aggressive_top1_single_round_1773392228\nAuto_B_MergedPilot_1773391663\nAuto_B_Pilot01\nAuto_B_PilotSlice01\nAuto_B_TestRun_20260315\nC_S_3_B_902_Min\nC_T_900_920_STUDY_B\nC_T_900_920_U2_B\nC_T_900_920_U2_B_FS\nC_T_902_905_U3_B\nMin_B_Study_250824\nMin_B_Study_250831\nMin_B_Study_250907\nMin_B_Study_251225\nMin_B_Study_251227\nMin_B_Study_251227_Filter\nMin_B_Study_251227_Filtered\nMin_B_Study_251227_Filtered2\nMin_B_Study_251227_ICOS_Filtered\nMin_B_Study_251229\nResearchTest_Tick_B_090000_092800_Wide_20260419\nTest_Min_B_20250713_2\nTick_B_902\nTick_B_902_905\nTick_B_902_905_2\nTick_B_902_905_Study\nTick_B_902_905_Study_2\nTick_B_902_905_Update\nTick_B_902_905_Update_2\nTick_B_902_905_Update_2_Study\nTick_B_902_Study\nTick_B_902_Study_2\nTick_B_902_Update\nTick_B_902_Update_2\nTick_B_902_v2_Study\nTick_B_905\nTick_B_905910_Study\nTick_B_905_915_LT\nTick_B_905_Study\nTick_B_905_Update\nTick_B_910\nTick_B_910_930_RB\nTick_B_930_Dev\nWideV1Final_B_20260425\nWideV1IterationV2_20260423__cand005\nWideV1IterationV3_20260423__cand001\nWideV1IterationV5CheckpointSmoke_20260425__cand001\nWideV1IterationV5Recovery_20260425__cand001\nWideV1IterationV5Recovery_20260425__cand002\nWideV1IterationV5Recovery_20260425__cand003\nWideV1IterationV5Recovery_20260425__cand004\nWideV1IterationV5Recovery_20260425__cand005\nWideV1IterationV5Recovery_20260425__cand006\nWideV1IterationV5Recovery_20260425__cand007\nWideV1IterationV5Recovery_20260425__cand008\nWideV1IterationV5Recovery_20260425__cand009\nWideV1IterationV5Recovery_20260425__cand010\nWideV1IterationV5Recovery_20260425__cand011\nWideV1IterationV5Recovery_20260425__cand012\nWideV1IterationV5Recovery_20260425__cand013\nWideV1IterationV5Recovery_20260425__cand014\nWideV1IterationV5Recovery_20260425__cand015\nWideV1IterationV5Recovery_20260425__cand016\nWideV1IterationV5Recovery_20260425__cand017\nWideV1IterationV5_20260424__cand001\nWideV1IterationV5_20260424__cand002\nWideV1IterationV5_20260424__cand003\nWideV1IterationV5_20260424__cand004\nWideV1IterationV5_20260424__cand005\nWideV1IterationV5_20260424__cand006\nWideV1IterationV5_20260424__cand008\nWideV1RetentionCand5_20260422__cand003\nWideV2Final_B_20260428\nWideV2V5DirectV4ShortfallRecovery_20260428__round001__cand007\nWideV2V5NextSeedRecoverySmoke_20260428__round001__cand003\nWideV2V5NextSeedRecoverySmoke_20260428__round002__cand003\nWideV2V5RecoverySmoke_20260428__round001__cand003\n__AUTO_TMP__Auto_B_Pilot01_1773230899792\n__AUTO_TMP__Auto_B_Pilot01_1773231079685\n__AUTO_TMP__Auto_B_PilotSlice01_1773231391970\n매도 조건식\n— 선택 —\n20250715_Study_S\n20250715_Study_S_2\n20250720_Study_S\n20250720_Study_S_2\nC_S_3_S_902_Min\nC_T_900_920_STUDY_S\nC_T_900_920_U2_S\nC_T_900_920_U2_S_FS\nC_T_902_905_U3_S\nMin_S_Study_250824\nMin_S_Study_250831\nMin_S_Study_250907\nMin_S_Study_251225\nMin_S_Study_251226\nMin_S_Study_251227\nMin_S_Study_251227_Filtered\nResearchTest_Tick_S_090000_092800_Wide_20260419\nTest_Min_S_20250713_2\nTick_S_902\nTick_S_902_905\nTick_S_902_905_2\nTick_S_902_905_Study\nTick_S_902_905_Update\nTick_S_902_905_Update_2\nTick_S_902_905_Update_2_Study\nTick_S_902_Study\nTick_S_902_Update\nTick_S_902_v2_Study\nTick_S_905\nTick_S_905910_Study\nTick_S_905_915_LT\nTick_S_905_Study\nTick_S_905_Update\nTick_S_910\nTick_S_910_930_RB\nTick_S_930_Dev\n시작 (YYYYMMDD)\n종료 (YYYYMMDD)\n시간단위\n분봉 (min)\n틱 (tick)\n엔진 수\n▸ 백테스트 실행\n↻ 이력\nself.vars → 스윕 빌더\n가용 min: 일일DB 0일\n조건식 편집\n결과 분석\n결과 라이브러리\n6/6\n↻\n★ 즐겨찾기\n☆\n취소됨\n20260628_000058_기존매수_58526\n—\n재실행\n🏷\nevidence job:20260628_000058_기존매수_58526 · terminal_without_openable_artifact · condition high\n☆\n추적불가\n20260628_000056_기존매수_56343\n14m 38s\n복구\n재실행\n🏷\nevidence job:20260628_000056_기존매수_56343 · lost_tracking · condition high\n☆\n취소됨\n20260627_133018_기존매수_18105\n11s\n재실행\n🏷\nevidence job:20260627_133018_기존매수_18105 · terminal_without_openable_artifact · condition high\n☆\n취소됨\n20260627_133006_기존매수_6430\n12s\n재실행\n🏷\nevidence job:20260627_133006_기존매수_6430 · terminal_without_openable_artifact · condition high\n☆\n취소됨\n20260627_132536_기존매수_36160\n12s\n재실행\n🏷\nevidence job:20260627_132536_기존매수_36160 · terminal_without_openable_artifact · condition high\n☆\n취소됨\n20260627_132523_기존매수_23936\n12s\n재실행\n🏷\nevidence job:20260627_132523_기존매수_23936 · terminal_without_openable_artifact · condition high\n예시 데이터\n핵심 메트릭\n⊕ 비교 기준(A)\n⬇ CSV\n⛶ 전체화면 분석\n↻\n거래수\n180\n승률\n55.00%\n수익률합계\n38.65%\n수익금\n+1,707,840원\nMDD\n417.60%\nCAGR\n—\n누적수익곡선 · 일별손익\n일이익 ₩\n일손실 ₩\n누적수익 ₩\n휠 = 시간축 줌 · 드래그 = 팬\nShift+드래그 = 구간 선택 → 구간 분석\n크로스헤어로 일별 값 확인\n최종 누적\n+1,707,840원\n누적 고점\n+1,707,840원\n거래일수\n80\n0\n28만\n-11",
+    "markers": {
+      "resultLibrary": true,
+      "jobLifecycle": true,
+      "metrics": true,
+      "equity": true,
+      "distribution": true,
+      "heatmap": true,
+      "underwater": true,
+      "maeMfe": true,
+      "orderflow": true,
+      "guiParity": true,
+      "evo": true,
+      "overlay": true,
+      "portfolio": true
+    },
+    "forbidden": []
+  },
+  "responses": [
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/styles/theme.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/stom-ui.js?v=f41f5701",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/bundle/app.js?v=91fec92d",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/ui/remodel/remodel-bootstrap.js?v=20260627g002",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/jobs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/health",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/strategies?kind=sell",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/strategies?kind=buy",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/status",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/runs",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/result?job_id=__demo__",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/data_range",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/strategies?kind=sell",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/strategies?kind=buy",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/result?job_id=__demo__",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:8776/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+      "status": 200,
+      "ok": true
+    }
+  ],
+  "screenshots": [
+    "artifacts/ultragoal-g003-backtest/backtest-edit-tab-devdb.png",
+    "artifacts/ultragoal-g003-backtest/backtest-result-tab-devdb.png"
+  ],
+  "tool": "browser",
+  "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+  "actions": [
+    {
+      "type": "navigate",
+      "timestamp": "2026-06-27T15:15:30Z",
+      "url": "http://127.0.0.1:8776/ui/remodel/backtest",
+      "selector": "document",
+      "verdict": "passed",
+      "result": "remained under /ui/remodel/backtest and production BacktestTab workbench loaded"
+    },
+    {
+      "type": "click",
+      "timestamp": "2026-06-27T15:15:32Z",
+      "selector": "button:has-text(\"조건식 편집\")",
+      "verdict": "passed",
+      "result": "edit tab showed buy/sell editors, populated libraries, variables, sweep builder, and BackFinder section"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-27T15:15:33Z",
+      "selector": "viewport",
+      "path": "artifacts/ultragoal-g003-backtest/backtest-edit-tab-devdb.png",
+      "verdict": "passed"
+    },
+    {
+      "type": "click",
+      "timestamp": "2026-06-27T15:15:34Z",
+      "selector": "button:has-text(\"결과 분석\")",
+      "verdict": "passed",
+      "result": "result tab showed result library, labelled demo empty-state, charts, GUI parity, evo, overlay, and portfolio sections"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": "2026-06-27T15:15:36Z",
+      "selector": "viewport",
+      "path": "artifacts/ultragoal-g003-backtest/backtest-result-tab-devdb.png",
+      "verdict": "passed"
+    }
+  ]
+}

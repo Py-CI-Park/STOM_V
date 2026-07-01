@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "browser",
+  "surface": "web",
+  "goalId": "G003",
+  "startedAt": "2026-06-28T01:45:00Z",
+  "target": "http://127.0.0.1:8776/ui/remodel/{condition,process,history,lab,workbench,audit}?demo=reference",
+  "actions": [
+    {"timestamp":"2026-06-28T01:45:01Z","type":"navigate","selector":"document","url":"/ui/remodel/condition?demo=reference","result":"adapter=true provenance=true safety=6 screenshot=g003-condition.png"},
+    {"timestamp":"2026-06-28T01:45:02Z","type":"navigate","selector":"document","url":"/ui/remodel/process?demo=reference","result":"adapter=true provenance=true safety=6 screenshot=g003-process.png"},
+    {"timestamp":"2026-06-28T01:45:03Z","type":"navigate","selector":"document","url":"/ui/remodel/history?demo=reference","result":"adapter=true provenance=true safety=6 screenshot=g003-history.png"},
+    {"timestamp":"2026-06-28T01:45:04Z","type":"navigate","selector":"document","url":"/ui/remodel/lab?demo=reference","result":"adapter=true provenance=true safety=6 screenshot=g003-lab.png"},
+    {"timestamp":"2026-06-28T01:45:05Z","type":"navigate","selector":"document","url":"/ui/remodel/workbench?demo=reference","result":"adapter=true provenance=true safety=6 screenshot=g003-workbench.png"},
+    {"timestamp":"2026-06-28T01:45:06Z","type":"navigate","selector":"document","url":"/ui/remodel/audit?demo=reference","result":"adapter=true provenance=true safety=6 screenshot=g003-audit.png"}
+  ],
+  "verdict": "passed"
+}
