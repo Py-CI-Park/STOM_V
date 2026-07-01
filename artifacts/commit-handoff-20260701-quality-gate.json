@@ -34,7 +34,7 @@
         "id": "commit-handoff-cli-replay",
         "kind": "command-replay",
         "path": "artifacts/commit-handoff-20260701-cli-replay.json",
-        "description": "Replay-safe git rev-parse HEAD command showing final verification-gate commit e589e114."
+        "description": "Replay-safe git rev-parse e589e114 command showing the committed verification-gate artifact commit."
       },
       {
         "id": "process-research-backtest-receipts",
@@ -88,7 +88,7 @@
         "id": "surface-cli",
         "contractRef": "Git state and replay-safe command evidence",
         "surface": "cli",
-        "invocation": "git rev-parse HEAD replay and git diff/protected-path checks",
+        "invocation": "git rev-parse e589e114 replay and git diff/protected-path checks",
         "verdict": "passed",
         "artifactRefs": ["commit-handoff-cli-replay", "commit-handoff-verification-summary"]
       },

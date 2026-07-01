@@ -2,6 +2,6 @@
   "schemaVersion": 1,
   "kind": "cli-replay",
   "replaySafe": true,
-  "command": ["git", "rev-parse", "HEAD"],
+  "command": ["git", "rev-parse", "e589e114"],
   "recordedStdout": "e589e1148d0b34ff75da1d855fff5b1392143d21\n"
 }
