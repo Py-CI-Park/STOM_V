@@ -165,6 +165,19 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
   const persistenceRows = (feedback?.persistence?.items) || [];
   const hypotheses = (feedback?.hypotheses?.items) || [];
   const patternCards = (feedback?.pattern_cards?.items) || [];
+  const observability = discovery.research_observability || {};
+  const modeAuthority = observability.mode_authority || {};
+  const contextPackHealth = observability.context_pack_health || {};
+  const branchTree = Array.isArray(observability.branch_tree) ? observability.branch_tree : [];
+  const candidatePack = observability.candidate_pack || {};
+  const analysisCards = observability.analysis_cards || {};
+  const promptReceipts = observability.prompt_receipts || {};
+  const promotionBlockers = observability.promotion_blockers || {};
+  const contextFields = contextPackHealth.required_fields || [];
+  const candidateFields = candidatePack.required_fields || [];
+  const analysisFields = analysisCards.required_fields || [];
+  const promptFields = promptReceipts.required_fields || [];
+  const blockerItems = promotionBlockers.blockers || [];
 
   return (
     <div className="panel condition-discovery-panel">
@@ -217,6 +230,73 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
             <b>{authority.promotion_review_ready ? "review-ready" : "blocked"}</b>
             <small>score_can_promote={String(authority.score_can_promote === true)}</small>
           </div>
+        </div>
+
+        <div className="condition-discovery-grid research-observability-grid" aria-label="Research Pack Branch Tree">
+          <section>
+            <h4>Research Pack / Branch Tree</h4>
+            <div className="condition-discovery-row">
+              <span>mode authority</span>
+              <b>{modeAuthority.generation_allowed === true ? "research generation allowed" : (modeAuthority.generation_allowed === false ? "zero-generation review" : "authority pending/blocked")}</b>
+              <small>{modeAuthority.process || discovery.current_process?.code || "process"} · {modeAuthority.preset || discovery.preset}</small>
+            </div>
+            <div className="condition-discovery-note">
+              context pack health: {contextPackHealth.status || "pending"} · budget≤{contextPackHealth.fail_closed_budget_tokens || 250000}
+            </div>
+            <div className="condition-discovery-pillrow">
+              {contextFields.map(field => <_CdPill key={field} label={field} tone="info" />)}
+            </div>
+            {branchTree.length > 0 && (
+              <ol className="condition-discovery-note" style={{ margin: "8px 0 0", paddingLeft: 18 }}>
+                {branchTree.map(step => (
+                  <li key={step.step}><b>{step.step}</b> → {step.output}</li>
+                ))}
+              </ol>
+            )}
+          </section>
+
+          <section>
+            <h4>Candidate pack · Analysis cards</h4>
+            <div className="condition-discovery-row">
+              <span>candidate pack</span>
+              <b>{candidatePack.recommended_candidates || "2-3+"}</b>
+              <small>min {candidatePack.min_candidates || 2} · fallback {candidatePack.fallback_source || "diagnostic fallback"}</small>
+            </div>
+            <div className="condition-discovery-pillrow">
+              {candidateFields.map(field => <_CdPill key={field} label={field} tone="success" />)}
+            </div>
+            <div className="condition-discovery-row">
+              <span>analysis cards</span>
+              <b>{analysisCards.schema || "analysis_card_v2"}</b>
+              <small>{analysisFields.join(" · ") || "root cause / segment contribution / insight score"}</small>
+            </div>
+          </section>
+
+          <section>
+            <h4>Prompt receipts · Fallback</h4>
+            <div className="condition-discovery-row">
+              <span>prompt receipts</span>
+              <b>{promptReceipts.prompt_maturity_authority || "research_prompt_maturity_only"}</b>
+              <small>{promptFields.join(" · ") || "downstream official backtest result required"}</small>
+            </div>
+            <div className="condition-discovery-note">
+              fallback status: deterministic filter-only 후보는 diagnostic fallback으로만 표시되고 prompt maturity credit은 0입니다.
+            </div>
+          </section>
+
+          <section>
+            <h4>Promotion blockers</h4>
+            <div className="condition-discovery-row">
+              <span>promotion-review</span>
+              <b>{promotionBlockers.generation_allowed === false ? "zero generation" : "research only"}</b>
+              <small>{promotionBlockers.authority || "fresh/frozen holdout · OOS/WF · slippage advisory required"}</small>
+            </div>
+            <div className="condition-discovery-pillrow">
+              {blockerItems.length === 0 ? (
+                <_CdPill label="blockers pending" tone="info" />
+              ) : blockerItems.map(blocker => <_CdPill key={blocker} label={blocker} tone="danger" />)}
+            </div>
+          </section>
         </div>
 
         <div className="condition-discovery-grid">

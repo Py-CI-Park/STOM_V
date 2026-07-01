@@ -10,9 +10,12 @@ CRITICAL: 상위 프록시 API는 system 메시지를 필수로 요구한다 (�
 
 from __future__ import annotations
 
+import hashlib
+import json
+import math
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
 from .time_cap_bucket import time_cap_bucket_prompt_lines
 
@@ -20,8 +23,17 @@ from .time_cap_bucket import time_cap_bucket_prompt_lines
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _ASSET_DIR = _REPO_ROOT / "utility" / "ai_agent" / "system_prompt" / "v1"
 
-# system 메시지에 이어붙일 자산 순서 (examples.md는 길어서 system_prompt가 참조로 안내).
+# system 메시지에 이어붙일 자산 순서 (examples.md는 연구 Context Pack에 전체 포함).
 _SYSTEM_ASSETS = ("system_prompt.md", "variables_reference.md", "forbidden.md")
+_FULL_STOM_SOURCE_ASSETS = (
+    ("strategy", _REPO_ROOT / "utility" / "ai_agent" / "strategy.txt"),
+    ("rules", _REPO_ROOT / "utility" / "ai_agent" / "rules.txt"),
+    ("system_prompt", _ASSET_DIR / "system_prompt.md"),
+    ("variables_reference", _ASSET_DIR / "variables_reference.md"),
+    ("forbidden", _ASSET_DIR / "forbidden.md"),
+    ("examples", _ASSET_DIR / "examples.md"),
+)
+MAX_RESEARCH_CONTEXT_PACK_TOKENS = 250_000
 
 _VALID_KINDS = ("buy", "sell")
 _VALID_TIMEFRAMES = ("min", "tick")
@@ -32,7 +44,66 @@ _FENCE_RE = re.compile(
     re.DOTALL | re.IGNORECASE,
 )
 
+# Strict research-generation responses must use an explicit python/py fence; the
+# legacy extract_code path still accepts bare fences for backward compatibility.
+_STRICT_PYTHON_FENCE_RE = re.compile(
+    r"```(?:python|py)\s*\n(.*?)```",
+    re.DOTALL | re.IGNORECASE,
+)
 
+_JSON_FENCE_RE = re.compile(
+    r"```(?:json)?\s*\n(\{.*?\})\s*```",
+    re.DOTALL | re.IGNORECASE,
+)
+
+REPAIR_RESEARCH_PROMPT_VERSION = "repair_v1_analysis_card_single_axis"
+DISCOVERY_RESEARCH_PROMPT_VERSION = "discovery_v1_gap_novelty_single_candidate"
+_RESEARCH_PROMPT_VERSIONS = (REPAIR_RESEARCH_PROMPT_VERSION, DISCOVERY_RESEARCH_PROMPT_VERSION)
+_RESEARCH_LANES = ("repair", "discovery")
+_DOWNSTREAM_RESULTS = ("improved", "degraded", "rejected", "invalid", "not_evaluated", "neutral")
+_PROHIBITED_RESEARCH_METADATA_KEYS = frozenset({
+    "can_promote",
+    "can_export",
+    "can_live",
+    "can_final_promote",
+    "promotion_eligible",
+    "promotion_claim",
+    "export_eligible",
+    "live_eligible",
+    "final_promotion",
+    "production_ready",
+})
+_LEAKY_RESEARCH_CODE_PREFIXES = ("R_", "S_")
+
+
+
+
+def _sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _estimate_text_tokens(text: str) -> int:
+    """Conservative rendered-payload token estimate for fail-closed research prompts."""
+
+    if not text:
+        return 0
+    # Korean/STOM prompts mix Hangul, identifiers, JSON and code. Character/2 is a
+    # conservative approximation for budget enforcement; exact tokenizer coupling
+    # would make this library depend on a provider implementation.
+    return int(math.ceil(len(text) / 2))
+
+
+def _read_context_asset(name: str, path: Path) -> Dict[str, Any]:
+    content = path.read_text(encoding="utf-8")
+    rel_path = path.relative_to(_REPO_ROOT).as_posix()
+    return {
+        "name": name,
+        "path": rel_path,
+        "content": content,
+        "sha256": _sha256_text(content),
+        "bytes": len(content.encode("utf-8")),
+        "characters": len(content),
+    }
 def _read_asset(name: str) -> str:
     path = _ASSET_DIR / name
     return path.read_text(encoding="utf-8")
@@ -224,6 +295,594 @@ def _report_principles_lines(kind: str) -> List[str]:
         "- 트레일링: 최고수익률 >= 시작값 이후 (최고수익률-폭) 이탈 시 청산 — MFE 반납(시드 실측 2.1%p)을 줄인다.",
     ]
 
+
+def _validate_kind_and_timeframe(kind: str, timeframe: str) -> None:
+    if kind not in _VALID_KINDS:
+        raise ValueError(f"kind는 {_VALID_KINDS} 중 하나여야 합니다: {kind!r}")
+    if timeframe not in _VALID_TIMEFRAMES:
+        raise ValueError(f"timeframe은 {_VALID_TIMEFRAMES} 중 하나여야 합니다: {timeframe!r}")
+
+
+def _prompt_score_band(prompt_score: int) -> str:
+    if prompt_score >= 85:
+        return "85_100"
+    if prompt_score >= 70:
+        return "70_84"
+    if prompt_score >= 50:
+        return "50_69"
+    if prompt_score >= 30:
+        return "30_49"
+    return "0_29"
+
+
+def _json_safe(value: Any) -> Any:
+    try:
+        json.dumps(value, ensure_ascii=False, sort_keys=True)
+        return value
+    except (TypeError, ValueError):
+        return str(value)
+
+
+def _contains_prohibited_research_metadata_key(value: Any) -> bool:
+    if isinstance(value, Mapping):
+        for key, nested in value.items():
+            if str(key) in _PROHIBITED_RESEARCH_METADATA_KEYS:
+                return True
+            if _contains_prohibited_research_metadata_key(nested):
+                return True
+    elif isinstance(value, list):
+        return any(_contains_prohibited_research_metadata_key(item) for item in value)
+    return False
+
+def _contains_truthy_prohibited_research_metadata_key(value: Any) -> bool:
+    if isinstance(value, Mapping):
+        for key, nested in value.items():
+            if str(key) in _PROHIBITED_RESEARCH_METADATA_KEYS and bool(nested):
+                return True
+            if _contains_truthy_prohibited_research_metadata_key(nested):
+                return True
+    elif isinstance(value, list):
+        return any(_contains_truthy_prohibited_research_metadata_key(item) for item in value)
+    return False
+
+
+def _research_code_leakage_reasons(code: str) -> list[str]:
+    return [
+        f"code_uses_{prefix.rstrip('_')}_diagnostic"
+        for prefix in _LEAKY_RESEARCH_CODE_PREFIXES
+        if prefix in code
+    ]
+
+
+
+def _format_json_block(value: Mapping[str, Any]) -> str:
+    return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True)
+def _sort_json(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
+
+
+def _format_parent_condition_code_blocks(context_pack: Mapping[str, Any]) -> str:
+    parents = context_pack.get("parents") if isinstance(context_pack.get("parents"), Mapping) else {}
+    blocks: list[str] = []
+    for side, label in (("buy", "매수"), ("sell", "매도")):
+        parent = parents.get(side) if isinstance(parents.get(side), Mapping) else {}
+        code = str(parent.get("code") or "").strip()
+        if not code:
+            continue
+        parent_id = str(parent.get("id") or "")
+        blocks.extend([
+            f"## Parent {label} condition full code",
+            f"- id: {parent_id}",
+            f"- sha256: {parent.get('sha256') or ''}",
+            "```python",
+            code,
+            "```",
+        ])
+    if not blocks:
+        return ""
+    return "\n".join([
+        "# Parent condition full-code payload",
+        "ID는 추적용일 뿐이며, LLM 판단에는 아래 조건식 전문을 사용한다.",
+        *blocks,
+    ])
+
+
+def render_research_context_pack(context_pack: Mapping[str, Any]) -> str:
+    """Render a Context Pack exactly as a research prompt block."""
+
+    sections = [
+        "# Research Prompt Context Pack",
+        _format_json_block(dict(context_pack)),
+    ]
+    parent_blocks = _format_parent_condition_code_blocks(context_pack)
+    if parent_blocks:
+        sections.extend(["", parent_blocks])
+    return "\n".join(sections)
+
+
+def estimate_research_context_pack_budget(value: str | Mapping[str, Any] | Iterable[Mapping[str, str]]) -> Dict[str, Any]:
+    """Estimate the rendered prompt payload budget used by research Context Packs."""
+
+    if isinstance(value, str):
+        rendered = value
+    elif isinstance(value, Mapping):
+        rendered = render_research_context_pack(value)
+    else:
+        rendered = "\n\n".join(str(message.get("content", "")) for message in value)
+    return {
+        "schema_version": 1,
+        "estimated_tokens": _estimate_text_tokens(rendered),
+        "rendered_characters": len(rendered),
+        "rendered_sha256": _sha256_text(rendered),
+        "estimator": "chars_div_2_conservative_v1",
+    }
+
+
+def _maybe_hashed_code(code: str) -> Dict[str, Any]:
+    return {
+        "code": code,
+        "sha256": _sha256_text(code) if code else "",
+        "characters": len(code),
+        "present": bool(code.strip()),
+    }
+
+
+def _context_asset_records() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    assets: list[dict[str, Any]] = []
+    missing: list[dict[str, Any]] = []
+    for name, path in _FULL_STOM_SOURCE_ASSETS:
+        rel_path = path.relative_to(_REPO_ROOT).as_posix()
+        if path.exists():
+            assets.append(_read_context_asset(name, path))
+        else:
+            missing.append({"name": name, "path": rel_path, "status": "missing"})
+    return assets, missing
+
+
+def build_research_context_pack(
+    *,
+    context_pack_id: Optional[str] = None,
+    mode: str,
+    timeframe: str,
+    parent_buy_id: Optional[str] = None,
+    parent_buy_code: str = "",
+    parent_sell_id: Optional[str] = None,
+    parent_sell_code: str = "",
+    official_metrics: Optional[Mapping[str, Any]] = None,
+    daily_rows_summary: Optional[Any] = None,
+    regime_summaries: Optional[Mapping[str, Any]] = None,
+    segment_heatmap: Optional[Any] = None,
+    feature_importance: Optional[Any] = None,
+    edge_ratio: Optional[Mapping[str, Any]] = None,
+    mfe_mae: Optional[Mapping[str, Any]] = None,
+    correlation_redundancy: Optional[Any] = None,
+    avoid_zones: Optional[Any] = None,
+    prefer_zones: Optional[Any] = None,
+    root_cause_summary: Optional[Any] = None,
+    candidate_hypotheses: Optional[list[Mapping[str, Any]]] = None,
+    validation_provenance: Optional[Mapping[str, Any]] = None,
+    extra_context: Optional[Mapping[str, Any]] = None,
+    max_tokens: int = MAX_RESEARCH_CONTEXT_PACK_TOKENS,
+) -> Dict[str, Any]:
+    """Build the full research prompt Context Pack for STOM condition research.
+
+    The pack deliberately carries full STOM source-rule assets plus the parent
+    buy/sell code and quantitative analysis context. It raises when the rendered
+    payload exceeds the configured budget so callers fail closed instead of
+    silently dropping rules or analysis evidence.
+    """
+
+    if timeframe not in _VALID_TIMEFRAMES:
+        raise ValueError(f"timeframe은 {_VALID_TIMEFRAMES} 중 하나여야 합니다: {timeframe!r}")
+    model_visible_context = {
+        "validation_provenance": validation_provenance or {},
+        "extra_context": extra_context or {},
+        "candidate_hypotheses": candidate_hypotheses or [],
+        "official_metrics": official_metrics or {},
+        "daily_rows_summary": daily_rows_summary or {},
+        "regime_summaries": regime_summaries or {},
+        "segment_heatmap": segment_heatmap or {},
+        "feature_importance": feature_importance or {},
+        "edge_ratio": edge_ratio or {},
+        "mfe_mae": mfe_mae or {},
+        "correlation_redundancy": correlation_redundancy or {},
+        "avoid_zones": avoid_zones or [],
+        "prefer_zones": prefer_zones or [],
+        "root_cause_summary": root_cause_summary or {},
+    }
+    if _contains_truthy_prohibited_research_metadata_key(model_visible_context):
+        raise ValueError("research_context_authority_smuggling")
+    assets, missing_assets = _context_asset_records()
+    if missing_assets:
+        missing_names = ",".join(item["name"] for item in missing_assets)
+        raise ValueError(f"research_context_pack_sources_missing: {missing_names}")
+    pack: Dict[str, Any] = {
+        "schema_version": 1,
+        "context_pack_version": "research_context_pack_v1_full_stom_sources",
+        "context_pack_id": context_pack_id or "",
+        "mode": mode,
+        "timeframe": timeframe,
+        "budget_policy": {
+            "max_tokens": int(max_tokens),
+            "fail_closed_on_overflow": True,
+            "source_inclusion": "full_stom_rules_and_examples_when_available",
+        },
+        "stom_sources": {
+            "assets": assets,
+            "missing_assets": missing_assets,
+            "asset_names": [asset["name"] for asset in assets],
+            "all_available_sources_included": not missing_assets,
+        },
+        "parents": {
+            "delivery_policy": "full_condition_code_required_not_id_only",
+            "buy": {
+                "role": "buy",
+                "id": parent_buy_id or "",
+                "prompt_payload_required": True,
+                **_maybe_hashed_code(parent_buy_code),
+            },
+            "sell": {
+                "role": "sell",
+                "id": parent_sell_id or "",
+                "prompt_payload_required": True,
+                **_maybe_hashed_code(parent_sell_code),
+            },
+        },
+        "analysis": {
+            "official_metrics": dict(official_metrics or {}),
+            "daily_rows_summary": _json_safe(daily_rows_summary or {}),
+            "regime_summaries": dict(regime_summaries or {}),
+            "segment_heatmap": _json_safe(segment_heatmap or {}),
+            "feature_importance": _json_safe(feature_importance or {}),
+            "edge_ratio": dict(edge_ratio or {}),
+            "mfe_mae": dict(mfe_mae or {}),
+            "correlation_redundancy": _json_safe(correlation_redundancy or {}),
+            "avoid_zones": _json_safe(avoid_zones or []),
+            "prefer_zones": _json_safe(prefer_zones or []),
+            "root_cause_summary": _json_safe(root_cause_summary or {}),
+        },
+        "candidate_hypotheses": [dict(item) for item in (candidate_hypotheses or [])],
+        "validation_provenance": dict(validation_provenance or {}),
+        "extra_context": dict(extra_context or {}),
+        "prompt_contract": {
+            "parent_condition_delivery": "full_condition_code_required_not_id_only",
+            "parent_condition_ids_are_trace_only": True,
+            "include_full_stom_sources": True,
+            "include_analysis_context": True,
+            "include_candidate_hypotheses": True,
+            "research_only_no_export_live_final_promotion": True,
+        },
+        "authority": {
+            "scope": "research_only",
+            "can_export": False,
+            "can_live": False,
+            "can_final_promote": False,
+            "slippage": "advisory_only_not_generation_hard_gate",
+        },
+    }
+    if not pack["context_pack_id"]:
+        pack["context_pack_id"] = "rcp_" + _sha256_text(_sort_json({
+            "mode": mode,
+            "timeframe": timeframe,
+            "parents": pack["parents"],
+            "assets": [(asset["name"], asset["sha256"]) for asset in assets],
+            "metrics": pack["analysis"]["official_metrics"],
+        }))[:16]
+
+    budget = estimate_research_context_pack_budget(pack)
+    budget.update({
+        "max_tokens": int(max_tokens),
+        "within_limit": budget["estimated_tokens"] <= int(max_tokens),
+        "overflow_tokens": max(0, budget["estimated_tokens"] - int(max_tokens)),
+    })
+    pack["budget"] = budget
+    if not budget["within_limit"]:
+        raise ValueError(
+            "research_context_pack_budget_exceeded: "
+            f"estimated_tokens={budget['estimated_tokens']} max_tokens={max_tokens}"
+        )
+    return pack
+
+def _parse_metadata(response_text: str) -> tuple[Optional[dict[str, Any]], bool, str, int]:
+    if not response_text:
+        return None, False, "metadata_missing", 0
+    matches = _JSON_FENCE_RE.findall(response_text)
+    if not matches:
+        return None, False, "metadata_missing", 0
+
+    parsed: Optional[dict[str, Any]] = None
+    last_error = "metadata_not_json"
+    for match in matches:
+        try:
+            loaded = json.loads(match)
+        except json.JSONDecodeError:
+            last_error = "metadata_not_json"
+            continue
+        if isinstance(loaded, dict):
+            parsed = loaded if parsed is None else parsed
+        else:
+            last_error = "metadata_not_object"
+
+    if parsed is None:
+        return None, True, last_error, len(matches)
+    return parsed, True, "", len(matches)
+
+
+def build_repair_research_messages(
+    kind: str,
+    *,
+    timeframe: str,
+    parent_code: str,
+    analysis_card: Mapping[str, Any],
+    research_context_pack: Optional[Mapping[str, Any]] = None,
+    prompt_version: str = REPAIR_RESEARCH_PROMPT_VERSION,
+) -> List[Dict[str, str]]:
+    """Build a strict one-analysis-card/one-axis repair prompt."""
+
+    _validate_kind_and_timeframe(kind, timeframe)
+    if prompt_version != REPAIR_RESEARCH_PROMPT_VERSION:
+        raise ValueError(f"unsupported repair prompt_version: {prompt_version!r}")
+    label = _kind_label(kind)
+    metadata_contract = {
+        "schema_version": 1,
+        "lane": "repair",
+        "prompt_version": prompt_version,
+        "kind": kind,
+        "timeframe": timeframe,
+        "parent_id": analysis_card.get("candidate_id") or analysis_card.get("parent_id"),
+        "analysis_card_id": analysis_card.get("analysis_id"),
+        "intended_hypothesis": "exactly one repair hypothesis",
+        "risk_note": "risk introduced by this single-axis change",
+    }
+    context_lines = (
+        [
+            "Research Prompt Context Pack:",
+            render_research_context_pack(research_context_pack),
+            "",
+        ]
+        if research_context_pack
+        else []
+    )
+    user = "\n".join([
+        f"STOM {label['ko']}전략 repair 후보를 하나만 작성하라.",
+        "입력은 부모 전략 1개와 분석 카드 1개다. 전면 재작성 금지.",
+        "분석 카드의 원인 1개만 고치고, 변경 축도 1개만 허용한다.",
+        "응답은 반드시 python 코드 블록 1개와 json metadata 블록 1개만 포함한다.",
+        "metadata는 lane/prompt_version/kind/timeframe/parent_id/analysis_card_id/intended_hypothesis/risk_note를 포함한다.",
+        *context_lines,
+        "분석 카드:",
+        f"```json\n{_format_json_block(dict(analysis_card))}\n```",
+        "",
+        "부모 전략:",
+        f"```python\n{parent_code}\n```",
+        "",
+        "metadata 예시:",
+        f"```json\n{_format_json_block(metadata_contract)}\n```",
+    ])
+    return [{"role": "system", "content": _build_system_message()}, {"role": "user", "content": user}]
+
+
+def build_discovery_research_messages(
+    kind: str,
+    *,
+    timeframe: str,
+    coverage_gap: Mapping[str, Any],
+    novelty_context: Mapping[str, Any],
+    research_context_pack: Optional[Mapping[str, Any]] = None,
+    prompt_version: str = DISCOVERY_RESEARCH_PROMPT_VERSION,
+) -> List[Dict[str, str]]:
+    """Build a strict one-gap/one-candidate discovery prompt."""
+
+    _validate_kind_and_timeframe(kind, timeframe)
+    if prompt_version != DISCOVERY_RESEARCH_PROMPT_VERSION:
+        raise ValueError(f"unsupported discovery prompt_version: {prompt_version!r}")
+    label = _kind_label(kind)
+    metadata_contract = {
+        "schema_version": 1,
+        "lane": "discovery",
+        "prompt_version": prompt_version,
+        "kind": kind,
+        "timeframe": timeframe,
+        "coverage_gap_id": coverage_gap.get("coverage_gap_id") or coverage_gap.get("id"),
+        "discovery_target_coverage": coverage_gap.get("coverage_bucket_keys") or [],
+        "intended_hypothesis": "exactly one discovery hypothesis",
+        "novelty_rationale": "why this differs structurally and by coverage/family",
+        "risk_note": "risk introduced by this new candidate",
+    }
+    context_lines = (
+        [
+            "Research Prompt Context Pack:",
+            render_research_context_pack(research_context_pack),
+            "",
+        ]
+        if research_context_pack
+        else []
+    )
+    user = "\n".join([
+        f"STOM {label['ko']}전략 discovery 후보를 하나만 작성하라.",
+        "입력은 coverage gap 1개와 novelty context 1개다. 기존 후보 복제 금지.",
+        "새 후보는 structural fingerprint, coverage regime, entry/exit family가 달라야 한다.",
+        "응답은 반드시 python 코드 블록 1개와 json metadata 블록 1개만 포함한다.",
+        "metadata는 lane/prompt_version/kind/timeframe/coverage_gap_id/discovery_target_coverage/intended_hypothesis/novelty_rationale/risk_note를 포함한다.",
+        *context_lines,
+        "coverage gap:",
+        f"```json\n{_format_json_block(dict(coverage_gap))}\n```",
+        "",
+        "novelty context:",
+        f"```json\n{_format_json_block(dict(novelty_context))}\n```",
+        "",
+        "metadata 예시:",
+        f"```json\n{_format_json_block(metadata_contract)}\n```",
+    ])
+    return [{"role": "system", "content": _build_system_message()}, {"role": "user", "content": user}]
+
+
+def validate_research_candidate_response(
+    response_text: str,
+    *,
+    expected_lane: str,
+    expected_prompt_version: str,
+    expected_kind: str,
+    expected_timeframe: str,
+) -> Dict[str, Any]:
+    """Validate strict repair/discovery LLM responses before any backtest path."""
+
+    failures: list[str] = []
+    code_matches = [match.strip() for match in _STRICT_PYTHON_FENCE_RE.findall(response_text or "")]
+    metadata, metadata_present, metadata_error, metadata_block_count = _parse_metadata(response_text or "")
+    metadata_json_safe = metadata is not None
+    if len(code_matches) != 1:
+        failures.append("zero_code_blocks" if not code_matches else "multiple_candidate_code_blocks")
+    elif not code_matches[0]:
+        failures.append("empty_candidate_code_block")
+    if len(code_matches) == 1:
+        failures.extend(_research_code_leakage_reasons(code_matches[0]))
+    if metadata_block_count > 1:
+        failures.append("multiple_metadata_blocks")
+    if not metadata_present:
+        failures.append("missing_metadata")
+    elif not metadata_json_safe:
+        failures.append(metadata_error or "metadata_not_json")
+    metadata = metadata or {}
+
+    if expected_lane not in _RESEARCH_LANES:
+        failures.append("invalid_expected_lane")
+    if expected_prompt_version not in _RESEARCH_PROMPT_VERSIONS:
+        failures.append("invalid_expected_prompt_version")
+    if metadata.get("schema_version") != 1:
+        failures.append("schema_version_mismatch")
+    if metadata.get("lane") != expected_lane:
+        failures.append("lane_mismatch")
+    if metadata.get("prompt_version") != expected_prompt_version:
+        failures.append("prompt_version_mismatch")
+    if metadata.get("kind") != expected_kind:
+        failures.append("kind_mismatch")
+    if metadata.get("timeframe") != expected_timeframe:
+        failures.append("timeframe_mismatch")
+    if not metadata.get("intended_hypothesis"):
+        failures.append("missing_intended_hypothesis")
+    alternatives = metadata.get("alternatives") or metadata.get("candidates")
+    if isinstance(alternatives, list) and len(alternatives) > 1:
+        failures.append("multiple_alternatives")
+    if not metadata.get("risk_note"):
+        failures.append("missing_risk_note")
+    if _contains_prohibited_research_metadata_key(metadata):
+        failures.append("metadata_authority_smuggling")
+    if expected_lane == "repair":
+        if not metadata.get("parent_id"):
+            failures.append("missing_repair_parent_reference")
+        if not metadata.get("analysis_card_id"):
+            failures.append("missing_repair_analysis_card_reference")
+    if expected_lane == "discovery":
+        if not metadata.get("coverage_gap_id"):
+            failures.append("missing_discovery_coverage_gap_reference")
+        if not metadata.get("discovery_target_coverage"):
+            failures.append("missing_discovery_target_coverage")
+        if not metadata.get("novelty_rationale"):
+            failures.append("missing_discovery_novelty_rationale")
+
+    valid = not failures
+    return {
+        "schema_version": 1,
+        "valid": valid,
+        "lane": expected_lane,
+        "prompt_version": expected_prompt_version,
+        "kind": expected_kind,
+        "timeframe": expected_timeframe,
+        "code": code_matches[0].strip() if len(code_matches) == 1 else "",
+        "metadata": metadata,
+        "code_block_count": len(code_matches),
+        "metadata_present": metadata_present,
+        "metadata_block_count": metadata_block_count,
+        "metadata_json_safe": metadata_json_safe,
+        "failure_reason": "" if valid else "|".join(dict.fromkeys(failures)),
+        "authority": "mandatory_for_repair_discovery_prompt_paths",
+    }
+
+
+def build_research_prompt_receipt(
+    *,
+    receipt_id: str,
+    round_id: str,
+    slot_id: str,
+    lane: str,
+    prompt_version: str,
+    prompt_score: int,
+    intended_hypothesis: str,
+    strict_response_validation: Mapping[str, Any],
+    context_pack_id: Optional[str] = None,
+    context_pack_sha256: Optional[str] = None,
+    candidate_pack_id: Optional[str] = None,
+    candidate_contract_id: Optional[str] = None,
+    mode_authority: str = "research_only",
+    generation_allowed: Optional[bool] = None,
+    full_stom_sources_included: Optional[bool] = None,
+    prompt_budget_estimated_tokens: Optional[int] = None,
+    parent_id: Optional[str] = None,
+    analysis_card_id: Optional[str] = None,
+    parent_buy_id: Optional[str] = None,
+    parent_sell_id: Optional[str] = None,
+    preserves_parent_structure: Optional[bool] = None,
+    parent_buy_code: str = "",
+    parent_sell_code: str = "",
+    mutation_axis: Optional[str] = None,
+    coverage_gap_id: Optional[str] = None,
+    discovery_target_coverage: Optional[Any] = None,
+    risk_note: str = "",
+    output_candidate_id: Optional[str] = None,
+    failure_reason: str = "",
+    downstream_result: str = "not_evaluated",
+) -> Dict[str, Any]:
+    """Build JSON-safe research prompt maturity receipt."""
+
+    if lane not in _RESEARCH_LANES:
+        raise ValueError(f"lane must be one of {_RESEARCH_LANES}: {lane!r}")
+    if prompt_version not in _RESEARCH_PROMPT_VERSIONS:
+        raise ValueError(f"unsupported prompt_version: {prompt_version!r}")
+    if downstream_result not in _DOWNSTREAM_RESULTS:
+        raise ValueError(f"unsupported downstream_result: {downstream_result!r}")
+    score = max(0, min(int(prompt_score), 100))
+    if downstream_result in {"degraded", "rejected", "invalid"} and not failure_reason:
+        raise ValueError("failure_reason is required for degraded/rejected/invalid downstream_result")
+    parent_conditions = {
+        "delivery_policy": "full_condition_code_required_not_id_only",
+        "buy": {"id": parent_buy_id or parent_id or "", **_maybe_hashed_code(parent_buy_code)},
+        "sell": {"id": parent_sell_id or "", **_maybe_hashed_code(parent_sell_code)},
+    }
+    return {
+        "schema_version": 1,
+        "receipt_id": receipt_id,
+        "round_id": round_id,
+        "slot_id": slot_id,
+        "lane": lane,
+        "prompt_version": prompt_version,
+        "prompt_score": score,
+        "prompt_score_band": _prompt_score_band(score),
+        "intended_hypothesis": intended_hypothesis,
+        "context_pack_id": context_pack_id,
+        "context_pack_sha256": context_pack_sha256,
+        "candidate_pack_id": candidate_pack_id,
+        "candidate_contract_id": candidate_contract_id,
+        "mode_authority": mode_authority,
+        "generation_allowed": generation_allowed,
+        "full_stom_sources_included": full_stom_sources_included,
+        "prompt_budget_estimated_tokens": prompt_budget_estimated_tokens,
+        "parent_id": parent_id,
+        "analysis_card_id": analysis_card_id,
+        "parent_buy_id": parent_buy_id,
+        "parent_sell_id": parent_sell_id,
+        "parent_conditions": parent_conditions,
+        "preserves_parent_structure": preserves_parent_structure,
+        "mutation_axis": mutation_axis,
+        "coverage_gap_id": coverage_gap_id,
+        "discovery_target_coverage": _json_safe(discovery_target_coverage or {}),
+        "risk_note": risk_note,
+        "output_candidate_id": output_candidate_id,
+        "failure_reason": failure_reason,
+        "downstream_result": downstream_result,
+        "strict_response_validation": dict(strict_response_validation),
+        "authority": "research_prompt_maturity_only",
+    }
 
 def build_messages(
     kind: str,

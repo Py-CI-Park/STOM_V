@@ -7,7 +7,30 @@ import math
 from pathlib import Path
 
 from cli.analyzer import analyze_result_csv
-from cli.condition_generator import generate_condition_expressions_from_analysis
+from ai_strategy_loop.brain.prompt import (
+    DISCOVERY_RESEARCH_PROMPT_VERSION,
+    REPAIR_RESEARCH_PROMPT_VERSION,
+    build_research_prompt_receipt,
+    validate_research_candidate_response,
+)
+from ai_strategy_loop.controller.condition_discovery import (
+    LANE_DISCOVERY,
+    LANE_REPAIR,
+    PROCESS_RESEARCH,
+    assess_discovery_novelty,
+    build_evidence_health,
+    build_research_analysis_card,
+    build_research_loop_policy,
+    build_validation_provenance,
+    resolve_hybrid_research_slots,
+    resolve_condition_discovery_process_projection,
+    score_research_lane,
+)
+from cli.condition_generator import (
+    expression_result_from_candidate_pack,
+    generate_condition_expressions_from_analysis,
+    mark_diagnostic_fallback,
+)
 from cli.paths import DB_STRATEGY
 from cli.research_iteration_v2 import build_v2_candidate_pool, candidate_from_expression
 from cli.research_iteration_v3 import build_v3_candidate_pool, parse_best_expression_conditions
@@ -76,6 +99,34 @@ _RETENTION_METADATA_KEYS = (
     'retention_fallback_used',
 )
 
+_RESEARCH_METADATA_KEYS = (
+    'research_lane',
+    'research_contract',
+    'strict_response_validation',
+    'prompt_receipt',
+    'analysis_card',
+    'validation_provenance',
+    'discovery_novelty',
+    'research_score_detail',
+    'research_lane_score',
+    'context_pack_id',
+    'context_pack_sha256',
+    'candidate_contract_id',
+    'candidate_pack_id',
+    'hypothesis_id',
+    'mutation_axis',
+    'fallback_used',
+    'fallback_reason',
+    'prompt_maturity_credit_allowed',
+    'parent_buy_id',
+    'parent_sell_id',
+    'parent_buy_code',
+    'parent_buy_sha256',
+    'parent_sell_code',
+    'parent_sell_sha256',
+    'preserves_parent_structure',
+)
+
 @dataclass
 class ResearchLoopConfig:
     name: str = 'AutoResearch'
@@ -121,6 +172,9 @@ class ResearchLoopConfig:
     iteration_v2_include_secondary_only: bool = True
     iteration_v2_max_secondary_only: int = 1
     iteration_v2_duplicate_retention_tolerance: float = 0.02
+    condition_discovery_preset: str = 'fast'
+    condition_discovery_process: str | None = None
+    hybrid_research_enabled: bool = False
 
 
 def _base_config_dict(config: ResearchLoopConfig) -> dict:
@@ -161,8 +215,30 @@ def _candidate_name_prefix(config: ResearchLoopConfig) -> str:
     return config.candidate_name_prefix or config.name
 
 
+def _condition_discovery_projection(config: ResearchLoopConfig) -> dict:
+    selector = config.condition_discovery_process
+    if selector is not None and str(selector).strip():
+        return resolve_condition_discovery_process_projection(selector=selector)
+    return resolve_condition_discovery_process_projection(
+        selector=None,
+        preset=config.condition_discovery_preset,
+    )
+
+
+def _process_research_enabled(config: ResearchLoopConfig) -> bool:
+    projection = _condition_discovery_projection(config)
+    return bool(config.hybrid_research_enabled or projection['process'] == PROCESS_RESEARCH)
+
+
+def _research_candidate_count(config: ResearchLoopConfig) -> int:
+    if _process_research_enabled(config):
+        return int(build_research_loop_policy()['slots_total'])
+    return config.candidate_count
+
+
 def _candidate_pool_size(config: ResearchLoopConfig) -> int:
-    return max(config.top_n, config.candidate_count * config.candidate_pool_multiplier)
+    count = _research_candidate_count(config)
+    return max(config.top_n, count * config.candidate_pool_multiplier)
 
 
 def _split_csv_values(value: str | None) -> list[str]:
@@ -173,9 +249,34 @@ def _effective_top_n(config: ResearchLoopConfig) -> int:
     return _candidate_pool_size(config) if config.run_candidates else config.top_n
 
 
-def _build_iteration_plan(config: ResearchLoopConfig) -> dict:
+def _build_hybrid_research_plan(config: ResearchLoopConfig) -> dict:
+    projection = _condition_discovery_projection(config)
+    enabled = _process_research_enabled(config)
+    policy = build_research_loop_policy()
+    slots = resolve_hybrid_research_slots() if enabled else None
     return {
-        'candidate_count': config.candidate_count,
+        'enabled': enabled,
+        'preset': projection['preset'],
+        'process': projection['process'],
+        'policy': policy,
+        'slots': slots,
+        'candidate_count': policy['slots_total'] if enabled else config.candidate_count,
+        'authority': 'research_only_no_export_live_or_final_promotion',
+    }
+
+
+def _iteration_candidate_count(config: ResearchLoopConfig, iteration_plan: dict | None = None) -> int:
+    if iteration_plan and (iteration_plan.get('research_loop') or {}).get('enabled'):
+        return int((iteration_plan.get('research_loop') or {}).get('candidate_count') or _research_candidate_count(config))
+    return _research_candidate_count(config)
+
+
+def _build_iteration_plan(config: ResearchLoopConfig) -> dict:
+    research_loop = _build_hybrid_research_plan(config)
+    candidate_count = _iteration_candidate_count(config, {'research_loop': research_loop})
+    return {
+        'candidate_count': candidate_count,
+        'requested_candidate_count': config.candidate_count,
         'candidate_name_prefix': _candidate_name_prefix(config),
         'score_reference_csv': config.score_reference_csv,
         'effective_top_n': _effective_top_n(config),
@@ -199,6 +300,7 @@ def _build_iteration_plan(config: ResearchLoopConfig) -> dict:
         'iteration_v2_include_secondary_only': config.iteration_v2_include_secondary_only,
         'iteration_v2_max_secondary_only': config.iteration_v2_max_secondary_only,
         'iteration_v2_duplicate_retention_tolerance': config.iteration_v2_duplicate_retention_tolerance,
+        'research_loop': research_loop,
     }
 
 
@@ -245,6 +347,209 @@ def _v5_candidate_pool_metadata(
     }
 
 
+def _hybrid_lane_sequence(slots: dict | None) -> list[str]:
+    if not slots:
+        return []
+    slots_by_lane = slots.get('slots_by_lane') or {}
+    counts = {
+        LANE_REPAIR: int(slots_by_lane.get(LANE_REPAIR, 0) or 0),
+        LANE_DISCOVERY: int(slots_by_lane.get(LANE_DISCOVERY, 0) or 0),
+    }
+    sequence: list[str] = []
+    while counts[LANE_REPAIR] > 0 or counts[LANE_DISCOVERY] > 0:
+        for lane in (LANE_REPAIR, LANE_DISCOVERY):
+            if counts[lane] > 0:
+                sequence.append(lane)
+                counts[lane] -= 1
+    return sequence
+
+
+def _prompt_version_for_lane(lane: str) -> str:
+    return DISCOVERY_RESEARCH_PROMPT_VERSION if lane == LANE_DISCOVERY else REPAIR_RESEARCH_PROMPT_VERSION
+
+
+def _research_prompt_timeframe(config: ResearchLoopConfig) -> str:
+    return 'tick' if config.is_tick else 'min'
+
+
+def _source_response_text(source_candidate: object) -> str:
+    if not isinstance(source_candidate, dict):
+        return ''
+    for key in ('response_text', 'raw_response', 'llm_response', 'candidate_response'):
+        value = source_candidate.get(key)
+        if value:
+            return str(value)
+    return ''
+
+
+def _default_strict_response_validation(
+    *,
+    lane: str,
+    prompt_version: str,
+    kind: str,
+    timeframe: str,
+) -> dict:
+    return {
+        'schema_version': 1,
+        'valid': True,
+        'lane': lane,
+        'prompt_version': prompt_version,
+        'kind': kind,
+        'timeframe': timeframe,
+        'code': '',
+        'metadata': {},
+        'code_block_count': 0,
+        'metadata_present': False,
+        'metadata_json_safe': True,
+        'failure_reason': '',
+        'source': 'non_llm_expression_candidate',
+        'authority': 'mandatory_for_repair_discovery_prompt_paths',
+    }
+
+
+def _strict_response_validation_for_spec(
+    config: ResearchLoopConfig,
+    source_candidate: object,
+    *,
+    lane: str,
+) -> dict:
+    prompt_version = _prompt_version_for_lane(lane)
+    timeframe = _research_prompt_timeframe(config)
+    if isinstance(source_candidate, dict):
+        existing = source_candidate.get('strict_response_validation')
+        if isinstance(existing, dict):
+            return dict(existing)
+        response_text = _source_response_text(source_candidate)
+        if response_text:
+            return validate_research_candidate_response(
+                response_text,
+                expected_lane=lane,
+                expected_prompt_version=prompt_version,
+                expected_kind='buy',
+                expected_timeframe=timeframe,
+            )
+    return _default_strict_response_validation(
+        lane=lane,
+        prompt_version=prompt_version,
+        kind='buy',
+        timeframe=timeframe,
+    )
+
+
+def _prompt_receipt_for_spec(
+    config: ResearchLoopConfig,
+    spec: dict,
+    source_candidate: object,
+    strict_validation: dict,
+) -> dict:
+    lane = spec.get('research_lane') or LANE_REPAIR
+    prompt_version = strict_validation.get('prompt_version') or _prompt_version_for_lane(lane)
+    source = source_candidate if isinstance(source_candidate, dict) else {}
+    failure_reason = strict_validation.get('failure_reason') or ''
+    downstream_result = 'invalid' if strict_validation.get('valid') is False else str(source.get('downstream_result') or 'not_evaluated')
+    prompt_score = source.get('prompt_score', source.get('prompt_maturity_score', 50))
+    if source.get('prompt_maturity_credit_allowed') is False:
+        prompt_score = 0
+    prompt_score_value = 50 if prompt_score in (None, '') else prompt_score
+    intended_hypothesis = (
+        source.get('intended_hypothesis')
+        or source.get('hypothesis')
+        or _format_candidate_reason(source)
+        or f"analysis_candidate={spec.get('expression')}"
+    )
+    return build_research_prompt_receipt(
+        receipt_id=f"{spec.get('strategy_name')}__prompt",
+        round_id=str(source.get('round_id') or source.get('iteration_id') or 'research-loop'),
+        slot_id=str(source.get('slot_id') or f"slot-{spec.get('index')}"),
+        lane=lane,
+        prompt_version=prompt_version,
+        prompt_score=int(float(prompt_score_value)),
+        intended_hypothesis=str(intended_hypothesis),
+        context_pack_id=source.get('context_pack_id'),
+        context_pack_sha256=source.get('context_pack_sha256'),
+        candidate_pack_id=source.get('candidate_pack_id'),
+        candidate_contract_id=source.get('candidate_contract_id'),
+        mode_authority=source.get('mode_authority') or 'research_only',
+        generation_allowed=source.get('generation_allowed'),
+        full_stom_sources_included=source.get('full_stom_sources_included'),
+        prompt_budget_estimated_tokens=source.get('prompt_budget_estimated_tokens'),
+        parent_id=source.get('parent_id') or source.get('parent_buy_id'),
+        analysis_card_id=source.get('analysis_card_id'),
+        parent_buy_id=source.get('parent_buy_id') or source.get('parent_id'),
+        parent_sell_id=source.get('parent_sell_id'),
+        parent_buy_code=str(source.get('parent_buy_code') or source.get('parent_code') or ''),
+        parent_sell_code=str(source.get('parent_sell_code') or ''),
+        preserves_parent_structure=source.get('preserves_parent_structure'),
+        mutation_axis=source.get('mutation_axis'),
+        coverage_gap_id=source.get('coverage_gap_id'),
+        discovery_target_coverage=source.get('discovery_target_coverage') or source.get('coverage_bucket_keys') or {},
+        risk_note=str(source.get('risk_note') or ''),
+        output_candidate_id=spec.get('strategy_name'),
+        failure_reason=failure_reason,
+        downstream_result=downstream_result,
+        strict_response_validation=strict_validation,
+    )
+
+
+def _attach_research_contract_to_spec(
+    config: ResearchLoopConfig,
+    spec: dict,
+    source_candidate: object,
+    *,
+    lane: str,
+) -> None:
+    strict_validation = _strict_response_validation_for_spec(config, source_candidate, lane=lane)
+    spec['research_lane'] = lane
+    prompt_receipt = _prompt_receipt_for_spec(config, spec, source_candidate, strict_validation)
+    source = source_candidate if isinstance(source_candidate, dict) else {}
+    for key in (
+        'context_pack_id',
+        'context_pack_sha256',
+        'candidate_pack_id',
+        'candidate_contract_id',
+        'hypothesis_id',
+        'mutation_axis',
+        'fallback_used',
+        'fallback_reason',
+        'prompt_maturity_credit_allowed',
+        'parent_buy_id',
+        'parent_buy_code',
+        'parent_buy_sha256',
+        'parent_sell_id',
+        'parent_sell_code',
+        'parent_sell_sha256',
+        'preserves_parent_structure',
+    ):
+        if key in source:
+            spec[key] = source[key]
+    contract = {
+        'schema_version': 1,
+        'enabled': True,
+        'lane': lane,
+        'strict_response_validation': strict_validation,
+        'prompt_receipt': prompt_receipt,
+        'context_pack_id': source.get('context_pack_id'),
+        'context_pack_sha256': source.get('context_pack_sha256'),
+        'candidate_contract_id': source.get('candidate_contract_id'),
+        'candidate_pack_id': source.get('candidate_pack_id'),
+        'hypothesis_id': source.get('hypothesis_id'),
+        'mutation_axis': source.get('mutation_axis'),
+        'parent_buy_id': source.get('parent_buy_id') or source.get('parent_id'),
+        'parent_sell_id': source.get('parent_sell_id'),
+        'preserves_parent_structure': source.get('preserves_parent_structure'),
+        'parent_conditions': prompt_receipt.get('parent_conditions'),
+        'fallback_used': bool(source.get('fallback_used')),
+        'fallback_reason': source.get('fallback_reason') or '',
+        'prompt_maturity_credit_allowed': source.get('prompt_maturity_credit_allowed') is not False,
+        'authority': 'research_only_no_export_live_or_final_promotion',
+    }
+    spec.update({
+        'research_lane': lane,
+        'research_contract': contract,
+        'strict_response_validation': strict_validation,
+        'prompt_receipt': prompt_receipt,
+    })
+
 def _build_candidate_specs(
     config: ResearchLoopConfig,
     expression_result: dict,
@@ -254,7 +559,13 @@ def _build_candidate_specs(
     specs = []
     expressions = expression_result.get('expressions') or []
     selected = expression_result.get('selected_candidates') or []
-    candidate_limit = config.candidate_count if candidate_count is None else max(int(candidate_count), 0)
+    research_plan = _build_hybrid_research_plan(config)
+    candidate_limit = (
+        _iteration_candidate_count(config, {'research_loop': research_plan})
+        if candidate_count is None
+        else max(int(candidate_count), 0)
+    )
+    lane_sequence = _hybrid_lane_sequence(research_plan.get('slots')) if research_plan.get('enabled') else []
     for index, expression in enumerate(expressions[:candidate_limit], start=1):
         source_candidate = selected[index - 1] if index - 1 < len(selected) else None
         spec = {
@@ -268,6 +579,12 @@ def _build_candidate_specs(
             for key in _RETENTION_METADATA_KEYS:
                 if key in source_candidate:
                     spec[key] = source_candidate[key]
+        if research_plan.get('enabled'):
+            source_lane = source_candidate.get('lane') if isinstance(source_candidate, dict) else None
+            lane = source_lane if source_lane in (LANE_REPAIR, LANE_DISCOVERY) else (
+                lane_sequence[index - 1] if index - 1 < len(lane_sequence) else LANE_REPAIR
+            )
+            _attach_research_contract_to_spec(config, spec, source_candidate, lane=lane)
         specs.append(spec)
     return specs
 
@@ -506,6 +823,14 @@ def _flush_research_runtime_checkpoint(
 
 
 def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
+    projection = _condition_discovery_projection(config)
+    if projection.get('process') == 'promotion-review':
+        return _error(
+            'promotion_review_generation_blocked',
+            'promotion-review is zero-generation evidence health only; repair/discovery generation is disabled',
+            condition_discovery_process=projection.get('process'),
+            condition_discovery_preset=projection.get('preset'),
+        )
     if config.candidate_plan_only and config.run_candidates:
         return _error(
             'candidate_plan_only_iteration_conflict',
@@ -726,6 +1051,9 @@ def _candidate_item_error(spec: dict, phase: str, message: str, **extra) -> dict
     for key in _RETENTION_METADATA_KEYS:
         if key in spec:
             item[key] = spec[key]
+    for key in _RESEARCH_METADATA_KEYS:
+        if key in spec:
+            item[key] = spec[key]
     item.update(extra)
     return item
 
@@ -802,6 +1130,109 @@ def _prepare_candidate_strategy(
     }
 
 
+def _candidate_research_metrics(candidate_result: dict, comparison: dict, promotion: dict) -> dict:
+    metrics = dict(candidate_result.get('metrics') or {})
+    candidate_summary = (comparison.get('candidate_summary') or {}) if isinstance(comparison, dict) else {}
+    for source_key, target_key in (
+        ('profit', 'profit'),
+        ('total_profit', 'profit'),
+        ('수익금', 'profit'),
+        ('mdd', 'mdd'),
+        ('max_drawdown', 'mdd'),
+        ('trade_count', 'trade_count'),
+    ):
+        if target_key not in metrics and source_key in candidate_summary:
+            metrics[target_key] = candidate_summary[source_key]
+    if 'profit' not in metrics and promotion.get('score') is not None:
+        metrics['profit'] = promotion.get('score')
+    return metrics
+
+
+def _build_candidate_research_artifacts(
+    config: ResearchLoopConfig,
+    spec: dict,
+    *,
+    candidate_result: dict,
+    comparison: dict,
+    promotion: dict,
+) -> dict:
+    if not spec.get('research_contract'):
+        return {}
+    lane = spec.get('research_lane') or LANE_REPAIR
+    metrics = _candidate_research_metrics(candidate_result, comparison, promotion)
+    prompt_receipt = dict(spec.get('prompt_receipt') or {})
+    candidate_metrics = candidate_result.get('metrics') or {}
+    candidate_csv = candidate_result.get('csv_path') or candidate_result.get('output_csv')
+    evidence_payload = {
+        'csv': bool(candidate_csv),
+        'trades': bool(metrics.get('trade_count')),
+        'equity': bool(
+            candidate_result.get('equity_path')
+            or candidate_result.get('equity_curve')
+            or candidate_metrics.get('equity_curve')
+        ),
+        'prompt': bool(prompt_receipt),
+        'validation': bool(comparison) and bool(promotion),
+    }
+    evidence_health = build_evidence_health(
+        evidence_payload,
+        preset=_condition_discovery_projection(config)['preset'],
+    )
+    validation_provenance = build_validation_provenance(
+        used_for_prompt_or_allocation=True,
+        frozen=False,
+        fresh_holdout=False,
+        evidence_health=evidence_health,
+        artifact_ids=[spec.get('strategy_name')],
+    )
+    source_candidate = spec.get('source_candidate') if isinstance(spec.get('source_candidate'), dict) else {}
+    novelty = {}
+    if lane == LANE_DISCOVERY:
+        novelty = assess_discovery_novelty(
+            {
+                'candidate_id': spec.get('strategy_name'),
+                'structural_fingerprint': source_candidate.get('structural_fingerprint') or spec.get('expression'),
+                'coverage_bucket_keys': source_candidate.get('coverage_bucket_keys') or source_candidate.get('discovery_target_coverage') or [],
+                'entry_exit_family': source_candidate.get('entry_exit_family') or source_candidate.get('family') or lane,
+                'evidence': evidence_payload,
+            },
+            [],
+        )
+    downstream_result = 'improved' if promotion.get('passed') is True else 'rejected'
+    prompt_receipt.update({
+        'downstream_result': downstream_result,
+        'official_backtest_result': {
+            'status': candidate_result.get('status'),
+            'promotion_passed': promotion.get('passed') is True,
+            'promotion_score': promotion.get('score'),
+            'candidate_csv': candidate_result.get('csv_path'),
+            'trade_count': metrics.get('trade_count'),
+        },
+    })
+    analysis_card = build_research_analysis_card(
+        analysis_id=f"{spec.get('strategy_name')}__analysis",
+        candidate_id=spec.get('strategy_name'),
+        lane=lane,
+        metrics=metrics,
+        parent_id=prompt_receipt.get('parent_id'),
+        round_id=prompt_receipt.get('round_id'),
+        slot_id=prompt_receipt.get('slot_id'),
+        context_pack_id=prompt_receipt.get('context_pack_id') or spec.get('context_pack_id'),
+        parent_comparison=comparison,
+        root_cause=source_candidate.get('root_cause') or source_candidate.get('root_cause_decomposition') or 'candidate_result_comparison',
+        segment_contribution=source_candidate.get('segment_contribution') or source_candidate.get('segment_notes') or {},
+        next_recommendation=source_candidate.get('next_recommendation') or 'review official backtest result and mutate one bounded axis',
+        evidence_health=evidence_health,
+        validation_provenance=validation_provenance,
+        prompt_receipt=prompt_receipt,
+    )
+    return {
+        'analysis_card': analysis_card,
+        'prompt_receipt': prompt_receipt,
+        'validation_provenance': validation_provenance,
+        'discovery_novelty': novelty,
+    }
+
 def _execute_candidate_spec(
     config: ResearchLoopConfig,
     spec: dict,
@@ -816,6 +1247,16 @@ def _execute_candidate_spec(
         strategy_name=strategy_name,
         will_save_override=True,
     )
+    strict_validation = spec.get('strict_response_validation')
+    if isinstance(strict_validation, dict) and strict_validation.get('valid') is False:
+        return _candidate_item_error(
+            spec,
+            'candidate_prompt_validation',
+            strict_validation.get('failure_reason') or 'strict repair/discovery response validation failed',
+            candidate=candidate,
+            candidate_plan=candidate_plan,
+            cleanup=_candidate_not_created_cleanup(strategy_name),
+        )
 
     strategy_flow = _prepare_candidate_strategy(
         config,
@@ -901,6 +1342,14 @@ def _execute_candidate_spec(
             candidate_csv=candidate_csv,
             candidate_result=candidate_result,
         )
+    research_artifacts = _build_candidate_research_artifacts(
+        config,
+        spec,
+        candidate_result=candidate_result,
+        comparison=comparison,
+        promotion=promotion,
+    )
+
 
     return {
         'index': spec.get('index'),
@@ -909,6 +1358,11 @@ def _execute_candidate_spec(
         **{
             key: spec[key]
             for key in _RETENTION_METADATA_KEYS
+            if key in spec
+        },
+        **{
+            key: spec[key]
+            for key in _RESEARCH_METADATA_KEYS
             if key in spec
         },
         'status': 'ok',
@@ -920,12 +1374,77 @@ def _execute_candidate_spec(
         'comparison': comparison,
         'promotion': promotion,
         **reference_evaluation,
+        **research_artifacts,
         'rank': None,
         'rank_score': None,
         'selected_as_best': False,
         'cleanup': None,
     }
 
+
+def _lane_score_candidate_payload(candidate: dict) -> dict:
+    analysis_card = candidate.get('analysis_card') or {}
+    prompt_receipt = candidate.get('prompt_receipt') or {}
+    return {
+        'candidate_id': candidate.get('strategy_name'),
+        'lane': candidate.get('research_lane') or LANE_REPAIR,
+        'metrics': analysis_card.get('metrics') or (candidate.get('candidate_result') or {}).get('metrics') or {},
+        'parent_metrics': analysis_card.get('parent_metrics') or {},
+        'insight_score': analysis_card.get('insight_score'),
+        'prompt_receipt': prompt_receipt,
+        'evidence_health': analysis_card.get('evidence_health'),
+        'validation_provenance': candidate.get('validation_provenance'),
+        'discovery_novelty': candidate.get('discovery_novelty'),
+        'downstream_result': prompt_receipt.get('downstream_result'),
+    }
+
+
+def _attach_hybrid_research_scores(
+    config: ResearchLoopConfig,
+    iteration_plan: dict,
+    candidates: list[dict],
+) -> dict:
+    research_plan = iteration_plan.get('research_loop') or {}
+    if not research_plan.get('enabled'):
+        return {}
+    lane_payloads = {
+        LANE_REPAIR: [
+            _lane_score_candidate_payload(candidate)
+            for candidate in candidates
+            if candidate.get('research_lane') == LANE_REPAIR
+        ],
+        LANE_DISCOVERY: [
+            _lane_score_candidate_payload(candidate)
+            for candidate in candidates
+            if candidate.get('research_lane') == LANE_DISCOVERY
+        ],
+    }
+    preset = _condition_discovery_projection(config)['preset']
+    repair_lane = score_research_lane(lane_payloads[LANE_REPAIR], preset=preset)
+    discovery_lane = score_research_lane(lane_payloads[LANE_DISCOVERY], preset=preset)
+    detail_by_id = {
+        detail.get('candidate_id'): detail
+        for lane in (repair_lane, discovery_lane)
+        for detail in lane.get('candidate_scores', [])
+    }
+    for candidate in candidates:
+        detail = detail_by_id.get(candidate.get('strategy_name'))
+        if detail:
+            candidate['research_score_detail'] = detail
+            candidate['research_lane_score'] = detail.get('candidate_score')
+    next_allocation = resolve_hybrid_research_slots({
+        'previous_slots_by_lane': (research_plan.get('slots') or {}).get('slots_by_lane'),
+        'repair_lane': repair_lane,
+        'discovery_lane': discovery_lane,
+    })
+    return {
+        'schema_version': 1,
+        'enabled': True,
+        'repair_lane': repair_lane,
+        'discovery_lane': discovery_lane,
+        'next_allocation': next_allocation,
+        'authority': 'advisory_research_budget_only',
+    }
 
 def run_research_once(config: ResearchLoopConfig, controller) -> dict:
     """Run one analyze-generate-compare research iteration."""
@@ -1232,11 +1751,37 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         return checkpoint_result
 
     iteration_plan = _build_iteration_plan(config)
-    expression_result = generate_condition_expressions_from_analysis(
-        analysis_result,
-        top_n=iteration_plan['effective_top_n'],
-    )
+    planned_candidate_count = _iteration_candidate_count(config, iteration_plan)
+    research_loop_enabled = bool((iteration_plan.get('research_loop') or {}).get('enabled'))
+    candidate_pack_result = {}
+    if research_loop_enabled:
+        candidate_pack = (
+            analysis_result.get('research_candidate_pack')
+            or analysis_result.get('llm_candidate_pack')
+            or analysis_result.get('candidate_pack')
+            or {}
+        )
+        if candidate_pack:
+            candidate_pack_result = expression_result_from_candidate_pack(
+                candidate_pack,
+                planned_count=planned_candidate_count,
+                min_candidates=2,
+            )
+    if candidate_pack_result.get('status') == 'ok':
+        expression_result = candidate_pack_result
+    else:
+        expression_result = generate_condition_expressions_from_analysis(
+            analysis_result,
+            top_n=iteration_plan['effective_top_n'],
+        )
+        if research_loop_enabled:
+            expression_result = mark_diagnostic_fallback(
+                expression_result,
+                reason=candidate_pack_result.get('fallback_reason') or 'llm_candidate_pack_missing',
+            )
     expressions = expression_result.get('expressions') or []
+    if expression_result.get('source') == 'llm_multi_hypothesis_candidate_pack' and len(expressions) >= 2:
+        planned_candidate_count = len(expressions)
     if expression_result.get('status') != 'ok' or not expressions:
         recorder.mark(
             'iteration_aborted',
@@ -1264,8 +1809,8 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             ),
             failure_policy,
         )
-    if len(expressions) < config.candidate_count:
-        message = f"candidate_count={config.candidate_count} requested but only {len(expressions)} expressions generated"
+    if len(expressions) < planned_candidate_count:
+        message = f"candidate_count={planned_candidate_count} requested but only {len(expressions)} expressions generated"
         recorder.mark(
             'iteration_aborted',
             phase='insufficient_expressions',
@@ -1284,7 +1829,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
                 analysis_result=analysis_result,
                 expression_result=expression_result,
                 iteration_plan=iteration_plan,
-                requested_candidate_count=config.candidate_count,
+                requested_candidate_count=planned_candidate_count,
                 expression_count=len(expressions),
                 candidate_specs=[],
                 candidates=[],
@@ -1311,7 +1856,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
     iteration_v4 = None
     iteration_v5 = None
     actual_rowset_selection = None
-    candidate_execution_count = config.candidate_count
+    candidate_execution_count = planned_candidate_count
     if config.iteration_v2_mode == 'best_feature_mix':
         best_context = {
             'strategy_name': config.iteration_v2_best_candidate,
@@ -1389,13 +1934,13 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
                 primary_feature=config.iteration_v2_primary_feature,
                 trade_amount_feature=config.iteration_v2_trade_amount_feature,
                 secondary_features=_split_csv_values(config.iteration_v2_secondary_features),
-                candidate_count=config.candidate_count,
+                candidate_count=planned_candidate_count,
             )
             expression_candidates = recovery_result.get('candidates') or []
             iteration_v5 = {
                 'status': 'pool_built',
                 'mode': 'best_feature_mix_v5',
-                'requested_count': config.candidate_count,
+                'requested_count': planned_candidate_count,
                 'v4_candidate_count': len(iteration_v4.get('candidates') or []),
                 'initial_v4_candidate_count': recovery_result.get('initial_v4_candidate_count'),
                 'recovery': {
@@ -1424,16 +1969,19 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             baseline_frame,
             min_retention=config.min_estimated_retention,
         )
-        rowset_selection_count = config.candidate_count
+        rowset_selection_count = candidate_execution_count
         if config.iteration_v2_mode == 'best_feature_mix_v5':
             eligible_count = sum(
                 1 for candidate in annotated_candidates
                 if candidate.get('retention_filter_passed') is True
             )
-            rowset_selection_count = planned_v5_execution_count(
-                requested_count=config.candidate_count,
-                eligible_count=eligible_count,
-            )
+            if research_loop_enabled:
+                rowset_selection_count = planned_candidate_count
+            else:
+                rowset_selection_count = planned_v5_execution_count(
+                    requested_count=planned_candidate_count,
+                    eligible_count=eligible_count,
+                )
             candidate_execution_count = rowset_selection_count
         selected_candidates, retention_selection = select_rowset_diverse_candidates(
             annotated_candidates,
@@ -1444,7 +1992,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             iteration_v5 = {
                 **(iteration_v5 or {}),
                 'status': 'execution_pool_selected',
-                'requested_count': config.candidate_count,
+                'requested_count': planned_candidate_count,
                 'eligible_count': eligible_count,
                 'execution_count': len(selected_candidates),
                 'planned_execution_count': rowset_selection_count,
@@ -1457,7 +2005,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         )
         selected_candidates, retention_selection = select_retention_aware_candidates(
             annotated_candidates,
-            candidate_count=config.candidate_count,
+            candidate_count=candidate_execution_count,
             allow_fallback=config.allow_retention_fallback,
             min_retention=config.min_estimated_retention,
         )
@@ -1507,9 +2055,10 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             ),
             failure_policy,
         )
-    if len(selected_candidates) < config.candidate_count:
+    required_selected_count = planned_candidate_count if config.iteration_v2_mode == 'best_feature_mix_v5' else candidate_execution_count
+    if len(selected_candidates) < required_selected_count:
         message = (
-            f"candidate_count={config.candidate_count} requested but only "
+            f"candidate_count={required_selected_count} requested but only "
             f"{len(selected_candidates)} candidates selected after retention filtering"
         )
         recorder.mark(
@@ -1533,7 +2082,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
                 **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
                 retention_selection=retention_selection,
                 retention_candidates=retention_candidates,
-                requested_candidate_count=config.candidate_count,
+                requested_candidate_count=required_selected_count,
                 selected_candidate_count=len(selected_candidates),
                 **_v5_candidate_pool_metadata(iteration_v5, retention_selection),
                 candidate_specs=[],
@@ -1560,7 +2109,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         phase='candidate_pool',
         detail={
             'candidate_spec_count': len(specs),
-            'requested_count': config.candidate_count,
+            'requested_count': planned_candidate_count,
             'execution_count': candidate_execution_count,
         },
     )
@@ -1716,7 +2265,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             'actual_rowset_selection': {
                 'status': 'not_run',
                 'reason': 'candidate_iteration_runtime_failure',
-                'requested_count': config.candidate_count,
+                'requested_count': planned_candidate_count,
                 'successful_candidate_count': 0,
             },
             'cleanup_summary': cleanup_summary,
@@ -1728,6 +2277,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             result_payload,
             failure_policy,
         )
+    hybrid_research_result = _attach_hybrid_research_scores(config, iteration_plan, candidates)
     ranked_candidates, best_candidate = _rank_candidate_results(candidates, config)
     if config.iteration_v2_mode == 'best_feature_mix_v5':
         successful_candidates = [
@@ -1735,17 +2285,17 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             for candidate in ranked_candidates
             if candidate.get('status') == 'ok'
         ]
-        if len(successful_candidates) < config.candidate_count:
+        if len(successful_candidates) < planned_candidate_count:
             actual_rowset_selection = {
                 'status': 'not_run',
                 'reason': 'insufficient_successful_candidates',
-                'requested_count': config.candidate_count,
+                'requested_count': planned_candidate_count,
                 'successful_candidate_count': len(successful_candidates),
             }
             iteration_v5 = {
                 **(iteration_v5 or {}),
                 'status': 'not_run',
-                'requested_count': config.candidate_count,
+                'requested_count': planned_candidate_count,
                 'execution_count': len(specs),
                 'actual_selected_count': 0,
                 'row_set_identity_status': 'not_evaluated',
@@ -1758,7 +2308,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             _, actual_rowset_selection = select_actual_rowset_representatives(
                 ranked_candidates,
                 runtime_root=Path.cwd(),
-                requested_count=config.candidate_count,
+                requested_count=planned_candidate_count,
             )
             ranked_candidates, best_candidate = apply_actual_rowset_selection(
                 ranked_candidates,
@@ -1767,7 +2317,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             iteration_v5 = {
                 **(iteration_v5 or {}),
                 'status': actual_rowset_selection.get('status'),
-                'requested_count': config.candidate_count,
+                'requested_count': planned_candidate_count,
                 'execution_count': len(specs),
                 'actual_selected_count': actual_rowset_selection.get('selected_count'),
                 'row_set_identity_status': actual_rowset_selection.get('row_set_identity_status'),
@@ -1804,6 +2354,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         'expression_result': expression_result,
         'iteration_plan': iteration_plan,
         **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
+        'hybrid_research': hybrid_research_result,
         'retention_selection': retention_selection,
         'retention_candidates': retention_candidates,
         'candidate_specs': specs,

@@ -133,6 +133,15 @@ def test_evidence_workspace_labels_each_owner_surface() -> None:
     assert "조건식 발굴 거버넌스" in panels
     assert "생성품질 점수" in panels
     assert "Human DB pattern cards" in panels
+    assert "Research Pack / Branch Tree" in panels
+    assert "context pack health" in panels
+    assert "candidate pack" in panels
+    assert "analysis cards" in panels
+    assert "prompt receipts" in panels
+    assert "fallback status" in panels
+    assert "Promotion blockers" in panels
+    assert "zero-generation review" in panels
+    assert "authority pending/blocked" in panels
     assert "<ConditionDiscoveryPanel state={state} wsStatus={wsStatus} />" in app
     assert "workspace-owner-boundary" in src
     for active in ('activeKey="records"', 'activeKey="lab"', 'activeKey="workbench"', 'activeKey="verdict"'):
@@ -440,3 +449,6 @@ def test_process_flow_growth_keeps_readonly_state_contract() -> None:
     assert "쉽게 보는 조건식 발굴 루프" in process_doc
     assert "같은 좌표 양분기" not in process_doc
     assert "사후슬라이스 착시" not in process_doc
+    assert "Research Prompt Context Pack → Analysis Card v2 → Multi-Hypothesis Candidate Pack" in process_doc
+    assert "Promotion Review = zero-generation" in process_doc
+    assert "diagnostic fallback" in process_doc
