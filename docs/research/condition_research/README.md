@@ -39,8 +39,8 @@
 | 2026-06-18 | `2026-06-18_current_state_rereview_summary.md` | 조건식 생성/OOS/포트폴리오/대시보드 연구 현황의 최신 점수와 다음 공식 OOS 우선순위 |
 | 2026-06-30 | `2026-06-30_condition_research_knowledge_system.md` | 조건식 이름/계보/Condition Passport/연구 문서 관리 시스템 설계 |
 | 2026-06-30 | `2026-06-30_next_improved_process_research_plan.md` | 개선된 process-research v2의 다음 실제 연구 실행 계획서 |
-| 2026-07-01 | `2026-07-01_process_research_v2_handoff_and_sell_axis.md` | process-research v2 전체 핸드오프: 실전 검증 결과, 커밋 전 파일 정리, 매도 조건식 연구축 |
-| 2026-07-01 | `2026-07-01_uncommitted_inventory_and_commit_plan.md` | 커밋 전 파일 인벤토리와 코드/문서/evidence 분리 커밋 계획 |
+| 2026-07-01 | `2026-07-01_process_research_v2_handoff_and_sell_axis.md` | process-research v2 전체 핸드오프: 실전 검증 결과, 커밋 정리 결과, 매도 조건식 연구축 |
+| 2026-07-01 | `2026-07-01_uncommitted_inventory_and_commit_plan.md` | 커밋 전 인벤토리와 커밋 후 `.gjc`/`.omo` 보류 상태 정리 기록 |
 
 ## 원본 보고서 핵심
 

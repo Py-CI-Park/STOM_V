@@ -181,71 +181,44 @@ promotion-review는 조건식 생성이 아니다. 다음 조건을 만족할 �
 - evidence health가 충분함
 - export/live/final promotion은 여전히 금지
 
-## 7. 커밋되지 않은 파일 정리 방안
+## 7. 파일 정리와 커밋 결과
 
-현재 worktree에는 이번 연구와 직접 관련된 파일, 이전 연구 evidence, GJC runtime state, 대시보드/프로세스 개선 코드가 섞여 있다. `git add -A`는 금지하고, 아래처럼 그룹별로 선별해야 한다.
+이번 정리에서는 `git add -A`를 쓰지 않고 코드/테스트, 연구 문서, evidence artifacts를 분리해 명시적으로 커밋했다. 현재 남은 untracked는 `.gjc/` runtime state와 `.omo/` 대량 evidence이며, 둘 다 일반 소스 커밋에서 제외했다.
 
-### 7.1 커밋 후보 A — 프로세스 개선 코드와 테스트
+### 7.1 완료 커밋 A — 프로세스 개선 코드와 테스트
 
-| 분류 | 파일 |
+| Commit | 포함 범위 |
 |---|---|
-| Prompt/Context Pack | `ai_strategy_loop/brain/prompt.py` |
-| Research policy/analysis card/authority | `ai_strategy_loop/controller/condition_discovery.py` |
-| Candidate pack parsing/validation | `cli/condition_generator.py` |
-| Research loop wiring | `cli/research_loop.py` |
-| Ranking/receipt metadata | `cli/research_ranking.py` |
-| Dashboard observability | `ai_strategy_loop/dashboard/frontend/panels-analysis.jsx`, `docs/process_flow.html` |
-| Tests | `tests/unit/test_research_prompt_contracts.py`, `tests/unit/test_condition_discovery_policy.py`, `tests/unit/test_condition_generator.py`, `tests/unit/test_research_loop.py`, `tests/unit/dashboard/test_dashboard_ui_remodel.py` |
+| `332106f2 조건식 연구 컨텍스트팩과 다중 후보 루프 개선` | `ai_strategy_loop/brain/prompt.py`, `ai_strategy_loop/controller/condition_discovery.py`, `cli/condition_generator.py`, `cli/research_loop.py`, `cli/research_ranking.py`, dashboard observability, focused unit tests |
 
-권장 커밋 성격: `조건식 연구 컨텍스트팩과 다중 후보 루프 개선`.
+### 7.2 완료 커밋 B — durable 연구 문서
 
-### 7.2 커밋 후보 B — durable 연구 문서
-
-| 분류 | 파일/디렉터리 |
+| Commit | 포함 범위 |
 |---|---|
-| 연구 지식 시스템 | `docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md` |
-| 다음 개선 계획 | `docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md` |
-| 현재 핸드오프 문서 | `docs/research/condition_research/2026-07-01_process_research_v2_handoff_and_sell_axis.md` |
-| README 인덱스 | `docs/research/condition_research/README.md` |
-| 조건식 passport | `docs/research/condition_research/condition_passports/` |
-| 실전 검증 run 문서 | `docs/research/condition_research/research_runs/` |
-| 이전 자동 보고서 | `docs/research/condition_research/auto_reports/` |
+| `833bc650 조건식 연구 기록과 핸드오프 문서 정리` | Condition Passport, process-research v2 계획/관리/결과 보고서, research docs index, update logs, 현재 핸드오프 문서 계열 |
 
-권장 커밋 성격: `조건식 연구 문서 체계와 v2 검증 기록 정리`.
+### 7.3 완료 커밋 C — 검증 evidence artifacts
 
-### 7.3 커밋 후보 C — 검증 evidence artifacts
-
-| 분류 | 파일/디렉터리 |
+| Commit | 포함 범위 |
 |---|---|
-| 이번 run 핵심 evidence | `artifacts/process-research-validation-20260701/` |
-| 이전 process presentation | `artifacts/process-research-actual-20260629/` |
-| quality gate / review receipts | `artifacts/g001-*`, `artifacts/g002-*`, `artifacts/g003-*`, `artifacts/phase*-*`, `artifacts/process-research-*` |
+| `942e8b28 조건식 연구 검증 산출물 보존` | `artifacts/process-research-validation-20260701/`의 Context Pack, Analysis/Card/Candidate receipts, official backtest receipts, HTML/screenshot, quality gates와 관련 연구 evidence artifacts |
 
-권장: repo 정책상 artifact를 커밋할지 여부가 불명확하면, 핵심 JSON/MD/HTML/PNG만 선별한다. `__pycache__/` 같은 생성물은 staging 금지.
-
-### 7.4 커밋 제외 또는 별도 검토
+### 7.4 보류한 파일군
 
 | 분류 | 이유 |
 |---|---|
-| `.gjc/` | 현재 세션 workflow/runtime state다. 일반 소스 커밋에는 보통 포함하지 않는다. |
-| `.omo/evidence/tmap-walkforward/` 대량 evidence | 이번 2026-07-01 Ultragoal run과 직접 관련 없는 이전/별도 연구 evidence가 대량 섞여 있다. 별도 inventory 후 판단한다. |
-| `artifacts/*__pycache__*` | Python bytecode 생성물. 커밋 제외. |
+| `.gjc/` | 현재 세션 workflow/runtime state다. Ultragoal ledger/checkpoint audit trail로 유지하고 일반 소스 커밋에는 포함하지 않는다. |
+| `.omo/evidence/`, `.omo/plans/`, `.omo/drafts/` | 과거/별도 연구 evidence, WAL/로그/스크린샷, draft plan이 섞여 있다. 별도 OMO inventory 전까지 커밋하지 않는다. |
+| `artifacts/*__pycache__*` | Python bytecode 생성물. 정리 후 커밋 제외했다. |
 | protected paths | `_database/`, `_log/`, `*.db`, `backtest/graph/` 등은 source edit로 취급하지 않는다. 이번 protected path check에서는 변경 없음. |
 
-### 7.5 안전한 staging 예시
-
-아래는 예시다. 실제 커밋 전에는 `git diff --check`와 focused tests를 다시 실행한다.
+### 7.5 최종 확인 명령
 
 ```powershell
-# 코드 + 테스트만 선별
-# git add ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py ai_strategy_loop/dashboard/frontend/panels-analysis.jsx
-# git add cli/condition_generator.py cli/research_loop.py cli/research_ranking.py
-# git add tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py
-
-# 연구 문서만 선별
-# git add docs/research/condition_research/README.md
-# git add docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md docs/research/condition_research/2026-07-01_process_research_v2_handoff_and_sell_axis.md
-# git add docs/research/condition_research/condition_passports docs/research/condition_research/research_runs
+git log --oneline -5
+git status --short
+git diff --check
+git status --short -- _database _database_v3k_shadow _log backup "*.db" backtest/graph .omx/reports "v3k_settings*.json" _v3k_sidecar/v3k_gui_settings.json
 ```
 
 ## 8. 주요 evidence 경로

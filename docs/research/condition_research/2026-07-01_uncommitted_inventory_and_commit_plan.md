@@ -13,9 +13,9 @@
 | remaining untracked groups | `.gjc`, `.omo` | GJC session state와 OMO 과거/별도 evidence라 일반 커밋 제외 |
 | protected runtime path 변경 | 0 | protected path check에서 변경 없음 |
 
-## Modified tracked files — 커밋 후보 A
+## Historical pre-commit snapshot — 당시 modified tracked files
 
-아래 12개는 현재 git이 추적 중이며 수정된 파일이다. 하나의 코드 커밋으로 묶을 수 있지만, 문서와 대시보드 변경까지 포함되므로 최종 리뷰 후 분리 커밋도 가능하다.
+아래 12개는 커밋 전 인벤토리 시점에 git이 추적 중이며 수정되어 있던 파일이다. 현재는 `332106f2` 코드/테스트 커밋과 `833bc650` 문서 커밋으로 정리 완료되었다.
 
 | 파일 | 역할 | 권장 처리 |
 |---|---|---|
@@ -72,9 +72,9 @@
 | `artifacts/process-research-validation-20260701/quality_gate_G001.json` 등 | Ultragoal quality gate | evidence 커밋 후보 |
 | `artifacts/process-research-validation-20260701/__pycache__/` | Python bytecode | 정리 완료, 커밋 제외 |
 
-## 커밋 분리 추천
+## Historical commit split plan — 실행 완료된 분리 기준
 
-### Commit 1 — 코드와 테스트
+### Commit 1 — 코드와 테스트, 완료됨
 
 목적: process-research v2 기능 개선 자체를 기록한다.
 
@@ -95,7 +95,7 @@ tests/unit/dashboard/test_dashboard_ui_remodel.py
 docs/process_flow.html
 ```
 
-### Commit 2 — 연구 문서 체계
+### Commit 2 — 연구 문서 체계, 완료됨
 
 목적: 사람과 AI가 연구 맥락을 재구성할 수 있는 durable docs를 남긴다.
 
@@ -111,7 +111,7 @@ docs/research/condition_research/condition_passports/
 docs/research/condition_research/research_runs/
 ```
 
-### Commit 3 — 연구 evidence artifacts
+### Commit 3 — 연구 evidence artifacts, 완료됨
 
 목적: 실전 검증 run을 재검토할 수 있는 증거를 보존한다.
 
