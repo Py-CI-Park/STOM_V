@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "gjc.browser",
+  "url": "http://127.0.0.1:8770/ui/backtest and /ui/chart-replay",
+  "startedAt": "2026-06-21T08:19:47.732000Z",
+  "endedAt": "2026-06-21T08:19:50.232000Z",
+  "actions": [
+    {
+      "timestampMs": 0,
+      "timestamp": "2026-06-21T08:19:47.732000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "Adversarial case editor_toggle_state verdict passed",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 500,
+      "timestamp": "2026-06-21T08:19:48.232000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "Adversarial case db_error_library_ui verdict passed",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 1000,
+      "timestamp": "2026-06-21T08:19:48.732000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "Adversarial case db_error_editor_ui verdict passed",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 1500,
+      "timestamp": "2026-06-21T08:19:49.232000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "Adversarial case self_vars_ui_import verdict passed",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 2000,
+      "timestamp": "2026-06-21T08:19:49.732000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "Adversarial case backfinder_preflight_ui verdict passed",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 2500,
+      "timestamp": "2026-06-21T08:19:50.232000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "Adversarial case chart_replay_errors_ui verdict passed",
+      "result": "passed"
+    }
+  ],
+  "checks": {
+    "editor_toggle_state": {
+      "verdict": "passed",
+      "buyName": "G004_BUY_DRAFT",
+      "sellName": "G004_SELL_DRAFT",
+      "buyCodePreserved": true,
+      "sellCodePreserved": true,
+      "controlsVisible": true
+    },
+    "db_error_library_ui": {
+      "verdict": "passed",
+      "textHit": true
+    },
+    "db_error_editor_ui": {
+      "verdict": "passed"
+    },
+    "self_vars_ui_import": {
+      "verdict": "passed",
+      "hasNoExecCopy": true
+    },
+    "backfinder_preflight_ui": {
+      "verdict": "passed"
+    },
+    "chart_replay_errors_ui": {
+      "verdict": "passed",
+      "signalErrorVisible": true,
+      "wsErrorVisible": true
+    }
+  },
+  "raw": {
+    "schemaVersion": 1,
+    "kind": "g004-adversarial-browser",
+    "capturedAt": "2026-06-21T08:19:47.732Z",
+    "cases": {
+      "editor_toggle_state": {
+        "verdict": "passed",
+        "buyName": "G004_BUY_DRAFT",
+        "sellName": "G004_SELL_DRAFT",
+        "buyCodePreserved": true,
+        "sellCodePreserved": true,
+        "controlsVisible": true
+      },
+      "db_error_library_ui": {
+        "verdict": "passed",
+        "textHit": true
+      },
+      "db_error_editor_ui": {
+        "verdict": "passed"
+      },
+      "self_vars_ui_import": {
+        "verdict": "passed",
+        "hasNoExecCopy": true
+      },
+      "backfinder_preflight_ui": {
+        "verdict": "passed"
+      },
+      "chart_replay_errors_ui": {
+        "verdict": "passed",
+        "signalErrorVisible": true,
+        "wsErrorVisible": true
+      }
+    }
+  }
+}

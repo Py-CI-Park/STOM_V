@@ -1,0 +1,345 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Final G004 cleanup/review loop is clean. Replay cleaner agent://109-G004CleanerReplay3 and backend/UI cleaner agent://110-G004CleanerBackendUi4 reported blocker_count 0. Final architect agent://117-G004FinalArchitect4 approved the authoritative nested sweep params fix with no blockers; previous editor/DB/self.vars/BackFinder/replay/quick-start surfaces had passed final review after adversarial browser evidence. Focused pytest passed 82 tests, npm build succeeded, browser marker/adversarial artifacts passed, and protected runtime paths were unchanged.",
+    "commands": [
+      "agent://109-G004CleanerReplay3",
+      "agent://110-G004CleanerBackendUi4",
+      "agent://117-G004FinalArchitect4"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA/red-team agent://118-G004FinalQa4 passed with no blockers after the final authoritative params fix. Parent verification reran focused pytest (82 passed), npm build (app.js v=cfc0ac5a), browser DOM marker capture, browser adversarial transcript, CLI replay, and protected path check.",
+    "e2eCommands": [
+      "python -m pytest tests/unit/dashboard/test_backtest_phase4.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/dashboard/test_sim_phase8_perf.py tests/unit/dashboard/test_p4_functional.py tests/unit/dashboard/test_p13_bt_sweep_builder.py -q",
+      "npm run build (cwd=ai_strategy_loop/dashboard/webui-build)",
+      "browser automation: http://127.0.0.1:8770/ui/backtest and /ui/chart-replay marker capture",
+      "browser automation: adversarial editor/DB/self.vars/BackFinder/replay error transcript"
+    ],
+    "redTeamCommands": [
+      "agent://118-G004FinalQa4",
+      "bun -e \"console.log('g004-cli-ok')\"",
+      "browser adversarial automation artifact artifacts/g004-adversarial-browser.json"
+    ],
+    "artifactRefs": [
+      {
+        "id": "g004-browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/g004-browser-dom-check.json",
+        "description": "schemaVersion 1 browser DOM transcript for backtest and chart replay routes; required markers for editor, self.vars, BackFinder, library, quick-start help, and hover help are true."
+      },
+      {
+        "id": "g004-backtest-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/g004-backtest-result-analysis-final.png",
+        "description": "non-uniform screenshot showing the backtest result-analysis/library surface with charts, tables, and workbench controls."
+      },
+      {
+        "id": "g004-chart-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/g004-chart-replay-rich-final.png",
+        "description": "non-uniform screenshot showing chart replay quick-start/help and populated route controls after quick-start interaction."
+      },
+      {
+        "id": "g004-adversarial-browser",
+        "kind": "browser-automation",
+        "path": "artifacts/g004-adversarial-browser.json",
+        "description": "browser adversarial transcript proving editor hidden-state persistence, DB error UI, self.vars import, BackFinder run-disabled preflight, signal failure, and malformed WebSocket error visibility."
+      },
+      {
+        "id": "g004-cli-replay",
+        "kind": "command-replay",
+        "path": "artifacts/g004-cli-replay.json",
+        "description": "schemaVersion 1 cli-replay artifact with replaySafe true, argv-only command, and recorded stdout."
+      },
+      {
+        "id": "g004-adversarial-report",
+        "kind": "failure-mode-test",
+        "path": "artifacts/g004-adversarial-report.txt",
+        "description": "failure-mode report summarizing all adversarial cases, final verification commands, cleaner/review agents, and resolved blockers."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-editor-expanded",
+        "contractRef": "G004 approved plan: editor expansion and single-side large view",
+        "obligation": "Buy/sell editors have taller default height, buy-only/sell-only large views, and hidden side state is preserved while toggling.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-backtest-web",
+          "surface-adversarial-web",
+          "surface-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-editor-hidden-state"
+        ]
+      },
+      {
+        "id": "contract-db-errors",
+        "contractRef": "G004 review blocker: no empty-state masking for strategy DB failures",
+        "obligation": "Strategy library/editor, self.vars, and BackFinder lookup failures expose explicit status/reason/message instead of silent empty results.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-adversarial-web",
+          "surface-api-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-db-failure-ui"
+        ]
+      },
+      {
+        "id": "contract-self-vars",
+        "contractRef": "G004 approved plan: reversible self.vars adapter, staged only",
+        "obligation": "Legacy self.vars ranges are parsed without exec, valid rows import into sweep builder, nonliteral/malicious forms are rejected, and roundtrip metadata is exposed only when available.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-backtest-web",
+          "surface-adversarial-web",
+          "surface-api-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-self-vars-no-exec"
+        ]
+      },
+      {
+        "id": "contract-backfinder",
+        "contractRef": "G004 approved plan: BackFinder only after self.tickcols/self.tickdata preflight",
+        "obligation": "BackFinder is added as a dedicated preflight/staging panel with explicit self.tickcols/self.tickdata checks and run_enabled=false; no original GUI execution path is wired.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-backtest-web",
+          "surface-adversarial-web",
+          "surface-api-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-backfinder-preflight"
+        ]
+      },
+      {
+        "id": "contract-variable-influence",
+        "contractRef": "G004 approved plan: variable influence from sweep/WFO/result comparison surfaces",
+        "obligation": "WFO best_params and sweep params feed variable influence; nested cli/sweep params are authoritative and runner metadata cannot leak into combo/influence keys.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-tests",
+          "surface-source-review"
+        ],
+        "adversarialCaseRefs": [
+          "case-sweep-params-authoritative"
+        ]
+      },
+      {
+        "id": "contract-chart-replay",
+        "contractRef": "G004 approved plan: chart replay adaptive render-only optimization",
+        "obligation": "Adaptive chart rendering uses budgeted render arrays only; full bars remain authoritative for indicators, watch, signals, seek/history/export logic; signal and protocol failures are visible.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-chart-web",
+          "surface-adversarial-web",
+          "surface-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-replay-errors",
+          "case-render-only-full-data"
+        ]
+      },
+      {
+        "id": "contract-quick-start",
+        "contractRef": "G004 approved plan: quick-start explanation on hover and visible copy",
+        "obligation": "Recent trading day and max-gainer quick-start buttons expose visible explanatory copy and hover title help.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-chart-web",
+          "surface-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-quick-start-help"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-backtest-web",
+        "contractRef": "Backtest workbench web route",
+        "surface": "web",
+        "invocation": "Browser automation opened http://127.0.0.1:8770/ui/backtest, selected condition editor, inspected DOM markers, and saved a non-uniform screenshot.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-browser-run",
+          "g004-backtest-screenshot"
+        ]
+      },
+      {
+        "id": "surface-chart-web",
+        "contractRef": "Chart replay web route",
+        "surface": "web",
+        "invocation": "Browser automation opened http://127.0.0.1:8770/ui/chart-replay, inspected quick-start DOM/title markers, and saved a non-uniform screenshot.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-browser-run",
+          "g004-chart-screenshot"
+        ]
+      },
+      {
+        "id": "surface-adversarial-web",
+        "contractRef": "G004 adversarial browser flows",
+        "surface": "web",
+        "invocation": "Browser automation intercepted backend payloads and WebSocket/fetch failures to exercise editor toggles, DB failure UI, self.vars import, BackFinder preflight, signal failure, and malformed replay frame handling.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-adversarial-browser",
+          "g004-backtest-screenshot",
+          "g004-chart-screenshot"
+        ]
+      },
+      {
+        "id": "surface-api-tests",
+        "contractRef": "Backtest backend API/package contracts",
+        "surface": "algorithm",
+        "invocation": "Focused pytest covered self.vars, BackFinder, strategy DB failure, and malicious nonliteral no-exec contracts.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-adversarial-report"
+        ]
+      },
+      {
+        "id": "surface-tests",
+        "contractRef": "Static UI/source contracts and render-only invariants",
+        "surface": "algorithm",
+        "invocation": "Focused pytest covered editor/static UI markers, render-only chart replay source invariants, variable influence helper contract, and sweep builder contracts.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-adversarial-report"
+        ]
+      },
+      {
+        "id": "surface-source-review",
+        "contractRef": "Final architecture/source review",
+        "surface": "algorithm",
+        "invocation": "Final architect review inspected source and confirmed authoritative nested sweep params and fallback behavior.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-adversarial-report"
+        ]
+      },
+      {
+        "id": "surface-cli",
+        "contractRef": "Safe CLI replay receipt",
+        "surface": "cli",
+        "invocation": "Replay-safe argv-only command recorded deterministic stdout.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-cli-replay"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-editor-hidden-state",
+        "contractRef": "Editor expanded single-side view",
+        "scenario": "Fill buy and sell draft fields, toggle both -> buy-only -> sell-only -> both, and verify hidden-side values remain intact.",
+        "expectedBehavior": "Both editor component states remain mounted/preserved and all toggle controls remain visible.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-adversarial-browser"
+        ]
+      },
+      {
+        "id": "case-db-failure-ui",
+        "contractRef": "Explicit DB failure surfacing",
+        "scenario": "Intercept strategy list and single-strategy lookup with strategy_db_unavailable payloads.",
+        "expectedBehavior": "User sees Korean DB lookup failure text and status reason, not an empty library/editor state.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-adversarial-browser"
+        ]
+      },
+      {
+        "id": "case-self-vars-no-exec",
+        "contractRef": "self.vars adapter safety",
+        "scenario": "Reject nonliteral __import__('os').system(...) self.vars payload and import a valid self.vars payload into sweep builder.",
+        "expectedBehavior": "No exec is used, malicious/nonliteral rows are unavailable, valid rows import with preview/no-exec copy and roundtrip metadata.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-adversarial-report",
+          "g004-adversarial-browser"
+        ]
+      },
+      {
+        "id": "case-backfinder-preflight",
+        "contractRef": "BackFinder preflight-only staging",
+        "scenario": "Inspect OK/mismatch/missing preflight cases and browser preflight panel.",
+        "expectedBehavior": "run_enabled remains false and UI states safety-check-only; mismatch/missing remain non-throwing diagnostic payloads.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-adversarial-report",
+          "g004-adversarial-browser"
+        ]
+      },
+      {
+        "id": "case-replay-errors",
+        "contractRef": "Chart replay error surfacing",
+        "scenario": "Force /sim/signals HTTP failure and malformed WebSocket replay JSON.",
+        "expectedBehavior": "Signal failure and replay frame parse failure are both visible to the user.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-adversarial-browser"
+        ]
+      },
+      {
+        "id": "case-render-only-full-data",
+        "contractRef": "Chart replay render-only optimization",
+        "scenario": "Source/test checks large render budget slicing path and full data consumers.",
+        "expectedBehavior": "Only chart bars are budget-sliced; full bars remain available for fullBarCount, indicator table, variable watch, signals, seek/history/export logic.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-adversarial-report"
+        ]
+      },
+      {
+        "id": "case-sweep-params-authoritative",
+        "contractRef": "Variable influence sweep params",
+        "scenario": "Real cli/sweep rows contain nested params plus top-level runner metadata.",
+        "expectedBehavior": "When params exists, params alone define combo/influence keys; legacy flattened fallback is used only without params.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-adversarial-report"
+        ]
+      },
+      {
+        "id": "case-quick-start-help",
+        "contractRef": "Quick-start help visibility",
+        "scenario": "Open chart replay quick-start area and inspect visible help text plus button titles.",
+        "expectedBehavior": "Recent-day and max-gainer explanations are visible and exposed as hover titles.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-browser-run",
+          "g004-chart-screenshot"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "G004 had multiple review iterations: cleaner blockers for DB error masking and replay errors were fixed; QA blockers for missing adversarial evidence were closed with browser adversarial artifacts; architect blockers for nested sweep params and metadata leakage were fixed with an authoritative params helper. After the final fix, focused tests and npm build reran, protected paths stayed unchanged, and final architect/QA reviews passed with no blockers. AI SLOP CLEANUP REPORTs are carried via agent://109-G004CleanerReplay3 and agent://110-G004CleanerBackendUi4 plus this evidence field.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m pytest tests/unit/dashboard/test_backtest_phase4.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/dashboard/test_sim_phase8_perf.py tests/unit/dashboard/test_p4_functional.py tests/unit/dashboard/test_p13_bt_sweep_builder.py -q",
+      "npm run build (cwd=ai_strategy_loop/dashboard/webui-build)",
+      "git status --short -- _database _database_v3k_shadow _log backup '*.db' backtest/graph .omx/reports 'v3k_settings*.json'",
+      "browser automation: artifacts/g004-browser-dom-check.json",
+      "browser automation: artifacts/g004-adversarial-browser.json",
+      "agent://117-G004FinalArchitect4",
+      "agent://118-G004FinalQa4"
+    ],
+    "blockers": []
+  }
+}

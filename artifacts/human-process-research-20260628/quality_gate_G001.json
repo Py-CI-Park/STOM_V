@@ -1,0 +1,106 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 167-G001BaselineReview inspected baseline/schema artifacts and approved research-only baseline setup; QA blocker was fixed by adding analysis safety_flags and rerun 169-G001BaselineQaRerun passed.",
+    "commands": [
+      "agent://167-G001BaselineReview",
+      "agent://169-G001BaselineQaRerun",
+      "python scripts/verify_nonrelease_sync.py",
+      "git status --short protected paths"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Read-only JSON/schema QA parsed baseline_setup, candidate_card_schema, analysis_card_schema; adversarial check confirmed export/live/finalPromotion false, canonical process-research/research, baseline candidates, advisory slippage semantics, and 64->32 fallback triggers.",
+    "e2eCommands": [
+      "read-only JSON parse by 169-G001BaselineQaRerun"
+    ],
+    "redTeamCommands": [
+      "schema omission red-team: initial safety_flags omission found and fixed; rerun passed"
+    ],
+    "artifactRefs": [
+      {
+        "id": "baseline-setup",
+        "kind": "test-report",
+        "path": "artifacts/human-process-research-20260628/baseline_setup.json",
+        "description": "G001 baseline/safety setup artifact"
+      },
+      {
+        "id": "candidate-schema",
+        "kind": "algorithm-boundary-report",
+        "path": "artifacts/human-process-research-20260628/candidate_card_schema.json",
+        "description": "candidate-card schema with research-only safety flags"
+      },
+      {
+        "id": "analysis-schema",
+        "kind": "algorithm-boundary-report",
+        "path": "artifacts/human-process-research-20260628/analysis_card_schema.json",
+        "description": "analysis-card schema with explicit safety_flags"
+      },
+      {
+        "id": "qa-rerun",
+        "kind": "test-report",
+        "path": "artifacts/human-process-research-20260628/g001_qa_rerun_receipt.json",
+        "description": "read-only QA rerun evidence"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-g001-baseline",
+        "contractRef": "G001 objective",
+        "obligation": "Record branch/state, nonrelease/protected checks, dashboard/lock/GPT auth, baseline candidates, schemas, slippage semantics, and 64->32 fallback policy",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-artifacts"
+        ],
+        "adversarialCaseRefs": [
+          "case-schema-safety-omission"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-artifacts",
+        "contractRef": "G001 baseline artifacts",
+        "surface": "api",
+        "invocation": "Read-only artifact inspection and JSON parse by architect/QA agents",
+        "verdict": "passed",
+        "artifactRefs": [
+          "baseline-setup",
+          "candidate-schema",
+          "analysis-schema",
+          "qa-rerun"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-schema-safety-omission",
+        "contractRef": "research-only safety must be carried by schemas",
+        "scenario": "analysis_card_schema initially omitted safety_flags; fix added required safety_flags and rerun verified",
+        "expectedBehavior": "Schema requires advisoryOnly true and promote/export/live false",
+        "verdict": "passed",
+        "artifactRefs": [
+          "analysis-schema",
+          "qa-rerun"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "One blocking QA finding was fixed and the verification loop was rerun cleanly with 169-G001BaselineQaRerun; no blockers remain.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "agent://169-G001BaselineQaRerun"
+    ],
+    "blockers": []
+  }
+}

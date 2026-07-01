@@ -1,0 +1,8 @@
+Phase 1 adversarial cases passed after fixes:
+- malformed-prompt-output: strict research validation counts only explicit python/py candidate fences, rejects multiple code fences, empty code, and bare JSON-only responses.
+- missing-evidence: build_evidence_health and lane scoring hard-block missing required research evidence.
+- promotion-authority-smuggling: strict prompt metadata recursively rejects can_promote/can_export/can_live/promotion_eligible-like keys.
+- mdd-cap-pressure: severe MDD veto and cap-pressure advantage caps prevent profit-only allocation wins.
+- contaminated-validation: research-fed validation remains promotion-ineligible and requires separate fresh/frozen holdout for promotion review.
+- duplicate-discovery-novelty: structural fingerprint, coverage regime, entry/exit family, and explicit official evidence all gate discovery credit.
+- legacy-extract-code-compatibility: legacy extract_code behavior remains covered by tests/unit/test_extract_code.py.

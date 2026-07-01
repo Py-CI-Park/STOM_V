@@ -1,0 +1,974 @@
+{
+  "startedAt": "2026-06-29T23:45:39.258714+00:00",
+  "endedAt": "2026-06-29T23:48:58.720918+00:00",
+  "config": {
+    "name": "process_research_seeded_902905_20260629",
+    "base_buy_strategy": "Tick_B_902_905_Update_2",
+    "sell_strategy": "Tick_S_902_905_Update_2",
+    "start_date": 20250101,
+    "end_date": 20251231,
+    "is_tick": true,
+    "betting": "1",
+    "avg_time": 60,
+    "start_time": 90000,
+    "end_time": 92800,
+    "engine_count": 32,
+    "top_n": 4,
+    "run_candidate": false,
+    "run_candidates": true,
+    "candidate_count": 6,
+    "candidate_name_prefix": "actual_pr_902905_20260629",
+    "cleanup_best_candidate": true,
+    "keep_loser_candidates": false,
+    "keep_failed_candidate": false,
+    "min_estimated_retention": 0.4,
+    "candidate_pool_multiplier": 3,
+    "candidate_timeout": 900,
+    "condition_discovery_process": "2",
+    "runtime_output_path": "artifacts\\process-research-actual-20260629\\seeded_runtime_result.json",
+    "max_consecutive_candidate_failures": 4
+  },
+  "result": {
+    "status": "error",
+    "phase": "no_expressions",
+    "message": "no candidate expressions generated",
+    "strategy_name": "process_research_seeded_902905_20260629",
+    "config": {
+      "name": "process_research_seeded_902905_20260629",
+      "baseline_csv": null,
+      "score_reference_csv": null,
+      "base_buy_strategy": "Tick_B_902_905_Update_2",
+      "sell_strategy": "Tick_S_902_905_Update_2",
+      "start_date": 20250101,
+      "end_date": 20251231,
+      "is_tick": true,
+      "betting": "1",
+      "avg_time": 60,
+      "start_time": 90000,
+      "end_time": 92800,
+      "engine_count": 32,
+      "top_n": 4,
+      "min_samples": 30,
+      "quantiles": 10,
+      "alpha": 0.05,
+      "run_candidate": false,
+      "run_candidates": true,
+      "candidate_count": 6,
+      "candidate_name_prefix": "actual_pr_902905_20260629",
+      "cleanup_best_candidate": true,
+      "keep_loser_candidates": false,
+      "candidate_start_date": null,
+      "candidate_end_date": null,
+      "candidate_timeout": 900,
+      "candidate_plan_only": false,
+      "keep_failed_candidate": false,
+      "runtime_output_path": "artifacts\\process-research-actual-20260629\\seeded_runtime_result.json",
+      "max_consecutive_candidate_failures": 4,
+      "min_estimated_retention": 0.4,
+      "allow_retention_fallback": true,
+      "use_retention_penalty": true,
+      "candidate_pool_multiplier": 3,
+      "iteration_v2_mode": "",
+      "iteration_v2_best_candidate": "",
+      "iteration_v2_best_expression": "",
+      "iteration_v2_primary_feature": "B_시가총액",
+      "iteration_v2_trade_amount_feature": "B_당일거래대금",
+      "iteration_v2_secondary_features": "",
+      "iteration_v2_include_secondary_only": true,
+      "iteration_v2_max_secondary_only": 1,
+      "iteration_v2_duplicate_retention_tolerance": 0.02,
+      "condition_discovery_preset": "fast",
+      "condition_discovery_process": "2",
+      "hybrid_research_enabled": false
+    },
+    "baseline_csv": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260630084847.csv",
+    "baseline_result": {
+      "status": "success",
+      "message": "백테스트 완료",
+      "metrics": {
+        "trade_count": 103,
+        "daily_avg_trades": 0.4,
+        "win_rate": 49.51,
+        "avg_profit_pct": 0.22,
+        "total_profit_pct": 22.88,
+        "total_profit_krw": 229318,
+        "cagr": 23.73,
+        "mdd_pct": 23.89,
+        "mdd_amount": 0.0,
+        "tpi": 1.1,
+        "seed_capital": 1002450.0,
+        "max_hold_count": 1,
+        "avg_hold_time": 311.34,
+        "day_count": 258,
+        "bootstrap_avg": 0.0,
+        "bootstrap_min": 0.0,
+        "bootstrap_max": 0.0
+      },
+      "csv_path": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260630084847.csv",
+      "config": {
+        "buy_strategy": "Tick_B_902_905_Update_2",
+        "sell_strategy": "Tick_S_902_905_Update_2",
+        "start_date": "20250101",
+        "end_date": "20251231"
+      },
+      "checkpoint_status": "success",
+      "last_checkpoint": "csv_detected",
+      "elapsed_seconds": 183.628,
+      "checkpoints": [
+        {
+          "name": "preflight_started",
+          "elapsed_seconds": 0.0,
+          "detail": {
+            "buy_strategy": "Tick_B_902_905_Update_2",
+            "sell_strategy": "Tick_S_902_905_Update_2",
+            "start_date": 20250101,
+            "end_date": 20251231,
+            "is_tick": true,
+            "engine_count": 32
+          }
+        },
+        {
+          "name": "dict_set_synced",
+          "elapsed_seconds": 0.0,
+          "detail": {}
+        },
+        {
+          "name": "backtest_watermark_ready",
+          "elapsed_seconds": 0.201,
+          "detail": {
+            "backtest_rowid_watermark": 5604
+          }
+        },
+        {
+          "name": "engine_processes_started",
+          "elapsed_seconds": 44.069,
+          "detail": {
+            "engine_count": 32
+          }
+        },
+        {
+          "name": "stock_back_db_selected",
+          "elapsed_seconds": 44.069,
+          "detail": {
+            "db_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database\\stock_tick_back.db"
+          }
+        },
+        {
+          "name": "moneytop_loaded",
+          "elapsed_seconds": 45.589,
+          "detail": {
+            "rows": 433157
+          }
+        },
+        {
+          "name": "engine_data_load_requested",
+          "elapsed_seconds": 48.366,
+          "detail": {
+            "expected_count": 32,
+            "data_list_count": 2087,
+            "avg_list": [
+              60
+            ]
+          }
+        },
+        {
+          "name": "engine_data_response_wait_started",
+          "elapsed_seconds": 48.366,
+          "detail": {
+            "expected_count": 32,
+            "timeout_seconds": 3600
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 69.446,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 1,
+            "response_index": 0,
+            "chunk_count": 50
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 74.953,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 2,
+            "response_index": 1,
+            "chunk_count": 47
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 76.201,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 3,
+            "response_index": 2,
+            "chunk_count": 48
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 77.573,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 4,
+            "response_index": 3,
+            "chunk_count": 47
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 88.645,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 5,
+            "response_index": 4,
+            "chunk_count": 50
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 91.477,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 6,
+            "response_index": 5,
+            "chunk_count": 48
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 91.751,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 7,
+            "response_index": 6,
+            "chunk_count": 51
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 92.545,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 8,
+            "response_index": 7,
+            "chunk_count": 49
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 92.807,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 9,
+            "response_index": 8,
+            "chunk_count": 48
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 97.482,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 10,
+            "response_index": 9,
+            "chunk_count": 54
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 97.695,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 11,
+            "response_index": 10,
+            "chunk_count": 49
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 98.298,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 12,
+            "response_index": 11,
+            "chunk_count": 55
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 101.637,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 13,
+            "response_index": 12,
+            "chunk_count": 48
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 102.082,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 14,
+            "response_index": 13,
+            "chunk_count": 50
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 102.315,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 15,
+            "response_index": 14,
+            "chunk_count": 49
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 104.692,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 16,
+            "response_index": 15,
+            "chunk_count": 55
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 105.86,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 17,
+            "response_index": 16,
+            "chunk_count": 52
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 107.482,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 18,
+            "response_index": 17,
+            "chunk_count": 51
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 108.215,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 19,
+            "response_index": 18,
+            "chunk_count": 58
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 108.46,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 20,
+            "response_index": 19,
+            "chunk_count": 49
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 109.443,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 21,
+            "response_index": 20,
+            "chunk_count": 52
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 110.542,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 22,
+            "response_index": 21,
+            "chunk_count": 52
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 114.472,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 23,
+            "response_index": 22,
+            "chunk_count": 54
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 117.179,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 24,
+            "response_index": 23,
+            "chunk_count": 51
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 118.145,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 25,
+            "response_index": 24,
+            "chunk_count": 54
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 118.487,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 26,
+            "response_index": 25,
+            "chunk_count": 52
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 118.71,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 27,
+            "response_index": 26,
+            "chunk_count": 56
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 119.757,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 28,
+            "response_index": 27,
+            "chunk_count": 51
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 120.585,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 29,
+            "response_index": 28,
+            "chunk_count": 53
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 125.44,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 30,
+            "response_index": 29,
+            "chunk_count": 49
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 126.888,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 31,
+            "response_index": 30,
+            "chunk_count": 55
+          }
+        },
+        {
+          "name": "engine_data_response_received",
+          "elapsed_seconds": 139.38,
+          "detail": {
+            "expected_count": 32,
+            "received_count": 32,
+            "response_index": 31,
+            "chunk_count": 51
+          }
+        },
+        {
+          "name": "shared_data_loaded",
+          "elapsed_seconds": 139.38,
+          "detail": {
+            "back_count": 1638
+          }
+        },
+        {
+          "name": "engine_data_load_completed",
+          "elapsed_seconds": 139.38,
+          "detail": {
+            "back_count": 1638,
+            "expected_count": 32,
+            "received_count": 32,
+            "received_lengths": [
+              50,
+              47,
+              48,
+              47,
+              50,
+              48,
+              51,
+              49,
+              48,
+              54,
+              49,
+              55,
+              48,
+              50,
+              49,
+              55,
+              52,
+              51,
+              58,
+              49,
+              52,
+              52,
+              54,
+              51,
+              54,
+              52,
+              56,
+              51,
+              53,
+              49,
+              55,
+              51
+            ]
+          }
+        },
+        {
+          "name": "back_count_ready",
+          "elapsed_seconds": 139.38,
+          "detail": {
+            "back_count": 1638
+          }
+        },
+        {
+          "name": "backtest_process_started",
+          "elapsed_seconds": 154.145,
+          "detail": {
+            "pid": 74024
+          }
+        },
+        {
+          "name": "backtest_process_finished",
+          "elapsed_seconds": 183.087,
+          "detail": {
+            "exitcode": 0
+          }
+        },
+        {
+          "name": "csv_detected",
+          "elapsed_seconds": 183.628,
+          "detail": {
+            "csv_path": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260630084847.csv"
+          }
+        },
+        {
+          "name": "shared_memory_cleanup_started",
+          "elapsed_seconds": 183.628,
+          "detail": {
+            "shared_info_count": 1638
+          }
+        },
+        {
+          "name": "shared_memory_cleanup_completed",
+          "elapsed_seconds": 183.632,
+          "detail": {}
+        }
+      ],
+      "backtest_process_diagnostics": {
+        "event_count": 3,
+        "last_checkpoint": "report_csv_written",
+        "last_by_source": {
+          "BackTest": "report_csv_written"
+        },
+        "events": [
+          {
+            "source": "BackTest",
+            "checkpoint": "report_started",
+            "detail": {
+              "trade_count": 103
+            },
+            "time": "20260630084846"
+          },
+          {
+            "source": "BackTest",
+            "checkpoint": "report_db_written",
+            "detail": {
+              "table": "stock_bt",
+              "save_file_name": "stock_bt_Tick_B_902_905_Update_2_20260630084847"
+            },
+            "time": "20260630084847"
+          },
+          {
+            "source": "BackTest",
+            "checkpoint": "report_csv_written",
+            "detail": {
+              "save_file_name": "stock_bt_Tick_B_902_905_Update_2_20260630084847"
+            },
+            "time": "20260630084847"
+          }
+        ]
+      },
+      "run_id": 107,
+      "duration": 191.24
+    },
+    "analysis_result": {
+      "status": "ok",
+      "created_at": "2026-06-30T08:48:58.683690",
+      "row_count": 103,
+      "feature_columns": [
+        "B_현재가",
+        "B_등락율",
+        "B_당일거래대금",
+        "B_거래대금증감",
+        "B_체결강도",
+        "B_시가총액",
+        "B_회전율",
+        "B_전일동시간비",
+        "B_매수총잔량",
+        "B_매도총잔량",
+        "B_시분초",
+        "B_분봉시가",
+        "B_분봉고가",
+        "B_분봉저가"
+      ],
+      "market_cap_analysis": [
+        {
+          "group": "소형주",
+          "count": 103,
+          "mean_return": 0.22388349514563102,
+          "median_return": 0.0,
+          "win_rate": 0.49514563106796117,
+          "mean_return_diff": 0.0,
+          "win_rate_diff": 0.0
+        }
+      ],
+      "market_cap_candidates": [],
+      "time_analysis": [
+        {
+          "group": "장초반",
+          "count": 103,
+          "mean_return": 0.22388349514563102,
+          "median_return": 0.0,
+          "win_rate": 0.49514563106796117,
+          "mean_return_diff": 0.0,
+          "win_rate_diff": 0.0
+        }
+      ],
+      "time_candidates": [],
+      "quantile_candidates": [],
+      "ttest_candidates": [],
+      "recommended_candidates": []
+    },
+    "expression_result": {
+      "status": "ok",
+      "selected_candidates": [],
+      "expressions": [],
+      "candidate_count": 0
+    },
+    "iteration_plan": {
+      "candidate_count": 4,
+      "requested_candidate_count": 6,
+      "candidate_name_prefix": "actual_pr_902905_20260629",
+      "score_reference_csv": null,
+      "effective_top_n": 12,
+      "candidate_pool_multiplier": 3,
+      "candidate_pool_size": 12,
+      "min_estimated_retention": 0.4,
+      "allow_retention_fallback": true,
+      "use_retention_penalty": true,
+      "candidate_start_date": 20250101,
+      "candidate_end_date": 20251231,
+      "candidate_timeout": 900,
+      "cleanup_best_candidate": true,
+      "keep_loser_candidates": false,
+      "keep_failed_candidate": false,
+      "iteration_v2_mode": "",
+      "iteration_v2_best_candidate": "",
+      "iteration_v2_best_expression": "",
+      "iteration_v2_primary_feature": "B_시가총액",
+      "iteration_v2_trade_amount_feature": "B_당일거래대금",
+      "iteration_v2_secondary_features": [],
+      "iteration_v2_include_secondary_only": true,
+      "iteration_v2_max_secondary_only": 1,
+      "iteration_v2_duplicate_retention_tolerance": 0.02,
+      "research_loop": {
+        "enabled": true,
+        "preset": "research",
+        "process": "process-research",
+        "policy": {
+          "schema_version": 1,
+          "lanes": [
+            "repair",
+            "discovery"
+          ],
+          "default_slots": {
+            "repair": 2,
+            "discovery": 2
+          },
+          "slots_total": 4,
+          "max_slot_shift": 1,
+          "min_slots_per_lane": 1,
+          "lane_score_constants": {
+            "lane_advantage_threshold_points": 5.0,
+            "profit_tie_epsilon_pct": 0.02,
+            "mdd_tie_epsilon_pp": 2.0,
+            "severe_mdd_cap_multiplier": 1.25,
+            "severe_mdd_delta_pp": 10.0,
+            "mdd_advantage_cap_delta_pp": 5.0
+          },
+          "insight_score": {
+            "authority": "research_actionability_only",
+            "caps": {
+              "no_official_metrics": 20,
+              "missing_required_research_evidence": 40,
+              "missing_next_recommendation": 50,
+              "no_segment_contribution": 65,
+              "no_repair_parent_comparison": 60,
+              "promotion_claim_contradiction": 30
+            }
+          },
+          "validation_scopes": [
+            "research_only",
+            "fresh_frozen_holdout"
+          ],
+          "authority": "research_budget_steering_only"
+        },
+        "slots": {
+          "schema_version": 1,
+          "slots_total": 4,
+          "previous_slots_by_lane": {
+            "repair": 2,
+            "discovery": 2
+          },
+          "slots_by_lane": {
+            "repair": 2,
+            "discovery": 2
+          },
+          "better_lane": null,
+          "shift_applied": {
+            "from": null,
+            "to": null,
+            "count": 0
+          },
+          "decision_reason": "default_allocation",
+          "repair_lane_score": null,
+          "discovery_lane_score": null,
+          "tie_breaks_used": [],
+          "blockers": [],
+          "authority": "research_budget_steering_only"
+        },
+        "candidate_count": 4,
+        "authority": "research_only_no_export_live_or_final_promotion"
+      }
+    },
+    "candidate_specs": [],
+    "candidates": [],
+    "best_candidate": null,
+    "actual_rowset_selection": null,
+    "cleanup_summary": {
+      "attempted_count": 0,
+      "deleted_count": 0,
+      "kept_count": 0,
+      "failed_count": 0,
+      "items": []
+    },
+    "failure_policy": {
+      "max_consecutive_candidate_failures": 4,
+      "consecutive_candidate_failures": 0,
+      "total_candidate_failures": 0,
+      "aborted": false,
+      "abort_reason": null
+    },
+    "runtime_timing": {
+      "elapsed_seconds": 195.854,
+      "checkpoint_durations": [
+        {
+          "from": "iteration_started",
+          "to": "analysis_completed",
+          "phase": "analysis",
+          "duration_seconds": 195.83
+        },
+        {
+          "from": "analysis_completed",
+          "to": "iteration_aborted",
+          "phase": "no_expressions",
+          "duration_seconds": 0.024
+        }
+      ],
+      "candidate_durations": []
+    },
+    "checkpoints": [
+      {
+        "name": "iteration_started",
+        "elapsed_seconds": 0.0,
+        "phase": "candidate_iteration"
+      },
+      {
+        "name": "analysis_completed",
+        "elapsed_seconds": 195.83,
+        "phase": "analysis"
+      },
+      {
+        "name": "iteration_aborted",
+        "elapsed_seconds": 195.854,
+        "phase": "no_expressions",
+        "message": "no candidate expressions generated"
+      }
+    ],
+    "checkpoint_summary": {
+      "event_count": 3,
+      "last_checkpoint": "iteration_aborted",
+      "elapsed_seconds": 195.854
+    },
+    "report": {
+      "created_at": "2026-06-30T08:48:58.720862",
+      "strategy_name": "process_research_seeded_902905_20260629",
+      "status": "error",
+      "baseline_csv": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260630084847.csv",
+      "candidate_csv": null,
+      "phase": "no_expressions",
+      "candidate_expression": null,
+      "candidate_reason": null,
+      "trade_counts": {},
+      "trade_count_retention": null,
+      "trade_count_expansion": null,
+      "baseline_summary": {},
+      "candidate_summary": {},
+      "excluded_summary": {},
+      "new_summary": {},
+      "promotion": null,
+      "score_reference_csv": null,
+      "reference_comparison": null,
+      "reference_promotion": null,
+      "candidate_plan": null,
+      "cleanup": null,
+      "iteration_plan": {
+        "candidate_count": 4,
+        "requested_candidate_count": 6,
+        "candidate_name_prefix": "actual_pr_902905_20260629",
+        "score_reference_csv": null,
+        "effective_top_n": 12,
+        "candidate_pool_multiplier": 3,
+        "candidate_pool_size": 12,
+        "min_estimated_retention": 0.4,
+        "allow_retention_fallback": true,
+        "use_retention_penalty": true,
+        "candidate_start_date": 20250101,
+        "candidate_end_date": 20251231,
+        "candidate_timeout": 900,
+        "cleanup_best_candidate": true,
+        "keep_loser_candidates": false,
+        "keep_failed_candidate": false,
+        "iteration_v2_mode": "",
+        "iteration_v2_best_candidate": "",
+        "iteration_v2_best_expression": "",
+        "iteration_v2_primary_feature": "B_시가총액",
+        "iteration_v2_trade_amount_feature": "B_당일거래대금",
+        "iteration_v2_secondary_features": [],
+        "iteration_v2_include_secondary_only": true,
+        "iteration_v2_max_secondary_only": 1,
+        "iteration_v2_duplicate_retention_tolerance": 0.02,
+        "research_loop": {
+          "enabled": true,
+          "preset": "research",
+          "process": "process-research",
+          "policy": {
+            "schema_version": 1,
+            "lanes": [
+              "repair",
+              "discovery"
+            ],
+            "default_slots": {
+              "repair": 2,
+              "discovery": 2
+            },
+            "slots_total": 4,
+            "max_slot_shift": 1,
+            "min_slots_per_lane": 1,
+            "lane_score_constants": {
+              "lane_advantage_threshold_points": 5.0,
+              "profit_tie_epsilon_pct": 0.02,
+              "mdd_tie_epsilon_pp": 2.0,
+              "severe_mdd_cap_multiplier": 1.25,
+              "severe_mdd_delta_pp": 10.0,
+              "mdd_advantage_cap_delta_pp": 5.0
+            },
+            "insight_score": {
+              "authority": "research_actionability_only",
+              "caps": {
+                "no_official_metrics": 20,
+                "missing_required_research_evidence": 40,
+                "missing_next_recommendation": 50,
+                "no_segment_contribution": 65,
+                "no_repair_parent_comparison": 60,
+                "promotion_claim_contradiction": 30
+              }
+            },
+            "validation_scopes": [
+              "research_only",
+              "fresh_frozen_holdout"
+            ],
+            "authority": "research_budget_steering_only"
+          },
+          "slots": {
+            "schema_version": 1,
+            "slots_total": 4,
+            "previous_slots_by_lane": {
+              "repair": 2,
+              "discovery": 2
+            },
+            "slots_by_lane": {
+              "repair": 2,
+              "discovery": 2
+            },
+            "better_lane": null,
+            "shift_applied": {
+              "from": null,
+              "to": null,
+              "count": 0
+            },
+            "decision_reason": "default_allocation",
+            "repair_lane_score": null,
+            "discovery_lane_score": null,
+            "tie_breaks_used": [],
+            "blockers": [],
+            "authority": "research_budget_steering_only"
+          },
+          "candidate_count": 4,
+          "authority": "research_only_no_export_live_or_final_promotion"
+        }
+      },
+      "iteration_v2": null,
+      "iteration_v3": null,
+      "iteration_v4": null,
+      "iteration_v5": null,
+      "actual_rowset_selection": null,
+      "retention_selection": null,
+      "candidates": [],
+      "best_candidate": null,
+      "cleanup_summary": {
+        "attempted_count": 0,
+        "deleted_count": 0,
+        "kept_count": 0,
+        "failed_count": 0,
+        "items": []
+      }
+    }
+  }
+}

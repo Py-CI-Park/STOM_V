@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "kind": "engine-decision-receipt-48-inclusive",
+  "createdAt": "2026-06-28T00:40:22.860033Z",
+  "sourceBenchmark": "artifacts\\12h-followup-research-20260628\\engine_benchmark_32_48_64.json",
+  "decisionPolicy": "stable engines only; no timeouts or recovery attempts; choose lowest amortized_p50_sec before long GPT-auth B; keep 48 in candidate set rather than relying on legacy 32/64 policy",
+  "selected_engine": 64,
+  "selected_reason": "selected 64: lowest amortized_p50 among stable 32/48/64; 64 amortized 75.20s and steady p50 29.57s. 48 measured but did not beat 32/64 on amortized p50.",
+  "columns": [
+    "engine_count",
+    "prepare_elapsed_sec",
+    "amortized_p50_sec",
+    "steady_run_p50_sec",
+    "steady_run_p95_sec",
+    "success_rate",
+    "timeout_count",
+    "recovery_attempts",
+    "recovery_success_count",
+    "recovery_failure_count",
+    "selected_engine",
+    "selected_reason"
+  ],
+  "rows": [
+    {
+      "engine_count": 32,
+      "prepare_elapsed_sec": 128.57670189999044,
+      "amortized_p50_sec": 80.02518893331094,
+      "steady_run_p50_sec": 37.166288299980806,
+      "steady_run_p95_sec": 37.51758781999524,
+      "success_rate": 1.0,
+      "timeout_count": 0,
+      "recovery_attempts": 0,
+      "recovery_success_count": 0,
+      "recovery_failure_count": 0,
+      "selected_engine": 64,
+      "selected_reason": ""
+    },
+    {
+      "engine_count": 48,
+      "prepare_elapsed_sec": 140.49614249999286,
+      "amortized_p50_sec": 80.9227652999883,
+      "steady_run_p50_sec": 34.09071779999067,
+      "steady_run_p95_sec": 34.94310042000434,
+      "success_rate": 1.0,
+      "timeout_count": 0,
+      "recovery_attempts": 0,
+      "recovery_success_count": 0,
+      "recovery_failure_count": 0,
+      "selected_engine": 64,
+      "selected_reason": ""
+    },
+    {
+      "engine_count": 64,
+      "prepare_elapsed_sec": 136.87257070001215,
+      "amortized_p50_sec": 75.19745493334872,
+      "steady_run_p50_sec": 29.57326470001135,
+      "steady_run_p95_sec": 29.875974839998527,
+      "success_rate": 1.0,
+      "timeout_count": 0,
+      "recovery_attempts": 0,
+      "recovery_success_count": 0,
+      "recovery_failure_count": 0,
+      "selected_engine": 64,
+      "selected_reason": "selected 64: lowest amortized_p50 among stable 32/48/64; 64 amortized 75.20s and steady p50 29.57s. 48 measured but did not beat 32/64 on amortized p50."
+    }
+  ],
+  "legacyScriptDecision": {
+    "selected_engine_count": 64,
+    "changed_default": true,
+    "reason": "candidate_passed_threshold_without_stability_regression",
+    "policy": {
+      "amortized_improvement_threshold": 0.15,
+      "steady_state_improvement_threshold": 0.2,
+      "baseline_engine_count": 32,
+      "candidate_engine_count": 64
+    },
+    "comparisons": {
+      "amortized_total_p50_improvement": 0.060327680125634144,
+      "run_p50_improvement": 0.20429867891794234,
+      "run_p95_improvement": 0.20368081809151034,
+      "success_rate_delta": 0.0,
+      "timeout_delta": 0,
+      "recovery_attempt_delta": 0
+    }
+  }
+}

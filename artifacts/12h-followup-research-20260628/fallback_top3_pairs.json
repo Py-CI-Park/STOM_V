@@ -1,0 +1,17 @@
+[
+  {
+    "label": "rr8_21_trail_keep=0.7",
+    "buy": "GATE_rr8_21_trail_keep_0_7_B",
+    "sell": "GATE_rr8_21_trail_keep_0_7_S"
+  },
+  {
+    "label": "rr8_12_turnover_min_902=1.5",
+    "buy": "GATE_rr8_12_turnover_min_902_1_5_B",
+    "sell": "GATE_rr8_12_turnover_min_902_1_5_S"
+  },
+  {
+    "label": "rr8_0_cap_max=2500",
+    "buy": "GATE_rr8_0_cap_max_2500_B",
+    "sell": "GATE_rr8_0_cap_max_2500_S"
+  }
+]

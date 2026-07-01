@@ -1,0 +1,670 @@
+{
+  "generatedAt": 1782579393.796942,
+  "primaryRoute": "A/B/C LLM route attempted, blocked by gpt_auth refresh_token_invalidated/token_expired",
+  "fallbackRoute": "LLM-free anchor mutation/backtest hill-climb from seed_902905",
+  "evaluatedCandidates": 180,
+  "gatePassers": 105,
+  "rounds": [
+    {
+      "round": 1,
+      "evaluated": 25,
+      "passers": 0,
+      "best": {
+        "label": "r1_17_take_hard=7",
+        "profit": 889434.0,
+        "mdd": 31.24,
+        "trades": 105,
+        "daily": 0.4,
+        "gate": false
+      }
+    },
+    {
+      "round": 2,
+      "evaluated": 25,
+      "passers": 1,
+      "best": {
+        "label": "r2_7_window_end=90700",
+        "profit": 1288813.0,
+        "mdd": 24.32,
+        "trades": 161,
+        "daily": 0.7,
+        "gate": true
+      }
+    },
+    {
+      "round": 3,
+      "evaluated": 23,
+      "passers": 17,
+      "best": {
+        "label": "r3_9_burst_min_902=2.5",
+        "profit": 1639150.0,
+        "mdd": 21.9,
+        "trades": 166,
+        "daily": 0.7,
+        "gate": true
+      }
+    },
+    {
+      "round": 4,
+      "evaluated": 16,
+      "passers": 13,
+      "best": {
+        "label": "r4_15_take_hard=9",
+        "profit": 1965439.0,
+        "mdd": 21.87,
+        "trades": 166,
+        "daily": 0.7,
+        "gate": true
+      }
+    },
+    {
+      "round": 5,
+      "evaluated": 22,
+      "passers": 19,
+      "best": {
+        "label": "rr5_17_trail_start=4",
+        "profit": 2304808.0,
+        "mdd": 19.21,
+        "trades": 166,
+        "daily": 0.7,
+        "gate": true
+      }
+    },
+    {
+      "round": 6,
+      "evaluated": 23,
+      "passers": 21,
+      "best": {
+        "label": "rr6_19_trail_start=3",
+        "profit": 2617990.0,
+        "mdd": 21.44,
+        "trades": 166,
+        "daily": 0.7,
+        "gate": true
+      }
+    },
+    {
+      "round": 7,
+      "evaluated": 23,
+      "passers": 17,
+      "best": {
+        "label": "rr7_3_strength_min=70",
+        "profit": 2873814.0,
+        "mdd": 20.83,
+        "trades": 165,
+        "daily": 0.7,
+        "gate": true
+      }
+    },
+    {
+      "round": 8,
+      "evaluated": 23,
+      "passers": 17,
+      "best": {
+        "label": "rr8_21_trail_keep=0.7",
+        "profit": 3089180.0,
+        "mdd": 18.84,
+        "trades": 165,
+        "daily": 0.7,
+        "gate": true
+      }
+    }
+  ],
+  "best": {
+    "round": 8,
+    "label": "rr8_21_trail_keep=0.7",
+    "profit": 3089180.0,
+    "mdd": 18.84,
+    "trades": 165,
+    "daily": 0.7,
+    "gate": true,
+    "theta": {
+      "cap_max": 3000,
+      "prev_ratio_min": 0,
+      "strength_min": 70,
+      "strength_max": 300,
+      "window_end": 90700,
+      "angle_min_902": 5,
+      "burst_min_902": 2.5,
+      "turnover_min_902": 2,
+      "stop_deep": -2.0,
+      "take_hard": 9,
+      "stop_hard": -5.0,
+      "trail_start": 3,
+      "trail_keep": 0.7,
+      "window_start": 90200
+    }
+  },
+  "top": [
+    {
+      "round": 8,
+      "label": "rr8_21_trail_keep=0.7",
+      "profit": 3089180.0,
+      "mdd": 18.84,
+      "trades": 165,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.7,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 8,
+      "label": "rr8_12_turnover_min_902=1.5",
+      "profit": 3062696.0,
+      "mdd": 12.87,
+      "trades": 190,
+      "daily": 0.8,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 1.5,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 8,
+      "label": "rr8_0_cap_max=2500",
+      "profit": 3047522.0,
+      "mdd": 17.34,
+      "trades": 145,
+      "daily": 0.6,
+      "gate": true,
+      "theta": {
+        "cap_max": 2500,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 8,
+      "label": "rr8_4_strength_max=250",
+      "profit": 3040172.0,
+      "mdd": 19.01,
+      "trades": 164,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 250,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 7,
+      "label": "rr7_3_strength_min=70",
+      "profit": 2873814.0,
+      "mdd": 20.83,
+      "trades": 165,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 7,
+      "label": "rr7_9_angle_min_902=8",
+      "profit": 2873814.0,
+      "mdd": 20.83,
+      "trades": 165,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 50,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 8,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 8,
+      "label": "rr8_8_angle_min_902=3",
+      "profit": 2873814.0,
+      "mdd": 20.83,
+      "trades": 165,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 3,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 8,
+      "label": "rr8_9_angle_min_902=8",
+      "profit": 2873814.0,
+      "mdd": 20.83,
+      "trades": 165,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 8,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 8,
+      "label": "rr8_14_stop_deep=-1.5",
+      "profit": 2873814.0,
+      "mdd": 20.83,
+      "trades": 165,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -1.5,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 8,
+      "label": "rr8_15_stop_deep=-2.5",
+      "profit": 2873814.0,
+      "mdd": 20.83,
+      "trades": 165,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.5,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 7,
+      "label": "rr7_21_trail_keep=0.7",
+      "profit": 2833356.0,
+      "mdd": 19.39,
+      "trades": 166,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 50,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.7,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 7,
+      "label": "rr7_12_turnover_min_902=1.5",
+      "profit": 2806872.0,
+      "mdd": 13.11,
+      "trades": 191,
+      "daily": 0.8,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 50,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 1.5,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 8,
+      "label": "rr8_17_stop_hard=-4.0",
+      "profit": 2801583.0,
+      "mdd": 22.98,
+      "trades": 165,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -4.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 7,
+      "label": "rr7_0_cap_max=2500",
+      "profit": 2791698.0,
+      "mdd": 17.85,
+      "trades": 146,
+      "daily": 0.6,
+      "gate": true,
+      "theta": {
+        "cap_max": 2500,
+        "prev_ratio_min": 0,
+        "strength_min": 50,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 7,
+      "label": "rr7_4_strength_max=250",
+      "profit": 2784348.0,
+      "mdd": 19.56,
+      "trades": 165,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 50,
+        "strength_max": 250,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 8,
+      "label": "rr8_20_trail_keep=0.5",
+      "profit": 2694636.0,
+      "mdd": 21.28,
+      "trades": 165,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.5,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 8,
+      "label": "rr8_18_stop_hard=-7.0",
+      "profit": 2674687.0,
+      "mdd": 22.01,
+      "trades": 165,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -7.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 8,
+      "label": "rr8_16_take_hard=7",
+      "profit": 2672966.0,
+      "mdd": 20.55,
+      "trades": 165,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 7,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 6,
+      "label": "rr6_19_trail_start=3",
+      "profit": 2617990.0,
+      "mdd": 21.44,
+      "trades": 166,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 50,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    },
+    {
+      "round": 7,
+      "label": "rr7_14_stop_deep=-1.5",
+      "profit": 2617990.0,
+      "mdd": 21.44,
+      "trades": 166,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 50,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -1.5,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.6,
+        "window_start": 90200
+      }
+    }
+  ],
+  "safety": {
+    "export": false,
+    "live": false,
+    "finalPromotion": false,
+    "advisoryOnly": true,
+    "verifiedBy": "safety_receipt.json allPassed=true: nonrelease_sync, git_diff_check, protected_path_status, py_compile, dashboard_health",
+    "receipt": "artifacts/overnight-process-research-20260627/safety_receipt.json"
+  },
+  "artifacts": {
+    "anchorJsonl": "artifacts\\overnight-process-research-20260627\\anchor.jsonl",
+    "morningReport": "docs/research/condition_research/auto_reports/morning_20260628_process_research.md"
+  },
+  "caveats": {
+    "primaryRouteBlocked": "Raw auth failure evidence in artifacts/overnight-process-research-20260627/logs/process_a_fast.log lines 6-36 and repeated generations 0-7.",
+    "interruptedRound4": "Round 4 has candidate rows but no round_done because the monitor killed the prior fallback run; resume started from best r4 candidate and completed r5-r8.",
+    "reportScope": "PROMOTE checklist / validation 결산 / portfolio decision sections in the generated morning report are historical dashboard output, not proof of overnight promotion readiness.",
+    "researchOnly": "All current overnight conclusions are advisory process-research evidence only; finalPromotion/export/live remain false."
+  },
+  "rawEvidence": {
+    "authFailureLog": "artifacts/overnight-process-research-20260627/logs/process_a_fast.log",
+    "anchorMutationLog": "artifacts/overnight-process-research-20260627/logs/anchor_mutation.log",
+    "fallbackEvents": "artifacts/overnight-process-research-20260627/anchor-fallback-events.jsonl",
+    "safetyChecks": [
+      "python scripts/verify_nonrelease_sync.py",
+      "git diff --check -- <overnight artifacts/docs>",
+      "git status --short -- protected paths",
+      "GET /health"
+    ],
+    "safetyReceipt": "artifacts/overnight-process-research-20260627/safety_receipt.json"
+  }
+}

@@ -1,0 +1,13 @@
+G002 adversarial/failure-mode report
+
+Scope: Phase 2 shared ResultDetailBody and History archive.
+
+Cases exercised by parent agent:
+1. /ui/evolution/history legacy route: expected canonicalization to /ui/evolution/records without falling back to overview. Browser observed final URL http://127.0.0.1:8770/ui/evolution/records and route functions history -> records.
+2. History ownership: expected History tab to render Run Compare and History archive, with ownership text. Browser observed Run Compare, History archive, and ownership text present.
+3. Workbench duplication: expected Workbench not to render Run Compare or History archive; only a handoff card to History is allowed. Browser observed no Run Compare/no History archive in Workbench and a History handoff button.
+4. Overview duplication: expected overview not to render duplicate Run Compare, History archive, ResultDetail body, or Research Lab data surface; only navigation/handoff is allowed. Browser observed navigation-only History/Research/Workbench affordances and no duplicate owner surfaces.
+5. ResultDetail extraction: static tests assert ResultDetailBody exists, has sourceContext, is published via backtest-charts, and does not call _btFetchJson.
+6. Backend route alias: focused route parity tests assert /ui/history and /ui/evolution/history redirect to /ui/evolution/records.
+
+Verdict: passed.

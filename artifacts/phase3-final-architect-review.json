@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G003",
+  "architectureStatus": "CLEAR",
+  "productStatus": "CLEAR",
+  "codeStatus": "CLEAR",
+  "recommendation": "APPROVE",
+  "blockers": [],
+  "createdAt": "2026-06-29T15:11:43.711804Z",
+  "evidence": [
+    "G001 and G002 both have completion receipts and quality gates in the Ultragoal ledger.",
+    "Current status shows G001/G002 complete and G003 active before final closeout.",
+    "Changed-scope tests pass with 118 passing tests; py_compile, diff check, and protected-path checks pass.",
+    "Full unit suite was attempted; the first deterministic failure is an untouched backtest constructor contract, verified by git diff --name-only returning no changes for backtest/backtest.py and tests/unit/test_backtest_button_contract.py.",
+    "Research-only boundaries are preserved: no export/live/final promotion code was added and protected path status is clean."
+  ]
+}

@@ -1,0 +1,237 @@
+{
+  "generatedAt": 1782591912.8137496,
+  "status": "complete",
+  "route": "GPT-authenticated A/B/C rerun after successful OAuth login",
+  "priorFallbackBaseline": {
+    "evaluatedCandidates": 180,
+    "gatePassers": 105,
+    "best": {
+      "round": 8,
+      "label": "rr8_21_trail_keep=0.7",
+      "profit": 3089180.0,
+      "mdd": 18.84,
+      "trades": 165,
+      "daily": 0.7,
+      "gate": true,
+      "theta": {
+        "cap_max": 3000,
+        "prev_ratio_min": 0,
+        "strength_min": 70,
+        "strength_max": 300,
+        "window_end": 90700,
+        "angle_min_902": 5,
+        "burst_min_902": 2.5,
+        "turnover_min_902": 2,
+        "stop_deep": -2.0,
+        "take_hard": 9,
+        "stop_hard": -5.0,
+        "trail_start": 3,
+        "trail_keep": 0.7,
+        "window_start": 90200
+      }
+    }
+  },
+  "gptAuth": {
+    "oauthStatusLog": "artifacts/gpt-auth-process-research-20260627/logs/oauth_status.log",
+    "proxySmokeLog": "artifacts/gpt-auth-process-research-20260627/logs/gpt_auth_proxy_smoke.log",
+    "proxySmoke": "STOM_OK status 200"
+  },
+  "phases": [
+    {
+      "name": "smoke_generation",
+      "returncode": 0,
+      "elapsedSec": 238.008,
+      "log": "artifacts\\gpt-auth-process-research-20260627\\logs\\smoke_generation.log",
+      "evaluated": 1,
+      "gatePassers": 0,
+      "bestByProfit": {
+        "gen": 0,
+        "profit": -580680,
+        "mdd": 10.51,
+        "trades": 8,
+        "gate": false,
+        "graded": 0.0,
+        "line": "[LOOP] graded=0 hard_composite=-0 calmar=-1.147 r2=0.9968 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 mdd=10.51 profit=-580,680 trades=8 gate_distance=일평균 0/0.5회(부족); profit negative"
+      },
+      "bestByScore": {
+        "gen": 0,
+        "profit": -580680,
+        "mdd": 10.51,
+        "trades": 8,
+        "gate": false,
+        "graded": 0.0,
+        "line": "[LOOP] graded=0 hard_composite=-0 calmar=-1.147 r2=0.9968 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 mdd=10.51 profit=-580,680 trades=8 gate_distance=일평균 0/0.5회(부족); profit negative"
+      },
+      "tailSummary": [
+        "[LOOP] === SUMMARY ===",
+        "{",
+        "  \"run_id\": \"gptauth_smoke_20260627\",",
+        "  \"generations\": 1,",
+        "  \"best_gen\": 0,",
+        "  \"best_score\": 0.0,",
+        "  \"best_buy\": \"AILOOP_gptauth_smoke_20260627_g0_buy\",",
+        "  \"best_sell\": \"AILOOP_gptauth_smoke_20260627_g0_sell\",",
+        "  \"winner_gen\": -1,",
+        "  \"winner_score\": null,",
+        "  \"winner_buy\": null,",
+        "  \"winner_sell\": null,",
+        "  \"stop_reason\": \"max_generations 도달: gen_count 1 >= 1\"",
+        "}",
+        "[LOOP] wall-clock: 228.2s"
+      ]
+    },
+    {
+      "name": "process_a_fast",
+      "returncode": 0,
+      "elapsedSec": 861.298,
+      "log": "artifacts\\gpt-auth-process-research-20260627\\logs\\process_a_fast.log",
+      "evaluated": 8,
+      "gatePassers": 0,
+      "bestByProfit": {
+        "gen": 3,
+        "profit": -2290,
+        "mdd": 1.19,
+        "trades": 3,
+        "gate": false,
+        "graded": 0.0,
+        "line": "[LOOP] graded=0 hard_composite=-0 calmar=-0.04202 r2=0.9491 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 mdd=1.19 profit=-2,290 trades=3 gate_distance=일평균 0/0.5회(부족); profit negative"
+      },
+      "bestByScore": {
+        "gen": 6,
+        "profit": -1855006,
+        "mdd": 38.67,
+        "trades": 92,
+        "gate": false,
+        "graded": 0.15556,
+        "line": "[LOOP] graded=0.15556 hard_composite=-0 calmar=-0.9953 r2=0.9799 gate=False reason=daily_avg_trades 0.4 < min_daily_trades 0.5 mdd=38.67 profit=-1,855,006 trades=92 gate_distance=일평균 0.4/0.5회(부족); MDD 38.67 is 1.1x cap(35); profit negative"
+      },
+      "tailSummary": [
+        "[LOOP] === SUMMARY ===",
+        "{",
+        "  \"run_id\": \"gptauth_A_fast_20260627\",",
+        "  \"generations\": 8,",
+        "  \"best_gen\": 6,",
+        "  \"best_score\": 0.15555980088237056,",
+        "  \"best_buy\": \"AILOOP_gptauth_A_fast_20260627_g6_buy\",",
+        "  \"best_sell\": \"AILOOP_gptauth_A_fast_20260627_g6_sell\",",
+        "  \"winner_gen\": -1,",
+        "  \"winner_score\": null,",
+        "  \"winner_buy\": null,",
+        "  \"winner_sell\": null,",
+        "  \"stop_reason\": \"max_generations 도달: gen_count 8 >= 8\"",
+        "}",
+        "[LOOP] wall-clock: 853.1s"
+      ]
+    },
+    {
+      "name": "process_b_research",
+      "returncode": 0,
+      "elapsedSec": 1812.163,
+      "log": "artifacts\\gpt-auth-process-research-20260627\\logs\\process_b_research.log",
+      "evaluated": 18,
+      "gatePassers": 0,
+      "bestByProfit": {
+        "gen": 10,
+        "profit": 174904,
+        "mdd": 4.3,
+        "trades": 33,
+        "gate": false,
+        "graded": 0.0147307,
+        "line": "[LOOP] graded=0.0147307 hard_composite=0 calmar=0.8442 r2=0.2086 gate=False reason=daily_avg_trades 0.1 < min_daily_trades 0.5 mdd=4.3 profit=174,904 trades=33 gate_distance=일평균 0.1/0.5회(부족)"
+      },
+      "bestByScore": {
+        "gen": 3,
+        "profit": -293685,
+        "mdd": 17.75,
+        "trades": 118,
+        "gate": false,
+        "graded": 0.354317,
+        "line": "[LOOP] graded=0.354317 hard_composite=-0 calmar=-0.3431 r2=0.06346 gate=False reason=total_profit -2.937e+05 <= 0 mdd=17.75 profit=-293,685 trades=118 gate_distance=profit negative"
+      },
+      "tailSummary": [
+        "[LOOP] === SUMMARY ===",
+        "{",
+        "  \"run_id\": \"gptauth_B_research_20260627\",",
+        "  \"generations\": 18,",
+        "  \"best_gen\": 3,",
+        "  \"best_score\": 0.3543172951758025,",
+        "  \"best_buy\": \"AILOOP_gptauth_B_research_20260627_g3_buy\",",
+        "  \"best_sell\": \"AILOOP_gptauth_B_research_20260627_g3_sell\",",
+        "  \"winner_gen\": -1,",
+        "  \"winner_score\": null,",
+        "  \"winner_buy\": null,",
+        "  \"winner_sell\": null,",
+        "  \"stop_reason\": \"max_generations 도달: gen_count 18 >= 18\"",
+        "}",
+        "[LOOP] wall-clock: 1803.6s"
+      ]
+    },
+    {
+      "name": "process_c_review",
+      "returncode": 0,
+      "elapsedSec": 506.693,
+      "log": "artifacts\\gpt-auth-process-research-20260627\\logs\\process_c_review.log",
+      "evaluated": 3,
+      "gatePassers": 0,
+      "bestByProfit": {
+        "gen": 2,
+        "profit": -14492886,
+        "mdd": 294.0,
+        "trades": 918,
+        "gate": false,
+        "graded": 0.0388583,
+        "line": "[LOOP] graded=0.0388583 hard_composite=-0 calmar=-1.02 r2=0.9907 gate=False reason=mdd 294 > mdd_cap 15 mdd=294 profit=-14,492,886 trades=918 gate_distance=거래 918 과다(>softcap 150); MDD 294 is 20x cap(15); profit negative"
+      },
+      "bestByScore": {
+        "gen": 2,
+        "profit": -14492886,
+        "mdd": 294.0,
+        "trades": 918,
+        "gate": false,
+        "graded": 0.0388583,
+        "line": "[LOOP] graded=0.0388583 hard_composite=-0 calmar=-1.02 r2=0.9907 gate=False reason=mdd 294 > mdd_cap 15 mdd=294 profit=-14,492,886 trades=918 gate_distance=거래 918 과다(>softcap 150); MDD 294 is 20x cap(15); profit negative"
+      },
+      "tailSummary": [
+        "[LOOP] === SUMMARY ===",
+        "{",
+        "  \"run_id\": \"gptauth_C_review_20260627\",",
+        "  \"generations\": 3,",
+        "  \"best_gen\": 2,",
+        "  \"best_score\": 0.03885829673209645,",
+        "  \"best_buy\": \"AILOOP_gptauth_C_review_20260627_g2_buy\",",
+        "  \"best_sell\": \"AILOOP_gptauth_C_review_20260627_g2_sell\",",
+        "  \"winner_gen\": -1,",
+        "  \"winner_score\": null,",
+        "  \"winner_buy\": null,",
+        "  \"winner_sell\": null,",
+        "  \"stop_reason\": \"max_generations 도달: gen_count 3 >= 3\"",
+        "}",
+        "[LOOP] wall-clock: 497.6s"
+      ]
+    }
+  ],
+  "conclusion": {
+    "authenticatedLoopWorked": true,
+    "hardGateWinners": 0,
+    "bestAuthenticatedProfit": 174904,
+    "bestAuthenticatedPhase": "process_b_research",
+    "fallbackStillBest": true,
+    "researchOnly": true,
+    "export": false,
+    "live": false,
+    "finalPromotion": false
+  },
+  "artifacts": {
+    "morningReport": "docs/research/condition_research/auto_reports/morning_20260628_gpt_auth_process_research.md",
+    "driverSummary": "artifacts/gpt-auth-process-research-20260627/gpt-auth-research-summary.json",
+    "safetyReceipt": "artifacts/gpt-auth-process-research-20260627/safety_receipt.json"
+  },
+  "safety": {
+    "export": false,
+    "live": false,
+    "finalPromotion": false,
+    "advisoryOnly": true,
+    "receipt": "artifacts/gpt-auth-process-research-20260627/safety_receipt.json",
+    "allPassed": true
+  }
+}

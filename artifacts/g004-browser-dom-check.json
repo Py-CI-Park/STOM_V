@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "gjc.browser",
+  "url": "http://127.0.0.1:8770/ui/backtest",
+  "startedAt": "2026-06-21T08:18:32.342000Z",
+  "endedAt": "2026-06-21T08:18:34.742000Z",
+  "screenshots": [
+    "artifacts/g004-backtest-editor-legacy-final.png",
+    "artifacts/g004-chart-replay-final.png"
+  ],
+  "actions": [
+    {
+      "timestampMs": 0,
+      "timestamp": "2026-06-21T08:18:32.342000Z",
+      "type": "navigate",
+      "action": "navigate",
+      "selector": "body",
+      "url": "http://127.0.0.1:8770/ui/backtest",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 400,
+      "timestamp": "2026-06-21T08:18:32.742000Z",
+      "type": "click",
+      "action": "click",
+      "selector": "text/조건식 편집",
+      "description": "Open condition editor surface.",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 800,
+      "timestamp": "2026-06-21T08:18:33.142000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "Backtest workbench shows expanded editor controls, self.vars import, BackFinder preflight, and strategy library markers.",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 1200,
+      "timestamp": "2026-06-21T08:18:33.542000Z",
+      "type": "screenshot",
+      "action": "screenshot",
+      "selector": "body",
+      "path": "artifacts/g004-backtest-editor-legacy-final.png",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 1600,
+      "timestamp": "2026-06-21T08:18:33.942000Z",
+      "type": "navigate",
+      "action": "navigate",
+      "selector": "body",
+      "url": "http://127.0.0.1:8770/ui/chart-replay",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 2000,
+      "timestamp": "2026-06-21T08:18:34.342000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "button[title]",
+      "description": "Chart replay quick-start visible copy and hover title help are present.",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 2400,
+      "timestamp": "2026-06-21T08:18:34.742000Z",
+      "type": "screenshot",
+      "action": "screenshot",
+      "selector": "body",
+      "path": "artifacts/g004-chart-replay-final.png",
+      "result": "passed"
+    }
+  ],
+  "checks": {
+    "backtest": {
+      "backtestWorkbench": true,
+      "largeBuy": true,
+      "largeSell": true,
+      "selfVars": true,
+      "backfinder": true,
+      "library": true
+    },
+    "simulation": {
+      "chartReplay": true,
+      "quickStart": true,
+      "latestHelp": true,
+      "topGainerHelp": true,
+      "hoverGuide": true
+    },
+    "titles": [
+      {
+        "text": "🧬\n조건식 AI\nLIVE",
+        "title": "조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스"
+      },
+      {
+        "text": "📊\n백테스트\nBT",
+        "title": "조건식 백테스트 실행·결과 조회"
+      },
+      {
+        "text": "📈\n차트 리플레이\nSIM",
+        "title": "차트 리플레이·수동 신호 검토"
+      },
+      {
+        "text": "⚡ 최근 거래일",
+        "title": "보유한 일일 DB 중 가장 최근 거래일을 고르고 그날 등락률 1위 종목을 자동 재생합니다."
+      },
+      {
+        "text": "⚡ 최대 상승일",
+        "title": "최근 거래일 후보 전체에서 일중 최대 상승률이 가장 큰 날짜·종목을 찾아 자동 재생합니다."
+      }
+    ]
+  },
+  "raw": {
+    "schemaVersion": 1,
+    "kind": "browser-dom-check",
+    "capturedAt": "2026-06-21T08:18:32.342Z",
+    "backtest": {
+      "url": "http://127.0.0.1:8770/ui/backtest",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "markers": {
+        "backtestWorkbench": true,
+        "largeBuy": true,
+        "largeSell": true,
+        "selfVars": true,
+        "backfinder": true,
+        "library": true
+      }
+    },
+    "simulation": {
+      "url": "http://127.0.0.1:8770/ui/chart-replay",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "markers": {
+        "chartReplay": true,
+        "quickStart": true,
+        "latestHelp": true,
+        "topGainerHelp": true,
+        "hoverGuide": true
+      },
+      "titles": [
+        {
+          "text": "🧬\n조건식 AI\nLIVE",
+          "title": "조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스"
+        },
+        {
+          "text": "📊\n백테스트\nBT",
+          "title": "조건식 백테스트 실행·결과 조회"
+        },
+        {
+          "text": "📈\n차트 리플레이\nSIM",
+          "title": "차트 리플레이·수동 신호 검토"
+        },
+        {
+          "text": "⚡ 최근 거래일",
+          "title": "보유한 일일 DB 중 가장 최근 거래일을 고르고 그날 등락률 1위 종목을 자동 재생합니다."
+        },
+        {
+          "text": "⚡ 최대 상승일",
+          "title": "최근 거래일 후보 전체에서 일중 최대 상승률이 가장 큰 날짜·종목을 찾아 자동 재생합니다."
+        }
+      ]
+    }
+  }
+}

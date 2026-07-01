@@ -1,0 +1,199 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Final architect review agent://72-G007FinalArchitect returned CLEAR/CLEAR/CLEAR and APPROVE with no blockers. It confirmed effective runtime preset policy for staged MDD/OOS/windows, pre-save seed_db pattern-card anti-copy guard, fail-closed page_data, and frontend IA cleanup.",
+    "commands": [
+      "architect final review agent://72-G007FinalArchitect",
+      "parent verification: python -m pytest tests/unit/test_condition_discovery_policy.py tests/unit/test_advisory_scores.py tests/unit/test_condition_discovery_feedback.py tests/unit/test_publish_live_page_data.py tests/unit/test_generator_guardrail.py tests/unit/test_warm_session_window.py tests/unit/test_small_universe_scope.py -q",
+      "parent verification: python -m pytest tests/unit/dashboard -q",
+      "parent verification: npm run build:app",
+      "parent verification: git diff --check"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Final executor QA agent://73-G007FinalQa returned overallStatus pass with no blockers. Parent verification passed 37 focused governance/generator/window tests, 564 dashboard tests, batch launcher --help exit 0, /health status ok, and browser DOM checks on http://127.0.0.1:8770/ui/evolution.",
+    "e2eCommands": [
+      "python -m pytest tests/unit/test_condition_discovery_policy.py tests/unit/test_advisory_scores.py tests/unit/test_condition_discovery_feedback.py tests/unit/test_publish_live_page_data.py tests/unit/test_generator_guardrail.py tests/unit/test_warm_session_window.py tests/unit/test_small_universe_scope.py -q",
+      "python -m pytest tests/unit/dashboard -q",
+      "npm run build:app",
+      "cmd.exe /c \"set STOM_DASHBOARD_NO_BROWSER=1&& set STOM_DASHBOARD_NO_PAUSE=1&& stom_dashboard.bat --help\""
+    ],
+    "redTeamCommands": [
+      "executor QA final review agent://73-G007FinalQa",
+      "browser DOM verification on http://127.0.0.1:8770/ui/evolution",
+      "git diff --check"
+    ],
+    "artifactRefs": [
+      {
+        "id": "g007-browser-dom-check",
+        "kind": "browser-automation",
+        "path": "artifacts/g007-browser-dom-check.json",
+        "description": "Browser DOM verification transcript for dashboard IA cleanup and merged heatmap/edge surface."
+      },
+      {
+        "id": "g007-dashboard-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/g007-dashboard-final.png",
+        "description": "Non-uniform dashboard screenshot captured from http://127.0.0.1:8770/ui/evolution."
+      },
+      {
+        "id": "g007-cli-replay",
+        "kind": "command-replay",
+        "path": "artifacts/g007-cli-replay.json",
+        "description": "Checkpoint-compatible safe CLI replay receipt."
+      },
+      {
+        "id": "g007-adversarial-report",
+        "kind": "failure-mode-test",
+        "path": "artifacts/g007-adversarial-report.txt",
+        "description": "Adversarial cases covering MDD caps, full-session windows, fail-closed page_data, anti-copy guard, and UI duplication cleanup."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-effective-policy",
+        "contractRef": "G007 backend governance: fast/research/promotion preset policy, staged MDD, tick/min windows, OOS semantics",
+        "obligation": "Preset policy must be effective in runtime scoring/backtest paths, not only dashboard text.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-backend-tests"],
+        "adversarialCaseRefs": ["case-mdd-cap", "case-min-full-session"]
+      },
+      {
+        "id": "contract-advisory-authority",
+        "contractRef": "G007 100-point scores and advisory authority",
+        "obligation": "Performance and generation-quality scores must remain advisory and cannot promote, export, or select winner.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-backend-tests"],
+        "adversarialCaseRefs": ["case-score-no-authority"]
+      },
+      {
+        "id": "contract-pattern-cards",
+        "contractRef": "G007 human DB composition pattern-card anti-copy guard",
+        "obligation": "Human DB/few-shot patterns teach composition only; threshold/full-expression/performance truth copying is blocked before save.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-backend-tests"],
+        "adversarialCaseRefs": ["case-pattern-copy"]
+      },
+      {
+        "id": "contract-page-data-fail-closed",
+        "contractRef": "G007 page_data governance publication",
+        "obligation": "Condition-discovery projection failures must publish explicit non-authoritative error state instead of silently dropping panels.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-backend-tests"],
+        "adversarialCaseRefs": ["case-page-data-error"]
+      },
+      {
+        "id": "contract-dashboard-ia",
+        "contractRef": "G007 dashboard IA cleanup",
+        "obligation": "Remove duplicate nested research/wiki buttons, remove nested STOM lab in wiki/lab, remove internal explanation copy, merge heatmap+Edge Ratio, and show process/default table.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-browser-dashboard", "surface-dashboard-tests"],
+        "adversarialCaseRefs": ["case-ui-duplicates"]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-backend-tests",
+        "contractRef": "Backend governance and generator guard public behavior",
+        "surface": "algorithm",
+        "invocation": "Focused pytest suite for condition_discovery, advisory_scores, condition_discovery_feedback, publish_live_page_data, generator_guardrail, warm_session_window, and small_universe_scope.",
+        "verdict": "passed",
+        "artifactRefs": ["g007-adversarial-report"]
+      },
+      {
+        "id": "surface-dashboard-tests",
+        "contractRef": "Dashboard source/build contract",
+        "surface": "algorithm",
+        "invocation": "Full dashboard unit/source contract suite: python -m pytest tests/unit/dashboard -q (564 passed).",
+        "verdict": "passed",
+        "artifactRefs": ["g007-adversarial-report"]
+      },
+      {
+        "id": "surface-browser-dashboard",
+        "contractRef": "Live dashboard at final user URL",
+        "surface": "web",
+        "invocation": "Browser automation loaded http://127.0.0.1:8770/ui/evolution, navigated lab/overview, inspected DOM, and captured screenshot.",
+        "verdict": "passed",
+        "artifactRefs": ["g007-browser-dom-check", "g007-dashboard-screenshot"]
+      },
+      {
+        "id": "surface-batch-launcher",
+        "contractRef": "Dashboard batch launcher",
+        "surface": "cli",
+        "invocation": "stom_dashboard.bat --help with STOM_DASHBOARD_NO_BROWSER=1 and STOM_DASHBOARD_NO_PAUSE=1 exited 0 and reported default URL http://127.0.0.1:8770/ui/evolution.",
+        "verdict": "passed",
+        "artifactRefs": ["g007-cli-replay"]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-mdd-cap",
+        "contractRef": "Promotion staged MDD hard gate",
+        "scenario": "Configured raw mdd_cap is 35 while promotion preset cap is 15; candidate has MDD above 15 but below 35.",
+        "expectedBehavior": "Effective runtime config uses 15 so compute_fitness rejects the candidate.",
+        "verdict": "passed",
+        "artifactRefs": ["g007-adversarial-report"]
+      },
+      {
+        "id": "case-min-full-session",
+        "contractRef": "Research/promotion MIN full-session policy",
+        "scenario": "MIN preset starts with full_session_enabled false and 09:28 configured end.",
+        "expectedBehavior": "Effective runtime config forces full session through bt_min_universe_end_time and cold/warm backtest paths consume the effective window.",
+        "verdict": "passed",
+        "artifactRefs": ["g007-adversarial-report"]
+      },
+      {
+        "id": "case-score-no-authority",
+        "contractRef": "Advisory 100-point scores",
+        "scenario": "High advisory performance/generation-quality score appears without complete hard gates/evidence/human approval.",
+        "expectedBehavior": "score_can_promote, score_can_export, and score_can_select_winner remain false.",
+        "verdict": "passed",
+        "artifactRefs": ["g007-adversarial-report"]
+      },
+      {
+        "id": "case-pattern-copy",
+        "contractRef": "Human DB composition cards",
+        "scenario": "Generated expression copies a seed_db card exactly or reuses numeric thresholds/canonical equivalents.",
+        "expectedBehavior": "Generator blocks before DB save and retries; performance truth is never imported.",
+        "verdict": "passed",
+        "artifactRefs": ["g007-adversarial-report"]
+      },
+      {
+        "id": "case-page-data-error",
+        "contractRef": "Fail-closed page_data",
+        "scenario": "Condition-discovery page-data projection raises due to malformed feedback/hypothesis payload.",
+        "expectedBehavior": "State publish continues with explicit condition_discovery error and all-false advisory authority.",
+        "verdict": "passed",
+        "artifactRefs": ["g007-adversarial-report"]
+      },
+      {
+        "id": "case-ui-duplicates",
+        "contractRef": "Dashboard IA cleanup",
+        "scenario": "User navigates lab/wiki and overview looking for duplicate research/wiki/lab controls and small split edge-ratio panel.",
+        "expectedBehavior": "No nested STOM 연구실, no duplicate workspace buttons, no internal explanation copy, and merged heatmap+Edge Ratio surface appears at large width.",
+        "verdict": "passed",
+        "artifactRefs": ["g007-browser-dom-check", "g007-dashboard-screenshot"]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Review blockers were resolved and verification was rerun. Earlier frontend copy blocker was fixed by replacing internal navigation explanation with owner-only text. Earlier backend blockers were fixed by applying an effective runtime config overlay, passing effective cold/warm windows, validating seed_db pattern cards before save, publishing cards only when active, and failing closed on page_data errors. Full focused and dashboard verification reran cleanly; architect and executor QA final reviews report no blockers.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m pytest tests/unit/test_condition_discovery_policy.py tests/unit/test_advisory_scores.py tests/unit/test_condition_discovery_feedback.py tests/unit/test_publish_live_page_data.py tests/unit/test_generator_guardrail.py tests/unit/test_warm_session_window.py tests/unit/test_small_universe_scope.py -q",
+      "python -m pytest tests/unit/dashboard -q",
+      "npm run build:app",
+      "git diff --check"
+    ],
+    "blockers": []
+  }
+}

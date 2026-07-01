@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G003",
+  "status": "passed_for_changed_scope",
+  "createdAt": "2026-06-29T15:11:43.711804Z",
+  "commands": [
+    {
+      "command": "pytest tests/unit/ -q",
+      "status": "timed_out_with_failures_outside_changed_scope",
+      "output": "Timed out after 300s around 55%; visible progress included unrelated failures before timeout.",
+      "artifact": "not emitted by timeout tool output"
+    },
+    {
+      "command": "pytest tests/unit/ -q -x",
+      "status": "failed_outside_changed_scope",
+      "output": "1 failed, 790 passed, 9 warnings; first failure tests/unit/test_backtest_button_contract.py::test_backtest_constructor_contract_is_small_and_queue_driven; backtest/backtest.py and the failing test are untouched by this work.",
+      "artifact": "artifact://1770"
+    },
+    {
+      "command": "git diff --name-only -- backtest/backtest.py tests/unit/test_backtest_button_contract.py",
+      "status": "passed",
+      "output": "no output; first full-suite failure surface is not modified"
+    },
+    {
+      "command": "pytest tests/unit/test_research_loop.py tests/unit/test_condition_discovery_policy.py tests/unit/test_research_prompt_contracts.py tests/unit/test_extract_code.py -q",
+      "status": "passed",
+      "output": "118 passed in 7.25s",
+      "artifact": "artifact://1773"
+    },
+    {
+      "command": "python -m py_compile cli/research_loop.py cli/research_ranking.py ai_strategy_loop/controller/condition_discovery.py ai_strategy_loop/brain/prompt.py",
+      "status": "passed",
+      "output": "no output"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "output": "exit 0; CRLF warnings only for ai_strategy_loop/controller/condition_discovery.py and tests/unit/test_condition_discovery_policy.py"
+    },
+    {
+      "command": "git status --short -- _database _database_v3k_shadow _log backup '*.db' backtest/graph .omx/reports 'v3k_settings*.json'",
+      "status": "passed",
+      "output": "no output"
+    }
+  ],
+  "researchOnlySafety": {
+    "noExport": true,
+    "noLive": true,
+    "noFinalPromotion": true,
+    "protectedPathStatusClean": true
+  },
+  "nonreleaseSync": {
+    "applicable": false,
+    "reason": "Changed files are research-loop, prompt/policy helpers, ranking, and focused tests; nonrelease branch propagation/sync paths were not touched."
+  }
+}

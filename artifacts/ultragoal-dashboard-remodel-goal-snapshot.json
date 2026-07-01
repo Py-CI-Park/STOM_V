@@ -1,0 +1,11 @@
+{
+  "goal": {
+    "objective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+    "status": "active",
+    "updatedAt": "2026-06-24T02:04:16Z"
+  },
+  "usage": {
+    "tokens": 2902532
+  },
+  "source": "goal({\"op\":\"get\"}) refreshed before Ultragoal checkpoint"
+}

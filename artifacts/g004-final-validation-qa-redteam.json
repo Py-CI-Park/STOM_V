@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "kind": "failure-mode-test-report",
+  "goalId": "G004",
+  "reviewedAt": "2026-06-30T14:04:08Z",
+  "agentRefs": [
+    "agent://252-G004FinalQa"
+  ],
+  "status": "passed",
+  "e2eStatus": "passed",
+  "redTeamStatus": "passed",
+  "blockers": [],
+  "contractCoverage": [
+    {
+      "id": "contract-context-pack-metadata",
+      "contractRef": "G004 objective: context pack metadata preserved across candidate specs, prompt receipts, analysis card/ranking evidence",
+      "status": "covered",
+      "evidenceRefs": [
+        "artifacts/g004-research-only-validation-smoke.json",
+        "tests/unit/test_research_loop.py",
+        "tests/unit/test_condition_generator.py"
+      ]
+    },
+    {
+      "id": "contract-multi-hypothesis-pack",
+      "contractRef": "G004 objective: 2-3+ contracts or mocked candidate pack path with repair/discovery lanes",
+      "status": "covered",
+      "evidenceRefs": [
+        "artifacts/g004-research-only-validation-smoke.json",
+        "tests/unit/test_condition_generator.py"
+      ]
+    },
+    {
+      "id": "contract-official-analysis-prompt",
+      "contractRef": "G004 objective: official candidate handling, analysis cards, prompt receipts",
+      "status": "covered",
+      "evidenceRefs": [
+        "artifacts/g004-research-only-validation-smoke.json",
+        "tests/unit/test_research_loop.py"
+      ]
+    },
+    {
+      "id": "contract-fallback-demotion",
+      "contractRef": "G004 objective: deterministic fallback labeling and no prompt maturity credit",
+      "status": "covered",
+      "evidenceRefs": [
+        "artifacts/g004-research-only-validation-smoke.json",
+        "tests/unit/test_condition_generator.py",
+        "tests/unit/test_research_loop.py"
+      ]
+    },
+    {
+      "id": "contract-zero-generation-promotion-review",
+      "contractRef": "G004 objective and approved plan: promotion-review zero-generation, no export/live/final promotion",
+      "status": "covered",
+      "evidenceRefs": [
+        "artifacts/g004-research-only-validation-smoke.json",
+        "tests/unit/test_research_loop.py",
+        "tests/unit/test_condition_discovery_policy.py"
+      ]
+    }
+  ],
+  "adversarialCases": [
+    {
+      "id": "case-weak-candidate-pack",
+      "scenario": "Candidate pack has fewer than two valid hypotheses or no discovery lane.",
+      "expectedBehavior": "Reject with insufficient_valid_candidates or missing_discovery_candidate.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "artifacts/g004-final-validation-focused-test-report.txt"
+      ]
+    },
+    {
+      "id": "case-authority-smuggling",
+      "scenario": "Candidate or analysis metadata tries to enable can_live/can_export/final promotion.",
+      "expectedBehavior": "Strict validation rejects or blocks authority; smoke keeps all authority false.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "artifacts/g004-research-only-validation-smoke.json",
+        "artifacts/g004-final-validation-focused-test-report.txt"
+      ]
+    },
+    {
+      "id": "case-diagnostic-leakage",
+      "scenario": "R_/S_ diagnostic variables leak into generated or fallback expressions.",
+      "expectedBehavior": "Validation rejects leakage before candidate execution.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "artifacts/g004-final-validation-focused-test-report.txt"
+      ]
+    },
+    {
+      "id": "case-promotion-review-generation",
+      "scenario": "Promotion-review attempts to generate candidates or run controller side effects.",
+      "expectedBehavior": "Blocked at validation with controller_run_count 0.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "artifacts/g004-research-only-validation-smoke.json"
+      ]
+    },
+    {
+      "id": "case-research-result-promoted",
+      "scenario": "Research-only official backtest result is treated as promotion approval.",
+      "expectedBehavior": "Rank reason remains advisory rejection; promotion_passed false.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "artifacts/g004-research-only-validation-smoke.json"
+      ]
+    }
+  ],
+  "evidence": "QA/red-team review passed with blockers empty and parent reran focused pytest, py_compile, JSON validation, whitespace check, protected-path check, and research-only smoke."
+}

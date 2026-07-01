@@ -1,0 +1,181 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Core final review agent://248-G003CoreArchitectFinal and UI/docs review agent://243-G003UiDocsArchitect both approved with blockers empty. Final slop scan agent://249-G003SlopFinal passed after all review blockers were resolved.",
+    "commands": [
+      "agent://248-G003CoreArchitectFinal",
+      "agent://243-G003UiDocsArchitect",
+      "agent://249-G003SlopFinal"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Focused pytest suite passed 154 tests in 18.49s; py_compile passed; browser/static presentation verification loaded the observability section and found all required markers; QA red-team agent://245-G003QaRedTeam passed with blockers empty.",
+    "e2eCommands": [
+      "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_publish_live_page_data.py -q",
+      "python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py cli/research_ranking.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py"
+    ],
+    "redTeamCommands": [
+      "agent://245-G003QaRedTeam read-only adversarial QA review",
+      "browser verification of artifacts/process-research-actual-20260629/process_research_presentation.html#observability"
+    ],
+    "artifactRefs": [
+      {
+        "id": "focused-test-report",
+        "kind": "test-report",
+        "path": "artifacts/g003-mode-authority-observability-focused-test-report.txt",
+        "description": "Focused test, compile, whitespace, and protected-path verification report for G003."
+      },
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/g003-mode-authority-observability-browser-verification.json",
+        "description": "Browser automation receipt proving static HTML observability markers are present."
+      },
+      {
+        "id": "observability-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/g003-mode-authority-observability-presentation.png",
+        "description": "Non-uniform screenshot of the updated observability section."
+      },
+      {
+        "id": "architect-review",
+        "kind": "code-review-report",
+        "path": "artifacts/g003-mode-authority-observability-architect-review.json",
+        "description": "Architecture/product/code review synthesis with blockers empty."
+      },
+      {
+        "id": "slop-cleaner",
+        "kind": "code-review-report",
+        "path": "artifacts/g003-mode-authority-observability-slop-cleaner.json",
+        "description": "Read-only cleanup/slop scan receipt with blockers empty."
+      },
+      {
+        "id": "qa-redteam",
+        "kind": "failure-mode-test-report",
+        "path": "artifacts/g003-mode-authority-observability-qa-redteam.json",
+        "description": "QA red-team review covering bypass and authority-smuggling cases."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-mode-authority",
+        "contractRef": "G003 objective: repair/discovery may generate research-only candidates; promotion-review must be zero-generation read-only evidence health",
+        "obligation": "Promotion-review blocks research-loop generation before baseline/analysis/generation side effects, while repair/discovery remain research-only.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-api-package"],
+        "adversarialCaseRefs": ["case-promotion-generation-bypass"]
+      },
+      {
+        "id": "contract-ranking-receipts",
+        "contractRef": "G003 objective: extend ranking/receipts with context_pack_id, candidate_pack_id, hypothesis_id, mutation axis, novelty, fallback, prompt validation, advisory rank reason, and downstream official backtest result",
+        "obligation": "Prompt receipts, candidate specs, analysis cards, and rank_score expose research metadata and official backtest result without promotion authority.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-api-package"],
+        "adversarialCaseRefs": ["case-fallback-prompt-credit", "case-missing-mdd"]
+      },
+      {
+        "id": "contract-observability",
+        "contractRef": "G003 objective: update dashboard/docs/static HTML observability",
+        "obligation": "Dashboard/static docs expose context pack health, branch tree, candidate pack, analysis cards, prompt receipts, fallback status, and promotion blockers.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-web-static"],
+        "adversarialCaseRefs": ["case-dashboard-authority-default"]
+      },
+      {
+        "id": "contract-no-live-export",
+        "contractRef": "Approved plan boundary: research-only; no export/live/final promotion",
+        "obligation": "No changed path grants export, live, or final promotion authority.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-api-package"],
+        "adversarialCaseRefs": ["case-authority-smuggling"]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-api-package",
+        "contractRef": "Python research-loop and policy helper contracts",
+        "surface": "api/package",
+        "invocation": "Focused pytest and py_compile over changed helper, loop, policy, ranking, and prompt contract files.",
+        "verdict": "passed",
+        "artifactRefs": ["focused-test-report"]
+      },
+      {
+        "id": "surface-web-static",
+        "contractRef": "Dashboard/static HTML observability surface",
+        "surface": "web",
+        "invocation": "Browser automation loaded the updated presentation and asserted required observability markers with screenshot evidence.",
+        "verdict": "passed",
+        "artifactRefs": ["browser-run", "observability-screenshot"]
+      },
+      {
+        "id": "surface-live-trading",
+        "contractRef": "Live/export/final promotion surfaces are out of scope for G003",
+        "surface": "api/package",
+        "status": "not_applicable",
+        "reason": "G003 is explicitly research-only; live/export/final promotion verification is prohibited except as blocked authority checks."
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-promotion-generation-bypass",
+        "contractRef": "Promotion-review zero-generation",
+        "scenario": "Attempt to run promotion-review through candidate generation paths, including run_research_once with run_candidate False and no run_candidates.",
+        "expectedBehavior": "Return promotion_review_generation_blocked before controller baseline run, analysis, expression generation, candidate spec creation, save, or backtest.",
+        "verdict": "passed",
+        "artifactRefs": ["focused-test-report", "qa-redteam"]
+      },
+      {
+        "id": "case-fallback-prompt-credit",
+        "contractRef": "Diagnostic deterministic fallback demotion",
+        "scenario": "Deterministic fallback or unsafe diagnostic expression path attempts to earn prompt maturity credit.",
+        "expectedBehavior": "fallback_used True, source diagnostic_deterministic_candidate_fallback, prompt_maturity_credit_allowed False, prompt_score 0, unsafe R_/S_ leakage blocked.",
+        "verdict": "passed",
+        "artifactRefs": ["focused-test-report", "qa-redteam"]
+      },
+      {
+        "id": "case-missing-mdd",
+        "contractRef": "Official backtest result evidence health",
+        "scenario": "Candidate result lacks MDD/max_drawdown metrics.",
+        "expectedBehavior": "Do not fabricate mdd=0.0; keep evidence health incomplete and validation promotion blockers present.",
+        "verdict": "passed",
+        "artifactRefs": ["focused-test-report", "slop-cleaner"]
+      },
+      {
+        "id": "case-dashboard-authority-default",
+        "contractRef": "Dashboard authority display fail-closed",
+        "scenario": "Partial/stale condition_discovery payload omits generation_allowed.",
+        "expectedBehavior": "Display authority pending/blocked instead of research generation allowed.",
+        "verdict": "passed",
+        "artifactRefs": ["focused-test-report", "browser-run"]
+      },
+      {
+        "id": "case-authority-smuggling",
+        "contractRef": "No export/live/final promotion authority",
+        "scenario": "Candidate/analysis metadata attempts to set can_live, can_export, production_ready, promotion_claim, or final promotion fields.",
+        "expectedBehavior": "Strict validators reject or block the metadata and keep authority research-only.",
+        "verdict": "passed",
+        "artifactRefs": ["focused-test-report", "qa-redteam"]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Initial core/slop review blockers were resolved; full focused verification loop reran cleanly; final architecture, slop, and QA reviews are clean.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_publish_live_page_data.py -q",
+      "python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py cli/research_ranking.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py",
+      "git diff --check -- changed G003 source/test/doc files",
+      "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json _v3k_sidecar/v3k_gui_settings.json"
+    ],
+    "blockers": []
+  }
+}

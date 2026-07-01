@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "git",
+    "status",
+    "--short",
+    "--",
+    "_database",
+    "_database_v3k_shadow",
+    "_log",
+    "backup",
+    "*.db",
+    "backtest/graph",
+    ".omx/reports",
+    "v3k_settings*.json",
+    "_v3k_sidecar/v3k_gui_settings.json"
+  ],
+  "recordedStdout": ""
+}

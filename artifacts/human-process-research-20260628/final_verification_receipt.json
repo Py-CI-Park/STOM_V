@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "kind": "final-verification-receipt",
+  "createdAt": "2026-06-28T15:18:46.128713+00:00",
+  "commands": [
+    {
+      "command": "python scripts/verify_nonrelease_sync.py",
+      "status": "passed"
+    },
+    {
+      "command": "git status --short protected paths",
+      "status": "passed_clean_no_output"
+    },
+    {
+      "command": "dashboard /health via browser",
+      "status": "passed",
+      "body": {
+        "status": "ok",
+        "contract_version": 2
+      }
+    },
+    {
+      "command": "artifact JSON/JSONL validation",
+      "status": "passed",
+      "candidate_cards": 5,
+      "analysis_cards": 5,
+      "prompt_mutation_receipts": 1
+    }
+  ],
+  "protectedPathMutationObserved": false
+}

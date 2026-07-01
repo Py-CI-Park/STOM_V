@@ -1,0 +1,29 @@
+{
+  "story": "G002 Multi-hypothesis candidate contracts and loop integration",
+  "generatedAt": "2026-06-30T12:48:23Z",
+  "status": "verification_clean",
+  "verification": {
+    "pytest": "129 passed in focused set (artifact://1907)",
+    "py_compile": "passed with no output",
+    "git_diff_check": "passed with CRLF warnings only",
+    "protected_paths": "clean/no output",
+    "architectReview": "239-G002ArchitectClean APPROVE/CLEAR",
+    "slopReview": "240-G002SlopClean PASS",
+    "qaRedTeam": "241-G002QaClean passed/no blockers"
+  },
+  "changed_files": [
+    "ai_strategy_loop/brain/prompt.py",
+    "ai_strategy_loop/controller/condition_discovery.py",
+    "cli/condition_generator.py",
+    "cli/research_loop.py",
+    "tests/unit/test_research_prompt_contracts.py",
+    "tests/unit/test_condition_discovery_policy.py",
+    "tests/unit/test_condition_generator.py",
+    "tests/unit/test_research_loop.py"
+  ],
+  "research_boundaries": {
+    "export": false,
+    "live": false,
+    "final_promotion": false
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "architectureStatus": "CLEAR",
+  "productStatus": "CLEAR",
+  "codeStatus": "CLEAR",
+  "recommendation": "APPROVE",
+  "blockers": [],
+  "evidence": "Architect review agent://256-ResearchV2Architect: process integrity, product intent coverage, and artifact integrity CLEAR. Context Pack contains full_condition_code_required_not_id_only, full parent buy/sell code and sha256, all STOM sources included; candidate/backtest receipts show 4 successful research-only candidates; dashboard evidence browser-verified; safety flags false for export/live/finalPromotion.",
+  "commands": [
+    "architect review agent://256-ResearchV2Architect"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "review_id": "240-G002SlopClean",
+  "verdict": "PASS",
+  "blockers": [],
+  "advisory": [
+    "No tests/gates/formatters/project-wide commands run by read-only reviewer; leader owns verification.",
+    "Falsey malformed pack values at research-loop selection are treated as missing; direct pack validation rejects non-dict packs and no unsafe candidate executes."
+  ],
+  "reviewed_files": [
+    "cli/condition_generator.py",
+    "cli/research_loop.py",
+    "ai_strategy_loop/brain/prompt.py",
+    "tests/unit/test_condition_generator.py",
+    "tests/unit/test_research_loop.py",
+    "tests/unit/test_research_prompt_contracts.py"
+  ],
+  "verification_scope": "Read-only cleanup/slop review of exact G002 files. Leader verification: focused pytest 129 passed, py_compile passed, git diff --check CRLF warnings only, protected paths clean.",
+  "summary": [
+    "No blocking fallback masking, fake/no-op behavior, dead alias, unsafe shortcut, protected-boundary, export/live/final-promotion, or research-only authority violation found.",
+    "LLM packs are validated before use; weak/leaky/authority-smuggled/non-dict packs fail; invalid siblings are isolated; deterministic fallback is diagnostic and no-credit.",
+    "Research loop prefers valid LLM packs before deterministic fallback, carries metadata into specs/contracts, blocks invalid strict prompt responses before side effects, and rejects leaky diagnostic fallback before execution."
+  ]
+}

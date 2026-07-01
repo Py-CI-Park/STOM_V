@@ -1,0 +1,25 @@
+G004 final validation report
+
+Scope:
+- Focused tests and verification for all changed files.
+- Non-live research-only smoke proving context pack metadata, 2-candidate repair/discovery pack contracts, official candidate artifact handling, analysis card, prompt receipt downstream official backtest result, deterministic fallback labeling, promotion-review zero-generation block, advisory ranking metadata, and no export/live/final promotion authority.
+- Protected-path safety and JSON artifact validation.
+
+Commands/scenarios run by parent:
+1. Research-only Python smoke through real helper contracts.
+   Artifact: artifacts/g004-research-only-validation-smoke.json
+   Result: passed; candidate_pack_id g004-pack-001 with repair/discovery lanes, context_pack_id g004-rcp-001, analysis_card_v2 research-only safety flags false for export/live/final promote, prompt_receipt official_backtest_result recorded, deterministic fallback prompt_score 0, promotion-review controller_run_count 0, advisory ranking reason official_backtest_research_candidate_not_promotion_passed.
+2. python -m json.tool artifacts/g004-research-only-validation-smoke.json
+   Result: passed.
+3. pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_publish_live_page_data.py -q
+   Result: 154 passed in 108.62s (raw output artifact://1979).
+4. python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py cli/research_ranking.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py
+   Result: passed with no output.
+5. git diff --check -- changed G004 source/test/doc/artifact files
+   Result: passed; CRLF warnings only for ai_strategy_loop/controller/condition_discovery.py and tests/unit/test_condition_discovery_policy.py.
+6. git status --short -- _database _database_v3k_shadow _log backup "*.db" backtest/graph .omx/reports "v3k_settings*.json" _v3k_sidecar/v3k_gui_settings.json
+   Result: no output; protected paths clean.
+7. Final review gates.
+   Result: architect agent://250-G004FinalArchitect approved, slop agent://251-G004FinalSlop passed, QA/red-team agent://252-G004FinalQa passed; blockers empty.
+
+Verdict: passed.

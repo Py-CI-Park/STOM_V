@@ -1,0 +1,6 @@
+Final closeout adversarial/failure-mode report
+
+- ledger-completion: G001 and G002 completion receipts exist before G003; status command shows G003 active only.
+- full-suite-unrelated-failure: full unit suite is not clean in this worktree, but first deterministic failure is tests/unit/test_backtest_button_contract.py against untouched backtest/backtest.py; changed-scope tests pass.
+- protected-paths: protected/runtime path status command returned no output.
+- research-only-boundary: no export/live/final promotion wiring was added; new process metadata remains research-only/advisory.

@@ -1,0 +1,54 @@
+{
+  "trade_count": 639,
+  "skipped_trades": 5,
+  "base_total_profit": 15728180.0,
+  "betting_krw": 5000000.0,
+  "csv_paths": [
+    "backtest/csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628094538.csv",
+    "backtest/csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628095000.csv",
+    "backtest/csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628095425.csv",
+    "backtest/csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628095906.csv"
+  ],
+  "scenarios": [
+    {
+      "tick": 0,
+      "fee_bps": 0.0,
+      "total_profit": 15728180.0,
+      "profit_delta": 0.0,
+      "profit_retention_ratio": 1.0,
+      "mdd_amount": 1763620.0,
+      "trade_count": 639,
+      "breakeven_tick": 2.0303787783510865
+    },
+    {
+      "tick": 1,
+      "fee_bps": 0.0,
+      "total_profit": 7981753.48702532,
+      "profit_delta": -7746426.51297468,
+      "profit_retention_ratio": 0.5074810618282166,
+      "mdd_amount": 2654264.512449505,
+      "trade_count": 639,
+      "breakeven_tick": 2.0303787783510865
+    },
+    {
+      "tick": 2,
+      "fee_bps": 0.0,
+      "total_profit": 235326.97405063987,
+      "profit_delta": -15492853.02594936,
+      "profit_retention_ratio": 0.014962123656433221,
+      "mdd_amount": 4023137.394014522,
+      "trade_count": 639,
+      "breakeven_tick": 2.0303787783510865
+    },
+    {
+      "tick": 3,
+      "fee_bps": 0.0,
+      "total_profit": -7511099.53892404,
+      "profit_delta": -23239279.53892404,
+      "profit_retention_ratio": -0.47755681451535015,
+      "mdd_amount": 9114136.278081844,
+      "trade_count": 639,
+      "breakeven_tick": 2.0303787783510865
+    }
+  ]
+}

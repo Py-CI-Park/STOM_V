@@ -1,0 +1,181 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review agent://253-G001DocArchitect approved the documentation system and plan with blockers empty. The later README legacy-flow watch item was fixed and clean QA agent://255-G001DocQaClean passed.",
+    "commands": [
+      "agent://253-G001DocArchitect",
+      "agent://255-G001DocQaClean"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "G002 documentation verifies the concrete next research plan: rr8_12 stability seed, comparators, full buy/sell code capture, Context Pack, Analysis Card v2, multi-hypothesis candidate pack, official backtest/ranking, and zero-generation promotion-review.",
+    "e2eCommands": [
+      "python documentation content verification for required markers",
+      "git diff --check -- docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md docs/research/condition_research/README.md",
+      "git status --short -- protected runtime paths"
+    ],
+    "redTeamCommands": [
+      "agent://255-G001DocQaClean read-only adversarial documentation QA"
+    ],
+    "artifactRefs": [
+      {
+        "id": "knowledge-system-doc",
+        "kind": "documentation-report",
+        "path": "docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md",
+        "description": "Condition research knowledge-system, naming, Condition Passport, and report-management design."
+      },
+      {
+        "id": "next-run-plan-doc",
+        "kind": "documentation-report",
+        "path": "docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md",
+        "description": "Improved process next-run research plan with seed choices, context pack, candidate pack, and report templates."
+      },
+      {
+        "id": "research-readme-index",
+        "kind": "documentation-report",
+        "path": "docs/research/condition_research/README.md",
+        "description": "Condition research index updated with latest documentation-management principles."
+      },
+      {
+        "id": "architect-review",
+        "kind": "code-review-report",
+        "path": "artifacts/condition-research-doc-system-architect-review.json",
+        "description": "Read-only architect review approving G001 documentation with blockers empty."
+      },
+      {
+        "id": "qa-redteam",
+        "kind": "failure-mode-test-report",
+        "path": "artifacts/condition-research-doc-system-qa-redteam.json",
+        "description": "Read-only QA/red-team review passed after README legacy-flow clarification."
+      },
+      {
+        "id": "doc-verification-report",
+        "kind": "test-report",
+        "path": "artifacts/condition-research-doc-system-verification-report.txt",
+        "description": "Required-marker, whitespace, protected-path, architect review, and QA verification report for the documentation system."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-start-seed",
+        "contractRef": "G002: starting seed choice",
+        "obligation": "Name rr8_12_turnover_min_902=1.5 as stability seed and comparators with rationale.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-docs"
+        ],
+        "adversarialCaseRefs": [
+          "case-profit-chasing"
+        ]
+      },
+      {
+        "id": "contract-process-loop",
+        "contractRef": "G002: improved process sequence",
+        "obligation": "Define seed code resolve, Context Pack, Analysis Card v2, multi-hypothesis generation, official backtest, ranking, next iteration, and zero-generation promotion-review.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-docs"
+        ],
+        "adversarialCaseRefs": [
+          "case-missing-generation-branches"
+        ]
+      },
+      {
+        "id": "contract-boundaries",
+        "contractRef": "G002: research-only boundaries",
+        "obligation": "Keep export/live/finalPromotion false and make 3-tick slippage advisory only.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-docs"
+        ],
+        "adversarialCaseRefs": [
+          "case-promotion-generation"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-docs",
+        "contractRef": "Next improved-process research plan",
+        "surface": "api/package",
+        "invocation": "Direct file inspection plus required-marker verification over the documentation files.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "doc-verification-report"
+        ]
+      },
+      {
+        "id": "surface-review",
+        "contractRef": "Review gate",
+        "surface": "api/package",
+        "invocation": "Read-only architect and QA/red-team reviews over the documentation files.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "architect-review",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "surface-live-export-final",
+        "contractRef": "Research-only boundary",
+        "surface": "api/package",
+        "status": "not_applicable",
+        "reason": "The goal is documentation-only and explicitly forbids export/live/final promotion; verification is limited to blocked-boundary documentation."
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-profit-chasing",
+        "contractRef": "Seed selection rationale",
+        "scenario": "Choose rr8_21 only because it has best 2025 profit.",
+        "expectedBehavior": "Plan chooses rr8_12 as OOS-stable baseline and keeps rr8_21 as comparator only.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "next-run-plan-doc"
+        ]
+      },
+      {
+        "id": "case-missing-generation-branches",
+        "contractRef": "Multi-hypothesis candidate pack",
+        "scenario": "Generate only one candidate from one analysis card.",
+        "expectedBehavior": "Plan requires minimum 2, target 3, repair>=1 and discovery>=1.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "next-run-plan-doc"
+        ]
+      },
+      {
+        "id": "case-promotion-generation",
+        "contractRef": "Zero-generation promotion review",
+        "scenario": "Promotion-review generates or promotes candidates.",
+        "expectedBehavior": "Plan requires generation 0 and export/live/finalPromotion false.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "next-run-plan-doc",
+          "qa-redteam"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Documentation marker verification, whitespace check, protected-path check, architect review, and clean QA/red-team review are all clean; blockers empty.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python documentation content verification for required markers",
+      "git diff --check -- docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md docs/research/condition_research/README.md",
+      "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json _v3k_sidecar/v3k_gui_settings.json",
+      "agent://253-G001DocArchitect",
+      "agent://255-G001DocQaClean"
+    ],
+    "blockers": []
+  }
+}

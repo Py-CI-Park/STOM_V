@@ -1,0 +1,235 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 155-GptRerunReview approved the GPT-authenticated rerun closure artifacts. It verified OAuth/proxy recovery, smoke/A/B/C generation and backtest execution, zero hard-gate winners, prior fallback baseline still best, and research-only safety boundaries with no export/live/final promotion claims.",
+    "commands": [
+      "agent://155-GptRerunReview"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA first found missing direct provider/config evidence, then re-reviewed after phase_config_evidence.json and the process_*.json configs were included. Final QA 157-GptRerunQaFix passed with no blockers: every phase config directly shows provider/model gpt_auth/gpt-5.5; the driver receipt invokes ai_strategy_loop.controller.loop with the exact config paths and matching run ids; all phases returned 0 and completed generation/backtest summaries; zero hard-gate winners; fallback remains best; research-only safety preserved.",
+    "e2eCommands": [
+      "python artifacts/gpt-auth-process-research-20260627/run_gpt_auth_research.py",
+      "python -m ai_strategy_loop.scripts.gen_morning_report --out docs/research/condition_research/auto_reports/morning_20260628_gpt_auth_process_research.md"
+    ],
+    "redTeamCommands": [
+      "agent://156-GptRerunQa",
+      "agent://157-GptRerunQaFix"
+    ],
+    "artifactRefs": [
+      {
+        "id": "rerun-log",
+        "kind": "api-test-report",
+        "path": "docs/update_log/2026-06-27_gpt_auth_research_rerun_log.md",
+        "description": "Dated rerun/baseline record with OAuth recovery conditions and research-only safety warnings."
+      },
+      {
+        "id": "morning-report",
+        "kind": "api-test-report",
+        "path": "docs/research/condition_research/auto_reports/morning_20260628_gpt_auth_process_research.md",
+        "description": "User-facing morning report with explicit GPT-auth rerun scope caveat and A/B/C result summary."
+      },
+      {
+        "id": "final-summary",
+        "kind": "algorithm-artifact",
+        "path": "artifacts/gpt-auth-process-research-20260627/final_gpt_auth_research_summary.json",
+        "description": "Structured final GPT-auth rerun summary comparing authenticated candidates with the prior fallback baseline."
+      },
+      {
+        "id": "driver-summary",
+        "kind": "algorithm-artifact",
+        "path": "artifacts/gpt-auth-process-research-20260627/gpt-auth-research-summary.json",
+        "description": "Driver receipt with oauth status, proxy smoke, phase command arrays, phase tail summaries, return codes, report generation, and status complete."
+      },
+      {
+        "id": "phase-config-evidence",
+        "kind": "api-test-report",
+        "path": "artifacts/gpt-auth-process-research-20260627/phase_config_evidence.json",
+        "description": "Direct config evidence index proving smoke/A/B/C provider/model gpt_auth/gpt-5.5 and matching process/run settings."
+      },
+      {
+        "id": "safety-receipt",
+        "kind": "api-test-report",
+        "path": "artifacts/gpt-auth-process-research-20260627/safety_receipt.json",
+        "description": "allPassed safety receipt for nonrelease sync, diff check, protected path status, py_compile, and dashboard health."
+      },
+      {
+        "id": "qa-final",
+        "kind": "review-report",
+        "path": "agent://157-GptRerunQaFix",
+        "description": "Final executor QA/red-team review that passed after config evidence resolved the only blocker."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-baseline",
+        "contractRef": "G001 Record previous research baseline",
+        "obligation": "Document prior fallback research baseline and create authenticated rerun config directory.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-rerun-log", "surface-configs"],
+        "adversarialCaseRefs": ["case-baseline-overclaim"]
+      },
+      {
+        "id": "contract-oauth-preflight",
+        "contractRef": "G002 Verify GPT OAuth and preflight",
+        "obligation": "Verify OAuth status, proxy smoke, dashboard health, nonrelease sync, protected path baseline, config validity, and tiny GPT smoke.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-driver", "surface-safety"],
+        "adversarialCaseRefs": ["case-provider-binding"]
+      },
+      {
+        "id": "contract-fast-discovery",
+        "contractRef": "G003 Execute authenticated A fast-discovery",
+        "obligation": "Run authenticated fast-discovery with bounded generations and capture run ids/results without export/live/promote.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-driver", "surface-summary"],
+        "adversarialCaseRefs": ["case-hard-gate-overclaim"]
+      },
+      {
+        "id": "contract-process-research",
+        "contractRef": "G004 Execute authenticated B process-research",
+        "obligation": "Run authenticated full-period process-research with 32 warm engines and capture candidate results/reject reasons.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-driver", "surface-summary"],
+        "adversarialCaseRefs": ["case-fallback-comparison"]
+      },
+      {
+        "id": "contract-review-synthesis",
+        "contractRef": "G005 Execute C promotion-review read-only synthesis",
+        "obligation": "Run/synthesize read-only promotion-review evidence health while preserving final promotion/export/live blockers.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-report", "surface-safety"],
+        "adversarialCaseRefs": ["case-promotion-confusion"]
+      },
+      {
+        "id": "contract-close",
+        "contractRef": "G006 Generate report and close safely",
+        "obligation": "Generate final report, compare against fallback baseline, run final safety checks, and close with quality evidence.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-report", "surface-safety"],
+        "adversarialCaseRefs": ["case-protected-path"]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-rerun-log",
+        "contractRef": "G001 baseline documentation",
+        "surface": "package",
+        "invocation": "Read docs/update_log/2026-06-27_gpt_auth_research_rerun_log.md.",
+        "verdict": "passed",
+        "artifactRefs": ["rerun-log"]
+      },
+      {
+        "id": "surface-configs",
+        "contractRef": "GPT-auth phase configuration",
+        "surface": "package",
+        "invocation": "Read process_smoke.json, process_a_fast.json, process_b_research.json, process_c_review.json and phase_config_evidence.json.",
+        "verdict": "passed",
+        "artifactRefs": ["phase-config-evidence"]
+      },
+      {
+        "id": "surface-driver",
+        "contractRef": "Authenticated research driver execution",
+        "surface": "algorithm",
+        "invocation": "run_gpt_auth_research.py completed OAuth status, proxy smoke, smoke_generation, process_a_fast, process_b_research, process_c_review, and report generation; receipts in gpt-auth-research-summary.json.",
+        "verdict": "passed",
+        "artifactRefs": ["driver-summary"]
+      },
+      {
+        "id": "surface-summary",
+        "contractRef": "Structured GPT-auth result comparison",
+        "surface": "algorithm",
+        "invocation": "final_gpt_auth_research_summary.json reports authenticatedLoopWorked=true, hardGateWinners=0, bestAuthenticatedProfit=174904, fallbackStillBest=true, researchOnly=true.",
+        "verdict": "passed",
+        "artifactRefs": ["final-summary"]
+      },
+      {
+        "id": "surface-report",
+        "contractRef": "User-facing morning report",
+        "surface": "package",
+        "invocation": "morning_20260628_gpt_auth_process_research.md includes a top scope caveat and section 4-A with authenticated A/B/C results.",
+        "verdict": "passed",
+        "artifactRefs": ["morning-report"]
+      },
+      {
+        "id": "surface-safety",
+        "contractRef": "Research-only safety boundary",
+        "surface": "package",
+        "invocation": "safety_receipt.json and current safety rerun show nonrelease sync, diff check, protected path status, py_compile, and dashboard health passing.",
+        "verdict": "passed",
+        "artifactRefs": ["safety-receipt"]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-provider-binding",
+        "contractRef": "G002/G003/G004/G005 authenticated GPT route",
+        "scenario": "A phase could be named gptauth_* while actually using another provider or fallback path.",
+        "expectedBehavior": "Each invoked config must directly show provider/model gpt_auth/gpt-5.5 and driver receipt must invoke that exact config.",
+        "verdict": "passed",
+        "artifactRefs": ["phase-config-evidence", "driver-summary"]
+      },
+      {
+        "id": "case-hard-gate-overclaim",
+        "contractRef": "A/B/C result interpretation",
+        "scenario": "Positive but gate-failed candidates could be reported as winners.",
+        "expectedBehavior": "Summaries must preserve gatePassers=0/winner_gen=-1 and gate failure reasons.",
+        "verdict": "passed",
+        "artifactRefs": ["final-summary", "driver-summary", "morning-report"]
+      },
+      {
+        "id": "case-fallback-comparison",
+        "contractRef": "Baseline comparison",
+        "scenario": "The authenticated rerun could be overclaimed despite being weaker than prior fallback.",
+        "expectedBehavior": "Report must compare GPT-auth best 174,904 against fallback best 3,089,180 and keep fallbackStillBest=true.",
+        "verdict": "passed",
+        "artifactRefs": ["final-summary", "morning-report"]
+      },
+      {
+        "id": "case-promotion-confusion",
+        "contractRef": "Research-only boundary",
+        "scenario": "Historical PROMOTE report sections could be mistaken as this rerun's operational approval.",
+        "expectedBehavior": "Top report caveat and final flags must state historical/advisory only and export/live/finalPromotion false.",
+        "verdict": "passed",
+        "artifactRefs": ["morning-report", "final-summary"]
+      },
+      {
+        "id": "case-protected-path",
+        "contractRef": "Protected runtime paths",
+        "scenario": "Research could mutate protected source/runtime paths.",
+        "expectedBehavior": "Protected path status must remain empty and safety receipt allPassed=true.",
+        "verdict": "passed",
+        "artifactRefs": ["safety-receipt"]
+      },
+      {
+        "id": "case-baseline-overclaim",
+        "contractRef": "Previous fallback baseline documentation",
+        "scenario": "The previous fallback baseline could be confused with a new GPT-auth winner.",
+        "expectedBehavior": "Rerun log and report separate prior fallback baseline from the authenticated rerun result.",
+        "verdict": "passed",
+        "artifactRefs": ["rerun-log", "morning-report", "final-summary"]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Safety verification was rerun cleanly after the GPT-auth rerun artifacts were inspected: py_compile for run_gpt_auth_research.py, scripts/verify_nonrelease_sync.py, git diff --check for the rerun artifacts/docs, protected path status, and dashboard health. QA blocker about missing provider/config evidence was resolved by phase_config_evidence.json and final QA 157-GptRerunQaFix. Architect and QA blockers arrays are empty.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m py_compile artifacts/gpt-auth-process-research-20260627/run_gpt_auth_research.py",
+      "python scripts/verify_nonrelease_sync.py",
+      "git diff --check -- docs/update_log/2026-06-27_gpt_auth_research_rerun_log.md docs/research/condition_research/auto_reports/morning_20260628_gpt_auth_process_research.md artifacts/gpt-auth-process-research-20260627",
+      "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+      "python -c \"import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8770/health', timeout=5).read().decode())\""
+    ],
+    "blockers": []
+  }
+}

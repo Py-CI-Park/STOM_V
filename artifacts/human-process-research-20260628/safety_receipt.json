@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "kind": "human-process-research-safety-receipt",
+  "createdAt": "2026-06-28T15:12:38.468752+00:00",
+  "researchOnly": true,
+  "export": false,
+  "live": false,
+  "finalPromotion": false,
+  "protectedPathMutationObserved": false,
+  "protectedPathCheck": "git status --short protected paths returned no output",
+  "nonreleaseSync": "passed: python scripts/verify_nonrelease_sync.py",
+  "dashboardHealth": "ok contract_version=2",
+  "engineFallbackTriggered": false,
+  "candidateCount": 5,
+  "analysisCardCount": 5,
+  "promptMutationReceiptCount": 1,
+  "bestCandidate": "human_seed_rr8_21_trail_keep=0.7 for 2025 full-period profit; rr8_12 remains OOS-stable baseline from prior 4/4 validation",
+  "rejectedMutation": "human_mutation_rr8_13_turnover_min_902=3 rejected below parent",
+  "notes": [
+    "3-tick slippage remains advisory, not immediate hard gate",
+    "No export/live/final promotion attempted",
+    "Dashboard audit route fallback disclosed as non-blocking UI cleanup"
+  ]
+}

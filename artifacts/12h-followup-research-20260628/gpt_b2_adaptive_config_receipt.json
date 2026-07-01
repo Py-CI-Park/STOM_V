@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "kind": "gpt-b-adaptive-config-receipt",
+  "createdAt": "2026-06-28T02:03:37.568132Z",
+  "config": "artifacts\\12h-followup-research-20260628\\process_b_gptauth_seeded_64_b2_low_complexity.json",
+  "basis": "B1 reached gen17/36 before tool timeout and showed repeated time_cap_bucket_v1 complexity rejections; B2 preserves selected engine 64, rr8_12 seed, daily/trades/window evidence post-filter, filter/liquidity/MDD/edge constraints, but disables time_cap_bucket prompt to reduce code-complexity failures.",
+  "previousRun": "follow12_gptauth_B_seeded64_20260628"
+}

@@ -1,0 +1,205 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Final closeout verifies G001/G002 receipts, current changed-scope tests, py_compile, diff check, protected-path safety, and research-only boundaries. Full unit suite was attempted; first deterministic failure is outside changed scope and documented in artifacts/phase3-final-verification-summary.json.",
+    "commands": [
+      "gjc ultragoal status --json",
+      "pytest tests/unit/ -q -x",
+      "pytest changed-scope focused suite",
+      "py_compile changed modules",
+      "git diff --check",
+      "protected-path git status check"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Final QA passed changed-scope package/API checks and red-team cases for ledger receipts, unrelated full-suite failure containment, protected paths, and research-only no export/live/final promotion boundaries.",
+    "e2eCommands": [
+      "pytest tests/unit/test_research_loop.py tests/unit/test_condition_discovery_policy.py tests/unit/test_research_prompt_contracts.py tests/unit/test_extract_code.py -q",
+      "python -m py_compile cli/research_loop.py cli/research_ranking.py ai_strategy_loop/controller/condition_discovery.py ai_strategy_loop/brain/prompt.py"
+    ],
+    "redTeamCommands": [
+      "pytest tests/unit/ -q -x",
+      "git diff --name-only -- backtest/backtest.py tests/unit/test_backtest_button_contract.py",
+      "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+      "adversarial cases recorded in artifacts/phase3-final-adversarial-report.txt"
+    ],
+    "artifactRefs": [
+      {
+        "id": "phase3-verification-summary",
+        "kind": "api-package-test-report",
+        "path": "artifacts/phase3-final-verification-summary.json",
+        "description": "Final focused and broad verification summary, including full-suite unrelated failure note."
+      },
+      {
+        "id": "phase3-architect-review",
+        "kind": "api-package-review-report",
+        "path": "artifacts/phase3-final-architect-review.json",
+        "description": "Final architecture/product/code synthesis."
+      },
+      {
+        "id": "phase3-qa-redteam",
+        "kind": "property-test-report",
+        "path": "artifacts/phase3-final-qa-redteam.json",
+        "description": "Final QA/red-team matrix."
+      },
+      {
+        "id": "phase3-adversarial-report",
+        "kind": "failure-mode-test-report",
+        "path": "artifacts/phase3-final-adversarial-report.txt",
+        "description": "Final closeout adversarial/failure-mode report."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-all-goals-receipted",
+        "contractRef": "Ultragoal aggregate plan: G001/G002/G003 durable ledger completion",
+        "obligation": "Earlier implementation stories have receipts and final closeout checkpoints only with real evidence.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-ultragoal-ledger"
+        ],
+        "adversarialCaseRefs": [
+          "case-ledger-completion"
+        ]
+      },
+      {
+        "id": "contract-relevant-tests",
+        "contractRef": "G003 objective: relevant unit tests and changed-file scope",
+        "obligation": "Changed-scope focused unit tests and compilation pass; unrelated full-suite failure is documented, not suppressed.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-package-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-full-suite-unrelated-failure"
+        ]
+      },
+      {
+        "id": "contract-research-only-safety",
+        "contractRef": "User and approved plan: research-only, no export/live/final promotion, protected paths preserved",
+        "obligation": "No protected path mutation and no export/live/final promotion authority added.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-safety-checks"
+        ],
+        "adversarialCaseRefs": [
+          "case-protected-paths",
+          "case-research-only-boundary"
+        ]
+      },
+      {
+        "id": "contract-nonrelease-sync-out-of-scope",
+        "contractRef": "G003 objective: nonrelease checks where applicable",
+        "obligation": "Nonrelease verifier is not applicable because nonrelease sync/path files were not changed.",
+        "status": "not_applicable",
+        "reason": "Changed files are limited to research-loop/prompt/policy/ranking and unit tests."
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-ultragoal-ledger",
+        "contractRef": "Ultragoal durable ledger receipts",
+        "surface": "api/package",
+        "invocation": "gjc ultragoal status --json and checkpoint outputs for G001/G002.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase3-verification-summary"
+        ]
+      },
+      {
+        "id": "surface-package-tests",
+        "contractRef": "Changed-scope Python package/unit tests",
+        "surface": "api/package",
+        "invocation": "Focused pytest suite and py_compile over changed modules.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase3-verification-summary"
+        ]
+      },
+      {
+        "id": "surface-safety-checks",
+        "contractRef": "Protected path and research-only boundary",
+        "surface": "api/package",
+        "invocation": "Protected runtime path git status check and current code review.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase3-verification-summary",
+          "phase3-architect-review"
+        ]
+      },
+      {
+        "id": "surface-full-unit-suite",
+        "contractRef": "Project-wide unit suite outside changed-scope claim",
+        "surface": "api/package",
+        "status": "not_applicable",
+        "reason": "Full suite was attempted for situational awareness but the first failure is in an untouched backtest contract outside the approved research-process change scope."
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-ledger-completion",
+        "contractRef": "durable ledger receipts",
+        "scenario": "Final completion attempted before prior story receipts exist.",
+        "expectedBehavior": "Final closeout only proceeds after G001 and G002 are complete with receipts.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase3-adversarial-report",
+          "phase3-verification-summary"
+        ]
+      },
+      {
+        "id": "case-full-suite-unrelated-failure",
+        "contractRef": "verification scope matching claim scope",
+        "scenario": "Project-wide unit run reports an unrelated untouched failure.",
+        "expectedBehavior": "Do not suppress it; document it and rely only on changed-scope passing verification for this story.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase3-adversarial-report",
+          "phase3-verification-summary"
+        ]
+      },
+      {
+        "id": "case-protected-paths",
+        "contractRef": "protected runtime paths",
+        "scenario": "Research-process implementation accidentally touches runtime/protected paths.",
+        "expectedBehavior": "Protected path status remains empty.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase3-adversarial-report",
+          "phase3-verification-summary"
+        ]
+      },
+      {
+        "id": "case-research-only-boundary",
+        "contractRef": "no export/live/final promotion",
+        "scenario": "Research process metadata is treated as promotion/live/export authority.",
+        "expectedBehavior": "Quality gates and code keep authority research-only/advisory.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase3-adversarial-report",
+          "phase3-architect-review"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI SLOP CLEANUP REPORT passed with zero blocking findings. Full final changed-scope verification reran cleanly: focused pytest 118 passed, py_compile passed, diff check exit 0 with CRLF warnings only, protected runtime path check no output. Full unit first failure is documented as outside changed scope. Slop report: artifacts/phase3-final-slop-cleaner.json.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_research_loop.py tests/unit/test_condition_discovery_policy.py tests/unit/test_research_prompt_contracts.py tests/unit/test_extract_code.py -q",
+      "python -m py_compile cli/research_loop.py cli/research_ranking.py ai_strategy_loop/controller/condition_discovery.py ai_strategy_loop/brain/prompt.py",
+      "git diff --check",
+      "git status --short -- _database _database_v3k_shadow _log backup '*.db' backtest/graph .omx/reports 'v3k_settings*.json'"
+    ],
+    "blockers": []
+  }
+}

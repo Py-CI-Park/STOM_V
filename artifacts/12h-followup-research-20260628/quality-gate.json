@@ -1,0 +1,252 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review agent://162-ResearchArtifactReview normalized: 48-inclusive engine decision before B, fallback validation before GPT B, constrained GPT B evidence, C zero-generation proof, and research-only no-promotion safety all clear.",
+    "commands": [
+      "architect review agent://162-ResearchArtifactReview"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA agent://163-ResearchQaReview passed artifact consistency and adversarial checks for engine rows, selected engine consistency, fallback OOS/WF-like rows, slippage/edge refs, C zero-generation fields, and safety receipt research-only flags.",
+    "e2eCommands": [
+      "read-only artifact QA agent://163-ResearchQaReview"
+    ],
+    "redTeamCommands": [
+      "read-only adversarial artifact consistency review agent://163-ResearchQaReview"
+    ],
+    "artifactRefs": [
+      {
+        "id": "execution-report",
+        "kind": "api-test-report",
+        "path": "docs/update_log/2026-06-28_12h_followup_research_execution.md",
+        "description": "dated execution report with conclusions, tables, safety boundary, and follow-ups"
+      },
+      {
+        "id": "morning-report",
+        "kind": "api-test-report",
+        "path": "docs/research/condition_research/auto_reports/morning_20260628_12h_followup_research.md",
+        "description": "morning report copy for future research use"
+      },
+      {
+        "id": "engine-receipt",
+        "kind": "algorithm-artifact",
+        "path": "artifacts\\12h-followup-research-20260628\\engine_decision_receipt_48_inclusive.json",
+        "description": "32/48/64 benchmark decision receipt"
+      },
+      {
+        "id": "fallback-summary",
+        "kind": "algorithm-artifact",
+        "path": "artifacts\\12h-followup-research-20260628\\fallback_validation_summary.json",
+        "description": "fallback top3 OOS/WF, edge, and slippage validation summary"
+      },
+      {
+        "id": "gpt-b-summary",
+        "kind": "algorithm-artifact",
+        "path": "artifacts\\12h-followup-research-20260628\\gpt_b_seeded_summary.json",
+        "description": "GPT-auth B seeded run summary with constraints/window evidence"
+      },
+      {
+        "id": "c-health",
+        "kind": "algorithm-artifact",
+        "path": "artifacts\\12h-followup-research-20260628\\promotion_review_readonly_health.json",
+        "description": "C read-only zero-generation evidence health"
+      },
+      {
+        "id": "safety-receipt",
+        "kind": "api-test-report",
+        "path": "artifacts\\12h-followup-research-20260628\\safety_receipt.json",
+        "description": "research-only safety receipt"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-engine",
+        "contractRef": "approved plan: benchmark 32/48/64 first",
+        "obligation": "48-inclusive decision receipt exists before long GPT-auth B",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-engine"
+        ],
+        "adversarialCaseRefs": [
+          "case-missing-48"
+        ]
+      },
+      {
+        "id": "contract-fallback",
+        "contractRef": "approved plan: fallback top3 validation",
+        "obligation": "OOS/WF-style rows, slippage 0/1/2/3, Edge Ratio, segment notes or unavailable reasons exist before B",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-fallback"
+        ],
+        "adversarialCaseRefs": [
+          "case-missing-slippage-edge"
+        ]
+      },
+      {
+        "id": "contract-b",
+        "contractRef": "approved plan: constrained seed-guided GPT-auth B",
+        "obligation": "B uses selected engine/seed, reports daily/trades/window constraints and preserves weak GPT reasons",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-gpt-b"
+        ],
+        "adversarialCaseRefs": [
+          "case-b-contradiction"
+        ]
+      },
+      {
+        "id": "contract-c",
+        "contractRef": "approved plan: C read-only promotion-review",
+        "obligation": "C creates no candidates and keeps export/live/finalPromotion false",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-c"
+        ],
+        "adversarialCaseRefs": [
+          "case-c-promotion"
+        ]
+      },
+      {
+        "id": "contract-safety",
+        "contractRef": "project AGENTS and approved plan safety boundary",
+        "obligation": "No export/live/final promotion/protected path mutation; nonrelease guard passes",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-safety"
+        ],
+        "adversarialCaseRefs": [
+          "case-safety-flip"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-engine",
+        "contractRef": "engine decision receipt",
+        "surface": "algorithm",
+        "invocation": "read typed JSON receipt and compare rows/selected_engine",
+        "verdict": "passed",
+        "artifactRefs": [
+          "engine-receipt"
+        ]
+      },
+      {
+        "id": "surface-fallback",
+        "contractRef": "fallback validation summary",
+        "surface": "algorithm",
+        "invocation": "read typed JSON summary and linked edge/slippage artifacts",
+        "verdict": "passed",
+        "artifactRefs": [
+          "fallback-summary"
+        ]
+      },
+      {
+        "id": "surface-gpt-b",
+        "contractRef": "GPT-auth B research summary",
+        "surface": "algorithm",
+        "invocation": "read typed JSON summary and execution report",
+        "verdict": "passed",
+        "artifactRefs": [
+          "gpt-b-summary",
+          "execution-report"
+        ]
+      },
+      {
+        "id": "surface-c",
+        "contractRef": "C read-only health",
+        "surface": "algorithm",
+        "invocation": "read typed JSON health receipt",
+        "verdict": "passed",
+        "artifactRefs": [
+          "c-health"
+        ]
+      },
+      {
+        "id": "surface-safety",
+        "contractRef": "safety receipt and final commands",
+        "surface": "package",
+        "invocation": "python scripts/verify_nonrelease_sync.py; git protected path status; dashboard /health",
+        "verdict": "passed",
+        "artifactRefs": [
+          "safety-receipt"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-missing-48",
+        "contractRef": "approved plan engine benchmark",
+        "scenario": "48 row missing or selected engine absent from rows",
+        "expectedBehavior": "QA flags blocker",
+        "verdict": "passed",
+        "artifactRefs": [
+          "engine-receipt"
+        ]
+      },
+      {
+        "id": "case-missing-slippage-edge",
+        "contractRef": "approved plan fallback validation",
+        "scenario": "fallback winner lacks OOS/WF rows or edge/slippage refs",
+        "expectedBehavior": "QA flags blocker",
+        "verdict": "passed",
+        "artifactRefs": [
+          "fallback-summary"
+        ]
+      },
+      {
+        "id": "case-b-contradiction",
+        "contractRef": "approved plan GPT-auth B",
+        "scenario": "B summary hides generated failures or contradicts fallback baseline",
+        "expectedBehavior": "failures remain explicit and fallback remains champion",
+        "verdict": "passed",
+        "artifactRefs": [
+          "gpt-b-summary",
+          "execution-report"
+        ]
+      },
+      {
+        "id": "case-c-promotion",
+        "contractRef": "approved plan C read-only",
+        "scenario": "C generates candidates or enables export/live/final promotion",
+        "expectedBehavior": "zero-generation flags and promotion false",
+        "verdict": "passed",
+        "artifactRefs": [
+          "c-health"
+        ]
+      },
+      {
+        "id": "case-safety-flip",
+        "contractRef": "approved plan safety",
+        "scenario": "safety receipt or docs claim export/live/final promotion",
+        "expectedBehavior": "all flags false and nonrelease/protected checks pass",
+        "verdict": "passed",
+        "artifactRefs": [
+          "safety-receipt",
+          "execution-report"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "No product source edits were made; final read-only review/QA blockers are empty. Final safety rerun passed nonrelease sync, dashboard health, and protected path status. B2 timeout evidence is captured as a non-blocking research finding because it supports not promoting and not continuing unsafe 64-engine long-loop execution.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python scripts/verify_nonrelease_sync.py",
+      "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+      "GET http://127.0.0.1:8770/health",
+      "architect review agent://162-ResearchArtifactReview",
+      "executor QA agent://163-ResearchQaReview"
+    ],
+    "blockers": []
+  }
+}

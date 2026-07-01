@@ -1,0 +1,15 @@
+Condition research documentation system verification report
+
+Scope:
+- docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md
+- docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md
+- docs/research/condition_research/README.md
+
+Checks run:
+1. Required-marker verification passed: Condition Passport, full_condition_code_required_not_id_only, seed ids, research plan/management/result reports, Research Prompt Context Pack, Analysis Card v2, multi-hypothesis, generation 0, README index links, and research-only principles were present.
+2. git diff --check over the three documentation files passed with no output.
+3. Protected path status returned no output.
+4. Architect review agent://253-G001DocArchitect approved with blockers empty.
+5. Clean QA/red-team agent://255-G001DocQaClean passed with blockers empty after README legacy-flow clarification.
+
+Verdict: passed.

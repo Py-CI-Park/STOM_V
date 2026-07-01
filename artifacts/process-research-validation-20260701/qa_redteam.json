@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "e2eStatus": "passed",
+  "redTeamStatus": "passed",
+  "blockers": [],
+  "evidence": "Executor QA agent://257-ResearchV2Qa: artifact presence/schema consistency, 4 candidate official backtests, report-to-receipt consistency, research-only safety flags, 64/no-fallback consistency, full parent condition code delivery, and dashboard screenshot all passed.",
+  "commands": [
+    "executor QA/red-team agent://257-ResearchV2Qa"
+  ]
+}

@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "kind": "human-full-period-backtest-receipts",
+  "createdAt": "2026-06-28T14:54:24.867532+00:00",
+  "engine": {
+    "selectedEngineCount": 64,
+    "fallbackTriggered": false,
+    "fallbackReceipt": null,
+    "prepareStatus": "ok for seed replay and one mutation runs"
+  },
+  "runs": [
+    {
+      "run_id": "human_fullperiod_seed_replay_20260628",
+      "rows": [
+        {
+          "gen_no": 0,
+          "buy_name": "GATE_rr8_12_turnover_min_902_1_5_B",
+          "sell_name": "GATE_rr8_12_turnover_min_902_1_5_S",
+          "status": "ok",
+          "score": 1.802476783121088,
+          "gate_passed": 1,
+          "reason": "ok",
+          "csv_path": "backtest/csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628234642.csv",
+          "trade_count": 190,
+          "daily_avg_trades": 0.8,
+          "mdd": 12.87,
+          "profit": 3062696.0,
+          "total_profit_pct": 30.66,
+          "strategy_gist": "human_seed_rr8_12_turnover_min_902=1.5",
+          "payoff_ratio": 1.0868551081437703
+        },
+        {
+          "gen_no": 1,
+          "buy_name": "GATE_rr8_0_cap_max_2500_B",
+          "sell_name": "GATE_rr8_0_cap_max_2500_S",
+          "status": "ok",
+          "score": 1.8018829833728311,
+          "gate_passed": 1,
+          "reason": "ok",
+          "csv_path": "backtest/csv\\stock_bt_GATE_rr8_0_cap_max_2500_B_20260628234715.csv",
+          "trade_count": 145,
+          "daily_avg_trades": 0.6,
+          "mdd": 17.34,
+          "profit": 3047522.0,
+          "total_profit_pct": 60.6,
+          "strategy_gist": "human_seed_rr8_0_cap_max=2500",
+          "payoff_ratio": 1.1011213559916606
+        },
+        {
+          "gen_no": 2,
+          "buy_name": "GATE_rr8_21_trail_keep_0_7_B",
+          "sell_name": "GATE_rr8_21_trail_keep_0_7_S",
+          "status": "ok",
+          "score": 1.8035046903430416,
+          "gate_passed": 1,
+          "reason": "ok",
+          "csv_path": "backtest/csv\\stock_bt_GATE_rr8_21_trail_keep_0_7_B_20260628234747.csv",
+          "trade_count": 165,
+          "daily_avg_trades": 0.7,
+          "mdd": 18.84,
+          "profit": 3089180.0,
+          "total_profit_pct": 61.42,
+          "strategy_gist": "human_seed_rr8_21_trail_keep=0.7",
+          "payoff_ratio": 1.0895996838703166
+        },
+        {
+          "gen_no": 3,
+          "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g8_buy",
+          "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g8_sell",
+          "status": "ok",
+          "score": 1.7348975087258485,
+          "gate_passed": 1,
+          "reason": "ok",
+          "csv_path": "backtest/csv\\stock_bt_AILOOP_follow12_gptauth_B_seeded64_20260628_g8_buy_20260628234820.csv",
+          "trade_count": 550,
+          "daily_avg_trades": 2.3,
+          "mdd": 15.14,
+          "profit": 1772126.0,
+          "total_profit_pct": 17.72,
+          "strategy_gist": "human_seed_gptauth_B_gen8",
+          "payoff_ratio": 1.761858565470416
+        }
+      ]
+    },
+    {
+      "run_id": "human_fullperiod_one_mutation_20260628",
+      "rows": [
+        {
+          "gen_no": 0,
+          "buy_name": "GATE_rr8_13_turnover_min_902_3_B",
+          "sell_name": "GATE_rr8_13_turnover_min_902_3_S",
+          "status": "ok",
+          "score": 1.7796677389503373,
+          "gate_passed": 1,
+          "reason": "ok",
+          "csv_path": "backtest/csv\\stock_bt_GATE_rr8_13_turnover_min_902_3_B_20260628235311.csv",
+          "trade_count": 152,
+          "daily_avg_trades": 0.6,
+          "mdd": 19.49,
+          "profit": 2538600.0,
+          "total_profit_pct": 50.48,
+          "strategy_gist": "human_mutation_rr8_13_turnover_min_902=3",
+          "payoff_ratio": 1.0801350363149713
+        }
+      ]
+    }
+  ],
+  "ranking": [
+    {
+      "gen_no": 2,
+      "buy_name": "GATE_rr8_21_trail_keep_0_7_B",
+      "sell_name": "GATE_rr8_21_trail_keep_0_7_S",
+      "status": "ok",
+      "score": 1.8035046903430416,
+      "gate_passed": 1,
+      "reason": "ok",
+      "csv_path": "backtest/csv\\stock_bt_GATE_rr8_21_trail_keep_0_7_B_20260628234747.csv",
+      "trade_count": 165,
+      "daily_avg_trades": 0.7,
+      "mdd": 18.84,
+      "profit": 3089180.0,
+      "total_profit_pct": 61.42,
+      "strategy_gist": "human_seed_rr8_21_trail_keep=0.7",
+      "payoff_ratio": 1.0895996838703166
+    },
+    {
+      "gen_no": 0,
+      "buy_name": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "sell_name": "GATE_rr8_12_turnover_min_902_1_5_S",
+      "status": "ok",
+      "score": 1.802476783121088,
+      "gate_passed": 1,
+      "reason": "ok",
+      "csv_path": "backtest/csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628234642.csv",
+      "trade_count": 190,
+      "daily_avg_trades": 0.8,
+      "mdd": 12.87,
+      "profit": 3062696.0,
+      "total_profit_pct": 30.66,
+      "strategy_gist": "human_seed_rr8_12_turnover_min_902=1.5",
+      "payoff_ratio": 1.0868551081437703
+    },
+    {
+      "gen_no": 1,
+      "buy_name": "GATE_rr8_0_cap_max_2500_B",
+      "sell_name": "GATE_rr8_0_cap_max_2500_S",
+      "status": "ok",
+      "score": 1.8018829833728311,
+      "gate_passed": 1,
+      "reason": "ok",
+      "csv_path": "backtest/csv\\stock_bt_GATE_rr8_0_cap_max_2500_B_20260628234715.csv",
+      "trade_count": 145,
+      "daily_avg_trades": 0.6,
+      "mdd": 17.34,
+      "profit": 3047522.0,
+      "total_profit_pct": 60.6,
+      "strategy_gist": "human_seed_rr8_0_cap_max=2500",
+      "payoff_ratio": 1.1011213559916606
+    },
+    {
+      "gen_no": 0,
+      "buy_name": "GATE_rr8_13_turnover_min_902_3_B",
+      "sell_name": "GATE_rr8_13_turnover_min_902_3_S",
+      "status": "ok",
+      "score": 1.7796677389503373,
+      "gate_passed": 1,
+      "reason": "ok",
+      "csv_path": "backtest/csv\\stock_bt_GATE_rr8_13_turnover_min_902_3_B_20260628235311.csv",
+      "trade_count": 152,
+      "daily_avg_trades": 0.6,
+      "mdd": 19.49,
+      "profit": 2538600.0,
+      "total_profit_pct": 50.48,
+      "strategy_gist": "human_mutation_rr8_13_turnover_min_902=3",
+      "payoff_ratio": 1.0801350363149713
+    },
+    {
+      "gen_no": 3,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g8_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g8_sell",
+      "status": "ok",
+      "score": 1.7348975087258485,
+      "gate_passed": 1,
+      "reason": "ok",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_follow12_gptauth_B_seeded64_20260628_g8_buy_20260628234820.csv",
+      "trade_count": 550,
+      "daily_avg_trades": 2.3,
+      "mdd": 15.14,
+      "profit": 1772126.0,
+      "total_profit_pct": 17.72,
+      "strategy_gist": "human_seed_gptauth_B_gen8",
+      "payoff_ratio": 1.761858565470416
+    }
+  ],
+  "safety": {
+    "researchOnly": true,
+    "export": false,
+    "live": false,
+    "finalPromotion": false
+  }
+}

@@ -1,0 +1,11 @@
+G003 adversarial/failure-mode report
+
+Scope: Phase 3 Condition AI home and IA cleanup.
+
+Cases exercised:
+1. Visible label rename: /ui/evolution top and overview subtab show 조건식 AI, and browser artifact contains no 진화 홈 label.
+2. Default overview section order: source no longer contains the idle ternary bypass; browser sees 조건식 AI Live Monitor and 설정 · 게이트 · 백테스트 엔진 요약.
+3. Duplicate owner surfaces: overview contains Research/History navigation-only text; app.jsx no longer imports/renders RunComparePanel or ResearchLabPanel.
+4. Ownership IA remains nested: History owns archive/ResultDetail/Compare; Lab and Workbench remain canonical subtabs.
+
+Verdict: passed.

@@ -1,0 +1,160 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review agent://253-G001DocArchitect approved the documentation system and plan with blockers empty. The later README legacy-flow watch item was fixed and clean QA agent://255-G001DocQaClean passed.",
+    "commands": [
+      "agent://253-G001DocArchitect",
+      "agent://255-G001DocQaClean"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "G003 documentation verifies README index updates, legacy-flow clarification, required-marker verification, whitespace check, protected path check, and clean read-only QA.",
+    "e2eCommands": [
+      "python documentation content verification for required markers",
+      "git diff --check -- docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md docs/research/condition_research/README.md",
+      "git status --short -- protected runtime paths"
+    ],
+    "redTeamCommands": [
+      "agent://255-G001DocQaClean read-only adversarial documentation QA"
+    ],
+    "artifactRefs": [
+      {
+        "id": "knowledge-system-doc",
+        "kind": "documentation-report",
+        "path": "docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md",
+        "description": "Condition research knowledge-system, naming, Condition Passport, and report-management design."
+      },
+      {
+        "id": "next-run-plan-doc",
+        "kind": "documentation-report",
+        "path": "docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md",
+        "description": "Improved process next-run research plan with seed choices, context pack, candidate pack, and report templates."
+      },
+      {
+        "id": "research-readme-index",
+        "kind": "documentation-report",
+        "path": "docs/research/condition_research/README.md",
+        "description": "Condition research index updated with latest documentation-management principles."
+      },
+      {
+        "id": "architect-review",
+        "kind": "code-review-report",
+        "path": "artifacts/condition-research-doc-system-architect-review.json",
+        "description": "Read-only architect review approving G001 documentation with blockers empty."
+      },
+      {
+        "id": "qa-redteam",
+        "kind": "failure-mode-test-report",
+        "path": "artifacts/condition-research-doc-system-qa-redteam.json",
+        "description": "Read-only QA/red-team review passed after README legacy-flow clarification."
+      },
+      {
+        "id": "doc-verification-report",
+        "kind": "test-report",
+        "path": "artifacts/condition-research-doc-system-verification-report.txt",
+        "description": "Required-marker, whitespace, protected-path, architect review, and QA verification report for the documentation system."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-readme-index",
+        "contractRef": "G003: update condition research index",
+        "obligation": "README links both new 2026-06-30 documents and summarizes document-management principles.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-docs"
+        ],
+        "adversarialCaseRefs": [
+          "case-readme-legacy-db"
+        ]
+      },
+      {
+        "id": "contract-doc-verification",
+        "contractRef": "G003: focused documentation verification",
+        "obligation": "Run marker verification, whitespace check, protected-path check, and clean read-only QA.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-docs",
+          "surface-review"
+        ],
+        "adversarialCaseRefs": [
+          "case-missing-index"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-docs",
+        "contractRef": "Index and verification",
+        "surface": "api/package",
+        "invocation": "Direct file inspection plus required-marker verification over the documentation files.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "doc-verification-report"
+        ]
+      },
+      {
+        "id": "surface-review",
+        "contractRef": "Review gate",
+        "surface": "api/package",
+        "invocation": "Read-only architect and QA/red-team reviews over the documentation files.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "architect-review",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "surface-live-export-final",
+        "contractRef": "Research-only boundary",
+        "surface": "api/package",
+        "status": "not_applicable",
+        "reason": "The goal is documentation-only and explicitly forbids export/live/final promotion; verification is limited to blocked-boundary documentation."
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-readme-legacy-db",
+        "contractRef": "README legacy strategy-db ambiguity",
+        "scenario": "README-only reader follows old flow into production or promotion semantics.",
+        "expectedBehavior": "README now says research candidate storage / not operating DB or promotion, and repeats full-code/passport/report principles.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "research-readme-index",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-missing-index",
+        "contractRef": "Index coverage",
+        "scenario": "New documents are created but not linked from the index.",
+        "expectedBehavior": "README latest criteria table links both documents.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "research-readme-index"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Documentation marker verification, whitespace check, protected-path check, architect review, and clean QA/red-team review are all clean; blockers empty.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python documentation content verification for required markers",
+      "git diff --check -- docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md docs/research/condition_research/README.md",
+      "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json _v3k_sidecar/v3k_gui_settings.json",
+      "agent://253-G001DocArchitect",
+      "agent://255-G001DocQaClean"
+    ],
+    "blockers": []
+  }
+}

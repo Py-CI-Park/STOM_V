@@ -1,0 +1,169 @@
+{
+  "startedAt": "2026-06-27T14:41:23.078541+00:00",
+  "reason": "gpt_auth_refresh_token_invalidated",
+  "commands": [
+    {
+      "name": "git_status_fallback_start",
+      "command": [
+        "git",
+        "status",
+        "--short",
+        "--branch",
+        "--untracked-files=no"
+      ],
+      "returncode": 0,
+      "timedOut": false,
+      "elapsedSec": 0.191,
+      "log": "artifacts\\overnight-process-research-20260627\\logs\\git_status_fallback_start.log",
+      "tail": [
+        "## loop/process-research-pipeline...origin/loop/process-research-pipeline"
+      ]
+    },
+    {
+      "name": "nonrelease_sync_fallback_final",
+      "command": [
+        "C:\\Python\\64\\Python31313\\python.exe",
+        "scripts/verify_nonrelease_sync.py"
+      ],
+      "returncode": 0,
+      "timedOut": false,
+      "elapsedSec": 1.487,
+      "log": "artifacts\\overnight-process-research-20260627\\logs\\nonrelease_sync_fallback_final.log",
+      "tail": [
+        "[OK] 워크트리에 .pyd 파일이 없습니다.",
+        "[OK] 텔레그램 qlist 계약이 현재 MainWindow 순서와 일치합니다.",
+        "[OK] MainWindow가 텔레그램 런타임을 시작합니다.",
+        "[OK] 설정 변경 전파가 TelegramProcessAlive 경로를 사용합니다.",
+        "[OK] 텔레그램 alive helper가 존재합니다.",
+        "[OK] Jisu cleanup matches V2.70 removal.",
+        "[OK] Shutdown cleanup matches current MainWindow runtime.",
+        "[OK] Shutdown persists dialog geometry before closing dialogs.",
+        "[OK] Shutdown hides Qt windows before bounded child cleanup.",
+        "[OK] Shutdown does not raise SystemExit inside Qt closeEvent.",
+        "[OK] Shutdown query/sound child wait is bounded with terminate fallback.",
+        "[OK] Shutdown backtest stop acknowledgement wait is bounded with terminate fallback.",
+        "[OK] BackTest 프로세스 생성자가 직접 인자 전달 계약을 유지합니다.",
+        "[OK] BackTest 실행 인자가 backQ 우회 전달로 오염되지 않습니다.",
+        "[OK] WebCrawling runtime wiring matches QThread contract.",
+        "[OK] static.py compatibility exports match runtime contract.",
+        "[OK] WebCrawling stop contract includes timeout and cancellation guards.",
+        "[OK] Key loading safety guard is present.",
+        "[OK] Kiwoom P/L rounding matches expected loss math.",
+        "[OK] 비정식 워크트리에서 시리얼키 UI 생성이 차단됩니다.",
+        "[OK] 설정 저장이 워크트리 시리얼키 정책을 따릅니다.",
+        "[OK] dict_set 적재가 비정식 워크트리 시리얼키 정책을 따릅니다.",
+        "[OK] legacy utility/setting.py도 비정식 워크트리 시리얼키 정책을 따릅니다.",
+        "",
+        "모든 비정식 워크트리 동기화 가드레일 검사를 통과했습니다."
+      ]
+    },
+    {
+      "name": "git_diff_check_fallback_final",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "returncode": 0,
+      "timedOut": false,
+      "elapsedSec": 0.165,
+      "log": "artifacts\\overnight-process-research-20260627\\logs\\git_diff_check_fallback_final.log",
+      "tail": []
+    },
+    {
+      "name": "protected_paths_fallback_final",
+      "command": [
+        "git",
+        "status",
+        "--short",
+        "--",
+        "_database",
+        "_database_v3k_shadow",
+        "_log",
+        "backup",
+        "*.db",
+        "backtest/graph",
+        ".omx/reports",
+        "v3k_settings*.json"
+      ],
+      "returncode": 0,
+      "timedOut": false,
+      "elapsedSec": 0.413,
+      "log": "artifacts\\overnight-process-research-20260627\\logs\\protected_paths_fallback_final.log",
+      "tail": []
+    },
+    {
+      "name": "git_status_fallback_final",
+      "command": [
+        "git",
+        "status",
+        "--short",
+        "--branch",
+        "--untracked-files=no"
+      ],
+      "returncode": 0,
+      "timedOut": false,
+      "elapsedSec": 0.191,
+      "log": "artifacts\\overnight-process-research-20260627\\logs\\git_status_fallback_final.log",
+      "tail": [
+        "## loop/process-research-pipeline...origin/loop/process-research-pipeline"
+      ]
+    }
+  ],
+  "anchor_mutation": {
+    "name": "anchor_mutation",
+    "command": [
+      "C:\\Python\\64\\Python31313\\python.exe",
+      "-m",
+      "ai_strategy_loop.scripts.overnight_anchor_mutation",
+      "--config-json",
+      "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\artifacts\\overnight-process-research-20260627\\process_b_research.json",
+      "--run-prefix",
+      "ovn_anchor_20260627",
+      "--out",
+      "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\artifacts\\overnight-process-research-20260627\\anchor.jsonl",
+      "--deadline-hhmm",
+      "0600",
+      "--max-rounds",
+      "0",
+      "--round-timeout",
+      "5400"
+    ],
+    "returncode": 1,
+    "timedOut": false,
+    "elapsedSec": 0.357,
+    "log": "artifacts\\overnight-process-research-20260627\\logs\\anchor_mutation.log",
+    "tail": [
+      "Traceback (most recent call last):",
+      "  File \"<frozen runpy>\", line 198, in _run_module_as_main",
+      "  File \"<frozen runpy>\", line 88, in _run_code",
+      "  File \"C:\\System_Trading\\STOM\\STOM_V.wt-dev\\ai_strategy_loop\\scripts\\overnight_anchor_mutation.py\", line 197, in <module>",
+      "    raise SystemExit(main())",
+      "                     ~~~~^^",
+      "  File \"C:\\System_Trading\\STOM\\STOM_V.wt-dev\\ai_strategy_loop\\scripts\\overnight_anchor_mutation.py\", line 90, in main",
+      "    deadline = _deadline_epoch(args.deadline_hhmm)",
+      "  File \"C:\\System_Trading\\STOM\\STOM_V.wt-dev\\ai_strategy_loop\\scripts\\overnight_anchor_mutation.py\", line 41, in _deadline_epoch",
+      "    hh, mm = (int(x) for x in hhmm.split(\":\"))",
+      "    ^^^^^^",
+      "ValueError: not enough values to unpack (expected 2, got 1)"
+    ]
+  },
+  "morning_report": {
+    "name": "morning_report_fallback",
+    "command": [
+      "C:\\Python\\64\\Python31313\\python.exe",
+      "-m",
+      "ai_strategy_loop.scripts.gen_morning_report",
+      "--out",
+      "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\docs\\research\\condition_research\\auto_reports\\morning_20260628_process_research.md"
+    ],
+    "returncode": 0,
+    "timedOut": false,
+    "elapsedSec": 5.158,
+    "log": "artifacts\\overnight-process-research-20260627\\logs\\morning_report_fallback.log",
+    "tail": [
+      "[REPORT] C:\\System_Trading\\STOM\\STOM_V.wt-dev\\docs\\research\\condition_research\\auto_reports\\morning_20260628_process_research.md"
+    ]
+  },
+  "completedAt": "2026-06-27T14:41:31.072624+00:00"
+}

@@ -1,0 +1,32 @@
+{
+  "runs": [
+    {
+      "window": "2022",
+      "run_id": "follow12_fallback_oos_2022_r2",
+      "returncode": 0,
+      "elapsedSec": 246.215,
+      "config": "artifacts\\12h-followup-research-20260628\\fallback_validation_2022.json"
+    },
+    {
+      "window": "2023",
+      "run_id": "follow12_fallback_oos_2023_r2",
+      "returncode": 0,
+      "elapsedSec": 270.152,
+      "config": "artifacts\\12h-followup-research-20260628\\fallback_validation_2023.json"
+    },
+    {
+      "window": "2024",
+      "run_id": "follow12_fallback_oos_2024_r2",
+      "returncode": 0,
+      "elapsedSec": 261.449,
+      "config": "artifacts\\12h-followup-research-20260628\\fallback_validation_2024.json"
+    },
+    {
+      "window": "2025",
+      "run_id": "follow12_fallback_oos_2025_r2",
+      "returncode": 0,
+      "elapsedSec": 288.096,
+      "config": "artifacts\\12h-followup-research-20260628\\fallback_validation_2025.json"
+    }
+  ]
+}

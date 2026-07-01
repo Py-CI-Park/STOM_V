@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "kind": "12h-followup-research-safety-receipt",
+  "createdAt": "2026-06-28T03:06:09.659335Z",
+  "researchOnly": true,
+  "export": false,
+  "live": false,
+  "finalPromotion": false,
+  "protectedPathMutationObserved": false,
+  "nonreleaseSync": "passed: python scripts/verify_nonrelease_sync.py",
+  "protectedPathCheck": "passed: git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json returned no paths",
+  "dashboardHealth": "ok contract_version=2",
+  "branch": "loop/process-research-pipeline...origin/loop/process-research-pipeline",
+  "artifacts": [
+    "artifacts\\12h-followup-research-20260628\\engine_benchmark_32_48_64.json",
+    "artifacts\\12h-followup-research-20260628\\engine_decision_receipt_48_inclusive.json",
+    "artifacts\\12h-followup-research-20260628\\fallback_validation_summary.json",
+    "artifacts\\12h-followup-research-20260628\\gpt_b_seeded_summary.json",
+    "artifacts\\12h-followup-research-20260628\\promotion_review_readonly_health.json"
+  ],
+  "notes": [
+    "No export/live/final promotion command was run.",
+    "C promotion-review was report-only frozen synthesis with zero new candidates.",
+    "Backtest CSV/runtime DB files are generated runtime evidence and not committed source."
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "kind": "human-process-research-final-summary",
+  "createdAt": "2026-06-28T15:03:31.268284+00:00",
+  "mode": "research-only",
+  "export": false,
+  "live": false,
+  "finalPromotion": false,
+  "headline": "Official full-period replay confirmed prior seed family remains stronger than the one bounded turnover-tightening mutation; analysis-card loop identified post-backtest analysis/prompt discipline as the next improvement lever.",
+  "bestFullPeriod": {
+    "gen_no": 2,
+    "buy_name": "GATE_rr8_21_trail_keep_0_7_B",
+    "sell_name": "GATE_rr8_21_trail_keep_0_7_S",
+    "status": "ok",
+    "score": 1.8035046903430416,
+    "gate_passed": 1,
+    "reason": "ok",
+    "csv_path": "backtest/csv\\stock_bt_GATE_rr8_21_trail_keep_0_7_B_20260628234747.csv",
+    "trade_count": 165,
+    "daily_avg_trades": 0.7,
+    "mdd": 18.84,
+    "profit": 3089180.0,
+    "total_profit_pct": 61.42,
+    "strategy_gist": "human_seed_rr8_21_trail_keep=0.7",
+    "payoff_ratio": 1.0895996838703166
+  },
+  "mutationResult": {
+    "gen_no": 0,
+    "buy_name": "GATE_rr8_13_turnover_min_902_3_B",
+    "sell_name": "GATE_rr8_13_turnover_min_902_3_S",
+    "status": "ok",
+    "score": 1.7796677389503373,
+    "gate_passed": 1,
+    "reason": "ok",
+    "csv_path": "backtest/csv\\stock_bt_GATE_rr8_13_turnover_min_902_3_B_20260628235311.csv",
+    "trade_count": 152,
+    "daily_avg_trades": 0.6,
+    "mdd": 19.49,
+    "profit": 2538600.0,
+    "total_profit_pct": 50.48,
+    "strategy_gist": "human_mutation_rr8_13_turnover_min_902=3",
+    "payoff_ratio": 1.0801350363149713
+  },
+  "candidateCount": 5,
+  "analysisCardCount": 5,
+  "promptMutationReceiptCount": 1,
+  "dashboardPages": [
+    {
+      "url": "http://127.0.0.1:8770/ui/evolution/process",
+      "path": "/ui/evolution/process",
+      "length": 4293,
+      "screenshot": "artifacts/human-process-research-20260628/dashboard-process.png"
+    },
+    {
+      "url": "http://127.0.0.1:8770/ui/evolution/lab",
+      "path": "/ui/evolution/lab",
+      "length": 4184,
+      "screenshot": "artifacts/human-process-research-20260628/dashboard-lab.png"
+    },
+    {
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench",
+      "path": "/ui/evolution/workbench",
+      "length": 24247,
+      "screenshot": "artifacts/human-process-research-20260628/dashboard-workbench.png"
+    },
+    {
+      "url": "http://127.0.0.1:8770/ui/evolution/audit",
+      "path": "/ui/evolution",
+      "length": 11868,
+      "screenshot": "artifacts/human-process-research-20260628/dashboard-audit.png"
+    }
+  ],
+  "nextRunQueue": [
+    "Do not promote/export/live; continue research-only.",
+    "Use rr8_21 as 2025 profit comparator but rr8_12 as OOS-stable baseline.",
+    "Do not tighten turnover_min_902 further as first repair; it lowered profit and worsened MDD.",
+    "Next mutation should target exit/trailing or loss-cluster/time-segment repair from analysis cards.",
+    "Keep 64 engine for short batches; use explicit 32 fallback on timeout/no-metrics/replay failure."
+  ]
+}

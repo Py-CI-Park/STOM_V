@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STOM Process Research v2 Validation</title>
+<style>
+:root{--bg:#06111f;--panel:#0e2038;--line:#23476d;--text:#e7f1ff;--muted:#a9bfd7;--blue:#48a9ff;--green:#74f59a;--yellow:#ffe36f;--orange:#ff9b4a;--red:#ff5b7a;--purple:#b987ff}*{box-sizing:border-box}body{font-family:Segoe UI,Arial,sans-serif;background:radial-gradient(circle at 18% 12%,#123a68 0,#06111f 34%,#040b14 100%);color:var(--text);margin:0;padding:28px;line-height:1.55}h1,h2,h3{color:#9fd3ff}h1{font-size:2.1rem;margin:0 0 10px}p{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:linear-gradient(145deg,#102b4a,#0b1a2f);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 8px 30px #0006}.big{font-size:1.55rem;font-weight:800}.ok{color:var(--green)}table{border-collapse:collapse;width:100%;margin:14px 0 24px;background:#0a182a}th,td{border:1px solid #24415f;padding:10px;text-align:left;vertical-align:top}th{background:#143254;color:#d9ecff}code{color:#ffe29a}.flow{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 24px}.node{background:linear-gradient(135deg,#123f6d,#10233b);border:1px solid #2d5f91;border-radius:999px;padding:10px 14px;box-shadow:inset 0 0 16px #58b7ff20}.arrow{align-self:center;color:#8bc2ff}.branch{display:grid;grid-template-columns:1.1fr .9fr 1fr;gap:16px;margin:16px 0 24px}.branch .step{min-height:150px}.heatmap{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:14px 0 20px}.cell{min-height:54px;border-radius:8px;padding:6px;font-weight:700;color:#06111f;text-shadow:0 1px 0 #fff6;border:1px solid #ffffff55}.c1{background:#74f59a}.c2{background:#b6f567}.c3{background:#ffe36f}.c4{background:#ffb84d}.c5{background:#ff6b6b}.c6{background:#b987ff}.c7{background:#4bc7ff}.legend{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 24px}.pill{border-radius:999px;padding:7px 11px;border:1px solid #ffffff33;background:#10233b}.good{color:#74f59a}.warn{color:#ffe36f}.risk{color:#ff9b4a}.bad{color:#ff5b7a}.section{margin:30px 0;padding:20px;border:1px solid #1d3d5f;border-radius:16px;background:#07182a99}.mini{font-size:.9rem;color:#a9bfd7}.bar{height:12px;border-radius:99px;background:#0a1424;overflow:hidden;border:1px solid #28496a}.bar span{display:block;height:100%;background:linear-gradient(90deg,#74f59a,#ffe36f,#ff9b4a)}@media(max-width:900px){.grid,.branch{grid-template-columns:1fr}.heatmap{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<h1>STOM 조건식 연구 프로세스 v2 실전 검증</h1>
+<p>목적: 좋은 조건식 즉시 확정이 아니라, <b>full Context Pack → Analysis Card v2 → multi-hypothesis 후보 → 공식 백테스트 → 결과 환류</b>가 실제로 작동하는지 검증.</p>
+<div class="grid">
+  <div class="card"><div>상태</div><div class="big ok">ok</div></div>
+  <div class="card"><div>엔진</div><div class="big">64</div></div>
+  <div class="card"><div>Fallback</div><div class="big">False</div></div>
+  <div class="card"><div>후보</div><div class="big">4</div></div>
+</div>
+<section class="section">
+<h2>프로세스 흐름</h2>
+<div class="flow"><span class="node">Seed Passport</span><span class="arrow">→</span><span class="node">Full Code Context Pack</span><span class="arrow">→</span><span class="node">Analysis Card v2</span><span class="arrow">→</span><span class="node">4 Hypotheses</span><span class="arrow">→</span><span class="node">Official Backtests</span><span class="arrow">→</span><span class="node">Next Queue</span></div>
+<div class="branch">
+  <div class="card step"><h3>1. 입력</h3><p>시작 seed <code>rr8_12_turnover_min_902=1.5</code>, 비교 seed 3개, 매수/매도 조건식 전문과 sha256, STOM 변수/규칙 원천을 Context Pack으로 고정.</p></div>
+  <div class="card step"><h3>2. 분석</h3><p>baseline 공식 백테스트 결과를 Analysis Card v2로 변환하고, root-cause / avoid zone / prefer zone / segment contribution을 다음 후보 생성에 전달.</p></div>
+  <div class="card step"><h3>3. 환류</h3><p>후보 4개를 서로 다른 가설로 공식 백테스트하고, 즉시 승격하지 않고 다음 threshold ladder 연구 queue로 연결.</p></div>
+</div>
+</section>
+<section class="section">
+<h2>Baseline</h2>
+<table><tr><th>CSV</th><th>Profit</th><th>MDD</th><th>Trades</th><th>Win</th></tr><tr><td><code>backtest/csv\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260701170259.csv</code></td><td>518,822</td><td>20.54</td><td>175</td><td>52.57</td></tr></table>
+</section>
+<section class="section">
+<h2>Candidate Results</h2>
+<p>후보 표현식은 모두 <b>reject filter</b>입니다. 즉 조건이 참이면 <code>매수=False</code>로 진입을 차단합니다.</p>
+<table><tr><th>Candidate</th><th>Reject filter</th><th>Profit</th><th>ΔProfit</th><th>MDD</th><th>ΔMDD</th><th>Trades</th><th>Win</th></tr><tr><td>prv2_20260701_e64__cand001</td><td><code>시가총액 &lt; 700 and 등락율 &lt; 3.0</code></td><td>518,822</td><td>+0</td><td>20.54</td><td>+0.00</td><td>175</td><td>52.57</td></tr><tr><td>prv2_20260701_e64__cand002</td><td><code>체결강도 &lt; 120</code></td><td>419,904</td><td>-98,918</td><td>14.68</td><td>-5.86</td><td>121</td><td>51.24</td></tr><tr><td>prv2_20260701_e64__cand003</td><td><code>등락율 &gt;= 7.2</code></td><td>-25,668</td><td>-544,490</td><td>12.56</td><td>-7.98</td><td>55</td><td>43.64</td></tr><tr><td>prv2_20260701_e64__cand004</td><td><code>거래대금증감 &lt; -5_000_000_000</code></td><td>439,000</td><td>-79,822</td><td>5.0</td><td>-15.54</td><td>36</td><td>66.67</td></tr></table>
+<div class="legend"><span class="pill good">위험 축소</span><span class="pill warn">수익 감소</span><span class="pill risk">거래수 감소</span><span class="pill bad">승격 금지</span></div>
+</section>
+<section class="section">
+<h2>세그먼트/가설 히트맵</h2>
+<p>이 히트맵은 이번 검증의 핵심 판단을 사람이 빠르게 보도록 만든 시각화입니다. 초록은 유지/선호, 노랑은 추가 연구, 빨강은 회피/축소, 보라는 novelty/discovery 축을 뜻합니다.</p>
+<div class="heatmap">
+  <div class="cell c1">09:02<br>강점 유지</div><div class="cell c3">09:05<br>검증 필요</div><div class="cell c5">고MDD<br>회피</div><div class="cell c7">체결강도<br>완화</div>
+  <div class="cell c2">중형주<br>선호</div><div class="cell c4">거래수<br>감소</div><div class="cell c6">Discovery<br>신규 축</div><div class="cell c1">Risk<br>축소</div>
+  <div class="cell c3">profit<br>보존</div><div class="cell c5">cand003<br>제외</div><div class="cell c7">cand002<br>ladder</div><div class="cell c1">cand004<br>MDD 5%</div>
+  <div class="cell c2">full code<br>전달</div><div class="cell c6">novelty<br>gate</div><div class="cell c4">slippage<br>advisory</div><div class="cell c1">research<br>only</div>
+</div>
+<div class="bar"><span style="width:76%"></span></div><p class="mini">프로세스 검증 완성도: full code context, analysis card, 4-candidate official backtests, dashboard evidence, safety receipt 확보.</p>
+</section>
+<section class="section">
+<h2>핵심 해석</h2>
+<ul><li><b>prv2_20260701_e64__cand004</b>가 MDD 5.0%로 가장 강한 위험 축소 신호를 냈다.</li><li>다만 거래수와 수익이 감소했으므로 승격이 아니라 다음 threshold ladder 연구 후보로만 유지한다.</li><li>이번 검증은 research-only이며 export/live/final promotion은 금지된다.</li></ul>
+<h2>산출물</h2>
+<ul><li>Context Pack: <code>research_context_pack.json</code></li><li>Analysis Cards: <code>analysis_cards.jsonl</code></li><li>Candidate Cards: <code>candidate_cards.jsonl</code></li><li>Backtest Receipts: <code>full_period_backtest_receipts.json</code></li><li>Safety Receipt: <code>safety_receipt.json</code></li></ul>
+</section>
+</body>
+</html>

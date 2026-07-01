@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "surface": "web",
+  "tool": "GJC browser/puppeteer",
+  "runId": "process_research_v2_validation_20260701",
+  "createdAt": "2026-07-01T08:20:01.685061+00:00",
+  "verifiedAt": "2026-07-01T08:40:00.000000+00:00",
+  "status": "browser-verified",
+  "actions": [
+    {
+      "type": "goto",
+      "url": "http://127.0.0.1:55502/artifacts/process-research-validation-20260701/process_research_validation_report.html",
+      "timestamp": 1
+    },
+    {
+      "type": "observe",
+      "selector": "body",
+      "timestamp": 2
+    },
+    {
+      "type": "assert",
+      "selector": "body",
+      "timestamp": 3,
+      "description": "hasProcessFlow"
+    },
+    {
+      "type": "assert",
+      "selector": "body",
+      "timestamp": 4,
+      "description": "hasCandidateResults"
+    },
+    {
+      "type": "assert",
+      "selector": "body",
+      "timestamp": 5,
+      "description": "hasResearchOnlyBoundary"
+    },
+    {
+      "type": "assert",
+      "selector": "body",
+      "timestamp": 6,
+      "description": "hasSegmentHypothesisHeatmap"
+    },
+    {
+      "type": "screenshot",
+      "selector": "fullPage",
+      "timestamp": 7
+    }
+  ],
+  "assertions": [
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 8,
+      "description": "hasProcessFlow"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 9,
+      "description": "hasCandidateResults"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 10,
+      "description": "hasResearchOnlyBoundary"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 11,
+      "description": "hasSegmentHypothesisHeatmap"
+    }
+  ],
+  "artifactRefs": [
+    "artifacts/process-research-validation-20260701/process_research_validation_report.png"
+  ],
+  "observed": {
+    "url": "http://127.0.0.1:55502/artifacts/process-research-validation-20260701/process_research_validation_report.html",
+    "title": "STOM Process Research v2 Validation",
+    "hasProcessFlow": true,
+    "hasCandidateResults": true,
+    "hasResearchOnlyBoundary": true,
+    "hasSegmentHypothesisHeatmap": true,
+    "hasCandidate004": true,
+    "status": "ok",
+    "engine": 64,
+    "fallbackUsed": false,
+    "candidateCount": 4,
+    "missingMarkers": [],
+    "textLength": 3540
+  },
+  "resultReport": "docs/research/condition_research/research_runs/process_research_v2_validation_20260701_result.md",
+  "managementReport": "docs/research/condition_research/research_runs/process_research_v2_validation_20260701_management.md",
+  "artifactDir": "artifacts/process-research-validation-20260701",
+  "htmlReport": "artifacts/process-research-validation-20260701/process_research_validation_report.html",
+  "screenshot": "artifacts/process-research-validation-20260701/process_research_validation_report.png",
+  "verdict": "passed"
+}

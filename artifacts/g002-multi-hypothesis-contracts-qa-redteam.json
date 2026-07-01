@@ -1,0 +1,154 @@
+{
+  "review_id": "241-G002QaClean",
+  "status": "passed",
+  "blockers": [],
+  "contractCoverage": [
+    {
+      "contractRef": "LLM pack R_* and S_* expressions rejected before execution",
+      "status": "covered",
+      "evidence": [
+        "cli/condition_generator.py expression leakage validation",
+        "tests/unit/test_condition_generator.py R_MFE and S_보유시간 cases"
+      ]
+    },
+    {
+      "contractRef": "Deterministic diagnostic fallback R_/S_ leakage aborts before execution",
+      "status": "covered",
+      "evidence": [
+        "cli/condition_generator.py mark_diagnostic_fallback leakage error",
+        "tests/unit/test_research_loop.py leaky fallback no-execution case"
+      ]
+    },
+    {
+      "contractRef": "Strict prompt-response code containing R_/S_ is invalid before execution",
+      "status": "covered",
+      "evidence": [
+        "ai_strategy_loop/brain/prompt.py strict code leakage validation",
+        "tests/unit/test_research_prompt_contracts.py R_/S_ code cases"
+      ]
+    },
+    {
+      "contractRef": "Top-level, nested, and authority-object pack authority smuggling block the pack",
+      "status": "covered",
+      "evidence": [
+        "cli/condition_generator.py recursive pack authority scope",
+        "tests/unit/test_condition_generator.py authority object and top-level cases"
+      ]
+    },
+    {
+      "contractRef": "2-candidate and 3-candidate packs execute under four-slot process-research config",
+      "status": "covered",
+      "evidence": [
+        "cli/research_loop.py planned_candidate_count reduction",
+        "tests/unit/test_research_loop.py 2-pack and 3-pack process-research cases"
+      ]
+    },
+    {
+      "contractRef": "Deterministic fallback has no prompt maturity credit",
+      "status": "covered",
+      "evidence": [
+        "mark_diagnostic_fallback and prompt receipt score zero tests"
+      ]
+    },
+    {
+      "contractRef": "Metadata and research-only boundaries propagate",
+      "status": "covered",
+      "evidence": [
+        "research_contract/prompt_receipt propagation tests and research-only authority fields"
+      ]
+    }
+  ],
+  "surfaceEvidence": [
+    {
+      "surface": "cli/condition_generator.py LLM pack and fallback validators",
+      "status": "covered",
+      "evidence": [
+        "Pack validation, recursive authority checks, R/S leakage rejection, sibling isolation, non-dict handling, fallback no-credit labeling."
+      ]
+    },
+    {
+      "surface": "cli/research_loop.py process-research integration",
+      "status": "covered",
+      "evidence": [
+        "LLM packs precede deterministic fallback; pack size reduces four-slot execution to 2/3; invalid prompt/fallback paths abort before execution."
+      ]
+    },
+    {
+      "surface": "ai_strategy_loop/brain/prompt.py strict prompt contracts",
+      "status": "covered",
+      "evidence": [
+        "Research-only context authority, strict code/metadata validation, R/S code leakage rejection."
+      ]
+    },
+    {
+      "surface": "unit contract tests",
+      "status": "covered",
+      "evidence": [
+        "Focused pytest 129 passed from leader verification."
+      ]
+    }
+  ],
+  "adversarialCases": [
+    {
+      "case": "LLM pack candidate uses R_MFE < 0",
+      "result": "passed",
+      "evidence": [
+        "Rejected before expression selection."
+      ]
+    },
+    {
+      "case": "LLM pack candidate uses S_보유시간 > 10",
+      "result": "passed",
+      "evidence": [
+        "Rejected before expression selection."
+      ]
+    },
+    {
+      "case": "Deterministic fallback emits R_MFE < 0 after missing/invalid LLM pack",
+      "result": "passed",
+      "evidence": [
+        "Fallback status error; iteration aborts at no_expressions before execution."
+      ]
+    },
+    {
+      "case": "Strict prompt code block contains R_ or S_ diagnostic variable",
+      "result": "passed",
+      "evidence": [
+        "Strict response validation invalid; execution guard stops before strategy creation/backtest."
+      ]
+    },
+    {
+      "case": "Pack-level authority object or top-level can_live True",
+      "result": "passed",
+      "evidence": [
+        "Entire pack blocked with pack_authority_smuggling."
+      ]
+    },
+    {
+      "case": "Candidate-level can_live True in one sibling",
+      "result": "passed",
+      "evidence": [
+        "Only offending sibling invalid; safe siblings survive when lane/min counts hold."
+      ]
+    },
+    {
+      "case": "Non-dict candidate pack",
+      "result": "passed",
+      "evidence": [
+        "Fails closed as candidate_pack_not_object."
+      ]
+    },
+    {
+      "case": "2/3 candidate LLM pack under process-research four-slot config",
+      "result": "passed",
+      "evidence": [
+        "Executes exactly 2 or 3 candidates."
+      ]
+    }
+  ],
+  "artifactRefs": [
+    "agent://241-G002QaClean",
+    "artifact://1907"
+  ],
+  "advisory": "Read-only QA found no blocker; verification results cited from leader evidence."
+}

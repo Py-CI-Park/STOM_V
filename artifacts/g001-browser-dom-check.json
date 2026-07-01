@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "gjc.browser",
+  "url": "http://127.0.0.1:8770/ui/backtest?v=g001fresh",
+  "startedAt": "2026-06-21T05:31:10.209Z",
+  "endedAt": "2026-06-21T05:31:10.214Z",
+  "screenshot": "artifacts/g001-backtest-result-library.png",
+  "actions": [
+    {
+      "timestampMs": 0,
+      "timestamp": "2026-06-21T05:31:10.209Z",
+      "type": "navigate",
+      "action": "navigate",
+      "selector": "body",
+      "url": "http://127.0.0.1:8770/ui/backtest?v=g001fresh",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 5,
+      "timestamp": "2026-06-21T05:31:10.214Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "button",
+      "description": "Backtest result library shows actionable rerun buttons for cancelled rows instead of a cancelled-only dead list.",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 5,
+      "timestamp": "2026-06-21T05:31:10.214Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "Evidence and condition-confidence text are visible in the result library rows.",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 5,
+      "timestamp": "2026-06-21T05:31:10.214Z",
+      "type": "screenshot",
+      "action": "screenshot",
+      "selector": "body",
+      "path": "artifacts/g001-backtest-result-library.png",
+      "result": "passed"
+    }
+  ],
+  "checks": {
+    "hasResultLibrary": true,
+    "hasRerun": true,
+    "hasEvidence": true,
+    "hasConditionLow": true,
+    "cancelledDisabledRows": 41,
+    "rerunButtons": 41,
+    "resultButtons": 1,
+    "textLength": 13898
+  }
+}

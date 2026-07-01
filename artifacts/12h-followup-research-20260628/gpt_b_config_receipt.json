@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "kind": "gpt-b-config-receipt",
+  "createdAt": "2026-06-28T01:03:01.955931Z",
+  "config": "artifacts\\12h-followup-research-20260628\\process_b_gptauth_seeded_64.json",
+  "selectedEngine": 64,
+  "seed": "rr8_12_turnover_min_902=1.5",
+  "constraints": {
+    "daily_avg_trades_min": 0.5,
+    "total_trades_min_for_above_reject_line": 100,
+    "windowEvidenceRequired": true,
+    "no_export_live_final_promotion": true
+  }
+}

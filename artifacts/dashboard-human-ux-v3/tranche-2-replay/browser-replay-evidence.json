@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "browser",
+  "surface": "web",
+  "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference",
+  "title": "STOM AI · 조건식 AI 연구 대시보드",
+  "actions": [
+    {
+      "timestamp": "2026-06-30T11:12:10.364Z",
+      "action": "navigate",
+      "selector": "body",
+      "url": "http://127.0.0.1:8776/ui/remodel/chart-replay?demo=reference"
+    },
+    {
+      "timestamp": "2026-06-30T11:12:10.365Z",
+      "action": "evaluate",
+      "selector": "[data-ux-task-header=\"chart_replay\"],[data-ux-primary-canvas=\"chart_replay\"],[data-replay-quick-start],[data-replay-step=\"source\"],[data-replay-step=\"strategy\"],[data-replay-step=\"preview\"],[data-replay-step=\"manual-start\"],[data-replay-step=\"investigate\"],[data-replay-playback-sticky],[data-replay-selected-bar],[data-replay-signal-log],[data-ux-evidence-drawer=\"chart_replay\"],[data-safety-boundary=\"chart_replay\"]"
+    },
+    {
+      "timestamp": "2026-06-30T11:12:10.642Z",
+      "action": "screenshot",
+      "selector": "[data-ux-primary-canvas=\"chart_replay\"]",
+      "path": "artifacts/dashboard-human-ux-v3/tranche-2-replay/browser-replay-viewport.png"
+    }
+  ],
+  "selectors": {
+    "[data-ux-task-header=\"chart_replay\"]": {
+      "found": true,
+      "text": "Task-first V3\n차트 리플레이 · 선택에서 재생까지 바로 이어지는 V3\n\nV2의 빠른 시작·날짜·종목·재생·타임라인 흐름을 계승하고, API/WS 계약 증거는 접힌 drawer로 내립니다.\n\npurpose\n데이터 소스·거래일·종목·전략 선택 후 신호를 조사\nstate\nDEMO / REFERENCE REPLAY INERT MODE · static replay fixture\nprimary-action\n수동 재생 준비와 신",
+      "rect": {
+        "x": 14,
+        "y": 269,
+        "width": 1412,
+        "height": 383
+      }
+    },
+    "[data-ux-primary-canvas=\"chart_replay\"]": {
+      "found": true,
+      "text": "1 SOURCE / DATE / SYMBOL / STRATEGY\nV2처럼 바로 고르는 리플레이 시작점\n데이터 소스\nSTOM Tick DB (Local)\n분봉 DB (Local)\n거래일\n2025-05-27\n2025-05-26\n종목\n005930 삼성전자\n전략\nSTOM_AI_MOMENTUM_V1 / EXIT_V1\n빠른 시작\n최근 거래일\n최대 상승일\n내가 선택하기\n선택 종목\n005930 삼성전자\n최근가\n78,600\n변동률\n-0.25%",
+      "rect": {
+        "x": 14,
+        "y": 739,
+        "width": 1412,
+        "height": 1254
+      }
+    },
+    "[data-replay-quick-start]": {
+      "found": true,
+      "text": "빠른 시작\n최근 거래일\n최대 상승일\n내가 선택하기",
+      "rect": {
+        "x": 40,
+        "y": 910,
+        "width": 834,
+        "height": 27
+      }
+    },
+    "[data-replay-step=\"source\"]": {
+      "found": true,
+      "text": "1 SOURCE / DATE / SYMBOL / STRATEGY\nV2처럼 바로 고르는 리플레이 시작점\n데이터 소스\nSTOM Tick DB (Local)\n분봉 DB (Local)\n거래일\n2025-05-27\n2025-05-26\n종목\n005930 삼성전자\n전략\nSTOM_AI_MOMENTUM_V1 / EXIT_V1\n빠른 시작\n최근 거래일\n최대 상승일\n내가 선택하기\n선택 종목\n005930 삼성전자\n최근가\n78,600\n변동률\n-0.25%",
+      "rect": {
+        "x": 27,
+        "y": 752,
+        "width": 860,
+        "height": 349
+      }
+    },
+    "[data-replay-step=\"strategy\"]": {
+      "found": true,
+      "text": "전략\nSTOM_AI_MOMENTUM_V1 / EXIT_V1",
+      "rect": {
+        "x": 673,
+        "y": 843,
+        "width": 201,
+        "height": 57
+      }
+    },
+    "[data-replay-step=\"preview\"]": {
+      "found": true,
+      "text": "선택 종목\n005930 삼성전자\n최근가\n78,600\n변동률\n-0.25%\n프리뷰 bars\n48 candle\n신호\nSELL · 10:23:17.000",
+      "rect": {
+        "x": 40,
+        "y": 947,
+        "width": 834,
+        "height": 142
+      }
+    },
+    "[data-replay-step=\"manual-start\"]": {
+      "found": true,
+      "text": "재생 컨트롤 · /sim/ws 수동 게이트 · sticky timeline\n/sim/ws manual gate\n즉시 시작\n▶ 재생\nⅡ 일시정지\n▶ 재개\n1x\n5x\n20x\n60x\nseek\n■ 정지\nTimeline 09:00:00 → 15:30:00 · cursor 10:23:18 · /sim/ws는 자동 연결하지 않고 사용자 수동 시작만 허용",
+      "rect": {
+        "x": 27,
+        "y": 1114,
+        "width": 1386,
+        "height": 163
+      }
+    },
+    "[data-replay-step=\"investigate\"]": {
+      "found": true,
+      "text": "실시간 리플레이 차트 · candle primary canvas\nReference/demo inert\n005930 삼성전자\nstatus=CURRENT\nrun_id=R-250518-1421-7XQ9\nfreshness=reference-replay-static\nmalformed=0\n005930 삼성전자\nlatest · 리플레이 차트 005930 · 16:50 · Close: 79838 · source=reference replay",
+      "rect": {
+        "x": 27,
+        "y": 1289,
+        "width": 1386,
+        "height": 692
+      }
+    },
+    "[data-replay-playback-sticky]": {
+      "found": true,
+      "text": "재생 컨트롤 · /sim/ws 수동 게이트 · sticky timeline\n/sim/ws manual gate\n즉시 시작\n▶ 재생\nⅡ 일시정지\n▶ 재개\n1x\n5x\n20x\n60x\nseek\n■ 정지\nTimeline 09:00:00 → 15:30:00 · cursor 10:23:18 · /sim/ws는 자동 연결하지 않고 사용자 수동 시작만 허용",
+      "rect": {
+        "x": 27,
+        "y": 1114,
+        "width": 1386,
+        "height": 163
+      }
+    },
+    "[data-replay-selected-bar]": {
+      "found": true,
+      "text": "선택 bar · 005930 삼성전자\ntime\n10:23:17.000\nclose\n78,600\nsignal\nSELL\nreason\nMA20 하향 돌파\n\n차트 hover/keyboard focus 없이도 선택 봉과 신호 로그가 같은 문맥으로 보입니다.",
+      "rect": {
+        "x": 40,
+        "y": 1755,
+        "width": 903,
+        "height": 213
+      }
+    },
+    "[data-replay-signal-log]": {
+      "found": true,
+      "text": "전략 신호 로그 · synchronized\nsignal log\n시간\t종목\t신호\t전략\t가격\t수량\t사유\n10:23:17.000\t005930 삼성전자\t\nSELL\tSTOM_AI_MOMENTUM_V1\t78,600\t100\tMA20 하향 돌파\n10:23:16.000\t000660 SK하이닉스\t\nBUY\tSTOM_AI_MOMENTUM_V1\t203,000\t100\t모멘텀 강도 상승\n10:22:59.000\t373220 LG에너지솔루션\t\nSELL\tST",
+      "rect": {
+        "x": 966,
+        "y": 1289,
+        "width": 447,
+        "height": 692
+      }
+    },
+    "[data-ux-evidence-drawer=\"chart_replay\"]": {
+      "found": true,
+      "text": "Replay API/WS Contract Matrix / UX proof / safe REST evidence 열기\ncontract markers preserved",
+      "rect": {
+        "x": 14,
+        "y": 2004,
+        "width": 1412,
+        "height": 51
+      }
+    },
+    "[data-safety-boundary=\"chart_replay\"]": {
+      "found": true,
+      "text": "No Live Order\n실거래 주문 없음\nNo Broker Login\n브로커 로그인 없음\nNo Account Trading\n계좌/자산 연동 없음\nResearch Only\n연구 전용\nHuman Approval Gate\n수동 승인 게이트\nAppend-Only Audit\n불변 감사\nReplay is historical only · /sim/ws never auto-opens · manual-gated playback actions",
+      "rect": {
+        "x": 14,
+        "y": 662,
+        "width": 1412,
+        "height": 67
+      }
+    }
+  },
+  "forbiddenLiveControls": 0
+}

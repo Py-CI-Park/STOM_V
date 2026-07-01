@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "kind": "candidate-card-schema",
+  "requiredFields": [
+    "schema_version",
+    "candidate_id",
+    "parent_id",
+    "source_seed",
+    "process",
+    "preset",
+    "mutation_axis",
+    "one_mutation_only",
+    "expected_effect",
+    "stop_criteria",
+    "official_backtest",
+    "evidence_refs",
+    "safety_flags"
+  ],
+  "safety_flags": {
+    "advisoryOnly": true,
+    "can_promote": false,
+    "can_export": false,
+    "can_live": false
+  }
+}

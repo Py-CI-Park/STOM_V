@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "failure-mode-test-report",
+  "reviewedAt": "2026-07-01T02:11:51Z",
+  "agentRef": "agent://255-G001DocQaClean",
+  "status": "passed",
+  "e2eStatus": "passed",
+  "redTeamStatus": "passed",
+  "blockers": [],
+  "evidence": "Read-only QA/red-team passed after README legacy-flow clarification. It covered human-readable condition names, full buy/sell code plus sha256 passport fields, plan/management/result reports, research-only boundaries, next-run seed choices, id-only prompt prevention, promotion-review no-generation, and README legacy DB ambiguity."
+}

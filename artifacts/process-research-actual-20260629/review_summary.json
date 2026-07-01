@@ -1,0 +1,367 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-06-30T00:05:22.915893+00:00",
+  "status": "completed_with_no_promotable_candidate",
+  "answer": "개선 프로세스로 실제 실행했다. 구조는 정상 작동했고 4개 후보 공식 백테스트까지 수행됐지만, 이번 실행에서는 기준선을 이긴 후보는 없었다.",
+  "runs": {
+    "missingArchivedSeedDbNames": {
+      "status": "error",
+      "phase": "baseline_run",
+      "message": "매수 전략 'GATE_rr8_12_turnover_min_902_1_5_B'이(가) strategy.db에 없습니다.; 매도 전략 'GATE_rr8_12_turnover_min_902_1_5_S'이(가) strategy.db에 없습니다."
+    },
+    "liveDbSeedBaseline": {
+      "status": "error",
+      "phase": "no_expressions",
+      "message": "no candidate expressions generated",
+      "baselineCsv": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260630084847.csv"
+    },
+    "archivedCsvStrictAnalysis": {
+      "status": "error",
+      "phase": "no_expressions",
+      "message": "no candidate expressions generated",
+      "recommendedCandidates": 0
+    },
+    "archivedCsvRelaxedAnalysisActualCandidates": {
+      "status": "ok",
+      "phase": "candidates_evaluated",
+      "candidateCount": 4,
+      "bestCandidate": {
+        "schemaVersion": 1,
+        "runId": "process_research_relaxed_20260629",
+        "candidateId": "actual_pr_relaxed_20260629__cand004",
+        "rank": 1,
+        "selectedAsBest": true,
+        "lane": "discovery",
+        "expression": "-11_905_509_280 <= 거래대금증감 < -5232658666.2",
+        "status": "ok",
+        "candidateCsv": "backtest/csv\\stock_bt_actual_pr_relaxed_20260629__cand004_20260630090323.csv",
+        "tradeCount": 93,
+        "winRate": 0.5053763440860215,
+        "avgReturn": 0.38688172043010755,
+        "totalReturn": 35.980000000000004,
+        "totalProfit": 358654.0,
+        "profitFactor": 1.3579788518853442,
+        "avgMae": -1.709569892473118,
+        "avgMfe": 2.295483870967742,
+        "tradeRetention": 0.48947368421052634,
+        "promotionPassed": false,
+        "promotionScore": -40.53259958121109,
+        "promotionReasons": [
+          "score<=0"
+        ],
+        "promotionDeltas": {
+          "avg_return_delta": 0.0641975099037918,
+          "win_rate_delta": -0.036728919071873256,
+          "avg_mae_delta": 0.06453537068477688,
+          "total_profit_delta": -2704042.0,
+          "excluded_quality": 0.0
+        },
+        "researchLaneScore": 0.0,
+        "researchScoreDetail": {
+          "candidate_id": "actual_pr_relaxed_20260629__cand004",
+          "eligible_for_lane_advantage": true,
+          "candidate_score": 0.0,
+          "raw_score": 102.0,
+          "profit_delta": 358654.0,
+          "profit_delta_pct": 358654.0,
+          "profit_delta_points": 100.0,
+          "mdd_delta_pp": 0.0,
+          "mdd_penalty": 0.0,
+          "oos_advisory_penalty": 0.0,
+          "insight_score": 65,
+          "insight_score_points": 2.0,
+          "prompt_score": 50,
+          "prompt_maturity_points": 0.0,
+          "blockers": [],
+          "caps_applied": [
+            "discovery_credit_failed_advantage_capped"
+          ],
+          "failure_reason": ""
+        },
+        "validationScope": "research_only",
+        "discoveryNoveltyPassed": null
+      }
+    }
+  },
+  "processContractObserved": {
+    "process": "process-research",
+    "preset": "research",
+    "requestedCandidateCount": 6,
+    "executedCandidateCount": 4,
+    "slotAllocation": {
+      "repair": 2,
+      "discovery": 2
+    },
+    "lanes": [
+      "repair",
+      "discovery",
+      "repair",
+      "discovery"
+    ],
+    "nextAllocation": {
+      "schema_version": 1,
+      "slots_total": 4,
+      "previous_slots_by_lane": {
+        "repair": 2,
+        "discovery": 2
+      },
+      "slots_by_lane": {
+        "repair": 3,
+        "discovery": 1
+      },
+      "better_lane": "repair",
+      "shift_applied": {
+        "from": "discovery",
+        "to": "repair",
+        "count": 1
+      },
+      "decision_reason": "opposing_lane_advantage_capped",
+      "repair_lane_score": 102.0,
+      "discovery_lane_score": 0.0,
+      "tie_breaks_used": [],
+      "blockers": [],
+      "authority": "research_budget_steering_only"
+    },
+    "authority": "research_only_no_export_live_or_final_promotion"
+  },
+  "candidateCardsPath": "artifacts\\process-research-actual-20260629\\candidate_cards.jsonl",
+  "analysisCardsPath": "artifacts\\process-research-actual-20260629\\analysis_cards.jsonl",
+  "promptReceiptsPath": "artifacts\\process-research-actual-20260629\\prompt_mutation_receipts.jsonl",
+  "candidateCards": [
+    {
+      "schemaVersion": 1,
+      "runId": "process_research_relaxed_20260629",
+      "candidateId": "actual_pr_relaxed_20260629__cand001",
+      "rank": 2,
+      "selectedAsBest": false,
+      "lane": "repair",
+      "expression": "6.684 <= 등락율 < 7.43",
+      "status": "ok",
+      "candidateCsv": "backtest/csv\\stock_bt_actual_pr_relaxed_20260629__cand001_20260630085346.csv",
+      "tradeCount": 93,
+      "winRate": 0.5268817204301075,
+      "avgReturn": 0.38623655913978494,
+      "totalReturn": 35.92,
+      "totalProfit": 357247.0,
+      "profitFactor": 1.36482514797371,
+      "avgMae": -1.7248387096774194,
+      "avgMfe": 2.322258064516129,
+      "tradeRetention": 0.48947368421052634,
+      "promotionPassed": false,
+      "promotionScore": -40.55268307583474,
+      "promotionReasons": [
+        "score<=0"
+      ],
+      "promotionDeltas": {
+        "avg_return_delta": 0.0635523486134692,
+        "win_rate_delta": -0.015223542727787254,
+        "avg_mae_delta": 0.04926655348047548,
+        "total_profit_delta": -2705449.0,
+        "excluded_quality": 0.0
+      },
+      "researchLaneScore": 102.0,
+      "researchScoreDetail": {
+        "candidate_id": "actual_pr_relaxed_20260629__cand001",
+        "eligible_for_lane_advantage": true,
+        "candidate_score": 102.0,
+        "raw_score": 102.0,
+        "profit_delta": 357247.0,
+        "profit_delta_pct": 357247.0,
+        "profit_delta_points": 100.0,
+        "mdd_delta_pp": 0.0,
+        "mdd_penalty": 0.0,
+        "oos_advisory_penalty": 0.0,
+        "insight_score": 65,
+        "insight_score_points": 2.0,
+        "prompt_score": 50,
+        "prompt_maturity_points": 0.0,
+        "blockers": [],
+        "caps_applied": [],
+        "failure_reason": ""
+      },
+      "validationScope": "research_only",
+      "discoveryNoveltyPassed": null
+    },
+    {
+      "schemaVersion": 1,
+      "runId": "process_research_relaxed_20260629",
+      "candidateId": "actual_pr_relaxed_20260629__cand002",
+      "rank": 3,
+      "selectedAsBest": false,
+      "lane": "discovery",
+      "expression": "4074.1 <= 매수총잔량 < 7154.6",
+      "status": "ok",
+      "candidateCsv": "backtest/csv\\stock_bt_actual_pr_relaxed_20260629__cand002_20260630085656.csv",
+      "tradeCount": 99,
+      "winRate": 0.5151515151515151,
+      "avgReturn": 0.35050505050505054,
+      "totalReturn": 34.7,
+      "totalProfit": 344974.0,
+      "profitFactor": 1.327885586869141,
+      "avgMae": -1.7184848484848485,
+      "avgMfe": 2.2503030303030305,
+      "tradeRetention": 0.5210526315789473,
+      "promotionPassed": false,
+      "promotionScore": -40.75035937267411,
+      "promotionReasons": [
+        "score<=0"
+      ],
+      "promotionDeltas": {
+        "avg_return_delta": 0.0278208399787348,
+        "win_rate_delta": -0.02695374800637962,
+        "avg_mae_delta": 0.05562041467304635,
+        "total_profit_delta": -2717722.0,
+        "excluded_quality": 0.0
+      },
+      "researchLaneScore": 0.0,
+      "researchScoreDetail": {
+        "candidate_id": "actual_pr_relaxed_20260629__cand002",
+        "eligible_for_lane_advantage": true,
+        "candidate_score": 0.0,
+        "raw_score": 102.0,
+        "profit_delta": 344974.0,
+        "profit_delta_pct": 344974.0,
+        "profit_delta_points": 100.0,
+        "mdd_delta_pp": 0.0,
+        "mdd_penalty": 0.0,
+        "oos_advisory_penalty": 0.0,
+        "insight_score": 65,
+        "insight_score_points": 2.0,
+        "prompt_score": 50,
+        "prompt_maturity_points": 0.0,
+        "blockers": [],
+        "caps_applied": [
+          "discovery_credit_failed_advantage_capped"
+        ],
+        "failure_reason": ""
+      },
+      "validationScope": "research_only",
+      "discoveryNoveltyPassed": null
+    },
+    {
+      "schemaVersion": 1,
+      "runId": "process_research_relaxed_20260629",
+      "candidateId": "actual_pr_relaxed_20260629__cand003",
+      "rank": 4,
+      "selectedAsBest": false,
+      "lane": "repair",
+      "expression": "176.854 <= 체결강도 < 201.327",
+      "status": "ok",
+      "candidateCsv": "backtest/csv\\stock_bt_actual_pr_relaxed_20260629__cand003_20260630090015.csv",
+      "tradeCount": 98,
+      "winRate": 0.5102040816326531,
+      "avgReturn": 0.29530612244897964,
+      "totalReturn": 28.940000000000005,
+      "totalProfit": 287668.0,
+      "profitFactor": 1.2624511669747336,
+      "avgMae": -1.6989795918367347,
+      "avgMfe": 2.235204081632653,
+      "tradeRetention": 0.5157894736842106,
+      "promotionPassed": false,
+      "promotionScore": -41.626357432867884,
+      "promotionReasons": [
+        "score<=0"
+      ],
+      "promotionDeltas": {
+        "avg_return_delta": -0.027378088077336105,
+        "win_rate_delta": -0.031901181525241684,
+        "avg_mae_delta": 0.0751256713211601,
+        "total_profit_delta": -2775028.0,
+        "excluded_quality": 0.0
+      },
+      "researchLaneScore": 102.0,
+      "researchScoreDetail": {
+        "candidate_id": "actual_pr_relaxed_20260629__cand003",
+        "eligible_for_lane_advantage": true,
+        "candidate_score": 102.0,
+        "raw_score": 102.0,
+        "profit_delta": 287668.0,
+        "profit_delta_pct": 287668.0,
+        "profit_delta_points": 100.0,
+        "mdd_delta_pp": 0.0,
+        "mdd_penalty": 0.0,
+        "oos_advisory_penalty": 0.0,
+        "insight_score": 65,
+        "insight_score_points": 2.0,
+        "prompt_score": 50,
+        "prompt_maturity_points": 0.0,
+        "blockers": [],
+        "caps_applied": [],
+        "failure_reason": ""
+      },
+      "validationScope": "research_only",
+      "discoveryNoveltyPassed": null
+    },
+    {
+      "schemaVersion": 1,
+      "runId": "process_research_relaxed_20260629",
+      "candidateId": "actual_pr_relaxed_20260629__cand004",
+      "rank": 1,
+      "selectedAsBest": true,
+      "lane": "discovery",
+      "expression": "-11_905_509_280 <= 거래대금증감 < -5232658666.2",
+      "status": "ok",
+      "candidateCsv": "backtest/csv\\stock_bt_actual_pr_relaxed_20260629__cand004_20260630090323.csv",
+      "tradeCount": 93,
+      "winRate": 0.5053763440860215,
+      "avgReturn": 0.38688172043010755,
+      "totalReturn": 35.980000000000004,
+      "totalProfit": 358654.0,
+      "profitFactor": 1.3579788518853442,
+      "avgMae": -1.709569892473118,
+      "avgMfe": 2.295483870967742,
+      "tradeRetention": 0.48947368421052634,
+      "promotionPassed": false,
+      "promotionScore": -40.53259958121109,
+      "promotionReasons": [
+        "score<=0"
+      ],
+      "promotionDeltas": {
+        "avg_return_delta": 0.0641975099037918,
+        "win_rate_delta": -0.036728919071873256,
+        "avg_mae_delta": 0.06453537068477688,
+        "total_profit_delta": -2704042.0,
+        "excluded_quality": 0.0
+      },
+      "researchLaneScore": 0.0,
+      "researchScoreDetail": {
+        "candidate_id": "actual_pr_relaxed_20260629__cand004",
+        "eligible_for_lane_advantage": true,
+        "candidate_score": 0.0,
+        "raw_score": 102.0,
+        "profit_delta": 358654.0,
+        "profit_delta_pct": 358654.0,
+        "profit_delta_points": 100.0,
+        "mdd_delta_pp": 0.0,
+        "mdd_penalty": 0.0,
+        "oos_advisory_penalty": 0.0,
+        "insight_score": 65,
+        "insight_score_points": 2.0,
+        "prompt_score": 50,
+        "prompt_maturity_points": 0.0,
+        "blockers": [],
+        "caps_applied": [
+          "discovery_credit_failed_advantage_capped"
+        ],
+        "failure_reason": ""
+      },
+      "validationScope": "research_only",
+      "discoveryNoveltyPassed": null
+    }
+  ],
+  "review": {
+    "bestCandidate": "actual_pr_relaxed_20260629__cand004",
+    "allPromotionPassed": [],
+    "finding": "후보 4개 모두 공식 백테스트는 성공했으나 promotion score가 음수이고 기준 CSV 대비 total_profit_delta가 약 -270만~-277만으로 나빠졌다.",
+    "processFinding": "process-research 계약(2 -> process-research/research, requested 6 -> executed 4, repair/discovery 2/2, 다음 allocation repair 3/discovery 1)이 실제 결과에 기록됐다.",
+    "weakPoint": "default 분석 기준에서는 recommended_candidates가 0개였다. 즉 실제 병목은 백테스트 엔진보다 결과분석->후보생성 후보 폭/민감도이며, relaxed 분석으로만 후보가 생성됐다.",
+    "nextDirection": "분석 stage의 후보 생성 문턱을 자동 이완하되, relaxed 후보는 exploration 라벨로 분리하고 promotion-review에는 fresh/frozen holdout을 요구해야 한다."
+  },
+  "safety": {
+    "researchOnly": true,
+    "export": false,
+    "live": false,
+    "finalPromotion": false,
+    "protectedPathCheck": "no output"
+  }
+}

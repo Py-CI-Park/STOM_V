@@ -1,0 +1,41 @@
+G001 Phase 1 adversarial report
+
+Scope: result identity and backtest result library recovery only.
+
+Observed verification:
+- python -m pytest tests/unit/dashboard/test_backtest_result_identity.py tests/unit/dashboard/test_backtest_jobs.py tests/unit/test_dashboard_backtest_detail.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q => 54 passed.
+- npm run build in ai_strategy_loop/dashboard/webui-build => passed, rebuilt frontend bundle app.js v=009eed8d.
+- git diff --check => no diff errors; only unrelated LF/CRLF warnings in tests/unit/test_generator_guardrail.py and tests/unit/test_publish_live_page_data.py.
+- Protected runtime paths status check produced no output.
+- Browser automation at http://127.0.0.1:8770/ui/backtest?v=g001fresh confirmed result library, evidence lines, condition confidence, disabled cancelled detail rows, and enabled rerun buttons; screenshot saved to artifacts/g001-backtest-result-library.png.
+
+Adversarial cases:
+1. Success job with deleted CSV artifact.
+   Expected: no silent detail open; status_kind artifact_missing; artifact_state success_without_openable_artifact; recover_result and rerun_same_condition actions.
+   Evidence: tests/unit/dashboard/test_backtest_result_identity.py::test_missing_artifact_exposes_recover_and_rerun_actions.
+   Verdict: passed.
+
+2. Cancelled terminal rows.
+   Expected: row is no longer a dead disabled trap; detail button remains disabled when no artifact exists, but rerun_same_condition is available.
+   Evidence: browser transcript artifacts/g001-browser-dom-check.json shows 41 cancelled disabled detail rows and 41 enabled rerun buttons.
+   Verdict: passed.
+
+3. Recoverable/error row with retained artifact.
+   Expected: no automatic open; user can explicitly open/recover/report/rerun according to open_actions.
+   Evidence: architect review agent://89-G001ArchitectReview2 and QA report agent://90-G001QaRedTeam2 verified auto-open is limited to success/no_trades while manual actions remain available.
+   Verdict: passed.
+
+4. no_trades terminal job.
+   Expected: available detail opens with empty analysis, not an error.
+   Evidence: tests/unit/dashboard/test_backtest_result_identity.py::test_no_trades_is_openable_and_auto_detail_contract.
+   Verdict: passed.
+
+5. Legacy name-only job JSON without code snapshots.
+   Expected: usable but low-confidence name_only_legacy identity; no current strategy DB lookup masquerading as high-confidence result evidence.
+   Evidence: tests/unit/dashboard/test_backtest_result_identity.py::test_condition_identity_uses_code_hash_and_legacy_confidence.
+   Verdict: passed.
+
+6. Generation/demo result branches.
+   Expected: available /bt/result branches expose the additive Phase 1 fields consistently.
+   Evidence: tests/unit/dashboard/test_backtest_result_identity.py::test_demo_result_exposes_phase1_additive_fields; QA report agent://90-G001QaRedTeam2 inspected run/gen branches.
+   Verdict: passed.

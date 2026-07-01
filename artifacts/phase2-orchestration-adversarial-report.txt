@@ -1,0 +1,7 @@
+Phase 2 adversarial/failure-mode report
+
+- numeric-selector: condition_discovery_process=2 must canonicalize to process-research/research and four slots; covered by test_process_research_plan_normalizes_numeric_selector.
+- v5-overrequested-count: process-research with candidate_count=6 must still execute exactly four repair/discovery specs; covered by test_run_research_iteration_v5_process_research_caps_to_four_hybrid_slots.
+- invalid-prompt-before-side-effects: invalid strict prompt response must fail with candidate_prompt_validation before strategy save/backtest; covered by test_execute_candidate_spec_rejects_invalid_hybrid_prompt_before_side_effects.
+- advisory-ranking-score: lane score payload must not become ranking authority; covered by test_rank_candidate_results_preserves_hybrid_lane_score_payload and cli/research_ranking.py::_rank_key.
+- legacy-disabled-path: non-process-research candidate counts/ranking remain unchanged; covered by existing research_loop regression suite.

@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "e2eStatus": "pass_readonly_artifact_parse_consistency",
+  "redTeamStatus": "pass_no_contradictions_found",
+  "blockers": [],
+  "evidence": "Parsed candidate_cards.jsonl and full_period_backtest_receipts.json; 5 cards and 5 official rows; all status ok/gate passed; C005 exactly one mutation parent C001; fallbackTriggered=false; all safety flags false; evidence paths exist."
+}

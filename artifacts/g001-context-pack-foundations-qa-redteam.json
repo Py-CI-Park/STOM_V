@@ -1,0 +1,13 @@
+{
+  "sourceAgent": "229-G001QaPostSlop",
+  "status": "pass",
+  "blockers": [],
+  "adversarialCases": [
+    "truthy can_final_promote in prompt context blocked",
+    "nested production_ready/can_live in prompt/card fields blocked",
+    "safe false validation provenance allowed",
+    "parent hash mismatch blocked",
+    "source missing and budget overflow blocked"
+  ],
+  "evidence": "QA/red-team reviewed target files and adversarial contract cases with no blockers."
+}

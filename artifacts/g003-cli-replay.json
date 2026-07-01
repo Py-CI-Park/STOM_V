@@ -1,0 +1,1 @@
+{"schemaVersion":1,"kind":"cli-replay","replaySafe":true,"command":["bun","-e","console.log('g003-cli-ok')"],"recordedStdout":"g003-cli-ok\n"}

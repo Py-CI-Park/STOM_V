@@ -1,0 +1,107 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 170-G002BacktestReview approved G002 bounded full-period official backtest loop with 4 seed replays and one bounded mutation; no blockers.",
+    "commands": [
+      "agent://170-G002BacktestReview",
+      "python -m ai_strategy_loop.scripts.claude_candidate_batch_eval seed replay",
+      "python -m ai_strategy_loop.scripts.claude_candidate_batch_eval one mutation"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "QA 171-G002BacktestQa parsed artifacts and verified 5 candidate cards/5 rows, status ok/gate pass, C005 single mutation, fallbackTriggered=false, and research-only safety.",
+    "e2eCommands": [
+      "python -m ai_strategy_loop.scripts.claude_candidate_batch_eval --pairs-json artifacts/human-process-research-20260628/human_seed_pairs.json --config-json artifacts/12h-followup-research-20260628/process_b_gptauth_seeded_64.json --run-id human_fullperiod_seed_replay_20260628",
+      "python -m ai_strategy_loop.scripts.claude_candidate_batch_eval --pairs-json artifacts/human-process-research-20260628/human_mutation_pairs.json --config-json artifacts/12h-followup-research-20260628/process_b_gptauth_seeded_64.json --run-id human_fullperiod_one_mutation_20260628"
+    ],
+    "redTeamCommands": [
+      "artifact consistency/red-team by agent://171-G002BacktestQa"
+    ],
+    "artifactRefs": [
+      {
+        "id": "candidate-cards",
+        "kind": "test-report",
+        "path": "artifacts/human-process-research-20260628/candidate_cards.jsonl",
+        "description": "candidate cards with observed official backtest metrics"
+      },
+      {
+        "id": "backtest-receipts",
+        "kind": "test-report",
+        "path": "artifacts/human-process-research-20260628/full_period_backtest_receipts.json",
+        "description": "official full-period backtest rows and engine fallback state"
+      },
+      {
+        "id": "g002-arch",
+        "kind": "test-report",
+        "path": "artifacts/human-process-research-20260628/g002_architect_receipt.json",
+        "description": "architect review receipt"
+      },
+      {
+        "id": "g002-qa",
+        "kind": "test-report",
+        "path": "artifacts/human-process-research-20260628/g002_qa_receipt.json",
+        "description": "QA/red-team receipt"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-g002-loop",
+        "contractRef": "G002 objective",
+        "obligation": "Replay seeds and one bounded mutation through official full-period backtest, recording candidate cards and fallback state",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-backtest-artifacts"
+        ],
+        "adversarialCaseRefs": [
+          "case-mutation-single-axis"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-backtest-artifacts",
+        "contractRef": "G002 official backtest artifacts",
+        "surface": "algorithm",
+        "invocation": "official warm backtest batch evaluation with 64 engines for seed replay and one mutation",
+        "verdict": "passed",
+        "artifactRefs": [
+          "candidate-cards",
+          "backtest-receipts",
+          "g002-qa"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-mutation-single-axis",
+        "contractRef": "one bounded mutation only",
+        "scenario": "C005 must have parent C001 and exactly turnover_min_902 1.5 -> 3.0 mutation; fallback should be absent only if no trigger occurred",
+        "expectedBehavior": "single mutation recorded, fallbackTriggered=false, all rows ok/gate passed",
+        "verdict": "passed",
+        "artifactRefs": [
+          "candidate-cards",
+          "backtest-receipts",
+          "g002-qa"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "No blockers from architect/QA; full verification loop clean for G002.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "agent://170-G002BacktestReview",
+      "agent://171-G002BacktestQa"
+    ],
+    "blockers": []
+  }
+}
