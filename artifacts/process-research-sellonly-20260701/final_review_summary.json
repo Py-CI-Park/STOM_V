@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "kind": "sell-only-final-review-summary",
+  "createdAt": "2026-07-01T16:30:46.653740+00:00",
+  "architectReview": {
+    "agent": "274-SellOnlyArchFinal",
+    "source": "agent://274-SellOnlyArchFinal",
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review reported architectureStatus CLEAR, product/code APPROVE, recommendation APPROVE, blockers None; normalized to CLEAR lane statuses for Ultragoal gate because no product/code blockers were reported.",
+    "blockers": []
+  },
+  "executorQa": {
+    "agent": "275-SellOnlyQaFinal",
+    "source": "agent://275-SellOnlyQaFinal",
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "QA evidence review passed: local_verification_summary status passed, final_summary ok, engine 64, fallback false, six prompt receipts and six candidate backtests aligned, research-only safety intact.",
+    "blockers": []
+  },
+  "slopCleanup": {
+    "agent": "276-SellOnlySlopFinal",
+    "source": "agent://276-SellOnlySlopFinal",
+    "status": "passed",
+    "blockingFindings": 0,
+    "advisoryFindings": 5,
+    "evidence": "AI SLOP CLEANUP REPORT PASS with blocking findings count 0."
+  }
+}

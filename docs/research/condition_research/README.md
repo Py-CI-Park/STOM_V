@@ -41,6 +41,7 @@
 | 2026-06-30 | `2026-06-30_next_improved_process_research_plan.md` | 개선된 process-research v2의 다음 실제 연구 실행 계획서 |
 | 2026-07-01 | `2026-07-01_process_research_v2_handoff_and_sell_axis.md` | process-research v2 전체 핸드오프: 실전 검증 결과, 커밋 정리 결과, 매도 조건식 연구축 |
 | 2026-07-01 | `2026-07-01_uncommitted_inventory_and_commit_plan.md` | 커밋 전 인벤토리와 커밋 후 `.gjc`/`.omo` 보류 상태 정리 기록 |
+| 2026-07-02 | `2026-07-02_sell_only_repair_validation_handoff.md` | sell-only repair 실전 검증: parent buy 고정, parent sell 단일축 후보 6개 공식 백테스트, hard stop 축 후속 연구 방향 |
 
 ## 원본 보고서 핵심
 

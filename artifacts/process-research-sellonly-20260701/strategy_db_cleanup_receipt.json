@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "kind": "strategy-db-cleanup-receipt",
+  "runId": "process_research_sellonly_20260701_night",
+  "createdAt": "2026-07-01T16:24:12.808407+00:00",
+  "items": [
+    {
+      "name": "prv2sell_20260701_stop06",
+      "kind": "sell",
+      "existed_before": false,
+      "previous_code": null,
+      "previous_sha256": "",
+      "action": "created",
+      "cleanup": "ok",
+      "cleanup_message": null,
+      "cleanup_action": "deleted"
+    },
+    {
+      "name": "prv2sell_20260701_trail05",
+      "kind": "sell",
+      "existed_before": false,
+      "previous_code": null,
+      "previous_sha256": "",
+      "action": "created",
+      "cleanup": "ok",
+      "cleanup_message": null,
+      "cleanup_action": "deleted"
+    },
+    {
+      "name": "prv2sell_20260701_flowma04",
+      "kind": "sell",
+      "existed_before": false,
+      "previous_code": null,
+      "previous_sha256": "",
+      "action": "created",
+      "cleanup": "ok",
+      "cleanup_message": null,
+      "cleanup_action": "deleted"
+    },
+    {
+      "name": "prv2sell_20260701_hold03",
+      "kind": "sell",
+      "existed_before": false,
+      "previous_code": null,
+      "previous_sha256": "",
+      "action": "created",
+      "cleanup": "ok",
+      "cleanup_message": null,
+      "cleanup_action": "deleted"
+    },
+    {
+      "name": "prv2sell_20260701_stop02",
+      "kind": "sell",
+      "existed_before": false,
+      "previous_code": null,
+      "previous_sha256": "",
+      "action": "created",
+      "cleanup": "ok",
+      "cleanup_message": null,
+      "cleanup_action": "deleted"
+    },
+    {
+      "name": "prv2sell_20260701_trail01",
+      "kind": "sell",
+      "existed_before": false,
+      "previous_code": null,
+      "previous_sha256": "",
+      "action": "created",
+      "cleanup": "ok",
+      "cleanup_message": null,
+      "cleanup_action": "deleted"
+    },
+    {
+      "name": "GATE_rr8_12_turnover_min_902_1_5_S",
+      "kind": "sell",
+      "existed_before": true,
+      "previous_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+      "action": "updated",
+      "cleanup": "ok",
+      "cleanup_message": null,
+      "cleanup_action": "restored_previous_row",
+      "restored_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07"
+    },
+    {
+      "name": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "kind": "buy",
+      "existed_before": true,
+      "previous_sha256": "348c518145cbf91e7123f9a8f3498fc35b36d269cce3e3e57154bd191d3ea97a",
+      "action": "updated",
+      "cleanup": "ok",
+      "cleanup_message": null,
+      "cleanup_action": "restored_previous_row",
+      "restored_sha256": "348c518145cbf91e7123f9a8f3498fc35b36d269cce3e3e57154bd191d3ea97a"
+    }
+  ]
+}

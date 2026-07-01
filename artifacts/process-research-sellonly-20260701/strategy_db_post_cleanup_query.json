@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "kind": "strategy-db-post-cleanup-query-receipt",
+  "createdAt": "2026-07-01T16:27:24.175813+00:00",
+  "dbPath": "_database/strategy.db",
+  "queryPurpose": "Confirm transient sell-only research strategy rows were not left in strategy DB after cleanup.",
+  "remainingTransientRows": [],
+  "status": "passed"
+}
