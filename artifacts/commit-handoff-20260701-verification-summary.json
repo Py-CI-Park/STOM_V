@@ -3,14 +3,15 @@
   "kind": "test-report",
   "id": "commit-handoff-20260701-verification-summary",
   "scope": "STOM condition research process handoff commits",
-  "head": "98385e9b0977924beca5d8da2d14d61ba0efb5b5",
+  "head": "e589e1148d0b34ff75da1d855fff5b1392143d21",
   "commits": [
     "332106f2 조건식 연구 컨텍스트팩과 다중 후보 루프 개선",
     "833bc650 조건식 연구 기록과 핸드오프 문서 정리",
     "942e8b28 조건식 연구 검증 산출물 보존",
     "0d9591d5 조건식 연구 핸드오프 최신 상태 보강",
     "d640f98d 조건식 연구 핸드오프 문구 재정리",
-    "98385e9b 조건식 연구 인벤토리 후속 정리"
+    "98385e9b 조건식 연구 인벤토리 후속 정리",
+    "e589e114 조건식 연구 핸드오프 검증 게이트 보존"
   ],
   "verification": {
     "focused_pytest": {

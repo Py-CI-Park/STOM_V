@@ -4,7 +4,7 @@
     "productStatus": "CLEAR",
     "codeStatus": "CLEAR",
     "recommendation": "APPROVE",
-    "evidence": "agent://268-CommitHandoffArchLast returned CLEAR/APPROVE with blockers=[] after HEAD 98385e9b. It verified historical vs post-commit disposition, research-only boundaries, committed evidence receipts, .gjc/.omo exclusion, and sell-only next research lane.",
+    "evidence": "agent://268-CommitHandoffArchLast returned CLEAR/APPROVE with blockers=[] after HEAD 98385e9b, and the committed gate artifacts were then preserved at e589e114. The review verified historical vs post-commit disposition, research-only boundaries, committed evidence receipts, .gjc/.omo exclusion, and sell-only next research lane.",
     "commands": [
       "architect review agent://268-CommitHandoffArchLast"
     ],
@@ -34,7 +34,7 @@
         "id": "commit-handoff-cli-replay",
         "kind": "command-replay",
         "path": "artifacts/commit-handoff-20260701-cli-replay.json",
-        "description": "Replay-safe git log command showing final commit chain through 98385e9b."
+        "description": "Replay-safe git rev-parse HEAD command showing final verification-gate commit e589e114."
       },
       {
         "id": "process-research-backtest-receipts",
@@ -88,7 +88,7 @@
         "id": "surface-cli",
         "contractRef": "Git state and replay-safe command evidence",
         "surface": "cli",
-        "invocation": "git log --oneline -7 replay and git diff/protected-path checks",
+        "invocation": "git rev-parse HEAD replay and git diff/protected-path checks",
         "verdict": "passed",
         "artifactRefs": ["commit-handoff-cli-replay", "commit-handoff-verification-summary"]
       },
@@ -155,7 +155,7 @@
   },
   "iteration": {
     "status": "passed",
-    "evidence": "Initial final reviews found stale pre-commit wording; commits 0d9591d5, d640f98d, and 98385e9b resolved the blockers. Full review loop was rerun: agent://268-CommitHandoffArchLast CLEAR/APPROVE, agent://269-CommitHandoffQaLast passed, agent://270-CommitHandoffSlopLast PASS. Focused tests, py_compile, git diff --check, and protected path check were run cleanly after commits.",
+    "evidence": "Initial final reviews found stale pre-commit wording; commits 0d9591d5, d640f98d, and 98385e9b resolved the blockers, then e589e114 preserved this quality-gate evidence. Full review loop was rerun: agent://268-CommitHandoffArchLast CLEAR/APPROVE, agent://269-CommitHandoffQaLast passed, agent://270-CommitHandoffSlopLast PASS. Focused tests, py_compile, git diff --check, and protected path check were run cleanly after commits.",
     "fullRerun": true,
     "rerunCommands": [
       "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q",
