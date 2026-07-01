@@ -1,0 +1,168 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "agent://268-CommitHandoffArchLast returned CLEAR/APPROVE with blockers=[] after HEAD 98385e9b. It verified historical vs post-commit disposition, research-only boundaries, committed evidence receipts, .gjc/.omo exclusion, and sell-only next research lane.",
+    "commands": [
+      "architect review agent://268-CommitHandoffArchLast"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "agent://269-CommitHandoffQaLast returned passed/passed/passed with blockers=[]; focused tests passed 149/149, py_compile passed, git diff --check passed, protected path status was empty. agent://270-CommitHandoffSlopLast returned PASS with blocking_findings=[].",
+    "e2eCommands": [
+      "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q",
+      "python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py cli/research_ranking.py tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py"
+    ],
+    "redTeamCommands": [
+      "executor QA red-team agent://269-CommitHandoffQaLast",
+      "critic slop review agent://270-CommitHandoffSlopLast"
+    ],
+    "artifactRefs": [
+      {
+        "id": "commit-handoff-verification-summary",
+        "kind": "test-report",
+        "path": "artifacts/commit-handoff-20260701-verification-summary.json",
+        "description": "Focused pytest, py_compile, git diff --check, protected path status, review receipts, and remaining .gjc/.omo disposition."
+      },
+      {
+        "id": "commit-handoff-cli-replay",
+        "kind": "command-replay",
+        "path": "artifacts/commit-handoff-20260701-cli-replay.json",
+        "description": "Replay-safe git log command showing final commit chain through 98385e9b."
+      },
+      {
+        "id": "process-research-backtest-receipts",
+        "kind": "test-report",
+        "path": "artifacts/process-research-validation-20260701/full_period_backtest_receipts.json",
+        "description": "Official full-period backtest receipts with engine 64, fallback=false, four candidates, full parent condition code, and research-only authority."
+      },
+      {
+        "id": "process-research-safety-receipt",
+        "kind": "test-report",
+        "path": "artifacts/process-research-validation-20260701/safety_receipt.json",
+        "description": "Research-only safety receipt: export=false, live=false, finalPromotion=false, protectedPathMutationAllowed=false."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-inventory-current",
+        "contractRef": "G001 inventory objective",
+        "obligation": "Current branch, committed files, remaining .gjc/.omo groups, protected-path status, and commit disposition must be reconstructable without stale pre-commit claims.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-docs", "surface-cli"],
+        "adversarialCaseRefs": ["case-stale-precommit"]
+      },
+      {
+        "id": "contract-handoff-complete",
+        "contractRef": "G002 handoff objective",
+        "obligation": "A reader must understand process-research v2, full-code Context Pack, Analysis Card v2, multi-hypothesis candidates, official backtest validation, sell-axis next work, limitations, and research-only boundaries from the docs.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-docs", "surface-receipts"],
+        "adversarialCaseRefs": ["case-boundary", "case-id-only", "case-metrics"]
+      },
+      {
+        "id": "contract-commit-verification",
+        "contractRef": "G003 staging verification commit objective",
+        "obligation": "Code/tests/docs/artifacts must be explicitly committed, verified, and remaining untracked files explained.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-cli", "surface-tests"],
+        "adversarialCaseRefs": ["case-protected-paths"]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-docs",
+        "contractRef": "Committed handoff documentation",
+        "surface": "package",
+        "invocation": "Read committed docs under docs/research/condition_research and docs/update_log; architect/QA/slop reviews confirmed current state and no stale blockers.",
+        "verdict": "passed",
+        "artifactRefs": ["commit-handoff-verification-summary"]
+      },
+      {
+        "id": "surface-cli",
+        "contractRef": "Git state and replay-safe command evidence",
+        "surface": "cli",
+        "invocation": "git log --oneline -7 replay and git diff/protected-path checks",
+        "verdict": "passed",
+        "artifactRefs": ["commit-handoff-cli-replay", "commit-handoff-verification-summary"]
+      },
+      {
+        "id": "surface-tests",
+        "contractRef": "Focused test and compile verification",
+        "surface": "package",
+        "invocation": "pytest focused unit suite and py_compile on touched Python/test files",
+        "verdict": "passed",
+        "artifactRefs": ["commit-handoff-verification-summary"]
+      },
+      {
+        "id": "surface-receipts",
+        "contractRef": "Research validation official receipts",
+        "surface": "algorithm",
+        "invocation": "Read full-period official backtest receipts and safety receipt for process_research_v2_validation_20260701",
+        "verdict": "passed",
+        "artifactRefs": ["process-research-backtest-receipts", "process-research-safety-receipt"]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-stale-precommit",
+        "contractRef": "Final handoff freshness",
+        "scenario": "A maintainer interprets historical pre-commit inventory as current state.",
+        "expectedBehavior": "Docs label pre-commit sections as historical/executed and current state leaves only .gjc/.omo untracked disposition.",
+        "verdict": "passed",
+        "artifactRefs": ["commit-handoff-verification-summary"]
+      },
+      {
+        "id": "case-boundary",
+        "contractRef": "Research-only boundary",
+        "scenario": "Documentation or receipts accidentally imply export/live/final promotion authority.",
+        "expectedBehavior": "All docs/receipts retain no export, no live, no final promotion.",
+        "verdict": "passed",
+        "artifactRefs": ["process-research-safety-receipt"]
+      },
+      {
+        "id": "case-id-only",
+        "contractRef": "Full condition code delivery",
+        "scenario": "Handoff relies only on condition IDs instead of full parent buy/sell code.",
+        "expectedBehavior": "Receipts/context pack include full parent buy/sell code and sha256; IDs are trace-only.",
+        "verdict": "passed",
+        "artifactRefs": ["process-research-backtest-receipts"]
+      },
+      {
+        "id": "case-metrics",
+        "contractRef": "Backtest metrics consistency",
+        "scenario": "Candidate metrics in docs diverge from official receipt.",
+        "expectedBehavior": "Docs and official receipt agree on baseline and candidates cand001-cand004.",
+        "verdict": "passed",
+        "artifactRefs": ["process-research-backtest-receipts"]
+      },
+      {
+        "id": "case-protected-paths",
+        "contractRef": "Protected runtime path preservation",
+        "scenario": "Commit accidentally includes protected runtime paths or DB/log outputs.",
+        "expectedBehavior": "Protected path status command has no output and docs keep protected paths out of source commits.",
+        "verdict": "passed",
+        "artifactRefs": ["commit-handoff-verification-summary"]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Initial final reviews found stale pre-commit wording; commits 0d9591d5, d640f98d, and 98385e9b resolved the blockers. Full review loop was rerun: agent://268-CommitHandoffArchLast CLEAR/APPROVE, agent://269-CommitHandoffQaLast passed, agent://270-CommitHandoffSlopLast PASS. Focused tests, py_compile, git diff --check, and protected path check were run cleanly after commits.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q",
+      "python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py cli/research_ranking.py tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py",
+      "git diff --check",
+      "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json _v3k_sidecar/v3k_gui_settings.json"
+    ],
+    "blockers": []
+  }
+}

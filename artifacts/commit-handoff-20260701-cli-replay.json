@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": ["git", "log", "--oneline", "-7"],
+  "recordedStdout": "98385e9b 조건식 연구 인벤토리 후속 정리\nd640f98d 조건식 연구 핸드오프 문구 재정리\n0d9591d5 조건식 연구 핸드오프 최신 상태 보강\n942e8b28 조건식 연구 검증 산출물 보존\n833bc650 조건식 연구 기록과 핸드오프 문서 정리\n332106f2 조건식 연구 컨텍스트팩과 다중 후보 루프 개선\na57a61a9 울트라골 최종 스냅샷 갱신\n"
+}
