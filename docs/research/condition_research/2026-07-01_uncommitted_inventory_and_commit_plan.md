@@ -42,34 +42,34 @@
 | `docs` | committed + 이 freshness patch | `833bc650`에서 문서 정리 커밋 완료, 이후 stale wording만 보강 |
 | `tests` | committed | `332106f2`에서 테스트 커밋 완료 |
 
-## 이번 연구와 직접 관련 있는 신규 문서
+## 이번 연구와 직접 관련해 커밋된 문서
 
-| 경로 | 역할 | 권장 처리 |
+| 경로 | 역할 | 처리 결과 |
 |---|---|---|
-| `docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md` | Condition Passport/문서 관리 체계 | 커밋 후보 |
-| `docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md` | 다음 개선 연구 계획 | 커밋 후보 |
-| `docs/research/condition_research/2026-07-01_process_research_v2_handoff_and_sell_axis.md` | 전체 핸드오프, sell-axis 방향, 파일 정리 | 커밋 후보 |
-| `docs/research/condition_research/2026-07-01_uncommitted_inventory_and_commit_plan.md` | 현재 파일 인벤토리 | 커밋 후보 |
-| `docs/update_log/2026-07-01_ai_strategy_loop_branch_handoff_commit_record.md` | 브랜치/커밋/제한사항/다음 연구 핸드오프 | 커밋 후보 |
-| `docs/research/condition_research/condition_passports/` | seed/comparator Condition Passport | 커밋 후보 |
-| `docs/research/condition_research/research_runs/` | plan/management/result report | 커밋 후보 |
-| `docs/research/condition_research/auto_reports/` | 이전 process research 자동 보고서 | 커밋 후보이나 범위가 넓어 별도 검토 가능 |
+| `docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md` | Condition Passport/문서 관리 체계 | `833bc650`에 포함 |
+| `docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md` | 다음 개선 연구 계획 | `833bc650`에 포함 |
+| `docs/research/condition_research/2026-07-01_process_research_v2_handoff_and_sell_axis.md` | 전체 핸드오프, sell-axis 방향, 파일 정리 | `833bc650`, `0d9591d5`, `d640f98d`에 포함 |
+| `docs/research/condition_research/2026-07-01_uncommitted_inventory_and_commit_plan.md` | 파일 인벤토리와 커밋 후 보류 상태 | `833bc650`, `0d9591d5`, `d640f98d`에 포함 |
+| `docs/update_log/2026-07-01_ai_strategy_loop_branch_handoff_commit_record.md` | 브랜치/커밋/제한사항/다음 연구 핸드오프 | `833bc650`, `0d9591d5`에 포함 |
+| `docs/research/condition_research/condition_passports/` | seed/comparator Condition Passport | `833bc650`에 포함 |
+| `docs/research/condition_research/research_runs/` | plan/management/result report | `833bc650`에 포함 |
+| `docs/research/condition_research/auto_reports/` | 이전 process research 자동 보고서 | `833bc650`에 포함 |
 
-## 이번 연구와 직접 관련 있는 신규 artifacts
+## 이번 연구와 직접 관련해 커밋된 artifacts
 
-| 경로 | 역할 | 권장 처리 |
+| 경로 | 역할 | 처리 결과 |
 |---|---|---|
-| `artifacts/process-research-validation-20260701/research_context_pack.json` | full Context Pack | evidence 커밋 후보 |
-| `artifacts/process-research-validation-20260701/research_context_pack_prompt.md` | prompt용 Context Pack | evidence 커밋 후보 |
-| `artifacts/process-research-validation-20260701/analysis_cards.jsonl` | Analysis Card v2 | evidence 커밋 후보 |
-| `artifacts/process-research-validation-20260701/candidate_cards.jsonl` | multi-hypothesis 후보 카드 | evidence 커밋 후보 |
-| `artifacts/process-research-validation-20260701/prompt_mutation_receipts.jsonl` | prompt/authority receipt | evidence 커밋 후보 |
-| `artifacts/process-research-validation-20260701/full_period_backtest_receipts.json` | 공식 백테스트 결과 receipt | evidence 커밋 후보 |
-| `artifacts/process-research-validation-20260701/engine_fallback_receipt.json` | 64/32 fallback 정책 receipt | evidence 커밋 후보 |
-| `artifacts/process-research-validation-20260701/safety_receipt.json` | research-only safety receipt | evidence 커밋 후보 |
-| `artifacts/process-research-validation-20260701/process_research_validation_report.html` | HTML 보고서 | evidence 커밋 후보 |
-| `artifacts/process-research-validation-20260701/process_research_validation_report.png` | 브라우저 검증 screenshot | evidence 커밋 후보 |
-| `artifacts/process-research-validation-20260701/quality_gate_G001.json` 등 | Ultragoal quality gate | evidence 커밋 후보 |
+| `artifacts/process-research-validation-20260701/research_context_pack.json` | full Context Pack | `942e8b28`에 포함 |
+| `artifacts/process-research-validation-20260701/research_context_pack_prompt.md` | prompt용 Context Pack | `942e8b28`에 포함 |
+| `artifacts/process-research-validation-20260701/analysis_cards.jsonl` | Analysis Card v2 | `942e8b28`에 포함 |
+| `artifacts/process-research-validation-20260701/candidate_cards.jsonl` | multi-hypothesis 후보 카드 | `942e8b28`에 포함 |
+| `artifacts/process-research-validation-20260701/prompt_mutation_receipts.jsonl` | prompt/authority receipt | `942e8b28`에 포함 |
+| `artifacts/process-research-validation-20260701/full_period_backtest_receipts.json` | 공식 백테스트 결과 receipt | `942e8b28`에 포함 |
+| `artifacts/process-research-validation-20260701/engine_fallback_receipt.json` | 64/32 fallback 정책 receipt | `942e8b28`에 포함 |
+| `artifacts/process-research-validation-20260701/safety_receipt.json` | research-only safety receipt | `942e8b28`에 포함 |
+| `artifacts/process-research-validation-20260701/process_research_validation_report.html` | HTML 보고서 | `942e8b28`에 포함 |
+| `artifacts/process-research-validation-20260701/process_research_validation_report.png` | 브라우저 검증 screenshot | `942e8b28`에 포함 |
+| `artifacts/process-research-validation-20260701/quality_gate_G001.json` 등 | Ultragoal quality gate | `942e8b28`에 포함 |
 | `artifacts/process-research-validation-20260701/__pycache__/` | Python bytecode | 정리 완료, 커밋 제외 |
 
 ## Historical commit split plan — 실행 완료된 분리 기준
