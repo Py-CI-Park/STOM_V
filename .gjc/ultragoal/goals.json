@@ -1,0 +1,255 @@
+{
+  "version": 1,
+  "brief": "Approved plan: execute 100% STOM dashboard remodel replacement from pending approval artifact `C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel/.gjc/_session-019f05e9-d676-7000-9c61-3c206a2d4031/plans/ralplan/019f05e9-d676-7000-9c61-3c206a2d4031/pending-approval.md`.\n\nGlobal constraints:\n- Worktree: `C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel`.\n- Preserve existing routes `/ui/evolution`, `/ui/backtest`, `/ui/chart-replay` until all gates pass.\n- Build `/ui/remodel/` as full replacement candidate with remodel namespace/deep-link refresh and no route escape.\n- Reuse production React components/API/WS state machines; do not continue static prototype as production renderer.\n- No live orders, no broker login, no account/account-trading controls, no hidden automatic export, no hidden final_approval action.\n- Use fixture DB or read-only DB verification only; no live broker or operating DB writes.\n- Completion requires page-by-page code checks, API/WS checks, E2E checks, visual screenshots, source/DOM safety checks, and preserved-route regression checks.\n\n@goal: Baseline acceptance matrix and route inventory\nFreeze the approved scorecard and pending plan into the execution ledger, inventory every static/mock-backed remodel page section, map existing production components/API contracts, capture baseline screenshots for `/ui/evolution`, `/ui/backtest`, `/ui/chart-replay`, and `/ui/remodel/`, and add focused tests/docs needed to prevent route/safety regressions before implementation.\n\n@goal: Remodel namespace shell and shared bootstrap\nConvert `/ui/remodel/` from static prototype production path into a scoped remodel namespace shell that can mount the production React component graph, supports remodel deep links without route escape, includes bundle drift guard, scoped CSS token bridge, real/preview/disabled state labeling, and preserves canonical routes.\n\n@goal: Backtest full parity\nReplace the static remodel backtest page with production `BacktestTab` behavior and `/bt/*` API/WS coverage: strategy CRUD, validation, variables, self.vars/sweep, BackFinder, run/job lifecycle, `/bt/ws_job`, cancel/meta, result library, analysis, compare, overlay, portfolio, report, and evolution handoff.\n\n@goal: Chart replay full parity\nReplace the static remodel chart replay page with production `SimulationTab` behavior and `/sim/*` API/WS coverage: health, days, demo, stocks, strategies, signals, `/sim/ws`, playback controls, seek/speed, chart engines, split/overlay, indicators, signal log, auto-pause learning, variable watch, and diagnostics.\n\n@goal: Condition AI pages full parity\nConnect or reuse production condition AI pages for overview, process, history, lab, workbench, and audit analysis surfaces: status/ws/runs, run state, generation durations, strategy code/diff/prompts/context, equity/backtest detail, GUI parity, HoF/reference, autopsy, counterfactual, freeze/MC, TMAP, edge ratio, feature importance, variable correlation, and handoffs.\n\n@goal: Decision audit settings and safety completion\nComplete decision audit, approval, settings, and safety surfaces: `/decisions`, guarded `/record_decision`, final approval/export separation, `/config/spec`, `/gpt_auth/status`, `/gpt_auth/test`, source and DOM forbidden-action guards, and all buttons either working, disabled with explanation, or clearly preview-only.\n\n@goal: Final page-by-page verification and completion evidence\nRun full verification and evidence closure: unit/integration tests, browser E2E for condition/backtest/replay/audit, preserved route regression checks, source/DOM safety scans, visual captures for every remodel and canonical page/modal, console/network checks, quality gate review, and final 100/100 scorecard update.",
+  "gjcGoalMode": "aggregate",
+  "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+  "goals": [
+    {
+      "id": "G001",
+      "title": "Baseline acceptance matrix and route inventory",
+      "objective": "Freeze the approved scorecard and pending plan into the execution ledger, inventory every static/mock-backed remodel page section, map existing production components/API contracts, capture baseline screenshots for `/ui/evolution`, `/ui/backtest`, `/ui/chart-replay`, and `/ui/remodel/`, and add focused tests/docs needed to prevent route/safety regressions before implementation.",
+      "status": "complete",
+      "createdAt": "2026-06-27T14:15:20.600Z",
+      "updatedAt": "2026-06-27T14:39:26.937Z",
+      "startedAt": "2026-06-27T14:15:27.882Z",
+      "completedAt": "2026-06-27T14:39:26.937Z",
+      "evidence": "G001 baseline complete: added tests/unit/test_dashboard_remodel_baseline_contract.py, documented docs/update_log/2026-06-27_ultragoal_g001_baseline_inventory.md, captured route screenshots under artifacts/ultragoal-g001-baseline, verified 9 focused tests, 329 dashboard tests, and git diff --check. Architect review subagent 5-G001ArchitectReview CLEAR/APPROVE; executor QA subagent 6-G001ExecutorQa passed; quality gate artifacts in artifacts/ultragoal-g001-baseline/.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "4b59a347-051b-41fe-9696-ccf6979dc8a8",
+        "verifiedAt": "2026-06-27T14:39:26.937Z",
+        "goalId": "G001",
+        "receiptKind": "per-goal",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "e29f99eaf3d45cab2df4eede8110e8a3ccf0b63bb470c9e46cba22c0edb32fd9",
+        "gjcGoalSnapshotHash": "0bb4a07fb48ca19e8757049bce651dacd665cc302f941573e255169f24064512",
+        "planGeneration": "772f2f74c24209786b70ebfad4d074056da162bb563c442c6a0f74ebad35bbd1",
+        "basis": {
+          "planHashBeforeCheckpoint": "f1ec157e3028890e2f2daff6fd1e357bc5f67fb904d3d29d20e84174b043578e",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "9cd5592a-63b2-4990-b66b-23e9bc66ac83",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-27T14:39:26.937Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G001"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "2e6d9ae36584c503299991566abc5a56cad3ddee11c5192e49b1ca82cf752d70"
+        },
+        "checkpointLedgerEventId": "ccee2eaf-c864-46bc-8dc4-4ad2dd616ba9"
+      }
+    },
+    {
+      "id": "G002",
+      "title": "Remodel namespace shell and shared bootstrap",
+      "objective": "Convert `/ui/remodel/` from static prototype production path into a scoped remodel namespace shell that can mount the production React component graph, supports remodel deep links without route escape, includes bundle drift guard, scoped CSS token bridge, real/preview/disabled state labeling, and preserves canonical routes.",
+      "status": "complete",
+      "createdAt": "2026-06-27T14:15:20.600Z",
+      "updatedAt": "2026-06-27T14:59:12.784Z",
+      "startedAt": "2026-06-27T14:39:27.098Z",
+      "completedAt": "2026-06-27T14:59:12.784Z",
+      "evidence": "G002 remodel namespace shell complete: app.py serves /ui/remodel deep links, remodel index boots production bundle with manifest versions, remodel-bootstrap seeds/remaps route state, tests guard deep links/manifest/canonical routes/safety. Browser evidence under artifacts/ultragoal-g002-shell shows condition/backtest/chart-replay/process stay under /ui/remodel and render production surfaces. Verification: 10 focused tests, 330 dashboard tests, node check, py_compile, git diff --check. Architect subagent 7 CLEAR/APPROVE; executor QA subagent 8 passed with no blockers.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "22636312-019d-4475-b4b8-6cb4a272a236",
+        "verifiedAt": "2026-06-27T14:59:12.784Z",
+        "goalId": "G002",
+        "receiptKind": "per-goal",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "41ead4e2484d870fd3a95d85f0f4194982a205b341b7e6a59072800b9776d7da",
+        "gjcGoalSnapshotHash": "c16f641693b46de8c3888f8bcfaf6a2cff8c73c948a508c461533f58d75762ce",
+        "planGeneration": "68f25fe132dc19cf8c62f7771a2ac6b8492544db393ea06b0d881cf41aab59f3",
+        "basis": {
+          "planHashBeforeCheckpoint": "f91f1bfc64d0534cbb780a6cbb0c3548e559693a5fe4bddbd16200022079dc65",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "3da21124-337f-4cf5-9f6d-27bd18f900cc",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-27T14:59:12.784Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G002"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "58f0d12638357a124b62e8a56316c2b5138bb74835f6516a48fb355a3c5f2645"
+        },
+        "checkpointLedgerEventId": "f3c2e00e-3533-41f5-b1e6-fad103da0c13"
+      }
+    },
+    {
+      "id": "G003",
+      "title": "Backtest full parity",
+      "objective": "Replace the static remodel backtest page with production `BacktestTab` behavior and `/bt/*` API/WS coverage: strategy CRUD, validation, variables, self.vars/sweep, BackFinder, run/job lifecycle, `/bt/ws_job`, cancel/meta, result library, analysis, compare, overlay, portfolio, report, and evolution handoff.",
+      "status": "complete",
+      "createdAt": "2026-06-27T14:15:20.600Z",
+      "updatedAt": "2026-06-27T15:40:27.889Z",
+      "startedAt": "2026-06-27T14:59:12.842Z",
+      "completedAt": "2026-06-27T15:40:27.889Z",
+      "evidence": "G003 backtest parity complete: /ui/remodel/backtest renders production BacktestTab inside remodel shell; browser edit/result evidence and screenshots saved under artifacts/ultragoal-g003-backtest; direct API smoke 9/9 returned 200; focused backtest tests 225 passed, 1 skipped; remodel focused tests 10 passed; py_compile, node --check, and git diff --check passed; architect 11 CLEAR/APPROVE and executor QA 12 passed with no blockers.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "9838fcbb-1b0b-449d-b3d2-55fc707ecee8",
+        "verifiedAt": "2026-06-27T15:40:27.889Z",
+        "goalId": "G003",
+        "receiptKind": "per-goal",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "e92086b5a003f8447559e6f9a34ba4af67547b77b13e6065fe37131813dd5df8",
+        "gjcGoalSnapshotHash": "8e5f17d4a586c475160faa58ca2cf154d3a6fd62ee1fc9edac6c61b9efbef387",
+        "planGeneration": "5c9a45196d833c07de25060f59ce07805f423eabde574706c7c7fd23ac11861b",
+        "basis": {
+          "planHashBeforeCheckpoint": "85f3079873c9c82089267beee2b172ec56466cfddfceb97c46cd8547e2364007",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "8e23463a-6f1f-466f-8d22-daf828d5a4c2",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-27T15:40:27.889Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G003"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "b77e48b6bf3316952eb6f41a0952d30236f90b83d49bb5dc7809f280ecf5c818"
+        },
+        "checkpointLedgerEventId": "f085b8e1-4b25-4c3a-854f-d30ac580dac0"
+      }
+    },
+    {
+      "id": "G004",
+      "title": "Chart replay full parity",
+      "objective": "Replace the static remodel chart replay page with production `SimulationTab` behavior and `/sim/*` API/WS coverage: health, days, demo, stocks, strategies, signals, `/sim/ws`, playback controls, seek/speed, chart engines, split/overlay, indicators, signal log, auto-pause learning, variable watch, and diagnostics.",
+      "status": "complete",
+      "createdAt": "2026-06-27T14:15:20.600Z",
+      "updatedAt": "2026-06-27T15:51:01.759Z",
+      "startedAt": "2026-06-27T15:40:27.947Z",
+      "completedAt": "2026-06-27T15:51:01.759Z",
+      "evidence": "G004 chart replay parity complete: /ui/remodel/chart-replay renders production SimulationTab inside remodel shell; wt-dev DB hardlinks supplied one min and one tick day for evidence; browser quick-start/playback screenshot and transcript saved under artifacts/ultragoal-g004-replay; simulation API smoke returned 8/8 HTTP 200; focused simulation tests 131 passed, 2 skipped; remodel focused tests 10 passed; py_compile, node --check, and git diff --check passed; architect 13 CLEAR/APPROVE and executor QA 14 passed with no blockers.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "1b17963a-5eea-468a-bd8d-6e4e7c910c8e",
+        "verifiedAt": "2026-06-27T15:51:01.759Z",
+        "goalId": "G004",
+        "receiptKind": "per-goal",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "0c129b3ee1706fe5ea7046c77f8552b5adc9cf4c9d1bcd05eec4560e1a47ec13",
+        "gjcGoalSnapshotHash": "ba15553dd93f5641feda6b0e5c5379a617fb51b3677449b57d350718b1e48f35",
+        "planGeneration": "b99b4db0f5596479af9a27604b7e97a7bf07acc9a201095984055b0c8be8bd4a",
+        "basis": {
+          "planHashBeforeCheckpoint": "cb13ee502be50e0bb8076df7ec9f08acb3d704fa57e079b427f0205db91d6c3f",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "267b5511-2170-4f7b-8867-facab6b13216",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-27T15:51:01.759Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G004"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "87f30a59593cd9434a41e22dc46c06281b7fc23aab0576ceb5d3e15847edb98a"
+        },
+        "checkpointLedgerEventId": "ab7bf64d-e968-4993-bb6d-aed07657af14"
+      }
+    },
+    {
+      "id": "G005",
+      "title": "Condition AI pages full parity",
+      "objective": "Connect or reuse production condition AI pages for overview, process, history, lab, workbench, and audit analysis surfaces: status/ws/runs, run state, generation durations, strategy code/diff/prompts/context, equity/backtest detail, GUI parity, HoF/reference, autopsy, counterfactual, freeze/MC, TMAP, edge ratio, feature importance, variable correlation, and handoffs.",
+      "status": "complete",
+      "createdAt": "2026-06-27T14:15:20.600Z",
+      "updatedAt": "2026-06-27T16:12:06.488Z",
+      "startedAt": "2026-06-27T15:51:01.820Z",
+      "completedAt": "2026-06-27T16:12:06.488Z",
+      "evidence": "G005 condition AI parity complete: /ui/remodel/condition, process, history, lab, workbench, and audit render production evolution surfaces under remodel shell; browser transcript/screenshots saved under artifacts/ultragoal-g005-condition; condition/evolution API smoke returned 29/29 HTTP 200; focused condition/research/dashboard tests passed 151 with 7 skipped; architect 17 CLEAR/APPROVE and executor QA 16 passed with no blockers.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "6198fa01-d88d-4f56-a290-f23be7296398",
+        "verifiedAt": "2026-06-27T16:12:06.488Z",
+        "goalId": "G005",
+        "receiptKind": "per-goal",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "a4d9bb9a523ae9c15e2691c1bc34b0e5e30f42b466c0546920382c8757c49154",
+        "gjcGoalSnapshotHash": "f7aef5d9aa2c17620cc34500798ca94c8974676c750a8e8d8ca133fe7a858eb9",
+        "planGeneration": "a3b90be7816a640ec874f66634bfa5f7e0a338db9a8ff9fe9c8c1f2c71a872d5",
+        "basis": {
+          "planHashBeforeCheckpoint": "a634207edc05129e325ed8071f60cbb39d433ca95fe5d18a37c77f4a6af7cc31",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "a4f36c33-0acc-4803-a2ab-13eeba6b6a68",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-27T16:12:06.488Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G005"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "02f91d6ca6316f197a576f996c1310e94747c2f50841cd9cc1bdb835582ae560"
+        },
+        "checkpointLedgerEventId": "cf663209-4bef-46b4-8627-8c28a84b71b9"
+      }
+    },
+    {
+      "id": "G006",
+      "title": "Decision audit settings and safety completion",
+      "objective": "Complete decision audit, approval, settings, and safety surfaces: `/decisions`, guarded `/record_decision`, final approval/export separation, `/config/spec`, `/gpt_auth/status`, `/gpt_auth/test`, source and DOM forbidden-action guards, and all buttons either working, disabled with explanation, or clearly preview-only.",
+      "status": "complete",
+      "createdAt": "2026-06-27T14:15:20.600Z",
+      "updatedAt": "2026-06-27T16:29:58.441Z",
+      "startedAt": "2026-06-27T16:12:06.545Z",
+      "completedAt": "2026-06-27T16:29:58.441Z",
+      "evidence": "G006 safety/settings/audit complete: /ui/remodel/audit and SettingsModal browser evidence saved under artifacts/ultragoal-g006-safety; live/API smoke verifies /decisions, /config/spec, /gpt_auth/status, /gpt_auth/test; isolated TestClient smoke verifies /record_decision invalid rejection and append-only order plus WS final_approval ignores malicious dest_strategy_db; source/DOM scans show no forbidden live-order/broker/account/export controls; focused G006 tests passed 95 with 1 skipped; architect 20 CLEAR/APPROVE and executor QA 19 passed with no blockers.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "82f7d676-7e0b-4589-97d8-1d598389736c",
+        "verifiedAt": "2026-06-27T16:29:58.441Z",
+        "goalId": "G006",
+        "receiptKind": "per-goal",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "5755e9a68c33add2065da43f7fd619356ea838242f44b585609abc0a52c5adb0",
+        "gjcGoalSnapshotHash": "0859b30ef5a0829e8cd03bba4862b860680ecfbcec1c66cb23afe82da03a2677",
+        "planGeneration": "02843c90eefef03406845e3c68cb1c507a1e461a751d694c8b5138011b00388b",
+        "basis": {
+          "planHashBeforeCheckpoint": "660f8f45f6676357c41201c14d2ecb2c6d1f87cb813816a0b105af66315e3b08",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "e26d6d19-d553-4742-b12d-09e33f5c01a9",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-27T16:29:58.441Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G006"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "5e8ef8a77df37fdf809f59408fa92933ab72e801777cfc6f4f8075a2ff5e7f4d"
+        },
+        "checkpointLedgerEventId": "7a81f848-216f-4572-b52d-4754563b348a"
+      }
+    },
+    {
+      "id": "G007",
+      "title": "Final page-by-page verification and completion evidence",
+      "objective": "Run full verification and evidence closure: unit/integration tests, browser E2E for condition/backtest/replay/audit, preserved route regression checks, source/DOM safety scans, visual captures for every remodel and canonical page/modal, console/network checks, quality gate review, and final 100/100 scorecard update.",
+      "status": "complete",
+      "createdAt": "2026-06-27T14:15:20.600Z",
+      "updatedAt": "2026-06-27T16:49:53.217Z",
+      "startedAt": "2026-06-27T16:29:58.655Z",
+      "completedAt": "2026-06-27T16:49:53.217Z",
+      "evidence": "G007 final closure complete: dashboard suite passed 894 with 18 skipped; py_compile app/backtest_api/simulation_api, node --check remodel-bootstrap, and git diff --check passed; browser E2E captured 8 remodel pages, 3 canonical pages, and SettingsModal with all route/marker/console/network/forbidden-control assertions true; API matrix all HTTP OK including favicon and GPT safe probe; final source safety scan clean; final scorecard records 100/100 replacement, 100/100 standalone completeness, and 100/100 total; architect 21 CLEAR/APPROVE and executor QA 22 passed with no blockers.",
+      "completionVerification": {
+        "schemaVersion": 1,
+        "receiptId": "466f0e9e-2bc8-4cd5-8eb4-75c2a29c2898",
+        "verifiedAt": "2026-06-27T16:49:53.217Z",
+        "goalId": "G007",
+        "receiptKind": "final-aggregate",
+        "goalStatusBeforeCheckpoint": "active",
+        "gjcGoalMode": "aggregate",
+        "gjcObjective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+        "qualityGateHash": "07245182c97613b7e50010f3662afabc8308d042ee95ca524c25c75220e7a9d7",
+        "gjcGoalSnapshotHash": "14c1dda3251bfb246cf8c4620af6e0595d35f78447fda2acfc277690117b23c0",
+        "planGeneration": "59f90d6270e32781a08dda461e2e1411ade4ffef1467fa8e9a58fe8db45baf60",
+        "basis": {
+          "planHashBeforeCheckpoint": "45bf3dde492ae0216fef7ab31b8564bc30d746c3671f210d3527ca99164b5eb5",
+          "latestRelevantLedgerEventIdBeforeCheckpoint": "0fbc23d5-4909-4025-8f3b-bed3073c4c98",
+          "goalUpdatedAtBeforeCheckpoint": "2026-06-27T16:49:53.217Z",
+          "relevantGoalIdsBeforeCheckpoint": [
+            "G001",
+            "G002",
+            "G003",
+            "G004",
+            "G005",
+            "G006",
+            "G007"
+          ],
+          "requiredGoalSetHashBeforeCheckpoint": "1e6f6464f51fd049d2b9be44d886cf757df985b55d809b060d0e48b09d207f6e"
+        },
+        "checkpointLedgerEventId": "aa04a1df-04ea-42f1-8b17-0f2db52749bf"
+      }
+    }
+  ],
+  "createdAt": "2026-06-27T14:15:20.600Z",
+  "updatedAt": "2026-06-27T16:49:53.217Z",
+  "state_revision": 15
+}

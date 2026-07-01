@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "kind": "goal_mode_request",
+  "source": "ultragoal",
+  "objective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+  "createdAt": "2026-06-30T04:09:48.694Z",
+  "goalsPath": "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel\\.gjc\\_session-019f05e9-d676-7000-9c61-3c206a2d4031\\ultragoal\\goals.json",
+  "sessionId": "019f05e9-d676-7000-9c61-3c206a2d4031"
+}
