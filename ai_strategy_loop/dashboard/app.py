@@ -36,9 +36,9 @@ import time  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 from typing import Any, Dict, List, Optional  # noqa: E402
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect  # noqa: E402
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
-from fastapi.responses import HTMLResponse, RedirectResponse  # noqa: E402
+from fastapi.responses import HTMLResponse, RedirectResponse, Response  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
 
@@ -64,6 +64,13 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 #   해석해 CWD와 무관하게 동작한다. 이 디렉토리를 /ui 하위에 마운트해 같은 origin에서
 #   서빙한다(REST/WS API와 동일 출처 → CORS 우회 + 단일 진입점).
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
+_REMODEL_FRONTEND_DIR = os.path.join(_FRONTEND_DIR, "remodel")
+_DASHBOARD_FAVICON_SVG = (
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>"
+    "<circle cx='32' cy='32' r='28' fill='#081624'/>"
+    "<circle cx='32' cy='32' r='16' fill='#0fb5ff'/>"
+    "</svg>"
+)
 
 # 폴링 주기(초) — current_state.json 변경 감지 → WS push.
 _POLL_INTERVAL = 1.0
@@ -2668,7 +2675,7 @@ def create_app() -> FastAPI:
         #   재검증(no-cache)시킨다. ETag 304로 비용은 없고, jsx 버전 범프(v=...)가
         #   즉시 반영된다 ("새 기능이 안 보이는 옛 대시보드" 실사고 재발 방지).
         response = await call_next(request)
-        if "text/html" in (response.headers.get("content-type") or ""):
+        if "text/html" in (response.headers.get("content-type") or "") and "cache-control" not in response.headers:
             response.headers["Cache-Control"] = "no-cache"
         return response
 
@@ -2690,56 +2697,192 @@ def create_app() -> FastAPI:
         except Exception:  # noqa: BLE001
             return HTMLResponse("<h1>Dashboard frontend not available</h1>", status_code=503)
 
+    def _dashboard_remodel_index_response() -> HTMLResponse:
+        index_path = os.path.join(_REMODEL_FRONTEND_DIR, "index.html")
+        try:
+            with open(index_path, encoding="utf-8") as fh:
+                response = HTMLResponse(fh.read())
+            response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            response.headers["X-STOM-Dashboard-Version"] = "v3-remodel"
+            return response
+        except Exception:  # noqa: BLE001
+            return HTMLResponse("<h1>Dashboard remodel frontend not available</h1>", status_code=503)
+
+    def _dashboard_version_from_request(request: Request) -> str:
+        """Return one-response dashboard version selector; never persist in browser state."""
+        selector = (request.query_params.get("dashboard_version") or "").strip().lower()
+        if selector in {"v3", "remodel", "preview"}:
+            return "v3"
+        if selector in {"v2", "legacy", "production"}:
+            return "v2"
+
+        profile = (request.query_params.get("dashboard_profile") or "").strip().lower()
+        if profile in {"v3", "remodel", "preview"}:
+            return "v3"
+        return "v2"
+
+    def _dashboard_selected_index_response(request: Request) -> HTMLResponse:
+        if _dashboard_version_from_request(request) == "v3":
+            return _dashboard_remodel_index_response()
+        response = _dashboard_index_response()
+        response.headers["X-STOM-Dashboard-Version"] = "v2"
+        return response
+
+    def _redirect_with_query(request: Request, target: str) -> RedirectResponse:
+        query = str(request.url.query or "")
+        if query:
+            target = f"{target}?{query}"
+        return RedirectResponse(url=target, status_code=307)
+
+    def _dashboard_not_found() -> HTMLResponse:
+        return HTMLResponse(
+            """<!doctype html>
+<html lang=\"ko\">
+<head>
+  <meta charset=\"utf-8\" />
+  <title>STOM Dashboard Route Not Found</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background:
+      radial-gradient(circle at 18% 18%, rgba(17, 88, 118, .65), transparent 34%),
+      radial-gradient(circle at 80% 72%, rgba(117, 74, 179, .34), transparent 30%),
+      linear-gradient(135deg, #06131d 0%, #020409 55%, #090b13 100%);
+      color: #d8eefc; font-family: system-ui, sans-serif; }
+    main { width: min(920px, calc(100vw - 48px)); border: 1px solid #1e5d77; border-radius: 22px;
+      background: linear-gradient(135deg, rgba(9, 32, 45, .96), rgba(3, 9, 16, .96));
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .45); padding: 30px; display: grid; gap: 20px; }
+    .hero { display: grid; grid-template-columns: 120px 1fr; gap: 22px; align-items: center; }
+    .code { height: 120px; border-radius: 18px; display: grid; place-items: center; font-size: 42px; font-weight: 800;
+      background: conic-gradient(from 180deg, #0fb5ff, #65e6c4, #8c63ff, #0fb5ff); color: #06131d; }
+    h1 { margin: 0 0 10px; font-size: 30px; letter-spacing: .02em; }
+    p { margin: 0; color: #8db6c8; line-height: 1.6; }
+    .badges { display: flex; gap: 10px; flex-wrap: wrap; }
+    .badge { border: 1px solid #2d7290; border-radius: 999px; padding: 7px 11px; background: rgba(10, 48, 65, .72); color: #b9f6e5; font-size: 12px; }
+    .matrix { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .cell { min-height: 74px; border: 1px solid #173d52; border-radius: 14px; padding: 14px; background: rgba(4, 18, 29, .72); }
+    .label { color: #69d6ff; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+    .value { margin-top: 8px; color: #f2fbff; font-weight: 700; }
+    code { color: #65e6c4; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class=\"hero\">
+      <div class=\"code\">404</div>
+      <div>
+        <h1>Dashboard route not found</h1>
+        <p>Unknown dashboard routes fail closed with <code>404</code> instead of masking broken links with a V2/V3 shell.</p>
+      </div>
+    </section>
+    <section class=\"badges\">
+      <span class=\"badge\">V2 default preserved</span>
+      <span class=\"badge\">V3 explicit only</span>
+      <span class=\"badge\">No hidden SPA fallback</span>
+      <span class=\"badge\">Research-only boundary</span>
+    </section>
+    <section class=\"matrix\">
+      <div class=\"cell\"><div class=\"label\">route state</div><div class=\"value\">unknown</div></div>
+      <div class=\"cell\"><div class=\"label\">response</div><div class=\"value\">fail-closed 404</div></div>
+      <div class=\"cell\"><div class=\"label\">shell loaded</div><div class=\"value\">none</div></div>
+    </section>
+  </main>
+</body>
+</html>""",
+            status_code=404,
+        )
+
+    @app.get("/ui", response_class=HTMLResponse)
+    def ui_root_no_slash(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/")
+
+    @app.get("/ui/", response_class=HTMLResponse)
+    def ui_root(request: Request) -> HTMLResponse:
+        return _dashboard_selected_index_response(request)
+
+    @app.get("/ui/remodel", response_class=HTMLResponse)
+    def ui_remodel_root_no_slash() -> RedirectResponse:
+        return RedirectResponse(url="/ui/remodel/", status_code=307)
+
+    @app.get("/ui/remodel/", response_class=HTMLResponse)
+    def ui_remodel_root() -> HTMLResponse:
+        return _dashboard_remodel_index_response()
+
+    @app.get("/ui/remodel/{remodel_page}", response_class=HTMLResponse)
+    def ui_remodel_deeplink(remodel_page: str = "condition") -> Any:
+        if remodel_page == "remodel-bootstrap.js":
+            script_path = os.path.join(_REMODEL_FRONTEND_DIR, "remodel-bootstrap.js")
+            try:
+                with open(script_path, encoding="utf-8") as fh:
+                    return Response(fh.read(), media_type="application/javascript")
+            except Exception:  # noqa: BLE001
+                return Response("", media_type="application/javascript", status_code=404)
+        allowed = {
+            "condition", "evolution", "process", "history", "records",
+            "lab", "workbench", "audit", "verdict", "backtest",
+            "chart-replay", "simulation", "settings",
+        }
+        if remodel_page not in allowed:
+            return _dashboard_not_found()
+        return _dashboard_remodel_index_response()
+
     @app.get("/ui/evolution", response_class=HTMLResponse)
     @app.get("/ui/evolution/{subtab}", response_class=HTMLResponse)
-    def ui_evolution(subtab: str = "overview") -> Any:
+    def ui_evolution(request: Request, subtab: str = "overview") -> Any:
         if subtab == "history":
-            return RedirectResponse(url="/ui/evolution/records", status_code=307)
+            return _redirect_with_query(request, "/ui/evolution/records")
         allowed = {"overview", "process", "records", "lab", "workbench", "verdict"}
         if subtab not in allowed:
-            return RedirectResponse(url="/ui/evolution", status_code=307)
-        return _dashboard_index_response()
-
+            return _dashboard_not_found()
+        return _dashboard_selected_index_response(request)
 
     @app.get("/ui/backtest", response_class=HTMLResponse)
-    def ui_backtest() -> HTMLResponse:
-        return _dashboard_index_response()
+    def ui_backtest(request: Request) -> HTMLResponse:
+        return _dashboard_selected_index_response(request)
 
     @app.get("/ui/chart-replay", response_class=HTMLResponse)
-    def ui_chart_replay() -> HTMLResponse:
-        return _dashboard_index_response()
+    def ui_chart_replay(request: Request) -> HTMLResponse:
+        return _dashboard_selected_index_response(request)
 
     @app.get("/ui/simulation")
-    def ui_simulation_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/chart-replay", status_code=307)
+    def ui_simulation_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/chart-replay")
 
     @app.get("/ui/process")
-    def ui_process_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/evolution/process", status_code=307)
+    def ui_process_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/evolution/process")
 
     @app.get("/ui/records")
-    def ui_records_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/evolution/records", status_code=307)
+    def ui_records_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/evolution/records")
 
     @app.get("/ui/history")
-    def ui_history_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/evolution/records", status_code=307)
+    def ui_history_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/evolution/records")
 
     @app.get("/ui/lab")
-    def ui_lab_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/evolution/lab", status_code=307)
+    def ui_lab_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/evolution/lab")
 
     @app.get("/ui/pro")
-    def ui_pro_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/evolution/workbench", status_code=307)
+    def ui_pro_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/evolution/workbench")
 
     @app.get("/ui/verdict")
-    def ui_verdict_alias() -> RedirectResponse:
-        return RedirectResponse(url="/ui/evolution/verdict", status_code=307)
+    def ui_verdict_alias(request: Request) -> RedirectResponse:
+        return _redirect_with_query(request, "/ui/evolution/verdict")
 
     @app.get("/health")
     def health() -> Dict[str, Any]:
         return {"status": "ok", "contract_version": C.CONTRACT_VERSION}
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    def favicon() -> Response:
+        return Response(
+            _DASHBOARD_FAVICON_SVG,
+            media_type="image/svg+xml",
+            headers={"Cache-Control": "public, max-age=86400"},
+        )
 
     @app.get("/process_flow", response_class=HTMLResponse)
     def process_flow() -> HTMLResponse:
@@ -3401,6 +3544,25 @@ def create_app() -> FastAPI:
     #   않는다(StaticFiles는 /ui/* 만 처리). html=True 로 /ui/ 가 index.html을 서빙.
     #   .jsx 는 StaticFiles 기본 content-type으로 서빙되며 브라우저 fetch+Babel 변환에
     #   문제 없다. 프론트엔드 디렉토리가 없으면 API만으로도 기동되도록 가드한다.
+    # reviewed 리모델 산출물은 딥링크 라우트(/ui/remodel/condition 등)를
+    #   FastAPI 핸들러가 fail-closed로 판정해야 한다. 따라서 /ui/remodel
+    #   전체를 StaticFiles로 마운트하지 않고 정적 하위 디렉터리만 분리해
+    #   딥링크가 정적 파일 404로 오인되지 않게 한다.
+    if os.path.isdir(_REMODEL_FRONTEND_DIR):
+        remodel_static_mounts = {
+            "src": "ui_remodel_src",
+            "styles": "ui_remodel_styles",
+            "docs": "ui_remodel_docs",
+            "data": "ui_remodel_data",
+        }
+        for subdir, mount_name in remodel_static_mounts.items():
+            static_dir = os.path.join(_REMODEL_FRONTEND_DIR, subdir)
+            if os.path.isdir(static_dir):
+                app.mount(
+                    f"/ui/remodel/{subdir}",
+                    StaticFiles(directory=static_dir),
+                    name=mount_name,
+                )
     if os.path.isdir(_FRONTEND_DIR):
         app.mount("/ui", StaticFiles(directory=_FRONTEND_DIR, html=True), name="ui")
 

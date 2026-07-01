@@ -786,7 +786,7 @@ function useBackend(baseUrl) {
         setState((s) => ({
           ...s,
           status: "complete",
-          latest: { ...s.latest, phase: "승인 완료", message: `${msg.user_buy} / ${msg.user_sell} 운영 DB로 내보냄` },
+          latest: { ...s.latest, phase: "승인 완료", message: `${msg.user_buy} / ${msg.user_sell} 연구 Export 후보로 기록됨` },
         }));
         // 데모에서도 export 결과 배너가 뜨도록 합성 reply를 둔다(실제 export 아님).
         setLastReply({ action: "final_approval", status: "ok", demo: true,

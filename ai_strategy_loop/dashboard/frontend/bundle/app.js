@@ -8904,7 +8904,7 @@ def signal_sell(pos, bar, ind):
           setState((s) => ({
             ...s,
             status: "complete",
-            latest: { ...s.latest, phase: "\uC2B9\uC778 \uC644\uB8CC", message: `${msg.user_buy} / ${msg.user_sell} \uC6B4\uC601 DB\uB85C \uB0B4\uBCF4\uB0C4` }
+            latest: { ...s.latest, phase: "\uC2B9\uC778 \uC644\uB8CC", message: `${msg.user_buy} / ${msg.user_sell} \uC5F0\uAD6C Export \uD6C4\uBCF4\uB85C \uAE30\uB85D\uB428` }
           }));
           setLastReply({
             action: "final_approval",
@@ -22786,9 +22786,9 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         style: { width: "100%", justifyContent: "center" },
         onClick: onApprove
       },
-      /* @__PURE__ */ React.createElement("span", null, "\uC2E4\uC804 \uC804\uB7B5\uC73C\uB85C \uC2B9\uC778 \xB7 \uB0B4\uBCF4\uB0B4\uAE30"),
+      /* @__PURE__ */ React.createElement("span", null, "\uC5F0\uAD6C \uC0B0\uCD9C\uBB3C \uC2B9\uC778 \xB7 Export"),
       /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, opacity: 0.8 } }, "\u2192")
-    ), /* @__PURE__ */ React.createElement("p", { style: { fontSize: 11, color: "var(--ink-2)", marginTop: 10, lineHeight: 1.55, textAlign: "center" } }, "\uC2B9\uC778 \uC2DC \uC6B4\uC601\uC6A9 ", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-1)" } }, "strategy.db"), "\uB85C export\uB429\uB2C8\uB2E4. \uCDE8\uC18C\uD560 \uC218 \uC5C6\uC73C\uB2C8 \uC2E0\uC911\uD788 \uC9C4\uD589\uD558\uC138\uC694.")));
+    ), /* @__PURE__ */ React.createElement("p", { style: { fontSize: 11, color: "var(--ink-2)", marginTop: 10, lineHeight: 1.55, textAlign: "center" } }, "Human Approval Gate \uD1B5\uACFC \uD6C4 \uC5F0\uAD6C \uACB0\uACFC\uB85C\uB9CC export\uB429\uB2C8\uB2E4. \uC2E4\uAC70\uB798/\uC8FC\uBB38/\uACC4\uC88C/\uBE0C\uB85C\uCEE4 \uC5F0\uB3D9\uC740 \uC5C6\uC2B5\uB2C8\uB2E4.")));
   }
   function MergedBestWinnerCard({ best, winner, onApprove, onViewCode }) {
     const gen = winner.gen;
@@ -22811,9 +22811,9 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         style: { width: "100%", justifyContent: "center" },
         onClick: onApprove
       },
-      /* @__PURE__ */ React.createElement("span", null, "\uC2E4\uC804 \uC804\uB7B5\uC73C\uB85C \uC2B9\uC778 \xB7 \uB0B4\uBCF4\uB0B4\uAE30"),
+      /* @__PURE__ */ React.createElement("span", null, "\uC5F0\uAD6C \uC0B0\uCD9C\uBB3C \uC2B9\uC778 \xB7 Export"),
       /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, opacity: 0.8 } }, "\u2192")
-    ), /* @__PURE__ */ React.createElement("p", { style: { fontSize: 11, color: "var(--ink-2)", marginTop: 10, lineHeight: 1.55, textAlign: "center" } }, "\uC2B9\uC778 \uC2DC \uC6B4\uC601\uC6A9 ", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--ink-1)" } }, "strategy.db"), "\uB85C export\uB429\uB2C8\uB2E4. \uCDE8\uC18C\uD560 \uC218 \uC5C6\uC73C\uB2C8 \uC2E0\uC911\uD788 \uC9C4\uD589\uD558\uC138\uC694.")));
+    ), /* @__PURE__ */ React.createElement("p", { style: { fontSize: 11, color: "var(--ink-2)", marginTop: 10, lineHeight: 1.55, textAlign: "center" } }, "Human Approval Gate \uD1B5\uACFC \uD6C4 \uC5F0\uAD6C \uACB0\uACFC\uB85C\uB9CC export\uB429\uB2C8\uB2E4. \uC2E4\uAC70\uB798/\uC8FC\uBB38/\uACC4\uC88C/\uBE0C\uB85C\uCEE4 \uC5F0\uB3D9\uC740 \uC5C6\uC2B5\uB2C8\uB2E4.")));
   }
   function NameRow({ label, value }) {
     return /* @__PURE__ */ React.createElement("div", { style: {
@@ -22842,7 +22842,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     const canSubmit = userBuy.trim() && userSell.trim() && confirmText.trim() === "\uC2B9\uC778";
     return /* @__PURE__ */ React.createElement("div", { className: "modal-bd", onMouseDown: (e) => {
       if (e.target === e.currentTarget) onClose();
-    } }, /* @__PURE__ */ React.createElement("div", { className: "modal", onMouseDown: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "modal-hd" }, /* @__PURE__ */ React.createElement("h2", null, "\uC2E4\uC804 \uC804\uB7B5 \uC2B9\uC778 \xB7 \uB0B4\uBCF4\uB0B4\uAE30", /* @__PURE__ */ React.createElement("span", { className: "sub" }, "gen_", String(winner.gen).padStart(2, "0"), " \xB7 score ", fmtScore(winner.score))), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\uB2EB\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "modal-bd-content" }, /* @__PURE__ */ React.createElement("div", { className: "alert-danger", style: { marginBottom: 18 } }, /* @__PURE__ */ React.createElement("strong", null, "\u26A0 \uC6B4\uC601 DB \uBCC0\uACBD \uC791\uC5C5"), " \u2014 \uC774 \uC6B0\uC2B9 \uC804\uB7B5\uC744 \uC6B4\uC601\uC6A9 ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, "strategy.db"), "\uC5D0", /* @__PURE__ */ React.createElement("span", { className: "mono" }, " live-deploy gate"), "\uB85C \uB0B4\uBCF4\uB0C5\uB2C8\uB2E4. \uC2E4\uAC70\uB798 \uC790\uB3D9\uB9E4\uB9E4\uC5D0\uC11C \uC989\uC2DC \uC0AC\uC6A9 \uAC00\uB2A5\uD558\uAC8C \uB429\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { marginBottom: 14, fontSize: 11, color: "var(--ink-3)", lineHeight: 1.5 } }, "\uB3D9\uC120: \uC99D\uAC70 \u2192 ", /* @__PURE__ */ React.createElement("b", null, "\uB0B4\uBCF4\uB0B4\uAE30 \uC2B9\uC778"), "(\uC774 \uB2E8\uACC4 \xB7 WS ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, "final_approval"), ") \u2192", /* @__PURE__ */ React.createElement("b", null, " \uACB0\uC815 \uC774\uB825 \u2192 \uC6B4\uC6A9 \uACB0\uC815"), " \uD0ED\uC5D0\uC11C \uCC44\uD0DD \uC0AC\uC720 \uAE30\uB85D(REST ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, "/record_decision"), ", append-only)."), /* @__PURE__ */ React.createElement("div", { className: "group" }, /* @__PURE__ */ React.createElement("div", { className: "group-title" }, "\uC6B0\uC2B9 \uC804\uB7B5 \uC6D0\uBCF8"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6 } }, /* @__PURE__ */ React.createElement(NameRow, { label: "\uB9E4\uC218", value: winner.buy_name }), /* @__PURE__ */ React.createElement(NameRow, { label: "\uB9E4\uB3C4", value: winner.sell_name }))), /* @__PURE__ */ React.createElement("div", { className: "group" }, /* @__PURE__ */ React.createElement("div", { className: "group-title" }, "\uC6B4\uC601 DB \uC800\uC7A5\uBA85 \u2014 \uC0AC\uC6A9\uC790 \uC9C0\uC815"), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uB9E4\uC218 \uC804\uB7B5 \uC774\uB984"), /* @__PURE__ */ React.createElement(
+    } }, /* @__PURE__ */ React.createElement("div", { className: "modal", onMouseDown: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "modal-hd" }, /* @__PURE__ */ React.createElement("h2", null, "\uC5F0\uAD6C \uC0B0\uCD9C\uBB3C \uC2B9\uC778 \xB7 Export", /* @__PURE__ */ React.createElement("span", { className: "sub" }, "gen_", String(winner.gen).padStart(2, "0"), " \xB7 score ", fmtScore(winner.score))), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\uB2EB\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "modal-bd-content" }, /* @__PURE__ */ React.createElement("div", { className: "alert-danger", style: { marginBottom: 18 } }, /* @__PURE__ */ React.createElement("strong", null, "\u26A0 Human Approval Gate"), " \u2014 \uC774 \uC6B0\uC2B9 \uC804\uB7B5\uC740 \uC5F0\uAD6C \uC0B0\uCD9C\uBB3C\uB85C\uB9CC export\uB429\uB2C8\uB2E4. \uC2E4\uAC70\uB798 \uC8FC\uBB38, \uBE0C\uB85C\uCEE4 \uB85C\uADF8\uC778, \uACC4\uC88C/\uC790\uC0B0 \uC5F0\uB3D9, \uC790\uB3D9\uB9E4\uB9E4 \uBC30\uD3EC\uB294 \uC218\uD589\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { marginBottom: 14, fontSize: 11, color: "var(--ink-3)", lineHeight: 1.5 } }, "\uB3D9\uC120: \uC99D\uAC70 \u2192 ", /* @__PURE__ */ React.createElement("b", null, "\uB0B4\uBCF4\uB0B4\uAE30 \uC2B9\uC778"), "(\uC774 \uB2E8\uACC4 \xB7 WS ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, "final_approval"), ") \u2192", /* @__PURE__ */ React.createElement("b", null, " \uACB0\uC815 \uC774\uB825 \u2192 \uC6B4\uC6A9 \uACB0\uC815"), " \uD0ED\uC5D0\uC11C \uCC44\uD0DD \uC0AC\uC720 \uAE30\uB85D(REST ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, "/record_decision"), ", append-only)."), /* @__PURE__ */ React.createElement("div", { className: "group" }, /* @__PURE__ */ React.createElement("div", { className: "group-title" }, "\uC6B0\uC2B9 \uC804\uB7B5 \uC6D0\uBCF8"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6 } }, /* @__PURE__ */ React.createElement(NameRow, { label: "\uB9E4\uC218", value: winner.buy_name }), /* @__PURE__ */ React.createElement(NameRow, { label: "\uB9E4\uB3C4", value: winner.sell_name }))), /* @__PURE__ */ React.createElement("div", { className: "group" }, /* @__PURE__ */ React.createElement("div", { className: "group-title" }, "\uC5F0\uAD6C Export \uC800\uC7A5\uBA85 \u2014 \uC0AC\uC6A9\uC790 \uC9C0\uC815"), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uB9E4\uC218 \uC804\uB7B5 \uC774\uB984"), /* @__PURE__ */ React.createElement(
       "input",
       {
         className: "input",
@@ -22850,7 +22850,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         onChange: (e) => setUserBuy(e.target.value),
         placeholder: "\uC608: VWAP_MOMENTUM_v3"
       }
-    ), /* @__PURE__ */ React.createElement("span", { className: "help" }, "\uC6B4\uC601 \uC2DC\uC2A4\uD15C\uC5D0\uC11C \uC774 \uC774\uB984\uC73C\uB85C \uCC38\uC870\uB429\uB2C8\uB2E4")), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uB9E4\uB3C4 \uC804\uB7B5 \uC774\uB984"), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("span", { className: "help" }, "\uC5F0\uAD6C \uACB0\uACFC\uC640 \uAC10\uC0AC \uAE30\uB85D\uC5D0\uC11C \uC774 \uC774\uB984\uC73C\uB85C \uCC38\uC870\uB429\uB2C8\uB2E4")), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uB9E4\uB3C4 \uC804\uB7B5 \uC774\uB984"), /* @__PURE__ */ React.createElement(
       "input",
       {
         className: "input",
@@ -22858,7 +22858,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         onChange: (e) => setUserSell(e.target.value),
         placeholder: "\uC608: ATR_TRAILING_v3"
       }
-    ), /* @__PURE__ */ React.createElement("span", { className: "help" }, "\uC911\uBCF5 \uC2DC \uB36E\uC5B4\uC4F0\uAE30 \uB429\uB2C8\uB2E4")))), /* @__PURE__ */ React.createElement("div", { className: "group" }, /* @__PURE__ */ React.createElement("div", { className: "group-title" }, "\uCD5C\uC885 \uD655\uC778"), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uC544\uB798 \uC785\uB825\uB780\uC5D0 ", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--amber)" } }, "\uC2B9\uC778"), " \uC774\uB77C\uACE0 \uC785\uB825\uD558\uC138\uC694"), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("span", { className: "help" }, "\uC911\uBCF5 \uC2DC \uC5F0\uAD6C Export \uD6C4\uBCF4\uBA85\uC774 \uAC31\uC2E0\uB429\uB2C8\uB2E4")))), /* @__PURE__ */ React.createElement("div", { className: "group" }, /* @__PURE__ */ React.createElement("div", { className: "group-title" }, "\uCD5C\uC885 \uD655\uC778"), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("label", null, "\uC544\uB798 \uC785\uB825\uB780\uC5D0 ", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { color: "var(--amber)" } }, "\uC2B9\uC778"), " \uC774\uB77C\uACE0 \uC785\uB825\uD558\uC138\uC694"), /* @__PURE__ */ React.createElement(
       "input",
       {
         className: "input",
@@ -30193,7 +30193,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     const stopReplay = () => {
       _stopReplay();
     };
-    const applyDemo = useCallback_sim((mode, asDemo) => {
+    const applyDemo = useCallback_sim((mode, asDemo, autoStart = false) => {
       if (isDemo || !baseUrl) return;
       setPresetBusy(true);
       _stopReplay();
@@ -30208,7 +30208,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
         setSelected([String(j.code)]);
         setSpeed(_SIM_DEMO_SPEED);
         setDemoActive(!!asDemo);
-        pendingAutoplayRef.current = true;
+        pendingAutoplayRef.current = !!autoStart;
         setPresetBusy(false);
       }).catch(() => {
         setPresetBusy(false);
@@ -30228,7 +30228,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       if (_simDemoSeen()) return;
       demoTriedRef.current = true;
       _simMarkDemoSeen();
-      applyDemo("latest", true);
+      applyDemo("latest", true, false);
     }, [baseUrl, isDemo, applyDemo]);
     const exitDemo = useCallback_sim(() => {
       setDemoActive(false);
@@ -30239,7 +30239,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     }, [_stopReplay]);
     const onPreset = useCallback_sim((mode) => {
       setDemoActive(false);
-      applyDemo(mode, false);
+      applyDemo(mode, false, true);
     }, [applyDemo]);
     const codes = meta && meta.codes && meta.codes.length ? meta.codes : selected2;
     const canPlay = !isDemo && !!date && selected2.length > 0 && (status === "idle" || status === "done" || status === "error");
@@ -30400,7 +30400,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       display: "flex",
       alignItems: "center",
       gap: 6
-    } }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uC608\uC2DC \uC790\uB3D9 \uC7AC\uC0DD"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC900\uBE44\uB41C \uB370\uC774\uD130\uB85C \uB458\uB7EC\uBCF4\uB294 \uC911 \xB7 ", _SIM_DEMO_SPEED, "x"), /* @__PURE__ */ React.createElement(
+    } }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uC608\uC2DC \uCD94\uCC9C \uC900\uBE44"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC608\uC2DC \uC790\uB3D9 \uC7AC\uC0DD \uC900\uBE44 \xB7 \uC7AC\uC0DD\uC740 \uC0AC\uC6A9\uC790 \uAC8C\uC774\uD2B8 \uD6C4 \uC2DC\uC791"), /* @__PURE__ */ React.createElement(
       "button",
       {
         className: "btn ghost sm",
@@ -32932,6 +32932,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       { label: "status", value: state.status || "\u2014" },
       { label: "run", value: selectedRun ? "archive" : "LIVE" }
     ];
+    const currentDashboardPath = typeof window !== "undefined" && window.location && window.location.pathname || "/ui/evolution";
+    const v3PreviewHref = `${currentDashboardPath || "/ui/evolution"}?dashboard_version=v3`;
     return /* @__PURE__ */ React.createElement("div", { className: "stom-app-shell" }, /* @__PURE__ */ React.createElement("header", { className: "stom-shell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-shell-top" }, /* @__PURE__ */ React.createElement("div", { className: "stom-shell-brand" }, /* @__PURE__ */ React.createElement(Logo, null), /* @__PURE__ */ React.createElement("div", { className: "stom-shell-title" }, /* @__PURE__ */ React.createElement("h1", null, "STOM AI \xB7 \uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uB300\uC2DC\uBCF4\uB4DC"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "autonomous_strategy_loop \xB7 contract_v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("nav", { className: "stom-pagenav mono", "aria-label": "\uD604\uC7AC \uC704\uCE58" }, /* @__PURE__ */ React.createElement(
       "span",
       {
@@ -32942,6 +32944,15 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       " ",
       shellRouteLabel
     ))), /* @__PURE__ */ React.createElement("div", { className: "stom-shell-controls" }, /* @__PURE__ */ React.createElement(ThemeToggle, { theme, onChange: setTheme }), /* @__PURE__ */ React.createElement(
+      "a",
+      {
+        className: "btn ghost sm mono",
+        "data-dashboard-preview": "v3",
+        href: v3PreviewHref,
+        title: "V2 \uAE30\uBCF8 \uD654\uBA74\uC740 \uC720\uC9C0\uD558\uACE0 \uD604\uC7AC \uACBD\uB85C\uB97C V3 \uB9AC\uBAA8\uB378 \uD504\uB9AC\uBDF0\uB85C 1\uD68C \uC5F4\uAE30"
+      },
+      "V3 Preview"
+    ), /* @__PURE__ */ React.createElement(
       BaseUrlControl,
       {
         value: pendingBase,
@@ -33032,6 +33043,25 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         runId: state.run_id,
         baseUrl
       }
+    ), /* @__PURE__ */ React.createElement(
+      "section",
+      {
+        "data-safety-boundary": "v2-research-only",
+        style: {
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+          gap: 10,
+          marginTop: 18
+        }
+      },
+      [
+        ["\uC2E4\uAC70\uB798/\uC8FC\uBB38 \uAE30\uB2A5 \uC5C6\uC74C", "No Live Order"],
+        ["\uBE0C\uB85C\uCEE4 \uB85C\uADF8\uC778 \uC5C6\uC74C", "No Broker Login"],
+        ["\uACC4\uC88C/\uC790\uC0B0 \uC5F0\uB3D9 \uC5C6\uC74C", "No Account Trading"],
+        ["\uC5F0\uAD6C \uC804\uC6A9", "Research Only"],
+        ["Human Approval Gate", "\uC2B9\uC778 \uD6C4 Export"],
+        ["Append-Only Audit", "\uBD88\uBCC0 \uAC10\uC0AC \uB85C\uADF8"]
+      ].map(([title, detail]) => /* @__PURE__ */ React.createElement("div", { key: title, className: "panel", style: { padding: "10px 12px" } }, /* @__PURE__ */ React.createElement("b", null, title), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { color: "var(--ink-3)", fontSize: 10.5, marginTop: 4 } }, detail)))
     ), /* @__PURE__ */ React.createElement("footer", { style: { marginTop: 24, padding: "12px 0", textAlign: "center", color: "var(--ink-3)", fontSize: 10.5, fontFamily: "var(--mono)" } }, "STOM AI \xB7 STATE_CONTRACT v", (_h = state.contract_version) != null ? _h : 1, " \xB7 last_update ", fmtTime(state.updated_at)));
   }
   var STOM_TABS = DASHBOARD_ROUTE_CONTRACTS;
