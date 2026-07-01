@@ -97,21 +97,55 @@ def test_dashboard_frontend_called_read_only_routes_do_not_404(monkeypatch, tmp_
         response = client.get(route, params=params)
         assert response.status_code != 404
 
-def test_dashboard_ui_deep_links_serve_spa_without_broad_catchall(monkeypatch, tmp_path: Path) -> None:
-    """Given explicit dashboard UI deep links, Then only named routes serve the SPA shell."""
+def test_dashboard_ui_deep_links_preserve_v2_default_and_explicit_v3_selector(monkeypatch, tmp_path: Path) -> None:
+    """Given canonical dashboard routes, Then V2 remains default and V3 is explicit."""
     client = _client(monkeypatch, tmp_path)
 
     for route, status_code in UI_DEEP_LINKS.items():
         response = client.get(route)
         assert response.status_code == status_code
-        assert "STOM AI" in response.text
-        assert 'href="/ui/styles.css' in response.text
-        assert 'src="/ui/vendor-react.js' in response.text
+        assert "STOM AI · 조건식 자율 진화 대시보드" in response.text
         assert 'src="/ui/bundle/app.js' in response.text
-        assert 'src="bundle/app.js' not in response.text
+        assert 'src="/ui/remodel/src/app.js' not in response.text
+        assert response.headers["x-stom-dashboard-version"] == "v2"
+
+        v3 = client.get(route, params={"dashboard_version": "v3"})
+        assert v3.status_code == status_code
+        assert "STOM AI · 조건식 AI 연구 대시보드" in v3.text
+        assert 'href="/ui/remodel/styles/theme.css' in v3.text
+        assert 'src="/ui/remodel/src/data.js' in v3.text
+        assert 'src="/ui/remodel/src/app.js' in v3.text
+        assert 'src="/ui/bundle/app.js' not in v3.text
+        assert v3.headers["x-stom-dashboard-version"] == "v3-remodel"
 
     missing = client.get("/ui/not-a-real-dashboard-route.js")
     assert missing.status_code == 404
+
+    missing_remodel = client.get("/ui/remodel/not-a-real-dashboard-route")
+    assert missing_remodel.status_code == 404
+
+    for remodel_route in [
+        "/ui/remodel/condition",
+        "/ui/remodel/process",
+        "/ui/remodel/history",
+        "/ui/remodel/lab",
+        "/ui/remodel/workbench",
+        "/ui/remodel/audit",
+        "/ui/remodel/backtest",
+        "/ui/remodel/chart-replay",
+    ]:
+        remodel = client.get(f"{remodel_route}?demo=reference")
+        assert remodel.status_code == 200
+        assert remodel.headers["x-stom-dashboard-version"] == "v3-remodel"
+        assert 'src="/ui/remodel/src/app.js' in remodel.text
+
+    for asset_route in [
+        "/ui/remodel/src/app.js",
+        "/ui/remodel/src/data.js",
+        "/ui/remodel/styles/theme.css",
+    ]:
+        asset = client.get(asset_route)
+        assert asset.status_code == 200
 
 
 def test_dashboard_legacy_ui_aliases_redirect_to_evolution_subtabs(monkeypatch, tmp_path: Path) -> None:
@@ -122,3 +156,7 @@ def test_dashboard_legacy_ui_aliases_redirect_to_evolution_subtabs(monkeypatch, 
         response = client.get(route, follow_redirects=False)
         assert response.status_code in {307, 308}
         assert response.headers["location"] == target
+
+        selected = client.get(f"{route}?dashboard_version=v3", follow_redirects=False)
+        assert selected.status_code in {307, 308}
+        assert selected.headers["location"] == f"{target}?dashboard_version=v3"

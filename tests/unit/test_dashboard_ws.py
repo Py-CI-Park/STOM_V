@@ -52,6 +52,12 @@ class TestHealthAndSpec:
         assert body["status"] == "ok"
         assert body["contract_version"] == C.CONTRACT_VERSION
 
+    def test_favicon_returns_svg(self, client):
+        resp = client.get("/favicon.ico")
+        assert resp.status_code == 200
+        assert resp.headers["content-type"].startswith("image/svg+xml")
+        assert "<svg" in resp.text
+
     def test_config_spec_returns_fields(self, client):
         resp = client.get("/config/spec")
         assert resp.status_code == 200
