@@ -608,6 +608,28 @@ class LoopConfig:
     #   byte-동일하다(하위호환). 가정 산출/판정 실패는 흡수한다(학습 보조 경로).
     hypothesis_tracking_enabled: bool = False
 
+    # --- T4.1: 차트술사 구조론 원리 문서 3종 (principles/constraints/idioms) ---
+    # 데이터 근거: chart_sulsa_stom_quant_insight_report_v7_0.html §1.15 원문 마스터
+    #   프롬프트 0~28장. 단, 문서 자체가 백테스트 미검증 가설 체계이며 모든 임계값은
+    #   무근거 가설로 라벨되어 있다(문서 서두 명시).
+    # principle_docs_enabled: True면 **후속 Phase 2의 Context Pack**이
+    #   brain/principles.py 로더(load_principles/load_constraints/load_idioms)로
+    #   원리 문서를 소비할 수 있음을 표시한다. 현 시점에는 어떤 코드 경로도 이 토글을
+    #   읽지 않는다 — build_messages/generate_strategy에 연결되어 있지 않아 기본 OFF든
+    #   ON이든 생성 프롬프트가 기존과 byte-동일하다(하위호환).
+    principle_docs_enabled: bool = False
+
+    # --- T4.3: 원리 일관성 게이트 (opt-in PRE-SAVE 게이트) ---
+    # principle_gate_enabled: True면 generate_strategy(principle_gate_enabled=True)로
+    #   배선된 경로에서 brain/principle_gate.check_principle_consistency 의 reject
+    #   severity 위반(CSC-06 돌파-무거래량 / CSC-07 손절 부재 / CSC-10 tick 시간창)
+    #   시 저장 거부→재시도한다. advisory(PG-META-01)는 로그만 남긴다.
+    #   ⚠️ 현 시점 루프 오케스트레이터(controller/loop.py)는 이 토글을 읽지 않는다
+    #   (다른 워크플로우가 동시 수정 중인 파일이라 배선 보류 — 후속 배선 지점:
+    #   _generate_pair 의 generate_strategy 호출부에서 이 토글을 전달). 기본 OFF면
+    #   어떤 코드 경로도 게이트를 평가하지 않아 동작이 기존과 byte-동일하다(하위호환).
+    principle_gate_enabled: bool = False
+
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "LoopConfig":
         """dict에서 LoopConfig 생성. 알 수 없는 키는 무시한다."""
