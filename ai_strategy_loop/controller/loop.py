@@ -636,6 +636,7 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
                    freeze_buy: bool = False,
                    prev_judged_hypotheses: Optional[list] = None,
                    segment_avoid_lines: Optional[list] = None,
+                   feature_hint_lines: Optional[list] = None,
                    state: Optional[LoopState] = None) -> Dict[str, Any]:
     """이 세대의 buy + sell 전략을 생성/저장한다.
 
@@ -665,6 +666,12 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             프롬프트에 avoid 가이드로 주입된다(build_messages가 kind=='buy'일 때만 반영 —
             매도 무영향). 호출부가 토글(segment_feedback_enabled) ON일 때만 채운다. None/빈
             리스트면 generate_strategy에 None이 가 byte-동일하다(하위호환).
+        feature_hint_lines: 직전/best 세대 train CSV의 세그먼트별 feature_importance에서
+            추출한 'prefer 힌트' 라인 리스트(P3 환류 — segment_avoid의 양(prefer) 신호 짝).
+            주어지면 매수(buy) generate_strategy로 전달돼 매수 프롬프트에 prefer 가이드로
+            주입된다(build_messages가 kind=='buy'일 때만 반영 — 매도 무영향). 호출부가
+            토글(feature_importance_feedback_enabled) ON일 때만 채운다. None/빈 리스트면
+            generate_strategy에 None이 가 byte-동일하다(하위호환).
         state: 프롬프트 영속화(P1c)용 LoopState. config.prompt_logging_enabled가
             True이고 state가 주어졌을 때만, 각 generate_strategy 호출에 on_prompt
             콜백을 연결해 LLM 호출별 프롬프트를 prompts 테이블에 기록한다. None이거나
@@ -826,6 +833,10 @@ def _generate_pair(provider, config: LoopConfig, run_id: str, gen_no: int,
             #   호출 시그니처를 byte-identical 보존한다. 토글 OFF면 호출부가 None을 넘겨
             #   build_messages가 미주입(byte-동일).
             segment_avoid_lines=(segment_avoid_lines if kind == "buy" else None),
+            # P3 feature_importance prefer 힌트 — build_messages가 kind=='buy'일 때만
+            #   반영하므로 매도 경로엔 무영향. 매수에만 전달해 sell 호출 시그니처를
+            #   byte-identical 보존한다. 토글 OFF면 호출부가 None을 넘겨 미주입(byte-동일).
+            feature_hint_lines=(feature_hint_lines if kind == "buy" else None),
             # 프롬프트 영속화(P1c) — 토글 OFF/state=None이면 None이라 무영향(byte-identical).
             #   buy/sell 두 호출 모두 같은 콜백을 받는다(kind는 레코드에 담긴다).
             on_prompt=on_prompt,
@@ -1184,6 +1195,11 @@ def run_loop(
     #   토글(segment_feedback_enabled) OFF면 항상 None이라 산출·주입이 전혀 안 일어난다
     #   (byte-동일). 백테 실패 세대(CSV 없음)는 None으로 비워 오래된 가이드를 안 남긴다.
     next_segment_avoid_lines: Optional[list] = None
+    # P3 feature_importance 환류: 직전 세대 train CSV의 세그먼트별 feature_importance에서
+    #   추출한 'prefer 힌트' 라인(avoid의 양(prefer) 신호 짝). 다음 세대 매수 프롬프트로
+    #   환류한다. 토글(feature_importance_feedback_enabled) OFF면 항상 None이라 산출·주입이
+    #   전혀 안 일어난다(byte-동일). 백테 실패 세대(CSV 없음)는 None으로 비운다.
+    next_feature_hint_lines: Optional[list] = None
     # P2a 가정 루프: 직전 세대 피드백이 '이 다음 세대'를 겨냥해 세운 가정 목록.
     #   다음 세대에서 그 세대의 부모 대비 델타로 채택/기각해 hypotheses_json으로 영속한다.
     #   토글 OFF면 항상 None이라 가정 방출·판정·저장이 전혀 안 일어난다(byte-동일).
@@ -1374,6 +1390,13 @@ def run_loop(
                 if (getattr(config, "segment_feedback_enabled", False)
                         and next_segment_avoid_lines):
                     gen_kwargs["segment_avoid_lines"] = next_segment_avoid_lines
+                # P3 feature_importance 환류: 토글 ON + 직전 세대 train CSV에서 prefer
+                #   힌트를 확보했을 때만 _generate_pair로 넘겨 매수 프롬프트에 환류한다.
+                #   OFF(기본)거나 힌트가 비면 키를 넣지 않아 _generate_pair 호출 시그니처가
+                #   기존과 byte-identical 하다(T4 배선과 동일 — monkeypatch 테스트 보호).
+                if (getattr(config, "feature_importance_feedback_enabled", False)
+                        and next_feature_hint_lines):
+                    gen_kwargs["feature_hint_lines"] = next_feature_hint_lines
                 # 프롬프트 영속화(P1c): 토글 ON일 때만 state를 _generate_pair로 넘겨
                 #   프롬프트 로깅 콜백을 활성화한다. OFF(기본)면 state 키를 넣지 않아
                 #   _generate_pair 호출 시그니처가 기존과 byte-identical 하다(하위호환).
@@ -1497,6 +1520,10 @@ def run_loop(
                 #   비워 다음 세대가 오래된 패배 구간 가이드를 환류받지 않게 한다(토글
                 #   OFF면 어차피 항상 None).
                 next_segment_avoid_lines = None
+                # P3 — 실패 세대는 CSV가 없어 feature_importance 분석도 불가하다. prefer
+                #   힌트를 비워 다음 세대가 오래된 힌트를 환류받지 않게 한다(토글 OFF면
+                #   어차피 항상 None).
+                next_feature_hint_lines = None
                 gen_no += 1
                 continue
 
@@ -1696,6 +1723,11 @@ def run_loop(
             #   (build_segment_avoid_lines가 데이터 없음/부족/읽기 실패를 빈 리스트로 흡수).
             #   OFF(기본)면 헬퍼를 호출조차 안 해 None을 유지(byte-동일). 실패는 흡수한다.
             next_segment_avoid_lines = _build_segment_avoid(config, outcome)
+            # P3 feature_importance 환류: 토글 ON일 때만 이 세대 train CSV에서 세그먼트별
+            #   'prefer 힌트'를 산출해 다음 세대 매수 프롬프트로 환류한다(순수·무예외 —
+            #   데이터 없음/부족/읽기 실패는 빈 힌트로 흡수). OFF(기본)면 헬퍼를 호출조차
+            #   안 해 None 유지(byte-동일). holdout 가드: outcome.csv_path는 train CSV다.
+            next_feature_hint_lines = _build_feature_hints(config, outcome)
             # P2a 가정 방출: 부검 NL과 동일 인자(게이트 통과/MDD/손익/거래수)로 이 세대가
             #   '다음 세대용'으로 세우는 가정을 만든다. is_refine은 다음 세대가 부모를 갖는지
             #   (현재 best가 출발점이 되는지)로 본다. 토글 OFF면 None이라 가정이 carry되지
@@ -2272,6 +2304,45 @@ def _build_segment_avoid(config, outcome) -> Optional[list]:
         return lines or None
     except Exception as exc:  # noqa: BLE001 - 환류 산출 실패는 루프를 막지 않음(학습 보조 경로).
         logger.info("세그먼트 avoid 환류 산출 실패(무시): %s", exc)
+        return None
+
+
+def _build_feature_hints(config, outcome) -> Optional[list]:
+    """P3 feature_importance 환류 — 이 세대 train CSV에서 'prefer 힌트' 라인을 산출한다(토글 ON일 때만).
+
+    build_feature_importance_lines(순수·무예외)를 호출해 결과 CSV를 시총/시간대 세그먼트로
+    쪼개고, 각 셀에서 승/패를 가장 강하게 가른 진입 피처(B_*)를 매수 프롬프트용 한국어
+    prefer 힌트 라인으로 만든다(_build_segment_avoid의 양(prefer) 신호 짝 — 동일 채널).
+
+    토글(feature_importance_feedback_enabled) OFF면 헬퍼를 호출조차 안 해 None을 돌린다
+    (byte-동일). CSV 없음/데이터 부족/읽기 실패는 빈 리스트로 흡수되며, 빈 리스트는 None으로
+    정규화해 호출부가 gen_kwargs에 키를 넣지 않게 한다(byte-identical). 산출 실패도 흡수한다.
+
+    fine_time은 세그먼트 부검·avoid 환류와 동일하게 segment_fine_time 토글을 따른다
+    (시간축 정합). min_cell은 config.feature_importance_feedback_min_cell. holdout 가드:
+    outcome.csv_path는 train CSV다(호출부 책임).
+
+    반환: List[str](prefer 힌트 라인) 또는 None(토글 OFF/CSV 없음/빈 결과/실패).
+    """
+    if not getattr(config, "feature_importance_feedback_enabled", False):
+        return None
+    csv_path = getattr(outcome, "csv_path", None)
+    if not csv_path:
+        return None
+    try:
+        from ai_strategy_loop.brain.feature_importance_feedback import (  # noqa: PLC0415
+            build_feature_importance_lines,
+        )
+
+        abs_csv = csv_path if os.path.isabs(csv_path) else os.path.join(REPO_ROOT, csv_path)
+        lines = build_feature_importance_lines(
+            abs_csv,
+            min_cell=int(getattr(config, "feature_importance_feedback_min_cell", 20) or 20),
+            fine_time=bool(getattr(config, "segment_fine_time", False)),
+        )
+        return lines or None
+    except Exception as exc:  # noqa: BLE001 - 환류 산출 실패는 루프를 막지 않음(학습 보조 경로).
+        logger.info("feature_importance 힌트 환류 산출 실패(무시): %s", exc)
         return None
 
 

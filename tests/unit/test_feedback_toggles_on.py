@@ -28,7 +28,13 @@ from ai_strategy_loop.brain.feature_importance_feedback import (  # noqa: E402
     build_feature_importance_lines,
 )
 from ai_strategy_loop.brain.prompt import build_messages  # noqa: E402
-from ai_strategy_loop.config import LoopConfig  # noqa: E402
+from ai_strategy_loop.config import (  # noqa: E402
+    LoopConfig,
+    research_feedback_config_overrides,
+)
+from ai_strategy_loop.controller import loop as L  # noqa: E402
+from ai_strategy_loop.controller.state import LoopState  # noqa: E402
+from ai_strategy_loop.fitness.score import FitnessResult, GradedResult  # noqa: E402
 from ai_strategy_loop.scripts.research_presets import PresetName, preset_payload  # noqa: E402
 
 # 환류 4종 + feature_importance(신규). 연구 프리셋이 켜야 하는 토글.
@@ -191,3 +197,191 @@ def test_build_messages_feature_hint_on_injects_block() -> None:
     user = msgs[-1]["content"]
     assert "prefer 힌트" in user
     assert "체결강도 상단" in user
+
+
+# ---------------------------------------------------------------------------
+# 증분 4 — research_feedback_config_overrides: 환류 4종 opt-in 스위치 묶음.
+#   전역 기본값(OFF)은 절대 바꾸지 않고, 호출부가 명시 병합할 때만 켜진다.
+# ---------------------------------------------------------------------------
+_OVERRIDE_TOGGLES = (
+    "segment_feedback_enabled",
+    "quantile_feedback_enabled",
+    "hypothesis_tracking_enabled",
+    "feature_importance_feedback_enabled",
+)
+
+
+def test_research_feedback_overrides_enable_exactly_four_toggles() -> None:
+    overrides = research_feedback_config_overrides()
+    assert set(overrides) == set(_OVERRIDE_TOGGLES)
+    assert all(value is True for value in overrides.values())
+
+
+def test_research_feedback_overrides_do_not_change_defaults() -> None:
+    # 반환 dict를 변이해도(새 dict) 전역 LoopConfig 기본값은 전부 OFF 그대로.
+    mutated = research_feedback_config_overrides()
+    mutated["segment_feedback_enabled"] = False
+    cfg = LoopConfig()
+    for name in _OVERRIDE_TOGGLES:
+        assert getattr(cfg, name) is False, f"{name} 전역 기본값은 OFF여야 한다"
+
+
+def test_research_feedback_overrides_round_trip_into_loopconfig() -> None:
+    cfg = LoopConfig.from_dict(research_feedback_config_overrides())
+    for name in _OVERRIDE_TOGGLES:
+        assert getattr(cfg, name) is True
+    # 세트에 없는 토글은 켜지지 않는다(명시적 4종 스위치 — 부수효과 없음).
+    assert cfg.counterfactual_feedback_enabled is False
+    assert cfg.exit_forensics_feedback_enabled is False
+
+
+def test_research_feedback_overrides_returns_fresh_dict_each_call() -> None:
+    first = research_feedback_config_overrides()
+    second = research_feedback_config_overrides()
+    assert first == second
+    assert first is not second  # 공유 상태 변이 방지(불변성).
+
+
+# ---------------------------------------------------------------------------
+# 증분 5 — loop 배선: _build_feature_hints 산출 + _generate_pair 전달.
+# ---------------------------------------------------------------------------
+def test_build_feature_hints_off_returns_none(tmp_path) -> None:
+    # 토글 OFF(기본)면 CSV가 있어도 헬퍼가 즉시 None — 산출 자체가 없다(byte-동일).
+    outcome = L.BacktestOutcome(True, "success", _segmented_csv(tmp_path), {}, "ok")
+    assert L._build_feature_hints(LoopConfig(), outcome) is None
+
+
+def test_build_feature_hints_on_returns_lines(tmp_path) -> None:
+    cfg = LoopConfig.from_dict({"feature_importance_feedback_enabled": True})
+    outcome = L.BacktestOutcome(True, "success", _segmented_csv(tmp_path), {}, "ok")
+    lines = L._build_feature_hints(cfg, outcome)
+    assert lines, "토글 ON + 분리 신호 CSV면 prefer 힌트가 나와야 한다"
+    assert "체결강도" in "\n".join(lines)
+
+
+def test_build_feature_hints_on_missing_csv_returns_none(tmp_path) -> None:
+    cfg = LoopConfig.from_dict({"feature_importance_feedback_enabled": True})
+    # 실패 세대(CSV 없음) → None.
+    failed = L.BacktestOutcome(False, "error", None, None, "no csv")
+    assert L._build_feature_hints(cfg, failed) is None
+    # 존재하지 않는 CSV → 빈 결과가 None으로 정규화(gen_kwargs 키 미주입 보장).
+    missing = L.BacktestOutcome(True, "success", str(tmp_path / "missing.csv"), {}, "ok")
+    assert L._build_feature_hints(cfg, missing) is None
+
+
+def _capture_hint_kwargs(monkeypatch) -> dict:
+    """brain.generate_strategy를 대체해 kind별 feature_hint_lines kwargs를 캡처한다."""
+    captured: dict = {}
+
+    def _fake_generate_strategy(provider, kind, name, db, **kw):
+        captured[kind] = kw.get("feature_hint_lines")
+        return {"status": "ok", "name": name, "code": "x",
+                "attempts": 1, "usage": {"total_tokens": 1}}
+
+    # _generate_pair는 함수 내부에서 brain.generate_strategy를 지연 import 한다.
+    import ai_strategy_loop.brain as brain
+    monkeypatch.setattr(brain, "generate_strategy", _fake_generate_strategy)
+    return captured
+
+
+def test_generate_pair_passes_hints_to_buy_only(monkeypatch) -> None:
+    captured = _capture_hint_kwargs(monkeypatch)
+    hints = ["- 시총 '소형' 구간에서는 체결강도 상단(높은 값)이 승패를 가른다 — …"]
+    res = L._generate_pair(object(), LoopConfig(), "rid", 1, None,
+                           feature_hint_lines=hints)
+    assert res["status"] == "ok", res
+    assert captured["buy"] == hints
+    assert captured["sell"] is None  # 매도 프롬프트 무영향(kind=='buy' 전용 채널).
+
+
+def test_generate_pair_default_passes_none_hints(monkeypatch) -> None:
+    # feature_hint_lines 미전달(기본 None) → buy/sell 모두 None(byte-identical 보호).
+    captured = _capture_hint_kwargs(monkeypatch)
+    res = L._generate_pair(object(), LoopConfig(), "rid", 1, None)
+    assert res["status"] == "ok", res
+    assert captured["buy"] is None
+    assert captured["sell"] is None
+
+
+# ---------------------------------------------------------------------------
+# 증분 6 — run_loop 폐루프 배선: 직전 세대 train CSV → 다음 세대 프롬프트 kwargs.
+# ---------------------------------------------------------------------------
+def _fake_score(outcome, cfg):
+    """gate 실패(거래 발생) 성공 세대 — 루프가 부검 phase까지 진행하게 한다."""
+    fit = FitnessResult(score=0.0, calmar=0.5, uptrend_r2=0.5, gate_passed=False,
+                        reason="MDD 초과", cagr=1.0, mdd=20.0,
+                        trade_count=20, total_profit=1000.0)
+    graded = GradedResult(
+        graded=0.7, gate_passed=False, composite=0.0,
+        trades_term=1.0, mdd_term=0.5, profit_term=1.0, uptrend_term=0.5,
+        gate_distance="MDD 20 > cap", cagr=1.0, mdd=20.0,
+        trade_count=20, total_profit=1000.0, uptrend_r2=0.5,
+    )
+    return (fit, graded, None)
+
+
+def _run_two_gen_loop(monkeypatch, tmp_path, fake_generate, config_extra, run_id) -> None:
+    """성공 백테(실 CSV) 2세대 미니 루프 하네스 (test_error_feedback 패턴 미러)."""
+    monkeypatch.setattr(L, "_make_provider_with_proxy", lambda cfg: (object(), False))
+    monkeypatch.setattr(L, "_generate_pair", fake_generate)
+    monkeypatch.setattr(L.bootstrap, "ensure_loop_db_engine_compat", lambda *a, **k: None)
+    monkeypatch.setattr(L, "_print_strategy_head", lambda *a, **k: None)
+    monkeypatch.setattr(L, "_strategy_gist", lambda *a, **k: "")
+    csv_path = _segmented_csv(tmp_path)
+    monkeypatch.setattr(
+        L, "run_backtest_for",
+        lambda cfg, buy, sell: L.BacktestOutcome(
+            True, "success", csv_path,
+            {"cagr": 1.0, "mdd_pct": 5.0, "trade_count": 20, "total_profit_krw": 1000},
+            "ok",
+        ),
+    )
+    monkeypatch.setattr(L, "_score_outcome", _fake_score)
+    config = LoopConfig.from_dict({
+        "provider": "openrouter", "max_generations": 2, "bt_engine_mode": "cold",
+        "cost_cap_generations": 100, "cost_cap_tokens": None,
+        "autopsy_enabled": True, "mdd_cap": 10.0, "min_trades": 10,
+        **config_extra,
+    })
+    st = LoopState(db_path=str(tmp_path / "runs.db"), snapshot_dir=str(tmp_path / "s"))
+    try:
+        L.run_loop(config, run_id=run_id, state=st)
+    finally:
+        st.close()
+
+
+def test_loop_on_feeds_feature_hints_to_next_generation(monkeypatch, tmp_path) -> None:
+    """토글 ON: gen0 train CSV의 prefer 힌트가 gen1 프롬프트 빌드 kwargs로 환류된다."""
+    captured = []
+
+    def fake_generate(provider, cfg, rid, gen, fb, **kw):
+        captured.append({"gen": gen, "hints": kw.get("feature_hint_lines")})
+        return {"status": "ok",
+                "buy_name": f"AILOOP_{rid}_g{gen}_buy",
+                "sell_name": f"AILOOP_{rid}_g{gen}_sell",
+                "tokens": 1}
+
+    _run_two_gen_loop(monkeypatch, tmp_path, fake_generate,
+                      {"feature_importance_feedback_enabled": True}, "fihint")
+    by_gen = {c["gen"]: c for c in captured}
+    assert by_gen[0]["hints"] is None, "첫 세대는 직전 CSV가 없어 힌트가 없어야 한다"
+    hints = by_gen[1]["hints"]
+    assert hints, "토글 ON이면 gen1 프롬프트 빌드 kwargs에 비어있지 않은 힌트가 온다"
+    assert "체결강도" in "\n".join(hints)
+
+
+def test_loop_off_never_passes_feature_hint_kwarg(monkeypatch, tmp_path) -> None:
+    """토글 OFF(기본): gen_kwargs에 feature_hint_lines 키 자체가 없다(시그니처 보호)."""
+    seen_gens = []
+
+    def fake_generate_strict(provider, cfg, rid, gen, fb,
+                             history_summary=None, sell_feedback=None):
+        # opt-in 키가 하나라도 오면 TypeError로 즉사 → byte-identical 시그니처 보증.
+        seen_gens.append(gen)
+        return {"status": "ok",
+                "buy_name": f"AILOOP_{rid}_g{gen}_buy",
+                "sell_name": f"AILOOP_{rid}_g{gen}_sell",
+                "tokens": 1}
+
+    _run_two_gen_loop(monkeypatch, tmp_path, fake_generate_strict, {}, "fioff")
+    assert seen_gens == [0, 1]

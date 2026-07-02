@@ -189,6 +189,15 @@ class ResearchLoopConfig:
     # 후보 결과에 additive 필드(slippage_profiles)로 병기한다.
     # 기본 False라 기존 결과 스키마/동작은 byte-동일(하위호환).
     slippage_profiles_enabled: bool = False
+    # True면 분석 성공 후 연구 Context Pack(부모 전문+공식 지표+STOM 규칙 원천,
+    # 250k 예산 fail-closed)을 조립하되 관측/영수증 전용으로만 기록한다:
+    # analysis_result에 additive 추적 키(context_pack_id/context_pack_sha256/
+    # research_context_pack_receipt)만 남기고 팩 전문은 결과·체크포인트 JSON에
+    # 영속하지 않는다. 현 배선에서 후보 생성은 이 팩을 소비하지 않는다
+    # (결정론 생성기는 해당 키를 무시하고, LLM 후보팩은 이 주입과 별개 경로에서
+    # 생산된다). 소스 부족/조립 실패 시 진행을 막지 않고 context_pack_error만
+    # 기록한다. 기본 False(하위호환).
+    context_pack_enabled: bool = False
 
 
 def _base_config_dict(config: ResearchLoopConfig) -> dict:
@@ -1072,11 +1081,102 @@ def _candidate_slippage_fields(config: ResearchLoopConfig, candidate_csv: str | 
         return {'slippage_profiles_error': str(exc)}
 
 
+def _load_condition_code(name: str | None, strategy_type: str) -> str:
+    """전략 DB에서 조건식 전문을 로드한다 (실패/부재 시 빈 문자열, 무예외)."""
+    if not name:
+        return ''
+    try:
+        loaded = load_strategy_from_db(DB_STRATEGY, name, strategy_type)
+    except Exception:
+        return ''
+    if not isinstance(loaded, dict) or loaded.get('status') != 'ok':
+        return ''
+    return str(loaded.get('code') or '')
+
+
+def _context_pack_sources(config: ResearchLoopConfig, analysis_result: dict, baseline_csv: str | None) -> dict:
+    """연구 Context Pack 조립용 sources dict (부모 전문은 전략 DB에서 로드)."""
+    projection = _condition_discovery_projection(config)
+    recommended = analysis_result.get('recommended_candidates') or []
+    return {
+        'mode': projection.get('process') or 'research-loop',
+        'timeframe': 'tick' if config.is_tick else 'min',
+        'parent_buy_id': config.base_buy_strategy,
+        'parent_buy_code': _load_condition_code(config.base_buy_strategy, 'buy'),
+        'parent_sell_id': config.sell_strategy,
+        'parent_sell_code': _load_condition_code(config.sell_strategy, 'sell'),
+        'official_metrics': {
+            'status': analysis_result.get('status'),
+            'row_count': analysis_result.get('row_count'),
+            'recommended_candidate_count': len(recommended),
+        },
+        'feature_importance': {
+            'source': 'analysis_result',
+            'recommended_candidates': recommended,
+        },
+        'validation_provenance': {
+            'process': projection.get('process'),
+            'preset': projection.get('preset'),
+            'research_only': True,
+            'baseline_csv': baseline_csv,
+        },
+    }
+
+
+def _apply_research_context_pack(config: ResearchLoopConfig, analysis_result: dict, baseline_csv: str | None) -> dict:
+    """opt-in 연구 Context Pack 영수증 주입(additive 키만, 새 dict 반환).
+
+    관측/영수증 전용 배선이다 — 팩 전문(최대 250k 토큰)은 결과·체크포인트
+    JSON에 영속하지 않고 영수증(research_context_pack_receipt)만 남긴다.
+    현 배선에서 후보 생성은 이 팩을 소비하지 않는다(결정론 생성기는 키를
+    무시하고, LLM 후보팩은 별개 경로에서 생산된다).
+    소스 부족/조립 실패(예산 초과 포함)는 context_pack_error로만 기록하고
+    진행을 막지 않는다. 기본 OFF면 입력을 그대로 돌려준다(byte-동일).
+    """
+    if not getattr(config, 'context_pack_enabled', False):
+        return analysis_result
+    try:
+        from ai_strategy_loop.controller.context_pack_builder import (
+            build_context_pack_receipt,
+            build_research_context_pack,
+        )
+        sources = _context_pack_sources(config, analysis_result, baseline_csv)
+        pack = build_research_context_pack(sources)
+        receipt = build_context_pack_receipt(pack)
+        return {
+            **analysis_result,
+            'research_context_pack_receipt': receipt,
+            'context_pack_id': receipt['context_pack_id'],
+            'context_pack_sha256': receipt['context_pack_sha256'],
+        }
+    except Exception as exc:
+        return {**analysis_result, 'context_pack_error': str(exc)}
+
+
+def _context_pack_result_fields(config: ResearchLoopConfig, result: dict) -> dict:
+    """opt-in Context Pack 추적 필드(additive만) — analysis_result에서 승격."""
+    if not getattr(config, 'context_pack_enabled', False):
+        return {}
+    analysis_result = result.get('analysis_result')
+    if not isinstance(analysis_result, dict):
+        return {}
+    fields = {}
+    for key in ('context_pack_id', 'context_pack_sha256', 'context_pack_error'):
+        value = analysis_result.get(key)
+        if value:
+            fields[key] = value
+    return fields
+
+
 def _build_result(config: ResearchLoopConfig, result: dict) -> dict:
     receipt_fields = _replay_profile_receipt_fields(config)
     if receipt_fields:
         # additive 병합: 기존 result 키가 항상 우선(스키마 불변 보장).
         result = {**receipt_fields, **result}
+    context_pack_fields = _context_pack_result_fields(config, result)
+    if context_pack_fields:
+        # additive 병합: 기존 result 키가 항상 우선(스키마 불변 보장).
+        result = {**context_pack_fields, **result}
     result['report'] = build_research_report(result, strategy_name=config.name)
     return result
 
@@ -1581,6 +1681,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
             baseline_csv=baseline_csv,
             analysis_result=analysis_result,
         )
+    analysis_result = _apply_research_context_pack(config, analysis_result, baseline_csv)
 
     expression_result = generate_condition_expressions_from_analysis(
         analysis_result,
@@ -1841,6 +1942,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             ),
             failure_policy,
         )
+    analysis_result = _apply_research_context_pack(config, analysis_result, baseline_csv)
     recorder.mark('analysis_completed', phase='analysis')
     checkpoint_result = _flush_research_runtime_checkpoint(
         config,
