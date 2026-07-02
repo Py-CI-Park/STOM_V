@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, replace
+import json
 import math
 from pathlib import Path
 
@@ -16,12 +17,14 @@ from ai_strategy_loop.brain.prompt import (
 from ai_strategy_loop.controller.condition_discovery import (
     LANE_DISCOVERY,
     LANE_REPAIR,
+    MIN_SLOTS_PER_LANE,
     PROCESS_RESEARCH,
     assess_discovery_novelty,
     build_evidence_health,
     build_research_analysis_card,
     build_research_loop_policy,
     build_validation_provenance,
+    preset_policy,
     resolve_hybrid_research_slots,
     resolve_condition_discovery_process_projection,
     score_research_lane,
@@ -56,7 +59,9 @@ from cli.research_compare import (
     INSTRUMENT_COLUMNS,
     OPTIONAL_KEY_COLUMNS,
     REQUIRED_KEY_COLUMNS,
+    build_round_comparison_matrix,
     compare_trade_sets,
+    render_matrix_md,
 )
 from cli.research_metrics import NUMERIC_COLUMNS, normalize_trade_frame
 from cli.research_promotion import evaluate_research_candidate
@@ -198,6 +203,47 @@ class ResearchLoopConfig:
     # 생산된다). 소스 부족/조립 실패 시 진행을 막지 않고 context_pack_error만
     # 기록한다. 기본 False(하위호환).
     context_pack_enabled: bool = False
+    # True이고 run_research_iteration(provider=...)로 provider 콜러블이 주입되면
+    # 분석 성공 후 context_pack_builder.produce_research_candidate_pack으로
+    # LLM 후보팩을 실생산해 analysis_result['research_candidate_pack']에 넣는다.
+    # 생산 실패/None/provider 미주입은 기존 결정론 폴백(mark_diagnostic_fallback,
+    # prompt credit 0)으로 자연 낙하한다. 이 모듈은 LLM을 직접 호출하지 않는다 —
+    # provider는 호출자가 주입하는 Callable[[list[dict]], str]이다.
+    # 기본 False(하위호환, 기존 결과 스키마 byte-동일).
+    llm_candidate_pack_enabled: bool = False
+    # 변이축 효과 원장(JSONL) 경로. 설정 시 (a) LLM 팩 생산 프롬프트에 축
+    # 사전확률 라인(AxisLedger.to_prompt_lines)을 주입하고, (b) 라운드 후보
+    # 평가 완료 후 각 후보의 부모 대비 delta를 AxisLedger.record로 기록한다.
+    # recorded_at은 analysis_result의 기존 created_at 타임스탬프를 재사용한다
+    # (원장 모듈 내 시계 금지 규약). 필수 필드 미확보 후보는 기록을 스킵하고
+    # 사유만 남긴다(집계 오염 금지). 빈 문자열이면 미사용(기본, 하위호환).
+    axis_ledger_path: str = ''
+    # 연구 레인(process-research/hybrid) 한정 라운드 슬롯 확장 opt-in.
+    # None(기본)이면 기존 4슬롯 정책 불변(byte-동일). 설정 시
+    # RESEARCH_SLOTS_OVERRIDE_MIN(2)..RESEARCH_SLOTS_OVERRIDE_MAX(12) 범위의
+    # 정수만 허용하고 위반은 fail-closed(validate가 반복 시작을 거부)다.
+    # 확장 값은 라운드 후보 수·LLM 팩 생산 lanes·결정론 폴백 후보 수에 일관
+    # 적용되며, promotion-review/fast-discovery 레인에는 영향이 없다.
+    candidate_slots_override: int | None = None
+    # candidate_slots_override 사용 시 레인별 쿼터 {repair: n, discovery: m}.
+    # 두 레인 모두 MIN_SLOTS_PER_LANE(1) 이상 정수이고 합계가
+    # candidate_slots_override와 같아야 한다(불일치·미지 레인은 fail-closed).
+    # 생략하면 균등 분할(홀수면 repair 우선). candidate_slots_override 없이
+    # 단독 설정도 거부한다. 기본 None(하위호환).
+    candidate_lane_quota: dict | None = None
+    # 라운드 교차비교 매트릭스 opt-in(T3.4). True면 반복 라운드 종료 시
+    # build_round_comparison_matrix로 후보×지표(profit/MDD/trades/win_rate/
+    # 슬리피지 tick2/랭크/레인/변이축) 매트릭스와 부모 대비 delta(변이 귀속),
+    # baseline 대비 개선 후보 수를 계산해 JSON+Markdown 아티팩트로 저장한다.
+    # 결과 dict에는 additive 요약 키(round_matrix: 경로+개선 후보 수)만 남고
+    # 매트릭스 본문은 결과에 영속하지 않는다. 저장 실패/디렉터리 미해결은
+    # 진행을 막지 않고 round_matrix.error에만 기록한다(무차단, advisory).
+    # 기본 False(하위호환, 기존 결과 스키마 byte-동일).
+    round_matrix_enabled: bool = False
+    # 매트릭스 아티팩트 저장 디렉터리. 빈 문자열(기본)이면 runtime_output_path의
+    # 부모 디렉터리를 쓰고, 둘 다 없으면 저장을 스킵하고 사유만 기록한다.
+    # round_matrix_enabled=False면 이 값은 무시된다(하위호환).
+    round_matrix_output_dir: str = ''
 
 
 def _base_config_dict(config: ResearchLoopConfig) -> dict:
@@ -253,8 +299,107 @@ def _process_research_enabled(config: ResearchLoopConfig) -> bool:
     return bool(config.hybrid_research_enabled or projection['process'] == PROCESS_RESEARCH)
 
 
+# 연구 레인 한정 슬롯 확장(opt-in)의 하드 경계 — 하한 2, 상한 12.
+RESEARCH_SLOTS_OVERRIDE_MIN = 2
+RESEARCH_SLOTS_OVERRIDE_MAX = 12
+_SLOTS_OVERRIDE_LANES = (LANE_REPAIR, LANE_DISCOVERY)
+_SLOTS_OVERRIDE_DECISION_REASON = 'config_candidate_slots_override'
+
+
+def _candidate_slots_override_error(config: ResearchLoopConfig) -> str:
+    """슬롯 확장 opt-in 필드 검증 — 문제 없으면 '' (미설정 포함).
+
+    fail-closed 규약: 여기서 사유가 나오면 validate_research_iteration_config가
+    반복 시작 자체를 거부한다. 조용한 축소/보정은 하지 않는다.
+    """
+    override = getattr(config, 'candidate_slots_override', None)
+    quota = getattr(config, 'candidate_lane_quota', None)
+    if override is None and quota is None:
+        return ''
+    if override is None:
+        return 'candidate_lane_quota requires candidate_slots_override'
+    if isinstance(override, bool) or not isinstance(override, int):
+        return 'candidate_slots_override must be an integer'
+    if not RESEARCH_SLOTS_OVERRIDE_MIN <= override <= RESEARCH_SLOTS_OVERRIDE_MAX:
+        return (
+            f'candidate_slots_override must be between {RESEARCH_SLOTS_OVERRIDE_MIN} '
+            f'and {RESEARCH_SLOTS_OVERRIDE_MAX}'
+        )
+    if quota is None:
+        return ''
+    if not isinstance(quota, dict):
+        return 'candidate_lane_quota must be a dict of lane -> slot count'
+    unknown = sorted(str(lane) for lane in quota if str(lane) not in _SLOTS_OVERRIDE_LANES)
+    if unknown:
+        return f"candidate_lane_quota has unsupported lanes: {', '.join(unknown)}"
+    for lane in _SLOTS_OVERRIDE_LANES:
+        value = quota.get(lane)
+        if value is None:
+            return f'candidate_lane_quota must include lane {lane}'
+        if isinstance(value, bool) or not isinstance(value, int):
+            return f'candidate_lane_quota[{lane}] must be an integer'
+        if value < MIN_SLOTS_PER_LANE:
+            return f'candidate_lane_quota[{lane}] must be >= {MIN_SLOTS_PER_LANE}'
+    quota_total = sum(int(quota[lane]) for lane in _SLOTS_OVERRIDE_LANES)
+    if quota_total != override:
+        return (
+            f'candidate_lane_quota sum ({quota_total}) must equal '
+            f'candidate_slots_override ({override})'
+        )
+    return ''
+
+
+def _resolve_candidate_slots_override(config: ResearchLoopConfig) -> dict | None:
+    """검증된 슬롯 확장 해석 — 미설정이면 None(기존 4슬롯 정책 경로 불변).
+
+    검증 실패는 ValueError로 즉시 중단한다(fail-closed 방어선 —
+    validate_research_iteration_config를 거친 경로에서는 발생하지 않는다).
+    쿼터 생략 시 균등 분할(홀수면 repair 우선)로 결정론 파생한다.
+    """
+    override = getattr(config, 'candidate_slots_override', None)
+    quota = getattr(config, 'candidate_lane_quota', None)
+    if override is None and quota is None:
+        return None
+    error = _candidate_slots_override_error(config)
+    if error:
+        raise ValueError(f'candidate_slots_override_invalid: {error}')
+    total = int(override)
+    if quota is None:
+        repair_slots = (total + 1) // 2
+        slots_by_lane = {LANE_REPAIR: repair_slots, LANE_DISCOVERY: total - repair_slots}
+    else:
+        slots_by_lane = {lane: int(quota[lane]) for lane in _SLOTS_OVERRIDE_LANES}
+    return {'slots_total': total, 'slots_by_lane': slots_by_lane}
+
+
+def _override_hybrid_slots(resolution: dict) -> dict:
+    """config 슬롯 확장을 resolve_hybrid_research_slots 반환 골격으로 투영.
+
+    오버라이드는 config가 고정(pin)한 배분이라 라운드 간 시프트가 없다 —
+    previous와 현재 배분이 같고 better_lane/shift는 중립값이다.
+    """
+    slots_by_lane = dict(resolution['slots_by_lane'])
+    return {
+        'schema_version': int(build_research_loop_policy()['schema_version']),
+        'slots_total': int(resolution['slots_total']),
+        'previous_slots_by_lane': dict(slots_by_lane),
+        'slots_by_lane': slots_by_lane,
+        'better_lane': None,
+        'shift_applied': {'from': None, 'to': None, 'count': 0},
+        'decision_reason': _SLOTS_OVERRIDE_DECISION_REASON,
+        'repair_lane_score': None,
+        'discovery_lane_score': None,
+        'tie_breaks_used': [],
+        'blockers': [],
+        'authority': 'research_budget_steering_only',
+    }
+
+
 def _research_candidate_count(config: ResearchLoopConfig) -> int:
     if _process_research_enabled(config):
+        slots_override = _resolve_candidate_slots_override(config)
+        if slots_override is not None:
+            return int(slots_override['slots_total'])
         return int(build_research_loop_policy()['slots_total'])
     return config.candidate_count
 
@@ -276,16 +421,32 @@ def _build_hybrid_research_plan(config: ResearchLoopConfig) -> dict:
     projection = _condition_discovery_projection(config)
     enabled = _process_research_enabled(config)
     policy = build_research_loop_policy()
-    slots = resolve_hybrid_research_slots() if enabled else None
-    return {
+    slots_override = _resolve_candidate_slots_override(config) if enabled else None
+    if not enabled:
+        slots = None
+        candidate_count = config.candidate_count
+    elif slots_override is not None:
+        slots = _override_hybrid_slots(slots_override)
+        candidate_count = int(slots_override['slots_total'])
+    else:
+        slots = resolve_hybrid_research_slots()
+        candidate_count = policy['slots_total']
+    plan = {
         'enabled': enabled,
         'preset': projection['preset'],
         'process': projection['process'],
         'policy': policy,
         'slots': slots,
-        'candidate_count': policy['slots_total'] if enabled else config.candidate_count,
+        'candidate_count': candidate_count,
         'authority': 'research_only_no_export_live_or_final_promotion',
     }
+    if slots_override is not None:
+        # additive: 오버라이드가 활성일 때만 키가 생긴다 (기본 결과 스키마 불변).
+        plan['candidate_slots_override'] = {
+            'slots_total': int(slots_override['slots_total']),
+            'slots_by_lane': dict(slots_override['slots_by_lane']),
+        }
+    return plan
 
 
 def _iteration_candidate_count(config: ResearchLoopConfig, iteration_plan: dict | None = None) -> int:
@@ -856,6 +1017,16 @@ def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
             condition_discovery_process=projection.get('process'),
             condition_discovery_preset=projection.get('preset'),
         )
+    slots_override_error = _candidate_slots_override_error(config)
+    if slots_override_error:
+        # fail-closed: 슬롯 확장 opt-in 필드가 설정됐지만 유효하지 않으면
+        # 반복을 시작하지 않는다 (조용한 4슬롯 축소/보정 금지).
+        return _error(
+            'invalid_candidate_slots_override',
+            slots_override_error,
+            candidate_slots_override=config.candidate_slots_override,
+            candidate_lane_quota=config.candidate_lane_quota,
+        )
     if config.candidate_plan_only and config.run_candidates:
         return _error(
             'candidate_plan_only_iteration_conflict',
@@ -1151,6 +1322,413 @@ def _apply_research_context_pack(config: ResearchLoopConfig, analysis_result: di
         }
     except Exception as exc:
         return {**analysis_result, 'context_pack_error': str(exc)}
+
+
+_LLM_PACK_AUTHORITY = 'research_only_no_export_live_or_final_promotion'
+
+# 축 원장 verdict 어휘 — prompt_receipt downstream_result와 동일 계열을 쓴다.
+_AXIS_LEDGER_VERDICT_IMPROVED = 'improved'
+_AXIS_LEDGER_VERDICT_REJECTED = 'rejected'
+
+
+def _axis_ledger_prompt_lines(config: ResearchLoopConfig) -> tuple[list[str], str]:
+    """축 원장 사전확률 프롬프트 라인. 미사용/집계 실패 시 (빈 목록, 사유).
+
+    원장 손상(corrupt_ledger_line)은 팩 생산을 막지 않고 사유만 영수증에
+    남긴다 — 프롬프트 주입은 advisory 경로라 진행 차단 대상이 아니다.
+    """
+    path = str(getattr(config, 'axis_ledger_path', '') or '').strip()
+    if not path:
+        return [], ''
+    try:
+        from ai_strategy_loop.controller.axis_ledger import AxisLedger, to_prompt_lines
+        return to_prompt_lines(AxisLedger(path).aggregate_axis_priors()), ''
+    except Exception as exc:
+        return [], f'axis_ledger_priors_error:{exc}'
+
+
+def _llm_pack_lanes(config: ResearchLoopConfig) -> dict | None:
+    """팩 생산 레인 배분 — 슬롯 확장 쿼터 우선, 아니면 4슬롯 정책 slots_by_lane."""
+    if not _process_research_enabled(config):
+        return None
+    slots_override = _resolve_candidate_slots_override(config)
+    slots_by_lane = (
+        slots_override['slots_by_lane']
+        if slots_override is not None
+        else resolve_hybrid_research_slots().get('slots_by_lane') or {}
+    )
+    lanes = {
+        str(lane): int(count)
+        for lane, count in slots_by_lane.items()
+        if int(count or 0) > 0
+    }
+    return lanes or None
+
+
+def _llm_pack_sources(
+    config: ResearchLoopConfig,
+    analysis_result: dict,
+    baseline_csv: str | None,
+) -> dict:
+    """LLM 팩 생산용 sources — 영수증용 sources에 pack_producer 필수 입력을 보강.
+
+    pack_producer는 repair 레인에 analysis_card(analysis_id+parent 참조),
+    discovery 레인에 coverage_gap(id+bucket keys)/novelty_context를 요구한다.
+    analysis_result가 이미 제공하면 그대로 쓰고, 없으면 분석 결과에서
+    결정론적으로 조립한다(모듈 내 시계/LLM 호출 없음).
+    """
+    sources = _context_pack_sources(config, analysis_result, baseline_csv)
+    recommended = analysis_result.get('recommended_candidates') or []
+    parent_reference = config.base_buy_strategy or config.name
+    analysis_card = analysis_result.get('analysis_card')
+    if not isinstance(analysis_card, dict) or not analysis_card:
+        analysis_card = {
+            'analysis_id': f'{config.name}__baseline_analysis',
+            'candidate_id': parent_reference,
+            'parent_id': parent_reference,
+            'root_cause': analysis_result.get('root_cause') or 'baseline_analysis_result',
+            'feature_importance': {
+                'source': 'analysis_result',
+                'recommended_candidates': recommended,
+            },
+        }
+    coverage_gap = analysis_result.get('coverage_gap')
+    if not isinstance(coverage_gap, dict) or not coverage_gap:
+        bucket_keys = [
+            str(item.get('feature'))
+            for item in recommended
+            if isinstance(item, dict) and item.get('feature')
+        ]
+        coverage_gap = {
+            'coverage_gap_id': f'{config.name}__coverage_gap',
+            'coverage_bucket_keys': bucket_keys or ['uncovered_segment_unknown'],
+        }
+    novelty_context = analysis_result.get('novelty_context')
+    if not isinstance(novelty_context, dict) or not novelty_context:
+        novelty_context = {
+            'source': 'research_loop_baseline_analysis',
+            'existing_fingerprints': [],
+        }
+    return {
+        **sources,
+        'round_id': config.name,
+        'analysis_card': analysis_card,
+        'coverage_gap': coverage_gap,
+        'novelty_context': novelty_context,
+    }
+
+
+def _apply_llm_candidate_pack(
+    config: ResearchLoopConfig,
+    analysis_result: dict,
+    baseline_csv: str | None,
+    provider,
+) -> dict:
+    """opt-in LLM 후보팩 실생산 배선 (additive 키만, 실패 시 진행 무차단).
+
+    성공 시 analysis_result에 research_candidate_pack(팩 전문)과
+    research_candidate_pack_wiring(영수증)을 additive로 주입한다. 생산이
+    None/예외/provider 미주입이면 팩을 넣지 않아 기존 결정론 폴백
+    (mark_diagnostic_fallback, prompt credit 0)이 자연 발동한다.
+    외부에서 이미 주입된 research_candidate_pack은 덮지 않는다(기존 경로 무변경).
+    기본 OFF면 입력을 그대로 돌려준다(is-동일).
+    """
+    if not getattr(config, 'llm_candidate_pack_enabled', False):
+        return analysis_result
+    if analysis_result.get('research_candidate_pack'):
+        return analysis_result
+    wiring = {
+        'schema_version': 1,
+        'enabled': True,
+        'status': 'error',
+        'failure_reason': '',
+        'axis_prompt_line_count': 0,
+        'axis_priors_error': '',
+        'authority': _LLM_PACK_AUTHORITY,
+    }
+    if provider is None:
+        wiring['status'] = 'skipped'
+        wiring['failure_reason'] = 'llm_pack_provider_missing'
+        return {**analysis_result, 'research_candidate_pack_wiring': wiring}
+    try:
+        from ai_strategy_loop.controller.context_pack_builder import (
+            produce_research_candidate_pack,
+        )
+        axis_lines, axis_error = _axis_ledger_prompt_lines(config)
+        wiring['axis_prompt_line_count'] = len(axis_lines)
+        wiring['axis_priors_error'] = axis_error
+        sources = _llm_pack_sources(config, analysis_result, baseline_csv)
+        if axis_lines:
+            sources['axis_prompt_lines'] = axis_lines
+        pack = produce_research_candidate_pack(
+            sources,
+            provider,
+            lanes=_llm_pack_lanes(config),
+            axis_prompt_lines=axis_lines or None,
+        )
+    except Exception as exc:
+        wiring['failure_reason'] = f'llm_pack_production_error:{exc}'
+        return {**analysis_result, 'research_candidate_pack_wiring': wiring}
+    if not pack:
+        wiring['failure_reason'] = 'llm_pack_production_failed'
+        return {**analysis_result, 'research_candidate_pack_wiring': wiring}
+    wiring['status'] = 'ok'
+    return {
+        **analysis_result,
+        'research_candidate_pack': pack,
+        'research_candidate_pack_wiring': wiring,
+    }
+
+
+def _metric_number(mapping, keys: tuple[str, ...]) -> float | None:
+    """dict에서 첫 유한 수치를 뽑는다 (bool 제외, 미확보 None)."""
+    if not isinstance(mapping, dict):
+        return None
+    for key in keys:
+        value = mapping.get(key)
+        if isinstance(value, bool):
+            continue
+        if isinstance(value, (int, float)) and math.isfinite(float(value)):
+            return float(value)
+    return None
+
+
+def _axis_ledger_slippage_profile(config: ResearchLoopConfig) -> str:
+    """프리셋 정책의 슬리피지 게이트 프로파일 (미설정 프리셋은 'unprofiled')."""
+    try:
+        policy = preset_policy(_condition_discovery_projection(config)['preset'])
+        profile = str(getattr(policy, 'slippage_gate_profile', '') or '')
+    except Exception:
+        profile = ''
+    return profile or 'unprofiled'
+
+
+def _axis_ledger_entry_for_candidate(
+    config: ResearchLoopConfig,
+    candidate: dict,
+    *,
+    recorded_at: str,
+    baseline_metrics: dict,
+) -> tuple[dict | None, list[str]]:
+    """후보 1건의 원장 레코드. 필수 필드 미확보 시 (None, 스킵 사유 목록).
+
+    delta는 comparison의 baseline/candidate summary(부모 대비)에서, MDD는
+    candidate_result/baseline metrics에서만 취한다 — 미확보 값은 0으로
+    채우지 않고 스킵한다(집계 오염 금지).
+    """
+    if candidate.get('status') != 'ok':
+        return None, ['candidate_not_evaluated']
+    reasons: list[str] = []
+    axis = str(candidate.get('mutation_axis') or '').strip()
+    if not axis:
+        reasons.append('missing_mutation_axis')
+    if not recorded_at:
+        reasons.append('missing_recorded_at')
+    comparison = candidate.get('comparison') if isinstance(candidate.get('comparison'), dict) else {}
+    baseline_summary = comparison.get('baseline_summary') if isinstance(comparison.get('baseline_summary'), dict) else {}
+    candidate_summary = comparison.get('candidate_summary') if isinstance(comparison.get('candidate_summary'), dict) else {}
+    deltas: dict[str, float] = {}
+    for field, keys in (
+        ('delta_profit', ('total_profit', 'profit')),
+        ('delta_trades', ('trade_count',)),
+        ('delta_win_rate', ('win_rate',)),
+    ):
+        base_value = _metric_number(baseline_summary, keys)
+        cand_value = _metric_number(candidate_summary, keys)
+        if base_value is None or cand_value is None:
+            reasons.append(f'missing_{field}')
+        else:
+            deltas[field] = cand_value - base_value
+    # 실 컨트롤러 run metrics 는 'mdd_pct'(cli/runner.py) — 이 키를 1순위로,
+    # 합성/구형 페이로드용 'mdd'/'max_drawdown' 은 폴백으로 유지한다.
+    mdd_keys = ('mdd_pct', 'mdd', 'max_drawdown')
+    cand_mdd = _metric_number((candidate.get('candidate_result') or {}).get('metrics'), mdd_keys)
+    if cand_mdd is None:
+        cand_mdd = _metric_number(candidate_summary, mdd_keys)
+    base_mdd = _metric_number(baseline_metrics, mdd_keys)
+    if base_mdd is None:
+        base_mdd = _metric_number(baseline_summary, mdd_keys)
+    if cand_mdd is None or base_mdd is None:
+        reasons.append('missing_delta_mdd')
+    else:
+        deltas['delta_mdd'] = cand_mdd - base_mdd
+    prompt_receipt = candidate.get('prompt_receipt') if isinstance(candidate.get('prompt_receipt'), dict) else {}
+    parent_id = str(
+        candidate.get('parent_buy_id')
+        or prompt_receipt.get('parent_buy_id')
+        or prompt_receipt.get('parent_id')
+        or config.base_buy_strategy
+        or ''
+    ).strip()
+    if not parent_id:
+        reasons.append('missing_parent_id')
+    candidate_id = str(candidate.get('strategy_name') or '').strip()
+    if not candidate_id:
+        reasons.append('missing_candidate_id')
+    if reasons:
+        return None, reasons
+    promotion = candidate.get('promotion') if isinstance(candidate.get('promotion'), dict) else {}
+    entry = {
+        # run_id 는 이 라운드의 안정 식별자 — config.name(라운드 이름) 우선,
+        # 후보가 명시 round_id 를 갖고 있으면 그것을 쓴다.
+        'run_id': str(candidate.get('round_id') or config.name or prompt_receipt.get('round_id') or 'research-loop'),
+        'parent_id': parent_id,
+        'candidate_id': candidate_id,
+        'axis': axis,
+        # 구조화된 param 정보가 없으면 축 이름을 그대로 쓴다 —
+        # 집계(aggregate_axis_priors)는 axis/delta/verdict만 사용한다.
+        'param': str(candidate.get('mutation_param') or axis),
+        'from_value': candidate.get('mutation_from'),
+        'to_value': candidate.get('mutation_to'),
+        'delta_profit': deltas['delta_profit'],
+        'delta_mdd': deltas['delta_mdd'],
+        'delta_trades': deltas['delta_trades'],
+        'delta_win_rate': deltas['delta_win_rate'],
+        'slippage_profile': _axis_ledger_slippage_profile(config),
+        'window': f'{_candidate_start_date(config)}-{_candidate_end_date(config)}',
+        'verdict': (
+            _AXIS_LEDGER_VERDICT_IMPROVED
+            if promotion.get('passed') is True
+            else _AXIS_LEDGER_VERDICT_REJECTED
+        ),
+        'recorded_at': recorded_at,
+    }
+    return entry, []
+
+
+def _record_axis_ledger_entries(
+    config: ResearchLoopConfig,
+    candidates: list[dict],
+    *,
+    analysis_result: dict,
+    baseline_result: dict | None,
+) -> dict | None:
+    """라운드 평가 완료 후 축 원장 기록 (opt-in, 무차단, additive 요약 반환).
+
+    recorded_at은 analysis_result의 기존 created_at을 재사용한다(모듈 내
+    시계 금지 규약). axis_ledger_path 미설정이면 None(결과 스키마 불변).
+    """
+    path = str(getattr(config, 'axis_ledger_path', '') or '').strip()
+    if not path:
+        return None
+    recorded_at = str((analysis_result or {}).get('created_at') or '').strip()
+    baseline_metrics = (baseline_result or {}).get('metrics') if isinstance(baseline_result, dict) else {}
+    if not isinstance(baseline_metrics, dict):
+        baseline_metrics = {}
+    summary = {
+        'schema_version': 1,
+        'path': path,
+        'recorded_count': 0,
+        'skipped': [],
+        'error': '',
+        'authority': 'research_prompt_prior_only',
+    }
+    try:
+        from ai_strategy_loop.controller.axis_ledger import AxisLedger
+        ledger = AxisLedger(path)
+    except Exception as exc:
+        summary['error'] = f'axis_ledger_unavailable:{exc}'
+        return summary
+    for candidate in candidates or []:
+        if not isinstance(candidate, dict):
+            continue
+        entry, skip_reasons = _axis_ledger_entry_for_candidate(
+            config,
+            candidate,
+            recorded_at=recorded_at,
+            baseline_metrics=baseline_metrics,
+        )
+        if skip_reasons:
+            summary['skipped'].append({
+                'candidate_id': str(candidate.get('strategy_name') or ''),
+                'reasons': skip_reasons,
+            })
+            continue
+        try:
+            ledger.record(entry)
+        except ValueError as exc:
+            # 원장 검증 실패 — 기록하지 않고 사유만 남긴다(집계 오염 금지).
+            summary['skipped'].append({
+                'candidate_id': entry['candidate_id'],
+                'reasons': str(exc).split('|'),
+            })
+            continue
+        except Exception as exc:
+            summary['error'] = f'axis_ledger_write_error:{exc}'
+            break
+        summary['recorded_count'] += 1
+    return summary
+
+
+_ROUND_MATRIX_SUMMARY_SCHEMA_VERSION = 1
+_ROUND_MATRIX_AUTHORITY = 'research_observability_only'
+
+
+def _round_matrix_artifact_stem(config: ResearchLoopConfig) -> str:
+    """아티팩트 파일 이름 stem — 라운드 이름을 파일계 안전 문자로 정규화."""
+    name = str(config.name or '').strip() or 'research-round'
+    return ''.join(
+        char if (char.isalnum() or char in '._-') else '_'
+        for char in name
+    )
+
+
+def _round_matrix_output_dir(config: ResearchLoopConfig) -> Path | None:
+    """매트릭스 저장 디렉터리 — 명시 dir 우선, 없으면 runtime_output_path 부모."""
+    explicit = str(getattr(config, 'round_matrix_output_dir', '') or '').strip()
+    if explicit:
+        return Path(explicit)
+    runtime_path = str(getattr(config, 'runtime_output_path', '') or '').strip()
+    if runtime_path:
+        return Path(runtime_path).parent
+    return None
+
+
+def _write_round_matrix_artifacts(config: ResearchLoopConfig, result_payload: dict) -> dict | None:
+    """라운드 종료 시 교차비교 매트릭스 아티팩트 기록 (opt-in, 무차단, additive).
+
+    round_matrix_enabled=False(기본)면 None — 결과 스키마 불변(byte-동일).
+    ON이면 JSON+Markdown을 저장하고 경로+요약(개선 후보 수)만 반환한다 —
+    매트릭스 본문은 결과 dict/체크포인트에 영속하지 않는다. 조립/저장 실패는
+    진행을 막지 않고 error만 남긴다.
+    """
+    if not getattr(config, 'round_matrix_enabled', False):
+        return None
+    summary = {
+        'schema_version': _ROUND_MATRIX_SUMMARY_SCHEMA_VERSION,
+        'status': 'skipped',
+        'json_path': '',
+        'md_path': '',
+        'candidate_count': 0,
+        'improved_over_baseline_count': 0,
+        'error': '',
+        'authority': _ROUND_MATRIX_AUTHORITY,
+    }
+    output_dir = _round_matrix_output_dir(config)
+    if output_dir is None:
+        return {**summary, 'error': 'round_matrix_output_dir_unresolved'}
+    try:
+        matrix = build_round_comparison_matrix(result_payload)
+        markdown = render_matrix_md(matrix)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        stem = _round_matrix_artifact_stem(config)
+        json_path = output_dir / f'{stem}_round_matrix.json'
+        md_path = output_dir / f'{stem}_round_matrix.md'
+        json_path.write_text(
+            json.dumps(matrix, ensure_ascii=False, indent=2, default=str),
+            encoding='utf-8',
+        )
+        md_path.write_text(markdown, encoding='utf-8')
+    except Exception as exc:
+        return {**summary, 'status': 'error', 'error': f'round_matrix_write_error:{exc}'}
+    return {
+        **summary,
+        'status': 'written',
+        'json_path': str(json_path),
+        'md_path': str(md_path),
+        'candidate_count': int(matrix.get('candidate_count') or 0),
+        'improved_over_baseline_count': int(matrix.get('improved_over_baseline_count') or 0),
+    }
 
 
 def _context_pack_result_fields(config: ResearchLoopConfig, result: dict) -> dict:
@@ -1838,8 +2416,13 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
     })
 
 
-def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
-    """Run one baseline analysis and evaluate multiple candidate expressions."""
+def run_research_iteration(config: ResearchLoopConfig, controller, *, provider=None) -> dict:
+    """Run one baseline analysis and evaluate multiple candidate expressions.
+
+    provider(additive, 기본 None): LLM 후보팩 생산용 Callable[[list[dict]], str].
+    config.llm_candidate_pack_enabled=True이면서 provider가 주입된 경우에만
+    팩 생산을 시도한다 — 미주입/실패는 기존 결정론 폴백(credit 0)으로 낙하한다.
+    """
     validation = validate_research_iteration_config(config)
     if validation.get('status') != 'ok':
         return validation
@@ -1943,6 +2526,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             failure_policy,
         )
     analysis_result = _apply_research_context_pack(config, analysis_result, baseline_csv)
+    analysis_result = _apply_llm_candidate_pack(config, analysis_result, baseline_csv, provider)
     recorder.mark('analysis_completed', phase='analysis')
     checkpoint_result = _flush_research_runtime_checkpoint(
         config,
@@ -1984,9 +2568,16 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             top_n=iteration_plan['effective_top_n'],
         )
         if research_loop_enabled:
+            wiring_failure_reason = str(
+                (analysis_result.get('research_candidate_pack_wiring') or {}).get('failure_reason') or ''
+            )
             expression_result = mark_diagnostic_fallback(
                 expression_result,
-                reason=candidate_pack_result.get('fallback_reason') or 'llm_candidate_pack_missing',
+                reason=(
+                    candidate_pack_result.get('fallback_reason')
+                    or wiring_failure_reason
+                    or 'llm_candidate_pack_missing'
+                ),
             )
     expressions = expression_result.get('expressions') or []
     if expression_result.get('source') == 'llm_multi_hypothesis_candidate_pack' and len(expressions) >= 2:
@@ -2551,6 +3142,12 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
     )
 
     has_best_candidate = best_candidate is not None
+    axis_ledger_recording = _record_axis_ledger_entries(
+        config,
+        ranked_candidates,
+        analysis_result=analysis_result,
+        baseline_result=baseline_result,
+    )
     result_payload = {
         'status': 'ok' if has_best_candidate else 'error',
         'phase': 'candidates_evaluated' if has_best_candidate else 'candidate_iteration',
@@ -2573,7 +3170,15 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         **_v5_candidate_pool_metadata(iteration_v5, retention_selection),
         'cleanup_summary': cleanup_summary,
         'failure_policy': failure_policy,
+        # opt-in 축 원장 기록 요약 — axis_ledger_path 미설정이면 키 자체가 없다.
+        **({'axis_ledger_recording': axis_ledger_recording} if axis_ledger_recording is not None else {}),
     }
+    # opt-in 라운드 교차비교 매트릭스(T3.4) — round_matrix_enabled 미설정이면
+    # 키 자체가 없다. 매트릭스 본문은 아티팩트(JSON+md)로만 저장하고 결과에는
+    # 경로+개선 후보 수 요약만 additive로 남긴다.
+    round_matrix_summary = _write_round_matrix_artifacts(config, result_payload)
+    if round_matrix_summary is not None:
+        result_payload = {**result_payload, 'round_matrix': round_matrix_summary}
     recorder.mark(
         'iteration_completed' if has_best_candidate else 'iteration_aborted',
         phase=result_payload['phase'],
