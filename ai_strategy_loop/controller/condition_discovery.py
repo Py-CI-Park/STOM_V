@@ -12,6 +12,7 @@ from typing import Any, Dict, Mapping, Optional
 import copy
 import hashlib
 import json
+import math
 
 PRESET_FAST = "fast"
 PRESET_RESEARCH = "research"
@@ -126,6 +127,10 @@ class PresetPolicy:
     promotion_candidate_allowed: bool
     human_approval_required: bool
     required_evidence: tuple[str, ...]
+    # 승격 슬리피지 hard gate가 참조할 프로파일 키(예: 'tick2'). 빈 문자열이면
+    # 게이트 미설정. 기본 ''이라 기존 프리셋 정의/동작은 키 추가 외 불변(하위호환).
+    # 판정 자체는 evaluate_slippage_gate 순수 함수에서만 수행한다(흐름 미배선).
+    slippage_gate_profile: str = ""
 
     def to_dict(self, *, configured_mdd_cap: Optional[float] = None) -> Dict[str, Any]:
         configured = None if configured_mdd_cap is None else max(0.0, float(configured_mdd_cap))
@@ -144,6 +149,7 @@ class PresetPolicy:
             "promotion_candidate_allowed": self.promotion_candidate_allowed,
             "human_approval_required": self.human_approval_required,
             "required_evidence": list(self.required_evidence),
+            "slippage_gate_profile": self.slippage_gate_profile,
         }
 
 
@@ -214,6 +220,9 @@ _PRESET_POLICIES: Dict[str, PresetPolicy] = {
         promotion_candidate_allowed=True,
         human_approval_required=True,
         required_evidence=EVIDENCE_COMPONENTS,
+        # 승격 검토는 tick2 프로파일 손익>0을 hard gate 요건으로 선언한다.
+        # (판정 함수만 제공 — 승격 레인은 zero-generation이라 흐름 배선 없음.)
+        slippage_gate_profile="tick2",
     ),
 }
 
@@ -329,6 +338,60 @@ def resolve_condition_discovery_process_projection(
 
 def preset_policy(preset: Any) -> PresetPolicy:
     return _PRESET_POLICIES[normalize_condition_discovery_preset(preset)]
+
+
+def evaluate_slippage_gate(
+    preset: Any,
+    slippage_profiles: Optional[Mapping[str, Any]],
+) -> Dict[str, Any]:
+    """승격 슬리피지 hard gate 판정(순수 함수 — 기존 승격/생성 흐름에는 배선하지 않는다).
+
+    프리셋의 slippage_gate_profile(예: promotion='tick2')이 설정된 경우
+    해당 프로파일의 total_profit > 0 이어야 통과한다. evidence 부재·프로파일
+    누락·비유한수 값은 hard gate 원칙대로 통과 실패로 처리한다(추측 금지).
+    게이트 미설정 프리셋은 enabled=False, passed=None(판정 없음)을 돌려준다.
+
+    slippage_profiles는 fitness/slippage_profiles.compute_slippage_profiles
+    결과 dict(내부 "profiles" 컨테이너) 또는 프로파일 매핑 자체를 받는다.
+    """
+    policy = preset_policy(preset)
+    gate_profile = policy.slippage_gate_profile
+    verdict: Dict[str, Any] = {
+        "schema_version": 1,
+        "preset": policy.preset,
+        "gate_profile": gate_profile,
+        "enabled": bool(gate_profile),
+        "passed": None,
+        "reason": "slippage_gate_not_configured",
+        "profile_total_profit": None,
+    }
+    if not gate_profile:
+        return verdict
+    if not isinstance(slippage_profiles, Mapping) or not slippage_profiles:
+        return {**verdict, "passed": False, "reason": "slippage_profiles_missing"}
+    container = slippage_profiles.get("profiles")
+    if not isinstance(container, Mapping):
+        container = slippage_profiles
+    entry = container.get(gate_profile)
+    if not isinstance(entry, Mapping):
+        return {**verdict, "passed": False, "reason": "slippage_gate_profile_missing"}
+    try:
+        total = float(entry.get("total_profit"))
+    except (TypeError, ValueError):
+        total = float("nan")
+    if not math.isfinite(total):
+        return {**verdict, "passed": False, "reason": "slippage_profile_total_profit_invalid"}
+    passed = total > 0.0
+    return {
+        **verdict,
+        "passed": passed,
+        "reason": (
+            "slippage_profile_profit_positive"
+            if passed
+            else "slippage_profile_profit_not_positive"
+        ),
+        "profile_total_profit": total,
+    }
 
 
 def _coerce_time(value: Any, default: int) -> int:

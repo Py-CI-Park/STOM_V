@@ -128,6 +128,12 @@ def _rank_score(candidate: dict) -> dict:
             'candidate_csv': candidate.get('candidate_csv') or candidate_result.get('csv_path'),
         }
         score['advisory_rank_reason'] = _advisory_rank_reason(candidate, score)
+    slippage_profiles = candidate.get('slippage_profiles')
+    if isinstance(slippage_profiles, dict) and slippage_profiles:
+        # 슬리피지 다중 프로파일 advisory 병기(additive) — _rank_key가 읽지 않는
+        # 필드라 랭킹 순서에는 어떤 영향도 없다(순서 로직 불변).
+        score['slippage_profiles'] = slippage_profiles
+        score['slippage_profiles_authority'] = 'advisory_only'
     return score
 
 

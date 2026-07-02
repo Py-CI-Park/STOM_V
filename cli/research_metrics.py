@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from ai_strategy_loop.fitness.measurement_frame import DEFAULT_MEASUREMENT_FRAME
 from cli._utils import ensure_dataframe as _ensure_dataframe
 
 
@@ -92,4 +93,6 @@ def summarize_trade_frame(data, return_col: str = '수익률') -> dict:
         'date_concentration': calculate_concentration(df, '_trade_date'),
         'symbol_concentration': calculate_concentration(df, '종목명'),
         'sell_condition_counts': sell_counts,
+        # 측정계 프레임(T0.3 additive): 세그먼트 연구 지표는 1포지션 니치 측정계 산물.
+        'measurement_frame': DEFAULT_MEASUREMENT_FRAME,
     }

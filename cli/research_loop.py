@@ -26,12 +26,19 @@ from ai_strategy_loop.controller.condition_discovery import (
     resolve_condition_discovery_process_projection,
     score_research_lane,
 )
+from ai_strategy_loop.controller.replay_profile import (
+    CANONICAL_REPLAY_PROFILE_V1,
+    ReplayProfile,
+    canonical_execution_diff,
+    condition_code_sha256,
+)
+from ai_strategy_loop.fitness.slippage_profiles import slippage_profiles_from_csv
 from cli.condition_generator import (
     expression_result_from_candidate_pack,
     generate_condition_expressions_from_analysis,
     mark_diagnostic_fallback,
 )
-from cli.paths import DB_STRATEGY
+from cli.paths import DB_STOCK_BACK_MIN, DB_STOCK_BACK_TICK, DB_STRATEGY
 from cli.research_iteration_v2 import build_v2_candidate_pool, candidate_from_expression
 from cli.research_iteration_v3 import build_v3_candidate_pool, parse_best_expression_conditions
 from cli.research_iteration_v4 import (
@@ -175,6 +182,13 @@ class ResearchLoopConfig:
     condition_discovery_preset: str = 'fast'
     condition_discovery_process: str | None = None
     hybrid_research_enabled: bool = False
+    # True면 결과 dict에 replay_profile 영수증(additive 필드)을 기록한다.
+    # 기본 False라 기존 결과 스키마/동작은 byte-동일(하위호환).
+    record_replay_profile: bool = False
+    # True면 후보 CSV로 슬리피지 다중 프로파일(tick0/1/2/3, advisory)을 계산해
+    # 후보 결과에 additive 필드(slippage_profiles)로 병기한다.
+    # 기본 False라 기존 결과 스키마/동작은 byte-동일(하위호환).
+    slippage_profiles_enabled: bool = False
 
 
 def _base_config_dict(config: ResearchLoopConfig) -> dict:
@@ -749,6 +763,8 @@ def _finalize_research_runtime_result(
     failure_policy: dict,
 ) -> dict:
     result_payload = {
+        # opt-in replay 프로파일 영수증(additive). 기본 OFF면 빈 dict라 불변.
+        **_replay_profile_receipt_fields(config),
         **result_payload,
         'failure_policy': failure_policy,
         'runtime_timing': _runtime_timing_summary(
@@ -971,7 +987,96 @@ def _safe_reference_promotion_score(config: ResearchLoopConfig, candidate_csv: s
         return None
 
 
+def _replay_db_identifier(is_tick: bool) -> str:
+    """백테스트 DB 식별자(머신 독립 상대 표기). 절대 경로는 sha 안정성을 깨서 제외한다."""
+    raw = DB_STOCK_BACK_TICK if is_tick else DB_STOCK_BACK_MIN
+    return f'_database/{Path(raw).name}'
+
+
+def _replay_strategy_code_sha256(name: str, strategy_type: str) -> str:
+    """전략 코드 sha256. 조회 실패 시 빈 문자열(영수증이 replay를 막지 않도록)."""
+    if not name:
+        return ''
+    try:
+        loaded = load_strategy_from_db(DB_STRATEGY, name, strategy_type)
+    except Exception:
+        return ''
+    if not isinstance(loaded, dict) or loaded.get('status') != 'ok':
+        return ''
+    return condition_code_sha256(str(loaded.get('code') or ''))
+
+
+def _coerce_replay_avg_time(value: object) -> object:
+    """avg_time을 int로 정규화(불가하면 문자열 유지) — sha 안정성 확보."""
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        return str(value)
+
+
+def _build_replay_profile(config: ResearchLoopConfig) -> ReplayProfile:
+    """replay 실행 설정(_base_config_dict와 동일 입력)에서 ReplayProfile을 구성한다.
+
+    divid_mode는 research loop가 넘기지 않아 BTConfig 기본값(cli/config.py:34)이
+    적용되므로 그 값을 그대로 기록한다. 영수증 전용이며 실행 경로는 불변이다.
+    """
+    is_tick = bool(config.is_tick)
+    return ReplayProfile(
+        profile_id='research_loop_baseline_replay',
+        is_tick=is_tick,
+        universe='stock',
+        betting=str(config.betting),
+        avg_time=_coerce_replay_avg_time(config.avg_time),
+        engine_count=int(config.engine_count),
+        fallback_engine_count=0,
+        start_date=int(config.start_date),
+        end_date=int(config.end_date),
+        start_time=int(config.start_time),
+        end_time=int(config.end_time),
+        divid_mode='종목코드별 분류',
+        db_path=_replay_db_identifier(is_tick),
+        buy_strategy_name=str(config.base_buy_strategy or ''),
+        sell_strategy_name=str(config.sell_strategy or ''),
+        buy_condition_sha256=_replay_strategy_code_sha256(config.base_buy_strategy, 'buy'),
+        sell_condition_sha256=_replay_strategy_code_sha256(config.sell_strategy, 'sell'),
+    )
+
+
+def _replay_profile_receipt_fields(config: ResearchLoopConfig) -> dict:
+    """opt-in replay 프로파일 영수증(additive 필드만). 실패해도 결과를 막지 않는다."""
+    if not getattr(config, 'record_replay_profile', False):
+        return {}
+    try:
+        profile = _build_replay_profile(config)
+        diff = canonical_execution_diff(profile)
+        return {
+            'replay_profile': profile.to_receipt(),
+            'replay_profile_sha256': profile.profile_sha256(),
+            'replay_profile_canonical_id': CANONICAL_REPLAY_PROFILE_V1.profile_id,
+            'replay_profile_canonical_diff': diff,
+            'replay_profile_matches_canonical': not diff,
+        }
+    except Exception as exc:
+        return {'replay_profile_error': str(exc)}
+
+
+def _candidate_slippage_fields(config: ResearchLoopConfig, candidate_csv: str | None) -> dict:
+    """opt-in 슬리피지 프로파일(advisory, additive 필드만). 실패해도 평가를 막지 않는다."""
+    if not getattr(config, 'slippage_profiles_enabled', False):
+        return {}
+    if not candidate_csv:
+        return {}
+    try:
+        return {'slippage_profiles': slippage_profiles_from_csv(candidate_csv)}
+    except Exception as exc:
+        return {'slippage_profiles_error': str(exc)}
+
+
 def _build_result(config: ResearchLoopConfig, result: dict) -> dict:
+    receipt_fields = _replay_profile_receipt_fields(config)
+    if receipt_fields:
+        # additive 병합: 기존 result 키가 항상 우선(스키마 불변 보장).
+        result = {**receipt_fields, **result}
     result['report'] = build_research_report(result, strategy_name=config.name)
     return result
 
@@ -1375,6 +1480,7 @@ def _execute_candidate_spec(
         'promotion': promotion,
         **reference_evaluation,
         **research_artifacts,
+        **_candidate_slippage_fields(config, candidate_csv),
         'rank': None,
         'rank_score': None,
         'selected_as_best': False,
@@ -1627,6 +1733,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         'candidate_plan': candidate_plan,
         'comparison': comparison,
         'promotion': promotion,
+        **_candidate_slippage_fields(config, candidate_csv),
     })
 
 
