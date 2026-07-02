@@ -1,0 +1,81 @@
+"""시드 격자 패키지 — lane × time_band × cap_tier × regime 격자 열거 + 패밀리 시드 빌드.
+
+공개 API 는 :mod:`ai_strategy_loop.seeds.lattice` 를 재수출한다. 연구 레인 전용
+(승격/export/live 권한 로직과 무관) 순수 추가 모듈이다.
+"""
+
+from ai_strategy_loop.seeds.coverage import (
+    COVERAGE_GAPS_SCHEMA,
+    COVERAGE_MAP_SCHEMA,
+    DEFAULT_MIN_TRADES,
+    CellCoverage,
+    build_coverage_map,
+    coverage_gaps,
+    load_coverage_map,
+    save_coverage_map,
+)
+from ai_strategy_loop.seeds.lattice import (
+    CAP_TIERS,
+    MIN_BANDS,
+    REGIMES,
+    SELL_DEFAULTS,
+    TICK_BANDS,
+    CapTier,
+    Cell,
+    LatticeConfig,
+    ParamSpec,
+    PatternFamily,
+    Regime,
+    SeedRecord,
+    TimeBand,
+    build_buy_code,
+    build_seed,
+    build_sell_code,
+    default_pattern_families,
+    enumerate_cells,
+    load_pattern_families,
+    seed_condition_id,
+)
+from ai_strategy_loop.seeds.passport import (
+    PASSPORT_ROLE,
+    PROMOTION_STATUS,
+    passport_condition_id,
+    passport_filename,
+    render_passport,
+)
+
+__all__ = [
+    "CAP_TIERS",
+    "COVERAGE_GAPS_SCHEMA",
+    "COVERAGE_MAP_SCHEMA",
+    "DEFAULT_MIN_TRADES",
+    "MIN_BANDS",
+    "PASSPORT_ROLE",
+    "PROMOTION_STATUS",
+    "REGIMES",
+    "SELL_DEFAULTS",
+    "TICK_BANDS",
+    "CapTier",
+    "Cell",
+    "CellCoverage",
+    "LatticeConfig",
+    "ParamSpec",
+    "PatternFamily",
+    "Regime",
+    "SeedRecord",
+    "TimeBand",
+    "build_buy_code",
+    "build_coverage_map",
+    "build_seed",
+    "build_sell_code",
+    "coverage_gaps",
+    "default_pattern_families",
+    "enumerate_cells",
+    "load_coverage_map",
+    "load_pattern_families",
+    "passport_condition_id",
+    "passport_filename",
+    "render_passport",
+    "save_coverage_map",
+    "seed_condition_id",
+]
