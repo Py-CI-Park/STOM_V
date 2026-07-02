@@ -34,7 +34,16 @@ from ai_strategy_loop.seeds.coverage import (  # noqa: E402
     DEFAULT_MIN_TRADES,
     build_coverage_map,
     coverage_gaps,
+    load_coverage_map,
     save_coverage_map,
+)
+from ai_strategy_loop.seeds.smoke_budget import (  # noqa: E402
+    SMOKE_BASE_WINDOW_DAYS,
+    SMOKE_GO,
+    SMOKE_NO_GO,
+    SMOKE_VERDICT_SCHEMA,
+    VALID_SMOKE_LANES,
+    evaluate_smoke_budget,
 )
 from ai_strategy_loop.seeds.lattice import (  # noqa: E402
     SeedRecord,
@@ -212,6 +221,146 @@ def _cmd_coverage(args: argparse.Namespace) -> int:
 
 
 # ---------------------------------------------------------------------------
+# smoke-plan — coverage 결과 + 스모크 판정 → 셀별 go/no_go 집계 + 다음 배치 계획
+# ---------------------------------------------------------------------------
+SMOKE_PLAN_SCHEMA = "seed_lattice_smoke_plan_v1"
+
+# 배치 라벨 (advisory 자원 배분 — 선택·동결 사용 금지, no_go 는 영구 폐기 아님).
+_PLAN_FULL_SWEEP = "full_sweep"
+_PLAN_SMOKE_FIRST = "smoke_first"
+_PLAN_DEPRIORITIZED = "deprioritized"
+_PLAN_COVERED = "covered"
+
+
+def _load_smoke_entries(path: Path) -> List[Mapping[str, Any]]:
+    """스모크 JSON 을 읽는다 (리스트 또는 {"verdicts"|"results": [...]} 허용)."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(data, dict):
+        data = data.get("verdicts") or data.get("results") or []
+    if not isinstance(data, list):
+        raise SystemExit(f"스모크 JSON 형식 오류 (리스트/verdicts/results 키 필요): {path}")
+    return data
+
+
+def _as_smoke_verdict(entry: Mapping[str, Any], index: int,
+                      window_days: int) -> Dict[str, Any]:
+    """엔트리를 스모크 판정 dict 로 정규화한다.
+
+    이미 판정된 verdict(schema 일치 또는 verdict 키 존재)는 그대로 쓰고,
+    원시 결과(profit 만 있는 경우)는 :func:`evaluate_smoke_budget` 으로
+    판정한다 — lane 은 엔트리의 lane 또는 cell_id 접두어에서 유도한다.
+    """
+    if entry.get("schema") == SMOKE_VERDICT_SCHEMA or entry.get("verdict") is not None:
+        verdict = entry.get("verdict")
+        if verdict not in (SMOKE_GO, SMOKE_NO_GO):
+            raise SystemExit(f"smoke[{index}] verdict 값 오류: {verdict!r}")
+        return dict(entry)
+    lane = entry.get("lane")
+    if lane is None:
+        cell_id = str(entry.get("cell_id") or entry.get("cell") or "")
+        lane = cell_id.split("_", 1)[0] if cell_id else ""
+    if lane not in VALID_SMOKE_LANES:
+        raise SystemExit(f"smoke[{index}] lane 유도 실패 (tick|min 필요): {lane!r}")
+    try:
+        return evaluate_smoke_budget(entry, lane=lane, window_days=window_days)
+    except ValueError as exc:
+        raise SystemExit(f"smoke[{index}] 판정 실패: {exc}") from exc
+
+
+def _cmd_smoke_plan(args: argparse.Namespace) -> int:
+    """smoke-plan 서브커맨드: 셀별 go/no_go 집계 + 다음 배치 계획 JSON 산출.
+
+    advisory 전용 — 계획은 자원 배분(어느 셀을 본 스윕/스모크/후순위로 보낼지)
+    이며 어떤 후보 선택·동결에도 쓰지 않는다. 백테스트 실행은 범위 밖이다.
+    """
+    cov_map = load_coverage_map(args.coverage)
+    entries = _load_smoke_entries(Path(args.smoke))
+    verdicts = [_as_smoke_verdict(e, i, args.window_days)
+                for i, e in enumerate(entries)]
+
+    cell_ids = list(cov_map.get("cells", {}))
+    gap_cells = {g["cell_id"] for g in coverage_gaps(cov_map, min_trades=args.min_trades)}
+
+    per_cell: Dict[str, Dict[str, Any]] = {
+        cid: {"go": 0, "no_go": 0, "run_ids": []} for cid in cell_ids}
+    unmatched: List[Dict[str, Any]] = []
+    run_ids: List[str] = []
+    for i, v in enumerate(verdicts):
+        cid = v.get("cell_id")
+        rid = (v.get("attempt") or {}).get("run_id")
+        if rid:
+            run_ids.append(str(rid))
+        if cid is None or str(cid) not in per_cell:
+            unmatched.append({"index": i, "cell_id": cid,
+                              "reason": "coverage map 에 없는 cell_id"})
+            continue
+        agg = per_cell[str(cid)]
+        agg["go" if v["verdict"] == SMOKE_GO else "no_go"] += 1
+        if rid:
+            agg["run_ids"].append(str(rid))
+
+    cells_out: Dict[str, Dict[str, Any]] = {}
+    batches: Dict[str, List[str]] = {
+        _PLAN_FULL_SWEEP: [], _PLAN_SMOKE_FIRST: [], _PLAN_DEPRIORITIZED: []}
+    for cid in cell_ids:  # coverage map 순서 = 격자 열거 순서 (결정론)
+        agg = per_cell[cid]
+        is_gap = cid in gap_cells
+        if not is_gap:
+            action = _PLAN_COVERED
+        elif agg["go"] > 0:
+            action = _PLAN_FULL_SWEEP  # go 시드가 하나라도 있으면 본 스윕 진행
+        elif agg["no_go"] > 0:
+            action = _PLAN_DEPRIORITIZED  # 후순위 강등 — 영구 폐기 아님
+        else:
+            action = _PLAN_SMOKE_FIRST  # 스모크 미실시 gap — 스모크부터
+        if action != _PLAN_COVERED:
+            batches[action].append(cid)
+        cells_out[cid] = {
+            "gap": is_gap,
+            "go": agg["go"],
+            "no_go": agg["no_go"],
+            "verdict_count": agg["go"] + agg["no_go"],
+            "action": action,
+        }
+
+    plan = {
+        "schema": SMOKE_PLAN_SCHEMA,
+        "advisory_only": True,
+        "policy_note": (
+            "자원 배분용 advisory 계획 — 후보 선택·동결(freeze) 사용 금지. "
+            "deprioritized 는 영구 폐기가 아니라 대기열 후순위 강등이다."
+        ),
+        "min_trades": args.min_trades,
+        "window_days": args.window_days,
+        "cells": cells_out,
+        "batches": batches,
+        "n_trials_accounting": {
+            "smoke_attempts": len(verdicts),
+            "run_ids": run_ids,
+            "note": "스모크 시도는 동결 시 --trial-runs n_trials 에 전량 합산(누락 금지)",
+        },
+        "unmatched_verdicts": unmatched,
+        "note": "백테스트 실행은 이 CLI 범위 밖 — 계획 JSON 만 산출",
+    }
+
+    out_path = Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(plan, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+    _emit({
+        "command": "smoke-plan",
+        "plan": str(out_path),
+        "cells": len(cells_out),
+        "gap_cells": len(gap_cells),
+        "smoke_attempts": len(verdicts),
+        "batches": {k: len(v) for k, v in batches.items()},
+        "unmatched_verdicts": len(unmatched),
+        "advisory_only": True,
+    })
+    return 0
+
+
+# ---------------------------------------------------------------------------
 # argparse
 # ---------------------------------------------------------------------------
 def build_parser() -> argparse.ArgumentParser:
@@ -245,6 +394,23 @@ def build_parser() -> argparse.ArgumentParser:
     p_cov.add_argument("--min-trades", type=int, default=DEFAULT_MIN_TRADES,
                        help=f"셀당 최소 거래수 목표 (기본 {DEFAULT_MIN_TRADES})")
     p_cov.set_defaults(func=_cmd_coverage)
+
+    p_plan = sub.add_parser(
+        "smoke-plan",
+        help="coverage 결과 + 스모크 판정 → 셀별 go/no_go 집계 + 다음 배치 계획"
+             " (advisory 자원 배분 전용 — 선택·동결 사용 금지)")
+    p_plan.add_argument("--coverage", required=True,
+                        help="coverage 서브커맨드 산출 coverage map JSON 경로")
+    p_plan.add_argument("--smoke", required=True,
+                        help="스모크 판정(또는 원시 결과) JSON 경로 "
+                             "(리스트 또는 verdicts/results 키)")
+    p_plan.add_argument("--out", required=True, help="배치 계획 JSON 출력 경로")
+    p_plan.add_argument("--min-trades", type=int, default=DEFAULT_MIN_TRADES,
+                        help=f"셀당 최소 거래수 목표 (기본 {DEFAULT_MIN_TRADES})")
+    p_plan.add_argument("--window-days", type=int, default=SMOKE_BASE_WINDOW_DAYS,
+                        help="원시 결과 판정용 스모크 창 길이(일) — 창 비례 예산 축소"
+                             f" (기본 {SMOKE_BASE_WINDOW_DAYS} = 2025Q1)")
+    p_plan.set_defaults(func=_cmd_smoke_plan)
     return parser
 
 

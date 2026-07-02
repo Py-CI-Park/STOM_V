@@ -43,6 +43,23 @@ from ai_strategy_loop.seeds.passport import (
     passport_filename,
     render_passport,
 )
+from ai_strategy_loop.seeds.revival_registry import (
+    REGISTRY_SCHEMA,
+    REVALIDATION_POLICY,
+    load_registry,
+    pending_revalidation,
+    register_rejected,
+)
+from ai_strategy_loop.seeds.smoke_budget import (
+    SMOKE_BASE_BUDGET_KRW,
+    SMOKE_BASE_WINDOW_DAYS,
+    SMOKE_FORBIDDEN_USES,
+    SMOKE_GO,
+    SMOKE_NO_GO,
+    SMOKE_VERDICT_SCHEMA,
+    evaluate_smoke_budget,
+    smoke_budget_threshold,
+)
 
 __all__ = [
     "CAP_TIERS",
@@ -53,7 +70,15 @@ __all__ = [
     "PASSPORT_ROLE",
     "PROMOTION_STATUS",
     "REGIMES",
+    "REGISTRY_SCHEMA",
+    "REVALIDATION_POLICY",
     "SELL_DEFAULTS",
+    "SMOKE_BASE_BUDGET_KRW",
+    "SMOKE_BASE_WINDOW_DAYS",
+    "SMOKE_FORBIDDEN_USES",
+    "SMOKE_GO",
+    "SMOKE_NO_GO",
+    "SMOKE_VERDICT_SCHEMA",
     "TICK_BANDS",
     "CapTier",
     "Cell",
@@ -71,11 +96,16 @@ __all__ = [
     "coverage_gaps",
     "default_pattern_families",
     "enumerate_cells",
+    "evaluate_smoke_budget",
     "load_coverage_map",
     "load_pattern_families",
+    "load_registry",
     "passport_condition_id",
     "passport_filename",
+    "pending_revalidation",
+    "register_rejected",
     "render_passport",
     "save_coverage_map",
     "seed_condition_id",
+    "smoke_budget_threshold",
 ]

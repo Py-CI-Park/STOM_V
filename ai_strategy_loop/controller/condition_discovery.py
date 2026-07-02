@@ -59,6 +59,10 @@ _BLOCKING_STATUSES = {STATUS_MISSING, STATUS_UNAVAILABLE, STATUS_FAILED}
 
 TICK_RESEARCH_START = 90000
 TICK_RESEARCH_END = 92800
+# research 프리셋 한정 tick 서브밴드 오버라이드가 허용되는 범위(HHMMSS).
+# seeds/lattice.py TICK_BANDS(09:00~09:30, 마지막 밴드 92500~93000)와 정합한다.
+TICK_RESEARCH_SUBBAND_MIN_START = TICK_RESEARCH_START
+TICK_RESEARCH_SUBBAND_MAX_END = 93000
 MIN_FULL_SESSION_START = 90000
 MIN_FULL_SESSION_END_CANDIDATES = (151800, 151900)
 RESEARCH_LOOP_SCHEMA_VERSION = 1
@@ -401,6 +405,62 @@ def _coerce_time(value: Any, default: int) -> int:
         return int(default)
 
 
+def _as_tick_subband_hhmmss(value: Any) -> int:
+    """tick 서브밴드 경계값을 HHMMSS 정수로 강제한다 (묵시 절단 금지).
+
+    bool·소수부가 있는 float 는 ValueError 로 거부한다 — int() 묵시 절단으로
+    90500.7 이 90500 이 되는 조용한 의미 변형을 막는다. 정수값 float(90500.0)
+    와 정수 문자열은 손실 없이 허용한다.
+    """
+
+    if isinstance(value, bool):
+        raise ValueError(f"bool은 HHMMSS가 아닙니다: {value!r}")
+    if isinstance(value, float) and not value.is_integer():
+        raise ValueError(f"소수부가 있는 float는 절단하지 않고 거부합니다: {value!r}")
+    return int(value)
+
+
+def _resolve_tick_research_window(preset: str, start: Any, end: Any) -> tuple[int, int, bool]:
+    """tick 연구 시간창을 (start, end, overridden)으로 해석한다.
+
+    research 프리셋만 [TICK_RESEARCH_SUBBAND_MIN_START, TICK_RESEARCH_SUBBAND_MAX_END]
+    안의 start < end 서브밴드 오버라이드를 허용하며, 위반(90000 미만·93000 초과·역전·
+    비정수·float 묵시 절단·분초 60 이상)은 ValueError로 fail-closed 거부한다.
+    fast/promotion 프리셋과 미지정(None/None)은 기존 고정 창(90000~92800)을 그대로
+    유지한다(행동 불변 — tick 창은 구성값보다 정책이 우선하는 기존 강제 패턴을 따라
+    비 research 오버라이드는 무시).
+    """
+
+    has_override = start is not None or end is not None
+    if preset != PRESET_RESEARCH or not has_override:
+        return TICK_RESEARCH_START, TICK_RESEARCH_END, False
+    try:
+        resolved_start = TICK_RESEARCH_START if start is None else _as_tick_subband_hhmmss(start)
+        resolved_end = TICK_RESEARCH_END if end is None else _as_tick_subband_hhmmss(end)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            "condition_discovery_tick_window_start/end는 HHMMSS 정수여야 합니다 "
+            f"(받음: start={start!r}, end={end!r})"
+        ) from exc
+    if (
+        resolved_start < TICK_RESEARCH_SUBBAND_MIN_START
+        or resolved_end > TICK_RESEARCH_SUBBAND_MAX_END
+        or resolved_start >= resolved_end
+    ):
+        raise ValueError(
+            "condition_discovery_tick_window는 "
+            f"[{TICK_RESEARCH_SUBBAND_MIN_START}, {TICK_RESEARCH_SUBBAND_MAX_END}] 안의 "
+            f"start < end 서브밴드여야 합니다 (받음: start={resolved_start}, end={resolved_end})"
+        )
+    for name, value in (("start", resolved_start), ("end", resolved_end)):
+        if (value // 100) % 100 >= 60 or value % 100 >= 60:
+            raise ValueError(
+                "condition_discovery_tick_window는 분·초가 00~59인 유효한 HHMMSS여야 "
+                f"합니다 (받음: {name}={value})"
+            )
+    return resolved_start, resolved_end, True
+
+
 def resolve_time_window_policy(config: Any) -> Dict[str, Any]:
     """Resolve tick/min session-window policy for the configured preset.
 
@@ -412,14 +472,27 @@ def resolve_time_window_policy(config: Any) -> Dict[str, Any]:
     preset = normalize_condition_discovery_preset(getattr(config, "condition_discovery_preset", PRESET_FAST))
     timeframe = str(getattr(config, "bt_timeframe", TIMEFRAME_MIN) or TIMEFRAME_MIN).lower()
     if timeframe == TIMEFRAME_TICK:
+        tick_start, tick_end, tick_overridden = _resolve_tick_research_window(
+            preset,
+            getattr(config, "condition_discovery_tick_window_start", None),
+            getattr(config, "condition_discovery_tick_window_end", None),
+        )
         return {
             "timeframe": TIMEFRAME_TICK,
-            "start_time": TICK_RESEARCH_START,
-            "end_time": TICK_RESEARCH_END,
+            "start_time": tick_start,
+            "end_time": tick_end,
             "full_session_required": False,
-            "source": "condition_discovery_tick_research_window",
-            "boundary_status": "fixed",
-            "notes": "Tick research/promotion uses the approved 09:00-09:28 opening window.",
+            "source": (
+                "condition_discovery_tick_research_subband"
+                if tick_overridden
+                else "condition_discovery_tick_research_window"
+            ),
+            "boundary_status": "configured_subband" if tick_overridden else "fixed",
+            "notes": (
+                "Tick research uses a configured sub-band inside the approved 09:00-09:30 opening window."
+                if tick_overridden
+                else "Tick research/promotion uses the approved 09:00-09:28 opening window."
+            ),
         }
 
     end_time = _coerce_time(getattr(config, "bt_min_universe_end_time", 151900), 151900)
@@ -1477,14 +1550,18 @@ def effective_condition_discovery_runtime_config(config: Any) -> Any:
     setattr(effective, "research_oos_mode", policy.oos_mode)
 
     timeframe = str(getattr(config, "bt_timeframe", TIMEFRAME_MIN) or TIMEFRAME_MIN).lower()
-    setattr(
-        effective,
-        "bt_universe_start_time",
-        TICK_RESEARCH_START if timeframe == TIMEFRAME_TICK else MIN_FULL_SESSION_START,
-    )
     if timeframe == TIMEFRAME_TICK:
-        setattr(effective, "bt_universe_end_time", TICK_RESEARCH_END)
-    elif preset in (PRESET_RESEARCH, PRESET_PROMOTION):
+        # research 프리셋 한정 서브밴드 오버라이드(기본 None → 기존 90000~92800 고정).
+        tick_start, tick_end, _tick_overridden = _resolve_tick_research_window(
+            preset,
+            getattr(config, "condition_discovery_tick_window_start", None),
+            getattr(config, "condition_discovery_tick_window_end", None),
+        )
+        setattr(effective, "bt_universe_start_time", tick_start)
+        setattr(effective, "bt_universe_end_time", tick_end)
+    else:
+        setattr(effective, "bt_universe_start_time", MIN_FULL_SESSION_START)
+    if timeframe != TIMEFRAME_TICK and preset in (PRESET_RESEARCH, PRESET_PROMOTION):
         setattr(effective, "full_session_enabled", True)
         end_time = _coerce_time(
             getattr(config, "bt_min_universe_end_time", MIN_FULL_SESSION_END_CANDIDATES[-1]),

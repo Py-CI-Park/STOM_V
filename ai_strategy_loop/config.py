@@ -478,6 +478,12 @@ class LoopConfig:
     # It does not export/live-wire anything; policy helpers keep scores advisory and evidence authoritative.
     condition_discovery_preset: str = "fast"  # 'fast' | 'research' | 'promotion'
     condition_discovery_process: Optional[str] = None  # optional canonical selector: 1/2/3 or fast-discovery/process-research/promotion-review
+    # research 프리셋 한정 tick 연구 시간창 서브밴드(HHMMSS). None(기본)이면 기존 고정
+    # 90000~92800 그대로(행동 불변). 지정 시 90000 <= start < end <= 93000만 허용하고
+    # 위반은 condition_discovery 해석 시점에 ValueError. fast/promotion 프리셋은
+    # 오버라이드를 무시하고 고정 창을 유지한다(기존 tick 강제 패턴).
+    condition_discovery_tick_window_start: Optional[int] = None
+    condition_discovery_tick_window_end: Optional[int] = None
     # Sparse-positive prompt guidance for TICK candidate generation.
     # Default OFF keeps the existing prompt, hard gates, and selector behavior unchanged.
     sparse_positive_prompt_enabled: bool = False
@@ -642,3 +648,31 @@ class LoopConfig:
     def to_dict(self) -> Dict[str, Any]:
         """현재 설정을 dict로 직렬화."""
         return {f.name: getattr(self, f.name) for f in fields(self)}
+
+
+# =====================================================================
+# 연구 환류 오버라이드 세트 (명시적 opt-in 스위치 묶음)
+# =====================================================================
+def research_feedback_config_overrides() -> Dict[str, bool]:
+    """연구 레인 환류 토글 4종을 한 번에 켜는 오버라이드 dict를 돌려준다(문서화된 opt-in).
+
+    "실행→분석→환류→재생성" 폐루프를 구성하는 4종 토글의 정본(canonical) 세트다:
+      - segment_feedback_enabled: 패배 구간 avoid 라인 환류(T4).
+      - quantile_feedback_enabled: 부검 변별 라인에 승자 분위수 임계 후보 병기(R1).
+      - hypothesis_tracking_enabled: 부검 방향성 가정 방출·채택/기각 판정(P2a).
+      - feature_importance_feedback_enabled: 세그먼트별 결정 피처 prefer 힌트(P3).
+
+    전역 LoopConfig 기본값은 전부 OFF(False)로 유지한다 — 이 함수는 기본값을 바꾸지
+    않고, 호출부가 명시적으로 병합할 때만 켜진다(예: LoopConfig.from_dict({**base,
+    **research_feedback_config_overrides()})). 연구 레인 전용이며 승격/export/live
+    권한과 무관하다(분석·프롬프트 보조 토글만 포함).
+
+    매 호출마다 새 dict를 만들어 돌려준다(공유 상태 변이 방지 — 호출부가 자유롭게
+    병합/수정해도 서로 간섭하지 않는다).
+    """
+    return {
+        "segment_feedback_enabled": True,
+        "quantile_feedback_enabled": True,
+        "hypothesis_tracking_enabled": True,
+        "feature_importance_feedback_enabled": True,
+    }

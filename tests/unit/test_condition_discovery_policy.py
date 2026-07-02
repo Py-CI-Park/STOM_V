@@ -119,6 +119,164 @@ def test_research_tick_policy_uses_opening_window_and_staged_mdd():
         "promotion-review",
     ]
 
+def test_tick_research_window_default_stays_fixed_without_subband_override():
+    cfg = LoopConfig(condition_discovery_preset="research", bt_timeframe="tick", mdd_cap=40.0)
+    window = resolve_time_window_policy(cfg)
+    assert window["start_time"] == 90000
+    assert window["end_time"] == 92800
+    assert window["source"] == "condition_discovery_tick_research_window"
+    assert window["boundary_status"] == "fixed"
+
+    effective = effective_condition_discovery_runtime_config(cfg)
+    assert effective.bt_universe_start_time == 90000
+    assert effective.bt_universe_end_time == 92800
+
+
+def test_tick_research_window_applies_valid_subband_for_research_preset():
+    cfg = LoopConfig(
+        condition_discovery_preset="research",
+        bt_timeframe="tick",
+        mdd_cap=40.0,
+        condition_discovery_tick_window_start=90500,
+        condition_discovery_tick_window_end=92000,
+    )
+    window = resolve_time_window_policy(cfg)
+    assert window["start_time"] == 90500
+    assert window["end_time"] == 92000
+    assert window["source"] == "condition_discovery_tick_research_subband"
+    assert window["boundary_status"] == "configured_subband"
+    assert window["full_session_required"] is False
+
+    effective = effective_condition_discovery_runtime_config(cfg)
+    assert effective.bt_universe_start_time == 90500
+    assert effective.bt_universe_end_time == 92000
+
+    payload = resolve_condition_discovery_policy(cfg)
+    assert payload["time_window"]["start_time"] == 90500
+    assert payload["time_window"]["end_time"] == 92000
+    assert payload["capabilities"]["can_promote"] is False
+
+
+def test_tick_research_window_partial_override_and_lattice_band_max_end():
+    start_only = LoopConfig(
+        condition_discovery_preset="research",
+        bt_timeframe="tick",
+        condition_discovery_tick_window_start=91000,
+    )
+    window = resolve_time_window_policy(start_only)
+    assert (window["start_time"], window["end_time"]) == (91000, 92800)
+    assert window["boundary_status"] == "configured_subband"
+
+    # 격자(seeds/lattice.py TICK_BANDS)의 마지막 밴드 상한 93000까지 허용.
+    max_end = LoopConfig(
+        condition_discovery_preset="research",
+        bt_timeframe="tick",
+        condition_discovery_tick_window_end=93000,
+    )
+    effective = effective_condition_discovery_runtime_config(max_end)
+    assert effective.bt_universe_start_time == 90000
+    assert effective.bt_universe_end_time == 93000
+
+
+def test_tick_research_window_rejects_out_of_band_or_reversed_subband():
+    invalid_windows = (
+        (85900, 92000),  # 90000 미만 시작
+        (90000, 93100),  # 93000 초과 종료
+        (92000, 91000),  # 역전 창
+        (91500, 91500),  # 빈 창
+    )
+    for start, end in invalid_windows:
+        cfg = LoopConfig(
+            condition_discovery_preset="research",
+            bt_timeframe="tick",
+            condition_discovery_tick_window_start=start,
+            condition_discovery_tick_window_end=end,
+        )
+        with pytest.raises(ValueError, match="condition_discovery_tick_window"):
+            resolve_time_window_policy(cfg)
+        with pytest.raises(ValueError, match="condition_discovery_tick_window"):
+            effective_condition_discovery_runtime_config(cfg)
+
+    non_numeric = LoopConfig(
+        condition_discovery_preset="research",
+        bt_timeframe="tick",
+        condition_discovery_tick_window_start="open",
+    )
+    with pytest.raises(ValueError, match="condition_discovery_tick_window"):
+        resolve_time_window_policy(non_numeric)
+
+
+def test_tick_research_window_rejects_float_truncation_and_bool():
+    # 소수부가 있는 float 는 int() 묵시 절단 없이 fail-closed 거부한다.
+    for start, end in ((90500.7, 92000), (90500, 92000.5)):
+        cfg = LoopConfig(
+            condition_discovery_preset="research",
+            bt_timeframe="tick",
+            condition_discovery_tick_window_start=start,
+            condition_discovery_tick_window_end=end,
+        )
+        with pytest.raises(ValueError, match="condition_discovery_tick_window"):
+            resolve_time_window_policy(cfg)
+
+    bool_cfg = LoopConfig(
+        condition_discovery_preset="research",
+        bt_timeframe="tick",
+        condition_discovery_tick_window_start=True,
+    )
+    with pytest.raises(ValueError, match="condition_discovery_tick_window"):
+        resolve_time_window_policy(bool_cfg)
+
+    # 정수값 float(90500.0)은 손실이 없으므로 허용된다.
+    lossless = LoopConfig(
+        condition_discovery_preset="research",
+        bt_timeframe="tick",
+        condition_discovery_tick_window_start=90500.0,
+        condition_discovery_tick_window_end=92000.0,
+    )
+    window = resolve_time_window_policy(lossless)
+    assert (window["start_time"], window["end_time"]) == (90500, 92000)
+
+
+def test_tick_research_window_rejects_invalid_hhmmss_minute_second():
+    # 범위([90000, 93000])는 지나지만 분·초가 60 이상인 HHMMSS 를 거부한다.
+    invalid_windows = (
+        (90090, 92000),  # start 초=90
+        (90000, 92999),  # end 분=29, 초=99
+        (90060, 92000),  # start 초=60 경계
+    )
+    for start, end in invalid_windows:
+        cfg = LoopConfig(
+            condition_discovery_preset="research",
+            bt_timeframe="tick",
+            condition_discovery_tick_window_start=start,
+            condition_discovery_tick_window_end=end,
+        )
+        with pytest.raises(ValueError, match="condition_discovery_tick_window"):
+            resolve_time_window_policy(cfg)
+        with pytest.raises(ValueError, match="condition_discovery_tick_window"):
+            effective_condition_discovery_runtime_config(cfg)
+
+
+def test_tick_window_override_is_ignored_for_fast_and_promotion_presets():
+    for preset in ("fast", "promotion"):
+        cfg = LoopConfig(
+            condition_discovery_preset=preset,
+            bt_timeframe="tick",
+            mdd_cap=40.0,
+            condition_discovery_tick_window_start=90500,
+            condition_discovery_tick_window_end=92000,
+        )
+        window = resolve_time_window_policy(cfg)
+        assert window["start_time"] == 90000
+        assert window["end_time"] == 92800
+        assert window["source"] == "condition_discovery_tick_research_window"
+        assert window["boundary_status"] == "fixed"
+
+        effective = effective_condition_discovery_runtime_config(cfg)
+        assert effective.bt_universe_start_time == 90000
+        assert effective.bt_universe_end_time == 92800
+
+
 def test_fast_policy_and_stricter_configured_mdd_are_pinned():
     fast = resolve_condition_discovery_policy(
         LoopConfig(condition_discovery_preset="fast", bt_timeframe="tick", mdd_cap=40.0)
