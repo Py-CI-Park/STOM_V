@@ -10,10 +10,10 @@
 | Phase 0 측정·재현성 기반 | ✅ 완료 | a79b2b27 |
 | Phase 1 시드 격자 | 🔶 부분 완료 (T1.3/T1.5 배선 잔여) | a5948fb5 |
 | Phase 2 분석·환류 배선 | 🔶 부분 완료 (T2.1/T2.4 배선 잔여) | be5e98fc |
-| Phase 3 다후보·축 원장 | 🔶 부분 완료 (배선 잔여) | db85f594 |
+| Phase 3 다후보·축 원장 | ✅ 완료 | db85f594 + 1d199a33 |
 | Phase 4 원리 주입 | ✅ 완료 | bc604a97 |
-| Phase 5 벤치마크·포트폴리오 | ⬜ 대기 | - |
-| Phase 6 위생 | ⬜ 대기 | - |
+| Phase 5 벤치마크·포트폴리오 | ✅ 완료 | ee1d0c9f + 221aee7c |
+| Phase 6 위생 | ✅ 완료 (T6.2는 문서화된 보류 유지) | ee1d0c9f + 221aee7c |
 
 ## Phase 0 — 측정·재현성 기반
 
@@ -51,11 +51,11 @@
 ## Phase 3 — 다후보·축 원장
 
 - [x] T3.1 `brain/pack_producer.py` — repair/discovery 프롬프트 실호출로 팩 생산, `condition_generator` 검증 실통과 확인, partial/shortfall 정직 기록, 권한 밀반입 차단, 결정론 영수증. **배선(research_loop 연결)은 잔여**
-- [ ] T3.2 라운드 후보 8~12 + 레인 쿼터 (공유 파일 — 배선 단계에서)
+- [x] T3.2 라운드 슬롯 opt-in 확장 — 기본 4 불변, 연구 레인 한정 2~12+레인 쿼터(fail-closed), promotion/fast 무영향 (테스트 17개)
 - [x] T3.3 `controller/axis_ledger.py` — JSONL 원장 + 축별 사전확률 + 프롬프트 라인 + 자동 금지(`turnover_min_902 1.5→3.0` 수동 금지의 데이터 재현 테스트 포함). 리뷰 결함 2건(유망/금지 라벨 모순, sell repair 부모 코드) 수정 반영 확인
-- [ ] T3.4 라운드 교차비교 매트릭스 리포트 (배선 단계에서)
+- [x] T3.4 라운드 교차비교 매트릭스 — 후보×지표+변이 귀속 아티팩트, opt-in 저장
 - [x] 자체 검증: 테스트 35개(axis 20+pack 15) 통과
-- [ ] 배선 + 전체 게이트 + 커밋
+- [x] LLM 팩 실배선(credit 인정 경로+폴백 사유 기록) + 축 원장 기록·주입 배선(mdd_pct 키 수정 반영) + 게이트 3,972 통과 + 커밋 1d199a33
 
 ## Phase 4 — 원리 주입 (chart_sulsa v7.0)
 
@@ -67,17 +67,17 @@
 
 ## Phase 5 — 벤치마크·포트폴리오
 
-- [ ] T5.1 positive control 자동화 + 포트폴리오 프레임 상대 지표
-- [ ] T5.2 `portfolio/assembler.py` — 상관 캡 + 시간대 상보성 결합
-- [ ] T5.3 승격 전제 불변 확인 (zero-generation, 슬리피지 hard gate)
-- [ ] 검증 + 커밋
+- [x] T5.1 positive control 자동화(compute_fitness 재사용 byte-동일 게이트) — **실측 19/19 통과, gate_healthy** + receipt 스크립트
+- [x] T5.2 `portfolio/assembler.py` — 상관 캡 0.5(제외 사유 필수), 시간밴드 상보성, 결합 MDD, 포트폴리오 프레임 라벨, 명예의 전당 19전략 상대 지표 (테스트 32개)
+- [x] T5.3 승격 전제 판정 모듈 — 5체크 fail-closed, can_promote 항상 False 고정 (테스트 25개)
+- [x] 검증 80개 통과 + 커밋 ee1d0c9f / 221aee7c
 
 ## Phase 6 — 위생
 
-- [ ] T6.1 evidence lineage 자동 검사 스크립트
-- [ ] T6.2 미커밋 증거(.gjc/.omo) 인벤토리 대조 후 정리 결정
-- [ ] T6.3 LLM auth 폴백 강화 + 고아 프로세스 정리 자동화
-- [ ] 검증 + 커밋
+- [x] T6.1 `scripts/check_research_evidence_lineage.py` — summary·jsonl 일관성/3종 문서 완결성 읽기 전용 검사
+- [x] T6.2 인벤토리 대조 완료 — 7/01 문서의 명시 결정('.gjc/.omo는 별도 인벤토리 없이 커밋 금지') 유효 확인, 보류 유지
+- [x] T6.3 고아 프로세스 정리 스크립트(dry-run 기본, 실환경 스모크) + auth 폴백 격차 확정(연구 루프=실존, 발굴 루프=부재 → FailoverProvider 배선안 격차 노트로 이월)
+- [x] 검증 41개 통과 + 커밋 221aee7c
 
 ## 불변 조건 (모든 Phase 공통)
 
