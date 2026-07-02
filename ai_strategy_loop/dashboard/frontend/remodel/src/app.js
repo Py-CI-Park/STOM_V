@@ -70,8 +70,47 @@
     baseUrl: modeBackendBase(),
     latestLoopPayload: null,
     latestRunsPayload: null,
+    conditionDetailEvidence: {},
+    conditionDetailPayloads: {},
+    conditionDetailProbeStarted: false,
+    conditionDetailProbeComplete: false,
+    decisionAuditEvidence: {},
+    decisionAuditPayloads: {},
+    decisionAuditProbeStarted: false,
+    decisionAuditProbeComplete: false,
+    lastDecisionRecordStatus: null,
     processSelectedRunId: null,
   };
+  const RemodelStatusVocabulary = [
+    'reference',
+    'demo',
+    'live',
+    'empty',
+    'loading',
+    'error',
+    'stale',
+    'requires-confirmation',
+  ];
+  const RemodelModuleMap = [
+    { module: 'core/mode', owner: 'mode guard', surface: 'detectRemodelMode/readQueryBackendBase/modeBackendBase', nextUse: 'shared reference/demo/live behavior' },
+    { module: 'core/api', owner: 'backend bridge', surface: 'backendUrl/fetchJson/fetchText', nextUse: 'safe REST reads and explicit mutation gates' },
+    { module: 'core/state', owner: 'shell state', surface: 'state/PageControllers/routeToState', nextUse: 'cross-workflow handoff context' },
+    { module: 'components/status', owner: 'status UI', surface: 'badge/provenanceCue/compactSafetyStrip', nextUse: 'empty/loading/error/stale/requires-confirmation states' },
+    { module: 'components/layout', owner: 'layout UI', surface: 'panel/taskFrame/evidenceDrawer/table/chart', nextUse: 'consistent dense operational pages' },
+    { module: 'pages/backtest', owner: 'BacktestAdapter', surface: 'BacktestContracts/renderBacktest', nextUse: 'V2 backtest preflight, run, job, result parity' },
+    { module: 'pages/replay', owner: 'ReplayAdapter', surface: 'ReplayContracts/renderReplay', nextUse: 'V2 chart replay preflight, websocket, timeline parity' },
+    { module: 'pages/condition-ai', owner: 'RemodelAdapters', surface: 'overview/lab/workbench renderers', nextUse: 'strategy code, diff, prompt, context, analytics APIs' },
+    { module: 'pages/audit', owner: 'RemodelAdapters', surface: 'audit renderer/append-only cues', nextUse: 'decisions and record_decision append-only flow' },
+  ];
+  window.RemodelStatusVocabulary = RemodelStatusVocabulary;
+  window.RemodelModuleMap = RemodelModuleMap;
+  const ConditionDetailContracts = [
+    { id: 'strategy-code', label: 'Strategy code', endpoint: '/strategy_code?run=&gen=', owner: 'ConditionDetailAdapter.strategyCode', emptyState: 'missing run/gen returns empty buy_code/sell_code', responseKeys: ['buy_code', 'sell_code', 'buy_name', 'sell_name'] },
+    { id: 'strategy-diff', label: 'Previous diff', endpoint: '/strategy_diff?run_id=&gen_no=&base_gen=previous', owner: 'ConditionDetailAdapter.strategyDiff', emptyState: 'missing run/gen returns empty diff arrays', responseKeys: ['buy_diff', 'sell_diff', 'diff_status', 'reason'] },
+    { id: 'prompts', label: 'Prompt timeline', endpoint: '/prompts?run_id=&gen_no=', owner: 'ConditionDetailAdapter.prompts', emptyState: 'no prompt rows is a valid empty inspector state', responseKeys: ['prompts', 'reason'] },
+    { id: 'ai-context-pack', label: 'AI context pack', endpoint: '/ai_context_pack?run_id=&gen_no=', owner: 'ConditionDetailAdapter.aiContextPack', emptyState: 'missing context renders bounded read-only summary', responseKeys: ['context', 'items', 'reason'] },
+    { id: 'backtest-detail', label: 'Backtest detail', endpoint: '/backtest_detail?run_id=&gen_no=', owner: 'ConditionDetailAdapter.backtestDetail', emptyState: 'missing result renders empty daily/cumulative/drawdown arrays', responseKeys: ['daily', 'cumulative', 'drawdown', 'summary'] },
+  ];
   const BacktestContracts = [
     { id: 'bt-health', method: 'GET', endpoint: '/bt/health', owner: 'BacktestAdapter.readOnlyProbe', modeBehavior: 'reference/demo inert fixture · live safe read on Backtest page load', livePath: '/bt/health', safeAuto: true },
     { id: 'bt-strategies-buy', method: 'GET', endpoint: '/bt/strategies?kind=buy', owner: 'BacktestAdapter.readOnlyProbe', modeBehavior: 'reference/demo inert fixture · live safe read on Backtest page load', livePath: '/bt/strategies?kind=buy', safeAuto: true },
@@ -200,6 +239,14 @@
     { id: 'workbench', label: '분석 워크벤치' },
     { id: 'audit', label: '결정 감사' }
   ];
+  const REMODEL_WORKFLOW_STEPS = [
+    { id: 'overview', label: 'Overview', route: '/ui/remodel/condition', primary: 'condition', sub: 'overview', tone: 'blue' },
+    { id: 'condition', label: 'Condition AI', route: '/ui/remodel/workbench', primary: 'condition', sub: 'workbench', tone: 'violet' },
+    { id: 'backtest', label: 'Backtest', route: '/ui/remodel/backtest', primary: 'backtest', sub: 'overview', tone: 'green' },
+    { id: 'replay', label: 'Chart Replay', route: '/ui/remodel/chart-replay', primary: 'replay', sub: 'overview', tone: 'cyan' },
+    { id: 'audit', label: 'Audit/Decision', route: '/ui/remodel/audit', primary: 'condition', sub: 'audit', tone: 'amber' },
+    { id: 'settings', label: 'Settings', route: 'settings-modal', primary: 'settings', sub: 'settings', tone: 'blue', action: 'settings' },
+  ];
 
   const colors = ['var(--green-2)', 'var(--blue)', 'var(--violet)', 'var(--amber)', 'var(--red)', 'var(--cyan)', 'var(--orange)'];
 
@@ -238,6 +285,78 @@
   function infoList(rows) {
     return `<div class="info-list">${rows.map(r => `<div class="info-row"><span class="label">${escapeHtml(r[0])}</span><span class="value ${r[2] || ''}">${escapeHtml(r[1])}</span></div>`).join('')}</div>`;
   }
+  const UX_PAGE_KEY_ALIASES = {
+    chart_replay: 'replay',
+  };
+  function functionalStateStrip(pageId, config = {}) {
+    const uxKey = UX_PAGE_KEY_ALIASES[pageId] || pageId;
+    const pageStates = UX_PAGE_STATES[uxKey] || [];
+    const configState = String(config.state || '').toLowerCase();
+    const tokens = RemodelStatusVocabulary.map(status => {
+      const active = status === remodelMode || configState.includes(status) || (status === 'requires-confirmation' && String(config.risk || '').toLowerCase().includes('manual-gated'));
+      return `<span class="state-token ${active ? 'active' : ''}" data-state-token="${escapeHtml(status)}">${escapeHtml(status)}</span>`;
+    }).join('');
+    const chips = pageStates.slice(0, 5).map(item => `<span class="page-state-chip">${escapeHtml(item)}</span>`).join('');
+    return `<div class="functional-state-strip" data-functional-state-strip="${escapeHtml(pageId)}" data-state-vocabulary="${escapeHtml(RemodelStatusVocabulary.join('|'))}"><div class="state-token-row">${tokens}</div><div class="page-state-row">${chips}</div></div>`;
+  }
+  function workflowStepForState() {
+    if (state.primary === 'backtest') return 'backtest';
+    if (state.primary === 'replay') return 'replay';
+    if (state.sub === 'audit') return 'audit';
+    if (state.sub === 'overview') return 'overview';
+    return 'condition';
+  }
+  function currentWorkflowContext(input = {}) {
+    const detail = conditionDetailContext(input);
+    const decisionPayload = state.decisionAuditPayloads.decisions || {};
+    const latestDecision = (firstArray(decisionPayload, ['decisions', 'items', 'rows'])[0] || (DATA.audit.ledger || [])[0] || {});
+    const selected = detail.selected || {};
+    const strategy = String(input.strategy || selected.buy_name || selected.buy || DATA.overview.activeStrategy.name || BACKTEST_PREFLIGHT_DEFAULTS.buy || '').trim();
+    const date = String(input.date || REPLAY_PREFLIGHT_DEFAULTS.date || '20250516').trim();
+    const code = String(input.code || REPLAY_PREFLIGHT_DEFAULTS.code || ((DATA.replay.stocks || [])[0] || {}).code || '').trim();
+    const decision = String(input.decision || latestDecision.verdict || latestDecision.decision || 'hold').trim();
+    return {
+      run_id: String(input.run_id ?? input.runId ?? detail.run_id ?? DATA.shell.runId ?? '').trim(),
+      gen_no: intOrDefault(input.gen_no ?? input.genNo ?? detail.gen_no, -1),
+      strategy,
+      date,
+      code,
+      decision,
+      workflow_step: workflowStepForState(),
+      ready: Boolean(detail.run_id && strategy),
+    };
+  }
+  function renderSharedContextStrip(context = currentWorkflowContext()) {
+    const runGen = `${context.run_id || 'missing'} / gen ${context.gen_no >= 0 ? context.gen_no : 'missing'}`;
+    const symbolDate = `${context.code || 'symbol'} / ${context.date || 'date'}`;
+    return `<div class="shared-context-strip" data-shared-context-strip data-workflow-context="${escapeHtml(context.workflow_step)}">
+      <span class="context-chip" data-context-run-gen><b>run/gen</b><span>${escapeHtml(runGen)}</span></span>
+      <span class="context-chip" data-context-strategy><b>strategy</b><span>${escapeHtml(context.strategy || 'missing')}</span></span>
+      <span class="context-chip" data-context-symbol-date><b>symbol/date</b><span>${escapeHtml(symbolDate)}</span></span>
+      <span class="context-chip" data-context-decision><b>decision</b><span>${escapeHtml(context.decision || 'hold')}</span></span>
+    </div>`;
+  }
+  function renderWorkflowRail() {
+    const active = workflowStepForState();
+    return `<nav class="workflow-rail" data-workflow-rail aria-label="V3 workflow">
+      ${REMODEL_WORKFLOW_STEPS.map((step, index) => {
+        const isActive = active === step.id;
+        const attrs = step.action === 'settings'
+          ? 'data-workflow-action="settings"'
+          : `data-workflow-primary="${escapeHtml(step.primary)}" data-workflow-sub="${escapeHtml(step.sub || 'overview')}" data-workflow-route="${escapeHtml(step.route)}"`;
+        return `<button class="workflow-step ${isActive ? 'active' : ''}" data-workflow-step="${escapeHtml(step.id)}" ${attrs} aria-current="${isActive ? 'step' : 'false'}">
+          <span>${index + 1}</span><b>${escapeHtml(step.label)}</b><small>${escapeHtml(step.route)}</small>
+        </button>`;
+      }).join('')}
+    </nav>`;
+  }
+  window.RemodelWorkflowUX = {
+    steps: REMODEL_WORKFLOW_STEPS,
+    workflowStepForState,
+    currentWorkflowContext,
+    renderWorkflowRail,
+    renderSharedContextStrip,
+  };
   function taskFrame(pageId, config) {
     const fields = [
       ['purpose', config.purpose],
@@ -254,11 +373,12 @@
         <span class="badge blue">Task-first V3</span>
         <h2>${escapeHtml(config.title)}</h2>
         <p>${escapeHtml(config.summary)}</p>
+        ${functionalStateStrip(pageId, config)}
       </div>
       <div class="task-frame-fields">
         ${fields.map(([key, value]) => `<div class="task-field" data-ux-field="${escapeHtml(key)}"><span>${escapeHtml(key)}</span><b>${escapeHtml(value)}</b></div>`).join('')}
       </div>
-      ${action ? `<div class="task-frame-action">${action}</div>` : ''}
+      ${action ? `<div class="task-frame-action" data-primary-action-slot>${action}</div>` : ''}
     </section>`;
   }
   function compactSafetyStrip(pageId, notes = []) {
@@ -698,7 +818,7 @@
       const light = 18 + v * 45;
       return `hsl(${hue} 78% ${light}%)`;
     };
-    const gridCols = `74px repeat(${cols.length}, minmax(40px, 1fr))`;
+    const gridCols = `minmax(54px, .8fr) repeat(${cols.length}, minmax(0, 1fr))`;
     const flatValues = values.flat().map(v => Number(v)).filter(v => Number.isFinite(v));
     const minValue = flatValues.length ? Math.min(...flatValues) : 0;
     const maxValue = flatValues.length ? Math.max(...flatValues) : 0;
@@ -753,6 +873,8 @@
       <div class="boundary-strip">
         <span>Route Owner <b>${s.routeOwner}</b></span><span>Boundary <b>${s.boundary}</b></span><span>Env <b>dev</b></span><span>Mode <b>${modeLabel}</b></span><span>Contract <b>${s.contract}</b></span><span>Approval <b>Human Gate Required</b></span><span>Audit <b>Append-Only</b></span>
       </div>
+      ${renderWorkflowRail()}
+      ${renderSharedContextStrip()}
       <nav class="nav-row">${primary}<div class="shell-run">
         <button class="btn small ${state.liveMode === 'LIVE' ? 'primary' : ''}" data-live="LIVE">LIVE</button><button class="btn small ${state.liveMode === 'ARCHIVE' ? 'blue' : ''}" data-live="ARCHIVE">ARCHIVE</button>
         <span class="progress-wrap"><span class="muted">${s.generationText}</span><span class="progress"><span style="width:${s.generationProgress}%"></span></span><span class="mono green">${s.generationProgress}%</span></span>
@@ -767,6 +889,13 @@
   function attachShellEvents() {
     document.querySelectorAll('[data-primary]').forEach(el => el.addEventListener('click', () => { state.primary = el.dataset.primary; if (state.primary === 'condition' && !state.sub) state.sub = 'overview'; pushRouteFromState(); render(); }));
     document.querySelectorAll('[data-sub]').forEach(el => el.addEventListener('click', () => { state.sub = el.dataset.sub; pushRouteFromState(); render(); }));
+    document.querySelectorAll('[data-workflow-primary]').forEach(el => el.addEventListener('click', () => {
+      state.primary = el.dataset.workflowPrimary;
+      state.sub = el.dataset.workflowSub || (state.primary === 'condition' ? 'overview' : state.sub);
+      pushRouteFromState();
+      render();
+    }));
+    document.querySelectorAll('[data-workflow-action="settings"]').forEach(el => el.addEventListener('click', openSettingsModal));
     document.querySelectorAll('[data-live]').forEach(el => el.addEventListener('click', () => { state.liveMode = el.dataset.live; render(); }));
     document.querySelectorAll('.url-input').forEach(el => el.addEventListener('change', () => {
       if (!isLiveBackendMode) {
@@ -870,9 +999,717 @@
       .slice(0, 3);
   }
 
+  function conditionDetailContext(input = {}) {
+    const payload = input.payload || state.latestLoopPayload || {};
+    const overview = DATA.overview || {};
+    const generations = Array.isArray(input.generations)
+      ? input.generations
+      : Array.isArray(payload.generations)
+        ? payload.generations
+        : (overview.generations || []);
+    const selected = input.generation || generations.find(row => row && (row.selected || row.gate_passed === true || row.gate_passed === '통과')) || generations[0] || {};
+    const hasRunInput = Object.prototype.hasOwnProperty.call(input, 'run_id') || Object.prototype.hasOwnProperty.call(input, 'runId');
+    const hasGenInput = Object.prototype.hasOwnProperty.call(input, 'gen_no') || Object.prototype.hasOwnProperty.call(input, 'genNo') || Object.prototype.hasOwnProperty.call(input, 'gen');
+    const runId = String(hasRunInput ? (input.run_id ?? input.runId ?? '') : (payload.run_id || overview.run_id || DATA.shell.runId || '')).trim();
+    const genNo = intOrDefault(hasGenInput ? (input.gen_no ?? input.genNo ?? input.gen) : (selected.gen_no ?? selected.gen ?? -1), -1);
+    const status = !runId ? 'missing-run' : genNo < 0 ? 'missing-gen' : 'ready';
+    return {
+      run_id: runId,
+      gen_no: genNo,
+      selected,
+      status,
+      ready: status === 'ready',
+      reason: status === 'ready' ? 'read-only detail APIs can be requested' : 'Missing run/gen returns an empty state, not a broken inspector.',
+    };
+  }
+
+  function conditionDetailEndpoint(contract, context) {
+    const ctx = context || conditionDetailContext();
+    const run = encodeURIComponent(ctx.run_id || '');
+    const gen = encodeURIComponent(String(ctx.gen_no ?? -1));
+    if (!contract) return '';
+    if (contract.id === 'strategy-code') return `/strategy_code?run=${run}&gen=${gen}`;
+    if (contract.id === 'strategy-diff') return `/strategy_diff?run_id=${run}&gen_no=${gen}&base_gen=previous`;
+    if (contract.id === 'prompts') return `/prompts?run_id=${run}&gen_no=${gen}`;
+    if (contract.id === 'ai-context-pack') return `/ai_context_pack?run_id=${run}&gen_no=${gen}`;
+    if (contract.id === 'backtest-detail') return `/backtest_detail?run_id=${run}&gen_no=${gen}`;
+    return contract.endpoint || '';
+  }
+
+  function markConditionDetailEvidence(id, status, detail, payload = null) {
+    state.conditionDetailEvidence[id] = { status, detail };
+    if (payload) state.conditionDetailPayloads[id] = payload;
+  }
+
+  function conditionDetailPayloadSummary(contract, payload) {
+    if (!payload || typeof payload !== 'object') return 'empty response';
+    if (contract.id === 'strategy-code') {
+      const buyLines = String(payload.buy_code || '').split('\n').filter(Boolean).length;
+      const sellLines = String(payload.sell_code || '').split('\n').filter(Boolean).length;
+      return `${buyLines} buy lines · ${sellLines} sell lines · ${payload.code_status || 'available'}`;
+    }
+    if (contract.id === 'strategy-diff') return `${firstArray(payload, ['buy_diff']).length} buy diff · ${firstArray(payload, ['sell_diff']).length} sell diff · ${payload.diff_status || payload.reason || 'available'}`;
+    if (contract.id === 'prompts') return `${firstArray(payload, ['prompts', 'items', 'rows']).length} prompts · ${payload.reason || 'available'}`;
+    if (contract.id === 'backtest-detail') return `${firstArray(payload, ['daily']).length} daily · ${firstArray(payload, ['cumulative']).length} cumulative · ${firstArray(payload, ['drawdown']).length} drawdown`;
+    return summarizePayload(payload);
+  }
+
+  function renderConditionDetailSurface(context = conditionDetailContext()) {
+    const selectorRows = [
+      ['run_id', context.run_id || 'missing'],
+      ['gen_no', String(context.gen_no)],
+      ['status', context.status, context.ready ? 'green' : 'amber'],
+      ['mode', modeLabel],
+    ];
+    const apiAttrs = {
+      'strategy-code': 'data-condition-detail-api="/strategy_code?run=&gen="',
+      'strategy-diff': 'data-condition-detail-api="/strategy_diff?run_id=&gen_no=&base_gen=previous"',
+      prompts: 'data-condition-detail-api="/prompts?run_id=&gen_no="',
+      'ai-context-pack': 'data-condition-detail-api="/ai_context_pack?run_id=&gen_no="',
+      'backtest-detail': 'data-condition-detail-api="/backtest_detail?run_id=&gen_no="',
+    };
+    const cards = ConditionDetailContracts.map(contract => {
+      const ev = state.conditionDetailEvidence[contract.id] || {};
+      const payload = state.conditionDetailPayloads[contract.id] || {};
+      const endpoint = conditionDetailEndpoint(contract, context);
+      const detail = ev.detail || (context.ready ? 'Ready for live safe GET; reference/demo remains inert.' : contract.emptyState);
+      const empty = !context.ready || ev.status === 'EMPTY' || ev.status === 'NOT-USED' || ev.status === 'INERT';
+      return `<div class="condition-detail-card" ${apiAttrs[contract.id] || ''} data-condition-detail-id="${escapeHtml(contract.id)}">
+        <div class="panel-header"><span>${escapeHtml(contract.label)}</span>${badge(ev.status || (isLiveBackendMode ? 'PENDING' : 'INERT'), cls(ev.status || 'hold'))}</div>
+        <div class="muted">${escapeHtml(contract.endpoint)}</div>
+        <div class="${empty ? 'condition-detail-empty' : ''}" ${empty ? 'data-condition-detail-empty' : ''}>${escapeHtml(detail)}</div>
+        <div class="muted">${escapeHtml(endpoint)}</div>
+        ${contract.id === 'strategy-code' ? codeBox(String(payload.buy_code || DATA.strategyCode.buy || '').split('\n').slice(0, 8).join('\n')) : ''}
+      </div>`;
+    }).join('');
+    return `<section class="condition-detail-surface" data-condition-detail-surface data-condition-detail-context="${escapeHtml(context.status)}">
+      <div class="panel-header"><span>Condition AI detail APIs</span>${badge('read-only', 'blue')}</div>
+      <div class="notice">Strategy code / diff / prompt / context / backtest detail are read-only.</div>
+      <div class="notice warn">Missing run/gen returns an empty state, not a broken inspector.</div>
+      <div class="condition-detail-grid">
+        <div class="condition-detail-card" data-condition-run-gen-selector>${infoList(selectorRows)}</div>
+        ${cards}
+      </div>
+    </section>`;
+  }
+
+  const ConditionDetailAdapter = {
+    contracts: ConditionDetailContracts,
+    ensurePageEvidence() {
+      const context = conditionDetailContext();
+      if (!isLiveBackendMode) {
+        ConditionDetailContracts.forEach(contract => markConditionDetailEvidence(contract.id, 'INERT', 'reference/demo inert · no fetch; detail API contract is shown with fixture baseline'));
+        state.conditionDetailProbeComplete = true;
+        return Promise.resolve(false);
+      }
+      if (state.conditionDetailProbeStarted) return Promise.resolve(true);
+      state.conditionDetailProbeStarted = true;
+      if (!context.ready) {
+        ConditionDetailContracts.forEach(contract => markConditionDetailEvidence(contract.id, 'EMPTY', context.reason));
+        state.conditionDetailProbeComplete = true;
+        return Promise.resolve(false);
+      }
+      ConditionDetailContracts.forEach(contract => markConditionDetailEvidence(contract.id, 'PENDING', 'live safe GET queued'));
+      return Promise.all(ConditionDetailContracts.map(contract =>
+        fetchJson(conditionDetailEndpoint(contract, context), 5000)
+          .then(payload => markConditionDetailEvidence(contract.id, 'LIVE OK', conditionDetailPayloadSummary(contract, payload), payload))
+          .catch(e => markConditionDetailEvidence(contract.id, 'LIVE ERROR', e.message || 'request failed'))
+      )).then(() => {
+        state.conditionDetailProbeComplete = true;
+        render();
+        return true;
+      });
+    },
+  };
+
+  window.ConditionDetailSurface = {
+    contracts: ConditionDetailContracts,
+    context: conditionDetailContext,
+    endpoint: conditionDetailEndpoint,
+    render: renderConditionDetailSurface,
+  };
+
+  const ANALYTICS_HANDOFF_ENDPOINTS = Object.freeze([
+    { id: 'edge-ratio', label: 'Edge Ratio', endpoint: '/edge_ratio?run_ids=', state: 'read-only run analysis' },
+    { id: 'feature-importance', label: 'Feature Importance', endpoint: '/feature_importance?run_id=&gen_no=', state: 'read-only factor ranking' },
+    { id: 'variable-correlation', label: 'Variable Correlation', endpoint: '/variable_correlation?run_id=&gen_no=', state: 'read-only factor relationship' },
+  ]);
+
+  function analyticsHandoffContext(input = {}) {
+    const detail = conditionDetailContext(input);
+    const selected = detail.selected || {};
+    const buy = String(input.buy || selected.buy_name || selected.buy || DATA.overview.activeStrategy.name || BACKTEST_PREFLIGHT_DEFAULTS.buy || '').trim();
+    const sell = String(input.sell || selected.sell_name || selected.sell || BACKTEST_PREFLIGHT_DEFAULTS.sell || '').trim();
+    const date = String(input.date || REPLAY_PREFLIGHT_DEFAULTS.date || '').trim();
+    const code = String(input.code || REPLAY_PREFLIGHT_DEFAULTS.code || '').trim();
+    const jobId = String(input.job_id || input.jobId || 'J10235').trim();
+    const ctx = {
+      run_id: detail.run_id,
+      gen_no: detail.gen_no,
+      buy,
+      sell,
+      date,
+      code,
+      job_id: jobId,
+      ready: detail.ready && Boolean(buy && sell),
+      source_status: detail.status,
+    };
+    ctx.disabledReason = ctx.ready ? '' : 'Incomplete context disables handoff actions.';
+    return ctx;
+  }
+
+  function buildConditionToBacktestHandoff(context = analyticsHandoffContext()) {
+    return {
+      route: '/ui/remodel/backtest',
+      run_id: context.run_id,
+      gen_no: context.gen_no,
+      payload: buildBacktestRunPayload({
+        buy: context.buy,
+        sell: context.sell,
+        mode: 'backtest',
+      }),
+      prefillOnly: true,
+      disabledReason: context.ready ? '' : 'Incomplete context disables handoff actions.',
+    };
+  }
+
+  function buildBacktestToReplayHandoff(input = {}) {
+    const date = String(input.date || REPLAY_PREFLIGHT_DEFAULTS.date || '').trim();
+    const code = String(input.code || REPLAY_PREFLIGHT_DEFAULTS.code || '').trim();
+    const buy = String(input.buy || REPLAY_PREFLIGHT_DEFAULTS.buy || '').trim();
+    const sell = String(input.sell || REPLAY_PREFLIGHT_DEFAULTS.sell || '').trim();
+    const ready = Boolean(date && code && buy && sell);
+    return {
+      route: '/ui/remodel/chart-replay',
+      job_id: String(input.job_id || input.jobId || 'J10235').trim(),
+      payload: buildReplayStartPayload({ date, code, codes: code ? [code] : [], buy, sell }),
+      prefillOnly: true,
+      disabledReason: ready ? '' : 'Incomplete context disables handoff actions.',
+    };
+  }
+
+  function validateAnalyticsHandoff(context = analyticsHandoffContext()) {
+    const reasons = [];
+    if (!context.run_id) reasons.push('run_id required');
+    if (Number(context.gen_no) < 0) reasons.push('gen_no required');
+    if (!context.buy || !context.sell) reasons.push('buy/sell strategy required');
+    return {
+      ok: reasons.length === 0,
+      reasons,
+      disabledReason: reasons.length ? 'Incomplete context disables handoff actions.' : '',
+    };
+  }
+
+  function renderAnalyticsHandoffSurface(context = analyticsHandoffContext()) {
+    const validation = validateAnalyticsHandoff(context);
+    const conditionHandoff = buildConditionToBacktestHandoff(context);
+    const replayHandoff = buildBacktestToReplayHandoff({
+      job_id: context.job_id,
+      date: context.date,
+      code: context.code,
+      buy: context.buy,
+      sell: context.sell,
+    });
+    const endpointAttrs = {
+      'edge-ratio': 'data-analytics-endpoint="/edge_ratio?run_ids="',
+      'feature-importance': 'data-analytics-endpoint="/feature_importance?run_id=&gen_no="',
+      'variable-correlation': 'data-analytics-endpoint="/variable_correlation?run_id=&gen_no="',
+    };
+    const endpointCards = ANALYTICS_HANDOFF_ENDPOINTS.map(item => `<div class="analytics-handoff-card" ${endpointAttrs[item.id]}>
+      <b>${escapeHtml(item.label)}</b>
+      <span>${escapeHtml(item.endpoint)}</span>
+      <small>${escapeHtml(item.state)}</small>
+    </div>`).join('');
+    return `<section class="analytics-handoff-surface" data-analytics-handoff-surface>
+      <div class="panel-header"><span>Analytics and workflow handoff</span>${badge('prefill only', 'violet')}</div>
+      <div class="notice">No auto-run; handoff only pre-fills the next workflow.</div>
+      <div class="notice warn" data-handoff-disabled-reason="${escapeHtml(validation.disabledReason || 'ready')}">${escapeHtml(validation.disabledReason || 'Ready: route/payload preview only.')}</div>
+      <div class="analytics-endpoint-grid">${endpointCards}</div>
+      <div class="analytics-handoff-grid">
+        <div class="analytics-handoff-card" data-condition-to-backtest-handoff data-handoff-route="/ui/remodel/backtest">
+          <b>Condition AI → Backtest</b>
+          <span>${escapeHtml(conditionHandoff.route)}</span>
+          <pre class="preflight-code">${escapeHtml(JSON.stringify(conditionHandoff.payload, null, 2))}</pre>
+        </div>
+        <div class="analytics-handoff-card" data-backtest-to-replay-handoff data-handoff-route="/ui/remodel/chart-replay">
+          <b>Backtest Result → Chart Replay</b>
+          <span>${escapeHtml(replayHandoff.route)}</span>
+          <pre class="preflight-code">${escapeHtml(JSON.stringify(replayHandoff.payload, null, 2))}</pre>
+        </div>
+      </div>
+    </section>`;
+  }
+
+  window.AnalyticsHandoffSurface = {
+    endpoints: ANALYTICS_HANDOFF_ENDPOINTS,
+    context: analyticsHandoffContext,
+    conditionToBacktest: buildConditionToBacktestHandoff,
+    backtestToReplay: buildBacktestToReplayHandoff,
+    validate: validateAnalyticsHandoff,
+    render: renderAnalyticsHandoffSurface,
+  };
+
+  const DecisionAuditContracts = [
+    { id: 'decisions', method: 'GET', endpoint: '/decisions', owner: 'DecisionAuditAdapter.readOnlyLedger', modeBehavior: 'reference/demo inert fixture - live safe GET on Audit page load', safeAuto: true },
+    { id: 'record-decision', method: 'POST', endpoint: '/record_decision', owner: 'Manual researcher action', modeBehavior: 'reference/demo inert fixture - live only after explicit confirm', reason: 'Append-only decision record; no export, broker, order, or approval websocket side effect.' },
+  ];
+
+  const DECISION_VERDICTS = ['promote', 'complement', 'hold', 'reject'];
+
+  function decisionAuditDraftContext(input = {}) {
+    const handoff = analyticsHandoffContext(input);
+    const verdict = String(input.verdict || 'hold').trim().toLowerCase();
+    const strategy = String(input.strategy || handoff.buy || DATA.overview.activeStrategy.name || '').trim();
+    const note = String(input.note || `run_id=${handoff.run_id || 'missing'} gen_no=${handoff.gen_no} strategy=${strategy || 'missing'} requires additional OOS validation`).trim();
+    const context = {
+      run_id: String(input.run_id ?? input.runId ?? handoff.run_id ?? '').trim(),
+      gen_no: intOrDefault(input.gen_no ?? input.genNo ?? handoff.gen_no, -1),
+      strategy,
+      verdict,
+      note,
+      evidence: [
+        '/strategy_code?run=&gen=',
+        '/backtest_detail?run_id=&gen_no=',
+        '/decisions',
+      ],
+      latest_decision_count: Number((state.decisionAuditPayloads.decisions || {}).count || 0),
+    };
+    const missing = [];
+    if (!context.run_id) missing.push('run_id');
+    if (context.gen_no < 0) missing.push('gen_no');
+    if (!context.strategy) missing.push('strategy');
+    context.status = missing.length ? 'missing-context' : 'ready';
+    context.ready = missing.length === 0;
+    context.missing = missing;
+    context.disabledReason = context.ready ? '' : `Missing ${missing.join(', ')} blocks record_decision.`;
+    return context;
+  }
+
+  function buildRecordDecisionPayload(draft = decisionAuditDraftContext()) {
+    const normalized = String(draft.verdict || '').trim().toLowerCase();
+    const contextNote = `run_id=${draft.run_id || 'missing'} gen_no=${draft.gen_no} strategy=${draft.strategy || 'missing'}`;
+    const note = String(draft.note || '').includes('run_id=')
+      ? String(draft.note || '').trim()
+      : `${String(draft.note || '').trim()} | ${contextNote}`.trim();
+    return {
+      verdict: DECISION_VERDICTS.includes(normalized) ? normalized : '',
+      note,
+    };
+  }
+
+  function validateRecordDecisionPayload(payload) {
+    const errors = [];
+    const verdict = String((payload || {}).verdict || '').trim().toLowerCase();
+    const note = String((payload || {}).note || '').trim();
+    if (!DECISION_VERDICTS.includes(verdict)) errors.push('verdict must be promote, complement, hold, or reject');
+    if (note.length < 8) errors.push('note is required');
+    if (!note.includes('run_id=') || !note.includes('gen_no=') || !note.includes('strategy=')) errors.push('context note is required');
+    return {
+      ok: errors.length === 0,
+      errors,
+      disabledReason: errors.length ? errors.join('; ') : '',
+    };
+  }
+
+  function markDecisionAuditEvidence(id, status, detail, payload = null) {
+    state.decisionAuditEvidence[id] = { status, detail };
+    if (payload) state.decisionAuditPayloads[id] = payload;
+  }
+
+  function decisionRowsFromPayload(payload) {
+    const rows = firstArray(payload, ['decisions', 'items', 'rows']);
+    return rows.slice(0, 4).map(row => ({
+      verdict: row.verdict || row.decision || 'hold',
+      note: row.note || 'no note',
+      ts: row.ts || row.time || '',
+    }));
+  }
+
+  function recordDecisionAfterConfirm(payload, confirmFn = window.confirm) {
+    const validation = validateRecordDecisionPayload(payload);
+    if (!validation.ok) {
+      state.lastDecisionRecordStatus = { status: 'validation-error', detail: validation.disabledReason };
+      return Promise.resolve(state.lastDecisionRecordStatus);
+    }
+    const approved = typeof confirmFn === 'function'
+      ? confirmFn('Append-only record only; this does not export or place orders.')
+      : false;
+    if (!approved) {
+      state.lastDecisionRecordStatus = { status: 'cancelled', detail: 'Manual confirmation cancelled.' };
+      return Promise.resolve(state.lastDecisionRecordStatus);
+    }
+    if (!isLiveBackendMode) {
+      state.lastDecisionRecordStatus = { status: 'inert', detail: 'Reference/demo mode never posts record_decision.' };
+      return Promise.resolve(state.lastDecisionRecordStatus);
+    }
+    state.lastDecisionRecordStatus = { status: 'posting', detail: 'POST /record_decision queued after manual confirm.' };
+    return fetch(backendUrl('/record_decision'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+      .then(out => {
+        state.lastDecisionRecordStatus = { status: out.status || 'ok', detail: summarizePayload(out) };
+        state.decisionAuditProbeStarted = false;
+        return DecisionAuditAdapter.ensurePageEvidence().then(() => state.lastDecisionRecordStatus);
+      })
+      .catch(e => {
+        state.lastDecisionRecordStatus = { status: 'record-failed', detail: e.message || 'record_decision failed' };
+        return state.lastDecisionRecordStatus;
+      });
+  }
+
+  function renderDecisionAuditSurface(draft = decisionAuditDraftContext()) {
+    const payload = buildRecordDecisionPayload(draft);
+    const validation = validateRecordDecisionPayload(payload);
+    const decisionList = state.decisionAuditPayloads.decisions || {};
+    const recordStatus = state.lastDecisionRecordStatus || { status: 'idle', detail: 'Record failure, duplicate context, missing context, and validation errors stay visible.' };
+    const contractCards = DecisionAuditContracts.map(contract => {
+      const ev = state.decisionAuditEvidence[contract.id] || {};
+      const attrs = contract.id === 'decisions'
+        ? 'data-decisions-endpoint="/decisions"'
+        : 'data-record-decision-endpoint="/record_decision" data-record-decision-gate="manual-confirm-required"';
+      return `<div class="decision-draft-card" ${attrs} data-decision-contract="${escapeHtml(contract.id)}">
+        <div class="panel-header"><span>${escapeHtml(contract.method)} ${escapeHtml(contract.endpoint)}</span>${badge(ev.status || (isLiveBackendMode ? 'PENDING' : 'INERT'), cls(ev.status || 'hold'))}</div>
+        <div class="muted">${escapeHtml(contract.modeBehavior)}</div>
+        <div class="muted">${escapeHtml(ev.detail || contract.reason || 'safe read-only decision ledger')}</div>
+      </div>`;
+    }).join('');
+    const rows = decisionRowsFromPayload(decisionList);
+    const history = rows.length
+      ? rows.map(row => `<div class="decision-draft-card"><b>${escapeHtml(row.verdict)}</b><span>${escapeHtml(row.note)}</span><small>${escapeHtml(row.ts)}</small></div>`).join('')
+      : '<div class="decision-draft-card" data-decision-empty-state>No decision rows yet; /decisions empty state is valid.</div>';
+    return `<section class="decision-audit-surface" data-decision-audit-surface data-approval-boundary="separate-route">
+      <div class="panel-header"><span>Decision audit contracts</span>${badge(draft.status, draft.ready ? 'green' : 'amber')}</div>
+      <div class="notice">Append-only record only; this does not export or place orders.</div>
+      <div class="notice warn">final approval remains separate from /record_decision.</div>
+      <div class="notice warn" data-record-decision-disabled-reason="${escapeHtml(draft.disabledReason || validation.disabledReason || 'ready')}">Missing verdict/note/context blocks record_decision. ${escapeHtml(draft.disabledReason || validation.disabledReason || 'Ready after manual confirm.')}</div>
+      <div class="decision-contract-grid">${contractCards}</div>
+      <div class="decision-context-grid">
+        <div class="decision-draft-card">${infoList([['run_id', draft.run_id || 'missing'], ['gen_no', String(draft.gen_no)], ['strategy', draft.strategy || 'missing'], ['history_count', String(draft.latest_decision_count)]])}</div>
+        <div class="decision-draft-card" data-record-decision-payload="${escapeHtml(JSON.stringify(payload))}">
+          <b>record_decision payload preview</b>
+          <pre class="preflight-code">${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
+        </div>
+        <div class="decision-boundary-card">
+          <b>Approval boundary</b>
+          <span>record_decision writes audit history only. Export approval, websocket approval, broker login, and orders stay outside this route.</span>
+          ${badge(recordStatus.status, cls(recordStatus.status))}
+          <small>${escapeHtml(recordStatus.detail)}</small>
+        </div>
+      </div>
+      <div class="decision-record-grid">${history}</div>
+      ${manualBtn('Confirm append-only decision record', 'primary', `data-record-decision-confirm data-record-decision-payload="${escapeHtml(JSON.stringify(payload))}" data-record-decision-disabled-reason="${escapeHtml(validation.disabledReason || '')}"`, 'record-decision-confirm')}
+    </section>`;
+  }
+
+  const DecisionAuditAdapter = {
+    contracts: DecisionAuditContracts,
+    ensurePageEvidence() {
+      if (!isLiveBackendMode) {
+        DecisionAuditContracts.forEach(contract => markDecisionAuditEvidence(contract.id, 'INERT', contract.id === 'decisions' ? 'reference/demo inert - no /decisions fetch' : 'manual-gated - no POST in reference/demo'));
+        state.decisionAuditProbeComplete = true;
+        return Promise.resolve(false);
+      }
+      if (state.decisionAuditProbeStarted) return Promise.resolve(true);
+      state.decisionAuditProbeStarted = true;
+      markDecisionAuditEvidence('decisions', 'PENDING', 'live safe GET queued');
+      markDecisionAuditEvidence('record-decision', 'MANUAL-GATED', 'POST /record_decision waits for explicit confirm.');
+      return fetchJson('/decisions', 5000)
+        .then(payload => markDecisionAuditEvidence('decisions', 'LIVE OK', `${Number(payload.count || 0)} decisions`, payload))
+        .catch(e => markDecisionAuditEvidence('decisions', 'LIVE ERROR', e.message || 'request failed'))
+        .then(() => {
+          state.decisionAuditProbeComplete = true;
+          render();
+          return true;
+        });
+    },
+  };
+
+  window.DecisionAuditSurface = {
+    contracts: DecisionAuditContracts,
+    draftContext: decisionAuditDraftContext,
+    buildPayload: buildRecordDecisionPayload,
+    validatePayload: validateRecordDecisionPayload,
+    recordAfterConfirm: recordDecisionAfterConfirm,
+    render: renderDecisionAuditSurface,
+  };
+
+  function scheduleRenderForEvidence() {
+    if (state.evidenceRenderScheduled) return;
+    state.evidenceRenderScheduled = true;
+    setTimeout(() => {
+      state.evidenceRenderScheduled = false;
+      render();
+    }, 0);
+  }
+
   function markBacktestEvidence(id, status, detail) {
     state.backtestContractEvidence[id] = { status, detail };
+    if (isLiveBackendMode && state.primary === 'backtest') scheduleRenderForEvidence();
   }
+
+  const BACKTEST_PREFLIGHT_DEFAULTS = Object.freeze({
+    buy: 'BreakOut_v2',
+    sell: 'BreakOut_Exit_v1',
+    start: '20220101',
+    end: '20250516',
+    timeframe: 'min',
+    engines: 8,
+    mode: 'backtest',
+    param_space: '',
+    train_window_days: 60,
+    test_window_days: 20,
+    step_days: 5,
+    sweep_action: 'param',
+    sweep_spec: [{ name: 'fastLen', min: 10, max: 40, step: 5 }],
+    sweep_params: '',
+    window_days: 20,
+    opt_method: 'grid',
+    opt_objective: 'tpi',
+  });
+
+  function intOrDefault(value, fallback) {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  function buildBacktestRunPayload(form = {}) {
+    const merged = Object.assign({}, BACKTEST_PREFLIGHT_DEFAULTS, form || {});
+    const mode = String(merged.mode || 'backtest').trim() || 'backtest';
+    const payload = {
+      buy: String(merged.buy || '').trim(),
+      sell: String(merged.sell || '').trim(),
+      start: intOrDefault(merged.start, 0),
+      end: intOrDefault(merged.end, 0),
+      timeframe: String(merged.timeframe || 'min').trim() || 'min',
+      engines: intOrDefault(merged.engines, 4),
+      mode,
+    };
+    if (mode === 'optimize') {
+      payload.param_space = String(merged.param_space || '').trim();
+      payload.opt_method = String(merged.opt_method || 'grid').trim() || 'grid';
+      payload.opt_objective = String(merged.opt_objective || 'tpi').trim() || 'tpi';
+    } else if (mode === 'wfo') {
+      payload.train_window_days = intOrDefault(merged.train_window_days, 0);
+      payload.test_window_days = intOrDefault(merged.test_window_days, 0);
+      payload.step_days = intOrDefault(merged.step_days, 0);
+      payload.opt_method = String(merged.opt_method || 'grid').trim() || 'grid';
+      payload.opt_objective = String(merged.opt_objective || 'tpi').trim() || 'tpi';
+      if (String(merged.param_space || '').trim()) payload.param_space = String(merged.param_space).trim();
+    } else if (mode === 'sweep') {
+      payload.sweep_action = String(merged.sweep_action || 'param').trim() || 'param';
+      if (payload.sweep_action === 'rolling') {
+        payload.window_days = intOrDefault(merged.window_days, 0);
+        payload.step_days = intOrDefault(merged.step_days, 0);
+      } else if (String(merged.sweep_params || '').trim()) {
+        payload.sweep_params = String(merged.sweep_params).trim();
+      } else {
+        payload.sweep_spec = Array.isArray(merged.sweep_spec)
+          ? merged.sweep_spec
+              .filter(row => row && String(row.name || '').trim())
+              .map(row => ({
+                name: String(row.name).trim(),
+                min: Number(row.min),
+                max: Number(row.max),
+                step: Number(row.step),
+              }))
+          : [];
+      }
+    }
+    return payload;
+  }
+
+  function validateBacktestRunPayload(payload) {
+    const reasons = [];
+    if (!payload || !payload.buy || !payload.sell) reasons.push('buy/sell strategy names are required');
+    if (!/^\d{8}$/.test(String(payload && payload.start))) reasons.push('start must be YYYYMMDD');
+    if (!/^\d{8}$/.test(String(payload && payload.end))) reasons.push('end must be YYYYMMDD');
+    if (payload && payload.start && payload.end && Number(payload.end) < Number(payload.start)) reasons.push('end must be on or after start');
+    if (payload && Number(payload.engines) < 1) reasons.push('engines must be >= 1');
+    if (payload && payload.mode === 'optimize' && !payload.param_space) reasons.push('optimize requires param_space');
+    if (payload && payload.mode === 'wfo' && (Number(payload.train_window_days) < 1 || Number(payload.test_window_days) < 1)) reasons.push('wfo requires train/test windows');
+    if (payload && payload.mode === 'sweep') {
+      if (payload.sweep_action === 'rolling' && (Number(payload.window_days) < 1 || Number(payload.step_days) < 1)) reasons.push('rolling sweep requires window_days and step_days');
+      if (payload.sweep_action !== 'rolling' && !payload.sweep_params && (!Array.isArray(payload.sweep_spec) || !payload.sweep_spec.length)) reasons.push('param sweep requires sweep_spec or sweep_params');
+      const badSweepRow = Array.isArray(payload.sweep_spec)
+        ? payload.sweep_spec.find(row => !Number.isFinite(row.min) || !Number.isFinite(row.max) || !Number.isFinite(row.step))
+        : null;
+      if (badSweepRow) reasons.push(`sweep variable ${badSweepRow.name} needs numeric min/max/step`);
+    }
+    return {
+      ok: reasons.length === 0,
+      reasons,
+      disabledReason: reasons.join(' · '),
+      summary: reasons.length ? 'Invalid preflight blocks /bt/run before confirm.' : 'Payload matches V2 /bt/run shape.',
+      confirmRequired: true,
+    };
+  }
+
+  function renderBacktestPreflightPanel() {
+    const payload = buildBacktestRunPayload();
+    const validation = validateBacktestRunPayload(payload);
+    const modeText = isLiveBackendMode
+      ? 'Live mode requires a manual confirm before POST /bt/run.'
+      : 'Reference/demo preflight only; /bt/run is not called.';
+    const disabledReason = validation.ok
+      ? (isLiveBackendMode ? 'Manual confirmation required before request.' : 'Reference/demo mode keeps POST inert.')
+      : validation.disabledReason;
+    return `<div class="backtest-preflight-panel" data-backtest-run-payload-shape="buy|sell|start|end|timeframe|engines|mode">
+      <div class="preflight-grid">
+        <div data-backtest-validation-summary="${escapeHtml(validation.summary)}">
+          ${badge(validation.ok ? 'PREFLIGHT PASS' : 'PREFLIGHT BLOCKED', validation.ok ? 'green' : 'red')}
+          <p>${escapeHtml(modeText)}</p>
+          <p class="muted">${escapeHtml(validation.summary)}</p>
+        </div>
+        <div data-backtest-disabled-reason="${escapeHtml(disabledReason)}">
+          <b>Disabled reason</b>
+          <p>${escapeHtml(disabledReason)}</p>
+        </div>
+      </div>
+      <pre class="preflight-code" data-backtest-preflight-payload>${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
+      <div class="bt-action-row" data-backtest-confirm-gate="manual-required">
+        ${manualBtn('Confirm gated /bt/run payload', 'primary small', '', 'bt-run-preview')}
+        <span class="muted">${escapeHtml(modeText)}</span>
+      </div>
+    </div>`;
+  }
+
+  window.BacktestPreflight = {
+    defaults: BACKTEST_PREFLIGHT_DEFAULTS,
+    buildRunPayload: buildBacktestRunPayload,
+    validateRunPayload: validateBacktestRunPayload,
+  };
+
+  const BACKTEST_JOB_STATES = Object.freeze([
+    'idle',
+    'pending',
+    'running',
+    'success',
+    'error',
+    'cancelled',
+    'missing-job',
+    'unknown-job',
+    'ws-closed',
+    'terminal',
+  ]);
+
+  function normalizeBacktestJobMessage(message = {}) {
+    const jobId = String(message.job_id || message.jobId || '').trim();
+    if (message.error) {
+      const status = jobId ? 'unknown-job' : 'missing-job';
+      return {
+        job_id: jobId,
+        status,
+        phase: 'error',
+        progress: 0,
+        terminal: true,
+        message: String(message.error || ''),
+        log_tail: [],
+      };
+    }
+    const rawStatus = String(message.status || 'idle').trim() || 'idle';
+    const status = rawStatus === 'failed' ? 'error' : rawStatus === 'canceled' ? 'cancelled' : rawStatus;
+    const terminal = Boolean(message.terminal) || ['success', 'error', 'cancelled'].includes(status);
+    const progress = Math.max(0, Math.min(1, Number(message.progress || (terminal ? 1 : 0))));
+    return {
+      job_id: jobId,
+      status: BACKTEST_JOB_STATES.includes(status) ? status : 'error',
+      phase: String(message.phase || (terminal ? 'done' : status)),
+      progress,
+      terminal,
+      message: String(message.message || ''),
+      elapsed: Number(message.elapsed || 0),
+      log_tail: Array.isArray(message.log_tail) ? message.log_tail : [],
+    };
+  }
+
+  function backtestJobWsPath(jobId) {
+    return `/bt/ws_job?job_id=${encodeURIComponent(String(jobId || '').trim())}`;
+  }
+
+  function renderBacktestJobProgressPanel() {
+    const running = normalizeBacktestJobMessage({
+      job_id: 'J10235',
+      status: 'running',
+      progress: 0.634,
+      phase: 'running',
+      elapsed: 78,
+      log_tail: ['prepare strategies', 'load bars', 'running engine shard 3/8'],
+    });
+    const terminal = normalizeBacktestJobMessage({
+      job_id: 'J10234',
+      status: 'success',
+      progress: 1,
+      phase: 'done',
+      terminal: true,
+      message: 'result ready',
+    });
+    const missing = normalizeBacktestJobMessage({ error: 'job_id is required' });
+    const unknown = normalizeBacktestJobMessage({ job_id: 'nope', error: 'job_id not found' });
+    const percent = Math.round(running.progress * 1000) / 10;
+    return `<div class="backtest-job-progress" data-backtest-job-progress data-backtest-ws-path="/bt/ws_job?job_id=J10235">
+      <div class="job-state-grid">
+        <div>
+          ${badge(running.status, 'blue')}
+          <b>${escapeHtml(running.job_id)}</b>
+          <p>WebSocket observer is manual-gated; no stream opens on page load.</p>
+        </div>
+        <div data-backtest-terminal-state="${escapeHtml(terminal.status)}">
+          ${badge(terminal.terminal ? 'terminal' : terminal.status, terminal.terminal ? 'green' : 'amber')}
+          <p>Result fetch waits for terminal job evidence.</p>
+        </div>
+        <div data-backtest-job-error="missing-job">${badge(missing.status, 'red')}<p>${escapeHtml(missing.message)}</p></div>
+        <div data-backtest-job-error="unknown-job">${badge(unknown.status, 'red')}<p>${escapeHtml(unknown.message)}</p></div>
+      </div>
+      <div class="progress"><span style="width:${percent}%"></span></div>
+      <div class="job-log-tail">${running.log_tail.map(escapeHtml).join(' · ')}</div>
+    </div>`;
+  }
+
+  window.BacktestJobProgress = {
+    states: BACKTEST_JOB_STATES,
+    normalizeMessage: normalizeBacktestJobMessage,
+    jobWsPath: backtestJobWsPath,
+  };
+
+  const BACKTEST_ANALYSIS_SURFACES = Object.freeze([
+    { id: 'result', label: 'Result summary', endpoint: '/bt/result?job_id=__demo__', state: 'safe demo read' },
+    { id: 'summary', label: 'Summary metrics', endpoint: '/bt/analysis/summary?job_id=', state: 'completed job required' },
+    { id: 'equity', label: 'Equity curve', endpoint: '/bt/analysis/equity?job_id=', state: 'completed job required' },
+    { id: 'distribution', label: 'PnL distribution', endpoint: '/bt/analysis/distribution?job_id=', state: 'completed job required' },
+    { id: 'heatmap', label: 'Time heatmap', endpoint: '/bt/analysis/heatmap?job_id=', state: 'completed job required' },
+    { id: 'underwater', label: 'Underwater', endpoint: '/bt/analysis/underwater?job_id=', state: 'completed job required' },
+    { id: 'insights', label: 'Insights', endpoint: '/bt/analysis/insights?job_id=', state: 'completed job required' },
+    { id: 'mae-mfe', label: 'MAE/MFE', endpoint: '/bt/analysis/mae_mfe?job_id=', state: 'completed job required' },
+    { id: 'exit-reasons', label: 'Exit reasons', endpoint: '/bt/analysis/exit_reasons?job_id=', state: 'completed job required' },
+    { id: 'montecarlo', label: 'Monte Carlo', endpoint: '/bt/analysis/montecarlo?job_id=', state: 'completed job required' },
+    { id: 'orderflow', label: 'Orderflow', endpoint: '/bt/analysis/orderflow?job_id=', state: 'completed job required' },
+    { id: 'gui-parity', label: 'GUI parity', endpoint: '/bt/analysis/gui_parity?job_id=', state: 'completed job required' },
+    { id: 'compare', label: 'Compare', endpoint: '/bt/compare?job_a=&job_b=', state: 'two completed jobs required' },
+    { id: 'overlay', label: 'Overlay', endpoint: '/bt/overlay?job_ids=', state: 'two to four completed jobs required' },
+    { id: 'report', label: 'HTML report', endpoint: '/bt/report?job_id=', state: 'completed job required' },
+  ]);
+
+  function renderBacktestAnalysisSurface() {
+    const items = BACKTEST_ANALYSIS_SURFACES.map(surface => `<div class="analysis-surface-item" data-backtest-analysis-surface="${escapeHtml(surface.id)}">
+      <b>${escapeHtml(surface.label)}</b>
+      <span>${escapeHtml(surface.endpoint)}</span>
+      <small>${escapeHtml(surface.state)}</small>
+    </div>`).join('');
+    return `<div class="backtest-analysis-surface">
+      <div class="notice" data-backtest-result-empty>No completed job selected; analysis calls remain disabled.</div>
+      <div class="notice warn" data-backtest-compare-disabled-reason="Need two completed job ids before compare.">Need two completed job ids before compare.</div>
+      <div class="notice" data-backtest-report-state="disabled">Report opens only for existing completed job evidence.</div>
+      <div class="analysis-surface-grid">${items}</div>
+    </div>`;
+  }
+
+  window.BacktestAnalysisSurface = {
+    surfaces: BACKTEST_ANALYSIS_SURFACES,
+    render: renderBacktestAnalysisSurface,
+  };
 
   function firstReplayDateCode(payload) {
     const rows = firstArray(payload, ['demos', 'items', 'rows', 'stocks', 'codes']);
@@ -890,6 +1727,262 @@
     state.replayContractEvidence[id] = { status, detail };
   }
 
+  const REPLAY_PREFLIGHT_DEFAULTS = Object.freeze({
+    src: 'min',
+    date: '20250516',
+    code: '005930',
+    codes: ['005930'],
+    speed: 1,
+    agg_sec: 10,
+    buy: 'BreakOut_v2',
+    sell: 'BreakOut_Exit_v1',
+  });
+
+  function buildReplayStartPayload(form = {}) {
+    const merged = Object.assign({}, REPLAY_PREFLIGHT_DEFAULTS, form || {});
+    const explicitCodes = Array.isArray(merged.codes)
+      ? merged.codes.map(code => String(code || '').trim()).filter(Boolean)
+      : [];
+    const fallbackCode = String(merged.code || '').trim();
+    const codes = explicitCodes.length ? explicitCodes : (fallbackCode ? [fallbackCode] : []);
+    return {
+      action: 'start',
+      date: intOrDefault(merged.date, 0),
+      src: String(merged.src || 'min').trim() || 'min',
+      codes,
+      speed: Number(merged.speed || 1),
+      agg_sec: intOrDefault(merged.agg_sec, 10),
+      buy: String(merged.buy || '').trim(),
+      sell: String(merged.sell || '').trim(),
+    };
+  }
+
+  function validateReplayStartPayload(payload) {
+    const reasons = [];
+    if (!payload || !/^\d{8}$/.test(String(payload.date))) reasons.push('date must be YYYYMMDD');
+    if (!payload || !Array.isArray(payload.codes) || !payload.codes.length) reasons.push('code selection is required');
+    if (!payload || !['min', 'tick'].includes(String(payload.src || ''))) reasons.push('src must be min or tick');
+    if (!payload || Number(payload.speed) <= 0) reasons.push('speed must be positive');
+    if (!payload || Number(payload.agg_sec) < 1) reasons.push('agg_sec must be >= 1');
+    if (!payload || !payload.buy || !payload.sell) reasons.push('buy/sell strategy names are required');
+    return {
+      ok: reasons.length === 0,
+      reasons,
+      disabledReason: reasons.join(' · '),
+      summary: reasons.length ? 'Missing date/code blocks /sim/ws start before confirm.' : 'Replay start payload matches V2 /sim/ws action shape.',
+      confirmRequired: true,
+    };
+  }
+
+  function renderReplayPreflightPanel() {
+    const payload = buildReplayStartPayload();
+    const validation = validateReplayStartPayload(payload);
+    const modeText = isLiveBackendMode
+      ? 'Live mode requires manual /sim/ws start confirmation.'
+      : 'Reference/demo replay preflight only; /sim/ws is not opened.';
+    const disabledReason = validation.ok
+      ? (isLiveBackendMode ? 'Manual confirmation required before WebSocket start.' : 'Reference/demo mode keeps /sim/ws inert.')
+      : validation.disabledReason;
+    return `<div class="replay-preflight-panel" data-replay-start-payload-shape="action|date|src|codes|speed|agg_sec|buy|sell">
+      <div class="replay-preflight-grid" data-replay-dataset-selector>
+        <div>${badge(validation.ok ? 'DATASET READY' : 'DATASET BLOCKED', validation.ok ? 'green' : 'red')}<p>${escapeHtml(validation.summary)}</p></div>
+        <div data-replay-disabled-reason="${escapeHtml(disabledReason)}"><b>Disabled reason</b><p>${escapeHtml(disabledReason)}</p></div>
+      </div>
+      <pre class="preflight-code" data-replay-preflight-payload>${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
+      <div class="bt-action-row" data-replay-start-gate="manual-required">
+        ${manualBtn('Confirm gated /sim/ws start', 'primary small', '', 'sim-start')}
+        <span class="muted">${escapeHtml(modeText)}</span>
+      </div>
+    </div>`;
+  }
+
+  window.ReplayPreflight = {
+    defaults: REPLAY_PREFLIGHT_DEFAULTS,
+    buildStartPayload: buildReplayStartPayload,
+    validateStartPayload: validateReplayStartPayload,
+  };
+
+  const REPLAY_PLAYBACK_STATES = Object.freeze([
+    'idle',
+    'ready',
+    'playing',
+    'paused',
+    'seeking',
+    'done',
+    'error',
+    'over-limit',
+  ]);
+
+  function replayWsActionPayload(action, patch = {}) {
+    const kind = String(action || '').trim();
+    if (kind === 'start') return buildReplayStartPayload(patch);
+    if (kind === 'pause' || kind === 'resume' || kind === 'stop') return { action: kind };
+    if (kind === 'speed') return { action: 'speed', value: Number(patch.value || patch.speed || 1) };
+    if (kind === 'seek') return { action: 'seek', t: intOrDefault(patch.t || patch.cursor || 0, 0) };
+    return { action: kind || 'unknown' };
+  }
+
+  function normalizeReplayWsMessage(message = {}) {
+    const kind = String(message.type || message.kind || message.action || '').trim() || (message.error ? 'error' : 'unknown');
+    if (kind === 'error' || message.error) {
+      const text = String(message.error || message.message || '');
+      return {
+        kind: 'error',
+        state: /limit/i.test(text) ? 'over-limit' : 'error',
+        terminal: false,
+        message: text || 'Replay WebSocket error',
+      };
+    }
+    if (kind === 'done') return { kind, state: 'done', terminal: true, bars: 0, message: 'Replay completed' };
+    if (kind === 'meta') return { kind, state: 'playing', terminal: false, bars_total: Number(message.bars_total || 0), codes: message.codes || [] };
+    if (kind === 'bars' || kind === 'history') return { kind, state: 'playing', terminal: false, bars: firstArray(message, ['items', 'bars', 'history']).length };
+    return { kind, state: REPLAY_PLAYBACK_STATES.includes(kind) ? kind : 'ready', terminal: false };
+  }
+
+  function renderReplayPlaybackControls() {
+    const actions = [
+      ['start', 'Start', 'data-replay-ws-action="start"'],
+      ['pause', 'Pause', 'data-replay-ws-action="pause"'],
+      ['resume', 'Resume', 'data-replay-ws-action="resume"'],
+      ['speed', 'Speed x2', 'data-replay-ws-action="speed"'],
+      ['seek', 'Seek 093000', 'data-replay-ws-action="seek"'],
+      ['stop', 'Stop', 'data-replay-ws-action="stop"'],
+    ];
+    const actionButtons = actions.map(([action, label, attrs]) => manualBtn(label, 'small', attrs, `sim-${action}`)).join('');
+    const messages = [
+      normalizeReplayWsMessage({ type: 'meta', codes: ['005930'], bars_total: 4200 }),
+      normalizeReplayWsMessage({ type: 'bars', items: [{ t: 93000 }, { t: 93001 }] }),
+      normalizeReplayWsMessage({ type: 'history', history: [{ t: 92500 }] }),
+      normalizeReplayWsMessage({ type: 'done' }),
+      normalizeReplayWsMessage({ type: 'error', error: 'over session limit' }),
+    ];
+    const messageItems = messages.map(item => `<div class="replay-message-chip" data-replay-ws-message-kind="${escapeHtml(item.kind)}">
+      <b>${escapeHtml(item.kind)}</b><span>${escapeHtml(item.state)}</span>
+    </div>`).join('');
+    return `<div class="replay-playback-controls" data-replay-playback-controls>
+      <div class="notice">Playback controls build /sim/ws messages only after manual start.</div>
+      <div class="bt-action-row">${actionButtons}</div>
+      <div class="replay-message-grid">${messageItems}</div>
+      <div class="notice danger">Over session limit remains visible as error state.</div>
+    </div>`;
+  }
+
+  window.ReplayPlayback = {
+    states: REPLAY_PLAYBACK_STATES,
+    actionPayload: replayWsActionPayload,
+    normalizeMessage: normalizeReplayWsMessage,
+  };
+
+  const REPLAY_TIMELINE_EMPTY_TEXT = 'No signal/trade data for selected replay cursor.';
+
+  function replayTimelineCursor(payload = {}) {
+    const bars = firstArray(payload, ['bars', 'items', 'history']);
+    const signals = firstArray(payload, ['signals', 'signalLog', 'signal_log']);
+    const trades = firstArray(payload, ['trades', 'fills', 'orders']);
+    const positions = firstArray(payload, ['positions', 'positionRows']);
+    const logs = firstArray(payload, ['logs', 'events']);
+    const maxIndex = Math.max(0, bars.length - 1);
+    const requestedIndex = payload.selectedIndex ?? payload.index ?? payload.cursor ?? maxIndex;
+    const selectedIndex = Math.max(0, Math.min(maxIndex, intOrDefault(requestedIndex, maxIndex)));
+    const selectedBar = bars[selectedIndex] || bars[maxIndex] || {};
+    const firstSignal = signals[0] || {};
+    const selectedTime = String(payload.selectedTime || selectedBar.time || selectedBar.t || firstSignal.time || 'n/a');
+    const selectedCode = String(payload.selectedCode || selectedBar.code || selectedBar.stock || firstSignal.stock || payload.code || '');
+    return {
+      bars,
+      signals,
+      trades,
+      positions,
+      logs,
+      selectedIndex,
+      selectedTime,
+      selectedCode,
+      selectedBar,
+      hasSignals: signals.length > 0,
+      hasTrades: trades.length > 0,
+      emptyText: REPLAY_TIMELINE_EMPTY_TEXT,
+    };
+  }
+
+  function replayTimelineHandoffContext(input = {}) {
+    const codeFromList = Array.isArray(input.codes) && input.codes.length ? input.codes[0] : '';
+    const date = String(input.date || input.day || input.trading_day || REPLAY_PREFLIGHT_DEFAULTS.date || '').trim();
+    const code = String(input.code || input.stock_code || input.symbol || codeFromList || REPLAY_PREFLIGHT_DEFAULTS.code || '').trim();
+    const buy = String(input.buy || input.buy_name || input.buyStrategy || input.strategy || REPLAY_PREFLIGHT_DEFAULTS.buy || '').trim();
+    const sell = String(input.sell || input.sell_name || input.sellStrategy || REPLAY_PREFLIGHT_DEFAULTS.sell || '').trim();
+    const src = String(input.src || input.timeframe || REPLAY_PREFLIGHT_DEFAULTS.src || 'min').trim() || 'min';
+    const prefillReady = Boolean(date && code && buy && sell);
+    return {
+      source: 'bt-result-localStorage-event',
+      date,
+      code,
+      buy,
+      sell,
+      src,
+      selectedIndex: intOrDefault(input.selectedIndex ?? input.cursor ?? 0, 0),
+      prefillReady,
+      reason: prefillReady ? 'Backtest result handoff can prefill replay preflight.' : 'Need date, code, buy, and sell before replay prefill.',
+    };
+  }
+
+  function replayTimelineEventText(row = {}, fallbackTime = 'n/a') {
+    const time = row.time || row.t || row.buy_hms || row.sell_hms || fallbackTime;
+    const label = row.signal || row.action || row.side || row.status || row.reason || row.message || row.kind || 'event';
+    const price = row.price || row.c || row.close || row.buy_price || row.sell_price || '';
+    return `${time} · ${label}${price ? ` · ${price}` : ''}`;
+  }
+
+  function renderReplayTimelineSurface(data = {}, selectedStock = {}) {
+    const cursor = replayTimelineCursor(data);
+    const handoff = replayTimelineHandoffContext(data.handoff || {
+      date: REPLAY_PREFLIGHT_DEFAULTS.date,
+      code: cursor.selectedCode || selectedStock.code,
+      buy: REPLAY_PREFLIGHT_DEFAULTS.buy,
+      sell: REPLAY_PREFLIGHT_DEFAULTS.sell,
+      src: REPLAY_PREFLIGHT_DEFAULTS.src,
+      selectedIndex: cursor.selectedIndex,
+    });
+    const cursorPct = cursor.bars.length > 1 ? Math.round(cursor.selectedIndex / (cursor.bars.length - 1) * 1000) / 10 : 0;
+    const signalItems = cursor.signals.length
+      ? cursor.signals.slice(0, 5).map(row => `<div class="replay-event-item" data-replay-event-kind="signal"><b>${escapeHtml(row.signal || 'SIGNAL')}</b><span>${escapeHtml(replayTimelineEventText(row, cursor.selectedTime))}</span></div>`).join('')
+      : `<div class="replay-empty-state" data-replay-empty-signals data-replay-event-kind="signal">${escapeHtml(REPLAY_TIMELINE_EMPTY_TEXT)}</div>`;
+    const tradeItems = cursor.trades.length
+      ? cursor.trades.slice(0, 5).map(row => `<div class="replay-event-item" data-replay-event-kind="trade"><b>${escapeHtml(row.side || row.action || 'TRADE')}</b><span>${escapeHtml(replayTimelineEventText(row, cursor.selectedTime))}</span></div>`).join('')
+      : `<div class="replay-empty-state" data-replay-empty-trades data-replay-event-kind="trade">${escapeHtml(REPLAY_TIMELINE_EMPTY_TEXT)}</div>`;
+    const positionItems = cursor.positions.length
+      ? cursor.positions.slice(0, 4).map(row => `<div class="replay-event-item" data-replay-event-kind="position"><b>${escapeHtml(row.code || cursor.selectedCode || 'POSITION')}</b><span>${escapeHtml(row.qty || row.size || row.status || 'position snapshot')}</span></div>`).join('')
+      : `<div class="replay-empty-state" data-replay-event-kind="position">No open position snapshot for selected cursor.</div>`;
+    const logItems = cursor.logs.length
+      ? cursor.logs.slice(0, 4).map(row => `<div class="replay-event-item" data-replay-event-kind="log"><b>LOG</b><span>${escapeHtml(typeof row === 'string' ? row : replayTimelineEventText(row, cursor.selectedTime))}</span></div>`).join('')
+      : `<div class="replay-empty-state" data-replay-event-kind="log">No replay log event at this cursor.</div>`;
+    return `<section class="replay-timeline-surface" data-replay-timeline-surface data-replay-cursor-source="shared">
+      <div class="panel-header"><span>Replay cursor timeline · signals/trades/positions/logs</span>${badge('shared cursor', 'blue')}</div>
+      <div class="replay-timeline" data-replay-timeline role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${cursorPct}"><span style="width:${cursorPct}%"></span></div>
+      <div class="replay-detail-grid">
+        <div class="replay-selected-detail" data-replay-selected-detail>
+          ${infoList([['selectedIndex', String(cursor.selectedIndex)], ['selectedTime', cursor.selectedTime], ['selectedCode', cursor.selectedCode || selectedStock.code || 'n/a'], ['bars', String(cursor.bars.length)], ['signals', String(cursor.signals.length)], ['trades', String(cursor.trades.length)]])}
+        </div>
+        <div class="replay-handoff-card" data-replay-backtest-handoff data-replay-handoff-source="bt-result-localStorage-event" data-replay-prefill-ready="${handoff.prefillReady ? 'true' : 'false'}">
+          <b>Backtest result handoff prefill</b>
+          <span>${escapeHtml(handoff.reason)}</span>
+          ${infoList([['date', handoff.date], ['code', handoff.code], ['buy', handoff.buy], ['sell', handoff.sell], ['src', handoff.src]])}
+        </div>
+      </div>
+      <div class="replay-event-timeline">
+        <div>${signalItems}</div>
+        <div>${tradeItems}</div>
+        <div>${positionItems}</div>
+        <div>${logItems}</div>
+      </div>
+    </section>`;
+  }
+
+  window.ReplayTimeline = {
+    emptyText: REPLAY_TIMELINE_EMPTY_TEXT,
+    normalizeCursor: replayTimelineCursor,
+    handoffContext: replayTimelineHandoffContext,
+    render: renderReplayTimelineSurface,
+  };
 
   const BacktestAdapter = {
     contracts: BacktestContracts,
@@ -1214,6 +2307,9 @@
 
   function renderOverview(vm = RemodelAdapters.overview()) {
     const o = vm.data;
+    ConditionDetailAdapter.ensurePageEvidence();
+    const conditionDetailSurface = renderConditionDetailSurface(conditionDetailContext());
+    const analyticsHandoffSurface = renderAnalyticsHandoffSurface(analyticsHandoffContext());
     const liveRows = [['Phase', o.live.phase, 'amber'], ['Checkpoint', o.live.checkpoint], ['Message', o.live.message], ['Elapsed', o.live.elapsed], ['ETA', o.live.eta], ['생성 전략', o.live.strategies], ['게이트 통과', o.live.gate, 'green']];
     const activeRows = [['ID', o.activeStrategy.id], ['Name', o.activeStrategy.name], ['Grade', o.activeStrategy.grade, 'amber'], ['Score', o.activeStrategy.score, 'green'], ['Profit', o.activeStrategy.profit, 'green'], ['MDD', o.activeStrategy.mdd, 'red'], ['Trades', o.activeStrategy.trades]];
     const genColumns = [
@@ -1250,6 +2346,8 @@
         ${panel('Profit / Equity Evidence', chart('Profit Equity Overlay', [{name:'Profit',values:o.profitTrend},{name:'Equity',values:o.equitySeries[0]?.values || o.profitTrend}], { tall: true, value:'+18.742%' }))}
         ${panel('백테스트 상세 · risk path', barLineChart('백테스트 상세', o.dailyBars, {height:190, value:'+22.13%' }))}
       </div>
+      ${conditionDetailSurface}
+      ${analyticsHandoffSurface}
       <div class="notice warn"><span>Export와 Audit는 분리됩니다 · Human Approval Gate 전까지 연구 산출물 대기</span>${badge('Append-Only Audit', 'amber')}</div>
     </section>`;
     return `
@@ -1656,6 +2754,8 @@
 
   function renderAudit(vm = RemodelAdapters.audit()) {
     const a = vm.data;
+    DecisionAuditAdapter.ensurePageEvidence();
+    const decisionAuditSurface = renderDecisionAuditSurface(decisionAuditDraftContext());
     const oosCols = [{key:'window',label:'Window'},{key:'period',label:'기간'},{key:'diff',label:'Sharpe Diff'},{key:'low',label:'95% CI Low'},{key:'high',label:'95% CI High'},{key:'p',label:'p-value'},{key:'result',label:'결론',render:r=>badge(r.result,cls(r.result))}];
     const ledgerCols = [{key:'decision_id',label:'Decision ID'},{key:'time',label:'결정일시'},{key:'decision',label:'결정',render:r=>badge(r.decision,cls(r.decision))},{key:'strategy',label:'전략ID'},{key:'note',label:'요약 노트'},{key:'user',label:'결정자'},{key:'role',label:'역할'},{key:'links',label:'증거 링크'},{key:'hash',label:'레코드 해시'},{key:'verified',label:'검증',render:r=>`<span class="green">✓ ${r.verified}</span>`}];
     const latestDecision = a.ledger[0] || {};
@@ -1683,6 +2783,7 @@
           <div class="notice warn">Append-Only Ledger · 최종 전략 추출(Export) 승인과 결정 감사(Decision Audit)는 별개입니다.</div>
         </section>
       </div>
+      ${decisionAuditSurface}
       <div class="audit-oos-ledger-grid">
         ${panel('PROMOTE 체크리스트', `<div class="info-list">${a.checklist.map((x,i)=>`<div class="info-row"><span>${x}</span><span class="${i===9?'amber':'green'}">${i===9?'검토 필요':'통과'}</span></div>`).join('')}</div><div class="notice warn">체크 완료: 9/10 · 최종 권고: 보완 필요</div>`, { className: 'audit-checklist-card' })}
         ${panel('결정 히스토리 (Append-Only Ledger)', table(ledgerCols, a.ledger), { action: manualBtn('내보내기 CSV 요청','small','data-audit-step="ledger-export"', 'audit-ledger-export') })}
@@ -1727,7 +2828,21 @@
     const modeNote = isLiveBackendMode
       ? 'LIVE mode: BacktestAdapter may call safe GET/read endpoints only; mutating POST endpoints stay manual-gated/not-auto-invoked.'
       : `${modeLabel} mode: ${INERT_BACKTEST_STATUS}. Matrix is fixture/static only.`;
-    return panel('Backtest API Contract Matrix', `<div class="notice"><span>${escapeHtml(modeNote)}</span>${badge(state.backtestProbeComplete ? 'Evidence settled' : isLiveBackendMode ? 'Live probe pending' : 'Fixture inert', state.backtestProbeComplete ? 'green' : 'amber')}</div>${table(columns, BacktestContracts)}`);
+    const liveErrorCount = Object.values(state.backtestContractEvidence).filter(ev => ev && ev.status === 'LIVE ERROR').length;
+    const errorNotice = liveErrorCount
+      ? `<div class="notice danger" data-backtest-live-error-summary><b>LIVE ERROR</b><span>${liveErrorCount} safe-read endpoint(s) failed; fixture charts remain labeled and no mock success is substituted.</span></div>`
+      : '';
+    return panel('Backtest API Contract Matrix', `<div class="notice"><span>${escapeHtml(modeNote)}</span>${badge(state.backtestProbeComplete ? 'Evidence settled' : isLiveBackendMode ? 'Live probe pending' : 'Fixture inert', state.backtestProbeComplete ? 'green' : 'amber')}</div>${errorNotice}${table(columns, BacktestContracts)}`);
+  }
+  function renderBacktestLiveProbeBanner() {
+    if (!isLiveBackendMode) return '';
+    const evidence = Object.values(state.backtestContractEvidence);
+    const errorCount = evidence.filter(ev => ev && ev.status === 'LIVE ERROR').length;
+    const pendingCount = evidence.filter(ev => ev && ev.status === 'PENDING').length;
+    if (errorCount) {
+      return `<div class="notice danger" data-backtest-live-probe-status><b>LIVE ERROR</b><span>${errorCount} safe-read endpoint(s) failed against ${escapeHtml(state.baseUrl)}. Fixture charts remain labeled; no mock success is substituted.</span></div>`;
+    }
+    return `<div class="notice warn" data-backtest-live-probe-status><b>Live probe pending</b><span>${pendingCount || BacktestContracts.filter(c => c.safeAuto === true).length} safe-read endpoint(s) are being checked; mutating POST endpoints remain manual-gated.</span></div>`;
   }
   function renderBacktest() {
     const b = DATA.backtest;
@@ -1768,6 +2883,7 @@
         actionLabel: '검증 상태 확인'
       })}
       ${compactSafetyStrip('backtest', ['/bt/* mutating endpoints are not auto-invoked', 'manual-gated and never page-load triggered'])}
+      ${renderBacktestLiveProbeBanner()}
       <div class="notice compact-feature-map" data-backtest-required-text="legacy-v2-compare">지원 흐름: 실행 파라미터 · 최적화 · WFO · 스윕 · 조건식 편집 · 결과 분석 · 독립 HTML 보고서</div>
       <section class="backtest-primary-canvas panel" data-ux-primary-canvas="backtest">
         <div class="backtest-step-grid">
@@ -1794,12 +2910,14 @@
           <section class="panel gated-run-card" data-backtest-step="gated-run">
             <div class="panel-header"><span>4 Gated Run Preview</span>${badge(isLiveBackendMode ? 'manual live action' : 'Reference/demo inert', 'amber')}</div>
             <div class="panel-body">
+              ${renderBacktestPreflightPanel()}
+              ${renderBacktestJobProgressPanel()}
               ${infoList([['Job','#10235 BreakOut_v2'],['Progress','63.4%'],['Bars','6,342,112 / 10,000,000'],['Gate','수동 실행 전 대기','amber']])}
               <div class="progress amber"><span style="width:63.4%"></span></div>
               <div class="bt-action-row">${manualBtn('백테스트 실행 검토','primary', '', 'bt-run-preview')}${manualBtn('작업 취소','danger', '', 'bt-job-cancel')}</div>
             </div>
           </section>
-          <section data-backtest-step="analyze">${analyzeBody}</section>
+          <section data-backtest-step="analyze">${renderBacktestAnalysisSurface()}${analyzeBody}</section>
         </div>
       </section>
       ${evidenceDrawer('backtest', 'Backtest API Contract Matrix / UX proof / 안전 GET 증거 열기', evidence)}
@@ -1860,7 +2978,29 @@
       <div class="grid cols-4">${metricCard('time', selectedBarTime)}${metricCard('close', selectedBarPrice, '', 'green')}${metricCard('signal', selectedSignal.signal, '', cls(selectedSignal.signal))}${metricCard('reason', selectedSignal.reason || 'manual inspect')}</div>
       <p class="muted">차트 hover/keyboard focus 없이도 선택 봉과 신호 로그가 같은 문맥으로 보입니다.</p>
     </div>`;
+    const replayBars = selectedStock.candles || [];
+    const replayCursorIndex = Math.max(0, replayBars.findIndex(c => String(c.time || c.t || '') === String(selectedBarTime)));
+    const replayTimelineSurface = renderReplayTimelineSurface({
+      bars: replayBars,
+      signals: r.signalLog || [],
+      trades: r.trades || [],
+      positions: r.positions || [],
+      logs: r.logs || [`cursor ${selectedBarTime} · ${selectedStock.code} · shared chart/log/detail state`],
+      selectedIndex: replayCursorIndex,
+      selectedTime: selectedBarTime,
+      selectedCode: selectedStock.code,
+      handoff: {
+        date: REPLAY_PREFLIGHT_DEFAULTS.date,
+        code: selectedStock.code,
+        buy: REPLAY_PREFLIGHT_DEFAULTS.buy,
+        sell: REPLAY_PREFLIGHT_DEFAULTS.sell,
+        src: REPLAY_PREFLIGHT_DEFAULTS.src,
+        selectedIndex: replayCursorIndex,
+      },
+    }, selectedStock);
     const mainCanvas = `<section class="replay-primary-canvas panel" data-ux-primary-canvas="chart_replay">
+      ${renderReplayPreflightPanel()}
+      ${renderReplayPlaybackControls()}
       <div class="replay-first-row">
         <div class="replay-picker-card" data-replay-step="source">
           <div class="step-kicker">1 Source / Date / Symbol / Strategy</div>
@@ -1876,6 +3016,7 @@
         </div>
       </div>
       ${playback}
+      ${replayTimelineSurface}
       <div class="replay-investigation-grid" data-replay-step="investigate">
         <div class="primary-candle-card">
           <div class="panel-header"><span>실시간 리플레이 차트 · candle primary canvas</span>${modeBadge}</div>
@@ -1957,6 +3098,11 @@
     document.querySelectorAll('[data-action="approval"]').forEach(el => el.addEventListener('click', openApprovalModal));
     document.querySelectorAll('[data-action="process-node"]').forEach(el => el.addEventListener('click', () => openProcessNodeModal(el.dataset.processNode)));
     document.querySelectorAll('[data-process-run-selector]').forEach(el => el.addEventListener('change', () => { state.processSelectedRunId = el.value; render(); }));
+    document.querySelectorAll('[data-record-decision-confirm]').forEach(el => el.addEventListener('click', () => {
+      let payload = {};
+      try { payload = JSON.parse(el.dataset.recordDecisionPayload || '{}'); } catch (_) { payload = {}; }
+      recordDecisionAfterConfirm(payload).then(() => render());
+    }));
     attachChartEvents();
   }
   function openSettingsModal() {
