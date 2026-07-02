@@ -1,0 +1,75 @@
+﻿{
+    "task":  "TODO 04 - Backtest V3 Adapter And Preflight Parity",
+    "event":  "task-evidence-refreshed",
+    "status":  "passed",
+    "started_at":  "2026-07-02T00:00:40.1843019+09:00",
+    "ended_at":  "2026-07-02T00:02:17.5425652+09:00",
+    "duration_ms":  97358,
+    "worktree":  "C:\\System_Trading\\STOM\\STOM_V.wt-dashboard-remodel",
+    "branch":  "feature/dashboard-remodel-20260626",
+    "head":  "887c3591161e95b2d828112266dc9d34a749adab",
+    "evidence":  [
+                     ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo04_backtest_preflight.log",
+                     ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo04_backtest_preflight_desktop.png",
+                     ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo04_backtest_preflight_narrow.png",
+                     ".omo\\evidence\\dashboard-v3-functional-parity-20260701\\todo04_backtest_preflight_cdp.json"
+                 ],
+    "steps":  [
+                  {
+                      "name":  "backtest preflight tests pass 1",
+                      "command":  "python -m pytest tests/unit/test_dashboard_remodel_backtest_preflight.py -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:00:40.2185004+09:00",
+                      "ended_at":  "2026-07-02T00:00:51.2871359+09:00",
+                      "duration_ms":  11069
+                  },
+                  {
+                      "name":  "backtest preflight tests pass 2 flaky probe",
+                      "command":  "python -m pytest tests/unit/test_dashboard_remodel_backtest_preflight.py -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:00:51.3036554+09:00",
+                      "ended_at":  "2026-07-02T00:01:03.3402436+09:00",
+                      "duration_ms":  12037
+                  },
+                  {
+                      "name":  "G004 remodel backtest static tests",
+                      "command":  "python -m pytest tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_g004_backtest_adapter_contract_matrix tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_g004_backtest_reference_demo_are_inert tests/unit/test_dashboard_remodel_static.py::test_reviewed_remodel_g004_backtest_live_reads_and_mutation_gates -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:01:03.3407847+09:00",
+                      "ended_at":  "2026-07-02T00:01:18.2742111+09:00",
+                      "duration_ms":  14933
+                  },
+                  {
+                      "name":  "backend backtest ws/job contract tests",
+                      "command":  "python -m pytest tests/unit/dashboard/test_backtest_ws_job.py -q",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:01:18.2749641+09:00",
+                      "ended_at":  "2026-07-02T00:01:37.9446619+09:00",
+                      "duration_ms":  19670
+                  },
+                  {
+                      "name":  "node syntax check remodel app",
+                      "command":  "node --check ai_strategy_loop/dashboard/frontend/remodel/src/app.js",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:01:37.9452004+09:00",
+                      "ended_at":  "2026-07-02T00:01:39.1991097+09:00",
+                      "duration_ms":  1254
+                  },
+                  {
+                      "name":  "git diff check",
+                      "command":  "$ErrorActionPreference = \"Continue\"; git diff --check; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; exit 0",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:01:39.2001096+09:00",
+                      "ended_at":  "2026-07-02T00:01:40.1796678+09:00",
+                      "duration_ms":  980
+                  },
+                  {
+                      "name":  "protected path status",
+                      "command":  "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+                      "exit_code":  0,
+                      "started_at":  "2026-07-02T00:01:40.1796678+09:00",
+                      "ended_at":  "2026-07-02T00:01:43.3644616+09:00",
+                      "duration_ms":  3185
+                  }
+              ]
+}

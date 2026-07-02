@@ -1,0 +1,38 @@
+﻿[
+    {
+        "name":  "whole-process UX tests pass 1",
+        "status":  "see todo13_whole_process_ux.log",
+        "exit_code":  0
+    },
+    {
+        "name":  "whole-process UX tests pass 2 flaky probe",
+        "status":  "see todo13_whole_process_ux.log",
+        "exit_code":  0
+    },
+    {
+        "name":  "shared IA and UX sweep regressions",
+        "status":  "see todo13_whole_process_ux.log",
+        "exit_code":  0
+    },
+    {
+        "name":  "node syntax check remodel app",
+        "status":  "see todo13_whole_process_ux.log",
+        "exit_code":  0
+    },
+    {
+        "name":  "git diff check",
+        "status":  "CRLF warnings only; exit 0",
+        "exit_code":  0
+    },
+    {
+        "name":  "protected path status",
+        "status":  "clean",
+        "exit_code":  0
+    },
+    {
+        "name":  "browser CDP whole-process UX validation retry",
+        "start":  "2026-07-02T01:31:01.0601447+09:00",
+        "end":  "2026-07-02T01:31:21.6371173+09:00",
+        "exit_code":  0
+    }
+]

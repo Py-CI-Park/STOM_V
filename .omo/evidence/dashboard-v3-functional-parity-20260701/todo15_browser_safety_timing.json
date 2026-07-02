@@ -1,0 +1,40 @@
+[
+  {
+    "name": "offline GUI smoke",
+    "start": "2026-07-02T01:39:02.0091222+09:00",
+    "end": "2026-07-02T01:39:20.9000000+09:00",
+    "exit_code": 0
+  },
+  {
+    "name": "HTTP route boundaries",
+    "start": "2026-07-02T01:39:20.9000000+09:00",
+    "end": "2026-07-02T01:39:24.1000000+09:00",
+    "exit_code": 0
+  },
+  {
+    "name": "browser CDP deep link and safety validation",
+    "start": "2026-07-02T01:39:24.1000000+09:00",
+    "end": "2026-07-02T02:04:45.0000000+09:00",
+    "exit_code": 0,
+    "notes": "Retried after mobile process/history overflow CSS containment, CDP page-target selection, and visible LIVE ERROR backtest failure banner."
+  },
+  {
+    "name": "node syntax check remodel app",
+    "start": "2026-07-02T02:01:30.0000000+09:00",
+    "end": "2026-07-02T02:01:31.0000000+09:00",
+    "exit_code": 0
+  },
+  {
+    "name": "git diff check",
+    "start": "2026-07-02T02:04:46.0000000+09:00",
+    "end": "2026-07-02T02:04:47.0000000+09:00",
+    "exit_code": 0,
+    "notes": "CRLF warnings only; no whitespace errors."
+  },
+  {
+    "name": "protected path status",
+    "start": "2026-07-02T02:04:47.0000000+09:00",
+    "end": "2026-07-02T02:04:48.0000000+09:00",
+    "exit_code": 0
+  }
+]

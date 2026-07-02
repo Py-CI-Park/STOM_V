@@ -1,0 +1,103 @@
+﻿{
+    "generated_at":  "2026-07-02T14:16:44.3839946+09:00",
+    "source":  ".omo/evidence/dashboard-v3-visual-comparison-20260702/visual_compare_results.json",
+    "premise":  "desktop-only; mobile-390 findings are scope-excluded by user instruction",
+    "total_checks_original":  48,
+    "desktop_checks":  32,
+    "desktop_overflow_failures":  4,
+    "desktop_graphic_failures":  4,
+    "desktop_blankish":  0,
+    "mobile_scope_excluded":  {
+                                  "overflow_failures":  12,
+                                  "graphic_failures":  5
+                              },
+    "desktop_lane_summary":  [
+                                 {
+                                     "lane":  "v2",
+                                     "checks":  16,
+                                     "overflow_failures":  2,
+                                     "graphic_failures":  4,
+                                     "blankish":  0,
+                                     "pages_with_overflow":  [
+                                                                 "condition@desktop-1440",
+                                                                 "process@desktop-1440"
+                                                             ]
+                                 },
+                                 {
+                                     "lane":  "v3",
+                                     "checks":  16,
+                                     "overflow_failures":  2,
+                                     "graphic_failures":  0,
+                                     "blankish":  0,
+                                     "pages_with_overflow":  [
+                                                                 "condition@desktop-1440",
+                                                                 "condition@desktop-1280"
+                                                             ]
+                                 }
+                             ],
+    "v3_desktop_blockers":  [
+                                {
+                                    "page":  "condition",
+                                    "viewport":  "desktop-1440",
+                                    "doc_scroll_width":  1425,
+                                    "first_offenders":  [
+                                                            {
+                                                                "tag":  "DIV",
+                                                                "class":  "heat-label",
+                                                                "text":  "14",
+                                                                "left":  1439,
+                                                                "right":  1493,
+                                                                "width":  54
+                                                            },
+                                                            {
+                                                                "tag":  "DIV",
+                                                                "class":  "heat-cell",
+                                                                "text":  "",
+                                                                "left":  1439,
+                                                                "right":  1479,
+                                                                "width":  40
+                                                            },
+                                                            {
+                                                                "tag":  "DIV",
+                                                                "class":  "heat-cell",
+                                                                "text":  "",
+                                                                "left":  1439,
+                                                                "right":  1479,
+                                                                "width":  40
+                                                            }
+                                                        ]
+                                },
+                                {
+                                    "page":  "condition",
+                                    "viewport":  "desktop-1280",
+                                    "doc_scroll_width":  1265,
+                                    "first_offenders":  [
+                                                            {
+                                                                "tag":  "DIV",
+                                                                "class":  "heat-label",
+                                                                "text":  "14",
+                                                                "left":  1311,
+                                                                "right":  1365,
+                                                                "width":  54
+                                                            },
+                                                            {
+                                                                "tag":  "DIV",
+                                                                "class":  "heat-cell",
+                                                                "text":  "",
+                                                                "left":  1311,
+                                                                "right":  1351,
+                                                                "width":  40
+                                                            },
+                                                            {
+                                                                "tag":  "DIV",
+                                                                "class":  "heat-cell",
+                                                                "text":  "",
+                                                                "left":  1311,
+                                                                "right":  1351,
+                                                                "width":  40
+                                                            }
+                                                        ]
+                                }
+                            ],
+    "conclusion":  "V3 desktop has one real visual blocker class: Condition page heatmap child overflow at 1280/1440. V2 desktop overflow findings are legacy React Flow viewport measurements. Mobile findings are excluded from this follow-up score."
+}

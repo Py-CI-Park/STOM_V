@@ -1,0 +1,38 @@
+[
+  {
+    "name": "remodel unit suite",
+    "start": "2026-07-02T02:07:37.2983003+09:00",
+    "end": "2026-07-02T02:07:57.3043666+09:00",
+    "exit_code": 0
+  },
+  {
+    "name": "baseline and remodel static suite",
+    "start": "2026-07-02T02:07:57.3109194+09:00",
+    "end": "2026-07-02T02:08:06.4823572+09:00",
+    "exit_code": 0
+  },
+  {
+    "name": "dashboard backend parity suites",
+    "start": "2026-07-02T02:08:06.4828949+09:00",
+    "end": "2026-07-02T02:08:44.0919235+09:00",
+    "exit_code": 0
+  },
+  {
+    "name": "node syntax check remodel app",
+    "start": "2026-07-02T02:08:44.0919235+09:00",
+    "end": "2026-07-02T02:08:44.3066497+09:00",
+    "exit_code": 0
+  },
+  {
+    "name": "git diff check",
+    "start": "2026-07-02T02:08:44.3071737+09:00",
+    "end": "2026-07-02T02:08:44.7273637+09:00",
+    "exit_code": 0
+  },
+  {
+    "name": "protected path status",
+    "start": "2026-07-02T02:08:44.7278689+09:00",
+    "end": "2026-07-02T02:08:45.2580303+09:00",
+    "exit_code": 0
+  }
+]

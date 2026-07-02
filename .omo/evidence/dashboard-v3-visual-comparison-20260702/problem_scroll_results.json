@@ -1,0 +1,122 @@
+[
+  {
+    "name": "v3-lab-mobile-graph",
+    "path": "/ui/remodel/lab?demo=reference",
+    "selector": ".chart-box",
+    "before": {
+      "found": true,
+      "scrollWidth": 390,
+      "left": 8,
+      "right": 786,
+      "width": 778,
+      "height": 282,
+      "viewport": 390
+    },
+    "after": {
+      "y": 4364,
+      "left": 8,
+      "right": 786,
+      "width": 778,
+      "height": 282,
+      "viewport": 390,
+      "docScrollWidth": 390
+    },
+    "file": "problem_v3-lab-mobile-graph.png"
+  },
+  {
+    "name": "v3-audit-mobile-graph",
+    "path": "/ui/remodel/audit?demo=reference",
+    "selector": ".chart-box",
+    "before": {
+      "found": true,
+      "scrollWidth": 390,
+      "left": 8,
+      "right": 512,
+      "width": 504,
+      "height": 322,
+      "viewport": 390
+    },
+    "after": {
+      "y": 4473,
+      "left": 8,
+      "right": 512,
+      "width": 504,
+      "height": 322,
+      "viewport": 390,
+      "docScrollWidth": 390
+    },
+    "file": "problem_v3-audit-mobile-graph.png"
+  },
+  {
+    "name": "v3-chart-replay-mobile-candle",
+    "path": "/ui/remodel/chart-replay?demo=reference",
+    "selector": ".candle-box",
+    "before": {
+      "found": true,
+      "scrollWidth": 390,
+      "left": 8,
+      "right": 1040,
+      "width": 1032,
+      "height": 397,
+      "viewport": 390
+    },
+    "after": {
+      "y": 4806,
+      "left": 8,
+      "right": 1040,
+      "width": 1032,
+      "height": 397,
+      "viewport": 390,
+      "docScrollWidth": 390
+    },
+    "file": "problem_v3-chart-replay-mobile-candle.png"
+  },
+  {
+    "name": "v3-condition-desktop-heatmap",
+    "path": "/ui/remodel/condition?demo=reference",
+    "selector": ".heatmap",
+    "before": {
+      "found": true,
+      "scrollWidth": 1280,
+      "left": 1037,
+      "right": 1140,
+      "width": 103,
+      "height": 70,
+      "viewport": 1280
+    },
+    "after": {
+      "y": 6662,
+      "left": 1037,
+      "right": 1140,
+      "width": 103,
+      "height": 70,
+      "viewport": 1280,
+      "docScrollWidth": 1280
+    },
+    "file": "problem_v3-condition-desktop-heatmap.png"
+  },
+  {
+    "name": "v2-condition-mobile-table",
+    "path": "/ui/evolution",
+    "selector": "table",
+    "before": {
+      "found": true,
+      "scrollWidth": 551,
+      "left": 26,
+      "right": 595,
+      "width": 569,
+      "height": 1288,
+      "viewport": 551
+    },
+    "after": {
+      "y": 3920,
+      "left": 26,
+      "right": 595,
+      "width": 569,
+      "height": 1288,
+      "viewport": 551,
+      "docScrollWidth": 551
+    },
+    "file": "problem_v2-condition-mobile-table.png"
+  }
+]

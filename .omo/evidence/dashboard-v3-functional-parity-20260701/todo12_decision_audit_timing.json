@@ -1,0 +1,48 @@
+﻿[
+    {
+        "name":  "decision audit tests pass 1",
+        "status":  "see todo12_decision_audit.log",
+        "exit_code":  0
+    },
+    {
+        "name":  "decision audit tests pass 2 flaky probe",
+        "status":  "see todo12_decision_audit.log",
+        "exit_code":  0
+    },
+    {
+        "name":  "p2 structural decision boundary",
+        "status":  "see todo12_decision_audit.log",
+        "exit_code":  0
+    },
+    {
+        "name":  "remodel safety cues",
+        "status":  "see todo12_decision_audit.log",
+        "exit_code":  0
+    },
+    {
+        "name":  "backend decisions append-only contract",
+        "status":  "see todo12_decision_audit.log",
+        "exit_code":  0
+    },
+    {
+        "name":  "node syntax check remodel app",
+        "status":  "see todo12_decision_audit.log",
+        "exit_code":  0
+    },
+    {
+        "name":  "git diff check",
+        "status":  "CRLF warnings only; exit 0",
+        "exit_code":  0
+    },
+    {
+        "name":  "protected path status",
+        "status":  "clean",
+        "exit_code":  0
+    },
+    {
+        "name":  "browser CDP decision audit validation retry",
+        "start":  "2026-07-02T01:20:48.1427878+09:00",
+        "end":  "2026-07-02T01:21:13.5643563+09:00",
+        "exit_code":  0
+    }
+]

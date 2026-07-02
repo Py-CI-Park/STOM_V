@@ -1,0 +1,44 @@
+﻿[
+    {
+        "name":  "whole-flow functional parity tests pass 1",
+        "start":  "2026-07-02T01:34:35.2822067+09:00",
+        "end":  "2026-07-02T01:34:44.3470620+09:00",
+        "exit_code":  0
+    },
+    {
+        "name":  "whole-flow functional parity tests pass 2 flaky probe",
+        "start":  "2026-07-02T01:34:44.3849583+09:00",
+        "end":  "2026-07-02T01:35:05.3411742+09:00",
+        "exit_code":  0
+    },
+    {
+        "name":  "baseline and remodel static suite",
+        "start":  "2026-07-02T01:35:05.3465887+09:00",
+        "end":  "2026-07-02T01:35:15.0368135+09:00",
+        "exit_code":  0
+    },
+    {
+        "name":  "dashboard backend parity suites",
+        "start":  "2026-07-02T01:35:15.0413308+09:00",
+        "end":  "2026-07-02T01:35:50.1479178+09:00",
+        "exit_code":  0
+    },
+    {
+        "name":  "node syntax check remodel app",
+        "start":  "2026-07-02T01:35:50.1532719+09:00",
+        "end":  "2026-07-02T01:35:50.3655981+09:00",
+        "exit_code":  0
+    },
+    {
+        "name":  "git diff check",
+        "start":  "2026-07-02T01:35:50.3709377+09:00",
+        "end":  "2026-07-02T01:35:51.0771708+09:00",
+        "exit_code":  0
+    },
+    {
+        "name":  "protected path status",
+        "start":  "2026-07-02T01:35:51.0826904+09:00",
+        "end":  "2026-07-02T01:35:51.6925448+09:00",
+        "exit_code":  0
+    }
+]

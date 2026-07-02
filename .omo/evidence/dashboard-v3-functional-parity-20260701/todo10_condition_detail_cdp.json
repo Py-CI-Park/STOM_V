@@ -1,0 +1,78 @@
+{
+  "viewport": 390,
+  "scrollWidth": 390,
+  "hasSurface": true,
+  "domContext": "ready",
+  "apiCardCount": 5,
+  "emptyCount": 5,
+  "selector": true,
+  "endpoints": [
+    "/strategy_code?run=runP&gen=0",
+    "/strategy_diff?run_id=runP&gen_no=0&base_gen=previous",
+    "/prompts?run_id=runP&gen_no=0",
+    "/ai_context_pack?run_id=runP&gen_no=0",
+    "/backtest_detail?run_id=runP&gen_no=0"
+  ],
+  "ready": {
+    "run_id": "runP",
+    "gen_no": 0,
+    "selected": {
+      "gen": 136,
+      "status": "gate_passed",
+      "graded_score": 0.808,
+      "gate_passed": "통과",
+      "gate_reason": "All criteria passed",
+      "trade_count": 302,
+      "daily_avg_trades": 4.3,
+      "MDD": "-8.45%",
+      "profit": "+14.05%",
+      "strategy_gist": "이동평균 정배열 + ATR 필터 + 거래량 급증",
+      "actions": "코드 · 백테스트"
+    },
+    "status": "ready",
+    "ready": true,
+    "reason": "read-only detail APIs can be requested"
+  },
+  "missingRun": {
+    "run_id": "",
+    "gen_no": 0,
+    "selected": {
+      "gen": 136,
+      "status": "gate_passed",
+      "graded_score": 0.808,
+      "gate_passed": "통과",
+      "gate_reason": "All criteria passed",
+      "trade_count": 302,
+      "daily_avg_trades": 4.3,
+      "MDD": "-8.45%",
+      "profit": "+14.05%",
+      "strategy_gist": "이동평균 정배열 + ATR 필터 + 거래량 급증",
+      "actions": "코드 · 백테스트"
+    },
+    "status": "missing-run",
+    "ready": false,
+    "reason": "Missing run/gen returns an empty state, not a broken inspector."
+  },
+  "missingGen": {
+    "run_id": "runP",
+    "gen_no": -1,
+    "selected": {
+      "gen": 136,
+      "status": "gate_passed",
+      "graded_score": 0.808,
+      "gate_passed": "통과",
+      "gate_reason": "All criteria passed",
+      "trade_count": 302,
+      "daily_avg_trades": 4.3,
+      "MDD": "-8.45%",
+      "profit": "+14.05%",
+      "strategy_gist": "이동평균 정배열 + ATR 필터 + 거래량 급증",
+      "actions": "코드 · 백테스트"
+    },
+    "status": "missing-gen",
+    "ready": false,
+    "reason": "Missing run/gen returns an empty state, not a broken inspector."
+  },
+  "missingHtmlHasEmpty": true,
+  "fetches": []
+}

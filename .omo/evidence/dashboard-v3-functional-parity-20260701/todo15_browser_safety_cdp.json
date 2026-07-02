@@ -1,0 +1,253 @@
+{
+  "deepLinks": [
+    {
+      "leaf": "condition",
+      "viewport": "desktop",
+      "scrollWidth": 1425,
+      "bodyTextLength": 11665,
+      "h2": "조건식 AI · 현재 세대와 BEST 후보를 먼저 판단하는 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 35,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "process",
+      "viewport": "desktop",
+      "scrollWidth": 1425,
+      "bodyTextLength": 5313,
+      "h2": "프로세스 · payload-driven cockpit을 유지한 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 25,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "history",
+      "viewport": "desktop",
+      "scrollWidth": 1425,
+      "bodyTextLength": 5848,
+      "h2": "히스토리 · 찾기/상세/비교/Lineage가 한 흐름인 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 18,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "lab",
+      "viewport": "desktop",
+      "scrollWidth": 1425,
+      "bodyTextLength": 5412,
+      "h2": "연구실 · 히트맵과 검증을 먼저 읽는 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 11,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "workbench",
+      "viewport": "desktop",
+      "scrollWidth": 1425,
+      "bodyTextLength": 4984,
+      "h2": "분석 워크벤치 · 후보 선택과 리뷰 handoff가 먼저 보이는 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 19,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "audit",
+      "viewport": "desktop",
+      "scrollWidth": 1425,
+      "bodyTextLength": 6009,
+      "h2": "결정 감사 · Decision funnel과 Append-Only Ledger가 먼저 보이는 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 16,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "backtest",
+      "viewport": "desktop",
+      "scrollWidth": 1425,
+      "bodyTextLength": 4722,
+      "h2": "백테스트 · 조건식 편집과 검증을 먼저 보여주는 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 19,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "chart-replay",
+      "viewport": "desktop",
+      "scrollWidth": 1425,
+      "bodyTextLength": 4513,
+      "h2": "차트 리플레이 · 선택에서 재생까지 바로 이어지는 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 11,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "condition",
+      "viewport": "mobile",
+      "scrollWidth": 390,
+      "bodyTextLength": 11665,
+      "h2": "조건식 AI · 현재 세대와 BEST 후보를 먼저 판단하는 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 35,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "process",
+      "viewport": "mobile",
+      "scrollWidth": 390,
+      "bodyTextLength": 5313,
+      "h2": "프로세스 · payload-driven cockpit을 유지한 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 25,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "history",
+      "viewport": "mobile",
+      "scrollWidth": 390,
+      "bodyTextLength": 5848,
+      "h2": "히스토리 · 찾기/상세/비교/Lineage가 한 흐름인 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 18,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "lab",
+      "viewport": "mobile",
+      "scrollWidth": 390,
+      "bodyTextLength": 5412,
+      "h2": "연구실 · 히트맵과 검증을 먼저 읽는 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 11,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "workbench",
+      "viewport": "mobile",
+      "scrollWidth": 390,
+      "bodyTextLength": 4984,
+      "h2": "분석 워크벤치 · 후보 선택과 리뷰 handoff가 먼저 보이는 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 19,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "audit",
+      "viewport": "mobile",
+      "scrollWidth": 390,
+      "bodyTextLength": 6009,
+      "h2": "결정 감사 · Decision funnel과 Append-Only Ledger가 먼저 보이는 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 16,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "backtest",
+      "viewport": "mobile",
+      "scrollWidth": 390,
+      "bodyTextLength": 4722,
+      "h2": "백테스트 · 조건식 편집과 검증을 먼저 보여주는 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 19,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    },
+    {
+      "leaf": "chart-replay",
+      "viewport": "mobile",
+      "scrollWidth": 390,
+      "bodyTextLength": 4513,
+      "h2": "차트 리플레이 · 선택에서 재생까지 바로 이어지는 V3",
+      "workflowSteps": 6,
+      "contextChips": 4,
+      "panels": 11,
+      "forbidden": [],
+      "fetchCalls": [],
+      "wsCalls": []
+    }
+  ],
+  "liveFailure": {
+    "scrollWidth": 1280,
+    "liveMode": true,
+    "liveErrorCount": 1,
+    "pendingOrManualCount": 0,
+    "fetchCalls": [
+      {
+        "url": "http://127.0.0.1:9/bt/health",
+        "method": "GET"
+      },
+      {
+        "url": "http://127.0.0.1:9/bt/strategies?kind=buy",
+        "method": "GET"
+      },
+      {
+        "url": "http://127.0.0.1:9/bt/strategies?kind=sell",
+        "method": "GET"
+      },
+      {
+        "url": "http://127.0.0.1:9/bt/data_range",
+        "method": "GET"
+      },
+      {
+        "url": "http://127.0.0.1:9/bt/jobs",
+        "method": "GET"
+      },
+      {
+        "url": "http://127.0.0.1:9/bt/result?job_id=__demo__",
+        "method": "GET"
+      },
+      {
+        "url": "http://127.0.0.1:9/bt/analysis/montecarlo?job_id=__demo__&n=2000",
+        "method": "GET"
+      },
+      {
+        "url": "http://127.0.0.1:9/health",
+        "method": "GET"
+      }
+    ],
+    "wsCalls": []
+  }
+}

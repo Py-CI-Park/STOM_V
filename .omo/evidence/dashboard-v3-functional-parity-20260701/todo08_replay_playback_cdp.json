@@ -1,0 +1,44 @@
+{
+  "viewport": 390,
+  "scrollWidth": 390,
+  "hasPanel": true,
+  "start": {
+    "action": "start",
+    "date": 20250516,
+    "src": "min",
+    "codes": [
+      "005930"
+    ],
+    "speed": 1,
+    "agg_sec": 10,
+    "buy": "BreakOut_v2",
+    "sell": "BreakOut_Exit_v1"
+  },
+  "pause": {
+    "action": "pause"
+  },
+  "speed": {
+    "action": "speed",
+    "value": 2
+  },
+  "seek": {
+    "action": "seek",
+    "t": 93000
+  },
+  "done": {
+    "kind": "done",
+    "state": "done",
+    "terminal": true,
+    "bars": 0,
+    "message": "Replay completed"
+  },
+  "overLimit": {
+    "kind": "error",
+    "state": "over-limit",
+    "terminal": false,
+    "message": "over session limit"
+  },
+  "actionButtonCount": 6,
+  "messageCount": 5,
+  "streamAutoOpened": false
+}

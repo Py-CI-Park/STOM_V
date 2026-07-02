@@ -1,391 +1,417 @@
-{
-  "schema_version": 2,
-  "active_work_id": null,
-  "works": {
-    "condition-research-rereview-20260603": {
-      "work_id": "condition-research-rereview-20260603",
-      "active_plan": ".omo/plans/condition-research-rereview-20260603.md",
-      "plan_name": "condition-research-rereview-20260603",
-      "session_ids": [
-        "codex:condition-research-rereview-20260603"
-      ],
-      "status": "completed",
-      "worktree_path": null
-    },
-    "tick-oos-validation-20260603": {
-      "work_id": "tick-oos-validation-20260603",
-      "active_plan": ".omo/plans/tick-oos-validation-20260603.md",
-      "plan_name": "tick-oos-validation-20260603",
-      "session_ids": [
-        "codex:tick-oos-validation-20260603",
-        "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
-      ],
-      "status": "completed",
-      "worktree_path": null
-    },
-    "tick-research-dashboard-upgrade-20260603": {
-      "work_id": "tick-research-dashboard-upgrade-20260603",
-      "active_plan": ".omo/plans/tick-research-dashboard-upgrade-20260603.md",
-      "plan_name": "tick-research-dashboard-upgrade-20260603",
-      "session_ids": [
-        "codex:tick-research-dashboard-upgrade-20260603"
-      ],
-      "status": "completed",
-      "worktree_path": null
-    },
-    "tick-oos-dashboard-validation-20260604": {
-      "work_id": "tick-oos-dashboard-validation-20260604",
-      "active_plan": ".omo/plans/tick-oos-dashboard-validation-20260604.md",
-      "plan_name": "tick-oos-dashboard-validation-20260604",
-      "session_ids": [
-        "codex:tick-oos-dashboard-validation-20260604"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "completed_at": "2026-06-04T11:48:55.6080517+09:00"
-    },
-    "tick-selection-rule-sparse-gen5-research-20260604": {
-      "work_id": "tick-selection-rule-sparse-gen5-research-20260604",
-      "active_plan": ".omo/plans/tick-selection-rule-sparse-gen5-research-20260604.md",
-      "plan_name": "tick-selection-rule-sparse-gen5-research-20260604",
-      "session_ids": [
-        "codex:tick-selection-rule-sparse-gen5-research-20260604"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "completed_at": "2026-06-04T13:48:48.8255929+09:00"
-    },
-    "tick-sparse-positive-generation-improvement-20260604": {
-      "work_id": "tick-sparse-positive-generation-improvement-20260604",
-      "active_plan": ".omo/plans/tick-sparse-positive-generation-improvement-20260604.md",
-      "plan_name": "tick-sparse-positive-generation-improvement-20260604",
-      "session_ids": [
-        "codex:tick-sparse-positive-generation-improvement-20260604"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "completed_at": "2026-06-04T18:36:30+09:00"
-    },
-    "tick-sparse-positive-oos-robustness-20260604": {
-      "work_id": "tick-sparse-positive-oos-robustness-20260604",
-      "active_plan": ".omo/plans/tick-sparse-positive-oos-robustness-20260604.md",
-      "plan_name": "tick-sparse-positive-oos-robustness-20260604",
-      "session_ids": [
-        "codex:tick-sparse-positive-oos-robustness-20260604"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "completed_at": "2026-06-04T21:29:45.0092262+09:00"
-    },
-    "tick-dashboard-observability-research-ux-20260604": {
-      "work_id": "tick-dashboard-observability-research-ux-20260604",
-      "active_plan": ".omo/plans/tick-dashboard-observability-research-ux-20260604.md",
-      "plan_name": "tick-dashboard-observability-research-ux-20260604",
-      "session_ids": [
-        "codex:tick-dashboard-observability-research-ux-20260604"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "completed_at": "2026-06-05T00:16:10.6705427+09:00"
-    },
-    "tick-research-direction-realignment-20260605": {
-      "work_id": "tick-research-direction-realignment-20260605",
-      "active_plan": ".omo/plans/tick-research-direction-realignment-20260605.md",
-      "plan_name": "tick-research-direction-realignment-20260605",
-      "session_ids": [
-        "codex:tick-research-direction-realignment-20260605"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "completed_at": "2026-06-05T07:24:21.2675354+09:00"
-    },
-    "tick-p7-observability-bounded-training-20260605": {
-      "work_id": "tick-p7-observability-bounded-training-20260605",
-      "active_plan": ".omo/plans/tick-p7-observability-bounded-training-20260605.md",
-      "plan_name": "tick-p7-observability-bounded-training-20260605",
-      "session_ids": [
-        "codex:tick-p7-observability-bounded-training-20260605"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "completed_at": "2026-06-05T12:22:35.0665084+09:00"
-    },
-    "tick-p7-timeout-unblock-live-strategy-visibility-20260605": {
-      "work_id": "tick-p7-timeout-unblock-live-strategy-visibility-20260605",
-      "active_plan": ".omo/plans/tick-p7-timeout-unblock-live-strategy-visibility-20260605.md",
-      "plan_name": "tick-p7-timeout-unblock-live-strategy-visibility-20260605",
-      "session_ids": [
-        "codex:tick-p7-timeout-unblock-live-strategy-visibility-20260605"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "completed_at": "2026-06-05T15:27:48.0561541+09:00"
-    },
-    "tick-seed-warm-timeout-root-cause-20260605": {
-      "work_id": "tick-seed-warm-timeout-root-cause-20260605",
-      "active_plan": ".omo/plans/tick-seed-warm-timeout-root-cause-20260605.md",
-      "plan_name": "tick-seed-warm-timeout-root-cause-20260605",
-      "session_ids": [
-        "codex:tick-seed-warm-timeout-root-cause-20260605"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "completed_at": "2026-06-05T17:02:41.1988220+09:00"
-    },
-    "ct-seed-tick-preflight-repair-20260605": {
-      "work_id": "ct-seed-tick-preflight-repair-20260605",
-      "active_plan": ".omo/plans/ct-seed-tick-preflight-repair-20260605.md",
-      "plan_name": "ct-seed-tick-preflight-repair-20260605",
-      "session_ids": [
-        "codex:ct-seed-tick-preflight-repair-20260605"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "completed_at": "2026-06-05T19:35:31.9546622+09:00"
-    },
-    "ct-seed-branch-workload-isolation-20260605": {
-      "work_id": "ct-seed-branch-workload-isolation-20260605",
-      "active_plan": ".omo/plans/ct-seed-branch-workload-isolation-20260605.md",
-      "plan_name": "ct-seed-branch-workload-isolation-20260605",
-      "session_ids": [
-        "codex:ct-seed-branch-workload-isolation-20260605"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "completed_at": "2026-06-05T20:00:21.0478602+09:00"
-    },
-    "tick-human-like-research-criteria-dashboard-20260605": {
-      "work_id": "tick-human-like-research-criteria-dashboard-20260605",
-      "active_plan": ".omo/plans/tick-human-like-research-criteria-dashboard-20260605.md",
-      "plan_name": "tick-human-like-research-criteria-dashboard-20260605",
-      "session_ids": [
-        "codex:tick-human-like-research-criteria-dashboard-20260605"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "completed_at": "2026-06-06T07:42:47.2295790+09:00"
-    },
-    "tick-900-930-generated-timeout-reduction-20260606": {
-      "work_id": "tick-900-930-generated-timeout-reduction-20260606",
-      "active_plan": ".omo/plans/tick-900-930-generated-timeout-reduction-20260606.md",
-      "plan_name": "tick-900-930-generated-timeout-reduction-20260606",
-      "session_ids": [
-        "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
-      ],
-      "status": "blocked",
-      "worktree_path": null,
-      "blocked_at": "2026-06-06T10:55:00+09:00",
-      "blocker": "P3 split probes ended under wall cap, but generated strategy creation is blocked by gpt_auth HTTP 429 usage_limit_reached and no alternate openrouter/codex_proxy credentials are configured. Do not retry P4 until provider/fallback is available."
-    },
-    "tick-min-condition-generation-review-20260613": {
-      "work_id": "tick-min-condition-generation-review-20260613",
-      "active_plan": ".omo/plans/tick-min-condition-generation-review-20260613.md",
-      "plan_name": "tick-min-condition-generation-review-20260613",
-      "session_ids": [
-        "codex:tick-min-condition-generation-review-20260613"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "started_at": "2026-06-13T13:14:44.4405455+09:00",
-      "completed_at": "2026-06-13T13:30:41.1011360+09:00"
-    },
-    "tick-min-condition-deficit-rereview-20260613": {
-      "work_id": "tick-min-condition-deficit-rereview-20260613",
-      "active_plan": ".omo/plans/tick-min-condition-generation-review-20260613.md",
-      "plan_name": "tick-min-condition-generation-review-20260613",
-      "session_ids": [
-        "codex:tick-min-condition-deficit-rereview-20260613"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "started_at": "2026-06-13T17:29:16.7288560+09:00",
-      "completed_at": "2026-06-13T17:31:41.6178027+09:00"
-    },
-    "condition-research-score-update-20260615": {
-      "work_id": "condition-research-score-update-20260615",
-      "active_plan": ".omo/plans/condition-research-score-update-20260615.md",
-      "plan_name": "condition-research-score-update-20260615",
-      "session_ids": [
-        "codex:condition-research-score-update-20260615"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "started_at": "2026-06-15T22:05:55.6381866+09:00",
-      "completed_at": "2026-06-15T22:15:30.3677436+09:00"
-    },
-    "condition-self-improvement-process-report-20260615": {
-      "work_id": "condition-self-improvement-process-report-20260615",
-      "active_plan": ".omo/plans/condition-self-improvement-process-report-20260615.md",
-      "plan_name": "condition-self-improvement-process-report-20260615",
-      "session_ids": [
-        "codex:condition-self-improvement-process-report-20260615"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "started_at": "2026-06-15T23:43:30.7402839+09:00",
-      "completed_at": "2026-06-15T23:55:19.2768715+09:00"
-    },
-    "condition-self-improvement-score-rereview-20260617": {
-      "work_id": "condition-self-improvement-score-rereview-20260617",
-      "active_plan": ".omo/plans/condition-self-improvement-score-rereview-20260617.md",
-      "plan_name": "condition-self-improvement-score-rereview-20260617",
-      "session_ids": [
-        "codex:condition-self-improvement-score-rereview-20260617"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "started_at": "2026-06-17T10:44:37.9354770+09:00",
-      "completed_at": "2026-06-17T10:54:19.2246078+09:00"
-    },
-    "condition-generation-breadth-evaluation-20260617": {
-      "work_id": "condition-generation-breadth-evaluation-20260617",
-      "active_plan": ".omo/plans/condition-generation-breadth-evaluation-20260617.md",
-      "plan_name": "condition-generation-breadth-evaluation-20260617",
-      "session_ids": [
-        "codex:condition-generation-breadth-evaluation-20260617"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "started_at": "2026-06-17T11:16:00+09:00",
-      "completed_at": "2026-06-17T11:45:00+09:00"
-    },
-    "dashboard-research-records-oos-execution-20260618": {
-      "work_id": "dashboard-research-records-oos-execution-20260618",
-      "active_plan": ".omo/plans/dashboard-research-records-oos-execution-20260618.md",
-      "plan_name": "dashboard-research-records-oos-execution-20260618",
-      "session_ids": [
-        "codex:dashboard-research-records-oos-execution-20260618"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "started_at": "2026-06-18T00:00:00+09:00",
-      "completed_at": "2026-06-18T10:22:16.6358729+09:00"
-    },
-    "oos-2023-2025-combo-experiments-20260618": {
-      "work_id": "oos-2023-2025-combo-experiments-20260618",
-      "active_plan": ".omo/plans/oos-2023-2025-combo-experiments-20260618.md",
-      "plan_name": "oos-2023-2025-combo-experiments-20260618",
-      "session_ids": [
-        "codex:oos-2023-2025-combo-experiments-20260618"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "started_at": "2026-06-18T10:30:00+09:00",
-      "completed_at": "2026-06-18T14:05:00+09:00"
-    },
-    "combo-defense-stress-followup-20260618": {
-      "work_id": "combo-defense-stress-followup-20260618",
-      "active_plan": ".omo/plans/combo-defense-stress-followup-20260618.md",
-      "plan_name": "combo-defense-stress-followup-20260618",
-      "session_ids": [
-        "codex:combo-defense-stress-followup-20260618"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "started_at": "2026-06-18T14:10:00+09:00",
-      "completed_at": "2026-06-18T14:35:00+09:00"
-    },
-    "q4-defense-prerule-halfexit-dashboard-20260618": {
-      "work_id": "q4-defense-prerule-halfexit-dashboard-20260618",
-      "active_plan": ".omo/plans/q4-defense-prerule-halfexit-dashboard-20260618.md",
-      "plan_name": "q4-defense-prerule-halfexit-dashboard-20260618",
-      "session_ids": [
-        "codex:q4-defense-prerule-halfexit-dashboard-20260618"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "started_at": "2026-06-18T15:20:00+09:00",
-      "completed_at": "2026-06-18T16:20:00+09:00"
-    },
-    "post-q4-defense-next4-20260618": {
-      "work_id": "post-q4-defense-next4-20260618",
-      "active_plan": ".omo/plans/post-q4-defense-next4-20260618.md",
-      "plan_name": "post-q4-defense-next4-20260618",
-      "session_ids": [
-        "codex:post-q4-defense-next4-20260618"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "started_at": "2026-06-18T16:30:00+09:00",
-      "completed_at": "2026-06-18T17:00:00+09:00"
-    },
-    "post-q4-3h-bulk-research-20260618": {
-      "work_id": "post-q4-3h-bulk-research-20260618",
-      "active_plan": ".omo/plans/post-q4-3h-bulk-research-20260618.md",
-      "plan_name": "post-q4-3h-bulk-research-20260618",
-      "session_ids": [
-        "codex:post-q4-3h-bulk-research-20260618"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "started_at": "2026-06-18T16:48:14.475338+09:00",
-      "completed_at": "2026-06-18T17:03:04.417664+09:00"
-    },
-    "condition-research-current-state-rereview-20260618": {
-      "work_id": "condition-research-current-state-rereview-20260618",
-      "active_plan": ".omo/plans/condition-research-current-state-rereview-20260618.md",
-      "plan_name": "condition-research-current-state-rereview-20260618",
-      "session_ids": [
-        "codex:condition-research-current-state-rereview-20260618"
-      ],
-      "status": "completed",
-      "worktree_path": null,
-      "started_at": "2026-06-18T18:00:00+09:00",
-      "completed_at": "2026-06-18T18:25:00+09:00"
-    },
-    "stom-condition-research-dashboard-reorganization-20260618-pages-1-3": {
-      "work_id": "stom-condition-research-dashboard-reorganization-20260618-pages-1-3",
-      "active_plan": ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
-      "plan_name": "stom-condition-research-dashboard-reorganization-20260618",
-      "session_ids": [
-        "codex:stom-condition-research-dashboard-reorganization-20260618-pages-1-3"
-      ],
-      "status": "completed_selected_range",
-      "worktree_path": null,
-      "started_at": "2026-06-18T22:06:15+09:00",
-      "requested_range": "1~3",
-      "completed_at": "2026-06-18T22:06:15+09:00"
-    },
-    "stom-condition-research-dashboard-reorganization-20260618-pages-4-8": {
-      "work_id": "stom-condition-research-dashboard-reorganization-20260618-pages-4-8",
-      "active_plan": ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
-      "plan_name": "stom-condition-research-dashboard-reorganization-20260618",
-      "session_ids": [
-        "codex:stom-condition-research-dashboard-reorganization-20260618-pages-4-8"
-      ],
-      "status": "completed_selected_range",
-      "worktree_path": null,
-      "started_at": "2026-06-18T22:20:00+09:00",
-      "requested_range": "4~8",
-      "completed_at": "2026-06-18T22:45:47+09:00"
-    },
-    "stom-condition-research-dashboard-reorganization-20260618-pages-9-12": {
-      "work_id": "stom-condition-research-dashboard-reorganization-20260618-pages-9-12",
-      "active_plan": ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
-      "plan_name": "stom-condition-research-dashboard-reorganization-20260618",
-      "session_ids": [
-        "codex:stom-condition-research-dashboard-reorganization-20260618-pages-9-12"
-      ],
-      "status": "completed_selected_range",
-      "worktree_path": null,
-      "started_at": "2026-06-18T22:55:14+09:00",
-      "requested_range": "9~12",
-      "completed_at": "2026-06-18T23:15:00+09:00"
-    },
-    "stom-condition-research-dashboard-reorganization-20260618-remaining": {
-      "work_id": "stom-condition-research-dashboard-reorganization-20260618-remaining",
-      "active_plan": ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
-      "plan_name": "stom-condition-research-dashboard-reorganization-20260618",
-      "session_ids": [
-        "codex:stom-condition-research-dashboard-reorganization-20260618-remaining"
-      ],
-      "status": "completed",
-      "started_at": "2026-06-18T23:19:07+09:00",
-      "ended_at": "2026-06-18T23:32:13.2021265+09:00",
-      "duration_ms": 786202,
-      "duration_human": "13.1m",
-      "worktree_path": null,
-      "requested_range": "13~16 F1~F4"
-    }
-  }
+﻿{
+    "schema_version":  2,
+    "active_work_id":  "dashboard-v3-desktop-visual-polish-20260702",
+    "works":  {
+                  "condition-research-rereview-20260603":  {
+                                                               "work_id":  "condition-research-rereview-20260603",
+                                                               "active_plan":  ".omo/plans/condition-research-rereview-20260603.md",
+                                                               "plan_name":  "condition-research-rereview-20260603",
+                                                               "session_ids":  [
+                                                                                   "codex:condition-research-rereview-20260603"
+                                                                               ],
+                                                               "status":  "completed",
+                                                               "worktree_path":  null
+                                                           },
+                  "tick-oos-validation-20260603":  {
+                                                       "work_id":  "tick-oos-validation-20260603",
+                                                       "active_plan":  ".omo/plans/tick-oos-validation-20260603.md",
+                                                       "plan_name":  "tick-oos-validation-20260603",
+                                                       "session_ids":  [
+                                                                           "codex:tick-oos-validation-20260603",
+                                                                           "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
+                                                                       ],
+                                                       "status":  "completed",
+                                                       "worktree_path":  null
+                                                   },
+                  "tick-research-dashboard-upgrade-20260603":  {
+                                                                   "work_id":  "tick-research-dashboard-upgrade-20260603",
+                                                                   "active_plan":  ".omo/plans/tick-research-dashboard-upgrade-20260603.md",
+                                                                   "plan_name":  "tick-research-dashboard-upgrade-20260603",
+                                                                   "session_ids":  [
+                                                                                       "codex:tick-research-dashboard-upgrade-20260603"
+                                                                                   ],
+                                                                   "status":  "completed",
+                                                                   "worktree_path":  null
+                                                               },
+                  "tick-oos-dashboard-validation-20260604":  {
+                                                                 "work_id":  "tick-oos-dashboard-validation-20260604",
+                                                                 "active_plan":  ".omo/plans/tick-oos-dashboard-validation-20260604.md",
+                                                                 "plan_name":  "tick-oos-dashboard-validation-20260604",
+                                                                 "session_ids":  [
+                                                                                     "codex:tick-oos-dashboard-validation-20260604"
+                                                                                 ],
+                                                                 "status":  "completed",
+                                                                 "worktree_path":  null,
+                                                                 "completed_at":  "2026-06-04T11:48:55.6080517+09:00"
+                                                             },
+                  "tick-selection-rule-sparse-gen5-research-20260604":  {
+                                                                            "work_id":  "tick-selection-rule-sparse-gen5-research-20260604",
+                                                                            "active_plan":  ".omo/plans/tick-selection-rule-sparse-gen5-research-20260604.md",
+                                                                            "plan_name":  "tick-selection-rule-sparse-gen5-research-20260604",
+                                                                            "session_ids":  [
+                                                                                                "codex:tick-selection-rule-sparse-gen5-research-20260604"
+                                                                                            ],
+                                                                            "status":  "completed",
+                                                                            "worktree_path":  null,
+                                                                            "completed_at":  "2026-06-04T13:48:48.8255929+09:00"
+                                                                        },
+                  "tick-sparse-positive-generation-improvement-20260604":  {
+                                                                               "work_id":  "tick-sparse-positive-generation-improvement-20260604",
+                                                                               "active_plan":  ".omo/plans/tick-sparse-positive-generation-improvement-20260604.md",
+                                                                               "plan_name":  "tick-sparse-positive-generation-improvement-20260604",
+                                                                               "session_ids":  [
+                                                                                                   "codex:tick-sparse-positive-generation-improvement-20260604"
+                                                                                               ],
+                                                                               "status":  "completed",
+                                                                               "worktree_path":  null,
+                                                                               "completed_at":  "2026-06-04T18:36:30+09:00"
+                                                                           },
+                  "tick-sparse-positive-oos-robustness-20260604":  {
+                                                                       "work_id":  "tick-sparse-positive-oos-robustness-20260604",
+                                                                       "active_plan":  ".omo/plans/tick-sparse-positive-oos-robustness-20260604.md",
+                                                                       "plan_name":  "tick-sparse-positive-oos-robustness-20260604",
+                                                                       "session_ids":  [
+                                                                                           "codex:tick-sparse-positive-oos-robustness-20260604"
+                                                                                       ],
+                                                                       "status":  "completed",
+                                                                       "worktree_path":  null,
+                                                                       "completed_at":  "2026-06-04T21:29:45.0092262+09:00"
+                                                                   },
+                  "tick-dashboard-observability-research-ux-20260604":  {
+                                                                            "work_id":  "tick-dashboard-observability-research-ux-20260604",
+                                                                            "active_plan":  ".omo/plans/tick-dashboard-observability-research-ux-20260604.md",
+                                                                            "plan_name":  "tick-dashboard-observability-research-ux-20260604",
+                                                                            "session_ids":  [
+                                                                                                "codex:tick-dashboard-observability-research-ux-20260604"
+                                                                                            ],
+                                                                            "status":  "completed",
+                                                                            "worktree_path":  null,
+                                                                            "completed_at":  "2026-06-05T00:16:10.6705427+09:00"
+                                                                        },
+                  "tick-research-direction-realignment-20260605":  {
+                                                                       "work_id":  "tick-research-direction-realignment-20260605",
+                                                                       "active_plan":  ".omo/plans/tick-research-direction-realignment-20260605.md",
+                                                                       "plan_name":  "tick-research-direction-realignment-20260605",
+                                                                       "session_ids":  [
+                                                                                           "codex:tick-research-direction-realignment-20260605"
+                                                                                       ],
+                                                                       "status":  "completed",
+                                                                       "worktree_path":  null,
+                                                                       "completed_at":  "2026-06-05T07:24:21.2675354+09:00"
+                                                                   },
+                  "tick-p7-observability-bounded-training-20260605":  {
+                                                                          "work_id":  "tick-p7-observability-bounded-training-20260605",
+                                                                          "active_plan":  ".omo/plans/tick-p7-observability-bounded-training-20260605.md",
+                                                                          "plan_name":  "tick-p7-observability-bounded-training-20260605",
+                                                                          "session_ids":  [
+                                                                                              "codex:tick-p7-observability-bounded-training-20260605"
+                                                                                          ],
+                                                                          "status":  "completed",
+                                                                          "worktree_path":  null,
+                                                                          "completed_at":  "2026-06-05T12:22:35.0665084+09:00"
+                                                                      },
+                  "tick-p7-timeout-unblock-live-strategy-visibility-20260605":  {
+                                                                                    "work_id":  "tick-p7-timeout-unblock-live-strategy-visibility-20260605",
+                                                                                    "active_plan":  ".omo/plans/tick-p7-timeout-unblock-live-strategy-visibility-20260605.md",
+                                                                                    "plan_name":  "tick-p7-timeout-unblock-live-strategy-visibility-20260605",
+                                                                                    "session_ids":  [
+                                                                                                        "codex:tick-p7-timeout-unblock-live-strategy-visibility-20260605"
+                                                                                                    ],
+                                                                                    "status":  "completed",
+                                                                                    "worktree_path":  null,
+                                                                                    "completed_at":  "2026-06-05T15:27:48.0561541+09:00"
+                                                                                },
+                  "tick-seed-warm-timeout-root-cause-20260605":  {
+                                                                     "work_id":  "tick-seed-warm-timeout-root-cause-20260605",
+                                                                     "active_plan":  ".omo/plans/tick-seed-warm-timeout-root-cause-20260605.md",
+                                                                     "plan_name":  "tick-seed-warm-timeout-root-cause-20260605",
+                                                                     "session_ids":  [
+                                                                                         "codex:tick-seed-warm-timeout-root-cause-20260605"
+                                                                                     ],
+                                                                     "status":  "completed",
+                                                                     "worktree_path":  null,
+                                                                     "completed_at":  "2026-06-05T17:02:41.1988220+09:00"
+                                                                 },
+                  "ct-seed-tick-preflight-repair-20260605":  {
+                                                                 "work_id":  "ct-seed-tick-preflight-repair-20260605",
+                                                                 "active_plan":  ".omo/plans/ct-seed-tick-preflight-repair-20260605.md",
+                                                                 "plan_name":  "ct-seed-tick-preflight-repair-20260605",
+                                                                 "session_ids":  [
+                                                                                     "codex:ct-seed-tick-preflight-repair-20260605"
+                                                                                 ],
+                                                                 "status":  "completed",
+                                                                 "worktree_path":  null,
+                                                                 "completed_at":  "2026-06-05T19:35:31.9546622+09:00"
+                                                             },
+                  "ct-seed-branch-workload-isolation-20260605":  {
+                                                                     "work_id":  "ct-seed-branch-workload-isolation-20260605",
+                                                                     "active_plan":  ".omo/plans/ct-seed-branch-workload-isolation-20260605.md",
+                                                                     "plan_name":  "ct-seed-branch-workload-isolation-20260605",
+                                                                     "session_ids":  [
+                                                                                         "codex:ct-seed-branch-workload-isolation-20260605"
+                                                                                     ],
+                                                                     "status":  "completed",
+                                                                     "worktree_path":  null,
+                                                                     "completed_at":  "2026-06-05T20:00:21.0478602+09:00"
+                                                                 },
+                  "tick-human-like-research-criteria-dashboard-20260605":  {
+                                                                               "work_id":  "tick-human-like-research-criteria-dashboard-20260605",
+                                                                               "active_plan":  ".omo/plans/tick-human-like-research-criteria-dashboard-20260605.md",
+                                                                               "plan_name":  "tick-human-like-research-criteria-dashboard-20260605",
+                                                                               "session_ids":  [
+                                                                                                   "codex:tick-human-like-research-criteria-dashboard-20260605"
+                                                                                               ],
+                                                                               "status":  "completed",
+                                                                               "worktree_path":  null,
+                                                                               "completed_at":  "2026-06-06T07:42:47.2295790+09:00"
+                                                                           },
+                  "tick-900-930-generated-timeout-reduction-20260606":  {
+                                                                            "work_id":  "tick-900-930-generated-timeout-reduction-20260606",
+                                                                            "active_plan":  ".omo/plans/tick-900-930-generated-timeout-reduction-20260606.md",
+                                                                            "plan_name":  "tick-900-930-generated-timeout-reduction-20260606",
+                                                                            "session_ids":  [
+                                                                                                "codex:019e8b60-8dc5-7d43-ab6b-8e7c1fbdfde5"
+                                                                                            ],
+                                                                            "status":  "blocked",
+                                                                            "worktree_path":  null,
+                                                                            "blocked_at":  "2026-06-06T10:55:00+09:00",
+                                                                            "blocker":  "P3 split probes ended under wall cap, but generated strategy creation is blocked by gpt_auth HTTP 429 usage_limit_reached and no alternate openrouter/codex_proxy credentials are configured. Do not retry P4 until provider/fallback is available."
+                                                                        },
+                  "tick-min-condition-generation-review-20260613":  {
+                                                                        "work_id":  "tick-min-condition-generation-review-20260613",
+                                                                        "active_plan":  ".omo/plans/tick-min-condition-generation-review-20260613.md",
+                                                                        "plan_name":  "tick-min-condition-generation-review-20260613",
+                                                                        "session_ids":  [
+                                                                                            "codex:tick-min-condition-generation-review-20260613"
+                                                                                        ],
+                                                                        "status":  "completed",
+                                                                        "worktree_path":  null,
+                                                                        "started_at":  "2026-06-13T13:14:44.4405455+09:00",
+                                                                        "completed_at":  "2026-06-13T13:30:41.1011360+09:00"
+                                                                    },
+                  "tick-min-condition-deficit-rereview-20260613":  {
+                                                                       "work_id":  "tick-min-condition-deficit-rereview-20260613",
+                                                                       "active_plan":  ".omo/plans/tick-min-condition-generation-review-20260613.md",
+                                                                       "plan_name":  "tick-min-condition-generation-review-20260613",
+                                                                       "session_ids":  [
+                                                                                           "codex:tick-min-condition-deficit-rereview-20260613"
+                                                                                       ],
+                                                                       "status":  "completed",
+                                                                       "worktree_path":  null,
+                                                                       "started_at":  "2026-06-13T17:29:16.7288560+09:00",
+                                                                       "completed_at":  "2026-06-13T17:31:41.6178027+09:00"
+                                                                   },
+                  "condition-research-score-update-20260615":  {
+                                                                   "work_id":  "condition-research-score-update-20260615",
+                                                                   "active_plan":  ".omo/plans/condition-research-score-update-20260615.md",
+                                                                   "plan_name":  "condition-research-score-update-20260615",
+                                                                   "session_ids":  [
+                                                                                       "codex:condition-research-score-update-20260615"
+                                                                                   ],
+                                                                   "status":  "completed",
+                                                                   "worktree_path":  null,
+                                                                   "started_at":  "2026-06-15T22:05:55.6381866+09:00",
+                                                                   "completed_at":  "2026-06-15T22:15:30.3677436+09:00"
+                                                               },
+                  "condition-self-improvement-process-report-20260615":  {
+                                                                             "work_id":  "condition-self-improvement-process-report-20260615",
+                                                                             "active_plan":  ".omo/plans/condition-self-improvement-process-report-20260615.md",
+                                                                             "plan_name":  "condition-self-improvement-process-report-20260615",
+                                                                             "session_ids":  [
+                                                                                                 "codex:condition-self-improvement-process-report-20260615"
+                                                                                             ],
+                                                                             "status":  "completed",
+                                                                             "worktree_path":  null,
+                                                                             "started_at":  "2026-06-15T23:43:30.7402839+09:00",
+                                                                             "completed_at":  "2026-06-15T23:55:19.2768715+09:00"
+                                                                         },
+                  "condition-self-improvement-score-rereview-20260617":  {
+                                                                             "work_id":  "condition-self-improvement-score-rereview-20260617",
+                                                                             "active_plan":  ".omo/plans/condition-self-improvement-score-rereview-20260617.md",
+                                                                             "plan_name":  "condition-self-improvement-score-rereview-20260617",
+                                                                             "session_ids":  [
+                                                                                                 "codex:condition-self-improvement-score-rereview-20260617"
+                                                                                             ],
+                                                                             "status":  "completed",
+                                                                             "worktree_path":  null,
+                                                                             "started_at":  "2026-06-17T10:44:37.9354770+09:00",
+                                                                             "completed_at":  "2026-06-17T10:54:19.2246078+09:00"
+                                                                         },
+                  "condition-generation-breadth-evaluation-20260617":  {
+                                                                           "work_id":  "condition-generation-breadth-evaluation-20260617",
+                                                                           "active_plan":  ".omo/plans/condition-generation-breadth-evaluation-20260617.md",
+                                                                           "plan_name":  "condition-generation-breadth-evaluation-20260617",
+                                                                           "session_ids":  [
+                                                                                               "codex:condition-generation-breadth-evaluation-20260617"
+                                                                                           ],
+                                                                           "status":  "completed",
+                                                                           "worktree_path":  null,
+                                                                           "started_at":  "2026-06-17T11:16:00+09:00",
+                                                                           "completed_at":  "2026-06-17T11:45:00+09:00"
+                                                                       },
+                  "dashboard-research-records-oos-execution-20260618":  {
+                                                                            "work_id":  "dashboard-research-records-oos-execution-20260618",
+                                                                            "active_plan":  ".omo/plans/dashboard-research-records-oos-execution-20260618.md",
+                                                                            "plan_name":  "dashboard-research-records-oos-execution-20260618",
+                                                                            "session_ids":  [
+                                                                                                "codex:dashboard-research-records-oos-execution-20260618"
+                                                                                            ],
+                                                                            "status":  "completed",
+                                                                            "worktree_path":  null,
+                                                                            "started_at":  "2026-06-18T00:00:00+09:00",
+                                                                            "completed_at":  "2026-06-18T10:22:16.6358729+09:00"
+                                                                        },
+                  "oos-2023-2025-combo-experiments-20260618":  {
+                                                                   "work_id":  "oos-2023-2025-combo-experiments-20260618",
+                                                                   "active_plan":  ".omo/plans/oos-2023-2025-combo-experiments-20260618.md",
+                                                                   "plan_name":  "oos-2023-2025-combo-experiments-20260618",
+                                                                   "session_ids":  [
+                                                                                       "codex:oos-2023-2025-combo-experiments-20260618"
+                                                                                   ],
+                                                                   "status":  "completed",
+                                                                   "worktree_path":  null,
+                                                                   "started_at":  "2026-06-18T10:30:00+09:00",
+                                                                   "completed_at":  "2026-06-18T14:05:00+09:00"
+                                                               },
+                  "combo-defense-stress-followup-20260618":  {
+                                                                 "work_id":  "combo-defense-stress-followup-20260618",
+                                                                 "active_plan":  ".omo/plans/combo-defense-stress-followup-20260618.md",
+                                                                 "plan_name":  "combo-defense-stress-followup-20260618",
+                                                                 "session_ids":  [
+                                                                                     "codex:combo-defense-stress-followup-20260618"
+                                                                                 ],
+                                                                 "status":  "completed",
+                                                                 "worktree_path":  null,
+                                                                 "started_at":  "2026-06-18T14:10:00+09:00",
+                                                                 "completed_at":  "2026-06-18T14:35:00+09:00"
+                                                             },
+                  "q4-defense-prerule-halfexit-dashboard-20260618":  {
+                                                                         "work_id":  "q4-defense-prerule-halfexit-dashboard-20260618",
+                                                                         "active_plan":  ".omo/plans/q4-defense-prerule-halfexit-dashboard-20260618.md",
+                                                                         "plan_name":  "q4-defense-prerule-halfexit-dashboard-20260618",
+                                                                         "session_ids":  [
+                                                                                             "codex:q4-defense-prerule-halfexit-dashboard-20260618"
+                                                                                         ],
+                                                                         "status":  "completed",
+                                                                         "worktree_path":  null,
+                                                                         "started_at":  "2026-06-18T15:20:00+09:00",
+                                                                         "completed_at":  "2026-06-18T16:20:00+09:00"
+                                                                     },
+                  "post-q4-defense-next4-20260618":  {
+                                                         "work_id":  "post-q4-defense-next4-20260618",
+                                                         "active_plan":  ".omo/plans/post-q4-defense-next4-20260618.md",
+                                                         "plan_name":  "post-q4-defense-next4-20260618",
+                                                         "session_ids":  [
+                                                                             "codex:post-q4-defense-next4-20260618"
+                                                                         ],
+                                                         "status":  "completed",
+                                                         "worktree_path":  null,
+                                                         "started_at":  "2026-06-18T16:30:00+09:00",
+                                                         "completed_at":  "2026-06-18T17:00:00+09:00"
+                                                     },
+                  "post-q4-3h-bulk-research-20260618":  {
+                                                            "work_id":  "post-q4-3h-bulk-research-20260618",
+                                                            "active_plan":  ".omo/plans/post-q4-3h-bulk-research-20260618.md",
+                                                            "plan_name":  "post-q4-3h-bulk-research-20260618",
+                                                            "session_ids":  [
+                                                                                "codex:post-q4-3h-bulk-research-20260618"
+                                                                            ],
+                                                            "status":  "completed",
+                                                            "worktree_path":  null,
+                                                            "started_at":  "2026-06-18T16:48:14.475338+09:00",
+                                                            "completed_at":  "2026-06-18T17:03:04.417664+09:00"
+                                                        },
+                  "condition-research-current-state-rereview-20260618":  {
+                                                                             "work_id":  "condition-research-current-state-rereview-20260618",
+                                                                             "active_plan":  ".omo/plans/condition-research-current-state-rereview-20260618.md",
+                                                                             "plan_name":  "condition-research-current-state-rereview-20260618",
+                                                                             "session_ids":  [
+                                                                                                 "codex:condition-research-current-state-rereview-20260618"
+                                                                                             ],
+                                                                             "status":  "completed",
+                                                                             "worktree_path":  null,
+                                                                             "started_at":  "2026-06-18T18:00:00+09:00",
+                                                                             "completed_at":  "2026-06-18T18:25:00+09:00"
+                                                                         },
+                  "stom-condition-research-dashboard-reorganization-20260618-pages-1-3":  {
+                                                                                              "work_id":  "stom-condition-research-dashboard-reorganization-20260618-pages-1-3",
+                                                                                              "active_plan":  ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
+                                                                                              "plan_name":  "stom-condition-research-dashboard-reorganization-20260618",
+                                                                                              "session_ids":  [
+                                                                                                                  "codex:stom-condition-research-dashboard-reorganization-20260618-pages-1-3"
+                                                                                                              ],
+                                                                                              "status":  "completed_selected_range",
+                                                                                              "worktree_path":  null,
+                                                                                              "started_at":  "2026-06-18T22:06:15+09:00",
+                                                                                              "requested_range":  "1~3",
+                                                                                              "completed_at":  "2026-06-18T22:06:15+09:00"
+                                                                                          },
+                  "stom-condition-research-dashboard-reorganization-20260618-pages-4-8":  {
+                                                                                              "work_id":  "stom-condition-research-dashboard-reorganization-20260618-pages-4-8",
+                                                                                              "active_plan":  ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
+                                                                                              "plan_name":  "stom-condition-research-dashboard-reorganization-20260618",
+                                                                                              "session_ids":  [
+                                                                                                                  "codex:stom-condition-research-dashboard-reorganization-20260618-pages-4-8"
+                                                                                                              ],
+                                                                                              "status":  "completed_selected_range",
+                                                                                              "worktree_path":  null,
+                                                                                              "started_at":  "2026-06-18T22:20:00+09:00",
+                                                                                              "requested_range":  "4~8",
+                                                                                              "completed_at":  "2026-06-18T22:45:47+09:00"
+                                                                                          },
+                  "stom-condition-research-dashboard-reorganization-20260618-pages-9-12":  {
+                                                                                               "work_id":  "stom-condition-research-dashboard-reorganization-20260618-pages-9-12",
+                                                                                               "active_plan":  ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
+                                                                                               "plan_name":  "stom-condition-research-dashboard-reorganization-20260618",
+                                                                                               "session_ids":  [
+                                                                                                                   "codex:stom-condition-research-dashboard-reorganization-20260618-pages-9-12"
+                                                                                                               ],
+                                                                                               "status":  "completed_selected_range",
+                                                                                               "worktree_path":  null,
+                                                                                               "started_at":  "2026-06-18T22:55:14+09:00",
+                                                                                               "requested_range":  "9~12",
+                                                                                               "completed_at":  "2026-06-18T23:15:00+09:00"
+                                                                                           },
+                  "stom-condition-research-dashboard-reorganization-20260618-remaining":  {
+                                                                                              "work_id":  "stom-condition-research-dashboard-reorganization-20260618-remaining",
+                                                                                              "active_plan":  ".omo/plans/stom-condition-research-dashboard-reorganization-20260618.md",
+                                                                                              "plan_name":  "stom-condition-research-dashboard-reorganization-20260618",
+                                                                                              "session_ids":  [
+                                                                                                                  "codex:stom-condition-research-dashboard-reorganization-20260618-remaining"
+                                                                                                              ],
+                                                                                              "status":  "completed",
+                                                                                              "started_at":  "2026-06-18T23:19:07+09:00",
+                                                                                              "ended_at":  "2026-06-18T23:32:13.2021265+09:00",
+                                                                                              "duration_ms":  786202,
+                                                                                              "duration_human":  "13.1m",
+                                                                                              "worktree_path":  null,
+                                                                                              "requested_range":  "13~16 F1~F4"
+                                                                                          },
+                  "dashboard-v3-functional-parity-20260701":  {
+                                                                  "work_id":  "dashboard-v3-functional-parity-20260701",
+                                                                  "active_plan":  ".omo/plans/dashboard-v3-functional-parity-20260701.md",
+                                                                  "plan_name":  "dashboard-v3-functional-parity-20260701",
+                                                                  "session_ids":  [
+                                                                                      "codex:dashboard-v3-functional-parity-20260701"
+                                                                                  ],
+                                                                  "status":  "completed",
+                                                                  "started_at":  "2026-07-01T23:00:09.3801563+09:00",
+                                                                  "ended_at":  "2026-07-02T02:10:19.0612507+09:00",
+                                                                  "duration_ms":  11409681,
+                                                                  "worktree_path":  "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
+                                                              },
+                  "dashboard-v3-desktop-visual-polish-20260702":  {
+                                                                      "work_id":  "dashboard-v3-desktop-visual-polish-20260702",
+                                                                      "active_plan":  ".omo/plans/dashboard-v3-desktop-visual-polish-20260702.md",
+                                                                      "plan_name":  "dashboard-v3-desktop-visual-polish-20260702",
+                                                                      "session_ids":  [
+                                                                                          "codex:dashboard-v3-desktop-visual-polish-20260702"
+                                                                                      ],
+                                                                      "status":  "completed",
+                                                                      "started_at":  "2026-07-02T13:25:00+09:00",
+                                                                      "ended_at":  "2026-07-02T14:24:05.9910826+09:00",
+                                                                      "duration_ms":  3545991,
+                                                                      "worktree_path":  "C:/System_Trading/STOM/STOM_V.wt-dashboard-remodel"
+                                                              }
+              }
 }
