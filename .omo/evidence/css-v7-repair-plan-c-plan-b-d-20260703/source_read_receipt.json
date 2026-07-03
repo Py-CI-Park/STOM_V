@@ -1,0 +1,74 @@
+﻿[
+    {
+        "path":  ".omo/plans/css-v7-repair-plan-c-plan-b-d-20260703.md",
+        "read_scope":  "full_document",
+        "line_count":  115,
+        "sha256":  "b7a938f25466c0835956d0f150cf737b9f8d94383662cadcebcb31a5037856ae",
+        "applied_sections":  "all; P1 current task",
+        "read_at":  "2026-07-03T23:30:21.9814675+09:00"
+    },
+    {
+        "path":  ".omo/plans/ai-loop-full-next-execution-20260703.md",
+        "read_scope":  "full_document",
+        "line_count":  594,
+        "sha256":  "27f8302066f5fcc209acd00044d04ca843b5a974ba5f17ca6b23a57cb1aaad8c",
+        "applied_sections":  "T4-T10; source authority; invariants",
+        "read_at":  "2026-07-03T23:30:21.9923798+09:00"
+    },
+    {
+        "path":  "docs/update_log/2026-07-03_ai_loop_full_implementation_session_handoff.md",
+        "read_scope":  "full_document",
+        "line_count":  69,
+        "sha256":  "dbc929eb04222e1c8b8ba0384e44ab8da2bcefdf8033c21f95b54b81cbfc832c",
+        "applied_sections":  "next work order; invariants",
+        "read_at":  "2026-07-03T23:30:21.9948870+09:00"
+    },
+    {
+        "path":  "docs/research/condition_research/plans/2026-07-02_plan_C_chart_sulsa_validation_protocol.md",
+        "read_scope":  "full_document",
+        "line_count":  192,
+        "sha256":  "94321f49693bd84789fc922221db9e196275d9e9d500c7acc42f0d63ab21be81",
+        "applied_sections":  "0-12; Plan C validation protocol",
+        "read_at":  "2026-07-03T23:30:21.9993988+09:00"
+    },
+    {
+        "path":  "docs/research/condition_research/plans/2026-07-02_plan_B_research_execution_roadmap.md",
+        "read_scope":  "full_document",
+        "line_count":  432,
+        "sha256":  "6ecc9544248ca7100bef707e0d7e778f6a517522f9a2f6dd8b8368a7d739629b",
+        "applied_sections":  "B1-B5; Plan B roadmap",
+        "read_at":  "2026-07-03T23:30:22.0023998+09:00"
+    },
+    {
+        "path":  "docs/research/condition_research/plans/2026-07-02_plan_D_seed_research_program.md",
+        "read_scope":  "full_document",
+        "line_count":  150,
+        "sha256":  "e0dae7379559fe6556a769c8e4312a6f48d926fc299c9e78373afab00dd16ae7",
+        "applied_sections":  "0-8; Plan D program",
+        "read_at":  "2026-07-03T23:30:22.0059102+09:00"
+    },
+    {
+        "path":  "docs/research/condition_research/chart_sulsa/2026-07-02_chart_sulsa_v7_condition_catalog.md",
+        "read_scope":  "full_document",
+        "line_count":  143,
+        "sha256":  "bca6833d037fcc099d45cb8745a1c8a7cf9681385216bce02993379dc86c7833",
+        "applied_sections":  "catalog 25; combos 2",
+        "read_at":  "2026-07-03T23:30:22.0094215+09:00"
+    },
+    {
+        "path":  "docs/research/condition_research/chart_sulsa/provenance_registry.jsonl",
+        "read_scope":  "full_document",
+        "line_count":  28,
+        "sha256":  "7b9468890d72f4110191aaf13144a63be046a32cf38440962171cbb652d0c861",
+        "applied_sections":  "condition/combo provenance",
+        "read_at":  "2026-07-03T23:30:22.0124204+09:00"
+    },
+    {
+        "path":  "docs/update_log/2026-07-03_css_v7_root_cause_before_plan_b.md",
+        "read_scope":  "full_document",
+        "line_count":  68,
+        "sha256":  "8103b0ed204113bec07a1b7ecd243e1bb82f287418a1263d90ae0c8d06807ed0",
+        "applied_sections":  "root cause; next decision",
+        "read_at":  "2026-07-03T23:30:22.0159333+09:00"
+    }
+]

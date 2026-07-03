@@ -1,0 +1,4624 @@
+{
+  "status": "collision_abort",
+  "schema_version": 1,
+  "dry_run": false,
+  "seeds": "docs\\research\\condition_research\\generated_conditions\\lattice\\lattice_seeds.json",
+  "db": "ai_strategy_loop\\state\\loop_strategies.db",
+  "pairs_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_all_duplicate_probe.json",
+  "ledger_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\provenance_lattice_register_duplicate_probe.jsonl",
+  "backup_path": null,
+  "planned_seed_count": 576,
+  "planned_insert_count": 1152,
+  "inserted_seed_count": 0,
+  "inserted_row_count": 0,
+  "conflicts": [
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_small_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_small_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_small_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_small_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_small_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_small_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_small_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_small_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_small_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_small_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_small_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_small_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_small_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_small_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_small_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_small_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_small_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_small_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_small_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_small_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_small_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_small_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_small_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_small_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midsmall_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_midlarge_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_large_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_large_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_large_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_large_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_large_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_large_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_large_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_large_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_large_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_large_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_large_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_large_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_large_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_large_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_large_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_large_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_large_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_large_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_large_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_large_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_large_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_large_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0900_large_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0900_large_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_small_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_small_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_small_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_small_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_small_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_small_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_small_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_small_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_small_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_small_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_small_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_small_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_small_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_small_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_small_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_small_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_small_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_small_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_small_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_small_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_small_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_small_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_small_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_small_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midsmall_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_midlarge_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_large_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_large_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_large_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_large_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_large_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_large_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_large_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_large_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_large_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_large_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_large_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_large_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_large_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_large_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_large_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_large_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_large_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_large_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_large_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_large_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_large_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_large_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0905_large_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0905_large_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_small_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_small_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_small_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_small_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_small_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_small_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_small_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_small_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_small_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_small_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_small_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_small_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_small_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_small_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_small_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_small_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_small_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_small_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_small_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_small_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_small_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_small_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_small_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_small_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midsmall_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_midlarge_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_large_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_large_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_large_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_large_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_large_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_large_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_large_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_large_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_large_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_large_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_large_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_large_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_large_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_large_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_large_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_large_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_large_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_large_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_large_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_large_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_large_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_large_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0910_large_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0910_large_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_small_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_small_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_small_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_small_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_small_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_small_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_small_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_small_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_small_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_small_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_small_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_small_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_small_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_small_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_small_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_small_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_small_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_small_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_small_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_small_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_small_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_small_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_small_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_small_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midsmall_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_midlarge_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_large_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_large_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_large_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_large_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_large_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_large_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_large_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_large_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_large_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_large_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_large_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_large_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_large_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_large_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_large_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_large_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_large_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_large_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_large_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_large_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_large_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_large_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0915_large_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0915_large_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_small_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_small_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_small_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_small_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_small_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_small_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_small_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_small_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_small_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_small_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_small_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_small_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_small_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_small_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_small_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_small_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_small_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_small_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_small_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_small_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_small_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_small_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_small_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_small_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midsmall_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_midlarge_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_large_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_large_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_large_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_large_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_large_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_large_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_large_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_large_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_large_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_large_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_large_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_large_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_large_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_large_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_large_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_large_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_large_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_large_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_large_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_large_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_large_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_large_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0920_large_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0920_large_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_small_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_small_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_small_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_small_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_small_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_small_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_small_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_small_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_small_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_small_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_small_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_small_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_small_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_small_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_small_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_small_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_small_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_small_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_small_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_small_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_small_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_small_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_small_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_small_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midsmall_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_midlarge_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_large_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_large_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_large_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_large_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_large_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_large_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_large_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_large_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_large_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_large_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_large_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_large_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_large_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_large_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_large_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_large_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_large_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_large_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_large_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_large_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_large_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_large_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:tick_0925_large_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:tick_0925_large_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_small_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_small_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_small_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_small_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_small_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_small_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_small_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_small_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_small_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_small_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_small_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_small_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_small_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_small_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_small_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_small_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_small_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_small_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_small_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_small_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_small_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_small_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_small_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_small_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midsmall_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midsmall_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midsmall_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midsmall_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midsmall_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midsmall_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midsmall_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midsmall_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midsmall_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midsmall_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midsmall_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midsmall_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midsmall_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midsmall_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midsmall_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midsmall_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midsmall_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midsmall_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midsmall_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midsmall_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midsmall_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midsmall_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midsmall_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midsmall_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midlarge_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midlarge_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midlarge_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midlarge_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midlarge_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midlarge_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midlarge_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midlarge_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midlarge_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midlarge_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midlarge_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midlarge_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midlarge_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midlarge_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midlarge_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midlarge_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midlarge_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midlarge_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midlarge_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midlarge_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midlarge_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midlarge_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_midlarge_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_midlarge_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_large_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_large_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_large_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_large_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_large_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_large_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_large_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_large_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_large_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_large_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_large_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_large_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_large_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_large_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_large_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_large_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_large_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_large_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_large_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_large_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_large_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_large_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_09h_large_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_09h_large_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_small_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_small_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_small_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_small_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_small_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_small_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_small_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_small_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_small_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_small_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_small_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_small_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_small_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_small_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_small_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_small_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_small_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_small_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_small_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_small_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_small_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_small_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_small_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_small_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midsmall_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midsmall_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midsmall_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midsmall_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midsmall_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midsmall_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midsmall_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midsmall_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midsmall_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midsmall_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midsmall_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midsmall_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midsmall_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midsmall_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midsmall_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midsmall_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midsmall_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midsmall_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midsmall_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midsmall_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midsmall_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midsmall_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midsmall_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midsmall_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midlarge_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midlarge_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midlarge_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midlarge_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midlarge_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midlarge_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midlarge_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midlarge_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midlarge_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midlarge_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midlarge_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midlarge_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midlarge_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midlarge_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midlarge_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midlarge_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midlarge_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midlarge_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midlarge_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midlarge_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midlarge_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midlarge_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_midlarge_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_midlarge_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_large_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_large_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_large_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_large_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_large_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_large_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_large_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_large_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_large_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_large_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_large_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_large_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_large_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_large_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_large_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_large_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_large_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_large_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_large_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_large_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_large_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_large_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_10h_large_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_10h_large_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_small_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_small_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_small_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_small_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_small_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_small_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_small_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_small_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_small_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_small_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_small_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_small_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_small_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_small_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_small_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_small_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_small_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_small_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_small_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_small_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_small_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_small_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_small_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_small_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midsmall_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midsmall_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midsmall_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midsmall_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midsmall_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midsmall_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midsmall_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midsmall_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midsmall_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midsmall_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midsmall_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midsmall_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midsmall_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midsmall_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midsmall_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midsmall_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midsmall_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midsmall_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midsmall_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midsmall_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midsmall_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midsmall_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midsmall_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midsmall_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midlarge_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midlarge_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midlarge_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midlarge_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midlarge_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midlarge_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midlarge_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midlarge_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midlarge_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midlarge_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midlarge_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midlarge_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midlarge_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midlarge_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midlarge_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midlarge_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midlarge_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midlarge_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midlarge_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midlarge_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midlarge_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midlarge_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_midlarge_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_midlarge_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_large_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_large_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_large_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_large_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_large_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_large_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_large_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_large_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_large_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_large_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_large_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_large_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_large_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_large_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_large_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_large_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_large_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_large_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_large_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_large_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_large_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_large_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_11h_large_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_11h_large_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_small_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_small_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_small_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_small_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_small_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_small_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_small_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_small_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_small_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_small_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_small_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_small_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_small_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_small_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_small_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_small_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_small_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_small_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_small_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_small_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_small_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_small_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_small_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_small_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midsmall_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midsmall_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midsmall_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midsmall_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midsmall_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midsmall_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midsmall_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midsmall_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midsmall_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midsmall_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midsmall_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midsmall_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midsmall_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midsmall_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midsmall_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midsmall_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midsmall_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midsmall_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midsmall_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midsmall_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midsmall_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midsmall_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midsmall_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midsmall_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midlarge_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midlarge_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midlarge_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midlarge_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midlarge_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midlarge_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midlarge_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midlarge_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midlarge_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midlarge_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midlarge_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midlarge_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midlarge_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midlarge_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midlarge_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midlarge_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midlarge_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midlarge_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midlarge_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midlarge_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midlarge_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midlarge_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_midlarge_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_midlarge_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_large_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_large_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_large_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_large_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_large_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_large_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_large_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_large_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_large_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_large_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_large_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_large_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_large_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_large_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_large_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_large_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_large_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_large_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_large_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_large_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_large_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_large_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_13h_large_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_13h_large_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_small_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_small_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_small_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_small_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_small_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_small_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_small_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_small_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_small_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_small_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_small_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_small_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_small_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_small_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_small_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_small_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_small_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_small_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_small_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_small_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_small_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_small_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_small_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_small_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midsmall_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midsmall_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midsmall_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midsmall_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midsmall_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midsmall_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midsmall_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midsmall_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midsmall_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midsmall_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midsmall_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midsmall_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midsmall_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midsmall_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midsmall_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midsmall_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midsmall_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midsmall_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midsmall_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midsmall_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midsmall_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midsmall_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midsmall_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midsmall_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midlarge_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midlarge_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midlarge_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midlarge_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midlarge_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midlarge_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midlarge_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midlarge_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midlarge_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midlarge_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midlarge_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midlarge_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midlarge_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midlarge_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midlarge_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midlarge_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midlarge_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midlarge_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midlarge_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midlarge_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midlarge_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midlarge_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_midlarge_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_midlarge_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_large_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_large_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_large_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_large_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_large_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_large_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_large_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_large_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_large_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_large_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_large_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_large_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_large_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_large_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_large_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_large_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_large_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_large_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_large_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_large_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_large_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_large_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_14h_large_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_14h_large_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_small_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_small_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_small_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_small_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_small_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_small_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_small_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_small_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_small_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_small_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_small_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_small_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_small_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_small_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_small_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_small_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_small_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_small_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_small_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_small_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_small_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_small_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_small_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_small_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midsmall_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_midlarge_high:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_large_low:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_large_low:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_large_low:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_large_low:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_large_low:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_large_low:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_large_low:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_large_low:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_large_mid:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_large_mid:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_large_mid:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_large_mid:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_large_mid:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_large_mid:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_large_mid:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_large_mid:volume_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_large_high:momentum_breakout_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_large_high:momentum_breakout_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_large_high:prevday_active_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_large_high:prevday_active_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_large_high:strength_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_large_high:strength_surge_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_lattice_v1:min_1430p_large_high:volume_surge_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_lattice_v1:min_1430p_large_high:volume_surge_S"
+    }
+  ]
+}

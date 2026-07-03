@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "run_id": "lat_smoke_tick_stratified_probe_20260703",
+  "pairs_path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_stratified_probe.json",
+  "log_path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_tick_stratified_probe.log",
+  "prepare": {
+    "back_count": 810,
+    "elapsed_sec": 91
+  },
+  "results": [
+    {
+      "gen_no": 0,
+      "buy_name": "LAT_lattice_v1:tick_0905_large_high:volume_surge_B",
+      "sell_name": "LAT_lattice_v1:tick_0905_large_high:volume_surge_S",
+      "status": "error",
+      "gate_passed": 0,
+      "reason": "[lattice_v1:tick_0905_large_high:volume_surge] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "mdd": 0.0,
+      "profit": 0.0,
+      "strategy_gist": "",
+      "csv_path": null
+    },
+    {
+      "gen_no": 1,
+      "buy_name": "LAT_lattice_v1:tick_0910_midlarge_high:strength_surge_B",
+      "sell_name": "LAT_lattice_v1:tick_0910_midlarge_high:strength_surge_S",
+      "status": "error",
+      "gate_passed": 0,
+      "reason": "[lattice_v1:tick_0910_midlarge_high:strength_surge] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "mdd": 0.0,
+      "profit": 0.0,
+      "strategy_gist": "",
+      "csv_path": null
+    },
+    {
+      "gen_no": 2,
+      "buy_name": "LAT_lattice_v1:tick_0915_large_mid:momentum_breakout_B",
+      "sell_name": "LAT_lattice_v1:tick_0915_large_mid:momentum_breakout_S",
+      "status": "error",
+      "gate_passed": 0,
+      "reason": "[lattice_v1:tick_0915_large_mid:momentum_breakout] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "mdd": 0.0,
+      "profit": 0.0,
+      "strategy_gist": "",
+      "csv_path": null
+    },
+    {
+      "gen_no": 3,
+      "buy_name": "LAT_lattice_v1:tick_0920_midlarge_low:prevday_active_B",
+      "sell_name": "LAT_lattice_v1:tick_0920_midlarge_low:prevday_active_S",
+      "status": "error",
+      "gate_passed": 0,
+      "reason": "[lattice_v1:tick_0920_midlarge_low:prevday_active] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "mdd": 0.0,
+      "profit": 0.0,
+      "strategy_gist": "",
+      "csv_path": null
+    }
+  ]
+}

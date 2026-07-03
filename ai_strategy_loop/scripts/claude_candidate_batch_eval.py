@@ -18,6 +18,7 @@ import argparse
 import json
 import time
 from pathlib import Path
+from typing import Any
 
 import ai_strategy_loop.bootstrap as bootstrap
 from ai_strategy_loop.launch_config import config_from_dict
@@ -32,6 +33,29 @@ from cli.warm_session import WarmBacktestSession
 
 def _load_json(path: str):
     return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def _failed_generation_payload(label: str, outcome) -> dict[str, Any]:
+    if outcome.status == "no_trades":
+        return {
+            "status": "no_trades",
+            "score": 0.0,
+            "gate_passed": False,
+            "reason": f"[{label}] {outcome.reason}",
+            "csv_path": outcome.csv_path,
+            "trade_count": 0,
+            "daily_avg_trades": 0.0,
+            "mdd": 0.0,
+            "profit": 0.0,
+            "strategy_gist": label,
+        }
+    return {
+        "status": "error",
+        "score": 0.0,
+        "gate_passed": False,
+        "reason": f"[{label}] backtest failed: {outcome.reason}",
+        "csv_path": outcome.csv_path,
+    }
 
 
 def main() -> int:
@@ -80,11 +104,10 @@ def main() -> int:
             if not outcome.ok:
                 st.record_generation(
                     rid, i, buy_name=buy, sell_name=sell,
-                    status="error", score=0.0, gate_passed=False,
-                    reason=f"[{label}] backtest failed: {outcome.reason}",
-                    csv_path=outcome.csv_path,
+                    **_failed_generation_payload(label, outcome),
                 )
-                print(f"[BATCH] gen{i} {label} ERROR ({elapsed:.0f}s) {outcome.reason}",
+                level = "NO_TRADES" if outcome.status == "no_trades" else "ERROR"
+                print(f"[BATCH] gen{i} {label} {level} ({elapsed:.0f}s) {outcome.reason}",
                       flush=True)
                 continue
 

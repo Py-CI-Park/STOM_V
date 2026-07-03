@@ -438,6 +438,12 @@ def _warm_to_outcome(result: dict) -> BacktestOutcome:
     if message:
         detail_parts.append(f"message={message}")
     detail_parts.append(f"csv={'yes' if csv_path else 'no'}")
+    detail_parts.append(f"metrics={'yes' if metrics else 'no'}")
+    if status == "success" and not csv_path and not metrics:
+        return BacktestOutcome(
+            False, "no_trades", csv_path, metrics,
+            "warm backtest no_trades: " + " ".join(detail_parts),
+        )
     return BacktestOutcome(
         False, str(status), csv_path, metrics,
         "warm backtest non-success: " + " ".join(detail_parts),

@@ -1,0 +1,19 @@
+{
+  "status": "dry_run_ok",
+  "schema_version": 1,
+  "dry_run": true,
+  "seeds": "docs\\research\\condition_research\\generated_conditions\\lattice\\lattice_seeds.json",
+  "db": "ai_strategy_loop\\state\\loop_strategies.db",
+  "pairs_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_all.json",
+  "ledger_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\provenance_lattice_register_sanitized.jsonl",
+  "mapping_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\lattice_strategy_name_mapping_sanitized.jsonl",
+  "backup_path": null,
+  "planned_seed_count": 576,
+  "planned_insert_count": 1152,
+  "inserted_seed_count": 0,
+  "inserted_row_count": 0,
+  "unsafe_legacy_name_count": 1152,
+  "unsafe_target_name_count": 0,
+  "name_style": "filename_safe_v2",
+  "conflicts": []
+}

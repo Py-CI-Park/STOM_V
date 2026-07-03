@@ -1,0 +1,142 @@
+# CSS_V7 Repair And Resume Plan C/B/D
+
+## Scope
+
+Run the user's priority 1~7 sequence after the Plan C T5 blocker analysis.
+This plan extends the original handoff order without replacing the source
+Plan C/B/D documents.
+
+## Invariants
+
+- Research lane only; keep `hypothesis_seed`.
+- No A3, promotion-review, export, live, or final promotion changes.
+- No UPDATE/DELETE against strategy DBs. Repair rows must be append-only
+  variants unless the user separately approves a destructive correction.
+- Do not run Plan B before repaired CSS_V7 smoke evidence exists.
+- OOS-blind: no OOS before freeze/preregistration.
+- Do not clean/stage dashboard seven files, `.gjc`, or unrelated `.omo` residue.
+- No `git add -A`.
+
+## Read-First Sources
+
+- `.omo/plans/ai-loop-full-next-execution-20260703.md`
+- `docs/update_log/2026-07-03_ai_loop_full_implementation_session_handoff.md`
+- `docs/research/condition_research/plans/2026-07-02_plan_C_chart_sulsa_validation_protocol.md`
+- `docs/research/condition_research/plans/2026-07-02_plan_B_research_execution_roadmap.md`
+- `docs/research/condition_research/plans/2026-07-02_plan_D_seed_research_program.md`
+- `docs/research/condition_research/chart_sulsa/2026-07-02_chart_sulsa_v7_condition_catalog.md`
+- `docs/research/condition_research/chart_sulsa/provenance_registry.jsonl`
+- `docs/update_log/2026-07-03_css_v7_root_cause_before_plan_b.md`
+
+## TODOs
+
+- [x] P1. CSS_V7 append-only fixcall repair and arity gate
+
+  Purpose: unblock Plan C without mutating original CSS_V7 DB rows.
+
+  Acceptance:
+  - Read-first receipt exists for this plan and the source documents.
+  - A failing test captures that `self.Buy(...7 args)`/`self.Sell(...7 args)`
+    is invalid for STOM runtime and that repaired variants use zero-arg calls.
+  - A repair script creates `*_FIXCALL` rows in `ai_strategy_loop/state/loop_strategies.db`
+    with backup, INSERT-only semantics, and collision abort.
+  - Repaired pairs are written under `artifacts/chart_sulsa_validation_20260702/`.
+  - Static arity gate reports zero invalid runtime calls for repaired rows.
+  - Original CSS_V7 rows are not updated or deleted.
+  - Evidence and timing are appended to `.omo/start-work/ledger.jsonl`.
+
+- [x] P2. Plan C T5 repaired smoke validation
+
+  Purpose: rerun CSS_V7 smoke on repaired pair list before any Plan B work.
+
+  Acceptance:
+  - Positive control is healthy or an explicit blocker is written.
+  - Combo-first order is preserved using repaired pair names.
+  - Tick and min smoke produce honest ok/error/no_trades statuses.
+  - All pairs are classified `go|no_go|hold` for the smoke stage.
+  - Revival registry is append-only for no_go pairs.
+
+- [x] P3. Plan C train/OOS/WF/slippage for smoke survivors
+
+  Purpose: finish Plan C classification and export Plan D seed-pool input.
+
+  Acceptance:
+  - Train is measurement-only, with comparator where available.
+  - OOS usage is preregistered and logged.
+  - WF/slippage are advisory as defined by Plan C.
+  - Every unique repaired pair has final status `survivor|rejected|hold`.
+
+- [x] P4. Plan B B1.1-B1.2 576 seed generation and loop DB registration
+
+  Purpose: generate lattice seeds and register them INSERT-only.
+
+  Acceptance:
+  - `seed_count` is 576 unless a documented lane/family filter is used.
+  - Loop DB registration has backup, collision check, pairs JSON, and provenance JSONL.
+  - Duplicate-name abort is tested against a copied DB.
+
+- [x] P5R. Plan B P5 root-cause repair before full smoke
+
+  Purpose: remove the known blockers before resuming Plan B full smoke.
+
+  Acceptance:
+  - Lattice pair/DB strategy names are checked for Windows filename safety.
+  - Existing `LAT_lattice_v1:...` rows remain untouched; sanitized strategy-name rows are added INSERT-only.
+  - `pairs_tick.json` and `pairs_min.json` are regenerated with sanitized names, with a mapping ledger.
+  - Batch evaluation records warm success + `csv=no` + missing metrics as `no_trades`, not generic `error`.
+  - The 14 sampled tick seeds have a gate-by-gate feasibility audit.
+  - Threshold relaxation need is decided before any full smoke.
+  - Only a sanitized 20-pair stratified acceptance probe is run; full 288 tick/min smoke remains blocked.
+
+  Result 2026-07-04:
+  - Legacy `LAT_lattice_v1:...` rows were preserved; sanitized filename-safe rows were added INSERT-only.
+  - `pairs_tick.json` and `pairs_min.json` now point to sanitized names, with mapping ledger.
+  - Sanitized acceptance probe used 20 pairs only and returned `ok=20`, `gate_passed=0`, `trade_count=24..1418`.
+  - Threshold relaxation is not required before resuming full smoke; later refinement is still needed because no sampled pair passed performance gates.
+
+- [ ] P5. Plan B B1.3 overnight smoke batch
+
+  Purpose: run tick first, then min, and export smoke results.
+
+  Status 2026-07-03: blocked before full batch. Tick first10 plus a
+  stratified 4-pair probe produced 14/14 `status=error` with raw backtest
+  `success` but `csv=no`, so running the full 288 tick pairs would likely hit
+  the Plan B consecutive-error stop condition before producing useful smoke
+  results.
+
+  Status 2026-07-04: P5R resolved the pre-full-smoke blocker. Full 288 tick
+  smoke and min smoke are still not run in this selected-range session.
+
+  Acceptance:
+  - Resume manifest and first-10-pair timing estimate are written.
+  - Tick smoke result export exists before min starts.
+  - Any cleanup uses dry-run inventory and explicit PID exclusion.
+
+- [ ] P6. Plan B B2-B5 coverage, refinement, OOS, portfolio
+
+  Purpose: convert smoke results into go/no_go, refine go cells, freeze before OOS,
+  then assemble a portfolio only with 2+ OOS survivors.
+
+  Acceptance:
+  - coverage/gaps/batch_plan JSONs exist per lane.
+  - no_go seeds are appended to revival registry.
+  - OOS preregistration exists before every OOS run.
+  - Portfolio outputs include measurement-frame labels.
+
+- [ ] P7. Plan D survivor seed research program
+
+  Purpose: build seed pool from Plan C survivors, Plan B survivors, and verified
+  rr8 seed; run serial seed research until top 3 seeds are frozen.
+
+  Acceptance:
+  - `seed_pool.jsonl` is append-only and sha-checked.
+  - Only one active seed runs at a time.
+  - R-a/R-b/R-c/R-d outputs exist per round.
+  - Program stops when top 3 priority seeds are frozen, seed pool is exhausted,
+    positive control fails, or 3 seeds show all-round no-improve.
+
+## Final Verification Wave
+
+- [ ] F1. Evidence and scope audit
+- [ ] F2. Code quality and test audit
+- [ ] F3. Research lineage and protected-path audit

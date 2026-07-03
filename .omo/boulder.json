@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "active_work_id": null,
+  "active_work_id": "css-v7-repair-plan-c-plan-b-d-20260703",
   "works": {
     "condition-research-rereview-20260603": {
       "work_id": "condition-research-rereview-20260603",
@@ -386,6 +386,83 @@
       "duration_human": "13.1m",
       "worktree_path": null,
       "requested_range": "13~16 F1~F4"
+    },
+    "ai-loop-full-next-execution-20260703-t0-t3": {
+      "work_id": "ai-loop-full-next-execution-20260703-t0-t3",
+      "active_plan": ".omo/plans/ai-loop-full-next-execution-20260703.md",
+      "plan_name": "ai-loop-full-next-execution-20260703",
+      "session_ids": [
+        "codex:ai-loop-full-next-execution-20260703-t0-t3"
+      ],
+      "status": "completed_selected_range",
+      "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+      "started_at": "2026-07-03T12:38:47.3701118+09:00",
+      "requested_range": "T0~T3",
+      "objective": "T0 preflight + Plan A A1/A2 provider stabilization + A3 blocked_pending_user_approval record",
+      "completed_at": "2026-07-03T13:39:11.7561604+09:00",
+      "completed_range": "T0~T3"
+    },
+    "ai-loop-full-next-execution-20260703-t4-t5": {
+      "work_id": "ai-loop-full-next-execution-20260703-t4-t5",
+      "active_plan": ".omo/plans/ai-loop-full-next-execution-20260703.md",
+      "plan_name": "ai-loop-full-next-execution-20260703",
+      "session_ids": [
+        "codex:ai-loop-full-next-execution-20260703-t4-t5"
+      ],
+      "status": "blocked_selected_range",
+      "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+      "started_at": "2026-07-03T15:43:39.3939116+09:00",
+      "requested_range": "T4~T5",
+      "objective": "Plan C CSS_V7 static gate + unique pair list + loop DB mirror INSERT-only + smoke/train/OOS/WF validation",
+      "blocked_at": "2026-07-03T16:48:00+09:00",
+      "completed_range": "T4",
+      "blocked_range": "T5",
+      "blocker": "CSS_V7 smoke validation produced no go candidates: tick 7/7 warm backtest timeout at 300s, min smoke stopped after first-pair long runtime with 1200s timeout risk. train/OOS/WF not opened."
+    },
+    "css-v7-root-cause-before-plan-b-20260703": {
+      "work_id": "css-v7-root-cause-before-plan-b-20260703",
+      "active_plan": ".omo/plans/css-v7-root-cause-before-plan-b-20260703.md",
+      "plan_name": "css-v7-root-cause-before-plan-b-20260703",
+      "session_ids": [
+        "codex:css-v7-root-cause-before-plan-b-20260703"
+      ],
+      "status": "completed",
+      "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+      "started_at": "2026-07-03T22:41:28.1535515+09:00",
+      "requested_range": "R0~R3",
+      "objective": "CSS_V7 timeout root-cause analysis before Plan B",
+      "completed_at": "2026-07-03T22:56:09.3257742+09:00",
+      "result": "root_cause_identified: CSS_V7 non-OPT Buy/Sell call arity mismatch; Plan B blocked unless repaired or excluded",
+      "completed_range": "R0~R3"
+    },
+    "css-v7-repair-plan-c-plan-b-d-20260703": {
+      "work_id": "css-v7-repair-plan-c-plan-b-d-20260703",
+      "active_plan": ".omo/plans/css-v7-repair-plan-c-plan-b-d-20260703.md",
+      "plan_name": "css-v7-repair-plan-c-plan-b-d-20260703",
+      "session_ids": [
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-p5r-20260704",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-b-pre-d-20260704"
+      ],
+      "status": "active",
+      "started_at": "2026-07-03T23:30:01.3258147+09:00",
+      "ended_at": null,
+      "duration_ms": null,
+      "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
+      "objective": "Run priorities 1~7: CSS_V7 repair, Plan C validation, Plan B, Plan D",
+      "resumed_at": "2026-07-04T08:48:04.4061085+09:00",
+      "requested_range": "Plan B completion before Plan D",
+      "current_priority": "P5",
+      "completed_range": "P5-root-cause-repair",
+      "completed_at": "2026-07-04T08:13:02.9135701+09:00",
+      "last_completed_priority": "P5R",
+      "last_completed_at": "2026-07-04T08:13:02.9135701+09:00",
+      "last_evidence": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\p5r_root_cause_repair_summary.json",
+      "next_priority": "P5 full tick smoke resume",
+      "p5_blocker_status": "resolved_for_full_smoke_resume",
+      "blocked_at": "2026-07-04T00:43:02.435301+09:00",
+      "blocked_priority": "P5",
+      "blocker": "Resolved for resume: legacy colon strategy names caused unsafe backtest artifact paths; sanitized rows and pairs produced 20/20 ok acceptance probe. P5 full tick/min smoke has not been run yet."
     }
   }
 }

@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-03T15:42:28.771136+00:00",
+  "priority": "P5",
+  "status": "blocked_before_full_batch",
+  "reason": "14/14 sampled tick lattice seeds ended status=error with raw success but csv=no; full tick batch would likely hit Plan B consecutive-error stop condition before useful smoke results.",
+  "runs": {
+    "first10": {
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_first10.json",
+      "rows": 10,
+      "timing": {
+        "prepare": {
+          "back_count": 810,
+          "elapsed_sec": 78
+        },
+        "pair_elapsed_sec": [
+          31,
+          31,
+          31,
+          31,
+          31,
+          31,
+          37,
+          42,
+          30,
+          31
+        ]
+      }
+    },
+    "stratified_probe": {
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_stratified_probe.json",
+      "rows": 4,
+      "timing": {
+        "prepare": {
+          "back_count": 810,
+          "elapsed_sec": 91
+        },
+        "pair_elapsed_sec": [
+          36,
+          37,
+          32,
+          31
+        ]
+      }
+    }
+  },
+  "combined_sample_count": 14,
+  "status_counts": {
+    "error": 14
+  },
+  "top_reasons": [
+    [
+      "[lattice_v1:tick_0900_small_low:momentum_breakout] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      1
+    ],
+    [
+      "[lattice_v1:tick_0900_small_low:prevday_active] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      1
+    ],
+    [
+      "[lattice_v1:tick_0900_small_low:strength_surge] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      1
+    ],
+    [
+      "[lattice_v1:tick_0900_small_low:volume_surge] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      1
+    ],
+    [
+      "[lattice_v1:tick_0900_small_mid:momentum_breakout] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      1
+    ]
+  ],
+  "timing": {
+    "avg_pair_elapsed_sec": 33.0,
+    "projected_288_tick_elapsed_sec_including_one_prepare": 9582.0,
+    "projected_288_tick_elapsed_hours": 2.66
+  },
+  "decision": {
+    "full_tick_batch_started": false,
+    "min_batch_started": false,
+    "next_required_action": "Analyze lattice seed no-trade/csv=no cause or adjust seed lattice thresholds before overnight smoke.",
+    "plan_b_stop_condition_relevance": "same error would reach 20 consecutive errors if continued from current samples"
+  }
+}
