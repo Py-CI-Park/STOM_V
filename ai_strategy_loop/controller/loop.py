@@ -2677,7 +2677,20 @@ def _make_provider_with_proxy(config: LoopConfig):
             clear_env()
             raise RuntimeError("gpt_auth 프록시 시작 실패")
         proxy_active = True
-    return make_provider(config), proxy_active
+    provider = make_provider(config)
+    if os.environ.get("OPENROUTER_API_KEY") and getattr(config, "provider", None) != "openrouter":
+        from ai_strategy_loop.provider.failover import FailoverProvider  # noqa: PLC0415
+        from ai_strategy_loop.provider.openrouter import OpenRouterProvider  # noqa: PLC0415
+
+        def _log_failover(event: dict[str, str]) -> None:
+            print(f"[LOOP] provider failover: {event}", flush=True)
+
+        provider = FailoverProvider(
+            provider,
+            [OpenRouterProvider(config)],
+            on_switch=_log_failover,
+        )
+    return provider, proxy_active
 
 
 def _stop_proxy() -> None:
