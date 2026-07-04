@@ -1,0 +1,68 @@
+/* v4.css — V4 대시보드 전용 레이아웃 (.v4-root 스코프)
+ *
+ *   V2 styles.css 의 디자인 토큰(var(--*))을 재사용하되, 레이아웃 클래스는 전부
+ *   v4-* 로 격리한다 → V2 화면에 회귀 0. graph-first 원칙: 본문 컨테이너가 차트에
+ *   큰 면적을 준다(차트 컴포넌트는 크기 prop 없이 컨테이너 크기로 스케일).
+ */
+.v4-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-0);
+  color: var(--ink-0);
+}
+
+/* ── 상단바 ── */
+.v4-topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; padding: 10px 18px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--line-1);
+}
+.v4-brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.v4-brand-mark { font-size: 18px; font-weight: 600; letter-spacing: .04em; color: var(--ink-0); }
+.v4-brand-sub { font-size: 11px; color: var(--ink-2); white-space: nowrap; }
+.v4-controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+/* ── 탭 네비 ── */
+.v4-tabnav {
+  position: sticky; top: 51px; z-index: 19;
+  display: flex; gap: 2px; padding: 6px 14px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--line-1);
+  overflow-x: auto;
+}
+.v4-tab {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 6px;
+  border: 1px solid transparent; background: transparent;
+  color: var(--ink-2); font-size: 13px; white-space: nowrap;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.v4-tab:hover { color: var(--ink-0); background: var(--bg-2); }
+.v4-tab.active { color: var(--ink-0); background: var(--bg-2); border-color: var(--line-2); }
+.v4-tab.active .v4-tab-badge { color: var(--teal); }
+.v4-tab-badge { font-size: 10px; color: var(--ink-3); letter-spacing: .08em; }
+
+/* ── 본문 ── */
+.v4-main { flex: 1; padding: 16px 18px 40px; min-width: 0; }
+
+/* graph-first 기반: V4 안에서 차트 컨테이너 최소 높이 확대(후속 phase 에서 hero 별 확장) */
+.v4-root .chart-wrap { min-height: 300px; }
+
+/* ── Phase 1 placeholder (후속 phase 에서 제거) ── */
+.v4-placeholder {
+  border: 1px dashed var(--line-2); border-radius: 10px;
+  padding: 48px 28px; text-align: center; color: var(--ink-2);
+  background: linear-gradient(180deg, rgba(76,214,179,.03), transparent 60%);
+}
+.v4-placeholder-badge {
+  display: inline-block; font-size: 11px; letter-spacing: .12em;
+  color: var(--teal); border: 1px solid rgba(76,214,179,.3);
+  background: rgba(76,214,179,.06); border-radius: 999px;
+  padding: 3px 10px; margin-bottom: 12px;
+}
+.v4-placeholder h2 { font-size: 20px; color: var(--ink-0); margin-bottom: 8px; letter-spacing: -.01em; }
+.v4-placeholder p { margin: 4px 0; line-height: 1.6; }
+.v4-placeholder-note { font-size: 11px; color: var(--ink-3); margin-top: 14px; }
