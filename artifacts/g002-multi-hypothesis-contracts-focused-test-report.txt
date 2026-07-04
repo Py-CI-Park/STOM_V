@@ -1,0 +1,20 @@
+G002 focused verification after authority/leak blocker fixes
+
+Commands run by leader:
+1. pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py -q
+   Result: 129 passed in 9.24s (raw output artifact://1907)
+2. python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py
+   Result: passed with no output
+3. git diff --check -- ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py
+   Result: passed; only CRLF conversion warnings for ai_strategy_loop/controller/condition_discovery.py and tests/unit/test_condition_discovery_policy.py
+4. git status --short -- _database _database_v3k_shadow _log backup "*.db" backtest/graph .omx/reports "v3k_settings*.json" _v3k_sidecar/v3k_gui_settings.json
+   Result: no output; protected paths clean
+
+Contract-specific coverage added/verified:
+- LLM candidate-pack R_* and S_* expression leakage rejection.
+- Diagnostic deterministic fallback R_/S_ expression leakage abort before execution.
+- Strict prompt-response code R_/S_ leakage invalidation.
+- Top-level and authority-object pack authority smuggling rejection.
+- Non-dict candidate pack fail-closed behavior.
+- 2-candidate and 3-candidate LLM pack execution under four-slot process-research config.
+- Deterministic fallback prompt maturity credit disabled and prompt score zero.

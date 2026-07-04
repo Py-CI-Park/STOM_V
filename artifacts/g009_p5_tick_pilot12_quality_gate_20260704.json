@@ -1,0 +1,73 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 8-G009PilotArchitect approved G009 checkpoint closure. It found the receipt, handoff, plan, boulder, and ledger consistent on official DB-full-period + warm64 pilot12, complete run, 12/12 ok rows, gate_passed=0, no survivor promotion, chunk01-only next action, and min/P6/P7 blocks. Only advisory: trading-quality-bad rows must not be promoted.",
+    "commands": ["architect review 8-G009PilotArchitect"],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 9-G009PilotQa passed read-only red-team over receipt, handoff, verification artifact, plan, and ledger. Leader verification parsed JSON/JSONL, checked DB rows for run_id lat_tick_official_full_warm64_pilot12_20260704, verified no lingering batch process, reran 19 focused tests, and ran git diff --check. QA found no permission for monolithic tick 288, min, P6/P7, wrong-profile decisions, or survivor promotion.",
+    "e2eCommands": [
+      "python -m ai_strategy_loop.scripts.claude_candidate_batch_eval --pairs-json docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_pilot12_20260704.json --config-json docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json --run-id lat_tick_official_full_warm64_pilot12_20260704 --fail-fast-timeout",
+      "python JSON/DB verification for receipt, protocol, manifest, boulder, ledger"
+    ],
+    "redTeamCommands": [
+      "powershell process scan for claude_candidate_batch_eval and pilot run_id",
+      "pytest tests/unit/test_warm_session_window.py tests/unit/test_lattice_p5_batch_repair.py tests/unit/test_plan_b_p5_profile_audit.py -q",
+      "git diff --check",
+      "executor QA 9-G009PilotQa"
+    ],
+    "artifactRefs": [
+      {"id": "pilot-receipt", "kind": "algorithm-test-report", "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_pilot12_official_full_warm64_20260704_receipt.json", "description": "Official pilot12 execution receipt with DB-full warm64 profile, row summary, and forbidden list."},
+      {"id": "pilot-handoff", "kind": "algorithm-boundary-report", "path": "docs/update_log/2026-07-04_p5_tick_pilot12_handoff.md", "description": "Handoff explaining operationally clean but trading-quality-bad pilot result and next blocks."},
+      {"id": "verification", "kind": "test-report", "path": "artifacts/g009_p5_tick_pilot12_verification_20260704.json", "description": "Verification command and DB/process/test summary."},
+      {"id": "plan", "kind": "algorithm-boundary-report", "path": ".omo/plans/css-v7-repair-plan-c-plan-b-d-20260703.md", "description": "Managed plan updated with pilot12 result and chunk01-only next action."},
+      {"id": "ledger", "kind": "algorithm-boundary-report", "path": ".omo/start-work/ledger.jsonl", "description": "Start-work ledger pilot12 completion event."}
+    ],
+    "contractCoverage": [
+      {"id": "c-pilot-receipt", "contractRef": "G009 pilot receipt", "obligation": "A pilot12 execution receipt exists and identifies the official DB-full warm64 run/profile.", "status": "covered", "surfaceEvidenceRefs": ["s-receipt"], "adversarialCaseRefs": ["r-mismatch"]},
+      {"id": "c-rows", "contractRef": "12 honest rows", "obligation": "Pilot run is complete with 12 honest rows and gate_passed=0 recorded honestly.", "status": "covered", "surfaceEvidenceRefs": ["s-receipt", "s-db"], "adversarialCaseRefs": ["r-missing-rows"]},
+      {"id": "c-process-clean", "contractRef": "Process cleanup", "obligation": "Post-run process scan has no lingering pilot batch process.", "status": "covered", "surfaceEvidenceRefs": ["s-process"], "adversarialCaseRefs": ["r-lingering-process"]},
+      {"id": "c-no-promotion", "contractRef": "No survivor promotion", "obligation": "Bad MDD/profit and gate_passed=0 rows are not promoted as survivors.", "status": "covered", "surfaceEvidenceRefs": ["s-receipt", "s-handoff", "s-plan"], "adversarialCaseRefs": ["r-survivor-promotion"]},
+      {"id": "c-next-action", "contractRef": "Chunk01-only next action", "obligation": "Only 24-pair tick chunk01 coverage-map work is unblocked; monolithic tick 288/min/P6/P7 remain blocked.", "status": "covered", "surfaceEvidenceRefs": ["s-receipt", "s-handoff", "s-plan", "s-ledger"], "adversarialCaseRefs": ["r-forbidden-escalation"]},
+      {"id": "c-wrong-profile", "contractRef": "Wrong-profile exclusion", "obligation": "Wrong-profile lat_smoke_tick_full_sanitized_20260704* rows are not used for official decisions.", "status": "covered", "surfaceEvidenceRefs": ["s-handoff", "s-plan"], "adversarialCaseRefs": ["r-wrong-profile"]}
+    ],
+    "surfaceEvidence": [
+      {"id": "s-receipt", "contractRef": "Pilot receipt", "surface": "algorithm", "invocation": "Read/parse p5_tick_pilot12_official_full_warm64_20260704_receipt.json", "verdict": "passed", "artifactRefs": ["pilot-receipt"]},
+      {"id": "s-db", "contractRef": "LoopState DB run rows", "surface": "algorithm", "invocation": "SQLite query for run_id lat_tick_official_full_warm64_pilot12_20260704", "verdict": "passed", "artifactRefs": ["verification"]},
+      {"id": "s-process", "contractRef": "Process cleanup", "surface": "algorithm", "invocation": "Process-clean evidence captured in artifacts/g009_p5_tick_pilot12_verification_20260704.json from a post-run process scan", "verdict": "passed", "artifactRefs": ["verification"]},
+      {"id": "s-handoff", "contractRef": "Handoff", "surface": "algorithm", "invocation": "Read docs/update_log/2026-07-04_p5_tick_pilot12_handoff.md", "verdict": "passed", "artifactRefs": ["pilot-handoff"]},
+      {"id": "s-plan", "contractRef": "Managed plan", "surface": "algorithm", "invocation": "Read .omo plan/boulder state", "verdict": "passed", "artifactRefs": ["plan"]},
+      {"id": "s-ledger", "contractRef": "Ledger", "surface": "algorithm", "invocation": "Parse .omo/start-work/ledger.jsonl", "verdict": "passed", "artifactRefs": ["ledger"]}
+    ],
+    "adversarialCases": [
+      {"id": "r-mismatch", "contractRef": "G009 pilot receipt", "scenario": "Receipt, handoff, verification, plan, and ledger disagree on run_id/profile/status/rows.", "expectedBehavior": "All artifacts agree on official full-period warm64 pilot12 complete run.", "verdict": "passed", "artifactRefs": ["pilot-receipt", "pilot-handoff", "verification", "plan", "ledger"]},
+      {"id": "r-missing-rows", "contractRef": "12 honest rows", "scenario": "Pilot completion is claimed with missing rows or non-honest statuses.", "expectedBehavior": "Receipt and DB show 12 rows, ok=12, gate_passed=0.", "verdict": "passed", "artifactRefs": ["pilot-receipt", "verification"]},
+      {"id": "r-lingering-process", "contractRef": "Process cleanup", "scenario": "A batch process remains after pilot completion.", "expectedBehavior": "Process scan is empty for claude_candidate_batch_eval/pilot run_id.", "verdict": "passed", "artifactRefs": ["verification"]},
+      {"id": "r-survivor-promotion", "contractRef": "No survivor promotion", "scenario": "Pilot rows are treated as survivor or economic validity evidence despite gate_passed=0 and severe MDD.", "expectedBehavior": "Artifacts explicitly mark trading quality bad and prohibit survivor promotion.", "verdict": "passed", "artifactRefs": ["pilot-receipt", "pilot-handoff", "plan"]},
+      {"id": "r-forbidden-escalation", "contractRef": "Chunk01-only next action", "scenario": "Operator interprets pilot completion as permission for monolithic 288/min/P6/P7.", "expectedBehavior": "Only chunk01 coverage-map work is next; downstream remains blocked until tick export.", "verdict": "passed", "artifactRefs": ["pilot-receipt", "pilot-handoff", "plan", "ledger"]},
+      {"id": "r-wrong-profile", "contractRef": "Wrong-profile exclusion", "scenario": "Wrong-profile lat_smoke_tick_full_sanitized_20260704* rows are reused for survivor/rejection/P6.", "expectedBehavior": "Artifacts preserve wrong-profile exclusion.", "verdict": "passed", "artifactRefs": ["pilot-handoff", "plan"]}
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "G009 pilot12 execution completed and produced durable receipt/handoff/verification artifacts. JSON/JSONL/DB checks, process cleanup scan, focused tests, git diff --check, architect review 8-G009PilotArchitect, and executor QA 9-G009PilotQa are clean. Trading quality is bad and documented as a non-promotion advisory, not a G009 completion blocker.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python JSON/DB verification for receipt, protocol, manifest, boulder, ledger",
+      "powershell process scan for claude_candidate_batch_eval and pilot run_id",
+      "pytest tests/unit/test_warm_session_window.py tests/unit/test_lattice_p5_batch_repair.py tests/unit/test_plan_b_p5_profile_audit.py -q",
+      "git diff --check",
+      "architect review 8-G009PilotArchitect",
+      "executor QA 9-G009PilotQa"
+    ],
+    "blockers": []
+  }
+}

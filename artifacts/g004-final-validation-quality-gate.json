@@ -1,0 +1,303 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Final architecture/product/code review agent://250-G004FinalArchitect approved with blockers empty; cleanup/slop review agent://251-G004FinalSlop passed with blockers empty. Product PASS/code APPROVE are normalized to strict gate CLEAR statuses in artifacts/g004-final-validation-architect-review.json.",
+    "commands": [
+      "agent://250-G004FinalArchitect",
+      "agent://251-G004FinalSlop"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Research-only smoke passed; JSON validation passed; focused pytest reran 154 tests passing in 108.62s (artifact://1979); py_compile passed; git diff --check passed with CRLF warnings only; protected-path status clean; QA/red-team agent://252-G004FinalQa passed with blockers empty.",
+    "e2eCommands": [
+      "Research-only Python smoke through real helper contracts -> artifacts/g004-research-only-validation-smoke.json",
+      "python -m json.tool artifacts/g004-research-only-validation-smoke.json",
+      "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_publish_live_page_data.py -q",
+      "python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py cli/research_ranking.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py",
+      "git diff --check -- ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py ai_strategy_loop/dashboard/frontend/panels-analysis.jsx cli/condition_generator.py cli/research_loop.py cli/research_ranking.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/test_research_prompt_contracts.py tests/unit/dashboard/test_dashboard_ui_remodel.py docs/process_flow.html artifacts/process-research-actual-20260629/process_research_presentation.html",
+      "git status --short -- _database _database_v3k_shadow _log backup \"*.db\" backtest/graph .omx/reports \"v3k_settings*.json\" _v3k_sidecar/v3k_gui_settings.json"
+    ],
+    "redTeamCommands": [
+      "agent://252-G004FinalQa read-only QA/red-team review",
+      "Focused adversarial tests for weak packs, authority smuggling, diagnostic leakage, promotion-review generation bypass, and research-result promotion misuse"
+    ],
+    "artifactRefs": [
+      {
+        "id": "focused-test-report",
+        "kind": "test-report",
+        "path": "artifacts/g004-final-validation-focused-test-report.txt",
+        "description": "Focused test, compile, JSON, whitespace, protected-path, and final review verification report for G004."
+      },
+      {
+        "id": "research-smoke",
+        "kind": "api-package-test-report",
+        "path": "artifacts/g004-research-only-validation-smoke.json",
+        "description": "Non-live research-only smoke artifact proving context pack, multi-hypothesis candidate, analysis card, prompt receipt, fallback, ranking, and promotion-review zero-generation contracts."
+      },
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/g003-mode-authority-observability-browser-verification.json",
+        "description": "Browser automation receipt from the current implementation proving static HTML observability markers are present."
+      },
+      {
+        "id": "observability-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/g003-mode-authority-observability-presentation.png",
+        "description": "Non-uniform screenshot of the updated process research observability section."
+      },
+      {
+        "id": "architect-review",
+        "kind": "code-review-report",
+        "path": "artifacts/g004-final-validation-architect-review.json",
+        "description": "Architecture/product/code review synthesis with blockers empty."
+      },
+      {
+        "id": "slop-cleaner",
+        "kind": "code-review-report",
+        "path": "artifacts/g004-final-validation-slop-cleaner.json",
+        "description": "Read-only cleanup/slop scan receipt with blockers empty."
+      },
+      {
+        "id": "qa-redteam",
+        "kind": "failure-mode-test-report",
+        "path": "artifacts/g004-final-validation-qa-redteam.json",
+        "description": "QA red-team review covering candidate-pack, authority, fallback, promotion-review, and research-only failure modes."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-context-pack",
+        "contractRef": "G004 objective: context pack metadata and full STOM prompt context are preserved through research artifacts",
+        "obligation": "context_pack_id, context_pack_sha256, full_stom_sources_included, prompt budget, candidate_pack_id, and candidate_contract_id survive candidate specs, analysis cards, prompt receipts, and ranking metadata.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-api-package"
+        ],
+        "adversarialCaseRefs": [
+          "case-authority-smuggling"
+        ]
+      },
+      {
+        "id": "contract-multi-candidate",
+        "contractRef": "G004 objective: 2-3+ contracts or mocked candidate pack path",
+        "obligation": "A non-live smoke creates a multi-hypothesis pack with at least two repair/discovery candidates, while focused tests cover 2-3+ pack validation and invalid sibling isolation.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-api-package"
+        ],
+        "adversarialCaseRefs": [
+          "case-weak-candidate-pack"
+        ]
+      },
+      {
+        "id": "contract-official-analysis-prompt",
+        "contractRef": "G004 objective: official candidate handling, analysis cards, prompt receipts",
+        "obligation": "Research artifacts carry official_backtest_result, downstream_result rejected when promotion fails, analysis_card_v2, and advisory ranking reason instead of prompt-only promotion claims.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-api-package"
+        ],
+        "adversarialCaseRefs": [
+          "case-research-result-promoted"
+        ]
+      },
+      {
+        "id": "contract-diagnostic-fallback",
+        "contractRef": "G004 objective: deterministic fallback labeling",
+        "obligation": "Deterministic fallback is diagnostic only, source diagnostic_deterministic_candidate_fallback, fallback_used true, prompt_score 0, and prompt_maturity_credit_allowed false.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-api-package"
+        ],
+        "adversarialCaseRefs": [
+          "case-diagnostic-leakage",
+          "case-fallback-prompt-credit"
+        ]
+      },
+      {
+        "id": "contract-promotion-review-zero-generation",
+        "contractRef": "G004 objective and approved plan: no export/live/final promotion and promotion-review zero-generation",
+        "obligation": "Promotion-review returns promotion_review_generation_blocked before controller side effects; all research-only authority flags remain false for export/live/final promote; protected paths remain clean.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-api-package",
+          "surface-protected-paths"
+        ],
+        "adversarialCaseRefs": [
+          "case-promotion-generation-bypass",
+          "case-authority-smuggling"
+        ]
+      },
+      {
+        "id": "contract-observability",
+        "contractRef": "Approved plan: dashboard/HTML observability for context pack, branch tree, candidate pack, analysis cards, prompt receipts, fallback, promotion blockers",
+        "obligation": "Static HTML/dashboard tests and browser receipt prove updated observability markers remain visible.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-static"
+        ],
+        "adversarialCaseRefs": [
+          "case-dashboard-observability-regression"
+        ]
+      },
+      {
+        "id": "contract-live-out-of-scope",
+        "contractRef": "Live/export/final promotion surfaces are explicitly prohibited",
+        "obligation": "Live trading, export, and final promotion execution are not part of this story and are only verified as blocked authority.",
+        "status": "not_applicable",
+        "reason": "The approved plan is research-only and prohibits export/live/final promotion; running those surfaces would violate the contract."
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-api-package",
+        "contractRef": "Python research-loop, prompt, generator, policy, ranking, and dashboard contract helpers",
+        "surface": "api/package",
+        "invocation": "Research-only smoke, focused pytest, and py_compile over changed helper, loop, policy, ranking, prompt, dashboard tests, and prompt contract files.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "research-smoke",
+          "focused-test-report"
+        ]
+      },
+      {
+        "id": "surface-web-static",
+        "contractRef": "Dashboard/static HTML observability surface",
+        "surface": "web",
+        "invocation": "Browser automation loaded the updated presentation and asserted required observability markers with screenshot evidence; focused dashboard/static tests reran in the G004 suite.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "observability-screenshot",
+          "focused-test-report"
+        ]
+      },
+      {
+        "id": "surface-protected-paths",
+        "contractRef": "Protected runtime paths must remain untouched",
+        "surface": "api/package",
+        "invocation": "Focused verification report records the protected-path git status check returning no output; no protected runtime paths were edited.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "focused-test-report"
+        ]
+      },
+      {
+        "id": "surface-live-export-final-promotion",
+        "contractRef": "Live/export/final promotion are out of scope and prohibited",
+        "surface": "api/package",
+        "status": "not_applicable",
+        "reason": "Research-only validation must not invoke live, export, or final promotion paths; tests and smoke cover blocked authority instead."
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-weak-candidate-pack",
+        "contractRef": "Multi-hypothesis candidate pack contract",
+        "scenario": "Pack has fewer than two valid candidates, no repair lane, or no discovery lane.",
+        "expectedBehavior": "Reject weak pack or isolate invalid siblings before official candidate handling.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "focused-test-report",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-authority-smuggling",
+        "contractRef": "Research-only authority",
+        "scenario": "Candidate/pack/analysis metadata tries to set can_live, can_export, final promotion, or production-ready fields.",
+        "expectedBehavior": "Strict validation rejects or blocks authority and smoke artifacts keep can_export/can_live/can_final_promote false.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "research-smoke",
+          "focused-test-report",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-diagnostic-leakage",
+        "contractRef": "Diagnostic deterministic fallback demotion",
+        "scenario": "Fallback or generated condition uses R_/S_ diagnostic/result variables.",
+        "expectedBehavior": "Expression leakage validation blocks execution; fallback receives prompt_score 0 and no prompt maturity credit.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "research-smoke",
+          "focused-test-report",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-fallback-prompt-credit",
+        "contractRef": "Prompt maturity accounting",
+        "scenario": "Deterministic fallback attempts to earn LLM prompt maturity credit.",
+        "expectedBehavior": "source diagnostic_deterministic_candidate_fallback, fallback_used true, prompt_maturity_credit_allowed false, prompt_score 0.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "research-smoke",
+          "focused-test-report"
+        ]
+      },
+      {
+        "id": "case-promotion-generation-bypass",
+        "contractRef": "Promotion-review zero-generation",
+        "scenario": "promotion-review path attempts candidate generation, baseline/controller execution, export, live, or final promotion side effects.",
+        "expectedBehavior": "Return promotion_review_generation_blocked before controller side effects; smoke controller_run_count is 0.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "research-smoke",
+          "focused-test-report",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-research-result-promoted",
+        "contractRef": "Research-only validation provenance",
+        "scenario": "A research candidate's official backtest result is interpreted as promotion approval.",
+        "expectedBehavior": "downstream_result remains rejected, promotion_passed false, advisory_rank_reason official_backtest_research_candidate_not_promotion_passed.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "research-smoke",
+          "focused-test-report",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-dashboard-observability-regression",
+        "contractRef": "Dashboard/static observability",
+        "scenario": "Observability page drops context pack health, branch tree, candidate pack, analysis cards, prompt receipts, fallback, or promotion blockers markers.",
+        "expectedBehavior": "Focused dashboard/static tests and browser receipt detect required markers.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "observability-screenshot",
+          "focused-test-report"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "The current G004 completion audit reran smoke JSON validation, the focused pytest suite, py_compile, git diff --check, protected-path status, and final architect/slop/QA reviews. All blocking findings are resolved or absent; no export/live/final promotion was invoked.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m json.tool artifacts/g004-research-only-validation-smoke.json",
+      "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_publish_live_page_data.py -q",
+      "python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py cli/research_ranking.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py",
+      "git diff --check -- changed G004 source/test/doc/artifact files",
+      "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json _v3k_sidecar/v3k_gui_settings.json",
+      "agent://250-G004FinalArchitect",
+      "agent://251-G004FinalSlop",
+      "agent://252-G004FinalQa"
+    ],
+    "blockers": []
+  }
+}

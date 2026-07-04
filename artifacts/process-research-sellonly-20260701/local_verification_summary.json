@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "kind": "sell-only-local-verification-summary",
+  "createdAt": "2026-07-01T16:24:53.090758+00:00",
+  "status": "passed",
+  "checks": {
+    "finalStatus": "ok",
+    "fallbackUsed": false,
+    "fallbackTriggered": false,
+    "candidateCards": 6,
+    "promptReceipts": 6,
+    "backtestCandidateCount": 6,
+    "missingPromptReceipts": [],
+    "candidateCountMatchesFinal": true,
+    "cleanupCount": 8,
+    "cleanupActions": [
+      "deleted",
+      "restored_previous_row"
+    ],
+    "safety": {
+      "export": false,
+      "live": false,
+      "finalPromotion": false,
+      "parentBuyFixed": true
+    },
+    "contextHasParentBuyCode": true,
+    "contextHasParentSellCode": true,
+    "contextHasSourceRefs": true,
+    "strategyDbPostCleanupQuery": "passed",
+    "remainingTransientRows": [],
+    "focusedPytest": "35 passed",
+    "diffCheck": "passed",
+    "protectedPathCheck": "passed",
+    "htmlScreenshot": "artifacts/process-research-sellonly-20260701/sell_only_validation_report.png",
+    "finalReview": "passed",
+    "htmlVisualCheck": "candidate profit visual bars captured"
+  },
+  "baseline": {
+    "total_profit_krw": 518822,
+    "mdd_pct": 20.54,
+    "trade_count": 175,
+    "win_rate": 52.57,
+    "avg_hold_time": 280.04,
+    "tpi": 1.13
+  },
+  "candidates": [
+    {
+      "strategy_name": "prv2sell_20260701_trail01",
+      "axis": "trailing_giveback",
+      "profit": 356100,
+      "mdd": 24.61,
+      "trades": 177,
+      "win": 54.24,
+      "avg_hold": 231.02,
+      "status": "success",
+      "has_prompt_receipt": true
+    },
+    {
+      "strategy_name": "prv2sell_20260701_stop02",
+      "axis": "hard_stop",
+      "profit": 558947,
+      "mdd": 19.09,
+      "trades": 175,
+      "win": 52.57,
+      "avg_hold": 260.74,
+      "status": "success",
+      "has_prompt_receipt": true
+    },
+    {
+      "strategy_name": "prv2sell_20260701_hold03",
+      "axis": "hold_time_stop",
+      "profit": 202095,
+      "mdd": 28.45,
+      "trades": 176,
+      "win": 45.45,
+      "avg_hold": 180.43,
+      "status": "success",
+      "has_prompt_receipt": true
+    },
+    {
+      "strategy_name": "prv2sell_20260701_flowma04",
+      "axis": "orderflow_ma_breakdown",
+      "profit": 96566,
+      "mdd": 28.1,
+      "trades": 182,
+      "win": 44.51,
+      "avg_hold": 168.9,
+      "status": "success",
+      "has_prompt_receipt": true
+    },
+    {
+      "strategy_name": "prv2sell_20260701_trail05",
+      "axis": "additional_trailing_ladder",
+      "profit": 530905,
+      "mdd": 20.6,
+      "trades": 175,
+      "win": 52.57,
+      "avg_hold": 275.6,
+      "status": "success",
+      "has_prompt_receipt": true
+    },
+    {
+      "strategy_name": "prv2sell_20260701_stop06",
+      "axis": "additional_hard_stop_ladder",
+      "profit": 554107,
+      "mdd": 20.04,
+      "trades": 175,
+      "win": 52.57,
+      "avg_hold": 278.89,
+      "status": "success",
+      "has_prompt_receipt": true
+    }
+  ],
+  "bestByProfit": {
+    "strategy_name": "prv2sell_20260701_stop02",
+    "axis": "hard_stop",
+    "profit": 558947,
+    "mdd": 19.09,
+    "trades": 175,
+    "win": 52.57,
+    "avg_hold": 260.74,
+    "status": "success",
+    "has_prompt_receipt": true
+  },
+  "bestByMddAmongPositiveProfit": {
+    "strategy_name": "prv2sell_20260701_stop02",
+    "axis": "hard_stop",
+    "profit": 558947,
+    "mdd": 19.09,
+    "trades": 175,
+    "win": 52.57,
+    "avg_hold": 260.74,
+    "status": "success",
+    "has_prompt_receipt": true
+  },
+  "artifactRefs": {
+    "finalSummary": "artifacts/process-research-sellonly-20260701/final_summary.json",
+    "candidateCards": "artifacts/process-research-sellonly-20260701/candidate_cards.jsonl",
+    "promptReceipts": "artifacts/process-research-sellonly-20260701/prompt_mutation_receipts.jsonl",
+    "cleanupReceipt": "artifacts/process-research-sellonly-20260701/strategy_db_cleanup_receipt.json",
+    "htmlReport": "artifacts/process-research-sellonly-20260701/sell_only_validation_report.html",
+    "strategyDbPostCleanupQuery": "artifacts/process-research-sellonly-20260701/strategy_db_post_cleanup_query.json",
+    "verificationCommands": "artifacts/process-research-sellonly-20260701/verification_commands.json",
+    "finalReviewSummary": "artifacts/process-research-sellonly-20260701/final_review_summary.json"
+  }
+}

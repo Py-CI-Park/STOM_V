@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "kind": "ai-slop-cleanup-report",
+  "goalId": "G004",
+  "reviewedAt": "2026-06-30T14:04:08Z",
+  "agentRefs": [
+    "agent://251-G004FinalSlop"
+  ],
+  "status": "PASS",
+  "recommendation": "APPROVE",
+  "blockingFindings": [],
+  "advisoryFindings": [],
+  "evidence": "Read-only cleanup/slop review approved after G004 verification scope; blockers empty. No edits were made by the reviewer."
+}

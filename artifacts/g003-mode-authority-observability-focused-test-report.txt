@@ -1,0 +1,23 @@
+G003 focused verification report
+
+Scope:
+- Mode authority, promotion-review zero-generation policy, research observability payload.
+- Context/candidate/prompt receipt metadata propagation.
+- Multi-hypothesis pack fallback/ranking official-backtest result metadata.
+- Dashboard/static HTML observability markers.
+- Research-only safety: no export, no live, no final promotion.
+- Post-review blocker fixes: promotion-review research-loop bypass removed before baseline/analysis/generation side effects; validation provenance and validation_promotion_blockers now fail closed on missing evidence; result-fed analysis cards derive evidence health from actual candidate artifacts instead of unconditional complete evidence; missing MDD is no longer fabricated as 0.0; dashboard mode authority defaults to pending/blocked unless explicitly allowed.
+
+Commands run by parent:
+1. python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py cli/research_ranking.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py
+   Result: passed with no output.
+2. pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_publish_live_page_data.py -q
+   Result: 154 passed in 18.49s (full raw output artifact://1952).
+3. git diff --check -- changed G003 source/test/doc files
+   Result: passed; CRLF warnings only for ai_strategy_loop/controller/condition_discovery.py and tests/unit/test_condition_discovery_policy.py.
+4. git status --short -- _database _database_v3k_shadow _log backup "*.db" backtest/graph .omx/reports "v3k_settings*.json" _v3k_sidecar/v3k_gui_settings.json
+   Result: no output; protected paths clean.
+5. Browser automation loaded artifacts/process-research-actual-20260629/process_research_presentation.html#observability
+   Result: required observability markers present; screenshot saved at artifacts/g003-mode-authority-observability-presentation.png.
+
+Verdict: passed.

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import fields
+import functools
 import json
 from pathlib import Path
 from typing import Any, Callable
@@ -421,8 +422,12 @@ def run_wide_v2_optimizer(
     config: WideV2OptimizerConfig,
     controller,
     *,
+    provider=None,
     research_runner: ResearchRunner = run_research_iteration,
 ) -> dict[str, Any]:
+    if provider is not None and research_runner is run_research_iteration:
+        research_runner = functools.partial(run_research_iteration, provider=provider)
+
     rounds: list[dict[str, Any]] = []
     leaderboard: list[dict[str, Any]] = []
     round_results: dict[int, dict[str, Any]] = {}

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G002",
+  "qaStatus": "passed",
+  "e2eStatus": "passed",
+  "redTeamStatus": "passed",
+  "blockers": [],
+  "createdAt": "2026-06-29T14:59:31.601600Z",
+  "evidence": [
+    "Executor QA agent://206-Phase2QaRedTeam found numeric selector 2 bypass; fixed and covered by test_process_research_plan_normalizes_numeric_selector.",
+    "V5 cap blocker from architect was fixed and covered by test_run_research_iteration_v5_process_research_caps_to_four_hybrid_slots.",
+    "Focused suite passed after fixes: 118 passed; py_compile passed; diff check only CRLF warnings; protected-path status clean."
+  ],
+  "adversarialCases": [
+    {
+      "id": "case-numeric-selector",
+      "verdict": "passed",
+      "evidence": "condition_discovery_process=2 enables process-research/research and 2 repair + 2 discovery slots."
+    },
+    {
+      "id": "case-v5-overrequested-count",
+      "verdict": "passed",
+      "evidence": "candidate_count=6 with process-research executes exactly four specs and preserves lane sequence."
+    },
+    {
+      "id": "case-invalid-prompt-before-side-effects",
+      "verdict": "passed",
+      "evidence": "candidate_prompt_validation error returns before _prepare_candidate_strategy/controller run."
+    },
+    {
+      "id": "case-advisory-ranking-score",
+      "verdict": "passed",
+      "evidence": "research_lane_score is preserved in rank_score but omitted from _rank_key ordering."
+    },
+    {
+      "id": "case-legacy-disabled-path",
+      "verdict": "passed",
+      "evidence": "legacy tests remain passing and disabled research_loop keeps configured candidate_count."
+    }
+  ]
+}

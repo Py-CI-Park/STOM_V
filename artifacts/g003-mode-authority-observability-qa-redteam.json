@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G003",
+  "status": "passed",
+  "e2eStatus": "passed_read_only_review_parent_verified",
+  "redTeamStatus": "passed",
+  "blockers": [],
+  "evidence": "Read-only QA/red-team agent://245-G003QaRedTeam returned passed, e2eStatus passed_read_only_review_parent_verified, redTeamStatus passed, blockers empty. It reviewed coverage for promotion-review zero generation, research observability payload, metadata propagation, downstream official-backtest receipts, advisory ranking, static markers, live page-data safety, and no export/live/final promotion claims. Parent reran focused tests after later blocker fixes: 154 passed in 18.49s (artifact://1952).",
+  "commands": ["agent://245-G003QaRedTeam"],
+  "artifactRefs": [
+    "artifacts/g003-mode-authority-observability-focused-test-report.txt",
+    "artifacts/g003-mode-authority-observability-browser-verification.json",
+    "artifacts/g003-mode-authority-observability-presentation.png"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "kind": "typed-receipt",
+  "verifiedAt": "2026-06-24T01:50:50Z",
+  "build": {
+    "command": "npm run build:app",
+    "cwd": "ai_strategy_loop/dashboard/webui-build",
+    "status": "passed",
+    "appJs": "3bc2305b",
+    "stomUiJs": "f41f5701"
+  },
+  "tests": {
+    "command": "python -m pytest tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_dashboard_research_lab_frontend.py tests/unit/dashboard/test_p11_process_flow.py tests/unit/test_process_timing.py tests/unit/dashboard/test_track_z_pr1_harness.py tests/unit/test_dashboard_validation_views.py tests/unit/dashboard/test_research_records_frontend.py tests/unit/dashboard/test_evolution_gui_parity.py tests/unit/dashboard/test_p14_build_harness.py -q",
+    "status": "passed",
+    "passed": 123,
+    "duration": "141.65s"
+  },
+  "gitDiffCheck": {
+    "status": "passed",
+    "note": "Only LF/CRLF warnings in pre-existing tests; no whitespace errors."
+  },
+  "protectedPaths": {
+    "status": "passed",
+    "output": ""
+  }
+}

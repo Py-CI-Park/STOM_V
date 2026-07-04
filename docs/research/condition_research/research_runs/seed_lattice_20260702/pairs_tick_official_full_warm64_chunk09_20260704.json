@@ -1,0 +1,170 @@
+[
+  {
+    "label": "lattice_v1:tick_0920_small_low:momentum_breakout",
+    "buy": "LAT_lattice_v1_tick_0920_small_low_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_tick_0920_small_low_momentum_breakout_S",
+    "official_index": 192,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_small_low:prevday_active",
+    "buy": "LAT_lattice_v1_tick_0920_small_low_prevday_active_B",
+    "sell": "LAT_lattice_v1_tick_0920_small_low_prevday_active_S",
+    "official_index": 193,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_small_low:strength_surge",
+    "buy": "LAT_lattice_v1_tick_0920_small_low_strength_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_small_low_strength_surge_S",
+    "official_index": 194,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_small_low:volume_surge",
+    "buy": "LAT_lattice_v1_tick_0920_small_low_volume_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_small_low_volume_surge_S",
+    "official_index": 195,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_small_mid:momentum_breakout",
+    "buy": "LAT_lattice_v1_tick_0920_small_mid_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_tick_0920_small_mid_momentum_breakout_S",
+    "official_index": 196,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_small_mid:prevday_active",
+    "buy": "LAT_lattice_v1_tick_0920_small_mid_prevday_active_B",
+    "sell": "LAT_lattice_v1_tick_0920_small_mid_prevday_active_S",
+    "official_index": 197,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_small_mid:strength_surge",
+    "buy": "LAT_lattice_v1_tick_0920_small_mid_strength_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_small_mid_strength_surge_S",
+    "official_index": 198,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_small_mid:volume_surge",
+    "buy": "LAT_lattice_v1_tick_0920_small_mid_volume_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_small_mid_volume_surge_S",
+    "official_index": 199,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_small_high:momentum_breakout",
+    "buy": "LAT_lattice_v1_tick_0920_small_high_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_tick_0920_small_high_momentum_breakout_S",
+    "official_index": 200,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_small_high:prevday_active",
+    "buy": "LAT_lattice_v1_tick_0920_small_high_prevday_active_B",
+    "sell": "LAT_lattice_v1_tick_0920_small_high_prevday_active_S",
+    "official_index": 201,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_small_high:strength_surge",
+    "buy": "LAT_lattice_v1_tick_0920_small_high_strength_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_small_high_strength_surge_S",
+    "official_index": 202,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_small_high:volume_surge",
+    "buy": "LAT_lattice_v1_tick_0920_small_high_volume_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_small_high_volume_surge_S",
+    "official_index": 203,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_midsmall_low:momentum_breakout",
+    "buy": "LAT_lattice_v1_tick_0920_midsmall_low_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_tick_0920_midsmall_low_momentum_breakout_S",
+    "official_index": 204,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_midsmall_low:prevday_active",
+    "buy": "LAT_lattice_v1_tick_0920_midsmall_low_prevday_active_B",
+    "sell": "LAT_lattice_v1_tick_0920_midsmall_low_prevday_active_S",
+    "official_index": 205,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_midsmall_low:strength_surge",
+    "buy": "LAT_lattice_v1_tick_0920_midsmall_low_strength_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_midsmall_low_strength_surge_S",
+    "official_index": 206,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_midsmall_low:volume_surge",
+    "buy": "LAT_lattice_v1_tick_0920_midsmall_low_volume_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_midsmall_low_volume_surge_S",
+    "official_index": 207,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_midsmall_mid:momentum_breakout",
+    "buy": "LAT_lattice_v1_tick_0920_midsmall_mid_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_tick_0920_midsmall_mid_momentum_breakout_S",
+    "official_index": 208,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_midsmall_mid:prevday_active",
+    "buy": "LAT_lattice_v1_tick_0920_midsmall_mid_prevday_active_B",
+    "sell": "LAT_lattice_v1_tick_0920_midsmall_mid_prevday_active_S",
+    "official_index": 209,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_midsmall_mid:strength_surge",
+    "buy": "LAT_lattice_v1_tick_0920_midsmall_mid_strength_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_midsmall_mid_strength_surge_S",
+    "official_index": 210,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_midsmall_mid:volume_surge",
+    "buy": "LAT_lattice_v1_tick_0920_midsmall_mid_volume_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_midsmall_mid_volume_surge_S",
+    "official_index": 211,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_midsmall_high:momentum_breakout",
+    "buy": "LAT_lattice_v1_tick_0920_midsmall_high_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_tick_0920_midsmall_high_momentum_breakout_S",
+    "official_index": 212,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_midsmall_high:prevday_active",
+    "buy": "LAT_lattice_v1_tick_0920_midsmall_high_prevday_active_B",
+    "sell": "LAT_lattice_v1_tick_0920_midsmall_high_prevday_active_S",
+    "official_index": 213,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_midsmall_high:strength_surge",
+    "buy": "LAT_lattice_v1_tick_0920_midsmall_high_strength_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_midsmall_high_strength_surge_S",
+    "official_index": 214,
+    "chunk_no": 9
+  },
+  {
+    "label": "lattice_v1:tick_0920_midsmall_high:volume_surge",
+    "buy": "LAT_lattice_v1_tick_0920_midsmall_high_volume_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_midsmall_high_volume_surge_S",
+    "official_index": 215,
+    "chunk_no": 9
+  }
+]

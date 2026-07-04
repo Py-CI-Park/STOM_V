@@ -1,0 +1,166 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "G003 finalization artifacts are present: two extra ladder candidates, result/management/plan reports, HTML report, screenshot, final handoff, verification receipts, final reviews. Architect final review agent://274-SellOnlyArchFinal reports no blockers; slop cleanup agent://276-SellOnlySlopFinal reports blocking_findings_count=0.",
+    "commands": [
+      "agent://274-SellOnlyArchFinal",
+      "agent://276-SellOnlySlopFinal"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA agent://275-SellOnlyQaFinal passed: 6 candidates, 6 prompt receipts, official 64-engine backtest receipts, fallback false, research-only safety intact. Local verification summary status=passed.",
+    "e2eCommands": [
+      "python artifacts/process-research-sellonly-20260701/run_sellonly_research.py",
+      "browser file://artifacts/process-research-sellonly-20260701/sell_only_validation_report.html screenshot capture"
+    ],
+    "redTeamCommands": [
+      "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_generator.py tests/unit/test_condition_discovery_policy.py -q",
+      "git diff --check",
+      "protected path status check",
+      "strategy DB post-cleanup query"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/process-research-sellonly-20260701/dashboard_verification.json",
+        "description": "Browser-file HTML verification receipt with screenshot path and visible evidence list."
+      },
+      {
+        "id": "gui-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/process-research-sellonly-20260701/sell_only_validation_report.png",
+        "description": "Non-uniform screenshot of sell-only validation HTML report."
+      },
+      {
+        "id": "algorithm-report",
+        "kind": "algorithm-test-report",
+        "path": "artifacts/process-research-sellonly-20260701/local_verification_summary.json",
+        "description": "Algorithm/backtest consistency verification covering context, candidates, receipts, cleanup, tests, and safety."
+      },
+      {
+        "id": "api-package-report",
+        "kind": "api-package-test-report",
+        "path": "artifacts/process-research-sellonly-20260701/final_summary.json",
+        "description": "Structured package/API-style run summary consumed by downstream reports."
+      },
+      {
+        "id": "adversarial-report",
+        "kind": "failure-mode-test",
+        "path": "artifacts/process-research-sellonly-20260701/final_review_summary.json",
+        "description": "Architect, QA, and slop cleanup final review evidence with no blockers."
+      },
+      {
+        "id": "verification-commands",
+        "kind": "test-report",
+        "path": "artifacts/process-research-sellonly-20260701/verification_commands.json",
+        "description": "Focused command verification receipt: py_compile, official research rerun, focused pytest, diff check, protected path check, browser capture."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-g003",
+        "contractRef": "G003",
+        "obligation": "Additional research before cutoff plus final reports/handoff/dashboard must be generated with verification and research-only safety intact.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-algorithm",
+          "surface-web"
+        ],
+        "adversarialCaseRefs": [
+          "case-research-boundary",
+          "case-receipt-consistency"
+        ]
+      },
+      {
+        "id": "contract-live-export-out-of-scope",
+        "contractRef": "research-only safety boundary",
+        "obligation": "Export/live/final promotion remain forbidden for this story.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-algorithm"
+        ],
+        "adversarialCaseRefs": [
+          "case-research-boundary"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-algorithm",
+        "contractRef": "G003",
+        "surface": "algorithm/math",
+        "invocation": "Official 64-engine backtest receipts plus local consistency/property checks over candidate/prompt/backtest/safety artifacts.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "algorithm-report",
+          "api-package-report",
+          "verification-commands"
+        ]
+      },
+      {
+        "id": "surface-web",
+        "contractRef": "G003",
+        "surface": "web",
+        "invocation": "Headless browser opened generated HTML report and captured screenshot.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "gui-screenshot"
+        ]
+      },
+      {
+        "id": "surface-live-trading",
+        "contractRef": "live trading intentionally outside this research-only story",
+        "surface": "api",
+        "status": "not_applicable",
+        "reason": "The approved contract explicitly forbids live/export/final promotion; safety receipt verifies no such authority."
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-research-boundary",
+        "contractRef": "research-only safety boundary",
+        "scenario": "Check that generated candidates cannot export, trade live, or final-promote.",
+        "expectedBehavior": "Safety and prompt receipts show research-only authority only.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "algorithm-report",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-receipt-consistency",
+        "contractRef": "G003",
+        "scenario": "Check candidate count, prompt receipts, candidate cards, backtests, fallback, and cleanup for drift or missing evidence.",
+        "expectedBehavior": "All six sell-only candidates have prompt receipts and official backtest receipts; fallback false; transient rows cleaned.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "algorithm-report",
+          "adversarial-report"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Blocking review issues were resolved: extra ladder candidates are included in candidate cards and prompt receipts, fallback branch covers candidate runs, cleanup restores/deletes transient rows, and full verification was rerun cleanly. AI slop cleanup passed with zero blocking findings.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m py_compile artifacts/process-research-sellonly-20260701/run_sellonly_research.py",
+      "python artifacts/process-research-sellonly-20260701/run_sellonly_research.py",
+      "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_generator.py tests/unit/test_condition_discovery_policy.py -q",
+      "git diff --check",
+      "protected path status check"
+    ],
+    "blockers": []
+  }
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "label": "lattice_v1:tick_0905_large_high:volume_surge",
+    "buy": "LAT_lattice_v1:tick_0905_large_high:volume_surge_B",
+    "sell": "LAT_lattice_v1:tick_0905_large_high:volume_surge_S"
+  },
+  {
+    "label": "lattice_v1:tick_0910_midlarge_high:strength_surge",
+    "buy": "LAT_lattice_v1:tick_0910_midlarge_high:strength_surge_B",
+    "sell": "LAT_lattice_v1:tick_0910_midlarge_high:strength_surge_S"
+  },
+  {
+    "label": "lattice_v1:tick_0915_large_mid:momentum_breakout",
+    "buy": "LAT_lattice_v1:tick_0915_large_mid:momentum_breakout_B",
+    "sell": "LAT_lattice_v1:tick_0915_large_mid:momentum_breakout_S"
+  },
+  {
+    "label": "lattice_v1:tick_0920_midlarge_low:prevday_active",
+    "buy": "LAT_lattice_v1:tick_0920_midlarge_low:prevday_active_B",
+    "sell": "LAT_lattice_v1:tick_0920_midlarge_low:prevday_active_S"
+  }
+]

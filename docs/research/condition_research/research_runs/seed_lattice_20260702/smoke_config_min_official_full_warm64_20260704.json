@@ -1,0 +1,42 @@
+{
+  "_comment": "Plan B P5 official min lattice profile; DB full period; warm64; run only after official tick export.",
+  "provider": "gpt_auth",
+  "bt_engine_mode": "warm",
+  "bt_timeframe": "min",
+  "full_session_enabled": true,
+  "bt_min_universe_end_time": 151900,
+  "bt_universe_start_time": 90000,
+  "bt_warm_engine_count": 64,
+  "bt_betting": "5",
+  "bt_avg_time": 30,
+  "min_daily_trades": 0.5,
+  "mdd_cap": 35.0,
+  "winner_objective": "uptrend",
+  "autopsy_enabled": false,
+  "bt_full_start": 20250407,
+  "bt_full_end": 20260227,
+  "max_generations": 1,
+  "bt_timeout": 14400,
+  "bt_warm_run_timeout": 1200,
+  "equity_points_enabled": true,
+  "condition_discovery_preset": "fast",
+  "condition_discovery_process": "fast-discovery",
+  "_official_profile": {
+    "schema": "plan_b_p5_official_profile_v1",
+    "lane": "min",
+    "source_db_range": {
+      "path": "_database/stock_min_back.db",
+      "table_count": 1381,
+      "temporal_row_count": 5578411,
+      "index_min_len_filter": 12,
+      "min_index": "202504070900",
+      "max_index": "202602271519",
+      "start_date": 20250407,
+      "end_date": 20260227,
+      "skipped_no_index_tables": [],
+      "skipped_no_index_table_count": 0
+    },
+    "time_window_policy": "full_session_enabled runtime resolves min to 09:00-15:19.",
+    "full_run_forbidden_until_tick_official_export": true
+  }
+}

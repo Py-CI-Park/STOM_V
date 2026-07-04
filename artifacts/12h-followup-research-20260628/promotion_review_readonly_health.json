@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "kind": "promotion-review-read-only-evidence-health",
+  "createdAt": "2026-06-28T03:04:50.495051Z",
+  "mode": "report-only-frozen-artifact-synthesis",
+  "C_new_candidates": 0,
+  "C_generation_rows": 0,
+  "C_evaluated": 0,
+  "sourceCandidateIds": [
+    "rr8_12_turnover_min_902=1.5",
+    "rr8_0_cap_max=2500",
+    "rr8_21_trail_keep=0.7",
+    "follow12_gptauth_B_seeded64_20260628/gen0",
+    "follow12_gptauth_B_seeded64_20260628/gen8"
+  ],
+  "sourceArtifacts": [
+    "artifacts\\12h-followup-research-20260628\\engine_decision_receipt_48_inclusive.json",
+    "artifacts\\12h-followup-research-20260628\\fallback_validation_summary.json",
+    "artifacts\\12h-followup-research-20260628\\gpt_b_seeded_summary.json"
+  ],
+  "export": false,
+  "live": false,
+  "finalPromotion": false,
+  "evidenceHealth": {
+    "engineDecision": {
+      "selectedEngine": 64,
+      "has48InclusiveRows": true
+    },
+    "fallbackValidation": {
+      "topCandidate": "rr8_12_turnover_min_902=1.5",
+      "topCandidateGateWindows": 4,
+      "topCandidateMaxMdd": 13.58
+    },
+    "gptB": {
+      "follow12_gptauth_B_seeded64_20260628": {
+        "rows": 18,
+        "ok_rows": 8,
+        "gate_passed": 2,
+        "user_constraint_pass": 2,
+        "best_profit_row": {
+          "run_id": "follow12_gptauth_B_seeded64_20260628",
+          "gen_no": 0,
+          "buy_name": "GATE_rr8_12_turnover_min_902_1_5_B",
+          "sell_name": "GATE_rr8_12_turnover_min_902_1_5_S",
+          "status": "ok",
+          "gate_passed": 1,
+          "profit": 3062696.0,
+          "mdd": 12.87,
+          "trade_count": 190,
+          "daily_avg_trades": 0.8,
+          "reason": "ok",
+          "csv_path": "backtest/csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628100641.csv",
+          "score": 1.802476783121088,
+          "total_profit_pct": 30.66,
+          "strategy_gist": "if not (관심종목 == 1):                         # 공통 필터 – 관심종목",
+          "window_evidence": {
+            "window_start": 90000,
+            "window_end": 90700,
+            "window_minutes": 7.0,
+            "windows": [
+              [
+                90200,
+                90700
+              ],
+              [
+                90000,
+                90200
+              ]
+            ]
+          },
+          "above_reject_line": true,
+          "passes_user_B_constraints": true,
+          "theta_window_delta_vs_seed_minutes": 2.0
+        },
+        "notes": "B1 selected-engine run reached gen17 before tool timeout; enough evidence captured"
+      },
+      "follow12_gptauth_B2_seeded64_20260628": {
+        "rows": 6,
+        "ok_rows": 0,
+        "gate_passed": 0,
+        "user_constraint_pass": 0,
+        "best_profit_row": null,
+        "notes": "B2 engine data loading timeouts after warm prepare failure"
+      }
+    }
+  },
+  "promotionVerdict": "not_promoted_research_only",
+  "notes": [
+    "C did not invoke controller generation or batch evaluation.",
+    "Evidence is advisory only and does not approve export/live/final promotion.",
+    "Fallback stability candidate remains stronger than newly generated GPT rows."
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "G003 final architect review 102-G003ArchFinal approved with no blockers after previous idle-bypass and rename blockers were fixed. Source now labels top and overview as 조건식 AI, default overview renders Live Monitor plus settings/gates/engine summary, and Research/History/Workbench are navigation-only from overview.",
+    "commands": ["agent://102-G003ArchFinal"],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA final 103-G003QaFinal passed. Parent ran focused tests (17 passed), npm build app.js v=e79f8cac, browser DOM automation and screenshot for /ui/evolution, CLI replay, and adversarial report.",
+    "e2eCommands": [
+      "python -m pytest tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_dashboard_route_parity.py -q",
+      "npm run build (cwd=ai_strategy_loop/dashboard/webui-build)",
+      "browser automation: http://127.0.0.1:8770/ui/evolution"
+    ],
+    "redTeamCommands": ["agent://103-G003QaFinal", "bun -e \"console.log('g003-cli-ok')\""],
+    "artifactRefs": [
+      {
+        "id": "g003-browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/g003-browser-dom-check.json",
+        "description": "schemaVersion 1 automation transcript for /ui/evolution showing 조건식 AI labels, Live Monitor, gate/engine summary, and navigation-only Research/History ownership."
+      },
+      {
+        "id": "g003-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/g003-overview-condition-ai.png",
+        "description": "non-uniform screenshot showing Condition AI top/overview labels and overview sections."
+      },
+      {
+        "id": "g003-cli-replay",
+        "kind": "command-replay",
+        "path": "artifacts/g003-cli-replay.json",
+        "description": "allowlisted CLI replay marker for G003 verification."
+      },
+      {
+        "id": "g003-adversarial-report",
+        "kind": "failure-mode-test",
+        "path": "artifacts/g003-adversarial-report.txt",
+        "description": "failure-mode report for labels, idle branch, overview ordering, and duplicate owner surfaces."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-condition-ai-labels",
+        "contractRef": "G003 approved plan: rename user-facing evolution/home labels to Condition AI",
+        "obligation": "Top-level evolution route and overview subtab visibly use 조건식 AI.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-overview"],
+        "adversarialCaseRefs": ["case-label-rename"]
+      },
+      {
+        "id": "contract-overview-sections",
+        "contractRef": "G003 approved plan: home top area order",
+        "obligation": "Overview renders Live Monitor followed by settings/gates/backtest engine summary; idle does not bypass those sections.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-overview", "surface-tests"],
+        "adversarialCaseRefs": ["case-idle-bypass"]
+      },
+      {
+        "id": "contract-ia-ownership",
+        "contractRef": "G003 approved plan: clear IA ownership without duplicate surfaces",
+        "obligation": "Overview links to Research Lab, Workbench, and History without rendering duplicate owner surfaces.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-overview", "surface-tests"],
+        "adversarialCaseRefs": ["case-duplicate-owner"]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-overview",
+        "contractRef": "Condition AI overview web route",
+        "surface": "web",
+        "invocation": "Browser automation opened http://127.0.0.1:8770/ui/evolution and inspected DOM plus screenshot.",
+        "verdict": "passed",
+        "artifactRefs": ["g003-browser-run", "g003-screenshot"]
+      },
+      {
+        "id": "surface-tests",
+        "contractRef": "Static UI contract tests",
+        "surface": "cli",
+        "invocation": "Focused pytest suite and CLI replay executed by parent agent.",
+        "verdict": "passed",
+        "artifactRefs": ["g003-cli-replay", "g003-adversarial-report"]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-label-rename",
+        "contractRef": "Condition AI label rename",
+        "scenario": "Old 진화 홈 label should not remain in top/home route labels.",
+        "expectedBehavior": "Browser observes 조건식 AI top and overview tabs and no 진화 홈 label.",
+        "verdict": "passed",
+        "artifactRefs": ["g003-browser-run", "g003-screenshot"]
+      },
+      {
+        "id": "case-idle-bypass",
+        "contractRef": "Default overview branch",
+        "scenario": "Idle/default overview must not bypass Live Monitor and gate/engine sections.",
+        "expectedBehavior": "Source/test guard removes old isIdle ternary bypass; browser sees required sections.",
+        "verdict": "passed",
+        "artifactRefs": ["g003-adversarial-report", "g003-browser-run"]
+      },
+      {
+        "id": "case-duplicate-owner",
+        "contractRef": "IA ownership duplicate cleanup",
+        "scenario": "Overview should not render duplicate ResearchLab or Compare owner surfaces.",
+        "expectedBehavior": "Overview only renders navigation/handoff copy and tests assert no ResearchLabPanel or RunComparePanel in app.jsx.",
+        "verdict": "passed",
+        "artifactRefs": ["g003-adversarial-report", "g003-browser-run"]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Initial G003 architect review found blockers for idle overview bypass, partial rename, and weak tests. Fixes were implemented, focused tests and build reran, browser evidence refreshed, and final architect/QA reviews passed with no blockers.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m pytest tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_dashboard_route_parity.py -q",
+      "npm run build (cwd=ai_strategy_loop/dashboard/webui-build)",
+      "browser automation: /ui/evolution Condition AI overview",
+      "agent://102-G003ArchFinal",
+      "agent://103-G003QaFinal"
+    ],
+    "blockers": []
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "architectureStatus": "CLEAR",
+  "productStatus": "PASS",
+  "codeStatus": "APPROVE",
+  "recommendation": "Approve G002 as complete research evidence. Keep outputs research-only and do not promote the turnover mutation over the seed because it underperformed its parent.",
+  "blockers": [],
+  "evidence": "Inspected candidate cards, full_period_backtest_receipts, seed/mutation pairs. Four seed pairs replayed with status ok/gate_passed; one mutation C005 parent C001 theta_delta 1.5 -> 3.0; engine 64, fallbackTriggered=false; research-only preserved."
+}

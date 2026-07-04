@@ -1,0 +1,64 @@
+{
+  "generatedAt": "2026-06-27T20:38:00Z",
+  "purpose": "Direct evidence that the smoke/A/B/C phases were configured for GPT OAuth provider execution.",
+  "phases": [
+    {
+      "name": "smoke_generation",
+      "config": "artifacts/gpt-auth-process-research-20260627/process_smoke.json",
+      "runId": "gptauth_smoke_20260627",
+      "provider": "gpt_auth",
+      "model": "gpt-5.5",
+      "condition_discovery_preset": "fast",
+      "condition_discovery_process": "fast-discovery",
+      "max_generations": 1,
+      "bt_warm_engine_count": 32,
+      "sourceConfigLines": "process_smoke.json lines 1-24"
+    },
+    {
+      "name": "process_a_fast",
+      "config": "artifacts/gpt-auth-process-research-20260627/process_a_fast.json",
+      "runId": "gptauth_A_fast_20260627",
+      "provider": "gpt_auth",
+      "model": "gpt-5.5",
+      "condition_discovery_preset": "fast",
+      "condition_discovery_process": "fast-discovery",
+      "max_generations": 8,
+      "bt_warm_engine_count": 32,
+      "sourceConfigLines": "process_a_fast.json lines 1-24"
+    },
+    {
+      "name": "process_b_research",
+      "config": "artifacts/gpt-auth-process-research-20260627/process_b_research.json",
+      "runId": "gptauth_B_research_20260627",
+      "provider": "gpt_auth",
+      "model": "gpt-5.5",
+      "condition_discovery_preset": "research",
+      "condition_discovery_process": "process-research",
+      "max_generations": 18,
+      "bt_warm_engine_count": 32,
+      "sourceConfigLines": "process_b_research.json lines 1-29"
+    },
+    {
+      "name": "process_c_review",
+      "config": "artifacts/gpt-auth-process-research-20260627/process_c_review.json",
+      "runId": "gptauth_C_review_20260627",
+      "provider": "gpt_auth",
+      "model": "gpt-5.5",
+      "condition_discovery_preset": "promotion",
+      "condition_discovery_process": "promotion-review",
+      "max_generations": 3,
+      "bt_warm_engine_count": 32,
+      "research_oos_mode": "promotion_only",
+      "sourceConfigLines": "process_c_review.json lines 1-22"
+    }
+  ],
+  "driverReceipt": "artifacts/gpt-auth-process-research-20260627/gpt-auth-research-summary.json",
+  "driverCommandEvidence": "Driver phase commands invoked ai_strategy_loop.controller.loop with each listed --config-json path and matching run id; see gpt-auth-research-summary.json phase command arrays.",
+  "proxySmoke": "artifacts/gpt-auth-process-research-20260627/logs/gpt_auth_proxy_smoke.log returned STOM_OK over gpt-5.5 with HTTP 200 before phase execution.",
+  "safety": {
+    "researchOnly": true,
+    "export": false,
+    "live": false,
+    "finalPromotion": false
+  }
+}

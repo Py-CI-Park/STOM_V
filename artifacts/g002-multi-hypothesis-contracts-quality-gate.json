@@ -1,0 +1,247 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect 239-G002ArchitectClean approved G002 after final authority/leak fixes: LLM-first multi-hypothesis contracts, 2/3 pack execution, metadata propagation, B-only/R-S safety, diagnostic fallback, strict prompt validation, and research-only boundaries are clean.",
+    "commands": [
+      "architect subagent 239-G002ArchitectClean"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA 241-G002QaClean passed read-only adversarial review. Leader ran focused tests: 129 passed; py_compile passed; git diff --check passed with CRLF warnings only; protected paths clean.",
+    "e2eCommands": [
+      "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py -q"
+    ],
+    "redTeamCommands": [
+      "executor QA/red-team subagent 241-G002QaClean",
+      "critic cleanup/slop subagent 240-G002SlopClean"
+    ],
+    "artifactRefs": [
+      {
+        "id": "g002-focused-tests",
+        "kind": "test-report",
+        "path": "artifacts/g002-multi-hypothesis-contracts-focused-test-report.txt",
+        "description": "Focused test, compile, diff-check, and protected-path verification report."
+      },
+      {
+        "id": "g002-verification-summary",
+        "kind": "test-report",
+        "path": "artifacts/g002-multi-hypothesis-contracts-verification-summary.json",
+        "description": "Structured G002 verification summary."
+      },
+      {
+        "id": "g002-architect-review",
+        "kind": "api-package-test-report",
+        "path": "artifacts/g002-multi-hypothesis-contracts-architect-review.json",
+        "description": "Architecture/product/code review summary."
+      },
+      {
+        "id": "g002-slop-cleaner",
+        "kind": "test-report",
+        "path": "artifacts/g002-multi-hypothesis-contracts-slop-cleaner.json",
+        "description": "AI slop cleanup read-only report."
+      },
+      {
+        "id": "g002-qa-redteam",
+        "kind": "failure-mode-test",
+        "path": "artifacts/g002-multi-hypothesis-contracts-qa-redteam.json",
+        "description": "Adversarial QA matrix for leakage, authority, fallback, and candidate-count invariants."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-g002-llm-pack",
+        "contractRef": "G002 approved plan: LLM-first 2-3+ multi-hypothesis candidate pack",
+        "obligation": "Validate packs side-effect-free, isolate invalid siblings, execute 2/3 valid candidates without four-slot abort.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-api-contracts",
+          "surface-algorithm-validation"
+        ],
+        "adversarialCaseRefs": [
+          "case-two-three-pack",
+          "case-invalid-sibling"
+        ]
+      },
+      {
+        "id": "contract-g002-leakage",
+        "contractRef": "B-only/no result or sell diagnostic leakage",
+        "obligation": "Reject R_/S_ leakage in LLM packs, diagnostic fallback, and strict prompt-response code before execution.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-algorithm-validation"
+        ],
+        "adversarialCaseRefs": [
+          "case-llm-rs-leak",
+          "case-fallback-rs-leak",
+          "case-prompt-code-rs-leak"
+        ]
+      },
+      {
+        "id": "contract-g002-authority",
+        "contractRef": "Research-only/no export-live-final-promotion authority",
+        "obligation": "Reject pack/candidate/context authority smuggling and prevent prompt credit for diagnostic fallback.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-api-contracts"
+        ],
+        "adversarialCaseRefs": [
+          "case-pack-authority",
+          "case-candidate-authority",
+          "case-fallback-no-credit"
+        ]
+      },
+      {
+        "id": "contract-gui-out-of-scope",
+        "contractRef": "G002 story has no GUI/web runtime surface",
+        "obligation": "Dashboard/HTML observability is deferred to G003.",
+        "status": "not_applicable",
+        "reason": "G002 scope is library/research-loop contract integration only."
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-api-contracts",
+        "contractRef": "Condition generator and research loop library/API contracts",
+        "surface": "api/package",
+        "invocation": "Focused unit contracts plus read-only architecture/QA review over cli/condition_generator.py, cli/research_loop.py, and prompt.py",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g002-focused-tests",
+          "g002-architect-review",
+          "g002-qa-redteam"
+        ]
+      },
+      {
+        "id": "surface-algorithm-validation",
+        "contractRef": "Candidate pack/fallback/prompt validation invariants",
+        "surface": "algorithm/math",
+        "invocation": "Adversarial tests and QA for R_/S_ leakage, authority smuggling, invalid sibling isolation, non-dict pack, and 2/3 candidate pack execution",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g002-focused-tests",
+          "g002-qa-redteam"
+        ]
+      },
+      {
+        "id": "surface-cli-out-of-scope",
+        "contractRef": "No new CLI command shipped in G002",
+        "surface": "cli",
+        "status": "not_applicable",
+        "reason": "G002 modifies library/research-loop internals; CLI validation belongs to G004 research-only validation."
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-llm-rs-leak",
+        "contractRef": "B-only/no result leakage",
+        "scenario": "LLM pack candidate expression uses R_MFE or S_ diagnostic variable.",
+        "expectedBehavior": "Candidate is invalid and cannot enter selected executable expressions.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g002-focused-tests",
+          "g002-qa-redteam"
+        ]
+      },
+      {
+        "id": "case-fallback-rs-leak",
+        "contractRef": "Diagnostic fallback safety",
+        "scenario": "Deterministic fallback emits R_MFE after missing/invalid LLM pack.",
+        "expectedBehavior": "Fallback result becomes error, expressions clear, iteration aborts before execution.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g002-focused-tests",
+          "g002-qa-redteam"
+        ]
+      },
+      {
+        "id": "case-prompt-code-rs-leak",
+        "contractRef": "Strict prompt response safety",
+        "scenario": "Strict prompt python code block uses R_ or S_ diagnostic variable.",
+        "expectedBehavior": "Strict response validation invalidates and execution guard stops before side effects.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g002-focused-tests",
+          "g002-qa-redteam"
+        ]
+      },
+      {
+        "id": "case-pack-authority",
+        "contractRef": "Research-only authority",
+        "scenario": "Pack-level authority object or top-level can_live attempts export/live/final promotion authority.",
+        "expectedBehavior": "Entire pack blocked with pack_authority_smuggling and zero selected candidates.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g002-focused-tests",
+          "g002-qa-redteam"
+        ]
+      },
+      {
+        "id": "case-candidate-authority",
+        "contractRef": "Invalid sibling isolation",
+        "scenario": "One candidate sibling has can_live True.",
+        "expectedBehavior": "Only that sibling invalid; safe siblings survive if min/lane requirements hold.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g002-focused-tests",
+          "g002-qa-redteam"
+        ]
+      },
+      {
+        "id": "case-two-three-pack",
+        "contractRef": "2-3+ candidate pack execution",
+        "scenario": "2-candidate and 3-candidate LLM packs run under process-research candidate_count=4.",
+        "expectedBehavior": "Loop executes exactly 2 or 3 candidate specs, preserving lanes and metadata.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g002-focused-tests",
+          "g002-qa-redteam"
+        ]
+      },
+      {
+        "id": "case-invalid-sibling",
+        "contractRef": "Invalid sibling isolation",
+        "scenario": "Duplicate/leaky/unsafe sibling appears in otherwise valid candidate pack.",
+        "expectedBehavior": "Invalid sibling recorded; valid candidates remain eligible when lane/min counts hold.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g002-focused-tests",
+          "g002-qa-redteam"
+        ]
+      },
+      {
+        "id": "case-fallback-no-credit",
+        "contractRef": "Prompt maturity no-credit fallback",
+        "scenario": "Deterministic fallback selected candidate attempts prompt maturity credit.",
+        "expectedBehavior": "prompt_maturity_credit_allowed is false and prompt score is zero.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g002-focused-tests",
+          "g002-qa-redteam"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Final blocker loop reran after QA/slop findings. All blocking findings resolved; full focused verification and read-only review loop are clean.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py -q",
+      "python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py",
+      "git diff --check -- ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py",
+      "git status --short -- _database _database_v3k_shadow _log backup \"*.db\" backtest/graph .omx/reports \"v3k_settings*.json\" _v3k_sidecar/v3k_gui_settings.json",
+      "architect review 239-G002ArchitectClean",
+      "critic cleanup 240-G002SlopClean",
+      "executor QA red-team 241-G002QaClean"
+    ],
+    "blockers": []
+  }
+}

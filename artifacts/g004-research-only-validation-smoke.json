@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "kind": "research-only-validation-smoke",
+  "goalId": "G004",
+  "status": "passed",
+  "candidatePack": {
+    "candidate_pack_id": "g004-pack-001",
+    "candidate_count": 2,
+    "lanes": [
+      "repair",
+      "discovery"
+    ],
+    "context_pack_id": "g004-rcp-001"
+  },
+  "analysisCard": {
+    "analysis_card_version": "analysis_card_v2",
+    "context_pack_id": "g004-rcp-001",
+    "can_export": false,
+    "can_live": false,
+    "can_final_promote": false
+  },
+  "promptReceipt": {
+    "receipt_id": "G004Smoke__cand001__prompt",
+    "candidate_contract_id": "g004-pack-001::repair-entry-strength",
+    "downstream_result": "rejected",
+    "official_backtest_result": {
+      "status": "success",
+      "promotion_passed": false,
+      "promotion_score": 12.5,
+      "candidate_csv": "artifacts/g004-smoke-candidate.csv",
+      "trade_count": 12
+    }
+  },
+  "fallback": {
+    "source": "diagnostic_deterministic_candidate_fallback",
+    "fallback_used": true,
+    "prompt_score": 0,
+    "prompt_maturity_credit_allowed": false
+  },
+  "promotionReview": {
+    "phase": "promotion_review_generation_blocked",
+    "controller_run_count": 0
+  },
+  "ranking": {
+    "promotion_passed": false,
+    "promotion_score": 12.5,
+    "trade_count": 12.0,
+    "trade_count_retention": 0.8,
+    "date_concentration": null,
+    "symbol_concentration": null,
+    "context_pack_id": "g004-rcp-001",
+    "context_pack_sha256": "sha-g004-context",
+    "candidate_pack_id": "g004-pack-001",
+    "candidate_contract_id": "g004-pack-001::repair-entry-strength",
+    "hypothesis_id": "repair-entry-strength",
+    "mutation_axis": "entry_strength_only",
+    "downstream_result": "rejected",
+    "prompt_validation": {
+      "schema_version": 1,
+      "valid": true,
+      "lane": "repair",
+      "prompt_version": "repair_v1_analysis_card_single_axis",
+      "kind": "buy",
+      "timeframe": "tick",
+      "code": "",
+      "metadata": {},
+      "code_block_count": 0,
+      "metadata_present": false,
+      "metadata_json_safe": true,
+      "failure_reason": "",
+      "source": "non_llm_expression_candidate",
+      "authority": "mandatory_for_repair_discovery_prompt_paths"
+    },
+    "official_backtest_result": {
+      "status": "success",
+      "promotion_passed": false,
+      "promotion_score": 12.5,
+      "trade_count": 12.0,
+      "trade_count_retention": 0.8,
+      "candidate_csv": "artifacts/g004-smoke-candidate.csv"
+    },
+    "advisory_rank_reason": "official_backtest_research_candidate_not_promotion_passed"
+  },
+  "authority": "research_only_no_export_live_or_final_promotion"
+}

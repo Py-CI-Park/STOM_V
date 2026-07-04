@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "gjc-browser-puppeteer",
+  "surface": "web",
+  "url": "http://127.0.0.1:8770/ui/evolution/process?fresh=91fec92d",
+  "actions": [
+    {
+      "type": "goto",
+      "timestamp": 1,
+      "url": "http://127.0.0.1:8770/ui/evolution/process?fresh=91fec92d"
+    },
+    {
+      "type": "assert",
+      "timestamp": 2,
+      "selector": ".process-selector-panel",
+      "target": "Process selector panel is rendered"
+    },
+    {
+      "type": "assert",
+      "timestamp": 3,
+      "selector": ".process-pipeline-panel",
+      "target": "Full pipeline panel is rendered"
+    },
+    {
+      "type": "assert",
+      "timestamp": 4,
+      "selector": ".process-warm-panel",
+      "target": "Warm timing metadata panel is rendered"
+    },
+    {
+      "type": "assert",
+      "timestamp": 5,
+      "selector": ".phase-step",
+      "target": "Five-step live graph remains rendered"
+    },
+    {
+      "type": "assert",
+      "timestamp": 6,
+      "selector": "body",
+      "target": "No legacy process iframe is present"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": 7,
+      "selector": "body",
+      "path": "artifacts/process-research-pipeline-process-page-final.png"
+    }
+  ],
+  "result": {
+    "title": "STOM AI · 조건식 자율 진화 대시보드",
+    "hasSelector": true,
+    "hasPipeline": true,
+    "hasWarm": true,
+    "hasFiveStepGraph": true,
+    "hasTimingGrid": true,
+    "hasIframe": false,
+    "hasProcessResearch": true,
+    "hasPromotionReview": true,
+    "hasAdvisorySplit": true,
+    "hasResearchValidation": true,
+    "hasCapabilities": true,
+    "hasWarmFallback": true,
+    "bodyLen": 21436,
+    "htmlLen": 61813
+  },
+  "screenshot": "artifacts/process-research-pipeline-process-page-final.png",
+  "verdict": "passed"
+}

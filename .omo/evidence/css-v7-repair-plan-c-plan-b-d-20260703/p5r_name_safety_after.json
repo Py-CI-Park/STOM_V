@@ -1,0 +1,17 @@
+{
+  "db": "ai_strategy_loop\\state\\loop_strategies.db",
+  "after": {
+    "stockbuy": {
+      "lattice_total": 1152,
+      "legacy_colon": 576,
+      "filename_unsafe": 576,
+      "safe_no_colon": 576
+    },
+    "stocksell": {
+      "lattice_total": 1152,
+      "legacy_colon": 576,
+      "filename_unsafe": 576,
+      "safe_no_colon": 576
+    }
+  }
+}

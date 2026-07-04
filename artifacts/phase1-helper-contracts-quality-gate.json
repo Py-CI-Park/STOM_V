@@ -1,0 +1,184 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect R3 cleared Phase 1 after blocker fixes: strict research validation in ai_strategy_loop/brain/prompt.py, legacy extract_code preservation, and research-only helper contracts in ai_strategy_loop/controller/condition_discovery.py. Review evidence stored at artifacts/phase1-helper-contracts-architect-review.json and agent://203-Phase1ArchitectReviewR3.",
+    "commands": [
+      "architect review agent://203-Phase1ArchitectReviewR3"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA/red-team R2 passed malformed-output, missing-evidence, authority-smuggling, MDD cap pressure, contaminated-validation, duplicate-novelty, and legacy compatibility cases. Focused package/API verification passed: pytest tests/unit/test_condition_discovery_policy.py tests/unit/test_extract_code.py tests/unit/test_research_prompt_contracts.py -q -> 27 passed; py_compile passed; diff check had CRLF warnings only; protected runtime path check had no output.",
+    "e2eCommands": [
+      "pytest tests/unit/test_condition_discovery_policy.py tests/unit/test_extract_code.py tests/unit/test_research_prompt_contracts.py -q",
+      "python -m py_compile ai_strategy_loop/controller/condition_discovery.py ai_strategy_loop/brain/prompt.py"
+    ],
+    "redTeamCommands": [
+      "executor QA/red-team agent://202-Phase1QaRedTeamR2",
+      "adversarial cases recorded in artifacts/phase1-helper-contracts-adversarial-report.txt"
+    ],
+    "artifactRefs": [
+      {
+        "id": "phase1-verification-summary",
+        "kind": "api-package-test-report",
+        "path": "artifacts/phase1-helper-contracts-verification-summary.json",
+        "description": "Focused pytest, py_compile, diff check, protected-path check, and research-only safety receipt."
+      },
+      {
+        "id": "phase1-architect-review",
+        "kind": "api-package-review-report",
+        "path": "artifacts/phase1-helper-contracts-architect-review.json",
+        "description": "Architect R3 review with CLEAR/CLEAR/CLEAR and APPROVE."
+      },
+      {
+        "id": "phase1-qa-redteam",
+        "kind": "property-test-report",
+        "path": "artifacts/phase1-helper-contracts-qa-redteam.json",
+        "description": "Executor QA/red-team matrix for Phase 1 helper and prompt contracts."
+      },
+      {
+        "id": "phase1-adversarial-report",
+        "kind": "failure-mode-test-report",
+        "path": "artifacts/phase1-helper-contracts-adversarial-report.txt",
+        "description": "Adversarial/failure-mode scenarios for malformed prompts, evidence, authority smuggling, MDD, validation, novelty, and legacy compatibility."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-hybrid-slot-policy",
+        "contractRef": "Approved Phase 1 plan: hybrid 4-slot repair/discovery loop and deterministic advisory lane scoring.",
+        "obligation": "Expose bounded 2/2 default slots, max one-slot shift, lane score, MDD/OOS/prompt/insight inputs, and capped/vetoed allocation behavior without granting promotion authority.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-policy-api"],
+        "adversarialCaseRefs": ["case-mdd-cap-pressure", "case-missing-evidence"]
+      },
+      {
+        "id": "contract-prompt-strictness",
+        "contractRef": "Approved Phase 1 plan: repair/discovery prompt builders and strict response validation before any backtest path.",
+        "obligation": "Require one explicit python/py code fence, one metadata block, full lane-specific metadata, no multiple alternatives, no authority smuggling, and legacy extract_code compatibility.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-prompt-api"],
+        "adversarialCaseRefs": ["case-malformed-prompt-output", "case-authority-smuggling", "case-legacy-extract-code"]
+      },
+      {
+        "id": "contract-analysis-novelty-provenance",
+        "contractRef": "Approved Phase 1 plan: Insight Score/root-cause/segment contribution, strict discovery novelty, and validation provenance split.",
+        "obligation": "Build research-only analysis cards, cap weak insight evidence, require novelty across structure/coverage/family/evidence, and block research-fed validation from promotion.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-policy-api"],
+        "adversarialCaseRefs": ["case-contaminated-validation", "case-duplicate-discovery-novelty"]
+      },
+      {
+        "id": "contract-research-only-boundary",
+        "contractRef": "User and approved plan: no export/live/final promotion; preserve protected paths.",
+        "obligation": "Policy and safety flags keep can_promote/can_export/can_live false; protected runtime-path check remains clean.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-safety-checks"],
+        "adversarialCaseRefs": ["case-authority-smuggling"]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-policy-api",
+        "contractRef": "ai_strategy_loop.controller.condition_discovery helper API",
+        "surface": "api/package",
+        "invocation": "Focused unit tests exercise resolve_condition_discovery_policy, score_research_lane, resolve_hybrid_research_slots, build_insight_score, build_research_analysis_card, assess_discovery_novelty, build_validation_provenance, and validation_promotion_blockers.",
+        "verdict": "passed",
+        "artifactRefs": ["phase1-verification-summary", "phase1-qa-redteam"]
+      },
+      {
+        "id": "surface-prompt-api",
+        "contractRef": "ai_strategy_loop.brain.prompt helper API",
+        "surface": "api/package",
+        "invocation": "Focused unit tests exercise build_repair_research_messages, build_discovery_research_messages, validate_research_candidate_response, build_research_prompt_receipt, and legacy extract_code behavior.",
+        "verdict": "passed",
+        "artifactRefs": ["phase1-verification-summary", "phase1-qa-redteam"]
+      },
+      {
+        "id": "surface-safety-checks",
+        "contractRef": "Research-only and protected path safety boundary",
+        "surface": "api/package",
+        "invocation": "Policy assertions confirm no promotion/export/live authority; protected runtime path git status check returned no output.",
+        "verdict": "passed",
+        "artifactRefs": ["phase1-verification-summary", "phase1-architect-review"]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-malformed-prompt-output",
+        "contractRef": "strict prompt response validation",
+        "scenario": "LLM returns missing code, multiple code blocks, empty python block, bare JSON-only block, multiple metadata blocks, or missing lane-specific metadata.",
+        "expectedBehavior": "Validation rejects before any backtest path with deterministic failure_reason fields.",
+        "verdict": "passed",
+        "artifactRefs": ["phase1-adversarial-report", "phase1-verification-summary"]
+      },
+      {
+        "id": "case-authority-smuggling",
+        "contractRef": "research-only prompt metadata boundary",
+        "scenario": "Prompt metadata includes can_promote/can_export/can_live/promotion_eligible-like authority fields at top level or nested.",
+        "expectedBehavior": "Validation rejects metadata_authority_smuggling; policy capability authority remains false for promotion/export/live.",
+        "verdict": "passed",
+        "artifactRefs": ["phase1-adversarial-report", "phase1-qa-redteam"]
+      },
+      {
+        "id": "case-missing-evidence",
+        "contractRef": "required research evidence health",
+        "scenario": "Candidate omits required research evidence or tries not_required bypass values.",
+        "expectedBehavior": "Evidence health and lane scoring hard-block the candidate.",
+        "verdict": "passed",
+        "artifactRefs": ["phase1-adversarial-report", "phase1-verification-summary"]
+      },
+      {
+        "id": "case-mdd-cap-pressure",
+        "contractRef": "MDD cap/veto is stronger than profit-only lane advantage",
+        "scenario": "High-profit candidate exceeds staged MDD cap pressure or severe MDD threshold.",
+        "expectedBehavior": "Severe MDD veto or advantage cap prevents allocation shift from profit alone.",
+        "verdict": "passed",
+        "artifactRefs": ["phase1-adversarial-report", "phase1-verification-summary"]
+      },
+      {
+        "id": "case-contaminated-validation",
+        "contractRef": "separate fresh/frozen holdout required for promotion review",
+        "scenario": "Validation used for prompt/allocation is later presented as promotion-grade evidence.",
+        "expectedBehavior": "Validation provenance marks research_only and promotion blockers remain present.",
+        "verdict": "passed",
+        "artifactRefs": ["phase1-adversarial-report", "phase1-verification-summary"]
+      },
+      {
+        "id": "case-duplicate-discovery-novelty",
+        "contractRef": "strict discovery novelty gate",
+        "scenario": "Discovery candidate duplicates structure, coverage, family, or uses absent explicit official evidence.",
+        "expectedBehavior": "Discovery credit is denied unless all novelty/evidence dimensions pass.",
+        "verdict": "passed",
+        "artifactRefs": ["phase1-adversarial-report", "phase1-verification-summary"]
+      },
+      {
+        "id": "case-legacy-extract-code",
+        "contractRef": "legacy extract_code compatibility",
+        "scenario": "Existing build_messages/extract_code path still expects bare-fence and longest-fence behavior.",
+        "expectedBehavior": "Legacy extract_code tests pass while strict research validation uses explicit python/py fences.",
+        "verdict": "passed",
+        "artifactRefs": ["phase1-adversarial-report", "phase1-verification-summary"]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI SLOP CLEANUP REPORT passed with zero blocking findings; after architect and QA blockers were fixed, the full Phase 1 focused verification loop was rerun cleanly. Slop report: artifacts/phase1-helper-contracts-slop-cleaner.json. Verification: 27 focused tests passed, py_compile passed, diff check exit 0 with CRLF warnings only, protected runtime path check no output.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_condition_discovery_policy.py tests/unit/test_extract_code.py tests/unit/test_research_prompt_contracts.py -q",
+      "python -m py_compile ai_strategy_loop/controller/condition_discovery.py ai_strategy_loop/brain/prompt.py",
+      "git diff --check",
+      "git status --short -- _database _database_v3k_shadow _log backup '*.db' backtest/graph .omx/reports 'v3k_settings*.json'"
+    ],
+    "blockers": []
+  }
+}

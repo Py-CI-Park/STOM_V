@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "scope": "P5-root-cause-repair only",
+  "full_288_tick_smoke_started": false,
+  "full_min_smoke_started": false,
+  "root_cause": "legacy lattice strategy names contained colon characters, making backtest artifact file paths unsafe; sanitized names produce CSV/metrics.",
+  "name_safety": {
+    "dryrun_unsafe_legacy_name_count": 1152,
+    "dryrun_unsafe_target_name_count": 0,
+    "db_after": {
+      "stockbuy": {
+        "lattice_total": 1152,
+        "legacy_colon": 576,
+        "filename_unsafe": 576,
+        "safe_no_colon": 576
+      },
+      "stocksell": {
+        "lattice_total": 1152,
+        "legacy_colon": 576,
+        "filename_unsafe": 576,
+        "safe_no_colon": 576
+      }
+    },
+    "mapping_ledger": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\lattice_strategy_name_mapping_sanitized.jsonl"
+  },
+  "insert_only": {
+    "inserted_row_count": 1152,
+    "backup_path": "ai_strategy_loop\\state\\loop_strategies.db.bak.lattice_20260703T225541Z",
+    "conflicts": [],
+    "old_colon_rows_preserved_per_table": true
+  },
+  "sample14_before_sanitized": {
+    "sample_count": 14,
+    "status_counts": {
+      "no_trades": 14
+    },
+    "interim_decision": {
+      "threshold_relaxation_needed": true,
+      "primary_relaxation_targets": [
+        "family_trigger",
+        "regime_filter",
+        "market_cap_tier"
+      ],
+      "keep_locked": [
+        "universe_filter",
+        "time_window",
+        "exit_rule"
+      ],
+      "rationale": "All sampled seeds completed without csv/metrics; entry gates are the likely bottleneck."
+    }
+  },
+  "acceptance20_after_sanitized": {
+    "result_count": 20,
+    "status_counts": {
+      "ok": 20
+    },
+    "gate_passed_count": 0,
+    "trade_count_min": 24,
+    "trade_count_max": 1418
+  },
+  "threshold_decision": {
+    "relaxation_required_before_full_smoke_resume": false,
+    "reason": "Sanitized 20-pair probe generated CSV/metrics and nonzero trades for every sampled pair; threshold relaxation is not required to unblock P5 full smoke.",
+    "follow_up": "0/20 passed performance gates, so refinement/portfolio work should evaluate profit/MDD/trade-quality thresholds after full smoke classification."
+  },
+  "evidence": [
+    "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\register_lattice_seeds_sanitized_dryrun.json",
+    "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\register_lattice_seeds_sanitized_receipt.json",
+    "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\lattice_strategy_name_mapping_sanitized.jsonl",
+    "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_acceptance20_sanitized.json",
+    "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\lattice_sample14_feasibility_audit.json",
+    "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_tick_acceptance20_sanitized.log",
+    "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_acceptance20_sanitized.json"
+  ]
+}

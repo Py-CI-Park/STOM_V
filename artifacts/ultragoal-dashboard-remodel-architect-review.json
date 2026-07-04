@@ -1,0 +1,13 @@
+{
+  "source": "agent://125-DashboardRemodelReview",
+  "run_id": "019ef739-fcbe-7000-9252-4130c4381d1c",
+  "stage": "architect",
+  "stage_n": 125,
+  "architectureStatus": "CLEAR",
+  "productStatus": "PASS",
+  "codeStatus": "APPROVE",
+  "recommendation": "APPROVE",
+  "blockers": [],
+  "advisoriesCount": 3,
+  "sha256": "ab6e37e0650a2bdad52fef6c3974290502fe2f320711b8824afb70f1388be63a"
+}

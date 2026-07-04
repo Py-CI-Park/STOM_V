@@ -1,0 +1,273 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review 151-OvernightResearchReview approved the overnight research closure artifacts. Final QA 154-OvernightResearchQaFinal found clean closure evidence with blockers resolved. Research-only safety boundaries are explicit and backed by safety_receipt.json.",
+    "commands": [
+      "agent://151-OvernightResearchReview",
+      "agent://154-OvernightResearchQaFinal"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Final QA inspected morning report, final_research_summary.json, anchor.jsonl, process_a_fast.log, and safety_receipt.json. It verified 180 evaluated candidates, 105 gate passers, best rr8_21_trail_keep=0.7, raw gpt_auth blocker evidence, r4 interruption caveat, dedup resume behavior, and durable safety receipt allPassed=true.",
+    "e2eCommands": [
+      "PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python artifacts/overnight-process-research-20260627/run_anchor_resume.py --max-rounds 1 --deadline-hhmm 06:00 --round-timeout 2400",
+      "PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python -m ai_strategy_loop.scripts.gen_morning_report --out docs/research/condition_research/auto_reports/morning_20260628_process_research.md"
+    ],
+    "redTeamCommands": [
+      "agent://152-OvernightResearchQa",
+      "agent://153-OvernightResearchQaRerun",
+      "agent://154-OvernightResearchQaFinal"
+    ],
+    "artifactRefs": [
+      {
+        "id": "anchor-jsonl",
+        "kind": "algorithm-artifact",
+        "path": "artifacts/overnight-process-research-20260627/anchor.jsonl",
+        "description": "LLM-free anchor mutation event stream with 180 candidate rows and round/resume events."
+      },
+      {
+        "id": "final-summary",
+        "kind": "api-test-report",
+        "path": "artifacts/overnight-process-research-20260627/final_research_summary.json",
+        "description": "Structured summary of primary blocker, fallback route, top candidates, caveats, and safety references."
+      },
+      {
+        "id": "morning-report",
+        "kind": "api-test-report",
+        "path": "docs/research/condition_research/auto_reports/morning_20260628_process_research.md",
+        "description": "User-facing morning report with scope caveats, top candidates, and advisory-only safety warning."
+      },
+      {
+        "id": "auth-log",
+        "kind": "api-test-report",
+        "path": "artifacts/overnight-process-research-20260627/logs/process_a_fast.log",
+        "description": "Raw gpt_auth refresh_token_invalidated/token_expired evidence."
+      },
+      {
+        "id": "safety-receipt",
+        "kind": "api-test-report",
+        "path": "artifacts/overnight-process-research-20260627/safety_receipt.json",
+        "description": "allPassed safety receipt for nonrelease sync, diff check, protected path status, py_compile, and dashboard health."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-prepare",
+        "contractRef": "G001 Prepare overnight research run",
+        "obligation": "Create configs/drivers and preflight evidence for overnight research.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-configs",
+          "surface-safety"
+        ],
+        "adversarialCaseRefs": [
+          "case-protected-path"
+        ]
+      },
+      {
+        "id": "contract-fast-blocker",
+        "contractRef": "G002 Execute A fast-discovery research",
+        "obligation": "Attempt fast-discovery, capture blocker evidence, and avoid export/live/promote.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-auth-log",
+          "surface-summary"
+        ],
+        "adversarialCaseRefs": [
+          "case-token-expired"
+        ]
+      },
+      {
+        "id": "contract-process-research",
+        "contractRef": "G003 Execute B process-research full-period improvement",
+        "obligation": "Run 32-engine full-period improvement research and record top candidates.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-anchor",
+          "surface-summary"
+        ],
+        "adversarialCaseRefs": [
+          "case-duplicate-theta",
+          "case-interrupted-round"
+        ]
+      },
+      {
+        "id": "contract-readonly-synthesis",
+        "contractRef": "G004 Execute C promotion-review read-only synthesis",
+        "obligation": "Summarize top candidates as advisory evidence only, without promotion/export/live.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-report",
+          "surface-safety"
+        ],
+        "adversarialCaseRefs": [
+          "case-promotion-confusion"
+        ]
+      },
+      {
+        "id": "contract-close",
+        "contractRef": "G005 Generate morning report and close safely",
+        "obligation": "Generate morning report, safety receipt, and final closure evidence.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-report",
+          "surface-safety"
+        ],
+        "adversarialCaseRefs": [
+          "case-safety-receipt"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-configs",
+        "contractRef": "overnight config/driver artifacts",
+        "surface": "package",
+        "invocation": "Created process_a_fast.json, process_b_research.json, process_c_review.json, run_overnight_research.py, run_anchor_fallback.py, and run_anchor_resume.py; py_compile passed.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "safety-receipt"
+        ]
+      },
+      {
+        "id": "surface-auth-log",
+        "contractRef": "A fast-discovery blocker evidence",
+        "surface": "package",
+        "invocation": "process_a_fast attempted 8 generations and logged HTTP 401 refresh_token_invalidated/token_expired.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "auth-log"
+        ]
+      },
+      {
+        "id": "surface-anchor",
+        "contractRef": "LLM-free process-research fallback",
+        "surface": "algorithm",
+        "invocation": "anchor mutation + resume rounds r1-r8 evaluated 180 candidates, 105 passers.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "anchor-jsonl"
+        ]
+      },
+      {
+        "id": "surface-summary",
+        "contractRef": "structured research result",
+        "surface": "api",
+        "invocation": "final_research_summary.json generated from anchor.jsonl and updated with caveats/raw evidence refs.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "final-summary"
+        ]
+      },
+      {
+        "id": "surface-report",
+        "contractRef": "morning user report",
+        "surface": "package",
+        "invocation": "gen_morning_report then manual caveat/top-candidate section update.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "morning-report"
+        ]
+      },
+      {
+        "id": "surface-safety",
+        "contractRef": "research-only safety boundary",
+        "surface": "package",
+        "invocation": "safety_receipt.json captured nonrelease sync, diff check, protected path status, py_compile, and dashboard health.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "safety-receipt"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-token-expired",
+        "contractRef": "primary A/B/C route blocker",
+        "scenario": "A fast-discovery could be claimed without raw auth evidence.",
+        "expectedBehavior": "Report raw token blocker and switch honestly to fallback.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "auth-log",
+          "final-summary"
+        ]
+      },
+      {
+        "id": "case-interrupted-round",
+        "contractRef": "monitor timeout/fallback interruption",
+        "scenario": "Interrupted r4 could be silently counted as complete.",
+        "expectedBehavior": "Caveat r4 as unclosed and resume from best r4 candidate.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "anchor-jsonl",
+          "morning-report",
+          "final-summary"
+        ]
+      },
+      {
+        "id": "case-duplicate-theta",
+        "contractRef": "resume duplicate prevention",
+        "scenario": "Resume could re-evaluate identical theta after timeout.",
+        "expectedBehavior": "Read prior theta signatures and skip duplicates.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "anchor-jsonl",
+          "final-summary"
+        ]
+      },
+      {
+        "id": "case-promotion-confusion",
+        "contractRef": "advisory-only safety",
+        "scenario": "Historical PROMOTE checklist could be mistaken for overnight promotion approval.",
+        "expectedBehavior": "Report scope caveat and finalPromotion/export/live false.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "morning-report",
+          "final-summary"
+        ]
+      },
+      {
+        "id": "case-safety-receipt",
+        "contractRef": "durable safety evidence",
+        "scenario": "Safety checks could be asserted without durable output refs.",
+        "expectedBehavior": "Provide typed safety receipt with all check return codes and protected path output.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "safety-receipt"
+        ]
+      },
+      {
+        "id": "case-protected-path",
+        "contractRef": "project protected runtime paths",
+        "scenario": "Research could mutate protected source/runtime paths.",
+        "expectedBehavior": "Protected path status check returns empty output with returncode 0.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "safety-receipt"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Initial QA found blockers around report scope, raw auth evidence, r4 interruption, and safety receipt references. Report and summary were updated; safety_receipt.json was created; final QA returned status clean with no blockers. Full safety recheck reran cleanly.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m py_compile artifacts/overnight-process-research-20260627/run_anchor_fallback.py artifacts/overnight-process-research-20260627/run_anchor_resume.py artifacts/overnight-process-research-20260627/run_overnight_research.py",
+      "python scripts/verify_nonrelease_sync.py",
+      "git diff --check -- <overnight artifacts/docs>",
+      "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+      "GET http://127.0.0.1:8770/health",
+      "agent://154-OvernightResearchQaFinal"
+    ],
+    "blockers": []
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "schema": "plan_b_p5_tick_official_chunk_manifest_v1",
+  "created_at": "2026-07-04T19:28:17+0900",
+  "source_pairs": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick.json",
+  "official_config": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json",
+  "pair_count": 288,
+  "chunk_size": 24,
+  "chunk_count": 12,
+  "pilot": {
+    "pair_count": 12,
+    "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_pilot12_20260704.json",
+    "run_id": "lat_tick_official_full_warm64_pilot12_20260704",
+    "allowed_next_action": "pilot12 only before chunk01/full 288"
+  },
+  "chunks": [
+    {
+      "chunk_no": 1,
+      "start_index": 0,
+      "end_index": 23,
+      "pair_count": 24,
+      "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk01_20260704.json",
+      "run_id": "lat_tick_official_full_warm64_chunk01_20260704"
+    },
+    {
+      "chunk_no": 2,
+      "start_index": 24,
+      "end_index": 47,
+      "pair_count": 24,
+      "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk02_20260704.json",
+      "run_id": "lat_tick_official_full_warm64_chunk02_20260704"
+    },
+    {
+      "chunk_no": 3,
+      "start_index": 48,
+      "end_index": 71,
+      "pair_count": 24,
+      "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk03_20260704.json",
+      "run_id": "lat_tick_official_full_warm64_chunk03_20260704"
+    },
+    {
+      "chunk_no": 4,
+      "start_index": 72,
+      "end_index": 95,
+      "pair_count": 24,
+      "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk04_20260704.json",
+      "run_id": "lat_tick_official_full_warm64_chunk04_20260704"
+    },
+    {
+      "chunk_no": 5,
+      "start_index": 96,
+      "end_index": 119,
+      "pair_count": 24,
+      "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk05_20260704.json",
+      "run_id": "lat_tick_official_full_warm64_chunk05_20260704"
+    },
+    {
+      "chunk_no": 6,
+      "start_index": 120,
+      "end_index": 143,
+      "pair_count": 24,
+      "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk06_20260704.json",
+      "run_id": "lat_tick_official_full_warm64_chunk06_20260704"
+    },
+    {
+      "chunk_no": 7,
+      "start_index": 144,
+      "end_index": 167,
+      "pair_count": 24,
+      "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk07_20260704.json",
+      "run_id": "lat_tick_official_full_warm64_chunk07_20260704"
+    },
+    {
+      "chunk_no": 8,
+      "start_index": 168,
+      "end_index": 191,
+      "pair_count": 24,
+      "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk08_20260704.json",
+      "run_id": "lat_tick_official_full_warm64_chunk08_20260704"
+    },
+    {
+      "chunk_no": 9,
+      "start_index": 192,
+      "end_index": 215,
+      "pair_count": 24,
+      "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk09_20260704.json",
+      "run_id": "lat_tick_official_full_warm64_chunk09_20260704"
+    },
+    {
+      "chunk_no": 10,
+      "start_index": 216,
+      "end_index": 239,
+      "pair_count": 24,
+      "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk10_20260704.json",
+      "run_id": "lat_tick_official_full_warm64_chunk10_20260704"
+    },
+    {
+      "chunk_no": 11,
+      "start_index": 240,
+      "end_index": 263,
+      "pair_count": 24,
+      "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk11_20260704.json",
+      "run_id": "lat_tick_official_full_warm64_chunk11_20260704"
+    },
+    {
+      "chunk_no": 12,
+      "start_index": 264,
+      "end_index": 287,
+      "pair_count": 24,
+      "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk12_20260704.json",
+      "run_id": "lat_tick_official_full_warm64_chunk12_20260704"
+    }
+  ],
+  "policy": {
+    "warm_prepare": "before every pilot/chunk",
+    "warm_close": "after every pilot/chunk",
+    "fail_fast_timeout": true,
+    "full_288_single_run_allowed": false,
+    "min_before_tick_export_allowed": false
+  }
+}

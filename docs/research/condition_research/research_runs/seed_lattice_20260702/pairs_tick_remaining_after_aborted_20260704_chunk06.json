@@ -1,0 +1,62 @@
+[
+  {
+    "label": "lattice_v1:tick_0920_large_low:strength_surge",
+    "buy": "LAT_lattice_v1_tick_0920_large_low_strength_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_large_low_strength_surge_S"
+  },
+  {
+    "label": "lattice_v1:tick_0920_large_low:volume_surge",
+    "buy": "LAT_lattice_v1_tick_0920_large_low_volume_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_large_low_volume_surge_S"
+  },
+  {
+    "label": "lattice_v1:tick_0920_large_mid:momentum_breakout",
+    "buy": "LAT_lattice_v1_tick_0920_large_mid_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_tick_0920_large_mid_momentum_breakout_S"
+  },
+  {
+    "label": "lattice_v1:tick_0920_large_mid:prevday_active",
+    "buy": "LAT_lattice_v1_tick_0920_large_mid_prevday_active_B",
+    "sell": "LAT_lattice_v1_tick_0920_large_mid_prevday_active_S"
+  },
+  {
+    "label": "lattice_v1:tick_0920_large_mid:strength_surge",
+    "buy": "LAT_lattice_v1_tick_0920_large_mid_strength_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_large_mid_strength_surge_S"
+  },
+  {
+    "label": "lattice_v1:tick_0920_large_mid:volume_surge",
+    "buy": "LAT_lattice_v1_tick_0920_large_mid_volume_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_large_mid_volume_surge_S"
+  },
+  {
+    "label": "lattice_v1:tick_0920_large_high:momentum_breakout",
+    "buy": "LAT_lattice_v1_tick_0920_large_high_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_tick_0920_large_high_momentum_breakout_S"
+  },
+  {
+    "label": "lattice_v1:tick_0920_large_high:prevday_active",
+    "buy": "LAT_lattice_v1_tick_0920_large_high_prevday_active_B",
+    "sell": "LAT_lattice_v1_tick_0920_large_high_prevday_active_S"
+  },
+  {
+    "label": "lattice_v1:tick_0920_large_high:strength_surge",
+    "buy": "LAT_lattice_v1_tick_0920_large_high_strength_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_large_high_strength_surge_S"
+  },
+  {
+    "label": "lattice_v1:tick_0920_large_high:volume_surge",
+    "buy": "LAT_lattice_v1_tick_0920_large_high_volume_surge_B",
+    "sell": "LAT_lattice_v1_tick_0920_large_high_volume_surge_S"
+  },
+  {
+    "label": "lattice_v1:tick_0925_small_low:momentum_breakout",
+    "buy": "LAT_lattice_v1_tick_0925_small_low_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_tick_0925_small_low_momentum_breakout_S"
+  },
+  {
+    "label": "lattice_v1:tick_0925_small_low:prevday_active",
+    "buy": "LAT_lattice_v1_tick_0925_small_low_prevday_active_B",
+    "sell": "LAT_lattice_v1_tick_0925_small_low_prevday_active_S"
+  }
+]

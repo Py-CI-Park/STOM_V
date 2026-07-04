@@ -83,6 +83,8 @@ def generate_strategy(
     report_principles_enabled: bool = False,
     sell_exec_budget_guard_enabled: bool = False,
     sell_max_window_calls: int = 8,
+    principle_gate_enabled: bool = False,
+    principle_gate_metadata: Optional[Dict[str, Any]] = None,
     hypothesis_feedback: Optional[str] = None,
     few_shot_examples: Optional[list] = None,
     pattern_cards: Optional[list] = None,
@@ -157,6 +159,14 @@ def generate_strategy(
             리스트(T4 반복 정제 폐루프). build_messages로 전달돼 kind=='buy'일 때만 매수
             프롬프트에 avoid 가이드 블록으로 주입된다(매도 무영향). None/빈 리스트=주입 안 함,
             byte-identical(하위호환). 호출부가 토글(segment_feedback_enabled) ON일 때만 채운다.
+        principle_gate_enabled: True면 PRE-SAVE 체인 마지막(dedup 직전)에 원리 일관성
+            게이트(brain/principle_gate.check_principle_consistency — constraints_checklist.md
+            CSC-06/07/10)를 검사해 reject severity 위반 시 prior_error 설정 후 재시도한다
+            (advisory 는 로그만). 기본 False면 이 검사가 평가조차 안 돼 동작이 기존과
+            byte-동일하다(하위호환).
+        principle_gate_metadata: principle_gate_enabled=True일 때 게이트에 넘길 부가
+            metadata(예: {'principle_ids': ['P4']}). timeframe/kind 는 자동 보충된다.
+            None(기본)이면 principle_ids 부재 advisory 만 로그된다(저장은 막지 않음).
         on_prompt: LLM 호출이 성공한 직후 그 프롬프트 레코드(dict)를 받는 선택적
             콜백(P1c 프롬프트 영속화). None이면 호출되지 않아 동작이 byte-identical
             하다(로깅 안 함=기존과 동일). 예외는 콜백 내부에서 흡수해 루프를 막지 않는다.
@@ -438,6 +448,36 @@ def generate_strategy(
                 prior_error = f"pattern-card guard failed closed: {exc}"
                 logger.info("attempt %d: %s", attempt, prior_error)
                 continue
+        # --- 4g) 원리 일관성 게이트 (T4.3; opt-in, 기본 OFF) ---
+        #   constraints_checklist.md 의 기계 판정 항목(CSC-06/07/10 + PG-META-01
+        #   advisory)을 저장 전에 검사한다. reject severity 위반만 저장 거부→
+        #   재시도하고, advisory 는 로그만 남긴다. generator 는 한 번에 한 kind 만
+        #   생성하므로 반대편 코드는 None(판정 보류)으로 넘긴다. 기본 OFF 면 이
+        #   블록이 평가조차 안 돼 동작이 기존과 byte-동일하다(하위호환).
+        if principle_gate_enabled:
+            from ai_strategy_loop.brain.principle_gate import check_principle_consistency  # noqa: PLC0415
+            _pg_meta = dict(principle_gate_metadata or {})
+            _pg_meta.setdefault("timeframe", timeframe)
+            _pg_meta.setdefault("kind", kind)
+            _pg_violations = check_principle_consistency(
+                buy_code=code if kind == "buy" else None,
+                sell_code=code if kind == "sell" else None,
+                metadata=_pg_meta,
+            )
+            for _adv in _pg_violations:
+                if _adv.get("severity") == "advisory":
+                    logger.info(
+                        "attempt %d: 원리 게이트 advisory [%s] %s",
+                        attempt, _adv.get("rule_id"), _adv.get("message"),
+                    )
+            _pg_rejects = [v for v in _pg_violations if v.get("severity") == "reject"]
+            if _pg_rejects:
+                prior_error = "원리 일관성 위반: " + "; ".join(
+                    f"[{v.get('rule_id')}] {v.get('message')}" for v in _pg_rejects
+                )
+                logger.info("attempt %d: %s", attempt, prior_error)
+                continue
+
         # --- 5) dedup ---
         if dedup is not None and dedup.is_duplicate(code):
             prior_error = "직전 전략과 구조가 동일(중복). 다른 조건으로 작성하라."

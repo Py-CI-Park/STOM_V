@@ -1,0 +1,349 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect reviews cleared benchmark/backend policy, dashboard UI/heatmaps, and docs/artifacts. Final CLEAR receipts: agent://147-BenchmarkBackendReview, agent://148-DashboardUiReview, agent://149-DocsArtifactReview.",
+    "commands": [
+      "architect review agent://147-BenchmarkBackendReview",
+      "architect review agent://148-DashboardUiReview",
+      "architect review agent://149-DocsArtifactReview"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA/red-team re-review passed every contract and adversarial case after fixes. Browser automation pass=true on build ea4b6150; benchmark artifact keeps 32; process 2 shows immediate research, process 3 review-only; Lab and Workbench heatmaps have structural evidence.",
+    "e2eCommands": [
+      "python -m pytest tests/unit/test_benchmark_warm_engines.py -q -> 7 passed",
+      "python -m pytest tests/unit/test_benchmark_warm_engines.py tests/unit/test_launch_config.py tests/unit/test_condition_discovery_policy.py tests/unit/test_dashboard_validation_views.py tests/unit/test_warm_session_window.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/dashboard/test_p11_process_flow.py -q -> 110 passed",
+      "npm run build:app -> app.js v=ea4b6150",
+      "npm run harness -> allPass true",
+      "browser automation -> artifacts/process-research-v4-browser-verification.json pass=true"
+    ],
+    "redTeamCommands": [
+      "executor QA/red-team agent://150-QaRedTeamReview",
+      "adversarial cases: 64 faster per-run but slower amortized, 64 below threshold, process 3 selected, process 2 immediate research, Lab heatmap missing-state, Workbench heatmap empty-state"
+    ],
+    "artifactRefs": [
+      {
+        "id": "benchmark-artifact",
+        "kind": "algorithm-artifact",
+        "path": "artifacts/process-research-engine-benchmark.json",
+        "description": "32-vs-64 benchmark measurements and decision; selected 32 with changed_default false."
+      },
+      {
+        "id": "browser-run",
+        "kind": "browser-automation",
+        "path": "artifacts/process-research-v4-browser-verification.json",
+        "description": "Automation transcript covering overview/process/lab/workbench/backtest/records/verdict/chartReplay with pass=true."
+      },
+      {
+        "id": "process-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/process-research-v4-process-page.png",
+        "description": "Non-uniform screenshot showing process selector and promotion-review review-only state."
+      },
+      {
+        "id": "lab-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/process-research-v4-lab-page.png",
+        "description": "Non-uniform screenshot showing Lab Edge Ratio heatmap surface."
+      },
+      {
+        "id": "workbench-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/process-research-v4-workbench-page.png",
+        "description": "Non-uniform screenshot showing Workbench heatmap card and candidate analysis."
+      },
+      {
+        "id": "verification-summary",
+        "kind": "typed-receipt",
+        "path": "artifacts/process-research-v4-verification-summary.json",
+        "description": "Command and review receipt for tests/build/harness/browser/nonrelease/diff/protected-path checks."
+      },
+      {
+        "id": "operator-doc",
+        "kind": "documentation",
+        "path": "docs/update_log/2026-06-27_process_research_benchmark_first_execution.md",
+        "description": "Dated update log with benchmark decision, safety policy, process guide, commands, and evidence."
+      },
+      {
+        "id": "api-package-receipt",
+        "kind": "api-test-report",
+        "path": "artifacts/process-research-v4-verification-summary.json",
+        "description": "API/package command receipt for focused pytest, build, harness, nonrelease, diff, and protected-path checks."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-benchmark-first",
+        "contractRef": "32/64 benchmark must be first and data-driven",
+        "obligation": "Run repeated 32/64 measurements on fixed input and select default by threshold policy.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-benchmark-artifact"
+        ],
+        "adversarialCaseRefs": [
+          "case-64-faster-run-slower-amortized",
+          "case-64-below-threshold"
+        ]
+      },
+      {
+        "id": "contract-process-research",
+        "contractRef": "Processes 1 and 2 must allow immediate research/full-period analysis without promotion/export/live.",
+        "obligation": "Expose research actions, full-period validation, condition improvement, and blocked production actions.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-process-web",
+          "surface-policy-api"
+        ],
+        "adversarialCaseRefs": [
+          "case-process-2-immediate-research",
+          "case-promotion-export-live-blocked"
+        ]
+      },
+      {
+        "id": "contract-promotion-review",
+        "contractRef": "Process 3 is frozen promotion review only.",
+        "obligation": "Show review-only language and preserve human approval/export/live blockers.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-process-web",
+          "surface-policy-api"
+        ],
+        "adversarialCaseRefs": [
+          "case-process-3-review-only"
+        ]
+      },
+      {
+        "id": "contract-heatmaps",
+        "contractRef": "Lab and Workbench heatmaps must be visible/contained when data exists.",
+        "obligation": "Render scroll-contained Lab Edge Ratio and Workbench RP heatmap structures.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-lab-web",
+          "surface-workbench-web"
+        ],
+        "adversarialCaseRefs": [
+          "case-lab-heatmap-missing-state",
+          "case-workbench-empty-state"
+        ]
+      },
+      {
+        "id": "contract-docs",
+        "contractRef": "Operator docs must explain safety policy, process numbers, page guide, and commands.",
+        "obligation": "Document benchmark decision and research vs promotion separation without overclaiming production promotion.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-docs"
+        ],
+        "adversarialCaseRefs": [
+          "case-doc-overclaim"
+        ]
+      },
+      {
+        "id": "contract-protected-paths",
+        "contractRef": "Protected/runtime paths and nonrelease safety must remain intact.",
+        "obligation": "No source change should write protected runtime DB/log/v3k paths; nonrelease verifier passes.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-safety-checks"
+        ],
+        "adversarialCaseRefs": [
+          "case-protected-path-side-effect"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-benchmark-artifact",
+        "contractRef": "Benchmark result artifact",
+        "surface": "algorithm",
+        "invocation": "Read artifacts/process-research-engine-benchmark.json and compare 32/64 p50/p95/amortized/success/timeout/recovery.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "benchmark-artifact"
+        ]
+      },
+      {
+        "id": "surface-policy-api",
+        "contractRef": "Process catalog and capability policy",
+        "surface": "api",
+        "invocation": "Focused pytest exercises condition_discovery and launch_config process/preset semantics.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-package-receipt"
+        ]
+      },
+      {
+        "id": "surface-process-web",
+        "contractRef": "Process page",
+        "surface": "web",
+        "invocation": "Browser automation selected process 2 and 3 and verified immediate-research vs review-only text plus blockers.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "process-screenshot"
+        ]
+      },
+      {
+        "id": "surface-lab-web",
+        "contractRef": "Research Lab heatmap",
+        "surface": "web",
+        "invocation": "Browser automation verified Lab edgeHeatmapScroll=1, edgeHeatmapShell=1, edgeHeatmapMissing=0.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "lab-screenshot"
+        ]
+      },
+      {
+        "id": "surface-workbench-web",
+        "contractRef": "Workbench heatmap",
+        "surface": "web",
+        "invocation": "Browser automation verified Workbench rpHeatmapScroll=1, rpHeatmap=1, cssMaxContent=true.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "workbench-screenshot"
+        ]
+      },
+      {
+        "id": "surface-docs",
+        "contractRef": "Operator guide documentation",
+        "surface": "package",
+        "invocation": "Architect docs review compared update log against benchmark/browser artifacts.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-package-receipt"
+        ]
+      },
+      {
+        "id": "surface-safety-checks",
+        "contractRef": "Repository safety checks",
+        "surface": "package",
+        "invocation": "verify_nonrelease_sync.py, git diff --check, and protected-path git status check.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-package-receipt"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-64-faster-run-slower-amortized",
+        "contractRef": "32/64 benchmark decision",
+        "scenario": "64 has faster per-run timing but worse amortized prepare+run time.",
+        "expectedBehavior": "Keep 32 unless threshold policy passes.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "benchmark-artifact"
+        ]
+      },
+      {
+        "id": "case-64-below-threshold",
+        "contractRef": "32/64 benchmark decision",
+        "scenario": "64 p50/p95 improvements are close to but below 20%.",
+        "expectedBehavior": "Keep 32.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "benchmark-artifact"
+        ]
+      },
+      {
+        "id": "case-process-2-immediate-research",
+        "contractRef": "Process research semantics",
+        "scenario": "Select process 2.",
+        "expectedBehavior": "Display immediate research and full_period_validation/condition_improvement_loop.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run"
+        ]
+      },
+      {
+        "id": "case-process-3-review-only",
+        "contractRef": "Promotion review semantics",
+        "scenario": "Select process 3 promotion-review.",
+        "expectedBehavior": "Display REVIEW ONLY/승격 검토 전용 and final_promotion_without_human_approval blocker.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run"
+        ]
+      },
+      {
+        "id": "case-promotion-export-live-blocked",
+        "contractRef": "Safety policy",
+        "scenario": "Inspect process capabilities and blocked actions.",
+        "expectedBehavior": "can_promote/can_export/can_live false and export/live/final promotion blocked.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "case-lab-heatmap-missing-state",
+        "contractRef": "Lab heatmap",
+        "scenario": "Valid cross data should not be hidden by generic missing state.",
+        "expectedBehavior": "Lab heatmap shell and scroll render; missing marker absent.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "lab-screenshot"
+        ]
+      },
+      {
+        "id": "case-workbench-empty-state",
+        "contractRef": "Workbench heatmap",
+        "scenario": "Workbench should not remain heatmap-empty when selected run has data.",
+        "expectedBehavior": "rpHeatmap/rpHeatmapScroll present; any rpEmpty belongs to separate non-heatmap card.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-run",
+          "workbench-screenshot"
+        ]
+      },
+      {
+        "id": "case-doc-overclaim",
+        "contractRef": "Docs safety interpretation",
+        "scenario": "Docs could overstate research result as production promotion.",
+        "expectedBehavior": "Docs keep research/full-period analysis separate from promotion/export/live.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "operator-doc"
+        ]
+      },
+      {
+        "id": "case-protected-path-side-effect",
+        "contractRef": "Protected runtime paths",
+        "scenario": "Implementation accidentally writes DB/log/v3k protected paths.",
+        "expectedBehavior": "Protected-path status check has no output.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Review blockers were resolved and the verification loop was rerun: benchmark missing-baseline policy fixed, heatmap regression coverage added, process 3 review-only fixed, Workbench heatmap added, Lab fallback ordering cleaned; final architecture/docs/QA reviews are clean and tests/build/harness/browser/safety checks passed. AI slop cleanup sweep performed as changed-file review: no stubs/placeholders/dead aliases/new dependencies found; review lanes returned zero blockers.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m pytest tests/unit/test_benchmark_warm_engines.py -q",
+      "python -m pytest tests/unit/test_benchmark_warm_engines.py tests/unit/test_launch_config.py tests/unit/test_condition_discovery_policy.py tests/unit/test_dashboard_validation_views.py tests/unit/test_warm_session_window.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/dashboard/test_p11_process_flow.py -q",
+      "npm run build:app",
+      "npm run harness",
+      "browser automation /ui/evolution/process,/lab,/workbench,/backtest,/records,/verdict,/chart-replay",
+      "python scripts/verify_nonrelease_sync.py",
+      "git diff --check",
+      "git status protected runtime paths"
+    ],
+    "blockers": []
+  }
+}

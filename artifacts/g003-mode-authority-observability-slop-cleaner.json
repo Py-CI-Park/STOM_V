@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G003",
+  "status": "PASS",
+  "blockers": [],
+  "advisory": [],
+  "evidence": "Final read-only slop scan agent://249-G003SlopFinal returned architectural_status CLEAR, code_review_recommendation APPROVE, acceptance PASS/APPROVE, blockers empty after promotion-review bypass, evidence fail-open, MDD default, and dashboard authority-default fixes. Earlier slop findings agent://244-G003SlopCleaner were resolved before final scan.",
+  "commands": ["agent://249-G003SlopFinal"]
+}

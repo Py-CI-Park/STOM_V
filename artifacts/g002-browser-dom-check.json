@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "surface": "web",
+  "tool": "GJC browser/puppeteer",
+  "actions": [
+    {
+      "type": "goto",
+      "url": "http://127.0.0.1:8770/ui/evolution/history",
+      "timestamp": 1
+    },
+    {
+      "type": "observe",
+      "selector": "body",
+      "timestamp": 2
+    },
+    {
+      "type": "screenshot",
+      "selector": "#root",
+      "timestamp": 3
+    }
+  ],
+  "assertions": [
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 4,
+      "description": "legacy history route canonicalized to /ui/evolution/records"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 5,
+      "description": "History ResultDetail and Compare section rendered"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 6,
+      "description": "Run Compare and History archive rendered under History ownership"
+    }
+  ],
+  "artifactRefs": [
+    "artifacts/g002-history-workbench.png"
+  ],
+  "observed": {
+    "url": "http://127.0.0.1:8770/ui/evolution/records",
+    "title": "STOM AI · 조건식 자율 진화 대시보드",
+    "hasHistoryResultCompare": true,
+    "hasRunCompare": true,
+    "hasHistoryArchive": true,
+    "hasOwnershipText": true,
+    "overviewCompareOnlyHandoff": false,
+    "selectedTabs": [
+      {
+        "name": "🧬\n진화 홈\nLIVE",
+        "selected": "true"
+      },
+      {
+        "name": "IDX\n히스토리\nHISTORY",
+        "selected": "true"
+      }
+    ],
+    "routeFunctions": {
+      "history": "records",
+      "historyPath": "/ui/evolution/records"
+    },
+    "scripts": [
+      "http://127.0.0.1:8770/ui/vendor-react.js?v=20260603a",
+      "http://127.0.0.1:8770/ui/vendor-react-dom.js?v=20260603a",
+      "http://127.0.0.1:8770/ui/vendor-lightweight-charts.js?v=20260612a",
+      "http://127.0.0.1:8770/ui/bundle/stom-ui.js?v=f41f5701",
+      "http://127.0.0.1:8770/ui/bundle/app.js?v=fac81b3b"
+    ]
+  }
+}

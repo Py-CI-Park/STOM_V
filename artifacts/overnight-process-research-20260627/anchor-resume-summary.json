@@ -1,0 +1,30 @@
+{
+  "completedRounds": 1,
+  "adoptedTotal": 105,
+  "bestOverall": {
+    "label": "rr8_21_trail_keep=0.7",
+    "profit": 3089180.0,
+    "mdd": 18.84,
+    "trades": 165,
+    "daily": 0.7,
+    "gate": true,
+    "theta": {
+      "cap_max": 3000,
+      "prev_ratio_min": 0,
+      "strength_min": 70,
+      "strength_max": 300,
+      "window_end": 90700,
+      "angle_min_902": 5,
+      "burst_min_902": 2.5,
+      "turnover_min_902": 2,
+      "stop_deep": -2.0,
+      "take_hard": 9,
+      "stop_hard": -5.0,
+      "trail_start": 3,
+      "trail_keep": 0.7,
+      "window_start": 90200
+    }
+  },
+  "finishedTs": 1782579344.7870963,
+  "out": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\artifacts\\overnight-process-research-20260627\\anchor.jsonl"
+}

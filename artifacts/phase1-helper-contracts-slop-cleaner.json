@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "kind": "ai-slop-cleanup-report",
+  "goalId": "G001",
+  "changedFiles": [
+    "ai_strategy_loop/controller/condition_discovery.py",
+    "ai_strategy_loop/brain/prompt.py",
+    "tests/unit/test_condition_discovery_policy.py",
+    "tests/unit/test_research_prompt_contracts.py"
+  ],
+  "blockingFindings": [],
+  "advisoryFindings": [],
+  "evidence": "Manual Ultragoal cleanup sweep found no fallback-like masking, no dead aliases, no speculative export/live/final-promotion authority, no duplicated validation path after QA fixes, and no test-only contract drift. Two earlier review/QA blockers were fixed before this clean report: full strict prompt metadata/code validation and explicit official evidence precedence for discovery novelty.",
+  "verdict": "passed"
+}

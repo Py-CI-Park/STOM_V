@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "kind": "AI SLOP CLEANUP REPORT",
+  "goalId": "G003",
+  "status": "passed",
+  "blockingFindings": [],
+  "advisoryFindings": [
+    "Full pytest tests/unit/ is not clean in this worktree, but the first failure is tests/unit/test_backtest_button_contract.py against an untouched backtest constructor surface; changed-scope verification remains clean."
+  ],
+  "changedFilesReviewed": [
+    "ai_strategy_loop/brain/prompt.py",
+    "ai_strategy_loop/controller/condition_discovery.py",
+    "cli/research_loop.py",
+    "cli/research_ranking.py",
+    "tests/unit/test_condition_discovery_policy.py",
+    "tests/unit/test_research_loop.py",
+    "tests/unit/test_research_prompt_contracts.py"
+  ],
+  "evidence": "Final cleanup review found no blocking fallback-like masking, dead aliases, live/export/promotion boundary expansion, or protected-path mutation in the changed research-process surface.",
+  "createdAt": "2026-06-29T15:11:43.711804Z"
+}

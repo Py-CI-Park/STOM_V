@@ -1,0 +1,10 @@
+{
+  "goal": {
+    "objective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+    "status": "active",
+    "tokensUsed": 410711,
+    "updatedAt": "2026-06-27T20:45:00Z"
+  },
+  "capturedAt": "2026-06-27T20:45:00Z",
+  "source": "goal({op:\"get\"}) observed active immediately before final GPT-auth rerun checkpoint"
+}

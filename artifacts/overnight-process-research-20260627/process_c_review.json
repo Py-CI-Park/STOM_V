@@ -1,0 +1,18 @@
+{
+  "provider": "gpt_auth",
+  "max_generations": 3,
+  "condition_discovery_preset": "promotion",
+  "condition_discovery_process": "promotion-review",
+  "bt_engine_mode": "warm",
+  "bt_timeframe": "tick",
+  "bt_scope": "universe",
+  "bt_full_start": 20250101,
+  "bt_full_end": 20251231,
+  "bt_universe_start_time": 90000,
+  "bt_universe_end_time": 92800,
+  "bt_warm_engine_count": 32,
+  "research_oos_mode": "promotion_only",
+  "prompt_logging_enabled": true,
+  "equity_points_enabled": true,
+  "hypothesis_tracking_enabled": true
+}

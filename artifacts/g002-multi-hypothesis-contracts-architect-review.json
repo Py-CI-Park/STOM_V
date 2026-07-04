@@ -1,0 +1,19 @@
+{
+  "review_id": "239-G002ArchitectClean",
+  "architectureStatus": "CLEAR",
+  "productStatus": "CLEAR",
+  "codeStatus": "CLEAR",
+  "recommendation": "APPROVE",
+  "blockers": [],
+  "advisory": [
+    "No tests/gates/formatters/project-wide commands run by read-only reviewer; leader owns verification.",
+    "run_research_once remains a legacy deterministic path; use run_research_iteration/process-research for the G002 contract."
+  ],
+  "evidence": [
+    "cli/condition_generator.py validates multi-hypothesis packs, isolates invalid siblings, rejects pack authority smuggling/non-object packs, requires repair+discovery coverage, and blocks R_/S_ leakage.",
+    "cli/condition_generator.py demotes deterministic fallback to diagnostic/no prompt credit with leakage rejection.",
+    "cli/research_loop.py propagates repair parent metadata, attaches research-only contracts/receipts, prefers LLM packs, and accepts 2+ LLM candidates without four-slot abort.",
+    "ai_strategy_loop/brain/prompt.py enforces research-only context authority plus strict prompt/response metadata, code fence, novelty, and R_/S_ validation.",
+    "Focused tests cover pack validation, 2/3 candidate packs, fallback leakage, strict prompt code leakage, and research-only boundaries."
+  ]
+}

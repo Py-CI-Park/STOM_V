@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "runId": "process_research_sellonly_20260701_night",
+  "createdAt": "2026-07-01T16:24:12.547003+00:00",
+  "status": "browser-verified",
+  "htmlReport": "artifacts/process-research-sellonly-20260701/sell_only_validation_report.html",
+  "resultReport": "docs/research/condition_research/research_runs/process_research_sellonly_20260701_night_result.md",
+  "managementReport": "docs/research/condition_research/research_runs/process_research_sellonly_20260701_night_management.md",
+  "artifactDir": "artifacts/process-research-sellonly-20260701",
+  "browserVerification": {
+    "url": "file:///C:/System_Trading/STOM/STOM_V.wt-dev/artifacts/process-research-sellonly-20260701/sell_only_validation_report.html",
+    "screenshot": "artifacts/process-research-sellonly-20260701/sell_only_validation_report.png",
+    "verifiedAt": "2026-07-01T16:26:47.487695+00:00",
+    "visibleEvidence": [
+      "status ok",
+      "engine 64",
+      "fallback false",
+      "candidate count 6",
+      "baseline metrics",
+      "six candidate table",
+      "candidate profit visual bars"
+    ]
+  },
+  "surface": "web",
+  "tool": "GJC browser/puppeteer",
+  "verifiedAt": "2026-07-01T16:34:36.848837+00:00",
+  "actions": [
+    {
+      "type": "goto",
+      "url": "file:///C:/System_Trading/STOM/STOM_V.wt-dev/artifacts/process-research-sellonly-20260701/sell_only_validation_report.html",
+      "timestamp": 1
+    },
+    {
+      "type": "observe",
+      "selector": "body",
+      "timestamp": 2
+    },
+    {
+      "type": "assert",
+      "selector": "body",
+      "timestamp": 3,
+      "description": "hasStatusOk"
+    },
+    {
+      "type": "assert",
+      "selector": "body",
+      "timestamp": 4,
+      "description": "hasCandidateResults"
+    },
+    {
+      "type": "assert",
+      "selector": "body",
+      "timestamp": 5,
+      "description": "hasResearchOnlyBoundary"
+    },
+    {
+      "type": "assert",
+      "selector": "body",
+      "timestamp": 6,
+      "description": "hasSixCandidates"
+    },
+    {
+      "type": "assert",
+      "selector": "body",
+      "timestamp": 7,
+      "description": "hasCandidateProfitVisualCheck"
+    },
+    {
+      "type": "screenshot",
+      "selector": "fullPage",
+      "timestamp": 8
+    }
+  ],
+  "assertions": [
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 9,
+      "description": "hasStatusOk"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 10,
+      "description": "hasCandidateResults"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 11,
+      "description": "hasResearchOnlyBoundary"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 12,
+      "description": "hasSixCandidates"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 13,
+      "description": "hasCandidateProfitVisualCheck"
+    }
+  ],
+  "artifactRefs": [
+    "artifacts/process-research-sellonly-20260701/sell_only_validation_report.png"
+  ],
+  "observed": {
+    "url": "file:///C:/System_Trading/STOM/STOM_V.wt-dev/artifacts/process-research-sellonly-20260701/sell_only_validation_report.html",
+    "title": "STOM sell-only repair validation",
+    "hasStatusOk": true,
+    "hasCandidateResults": true,
+    "hasResearchOnlyBoundary": true,
+    "hasSixCandidates": true,
+    "status": "ok",
+    "engine": 64,
+    "fallbackUsed": false,
+    "candidateCount": 6,
+    "missingMarkers": [],
+    "hasCandidateProfitVisualCheck": true,
+    "screenshotBytes": 299716
+  },
+  "screenshot": "artifacts/process-research-sellonly-20260701/sell_only_validation_report.png",
+  "verdict": "passed"
+}

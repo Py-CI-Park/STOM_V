@@ -1,0 +1,210 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Phase 2 architecture blockers from agent://205-Phase2ArchitectRerun and agent://207-Phase2ArchitectFinal were fixed. Current-state review confirms canonical process projection, V5 four-slot cap, strict prompt validation before side effects, research-only metadata, advisory ranking payloads, and legacy compatibility. Details: artifacts/phase2-orchestration-architect-review.json.",
+    "commands": [
+      "architect review agent://205-Phase2ArchitectRerun",
+      "architect review agent://207-Phase2ArchitectFinal",
+      "leader current-state code review after subagent clean-review runner failures"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Phase 2 QA blocker from agent://206-Phase2QaRedTeam was fixed; focused tests passed with 118 passing tests. Red-team cases covered numeric selector aliasing, V5 overrequested count, invalid prompt rejection before side effects, advisory-only ranking score, and legacy disabled behavior.",
+    "e2eCommands": [
+      "pytest tests/unit/test_research_loop.py tests/unit/test_condition_discovery_policy.py tests/unit/test_research_prompt_contracts.py tests/unit/test_extract_code.py -q",
+      "python -m py_compile cli/research_loop.py cli/research_ranking.py ai_strategy_loop/controller/condition_discovery.py ai_strategy_loop/brain/prompt.py"
+    ],
+    "redTeamCommands": [
+      "executor QA/red-team agent://206-Phase2QaRedTeam",
+      "adversarial cases recorded in artifacts/phase2-orchestration-adversarial-report.txt"
+    ],
+    "artifactRefs": [
+      {
+        "id": "phase2-verification-summary",
+        "kind": "api-package-test-report",
+        "path": "artifacts/phase2-orchestration-verification-summary.json",
+        "description": "Focused pytest, py_compile, diff check, protected-path check, and research-only safety receipt."
+      },
+      {
+        "id": "phase2-architect-review",
+        "kind": "api-package-review-report",
+        "path": "artifacts/phase2-orchestration-architect-review.json",
+        "description": "Resolved architect blockers and current-state architecture/product/code synthesis."
+      },
+      {
+        "id": "phase2-qa-redteam",
+        "kind": "property-test-report",
+        "path": "artifacts/phase2-orchestration-qa-redteam.json",
+        "description": "QA/red-team matrix for Phase 2 orchestration and ranking wiring."
+      },
+      {
+        "id": "phase2-adversarial-report",
+        "kind": "failure-mode-test-report",
+        "path": "artifacts/phase2-orchestration-adversarial-report.txt",
+        "description": "Adversarial/failure-mode scenarios for selector aliases, V5 slot caps, prompt validation, ranking authority, and legacy compatibility."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-process-projection",
+        "contractRef": "Approved Phase 2 plan: opt-in process-research orchestration",
+        "obligation": "Canonical process-research and numeric selector 2 must use research preset semantics and exactly four hybrid slots.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-research-loop-api"
+        ],
+        "adversarialCaseRefs": [
+          "case-numeric-selector",
+          "case-v5-overrequested-count"
+        ]
+      },
+      {
+        "id": "contract-strict-prompt-before-backtest",
+        "contractRef": "Approved Phase 2 plan: strict repair/discovery prompt responses",
+        "obligation": "Invalid strict prompt outputs are rejected before candidate strategy save/backtest side effects.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-research-loop-api"
+        ],
+        "adversarialCaseRefs": [
+          "case-invalid-prompt-before-side-effects"
+        ]
+      },
+      {
+        "id": "contract-metadata-ranking",
+        "contractRef": "Approved Phase 2 plan: analysis/provenance/novelty/lane scoring and ranking payload",
+        "obligation": "Attach prompt receipts, analysis cards, validation provenance, discovery novelty, lane scores, and next allocation while keeping lane score advisory-only.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-ranking-api"
+        ],
+        "adversarialCaseRefs": [
+          "case-advisory-ranking-score"
+        ]
+      },
+      {
+        "id": "contract-research-only-boundary",
+        "contractRef": "User and approved plan: research-only, no export/live/final promotion, protected paths preserved",
+        "obligation": "No export/live/final promotion wiring and no protected runtime path mutation.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-safety-checks"
+        ],
+        "adversarialCaseRefs": [
+          "case-legacy-disabled-path"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-research-loop-api",
+        "contractRef": "cli.research_loop orchestration API",
+        "surface": "api/package",
+        "invocation": "Focused unit tests exercise _build_iteration_plan, _build_candidate_specs, _execute_candidate_spec, run_research_iteration V5, and hybrid scoring paths.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase2-verification-summary",
+          "phase2-qa-redteam"
+        ]
+      },
+      {
+        "id": "surface-ranking-api",
+        "contractRef": "cli.research_ranking ranking API",
+        "surface": "api/package",
+        "invocation": "Focused ranking unit test checks advisory lane score payload and unchanged ranking key authority.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase2-verification-summary"
+        ]
+      },
+      {
+        "id": "surface-safety-checks",
+        "contractRef": "Research-only and protected path safety boundary",
+        "surface": "api/package",
+        "invocation": "Protected runtime path git status check returned no output; policy strings preserve research-only no export/live/final promotion authority.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase2-verification-summary",
+          "phase2-architect-review"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-numeric-selector",
+        "contractRef": "canonical process selector projection",
+        "scenario": "Direct ResearchLoopConfig receives condition_discovery_process=2 with default preset.",
+        "expectedBehavior": "Research loop canonicalizes to process-research/research and four slots.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase2-adversarial-report",
+          "phase2-verification-summary"
+        ]
+      },
+      {
+        "id": "case-v5-overrequested-count",
+        "contractRef": "V5 process-research four-slot cap",
+        "scenario": "V5 process-research is requested with candidate_count=6.",
+        "expectedBehavior": "Recovery, rowset selection, specs, and actual-rowset requested count remain capped at four hybrid slots.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase2-adversarial-report",
+          "phase2-verification-summary"
+        ]
+      },
+      {
+        "id": "case-invalid-prompt-before-side-effects",
+        "contractRef": "strict prompt response validation",
+        "scenario": "Candidate spec contains invalid strict_response_validation.",
+        "expectedBehavior": "Return candidate_prompt_validation with candidate_not_created cleanup before strategy/backtest side effects.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase2-adversarial-report",
+          "phase2-verification-summary"
+        ]
+      },
+      {
+        "id": "case-advisory-ranking-score",
+        "contractRef": "ranking authority separation",
+        "scenario": "Hybrid candidate carries research_lane_score.",
+        "expectedBehavior": "Rank score payload preserves lane score as advisory_research_budget_only while rank key ignores it.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase2-adversarial-report",
+          "phase2-verification-summary"
+        ]
+      },
+      {
+        "id": "case-legacy-disabled-path",
+        "contractRef": "legacy compatibility outside opt-in",
+        "scenario": "Research loop is not enabled.",
+        "expectedBehavior": "Configured candidate_count/ranking behavior remains unchanged and existing tests pass.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "phase2-adversarial-report",
+          "phase2-verification-summary"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI SLOP CLEANUP REPORT passed with zero blocking findings. After QA and architect blockers were fixed, the full Phase 2 focused verification loop was rerun cleanly: 118 focused tests passed, py_compile passed, diff check exit 0 with CRLF warnings only, protected runtime path check no output. Slop report: artifacts/phase2-orchestration-slop-cleaner.json.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_research_loop.py tests/unit/test_condition_discovery_policy.py tests/unit/test_research_prompt_contracts.py tests/unit/test_extract_code.py -q",
+      "python -m py_compile cli/research_loop.py cli/research_ranking.py ai_strategy_loop/controller/condition_discovery.py ai_strategy_loop/brain/prompt.py",
+      "git diff --check",
+      "git status --short -- _database _database_v3k_shadow _log backup '*.db' backtest/graph .omx/reports 'v3k_settings*.json'"
+    ],
+    "blockers": []
+  }
+}

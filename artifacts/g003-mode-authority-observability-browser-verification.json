@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "surface": "web",
+  "tool": "GJC browser/puppeteer",
+  "actions": [
+    {
+      "type": "goto",
+      "url": "file:///C:/System_Trading/STOM/STOM_V.wt-dev/artifacts/process-research-actual-20260629/process_research_presentation.html#observability",
+      "timestamp": 1
+    },
+    {
+      "type": "observe",
+      "selector": "body",
+      "timestamp": 2
+    },
+    {
+      "type": "screenshot",
+      "selector": "viewport",
+      "timestamp": 3
+    }
+  ],
+  "assertions": [
+    {"status": "passed", "selector": "body", "timestamp": 4, "description": "hasResearchPackBranchTree"},
+    {"status": "passed", "selector": "body", "timestamp": 5, "description": "hasContextPackHealth"},
+    {"status": "passed", "selector": "body", "timestamp": 6, "description": "hasCandidatePack"},
+    {"status": "passed", "selector": "body", "timestamp": 7, "description": "hasAnalysisCards"},
+    {"status": "passed", "selector": "body", "timestamp": 8, "description": "hasPromptReceipts"},
+    {"status": "passed", "selector": "body", "timestamp": 9, "description": "hasPromotionBlockers"},
+    {"status": "passed", "selector": "body", "timestamp": 10, "description": "hasDiagnosticFallback"}
+  ],
+  "artifactRefs": [
+    "artifacts/g003-mode-authority-observability-presentation.png"
+  ],
+  "observed": {
+    "url": "file:///C:/System_Trading/STOM/STOM_V.wt-dev/artifacts/process-research-actual-20260629/process_research_presentation.html#observability",
+    "title": "STOM 조건식 연구 프로세스 개선 설계 — Prompt Context Pack / Multi-Candidate Loop",
+    "hasResearchPackBranchTree": true,
+    "hasContextPackHealth": true,
+    "hasCandidatePack": true,
+    "hasAnalysisCards": true,
+    "hasPromptReceipts": true,
+    "hasPromotionBlockers": true,
+    "hasDiagnosticFallback": true,
+    "missingMarkers": [],
+    "textLength": 11023
+  },
+  "verdict": "passed"
+}

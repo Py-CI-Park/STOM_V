@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "createdAt": "2026-06-28T15:01:13.306Z",
+  "health": {
+    "status": "ok",
+    "contract_version": 2
+  },
+  "pages": [
+    {
+      "url": "http://127.0.0.1:8770/ui/evolution/process",
+      "screenshot": "artifacts/human-process-research-20260628/dashboard-process.png",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "text": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 프로세스\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n조건식 발굴 프로세스 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 루프 제어·상태 변경·final approval/export·/process_flow 정적 참고 본문\nevolution/process\nROUTE\nFLOW\nOWNER\n조건식 발굴 프로세스\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n1 / 1세대\nprovider=batch\ntf=\nrun_id=human_fullperiod_one_mutation_20260628\n100.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\n조건식 발굴 프로세스\n상세 프로세스\n아래 네이티브 그래프·타이밍·로그가 현재 정본입니다. 전체 설명 문서는 읽기 전용 참고 자료로 별도 확인할 수 있습니다.\n상세 프로세스 문서 열기\n현재 노드 미정\nphase —\ncurrent_step —\n최근 로그 로그 대기중…\nProcess selector\nstate.page_data.condition_discovery.process · process_catalog projection (static fallback)\nadvisory research\n1\nfast-discovery\nfast · Fast discovery\n2\nprocess-research\nresearch · Process research\n3\npromotion-review\npromotion · Promotion review\n선택 PROCESS\n1 · fast-discovery빠른 조건 탐색용 projection입니다. 후보 설명과 정렬만 하며 승격 권한은 없습니다.\nVALIDATION NAMES\nresearch_validationresearch evidence is reported as advisory_split, not clean promotion OOS\nCAPABILITY\nCAN_PROMOTE=FALSE\nCAN_EXPORT=FALSE\nCAN_LIVE=FALSE\nfast/research are advisory; promotion still requires frozen review and human approval\nRESEARCH ALLOWED\n즉시 연구 가능candidate_generation · smoke_or_full_period_backtest · edge_ratio_analysis · condition_improvement_loop\nSTILL BLOCKED\n운영 반영 차단production_promote · export · live\nQUICK START\n1번 선택 안내1번은 빠르게 후보를 만들고 곧바로 전체기간/스모크 연구를 반복합니다.\nFull pipeline · advisory research → frozen promotion review\n기존 5-step 그래프는 실행 상태 요약이고, 이 섹션은 전체 연구/검토 계약입니다.\n1. condition generation조건식 후보를 생성하고 STOM 문법/변수 경계를 먼저 확인합니다.\n2. full-period / research_validation전체 기간 검증과 research_validation 결과를 advisory_split evidence로 분리해 기록합니다.\n3. scoring / evidence성과·생성품질 100점, hard gate, evidence health를 함께 보되 점수는 advisory-only입니다.\n4. autopsy / analysis실패 원인, hypothesis, 패턴 카드를 분석해 다음 세대 맥락으로 환류합니다.\n5. improvement채택/거",
+      "length": 4293,
+      "path": "/ui/evolution/process"
+    },
+    {
+      "url": "http://127.0.0.1:8770/ui/evolution/lab",
+      "screenshot": "artifacts/human-process-research-20260628/dashboard-lab.png",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "text": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 연구실\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n연구실 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 전체 기록 인덱스 정본·Workbench 중복 렌더\nevolution/lab\nROUTE\nLAB\nOWNER\n연구실\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n1 / 1세대\nprovider=batch\ntf=\nrun_id=human_fullperiod_one_mutation_20260628\n100.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\nEVIDENCE WORKSPACE · OWNER MATRIX\n기록 · 연구 · 분석 · 결정 역할 맵\n\n현재 표면: 연구실\n\nowns: 탐색 히트맵, Edge Ratio, 변수 중요도, 상관관계, 변수 조합, 검증, 위키, AI 컨텍스트\nnot-owner: 전체 기록 인덱스 정본·Workbench 중복 렌더\nPHASE 2 INVENTORY GATE\n페이지 역할 · 소스 소유권 · 성능 기준\n8 pages · 4 source groups\n\nUI 대공사는 라벨을 먼저 바꾸는 작업이 아니라, 각 페이지가 무엇을 소유하고 무엇을 소유하지 않는지 고정한 뒤 안전하게 재배치하는 작업입니다.\n\n실행 중\n없음\n검증 결산 요약 · ⚠️2\n동결 후보: gen7 THETA_seed_902905_06_B — train 손익 10,965,479 · MDD 10.04 · 272건 · payoff 1.53\nV1 과적합: DSR 0.945 (n_trials 80) · PBO 0.343 · MC P(흑자) 1.0\nrun 목록 (최신순)\n[루프] 🔄 follow12_gptauth_B_seeded64_20260628\nif not (관심종목 == 1): # 공통 필터 – 관심종목\n[루프] 🔄 ovn_anchor_20260627_r4\nr4_0_cap_max=2500\n[루프] 🔄 overnight_B_research_20260627\n[루프] human_fullperiod_one_mutation_20260628\nhuman_mutation_rr8_13_turnover_min_902=3\n[루프] human_fullperiod_seed_replay_20260628\nhuman_seed_rr8_12_turnover_min_902=1.5\n[루프] follow12_gptauth_B2_seeded64_20260628\n[OOS] follow12_fallback_oos_2025_r2\nrr8_21_trail_keep=0.7\n[OOS] follow12_fallback_oos_2024_r2\nrr8_21_trail_keep=0.7\n[OOS] follow12_fallback_oos_2023_r2\nrr8_21_trail_keep=0.7\n[OOS] follow12_fallback_oos_2022_r2\nrr8_21_trail_keep=0.7\n[루프] gptauth_C_review_20260627\nif 시분초 < 90000 or 시분초 > 145000:\n[루프] gptauth_B_research_20260627\nif not (90500 <= 시분초 < 91500):\n[루프] gptauth_A_fast_20260627\nif not (90500 <= 시분초 < 91000):\n[루프] gptauth_smoke_20260627\nif not (91000 <= 시분초 < 91500):\n[루프] ovn_anchor_20260627_resume_r8\nrr8_0_cap_max=2500\n[루프] ovn_anchor_20260627_resume_r7\nrr7_0_cap_max=2500\n[루프] ovn_anchor_20",
+      "length": 4184,
+      "path": "/ui/evolution/lab"
+    },
+    {
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench",
+      "screenshot": "artifacts/human-process-research-20260628/dashboard-workbench.png",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "text": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 분석 워크벤치\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n분석 워크벤치 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 연구실 분석·append-only 운용 결정·final approval\nevolution/workbench\nROUTE\nWORK\nOWNER\n분석 워크벤치\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n1 / 1세대\nprovider=batch\ntf=\nrun_id=human_fullperiod_one_mutation_20260628\n100.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\nEVIDENCE WORKSPACE · OWNER MATRIX\n기록 · 연구 · 분석 · 결정 역할 맵\n\n현재 표면: 분석 워크벤치\n\nowns: 조건 후보 심층 분석과 워크벤치 액션\nnot-owner: 연구실 분석·append-only 운용 결정·final approval\nPHASE 2 INVENTORY GATE\n페이지 역할 · 소스 소유권 · 성능 기준\n8 pages · 4 source groups\n\nUI 대공사는 라벨을 먼저 바꾸는 작업이 아니라, 각 페이지가 무엇을 소유하고 무엇을 소유하지 않는지 고정한 뒤 안전하게 재배치하는 작업입니다.\n\nSTOM 분석 워크벤치\ncandidate analysis · HoF field contract · workbench actions\nHOF FIELD CONTRACT\n명예의 전당 병합 전 인벤토리 게이트\n13 fields locked\n이 표면은 벤치마크 성과판입니다. 시각 통합 전 아래 필드와 액션이 모두 보존되어야 하며, 분석 프로 워크벤치 책임과 인간 reference 증거를 섞어 잃으면 안 됩니다.\n조건 후보 열기\n즉시 백테스트 연결\nHoF 비교 기준 확인\n인간 reference screenshot 확인\n정체성kind · name · period\n성과total_return_krw · total_return_pct · annual_return_pct\n위험·체결mdd_pct · payoff · daily_avg_trades · max_hold · operating_capital_krw\n증거·액션screenshots · workbench_actions\nkind\n구분\n인간·시드·AI 구분 유지\nname\n이름\n표시명 및 전략 식별 유지\ntotal_return_krw\n총수익금\n원 단위 성과 비교 유지\ntotal_return_pct\n총수익률\n운영금 대비 수익률 유지\nannual_return_pct\n연평균\n단기 연환산 신뢰 경고 유지\nmdd_pct\nMDD\n손실위험 비교 유지\npayoff\npayoff\n손익비 비교 유지\ndaily_avg_trades\n일평균거래\n빈도/체결 현실성 판단 유지\nmax_hold\n동시보유\n인간/AI 필드 정규화 유지\noperating_capital_krw\n운영금\n운영금 대비 비교 유지\nperiod\n백테 기간\n기간과 표본 길이 유지\nscreenshots\n스크린샷\n인간 결과 증거 갤러리 유지\nworkbench_actions\n워크벤치 액션\n분석 프로 워크벤치 책임 분리 유지\n🔬\n분석 워크벤치 — 후보 심층 분석\nhuman_fullperiod_one_mutation_20260628 · human_mutation_rr8_13_turnover_min_902=3\nrun\n선택…\nhuman_fullperiod_one_mutation_20260628 · human_mutation_rr8_13_turnover_min_902=3 ✓\nhuman_fullperiod_seed_replay_20260628 · human_seed_rr8_12_turno",
+      "length": 24247,
+      "path": "/ui/evolution/workbench"
+    },
+    {
+      "url": "http://127.0.0.1:8770/ui/evolution/audit",
+      "screenshot": "artifacts/human-process-research-20260628/dashboard-audit.png",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "text": "STOM AI · 조건식 AI 연구 대시보드\nautonomous_strategy_loop · contract_v2\n🧬 조건식 AI / 조건식 AI\nDark\nLight\nBASE\n적용\n↻\n백엔드 연결됨 · v2\n대기\nℹ\n주요 페이지\n운영 루프 · 조건식 AI 생성·백테스트·채점·승인 대기 루프와 하위 연구 워크스페이스\n비소유: 히스토리·분석 워크벤치·운용 결정 이력\nevolution/overview\nROUTE\nHOME\nOWNER\n운영 루프\nSTATUS\nidle\nRUN\nLIVE\n전체 페이지\n🧬\n조건식 AI\nLIVE\n📊\n백테스트\nBT\n📈\n차트 리플레이\nSIM\n🏠\n조건식 AI\nHOME\n🗺️\n프로세스\nFLOW\nIDX\n히스토리\nHISTORY\n🔬\n연구실\nLAB\n📊\n분석 워크벤치\nWORK\n⚖️\n결정 감사\nAUDIT\n진행도\n1 / 1세대\nprovider=batch\ntf=\nrun_id=human_fullperiod_one_mutation_20260628\n100.0%\nRUN\nLIVE(현재)\n▸ 시작\n◼ 정지\n조건식 AI LIVE MONITOR\n현재 세대 — LIVE\n0시 10분 58초\n세대\ngen_01 / 1\n페이즈\n—\n체크포인트\n—\n›\n배치 완료: human_fullperiod_one_mutation_20260628\nACTIVE STRATEGY\nsource=best\nBUY_NAME\nempty\nSELL_NAME\nempty\nrun_id=human_fullperiod_one_mutation_20260628\ngen_no=-1\ncode_status=missing_generation\ndiff_status=missing_generation\nunavailable: missing_generation\nexpand preview\nopen full code\nPrevious Diff via /strategy_diff\n1\n생성\nLLM Code Gen\n2\n백테스트\nBacktest\n3\n채점\nGrading\n4\n부검\nAutopsy\n대기중\n조건식 발굴 프로세스\n상세 프로세스\n아래 네이티브 그래프·타이밍·로그가 현재 정본입니다. 전체 설명 문서는 읽기 전용 참고 자료로 별도 확인할 수 있습니다.\n상세 프로세스 문서 열기\n현재 노드 미정\nphase —\ncurrent_step —\n최근 로그 로그 대기중…\nProcess selector\nstate.page_data.condition_discovery.process · process_catalog projection (static fallback)\nadvisory research\n1\nfast-discovery\nfast · Fast discovery\n2\nprocess-research\nresearch · Process research\n3\npromotion-review\npromotion · Promotion review\n선택 PROCESS\n1 · fast-discovery빠른 조건 탐색용 projection입니다. 후보 설명과 정렬만 하며 승격 권한은 없습니다.\nVALIDATION NAMES\nresearch_validationresearch evidence is reported as advisory_split, not clean promotion OOS\nCAPABILITY\nCAN_PROMOTE=FALSE\nCAN_EXPORT=FALSE\nCAN_LIVE=FALSE\nfast/research are advisory; promotion still requires frozen review and human approval\nRESEARCH ALLOWED\n즉시 연구 가능candidate_generation · smoke_or_full_period_backtest · edge_ratio_analysis · condition_improvement_loop\nSTILL BLOCKED\n운영 반영 차단production_promote · export · live\nQUICK START\n1번 선택 안내1번은 빠르게 후보를 만들고 곧바로 전체기간/스모크 연구를 반복합니다.\nFull pipeline · advisory research → frozen",
+      "length": 11868,
+      "path": "/ui/evolution"
+    }
+  ],
+  "tool": "gjc.browser",
+  "surface": "web",
+  "startedAt": "2026-06-28T15:01:13.306Z",
+  "steps": [
+    {
+      "step": 1,
+      "action": "navigate+screenshot",
+      "url": "http://127.0.0.1:8770/ui/evolution/process",
+      "observedPath": "/ui/evolution/process",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "textLength": 4293,
+      "screenshot": "artifacts/human-process-research-20260628/dashboard-process.png",
+      "status": "passed"
+    },
+    {
+      "step": 2,
+      "action": "navigate+screenshot",
+      "url": "http://127.0.0.1:8770/ui/evolution/lab",
+      "observedPath": "/ui/evolution/lab",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "textLength": 4184,
+      "screenshot": "artifacts/human-process-research-20260628/dashboard-lab.png",
+      "status": "passed"
+    },
+    {
+      "step": 3,
+      "action": "navigate+screenshot",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench",
+      "observedPath": "/ui/evolution/workbench",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "textLength": 24247,
+      "screenshot": "artifacts/human-process-research-20260628/dashboard-workbench.png",
+      "status": "passed"
+    },
+    {
+      "step": 4,
+      "action": "navigate+screenshot",
+      "url": "http://127.0.0.1:8770/ui/evolution/audit",
+      "observedPath": "/ui/evolution",
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "textLength": 11868,
+      "screenshot": "artifacts/human-process-research-20260628/dashboard-audit.png",
+      "status": "passed"
+    }
+  ],
+  "pass": true,
+  "actions": [
+    {
+      "type": "goto",
+      "timestamp": 1,
+      "url": "http://127.0.0.1:8770/ui/evolution/process"
+    },
+    {
+      "type": "assert",
+      "timestamp": 2,
+      "selector": "body",
+      "target": "/ui/evolution/process body rendered with text length 4293"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": 3,
+      "selector": "body",
+      "path": "artifacts/human-process-research-20260628/dashboard-process.png"
+    },
+    {
+      "type": "goto",
+      "timestamp": 4,
+      "url": "http://127.0.0.1:8770/ui/evolution/lab"
+    },
+    {
+      "type": "assert",
+      "timestamp": 5,
+      "selector": "body",
+      "target": "/ui/evolution/lab body rendered with text length 4184"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": 6,
+      "selector": "body",
+      "path": "artifacts/human-process-research-20260628/dashboard-lab.png"
+    },
+    {
+      "type": "goto",
+      "timestamp": 7,
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench"
+    },
+    {
+      "type": "assert",
+      "timestamp": 8,
+      "selector": "body",
+      "target": "/ui/evolution/workbench body rendered with text length 24247"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": 9,
+      "selector": "body",
+      "path": "artifacts/human-process-research-20260628/dashboard-workbench.png"
+    },
+    {
+      "type": "goto",
+      "timestamp": 10,
+      "url": "http://127.0.0.1:8770/ui/evolution/audit"
+    },
+    {
+      "type": "assert",
+      "timestamp": 11,
+      "selector": "body",
+      "target": "/ui/evolution body rendered with text length 11868"
+    },
+    {
+      "type": "screenshot",
+      "timestamp": 12,
+      "selector": "body",
+      "path": "artifacts/human-process-research-20260628/dashboard-audit.png"
+    }
+  ],
+  "result": {
+    "verdict": "passed",
+    "pageCount": 4,
+    "health": {
+      "status": "ok",
+      "contract_version": 2
+    },
+    "hasProcess": true,
+    "hasLab": true,
+    "hasWorkbench": true,
+    "auditRequestRenderedFallback": true
+  },
+  "verdict": "passed"
+}

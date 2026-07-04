@@ -18,6 +18,7 @@ import argparse
 import json
 import time
 from pathlib import Path
+from typing import Any
 
 import ai_strategy_loop.bootstrap as bootstrap
 from ai_strategy_loop.launch_config import config_from_dict
@@ -34,11 +35,40 @@ def _load_json(path: str):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
+def _failed_generation_payload(label: str, outcome) -> dict[str, Any]:
+    if outcome.status == "no_trades":
+        return {
+            "status": "no_trades",
+            "score": 0.0,
+            "gate_passed": False,
+            "reason": f"[{label}] {outcome.reason}",
+            "csv_path": outcome.csv_path,
+            "trade_count": 0,
+            "daily_avg_trades": 0.0,
+            "mdd": 0.0,
+            "profit": 0.0,
+            "strategy_gist": label,
+        }
+    return {
+        "status": "error",
+        "score": 0.0,
+        "gate_passed": False,
+        "reason": f"[{label}] backtest failed: {outcome.reason}",
+        "csv_path": outcome.csv_path,
+        "strategy_gist": label,
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--pairs-json", required=True)
     ap.add_argument("--config-json", required=True)
     ap.add_argument("--run-id", required=True)
+    ap.add_argument(
+        "--fail-fast-timeout",
+        action="store_true",
+        help="timeout 발생 시 warm 엔진 복구/재로딩을 생략하고 error row 기록 후 배치를 중단",
+    )
     args = ap.parse_args()
 
     pairs = _load_json(args.pairs_json)
@@ -70,7 +100,12 @@ def main() -> int:
             t1 = time.time()
             try:
                 outcome = _warm_to_outcome(
-                    sess.run(buy, sell, timeout=config.bt_warm_run_timeout)
+                    sess.run(
+                        buy,
+                        sell,
+                        timeout=config.bt_warm_run_timeout,
+                        recover_on_timeout=not args.fail_fast_timeout,
+                    )
                 )
             except Exception as exc:  # noqa: BLE001 - 한 후보 실패가 배치를 못 막게.
                 from ai_strategy_loop.controller.loop import BacktestOutcome
@@ -80,12 +115,14 @@ def main() -> int:
             if not outcome.ok:
                 st.record_generation(
                     rid, i, buy_name=buy, sell_name=sell,
-                    status="error", score=0.0, gate_passed=False,
-                    reason=f"[{label}] backtest failed: {outcome.reason}",
-                    csv_path=outcome.csv_path,
+                    **_failed_generation_payload(label, outcome),
                 )
-                print(f"[BATCH] gen{i} {label} ERROR ({elapsed:.0f}s) {outcome.reason}",
+                level = "NO_TRADES" if outcome.status == "no_trades" else "ERROR"
+                print(f"[BATCH] gen{i} {label} {level} ({elapsed:.0f}s) {outcome.reason}",
                       flush=True)
+                if args.fail_fast_timeout and outcome.status == "error" and "시간 초과" in outcome.reason:
+                    print(f"[BATCH] abort after timeout: {label}", flush=True)
+                    break
                 continue
 
             fit, graded, fit_err = _score_outcome(outcome, config)

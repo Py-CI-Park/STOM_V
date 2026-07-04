@@ -19,6 +19,43 @@ def _numeric_value(value: Any, default: float = 0.0) -> float:
     except (TypeError, ValueError):
         return default
 
+def _research_metadata_value(candidate: dict, key: str):
+    value = candidate.get(key)
+    if value not in (None, ''):
+        return value
+    for container_name in ('research_contract', 'prompt_receipt', 'analysis_card', 'source_candidate'):
+        container = candidate.get(container_name)
+        if isinstance(container, dict):
+            value = container.get(key)
+            if value not in (None, ''):
+                return value
+    return None
+
+
+def _has_research_metadata(candidate: dict) -> bool:
+    return any(
+        _research_metadata_value(candidate, key) not in (None, '')
+        for key in (
+            'context_pack_id',
+            'candidate_pack_id',
+            'hypothesis_id',
+            'mutation_axis',
+            'fallback_used',
+            'prompt_maturity_credit_allowed',
+        )
+    ) or isinstance(candidate.get('prompt_receipt'), dict) or isinstance(candidate.get('research_contract'), dict)
+
+
+def _advisory_rank_reason(candidate: dict, score: dict) -> str:
+    strict_validation = _research_metadata_value(candidate, 'strict_response_validation')
+    if isinstance(strict_validation, dict) and strict_validation.get('valid') is False:
+        return 'prompt_validation_invalid'
+    if _research_metadata_value(candidate, 'fallback_used') is True:
+        return 'diagnostic_fallback_ranked_without_prompt_credit'
+    if not score.get('promotion_passed'):
+        return 'official_backtest_research_candidate_not_promotion_passed'
+    return 'official_backtest_research_candidate_ranked_advisory_only'
+
 
 def _rank_score(candidate: dict) -> dict:
     incremental_promotion = candidate.get('promotion') or {}
@@ -43,10 +80,60 @@ def _rank_score(candidate: dict) -> dict:
             default=float('inf'),
         ),
     }
+    research_lane_score = candidate.get('research_lane_score')
+    if research_lane_score is None:
+        detail = candidate.get('research_score_detail') or {}
+        if isinstance(detail, dict):
+            research_lane_score = detail.get('candidate_score')
+    if research_lane_score is not None:
+        score['research_lane'] = candidate.get('research_lane')
+        score['research_lane_score'] = _numeric_value(research_lane_score)
+        score['research_score_authority'] = 'advisory_research_budget_only'
     if use_reference:
         score['score_basis'] = 'reference'
         score['incremental_promotion_score'] = _numeric_value(incremental_promotion.get('score'))
         score['reference_promotion_score'] = _numeric_value(reference_promotion.get('score'))
+    if _has_research_metadata(candidate):
+        for key in (
+            'context_pack_id',
+            'context_pack_sha256',
+            'candidate_pack_id',
+            'candidate_contract_id',
+            'hypothesis_id',
+            'mutation_axis',
+            'fallback_used',
+            'fallback_reason',
+            'prompt_maturity_credit_allowed',
+            'downstream_result',
+        ):
+            value = _research_metadata_value(candidate, key)
+            if value not in (None, ''):
+                score[key] = value
+        novelty = candidate.get('discovery_novelty') or _research_metadata_value(candidate, 'novelty')
+        if novelty:
+            score['novelty'] = novelty
+        strict_validation = (
+            candidate.get('strict_response_validation')
+            or _research_metadata_value(candidate, 'strict_response_validation')
+        )
+        if strict_validation:
+            score['prompt_validation'] = strict_validation
+        candidate_result = candidate.get('candidate_result') or {}
+        score['official_backtest_result'] = {
+            'status': candidate_result.get('status') or candidate.get('status'),
+            'promotion_passed': score['promotion_passed'],
+            'promotion_score': score['promotion_score'],
+            'trade_count': score['trade_count'],
+            'trade_count_retention': score['trade_count_retention'],
+            'candidate_csv': candidate.get('candidate_csv') or candidate_result.get('csv_path'),
+        }
+        score['advisory_rank_reason'] = _advisory_rank_reason(candidate, score)
+    slippage_profiles = candidate.get('slippage_profiles')
+    if isinstance(slippage_profiles, dict) and slippage_profiles:
+        # 슬리피지 다중 프로파일 advisory 병기(additive) — _rank_key가 읽지 않는
+        # 필드라 랭킹 순서에는 어떤 영향도 없다(순서 로직 불변).
+        score['slippage_profiles'] = slippage_profiles
+        score['slippage_profiles_authority'] = 'advisory_only'
     return score
 
 

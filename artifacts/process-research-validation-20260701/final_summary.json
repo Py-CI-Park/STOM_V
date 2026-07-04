@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "kind": "improved-process-validation-summary",
+  "runId": "process_research_v2_validation_20260701",
+  "status": "ok",
+  "phase": "candidates_evaluated",
+  "engine": 64,
+  "fallbackUsed": false,
+  "baselineCsv": "backtest/csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260701170259.csv",
+  "candidateCount": 4,
+  "artifacts": {
+    "contextPack": "artifacts/process-research-validation-20260701/research_context_pack.json",
+    "candidateCards": "artifacts/process-research-validation-20260701/candidate_cards.jsonl",
+    "analysisCards": "artifacts/process-research-validation-20260701/analysis_cards.jsonl",
+    "promptReceipts": "artifacts/process-research-validation-20260701/prompt_mutation_receipts.jsonl",
+    "backtestReceipts": "artifacts/process-research-validation-20260701/full_period_backtest_receipts.json",
+    "fallbackReceipt": "artifacts/process-research-validation-20260701/engine_fallback_receipt.json",
+    "safetyReceipt": "artifacts/process-research-validation-20260701/safety_receipt.json",
+    "dashboardVerification": "artifacts/process-research-validation-20260701/dashboard_verification.json"
+  }
+}

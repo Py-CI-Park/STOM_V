@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": ["bun", "-e", "console.log('g004-cli-ok')"],
+  "recordedStdout": "g004-cli-ok\n"
+}

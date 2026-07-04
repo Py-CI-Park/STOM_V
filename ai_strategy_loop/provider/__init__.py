@@ -16,6 +16,7 @@
 
 from .base import ChatResult, ChatUsage, Provider, ProviderError, RetryPolicy
 from .factory import make_provider
+from .failover import FailoverProvider
 
 __all__ = [
     "ChatResult",
@@ -23,5 +24,6 @@ __all__ = [
     "Provider",
     "ProviderError",
     "RetryPolicy",
+    "FailoverProvider",
     "make_provider",
 ]

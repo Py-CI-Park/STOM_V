@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "test-report",
+  "id": "commit-handoff-20260701-verification-summary",
+  "scope": "STOM condition research process handoff commits",
+  "head": "e589e1148d0b34ff75da1d855fff5b1392143d21",
+  "commits": [
+    "332106f2 조건식 연구 컨텍스트팩과 다중 후보 루프 개선",
+    "833bc650 조건식 연구 기록과 핸드오프 문서 정리",
+    "942e8b28 조건식 연구 검증 산출물 보존",
+    "0d9591d5 조건식 연구 핸드오프 최신 상태 보강",
+    "d640f98d 조건식 연구 핸드오프 문구 재정리",
+    "98385e9b 조건식 연구 인벤토리 후속 정리",
+    "e589e114 조건식 연구 핸드오프 검증 게이트 보존"
+  ],
+  "verification": {
+    "focused_pytest": {
+      "command": "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q",
+      "result": "149 passed in 11.46s"
+    },
+    "py_compile": {
+      "command": "python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py cli/condition_generator.py cli/research_loop.py cli/research_ranking.py tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_condition_generator.py tests/unit/test_research_loop.py tests/unit/dashboard/test_dashboard_ui_remodel.py",
+      "result": "passed"
+    },
+    "diff_check": {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    "protected_paths": {
+      "command": "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json _v3k_sidecar/v3k_gui_settings.json",
+      "result": "no output; no protected runtime path changes"
+    }
+  },
+  "reviewEvidence": {
+    "architect": "agent://268-CommitHandoffArchLast CLEAR/APPROVE blockers=[]",
+    "qa": "agent://269-CommitHandoffQaLast passed blockers=[]",
+    "slop": "agent://270-CommitHandoffSlopLast PASS blocking_findings=[]"
+  },
+  "remainingUntrackedDisposition": {
+    ".gjc": "runtime/session state; excluded from source commit",
+    ".omo": "mixed drafts/evidence/plans; requires separate OMO inventory before any commit"
+  },
+  "researchBoundary": {
+    "export": false,
+    "live": false,
+    "finalPromotion": false
+  }
+}

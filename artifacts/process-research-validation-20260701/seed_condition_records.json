@@ -1,0 +1,70 @@
+[
+  {
+    "condition_id": "rr8_12_turnover_min_902=1.5",
+    "human_name": "OOSStable_Open902_TurnoverMin_v1",
+    "role": "start_seed",
+    "buy_id": "GATE_rr8_12_turnover_min_902_1_5_B",
+    "sell_id": "GATE_rr8_12_turnover_min_902_1_5_S",
+    "buy_sha256": "348c518145cbf91e7123f9a8f3498fc35b36d269cce3e3e57154bd191d3ea97a",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "prior": {
+      "profit": 3062696,
+      "mdd": 12.87,
+      "trades": 190,
+      "daily": 0.8,
+      "source": "2026-06-28 official 2025 replay"
+    },
+    "passport_path": "docs/research/condition_research/condition_passports/rr8_12_turnover_min_902_1.5.md"
+  },
+  {
+    "condition_id": "rr8_21_trail_keep=0.7",
+    "human_name": "ProfitLead_TrailKeep070_2025Comparator",
+    "role": "profit_comparator",
+    "buy_id": "GATE_rr8_21_trail_keep_0_7_B",
+    "sell_id": "GATE_rr8_21_trail_keep_0_7_S",
+    "buy_sha256": "157b58b0f7618de11f52d534e5f7c61b28bf11e7404ef3885dc4d52ab2da2099",
+    "sell_sha256": "01a1673baf10ebfe502f25cfbf8f37f683cc0805676f4a4b795d6860a45da9ef",
+    "prior": {
+      "profit": 3089180,
+      "mdd": 18.84,
+      "trades": 165,
+      "daily": 0.7,
+      "source": "2026-06-28 official 2025 replay"
+    },
+    "passport_path": "docs/research/condition_research/condition_passports/rr8_21_trail_keep_0.7.md"
+  },
+  {
+    "condition_id": "rr8_0_cap_max=2500",
+    "human_name": "CapLimited_2500_Comparator",
+    "role": "segment_comparator",
+    "buy_id": "GATE_rr8_0_cap_max_2500_B",
+    "sell_id": "GATE_rr8_0_cap_max_2500_S",
+    "buy_sha256": "3d14a1f4fb1062cfb76cc13b6ff31fd857c5ac46be6b716a84473fc2d9349623",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "prior": {
+      "profit": 3047522,
+      "mdd": 17.34,
+      "trades": 145,
+      "daily": 0.6,
+      "source": "2026-06-28 official 2025 replay"
+    },
+    "passport_path": "docs/research/condition_research/condition_passports/rr8_0_cap_max_2500.md"
+  },
+  {
+    "condition_id": "human_seed_gptauth_B_gen8",
+    "human_name": "GPTGen8_HighCoverage_FailedProfitContext",
+    "role": "failure_coverage_context",
+    "buy_id": "AILOOP_follow12_gptauth_B_seeded64_20260628_g8_buy",
+    "sell_id": "AILOOP_follow12_gptauth_B_seeded64_20260628_g8_sell",
+    "buy_sha256": "83e7322e2efd540d18e960ad2128d57d01f4d4d061f62c91bb352312ab514e73",
+    "sell_sha256": "4ed51bb1a051bec150789e89257d4b623ef800567d64d2d9bf86359df59992a9",
+    "prior": {
+      "profit": 1772126,
+      "mdd": 15.14,
+      "trades": 550,
+      "daily": 2.3,
+      "source": "2026-06-28 official 2025 replay"
+    },
+    "passport_path": "docs/research/condition_research/condition_passports/human_seed_gptauth_B_gen8.md"
+  }
+]

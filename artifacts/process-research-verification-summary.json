@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "verification-summary",
+  "branch": "loop/process-research-pipeline",
+  "commands": [
+    {
+      "command": ["python", "-m", "pytest", "tests/unit/test_launch_config.py", "tests/unit/test_condition_discovery_policy.py", "tests/unit/test_dashboard_validation_views.py", "tests/unit/test_warm_session_window.py", "tests/unit/dashboard/test_dashboard_ui_remodel.py", "tests/unit/dashboard/test_p11_process_flow.py", "tests/unit/test_process_timing.py", "tests/unit/test_dashboard_engine_progress_contract.py", "tests/unit/test_dashboard_phase_mapping.py", "-q"],
+      "result": "154 passed in 16.09s",
+      "artifact": "artifact://1220"
+    },
+    {
+      "command": ["npm", "run", "build:app"],
+      "cwd": "ai_strategy_loop/dashboard/webui-build",
+      "result": "app.js v=91fec92d, stom-ui.js v=f41f5701, HTML pins updated",
+      "artifact": "artifact://1218"
+    },
+    {
+      "command": ["npm", "run", "harness"],
+      "cwd": "ai_strategy_loop/dashboard/webui-build",
+      "result": "allPass true",
+      "artifact": "artifact://1222"
+    },
+    {
+      "command": ["python", "scripts/verify_nonrelease_sync.py"],
+      "result": "OK",
+      "artifact": "tool output"
+    },
+    {
+      "command": ["git", "diff", "--check"],
+      "result": "no whitespace errors; CRLF warnings only"
+    },
+    {
+      "command": ["git", "status", "--short", "--", "_database", "_database_v3k_shadow", "_log", "backup", "*.db", "backtest/graph", ".omx/reports", "v3k_settings*.json"],
+      "result": "no protected runtime path changes"
+    },
+    {
+      "command": ["python", "-m", "pytest", "tests/unit/", "-q"],
+      "result": "8 failed, 3440 passed; failures are pre-existing/out-of-scope backtest/UI/tick-probe contracts outside changed files",
+      "artifact": "artifact://1208"
+    }
+  ],
+  "reviewEvidence": {
+    "architect": "agent://140-FinalReview",
+    "executorQa": "agent://141-FinalQa"
+  },
+  "browserEvidence": "artifacts/process-research-browser-verification.json",
+  "screenshot": "artifacts/process-research-pipeline-process-page-final.png"
+}

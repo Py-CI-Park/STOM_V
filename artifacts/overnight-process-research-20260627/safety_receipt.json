@@ -1,0 +1,71 @@
+{
+  "generatedAt": 1782579833.7229075,
+  "checks": [
+    {
+      "name": "nonrelease_sync",
+      "command": [
+        "C:\\Python\\64\\Python31313\\python.exe",
+        "scripts/verify_nonrelease_sync.py"
+      ],
+      "returncode": 0,
+      "stdout": "[OK] ��ũƮ���� .pyd ������ �����ϴ�.\n[OK] �ڷ��׷� qlist ����� ���� MainWindow ������ ��ġ�մϴ�.\n[OK] MainWindow�� �ڷ��׷� ��Ÿ���� �����մϴ�.\n[OK] ���� ���� ���İ� TelegramProcessAlive ��θ� ����մϴ�.\n[OK] �ڷ��׷� alive helper�� �����մϴ�.\n[OK] Jisu cleanup matches V2.70 removal.\n[OK] Shutdown cleanup matches current MainWindow runtime.\n[OK] Shutdown persists dialog geometry before closing dialogs.\n[OK] Shutdown hides Qt windows before bounded child cleanup.\n[OK] Shutdown does not raise SystemExit inside Qt closeEvent.\n[OK] Shutdown query/sound child wait is bounded with terminate fallback.\n[OK] Shutdown backtest stop acknowledgement wait is bounded with terminate fallback.\n[OK] BackTest ���μ��� �����ڰ� ���� ���� ���� ����� �����մϴ�.\n[OK] BackTest ���� ���ڰ� backQ ��ȸ ���޷� �������� �ʽ��ϴ�.\n[OK] WebCrawling runtime wiring matches QThread contract.\n[OK] static.py compatibility exports match runtime contract.\n[OK] WebCrawling stop contract includes timeout and cancellation guards.\n[OK] Key loading safety guard is present.\n[OK] Kiwoom P/L rounding matches expected loss math.\n[OK] ������ ��ũƮ������ �ø���Ű UI ������ ���ܵ˴ϴ�.\n[OK] ���� ������ ��ũƮ�� �ø���Ű ��å�� �����ϴ�.\n[OK] dict_set ���簡 ������ ��ũƮ�� �ø���Ű ��å�� �����ϴ�.\n[OK] legacy utility/setting.py�� ������ ��ũƮ�� �ø���Ű ��å�� �����ϴ�.\n\n��� ������ ��ũƮ�� ����ȭ ���巹�� �˻縦 ����߽��ϴ�.\n"
+    },
+    {
+      "name": "git_diff_check",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "docs/update_log/2026-06-27_overnight_process_research_plan.md",
+        "docs/research/condition_research/auto_reports/morning_20260628_process_research.md",
+        "artifacts/overnight-process-research-20260627/run_overnight_research.py",
+        "artifacts/overnight-process-research-20260627/run_anchor_fallback.py",
+        "artifacts/overnight-process-research-20260627/run_anchor_resume.py",
+        "artifacts/overnight-process-research-20260627/final_research_summary.json",
+        "artifacts/overnight-process-research-20260627/anchor.jsonl"
+      ],
+      "returncode": 0,
+      "stdout": ""
+    },
+    {
+      "name": "protected_path_status",
+      "command": [
+        "git",
+        "status",
+        "--short",
+        "--",
+        "_database",
+        "_database_v3k_shadow",
+        "_log",
+        "backup",
+        "*.db",
+        "backtest/graph",
+        ".omx/reports",
+        "v3k_settings*.json"
+      ],
+      "returncode": 0,
+      "stdout": ""
+    },
+    {
+      "name": "py_compile",
+      "command": [
+        "C:\\Python\\64\\Python31313\\python.exe",
+        "-m",
+        "py_compile",
+        "artifacts/overnight-process-research-20260627/run_anchor_fallback.py",
+        "artifacts/overnight-process-research-20260627/run_anchor_resume.py",
+        "artifacts/overnight-process-research-20260627/run_overnight_research.py"
+      ],
+      "returncode": 0,
+      "stdout": ""
+    },
+    {
+      "name": "dashboard_health",
+      "url": "http://127.0.0.1:8770/health",
+      "returncode": 0,
+      "stdout": "{\"status\":\"ok\",\"contract_version\":2}"
+    }
+  ],
+  "allPassed": true
+}

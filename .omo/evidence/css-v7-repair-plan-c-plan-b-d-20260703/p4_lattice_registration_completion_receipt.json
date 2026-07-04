@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-03T15:28:21.325927+00:00",
+  "priority": "P4",
+  "status": "complete",
+  "seed_build": {
+    "seeds_json": "docs\\research\\condition_research\\generated_conditions\\lattice\\lattice_seeds.json",
+    "sha256": "685566e1da7bd7158ab40c1e73ef7b9c7d753dc25aee9f0363f188b33a2d0398",
+    "seed_count": 576,
+    "passport_count": 576
+  },
+  "registration": {
+    "status": "inserted",
+    "schema_version": 1,
+    "dry_run": false,
+    "seeds": "docs\\research\\condition_research\\generated_conditions\\lattice\\lattice_seeds.json",
+    "db": "ai_strategy_loop\\state\\loop_strategies.db",
+    "pairs_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_all.json",
+    "ledger_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\provenance_lattice_register.jsonl",
+    "backup_path": "ai_strategy_loop\\state\\loop_strategies.db.bak.lattice_20260703T152703Z",
+    "planned_seed_count": 576,
+    "planned_insert_count": 1152,
+    "inserted_seed_count": 576,
+    "inserted_row_count": 1152,
+    "conflicts": []
+  },
+  "dry_run": {
+    "status": "dry_run_ok",
+    "schema_version": 1,
+    "dry_run": true,
+    "seeds": "docs\\research\\condition_research\\generated_conditions\\lattice\\lattice_seeds.json",
+    "db": "ai_strategy_loop\\state\\loop_strategies.db",
+    "pairs_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_all.json",
+    "ledger_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\provenance_lattice_register.jsonl",
+    "backup_path": null,
+    "planned_seed_count": 576,
+    "planned_insert_count": 1152,
+    "inserted_seed_count": 0,
+    "inserted_row_count": 0,
+    "conflicts": []
+  },
+  "duplicate_abort": {
+    "status": "collision_abort",
+    "conflicts": 1152,
+    "inserted_seed_count": 0,
+    "backup_path": null
+  },
+  "pairs": {
+    "all": 576,
+    "tick": 288,
+    "min": 288
+  },
+  "provenance_ledger_lines": 576,
+  "tests": [
+    "python -m pytest tests\\unit\\test_register_lattice_seeds.py -q: 3 passed",
+    "python -m py_compile ai_strategy_loop\\scripts\\register_lattice_seeds.py tests\\unit\\test_register_lattice_seeds.py: pass"
+  ]
+}

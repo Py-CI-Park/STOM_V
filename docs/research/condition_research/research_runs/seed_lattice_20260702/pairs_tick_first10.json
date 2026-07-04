@@ -1,0 +1,52 @@
+[
+  {
+    "label": "lattice_v1:tick_0900_small_low:momentum_breakout",
+    "buy": "LAT_lattice_v1:tick_0900_small_low:momentum_breakout_B",
+    "sell": "LAT_lattice_v1:tick_0900_small_low:momentum_breakout_S"
+  },
+  {
+    "label": "lattice_v1:tick_0900_small_low:prevday_active",
+    "buy": "LAT_lattice_v1:tick_0900_small_low:prevday_active_B",
+    "sell": "LAT_lattice_v1:tick_0900_small_low:prevday_active_S"
+  },
+  {
+    "label": "lattice_v1:tick_0900_small_low:strength_surge",
+    "buy": "LAT_lattice_v1:tick_0900_small_low:strength_surge_B",
+    "sell": "LAT_lattice_v1:tick_0900_small_low:strength_surge_S"
+  },
+  {
+    "label": "lattice_v1:tick_0900_small_low:volume_surge",
+    "buy": "LAT_lattice_v1:tick_0900_small_low:volume_surge_B",
+    "sell": "LAT_lattice_v1:tick_0900_small_low:volume_surge_S"
+  },
+  {
+    "label": "lattice_v1:tick_0900_small_mid:momentum_breakout",
+    "buy": "LAT_lattice_v1:tick_0900_small_mid:momentum_breakout_B",
+    "sell": "LAT_lattice_v1:tick_0900_small_mid:momentum_breakout_S"
+  },
+  {
+    "label": "lattice_v1:tick_0900_small_mid:prevday_active",
+    "buy": "LAT_lattice_v1:tick_0900_small_mid:prevday_active_B",
+    "sell": "LAT_lattice_v1:tick_0900_small_mid:prevday_active_S"
+  },
+  {
+    "label": "lattice_v1:tick_0900_small_mid:strength_surge",
+    "buy": "LAT_lattice_v1:tick_0900_small_mid:strength_surge_B",
+    "sell": "LAT_lattice_v1:tick_0900_small_mid:strength_surge_S"
+  },
+  {
+    "label": "lattice_v1:tick_0900_small_mid:volume_surge",
+    "buy": "LAT_lattice_v1:tick_0900_small_mid:volume_surge_B",
+    "sell": "LAT_lattice_v1:tick_0900_small_mid:volume_surge_S"
+  },
+  {
+    "label": "lattice_v1:tick_0900_small_high:momentum_breakout",
+    "buy": "LAT_lattice_v1:tick_0900_small_high:momentum_breakout_B",
+    "sell": "LAT_lattice_v1:tick_0900_small_high:momentum_breakout_S"
+  },
+  {
+    "label": "lattice_v1:tick_0900_small_high:prevday_active",
+    "buy": "LAT_lattice_v1:tick_0900_small_high:prevday_active_B",
+    "sell": "LAT_lattice_v1:tick_0900_small_high:prevday_active_S"
+  }
+]

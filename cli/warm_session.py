@@ -417,7 +417,7 @@ class WarmBacktestSession:
     # ------------------------------------------------------------------
     # run: 웜 재실행 (runner.py Step6~7)
     # ------------------------------------------------------------------
-    def run(self, buy_strategy, sell_strategy, betting=None, back_club=False, timeout=None):
+    def run(self, buy_strategy, sell_strategy, betting=None, back_club=False, timeout=None, recover_on_timeout=True):
         """살아있는 엔진에 전략만 바꿔 백테 1회를 실행한다.
 
         반환: run_backtest와 동일한 result dict 구조
@@ -449,9 +449,15 @@ class WarmBacktestSession:
         if proc.is_alive():
             # timeout: 하드 kill 전에 협조적 취소를 먼저 시도해 BackTest/엔진을 정상 종료시킨다.
             self._warm_timeout_count += 1
-            result = self._recover_after_failure(
-                proc, timeout_hit=True,
-                error_message=f'백테스트 시간 초과 ({timeout}초)')
+            if not recover_on_timeout:
+                result = self._abort_timeout_without_recovery(
+                    proc,
+                    error_message=f'백테스트 시간 초과 ({timeout}초)',
+                )
+            else:
+                result = self._recover_after_failure(
+                    proc, timeout_hit=True,
+                    error_message=f'백테스트 시간 초과 ({timeout}초)')
             return self._with_timing(
                 result, self._run_timing(result.get('status', 'error'), timing_started_at, timeout_hit=True)
             )
@@ -571,6 +577,26 @@ class WarmBacktestSession:
         # 여기까지 오면 reset 실패 또는 reload 실패 → nuclear fallback(full 재구동).
         self._warm_recovery_failure_count += 1
         return self._nuclear_fallback(error_message)
+
+    def _abort_timeout_without_recovery(self, proc, error_message):
+        """Fail-fast timeout path for terminal batch probes.
+
+        Some research preflights intentionally stop on the first timeout instead of
+        paying the full warm-session reset/reload cost. Kill the current BackTest,
+        close the warm pool, and return a recordable error row to the caller.
+        """
+        try:
+            self._finalize_backtest_proc(proc, timeout_hit=True, reset_ok=False)
+        except Exception:
+            pass
+        try:
+            self.close()
+        except Exception:
+            pass
+        self._prepared = False
+        return {'status': 'error',
+                'message': f'{error_message} (엔진 복구 생략: fail-fast timeout)',
+                'metrics': None}
 
     def _finalize_backtest_proc(self, proc, timeout_hit, reset_ok):
         """BackTest 프로세스를 정상 종료시킨다(필요 시에만 hard-kill).

@@ -1,0 +1,5 @@
+Focused verification report
+Command: pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_research_loop.py -q
+Result: 117 passed in 9.55s
+Raw output artifact: artifact://1862
+Supporting checks: py_compile passed; git diff --check passed with CRLF warnings only; protected runtime paths clean.

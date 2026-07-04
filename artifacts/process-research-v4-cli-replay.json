@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "python",
+    "-m",
+    "ai_strategy_loop.scripts.benchmark_warm_engines",
+    "--timeframe",
+    "tick",
+    "--engines",
+    "32",
+    "64",
+    "--repeat",
+    "3",
+    "--out",
+    "artifacts/process-research-engine-benchmark.json"
+  ],
+  "recordedStdout": "{\n  \"status\": \"ok\",\n  \"path\": \"C:\\\\System_Trading\\\\STOM\\\\STOM_V.wt-dev\\\\artifacts\\\\process-research-engine-benchmark.json\",\n  \"selected_engine_count\": 32,\n  \"reason\": \"candidate_did_not_meet_improvement_threshold\"\n}\n"
+}

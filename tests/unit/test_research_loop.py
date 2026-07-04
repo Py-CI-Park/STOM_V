@@ -151,6 +151,75 @@ def test_research_loop_rejects_iteration_mode_conflicts(tmp_path):
     assert invalid_count['phase'] == 'invalid_candidate_count'
 
 
+def test_promotion_review_blocks_all_research_loop_generation_modes(tmp_path):
+    candidate = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='PromotionReviewCandidate',
+            baseline_csv=str(tmp_path / 'b.csv'),
+            condition_discovery_process='promotion-review',
+            run_candidate=True,
+            run_candidates=False,
+        )
+    )
+    assert candidate['phase'] == 'promotion_review_generation_blocked'
+    assert candidate['condition_discovery_process'] == 'promotion-review'
+    assert candidate['condition_discovery_preset'] == 'promotion'
+
+    candidates = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='PromotionReviewBatch',
+            baseline_csv=str(tmp_path / 'b.csv'),
+            condition_discovery_process='promotion-review',
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+        )
+    )
+    assert candidates['phase'] == 'promotion_review_generation_blocked'
+
+    read_only_review = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='PromotionReviewReadOnly',
+            baseline_csv=str(tmp_path / 'b.csv'),
+            condition_discovery_process='promotion-review',
+            run_candidate=False,
+            run_candidates=False,
+        )
+    )
+    assert read_only_review['phase'] == 'promotion_review_generation_blocked'
+
+
+def test_promotion_review_run_research_once_blocks_before_generation(monkeypatch, tmp_path):
+    calls = {'analysis': 0, 'generation': 0}
+
+    def fail_analysis(*args, **kwargs):
+        calls['analysis'] += 1
+        return {'status': 'ok'}
+
+    def fail_generation(*args, **kwargs):
+        calls['generation'] += 1
+        return {'status': 'ok', 'expressions': ['체결강도 > 100']}
+
+    monkeypatch.setattr(research_loop, 'analyze_result_csv', fail_analysis)
+    monkeypatch.setattr(research_loop, 'generate_condition_expressions_from_analysis', fail_generation)
+    controller = DummyController(None)
+
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='PromotionReviewNoGeneration',
+            baseline_csv=str(tmp_path / 'baseline.csv'),
+            condition_discovery_process='promotion-review',
+            run_candidate=False,
+            run_candidates=False,
+        ),
+        controller,
+    )
+
+    assert result['phase'] == 'promotion_review_generation_blocked'
+    assert controller.runs == []
+    assert calls == {'analysis': 0, 'generation': 0}
+
+
 def test_validate_research_iteration_rejects_invalid_min_estimated_retention(tmp_path):
     invalid_retention = research_loop.validate_research_iteration_config(
         ResearchLoopConfig(
@@ -457,6 +526,357 @@ def test_build_candidate_specs_uses_one_expression_per_candidate():
     assert specs[0]['source_candidate']['feature'] == 'B_泥닿껐媛뺣룄'
     assert specs[1]['source_candidate']['feature'] == 'B_?쒓?珥앹븸'
     assert custom_specs[0]['strategy_name'] == 'CustomPrefix__cand001'
+
+
+def test_build_candidate_specs_preserves_llm_candidate_pack_metadata():
+    candidate_pack = {
+        'schema_version': 1,
+        'candidate_pack_id': 'pack-1',
+        'context_pack_id': 'rcp-pack-1',
+        'context_pack_sha256': 'sha-pack-1',
+        'full_stom_sources_included': True,
+        'prompt_budget_estimated_tokens': 124000,
+        'mode_authority': 'repair_discovery_research_only',
+        'generation_allowed': True,
+        'parents': {
+            'buy': {'id': 'buy-parent', 'code': 'if 체결강도 > 90:\n    매수 = True'},
+            'sell': {'id': 'sell-parent', 'code': 'if 수익률 < -1:\n    매도 = True'},
+        },
+        'candidates': [
+            {
+                'hypothesis_id': 'A',
+                'lane': 'repair',
+                'expression': '체결강도 > 100',
+                'intended_hypothesis': 'conservative repair',
+                'mutation_axis': 'entry_strength',
+                'expected_effect': 'reduce weak entries',
+                'risk_note': 'may reduce trades',
+                'parent_buy_id': 'buy-parent',
+                'analysis_card_id': 'analysis-1',
+                'preserves_parent_structure': True,
+            },
+            {
+                'hypothesis_id': 'B',
+                'lane': 'repair',
+                'expression': '등락율 < 5',
+                'intended_hypothesis': 'alternate repair',
+                'mutation_axis': 'overheat_cap',
+                'expected_effect': 'reduce chase losses',
+                'risk_note': 'may miss breakouts',
+                'parent_buy_id': 'buy-parent',
+                'analysis_card_id': 'analysis-1',
+                'preserves_parent_structure': True,
+            },
+            {
+                'hypothesis_id': 'C',
+                'lane': 'discovery',
+                'expression': '거래대금 > 1000',
+                'intended_hypothesis': 'new liquidity segment',
+                'mutation_axis': 'liquidity_regime',
+                'expected_effect': 'expand coverage',
+                'risk_note': 'may overtrade',
+                'coverage_bucket_keys': ['midday-liquidity'],
+                'novelty': {'market_segment': 'midday'},
+                'novelty_rationale': 'new market segment',
+            },
+        ],
+    }
+    expression_result = research_loop.expression_result_from_candidate_pack(candidate_pack, planned_count=3)
+    specs = research_loop._build_candidate_specs(
+        ResearchLoopConfig(
+            name='PackName',
+            run_candidates=True,
+            candidate_count=3,
+            condition_discovery_process='process-research',
+            condition_discovery_preset='research',
+        ),
+        expression_result,
+        candidate_count=3,
+    )
+
+    assert [spec['research_lane'] for spec in specs] == ['repair', 'repair', 'discovery']
+    assert specs[0]['candidate_pack_id'] == 'pack-1'
+    assert specs[0]['context_pack_id'] == 'rcp-pack-1'
+    assert specs[0]['context_pack_sha256'] == 'sha-pack-1'
+    assert specs[0]['candidate_contract_id'] == 'pack-1::A'
+    assert specs[0]['hypothesis_id'] == 'A'
+    assert specs[0]['mutation_axis'] == 'entry_strength'
+    assert specs[0]['research_contract']['fallback_used'] is False
+    assert specs[0]['research_contract']['prompt_maturity_credit_allowed'] is True
+    assert specs[2]['prompt_receipt']['coverage_gap_id'] is None
+    assert specs[2]['prompt_receipt']['discovery_target_coverage'] == ['midday-liquidity']
+    assert specs[0]['prompt_receipt']['parent_buy_id'] == 'buy-parent'
+    assert specs[0]['prompt_receipt']['context_pack_id'] == 'rcp-pack-1'
+    assert specs[0]['prompt_receipt']['context_pack_sha256'] == 'sha-pack-1'
+    assert specs[0]['prompt_receipt']['candidate_contract_id'] == 'pack-1::A'
+    assert specs[0]['prompt_receipt']['full_stom_sources_included'] is True
+    assert specs[0]['prompt_receipt']['prompt_budget_estimated_tokens'] == 124000
+    assert specs[0]['prompt_receipt']['preserves_parent_structure'] is True
+    assert specs[0]['prompt_receipt']['parent_conditions']['buy']['code'] == 'if 체결강도 > 90:\n    매수 = True'
+    assert specs[0]['prompt_receipt']['parent_conditions']['sell']['code'] == 'if 수익률 < -1:\n    매도 = True'
+    assert specs[0]['research_contract']['parent_conditions']['delivery_policy'] == 'full_condition_code_required_not_id_only'
+    assert specs[0]['research_contract']['parent_conditions']['buy']['sha256']
+    assert specs[0]['research_contract']['parent_buy_id'] == 'buy-parent'
+    assert specs[0]['research_contract']['preserves_parent_structure'] is True
+
+
+def test_build_candidate_specs_marks_deterministic_fallback_no_prompt_credit():
+    fallback_result = research_loop.mark_diagnostic_fallback(
+        {
+            'status': 'ok',
+            'expressions': ['등락율 <= 2'],
+            'selected_candidates': [{'source': 'quantile', 'feature': 'B_등락율'}],
+            'candidate_count': 1,
+        },
+        reason='llm_candidate_pack_missing',
+    )
+    specs = research_loop._build_candidate_specs(
+        ResearchLoopConfig(
+            name='FallbackName',
+            run_candidates=True,
+            candidate_count=1,
+            condition_discovery_process='process-research',
+            condition_discovery_preset='research',
+        ),
+        fallback_result,
+        candidate_count=1,
+    )
+
+    assert specs[0]['fallback_used'] is True
+    assert specs[0]['fallback_reason'] == 'llm_candidate_pack_missing'
+    assert specs[0]['prompt_maturity_credit_allowed'] is False
+    assert specs[0]['prompt_receipt']['prompt_score'] == 0
+    assert specs[0]['research_contract']['fallback_used'] is True
+    assert specs[0]['research_contract']['prompt_maturity_credit_allowed'] is False
+
+
+def test_candidate_research_artifacts_record_downstream_official_backtest_result():
+    spec = {
+        'strategy_name': 'PackName__cand001',
+        'research_lane': 'repair',
+        'context_pack_id': 'rcp-pack-1',
+        'prompt_receipt': {
+            'receipt_id': 'prompt-1',
+            'round_id': 'round-1',
+            'slot_id': 'slot-1',
+            'lane': 'repair',
+            'context_pack_id': 'rcp-pack-1',
+            'candidate_pack_id': 'pack-1',
+            'candidate_contract_id': 'pack-1::A',
+            'strict_response_validation': {'valid': True},
+            'downstream_result': 'not_evaluated',
+        },
+        'research_contract': {'enabled': True},
+        'source_candidate': {
+            'root_cause': {'primary': 'weak open entries'},
+            'segment_contribution': {'open-smallcap': -0.8},
+            'next_recommendation': 'tighten one entry-strength axis',
+        },
+    }
+    artifacts = research_loop._build_candidate_research_artifacts(
+        ResearchLoopConfig(condition_discovery_process='process-research', condition_discovery_preset='research'),
+        spec,
+        candidate_result={'status': 'success', 'csv_path': 'candidate.csv'},
+        comparison={'candidate_summary': {'trade_count': 12}, 'profit_delta': -1000},
+        promotion={'passed': False, 'score': 12.5},
+    )
+
+    receipt = artifacts['prompt_receipt']
+    assert receipt['downstream_result'] == 'rejected'
+    assert receipt['official_backtest_result'] == {
+        'status': 'success',
+        'promotion_passed': False,
+        'promotion_score': 12.5,
+        'candidate_csv': 'candidate.csv',
+        'trade_count': 12,
+    }
+    assert artifacts['analysis_card']['context_pack_id'] == 'rcp-pack-1'
+    assert artifacts['analysis_card']['prompt_receipt']['official_backtest_result']['candidate_csv'] == 'candidate.csv'
+    assert 'mdd' not in artifacts['analysis_card']['official_metrics']
+    assert artifacts['analysis_card']['validation_provenance']['evidence_health']['overall'] != 'complete'
+    assert 'validation_evidence_incomplete' in artifacts['analysis_card']['validation_provenance']['promotion_blockers']
+
+
+def test_process_research_llm_pack_can_execute_three_candidate_pack(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    candidate_pack = {
+        'schema_version': 1,
+        'candidate_pack_id': 'pack-run',
+        'parents': {
+            'buy': {'id': 'buy-parent', 'code': 'if 체결강도 > 90:\n    매수 = True'},
+            'sell': {'id': 'sell-parent', 'code': 'if 수익률 < -1:\n    매도 = True'},
+        },
+        'candidates': [
+            {
+                'hypothesis_id': 'A',
+                'lane': 'repair',
+                'expression': '체결강도 > 100',
+                'intended_hypothesis': 'repair weak entry strength',
+                'mutation_axis': 'entry_strength',
+                'expected_effect': 'reduce weak entries',
+                'risk_note': 'may reduce trades',
+                'parent_buy_id': 'buy-parent',
+                'parent_sell_id': 'sell-parent',
+                'analysis_card_id': 'analysis-1',
+                'preserves_parent_structure': True,
+            },
+            {
+                'hypothesis_id': 'B',
+                'lane': 'repair',
+                'expression': '등락율 < 5',
+                'intended_hypothesis': 'alternate overheat repair',
+                'mutation_axis': 'overheat_cap',
+                'expected_effect': 'keep stronger entries',
+                'risk_note': 'may reduce breakout trades',
+                'parent_buy_id': 'buy-parent',
+                'analysis_card_id': 'analysis-1',
+                'preserves_parent_structure': True,
+            },
+            {
+                'hypothesis_id': 'C',
+                'lane': 'discovery',
+                'expression': '거래대금 > 1000',
+                'intended_hypothesis': 'new liquidity coverage',
+                'mutation_axis': 'liquidity_segment',
+                'expected_effect': 'discover risk segment',
+                'risk_note': 'may reject too much',
+                'coverage_bucket_keys': ['liquidity-risk'],
+                'novelty': {'market_segment': 'liquidity'},
+                'novelty_rationale': 'new risk segment',
+            },
+        ],
+    }
+    monkeypatch.setattr(
+        research_loop,
+        'analyze_result_csv',
+        lambda *args, **kwargs: {'status': 'ok', 'research_candidate_pack': candidate_pack},
+    )
+
+    def fake_annotate(candidates, *_args, **_kwargs):
+        return [
+            {
+                **candidate,
+                'retention_estimate': {'estimated_retention': 1.0},
+                'retention_filter_passed': True,
+                'retention_fallback_used': False,
+            }
+            for candidate in candidates
+        ]
+
+    monkeypatch.setattr(research_loop, 'annotate_candidate_retention', fake_annotate)
+    monkeypatch.setattr(
+        research_loop,
+        'select_retention_aware_candidates',
+        lambda candidates, **kwargs: (candidates, {'status': 'ok', 'selected_count': len(candidates)}),
+    )
+    executed_specs = []
+
+    def fake_execute(config, spec, controller, baseline_csv):
+        executed_specs.append(spec.copy())
+        return {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'status': 'ok',
+            'phase': 'candidate_evaluated',
+            'candidate_csv': baseline_csv,
+            'comparison': {'candidate_summary': {'trade_count': 1}, 'trade_count_retention': 1.0},
+            'promotion': {'status': 'ok', 'passed': True, 'score': 1.0},
+            'cleanup': None,
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute)
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='PackRun',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=4,
+            condition_discovery_process='process-research',
+            condition_discovery_preset='research',
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'ok'
+    assert len(executed_specs) == 3
+    assert result['expression_result']['source'] == 'llm_multi_hypothesis_candidate_pack'
+    assert result['expression_result']['candidate_count'] == 3
+    assert [spec['research_lane'] for spec in executed_specs] == ['repair', 'repair', 'discovery']
+    assert executed_specs[0]['parent_sell_id'] == 'sell-parent'
+    assert executed_specs[0]['research_contract']['preserves_parent_structure'] is True
+
+    candidate_pack = {
+        **candidate_pack,
+        'candidate_pack_id': 'pack-run-2',
+        'candidates': [candidate_pack['candidates'][0], candidate_pack['candidates'][2]],
+    }
+    executed_specs.clear()
+    result_two = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='PackRunTwo',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=4,
+            condition_discovery_process='process-research',
+            condition_discovery_preset='research',
+        ),
+        DummyController(None),
+    )
+
+    assert result_two['status'] == 'ok'
+    assert len(executed_specs) == 2
+    assert result_two['expression_result']['candidate_pack_id'] == 'pack-run-2'
+    assert result_two['expression_result']['candidate_count'] == 2
+    assert [spec['research_lane'] for spec in executed_specs] == ['repair', 'discovery']
+
+
+def test_process_research_diagnostic_fallback_rejects_leaky_expressions(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    monkeypatch.setattr(
+        research_loop,
+        'analyze_result_csv',
+        lambda *args, **kwargs: {'status': 'ok', 'recommended_candidates': []},
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'generate_condition_expressions_from_analysis',
+        lambda *args, **kwargs: {
+            'status': 'ok',
+            'expressions': ['R_MFE < 0'],
+            'selected_candidates': [{'feature': 'R_MFE', 'source': 'quantile'}],
+            'candidate_count': 1,
+        },
+    )
+
+    def fail_execute(*args, **kwargs):
+        raise AssertionError('leaky diagnostic fallback should not reach execution')
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fail_execute)
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='LeakyFallback',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=4,
+            condition_discovery_process='process-research',
+            condition_discovery_preset='research',
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'no_expressions'
+    assert result['expression_result']['status'] == 'error'
+    assert 'diagnostic_fallback_expression_leakage' in result['expression_result']['fallback_reason']
 
 
 def test_execute_candidate_spec_uses_spec_strategy_name_and_single_expression(monkeypatch, tmp_path):
@@ -1272,6 +1692,80 @@ def test_rank_candidate_results_prefers_promotion_pass_then_score():
     assert ranked[0]['rank_score']['trade_count'] == 100.0
 
 
+def test_rank_candidate_results_exposes_research_context_and_advisory_reason():
+    candidates = [
+        {
+            'index': 1,
+            'status': 'ok',
+            'strategy_name': 'Research__cand001',
+            'expression': 'B_체결강도 > 100',
+            'context_pack_id': 'rcp-1',
+            'context_pack_sha256': 'sha-1',
+            'candidate_pack_id': 'pack-1',
+            'candidate_contract_id': 'pack-1::A',
+            'hypothesis_id': 'A',
+            'mutation_axis': 'entry_strength',
+            'fallback_used': False,
+            'prompt_maturity_credit_allowed': True,
+            'downstream_result': 'rejected',
+            'strict_response_validation': {'valid': True, 'failure_reason': ''},
+            'discovery_novelty': {'passes_discovery_credit': True},
+            'prompt_receipt': {
+                'context_pack_id': 'rcp-1',
+                'candidate_pack_id': 'pack-1',
+                'candidate_contract_id': 'pack-1::A',
+                'strict_response_validation': {'valid': True, 'failure_reason': ''},
+                'downstream_result': 'rejected',
+                'official_backtest_result': {'status': 'success', 'promotion_passed': False},
+            },
+            'candidate_result': {'status': 'success', 'csv_path': 'candidate.csv'},
+            'promotion': {'passed': False, 'score': 100.0},
+            'comparison': {
+                'candidate_summary': {'trade_count': 100, 'date_concentration': 0.1, 'symbol_concentration': 0.1},
+                'trade_count_retention': 0.8,
+            },
+        },
+        {
+            'index': 2,
+            'status': 'ok',
+            'strategy_name': 'Research__cand002',
+            'expression': 'B_등락율 < 5',
+            'fallback_used': True,
+            'fallback_reason': 'llm_candidate_pack_missing',
+            'prompt_maturity_credit_allowed': False,
+            'candidate_result': {'status': 'success', 'csv_path': 'fallback.csv'},
+            'promotion': {'passed': False, 'score': 10.0},
+            'comparison': {
+                'candidate_summary': {'trade_count': 10, 'date_concentration': 0.1, 'symbol_concentration': 0.1},
+                'trade_count_retention': 0.4,
+            },
+        },
+    ]
+
+    ranked, best = research_loop._rank_candidate_results(candidates)
+
+    assert best['strategy_name'] == 'Research__cand001'
+    score = best['rank_score']
+    assert score['context_pack_id'] == 'rcp-1'
+    assert score['candidate_pack_id'] == 'pack-1'
+    assert score['candidate_contract_id'] == 'pack-1::A'
+    assert score['hypothesis_id'] == 'A'
+    assert score['mutation_axis'] == 'entry_strength'
+    assert score['prompt_validation'] == {'valid': True, 'failure_reason': ''}
+    assert score['official_backtest_result'] == {
+        'status': 'success',
+        'promotion_passed': False,
+        'promotion_score': 100.0,
+        'trade_count': 100.0,
+        'trade_count_retention': 0.8,
+        'candidate_csv': 'candidate.csv',
+    }
+    assert score['advisory_rank_reason'] == 'official_backtest_research_candidate_not_promotion_passed'
+    fallback_score = ranked[1]['rank_score']
+    assert fallback_score['fallback_used'] is True
+    assert fallback_score['advisory_rank_reason'] == 'diagnostic_fallback_ranked_without_prompt_credit'
+
+
 def test_rank_candidate_results_uses_adjusted_score_when_retention_penalty_enabled():
     config = ResearchLoopConfig(
         run_candidate=False,
@@ -2039,6 +2533,151 @@ def test_run_research_iteration_v5_executes_oversampled_pool_and_selects_actual_
         if candidate.get('actual_rowset_selected') is True
     ]
     assert selected == ['V5Run__cand001', 'V5Run__cand003']
+
+
+def test_run_research_iteration_v5_process_research_caps_to_four_hybrid_slots(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    trade_amount_feature = (research_loop.build_v4_candidate_pool.__kwdefaults__ or {})['trade_amount_feature']
+    trade_amount_runtime_feature = trade_amount_feature[2:]
+    pd.DataFrame([
+        {'B_PRIMARY': 50, trade_amount_feature: 2000, 'B_STRENGTH': 10, INSTRUMENT_COLUMNS[1]: 'A', REQUIRED_KEY_COLUMNS[0]: 1, OPTIONAL_KEY_COLUMNS[0]: 100},
+        {'B_PRIMARY': 60, trade_amount_feature: 3000, 'B_STRENGTH': 20, INSTRUMENT_COLUMNS[1]: 'B', REQUIRED_KEY_COLUMNS[0]: 2, OPTIONAL_KEY_COLUMNS[0]: 200},
+    ]).to_csv(baseline, index=False, encoding='utf-8')
+    monkeypatch.setattr(research_loop, 'analyze_result_csv', lambda *args, **kwargs: {'status': 'ok'})
+
+    generated = [f'STRENGTH < {limit}' for limit in (15, 20, 25, 30, 35, 40)]
+    monkeypatch.setattr(
+        research_loop,
+        'generate_condition_expressions_from_analysis',
+        lambda analysis, top_n: {
+            'status': 'ok',
+            'expressions': list(generated),
+            'selected_candidates': [
+                {'feature': 'B_STRENGTH', 'operator': '<', 'threshold': float(index), 'expression': expression}
+                for index, expression in enumerate(generated, start=1)
+            ],
+        },
+    )
+    v4_candidates = [
+        {'expression': expression, 'v4_candidate_type': 'v4_replace_secondary', 'combined_score': float(10 - index)}
+        for index, expression in enumerate(generated, start=1)
+    ]
+    monkeypatch.setattr(
+        research_loop,
+        'build_v4_candidate_pool',
+        lambda *args, **kwargs: {
+            'status': 'ok',
+            'mode': 'best_feature_mix_v4',
+            'candidates': list(v4_candidates),
+            'candidate_count': len(v4_candidates),
+            'type_counts': {'v4_replace_secondary': len(v4_candidates)},
+        },
+    )
+
+    recovery_requested = []
+
+    def fake_v5_recovery(*args, candidate_count, existing_v4_result, **kwargs):
+        recovery_requested.append(candidate_count)
+        return {
+            'candidates': list(existing_v4_result.get('candidates') or []),
+            'initial_v4_candidate_count': len(existing_v4_result.get('candidates') or []),
+            'recovery_attempted': False,
+            'recovery_reason': None,
+            'recovery_family_counts': {},
+            'final_candidate_pool_count': len(existing_v4_result.get('candidates') or []),
+            'requested_candidate_count': candidate_count,
+            'recovery_needed_count': 0,
+        }
+
+    monkeypatch.setattr(research_loop, 'build_v5_recovery_candidate_pool', fake_v5_recovery)
+    monkeypatch.setattr(
+        research_loop,
+        'annotate_candidate_rowset_proxy',
+        lambda candidates, baseline_frame, min_retention: [dict(candidate, retention_filter_passed=True) for candidate in candidates],
+    )
+
+    rowset_counts = []
+
+    def fake_select_rowset_diverse_candidates(candidates, *, candidate_count, min_retention):
+        rowset_counts.append(candidate_count)
+        selected = [dict(candidate) for candidate in candidates[:candidate_count]]
+        return selected, {
+            'status': 'ok',
+            'phase': 'rowset_diverse_candidates_selected',
+            'requested_count': candidate_count,
+            'selected_count': len(selected),
+            'eligible_count': len(candidates),
+        }
+
+    monkeypatch.setattr(research_loop, 'select_rowset_diverse_candidates', fake_select_rowset_diverse_candidates)
+
+    executed_specs = []
+
+    def fake_execute_candidate_spec(config, spec, controller, baseline_csv):
+        executed_specs.append(spec)
+        return {
+            'status': 'ok',
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'research_lane': spec.get('research_lane'),
+            'comparison': {
+                'trade_count_retention': 0.9,
+                'candidate_summary': {
+                    'trade_count': 10,
+                    'date_concentration': 0.0,
+                    'symbol_concentration': 0.0,
+                },
+            },
+            'promotion': {'status': 'ok', 'passed': True, 'score': float(100 - spec['index'])},
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute_candidate_spec)
+    monkeypatch.setattr(
+        research_loop,
+        'select_actual_rowset_representatives',
+        lambda ranked, runtime_root, requested_count: (
+            ranked[:requested_count],
+            {
+                'status': 'ok',
+                'row_set_identity_status': 'all_distinct',
+                'requested_count': requested_count,
+                'executed_count': len(ranked),
+                'actual_group_count': len(ranked),
+                'selected_count': requested_count,
+                'selected_strategy_names': [candidate['strategy_name'] for candidate in ranked[:requested_count]],
+            },
+        ),
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='V5Hybrid',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=6,
+            condition_discovery_process='2',
+            iteration_v2_mode='best_feature_mix_v5',
+            iteration_v2_best_candidate='WideV1IterationV4__cand001',
+            iteration_v2_best_expression=f'10 <= PRIMARY < 90 and 1000 <= {trade_amount_runtime_feature} < 5000',
+            iteration_v2_primary_feature='B_PRIMARY',
+            iteration_v2_trade_amount_feature=trade_amount_feature,
+            iteration_v2_secondary_features=f'B_STRENGTH,{trade_amount_feature}',
+        ),
+        controller=object(),
+    )
+
+    assert result['status'] == 'ok'
+    assert recovery_requested == [4]
+    assert rowset_counts == [4]
+    assert len(executed_specs) == 4
+    assert [spec['research_lane'] for spec in executed_specs] == ['repair', 'discovery', 'repair', 'discovery']
+    assert result['iteration_plan']['requested_candidate_count'] == 6
+    assert result['iteration_plan']['candidate_count'] == 4
+    assert result['iteration_v5']['requested_count'] == 4
+    assert result['iteration_v5']['execution_count'] == 4
+    assert result['actual_rowset_selection']['requested_count'] == 4
 
 
 def test_run_research_iteration_v5_skips_actual_rowset_when_success_count_is_short(monkeypatch, tmp_path):
@@ -3741,3 +4380,138 @@ def test_research_loop_rejects_candidate_name_matching_base_strategy(monkeypatch
     assert 'name' in result['message']
     assert 'base_buy_strategy' in result['message']
     assert calls['save'] == 0
+
+def test_process_research_plan_uses_four_hybrid_slots():
+    plan = research_loop._build_iteration_plan(
+        ResearchLoopConfig(
+            run_candidates=True,
+            candidate_count=2,
+            top_n=1,
+            condition_discovery_preset='research',
+            condition_discovery_process='process-research',
+        )
+    )
+
+    assert plan['requested_candidate_count'] == 2
+    assert plan['candidate_count'] == 4
+    assert plan['effective_top_n'] == 12
+    assert plan['research_loop']['enabled'] is True
+    assert plan['research_loop']['slots']['slots_by_lane'] == {'repair': 2, 'discovery': 2}
+    assert plan['research_loop']['authority'] == 'research_only_no_export_live_or_final_promotion'
+    assert plan['research_loop']['process'] == 'process-research'
+    assert plan['research_loop']['preset'] == 'research'
+
+
+def test_process_research_plan_normalizes_numeric_selector():
+    plan = research_loop._build_iteration_plan(
+        ResearchLoopConfig(
+            run_candidates=True,
+            candidate_count=2,
+            top_n=1,
+            condition_discovery_process='2',
+        )
+    )
+
+    assert plan['requested_candidate_count'] == 2
+    assert plan['candidate_count'] == 4
+    assert plan['effective_top_n'] == 12
+    assert plan['research_loop']['enabled'] is True
+    assert plan['research_loop']['process'] == 'process-research'
+    assert plan['research_loop']['preset'] == 'research'
+    assert plan['research_loop']['slots']['slots_by_lane'] == {'repair': 2, 'discovery': 2}
+
+
+def test_process_research_candidate_specs_attach_lanes_and_validate_prompt_response():
+    response = (
+        '```json\n'
+        '{"schema_version":1,"lane":"repair","prompt_version":"repair_v1_analysis_card_single_axis",'
+        '"kind":"buy","timeframe":"tick","parent_id":"parent","analysis_card_id":"analysis",'
+        '"intended_hypothesis":"repair one axis","risk_note":"risk"}'
+        '\n```'
+    )
+    specs = research_loop._build_candidate_specs(
+        ResearchLoopConfig(
+            name='Hybrid',
+            run_candidates=True,
+            candidate_count=5,
+            condition_discovery_preset='research',
+            condition_discovery_process='process-research',
+        ),
+        {
+            'expressions': ['A', 'B', 'C', 'D', 'E'],
+            'selected_candidates': [
+                {'response_text': response, 'prompt_score': 10},
+                {'coverage_bucket_keys': ['turnover'], 'entry_exit_family': 'reversal'},
+                {},
+                {},
+            ],
+        },
+    )
+
+    assert [spec['research_lane'] for spec in specs] == ['repair', 'discovery', 'repair', 'discovery']
+    assert len(specs) == 4
+    assert specs[0]['strict_response_validation']['valid'] is False
+    assert 'zero_code_blocks' in specs[0]['strict_response_validation']['failure_reason']
+    assert specs[0]['prompt_receipt']['downstream_result'] == 'invalid'
+    assert specs[1]['strict_response_validation']['valid'] is True
+    assert specs[1]['prompt_receipt']['lane'] == 'discovery'
+
+
+def test_execute_candidate_spec_rejects_invalid_hybrid_prompt_before_side_effects(tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    config = ResearchLoopConfig(
+        name='Hybrid',
+        base_buy_strategy='BaseBuy',
+        condition_discovery_preset='research',
+        condition_discovery_process='process-research',
+    )
+    spec = {
+        'index': 1,
+        'strategy_name': 'Hybrid__cand001',
+        'expression': '체결강도 > 100',
+        'expressions': ['체결강도 > 100'],
+        'research_lane': 'repair',
+        'research_contract': {'enabled': True},
+        'strict_response_validation': {'valid': False, 'failure_reason': 'zero_code_blocks'},
+        'prompt_receipt': {'downstream_result': 'invalid'},
+    }
+
+    class RaisingController:
+        def run(self, _config_dict):
+            raise AssertionError('candidate backtest should not run after invalid prompt validation')
+
+    result = research_loop._execute_candidate_spec(config, spec, RaisingController(), str(baseline))
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_prompt_validation'
+    assert result['cleanup']['reason'] == 'candidate_not_created'
+    assert result['strict_response_validation']['failure_reason'] == 'zero_code_blocks'
+
+
+def test_rank_candidate_results_preserves_hybrid_lane_score_payload():
+    candidates = [
+        {
+            'index': 1,
+            'strategy_name': 'Hybrid__cand001',
+            'status': 'ok',
+            'research_lane': 'repair',
+            'research_lane_score': 12.5,
+            'promotion': {'passed': True, 'score': 10.0},
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 3,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 1.0,
+            },
+        }
+    ]
+
+    ranked, best = research_loop._rank_candidate_results(candidates)
+
+    assert best['strategy_name'] == 'Hybrid__cand001'
+    assert ranked[0]['rank_score']['research_lane'] == 'repair'
+    assert ranked[0]['rank_score']['research_lane_score'] == 12.5
+    assert ranked[0]['rank_score']['research_score_authority'] == 'advisory_research_budget_only'

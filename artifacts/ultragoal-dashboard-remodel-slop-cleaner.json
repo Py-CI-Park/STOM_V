@@ -1,0 +1,22 @@
+{
+  "source": "agent://127-DashboardSlopCleaner",
+  "status": "PASS",
+  "blocking_findings": [],
+  "architectural_status": "WATCH",
+  "code_review_recommendation": "COMMENT",
+  "inspected_files": [
+    "ai_strategy_loop/dashboard/frontend/app.jsx",
+    "ai_strategy_loop/dashboard/frontend/analysis.jsx",
+    "ai_strategy_loop/dashboard/frontend/rl-analysis.jsx",
+    "ai_strategy_loop/dashboard/frontend/rl-panel.jsx",
+    "ai_strategy_loop/dashboard/frontend/styles.css"
+  ],
+  "constraint_check": {
+    "no_duplicate_research_lab_home_workbench_owners": "PASS",
+    "no_lab_fullscreen_control": "PASS",
+    "bounded_edge_ratio_time_market_cap_heatmap_in_lab": "PASS",
+    "home_summary_cards_only": "PASS",
+    "process_native_no_iframe": "PASS"
+  },
+  "note": "The only user-visible idle Home link copy advisory was fixed after this report and before the final build/browser verification. Remaining advisory findings are non-blocking cleanup opportunities, not violations of the approved phase contracts."
+}

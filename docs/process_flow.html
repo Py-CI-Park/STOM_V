@@ -78,6 +78,14 @@ th{background:#21262d}.mono{font-family:Consolas,monospace}
 <div class="note" style="font-size:14px;line-height:1.7">
 <b>한눈에 흐름</b> — ① AI가 규칙을 만든다 → ② 과거 2분기로 <b>빠르게</b> 본다 → ③ 통과하면 <b>3년 전체</b>로 본다 → ④ <b>다른 해(미래)</b>로도 본다 → ⑤ 가짜면 <b>검문소(게이트)</b>가 막는다 → ⑥ 실패를 <b>기억</b>해 다음엔 안 만든다 → <b>↻ 반복</b>.<br>
 💡 <b>지금 상태(2026-06-16)</b>: P0~P5 폐루프 구현완료. 양성대조 진단으로 <b>알파 실재·게이트 정상·병목=콜드 생성</b> 확정(§1.5). 콜드 LLM 신규 발굴은 0이지만 검증 챔피언은 게이트 통과 → <b>다음 = 앵커 변이(v2)로 ①생성 단계 교체</b>. "없다"가 아니라 "콜드 생성으론 아직".</div>
+<div class="verdict"><b>🧭 2026-06-30 v2 연구 프로세스 보강</b> — 최신 개선은 콜드 생성 자체를 방치하지 않고, <b>Research Prompt Context Pack → Analysis Card v2 → Multi-Hypothesis Candidate Pack → 후보별 공식 백테스트 → research-only ranking</b>으로 이어지는 공통 계약을 추가한다. Context Pack은 STOM 변수/규칙 전체, 부모 매수·매도 조건식 전문, 결과 메트릭, 시간대/시총/국면/히트맵/상관/중복/feature importance/MFE·MAE/root-cause/avoid·prefer zone을 250k 예산 안에서 최대한 싣고, 후보는 1개가 아니라 서로 다른 가설 2~3개 이상을 동시에 만든다.</div>
+<div class="cards">
+<div class="node fb"><div class="ttl">Context Pack Health</div><div class="desc"><b>context_pack_id·sha256·source hash·budget</b>가 없으면 fail-closed. 프롬프트가 실제 STOM 규칙과 부모 조건식을 읽었는지 대시보드에 노출한다.</div></div>
+<div class="node bt"><div class="ttl">Analysis Card v2</div><div class="desc">profit/MDD/trades/daily/win/payoff뿐 아니라 시간대·시총·등락률·거래대금·체결강도 세그먼트와 root-cause, mutation_axis, expected_effect, risk_note를 다음 생성 입력으로 고정한다.</div></div>
+<div class="node gen"><div class="ttl">2~3+ 후보 분기</div><div class="desc">Repair는 부모 구조를 보존하고 실패 원인 1개/수정축 1개만 바꾼다. Discovery는 coverage regime·feature family·market segment novelty gate를 통과해야 prompt credit을 받는다.</div></div>
+<div class="node gate"><div class="ttl">Promotion Review = zero-generation</div><div class="desc">승격 검토는 새 조건식을 만들지 않는다. frozen/fresh holdout, OOS/WF, slippage advisory, evidence health, human approval blocker만 읽는다. export/live/final promotion은 계속 금지다.</div></div>
+</div>
+<div class="note"><b>대시보드/정적 페이지 표시 항목</b>: Research Pack / Branch Tree, context pack health, candidate pack, analysis cards, prompt receipts, fallback status, promotion blockers. deterministic filter-only 후보는 diagnostic fallback으로만 표시하고 prompt maturity credit은 0이다.</div>
 <div class="note">🎨 <b>색상 범례</b>: <span style="color:var(--mag)">●보라=생성</span> · <span style="color:var(--acc)">●파랑=백테</span> · <span style="color:var(--ok)">●초록=게이트</span> · <span style="color:var(--warn)">●주황=환류</span></div>
 
 <h2>1. 전체 파이프라인 (데이터마이닝 폐루프)</h2>

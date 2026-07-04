@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G003",
+  "qaStatus": "passed",
+  "e2eStatus": "passed",
+  "redTeamStatus": "passed",
+  "blockers": [],
+  "createdAt": "2026-06-29T15:11:43.711804Z",
+  "evidence": [
+    "Changed-scope focused suite passed after all fixes: 118 passed.",
+    "Final adversarial checks cover numeric selector alias, V5 overrequested process-research cap, invalid prompt before side effects, advisory ranking authority, legacy disabled path, and protected paths.",
+    "Full unit first failure is outside changed scope and is documented rather than suppressed."
+  ],
+  "adversarialCases": [
+    {
+      "id": "case-ledger-completion",
+      "verdict": "passed",
+      "evidence": "G001 and G002 checkpoint receipts exist; G003 remains active pending final receipt."
+    },
+    {
+      "id": "case-full-suite-unrelated-failure",
+      "verdict": "passed",
+      "evidence": "First full-suite failure is in untouched backtest constructor contract; changed-scope suite passes."
+    },
+    {
+      "id": "case-protected-paths",
+      "verdict": "passed",
+      "evidence": "Protected path status command returned no output."
+    },
+    {
+      "id": "case-research-only-boundary",
+      "verdict": "passed",
+      "evidence": "Quality gates and code strings preserve no export/live/final promotion authority."
+    }
+  ]
+}

@@ -1,0 +1,802 @@
+{
+  "schemaVersion": 1,
+  "kind": "gpt-auth-B-seeded-summary",
+  "createdAt": "2026-06-28T03:04:34.859193Z",
+  "runs": {
+    "follow12_gptauth_B_seeded64_20260628": {
+      "rows": 18,
+      "ok_rows": 8,
+      "gate_passed": 2,
+      "user_constraint_pass": 2,
+      "best_profit_row": {
+        "run_id": "follow12_gptauth_B_seeded64_20260628",
+        "gen_no": 0,
+        "buy_name": "GATE_rr8_12_turnover_min_902_1_5_B",
+        "sell_name": "GATE_rr8_12_turnover_min_902_1_5_S",
+        "status": "ok",
+        "gate_passed": 1,
+        "profit": 3062696.0,
+        "mdd": 12.87,
+        "trade_count": 190,
+        "daily_avg_trades": 0.8,
+        "reason": "ok",
+        "csv_path": "backtest/csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628100641.csv",
+        "score": 1.802476783121088,
+        "total_profit_pct": 30.66,
+        "strategy_gist": "if not (관심종목 == 1):                         # 공통 필터 – 관심종목",
+        "window_evidence": {
+          "window_start": 90000,
+          "window_end": 90700,
+          "window_minutes": 7.0,
+          "windows": [
+            [
+              90200,
+              90700
+            ],
+            [
+              90000,
+              90200
+            ]
+          ]
+        },
+        "above_reject_line": true,
+        "passes_user_B_constraints": true,
+        "theta_window_delta_vs_seed_minutes": 2.0
+      },
+      "notes": "B1 selected-engine run reached gen17 before tool timeout; enough evidence captured"
+    },
+    "follow12_gptauth_B2_seeded64_20260628": {
+      "rows": 6,
+      "ok_rows": 0,
+      "gate_passed": 0,
+      "user_constraint_pass": 0,
+      "best_profit_row": null,
+      "notes": "B2 engine data loading timeouts after warm prepare failure"
+    }
+  },
+  "rows": [
+    {
+      "run_id": "follow12_gptauth_B2_seeded64_20260628",
+      "gen_no": 0,
+      "buy_name": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "sell_name": "GATE_rr8_12_turnover_min_902_1_5_S",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "backtest failed/timeout: backtest non-success: exit=3 status=error message=engine data loading timed out last_checkpoint=engine_data_response_timeout csv=no (elapsed 354s)",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": 90000,
+        "window_end": 90700,
+        "window_minutes": 7.0,
+        "windows": [
+          [
+            90200,
+            90700
+          ],
+          [
+            90000,
+            90200
+          ]
+        ]
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": 2.0
+    },
+    {
+      "run_id": "follow12_gptauth_B2_seeded64_20260628",
+      "gen_no": 1,
+      "buy_name": "AILOOP_follow12_gptauth_B2_seeded64_20260628_g1_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B2_seeded64_20260628_g1_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "backtest failed/timeout: backtest non-success: exit=3 status=error message=engine data loading timed out last_checkpoint=engine_data_response_timeout csv=no (elapsed 357s)",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": 90000,
+        "window_end": 92000,
+        "window_minutes": 20.0,
+        "windows": [
+          [
+            90000,
+            92000
+          ]
+        ]
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": 15.0
+    },
+    {
+      "run_id": "follow12_gptauth_B2_seeded64_20260628",
+      "gen_no": 2,
+      "buy_name": "AILOOP_follow12_gptauth_B2_seeded64_20260628_g2_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B2_seeded64_20260628_g2_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "backtest failed/timeout: backtest non-success: exit=3 status=error message=engine data loading timed out last_checkpoint=engine_data_response_timeout csv=no (elapsed 354s)",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": 90000,
+        "window_end": 92000,
+        "window_minutes": 20.0,
+        "windows": [
+          [
+            90000,
+            92000
+          ]
+        ]
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": 15.0
+    },
+    {
+      "run_id": "follow12_gptauth_B2_seeded64_20260628",
+      "gen_no": 3,
+      "buy_name": "AILOOP_follow12_gptauth_B2_seeded64_20260628_g3_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B2_seeded64_20260628_g3_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "backtest failed/timeout: backtest non-success: exit=3 status=error message=engine data loading timed out last_checkpoint=engine_data_response_timeout csv=no (elapsed 353s)",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": 90000,
+        "window_end": 92000,
+        "window_minutes": 20.0,
+        "windows": [
+          [
+            90000,
+            92000
+          ],
+          [
+            90000,
+            90500
+          ],
+          [
+            90500,
+            92000
+          ]
+        ]
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": 15.0
+    },
+    {
+      "run_id": "follow12_gptauth_B2_seeded64_20260628",
+      "gen_no": 4,
+      "buy_name": "AILOOP_follow12_gptauth_B2_seeded64_20260628_g4_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B2_seeded64_20260628_g4_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "backtest failed/timeout: backtest non-success: exit=3 status=error message=engine data loading timed out last_checkpoint=engine_data_response_timeout csv=no (elapsed 352s)",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": 90000,
+        "window_end": 91500,
+        "window_minutes": 15.0,
+        "windows": [
+          [
+            90000,
+            91500
+          ]
+        ]
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": 10.0
+    },
+    {
+      "run_id": "follow12_gptauth_B2_seeded64_20260628",
+      "gen_no": 5,
+      "buy_name": "AILOOP_follow12_gptauth_B2_seeded64_20260628_g5_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B2_seeded64_20260628_g5_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "backtest failed/timeout: backtest non-success: exit=3 status=error message=engine data loading timed out last_checkpoint=engine_data_response_timeout csv=no (elapsed 355s)",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": 90200,
+        "window_end": 91500,
+        "window_minutes": 13.0,
+        "windows": [
+          [
+            90200,
+            91500
+          ]
+        ]
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": 8.0
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 0,
+      "buy_name": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "sell_name": "GATE_rr8_12_turnover_min_902_1_5_S",
+      "status": "ok",
+      "gate_passed": 1,
+      "profit": 3062696.0,
+      "mdd": 12.87,
+      "trade_count": 190,
+      "daily_avg_trades": 0.8,
+      "reason": "ok",
+      "csv_path": "backtest/csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628100641.csv",
+      "score": 1.802476783121088,
+      "total_profit_pct": 30.66,
+      "strategy_gist": "if not (관심종목 == 1):                         # 공통 필터 – 관심종목",
+      "window_evidence": {
+        "window_start": 90000,
+        "window_end": 90700,
+        "window_minutes": 7.0,
+        "windows": [
+          [
+            90200,
+            90700
+          ],
+          [
+            90000,
+            90200
+          ]
+        ]
+      },
+      "above_reject_line": true,
+      "passes_user_B_constraints": true,
+      "theta_window_delta_vs_seed_minutes": 2.0
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 1,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g1_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g1_sell",
+      "status": "ok",
+      "gate_passed": 0,
+      "profit": -143272.0,
+      "mdd": 3.45,
+      "trade_count": 12,
+      "daily_avg_trades": 0.0,
+      "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_follow12_gptauth_B_seeded64_20260628_g1_buy_20260628101016.csv",
+      "score": 0.0,
+      "total_profit_pct": -2.87,
+      "strategy_gist": "if not (91000 <= 시분초 < 91500):",
+      "window_evidence": {
+        "window_start": 91000,
+        "window_end": 91500,
+        "window_minutes": 5.0,
+        "windows": [
+          [
+            91000,
+            91500
+          ]
+        ]
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": 0.0
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 2,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g2_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g2_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "generation failed: buy 생성 실패: 재시도 소진 (3회): time_cap_bucket_v1 code too complex for bounded preflight; use one small branch for one selected 5-minute window x one market-cap band, then keep only the strongest few filters. code_lines=45>40, if_nodes=19>16",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": null,
+        "window_end": null,
+        "window_minutes": null,
+        "windows": []
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": null
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 3,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g3_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g3_sell",
+      "status": "ok",
+      "gate_passed": 0,
+      "profit": -9024539.0,
+      "mdd": 94.34,
+      "trade_count": 799,
+      "daily_avg_trades": 3.3,
+      "reason": "mdd 94.34 > mdd_cap 25",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_follow12_gptauth_B_seeded64_20260628_g3_buy_20260628101742.csv",
+      "score": 0.0594510801646854,
+      "total_profit_pct": -90.02,
+      "strategy_gist": "if not (",
+      "window_evidence": {
+        "window_start": 90500,
+        "window_end": 91000,
+        "window_minutes": 5.0,
+        "windows": [
+          [
+            90500,
+            91000
+          ]
+        ]
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": 0.0
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 4,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g4_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g4_sell",
+      "status": "ok",
+      "gate_passed": 0,
+      "profit": -114909.0,
+      "mdd": 2.03,
+      "trade_count": 5,
+      "daily_avg_trades": 0.0,
+      "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_follow12_gptauth_B_seeded64_20260628_g4_buy_20260628102114.csv",
+      "score": 0.0,
+      "total_profit_pct": -2.3,
+      "strategy_gist": "if not (90000 <= 시분초 < 90500):",
+      "window_evidence": {
+        "window_start": 90000,
+        "window_end": 90500,
+        "window_minutes": 5.0,
+        "windows": [
+          [
+            90000,
+            90500
+          ]
+        ]
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": 0.0
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 5,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g5_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g5_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "generation failed: buy 생성 실패: 재시도 소진 (3회): time_cap_bucket_v1 code too complex for bounded preflight; use one small branch for one selected 5-minute window x one market-cap band, then keep only the strongest few filters. code_lines=44>40, if_nodes=19>16",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": null,
+        "window_end": null,
+        "window_minutes": null,
+        "windows": []
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": null
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 6,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g6_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g6_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "generation failed: buy 생성 실패: 재시도 소진 (3회): time_cap_bucket_v1 code too complex for bounded preflight; use one small branch for one selected 5-minute window x one market-cap band, then keep only the strongest few filters. if_nodes=19>16",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": null,
+        "window_end": null,
+        "window_minutes": null,
+        "windows": []
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": null
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 7,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g7_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g7_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "generation failed: buy 생성 실패: 재시도 소진 (3회): time_cap_bucket_v1 code too complex for bounded preflight; use one small branch for one selected 5-minute window x one market-cap band, then keep only the strongest few filters. if_nodes=19>16",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": null,
+        "window_end": null,
+        "window_minutes": null,
+        "windows": []
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": null
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 8,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g8_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g8_sell",
+      "status": "ok",
+      "gate_passed": 1,
+      "profit": 1772126.0,
+      "mdd": 15.14,
+      "trade_count": 550,
+      "daily_avg_trades": 2.3,
+      "reason": "ok",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_follow12_gptauth_B_seeded64_20260628_g8_buy_20260628103139.csv",
+      "score": 1.7348975087258485,
+      "total_profit_pct": 17.72,
+      "strategy_gist": "if not (관심종목 == 1):",
+      "window_evidence": {
+        "window_start": 90500,
+        "window_end": 91000,
+        "window_minutes": 5.0,
+        "windows": [
+          [
+            90500,
+            91000
+          ]
+        ]
+      },
+      "above_reject_line": true,
+      "passes_user_B_constraints": true,
+      "theta_window_delta_vs_seed_minutes": 0.0
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 9,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g9_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g9_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "generation failed: buy 생성 실패: 재시도 소진 (3회): time_cap_bucket_v1 code too complex for bounded preflight; use one small branch for one selected 5-minute window x one market-cap band, then keep only the strongest few filters. if_nodes=17>16",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": null,
+        "window_end": null,
+        "window_minutes": null,
+        "windows": []
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": null
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 10,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g10_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g10_sell",
+      "status": "ok",
+      "gate_passed": 0,
+      "profit": -358838.0,
+      "mdd": 5.64,
+      "trade_count": 9,
+      "daily_avg_trades": 0.0,
+      "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_follow12_gptauth_B_seeded64_20260628_g10_buy_20260628103705.csv",
+      "score": 0.0,
+      "total_profit_pct": -7.18,
+      "strategy_gist": "if not (관심종목 == 1):",
+      "window_evidence": {
+        "window_start": 90200,
+        "window_end": 90500,
+        "window_minutes": 3.0,
+        "windows": [
+          [
+            90200,
+            90500
+          ]
+        ]
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": -2.0
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 11,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g11_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g11_sell",
+      "status": "ok",
+      "gate_passed": 0,
+      "profit": -3971779.0,
+      "mdd": 45.0,
+      "trade_count": 372,
+      "daily_avg_trades": 1.5,
+      "reason": "mdd 45 > mdd_cap 25",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_follow12_gptauth_B_seeded64_20260628_g11_buy_20260628104119.csv",
+      "score": 0.12875417662549343,
+      "total_profit_pct": -39.74,
+      "strategy_gist": "if not (90500 <= 시분초 < 91000):",
+      "window_evidence": {
+        "window_start": 90500,
+        "window_end": 91000,
+        "window_minutes": 5.0,
+        "windows": [
+          [
+            90500,
+            91000
+          ]
+        ]
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": 0.0
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 12,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g12_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g12_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "backtest failed/timeout: warm backtest non-success: status=error message=backtest completed without metrics csv=no (elapsed 30s)",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": 90200,
+        "window_end": 90500,
+        "window_minutes": 3.0,
+        "windows": [
+          [
+            90200,
+            90500
+          ]
+        ]
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": -2.0
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 13,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g13_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g13_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "generation failed: buy 생성 실패: 재시도 소진 (3회): time_cap_bucket_v1 code too complex for bounded preflight; use one small branch for one selected 5-minute window x one market-cap band, then keep only the strongest few filters. if_nodes=17>16",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": null,
+        "window_end": null,
+        "window_minutes": null,
+        "windows": []
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": null
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 14,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g14_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g14_sell",
+      "status": "ok",
+      "gate_passed": 0,
+      "profit": -2298850.0,
+      "mdd": 40.56,
+      "trade_count": 387,
+      "daily_avg_trades": 1.6,
+      "reason": "mdd 40.56 > mdd_cap 25",
+      "csv_path": "backtest/csv\\stock_bt_AILOOP_follow12_gptauth_B_seeded64_20260628_g14_buy_20260628105134.csv",
+      "score": 0.17437128552724473,
+      "total_profit_pct": -22.99,
+      "strategy_gist": "if not (91000 <= 시분초 < 91500):",
+      "window_evidence": {
+        "window_start": 91000,
+        "window_end": 91500,
+        "window_minutes": 5.0,
+        "windows": [
+          [
+            91000,
+            91500
+          ]
+        ]
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": 0.0
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 15,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g15_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g15_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "generation failed: buy 생성 실패: 재시도 소진 (3회): time_cap_bucket_v1 code too complex for bounded preflight; use one small branch for one selected 5-minute window x one market-cap band, then keep only the strongest few filters. code_lines=41>40, if_nodes=20>16",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": null,
+        "window_end": null,
+        "window_minutes": null,
+        "windows": []
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": null
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 16,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g16_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g16_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "generation failed: buy 생성 실패: 재시도 소진 (3회): time_cap_bucket_v1 code too complex for bounded preflight; use one small branch for one selected 5-minute window x one market-cap band, then keep only the strongest few filters. code_lines=52>40, if_nodes=23>16, assign_nodes=27>25",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": null,
+        "window_end": null,
+        "window_minutes": null,
+        "windows": []
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": null
+    },
+    {
+      "run_id": "follow12_gptauth_B_seeded64_20260628",
+      "gen_no": 17,
+      "buy_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g17_buy",
+      "sell_name": "AILOOP_follow12_gptauth_B_seeded64_20260628_g17_sell",
+      "status": "error",
+      "gate_passed": 0,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "reason": "generation failed: buy 생성 실패: 재시도 소진 (3회): time_cap_bucket_v1 code too complex for bounded preflight; use one small branch for one selected 5-minute window x one market-cap band, then keep only the strongest few filters. if_nodes=17>16",
+      "csv_path": null,
+      "score": 0.0,
+      "total_profit_pct": 0.0,
+      "strategy_gist": "",
+      "window_evidence": {
+        "window_start": null,
+        "window_end": null,
+        "window_minutes": null,
+        "windows": []
+      },
+      "above_reject_line": false,
+      "passes_user_B_constraints": false,
+      "theta_window_delta_vs_seed_minutes": null
+    }
+  ],
+  "fallbackChampion": "rr8_12_turnover_min_902=1.5",
+  "fallbackChampionMetrics": {
+    "windows": 4,
+    "gate_passed_windows": 4,
+    "profit_sum": 15694418.0,
+    "profit_min": 2852246.0,
+    "profit_max": 5649359.0,
+    "profit_avg": 3923604.5,
+    "max_mdd": 13.58,
+    "min_daily": 0.5,
+    "total_trades": 644,
+    "edge_global": {
+      "count": 644,
+      "win_rate": 0.5512422360248447,
+      "avg_return": 0.48734472049689437,
+      "total_profit": 15694418.0,
+      "mean_mfe": 2.6870186335403727,
+      "mean_mae": 1.6981987577639752,
+      "edge_ratio": 1.5822757031564316,
+      "mae_efficiency": 0.18137005617068488,
+      "mean_mae_losers": 2.607820069204152,
+      "mean_mae_winners": 0.9576901408450704
+    },
+    "slippage_tick0_profit": 15728180.0,
+    "slippage_tick3_profit": -7511099.53892404,
+    "edge_report": "artifacts\\12h-followup-research-20260628\\edge_ratio_rr8_12_turnover_min_902_1_5.json",
+    "slippage_report": "artifacts\\12h-followup-research-20260628\\slippage_rr8_12_turnover_min_902_1_5.json"
+  }
+}

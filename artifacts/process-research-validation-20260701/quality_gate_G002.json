@@ -1,0 +1,269 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "blockers": [],
+    "evidence": "Architect review agent://256-ResearchV2Architect: process integrity, product intent coverage, and artifact integrity CLEAR. Context Pack contains full_condition_code_required_not_id_only, full parent buy/sell code and sha256, all STOM sources included; candidate/backtest receipts show 4 successful research-only candidates; dashboard evidence browser-verified; safety flags false for export/live/finalPromotion.",
+    "commands": [
+      "architect review agent://256-ResearchV2Architect"
+    ]
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA agent://257-ResearchV2Qa: artifact presence/schema consistency, 4 candidate official backtests, report-to-receipt consistency, research-only safety flags, 64/no-fallback consistency, full parent condition code delivery, and dashboard screenshot all passed.",
+    "e2eCommands": [
+      "python artifacts/process-research-validation-20260701/run_process_research_validation.py",
+      "artifact validation Python script",
+      "browser report verification"
+    ],
+    "redTeamCommands": [
+      "executor QA/red-team agent://257-ResearchV2Qa",
+      "critic slop review agent://258-ResearchV2Slop"
+    ],
+    "artifactRefs": [
+      {
+        "id": "context-pack",
+        "kind": "test-report",
+        "path": "artifacts/process-research-validation-20260701/research_context_pack.json",
+        "description": "Research Prompt Context Pack with full STOM sources and full parent buy/sell code plus sha256"
+      },
+      {
+        "id": "candidate-cards",
+        "kind": "test-report",
+        "path": "artifacts/process-research-validation-20260701/candidate_cards.jsonl",
+        "description": "4 multi-hypothesis candidate cards with repair/discovery lanes"
+      },
+      {
+        "id": "analysis-cards",
+        "kind": "test-report",
+        "path": "artifacts/process-research-validation-20260701/analysis_cards.jsonl",
+        "description": "Analysis Card v2 for baseline research root-cause context"
+      },
+      {
+        "id": "prompt-receipts",
+        "kind": "test-report",
+        "path": "artifacts/process-research-validation-20260701/prompt_mutation_receipts.jsonl",
+        "description": "Prompt receipts carrying full parent condition context and research-only authority"
+      },
+      {
+        "id": "backtest-receipts",
+        "kind": "test-report",
+        "path": "artifacts/process-research-validation-20260701/full_period_backtest_receipts.json",
+        "description": "Official full-period backtest receipts for baseline/candidates"
+      },
+      {
+        "id": "fallback-receipt",
+        "kind": "test-report",
+        "path": "artifacts/process-research-validation-20260701/engine_fallback_receipt.json",
+        "description": "64/32 fallback receipt, not triggered because 64 succeeded"
+      },
+      {
+        "id": "safety-receipt",
+        "kind": "test-report",
+        "path": "artifacts/process-research-validation-20260701/safety_receipt.json",
+        "description": "Research-only safety receipt: no export/live/final promotion"
+      },
+      {
+        "id": "dashboard-receipt",
+        "kind": "browser-automation",
+        "path": "artifacts/process-research-validation-20260701/dashboard_verification.json",
+        "description": "Browser verification receipt for generated HTML report"
+      },
+      {
+        "id": "dashboard-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/process-research-validation-20260701/process_research_validation_report.png",
+        "description": "Non-uniform screenshot of process research validation HTML report"
+      },
+      {
+        "id": "verification-report",
+        "kind": "test-report",
+        "path": "artifacts/process-research-validation-20260701/verification_report.txt",
+        "description": "Focused verification command/evidence summary"
+      },
+      {
+        "id": "architect-review",
+        "kind": "test-report",
+        "path": "artifacts/process-research-validation-20260701/architect_review.json",
+        "description": "Local architect review receipt synthesized from agent review"
+      },
+      {
+        "id": "qa-redteam",
+        "kind": "test-report",
+        "path": "artifacts/process-research-validation-20260701/qa_redteam.json",
+        "description": "Local executor QA/red-team receipt synthesized from agent QA"
+      },
+      {
+        "id": "slop-cleaner",
+        "kind": "test-report",
+        "path": "artifacts/process-research-validation-20260701/slop_cleaner.json",
+        "description": "Local slop review receipt synthesized from critic review"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-research-only",
+        "contractRef": "User/Ultragoal research-only boundary",
+        "obligation": "No export/live/final promotion and protected path safety",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-safety"
+        ],
+        "adversarialCaseRefs": [
+          "case-authority-leakage"
+        ]
+      },
+      {
+        "id": "contract-context-pack",
+        "contractRef": "Full parent condition code Context Pack",
+        "obligation": "Include full parent buy/sell code, sha256, STOM sources, and budget health",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-artifacts"
+        ],
+        "adversarialCaseRefs": [
+          "case-id-only-context"
+        ]
+      },
+      {
+        "id": "contract-multi-candidate",
+        "contractRef": "2-3+ multi-hypothesis candidate process",
+        "obligation": "Produce repair/discovery candidates and official backtest receipts",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-backtest"
+        ],
+        "adversarialCaseRefs": [
+          "case-candidate-mismatch"
+        ]
+      },
+      {
+        "id": "contract-dashboard",
+        "contractRef": "Dashboard/HTML observability",
+        "obligation": "Expose human-readable report and screenshot evidence",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-dashboard"
+        ],
+        "adversarialCaseRefs": [
+          "case-dashboard-missing"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-artifacts",
+        "contractRef": "Research artifacts",
+        "surface": "api/package",
+        "invocation": "Read/parse JSON and JSONL artifacts from artifacts/process-research-validation-20260701",
+        "verdict": "passed",
+        "artifactRefs": [
+          "context-pack",
+          "candidate-cards",
+          "analysis-cards",
+          "prompt-receipts"
+        ]
+      },
+      {
+        "id": "surface-backtest",
+        "contractRef": "Official backtest receipts",
+        "surface": "algorithm/math",
+        "invocation": "Official STOM backtest run via process-research validation script with engine 64",
+        "verdict": "passed",
+        "artifactRefs": [
+          "backtest-receipts",
+          "fallback-receipt",
+          "verification-report"
+        ]
+      },
+      {
+        "id": "surface-safety",
+        "contractRef": "Research-only safety",
+        "surface": "api/package",
+        "invocation": "Safety receipt and protected-path git status check",
+        "verdict": "passed",
+        "artifactRefs": [
+          "safety-receipt",
+          "verification-report"
+        ]
+      },
+      {
+        "id": "surface-dashboard",
+        "contractRef": "HTML dashboard observability",
+        "surface": "web",
+        "invocation": "Browser opened generated HTML report and captured non-uniform screenshot",
+        "verdict": "passed",
+        "artifactRefs": [
+          "dashboard-receipt",
+          "dashboard-screenshot"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-id-only-context",
+        "contractRef": "Full condition prompt contract",
+        "scenario": "Candidate generation proceeds with only condition ids and no full buy/sell code",
+        "expectedBehavior": "Blocked; artifacts must contain full code and sha256",
+        "verdict": "passed",
+        "artifactRefs": [
+          "context-pack",
+          "prompt-receipts",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-authority-leakage",
+        "contractRef": "Research-only boundary",
+        "scenario": "Artifact claims can_export/can_live/finalPromotion true",
+        "expectedBehavior": "Blocked/absent; all flags false",
+        "verdict": "passed",
+        "artifactRefs": [
+          "safety-receipt",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-candidate-mismatch",
+        "contractRef": "Official result consistency",
+        "scenario": "Report candidate metrics diverge from backtest receipt",
+        "expectedBehavior": "QA detects mismatch; current report matches receipts",
+        "verdict": "passed",
+        "artifactRefs": [
+          "backtest-receipts",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-dashboard-missing",
+        "contractRef": "Observability",
+        "scenario": "No visible human report or screenshot",
+        "expectedBehavior": "Browser receipt and screenshot are present",
+        "verdict": "passed",
+        "artifactRefs": [
+          "dashboard-receipt",
+          "dashboard-screenshot"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Full blocking verification loop was run after artifacts/reports were produced; slop advisory was fixed; artifact validation, py_compile, diff check, protected path check, browser verification, architect review, and QA/red-team all passed.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "artifact validation Python script",
+      "python -m py_compile artifacts/process-research-validation-20260701/run_process_research_validation.py",
+      "git diff --check on run docs/script/html",
+      "git status --short protected paths",
+      "browser open+screenshot report"
+    ],
+    "blockers": [],
+    "goalId": "G002"
+  }
+}

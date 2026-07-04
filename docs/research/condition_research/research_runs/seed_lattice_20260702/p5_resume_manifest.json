@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "stage": "P5_lattice_smoke_prepare",
+  "tick_pairs": 288,
+  "min_pairs": 288,
+  "first10_pairs": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_first10.json",
+  "tick_config": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_config_tick.json",
+  "min_config": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_config_min.json",
+  "full_tick_run_id": "lat_smoke_tick_20260703",
+  "first10_tick_run_id": "lat_smoke_tick_first10_20260703",
+  "sequence": [
+    "tick first10 timing",
+    "tick full batch if feasible",
+    "min full batch after tick results"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "property-test-report",
+  "goalId": "G001",
+  "status": "passed",
+  "e2eStatus": "passed",
+  "redTeamStatus": "passed",
+  "evidence": "Executor QA/red-team R2 agent://202-Phase1QaRedTeamR2 passed after fixes. It inspected Phase 1 files and accepted main verification evidence: focused pytest 27 passed and py_compile passed. It confirmed strict research validation requires explicit python/py fences, rejects metadata smuggling recursively, and preserves legacy extract_code behavior.",
+  "commands": [
+    "executor QA/red-team agent://202-Phase1QaRedTeamR2",
+    "pytest tests/unit/test_condition_discovery_policy.py tests/unit/test_extract_code.py tests/unit/test_research_prompt_contracts.py -q -> 27 passed"
+  ],
+  "blockers": [],
+  "adversarialCases": [
+    "malformed-prompt-output",
+    "missing-evidence",
+    "promotion-authority-smuggling",
+    "mdd-cap-pressure",
+    "contaminated-validation",
+    "duplicate-discovery-novelty",
+    "legacy-extract-code-compatibility"
+  ]
+}

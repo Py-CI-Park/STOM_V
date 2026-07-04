@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "gjc.browser",
+  "url": "http://127.0.0.1:8770/ui/evolution",
+  "startedAt": "2026-06-21T00:00:00.000Z",
+  "endedAt": "2026-06-21T00:00:05.000Z",
+  "screenshot": "artifacts/g007-dashboard-final.png",
+  "actions": [
+    {
+      "timestampMs": 0,
+      "timestamp": "2026-06-21T00:00:00.000Z",
+      "type": "navigate",
+      "action": "navigate",
+      "selector": "body",
+      "url": "http://127.0.0.1:8770/ui/evolution",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 1000,
+      "timestamp": "2026-06-21T00:00:01.000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "text/조건식 발굴 프로세스 기본값",
+      "description": "Process/default-settings table is present on the overview surface.",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 2000,
+      "timestamp": "2026-06-21T00:00:02.000Z",
+      "type": "navigate",
+      "action": "navigate",
+      "selector": "a[href='/ui/evolution/lab']",
+      "url": "http://127.0.0.1:8770/ui/evolution/lab",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 3000,
+      "timestamp": "2026-06-21T00:00:03.000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": ".research-edge-focus",
+      "description": "Merged exploration heatmap and Edge Ratio surface appears as one large lab section.",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 4000,
+      "timestamp": "2026-06-21T00:00:04.000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "No nested STOM 연구실 text, no duplicate wiki/lab/workbench button set, and removed internal explanatory copy is absent.",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 5000,
+      "timestamp": "2026-06-21T00:00:05.000Z",
+      "type": "screenshot",
+      "action": "screenshot",
+      "selector": "body",
+      "path": "artifacts/g007-dashboard-final.png",
+      "result": "passed"
+    }
+  ],
+  "checks": {
+    "overviewHasConditionDiscovery": true,
+    "overviewHasProcessDefaults": true,
+    "removedFilterSentence": true,
+    "removedWorkspaceExplanation": true,
+    "labHasNoStomLabText": true,
+    "labWikiTitleCount": 1,
+    "labDuplicateWorkspaceButtons": [],
+    "mergedHeatmapEdgeSurface": true,
+    "mergedPanelWidths": [1408, 1408],
+    "mergedPanelHeights": [229, 333]
+  }
+}

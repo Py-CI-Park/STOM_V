@@ -1,0 +1,15 @@
+{
+  "status": "inserted",
+  "schema_version": 1,
+  "dry_run": false,
+  "seeds": "docs\\research\\condition_research\\generated_conditions\\lattice\\lattice_seeds.json",
+  "db": "ai_strategy_loop\\state\\loop_strategies.db",
+  "pairs_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_all.json",
+  "ledger_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\provenance_lattice_register.jsonl",
+  "backup_path": "ai_strategy_loop\\state\\loop_strategies.db.bak.lattice_20260703T152703Z",
+  "planned_seed_count": 576,
+  "planned_insert_count": 1152,
+  "inserted_seed_count": 576,
+  "inserted_row_count": 1152,
+  "conflicts": []
+}

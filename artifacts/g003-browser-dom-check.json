@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "surface": "web",
+  "tool": "GJC browser/puppeteer",
+  "actions": [
+    {
+      "type": "goto",
+      "url": "http://127.0.0.1:8770/ui/evolution",
+      "timestamp": 1
+    },
+    {
+      "type": "observe",
+      "selector": "body",
+      "timestamp": 2
+    },
+    {
+      "type": "screenshot",
+      "selector": "#root",
+      "timestamp": 3
+    }
+  ],
+  "assertions": [
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 4,
+      "description": "hasTopConditionAI"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 5,
+      "description": "hasOverviewConditionAI"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 6,
+      "description": "hasLiveMonitor"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 7,
+      "description": "hasGateEngineSummary"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 8,
+      "description": "hasResearchNavOnly"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 9,
+      "description": "hasHistoryNavOnly"
+    }
+  ],
+  "artifactRefs": [
+    "artifacts/g003-overview-condition-ai.png"
+  ],
+  "observed": {
+    "url": "http://127.0.0.1:8770/ui/evolution?g003=2",
+    "hasTopConditionAI": true,
+    "hasOverviewConditionAI": true,
+    "hasLiveMonitor": true,
+    "hasGateEngineSummary": true,
+    "hasResearchNavOnly": true,
+    "hasHistoryNavOnly": true,
+    "selectedTabs": [
+      {
+        "name": "🧬\n조건식 AI\nLIVE",
+        "selected": "true"
+      },
+      {
+        "name": "🏠\n조건식 AI\nHOME",
+        "selected": "true"
+      }
+    ],
+    "scripts": [
+      "http://127.0.0.1:8770/ui/vendor-react.js?v=20260603a",
+      "http://127.0.0.1:8770/ui/vendor-react-dom.js?v=20260603a",
+      "http://127.0.0.1:8770/ui/vendor-lightweight-charts.js?v=20260612a",
+      "http://127.0.0.1:8770/ui/bundle/stom-ui.js?v=f41f5701",
+      "http://127.0.0.1:8770/ui/bundle/app.js?v=e79f8cac"
+    ]
+  }
+}

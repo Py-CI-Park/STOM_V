@@ -1,0 +1,10 @@
+STOM process-research v2 validation verification
+
+Commands/evidence:
+- python artifacts/process-research-validation-20260701/run_process_research_validation.py -> status ok, phase candidates_evaluated, engine 64, 4 candidates.
+- artifact validation Python script -> artifact validation passed.
+- python -m py_compile artifacts/process-research-validation-20260701/run_process_research_validation.py -> passed.
+- git diff --check on run docs/script/html -> passed.
+- git status --short protected paths -> no output.
+- Browser opened http://127.0.0.1:55502/artifacts/process-research-validation-20260701/process_research_validation_report.html and screenshot saved to process_research_validation_report.png.
+- Architect/QA/slop review agents returned clean status with blockers [].

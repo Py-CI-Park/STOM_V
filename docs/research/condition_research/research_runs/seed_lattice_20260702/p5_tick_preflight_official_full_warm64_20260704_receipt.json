@@ -1,0 +1,121 @@
+{
+  "schema": "plan_b_p5_tick_preflight_receipt_v1",
+  "created_at": "2026-07-04T19:07:40+0900",
+  "lane": "tick",
+  "official_profile": "DB full period + warm64",
+  "config_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json",
+  "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_preflight4_official_full_warm64_20260704.json",
+  "supplement_pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_preflight_gen3_official_full_warm64_20260704.json",
+  "run_ids": [
+    "lat_preflight_tick_official_full_warm64_20260704_retry01",
+    "lat_preflight_tick_official_full_warm64_20260704_gen3_retry02"
+  ],
+  "run_status": {
+    "lat_preflight_tick_official_full_warm64_20260704_retry01": "running",
+    "lat_preflight_tick_official_full_warm64_20260704_gen3_retry02": "complete"
+  },
+  "first_retry_status": "aborted_after_3_rows_due_manual_stop_during_slow_gen3_recovery_wait; official judgment uses its 3 completed rows only",
+  "second_retry_status": "complete_gen3_supplement_with_fail_fast_timeout_code_available",
+  "warm_prepare_evidence": [
+    {
+      "run_id": "lat_preflight_tick_official_full_warm64_20260704_retry01",
+      "observed_stdout": "prepare status=ok back_count=2424 elapsed=295s"
+    },
+    {
+      "run_id": "lat_preflight_tick_official_full_warm64_20260704_gen3_retry02",
+      "observed_stdout": "prepare status=ok back_count=2424 elapsed=347s"
+    }
+  ],
+  "rows": [
+    {
+      "source_run_id": "lat_preflight_tick_official_full_warm64_20260704_retry01",
+      "gen_no": 0,
+      "buy_name": "LAT_lattice_v1_tick_0900_small_low_momentum_breakout_B",
+      "sell_name": "LAT_lattice_v1_tick_0900_small_low_momentum_breakout_S",
+      "status": "ok",
+      "gate_passed": 0,
+      "reason": "mdd 280.1 > mdd_cap 35",
+      "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_tick_0900_small_low_momentum_breakout_B_20260704183806.csv",
+      "trade_count": 1712,
+      "daily_avg_trades": 1.8,
+      "mdd": 280.14,
+      "profit": -42046738.0,
+      "total_profit_pct": -280.53,
+      "payoff_ratio": 0.9438493079444867,
+      "give_back_rate": 0.04363312555654497,
+      "strategy_gist": "lattice_v1:tick_0900_small_low:momentum_breakout"
+    },
+    {
+      "source_run_id": "lat_preflight_tick_official_full_warm64_20260704_retry01",
+      "gen_no": 1,
+      "buy_name": "LAT_lattice_v1_tick_0910_small_low_momentum_breakout_B",
+      "sell_name": "LAT_lattice_v1_tick_0910_small_low_momentum_breakout_S",
+      "status": "ok",
+      "gate_passed": 0,
+      "reason": "daily_avg_trades 0.4 < min_daily_trades 0.5",
+      "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_tick_0910_small_low_momentum_breakout_B_20260704183930.csv",
+      "trade_count": 358,
+      "daily_avg_trades": 0.4,
+      "mdd": 181.44,
+      "profit": -9158599.0,
+      "total_profit_pct": -183.17,
+      "payoff_ratio": 1.0199001221104909,
+      "give_back_rate": 0.024489795918367346,
+      "strategy_gist": "lattice_v1:tick_0910_small_low:momentum_breakout"
+    },
+    {
+      "source_run_id": "lat_preflight_tick_official_full_warm64_20260704_retry01",
+      "gen_no": 2,
+      "buy_name": "LAT_lattice_v1_tick_0920_small_low_momentum_breakout_B",
+      "sell_name": "LAT_lattice_v1_tick_0920_small_low_momentum_breakout_S",
+      "status": "ok",
+      "gate_passed": 0,
+      "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+      "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_tick_0920_small_low_momentum_breakout_B_20260704184047.csv",
+      "trade_count": 139,
+      "daily_avg_trades": 0.1,
+      "mdd": 53.41,
+      "profit": -2497875.0,
+      "total_profit_pct": -49.96,
+      "payoff_ratio": 0.9763332094430061,
+      "give_back_rate": 0.034482758620689655,
+      "strategy_gist": "lattice_v1:tick_0920_small_low:momentum_breakout"
+    },
+    {
+      "source_run_id": "lat_preflight_tick_official_full_warm64_20260704_gen3_retry02",
+      "gen_no": 0,
+      "buy_name": "LAT_lattice_v1_tick_0925_large_high_volume_surge_B",
+      "sell_name": "LAT_lattice_v1_tick_0925_large_high_volume_surge_S",
+      "status": "ok",
+      "gate_passed": 0,
+      "reason": "mdd 263.6 > mdd_cap 35",
+      "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_tick_0925_large_high_volume_surge_B_20260704190025.csv",
+      "trade_count": 1742,
+      "daily_avg_trades": 1.8,
+      "mdd": 263.65,
+      "profit": -39386976.0,
+      "total_profit_pct": -263.47,
+      "payoff_ratio": 0.8563797941692127,
+      "give_back_rate": 0.012234910277324634,
+      "strategy_gist": "lattice_v1:tick_0925_large_high:volume_surge"
+    }
+  ],
+  "summary": {
+    "expected_preflight_pairs": 4,
+    "recorded_rows": 4,
+    "status_counts": {
+      "ok": 4
+    },
+    "gate_passed_count": 0,
+    "all_rows_honest_status": true,
+    "effective_gate_reason_tokens_present": true,
+    "full_288_allowed": false,
+    "blocker": "Preflight produced 4 honest rows but all gate_passed=false with severe MDD/profit failures; tick 288 remains blocked until chunk-size/coverage objective and timeout fail-fast protocol are committed and reviewed."
+  },
+  "verdict": "preflight_executed_full_288_still_blocked",
+  "forbidden": [
+    "Do not use lat_smoke_tick_full_sanitized_20260704* for official survivor/rejection/P6 decisions.",
+    "Do not run tick 288 until P5 blocker review updates chunk protocol and fail-fast timeout handling.",
+    "Do not run min/P6/P7 before tick official export exists."
+  ]
+}

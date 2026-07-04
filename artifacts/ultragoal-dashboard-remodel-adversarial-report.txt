@@ -1,0 +1,23 @@
+Ultragoal dashboard remodel adversarial report
+
+Scope: approved pending plan .gjc/plans/ralplan/2026-06-19-proxy-oos/pending-approval.md phases 0-6.
+
+Parent verification:
+- npm run build:app in ai_strategy_loop/dashboard/webui-build succeeded on 2026-06-24 after the final source state; served app.js hash 3bc2305b, stom-ui.js hash f41f5701, HTML pins regenerated.
+- Focused pytest command succeeded: 123 passed in 141.65s.
+- CLI replay succeeded: python -c "print('ultragoal-dashboard-remodel-ok')" -> ultragoal-dashboard-remodel-ok.
+- Browser-served route sweep ran against http://127.0.0.1:8770 and wrote artifacts/ultragoal-dashboard-remodel-browser-current.json plus current screenshots.
+- Protected runtime path status check returned no protected-path changes; git diff --check returned only pre-existing LF/CRLF warnings and no whitespace errors.
+
+Adversarial cases:
+1. Stale iframe/process_flow regression: browser route sweep found hasIframeProcess=false on Home, Lab, Process, Workbench, and Records; source app.jsx Process route renders native-process-page with ProcessFlowPanel; dashboard-inventory only references /process_flow as non-owner/static reference.
+2. Research Lab fullscreen regression: source search found fullscreen only in Backtest result area/bundle and none in ResearchLabPanel/LabPage; browser route sweep found no visible "전체 화면" text on Home/Lab/Process/Workbench/Records.
+3. Duplicate Lab/Workbench/History owner regression: Home route has research-suite-cards and no research-lab-shell; Lab route has research-lab-shell and edge-heatmap-shell; Workbench/Records routes do not render Lab shell/edge heatmap. Home cards summarize/navigate only, and idle Home copy now names the Lab link as 연구실 rather than 리서치 Wiki.
+4. Oversized Edge Ratio heatmap regression: _Heatmap uses bounded cellW/cellH, max-height scroll, sparse blank cells, legend, axis counts, count text, and tooltips. Browser Lab route shows the integrated Edge heatmap owner only in Lab.
+5. Missing variable analysis affordances: source exposes variable importance top-N/show-more/segment context/Cohen's d/low-sample warning; correlation exposes method/axis/run/sample counts/filter/list toggle/top-N; combinations expose payload-backed selected-pair details only.
+6. Process tab stale-contract regression: browser Process route reports hasNativeProcess=true and hasIframeProcess=false; native ProcessFlowPanel preserves current_step, step_timings, logs, gates/defaults, and reduced-motion CSS fallback.
+7. GUI parity two-column regression: EvolutionGuiParityPanel passes layoutMode="large-one-column" and shared BtGuiParitySection disables two-column grid in that mode; browser Home route reports hasParityLarge=true.
+8. Served runtime/cache-pin mismatch: all served HTML entries use /ui/styles.css?v=20260624u001 and app.js?v=3bc2305b; app bundle contains current source markers, and build manifest matches the built bundle hash.
+9. AI slop cleanup: agent://127-DashboardSlopCleaner reported status PASS with zero blocking findings. Advisory findings were non-blocking; the user-visible idle Home 리서치 Wiki copy advisory was fixed before final build/browser verification.
+
+Verdict: passed. No blocking findings remain for phases 0-6.

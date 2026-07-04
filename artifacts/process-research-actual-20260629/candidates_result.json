@@ -1,0 +1,432 @@
+{
+  "startedAt": "2026-06-29T23:49:51.163447+00:00",
+  "endedAt": "2026-06-29T23:49:56.065846+00:00",
+  "config": {
+    "name": "process_research_candidates_20260629",
+    "baseline_csv": "backtest/csv/stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628234642.csv",
+    "score_reference_csv": "backtest/csv/stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628234642.csv",
+    "base_buy_strategy": "Tick_B_902_905_Update_2",
+    "sell_strategy": "Tick_S_902_905_Update_2",
+    "start_date": 20250101,
+    "end_date": 20251231,
+    "is_tick": true,
+    "betting": "1",
+    "avg_time": 60,
+    "start_time": 90000,
+    "end_time": 92800,
+    "engine_count": 32,
+    "top_n": 4,
+    "run_candidate": false,
+    "run_candidates": true,
+    "candidate_count": 6,
+    "candidate_name_prefix": "actual_pr_cands_20260629",
+    "cleanup_best_candidate": true,
+    "keep_loser_candidates": false,
+    "keep_failed_candidate": false,
+    "min_estimated_retention": 0.4,
+    "candidate_pool_multiplier": 3,
+    "candidate_timeout": 900,
+    "condition_discovery_process": "2",
+    "runtime_output_path": "artifacts\\process-research-actual-20260629\\candidates_runtime_result.json",
+    "max_consecutive_candidate_failures": 4
+  },
+  "result": {
+    "status": "error",
+    "phase": "no_expressions",
+    "message": "no candidate expressions generated",
+    "strategy_name": "process_research_candidates_20260629",
+    "config": {
+      "name": "process_research_candidates_20260629",
+      "baseline_csv": "backtest/csv/stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628234642.csv",
+      "score_reference_csv": "backtest/csv/stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628234642.csv",
+      "base_buy_strategy": "Tick_B_902_905_Update_2",
+      "sell_strategy": "Tick_S_902_905_Update_2",
+      "start_date": 20250101,
+      "end_date": 20251231,
+      "is_tick": true,
+      "betting": "1",
+      "avg_time": 60,
+      "start_time": 90000,
+      "end_time": 92800,
+      "engine_count": 32,
+      "top_n": 4,
+      "min_samples": 30,
+      "quantiles": 10,
+      "alpha": 0.05,
+      "run_candidate": false,
+      "run_candidates": true,
+      "candidate_count": 6,
+      "candidate_name_prefix": "actual_pr_cands_20260629",
+      "cleanup_best_candidate": true,
+      "keep_loser_candidates": false,
+      "candidate_start_date": null,
+      "candidate_end_date": null,
+      "candidate_timeout": 900,
+      "candidate_plan_only": false,
+      "keep_failed_candidate": false,
+      "runtime_output_path": "artifacts\\process-research-actual-20260629\\candidates_runtime_result.json",
+      "max_consecutive_candidate_failures": 4,
+      "min_estimated_retention": 0.4,
+      "allow_retention_fallback": true,
+      "use_retention_penalty": true,
+      "candidate_pool_multiplier": 3,
+      "iteration_v2_mode": "",
+      "iteration_v2_best_candidate": "",
+      "iteration_v2_best_expression": "",
+      "iteration_v2_primary_feature": "B_시가총액",
+      "iteration_v2_trade_amount_feature": "B_당일거래대금",
+      "iteration_v2_secondary_features": "",
+      "iteration_v2_include_secondary_only": true,
+      "iteration_v2_max_secondary_only": 1,
+      "iteration_v2_duplicate_retention_tolerance": 0.02,
+      "condition_discovery_preset": "fast",
+      "condition_discovery_process": "2",
+      "hybrid_research_enabled": false
+    },
+    "baseline_csv": "backtest/csv/stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628234642.csv",
+    "baseline_result": null,
+    "analysis_result": {
+      "status": "ok",
+      "created_at": "2026-06-30T08:49:56.055301",
+      "row_count": 190,
+      "feature_columns": [
+        "B_현재가",
+        "B_등락율",
+        "B_당일거래대금",
+        "B_거래대금증감",
+        "B_체결강도",
+        "B_시가총액",
+        "B_회전율",
+        "B_전일동시간비",
+        "B_매수총잔량",
+        "B_매도총잔량",
+        "B_시분초",
+        "B_분봉시가",
+        "B_분봉고가",
+        "B_분봉저가"
+      ],
+      "market_cap_analysis": [
+        {
+          "group": "소형주",
+          "count": 190,
+          "mean_return": 0.32268421052631574,
+          "median_return": 0.355,
+          "win_rate": 0.5421052631578948,
+          "mean_return_diff": 0.0,
+          "win_rate_diff": 0.0
+        }
+      ],
+      "market_cap_candidates": [],
+      "time_analysis": [
+        {
+          "group": "장초반",
+          "count": 190,
+          "mean_return": 0.32268421052631574,
+          "median_return": 0.355,
+          "win_rate": 0.5421052631578948,
+          "mean_return_diff": 0.0,
+          "win_rate_diff": 0.0
+        }
+      ],
+      "time_candidates": [],
+      "quantile_candidates": [],
+      "ttest_candidates": [],
+      "recommended_candidates": []
+    },
+    "expression_result": {
+      "status": "ok",
+      "selected_candidates": [],
+      "expressions": [],
+      "candidate_count": 0
+    },
+    "iteration_plan": {
+      "candidate_count": 4,
+      "requested_candidate_count": 6,
+      "candidate_name_prefix": "actual_pr_cands_20260629",
+      "score_reference_csv": "backtest/csv/stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628234642.csv",
+      "effective_top_n": 12,
+      "candidate_pool_multiplier": 3,
+      "candidate_pool_size": 12,
+      "min_estimated_retention": 0.4,
+      "allow_retention_fallback": true,
+      "use_retention_penalty": true,
+      "candidate_start_date": 20250101,
+      "candidate_end_date": 20251231,
+      "candidate_timeout": 900,
+      "cleanup_best_candidate": true,
+      "keep_loser_candidates": false,
+      "keep_failed_candidate": false,
+      "iteration_v2_mode": "",
+      "iteration_v2_best_candidate": "",
+      "iteration_v2_best_expression": "",
+      "iteration_v2_primary_feature": "B_시가총액",
+      "iteration_v2_trade_amount_feature": "B_당일거래대금",
+      "iteration_v2_secondary_features": [],
+      "iteration_v2_include_secondary_only": true,
+      "iteration_v2_max_secondary_only": 1,
+      "iteration_v2_duplicate_retention_tolerance": 0.02,
+      "research_loop": {
+        "enabled": true,
+        "preset": "research",
+        "process": "process-research",
+        "policy": {
+          "schema_version": 1,
+          "lanes": [
+            "repair",
+            "discovery"
+          ],
+          "default_slots": {
+            "repair": 2,
+            "discovery": 2
+          },
+          "slots_total": 4,
+          "max_slot_shift": 1,
+          "min_slots_per_lane": 1,
+          "lane_score_constants": {
+            "lane_advantage_threshold_points": 5.0,
+            "profit_tie_epsilon_pct": 0.02,
+            "mdd_tie_epsilon_pp": 2.0,
+            "severe_mdd_cap_multiplier": 1.25,
+            "severe_mdd_delta_pp": 10.0,
+            "mdd_advantage_cap_delta_pp": 5.0
+          },
+          "insight_score": {
+            "authority": "research_actionability_only",
+            "caps": {
+              "no_official_metrics": 20,
+              "missing_required_research_evidence": 40,
+              "missing_next_recommendation": 50,
+              "no_segment_contribution": 65,
+              "no_repair_parent_comparison": 60,
+              "promotion_claim_contradiction": 30
+            }
+          },
+          "validation_scopes": [
+            "research_only",
+            "fresh_frozen_holdout"
+          ],
+          "authority": "research_budget_steering_only"
+        },
+        "slots": {
+          "schema_version": 1,
+          "slots_total": 4,
+          "previous_slots_by_lane": {
+            "repair": 2,
+            "discovery": 2
+          },
+          "slots_by_lane": {
+            "repair": 2,
+            "discovery": 2
+          },
+          "better_lane": null,
+          "shift_applied": {
+            "from": null,
+            "to": null,
+            "count": 0
+          },
+          "decision_reason": "default_allocation",
+          "repair_lane_score": null,
+          "discovery_lane_score": null,
+          "tie_breaks_used": [],
+          "blockers": [],
+          "authority": "research_budget_steering_only"
+        },
+        "candidate_count": 4,
+        "authority": "research_only_no_export_live_or_final_promotion"
+      }
+    },
+    "candidate_specs": [],
+    "candidates": [],
+    "best_candidate": null,
+    "actual_rowset_selection": null,
+    "cleanup_summary": {
+      "attempted_count": 0,
+      "deleted_count": 0,
+      "kept_count": 0,
+      "failed_count": 0,
+      "items": []
+    },
+    "failure_policy": {
+      "max_consecutive_candidate_failures": 4,
+      "consecutive_candidate_failures": 0,
+      "total_candidate_failures": 0,
+      "aborted": false,
+      "abort_reason": null
+    },
+    "runtime_timing": {
+      "elapsed_seconds": 0.153,
+      "checkpoint_durations": [
+        {
+          "from": "iteration_started",
+          "to": "analysis_completed",
+          "phase": "analysis",
+          "duration_seconds": 0.147
+        },
+        {
+          "from": "analysis_completed",
+          "to": "iteration_aborted",
+          "phase": "no_expressions",
+          "duration_seconds": 0.006
+        }
+      ],
+      "candidate_durations": []
+    },
+    "checkpoints": [
+      {
+        "name": "iteration_started",
+        "elapsed_seconds": 0.0,
+        "phase": "candidate_iteration"
+      },
+      {
+        "name": "analysis_completed",
+        "elapsed_seconds": 0.147,
+        "phase": "analysis"
+      },
+      {
+        "name": "iteration_aborted",
+        "elapsed_seconds": 0.153,
+        "phase": "no_expressions",
+        "message": "no candidate expressions generated"
+      }
+    ],
+    "checkpoint_summary": {
+      "event_count": 3,
+      "last_checkpoint": "iteration_aborted",
+      "elapsed_seconds": 0.153
+    },
+    "report": {
+      "created_at": "2026-06-30T08:49:56.065783",
+      "strategy_name": "process_research_candidates_20260629",
+      "status": "error",
+      "baseline_csv": "backtest/csv/stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628234642.csv",
+      "candidate_csv": null,
+      "phase": "no_expressions",
+      "candidate_expression": null,
+      "candidate_reason": null,
+      "trade_counts": {},
+      "trade_count_retention": null,
+      "trade_count_expansion": null,
+      "baseline_summary": {},
+      "candidate_summary": {},
+      "excluded_summary": {},
+      "new_summary": {},
+      "promotion": null,
+      "score_reference_csv": "backtest/csv/stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628234642.csv",
+      "reference_comparison": null,
+      "reference_promotion": null,
+      "candidate_plan": null,
+      "cleanup": null,
+      "iteration_plan": {
+        "candidate_count": 4,
+        "requested_candidate_count": 6,
+        "candidate_name_prefix": "actual_pr_cands_20260629",
+        "score_reference_csv": "backtest/csv/stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260628234642.csv",
+        "effective_top_n": 12,
+        "candidate_pool_multiplier": 3,
+        "candidate_pool_size": 12,
+        "min_estimated_retention": 0.4,
+        "allow_retention_fallback": true,
+        "use_retention_penalty": true,
+        "candidate_start_date": 20250101,
+        "candidate_end_date": 20251231,
+        "candidate_timeout": 900,
+        "cleanup_best_candidate": true,
+        "keep_loser_candidates": false,
+        "keep_failed_candidate": false,
+        "iteration_v2_mode": "",
+        "iteration_v2_best_candidate": "",
+        "iteration_v2_best_expression": "",
+        "iteration_v2_primary_feature": "B_시가총액",
+        "iteration_v2_trade_amount_feature": "B_당일거래대금",
+        "iteration_v2_secondary_features": [],
+        "iteration_v2_include_secondary_only": true,
+        "iteration_v2_max_secondary_only": 1,
+        "iteration_v2_duplicate_retention_tolerance": 0.02,
+        "research_loop": {
+          "enabled": true,
+          "preset": "research",
+          "process": "process-research",
+          "policy": {
+            "schema_version": 1,
+            "lanes": [
+              "repair",
+              "discovery"
+            ],
+            "default_slots": {
+              "repair": 2,
+              "discovery": 2
+            },
+            "slots_total": 4,
+            "max_slot_shift": 1,
+            "min_slots_per_lane": 1,
+            "lane_score_constants": {
+              "lane_advantage_threshold_points": 5.0,
+              "profit_tie_epsilon_pct": 0.02,
+              "mdd_tie_epsilon_pp": 2.0,
+              "severe_mdd_cap_multiplier": 1.25,
+              "severe_mdd_delta_pp": 10.0,
+              "mdd_advantage_cap_delta_pp": 5.0
+            },
+            "insight_score": {
+              "authority": "research_actionability_only",
+              "caps": {
+                "no_official_metrics": 20,
+                "missing_required_research_evidence": 40,
+                "missing_next_recommendation": 50,
+                "no_segment_contribution": 65,
+                "no_repair_parent_comparison": 60,
+                "promotion_claim_contradiction": 30
+              }
+            },
+            "validation_scopes": [
+              "research_only",
+              "fresh_frozen_holdout"
+            ],
+            "authority": "research_budget_steering_only"
+          },
+          "slots": {
+            "schema_version": 1,
+            "slots_total": 4,
+            "previous_slots_by_lane": {
+              "repair": 2,
+              "discovery": 2
+            },
+            "slots_by_lane": {
+              "repair": 2,
+              "discovery": 2
+            },
+            "better_lane": null,
+            "shift_applied": {
+              "from": null,
+              "to": null,
+              "count": 0
+            },
+            "decision_reason": "default_allocation",
+            "repair_lane_score": null,
+            "discovery_lane_score": null,
+            "tie_breaks_used": [],
+            "blockers": [],
+            "authority": "research_budget_steering_only"
+          },
+          "candidate_count": 4,
+          "authority": "research_only_no_export_live_or_final_promotion"
+        }
+      },
+      "iteration_v2": null,
+      "iteration_v3": null,
+      "iteration_v4": null,
+      "iteration_v5": null,
+      "actual_rowset_selection": null,
+      "retention_selection": null,
+      "candidates": [],
+      "best_candidate": null,
+      "cleanup_summary": {
+        "attempted_count": 0,
+        "deleted_count": 0,
+        "kept_count": 0,
+        "failed_count": 0,
+        "items": []
+      }
+    }
+  }
+}

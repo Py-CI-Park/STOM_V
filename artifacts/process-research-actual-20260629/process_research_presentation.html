@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>STOM 조건식 연구 프로세스 개선 설계 — Prompt Context Pack / Multi-Candidate Loop</title>
+<style>
+  :root {
+    --bg:#06111f; --panel:#0e1b2f; --panel2:#10243f; --panel3:#132c4d; --text:#eef6ff; --muted:#a9bbd1;
+    --accent:#61dafb; --green:#53d769; --orange:#ffb454; --red:#ff6b6b; --purple:#b18cff; --blue:#6aa8ff;
+    --line:#284767; --code:#061727; --white:#fff; --shadow:rgba(0,0,0,.28);
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; font-family:'Segoe UI','Malgun Gothic',system-ui,sans-serif; background:
+    radial-gradient(circle at 12% 2%, rgba(97,218,251,.20), transparent 30%),
+    radial-gradient(circle at 88% 0%, rgba(177,140,255,.18), transparent 28%),
+    linear-gradient(135deg,#06111f 0%,#071827 58%,#0b1424 100%); color:var(--text); line-height:1.62; }
+  header.hero { padding:58px 48px 36px; border-bottom:1px solid var(--line); }
+  .hero h1 { font-size:42px; margin:0 0 12px; letter-spacing:-.035em; }
+  .hero p { font-size:18px; color:var(--muted); max-width:1180px; margin:0; }
+  .meta { margin-top:22px; display:flex; flex-wrap:wrap; gap:10px; }
+  .chip,.pill { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); border-radius:999px; padding:5px 10px; color:var(--text); background:rgba(255,255,255,.045); font-size:13px; white-space:nowrap; }
+  .pill.repair { border-color:rgba(97,218,251,.65); color:#b8f2ff; background:rgba(97,218,251,.09); }
+  .pill.discovery { border-color:rgba(177,140,255,.65); color:#d9c8ff; background:rgba(177,140,255,.09); }
+  .pill.review { border-color:rgba(83,215,105,.65); color:#c7ffd1; background:rgba(83,215,105,.08); }
+  nav { position:sticky; top:0; z-index:10; display:flex; flex-wrap:wrap; gap:8px; padding:12px 24px; background:rgba(6,17,31,.94); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+  nav a { color:var(--text); text-decoration:none; font-size:13px; padding:6px 10px; border-radius:8px; background:rgba(255,255,255,.045); }
+  nav a:hover { background:rgba(97,218,251,.16); }
+  main { padding:28px; max-width:1480px; margin:0 auto; }
+  section.slide { margin:0 0 28px; padding:28px; border:1px solid var(--line); border-radius:20px; background:rgba(14,27,47,.90); box-shadow:0 20px 60px var(--shadow); overflow:hidden; }
+  h2 { margin:0 0 18px; font-size:28px; letter-spacing:-.02em; }
+  h3 { margin:24px 0 10px; font-size:20px; color:#dbe9ff; }
+  h4 { margin:12px 0 8px; color:#dbe9ff; }
+  .lead { font-size:18px; color:#d8e9ff; }
+  .grid { display:grid; gap:16px; }
+  .grid.cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .grid.cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .grid.cols-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .card { padding:18px; border:1px solid var(--line); border-radius:16px; background:linear-gradient(180deg, rgba(16,36,63,.94), rgba(10,24,43,.94)); }
+  .card h3,.card h4 { margin-top:0; }
+  .metric { font-size:31px; font-weight:800; color:var(--accent); line-height:1.12; }
+  .muted { color:var(--muted); }
+  .good { color:var(--green); } .warn { color:var(--orange); } .bad { color:var(--red); } .purple { color:var(--purple); } .blue { color:var(--blue); }
+  code { background:var(--code); border:1px solid #183554; border-radius:6px; padding:2px 5px; color:#d8f5ff; }
+  pre { background:var(--code); border:1px solid #183554; border-radius:12px; padding:16px; overflow:auto; color:#d8f5ff; }
+  table { width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; }
+  th,td { border-bottom:1px solid var(--line); padding:10px 10px; vertical-align:top; }
+  th { text-align:left; color:#c8dcf4; background:rgba(255,255,255,.045); position:sticky; top:45px; }
+  td.num,th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  ul.compact li { margin:5px 0; }
+  .callout { padding:16px 18px; border-left:4px solid var(--accent); background:rgba(97,218,251,.08); border-radius:12px; margin:16px 0; }
+  .callout.warn { border-left-color:var(--orange); background:rgba(255,180,84,.08); }
+  .callout.bad { border-left-color:var(--red); background:rgba(255,107,107,.08); }
+  .callout.good { border-left-color:var(--green); background:rgba(83,215,105,.08); }
+  .small { font-size:13px; }
+  .qbox { border:1px dashed rgba(97,218,251,.55); background:rgba(97,218,251,.06); border-radius:14px; padding:16px; }
+  .kbd { border:1px solid var(--line); background:rgba(255,255,255,.06); border-radius:8px; padding:1px 6px; font-size:12px; }
+  .flow { display:grid; grid-template-columns:repeat(6,minmax(150px,1fr)); gap:10px; align-items:stretch; }
+  .step { position:relative; padding:14px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.045); min-height:122px; }
+  .step:after { content:'→'; position:absolute; right:-13px; top:42%; color:var(--accent); font-size:22px; }
+  .step:last-child:after { content:''; }
+  .step .n { font-weight:800; color:var(--accent); }
+  .tree { position:relative; padding:18px; border:1px solid var(--line); border-radius:18px; background:rgba(255,255,255,.035); overflow:hidden; }
+  .tree:before { content:''; position:absolute; inset:-40%; background:radial-gradient(circle, rgba(97,218,251,.10), transparent 45%); animation:pulse 5s ease-in-out infinite; }
+  .tree-grid { position:relative; display:grid; grid-template-columns:1.1fr .8fr 1.3fr .9fr; gap:18px; align-items:center; }
+  .node { position:relative; border:1px solid var(--line); background:linear-gradient(180deg,rgba(19,44,77,.96),rgba(10,25,45,.96)); border-radius:16px; padding:14px; min-height:92px; animation:rise .8s ease both; }
+  .node b { color:#e9f7ff; }
+  .node small { display:block; color:var(--muted); margin-top:5px; }
+  .node.root { border-color:rgba(97,218,251,.8); box-shadow:0 0 0 1px rgba(97,218,251,.18), 0 0 28px rgba(97,218,251,.10); }
+  .node.repair { border-color:rgba(97,218,251,.55); }
+  .node.discovery { border-color:rgba(177,140,255,.55); }
+  .node.review { border-color:rgba(83,215,105,.55); }
+  .stack { display:grid; gap:10px; }
+  .arrow { color:var(--accent); text-align:center; font-size:28px; animation:blink 1.8s ease-in-out infinite; }
+  .legend { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; position:relative; }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:.55} 50%{transform:scale(1.08);opacity:.9} }
+  @keyframes rise { from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:translateY(0)} }
+  @keyframes blink { 0%,100%{opacity:.45; transform:translateX(0)} 50%{opacity:1; transform:translateX(4px)} }
+  .matrix { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+  .matrix .card { min-height:220px; }
+  .timeline { border-left:3px solid var(--line); margin-left:12px; padding-left:18px; }
+  .event { position:relative; margin:0 0 18px; padding:12px 14px; border-radius:12px; background:rgba(255,255,255,.045); border:1px solid var(--line); }
+  .event:before { content:''; width:12px; height:12px; border-radius:50%; background:var(--accent); position:absolute; left:-26px; top:18px; }
+  details { border:1px solid var(--line); border-radius:14px; padding:12px 16px; background:rgba(255,255,255,.04); margin:12px 0; }
+  summary { cursor:pointer; font-weight:700; color:#dcecff; }
+  footer { padding:32px; color:var(--muted); text-align:center; }
+  @media (max-width:1180px) { .grid.cols-2,.grid.cols-3,.grid.cols-4,.flow,.tree-grid,.matrix { grid-template-columns:1fr; } .step:after{content:'';} .arrow{transform:rotate(90deg);} header.hero{padding:36px 22px;} main{padding:16px;} }
+</style>
+</head>
+<body>
+<header class="hero">
+  <h1>STOM 조건식 연구 프로세스 개선 설계</h1>
+  <p>이번 업데이트의 핵심은 <b>STOM 변수/규칙 전체 포함</b>, <b>이전 매수·매도 조건식 전문 포함</b>, <b>백테스트 1회 이후 2~3개 이상의 방향성 후보를 동시에 생성·평가</b>, 그리고 <b>분석 카드 기반 반복 연구</b>입니다. 목표는 프로세스 통과가 아니라 실제로 더 좋은 조건식을 만들 확률을 높이는 것입니다.</p>
+  <div class="meta">
+    <span class="chip">업데이트: 2026-06-30</span>
+    <span class="chip">대상: 사용자 중간점검/협의용</span>
+    <span class="chip">Prompt budget: 250k 이내 품질 우선</span>
+    <span class="chip">research-only</span>
+    <span class="chip">금지: export / live / final promotion</span>
+    <span class="chip">근거: artifacts/process-research-actual-20260629</span>
+  </div>
+</header>
+<nav>
+  <a href="#onepage">요약</a><a href="#concern">걱정 반영</a><a href="#map">애니메이션 맵</a><a href="#modes">3모드</a><a href="#contextpack">Context Pack</a><a href="#multi">다중 후보</a><a href="#analysiscard">분석 카드</a><a href="#evidence">실행 증거</a><a href="#candidates">후보 결과</a><a href="#diagnosis">진단</a><a href="#plan">개선 계획</a><a href="#observability">관측 페이지</a><a href="#command">추천 명령</a>
+</nav>
+<main>
+<section id="onepage" class="slide">
+  <h2>1. 한 장 요약</h2>
+  <div class="grid cols-4">
+    <div class="card"><div class="metric good">맞음</div><p>사장님 걱정은 핵심 병목을 정확히 짚었습니다. 좋은 조건식은 프롬프트에 들어가는 연구 컨텍스트 품질이 좌우합니다.</p></div>
+    <div class="card"><div class="metric">전체</div><p><code>strategy.txt</code>, <code>rules.txt</code>, system prompt, variables, forbidden, 예제까지 가능한 한 포함해야 합니다.</p></div>
+    <div class="card"><div class="metric blue">2~3+</div><p>백테스트 1회 후 후보 1개가 아니라 서로 다른 가설 후보 2~3개 이상을 동시에 만들고 평가하는 방식이 타당합니다.</p></div>
+    <div class="card"><div class="metric warn">공백</div><p>현재 process-research는 다중 후보 백테스트는 있지만, 풍부한 LLM prompt 기반 다중 후보 생성은 아직 약합니다.</p></div>
+  </div>
+  <div class="callout good"><b>결론:</b> 다음 개선은 “후보 수 증가”가 아니라 <b>백테스트 분석 → 분석 카드 → 풍부한 Prompt Context Pack → 서로 다른 2~3개 이상 후보 생성 → 공식 백테스트 비교</b>의 폐루프를 만드는 것입니다.</div>
+</section>
+
+<section id="concern" class="slide">
+  <h2>2. 사장님 걱정 반영 여부</h2>
+  <table>
+    <thead><tr><th>걱정/요구</th><th>반영 방향</th><th>현재 상태</th><th>수정 결론</th></tr></thead>
+    <tbody>
+      <tr><td>STOM 변수/규칙 전체 포함</td><td><code>strategy.txt</code>, <code>rules.txt</code>, system prompt, variables, forbidden, 예제까지 Context Pack에 포함</td><td>현재는 system 자산 요약 중심</td><td><b class="good">전체 포함으로 수정</b></td></tr>
+      <tr><td>이전 매수/매도 조건식 포함</td><td>부모 buy/sell 전문을 항상 제공</td><td>AI loop 일부 경로만 강함</td><td><b>process-research 공통 계약으로 승격</b></td></tr>
+      <tr><td>백테스트 결과 분석 반영</td><td>profit/MDD뿐 아니라 시간·시총·feature·edge·상관·실패 원인 포함</td><td>분석은 있으나 prompt 연결 약함</td><td><b>분석 카드와 prompt를 직접 연결</b></td></tr>
+      <tr><td>후보 2~3개 동시 추천/평가</td><td>서로 다른 가설 후보를 동시에 만들고 공식 백테스트로 비교</td><td>다중 candidate 실행은 존재, LLM 다중 가설 생성은 약함</td><td><b>multi-hypothesis candidate pack 필요</b></td></tr>
+      <tr><td>3가지 연구 모드 전체 적용</td><td>Repair/Discovery/Promotion Review가 같은 Context Pack을 공유하되 권한만 다르게 사용</td><td>부분 적용</td><td><b>공통 기반으로 설계</b></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="map" class="slide">
+  <h2>3. 전체 흐름 — 애니메이션 트리/플로우차트</h2>
+  <div class="tree">
+    <div class="tree-grid">
+      <div class="node root" style="animation-delay:.05s"><b>① 기준선 공식 백테스트</b><small>부모 buy/sell 조건식 + 전체 기간 결과 + 거래별 CSV 확보</small></div>
+      <div class="arrow">→</div>
+      <div class="stack">
+        <div class="node" style="animation-delay:.18s"><b>② Research Prompt Context Pack</b><small>STOM 변수/규칙 전체, 부모 조건식, 분석 결과, 히트맵, 통계, 상관관계 통합</small></div>
+        <div class="node" style="animation-delay:.28s"><b>③ 분석 카드</b><small>실패 원인, 취약 구간, 강점 구간, 수정해야 할 한 축을 카드화</small></div>
+      </div>
+      <div class="arrow">→</div>
+    </div>
+    <div class="tree-grid" style="margin-top:18px; grid-template-columns:1fr .25fr 1fr .25fr 1fr;">
+      <div class="stack">
+        <div class="node repair" style="animation-delay:.38s"><b>Repair 후보 A</b><small>부모 구조 유지 + 실패 원인 1개 수리</small></div>
+        <div class="node repair" style="animation-delay:.48s"><b>Repair 후보 B</b><small>동일 부모에서 다른 수정축 1개</small></div>
+        <div class="node discovery" style="animation-delay:.58s"><b>Discovery 후보 C</b><small>다른 coverage regime / feature family / segment</small></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node" style="animation-delay:.68s"><b>④ 후보별 공식 백테스트</b><small>각 후보를 같은 기준선/같은 엔진으로 검증. 3틱 슬리피지는 advisory 분석 축으로 보존.</small></div>
+      <div class="arrow">→</div>
+      <div class="stack">
+        <div class="node" style="animation-delay:.78s"><b>⑤ 비교/랭킹</b><small>profit, MDD, trades, daily, payoff, segment contribution, novelty</small></div>
+        <div class="node review" style="animation-delay:.88s"><b>⑥ Promotion Review</b><small>생성 금지. fresh/frozen holdout evidence health만 검토.</small></div>
+      </div>
+    </div>
+    <div class="legend">
+      <span class="pill repair">Repair</span><span class="pill discovery">Discovery</span><span class="pill review">Promotion Review</span><span class="chip">반복: 분석 카드 업데이트 → 다음 후보 2~3개 생성</span>
+    </div>
+  </div>
+  <div class="callout warn">이 맵이 기존 HTML의 단순 6단계보다 더 맞습니다. 이유는 조건식 연구가 선형 프로세스가 아니라 <b>나무처럼 여러 가설 후보를 갈라서 동시에 평가한 뒤 다시 줄기를 선택하는 탐색 문제</b>이기 때문입니다.</div>
+</section>
+
+<section id="modes" class="slide">
+  <h2>4. 3가지 연구 모드 전체 적용</h2>
+  <table>
+    <thead><tr><th>모드</th><th>생성 권한</th><th>Context Pack 사용 방식</th><th>후보 수</th><th>목표</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill repair">Repair</span></td><td>생성 가능</td><td>부모 buy/sell 전문 + 실패 원인 카드 + 한 축 mutation</td><td>2개 이상 권장</td><td>기존 엣지 보존, 약점 수리</td></tr>
+      <tr><td><span class="pill discovery">Discovery</span></td><td>생성 가능</td><td>부모와 다른 coverage/feature/segment를 강제하고 novelty gate 적용</td><td>1~2개 이상 권장</td><td>시드 고착 탈출, 새 국면 발견</td></tr>
+      <tr><td><span class="pill review">Promotion Review</span></td><td><b>생성 금지</b></td><td>Context Pack을 검토 근거로만 사용. fresh/frozen holdout, OOS/WF, slippage advisory 확인</td><td>0개</td><td>과최적화 방지, evidence health 검토</td></tr>
+    </tbody>
+  </table>
+  <p class="lead">따라서 이번 개선은 특정 모드 하나가 아니라 <b>3모드 공통 기반</b>입니다. 단, Promotion Review는 절대 새 조건식을 만들면 안 됩니다.</p>
+</section>
+
+<section id="contextpack" class="slide">
+  <h2>5. Research Prompt Context Pack — 전체 포함 버전</h2>
+  <div class="callout good"><b>정책 수정:</b> 프롬프트 길이는 250k 이내에서 품질을 우선합니다. 비용 절약을 이유로 중요한 연구 정보를 잘라내지 않습니다.</div>
+  <table>
+    <thead><tr><th>블록</th><th>포함할 내용</th><th>왜 중요한가</th></tr></thead>
+    <tbody>
+      <tr><td>STOM 변수/규칙 전체</td><td><code>utility/ai_agent/strategy.txt</code>, <code>rules.txt</code>, system prompt, variables reference, forbidden, 예제 구조</td><td>문법 오류와 금지 변수 사용을 줄이고 STOM 문법을 제대로 쓰게 함</td></tr>
+      <tr><td>Parent Buy Code</td><td>이전 매수 조건식 전문</td><td>진입 구조, 필터 순서, 유동성 게이트를 보존</td></tr>
+      <tr><td>Parent Sell Code</td><td>이전 매도 조건식 전문</td><td>MDD/give-back/보유시간 문제를 청산에서 해결</td></tr>
+      <tr><td>Baseline Metrics</td><td>profit, MDD, trades, daily_avg, win_rate, payoff, retention</td><td>무엇을 이겨야 하는지 명확화</td></tr>
+      <tr><td>Time/Market-Cap Heatmap</td><td>시간대 × 시총 × 등락률 × 거래대금 성과</td><td>조건식은 전체 평균보다 국면별 엣지가 중요</td></tr>
+      <tr><td>Feature Importance</td><td>승패를 가른 변수와 방향, 구간별 prefer hint</td><td>어떤 변수를 살리고 어떤 방향으로 게이트할지 결정</td></tr>
+      <tr><td>Correlation/Redundancy</td><td>중복 변수군, 상관 높은 변수, 이미 시도한 가족</td><td>겉보기 novelty와 반복 실험 방지</td></tr>
+      <tr><td>Edge Ratio / MFE / MAE</td><td>평가익 반납, 역행폭, 청산 효율</td><td>매도식 개선의 핵심 근거</td></tr>
+      <tr><td>Analysis Cards</td><td>실패 원인, 수정 축, expected effect, risk note</td><td>프롬프트가 “한 가설”만 실험하게 만듦</td></tr>
+      <tr><td>Safety Contract</td><td>research-only, no export/live/final promotion</td><td>연구와 승격 경계 보존</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="multi" class="slide">
+  <h2>6. 하나의 백테스트 이후 2~3개 후보 동시 생성/평가</h2>
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>현재 존재하는 것</h3>
+      <ul class="compact">
+        <li><code>cli/research_loop.py</code>에는 후보 여러 개를 선택하고 순차적으로 공식 백테스트하는 구조가 있습니다.</li>
+        <li>최근 실제 실행에서도 4개 후보가 공식 백테스트까지 완료됐습니다.</li>
+        <li>즉 “여러 후보를 평가하는 실행 틀”은 이미 있습니다.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>부족한 것</h3>
+      <ul class="compact">
+        <li>최근 process-research 후보는 LLM이 풍부한 컨텍스트를 보고 만든 후보가 아니라 <code>non_llm_expression_candidate</code>였습니다.</li>
+        <li>후보들이 서로 다른 가설 2~3개로 명확히 갈라진 것이 아니라 단순 quantile/필터 후보에 가깝습니다.</li>
+        <li>따라서 “동시 평가 틀은 있음, 고품질 동시 생성은 부족”이 정확한 진단입니다.</li>
+      </ul>
+    </div>
+  </div>
+  <h3>권장 후보 팩 구조</h3>
+  <table>
+    <thead><tr><th>후보</th><th>역할</th><th>생성 지시</th><th>평가 포인트</th></tr></thead>
+    <tbody>
+      <tr><td>A</td><td>보수적 Repair</td><td>부모 buy/sell 유지, 가장 큰 실패 원인 1개만 수정</td><td>MDD 개선, 거래수 유지</td></tr>
+      <tr><td>B</td><td>공격적 Repair</td><td>같은 부모에서 다른 수정축. 예: 시간/시총/체결강도 중 하나만 변경</td><td>수익 개선, 과매매 방지</td></tr>
+      <tr><td>C</td><td>Discovery</td><td>기존 feature family와 다른 coverage regime 탐색</td><td>novelty, 새로운 강점 구간</td></tr>
+      <tr><td>D 선택</td><td>청산 전용</td><td>buy 고정, sell만 조정</td><td>give-back, MFE/MAE, 보유시간</td></tr>
+    </tbody>
+  </table>
+  <div class="callout"><b>퀀트 판단:</b> 하나의 백테스트에서 후보 1개만 만드는 것은 정보 사용 효율이 낮습니다. 같은 분석 결과에서 서로 다른 가설 2~3개를 만들고 같은 공식 엔진으로 평가해야 탐색 속도와 학습 품질이 올라갑니다.</div>
+</section>
+
+<section id="analysiscard" class="slide">
+  <h2>7. 분석 카드란 무엇인가</h2>
+  <p class="lead">분석 카드는 “백테스트 결과를 다음 조건식 생성으로 넘기기 위한 연구 메모의 표준 단위”입니다. 사람이 백테스트 결과를 보고 다음 실험을 정리하는 카드라고 보면 됩니다.</p>
+  <div class="matrix">
+    <div class="card"><h3>무엇을 설명하나</h3><ul><li>어떤 후보/부모를 분석했는지</li><li>어디서 손익이 났는지</li><li>실패 원인이 무엇인지</li><li>다음 후보가 무엇을 고쳐야 하는지</li></ul></div>
+    <div class="card"><h3>왜 필요한가</h3><ul><li>LLM이 감으로 조건식을 만들지 않게 함</li><li>한 번에 하나의 원인만 고치게 함</li><li>후보 생성 이유를 나중에 추적 가능하게 함</li><li>성과가 없을 때도 학습을 남김</li></ul></div>
+    <div class="card"><h3>좋은 분석 카드 조건</h3><ul><li>root-cause가 명확함</li><li>segment contribution이 있음</li><li>수정축이 하나임</li><li>expected effect와 risk가 있음</li><li>승격 권한을 주장하지 않음</li></ul></div>
+  </div>
+  <h3>분석 카드 필드 예시</h3>
+  <pre>{
+  "analysis_card_id": "baseline_902_card_001",
+  "parent_buy_id": "Tick_B_902_905_Update_2",
+  "parent_sell_id": "Tick_S_902_905_Update_2",
+  "root_cause": "09:00~09:05 중소형 급등 이후 되돌림 구간에서 give-back 손실이 큼",
+  "segment_contribution": {
+    "bad_segments": ["09:00~09:05 / 중소형 / 등락률 6~9%"],
+    "good_segments": ["09:06~09:15 / 거래대금 증가 / 체결강도 유지"]
+  },
+  "mutation_axis": "time_window_or_exit_trailing_only",
+  "expected_effect": "거래수는 10~20% 감소하되 MDD와 give-back 감소",
+  "risk_note": "너무 좁히면 daily trades가 0.5 미만으로 하락 가능",
+  "promotion_authority": false
+}</pre>
+</section>
+
+<section id="evidence" class="slide">
+  <h2>8. 실제 실행 증거: 무엇을 돌렸고 어디서 막혔나</h2>
+  <div class="timeline">
+    <div class="event"><b>1차: archived seed 이름 사용</b><br>결과: <span class="bad">baseline_run error</span>. 현재 <code>strategy.db</code>에 과거 GATE 전략명이 없어 실패했습니다.</div>
+    <div class="event"><b>2차: 현재 DB 전략명 사용</b><br>기준선 전략 <code>Tick_B_902_905_Update_2</code> / <code>Tick_S_902_905_Update_2</code>. baseline 백테스트는 성공했지만 default 분석 기준에서 후보가 0개였습니다.</div>
+    <div class="event"><b>3차: archived CSV strict analysis</b><br>과거 기준선 CSV를 사용했지만 strict 기준에서는 여전히 후보 0개였습니다.</div>
+    <div class="event"><b>4차: relaxed diagnostic pass</b><br>후보 4개가 생성되어 공식 백테스트까지 완료됐습니다. 이 실행이 실제 개선 프로세스 검증의 핵심 증거입니다.</div>
+  </div>
+  <div class="grid cols-3">
+    <div class="card"><h3>default 결과</h3><div class="metric bad">0 후보</div><p>분석 기준이 후보화를 막았습니다.</p></div>
+    <div class="card"><h3>relaxed 결과</h3><div class="metric good">4 후보</div><p>프로세스가 end-to-end로 실행됐습니다.</p></div>
+    <div class="card"><h3>승격 결과</h3><div class="metric warn">0 통과</div><p>아직 기준선을 이긴 후보는 없습니다.</p></div>
+  </div>
+</section>
+
+<section id="candidates" class="slide">
+  <h2>9. 후보별 실제 백테스트 결과</h2>
+  <table>
+    <thead><tr><th class="num">순위</th><th>lane</th><th>조건식</th><th class="num">거래수</th><th class="num">승률</th><th class="num">총손익</th><th class="num">retention</th><th class="num">promotion score</th><th>판정</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1</td><td><span class="pill discovery">discovery</span></td><td><code>-11_905_509_280 &lt;= 거래대금증감 &lt; -5232658666.2</code></td><td class="num">93</td><td class="num">50.54%</td><td class="num">358,654</td><td class="num">0.489</td><td class="num bad">-40.533</td><td><span class="bad">실패</span></td></tr>
+      <tr><td class="num">2</td><td><span class="pill repair">repair</span></td><td><code>6.684 &lt;= 등락율 &lt; 7.43</code></td><td class="num">93</td><td class="num">52.69%</td><td class="num">357,247</td><td class="num">0.489</td><td class="num bad">-40.553</td><td><span class="bad">실패</span></td></tr>
+      <tr><td class="num">3</td><td><span class="pill discovery">discovery</span></td><td><code>4074.1 &lt;= 매수총잔량 &lt; 7154.6</code></td><td class="num">99</td><td class="num">51.52%</td><td class="num">344,974</td><td class="num">0.521</td><td class="num bad">-40.750</td><td><span class="bad">실패</span></td></tr>
+      <tr><td class="num">4</td><td><span class="pill repair">repair</span></td><td><code>176.854 &lt;= 체결강도 &lt; 201.327</code></td><td class="num">98</td><td class="num">51.02%</td><td class="num">287,668</td><td class="num">0.516</td><td class="num bad">-41.626</td><td><span class="bad">실패</span></td></tr>
+    </tbody>
+  </table>
+  <div class="callout bad">후보 4개 모두 공식 백테스트는 성공했지만 promotion score가 음수입니다. 즉, “프로세스 작동”과 “좋은 조건식 발견”은 분리해서 봐야 합니다.</div>
+</section>
+
+<section id="diagnosis" class="slide">
+  <h2>10. 현재 병목 진단</h2>
+  <table>
+    <thead><tr><th>영역</th><th>관찰</th><th>진단</th><th>개선 방향</th></tr></thead>
+    <tbody>
+      <tr><td>프롬프트 입력</td><td>최근 실행 receipt가 <code>non_llm_expression_candidate</code></td><td>풍부한 프롬프트 기반 생성이 아님</td><td>Context Pack 기반 LLM 후보 생성으로 확장</td></tr>
+      <tr><td>STOM 규칙</td><td>system 자산은 있으나 원천 가이드 전체 포함은 아님</td><td>문법/예제/변수 맥락이 잘릴 수 있음</td><td><code>strategy.txt</code>/<code>rules.txt</code> 전체 포함 정책</td></tr>
+      <tr><td>후보 다양성</td><td>여러 후보 실행은 있지만 단순 필터 후보 중심</td><td>가설 다양성이 부족</td><td>2~3개 이상 multi-hypothesis candidate pack</td></tr>
+      <tr><td>분석 카드</td><td>insight score가 no_segment_contribution으로 cap</td><td>어느 구간이 성과를 만들었는지 설명 부족</td><td>segment contribution/root-cause 필수화</td></tr>
+      <tr><td>상관관계</td><td>generator log에 <code>prompt_injected: False</code> 경로 존재</td><td>중복 변수 반복 위험</td><td>correlation/redundancy summary를 prompt 필수 블록으로 추가</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="plan" class="slide">
+  <h2>11. 상세 개선 계획</h2>
+  <table>
+    <thead><tr><th>단계</th><th>작업</th><th>구현/검증 포인트</th><th>완료 기준</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1</td><td>Context Pack 스키마 정의</td><td>STOM 규칙 전체, parent buy/sell, 분석 결과, 히트맵, 통계, 상관관계 포함</td><td>테스트에서 prompt에 필수 블록 모두 존재 확인</td></tr>
+      <tr><td class="num">2</td><td>분석 카드 강화</td><td>root_cause, segment_contribution, mutation_axis, expected_effect, risk_note 필수화</td><td>no_segment_contribution cap 감소</td></tr>
+      <tr><td class="num">3</td><td>Multi-candidate prompt 생성</td><td>한 백테스트 분석에서 후보 A/B/C를 다른 가설로 생성</td><td>후보별 hypothesis와 novelty 차이 검증</td></tr>
+      <tr><td class="num">4</td><td>process-research 연결</td><td>기존 deterministic expression 후보는 diagnostic fallback으로 유지</td><td>기본 연구 경로가 LLM repair/discovery 후보 생성 사용</td></tr>
+      <tr><td class="num">5</td><td>공식 백테스트 비교</td><td>후보별 동일 기준선/동일 엔진/동일 평가표 적용</td><td>candidate_cards, analysis_cards, prompt_receipts 모두 생성</td></tr>
+      <tr><td class="num">6</td><td>Promotion Review 분리</td><td>생성 금지, fresh/frozen holdout evidence만 검토</td><td>research evidence만으로 승격 불가</td></tr>
+      <tr><td class="num">7</td><td>HTML/대시보드 개선</td><td>트리 플로우, 후보 분기, 분석 카드, next action 시각화</td><td>사람이 중간점검에서 흐름을 이해 가능</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="observability" class="slide">
+  <h2>12. 구현 관측 페이지 — 무엇을 화면에서 봐야 하나</h2>
+  <div class="grid cols-3">
+    <div class="card"><h3>Research Pack / Branch Tree</h3><p><code>context_pack_id</code>, <code>context_pack_sha256</code>, full STOM source 포함 여부, 250k budget 추정치, 그리고 기준선→분석카드→후보팩→공식백테스트→research-only 랭킹 흐름을 한 화면에 보여줍니다.</p></div>
+    <div class="card"><h3>Candidate pack / Analysis cards</h3><p>후보 2~3개 이상, 각 후보의 <code>hypothesis_id</code>, <code>mutation_axis</code>, novelty, expected effect, risk note, 분석 카드의 root-cause/segment contribution/Insight Score를 같이 봅니다.</p></div>
+    <div class="card"><h3>Prompt receipts / Fallback</h3><p>프롬프트 버전, prompt score, strict validation, downstream official backtest result가 receipt에 남고, deterministic filter-only 후보는 <code>diagnostic_deterministic_candidate_fallback</code>으로만 표시되며 prompt credit은 0입니다.</p></div>
+  </div>
+  <table>
+    <thead><tr><th>화면 블록</th><th>질문에 답하는 내용</th><th>정상 표시</th><th>위험 표시</th></tr></thead>
+    <tbody>
+      <tr><td>context pack health</td><td>AI가 STOM 규칙 전체와 부모 조건식 전문을 실제로 받았는가?</td><td>필수 source/hash/budget present</td><td>missing source, budget 초과, context_pack_id 없음</td></tr>
+      <tr><td>branch tree</td><td>하나의 백테스트가 어떤 후보 분기로 이어졌는가?</td><td>baseline → analysis card → 2~3+ candidates → official backtests</td><td>후보 1개만 생성, 공식 백테스트 누락</td></tr>
+      <tr><td>candidate pack</td><td>후보들이 서로 다른 가설인가?</td><td>repair/discovery lane, hypothesis_id, mutation_axis, novelty 분리</td><td>동일 표현 복제, discovery novelty 없음</td></tr>
+      <tr><td>analysis cards</td><td>백테스트 실패 원인이 다음 생성에 반영되었는가?</td><td>root-cause, segment contribution, avoid/prefer zone 존재</td><td>profit/MDD만 보고 원인 없음</td></tr>
+      <tr><td>prompt receipts</td><td>프롬프트 품질과 후보 결과가 연결되는가?</td><td>strict validation + downstream official backtest result 존재</td><td>결과 없는 prompt score, 실패 이유 없음</td></tr>
+      <tr><td>promotion blockers</td><td>연구 결과가 실수로 승격/라이브로 이어지지 않는가?</td><td>zero-generation promotion-review, holdout/OOS/WF/slippage advisory blocker 표시</td><td>생성 권한이 켜진 promotion-review</td></tr>
+    </tbody>
+  </table>
+</section>
+<section id="command" class="slide">
+  <h2>13. 추천 상세 계획 작성 명령어</h2>
+  <p>다음 단계는 범위가 크므로 ralplan으로 상세 계획을 먼저 고정하는 것이 맞습니다.</p>
+  <pre>/skill:ralplan --deliberate "STOM 조건식 연구 프로세스 개선을 위한 상세 실행 계획을 작성한다. 목표는 프로세스 통과가 아니라 실제로 더 좋은 조건식을 만들 확률을 높이는 것이다. STOM 변수/규칙은 요약이 아니라 utility/ai_agent/strategy.txt, utility/ai_agent/rules.txt, system_prompt, variables_reference, forbidden, 예제 구조를 250k prompt budget 이내에서 최대한 전체 포함한다. 3가지 연구 모드인 기존 시드 repair, 신규 discovery, promotion-review 전체에 공통 적용되는 Research Prompt Context Pack을 설계한다. Context Pack에는 이전 매수 조건식 전문, 이전 매도 조건식 전문, 백테스트 전체 결과, profit/MDD/trades/daily/win/payoff, 시간대 분석, 시가총액 분석, 등락률/거래대금/체결강도 국면 분석, 세그먼트 히트맵, feature importance, edge ratio, MFE/MAE, 상관관계/중복 변수 분석, 실패 원인 root-cause, avoid/prefer zone, 후보별 hypothesis, expected effect, mutation axis, risk note를 포함한다. 하나의 백테스트 분석 이후 후보 1개가 아니라 서로 다른 가설의 조건식 후보 2~3개 이상을 동시에 생성하고 각각 공식 백테스트로 평가하는 multi-hypothesis candidate pack을 설계한다. process-research의 기존 deterministic filter-only 후보 생성은 diagnostic fallback으로 격하하고, 기본 연구 경로는 분석 카드 기반 LLM repair/discovery 후보 생성으로 확장한다. repair 모드는 부모 buy/sell 구조를 보존하며 하나의 실패 원인과 하나의 수정축만 변경한다. discovery 모드는 기존 시드와 다른 coverage regime, feature family, market segment를 강제하는 novelty gate를 둔다. promotion-review는 생성 없이 frozen/fresh holdout, OOS/WF, slippage advisory, 안정성 evidence health만 검토한다. 연구-only 경계를 유지하고 export/live/final promotion은 금지한다. 계획에는 변경 대상 파일, 함수, 데이터 구조, prompt contract, receipt schema, 분석 카드 schema, multi-candidate 평가 루프, 테스트 전략, 실제 연구 검증 절차, HTML/대시보드 개선 페이지 산출물을 단계별 표로 포함한다."</pre>
+</section>
+
+<section class="slide">
+  <h2>14. 근거 파일</h2>
+  <table>
+    <thead><tr><th>파일</th><th>역할</th></tr></thead>
+    <tbody>
+      <tr><td><code>utility/ai_agent/strategy.txt</code></td><td>STOM 변수/예제 원천. 다음 개선에서는 전체 포함 정책.</td></tr>
+      <tr><td><code>utility/ai_agent/rules.txt</code></td><td>조건식 생성 규칙 원천. 다음 개선에서는 전체 포함 정책.</td></tr>
+      <tr><td><code>ai_strategy_loop/brain/prompt.py</code></td><td>현재 LLM prompt builder. parent code/segment/feature hint 일부 지원.</td></tr>
+      <tr><td><code>cli/research_loop.py</code></td><td>현재 다중 후보 선택/공식 백테스트 실행 루프 존재.</td></tr>
+      <tr><td><code>cli/condition_generator.py</code></td><td>현재 분석 기반 deterministic expression 생성.</td></tr>
+      <tr><td><code>artifacts/process-research-actual-20260629/review_summary.md</code></td><td>최근 실제 연구 실행 요약.</td></tr>
+      <tr><td><code>artifacts/process-research-actual-20260629/prompt_mutation_receipts.jsonl</code></td><td>최근 후보가 non-LLM expression candidate였다는 증거.</td></tr>
+    </tbody>
+  </table>
+</section>
+</main>
+<footer>STOM condition research process review · prompt-quality first · research-only · no export/live/final promotion</footer>
+</body>
+</html>

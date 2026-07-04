@@ -1,0 +1,279 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "tool": "gjc.browser",
+  "url": "http://127.0.0.1:8770/ui/evolution?fresh=3bc2305b",
+  "startedAt": "2026-06-24T01:55:05Z",
+  "endedAt": "2026-06-24T01:55:06.001000Z",
+  "screenshots": [
+    "artifacts/ultragoal-overview-20260624-current.png",
+    "artifacts/ultragoal-lab-20260624-current.png",
+    "artifacts/ultragoal-process-20260624-current.png"
+  ],
+  "actions": [
+    {
+      "timestampMs": 0,
+      "timestamp": "2026-06-24T01:55:05Z",
+      "type": "navigate",
+      "action": "navigate",
+      "selector": "body",
+      "url": "http://127.0.0.1:8770/ui/evolution?fresh=3bc2305b",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 1,
+      "timestamp": "2026-06-24T01:55:05.001000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": ".research-suite-cards",
+      "description": "Home renders summary/navigation cards",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 2,
+      "timestamp": "2026-06-24T01:55:05.002000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "Home does not mount ResearchLab shell",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 3,
+      "timestamp": "2026-06-24T01:55:05.003000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "Home idle copy no longer uses 리서치 Wiki",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 4,
+      "timestamp": "2026-06-24T01:55:05.004000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": ".bt-gui-parity-large",
+      "description": "Home exposes Evolution GUI Parity large mode",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 100,
+      "timestamp": "2026-06-24T01:55:05.100000Z",
+      "type": "navigate",
+      "action": "navigate",
+      "selector": "body",
+      "url": "http://127.0.0.1:8770/ui/evolution/lab?fresh=3bc2305b",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 101,
+      "timestamp": "2026-06-24T01:55:05.101000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": ".research-lab-shell",
+      "description": "Lab route owns ResearchLabPanel shell",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 102,
+      "timestamp": "2026-06-24T01:55:05.102000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": ".edge-heatmap-shell",
+      "description": "Lab route owns integrated Edge Ratio heatmap",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 103,
+      "timestamp": "2026-06-24T01:55:05.103000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "Lab route has no fullscreen control text",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 200,
+      "timestamp": "2026-06-24T01:55:05.200000Z",
+      "type": "navigate",
+      "action": "navigate",
+      "selector": "body",
+      "url": "http://127.0.0.1:8770/ui/evolution/process?fresh=3bc2305b",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 201,
+      "timestamp": "2026-06-24T01:55:05.201000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": ".native-process-page",
+      "description": "Process route renders native Process page",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 202,
+      "timestamp": "2026-06-24T01:55:05.202000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "iframe[src*=\"/process_flow\"]",
+      "description": "Process route has no process_flow iframe",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 300,
+      "timestamp": "2026-06-24T01:55:05.300000Z",
+      "type": "navigate",
+      "action": "navigate",
+      "selector": "body",
+      "url": "http://127.0.0.1:8770/ui/evolution/workbench?fresh=3bc2305b",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 301,
+      "timestamp": "2026-06-24T01:55:05.301000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "workbench route does not duplicate Lab shell",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 302,
+      "timestamp": "2026-06-24T01:55:05.302000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "workbench route does not duplicate Edge heatmap",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 400,
+      "timestamp": "2026-06-24T01:55:05.400000Z",
+      "type": "navigate",
+      "action": "navigate",
+      "selector": "body",
+      "url": "http://127.0.0.1:8770/ui/evolution/records?fresh=3bc2305b",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 401,
+      "timestamp": "2026-06-24T01:55:05.401000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "records route does not duplicate Lab shell",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 402,
+      "timestamp": "2026-06-24T01:55:05.402000Z",
+      "type": "assert",
+      "action": "assert",
+      "selector": "body",
+      "description": "records route does not duplicate Edge heatmap",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 999,
+      "timestamp": "2026-06-24T01:55:05.999000Z",
+      "type": "screenshot",
+      "action": "screenshot",
+      "selector": "body",
+      "path": "artifacts/ultragoal-overview-20260624-current.png",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 1000,
+      "timestamp": "2026-06-24T01:55:06Z",
+      "type": "screenshot",
+      "action": "screenshot",
+      "selector": "body",
+      "path": "artifacts/ultragoal-lab-20260624-current.png",
+      "result": "passed"
+    },
+    {
+      "timestampMs": 1001,
+      "timestamp": "2026-06-24T01:55:06.001000Z",
+      "type": "screenshot",
+      "action": "screenshot",
+      "selector": "body",
+      "path": "artifacts/ultragoal-process-20260624-current.png",
+      "result": "passed"
+    }
+  ],
+  "checks": {
+    "checkedAt": "2026-06-24T01:50:50.842Z",
+    "bundle": {
+      "app": "3bc2305b",
+      "stomUi": "f41f5701",
+      "css": "20260624u001"
+    },
+    "routes": {
+      "home": {
+        "url": "http://127.0.0.1:8770/ui/evolution?fresh=3bc2305b",
+        "hasIframeProcess": false,
+        "hasResearchLabShell": false,
+        "hasResearchSuiteCards": true,
+        "hasEdgeHeatmap": false,
+        "hasNativeProcess": false,
+        "hasParityLarge": true,
+        "hasFullscreenText": false,
+        "hasResearchWikiCopy": false,
+        "hasLabIdleCopy": true,
+        "selectedTabs": "🧬조건식 AILIVE | 🏠조건식 AIHOME"
+      },
+      "lab": {
+        "url": "http://127.0.0.1:8770/ui/evolution/lab?fresh=3bc2305b",
+        "hasIframeProcess": false,
+        "hasResearchLabShell": true,
+        "hasResearchSuiteCards": false,
+        "hasEdgeHeatmap": true,
+        "hasNativeProcess": false,
+        "hasParityLarge": false,
+        "hasFullscreenText": false,
+        "hasResearchWikiCopy": true,
+        "hasLabIdleCopy": true,
+        "selectedTabs": "🧬조건식 AILIVE | 🔬연구실LAB"
+      },
+      "process": {
+        "url": "http://127.0.0.1:8770/ui/evolution/process?fresh=3bc2305b",
+        "hasIframeProcess": false,
+        "hasResearchLabShell": false,
+        "hasResearchSuiteCards": false,
+        "hasEdgeHeatmap": false,
+        "hasNativeProcess": true,
+        "hasParityLarge": false,
+        "hasFullscreenText": false,
+        "hasResearchWikiCopy": false,
+        "hasLabIdleCopy": false,
+        "selectedTabs": "🧬조건식 AILIVE | 🗺️프로세스FLOW"
+      },
+      "workbench": {
+        "url": "http://127.0.0.1:8770/ui/evolution/workbench?fresh=3bc2305b",
+        "hasIframeProcess": false,
+        "hasResearchLabShell": false,
+        "hasResearchSuiteCards": false,
+        "hasEdgeHeatmap": false,
+        "hasNativeProcess": false,
+        "hasParityLarge": false,
+        "hasFullscreenText": false,
+        "hasResearchWikiCopy": false,
+        "hasLabIdleCopy": false,
+        "selectedTabs": "🧬조건식 AILIVE | 📊분석 워크벤치WORK"
+      },
+      "records": {
+        "url": "http://127.0.0.1:8770/ui/evolution/records?fresh=3bc2305b",
+        "hasIframeProcess": false,
+        "hasResearchLabShell": false,
+        "hasResearchSuiteCards": false,
+        "hasEdgeHeatmap": false,
+        "hasNativeProcess": false,
+        "hasParityLarge": false,
+        "hasFullscreenText": false,
+        "hasResearchWikiCopy": false,
+        "hasLabIdleCopy": false,
+        "selectedTabs": "🧬조건식 AILIVE | IDX히스토리HISTORY"
+      }
+    }
+  }
+}

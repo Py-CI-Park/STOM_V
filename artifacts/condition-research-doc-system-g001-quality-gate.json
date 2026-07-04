@@ -1,0 +1,194 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review agent://253-G001DocArchitect approved the documentation system and plan with blockers empty. The later README legacy-flow watch item was fixed and clean QA agent://255-G001DocQaClean passed.",
+    "commands": [
+      "agent://253-G001DocArchitect",
+      "agent://255-G001DocQaClean"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "G001 documentation verifies condition catalog, naming, Condition Passport metadata, and plan/management/result report system. Required-marker verification and reviews passed.",
+    "e2eCommands": [
+      "python documentation content verification for required markers",
+      "git diff --check -- docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md docs/research/condition_research/README.md",
+      "git status --short -- protected runtime paths"
+    ],
+    "redTeamCommands": [
+      "agent://255-G001DocQaClean read-only adversarial documentation QA"
+    ],
+    "artifactRefs": [
+      {
+        "id": "knowledge-system-doc",
+        "kind": "documentation-report",
+        "path": "docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md",
+        "description": "Condition research knowledge-system, naming, Condition Passport, and report-management design."
+      },
+      {
+        "id": "next-run-plan-doc",
+        "kind": "documentation-report",
+        "path": "docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md",
+        "description": "Improved process next-run research plan with seed choices, context pack, candidate pack, and report templates."
+      },
+      {
+        "id": "research-readme-index",
+        "kind": "documentation-report",
+        "path": "docs/research/condition_research/README.md",
+        "description": "Condition research index updated with latest documentation-management principles."
+      },
+      {
+        "id": "architect-review",
+        "kind": "code-review-report",
+        "path": "artifacts/condition-research-doc-system-architect-review.json",
+        "description": "Read-only architect review approving G001 documentation with blockers empty."
+      },
+      {
+        "id": "qa-redteam",
+        "kind": "failure-mode-test-report",
+        "path": "artifacts/condition-research-doc-system-qa-redteam.json",
+        "description": "Read-only QA/red-team review passed after README legacy-flow clarification."
+      },
+      {
+        "id": "doc-verification-report",
+        "kind": "test-report",
+        "path": "artifacts/condition-research-doc-system-verification-report.txt",
+        "description": "Required-marker, whitespace, protected-path, architect review, and QA verification report for the documentation system."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-condition-catalog",
+        "contractRef": "G001: durable knowledge-system/naming plan",
+        "obligation": "Explain why AI/human searchable condition catalogs are needed and map difficult condition ids to human-readable names.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-docs"
+        ],
+        "adversarialCaseRefs": [
+          "case-id-only-prompt",
+          "case-opaque-seed"
+        ]
+      },
+      {
+        "id": "contract-passport-metadata",
+        "contractRef": "G001: metadata every condition must carry",
+        "obligation": "Define Condition Passport metadata including full buy/sell condition text and sha256, metrics, artifacts, promotion status, and next actions.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-docs"
+        ],
+        "adversarialCaseRefs": [
+          "case-missing-code-hash"
+        ]
+      },
+      {
+        "id": "contract-report-system",
+        "contractRef": "G001: future research plan/management/result reports",
+        "obligation": "Specify plan, management, and result report documents and their required contents.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-docs"
+        ],
+        "adversarialCaseRefs": [
+          "case-missing-report-chain"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-docs",
+        "contractRef": "Research documentation knowledge system",
+        "surface": "api/package",
+        "invocation": "Direct file inspection plus required-marker verification over the documentation files.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "doc-verification-report"
+        ]
+      },
+      {
+        "id": "surface-review",
+        "contractRef": "Review gate",
+        "surface": "api/package",
+        "invocation": "Read-only architect and QA/red-team reviews over the documentation files.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "architect-review",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "surface-live-export-final",
+        "contractRef": "Research-only boundary",
+        "surface": "api/package",
+        "status": "not_applicable",
+        "reason": "The goal is documentation-only and explicitly forbids export/live/final promotion; verification is limited to blocked-boundary documentation."
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-id-only-prompt",
+        "contractRef": "No id-only prompts",
+        "scenario": "A future researcher tries to send only condition ids to the LLM.",
+        "expectedBehavior": "Docs require full buy/sell condition text and sha256; id is trace-only.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "knowledge-system-doc",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-opaque-seed",
+        "contractRef": "Human-readable condition names",
+        "scenario": "A difficult id like rr8_12_turnover_min_902=1.5 is not understandable to humans.",
+        "expectedBehavior": "Docs map it to OOSStable_Open902_TurnoverMin_v1 with role and rationale.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "knowledge-system-doc",
+          "next-run-plan-doc"
+        ]
+      },
+      {
+        "id": "case-missing-code-hash",
+        "contractRef": "Condition Passport full-code metadata",
+        "scenario": "A passport lacks buy/sell full text or sha256.",
+        "expectedBehavior": "Research start and Context Pack creation are fail-closed until full text/hash exist.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "knowledge-system-doc",
+          "next-run-plan-doc"
+        ]
+      },
+      {
+        "id": "case-missing-report-chain",
+        "contractRef": "Research report management",
+        "scenario": "A run has no plan/management/result report trail.",
+        "expectedBehavior": "Docs require all three report types before treating research as manageable/reusable.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "knowledge-system-doc"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Documentation marker verification, whitespace check, protected-path check, architect review, and clean QA/red-team review are all clean; blockers empty.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python documentation content verification for required markers",
+      "git diff --check -- docs/research/condition_research/2026-06-30_condition_research_knowledge_system.md docs/research/condition_research/2026-06-30_next_improved_process_research_plan.md docs/research/condition_research/README.md",
+      "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json _v3k_sidecar/v3k_gui_settings.json",
+      "agent://253-G001DocArchitect",
+      "agent://255-G001DocQaClean"
+    ],
+    "blockers": []
+  }
+}

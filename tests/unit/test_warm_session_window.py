@@ -186,6 +186,34 @@ def test_warm_run_timeout_timing_tracks_recovery_counters(monkeypatch):
     assert timing["back_count"] == 2
     assert timing["run_elapsed"] >= 0.0
 
+def test_warm_run_timeout_can_skip_recovery(monkeypatch):
+    session = warm.WarmBacktestSession(_warm_config(engine_count=2))
+    session._prepared = True
+    session.back_count = 2
+    session.back_eques = []
+    monkeypatch.setattr(warm, "_get_backtest_last_rowid", lambda: 10)
+    monkeypatch.setattr(session, "_clear_run_queues", lambda: None)
+    monkeypatch.setattr(session, "_spawn_backtest", lambda *args, **kwargs: _DummyProc(alive=True))
+    monkeypatch.setattr(
+        session,
+        "_recover_after_failure",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("recovery should be skipped")),
+    )
+
+    called = {}
+
+    def _abort(proc, error_message):
+        called["error_message"] = error_message
+        return {"status": "error", "message": error_message, "metrics": None}
+
+    monkeypatch.setattr(session, "_abort_timeout_without_recovery", _abort)
+
+    result = session.run("BUY", "SELL", timeout=1, recover_on_timeout=False)
+
+    assert result["status"] == "error"
+    assert "시간 초과" in called["error_message"]
+    assert result["timing"]["timeout"] is True
+    assert result["timing"]["timeout_count"] == 1
 
 def test_warm_session_page_data_projects_prepare_and_last_run_timing():
     prepare = {"timing": {"prepare_elapsed": 0.1, "status": "ok"}}

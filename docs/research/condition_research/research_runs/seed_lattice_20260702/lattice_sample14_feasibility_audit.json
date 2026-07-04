@@ -1,0 +1,710 @@
+{
+  "schema_version": 1,
+  "sample_count": 14,
+  "status_counts": {
+    "no_trades": 14
+  },
+  "missing_seed_definitions": [],
+  "decision": {
+    "threshold_relaxation_needed": true,
+    "primary_relaxation_targets": [
+      "family_trigger",
+      "regime_filter",
+      "market_cap_tier"
+    ],
+    "keep_locked": [
+      "universe_filter",
+      "time_window",
+      "exit_rule"
+    ],
+    "rationale": "All sampled seeds completed without csv/metrics; entry gates are the likely bottleneck."
+  },
+  "samples": [
+    {
+      "condition_id": "lattice_v1:tick_0900_small_low:momentum_breakout",
+      "cell_id": "tick_0900_small_low",
+      "family": "momentum_breakout",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0900_small_low:momentum_breakout] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_first10.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "90000 <= hhmmss < 90500",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "market_cap < 1500.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "0.0 <= change_pct < 3.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "price >= high * 0.995",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    },
+    {
+      "condition_id": "lattice_v1:tick_0900_small_low:prevday_active",
+      "cell_id": "tick_0900_small_low",
+      "family": "prevday_active",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0900_small_low:prevday_active] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_first10.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "90000 <= hhmmss < 90500",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "market_cap < 1500.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "0.0 <= change_pct < 3.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "prev_same_time_ratio >= 50.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    },
+    {
+      "condition_id": "lattice_v1:tick_0900_small_low:strength_surge",
+      "cell_id": "tick_0900_small_low",
+      "family": "strength_surge",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0900_small_low:strength_surge] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_first10.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "90000 <= hhmmss < 90500",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "market_cap < 1500.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "0.0 <= change_pct < 3.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "execution_strength >= 110.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    },
+    {
+      "condition_id": "lattice_v1:tick_0900_small_low:volume_surge",
+      "cell_id": "tick_0900_small_low",
+      "family": "volume_surge",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0900_small_low:volume_surge] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_first10.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "90000 <= hhmmss < 90500",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "market_cap < 1500.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "0.0 <= change_pct < 3.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "trade_value_per_sec >= avg(30) * 2.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    },
+    {
+      "condition_id": "lattice_v1:tick_0900_small_mid:momentum_breakout",
+      "cell_id": "tick_0900_small_mid",
+      "family": "momentum_breakout",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0900_small_mid:momentum_breakout] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_first10.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "90000 <= hhmmss < 90500",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "market_cap < 1500.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "3.0 <= change_pct < 8.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "price >= high * 0.995",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    },
+    {
+      "condition_id": "lattice_v1:tick_0900_small_mid:prevday_active",
+      "cell_id": "tick_0900_small_mid",
+      "family": "prevday_active",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0900_small_mid:prevday_active] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_first10.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "90000 <= hhmmss < 90500",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "market_cap < 1500.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "3.0 <= change_pct < 8.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "prev_same_time_ratio >= 50.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    },
+    {
+      "condition_id": "lattice_v1:tick_0900_small_mid:strength_surge",
+      "cell_id": "tick_0900_small_mid",
+      "family": "strength_surge",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0900_small_mid:strength_surge] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_first10.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "90000 <= hhmmss < 90500",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "market_cap < 1500.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "3.0 <= change_pct < 8.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "execution_strength >= 110.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    },
+    {
+      "condition_id": "lattice_v1:tick_0900_small_mid:volume_surge",
+      "cell_id": "tick_0900_small_mid",
+      "family": "volume_surge",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0900_small_mid:volume_surge] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_first10.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "90000 <= hhmmss < 90500",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "market_cap < 1500.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "3.0 <= change_pct < 8.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "trade_value_per_sec >= avg(30) * 2.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    },
+    {
+      "condition_id": "lattice_v1:tick_0900_small_high:momentum_breakout",
+      "cell_id": "tick_0900_small_high",
+      "family": "momentum_breakout",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0900_small_high:momentum_breakout] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_first10.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "90000 <= hhmmss < 90500",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "market_cap < 1500.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "8.0 <= change_pct < 29.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "price >= high * 0.995",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    },
+    {
+      "condition_id": "lattice_v1:tick_0900_small_high:prevday_active",
+      "cell_id": "tick_0900_small_high",
+      "family": "prevday_active",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0900_small_high:prevday_active] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_first10.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "90000 <= hhmmss < 90500",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "market_cap < 1500.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "8.0 <= change_pct < 29.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "prev_same_time_ratio >= 50.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    },
+    {
+      "condition_id": "lattice_v1:tick_0905_large_high:volume_surge",
+      "cell_id": "tick_0905_large_high",
+      "family": "volume_surge",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0905_large_high:volume_surge] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_stratified_probe.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "90500 <= hhmmss < 91000",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "market_cap >= 10000.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "8.0 <= change_pct < 29.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "trade_value_per_sec >= avg(30) * 2.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    },
+    {
+      "condition_id": "lattice_v1:tick_0910_midlarge_high:strength_surge",
+      "cell_id": "tick_0910_midlarge_high",
+      "family": "strength_surge",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0910_midlarge_high:strength_surge] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_stratified_probe.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "91000 <= hhmmss < 91500",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "3000.0 <= market_cap < 10000.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "8.0 <= change_pct < 29.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "execution_strength >= 110.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    },
+    {
+      "condition_id": "lattice_v1:tick_0915_large_mid:momentum_breakout",
+      "cell_id": "tick_0915_large_mid",
+      "family": "momentum_breakout",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0915_large_mid:momentum_breakout] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_stratified_probe.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "91500 <= hhmmss < 92000",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "market_cap >= 10000.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "3.0 <= change_pct < 8.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "price >= high * 0.995",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    },
+    {
+      "condition_id": "lattice_v1:tick_0920_midlarge_low:prevday_active",
+      "cell_id": "tick_0920_midlarge_low",
+      "family": "prevday_active",
+      "runtime_status": "no_trades",
+      "raw_status": "error",
+      "reason": "[lattice_v1:tick_0920_midlarge_low:prevday_active] backtest failed: warm backtest non-success: status=success message=백테스트 완료 csv=no",
+      "trade_count": 0,
+      "source_results": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_stratified_probe.json",
+      "gates": [
+        {
+          "gate": "universe_filter",
+          "condition": "interest_universe == 1",
+          "feasibility": "data_dependent",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "time_window",
+          "condition": "92000 <= hhmmss < 92500",
+          "lane": "tick",
+          "feasibility": "structural_ok",
+          "relaxation_candidate": false
+        },
+        {
+          "gate": "market_cap_tier",
+          "condition": "3000.0 <= market_cap < 10000.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "regime_filter",
+          "condition": "0.0 <= change_pct < 3.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "family_trigger",
+          "condition": "prev_same_time_ratio >= 50.0",
+          "feasibility": "strict_axis",
+          "relaxation_candidate": true
+        },
+        {
+          "gate": "exit_rule",
+          "condition": "take_profit=2.0 stop_loss=2.0 max_hold=180 force_exit=92900",
+          "feasibility": "post_entry_only",
+          "relaxation_candidate": false
+        }
+      ]
+    }
+  ]
+}

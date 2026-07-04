@@ -1,0 +1,7 @@
+G007 adversarial coverage
+- Promotion preset with configured MDD 35% is normalized to effective hard cap 15%; compute_fitness uses the effective config before winner scoring.
+- Research/promotion MIN presets force full-session start/end policy and cold/warm backtest paths receive effective start/end windows.
+- Condition-discovery page-data projection exceptions fail closed with explicit error payload and all-false advisory authority.
+- Malformed hypotheses normalize safely and do not erase page_data.
+- Human DB pattern-card exact/threshold/performance copying is blocked before save_strategy_to_db; retry saves only a passing candidate.
+- Browser DOM checks confirm no duplicate nested lab/wiki buttons, no STOM 연구실 inside wiki/lab, no internal-navigation explanation copy, and one merged heatmap+Edge Ratio surface.

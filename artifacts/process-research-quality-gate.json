@@ -1,0 +1,278 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Final architect review FinalReview subagent cleared architecture/product/code after watch fixes: process selector label/title fallback, exact can_promote/can_export/can_live capability authority, server-side advisory/promotion guardrails, warm timing metadata projection, phase/current_step/step_timings compatibility, and generated bundle pin coverage.",
+    "commands": [
+      "architect review: FinalReview subagent",
+      "python -m pytest tests/unit/test_launch_config.py tests/unit/test_condition_discovery_policy.py tests/unit/test_dashboard_validation_views.py tests/unit/test_warm_session_window.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/dashboard/test_p11_process_flow.py tests/unit/test_process_timing.py tests/unit/test_dashboard_engine_progress_contract.py tests/unit/test_dashboard_phase_mapping.py -q -> 154 passed in 16.09s",
+      "npm run build:app (cwd ai_strategy_loop/dashboard/webui-build) -> app.js v=91fec92d, stom-ui.js v=f41f5701",
+      "npm run harness (cwd ai_strategy_loop/dashboard/webui-build) -> allPass true",
+      "browser automation http://127.0.0.1:8770/ui/evolution/process?fresh=91fec92d -> native process panels present, no iframe, screenshot captured",
+      "python scripts/verify_nonrelease_sync.py -> OK",
+      "git diff --check -> no whitespace errors; CRLF warnings only",
+      "protected runtime path git status check -> no output"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Final executor QA FinalQa subagent passed contract, surface, and adversarial coverage. Browser evidence shows the served Process route using app.js v=91fec92d renders the process selector, full advisory/frozen pipeline, warm timing metadata, 5-step graph, capability labels, and no legacy process iframe. Scoped verification passed; full tests/unit currently has 8 unrelated pre-existing/out-of-scope failures documented in artifacts/process-research-verification-summary.json.",
+    "e2eCommands": [
+      "python -m pytest tests/unit/test_launch_config.py tests/unit/test_condition_discovery_policy.py tests/unit/test_dashboard_validation_views.py tests/unit/test_warm_session_window.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/dashboard/test_p11_process_flow.py tests/unit/test_process_timing.py tests/unit/test_dashboard_engine_progress_contract.py tests/unit/test_dashboard_phase_mapping.py -q",
+      "npm run build:app",
+      "npm run harness",
+      "browser automation /ui/evolution/process?fresh=91fec92d"
+    ],
+    "redTeamCommands": [
+      "FinalQa subagent adversarial cases: mismatched-selector-preset, score-authority-smuggling, research-advisory-promotion, promotion-without-frozen-human-gates, warm-metadata-key-drift, served-page-stale-iframe",
+      "python -m pytest tests/unit/test_condition_discovery_policy.py tests/unit/dashboard/test_p11_process_flow.py tests/unit/test_warm_session_window.py -q"
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-process-verification",
+        "kind": "browser-automation",
+        "path": "artifacts/process-research-browser-verification.json",
+        "description": "Browser transcript for /ui/evolution/process?fresh=91fec92d with selector, pipeline, warm panel, graph, timing, capability, and no-iframe checks."
+      },
+      {
+        "id": "process-page-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/process-research-pipeline-process-page-final.png",
+        "description": "Non-uniform screenshot of the native Process page showing process selector, advisory/frozen pipeline, warm timing metadata, capability pills, and default gates."
+      },
+      {
+        "id": "verification-summary",
+        "kind": "typed-receipt",
+        "path": "artifacts/process-research-verification-summary.json",
+        "description": "Command/result receipt for targeted pytest, build, harness, browser evidence, nonrelease sync, diff check, protected paths, and full unit-suite known failures."
+      },
+      {
+        "id": "api-package-receipt",
+        "kind": "api-test-report",
+        "path": "artifacts/process-research-api-package-receipt.json",
+        "description": "Typed receipt for API/package source verification, bundle build, harness, nonrelease sync, diff check, and protected path check."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-mismatch-fail-closed",
+        "contractRef": "Process code/name/number selector must resolve through one authority and reject mismatched explicit preset/process combinations.",
+        "obligation": "config_from_dict and policy projection fail closed instead of silently choosing a conflicting preset.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-policy-api",
+          "surface-verification-suite"
+        ],
+        "adversarialCaseRefs": [
+          "case-mismatched-selector-preset"
+        ]
+      },
+      {
+        "id": "contract-advisory-no-promotion",
+        "contractRef": "Fast/research lanes are advisory and must not promote, export, or enable live behavior.",
+        "obligation": "can_promote/can_export/can_live remain false; promotion/export/live stay blocked without approval.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-policy-api",
+          "surface-process-web"
+        ],
+        "adversarialCaseRefs": [
+          "case-research-advisory-promotion",
+          "case-score-authority-smuggling"
+        ]
+      },
+      {
+        "id": "contract-promotion-review-gates",
+        "contractRef": "Promotion review requires frozen prompt/equity/validation evidence, hard gates, and human approval.",
+        "obligation": "Promotion review is selectable for review but does not itself authorize export/live/promotion.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-policy-api",
+          "surface-process-web"
+        ],
+        "adversarialCaseRefs": [
+          "case-promotion-without-frozen-human-gates"
+        ]
+      },
+      {
+        "id": "contract-warm-timing",
+        "contractRef": "Warm-session 32/64 benchmark research needs additive timing metadata visible to the dashboard.",
+        "obligation": "prepare/run timing, engine/back counts, timeouts and recovery counters are captured without changing queue/process semantics.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-warm-api",
+          "surface-process-web"
+        ],
+        "adversarialCaseRefs": [
+          "case-warm-metadata-key-drift"
+        ]
+      },
+      {
+        "id": "contract-native-process-page",
+        "contractRef": "Process dashboard must show a native detailed process view with process selector, full pipeline, capability state, and warm metadata, not the old process_flow iframe.",
+        "obligation": "Served route renders native panels from the fresh generated bundle and no iframe.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-process-web"
+        ],
+        "adversarialCaseRefs": [
+          "case-served-page-stale-iframe"
+        ]
+      },
+      {
+        "id": "contract-protected-runtime-paths",
+        "contractRef": "Project AGENTS protected/runtime paths and V3K gates must remain untouched.",
+        "obligation": "No _database/_log/db/backtest graph/v3k settings side effects; nonrelease sync still passes.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-verification-suite"
+        ],
+        "adversarialCaseRefs": [
+          "case-protected-path-side-effect"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-policy-api",
+        "contractRef": "Process catalog and governance policy API",
+        "surface": "api",
+        "invocation": "Unit tests exercise ai_strategy_loop.controller.condition_discovery and ai_strategy_loop.launch_config selector/preset projections.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-package-receipt"
+        ]
+      },
+      {
+        "id": "surface-warm-api",
+        "contractRef": "Warm-session timing metadata API",
+        "surface": "api",
+        "invocation": "Unit tests exercise cli.warm_session.prepare/run timing and ai_strategy_loop.controller.loop page_data warm_session projection.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-package-receipt"
+        ]
+      },
+      {
+        "id": "surface-process-web",
+        "contractRef": "Dashboard Process route",
+        "surface": "web",
+        "invocation": "Browser automation loaded http://127.0.0.1:8770/ui/evolution/process?fresh=91fec92d and checked native process panels plus screenshot evidence.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-process-verification",
+          "process-page-screenshot"
+        ]
+      },
+      {
+        "id": "surface-verification-suite",
+        "contractRef": "Repository verification and safety checks",
+        "surface": "package",
+        "invocation": "Scoped pytest, npm build/harness, verify_nonrelease_sync.py, git diff --check, protected runtime-path status check, and full unit-suite scan were run and recorded.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "api-package-receipt"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-mismatched-selector-preset",
+        "contractRef": "process/preset mismatch fail-closed",
+        "scenario": "Supply process selector fast-discovery while preset projects to process-research.",
+        "expectedBehavior": "Reject with an explicit mismatch error; do not silently fall back.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary",
+          "api-package-receipt"
+        ]
+      },
+      {
+        "id": "case-score-authority-smuggling",
+        "contractRef": "capability pills must not trust score_can_* aliases",
+        "scenario": "Try to make score_can_promote/export/live authority drive dashboard capability display.",
+        "expectedBehavior": "Frontend only accepts exact can_promote/can_export/can_live governance keys.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary",
+          "api-package-receipt"
+        ]
+      },
+      {
+        "id": "case-research-advisory-promotion",
+        "contractRef": "research lane advisory only",
+        "scenario": "Treat process-research scoring/evidence as promotion-ready authority.",
+        "expectedBehavior": "Research lane remains advisory with can_promote/can_export/can_live false and an advisory_process_only blocker.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary",
+          "api-package-receipt"
+        ]
+      },
+      {
+        "id": "case-promotion-without-frozen-human-gates",
+        "contractRef": "promotion review guardrails",
+        "scenario": "Treat selecting promotion-review as enough to export/live/promote.",
+        "expectedBehavior": "Promotion review still blocks without frozen prompt/equity/validation evidence, hard gates, and human approval; can_export/can_live remain false.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary",
+          "api-package-receipt"
+        ]
+      },
+      {
+        "id": "case-warm-metadata-key-drift",
+        "contractRef": "warm timing frontend/backend contract",
+        "scenario": "Backend emits timing metadata but frontend reads different keys.",
+        "expectedBehavior": "Backend projects prepare_elapsed_sec, last_run_elapsed_sec/run_elapsed_sec, engine_count/back_count/status and frontend reads those exact keys with fallbacks.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary",
+          "api-package-receipt"
+        ]
+      },
+      {
+        "id": "case-served-page-stale-iframe",
+        "contractRef": "native Process route",
+        "scenario": "Served route renders stale /process_flow iframe or old bundle.",
+        "expectedBehavior": "Fresh app.js v=91fec92d renders native Process panels with no iframe.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-process-verification",
+          "process-page-screenshot"
+        ]
+      },
+      {
+        "id": "case-protected-path-side-effect",
+        "contractRef": "protected runtime paths",
+        "scenario": "Implementation accidentally writes _database/_log/db/backtest graph/v3k settings runtime paths.",
+        "expectedBehavior": "Protected runtime path status check has no output and nonrelease sync remains OK.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-summary"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "All watch findings were fixed and the full blocking verification loop was rerun: selected process metadata now supports label/title/name/code/preset/slug/key, score_can_* aliases were removed from capability authority, warm timing mapping is pinned, generated bundle was rebuilt to app.js v=91fec92d, native Process route was browser-verified, nonrelease/protected-path checks passed, and final architect/QA lanes returned no blockers.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m pytest tests/unit/test_launch_config.py tests/unit/test_condition_discovery_policy.py tests/unit/test_dashboard_validation_views.py tests/unit/test_warm_session_window.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/dashboard/test_p11_process_flow.py tests/unit/test_process_timing.py tests/unit/test_dashboard_engine_progress_contract.py tests/unit/test_dashboard_phase_mapping.py -q",
+      "npm run build:app",
+      "npm run harness",
+      "browser automation /ui/evolution/process?fresh=91fec92d",
+      "python scripts/verify_nonrelease_sync.py",
+      "git diff --check",
+      "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json"
+    ],
+    "blockers": []
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect final post-slop review 227-G001ArchitectPostSlop returned CLEAR/CLEAR/CLEAR/APPROVE with no blockers for Context Pack source inclusion, budget fail-closed behavior, Analysis Card v2 fields, recursive authority-smuggling rejection across all serialized fields, parent hash mismatch rejection, safe false validation provenance, and research-only boundaries.",
+    "commands": [
+      "architect review: 227-G001ArchitectPostSlop"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Focused unit/adversarial verification passed (117 tests; artifact://1862), py_compile passed, protected-path status was clean, QA red-team 229-G001QaPostSlop reported pass with no blockers, and slop cleanup 228-G001SlopPostSlop reported PASS with no blockers.",
+    "e2eCommands": [
+      "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_research_loop.py -q"
+    ],
+    "redTeamCommands": [
+      "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py -q",
+      "QA red-team review: 229-G001QaPostSlop"
+    ],
+    "artifactRefs": [
+      {
+        "id": "focused-tests",
+        "kind": "test-report",
+        "path": "artifacts/g001-context-pack-foundations-focused-test-report.txt",
+        "description": "Focused pytest run covering prompt contracts, condition discovery policy, and research loop regressions: 117 passed (artifact://1862)."
+      },
+      {
+        "id": "verification-summary",
+        "kind": "api-package-test-report",
+        "path": "artifacts/g001-context-pack-foundations-verification-summary.json",
+        "description": "Structured G001 verification summary with command and review evidence."
+      },
+      {
+        "id": "architect-review",
+        "kind": "api-package-review-report",
+        "path": "artifacts/g001-context-pack-foundations-architect-review.json",
+        "description": "Architecture/product/code review with CLEAR/APPROVE verdict."
+      },
+      {
+        "id": "slop-cleaner",
+        "kind": "code-cleanup-review-report",
+        "path": "artifacts/g001-context-pack-foundations-slop-cleaner.json",
+        "description": "AI slop cleanup report with PASS and zero blockers."
+      },
+      {
+        "id": "qa-redteam",
+        "kind": "property-test-report",
+        "path": "artifacts/g001-context-pack-foundations-qa-redteam.json",
+        "description": "QA/red-team report covering authority smuggling, hash mismatch, source missing, and budget overflow adversarial cases."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-context-pack",
+        "contractRef": "G001 Context Pack",
+        "obligation": "Include full STOM sources, source hashes, parent buy/sell code hashes, analysis context, research-only authority, and fail-closed 250k budget/source checks.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-api-package",
+          "surface-algorithm"
+        ],
+        "adversarialCaseRefs": [
+          "case-source-missing",
+          "case-budget-overflow",
+          "case-context-authority-smuggling"
+        ]
+      },
+      {
+        "id": "contract-analysis-card",
+        "contractRef": "G001 Analysis Card v2",
+        "obligation": "Record parent condition source records, official metrics, segment/feature/edge/MFE/MAE/correlation context, mutation contract, safe validation provenance, and research-only authority.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-api-package",
+          "surface-algorithm"
+        ],
+        "adversarialCaseRefs": [
+          "case-card-authority-smuggling",
+          "case-parent-hash-mismatch"
+        ]
+      },
+      {
+        "id": "contract-research-only",
+        "contractRef": "Approved plan safety boundary",
+        "obligation": "No export, no live wiring, no final promotion, and protected paths unchanged.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-api-package"
+        ],
+        "adversarialCaseRefs": [
+          "case-research-fed-validation-blocked"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-api-package",
+        "contractRef": "Python helper APIs",
+        "surface": "api/package",
+        "invocation": "Focused pytest import and helper contract tests",
+        "verdict": "passed",
+        "artifactRefs": [
+          "focused-tests",
+          "verification-summary"
+        ]
+      },
+      {
+        "id": "surface-algorithm",
+        "contractRef": "Hash, budget, and authority invariant checks",
+        "surface": "algorithm/math",
+        "invocation": "Unit/adversarial tests plus QA red-team review",
+        "verdict": "passed",
+        "artifactRefs": [
+          "focused-tests",
+          "qa-redteam"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-source-missing",
+        "contractRef": "Context Pack full STOM sources",
+        "scenario": "Required STOM source asset missing",
+        "expectedBehavior": "Fail closed before rendering",
+        "verdict": "passed",
+        "artifactRefs": [
+          "focused-tests",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-budget-overflow",
+        "contractRef": "Context Pack 250k budget",
+        "scenario": "Rendered pack exceeds max_tokens",
+        "expectedBehavior": "Raise research_context_pack_budget_exceeded",
+        "verdict": "passed",
+        "artifactRefs": [
+          "focused-tests",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-context-authority-smuggling",
+        "contractRef": "Prompt context research-only boundary",
+        "scenario": "Truthy can_final_promote/can_live/production_ready in model-visible context",
+        "expectedBehavior": "Raise research_context_authority_smuggling",
+        "verdict": "passed",
+        "artifactRefs": [
+          "focused-tests",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-card-authority-smuggling",
+        "contractRef": "Analysis Card research-only boundary",
+        "scenario": "Truthy promotion/export/live keys in flags or non-flag card fields",
+        "expectedBehavior": "Raise research_authority_smuggling",
+        "verdict": "passed",
+        "artifactRefs": [
+          "focused-tests",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-parent-hash-mismatch",
+        "contractRef": "Parent source integrity",
+        "scenario": "Supplied parent code hash does not match code",
+        "expectedBehavior": "Raise parent_condition_hash_mismatch",
+        "verdict": "passed",
+        "artifactRefs": [
+          "focused-tests",
+          "qa-redteam"
+        ]
+      },
+      {
+        "id": "case-research-fed-validation-blocked",
+        "contractRef": "Promotion review separation",
+        "scenario": "Research-fed validation provenance is used for promotion",
+        "expectedBehavior": "Promotion blockers remain present",
+        "verdict": "passed",
+        "artifactRefs": [
+          "focused-tests",
+          "qa-redteam"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Blocking QA/slop findings were fixed and the full focused verification loop was rerun cleanly. AI SLOP CLEANUP REPORT: 228-G001SlopPostSlop PASS with zero blockers. Final architect review 227-G001ArchitectPostSlop and QA red-team 229-G001QaPostSlop both returned no blockers.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py tests/unit/test_research_loop.py -q",
+      "python -m py_compile ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py",
+      "git diff --check -- ai_strategy_loop/brain/prompt.py ai_strategy_loop/controller/condition_discovery.py tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_discovery_policy.py",
+      "git status --short -- protected runtime paths"
+    ],
+    "blockers": []
+  }
+}

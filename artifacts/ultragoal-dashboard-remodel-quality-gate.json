@@ -1,0 +1,482 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Final review synthesis: agent://125-DashboardRemodelReview returned architecture CLEAR, recommendation APPROVE, blockers []; agent://127-DashboardSlopCleaner returned PASS with zero blocking findings; parent verification reran build, focused tests, browser route checks, git diff --check, and protected-path status after the final app.js 3bc2305b build. Product/code statuses are CLEAR because every phase 0-6 contract has direct source, test, and browser evidence and all blockers arrays are empty.",
+    "commands": [
+      "architect review agent://125-DashboardRemodelReview",
+      "AI slop cleanup agent://127-DashboardSlopCleaner",
+      "npm run build:app (ai_strategy_loop/dashboard/webui-build) -> app.js v=3bc2305b, stom-ui.js v=f41f5701",
+      "python -m pytest tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_dashboard_research_lab_frontend.py tests/unit/dashboard/test_p11_process_flow.py tests/unit/test_process_timing.py tests/unit/dashboard/test_track_z_pr1_harness.py tests/unit/test_dashboard_validation_views.py tests/unit/dashboard/test_research_records_frontend.py tests/unit/dashboard/test_evolution_gui_parity.py tests/unit/dashboard/test_p14_build_harness.py -q -> 123 passed",
+      "browser automation at http://127.0.0.1:8770 with ?fresh=3bc2305b -> artifacts/ultragoal-dashboard-remodel-browser-current.json",
+      "git diff --check -> only LF/CRLF warnings in pre-existing test files, no whitespace errors",
+      "git status --short -- protected runtime paths -> no output"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA/red-team agent://126-DashboardQaRedTeam returned passed with no blockers across contracts and adversarial cases. Parent reran the browser-served route sweep after the final bundle hash 3bc2305b and confirmed no process iframe, no Lab fullscreen text, Home summary cards only, Lab-owned edge heatmap, native Process page, Workbench/Records no duplicate Lab surface, and Evolution GUI parity large mode. Focused tests passed 123/123 and CLI replay matched recorded stdout.",
+    "e2eCommands": [
+      "npm run build:app in ai_strategy_loop/dashboard/webui-build",
+      "python -m pytest tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_dashboard_research_lab_frontend.py tests/unit/dashboard/test_p11_process_flow.py tests/unit/test_process_timing.py tests/unit/dashboard/test_track_z_pr1_harness.py tests/unit/test_dashboard_validation_views.py tests/unit/dashboard/test_research_records_frontend.py tests/unit/dashboard/test_evolution_gui_parity.py tests/unit/dashboard/test_p14_build_harness.py -q",
+      "browser automation loaded /ui/evolution, /ui/evolution/lab, /ui/evolution/process, /ui/evolution/workbench, /ui/evolution/records on http://127.0.0.1:8770?fresh=3bc2305b"
+    ],
+    "redTeamCommands": [
+      "executor QA/red-team agent://126-DashboardQaRedTeam",
+      "AI slop cleanup agent://127-DashboardSlopCleaner",
+      "git diff --check",
+      "git status --short -- _database _database_v3k_shadow _log backup '*.db' backtest/graph .omx/reports 'v3k_settings*.json'",
+      "bun -e \"console.log('ultragoal-dashboard-remodel-ok')\""
+    ],
+    "artifactRefs": [
+      {
+        "id": "browser-routes-current",
+        "kind": "browser-automation",
+        "path": "artifacts/ultragoal-dashboard-remodel-browser-current.json",
+        "description": "Fresh browser automation transcript from http://127.0.0.1:8770 covering Home, Lab, Process, Workbench, and Records routes with current bundle 3bc2305b."
+      },
+      {
+        "id": "screenshot-home-current",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-overview-20260624-current.png",
+        "description": "Non-uniform screenshot of Condition AI Home with research-suite cards, progress/process panels, and large GUI parity section."
+      },
+      {
+        "id": "screenshot-lab-current",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-lab-20260624-current.png",
+        "description": "Non-uniform screenshot of Research Lab with Lab-owned Edge Ratio/time×market-cap heatmap and no Lab fullscreen control."
+      },
+      {
+        "id": "screenshot-process-current",
+        "kind": "screenshot",
+        "path": "artifacts/ultragoal-process-20260624-current.png",
+        "description": "Non-uniform screenshot of native Process page with no process_flow iframe."
+      },
+      {
+        "id": "cli-replay-current",
+        "kind": "command-replay",
+        "path": "artifacts/ultragoal-dashboard-remodel-cli-replay-current.json",
+        "description": "Checkpoint-compatible safe CLI replay receipt with replaySafe true and recorded stdout."
+      },
+      {
+        "id": "adversarial-report-current",
+        "kind": "failure-mode-test",
+        "path": "artifacts/ultragoal-dashboard-remodel-adversarial-report.txt",
+        "description": "Adversarial report covering stale iframe/fullscreen/duplicate owner/oversized heatmap/invented stats/cache-pin regressions."
+      },
+      {
+        "id": "architect-review",
+        "kind": "api-test-report",
+        "path": "artifacts/ultragoal-dashboard-remodel-architect-review.json",
+        "description": "Architect review receipt: CLEAR architecture, APPROVE recommendation, no blockers."
+      },
+      {
+        "id": "qa-red-team",
+        "kind": "api-test-report",
+        "path": "artifacts/ultragoal-dashboard-remodel-qa-redteam.json",
+        "description": "Executor QA/red-team report: passed contract coverage, surface evidence, adversarial cases, and no blockers."
+      },
+      {
+        "id": "slop-cleaner",
+        "kind": "api-test-report",
+        "path": "artifacts/ultragoal-dashboard-remodel-slop-cleaner.json",
+        "description": "AI slop cleanup sweep: PASS with zero blocking findings; non-blocking copy advisory fixed before final build."
+      },
+      {
+        "id": "verification-receipt",
+        "kind": "api-test-report",
+        "path": "artifacts/ultragoal-dashboard-remodel-verification-receipt.json",
+        "description": "Typed receipt for final build, focused pytest, git diff --check, and protected path checks."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-phase0-static-runtime",
+        "contractRef": "G001 Phase 0 runtime/stale-contract preflight",
+        "obligation": "Frontend/static contract tests and inventories require served bundle regeneration, CSS cache pin consistency, native Process contract, and no Research Lab fullscreen requirement.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-source-contracts",
+          "surface-build-tests",
+          "surface-browser-dashboard"
+        ],
+        "adversarialCaseRefs": [
+          "case-cache-pin-mismatch",
+          "case-stale-process-iframe",
+          "case-lab-fullscreen"
+        ]
+      },
+      {
+        "id": "contract-phase1-lab-heatmap",
+        "contractRef": "G002 Phase 1 Lab fullscreen removal and bounded Edge heatmap",
+        "obligation": "ResearchLabPanel has no fullscreen state/control and Lab owns integrated Edge Ratio + time×market-cap heatmap with canonical axes, sparse blanks, bounded sizing, legend/count/tooltips, and controlled scroll.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-lab-browser",
+          "surface-source-lab",
+          "surface-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-lab-fullscreen",
+          "case-oversized-heatmap",
+          "case-duplicate-owner"
+        ]
+      },
+      {
+        "id": "contract-phase2-research-strength",
+        "contractRef": "G003 Phase 2 research visualization/functionality",
+        "obligation": "Variable importance, correlation, and variable combination subviews expose requested controls/context and never invent statistics beyond payload-backed data.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-source-research",
+          "surface-tests",
+          "surface-qa-review"
+        ],
+        "adversarialCaseRefs": [
+          "case-invented-stats",
+          "case-missing-variable-controls"
+        ]
+      },
+      {
+        "id": "contract-phase3-native-process",
+        "contractRef": "G004 Phase 3 native Process tab remodel",
+        "obligation": "Process route uses native ProcessFlowPanel with diagram/status/timing/log/default-gate surfaces, animations/reduced motion, and no embedded /process_flow iframe.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-process-browser",
+          "surface-source-process",
+          "surface-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-stale-process-iframe"
+        ]
+      },
+      {
+        "id": "contract-phase4-home-readability",
+        "contractRef": "G005 Phase 4 Condition AI Home research-suite readability",
+        "obligation": "Condition AI Home exposes live/process/settings/research-suite summaries and navigation cards only, without duplicating Lab/History/Workbench/ResultDetail internals.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-home-browser",
+          "surface-source-home",
+          "surface-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-duplicate-owner",
+          "case-wiki-copy-regression"
+        ]
+      },
+      {
+        "id": "contract-phase5-parity-large",
+        "contractRef": "G006 Phase 5 Evolution GUI Parity one-column large graph mode",
+        "obligation": "Evolution GUI Parity lower graphs render as large one-column stacked charts without passing columns={2} and without regressing shared BacktestTab behavior.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-home-browser",
+          "surface-source-parity",
+          "surface-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-parity-two-column"
+        ]
+      },
+      {
+        "id": "contract-phase6-served-runtime",
+        "contractRef": "G007 Phase 6 served JS/CSS runtime verification",
+        "obligation": "Served runtime is rebuilt, HTML JS/CSS pins match current hashes, browser-served routes at 127.0.0.1:8770 verify current behavior, and focused tests/build/cache checks pass.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-build-tests",
+          "surface-browser-dashboard",
+          "surface-cli"
+        ],
+        "adversarialCaseRefs": [
+          "case-cache-pin-mismatch"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-browser-dashboard",
+        "contractRef": "served dashboard routes",
+        "surface": "web",
+        "invocation": "Browser automation against http://127.0.0.1:8770 routes with ?fresh=3bc2305b",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-routes-current",
+          "screenshot-home-current",
+          "screenshot-lab-current",
+          "screenshot-process-current"
+        ]
+      },
+      {
+        "id": "surface-home-browser",
+        "contractRef": "Condition AI Home",
+        "surface": "web",
+        "invocation": "Browser automation confirmed research-suite-cards present, ResearchLab shell absent, no 리서치 Wiki idle-copy regression, large parity present.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-routes-current",
+          "screenshot-home-current"
+        ]
+      },
+      {
+        "id": "surface-lab-browser",
+        "contractRef": "Research Lab",
+        "surface": "web",
+        "invocation": "Browser automation confirmed Lab shell and Edge heatmap present only on Lab, no fullscreen text, no process iframe.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-routes-current",
+          "screenshot-lab-current"
+        ]
+      },
+      {
+        "id": "surface-process-browser",
+        "contractRef": "Process tab",
+        "surface": "web",
+        "invocation": "Browser automation confirmed native-process-page present and iframe[src*=/process_flow] absent.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-routes-current",
+          "screenshot-process-current"
+        ]
+      },
+      {
+        "id": "surface-source-contracts",
+        "contractRef": "static contracts/inventory",
+        "surface": "package",
+        "invocation": "Source inspection of dashboard-inventory, visual-quality, and track-z harness markers plus focused contract tests.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-receipt",
+          "qa-red-team",
+          "architect-review"
+        ]
+      },
+      {
+        "id": "surface-source-lab",
+        "contractRef": "Lab source",
+        "surface": "package",
+        "invocation": "Source inspection of rl-panel.jsx, analysis.jsx, rl-analysis.jsx, styles.css for Lab ownership and heatmap/analysis controls.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-receipt",
+          "qa-red-team",
+          "slop-cleaner"
+        ]
+      },
+      {
+        "id": "surface-source-research",
+        "contractRef": "Research analysis source",
+        "surface": "package",
+        "invocation": "Source inspection and QA report cover variable importance, correlation, and combo behavior.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-receipt",
+          "qa-red-team",
+          "slop-cleaner"
+        ]
+      },
+      {
+        "id": "surface-source-process",
+        "contractRef": "Process source",
+        "surface": "package",
+        "invocation": "Source inspection and tests cover native ProcessFlowPanel routing and no iframe contract.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-receipt",
+          "qa-red-team",
+          "architect-review"
+        ]
+      },
+      {
+        "id": "surface-source-home",
+        "contractRef": "Home source",
+        "surface": "package",
+        "invocation": "Source inspection confirms ResearchSuiteCards summary/nav owner and no ResearchLabPanel render on Home.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-receipt",
+          "qa-red-team",
+          "slop-cleaner"
+        ]
+      },
+      {
+        "id": "surface-source-parity",
+        "contractRef": "Evolution GUI parity source",
+        "surface": "package",
+        "invocation": "Source inspection confirms layoutMode large-one-column and shared renderer large mode.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-receipt",
+          "qa-red-team",
+          "architect-review"
+        ]
+      },
+      {
+        "id": "surface-build-tests",
+        "contractRef": "focused tests and build",
+        "surface": "package",
+        "invocation": "npm run build:app plus 123 focused pytest tests",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-receipt"
+        ]
+      },
+      {
+        "id": "surface-cli",
+        "contractRef": "safe CLI replay",
+        "surface": "cli",
+        "invocation": "argv replay for allowlisted bun -e print sentinel",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay-current"
+        ]
+      },
+      {
+        "id": "surface-qa-review",
+        "contractRef": "executor QA/red-team",
+        "surface": "package",
+        "invocation": "Executor QA/red-team report with contract coverage, surface evidence, adversarial cases, and no blockers",
+        "verdict": "passed",
+        "artifactRefs": [
+          "qa-red-team"
+        ]
+      },
+      {
+        "id": "surface-tests",
+        "contractRef": "unit/static tests",
+        "surface": "package",
+        "invocation": "Focused pytest suite covering UI remodel, Research Lab, Process, Track Z, validation, records, parity, and build harness",
+        "verdict": "passed",
+        "artifactRefs": [
+          "verification-receipt"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-stale-process-iframe",
+        "contractRef": "Process native contract",
+        "scenario": "A stale iframe or process_flow embed survives the remodel.",
+        "expectedBehavior": "No iframe exists on served routes; Process uses native-process-page and ProcessFlowPanel.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-routes-current",
+          "screenshot-process-current"
+        ]
+      },
+      {
+        "id": "case-lab-fullscreen",
+        "contractRef": "Research Lab fullscreen removal",
+        "scenario": "Research Lab retains fullscreen state/button/text or removes Backtest fullscreen accidentally.",
+        "expectedBehavior": "Lab route/source have no Lab fullscreen control; fullscreen remains only in Backtest result area as required.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-routes-current",
+          "adversarial-report-current"
+        ]
+      },
+      {
+        "id": "case-duplicate-owner",
+        "contractRef": "No duplicate History/Compare/Workbench/Research Lab surfaces",
+        "scenario": "Home/Workbench/Records render Lab internals or duplicate ResultDetail/Compare owners.",
+        "expectedBehavior": "Home has summary cards only; Lab owns Lab shell/edge heatmap; Workbench/Records have no Lab shell/edge heatmap.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-routes-current",
+          "screenshot-home-current",
+          "screenshot-lab-current"
+        ]
+      },
+      {
+        "id": "case-oversized-heatmap",
+        "contractRef": "Bounded Edge Ratio/time×market-cap heatmap",
+        "scenario": "The merged heatmap consumes unbounded horizontal/vertical space or hides sparse data as fake zeros.",
+        "expectedBehavior": "Heatmap uses bounded dimensions/scroll, sparse blank cells, legend/count/tooltips, and source canonical axes.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "screenshot-lab-current",
+          "adversarial-report-current"
+        ]
+      },
+      {
+        "id": "case-invented-stats",
+        "contractRef": "Advisory research analysis honesty",
+        "scenario": "Variable combination/correlation panels fabricate unsupported statistics or promote advisory output as production proof.",
+        "expectedBehavior": "Source/QA show payload-backed stats only and advisory/final-approval separation.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "qa-red-team",
+          "adversarial-report-current"
+        ]
+      },
+      {
+        "id": "case-missing-variable-controls",
+        "contractRef": "Variable importance/correlation/combo strengthening",
+        "scenario": "Variable analysis tabs lack top-N, filter, sample count, selected context, or detail drilldown controls.",
+        "expectedBehavior": "Source/QA cover top-N/show-more, method/axis/run/sample context, filter/list toggle, and selected-pair detail.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "qa-red-team",
+          "adversarial-report-current"
+        ]
+      },
+      {
+        "id": "case-parity-two-column",
+        "contractRef": "Evolution GUI Parity large mode",
+        "scenario": "Evolution GUI Parity still passes columns={2} or renders small two-column lower graphs.",
+        "expectedBehavior": "Source uses layoutMode=large-one-column and browser Home route exposes bt-gui-parity-large.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-routes-current",
+          "screenshot-home-current"
+        ]
+      },
+      {
+        "id": "case-cache-pin-mismatch",
+        "contractRef": "Served runtime/cache pins",
+        "scenario": "Source changes ship without regenerated bundle/hash pins or stale CSS pin mismatch.",
+        "expectedBehavior": "Build output generated app.js v=3bc2305b; all five HTML entries use app.js?v=3bc2305b and styles.css?v=20260624u001; manifest matches.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "adversarial-report-current"
+        ]
+      },
+      {
+        "id": "case-wiki-copy-regression",
+        "contractRef": "Home research-suite readability",
+        "scenario": "Home still advertises Lab navigation as 리서치 Wiki rather than the integrated Research Lab owner.",
+        "expectedBehavior": "Final app.jsx idle link labels Lab as 연구실 and browser Home route hasResearchWikiCopy=false.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "browser-routes-current",
+          "adversarial-report-current"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Full final rerun completed after the last copy fix: AI slop cleanup had zero blocking findings, build regenerated app.js v=3bc2305b, focused pytest passed 123/123, browser route sweep on 127.0.0.1:8770 verified Home/Lab/Process/Workbench/Records served surfaces, CLI replay passed, git diff --check had no errors, protected runtime path status was clean, and all review/QA blocker arrays are empty.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "AI slop cleanup agent://127-DashboardSlopCleaner",
+      "npm run build:app",
+      "python -m pytest tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_dashboard_research_lab_frontend.py tests/unit/dashboard/test_p11_process_flow.py tests/unit/test_process_timing.py tests/unit/dashboard/test_track_z_pr1_harness.py tests/unit/test_dashboard_validation_views.py tests/unit/dashboard/test_research_records_frontend.py tests/unit/dashboard/test_evolution_gui_parity.py tests/unit/dashboard/test_p14_build_harness.py -q",
+      "browser automation at http://127.0.0.1:8770?fresh=3bc2305b",
+      "bun -e \"console.log('ultragoal-dashboard-remodel-ok')\"",
+      "git diff --check",
+      "git status --short -- _database _database_v3k_shadow _log backup '*.db' backtest/graph .omx/reports 'v3k_settings*.json'"
+    ],
+    "blockers": []
+  }
+}

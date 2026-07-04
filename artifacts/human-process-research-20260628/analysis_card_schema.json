@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "kind": "analysis-card-schema",
+  "requiredFields": [
+    "schema_version",
+    "analysis_id",
+    "candidate_id",
+    "run_id",
+    "csv_path",
+    "metrics",
+    "segment_notes",
+    "edge_ratio",
+    "mfe_mae",
+    "loss_clusters",
+    "decision",
+    "next_mutation_hypothesis",
+    "evidence_refs",
+    "safety_flags"
+  ],
+  "safety_flags": {
+    "advisoryOnly": true,
+    "can_promote": false,
+    "can_export": false,
+    "can_live": false
+  }
+}

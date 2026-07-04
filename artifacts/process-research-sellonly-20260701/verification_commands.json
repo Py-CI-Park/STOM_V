@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "sell-only-verification-command-receipt",
+  "createdAt": "2026-07-01T16:28:16.862446+00:00",
+  "commands": [
+    {
+      "command": "python -m py_compile artifacts/process-research-sellonly-20260701/run_sellonly_research.py",
+      "status": "passed"
+    },
+    {
+      "command": "python artifacts/process-research-sellonly-20260701/run_sellonly_research.py",
+      "status": "passed",
+      "evidence": "final_summary.status ok; 64-engine official baseline + 6 candidate backtests"
+    },
+    {
+      "command": "pytest tests/unit/test_research_prompt_contracts.py tests/unit/test_condition_generator.py tests/unit/test_condition_discovery_policy.py -q",
+      "status": "passed",
+      "output": "35 passed in 1.67s"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    },
+    {
+      "command": "git status --short -- _database _database_v3k_shadow _log backup \"*.db\" backtest/graph .omx/reports \"v3k_settings*.json\" _v3k_sidecar/v3k_gui_settings.json",
+      "status": "passed",
+      "output": "no tracked protected path changes"
+    },
+    {
+      "command": "browser open/capture file://.../sell_only_validation_report.html",
+      "status": "passed",
+      "evidence": "screenshot saved to sell_only_validation_report.png"
+    }
+  ],
+  "overallStatus": "passed"
+}

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation",
+  "baseUrl": "http://127.0.0.1:8770",
+  "capturedAt": "2026-06-24T00:00:00Z",
+  "routes": [
+    {
+      "path": "/ui/evolution",
+      "selected": ["조건식 AI", "조건식 AI"],
+      "hasIframe": false,
+      "hasFullscreenText": false,
+      "hasResearchSuiteCards": true,
+      "hasResearchLabShell": false,
+      "hasProcessNative": true,
+      "hasLargeParity": true,
+      "screenshot": "artifacts/ultragoal-overview-20260624.png"
+    },
+    {
+      "path": "/ui/evolution/lab",
+      "selected": ["조건식 AI", "연구실"],
+      "hasIframe": false,
+      "hasFullscreenText": false,
+      "hasResearchLabShell": true,
+      "hasEdgeHeatmapShell": true,
+      "screenshot": "artifacts/ultragoal-lab-20260624.png"
+    },
+    {
+      "path": "/ui/evolution/process",
+      "selected": ["조건식 AI", "프로세스"],
+      "hasIframe": false,
+      "hasFullscreenText": false,
+      "hasProcessNative": true,
+      "screenshot": "artifacts/ultragoal-process-20260624.png"
+    },
+    {
+      "path": "/ui/evolution/workbench",
+      "selected": ["조건식 AI", "분석 워크벤치"],
+      "hasIframe": false,
+      "hasResearchLabShell": false,
+      "hasEdgeHeatmapShell": false
+    }
+  ],
+  "labSubtabs": [
+    {"label": "변수 중요도", "clicked": true, "hasAdvisory": true},
+    {"label": "상관관계", "clicked": true, "hasFilter": true, "hasAdvisory": true, "hasShowMore": true},
+    {"label": "변수 조합", "clicked": true, "hasComboGrid": true, "hasAdvisory": true},
+    {"label": "검증", "clicked": true}
+  ],
+  "screenshots": [
+    "artifacts/ultragoal-overview-20260624.png",
+    "artifacts/ultragoal-lab-20260624.png",
+    "artifacts/ultragoal-process-20260624.png",
+    "artifacts/ultragoal-parity-20260624.png",
+    "artifacts/ultragoal-parity-large-20260624.png"
+  ]
+}

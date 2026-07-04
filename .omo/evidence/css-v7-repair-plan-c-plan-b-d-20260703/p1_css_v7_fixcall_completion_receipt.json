@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-07-03T14:38:59.252842+00:00",
+  "priority": "P1",
+  "status": "complete",
+  "tests": [
+    "python -m pytest tests\\unit\\test_repair_css_v7_call_arity.py -q: 4 passed",
+    "python -m py_compile scripts\\repair_css_v7_call_arity.py tests\\unit\\test_repair_css_v7_call_arity.py: pass"
+  ],
+  "loc": {
+    "scripts/repair_css_v7_call_arity.py": 219,
+    "tests/unit/test_repair_css_v7_call_arity.py": 123
+  },
+  "dry_run": {
+    "status": "dry_run_ok",
+    "schema_version": 1,
+    "dry_run": true,
+    "db_path": "ai_strategy_loop\\state\\loop_strategies.db",
+    "pairs_in": "artifacts\\chart_sulsa_validation_20260702\\pairs_unique.json",
+    "pairs_unique_fixcall": "artifacts\\chart_sulsa_validation_20260702\\pairs_unique_fixcall.json",
+    "backup_path": null,
+    "planned_insert_count": 21,
+    "inserted_count": 0,
+    "pair_count": 21,
+    "conflicts": [],
+    "invalid_runtime_call_count_before_repair": 21,
+    "invalid_runtime_call_count_after_repair": 0
+  },
+  "insert": {
+    "status": "inserted",
+    "schema_version": 1,
+    "dry_run": false,
+    "db_path": "ai_strategy_loop\\state\\loop_strategies.db",
+    "pairs_in": "artifacts\\chart_sulsa_validation_20260702\\pairs_unique.json",
+    "pairs_unique_fixcall": "artifacts\\chart_sulsa_validation_20260702\\pairs_unique_fixcall.json",
+    "backup_path": "ai_strategy_loop\\state\\loop_strategies.db.bak.css_v7_fixcall_20260703T143604Z",
+    "planned_insert_count": 21,
+    "inserted_count": 21,
+    "pair_count": 21,
+    "conflicts": [],
+    "invalid_runtime_call_count_before_repair": 21,
+    "invalid_runtime_call_count_after_repair": 0
+  },
+  "static_gate": {
+    "schema_version": 1,
+    "created_at_utc": "2026-07-03T14:38:59.249234+00:00",
+    "pairs_path": "artifacts\\chart_sulsa_validation_20260702\\pairs_unique_fixcall.json",
+    "pair_count": 21,
+    "checked_rows": {
+      "stockbuy": 21,
+      "stocksell": 21
+    },
+    "missing": [],
+    "invalid_calls": [],
+    "invalid_call_count": 0,
+    "status": "pass"
+  },
+  "runtime_probe": {
+    "status": "complete",
+    "prepare_status": "ok",
+    "pair": {
+      "label": "probe_css_v7_tick_master_fixcall",
+      "buy": "CSS_V7_TICK_B_MASTER_0900_0930_FIXCALL",
+      "sell": "CSS_V7_TICK_S_MASTER_0900_0930_FIXCALL",
+      "elapsed_sec": 15.755,
+      "raw_status": "success",
+      "raw_message": "백테스트 완료",
+      "ok": true,
+      "status": "success",
+      "reason": "ok",
+      "csv_path": "backtest/csv\\stock_bt_CSS_V7_TICK_B_MASTER_0900_0930_FIXCALL_20260703233804.csv",
+      "metrics": {
+        "trade_count": 26,
+        "daily_avg_trades": 13.0,
+        "win_rate": 57.69,
+        "avg_profit_pct": 0.14,
+        "total_profit_pct": 0.72,
+        "total_profit_krw": 178880,
+        "cagr": 89.43,
+        "mdd_pct": 1.46,
+        "mdd_amount": 0.0,
+        "tpi": 1.11,
+        "seed_capital": 25001528.0,
+        "max_hold_count": 5,
+        "avg_hold_time": 193.85,
+        "day_count": 2,
+        "bootstrap_avg": 0.0,
+        "bootstrap_min": 0.0,
+        "bootstrap_max": 0.0
+      },
+      "fitness_error": null,
+      "fitness": {
+        "score": 1.0293915318064732,
+        "gate_passed": true,
+        "reason": "ok",
+        "trade_count": 26,
+        "daily_avg_trades": 13.0,
+        "mdd": 1.46,
+        "profit": 178880.0,
+        "payoff_ratio": 0.9304718875502007,
+        "give_back_rate": 0.0
+      }
+    }
+  },
+  "evidence_paths": [
+    "artifacts\\chart_sulsa_validation_20260702\\css_v7_fixcall_static_gate_receipt.json",
+    "artifacts/chart_sulsa_validation_20260702/css_v7_fixcall_dryrun_receipt.json",
+    "artifacts/chart_sulsa_validation_20260702/css_v7_fixcall_insert_receipt.json",
+    "artifacts/chart_sulsa_validation_20260702/timeout_probe_direct_warm_fixcall_tick_summary.json"
+  ]
+}

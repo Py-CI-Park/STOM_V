@@ -1,0 +1,246 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Final architect review agent://89-G001ArchitectReview2 returned CLEAR/CLEAR/CLEAR and APPROVE with no blockers. It verified Phase 1 additive /bt/result fields, namespaced evidence_id, code-hash-first identity from snapshots only, status/action taxonomy, recover/open/rerun affordances, and success/no_trades-only auto-open. AI slop cleanup rerun agent://86-G001SlopCleaner2 returned PASS with no blocking findings.",
+    "commands": [
+      "architect review agent://89-G001ArchitectReview2",
+      "ai slop cleanup report agent://86-G001SlopCleaner2",
+      "parent verification: python -m pytest tests/unit/dashboard/test_backtest_result_identity.py tests/unit/dashboard/test_backtest_jobs.py tests/unit/test_dashboard_backtest_detail.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q",
+      "parent verification: npm run build in ai_strategy_loop/dashboard/webui-build",
+      "parent verification: browser automation at http://127.0.0.1:8770/ui/backtest?v=g001fresh"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA/red-team rerun agent://90-G001QaRedTeam2 returned passed with no blockers. Parent verification passed 54 focused tests, frontend build, dashboard health check, browser DOM checks, screenshot capture, git diff --check, and protected path status check.",
+    "e2eCommands": [
+      "python -m pytest tests/unit/dashboard/test_backtest_result_identity.py tests/unit/dashboard/test_backtest_jobs.py tests/unit/test_dashboard_backtest_detail.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q",
+      "npm run build",
+      "browser automation loaded http://127.0.0.1:8770/ui/backtest?v=g001fresh and asserted result-library recovery actions"
+    ],
+    "redTeamCommands": [
+      "executor QA/red-team agent://90-G001QaRedTeam2",
+      "git diff --check",
+      "git status --short -- _database _database_v3k_shadow _log backup '*.db' backtest/graph .omx/reports 'v3k_settings*.json'"
+    ],
+    "artifactRefs": [
+      {
+        "id": "g001-browser-dom-check",
+        "kind": "browser-automation",
+        "path": "artifacts/g001-browser-dom-check.json",
+        "description": "Browser automation transcript with monotonic step timestamps confirming the backtest result library, evidence lines, condition confidence, disabled cancelled detail rows, and enabled rerun buttons."
+      },
+      {
+        "id": "g001-dashboard-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/g001-backtest-result-library.png",
+        "description": "Non-uniform screenshot of the live backtest result library at http://127.0.0.1:8770/ui/backtest showing Phase 1 recovery UI."
+      },
+      {
+        "id": "g001-cli-replay",
+        "kind": "command-replay",
+        "path": "artifacts/g001-cli-replay.json",
+        "description": "Checkpoint-compatible safe CLI replay receipt with replaySafe true and recorded stdout."
+      },
+      {
+        "id": "g001-adversarial-report",
+        "kind": "failure-mode-test",
+        "path": "artifacts/g001-adversarial-report.txt",
+        "description": "Adversarial report covering deleted artifacts, cancelled/stale rows, recoverable error rows, no_trades, legacy name-only identity, and demo/generation result branches."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-result-identity",
+        "contractRef": "G001 Phase 1 condition identity and evidence namespace",
+        "obligation": "Expose job/gen/demo evidence_id and condition_identity with code hashes only from captured code snapshots; legacy name-only evidence remains low confidence.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-backend-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-legacy-name-only",
+          "case-generation-demo-fields"
+        ]
+      },
+      {
+        "id": "contract-result-api-additive",
+        "contractRef": "G001 /bt/result backward compatibility",
+        "obligation": "Preserve existing /bt/result fields while adding status/action identity fields on available job, generation, and demo branches.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-backend-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-generation-demo-fields"
+        ]
+      },
+      {
+        "id": "contract-library-actions",
+        "contractRef": "G001 result library recovery actions",
+        "obligation": "Result rows must not trap users in disabled cancelled/missing rows; they must expose explicit open/recover/rerun/report actions according to status taxonomy.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser-dashboard",
+          "surface-backend-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-deleted-artifact",
+          "case-cancelled-rows",
+          "case-recoverable-error"
+        ]
+      },
+      {
+        "id": "contract-auto-open",
+        "contractRef": "G001 success/no_trades auto-detail behavior",
+        "obligation": "Only success and no_trades may auto-open detail; recoverable/problem states require explicit user action.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-browser-dashboard",
+          "surface-backend-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-no-trades",
+          "case-recoverable-error"
+        ]
+      },
+      {
+        "id": "contract-phase-boundary",
+        "contractRef": "Approved plan Phase 1 before later UI phases",
+        "obligation": "Implement only Phase 1 result identity/library recovery and avoid Phase 2-4 UI scope creep before checkpoint.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-backend-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-phase-boundary"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-backend-tests",
+        "contractRef": "Backend API and result identity/status taxonomy behavior",
+        "surface": "algorithm",
+        "invocation": "Focused pytest suite: python -m pytest tests/unit/dashboard/test_backtest_result_identity.py tests/unit/dashboard/test_backtest_jobs.py tests/unit/test_dashboard_backtest_detail.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q (54 passed).",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g001-adversarial-report"
+        ]
+      },
+      {
+        "id": "surface-browser-dashboard",
+        "contractRef": "Live dashboard backtest result library",
+        "surface": "web",
+        "invocation": "Browser automation loaded http://127.0.0.1:8770/ui/backtest?v=g001fresh, inspected DOM buttons/text, verified rerun/evidence/condition-confidence signals, and captured screenshot.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g001-browser-dom-check",
+          "g001-dashboard-screenshot"
+        ]
+      },
+      {
+        "id": "surface-cli-replay",
+        "contractRef": "Checkpoint CLI replay surface",
+        "surface": "cli",
+        "invocation": "Replay-safe argv command in artifacts/g001-cli-replay.json recorded stdout g001-cli-ok.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g001-cli-replay"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-deleted-artifact",
+        "contractRef": "Missing artifact recovery",
+        "scenario": "A job has status success but its CSV artifact is missing after completion.",
+        "expectedBehavior": "The row is not silently openable; it reports artifact_missing/success_without_openable_artifact and exposes recover_result plus rerun_same_condition.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g001-adversarial-report"
+        ]
+      },
+      {
+        "id": "case-cancelled-rows",
+        "contractRef": "Cancelled/stale rows are actionable",
+        "scenario": "The result library contains many cancelled rows with no openable artifacts.",
+        "expectedBehavior": "Detail buttons remain disabled, but rerun buttons are enabled so the library is not a dead cancelled-only trap.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g001-browser-dom-check",
+          "g001-dashboard-screenshot"
+        ]
+      },
+      {
+        "id": "case-recoverable-error",
+        "contractRef": "Recoverable/problem states require explicit user action",
+        "scenario": "An error/cancelled/stale/recoverable job has an artifact or action taxonomy.",
+        "expectedBehavior": "It does not auto-open; manual open/recover/report/rerun actions are shown according to open_actions.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g001-adversarial-report"
+        ]
+      },
+      {
+        "id": "case-no-trades",
+        "contractRef": "no_trades is a valid empty result",
+        "scenario": "A terminal job completes with no trades and no CSV.",
+        "expectedBehavior": "The detail auto-opens with available true, metrics null, and empty analysis instead of an error.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g001-adversarial-report"
+        ]
+      },
+      {
+        "id": "case-legacy-name-only",
+        "contractRef": "Legacy name-only identity",
+        "scenario": "A legacy job/generation record has names but no captured buy_code/sell_code snapshots.",
+        "expectedBehavior": "It remains displayable as name_only_legacy with low confidence and never masquerades as a high-confidence current DB code hash.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g001-adversarial-report"
+        ]
+      },
+      {
+        "id": "case-generation-demo-fields",
+        "contractRef": "Generation and demo /bt/result additive field shape",
+        "scenario": "A consumer requests /bt/result for generation CSV-present, metrics-only, or demo sources.",
+        "expectedBehavior": "Available branches include source_type, evidence_id, condition_identity, status_kind, artifact_state, openable, recoverable, open_actions, and rerun_spec while preserving existing fields.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g001-adversarial-report"
+        ]
+      },
+      {
+        "id": "case-phase-boundary",
+        "contractRef": "Phase order boundary",
+        "scenario": "Phase 1 is implemented before shared ResultDetail/History/IA/editor/replay work.",
+        "expectedBehavior": "No later-phase UI ownership migration is introduced before G001 checkpoint.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g001-adversarial-report"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "The full blocking verification loop was rerun after review findings. AI slop cleaner first found blockers around taxonomy fallback, identity drift, and inconsistent result fields; the code was fixed, cleaner rerun passed, focused tests reran to 54 passed, frontend build reran, architect review reran CLEAR/APPROVE, executor QA/red-team reran passed with no blockers, browser automation and screenshot evidence were captured, and protected paths remained untouched.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m pytest tests/unit/dashboard/test_backtest_result_identity.py tests/unit/dashboard/test_backtest_jobs.py tests/unit/test_dashboard_backtest_detail.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q",
+      "npm run build",
+      "git diff --check",
+      "browser automation on http://127.0.0.1:8770/ui/backtest?v=g001fresh"
+    ],
+    "blockers": []
+  }
+}

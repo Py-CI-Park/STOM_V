@@ -1,0 +1,263 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "G002 architecture/product/code review is clean. ResultDetail review 96-G002ReviewResult approved shared ResultDetailBody, route aliases, and Backtest compatibility. History review 97-G002ReviewHistory approved History ownership, Workbench/overview handoff-only behavior, and inventory consistency. Cleaner reruns 94-G002CleanerHistory2 and 95-G002CleanerContracts2 passed with no blocking findings.",
+    "commands": [
+      "agent://96-G002ReviewResult",
+      "agent://97-G002ReviewHistory",
+      "agent://94-G002CleanerHistory2",
+      "agent://95-G002CleanerContracts2"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA final lane 99-G002QaFinal passed after direct browser evidence for History, Workbench, and Overview. Parent reran focused tests (51 passed), npm build (app.js v=fac81b3b), browser DOM checks, screenshots, CLI replay, and adversarial report.",
+    "e2eCommands": [
+      "python -m pytest tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_dashboard_route_parity.py tests/unit/dashboard/test_backtest_result_identity.py tests/unit/test_dashboard_backtest_detail.py tests/unit/dashboard/test_research_records_frontend.py -q",
+      "npm run build (cwd=ai_strategy_loop/dashboard/webui-build)",
+      "browser automation: /ui/evolution/history -> /ui/evolution/records, /ui/evolution/workbench, /ui/evolution"
+    ],
+    "redTeamCommands": [
+      "agent://99-G002QaFinal",
+      "browser DOM adversarial checks for route fallback, duplicate Workbench/Overview surfaces, and ResultDetail sharing",
+      "bun -e \"console.log('g002-cli-ok')\""
+    ],
+    "artifactRefs": [
+      {
+        "id": "history-dom",
+        "kind": "browser-automation",
+        "path": "artifacts/g002-browser-dom-check.json",
+        "description": "History route automation transcript showing /ui/evolution/records, Run Compare, History archive, ownership text, and app.js v=fac81b3b."
+      },
+      {
+        "id": "history-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/g002-history-workbench-evidence.png",
+        "description": "Non-uniform full-page History screenshot for run/gen ResultDetail and Compare ownership."
+      },
+      {
+        "id": "workbench-dom",
+        "kind": "browser-automation",
+        "path": "artifacts/g002-workbench-dom-check.json",
+        "description": "Workbench route automation transcript showing handoff only and no Run Compare or History archive duplicate."
+      },
+      {
+        "id": "workbench-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/g002-workbench-ownership-evidence.png",
+        "description": "Non-uniform full-page Workbench screenshot proving handoff-only ownership."
+      },
+      {
+        "id": "overview-dom",
+        "kind": "browser-automation",
+        "path": "artifacts/g002-overview-dom-check.json",
+        "description": "Overview route automation transcript showing navigation-only History/Research/Workbench and no duplicate ResultDetail, Run Compare, History archive, or Research Lab data surface."
+      },
+      {
+        "id": "overview-screenshot",
+        "kind": "screenshot",
+        "path": "artifacts/g002-overview-ownership-evidence.png",
+        "description": "Non-uniform full-page Overview screenshot for handoff-only ownership."
+      },
+      {
+        "id": "cli-replay",
+        "kind": "command-replay",
+        "path": "artifacts/g002-cli-replay.json",
+        "description": "Deterministic CLI replay JSON with replaySafe true and recordedStdout g002-cli-ok."
+      },
+      {
+        "id": "adversarial-report",
+        "kind": "failure-mode-test",
+        "path": "artifacts/g002-adversarial-report.txt",
+        "description": "Adversarial/failure-mode report for history alias, History ownership, Workbench/Overview duplication, ResultDetail extraction, and backend route aliases."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-history-owner",
+        "contractRef": "G002 approved plan: History owns run/gen archive, ResultDetail, and Compare",
+        "obligation": "History records surface renders Run Compare, History archive, shared detail context, and ownership text.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-history"
+        ],
+        "adversarialCaseRefs": [
+          "case-history-owner",
+          "case-history-alias"
+        ]
+      },
+      {
+        "id": "contract-workbench-no-duplicate",
+        "contractRef": "G002 approved plan: Workbench does not duplicate History/Compare",
+        "obligation": "Workbench provides handoff to History and does not render Run Compare or History archive.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-workbench"
+        ],
+        "adversarialCaseRefs": [
+          "case-workbench-duplicate"
+        ]
+      },
+      {
+        "id": "contract-overview-no-duplicate",
+        "contractRef": "G002 duplicate-owner cleanup: Overview is navigation/handoff only for History/Research/Workbench",
+        "obligation": "Overview does not render duplicate Run Compare, History archive, ResultDetail body, or Research Lab data surface.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-overview"
+        ],
+        "adversarialCaseRefs": [
+          "case-overview-duplicate"
+        ]
+      },
+      {
+        "id": "contract-result-detail-body",
+        "contractRef": "G002 approved plan: shared presentational ResultDetailBody",
+        "obligation": "ResultDetailBody exists, is exported through backtest charts, has sourceContext, and does not fetch directly.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-static-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-resultdetail-fetch"
+        ]
+      },
+      {
+        "id": "contract-route-alias",
+        "contractRef": "G002 approved plan: route aliases preserve History archive entry",
+        "obligation": "/ui/history and /ui/evolution/history canonicalize to /ui/evolution/records.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-history",
+          "surface-static-tests"
+        ],
+        "adversarialCaseRefs": [
+          "case-history-alias"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-history",
+        "contractRef": "History records web route",
+        "surface": "web",
+        "invocation": "Browser automation opened http://127.0.0.1:8770/ui/evolution/history and observed canonical http://127.0.0.1:8770/ui/evolution/records with Run Compare and History archive.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "history-dom",
+          "history-screenshot"
+        ]
+      },
+      {
+        "id": "surface-workbench",
+        "contractRef": "Workbench web route",
+        "surface": "web",
+        "invocation": "Browser automation opened http://127.0.0.1:8770/ui/evolution/workbench and observed History handoff with no Run Compare or History archive duplicate.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "workbench-dom",
+          "workbench-screenshot"
+        ]
+      },
+      {
+        "id": "surface-overview",
+        "contractRef": "Overview web route",
+        "surface": "web",
+        "invocation": "Browser automation opened http://127.0.0.1:8770/ui/evolution and observed navigation-only History/Research/Workbench, no duplicate owner surfaces.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "overview-dom",
+          "overview-screenshot"
+        ]
+      },
+      {
+        "id": "surface-static-tests",
+        "contractRef": "Static contract and backend route parity tests",
+        "surface": "cli",
+        "invocation": "Focused pytest suite replayed by parent agent; CLI replay artifact also records deterministic safe command.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay",
+          "adversarial-report"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-history-alias",
+        "contractRef": "History legacy routes",
+        "scenario": "/ui/evolution/history must not fall back to overview or 404.",
+        "expectedBehavior": "Route canonicalizes to /ui/evolution/records and History tab is selected.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "history-dom",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-history-owner",
+        "contractRef": "History owns ResultDetail/Compare",
+        "scenario": "History records page should expose Run Compare and History archive in one owner surface.",
+        "expectedBehavior": "Run Compare, History archive, and ownership copy are present on History.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "history-dom",
+          "history-screenshot"
+        ]
+      },
+      {
+        "id": "case-workbench-duplicate",
+        "contractRef": "Workbench no duplicate",
+        "scenario": "Workbench route should not render History-owned Compare/archive content.",
+        "expectedBehavior": "Workbench shows handoff to History and does not render Run Compare or History archive.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "workbench-dom",
+          "workbench-screenshot"
+        ]
+      },
+      {
+        "id": "case-overview-duplicate",
+        "contractRef": "Overview no duplicate",
+        "scenario": "Overview route should not render duplicate Compare, ResultDetail, or Research Lab data surfaces.",
+        "expectedBehavior": "Overview only exposes navigation/handoff and no duplicate owner data surface.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "overview-dom",
+          "overview-screenshot"
+        ]
+      },
+      {
+        "id": "case-resultdetail-fetch",
+        "contractRef": "ResultDetailBody presentational boundary",
+        "scenario": "Shared ResultDetailBody should not own backend fetch behavior.",
+        "expectedBehavior": "Static tests assert no _btFetchJson in ResultDetailBody and confirm backtest-charts export.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "adversarial-report"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI SLOP CLEANUP REPORTS: initial contracts cleaner found two blockers; both were fixed. Rerun cleaners 94-G002CleanerHistory2 and 95-G002CleanerContracts2 passed with no blockers. Full verification rerun after fixes: 51 focused tests passed, npm build passed, browser History/Workbench/Overview evidence refreshed, executor QA final 99-G002QaFinal passed, diff check had only pre-existing CRLF warnings in unrelated tests, protected paths unchanged.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m pytest tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/test_dashboard_route_parity.py tests/unit/dashboard/test_backtest_result_identity.py tests/unit/test_dashboard_backtest_detail.py tests/unit/dashboard/test_research_records_frontend.py -q",
+      "npm run build (cwd=ai_strategy_loop/dashboard/webui-build)",
+      "git diff --check",
+      "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+      "browser automation: History, Workbench, Overview DOM checks and screenshots",
+      "agent://99-G002QaFinal"
+    ],
+    "blockers": []
+  }
+}

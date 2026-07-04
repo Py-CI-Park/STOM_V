@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "kind": "human-process-research-baseline",
+  "createdAt": "2026-06-28T14:36:59.243264+00:00",
+  "mode": "research-only",
+  "branch": "loop/process-research-pipeline",
+  "safety": {
+    "export": false,
+    "live": false,
+    "finalPromotion": false,
+    "protectedPathMutationAllowed": false,
+    "conditionDiscoveryProcess": "process-research",
+    "preset": "research"
+  },
+  "environmentChecks": {
+    "gitStatusShortBranch": "## loop/process-research-pipeline...origin/loop/process-research-pipeline",
+    "nonreleaseSync": "passed: python scripts/verify_nonrelease_sync.py",
+    "protectedPathStatus": "clean: git status --short protected paths returned no entries",
+    "dashboardHealth": "unavailable: http://127.0.0.1:8770/health connection refused during G001 preflight",
+    "runLock": {
+      "lockExists": false,
+      "isLocked": false
+    },
+    "gptOauth": {
+      "authenticated": true,
+      "hasRefreshToken": true,
+      "expired": false,
+      "tokenFile": "C:\\Users\\parkc\\.config\\newsletter-ai\\chatgpt_auth.json"
+    }
+  },
+  "baselineCandidates": [
+    {
+      "id": "rr8_12_turnover_min_902_1_5",
+      "label": "rr8_12_turnover_min_902=1.5",
+      "source": "fallback_champion",
+      "priorEvidence": "4/4 windows, profit_sum=15,694,418, max_mdd=13.58, min_daily=0.50, total_trades=644"
+    },
+    {
+      "id": "rr8_0_cap_max_2500",
+      "label": "rr8_0_cap_max=2500",
+      "source": "fallback_top3",
+      "priorEvidence": "3/4 windows, profit_sum=14,451,817, max_mdd=17.34, min_daily=0.40, total_trades=483"
+    },
+    {
+      "id": "rr8_21_trail_keep_0_7",
+      "label": "rr8_21_trail_keep=0.7",
+      "source": "fallback_top3",
+      "priorEvidence": "3/4 windows, profit_sum=14,223,795, max_mdd=18.84, min_daily=0.40, total_trades=545"
+    },
+    {
+      "id": "gptauth_B_gen8",
+      "label": "GPT-auth B gen8",
+      "source": "gpt_generated_candidate",
+      "priorEvidence": "profit=1,772,126, MDD=15.14, daily=2.3, did not beat fallback champion"
+    }
+  ],
+  "backtestSemantics": {
+    "officialBacktest": "primary evaluator; models betting/order amount, hoga/orderbook fill depth, and Kiwoom fees/tax",
+    "slippageStress": "advisory only in this run; 0/1/2/3 tick stress is not an immediate condition-generation hard gate; remains a promotion/live robustness risk"
+  },
+  "enginePolicy": {
+    "startEngineCount": 64,
+    "fallbackEngineCount": 32,
+    "fallbackTriggers": [
+      "warm_prepare_failure",
+      "engine_data_response_timeout",
+      "no_metrics",
+      "seed_or_candidate_replay_failure",
+      "repeated_timeout_cluster"
+    ],
+    "receiptRequiredWhenTriggered": true
+  },
+  "outputFiles": {
+    "candidateCards": "artifacts\\human-process-research-20260628\\candidate_cards.jsonl",
+    "analysisCards": "artifacts\\human-process-research-20260628\\analysis_cards.jsonl",
+    "promptMutationReceipts": "artifacts\\human-process-research-20260628\\prompt_mutation_receipts.jsonl",
+    "engineFallbackReceipt": "artifacts\\human-process-research-20260628\\engine_fallback_receipt.json"
+  }
+}

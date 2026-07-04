@@ -26,6 +26,14 @@ import html
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+# 측정계 프레임 라벨(T0.3) — 순수 상수/함수 모듈이라 자급자족 계약을 깨지 않는다.
+from ai_strategy_loop.fitness.measurement_frame import (
+    DEFAULT_MEASUREMENT_FRAME,
+    MEASUREMENT_FRAME_KEY,
+    frame_label,
+    resolve_frame,
+)
+
 # SVG 캔버스 기본 치수(뷰박스 좌표계 — 반응형 width:100%).
 _SVG_W = 720
 _SVG_H = 240
@@ -556,10 +564,13 @@ def _header(meta: Dict[str, Any]) -> str:
     gen_at = meta.get("generated_at") or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     source = meta.get("source") or ""
     trade_count = meta.get("trade_count")
+    # 측정계 프레임 라벨 필수 표기(T0.3) — 니치/포트폴리오 교차 비교 방지.
+    frame = resolve_frame(meta, default=DEFAULT_MEASUREMENT_FRAME)
     lines = [
         f"매수: {_esc(buy)} · 매도: {_esc(sell)}",
         f"기간: {_esc(period)}",
         f"거래수: {_esc(_num(trade_count))} · 생성: {_esc(gen_at)}",
+        f"측정계: {_esc(frame_label(frame))} [{_esc(frame)}]",
     ]
     if source:
         lines.append(f"출처: {_esc(source)}")
@@ -584,6 +595,15 @@ def render_report(payload: Dict[str, Any]) -> str:
     mc = payload.get("montecarlo") if isinstance(payload.get("montecarlo"), dict) else None
 
     summary = _get(analysis, "summary", default={}) or {}
+    # 측정계 프레임(T0.3): meta 명시값 → metrics → analysis.summary 순으로 읽고
+    # 없으면 니치(1포지션) 기본. meta 복사본에만 주입한다(입력 payload 불변).
+    frame = (
+        resolve_frame(meta)
+        or resolve_frame(metrics)
+        or resolve_frame(summary)
+        or DEFAULT_MEASUREMENT_FRAME
+    )
+    meta = {**meta, MEASUREMENT_FRAME_KEY: frame}
     note = meta.get("note")
     note_html = f'<div class="note">{_esc(note)}</div>' if note else ""
 

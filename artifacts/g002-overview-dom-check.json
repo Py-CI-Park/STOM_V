@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "surface": "web",
+  "tool": "GJC browser/puppeteer",
+  "actions": [
+    {
+      "type": "goto",
+      "url": "http://127.0.0.1:8770/ui/evolution",
+      "timestamp": 1
+    },
+    {
+      "type": "observe",
+      "selector": "body",
+      "timestamp": 2
+    },
+    {
+      "type": "screenshot",
+      "selector": "#root",
+      "timestamp": 3
+    }
+  ],
+  "assertions": [
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 4,
+      "description": "Overview route rendered"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 5,
+      "description": "History, Research, and Workbench navigation-only handoffs rendered"
+    },
+    {
+      "status": "passed",
+      "selector": "body",
+      "timestamp": 6,
+      "description": "Run Compare, History archive, ResultDetail body, and Research Lab data surface absent from Overview"
+    }
+  ],
+  "artifactRefs": [
+    "artifacts/g002-overview-ownership.png"
+  ],
+  "observed": {
+    "url": "http://127.0.0.1:8770/ui/evolution?g002=4",
+    "statusIdle": true,
+    "hasHistoryNavOnly": true,
+    "hasResearchNavOnly": true,
+    "hasWorkbenchNav": true,
+    "hasRunComparePanel": false,
+    "hasHistoryArchive": false,
+    "hasResultDetailBody": false,
+    "hasResearchLabDataSurface": false,
+    "scripts": [
+      "http://127.0.0.1:8770/ui/vendor-react.js?v=20260603a",
+      "http://127.0.0.1:8770/ui/vendor-react-dom.js?v=20260603a",
+      "http://127.0.0.1:8770/ui/vendor-lightweight-charts.js?v=20260612a",
+      "http://127.0.0.1:8770/ui/bundle/stom-ui.js?v=f41f5701",
+      "http://127.0.0.1:8770/ui/bundle/app.js?v=fac81b3b"
+    ]
+  }
+}

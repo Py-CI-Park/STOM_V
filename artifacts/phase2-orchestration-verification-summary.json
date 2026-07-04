@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G002",
+  "status": "passed",
+  "createdAt": "2026-06-29T14:59:31.601600Z",
+  "commands": [
+    {
+      "command": "pytest tests/unit/test_research_loop.py tests/unit/test_condition_discovery_policy.py tests/unit/test_research_prompt_contracts.py tests/unit/test_extract_code.py -q",
+      "status": "passed",
+      "output": "118 passed in 7.43s",
+      "artifact": "artifact://1758"
+    },
+    {
+      "command": "python -m py_compile cli/research_loop.py cli/research_ranking.py ai_strategy_loop/controller/condition_discovery.py ai_strategy_loop/brain/prompt.py",
+      "status": "passed",
+      "output": "no output"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "output": "exit 0; CRLF warnings only for ai_strategy_loop/controller/condition_discovery.py and tests/unit/test_condition_discovery_policy.py"
+    },
+    {
+      "command": "git status --short -- _database _database_v3k_shadow _log backup '*.db' backtest/graph .omx/reports 'v3k_settings*.json'",
+      "status": "passed",
+      "output": "no output"
+    }
+  ],
+  "researchOnlySafety": {
+    "noExport": true,
+    "noLive": true,
+    "noFinalPromotion": true,
+    "protectedPathStatusClean": true
+  },
+  "regressionsCovered": [
+    "numeric condition_discovery_process selector 2 canonicalizes to process-research/research",
+    "V5 process-research with requested candidate_count > 4 executes exactly four hybrid lane specs",
+    "invalid strict prompt response returns candidate_prompt_validation before candidate side effects",
+    "research lane scores are advisory payloads and do not affect ranking keys",
+    "legacy disabled path preserves configured candidate count and ranking behavior"
+  ]
+}

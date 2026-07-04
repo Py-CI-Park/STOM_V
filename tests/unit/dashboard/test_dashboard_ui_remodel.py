@@ -56,7 +56,7 @@ def test_phase2_history_owns_result_detail_and_compare() -> None:
     assert "<_RpRunCompare" not in workbench_panel
     assert "<_RpHistory" not in workbench_panel
     assert "히스토리 탭 소유" in workbench_panel
-    assert "<_RpBigHeatmap" not in workbench_panel
+    assert "<_RpBigHeatmap" in workbench_panel
     assert "탐색 히트맵은 연구실 소유" not in workbench_panel
     assert "RunComparePanel" not in app
     assert "ResearchLabPanel" in app
@@ -133,6 +133,15 @@ def test_evidence_workspace_labels_each_owner_surface() -> None:
     assert "조건식 발굴 거버넌스" in panels
     assert "생성품질 점수" in panels
     assert "Human DB pattern cards" in panels
+    assert "Research Pack / Branch Tree" in panels
+    assert "context pack health" in panels
+    assert "candidate pack" in panels
+    assert "analysis cards" in panels
+    assert "prompt receipts" in panels
+    assert "fallback status" in panels
+    assert "Promotion blockers" in panels
+    assert "zero-generation review" in panels
+    assert "authority pending/blocked" in panels
     assert "<ConditionDiscoveryPanel state={state} wsStatus={wsStatus} />" in app
     assert "workspace-owner-boundary" in src
     for active in ('activeKey="records"', 'activeKey="lab"', 'activeKey="workbench"', 'activeKey="verdict"'):
@@ -244,6 +253,13 @@ def test_process_tab_documents_condition_discovery_defaults() -> None:
         "state.page_data.warm_session",
         "warm metadata pending — existing display remains valid",
         "separate frozen promotion review",
+        "research allowed",
+        "still blocked",
+        "quick start",
+        "condition_improvement_loop",
+        "full_period_validation",
+        "review only",
+        "승격 검토 전용",
     ):
         assert marker in src
     for css_marker in (
@@ -257,6 +273,39 @@ def test_process_tab_documents_condition_discovery_defaults() -> None:
         ".process-warm-grid",
     ):
         assert css_marker in css
+
+
+def test_process_research_heatmap_visibility_and_sizing_contracts() -> None:
+    analysis = _read("analysis.jsx")
+    rp_heatmap = _read("rp-heatmap.jsx")
+    css = _read("styles.css")
+
+    for marker in (
+        "function _splitCrossLabel",
+        "edge-heatmap-missing",
+        "edge-heatmap-scroll",
+        "B_시분초/B_시가총액",
+        "시간대×시총 교차 히트맵",
+    ):
+        assert marker in analysis
+    for marker in (
+        "function _rpSplitCrossLabel",
+        "rp-heatmap-scroll",
+        "minmax(58px, 96px)",
+        "시간대 \\ 시총",
+    ):
+        assert marker in rp_heatmap
+    edge_scroll = css.split(".edge-heatmap-scroll", 1)[1].split("}", 1)[0]
+    assert "max-height: 360px" in edge_scroll
+    assert "overflow: auto" in edge_scroll
+    assert ".edge-heatmap-missing" in css
+    rp_scroll = css.split(".rp-heatmap-scroll", 1)[1].split("}", 1)[0]
+    assert "max-height: 420px" in rp_scroll
+    assert "overflow: auto" in rp_scroll
+    rp_grid = css.split(".rp-heatmap {", 1)[1].split("}", 1)[0]
+    assert "width: max-content" in rp_grid
+    rp_cell = css.split(".rp-heatmap-cell {", 1)[1].split("}", 1)[0]
+    assert "max-height: 48px" in rp_cell
 
 
 def test_g004_editor_legacy_tools_and_variable_influence_contracts() -> None:
@@ -400,3 +449,6 @@ def test_process_flow_growth_keeps_readonly_state_contract() -> None:
     assert "쉽게 보는 조건식 발굴 루프" in process_doc
     assert "같은 좌표 양분기" not in process_doc
     assert "사후슬라이스 착시" not in process_doc
+    assert "Research Prompt Context Pack → Analysis Card v2 → Multi-Hypothesis Candidate Pack" in process_doc
+    assert "Promotion Review = zero-generation" in process_doc
+    assert "diagnostic fallback" in process_doc

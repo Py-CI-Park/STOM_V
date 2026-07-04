@@ -1,0 +1,8 @@
+{
+  "verdict": "PASS",
+  "blockers": [],
+  "advisory": [
+    "Reject-filter label advisory was fixed in result markdown and HTML after review."
+  ],
+  "evidence": "Critic/slop review agent://258-ResearchV2Slop found no blocking slop, fake evidence, id-only context, or live/export/final-promotion leakage. Advisory about reject-filter expression labeling was addressed."
+}

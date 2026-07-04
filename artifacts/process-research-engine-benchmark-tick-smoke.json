@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "kind": "process-research-engine-benchmark",
+  "createdAt": "2026-06-27T04:26:01.856400Z",
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.13",
+    "cpu_count": 64
+  },
+  "inputSet": {
+    "buy": "Tick_B_902_905_Update_2",
+    "sell": "Tick_S_902_905_Update_2",
+    "timeframe": "tick",
+    "start": 20250101,
+    "end": 20251231,
+    "start_time": 90000,
+    "end_time": 92800,
+    "full_session": false,
+    "avg_time": 30,
+    "betting": "5",
+    "timeout": 600,
+    "run_timeout": 120,
+    "repeat": 1,
+    "engines": [
+      32
+    ],
+    "process": null,
+    "preset": "fast"
+  },
+  "decision": {
+    "selected_engine_count": 32,
+    "changed_default": false,
+    "reason": "baseline_or_candidate_missing",
+    "policy": {
+      "amortized_improvement_threshold": 0.15,
+      "steady_state_improvement_threshold": 0.2,
+      "baseline_engine_count": 32,
+      "candidate_engine_count": 64
+    },
+    "comparisons": {}
+  },
+  "measurements": [
+    {
+      "engine_count": 32,
+      "status": "ok",
+      "error": null,
+      "elapsed_wall_sec": 171.14199940000253,
+      "config": {
+        "start_date": 20250101,
+        "end_date": 20251231,
+        "start_time": 90000,
+        "end_time": 92800,
+        "avg_time": 30,
+        "engine_count": 32,
+        "is_tick": true,
+        "betting": "5",
+        "divid_mode": "종목코드별 분류",
+        "timeout": 600
+      },
+      "prepare": {
+        "status": "ok",
+        "message": null,
+        "back_count": 1638,
+        "timing": {
+          "engine_count": 32,
+          "back_count": 1638,
+          "status": "ok",
+          "prepare_elapsed": 120.37105649999285,
+          "spawn_subtotals_elapsed": 0.655037499993341,
+          "spawn_engines_elapsed": 56.59653799999796,
+          "market_data_load_elapsed": 6.721335800000816,
+          "engine_data_send_elapsed": 56.33689720000257
+        }
+      },
+      "runs": [
+        {
+          "index": 1,
+          "status": "success",
+          "success": true,
+          "message": "백테스트 완료",
+          "metrics": {
+            "trade_count": 105,
+            "daily_avg_trades": 0.4,
+            "win_rate": 46.67,
+            "avg_profit_pct": 0.06,
+            "total_profit_pct": 6.34,
+            "total_profit_krw": 318045,
+            "cagr": 6.58,
+            "mdd_pct": 36.38,
+            "mdd_amount": 0.0,
+            "tpi": 1.03,
+            "seed_capital": 5013375.0,
+            "max_hold_count": 1,
+            "avg_hold_time": 315.93,
+            "day_count": 262,
+            "bootstrap_avg": 0.0,
+            "bootstrap_min": 0.0,
+            "bootstrap_max": 0.0
+          },
+          "csv_path": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260627132545.csv",
+          "timing": {
+            "engine_count": 32,
+            "back_count": 1638,
+            "status": "success",
+            "run_elapsed": 37.34193169999344,
+            "timeout": false,
+            "timeout_count": 0,
+            "recovery_attempts": 0,
+            "recovery_success_count": 0,
+            "recovery_failure_count": 0,
+            "nuclear_fallback_count": 0
+          }
+        }
+      ],
+      "summary": {
+        "repeat_requested": 1,
+        "repeat_completed": 1,
+        "success_count": 1,
+        "success_rate": 1.0,
+        "timeout_count": 0,
+        "recovery_attempts": 0,
+        "prepare_elapsed_sec": 120.37105649999285,
+        "run_elapsed_sec": {
+          "min": 37.34193169999344,
+          "max": 37.34193169999344,
+          "mean": 37.34193169999344,
+          "median": 37.34193169999344,
+          "p50": 37.34193169999344,
+          "p95": 37.34193169999344
+        },
+        "amortized_total_p50_sec": 157.71298819998628
+      }
+    }
+  ]
+}

@@ -803,8 +803,10 @@ class AIBacktestController:
             from dataclasses import fields
 
             from cli.research_loop import ResearchLoopConfig, run_research_iteration, run_research_once
+            from cli.research_provider import resolve_llm_pack_provider
 
-            config_dict = config_dict or {}
+            config_dict = dict(config_dict or {})
+            provider_spec = config_dict.pop('llm_pack_provider', None)
             if config_dict.get('run_candidates') is True and 'run_candidate' not in config_dict:
                 config_dict = {**config_dict, 'run_candidate': False}
             allowed_fields = {field.name for field in fields(ResearchLoopConfig)}
@@ -813,7 +815,13 @@ class AIBacktestController:
                 if key in allowed_fields
             })
             if config.run_candidates:
-                return run_research_iteration(config, self)
+                provider, cleanup = resolve_llm_pack_provider(provider_spec)
+                try:
+                    if provider is None:
+                        return run_research_iteration(config, self)
+                    return run_research_iteration(config, self, provider=provider)
+                finally:
+                    cleanup()
             return run_research_once(config, self)
         except Exception as e:
             return {'status': 'error', 'phase': 'research_loop', 'message': str(e)}

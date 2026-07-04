@@ -1,0 +1,554 @@
+{
+  "schemaVersion": 1,
+  "kind": "process-research-engine-benchmark",
+  "createdAt": "2026-06-28T00:39:50.851378Z",
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.13",
+    "cpu_count": 64
+  },
+  "inputSet": {
+    "buy": "Tick_B_902_905_Update_2",
+    "sell": "Tick_S_902_905_Update_2",
+    "timeframe": "tick",
+    "start": 20250101,
+    "end": 20251231,
+    "start_time": 90000,
+    "end_time": 92800,
+    "full_session": false,
+    "avg_time": 30,
+    "betting": "5",
+    "timeout": 600,
+    "run_timeout": 120,
+    "repeat": 3,
+    "engines": [
+      32,
+      48,
+      64
+    ],
+    "process": "process-research",
+    "preset": "research"
+  },
+  "decision": {
+    "selected_engine_count": 64,
+    "changed_default": true,
+    "reason": "candidate_passed_threshold_without_stability_regression",
+    "policy": {
+      "amortized_improvement_threshold": 0.15,
+      "steady_state_improvement_threshold": 0.2,
+      "baseline_engine_count": 32,
+      "candidate_engine_count": 64
+    },
+    "comparisons": {
+      "amortized_total_p50_improvement": 0.060327680125634144,
+      "run_p50_improvement": 0.20429867891794234,
+      "run_p95_improvement": 0.20368081809151034,
+      "success_rate_delta": 0.0,
+      "timeout_delta": 0,
+      "recovery_attempt_delta": 0
+    }
+  },
+  "measurements": [
+    {
+      "engine_count": 32,
+      "status": "ok",
+      "error": null,
+      "elapsed_wall_sec": 253.30329960002564,
+      "config": {
+        "start_date": 20250101,
+        "end_date": 20251231,
+        "start_time": 90000,
+        "end_time": 92800,
+        "avg_time": 30,
+        "engine_count": 32,
+        "is_tick": true,
+        "betting": "5",
+        "divid_mode": "종목코드별 분류",
+        "timeout": 600
+      },
+      "prepare": {
+        "status": "ok",
+        "message": null,
+        "back_count": 1638,
+        "timing": {
+          "engine_count": 32,
+          "back_count": 1638,
+          "status": "ok",
+          "prepare_elapsed": 128.57670189999044,
+          "spawn_subtotals_elapsed": 0.8385287999990396,
+          "spawn_engines_elapsed": 56.47090559999924,
+          "market_data_load_elapsed": 5.998671500012279,
+          "engine_data_send_elapsed": 65.20466170000145
+        }
+      },
+      "runs": [
+        {
+          "index": 1,
+          "status": "success",
+          "success": true,
+          "message": "백테스트 완료",
+          "metrics": {
+            "trade_count": 105,
+            "daily_avg_trades": 0.4,
+            "win_rate": 46.67,
+            "avg_profit_pct": 0.06,
+            "total_profit_pct": 6.34,
+            "total_profit_krw": 318045,
+            "cagr": 6.58,
+            "mdd_pct": 36.38,
+            "mdd_amount": 0.0,
+            "tpi": 1.03,
+            "seed_capital": 5013375.0,
+            "max_hold_count": 1,
+            "avg_hold_time": 315.93,
+            "day_count": 262,
+            "bootstrap_avg": 0.0,
+            "bootstrap_min": 0.0,
+            "bootstrap_max": 0.0
+          },
+          "csv_path": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260628092954.csv",
+          "timing": {
+            "engine_count": 32,
+            "back_count": 1638,
+            "status": "success",
+            "run_elapsed": 37.556621099996846,
+            "timeout": false,
+            "timeout_count": 0,
+            "recovery_attempts": 0,
+            "recovery_success_count": 0,
+            "recovery_failure_count": 0,
+            "nuclear_fallback_count": 0
+          }
+        },
+        {
+          "index": 2,
+          "status": "success",
+          "success": true,
+          "message": "백테스트 완료",
+          "metrics": {
+            "trade_count": 105,
+            "daily_avg_trades": 0.4,
+            "win_rate": 46.67,
+            "avg_profit_pct": 0.06,
+            "total_profit_pct": 6.34,
+            "total_profit_krw": 318045,
+            "cagr": 6.58,
+            "mdd_pct": 36.38,
+            "mdd_amount": 0.0,
+            "tpi": 1.03,
+            "seed_capital": 5013375.0,
+            "max_hold_count": 1,
+            "avg_hold_time": 315.93,
+            "day_count": 262,
+            "bootstrap_avg": 0.0,
+            "bootstrap_min": 0.0,
+            "bootstrap_max": 0.0
+          },
+          "csv_path": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260628093029.csv",
+          "timing": {
+            "engine_count": 32,
+            "back_count": 1638,
+            "status": "success",
+            "run_elapsed": 35.449027900001965,
+            "timeout": false,
+            "timeout_count": 0,
+            "recovery_attempts": 0,
+            "recovery_success_count": 0,
+            "recovery_failure_count": 0,
+            "nuclear_fallback_count": 0
+          }
+        },
+        {
+          "index": 3,
+          "status": "success",
+          "success": true,
+          "message": "백테스트 완료",
+          "metrics": {
+            "trade_count": 105,
+            "daily_avg_trades": 0.4,
+            "win_rate": 46.67,
+            "avg_profit_pct": 0.06,
+            "total_profit_pct": 6.34,
+            "total_profit_krw": 318045,
+            "cagr": 6.58,
+            "mdd_pct": 36.38,
+            "mdd_amount": 0.0,
+            "tpi": 1.03,
+            "seed_capital": 5013375.0,
+            "max_hold_count": 1,
+            "avg_hold_time": 315.93,
+            "day_count": 262,
+            "bootstrap_avg": 0.0,
+            "bootstrap_min": 0.0,
+            "bootstrap_max": 0.0
+          },
+          "csv_path": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260628093106.csv",
+          "timing": {
+            "engine_count": 32,
+            "back_count": 1638,
+            "status": "success",
+            "run_elapsed": 37.166288299980806,
+            "timeout": false,
+            "timeout_count": 0,
+            "recovery_attempts": 0,
+            "recovery_success_count": 0,
+            "recovery_failure_count": 0,
+            "nuclear_fallback_count": 0
+          }
+        }
+      ],
+      "summary": {
+        "repeat_requested": 3,
+        "repeat_completed": 3,
+        "success_count": 3,
+        "success_rate": 1.0,
+        "timeout_count": 0,
+        "recovery_attempts": 0,
+        "prepare_elapsed_sec": 128.57670189999044,
+        "run_elapsed_sec": {
+          "min": 35.449027900001965,
+          "max": 37.556621099996846,
+          "mean": 36.72397909999321,
+          "median": 37.166288299980806,
+          "p50": 37.166288299980806,
+          "p95": 37.51758781999524
+        },
+        "amortized_total_p50_sec": 80.02518893331094
+      }
+    },
+    {
+      "engine_count": 48,
+      "status": "ok",
+      "error": null,
+      "elapsed_wall_sec": 260.8514623999945,
+      "config": {
+        "start_date": 20250101,
+        "end_date": 20251231,
+        "start_time": 90000,
+        "end_time": 92800,
+        "avg_time": 30,
+        "engine_count": 48,
+        "is_tick": true,
+        "betting": "5",
+        "divid_mode": "종목코드별 분류",
+        "timeout": 600
+      },
+      "prepare": {
+        "status": "ok",
+        "message": null,
+        "back_count": 1638,
+        "timing": {
+          "engine_count": 48,
+          "back_count": 1638,
+          "status": "ok",
+          "prepare_elapsed": 140.49614249999286,
+          "spawn_subtotals_elapsed": 0.7601771000190638,
+          "spawn_engines_elapsed": 75.41001019999385,
+          "market_data_load_elapsed": 4.60669179999968,
+          "engine_data_send_elapsed": 59.70973750000121
+        }
+      },
+      "runs": [
+        {
+          "index": 1,
+          "status": "success",
+          "success": true,
+          "message": "백테스트 완료",
+          "metrics": {
+            "trade_count": 105,
+            "daily_avg_trades": 0.4,
+            "win_rate": 46.67,
+            "avg_profit_pct": 0.06,
+            "total_profit_pct": 6.34,
+            "total_profit_krw": 318045,
+            "cagr": 6.58,
+            "mdd_pct": 36.38,
+            "mdd_amount": 0.0,
+            "tpi": 1.03,
+            "seed_capital": 5013375.0,
+            "max_hold_count": 1,
+            "avg_hold_time": 315.93,
+            "day_count": 262,
+            "bootstrap_avg": 0.0,
+            "bootstrap_min": 0.0,
+            "bootstrap_max": 0.0
+          },
+          "csv_path": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260628093417.csv",
+          "timing": {
+            "engine_count": 48,
+            "back_count": 1638,
+            "status": "success",
+            "run_elapsed": 35.03780960000586,
+            "timeout": false,
+            "timeout_count": 0,
+            "recovery_attempts": 0,
+            "recovery_success_count": 0,
+            "recovery_failure_count": 0,
+            "nuclear_fallback_count": 0
+          }
+        },
+        {
+          "index": 2,
+          "status": "success",
+          "success": true,
+          "message": "백테스트 완료",
+          "metrics": {
+            "trade_count": 105,
+            "daily_avg_trades": 0.4,
+            "win_rate": 46.67,
+            "avg_profit_pct": 0.06,
+            "total_profit_pct": 6.34,
+            "total_profit_krw": 318045,
+            "cagr": 6.58,
+            "mdd_pct": 36.38,
+            "mdd_amount": 0.0,
+            "tpi": 1.03,
+            "seed_capital": 5013375.0,
+            "max_hold_count": 1,
+            "avg_hold_time": 315.93,
+            "day_count": 262,
+            "bootstrap_avg": 0.0,
+            "bootstrap_min": 0.0,
+            "bootstrap_max": 0.0
+          },
+          "csv_path": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260628093450.csv",
+          "timing": {
+            "engine_count": 48,
+            "back_count": 1638,
+            "status": "success",
+            "run_elapsed": 33.45715030000429,
+            "timeout": false,
+            "timeout_count": 0,
+            "recovery_attempts": 0,
+            "recovery_success_count": 0,
+            "recovery_failure_count": 0,
+            "nuclear_fallback_count": 0
+          }
+        },
+        {
+          "index": 3,
+          "status": "success",
+          "success": true,
+          "message": "백테스트 완료",
+          "metrics": {
+            "trade_count": 105,
+            "daily_avg_trades": 0.4,
+            "win_rate": 46.67,
+            "avg_profit_pct": 0.06,
+            "total_profit_pct": 6.34,
+            "total_profit_krw": 318045,
+            "cagr": 6.58,
+            "mdd_pct": 36.38,
+            "mdd_amount": 0.0,
+            "tpi": 1.03,
+            "seed_capital": 5013375.0,
+            "max_hold_count": 1,
+            "avg_hold_time": 315.93,
+            "day_count": 262,
+            "bootstrap_avg": 0.0,
+            "bootstrap_min": 0.0,
+            "bootstrap_max": 0.0
+          },
+          "csv_path": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260628093524.csv",
+          "timing": {
+            "engine_count": 48,
+            "back_count": 1638,
+            "status": "success",
+            "run_elapsed": 34.09071779999067,
+            "timeout": false,
+            "timeout_count": 0,
+            "recovery_attempts": 0,
+            "recovery_success_count": 0,
+            "recovery_failure_count": 0,
+            "nuclear_fallback_count": 0
+          }
+        }
+      ],
+      "summary": {
+        "repeat_requested": 3,
+        "repeat_completed": 3,
+        "success_count": 3,
+        "success_rate": 1.0,
+        "timeout_count": 0,
+        "recovery_attempts": 0,
+        "prepare_elapsed_sec": 140.49614249999286,
+        "run_elapsed_sec": {
+          "min": 33.45715030000429,
+          "max": 35.03780960000586,
+          "mean": 34.195225900000274,
+          "median": 34.09071779999067,
+          "p50": 34.09071779999067,
+          "p95": 34.94310042000434
+        },
+        "amortized_total_p50_sec": 80.9227652999883
+      }
+    },
+    {
+      "engine_count": 64,
+      "status": "ok",
+      "error": null,
+      "elapsed_wall_sec": 245.67271140002413,
+      "config": {
+        "start_date": 20250101,
+        "end_date": 20251231,
+        "start_time": 90000,
+        "end_time": 92800,
+        "avg_time": 30,
+        "engine_count": 64,
+        "is_tick": true,
+        "betting": "5",
+        "divid_mode": "종목코드별 분류",
+        "timeout": 600
+      },
+      "prepare": {
+        "status": "ok",
+        "message": null,
+        "back_count": 1638,
+        "timing": {
+          "engine_count": 64,
+          "back_count": 1638,
+          "status": "ok",
+          "prepare_elapsed": 136.87257070001215,
+          "spawn_subtotals_elapsed": 0.6135647000046447,
+          "spawn_engines_elapsed": 83.48853729999973,
+          "market_data_load_elapsed": 4.368349600001238,
+          "engine_data_send_elapsed": 48.390368299995316
+        }
+      },
+      "runs": [
+        {
+          "index": 1,
+          "status": "success",
+          "success": true,
+          "message": "백테스트 완료",
+          "metrics": {
+            "trade_count": 105,
+            "daily_avg_trades": 0.4,
+            "win_rate": 46.67,
+            "avg_profit_pct": 0.06,
+            "total_profit_pct": 6.34,
+            "total_profit_krw": 318045,
+            "cagr": 6.58,
+            "mdd_pct": 36.38,
+            "mdd_amount": 0.0,
+            "tpi": 1.03,
+            "seed_capital": 5013375.0,
+            "max_hold_count": 1,
+            "avg_hold_time": 315.93,
+            "day_count": 262,
+            "bootstrap_avg": 0.0,
+            "bootstrap_min": 0.0,
+            "bootstrap_max": 0.0
+          },
+          "csv_path": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260628093828.csv",
+          "timing": {
+            "engine_count": 64,
+            "back_count": 1638,
+            "status": "success",
+            "run_elapsed": 29.57326470001135,
+            "timeout": false,
+            "timeout_count": 0,
+            "recovery_attempts": 0,
+            "recovery_success_count": 0,
+            "recovery_failure_count": 0,
+            "nuclear_fallback_count": 0
+          }
+        },
+        {
+          "index": 2,
+          "status": "success",
+          "success": true,
+          "message": "백테스트 완료",
+          "metrics": {
+            "trade_count": 105,
+            "daily_avg_trades": 0.4,
+            "win_rate": 46.67,
+            "avg_profit_pct": 0.06,
+            "total_profit_pct": 6.34,
+            "total_profit_krw": 318045,
+            "cagr": 6.58,
+            "mdd_pct": 36.38,
+            "mdd_amount": 0.0,
+            "tpi": 1.03,
+            "seed_capital": 5013375.0,
+            "max_hold_count": 1,
+            "avg_hold_time": 315.93,
+            "day_count": 262,
+            "bootstrap_avg": 0.0,
+            "bootstrap_min": 0.0,
+            "bootstrap_max": 0.0
+          },
+          "csv_path": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260628093858.csv",
+          "timing": {
+            "engine_count": 64,
+            "back_count": 1638,
+            "status": "success",
+            "run_elapsed": 29.569512399990344,
+            "timeout": false,
+            "timeout_count": 0,
+            "recovery_attempts": 0,
+            "recovery_success_count": 0,
+            "recovery_failure_count": 0,
+            "nuclear_fallback_count": 0
+          }
+        },
+        {
+          "index": 3,
+          "status": "success",
+          "success": true,
+          "message": "백테스트 완료",
+          "metrics": {
+            "trade_count": 105,
+            "daily_avg_trades": 0.4,
+            "win_rate": 46.67,
+            "avg_profit_pct": 0.06,
+            "total_profit_pct": 6.34,
+            "total_profit_krw": 318045,
+            "cagr": 6.58,
+            "mdd_pct": 36.38,
+            "mdd_amount": 0.0,
+            "tpi": 1.03,
+            "seed_capital": 5013375.0,
+            "max_hold_count": 1,
+            "avg_hold_time": 315.93,
+            "day_count": 262,
+            "bootstrap_avg": 0.0,
+            "bootstrap_min": 0.0,
+            "bootstrap_max": 0.0
+          },
+          "csv_path": "backtest/csv\\stock_bt_Tick_B_902_905_Update_2_20260628093928.csv",
+          "timing": {
+            "engine_count": 64,
+            "back_count": 1638,
+            "status": "success",
+            "run_elapsed": 29.9096092999971,
+            "timeout": false,
+            "timeout_count": 0,
+            "recovery_attempts": 0,
+            "recovery_success_count": 0,
+            "recovery_failure_count": 0,
+            "nuclear_fallback_count": 0
+          }
+        }
+      ],
+      "summary": {
+        "repeat_requested": 3,
+        "repeat_completed": 3,
+        "success_count": 3,
+        "success_rate": 1.0,
+        "timeout_count": 0,
+        "recovery_attempts": 0,
+        "prepare_elapsed_sec": 136.87257070001215,
+        "run_elapsed_sec": {
+          "min": 29.569512399990344,
+          "max": 29.9096092999971,
+          "mean": 29.6841287999996,
+          "median": 29.57326470001135,
+          "p50": 29.57326470001135,
+          "p95": 29.875974839998527
+        },
+        "amortized_total_p50_sec": 75.19745493334872
+      }
+    }
+  ]
+}

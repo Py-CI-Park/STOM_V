@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "kind": "api-package-test-report",
+  "goalId": "G001",
+  "commands": [
+    {
+      "command": "pytest tests/unit/test_condition_discovery_policy.py tests/unit/test_extract_code.py tests/unit/test_research_prompt_contracts.py -q",
+      "result": "27 passed in 14.43s",
+      "artifact": "artifact://1712"
+    },
+    {
+      "command": "python -m py_compile ai_strategy_loop/controller/condition_discovery.py ai_strategy_loop/brain/prompt.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "exit 0; CRLF warnings only"
+    },
+    {
+      "command": "git status --short -- _database _database_v3k_shadow _log backup '*.db' backtest/graph .omx/reports 'v3k_settings*.json'",
+      "result": "no output"
+    }
+  ],
+  "changedFiles": [
+    "ai_strategy_loop/controller/condition_discovery.py",
+    "ai_strategy_loop/brain/prompt.py",
+    "tests/unit/test_condition_discovery_policy.py",
+    "tests/unit/test_research_prompt_contracts.py"
+  ],
+  "researchOnlySafety": {
+    "canPromote": false,
+    "canExport": false,
+    "canLive": false,
+    "finalPromotion": false
+  },
+  "verdict": "passed"
+}

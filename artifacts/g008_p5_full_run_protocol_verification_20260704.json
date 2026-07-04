@@ -1,0 +1,24 @@
+{
+  "schema": "g008_p5_full_run_protocol_verification_v1",
+  "created_at": "2026-07-04T19:35:00+0900",
+  "protocol": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_full_run_protocol_after_preflight_20260704.json",
+  "manifest": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_chunk_manifest_full_warm64_20260704.json",
+  "pilot_pairs": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_pilot12_20260704.json",
+  "commands": [
+    {"command": "JSON parse verification for boulder, protocol, manifest, pilot pairs, ledger", "status": "passed", "stdout_summary": "boulder/protocol/manifest/pilot/ledger ok"},
+    {"command": "pytest tests/unit/test_warm_session_window.py tests/unit/test_lattice_p5_batch_repair.py tests/unit/test_plan_b_p5_profile_audit.py -q", "status": "passed", "stdout_summary": "19 passed in 14.51s"},
+    {"command": "git diff --check", "status": "passed", "stdout_summary": "No whitespace errors; CRLF warnings only."}
+  ],
+  "reviews": {
+    "architect": "agent://6-G008ProtocolArchitect",
+    "qa": "agent://7-G008ProtocolQa"
+  },
+  "decision": {
+    "next_allowed_action": "pilot12 only",
+    "pilot_run_id": "lat_tick_official_full_warm64_pilot12_20260704",
+    "required_flag": "--fail-fast-timeout",
+    "single_run_288_allowed": false,
+    "chunk_size_after_clean_pilot": 24,
+    "min_p6_p7_blocked": true
+  }
+}

@@ -1,0 +1,28 @@
+G004 adversarial verification report
+
+Scope
+- Phase 4 editor expansion, chart replay render-only optimization, quick-start help, variable influence, self.vars adapter, and BackFinder preflight-only staging.
+
+Verification commands and artifacts
+- Focused pytest: python -m pytest tests/unit/dashboard/test_backtest_phase4.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/dashboard/test_sim_phase8_perf.py tests/unit/dashboard/test_p4_functional.py tests/unit/dashboard/test_p13_bt_sweep_builder.py -q => 82 passed.
+- Dashboard build: npm run build in ai_strategy_loop/dashboard/webui-build => success, app.js v=cfc0ac5a.
+- Protected runtime paths check: git status --short -- _database _database_v3k_shadow _log backup "*.db" backtest/graph .omx/reports "v3k_settings*.json" => no output.
+- Browser marker transcript: artifacts/g004-browser-dom-check.json; screenshots: artifacts/g004-backtest-editor-legacy-final.png, artifacts/g004-chart-replay-final.png.
+- Browser adversarial transcript: artifacts/g004-adversarial-browser.json.
+- CLI replay artifact: artifacts/g004-cli-replay.json (bun -e "console.log('g004-cli-ok')").
+- Final cleaner/review agents: agent://109-G004CleanerReplay3, agent://110-G004CleanerBackendUi4, agent://117-G004FinalArchitect4, agent://118-G004FinalQa4.
+
+Adversarial cases
+1. Editor hidden-side state preservation: browser filled buy/sell draft names and code, toggled simultaneous -> buy-only -> sell-only -> simultaneous, and verified both hidden-side values were preserved.
+2. DB failure surfacing: browser intercepted strategy-list and single-strategy payloads with strategy_db_unavailable and verified visible Korean DB failure messages rather than empty-state masking.
+3. self.vars no-exec and sweep import: backend tests reject a nonliteral __import__('os').system(...) self.vars payload with exec_used=false and no rows; browser imported valid self.vars rows into the sweep builder with no-exec copy visible.
+4. BackFinder preflight-only: backend tests cover OK, mismatch, missing, and DB failure paths with run_enabled=false; browser verified preflight UI shows run_enabled=false and safety-check-only copy.
+5. Chart replay errors: browser injected /sim/signals failure and malformed WebSocket replay JSON, verifying visible signal and replay error messages.
+6. Render-only replay optimization: tests/source verify _simRenderBars slices only chart render arrays while full barsByCode remains authoritative for fullBarCount, indicator table, variable watch, signals, seek/history/export logic.
+7. Sweep variable influence: final source review verified nested cli/sweep params are authoritative; top-level runner metadata cannot leak into combo/influence keys when params exists, with legacy flattened fallback retained only when params is absent.
+8. Quick-start help: browser DOM and screenshot verify latest/top-gainer quick-start copy and hover titles are visible.
+
+Verdict
+- All blocking cleaner, architect, and executor QA findings were resolved.
+- Final architect review: CLEAR/APPROVE with no blockers (agent://117-G004FinalArchitect4).
+- Final executor QA/red-team: passed with no blockers (agent://118-G004FinalQa4).
