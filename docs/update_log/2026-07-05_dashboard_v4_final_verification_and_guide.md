@@ -79,6 +79,7 @@ cd STOM_V.wt-dev && python -m uvicorn ai_strategy_loop.dashboard.app:app --port 
 | 하네스 비결정 실패 | jsdom 이 WebSocket 을 구현 → 실서버(:80) state 프레임이 fixture 를 덮음 | mock 무조건 설치(hermetic) — `cd5ece18` |
 | RUN 목록 간헐 미도착 | `/runs` 2.6MB 가 초기 동시 fetch 큐 맨 뒤로 밀려 타임아웃, 재시도 없음 | 15s + 4s 간격 최대 4회 재시도(본 커밋) |
 | idle 진행도 "-1" 노출 | 백엔드 idle current_gen=-1 | "—" 클램프 — `f797d9eb` |
+| **RUN 드롭다운에 과거 run 안 보임**(사용자 신고) | `/ui/v4`(무슬래시)→`/ui/v4/` 307 리다이렉트가 **쿼리스트링을 버려** `?base=8791` 유실 → 로컬 백엔드(run 0)로 붙음 | `_redirect_with_query`로 쿼리 보존(V2/V3 규약과 동일) + 회귀 테스트 `test_dashboard_ui_v4_no_slash_redirect_preserves_query`. 수정 후 RUN 459개 채워짐 확인 |
 
 ## 5. wt-dev 반영(PR) 전략
 

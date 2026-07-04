@@ -160,3 +160,18 @@ def test_dashboard_legacy_ui_aliases_redirect_to_evolution_subtabs(monkeypatch, 
         selected = client.get(f"{route}?dashboard_version=v3", follow_redirects=False)
         assert selected.status_code in {307, 308}
         assert selected.headers["location"] == f"{target}?dashboard_version=v3"
+
+
+def test_dashboard_ui_v4_no_slash_redirect_preserves_query(monkeypatch, tmp_path: Path) -> None:
+    """Given /ui/v4?base=... (no trailing slash), Then the redirect to /ui/v4/ keeps the query.
+
+    Regression: the no-slash V4 route once hardcoded '/ui/v4/' and dropped the query, so a
+    cross-origin data link (?base=http://127.0.0.1:8791) silently reverted to the local backend
+    and the RUN archive selector rendered empty (사용자 신고 2026-07-05)."""
+    client = _client(monkeypatch, tmp_path)
+    r = client.get("/ui/v4?base=http://127.0.0.1:8791&tab=research", follow_redirects=False)
+    assert r.status_code in {307, 308}
+    assert r.headers["location"] == "/ui/v4/?base=http://127.0.0.1:8791&tab=research"
+    bare = client.get("/ui/v4", follow_redirects=False)
+    assert bare.status_code in {307, 308}
+    assert bare.headers["location"] == "/ui/v4/"

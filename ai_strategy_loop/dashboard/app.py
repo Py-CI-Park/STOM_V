@@ -2860,8 +2860,11 @@ def create_app() -> FastAPI:
         return _dashboard_remodel_index_response()
 
     @app.get("/ui/v4", response_class=HTMLResponse)
-    def ui_v4_root_no_slash() -> RedirectResponse:
-        return RedirectResponse(url="/ui/v4/", status_code=307)
+    def ui_v4_root_no_slash(request: Request) -> RedirectResponse:
+        # 쿼리스트링 보존(V2/V3 no-slash 라우트와 동일 규약) — 없으면 ?base=/?tab= 가
+        #   /ui/v4/ 리다이렉트에서 유실돼(예: cross-origin 데이터 연동 ?base=8791) 로컬
+        #   백엔드로 붙는 사고가 난다.
+        return _redirect_with_query(request, "/ui/v4/")
 
     @app.get("/ui/v4/", response_class=HTMLResponse)
     def ui_v4_root() -> HTMLResponse:
