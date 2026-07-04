@@ -504,13 +504,18 @@ const V4_PAGES = [
   { page: "lab", global: "LabPage" },
   { page: "pro", global: "ProPage" },
   { page: "verdict", global: "VerdictPanel" },
-  { page: "v4shell", global: "DashboardV4Shell" }, // v4.html opt-in preview — same standalone mount pattern (idle)
-  { page: "v4shell-running", global: "DashboardV4Shell", state: RUNNING_STATE }, // V4 Research Live with live data (charts + best/winner)
-  { page: "v4-backtest", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=backtest" }, // V4 Backtest tab (BacktestTab whole)
-  { page: "v4-replay", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=replay" }, // V4 Replay tab (SimulationTab, keep-alive shell)
-  { page: "v4-lab", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=lab" }, // V4 Lab (ResearchHeatmapPanel + ResearchLabPanel)
-  { page: "v4-workbench", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=workbench" }, // V4 Workbench (ResearchProPanel + RunCompare + HoF)
-  { page: "v4-audit", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=audit" }, // V4 Audit (VerdictPanel + safety strip)
+];
+// V4 opt-in dashboard shell (/ui/v4.html → window.DashboardV4Shell) + its 6 tabs. Separate array
+//   from V4_PAGES (the 3 legacy standalone HTML pages) so each gate asserts its own contract.
+//   Reuses runPageOnce (noAutoMount + name-mount) with per-tab ?tab= url + backend state.
+const V4_DASHBOARD_PAGES = [
+  { page: "v4shell", global: "DashboardV4Shell" }, // Research Live (default tab), idle
+  { page: "v4shell-running", global: "DashboardV4Shell", state: RUNNING_STATE }, // Research Live with live data
+  { page: "v4-backtest", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=backtest" }, // BacktestTab
+  { page: "v4-replay", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=replay" }, // SimulationTab (keep-alive shell)
+  { page: "v4-lab", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=lab" }, // ResearchHeatmap + ResearchLab
+  { page: "v4-workbench", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=workbench" }, // ResearchPro + RunCompare + HoF
+  { page: "v4-audit", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=audit" }, // VerdictPanel + safety strip
 ];
 async function runPageOnce({ page, global: globalName, state, path }) {
   const { window, errs } = makeDom({ state: state || IDLE_STATE, noAutoMount: true, path });
@@ -557,6 +562,19 @@ async function runV4() {
     if (!r.pass) allPass = false;
   }
   return { name: "V4_standalone_pages", pass: allPass, pages };
+}
+
+// V7: V4 opt-in dashboard shell (/ui/v4.html → window.DashboardV4Shell) + its 6 tabs. Separate
+//   gate from V4 (the 3 legacy standalone pages). Reuses runPageOnce with per-tab ?tab= url + state.
+async function runV7() {
+  const pages = {};
+  let allPass = true;
+  for (const spec of V4_DASHBOARD_PAGES) {
+    const r = await runPageOnce(spec);  // serial: each gets a clean jsdom (isolated errs)
+    pages[spec.page] = r;
+    if (!r.pass) allPass = false;
+  }
+  return { name: "V7_v4_dashboard_shell", pass: allPass, pages };
 }
 
 // ---------------------------------------------------------------- V5: governed records behavior
@@ -819,9 +837,10 @@ try {
   const v4 = await runV4();
   const v5 = await runV5();
   const v6 = await runV6();
+  const v7 = await runV7();
   const result = {
-    host: "node+jsdom", v1, v2, v3, v4, v5, v6,
-    allPass: v1.pass && v2.pass && v3.pass && v4.pass && v5.pass && v6.pass,
+    host: "node+jsdom", v1, v2, v3, v4, v5, v6, v7,
+    allPass: v1.pass && v2.pass && v3.pass && v4.pass && v5.pass && v6.pass && v7.pass,
   };
   process.stdout.write(asciiSafe(JSON.stringify(result, null, 2)) + "\n");
   process.exit(result.allPass ? 0 : 1);

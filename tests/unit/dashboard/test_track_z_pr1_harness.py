@@ -253,6 +253,27 @@ def test_track_z_v4_standalone_page_mounts() -> None:
     assert v4["pass"], f"V4 standalone page mounts failed: {v4}"
 
 
+def test_track_z_v7_v4_dashboard_shell() -> None:
+    """V7: the V4 opt-in dashboard shell (/ui/v4.html -> window.DashboardV4Shell) and each of its 6
+    tabs (research idle+running, backtest, replay, lab, workbench, audit) mount from the SAME served
+    bundle with 0 errors and a non-empty #root. Separate gate from V4 (the 3 legacy standalone
+    lab/pro/verdict pages) - this covers the new graph-first V4 dashboard."""
+    data = _run_harness()
+    v7 = data["v7"]
+    pages = v7["pages"]
+    expected = {"v4shell", "v4shell-running", "v4-backtest", "v4-replay", "v4-lab", "v4-workbench", "v4-audit"}
+    assert set(pages) == expected, f"V7 must render the V4 shell + 6 tabs, got {set(pages)}"
+    for name in expected:
+        r = pages[name]
+        assert r["componentIsFunction"], f"{name}: window.DashboardV4Shell is not a function"
+        assert r["mountError"] is None, f"{name}: mount error {r['mountError']}"
+        assert r["rootNonEmpty"], f"{name}: #root empty after mount"
+        assert not r["errorBoundaryTripped"], f"{name}: ErrorBoundary tripped (render threw)"
+        assert r["errorCount"] == 0, f"{name} render errors: {r['errors']}"
+        assert r["pass"], f"V7 page {name} failed: {r}"
+    assert v7["pass"], f"V7 V4 dashboard shell failed: {v7}"
+
+
 def test_track_z_v5_records_behavior() -> None:
     """V5: governed records UI behavior is runtime-proven, not only source-grepped."""
     data = _run_harness()
