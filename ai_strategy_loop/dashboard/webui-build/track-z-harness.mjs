@@ -508,6 +508,9 @@ const V4_PAGES = [
   { page: "v4shell-running", global: "DashboardV4Shell", state: RUNNING_STATE }, // V4 Research Live with live data (charts + best/winner)
   { page: "v4-backtest", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=backtest" }, // V4 Backtest tab (BacktestTab whole)
   { page: "v4-replay", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=replay" }, // V4 Replay tab (SimulationTab, keep-alive shell)
+  { page: "v4-lab", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=lab" }, // V4 Lab (ResearchHeatmapPanel + ResearchLabPanel)
+  { page: "v4-workbench", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=workbench" }, // V4 Workbench (ResearchProPanel + RunCompare + HoF)
+  { page: "v4-audit", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=audit" }, // V4 Audit (VerdictPanel + safety strip)
 ];
 async function runPageOnce({ page, global: globalName, state, path }) {
   const { window, errs } = makeDom({ state: state || IDLE_STATE, noAutoMount: true, path });

@@ -18,6 +18,9 @@ import { ErrorBoundary } from "./app.jsx";
 import { V4ResearchLive } from "./v4-research.jsx";
 import { V4Backtest } from "./v4-backtest.jsx";
 import { V4Replay } from "./v4-replay.jsx";
+import { V4Lab } from "./v4-lab.jsx";
+import { V4Workbench } from "./v4-workbench.jsx";
+import { V4Audit } from "./v4-audit.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4 } = React;
 
 // V4 IA — 상단 6탭(핸드오프 §7). 본문은 phase 별로 기존 컴포넌트로 채운다.
@@ -57,6 +60,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
 
   const { state, health, wsStatus, send } = useBackend(baseUrl);
   const active = V4_TABS.find(t => t.key === activeTab) || V4_TABS[0];
+  const runId = (state && state.run_id) || "";
 
   // 탭 전환 시 ?tab= 를 URL 에 반영(새로고침·딥링크 유지). V2/V3 라우트와 무관한 V4 내부 상태.
   const selectTab = (key) => {
@@ -118,6 +122,12 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
               <V4ResearchLive baseUrl={baseUrl} state={state} wsStatus={wsStatus} send={send} />
             ) : activeTab === "backtest" ? (
               <V4Backtest baseUrl={baseUrl} wsStatus={wsStatus} />
+            ) : activeTab === "lab" ? (
+              <V4Lab baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} onNavigate={selectTab} />
+            ) : activeTab === "workbench" ? (
+              <V4Workbench baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+            ) : activeTab === "audit" ? (
+              <V4Audit baseUrl={baseUrl} onNavigate={selectTab} />
             ) : (
               <div className="v4-placeholder">
                 <div className="v4-placeholder-badge mono">{active.badge}</div>

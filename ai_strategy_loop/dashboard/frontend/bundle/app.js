@@ -33414,6 +33414,132 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4Replay });
 
+  // ai_strategy_loop/dashboard/frontend/v4-lab.jsx
+  function V4Lab({ baseUrl, wsStatus, runId, onNavigate }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-lab" }, /* @__PURE__ */ React.createElement(ResearchHeatmapPanel, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(
+      ResearchLabPanel,
+      {
+        baseUrl,
+        wsStatus,
+        runId,
+        onOpenWorkbench: () => {
+          if (typeof onNavigate === "function") onNavigate("workbench");
+        }
+      }
+    ));
+  }
+  Object.assign(window, { V4Lab });
+
+  // ai_strategy_loop/dashboard/frontend/run-compare.jsx
+  var { useState: useState_rc, useEffect: useEffect_rc, useMemo: useMemo_rc } = React;
+  function rcNum(value, digits = 2) {
+    return typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : "-";
+  }
+  function rcMoney(value) {
+    return typeof value === "number" && Number.isFinite(value) ? value.toLocaleString("ko-KR") : "-";
+  }
+  function rcPct(value) {
+    return typeof value === "number" && Number.isFinite(value) ? `${value.toFixed(2)}%` : "-";
+  }
+  function rcDuration(sec) {
+    if (typeof sec !== "number" || !Number.isFinite(sec)) return "-";
+    if (sec < 60) return `${sec.toFixed(1)}s`;
+    const min = Math.floor(sec / 60);
+    const rem = Math.round(sec % 60);
+    if (min < 60) return `${min}m ${rem}s`;
+    return `${Math.floor(min / 60)}h ${min % 60}m`;
+  }
+  function rcYears(run) {
+    if (Array.isArray(run.years) && run.years.length) return run.years.join(", ");
+    if (run.start_year && run.end_year) return `${run.start_year}-${run.end_year}`;
+    return "-";
+  }
+  function rcWindow(run) {
+    const start2 = run.bt_universe_start_time;
+    const end = run.bt_universe_end_time;
+    return start2 || end ? `${start2 || "-"}~${end || "-"}` : "-";
+  }
+  function rcValue(run, key) {
+    const v = run[key];
+    return typeof v === "number" && Number.isFinite(v) ? v : Number.NEGATIVE_INFINITY;
+  }
+  function rcDefaultCompareIds(runs) {
+    const matched = runs.filter((r) => /seed|ai/i.test(String(r.run_id || ""))).slice(0, 6).map((r) => r.run_id);
+    return matched.length >= 2 ? matched : runs.slice(0, 2).map((r) => r.run_id);
+  }
+  function RunComparePanel({ baseUrl, wsStatus }) {
+    const [runs, setRuns] = useState_rc([]);
+    const [selected2, setSelected] = useState_rc([]);
+    const [compareRows, setCompareRows] = useState_rc([]);
+    const [sortKey, setSortKey] = useState_rc("final_profit");
+    const [err, setErr] = useState_rc("");
+    const [loading, setLoading] = useState_rc(false);
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const sortedRuns = useMemo_rc(() => {
+      return [...runs].sort((a, b) => rcValue(b, sortKey) - rcValue(a, sortKey));
+    }, [runs, sortKey]);
+    const refresh = React.useCallback(() => {
+      if (isDemo || !baseUrl) return;
+      setLoading(true);
+      setErr("");
+      fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(3e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        const rows = Array.isArray(j.runs) ? j.runs : [];
+        setRuns(rows);
+        setErr(j.error || "");
+        if (!selected2.length) setSelected(rcDefaultCompareIds(rows));
+      }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
+    }, [baseUrl, isDemo, selected2.length]);
+    useEffect_rc(() => {
+      refresh();
+    }, [refresh]);
+    useEffect_rc(() => {
+      if (isDemo || !baseUrl || !selected2.length) {
+        setCompareRows([]);
+        return;
+      }
+      const ids = selected2.map(encodeURIComponent).join(",");
+      fetch(baseUrl + "/runs/compare?ids=" + ids, { signal: AbortSignal.timeout(3500) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => setCompareRows(Array.isArray(j.generation_rows) ? j.generation_rows : [])).catch(() => setCompareRows([]));
+    }, [baseUrl, isDemo, selected2.join("|")]);
+    const toggleSelected = (runId) => {
+      setSelected((prev) => prev.includes(runId) ? prev.filter((x) => x !== runId) : [...prev, runId]);
+    };
+    const selectSeedAi = () => setSelected(rcDefaultCompareIds(runs));
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Run Compare Console", isDemo && typeof window.DemoBadge === "function" && /* @__PURE__ */ React.createElement(window.DemoBadge, null)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setSortKey("final_profit") }, "Sort: Total Profit"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setSortKey("total_profit_pct") }, "Return %"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: selectSeedAi, disabled: !runs.length }, "Seed vs AI"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: refresh, disabled: isDemo || loading }, loading ? "loading" : "refresh"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, isDemo ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty" }, "Demo mode: run comparison is available with a backend connection.") : err ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty danger" }, "query failed: ", err) : runs.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "run-compare-empty" }, "No recorded runs.") : /* @__PURE__ */ React.createElement("div", { className: "run-compare-shell" }, /* @__PURE__ */ React.createElement("div", { className: "run-compare-kpis" }, /* @__PURE__ */ React.createElement("span", null, "runs=", runs.length), /* @__PURE__ */ React.createElement("span", null, "selected=", selected2.length), /* @__PURE__ */ React.createElement("span", null, "generation_rows=", compareRows.length), /* @__PURE__ */ React.createElement("span", null, "sort=", sortKey)), /* @__PURE__ */ React.createElement("div", { className: "run-compare-scroll" }, /* @__PURE__ */ React.createElement("table", { className: "run-compare-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "Pick"), /* @__PURE__ */ React.createElement("th", null, "run_id"), /* @__PURE__ */ React.createElement("th", null, "Status"), /* @__PURE__ */ React.createElement("th", null, "Period"), /* @__PURE__ */ React.createElement("th", null, "Years"), /* @__PURE__ */ React.createElement("th", null, "min/tick"), /* @__PURE__ */ React.createElement("th", null, "Universe Time"), /* @__PURE__ */ React.createElement("th", null, "Total Profit"), /* @__PURE__ */ React.createElement("th", null, "Return %"), /* @__PURE__ */ React.createElement("th", null, "Trades"), /* @__PURE__ */ React.createElement("th", null, "Daily"), /* @__PURE__ */ React.createElement("th", null, "MDD"), /* @__PURE__ */ React.createElement("th", null, "Payoff"), /* @__PURE__ */ React.createElement("th", null, "Max Hold"), /* @__PURE__ */ React.createElement("th", null, "Elapsed"), /* @__PURE__ */ React.createElement("th", null, "Cost/Count"), /* @__PURE__ */ React.createElement("th", null, "Winner"))), /* @__PURE__ */ React.createElement("tbody", null, sortedRuns.map((r) => {
+      var _a;
+      const sparseHoldSuspicious = typeof r.max_hold_count === "number" && r.max_hold_count <= 1 && (r.trade_count || 0) >= 50;
+      return /* @__PURE__ */ React.createElement("tr", { key: r.run_id }, /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: selected2.includes(r.run_id), onChange: () => toggleSelected(r.run_id) })), /* @__PURE__ */ React.createElement("td", null, r.run_id), /* @__PURE__ */ React.createElement("td", null, r.status || "-"), /* @__PURE__ */ React.createElement("td", null, r.period || "-"), /* @__PURE__ */ React.createElement("td", null, rcYears(r)), /* @__PURE__ */ React.createElement("td", null, r.timeframe || "-"), /* @__PURE__ */ React.createElement("td", null, rcWindow(r)), /* @__PURE__ */ React.createElement("td", { className: r.final_profit > 0 ? "num-pos" : r.final_profit < 0 ? "num-neg" : "num-muted" }, rcMoney(r.final_profit)), /* @__PURE__ */ React.createElement("td", { className: r.total_profit_pct > 0 ? "num-pos" : r.total_profit_pct < 0 ? "num-neg" : "num-muted" }, rcPct(r.total_profit_pct)), /* @__PURE__ */ React.createElement("td", null, (_a = r.trade_count) != null ? _a : 0), /* @__PURE__ */ React.createElement("td", null, rcNum(r.daily_avg_trades, 1)), /* @__PURE__ */ React.createElement("td", { className: r.mdd > 0 ? "num-neg" : "num-muted" }, rcPct(r.mdd)), /* @__PURE__ */ React.createElement("td", null, rcNum(r.payoff_ratio, 2)), /* @__PURE__ */ React.createElement(
+        "td",
+        {
+          className: sparseHoldSuspicious ? "num-neg" : "",
+          title: sparseHoldSuspicious ? "Sparse hold warning: max_hold_count <= 1 with enough trades; compare Backtest Detail CSV peak_holdings. human corridor 6-12" : "max_hold_count"
+        },
+        rcNum(r.max_hold_count, 0),
+        sparseHoldSuspicious ? " !" : ""
+      ), /* @__PURE__ */ React.createElement("td", null, rcDuration(r.elapsed_sec)), /* @__PURE__ */ React.createElement("td", null, r.cost_or_count_text || rcNum(r.cost_or_count, 1)), /* @__PURE__ */ React.createElement("td", null, r.winner ? `gen_${String(r.winner.gen_no).padStart(2, "0")} / ${rcNum(r.winner.graded_score, 3)}` : "-"));
+    })))), /* @__PURE__ */ React.createElement("div", { className: "run-compare-gen" }, /* @__PURE__ */ React.createElement("span", null, "Selected generation preview:"), compareRows.slice(0, 6).map((row) => /* @__PURE__ */ React.createElement("span", { key: `${row.run_id}-${row.gen_no}` }, row.run_id, "/g", row.gen_no, ": ", rcMoney(row.profit), " (", rcPct(row.return_pct), ") ", rcDuration(row.duration_sec)))))));
+  }
+  Object.assign(window, { RunComparePanel });
+
+  // ai_strategy_loop/dashboard/frontend/v4-workbench.jsx
+  function V4Workbench({ baseUrl, wsStatus, runId }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-workbench" }, /* @__PURE__ */ React.createElement(ResearchProPanel, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HallOfFamePanel, { baseUrl, wsStatus }));
+  }
+  Object.assign(window, { V4Workbench });
+
+  // ai_strategy_loop/dashboard/frontend/v4-audit.jsx
+  var V4_SAFETY_TILES = [
+    ["\uC2E4\uAC70\uB798/\uC8FC\uBB38 \uAE30\uB2A5 \uC5C6\uC74C", "No Live Order"],
+    ["\uBE0C\uB85C\uCEE4 \uB85C\uADF8\uC778 \uC5C6\uC74C", "No Broker Login"],
+    ["\uACC4\uC88C/\uC790\uC0B0 \uC5F0\uB3D9 \uC5C6\uC74C", "No Account Trading"],
+    ["\uC5F0\uAD6C \uC804\uC6A9", "Research Only"],
+    ["Human Approval Gate", "\uC2B9\uC778 \uD6C4 Export"],
+    ["Append-Only Audit", "\uBD88\uBCC0 \uAC10\uC0AC \uB85C\uADF8"]
+  ];
+  function V4Audit({ baseUrl, onNavigate }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-audit" }, /* @__PURE__ */ React.createElement("section", { className: "v4-safety-strip", "data-safety-boundary": "v4-research-only" }, V4_SAFETY_TILES.map(([title, detail]) => /* @__PURE__ */ React.createElement("div", { key: title, className: "v4-safety-tile" }, /* @__PURE__ */ React.createElement("b", null, title), /* @__PURE__ */ React.createElement("span", { className: "mono" }, detail)))), /* @__PURE__ */ React.createElement(VerdictPanel, { baseUrl, onNavigate }));
+  }
+  Object.assign(window, { V4Audit });
+
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4 } = React;
   var V4_TABS = [
@@ -33447,6 +33573,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     }, [activeTab]);
     const { state, health, wsStatus, send } = useBackend(baseUrl);
     const active = V4_TABS.find((t) => t.key === activeTab) || V4_TABS[0];
+    const runId = state && state.run_id || "";
     const selectTab = (key) => {
       setActiveTab(key);
       try {
@@ -33468,7 +33595,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       },
       /* @__PURE__ */ React.createElement("span", { className: "v4-tab-label" }, tab.label),
       /* @__PURE__ */ React.createElement("span", { className: "v4-tab-badge mono" }, tab.badge)
-    ))), /* @__PURE__ */ React.createElement("main", { className: "v4-main" }, replayVisited && /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "replay" ? void 0 : "none" } }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(V4Replay, { baseUrl, wsStatus }))), activeTab === "replay" ? null : /* @__PURE__ */ React.createElement(ErrorBoundary, null, activeTab === "research" ? /* @__PURE__ */ React.createElement(V4ResearchLive, { baseUrl, state, wsStatus, send }) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder-badge mono" }, active.badge), /* @__PURE__ */ React.createElement("h2", null, active.label), /* @__PURE__ */ React.createElement("p", null, active.hint), /* @__PURE__ */ React.createElement("p", { className: "mono v4-placeholder-note" }, "base=", baseUrl, " \xB7 ws=", wsStatus, " \xB7 status=", state.status || "\u2014", " \xB7 \uC774 \uD0ED\uC740 \uD6C4\uC18D phase \uC5D0\uC11C \uAE30\uC874 V2 \uCEF4\uD3EC\uB10C\uD2B8\uB85C \uCC44\uC6C1\uB2C8\uB2E4.")))));
+    ))), /* @__PURE__ */ React.createElement("main", { className: "v4-main" }, replayVisited && /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "replay" ? void 0 : "none" } }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(V4Replay, { baseUrl, wsStatus }))), activeTab === "replay" ? null : /* @__PURE__ */ React.createElement(ErrorBoundary, null, activeTab === "research" ? /* @__PURE__ */ React.createElement(V4ResearchLive, { baseUrl, state, wsStatus, send }) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "audit" ? /* @__PURE__ */ React.createElement(V4Audit, { baseUrl, onNavigate: selectTab }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder-badge mono" }, active.badge), /* @__PURE__ */ React.createElement("h2", null, active.label), /* @__PURE__ */ React.createElement("p", null, active.hint), /* @__PURE__ */ React.createElement("p", { className: "mono v4-placeholder-note" }, "base=", baseUrl, " \xB7 ws=", wsStatus, " \xB7 status=", state.status || "\u2014", " \xB7 \uC774 \uD0ED\uC740 \uD6C4\uC18D phase \uC5D0\uC11C \uAE30\uC874 V2 \uCEF4\uD3EC\uB10C\uD2B8\uB85C \uCC44\uC6C1\uB2C8\uB2E4.")))));
   }
   Object.assign(window, { DashboardV4Shell });
 

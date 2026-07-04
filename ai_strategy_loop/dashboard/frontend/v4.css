@@ -80,6 +80,23 @@
 .v4-replay { min-width: 0; }
 .v4-replay .chart-wrap { min-height: 360px; }
 
+/* ── Lab / Workbench: 자체 fetch 패널 세로 스택 + 히트맵/차트 확대 ── */
+.v4-lab, .v4-workbench { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.v4-lab .chart-wrap, .v4-workbench .chart-wrap { min-height: 320px; }
+
+/* ── Audit: compact 안전 strip(quiet-by-default) + VerdictPanel ── */
+.v4-audit { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.v4-safety-strip {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;
+}
+.v4-safety-tile {
+  border: 1px solid var(--line-1); background: var(--bg-1);
+  border-radius: var(--radius-sm, 4px); padding: 7px 10px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.v4-safety-tile b { font-size: 12px; color: var(--ink-1); font-weight: 500; }
+.v4-safety-tile .mono { font-size: 10px; color: var(--ink-3); }
+
 /* ── Phase 1 placeholder (후속 phase 에서 제거) ── */
 .v4-placeholder {
   border: 1px dashed var(--line-2); border-radius: 10px;
