@@ -1,0 +1,68 @@
+{
+  "schema": "plan_b_p5_tick_pilot12_receipt_v1",
+  "created_at": "2026-07-04T20:10:00+0900",
+  "lane": "tick",
+  "official_profile": "DB full period + warm64",
+  "config_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json",
+  "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_pilot12_20260704.json",
+  "run_id": "lat_tick_official_full_warm64_pilot12_20260704",
+  "run_status": "complete",
+  "elapsed_seconds": 1575.931,
+  "command": [
+    "python",
+    "-m",
+    "ai_strategy_loop.scripts.claude_candidate_batch_eval",
+    "--pairs-json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_pilot12_20260704.json",
+    "--config-json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json",
+    "--run-id",
+    "lat_tick_official_full_warm64_pilot12_20260704",
+    "--fail-fast-timeout"
+  ],
+  "warm_prepare_evidence": [
+    {
+      "run_id": "lat_tick_official_full_warm64_pilot12_20260704",
+      "observed_stdout": "prepare status=ok back_count=2424 elapsed=336s"
+    }
+  ],
+  "summary": {
+    "expected_pilot_pairs": 12,
+    "recorded_rows": 12,
+    "status_counts": {"ok": 12},
+    "gate_passed_count": 0,
+    "all_rows_honest_status": true,
+    "all_rows_ok": true,
+    "min_profit": -472898110.0,
+    "max_profit": -42046738.0,
+    "min_mdd": 280.14,
+    "max_mdd": 1558.72,
+    "min_daily_avg_trades": 1.8,
+    "max_daily_avg_trades": 13.4,
+    "effective_gate_reason_tokens_present": true,
+    "process_surface_clean": "no lingering claude_candidate_batch_eval observed in post-run process scan",
+    "chunked_288_single_run_allowed": false,
+    "next_allowed_action": "P5 official tick 24-pair chunk01 only after G009 checkpoint; min/P6/P7 remain blocked until official tick export exists"
+  },
+  "rows": [
+    {"gen_no": 0, "buy_name": "LAT_lattice_v1_tick_0900_small_low_momentum_breakout_B", "sell_name": "LAT_lattice_v1_tick_0900_small_low_momentum_breakout_S", "status": "ok", "gate_passed": 0, "trade_count": 1712, "daily_avg_trades": 1.8, "profit": -42046738.0, "mdd": 280.14, "reason": "mdd 280.1 > mdd_cap 35"},
+    {"gen_no": 1, "buy_name": "LAT_lattice_v1_tick_0900_small_low_prevday_active_B", "sell_name": "LAT_lattice_v1_tick_0900_small_low_prevday_active_S", "status": "ok", "gate_passed": 0, "trade_count": 5580, "daily_avg_trades": 5.9, "profit": -201303144.0, "mdd": 801.58, "reason": "mdd 801.6 > mdd_cap 35"},
+    {"gen_no": 2, "buy_name": "LAT_lattice_v1_tick_0900_small_low_strength_surge_B", "sell_name": "LAT_lattice_v1_tick_0900_small_low_strength_surge_S", "status": "ok", "gate_passed": 0, "trade_count": 2292, "daily_avg_trades": 2.4, "profit": -61655222.0, "mdd": 409.6, "reason": "mdd 409.6 > mdd_cap 35"},
+    {"gen_no": 3, "buy_name": "LAT_lattice_v1_tick_0900_small_low_volume_surge_B", "sell_name": "LAT_lattice_v1_tick_0900_small_low_volume_surge_S", "status": "ok", "gate_passed": 0, "trade_count": 5039, "daily_avg_trades": 5.3, "profit": -174518095.0, "mdd": 695.29, "reason": "mdd 695.3 > mdd_cap 35"},
+    {"gen_no": 4, "buy_name": "LAT_lattice_v1_tick_0900_small_mid_momentum_breakout_B", "sell_name": "LAT_lattice_v1_tick_0900_small_mid_momentum_breakout_S", "status": "ok", "gate_passed": 0, "trade_count": 3684, "daily_avg_trades": 3.9, "profit": -80780103.0, "mdd": 536.84, "reason": "mdd 536.8 > mdd_cap 35"},
+    {"gen_no": 5, "buy_name": "LAT_lattice_v1_tick_0900_small_mid_prevday_active_B", "sell_name": "LAT_lattice_v1_tick_0900_small_mid_prevday_active_S", "status": "ok", "gate_passed": 0, "trade_count": 11033, "daily_avg_trades": 11.6, "profit": -405872933.0, "mdd": 1157.61, "reason": "mdd 1158 > mdd_cap 35"},
+    {"gen_no": 6, "buy_name": "LAT_lattice_v1_tick_0900_small_mid_strength_surge_B", "sell_name": "LAT_lattice_v1_tick_0900_small_mid_strength_surge_S", "status": "ok", "gate_passed": 0, "trade_count": 6272, "daily_avg_trades": 6.6, "profit": -201533325.0, "mdd": 802.26, "reason": "mdd 802.3 > mdd_cap 35"},
+    {"gen_no": 7, "buy_name": "LAT_lattice_v1_tick_0900_small_mid_volume_surge_B", "sell_name": "LAT_lattice_v1_tick_0900_small_mid_volume_surge_S", "status": "ok", "gate_passed": 0, "trade_count": 9055, "daily_avg_trades": 9.5, "profit": -315539307.0, "mdd": 1044.4, "reason": "mdd 1044 > mdd_cap 35"},
+    {"gen_no": 8, "buy_name": "LAT_lattice_v1_tick_0900_small_high_momentum_breakout_B", "sell_name": "LAT_lattice_v1_tick_0900_small_high_momentum_breakout_S", "status": "ok", "gate_passed": 0, "trade_count": 5740, "daily_avg_trades": 6.0, "profit": -130536748.0, "mdd": 853.98, "reason": "mdd 854 > mdd_cap 35"},
+    {"gen_no": 9, "buy_name": "LAT_lattice_v1_tick_0900_small_high_prevday_active_B", "sell_name": "LAT_lattice_v1_tick_0900_small_high_prevday_active_S", "status": "ok", "gate_passed": 0, "trade_count": 12750, "daily_avg_trades": 13.4, "profit": -472898110.0, "mdd": 1558.72, "reason": "mdd 1559 > mdd_cap 35"},
+    {"gen_no": 10, "buy_name": "LAT_lattice_v1_tick_0900_small_high_strength_surge_B", "sell_name": "LAT_lattice_v1_tick_0900_small_high_strength_surge_S", "status": "ok", "gate_passed": 0, "trade_count": 9010, "daily_avg_trades": 9.5, "profit": -303112343.0, "mdd": 1484.1, "reason": "mdd 1484 > mdd_cap 35"},
+    {"gen_no": 11, "buy_name": "LAT_lattice_v1_tick_0900_small_high_volume_surge_B", "sell_name": "LAT_lattice_v1_tick_0900_small_high_volume_surge_S", "status": "ok", "gate_passed": 0, "trade_count": 9346, "daily_avg_trades": 9.8, "profit": -330484262.0, "mdd": 1293.72, "reason": "mdd 1294 > mdd_cap 35"}
+  ],
+  "verdict": "pilot12_execution_clean_per_process_and_row_integrity; trading_quality_bad_all_gate_failed; proceed_only_as_coverage_map_not_promotion",
+  "forbidden": [
+    "Do not use lat_smoke_tick_full_sanitized_20260704* for official survivor/rejection/P6 decisions.",
+    "Do not run tick 288 as one monolithic run.",
+    "Do not start min/P6/P7 before official tick export exists.",
+    "Do not treat any pilot12 row as survivor or promotion evidence."
+  ]
+}

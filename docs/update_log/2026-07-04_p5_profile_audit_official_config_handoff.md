@@ -126,7 +126,8 @@ coverage map 이 완성되면 P5 는 다음 정제 판단으로 넘어갈 수 �
 python -m ai_strategy_loop.scripts.claude_candidate_batch_eval `
   --pairs-json docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_preflight4_official_full_warm64_20260704.json `
   --config-json docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json `
-  --run-id lat_preflight_tick_official_full_warm64_20260704
+  --run-id lat_preflight_tick_official_full_warm64_20260704_retry02 `
+  --fail-fast-timeout
 ```
 
 preflight 통과 조건:
@@ -135,6 +136,7 @@ preflight 통과 조건:
 2. 4쌍 결과가 honest `ok` / `no_trades` / `error` 로 기록되고 CSV/metrics 상태가 보존됨.
 3. 실패 reason 의 실효 게이트가 `min_daily_trades 0.5`, `mdd_cap 35` 와 일치.
 4. timeout streak 가 보이면 즉시 중단하고 chunk size 또는 timeout 재조정. 288 full run 금지.
+5. `--fail-fast-timeout` 로 timeout 페어를 error row 로 기록하고 warm-pool 재로딩 장기 대기를 생략.
 
 preflight 통과 후에만 tick 288 공식 run 을 48쌍×6 chunk 로 진행한다. tick 공식 export가
 정상 생성된 뒤에만 min preflight/min 공식 run 을 진행한다.

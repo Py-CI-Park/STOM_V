@@ -1,0 +1,46 @@
+{
+  "schema": "p5_tick_preflight_verification_v1",
+  "created_at": "2026-07-04T19:20:00+0900",
+  "preflight": {
+    "receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_preflight_official_full_warm64_20260704_receipt.json",
+    "run_ids": [
+      "lat_preflight_tick_official_full_warm64_20260704_retry01",
+      "lat_preflight_tick_official_full_warm64_20260704_gen3_retry02"
+    ],
+    "recorded_rows": 4,
+    "status_counts": {"ok": 4},
+    "gate_passed_count": 0,
+    "full_288_allowed": false
+  },
+  "commands": [
+    {
+      "command": "pytest tests/unit/test_warm_session_window.py tests/unit/test_lattice_p5_batch_repair.py tests/unit/test_plan_b_p5_profile_audit.py -q",
+      "status": "passed",
+      "stdout_summary": "19 passed in 13.36s"
+    },
+    {
+      "command": "python - <<'PY' ... json.loads(...) for .omo/boulder.json, p5 receipt, gen3 pairs ... PY",
+      "status": "passed",
+      "stdout_summary": "json ok"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "stdout_summary": "No whitespace errors; CRLF warnings only."
+    },
+    {
+      "command": "PowerShell process scan for lat_preflight_tick_official_full_warm64_20260704*/claude_candidate_batch_eval",
+      "status": "passed",
+      "stdout_summary": "No matching preflight process remained except the scan command itself."
+    }
+  ],
+  "reviews": {
+    "architect": "agent://5-P5PreflightArchitect2",
+    "qa": "agent://4-P5PreflightQa"
+  },
+  "notes": [
+    "retry01 was killed during slow gen3 recovery wait; DB status remains running by DB UPDATE/DELETE prohibition, but only its 3 completed generation rows are official evidence.",
+    "gen3 supplement run completed and supplies the fourth official preflight row.",
+    "tick/min 288, min, P6, P7 remain blocked."
+  ]
+}

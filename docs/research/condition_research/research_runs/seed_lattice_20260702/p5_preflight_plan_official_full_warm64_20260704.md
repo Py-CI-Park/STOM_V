@@ -22,7 +22,8 @@ This is a preflight plan only. Do not run tick/min 288 full smoke from this step
 python -m ai_strategy_loop.scripts.claude_candidate_batch_eval `
   --pairs-json docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_preflight4_official_full_warm64_20260704.json `
   --config-json docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json `
-  --run-id lat_preflight_tick_official_full_warm64_20260704
+  --run-id lat_preflight_tick_official_full_warm64_20260704_retry02 `
+  --fail-fast-timeout
 ```
 
 ## Acceptance before any full run
@@ -31,6 +32,7 @@ python -m ai_strategy_loop.scripts.claude_candidate_batch_eval `
 - All 2~4 preflight pairs record honest `ok`, `no_trades`, or `error` rows with CSV/metrics status preserved.
 - Runtime reason strings show effective gates `min_daily_trades 0.5` and `mdd_cap 35` when those gates fail.
 - If a timeout streak appears, stop and lower chunk size or increase per-run timeout before any 288 full run.
+- Use `--fail-fast-timeout` for preflight runs so a timeout is recorded as an error row instead of spending another full warm-pool recovery/reload cycle.
 
 ## Full-run protocol after preflight passes
 

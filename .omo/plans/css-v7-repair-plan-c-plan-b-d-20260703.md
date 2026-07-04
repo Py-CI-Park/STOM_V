@@ -132,10 +132,44 @@ Plan C/B/D documents.
   `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_profile_audit_official_full_warm64_20260704.json`.
   Official configs now use DB-full-period + warm64 and align configured/effective
   gates at `min_daily_trades=0.5`, `mdd_cap=35`. Tick runtime policy is
-  09:00~09:28 (raw DB reaches 09:30); min policy is 09:00~15:19. Next allowed
-  action is tick preflight 4 pairs only:
-  `lat_preflight_tick_official_full_warm64_20260704`. Full tick/min 288 remains
-  blocked until that preflight receipt exists.
+  09:00~09:28 (raw DB reaches 09:30); min policy is 09:00~15:19.
+
+  Tick preflight 2026-07-04: executed with official DB-full-period + warm64.
+  Evidence:
+  `docs/update_log/2026-07-04_p5_tick_preflight_failfast_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_preflight_official_full_warm64_20260704_receipt.json`.
+  Result: 4/4 honest `ok` rows, `gate_passed=0`, warm prepare `back_count=2424`.
+  Full-run protocol 2026-07-04: reviewed and committed in
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_full_run_protocol_after_preflight_20260704.json`.
+  Next allowed action is pilot12 only with `--fail-fast-timeout`; single-run 288,
+  chunk02+, min, P6, and P7 remain blocked until pilot/chunk receipts allow them.
+  Pilot12 2026-07-04: executed cleanly with official DB-full-period + warm64 and
+  `--fail-fast-timeout`. Evidence:
+  `docs/update_log/2026-07-04_p5_tick_pilot12_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_pilot12_official_full_warm64_20260704_receipt.json`.
+  Result: 12/12 honest `ok` rows, `gate_passed=0`, MDD `280.14~1558.72`,
+  profit `-472,898,110~-42,046,738`. This is process-clean but
+  trading-quality-bad; pilot rows are not survivors. Next allowed action is
+  24-pair tick chunk01 only as coverage-map evidence; min, P6, and P7 remain
+  blocked until official tick export exists.
+  Chunk01 2026-07-04: executed cleanly with official DB-full-period + warm64.
+  Evidence:
+  `docs/update_log/2026-07-04_p5_tick_chunk01_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk01_official_full_warm64_20260704_receipt.json`.
+  Result: 24/24 honest `ok` rows, `gate_passed=0`, MDD `280.14~1558.72`,
+  profit `-472,898,110~-42,046,738`. Chunk01 is coverage-map evidence only;
+  rows are not survivors. Next allowed action is chunk02 only; min, P6, and
+  P7 remain blocked until official tick export exists.
+  Chunk02 2026-07-04: executed cleanly with 24/24 honest `ok` rows,
+  `gate_passed=0`, MDD `338.29~1038.66`, profit
+  `-692,611,103~-34,363,738`. Evidence:
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk02_official_full_warm64_20260704_receipt.json`.
+  Chunk02 is coverage-map evidence only; next allowed action is chunk03 only.
+  Chunk03 2026-07-04: executed cleanly with 24/24 honest `ok` rows,
+  `gate_passed=0`, MDD `255.82~1470.77`, profit
+  `-514,230,966~-12,886,150`. Evidence:
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk03_official_full_warm64_20260704_receipt.json`.
+  Chunk03 is coverage-map evidence only; next allowed action is chunk04 only.
 
   Acceptance:
   - Resume manifest and first-10-pair timing estimate are written.

@@ -452,17 +452,17 @@
       "objective": "Run priorities 1~7: CSS_V7 repair, Plan C validation, Plan B, Plan D",
       "resumed_at": "2026-07-04T08:48:04.4061085+09:00",
       "requested_range": "Plan B completion before Plan D",
-      "current_priority": "P5-official-tick-preflight",
-      "completed_range": "P5-root-cause-repair + P5-profile-audit",
-      "completed_at": "2026-07-04T08:13:02.9135701+09:00",
-      "last_completed_priority": "P5-profile-audit",
-      "last_completed_at": "2026-07-04T08:13:02.9135701+09:00",
-      "last_evidence": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_profile_audit_official_full_warm64_20260704.json",
-      "next_priority": "P5 official tick preflight 4 pairs only",
-      "p5_blocker_status": "profile_audit_complete_preflight_required",
-      "blocked_at": "2026-07-04T00:43:02.435301+09:00",
-      "blocked_priority": "P5",
-      "blocker": "P5 profile audit completed. Full tick/min 288 remains blocked until tick preflight 4 pairs warm64 receipt exists. Next: lat_preflight_tick_official_full_warm64_20260704 using official full-period warm64 tick config."
+      "current_priority": "P5-official-tick-chunk04",
+      "completed_range": "P5-root-cause-repair + P5-profile-audit + P5-official-tick-preflight + P5-full-run-protocol-review + P5-official-tick-pilot12 + P5-official-tick-chunk01 + P5-official-tick-chunk02 + P5-official-tick-chunk03",
+      "completed_at": "2026-07-04T22:45:00+09:00",
+      "last_completed_priority": "P5-official-tick-chunk03",
+      "last_completed_at": "2026-07-04T22:45:00+09:00",
+      "last_evidence": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk03_official_full_warm64_20260704_receipt.json",
+      "next_priority": "P5 official tick chunk04 only",
+      "p5_blocker_status": "chunk03_complete_chunk04_required",
+      "blocked_at": "2026-07-04T22:45:00+09:00",
+      "blocked_priority": "P5-official-min-and-P6",
+      "blocker": "Chunk03 completed cleanly as execution evidence (24/24 ok, gate_passed=0) but trading quality remains bad (MDD 255.82~1470.77). Single-run tick 288 remains forbidden. Next allowed action: chunk04 only with --fail-fast-timeout; min, P6, and P7 remain blocked until official tick export exists."
     }
   }
 }

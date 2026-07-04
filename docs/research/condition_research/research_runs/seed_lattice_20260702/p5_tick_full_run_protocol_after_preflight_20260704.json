@@ -1,0 +1,55 @@
+{
+  "schema": "plan_b_p5_tick_full_run_protocol_after_preflight_v1",
+  "created_at": "2026-07-04T19:28:17+0900",
+  "preflight_receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_preflight_official_full_warm64_20260704_receipt.json",
+  "preflight_summary": {
+    "rows": 4,
+    "status_counts": {
+      "ok": 4
+    },
+    "gate_passed_count": 0,
+    "full_288_allowed_before_protocol": false
+  },
+  "decision": {
+    "tick_288_single_run_allowed": false,
+    "next_allowed_action": "pilot12 only",
+    "pilot_then_chunked_288_allowed_after_clean_pilot": true,
+    "chunk_size_after_pilot": 24,
+    "chunk_count_after_pilot": 12
+  },
+  "rationale": [
+    "Preflight proved warm64/full-period execution can prepare and record rows, but all 4 rows failed gates with severe MDD/profit damage.",
+    "retry01 exposed long warm recovery/reload wait; --fail-fast-timeout is required before larger chunks.",
+    "24-pair chunks reduce warm pool lifetime versus 48 while preserving coverage-map progress.",
+    "P5 success remains coverage-map completion, not gate_passed count."
+  ],
+  "required_command_flags": [
+    "--fail-fast-timeout"
+  ],
+  "pilot_command": [
+    "python",
+    "-m",
+    "ai_strategy_loop.scripts.claude_candidate_batch_eval",
+    "--pairs-json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_pilot12_20260704.json",
+    "--config-json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json",
+    "--run-id",
+    "lat_tick_official_full_warm64_pilot12_20260704",
+    "--fail-fast-timeout"
+  ],
+  "chunk_manifest": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_chunk_manifest_full_warm64_20260704.json",
+  "stop_conditions": [
+    "prepare status != ok",
+    "any pair timeout/error with fail-fast abort",
+    "process cleanup scan shows lingering preflight/chunk processes",
+    "pilot/chunk rows missing honest status",
+    "operator attempts min/P6/P7 before tick export"
+  ],
+  "forbidden": [
+    "Do not run tick 288 as one run.",
+    "Do not start chunk02+ before pilot12 receipt and chunk01 decision.",
+    "Do not start min before official tick export.",
+    "Do not use wrong-profile lat_smoke_tick_full_sanitized_20260704* for survivor/reject/P6."
+  ]
+}
