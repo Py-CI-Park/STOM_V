@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "kind": "algorithm-test-report",
+  "subject": "Plan B P5-profile-audit static official full warm64 config generation",
+  "commit": "8a35872e",
+  "commands": [
+    {
+      "command": "python -m pytest tests/unit/test_plan_b_p5_profile_audit.py tests/unit/test_lattice_p5_batch_repair.py -q",
+      "status": "passed",
+      "summary": "8 passed"
+    },
+    {
+      "command": "python scripts/verify_nonrelease_sync.py",
+      "status": "passed",
+      "summary": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "summary": "passed"
+    }
+  ],
+  "generated_artifacts": [
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_profile_audit_official_full_warm64_20260704.json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_min_official_full_warm64_20260704.json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_preflight_plan_official_full_warm64_20260704.md",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_preflight4_official_full_warm64_20260704.json"
+  ],
+  "review_evidence": {
+    "architect": {
+      "status": "CLEAR/APPROVE",
+      "ref": "agent://0-ProfileAuditReview",
+      "blockers": []
+    },
+    "executor_qa_initial": {
+      "ref": "agent://1-ProfileAuditQa",
+      "resolved_findings": [
+        "chunk_size helper lacked 40..60 validation",
+        "CLI receipt/stdout and preflight run_id were hardcoded/ambiguous for non-default stamps"
+      ]
+    },
+    "executor_qa_recheck": {
+      "status": "redTeamStatus=pass",
+      "ref": "agent://2-ProfileAuditQaRecheck",
+      "blockers": []
+    }
+  },
+  "scope_guards": {
+    "preflight_executed": false,
+    "tick_288_full_executed": false,
+    "min_288_full_executed": false,
+    "db_update_delete_executed": false
+  }
+}
