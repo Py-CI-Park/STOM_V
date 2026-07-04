@@ -1,114 +1,239 @@
-/* v4.css — V4 대시보드 전용 레이아웃 (.v4-root 스코프)
+/* v4.css — V4 대시보드 전용 레이아웃 (.v4- 스코프)
  *
- *   V2 styles.css 의 디자인 토큰(var(--*))을 재사용하되, 레이아웃 클래스는 전부
- *   v4-* 로 격리한다 → V2 화면에 회귀 0. graph-first 원칙: 본문 컨테이너가 차트에
- *   큰 면적을 준다(차트 컴포넌트는 크기 prop 없이 컨테이너 크기로 스케일).
+ *   승인된 리디자인 프로토타입(design-system/v4-redesign-prototype.html)의 구현 CSS.
+ *   디자인 토큰(var(--*))·공용 위젯(.btn/.theme-toggle/.panel/.progress-track/.evo-group)은
+ *   V2 styles.css 를 재사용하고, 레이아웃 클래스는 전부 v4- 프리픽스로 격리한다 → V2 회귀 0.
+ *   원칙: graph-first(대형 차트 컨테이너) · quiet-by-default(안전 정보는 작은 칩).
  */
+
+/* ============ 앱 프레임: 좌측 레일 + 워크스페이스 ============ */
 .v4-root {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
   background: var(--bg-0);
   color: var(--ink-0);
 }
 
-/* ── 상단바 ── */
-.v4-topbar {
-  position: sticky; top: 0; z-index: 20;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 14px; padding: 10px 18px;
+/* ── 좌측 슬림 레일 ── */
+.v4-rail {
+  width: 76px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 14px 0 10px;
   background: var(--bg-1);
-  border-bottom: 1px solid var(--line-1);
+  border-right: 1px solid var(--line-1);
+  position: sticky; top: 0; height: 100vh;
+  z-index: 30;
 }
-.v4-brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
-.v4-brand-mark { font-size: 18px; font-weight: 600; letter-spacing: .04em; color: var(--ink-0); }
-.v4-brand-sub { font-size: 11px; color: var(--ink-2); white-space: nowrap; }
-.v4-controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-
-/* ── 탭 네비 ── */
-.v4-tabnav {
-  position: sticky; top: 51px; z-index: 19;
-  display: flex; gap: 2px; padding: 6px 14px;
-  background: var(--bg-1);
-  border-bottom: 1px solid var(--line-1);
-  overflow-x: auto;
+.v4-rail-logo {
+  width: 34px; height: 34px; border-radius: 9px;
+  display: grid; place-items: center;
+  background: var(--bg-3); border: 1px solid var(--line-2);
+  margin-bottom: 10px;
 }
-.v4-tab {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 8px 14px; border-radius: 6px;
-  border: 1px solid transparent; background: transparent;
-  color: var(--ink-2); font-size: 13px; white-space: nowrap;
+.v4-rail-item {
+  width: 58px; padding: 9px 0 7px;
+  border-radius: 9px; border: 1px solid transparent;
+  background: transparent; color: var(--ink-2);
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  text-decoration: none; cursor: pointer;
   transition: background .12s, color .12s, border-color .12s;
 }
-.v4-tab:hover { color: var(--ink-0); background: var(--bg-2); }
-.v4-tab.active { color: var(--ink-0); background: var(--bg-2); border-color: var(--line-2); }
-.v4-tab.active .v4-tab-badge { color: var(--teal); }
-.v4-tab-badge { font-size: 10px; color: var(--ink-3); letter-spacing: .08em; }
+.v4-rail-item:hover { background: var(--bg-2); color: var(--ink-0); }
+.v4-rail-item.active {
+  background: rgba(76,214,179,.10);
+  border-color: rgba(76,214,179,.34);
+  color: var(--ink-0);
+}
+[data-theme="light"] .v4-rail-item.active { background: rgba(13,155,120,.10); border-color: rgba(13,155,120,.34); }
+.v4-rail-item.active .v4-ri-dot { opacity: 1; }
+.v4-ri-label { font-size: 9.5px; letter-spacing: .02em; }
+.v4-ri-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--teal); opacity: 0; margin-top: -2px; }
+.v4-rail-spacer { flex: 1; }
 
-/* ── 본문 ── */
-.v4-main { flex: 1; padding: 16px 18px 40px; min-width: 0; }
+/* ── 워크스페이스 ── */
+.v4-workspace { display: flex; flex-direction: column; min-width: 0; }
 
-/* graph-first 기반: V4 안에서 차트 컨테이너 최소 높이 확대 */
-.v4-root .chart-wrap { min-height: 300px; }
+/* ── 상단바 ── */
+.v4-topbar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 18px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--line-1);
+  position: sticky; top: 0; z-index: 20;
+}
+.v4-brand { display: flex; flex-direction: column; gap: 1px; min-width: 0; margin-right: 2px; }
+.v4-brand b { font-size: 15px; font-weight: 600; letter-spacing: .01em; }
+.v4-brand span { font-size: 10.5px; color: var(--ink-2); }
+.v4-safety { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.v4-sfx {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .03em;
+  color: var(--ink-2); border: 1px solid var(--line-1); background: var(--bg-2);
+  border-radius: 999px; padding: 3px 9px; white-space: nowrap;
+}
+.v4-sfx.demo { color: var(--violet); border-color: rgba(165,148,255,.34); background: rgba(165,148,255,.09); }
+.v4-sfx.gate { color: var(--amber); border-color: rgba(240,179,90,.32); background: rgba(240,179,90,.08); }
+.v4-grow { flex: 1 1 20px; }
+.v4-base {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-0); border: 1px solid var(--line-1);
+  border-radius: 6px; padding: 3px 6px;
+}
+.v4-base-lbl { font-size: 10px; color: var(--ink-3); letter-spacing: .08em; }
+.v4-base .toolbar-input { width: 168px; }
 
-/* ── Research Live 탭 (graph-first): 좌 대형 hero + 우 slim rail ── */
-.v4-research {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
+/* ── 컨트롤바(뷰 제목 + run 제어) ── */
+.v4-controlbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap;
+  padding: 9px 18px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--line-1);
+  position: sticky; top: 57px; z-index: 19;
+}
+.v4-view-title { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.v4-view-title h2 { font-size: 16px; }
+.v4-view-title span { font-size: 11px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v4-runbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.v4-runbar-prog { display: flex; align-items: center; gap: 9px; min-width: 190px; }
+.v4-runbar-gen { font-size: 14px; }
+.v4-runbar-track { width: 120px; }
+.v4-runsel {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-0); border: 1px solid var(--line-1);
+  border-radius: 6px; padding: 3px 6px;
+}
+.v4-runsel-lbl { font-size: 10px; color: var(--ink-3); letter-spacing: .08em; }
+.v4-runsel select {
+  font-size: 11px; background: var(--bg-1); color: var(--ink-0);
+  border: 1px solid var(--line-2); border-radius: 5px; padding: 3px 6px;
+  max-width: 190px;
+}
+
+/* ── 스테이지 ── */
+.v4-stage { flex: 1; padding: 14px 18px 40px; min-width: 0; }
+
+/* ============ 공용 소품 ============ */
+/* 상태 칩 — 상태를 형태로 인코딩(시맨틱 색은 액센트와 분리) */
+.v4-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .03em;
+  border-radius: 999px; padding: 2px 8px;
+  border: 1px solid var(--line-1); background: var(--bg-2); color: var(--ink-1);
+  white-space: nowrap;
+}
+.v4-chip.ok   { color: var(--teal);   border-color: rgba(76,214,179,.34);  background: rgba(76,214,179,.08); }
+.v4-chip.warn { color: var(--amber);  border-color: rgba(240,179,90,.34);  background: rgba(240,179,90,.08); }
+.v4-chip.bad  { color: var(--red);    border-color: rgba(255,107,107,.36); background: rgba(255,107,107,.08); }
+.v4-chip.win  { color: var(--violet); border-color: rgba(165,148,255,.34); background: rgba(165,148,255,.09); }
+.v4-chip.off  { color: var(--ink-3); }
+.v4-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+
+/* 스탯 행 */
+.v4-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  background: var(--line-1); border: 1px solid var(--line-1);
+  border-radius: 11px; overflow: hidden;
+}
+@media (max-width: 760px) { .v4-stats { grid-template-columns: repeat(2, 1fr); } }
+.v4-stat { background: var(--bg-1); padding: 12px 14px; display: flex; flex-direction: column; gap: 3px; }
+.v4-stat .v { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 23px; line-height: 1; color: var(--ink-0); }
+.v4-stat .v.pos { color: var(--teal); }
+.v4-stat .v.neg { color: var(--red); }
+.v4-stat .v .dim { color: var(--ink-3); font-size: 15px; }
+.v4-stat .s { font-size: 10.5px; color: var(--ink-2); font-family: var(--mono); }
+
+/* workflow + authority strip */
+.v4-wf {
+  display: flex; align-items: stretch; flex-wrap: wrap;
+  border: 1px solid var(--line-1); border-radius: 11px;
+  background: var(--bg-1); overflow: hidden; margin-bottom: 14px;
+}
+.v4-wf-step { display: flex; align-items: center; gap: 9px; padding: 10px 14px; border-right: 1px solid var(--line-1); flex-shrink: 0; }
+.v4-wf-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--mono); font-size: 11px;
+  background: var(--bg-2); border: 1px solid var(--line-2); color: var(--ink-2);
+}
+.v4-wf-step.done .v4-wf-num { background: rgba(76,214,179,.12); border-color: var(--teal); color: var(--teal); }
+.v4-wf-step.active .v4-wf-num { background: rgba(240,179,90,.14); border-color: var(--amber); color: var(--amber); box-shadow: 0 0 0 4px rgba(240,179,90,.10); }
+.v4-wf-txt b { display: block; font-size: 12.5px; }
+.v4-wf-txt span { display: block; font-size: 10px; color: var(--ink-2); font-family: var(--mono); }
+.v4-wf-next { margin-left: auto; display: flex; align-items: center; gap: 12px; padding: 8px 14px; flex-wrap: wrap; }
+.v4-wf-next .k { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-family: var(--mono); display: block; margin-bottom: 2px; }
+.v4-wf-next b { font-size: 12.5px; color: var(--teal); }
+
+/* ============ Research Live (graph-first) ============ */
+.v4-research { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+/* workflow(PhaseTimeline 정본) + process/authority + 다음 행동 */
+.v4-wfwrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: stretch; }
+@media (max-width: 1180px) { .v4-wfwrap { grid-template-columns: 1fr; } }
+.v4-wfwrap .v4-wf-next {
+  margin-left: 0;
+  border: 1px solid var(--line-1); border-radius: 8px; background: var(--bg-1);
+}
+.v4-rlive {
+  display: grid; grid-template-columns: minmax(0, 1fr) 352px;
   gap: 14px; align-items: start;
 }
-@media (max-width: 1180px) { .v4-research { grid-template-columns: 1fr; } }
-.v4-research-hero { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.v4-research-rail { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.v4-research-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-@media (max-width: 760px) { .v4-research-row2 { grid-template-columns: 1fr; } }
-/* 차트 대형화: hero 주인공 최대, 보조 차트 중간 (컴포넌트 수정 없이 컨테이너 높이로만 스케일) */
-.v4-research .chart-wrap { min-height: 340px; }
-.v4-research .v4-research-row2 .chart-wrap { min-height: 240px; }
-.v4-research .v4-hero-primary .chart-wrap { min-height: 420px; }
+@media (max-width: 1180px) { .v4-rlive { grid-template-columns: 1fr; } }
+.v4-hero-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.v4-side-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+/* graph-first: 주인공 차트 최대, 보조 중간 (차트는 크기 prop 없이 컨테이너로 스케일) */
+.v4-hero-primary .chart-wrap, .v4-hero-primary .v4-canvas-wrap { min-height: 400px; }
+.v4-rlive .chart-wrap { min-height: 250px; }
+.v4-rlive .v4-two .chart-wrap { min-height: 220px; }
+.v4-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 860px) { .v4-two { grid-template-columns: 1fr; } }
 .v4-idle-strip {
   border: 1px solid rgba(240,179,90,.28); background: rgba(240,179,90,.06);
-  color: var(--ink-2); border-radius: var(--radius-md, 6px);
-  padding: 8px 12px; font-size: 11.5px;
+  color: var(--ink-2); border-radius: 7px;
+  padding: 8px 12px; font-size: 11.5px; font-family: var(--mono);
 }
 
-/* ── Backtest 탭: BacktestTab 통째 재사용 + 결과 차트 완만 확대(내부 레이아웃 보존) ── */
+/* V4 대형 캔버스 차트(v4-charts.jsx) */
+.v4-canvas-wrap { position: relative; width: 100%; }
+.v4-canvas-wrap canvas { display: block; width: 100%; height: 100%; position: absolute; inset: 0; }
+.v4-canvas-legend {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  padding: 10px 14px 12px;
+  font-family: var(--mono); font-size: 10.5px; color: var(--ink-2);
+}
+.v4-canvas-legend i { display: inline-block; width: 14px; height: 0; vertical-align: middle; margin-right: 6px; }
+.v4-canvas-legend .dot-v { display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: middle; margin-right: 6px; }
+
+/* ============ 탭별 컨테이너 ============ */
 .v4-backtest { min-width: 0; }
 .v4-backtest .chart-wrap { min-height: 320px; }
-
-/* ── Replay 탭: SimulationTab 통째 재사용(keep-alive는 셸). 캔들/오버레이 차트 확대 ── */
 .v4-replay { min-width: 0; }
 .v4-replay .chart-wrap { min-height: 360px; }
-
-/* ── Lab / Workbench: 자체 fetch 패널 세로 스택 + 히트맵/차트 확대 ── */
 .v4-lab, .v4-workbench { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .v4-lab .chart-wrap, .v4-workbench .chart-wrap { min-height: 320px; }
-
-/* ── Audit: compact 안전 strip(quiet-by-default) + VerdictPanel ── */
 .v4-audit { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.v4-safety-strip {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;
-}
+.v4-context { min-width: 0; }
+
+/* Audit compact 안전 strip (quiet-by-default) */
+.v4-safety-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
 .v4-safety-tile {
   border: 1px solid var(--line-1); background: var(--bg-1);
-  border-radius: var(--radius-sm, 4px); padding: 7px 10px;
+  border-radius: 6px; padding: 7px 10px;
   display: flex; flex-direction: column; gap: 2px;
 }
 .v4-safety-tile b { font-size: 12px; color: var(--ink-1); font-weight: 500; }
 .v4-safety-tile .mono { font-size: 10px; color: var(--ink-3); }
 
-/* ── Phase 1 placeholder (후속 phase 에서 제거) ── */
+/* placeholder(전환기용) */
 .v4-placeholder {
   border: 1px dashed var(--line-2); border-radius: 10px;
   padding: 48px 28px; text-align: center; color: var(--ink-2);
   background: linear-gradient(180deg, rgba(76,214,179,.03), transparent 60%);
 }
-.v4-placeholder-badge {
-  display: inline-block; font-size: 11px; letter-spacing: .12em;
-  color: var(--teal); border: 1px solid rgba(76,214,179,.3);
-  background: rgba(76,214,179,.06); border-radius: 999px;
-  padding: 3px 10px; margin-bottom: 12px;
+.v4-placeholder h2 { font-size: 20px; color: var(--ink-0); margin-bottom: 8px; }
+
+/* 반응형: 좁은 폭에서 레일 축소 */
+@media (max-width: 760px) {
+  .v4-rail { width: 56px; }
+  .v4-rail-item { width: 46px; }
+  .v4-ri-label { display: none; }
 }
-.v4-placeholder h2 { font-size: 20px; color: var(--ink-0); margin-bottom: 8px; letter-spacing: -.01em; }
-.v4-placeholder p { margin: 4px 0; line-height: 1.6; }
-.v4-placeholder-note { font-size: 11px; color: var(--ink-3); margin-top: 14px; }

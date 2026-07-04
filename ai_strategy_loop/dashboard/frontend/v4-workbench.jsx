@@ -5,6 +5,7 @@
 import { ResearchProPanel } from "./research-pro.jsx";
 import { RunComparePanel } from "./run-compare.jsx";
 import { HallOfFamePanel } from "./chart.jsx";
+import { HofInventoryGate } from "./hof-inventory.jsx";
 
 function V4Workbench({ baseUrl, wsStatus, runId }) {
   return (
@@ -12,6 +13,8 @@ function V4Workbench({ baseUrl, wsStatus, runId }) {
       <ResearchProPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
       <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} />
       <HallOfFamePanel baseUrl={baseUrl} wsStatus={wsStatus} />
+      {/* HoF 필드/머지 계약 체크리스트(정적 계약 게이트) — compact */}
+      <HofInventoryGate compact />
     </div>
   );
 }

@@ -33432,14 +33432,257 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     root2.render(/* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(App, null)));
   }
 
+  // ai_strategy_loop/dashboard/frontend/v4-run-controls.jsx
+  function V4RunControls({
+    running,
+    state,
+    isDemo,
+    runList,
+    selectedRun,
+    onSelectRun,
+    onRefreshRun,
+    onOpenSettings,
+    onStop
+  }) {
+    const cur = Number(state.current_gen) || 0;
+    const max = Number(state.max_generations) || 0;
+    const pct = max > 0 ? Math.min(100, cur / max * 100) : 0;
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-runbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-runbar-prog", title: `\uC9C4\uD589\uB3C4 ${cur}/${max} \uC138\uB300` }, /* @__PURE__ */ React.createElement("span", { className: "mono v4-runbar-gen" }, /* @__PURE__ */ React.createElement("b", { style: { color: running ? "var(--amber)" : "var(--ink-0)" } }, cur), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, " / ", max || "\u2014")), /* @__PURE__ */ React.createElement("span", { className: "progress-track v4-runbar-track" }, /* @__PURE__ */ React.createElement("span", { className: "progress-fill" + (running ? " running" : ""), style: { width: pct + "%" } }))), /* @__PURE__ */ React.createElement("div", { className: "v4-runsel", title: "\uBCFC run \uC120\uD0DD \u2014 LIVE(\uD604\uC7AC) \uB610\uB294 \uACFC\uAC70 \uC2E4 run" }, /* @__PURE__ */ React.createElement("span", { className: "mono v4-runsel-lbl" }, "RUN"), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        className: "mono",
+        value: selectedRun,
+        disabled: isDemo,
+        onChange: (e) => onSelectRun(e.target.value)
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "" }, "LIVE(\uD604\uC7AC)"),
+      (runList || []).map((r) => /* @__PURE__ */ React.createElement("option", { key: r.run_id, value: r.run_id }, r.run_id, r.label ? " \xB7 " + r.label : "", r.gate_passed_count > 0 ? " \u2713" : ""))
+    ), selectedRun && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: onRefreshRun,
+        disabled: isDemo,
+        "data-tip": "\uC120\uD0DD run \uC0C8\uB85C\uACE0\uCE68"
+      },
+      "\u21BB"
+    )), /* @__PURE__ */ React.createElement("button", { className: "btn danger", onClick: onStop, disabled: !running }, "\u25FC \uC815\uC9C0"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: onOpenSettings, disabled: running }, "\u25B8 \uC124\uC815\xB7\uC2DC\uC791"));
+  }
+  Object.assign(window, { V4RunControls });
+
+  // ai_strategy_loop/dashboard/frontend/v4-charts.jsx
+  var { useEffect: useEffect_v4c, useRef: useRef_v4c } = React;
+  function _v4Tok(name) {
+    try {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    } catch (e) {
+      return "";
+    }
+  }
+  function _v4Alpha(hex2, a) {
+    const h = (hex2 || "#4cd6b3").replace("#", "");
+    const f = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+    const r = parseInt(f.substr(0, 2), 16) || 0, g = parseInt(f.substr(2, 2), 16) || 0, b = parseInt(f.substr(4, 2), 16) || 0;
+    return `rgba(${r},${g},${b},${a})`;
+  }
+  function _v4DrawHero(canvas, series, { target, bestIdx }) {
+    if (!canvas || typeof canvas.getContext !== "function") return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const wrap = canvas.parentElement;
+    const cw = Math.max(320, wrap && wrap.clientWidth || 880);
+    const ch = Math.max(220, wrap && wrap.clientHeight || 400);
+    const dpr = typeof window !== "undefined" && window.devicePixelRatio || 1;
+    canvas.width = Math.round(cw * dpr);
+    canvas.height = Math.round(ch * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cw, ch);
+    const ink2 = _v4Tok("--ink-2") || "#778496";
+    const line1 = _v4Tok("--line-1") || "#1d2530";
+    const teal = _v4Tok("--teal") || "#4cd6b3";
+    const violet = _v4Tok("--violet") || "#a594ff";
+    const amber = _v4Tok("--amber") || "#f0b35a";
+    const bg1 = _v4Tok("--bg-1") || "#0c1014";
+    const mono = _v4Tok("--mono") || "IBM Plex Mono, monospace";
+    const pl = 52, pr = 26, pt = 20, pb = 34;
+    const vals = series.map((s) => s.v);
+    if (!vals.length) {
+      ctx.fillStyle = ink2;
+      ctx.font = "12px " + mono;
+      ctx.textAlign = "center";
+      ctx.fillText("\uC5F0\uAD6C \uB300\uAE30 \u2014 \uC138\uB300 \uB370\uC774\uD130\uAC00 \uB3C4\uCC29\uD558\uBA74 \uC2E4\uC2DC\uAC04\uC73C\uB85C \uADF8\uB824\uC9D1\uB2C8\uB2E4", cw / 2, ch / 2);
+      return;
+    }
+    let min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    if (target != null) {
+      min = Math.min(min, target);
+      max = Math.max(max, target);
+    }
+    const pad = (max - min || 1) * 0.12;
+    min -= pad;
+    max += pad;
+    const rng = max - min || 1;
+    const px = (i) => series.length < 2 ? pl + (cw - pl - pr) / 2 : pl + (cw - pl - pr) * i / (series.length - 1);
+    const py = (v) => pt + (ch - pt - pb) * (1 - (v - min) / rng);
+    ctx.strokeStyle = line1;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 6]);
+    ctx.fillStyle = ink2;
+    ctx.font = "11px " + mono;
+    ctx.textAlign = "right";
+    for (let g = 0; g <= 4; g++) {
+      const yy = pt + (ch - pt - pb) * g / 4;
+      ctx.beginPath();
+      ctx.moveTo(pl, yy);
+      ctx.lineTo(cw - pr, yy);
+      ctx.stroke();
+      ctx.fillText((max - rng * g / 4).toFixed(2), pl - 8, yy + 4);
+    }
+    ctx.setLineDash([]);
+    if (target != null) {
+      const gy = py(target);
+      ctx.strokeStyle = violet;
+      ctx.setLineDash([7, 7]);
+      ctx.beginPath();
+      ctx.moveTo(pl, gy);
+      ctx.lineTo(cw - pr, gy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = violet;
+      ctx.textAlign = "left";
+      ctx.fillText("gate " + Number(target).toFixed(2), pl + 6, gy - 6);
+    }
+    const grad = ctx.createLinearGradient(0, pt, 0, ch - pb);
+    grad.addColorStop(0, _v4Alpha(teal, 0.28));
+    grad.addColorStop(1, _v4Alpha(teal, 0));
+    ctx.beginPath();
+    ctx.moveTo(px(0), py(vals[0]));
+    for (let i = 1; i < vals.length; i++) ctx.lineTo(px(i), py(vals[i]));
+    ctx.lineTo(px(vals.length - 1), ch - pb);
+    ctx.lineTo(px(0), ch - pb);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(px(0), py(vals[0]));
+    for (let j = 1; j < vals.length; j++) ctx.lineTo(px(j), py(vals[j]));
+    ctx.strokeStyle = teal;
+    ctx.lineWidth = 2.2;
+    ctx.lineJoin = "round";
+    ctx.stroke();
+    ctx.fillStyle = _v4Alpha(teal, 0.8);
+    for (let d = 0; d < vals.length; d++) {
+      ctx.beginPath();
+      ctx.arc(px(d), py(vals[d]), 2.2, 0, 7);
+      ctx.fill();
+    }
+    if (bestIdx != null && bestIdx >= 0 && bestIdx < vals.length) {
+      ctx.beginPath();
+      ctx.arc(px(bestIdx), py(vals[bestIdx]), 6, 0, 7);
+      ctx.fillStyle = violet;
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    const li = vals.length - 1;
+    ctx.beginPath();
+    ctx.arc(px(li), py(vals[li]), 7, 0, 7);
+    ctx.fillStyle = amber;
+    ctx.fill();
+    ctx.strokeStyle = bg1;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = ink2;
+    ctx.font = "11px " + mono;
+    ctx.textAlign = "center";
+    const marks = series.length >= 3 ? [0, Math.floor((series.length - 1) / 2), series.length - 1] : series.map((_, i) => i);
+    for (const m of marks) ctx.fillText(String(series[m].x), px(m), ch - pb + 18);
+  }
+  function V4HeroChart({ state, target }) {
+    const ref = useRef_v4c(null);
+    const gens = Array.isArray(state && state.generations) ? state.generations : [];
+    const series = gens.filter((g) => g && g.graded_score != null && isFinite(Number(g.graded_score))).map((g) => ({ x: "g" + g.gen_no, v: Number(g.graded_score) }));
+    let bestIdx = null, bestV = -Infinity;
+    for (let i = 0; i < series.length; i++) if (series[i].v > bestV) {
+      bestV = series[i].v;
+      bestIdx = i;
+    }
+    const key = series.map((s) => s.v.toFixed(4)).join(",") + "|" + (target != null ? target : "");
+    useEffect_v4c(() => {
+      const draw = () => _v4DrawHero(ref.current, series, { target, bestIdx });
+      draw();
+      let ro = null;
+      if (typeof ResizeObserver === "function" && ref.current && ref.current.parentElement) {
+        ro = new ResizeObserver(draw);
+        ro.observe(ref.current.parentElement);
+      }
+      window.addEventListener("resize", draw);
+      const mo = typeof MutationObserver === "function" ? new MutationObserver(draw) : null;
+      if (mo) mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+      return () => {
+        window.removeEventListener("resize", draw);
+        if (ro) ro.disconnect();
+        if (mo) mo.disconnect();
+      };
+    }, [key]);
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-canvas-wrap v4-hero-canvas", role: "img", "aria-label": "\uC801\uD569\uB3C4 \uACE1\uC120(\uC138\uB300\uBCC4 graded score)" }, /* @__PURE__ */ React.createElement("canvas", { ref }));
+  }
+  Object.assign(window, { V4HeroChart });
+
   // ai_strategy_loop/dashboard/frontend/v4-research.jsx
   var { useState: useState_v4r } = React;
-  function V4ResearchLive({ baseUrl, state, wsStatus, send }) {
+  function _V4Fold({ storageKey, label, children: children2, defaultOpen = true }) {
+    const [open, setOpen] = useState_v4r(() => {
+      try {
+        const v = window.localStorage.getItem(storageKey);
+        return v === null ? defaultOpen : v === "1";
+      } catch (e) {
+        return defaultOpen;
+      }
+    });
+    const onToggle = (e) => {
+      const o = e.currentTarget.open;
+      setOpen(o);
+      try {
+        window.localStorage.setItem(storageKey, o ? "1" : "0");
+      } catch (e2) {
+      }
+    };
+    return /* @__PURE__ */ React.createElement("details", { className: "evo-group", open, onToggle }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary", "aria-expanded": open }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, label)), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, children2));
+  }
+  function _V4WorkflowStrip({ state }) {
+    const discovery = state.page_data && state.page_data.condition_discovery || {};
+    const ma = discovery.research_observability && discovery.research_observability.mode_authority || {};
+    const procLabel = ma.process || discovery.current_process && discovery.current_process.code || "process-research";
+    const authKnown = ma.generation_allowed === true || ma.generation_allowed === false;
+    const authLabel = ma.generation_allowed === true ? "research allowed" : ma.generation_allowed === false ? "review only" : "authority \uB300\uAE30";
+    const authCls = ma.generation_allowed === true ? "ok" : ma.generation_allowed === false ? "warn" : "off";
+    const nextMsg = state.latest && (state.latest.message || state.latest.phase) || "\uB300\uAE30";
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-wfwrap" }, /* @__PURE__ */ React.createElement(PhaseTimeline, { state }), /* @__PURE__ */ React.createElement("div", { className: "v4-wf-next" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "process"), /* @__PURE__ */ React.createElement("b", { className: "mono", style: { color: "var(--ink-0)" } }, procLabel)), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + authCls, title: authKnown ? "mode_authority.generation_allowed" : "\uAD00\uCC30\uC131 \uBC1C\uD589 \uB300\uAE30(\uD3F4\uBC31)" }, authLabel), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB2E4\uC74C \uD589\uB3D9"), /* @__PURE__ */ React.createElement("b", null, nextMsg))));
+  }
+  function _V4Stats({ state }) {
+    var _a;
+    const cur = Number(state.current_gen) || 0;
+    const max = Number(state.max_generations) || 0;
+    const best = state.best || null;
+    const bestGen = best ? (state.generations || []).find((g) => g.gen_no === best.gen) : null;
+    const bestScore = best && best.graded_score != null ? Number(best.graded_score) : null;
+    const mdd = bestGen && bestGen.mdd != null ? Number(bestGen.mdd) : null;
+    const tokens = state.cumulative && Number(state.cumulative.tokens) || 0;
+    const cost = (_a = state.cumulative && state.cumulative.cost_or_count) != null ? _a : "\u2014";
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-stats" }, /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" }, cur, /* @__PURE__ */ React.createElement("span", { className: "dim" }, " / ", max || "\u2014")), /* @__PURE__ */ React.createElement("span", { className: "s" }, "\uD604\uC7AC \uC138\uB300 \xB7 ", state.status || "idle")), /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" + (bestScore != null ? " pos" : "") }, bestScore != null ? bestScore.toFixed(2) : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "s" }, "best fitness", best && best.gate_passed ? " \xB7 gate \u2713" : "")), /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" + (mdd != null ? " neg" : "") }, mdd != null ? "-" + Math.abs(mdd).toFixed(1) + "%" : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "s" }, "best MDD")), /* @__PURE__ */ React.createElement("div", { className: "v4-stat" }, /* @__PURE__ */ React.createElement("span", { className: "v" }, tokens ? tokens >= 1e3 ? (tokens / 1e3).toFixed(1) + "k" : tokens : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "s" }, "tokens \xB7 cost ", String(cost))));
+  }
+  function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode, targetScore, mddCap, minDailyTrades }) {
     const [approvalOpen, setApprovalOpen] = useState_v4r(false);
+    const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
     const s = state || {};
     const runId = s.run_id || "";
-    const hasData = Array.isArray(s.generations) && s.generations.length > 0;
+    const gens = Array.isArray(s.generations) ? s.generations : [];
+    const hasData = gens.length > 0;
     const merged = s.best && s.winner && s.best.gen === s.winner.gen;
+    const viewCode = typeof onViewCode === "function" ? onViewCode : () => {
+    };
     const onApprove = ({ userBuy, userSell }) => {
       if (!s.winner || typeof send !== "function") {
         setApprovalOpen(false);
@@ -33454,25 +33697,24 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       });
       setApprovalOpen(false);
     };
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-research" }, /* @__PURE__ */ React.createElement("div", { className: "v4-research-hero" }, !hasData && /* @__PURE__ */ React.createElement("div", { className: "v4-idle-strip mono" }, "\uC5F0\uAD6C \uB300\uAE30 \xB7 \uB77C\uC774\uBE0C \uB370\uC774\uD130 \uC5C6\uC74C \u2014 \uC138\uB300\uAC00 \uC9C4\uD589\uB418\uBA74 \uC544\uB798 \uCC28\uD2B8\uAC00 \uC2E4\uC2DC\uAC04\uC73C\uB85C \uCC44\uC6CC\uC9D1\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v4-hero-primary" }, /* @__PURE__ */ React.createElement(FitnessChart, { state: s, target: 1 })), /* @__PURE__ */ React.createElement("div", { className: "v4-research-row2" }, /* @__PURE__ */ React.createElement(ProfitChart, { state: s, targetPct: 0 }), /* @__PURE__ */ React.createElement(QualityTrendChart, { state: s })), /* @__PURE__ */ React.createElement(EquityOverlayChart, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(PhaseTimeline, { state: s }), /* @__PURE__ */ React.createElement(ResearchProPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement("aside", { className: "v4-research-rail" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), merged ? /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-research" }, /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(_V4WorkflowStrip, { state: s }), !hasData && /* @__PURE__ */ React.createElement("div", { className: "v4-idle-strip" }, "\uC5F0\uAD6C \uB300\uAE30 \xB7 \uC138\uB300 \uB370\uC774\uD130 \uC5C6\uC74C \u2014 \uC0C1\uB2E8 ", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--ink-0)" } }, "\u25B8 \uC124\uC815\xB7\uC2DC\uC791"), "\uC73C\uB85C \uC870\uAC74\uC2DD AI \uB8E8\uD504\uB97C \uC2DC\uC791\uD558\uBA74 \uC544\uB798\uAC00 \uC2E4\uC2DC\uAC04\uC73C\uB85C \uCC44\uC6CC\uC9D1\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v4-rlive" }, /* @__PURE__ */ React.createElement("div", { className: "v4-hero-col" }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "Fitness \uACE1\uC120 \xB7 graded score"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)" } }, "best ", s.best && s.best.graded_score != null ? Number(s.best.graded_score).toFixed(2) : "\u2014", " \xB7 gate ", targetScore != null ? Number(targetScore).toFixed(2) : "\u2014", " \xB7 gen ", s.current_gen || 0)), /* @__PURE__ */ React.createElement("div", { className: "v4-hero-primary" }, /* @__PURE__ */ React.createElement(V4HeroChart, { state: s, target: targetScore })), /* @__PURE__ */ React.createElement("div", { className: "v4-canvas-legend" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { style: { borderTop: "2px solid var(--teal)" } }), "graded fitness"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { style: { borderTop: "1px dashed var(--violet)" } }), "gate ", targetScore != null ? Number(targetScore).toFixed(2) : ""), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "dot-v", style: { background: "var(--violet)", border: "1.5px solid #fff", boxSizing: "border-box" } }), "best"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "dot-v", style: { background: "var(--amber)" } }), "\uD604\uC7AC \uC138\uB300"))), /* @__PURE__ */ React.createElement(_V4Stats, { state: s }), /* @__PURE__ */ React.createElement("div", { className: "v4-two" }, /* @__PURE__ */ React.createElement(ProfitChart, { state: s, targetPct: 0 }), /* @__PURE__ */ React.createElement(QualityTrendChart, { state: s })), /* @__PURE__ */ React.createElement(EquityOverlayChart, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_live_detail", label: "Live \uC0C1\uC138 \xB7 \uB2E8\uACC4 \uC2A4\uD2B8\uB9AC\uBC0D" }, /* @__PURE__ */ React.createElement(PhaseDetailPanel, { state: s, wsStatus, onViewLatestCode: viewCode }), /* @__PURE__ */ React.createElement(ActiveStrategyPanel, { state: s, baseUrl, onViewCode: viewCode })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_process", label: "\uD504\uB85C\uC138\uC2A4 \xB7 process selector (research vs review \uAD8C\uD55C)" }, /* @__PURE__ */ React.createElement(ProcessFlowPanel, { state: s })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_strategy", label: "Strategy / Prompt \xB7 \uC138\uB300 \uC774\uB825" }, /* @__PURE__ */ React.createElement(
+      GenerationsTable,
+      {
+        state: s,
+        mddCap,
+        minDailyTrades,
+        onViewCode: (g) => viewCode(g && g.gen_no != null ? g.gen_no : g),
+        onSelectDetail: (genNo) => setSelectedDetailGen(genNo)
+      }
+    ), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analytics", label: "Generation Analytics \xB7 \uC138\uB300 \uBD84\uC11D" }, /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analysis", label: "\uC9C4\uD654 \uBD84\uC11D \xB7 \uAC00\uC815/\uBD80\uAC80/\uACC4\uBCF4/\uD640\uB4DC\uC544\uC6C3" }, /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_config", label: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBE44\uC6A9", defaultOpen: false }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }))), /* @__PURE__ */ React.createElement("aside", { className: "v4-side-col" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), merged ? /* @__PURE__ */ React.createElement(
       MergedBestWinnerCard,
       {
         best: s.best,
         winner: s.winner,
         onApprove: () => setApprovalOpen(true),
-        onViewCode: () => {
-        }
+        onViewCode: viewCode
       }
-    ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: () => {
-    } }), /* @__PURE__ */ React.createElement(
-      WinnerCard,
-      {
-        winner: s.winner,
-        onApprove: () => setApprovalOpen(true),
-        onViewCode: () => {
-        }
-      }
-    )), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus })), /* @__PURE__ */ React.createElement(
+    ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: () => setApprovalOpen(true), onViewCode: viewCode })), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }))), /* @__PURE__ */ React.createElement(
       ApprovalDialog,
       {
         winner: approvalOpen ? s.winner : null,
@@ -33603,7 +33845,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/v4-workbench.jsx
   function V4Workbench({ baseUrl, wsStatus, runId }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-workbench" }, /* @__PURE__ */ React.createElement(ResearchProPanel, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HallOfFamePanel, { baseUrl, wsStatus }));
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-workbench" }, /* @__PURE__ */ React.createElement(ResearchProPanel, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HallOfFamePanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(HofInventoryGate, { compact: true }));
   }
   Object.assign(window, { V4Workbench });
 
@@ -33622,14 +33864,15 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   Object.assign(window, { V4Audit });
 
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
-  var { useState: useState_v4, useEffect: useEffect_v4 } = React;
+  var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4 } = React;
   var V4_TABS = [
-    { key: "research", label: "Research Live", badge: "LIVE", hint: "\uC2E4\uC2DC\uAC04 \uC5F0\uAD6C \uAD00\uCC30 \xB7 \uB300\uD615 fitness/equity \uCC28\uD2B8" },
-    { key: "backtest", label: "Backtest", badge: "BT", hint: "\uC804\uB7B5 \uC2E4\uD589 \xB7 equity/underwater/rolling \uB300\uD615 \uCC28\uD2B8" },
-    { key: "replay", label: "Replay", badge: "SIM", hint: "\uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774 \xB7 \uC2E0\uD638 \uB85C\uADF8" },
-    { key: "lab", label: "Lab", badge: "LAB", hint: "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 Edge Ratio \xB7 \uBCC0\uC218 \uBD84\uC11D" },
-    { key: "workbench", label: "Workbench", badge: "WORK", hint: "\uD6C4\uBCF4 \uBE44\uAD50 \xB7 \uBA85\uC608\uC758 \uC804\uB2F9" },
-    { key: "audit", label: "Audit", badge: "AUDIT", hint: "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 \uC548\uC804 \uAC8C\uC774\uD2B8" }
+    { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "\uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \xB7 \uC2E4\uC2DC\uAC04 \uAD00\uCC30" },
+    { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "\uC804\uB7B5 \uC2E4\uD589 \xB7 \uACB0\uACFC \uB9AC\uD3EC\uD2B8" },
+    { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "\uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774 \xB7 \uC2E0\uD638 \uB9E5\uB77D" },
+    { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 Edge Ratio \xB7 \uBCC0\uC218 \uBD84\uC11D" },
+    { key: "workbench", label: "Bench", full: "Workbench", badge: "WORK", hint: "\uD6C4\uBCF4 \uBE44\uAD50 \xB7 \uBA85\uC608\uC758 \uC804\uB2F9" },
+    { key: "audit", label: "Audit", full: "Audit", badge: "AUDIT", hint: "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 \uC548\uC804 \uAC8C\uC774\uD2B8" },
+    { key: "context", label: "Context", full: "AI Context Pack", badge: "PACK", hint: "\uBAA8\uB378\uC5D0 \uC804\uB2EC\uB41C \uCEE8\uD14D\uC2A4\uD2B8 \xB7 \uBCF5\uC0AC \uAC00\uB2A5" }
   ];
   var V4_TAB_KEYS = V4_TABS.map((t) => t.key);
   function v4InitialTab() {
@@ -33640,8 +33883,51 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     }
     return "research";
   }
+  function v4InitialBase(propBase) {
+    try {
+      const q = new URLSearchParams(window.location.search).get("base");
+      if (q && /^https?:\/\//.test(q)) return new URL(q).origin;
+    } catch (e) {
+    }
+    try {
+      const cached = localStorage.getItem("stom_base_url");
+      const here = window.location && window.location.origin || "";
+      if (cached && here.startsWith("http") && new URL(cached).origin === here) return cached;
+    } catch (e) {
+    }
+    return propBase || DEFAULT_BASE;
+  }
+  function V4RailIcon({ name }) {
+    const p = { width: 18, height: 18, viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: 1.4 };
+    if (name === "research") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M2 12 L6 8 L9 10 L15 3" }), /* @__PURE__ */ React.createElement("circle", { cx: "15", cy: "3", r: "1.3", fill: "currentColor", stroke: "none" }));
+    if (name === "backtest") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "2", y: "9", width: "3", height: "6", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "7.5", y: "5", width: "3", height: "10", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "13", y: "2", width: "3", height: "13", rx: "1" }));
+    if (name === "replay") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M3 4 L3 14" }), /* @__PURE__ */ React.createElement("path", { d: "M7 6 L7 12" }), /* @__PURE__ */ React.createElement("path", { d: "M11 3 L11 15" }), /* @__PURE__ */ React.createElement("path", { d: "M15 7 L15 11" }));
+    if (name === "lab") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "2.5", y: "2.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11.5", y: "2.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "2.5", y: "11.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11.5", y: "11.5", width: "4", height: "4", rx: "1" }));
+    if (name === "workbench") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M3 6 h12" }), /* @__PURE__ */ React.createElement("path", { d: "M3 10 h12" }), /* @__PURE__ */ React.createElement("path", { d: "M3 14 h7" }), /* @__PURE__ */ React.createElement("circle", { cx: "13", cy: "3.5", r: "1.4" }));
+    if (name === "audit") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M9 2 L15 5 V9 C15 12.5 12.5 15 9 16 C5.5 15 3 12.5 3 9 V5 Z" }), /* @__PURE__ */ React.createElement("path", { d: "M6.5 9 L8.3 10.8 L11.5 7" }));
+    return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "3", width: "12", height: "12", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M6 7 h6 M6 10 h4" }));
+  }
+  function V4ThemeToggle({ theme, onChange }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "theme-toggle", role: "group", "aria-label": "\uD14C\uB9C8" }, /* @__PURE__ */ React.createElement("button", { className: theme === "dark" ? "active" : "", onClick: () => onChange("dark"), "data-tip": "\uB2E4\uD06C \uBAA8\uB4DC" }, "Dark"), /* @__PURE__ */ React.createElement("button", { className: theme === "light" ? "active" : "", onClick: () => onChange("light"), "data-tip": "\uB77C\uC774\uD2B8 \uBAA8\uB4DC" }, "Light"));
+  }
+  function V4BaseControl({ value, onChange, onApply, onReconnect }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-base" }, /* @__PURE__ */ React.createElement("span", { className: "mono v4-base-lbl" }, "BASE"), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "toolbar-input",
+        value,
+        spellCheck: false,
+        onChange: (e) => onChange(e.target.value),
+        onKeyDown: (e) => {
+          if (e.key === "Enter") onApply();
+        }
+      }
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onApply, "data-tip": "Base URL \uC801\uC6A9 \uD6C4 \uC7AC\uC5F0\uACB0" }, "\uC801\uC6A9"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onReconnect, "data-tip": "\uD604\uC7AC URL\uB85C \uC7AC\uC5F0\uACB0" }, "\u21BB"));
+  }
   function DashboardV4Shell({ baseUrl: baseUrlProp }) {
-    const [baseUrl] = useState_v4(() => baseUrlProp || DEFAULT_BASE);
+    var _a, _b, _c, _d, _e, _f, _g;
+    const [baseUrl, setBaseUrl] = useState_v4(() => v4InitialBase(baseUrlProp));
+    const [pendingBase, setPendingBase] = useState_v4(baseUrl);
     const [theme, setTheme] = useState_v4(() => localStorage.getItem("stom_theme") || "dark");
     const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab());
     const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab() === "replay");
@@ -33652,9 +33938,76 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     useEffect_v4(() => {
       if (activeTab === "replay") setReplayVisited(true);
     }, [activeTab]);
-    const { state, health, wsStatus, send } = useBackend(baseUrl);
-    const active = V4_TABS.find((t) => t.key === activeTab) || V4_TABS[0];
-    const runId = state && state.run_id || "";
+    const { state: liveState, health, wsStatus, configSpec, configSpecStatus, send, lastReply, reconnect } = useBackend(baseUrl);
+    const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
+    const [selectedRun, setSelectedRun] = useState_v4("");
+    const [runList, setRunList] = useState_v4([]);
+    const [fetchedRunState, setFetchedRunState] = useState_v4(null);
+    useEffect_v4(() => {
+      if (isDemo || !baseUrl) {
+        setRunList([]);
+        return;
+      }
+      let cancelled = false;
+      fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(3e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (cancelled) return;
+        const runs = Array.isArray(j && j.runs) ? j.runs : [];
+        runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
+        setRunList(runs);
+      }).catch(() => {
+        if (!cancelled) setRunList([]);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [baseUrl, isDemo, liveState.run_id, liveState.status]);
+    const fetchRunState = useCallback_v4(() => {
+      if (!selectedRun || isDemo || !baseUrl) {
+        setFetchedRunState(null);
+        return;
+      }
+      fetch(baseUrl + "/run_state?run_id=" + encodeURIComponent(selectedRun), { signal: AbortSignal.timeout(4e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => setFetchedRunState(j)).catch(() => setFetchedRunState(null));
+    }, [baseUrl, selectedRun, isDemo]);
+    useEffect_v4(() => {
+      if (!selectedRun) {
+        setFetchedRunState(null);
+        return;
+      }
+      fetchRunState();
+      const id2 = setInterval(fetchRunState, 3e4);
+      return () => clearInterval(id2);
+    }, [fetchRunState, selectedRun]);
+    const state = selectedRun && fetchedRunState ? fetchedRunState : liveState;
+    const running = state.status === "running" || state.status === "stopping";
+    const runId = state.run_id || "";
+    const [settingsOpen, setSettingsOpen] = useState_v4(false);
+    const [gptAuthProbe, setGptAuthProbe] = useState_v4(null);
+    const [codeViewGen, setCodeViewGen] = useState_v4(null);
+    const onStart = useCallback_v4((config) => {
+      send({ action: "start", config });
+      setSettingsOpen(false);
+    }, [send]);
+    const onStop = useCallback_v4(() => {
+      send({ action: "stop" });
+    }, [send]);
+    const onGptAuthTest = useCallback_v4(() => {
+      setGptAuthProbe({ status: "testing", message: "GPT auth proxy test running" });
+      fetch(baseUrl + "/gpt_auth/test", { method: "POST", signal: AbortSignal.timeout(8e3) }).then((r) => r.json().then((j) => ({ http_ok: r.ok, ...j }))).then((j) => setGptAuthProbe(j)).catch((e) => setGptAuthProbe({
+        status: "unavailable",
+        safe: true,
+        starts_evolution: false,
+        message: "GPT auth connection test failed without starting evolution",
+        reason: String(e && e.message ? e.message : e)
+      }));
+    }, [baseUrl]);
+    const onViewCodeByGen = useCallback_v4((genNo) => {
+      const g = (state.generations || []).find((x) => x.gen_no === genNo);
+      if (g) setCodeViewGen(g);
+    }, [state.generations]);
+    const mddCap = Number((_b = (_a = configSpec.find((f) => f.name === "mdd_cap")) == null ? void 0 : _a.default) != null ? _b : 40);
+    const minDailyTrades = Number((_d = (_c = configSpec.find((f) => f.name === "min_daily_trades")) == null ? void 0 : _c.default) != null ? _d : 0.5);
+    const targetScoreRaw = (_e = configSpec.find((f) => f.name === "target_score")) == null ? void 0 : _e.default;
+    const targetScore = targetScoreRaw === "" || targetScoreRaw === null || targetScoreRaw === void 0 ? 1 : Number(targetScoreRaw);
     const selectTab = (key) => {
       setActiveTab(key);
       try {
@@ -33664,19 +34017,67 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       } catch (e) {
       }
     };
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-root", "data-v4-tab": activeTab }, /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("span", { className: "v4-brand-mark" }, "STOM"), /* @__PURE__ */ React.createElement("span", { className: "v4-brand-sub mono" }, "V4 \xB7 graph-first research terminal")), /* @__PURE__ */ React.createElement("div", { className: "v4-controls" }, /* @__PURE__ */ React.createElement("div", { className: "theme-toggle", role: "group", "aria-label": "\uD14C\uB9C8" }, /* @__PURE__ */ React.createElement("button", { className: theme === "dark" ? "active" : "", onClick: () => setTheme("dark"), "data-tip": "\uB2E4\uD06C \uBAA8\uB4DC" }, "Dark"), /* @__PURE__ */ React.createElement("button", { className: theme === "light" ? "active" : "", onClick: () => setTheme("light"), "data-tip": "\uB77C\uC774\uD2B8 \uBAA8\uB4DC" }, "Light")), /* @__PURE__ */ React.createElement(ConnBadge, { health, wsStatus }), /* @__PURE__ */ React.createElement(StatusBadge, { status: state.status }), /* @__PURE__ */ React.createElement("a", { className: "btn ghost sm mono", href: "/ui/", title: "V2 \uC6B4\uC601 \uB300\uC2DC\uBCF4\uB4DC\uB85C" }, "\u2190 V2"))), /* @__PURE__ */ React.createElement("nav", { className: "v4-tabnav", role: "tablist", "aria-label": "V4 \uD0ED" }, V4_TABS.map((tab) => /* @__PURE__ */ React.createElement(
+    const active = V4_TABS.find((t) => t.key === activeTab) || V4_TABS[0];
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-root", "data-v4-tab": activeTab }, /* @__PURE__ */ React.createElement("aside", { className: "v4-rail", "aria-label": "V4 \uB0B4\uBE44\uAC8C\uC774\uC158" }, /* @__PURE__ */ React.createElement("div", { className: "v4-rail-logo", title: "STOM V4" }, /* @__PURE__ */ React.createElement("svg", { width: "20", height: "20", viewBox: "0 0 20 20", fill: "none" }, /* @__PURE__ */ React.createElement("path", { d: "M2 15 L6 12 L9 13 L13 7 L18 3", stroke: "var(--teal)", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "3", r: "1.8", fill: "var(--violet)" }))), V4_TABS.map((tab) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: tab.key,
         role: "tab",
         "aria-selected": activeTab === tab.key,
-        className: "v4-tab" + (activeTab === tab.key ? " active" : ""),
+        className: "v4-rail-item" + (activeTab === tab.key ? " active" : ""),
         onClick: () => selectTab(tab.key),
-        title: tab.hint
+        title: tab.full + " \u2014 " + tab.hint
       },
-      /* @__PURE__ */ React.createElement("span", { className: "v4-tab-label" }, tab.label),
-      /* @__PURE__ */ React.createElement("span", { className: "v4-tab-badge mono" }, tab.badge)
-    ))), /* @__PURE__ */ React.createElement("main", { className: "v4-main" }, replayVisited && /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "replay" ? void 0 : "none" } }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(V4Replay, { baseUrl, wsStatus }))), activeTab === "replay" ? null : /* @__PURE__ */ React.createElement(ErrorBoundary, null, activeTab === "research" ? /* @__PURE__ */ React.createElement(V4ResearchLive, { baseUrl, state, wsStatus, send }) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "audit" ? /* @__PURE__ */ React.createElement(V4Audit, { baseUrl, onNavigate: selectTab }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder-badge mono" }, active.badge), /* @__PURE__ */ React.createElement("h2", null, active.label), /* @__PURE__ */ React.createElement("p", null, active.hint), /* @__PURE__ */ React.createElement("p", { className: "mono v4-placeholder-note" }, "base=", baseUrl, " \xB7 ws=", wsStatus, " \xB7 status=", state.status || "\u2014", " \xB7 \uC774 \uD0ED\uC740 \uD6C4\uC18D phase \uC5D0\uC11C \uAE30\uC874 V2 \uCEF4\uD3EC\uB10C\uD2B8\uB85C \uCC44\uC6C1\uB2C8\uB2E4.")))));
+      /* @__PURE__ */ React.createElement(V4RailIcon, { name: tab.key }),
+      /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, tab.label),
+      /* @__PURE__ */ React.createElement("i", { className: "v4-ri-dot" })
+    )), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-spacer" }), /* @__PURE__ */ React.createElement("a", { className: "v4-rail-item", href: "/ui/", title: "V2 \uC6B4\uC601 \uB300\uC2DC\uBCF4\uB4DC\uB85C" }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("path", { d: "M11 3 L5 9 L11 15" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "V2"))), /* @__PURE__ */ React.createElement("div", { className: "v4-workspace" }, /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("b", null, "\uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uD130\uBBF8\uB110"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "V4 \xB7 autonomous_strategy_loop \xB7 contract v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("div", { className: "v4-safety", "aria-label": "\uC548\uC804 \uACBD\uACC4" }, isDemo && /* @__PURE__ */ React.createElement("span", { className: "v4-sfx demo" }, "DEMO"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uC2E4\uAC70\uB798 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "\uBE0C\uB85C\uCEE4 \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx gate" }, "HUMAN GATE"), /* @__PURE__ */ React.createElement("span", { className: "v4-sfx" }, "APPEND-ONLY \uAC10\uC0AC")), /* @__PURE__ */ React.createElement("div", { className: "v4-grow" }), /* @__PURE__ */ React.createElement(
+      V4BaseControl,
+      {
+        value: pendingBase,
+        onChange: setPendingBase,
+        onApply: () => setBaseUrl(pendingBase),
+        onReconnect: reconnect
+      }
+    ), /* @__PURE__ */ React.createElement(ConnBadge, { health, wsStatus }), /* @__PURE__ */ React.createElement(StatusBadge, { status: state.status }), /* @__PURE__ */ React.createElement(V4ThemeToggle, { theme, onChange: setTheme })), /* @__PURE__ */ React.createElement("div", { className: "v4-controlbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-view-title" }, /* @__PURE__ */ React.createElement("h2", null, active.full), /* @__PURE__ */ React.createElement("span", { className: "mono" }, active.hint, " \xB7 run=", selectedRun ? "archive" : "LIVE", runId ? " \xB7 " + runId : "")), /* @__PURE__ */ React.createElement(
+      V4RunControls,
+      {
+        running,
+        state,
+        isDemo,
+        runList,
+        selectedRun,
+        onSelectRun: setSelectedRun,
+        onRefreshRun: fetchRunState,
+        onOpenSettings: () => setSettingsOpen(true),
+        onStop
+      }
+    )), /* @__PURE__ */ React.createElement("main", { className: "v4-stage" }, replayVisited && /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "replay" ? void 0 : "none" } }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(V4Replay, { baseUrl, wsStatus }))), activeTab === "replay" ? null : /* @__PURE__ */ React.createElement(ErrorBoundary, null, activeTab === "research" ? /* @__PURE__ */ React.createElement(
+      V4ResearchLive,
+      {
+        baseUrl,
+        state,
+        wsStatus,
+        send,
+        lastReply,
+        onViewCode: onViewCodeByGen,
+        targetScore,
+        mddCap,
+        minDailyTrades
+      }
+    ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "audit" ? /* @__PURE__ */ React.createElement(V4Audit, { baseUrl, onNavigate: selectTab }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, typeof window.AIContextPanel === "function" ? /* @__PURE__ */ React.createElement(window.AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("h2", null, "AI Context Pack"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "AIContextPanel \uBBF8\uB85C\uB4DC \u2014 \uBC88\uB4E4 \uC7AC\uBE4C\uB4DC \uD544\uC694")))))), /* @__PURE__ */ React.createElement(
+      SettingsModal,
+      {
+        open: settingsOpen,
+        onClose: () => setSettingsOpen(false),
+        onStart,
+        configSpec,
+        configSpecStatus,
+        onGptAuthTest,
+        gptAuthProbe,
+        disabled: running || !isDemo && configSpecStatus && !configSpecStatus.live
+      }
+    ), /* @__PURE__ */ React.createElement(CodeViewer, { generation: codeViewGen, onClose: () => setCodeViewGen(null), runId, baseUrl }));
   }
   Object.assign(window, { DashboardV4Shell });
 

@@ -261,8 +261,8 @@ def test_track_z_v7_v4_dashboard_shell() -> None:
     data = _run_harness()
     v7 = data["v7"]
     pages = v7["pages"]
-    expected = {"v4shell", "v4shell-running", "v4-backtest", "v4-replay", "v4-lab", "v4-workbench", "v4-audit"}
-    assert set(pages) == expected, f"V7 must render the V4 shell + 6 tabs, got {set(pages)}"
+    expected = {"v4shell", "v4shell-running", "v4-backtest", "v4-replay", "v4-lab", "v4-workbench", "v4-audit", "v4-context"}
+    assert set(pages) == expected, f"V7 must render the V4 shell + 7 views, got {set(pages)}"
     for name in expected:
         r = pages[name]
         assert r["componentIsFunction"], f"{name}: window.DashboardV4Shell is not a function"

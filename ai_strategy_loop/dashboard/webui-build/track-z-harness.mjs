@@ -508,16 +508,41 @@ const V4_PAGES = [
 // V4 opt-in dashboard shell (/ui/v4.html → window.DashboardV4Shell) + its 6 tabs. Separate array
 //   from V4_PAGES (the 3 legacy standalone HTML pages) so each gate asserts its own contract.
 //   Reuses runPageOnce (noAutoMount + name-mount) with per-tab ?tab= url + backend state.
+// V4_RUNNING_STATE — RUNNING_STATE + condition_discovery page_data. The ported wt-dev research
+//   observability grid (Research Pack/Branch Tree · Candidate Pack · Prompt Receipts ·
+//   Promotion Blockers) renders only when page_data.condition_discovery exists; this fixture
+//   drives it so the V7 running gate proves the grid actually renders (field shapes mirror
+//   panels-analysis.jsx reads: branch_tree=[{step,output}], required_fields/blockers=strings).
+const V4_RUNNING_STATE = JSON.parse(JSON.stringify(RUNNING_STATE));
+V4_RUNNING_STATE.page_data = {
+  condition_discovery: {
+    preset: "fast",
+    policy: { label: "fast-discovery", purpose: "빠른 탐색" },
+    hard_gates: { mdd: { cap: 40 }, minimum_daily_trades: { min: 0.5 } },
+    time_window: {},
+    research_observability: {
+      mode_authority: { generation_allowed: true, process: "process-research", preset: "fast" },
+      context_pack_health: { status: "ok", required_fields: ["run_id", "gen_no"] },
+      branch_tree: [{ step: "seed_context", output: "6 sections" }],
+      candidate_pack: { required_fields: ["candidates"] },
+      analysis_cards: { required_fields: ["root_cause"] },
+      prompt_receipts: { required_fields: ["prompt_id"] },
+      promotion_blockers: { blockers: ["fresh_holdout_oos_pending"] },
+    },
+  },
+};
 const V4_DASHBOARD_PAGES = [
   { page: "v4shell", global: "DashboardV4Shell" }, // Research Live (default tab), idle
-  { page: "v4shell-running", global: "DashboardV4Shell", state: RUNNING_STATE }, // Research Live with live data
+  { page: "v4shell-running", global: "DashboardV4Shell", state: V4_RUNNING_STATE,
+    needles: ["research-observability-grid", "research allowed"] }, // Research Live + observability grid
   { page: "v4-backtest", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=backtest" }, // BacktestTab
   { page: "v4-replay", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=replay" }, // SimulationTab (keep-alive shell)
   { page: "v4-lab", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=lab" }, // ResearchHeatmap + ResearchLab
   { page: "v4-workbench", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=workbench" }, // ResearchPro + RunCompare + HoF
   { page: "v4-audit", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=audit" }, // VerdictPanel + safety strip
+  { page: "v4-context", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=context" }, // AIContextPanel view
 ];
-async function runPageOnce({ page, global: globalName, state, path }) {
+async function runPageOnce({ page, global: globalName, state, path, needles }) {
   const { window, errs } = makeDom({ state: state || IDLE_STATE, noAutoMount: true, path });
   inject(window, read(resolve(FE, "vendor-react.js")));
   inject(window, read(resolve(FE, "vendor-react-dom.js")));
@@ -545,11 +570,14 @@ async function runPageOnce({ page, global: globalName, state, path }) {
   const boundaryTripped = rootHtml.includes("대시보드 렌더 오류")
     || rootHtml.includes("Dashboard render error");
   const dynReq = errs.filter((e) => /Dynamic require|require is not/i.test(e));
+  // Optional content needles: prove named surfaces actually rendered (not just non-empty root).
+  const missingNeedles = (needles || []).filter((n) => !rootHtml.includes(n));
   const pass = componentIsFn && !mountError && errs.length === 0 && rootNonEmpty
-    && !boundaryTripped && dynReq.length === 0;
+    && !boundaryTripped && dynReq.length === 0 && missingNeedles.length === 0;
   return {
     page, global: globalName, pass, componentIsFunction: componentIsFn, mountError,
     rootNonEmpty, rootHtmlLen: rootHtml.length, errorBoundaryTripped: boundaryTripped,
+    ...(needles ? { missingNeedles } : {}),
     dynamicRequireErrors: dynReq, errorCount: errs.length, errors: errs.slice(0, 10),
   };
 }
