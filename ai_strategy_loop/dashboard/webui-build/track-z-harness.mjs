@@ -290,16 +290,21 @@ function makeDom(opts = {}) {
     if (u.includes("/verdict")) return jsonResp({ entries: [], count: 0, status: "unavailable" });
     return jsonResp({});
   };
-  window.fetch = opts.fetch || window.fetch || defaultFetch;
-  if (!window.WebSocket) {
-    // Connect successfully (wsStatus -> "open") but deliver no messages: state stays the
-    //   contract-valid /status payload. This avoids the demo-simulator fallback path.
-    window.WebSocket = class {
-      constructor() { this.readyState = 1; setTimeout(() => { if (typeof this.onopen === "function") this.onopen({}); }, 0); }
-      send() {} close() { this.readyState = 3; }
-      addEventListener() {} removeEventListener() {}
-    };
-  }
+  // ALWAYS install the mocks (2026-07-04): jsdom DOES implement WebSocket (and may grow fetch),
+  //   so the old `window.fetch ||` / `if (!window.WebSocket)` guards let the REAL implementations
+  //   through — a live localhost server (e.g. a dashboard on :80, the jsdom default port) would
+  //   then push its REAL state frames over ws://localhost/ws and OVERWRITE the harness fixture
+  //   via setState (observed: V4_RUNNING_STATE clobbered by an idle frame → marker asserts
+  //   failed only while a server happened to listen on :80). Unconditional mocks make the
+  //   harness deterministic and environment-independent.
+  window.fetch = opts.fetch || defaultFetch;
+  // Connect successfully (wsStatus -> "open") but deliver no messages: state stays the
+  //   contract-valid /status payload. This avoids the demo-simulator fallback path.
+  window.WebSocket = class {
+    constructor() { this.readyState = 1; setTimeout(() => { if (typeof this.onopen === "function") this.onopen({}); }, 0); }
+    send() {} close() { this.readyState = 3; }
+    addEventListener() {} removeEventListener() {}
+  };
   if (!window.localStorage) {
     const store = {};
     window.localStorage = { getItem: (k) => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }, removeItem: (k) => { delete store[k]; }, clear: () => { for (const k in store) delete store[k]; } };
@@ -314,6 +319,16 @@ function makeDom(opts = {}) {
 }
 const inject = (window, code) => { const s = window.document.createElement("script"); s.textContent = code; window.document.body.appendChild(s); };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+// waitFor — 고정 대기 flake 방지: 조건이 참이 될 때까지 step 간격 폴링(상한 tries).
+//   pytest 하위 subprocess 처럼 느린 호스트에서 state-반영 렌더(fetch 체인 후 setState)가
+//   고정 450/900ms 를 넘겨 마커 miss 로 오탐되는 것을 막는다. 조건 충족 시 즉시 반환.
+async function waitFor(cond, tries = 10, step = 300) {
+  for (let i = 0; i < tries; i++) {
+    if (cond()) return true;
+    await wait(step);
+  }
+  return cond();
+}
 
 // ---------------------------------------------------------------- V1: pilot
 async function runV1() {
@@ -447,6 +462,14 @@ async function runTabOnce({ tab, path, state, selectedNeedles, expectNoIframe, e
   inject(window, read(SERVED_APP));  // auto-mounts App at the preset tab (real served artifact)
   await wait(900);  // useBackend fetch chain + WS open + per-route on-demand fetches settle
   const root = window.document.getElementById("root");
+  // settle polling — 느린 호스트(pytest 하위 subprocess)에서 on-demand fetch 렌더가 900ms 를
+  //   넘겨 마커 miss 로 오탐되는 flake 방지. 기대 마커가 나타날 때까지 추가 폴링.
+  await waitFor(() => {
+    const html = root.innerHTML;
+    if (expectRecordsIndex && !(html.includes("Governed Research Index") && html.includes("Alpha Doc"))) return false;
+    if (expectProcessLive && !(root.querySelector(".process-live-strip") && html.includes("[gen2] scored graded=1.2"))) return false;
+    return html.trim().length > 0;
+  });
   const rootHtml = root.innerHTML;
   const rootNonEmpty = rootHtml.trim().length > 0;
   // ErrorBoundary fallback marker (app.jsx:705 "대시보드 렌더 오류") = a caught render throw.
@@ -566,19 +589,30 @@ async function runPageOnce({ page, global: globalName, state, path, needles }) {
     mountError = "window." + globalName + " is not a function";
   }
   const root = window.document.getElementById("root");
+  // Optional content needles: prove named surfaces actually rendered (not just non-empty root).
+  //   State-driven surfaces render after the fetch chain settles — poll instead of a fixed wait.
+  if (needles && needles.length) {
+    await waitFor(() => needles.every((n) => root.innerHTML.includes(n)));
+  }
   const rootHtml = root.innerHTML;
   const rootNonEmpty = rootHtml.trim().length > 0;
   const boundaryTripped = rootHtml.includes("대시보드 렌더 오류")
     || rootHtml.includes("Dashboard render error");
   const dynReq = errs.filter((e) => /Dynamic require|require is not/i.test(e));
-  // Optional content needles: prove named surfaces actually rendered (not just non-empty root).
   const missingNeedles = (needles || []).filter((n) => !rootHtml.includes(n));
   const pass = componentIsFn && !mountError && errs.length === 0 && rootNonEmpty
     && !boundaryTripped && dynReq.length === 0 && missingNeedles.length === 0;
   return {
     page, global: globalName, pass, componentIsFunction: componentIsFn, mountError,
     rootNonEmpty, rootHtmlLen: rootHtml.length, errorBoundaryTripped: boundaryTripped,
-    ...(needles ? { missingNeedles } : {}),
+    ...(needles ? {
+      missingNeedles,
+      // needle miss 진단: 데모 폴백/대기상태 여부 — pytest 하위 실행에서만 실패하는
+      //   원인을 분리하기 위한 관찰 필드(단정에는 미사용).
+      demoDetected: rootHtml.includes("데모 모드") || rootHtml.includes("DEMO"),
+      discoveryWaiting: rootHtml.includes("실시간 데이터 대기"),
+      wsBadge: (rootHtml.match(/백엔드 연결됨|재연결|connecting|데모 모드/) || [null])[0],
+    } : {}),
     dynamicRequireErrors: dynReq, errorCount: errs.length, errors: errs.slice(0, 10),
   };
 }
