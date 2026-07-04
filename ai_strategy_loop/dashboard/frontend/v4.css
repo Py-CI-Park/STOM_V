@@ -48,8 +48,29 @@
 /* ── 본문 ── */
 .v4-main { flex: 1; padding: 16px 18px 40px; min-width: 0; }
 
-/* graph-first 기반: V4 안에서 차트 컨테이너 최소 높이 확대(후속 phase 에서 hero 별 확장) */
+/* graph-first 기반: V4 안에서 차트 컨테이너 최소 높이 확대 */
 .v4-root .chart-wrap { min-height: 300px; }
+
+/* ── Research Live 탭 (graph-first): 좌 대형 hero + 우 slim rail ── */
+.v4-research {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 14px; align-items: start;
+}
+@media (max-width: 1180px) { .v4-research { grid-template-columns: 1fr; } }
+.v4-research-hero { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.v4-research-rail { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.v4-research-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 760px) { .v4-research-row2 { grid-template-columns: 1fr; } }
+/* 차트 대형화: hero 주인공 최대, 보조 차트 중간 (컴포넌트 수정 없이 컨테이너 높이로만 스케일) */
+.v4-research .chart-wrap { min-height: 340px; }
+.v4-research .v4-research-row2 .chart-wrap { min-height: 240px; }
+.v4-research .v4-hero-primary .chart-wrap { min-height: 420px; }
+.v4-idle-strip {
+  border: 1px solid rgba(240,179,90,.28); background: rgba(240,179,90,.06);
+  color: var(--ink-2); border-radius: var(--radius-md, 6px);
+  padding: 8px 12px; font-size: 11.5px;
+}
 
 /* ── Phase 1 placeholder (후속 phase 에서 제거) ── */
 .v4-placeholder {

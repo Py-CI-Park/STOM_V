@@ -33351,6 +33351,57 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     root2.render(/* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(App, null)));
   }
 
+  // ai_strategy_loop/dashboard/frontend/v4-research.jsx
+  var { useState: useState_v4r } = React;
+  function V4ResearchLive({ baseUrl, state, wsStatus, send }) {
+    const [approvalOpen, setApprovalOpen] = useState_v4r(false);
+    const s = state || {};
+    const runId = s.run_id || "";
+    const hasData = Array.isArray(s.generations) && s.generations.length > 0;
+    const merged = s.best && s.winner && s.best.gen === s.winner.gen;
+    const onApprove = ({ userBuy, userSell }) => {
+      if (!s.winner || typeof send !== "function") {
+        setApprovalOpen(false);
+        return;
+      }
+      send({
+        action: "final_approval",
+        buy_name: s.winner.buy_name,
+        sell_name: s.winner.sell_name,
+        user_buy: userBuy,
+        user_sell: userSell
+      });
+      setApprovalOpen(false);
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-research" }, /* @__PURE__ */ React.createElement("div", { className: "v4-research-hero" }, !hasData && /* @__PURE__ */ React.createElement("div", { className: "v4-idle-strip mono" }, "\uC5F0\uAD6C \uB300\uAE30 \xB7 \uB77C\uC774\uBE0C \uB370\uC774\uD130 \uC5C6\uC74C \u2014 \uC138\uB300\uAC00 \uC9C4\uD589\uB418\uBA74 \uC544\uB798 \uCC28\uD2B8\uAC00 \uC2E4\uC2DC\uAC04\uC73C\uB85C \uCC44\uC6CC\uC9D1\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v4-hero-primary" }, /* @__PURE__ */ React.createElement(FitnessChart, { state: s, target: 1 })), /* @__PURE__ */ React.createElement("div", { className: "v4-research-row2" }, /* @__PURE__ */ React.createElement(ProfitChart, { state: s, targetPct: 0 }), /* @__PURE__ */ React.createElement(QualityTrendChart, { state: s })), /* @__PURE__ */ React.createElement(EquityOverlayChart, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(EnginePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(PhaseTimeline, { state: s }), /* @__PURE__ */ React.createElement(ResearchProPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement("aside", { className: "v4-research-rail" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), merged ? /* @__PURE__ */ React.createElement(
+      MergedBestWinnerCard,
+      {
+        best: s.best,
+        winner: s.winner,
+        onApprove: () => setApprovalOpen(true),
+        onViewCode: () => {
+        }
+      }
+    ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: () => {
+    } }), /* @__PURE__ */ React.createElement(
+      WinnerCard,
+      {
+        winner: s.winner,
+        onApprove: () => setApprovalOpen(true),
+        onViewCode: () => {
+        }
+      }
+    )), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus })), /* @__PURE__ */ React.createElement(
+      ApprovalDialog,
+      {
+        winner: approvalOpen ? s.winner : null,
+        onClose: () => setApprovalOpen(false),
+        onConfirm: onApprove
+      }
+    ));
+  }
+  Object.assign(window, { V4ResearchLive });
+
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4 } = React;
   var V4_TABS = [
@@ -33369,7 +33420,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("stom_theme", theme);
     }, [theme]);
-    const { state, health, wsStatus } = useBackend(baseUrl);
+    const { state, health, wsStatus, send } = useBackend(baseUrl);
     const active = V4_TABS.find((t) => t.key === activeTab) || V4_TABS[0];
     return /* @__PURE__ */ React.createElement("div", { className: "v4-root", "data-v4-tab": activeTab }, /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("span", { className: "v4-brand-mark" }, "STOM"), /* @__PURE__ */ React.createElement("span", { className: "v4-brand-sub mono" }, "V4 \xB7 graph-first research terminal")), /* @__PURE__ */ React.createElement("div", { className: "v4-controls" }, /* @__PURE__ */ React.createElement("div", { className: "theme-toggle", role: "group", "aria-label": "\uD14C\uB9C8" }, /* @__PURE__ */ React.createElement("button", { className: theme === "dark" ? "active" : "", onClick: () => setTheme("dark"), "data-tip": "\uB2E4\uD06C \uBAA8\uB4DC" }, "Dark"), /* @__PURE__ */ React.createElement("button", { className: theme === "light" ? "active" : "", onClick: () => setTheme("light"), "data-tip": "\uB77C\uC774\uD2B8 \uBAA8\uB4DC" }, "Light")), /* @__PURE__ */ React.createElement(ConnBadge, { health, wsStatus }), /* @__PURE__ */ React.createElement(StatusBadge, { status: state.status }), /* @__PURE__ */ React.createElement("a", { className: "btn ghost sm mono", href: "/ui/", title: "V2 \uC6B4\uC601 \uB300\uC2DC\uBCF4\uB4DC\uB85C" }, "\u2190 V2"))), /* @__PURE__ */ React.createElement("nav", { className: "v4-tabnav", role: "tablist", "aria-label": "V4 \uD0ED" }, V4_TABS.map((tab) => /* @__PURE__ */ React.createElement(
       "button",
@@ -33383,7 +33434,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       },
       /* @__PURE__ */ React.createElement("span", { className: "v4-tab-label" }, tab.label),
       /* @__PURE__ */ React.createElement("span", { className: "v4-tab-badge mono" }, tab.badge)
-    ))), /* @__PURE__ */ React.createElement("main", { className: "v4-main" }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder-badge mono" }, active.badge), /* @__PURE__ */ React.createElement("h2", null, active.label), /* @__PURE__ */ React.createElement("p", null, active.hint), /* @__PURE__ */ React.createElement("p", { className: "mono v4-placeholder-note" }, "Phase 1 \uC178 \uAC80\uC99D \xB7 base=", baseUrl, " \xB7 ws=", wsStatus, " \xB7 status=", state.status || "\u2014", " \xB7 \uBCF8\uBB38\uC740 \uD6C4\uC18D phase \uC5D0\uC11C \uAE30\uC874 V2 \uCEF4\uD3EC\uB10C\uD2B8\uB85C \uCC44\uC6C1\uB2C8\uB2E4.")))));
+    ))), /* @__PURE__ */ React.createElement("main", { className: "v4-main" }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, activeTab === "research" ? /* @__PURE__ */ React.createElement(V4ResearchLive, { baseUrl, state, wsStatus, send }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder-badge mono" }, active.badge), /* @__PURE__ */ React.createElement("h2", null, active.label), /* @__PURE__ */ React.createElement("p", null, active.hint), /* @__PURE__ */ React.createElement("p", { className: "mono v4-placeholder-note" }, "base=", baseUrl, " \xB7 ws=", wsStatus, " \xB7 status=", state.status || "\u2014", " \xB7 \uC774 \uD0ED\uC740 \uD6C4\uC18D phase \uC5D0\uC11C \uAE30\uC874 V2 \uCEF4\uD3EC\uB10C\uD2B8\uB85C \uCC44\uC6C1\uB2C8\uB2E4.")))));
   }
   Object.assign(window, { DashboardV4Shell });
 

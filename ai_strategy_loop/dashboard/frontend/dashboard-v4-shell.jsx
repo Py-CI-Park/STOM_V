@@ -14,6 +14,8 @@
 import { ConnBadge, StatusBadge } from "./panels.jsx";
 // ErrorBoundary 재사용(단일 크래시가 전체 언마운트되지 않도록). KEEP on ONE physical line.
 import { ErrorBoundary } from "./app.jsx";
+// 탭 본문(phase 별 추가) — 기존 V2 컴포넌트 재배치. KEEP each on ONE physical line.
+import { V4ResearchLive } from "./v4-research.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4 } = React;
 
 // V4 IA — 상단 6탭(핸드오프 §7). 본문은 phase 별로 기존 컴포넌트로 채운다.
@@ -37,7 +39,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     localStorage.setItem("stom_theme", theme);
   }, [theme]);
 
-  const { state, health, wsStatus } = useBackend(baseUrl);
+  const { state, health, wsStatus, send } = useBackend(baseUrl);
   const active = V4_TABS.find(t => t.key === activeTab) || V4_TABS[0];
 
   return (
@@ -76,15 +78,19 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
 
       <main className="v4-main">
         <ErrorBoundary>
-          <div className="v4-placeholder">
-            <div className="v4-placeholder-badge mono">{active.badge}</div>
-            <h2>{active.label}</h2>
-            <p>{active.hint}</p>
-            <p className="mono v4-placeholder-note">
-              Phase 1 셸 검증 · base={baseUrl} · ws={wsStatus} · status={state.status || "—"} ·
-              본문은 후속 phase 에서 기존 V2 컴포넌트로 채웁니다.
-            </p>
-          </div>
+          {activeTab === "research" ? (
+            <V4ResearchLive baseUrl={baseUrl} state={state} wsStatus={wsStatus} send={send} />
+          ) : (
+            <div className="v4-placeholder">
+              <div className="v4-placeholder-badge mono">{active.badge}</div>
+              <h2>{active.label}</h2>
+              <p>{active.hint}</p>
+              <p className="mono v4-placeholder-note">
+                base={baseUrl} · ws={wsStatus} · status={state.status || "—"} ·
+                이 탭은 후속 phase 에서 기존 V2 컴포넌트로 채웁니다.
+              </p>
+            </div>
+          )}
         </ErrorBoundary>
       </main>
     </div>
