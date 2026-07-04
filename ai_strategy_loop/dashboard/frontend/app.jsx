@@ -261,6 +261,7 @@ function App() {
   ];
   const currentDashboardPath = (typeof window !== "undefined" && window.location && window.location.pathname) || "/ui/evolution";
   const v3PreviewHref = `${currentDashboardPath || "/ui/evolution"}?dashboard_version=v3`;
+  const v4PreviewHref = `${currentDashboardPath || "/ui/evolution"}?dashboard_version=v4`;
 
   return (
     <div className="stom-app-shell">
@@ -291,6 +292,12 @@ function App() {
                href={v3PreviewHref}
                title="V2 기본 화면은 유지하고 현재 경로를 V3 리모델 프리뷰로 1회 열기">
               V3 Preview
+            </a>
+            <a className="btn ghost sm mono"
+               data-dashboard-preview="v4"
+               href={v4PreviewHref}
+               title="V2 기본 화면은 유지하고 V4 graph-first 프리뷰를 1회 열기">
+              V4 Preview
             </a>
             <BaseUrlControl
               value={pendingBase}

@@ -32934,6 +32934,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     ];
     const currentDashboardPath = typeof window !== "undefined" && window.location && window.location.pathname || "/ui/evolution";
     const v3PreviewHref = `${currentDashboardPath || "/ui/evolution"}?dashboard_version=v3`;
+    const v4PreviewHref = `${currentDashboardPath || "/ui/evolution"}?dashboard_version=v4`;
     return /* @__PURE__ */ React.createElement("div", { className: "stom-app-shell" }, /* @__PURE__ */ React.createElement("header", { className: "stom-shell" }, /* @__PURE__ */ React.createElement("div", { className: "stom-shell-top" }, /* @__PURE__ */ React.createElement("div", { className: "stom-shell-brand" }, /* @__PURE__ */ React.createElement(Logo, null), /* @__PURE__ */ React.createElement("div", { className: "stom-shell-title" }, /* @__PURE__ */ React.createElement("h1", null, "STOM AI \xB7 \uC870\uAC74\uC2DD AI \uC5F0\uAD6C \uB300\uC2DC\uBCF4\uB4DC"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "autonomous_strategy_loop \xB7 contract_v", (_g = (_f = health.contract_version) != null ? _f : state.contract_version) != null ? _g : 1)), /* @__PURE__ */ React.createElement("nav", { className: "stom-pagenav mono", "aria-label": "\uD604\uC7AC \uC704\uCE58" }, /* @__PURE__ */ React.createElement(
       "span",
       {
@@ -32952,6 +32953,15 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         title: "V2 \uAE30\uBCF8 \uD654\uBA74\uC740 \uC720\uC9C0\uD558\uACE0 \uD604\uC7AC \uACBD\uB85C\uB97C V3 \uB9AC\uBAA8\uB378 \uD504\uB9AC\uBDF0\uB85C 1\uD68C \uC5F4\uAE30"
       },
       "V3 Preview"
+    ), /* @__PURE__ */ React.createElement(
+      "a",
+      {
+        className: "btn ghost sm mono",
+        "data-dashboard-preview": "v4",
+        href: v4PreviewHref,
+        title: "V2 \uAE30\uBCF8 \uD654\uBA74\uC740 \uC720\uC9C0\uD558\uACE0 V4 graph-first \uD504\uB9AC\uBDF0\uB97C 1\uD68C \uC5F4\uAE30"
+      },
+      "V4 Preview"
     ), /* @__PURE__ */ React.createElement(
       BaseUrlControl,
       {

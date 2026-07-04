@@ -2710,6 +2710,20 @@ def create_app() -> FastAPI:
         except Exception:  # noqa: BLE001
             return HTMLResponse("<h1>Dashboard remodel frontend not available</h1>", status_code=503)
 
+    def _dashboard_v4_index_response() -> HTMLResponse:
+        # V4 opt-in 프리뷰: frontend/v4.html(window.DashboardV4Shell 마운트). V2 와 같은 bundle/app.js 공유.
+        index_path = os.path.join(_FRONTEND_DIR, "v4.html")
+        try:
+            with open(index_path, encoding="utf-8") as fh:
+                response = HTMLResponse(fh.read())
+            response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            response.headers["X-STOM-Dashboard-Version"] = "v4-preview"
+            return response
+        except Exception:  # noqa: BLE001
+            return HTMLResponse("<h1>Dashboard V4 frontend not available</h1>", status_code=503)
+
     def _dashboard_version_from_request(request: Request) -> str:
         """Return one-response dashboard version selector; never persist in browser state."""
         selector = (request.query_params.get("dashboard_version") or "").strip().lower()
@@ -2717,14 +2731,21 @@ def create_app() -> FastAPI:
             return "v3"
         if selector in {"v2", "legacy", "production"}:
             return "v2"
+        if selector in {"v4", "v4-preview"}:
+            return "v4"
 
         profile = (request.query_params.get("dashboard_profile") or "").strip().lower()
         if profile in {"v3", "remodel", "preview"}:
             return "v3"
+        if profile in {"v4", "v4-preview"}:
+            return "v4"
         return "v2"
 
     def _dashboard_selected_index_response(request: Request) -> HTMLResponse:
-        if _dashboard_version_from_request(request) == "v3":
+        version = _dashboard_version_from_request(request)
+        if version == "v4":
+            return _dashboard_v4_index_response()
+        if version == "v3":
             return _dashboard_remodel_index_response()
         response = _dashboard_index_response()
         response.headers["X-STOM-Dashboard-Version"] = "v2"
@@ -2825,6 +2846,15 @@ def create_app() -> FastAPI:
         if remodel_page not in allowed:
             return _dashboard_not_found()
         return _dashboard_remodel_index_response()
+
+    @app.get("/ui/v4", response_class=HTMLResponse)
+    def ui_v4_root_no_slash() -> RedirectResponse:
+        return RedirectResponse(url="/ui/v4/", status_code=307)
+
+    @app.get("/ui/v4/", response_class=HTMLResponse)
+    def ui_v4_root() -> HTMLResponse:
+        # V4 opt-in 프리뷰 진입점. V2/V3 기본 경로는 불변, 미지 버전은 V2 폴백.
+        return _dashboard_v4_index_response()
 
     @app.get("/ui/evolution", response_class=HTMLResponse)
     @app.get("/ui/evolution/{subtab}", response_class=HTMLResponse)
