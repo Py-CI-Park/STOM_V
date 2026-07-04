@@ -18,6 +18,7 @@ import { V4RunControls } from "./v4-run-controls.jsx";
 import { V4ResearchLive } from "./v4-research.jsx";
 import { V4Backtest } from "./v4-backtest.jsx";
 import { V4Replay } from "./v4-replay.jsx";
+import { V4History } from "./v4-history.jsx";
 import { V4Lab } from "./v4-lab.jsx";
 import { V4Workbench } from "./v4-workbench.jsx";
 import { V4Audit } from "./v4-audit.jsx";
@@ -28,6 +29,7 @@ const V4_TABS = [
   { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "조건식 자율 진화 · 실시간 관찰" },
   { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "전략 실행 · 결과 리포트" },
   { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "캔들 리플레이 · 신호 맥락" },
+  { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen 아카이브 · Compare · 연구 기록 검색" },
   { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "탐색 히트맵 · Edge Ratio · 변수 분석" },
   { key: "workbench", label: "Bench", full: "Workbench", badge: "WORK", hint: "후보 비교 · 명예의 전당" },
   { key: "audit", label: "Audit", full: "Audit", badge: "AUDIT", hint: "append-only 결정 감사 · 안전 게이트" },
@@ -63,6 +65,7 @@ function V4RailIcon({ name }) {
   if (name === "research") return (<svg {...p}><path d="M2 12 L6 8 L9 10 L15 3" /><circle cx="15" cy="3" r="1.3" fill="currentColor" stroke="none" /></svg>);
   if (name === "backtest") return (<svg {...p}><rect x="2" y="9" width="3" height="6" rx="1" /><rect x="7.5" y="5" width="3" height="10" rx="1" /><rect x="13" y="2" width="3" height="13" rx="1" /></svg>);
   if (name === "replay") return (<svg {...p}><path d="M3 4 L3 14" /><path d="M7 6 L7 12" /><path d="M11 3 L11 15" /><path d="M15 7 L15 11" /></svg>);
+  if (name === "history") return (<svg {...p}><circle cx="9" cy="9" r="6.5" /><path d="M9 5.5 V9 L12 10.5" /></svg>);
   if (name === "lab") return (<svg {...p}><rect x="2.5" y="2.5" width="4" height="4" rx="1" /><rect x="11.5" y="2.5" width="4" height="4" rx="1" /><rect x="2.5" y="11.5" width="4" height="4" rx="1" /><rect x="11.5" y="11.5" width="4" height="4" rx="1" /></svg>);
   if (name === "workbench") return (<svg {...p}><path d="M3 6 h12" /><path d="M3 10 h12" /><path d="M3 14 h7" /><circle cx="13" cy="3.5" r="1.4" /></svg>);
   if (name === "audit") return (<svg {...p}><path d="M9 2 L15 5 V9 C15 12.5 12.5 15 9 16 C5.5 15 3 12.5 3 9 V5 Z" /><path d="M6.5 9 L8.3 10.8 L11.5 7" /></svg>);
@@ -257,6 +260,8 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
                                 targetScore={targetScore} mddCap={mddCap} minDailyTrades={minDailyTrades} />
               ) : activeTab === "backtest" ? (
                 <V4Backtest baseUrl={baseUrl} wsStatus={wsStatus} />
+              ) : activeTab === "history" ? (
+                <V4History baseUrl={baseUrl} wsStatus={wsStatus} onNavigate={selectTab} />
               ) : activeTab === "lab" ? (
                 <V4Lab baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} onNavigate={selectTab} />
               ) : activeTab === "workbench" ? (

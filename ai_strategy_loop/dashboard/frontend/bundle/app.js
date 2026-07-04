@@ -33708,7 +33708,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         onViewCode: (g) => viewCode(g && g.gen_no != null ? g.gen_no : g),
         onSelectDetail: (genNo) => setSelectedDetailGen(genNo)
       }
-    ), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analytics", label: "Generation Analytics \xB7 \uC138\uB300 \uBD84\uC11D" }, /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analysis", label: "\uC9C4\uD654 \uBD84\uC11D \xB7 \uAC00\uC815/\uBD80\uAC80/\uACC4\uBCF4/\uD640\uB4DC\uC544\uC6C3" }, /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_config", label: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBE44\uC6A9", defaultOpen: false }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }))), /* @__PURE__ */ React.createElement("aside", { className: "v4-side-col" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), merged ? /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement(BacktestDetailChart, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen }), /* @__PURE__ */ React.createElement(EvolutionGuiParityPanel, { baseUrl, wsStatus, state: s, externalSelGen: selectedDetailGen })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analytics", label: "Generation Analytics \xB7 \uC138\uB300 \uBD84\uC11D" }, /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_analysis", label: "\uC9C4\uD654 \uBD84\uC11D \xB7 \uAC00\uC815/\uBD80\uAC80/\uACC4\uBCF4/\uD640\uB4DC\uC544\uC6C3" }, /* @__PURE__ */ React.createElement(HypothesisPanel, { state: s }), /* @__PURE__ */ React.createElement(AutopsyPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement(FeedbackPanel, { state: s })), /* @__PURE__ */ React.createElement(_V4Fold, { storageKey: "stom_v4_config", label: "\uC124\uC815 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBE44\uC6A9", defaultOpen: false }, /* @__PURE__ */ React.createElement(ResearchCriteriaBanner, { state: s, baseUrl }), /* @__PURE__ */ React.createElement(ResearchGlossaryPanel, null), /* @__PURE__ */ React.createElement(ActiveConfigPanel, { state: s }), /* @__PURE__ */ React.createElement(CostPanel, { state: s, cap: 5e4 }))), /* @__PURE__ */ React.createElement("aside", { className: "v4-side-col" }, /* @__PURE__ */ React.createElement(CurrentGenPanel, { state: s }), merged ? /* @__PURE__ */ React.createElement(
       MergedBestWinnerCard,
       {
         best: s.best,
@@ -33739,6 +33739,12 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4Replay });
 
+  // ai_strategy_loop/dashboard/frontend/v4-history.jsx
+  function V4History({ baseUrl, wsStatus, onNavigate }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-history" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus }), /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate }));
+  }
+  Object.assign(window, { V4History });
+
   // ai_strategy_loop/dashboard/frontend/v4-lab.jsx
   function V4Lab({ baseUrl, wsStatus, runId, onNavigate }) {
     return /* @__PURE__ */ React.createElement("div", { className: "v4-lab" }, /* @__PURE__ */ React.createElement(ResearchHeatmapPanel, { baseUrl, wsStatus, runId }), /* @__PURE__ */ React.createElement(
@@ -33751,7 +33757,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           if (typeof onNavigate === "function") onNavigate("workbench");
         }
       }
-    ));
+    ), /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl, wsStatus, runId }));
   }
   Object.assign(window, { V4Lab });
 
@@ -33871,6 +33877,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "research", label: "Live", full: "Research Live", badge: "LIVE", hint: "\uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \xB7 \uC2E4\uC2DC\uAC04 \uAD00\uCC30" },
     { key: "backtest", label: "Backtest", full: "Backtest", badge: "BT", hint: "\uC804\uB7B5 \uC2E4\uD589 \xB7 \uACB0\uACFC \uB9AC\uD3EC\uD2B8" },
     { key: "replay", label: "Replay", full: "Replay", badge: "SIM", hint: "\uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774 \xB7 \uC2E0\uD638 \uB9E5\uB77D" },
+    { key: "history", label: "History", full: "History", badge: "HIST", hint: "run/gen \uC544\uCE74\uC774\uBE0C \xB7 Compare \xB7 \uC5F0\uAD6C \uAE30\uB85D \uAC80\uC0C9" },
     { key: "lab", label: "Lab", full: "Lab", badge: "LAB", hint: "\uD0D0\uC0C9 \uD788\uD2B8\uB9F5 \xB7 Edge Ratio \xB7 \uBCC0\uC218 \uBD84\uC11D" },
     { key: "workbench", label: "Bench", full: "Workbench", badge: "WORK", hint: "\uD6C4\uBCF4 \uBE44\uAD50 \xB7 \uBA85\uC608\uC758 \uC804\uB2F9" },
     { key: "audit", label: "Audit", full: "Audit", badge: "AUDIT", hint: "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 \uC548\uC804 \uAC8C\uC774\uD2B8" },
@@ -33904,6 +33911,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     if (name === "research") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M2 12 L6 8 L9 10 L15 3" }), /* @__PURE__ */ React.createElement("circle", { cx: "15", cy: "3", r: "1.3", fill: "currentColor", stroke: "none" }));
     if (name === "backtest") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "2", y: "9", width: "3", height: "6", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "7.5", y: "5", width: "3", height: "10", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "13", y: "2", width: "3", height: "13", rx: "1" }));
     if (name === "replay") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M3 4 L3 14" }), /* @__PURE__ */ React.createElement("path", { d: "M7 6 L7 12" }), /* @__PURE__ */ React.createElement("path", { d: "M11 3 L11 15" }), /* @__PURE__ */ React.createElement("path", { d: "M15 7 L15 11" }));
+    if (name === "history") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("circle", { cx: "9", cy: "9", r: "6.5" }), /* @__PURE__ */ React.createElement("path", { d: "M9 5.5 V9 L12 10.5" }));
     if (name === "lab") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "2.5", y: "2.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11.5", y: "2.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "2.5", y: "11.5", width: "4", height: "4", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11.5", y: "11.5", width: "4", height: "4", rx: "1" }));
     if (name === "workbench") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M3 6 h12" }), /* @__PURE__ */ React.createElement("path", { d: "M3 10 h12" }), /* @__PURE__ */ React.createElement("path", { d: "M3 14 h7" }), /* @__PURE__ */ React.createElement("circle", { cx: "13", cy: "3.5", r: "1.4" }));
     if (name === "audit") return /* @__PURE__ */ React.createElement("svg", { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M9 2 L15 5 V9 C15 12.5 12.5 15 9 16 C5.5 15 3 12.5 3 9 V5 Z" }), /* @__PURE__ */ React.createElement("path", { d: "M6.5 9 L8.3 10.8 L11.5 7" }));
@@ -34067,7 +34075,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         mddCap,
         minDailyTrades
       }
-    ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "audit" ? /* @__PURE__ */ React.createElement(V4Audit, { baseUrl, onNavigate: selectTab }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, typeof window.AIContextPanel === "function" ? /* @__PURE__ */ React.createElement(window.AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("h2", null, "AI Context Pack"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "AIContextPanel \uBBF8\uB85C\uB4DC \u2014 \uBC88\uB4E4 \uC7AC\uBE4C\uB4DC \uD544\uC694")))))), /* @__PURE__ */ React.createElement(
+    ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "lab" ? /* @__PURE__ */ React.createElement(V4Lab, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "audit" ? /* @__PURE__ */ React.createElement(V4Audit, { baseUrl, onNavigate: selectTab }) : /* @__PURE__ */ React.createElement("div", { className: "v4-context" }, typeof window.AIContextPanel === "function" ? /* @__PURE__ */ React.createElement(window.AIContextPanel, { baseUrl, wsStatus, runId, genNo: state.current_gen }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("h2", null, "AI Context Pack"), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "AIContextPanel \uBBF8\uB85C\uB4DC \u2014 \uBC88\uB4E4 \uC7AC\uBE4C\uB4DC \uD544\uC694")))))), /* @__PURE__ */ React.createElement(
       SettingsModal,
       {
         open: settingsOpen,

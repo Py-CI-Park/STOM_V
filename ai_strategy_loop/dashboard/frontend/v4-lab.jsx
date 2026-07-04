@@ -4,6 +4,7 @@
 // dual-safe ESM import (esbuild bundle 경로). KEEP each on ONE physical line.
 import { ResearchLabPanel } from "./research-lab.jsx";
 import { ResearchHeatmapPanel } from "./research-pro.jsx";
+import { ResearchWikiPanel } from "./research-wiki.jsx";
 
 function V4Lab({ baseUrl, wsStatus, runId, onNavigate }) {
   return (
@@ -12,6 +13,7 @@ function V4Lab({ baseUrl, wsStatus, runId, onNavigate }) {
       <ResearchLabPanel
         baseUrl={baseUrl} wsStatus={wsStatus} runId={runId}
         onOpenWorkbench={() => { if (typeof onNavigate === "function") onNavigate("workbench"); }} />
+      <ResearchWikiPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
     </div>
   );
 }

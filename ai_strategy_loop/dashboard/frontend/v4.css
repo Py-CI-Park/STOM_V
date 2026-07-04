@@ -208,7 +208,7 @@
 .v4-backtest .chart-wrap { min-height: 320px; }
 .v4-replay { min-width: 0; }
 .v4-replay .chart-wrap { min-height: 360px; }
-.v4-lab, .v4-workbench { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.v4-lab, .v4-workbench, .v4-history { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .v4-lab .chart-wrap, .v4-workbench .chart-wrap { min-height: 320px; }
 .v4-audit { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .v4-context { min-width: 0; }

@@ -10,6 +10,8 @@ import { CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveCon
 import { HypothesisPanel } from "./hypothesis.jsx";
 import { GenerationsTable } from "./table.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
+import { EvolutionGuiParityPanel } from "./evolution-gui-parity-panel.jsx";
+import { ResearchGlossaryPanel } from "./glossary.jsx";
 import { ProfitChart, QualityTrendChart, EquityOverlayChart, BacktestDetailChart } from "./chart.jsx";
 import { EnginePanel } from "./engine.jsx";
 import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./cards.jsx";
@@ -166,6 +168,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
                               onViewCode={(g) => viewCode(g && g.gen_no != null ? g.gen_no : g)}
                               onSelectDetail={(genNo) => setSelectedDetailGen(genNo)} />
             <BacktestDetailChart baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
+            <EvolutionGuiParityPanel baseUrl={baseUrl} wsStatus={wsStatus} state={s} externalSelGen={selectedDetailGen} />
           </_V4Fold>
           <_V4Fold storageKey="stom_v4_analytics" label="Generation Analytics · 세대 분석">
             <EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
@@ -180,6 +183,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
           </_V4Fold>
           <_V4Fold storageKey="stom_v4_config" label="설정 · 게이트 · 비용" defaultOpen={false}>
             <ResearchCriteriaBanner state={s} baseUrl={baseUrl} />
+            <ResearchGlossaryPanel />
             <ActiveConfigPanel state={s} />
             <CostPanel state={s} cap={50000} />
           </_V4Fold>

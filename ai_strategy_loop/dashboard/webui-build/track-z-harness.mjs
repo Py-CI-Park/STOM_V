@@ -541,6 +541,7 @@ const V4_DASHBOARD_PAGES = [
   { page: "v4-workbench", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=workbench" }, // ResearchPro + RunCompare + HoF
   { page: "v4-audit", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=audit" }, // VerdictPanel + safety strip
   { page: "v4-context", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=context" }, // AIContextPanel view
+  { page: "v4-history", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=history" }, // ResearchRecords + governed index
 ];
 async function runPageOnce({ page, global: globalName, state, path, needles }) {
   const { window, errs } = makeDom({ state: state || IDLE_STATE, noAutoMount: true, path });
