@@ -74,6 +74,21 @@ uvicorn ai_strategy_loop.dashboard.app:app --port 8790       # 이 워크트리
 # wt-dev 실데이터(8770 서빙 시): /ui/v4?base=http://127.0.0.1:8791
 ```
 
+## 5.5 자동 브라우저 UAT (2026-07-05 추가 — scripts/v4_uat.py)
+
+Playwright 조작 시나리오 + 캡처 직접 판독(`.omo/evidence/dashboard-v4-redesign-20260704/uat/`):
+
+| 시나리오 | 결과 |
+|---|---|
+| replay-playback | **pass** — 최근 거래일 자동재생(09:02:00 · 3/377 · 캔들/지표/미니맵), Live 이탈 후 복귀 시 재생 지속(09:03:00) — keep-alive 실증 |
+| run-archive | **pass** — wt-dev 458개 run 로드(fetch timeout 3s→10s 상향으로 해소), train_css_v7 선택 → 아카이브 전체 렌더 + **BEST=WINNER 5.532·게이트✓ + 승인·Export 게이트 버튼 노출** |
+| backtest-smoke | **pass(선택까지)** — wt-dev 라이브러리 로드+매수/매도 선택 검증. 실행은 활성 연구(chunk09) CPU 경합 회피로 옵트인 보류 |
+| lab/workbench/context-live | **pass(판독)** — 히트맵 실데이터(edge 0.510·21k+건), HoF 프로 12행 실측, AI Context Pack 4-sections+forbidden_actions 라이브 |
+
+동반 개선: `STOM_DASHBOARD_ALLOWED_ORIGINS` env 옵트인(CORS 확장, 기본 불변 —
+`tests/unit/dashboard/test_dashboard_cors_env.py` 4 passed), V4 온보딩(idle 첫 화면),
+:focus-visible/prefers-reduced-motion 접근성.
+
 ## 6. 남은 항목(후속)
 
 - 상단 BASE 수동 변경도 allowlist 제약 동일 — cross-origin 연동을 정식 지원하려면

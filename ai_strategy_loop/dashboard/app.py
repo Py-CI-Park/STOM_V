@@ -85,6 +85,18 @@ _ALLOWED_ORIGINS = [
     "http://localhost",
     "http://127.0.0.1",
 ]
+
+
+def _allowed_origins() -> list:
+    """기본 allowlist + env 옵트인 확장(STOM_DASHBOARD_ALLOWED_ORIGINS, 콤마 구분).
+
+    기본값은 불변(8770 localhost 전용 — 임의 origin 페이지의 로컬 API 호출 차단 정책 유지).
+    다른 포트에서 서빙되는 프론트(예: V4 프리뷰 8790)가 이 백엔드 데이터를 읽어야 할 때만
+    env 로 명시 확장한다. http(s) origin 형식만 수용, 후행 슬래시 제거.
+    """
+    extra = os.environ.get("STOM_DASHBOARD_ALLOWED_ORIGINS", "")
+    extras = [o.strip().rstrip("/") for o in extra.split(",") if o.strip().startswith("http")]
+    return [*_ALLOWED_ORIGINS, *extras]
 _PROMPT_HEAD_CHARS = 240
 
 
@@ -2663,7 +2675,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=_ALLOWED_ORIGINS,
+        allow_origins=_allowed_origins(),
         allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],

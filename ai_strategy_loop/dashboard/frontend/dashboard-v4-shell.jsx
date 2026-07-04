@@ -118,7 +118,9 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   useEffect_v4(() => {
     if (isDemo || !baseUrl) { setRunList([]); return; }
     let cancelled = false;
-    fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(3000) })
+    // 10s: 대형 아카이브(run 수백 개)·연구 실행 중 CPU 포화 백엔드의 콜드 응답이 3s 를
+    //   넘길 수 있다(cross-origin 데이터 연동 시나리오 실측) — V2 기본(3s)보다 여유.
+    fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(10000) })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
       .then(j => {
         if (cancelled) return;
@@ -257,6 +259,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
               {activeTab === "research" ? (
                 <V4ResearchLive baseUrl={baseUrl} state={state} wsStatus={wsStatus} send={send}
                                 lastReply={lastReply} onViewCode={onViewCodeByGen}
+                                onOpenSettings={() => setSettingsOpen(true)}
                                 targetScore={targetScore} mddCap={mddCap} minDailyTrades={minDailyTrades} />
               ) : activeTab === "backtest" ? (
                 <V4Backtest baseUrl={baseUrl} wsStatus={wsStatus} />
