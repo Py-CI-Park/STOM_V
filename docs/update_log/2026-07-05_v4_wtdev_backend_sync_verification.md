@@ -5,7 +5,7 @@
 `feature/dashboard-v4-20260704` 위에 머지한 격리 브랜치
 **`integration/v4-wtdev-backend-sync-20260705`** 의 전 게이트가 green 이다.
 채택(머지) 시 V4 브랜치 자체 백엔드가 research_observability page_data 를 emit 하고,
-백테 리포트에 측정계 라벨이 표기된다. **채택 여부는 베이스라인 결정 사안 — 사용자 승인 대기.**
+백테 리포트에 측정계 라벨이 표기된다. **2026-07-05 사용자 승인으로 V4 브랜치에 채택(fast-forward) 완료 — 채택 후 메인 워크트리에서 하네스 allPass·verify_nonrelease 재확인.**
 
 ## 머지 내용
 - 소스 충돌 **0** — 충돌 11건은 전부 빌드 산출물(html ?v=/manifest)·OMC 상태(.omo)·
