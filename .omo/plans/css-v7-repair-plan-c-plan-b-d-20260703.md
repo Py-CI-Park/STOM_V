@@ -126,6 +126,17 @@ Plan C/B/D documents.
   criterion switched to coverage-map completion (per-cell trades and gross/net
   EV via `fitness/lift.py`), and gate_passed count demoted to advisory.
 
+  Profile audit 2026-07-04: completed as static audit only; no preflight or
+  288 full run was executed. Evidence:
+  `docs/update_log/2026-07-04_p5_profile_audit_official_config_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_profile_audit_official_full_warm64_20260704.json`.
+  Official configs now use DB-full-period + warm64 and align configured/effective
+  gates at `min_daily_trades=0.5`, `mdd_cap=35`. Tick runtime policy is
+  09:00~09:28 (raw DB reaches 09:30); min policy is 09:00~15:19. Next allowed
+  action is tick preflight 4 pairs only:
+  `lat_preflight_tick_official_full_warm64_20260704`. Full tick/min 288 remains
+  blocked until that preflight receipt exists.
+
   Acceptance:
   - Resume manifest and first-10-pair timing estimate are written.
   - Tick smoke result export exists before min starts.

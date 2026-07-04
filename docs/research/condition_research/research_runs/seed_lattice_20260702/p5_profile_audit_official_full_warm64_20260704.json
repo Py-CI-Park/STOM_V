@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-04T06:08:27.987073+00:00",
+  "scope": "Plan B P5-profile-audit only; no backtest run executed",
+  "source_handoffs": [
+    "docs/update_log/2026-07-04_plan_b_lattice_wrong_profile_pause_handoff.md",
+    "docs/update_log/2026-07-04_quant_midreview_gate_zero_diagnosis_handoff.md"
+  ],
+  "receipt_path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_profile_audit_official_full_warm64_20260704.json",
+  "forbidden_inputs": {
+    "lat_smoke_tick_full_sanitized_20260704_star": "reference_only_not_official",
+    "chunk08_to_chunk10_resume": "forbidden"
+  },
+  "db_ranges": {
+    "tick": {
+      "path": "_database/stock_tick_back.db",
+      "table_count": 2427,
+      "temporal_row_count": 124235459,
+      "index_min_len_filter": 14,
+      "min_index": "20220323090000",
+      "max_index": "20260227093000",
+      "start_date": 20220323,
+      "end_date": 20260227,
+      "skipped_no_index_tables": [],
+      "skipped_no_index_table_count": 0
+    },
+    "min": {
+      "path": "_database/stock_min_back.db",
+      "table_count": 1381,
+      "temporal_row_count": 5578411,
+      "index_min_len_filter": 12,
+      "min_index": "202504070900",
+      "max_index": "202602271519",
+      "start_date": 20250407,
+      "end_date": 20260227,
+      "skipped_no_index_tables": [],
+      "skipped_no_index_table_count": 0
+    }
+  },
+  "official_configs": {
+    "tick": {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json",
+      "profile": {
+        "configured": {
+          "mdd_cap": 35.0,
+          "min_daily_trades": 0.5,
+          "condition_discovery_preset": "fast",
+          "condition_discovery_process": "fast-discovery",
+          "bt_universe_start_time": 90000,
+          "bt_universe_end_time": 92800
+        },
+        "effective": {
+          "mdd_cap": 35.0,
+          "min_daily_trades": 0.5,
+          "condition_discovery_preset": "fast",
+          "condition_discovery_process": "fast-discovery",
+          "bt_universe_start_time": 90000,
+          "bt_universe_end_time": 92800,
+          "full_session_enabled": false,
+          "bt_min_universe_end_time": 151900
+        },
+        "warm_backtest_config": {
+          "start_date": 20220323,
+          "end_date": 20260227,
+          "start_time": 90000,
+          "end_time": 92800,
+          "engine_count": 64,
+          "is_tick": true,
+          "avg_time": 30,
+          "betting": "5",
+          "timeout": 14400
+        }
+      }
+    },
+    "min": {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_min_official_full_warm64_20260704.json",
+      "profile": {
+        "configured": {
+          "mdd_cap": 35.0,
+          "min_daily_trades": 0.5,
+          "condition_discovery_preset": "fast",
+          "condition_discovery_process": "fast-discovery",
+          "bt_universe_start_time": 90000,
+          "bt_universe_end_time": 92800
+        },
+        "effective": {
+          "mdd_cap": 35.0,
+          "min_daily_trades": 0.5,
+          "condition_discovery_preset": "fast",
+          "condition_discovery_process": "fast-discovery",
+          "bt_universe_start_time": 90000,
+          "bt_universe_end_time": 92800,
+          "full_session_enabled": true,
+          "bt_min_universe_end_time": 151900
+        },
+        "warm_backtest_config": {
+          "start_date": 20250407,
+          "end_date": 20260227,
+          "start_time": 90000,
+          "end_time": 151900,
+          "engine_count": 64,
+          "is_tick": false,
+          "avg_time": 30,
+          "betting": "5",
+          "timeout": 14400
+        }
+      }
+    }
+  },
+  "gate_policy_audit": {
+    "previous_tick_config_min_daily_trades": 0.3,
+    "previous_min_config_min_daily_trades": 0.3,
+    "verdict": "corrected_config_to_effective_policy_floor",
+    "explanation": "LoopConfig did read the old 0.3 value, but condition-discovery fast policy raises min_daily_trades to 0.5 before scoring. Official configs now set 0.5 explicitly so configured and effective gates match receipts.",
+    "official_configured_min_daily_trades": 0.5,
+    "official_effective_min_daily_trades": 0.5,
+    "official_mdd_cap": 35.0
+  },
+  "pair_audit": {
+    "tick": {
+      "lane": "tick",
+      "pair_count": 288,
+      "unique_label_count": 288,
+      "duplicate_labels": [],
+      "unsafe_strategy_name_count": 0,
+      "unsafe_strategy_names_preview": []
+    },
+    "min": {
+      "lane": "min",
+      "pair_count": 288,
+      "unique_label_count": 288,
+      "duplicate_labels": [],
+      "unsafe_strategy_name_count": 0,
+      "unsafe_strategy_names_preview": []
+    }
+  },
+  "strategy_db_audit": {
+    "path": "ai_strategy_loop/state/loop_strategies.db",
+    "tables": {
+      "stockbuy": {
+        "expected_count": 576,
+        "unique_expected_count": 576,
+        "missing_count": 0,
+        "missing_preview": []
+      },
+      "stocksell": {
+        "expected_count": 576,
+        "unique_expected_count": 576,
+        "missing_count": 0,
+        "missing_preview": []
+      }
+    }
+  },
+  "chunk_protocol": {
+    "tick": {
+      "schema_version": 1,
+      "chunk_size": 48,
+      "chunk_count": 6,
+      "chunks": [
+        {
+          "chunk_id": "chunk01",
+          "start_index_inclusive": 0,
+          "end_index_exclusive": 48,
+          "pair_count": 48,
+          "warm_engine_restart_before_chunk": true,
+          "warm_engine_close_after_chunk": true
+        },
+        {
+          "chunk_id": "chunk02",
+          "start_index_inclusive": 48,
+          "end_index_exclusive": 96,
+          "pair_count": 48,
+          "warm_engine_restart_before_chunk": true,
+          "warm_engine_close_after_chunk": true
+        },
+        {
+          "chunk_id": "chunk03",
+          "start_index_inclusive": 96,
+          "end_index_exclusive": 144,
+          "pair_count": 48,
+          "warm_engine_restart_before_chunk": true,
+          "warm_engine_close_after_chunk": true
+        },
+        {
+          "chunk_id": "chunk04",
+          "start_index_inclusive": 144,
+          "end_index_exclusive": 192,
+          "pair_count": 48,
+          "warm_engine_restart_before_chunk": true,
+          "warm_engine_close_after_chunk": true
+        },
+        {
+          "chunk_id": "chunk05",
+          "start_index_inclusive": 192,
+          "end_index_exclusive": 240,
+          "pair_count": 48,
+          "warm_engine_restart_before_chunk": true,
+          "warm_engine_close_after_chunk": true
+        },
+        {
+          "chunk_id": "chunk06",
+          "start_index_inclusive": 240,
+          "end_index_exclusive": 288,
+          "pair_count": 48,
+          "warm_engine_restart_before_chunk": true,
+          "warm_engine_close_after_chunk": true
+        }
+      ],
+      "rationale": "Avoid the observed gen154~169 timeout streak by bounding each warm-engine lifetime and restarting between chunks."
+    },
+    "min": {
+      "schema_version": 1,
+      "chunk_size": 48,
+      "chunk_count": 6,
+      "chunks": [
+        {
+          "chunk_id": "chunk01",
+          "start_index_inclusive": 0,
+          "end_index_exclusive": 48,
+          "pair_count": 48,
+          "warm_engine_restart_before_chunk": true,
+          "warm_engine_close_after_chunk": true
+        },
+        {
+          "chunk_id": "chunk02",
+          "start_index_inclusive": 48,
+          "end_index_exclusive": 96,
+          "pair_count": 48,
+          "warm_engine_restart_before_chunk": true,
+          "warm_engine_close_after_chunk": true
+        },
+        {
+          "chunk_id": "chunk03",
+          "start_index_inclusive": 96,
+          "end_index_exclusive": 144,
+          "pair_count": 48,
+          "warm_engine_restart_before_chunk": true,
+          "warm_engine_close_after_chunk": true
+        },
+        {
+          "chunk_id": "chunk04",
+          "start_index_inclusive": 144,
+          "end_index_exclusive": 192,
+          "pair_count": 48,
+          "warm_engine_restart_before_chunk": true,
+          "warm_engine_close_after_chunk": true
+        },
+        {
+          "chunk_id": "chunk05",
+          "start_index_inclusive": 192,
+          "end_index_exclusive": 240,
+          "pair_count": 48,
+          "warm_engine_restart_before_chunk": true,
+          "warm_engine_close_after_chunk": true
+        },
+        {
+          "chunk_id": "chunk06",
+          "start_index_inclusive": 240,
+          "end_index_exclusive": 288,
+          "pair_count": 48,
+          "warm_engine_restart_before_chunk": true,
+          "warm_engine_close_after_chunk": true
+        }
+      ],
+      "rationale": "Avoid the observed gen154~169 timeout streak by bounding each warm-engine lifetime and restarting between chunks."
+    }
+  },
+  "preflight": {
+    "tick_pairs_path": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_preflight4_official_full_warm64_20260704.json",
+    "tick_pair_count": 4,
+    "plan_path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_preflight_plan_official_full_warm64_20260704.md",
+    "run_id": "lat_preflight_tick_official_full_warm64_20260704",
+    "full_run_allowed_by_this_receipt": false
+  },
+  "p5_success_criterion": {
+    "primary": "coverage_map_completion",
+    "required_fields": [
+      "per_cell_trade_count",
+      "gross_ev",
+      "net_ev",
+      "mdd_distribution"
+    ],
+    "gate_passed_count": "advisory_only",
+    "p6_ev_input": "ai_strategy_loop.fitness.lift.compute_lift_ev/segment_lift_ev from official smoke CSVs"
+  },
+  "verdict": "profile_audit_complete_full_run_still_blocked_until_preflight"
+}

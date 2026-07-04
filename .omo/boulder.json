@@ -452,17 +452,17 @@
       "objective": "Run priorities 1~7: CSS_V7 repair, Plan C validation, Plan B, Plan D",
       "resumed_at": "2026-07-04T08:48:04.4061085+09:00",
       "requested_range": "Plan B completion before Plan D",
-      "current_priority": "P5-profile-audit",
-      "completed_range": "P5-root-cause-repair",
+      "current_priority": "P5-official-tick-preflight",
+      "completed_range": "P5-root-cause-repair + P5-profile-audit",
       "completed_at": "2026-07-04T08:13:02.9135701+09:00",
-      "last_completed_priority": "P5R",
+      "last_completed_priority": "P5-profile-audit",
       "last_completed_at": "2026-07-04T08:13:02.9135701+09:00",
-      "last_evidence": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\p5r_root_cause_repair_summary.json",
-      "next_priority": "P5 profile audit before official full rerun",
-      "p5_blocker_status": "paused_wrong_profile_q1_warm8_smoke_only",
+      "last_evidence": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_profile_audit_official_full_warm64_20260704.json",
+      "next_priority": "P5 official tick preflight 4 pairs only",
+      "p5_blocker_status": "profile_audit_complete_preflight_required",
       "blocked_at": "2026-07-04T00:43:02.435301+09:00",
       "blocked_priority": "P5",
-      "blocker": "Paused after wrong-profile discovery: lat_smoke_tick_full_sanitized_20260704* used 2025Q1/warm8 and is smoke/reference evidence only. Do not continue chunk08~chunk10 or use these rows for survivor/rejection/P6. Next step is P5 profile audit and DB-full-period warm64 config/preflight. Handoff: docs/update_log/2026-07-04_plan_b_lattice_wrong_profile_pause_handoff.md"
+      "blocker": "P5 profile audit completed. Full tick/min 288 remains blocked until tick preflight 4 pairs warm64 receipt exists. Next: lat_preflight_tick_official_full_warm64_20260704 using official full-period warm64 tick config."
     }
   }
 }
