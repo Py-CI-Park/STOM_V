@@ -33402,6 +33402,12 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4ResearchLive });
 
+  // ai_strategy_loop/dashboard/frontend/v4-backtest.jsx
+  function V4Backtest({ baseUrl, wsStatus }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-backtest" }, /* @__PURE__ */ React.createElement(BacktestTab, { baseUrl, wsStatus }));
+  }
+  Object.assign(window, { V4Backtest });
+
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4 } = React;
   var V4_TABS = [
@@ -33412,16 +33418,34 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     { key: "workbench", label: "Workbench", badge: "WORK", hint: "\uD6C4\uBCF4 \uBE44\uAD50 \xB7 \uBA85\uC608\uC758 \uC804\uB2F9" },
     { key: "audit", label: "Audit", badge: "AUDIT", hint: "append-only \uACB0\uC815 \uAC10\uC0AC \xB7 \uC548\uC804 \uAC8C\uC774\uD2B8" }
   ];
+  var V4_TAB_KEYS = V4_TABS.map((t) => t.key);
+  function v4InitialTab() {
+    try {
+      const t = new URLSearchParams(window.location.search).get("tab");
+      if (t && V4_TAB_KEYS.includes(t)) return t;
+    } catch (e) {
+    }
+    return "research";
+  }
   function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     const [baseUrl] = useState_v4(() => baseUrlProp || DEFAULT_BASE);
     const [theme, setTheme] = useState_v4(() => localStorage.getItem("stom_theme") || "dark");
-    const [activeTab, setActiveTab] = useState_v4("research");
+    const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab());
     useEffect_v4(() => {
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("stom_theme", theme);
     }, [theme]);
     const { state, health, wsStatus, send } = useBackend(baseUrl);
     const active = V4_TABS.find((t) => t.key === activeTab) || V4_TABS[0];
+    const selectTab = (key) => {
+      setActiveTab(key);
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("tab", key);
+        window.history.replaceState(null, "", url.pathname + url.search);
+      } catch (e) {
+      }
+    };
     return /* @__PURE__ */ React.createElement("div", { className: "v4-root", "data-v4-tab": activeTab }, /* @__PURE__ */ React.createElement("header", { className: "v4-topbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-brand" }, /* @__PURE__ */ React.createElement("span", { className: "v4-brand-mark" }, "STOM"), /* @__PURE__ */ React.createElement("span", { className: "v4-brand-sub mono" }, "V4 \xB7 graph-first research terminal")), /* @__PURE__ */ React.createElement("div", { className: "v4-controls" }, /* @__PURE__ */ React.createElement("div", { className: "theme-toggle", role: "group", "aria-label": "\uD14C\uB9C8" }, /* @__PURE__ */ React.createElement("button", { className: theme === "dark" ? "active" : "", onClick: () => setTheme("dark"), "data-tip": "\uB2E4\uD06C \uBAA8\uB4DC" }, "Dark"), /* @__PURE__ */ React.createElement("button", { className: theme === "light" ? "active" : "", onClick: () => setTheme("light"), "data-tip": "\uB77C\uC774\uD2B8 \uBAA8\uB4DC" }, "Light")), /* @__PURE__ */ React.createElement(ConnBadge, { health, wsStatus }), /* @__PURE__ */ React.createElement(StatusBadge, { status: state.status }), /* @__PURE__ */ React.createElement("a", { className: "btn ghost sm mono", href: "/ui/", title: "V2 \uC6B4\uC601 \uB300\uC2DC\uBCF4\uB4DC\uB85C" }, "\u2190 V2"))), /* @__PURE__ */ React.createElement("nav", { className: "v4-tabnav", role: "tablist", "aria-label": "V4 \uD0ED" }, V4_TABS.map((tab) => /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -33429,12 +33453,12 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         role: "tab",
         "aria-selected": activeTab === tab.key,
         className: "v4-tab" + (activeTab === tab.key ? " active" : ""),
-        onClick: () => setActiveTab(tab.key),
+        onClick: () => selectTab(tab.key),
         title: tab.hint
       },
       /* @__PURE__ */ React.createElement("span", { className: "v4-tab-label" }, tab.label),
       /* @__PURE__ */ React.createElement("span", { className: "v4-tab-badge mono" }, tab.badge)
-    ))), /* @__PURE__ */ React.createElement("main", { className: "v4-main" }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, activeTab === "research" ? /* @__PURE__ */ React.createElement(V4ResearchLive, { baseUrl, state, wsStatus, send }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder-badge mono" }, active.badge), /* @__PURE__ */ React.createElement("h2", null, active.label), /* @__PURE__ */ React.createElement("p", null, active.hint), /* @__PURE__ */ React.createElement("p", { className: "mono v4-placeholder-note" }, "base=", baseUrl, " \xB7 ws=", wsStatus, " \xB7 status=", state.status || "\u2014", " \xB7 \uC774 \uD0ED\uC740 \uD6C4\uC18D phase \uC5D0\uC11C \uAE30\uC874 V2 \uCEF4\uD3EC\uB10C\uD2B8\uB85C \uCC44\uC6C1\uB2C8\uB2E4.")))));
+    ))), /* @__PURE__ */ React.createElement("main", { className: "v4-main" }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, activeTab === "research" ? /* @__PURE__ */ React.createElement(V4ResearchLive, { baseUrl, state, wsStatus, send }) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus }) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder-badge mono" }, active.badge), /* @__PURE__ */ React.createElement("h2", null, active.label), /* @__PURE__ */ React.createElement("p", null, active.hint), /* @__PURE__ */ React.createElement("p", { className: "mono v4-placeholder-note" }, "base=", baseUrl, " \xB7 ws=", wsStatus, " \xB7 status=", state.status || "\u2014", " \xB7 \uC774 \uD0ED\uC740 \uD6C4\uC18D phase \uC5D0\uC11C \uAE30\uC874 V2 \uCEF4\uD3EC\uB10C\uD2B8\uB85C \uCC44\uC6C1\uB2C8\uB2E4.")))));
   }
   Object.assign(window, { DashboardV4Shell });
 

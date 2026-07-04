@@ -506,9 +506,10 @@ const V4_PAGES = [
   { page: "verdict", global: "VerdictPanel" },
   { page: "v4shell", global: "DashboardV4Shell" }, // v4.html opt-in preview — same standalone mount pattern (idle)
   { page: "v4shell-running", global: "DashboardV4Shell", state: RUNNING_STATE }, // V4 Research Live with live data (charts + best/winner)
+  { page: "v4-backtest", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=backtest" }, // V4 Backtest tab (BacktestTab whole)
 ];
-async function runPageOnce({ page, global: globalName, state }) {
-  const { window, errs } = makeDom({ state: state || IDLE_STATE, noAutoMount: true });
+async function runPageOnce({ page, global: globalName, state, path }) {
+  const { window, errs } = makeDom({ state: state || IDLE_STATE, noAutoMount: true, path });
   inject(window, read(resolve(FE, "vendor-react.js")));
   inject(window, read(resolve(FE, "vendor-react-dom.js")));
   inject(window, read(resolve(FE, "vendor-lightweight-charts.js")));

@@ -72,6 +72,10 @@
   padding: 8px 12px; font-size: 11.5px;
 }
 
+/* ── Backtest 탭: BacktestTab 통째 재사용 + 결과 차트 완만 확대(내부 레이아웃 보존) ── */
+.v4-backtest { min-width: 0; }
+.v4-backtest .chart-wrap { min-height: 320px; }
+
 /* ── Phase 1 placeholder (후속 phase 에서 제거) ── */
 .v4-placeholder {
   border: 1px dashed var(--line-2); border-radius: 10px;

@@ -16,6 +16,7 @@ import { ConnBadge, StatusBadge } from "./panels.jsx";
 import { ErrorBoundary } from "./app.jsx";
 // 탭 본문(phase 별 추가) — 기존 V2 컴포넌트 재배치. KEEP each on ONE physical line.
 import { V4ResearchLive } from "./v4-research.jsx";
+import { V4Backtest } from "./v4-backtest.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4 } = React;
 
 // V4 IA — 상단 6탭(핸드오프 §7). 본문은 phase 별로 기존 컴포넌트로 채운다.
@@ -27,11 +28,21 @@ const V4_TABS = [
   { key: "workbench", label: "Workbench", badge: "WORK", hint: "후보 비교 · 명예의 전당" },
   { key: "audit", label: "Audit", badge: "AUDIT", hint: "append-only 결정 감사 · 안전 게이트" },
 ];
+const V4_TAB_KEYS = V4_TABS.map(t => t.key);
+
+// 초기 탭: URL ?tab= 파라미터(유효 키만) → 없으면 research. deep-link + 새로고침 유지.
+function v4InitialTab() {
+  try {
+    const t = new URLSearchParams(window.location.search).get("tab");
+    if (t && V4_TAB_KEYS.includes(t)) return t;
+  } catch (e) {}
+  return "research";
+}
 
 function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [baseUrl] = useState_v4(() => baseUrlProp || DEFAULT_BASE);
   const [theme, setTheme] = useState_v4(() => localStorage.getItem("stom_theme") || "dark");
-  const [activeTab, setActiveTab] = useState_v4("research");
+  const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab());
 
   // 테마: V2 와 동일한 data-theme 메커니즘·토큰 재사용(app.jsx:127-130).
   useEffect_v4(() => {
@@ -41,6 +52,16 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
 
   const { state, health, wsStatus, send } = useBackend(baseUrl);
   const active = V4_TABS.find(t => t.key === activeTab) || V4_TABS[0];
+
+  // 탭 전환 시 ?tab= 를 URL 에 반영(새로고침·딥링크 유지). V2/V3 라우트와 무관한 V4 내부 상태.
+  const selectTab = (key) => {
+    setActiveTab(key);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", key);
+      window.history.replaceState(null, "", url.pathname + url.search);
+    } catch (e) {}
+  };
 
   return (
     <div className="v4-root" data-v4-tab={activeTab}>
@@ -67,7 +88,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
             role="tab"
             aria-selected={activeTab === tab.key}
             className={"v4-tab" + (activeTab === tab.key ? " active" : "")}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => selectTab(tab.key)}
             title={tab.hint}
           >
             <span className="v4-tab-label">{tab.label}</span>
@@ -80,6 +101,8 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
         <ErrorBoundary>
           {activeTab === "research" ? (
             <V4ResearchLive baseUrl={baseUrl} state={state} wsStatus={wsStatus} send={send} />
+          ) : activeTab === "backtest" ? (
+            <V4Backtest baseUrl={baseUrl} wsStatus={wsStatus} />
           ) : (
             <div className="v4-placeholder">
               <div className="v4-placeholder-badge mono">{active.badge}</div>
