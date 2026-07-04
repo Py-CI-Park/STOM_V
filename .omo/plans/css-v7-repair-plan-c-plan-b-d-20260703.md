@@ -116,6 +116,16 @@ Plan C/B/D documents.
   `docs/update_log/2026-07-04_plan_b_lattice_wrong_profile_pause_handoff.md`
   and run a P5 profile audit for DB-full-period + warm64 configs.
 
+  Quant midreview 2026-07-04: gate_passed=0 is decomposed in
+  `docs/update_log/2026-07-04_quant_midreview_gate_zero_diagnosis_handoff.md`.
+  Verdicts: CSS_V7 non-OPT is invalid as complete strategies (demote to clause
+  fragments); lattice seeds are map-purpose seeds, not promotion candidates.
+  The P5 profile audit scope is extended with 4 items: gate-param propagation
+  audit (config `min_daily_trades 0.3` vs effective `0.5`), chunk 40-60 pairs
+  plus warm-engine restart protocol (gen154~169 timeout streak), success
+  criterion switched to coverage-map completion (per-cell trades and gross/net
+  EV via `fitness/lift.py`), and gate_passed count demoted to advisory.
+
   Acceptance:
   - Resume manifest and first-10-pair timing estimate are written.
   - Tick smoke result export exists before min starts.
