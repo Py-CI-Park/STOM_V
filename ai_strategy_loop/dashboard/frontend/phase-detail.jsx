@@ -606,6 +606,9 @@ const PROCESS_FALLBACK_CATALOG = [
     authority: "advisory research",
     capability: { can_promote: false, can_export: false, can_live: false },
     detail: "빠른 조건 탐색용 projection입니다. 후보 설명과 정렬만 하며 승격 권한은 없습니다.",
+    researchActions: ["candidate_generation", "smoke_or_full_period_backtest", "edge_ratio_analysis", "condition_improvement_loop"],
+    blockedActions: ["production_promote", "export", "live"],
+    quickStart: "1번은 빠르게 후보를 만들고 곧바로 전체기간/스모크 연구를 반복합니다.",
   },
   {
     number: 2,
@@ -615,6 +618,9 @@ const PROCESS_FALLBACK_CATALOG = [
     authority: "advisory research",
     capability: { can_promote: false, can_export: false, can_live: false },
     detail: "full-period research_validation과 advisory_split evidence를 보존하는 연구 projection입니다.",
+    researchActions: ["full_period_validation", "candidate_generation", "evidence_preservation", "edge_ratio_segment_analysis", "condition_improvement_loop"],
+    blockedActions: ["clean_oos_promotion_claim", "production_promote", "export", "live"],
+    quickStart: "2번은 전체기간 백테스트→분석→조건식 개선을 반복하는 연구 루틴입니다.",
   },
   {
     number: 3,
@@ -624,6 +630,9 @@ const PROCESS_FALLBACK_CATALOG = [
     authority: "separate frozen promotion review",
     capability: { can_promote: false, can_export: false, can_live: false },
     detail: "동결 후보를 별도 리뷰로 검토하는 projection입니다. hard gate·evidence health·인간 승인이 필요합니다.",
+    researchActions: ["frozen_candidate_review", "evidence_health_review", "hard_gate_review"],
+    blockedActions: ["final_promotion_without_human_approval", "export_without_approval", "live_without_approval"],
+    quickStart: "3번은 연구 실행이 아니라 동결 후보의 승격 가능성을 따로 검토합니다.",
   },
 ];
 
@@ -660,6 +669,12 @@ const FULL_PIPELINE_STEPS = [
   },
 ];
 
+function _listText(value, fallback = "—") {
+  if (Array.isArray(value)) return value.filter(Boolean).join(" · ") || fallback;
+  if (typeof value === "string" && value.trim()) return value.trim();
+  return fallback;
+}
+
 function _processCatalogRows(pageData) {
   const discovery = pageData?.condition_discovery || {};
   const raw = discovery.process_catalog || pageData?.process_catalog;
@@ -674,6 +689,9 @@ function _processCatalogRows(pageData) {
     authority: row.authority || row.mode || row.capability_label || "advisory research",
     capability: row.capability || row.capabilities || row.authority_guard || row,
     detail: row.detail || row.description || row.purpose || "metadata-provided process projection",
+    researchActions: row.research_actions || row.researchActions || row.allowed_research_actions || row.allowedActions,
+    blockedActions: row.blocked_actions || row.blockedActions || row.production_blockers || row.blockedActions,
+    quickStart: row.quick_start || row.quickStart || row.operator_hint || "",
   })).filter(row => row.code || row.name || Number.isFinite(row.number));
   return normalized.length ? normalized : PROCESS_FALLBACK_CATALOG;
 }
@@ -897,8 +915,21 @@ function ProcessFlowPanel({ state }) {
   });
   const pageData = state?.page_data || {};
   const processMeta = _selectedProcessMeta(pageData);
-  const selectedProcess = processMeta.selected;
+  const selectedProcessFromState = processMeta.selected;
+  const selectedProcessCodeFromState = selectedProcessFromState.code || "";
+  const [selectedProcessCode, setSelectedProcessCode] = useState_ph(selectedProcessCodeFromState);
+  useEffect_ph(() => {
+    setSelectedProcessCode(selectedProcessCodeFromState);
+  }, [selectedProcessCodeFromState]);
+  const selectedProcess = processMeta.rows.find(row => row.code === selectedProcessCode) || selectedProcessFromState;
   const selectedCapability = selectedProcess.capability || {};
+  const selectedResearchActions = Array.isArray(selectedProcess.researchActions) ? selectedProcess.researchActions : [];
+  const processAllowsResearch = selectedResearchActions.some(action => (
+    action === "candidate_generation"
+    || action === "smoke_or_full_period_backtest"
+    || action === "full_period_validation"
+    || action === "condition_improvement_loop"
+  ));
   const warmSession = pageData?.warm_session || {};
   const warmHasMetadata = Object.keys(warmSession).length > 0;
   const warmPrepare = _warmValue(warmSession, ["prepare_elapsed_sec", "prepare_seconds", "warm_prepare_seconds"]);
@@ -974,8 +1005,22 @@ function ProcessFlowPanel({ state }) {
         <div className="process-selector-row">
           {processMeta.rows.map(row => {
             const active = row === selectedProcess || row.code === selectedProcess.code;
+            const selectRow = () => setSelectedProcessCode(row.code || "");
             return (
-              <div key={`${row.number}-${row.code || row.name}`} className={`process-selector-option ${active ? "active" : ""}`}>
+              <div
+                key={`${row.number}-${row.code || row.name}`}
+                className={`process-selector-option ${active ? "active" : ""}`}
+                role="button"
+                tabIndex={0}
+                aria-pressed={active ? "true" : "false"}
+                onClick={selectRow}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    selectRow();
+                  }
+                }}
+              >
                 <span className="process-selector-num">{row.number}</span>
                 <b>{row.name || row.code}</b>
                 <small>{row.code} · {row.label}</small>
@@ -1002,6 +1047,21 @@ function ProcessFlowPanel({ state }) {
               <CapabilityPill label="can_live" value={_capabilityValue(selectedCapability, "can_live")} />
             </div>
             <small>fast/research are advisory; promotion still requires frozen review and human approval</small>
+          </div>
+          <div>
+            <span>{processAllowsResearch ? "research allowed" : "review only"}</span>
+            <b>{processAllowsResearch ? "즉시 연구 가능" : "승격 검토 전용"}</b>
+            <small>{_listText(selectedProcess.researchActions, processAllowsResearch ? "candidate_generation · full_period_backtest · condition_improvement_loop" : "frozen_candidate_review · evidence_health_review · hard_gate_review")}</small>
+          </div>
+          <div>
+            <span>still blocked</span>
+            <b>운영 반영 차단</b>
+            <small>{_listText(selectedProcess.blockedActions, "production_promote · export · live")}</small>
+          </div>
+          <div>
+            <span>quick start</span>
+            <b>{selectedProcess.number}번 선택 안내</b>
+            <small>{selectedProcess.quickStart || "선택한 프로세스의 연구/검토 범위를 확인한 뒤 시작합니다."}</small>
           </div>
         </div>
       </div>
