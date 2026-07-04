@@ -17,6 +17,7 @@ import { ErrorBoundary } from "./app.jsx";
 // 탭 본문(phase 별 추가) — 기존 V2 컴포넌트 재배치. KEEP each on ONE physical line.
 import { V4ResearchLive } from "./v4-research.jsx";
 import { V4Backtest } from "./v4-backtest.jsx";
+import { V4Replay } from "./v4-replay.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4 } = React;
 
 // V4 IA — 상단 6탭(핸드오프 §7). 본문은 phase 별로 기존 컴포넌트로 채운다.
@@ -43,12 +44,16 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   const [baseUrl] = useState_v4(() => baseUrlProp || DEFAULT_BASE);
   const [theme, setTheme] = useState_v4(() => localStorage.getItem("stom_theme") || "dark");
   const [activeTab, setActiveTab] = useState_v4(() => v4InitialTab());
+  // Replay 탭 keep-alive: 첫 방문 후 언마운트하지 않음(WS·재생 위치·종목 선택 유지).
+  const [replayVisited, setReplayVisited] = useState_v4(() => v4InitialTab() === "replay");
 
   // 테마: V2 와 동일한 data-theme 메커니즘·토큰 재사용(app.jsx:127-130).
   useEffect_v4(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("stom_theme", theme);
   }, [theme]);
+
+  useEffect_v4(() => { if (activeTab === "replay") setReplayVisited(true); }, [activeTab]);
 
   const { state, health, wsStatus, send } = useBackend(baseUrl);
   const active = V4_TABS.find(t => t.key === activeTab) || V4_TABS[0];
@@ -98,23 +103,34 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
       </nav>
 
       <main className="v4-main">
-        <ErrorBoundary>
-          {activeTab === "research" ? (
-            <V4ResearchLive baseUrl={baseUrl} state={state} wsStatus={wsStatus} send={send} />
-          ) : activeTab === "backtest" ? (
-            <V4Backtest baseUrl={baseUrl} wsStatus={wsStatus} />
-          ) : (
-            <div className="v4-placeholder">
-              <div className="v4-placeholder-badge mono">{active.badge}</div>
-              <h2>{active.label}</h2>
-              <p>{active.hint}</p>
-              <p className="mono v4-placeholder-note">
-                base={baseUrl} · ws={wsStatus} · status={state.status || "—"} ·
-                이 탭은 후속 phase 에서 기존 V2 컴포넌트로 채웁니다.
-              </p>
-            </div>
-          )}
-        </ErrorBoundary>
+        {/* Replay keep-alive: 첫 방문 후 언마운트하지 않고 hidden 처리 → 탭을 오가도
+            리플레이 WS·재생 위치·종목 선택이 초기화되지 않는다(app.jsx:365-371 패턴). */}
+        {replayVisited && (
+          <div style={{ display: activeTab === "replay" ? undefined : "none" }}>
+            <ErrorBoundary>
+              <V4Replay baseUrl={baseUrl} wsStatus={wsStatus} />
+            </ErrorBoundary>
+          </div>
+        )}
+        {activeTab === "replay" ? null : (
+          <ErrorBoundary>
+            {activeTab === "research" ? (
+              <V4ResearchLive baseUrl={baseUrl} state={state} wsStatus={wsStatus} send={send} />
+            ) : activeTab === "backtest" ? (
+              <V4Backtest baseUrl={baseUrl} wsStatus={wsStatus} />
+            ) : (
+              <div className="v4-placeholder">
+                <div className="v4-placeholder-badge mono">{active.badge}</div>
+                <h2>{active.label}</h2>
+                <p>{active.hint}</p>
+                <p className="mono v4-placeholder-note">
+                  base={baseUrl} · ws={wsStatus} · status={state.status || "—"} ·
+                  이 탭은 후속 phase 에서 기존 V2 컴포넌트로 채웁니다.
+                </p>
+              </div>
+            )}
+          </ErrorBoundary>
+        )}
       </main>
     </div>
   );

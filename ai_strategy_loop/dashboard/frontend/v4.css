@@ -76,6 +76,10 @@
 .v4-backtest { min-width: 0; }
 .v4-backtest .chart-wrap { min-height: 320px; }
 
+/* ── Replay 탭: SimulationTab 통째 재사용(keep-alive는 셸). 캔들/오버레이 차트 확대 ── */
+.v4-replay { min-width: 0; }
+.v4-replay .chart-wrap { min-height: 360px; }
+
 /* ── Phase 1 placeholder (후속 phase 에서 제거) ── */
 .v4-placeholder {
   border: 1px dashed var(--line-2); border-radius: 10px;

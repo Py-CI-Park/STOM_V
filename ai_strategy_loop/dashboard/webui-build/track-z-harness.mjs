@@ -507,6 +507,7 @@ const V4_PAGES = [
   { page: "v4shell", global: "DashboardV4Shell" }, // v4.html opt-in preview — same standalone mount pattern (idle)
   { page: "v4shell-running", global: "DashboardV4Shell", state: RUNNING_STATE }, // V4 Research Live with live data (charts + best/winner)
   { page: "v4-backtest", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=backtest" }, // V4 Backtest tab (BacktestTab whole)
+  { page: "v4-replay", global: "DashboardV4Shell", state: IDLE_STATE, path: "/ui/v4.html?tab=replay" }, // V4 Replay tab (SimulationTab, keep-alive shell)
 ];
 async function runPageOnce({ page, global: globalName, state, path }) {
   const { window, errs } = makeDom({ state: state || IDLE_STATE, noAutoMount: true, path });
