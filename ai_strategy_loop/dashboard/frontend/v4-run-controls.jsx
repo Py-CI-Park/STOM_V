@@ -10,14 +10,16 @@ function V4RunControls({
   runList, selectedRun, onSelectRun, onRefreshRun,
   onOpenSettings, onStop,
 }) {
-  const cur = Number(state.current_gen) || 0;
+  // idle 백엔드는 current_gen=-1 을 줄 수 있다 — 음수는 "시작 전"이므로 — 로 표기.
+  const curRaw = Number(state.current_gen);
+  const cur = Number.isFinite(curRaw) && curRaw >= 0 ? curRaw : null;
   const max = Number(state.max_generations) || 0;
-  const pct = max > 0 ? Math.min(100, (cur / max) * 100) : 0;
+  const pct = max > 0 && cur != null ? Math.min(100, (cur / max) * 100) : 0;
   return (
     <div className="v4-runbar">
-      <div className="v4-runbar-prog" title={`진행도 ${cur}/${max} 세대`}>
+      <div className="v4-runbar-prog" title={`진행도 ${cur ?? "—"}/${max} 세대`}>
         <span className="mono v4-runbar-gen">
-          <b style={{ color: running ? "var(--amber)" : "var(--ink-0)" }}>{cur}</b>
+          <b style={{ color: running ? "var(--amber)" : "var(--ink-0)" }}>{cur ?? "—"}</b>
           <span style={{ color: "var(--ink-3)" }}> / {max || "—"}</span>
         </span>
         <span className="progress-track v4-runbar-track">

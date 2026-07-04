@@ -33444,10 +33444,11 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     onOpenSettings,
     onStop
   }) {
-    const cur = Number(state.current_gen) || 0;
+    const curRaw = Number(state.current_gen);
+    const cur = Number.isFinite(curRaw) && curRaw >= 0 ? curRaw : null;
     const max = Number(state.max_generations) || 0;
-    const pct = max > 0 ? Math.min(100, cur / max * 100) : 0;
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-runbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-runbar-prog", title: `\uC9C4\uD589\uB3C4 ${cur}/${max} \uC138\uB300` }, /* @__PURE__ */ React.createElement("span", { className: "mono v4-runbar-gen" }, /* @__PURE__ */ React.createElement("b", { style: { color: running ? "var(--amber)" : "var(--ink-0)" } }, cur), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, " / ", max || "\u2014")), /* @__PURE__ */ React.createElement("span", { className: "progress-track v4-runbar-track" }, /* @__PURE__ */ React.createElement("span", { className: "progress-fill" + (running ? " running" : ""), style: { width: pct + "%" } }))), /* @__PURE__ */ React.createElement("div", { className: "v4-runsel", title: "\uBCFC run \uC120\uD0DD \u2014 LIVE(\uD604\uC7AC) \uB610\uB294 \uACFC\uAC70 \uC2E4 run" }, /* @__PURE__ */ React.createElement("span", { className: "mono v4-runsel-lbl" }, "RUN"), /* @__PURE__ */ React.createElement(
+    const pct = max > 0 && cur != null ? Math.min(100, cur / max * 100) : 0;
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-runbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-runbar-prog", title: `\uC9C4\uD589\uB3C4 ${cur != null ? cur : "\u2014"}/${max} \uC138\uB300` }, /* @__PURE__ */ React.createElement("span", { className: "mono v4-runbar-gen" }, /* @__PURE__ */ React.createElement("b", { style: { color: running ? "var(--amber)" : "var(--ink-0)" } }, cur != null ? cur : "\u2014"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, " / ", max || "\u2014")), /* @__PURE__ */ React.createElement("span", { className: "progress-track v4-runbar-track" }, /* @__PURE__ */ React.createElement("span", { className: "progress-fill" + (running ? " running" : ""), style: { width: pct + "%" } }))), /* @__PURE__ */ React.createElement("div", { className: "v4-runsel", title: "\uBCFC run \uC120\uD0DD \u2014 LIVE(\uD604\uC7AC) \uB610\uB294 \uACFC\uAC70 \uC2E4 run" }, /* @__PURE__ */ React.createElement("span", { className: "mono v4-runsel-lbl" }, "RUN"), /* @__PURE__ */ React.createElement(
       "select",
       {
         className: "mono",
@@ -33663,7 +33664,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   function _V4Stats({ state }) {
     var _a;
-    const cur = Number(state.current_gen) || 0;
+    const curRaw = Number(state.current_gen);
+    const cur = Number.isFinite(curRaw) && curRaw >= 0 ? curRaw : "\u2014";
     const max = Number(state.max_generations) || 0;
     const best = state.best || null;
     const bestGen = best ? (state.generations || []).find((g) => g.gen_no === best.gen) : null;

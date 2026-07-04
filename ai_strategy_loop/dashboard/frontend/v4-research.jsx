@@ -61,7 +61,8 @@ function _V4WorkflowStrip({ state }) {
 }
 
 function _V4Stats({ state }) {
-  const cur = Number(state.current_gen) || 0;
+  const curRaw = Number(state.current_gen);
+  const cur = Number.isFinite(curRaw) && curRaw >= 0 ? curRaw : "—";
   const max = Number(state.max_generations) || 0;
   const best = state.best || null;
   const bestGen = best ? (state.generations || []).find(g => g.gen_no === best.gen) : null;
