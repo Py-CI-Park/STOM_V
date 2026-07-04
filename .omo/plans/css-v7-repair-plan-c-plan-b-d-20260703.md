@@ -107,6 +107,15 @@ Plan C/B/D documents.
   Status 2026-07-04: P5R resolved the pre-full-smoke blocker. Full 288 tick
   smoke and min smoke are still not run in this selected-range session.
 
+  Pause 2026-07-04: tick smoke was partially run with the wrong official
+  profile (`2025-01-01~2025-03-31`, warm 8). The original run plus resume01
+  through resume07 produced 254/288 rows (`ok=238`, `error=16`,
+  `gate_passed=0`), but these outputs are smoke/reference evidence only and
+  must not be used for survivor/rejection/P6 decisions. Do not continue
+  chunk08~chunk10. First read
+  `docs/update_log/2026-07-04_plan_b_lattice_wrong_profile_pause_handoff.md`
+  and run a P5 profile audit for DB-full-period + warm64 configs.
+
   Acceptance:
   - Resume manifest and first-10-pair timing estimate are written.
   - Tick smoke result export exists before min starts.

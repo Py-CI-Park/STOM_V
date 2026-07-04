@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-07-04T12:25:35.224449+09:00",
+  "source_run_id": "lat_smoke_tick_full_sanitized_20260704",
+  "source_partial_export": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_results_tick_full_sanitized_20260704_partial_aborted.json",
+  "remaining_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_remaining_after_aborted_20260704.json",
+  "resume_policy": "chunked_resume_after_parent_interruption; aggregate with original_gen_start/end before P6",
+  "chunk_size": 12,
+  "chunk_count": 10,
+  "total_remaining_pairs": 118,
+  "chunks": [
+    {
+      "chunk_no": 1,
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_remaining_after_aborted_20260704_chunk01.json",
+      "pair_count": 12,
+      "original_gen_start": 170,
+      "original_gen_end": 181,
+      "run_id": "lat_smoke_tick_full_sanitized_20260704_resume01",
+      "log_path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_tick_full_sanitized_20260704_resume01.log"
+    },
+    {
+      "chunk_no": 2,
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_remaining_after_aborted_20260704_chunk02.json",
+      "pair_count": 12,
+      "original_gen_start": 182,
+      "original_gen_end": 193,
+      "run_id": "lat_smoke_tick_full_sanitized_20260704_resume02",
+      "log_path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_tick_full_sanitized_20260704_resume02.log"
+    },
+    {
+      "chunk_no": 3,
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_remaining_after_aborted_20260704_chunk03.json",
+      "pair_count": 12,
+      "original_gen_start": 194,
+      "original_gen_end": 205,
+      "run_id": "lat_smoke_tick_full_sanitized_20260704_resume03",
+      "log_path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_tick_full_sanitized_20260704_resume03.log"
+    },
+    {
+      "chunk_no": 4,
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_remaining_after_aborted_20260704_chunk04.json",
+      "pair_count": 12,
+      "original_gen_start": 206,
+      "original_gen_end": 217,
+      "run_id": "lat_smoke_tick_full_sanitized_20260704_resume04",
+      "log_path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_tick_full_sanitized_20260704_resume04.log"
+    },
+    {
+      "chunk_no": 5,
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_remaining_after_aborted_20260704_chunk05.json",
+      "pair_count": 12,
+      "original_gen_start": 218,
+      "original_gen_end": 229,
+      "run_id": "lat_smoke_tick_full_sanitized_20260704_resume05",
+      "log_path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_tick_full_sanitized_20260704_resume05.log"
+    },
+    {
+      "chunk_no": 6,
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_remaining_after_aborted_20260704_chunk06.json",
+      "pair_count": 12,
+      "original_gen_start": 230,
+      "original_gen_end": 241,
+      "run_id": "lat_smoke_tick_full_sanitized_20260704_resume06",
+      "log_path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_tick_full_sanitized_20260704_resume06.log"
+    },
+    {
+      "chunk_no": 7,
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_remaining_after_aborted_20260704_chunk07.json",
+      "pair_count": 12,
+      "original_gen_start": 242,
+      "original_gen_end": 253,
+      "run_id": "lat_smoke_tick_full_sanitized_20260704_resume07",
+      "log_path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_tick_full_sanitized_20260704_resume07.log"
+    },
+    {
+      "chunk_no": 8,
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_remaining_after_aborted_20260704_chunk08.json",
+      "pair_count": 12,
+      "original_gen_start": 254,
+      "original_gen_end": 265,
+      "run_id": "lat_smoke_tick_full_sanitized_20260704_resume08",
+      "log_path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_tick_full_sanitized_20260704_resume08.log"
+    },
+    {
+      "chunk_no": 9,
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_remaining_after_aborted_20260704_chunk09.json",
+      "pair_count": 12,
+      "original_gen_start": 266,
+      "original_gen_end": 277,
+      "run_id": "lat_smoke_tick_full_sanitized_20260704_resume09",
+      "log_path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_tick_full_sanitized_20260704_resume09.log"
+    },
+    {
+      "chunk_no": 10,
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\pairs_tick_remaining_after_aborted_20260704_chunk10.json",
+      "pair_count": 10,
+      "original_gen_start": 278,
+      "original_gen_end": 287,
+      "run_id": "lat_smoke_tick_full_sanitized_20260704_resume10",
+      "log_path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_tick_full_sanitized_20260704_resume10.log"
+    }
+  ],
+  "min_smoke_rule": "Do not start min until aggregate tick 288 export is complete and normal enough to classify."
+}
