@@ -118,17 +118,26 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
   useEffect_v4(() => {
     if (isDemo || !baseUrl) { setRunList([]); return; }
     let cancelled = false;
-    // 10s: 대형 아카이브(run 수백 개)·연구 실행 중 CPU 포화 백엔드의 콜드 응답이 3s 를
-    //   넘길 수 있다(cross-origin 데이터 연동 시나리오 실측) — V2 기본(3s)보다 여유.
-    fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(10000) })
-      .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-      .then(j => {
-        if (cancelled) return;
-        const runs = Array.isArray(j && j.runs) ? j.runs : [];
-        runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
-        setRunList(runs);
-      })
-      .catch(() => { if (!cancelled) setRunList([]); });
+    let attempt = 0;
+    // 대형 아카이브(/runs 가 수 MB)는 페이지 초기 로드의 동시 fetch 큐 맨 뒤로 밀려
+    //   타임아웃될 수 있다(실측: 8791 아카이브 2.6MB 가 10여 요청 뒤 도착). 15s 타임아웃 +
+    //   실패 시 4s 간격 재시도(최대 4회)로 초기 혼잡을 흡수한다.
+    const load = () => {
+      fetch(baseUrl + "/runs", { signal: AbortSignal.timeout(15000) })
+        .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+        .then(j => {
+          if (cancelled) return;
+          const runs = Array.isArray(j && j.runs) ? j.runs : [];
+          runs.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
+          setRunList(runs);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          if (attempt < 4) { attempt += 1; setTimeout(() => { if (!cancelled) load(); }, 4000); }
+          else setRunList([]);
+        });
+    };
+    load();
     return () => { cancelled = true; };
   }, [baseUrl, isDemo, liveState.run_id, liveState.status]);
 
