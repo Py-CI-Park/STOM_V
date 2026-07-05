@@ -325,7 +325,8 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                     <small>{row.exact_link || row.id}</small>
                   </button>
                 ))}
-                {timelineRows.length === 0 && <UiStateBlock kind="empty" compact title="No timeline records.">필터를 조정하면 exact-link 타임라인이 다시 표시됩니다.</UiStateBlock>}
+                {loading && records.length === 0 && <UiStateBlock kind="loading" compact title="거버넌스 인덱스 로딩 중…">수천 건의 exact-link 레코드를 집계 중입니다(대용량 · 최대 ~20초).</UiStateBlock>}
+                {!loading && timelineRows.length === 0 && <UiStateBlock kind="empty" compact title="No timeline records.">필터를 조정하면 exact-link 타임라인이 다시 표시됩니다.</UiStateBlock>}
               </div>
             </div>
             <div className="research-index-layout">
@@ -348,7 +349,8 @@ function ResearchIndexPanel({ baseUrl, wsStatus, initialLimit = 80 }) {
                     <small>{_rixShortPath(row.source_path)}</small>
                   </button>
                 ))}
-                {visibleRows.length === 0 && <UiStateBlock kind="empty" compact title="No matching research records.">검색어와 필터를 조정하세요.</UiStateBlock>}
+                {loading && records.length === 0 && <UiStateBlock kind="loading" compact title="거버넌스 인덱스 로딩 중…">수천 건의 레코드를 불러오는 중입니다(대용량 · 최대 ~20초).</UiStateBlock>}
+                {!loading && visibleRows.length === 0 && <UiStateBlock kind="empty" compact title="No matching research records.">검색어와 필터를 조정하세요.</UiStateBlock>}
                 {visibleRows.length < filtered.length && (
                   <button type="button" className="btn ghost sm research-index-more"
                           onClick={() => setDisplayLimit(v => Math.min(filtered.length, v + initialLimit))}>

@@ -139,6 +139,12 @@
 
 /* ── 스테이지 ── */
 .v4-stage { flex: 1; padding: 14px 18px 40px; min-width: 0; }
+/* V2 정본 페이지(ResearchIndexPage 등)를 재사용할 때 딸려오는 개발용 소유권 계약
+   헤더(EVIDENCE WORKSPACE · OWNER MATRIX + PHASE 2 INVENTORY GATE)는 Phase-9 SPA
+   통합 시 중복 방지용 설계 스캐폴딩이라 운영 사용자에겐 잡음이다. V4 좌측 레일이
+   이미 페이지 역할을 대신하므로 V4 스코프에서만 숨긴다(V2 경로 무영향).
+   '.research-index-page-head'(STOM 히스토리 제목)는 유지. */
+.v4-root .evidence-workspace-head { display: none; }
 
 /* ============ 공용 소품 ============ */
 /* 상태 칩 — 상태를 형태로 인코딩(시맨틱 색은 액센트와 분리) */

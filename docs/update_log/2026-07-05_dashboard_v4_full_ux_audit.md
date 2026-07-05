@@ -70,6 +70,26 @@
    자체 프로세스에서 same-origin 으로 서빙되면 자동 표시**(= wt-dev 레인 채택 시). 미러로는 안
    보이므로 신규 유료 실연구는 불요.
 
+## 5.5 History 탭 정리 2건 (2026-07-05 후속 — 사용자 질문 기인)
+
+사용자가 History 탭의 "EVIDENCE WORKSPACE · OWNER MATRIX / PHASE 2 INVENTORY GATE"와
+빈 "Governed Research Index"가 왜 필요한지·중복인지 물음. 실측 결과 2건 처리.
+
+1. **OWNER MATRIX / PHASE 2 INVENTORY GATE 헤더 숨김(V4 스코프).** 이 헤더는 Phase-9 SPA
+   통합 시 **중복 방지용 개발 스캐폴딩**(`dashboard-inventory.jsx` 주석: "pre-edit inventory
+   gate")이지 사용자 기능이 아니다. V4 좌측 레일이 페이지 역할을 대신하므로
+   `.v4-root .evidence-workspace-head { display:none }` 으로 V4 에서만 숨김(V2 경로 무영향).
+   "STOM 히스토리" 제목·RESEARCH RECORDS·Governed Index 본문은 유지. 판독: `followup/history_loading.png`.
+2. **Governed Research Index 빈 상태 = 실은 느린 로딩(원인 확정·수정).** `/research_index` 는
+   비어있지 않다 — HTTP 200 에 **2863 레코드(2.2MB)를 반환하지만 응답에 ~10.9s**(campaign/doc/
+   update_log/registry 교차 집계). 프론트가 로딩 중에도 "No records" 빈-상태를 그려 "비었다"로
+   오해됨. `research-index.jsx` 의 두 빈-상태를 `!loading` 으로 가드하고, `loading && records=0`
+   에 "거버넌스 인덱스 로딩 중(대용량 · 최대 ~20초)" 블록 추가(공유 컴포넌트의 실제 UX 버그라
+   V2 에도 안전한 개선). 브라우저 실측: t=6s 로딩 블록·"No records" 미표시 → ~18s 후 rows 2863 채워짐.
+
+또한 **v4.css `?v=` 를 20260704a→20260705b 로 범프**(build-app.mjs 가 v4.css 는 버전 처리하지
+않아, 이번 세션의 CSS 변경들이 사용자 브라우저 캐시에 안 잡히던 문제 해소 — 하드리프레시 불요).
+
 ## 6. 결론
 
 조건식을 **어떻게** 찾고(생성→백테→채점→부검→개선), **왜** 통과/기각되는지(게이트·부검·PROMOTE
