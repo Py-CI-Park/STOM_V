@@ -249,9 +249,11 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
           </div>
           <V4RunControls
             running={running} state={state} isDemo={isDemo}
+            isLive={activeTab === "research"}
             runList={runList} selectedRun={selectedRun}
             onSelectRun={setSelectedRun} onRefreshRun={fetchRunState}
-            onOpenSettings={() => setSettingsOpen(true)} onStop={onStop} />
+            onOpenSettings={() => setSettingsOpen(true)} onStop={onStop}
+            onGoLive={() => selectTab("research")} />
         </div>
 
         <main className="v4-stage">

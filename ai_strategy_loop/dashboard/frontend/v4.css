@@ -118,6 +118,24 @@
 }
 .v4-runsel-select:hover:not(:disabled) { border-color: var(--teal); }
 .v4-runsel-select:focus-visible { border-color: var(--blue); }
+/* 비-Live 탭에서 연구 진행 중일 때만 뜨는 Live 바로가기 칩 */
+.v4-runbar-livelink {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--sans); font-size: 11px; color: var(--amber);
+  background: rgba(240,179,90,.08); border: 1px solid rgba(240,179,90,.4);
+  border-radius: 8px; padding: 5px 10px; cursor: pointer;
+}
+.v4-runbar-livelink:hover { background: rgba(240,179,90,.14); border-color: rgba(240,179,90,.7); }
+.v4-runbar-livedot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--amber);
+  box-shadow: 0 0 0 0 rgba(240,179,90,.6); animation: v4-livepulse 1.6s ease-out infinite;
+}
+@keyframes v4-livepulse {
+  0% { box-shadow: 0 0 0 0 rgba(240,179,90,.5); }
+  70% { box-shadow: 0 0 0 6px rgba(240,179,90,0); }
+  100% { box-shadow: 0 0 0 0 rgba(240,179,90,0); }
+}
+@media (prefers-reduced-motion: reduce) { .v4-runbar-livedot { animation: none; } }
 
 /* ── 스테이지 ── */
 .v4-stage { flex: 1; padding: 14px 18px 40px; min-width: 0; }
@@ -219,6 +237,20 @@
 .v4-replay .chart-wrap { min-height: 360px; }
 .v4-lab, .v4-workbench, .v4-history { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .v4-lab .chart-wrap, .v4-workbench .chart-wrap { min-height: 320px; }
+/* 명예의 전당/후보 비교 테이블은 수백 행이라 페이지를 통째로 밀어 스캔성을 해쳤다(감사 #2).
+   워크벤치 스코프에서만 각 테이블의 '스크롤 래퍼'를 경계 처리해 영역 안에서 세로 스크롤되게
+   한다. 공유 컴포넌트 JS/HTML 은 무수정 — 프로 HoF/RunCompare(rp-table)는 :has() 로,
+   성과 HoF(.hof-scroll)는 직접 타겟. 헤더/컨트롤은 래퍼 밖이라 스크롤에 묻히지 않는다. */
+.v4-workbench div:has(> table.rp-table),
+.v4-workbench .hof-scroll {
+  max-height: 560px; overflow-y: auto;
+  border: 1px solid var(--line-1); border-radius: 8px;
+}
+/* 스크롤 영역 안 헤더 행은 상단 고정(스크롤해도 컬럼명이 보이게) */
+.v4-workbench div:has(> table.rp-table) thead th,
+.v4-workbench .hof-scroll thead th {
+  position: sticky; top: 0; z-index: 1; background: var(--bg-2);
+}
 .v4-audit { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .v4-context { min-width: 0; }
 

@@ -42,13 +42,33 @@
 
 검증: 빌드 0에러(app.js `f72a8d20`), jsdom 하네스 V1~V7 allPass, 8791 실데이터 461 run 로드.
 
-## 5. 남은 마이너 개선(후속, 우선순위 낮음)
+## 5. 마이너 개선 3건 — 처리 완료(2026-07-05 후속)
 
-1. **비-Live 탭의 run 제어 컨텍스트** — 진행도/설정·시작/정지가 Backtest/Replay/Lab 등에도 노출.
-   RUN 셀렉터는 데이터 스코프라 유지하되, 진행도/설정·시작은 Live 에서만 강조하는 방안 검토.
-2. **Workbench HoF 테이블 길이** — 상단 요약 카드 + 접이식/가상 스크롤 검토.
-3. **관찰성 라이브 데이터** — Research 거버넌스(Branch Tree 등)는 라이브 연구 중에만 채워짐
-   (아카이브는 대기). wt-dev 백엔드 emit 은 채택 완료 상태 → 이 브랜치에서 실연구 시 채워짐(E 시나리오).
+증거: `.omo/evidence/dashboard-v4-audit-20260705/followup/`. 빌드 `app.js=b808f9f9` ·
+하네스 V1~V7 allPass · pytest 25 passed · 브랜치 게이트 exit 0.
+
+1. **비-Live 탭의 run 제어 컨텍스트 정리 — 완료.** `V4RunControls` 를 탭 컨텍스트 인지형으로
+   재작성(`isLive` prop). Live 탭: 풀 컨트롤(진행도·RUN 셀렉터·정지·설정·시작). 비-Live 탭:
+   RUN 셀렉터(데이터 스코프)만 유지, **진행도/설정·시작 숨김**. 연구 진행 중이면 앰버
+   "⚡ 연구 진행 N/M · Live ↗" 링크(클릭 시 Live 이동) + 안전 정지만 노출 → 어디서든 상태
+   인지·중단 가능. 스크린샷 판독: `followup/backtest_dark.png`(링크·정지 노출·진행도/시작 숨김),
+   `followup/research_dark.png`(Live 풀 컨트롤).
+2. **Workbench HoF 테이블 길이 — 완료.** 감사 지적 대상은 ResearchProPanel 의 "명예의 전당 프로"
+   테이블(수백 행). 공유 컴포넌트 JS 는 무수정하고, **v4.css 워크벤치 스코프에서 `:has(> table.rp-table)`
+   + `.hof-scroll` 로 각 테이블 스크롤 래퍼를 max-height 560px 경계 처리 + thead sticky**. DOM 실측:
+   프로 HoF `clientHeight 558 / scrollHeight 1197`, 성과 HoF `558 / 1473` → 영역 내 스크롤 확정.
+   긴 테이블이 더 이상 페이지를 통째로 밀지 않아 뒤 계약 게이트가 위로 올라온다.
+3. **라이브 관찰성 데이터 — 실측으로 원인·경로 확정(유료 실행 불요).** wt-dev 백엔드가 라이브
+   연구 중(chunk06, gen 12→16/24)임을 확인하고, V4 코어(workflow strip·hero fitness·현재세대·
+   Best/Winner 게이트)가 **라이브로 정상 관찰**됨을 판독(`followup/research_dark.png`). 승인 게이트
+   E2E 는 아카이브 run 에서 실증(BEST=WINNER·승인/Export), 라이브 run 은 "게이트 통과 대기" 정상.
+   단, **거버넌스 패널(Branch Tree/Research Pack/Candidate Pack/Promotion Blockers)의 라이브
+   데이터는 읽기 전용 미러(8791)로는 안 뜬다** — `page_data.condition_discovery.research_observability`
+   는 wt-dev 루프가 **발행 시점에 프로세스 내부에서 만드는 라이브 투영**(`controller/loop.py:1039-1091`)
+   이라, 디스크 상태만 읽는 별도 미러 서버에는 실리지 않는다(검증: `/status` + 라이브 WS 프레임 4개
+   모두 page_data 빈 상태). 패널은 에러 없이 "실시간 데이터 대기" 폴백. **해소 경로: V4 가 루프
+   자체 프로세스에서 same-origin 으로 서빙되면 자동 표시**(= wt-dev 레인 채택 시). 미러로는 안
+   보이므로 신규 유료 실연구는 불요.
 
 ## 6. 결론
 

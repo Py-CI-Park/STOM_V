@@ -33437,18 +33437,29 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     running,
     state,
     isDemo,
+    isLive,
     runList,
     selectedRun,
     onSelectRun,
     onRefreshRun,
     onOpenSettings,
-    onStop
+    onStop,
+    onGoLive
   }) {
     const curRaw = Number(state.current_gen);
     const cur = Number.isFinite(curRaw) && curRaw >= 0 ? curRaw : null;
     const max = Number(state.max_generations) || 0;
     const pct = max > 0 && cur != null ? Math.min(100, cur / max * 100) : 0;
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-runbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-runbar-prog", title: `\uC9C4\uD589\uB3C4 ${cur != null ? cur : "\u2014"}/${max} \uC138\uB300` }, /* @__PURE__ */ React.createElement("span", { className: "mono v4-runbar-gen" }, /* @__PURE__ */ React.createElement("b", { style: { color: running ? "var(--amber)" : "var(--ink-0)" } }, cur != null ? cur : "\u2014"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, " / ", max || "\u2014")), /* @__PURE__ */ React.createElement("span", { className: "progress-track v4-runbar-track" }, /* @__PURE__ */ React.createElement("span", { className: "progress-fill" + (running ? " running" : ""), style: { width: pct + "%" } }))), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-runbar" }, isLive && /* @__PURE__ */ React.createElement("div", { className: "v4-runbar-prog", title: `\uC9C4\uD589\uB3C4 ${cur != null ? cur : "\u2014"}/${max} \uC138\uB300` }, /* @__PURE__ */ React.createElement("span", { className: "mono v4-runbar-gen" }, /* @__PURE__ */ React.createElement("b", { style: { color: running ? "var(--amber)" : "var(--ink-0)" } }, cur != null ? cur : "\u2014"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, " / ", max || "\u2014")), /* @__PURE__ */ React.createElement("span", { className: "progress-track v4-runbar-track" }, /* @__PURE__ */ React.createElement("span", { className: "progress-fill" + (running ? " running" : ""), style: { width: pct + "%" } }))), !isLive && running && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "v4-runbar-livelink",
+        onClick: onGoLive,
+        title: "\uC5F0\uAD6C \uC9C4\uD589 \uC911 \u2014 Live \uD0ED\uC5D0\uC11C \uC0C1\uC138 \uBCF4\uAE30"
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "v4-runbar-livedot" }),
+      /* @__PURE__ */ React.createElement("span", { className: "mono" }, "\uC5F0\uAD6C \uC9C4\uD589 ", cur != null ? cur : "\u2014", "/", max || "\u2014", " \xB7 Live \u2197")
+    ), /* @__PURE__ */ React.createElement(
       "div",
       {
         className: "v4-runsel" + (selectedRun ? " is-archive" : ""),
@@ -33477,7 +33488,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         },
         "\u21BB"
       )
-    ), /* @__PURE__ */ React.createElement("button", { className: "btn danger", onClick: onStop, disabled: !running }, "\u25FC \uC815\uC9C0"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: onOpenSettings, disabled: running }, "\u25B8 \uC124\uC815\xB7\uC2DC\uC791"));
+    ), (isLive || running) && /* @__PURE__ */ React.createElement("button", { className: "btn danger", onClick: onStop, disabled: !running }, "\u25FC \uC815\uC9C0"), isLive && /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: onOpenSettings, disabled: running }, "\u25B8 \uC124\uC815\xB7\uC2DC\uC791"));
   }
   Object.assign(window, { V4RunControls });
 
@@ -34087,12 +34098,14 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         running,
         state,
         isDemo,
+        isLive: activeTab === "research",
         runList,
         selectedRun,
         onSelectRun: setSelectedRun,
         onRefreshRun: fetchRunState,
         onOpenSettings: () => setSettingsOpen(true),
-        onStop
+        onStop,
+        onGoLive: () => selectTab("research")
       }
     )), /* @__PURE__ */ React.createElement("main", { className: "v4-stage" }, replayVisited && /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "replay" ? void 0 : "none" } }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(V4Replay, { baseUrl, wsStatus }))), activeTab === "replay" ? null : /* @__PURE__ */ React.createElement(ErrorBoundary, null, activeTab === "research" ? /* @__PURE__ */ React.createElement(
       V4ResearchLive,
