@@ -1,0 +1,52 @@
+{
+  "schema": "plan_b_p5_tick_chunk_stale_start_receipt_v1",
+  "created_at": "2026-07-05T06:24:07+09:00",
+  "lane": "tick",
+  "official_profile": "DB full period + warm64",
+  "chunk_no": 9,
+  "chunk_count": 12,
+  "expected_pairs": 24,
+  "config_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json",
+  "pairs_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk09_20260704.json",
+  "manifest_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_chunk_manifest_full_warm64_20260704.json",
+  "original_run_id": "lat_tick_official_full_warm64_chunk09_20260704",
+  "original_run_status": "running",
+  "original_generation_rows": 0,
+  "original_recorded_gen_nos": [],
+  "original_status_counts": {},
+  "original_gate_passed_count": 0,
+  "original_finished_at": null,
+  "live_batch_process_count": 0,
+  "process_scan_scope": "claude_candidate_batch_eval, lat_tick_official_full_warm64_chunk09_20260704, run_p5_tick_chunk09, stock_tick_back, stock_min_back",
+  "process_scan_interpretation": "No live batch/backtest process for chunk09 was observed; only the bounded PowerShell scan process itself matched during audit.",
+  "official_config_check": {
+    "bt_timeframe": "tick",
+    "bt_engine_mode": "warm",
+    "bt_warm_engine_count": 64,
+    "bt_full_start": 20220323,
+    "bt_full_end": 20260227,
+    "bt_universe_start_time": 90000,
+    "bt_universe_end_time": 92800,
+    "bt_warm_run_timeout": 300,
+    "pair_count": 24
+  },
+  "diagnosis": {
+    "stale_start": true,
+    "db_status_running": true,
+    "no_generation_rows": true,
+    "no_live_batch_process": true,
+    "trading_quality_failure": false,
+    "requires_new_run_id": true,
+    "db_update_delete_allowed": false
+  },
+  "next_allowed_action": "Run chunk09 from the same 24-pair manifest with new run id lat_tick_official_full_warm64_chunk09_retry01_20260705 and --fail-fast-timeout.",
+  "retry_run_id": "lat_tick_official_full_warm64_chunk09_retry01_20260705",
+  "forbidden": [
+    "Do not reuse lat_tick_official_full_warm64_chunk09_20260704.",
+    "Do not update or delete the stale chunk09 run row.",
+    "Do not start chunk10 before chunk09 has 24 honest official rows.",
+    "Do not start min, P6, P7, OOS, portfolio, or Plan D before official tick export exists.",
+    "Do not use wrong-profile lat_smoke_tick_full_sanitized_20260704* for official decisions."
+  ],
+  "verdict": "chunk09_original_run_stale_start_retry01_required"
+}

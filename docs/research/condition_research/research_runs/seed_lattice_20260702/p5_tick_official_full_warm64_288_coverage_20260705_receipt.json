@@ -1,0 +1,250 @@
+{
+  "schema": "plan_b_p5_tick_official_coverage_receipt_v1",
+  "created_at": "2026-07-05T10:35:08+09:00",
+  "lane": "tick",
+  "official_profile": "DB full period + warm64",
+  "expected_chunks": 12,
+  "expected_pairs_per_chunk": 24,
+  "expected_rows": 288,
+  "actual_chunks": 12,
+  "actual_rows": 288,
+  "status_counts": {
+    "ok": 288
+  },
+  "gate_passed_count": 0,
+  "unique_buy_names": 288,
+  "unique_sell_names": 288,
+  "unique_pairs": 288,
+  "all_chunks_24_rows": true,
+  "all_rows_honest_status": true,
+  "all_run_receipts_complete_or_combined": true,
+  "tick_export_executed": false,
+  "min_executed": false,
+  "p6_executed": false,
+  "verdict": "official_tick_288_of_288_row_coverage_complete; no_survivor_by_gate_passed; selected_range_stops_before_tick_export_min_p6",
+  "ranges": {
+    "min_profit": -692611103.0,
+    "max_profit": -899093.0,
+    "min_mdd": 16.88,
+    "max_mdd": 1558.72,
+    "min_daily_avg_trades": 0.1,
+    "max_daily_avg_trades": 29.3
+  },
+  "chunks": [
+    {
+      "chunk_no": 1,
+      "receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk01_official_full_warm64_20260704_receipt.json",
+      "run_id": "lat_tick_official_full_warm64_chunk01_20260704",
+      "run_status": "complete",
+      "recorded_rows": 24,
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "warm_prepare_evidence": [
+        {
+          "run_id": "lat_tick_official_full_warm64_chunk01_20260704",
+          "observed_stdout": "prepare status=ok back_count=2424 elapsed=329s"
+        }
+      ],
+      "source_note": "single complete run receipt"
+    },
+    {
+      "chunk_no": 2,
+      "receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk02_official_full_warm64_20260704_receipt.json",
+      "run_id": "lat_tick_official_full_warm64_chunk02_20260704",
+      "run_status": "complete",
+      "recorded_rows": 24,
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "warm_prepare_evidence": [
+        {
+          "run_id": "lat_tick_official_full_warm64_chunk02_20260704",
+          "observed_stdout": "prepare status=ok back_count=2424 elapsed=305s"
+        }
+      ],
+      "source_note": "single complete run receipt"
+    },
+    {
+      "chunk_no": 3,
+      "receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk03_official_full_warm64_20260704_receipt.json",
+      "run_id": "lat_tick_official_full_warm64_chunk03_20260704",
+      "run_status": "complete",
+      "recorded_rows": 24,
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "warm_prepare_evidence": [
+        {
+          "run_id": "lat_tick_official_full_warm64_chunk03_20260704",
+          "observed_stdout": "prepare status=ok back_count=2424 elapsed=332s"
+        }
+      ],
+      "source_note": "single complete run receipt"
+    },
+    {
+      "chunk_no": 4,
+      "receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk04_official_full_warm64_20260704_receipt.json",
+      "run_id": null,
+      "run_status": null,
+      "recorded_rows": 24,
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "warm_prepare_evidence": [
+        {
+          "run_id": "lat_tick_official_full_warm64_chunk04_20260704",
+          "observed_stdout": "prepare status=ok back_count=2424 elapsed=313s"
+        },
+        {
+          "run_id": "lat_tick_official_full_warm64_chunk04_supplement11_23_20260704",
+          "observed_stdout": "prepare status=ok back_count=2424 elapsed=298s"
+        }
+      ],
+      "source_note": "combined official row-level receipt"
+    },
+    {
+      "chunk_no": 5,
+      "receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk05_official_full_warm64_20260704_receipt.json",
+      "run_id": "lat_tick_official_full_warm64_chunk05_20260704",
+      "run_status": "complete",
+      "recorded_rows": 24,
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "warm_prepare_evidence": [
+        {
+          "run_id": "lat_tick_official_full_warm64_chunk05_20260704",
+          "observed_stdout": "prepare status=ok back_count=2424 elapsed=290s"
+        }
+      ],
+      "source_note": "single complete run receipt"
+    },
+    {
+      "chunk_no": 6,
+      "receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk06_official_full_warm64_20260704_receipt.json",
+      "run_id": null,
+      "run_status": null,
+      "recorded_rows": 24,
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "warm_prepare_evidence": [
+        {
+          "run_id": "lat_tick_official_full_warm64_chunk06_20260704",
+          "observed_stdout": "prepare status=ok back_count=2424 elapsed=288s"
+        },
+        {
+          "run_id": "lat_tick_official_full_warm64_chunk06_supplement10_23_20260704",
+          "observed_stdout": "see monitor output for prepare status=ok back_count=2424"
+        }
+      ],
+      "source_note": "combined official row-level receipt"
+    },
+    {
+      "chunk_no": 7,
+      "receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk07_official_full_warm64_20260704_receipt.json",
+      "run_id": "lat_tick_official_full_warm64_chunk07_20260704",
+      "run_status": "complete",
+      "recorded_rows": 24,
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "warm_prepare_evidence": [
+        {
+          "run_id": "lat_tick_official_full_warm64_chunk07_20260704",
+          "observed_stdout": "prepare status=ok back_count=2424 elapsed=294s"
+        }
+      ],
+      "source_note": "single complete run receipt"
+    },
+    {
+      "chunk_no": 8,
+      "receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk08_official_full_warm64_20260704_receipt.json",
+      "run_id": null,
+      "run_status": null,
+      "recorded_rows": 24,
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "warm_prepare_evidence": [
+        {
+          "run_id": "lat_tick_official_full_warm64_chunk08_20260704",
+          "observed_stdout": "prepare status=ok back_count=2424 elapsed=274s"
+        },
+        {
+          "run_id": "lat_tick_official_full_warm64_chunk08_supplement13_23_20260704",
+          "observed_stdout": "prepare status=ok back_count=2424 elapsed=277s"
+        }
+      ],
+      "source_note": "combined official row-level receipt"
+    },
+    {
+      "chunk_no": 9,
+      "receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk09_official_full_warm64_20260705_receipt.json",
+      "run_id": "lat_tick_official_full_warm64_chunk09_retry01_20260705",
+      "run_status": "complete",
+      "recorded_rows": 24,
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "warm_prepare_evidence": "prepare status=ok back_count=2424 elapsed=262s",
+      "source_note": "single complete run receipt"
+    },
+    {
+      "chunk_no": 10,
+      "receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk10_official_full_warm64_20260705_receipt.json",
+      "run_id": "lat_tick_official_full_warm64_chunk10_20260705",
+      "run_status": "complete",
+      "recorded_rows": 24,
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "warm_prepare_evidence": "prepare status=ok back_count=2424 elapsed=312s",
+      "source_note": "single complete run receipt"
+    },
+    {
+      "chunk_no": 11,
+      "receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk11_official_full_warm64_20260705_receipt.json",
+      "run_id": "lat_tick_official_full_warm64_chunk11_20260705",
+      "run_status": "complete",
+      "recorded_rows": 24,
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "warm_prepare_evidence": "prepare status=ok back_count=2424 elapsed=274s",
+      "source_note": "single complete run receipt"
+    },
+    {
+      "chunk_no": 12,
+      "receipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk12_official_full_warm64_20260705_receipt.json",
+      "run_id": "lat_tick_official_full_warm64_chunk12_20260705",
+      "run_status": "complete",
+      "recorded_rows": 24,
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "warm_prepare_evidence": "prepare status=ok back_count=2424 elapsed=282s",
+      "source_note": "single complete run receipt"
+    }
+  ],
+  "next_allowed_action_after_user_instruction": "tick export/summary only; min starts only after official tick export exists",
+  "forbidden_in_current_selected_range": [
+    "tick export was not run",
+    "min was not run",
+    "P6/P7/Plan D were not run",
+    "DB UPDATE/DELETE was not used"
+  ]
+}

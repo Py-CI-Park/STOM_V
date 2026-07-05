@@ -1,0 +1,101 @@
+[
+  {
+    "label": "lattice_v1:tick_0915_large_low:prevday_active",
+    "buy": "LAT_lattice_v1_tick_0915_large_low_prevday_active_B",
+    "sell": "LAT_lattice_v1_tick_0915_large_low_prevday_active_S",
+    "official_index": 181,
+    "chunk_no": 8,
+    "chunk08_original_gen_no": 13,
+    "supplement_reason": "chunk08_first_attempt_stale_partial_no_live_process"
+  },
+  {
+    "label": "lattice_v1:tick_0915_large_low:strength_surge",
+    "buy": "LAT_lattice_v1_tick_0915_large_low_strength_surge_B",
+    "sell": "LAT_lattice_v1_tick_0915_large_low_strength_surge_S",
+    "official_index": 182,
+    "chunk_no": 8,
+    "chunk08_original_gen_no": 14,
+    "supplement_reason": "chunk08_first_attempt_stale_partial_no_live_process"
+  },
+  {
+    "label": "lattice_v1:tick_0915_large_low:volume_surge",
+    "buy": "LAT_lattice_v1_tick_0915_large_low_volume_surge_B",
+    "sell": "LAT_lattice_v1_tick_0915_large_low_volume_surge_S",
+    "official_index": 183,
+    "chunk_no": 8,
+    "chunk08_original_gen_no": 15,
+    "supplement_reason": "chunk08_first_attempt_stale_partial_no_live_process"
+  },
+  {
+    "label": "lattice_v1:tick_0915_large_mid:momentum_breakout",
+    "buy": "LAT_lattice_v1_tick_0915_large_mid_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_tick_0915_large_mid_momentum_breakout_S",
+    "official_index": 184,
+    "chunk_no": 8,
+    "chunk08_original_gen_no": 16,
+    "supplement_reason": "chunk08_first_attempt_stale_partial_no_live_process"
+  },
+  {
+    "label": "lattice_v1:tick_0915_large_mid:prevday_active",
+    "buy": "LAT_lattice_v1_tick_0915_large_mid_prevday_active_B",
+    "sell": "LAT_lattice_v1_tick_0915_large_mid_prevday_active_S",
+    "official_index": 185,
+    "chunk_no": 8,
+    "chunk08_original_gen_no": 17,
+    "supplement_reason": "chunk08_first_attempt_stale_partial_no_live_process"
+  },
+  {
+    "label": "lattice_v1:tick_0915_large_mid:strength_surge",
+    "buy": "LAT_lattice_v1_tick_0915_large_mid_strength_surge_B",
+    "sell": "LAT_lattice_v1_tick_0915_large_mid_strength_surge_S",
+    "official_index": 186,
+    "chunk_no": 8,
+    "chunk08_original_gen_no": 18,
+    "supplement_reason": "chunk08_first_attempt_stale_partial_no_live_process"
+  },
+  {
+    "label": "lattice_v1:tick_0915_large_mid:volume_surge",
+    "buy": "LAT_lattice_v1_tick_0915_large_mid_volume_surge_B",
+    "sell": "LAT_lattice_v1_tick_0915_large_mid_volume_surge_S",
+    "official_index": 187,
+    "chunk_no": 8,
+    "chunk08_original_gen_no": 19,
+    "supplement_reason": "chunk08_first_attempt_stale_partial_no_live_process"
+  },
+  {
+    "label": "lattice_v1:tick_0915_large_high:momentum_breakout",
+    "buy": "LAT_lattice_v1_tick_0915_large_high_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_tick_0915_large_high_momentum_breakout_S",
+    "official_index": 188,
+    "chunk_no": 8,
+    "chunk08_original_gen_no": 20,
+    "supplement_reason": "chunk08_first_attempt_stale_partial_no_live_process"
+  },
+  {
+    "label": "lattice_v1:tick_0915_large_high:prevday_active",
+    "buy": "LAT_lattice_v1_tick_0915_large_high_prevday_active_B",
+    "sell": "LAT_lattice_v1_tick_0915_large_high_prevday_active_S",
+    "official_index": 189,
+    "chunk_no": 8,
+    "chunk08_original_gen_no": 21,
+    "supplement_reason": "chunk08_first_attempt_stale_partial_no_live_process"
+  },
+  {
+    "label": "lattice_v1:tick_0915_large_high:strength_surge",
+    "buy": "LAT_lattice_v1_tick_0915_large_high_strength_surge_B",
+    "sell": "LAT_lattice_v1_tick_0915_large_high_strength_surge_S",
+    "official_index": 190,
+    "chunk_no": 8,
+    "chunk08_original_gen_no": 22,
+    "supplement_reason": "chunk08_first_attempt_stale_partial_no_live_process"
+  },
+  {
+    "label": "lattice_v1:tick_0915_large_high:volume_surge",
+    "buy": "LAT_lattice_v1_tick_0915_large_high_volume_surge_B",
+    "sell": "LAT_lattice_v1_tick_0915_large_high_volume_surge_S",
+    "official_index": 191,
+    "chunk_no": 8,
+    "chunk08_original_gen_no": 23,
+    "supplement_reason": "chunk08_first_attempt_stale_partial_no_live_process"
+  }
+]
