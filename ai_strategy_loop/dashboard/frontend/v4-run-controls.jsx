@@ -26,17 +26,21 @@ function V4RunControls({
           <span className={"progress-fill" + (running ? " running" : "")} style={{ width: pct + "%" }}></span>
         </span>
       </div>
-      <div className="v4-runsel" title="볼 run 선택 — LIVE(현재) 또는 과거 실 run">
-        <span className="mono v4-runsel-lbl">RUN</span>
-        <select className="mono" value={selectedRun} disabled={isDemo}
+      <div className={"v4-runsel" + (selectedRun ? " is-archive" : "")}
+           title="볼 연구 run 선택 — LIVE(현재 진행) 또는 과거 실 run 아카이브">
+        <span className="mono v4-runsel-lbl">연구 RUN</span>
+        <select className="mono v4-runsel-select" value={selectedRun} disabled={isDemo}
                 onChange={e => onSelectRun(e.target.value)}>
-          <option value="">LIVE(현재)</option>
+          <option value="">● LIVE (현재 진행)</option>
           {(runList || []).map(r => (
             <option key={r.run_id} value={r.run_id}>
-              {r.run_id}{r.label ? " · " + r.label : ""}{r.gate_passed_count > 0 ? " ✓" : ""}
+              {(r.gate_passed_count > 0 ? "✓ " : "")}{r.run_id}{r.label ? " · " + r.label : ""}
             </option>
           ))}
         </select>
+        <span className={"v4-chip " + (selectedRun ? "warn" : "ok")}>
+          {selectedRun ? "아카이브" : "LIVE"}
+        </span>
         {selectedRun && (
           <button className="btn ghost sm" onClick={onRefreshRun} disabled={isDemo}
                   data-tip="선택 run 새로고침">↻</button>

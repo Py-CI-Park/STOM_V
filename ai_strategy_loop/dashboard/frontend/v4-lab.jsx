@@ -13,7 +13,16 @@ function V4Lab({ baseUrl, wsStatus, runId, onNavigate }) {
       <ResearchLabPanel
         baseUrl={baseUrl} wsStatus={wsStatus} runId={runId}
         onOpenWorkbench={() => { if (typeof onNavigate === "function") onNavigate("workbench"); }} />
-      <ResearchWikiPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+      {/* 연구 위키는 보조 참고(느린 fetch·타임아웃 가능) — V2 처럼 접이식으로 기본 접어
+          상시 에러 노출을 막는다. */}
+      <details className="evo-group v4-lab-wiki">
+        <summary className="evo-group-summary">
+          <div className="stom-section-label">연구 위키 · AI 컨텍스트 (선택)</div>
+        </summary>
+        <div className="evo-group-body">
+          <ResearchWikiPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+        </div>
+      </details>
     </div>
   );
 }

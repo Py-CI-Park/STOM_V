@@ -98,17 +98,26 @@
 .v4-runbar-prog { display: flex; align-items: center; gap: 9px; min-width: 190px; }
 .v4-runbar-gen { font-size: 14px; }
 .v4-runbar-track { width: 120px; }
+/* RUN 셀렉터 — 아카이브 연구 조회의 핵심 컨트롤이라 크고 눈에 띄게(사용자 신고 반영) */
 .v4-runsel {
-  display: flex; align-items: center; gap: 6px;
-  background: var(--bg-0); border: 1px solid var(--line-1);
-  border-radius: 6px; padding: 3px 6px;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-0); border: 1px solid var(--line-2);
+  border-radius: 8px; padding: 5px 9px;
 }
-.v4-runsel-lbl { font-size: 10px; color: var(--ink-3); letter-spacing: .08em; }
-.v4-runsel select {
-  font-size: 11px; background: var(--bg-1); color: var(--ink-0);
-  border: 1px solid var(--line-2); border-radius: 5px; padding: 3px 6px;
-  max-width: 190px;
+.v4-runsel.is-archive {
+  border-color: rgba(240,179,90,.5);
+  background: rgba(240,179,90,.07);
+  box-shadow: 0 0 0 1px rgba(240,179,90,.18);
 }
+.v4-runsel-lbl { font-size: 10px; color: var(--ink-2); letter-spacing: .1em; font-weight: 600; white-space: nowrap; }
+.v4-runsel-select {
+  font-size: 13px; font-weight: 500;
+  background: var(--bg-1); color: var(--ink-0);
+  border: 1px solid var(--line-2); border-radius: 6px; padding: 6px 9px;
+  min-width: 220px; max-width: 360px;
+}
+.v4-runsel-select:hover:not(:disabled) { border-color: var(--teal); }
+.v4-runsel-select:focus-visible { border-color: var(--blue); }
 
 /* ── 스테이지 ── */
 .v4-stage { flex: 1; padding: 14px 18px 40px; min-width: 0; }

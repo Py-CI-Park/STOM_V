@@ -33448,26 +33448,36 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const cur = Number.isFinite(curRaw) && curRaw >= 0 ? curRaw : null;
     const max = Number(state.max_generations) || 0;
     const pct = max > 0 && cur != null ? Math.min(100, cur / max * 100) : 0;
-    return /* @__PURE__ */ React.createElement("div", { className: "v4-runbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-runbar-prog", title: `\uC9C4\uD589\uB3C4 ${cur != null ? cur : "\u2014"}/${max} \uC138\uB300` }, /* @__PURE__ */ React.createElement("span", { className: "mono v4-runbar-gen" }, /* @__PURE__ */ React.createElement("b", { style: { color: running ? "var(--amber)" : "var(--ink-0)" } }, cur != null ? cur : "\u2014"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, " / ", max || "\u2014")), /* @__PURE__ */ React.createElement("span", { className: "progress-track v4-runbar-track" }, /* @__PURE__ */ React.createElement("span", { className: "progress-fill" + (running ? " running" : ""), style: { width: pct + "%" } }))), /* @__PURE__ */ React.createElement("div", { className: "v4-runsel", title: "\uBCFC run \uC120\uD0DD \u2014 LIVE(\uD604\uC7AC) \uB610\uB294 \uACFC\uAC70 \uC2E4 run" }, /* @__PURE__ */ React.createElement("span", { className: "mono v4-runsel-lbl" }, "RUN"), /* @__PURE__ */ React.createElement(
-      "select",
+    return /* @__PURE__ */ React.createElement("div", { className: "v4-runbar" }, /* @__PURE__ */ React.createElement("div", { className: "v4-runbar-prog", title: `\uC9C4\uD589\uB3C4 ${cur != null ? cur : "\u2014"}/${max} \uC138\uB300` }, /* @__PURE__ */ React.createElement("span", { className: "mono v4-runbar-gen" }, /* @__PURE__ */ React.createElement("b", { style: { color: running ? "var(--amber)" : "var(--ink-0)" } }, cur != null ? cur : "\u2014"), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, " / ", max || "\u2014")), /* @__PURE__ */ React.createElement("span", { className: "progress-track v4-runbar-track" }, /* @__PURE__ */ React.createElement("span", { className: "progress-fill" + (running ? " running" : ""), style: { width: pct + "%" } }))), /* @__PURE__ */ React.createElement(
+      "div",
       {
-        className: "mono",
-        value: selectedRun,
-        disabled: isDemo,
-        onChange: (e) => onSelectRun(e.target.value)
+        className: "v4-runsel" + (selectedRun ? " is-archive" : ""),
+        title: "\uBCFC \uC5F0\uAD6C run \uC120\uD0DD \u2014 LIVE(\uD604\uC7AC \uC9C4\uD589) \uB610\uB294 \uACFC\uAC70 \uC2E4 run \uC544\uCE74\uC774\uBE0C"
       },
-      /* @__PURE__ */ React.createElement("option", { value: "" }, "LIVE(\uD604\uC7AC)"),
-      (runList || []).map((r) => /* @__PURE__ */ React.createElement("option", { key: r.run_id, value: r.run_id }, r.run_id, r.label ? " \xB7 " + r.label : "", r.gate_passed_count > 0 ? " \u2713" : ""))
-    ), selectedRun && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        onClick: onRefreshRun,
-        disabled: isDemo,
-        "data-tip": "\uC120\uD0DD run \uC0C8\uB85C\uACE0\uCE68"
-      },
-      "\u21BB"
-    )), /* @__PURE__ */ React.createElement("button", { className: "btn danger", onClick: onStop, disabled: !running }, "\u25FC \uC815\uC9C0"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: onOpenSettings, disabled: running }, "\u25B8 \uC124\uC815\xB7\uC2DC\uC791"));
+      /* @__PURE__ */ React.createElement("span", { className: "mono v4-runsel-lbl" }, "\uC5F0\uAD6C RUN"),
+      /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          className: "mono v4-runsel-select",
+          value: selectedRun,
+          disabled: isDemo,
+          onChange: (e) => onSelectRun(e.target.value)
+        },
+        /* @__PURE__ */ React.createElement("option", { value: "" }, "\u25CF LIVE (\uD604\uC7AC \uC9C4\uD589)"),
+        (runList || []).map((r) => /* @__PURE__ */ React.createElement("option", { key: r.run_id, value: r.run_id }, r.gate_passed_count > 0 ? "\u2713 " : "", r.run_id, r.label ? " \xB7 " + r.label : ""))
+      ),
+      /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + (selectedRun ? "warn" : "ok") }, selectedRun ? "\uC544\uCE74\uC774\uBE0C" : "LIVE"),
+      selectedRun && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          className: "btn ghost sm",
+          onClick: onRefreshRun,
+          disabled: isDemo,
+          "data-tip": "\uC120\uD0DD run \uC0C8\uB85C\uACE0\uCE68"
+        },
+        "\u21BB"
+      )
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn danger", onClick: onStop, disabled: !running }, "\u25FC \uC815\uC9C0"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: onOpenSettings, disabled: running }, "\u25B8 \uC124\uC815\xB7\uC2DC\uC791"));
   }
   Object.assign(window, { V4RunControls });
 
@@ -33769,7 +33779,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           if (typeof onNavigate === "function") onNavigate("workbench");
         }
       }
-    ), /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl, wsStatus, runId }));
+    ), /* @__PURE__ */ React.createElement("details", { className: "evo-group v4-lab-wiki" }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label" }, "\uC5F0\uAD6C \uC704\uD0A4 \xB7 AI \uCEE8\uD14D\uC2A4\uD2B8 (\uC120\uD0DD)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body" }, /* @__PURE__ */ React.createElement(ResearchWikiPanel, { baseUrl, wsStatus, runId }))));
   }
   Object.assign(window, { V4Lab });
 
