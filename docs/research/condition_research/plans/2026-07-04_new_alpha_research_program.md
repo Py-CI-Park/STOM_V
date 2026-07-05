@@ -5,6 +5,7 @@
 - **작성 경위**: 패러다임 정찰 5건(규칙 채굴 / 이벤트 스터디 / 호가 미시구조 레이어 / 레짐 게이트 / 챔피언 증류·최적 청산) 제안 전문 + 독립 심사 2렌즈(심사 1: 통계 엄밀성·과적합 방어, 심사 2: 실행성·직교성) 채점 결과를 종합
 - **운영 전제**: 현재 warm64 tick 전량 스윕 실행 중 — **스윕 종료 전 어떤 백테스트/엔진 실행·DB 쓰기·프로세스 조작도 금지. 분석·설계·데이터 읽기만 허용.**
 - **관련 문서**: `docs/research/condition_research/plans/2026-07-02_plan_B_research_execution_roadmap.md`, `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_preflight_plan_official_full_warm64_20260704.md`
+- **실행 설계서 (2026-07-05 추가)**: `2026-07-05_new_alpha_implementation_design.md` — 실측 기반 실현 가능성 판정(54컬럼 실명·VI해제시간 저장 확인으로 D-3 해소), 알고리즘·패키지 구조(`alpha_lab/`)·테스트 순서·대시보드(`/ui/alpha-lab`) 반영 계획
 
 ---
 
