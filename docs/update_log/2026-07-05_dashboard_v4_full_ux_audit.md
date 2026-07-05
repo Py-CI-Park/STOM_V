@@ -90,6 +90,31 @@
 또한 **v4.css `?v=` 를 20260704a→20260705b 로 범프**(build-app.mjs 가 v4.css 는 버전 처리하지
 않아, 이번 세션의 CSS 변경들이 사용자 브라우저 캐시에 안 잡히던 문제 해소 — 하드리프레시 불요).
 
+## 5.6 전수 재감사 (2026-07-05 — 후속 수정 후 8뷰 재판독)
+
+후속 수정(§5·§5.5) 반영 상태에서 8뷰를 실데이터(8791, 라이브 연구 chunk12 진행 중)로
+재캡처·직접 판독. 증거: `.omo/evidence/dashboard-v4-audit-20260705/reaudit/`.
+**회귀 0건 · 신규 결함 0건.** 코드 변경 없이 검증만 수행(마지막 커밋 `15ab109f` 기준).
+
+| 뷰 | 점수 | 재판독 확인 | 수정 반영 |
+|---|---:|---|---|
+| Research Live | 92 | 풀 컨트롤·workflow strip·V4HeroChart·현재세대·Best/Winner 게이트·거버넌스 "대기" | #1 Live 풀 컨트롤 |
+| Backtest | 90 | 모드·매수매도 에디터·검증/저장 | #1 진행도·설정·시작 숨김, 라이브 링크+RUN+정지 |
+| Replay | 90 | 실데이터(213일 DB·실 종목 등락률·미니맵)·keep-alive | #1 |
+| History | 90↑ | RESEARCH RECORDS(17캠페인) 맨 위·Compare/RESULTDETAIL | OWNER MATRIX·INVENTORY GATE 헤더 제거·Governed Index 로딩 정상 |
+| Lab | 88 | Edge Ratio 히트맵(0.395·327건·승률26%)·6서브탭·해석 카드 | 위키 접이식(에러 없음) |
+| Workbench | 86↑ | 히트맵·명예의전당 프로(실 후보) | #2 HoF 경계 스크롤(무한 확장 안 함) |
+| Audit | 92 | 안전 strip·PROMOTE 체크리스트(게이트 판정·근거)·OOS 신뢰구간·결정 원장 | — |
+| Context | 88↑ | AI State(run/gen/전략/verdict=REJECT/forbidden)·context_pack 4섹션 **라이브** | — |
+
+**종합 ~90/100.** 핵심 확인: (1) #1 run 제어 정리는 **7개 비-Live 탭 전부 일관**(진행도·설정·시작
+숨김 + 앰버 "⚡ 연구 진행 N/24 · Live↗" 링크 + RUN 셀렉터 + 안전 정지). (2) #2 HoF 경계
+스크롤·헤더 숨김·위키 접이식·Governed Index 로딩 모두 해당 탭 반영. (3) 8탭 동일 topbar+controlbar
+구조로 시각 통일·중복 렌더 없음. (4) 생성→백테→채점→부검(Live) → PROMOTE 체크리스트·결정
+원장(Audit) → AI 컨텍스트(Context, verdict=REJECT_CANDIDATE·forbidden_actions 라이브)까지
+프로세스가 화면으로 연결. 한계는 §5 #3과 동일(거버넌스 라이브 데이터는 미러 미표시 — Context
+Pack 은 persisted state 라 라이브로 뜸, 대조 확인).
+
 ## 6. 결론
 
 조건식을 **어떻게** 찾고(생성→백테→채점→부검→개선), **왜** 통과/기각되는지(게이트·부검·PROMOTE
