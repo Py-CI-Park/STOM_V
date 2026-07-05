@@ -451,7 +451,8 @@
         "codex:css-v7-repair-plan-c-plan-b-d-20260703-min-chunk02-20260705",
         "codex:css-v7-repair-plan-c-plan-b-d-20260703-min-chunk03-20260705",
         "codex:css-v7-repair-plan-c-plan-b-d-20260703-min-chunk04-12-export-p6-no-d-20260705",
-        "codex:css-v7-repair-plan-c-plan-b-d-20260703-overnight-repair-analysis-bounded-preflight-no-d-20260705"
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-overnight-repair-analysis-bounded-preflight-no-d-20260705",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-repair-composite-coverage-preflight-no-d-20260706"
       ],
       "status": "active",
       "started_at": "2026-07-03T23:30:01.3258147+09:00",
@@ -459,19 +460,19 @@
       "duration_ms": null,
       "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
       "objective": "Run priorities 1~7: CSS_V7 repair, Plan C validation, Plan B, Plan D",
-      "resumed_at": "2026-07-05T21:54:02+09:00",
-      "requested_range": "overnight-remaining-pages-repair-analysis-bounded-preflight-no-D",
-      "current_priority": "overnight-repair-analysis-bounded-preflight-no-D-completed",
+      "resumed_at": "2026-07-06T07:37:29+09:00",
+      "requested_range": "repair-composite-coverage-preflight-no-D",
+      "current_priority": "repair-composite-coverage-preflight-no-D-completed",
       "completed_range": "P5-root-cause-repair + P5-profile-audit + P5-official-tick-preflight + P5-full-run-protocol-review + P5-official-tick-pilot12 + P5-official-tick-chunk01-12 + P5-official-tick-288-export + P5-official-min-preflight4 + P5-official-min-chunk01-12 + P5-official-min-288-export + P6-coverage-gaps-batch-plan-no-D",
       "completed_at": "2026-07-05T07:06:21+09:00",
-      "last_completed_priority": "overnight-repair-analysis-bounded-preflight-no-D",
-      "last_completed_at": "2026-07-05T22:45:57+09:00",
-      "last_evidence": "docs/update_log/2026-07-05_overnight_repair_analysis_bounded_preflight_no_d_handoff.md",
-      "next_priority": "repair-composite-coverage-preflight-no-D",
+      "last_completed_priority": "repair-composite-coverage-preflight-no-D",
+      "last_completed_at": "2026-07-06T08:15:46+09:00",
+      "last_evidence": "docs/update_log/2026-07-06_repair_composite_coverage_preflight_no_d_handoff.md",
+      "next_priority": "repair-composite-freeze-expanded-preflight-no-D",
       "p5_blocker_status": "completed_no_survivors_after_repair_preflight",
       "blocked_at": "2026-07-05T21:03:32+09:00",
       "blocked_priority": "P7-Plan-D",
-      "blocker": "Plan D remains blocked: official lattice and bounded repair preflight produced go=0; next allowed work is no-D composite/coverage repair preflight only.",
+      "blocker": "Plan D remains blocked until composite candidates are frozen/preregistered and produce OOS survivors; current work only opened the next no-D repair validation step.",
       "overnight_no_d_result": {
         "completed_at": "2026-07-05T22:45:57+09:00",
         "bounded_preflight_rows": 56,
@@ -496,44 +497,40 @@
         "full_chunk_allowed": false,
         "plan_d_allowed": false,
         "handoff": "docs/update_log/2026-07-05_overnight_repair_analysis_bounded_preflight_no_d_handoff.md"
+      },
+      "repair_composite_coverage_result": {
+        "completed_at": "2026-07-06T08:15:46+09:00",
+        "source_hold_raw": 37,
+        "dedup_groups": 7,
+        "designed_pairs": 24,
+        "inserted_seed_count": 24,
+        "inserted_row_count": 48,
+        "lane": "min",
+        "profile": "official_full_period_warm64",
+        "honest_rows": 24,
+        "status_counts": {
+          "ok": 24
+        },
+        "gate_passed_count": 16,
+        "decision_counts": {
+          "go": 16,
+          "hold": 1,
+          "no_go": 7
+        },
+        "full_chunk_allowed": true,
+        "plan_d_allowed": false,
+        "oos_executed": false,
+        "handoff": "docs/update_log/2026-07-06_repair_composite_coverage_preflight_no_d_handoff.md"
       }
     }
   },
   "active_work": {
-    "current_priority": "overnight-repair-analysis-bounded-preflight-no-D-completed",
-    "completed_range": "P5-root-cause-repair + P5-profile-audit + P5-official-tick-preflight + P5-full-run-protocol-review + P5-official-tick-pilot12 + P5-official-tick-chunk01-12 + P5-official-tick-288-export + P5-official-min-preflight4 + P5-official-min-chunk01-12 + P5-official-min-288-export + P6-coverage-gaps-batch-plan-no-D",
-    "last_completed_priority": "overnight-repair-analysis-bounded-preflight-no-D",
-    "last_completed_at": "2026-07-05T22:45:57+09:00",
-    "last_evidence": "docs/update_log/2026-07-05_overnight_repair_analysis_bounded_preflight_no_d_handoff.md",
-    "next_priority": "repair-composite-coverage-preflight-no-D",
-    "p5_blocker_status": "completed_no_survivors_after_repair_preflight",
+    "current_priority": "repair-composite-coverage-preflight-no-D-completed",
+    "requested_range": "repair-composite-coverage-preflight-no-D",
+    "resumed_at": "2026-07-06T07:37:29+09:00",
+    "last_evidence": "docs/update_log/2026-07-06_repair_composite_coverage_preflight_no_d_handoff.md",
+    "next_priority": "repair-composite-freeze-expanded-preflight-no-D",
     "blocked_priority": "P7-Plan-D",
-    "blocker": "Plan D remains blocked: official lattice and bounded repair preflight produced go=0; next allowed work is no-D composite/coverage repair preflight only.",
-    "requested_range": "overnight-remaining-pages-repair-analysis-bounded-preflight-no-D",
-    "overnight_no_d_result": {
-      "completed_at": "2026-07-05T22:45:57+09:00",
-      "bounded_preflight_rows": 56,
-      "phase1": {
-        "honest_rows": 8,
-        "go": 0,
-        "hold": 5,
-        "no_go": 3
-      },
-      "phase2": {
-        "honest_rows": 24,
-        "go": 0,
-        "hold": 17,
-        "no_go": 7
-      },
-      "phase3": {
-        "honest_rows": 24,
-        "go": 0,
-        "hold": 15,
-        "no_go": 9
-      },
-      "full_chunk_allowed": false,
-      "plan_d_allowed": false,
-      "handoff": "docs/update_log/2026-07-05_overnight_repair_analysis_bounded_preflight_no_d_handoff.md"
-    }
+    "blocker": "Plan D remains blocked until composite candidates are frozen/preregistered and produce OOS survivors; current work only opened the next no-D repair validation step."
   }
 }

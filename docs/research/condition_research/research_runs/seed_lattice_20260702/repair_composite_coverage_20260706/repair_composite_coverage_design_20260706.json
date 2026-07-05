@@ -1,0 +1,2737 @@
+{
+  "schema": "repair_composite_coverage_design_v1",
+  "created_at": "2026-07-06T07:59:38+09:00",
+  "scope": "repair-composite-coverage-preflight-no-D",
+  "source_dedup": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_composite_coverage_20260706\\repair_composite_hold_dedup_20260706.json",
+  "max_pairs": 24,
+  "design_rule": "Composite OR only across deduplicated hold anchors to solve daily_avg_trades shortage; no single-seed full chunk, no OOS, no Plan D.",
+  "db_policy": "INSERT-only; existing seed/lattice rows are not updated or deleted.",
+  "runtime_profile": "official min DB full period 2025-04-07~2026-02-27, warm64, full session 09:00~15:19",
+  "candidates": [
+    {
+      "rank": 1,
+      "condition_id": "repair_v2_20260706_01_cov01_sparse_positive_core_sell_default_tp3_sl3_hold60",
+      "lane": "min",
+      "cell_id": "min_composite_01",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M10_POS"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 431760.0,
+          "mdd": 9.89,
+          "trade_count": 19,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.630271310834386,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 1810276.0,
+        "daily_sum": 0.5,
+        "max_component_mdd": 17.69,
+        "component_count": 3
+      },
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "sell_params": {
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 2,
+      "condition_id": "repair_v2_20260706_01_cov01_sparse_positive_core_sell_protect_tp2p5_sl2_hold45",
+      "lane": "min",
+      "cell_id": "min_composite_01",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M10_POS"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 431760.0,
+          "mdd": 9.89,
+          "trade_count": 19,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.630271310834386,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 1810276.0,
+        "daily_sum": 0.5,
+        "max_component_mdd": 17.69,
+        "component_count": 3
+      },
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "sell_params": {
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 3,
+      "condition_id": "repair_v2_20260706_02_cov02_sparse_positive_balanced_sell_default_tp3_sl3_hold60",
+      "lane": "min",
+      "cell_id": "min_composite_02",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "S10_BAL",
+        "M09_POS"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r3_08_min_10h_midsmall_low_strength_surge_hold60_sl3_s107_tp3",
+        "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_08_min_10h_midsmall_low_strength_surge_hold60_sl3_s107_tp3",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 520198.0,
+          "mdd": 17.8,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.554545454545455,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_08_min_10h_midsmall_low_strength_surge_hold60_sl3_s107_tp3_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_08_min_10h_midsmall_low_strength_surge_hold60_sl3_s107_tp3_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "cell_id": "min_09h_small_low",
+          "time_bucket": "09h",
+          "size": "small",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 343274.0,
+          "mdd": 11.75,
+          "trade_count": 18,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.0354755784061696,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 1615179.0,
+        "daily_sum": 0.5,
+        "max_component_mdd": 17.8,
+        "component_count": 3
+      },
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "sell_params": {
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 4,
+      "condition_id": "repair_v2_20260706_02_cov02_sparse_positive_balanced_sell_protect_tp2p5_sl2_hold45",
+      "lane": "min",
+      "cell_id": "min_composite_02",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "S10_BAL",
+        "M09_POS"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r3_08_min_10h_midsmall_low_strength_surge_hold60_sl3_s107_tp3",
+        "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_08_min_10h_midsmall_low_strength_surge_hold60_sl3_s107_tp3",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 520198.0,
+          "mdd": 17.8,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.554545454545455,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_08_min_10h_midsmall_low_strength_surge_hold60_sl3_s107_tp3_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_08_min_10h_midsmall_low_strength_surge_hold60_sl3_s107_tp3_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "cell_id": "min_09h_small_low",
+          "time_bucket": "09h",
+          "size": "small",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 343274.0,
+          "mdd": 11.75,
+          "trade_count": 18,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.0354755784061696,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 1615179.0,
+        "daily_sum": 0.5,
+        "max_component_mdd": 17.8,
+        "component_count": 3
+      },
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "sell_params": {
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 5,
+      "condition_id": "repair_v2_20260706_03_cov03_sparse_positive_fourcell_sell_default_tp3_sl3_hold60",
+      "lane": "min",
+      "cell_id": "min_composite_03",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M09_POS",
+        "M10_POS"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+        "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "cell_id": "min_09h_small_low",
+          "time_bucket": "09h",
+          "size": "small",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 343274.0,
+          "mdd": 11.75,
+          "trade_count": 18,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.0354755784061696,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 431760.0,
+          "mdd": 9.89,
+          "trade_count": 19,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.630271310834386,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 2153550.0,
+        "daily_sum": 0.6,
+        "max_component_mdd": 17.69,
+        "component_count": 4
+      },
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "sell_params": {
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 6,
+      "condition_id": "repair_v2_20260706_03_cov03_sparse_positive_fourcell_sell_protect_tp2p5_sl2_hold45",
+      "lane": "min",
+      "cell_id": "min_composite_03",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M09_POS",
+        "M10_POS"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+        "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "cell_id": "min_09h_small_low",
+          "time_bucket": "09h",
+          "size": "small",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 343274.0,
+          "mdd": 11.75,
+          "trade_count": 18,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.0354755784061696,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 431760.0,
+          "mdd": 9.89,
+          "trade_count": 19,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.630271310834386,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 2153550.0,
+        "daily_sum": 0.6,
+        "max_component_mdd": 17.69,
+        "component_count": 4
+      },
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "sell_params": {
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 7,
+      "condition_id": "repair_v2_20260706_04_cov04_profitmax_fourcell_sell_default_tp3_sl3_hold60",
+      "lane": "min",
+      "cell_id": "min_composite_04",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_PMAX",
+        "S10_PMAX",
+        "M09_POS",
+        "M10_POS"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+        "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 860320.0,
+          "mdd": 15.94,
+          "trade_count": 52,
+          "daily_avg_trades": 0.2,
+          "payoff_ratio": 1.3867107219560548,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 109.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "cell_id": "min_09h_small_low",
+          "time_bucket": "09h",
+          "size": "small",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 343274.0,
+          "mdd": 11.75,
+          "trade_count": 18,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.0354755784061696,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 431760.0,
+          "mdd": 9.89,
+          "trade_count": 19,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.630271310834386,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 2262163.0,
+        "daily_sum": 0.5,
+        "max_component_mdd": 17.69,
+        "component_count": 4
+      },
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "sell_params": {
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 8,
+      "condition_id": "repair_v2_20260706_04_cov04_profitmax_fourcell_sell_protect_tp2p5_sl2_hold45",
+      "lane": "min",
+      "cell_id": "min_composite_04",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_PMAX",
+        "S10_PMAX",
+        "M09_POS",
+        "M10_POS"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+        "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 860320.0,
+          "mdd": 15.94,
+          "trade_count": 52,
+          "daily_avg_trades": 0.2,
+          "payoff_ratio": 1.3867107219560548,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 109.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "cell_id": "min_09h_small_low",
+          "time_bucket": "09h",
+          "size": "small",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 343274.0,
+          "mdd": 11.75,
+          "trade_count": 18,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.0354755784061696,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 431760.0,
+          "mdd": 9.89,
+          "trade_count": 19,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.630271310834386,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 2262163.0,
+        "daily_sum": 0.5,
+        "max_component_mdd": 17.69,
+        "component_count": 4
+      },
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "sell_params": {
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 9,
+      "condition_id": "repair_v2_20260706_05_cov05_daily_lift_l14_sell_default_tp3_sl3_hold60",
+      "lane": "min",
+      "cell_id": "min_composite_05",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "L14_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit",
+          "cell_id": "min_14h_large_high",
+          "time_bucket": "14h",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -277082.0,
+          "mdd": 30.15,
+          "trade_count": 100,
+          "daily_avg_trades": 0.5,
+          "payoff_ratio": 1.4637971847274176,
+          "decision_reason": "total_profit -2.771e+05 <= 0",
+          "buy_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 474625.0,
+        "daily_sum": 0.8,
+        "max_component_mdd": 30.15,
+        "component_count": 2
+      },
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "sell_params": {
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 10,
+      "condition_id": "repair_v2_20260706_05_cov05_daily_lift_l14_sell_protect_tp2p5_sl2_hold45",
+      "lane": "min",
+      "cell_id": "min_composite_05",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "L14_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit",
+          "cell_id": "min_14h_large_high",
+          "time_bucket": "14h",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -277082.0,
+          "mdd": 30.15,
+          "trade_count": 100,
+          "daily_avg_trades": 0.5,
+          "payoff_ratio": 1.4637971847274176,
+          "decision_reason": "total_profit -2.771e+05 <= 0",
+          "buy_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 474625.0,
+        "daily_sum": 0.8,
+        "max_component_mdd": 30.15,
+        "component_count": 2
+      },
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "sell_params": {
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 11,
+      "condition_id": "repair_v2_20260706_06_cov06_profitmax_l14_sell_default_tp3_sl3_hold60",
+      "lane": "min",
+      "cell_id": "min_composite_06",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_PMAX",
+        "L14_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+        "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 860320.0,
+          "mdd": 15.94,
+          "trade_count": 52,
+          "daily_avg_trades": 0.2,
+          "payoff_ratio": 1.3867107219560548,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 109.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit",
+          "cell_id": "min_14h_large_high",
+          "time_bucket": "14h",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -277082.0,
+          "mdd": 30.15,
+          "trade_count": 100,
+          "daily_avg_trades": 0.5,
+          "payoff_ratio": 1.4637971847274176,
+          "decision_reason": "total_profit -2.771e+05 <= 0",
+          "buy_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 583238.0,
+        "daily_sum": 0.7,
+        "max_component_mdd": 30.15,
+        "component_count": 2
+      },
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "sell_params": {
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 12,
+      "condition_id": "repair_v2_20260706_06_cov06_profitmax_l14_sell_protect_tp2p5_sl2_hold45",
+      "lane": "min",
+      "cell_id": "min_composite_06",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_PMAX",
+        "L14_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+        "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 860320.0,
+          "mdd": 15.94,
+          "trade_count": 52,
+          "daily_avg_trades": 0.2,
+          "payoff_ratio": 1.3867107219560548,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 109.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit",
+          "cell_id": "min_14h_large_high",
+          "time_bucket": "14h",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -277082.0,
+          "mdd": 30.15,
+          "trade_count": 100,
+          "daily_avg_trades": 0.5,
+          "payoff_ratio": 1.4637971847274176,
+          "decision_reason": "total_profit -2.771e+05 <= 0",
+          "buy_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 583238.0,
+        "daily_sum": 0.7,
+        "max_component_mdd": 30.15,
+        "component_count": 2
+      },
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "sell_params": {
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 13,
+      "condition_id": "repair_v2_20260706_07_cov07_strength_pair_l14_sell_default_tp3_sl3_hold60",
+      "lane": "min",
+      "cell_id": "min_composite_07",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "L14_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit",
+          "cell_id": "min_14h_large_high",
+          "time_bucket": "14h",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -277082.0,
+          "mdd": 30.15,
+          "trade_count": 100,
+          "daily_avg_trades": 0.5,
+          "payoff_ratio": 1.4637971847274176,
+          "decision_reason": "total_profit -2.771e+05 <= 0",
+          "buy_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 1101434.0,
+        "daily_sum": 0.9,
+        "max_component_mdd": 30.15,
+        "component_count": 3
+      },
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "sell_params": {
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 14,
+      "condition_id": "repair_v2_20260706_07_cov07_strength_pair_l14_sell_protect_tp2p5_sl2_hold45",
+      "lane": "min",
+      "cell_id": "min_composite_07",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "L14_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit",
+          "cell_id": "min_14h_large_high",
+          "time_bucket": "14h",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -277082.0,
+          "mdd": 30.15,
+          "trade_count": 100,
+          "daily_avg_trades": 0.5,
+          "payoff_ratio": 1.4637971847274176,
+          "decision_reason": "total_profit -2.771e+05 <= 0",
+          "buy_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 1101434.0,
+        "daily_sum": 0.9,
+        "max_component_mdd": 30.15,
+        "component_count": 3
+      },
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "sell_params": {
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 15,
+      "condition_id": "repair_v2_20260706_08_cov08_sparse_pair_l14_sell_default_tp3_sl3_hold60",
+      "lane": "min",
+      "cell_id": "min_composite_08",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "M10_POS",
+        "L14_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+        "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 431760.0,
+          "mdd": 9.89,
+          "trade_count": 19,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.630271310834386,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit",
+          "cell_id": "min_14h_large_high",
+          "time_bucket": "14h",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -277082.0,
+          "mdd": 30.15,
+          "trade_count": 100,
+          "daily_avg_trades": 0.5,
+          "payoff_ratio": 1.4637971847274176,
+          "decision_reason": "total_profit -2.771e+05 <= 0",
+          "buy_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 906385.0,
+        "daily_sum": 0.9,
+        "max_component_mdd": 30.15,
+        "component_count": 3
+      },
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "sell_params": {
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 16,
+      "condition_id": "repair_v2_20260706_08_cov08_sparse_pair_l14_sell_protect_tp2p5_sl2_hold45",
+      "lane": "min",
+      "cell_id": "min_composite_08",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "M10_POS",
+        "L14_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+        "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 431760.0,
+          "mdd": 9.89,
+          "trade_count": 19,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.630271310834386,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit",
+          "cell_id": "min_14h_large_high",
+          "time_bucket": "14h",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -277082.0,
+          "mdd": 30.15,
+          "trade_count": 100,
+          "daily_avg_trades": 0.5,
+          "payoff_ratio": 1.4637971847274176,
+          "decision_reason": "total_profit -2.771e+05 <= 0",
+          "buy_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 906385.0,
+        "daily_sum": 0.9,
+        "max_component_mdd": 30.15,
+        "component_count": 3
+      },
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "sell_params": {
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 17,
+      "condition_id": "repair_v2_20260706_09_cov09_early_late_l1430_sell_default_tp3_sl3_hold60",
+      "lane": "min",
+      "cell_id": "min_composite_09",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "L1430_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit",
+          "cell_id": "min_1430p_large_high",
+          "time_bucket": "1430p",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -737286.0,
+          "mdd": 25.16,
+          "trade_count": 73,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.2834027460964517,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 14421.0,
+        "daily_sum": 0.6,
+        "max_component_mdd": 25.16,
+        "component_count": 2
+      },
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "sell_params": {
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 18,
+      "condition_id": "repair_v2_20260706_09_cov09_early_late_l1430_sell_protect_tp2p5_sl2_hold45",
+      "lane": "min",
+      "cell_id": "min_composite_09",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "L1430_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit",
+          "cell_id": "min_1430p_large_high",
+          "time_bucket": "1430p",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -737286.0,
+          "mdd": 25.16,
+          "trade_count": 73,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.2834027460964517,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 14421.0,
+        "daily_sum": 0.6,
+        "max_component_mdd": 25.16,
+        "component_count": 2
+      },
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "sell_params": {
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 19,
+      "condition_id": "repair_v2_20260706_10_cov10_strength_momentum_1430_sell_default_tp3_sl3_hold60",
+      "lane": "min",
+      "cell_id": "min_composite_10",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M10_POS",
+        "L1430_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+        "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 431760.0,
+          "mdd": 9.89,
+          "trade_count": 19,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.630271310834386,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit",
+          "cell_id": "min_1430p_large_high",
+          "time_bucket": "1430p",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -737286.0,
+          "mdd": 25.16,
+          "trade_count": 73,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.2834027460964517,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 1072990.0,
+        "daily_sum": 0.8,
+        "max_component_mdd": 25.16,
+        "component_count": 4
+      },
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "sell_params": {
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 20,
+      "condition_id": "repair_v2_20260706_10_cov10_strength_momentum_1430_sell_protect_tp2p5_sl2_hold45",
+      "lane": "min",
+      "cell_id": "min_composite_10",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M10_POS",
+        "L1430_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+        "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 431760.0,
+          "mdd": 9.89,
+          "trade_count": 19,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.630271310834386,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit",
+          "cell_id": "min_1430p_large_high",
+          "time_bucket": "1430p",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -737286.0,
+          "mdd": 25.16,
+          "trade_count": 73,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.2834027460964517,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 1072990.0,
+        "daily_sum": 0.8,
+        "max_component_mdd": 25.16,
+        "component_count": 4
+      },
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "sell_params": {
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 21,
+      "condition_id": "repair_v2_20260706_11_cov11_l13_offset_sell_default_tp3_sl3_hold60",
+      "lane": "min",
+      "cell_id": "min_composite_11",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_PMAX",
+        "S10_PMAX",
+        "L13_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 860320.0,
+          "mdd": 15.94,
+          "trade_count": 52,
+          "daily_avg_trades": 0.2,
+          "payoff_ratio": 1.3867107219560548,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 109.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit",
+          "cell_id": "min_13h_large_high",
+          "time_bucket": "13h",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -770612.0,
+          "mdd": 19.01,
+          "trade_count": 269,
+          "daily_avg_trades": 1.3,
+          "payoff_ratio": 1.4961148993768516,
+          "decision_reason": "total_profit -7.706e+05 <= 0",
+          "buy_name": "LAT_repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 716517.0,
+        "daily_sum": 1.6,
+        "max_component_mdd": 19.01,
+        "component_count": 3
+      },
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "sell_params": {
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 22,
+      "condition_id": "repair_v2_20260706_11_cov11_l13_offset_sell_protect_tp2p5_sl2_hold45",
+      "lane": "min",
+      "cell_id": "min_composite_11",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_PMAX",
+        "S10_PMAX",
+        "L13_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 860320.0,
+          "mdd": 15.94,
+          "trade_count": 52,
+          "daily_avg_trades": 0.2,
+          "payoff_ratio": 1.3867107219560548,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 109.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit",
+          "cell_id": "min_13h_large_high",
+          "time_bucket": "13h",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -770612.0,
+          "mdd": 19.01,
+          "trade_count": 269,
+          "daily_avg_trades": 1.3,
+          "payoff_ratio": 1.4961148993768516,
+          "decision_reason": "total_profit -7.706e+05 <= 0",
+          "buy_name": "LAT_repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 716517.0,
+        "daily_sum": 1.6,
+        "max_component_mdd": 19.01,
+        "component_count": 3
+      },
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "sell_params": {
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 23,
+      "condition_id": "repair_v2_20260706_12_cov12_all_positive_plus_l14_sell_default_tp3_sl3_hold60",
+      "lane": "min",
+      "cell_id": "min_composite_12",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M09_POS",
+        "M10_POS",
+        "L14_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+        "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+        "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "cell_id": "min_09h_small_low",
+          "time_bucket": "09h",
+          "size": "small",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 343274.0,
+          "mdd": 11.75,
+          "trade_count": 18,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.0354755784061696,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 431760.0,
+          "mdd": 9.89,
+          "trade_count": 19,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.630271310834386,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit",
+          "cell_id": "min_14h_large_high",
+          "time_bucket": "14h",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -277082.0,
+          "mdd": 30.15,
+          "trade_count": 100,
+          "daily_avg_trades": 0.5,
+          "payoff_ratio": 1.4637971847274176,
+          "decision_reason": "total_profit -2.771e+05 <= 0",
+          "buy_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 1876468.0,
+        "daily_sum": 1.1,
+        "max_component_mdd": 30.15,
+        "component_count": 5
+      },
+      "sell_profile": "sell_default_tp3_sl3_hold60",
+      "sell_params": {
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 24,
+      "condition_id": "repair_v2_20260706_12_cov12_all_positive_plus_l14_sell_protect_tp2p5_sl2_hold45",
+      "lane": "min",
+      "cell_id": "min_composite_12",
+      "family": "composite_coverage_repair",
+      "group": "coverage_composite_daily_lift",
+      "component_aliases": [
+        "S09_D03",
+        "S10_PMAX",
+        "M09_POS",
+        "M10_POS",
+        "L14_NEAR"
+      ],
+      "component_condition_ids": [
+        "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+        "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+        "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+        "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+        "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit"
+      ],
+      "component_metrics": [
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+          "cell_id": "min_09h_midsmall_low",
+          "time_bucket": "09h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 751707.0,
+          "mdd": 16.15,
+          "trade_count": 57,
+          "daily_avg_trades": 0.3,
+          "payoff_ratio": 1.346739505823993,
+          "decision_reason": "daily_avg_trades 0.3 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 108.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase3",
+          "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "strength_surge",
+          "profit": 626809.0,
+          "mdd": 17.69,
+          "trade_count": 31,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.4286329386437029,
+          "decision_reason": "positive_profit_and_mdd_ok_but_daily_short",
+          "buy_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_B",
+          "sell_name": "LAT_repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+          "params": {
+            "strength_min": 107.0,
+            "take_profit": 4.0,
+            "stop_loss": 2.5,
+            "max_hold": 90,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+          "cell_id": "min_09h_small_low",
+          "time_bucket": "09h",
+          "size": "small",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 343274.0,
+          "mdd": 11.75,
+          "trade_count": 18,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.0354755784061696,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+          "cell_id": "min_10h_midsmall_low",
+          "time_bucket": "10h",
+          "size": "midsmall",
+          "strength": "low",
+          "family": "momentum_breakout",
+          "profit": 431760.0,
+          "mdd": 9.89,
+          "trade_count": 19,
+          "daily_avg_trades": 0.1,
+          "payoff_ratio": 1.630271310834386,
+          "decision_reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+          "buy_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 0.994,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        },
+        {
+          "phase": "phase2",
+          "condition_id": "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit",
+          "cell_id": "min_14h_large_high",
+          "time_bucket": "14h",
+          "size": "large",
+          "strength": "high",
+          "family": "momentum_breakout",
+          "profit": -277082.0,
+          "mdd": 30.15,
+          "trade_count": 100,
+          "daily_avg_trades": 0.5,
+          "payoff_ratio": 1.4637971847274176,
+          "decision_reason": "total_profit -2.771e+05 <= 0",
+          "buy_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_B",
+          "sell_name": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_S",
+          "seed_source": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json",
+          "params": {
+            "high_mult": 1.0,
+            "take_profit": 3.0,
+            "stop_loss": 3.0,
+            "max_hold": 60,
+            "force_exit": 145900
+          }
+        }
+      ],
+      "estimated_component_sum": {
+        "profit_sum": 1876468.0,
+        "daily_sum": 1.1,
+        "max_component_mdd": 30.15,
+        "component_count": 5
+      },
+      "sell_profile": "sell_protect_tp2p5_sl2_hold45",
+      "sell_params": {
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    }
+  ],
+  "seeds_json": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_composite_coverage_20260706\\repair_composite_coverage_candidates_20260706_seeds.json"
+}
