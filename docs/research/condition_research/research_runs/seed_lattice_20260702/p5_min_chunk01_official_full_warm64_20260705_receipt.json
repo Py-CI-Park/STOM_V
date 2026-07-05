@@ -1,0 +1,460 @@
+{
+  "schema": "p5_min_chunk01_official_full_warm64_receipt_v1",
+  "created_at": "2026-07-05T14:04:42+09:00",
+  "scope": "P5-official-min-chunk01-only",
+  "run_id": "lat_min_official_full_warm64_chunk01_20260705",
+  "chunk_no": 1,
+  "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk01_20260705.json",
+  "manifest_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_full_run_protocol_after_preflight_20260705.json",
+  "config_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_min_official_full_warm64_20260704.json",
+  "log_file": "artifacts/p5_min_chunk01_20260705.log",
+  "stderr_file": "artifacts/p5_min_chunk01_20260705.err",
+  "read_first_sources": [
+    {
+      "path": "docs/update_log/2026-07-05_p5_min_preflight4_handoff.md",
+      "sha256": "5c1aa230b13155c870e98da238c2486a1eb8db2f72ed633bb663e08b2a0a9348",
+      "line_count": 86
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_preflight4_official_full_warm64_20260705_receipt.json",
+      "sha256": "164704148ccbfbb5040731f9d083cdfd92c5adfaa67b09dd8699ac4aa1bce48c",
+      "line_count": 185
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_full_run_protocol_after_preflight_20260705.json",
+      "sha256": "6463c6ee371a7a428748f02148790ce336251cbcaeffdd7ae4eb9b6d66ab1f33",
+      "line_count": 168
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk01_20260705.json",
+      "sha256": "dcefd664f0823e34ac1d4ead53f3d16d5e71da7e7790acc2e5a37f308c9f4b95",
+      "line_count": 171
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_min_official_full_warm64_20260704.json",
+      "sha256": "59e85716814e6973e32922b329d8906462206e260eac02eb9575bc1d23e72b2a",
+      "line_count": 43
+    }
+  ],
+  "official_profile": {
+    "bt_timeframe": "min",
+    "bt_full_start": 20250407,
+    "bt_full_end": 20260227,
+    "bt_warm_engine_count": 64,
+    "bt_universe_start_time": 90000,
+    "bt_min_universe_end_time": 151900,
+    "full_session_enabled": true,
+    "bt_timeout": 14400,
+    "bt_warm_run_timeout": 1200,
+    "min_daily_trades": 0.5,
+    "mdd_cap": 35.0
+  },
+  "chunk_manifest": {
+    "chunk_count": 12,
+    "chunk_size": 24,
+    "current_chunk_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk01_20260705.json",
+    "current_scope_allowed_chunk": 1
+  },
+  "runtime": {
+    "started_at": "2026-07-05T13:51:29.7716135+09:00",
+    "ended_at": "2026-07-05T14:02:54.1089806+09:00",
+    "duration_ms": 684337,
+    "duration_human": "11.4m",
+    "exit_code": 0,
+    "stderr_empty": true
+  },
+  "warm_prepare": {
+    "status": "ok",
+    "back_count": 1379,
+    "elapsed_seconds": 121
+  },
+  "db_run": {
+    "status": "complete",
+    "started_at_epoch": 1783227103.84591,
+    "finished_at_epoch": 1783227773.1264307
+  },
+  "results": {
+    "expected_rows": 24,
+    "recorded_rows": 24,
+    "honest_rows": true,
+    "status_counts": {
+      "ok": 24
+    },
+    "gate_passed_count": 0,
+    "positive_profit_count": 2,
+    "negative_or_zero_profit_count": 22,
+    "reason_counts": {
+      "mdd_excess": 18,
+      "low_daily_trades": 5,
+      "nonpositive_profit": 1,
+      "other": 0
+    },
+    "profit_range": [
+      -72210271.0,
+      819969.0
+    ],
+    "mdd_range": [
+      5.74,
+      287.05
+    ],
+    "daily_avg_trades_range": [
+      0.1,
+      7.1
+    ],
+    "trade_count_range": [
+      15,
+      1503
+    ],
+    "rows": [
+      {
+        "gen_no": 0,
+        "official_index": 0,
+        "strategy_gist": "lattice_v1:min_09h_small_low:momentum_breakout",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": 709986.0,
+        "mdd": 5.74,
+        "trade_count": 15,
+        "daily_avg_trades": 0.1,
+        "payoff_ratio": 0.9462602137020742,
+        "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_small_low_momentum_breakout_B_20260705135406.csv"
+      },
+      {
+        "gen_no": 1,
+        "official_index": 1,
+        "strategy_gist": "lattice_v1:min_09h_small_low:prevday_active",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -8646892.0,
+        "mdd": 64.56,
+        "trade_count": 286,
+        "daily_avg_trades": 1.3,
+        "payoff_ratio": 1.2813325994931066,
+        "reason": "mdd 64.56 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_small_low_prevday_active_B_20260705135425.csv"
+      },
+      {
+        "gen_no": 2,
+        "official_index": 2,
+        "strategy_gist": "lattice_v1:min_09h_small_low:strength_surge",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -1042388.0,
+        "mdd": 21.93,
+        "trade_count": 16,
+        "daily_avg_trades": 0.1,
+        "payoff_ratio": 1.1097008159564825,
+        "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_small_low_strength_surge_B_20260705135451.csv"
+      },
+      {
+        "gen_no": 3,
+        "official_index": 3,
+        "strategy_gist": "lattice_v1:min_09h_small_low:volume_surge",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -2282808.0,
+        "mdd": 60.44,
+        "trade_count": 97,
+        "daily_avg_trades": 0.5,
+        "payoff_ratio": 1.1647083557195919,
+        "reason": "mdd 60.44 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_small_low_volume_surge_B_20260705135511.csv"
+      },
+      {
+        "gen_no": 4,
+        "official_index": 4,
+        "strategy_gist": "lattice_v1:min_09h_small_mid:momentum_breakout",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -2521104.0,
+        "mdd": 53.21,
+        "trade_count": 42,
+        "daily_avg_trades": 0.2,
+        "payoff_ratio": 1.1816089549116018,
+        "reason": "daily_avg_trades 0.2 < min_daily_trades 0.5",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_small_mid_momentum_breakout_B_20260705135534.csv"
+      },
+      {
+        "gen_no": 5,
+        "official_index": 5,
+        "strategy_gist": "lattice_v1:min_09h_small_mid:prevday_active",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -16898674.0,
+        "mdd": 89.89,
+        "trade_count": 611,
+        "daily_avg_trades": 2.9,
+        "payoff_ratio": 1.1990780131866938,
+        "reason": "mdd 89.89 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_small_mid_prevday_active_B_20260705135554.csv"
+      },
+      {
+        "gen_no": 6,
+        "official_index": 6,
+        "strategy_gist": "lattice_v1:min_09h_small_mid:strength_surge",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -2128091.0,
+        "mdd": 52.37,
+        "trade_count": 115,
+        "daily_avg_trades": 0.5,
+        "payoff_ratio": 1.1846317245467568,
+        "reason": "mdd 52.37 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_small_mid_strength_surge_B_20260705135614.csv"
+      },
+      {
+        "gen_no": 7,
+        "official_index": 7,
+        "strategy_gist": "lattice_v1:min_09h_small_mid:volume_surge",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -8056433.0,
+        "mdd": 177.42,
+        "trade_count": 176,
+        "daily_avg_trades": 0.8,
+        "payoff_ratio": 1.1767918662297285,
+        "reason": "mdd 177.4 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_small_mid_volume_surge_B_20260705135643.csv"
+      },
+      {
+        "gen_no": 8,
+        "official_index": 8,
+        "strategy_gist": "lattice_v1:min_09h_small_high:momentum_breakout",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -16346965.0,
+        "mdd": 287.05,
+        "trade_count": 251,
+        "daily_avg_trades": 1.2,
+        "payoff_ratio": 0.9997422302580141,
+        "reason": "mdd 287.1 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_small_high_momentum_breakout_B_20260705135700.csv"
+      },
+      {
+        "gen_no": 9,
+        "official_index": 9,
+        "strategy_gist": "lattice_v1:min_09h_small_high:prevday_active",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -72210271.0,
+        "mdd": 203.36,
+        "trade_count": 1503,
+        "daily_avg_trades": 7.1,
+        "payoff_ratio": 1.0103404851735684,
+        "reason": "mdd 203.4 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_small_high_prevday_active_B_20260705135722.csv"
+      },
+      {
+        "gen_no": 10,
+        "official_index": 10,
+        "strategy_gist": "lattice_v1:min_09h_small_high:strength_surge",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -21038284.0,
+        "mdd": 140.5,
+        "trade_count": 526,
+        "daily_avg_trades": 2.5,
+        "payoff_ratio": 0.9806244919088664,
+        "reason": "mdd 140.5 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_small_high_strength_surge_B_20260705135740.csv"
+      },
+      {
+        "gen_no": 11,
+        "official_index": 11,
+        "strategy_gist": "lattice_v1:min_09h_small_high:volume_surge",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -26838290.0,
+        "mdd": 261.26,
+        "trade_count": 530,
+        "daily_avg_trades": 2.5,
+        "payoff_ratio": 1.004962884784231,
+        "reason": "mdd 261.3 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_small_high_volume_surge_B_20260705135807.csv"
+      },
+      {
+        "gen_no": 12,
+        "official_index": 12,
+        "strategy_gist": "lattice_v1:min_09h_midsmall_low:momentum_breakout",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -973095.0,
+        "mdd": 22.69,
+        "trade_count": 24,
+        "daily_avg_trades": 0.1,
+        "payoff_ratio": 0.9755327545382794,
+        "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_midsmall_low_momentum_breakout_B_20260705135827.csv"
+      },
+      {
+        "gen_no": 13,
+        "official_index": 13,
+        "strategy_gist": "lattice_v1:min_09h_midsmall_low:prevday_active",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -11426181.0,
+        "mdd": 86.22,
+        "trade_count": 377,
+        "daily_avg_trades": 1.8,
+        "payoff_ratio": 1.1805451512294192,
+        "reason": "mdd 86.22 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_midsmall_low_prevday_active_B_20260705135852.csv"
+      },
+      {
+        "gen_no": 14,
+        "official_index": 14,
+        "strategy_gist": "lattice_v1:min_09h_midsmall_low:strength_surge",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": 819969.0,
+        "mdd": 15.91,
+        "trade_count": 47,
+        "daily_avg_trades": 0.2,
+        "payoff_ratio": 1.362707907791071,
+        "reason": "daily_avg_trades 0.2 < min_daily_trades 0.5",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_midsmall_low_strength_surge_B_20260705135912.csv"
+      },
+      {
+        "gen_no": 15,
+        "official_index": 15,
+        "strategy_gist": "lattice_v1:min_09h_midsmall_low:volume_surge",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -3611071.0,
+        "mdd": 102.03,
+        "trade_count": 105,
+        "daily_avg_trades": 0.5,
+        "payoff_ratio": 1.070227693936987,
+        "reason": "mdd 102 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_midsmall_low_volume_surge_B_20260705135932.csv"
+      },
+      {
+        "gen_no": 16,
+        "official_index": 16,
+        "strategy_gist": "lattice_v1:min_09h_midsmall_mid:momentum_breakout",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -4097595.0,
+        "mdd": 93.64,
+        "trade_count": 110,
+        "daily_avg_trades": 0.5,
+        "payoff_ratio": 1.1089224934616675,
+        "reason": "mdd 93.64 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_midsmall_mid_momentum_breakout_B_20260705135955.csv"
+      },
+      {
+        "gen_no": 17,
+        "official_index": 17,
+        "strategy_gist": "lattice_v1:min_09h_midsmall_mid:prevday_active",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -27685302.0,
+        "mdd": 111.94,
+        "trade_count": 754,
+        "daily_avg_trades": 3.5,
+        "payoff_ratio": 1.175311671686347,
+        "reason": "mdd 111.9 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_midsmall_mid_prevday_active_B_20260705140013.csv"
+      },
+      {
+        "gen_no": 18,
+        "official_index": 18,
+        "strategy_gist": "lattice_v1:min_09h_midsmall_mid:strength_surge",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -2749462.0,
+        "mdd": 34.04,
+        "trade_count": 259,
+        "daily_avg_trades": 1.2,
+        "payoff_ratio": 1.2946121297167346,
+        "reason": "total_profit -2.749e+06 <= 0",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_midsmall_mid_strength_surge_B_20260705140036.csv"
+      },
+      {
+        "gen_no": 19,
+        "official_index": 19,
+        "strategy_gist": "lattice_v1:min_09h_midsmall_mid:volume_surge",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -9363748.0,
+        "mdd": 94.14,
+        "trade_count": 270,
+        "daily_avg_trades": 1.3,
+        "payoff_ratio": 1.1200370311182626,
+        "reason": "mdd 94.14 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_midsmall_mid_volume_surge_B_20260705140055.csv"
+      },
+      {
+        "gen_no": 20,
+        "official_index": 20,
+        "strategy_gist": "lattice_v1:min_09h_midsmall_high:momentum_breakout",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -17103396.0,
+        "mdd": 167.56,
+        "trade_count": 333,
+        "daily_avg_trades": 1.6,
+        "payoff_ratio": 1.0043844361688465,
+        "reason": "mdd 167.6 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_midsmall_high_momentum_breakout_B_20260705140121.csv"
+      },
+      {
+        "gen_no": 21,
+        "official_index": 21,
+        "strategy_gist": "lattice_v1:min_09h_midsmall_high:prevday_active",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -52213930.0,
+        "mdd": 201.8,
+        "trade_count": 1189,
+        "daily_avg_trades": 5.6,
+        "payoff_ratio": 1.0217917421311038,
+        "reason": "mdd 201.8 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_midsmall_high_prevday_active_B_20260705140141.csv"
+      },
+      {
+        "gen_no": 22,
+        "official_index": 22,
+        "strategy_gist": "lattice_v1:min_09h_midsmall_high:strength_surge",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -23185140.0,
+        "mdd": 156.01,
+        "trade_count": 655,
+        "daily_avg_trades": 3.1,
+        "payoff_ratio": 1.0603063938812969,
+        "reason": "mdd 156 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_midsmall_high_strength_surge_B_20260705140210.csv"
+      },
+      {
+        "gen_no": 23,
+        "official_index": 23,
+        "strategy_gist": "lattice_v1:min_09h_midsmall_high:volume_surge",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -26505715.0,
+        "mdd": 254.12,
+        "trade_count": 497,
+        "daily_avg_trades": 2.3,
+        "payoff_ratio": 1.0516762515227314,
+        "reason": "mdd 254.1 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_midsmall_high_volume_surge_B_20260705140232.csv"
+      }
+    ]
+  },
+  "decision": {
+    "chunk01": "clean_coverage_no_survivor",
+    "chunk02": "allowed_next_only_after_user_instruction",
+    "full_min_288": "continue_chunked_only",
+    "p6_plan_d": "blocked_until_min_288_export_exists",
+    "reason": "Chunk01 completed with 24/24 ok rows and no raw errors, but gate_passed=0. This supports continuing min coverage as chunk02-only next; it does not create survivors or open P6/Plan D.",
+    "still_forbidden": [
+      "chunk02+ in this selected range",
+      "P6/P7/Plan D before min export",
+      "OOS before freeze/preregistration",
+      "DB UPDATE/DELETE"
+    ]
+  }
+}

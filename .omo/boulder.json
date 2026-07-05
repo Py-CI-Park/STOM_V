@@ -446,7 +446,8 @@
         "codex:css-v7-repair-plan-c-plan-b-d-20260703-chunk09-resume-20260705",
         "codex:css-v7-repair-plan-c-plan-b-d-20260703-chunk10-12-20260705",
         "codex:css-v7-repair-plan-c-plan-b-d-20260703-tick-export-summary-min-readiness-20260705",
-        "codex:css-v7-repair-plan-c-plan-b-d-20260703-min-preflight4-readiness-20260705"
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-min-preflight4-readiness-20260705",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-min-chunk01-20260705"
       ],
       "status": "active",
       "started_at": "2026-07-03T23:30:01.3258147+09:00",
@@ -456,30 +457,30 @@
       "objective": "Run priorities 1~7: CSS_V7 repair, Plan C validation, Plan B, Plan D",
       "resumed_at": "2026-07-04T08:48:04.4061085+09:00",
       "requested_range": "Plan B completion before Plan D",
-      "current_priority": "P5-official-min-chunk01-only-pending",
-      "completed_range": "P5-root-cause-repair + P5-profile-audit + P5-official-tick-preflight + P5-full-run-protocol-review + P5-official-tick-pilot12 + P5-official-tick-chunk01 + P5-official-tick-chunk02 + P5-official-tick-chunk03 + P5-official-tick-chunk04 + P5-official-tick-chunk05 + P5-official-tick-chunk06 + P5-official-tick-chunk07 + P5-official-tick-chunk08 + P5-official-tick-chunk09 + P5-official-tick-chunk10 + P5-official-tick-chunk11 + P5-official-tick-chunk12 + P5-official-min-preflight4",
+      "current_priority": "P5-official-min-chunk02-only-pending",
+      "completed_range": "P5-root-cause-repair + P5-profile-audit + P5-official-tick-preflight + P5-full-run-protocol-review + P5-official-tick-pilot12 + P5-official-tick-chunk01 + P5-official-tick-chunk02 + P5-official-tick-chunk03 + P5-official-tick-chunk04 + P5-official-tick-chunk05 + P5-official-tick-chunk06 + P5-official-tick-chunk07 + P5-official-tick-chunk08 + P5-official-tick-chunk09 + P5-official-tick-chunk10 + P5-official-tick-chunk11 + P5-official-tick-chunk12 + P5-official-min-preflight4 + P5-official-min-chunk01",
       "completed_at": "2026-07-05T07:06:21+09:00",
-      "last_completed_priority": "P5-official-min-preflight4-readiness",
-      "last_completed_at": "2026-07-05T12:29:34+09:00",
-      "last_evidence": "docs/update_log/2026-07-05_p5_min_preflight4_handoff.md",
-      "next_priority": "Generate official min 24-pair chunk manifest and run chunk01 only after user instruction",
-      "p5_blocker_status": "min_preflight4_complete_chunk01_required",
+      "last_completed_priority": "P5-official-min-chunk01-only",
+      "last_completed_at": "2026-07-05T14:02:54+09:00",
+      "last_evidence": "docs/update_log/2026-07-05_p5_min_chunk01_handoff.md",
+      "next_priority": "Run official min warm64 chunk02 only after user instruction",
+      "p5_blocker_status": "min_chunk01_complete_chunk02_required",
       "blocked_at": "2026-07-05T07:06:21+09:00",
       "blocked_priority": "P5-official-min-and-P6",
-      "blocker": "Official min preflight4 completed: warm prepare ok, back_count=1379, recorded 4/4 honest rows, status_counts ok=3 error=1, gate_passed=0. Full min may continue only as chunked coverage evidence with per-chunk error monitoring; monolithic 288, P6/P7, Plan D, OOS, and DB UPDATE/DELETE remain blocked."
+      "blocker": "Official min chunk01 completed: warm prepare ok, back_count=1379, recorded 24/24 ok rows, gate_passed=0. Next allowed action is chunk02 only. Chunk03+, P6/P7, Plan D, OOS, monolithic min 288, and DB UPDATE/DELETE remain blocked."
     }
   },
   "active_work": {
-      "current_priority": "P5-official-min-chunk01-only-pending",
-    "completed_range": "P5-root-cause-repair + P5-profile-audit + P5-official-tick-preflight + P5-full-run-protocol-review + P5-official-tick-pilot12 + P5-official-tick-chunk01 + P5-official-tick-chunk02 + P5-official-tick-chunk03 + P5-official-tick-chunk04 + P5-official-tick-chunk05 + P5-official-tick-chunk06 + P5-official-tick-chunk07 + P5-official-tick-chunk08 + P5-official-tick-chunk09 + P5-official-tick-chunk10 + P5-official-tick-chunk11 + P5-official-tick-chunk12 + P5-official-min-preflight4",
+      "current_priority": "P5-official-min-chunk02-only-pending",
+    "completed_range": "P5-root-cause-repair + P5-profile-audit + P5-official-tick-preflight + P5-full-run-protocol-review + P5-official-tick-pilot12 + P5-official-tick-chunk01 + P5-official-tick-chunk02 + P5-official-tick-chunk03 + P5-official-tick-chunk04 + P5-official-tick-chunk05 + P5-official-tick-chunk06 + P5-official-tick-chunk07 + P5-official-tick-chunk08 + P5-official-tick-chunk09 + P5-official-tick-chunk10 + P5-official-tick-chunk11 + P5-official-tick-chunk12 + P5-official-min-preflight4 + P5-official-min-chunk01",
     "completed_at": "2026-07-05T07:06:21+09:00",
-    "last_completed_priority": "P5-official-min-preflight4-readiness",
-    "last_completed_at": "2026-07-05T12:29:34+09:00",
-    "last_evidence": "docs/update_log/2026-07-05_p5_min_preflight4_handoff.md",
-    "next_priority": "Generate official min 24-pair chunk manifest and run chunk01 only after user instruction",
-    "p5_blocker_status": "min_preflight4_complete_chunk01_required",
+    "last_completed_priority": "P5-official-min-chunk01-only",
+    "last_completed_at": "2026-07-05T14:02:54+09:00",
+    "last_evidence": "docs/update_log/2026-07-05_p5_min_chunk01_handoff.md",
+    "next_priority": "Run official min warm64 chunk02 only after user instruction",
+    "p5_blocker_status": "min_chunk01_complete_chunk02_required",
     "blocked_at": "2026-07-05T07:06:21+09:00",
     "blocked_priority": "P5-official-min-and-P6",
-    "blocker": "Official min preflight4 completed: warm prepare ok, back_count=1379, recorded 4/4 honest rows, status_counts ok=3 error=1, gate_passed=0. Full min may continue only as chunked coverage evidence with per-chunk error monitoring; monolithic 288, P6/P7, Plan D, OOS, and DB UPDATE/DELETE remain blocked."
+    "blocker": "Official min chunk01 completed: warm prepare ok, back_count=1379, recorded 24/24 ok rows, gate_passed=0. Next allowed action is chunk02 only. Chunk03+, P6/P7, Plan D, OOS, monolithic min 288, and DB UPDATE/DELETE remain blocked."
   }
 }

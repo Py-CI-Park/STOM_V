@@ -299,6 +299,17 @@ Plan C/B/D documents.
   `gate_passed=0`, total runtime `4.8m`. Full min 288 is possible only as a
   chunked coverage run with per-chunk error monitoring; do not run monolithic
   288. Next allowed action is min chunk manifest plus chunk01 only.
+  Min chunk01 2026-07-05: generated the official 12-chunk min manifest and ran
+  chunk01 only. Evidence:
+  `docs/update_log/2026-07-05_p5_min_chunk01_handoff.md`,
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_full_run_protocol_after_preflight_20260705.json`,
+  and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_chunk01_official_full_warm64_20260705_receipt.json`.
+  Result: warm prepare `status=ok`, `back_count=1379`, elapsed `121s`;
+  recorded `24/24` honest `ok` rows, `gate_passed=0`, total runtime `11.4m`.
+  Chunk01 is clean coverage evidence but has no survivor. Next allowed action
+  is min chunk02 only; P6/P7/Plan D remain blocked until official min 288
+  coverage and export exist.
 
   Acceptance:
   - Resume manifest and first-10-pair timing estimate are written.

@@ -1,0 +1,170 @@
+[
+  {
+    "label": "lattice_v1:min_09h_midlarge_low:momentum_breakout",
+    "buy": "LAT_lattice_v1_min_09h_midlarge_low_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_min_09h_midlarge_low_momentum_breakout_S",
+    "official_index": 24,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_midlarge_low:prevday_active",
+    "buy": "LAT_lattice_v1_min_09h_midlarge_low_prevday_active_B",
+    "sell": "LAT_lattice_v1_min_09h_midlarge_low_prevday_active_S",
+    "official_index": 25,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_midlarge_low:strength_surge",
+    "buy": "LAT_lattice_v1_min_09h_midlarge_low_strength_surge_B",
+    "sell": "LAT_lattice_v1_min_09h_midlarge_low_strength_surge_S",
+    "official_index": 26,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_midlarge_low:volume_surge",
+    "buy": "LAT_lattice_v1_min_09h_midlarge_low_volume_surge_B",
+    "sell": "LAT_lattice_v1_min_09h_midlarge_low_volume_surge_S",
+    "official_index": 27,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_midlarge_mid:momentum_breakout",
+    "buy": "LAT_lattice_v1_min_09h_midlarge_mid_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_min_09h_midlarge_mid_momentum_breakout_S",
+    "official_index": 28,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_midlarge_mid:prevday_active",
+    "buy": "LAT_lattice_v1_min_09h_midlarge_mid_prevday_active_B",
+    "sell": "LAT_lattice_v1_min_09h_midlarge_mid_prevday_active_S",
+    "official_index": 29,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_midlarge_mid:strength_surge",
+    "buy": "LAT_lattice_v1_min_09h_midlarge_mid_strength_surge_B",
+    "sell": "LAT_lattice_v1_min_09h_midlarge_mid_strength_surge_S",
+    "official_index": 30,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_midlarge_mid:volume_surge",
+    "buy": "LAT_lattice_v1_min_09h_midlarge_mid_volume_surge_B",
+    "sell": "LAT_lattice_v1_min_09h_midlarge_mid_volume_surge_S",
+    "official_index": 31,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_midlarge_high:momentum_breakout",
+    "buy": "LAT_lattice_v1_min_09h_midlarge_high_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_min_09h_midlarge_high_momentum_breakout_S",
+    "official_index": 32,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_midlarge_high:prevday_active",
+    "buy": "LAT_lattice_v1_min_09h_midlarge_high_prevday_active_B",
+    "sell": "LAT_lattice_v1_min_09h_midlarge_high_prevday_active_S",
+    "official_index": 33,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_midlarge_high:strength_surge",
+    "buy": "LAT_lattice_v1_min_09h_midlarge_high_strength_surge_B",
+    "sell": "LAT_lattice_v1_min_09h_midlarge_high_strength_surge_S",
+    "official_index": 34,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_midlarge_high:volume_surge",
+    "buy": "LAT_lattice_v1_min_09h_midlarge_high_volume_surge_B",
+    "sell": "LAT_lattice_v1_min_09h_midlarge_high_volume_surge_S",
+    "official_index": 35,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_large_low:momentum_breakout",
+    "buy": "LAT_lattice_v1_min_09h_large_low_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_min_09h_large_low_momentum_breakout_S",
+    "official_index": 36,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_large_low:prevday_active",
+    "buy": "LAT_lattice_v1_min_09h_large_low_prevday_active_B",
+    "sell": "LAT_lattice_v1_min_09h_large_low_prevday_active_S",
+    "official_index": 37,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_large_low:strength_surge",
+    "buy": "LAT_lattice_v1_min_09h_large_low_strength_surge_B",
+    "sell": "LAT_lattice_v1_min_09h_large_low_strength_surge_S",
+    "official_index": 38,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_large_low:volume_surge",
+    "buy": "LAT_lattice_v1_min_09h_large_low_volume_surge_B",
+    "sell": "LAT_lattice_v1_min_09h_large_low_volume_surge_S",
+    "official_index": 39,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_large_mid:momentum_breakout",
+    "buy": "LAT_lattice_v1_min_09h_large_mid_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_min_09h_large_mid_momentum_breakout_S",
+    "official_index": 40,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_large_mid:prevday_active",
+    "buy": "LAT_lattice_v1_min_09h_large_mid_prevday_active_B",
+    "sell": "LAT_lattice_v1_min_09h_large_mid_prevday_active_S",
+    "official_index": 41,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_large_mid:strength_surge",
+    "buy": "LAT_lattice_v1_min_09h_large_mid_strength_surge_B",
+    "sell": "LAT_lattice_v1_min_09h_large_mid_strength_surge_S",
+    "official_index": 42,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_large_mid:volume_surge",
+    "buy": "LAT_lattice_v1_min_09h_large_mid_volume_surge_B",
+    "sell": "LAT_lattice_v1_min_09h_large_mid_volume_surge_S",
+    "official_index": 43,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_large_high:momentum_breakout",
+    "buy": "LAT_lattice_v1_min_09h_large_high_momentum_breakout_B",
+    "sell": "LAT_lattice_v1_min_09h_large_high_momentum_breakout_S",
+    "official_index": 44,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_large_high:prevday_active",
+    "buy": "LAT_lattice_v1_min_09h_large_high_prevday_active_B",
+    "sell": "LAT_lattice_v1_min_09h_large_high_prevday_active_S",
+    "official_index": 45,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_large_high:strength_surge",
+    "buy": "LAT_lattice_v1_min_09h_large_high_strength_surge_B",
+    "sell": "LAT_lattice_v1_min_09h_large_high_strength_surge_S",
+    "official_index": 46,
+    "chunk_no": 2
+  },
+  {
+    "label": "lattice_v1:min_09h_large_high:volume_surge",
+    "buy": "LAT_lattice_v1_min_09h_large_high_volume_surge_B",
+    "sell": "LAT_lattice_v1_min_09h_large_high_volume_surge_S",
+    "official_index": 47,
+    "chunk_no": 2
+  }
+]
