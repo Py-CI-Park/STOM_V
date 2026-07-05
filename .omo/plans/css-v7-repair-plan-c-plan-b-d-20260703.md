@@ -310,6 +310,15 @@ Plan C/B/D documents.
   Chunk01 is clean coverage evidence but has no survivor. Next allowed action
   is min chunk02 only; P6/P7/Plan D remain blocked until official min 288
   coverage and export exist.
+  Min chunk02 2026-07-05: executed with official DB-full-period + warm64.
+  Evidence:
+  `docs/update_log/2026-07-05_p5_min_chunk02_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_chunk02_official_full_warm64_20260705_receipt.json`.
+  Result: warm prepare `status=ok`, `back_count=1379`, elapsed `124s`;
+  recorded `24/24` honest `ok` rows, `gate_passed=0`, total runtime `13.3m`.
+  Official min coverage is now `48/288`. Chunk02 is clean coverage evidence
+  but has no survivor. Next allowed action is min chunk03 only; P6/P7/Plan D
+  remain blocked until official min 288 coverage and export exist.
 
   Acceptance:
   - Resume manifest and first-10-pair timing estimate are written.
