@@ -1,0 +1,545 @@
+{
+  "days": {
+    "y2023": [
+      "20230102",
+      "20230112",
+      "20230127",
+      "20230208",
+      "20230221",
+      "20230306",
+      "20230316",
+      "20230329",
+      "20230410",
+      "20230420",
+      "20230504",
+      "20230517",
+      "20230531",
+      "20230613",
+      "20230623",
+      "20230706",
+      "20230718",
+      "20230728",
+      "20230810",
+      "20230823",
+      "20230905",
+      "20230915",
+      "20230927",
+      "20231017",
+      "20231027",
+      "20231108",
+      "20231122",
+      "20231204",
+      "20231215",
+      "20231228"
+    ],
+    "y2024": [
+      "20240103",
+      "20240115",
+      "20240125",
+      "20240207",
+      "20240221",
+      "20240305",
+      "20240315",
+      "20240328",
+      "20240409",
+      "20240422",
+      "20240503",
+      "20240520",
+      "20240530",
+      "20240612",
+      "20240624",
+      "20240705",
+      "20240717",
+      "20240729",
+      "20240808",
+      "20240823",
+      "20240904",
+      "20240920",
+      "20241004",
+      "20241018",
+      "20241030",
+      "20241111",
+      "20241122",
+      "20241205",
+      "20241217",
+      "20241230"
+    ]
+  },
+  "excluded_days": {
+    "y2023": [],
+    "y2024": []
+  },
+  "samples_total": 678451,
+  "samples_by_year": {
+    "y2023": 361633,
+    "y2024": 316818
+  },
+  "pos_rate": {
+    "L1_60": 0.01988058091151756,
+    "L1_180": 0.0564830768913304,
+    "L1_300": 0.0805098673301388
+  },
+  "l2_dist": {
+    "pos": 23973,
+    "neg": 279010,
+    "zero": 375468,
+    "n": 678451,
+    "positive_rate": 0.035334902594292
+  },
+  "skip_counts": {
+    "days_skipped_missing_db": {
+      "y2023": 0,
+      "y2024": 0,
+      "total": 0
+    }
+  },
+  "shards": {
+    "dir": "cache",
+    "n_files": 60,
+    "total_bytes": 36807734,
+    "by_year": {
+      "y2023": {
+        "n_files": 30,
+        "total_bytes": 19625962
+      },
+      "y2024": {
+        "n_files": 30,
+        "total_bytes": 17181772
+      }
+    },
+    "extra_npz": [],
+    "files": [
+      {
+        "file": "20230102.npz",
+        "bytes": 554063,
+        "n_samples": 11183
+      },
+      {
+        "file": "20230112.npz",
+        "bytes": 713354,
+        "n_samples": 14158
+      },
+      {
+        "file": "20230127.npz",
+        "bytes": 683842,
+        "n_samples": 12941
+      },
+      {
+        "file": "20230208.npz",
+        "bytes": 793388,
+        "n_samples": 15190
+      },
+      {
+        "file": "20230221.npz",
+        "bytes": 751067,
+        "n_samples": 14139
+      },
+      {
+        "file": "20230306.npz",
+        "bytes": 800870,
+        "n_samples": 14961
+      },
+      {
+        "file": "20230316.npz",
+        "bytes": 562455,
+        "n_samples": 9939
+      },
+      {
+        "file": "20230329.npz",
+        "bytes": 696881,
+        "n_samples": 12348
+      },
+      {
+        "file": "20230410.npz",
+        "bytes": 770176,
+        "n_samples": 14094
+      },
+      {
+        "file": "20230420.npz",
+        "bytes": 659827,
+        "n_samples": 11470
+      },
+      {
+        "file": "20230504.npz",
+        "bytes": 573158,
+        "n_samples": 10334
+      },
+      {
+        "file": "20230517.npz",
+        "bytes": 673131,
+        "n_samples": 12362
+      },
+      {
+        "file": "20230531.npz",
+        "bytes": 614090,
+        "n_samples": 11374
+      },
+      {
+        "file": "20230613.npz",
+        "bytes": 747804,
+        "n_samples": 13851
+      },
+      {
+        "file": "20230623.npz",
+        "bytes": 662741,
+        "n_samples": 11886
+      },
+      {
+        "file": "20230706.npz",
+        "bytes": 590789,
+        "n_samples": 10788
+      },
+      {
+        "file": "20230718.npz",
+        "bytes": 680767,
+        "n_samples": 12278
+      },
+      {
+        "file": "20230728.npz",
+        "bytes": 547377,
+        "n_samples": 9927
+      },
+      {
+        "file": "20230810.npz",
+        "bytes": 612860,
+        "n_samples": 11057
+      },
+      {
+        "file": "20230823.npz",
+        "bytes": 663035,
+        "n_samples": 11740
+      },
+      {
+        "file": "20230905.npz",
+        "bytes": 720305,
+        "n_samples": 12997
+      },
+      {
+        "file": "20230915.npz",
+        "bytes": 679507,
+        "n_samples": 12722
+      },
+      {
+        "file": "20230927.npz",
+        "bytes": 455284,
+        "n_samples": 8150
+      },
+      {
+        "file": "20231017.npz",
+        "bytes": 716885,
+        "n_samples": 13443
+      },
+      {
+        "file": "20231027.npz",
+        "bytes": 541952,
+        "n_samples": 10173
+      },
+      {
+        "file": "20231108.npz",
+        "bytes": 696893,
+        "n_samples": 12982
+      },
+      {
+        "file": "20231122.npz",
+        "bytes": 633286,
+        "n_samples": 11736
+      },
+      {
+        "file": "20231204.npz",
+        "bytes": 597956,
+        "n_samples": 11059
+      },
+      {
+        "file": "20231215.npz",
+        "bytes": 582929,
+        "n_samples": 10664
+      },
+      {
+        "file": "20231228.npz",
+        "bytes": 649290,
+        "n_samples": 11687
+      },
+      {
+        "file": "20240103.npz",
+        "bytes": 507844,
+        "n_samples": 9108
+      },
+      {
+        "file": "20240115.npz",
+        "bytes": 681484,
+        "n_samples": 12163
+      },
+      {
+        "file": "20240125.npz",
+        "bytes": 643133,
+        "n_samples": 11591
+      },
+      {
+        "file": "20240207.npz",
+        "bytes": 600679,
+        "n_samples": 11174
+      },
+      {
+        "file": "20240221.npz",
+        "bytes": 654641,
+        "n_samples": 11534
+      },
+      {
+        "file": "20240305.npz",
+        "bytes": 571159,
+        "n_samples": 10269
+      },
+      {
+        "file": "20240315.npz",
+        "bytes": 565275,
+        "n_samples": 9964
+      },
+      {
+        "file": "20240328.npz",
+        "bytes": 559217,
+        "n_samples": 10364
+      },
+      {
+        "file": "20240409.npz",
+        "bytes": 716401,
+        "n_samples": 13215
+      },
+      {
+        "file": "20240422.npz",
+        "bytes": 546115,
+        "n_samples": 10392
+      },
+      {
+        "file": "20240503.npz",
+        "bytes": 640151,
+        "n_samples": 12201
+      },
+      {
+        "file": "20240520.npz",
+        "bytes": 675846,
+        "n_samples": 12326
+      },
+      {
+        "file": "20240530.npz",
+        "bytes": 559239,
+        "n_samples": 10354
+      },
+      {
+        "file": "20240612.npz",
+        "bytes": 773293,
+        "n_samples": 14459
+      },
+      {
+        "file": "20240624.npz",
+        "bytes": 535708,
+        "n_samples": 10165
+      },
+      {
+        "file": "20240705.npz",
+        "bytes": 583664,
+        "n_samples": 10854
+      },
+      {
+        "file": "20240717.npz",
+        "bytes": 691784,
+        "n_samples": 13064
+      },
+      {
+        "file": "20240729.npz",
+        "bytes": 584416,
+        "n_samples": 11210
+      },
+      {
+        "file": "20240808.npz",
+        "bytes": 440643,
+        "n_samples": 7900
+      },
+      {
+        "file": "20240823.npz",
+        "bytes": 418542,
+        "n_samples": 7447
+      },
+      {
+        "file": "20240904.npz",
+        "bytes": 250202,
+        "n_samples": 4212
+      },
+      {
+        "file": "20240920.npz",
+        "bytes": 620807,
+        "n_samples": 11907
+      },
+      {
+        "file": "20241004.npz",
+        "bytes": 515129,
+        "n_samples": 9954
+      },
+      {
+        "file": "20241018.npz",
+        "bytes": 488388,
+        "n_samples": 9103
+      },
+      {
+        "file": "20241030.npz",
+        "bytes": 520152,
+        "n_samples": 9483
+      },
+      {
+        "file": "20241111.npz",
+        "bytes": 556838,
+        "n_samples": 10227
+      },
+      {
+        "file": "20241122.npz",
+        "bytes": 645127,
+        "n_samples": 12068
+      },
+      {
+        "file": "20241205.npz",
+        "bytes": 500372,
+        "n_samples": 9215
+      },
+      {
+        "file": "20241217.npz",
+        "bytes": 577813,
+        "n_samples": 10411
+      },
+      {
+        "file": "20241230.npz",
+        "bytes": 557710,
+        "n_samples": 10484
+      }
+    ]
+  },
+  "built_at": "2026-07-05T23:40:28.585355",
+  "prereg_sha": "6750a56711fdca039f8c14b6f1a432abddd562ec134df2d06c65a3614ac39e5b",
+  "label_counts": {
+    "L1_60": {
+      "n": 678451,
+      "positives": 13488
+    },
+    "L1_180": {
+      "n": 678451,
+      "positives": 38321
+    },
+    "L1_300": {
+      "n": 678451,
+      "positives": 54622
+    },
+    "L2": {
+      "n": 678451,
+      "pos": 23973,
+      "neg": 279010,
+      "zero": 375468
+    }
+  },
+  "per_year": {
+    "y2023": {
+      "n_days": 30,
+      "n_samples": 361633,
+      "pos_rate": {
+        "L1_60": 0.02079179720877243,
+        "L1_180": 0.0593198076502974,
+        "L1_300": 0.08326950250668495
+      },
+      "l2_dist": {
+        "pos": 13671,
+        "neg": 150930,
+        "zero": 197032
+      }
+    },
+    "y2024": {
+      "n_days": 30,
+      "n_samples": 316818,
+      "pos_rate": {
+        "L1_60": 0.01884046992279479,
+        "L1_180": 0.053245080771925836,
+        "L1_300": 0.07735987222948192
+      },
+      "l2_dist": {
+        "pos": 10302,
+        "neg": 128080,
+        "zero": 178436
+      }
+    }
+  },
+  "stride_sec": 5,
+  "horizons_sec": [
+    60,
+    180,
+    300
+  ],
+  "sources": [
+    {
+      "file": "dataset_build_receipt_2023_c1.json",
+      "generated_at": "2026-07-05T23:30:18.584216",
+      "n_days": 10,
+      "n_samples": 130423,
+      "elapsed_sec": 308.206
+    },
+    {
+      "file": "dataset_build_receipt_2023_c2.json",
+      "generated_at": "2026-07-05T23:35:36.467899",
+      "n_days": 10,
+      "n_samples": 115597,
+      "elapsed_sec": 283.316
+    },
+    {
+      "file": "dataset_build_receipt_2023_c3.json",
+      "generated_at": "2026-07-05T23:40:28.585355",
+      "n_days": 10,
+      "n_samples": 115613,
+      "elapsed_sec": 273.393
+    },
+    {
+      "file": "dataset_build_receipt_2024_c1.json",
+      "generated_at": "2026-07-05T23:31:01.586842",
+      "n_days": 10,
+      "n_samples": 109774,
+      "elapsed_sec": 268.908
+    },
+    {
+      "file": "dataset_build_receipt_2024_c2.json",
+      "generated_at": "2026-07-05T23:35:44.595191",
+      "n_days": 10,
+      "n_samples": 109980,
+      "elapsed_sec": 260.234
+    },
+    {
+      "file": "dataset_build_receipt_2024_c3.json",
+      "generated_at": "2026-07-05T23:40:26.195751",
+      "n_days": 10,
+      "n_samples": 97064,
+      "elapsed_sec": 227.58
+    }
+  ],
+  "checks": {
+    "prereg_sha_consistent_across_chunks": true,
+    "days_match_prereg_mvp": true,
+    "chunk_internal_sums_consistent": true,
+    "shard_rowcounts_match_receipts": true,
+    "shard_label_recounts_match_receipts": true,
+    "shard_date_column_match": true,
+    "builder_agent_report": {
+      "y2023": {
+        "reported_days_done": 30,
+        "reported_samples_total": 361633,
+        "reported_pos_rate_L1_180": 0.05932,
+        "measured_pos_rate_L1_180": 0.0593198076502974,
+        "abs_rate_diff": 1.9234970259629502e-07,
+        "samples_match": true,
+        "rate_match_within_rounding": true
+      },
+      "y2024": {
+        "reported_days_done": 30,
+        "reported_samples_total": 316818,
+        "reported_pos_rate_L1_180": 0.053245,
+        "measured_pos_rate_L1_180": 0.053245080771925836,
+        "abs_rate_diff": 8.077192583527681e-08,
+        "samples_match": true,
+        "rate_match_within_rounding": true
+      }
+    }
+  },
+  "merged_at": "2026-07-05T23:53:02.782540"
+}
