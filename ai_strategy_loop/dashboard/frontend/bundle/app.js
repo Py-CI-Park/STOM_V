@@ -31227,6 +31227,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
     const [detail, setDetail] = useState_rix(null);
     const [detailLoading, setDetailLoading] = useState_rix(false);
     const [loading, setLoading] = useState_rix(false);
+    const [elapsed, setElapsed] = useState_rix(0);
     const [err, setErr] = useState_rix("");
     const [queryInput, setQueryInput] = useState_rix("");
     const [query, setQuery] = useState_rix("");
@@ -31240,6 +31241,12 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       const timer2 = setTimeout(() => setQuery(queryInput.trim().toLowerCase()), 180);
       return () => clearTimeout(timer2);
     }, [queryInput]);
+    useEffect_rix(() => {
+      if (!loading) return;
+      setElapsed(0);
+      const id2 = setInterval(() => setElapsed((e) => e + 1), 1e3);
+      return () => clearInterval(id2);
+    }, [loading]);
     const loadIndex = React.useCallback(() => {
       if (isDemo || !base) return;
       const controller = new AbortController();
@@ -31347,7 +31354,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       /* @__PURE__ */ React.createElement("strong", null, row.title || row.id),
       /* @__PURE__ */ React.createElement("span", { className: "research-index-row-badges" }, /* @__PURE__ */ React.createElement(ResearchBadge, { type: "trace", value: row.trace_status }), /* @__PURE__ */ React.createElement(ResearchBadge, { type: "canonicality", value: row.canonicality }), /* @__PURE__ */ React.createElement(ResearchBadge, { type: "authority", value: row.source_authority })),
       /* @__PURE__ */ React.createElement("small", null, row.exact_link || row.id)
-    )), loading && records.length === 0 && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "loading", compact: true, title: "\uAC70\uBC84\uB10C\uC2A4 \uC778\uB371\uC2A4 \uB85C\uB529 \uC911\u2026" }, "\uC218\uCC9C \uAC74\uC758 exact-link \uB808\uCF54\uB4DC\uB97C \uC9D1\uACC4 \uC911\uC785\uB2C8\uB2E4(\uB300\uC6A9\uB7C9 \xB7 \uCD5C\uB300 ~20\uCD08)."), !loading && timelineRows.length === 0 && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "empty", compact: true, title: "No timeline records." }, "\uD544\uD130\uB97C \uC870\uC815\uD558\uBA74 exact-link \uD0C0\uC784\uB77C\uC778\uC774 \uB2E4\uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("div", { className: "research-index-layout" }, /* @__PURE__ */ React.createElement("div", { className: "research-index-list", role: "listbox", "aria-label": "research index records" }, visibleRows.map((row) => /* @__PURE__ */ React.createElement(
+    )), loading && records.length === 0 && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "loading", compact: true, title: `\uAC70\uBC84\uB10C\uC2A4 \uC778\uB371\uC2A4 \uB85C\uB529 \uC911\u2026 (\uACBD\uACFC ${elapsed}s)` }, "\uC218\uCC9C \uAC74\uC758 exact-link \uB808\uCF54\uB4DC\uB97C \uC9D1\uACC4 \uC911\uC785\uB2C8\uB2E4(\uB300\uC6A9\uB7C9 \xB7 \uBCF4\uD1B5 ~11\uCD08, \uCD5C\uB300 ~20\uCD08)."), !loading && timelineRows.length === 0 && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "empty", compact: true, title: "No timeline records." }, "\uD544\uD130\uB97C \uC870\uC815\uD558\uBA74 exact-link \uD0C0\uC784\uB77C\uC778\uC774 \uB2E4\uC2DC \uD45C\uC2DC\uB429\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("div", { className: "research-index-layout" }, /* @__PURE__ */ React.createElement("div", { className: "research-index-list", role: "listbox", "aria-label": "research index records" }, visibleRows.map((row) => /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -31359,7 +31366,7 @@ ${JSON.stringify(pack.context_pack || {}, null, 2)}` : JSON.stringify(pack.conte
       /* @__PURE__ */ React.createElement("span", { className: "research-index-row-title" }, row.title || row.id),
       /* @__PURE__ */ React.createElement("span", { className: "research-index-row-badges" }, /* @__PURE__ */ React.createElement(ResearchBadge, { type: "kind", value: row.kind }), /* @__PURE__ */ React.createElement(ResearchBadge, { type: "canonicality", value: row.canonicality }), /* @__PURE__ */ React.createElement(ResearchBadge, { type: "authority", value: row.source_authority }), /* @__PURE__ */ React.createElement(ResearchBadge, { type: "trace", value: row.trace_status })),
       /* @__PURE__ */ React.createElement("small", null, _rixShortPath(row.source_path))
-    )), loading && records.length === 0 && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "loading", compact: true, title: "\uAC70\uBC84\uB10C\uC2A4 \uC778\uB371\uC2A4 \uB85C\uB529 \uC911\u2026" }, "\uC218\uCC9C \uAC74\uC758 \uB808\uCF54\uB4DC\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4(\uB300\uC6A9\uB7C9 \xB7 \uCD5C\uB300 ~20\uCD08)."), !loading && visibleRows.length === 0 && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "empty", compact: true, title: "No matching research records." }, "\uAC80\uC0C9\uC5B4\uC640 \uD544\uD130\uB97C \uC870\uC815\uD558\uC138\uC694."), visibleRows.length < filtered.length && /* @__PURE__ */ React.createElement(
+    )), loading && records.length === 0 && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "loading", compact: true, title: `\uAC70\uBC84\uB10C\uC2A4 \uC778\uB371\uC2A4 \uB85C\uB529 \uC911\u2026 (\uACBD\uACFC ${elapsed}s)` }, "\uC218\uCC9C \uAC74\uC758 \uB808\uCF54\uB4DC\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4(\uB300\uC6A9\uB7C9 \xB7 \uBCF4\uD1B5 ~11\uCD08, \uCD5C\uB300 ~20\uCD08)."), !loading && visibleRows.length === 0 && /* @__PURE__ */ React.createElement(UiStateBlock, { kind: "empty", compact: true, title: "No matching research records." }, "\uAC80\uC0C9\uC5B4\uC640 \uD544\uD130\uB97C \uC870\uC815\uD558\uC138\uC694."), visibleRows.length < filtered.length && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -33528,23 +33535,25 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const mono = _v4Tok("--mono") || "IBM Plex Mono, monospace";
     const pl = 52, pr = 26, pt = 20, pb = 34;
     const vals = series.map((s) => s.v);
-    if (!vals.length) {
-      ctx.fillStyle = ink2;
-      ctx.font = "12px " + mono;
-      ctx.textAlign = "center";
-      ctx.fillText("\uC5F0\uAD6C \uB300\uAE30 \u2014 \uC138\uB300 \uB370\uC774\uD130\uAC00 \uB3C4\uCC29\uD558\uBA74 \uC2E4\uC2DC\uAC04\uC73C\uB85C \uADF8\uB824\uC9D1\uB2C8\uB2E4", cw / 2, ch / 2);
-      return;
-    }
-    let min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
-    if (target != null) {
-      min = Math.min(min, target);
-      max = Math.max(max, target);
+    const nGen = vals.length;
+    let min, max;
+    if (nGen) {
+      min = Math.min.apply(null, vals);
+      max = Math.max.apply(null, vals);
+      if (target != null) {
+        min = Math.min(min, target);
+        max = Math.max(max, target);
+      }
+    } else {
+      const t = target != null ? Number(target) : 1;
+      min = Math.min(0, t);
+      max = Math.max(1, t);
     }
     const pad = (max - min || 1) * 0.12;
     min -= pad;
     max += pad;
     const rng = max - min || 1;
-    const px = (i) => series.length < 2 ? pl + (cw - pl - pr) / 2 : pl + (cw - pl - pr) * i / (series.length - 1);
+    const px = (i) => nGen < 2 ? pl + (cw - pl - pr) / 2 : pl + (cw - pl - pr) * i / (nGen - 1);
     const py = (v) => pt + (ch - pt - pb) * (1 - (v - min) / rng);
     ctx.strokeStyle = line1;
     ctx.lineWidth = 1;
@@ -33573,6 +33582,31 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       ctx.fillStyle = violet;
       ctx.textAlign = "left";
       ctx.fillText("gate " + Number(target).toFixed(2), pl + 6, gy - 6);
+    }
+    if (nGen < 2) {
+      if (nGen === 1) {
+        const cx = px(0), cy = py(vals[0]);
+        ctx.beginPath();
+        ctx.arc(cx, cy, 7, 0, 7);
+        ctx.fillStyle = amber;
+        ctx.fill();
+        ctx.strokeStyle = bg1;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.fillStyle = amber;
+        ctx.font = "11px " + mono;
+        ctx.textAlign = "center";
+        ctx.fillText(series[0].x + " \xB7 " + vals[0].toFixed(3), cx, cy - 14);
+      }
+      ctx.fillStyle = ink2;
+      ctx.font = "12px " + mono;
+      ctx.textAlign = "center";
+      ctx.fillText(
+        nGen === 1 ? "\uB370\uC774\uD130 \uCD95\uC801 \uC911 \xB7 \uC138\uB300 1 \u2014 \uC801\uD569\uB3C4 \uACE1\uC120\uC740 2\uC138\uB300\uBD80\uD130 \uD45C\uC2DC\uB429\uB2C8\uB2E4" : "\uC5F0\uAD6C \uB300\uAE30 \u2014 \uC138\uB300 \uB370\uC774\uD130\uAC00 \uB3C4\uCC29\uD558\uBA74 \uC2E4\uC2DC\uAC04\uC73C\uB85C \uADF8\uB824\uC9D1\uB2C8\uB2E4",
+        cw / 2,
+        ch - pb - 14
+      );
+      return;
     }
     const grad = ctx.createLinearGradient(0, pt, 0, ch - pb);
     grad.addColorStop(0, _v4Alpha(teal, 0.28));

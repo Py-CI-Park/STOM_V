@@ -115,6 +115,23 @@
 프로세스가 화면으로 연결. 한계는 §5 #3과 동일(거버넌스 라이브 데이터는 미러 미표시 — Context
 Pack 은 persisted state 라 라이브로 뜸, 대조 확인).
 
+## 5.7 로드맵 Phase 1 자율 개발 (2026-07-05 — ralph 루프)
+
+성숙도 로드맵(Artifact)의 순수 프론트 폴리시 3건을 ralph 지속 루프로 구현·검증. 정찰 결과
+외부 차단 항목(B2 백엔드배선·B3 미러·C7 비용·A1 채택)은 근거와 함께 제외(prd.deferred).
+
+| 스토리 | 구현 | 검증 |
+|---|---|---|
+| **C4** HeroChart 초기상태 | `v4-charts.jsx` `_v4DrawHero` 재구성 — 그리드+gate 프레임을 항상 그리고, 세대<2 는 '데이터 축적 중'(1세대는 앰버 마커+값) 상태 표시. 세대≥2 경로 무수정 | 픽스처 0/1/3세대 캡처 판독(roadmap/hero_*.png) — 프레임+gate+안내, 3세대 정상 곡선 |
+| **C5** Governed Index 로딩 | `research-index.jsx` elapsed 상태+1초 틱 → 두 로딩 블록에 '(경과 Ns)'+'보통 ~11초' | 브라우저 t=5s '경과 4s'·No records 미표시 → 로드 후 rows 2863 |
+| **C6** 라이트 테마 | 코드 무변경(이상 없음) | 8뷰 라이트 캡처(roadmap/light/*.png)·livelink 픽스처(라이트 --amber #b27200 대비 우수) — 결함 0 |
+
+검증 체인: 빌드 0에러(app.js=4d530d29) · 하네스 V1~V7 allPass · **architect 리뷰 APPROVED**(AC 라인별
+검증, 무회귀·타이머 누수 없음) · deslop 무편집 · 회귀 재검증 green. 증거:
+`.omo/evidence/dashboard-v4-audit-20260705/roadmap/`.
+
+남은 로드맵: B2·B3(백엔드/미러) · C7(비용 승인) · A1(채택) — 사용자 결정/승인 대기.
+
 ## 6. 결론
 
 조건식을 **어떻게** 찾고(생성→백테→채점→부검→개선), **왜** 통과/기각되는지(게이트·부검·PROMOTE

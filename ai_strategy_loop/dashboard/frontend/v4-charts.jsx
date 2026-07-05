@@ -42,19 +42,24 @@ function _v4DrawHero(canvas, series, { target, bestIdx }) {
 
   const pl = 52, pr = 26, pt = 20, pb = 34;
   const vals = series.map(s => s.v);
-  if (!vals.length) {
-    ctx.fillStyle = ink2; ctx.font = "12px " + mono; ctx.textAlign = "center";
-    ctx.fillText("연구 대기 — 세대 데이터가 도착하면 실시간으로 그려집니다", cw / 2, ch / 2);
-    return;
+  const nGen = vals.length;
+
+  // y 범위: 데이터가 있으면 값(+gate)에서, 없으면 gate(또는 0..1) 주변으로 프레임을 잡는다.
+  //   → 세대가 아직 없어도 축·gate 프레임을 그려 '빈 캔버스'가 노출되지 않게 한다(C4).
+  let min, max;
+  if (nGen) {
+    min = Math.min.apply(null, vals); max = Math.max.apply(null, vals);
+    if (target != null) { min = Math.min(min, target); max = Math.max(max, target); }
+  } else {
+    const t = (target != null ? Number(target) : 1);
+    min = Math.min(0, t); max = Math.max(1, t);
   }
-  let min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
-  if (target != null) { min = Math.min(min, target); max = Math.max(max, target); }
   const pad = (max - min || 1) * 0.12; min -= pad; max += pad;
   const rng = max - min || 1;
-  const px = i => series.length < 2 ? (pl + (cw - pl - pr) / 2) : pl + (cw - pl - pr) * i / (series.length - 1);
+  const px = i => nGen < 2 ? (pl + (cw - pl - pr) / 2) : pl + (cw - pl - pr) * i / (nGen - 1);
   const py = v => pt + (ch - pt - pb) * (1 - (v - min) / rng);
 
-  // 그리드(점선) + y축 라벨
+  // 그리드(점선) + y축 라벨 — 데이터 유무와 무관하게 항상 프레임을 그린다.
   ctx.strokeStyle = line1; ctx.lineWidth = 1; ctx.setLineDash([2, 6]);
   ctx.fillStyle = ink2; ctx.font = "11px " + mono; ctx.textAlign = "right";
   for (let g = 0; g <= 4; g++) {
@@ -72,6 +77,25 @@ function _v4DrawHero(canvas, series, { target, bestIdx }) {
     ctx.setLineDash([]);
     ctx.fillStyle = violet; ctx.textAlign = "left";
     ctx.fillText("gate " + Number(target).toFixed(2), pl + 6, gy - 6);
+  }
+
+  // 세대 2개 미만: 곡선 대신 '데이터 축적 중' 상태를 프레임 위에 그린다(휑한 캔버스 방지 · C4).
+  if (nGen < 2) {
+    if (nGen === 1) {
+      const cx = px(0), cy = py(vals[0]);
+      ctx.beginPath(); ctx.arc(cx, cy, 7, 0, 7);
+      ctx.fillStyle = amber; ctx.fill();
+      ctx.strokeStyle = bg1; ctx.lineWidth = 3; ctx.stroke();
+      ctx.fillStyle = amber; ctx.font = "11px " + mono; ctx.textAlign = "center";
+      ctx.fillText(series[0].x + " · " + vals[0].toFixed(3), cx, cy - 14);
+    }
+    ctx.fillStyle = ink2; ctx.font = "12px " + mono; ctx.textAlign = "center";
+    ctx.fillText(
+      nGen === 1
+        ? "데이터 축적 중 · 세대 1 — 적합도 곡선은 2세대부터 표시됩니다"
+        : "연구 대기 — 세대 데이터가 도착하면 실시간으로 그려집니다",
+      cw / 2, ch - pb - 14);
+    return;
   }
 
   // 그라디언트 area + 라인
