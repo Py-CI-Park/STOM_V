@@ -1,0 +1,70 @@
+{
+  "schema": "p6_lattice_coverage_gaps_batch_plan_no_d_v1",
+  "created_at": "2026-07-05T21:00:44+09:00",
+  "scope": "P6-coverage-gaps-batch-plan-no-D",
+  "inputs": {
+    "tick_summary": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_full_warm64_288_export_summary_20260705.json",
+    "tick_jsonl": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_full_warm64_288_export_summary_20260705.jsonl",
+    "min_summary": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_official_full_warm64_288_export_summary_20260705.json",
+    "min_jsonl": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_official_full_warm64_288_export_summary_20260705.jsonl"
+  },
+  "coverage": {
+    "expected_total": 576,
+    "recorded_total": 576,
+    "coverage_complete": true,
+    "by_lane": {
+      "tick": 288,
+      "min": 288
+    },
+    "status_by_lane": {
+      "min": {
+        "ok": 281,
+        "error": 7
+      },
+      "tick": {
+        "ok": 288
+      }
+    },
+    "gate_passed_by_lane": {
+      "min": 0,
+      "tick": 0
+    }
+  },
+  "gaps": {
+    "missing_lanes": [],
+    "missing_rows": 0,
+    "stale_or_supplemented_notes": [
+      "min chunk08 original run_id lat_min_official_full_warm64_chunk08_20260705 remains running/stale with 2 rows; supplement01 completed remaining 22 rows append-only."
+    ]
+  },
+  "classification_counts": {
+    "go": 0,
+    "hold": 0,
+    "no_go": 576
+  },
+  "no_go_reason_counts_by_lane": {
+    "min": {
+      "low_daily_trades": 43,
+      "mdd_excess": 200,
+      "mdd_excess_and_low_daily_trades": 15,
+      "nonpositive_profit": 23,
+      "no_metrics_or_error": 7
+    },
+    "tick": {
+      "mdd_excess": 279,
+      "mdd_excess_and_low_daily_trades": 8,
+      "low_daily_trades": 1
+    }
+  },
+  "batch_plan": {
+    "refinement_opened": false,
+    "refinement_reason": "not_opened_no_go_candidates",
+    "oos_opened": false,
+    "oos_reason": "forbidden_without_refinement_survivor_and_preregistration",
+    "portfolio_opened": false,
+    "portfolio_reason": "forbidden_without_oos_survivor",
+    "plan_d_input_available": false,
+    "plan_d_decision": "blocked_no_survivor_seed_pool",
+    "next_allowed_action": "design_repair_or_threshold_review_before_new refinement/OOS; Plan D remains blocked"
+  }
+}

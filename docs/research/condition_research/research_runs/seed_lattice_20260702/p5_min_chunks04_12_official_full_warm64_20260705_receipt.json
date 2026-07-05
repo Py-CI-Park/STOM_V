@@ -1,0 +1,313 @@
+{
+  "schema": "p5_min_chunks04_12_official_full_warm64_receipt_v1",
+  "created_at": "2026-07-05T21:00:44+09:00",
+  "scope": "P5-official-min-chunk04-to-12-export-and-P6-no-D",
+  "official_profile": {
+    "_comment": "Plan B P5 official min lattice profile; DB full period; warm64; run only after official tick export.",
+    "provider": "gpt_auth",
+    "bt_engine_mode": "warm",
+    "bt_timeframe": "min",
+    "full_session_enabled": true,
+    "bt_min_universe_end_time": 151900,
+    "bt_universe_start_time": 90000,
+    "bt_warm_engine_count": 64,
+    "bt_betting": "5",
+    "bt_avg_time": 30,
+    "min_daily_trades": 0.5,
+    "mdd_cap": 35.0,
+    "winner_objective": "uptrend",
+    "autopsy_enabled": false,
+    "bt_full_start": 20250407,
+    "bt_full_end": 20260227,
+    "max_generations": 1,
+    "bt_timeout": 14400,
+    "bt_warm_run_timeout": 1200,
+    "equity_points_enabled": true,
+    "condition_discovery_preset": "fast",
+    "condition_discovery_process": "fast-discovery",
+    "_official_profile": {
+      "schema": "plan_b_p5_official_profile_v1",
+      "lane": "min",
+      "source_db_range": {
+        "path": "_database/stock_min_back.db",
+        "table_count": 1381,
+        "temporal_row_count": 5578411,
+        "index_min_len_filter": 12,
+        "min_index": "202504070900",
+        "max_index": "202602271519",
+        "start_date": 20250407,
+        "end_date": 20260227,
+        "skipped_no_index_tables": [],
+        "skipped_no_index_table_count": 0
+      },
+      "time_window_policy": "full_session_enabled runtime resolves min to 09:00-15:19.",
+      "full_run_forbidden_until_tick_official_export": true
+    }
+  },
+  "db_update_delete_used": false,
+  "chunk_sequence_rule": "next chunk was opened only after the prior chunk had 24/24 honest rows; chunk08 required append-only supplement before chunk09",
+  "chunk_details": [
+    {
+      "chunk_no": 4,
+      "run_ids": [
+        "lat_min_official_full_warm64_chunk04_20260705"
+      ],
+      "run_statuses": {
+        "lat_min_official_full_warm64_chunk04_20260705": "complete"
+      },
+      "expected_rows": 24,
+      "recorded_rows": 24,
+      "unique_official_indices": 24,
+      "official_index_range": [
+        72,
+        95
+      ],
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "honest_rows": true,
+      "note": null
+    },
+    {
+      "chunk_no": 5,
+      "run_ids": [
+        "lat_min_official_full_warm64_chunk05_20260705"
+      ],
+      "run_statuses": {
+        "lat_min_official_full_warm64_chunk05_20260705": "complete"
+      },
+      "expected_rows": 24,
+      "recorded_rows": 24,
+      "unique_official_indices": 24,
+      "official_index_range": [
+        96,
+        119
+      ],
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "honest_rows": true,
+      "note": null
+    },
+    {
+      "chunk_no": 6,
+      "run_ids": [
+        "lat_min_official_full_warm64_chunk06_20260705"
+      ],
+      "run_statuses": {
+        "lat_min_official_full_warm64_chunk06_20260705": "complete"
+      },
+      "expected_rows": 24,
+      "recorded_rows": 24,
+      "unique_official_indices": 24,
+      "official_index_range": [
+        120,
+        143
+      ],
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "honest_rows": true,
+      "note": null
+    },
+    {
+      "chunk_no": 7,
+      "run_ids": [
+        "lat_min_official_full_warm64_chunk07_20260705"
+      ],
+      "run_statuses": {
+        "lat_min_official_full_warm64_chunk07_20260705": "complete"
+      },
+      "expected_rows": 24,
+      "recorded_rows": 24,
+      "unique_official_indices": 24,
+      "official_index_range": [
+        144,
+        167
+      ],
+      "status_counts": {
+        "error": 1,
+        "ok": 23
+      },
+      "gate_passed_count": 0,
+      "honest_rows": true,
+      "note": null
+    },
+    {
+      "chunk_no": 8,
+      "run_ids": [
+        "lat_min_official_full_warm64_chunk08_20260705",
+        "lat_min_official_full_warm64_chunk08_supplement01_20260705"
+      ],
+      "run_statuses": {
+        "lat_min_official_full_warm64_chunk08_20260705": "running",
+        "lat_min_official_full_warm64_chunk08_supplement01_20260705": "complete"
+      },
+      "expected_rows": 24,
+      "recorded_rows": 24,
+      "unique_official_indices": 24,
+      "official_index_range": [
+        168,
+        191
+      ],
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "honest_rows": true,
+      "note": "original run left as stale partial; supplement01 completed remaining 22 rows"
+    },
+    {
+      "chunk_no": 9,
+      "run_ids": [
+        "lat_min_official_full_warm64_chunk09_20260705"
+      ],
+      "run_statuses": {
+        "lat_min_official_full_warm64_chunk09_20260705": "complete"
+      },
+      "expected_rows": 24,
+      "recorded_rows": 24,
+      "unique_official_indices": 24,
+      "official_index_range": [
+        192,
+        215
+      ],
+      "status_counts": {
+        "error": 3,
+        "ok": 21
+      },
+      "gate_passed_count": 0,
+      "honest_rows": true,
+      "note": null
+    },
+    {
+      "chunk_no": 10,
+      "run_ids": [
+        "lat_min_official_full_warm64_chunk10_20260705"
+      ],
+      "run_statuses": {
+        "lat_min_official_full_warm64_chunk10_20260705": "complete"
+      },
+      "expected_rows": 24,
+      "recorded_rows": 24,
+      "unique_official_indices": 24,
+      "official_index_range": [
+        216,
+        239
+      ],
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "honest_rows": true,
+      "note": null
+    },
+    {
+      "chunk_no": 11,
+      "run_ids": [
+        "lat_min_official_full_warm64_chunk11_20260705"
+      ],
+      "run_statuses": {
+        "lat_min_official_full_warm64_chunk11_20260705": "complete"
+      },
+      "expected_rows": 24,
+      "recorded_rows": 24,
+      "unique_official_indices": 24,
+      "official_index_range": [
+        240,
+        263
+      ],
+      "status_counts": {
+        "error": 3,
+        "ok": 21
+      },
+      "gate_passed_count": 0,
+      "honest_rows": true,
+      "note": null
+    },
+    {
+      "chunk_no": 12,
+      "run_ids": [
+        "lat_min_official_full_warm64_chunk12_20260705"
+      ],
+      "run_statuses": {
+        "lat_min_official_full_warm64_chunk12_20260705": "complete"
+      },
+      "expected_rows": 24,
+      "recorded_rows": 24,
+      "unique_official_indices": 24,
+      "official_index_range": [
+        264,
+        287
+      ],
+      "status_counts": {
+        "ok": 24
+      },
+      "gate_passed_count": 0,
+      "honest_rows": true,
+      "note": null
+    }
+  ],
+  "coverage_after_chunk12": {
+    "completed_chunks": 12,
+    "completed_pairs": 288,
+    "total_pairs": 288,
+    "unique_official_indices": 288
+  },
+  "logs": {
+    "chunk04": {
+      "stdout": "artifacts/p5_min_chunk04_20260705.log",
+      "stderr": "artifacts/p5_min_chunk04_20260705.err"
+    },
+    "chunk05": {
+      "stdout": "artifacts/p5_min_chunk05_20260705.log",
+      "stderr": "artifacts/p5_min_chunk05_20260705.err"
+    },
+    "chunk06": {
+      "stdout": "artifacts/p5_min_chunk06_20260705.log",
+      "stderr": "artifacts/p5_min_chunk06_20260705.err"
+    },
+    "chunk07": {
+      "stdout": "artifacts/p5_min_chunk07_20260705.log",
+      "stderr": "artifacts/p5_min_chunk07_20260705.err"
+    },
+    "chunk08": {
+      "stdout": "artifacts/p5_min_chunk08_20260705.log",
+      "stderr": "artifacts/p5_min_chunk08_20260705.err"
+    },
+    "chunk09": {
+      "stdout": "artifacts/p5_min_chunk09_20260705.log",
+      "stderr": "artifacts/p5_min_chunk09_20260705.err"
+    },
+    "chunk10": {
+      "stdout": "artifacts/p5_min_chunk10_20260705.log",
+      "stderr": "artifacts/p5_min_chunk10_20260705.err"
+    },
+    "chunk11": {
+      "stdout": "artifacts/p5_min_chunk11_20260705.log",
+      "stderr": "artifacts/p5_min_chunk11_20260705.err"
+    },
+    "chunk12": {
+      "stdout": "artifacts/p5_min_chunk12_20260705.log",
+      "stderr": "artifacts/p5_min_chunk12_20260705.err"
+    },
+    "chunk08_supplement01": {
+      "stdout": "artifacts/p5_min_chunk08_supplement01_20260705.log",
+      "stderr": "artifacts/p5_min_chunk08_supplement01_20260705.err"
+    }
+  },
+  "source_pair_files": [
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk04_20260705.json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk05_20260705.json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk06_20260705.json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk07_20260705.json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk08_20260705.json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk09_20260705.json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk10_20260705.json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk11_20260705.json",
+    "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_official_full_warm64_chunk12_20260705.json"
+  ]
+}

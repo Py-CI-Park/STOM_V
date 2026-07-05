@@ -94,7 +94,7 @@ Plan C/B/D documents.
   - Sanitized acceptance probe used 20 pairs only and returned `ok=20`, `gate_passed=0`, `trade_count=24..1418`.
   - Threshold relaxation is not required before resuming full smoke; later refinement is still needed because no sampled pair passed performance gates.
 
-- [ ] P5. Plan B B1.3 overnight smoke batch
+- [x] P5. Plan B B1.3 overnight smoke batch
 
   Purpose: run tick first, then min, and export smoke results.
 
@@ -328,16 +328,36 @@ Plan C/B/D documents.
   Official min coverage is now `72/288`. Chunk03 is clean coverage evidence
   but has no survivor. Next allowed action is min chunk04 only; P6/P7/Plan D
   remain blocked until official min 288 coverage and export exist.
+  Min chunk04~12/export 2026-07-05: completed official DB-full-period + warm64
+  min coverage and export. Evidence:
+  `docs/update_log/2026-07-05_p5_min_288_export_p6_no_d_handoff.md`,
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_chunks04_12_official_full_warm64_20260705_receipt.json`,
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_official_full_warm64_288_coverage_20260705_receipt.json`,
+  and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_official_full_warm64_288_export_summary_20260705.json`.
+  Result: min `288/288` rows, `status_counts={'ok': 281, 'error': 7}`,
+  `gate_passed=0`. Chunk08 was resolved append-only with supplement01;
+  the original stale partial run remains preserved without DB UPDATE/DELETE.
 
   Acceptance:
   - Resume manifest and first-10-pair timing estimate are written.
   - Tick smoke result export exists before min starts.
   - Any cleanup uses dry-run inventory and explicit PID exclusion.
 
-- [ ] P6. Plan B B2-B5 coverage, refinement, OOS, portfolio
+- [x] P6. Plan B B2-B5 coverage, refinement, OOS, portfolio
 
   Purpose: convert smoke results into go/no_go, refine go cells, freeze before OOS,
   then assemble a portfolio only with 2+ OOS survivors.
+
+  Status 2026-07-05: completed P6 no-D classification from official tick 288
+  and min 288 exports. Evidence:
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p6_lattice_coverage_gaps_batch_plan_no_d_20260705.json`,
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p6_lattice_go_no_go_hold_20260705.json`,
+  and append-only registry
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p6_lattice_revival_registry_20260705.jsonl`.
+  Result: coverage `576/576`, `go=0`, `hold=0`, `no_go=576`.
+  Refinement/OOS/portfolio were not opened because no go candidate or
+  preregistered survivor exists.
 
   Acceptance:
   - coverage/gaps/batch_plan JSONs exist per lane.
