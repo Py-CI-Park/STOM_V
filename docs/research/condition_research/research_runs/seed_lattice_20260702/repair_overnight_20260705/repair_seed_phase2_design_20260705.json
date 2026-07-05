@@ -1,0 +1,418 @@
+{
+  "schema": "repair_seed_phase2_design_v1",
+  "created_at": "2026-07-05T22:08:57+09:00",
+  "source_phase1_result": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_preflight_phase1_result_20260705.json",
+  "phase2_max_pairs": 24,
+  "design_rule": "Do not expand loss-control tight-exit large-cap variants; focus on sparse positive min anchors with intermediate entry thresholds and default/less disruptive exits.",
+  "candidates": [
+    {
+      "rank": 1,
+      "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s102_default_exit",
+      "lane": "min",
+      "cell_id": "min_09h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_09h_midsmall_low:strength_surge",
+      "group": "sparse_positive_strength_mid_threshold",
+      "params": {
+        "strength_min": 102.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 2,
+      "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s105_default_exit",
+      "lane": "min",
+      "cell_id": "min_09h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_09h_midsmall_low:strength_surge",
+      "group": "sparse_positive_strength_mid_threshold",
+      "params": {
+        "strength_min": 105.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 3,
+      "condition_id": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+      "lane": "min",
+      "cell_id": "min_09h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_09h_midsmall_low:strength_surge",
+      "group": "sparse_positive_strength_mid_threshold",
+      "params": {
+        "strength_min": 108.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 4,
+      "condition_id": "repair_v1_20260705_r2_04_min_09h_midsmall_low_strength_s105_tp2_sl2_hold30",
+      "lane": "min",
+      "cell_id": "min_09h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_09h_midsmall_low:strength_surge",
+      "group": "sparse_positive_strength_mid_threshold",
+      "params": {
+        "strength_min": 105.0,
+        "take_profit": 2.0,
+        "stop_loss": 2.0,
+        "max_hold": 30,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 5,
+      "condition_id": "repair_v1_20260705_r2_05_min_10h_midsmall_low_strength_s102_default_exit",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_10h_midsmall_low:strength_surge",
+      "group": "sparse_positive_strength_mid_threshold",
+      "params": {
+        "strength_min": 102.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 6,
+      "condition_id": "repair_v1_20260705_r2_05_min_10h_midsmall_low_strength_s105_default_exit",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_10h_midsmall_low:strength_surge",
+      "group": "sparse_positive_strength_mid_threshold",
+      "params": {
+        "strength_min": 105.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 7,
+      "condition_id": "repair_v1_20260705_r2_05_min_10h_midsmall_low_strength_s108_default_exit",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_10h_midsmall_low:strength_surge",
+      "group": "sparse_positive_strength_mid_threshold",
+      "params": {
+        "strength_min": 108.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 8,
+      "condition_id": "repair_v1_20260705_r2_08_min_10h_midsmall_low_strength_s105_tp2_sl2_hold30",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_10h_midsmall_low:strength_surge",
+      "group": "sparse_positive_strength_mid_threshold",
+      "params": {
+        "strength_min": 105.0,
+        "take_profit": 2.0,
+        "stop_loss": 2.0,
+        "max_hold": 30,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 9,
+      "condition_id": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0992_default_exit",
+      "lane": "min",
+      "cell_id": "min_09h_small_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_09h_small_low:momentum_breakout",
+      "group": "sparse_positive_momentum_mid_threshold",
+      "params": {
+        "high_mult": 0.992,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 10,
+      "condition_id": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0993_default_exit",
+      "lane": "min",
+      "cell_id": "min_09h_small_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_09h_small_low:momentum_breakout",
+      "group": "sparse_positive_momentum_mid_threshold",
+      "params": {
+        "high_mult": 0.993,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 11,
+      "condition_id": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+      "lane": "min",
+      "cell_id": "min_09h_small_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_09h_small_low:momentum_breakout",
+      "group": "sparse_positive_momentum_mid_threshold",
+      "params": {
+        "high_mult": 0.994,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 12,
+      "condition_id": "repair_v1_20260705_r2_12_min_09h_small_low_momentum_h0992_tp2_sl2_hold30",
+      "lane": "min",
+      "cell_id": "min_09h_small_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_09h_small_low:momentum_breakout",
+      "group": "sparse_positive_momentum_mid_threshold",
+      "params": {
+        "high_mult": 0.992,
+        "take_profit": 2.0,
+        "stop_loss": 2.0,
+        "max_hold": 30,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 13,
+      "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0992_default_exit",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_10h_midsmall_low:momentum_breakout",
+      "group": "sparse_positive_momentum_mid_threshold",
+      "params": {
+        "high_mult": 0.992,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 14,
+      "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0993_default_exit",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_10h_midsmall_low:momentum_breakout",
+      "group": "sparse_positive_momentum_mid_threshold",
+      "params": {
+        "high_mult": 0.993,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 15,
+      "condition_id": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_10h_midsmall_low:momentum_breakout",
+      "group": "sparse_positive_momentum_mid_threshold",
+      "params": {
+        "high_mult": 0.994,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 16,
+      "condition_id": "repair_v1_20260705_r2_16_min_10h_midsmall_low_momentum_h0992_tp2_sl2_hold30",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_10h_midsmall_low:momentum_breakout",
+      "group": "sparse_positive_momentum_mid_threshold",
+      "params": {
+        "high_mult": 0.992,
+        "take_profit": 2.0,
+        "stop_loss": 2.0,
+        "max_hold": 30,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 17,
+      "condition_id": "repair_v1_20260705_r2_17_min_13h_midlarge_low_strength_s102_default_exit",
+      "lane": "min",
+      "cell_id": "min_13h_midlarge_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_13h_midlarge_low:strength_surge",
+      "group": "sparse_positive_strength_mid_threshold",
+      "params": {
+        "strength_min": 102.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 18,
+      "condition_id": "repair_v1_20260705_r2_17_min_13h_midlarge_low_strength_s105_default_exit",
+      "lane": "min",
+      "cell_id": "min_13h_midlarge_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_13h_midlarge_low:strength_surge",
+      "group": "sparse_positive_strength_mid_threshold",
+      "params": {
+        "strength_min": 105.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 19,
+      "condition_id": "repair_v1_20260705_r2_19_min_13h_large_high_momentum_h0997_default_exit",
+      "lane": "min",
+      "cell_id": "min_13h_large_high",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_13h_large_high:momentum_breakout",
+      "group": "high_frequency_loss_control_entry_stricter",
+      "params": {
+        "high_mult": 0.997,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 20,
+      "condition_id": "repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit",
+      "lane": "min",
+      "cell_id": "min_13h_large_high",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_13h_large_high:momentum_breakout",
+      "group": "high_frequency_loss_control_entry_stricter",
+      "params": {
+        "high_mult": 1.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 21,
+      "condition_id": "repair_v1_20260705_r2_21_min_14h_large_high_momentum_h0997_default_exit",
+      "lane": "min",
+      "cell_id": "min_14h_large_high",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_14h_large_high:momentum_breakout",
+      "group": "high_frequency_loss_control_entry_stricter",
+      "params": {
+        "high_mult": 0.997,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 22,
+      "condition_id": "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit",
+      "lane": "min",
+      "cell_id": "min_14h_large_high",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_14h_large_high:momentum_breakout",
+      "group": "high_frequency_loss_control_entry_stricter",
+      "params": {
+        "high_mult": 1.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 23,
+      "condition_id": "repair_v1_20260705_r2_23_min_1430p_large_high_momentum_h0997_default_exit",
+      "lane": "min",
+      "cell_id": "min_1430p_large_high",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_1430p_large_high:momentum_breakout",
+      "group": "high_frequency_loss_control_entry_stricter",
+      "params": {
+        "high_mult": 0.997,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    },
+    {
+      "rank": 24,
+      "condition_id": "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit",
+      "lane": "min",
+      "cell_id": "min_1430p_large_high",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_1430p_large_high:momentum_breakout",
+      "group": "high_frequency_loss_control_entry_stricter",
+      "params": {
+        "high_mult": 1.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed"
+    }
+  ],
+  "seeds_json": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase2_candidates_20260705_seeds.json"
+}

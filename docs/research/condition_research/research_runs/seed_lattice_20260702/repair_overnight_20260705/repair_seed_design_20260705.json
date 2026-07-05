@@ -1,0 +1,174 @@
+{
+  "schema": "repair_seed_design_v1",
+  "created_at": "2026-07-05T21:58:35+09:00",
+  "source_analysis": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\overnight_no_d_576_deep_analysis_20260705.json",
+  "design_principle": "Use min lane only for 1? because tick has positive_profit=0; split 8 probes into trade-lift of sparse positive anchors and loss-control of high-frequency low-MDD negative anchors.",
+  "forbidden_uses": [
+    "promotion",
+    "export",
+    "live",
+    "final",
+    "OOS_without_preregistration"
+  ],
+  "db_policy": "INSERT-only if registered; existing LAT_lattice_v1 rows are not modified.",
+  "preflight_budget": {
+    "phase1_max_pairs": 8,
+    "phase2_max_pairs": 24,
+    "phase3_max_pairs": 48
+  },
+  "candidates": [
+    {
+      "rank": 1,
+      "condition_id": "repair_v1_20260705_r01_min_09h_midsmall_low_strength_trade_lift_tight20",
+      "lane": "min",
+      "cell_id": "min_09h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_09h_midsmall_low:strength_surge",
+      "hypothesis": "positive/low-MDD but daily 0.2; loosen strength and tighten exit to test trade lift without opening drawdown",
+      "repair_type": "trade_lift",
+      "params": {
+        "strength_min": 100.0,
+        "take_profit": 1.5,
+        "stop_loss": 1.0,
+        "max_hold": 20,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "expected_observation": "1? preflight must create honest row; go requires profit>0, MDD<=35, daily_avg_trades>=0.5 under official full-period warm64 gate."
+    },
+    {
+      "rank": 2,
+      "condition_id": "repair_v1_20260705_r02_min_09h_midsmall_low_strength_trade_lift_hold30",
+      "lane": "min",
+      "cell_id": "min_09h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_09h_midsmall_low:strength_surge",
+      "hypothesis": "same anchor with slightly wider take-profit/hold to separate exit tightness from entry loosening",
+      "repair_type": "trade_lift",
+      "params": {
+        "strength_min": 100.0,
+        "take_profit": 2.0,
+        "stop_loss": 1.0,
+        "max_hold": 30,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "expected_observation": "1? preflight must create honest row; go requires profit>0, MDD<=35, daily_avg_trades>=0.5 under official full-period warm64 gate."
+    },
+    {
+      "rank": 3,
+      "condition_id": "repair_v1_20260705_r03_min_09h_small_low_momentum_trade_lift_tight20",
+      "lane": "min",
+      "cell_id": "min_09h_small_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_09h_small_low:momentum_breakout",
+      "hypothesis": "positive/very-low-MDD but daily 0.1; lower breakout threshold plus tight stop",
+      "repair_type": "trade_lift",
+      "params": {
+        "high_mult": 0.99,
+        "take_profit": 1.5,
+        "stop_loss": 1.0,
+        "max_hold": 20,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "expected_observation": "1? preflight must create honest row; go requires profit>0, MDD<=35, daily_avg_trades>=0.5 under official full-period warm64 gate."
+    },
+    {
+      "rank": 4,
+      "condition_id": "repair_v1_20260705_r04_min_10h_midsmall_low_momentum_trade_lift_tight20",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_10h_midsmall_low:momentum_breakout",
+      "hypothesis": "positive/low-MDD but sparse; test same repair in 10h bucket",
+      "repair_type": "trade_lift",
+      "params": {
+        "high_mult": 0.99,
+        "take_profit": 1.5,
+        "stop_loss": 1.0,
+        "max_hold": 20,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "expected_observation": "1? preflight must create honest row; go requires profit>0, MDD<=35, daily_avg_trades>=0.5 under official full-period warm64 gate."
+    },
+    {
+      "rank": 5,
+      "condition_id": "repair_v1_20260705_r05_min_10h_midsmall_low_strength_trade_lift_tight20",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_10h_midsmall_low:strength_surge",
+      "hypothesis": "positive/low-MDD strength anchor in 10h bucket with lower strength threshold",
+      "repair_type": "trade_lift",
+      "params": {
+        "strength_min": 100.0,
+        "take_profit": 1.5,
+        "stop_loss": 1.0,
+        "max_hold": 20,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "expected_observation": "1? preflight must create honest row; go requires profit>0, MDD<=35, daily_avg_trades>=0.5 under official full-period warm64 gate."
+    },
+    {
+      "rank": 6,
+      "condition_id": "repair_v1_20260705_r06_min_13h_large_high_momentum_loss_control_tight20",
+      "lane": "min",
+      "cell_id": "min_13h_large_high",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_13h_large_high:momentum_breakout",
+      "hypothesis": "daily 2.2 and MDD 14.79 but negative profit; isolate whether tighter stop/hold flips high-frequency low-MDD loss",
+      "repair_type": "loss_control",
+      "params": {
+        "high_mult": 0.995,
+        "take_profit": 1.5,
+        "stop_loss": 0.8,
+        "max_hold": 20,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "expected_observation": "1? preflight must create honest row; go requires profit>0, MDD<=35, daily_avg_trades>=0.5 under official full-period warm64 gate."
+    },
+    {
+      "rank": 7,
+      "condition_id": "repair_v1_20260705_r07_min_14h_large_high_momentum_loss_control_tight20",
+      "lane": "min",
+      "cell_id": "min_14h_large_high",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_14h_large_high:momentum_breakout",
+      "hypothesis": "daily 1.1 and MDD 22.62 but negative profit; test same loss-control idea in 14h",
+      "repair_type": "loss_control",
+      "params": {
+        "high_mult": 0.995,
+        "take_profit": 1.5,
+        "stop_loss": 0.8,
+        "max_hold": 20,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "expected_observation": "1? preflight must create honest row; go requires profit>0, MDD<=35, daily_avg_trades>=0.5 under official full-period warm64 gate."
+    },
+    {
+      "rank": 8,
+      "condition_id": "repair_v1_20260705_r08_min_1430p_large_high_momentum_loss_control_tight15",
+      "lane": "min",
+      "cell_id": "min_1430p_large_high",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_1430p_large_high:momentum_breakout",
+      "hypothesis": "late-session low-MDD negative row; tighter hold/take-profit checks if late drift can be harvested",
+      "repair_type": "loss_control",
+      "params": {
+        "high_mult": 0.995,
+        "take_profit": 1.2,
+        "stop_loss": 0.8,
+        "max_hold": 15,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "expected_observation": "1? preflight must create honest row; go requires profit>0, MDD<=35, daily_avg_trades>=0.5 under official full-period warm64 gate."
+    }
+  ],
+  "seeds_json": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_candidates_20260705_seeds.json"
+}

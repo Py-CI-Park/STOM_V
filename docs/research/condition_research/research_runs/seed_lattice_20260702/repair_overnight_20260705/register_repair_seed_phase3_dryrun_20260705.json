@@ -1,0 +1,19 @@
+{
+  "status": "dry_run_ok",
+  "schema_version": 1,
+  "dry_run": true,
+  "seeds": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json",
+  "db": "ai_strategy_loop\\state\\loop_strategies.db",
+  "pairs_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\pairs_repair_phase3_24_20260705.json",
+  "ledger_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\provenance_repair_seed_phase3_register_20260705.jsonl",
+  "mapping_out": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_strategy_name_mapping_20260705.jsonl",
+  "backup_path": null,
+  "planned_seed_count": 24,
+  "planned_insert_count": 48,
+  "inserted_seed_count": 0,
+  "inserted_row_count": 0,
+  "unsafe_legacy_name_count": 0,
+  "unsafe_target_name_count": 0,
+  "name_style": "filename_safe_v2",
+  "conflicts": []
+}

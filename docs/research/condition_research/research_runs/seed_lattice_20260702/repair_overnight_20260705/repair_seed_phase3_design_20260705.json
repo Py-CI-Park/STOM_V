@@ -1,0 +1,444 @@
+{
+  "schema": "repair_seed_phase3_design_v1",
+  "created_at": "2026-07-05T22:30:37+09:00",
+  "source_phase2_result": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_preflight_phase2_result_20260705.json",
+  "phase3_max_pairs": 24,
+  "cumulative_bounded_pairs_after_phase3": 56,
+  "design_rule": "Use build_seed-only single-condition variants after composite generation SyntaxError; focus on phase2 near-misses without manual buy-code synthesis.",
+  "composite_generation_status": "skipped_after_syntax_error_before_file_write; retained for future separate design only",
+  "candidates": [
+    {
+      "rank": 1,
+      "condition_id": "repair_v1_20260705_r3_01_min_09h_midsmall_low_strength_surge_hold60_sl3_s106_tp3",
+      "lane": "min",
+      "cell_id": "min_09h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_09h_midsmall_low:strength_surge",
+      "group": "phase2_sparse_strength_threshold_interpolation",
+      "params": {
+        "strength_min": 106.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "between phase2 s105 loss and s108 positive"
+    },
+    {
+      "rank": 2,
+      "condition_id": "repair_v1_20260705_r3_02_min_09h_midsmall_low_strength_surge_hold60_sl3_s107_tp3",
+      "lane": "min",
+      "cell_id": "min_09h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_09h_midsmall_low:strength_surge",
+      "group": "phase2_sparse_strength_threshold_interpolation",
+      "params": {
+        "strength_min": 107.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "between phase2 s105 loss and s108 positive"
+    },
+    {
+      "rank": 3,
+      "condition_id": "repair_v1_20260705_r3_03_min_09h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+      "lane": "min",
+      "cell_id": "min_09h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_09h_midsmall_low:strength_surge",
+      "group": "phase2_sparse_strength_threshold_interpolation",
+      "params": {
+        "strength_min": 109.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "slightly stricter than positive s108"
+    },
+    {
+      "rank": 4,
+      "condition_id": "repair_v1_20260705_r3_04_min_09h_midsmall_low_strength_surge_hold90_sl3_s106_tp4",
+      "lane": "min",
+      "cell_id": "min_09h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_09h_midsmall_low:strength_surge",
+      "group": "phase2_sparse_strength_threshold_interpolation",
+      "params": {
+        "strength_min": 106.0,
+        "take_profit": 4.0,
+        "stop_loss": 3.0,
+        "max_hold": 90,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "allow winners more room while keeping trade count"
+    },
+    {
+      "rank": 5,
+      "condition_id": "repair_v1_20260705_r3_05_min_09h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+      "lane": "min",
+      "cell_id": "min_09h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_09h_midsmall_low:strength_surge",
+      "group": "phase2_sparse_strength_threshold_interpolation",
+      "params": {
+        "strength_min": 107.0,
+        "take_profit": 4.0,
+        "stop_loss": 2.5,
+        "max_hold": 90,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "wider upside with tighter loss"
+    },
+    {
+      "rank": 6,
+      "condition_id": "repair_v1_20260705_r3_06_min_09h_midsmall_low_strength_surge_hold45_sl2_s109_tp2p5",
+      "lane": "min",
+      "cell_id": "min_09h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_09h_midsmall_low:strength_surge",
+      "group": "phase2_sparse_strength_threshold_interpolation",
+      "params": {
+        "strength_min": 109.0,
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "profit protection on stricter entry"
+    },
+    {
+      "rank": 7,
+      "condition_id": "repair_v1_20260705_r3_07_min_10h_midsmall_low_strength_surge_hold60_sl3_s106_tp3",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_10h_midsmall_low:strength_surge",
+      "group": "phase2_sparse_strength_threshold_interpolation",
+      "params": {
+        "strength_min": 106.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "between phase2 s105 loss and s108 positive"
+    },
+    {
+      "rank": 8,
+      "condition_id": "repair_v1_20260705_r3_08_min_10h_midsmall_low_strength_surge_hold60_sl3_s107_tp3",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_10h_midsmall_low:strength_surge",
+      "group": "phase2_sparse_strength_threshold_interpolation",
+      "params": {
+        "strength_min": 107.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "between phase2 s105 loss and s108 positive"
+    },
+    {
+      "rank": 9,
+      "condition_id": "repair_v1_20260705_r3_09_min_10h_midsmall_low_strength_surge_hold60_sl3_s109_tp3",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_10h_midsmall_low:strength_surge",
+      "group": "phase2_sparse_strength_threshold_interpolation",
+      "params": {
+        "strength_min": 109.0,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "slightly stricter than positive s108"
+    },
+    {
+      "rank": 10,
+      "condition_id": "repair_v1_20260705_r3_10_min_10h_midsmall_low_strength_surge_hold90_sl3_s106_tp4",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_10h_midsmall_low:strength_surge",
+      "group": "phase2_sparse_strength_threshold_interpolation",
+      "params": {
+        "strength_min": 106.0,
+        "take_profit": 4.0,
+        "stop_loss": 3.0,
+        "max_hold": 90,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "allow winners more room while keeping trade count"
+    },
+    {
+      "rank": 11,
+      "condition_id": "repair_v1_20260705_r3_11_min_10h_midsmall_low_strength_surge_hold90_sl2p5_s107_tp4",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_10h_midsmall_low:strength_surge",
+      "group": "phase2_sparse_strength_threshold_interpolation",
+      "params": {
+        "strength_min": 107.0,
+        "take_profit": 4.0,
+        "stop_loss": 2.5,
+        "max_hold": 90,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "wider upside with tighter loss"
+    },
+    {
+      "rank": 12,
+      "condition_id": "repair_v1_20260705_r3_12_min_10h_midsmall_low_strength_surge_hold45_sl2_s109_tp2p5",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "strength_surge",
+      "anchor": "lattice_v1:min_10h_midsmall_low:strength_surge",
+      "group": "phase2_sparse_strength_threshold_interpolation",
+      "params": {
+        "strength_min": 109.0,
+        "take_profit": 2.5,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "profit protection on stricter entry"
+    },
+    {
+      "rank": 13,
+      "condition_id": "repair_v1_20260705_r3_13_min_09h_small_low_momentum_breakout_h0p99_hold60_sl3_tp3",
+      "lane": "min",
+      "cell_id": "min_09h_small_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_09h_small_low:momentum_breakout",
+      "group": "phase2_sparse_momentum_trade_lift",
+      "params": {
+        "high_mult": 0.99,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "lift trade count from sparse positive 0.992-0.994 band"
+    },
+    {
+      "rank": 14,
+      "condition_id": "repair_v1_20260705_r3_14_min_09h_small_low_momentum_breakout_h0p991_hold60_sl3_tp3",
+      "lane": "min",
+      "cell_id": "min_09h_small_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_09h_small_low:momentum_breakout",
+      "group": "phase2_sparse_momentum_trade_lift",
+      "params": {
+        "high_mult": 0.991,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "lift trade count from sparse positive 0.992-0.994 band"
+    },
+    {
+      "rank": 15,
+      "condition_id": "repair_v1_20260705_r3_15_min_09h_small_low_momentum_breakout_h0p99_hold90_sl3_tp4",
+      "lane": "min",
+      "cell_id": "min_09h_small_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_09h_small_low:momentum_breakout",
+      "group": "phase2_sparse_momentum_trade_lift",
+      "params": {
+        "high_mult": 0.99,
+        "take_profit": 4.0,
+        "stop_loss": 3.0,
+        "max_hold": 90,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "give sparse winners more room"
+    },
+    {
+      "rank": 16,
+      "condition_id": "repair_v1_20260705_r3_16_min_09h_small_low_momentum_breakout_h0p991_hold90_sl2p5_tp4",
+      "lane": "min",
+      "cell_id": "min_09h_small_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_09h_small_low:momentum_breakout",
+      "group": "phase2_sparse_momentum_trade_lift",
+      "params": {
+        "high_mult": 0.991,
+        "take_profit": 4.0,
+        "stop_loss": 2.5,
+        "max_hold": 90,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "balance wider upside and tighter loss"
+    },
+    {
+      "rank": 17,
+      "condition_id": "repair_v1_20260705_r3_17_min_10h_midsmall_low_momentum_breakout_h0p99_hold60_sl3_tp3",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_10h_midsmall_low:momentum_breakout",
+      "group": "phase2_sparse_momentum_trade_lift",
+      "params": {
+        "high_mult": 0.99,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "lift trade count from sparse positive 0.992-0.994 band"
+    },
+    {
+      "rank": 18,
+      "condition_id": "repair_v1_20260705_r3_18_min_10h_midsmall_low_momentum_breakout_h0p991_hold60_sl3_tp3",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_10h_midsmall_low:momentum_breakout",
+      "group": "phase2_sparse_momentum_trade_lift",
+      "params": {
+        "high_mult": 0.991,
+        "take_profit": 3.0,
+        "stop_loss": 3.0,
+        "max_hold": 60,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "lift trade count from sparse positive 0.992-0.994 band"
+    },
+    {
+      "rank": 19,
+      "condition_id": "repair_v1_20260705_r3_19_min_10h_midsmall_low_momentum_breakout_h0p99_hold90_sl3_tp4",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_10h_midsmall_low:momentum_breakout",
+      "group": "phase2_sparse_momentum_trade_lift",
+      "params": {
+        "high_mult": 0.99,
+        "take_profit": 4.0,
+        "stop_loss": 3.0,
+        "max_hold": 90,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "give sparse winners more room"
+    },
+    {
+      "rank": 20,
+      "condition_id": "repair_v1_20260705_r3_20_min_10h_midsmall_low_momentum_breakout_h0p991_hold90_sl2p5_tp4",
+      "lane": "min",
+      "cell_id": "min_10h_midsmall_low",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_10h_midsmall_low:momentum_breakout",
+      "group": "phase2_sparse_momentum_trade_lift",
+      "params": {
+        "high_mult": 0.991,
+        "take_profit": 4.0,
+        "stop_loss": 2.5,
+        "max_hold": 90,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "balance wider upside and tighter loss"
+    },
+    {
+      "rank": 21,
+      "condition_id": "repair_v1_20260705_r3_21_min_13h_large_high_momentum_breakout_h1_hold30_sl2_tp2",
+      "lane": "min",
+      "cell_id": "min_13h_large_high",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_13h_large_high:momentum_breakout",
+      "group": "phase2_large_high_exit_repair",
+      "params": {
+        "high_mult": 1.0,
+        "take_profit": 2.0,
+        "stop_loss": 2.0,
+        "max_hold": 30,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "loss-control exit for high-frequency negative-profit hold"
+    },
+    {
+      "rank": 22,
+      "condition_id": "repair_v1_20260705_r3_22_min_13h_large_high_momentum_breakout_h1_hold45_sl2_tp4",
+      "lane": "min",
+      "cell_id": "min_13h_large_high",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_13h_large_high:momentum_breakout",
+      "group": "phase2_large_high_exit_repair",
+      "params": {
+        "high_mult": 1.0,
+        "take_profit": 4.0,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "preserve upside while cutting losses faster"
+    },
+    {
+      "rank": 23,
+      "condition_id": "repair_v1_20260705_r3_23_min_14h_large_high_momentum_breakout_h1_hold30_sl2_tp2",
+      "lane": "min",
+      "cell_id": "min_14h_large_high",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_14h_large_high:momentum_breakout",
+      "group": "phase2_large_high_exit_repair",
+      "params": {
+        "high_mult": 1.0,
+        "take_profit": 2.0,
+        "stop_loss": 2.0,
+        "max_hold": 30,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "nearest phase2 candidate: daily 0.5 mdd 30.15 profit -277k"
+    },
+    {
+      "rank": 24,
+      "condition_id": "repair_v1_20260705_r3_24_min_14h_large_high_momentum_breakout_h1_hold45_sl2_tp4",
+      "lane": "min",
+      "cell_id": "min_14h_large_high",
+      "family": "momentum_breakout",
+      "anchor": "lattice_v1:min_14h_large_high:momentum_breakout",
+      "group": "phase2_large_high_exit_repair",
+      "params": {
+        "high_mult": 1.0,
+        "take_profit": 4.0,
+        "stop_loss": 2.0,
+        "max_hold": 45,
+        "force_exit": 145900
+      },
+      "label": "hypothesis_seed",
+      "note": "nearest phase2 candidate: test asymmetric exit"
+    }
+  ],
+  "seeds_json": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_overnight_20260705\\repair_seed_phase3_candidates_20260705_seeds.json"
+}

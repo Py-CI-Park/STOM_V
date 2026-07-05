@@ -1,0 +1,146 @@
+[
+  {
+    "label": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s102_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s102_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s102_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s105_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s105_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s105_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_01_min_09h_midsmall_low_strength_s108_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_04_min_09h_midsmall_low_strength_s105_tp2_sl2_hold30",
+    "buy": "LAT_repair_v1_20260705_r2_04_min_09h_midsmall_low_strength_s105_tp2_sl2_hold30_B",
+    "sell": "LAT_repair_v1_20260705_r2_04_min_09h_midsmall_low_strength_s105_tp2_sl2_hold30_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_05_min_10h_midsmall_low_strength_s102_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_05_min_10h_midsmall_low_strength_s102_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_05_min_10h_midsmall_low_strength_s102_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_05_min_10h_midsmall_low_strength_s105_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_05_min_10h_midsmall_low_strength_s105_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_05_min_10h_midsmall_low_strength_s105_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_05_min_10h_midsmall_low_strength_s108_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_05_min_10h_midsmall_low_strength_s108_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_05_min_10h_midsmall_low_strength_s108_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_08_min_10h_midsmall_low_strength_s105_tp2_sl2_hold30",
+    "buy": "LAT_repair_v1_20260705_r2_08_min_10h_midsmall_low_strength_s105_tp2_sl2_hold30_B",
+    "sell": "LAT_repair_v1_20260705_r2_08_min_10h_midsmall_low_strength_s105_tp2_sl2_hold30_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0992_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0992_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0992_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0993_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0993_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0993_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_09_min_09h_small_low_momentum_h0994_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_12_min_09h_small_low_momentum_h0992_tp2_sl2_hold30",
+    "buy": "LAT_repair_v1_20260705_r2_12_min_09h_small_low_momentum_h0992_tp2_sl2_hold30_B",
+    "sell": "LAT_repair_v1_20260705_r2_12_min_09h_small_low_momentum_h0992_tp2_sl2_hold30_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0992_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0992_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0992_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0993_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0993_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0993_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_13_min_10h_midsmall_low_momentum_h0994_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_16_min_10h_midsmall_low_momentum_h0992_tp2_sl2_hold30",
+    "buy": "LAT_repair_v1_20260705_r2_16_min_10h_midsmall_low_momentum_h0992_tp2_sl2_hold30_B",
+    "sell": "LAT_repair_v1_20260705_r2_16_min_10h_midsmall_low_momentum_h0992_tp2_sl2_hold30_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_17_min_13h_midlarge_low_strength_s102_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_17_min_13h_midlarge_low_strength_s102_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_17_min_13h_midlarge_low_strength_s102_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_17_min_13h_midlarge_low_strength_s105_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_17_min_13h_midlarge_low_strength_s105_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_17_min_13h_midlarge_low_strength_s105_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_19_min_13h_large_high_momentum_h0997_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_19_min_13h_large_high_momentum_h0997_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_19_min_13h_large_high_momentum_h0997_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_20_min_13h_large_high_momentum_h10_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_21_min_14h_large_high_momentum_h0997_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_21_min_14h_large_high_momentum_h0997_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_21_min_14h_large_high_momentum_h0997_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_22_min_14h_large_high_momentum_h10_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_23_min_1430p_large_high_momentum_h0997_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_23_min_1430p_large_high_momentum_h0997_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_23_min_1430p_large_high_momentum_h0997_default_exit_S",
+    "lane": "min"
+  },
+  {
+    "label": "repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit",
+    "buy": "LAT_repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit_B",
+    "sell": "LAT_repair_v1_20260705_r2_24_min_1430p_large_high_momentum_h10_default_exit_S",
+    "lane": "min"
+  }
+]
