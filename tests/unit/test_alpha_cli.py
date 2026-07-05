@@ -23,7 +23,13 @@ from pathlib import Path
 import pytest
 
 from alpha_lab import registry
-from cli import alpha_dataset, alpha_events, alpha_mine, alpha_translate
+from cli import (
+    alpha_crosscheck,
+    alpha_dataset,
+    alpha_events,
+    alpha_mine,
+    alpha_translate,
+)
 
 DATES = ("20240103", "20240104")
 POS_CODE, NEG_CODE = "111111", "222222"
@@ -228,6 +234,32 @@ def test_dataset_requires_dates_xor_mvp(cli_env):
     assert exc2.value.code == 2
 
 
+def test_dataset_receipt_name_override_writes_separate_file(cli_env, tmp_path):
+    """--receipt-name(additive)은 청크 분할 실행 시 기본 영수증을 덮어쓰지
+    않고 지정 파일명으로 run-dir 안에 기록한다. 기본 동작은 불변."""
+    rc = alpha_dataset.main([
+        "--dates", "20240103", "--db-dir", str(cli_env["db_dir"]),
+        "--run-dir", str(cli_env["run_dir"]), "--cache-dir", str(tmp_path / "cc"),
+        "--receipt-name", "dataset_build_receipt_c1.json",
+    ])
+    assert rc == 0
+    override = cli_env["run_dir"] / "dataset_build_receipt_c1.json"
+    assert override.exists()
+    receipt = json.loads(override.read_text(encoding="utf-8"))
+    assert receipt["days_built"] == ["20240103"]
+    assert receipt["prereg_sha"] == cli_env["sha"]
+
+
+def test_dataset_receipt_name_rejects_path_separators(cli_env):
+    """--receipt-name은 run-dir 탈출 방지를 위해 경로 구분자를 거부한다."""
+    with pytest.raises(SystemExit) as exc:
+        alpha_dataset.main([
+            "--dates", "20240103", "--run-dir", str(cli_env["run_dir"]),
+            "--receipt-name", "sub/receipt.json",
+        ])
+    assert exc.value.code == 2
+
+
 # ------------------------------------------------------------- mining --
 
 
@@ -316,6 +348,200 @@ def test_events_report_cells_and_ledger(cli_env):
     assert registry.total_trials(ledger, "P2") == r["n_cells"]
 
 
+def test_events_collect_then_aggregate_matches_single_run(cli_env):
+    """--collect-name(청크 수집) → --from-collected(단일 집계) additive 왕복.
+
+    수집 전용은 보고서·원장을 건드리지 않고, 청크 병합 집계는 동일 일자
+    단일 실행과 셀 통계가 결정적으로 같아야 한다(min_n·FDR 전 기간 1회).
+    """
+    run_dir = cli_env["run_dir"]
+    report_path = run_dir / "event_cells_report.json"
+    ledger = run_dir / "n_trials_ledger.jsonl"
+    rc_single = alpha_events.main([
+        "--db-dir", str(cli_env["db_dir"]), "--dates", ",".join(DATES),
+        "--run-dir", str(run_dir),
+    ])
+    assert rc_single == 0
+    single = json.loads(report_path.read_text(encoding="utf-8"))
+    p2_before = registry.total_trials(ledger, "P2")
+    names = ("events_pool_c1.json", "events_pool_c2.json")
+    for date, name in zip(DATES, names):
+        rc = alpha_events.main([
+            "--db-dir", str(cli_env["db_dir"]), "--dates", date,
+            "--run-dir", str(run_dir), "--collect-name", name,
+        ])
+        assert rc == 0
+    # 수집 전용: 원장·기존 보고서 불변 + 풀 영수증 무결.
+    assert registry.total_trials(ledger, "P2") == p2_before
+    assert json.loads(report_path.read_text(encoding="utf-8")) == single
+    pool = json.loads((run_dir / names[0]).read_text(encoding="utf-8"))
+    assert pool["prereg_sha"] == cli_env["sha"]
+    assert pool["days_processed"] == [DATES[0]]
+    assert set(pool["pools"]) == {"real", "random", "shift"}
+    assert pool["n_outcome_samples"]["real"] == len(pool["pools"]["real"]) > 0
+    rc_merge = alpha_events.main([
+        "--dates", ",".join(DATES), "--run-dir", str(run_dir),
+        "--from-collected", ",".join(names),
+    ])
+    assert rc_merge == 0
+    merged = json.loads(report_path.read_text(encoding="utf-8"))
+    assert merged["cells"] == single["cells"]  # 청크 병합 == 단일 실행(결정 동일)
+    assert merged["events_detected"] == single["events_detected"]
+    assert merged["n_outcome_samples"] == single["n_outcome_samples"]
+    assert merged["days_processed"] == list(DATES)
+    assert merged["collected_from"] == list(names)
+    assert registry.total_trials(ledger, "P2") == p2_before + merged["n_cells"]
+
+
+def test_events_from_collected_requires_full_date_coverage(cli_env):
+    """요청 일자 일부만 담긴 수집 풀로는 집계 거부(exit 4) — 원장 불변."""
+    ledger = cli_env["run_dir"] / "n_trials_ledger.jsonl"
+    p2_before = registry.total_trials(ledger, "P2")
+    rc = alpha_events.main([
+        "--dates", ",".join(DATES), "--run-dir", str(cli_env["run_dir"]),
+        "--from-collected", "events_pool_c1.json",
+    ])
+    assert rc == 4
+    assert registry.total_trials(ledger, "P2") == p2_before
+
+
+def test_events_from_collected_rejects_foreign_seal(cli_env):
+    """다른 봉인(sha 불일치) 수집 풀은 병합 거부(exit 4)."""
+    run_dir = cli_env["run_dir"]
+    payload = json.loads(
+        (run_dir / "events_pool_c1.json").read_text(encoding="utf-8")
+    )
+    bad = dict(payload, prereg_sha="0" * 64)
+    (run_dir / "events_pool_bad.json").write_text(
+        json.dumps(bad, ensure_ascii=False), encoding="utf-8"
+    )
+    rc = alpha_events.main([
+        "--dates", DATES[0], "--run-dir", str(run_dir),
+        "--from-collected", "events_pool_bad.json",
+    ])
+    assert rc == 4
+
+
+def test_events_collect_name_and_from_collected_are_exclusive(cli_env):
+    with pytest.raises(SystemExit) as exc:
+        alpha_events.main([
+            "--dates", DATES[0], "--run-dir", str(cli_env["run_dir"]),
+            "--collect-name", "x.json", "--from-collected", "y.json",
+        ])
+    assert exc.value.code == 2
+
+
+def test_events_collect_name_rejects_path_separators(cli_env):
+    with pytest.raises(SystemExit) as exc:
+        alpha_events.main([
+            "--dates", DATES[0], "--run-dir", str(cli_env["run_dir"]),
+            "--collect-name", "sub/pool.json",
+        ])
+    assert exc.value.code == 2
+
+
+# ---------------------------------------------------------- crosscheck --
+
+XWIN_DATES = ("20230103", "20240103")  # 두 연도 1일씩 — 창 이름 2023/2024.
+
+
+@pytest.fixture(scope="module")
+def xwin_env(tmp_path_factory) -> dict:
+    """교차창 전용 독립 환경 — 연도별 1일 DB + windows.mvp 2그룹 봉인."""
+    root = tmp_path_factory.mktemp("alpha_xwin")
+    db_dir, run_dir = root / "db", root / "run"
+    db_dir.mkdir()
+    run_dir.mkdir()
+    for date in XWIN_DATES:
+        _build_day_db(db_dir / f"stock_tick_{date}.db", date)
+    prereg = dict(
+        MINI_PREREG,
+        windows={"mvp": {"y2023": [XWIN_DATES[0]], "y2024": [XWIN_DATES[1]]}},
+    )
+    sha = registry.seal(prereg, run_dir / "preregistration_v1.json")
+    (run_dir / "preregistration_v1.sha256").write_text(sha + "\n", encoding="utf-8")
+    rc = alpha_dataset.main([
+        "--mvp", "--db-dir", str(db_dir), "--run-dir", str(run_dir),
+    ])
+    assert rc == 0
+    return {"db_dir": db_dir, "run_dir": run_dir, "sha": sha}
+
+
+@pytest.fixture(scope="module")
+def cross_report(xwin_env) -> dict:
+    rc = alpha_crosscheck.main(["--mvp", "--run-dir", str(xwin_env["run_dir"])])
+    assert rc == 0
+    path = xwin_env["run_dir"] / "cross_window_report.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_crosscheck_recovers_planted_signal_both_windows(xwin_env, cross_report):
+    r = cross_report
+    assert r["prereg_sha"] == xwin_env["sha"]
+    assert r["label"] == "L1_180"
+    assert r["cross_lift_min"] == pytest.approx(1.3)
+    assert sorted(r["windows"]) == ["2023", "2024"]
+    rules = r["rules"]
+    assert rules and r["n_rules"] == len(rules)
+    for rule in rules:
+        for key in ("rule_id", "mined_on", "rule", "lift_2023", "lift_2024",
+                    "both_ge_1_3", "support_2023", "support_2024"):
+            assert key in rule
+        assert rule["mined_on"] in ("2023", "2024")
+    assert set(r["n_rules_by_window"]) == {"2023", "2024"}
+    assert sum(r["n_rules_by_window"].values()) == r["n_rules"]
+    both = [x for x in rules if x["both_ge_1_3"]]
+    assert r["n_both_ge_1_3"] == len(both) >= 1
+    # 플랜트 신호: 분리 피처(체결강도/스프레드율)만 쓰는 리프는 양 창 lift 2.0.
+    strong = [
+        x for x in both
+        if {cond[0] for cond in x["rule"]} <= {"체결강도", "스프레드율"}
+        and x["lift_2023"] > 1.5
+    ]
+    assert strong
+    for leaf in strong:
+        assert leaf["lift_2023"] == pytest.approx(2.0)
+        assert leaf["lift_2024"] == pytest.approx(2.0)
+    # 내부 키('_' 접두)는 직렬화 제외.
+    assert all(not k.startswith("_") for rule in rules for k in rule)
+
+
+def test_crosscheck_appends_mined_leaf_total_to_ledger(xwin_env, cross_report):
+    ledger = xwin_env["run_dir"] / "n_trials_ledger.jsonl"
+    assert registry.total_trials(ledger, "P1") == cross_report["n_rules"]
+    assert cross_report["ledger"]["program"] == "P1"
+    assert cross_report["ledger"]["n"] == cross_report["n_rules"]
+
+
+def test_crosscheck_requires_mvp_xor_explicit_windows(xwin_env):
+    with pytest.raises(SystemExit) as exc:
+        alpha_crosscheck.main(["--run-dir", str(xwin_env["run_dir"])])
+    assert exc.value.code == 2
+    with pytest.raises(SystemExit) as exc2:
+        alpha_crosscheck.main([
+            "--mvp", "--dates-a", "20230103",
+            "--run-dir", str(xwin_env["run_dir"]),
+        ])
+    assert exc2.value.code == 2
+    with pytest.raises(SystemExit) as exc3:
+        alpha_crosscheck.main([
+            "--dates-a", "20230103", "--run-dir", str(xwin_env["run_dir"]),
+        ])
+    assert exc3.value.code == 2
+
+
+def test_crosscheck_same_year_windows_rejected(xwin_env, cross_report):
+    """두 창이 같은 연도면 교차창이 아니다 — 입력 오류(exit 4), 보고서 불변."""
+    report_path = xwin_env["run_dir"] / "cross_window_report.json"
+    before = report_path.read_text(encoding="utf-8")
+    rc = alpha_crosscheck.main([
+        "--dates-a", "20240103", "--dates-b", "20240103",
+        "--run-dir", str(xwin_env["run_dir"]),
+    ])
+    assert rc == 4
+    assert report_path.read_text(encoding="utf-8") == before
+
+
 # --------------------------------------------------------------- seal --
 
 
@@ -327,7 +553,9 @@ def _sealed_dir_with_bad_sidecar(tmp_path: Path) -> Path:
     return run_dir
 
 
-@pytest.mark.parametrize("runner", ["dataset", "mine", "events", "translate"])
+@pytest.mark.parametrize(
+    "runner", ["dataset", "mine", "events", "translate", "crosscheck"]
+)
 def test_seal_mismatch_aborts_every_cli(tmp_path, runner):
     run_dir = _sealed_dir_with_bad_sidecar(tmp_path)
     argv_by_runner = {
@@ -343,10 +571,15 @@ def test_seal_mismatch_aborts_every_cli(tmp_path, runner):
             "--run-dir", str(run_dir),
         ]),
         "translate": lambda: alpha_translate.main(["--run-dir", str(run_dir)]),
+        "crosscheck": lambda: alpha_crosscheck.main([
+            "--dates-a", "20230103", "--dates-b", "20240103",
+            "--run-dir", str(run_dir),
+        ]),
     }
     assert argv_by_runner[runner]() == 3
     assert not (run_dir / "dataset_build_receipt.json").exists()
     assert not (run_dir / "mining_report.json").exists()
     assert not (run_dir / "event_cells_report.json").exists()
     assert not (run_dir / "translation_receipt.json").exists()
+    assert not (run_dir / "cross_window_report.json").exists()
     assert not (run_dir / "n_trials_ledger.jsonl").exists()

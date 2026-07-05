@@ -41,6 +41,16 @@ DEFAULT_STRIDE_SEC = 5                     # 봉인 그리드 stride.
 DEFAULT_HORIZONS = (60, 180, 300)          # 봉인 L1 지평.
 
 
+def _receipt_filename(value: str) -> str:
+    """--receipt-name 검증 — 경로 구분자 금지(run-dir 밖 탈출 방지)."""
+    name = str(value).strip()
+    if not name or Path(name).name != name:
+        raise argparse.ArgumentTypeError(
+            f"경로 구분자 없는 파일명이어야 한다: {value!r}"
+        )
+    return name
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="alpha_dataset",
@@ -55,6 +65,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--cache-dir", default=None,
         help="npz 샤드 출력 디렉토리 (기본 {run-dir}/cache)",
+    )
+    parser.add_argument(
+        "--receipt-name", type=_receipt_filename, default=RECEIPT_NAME,
+        help=f"run-dir 안 영수증 파일명 (기본 {RECEIPT_NAME} — 청크 분할 실행용)",
     )
     return parser
 
@@ -164,10 +178,11 @@ def _run(args: argparse.Namespace, now: datetime) -> int:
         "per_day": per_day,
         "elapsed_sec": round(time.monotonic() - started, 3),
     }
-    write_receipt(run_dir / RECEIPT_NAME, receipt)
+    receipt_path = run_dir / getattr(args, "receipt_name", RECEIPT_NAME)
+    write_receipt(receipt_path, receipt)
     logger.info(
         "dataset 완료: 일수 %d(스킵 %d) 표본 %d — %s",
-        len(per_day), len(skipped), receipt["n_samples"], run_dir / RECEIPT_NAME,
+        len(per_day), len(skipped), receipt["n_samples"], receipt_path,
     )
     if not per_day:
         logger.error("전 일자 DB 결측 — 입력 부족(exit %d)", EXIT_INPUT)

@@ -27,15 +27,19 @@ import numpy as np
 from alpha_lab.stats_common import bh_fdr, day_block_bootstrap
 from alpha_lab.stats_common import lift as _lift
 
-__all__ = ["adopt", "evaluate_leaves"]
+__all__ = ["adopt", "evaluate_leaves", "rule_mask"]
 
 logger = logging.getLogger(__name__)
 
 _ADOPT_REQUIRED = ("fdr_survivor", "lift", "support", "_idx", "_pos_idx", "_pos_all", "_n")
 
 
-def _rule_mask(X: np.ndarray, leaf: dict) -> np.ndarray:
-    """리프 rule×rule_cols conjunction을 X 표본 bool 마스크로 재구성."""
+def rule_mask(X: np.ndarray, leaf: dict) -> np.ndarray:
+    """리프 rule×rule_cols conjunction을 X 표본 bool 마스크로 재구성.
+
+    공개 API — evaluate_leaves 내부와 교차창 점검(alpha_crosscheck)이 같은
+    구현을 공유한다(마스크 재구성 중복 구현 금지).
+    """
     cols = leaf.get("rule_cols")
     if cols is None or len(cols) != len(leaf["rule"]):
         raise ValueError("리프에 rule_cols가 없거나 rule과 길이가 다르다 — mine_rules 산출물이 아니다")
@@ -46,6 +50,9 @@ def _rule_mask(X: np.ndarray, leaf: dict) -> np.ndarray:
         vals = X[:, int(col)]
         mask &= (vals <= thr) if op == "<=" else (vals > thr)
     return mask
+
+
+_rule_mask = rule_mask  # 기존 내부명 호환 별칭.
 
 
 def _validate_eval_inputs(X: np.ndarray, y: np.ndarray, day_ids: np.ndarray) -> None:
