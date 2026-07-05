@@ -1,3 +1,5 @@
 {"batch": "P1-L1_180-20260705T235857","meta": {"label": "L1_180","n_adopted": 30,"n_days": 60},"n": 80,"program": "P1","ts": "2026-07-05T23:58:57.667124"}
 {"batch": "P1XW-L1_180-20260706T000440","meta": {"kind": "cross_window","label": "L1_180","n_both_ge_1_3": 57,"n_rules_by_window": {"2023": 74,"2024": 79},"windows": {"2023": 30,"2024": 30}},"n": 153,"program": "P1","ts": "2026-07-06T00:04:40.591670"}
 {"batch": "P2-events-20260706T000925","meta": {"min_n": 200,"n_days": 60},"n": 138,"program": "P2","ts": "2026-07-06T00:09:25.362764"}
+{"batch": "P3-mcl-screening-20260706T022650","meta": {"counting_rule": "피처25×표적6 전수 선계상(미실행분 반환 없음)","kind": "mcl_screening_precommit","pool_n": 346,"survivors": 0,"valid_trials": 0},"n": 150,"program": "P3","ts": "2026-07-06T02:26:50.887993"}
+{"batch": "p5_exit_grid_v1_full","meta": {"gate_pass": true,"gate_report": "p5_replay_gate_report.json","rule": "exit grid 192 전수 선계상(봉인 counting_rule)"},"n": 192,"program": "P5","ts": "2026-07-05T18:10:19.398926+00:00"}
