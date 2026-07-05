@@ -277,6 +277,19 @@ Plan C/B/D documents.
   Result: `12/12` chunks, `288/288` unique pairs, `ok=288`,
   `gate_passed=0`. Tick export, min, P6, P7, and Plan D were not run in this
   selected range. Next allowed action is tick export/summary only.
+  Tick export/summary and min readiness 2026-07-05: completed without running
+  min. Evidence:
+  `docs/update_log/2026-07-05_p5_tick_export_summary_min_readiness_handoff.md`
+  plus JSONL export
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_full_warm64_288_export_summary_20260705.jsonl`
+  and summary JSON
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_full_warm64_288_export_summary_20260705.json`.
+  Result: `ok=288`, `gate_passed=0`, `negative_profit_count=288`,
+  `mdd_excess_count=287`, `low_daily_trades_count=9`. Root-cause judgment:
+  condition structure is primary; strict gate and tick lane are secondary
+  filters. Official min config and `pairs_min.json` are ready, but full min 288
+  should not start directly. Next allowed action is min official warm64
+  preflight4 only.
 
   Acceptance:
   - Resume manifest and first-10-pair timing estimate are written.
