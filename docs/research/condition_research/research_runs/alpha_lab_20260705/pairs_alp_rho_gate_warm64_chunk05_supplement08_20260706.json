@@ -1,0 +1,12 @@
+[
+  {
+    "label": "alp_rho_gate:ALP_RM_08:P1-s04-l027",
+    "buy": "ALP_RM_08",
+    "sell": "ALP_RM_08",
+    "rank": 8,
+    "rule_id": "P1-s04-l027",
+    "mined_lift": 2.3759105531186786,
+    "chunk_no": 5,
+    "note": "chunk03 fail-fast timeout(300s) supplement — 새 run_id, 동결 프로파일 그대로(p5 blocker 전례: retry/supplement with new run_id only)"
+  }
+]

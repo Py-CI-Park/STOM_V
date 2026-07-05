@@ -1,0 +1,628 @@
+{
+ "schema": "alpha_lab_rho_gate_registration_receipt_v1",
+ "stage": "rho_gate_registration_ALP_RM_top10",
+ "created_at": "2026-07-06T03:42:59.207415+09:00",
+ "git_head": "896d10d1be73173979f3b107b111b1f6c84e829a",
+ "seal_verification": {
+  "v1": {
+   "path": "docs\\research\\condition_research\\research_runs\\alpha_lab_20260705\\preregistration_v1.json",
+   "sha256": "6750a56711fdca039f8c14b6f1a432abddd562ec134df2d06c65a3614ac39e5b",
+   "verified": true
+  },
+  "p3": {
+   "path": "docs\\research\\condition_research\\research_runs\\alpha_lab_20260705\\p3_preregistration_v1.json",
+   "sha256": "6a75e83149a843c59ef7227de6071aa79b8eda0d9690d2507bbd42ad01b9ad54",
+   "verified": true
+  },
+  "p5": {
+   "path": "docs\\research\\condition_research\\research_runs\\alpha_lab_20260705\\p5_preregistration_v1.json",
+   "sha256": "84eeb95a5c426ab32371b95f51d7c5a624497f12d77773c770e63ca61edc2aeb",
+   "verified": true
+  }
+ },
+ "sealed_thresholds": {
+  "v1_rho_gate": {
+   "go": 0.5,
+   "hold": 0.2,
+   "n_rules": 10
+  },
+  "p5_engine_confirmation": "~25회, min 스윕 종료 후 PENDING"
+ },
+ "selection": {
+  "source_reports": {
+   "mining_report": "docs\\research\\condition_research\\research_runs\\alpha_lab_20260705\\mining_report.json",
+   "translation_receipt": "docs\\research\\condition_research\\research_runs\\alpha_lab_20260705\\translation_receipt.json"
+  },
+  "n_adopted_input": 30,
+  "ordering": "lift desc, support desc, rule json(ensure_ascii=False) asc",
+  "top10": [
+   {
+    "name": "ALP_RM_01",
+    "rule_id": "P1-s02-l019",
+    "lift": 3.874019081646003,
+    "support": 2349,
+    "positives": 514,
+    "rounded_rule": [
+     [
+      "등락율",
+      ">",
+      4.2
+     ],
+     [
+      "VI거리율",
+      "<=",
+      -0.1
+     ],
+     [
+      "전일비",
+      "<=",
+      12.2
+     ],
+     [
+      "전일비",
+      "<=",
+      3.4
+     ]
+    ],
+    "buy_expr": "if (90000 <= 시분초 < 93000) and (등락율) > 4.2 and ((현재가 / VI가격 - 1 if VI가격 > 0 else 0.0)) <= -0.1 and (전일비) <= 12.2 and (전일비) <= 3.4:\n    self.Buy()",
+    "buy_sha256": "9b48b605a31c117a46cc320dec3f9aed362abf05a8b49a824bdb11743ef539db"
+   },
+   {
+    "name": "ALP_RM_02",
+    "rule_id": "P1-s04-l011",
+    "lift": 3.5734434377237414,
+    "support": 2175,
+    "positives": 439,
+    "rounded_rule": [
+     [
+      "초당매도수량",
+      "<=",
+      120.5
+     ],
+     [
+      "등락율",
+      ">",
+      4.2
+     ],
+     [
+      "전일비",
+      "<=",
+      12.7
+     ],
+     [
+      "고가대비위치",
+      "<=",
+      0.5
+     ]
+    ],
+    "buy_expr": "if (90000 <= 시분초 < 93000) and (초당매도수량) <= 120.5 and (등락율) > 4.2 and (전일비) <= 12.7 and ((현재가 - 저가) / max(고가 - 저가, 1e-9)) <= 0.5:\n    self.Buy()",
+    "buy_sha256": "03c6f36f4056c6575a64939284400ff94c5df72ddffcac6f2ae47cabbbb6f8a2"
+   },
+   {
+    "name": "ALP_RM_03",
+    "rule_id": "P1-s03-l026",
+    "lift": 3.1211971871913198,
+    "support": 2008,
+    "positives": 354,
+    "rounded_rule": [
+     [
+      "시가총액",
+      ">",
+      10676.5
+     ],
+     [
+      "초당매도수량",
+      ">",
+      11.5
+     ],
+     [
+      "거래대금증감",
+      "<=",
+      -467159629824.0
+     ],
+     [
+      "당일거래대금",
+      "<=",
+      47698.5
+     ]
+    ],
+    "buy_expr": "if (90000 <= 시분초 < 93000) and (시가총액) > 10676.5 and (초당매도수량) > 11.5 and (거래대금증감) <= -467159629824.0 and (당일거래대금) <= 47698.5:\n    self.Buy()",
+    "buy_sha256": "f982f431254d3659b0fa9be0d5ec893254d81e7d66686f39683db356927bdc7c"
+   },
+   {
+    "name": "ALP_RM_04",
+    "rule_id": "P1-s00-l026",
+    "lift": 2.9865752265796766,
+    "support": 2223,
+    "positives": 375,
+    "rounded_rule": [
+     [
+      "시가총액",
+      ">",
+      10676.5
+     ],
+     [
+      "초당거래대금",
+      ">",
+      10.5
+     ],
+     [
+      "거래대금증감",
+      "<=",
+      -466225659904.0
+     ],
+     [
+      "당일거래대금",
+      "<=",
+      56422.0
+     ]
+    ],
+    "buy_expr": "if (90000 <= 시분초 < 93000) and (시가총액) > 10676.5 and (초당거래대금) > 10.5 and (거래대금증감) <= -466225659904.0 and (당일거래대금) <= 56422.0:\n    self.Buy()",
+    "buy_sha256": "57f646d4d296e4a96b4ca2f6fbfbceca67b5f51839e4a8c81f4742173ff4fe04"
+   },
+   {
+    "name": "ALP_RM_05",
+    "rule_id": "P1-s02-l020",
+    "lift": 2.653243110732709,
+    "support": 12805,
+    "positives": 1919,
+    "rounded_rule": [
+     [
+      "등락율",
+      ">",
+      4.2
+     ],
+     [
+      "VI거리율",
+      "<=",
+      -0.1
+     ],
+     [
+      "전일비",
+      "<=",
+      12.2
+     ],
+     [
+      "전일비",
+      ">",
+      3.4
+     ]
+    ],
+    "buy_expr": "if (90000 <= 시분초 < 93000) and (등락율) > 4.2 and ((현재가 / VI가격 - 1 if VI가격 > 0 else 0.0)) <= -0.1 and (전일비) <= 12.2 and (전일비) > 3.4:\n    self.Buy()",
+    "buy_sha256": "b2767c3507c1f930f98cb88f90aab1e91bc558b03bdb859ffe2a545e1b9f61cb"
+   },
+   {
+    "name": "ALP_RM_06",
+    "rule_id": "P1-s03-l007",
+    "lift": 2.58093625210415,
+    "support": 3080,
+    "positives": 449,
+    "rounded_rule": [
+     [
+      "시가총액",
+      "<=",
+      10676.5
+     ],
+     [
+      "초당매도수량",
+      "<=",
+      123.5
+     ],
+     [
+      "저가대비고가등락율",
+      ">",
+      11.8
+     ],
+     [
+      "고저평균대비등락율",
+      "<=",
+      -3.3
+     ]
+    ],
+    "buy_expr": "if (90000 <= 시분초 < 93000) and (시가총액) <= 10676.5 and (초당매도수량) <= 123.5 and (저가대비고가등락율) > 11.8 and (고저평균대비등락율) <= -3.3:\n    self.Buy()",
+    "buy_sha256": "ad4bb723909753d86b73408cd3220bccebacf17a2e612b26127b151e25b17a61"
+   },
+   {
+    "name": "ALP_RM_07",
+    "rule_id": "P1-s01-l029",
+    "lift": 2.578586367779071,
+    "support": 19513,
+    "positives": 2842,
+    "rounded_rule": [
+     [
+      "초당매수수량",
+      ">",
+      111.5
+     ],
+     [
+      "매도소진율",
+      ">",
+      0.1
+     ],
+     [
+      "초당매수수량",
+      ">",
+      1388.5
+     ],
+     [
+      "시가대비율",
+      "<=",
+      0.0
+     ]
+    ],
+    "buy_expr": "if (90000 <= 시분초 < 93000) and (초당매수수량) > 111.5 and (초당매도수량 / max(매도잔량1, 1)) > 0.1 and (초당매수수량) > 1388.5 and (현재가 / max(시가, 1) - 1) <= 0.0:\n    self.Buy()",
+    "buy_sha256": "d3095ddaf3ec4c7b8bc9823a5f4fb364486e5a621b448cfe845a7bea5e2cebab"
+   },
+   {
+    "name": "ALP_RM_08",
+    "rule_id": "P1-s04-l027",
+    "lift": 2.3759105531186786,
+    "support": 21878,
+    "positives": 2936,
+    "rounded_rule": [
+     [
+      "초당매도수량",
+      ">",
+      120.5
+     ],
+     [
+      "순매수수량비",
+      ">",
+      0.1
+     ],
+     [
+      "전일비",
+      "<=",
+      11.7
+     ],
+     [
+      "초당매도수량",
+      ">",
+      524.5
+     ]
+    ],
+    "buy_expr": "if (90000 <= 시분초 < 93000) and (초당매도수량) > 120.5 and (초당매수수량 / max(초당매도수량, 1)) > 0.1 and (전일비) <= 11.7 and (초당매도수량) > 524.5:\n    self.Buy()",
+    "buy_sha256": "de154bac2a95b0eeb4e8fc4b6ff2831e0fa7f19ed990bab67a185bbe642353ff"
+   },
+   {
+    "name": "ALP_RM_09",
+    "rule_id": "P1-s00-l012",
+    "lift": 2.283397595869657,
+    "support": 56376,
+    "positives": 7271,
+    "rounded_rule": [
+     [
+      "시가총액",
+      "<=",
+      10676.5
+     ],
+     [
+      "초당매수수량",
+      ">",
+      301.5
+     ],
+     [
+      "VI거리율",
+      "<=",
+      -0.0
+     ],
+     [
+      "초당거래대금",
+      ">",
+      19.5
+     ]
+    ],
+    "buy_expr": "if (90000 <= 시분초 < 93000) and (시가총액) <= 10676.5 and (초당매수수량) > 301.5 and ((현재가 / VI가격 - 1 if VI가격 > 0 else 0.0)) <= -0.0 and (초당거래대금) > 19.5:\n    self.Buy()",
+    "buy_sha256": "4f9a2702310f1a138dc90eddc650cff4ba902cabcc663d5c6666a7b555187212"
+   },
+   {
+    "name": "ALP_RM_10",
+    "rule_id": "P1-s03-l011",
+    "lift": 2.108220761005318,
+    "support": 38949,
+    "positives": 4638,
+    "rounded_rule": [
+     [
+      "시가총액",
+      "<=",
+      10676.5
+     ],
+     [
+      "초당매도수량",
+      ">",
+      123.5
+     ],
+     [
+      "전일비",
+      "<=",
+      10.8
+     ],
+     [
+      "시가대비율",
+      "<=",
+      0.0
+     ]
+    ],
+    "buy_expr": "if (90000 <= 시분초 < 93000) and (시가총액) <= 10676.5 and (초당매도수량) > 123.5 and (전일비) <= 10.8 and (현재가 / max(시가, 1) - 1) <= 0.0:\n    self.Buy()",
+    "buy_sha256": "4b88c0405bb68bdf06706f099550d8e427768508828f7a305046fd708a1bf9e3"
+   }
+  ]
+ },
+ "sell": {
+  "policy": "전 규칙 공통 고정 — 검증 완료 hard-stop 계열(챔피언 현직 매도식)",
+  "sell_strategy_source_id": "GATE_rr8_12_turnover_min_902_1_5_S",
+  "source_doc": "docs\\research\\condition_research\\condition_passports\\rr8_12_turnover_min_902_1.5.md",
+  "source_note": "passport sell 코드 블록 원문이 passport 기재 sell_code_sha256과 byte-exact 일치함을 실측 확인. hard-stop 절: '수익률 >= 9 or 수익률 <= -5.0' + 시분초<93000 게이트 등 현직 전문 그대로. 축 검증 근거: process_research_sellonly_20260701_night_result.md의 hard_stop 축 success(stop02 ΔProfit +40125, ΔMDD -1.45) — 채택 원문은 현직 매도식(-5.0 계열) 전문이다(설계 §3.4 '검증 완료 hard-stop 계열 고정').",
+  "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07"
+ },
+ "registration": {
+  "db_path": "_database\\strategy.db",
+  "db_isolation": "_database는 wt-dev에서 복사된 로컬 독립 사본(<DIR>, junction 아님)",
+  "mode": "INSERT-only (registrar 계약: 백업 선행, 충돌 쌍 전체 스킵, 멱등)",
+  "backup_path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database\\strategy.db.bak.alpha_lab_20260706T034259",
+  "inserted": [
+   {
+    "name": "ALP_RM_01",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "9b48b605a31c117a46cc320dec3f9aed362abf05a8b49a824bdb11743ef539db",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "rank": 1,
+     "rule_id": "P1-s02-l019",
+     "subset_id": 2,
+     "leaf_id": 19,
+     "lift": 3.874019081646003,
+     "support": 2349,
+     "positives": 514
+    }
+   },
+   {
+    "name": "ALP_RM_02",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "03c6f36f4056c6575a64939284400ff94c5df72ddffcac6f2ae47cabbbb6f8a2",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "rank": 2,
+     "rule_id": "P1-s04-l011",
+     "subset_id": 4,
+     "leaf_id": 11,
+     "lift": 3.5734434377237414,
+     "support": 2175,
+     "positives": 439
+    }
+   },
+   {
+    "name": "ALP_RM_03",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "f982f431254d3659b0fa9be0d5ec893254d81e7d66686f39683db356927bdc7c",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "rank": 3,
+     "rule_id": "P1-s03-l026",
+     "subset_id": 3,
+     "leaf_id": 26,
+     "lift": 3.1211971871913198,
+     "support": 2008,
+     "positives": 354
+    }
+   },
+   {
+    "name": "ALP_RM_04",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "57f646d4d296e4a96b4ca2f6fbfbceca67b5f51839e4a8c81f4742173ff4fe04",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "rank": 4,
+     "rule_id": "P1-s00-l026",
+     "subset_id": 0,
+     "leaf_id": 26,
+     "lift": 2.9865752265796766,
+     "support": 2223,
+     "positives": 375
+    }
+   },
+   {
+    "name": "ALP_RM_05",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "b2767c3507c1f930f98cb88f90aab1e91bc558b03bdb859ffe2a545e1b9f61cb",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "rank": 5,
+     "rule_id": "P1-s02-l020",
+     "subset_id": 2,
+     "leaf_id": 20,
+     "lift": 2.653243110732709,
+     "support": 12805,
+     "positives": 1919
+    }
+   },
+   {
+    "name": "ALP_RM_06",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "ad4bb723909753d86b73408cd3220bccebacf17a2e612b26127b151e25b17a61",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "rank": 6,
+     "rule_id": "P1-s03-l007",
+     "subset_id": 3,
+     "leaf_id": 7,
+     "lift": 2.58093625210415,
+     "support": 3080,
+     "positives": 449
+    }
+   },
+   {
+    "name": "ALP_RM_07",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "d3095ddaf3ec4c7b8bc9823a5f4fb364486e5a621b448cfe845a7bea5e2cebab",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "rank": 7,
+     "rule_id": "P1-s01-l029",
+     "subset_id": 1,
+     "leaf_id": 29,
+     "lift": 2.578586367779071,
+     "support": 19513,
+     "positives": 2842
+    }
+   },
+   {
+    "name": "ALP_RM_08",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "de154bac2a95b0eeb4e8fc4b6ff2831e0fa7f19ed990bab67a185bbe642353ff",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "rank": 8,
+     "rule_id": "P1-s04-l027",
+     "subset_id": 4,
+     "leaf_id": 27,
+     "lift": 2.3759105531186786,
+     "support": 21878,
+     "positives": 2936
+    }
+   },
+   {
+    "name": "ALP_RM_09",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "4f9a2702310f1a138dc90eddc650cff4ba902cabcc663d5c6666a7b555187212",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "rank": 9,
+     "rule_id": "P1-s00-l012",
+     "subset_id": 0,
+     "leaf_id": 12,
+     "lift": 2.283397595869657,
+     "support": 56376,
+     "positives": 7271
+    }
+   },
+   {
+    "name": "ALP_RM_10",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "4b88c0405bb68bdf06706f099550d8e427768508828f7a305046fd708a1bf9e3",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "rank": 10,
+     "rule_id": "P1-s03-l011",
+     "subset_id": 3,
+     "leaf_id": 11,
+     "lift": 2.108220761005318,
+     "support": 38949,
+     "positives": 4638
+    }
+   }
+  ],
+  "conflicts": [],
+  "post_verify": [
+   {
+    "name": "ALP_RM_01",
+    "stockbuy_sha256": "9b48b605a31c117a46cc320dec3f9aed362abf05a8b49a824bdb11743ef539db",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07"
+   },
+   {
+    "name": "ALP_RM_02",
+    "stockbuy_sha256": "03c6f36f4056c6575a64939284400ff94c5df72ddffcac6f2ae47cabbbb6f8a2",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07"
+   },
+   {
+    "name": "ALP_RM_03",
+    "stockbuy_sha256": "f982f431254d3659b0fa9be0d5ec893254d81e7d66686f39683db356927bdc7c",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07"
+   },
+   {
+    "name": "ALP_RM_04",
+    "stockbuy_sha256": "57f646d4d296e4a96b4ca2f6fbfbceca67b5f51839e4a8c81f4742173ff4fe04",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07"
+   },
+   {
+    "name": "ALP_RM_05",
+    "stockbuy_sha256": "b2767c3507c1f930f98cb88f90aab1e91bc558b03bdb859ffe2a545e1b9f61cb",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07"
+   },
+   {
+    "name": "ALP_RM_06",
+    "stockbuy_sha256": "ad4bb723909753d86b73408cd3220bccebacf17a2e612b26127b151e25b17a61",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07"
+   },
+   {
+    "name": "ALP_RM_07",
+    "stockbuy_sha256": "d3095ddaf3ec4c7b8bc9823a5f4fb364486e5a621b448cfe845a7bea5e2cebab",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07"
+   },
+   {
+    "name": "ALP_RM_08",
+    "stockbuy_sha256": "de154bac2a95b0eeb4e8fc4b6ff2831e0fa7f19ed990bab67a185bbe642353ff",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07"
+   },
+   {
+    "name": "ALP_RM_09",
+    "stockbuy_sha256": "4f9a2702310f1a138dc90eddc650cff4ba902cabcc663d5c6666a7b555187212",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07"
+   },
+   {
+    "name": "ALP_RM_10",
+    "stockbuy_sha256": "4b88c0405bb68bdf06706f099550d8e427768508828f7a305046fd708a1bf9e3",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07"
+   }
+  ]
+ },
+ "provenance_ledger": {
+  "path": "docs\\research\\condition_research\\research_runs\\alpha_lab_20260705\\rho_gate_registration_provenance.jsonl",
+  "records_appended": 10,
+  "prereg_sha": "6750a56711fdca039f8c14b6f1a432abddd562ec134df2d06c65a3614ac39e5b",
+  "n_trials_context": 713
+ },
+ "engine_wiring_note": "claude_candidate_batch_eval은 ai_strategy_loop.bootstrap이 STOM_CLI_DB_STRATEGY(setdefault)로 지정한 DB에서 전략명을 해석한다 — 기본값 ai_strategy_loop/state/loop_strategies.db(현 워크트리 0바이트). 본 등재 대상 _database/strategy.db를 엔진이 읽게 하려면 실행 전 STOM_CLI_DB_STRATEGY=<abs>/_database/strategy.db 선지정 필요(cli/paths.py DB_STRATEGY env-override 실측). strategy.db에는 formula 테이블 실재(엔진 호환).",
+ "official_profile": {
+  "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\smoke_config_tick_official_full_warm64_20260704.json",
+  "bt_timeframe": "tick",
+  "bt_full_start": 20220323,
+  "bt_full_end": 20260227,
+  "bt_betting": "5",
+  "bt_avg_time": 30,
+  "bt_engine_mode": "warm",
+  "bt_warm_engine_count": 64,
+  "bt_universe_start_time": 90000,
+  "bt_universe_end_time": 92800,
+  "bt_warm_run_timeout": 300
+ },
+ "chunk_protocol": {
+  "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\p5_tick_full_run_protocol_after_preflight_20260704.md",
+  "rules": [
+   "단일 대형 런 금지 — 청크 분할(공식 전례: 24쌍 청크, 본 워크플로는 2~3쌍)",
+   "--fail-fast-timeout 필수",
+   "청크마다 warm64 prepare/close",
+   "성공 기준은 커버리지 맵 완성(honest ok/no_trades/error)"
+  ]
+ }
+}

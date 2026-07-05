@@ -1,0 +1,371 @@
+{
+ "schema": "alpha_lab_rho_gate_engine_runs_v1",
+ "loop_runs_db": "ai_strategy_loop\\state\\loop_runs.db",
+ "config_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json",
+ "strategy_db_env": "STOM_CLI_DB_STRATEGY=C:/System_Trading/STOM/STOM_V.wt-alpha/_database/strategy.db",
+ "chunks": [
+  {
+   "chunk_no": 1,
+   "run_id": "alp_rho_gate_warm64_chunk01_20260706",
+   "run_status": "complete",
+   "started_at": 1783277588.5482378,
+   "finished_at": 1783278160.6166754,
+   "expected_pairs": 3,
+   "recorded_rows": 3,
+   "warm_prepare_evidence": "[BATCH] prepare status=ok back_count=2424 elapsed=299s",
+   "all_rows_honest_status": true,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_rho_gate_warm64_chunk01_20260706 pairs=3",
+    "[BATCH] prepare status=ok back_count=2424 elapsed=299s",
+    "[BATCH] gen0 alp_rho_gate:ALP_RM_01:P1-s02-l019 ok profit=-38,095,762 mdd=376.89 trades=981 daily=1.00 payoff=1.1304874986977476 gate=False reason=mdd 376.9 > mdd_cap 35 (81s)",
+    "[BATCH] gen1 alp_rho_gate:ALP_RM_02:P1-s04-l011 ok profit=-202,998,002 mdd=397.57 trades=6845 daily=7.20 payoff=1.4346001077752224 gate=False reason=mdd 397.6 > mdd_cap 35 (78s)",
+    "[BATCH] gen2 alp_rho_gate:ALP_RM_03:P1-s03-l026 ok profit=-11,826,414 mdd=118.83 trades=598 daily=0.60 payoff=0.9550592541207487 gate=False reason=mdd 118.8 > mdd_cap 35 (79s)",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_RM_01",
+     "sell_name": "ALP_RM_01",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "mdd 376.9 > mdd_cap 35",
+     "csv_path": "backtest/csv\\stock_bt_ALP_RM_01_20260706035925.csv",
+     "trade_count": 981,
+     "daily_avg_trades": 1.0,
+     "mdd": 376.89,
+     "profit": -38095762.0,
+     "total_profit_pct": -380.08,
+     "payoff_ratio": 1.1304874986977476,
+     "strategy_gist": "alp_rho_gate:ALP_RM_01:P1-s02-l019",
+     "created_at": 1783277969.4522867
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_RM_02",
+     "sell_name": "ALP_RM_02",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "mdd 397.6 > mdd_cap 35",
+     "csv_path": "backtest/csv\\stock_bt_ALP_RM_02_20260706040044.csv",
+     "trade_count": 6845,
+     "daily_avg_trades": 7.2,
+     "mdd": 397.57,
+     "profit": -202998002.0,
+     "total_profit_pct": -408.29,
+     "payoff_ratio": 1.4346001077752224,
+     "strategy_gist": "alp_rho_gate:ALP_RM_02:P1-s04-l011",
+     "created_at": 1783278048.0936584
+    },
+    {
+     "gen_no": 2,
+     "buy_name": "ALP_RM_03",
+     "sell_name": "ALP_RM_03",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "mdd 118.8 > mdd_cap 35",
+     "csv_path": "backtest/csv\\stock_bt_ALP_RM_03_20260706040204.csv",
+     "trade_count": 598,
+     "daily_avg_trades": 0.6,
+     "mdd": 118.83,
+     "profit": -11826414.0,
+     "total_profit_pct": -118.44,
+     "payoff_ratio": 0.9550592541207487,
+     "strategy_gist": "alp_rho_gate:ALP_RM_03:P1-s03-l026",
+     "created_at": 1783278127.4575937
+    }
+   ]
+  },
+  {
+   "chunk_no": 2,
+   "run_id": "alp_rho_gate_warm64_chunk02_20260706",
+   "run_status": "complete",
+   "started_at": 1783278205.4972084,
+   "finished_at": 1783278760.8793547,
+   "expected_pairs": 3,
+   "recorded_rows": 3,
+   "warm_prepare_evidence": "[BATCH] prepare status=ok back_count=2424 elapsed=290s",
+   "all_rows_honest_status": true,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_rho_gate_warm64_chunk02_20260706 pairs=3",
+    "[BATCH] prepare status=ok back_count=2424 elapsed=290s",
+    "[BATCH] gen0 alp_rho_gate:ALP_RM_04:P1-s00-l026 ok profit=-12,572,414 mdd=125.43 trades=672 daily=0.70 payoff=1.0030544760202582 gate=False reason=mdd 125.4 > mdd_cap 35 (76s)",
+    "[BATCH] gen1 alp_rho_gate:ALP_RM_05:P1-s02-l020 ok profit=-125,361,096 mdd=503.97 trades=4166 daily=4.40 payoff=1.3369019005853786 gate=False reason=mdd 504 > mdd_cap 35 (73s)",
+    "[BATCH] gen2 alp_rho_gate:ALP_RM_06:P1-s03-l007 ok profit=-125,984,689 mdd=806.97 trades=4651 daily=4.90 payoff=1.4296089749591052 gate=False reason=mdd 807 > mdd_cap 35 (85s)",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_RM_04",
+     "sell_name": "ALP_RM_04",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "mdd 125.4 > mdd_cap 35",
+     "csv_path": "backtest/csv\\stock_bt_ALP_RM_04_20260706040928.csv",
+     "trade_count": 672,
+     "daily_avg_trades": 0.7,
+     "mdd": 125.43,
+     "profit": -12572414.0,
+     "total_profit_pct": -125.69,
+     "payoff_ratio": 1.0030544760202582,
+     "strategy_gist": "alp_rho_gate:ALP_RM_04:P1-s00-l026",
+     "created_at": 1783278572.0230837
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_RM_05",
+     "sell_name": "ALP_RM_05",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "mdd 504 > mdd_cap 35",
+     "csv_path": "backtest/csv\\stock_bt_ALP_RM_05_20260706041042.csv",
+     "trade_count": 4166,
+     "daily_avg_trades": 4.4,
+     "mdd": 503.97,
+     "profit": -125361096.0,
+     "total_profit_pct": -501.1,
+     "payoff_ratio": 1.3369019005853786,
+     "strategy_gist": "alp_rho_gate:ALP_RM_05:P1-s02-l020",
+     "created_at": 1783278645.6077912
+    },
+    {
+     "gen_no": 2,
+     "buy_name": "ALP_RM_06",
+     "sell_name": "ALP_RM_06",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "mdd 807 > mdd_cap 35",
+     "csv_path": "backtest/csv\\stock_bt_ALP_RM_06_20260706041207.csv",
+     "trade_count": 4651,
+     "daily_avg_trades": 4.9,
+     "mdd": 806.97,
+     "profit": -125984689.0,
+     "total_profit_pct": -834.64,
+     "payoff_ratio": 1.4296089749591052,
+     "strategy_gist": "alp_rho_gate:ALP_RM_06:P1-s03-l007",
+     "created_at": 1783278730.5666764
+    }
+   ]
+  },
+  {
+   "chunk_no": 3,
+   "run_id": "alp_rho_gate_warm64_chunk03_20260706",
+   "run_status": "complete",
+   "started_at": 1783278798.8749878,
+   "finished_at": 1783279772.3207796,
+   "expected_pairs": 2,
+   "recorded_rows": 2,
+   "warm_prepare_evidence": "[BATCH] prepare status=ok back_count=2424 elapsed=295s",
+   "all_rows_honest_status": true,
+   "problems": [
+    "error rows present"
+   ],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_rho_gate_warm64_chunk03_20260706 pairs=2",
+    "[BATCH] prepare status=ok back_count=2424 elapsed=295s",
+    "[BATCH] gen0 alp_rho_gate:ALP_RM_07:P1-s01-l029 ok profit=-1,403,257,691 mdd=1118.96 trades=49273 daily=51.80 payoff=1.4616449752103147 gate=False reason=mdd 1119 > mdd_cap 35 (308s)",
+    "[BATCH] gen1 alp_rho_gate:ALP_RM_08:P1-s04-l027 ERROR (356s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no",
+    "[BATCH] abort after timeout: alp_rho_gate:ALP_RM_08:P1-s04-l027",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_RM_07",
+     "sell_name": "ALP_RM_07",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "mdd 1119 > mdd_cap 35",
+     "csv_path": "backtest/csv\\stock_bt_ALP_RM_07_20260706042317.csv",
+     "trade_count": 49273,
+     "daily_avg_trades": 51.8,
+     "mdd": 1118.96,
+     "profit": -1403257691.0,
+     "total_profit_pct": -1122.52,
+     "payoff_ratio": 1.4616449752103147,
+     "strategy_gist": "alp_rho_gate:ALP_RM_07:P1-s01-l029",
+     "created_at": 1783279404.7047894
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_RM_08",
+     "sell_name": "ALP_RM_08",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_rho_gate:ALP_RM_08:P1-s04-l027] backtest failed: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_rho_gate:ALP_RM_08:P1-s04-l027",
+     "created_at": 1783279761.1139574
+    }
+   ]
+  },
+  {
+   "chunk_no": 4,
+   "run_id": "alp_rho_gate_warm64_chunk04_20260706",
+   "run_status": "complete",
+   "started_at": 1783279880.9558308,
+   "finished_at": 1783280541.5917878,
+   "expected_pairs": 2,
+   "recorded_rows": 1,
+   "warm_prepare_evidence": "[BATCH] prepare status=ok back_count=2424 elapsed=288s",
+   "all_rows_honest_status": true,
+   "problems": [
+    "recorded_rows 1 != expected 2",
+    "error rows present"
+   ],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_rho_gate_warm64_chunk04_20260706 pairs=2",
+    "[BATCH] prepare status=ok back_count=2424 elapsed=288s",
+    "[BATCH] gen0 alp_rho_gate:ALP_RM_09:P1-s00-l012 ERROR (361s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no",
+    "[BATCH] abort after timeout: alp_rho_gate:ALP_RM_09:P1-s00-l012",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_RM_09",
+     "sell_name": "ALP_RM_09",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_rho_gate:ALP_RM_09:P1-s00-l012] backtest failed: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_rho_gate:ALP_RM_09:P1-s00-l012",
+     "created_at": 1783280530.3830671
+    }
+   ]
+  },
+  {
+   "chunk_no": 5,
+   "run_id": "alp_rho_gate_warm64_chunk05_supplement08_20260706",
+   "run_status": "complete",
+   "started_at": 1783280626.768068,
+   "finished_at": 1783281275.0342293,
+   "expected_pairs": 1,
+   "recorded_rows": 1,
+   "warm_prepare_evidence": "[BATCH] prepare status=ok back_count=2424 elapsed=291s",
+   "all_rows_honest_status": true,
+   "problems": [
+    "error rows present"
+   ],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_rho_gate_warm64_chunk05_supplement08_20260706 pairs=1",
+    "[BATCH] prepare status=ok back_count=2424 elapsed=291s",
+    "[BATCH] gen0 alp_rho_gate:ALP_RM_08:P1-s04-l027 ERROR (344s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no",
+    "[BATCH] abort after timeout: alp_rho_gate:ALP_RM_08:P1-s04-l027",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_RM_08",
+     "sell_name": "ALP_RM_08",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_rho_gate:ALP_RM_08:P1-s04-l027] backtest failed: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_rho_gate:ALP_RM_08:P1-s04-l027",
+     "created_at": 1783281263.8535151
+    }
+   ]
+  },
+  {
+   "chunk_no": 6,
+   "run_id": "alp_rho_gate_warm64_chunk06_supplement09_20260706",
+   "run_status": "complete",
+   "started_at": 1783281869.8089666,
+   "finished_at": 1783282536.6453993,
+   "expected_pairs": 1,
+   "recorded_rows": 1,
+   "warm_prepare_evidence": "[BATCH] prepare status=ok back_count=2424 elapsed=295s",
+   "all_rows_honest_status": true,
+   "problems": [
+    "error rows present"
+   ],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_rho_gate_warm64_chunk06_supplement09_20260706 pairs=1",
+    "[BATCH] prepare status=ok back_count=2424 elapsed=295s",
+    "[BATCH] gen0 alp_rho_gate:ALP_RM_09:P1-s00-l012 ERROR (359s) warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no",
+    "[BATCH] abort after timeout: alp_rho_gate:ALP_RM_09:P1-s00-l012",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_RM_09",
+     "sell_name": "ALP_RM_09",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_rho_gate:ALP_RM_09:P1-s00-l012] backtest failed: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_rho_gate:ALP_RM_09:P1-s00-l012",
+     "created_at": 1783282525.4420033
+    }
+   ]
+  },
+  {
+   "chunk_no": 7,
+   "run_id": "alp_rho_gate_warm64_chunk07_supplement10_20260706",
+   "run_status": "complete",
+   "started_at": 1783281337.8398545,
+   "finished_at": 1783281809.1107922,
+   "expected_pairs": 1,
+   "recorded_rows": 1,
+   "warm_prepare_evidence": "[BATCH] prepare status=ok back_count=2424 elapsed=290s",
+   "all_rows_honest_status": true,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_rho_gate_warm64_chunk07_supplement10_20260706 pairs=1",
+    "[BATCH] prepare status=ok back_count=2424 elapsed=290s",
+    "[BATCH] gen0 alp_rho_gate:ALP_RM_10:P1-s03-l011 ok profit=-641,121,223 mdd=581.92 trades=19730 daily=20.70 payoff=1.2561687587707369 gate=False reason=mdd 581.9 > mdd_cap 35 (148s)",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_RM_10",
+     "sell_name": "ALP_RM_10",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "mdd 581.9 > mdd_cap 35",
+     "csv_path": "backtest/csv\\stock_bt_ALP_RM_10_20260706050253.csv",
+     "trade_count": 19730,
+     "daily_avg_trades": 20.7,
+     "mdd": 581.92,
+     "profit": -641121223.0,
+     "total_profit_pct": -581.47,
+     "payoff_ratio": 1.2561687587707369,
+     "strategy_gist": "alp_rho_gate:ALP_RM_10:P1-s03-l011",
+     "created_at": 1783281778.3704526
+    }
+   ]
+  }
+ ],
+ "updated_at": "2026-07-06T05:16:33.863567+09:00"
+}

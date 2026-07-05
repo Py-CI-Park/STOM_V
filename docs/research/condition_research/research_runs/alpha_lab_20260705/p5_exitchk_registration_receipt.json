@@ -1,0 +1,112 @@
+{
+ "schema": "alpha_lab_p5_exitchk_registration_receipt_v1",
+ "stage": "p5_engine_confirmation_registration",
+ "created_at": "2026-07-06T05:34:33.969375+09:00",
+ "git_head": "896d10d1be73173979f3b107b111b1f6c84e829a",
+ "seal_verification": {
+  "v1": {
+   "path": "docs\\research\\condition_research\\research_runs\\alpha_lab_20260705\\preregistration_v1.json",
+   "sha256": "6750a56711fdca039f8c14b6f1a432abddd562ec134df2d06c65a3614ac39e5b",
+   "verified": true
+  },
+  "p3": {
+   "path": "docs\\research\\condition_research\\research_runs\\alpha_lab_20260705\\p3_preregistration_v1.json",
+   "sha256": "6a75e83149a843c59ef7227de6071aa79b8eda0d9690d2507bbd42ad01b9ad54",
+   "verified": true
+  },
+  "p5": {
+   "path": "docs\\research\\condition_research\\research_runs\\alpha_lab_20260705\\p5_preregistration_v1.json",
+   "sha256": "84eeb95a5c426ab32371b95f51d7c5a624497f12d77773c770e63ca61edc2aeb",
+   "verified": true
+  }
+ },
+ "sealed_thresholds": {
+  "v1_rho_gate": {
+   "go": 0.5,
+   "hold": 0.2,
+   "n_rules": 10
+  },
+  "p5_engine_confirmation_verbatim": "~25회, min 스윕 종료 후 PENDING",
+  "p5_engine_confirmation_note_verbatim": "provenance=program_spec — §4.4 '엔진 백테 총 ~25회(MVP <=2회)'; warm64 min 스윕 종료 전 엔진 프로세스 기동 금지, 본 봉인 범위는 오프라인 반사실 측정까지"
+ },
+ "engine_budget": {
+  "sealed_budget_runs": 25,
+  "prior_engine_confirmation_runs_in_ledger": 12,
+  "planned_runs_this_round": 10,
+  "planned_total_after_this_round": 22,
+  "n_trials_total_context": 725
+ },
+ "buy_source": {
+  "doc": "docs\\research\\condition_research\\condition_passports\\rr8_12_turnover_min_902_1.5.md",
+  "strategy_source_id": "GATE_rr8_12_turnover_min_902_1_5_B",
+  "note": "passport buy 코드블록 원문(rstrip 개행)이 passport 기재 buy_code_sha256과 byte-exact 일치 실측. 로컬 strategy.db에는 GATE_* 원본이 없음(stockbuy 112명 전수 조회 — GATE/rr8/turnover 매치 0), 원장 배선(phase0)과 rho_gate 등재가 이미 같은 passport 원문을 채택한 전례를 따름.",
+  "buy_sha256": "348c518145cbf91e7123f9a8f3498fc35b36d269cce3e3e57154bd191d3ea97a"
+ },
+ "sell_A_source": {
+  "doc": "docs\\research\\condition_research\\condition_passports\\rr8_12_turnover_min_902_1.5.md",
+  "strategy_source_id": "GATE_rr8_12_turnover_min_902_1_5_S",
+  "note": "대조군 A = 챔피언 현직 매도식 원문 그대로(하드스톱 절 '수익률 >= 9 or 수익률 <= -5.0' 포함 전문). rho_gate 등재와 동일 원천·동일 sha.",
+  "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07"
+ },
+ "sell_B_translation": {
+  "policy_id": "hard_stop=-5.0 / trailing=null / time_stop=300 / profit_cap=null",
+  "policy_source": "p5_exit_grid_report.json ev_ci_low 최상 정책 — p5_verdict.md §2 (EV +0.291%/거래, 95% CI [+0.028,+0.560], p=0.017)",
+  "one_to_one_mapping": {
+   "hard_stop": "봉인 규칙 '수익률(%) <= hard_stop_pct → 즉시 청산' → `수익률 <= -5.0`",
+   "trailing": "null → 절 없음",
+   "profit_cap": "null → 절 없음",
+   "time_stop": "봉인 규칙 '보유시간(초) >= time_stop_sec → 청산' → `보유시간 >= 300`",
+   "evaluation_order": "봉인 evaluation_order(hard_stop→trailing→profit_cap→time_stop)에서 활성 축만 남긴 if/elif 순서",
+   "force_exit": "엔진 전략종료청산 유지(추가 절 없음). 봉인 반사실 규약은 force_exit 92900였으나 엔진 공식 프로파일 유니버스는 90000~92800 — A/B 공통 조건이므로 대조 공정성 유지, 절대치 컨벤션 차이는 보고서에 명기"
+  },
+  "namespace_evidence": {
+   "수익률/보유시간": "backtest/backengine_kiwoom_tick2.py:191,193에서 exec(self.sellstg)(:213) 직전 바인딩 실측",
+   "보유시간_단위": "backtest/backengine_base.py:854 — is_tick이면 total_seconds() (초)",
+   "정밀도": "현직 챔피언 매도식이 동일 네임스페이스에서 수익률·보유시간을 이미 사용(전례)"
+  },
+  "sell_sha256": "69ea74584b0d75a10d6a396c79ed825d01cca1029316f7942f4f9b5316cfe191"
+ },
+ "registration": {
+  "db": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database\\strategy.db",
+  "inserted": [
+   {
+    "name": "ALP_EXITCHK_A_INCUMBENT",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "348c518145cbf91e7123f9a8f3498fc35b36d269cce3e3e57154bd191d3ea97a",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "role": "control_incumbent",
+     "policy": "champion incumbent sell (GATE_rr8_12_turnover_min_902_1_5_S 원문)"
+    }
+   },
+   {
+    "name": "ALP_EXITCHK_B_HARD5_TS300",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "348c518145cbf91e7123f9a8f3498fc35b36d269cce3e3e57154bd191d3ea97a",
+    "sell_sha256": "69ea74584b0d75a10d6a396c79ed825d01cca1029316f7942f4f9b5316cfe191",
+    "meta": {
+     "role": "candidate_exit",
+     "policy": "hard_stop -5.0 / trailing null / time_stop 300 / profit_cap null"
+    }
+   }
+  ],
+  "conflicts": [],
+  "backup_path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database\\strategy.db.bak.alpha_lab_20260706T053433",
+  "post_verify_byte_exact": {
+   "stockbuy/ALP_EXITCHK_A_INCUMBENT": true,
+   "stocksell/ALP_EXITCHK_A_INCUMBENT": true,
+   "stockbuy/ALP_EXITCHK_B_HARD5_TS300": true,
+   "stocksell/ALP_EXITCHK_B_HARD5_TS300": true
+  }
+ },
+ "provenance_note": "receipts.append_receipt는 source.kind가 leaf/event_cell로 제한(alpha_lab/bridge/receipts.py 실측)되어 청산정책 출처에 부정직하므로 미사용 — 본 마스터 영수증이 provenance를 전담.",
+ "process_scan": {
+  "python_exe_count": 5
+ }
+}

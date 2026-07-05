@@ -1,0 +1,14 @@
+[
+  {
+    "label": "alp_exitchk:A_incumbent:y2022",
+    "buy": "ALP_EXITCHK_A_INCUMBENT",
+    "sell": "ALP_EXITCHK_A_INCUMBENT",
+    "policy": "champion incumbent sell (control)"
+  },
+  {
+    "label": "alp_exitchk:B_hard5_ts300:y2022",
+    "buy": "ALP_EXITCHK_B_HARD5_TS300",
+    "sell": "ALP_EXITCHK_B_HARD5_TS300",
+    "policy": "hard_stop -5.0 / time_stop 300 (P5 Round-3 best)"
+  }
+]

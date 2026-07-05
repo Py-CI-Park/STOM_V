@@ -1,0 +1,151 @@
+{
+ "schema": "alpha_lab_p5_engine_confirmation_v1",
+ "created_at": "2026-07-06T06:05:31.037402+09:00",
+ "git_head": "896d10d1be73173979f3b107b111b1f6c84e829a",
+ "program": "alpha_lab_p5_exit_v1",
+ "seal_verification_post_run": {
+  "v1": {
+   "path": "docs\\research\\condition_research\\research_runs\\alpha_lab_20260705\\preregistration_v1.json",
+   "sha256": "6750a56711fdca039f8c14b6f1a432abddd562ec134df2d06c65a3614ac39e5b",
+   "verified_post_run": true
+  },
+  "p3": {
+   "path": "docs\\research\\condition_research\\research_runs\\alpha_lab_20260705\\p3_preregistration_v1.json",
+   "sha256": "6a75e83149a843c59ef7227de6071aa79b8eda0d9690d2507bbd42ad01b9ad54",
+   "verified_post_run": true
+  },
+  "p5": {
+   "path": "docs\\research\\condition_research\\research_runs\\alpha_lab_20260705\\p5_preregistration_v1.json",
+   "sha256": "84eeb95a5c426ab32371b95f51d7c5a624497f12d77773c770e63ca61edc2aeb",
+   "verified_post_run": true
+  }
+ },
+ "sealed_engine_confirmation_verbatim": "~25회, min 스윕 종료 후 PENDING",
+ "budget_accounting": {
+  "sealed_budget_runs": 25,
+  "runs_used_this_round": 10,
+  "prior_engine_confirmation_runs": 12,
+  "cumulative_engine_confirmation_runs": 22,
+  "within_budget": true,
+  "n_trials_ledger_batch": "P5-exitchk-engine-confirmation-20260706"
+ },
+ "wiring_validation": {
+  "trade_count_reproduction": "A(현직) 연도별 거래수 101/197/156/190 = 챔피언 20260628 게이트런 4본과 전수 일치(distill/p5_phase0_receipt.json)",
+  "passport_prior_reproduction": "A y2025 profit 3,062,696 / MDD 12.87 / trades 190 = passport prior_profit/prior_mdd/prior_trades와 완전 일치"
+ },
+ "registration_receipt": "p5_exitchk_registration_receipt.json",
+ "engine_runs_detail": "p5_exitchk_engine_runs.json",
+ "compare_intermediate": "p5_exitchk_compare_intermediate.json",
+ "windows_delta_b_minus_a": {
+  "full": {
+   "profit_krw": 1840478.0,
+   "total_profit_pct_pp": 18.34,
+   "ev_pp_per_trade": 0.0792,
+   "mdd_pp": 0.96,
+   "hold_sec_mean": -93.34,
+   "trade_count": -30
+  },
+  "y2022": {
+   "profit_krw": 2537670.0,
+   "total_profit_pct_pp": 50.67,
+   "ev_pp_per_trade": 0.4894,
+   "mdd_pp": -4.3,
+   "hold_sec_mean": -242.68,
+   "trade_count": 1
+  },
+  "y2023": {
+   "profit_krw": 2594635.0,
+   "total_profit_pct_pp": 25.95,
+   "ev_pp_per_trade": 0.3218,
+   "mdd_pp": 0.99,
+   "hold_sec_mean": -114.55,
+   "trade_count": -13
+  },
+  "y2024": {
+   "profit_krw": -1364825.0,
+   "total_profit_pct_pp": -41.89,
+   "ev_pp_per_trade": -0.1691,
+   "mdd_pp": 4.38,
+   "hold_sec_mean": -70.89,
+   "trade_count": -5
+  },
+  "y2025": {
+   "profit_krw": -1708599.0,
+   "total_profit_pct_pp": -17.13,
+   "ev_pp_per_trade": -0.1705,
+   "mdd_pp": 5.66,
+   "hold_sec_mean": -10.29,
+   "trade_count": -12
+  }
+ },
+ "full_window_paired_bootstrap": {
+  "point_delta_pp": 0.0792,
+  "ci95": [
+   -0.1044,
+   0.2533
+  ],
+  "p_one_sided_le0": 0.209,
+  "n_boot_effective": 1000,
+  "n_days": 463,
+  "method": "joint day-block bootstrap (같은 날 표본을 A/B 동시 재추출), stat=mean, seed=20260706 — 봉인 격자 부트스트랩 규약(entry_day 블록) 미러"
+ },
+ "replay_agreement": {
+  "mission_spec_prediction": {
+   "delta_pp": 0.2914,
+   "ci95": [
+    0.0276,
+    0.5598
+   ],
+   "source": "p5_exit_grid_report.json best_by_ev_ci_low(ev_pct) — 임무 지시문 명기 예측"
+  },
+  "paired_replay_delta": {
+   "delta_pp": 0.283,
+   "ci95": [
+    0.067,
+    0.495
+   ],
+   "p": 0.001,
+   "source": "p5_verdict.md §2 보조분석(사후 페어드)"
+  },
+  "engine_delta_full": 0.0792,
+  "engine_delta_ci95_day_block": [
+   -0.1044,
+   0.2533
+  ],
+  "engine_p_one_sided_le0": 0.209,
+  "checks": {
+   "engine_delta_within_replay_ci": true,
+   "replay_point_within_engine_ci": false,
+   "sign_agreement": true,
+   "yearly_decomposition_agreement": false
+  },
+  "verdict": "partial",
+  "verdict_note": "엔진 Δ+0.0792pp는 리플레이 CI [0.028,0.560] 하단부 안(부호 일치)이나, 점추정(+0.291)의 27% 수준이고 엔진 자체 95% CI [-0.104,+0.253]가 리플레이 점추정을 배제. 연도 분해는 2022/2023 우위 ↔ 2024/2025 역전 — 리플레이의 균질 개선 예측과 불합.",
+  "replay_model_limitation_candidates": [
+   "챔피언 아날로그(-5/trail60)가 현직 매도식의 비격자 절(최저현재가 60초, 등락율각도 미시절, 9% 익절, 29.5 상한)을 생략 — 엔진 A의 보유중앙값 167~257초(연도별)로 아날로그(606초)보다 훨씬 빨리 청산, 현직 성능을 리플레이가 과소평가",
+   "진입 고정 가정 — 엔진에서는 청산 정책이 슬롯 점유·재진입을 바꿔 거래 집합 자체가 변함(full 창 B 635건 vs A 665건)",
+   "체결 컨벤션 — 리플레이 bid1-2틱 균일 불리 vs 엔진 3호가 사다리: 정책별 청산 시점 분포가 달라 EV 이동이 비대칭",
+   "원장 풀링 — 2022~2025 혼합 원장에서 균질 효과로 추정했으나 실제 효과는 레짐 의존(최근 2개년 역전)"
+  ]
+ },
+ "verdict": {
+  "recommendation": "기각(불채택) — 현행 챔피언 매도식 유지",
+  "grounds": [
+   "최근 2개년 역전: ΔEV 2024 -0.169pp, 2025 -0.171pp (2022 +0.489, 2023 +0.322와 반대) — 풀윈도 +0.079pp는 구레짐(2022/2023) 기여",
+   "MDD 악화 4/5 창: full +0.96pp, 2023 +0.99pp, 2024 +4.38pp, 2025 +5.66pp (2022만 -4.30pp)",
+   "엔진 풀윈도 ΔEV의 95% CI [-0.104,+0.253]가 0을 포함(p_one_sided=0.209) — 우위 증거 불충분",
+   "리플레이 대비 방향은 유지되나 점추정 크게 축소(partial) — 오프라인 후보의 엔진 확증 실패"
+  ],
+  "positive_notes": [
+   "B 절 발동 분포(time_stop 584/hard_stop 51, full)는 리플레이 예측(615/52)과 근접 — 번역·배선 정확성은 교차 확인됨",
+   "payoff ratio는 B가 개선(full 1.344 vs 1.171) — 손실 절단 자체는 작동",
+   "time_stop 구조 신호의 레짐 조건부 재탐색은 새 봉인 + 새 n_trials로만 가능(SealViolation 규율)"
+  ]
+ },
+ "field_semantics_notes": {
+  "mdd": "loop_runs.db generations.mdd — 공식 루프 _score_outcome/graded.mdd(하드게이트 mdd_cap 35 판정에 쓰는 동일 필드). passport prior_mdd 12.87과 A y2025 mdd 12.87 일치로 교차 실측",
+  "ev_pct_per_trade": "결과 CSV '수익률' 컬럼 평균(엔진 GetKiwoomPgSgSp net %, 원장과 동일 단위)",
+  "hold_sec": "결과 CSV '보유시간' 컬럼(tick 엔진 초 단위 — backtest/backengine_base.py:854)",
+  "profit": "generations.profit (KRW), total_profit_pct: generations.total_profit_pct"
+ }
+}
