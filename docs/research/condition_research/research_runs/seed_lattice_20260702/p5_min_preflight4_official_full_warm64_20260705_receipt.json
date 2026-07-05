@@ -1,0 +1,184 @@
+{
+  "schema": "p5_min_preflight4_official_full_warm64_receipt_v1",
+  "created_at": "2026-07-05T12:35:09+09:00",
+  "scope": "P5-official-min-preflight4-readiness",
+  "run_id": "lat_min_preflight4_official_full_warm64_20260705",
+  "pair_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min_preflight4_official_full_warm64_20260705.json",
+  "config_file": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_min_official_full_warm64_20260704.json",
+  "log_file": "artifacts/p5_min_preflight4_20260705.log",
+  "stderr_file": "artifacts/p5_min_preflight4_20260705.err",
+  "read_first_sources": [
+    {
+      "path": "docs/update_log/2026-07-05_p5_tick_export_summary_min_readiness_handoff.md",
+      "sha256": "1383e9c6c506d7c19c6b783f1d02d868efe839be545654513ffd18199e574529",
+      "line_count": 142
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_full_warm64_288_export_summary_20260705.json",
+      "sha256": "391c51d95c6a128b4a1bf20a192369a853af86c3c25748c739c52d06962be183",
+      "line_count": 1937
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min.json",
+      "sha256": "f281563425fd8c970e2b832766df0cf57b4b454d6b5bc05542588cbb785cf746",
+      "line_count": 1443
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_min_official_full_warm64_20260704.json",
+      "sha256": "59e85716814e6973e32922b329d8906462206e260eac02eb9575bc1d23e72b2a",
+      "line_count": 43
+    }
+  ],
+  "official_profile": {
+    "bt_timeframe": "min",
+    "bt_full_start": 20250407,
+    "bt_full_end": 20260227,
+    "bt_warm_engine_count": 64,
+    "bt_universe_start_time": 90000,
+    "bt_min_universe_end_time": 151900,
+    "full_session_enabled": true,
+    "bt_timeout": 14400,
+    "bt_warm_run_timeout": 1200,
+    "min_daily_trades": 0.5,
+    "mdd_cap": 35.0
+  },
+  "pair_selection": {
+    "source_pairs": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_min.json",
+    "source_pair_count": 288,
+    "selected_count": 4,
+    "selected_preflight_indices": [
+      0,
+      96,
+      192,
+      287
+    ],
+    "selected_pairs": [
+      {
+        "label": "lattice_v1:min_09h_small_low:momentum_breakout",
+        "buy": "LAT_lattice_v1_min_09h_small_low_momentum_breakout_B",
+        "sell": "LAT_lattice_v1_min_09h_small_low_momentum_breakout_S",
+        "preflight_index": 0
+      },
+      {
+        "label": "lattice_v1:min_11h_small_low:momentum_breakout",
+        "buy": "LAT_lattice_v1_min_11h_small_low_momentum_breakout_B",
+        "sell": "LAT_lattice_v1_min_11h_small_low_momentum_breakout_S",
+        "preflight_index": 96
+      },
+      {
+        "label": "lattice_v1:min_14h_small_low:momentum_breakout",
+        "buy": "LAT_lattice_v1_min_14h_small_low_momentum_breakout_B",
+        "sell": "LAT_lattice_v1_min_14h_small_low_momentum_breakout_S",
+        "preflight_index": 192
+      },
+      {
+        "label": "lattice_v1:min_1430p_large_high:volume_surge",
+        "buy": "LAT_lattice_v1_min_1430p_large_high_volume_surge_B",
+        "sell": "LAT_lattice_v1_min_1430p_large_high_volume_surge_S",
+        "preflight_index": 287
+      }
+    ],
+    "selection_policy": "match official tick preflight4 boundary sample indices 0,96,192,287"
+  },
+  "runtime": {
+    "started_at": "2026-07-05T12:24:46.8635608+09:00",
+    "ended_at": "2026-07-05T12:29:34.4439186+09:00",
+    "duration_ms": 287580,
+    "duration_human": "4.8m",
+    "exit_code": 0,
+    "stderr_empty": true
+  },
+  "warm_prepare": {
+    "status": "ok",
+    "back_count": 1379,
+    "elapsed_seconds": 129
+  },
+  "db_run": {
+    "status": "complete",
+    "started_at_epoch": 1783221937.5033338,
+    "finished_at_epoch": 1783222173.570764
+  },
+  "results": {
+    "expected_rows": 4,
+    "recorded_rows": 4,
+    "honest_rows": true,
+    "status_counts": {
+      "ok": 3,
+      "error": 1
+    },
+    "gate_passed_count": 0,
+    "rows": [
+      {
+        "gen_no": 0,
+        "strategy_gist": "lattice_v1:min_09h_small_low:momentum_breakout",
+        "buy_name": "LAT_lattice_v1_min_09h_small_low_momentum_breakout_B",
+        "sell_name": "LAT_lattice_v1_min_09h_small_low_momentum_breakout_S",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": 709986.0,
+        "mdd": 5.74,
+        "trade_count": 15,
+        "daily_avg_trades": 0.1,
+        "payoff_ratio": 0.9462602137020742,
+        "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_09h_small_low_momentum_breakout_B_20260705122804.csv"
+      },
+      {
+        "gen_no": 1,
+        "strategy_gist": "lattice_v1:min_11h_small_low:momentum_breakout",
+        "buy_name": "LAT_lattice_v1_min_11h_small_low_momentum_breakout_B",
+        "sell_name": "LAT_lattice_v1_min_11h_small_low_momentum_breakout_S",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -150190.0,
+        "mdd": 3.0,
+        "trade_count": 1,
+        "daily_avg_trades": 0.0,
+        "payoff_ratio": 0.0,
+        "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_11h_small_low_momentum_breakout_B_20260705122831.csv"
+      },
+      {
+        "gen_no": 2,
+        "strategy_gist": "lattice_v1:min_14h_small_low:momentum_breakout",
+        "buy_name": "LAT_lattice_v1_min_14h_small_low_momentum_breakout_B",
+        "sell_name": "LAT_lattice_v1_min_14h_small_low_momentum_breakout_S",
+        "status": "error",
+        "gate_passed": false,
+        "profit": 0.0,
+        "mdd": 0.0,
+        "trade_count": 0,
+        "daily_avg_trades": 0.0,
+        "payoff_ratio": 0.0,
+        "reason": "[lattice_v1:min_14h_small_low:momentum_breakout] backtest failed: warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+        "csv_path": null
+      },
+      {
+        "gen_no": 3,
+        "strategy_gist": "lattice_v1:min_1430p_large_high:volume_surge",
+        "buy_name": "LAT_lattice_v1_min_1430p_large_high_volume_surge_B",
+        "sell_name": "LAT_lattice_v1_min_1430p_large_high_volume_surge_S",
+        "status": "ok",
+        "gate_passed": false,
+        "profit": -6842267.0,
+        "mdd": 36.37,
+        "trade_count": 508,
+        "daily_avg_trades": 2.4,
+        "payoff_ratio": 1.0907439498966311,
+        "reason": "mdd 36.37 > mdd_cap 35",
+        "csv_path": "backtest/csv\\stock_bt_LAT_lattice_v1_min_1430p_large_high_volume_surge_B_20260705122914.csv"
+      }
+    ]
+  },
+  "decision": {
+    "full_min_288": "possible_but_chunked_only",
+    "reason": "Official min warm64 prepare succeeded and 4/4 rows were recorded. However status_counts includes one raw error with csv=no/metrics=no and gate_passed=0, so open full min only as 24-pair chunks with per-chunk status/error monitoring; do not run a monolithic 288 batch.",
+    "next_allowed_action": "Generate official min 24-pair chunk manifest, then run chunk01 only after user instruction.",
+    "still_forbidden": [
+      "monolithic full min 288 in one run",
+      "P6/P7/Plan D before min export",
+      "OOS before freeze/preregistration",
+      "DB UPDATE/DELETE"
+    ]
+  }
+}

@@ -290,6 +290,15 @@ Plan C/B/D documents.
   filters. Official min config and `pairs_min.json` are ready, but full min 288
   should not start directly. Next allowed action is min official warm64
   preflight4 only.
+  Min preflight4 2026-07-05: executed with official DB-full-period + warm64.
+  Evidence:
+  `docs/update_log/2026-07-05_p5_min_preflight4_handoff.md` and
+  `docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_preflight4_official_full_warm64_20260705_receipt.json`.
+  Result: warm prepare `status=ok`, `back_count=1379`, elapsed `129s`;
+  recorded `4/4` honest rows with `status_counts={'ok': 3, 'error': 1}`,
+  `gate_passed=0`, total runtime `4.8m`. Full min 288 is possible only as a
+  chunked coverage run with per-chunk error monitoring; do not run monolithic
+  288. Next allowed action is min chunk manifest plus chunk01 only.
 
   Acceptance:
   - Resume manifest and first-10-pair timing estimate are written.
