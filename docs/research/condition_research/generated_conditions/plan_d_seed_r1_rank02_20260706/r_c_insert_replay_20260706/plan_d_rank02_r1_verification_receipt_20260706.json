@@ -1,0 +1,54 @@
+{
+  "schema": "plan_d_rank02_r1_verification_receipt_v1",
+  "created_at": "2026-07-06T23:54:09+09:00",
+  "scope": "plan-d-rank02-r1-insert-limited-replay-no-portfolio-export",
+  "checks": [
+    {
+      "name": "json_jsonl_parse",
+      "status": "passed",
+      "evidence": "10 JSON/JSONL files parsed successfully in r_c_insert_replay_20260706"
+    },
+    {
+      "name": "verify_nonrelease_sync",
+      "status": "passed",
+      "command": "python scripts/verify_nonrelease_sync.py",
+      "exit_code": 0
+    },
+    {
+      "name": "git_diff_check",
+      "status": "passed",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "notes": "LF/CRLF warnings only for existing ULW state files"
+    },
+    {
+      "name": "replay_process_cleanup",
+      "status": "passed",
+      "evidence": "claude_candidate_batch_eval process exited code 0; no background replay process left open"
+    },
+    {
+      "name": "guardrails",
+      "status": "passed",
+      "evidence": "OOS/portfolio/export/live/final not executed; DB UPDATE/DELETE not used; pairs_executed=8"
+    },
+    {
+      "name": "git_diff_cached_check",
+      "status": "passed",
+      "command": "git diff --cached --check",
+      "exit_code": 0
+    },
+    {
+      "name": "scoped_staging",
+      "status": "passed",
+      "evidence": "19 staged files, all scoped to rank02 R1 insert/replay evidence, handoff, ULW/Boulder ledgers, and forced replay log; dashboard/.gjc/DB/backtest CSV not staged"
+    }
+  ],
+  "artifacts": {
+    "source_read_receipt": ".omo/evidence/plan-d-rank02-r1-insert-limited-replay-no-portfolio-export-20260706/source_read_receipt.md",
+    "result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_c_insert_replay_20260706/plan_d_rank02_r1_limited_replay_result_20260706.json",
+    "summary": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_c_insert_replay_20260706/plan_d_rank02_r1_limited_replay_summary_20260706.md",
+    "handoff": "docs/update_log/2026-07-06_plan_d_rank02_r1_insert_replay_handoff.md",
+    "batch_log": "artifacts/plan_d_rank02_r1_8_min_warm64_20260706.log"
+  },
+  "updated_at": "2026-07-06T23:55:17+09:00"
+}
