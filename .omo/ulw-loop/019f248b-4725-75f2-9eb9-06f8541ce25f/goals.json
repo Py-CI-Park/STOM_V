@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-07-06T14:05:10.590Z",
-  "updatedAt": "2026-07-06T15:52:11.208Z",
+  "updatedAt": "2026-07-06T15:56:54.966Z",
   "briefPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/brief.md",
   "goalsPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/goals.json",
   "ledgerPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/ledger.jsonl",
@@ -143,7 +143,7 @@
       "id": "G004-goal-3-rank02-selected-oos-if-goal-2",
       "title": "Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. F...",
       "objective": "Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. Freeze/preregister only selected candidates, run only selected OOS, classify survivor/hold/no_go, and never run portfolio/export. Success requires preregistration, OOS result, survivor/no_go ledgers, verification receipt, handoff, and Korean commit. If there are no improved candidates, record blocked-by-no-candidate and proceed to Goal 5.",
-      "status": "in_progress",
+      "status": "blocked",
       "successCriteria": [
         {
           "id": "C001",
@@ -171,20 +171,25 @@
           "userModel": "regression",
           "expectedEvidence": "verification receipt plus commit hash for rank02 selected OOS scope",
           "essential": false,
-          "capturedEvidence": null,
-          "status": "pending"
+          "capturedEvidence": "verification and scoped Korean commit completed: JSON parse ok; verify_nonrelease_sync.py exit 0; scoped git diff --check exit 0; git diff --cached --check exit 0; commit 942e2014; G004 blocked before OOS classification due reproduced warm64 prepare wait | cleanup: no selected OOS processes remain",
+          "status": "pass",
+          "capturedAt": "2026-07-06T15:53:32.513Z"
         }
       ],
       "attempt": 1,
       "createdAt": "2026-07-06T14:05:10.590Z",
-      "updatedAt": "2026-07-06T15:52:11.208Z",
-      "startedAt": "2026-07-06T15:04:02.761Z"
+      "updatedAt": "2026-07-06T15:54:12.803Z",
+      "startedAt": "2026-07-06T15:04:02.761Z",
+      "steeringEvidence": "G004 selected OOS is blocked before classification: two preregistered selected2 warm64 attempts produced 0 generation rows and reproduced WarmSession.prepare/_collect_engine_shared_info wait; commit 942e2014 records blocked handoff",
+      "steeringRationale": "G005 depends on OOS survivors, but no OOS rows exist; the safe next reachable page is deadline closeout plus next diagnostic command",
+      "steeringStatus": "blocked",
+      "blockedReason": "G005 depends on OOS survivors, but no OOS rows exist; the safe next reachable page is deadline closeout plus next diagnostic command"
     },
     {
       "id": "G005-goal-4-append-survivor-records-and-p",
       "title": "Goal 4: append survivor records and prepare next seed readiness if Go...",
       "objective": "Goal 4: append survivor records and prepare next seed readiness if Goal 3 has survivors. Append-only update seed_pool and oos_survivors, create passport, and prepare rank03 or next-seed readiness review only. Success requires append-only ledger proof, passport, readiness summary, handoff, validation, and Korean commit.",
-      "status": "pending",
+      "status": "blocked",
       "successCriteria": [
         {
           "id": "C001",
@@ -216,47 +221,54 @@
       ],
       "attempt": 0,
       "createdAt": "2026-07-06T14:05:10.590Z",
-      "updatedAt": "2026-07-06T14:05:10.590Z"
+      "updatedAt": "2026-07-06T15:54:35.352Z",
+      "steeringEvidence": "G005 prerequisite is absent: G004 selected OOS produced 0 generation rows and no survivor/hold/no_go classification; blocked handoff commit 942e2014 records no survivor append is allowed",
+      "steeringRationale": "Appending survivor records without OOS survivor rows would fabricate research evidence; skip to G006 closeout",
+      "steeringStatus": "blocked",
+      "blockedReason": "Appending survivor records without OOS survivor rows would fabricate research evidence; skip to G006 closeout"
     },
     {
       "id": "G006-goal-5-deadline-closeout-and-whole-p",
       "title": "Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00...",
       "objective": "Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00 KST, or earlier if all reachable goals complete, write final handoff with completed pages, remaining pages, objective/benefit, blockers, next command, validation results, and commit hash list. Success requires handoff, ulw-loop evidence records or equivalent ledger, clean scoped staging, and Korean commit if there are new artifacts.",
-      "status": "pending",
+      "status": "in_progress",
       "successCriteria": [
         {
           "id": "C001",
-          "scenario": "happy path for: Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00 KST, or...",
+          "scenario": "CLI/data-channel: write final overnight closeout handoff with completed pages, blocked pages, objective/benefit, commit list, and next diagnostic command",
           "userModel": "happy",
-          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 6.",
+          "expectedEvidence": "docs/update_log/2026-07-07_plan_d_overnight_ulw_closeout.md showing G001-G006 status and next command",
           "essential": true,
-          "capturedEvidence": null,
-          "status": "pending"
+          "capturedEvidence": "final closeout handoff written at docs/update_log/2026-07-07_plan_d_overnight_ulw_closeout.md with G001-G006 status, commits, blocker, and next diagnostic command | cleanup: no runtime resources spawned for closeout",
+          "status": "pass",
+          "capturedAt": "2026-07-06T15:56:54.580Z"
         },
         {
           "id": "C002",
-          "scenario": "edge case (boundary/empty/malformed)",
+          "scenario": "CLI/data-channel adversarial edge: confirm no selected OOS process remains running, no fabricated survivor append, no DB UPDATE/DELETE, and unrelated dashboard/.gjc files remain unstaged",
           "userModel": "edge",
-          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00 KST, or....",
+          "expectedEvidence": "closeout verification section plus git/process status showing no stale selected OOS pids and scoped staging only",
           "essential": true,
-          "capturedEvidence": null,
-          "status": "pending"
+          "capturedEvidence": "adversarial closeout checks passed: selected OOS command-line process check returned empty; no survivor append fabricated; DB UPDATE/DELETE not used; unrelated dashboard/.gjc files remain outside staged scope | cleanup: selected OOS processes already stopped",
+          "status": "pass",
+          "capturedAt": "2026-07-06T15:56:54.966Z"
         },
         {
           "id": "C003",
-          "scenario": "regression: adjacent surface still works",
+          "scenario": "Regression channel: parse closeout JSON/JSONL if any, run verify_nonrelease_sync.py, git diff --check and git diff --cached --check, then commit only scoped closeout/ULW files with Korean message",
           "userModel": "regression",
-          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00 KST, or....",
+          "expectedEvidence": "verification receipt and commit hash for final closeout scope",
           "essential": false,
           "capturedEvidence": null,
           "status": "pending"
         }
       ],
-      "attempt": 0,
+      "attempt": 1,
       "createdAt": "2026-07-06T14:05:10.590Z",
-      "updatedAt": "2026-07-06T14:05:10.590Z"
+      "updatedAt": "2026-07-06T15:56:54.966Z",
+      "startedAt": "2026-07-06T15:54:42.759Z"
     }
   ],
   "codexObjective": "2026-07-07 06:00 KST까지 Plan D 남은 연구 페이지를 가능한 만큼 순차 실행하고, 완료하지 못하면 진행분을 handoff/ledger/커밋으로 정리해 보고한다.",
-  "activeGoalId": "G004-goal-3-rank02-selected-oos-if-goal-2"
+  "activeGoalId": "G006-goal-5-deadline-closeout-and-whole-p"
 }
