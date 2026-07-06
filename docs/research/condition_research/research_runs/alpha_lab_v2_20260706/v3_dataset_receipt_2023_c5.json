@@ -1,0 +1,208 @@
+{
+  "generated_at": "2026-07-06T22:14:01.540119",
+  "prereg_sha": "dcac74927466f6383d3119d1b5905f4d0733f300de0987b95612d5e9b794444b",
+  "label_mode": "v2",
+  "l3_engine": "vector",
+  "sell_sha_ok": true,
+  "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+  "date_source": "dates",
+  "db_dir": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database",
+  "cache_dir": "docs\\research\\condition_research\\research_runs\\alpha_lab_v3_20260706\\cache",
+  "stride_sec": 5,
+  "admission_horizons_sec": [
+    60,
+    180,
+    300
+  ],
+  "admission": "same_as_v1",
+  "derived": true,
+  "derived_features": [
+    "이동평균60",
+    "이동평균150",
+    "이동평균300",
+    "이동평균600",
+    "이동평균1200",
+    "최고현재가",
+    "최저현재가",
+    "체결강도평균",
+    "최고체결강도",
+    "최저체결강도",
+    "최고초당매수수량",
+    "최고초당매도수량",
+    "누적초당매수수량",
+    "누적초당매도수량",
+    "초당거래대금평균",
+    "등락율각도",
+    "당일거래대금각도",
+    "전일비각도"
+  ],
+  "annex_sha256": "568dc06156d433afa8e72f3f8d27794cb574d063670b6009fe68ce6604d84003",
+  "derived_window_hhmmss": [
+    90000,
+    93000
+  ],
+  "derived_avg": 30,
+  "n_feature_columns": 43,
+  "dates_requested": [
+    "20231108",
+    "20231122",
+    "20231204",
+    "20231215",
+    "20231228"
+  ],
+  "days_built": [
+    "20231108",
+    "20231122",
+    "20231204",
+    "20231215",
+    "20231228"
+  ],
+  "days_skipped_missing_db": [],
+  "n_days": 5,
+  "n_samples": 58128,
+  "labels": {
+    "L3_pos": {
+      "n": 58128,
+      "positives": 7618,
+      "positive_rate": 0.13105560143132397
+    }
+  },
+  "per_day": {
+    "20231108": {
+      "n_samples": 12982,
+      "shard": "20231108.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12982,
+          "positives": 1477,
+          "positive_rate": 0.11377291634570945
+        },
+        "L3_net": {
+          "n": 12982,
+          "mean": -0.009631673245124298,
+          "p10": -0.02253102324903011,
+          "p50": -0.01261971890926361,
+          "p90": 0.013189632631838307
+        }
+      },
+      "l3_stats": {
+        "fired": 10655,
+        "forced_cap": 2327,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231122": {
+      "n_samples": 11736,
+      "shard": "20231122.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11736,
+          "positives": 1498,
+          "positive_rate": 0.1276414451261077
+        },
+        "L3_net": {
+          "n": 11736,
+          "mean": -0.009788854343647298,
+          "p10": -0.0234527587890625,
+          "p50": -0.012703112326562405,
+          "p90": 0.014453163370490074
+        }
+      },
+      "l3_stats": {
+        "fired": 9917,
+        "forced_cap": 1819,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231204": {
+      "n_samples": 11059,
+      "shard": "20231204.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11059,
+          "positives": 1836,
+          "positive_rate": 0.16601862736232934
+        },
+        "L3_net": {
+          "n": 11059,
+          "mean": -0.007801552114218238,
+          "p10": -0.02305419445037842,
+          "p50": -0.012689138762652874,
+          "p90": 0.019028497859835625
+        }
+      },
+      "l3_stats": {
+        "fired": 8727,
+        "forced_cap": 2332,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231215": {
+      "n_samples": 10664,
+      "shard": "20231215.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10664,
+          "positives": 1301,
+          "positive_rate": 0.12199924981245311
+        },
+        "L3_net": {
+          "n": 10664,
+          "mean": -0.010332102235921358,
+          "p10": -0.024873344227671623,
+          "p50": -0.012434674426913261,
+          "p90": 0.013963459245860597
+        }
+      },
+      "l3_stats": {
+        "fired": 8394,
+        "forced_cap": 2270,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231228": {
+      "n_samples": 11687,
+      "shard": "20231228.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11687,
+          "positives": 1506,
+          "positive_rate": 0.1288611277487807
+        },
+        "L3_net": {
+          "n": 11687,
+          "mean": -0.01020919291833823,
+          "p10": -0.025592854246497154,
+          "p50": -0.013558827340602875,
+          "p90": 0.015192047692835331
+        }
+      },
+      "l3_stats": {
+        "fired": 9746,
+        "forced_cap": 1941,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    }
+  },
+  "elapsed_sec": 164.95
+}

@@ -1,0 +1,305 @@
+{
+ "generated_at": "2026-07-06",
+ "guards": {
+  "time_guard": "90001 <= 시분초 <= 92500",
+  "universe_guard": "관심종목 > 0"
+ },
+ "sell_policy": "champion hard-stop 계열 고정(sha 8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07) — alpha_lab.hillclimb.sell_policy.CHAMPION_SELL_EXPR",
+ "seeds": [
+  {
+   "seed_name": "ALP_V2SEED_01",
+   "registered_baseline_name": "ALP_V3H_01_T000",
+   "rule": [
+    [
+     "초당매수수량",
+     ">",
+     101.5
+    ],
+    [
+     "전일비",
+     "<=",
+     4.995
+    ],
+    [
+     "전일동시간비",
+     ">",
+     869.9
+    ]
+   ],
+   "lift": 3.242,
+   "support": 2038,
+   "year_repro_2023": 3.75,
+   "year_repro_2024": 2.58,
+   "buy_expr": "(90001 <= 시분초 <= 92500) and (관심종목 > 0) and (초당매수수량) > 101.5 and (전일비) <= 5.0 and (전일동시간비) > 869.9",
+   "translate_ok": true,
+   "reasons": []
+  },
+  {
+   "seed_name": "ALP_V2SEED_02",
+   "registered_baseline_name": "ALP_V3H_02_T000",
+   "rule": [
+    [
+     "초당거래대금",
+     ">",
+     6.5
+    ],
+    [
+     "전일비",
+     "<=",
+     5.045
+    ],
+    [
+     "전일동시간비",
+     ">",
+     837.8
+    ]
+   ],
+   "lift": 3.199,
+   "support": 2012,
+   "year_repro_2023": 3.55,
+   "year_repro_2024": 2.69,
+   "buy_expr": "(90001 <= 시분초 <= 92500) and (관심종목 > 0) and (초당거래대금) > 6.5 and (전일비) <= 5.0 and (전일동시간비) > 837.8",
+   "translate_ok": true,
+   "reasons": []
+  },
+  {
+   "seed_name": "ALP_V2SEED_03",
+   "registered_baseline_name": "ALP_V3H_03_T000",
+   "rule": [
+    [
+     "전일비",
+     "<=",
+     1.705
+    ],
+    [
+     "시가총액",
+     "<=",
+     35682.5
+    ],
+    [
+     "거래대금증감",
+     "<=",
+     -206500000000.0
+    ]
+   ],
+   "lift": 3.098,
+   "support": 2000,
+   "year_repro_2023": 2.76,
+   "year_repro_2024": 3.5,
+   "buy_expr": "(90001 <= 시분초 <= 92500) and (관심종목 > 0) and (전일비) <= 1.7 and (시가총액) <= 35682.5 and (거래대금증감) <= -206500000000.0",
+   "translate_ok": true,
+   "reasons": []
+  },
+  {
+   "seed_name": "ALP_V2SEED_04",
+   "registered_baseline_name": "ALP_V3H_04_T000",
+   "rule": [
+    [
+     "전일비",
+     ">",
+     4.525
+    ],
+    [
+     "시가총액",
+     ">",
+     19441.0
+    ],
+    [
+     "거래대금증감",
+     "<=",
+     -395800000000.0
+    ],
+    [
+     "체결강도",
+     "<=",
+     102.1
+    ]
+   ],
+   "lift": 2.648,
+   "support": 2000,
+   "year_repro_2023": 2.28,
+   "year_repro_2024": 2.87,
+   "buy_expr": "(90001 <= 시분초 <= 92500) and (관심종목 > 0) and (전일비) > 4.5 and (시가총액) > 19441.0 and (거래대금증감) <= -395800000000.0 and (체결강도) <= 102.1",
+   "translate_ok": true,
+   "reasons": []
+  },
+  {
+   "seed_name": "ALP_V2SEED_05",
+   "registered_baseline_name": "ALP_V3H_05_T000",
+   "rule": [
+    [
+     "초당매수수량",
+     ">",
+     101.5
+    ],
+    [
+     "전일비",
+     "<=",
+     1.485
+    ],
+    [
+     "전일동시간비",
+     "<=",
+     869.9
+    ]
+   ],
+   "lift": 2.63,
+   "support": 4004,
+   "year_repro_2023": 2.34,
+   "year_repro_2024": 3.03,
+   "buy_expr": "(90001 <= 시분초 <= 92500) and (관심종목 > 0) and (초당매수수량) > 101.5 and (전일비) <= 1.5 and (전일동시간비) <= 869.9",
+   "translate_ok": true,
+   "reasons": []
+  },
+  {
+   "seed_name": "ALP_V2SEED_06",
+   "registered_baseline_name": "ALP_V3H_06_T000",
+   "rule": [
+    [
+     "전일비",
+     ">",
+     1.705
+    ],
+    [
+     "전일비",
+     "<=",
+     4.525
+    ],
+    [
+     "시가총액",
+     "<=",
+     47315.0
+    ],
+    [
+     "거래대금증감",
+     "<=",
+     -414800000000.0
+    ]
+   ],
+   "lift": 2.523,
+   "support": 2000,
+   "year_repro_2023": 2.16,
+   "year_repro_2024": 2.82,
+   "buy_expr": "(90001 <= 시분초 <= 92500) and (관심종목 > 0) and (전일비) > 1.7 and (전일비) <= 4.5 and (시가총액) <= 47315.0 and (거래대금증감) <= -414800000000.0",
+   "translate_ok": true,
+   "reasons": []
+  },
+  {
+   "seed_name": "ALP_V2SEED_07",
+   "registered_baseline_name": "ALP_V3H_07_T000",
+   "rule": [
+    [
+     "순매수수량비",
+     ">",
+     0.0504
+    ],
+    [
+     "전일비",
+     "<=",
+     4.735
+    ],
+    [
+     "등락율",
+     ">",
+     1.565
+    ],
+    [
+     "저가대비고가등락율",
+     "<=",
+     1.775
+    ]
+   ],
+   "lift": 2.486,
+   "support": 6760,
+   "year_repro_2023": 2.26,
+   "year_repro_2024": 2.83,
+   "buy_expr": "(90001 <= 시분초 <= 92500) and (관심종목 > 0) and (초당매수수량 / max(초당매도수량, 1)) > 0.1 and (전일비) <= 4.7 and (등락율) > 1.6 and (저가대비고가등락율) <= 1.8",
+   "translate_ok": true,
+   "reasons": []
+  },
+  {
+   "seed_name": "ALP_V2SEED_08",
+   "registered_baseline_name": "ALP_V3H_08_T000",
+   "rule": [
+    [
+     "초당거래대금",
+     ">",
+     6.5
+    ],
+    [
+     "전일비",
+     "<=",
+     2.095
+    ],
+    [
+     "전일동시간비",
+     "<=",
+     837.8
+    ]
+   ],
+   "lift": 2.33,
+   "support": 8038,
+   "year_repro_2023": 2.09,
+   "year_repro_2024": 2.65,
+   "buy_expr": "(90001 <= 시분초 <= 92500) and (관심종목 > 0) and (초당거래대금) > 6.5 and (전일비) <= 2.1 and (전일동시간비) <= 837.8",
+   "translate_ok": true,
+   "reasons": []
+  },
+  {
+   "seed_name": "ALP_V2SEED_09",
+   "registered_baseline_name": "ALP_V3H_09_T000",
+   "rule": [
+    [
+     "초당거래대금",
+     "<=",
+     6.5
+    ],
+    [
+     "당일거래대금",
+     "<=",
+     1290.5
+    ],
+    [
+     "등락율",
+     ">",
+     2.055
+    ]
+   ],
+   "lift": 2.225,
+   "support": 3382,
+   "year_repro_2023": 2.2,
+   "year_repro_2024": 2.25,
+   "buy_expr": "(90001 <= 시분초 <= 92500) and (관심종목 > 0) and (초당거래대금) <= 6.5 and (당일거래대금) <= 1290.5 and (등락율) > 2.1",
+   "translate_ok": true,
+   "reasons": []
+  },
+  {
+   "seed_name": "ALP_V2SEED_10",
+   "registered_baseline_name": "ALP_V3H_10_T000",
+   "rule": [
+    [
+     "전일비",
+     "<=",
+     1.705
+    ],
+    [
+     "시가총액",
+     "<=",
+     35682.5
+    ],
+    [
+     "거래대금증감",
+     ">",
+     -206500000000.0
+    ]
+   ],
+   "lift": 2.21,
+   "support": 6579,
+   "year_repro_2023": 1.94,
+   "year_repro_2024": 2.6,
+   "buy_expr": "(90001 <= 시분초 <= 92500) and (관심종목 > 0) and (전일비) <= 1.7 and (시가총액) <= 35682.5 and (거래대금증감) > -206500000000.0",
+   "translate_ok": true,
+   "reasons": []
+  }
+ ]
+}

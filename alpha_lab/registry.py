@@ -18,10 +18,12 @@ import hashlib
 import json
 from pathlib import Path
 
-# v1 프로그램 4태그 + 알파 랩 v2 additive 태그(V2M=채굴 리프, V2F=필터 A/B).
-# 기존 태그 의미는 불변 — v2 확장은 preregistration_v2.json ledger.tags 봉인값.
+# v1 프로그램 4태그 + 알파 랩 v2 additive 태그(V2M=채굴 리프, V2F=필터 A/B)
+# + 알파 랩 v3 additive 태그(V3M=EV 채굴 리프, V3H=힐클라임 엔진 시행).
+# 기존 태그 의미는 불변 — v2/v3 확장은 각 preregistration_v{2,3}.json
+# ledger.tags 봉인값(v3: 50d3d38a — {"path":..., "tags":["V3M","V3H"]}).
 ALLOWED_PROGRAMS: frozenset[str] = frozenset(
-    {"P1", "P2", "P3", "P5", "V2M", "V2F"}
+    {"P1", "P2", "P3", "P5", "V2M", "V2F", "V3M", "V3H"}
 )
 
 

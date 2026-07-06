@@ -1,0 +1,601 @@
+{
+ "generated_at": "2026-07-07",
+ "program": "alpha_lab_v3_p3_hillclimb",
+ "prereg_sha_v3": "50d3d38ae9ee999d80c06a35f9745149ad10af5bd44e903ef754289a6babfa88",
+ "train_window": {
+  "bt_full_start": 20220323,
+  "bt_full_end": 20241231,
+  "basis": "OOS 봉인창(2025-01~2026-02) 직전까지"
+ },
+ "train_gate": {
+  "profit_pct_min": 0.0,
+  "daily_avg_trades_min": 0.3,
+  "mdd_max": 35.0
+ },
+ "seeds_run": 10,
+ "seeds_total": 10,
+ "runs_used": 29,
+ "runs_used_breakdown": {
+  "baseline": 10,
+  "hillclimb_mutation": 19
+ },
+ "engine_budget_sealed": {
+  "per_seed_max": 20,
+  "total_max": 200
+ },
+ "train_gate_passed": 0,
+ "train_gate_passed_seeds": [],
+ "go": false,
+ "status": "partial",
+ "seed_final_results": {
+  "ALP_V2SEED_01": {
+   "best_metrics": {
+    "status": "ok",
+    "profit_pct": -96.86,
+    "mdd": 96.95,
+    "calmar": -0.3689530685920578,
+    "trade_count": 2241,
+    "daily_avg_trades": 3.3,
+    "gate_passed": false,
+    "reason": "mdd 96.95 > mdd_cap 35"
+   },
+   "train_gate_pass": false,
+   "trials_used": 1
+  },
+  "ALP_V2SEED_02": {
+   "best_metrics": {
+    "status": "ok",
+    "profit_pct": -113.28,
+    "mdd": 112.99,
+    "calmar": -0.3702097530754934,
+    "trade_count": 2329,
+    "daily_avg_trades": 3.4,
+    "gate_passed": false,
+    "reason": "mdd 113 > mdd_cap 35"
+   },
+   "train_gate_pass": false,
+   "trials_used": 1
+  },
+  "ALP_V2SEED_03": {
+   "best_metrics": {
+    "status": "ok",
+    "profit_pct": -98.93,
+    "mdd": 102.21,
+    "calmar": -0.35740142843166034,
+    "trade_count": 1271,
+    "daily_avg_trades": 1.9,
+    "gate_passed": false,
+    "reason": "mdd 102.2 > mdd_cap 35"
+   },
+   "train_gate_pass": false,
+   "trials_used": 1
+  },
+  "ALP_V2SEED_04": {
+   "best_metrics": {
+    "status": "ok",
+    "profit_pct": -117.57,
+    "mdd": 116.83,
+    "calmar": -0.37165111700761794,
+    "trade_count": 709,
+    "daily_avg_trades": 1.0,
+    "gate_passed": false,
+    "reason": "mdd 116.8 > mdd_cap 35"
+   },
+   "train_gate_pass": false,
+   "trials_used": 1
+  },
+  "ALP_V2SEED_05": {
+   "best_metrics": {
+    "status": "ok",
+    "profit_pct": -215.63,
+    "mdd": 214.9,
+    "calmar": -0.37054443927408093,
+    "trade_count": 6777,
+    "daily_avg_trades": 10.0,
+    "gate_passed": false,
+    "reason": "mdd 214.9 > mdd_cap 35"
+   },
+   "train_gate_pass": false,
+   "trials_used": 1
+  },
+  "ALP_V2SEED_06": {
+   "best_metrics": {
+    "status": "ok",
+    "profit_pct": -59.26,
+    "mdd": 57.53,
+    "calmar": -0.3803233095776117,
+    "trade_count": 49,
+    "daily_avg_trades": 0.1,
+    "gate_passed": false,
+    "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+   },
+   "train_gate_pass": false,
+   "trials_used": 20
+  },
+  "ALP_V2SEED_07": {
+   "best_metrics": {
+    "status": "ok",
+    "profit_pct": -146.22,
+    "mdd": 146.22,
+    "calmar": -0.3692381343181507,
+    "trade_count": 8154,
+    "daily_avg_trades": 12.0,
+    "gate_passed": false,
+    "reason": "mdd 146.2 > mdd_cap 35"
+   },
+   "train_gate_pass": false,
+   "trials_used": 1
+  },
+  "ALP_V2SEED_08": {
+   "best_metrics": {
+    "status": "ok",
+    "profit_pct": -246.32,
+    "mdd": 245.37,
+    "calmar": -0.3707054652157965,
+    "trade_count": 11648,
+    "daily_avg_trades": 17.2,
+    "gate_passed": false,
+    "reason": "mdd 245.4 > mdd_cap 35"
+   },
+   "train_gate_pass": false,
+   "trials_used": 1
+  },
+  "ALP_V2SEED_09": {
+   "best_metrics": {
+    "status": "ok",
+    "profit_pct": -224.04,
+    "mdd": 223.63,
+    "calmar": -0.36994142109734834,
+    "trade_count": 7716,
+    "daily_avg_trades": 11.4,
+    "gate_passed": false,
+    "reason": "mdd 223.6 > mdd_cap 35"
+   },
+   "train_gate_pass": false,
+   "trials_used": 1
+  },
+  "ALP_V2SEED_10": {
+   "best_metrics": {
+    "status": "ok",
+    "profit_pct": -250.94,
+    "mdd": 249.1,
+    "calmar": -0.37201926936973106,
+    "trade_count": 6411,
+    "daily_avg_trades": 9.5,
+    "gate_passed": false,
+    "reason": "mdd 249.1 > mdd_cap 35"
+   },
+   "train_gate_pass": false,
+   "trials_used": 1
+  }
+ },
+ "seed06_hillclimb_detail": {
+  "seed_name": "ALP_V2SEED_06",
+  "initial_metrics": {
+   "status": "ok",
+   "profit_pct": -81.51,
+   "mdd": 84.5,
+   "calmar": -0.3562130177514793,
+   "trade_count": 766,
+   "daily_avg_trades": 1.1,
+   "gate_passed": false,
+   "reason": "mdd 84.5 > mdd_cap 35"
+  },
+  "best_trial": "ALP_V3H_06_T014",
+  "best_metrics": {
+   "status": "ok",
+   "profit_pct": -59.26,
+   "mdd": 57.53,
+   "calmar": -0.3803233095776117,
+   "trade_count": 49,
+   "daily_avg_trades": 0.1,
+   "gate_passed": false,
+   "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+  },
+  "trials_used": 20,
+  "history": [
+   {
+    "trial": 0,
+    "kind": "baseline",
+    "desc": "seed 원문",
+    "name": "ALP_V3H_06_T000",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -81.51,
+     "mdd": 84.5,
+     "calmar": -0.3562130177514793,
+     "trade_count": 766,
+     "daily_avg_trades": 1.1,
+     "gate_passed": false,
+     "reason": "mdd 84.5 > mdd_cap 35"
+    },
+    "accepted": true
+   },
+   {
+    "trial": 1,
+    "kind": "threshold",
+    "desc": "clause[0] 전일비>1.705->2.69(+2pp)",
+    "name": "ALP_V3H_06_T001",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -127.0,
+     "mdd": 125.78,
+     "calmar": -0.3728732707902687,
+     "trade_count": 745,
+     "daily_avg_trades": 1.1,
+     "gate_passed": false,
+     "reason": "mdd 125.8 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 2,
+    "kind": "threshold",
+    "desc": "clause[0] 전일비>1.705->0(-2pp)",
+    "name": "ALP_V3H_06_T002",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -78.29,
+     "mdd": 84.4,
+     "calmar": -0.34253554502369665,
+     "trade_count": 760,
+     "daily_avg_trades": 1.1,
+     "gate_passed": false,
+     "reason": "mdd 84.4 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 3,
+    "kind": "threshold",
+    "desc": "clause[0] 전일비>1.705->3.87(+5pp)",
+    "name": "ALP_V3H_06_T003",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -104.62,
+     "mdd": 104.32,
+     "calmar": -0.3703029141104295,
+     "trade_count": 498,
+     "daily_avg_trades": 0.7,
+     "gate_passed": false,
+     "reason": "mdd 104.3 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 4,
+    "kind": "threshold",
+    "desc": "clause[0] 전일비>1.705->0(-5pp)",
+    "name": "ALP_V3H_06_T004",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -78.29,
+     "mdd": 84.4,
+     "calmar": -0.34253554502369665,
+     "trade_count": 760,
+     "daily_avg_trades": 1.1,
+     "gate_passed": false,
+     "reason": "mdd 84.4 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 5,
+    "kind": "threshold",
+    "desc": "clause[1] 전일비<=4.525->5.2(+2pp)",
+    "name": "ALP_V3H_06_T005",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -98.54,
+     "mdd": 99.96,
+     "calmar": -0.364045618247299,
+     "trade_count": 870,
+     "daily_avg_trades": 1.3,
+     "gate_passed": false,
+     "reason": "mdd 99.96 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 6,
+    "kind": "threshold",
+    "desc": "clause[1] 전일비<=4.525->3.82(-2pp)",
+    "name": "ALP_V3H_06_T006",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -74.83,
+     "mdd": 79.58,
+     "calmar": -0.34719778838904247,
+     "trade_count": 671,
+     "daily_avg_trades": 1.0,
+     "gate_passed": false,
+     "reason": "mdd 79.58 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 7,
+    "kind": "threshold",
+    "desc": "clause[1] 전일비<=4.525->6.19(+5pp)",
+    "name": "ALP_V3H_06_T007",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -121.08,
+     "mdd": 119.93,
+     "calmar": -0.37280080046693903,
+     "trade_count": 1000,
+     "daily_avg_trades": 1.5,
+     "gate_passed": false,
+     "reason": "mdd 119.9 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 8,
+    "kind": "threshold",
+    "desc": "clause[1] 전일비<=4.525->2.62(-5pp)",
+    "name": "ALP_V3H_06_T008",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -84.88,
+     "mdd": 93.27,
+     "calmar": -0.3360137235981559,
+     "trade_count": 468,
+     "daily_avg_trades": 0.7,
+     "gate_passed": false,
+     "reason": "mdd 93.27 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 9,
+    "kind": "threshold",
+    "desc": "clause[2] 시가총액<=47315->53514(+2pp)",
+    "name": "ALP_V3H_06_T009",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -85.98,
+     "mdd": 88.81,
+     "calmar": -0.3575047854971287,
+     "trade_count": 779,
+     "daily_avg_trades": 1.2,
+     "gate_passed": false,
+     "reason": "mdd 88.81 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 10,
+    "kind": "threshold",
+    "desc": "clause[2] 시가총액<=47315->42630(-2pp)",
+    "name": "ALP_V3H_06_T010",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -78.73,
+     "mdd": 81.81,
+     "calmar": -0.35533553355335534,
+     "trade_count": 752,
+     "daily_avg_trades": 1.1,
+     "gate_passed": false,
+     "reason": "mdd 81.81 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 11,
+    "kind": "threshold",
+    "desc": "clause[2] 시가총액<=47315->62969(+5pp)",
+    "name": "ALP_V3H_06_T011",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -91.05,
+     "mdd": 93.72,
+     "calmar": -0.3587281263337601,
+     "trade_count": 814,
+     "daily_avg_trades": 1.2,
+     "gate_passed": false,
+     "reason": "mdd 93.72 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 12,
+    "kind": "threshold",
+    "desc": "clause[2] 시가총액<=47315->34451(-5pp)",
+    "name": "ALP_V3H_06_T012",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -115.33,
+     "mdd": 118.07,
+     "calmar": -0.3607182180062675,
+     "trade_count": 700,
+     "daily_avg_trades": 1.0,
+     "gate_passed": false,
+     "reason": "mdd 118.1 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 13,
+    "kind": "threshold",
+    "desc": "clause[3] 거래대금증감<=-4.148e+11->-2.8915e+11(+2pp)",
+    "name": "ALP_V3H_06_T013",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -136.57,
+     "mdd": 135.54,
+     "calmar": -0.37206728640991593,
+     "trade_count": 1619,
+     "daily_avg_trades": 2.4,
+     "gate_passed": false,
+     "reason": "mdd 135.5 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 14,
+    "kind": "threshold",
+    "desc": "clause[3] 거래대금증감<=-4.148e+11->-1.22498e+12(-2pp)",
+    "name": "ALP_V3H_06_T014",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -59.26,
+     "mdd": 57.53,
+     "calmar": -0.3803233095776117,
+     "trade_count": 49,
+     "daily_avg_trades": 0.1,
+     "gate_passed": false,
+     "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 15,
+    "kind": "threshold",
+    "desc": "clause[3] 거래대금증감<=-4.148e+11->-2.08543e+11(+5pp)",
+    "name": "ALP_V3H_06_T015",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -199.03,
+     "mdd": 198.88,
+     "calmar": -0.36956958970233306,
+     "trade_count": 2945,
+     "daily_avg_trades": 4.4,
+     "gate_passed": false,
+     "reason": "mdd 198.9 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 16,
+    "kind": "threshold",
+    "desc": "clause[3] 거래대금증감<=-4.148e+11->-1.22498e+12(-5pp)",
+    "name": "ALP_V3H_06_T016",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -59.26,
+     "mdd": 57.53,
+     "calmar": -0.3803233095776117,
+     "trade_count": 49,
+     "daily_avg_trades": 0.1,
+     "gate_passed": false,
+     "reason": "daily_avg_trades 0.1 < min_daily_trades 0.5"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 17,
+    "kind": "remove",
+    "desc": "remove clause[0] 전일비>1.705",
+    "name": "ALP_V3H_06_T017",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -78.29,
+     "mdd": 84.4,
+     "calmar": -0.34253554502369665,
+     "trade_count": 760,
+     "daily_avg_trades": 1.1,
+     "gate_passed": false,
+     "reason": "mdd 84.4 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 18,
+    "kind": "remove",
+    "desc": "remove clause[1] 전일비<=4.525",
+    "name": "ALP_V3H_06_T018",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -261.78,
+     "mdd": 257.64,
+     "calmar": -0.37521347616829687,
+     "trade_count": 1849,
+     "daily_avg_trades": 2.7,
+     "gate_passed": false,
+     "reason": "mdd 257.6 > mdd_cap 35"
+    },
+    "accepted": false
+   },
+   {
+    "trial": 19,
+    "kind": "remove",
+    "desc": "remove clause[2] 시가총액<=47315",
+    "name": "ALP_V3H_06_T019",
+    "metrics": {
+     "status": "ok",
+     "profit_pct": -110.42,
+     "mdd": 112.45,
+     "calmar": -0.36265006669630945,
+     "trade_count": 922,
+     "daily_avg_trades": 1.4,
+     "gate_passed": false,
+     "reason": "mdd 112.5 > mdd_cap 35"
+    },
+    "accepted": false
+   }
+  ]
+ },
+ "seed_meta": {
+  "ALP_V2SEED_01": {
+   "lift": 3.242,
+   "support": 2038,
+   "year_repro_2023": 3.75,
+   "year_repro_2024": 2.58
+  },
+  "ALP_V2SEED_02": {
+   "lift": 3.199,
+   "support": 2012,
+   "year_repro_2023": 3.55,
+   "year_repro_2024": 2.69
+  },
+  "ALP_V2SEED_03": {
+   "lift": 3.098,
+   "support": 2000,
+   "year_repro_2023": 2.76,
+   "year_repro_2024": 3.5
+  },
+  "ALP_V2SEED_04": {
+   "lift": 2.648,
+   "support": 2000,
+   "year_repro_2023": 2.28,
+   "year_repro_2024": 2.87
+  },
+  "ALP_V2SEED_05": {
+   "lift": 2.63,
+   "support": 4004,
+   "year_repro_2023": 2.34,
+   "year_repro_2024": 3.03
+  },
+  "ALP_V2SEED_06": {
+   "lift": 2.523,
+   "support": 2000,
+   "year_repro_2023": 2.16,
+   "year_repro_2024": 2.82
+  },
+  "ALP_V2SEED_07": {
+   "lift": 2.486,
+   "support": 6760,
+   "year_repro_2023": 2.26,
+   "year_repro_2024": 2.83
+  },
+  "ALP_V2SEED_08": {
+   "lift": 2.33,
+   "support": 8038,
+   "year_repro_2023": 2.09,
+   "year_repro_2024": 2.65
+  },
+  "ALP_V2SEED_09": {
+   "lift": 2.225,
+   "support": 3382,
+   "year_repro_2023": 2.2,
+   "year_repro_2024": 2.25
+  },
+  "ALP_V2SEED_10": {
+   "lift": 2.21,
+   "support": 6579,
+   "year_repro_2023": 1.94,
+   "year_repro_2024": 2.6
+  }
+ }
+}

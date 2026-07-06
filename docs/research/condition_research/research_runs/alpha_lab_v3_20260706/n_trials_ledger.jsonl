@@ -1,0 +1,2 @@
+{"batch": "V3M-evmine-20260706T225151","meta": {"label": "L3_pos","max_depth": 4,"min_samples_leaf": 1000,"n_days": 60,"n_samples": 678451,"n_subsets": 7,"seed": 20260707},"n": 107,"program": "V3M","ts": "2026-07-06T22:51:51.506274"}
+{"batch": "V3H-baseline10-seed06hillclimb19-20260707","meta": {"kind": "baseline+hillclimb_engine_backtests","seeds_run": 10},"n": 29,"program": "V3H","ts": "2026-07-07T00:46:22.505739"}

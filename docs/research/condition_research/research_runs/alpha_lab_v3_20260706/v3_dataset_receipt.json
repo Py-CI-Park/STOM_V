@@ -1,0 +1,1815 @@
+{
+  "generated_at": "2026-07-06T22:50:56.180618+09:00",
+  "prereg_sha": "dcac74927466f6383d3119d1b5905f4d0733f300de0987b95612d5e9b794444b",
+  "label_mode": "v2",
+  "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+  "l3_engines_used": [
+    "vector"
+  ],
+  "annex_sha256": "568dc06156d433afa8e72f3f8d27794cb574d063670b6009fe68ce6604d84003",
+  "derived": true,
+  "derived_features": [
+    "이동평균60",
+    "이동평균150",
+    "이동평균300",
+    "이동평균600",
+    "이동평균1200",
+    "최고현재가",
+    "최저현재가",
+    "체결강도평균",
+    "최고체결강도",
+    "최저체결강도",
+    "최고초당매수수량",
+    "최고초당매도수량",
+    "누적초당매수수량",
+    "누적초당매도수량",
+    "초당거래대금평균",
+    "등락율각도",
+    "당일거래대금각도",
+    "전일비각도"
+  ],
+  "derived_window_hhmmss": [
+    90000,
+    93000
+  ],
+  "derived_avg": 30,
+  "n_feature_columns": 43,
+  "source_chunk_receipts": [
+    {
+      "receipt": "v3_dataset_receipt_2023_c1.json",
+      "n_days": 1,
+      "n_samples": 11183,
+      "days_skipped_missing_db": []
+    },
+    {
+      "receipt": "v3_dataset_receipt_2023_c2.json",
+      "n_days": 8,
+      "n_samples": 107770,
+      "days_skipped_missing_db": []
+    },
+    {
+      "receipt": "v3_dataset_receipt_2023_c3.json",
+      "n_days": 8,
+      "n_samples": 94343,
+      "days_skipped_missing_db": []
+    },
+    {
+      "receipt": "v3_dataset_receipt_2023_c4.json",
+      "n_days": 8,
+      "n_samples": 90209,
+      "days_skipped_missing_db": []
+    },
+    {
+      "receipt": "v3_dataset_receipt_2023_c5.json",
+      "n_days": 5,
+      "n_samples": 58128,
+      "days_skipped_missing_db": []
+    },
+    {
+      "receipt": "v3_dataset_receipt_2024_c1.json",
+      "n_days": 1,
+      "n_samples": 9108,
+      "days_skipped_missing_db": []
+    },
+    {
+      "receipt": "v3_dataset_receipt_2024_c2.json",
+      "n_days": 10,
+      "n_samples": 112867,
+      "days_skipped_missing_db": []
+    },
+    {
+      "receipt": "v3_dataset_receipt_2024_c3.json",
+      "n_days": 10,
+      "n_samples": 101991,
+      "days_skipped_missing_db": []
+    },
+    {
+      "receipt": "v3_dataset_receipt_2024_c4.json",
+      "n_days": 9,
+      "n_samples": 92852,
+      "days_skipped_missing_db": []
+    }
+  ],
+  "n_days": 60,
+  "days": [
+    "20230102",
+    "20230112",
+    "20230127",
+    "20230208",
+    "20230221",
+    "20230306",
+    "20230316",
+    "20230329",
+    "20230410",
+    "20230420",
+    "20230504",
+    "20230517",
+    "20230531",
+    "20230613",
+    "20230623",
+    "20230706",
+    "20230718",
+    "20230728",
+    "20230810",
+    "20230823",
+    "20230905",
+    "20230915",
+    "20230927",
+    "20231017",
+    "20231027",
+    "20231108",
+    "20231122",
+    "20231204",
+    "20231215",
+    "20231228",
+    "20240103",
+    "20240115",
+    "20240125",
+    "20240207",
+    "20240221",
+    "20240305",
+    "20240315",
+    "20240328",
+    "20240409",
+    "20240422",
+    "20240503",
+    "20240520",
+    "20240530",
+    "20240612",
+    "20240624",
+    "20240705",
+    "20240717",
+    "20240729",
+    "20240808",
+    "20240823",
+    "20240904",
+    "20240920",
+    "20241004",
+    "20241018",
+    "20241030",
+    "20241111",
+    "20241122",
+    "20241205",
+    "20241217",
+    "20241230"
+  ],
+  "days_skipped_missing_db": [],
+  "n_samples": 678451,
+  "labels": {
+    "L3_pos": {
+      "n": 678451,
+      "positives": 76098,
+      "positive_rate": 0.11216432726902902
+    }
+  },
+  "per_year": {
+    "2023": {
+      "days_done": 30,
+      "n_samples": 361633,
+      "L3_pos": {
+        "positives": 41321,
+        "positive_rate": 0.11426224929693916
+      }
+    },
+    "2024": {
+      "days_done": 30,
+      "n_samples": 316818,
+      "L3_pos": {
+        "positives": 34777,
+        "positive_rate": 0.10976964692662665
+      }
+    }
+  },
+  "verification": {
+    "npz_recount_match": true,
+    "coverage_equals_sealed_sample_grid": true,
+    "chunk_prereg_sha_uniform": true,
+    "chunk_annex_sha_uniform": true,
+    "sell_sha_ok_all_chunks": true,
+    "n_feature_columns_uniform_43": true,
+    "derived_features_uniform": true,
+    "days_skipped_missing_db_empty": true
+  },
+  "per_day": {
+    "20230102": {
+      "n_samples": 11183,
+      "shard": "20230102.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11183,
+          "positives": 1489,
+          "positive_rate": 0.13314852901725835
+        },
+        "L3_net": {
+          "n": 11183,
+          "mean": -0.008244236362734863,
+          "p10": -0.02079969085752964,
+          "p50": -0.012050257995724678,
+          "p90": 0.014998295344412327
+        }
+      },
+      "l3_stats": {
+        "fired": 8088,
+        "forced_cap": 3095,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230112": {
+      "n_samples": 14158,
+      "shard": "20230112.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 14158,
+          "positives": 1192,
+          "positive_rate": 0.08419268258228563
+        },
+        "L3_net": {
+          "n": 14158,
+          "mean": -0.01039514525279349,
+          "p10": -0.02210771106183529,
+          "p50": -0.012357944156974554,
+          "p90": 0.004597632680088282
+        }
+      },
+      "l3_stats": {
+        "fired": 11052,
+        "forced_cap": 3106,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230127": {
+      "n_samples": 12941,
+      "shard": "20230127.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12941,
+          "positives": 798,
+          "positive_rate": 0.061664477242871496
+        },
+        "L3_net": {
+          "n": 12941,
+          "mean": -0.010468736296869948,
+          "p10": -0.02212444134056568,
+          "p50": -0.01199621707201004,
+          "p90": -0.0013566468842327595
+        }
+      },
+      "l3_stats": {
+        "fired": 10782,
+        "forced_cap": 2159,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230208": {
+      "n_samples": 15190,
+      "shard": "20230208.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 15190,
+          "positives": 1298,
+          "positive_rate": 0.08545095457537853
+        },
+        "L3_net": {
+          "n": 15190,
+          "mean": -0.010733940469507555,
+          "p10": -0.022584442049264908,
+          "p50": -0.01246286602690816,
+          "p90": 0.003316327463835478
+        }
+      },
+      "l3_stats": {
+        "fired": 12490,
+        "forced_cap": 2700,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230221": {
+      "n_samples": 14139,
+      "shard": "20230221.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 14139,
+          "positives": 1478,
+          "positive_rate": 0.10453355965768442
+        },
+        "L3_net": {
+          "n": 14139,
+          "mean": -0.009806469172920362,
+          "p10": -0.022835909202694894,
+          "p50": -0.012413900345563889,
+          "p90": 0.011061504855752167
+        }
+      },
+      "l3_stats": {
+        "fired": 11817,
+        "forced_cap": 2322,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230306": {
+      "n_samples": 14961,
+      "shard": "20230306.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 14961,
+          "positives": 1861,
+          "positive_rate": 0.12439008087694672
+        },
+        "L3_net": {
+          "n": 14961,
+          "mean": -0.008722131676606324,
+          "p10": -0.02313271351158619,
+          "p50": -0.012476464733481407,
+          "p90": 0.014414031989872456
+        }
+      },
+      "l3_stats": {
+        "fired": 11405,
+        "forced_cap": 3556,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230316": {
+      "n_samples": 9939,
+      "shard": "20230316.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 9939,
+          "positives": 1590,
+          "positive_rate": 0.15997585270147902
+        },
+        "L3_net": {
+          "n": 9939,
+          "mean": -0.009911824211714004,
+          "p10": -0.025487974286079407,
+          "p50": -0.015078157186508179,
+          "p90": 0.016735428944230205
+        }
+      },
+      "l3_stats": {
+        "fired": 8969,
+        "forced_cap": 970,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230329": {
+      "n_samples": 12348,
+      "shard": "20230329.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12348,
+          "positives": 1371,
+          "positive_rate": 0.11103012633624879
+        },
+        "L3_net": {
+          "n": 12348,
+          "mean": -0.010615161525035182,
+          "p10": -0.024934932589530945,
+          "p50": -0.013853516429662704,
+          "p90": 0.013541385531425476
+        }
+      },
+      "l3_stats": {
+        "fired": 10680,
+        "forced_cap": 1668,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230410": {
+      "n_samples": 14094,
+      "shard": "20230410.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 14094,
+          "positives": 2117,
+          "positive_rate": 0.15020576131687244
+        },
+        "L3_net": {
+          "n": 14094,
+          "mean": -0.007775520974634742,
+          "p10": -0.023688875138759613,
+          "p50": -0.012322080787271261,
+          "p90": 0.018628215417265892
+        }
+      },
+      "l3_stats": {
+        "fired": 11650,
+        "forced_cap": 2444,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230420": {
+      "n_samples": 11470,
+      "shard": "20230420.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11470,
+          "positives": 1501,
+          "positive_rate": 0.13086312118570184
+        },
+        "L3_net": {
+          "n": 11470,
+          "mean": -0.01115241672466176,
+          "p10": -0.026649095118045807,
+          "p50": -0.013719569891691208,
+          "p90": 0.014066933933645488
+        }
+      },
+      "l3_stats": {
+        "fired": 10109,
+        "forced_cap": 1361,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230504": {
+      "n_samples": 10334,
+      "shard": "20230504.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10334,
+          "positives": 1186,
+          "positive_rate": 0.11476678923940391
+        },
+        "L3_net": {
+          "n": 10334,
+          "mean": -0.011155725107555728,
+          "p10": -0.026873677410185336,
+          "p50": -0.013270211406052113,
+          "p90": 0.013492506928741932
+        }
+      },
+      "l3_stats": {
+        "fired": 9004,
+        "forced_cap": 1330,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230517": {
+      "n_samples": 12362,
+      "shard": "20230517.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12362,
+          "positives": 1205,
+          "positive_rate": 0.09747613654748423
+        },
+        "L3_net": {
+          "n": 12362,
+          "mean": -0.009453696102084833,
+          "p10": -0.023720669001340865,
+          "p50": -0.011704628821462393,
+          "p90": 0.009486965835094452
+        }
+      },
+      "l3_stats": {
+        "fired": 10086,
+        "forced_cap": 2276,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230531": {
+      "n_samples": 11374,
+      "shard": "20230531.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11374,
+          "positives": 809,
+          "positive_rate": 0.07112713205556533
+        },
+        "L3_net": {
+          "n": 11374,
+          "mean": -0.012149163692972956,
+          "p10": -0.023793170228600502,
+          "p50": -0.013312048278748989,
+          "p90": 0.0007113017491064966
+        }
+      },
+      "l3_stats": {
+        "fired": 9829,
+        "forced_cap": 1545,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230613": {
+      "n_samples": 13851,
+      "shard": "20230613.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 13851,
+          "positives": 1513,
+          "positive_rate": 0.10923399032560827
+        },
+        "L3_net": {
+          "n": 13851,
+          "mean": -0.009890510203539564,
+          "p10": -0.022236686199903488,
+          "p50": -0.013045575469732285,
+          "p90": 0.012656697072088718
+        }
+      },
+      "l3_stats": {
+        "fired": 11672,
+        "forced_cap": 2179,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230623": {
+      "n_samples": 11886,
+      "shard": "20230623.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11886,
+          "positives": 1383,
+          "positive_rate": 0.11635537607269056
+        },
+        "L3_net": {
+          "n": 11886,
+          "mean": -0.010444243426149163,
+          "p10": -0.025128154084086418,
+          "p50": -0.014222385827451944,
+          "p90": 0.014476732350885868
+        }
+      },
+      "l3_stats": {
+        "fired": 10422,
+        "forced_cap": 1464,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230706": {
+      "n_samples": 10788,
+      "shard": "20230706.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10788,
+          "positives": 1020,
+          "positive_rate": 0.09454949944382647
+        },
+        "L3_net": {
+          "n": 10788,
+          "mean": -0.012433855842421305,
+          "p10": -0.02552732564508915,
+          "p50": -0.014052973594516516,
+          "p90": 0.008243989199400007
+        }
+      },
+      "l3_stats": {
+        "fired": 9458,
+        "forced_cap": 1330,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230718": {
+      "n_samples": 12278,
+      "shard": "20230718.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12278,
+          "positives": 1542,
+          "positive_rate": 0.12559048705000814
+        },
+        "L3_net": {
+          "n": 12278,
+          "mean": -0.010565613020873837,
+          "p10": -0.025643613189458847,
+          "p50": -0.013909156434237957,
+          "p90": 0.01630892977118492
+        }
+      },
+      "l3_stats": {
+        "fired": 10605,
+        "forced_cap": 1673,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230728": {
+      "n_samples": 9927,
+      "shard": "20230728.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 9927,
+          "positives": 1647,
+          "positive_rate": 0.1659111514052584
+        },
+        "L3_net": {
+          "n": 9927,
+          "mean": -0.010341070325672904,
+          "p10": -0.027431061118841173,
+          "p50": -0.013686335645616055,
+          "p90": 0.017044685781002045
+        }
+      },
+      "l3_stats": {
+        "fired": 8173,
+        "forced_cap": 1754,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230810": {
+      "n_samples": 11057,
+      "shard": "20230810.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11057,
+          "positives": 1378,
+          "positive_rate": 0.12462693316451116
+        },
+        "L3_net": {
+          "n": 11057,
+          "mean": -0.0112262766919021,
+          "p10": -0.025757292285561558,
+          "p50": -0.013593824580311775,
+          "p90": 0.015094380825757973
+        }
+      },
+      "l3_stats": {
+        "fired": 8926,
+        "forced_cap": 2131,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230823": {
+      "n_samples": 11740,
+      "shard": "20230823.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11740,
+          "positives": 1865,
+          "positive_rate": 0.15885860306643954
+        },
+        "L3_net": {
+          "n": 11740,
+          "mean": -0.009710825296272233,
+          "p10": -0.026949354447424412,
+          "p50": -0.013569803908467293,
+          "p90": 0.018993194028735165
+        }
+      },
+      "l3_stats": {
+        "fired": 10309,
+        "forced_cap": 1431,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230905": {
+      "n_samples": 12997,
+      "shard": "20230905.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12997,
+          "positives": 1316,
+          "positive_rate": 0.10125413556974687
+        },
+        "L3_net": {
+          "n": 12997,
+          "mean": -0.01092966976697969,
+          "p10": -0.02459334023296833,
+          "p50": -0.013533959165215492,
+          "p90": 0.010492117144167423
+        }
+      },
+      "l3_stats": {
+        "fired": 10827,
+        "forced_cap": 2170,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230915": {
+      "n_samples": 12722,
+      "shard": "20230915.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12722,
+          "positives": 1111,
+          "positive_rate": 0.08732903631504481
+        },
+        "L3_net": {
+          "n": 12722,
+          "mean": -0.010775803143079651,
+          "p10": -0.023128235712647438,
+          "p50": -0.012405023910105228,
+          "p90": 0.005242316052317619
+        }
+      },
+      "l3_stats": {
+        "fired": 10649,
+        "forced_cap": 2073,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230927": {
+      "n_samples": 8150,
+      "shard": "20230927.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 8150,
+          "positives": 1007,
+          "positive_rate": 0.12355828220858896
+        },
+        "L3_net": {
+          "n": 8150,
+          "mean": -0.011046738780077376,
+          "p10": -0.02570951022207737,
+          "p50": -0.014145159162580967,
+          "p90": 0.014659704919904473
+        }
+      },
+      "l3_stats": {
+        "fired": 7264,
+        "forced_cap": 886,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231017": {
+      "n_samples": 13443,
+      "shard": "20231017.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 13443,
+          "positives": 1200,
+          "positive_rate": 0.08926578888640928
+        },
+        "L3_net": {
+          "n": 13443,
+          "mean": -0.01092021838534951,
+          "p10": -0.02482227236032486,
+          "p50": -0.012887796387076378,
+          "p90": 0.00776509428396821
+        }
+      },
+      "l3_stats": {
+        "fired": 11073,
+        "forced_cap": 2370,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231027": {
+      "n_samples": 10173,
+      "shard": "20231027.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10173,
+          "positives": 826,
+          "positive_rate": 0.08119532094760641
+        },
+        "L3_net": {
+          "n": 10173,
+          "mean": -0.012799019089457355,
+          "p10": -0.025147458910942076,
+          "p50": -0.014064916409552097,
+          "p90": 0.001922341808676854
+        }
+      },
+      "l3_stats": {
+        "fired": 9046,
+        "forced_cap": 1127,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231108": {
+      "n_samples": 12982,
+      "shard": "20231108.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12982,
+          "positives": 1477,
+          "positive_rate": 0.11377291634570945
+        },
+        "L3_net": {
+          "n": 12982,
+          "mean": -0.009631673245124298,
+          "p10": -0.02253102324903011,
+          "p50": -0.01261971890926361,
+          "p90": 0.013189632631838307
+        }
+      },
+      "l3_stats": {
+        "fired": 10655,
+        "forced_cap": 2327,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231122": {
+      "n_samples": 11736,
+      "shard": "20231122.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11736,
+          "positives": 1498,
+          "positive_rate": 0.1276414451261077
+        },
+        "L3_net": {
+          "n": 11736,
+          "mean": -0.009788854343647298,
+          "p10": -0.0234527587890625,
+          "p50": -0.012703112326562405,
+          "p90": 0.014453163370490074
+        }
+      },
+      "l3_stats": {
+        "fired": 9917,
+        "forced_cap": 1819,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231204": {
+      "n_samples": 11059,
+      "shard": "20231204.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11059,
+          "positives": 1836,
+          "positive_rate": 0.16601862736232934
+        },
+        "L3_net": {
+          "n": 11059,
+          "mean": -0.007801552114218238,
+          "p10": -0.02305419445037842,
+          "p50": -0.012689138762652874,
+          "p90": 0.019028497859835625
+        }
+      },
+      "l3_stats": {
+        "fired": 8727,
+        "forced_cap": 2332,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231215": {
+      "n_samples": 10664,
+      "shard": "20231215.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10664,
+          "positives": 1301,
+          "positive_rate": 0.12199924981245311
+        },
+        "L3_net": {
+          "n": 10664,
+          "mean": -0.010332102235921358,
+          "p10": -0.024873344227671623,
+          "p50": -0.012434674426913261,
+          "p90": 0.013963459245860597
+        }
+      },
+      "l3_stats": {
+        "fired": 8394,
+        "forced_cap": 2270,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231228": {
+      "n_samples": 11687,
+      "shard": "20231228.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11687,
+          "positives": 1506,
+          "positive_rate": 0.1288611277487807
+        },
+        "L3_net": {
+          "n": 11687,
+          "mean": -0.01020919291833823,
+          "p10": -0.025592854246497154,
+          "p50": -0.013558827340602875,
+          "p90": 0.015192047692835331
+        }
+      },
+      "l3_stats": {
+        "fired": 9746,
+        "forced_cap": 1941,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240103": {
+      "n_samples": 9108,
+      "shard": "20240103.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 9108,
+          "positives": 1029,
+          "positive_rate": 0.1129776021080369
+        },
+        "L3_net": {
+          "n": 9108,
+          "mean": -0.010979472484850551,
+          "p10": -0.025034314021468163,
+          "p50": -0.014002454467117786,
+          "p90": 0.01341405622661119
+        }
+      },
+      "l3_stats": {
+        "fired": 7598,
+        "forced_cap": 1510,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240115": {
+      "n_samples": 12163,
+      "shard": "20240115.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12163,
+          "positives": 1600,
+          "positive_rate": 0.1315464934637836
+        },
+        "L3_net": {
+          "n": 12163,
+          "mean": -0.010402988291785353,
+          "p10": -0.024968234822154045,
+          "p50": -0.01372248400002718,
+          "p90": 0.015267468802630937
+        }
+      },
+      "l3_stats": {
+        "fired": 10339,
+        "forced_cap": 1824,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240125": {
+      "n_samples": 11591,
+      "shard": "20240125.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11591,
+          "positives": 1436,
+          "positive_rate": 0.12388922439824002
+        },
+        "L3_net": {
+          "n": 11591,
+          "mean": -0.010106091016533416,
+          "p10": -0.023951517418026924,
+          "p50": -0.012753425166010857,
+          "p90": 0.014611564576625824
+        }
+      },
+      "l3_stats": {
+        "fired": 9347,
+        "forced_cap": 2244,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240207": {
+      "n_samples": 11174,
+      "shard": "20240207.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11174,
+          "positives": 983,
+          "positive_rate": 0.0879720780383032
+        },
+        "L3_net": {
+          "n": 11174,
+          "mean": -0.011301834851738994,
+          "p10": -0.024779237806797028,
+          "p50": -0.013439461588859558,
+          "p90": 0.005866137333214283
+        }
+      },
+      "l3_stats": {
+        "fired": 9353,
+        "forced_cap": 1821,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240221": {
+      "n_samples": 11534,
+      "shard": "20240221.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11534,
+          "positives": 1266,
+          "positive_rate": 0.10976244147737126
+        },
+        "L3_net": {
+          "n": 11534,
+          "mean": -0.01080704565504451,
+          "p10": -0.02616073377430439,
+          "p50": -0.013383363373577595,
+          "p90": 0.013115441612899393
+        }
+      },
+      "l3_stats": {
+        "fired": 9892,
+        "forced_cap": 1642,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240305": {
+      "n_samples": 10269,
+      "shard": "20240305.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10269,
+          "positives": 1456,
+          "positive_rate": 0.141785957736878
+        },
+        "L3_net": {
+          "n": 10269,
+          "mean": -0.00976839015509147,
+          "p10": -0.024275247007608414,
+          "p50": -0.01349340844899416,
+          "p90": 0.01652778685092926
+        }
+      },
+      "l3_stats": {
+        "fired": 8742,
+        "forced_cap": 1527,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240315": {
+      "n_samples": 9964,
+      "shard": "20240315.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 9964,
+          "positives": 1012,
+          "positive_rate": 0.10156563629064633
+        },
+        "L3_net": {
+          "n": 9964,
+          "mean": -0.01170354144333047,
+          "p10": -0.025245425663888453,
+          "p50": -0.013819990679621696,
+          "p90": 0.010458855796605371
+        }
+      },
+      "l3_stats": {
+        "fired": 8841,
+        "forced_cap": 1123,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240328": {
+      "n_samples": 10364,
+      "shard": "20240328.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10364,
+          "positives": 711,
+          "positive_rate": 0.06860285604013894
+        },
+        "L3_net": {
+          "n": 10364,
+          "mean": -0.011601449506409154,
+          "p10": -0.023432470858097076,
+          "p50": -0.0138167142868042,
+          "p90": 0.0038877169135957956
+        }
+      },
+      "l3_stats": {
+        "fired": 8712,
+        "forced_cap": 1652,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240409": {
+      "n_samples": 13215,
+      "shard": "20240409.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 13215,
+          "positives": 1784,
+          "positive_rate": 0.134998108210367
+        },
+        "L3_net": {
+          "n": 13215,
+          "mean": -0.00837327441513955,
+          "p10": -0.023348351940512657,
+          "p50": -0.012268505990505219,
+          "p90": 0.016045527905225763
+        }
+      },
+      "l3_stats": {
+        "fired": 10706,
+        "forced_cap": 2509,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240422": {
+      "n_samples": 10392,
+      "shard": "20240422.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10392,
+          "positives": 736,
+          "positive_rate": 0.07082371054657428
+        },
+        "L3_net": {
+          "n": 10392,
+          "mean": -0.011938441545289655,
+          "p10": -0.02401145156472921,
+          "p50": -0.012990821152925491,
+          "p90": 0.0009196805185638368
+        }
+      },
+      "l3_stats": {
+        "fired": 8914,
+        "forced_cap": 1478,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240503": {
+      "n_samples": 12201,
+      "shard": "20240503.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12201,
+          "positives": 1160,
+          "positive_rate": 0.09507417424801246
+        },
+        "L3_net": {
+          "n": 12201,
+          "mean": -0.010044182384645595,
+          "p10": -0.02234107069671154,
+          "p50": -0.01253979280591011,
+          "p90": 0.009436734952032566
+        }
+      },
+      "l3_stats": {
+        "fired": 9887,
+        "forced_cap": 2314,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240520": {
+      "n_samples": 12326,
+      "shard": "20240520.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12326,
+          "positives": 1721,
+          "positive_rate": 0.13962355995456757
+        },
+        "L3_net": {
+          "n": 12326,
+          "mean": -0.008018780942171143,
+          "p10": -0.02345079369843006,
+          "p50": -0.012003037612885237,
+          "p90": 0.016281421296298504
+        }
+      },
+      "l3_stats": {
+        "fired": 9648,
+        "forced_cap": 2678,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240530": {
+      "n_samples": 10354,
+      "shard": "20240530.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10354,
+          "positives": 953,
+          "positive_rate": 0.0920417230056017
+        },
+        "L3_net": {
+          "n": 10354,
+          "mean": -0.011170655221096672,
+          "p10": -0.024665270000696182,
+          "p50": -0.013302607461810112,
+          "p90": 0.008018442429602146
+        }
+      },
+      "l3_stats": {
+        "fired": 8467,
+        "forced_cap": 1887,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240612": {
+      "n_samples": 14459,
+      "shard": "20240612.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 14459,
+          "positives": 1885,
+          "positive_rate": 0.13036862853586
+        },
+        "L3_net": {
+          "n": 14459,
+          "mean": -0.0091852862490975,
+          "p10": -0.02388708963990211,
+          "p50": -0.01282979641109705,
+          "p90": 0.0151904108002782
+        }
+      },
+      "l3_stats": {
+        "fired": 11955,
+        "forced_cap": 2504,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240624": {
+      "n_samples": 10165,
+      "shard": "20240624.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10165,
+          "positives": 1005,
+          "positive_rate": 0.09886866699458928
+        },
+        "L3_net": {
+          "n": 10165,
+          "mean": -0.010027863221567082,
+          "p10": -0.022750694677233695,
+          "p50": -0.012796931900084019,
+          "p90": 0.009414548985660076
+        }
+      },
+      "l3_stats": {
+        "fired": 7993,
+        "forced_cap": 2172,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240705": {
+      "n_samples": 10854,
+      "shard": "20240705.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10854,
+          "positives": 923,
+          "positive_rate": 0.08503777409250046
+        },
+        "L3_net": {
+          "n": 10854,
+          "mean": -0.009825569575624743,
+          "p10": -0.02224222868680954,
+          "p50": -0.012149582616984844,
+          "p90": 0.007946291007101536
+        }
+      },
+      "l3_stats": {
+        "fired": 8112,
+        "forced_cap": 2742,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240717": {
+      "n_samples": 13064,
+      "shard": "20240717.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 13064,
+          "positives": 1546,
+          "positive_rate": 0.1183404776484997
+        },
+        "L3_net": {
+          "n": 13064,
+          "mean": -0.00919784001884523,
+          "p10": -0.022299905307590958,
+          "p50": -0.012067612260580063,
+          "p90": 0.013848493807017803
+        }
+      },
+      "l3_stats": {
+        "fired": 10170,
+        "forced_cap": 2894,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240729": {
+      "n_samples": 11210,
+      "shard": "20240729.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11210,
+          "positives": 1285,
+          "positive_rate": 0.11462979482604817
+        },
+        "L3_net": {
+          "n": 11210,
+          "mean": -0.009041137801840174,
+          "p10": -0.022281939163804054,
+          "p50": -0.012510295491665602,
+          "p90": 0.012570832483470453
+        }
+      },
+      "l3_stats": {
+        "fired": 8690,
+        "forced_cap": 2520,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240808": {
+      "n_samples": 7900,
+      "shard": "20240808.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 7900,
+          "positives": 1432,
+          "positive_rate": 0.18126582278481013
+        },
+        "L3_net": {
+          "n": 7900,
+          "mean": -0.007380638422545405,
+          "p10": -0.02403276655822992,
+          "p50": -0.013291090726852417,
+          "p90": 0.018636984005570414
+        }
+      },
+      "l3_stats": {
+        "fired": 6713,
+        "forced_cap": 1187,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240823": {
+      "n_samples": 7447,
+      "shard": "20240823.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 7447,
+          "positives": 854,
+          "positive_rate": 0.11467705116154156
+        },
+        "L3_net": {
+          "n": 7447,
+          "mean": -0.010726830797984584,
+          "p10": -0.026328283548355102,
+          "p50": -0.012640886008739471,
+          "p90": 0.014197682030498981
+        }
+      },
+      "l3_stats": {
+        "fired": 6095,
+        "forced_cap": 1352,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240904": {
+      "n_samples": 4212,
+      "shard": "20240904.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 4212,
+          "positives": 569,
+          "positive_rate": 0.13509021842355176
+        },
+        "L3_net": {
+          "n": 4212,
+          "mean": -0.010603317074539556,
+          "p10": -0.026995219849050043,
+          "p50": -0.014014912769198418,
+          "p90": 0.015643549337983134
+        }
+      },
+      "l3_stats": {
+        "fired": 3720,
+        "forced_cap": 492,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240920": {
+      "n_samples": 11907,
+      "shard": "20240920.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11907,
+          "positives": 1155,
+          "positive_rate": 0.09700176366843033
+        },
+        "L3_net": {
+          "n": 11907,
+          "mean": -0.00914223412931567,
+          "p10": -0.02075202763080597,
+          "p50": -0.011330006644129753,
+          "p90": 0.008947181515395641
+        }
+      },
+      "l3_stats": {
+        "fired": 9406,
+        "forced_cap": 2501,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20241004": {
+      "n_samples": 9954,
+      "shard": "20241004.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 9954,
+          "positives": 685,
+          "positive_rate": 0.06881655615832831
+        },
+        "L3_net": {
+          "n": 9954,
+          "mean": -0.012048520892204408,
+          "p10": -0.024888000823557375,
+          "p50": -0.012879472225904465,
+          "p90": 0.0027760493103414774
+        }
+      },
+      "l3_stats": {
+        "fired": 7744,
+        "forced_cap": 2210,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20241018": {
+      "n_samples": 9103,
+      "shard": "20241018.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 9103,
+          "positives": 757,
+          "positive_rate": 0.08315939800065912
+        },
+        "L3_net": {
+          "n": 9103,
+          "mean": -0.011730140541994132,
+          "p10": -0.02399146556854248,
+          "p50": -0.013737006112933159,
+          "p90": 0.000499013694934547
+        }
+      },
+      "l3_stats": {
+        "fired": 8033,
+        "forced_cap": 1070,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20241030": {
+      "n_samples": 9483,
+      "shard": "20241030.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 9483,
+          "positives": 896,
+          "positive_rate": 0.09448486765791417
+        },
+        "L3_net": {
+          "n": 9483,
+          "mean": -0.011102250785517825,
+          "p10": -0.024007488787174226,
+          "p50": -0.013242492452263832,
+          "p90": 0.008198563940823078
+        }
+      },
+      "l3_stats": {
+        "fired": 7774,
+        "forced_cap": 1709,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20241111": {
+      "n_samples": 10227,
+      "shard": "20241111.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10227,
+          "positives": 1761,
+          "positive_rate": 0.17219125843355823
+        },
+        "L3_net": {
+          "n": 10227,
+          "mean": -0.006766049035848208,
+          "p10": -0.021877888590097427,
+          "p50": -0.011507921852171421,
+          "p90": 0.01727702096104622
+        }
+      },
+      "l3_stats": {
+        "fired": 7972,
+        "forced_cap": 2255,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20241122": {
+      "n_samples": 12068,
+      "shard": "20241122.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12068,
+          "positives": 1475,
+          "positive_rate": 0.12222406363937686
+        },
+        "L3_net": {
+          "n": 12068,
+          "mean": -0.009647511582751648,
+          "p10": -0.023483263328671455,
+          "p50": -0.012810037471354008,
+          "p90": 0.01400915626436472
+        }
+      },
+      "l3_stats": {
+        "fired": 9923,
+        "forced_cap": 2145,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20241205": {
+      "n_samples": 9215,
+      "shard": "20241205.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 9215,
+          "positives": 649,
+          "positive_rate": 0.07042864894194248
+        },
+        "L3_net": {
+          "n": 9215,
+          "mean": -0.012735196233032084,
+          "p10": -0.02541511319577694,
+          "p50": -0.013995185494422913,
+          "p90": 0.0001917048793984577
+        }
+      },
+      "l3_stats": {
+        "fired": 8014,
+        "forced_cap": 1201,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20241217": {
+      "n_samples": 10411,
+      "shard": "20241217.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10411,
+          "positives": 1014,
+          "positive_rate": 0.09739698395927385
+        },
+        "L3_net": {
+          "n": 10411,
+          "mean": -0.012155428026899605,
+          "p10": -0.024865470826625824,
+          "p50": -0.014164110645651817,
+          "p90": 0.009112678468227386
+        }
+      },
+      "l3_stats": {
+        "fired": 9364,
+        "forced_cap": 1047,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20241230": {
+      "n_samples": 10484,
+      "shard": "20241230.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10484,
+          "positives": 1039,
+          "positive_rate": 0.09910339565051507
+        },
+        "L3_net": {
+          "n": 10484,
+          "mean": -0.009732061865334473,
+          "p10": -0.02258567400276661,
+          "p50": -0.012378119863569736,
+          "p90": 0.009935293346643448
+        }
+      },
+      "l3_stats": {
+        "fired": 8228,
+        "forced_cap": 2256,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    }
+  }
+}

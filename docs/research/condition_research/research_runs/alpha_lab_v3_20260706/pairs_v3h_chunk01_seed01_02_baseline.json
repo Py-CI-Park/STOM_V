@@ -1,0 +1,4 @@
+[
+ {"label": "v3h:seed01:T000", "buy": "ALP_V3H_01_T000", "sell": "ALP_V3H_01_T000", "policy": "standalone leaf seed baseline (ALP_V2SEED_01)"},
+ {"label": "v3h:seed02:T000", "buy": "ALP_V3H_02_T000", "sell": "ALP_V3H_02_T000", "policy": "standalone leaf seed baseline (ALP_V2SEED_02)"}
+]

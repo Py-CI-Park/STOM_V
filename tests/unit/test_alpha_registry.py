@@ -164,11 +164,11 @@ class TestV2ProgramTags:
         for tag in ("P1", "P2", "P3", "P5"):
             assert total_trials(ledger, tag) == 1
 
-    def test_allowed_set_is_exactly_six(self):
+    def test_allowed_set_is_exactly_eight(self):
         from alpha_lab.registry import ALLOWED_PROGRAMS
 
         assert ALLOWED_PROGRAMS == frozenset(
-            {"P1", "P2", "P3", "P5", "V2M", "V2F"}
+            {"P1", "P2", "P3", "P5", "V2M", "V2F", "V3M", "V3H"}
         )
 
     def test_unknown_tag_still_rejected(self, tmp_path):
@@ -176,4 +176,18 @@ class TestV2ProgramTags:
         with pytest.raises(ValueError):
             append_trials(ledger, program="V2X", batch="b", n=1, now=NOW)
         with pytest.raises(ValueError):
-            total_trials(tmp_path / "none.jsonl", "V3M")
+            total_trials(tmp_path / "none.jsonl", "V3X")
+
+
+class TestV3ProgramTags:
+    """알파 랩 v3 additive 태그(V3M·V3H) — 기존 6태그 불변 + 신규 허용
+    (preregistration_v3.json 봉인 50d3d38a — ledger.tags)."""
+
+    def test_v3_tags_accepted_and_filterable(self, tmp_path):
+        ledger = tmp_path / "ledger.jsonl"
+        append_trials(ledger, program="V3M", batch="ev_mining", n=98, now=NOW)
+        append_trials(ledger, program="V3H", batch="hillclimb", n=40, now=NOW)
+        append_trials(ledger, program="V3M", batch="ev_mining2", n=5, now=NOW)
+        assert total_trials(ledger, "V3M") == 103
+        assert total_trials(ledger, "V3H") == 40
+        assert total_trials(ledger) == 143
