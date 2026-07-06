@@ -18,7 +18,11 @@ import hashlib
 import json
 from pathlib import Path
 
-ALLOWED_PROGRAMS: frozenset[str] = frozenset({"P1", "P2", "P3", "P5"})
+# v1 프로그램 4태그 + 알파 랩 v2 additive 태그(V2M=채굴 리프, V2F=필터 A/B).
+# 기존 태그 의미는 불변 — v2 확장은 preregistration_v2.json ledger.tags 봉인값.
+ALLOWED_PROGRAMS: frozenset[str] = frozenset(
+    {"P1", "P2", "P3", "P5", "V2M", "V2F"}
+)
 
 
 class SealViolation(Exception):

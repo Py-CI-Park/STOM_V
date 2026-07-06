@@ -31,8 +31,10 @@ from cli.alpha_common import (
     EXIT_OK,
     EXIT_SEAL,
     LEDGER_NAME,
+    PREREG_NAME,
     add_date_selection_args,
     add_run_dir_args,
+    receipt_filename,
     resolve_dates,
     setup_logging,
     spec_float,
@@ -45,6 +47,7 @@ logger = logging.getLogger(__name__)
 
 REPORT_NAME = "mining_report.json"
 DEFAULT_LABEL = "L1_180"          # 봉인 기본 라벨.
+DEFAULT_PROGRAM = "P1"            # 기본 원장 태그·rule_id 접두(v2는 V2M).
 N_RANDOM_SUBSETS = 4              # 봉인 문안: 무작위 서브셋 4회.
 RANDOM_SUBSET_SIZE = 12           # 봉인 문안: 12피처.
 
@@ -64,6 +67,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--label", default=None,
         help=f"학습 라벨 키 (기본: 사전등록 mining_spec.label, 최종 폴백 {DEFAULT_LABEL})",
     )
+    parser.add_argument(
+        "--prereg-name", type=receipt_filename, default=PREREG_NAME,
+        help=(
+            f"run-dir 안 사전등록 파일명 (기본 {PREREG_NAME}"
+            " — v2 run은 preregistration_v2.json)"
+        ),
+    )
+    parser.add_argument(
+        "--program", default=DEFAULT_PROGRAM,
+        choices=sorted(registry.ALLOWED_PROGRAMS),
+        help=(
+            f"n_trials 원장 프로그램 태그·rule_id 접두 (기본 {DEFAULT_PROGRAM}"
+            " — v2 채굴은 V2M)"
+        ),
+    )
+    parser.add_argument(
+        "--report-name", type=receipt_filename, default=REPORT_NAME,
+        help=f"run-dir 안 보고서 파일명 (기본 {REPORT_NAME})",
+    )
     return parser
 
 
@@ -79,7 +101,8 @@ def feature_subsets(seed: int, n_features: int) -> List[List[int]]:
 
 
 def _serialize_rules(
-    evaluated: Sequence[dict], adopted: Sequence[dict]
+    evaluated: Sequence[dict], adopted: Sequence[dict],
+    program: str = DEFAULT_PROGRAM,
 ) -> List[Dict[str, Any]]:
     """평가 리프 전수 → 영수증 rule 항목(내부 '_' 키 제외, 채택 표시 부착)."""
     adopted_by_key = {(leaf["subset_id"], leaf["leaf_id"]): leaf for leaf in adopted}
@@ -87,7 +110,7 @@ def _serialize_rules(
     for leaf in evaluated:
         key = (leaf["subset_id"], leaf["leaf_id"])
         row: Dict[str, Any] = {
-            "rule_id": f"P1-s{leaf['subset_id']:02d}-l{leaf['leaf_id']:03d}",
+            "rule_id": f"{program}-s{leaf['subset_id']:02d}-l{leaf['leaf_id']:03d}",
             "subset_id": leaf["subset_id"],
             "leaf_id": leaf["leaf_id"],
             "rule": [[name, op, float(thr)] for name, op, thr in leaf["rule"]],
@@ -111,7 +134,8 @@ def _serialize_rules(
 
 
 def _mine_and_adopt(
-    data: Dict[str, np.ndarray], label: str, spec: Dict[str, Any]
+    data: Dict[str, np.ndarray], label: str, spec: Dict[str, Any],
+    *, program: str = DEFAULT_PROGRAM,
 ) -> Dict[str, Any]:
     """채굴→평가→채택 일괄 수행 후 보고서 구성요소 dict 반환."""
     X = data["features"]
@@ -143,7 +167,7 @@ def _mine_and_adopt(
         per_year_lift_gt=spec_float(gate, "per_year_lift_gt", 1.0),
     )
     return {
-        "rules": _serialize_rules(evaluated, adopted),
+        "rules": _serialize_rules(evaluated, adopted, program),
         "n_discovered": len(evaluated),
         "n_fdr_survived": sum(1 for leaf in evaluated if leaf["fdr_survivor"]),
         "n_adopted": len(adopted),
@@ -158,6 +182,7 @@ def _mine_and_adopt(
 def _build_report(
     mined: Dict[str, Any], *, spec: Dict[str, Any], label: str,
     dates: Sequence[str], prereg_sha: str, batch: str, now: datetime,
+    program: str = DEFAULT_PROGRAM,
 ) -> Dict[str, Any]:
     """mining_report.json 본문(리프 전수 + 파라미터 + 원장 기록 요약)."""
     return {
@@ -181,13 +206,13 @@ def _build_report(
         "n_fdr_survived": mined["n_fdr_survived"],
         "n_adopted": mined["n_adopted"],
         "rules": mined["rules"],
-        "ledger": {"program": "P1", "batch": batch, "n": mined["n_discovered"]},
+        "ledger": {"program": program, "batch": batch, "n": mined["n_discovered"]},
     }
 
 
 def _run(args: argparse.Namespace, now: datetime) -> int:
     run_dir = Path(args.run_dir)
-    verified = verified_prereg_or_none(run_dir, logger)
+    verified = verified_prereg_or_none(run_dir, logger, args.prereg_name)
     if verified is None:
         return EXIT_SEAL
     prereg, prereg_sha = verified
@@ -195,6 +220,7 @@ def _run(args: argparse.Namespace, now: datetime) -> int:
     cache_dir = Path(args.cache_dir) if args.cache_dir else run_dir / "cache"
     spec = prereg.get("mining_spec", {})
     label = args.label or spec.get("label") or DEFAULT_LABEL
+    program = args.program
     try:
         data = load_shards(cache_dir, dates)
     except FileNotFoundError as exc:
@@ -206,16 +232,16 @@ def _run(args: argparse.Namespace, now: datetime) -> int:
     if label not in data:
         logger.error("라벨 %r 이 샤드에 없다 (가용: %s)", label, sorted(data))
         return EXIT_INPUT
-    mined = _mine_and_adopt(data, label, spec)
-    batch = f"P1-{label}-{now.strftime('%Y%m%dT%H%M%S')}"
+    mined = _mine_and_adopt(data, label, spec, program=program)
+    batch = f"{program}-{label}-{now.strftime('%Y%m%dT%H%M%S')}"
     report = _build_report(
         mined, spec=spec, label=label, dates=dates,
-        prereg_sha=prereg_sha, batch=batch, now=now,
+        prereg_sha=prereg_sha, batch=batch, now=now, program=program,
     )
-    write_receipt(run_dir / REPORT_NAME, report)
+    write_receipt(run_dir / args.report_name, report)
     registry.append_trials(
         run_dir / LEDGER_NAME,
-        program="P1",
+        program=program,
         batch=batch,
         n=mined["n_discovered"],
         now=now,
@@ -224,7 +250,7 @@ def _run(args: argparse.Namespace, now: datetime) -> int:
     logger.info(
         "mine 완료: 리프 %d(FDR 생존 %d, 채택 %d) — %s",
         mined["n_discovered"], mined["n_fdr_survived"], mined["n_adopted"],
-        run_dir / REPORT_NAME,
+        run_dir / args.report_name,
     )
     return EXIT_OK
 

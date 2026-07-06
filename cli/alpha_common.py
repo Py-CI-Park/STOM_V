@@ -26,11 +26,13 @@ from alpha_lab import registry
 __all__ = [
     "DEFAULT_DB_DIR",
     "DEFAULT_RUN_DIR",
+    "DEFAULT_RUN_DIR_V2",
     "EXIT_INPUT",
     "EXIT_OK",
     "EXIT_SEAL",
     "LEDGER_NAME",
     "PREREG_NAME",
+    "PREREG_V2_NAME",
     "REPO_ROOT",
     "add_date_selection_args",
     "add_run_dir_args",
@@ -39,6 +41,7 @@ __all__ = [
     "load_verified_prereg",
     "mvp_dates",
     "parse_dates",
+    "receipt_filename",
     "resolve_dates",
     "setup_logging",
     "spec_float",
@@ -52,8 +55,13 @@ DEFAULT_RUN_DIR = (
     REPO_ROOT / "docs" / "research" / "condition_research" / "research_runs"
     / "alpha_lab_20260705"
 )
+DEFAULT_RUN_DIR_V2 = (
+    REPO_ROOT / "docs" / "research" / "condition_research" / "research_runs"
+    / "alpha_lab_v2_20260706"
+)
 DEFAULT_DB_DIR = REPO_ROOT / "_database"
 PREREG_NAME = "preregistration_v1.json"
+PREREG_V2_NAME = "preregistration_v2.json"
 LEDGER_NAME = "n_trials_ledger.jsonl"
 
 EXIT_OK = 0
@@ -129,13 +137,29 @@ def resolve_dates(args: argparse.Namespace, prereg: Dict[str, Any]) -> List[str]
     return parse_dates(args.dates)
 
 
-def load_verified_prereg(run_dir: Path) -> Tuple[Dict[str, Any], str]:
+def receipt_filename(value: str) -> str:
+    """argparse type — run-dir 안 파일명 강제(경로 구분자 금지, 탈출 방지).
+
+    alpha_dataset_v2의 --receipt-name 검증과 동일 규칙의 공용 헬퍼(additive).
+    """
+    name = str(value).strip()
+    if not name or Path(name).name != name:
+        raise argparse.ArgumentTypeError(
+            f"경로 구분자 없는 파일명이어야 한다: {value!r}"
+        )
+    return name
+
+
+def load_verified_prereg(
+    run_dir: Path, prereg_name: str = PREREG_NAME
+) -> Tuple[Dict[str, Any], str]:
     """봉인 검증 후 (사전등록 dict, sha256 hex)를 반환한다.
 
-    기대 sha는 preregistration_v1.sha256 사이드카의 첫 토큰이다.
+    기대 sha는 '{prereg_name 확장자 제외}.sha256' 사이드카의 첫 토큰이다
+    (기본 v1 — v2 CLI 는 prereg_name=PREREG_V2_NAME 로 호출, additive).
     불일치는 registry.SealViolation, 파일 부재는 FileNotFoundError.
     """
-    prereg_path = Path(run_dir) / PREREG_NAME
+    prereg_path = Path(run_dir) / prereg_name
     sidecar = prereg_path.with_suffix(".sha256")
     if not prereg_path.exists() or not sidecar.exists():
         raise FileNotFoundError(
@@ -151,11 +175,11 @@ def load_verified_prereg(run_dir: Path) -> Tuple[Dict[str, Any], str]:
 
 
 def verified_prereg_or_none(
-    run_dir: Path, logger: logging.Logger
+    run_dir: Path, logger: logging.Logger, prereg_name: str = PREREG_NAME
 ) -> Optional[Tuple[Dict[str, Any], str]]:
     """load_verified_prereg의 CLI 래퍼 — 실패 시 error 로그 후 None."""
     try:
-        return load_verified_prereg(run_dir)
+        return load_verified_prereg(run_dir, prereg_name)
     except registry.SealViolation as exc:
         logger.error("사전등록 봉인 불일치 — 비정상 종료: %s", exc)
         return None

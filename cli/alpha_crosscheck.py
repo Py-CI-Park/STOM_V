@@ -37,14 +37,16 @@ from cli.alpha_common import (
     EXIT_OK,
     EXIT_SEAL,
     LEDGER_NAME,
+    PREREG_NAME,
     add_run_dir_args,
     parse_dates,
+    receipt_filename,
     setup_logging,
     spec_int,
     verified_prereg_or_none,
     write_receipt,
 )
-from cli.alpha_mine import DEFAULT_LABEL, feature_subsets
+from cli.alpha_mine import DEFAULT_LABEL, DEFAULT_PROGRAM, feature_subsets
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +77,25 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--label", default=None,
         help=f"학습 라벨 키 (기본: 사전등록 mining_spec.label, 최종 폴백 {DEFAULT_LABEL})",
+    )
+    parser.add_argument(
+        "--prereg-name", type=receipt_filename, default=PREREG_NAME,
+        help=(
+            f"run-dir 안 사전등록 파일명 (기본 {PREREG_NAME}"
+            " — v2 run은 preregistration_v2.json)"
+        ),
+    )
+    parser.add_argument(
+        "--program", default=DEFAULT_PROGRAM,
+        choices=sorted(registry.ALLOWED_PROGRAMS),
+        help=(
+            f"n_trials 원장 프로그램 태그·rule_id 접두 (기본 {DEFAULT_PROGRAM}"
+            " — v2 채굴은 V2M)"
+        ),
+    )
+    parser.add_argument(
+        "--report-name", type=receipt_filename, default=REPORT_NAME,
+        help=f"run-dir 안 보고서 파일명 (기본 {REPORT_NAME})",
     )
     return parser
 
@@ -144,6 +165,7 @@ def _cross_eval_rules(
     datasets: Dict[str, Dict[str, np.ndarray]],
     label: str,
     spec: Dict[str, Any],
+    program: str = DEFAULT_PROGRAM,
 ) -> Dict[str, Any]:
     """양방향 채굴 + 두 창 lift 재계산 — 보고서 rules/카운트 구성요소."""
     seed = spec_int(spec, "seed", 20260705)
@@ -174,7 +196,8 @@ def _cross_eval_rules(
         for leaf in leaves:
             entry: Dict[str, Any] = {
                 "rule_id": (
-                    f"P1XW-{mined_on}-s{leaf['subset_id']:02d}-l{leaf['leaf_id']:03d}"
+                    f"{program}XW-{mined_on}"
+                    f"-s{leaf['subset_id']:02d}-l{leaf['leaf_id']:03d}"
                 ),
                 "mined_on": mined_on,
                 "subset_id": leaf["subset_id"],
@@ -215,12 +238,13 @@ def _cross_eval_rules(
 
 def _run(args: argparse.Namespace, now: datetime) -> int:
     run_dir = Path(args.run_dir)
-    verified = verified_prereg_or_none(run_dir, logger)
+    verified = verified_prereg_or_none(run_dir, logger, args.prereg_name)
     if verified is None:
         return EXIT_SEAL
     prereg, prereg_sha = verified
     spec = prereg.get("mining_spec", {})
     label = args.label or spec.get("label") or DEFAULT_LABEL
+    program = args.program
     cache_dir = Path(args.cache_dir) if args.cache_dir else run_dir / "cache"
     try:
         windows = resolve_windows(args, prereg)
@@ -231,8 +255,8 @@ def _run(args: argparse.Namespace, now: datetime) -> int:
     except (FileNotFoundError, ValueError) as exc:
         logger.error("교차창 입력 실패 — %s (exit %d)", exc, EXIT_INPUT)
         return EXIT_INPUT
-    crossed = _cross_eval_rules(windows, datasets, label, spec)
-    batch = f"P1XW-{label}-{now.strftime('%Y%m%dT%H%M%S')}"
+    crossed = _cross_eval_rules(windows, datasets, label, spec, program)
+    batch = f"{program}XW-{label}-{now.strftime('%Y%m%dT%H%M%S')}"
     report = {
         "generated_at": now.isoformat(),
         "prereg_sha": prereg_sha,
@@ -248,12 +272,12 @@ def _run(args: argparse.Namespace, now: datetime) -> int:
         "n_both_ge_1_3": crossed["n_both_ge_1_3"],
         "n_both_ge_1_3_by_window": crossed["n_both_ge_1_3_by_window"],
         "rules": crossed["rules"],
-        "ledger": {"program": "P1", "batch": batch, "n": crossed["n_rules"]},
+        "ledger": {"program": program, "batch": batch, "n": crossed["n_rules"]},
     }
-    write_receipt(run_dir / REPORT_NAME, report)
+    write_receipt(run_dir / args.report_name, report)
     registry.append_trials(
         run_dir / LEDGER_NAME,
-        program="P1",
+        program=program,
         batch=batch,
         n=crossed["n_rules"],
         now=now,
@@ -268,7 +292,7 @@ def _run(args: argparse.Namespace, now: datetime) -> int:
     logger.info(
         "crosscheck 완료: 규칙 %d(양방향 lift>=%.1f %d) — %s",
         crossed["n_rules"], CROSS_LIFT_MIN, crossed["n_both_ge_1_3"],
-        run_dir / REPORT_NAME,
+        run_dir / args.report_name,
     )
     return EXIT_OK
 

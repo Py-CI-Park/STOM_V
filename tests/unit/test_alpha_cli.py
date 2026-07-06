@@ -542,6 +542,88 @@ def test_crosscheck_same_year_windows_rejected(xwin_env, cross_report):
     assert report_path.read_text(encoding="utf-8") == before
 
 
+# ------------------------------------------- v2 additive 오버라이드 --
+
+
+def test_mine_v2m_program_prereg_and_report_name(cli_env, dataset_receipt):
+    """--prereg-name/--program/--report-name additive 오버라이드 — V2M 채굴.
+
+    기본 P1 산출(mining_report.json)·P1 원장 합계는 불변이어야 하고,
+    V2M 보고서는 별도 파일에 V2M rule_id·원장 태그로 기록돼야 한다.
+    """
+    run_dir = cli_env["run_dir"]
+    sha = registry.seal(MINI_PREREG, run_dir / "preregistration_v2.json")
+    (run_dir / "preregistration_v2.sha256").write_text(sha + "\n", encoding="utf-8")
+    ledger = run_dir / "n_trials_ledger.jsonl"
+    p1_before = registry.total_trials(ledger, "P1")
+    v2m_before = registry.total_trials(ledger, "V2M")
+    rc = alpha_mine.main([
+        "--dates", ",".join(DATES), "--run-dir", str(run_dir),
+        "--prereg-name", "preregistration_v2.json",
+        "--program", "V2M", "--report-name", "v2_mining_report.json",
+    ])
+    assert rc == 0
+    report = json.loads(
+        (run_dir / "v2_mining_report.json").read_text(encoding="utf-8")
+    )
+    assert report["prereg_sha"] == sha
+    assert report["ledger"]["program"] == "V2M"
+    rules = report["rules"]
+    assert rules and all(r["rule_id"].startswith("V2M-s") for r in rules)
+    assert registry.total_trials(ledger, "V2M") == v2m_before + report["n_discovered"]
+    assert registry.total_trials(ledger, "P1") == p1_before  # 기존 장부 불변.
+
+
+def test_mine_rejects_unknown_program_and_bad_report_name(cli_env):
+    with pytest.raises(SystemExit) as exc:
+        alpha_mine.main([
+            "--dates", ",".join(DATES), "--run-dir", str(cli_env["run_dir"]),
+            "--program", "P9",
+        ])
+    assert exc.value.code == 2
+    with pytest.raises(SystemExit) as exc2:
+        alpha_mine.main([
+            "--dates", ",".join(DATES), "--run-dir", str(cli_env["run_dir"]),
+            "--report-name", "sub/mining.json",
+        ])
+    assert exc2.value.code == 2
+
+
+def test_crosscheck_v2m_program_prereg_and_report_name(xwin_env, cross_report):
+    """crosscheck additive 오버라이드 — V2M 태그·별도 보고서·기존 산출 불변."""
+    run_dir = xwin_env["run_dir"]
+    prereg = dict(
+        MINI_PREREG,
+        windows={"mvp": {"y2023": [XWIN_DATES[0]], "y2024": [XWIN_DATES[1]]}},
+    )
+    sha = registry.seal(prereg, run_dir / "preregistration_v2.json")
+    (run_dir / "preregistration_v2.sha256").write_text(sha + "\n", encoding="utf-8")
+    ledger = run_dir / "n_trials_ledger.jsonl"
+    p1_before = registry.total_trials(ledger, "P1")
+    default_report = (run_dir / "cross_window_report.json").read_text(encoding="utf-8")
+    rc = alpha_crosscheck.main([
+        "--dates-a", XWIN_DATES[0], "--dates-b", XWIN_DATES[1],
+        "--run-dir", str(run_dir),
+        "--prereg-name", "preregistration_v2.json",
+        "--program", "V2M", "--report-name", "v2_cross_window_report.json",
+    ])
+    assert rc == 0
+    r2 = json.loads(
+        (run_dir / "v2_cross_window_report.json").read_text(encoding="utf-8")
+    )
+    assert r2["prereg_sha"] == sha
+    assert r2["ledger"]["program"] == "V2M"
+    assert r2["rules"] and all(
+        x["rule_id"].startswith("V2MXW-") for x in r2["rules"]
+    )
+    assert registry.total_trials(ledger, "V2M") == r2["n_rules"]
+    assert registry.total_trials(ledger, "P1") == p1_before  # 기존 장부 불변.
+    assert (
+        (run_dir / "cross_window_report.json").read_text(encoding="utf-8")
+        == default_report
+    )
+
+
 # --------------------------------------------------------------- seal --
 
 

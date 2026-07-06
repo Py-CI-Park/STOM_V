@@ -54,17 +54,24 @@ def _code_array(codes: List[object]) -> np.ndarray:
     return arr.astype(_CODE_DTYPE)
 
 
-def to_arrays(samples: Iterable[Mapping[str, object]]) -> Dict[str, np.ndarray]:
+def to_arrays(
+    samples: Iterable[Mapping[str, object]],
+    label_dtypes: Union[Mapping[str, np.dtype], None] = None,
+) -> Dict[str, np.ndarray]:
     """표본 dict 스트림 → 컬럼 배열 dict (npz 저장 계약 dtype 강제).
 
     라벨 키는 첫 표본에서 메타·피처를 제외한 나머지(삽입 순서 유지)로
     식별한다 — stream_samples 기본 지평이면 schema.LABEL_COLUMNS와 일치하고,
     비기본 지평(L1_30 등)도 그대로 통과한다. 모든 표본은 첫 표본과 동일한
     키 집합이어야 하며 다르면 ValueError. 빈 입력은 스키마 보존 빈 배열.
+
+    label_dtypes: 라벨 키별 dtype 재정의(additive — v2 L3_net float32 등).
+    미지정 키는 기존 계약(int8) 그대로다.
     """
     rows = list(samples)
     if not rows:
         return _empty_arrays()
+    overrides = dict(label_dtypes or {})
     first_keys = rows[0].keys()
     label_keys = [k for k in first_keys if k not in _META_SET and k not in _FEATURE_SET]
     features = np.empty((len(rows), len(ALL_FEATURES)), dtype=np.float32)
@@ -79,7 +86,8 @@ def to_arrays(samples: Iterable[Mapping[str, object]]) -> Dict[str, np.ndarray]:
         "t0": np.asarray([row["t0"] for row in rows], dtype=np.int64),
     }
     for name in label_keys:
-        arrays[name] = np.asarray([row[name] for row in rows], dtype=np.int8)
+        dtype = np.dtype(overrides.get(name, np.int8))
+        arrays[name] = np.asarray([row[name] for row in rows], dtype=dtype)
     return arrays
 
 
