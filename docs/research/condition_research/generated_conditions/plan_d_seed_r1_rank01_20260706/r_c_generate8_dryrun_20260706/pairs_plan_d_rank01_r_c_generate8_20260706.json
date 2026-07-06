@@ -1,0 +1,50 @@
+[
+  {
+    "label": "plan_d_r1_rank01_01_repair_strength_plus1_default",
+    "buy": "LAT_plan_d_r1_rank01_01_repair_strength_plus1_default_B",
+    "sell": "LAT_plan_d_r1_rank01_01_repair_strength_plus1_default_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_02_repair_momentum_wider_default",
+    "buy": "LAT_plan_d_r1_rank01_02_repair_momentum_wider_default_B",
+    "sell": "LAT_plan_d_r1_rank01_02_repair_momentum_wider_default_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_03_repair_l14_liquidity_relaxed_default",
+    "buy": "LAT_plan_d_r1_rank01_03_repair_l14_liquidity_relaxed_default_B",
+    "sell": "LAT_plan_d_r1_rank01_03_repair_l14_liquidity_relaxed_default_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_04_repair_l14_liquidity_tight_default",
+    "buy": "LAT_plan_d_r1_rank01_04_repair_l14_liquidity_tight_default_B",
+    "sell": "LAT_plan_d_r1_rank01_04_repair_l14_liquidity_tight_default_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_05_repair_exit_protect_tp28_sl25_hold60",
+    "buy": "LAT_plan_d_r1_rank01_05_repair_exit_protect_tp28_sl25_hold60_B",
+    "sell": "LAT_plan_d_r1_rank01_05_repair_exit_protect_tp28_sl25_hold60_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_06_discovery_adjacent_l13_l14_coverage",
+    "buy": "LAT_plan_d_r1_rank01_06_discovery_adjacent_l13_l14_coverage_B",
+    "sell": "LAT_plan_d_r1_rank01_06_discovery_adjacent_l13_l14_coverage_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_07_discovery_adjacent_l14_l1430_extension",
+    "buy": "LAT_plan_d_r1_rank01_07_discovery_adjacent_l14_l1430_extension_B",
+    "sell": "LAT_plan_d_r1_rank01_07_discovery_adjacent_l14_l1430_extension_S",
+    "lane": "plan"
+  },
+  {
+    "label": "plan_d_r1_rank01_08_discovery_balanced_l14_tight_exit",
+    "buy": "LAT_plan_d_r1_rank01_08_discovery_balanced_l14_tight_exit_B",
+    "sell": "LAT_plan_d_r1_rank01_08_discovery_balanced_l14_tight_exit_S",
+    "lane": "plan"
+  }
+]

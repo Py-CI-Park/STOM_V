@@ -1,0 +1,244 @@
+{
+  "schema": "plan_d_rank01_r_c_generate8_design_v1",
+  "created_at": "2026-07-06T14:00:17+09:00",
+  "scope": "plan-d-seed-r1-rank01-generate8-dryrun-no-portfolio-export",
+  "quota": {
+    "repair": 5,
+    "discovery": 3,
+    "total": 8
+  },
+  "parent": {
+    "condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+    "buy_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_B",
+    "sell_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_S",
+    "buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+    "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+  },
+  "candidates": [
+    {
+      "slot": 1,
+      "lane": "repair",
+      "condition_id": "plan_d_r1_rank01_01_repair_strength_plus1_default",
+      "mutation_axis": "entry_strength_threshold_plus1",
+      "expected_effect": "Filter weak strength-surge entries while preserving parent L14 coverage.",
+      "risk_note": "May reduce trade count below the parent if the S09/S10 strength gates are too strict.",
+      "params": {
+        "buy_mutation": "S09 109->110, S10 107->108",
+        "sell_profile": "default_tp3_sl3_hold60"
+      },
+      "schema": "plan_d_r1_rank01_candidate_v1",
+      "created_at": "2026-07-06T14:00:17+09:00",
+      "seed_id": "plan_d_rcs_oos_20260706_rank01",
+      "parent_condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+      "parent_buy_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_B",
+      "parent_sell_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_S",
+      "parent_buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+      "parent_sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "cell_id": "plan_d_r1_rank01_slot_01",
+      "family": "plan_d_seed_research_r1",
+      "label": "hypothesis_seed",
+      "created_reason": "Plan D R-c rank01 generate8 dry-run only; research lane; no DB apply/replay/OOS/portfolio/export/live/final",
+      "buy_sha256": "8bc075269259d0b5c26cdd8a06bbe85bc5bef31a2702ead24b6bb96cdd5aa1e3",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "slot": 2,
+      "lane": "repair",
+      "condition_id": "plan_d_r1_rank01_02_repair_momentum_wider_default",
+      "mutation_axis": "momentum_high_mult_0994_to_0992",
+      "expected_effect": "Lift daily trade coverage by widening M09/M10 near-high momentum entry.",
+      "risk_note": "Wider momentum may admit weaker late moves and raise MDD.",
+      "params": {
+        "buy_mutation": "M09/M10 high_mult 0.994->0.992",
+        "sell_profile": "default_tp3_sl3_hold60"
+      },
+      "schema": "plan_d_r1_rank01_candidate_v1",
+      "created_at": "2026-07-06T14:00:17+09:00",
+      "seed_id": "plan_d_rcs_oos_20260706_rank01",
+      "parent_condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+      "parent_buy_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_B",
+      "parent_sell_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_S",
+      "parent_buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+      "parent_sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "cell_id": "plan_d_r1_rank01_slot_02",
+      "family": "plan_d_seed_research_r1",
+      "label": "hypothesis_seed",
+      "created_reason": "Plan D R-c rank01 generate8 dry-run only; research lane; no DB apply/replay/OOS/portfolio/export/live/final",
+      "buy_sha256": "969d5dd81379ae45431e03059b357bf0a34c13866d299a968a8eaa28eed7f5d0",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "slot": 3,
+      "lane": "repair",
+      "condition_id": "plan_d_r1_rank01_03_repair_l14_liquidity_relaxed_default",
+      "mutation_axis": "l14_liquidity_relaxation",
+      "expected_effect": "Increase L14 participation by lowering late liquidity and rate thresholds.",
+      "risk_note": "Late-session relaxed liquidity could add noisy reversals.",
+      "params": {
+        "buy_mutation": "L14 amount 10000->9000 and rate floor 8->7",
+        "sell_profile": "default_tp3_sl3_hold60"
+      },
+      "schema": "plan_d_r1_rank01_candidate_v1",
+      "created_at": "2026-07-06T14:00:17+09:00",
+      "seed_id": "plan_d_rcs_oos_20260706_rank01",
+      "parent_condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+      "parent_buy_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_B",
+      "parent_sell_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_S",
+      "parent_buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+      "parent_sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "cell_id": "plan_d_r1_rank01_slot_03",
+      "family": "plan_d_seed_research_r1",
+      "label": "hypothesis_seed",
+      "created_reason": "Plan D R-c rank01 generate8 dry-run only; research lane; no DB apply/replay/OOS/portfolio/export/live/final",
+      "buy_sha256": "04e3c0cee0709c862b7ad641e3ee2ccb214ee211718742d435da3496d2c594b2",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "slot": 4,
+      "lane": "repair",
+      "condition_id": "plan_d_r1_rank01_04_repair_l14_liquidity_tight_default",
+      "mutation_axis": "l14_liquidity_tightening",
+      "expected_effect": "Reduce L14 drawdown by requiring stronger late liquidity.",
+      "risk_note": "Tighter L14 liquidity may cut the parent daily trade contribution.",
+      "params": {
+        "buy_mutation": "L14 amount 10000->12000",
+        "sell_profile": "default_tp3_sl3_hold60"
+      },
+      "schema": "plan_d_r1_rank01_candidate_v1",
+      "created_at": "2026-07-06T14:00:17+09:00",
+      "seed_id": "plan_d_rcs_oos_20260706_rank01",
+      "parent_condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+      "parent_buy_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_B",
+      "parent_sell_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_S",
+      "parent_buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+      "parent_sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "cell_id": "plan_d_r1_rank01_slot_04",
+      "family": "plan_d_seed_research_r1",
+      "label": "hypothesis_seed",
+      "created_reason": "Plan D R-c rank01 generate8 dry-run only; research lane; no DB apply/replay/OOS/portfolio/export/live/final",
+      "buy_sha256": "cce31d5127a2d6858c4a2744372424be890de5862bf3fcd77f5b63268b686ba2",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "slot": 5,
+      "lane": "repair",
+      "condition_id": "plan_d_r1_rank01_05_repair_exit_protect_tp28_sl25_hold60",
+      "mutation_axis": "exit_protection_tp28_sl25",
+      "expected_effect": "Keep parent entry while cutting losses faster and taking slightly earlier profit.",
+      "risk_note": "Earlier exits may reduce large winners that made rank01 profitable.",
+      "params": {
+        "buy_mutation": "none_parent_structure",
+        "sell_profile": "protect_tp2p8_sl2p5_hold60"
+      },
+      "schema": "plan_d_r1_rank01_candidate_v1",
+      "created_at": "2026-07-06T14:00:17+09:00",
+      "seed_id": "plan_d_rcs_oos_20260706_rank01",
+      "parent_condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+      "parent_buy_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_B",
+      "parent_sell_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_S",
+      "parent_buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+      "parent_sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "cell_id": "plan_d_r1_rank01_slot_05",
+      "family": "plan_d_seed_research_r1",
+      "label": "hypothesis_seed",
+      "created_reason": "Plan D R-c rank01 generate8 dry-run only; research lane; no DB apply/replay/OOS/portfolio/export/live/final",
+      "buy_sha256": "15f2cdf1da06f65b216b95a67de2b73a19965080ef228850bc6b45ab588e0418",
+      "sell_sha256": "696f18a392ee81d7a06cad88bd49113037756d858554fed145c766650a7b7a67"
+    },
+    {
+      "slot": 6,
+      "lane": "discovery",
+      "condition_id": "plan_d_r1_rank01_06_discovery_adjacent_l13_l14_coverage",
+      "mutation_axis": "adjacent_l13_l14_coverage",
+      "expected_effect": "Probe whether L13+L14 coverage remains useful when re-entered as a Plan D discovery branch.",
+      "risk_note": "Uses neighbouring survivor structure; needs replay before any promotion interpretation.",
+      "params": {
+        "source_neighbour": "rank08_l13_l14_default",
+        "coverage_bucket_keys": [
+          "L13_NEAR",
+          "L14_NEAR"
+        ]
+      },
+      "schema": "plan_d_r1_rank01_candidate_v1",
+      "created_at": "2026-07-06T14:00:17+09:00",
+      "seed_id": "plan_d_rcs_oos_20260706_rank01",
+      "parent_condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+      "parent_buy_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_B",
+      "parent_sell_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_S",
+      "parent_buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+      "parent_sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "cell_id": "plan_d_r1_rank01_slot_06",
+      "family": "plan_d_seed_research_r1",
+      "label": "hypothesis_seed",
+      "created_reason": "Plan D R-c rank01 generate8 dry-run only; research lane; no DB apply/replay/OOS/portfolio/export/live/final",
+      "buy_sha256": "cb2fb006eef4e3daeff48246506b6165d280ef465dd960ca47f3301cd1af42ee",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "slot": 7,
+      "lane": "discovery",
+      "condition_id": "plan_d_r1_rank01_07_discovery_adjacent_l14_l1430_extension",
+      "mutation_axis": "adjacent_l14_l1430_extension",
+      "expected_effect": "Probe whether L1430 reinforcement improves afternoon coverage stability.",
+      "risk_note": "L1430 can add late-session reversal risk.",
+      "params": {
+        "source_neighbour": "rank07_l14_l1430_default",
+        "coverage_bucket_keys": [
+          "L14_NEAR",
+          "L1430_NEAR"
+        ]
+      },
+      "schema": "plan_d_r1_rank01_candidate_v1",
+      "created_at": "2026-07-06T14:00:17+09:00",
+      "seed_id": "plan_d_rcs_oos_20260706_rank01",
+      "parent_condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+      "parent_buy_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_B",
+      "parent_sell_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_S",
+      "parent_buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+      "parent_sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "cell_id": "plan_d_r1_rank01_slot_07",
+      "family": "plan_d_seed_research_r1",
+      "label": "hypothesis_seed",
+      "created_reason": "Plan D R-c rank01 generate8 dry-run only; research lane; no DB apply/replay/OOS/portfolio/export/live/final",
+      "buy_sha256": "49cbf9c8ec4e5c1fe44103873f3ede38c2a6fcce60fdaef4d0928cfa55437a5a",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "slot": 8,
+      "lane": "discovery",
+      "condition_id": "plan_d_r1_rank01_08_discovery_balanced_l14_tight_exit",
+      "mutation_axis": "balanced_l14_tight_exit",
+      "expected_effect": "Probe balanced early entries with tighter sell profile against rank01 default exit.",
+      "risk_note": "Tight exit may over-trim winners and lower payoff ratio.",
+      "params": {
+        "source_neighbour": "rank13_balanced_l14_tight",
+        "coverage_bucket_keys": [
+          "balanced",
+          "L14_NEAR",
+          "tight_exit"
+        ]
+      },
+      "schema": "plan_d_r1_rank01_candidate_v1",
+      "created_at": "2026-07-06T14:00:17+09:00",
+      "seed_id": "plan_d_rcs_oos_20260706_rank01",
+      "parent_condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+      "parent_buy_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_B",
+      "parent_sell_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_S",
+      "parent_buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+      "parent_sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "cell_id": "plan_d_r1_rank01_slot_08",
+      "family": "plan_d_seed_research_r1",
+      "label": "hypothesis_seed",
+      "created_reason": "Plan D R-c rank01 generate8 dry-run only; research lane; no DB apply/replay/OOS/portfolio/export/live/final",
+      "buy_sha256": "2922c270000a0e3320444832f22e914a5c54c5a795dc1d6b55908ca10a79cb70",
+      "sell_sha256": "01c800b9d64fa573fd823487d7e88e33b611ba818ca3b390b0904bb9464b35ce"
+    }
+  ],
+  "restrictions": {
+    "db_insert_apply": false,
+    "official_replay": false,
+    "oos": false,
+    "portfolio": false,
+    "export_live_final": false
+  }
+}
