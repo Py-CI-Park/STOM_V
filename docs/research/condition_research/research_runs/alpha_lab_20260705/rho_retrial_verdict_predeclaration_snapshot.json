@@ -1,0 +1,103 @@
+{
+ "schema": "alpha_lab_rho_retrial_verdict_v1",
+ "stage": "P1_rho_retrial_engine_confirmation_ALP_RM2_top10",
+ "final": false,
+ "status": "predeclared_pending_runs",
+ "predeclared_at": "2026-07-06T08:08:50.659492+09:00",
+ "sealed_retrial_clause": "번역 계층 결함 진단·수정에 한해 1회, 동일 10규칙 재백테 <=10회. 규칙 재선별·임계값 하향·표본창 교체 금지. 재판정도 rho<0.5면 포기와 동일 처리.",
+ "declared_censoring_rule": {
+  "declared_before_any_engine_run": true,
+  "timeout_censoring": "타임아웃 검열(censored_timeout)=최하위 동률. 근거: 동결 프로파일 bt_warm_run_timeout=300s 내 완주 실패는 발화 폭주 자체가 수정 실패의 증거(재판정 지시문 사전 규칙). 순위 부여: 센티널 PF=-inf 대입 후 scipy.stats.spearmanr 기본 average-ties 랭킹 — 복수 검열은 동률 평균. 실측 PF는 정의상 >= 0.0(cli/research_metrics.py:34)이므로 항상 센티널 위에 위치.",
+  "zero_trade_rule": "거래 0건(no_trades)도 센티널 PF=-inf 최하위 동률(1차 rho_gate_verdict.json zero_trade_rule 계승). 검열과 같은 센티널이므로 상호 동률(average ties).",
+  "retry_policy": "재시도 없음 — 규칙당 정확히 1회, 엔진 실행 총 10회(예산 상한). 1차와 달리 검열 재현 확인용 재시도도 수행하지 않는다.",
+  "abort_policy": "--fail-fast-timeout 사용(1차와 동일). 타임아웃으로 청크가 중단되어 미시도 규칙이 남으면 해당 규칙은 보충 청크에서 각자 첫 시도 1회만 수행(시도 총합은 규칙당 1회, 전체 10회 유지). 타임아웃한 규칙 본인은 즉시 검열 확정.",
+  "rho_computation": "scipy.stats.spearmanr(mined_lift[n=10], engine_pf_with_sentinel[n=10]) — 1차와 동일한 채굴 lift 값(rho_retrial_registration_receipt.json meta.lift), PF는 거래 CSV '수익금' 기반 cli.research_metrics.calculate_profit_factor(1차와 동일 정의).",
+  "verdict_rule": "이분법(봉인 재판정 조항): rho >= 0.5 → '본빌드 진행 권고' / rho < 0.5 → 'P1 포기(재판정 소진)'. 제3 분기·추가 재시도 없음. 부가 지표(총수익·거래수·MDD·거래수 감소율)는 기록만 하고 판정에 사용하지 않는다."
+ },
+ "budget": {
+  "engine_attempts_max": 10,
+  "attempts_per_rule": 1,
+  "note": "총 정확히 10회 — 규칙당 1회, 보충 청크도 미시도 규칙의 첫 시도만 담는다."
+ },
+ "engine_profile": {
+  "config_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json",
+  "config_sha256": "00ebb88b34383d3b0270360c236f15b31195b5bd4433bae954387c5e37f84e21",
+  "frozen_fields_verified": {
+   "bt_timeframe": "tick",
+   "bt_full_start": 20220323,
+   "bt_full_end": 20260227,
+   "bt_engine_mode": "warm",
+   "bt_warm_engine_count": 64,
+   "bt_warm_run_timeout": 300,
+   "bt_universe_start_time": 90000,
+   "bt_universe_end_time": 92800
+  },
+  "strategy_db_env": "STOM_CLI_DB_STRATEGY=C:/System_Trading/STOM/STOM_V.wt-alpha/_database/strategy.db",
+  "runner": "python -m ai_strategy_loop.scripts.claude_candidate_batch_eval --pairs-json <chunk> --config-json <frozen> --run-id <id> --fail-fast-timeout",
+  "no_field_modified": true
+ },
+ "registration_receipt": {
+  "path": "docs/research/condition_research/research_runs/alpha_lab_20260705/rho_retrial_registration_receipt.json",
+  "sha256": "5e2d1c20e0b5bccf5d6a21a922e43bf7c84ae47ab0565d1b488da30d96e3fd58"
+ },
+ "first_round_verdict": {
+  "path": "docs/research/condition_research/research_runs/alpha_lab_20260705/rho_gate_verdict.json",
+  "sha256": "4c365bc7c2bfc67756678d4c0b1eeadd44d9c685158cf989e419a1ffccfcde15"
+ },
+ "chunk_plan": {
+  "design": "10 rules -> 4 chunks (3/3/2/2), warm64 prepare/close per chunk, --fail-fast-timeout",
+  "risk_ordering": "1차 검열 규칙의 재판(ALP_RM2_08, ALP_RM2_09)을 각 청크 마지막에 배치 — fail-fast abort가 다른 규칙의 시도를 잠식하지 않도록 사전 설계",
+  "chunks": {
+   "chunk01": [
+    "ALP_RM2_01",
+    "ALP_RM2_02",
+    "ALP_RM2_03"
+   ],
+   "chunk02": [
+    "ALP_RM2_04",
+    "ALP_RM2_05",
+    "ALP_RM2_06"
+   ],
+   "chunk03": [
+    "ALP_RM2_07",
+    "ALP_RM2_08"
+   ],
+   "chunk04": [
+    "ALP_RM2_10",
+    "ALP_RM2_09"
+   ]
+  },
+  "run_ids": [
+   "alp_rho_retrial_warm64_chunk01_20260706",
+   "alp_rho_retrial_warm64_chunk02_20260706",
+   "alp_rho_retrial_warm64_chunk03_20260706",
+   "alp_rho_retrial_warm64_chunk04_20260706"
+  ],
+  "pairs_files_sha256": {
+   "pairs_alp_rho_retrial_warm64_chunk01_20260706.json": "3e9c05b9fddeb02e7e4f20b7fefe361e8e50c8ac7803fffb2a47dbaef274f6df",
+   "pairs_alp_rho_retrial_warm64_chunk02_20260706.json": "07a10bf6b190a07a8037255bb96c70d980b3a851d13cdf6abf3bbf63389f8a1d",
+   "pairs_alp_rho_retrial_warm64_chunk03_20260706.json": "389982a196adcbd9e1393e9941e02550a77cfb605010ff4a0885548bbaf4f5b7",
+   "pairs_alp_rho_retrial_warm64_chunk04_20260706.json": "cd140cf0b29120bb554356cedfc3c30a0af9ef1e07f57a2dd69dc7b5ff0706e5"
+  }
+ },
+ "mined_lift_by_rule": {
+  "ALP_RM2_01": 3.874019081646003,
+  "ALP_RM2_02": 3.5734434377237414,
+  "ALP_RM2_03": 3.1211971871913198,
+  "ALP_RM2_04": 2.9865752265796766,
+  "ALP_RM2_05": 2.653243110732709,
+  "ALP_RM2_06": 2.58093625210415,
+  "ALP_RM2_07": 2.578586367779071,
+  "ALP_RM2_08": 2.3759105531186786,
+  "ALP_RM2_09": 2.283397595869657,
+  "ALP_RM2_10": 2.108220761005318
+ },
+ "preflight": {
+  "process_scan_finding": "2026-07-06 08:05 실측: wt-dev 레인의 claude_candidate_batch_eval(lat_repair_composite_coverage_24_official_full_warm64_20260706, PID 21040, warm64 풀 ~86 프로세스) 실행 중 발견 → 자원 경합에 의한 허위 검열 방지를 위해 해당 배치 종료 대기 후 착수(대기 증거는 최종 판정문에 기록)",
+  "will_rescan_before_each_chunk": true
+ },
+ "per_rule": null,
+ "rho": null,
+ "verdict": null,
+ "note": "본 파일은 엔진 실행 전 선언본이다. 실행 후 per_rule/rho/verdict를 채워 final:true로 갱신하며, declared_censoring_rule 본문은 바이트 동일하게 유지한다."
+}

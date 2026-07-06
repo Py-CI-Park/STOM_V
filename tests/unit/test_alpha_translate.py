@@ -20,7 +20,9 @@ from alpha_lab.dataset.schema import ALL_FEATURES
 from alpha_lab.translate import codegen, idioms
 from alpha_lab.translate.codegen import (
     DEFAULT_TIME_GUARD,
+    SAMPLE_TIME_GUARD,
     SELL_POLICY,
+    UNIVERSE_GUARD_MONEYTOP_PROXY,
     leaf_rule_to_buy_expr,
     repo_gate_check,
     to_buy_statement,
@@ -155,6 +157,101 @@ def test_time_guard_omitted_when_falsy():
     expr = leaf_rule_to_buy_expr(("등락율", ">", 2.0), time_guard=None)
     assert "시분초" not in expr
     ast.parse(expr, mode="eval")
+
+
+# ------------------------------------------- universe_guard (ρ게이트 재판정 additive)
+
+# ALP_RM_01(P1-s02-l019)의 1차 등재 rounded_rule — 골든 검증용
+# (rho_gate_registration_receipt.json selection.top10[0]).
+_RM01_RULE = [
+    ("등락율", ">", 4.2),
+    ("VI거리율", "<=", -0.1),
+    ("전일비", "<=", 12.2),
+    ("전일비", "<=", 3.4),
+]
+_RM01_LEAF = (
+    "(등락율) > 4.2 and ((현재가 / VI가격 - 1 if VI가격 > 0 else 0.0)) <= -0.1"
+    " and (전일비) <= 12.2 and (전일비) <= 3.4"
+)
+
+
+def test_retrial_guard_constants_sealed():
+    """재판정 가드 상수 — 표본 규약 시간창 + moneytop 프록시(관심종목)."""
+    assert SAMPLE_TIME_GUARD == "90001 <= 시분초 <= 92500"
+    assert UNIVERSE_GUARD_MONEYTOP_PROXY == "관심종목 > 0"
+
+
+def test_default_output_byte_identical_to_first_registration():
+    """universe_guard 도입 후에도 기본 호출 산출은 1차 등재본과 byte-identical.
+
+    골든: ALP_RM_01 buy_expr(rho_gate_registration_receipt.json,
+    buy_sha256=9b48b605...). 기본 옵션 경로의 비회귀를 sha256으로 고정한다.
+    """
+    import hashlib
+    stmt = to_buy_statement(leaf_rule_to_buy_expr(_RM01_RULE))
+    expected = (
+        "if (90000 <= 시분초 < 93000) and " + _RM01_LEAF + ":\n    self.Buy()"
+    )
+    assert stmt == expected
+    assert hashlib.sha256(stmt.encode("utf-8")).hexdigest() == (
+        "9b48b605a31c117a46cc320dec3f9aed362abf05a8b49a824bdb11743ef539db"
+    )
+
+
+def test_universe_guard_default_none_leaves_expr_unchanged():
+    base = leaf_rule_to_buy_expr(("등락율", ">", 2.0))
+    explicit = leaf_rule_to_buy_expr(("등락율", ">", 2.0), universe_guard=None)
+    assert explicit == base
+    assert "관심종목" not in base
+
+
+def test_universe_guard_appended_between_time_guard_and_leaf():
+    expr = leaf_rule_to_buy_expr(
+        _RM01_RULE,
+        time_guard=SAMPLE_TIME_GUARD,
+        universe_guard=UNIVERSE_GUARD_MONEYTOP_PROXY,
+    )
+    assert expr == (
+        f"({SAMPLE_TIME_GUARD}) and ({UNIVERSE_GUARD_MONEYTOP_PROXY}) and "
+        + _RM01_LEAF
+    )
+    ast.parse(expr, mode="eval")
+    ok, reasons = validate_expr(expr, ALLOWED)
+    assert ok, reasons
+
+
+def test_universe_guard_without_time_guard():
+    expr = leaf_rule_to_buy_expr(
+        ("등락율", ">", 2.0), time_guard=None,
+        universe_guard=UNIVERSE_GUARD_MONEYTOP_PROXY,
+    )
+    assert expr.startswith(f"({UNIVERSE_GUARD_MONEYTOP_PROXY}) and ")
+    assert "시분초" not in expr
+
+
+def test_guard_overrides_preserve_leaf_bytes():
+    """가드 오버라이드는 리프 절 바이트를 절대 바꾸지 않는다(재판정 봉인 조건)."""
+    base = leaf_rule_to_buy_expr(_RM01_RULE)
+    fixed = leaf_rule_to_buy_expr(
+        _RM01_RULE,
+        time_guard=SAMPLE_TIME_GUARD,
+        universe_guard=UNIVERSE_GUARD_MONEYTOP_PROXY,
+    )
+    base_leaf = base.split(f"({DEFAULT_TIME_GUARD}) and ", 1)[1]
+    prefix = f"({SAMPLE_TIME_GUARD}) and ({UNIVERSE_GUARD_MONEYTOP_PROXY}) and "
+    fixed_leaf = fixed.split(prefix, 1)[1]
+    assert base_leaf == fixed_leaf == _RM01_LEAF
+
+
+def test_repo_gate_accepts_universe_guarded_expr():
+    pytest.importorskip("ai_strategy_loop.brain.variable_scope")
+    expr = leaf_rule_to_buy_expr(
+        _RM01_RULE,
+        time_guard=SAMPLE_TIME_GUARD,
+        universe_guard=UNIVERSE_GUARD_MONEYTOP_PROXY,
+    )
+    ok, reasons = repo_gate_check(expr)
+    assert ok and reasons == [], reasons
 
 
 # ---------------------------------------------------------------- 규칙 입력 형태

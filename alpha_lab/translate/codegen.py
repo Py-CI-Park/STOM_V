@@ -1,10 +1,16 @@
 """리프 규칙 → STOM 매수식 생성 + 정적 검증 (P1 규칙 채굴 산출물의 번역기).
 
 계약(레인 B 모듈 5):
-  - leaf_rule_to_buy_expr(rule, *, time_guard, round_digits) -> str | None
+  - leaf_rule_to_buy_expr(rule, *, time_guard, universe_guard, round_digits)
+    -> str | None
     UNTRANSLATABLE/형식 오류 포함 시 None을 반환하고 사유를 warning 로그로
     남긴다. 사유를 프로그램적으로 쓰려면 translate_leaf_rule()의
     TranslationResult.reasons를 사용한다.
+  - universe_guard는 additive 옵션(기본 None=미결합 — 기존 산출 byte-identical
+    유지). ρ게이트 재판정(2026-07-06) 표본화 정합 보강용으로 도입:
+    시간창은 SAMPLE_TIME_GUARD(표본 규약 90001<=시분초<=92500)를 time_guard에,
+    유니버스는 UNIVERSE_GUARD_MONEYTOP_PROXY(관심종목 > 0)를 universe_guard에
+    넘겨 리프 절 앞에 AND 결합한다. 리프 절 자체는 어떤 옵션에서도 불변.
   - 임계값은 소수 round_digits(기본 1)자리 반올림 — 봉인 규칙.
   - validate_expr(expr, allowed_names): ast 파싱 성공 + 이름 화이트리스트 +
     금지 토큰(import, __, exec, eval, open, while, for, lambda, ;) 부재.
@@ -39,7 +45,9 @@ from alpha_lab.translate.idioms import (
 __all__ = [
     "DEFAULT_TIME_GUARD",
     "FORBIDDEN_TOKENS",
+    "SAMPLE_TIME_GUARD",
     "SELL_POLICY",
+    "UNIVERSE_GUARD_MONEYTOP_PROXY",
     "TranslationResult",
     "leaf_rule_to_buy_expr",
     "repo_gate_check",
@@ -52,6 +60,18 @@ logger = logging.getLogger(__name__)
 
 # CSC-10/11 tick 시간창(idiom_dictionary.md §9와 동일).
 DEFAULT_TIME_GUARD = "90000 <= 시분초 < 93000"
+
+# 표본 규약 시간창 — preregistration_v1.json label_spec.grid의 t0 월드
+# (09:00:01~09:25:00, t0>09:25:00 스킵)를 HHMMSS 폐구간으로 옮긴 것.
+# ρ게이트 재판정(2026-07-06)에서 time_guard 오버라이드 값으로 사용한다.
+SAMPLE_TIME_GUARD = "90001 <= 시분초 <= 92500"
+
+# 유니버스 가드(moneytop 프록시) — 표본 월드의 'moneytop 멤버십 초' 조건.
+# moneytop 세미콜론 리스트 자체는 조건식 네임스페이스에 없어 직접 표현이
+# 불가하고, 저장 컬럼 '관심종목'(int 0/1)이 실측 프록시다. 실측 근거:
+# rho_retrial_evidence_universe_proxy.json — 표본일 20230601+20240103 전 행
+# 238,227건에서 (관심종목!=0) == (코드 in moneytop[초]) 일치율 100.0%.
+UNIVERSE_GUARD_MONEYTOP_PROXY = "관심종목 > 0"
 
 # 매도식은 생성하지 않는다. 번역 산출 조건식은 기존 게이트 체인에서
 # '검증 완료 hard-stop 계열 고정' 매도 정책과 짝지어 평가한다.
@@ -206,6 +226,7 @@ def translate_leaf_rule(
     rule: Any,
     *,
     time_guard: Optional[str] = DEFAULT_TIME_GUARD,
+    universe_guard: Optional[str] = None,
     round_digits: int = 1,
     use_repo_gate: bool = True,
 ) -> TranslationResult:
@@ -214,6 +235,9 @@ def translate_leaf_rule(
     Args:
         rule: 모듈 docstring의 규칙 입력 형태 중 하나.
         time_guard: 식 맨 앞에 결합할 시간 가드(빈 값/None이면 생략).
+        universe_guard: 시간 가드 다음, 리프 절 앞에 결합할 유니버스 가드
+            (기본 None=미결합 — 기존 산출 byte-identical). 표본 규약 정합이
+            필요하면 UNIVERSE_GUARD_MONEYTOP_PROXY를 넘긴다.
         round_digits: 임계값 반올림 자릿수(봉인 기본 1).
         use_repo_gate: 저장소 생성 가드 추가 적용 여부.
     """
@@ -231,7 +255,8 @@ def translate_leaf_rule(
             fragments.append(frag)
     if reasons:
         return TranslationResult(None, tuple(reasons))
-    parts = ([f"({time_guard})"] if time_guard else []) + fragments
+    guards = [guard for guard in (time_guard, universe_guard) if guard]
+    parts = [f"({guard})" for guard in guards] + fragments
     expr = " and ".join(parts)
     ok, why = validate_expr(expr, translator_allowed_names())
     if not ok:
@@ -247,6 +272,7 @@ def leaf_rule_to_buy_expr(
     rule: Any,
     *,
     time_guard: Optional[str] = DEFAULT_TIME_GUARD,
+    universe_guard: Optional[str] = None,
     round_digits: int = 1,
     use_repo_gate: bool = True,
 ) -> Optional[str]:
@@ -254,6 +280,7 @@ def leaf_rule_to_buy_expr(
     result = translate_leaf_rule(
         rule,
         time_guard=time_guard,
+        universe_guard=universe_guard,
         round_digits=round_digits,
         use_repo_gate=use_repo_gate,
     )

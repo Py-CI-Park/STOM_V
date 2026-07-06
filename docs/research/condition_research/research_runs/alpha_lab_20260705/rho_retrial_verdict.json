@@ -1,0 +1,454 @@
+{
+ "schema": "alpha_lab_rho_retrial_verdict_v1",
+ "stage": "P1_rho_retrial_engine_confirmation_ALP_RM2_top10",
+ "final": true,
+ "status": "finalized",
+ "predeclared_at": "2026-07-06T08:08:50.659492+09:00",
+ "sealed_retrial_clause": "번역 계층 결함 진단·수정에 한해 1회, 동일 10규칙 재백테 <=10회. 규칙 재선별·임계값 하향·표본창 교체 금지. 재판정도 rho<0.5면 포기와 동일 처리.",
+ "declared_censoring_rule": {
+  "declared_before_any_engine_run": true,
+  "timeout_censoring": "타임아웃 검열(censored_timeout)=최하위 동률. 근거: 동결 프로파일 bt_warm_run_timeout=300s 내 완주 실패는 발화 폭주 자체가 수정 실패의 증거(재판정 지시문 사전 규칙). 순위 부여: 센티널 PF=-inf 대입 후 scipy.stats.spearmanr 기본 average-ties 랭킹 — 복수 검열은 동률 평균. 실측 PF는 정의상 >= 0.0(cli/research_metrics.py:34)이므로 항상 센티널 위에 위치.",
+  "zero_trade_rule": "거래 0건(no_trades)도 센티널 PF=-inf 최하위 동률(1차 rho_gate_verdict.json zero_trade_rule 계승). 검열과 같은 센티널이므로 상호 동률(average ties).",
+  "retry_policy": "재시도 없음 — 규칙당 정확히 1회, 엔진 실행 총 10회(예산 상한). 1차와 달리 검열 재현 확인용 재시도도 수행하지 않는다.",
+  "abort_policy": "--fail-fast-timeout 사용(1차와 동일). 타임아웃으로 청크가 중단되어 미시도 규칙이 남으면 해당 규칙은 보충 청크에서 각자 첫 시도 1회만 수행(시도 총합은 규칙당 1회, 전체 10회 유지). 타임아웃한 규칙 본인은 즉시 검열 확정.",
+  "rho_computation": "scipy.stats.spearmanr(mined_lift[n=10], engine_pf_with_sentinel[n=10]) — 1차와 동일한 채굴 lift 값(rho_retrial_registration_receipt.json meta.lift), PF는 거래 CSV '수익금' 기반 cli.research_metrics.calculate_profit_factor(1차와 동일 정의).",
+  "verdict_rule": "이분법(봉인 재판정 조항): rho >= 0.5 → '본빌드 진행 권고' / rho < 0.5 → 'P1 포기(재판정 소진)'. 제3 분기·추가 재시도 없음. 부가 지표(총수익·거래수·MDD·거래수 감소율)는 기록만 하고 판정에 사용하지 않는다."
+ },
+ "budget": {
+  "engine_attempts_max": 10,
+  "attempts_per_rule": 1,
+  "note": "총 정확히 10회 — 규칙당 1회, 보충 청크도 미시도 규칙의 첫 시도만 담는다."
+ },
+ "engine_profile": {
+  "config_json": "docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json",
+  "config_sha256": "00ebb88b34383d3b0270360c236f15b31195b5bd4433bae954387c5e37f84e21",
+  "frozen_fields_verified": {
+   "bt_timeframe": "tick",
+   "bt_full_start": 20220323,
+   "bt_full_end": 20260227,
+   "bt_engine_mode": "warm",
+   "bt_warm_engine_count": 64,
+   "bt_warm_run_timeout": 300,
+   "bt_universe_start_time": 90000,
+   "bt_universe_end_time": 92800
+  },
+  "strategy_db_env": "STOM_CLI_DB_STRATEGY=C:/System_Trading/STOM/STOM_V.wt-alpha/_database/strategy.db",
+  "runner": "python -m ai_strategy_loop.scripts.claude_candidate_batch_eval --pairs-json <chunk> --config-json <frozen> --run-id <id> --fail-fast-timeout",
+  "no_field_modified": true
+ },
+ "registration_receipt": {
+  "path": "docs/research/condition_research/research_runs/alpha_lab_20260705/rho_retrial_registration_receipt.json",
+  "sha256": "5e2d1c20e0b5bccf5d6a21a922e43bf7c84ae47ab0565d1b488da30d96e3fd58"
+ },
+ "first_round_verdict": {
+  "path": "docs/research/condition_research/research_runs/alpha_lab_20260705/rho_gate_verdict.json",
+  "sha256": "4c365bc7c2bfc67756678d4c0b1eeadd44d9c685158cf989e419a1ffccfcde15"
+ },
+ "chunk_plan": {
+  "design": "10 rules -> 4 chunks (3/3/2/2), warm64 prepare/close per chunk, --fail-fast-timeout",
+  "risk_ordering": "1차 검열 규칙의 재판(ALP_RM2_08, ALP_RM2_09)을 각 청크 마지막에 배치 — fail-fast abort가 다른 규칙의 시도를 잠식하지 않도록 사전 설계",
+  "chunks": {
+   "chunk01": [
+    "ALP_RM2_01",
+    "ALP_RM2_02",
+    "ALP_RM2_03"
+   ],
+   "chunk02": [
+    "ALP_RM2_04",
+    "ALP_RM2_05",
+    "ALP_RM2_06"
+   ],
+   "chunk03": [
+    "ALP_RM2_07",
+    "ALP_RM2_08"
+   ],
+   "chunk04": [
+    "ALP_RM2_10",
+    "ALP_RM2_09"
+   ]
+  },
+  "run_ids": [
+   "alp_rho_retrial_warm64_chunk01_20260706",
+   "alp_rho_retrial_warm64_chunk02_20260706",
+   "alp_rho_retrial_warm64_chunk03_20260706",
+   "alp_rho_retrial_warm64_chunk04_20260706"
+  ],
+  "pairs_files_sha256": {
+   "pairs_alp_rho_retrial_warm64_chunk01_20260706.json": "3e9c05b9fddeb02e7e4f20b7fefe361e8e50c8ac7803fffb2a47dbaef274f6df",
+   "pairs_alp_rho_retrial_warm64_chunk02_20260706.json": "07a10bf6b190a07a8037255bb96c70d980b3a851d13cdf6abf3bbf63389f8a1d",
+   "pairs_alp_rho_retrial_warm64_chunk03_20260706.json": "389982a196adcbd9e1393e9941e02550a77cfb605010ff4a0885548bbaf4f5b7",
+   "pairs_alp_rho_retrial_warm64_chunk04_20260706.json": "cd140cf0b29120bb554356cedfc3c30a0af9ef1e07f57a2dd69dc7b5ff0706e5"
+  }
+ },
+ "mined_lift_by_rule": {
+  "ALP_RM2_01": 3.874019081646003,
+  "ALP_RM2_02": 3.5734434377237414,
+  "ALP_RM2_03": 3.1211971871913198,
+  "ALP_RM2_04": 2.9865752265796766,
+  "ALP_RM2_05": 2.653243110732709,
+  "ALP_RM2_06": 2.58093625210415,
+  "ALP_RM2_07": 2.578586367779071,
+  "ALP_RM2_08": 2.3759105531186786,
+  "ALP_RM2_09": 2.283397595869657,
+  "ALP_RM2_10": 2.108220761005318
+ },
+ "preflight": {
+  "process_scan_finding": "2026-07-06 08:05 실측: wt-dev 레인의 claude_candidate_batch_eval(lat_repair_composite_coverage_24_official_full_warm64_20260706, PID 21040, warm64 풀 ~86 프로세스) 실행 중 발견 → 자원 경합에 의한 허위 검열 방지를 위해 해당 배치 종료 대기 후 착수(대기 증거는 최종 판정문에 기록)",
+  "will_rescan_before_each_chunk": true
+ },
+ "per_rule": [
+  {
+   "name": "ALP_RM2_01",
+   "retrial_of": "ALP_RM_01",
+   "rule_id": "P1-s02-l019",
+   "mined_lift": 3.874019081646003,
+   "lift_rank_desc": 1,
+   "n_attempts": 1,
+   "run_id": "alp_rho_retrial_warm64_chunk01_20260706",
+   "engine_row_status": "ok",
+   "engine_status": "ok",
+   "engine_pf": 0.5702482195481957,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -35682794.0,
+   "total_profit_pct": -356.0,
+   "trades": 929,
+   "mdd": 352.36,
+   "daily_avg_trades": 1.0,
+   "gate_passed": false,
+   "gate_reason": "mdd 352.4 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM2_01_20260706084235.csv",
+   "trades_r1": 981,
+   "trades_delta_vs_r1": -5.3,
+   "pf_rank_desc_n10": 5.0
+  },
+  {
+   "name": "ALP_RM2_02",
+   "retrial_of": "ALP_RM_02",
+   "rule_id": "P1-s04-l011",
+   "mined_lift": 3.5734434377237414,
+   "lift_rank_desc": 2,
+   "n_attempts": 1,
+   "run_id": "alp_rho_retrial_warm64_chunk01_20260706",
+   "engine_row_status": "ok",
+   "engine_status": "ok",
+   "engine_pf": 0.5870285156900004,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -201272927.0,
+   "total_profit_pct": -405.02,
+   "trades": 6771,
+   "mdd": 394.42,
+   "daily_avg_trades": 7.1,
+   "gate_passed": false,
+   "gate_reason": "mdd 394.4 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM2_02_20260706084406.csv",
+   "trades_r1": 6845,
+   "trades_delta_vs_r1": -1.08,
+   "pf_rank_desc_n10": 4.0
+  },
+  {
+   "name": "ALP_RM2_03",
+   "retrial_of": "ALP_RM_03",
+   "rule_id": "P1-s03-l026",
+   "mined_lift": 3.1211971871913198,
+   "lift_rank_desc": 3,
+   "n_attempts": 1,
+   "run_id": "alp_rho_retrial_warm64_chunk01_20260706",
+   "engine_row_status": "ok",
+   "engine_status": "ok",
+   "engine_pf": 0.7247455940937024,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -11826414.0,
+   "total_profit_pct": -118.44,
+   "trades": 598,
+   "mdd": 118.83,
+   "daily_avg_trades": 0.6,
+   "gate_passed": false,
+   "gate_reason": "mdd 118.8 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM2_03_20260706084529.csv",
+   "trades_r1": 598,
+   "trades_delta_vs_r1": 0.0,
+   "pf_rank_desc_n10": 2.0
+  },
+  {
+   "name": "ALP_RM2_04",
+   "retrial_of": "ALP_RM_04",
+   "rule_id": "P1-s00-l026",
+   "mined_lift": 2.9865752265796766,
+   "lift_rank_desc": 4,
+   "n_attempts": 1,
+   "run_id": "alp_rho_retrial_warm64_chunk02_20260706",
+   "engine_row_status": "ok",
+   "engine_status": "ok",
+   "engine_pf": 0.728130087740113,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -12645529.0,
+   "total_profit_pct": -126.42,
+   "trades": 669,
+   "mdd": 126.1,
+   "daily_avg_trades": 0.7,
+   "gate_passed": false,
+   "gate_reason": "mdd 126.1 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM2_04_20260706085254.csv",
+   "trades_r1": 672,
+   "trades_delta_vs_r1": -0.45,
+   "pf_rank_desc_n10": 1.0
+  },
+  {
+   "name": "ALP_RM2_05",
+   "retrial_of": "ALP_RM_05",
+   "rule_id": "P1-s02-l020",
+   "mined_lift": 2.653243110732709,
+   "lift_rank_desc": 5,
+   "n_attempts": 1,
+   "run_id": "alp_rho_retrial_warm64_chunk02_20260706",
+   "engine_row_status": "ok",
+   "engine_status": "ok",
+   "engine_pf": 0.6062413945225388,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -125022574.0,
+   "total_profit_pct": -499.75,
+   "trades": 4139,
+   "mdd": 502.7,
+   "daily_avg_trades": 4.3,
+   "gate_passed": false,
+   "gate_reason": "mdd 502.7 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM2_05_20260706085418.csv",
+   "trades_r1": 4166,
+   "trades_delta_vs_r1": -0.65,
+   "pf_rank_desc_n10": 3.0
+  },
+  {
+   "name": "ALP_RM2_06",
+   "retrial_of": "ALP_RM_06",
+   "rule_id": "P1-s03-l007",
+   "mined_lift": 2.58093625210415,
+   "lift_rank_desc": 6,
+   "n_attempts": 1,
+   "run_id": "alp_rho_retrial_warm64_chunk02_20260706",
+   "engine_row_status": "ok",
+   "engine_status": "ok",
+   "engine_pf": 0.5330032181009559,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -107642719.0,
+   "total_profit_pct": -714.54,
+   "trades": 3997,
+   "mdd": 689.64,
+   "daily_avg_trades": 4.2,
+   "gate_passed": false,
+   "gate_reason": "mdd 689.6 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM2_06_20260706085552.csv",
+   "trades_r1": 4651,
+   "trades_delta_vs_r1": -14.06,
+   "pf_rank_desc_n10": 7.0
+  },
+  {
+   "name": "ALP_RM2_07",
+   "retrial_of": "ALP_RM_07",
+   "rule_id": "P1-s01-l029",
+   "mined_lift": 2.578586367779071,
+   "lift_rank_desc": 7,
+   "n_attempts": 1,
+   "run_id": "alp_rho_retrial_warm64_chunk03_20260706",
+   "engine_row_status": "ok",
+   "engine_status": "ok",
+   "engine_pf": 0.5254584550616722,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -1351416284.0,
+   "total_profit_pct": -1081.18,
+   "trades": 46963,
+   "mdd": 1077.77,
+   "daily_avg_trades": 49.3,
+   "gate_passed": false,
+   "gate_reason": "mdd 1078 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM2_07_20260706090706.csv",
+   "trades_r1": 49273,
+   "trades_delta_vs_r1": -4.69,
+   "pf_rank_desc_n10": 8.0
+  },
+  {
+   "name": "ALP_RM2_08",
+   "retrial_of": "ALP_RM_08",
+   "rule_id": "P1-s04-l027",
+   "mined_lift": 2.3759105531186786,
+   "lift_rank_desc": 8,
+   "n_attempts": 1,
+   "run_id": "alp_rho_retrial_warm64_chunk03_20260706",
+   "engine_row_status": "error",
+   "engine_status": "censored_timeout",
+   "engine_pf": null,
+   "pf_basis": "사전선언 timeout_censoring — 센티널 PF=-inf 최하위 동률",
+   "profit": null,
+   "total_profit_pct": null,
+   "trades": null,
+   "mdd": null,
+   "daily_avg_trades": null,
+   "gate_passed": false,
+   "gate_reason": "[alp_rho_retrial:ALP_RM2_08:P1-s04-l027] backtest failed: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no",
+   "csv_path": null,
+   "trades_r1": null,
+   "trades_delta_vs_r1": null,
+   "pf_rank_desc_n10": 9.5,
+   "engine_pf_rho_input": "-inf (사전선언 센티널 — rho 계산에서 최하위 동률로 사용, 실측 불가값)"
+  },
+  {
+   "name": "ALP_RM2_09",
+   "retrial_of": "ALP_RM_09",
+   "rule_id": "P1-s00-l012",
+   "mined_lift": 2.283397595869657,
+   "lift_rank_desc": 9,
+   "n_attempts": 1,
+   "run_id": "alp_rho_retrial_warm64_chunk04_20260706",
+   "engine_row_status": "error",
+   "engine_status": "censored_timeout",
+   "engine_pf": null,
+   "pf_basis": "사전선언 timeout_censoring — 센티널 PF=-inf 최하위 동률",
+   "profit": null,
+   "total_profit_pct": null,
+   "trades": null,
+   "mdd": null,
+   "daily_avg_trades": null,
+   "gate_passed": false,
+   "gate_reason": "[alp_rho_retrial:ALP_RM2_09:P1-s00-l012] backtest failed: warm backtest non-success: status=error message=백테스트 시간 초과 (300초) (엔진 복구 생략: fail-fast timeout) csv=no metrics=no",
+   "csv_path": null,
+   "trades_r1": null,
+   "trades_delta_vs_r1": null,
+   "pf_rank_desc_n10": 9.5,
+   "engine_pf_rho_input": "-inf (사전선언 센티널 — rho 계산에서 최하위 동률로 사용, 실측 불가값)"
+  },
+  {
+   "name": "ALP_RM2_10",
+   "retrial_of": "ALP_RM_10",
+   "rule_id": "P1-s03-l011",
+   "mined_lift": 2.108220761005318,
+   "lift_rank_desc": 10,
+   "n_attempts": 1,
+   "run_id": "alp_rho_retrial_warm64_chunk04_20260706",
+   "engine_row_status": "ok",
+   "engine_status": "ok",
+   "engine_pf": 0.5465779238711626,
+   "pf_basis": "trade_csv(수익금) via cli.research_metrics.calculate_profit_factor",
+   "profit": -637359398.0,
+   "total_profit_pct": -578.05,
+   "trades": 19569,
+   "mdd": 579.0,
+   "daily_avg_trades": 20.6,
+   "gate_passed": false,
+   "gate_reason": "mdd 579 > mdd_cap 35",
+   "csv_path": "backtest/csv\\stock_bt_ALP_RM2_10_20260706093753.csv",
+   "trades_r1": 19730,
+   "trades_delta_vs_r1": -0.82,
+   "pf_rank_desc_n10": 6.0
+  }
+ ],
+ "rho": 0.6686960980480711,
+ "verdict": "본빌드 진행 권고",
+ "note": "본 파일은 엔진 실행 전 선언본이다. 실행 후 per_rule/rho/verdict를 채워 final:true로 갱신하며, declared_censoring_rule 본문은 바이트 동일하게 유지한다.",
+ "finalized_at": "2026-07-06T09:44:26.163282+09:00",
+ "coverage": {
+  "n_rules_sealed": 10,
+  "measured_ok": 8,
+  "censored_timeout": 2,
+  "no_trades": 0,
+  "censored_names": [
+   "ALP_RM2_08",
+   "ALP_RM2_09"
+  ],
+  "engine_attempts_total": 10
+ },
+ "run_states": {
+  "alp_rho_retrial_warm64_chunk01_20260706": {
+   "status": "complete",
+   "started_at": 1783294570.5621035,
+   "finished_at": 1783295162.6962702
+  },
+  "alp_rho_retrial_warm64_chunk02_20260706": {
+   "status": "complete",
+   "started_at": 1783295208.963373,
+   "finished_at": 1783295787.060125
+  },
+  "alp_rho_retrial_warm64_chunk03_20260706": {
+   "status": "complete",
+   "started_at": 1783295834.7283423,
+   "finished_at": 1783296801.7647643
+  },
+  "alp_rho_retrial_warm64_chunk04_20260706": {
+   "status": "complete",
+   "started_at": 1783297803.5064592,
+   "finished_at": 1783298641.0869315
+  }
+ },
+ "rho_basis": "scipy.stats.spearmanr(mined_lift, engine_pf_with_sentinel) n=10 — 사전선언 검열 규칙(PF=-inf 최하위 동률) 적용",
+ "verdict_basis": "봉인 재판정 이분법: rho >= 0.5 → 본빌드 진행 권고 / rho < 0.5 → P1 포기(재판정 소진). 실측 rho=0.668696",
+ "supplementary_not_used_for_verdict": {
+  "median_trades_delta_vs_r1_pct": -0.95,
+  "note": "총수익·거래수·MDD·거래수 감소율은 기록 전용 — 판정은 rho만 사용(봉인)"
+ },
+ "n_trials_ledger_total_after": 745,
+ "raw_asset_paths": {
+  "note": "git add 금지 자산 — 경로만 기재",
+  "loop_runs_db": "ai_strategy_loop\\state\\loop_runs.db",
+  "trade_csvs": [
+   "backtest/csv\\stock_bt_ALP_RM2_01_20260706084235.csv",
+   "backtest/csv\\stock_bt_ALP_RM2_02_20260706084406.csv",
+   "backtest/csv\\stock_bt_ALP_RM2_03_20260706084529.csv",
+   "backtest/csv\\stock_bt_ALP_RM2_04_20260706085254.csv",
+   "backtest/csv\\stock_bt_ALP_RM2_05_20260706085418.csv",
+   "backtest/csv\\stock_bt_ALP_RM2_06_20260706085552.csv",
+   "backtest/csv\\stock_bt_ALP_RM2_07_20260706090706.csv",
+   "backtest/csv\\stock_bt_ALP_RM2_10_20260706093753.csv"
+  ],
+  "backtest_db": "_database/backtest.db (stock_bt — 엔진 자체 기록)",
+  "batch_logs": [
+   "scratchpad retrial_chunk01..N.log (세션 임시 — 본문 인용은 rho_retrial_engine_runs.json)"
+  ]
+ },
+ "tracked_change_manifest": {
+  "amended_at": "2026-07-06T10:07:38+09:00",
+  "amendment_kind": "verification_repair_declaration_only",
+  "note": "검증 지적 수복 — 이 사이클의 tracked 수정 전수(5건)를 판정 파일에 명시 선언. 기존 선언 문언('codegen.py+test, n_trials_ledger')이 실제 전수보다 2건 좁았던 불일치의 해소이며, 판정 본문(rho/per_rule/declared_censoring_rule)·tracked 코드/원장 내용은 무변경(declared_censoring_rule 본문 바이트 동일 유지).",
+  "git_numstat_measured_at": "2026-07-06T10:06:09+09:00",
+  "files": [
+   {
+    "path": "alpha_lab/translate/codegen.py",
+    "numstat": "+29/-2",
+    "class": "allowed_translation_fix",
+    "basis": "rho_retrial_diagnosis.md §4 — SAMPLE_TIME_GUARD(codegen.py:67)·UNIVERSE_GUARD_MONEYTOP_PROXY(codegen.py:74) 신규 상수, universe_guard 옵션(기본 None=기존 산출 byte-identical)"
+   },
+   {
+    "path": "tests/unit/test_alpha_translate.py",
+    "numstat": "+97/-0",
+    "class": "allowed_tests",
+    "basis": "수정 검증 7케이스 추가 — 수복 시점 재실행 78 passed(1.27s, 2026-07-06 10:05 KST)"
+   },
+   {
+    "path": "alpha_lab/translate/__init__.py",
+    "numstat": "+4/-0",
+    "class": "declared_addendum_reexport",
+    "basis": "codegen 신규 상수 2종의 import 2행 + __all__ 2행 추가뿐 — 순수 additive 재수출, 로직 무변경(git diff 전문 실측). 기존 선언 문언 누락분의 명시 선언"
+   },
+   {
+    "path": "docs/research/condition_research/research_runs/alpha_lab_20260705/n_trials_ledger.jsonl",
+    "numstat": "+1/-0",
+    "class": "allowed_ledger_append",
+    "basis": "batch=rho_retrial n=10 append — 원장 전 행 재합산 총계 745 == n_trials_ledger_total_after"
+   },
+   {
+    "path": "docs/research/condition_research/research_runs/alpha_lab_20260705/rho_gate_registration_provenance.jsonl",
+    "numstat": "+10/-0",
+    "class": "declared_addendum_provenance_append",
+    "basis": "등재기 계약상의 append-only 원장 — ALP_RM2_01..10 10행(stage=rho_retrial_registration). 기존 선언 문언 누락분의 명시 선언"
+   }
+  ],
+  "integrity": {
+   "provenance_head_rows": 10,
+   "provenance_work_rows": 20,
+   "provenance_first10_byte_identical_to_head": true,
+   "provenance_appended_cross_receipt_checks": "buy/leaf/first_buy/sell sha256 + retrial_of + rule_id vs rho_retrial_registration_receipt.json verification[]·registration.inserted[]",
+   "provenance_appended_cross_receipt_mismatches": 0,
+   "registration_receipt_sha256_now": "5e2d1c20e0b5bccf5d6a21a922e43bf7c84ae47ab0565d1b488da30d96e3fd58",
+   "matches_pinned_registration_receipt_sha256": true,
+   "ledger_rows": 8,
+   "ledger_total_n": 745
+  }
+ }
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "label": "alp_rho_retrial:ALP_RM2_04:P1-s00-l026",
+    "buy": "ALP_RM2_04",
+    "sell": "ALP_RM2_04",
+    "rank": 4,
+    "rule_id": "P1-s00-l026",
+    "mined_lift": 2.9865752265796766,
+    "retrial_of": "ALP_RM_04",
+    "chunk_no": 2
+  },
+  {
+    "label": "alp_rho_retrial:ALP_RM2_05:P1-s02-l020",
+    "buy": "ALP_RM2_05",
+    "sell": "ALP_RM2_05",
+    "rank": 5,
+    "rule_id": "P1-s02-l020",
+    "mined_lift": 2.653243110732709,
+    "retrial_of": "ALP_RM_05",
+    "chunk_no": 2
+  },
+  {
+    "label": "alp_rho_retrial:ALP_RM2_06:P1-s03-l007",
+    "buy": "ALP_RM2_06",
+    "sell": "ALP_RM2_06",
+    "rank": 6,
+    "rule_id": "P1-s03-l007",
+    "mined_lift": 2.58093625210415,
+    "retrial_of": "ALP_RM_06",
+    "chunk_no": 2
+  }
+]

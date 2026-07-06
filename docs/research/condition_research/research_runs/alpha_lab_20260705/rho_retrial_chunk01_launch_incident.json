@@ -1,0 +1,36 @@
+{
+ "schema": "alpha_lab_rho_retrial_launch_incident_v1",
+ "created_at": "2026-07-06T08:35:07.375711+09:00",
+ "run_id": "alp_rho_retrial_warm64_chunk01_20260706",
+ "attempt": 1,
+ "launched_at": "2026-07-06T08:13:21+09:00 (PID 122264, 이전 세션이 백그라운드 기동)",
+ "prepare": "[BATCH] prepare status=ok back_count=2424 elapsed=295s (retrial_chunk01.attempt1.log:2)",
+ "gen0_started_at_epoch": 1783293511.582071,
+ "gen0_started_evidence": "ai_strategy_loop/state/current_state.json latest.gen_started_at=1783293511.582071 (08:18:31, strategy_gist=alp_rho_retrial:ALP_RM2_01:P1-s02-l019)",
+ "symptom": "gen0 행이 bt_warm_run_timeout=300s를 수십 분 초과해도 미기록, 엔진 풀 유휴(CPU 4~14%), BackTest 자식 프로세스 부재(122264의 자식 84개 전원 08:13:36 생성 — prepare 시점)",
+ "root_cause_pyspy": {
+  "tool": "py-spy 0.4.2 dump --pid 122264 (2회, 08:31/08:36 동일 스택)",
+  "mainthread_stack": [
+   "    dump (multiprocessing\\reduction.py:60)",
+   "    __init__ (multiprocessing\\popen_spawn_win32.py:97)",
+   "    __init__ (__init__)",
+   "    _Popen (multiprocessing\\context.py:343)",
+   "    _Popen (multiprocessing\\context.py:230)",
+   "    start (multiprocessing\\process.py:121)",
+   "    _spawn_backtest (cli\\warm_session.py:663)",
+   "    run (cli\\warm_session.py:446)"
+  ],
+  "diagnosis": "multiprocessing spawn 데드락 — Process.start() -> popen_spawn_win32.__init__:97 reduction.dump가 파이프 쓰기에서 영구 블록. spawn된 BackTest 자식이 payload를 읽기 전에 조기 사망했고(자식 프로세스 부재), 부모가 read handle을 계속 쥐고 있어 broken-pipe가 발생하지 않는 Windows 고전 데드락. cli/warm_session.py:663(_spawn_backtest)->446(run) 경로.",
+  "context": "08:05 preflight 실측(사전선언 preflight.process_scan_finding): wt-dev 레인 lat_repair_composite_coverage_24_official_full_warm64_20260706(PID 21040, ~86 프로세스) 실행 중. 이전 세션 launcher는 wait_idle.ps1(batch_eval 0개 대기)로 대기 후 08:13:21 기동 — 본 세션 08:19:43 재스캔에서는 wt-dev 풀 부재(총 python ~91개 = 본 풀 85 + 데몬 6). 즉 08:13~08:18 구간의 양 풀 공존 여부는 직접 실측 없음(추정). 확정 사실은 spawn 자식 조기 사망과 그로 인한 파이프 쓰기 데드락(py-spy 스택 2회 동일)이며, 08:36 실측 잔여 메모리 130.7/254.6GB에서 동일 spawn 경로 재기동은 정상 동작 여부로 재검증한다."
+ },
+ "engine_runs_consumed": 0,
+ "engine_runs_consumed_evidence": "loop_runs.db generations에 run_id=alp_rho_retrial_warm64_chunk01_20260706 행 0건(SELECT 실측), backtest/csv에 ALP_RM2 CSV 0건, 엔진의 '백테스트 시간 초과 (300초)' 판정 미발생 — 사전선언 timeout_censoring(엔진 타임아웃 판정)과 무관한 launcher-infra 결함",
+ "handling": {
+  "decision": "동일 run_id로 청크 재기동(LoopState.start_run은 INSERT OR REPLACE — ai_strategy_loop/controller/state.py:275). 규칙별 엔진 시도는 여전히 각 1회(총 10회) 유지 — 본 사건은 엔진 시도 0회 소모.",
+  "not_censoring_basis": "사전선언 declared_censoring_rule.timeout_censoring은 '동결 프로파일 bt_warm_run_timeout=300s 내 완주 실패(엔진 타임아웃 판정)'를 검열로 정의 — 본 건은 엔진에 도달하기 전 spawn 데드락이므로 어떤 규칙에도 검열/순위를 부여하지 않는다(추정 금지).",
+  "kill": "taskkill /PID 122264 /T /F (해당 트리 한정)",
+  "relaunch": "run_chunk.sh 01 — 동일 동결 프로파일·동일 run_id·동일 pairs(sha256 재검증 완료)·STOM_CLI_DB_STRATEGY 동일"
+ },
+ "watchdog_added": "재기동 이후 각 gen에 대해 행 미기록 상태로 경과 > 480s(timeout 300s + 유예 180s)면 py-spy 덤프 후 개입하는 감시를 세션 차원에서 수행(엔진 프로파일 무수정)",
+ "attempt1_termination": "taskkill /PID 122264 /T /F 실행 2026-07-06 08:37 — 트리 85개 전원 종료 실측(직후 python 프로세스 6개=데몬만 잔존)"
+}

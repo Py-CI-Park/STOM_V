@@ -1,0 +1,427 @@
+{
+ "schema": "alpha_lab_rho_retrial_registration_receipt_v1",
+ "stage": "rho_retrial_registration_ALP_RM2_top10",
+ "created_at": "2026-07-06T07:49:53.677282+09:00",
+ "sealed_retrial_clause": "번역 계층 결함 진단·수정에 한해 1회, 동일 10규칙 재백테 <=10회 — 규칙 재선별·임계값 하향·표본창 교체 금지, 리프 절 byte-identical 유지",
+ "first_receipt": {
+  "path": "docs\\research\\condition_research\\research_runs\\alpha_lab_20260705\\rho_gate_registration_receipt.json",
+  "sha256": "a706dc570e93f246b8ecad1a6cd49d4a1423b657092dd429b9188071449ecc27"
+ },
+ "modification_spec": {
+  "time_guard": {
+   "before": "90000 <= 시분초 < 93000",
+   "after": "90001 <= 시분초 <= 92500",
+   "basis": "preregistration_v1.json label_spec.grid — t0 09:00:01~09:30:00, t0>09:25:00 스킵 → 월드 [090001, 092500]"
+  },
+  "universe_guard": {
+   "before": null,
+   "after": "관심종목 > 0",
+   "basis": "rho_retrial_evidence_universe_proxy.json — 표본일 20230601+20240103 전 행 238,227건 일치율 100.0% (관심종목!=0 ⇔ moneytop 멤버십)"
+  },
+  "leaf_clauses": "1차 등재본과 byte-identical (본 영수증 verification[*].leaf_clauses_identical 전수 true)",
+  "not_translated": {
+   "stride_5s": "추정 그리드이지 거래 조건이 아님 — 번역하지 않음(rho_retrial_diagnosis.md §5)"
+  }
+ },
+ "codegen": {
+  "module": "alpha_lab/translate/codegen.py",
+  "additive_options": [
+   "universe_guard(신규, 기본 None)",
+   "time_guard(기존 파라미터 — 오버라이드 사용)"
+  ],
+  "constants": {
+   "SAMPLE_TIME_GUARD": "90001 <= 시분초 <= 92500",
+   "UNIVERSE_GUARD_MONEYTOP_PROXY": "관심종목 > 0"
+  }
+ },
+ "sell": {
+  "policy": "1차와 동일 — 챔피언 hard-stop 원문 재사용",
+  "sell_strategy_source_id": "GATE_rr8_12_turnover_min_902_1_5_S",
+  "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+  "verified_against_db_ALP_RM_01": true
+ },
+ "verification": [
+  {
+   "name": "ALP_RM2_01",
+   "retrial_of": "ALP_RM_01",
+   "rule_id": "P1-s02-l019",
+   "default_regen_byte_identical_to_first": true,
+   "leaf_clauses_identical": true,
+   "leaf_sha256": "e8cecfed8a7631c0e05bf0c6315cd362439abe52d881c4df0bc69d0e64f15c3d",
+   "buy_sha256": "1fdce899f9a08bea8b5e6c5106bef486df8af16335697abe5f32d5b643d9aa5f",
+   "static_ok": true,
+   "repo_gate_ok": true
+  },
+  {
+   "name": "ALP_RM2_02",
+   "retrial_of": "ALP_RM_02",
+   "rule_id": "P1-s04-l011",
+   "default_regen_byte_identical_to_first": true,
+   "leaf_clauses_identical": true,
+   "leaf_sha256": "5983dd270585de3e81aa26eab9359905ac2e372746e39a4d60e7b0f10ca5d8c1",
+   "buy_sha256": "5562a691d8dd03e841c188c4cab4790c52d6f2711a8209cc3cc30e8a4e2f6741",
+   "static_ok": true,
+   "repo_gate_ok": true
+  },
+  {
+   "name": "ALP_RM2_03",
+   "retrial_of": "ALP_RM_03",
+   "rule_id": "P1-s03-l026",
+   "default_regen_byte_identical_to_first": true,
+   "leaf_clauses_identical": true,
+   "leaf_sha256": "369d81daf0bedc8b55479c946e4585f93eb27df8d69d94b7ae1ad984636b7a23",
+   "buy_sha256": "6c6b8c2f9a4dd1a9fcfdafe5c87432505a6c06da27ea4d79a6011dbd1c86fc10",
+   "static_ok": true,
+   "repo_gate_ok": true
+  },
+  {
+   "name": "ALP_RM2_04",
+   "retrial_of": "ALP_RM_04",
+   "rule_id": "P1-s00-l026",
+   "default_regen_byte_identical_to_first": true,
+   "leaf_clauses_identical": true,
+   "leaf_sha256": "4e36552b004e2f782d7b322399e6b2dd1ef28087fa36a94ade2d9614d20bd32c",
+   "buy_sha256": "60766459e2e519f4d6c2dbe068ed4f351780a1812800a6f2a532b4adc61e3dfa",
+   "static_ok": true,
+   "repo_gate_ok": true
+  },
+  {
+   "name": "ALP_RM2_05",
+   "retrial_of": "ALP_RM_05",
+   "rule_id": "P1-s02-l020",
+   "default_regen_byte_identical_to_first": true,
+   "leaf_clauses_identical": true,
+   "leaf_sha256": "a5080a587fe13b1ddd0a308e83bdd207dc4c1e39444ee4d405a36c927fdadb13",
+   "buy_sha256": "bff112b30e12b6f184f8f3973086faaf60cb16a62fbb4ce0d51242569912f587",
+   "static_ok": true,
+   "repo_gate_ok": true
+  },
+  {
+   "name": "ALP_RM2_06",
+   "retrial_of": "ALP_RM_06",
+   "rule_id": "P1-s03-l007",
+   "default_regen_byte_identical_to_first": true,
+   "leaf_clauses_identical": true,
+   "leaf_sha256": "688c7afbcc211a3531716be6db2bd17f26463194853864623a20b4b1bbc0b5db",
+   "buy_sha256": "ad26654d32875edc3dd61f8a214c1f63d9f08dd177245371c335092e557fa124",
+   "static_ok": true,
+   "repo_gate_ok": true
+  },
+  {
+   "name": "ALP_RM2_07",
+   "retrial_of": "ALP_RM_07",
+   "rule_id": "P1-s01-l029",
+   "default_regen_byte_identical_to_first": true,
+   "leaf_clauses_identical": true,
+   "leaf_sha256": "00ced6d60f949cc618a2ab9d57b84c5a989d71f75f29aeac284512e3728b9b66",
+   "buy_sha256": "0c2e95de33d52dab23357d95c7db8df7f2e9639c8251fe54862cd5099518d023",
+   "static_ok": true,
+   "repo_gate_ok": true
+  },
+  {
+   "name": "ALP_RM2_08",
+   "retrial_of": "ALP_RM_08",
+   "rule_id": "P1-s04-l027",
+   "default_regen_byte_identical_to_first": true,
+   "leaf_clauses_identical": true,
+   "leaf_sha256": "fcbacb45bd4774ffbcfc7c61bd18d16e8d3dfee28d8b7989dedd411b03abc142",
+   "buy_sha256": "1b32004f65fdef70e1bf3153885e2cb1688c3ba75e508ac1831c86f03fb6e6f4",
+   "static_ok": true,
+   "repo_gate_ok": true
+  },
+  {
+   "name": "ALP_RM2_09",
+   "retrial_of": "ALP_RM_09",
+   "rule_id": "P1-s00-l012",
+   "default_regen_byte_identical_to_first": true,
+   "leaf_clauses_identical": true,
+   "leaf_sha256": "7215d4838d9f1aa0137f9ef8d3ac5d05862a2f8a265bf10faba2b5737a584d8e",
+   "buy_sha256": "48a98066f88baf112aa3cf48df6d96487e1c51762122997aad882bdf297536b1",
+   "static_ok": true,
+   "repo_gate_ok": true
+  },
+  {
+   "name": "ALP_RM2_10",
+   "retrial_of": "ALP_RM_10",
+   "rule_id": "P1-s03-l011",
+   "default_regen_byte_identical_to_first": true,
+   "leaf_clauses_identical": true,
+   "leaf_sha256": "5a3744f60821e0723015f3a4d5a57808eb414df1f2f85e8b16d164cf548c616e",
+   "buy_sha256": "8ff672a92fcf6a8a4405e3e55843fd3aa4ee5da615ed5f6d4da60fd825d04077",
+   "static_ok": true,
+   "repo_gate_ok": true
+  }
+ ],
+ "all_leaf_clauses_identical": true,
+ "registration": {
+  "db_path": "_database\\strategy.db",
+  "mode": "INSERT-only (registrar 계약: 백업 선행, 충돌 쌍 전체 스킵)",
+  "preexisting_name_conflicts": [],
+  "backup_path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database\\strategy.db.bak.alpha_lab_20260706T074953",
+  "inserted": [
+   {
+    "name": "ALP_RM2_01",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "1fdce899f9a08bea8b5e6c5106bef486df8af16335697abe5f32d5b643d9aa5f",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "retrial_of": "ALP_RM_01",
+     "rule_id": "P1-s02-l019",
+     "rank": 1,
+     "lift": 3.874019081646003,
+     "support": 2349,
+     "positives": 514,
+     "first_buy_sha256": "9b48b605a31c117a46cc320dec3f9aed362abf05a8b49a824bdb11743ef539db",
+     "leaf_sha256": "e8cecfed8a7631c0e05bf0c6315cd362439abe52d881c4df0bc69d0e64f15c3d",
+     "modification": "시간창 가드 90000<=시분초<93000 → 90001 <= 시분초 <= 92500(표본 규약), 유니버스 가드 (관심종목 > 0) AND 결합 — 리프 절 byte-identical 보존"
+    }
+   },
+   {
+    "name": "ALP_RM2_02",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "5562a691d8dd03e841c188c4cab4790c52d6f2711a8209cc3cc30e8a4e2f6741",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "retrial_of": "ALP_RM_02",
+     "rule_id": "P1-s04-l011",
+     "rank": 2,
+     "lift": 3.5734434377237414,
+     "support": 2175,
+     "positives": 439,
+     "first_buy_sha256": "03c6f36f4056c6575a64939284400ff94c5df72ddffcac6f2ae47cabbbb6f8a2",
+     "leaf_sha256": "5983dd270585de3e81aa26eab9359905ac2e372746e39a4d60e7b0f10ca5d8c1",
+     "modification": "시간창 가드 90000<=시분초<93000 → 90001 <= 시분초 <= 92500(표본 규약), 유니버스 가드 (관심종목 > 0) AND 결합 — 리프 절 byte-identical 보존"
+    }
+   },
+   {
+    "name": "ALP_RM2_03",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "6c6b8c2f9a4dd1a9fcfdafe5c87432505a6c06da27ea4d79a6011dbd1c86fc10",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "retrial_of": "ALP_RM_03",
+     "rule_id": "P1-s03-l026",
+     "rank": 3,
+     "lift": 3.1211971871913198,
+     "support": 2008,
+     "positives": 354,
+     "first_buy_sha256": "f982f431254d3659b0fa9be0d5ec893254d81e7d66686f39683db356927bdc7c",
+     "leaf_sha256": "369d81daf0bedc8b55479c946e4585f93eb27df8d69d94b7ae1ad984636b7a23",
+     "modification": "시간창 가드 90000<=시분초<93000 → 90001 <= 시분초 <= 92500(표본 규약), 유니버스 가드 (관심종목 > 0) AND 결합 — 리프 절 byte-identical 보존"
+    }
+   },
+   {
+    "name": "ALP_RM2_04",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "60766459e2e519f4d6c2dbe068ed4f351780a1812800a6f2a532b4adc61e3dfa",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "retrial_of": "ALP_RM_04",
+     "rule_id": "P1-s00-l026",
+     "rank": 4,
+     "lift": 2.9865752265796766,
+     "support": 2223,
+     "positives": 375,
+     "first_buy_sha256": "57f646d4d296e4a96b4ca2f6fbfbceca67b5f51839e4a8c81f4742173ff4fe04",
+     "leaf_sha256": "4e36552b004e2f782d7b322399e6b2dd1ef28087fa36a94ade2d9614d20bd32c",
+     "modification": "시간창 가드 90000<=시분초<93000 → 90001 <= 시분초 <= 92500(표본 규약), 유니버스 가드 (관심종목 > 0) AND 결합 — 리프 절 byte-identical 보존"
+    }
+   },
+   {
+    "name": "ALP_RM2_05",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "bff112b30e12b6f184f8f3973086faaf60cb16a62fbb4ce0d51242569912f587",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "retrial_of": "ALP_RM_05",
+     "rule_id": "P1-s02-l020",
+     "rank": 5,
+     "lift": 2.653243110732709,
+     "support": 12805,
+     "positives": 1919,
+     "first_buy_sha256": "b2767c3507c1f930f98cb88f90aab1e91bc558b03bdb859ffe2a545e1b9f61cb",
+     "leaf_sha256": "a5080a587fe13b1ddd0a308e83bdd207dc4c1e39444ee4d405a36c927fdadb13",
+     "modification": "시간창 가드 90000<=시분초<93000 → 90001 <= 시분초 <= 92500(표본 규약), 유니버스 가드 (관심종목 > 0) AND 결합 — 리프 절 byte-identical 보존"
+    }
+   },
+   {
+    "name": "ALP_RM2_06",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "ad26654d32875edc3dd61f8a214c1f63d9f08dd177245371c335092e557fa124",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "retrial_of": "ALP_RM_06",
+     "rule_id": "P1-s03-l007",
+     "rank": 6,
+     "lift": 2.58093625210415,
+     "support": 3080,
+     "positives": 449,
+     "first_buy_sha256": "ad4bb723909753d86b73408cd3220bccebacf17a2e612b26127b151e25b17a61",
+     "leaf_sha256": "688c7afbcc211a3531716be6db2bd17f26463194853864623a20b4b1bbc0b5db",
+     "modification": "시간창 가드 90000<=시분초<93000 → 90001 <= 시분초 <= 92500(표본 규약), 유니버스 가드 (관심종목 > 0) AND 결합 — 리프 절 byte-identical 보존"
+    }
+   },
+   {
+    "name": "ALP_RM2_07",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "0c2e95de33d52dab23357d95c7db8df7f2e9639c8251fe54862cd5099518d023",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "retrial_of": "ALP_RM_07",
+     "rule_id": "P1-s01-l029",
+     "rank": 7,
+     "lift": 2.578586367779071,
+     "support": 19513,
+     "positives": 2842,
+     "first_buy_sha256": "d3095ddaf3ec4c7b8bc9823a5f4fb364486e5a621b448cfe845a7bea5e2cebab",
+     "leaf_sha256": "00ced6d60f949cc618a2ab9d57b84c5a989d71f75f29aeac284512e3728b9b66",
+     "modification": "시간창 가드 90000<=시분초<93000 → 90001 <= 시분초 <= 92500(표본 규약), 유니버스 가드 (관심종목 > 0) AND 결합 — 리프 절 byte-identical 보존"
+    }
+   },
+   {
+    "name": "ALP_RM2_08",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "1b32004f65fdef70e1bf3153885e2cb1688c3ba75e508ac1831c86f03fb6e6f4",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "retrial_of": "ALP_RM_08",
+     "rule_id": "P1-s04-l027",
+     "rank": 8,
+     "lift": 2.3759105531186786,
+     "support": 21878,
+     "positives": 2936,
+     "first_buy_sha256": "de154bac2a95b0eeb4e8fc4b6ff2831e0fa7f19ed990bab67a185bbe642353ff",
+     "leaf_sha256": "fcbacb45bd4774ffbcfc7c61bd18d16e8d3dfee28d8b7989dedd411b03abc142",
+     "modification": "시간창 가드 90000<=시분초<93000 → 90001 <= 시분초 <= 92500(표본 규약), 유니버스 가드 (관심종목 > 0) AND 결합 — 리프 절 byte-identical 보존"
+    }
+   },
+   {
+    "name": "ALP_RM2_09",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "48a98066f88baf112aa3cf48df6d96487e1c51762122997aad882bdf297536b1",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "retrial_of": "ALP_RM_09",
+     "rule_id": "P1-s00-l012",
+     "rank": 9,
+     "lift": 2.283397595869657,
+     "support": 56376,
+     "positives": 7271,
+     "first_buy_sha256": "4f9a2702310f1a138dc90eddc650cff4ba902cabcc663d5c6666a7b555187212",
+     "leaf_sha256": "7215d4838d9f1aa0137f9ef8d3ac5d05862a2f8a265bf10faba2b5737a584d8e",
+     "modification": "시간창 가드 90000<=시분초<93000 → 90001 <= 시분초 <= 92500(표본 규약), 유니버스 가드 (관심종목 > 0) AND 결합 — 리프 절 byte-identical 보존"
+    }
+   },
+   {
+    "name": "ALP_RM2_10",
+    "tables": [
+     "stockbuy",
+     "stocksell"
+    ],
+    "buy_sha256": "8ff672a92fcf6a8a4405e3e55843fd3aa4ee5da615ed5f6d4da60fd825d04077",
+    "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "meta": {
+     "retrial_of": "ALP_RM_10",
+     "rule_id": "P1-s03-l011",
+     "rank": 10,
+     "lift": 2.108220761005318,
+     "support": 38949,
+     "positives": 4638,
+     "first_buy_sha256": "4b88c0405bb68bdf06706f099550d8e427768508828f7a305046fd708a1bf9e3",
+     "leaf_sha256": "5a3744f60821e0723015f3a4d5a57808eb414df1f2f85e8b16d164cf548c616e",
+     "modification": "시간창 가드 90000<=시분초<93000 → 90001 <= 시분초 <= 92500(표본 규약), 유니버스 가드 (관심종목 > 0) AND 결합 — 리프 절 byte-identical 보존"
+    }
+   }
+  ],
+  "conflicts": [],
+  "post_verify": [
+   {
+    "name": "ALP_RM2_01",
+    "stockbuy_sha256": "1fdce899f9a08bea8b5e6c5106bef486df8af16335697abe5f32d5b643d9aa5f",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "match": true
+   },
+   {
+    "name": "ALP_RM2_02",
+    "stockbuy_sha256": "5562a691d8dd03e841c188c4cab4790c52d6f2711a8209cc3cc30e8a4e2f6741",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "match": true
+   },
+   {
+    "name": "ALP_RM2_03",
+    "stockbuy_sha256": "6c6b8c2f9a4dd1a9fcfdafe5c87432505a6c06da27ea4d79a6011dbd1c86fc10",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "match": true
+   },
+   {
+    "name": "ALP_RM2_04",
+    "stockbuy_sha256": "60766459e2e519f4d6c2dbe068ed4f351780a1812800a6f2a532b4adc61e3dfa",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "match": true
+   },
+   {
+    "name": "ALP_RM2_05",
+    "stockbuy_sha256": "bff112b30e12b6f184f8f3973086faaf60cb16a62fbb4ce0d51242569912f587",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "match": true
+   },
+   {
+    "name": "ALP_RM2_06",
+    "stockbuy_sha256": "ad26654d32875edc3dd61f8a214c1f63d9f08dd177245371c335092e557fa124",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "match": true
+   },
+   {
+    "name": "ALP_RM2_07",
+    "stockbuy_sha256": "0c2e95de33d52dab23357d95c7db8df7f2e9639c8251fe54862cd5099518d023",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "match": true
+   },
+   {
+    "name": "ALP_RM2_08",
+    "stockbuy_sha256": "1b32004f65fdef70e1bf3153885e2cb1688c3ba75e508ac1831c86f03fb6e6f4",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "match": true
+   },
+   {
+    "name": "ALP_RM2_09",
+    "stockbuy_sha256": "48a98066f88baf112aa3cf48df6d96487e1c51762122997aad882bdf297536b1",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "match": true
+   },
+   {
+    "name": "ALP_RM2_10",
+    "stockbuy_sha256": "8ff672a92fcf6a8a4405e3e55843fd3aa4ee5da615ed5f6d4da60fd825d04077",
+    "stocksell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+    "match": true
+   }
+  ]
+ }
+}
