@@ -1,0 +1,58 @@
+{
+  "schema": "plan_d_rank01_r_c_verification_receipt_v1",
+  "created_at": "2026-07-06T16:07:03+09:00",
+  "scope": "plan-d-seed-r1-rank01-generate8-insert-replay-no-portfolio-export",
+  "run_id": "lat_plan_d_r1_rank01_r_c_generate8_min_warm64_20260706",
+  "source_read_receipt_exists": true,
+  "db_insert_only_apply": {
+    "status": "inserted",
+    "inserted_row_count": 16,
+    "backup_path": "ai_strategy_loop\\state\\loop_strategies.db.bak.lattice_20260706T065150Z",
+    "conflicts": [],
+    "candidate_stockbuy_matches": 8,
+    "candidate_stocksell_matches": 8
+  },
+  "limited_replay": {
+    "run_status": "complete",
+    "honest_rows": 8,
+    "status_counts": {
+      "ok": 8
+    },
+    "gate_passed_count": 8,
+    "warm_prepare": {
+      "status": null,
+      "back_count": null,
+      "elapsed_seconds": null
+    }
+  },
+  "forbidden_actions": {
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "additional_pairs_beyond_8_executed": false,
+    "db_update_delete_used": false
+  },
+  "artifacts": {
+    "result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_c_insert_replay_20260706/plan_d_rank01_r_c_limited_replay_result_20260706.json",
+    "summary": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_c_insert_replay_20260706/plan_d_rank01_r_c_limited_replay_summary_20260706.md",
+    "round_decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_c_insert_replay_20260706/plan_d_rank01_r_c_round_decision_20260706.json",
+    "axis_decision_ledger_draft": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_c_insert_replay_20260706/plan_d_rank01_r_c_axis_decision_ledger_draft_20260706.jsonl",
+    "handoff": "docs/update_log/2026-07-06_plan_d_seed_r1_rank01_generate8_insert_replay_handoff.md"
+  },
+  "official_profile_recheck": {
+    "db_path": "_database/stock_min_back.db",
+    "source_db_start_date": 20250407,
+    "source_db_end_date": 20260227,
+    "runtime_full_start": 20250407,
+    "runtime_full_end": 20260227,
+    "time_window_policy": "full_session_enabled runtime resolves min to 09:00-15:19.",
+    "bt_timeframe": "min",
+    "bt_engine_mode": "warm",
+    "bt_warm_engine_count": 64,
+    "bt_timeout": 14400,
+    "bt_warm_run_timeout": 1200,
+    "full_session_enabled": true,
+    "bt_universe_start_time": 90000,
+    "bt_min_universe_end_time": 151900
+  }
+}

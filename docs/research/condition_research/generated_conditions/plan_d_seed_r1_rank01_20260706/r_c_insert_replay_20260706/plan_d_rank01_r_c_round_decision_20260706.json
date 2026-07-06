@@ -1,0 +1,42 @@
+{
+  "schema": "plan_d_rank01_r_c_round_decision_v1",
+  "created_at": "2026-07-06T16:07:03+09:00",
+  "round": "R-c limited replay",
+  "decision": "open_r_d_round_decision",
+  "r_d_round_decision_possible": true,
+  "basis": {
+    "honest_rows": 8,
+    "gate_passed_count": 8,
+    "improved_count": 1,
+    "flat_count": 7,
+    "no_go_count": 0,
+    "parent_profit": 1887171.0,
+    "parent_mdd": 19.25
+  },
+  "recommended_active_seed": {
+    "label": "plan_d_r1_rank01_04_repair_l14_liquidity_tight_default",
+    "buy_name": "LAT_plan_d_r1_rank01_04_repair_l14_liquidity_tight_default_B",
+    "sell_name": "LAT_plan_d_r1_rank01_04_repair_l14_liquidity_tight_default_S",
+    "profit": 2153579.0,
+    "mdd": 18.69,
+    "reason": "rank01 parent ?? profit ??? MDD ??? ??? ??"
+  },
+  "coverage_auxiliary_watch": [
+    {
+      "label": "plan_d_r1_rank01_06_discovery_adjacent_l13_l14_coverage",
+      "profit": 1059257.0,
+      "mdd": 18.49,
+      "trade_count": 448,
+      "daily_avg_trades": 2.1,
+      "reason": "coverage_gain_trade_count_daily_avg_but_profit_check_required"
+    }
+  ],
+  "not_executed": [
+    "OOS",
+    "portfolio",
+    "export/live/final promotion",
+    "additional_pairs_beyond_8"
+  ],
+  "next_recommended_scope": "plan-d-seed-r1-rank01-rd-freeze-slot04-no-portfolio-export",
+  "next_recommended_goal": "slot04 ?? ??? freeze/preregistration?? ???? R-d ? ??/?? ??? ??? ??"
+}
