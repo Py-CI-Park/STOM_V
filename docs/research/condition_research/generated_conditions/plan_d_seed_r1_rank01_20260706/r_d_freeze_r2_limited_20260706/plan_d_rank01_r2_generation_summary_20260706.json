@@ -1,0 +1,26 @@
+{
+  "schema": "plan_d_rank01_r2_generation_summary_v1",
+  "created_at": "2026-07-06T16:56:17+09:00",
+  "freeze": {
+    "active_parent": "plan_d_r1_rank01_04_repair_l14_liquidity_tight_default",
+    "coverage_watch": "plan_d_r1_rank01_06_discovery_adjacent_l13_l14_coverage",
+    "freeze_ledger": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_d_freeze_r2_limited_20260706/plan_d_rank01_r2_freeze_ledger_20260706.jsonl",
+    "preregistration_draft": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_d_freeze_r2_limited_20260706/plan_d_rank01_r2_freeze_preregistration_draft_20260706.md"
+  },
+  "generation": {
+    "candidate_count": 24,
+    "static_gate_passed": 24,
+    "static_gate_failed": 0,
+    "seeds": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_d_freeze_r2_limited_20260706/plan_d_rank01_r2_seeds_20260706.json",
+    "design": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_d_freeze_r2_limited_20260706/plan_d_rank01_r2_design_20260706.json",
+    "static_gate": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_d_freeze_r2_limited_20260706/plan_d_rank01_r2_static_gate_20260706.json"
+  },
+  "constraints_observed": {
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "db_insert_apply_used": false,
+    "db_update_delete_used": false,
+    "official_replay_executed": false
+  }
+}

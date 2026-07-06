@@ -458,7 +458,8 @@
         "codex:css-v7-repair-plan-c-plan-b-d-20260703-repair-composite-plan-d-seed-pool-intake-20260706",
         "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-seed-r1-rank01-no-portfolio-export-20260706",
         "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-seed-r1-rank01-generate8-dryrun-no-portfolio-export-20260706",
-        "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-seed-r1-rank01-generate8-insert-replay-no-portfolio-export-20260706"
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-seed-r1-rank01-generate8-insert-replay-no-portfolio-export-20260706",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export-20260706"
       ],
       "status": "active",
       "started_at": "2026-07-03T23:30:01.3258147+09:00",
@@ -466,15 +467,15 @@
       "duration_ms": null,
       "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
       "objective": "Run priorities 1~7: CSS_V7 repair, Plan C validation, Plan B, Plan D",
-      "resumed_at": "2026-07-06T15:48:16+09:00",
-      "requested_range": "plan-d-seed-r1-rank01-generate8-insert-replay-no-portfolio-export",
-      "current_priority": "plan-d-seed-r1-rank01-generate8-insert-replay-no-portfolio-export",
+      "resumed_at": "2026-07-06T16:53:29+09:00",
+      "requested_range": "plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export",
+      "current_priority": "plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export",
       "completed_range": "P5-root-cause-repair + P5-profile-audit + P5-official-tick-preflight + P5-full-run-protocol-review + P5-official-tick-pilot12 + P5-official-tick-chunk01-12 + P5-official-tick-288-export + P5-official-min-preflight4 + P5-official-min-chunk01-12 + P5-official-min-288-export + P6-coverage-gaps-batch-plan-no-D",
       "completed_at": "2026-07-05T07:06:21+09:00",
       "last_completed_priority": "plan-d-seed-r1-rank01-generate8-insert-replay-no-portfolio-export",
       "last_completed_at": "2026-07-06T16:07:03+09:00",
       "last_evidence": "docs/update_log/2026-07-06_plan_d_seed_r1_rank01_generate8_insert_replay_handoff.md",
-      "next_priority": "plan-d-seed-r1-rank01-rd-freeze-slot04-no-portfolio-export",
+      "next_priority": null,
       "p5_blocker_status": "completed_no_survivors_after_repair_preflight",
       "blocked_at": "2026-07-05T21:03:32+09:00",
       "blocked_priority": null,
@@ -714,16 +715,70 @@
         "handoff": "docs/update_log/2026-07-06_plan_d_seed_r1_rank01_generate8_insert_replay_handoff.md",
         "result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_c_insert_replay_20260706/plan_d_rank01_r_c_limited_replay_result_20260706.json",
         "round_decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_c_insert_replay_20260706/plan_d_rank01_r_c_round_decision_20260706.json"
-      }
+      },
+      "plan_d_rank01_rd_freeze_r2_started_at": "2026-07-06T16:53:29+09:00",
+      "plan_d_rank01_rd_freeze_r2_source_receipt": ".omo/evidence/plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export-20260706/source_read_receipt.md"
     }
   },
   "active_work": {
-    "current_priority": "plan-d-seed-r1-rank01-generate8-insert-replay-no-portfolio-export",
-    "requested_range": "plan-d-seed-r1-rank01-generate8-insert-replay-no-portfolio-export",
-    "completed_at": "2026-07-06T16:07:03+09:00",
-    "last_evidence": "docs/update_log/2026-07-06_plan_d_seed_r1_rank01_generate8_insert_replay_handoff.md",
-    "next_priority": "plan-d-seed-r1-rank01-rd-freeze-slot04-no-portfolio-export",
+    "current_priority": "plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export",
+    "requested_range": "plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export",
+    "completed_at": null,
+    "last_evidence": ".omo/evidence/plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export-20260706/source_read_receipt.md",
+    "next_priority": null,
     "blocked_priority": null,
     "blocker": null
+  },
+  "sessions": [
+    "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export-20260706"
+  ],
+  "current_priority": "plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export",
+  "last_completed_scope": "plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export",
+  "updated_at": "2026-07-06T17:17:04+09:00",
+  "plan_d_rank01_rd_freeze_r2_result": {
+    "completed_at": "2026-07-06T17:17:04+09:00",
+    "result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_d_freeze_r2_limited_20260706/plan_d_rank01_r2_limited_replay_result_20260706.json",
+    "decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_d_freeze_r2_limited_20260706/plan_d_rank01_r2_round_decision_20260706.json",
+    "handoff": "docs/update_log/2026-07-06_plan_d_rank01_r2_limited_replay_handoff.md",
+    "honest_rows": 24,
+    "gate_passed_count": 24,
+    "decision_counts": {
+      "improved": 9,
+      "flat": 15,
+      "no_go": 0
+    },
+    "next_allowed_action": "plan-d-rank01-r2-selected-oos-prereg-no-portfolio-export",
+    "recommended_freeze_next": [
+      {
+        "label": "plan_d_r1_rank01_r2_15_l14_amt14000_default_tp3_sl3_hold90",
+        "profit": 2773694.0,
+        "mdd": 15.75,
+        "trades": 192,
+        "daily": 0.9,
+        "buy_axis": "l14_amt14000",
+        "sell_profile": "default_tp3_sl3_hold90",
+        "selection_reason": "best_profit"
+      },
+      {
+        "label": "plan_d_r1_rank01_r2_21_l14_rate_floor85_default_tp3_sl3_hold90",
+        "profit": 2515910.0,
+        "mdd": 15.57,
+        "trades": 188,
+        "daily": 0.9,
+        "buy_axis": "l14_rate_floor85",
+        "sell_profile": "default_tp3_sl3_hold90",
+        "selection_reason": "lowest_mdd_among_improved"
+      },
+      {
+        "label": "plan_d_r1_rank01_r2_12_l14_amt13000_default_tp3_sl3_hold90",
+        "profit": 2550258.0,
+        "mdd": 15.75,
+        "trades": 197,
+        "daily": 0.9,
+        "buy_axis": "l14_amt13000",
+        "sell_profile": "default_tp3_sl3_hold90",
+        "selection_reason": "nearby_amount_axis_confirmation"
+      }
+    ]
   }
 }

@@ -1,0 +1,40 @@
+{
+  "schema": "plan_d_rank01_r2_db_sha_recheck_v1",
+  "created_at": "2026-07-06T16:56:17+09:00",
+  "rows": [
+    {
+      "condition_id": "plan_d_r1_rank01_04_repair_l14_liquidity_tight_default",
+      "buy_name": "LAT_plan_d_r1_rank01_04_repair_l14_liquidity_tight_default_B",
+      "sell_name": "LAT_plan_d_r1_rank01_04_repair_l14_liquidity_tight_default_S",
+      "buy_sha256": "cce31d5127a2d6858c4a2744372424be890de5862bf3fcd77f5b63268b686ba2",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "buy_sha_matches_seed": true,
+      "sell_sha_matches_seed": true,
+      "metrics": {
+        "decision": "improved",
+        "profit": 2153579.0,
+        "mdd": 18.69,
+        "trade_count": 201,
+        "daily_avg_trades": 0.9,
+        "score": 1.1469251486851877
+      }
+    },
+    {
+      "condition_id": "plan_d_r1_rank01_06_discovery_adjacent_l13_l14_coverage",
+      "buy_name": "LAT_plan_d_r1_rank01_06_discovery_adjacent_l13_l14_coverage_B",
+      "sell_name": "LAT_plan_d_r1_rank01_06_discovery_adjacent_l13_l14_coverage_S",
+      "buy_sha256": "cb2fb006eef4e3daeff48246506b6165d280ef465dd960ca47f3301cd1af42ee",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "buy_sha_matches_seed": true,
+      "sell_sha_matches_seed": true,
+      "metrics": {
+        "decision": "flat",
+        "profit": 1059257.0,
+        "mdd": 18.49,
+        "trade_count": 448,
+        "daily_avg_trades": 2.1,
+        "score": 1.0177536372467657
+      }
+    }
+  ]
+}

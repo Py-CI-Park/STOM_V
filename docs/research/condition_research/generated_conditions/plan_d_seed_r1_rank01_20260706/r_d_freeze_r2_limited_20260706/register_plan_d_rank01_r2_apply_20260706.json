@@ -1,0 +1,19 @@
+{
+  "status": "inserted",
+  "schema_version": 1,
+  "dry_run": false,
+  "seeds": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank01_20260706\\r_d_freeze_r2_limited_20260706\\plan_d_rank01_r2_seeds_20260706.json",
+  "db": "ai_strategy_loop\\state\\loop_strategies.db",
+  "pairs_out": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank01_20260706\\r_d_freeze_r2_limited_20260706\\pairs_plan_d_rank01_r2_24_20260706.json",
+  "ledger_out": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank01_20260706\\r_d_freeze_r2_limited_20260706\\provenance_plan_d_rank01_r2_register_apply_20260706.jsonl",
+  "mapping_out": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank01_20260706\\r_d_freeze_r2_limited_20260706\\plan_d_rank01_r2_strategy_name_mapping_apply_20260706.jsonl",
+  "backup_path": "ai_strategy_loop\\state\\loop_strategies.db.bak.lattice_20260706T075715Z",
+  "planned_seed_count": 24,
+  "planned_insert_count": 48,
+  "inserted_seed_count": 24,
+  "inserted_row_count": 48,
+  "unsafe_legacy_name_count": 0,
+  "unsafe_target_name_count": 0,
+  "name_style": "filename_safe_v2",
+  "conflicts": []
+}
