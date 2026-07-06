@@ -453,7 +453,8 @@
         "codex:css-v7-repair-plan-c-plan-b-d-20260703-min-chunk04-12-export-p6-no-d-20260705",
         "codex:css-v7-repair-plan-c-plan-b-d-20260703-overnight-repair-analysis-bounded-preflight-no-d-20260705",
         "codex:css-v7-repair-plan-c-plan-b-d-20260703-repair-composite-coverage-preflight-no-d-20260706",
-        "codex:css-v7-repair-plan-c-plan-b-d-20260703-repair-composite-freeze-expanded-preflight-no-d-20260706"
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-repair-composite-freeze-expanded-preflight-no-d-20260706",
+        "codex:css-v7-repair-plan-c-plan-b-d-20260703-repair-composite-selected-oos-no-d-20260706"
       ],
       "status": "active",
       "started_at": "2026-07-03T23:30:01.3258147+09:00",
@@ -461,15 +462,15 @@
       "duration_ms": null,
       "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
       "objective": "Run priorities 1~7: CSS_V7 repair, Plan C validation, Plan B, Plan D",
-      "resumed_at": "2026-07-06T09:00:06+09:00",
-      "requested_range": "repair-composite-freeze-expanded-preflight-no-D",
-      "current_priority": "repair-composite-freeze-expanded-preflight-no-D-completed",
+      "resumed_at": "2026-07-06T10:41:56+09:00",
+      "requested_range": "repair-composite-selected-oos-no-D",
+      "current_priority": "repair-composite-selected-oos-no-D-completed",
       "completed_range": "P5-root-cause-repair + P5-profile-audit + P5-official-tick-preflight + P5-full-run-protocol-review + P5-official-tick-pilot12 + P5-official-tick-chunk01-12 + P5-official-tick-288-export + P5-official-min-preflight4 + P5-official-min-chunk01-12 + P5-official-min-288-export + P6-coverage-gaps-batch-plan-no-D",
       "completed_at": "2026-07-05T07:06:21+09:00",
-      "last_completed_priority": "repair-composite-freeze-expanded-preflight-no-D",
-      "last_completed_at": "2026-07-06T09:32:40+09:00",
-      "last_evidence": "docs/update_log/2026-07-06_repair_composite_freeze_expanded_preflight_no_d_handoff.md",
-      "next_priority": "repair-composite-selected-oos-no-D",
+      "last_completed_priority": "repair-composite-selected-oos-no-D",
+      "last_completed_at": "2026-07-06T10:51:50+09:00",
+      "last_evidence": "docs/update_log/2026-07-06_repair_composite_selected_oos_no_d_handoff.md",
+      "next_priority": "repair-composite-plan-d-seed-pool-intake",
       "p5_blocker_status": "completed_no_survivors_after_repair_preflight",
       "blocked_at": "2026-07-05T21:03:32+09:00",
       "blocked_priority": "P7-Plan-D",
@@ -562,16 +563,69 @@
         "handoff": "docs/update_log/2026-07-06_repair_composite_freeze_expanded_preflight_no_d_handoff.md",
         "result": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_freeze_expanded_20260706/repair_composite_expanded_preflight_result_20260706.json",
         "selected_preregistration_draft": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_freeze_expanded_20260706/repair_composite_selected_freeze_preregistration_draft_20260706.md"
+      },
+      "repair_composite_selected_oos_started_at": "2026-07-06T10:41:56+09:00",
+      "repair_composite_selected_oos_preregistration": {
+        "created_at": "2026-07-06T10:41:56+09:00",
+        "selected_count": 16,
+        "pairs": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/pairs_repair_composite_selected_16_oos_20260706.json",
+        "config": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/oos_config_min_selected16_20260706.json",
+        "freeze_recheck": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_freeze_recheck_20260706.json",
+        "preregistration": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_preregistration_20260706.md",
+        "oos_window": "2026-01-01~2026-02-27",
+        "profile": "min_warm64",
+        "caveat": "The selected 16 were chosen from a full-period min preflight that included 2026-01-01~2026-02-27, so this is a fixed OOS-style robustness replay, not a fully blind discovery OOS."
+      },
+      "repair_composite_selected_oos_result": {
+        "completed_at": "2026-07-06T10:51:50+09:00",
+        "run_id": "lat_repair_composite_selected16_oos_min_warm64_20260706",
+        "lane": "min",
+        "profile": "oos_2026_01_01_2026_02_27_warm64",
+        "honest_rows": 16,
+        "status_counts": {
+          "ok": 16
+        },
+        "gate_passed_count": 15,
+        "decision_counts": {
+          "survivor": 15,
+          "hold": 0,
+          "no_go": 1
+        },
+        "sell_profile_decision_counts": {
+          "sell_default_tp3_sl3_hold60": {
+            "survivor": 9,
+            "hold": 0,
+            "no_go": 0
+          },
+          "sell_loose_tp4_sl3_hold90": {
+            "survivor": 4,
+            "hold": 0,
+            "no_go": 1
+          },
+          "sell_tight_tp3_sl2p5_hold60": {
+            "survivor": 2,
+            "hold": 0,
+            "no_go": 0
+          }
+        },
+        "survivor_count": 15,
+        "plan_d_seed_pool_intake_allowed": true,
+        "plan_d_executed": false,
+        "portfolio_executed": false,
+        "caveat": "The selected 16 were chosen from a full-period min preflight that included 2026-01-01~2026-02-27, so this is a fixed OOS-style robustness replay, not a fully blind discovery OOS.",
+        "handoff": "docs/update_log/2026-07-06_repair_composite_selected_oos_no_d_handoff.md",
+        "result": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_result_20260706.json",
+        "survivors": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
       }
     }
   },
   "active_work": {
-    "current_priority": "repair-composite-freeze-expanded-preflight-no-D-completed",
-    "requested_range": "repair-composite-freeze-expanded-preflight-no-D",
-    "resumed_at": "2026-07-06T08:59:27+09:00",
-    "last_evidence": "docs/update_log/2026-07-06_repair_composite_freeze_expanded_preflight_no_d_handoff.md",
-    "next_priority": "repair-composite-selected-oos-no-D",
-    "blocked_priority": "P7-Plan-D",
-    "blocker": "Plan D/P7 remains blocked until selected composite candidates produce OOS survivors and a seed pool exists."
+    "current_priority": "repair-composite-selected-oos-no-D-completed",
+    "requested_range": "repair-composite-selected-oos-no-D",
+    "completed_at": "2026-07-06T10:51:50+09:00",
+    "last_evidence": "docs/update_log/2026-07-06_repair_composite_selected_oos_no_d_handoff.md",
+    "next_priority": "repair-composite-plan-d-seed-pool-intake",
+    "blocked_priority": null,
+    "blocker": null
   }
 }
