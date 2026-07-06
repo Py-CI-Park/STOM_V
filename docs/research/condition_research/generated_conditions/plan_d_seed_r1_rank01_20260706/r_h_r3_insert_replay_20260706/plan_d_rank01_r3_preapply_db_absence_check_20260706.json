@@ -1,0 +1,9 @@
+{
+  "scope": "overnight-plan-d-rank01-r3-to-rank02-readiness-bounded-no-export",
+  "created_at": "2026-07-06T00:00:00+09:00",
+  "candidate_count": 8,
+  "buy_matches_before_apply": 0,
+  "sell_matches_before_apply": 0,
+  "passed": true,
+  "lane_field_caveat": "pair lane values are inherited as plan from cell_id; replay uses explicit min config and buy/sell pairs."
+}

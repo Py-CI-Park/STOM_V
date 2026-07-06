@@ -1,0 +1,8 @@
+[
+  {
+    "label": "plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90",
+    "buy": "LAT_plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90_B",
+    "sell": "LAT_plan_d_r1_rank01_r3_05_l13_l14_rate85_hold90_S",
+    "lane": "min"
+  }
+]
