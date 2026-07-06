@@ -1,0 +1,38 @@
+{
+  "schema": "plan_d_rank01_rc_readiness_decision_v1",
+  "created_at": "2026-07-06T13:39:00+09:00",
+  "scope": "plan-d-seed-r1-rank01-no-portfolio-export",
+  "seed_id": "plan_d_rcs_oos_20260706_rank01",
+  "condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+  "run_id_template": "seedref_plan_d_rcs_oos_20260706_rank01_r1_20260706",
+  "candidate_slots_override": 8,
+  "candidate_lane_quota": {
+    "repair": 5,
+    "discovery": 3
+  },
+  "research_lane_only": true,
+  "required_label": "hypothesis_seed",
+  "db_policy": "INSERT-only; dry-run first; no UPDATE/DELETE",
+  "generation_executed": false,
+  "evaluation_executed": false,
+  "oos_executed": false,
+  "portfolio_executed": false,
+  "promotion_export_live_final_touched": false,
+  "readiness_inputs": {
+    "sha_recheck": true,
+    "passport_recheck": true,
+    "positive_control": {
+      "all_passed": true,
+      "passed_count": 20,
+      "total": 20,
+      "verdict": "gate_healthy"
+    },
+    "ablation_static_ready": true,
+    "axis_readiness": "ready_with_empty_priors"
+  },
+  "decision": "open_r_c_generation_dry_run_next_scope",
+  "next_after_positive_control": "open_r_c_generation_dry_run_only_if_gate_healthy",
+  "updated_at": "2026-07-06T13:40:04+09:00",
+  "blocker": null,
+  "next_scope_only": "plan-d-seed-r1-rank01-generate8-dryrun-no-portfolio-export"
+}

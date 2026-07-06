@@ -1,0 +1,25 @@
+{
+  "root": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank01_20260706",
+  "research_runs": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706",
+  "summaries_checked": 0,
+  "counts": {
+    "error": 0,
+    "warning": 0,
+    "advisory": 2
+  },
+  "issues": [
+    {
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_composite_selected_oos_20260706\\repair_composite_selected_oos_preregistration_20260706.md",
+      "check": "research_run_unrecognized",
+      "severity": "advisory",
+      "detail": "file does not follow *_plan/_management/_result.md convention"
+    },
+    {
+      "path": "docs\\research\\condition_research\\research_runs\\seed_lattice_20260702\\repair_composite_selected_oos_20260706\\repair_composite_selected_oos_summary_20260706.md",
+      "check": "research_run_unrecognized",
+      "severity": "advisory",
+      "detail": "file does not follow *_plan/_management/_result.md convention"
+    }
+  ],
+  "exit_code": 0
+}
