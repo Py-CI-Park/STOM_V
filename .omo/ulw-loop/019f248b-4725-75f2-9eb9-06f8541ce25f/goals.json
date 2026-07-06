@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-07-06T14:05:10.590Z",
-  "updatedAt": "2026-07-06T15:56:54.966Z",
+  "updatedAt": "2026-07-06T15:58:36.384Z",
   "briefPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/brief.md",
   "goalsPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/goals.json",
   "ledgerPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/ledger.jsonl",
@@ -231,7 +231,7 @@
       "id": "G006-goal-5-deadline-closeout-and-whole-p",
       "title": "Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00...",
       "objective": "Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00 KST, or earlier if all reachable goals complete, write final handoff with completed pages, remaining pages, objective/benefit, blockers, next command, validation results, and commit hash list. Success requires handoff, ulw-loop evidence records or equivalent ledger, clean scoped staging, and Korean commit if there are new artifacts.",
-      "status": "in_progress",
+      "status": "complete",
       "successCriteria": [
         {
           "id": "C001",
@@ -259,16 +259,18 @@
           "userModel": "regression",
           "expectedEvidence": "verification receipt and commit hash for final closeout scope",
           "essential": false,
-          "capturedEvidence": null,
-          "status": "pending"
+          "capturedEvidence": "closeout verification and scoped Korean commit completed: closeout JSON parse ok; verify_nonrelease_sync.py exit 0; scoped git diff --check exit 0; git diff --cached --check exit 0; commit 1c61a145 | cleanup: no selected OOS processes running",
+          "status": "pass",
+          "capturedAt": "2026-07-06T15:57:48.689Z"
         }
       ],
       "attempt": 1,
       "createdAt": "2026-07-06T14:05:10.590Z",
-      "updatedAt": "2026-07-06T15:56:54.966Z",
-      "startedAt": "2026-07-06T15:54:42.759Z"
+      "updatedAt": "2026-07-06T15:58:36.384Z",
+      "startedAt": "2026-07-06T15:54:42.759Z",
+      "completedAt": "2026-07-06T15:58:36.384Z",
+      "evidence": "G006 closeout complete: handoff docs/update_log/2026-07-07_plan_d_overnight_ulw_closeout.md, verification receipt, process check empty, commits 942e2014 and 1c61a145 recorded"
     }
   ],
-  "codexObjective": "2026-07-07 06:00 KST까지 Plan D 남은 연구 페이지를 가능한 만큼 순차 실행하고, 완료하지 못하면 진행분을 handoff/ledger/커밋으로 정리해 보고한다.",
-  "activeGoalId": "G006-goal-5-deadline-closeout-and-whole-p"
+  "codexObjective": "2026-07-07 06:00 KST까지 Plan D 남은 연구 페이지를 가능한 만큼 순차 실행하고, 완료하지 못하면 진행분을 handoff/ledger/커밋으로 정리해 보고한다."
 }
