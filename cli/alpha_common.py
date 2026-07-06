@@ -24,9 +24,11 @@ import numpy as np
 from alpha_lab import registry
 
 __all__ = [
+    "ANNEX_V3_NAME",
     "DEFAULT_DB_DIR",
     "DEFAULT_RUN_DIR",
     "DEFAULT_RUN_DIR_V2",
+    "DEFAULT_RUN_DIR_V3",
     "EXIT_INPUT",
     "EXIT_OK",
     "EXIT_SEAL",
@@ -59,9 +61,16 @@ DEFAULT_RUN_DIR_V2 = (
     REPO_ROOT / "docs" / "research" / "condition_research" / "research_runs"
     / "alpha_lab_v2_20260706"
 )
+DEFAULT_RUN_DIR_V3 = (
+    REPO_ROOT / "docs" / "research" / "condition_research" / "research_runs"
+    / "alpha_lab_v3_20260706"
+)
 DEFAULT_DB_DIR = REPO_ROOT / "_database"
 PREREG_NAME = "preregistration_v1.json"
 PREREG_V2_NAME = "preregistration_v2.json"
+# v3 파생 패리티 annex — load_verified_prereg(run_dir, ANNEX_V3_NAME)로
+# .sha256 사이드카 봉인 검증 후 사용한다(additive).
+ANNEX_V3_NAME = "v3_feature_annex.json"
 LEDGER_NAME = "n_trials_ledger.jsonl"
 
 EXIT_OK = 0

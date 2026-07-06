@@ -19,6 +19,13 @@
 
 npz 샤드 스키마: v1 META(date/code/t0) + features float32(25) +
 L3_net float32 + L3_pos int8. tick DB 는 read-only URI 전용.
+
+캐시 v3 증축(additive — v3 P1):
+  build --derived 는 v3_feature_annex.json(봉인 .sha256 사이드카 검증,
+  --annex-dir 기본 alpha_lab_v3_20260706)의 '패리티 통과' 파생 피처만
+  엔진 미러(compute_derived_tick, 공식 창 90000~93000·avg=30·단일일)로
+  재계산해 features 뒤에 증축 저장한다(feature_names 메타 포함).
+  --derived 미지정 실행은 기존 v2 산출과 동일하다.
 """
 from __future__ import annotations
 
@@ -30,9 +37,16 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 
 import numpy as np
+import pandas as pd
 
 from alpha_lab.dataset import reader
 from alpha_lab.dataset.cache import to_arrays, write_shard
+from alpha_lab.dataset.derived import (
+    AVG_WINDOW_FROZEN,
+    DERIVED_TICK_FEATURES,
+    SOURCE_COLUMNS,
+    compute_derived_tick,
+)
 from alpha_lab.dataset.labels_v2 import (
     EQUIVALENCE_THRESHOLD,
     SellExprMismatch,
@@ -42,11 +56,14 @@ from alpha_lab.dataset.labels_v2 import (
     run_equivalence_gate,
     verify_sell_expr,
 )
+from alpha_lab.dataset.parity import OFFICIAL_END_TIME, OFFICIAL_START_TIME
 from alpha_lab.dataset.schema import ALL_FEATURES, META_COLUMNS
 from cli.alpha_common import (
+    ANNEX_V3_NAME,
     DEFAULT_DB_DIR,
     DEFAULT_RUN_DIR,
     DEFAULT_RUN_DIR_V2,
+    DEFAULT_RUN_DIR_V3,
     EXIT_INPUT,
     EXIT_OK,
     EXIT_SEAL,
@@ -108,6 +125,14 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument(
         "--receipt-name", type=_receipt_filename, default=RECEIPT_NAME,
         help=f"run-dir 안 영수증 파일명 (기본 {RECEIPT_NAME} — 청크 분할 실행용)",
+    )
+    build.add_argument(
+        "--derived", action="store_true",
+        help="캐시 v3 — annex 패리티 통과 파생 피처를 features에 증축 저장",
+    )
+    build.add_argument(
+        "--annex-dir", default=str(DEFAULT_RUN_DIR_V3),
+        help=f"{ANNEX_V3_NAME}(+.sha256) 디렉토리 (기본 alpha_lab_v3_20260706)",
     )
 
     gate = sub.add_parser(
@@ -194,15 +219,76 @@ def _select_engine(args: argparse.Namespace, run_dir: Path) -> Optional[str]:
     return engine
 
 
+def _annex_passed_derived(annex_payload: Dict[str, Any]) -> List[str]:
+    """봉인 annex의 passed_features → 엔진 18항 순서의 파생 피처명 목록.
+
+    순서는 annex 기재 순이 아니라 DERIVED_TICK_FEATURES(엔진 add_rolling_data
+    추가 순서 = list_stock_tick[54:72]) 순으로 고정한다(결정성). 18항 밖의
+    이름은 무시하되 경고를 남긴다.
+    """
+    passed = {
+        str(item.get("name"))
+        for item in annex_payload.get("passed_features", [])
+    }
+    unknown = sorted(passed - set(DERIVED_TICK_FEATURES))
+    if unknown:
+        logger.warning("annex passed_features에 파생 18항 밖 이름 무시: %s", unknown)
+    return [name for name in DERIVED_TICK_FEATURES if name in passed]
+
+
+def _derived_by_index(
+    rows: Dict[int, dict],
+    derived_names: List[str],
+    *,
+    start_time: int = OFFICIAL_START_TIME,
+    end_time: int = OFFICIAL_END_TIME,
+) -> Dict[int, Dict[str, float]]:
+    """종목 하루 rows → {index int: {파생명: 값}} (엔진 입력 미러 재계산).
+
+    미러 규약(annex method와 동일): 단일일·공식 창(HHMMSS 90000~93000)·
+    rowid(삽입) 순 시계열 위에서 compute_derived_tick(avg=30, NaN→0.0).
+    NULL 저장값은 pd.read_sql과 같은 의미론(NaN)으로 들어가 워밍업과 함께
+    엔진의 nan_to_num 단계에서 0.0이 된다. 일 경계 롤링 없음(단일일).
+    """
+    window_items = [
+        (idx, row) for idx, row in rows.items()
+        if start_time <= idx % 1_000_000 <= end_time
+    ]
+    if not window_items:
+        return {}
+    frame = pd.DataFrame(
+        {
+            name: pd.to_numeric(
+                pd.Series(
+                    [row.get(name) for _, row in window_items], dtype="object"
+                ),
+                errors="coerce",
+            )
+            for name in SOURCE_COLUMNS
+        }
+    )
+    derived = compute_derived_tick(frame, AVG_WINDOW_FROZEN)
+    columns = {
+        name: derived[name].to_numpy(dtype="float64") for name in derived_names
+    }
+    return {
+        idx: {name: float(columns[name][pos]) for name in derived_names}
+        for pos, (idx, _) in enumerate(window_items)
+    }
+
+
 def _stream_v2_samples(
     conn, *, date: str, stride: int, sell_text: str, expected_sha: str,
     engine: str, day_stats: Dict[str, int],
+    derived_names: Optional[List[str]] = None,
 ) -> Iterator[dict]:
     """v1 채택 규칙 재현(reader 내부 재사용) + L3 라벨 부착 표본 스트림.
 
     reader._code_samples/_select_codes 는 사설 심볼이지만 의도적 재사용이다 —
     v2 표본 집합이 v1 과 동일해야 한다는 봉인(sample_grid.same_as_v1)을
     구현 공유로 보증한다(재구현 드리프트 금지).
+    derived_names 지정 시(캐시 v3, additive) 표본마다 t0 행의 파생값을
+    features 뒤에 붙인다 — 파생 조회 불가 표본은 정직 제외(derived_missing).
     """
     universe = reader.moneytop_universe(conn)
     day_int = int(date)
@@ -214,6 +300,9 @@ def _stream_v2_samples(
         ))
         if not samples:
             continue
+        derived_map: Dict[int, Dict[str, float]] = (
+            _derived_by_index(rows, derived_names) if derived_names else {}
+        )
         labels, stats = build_l3_labels(
             rows, [s["t0"] for s in samples], sell_text,
             engine=engine, expected_sha=expected_sha,
@@ -230,6 +319,15 @@ def _stream_v2_samples(
             out = {name: sample[name] for name in META_COLUMNS}
             for name in ALL_FEATURES:
                 out[name] = sample[name]
+            if derived_names:
+                extra = derived_map.get(int(sample["t0"]))
+                if extra is None:
+                    day_stats["derived_missing"] = (
+                        day_stats.get("derived_missing", 0) + 1
+                    )
+                    continue
+                for name in derived_names:
+                    out[name] = extra[name]
             out["L3_net"] = float(label["L3_net"])
             out["L3_pos"] = int(label["L3_pos"])
             yield out
@@ -255,6 +353,7 @@ def _label_summary(arrays: Dict[str, np.ndarray]) -> Dict[str, Any]:
 def _build_one_day(
     db_path: Path, date: str, cache_dir: Path, *, stride: int,
     sell_text: str, expected_sha: str, engine: str,
+    derived_names: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     day_stats: Dict[str, int] = {}
     conn = reader.connect_ro(db_path)
@@ -262,10 +361,13 @@ def _build_one_day(
         samples = list(_stream_v2_samples(
             conn, date=date, stride=stride, sell_text=sell_text,
             expected_sha=expected_sha, engine=engine, day_stats=day_stats,
+            derived_names=derived_names,
         ))
     finally:
         conn.close()
-    arrays = to_arrays(samples, label_dtypes=_LABEL_DTYPES)
+    arrays = to_arrays(
+        samples, label_dtypes=_LABEL_DTYPES, extra_features=derived_names
+    )
     shard_path = write_shard(cache_dir, date, arrays)
     logger.info("dataset v2 %s: 표본 %d → %s", date, len(samples), shard_path.name)
     return {
@@ -307,6 +409,24 @@ def _run_build(args: argparse.Namespace, now: datetime) -> int:
     engine = _select_engine(args, run_dir)
     if engine is None:
         return EXIT_SEAL  # 게이트 미통과 벡터 강제 — 규율 위반 차단.
+    derived_names: Optional[List[str]] = None
+    annex_sha: Optional[str] = None
+    if getattr(args, "derived", False):
+        annex = verified_prereg_or_none(
+            Path(args.annex_dir), logger, ANNEX_V3_NAME
+        )
+        if annex is None:
+            return EXIT_SEAL  # annex 봉인 불일치/부재 — 파생 증축 차단.
+        annex_payload, annex_sha = annex
+        derived_names = _annex_passed_derived(annex_payload)
+        if not derived_names:
+            logger.error(
+                "annex 패리티 통과 파생 0종 — --derived 불가(exit %d)", EXIT_INPUT
+            )
+            return EXIT_INPUT
+        logger.info(
+            "캐시 v3 파생 증축 %d종 (annex %s)", len(derived_names), annex_sha[:8]
+        )
     db_dir = Path(args.db_dir)
     cache_dir = Path(args.cache_dir) if args.cache_dir else run_dir / "cache"
     started = time.monotonic()
@@ -321,6 +441,7 @@ def _run_build(args: argparse.Namespace, now: datetime) -> int:
         per_day[date] = _build_one_day(
             db_path, date, cache_dir, stride=stride, sell_text=sell_text,
             expected_sha=expected_sha, engine=engine,
+            derived_names=derived_names,
         )
     receipt = {
         "generated_at": now.isoformat(),
@@ -335,6 +456,14 @@ def _run_build(args: argparse.Namespace, now: datetime) -> int:
         "stride_sec": stride,
         "admission_horizons_sec": list(ADMISSION_HORIZONS),
         "admission": "same_as_v1",
+        "derived": bool(derived_names),
+        "derived_features": derived_names or [],
+        "annex_sha256": annex_sha,
+        "derived_window_hhmmss": (
+            [OFFICIAL_START_TIME, OFFICIAL_END_TIME] if derived_names else None
+        ),
+        "derived_avg": AVG_WINDOW_FROZEN if derived_names else None,
+        "n_feature_columns": len(ALL_FEATURES) + len(derived_names or []),
         "dates_requested": dates,
         "days_built": list(per_day),
         "days_skipped_missing_db": skipped,
