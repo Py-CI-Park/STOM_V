@@ -1,0 +1,117 @@
+{
+  "schema": "plan_d_rank01_r3_axis_readiness_v1",
+  "created_at": "2026-07-06T19:09:34+09:00",
+  "scope": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export",
+  "active_parent": "plan_d_r1_rank01_r2_21_l14_rate_floor85_default_tp3_sl3_hold90",
+  "source_axis_priors": [
+    {
+      "schema": "plan_d_axis_decision_v1",
+      "created_at": "2026-07-06T17:14:36+09:00",
+      "scope": "plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export",
+      "axis": "sell_hold90",
+      "decision": "promote_for_selected_oos_preregistration",
+      "basis": "hold90 profile produced the best profit candidate and multiple improved rows while reducing MDD versus slot04.",
+      "supporting_labels": [
+        "plan_d_r1_rank01_r2_03_ctrl_l14_amt12000_default_tp3_sl3_hold90",
+        "plan_d_r1_rank01_r2_06_l14_amt11000_default_tp3_sl3_hold90",
+        "plan_d_r1_rank01_r2_09_l14_amt12500_default_tp3_sl3_hold90",
+        "plan_d_r1_rank01_r2_12_l14_amt13000_default_tp3_sl3_hold90",
+        "plan_d_r1_rank01_r2_15_l14_amt14000_default_tp3_sl3_hold90",
+        "plan_d_r1_rank01_r2_21_l14_rate_floor85_default_tp3_sl3_hold90"
+      ]
+    },
+    {
+      "schema": "plan_d_axis_decision_v1",
+      "created_at": "2026-07-06T17:14:36+09:00",
+      "scope": "plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export",
+      "axis": "buy_l14_amount_13000_14000",
+      "decision": "keep_as_primary_r2_axis",
+      "basis": "amount floors at 13000 and 14000 improved profit while keeping MDD <= frozen slot04.",
+      "supporting_labels": [
+        "plan_d_r1_rank01_r2_10_l14_amt13000_default_tp3_sl3_hold60",
+        "plan_d_r1_rank01_r2_12_l14_amt13000_default_tp3_sl3_hold90",
+        "plan_d_r1_rank01_r2_13_l14_amt14000_default_tp3_sl3_hold60",
+        "plan_d_r1_rank01_r2_15_l14_amt14000_default_tp3_sl3_hold90"
+      ]
+    },
+    {
+      "schema": "plan_d_axis_decision_v1",
+      "created_at": "2026-07-06T17:14:36+09:00",
+      "scope": "plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export",
+      "axis": "protective_sell_tp28_sl25",
+      "decision": "do_not_prioritize",
+      "basis": "protective sell reduced MDD but consistently reduced profit versus frozen slot04 and did not create improved rows.",
+      "supporting_labels": [
+        "plan_d_r1_rank01_r2_02_ctrl_l14_amt12000_protect_tp28_sl25_hold60",
+        "plan_d_r1_rank01_r2_05_l14_amt11000_protect_tp28_sl25_hold60",
+        "plan_d_r1_rank01_r2_08_l14_amt12500_protect_tp28_sl25_hold60",
+        "plan_d_r1_rank01_r2_11_l14_amt13000_protect_tp28_sl25_hold60",
+        "plan_d_r1_rank01_r2_14_l14_amt14000_protect_tp28_sl25_hold60",
+        "plan_d_r1_rank01_r2_17_l14_rate_floor75_protect_tp28_sl25_hold60",
+        "plan_d_r1_rank01_r2_20_l14_rate_floor85_protect_tp28_sl25_hold60",
+        "plan_d_r1_rank01_r2_23_l14_end1445_protect_tp28_sl25_hold60"
+      ]
+    },
+    {
+      "schema": "plan_d_axis_decision_v1",
+      "created_at": "2026-07-06T17:14:36+09:00",
+      "scope": "plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export",
+      "axis": "slot06_coverage_watch",
+      "decision": "watch_only",
+      "basis": "slot06 coverage profile remains useful for trade-count diagnostics but is not the active R2 parent.",
+      "supporting_labels": [
+        "plan_d_r1_rank01_06_discovery_adjacent_l13_l14_coverage"
+      ]
+    }
+  ],
+  "ready": true,
+  "readiness_status": "ready_for_r3_generate8_dryrun",
+  "primary_objective": "raise OOS-style trade support from 17 toward >=20 while preserving positive profit and MDD near the active parent",
+  "promote_axes": [
+    {
+      "axis": "sell_default_tp3_sl3_hold90",
+      "reason": "R2 hold90 made all selected OOS survivors and best active parent."
+    },
+    {
+      "axis": "buy_l14_rate_floor85",
+      "reason": "active parent had best selected-OOS profit/MDD balance."
+    }
+  ],
+  "watch_axes": [
+    {
+      "axis": "buy_l14_amt13000_14000",
+      "reason": "two watch survivors with 19 trades; use as comparator or small blend."
+    },
+    {
+      "axis": "l14_end1445_coverage",
+      "reason": "may increase full-period trade count but must be bounded due weaker prior profit/MDD."
+    },
+    {
+      "axis": "slot06_coverage_profile",
+      "reason": "coverage signal remains diagnostic only."
+    }
+  ],
+  "deprioritize_axes": [
+    {
+      "axis": "protective_sell_tp28_sl25",
+      "reason": "R2 prior reduced MDD but consistently reduced profit and did not produce improved rows."
+    },
+    {
+      "axis": "rate_floor75",
+      "reason": "R2 prior raised trades but weakened profit/MDD versus active parent."
+    }
+  ],
+  "recommended_next_scope": "plan-d-rank01-r3-generate8-dryrun-no-portfolio-export",
+  "allowed_next_actions": [
+    "generate R3 8-slot candidate pack",
+    "static gate",
+    "DB registration dry-run only"
+  ],
+  "blocked_actions": [
+    "official replay",
+    "OOS",
+    "portfolio",
+    "export/live/final promotion",
+    "DB INSERT apply before next explicit scope"
+  ]
+}

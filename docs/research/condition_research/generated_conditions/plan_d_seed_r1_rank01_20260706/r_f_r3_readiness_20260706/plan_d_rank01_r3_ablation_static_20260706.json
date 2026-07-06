@@ -1,0 +1,210 @@
+{
+  "schema": "plan_d_rank01_r3_ablation_static_v1",
+  "created_at": "2026-07-06T19:09:34+09:00",
+  "scope": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export",
+  "active_parent": "plan_d_r1_rank01_r2_21_l14_rate_floor85_default_tp3_sl3_hold90",
+  "method": "static_clause_decomposition_only_no_backtest",
+  "buy_clause_count": 31,
+  "sell_clause_count": 5,
+  "buy_clauses": [
+    {
+      "id": "buy_clause_01",
+      "text": "if not (관심종목 == 1):\npd_r1_c04_part1 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_02",
+      "text": "elif 90000 <= 시분초 < 100000:",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_03",
+      "text": "if not (1500.0 <= 시가총액 < 3000.0):\npd_r1_c04_part1 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_04",
+      "text": "elif not (0.0 <= 등락율 < 3.0):\npd_r1_c04_part1 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_05",
+      "text": "elif not (체결강도 >= 109.0):\npd_r1_c04_part1 = False\nelse:\npd_r1_c04_part1 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_06",
+      "text": "if pd_r1_c04_part1:\npd_r1_c04_signal = True\n# component 2: S10_PMAX\npd_r1_c04_part2 = True",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_07",
+      "text": "if not (관심종목 == 1):\npd_r1_c04_part2 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_08",
+      "text": "elif 100000 <= 시분초 < 110000:",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_09",
+      "text": "if not (1500.0 <= 시가총액 < 3000.0):\npd_r1_c04_part2 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_10",
+      "text": "elif not (0.0 <= 등락율 < 3.0):\npd_r1_c04_part2 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_11",
+      "text": "elif not (체결강도 >= 107.0):\npd_r1_c04_part2 = False\nelse:\npd_r1_c04_part2 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_12",
+      "text": "if pd_r1_c04_part2:\npd_r1_c04_signal = True\n# component 3: M09_POS\npd_r1_c04_part3 = True",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_13",
+      "text": "if not (관심종목 == 1):\npd_r1_c04_part3 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_14",
+      "text": "elif 90000 <= 시분초 < 100000:",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_15",
+      "text": "if not (시가총액 < 1500.0):\npd_r1_c04_part3 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_16",
+      "text": "elif not (0.0 <= 등락율 < 3.0):\npd_r1_c04_part3 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_17",
+      "text": "elif not (현재가 >= 고가 * 0.994):\npd_r1_c04_part3 = False\nelse:\npd_r1_c04_part3 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_18",
+      "text": "if pd_r1_c04_part3:\npd_r1_c04_signal = True\n# component 4: M10_POS\npd_r1_c04_part4 = True",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_19",
+      "text": "if not (관심종목 == 1):\npd_r1_c04_part4 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_20",
+      "text": "elif 100000 <= 시분초 < 110000:",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_21",
+      "text": "if not (1500.0 <= 시가총액 < 3000.0):\npd_r1_c04_part4 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_22",
+      "text": "elif not (0.0 <= 등락율 < 3.0):\npd_r1_c04_part4 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_23",
+      "text": "elif not (현재가 >= 고가 * 0.994):\npd_r1_c04_part4 = False\nelse:\npd_r1_c04_part4 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_24",
+      "text": "if pd_r1_c04_part4:\npd_r1_c04_signal = True\n# component 5: L14_NEAR\npd_r1_c04_part5 = True",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_25",
+      "text": "if not (관심종목 == 1):\npd_r1_c04_part5 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_26",
+      "text": "elif 140000 <= 시분초 < 143000:",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_27",
+      "text": "if not (시가총액 >= 12000.0):\npd_r1_c04_part5 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_28",
+      "text": "elif not (8.5 <= 등락율 < 29.0):\npd_r1_c04_part5 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_29",
+      "text": "elif not (현재가 >= 고가 * 1.0):\npd_r1_c04_part5 = False\nelse:\npd_r1_c04_part5 = False",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_30",
+      "text": "if pd_r1_c04_part5:\npd_r1_c04_signal = True",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "buy_clause_31",
+      "text": "if pd_r1_c04_signal:\nself.Buy()",
+      "evidence_type": "static_only_no_backtest"
+    }
+  ],
+  "sell_clauses": [
+    {
+      "id": "sell_clause_01",
+      "text": "if 수익률 >= 3.0:\n매도 = True",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "sell_clause_02",
+      "text": "elif 수익률 <= -3.0:\n매도 = True",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "sell_clause_03",
+      "text": "elif 보유시간 >= 90:\n매도 = True",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "sell_clause_04",
+      "text": "elif 시분초 >= 145900:\n매도 = True",
+      "evidence_type": "static_only_no_backtest"
+    },
+    {
+      "id": "sell_clause_05",
+      "text": "if 매도:\nself.Sell()",
+      "evidence_type": "static_only_no_backtest"
+    }
+  ],
+  "candidate_hypotheses": [
+    {
+      "axis": "coverage_relaxation",
+      "reason": "active parent survived OOS-style replay with low MDD but only 17 trades; R3 should test narrowly relaxed coverage without losing default hold90 risk profile.",
+      "backtest_executed": false
+    },
+    {
+      "axis": "amount_axis_crosscheck",
+      "reason": "amount 13000/14000 watch survivors had 19 trades and similar OOS profit; use as comparator, not replacement yet.",
+      "backtest_executed": false
+    },
+    {
+      "axis": "end1445_coverage_watch",
+      "reason": "R2 end1445 increased full-period trade count but weakened profit/MDD; only use as bounded coverage diagnostic.",
+      "backtest_executed": false
+    }
+  ]
+}
