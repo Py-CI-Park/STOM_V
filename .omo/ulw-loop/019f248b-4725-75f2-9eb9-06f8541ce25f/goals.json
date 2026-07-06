@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-07-06T14:05:10.590Z",
-  "updatedAt": "2026-07-06T14:52:58.662Z",
+  "updatedAt": "2026-07-06T14:59:06.934Z",
   "briefPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/brief.md",
   "goalsPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/goals.json",
   "ledgerPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/ledger.jsonl",
@@ -99,7 +99,7 @@
       "id": "G003-goal-2-rank02-r1-insert-only-and-off",
       "title": "Goal 2: rank02 R1 INSERT-only and official min warm64 limited replay...",
       "objective": "Goal 2: rank02 R1 INSERT-only and official min warm64 limited replay if Goal 1 passes. Insert only the dry-run-approved candidates, run preapply absence and postapply DB checks, then run official min full-period warm64 limited replay for at most the approved small set. Success requires replay result, classification, handoff, ledger, validation, and Korean commit.",
-      "status": "in_progress",
+      "status": "complete",
       "successCriteria": [
         {
           "id": "C001",
@@ -127,14 +127,17 @@
           "userModel": "regression",
           "expectedEvidence": "verification receipt and commit hash for rank02 R1 INSERT-only limited replay scope",
           "essential": false,
-          "capturedEvidence": null,
-          "status": "pending"
+          "capturedEvidence": "verification and scoped Korean commit completed: JSON/JSONL parse ok; verify_nonrelease_sync.py exit 0; git diff --check exit 0; git diff --cached --check exit 0; commit 012bdb71; staged scope excluded dashboard/.gjc/DB/backtest CSV | cleanup: no qa runtime resources spawned",
+          "status": "pass",
+          "capturedAt": "2026-07-06T14:55:43.229Z"
         }
       ],
       "attempt": 1,
       "createdAt": "2026-07-06T14:05:10.590Z",
-      "updatedAt": "2026-07-06T14:52:58.662Z",
-      "startedAt": "2026-07-06T14:34:29.353Z"
+      "updatedAt": "2026-07-06T14:59:06.934Z",
+      "startedAt": "2026-07-06T14:34:29.353Z",
+      "completedAt": "2026-07-06T14:59:06.934Z",
+      "evidence": "G003 completed: rank02 R1 INSERT-only apply inserted 16 rows, official min full-period warm64 limited replay produced 8/8 honest rows, decision_counts improved=2 flat=6, commit 012bdb71 recorded; OOS/portfolio/export not executed | cleanup: replay process exited code 0"
     },
     {
       "id": "G004-goal-3-rank02-selected-oos-if-goal-2",
@@ -251,6 +254,5 @@
       "updatedAt": "2026-07-06T14:05:10.590Z"
     }
   ],
-  "codexObjective": "2026-07-07 06:00 KST까지 Plan D 남은 연구 페이지를 가능한 만큼 순차 실행하고, 완료하지 못하면 진행분을 handoff/ledger/커밋으로 정리해 보고한다.",
-  "activeGoalId": "G003-goal-2-rank02-r1-insert-only-and-off"
+  "codexObjective": "2026-07-07 06:00 KST까지 Plan D 남은 연구 페이지를 가능한 만큼 순차 실행하고, 완료하지 못하면 진행분을 handoff/ledger/커밋으로 정리해 보고한다."
 }
