@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-07-06T14:05:10.590Z",
-  "updatedAt": "2026-07-06T14:59:06.934Z",
+  "updatedAt": "2026-07-06T15:52:11.208Z",
   "briefPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/brief.md",
   "goalsPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/goals.json",
   "ledgerPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/ledger.jsonl",
@@ -143,39 +143,42 @@
       "id": "G004-goal-3-rank02-selected-oos-if-goal-2",
       "title": "Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. F...",
       "objective": "Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. Freeze/preregister only selected candidates, run only selected OOS, classify survivor/hold/no_go, and never run portfolio/export. Success requires preregistration, OOS result, survivor/no_go ledgers, verification receipt, handoff, and Korean commit. If there are no improved candidates, record blocked-by-no-candidate and proceed to Goal 5.",
-      "status": "pending",
+      "status": "in_progress",
       "successCriteria": [
         {
           "id": "C001",
-          "scenario": "happy path for: Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. Freeze/pr...",
+          "scenario": "CLI/data-channel: re-read G003 handoff/result, freeze/preregister exactly the two improved candidates, create selected pairs and OOS config, then run selected OOS-style min warm64 replay for exactly those two pairs",
           "userModel": "happy",
-          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 4.",
+          "expectedEvidence": "plan_d_rank02_r1_selected_oos_preregistration_20260707.md and plan_d_rank02_r1_selected_oos_result_20260707.json showing honest_rows=2 status_counts/classification",
           "essential": true,
-          "capturedEvidence": null,
-          "status": "pending"
+          "capturedEvidence": "rank02 selected OOS preregistration completed, but both selected OOS attempts produced 0 generation rows and were stopped as warm64 prepare/engine-response wait blockers; result docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_blocked_result_20260707.json | cleanup: parent/child processes stopped; PID ledgers written",
+          "status": "blocked",
+          "capturedAt": "2026-07-06T15:52:02.817Z"
         },
         {
           "id": "C002",
-          "scenario": "edge case (boundary/empty/malformed)",
+          "scenario": "CLI/data-channel adversarial edge: verify selected set equals the two G003 improved labels, preregistration exists before OOS, no non-selected candidate OOS, no DB UPDATE/DELETE, no portfolio/export",
           "userModel": "edge",
-          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. Freeze/pr....",
+          "expectedEvidence": "freeze_recheck JSON, preregistration, OOS result constraints table, and handoff guardrails",
           "essential": true,
-          "capturedEvidence": null,
-          "status": "pending"
+          "capturedEvidence": "edge guard preserved: selected set exactly two G003 improved labels; preregistration existed before OOS attempts; non-selected candidates not run; DB UPDATE/DELETE not used; portfolio/export/live/final not run | cleanup: stale selected OOS processes stopped by exact PID list",
+          "status": "pass",
+          "capturedAt": "2026-07-06T15:52:11.208Z"
         },
         {
           "id": "C003",
-          "scenario": "regression: adjacent surface still works",
+          "scenario": "Regression channel: parse all new JSON/JSONL artifacts, run verify_nonrelease_sync.py, run git diff --check and git diff --cached --check, and commit only scoped files with Korean message",
           "userModel": "regression",
-          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. Freeze/pr....",
+          "expectedEvidence": "verification receipt plus commit hash for rank02 selected OOS scope",
           "essential": false,
           "capturedEvidence": null,
           "status": "pending"
         }
       ],
-      "attempt": 0,
+      "attempt": 1,
       "createdAt": "2026-07-06T14:05:10.590Z",
-      "updatedAt": "2026-07-06T14:05:10.590Z"
+      "updatedAt": "2026-07-06T15:52:11.208Z",
+      "startedAt": "2026-07-06T15:04:02.761Z"
     },
     {
       "id": "G005-goal-4-append-survivor-records-and-p",
@@ -254,5 +257,6 @@
       "updatedAt": "2026-07-06T14:05:10.590Z"
     }
   ],
-  "codexObjective": "2026-07-07 06:00 KST까지 Plan D 남은 연구 페이지를 가능한 만큼 순차 실행하고, 완료하지 못하면 진행분을 handoff/ledger/커밋으로 정리해 보고한다."
+  "codexObjective": "2026-07-07 06:00 KST까지 Plan D 남은 연구 페이지를 가능한 만큼 순차 실행하고, 완료하지 못하면 진행분을 handoff/ledger/커밋으로 정리해 보고한다.",
+  "activeGoalId": "G004-goal-3-rank02-selected-oos-if-goal-2"
 }

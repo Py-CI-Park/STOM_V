@@ -1,0 +1,101 @@
+{
+  "schema": "plan_d_rank02_r1_selected_freeze_recheck_v1",
+  "created_at": "2026-07-07T00:06:43+09:00",
+  "scope": "plan-d-rank02-selected-oos-prereg-no-portfolio-export",
+  "source_result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_c_insert_replay_20260706/plan_d_rank02_r1_limited_replay_result_20260706.json",
+  "source_round_decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_c_insert_replay_20260706/plan_d_rank02_r1_round_decision_20260706.json",
+  "selected_labels": [
+    "plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90",
+    "plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90"
+  ],
+  "selected_count": 2,
+  "selected_set_equals_round_decision": true,
+  "selected_set_equals_expected_improved": true,
+  "all_present": true,
+  "all_sha_match": true,
+  "non_selected_labels_excluded_from_oos": [
+    "plan_d_r1_rank02_r1_01_l14_rate75_hold90",
+    "plan_d_r1_rank02_r1_03_l14_end1445_rate80_hold90",
+    "plan_d_r1_rank02_r1_04_l13_l14_rate80_hold90",
+    "plan_d_r1_rank02_r1_05_l1430_bridge_rate80_hold90",
+    "plan_d_r1_rank02_r1_06_morning_strength_relax_hold90",
+    "plan_d_r1_rank02_r1_07_momentum_mult992_hold90"
+  ],
+  "records": [
+    {
+      "schema": "plan_d_rank02_r1_selected_freeze_v1",
+      "created_at": "2026-07-07T00:06:43+09:00",
+      "scope": "plan-d-rank02-selected-oos-prereg-no-portfolio-export",
+      "selection_order": 1,
+      "label": "plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90",
+      "selection_reason": "best_profit_and_lower_mdd_vs_rank02_parent_preflight",
+      "buy_name": "LAT_plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90_S",
+      "lane": "min",
+      "r1_replay_metrics": {
+        "profit": 2216506.0,
+        "mdd": 16.31,
+        "trade_count": 203,
+        "daily_avg_trades": 1.0,
+        "payoff_ratio": 1.4567449334880815,
+        "calmar": 1.6039239730226855,
+        "uptrend_r2": 0.37918028662665265,
+        "decision": "improved"
+      },
+      "buy_db_recheck": {
+        "exists": true,
+        "sha256": "bafc3f0c9139a3d89d70d999d60d99c090d525ea66c3757fee1ddc5685f98101",
+        "code_len": 2164,
+        "matches_r1_expected_sha256": true
+      },
+      "sell_db_recheck": {
+        "exists": true,
+        "sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+        "code_len": 159,
+        "matches_r1_expected_sha256": true
+      }
+    },
+    {
+      "schema": "plan_d_rank02_r1_selected_freeze_v1",
+      "created_at": "2026-07-07T00:06:43+09:00",
+      "scope": "plan-d-rank02-selected-oos-prereg-no-portfolio-export",
+      "selection_order": 2,
+      "label": "plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90",
+      "selection_reason": "secondary_improved_confirmation_same_or_better_mdd",
+      "buy_name": "LAT_plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90_S",
+      "lane": "min",
+      "r1_replay_metrics": {
+        "profit": 1348845.0,
+        "mdd": 18.56,
+        "trade_count": 204,
+        "daily_avg_trades": 1.0,
+        "payoff_ratio": 1.5339483402313017,
+        "calmar": 0.8556034482758622,
+        "uptrend_r2": 0.28019519358930406,
+        "decision": "improved"
+      },
+      "buy_db_recheck": {
+        "exists": true,
+        "sha256": "44a1a28f18d2d9b48a1e6ce9e16dce8c7041506a3bdf90c5750df046a5b708e3",
+        "code_len": 2163,
+        "matches_r1_expected_sha256": true
+      },
+      "sell_db_recheck": {
+        "exists": true,
+        "sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+        "code_len": 159,
+        "matches_r1_expected_sha256": true
+      }
+    }
+  ],
+  "constraints_observed": {
+    "db_update_delete_used": false,
+    "db_insert_apply_used": false,
+    "oos_preregistration_prepared_before_run": true,
+    "selected_pair_count": 2,
+    "non_selected_oos_forbidden": true,
+    "portfolio_executed": false,
+    "export_live_final_executed": false
+  }
+}

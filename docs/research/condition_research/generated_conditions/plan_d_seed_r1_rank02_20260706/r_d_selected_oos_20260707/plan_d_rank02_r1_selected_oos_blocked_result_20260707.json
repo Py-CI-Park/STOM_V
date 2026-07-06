@@ -1,0 +1,94 @@
+{
+  "schema": "plan_d_rank02_r1_selected_oos_blocked_result_v1",
+  "created_at": "2026-07-07T00:51:30+09:00",
+  "scope": "plan-d-rank02-selected-oos-prereg-no-portfolio-export",
+  "decision": "blocked_before_oos_classification",
+  "blocker": "warm64_prepare_engine_response_wait_reproduced",
+  "selected_candidate_count": 2,
+  "selected_labels": [
+    "plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90",
+    "plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90"
+  ],
+  "profile_intended": {
+    "lane": "min",
+    "db": "_database/stock_min_back.db",
+    "oos_window": "2026-01-01~2026-02-27",
+    "time_window": "09:00~15:19",
+    "warm_engine_count": 64
+  },
+  "completed_before_blocker": {
+    "source_read_receipt": ".omo/evidence/plan-d-rank02-selected-oos-prereg-no-portfolio-export-20260707/source_read_receipt.md",
+    "freeze_recheck": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_freeze_recheck_20260707.json",
+    "preregistration": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_preregistration_20260707.md",
+    "selected_pairs": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/pairs_plan_d_rank02_r1_selected2_oos_20260707.json",
+    "oos_config": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/oos_config_min_plan_d_rank02_r1_selected2_20260707.json",
+    "retry_config": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/oos_config_min_plan_d_rank02_r1_selected2_retry01_20260707.json"
+  },
+  "runs": [
+    {
+      "run_id": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_20260707",
+      "run_row": [
+        "lat_plan_d_rank02_r1_selected2_oos_min_warm64_20260707",
+        "running",
+        1783350431.807928,
+        null
+      ],
+      "generation_row_count": 0,
+      "generations": []
+    },
+    {
+      "run_id": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry01_20260707",
+      "run_row": [
+        "lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry01_20260707",
+        "running",
+        1783352572.1950908,
+        null
+      ],
+      "generation_row_count": 0,
+      "generations": []
+    }
+  ],
+  "runtime_evidence": [
+    {
+      "run_id": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_20260707",
+      "elapsed_seconds_before_stop_approx": 1759,
+      "log_path": "artifacts/plan_d_rank02_r1_selected2_oos_min_warm64_20260707.log",
+      "stop_record": "artifacts/plan_d_rank02_r1_selected2_oos_min_warm64_20260707_stopped_pids.json",
+      "parent_stack": "WarmSession.prepare -> _send_engine_data -> _collect_engine_shared_info",
+      "child_stack_sample": "backengine_base.MainLoop -> multiprocessing.queues.get",
+      "generation_rows": 0
+    },
+    {
+      "run_id": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry01_20260707",
+      "elapsed_seconds_before_stop_approx": 410,
+      "log_path": "artifacts/plan_d_rank02_r1_selected2_oos_min_warm64_retry01_20260707.log",
+      "stop_record": "artifacts/plan_d_rank02_r1_selected2_oos_min_warm64_retry01_20260707_stopped_pids.json",
+      "parent_stack": "WarmSession.prepare -> _send_engine_data -> _collect_engine_shared_info",
+      "child_stack_sample": "backengine_base.MainLoop -> multiprocessing.queues.get",
+      "generation_rows": 0,
+      "retry_policy": "same selected pairs, same OOS window, same warm64; only bt_timeout bounded to 1800 seconds"
+    }
+  ],
+  "classification": {
+    "survivor": [],
+    "hold": [],
+    "no_go": [],
+    "not_classified_reason": "No generation rows were produced. Candidate OOS quality was not measured."
+  },
+  "constraints_observed": {
+    "db_update_delete_used": false,
+    "db_insert_apply_used": false,
+    "oos_without_preregistration_used": false,
+    "non_selected_candidate_oos_used": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "full_tick_288_executed": false,
+    "full_min_288_executed": false
+  },
+  "plan_d_readiness": {
+    "can_append_oos_survivors": false,
+    "can_continue_next_seed_from_rank02_oos": false,
+    "reason": "selected OOS did not reach generation evaluation because warm64 prepare wait reproduced twice",
+    "next_allowed_action": "diagnose-warm64-prepare-engine-response-wait-before-selected-oos-retry"
+  }
+}
