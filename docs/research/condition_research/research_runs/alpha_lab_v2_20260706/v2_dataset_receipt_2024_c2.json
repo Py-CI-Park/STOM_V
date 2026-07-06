@@ -1,0 +1,325 @@
+{
+  "generated_at": "2026-07-06T14:17:36.684981",
+  "prereg_sha": "dcac74927466f6383d3119d1b5905f4d0733f300de0987b95612d5e9b794444b",
+  "label_mode": "v2",
+  "l3_engine": "vector",
+  "sell_sha_ok": true,
+  "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+  "date_source": "dates",
+  "db_dir": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database",
+  "cache_dir": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_lab_v2_20260706\\cache",
+  "stride_sec": 5,
+  "admission_horizons_sec": [
+    60,
+    180,
+    300
+  ],
+  "admission": "same_as_v1",
+  "dates_requested": [
+    "20240115",
+    "20240125",
+    "20240207",
+    "20240221",
+    "20240305",
+    "20240315",
+    "20240328",
+    "20240409",
+    "20240422",
+    "20240503"
+  ],
+  "days_built": [
+    "20240115",
+    "20240125",
+    "20240207",
+    "20240221",
+    "20240305",
+    "20240315",
+    "20240328",
+    "20240409",
+    "20240422",
+    "20240503"
+  ],
+  "days_skipped_missing_db": [],
+  "n_days": 10,
+  "n_samples": 112867,
+  "labels": {
+    "L3_pos": {
+      "n": 112867,
+      "positives": 12144,
+      "positive_rate": 0.10759566569502158
+    }
+  },
+  "per_day": {
+    "20240115": {
+      "n_samples": 12163,
+      "shard": "20240115.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12163,
+          "positives": 1600,
+          "positive_rate": 0.1315464934637836
+        },
+        "L3_net": {
+          "n": 12163,
+          "mean": -0.010402988291785353,
+          "p10": -0.024968234822154045,
+          "p50": -0.01372248400002718,
+          "p90": 0.015267468802630937
+        }
+      },
+      "l3_stats": {
+        "fired": 10339,
+        "forced_cap": 1824,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240125": {
+      "n_samples": 11591,
+      "shard": "20240125.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11591,
+          "positives": 1436,
+          "positive_rate": 0.12388922439824002
+        },
+        "L3_net": {
+          "n": 11591,
+          "mean": -0.010106091016533416,
+          "p10": -0.023951517418026924,
+          "p50": -0.012753425166010857,
+          "p90": 0.014611564576625824
+        }
+      },
+      "l3_stats": {
+        "fired": 9347,
+        "forced_cap": 2244,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240207": {
+      "n_samples": 11174,
+      "shard": "20240207.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11174,
+          "positives": 983,
+          "positive_rate": 0.0879720780383032
+        },
+        "L3_net": {
+          "n": 11174,
+          "mean": -0.011301834851738994,
+          "p10": -0.024779237806797028,
+          "p50": -0.013439461588859558,
+          "p90": 0.005866137333214283
+        }
+      },
+      "l3_stats": {
+        "fired": 9353,
+        "forced_cap": 1821,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240221": {
+      "n_samples": 11534,
+      "shard": "20240221.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11534,
+          "positives": 1266,
+          "positive_rate": 0.10976244147737126
+        },
+        "L3_net": {
+          "n": 11534,
+          "mean": -0.01080704565504451,
+          "p10": -0.02616073377430439,
+          "p50": -0.013383363373577595,
+          "p90": 0.013115441612899393
+        }
+      },
+      "l3_stats": {
+        "fired": 9892,
+        "forced_cap": 1642,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240305": {
+      "n_samples": 10269,
+      "shard": "20240305.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10269,
+          "positives": 1456,
+          "positive_rate": 0.141785957736878
+        },
+        "L3_net": {
+          "n": 10269,
+          "mean": -0.00976839015509147,
+          "p10": -0.024275247007608414,
+          "p50": -0.01349340844899416,
+          "p90": 0.01652778685092926
+        }
+      },
+      "l3_stats": {
+        "fired": 8742,
+        "forced_cap": 1527,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240315": {
+      "n_samples": 9964,
+      "shard": "20240315.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 9964,
+          "positives": 1012,
+          "positive_rate": 0.10156563629064633
+        },
+        "L3_net": {
+          "n": 9964,
+          "mean": -0.01170354144333047,
+          "p10": -0.025245425663888453,
+          "p50": -0.013819990679621696,
+          "p90": 0.010458855796605371
+        }
+      },
+      "l3_stats": {
+        "fired": 8841,
+        "forced_cap": 1123,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240328": {
+      "n_samples": 10364,
+      "shard": "20240328.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10364,
+          "positives": 711,
+          "positive_rate": 0.06860285604013894
+        },
+        "L3_net": {
+          "n": 10364,
+          "mean": -0.011601449506409154,
+          "p10": -0.023432470858097076,
+          "p50": -0.0138167142868042,
+          "p90": 0.0038877169135957956
+        }
+      },
+      "l3_stats": {
+        "fired": 8712,
+        "forced_cap": 1652,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240409": {
+      "n_samples": 13215,
+      "shard": "20240409.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 13215,
+          "positives": 1784,
+          "positive_rate": 0.134998108210367
+        },
+        "L3_net": {
+          "n": 13215,
+          "mean": -0.00837327441513955,
+          "p10": -0.023348351940512657,
+          "p50": -0.012268505990505219,
+          "p90": 0.016045527905225763
+        }
+      },
+      "l3_stats": {
+        "fired": 10706,
+        "forced_cap": 2509,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240422": {
+      "n_samples": 10392,
+      "shard": "20240422.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10392,
+          "positives": 736,
+          "positive_rate": 0.07082371054657428
+        },
+        "L3_net": {
+          "n": 10392,
+          "mean": -0.011938441545289655,
+          "p10": -0.02401145156472921,
+          "p50": -0.012990821152925491,
+          "p90": 0.0009196805185638368
+        }
+      },
+      "l3_stats": {
+        "fired": 8914,
+        "forced_cap": 1478,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20240503": {
+      "n_samples": 12201,
+      "shard": "20240503.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12201,
+          "positives": 1160,
+          "positive_rate": 0.09507417424801246
+        },
+        "L3_net": {
+          "n": 12201,
+          "mean": -0.010044182384645595,
+          "p10": -0.02234107069671154,
+          "p50": -0.01253979280591011,
+          "p90": 0.009436734952032566
+        }
+      },
+      "l3_stats": {
+        "fired": 9887,
+        "forced_cap": 2314,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    }
+  },
+  "elapsed_sec": 299.768
+}

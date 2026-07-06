@@ -1,0 +1,914 @@
+{
+ "schema": "alpha_lab_v2_filter_engine_runs_v1",
+ "loop_runs_db": "ai_strategy_loop/state/loop_runs.db",
+ "strategy_db_env": "STOM_CLI_DB_STRATEGY=C:/System_Trading/STOM/STOM_V.wt-alpha/_database/strategy.db",
+ "chunks": [
+  {
+   "tag": "full_c1",
+   "run_id": "alp_v2f_warm64_full_20260706_c1",
+   "run_status": "complete",
+   "started_at": 1783318276.9422996,
+   "finished_at": 1783318740.287721,
+   "expected_pairs": 2,
+   "recorded_rows": 2,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_v2f_warm64_full_20260706_c1 pairs=2",
+    "[BATCH] prepare status=ok back_count=2424 elapsed=270s",
+    "[BATCH] gen0 alp_v2f:F01:full ok profit=160,128 mdd=14.18 trades=31 daily=0.00 payoff=0.8862081830618082 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (77s)",
+    "[BATCH] gen1 alp_v2f:F02:full ok profit=160,128 mdd=14.18 trades=31 daily=0.00 payoff=0.8862081830618082 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (83s)",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_V2F_01",
+     "sell_name": "ALP_V2F_01",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_01_20260706151701.csv",
+     "trade_count": 31,
+     "daily_avg_trades": 0.0,
+     "mdd": 14.18,
+     "profit": 160128.0,
+     "total_profit_pct": 3.2,
+     "payoff_ratio": 0.8862081830618082,
+     "strategy_gist": "alp_v2f:F01:full",
+     "created_at": 1783318624.4861393,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 31,
+      "csv_profit_sum": 160128,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_V2F_02",
+     "sell_name": "ALP_V2F_02",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_02_20260706151824.csv",
+     "trade_count": 31,
+     "daily_avg_trades": 0.0,
+     "mdd": 14.18,
+     "profit": 160128.0,
+     "total_profit_pct": 3.2,
+     "payoff_ratio": 0.8862081830618082,
+     "strategy_gist": "alp_v2f:F02:full",
+     "created_at": 1783318707.786558,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 31,
+      "csv_profit_sum": 160128,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    }
+   ]
+  },
+  {
+   "tag": "full_c2",
+   "run_id": "alp_v2f_warm64_full_20260706_c2",
+   "run_status": "complete",
+   "started_at": 1783318786.0425303,
+   "finished_at": 1783319272.3785884,
+   "expected_pairs": 2,
+   "recorded_rows": 2,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_v2f_warm64_full_20260706_c2 pairs=2",
+    "[BATCH] prepare status=ok back_count=2424 elapsed=294s",
+    "[BATCH] gen0 alp_v2f:F03:full ok profit=608,814 mdd=4.39 trades=10 daily=0.00 payoff=1.988617886178862 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (82s)",
+    "[BATCH] gen1 alp_v2f:F04:full ERROR (78s) warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_V2F_03",
+     "sell_name": "ALP_V2F_03",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_03_20260706152558.csv",
+     "trade_count": 10,
+     "daily_avg_trades": 0.0,
+     "mdd": 4.39,
+     "profit": 608814.0,
+     "total_profit_pct": 12.18,
+     "payoff_ratio": 1.988617886178862,
+     "strategy_gist": "alp_v2f:F03:full",
+     "created_at": 1783319162.0628448,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 10,
+      "csv_profit_sum": 608814,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_V2F_04",
+     "sell_name": "ALP_V2F_04",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_v2f:F04:full] backtest failed: warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_v2f:F04:full",
+     "created_at": 1783319239.9410872,
+     "reconciliation": {
+      "csv_found": false,
+      "note": "status=error"
+     }
+    }
+   ]
+  },
+  {
+   "tag": "full_c3",
+   "run_id": "alp_v2f_warm64_full_20260706_c3",
+   "run_status": "complete",
+   "started_at": 1783319675.606006,
+   "finished_at": 1783320174.7400026,
+   "expected_pairs": 2,
+   "recorded_rows": 2,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_v2f_warm64_full_20260706_c3 pairs=2",
+    "[BATCH] prepare status=ok back_count=2424 elapsed=299s",
+    "[BATCH] gen0 alp_v2f:F05:full ok profit=112,551 mdd=8.58 trades=14 daily=0.00 payoff=2.045554202192448 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (86s)",
+    "[BATCH] gen1 alp_v2f:F06:full ERROR (80s) warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_V2F_05",
+     "sell_name": "ALP_V2F_05",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_05_20260706154057.csv",
+     "trade_count": 14,
+     "daily_avg_trades": 0.0,
+     "mdd": 8.58,
+     "profit": 112551.0,
+     "total_profit_pct": 2.25,
+     "payoff_ratio": 2.045554202192448,
+     "strategy_gist": "alp_v2f:F05:full",
+     "created_at": 1783320060.8170877,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 14,
+      "csv_profit_sum": 112551,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_V2F_06",
+     "sell_name": "ALP_V2F_06",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_v2f:F06:full] backtest failed: warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_v2f:F06:full",
+     "created_at": 1783320140.9962878,
+     "reconciliation": {
+      "csv_found": false,
+      "note": "status=error"
+     }
+    }
+   ]
+  },
+  {
+   "tag": "y2022_c1",
+   "run_id": "alp_v2f_warm64_y2022_20260706_c1",
+   "run_status": "complete",
+   "started_at": 1783320506.508277,
+   "finished_at": 1783320774.9410295,
+   "expected_pairs": 3,
+   "recorded_rows": 3,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_v2f_warm64_y2022_20260706_c1 pairs=3",
+    "[BATCH] prepare status=ok back_count=1530 elapsed=139s",
+    "[BATCH] gen0 alp_v2f:F01:y2022 ok profit=-232,601 mdd=6.77 trades=8 daily=0.00 payoff=1.075063613231552 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (35s)",
+    "[BATCH] gen1 alp_v2f:F02:y2022 ok profit=-232,601 mdd=6.77 trades=8 daily=0.00 payoff=1.075063613231552 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (35s)",
+    "[BATCH] gen2 alp_v2f:F03:y2022 ok profit=-75,075 mdd=1.50 trades=2 daily=0.00 payoff=0.5495495495495496 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (35s)",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_V2F_01",
+     "sell_name": "ALP_V2F_01",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_01_20260706155118.csv",
+     "trade_count": 8,
+     "daily_avg_trades": 0.0,
+     "mdd": 6.77,
+     "profit": -232601.0,
+     "total_profit_pct": -4.65,
+     "payoff_ratio": 1.075063613231552,
+     "strategy_gist": "alp_v2f:F01:y2022",
+     "created_at": 1783320681.5796251,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 8,
+      "csv_profit_sum": -232601,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_V2F_02",
+     "sell_name": "ALP_V2F_02",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_02_20260706155154.csv",
+     "trade_count": 8,
+     "daily_avg_trades": 0.0,
+     "mdd": 6.77,
+     "profit": -232601.0,
+     "total_profit_pct": -4.65,
+     "payoff_ratio": 1.075063613231552,
+     "strategy_gist": "alp_v2f:F02:y2022",
+     "created_at": 1783320717.078992,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 8,
+      "csv_profit_sum": -232601,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 2,
+     "buy_name": "ALP_V2F_03",
+     "sell_name": "ALP_V2F_03",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_03_20260706155229.csv",
+     "trade_count": 2,
+     "daily_avg_trades": 0.0,
+     "mdd": 1.5,
+     "profit": -75075.0,
+     "total_profit_pct": -1.5,
+     "payoff_ratio": 0.5495495495495496,
+     "strategy_gist": "alp_v2f:F03:y2022",
+     "created_at": 1783320752.0323896,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 2,
+      "csv_profit_sum": -75075,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    }
+   ]
+  },
+  {
+   "tag": "y2022_c2",
+   "run_id": "alp_v2f_warm64_y2022_20260706_c2",
+   "run_status": "complete",
+   "started_at": 1783321021.0063848,
+   "finished_at": 1783321281.5059595,
+   "expected_pairs": 3,
+   "recorded_rows": 3,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_v2f_warm64_y2022_20260706_c2 pairs=3",
+    "[BATCH] prepare status=ok back_count=1530 elapsed=151s",
+    "[BATCH] gen0 alp_v2f:F04:y2022 ERROR (25s) warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+    "[BATCH] gen1 alp_v2f:F05:y2022 ok profit=-91,404 mdd=3.59 trades=3 daily=0.00 payoff=1.0000000000000002 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (31s)",
+    "[BATCH] gen2 alp_v2f:F06:y2022 ERROR (33s) warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_V2F_04",
+     "sell_name": "ALP_V2F_04",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_v2f:F04:y2022] backtest failed: warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_v2f:F04:y2022",
+     "created_at": 1783321197.5872772,
+     "reconciliation": {
+      "csv_found": false,
+      "note": "status=error"
+     }
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_V2F_05",
+     "sell_name": "ALP_V2F_05",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_05_20260706160025.csv",
+     "trade_count": 3,
+     "daily_avg_trades": 0.0,
+     "mdd": 3.59,
+     "profit": -91404.0,
+     "total_profit_pct": -1.83,
+     "payoff_ratio": 1.0000000000000002,
+     "strategy_gist": "alp_v2f:F05:y2022",
+     "created_at": 1783321228.2333632,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 3,
+      "csv_profit_sum": -91404,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 2,
+     "buy_name": "ALP_V2F_06",
+     "sell_name": "ALP_V2F_06",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_v2f:F06:y2022] backtest failed: warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_v2f:F06:y2022",
+     "created_at": 1783321261.6518822,
+     "reconciliation": {
+      "csv_found": false,
+      "note": "status=error"
+     }
+    }
+   ]
+  },
+  {
+   "tag": "y2023_c1",
+   "run_id": "alp_v2f_warm64_y2023_20260706_c1",
+   "run_status": "complete",
+   "started_at": 1783321530.011449,
+   "finished_at": 1783321798.936468,
+   "expected_pairs": 3,
+   "recorded_rows": 3,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_v2f_warm64_y2023_20260706_c1 pairs=3",
+    "[BATCH] prepare status=ok back_count=1702 elapsed=155s",
+    "[BATCH] gen0 alp_v2f:F01:y2023 ok profit=206,296 mdd=4.25 trades=6 daily=0.00 payoff=0.37835497835497833 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (32s)",
+    "[BATCH] gen1 alp_v2f:F02:y2023 ok profit=206,296 mdd=4.25 trades=6 daily=0.00 payoff=0.37835497835497833 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (31s)",
+    "[BATCH] gen2 alp_v2f:F03:y2023 ok profit=211,586 mdd=4.33 trades=3 daily=0.00 payoff=3.788135593220339 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (31s)",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_V2F_01",
+     "sell_name": "ALP_V2F_01",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_01_20260706160833.csv",
+     "trade_count": 6,
+     "daily_avg_trades": 0.0,
+     "mdd": 4.25,
+     "profit": 206296.0,
+     "total_profit_pct": 4.13,
+     "payoff_ratio": 0.37835497835497833,
+     "strategy_gist": "alp_v2f:F01:y2023",
+     "created_at": 1783321716.8307376,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 6,
+      "csv_profit_sum": 206296,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_V2F_02",
+     "sell_name": "ALP_V2F_02",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_02_20260706160905.csv",
+     "trade_count": 6,
+     "daily_avg_trades": 0.0,
+     "mdd": 4.25,
+     "profit": 206296.0,
+     "total_profit_pct": 4.13,
+     "payoff_ratio": 0.37835497835497833,
+     "strategy_gist": "alp_v2f:F02:y2023",
+     "created_at": 1783321748.0182266,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 6,
+      "csv_profit_sum": 206296,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 2,
+     "buy_name": "ALP_V2F_03",
+     "sell_name": "ALP_V2F_03",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_03_20260706160936.csv",
+     "trade_count": 3,
+     "daily_avg_trades": 0.0,
+     "mdd": 4.33,
+     "profit": 211586.0,
+     "total_profit_pct": 4.23,
+     "payoff_ratio": 3.788135593220339,
+     "strategy_gist": "alp_v2f:F03:y2023",
+     "created_at": 1783321779.0711617,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 3,
+      "csv_profit_sum": 211586,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    }
+   ]
+  },
+  {
+   "tag": "y2023_c2",
+   "run_id": "alp_v2f_warm64_y2023_20260706_c2",
+   "run_status": "complete",
+   "started_at": 1783322031.233519,
+   "finished_at": 1783322298.2022848,
+   "expected_pairs": 3,
+   "recorded_rows": 3,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_v2f_warm64_y2023_20260706_c2 pairs=3",
+    "[BATCH] prepare status=ok back_count=1702 elapsed=141s",
+    "[BATCH] gen0 alp_v2f:F04:y2023 ERROR (37s) warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+    "[BATCH] gen1 alp_v2f:F05:y2023 ok profit=155,795 mdd=4.38 trades=4 daily=0.00 payoff=4.600343053173241 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (38s)",
+    "[BATCH] gen2 alp_v2f:F06:y2023 ERROR (30s) warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_V2F_04",
+     "sell_name": "ALP_V2F_04",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_v2f:F04:y2023] backtest failed: warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_v2f:F04:y2023",
+     "created_at": 1783322209.2283108,
+     "reconciliation": {
+      "csv_found": false,
+      "note": "status=error"
+     }
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_V2F_05",
+     "sell_name": "ALP_V2F_05",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_05_20260706161724.csv",
+     "trade_count": 4,
+     "daily_avg_trades": 0.0,
+     "mdd": 4.38,
+     "profit": 155795.0,
+     "total_profit_pct": 3.12,
+     "payoff_ratio": 4.600343053173241,
+     "strategy_gist": "alp_v2f:F05:y2023",
+     "created_at": 1783322247.545878,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 4,
+      "csv_profit_sum": 155795,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 2,
+     "buy_name": "ALP_V2F_06",
+     "sell_name": "ALP_V2F_06",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_v2f:F06:y2023] backtest failed: warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_v2f:F06:y2023",
+     "created_at": 1783322277.3061366,
+     "reconciliation": {
+      "csv_found": false,
+      "note": "status=error"
+     }
+    }
+   ]
+  },
+  {
+   "tag": "y2024_c1",
+   "run_id": "alp_v2f_warm64_y2024_20260706_c1",
+   "run_status": "complete",
+   "started_at": 1783322549.6721,
+   "finished_at": 1783322807.1725256,
+   "expected_pairs": 3,
+   "recorded_rows": 3,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_v2f_warm64_y2024_20260706_c1 pairs=3",
+    "[BATCH] prepare status=ok back_count=1538 elapsed=147s",
+    "[BATCH] gen0 alp_v2f:F01:y2024 ok profit=700,968 mdd=5.60 trades=10 daily=0.00 payoff=1.0042459936994932 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (31s)",
+    "[BATCH] gen1 alp_v2f:F02:y2024 ok profit=700,968 mdd=5.60 trades=10 daily=0.00 payoff=1.0042459936994932 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (31s)",
+    "[BATCH] gen2 alp_v2f:F03:y2024 ok profit=563,222 mdd=2.13 trades=4 daily=0.00 payoff=1.877914951989026 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (29s)",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_V2F_01",
+     "sell_name": "ALP_V2F_01",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_01_20260706162525.csv",
+     "trade_count": 10,
+     "daily_avg_trades": 0.0,
+     "mdd": 5.6,
+     "profit": 700968.0,
+     "total_profit_pct": 14.02,
+     "payoff_ratio": 1.0042459936994932,
+     "strategy_gist": "alp_v2f:F01:y2024",
+     "created_at": 1783322728.6049569,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 10,
+      "csv_profit_sum": 700968,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_V2F_02",
+     "sell_name": "ALP_V2F_02",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_02_20260706162556.csv",
+     "trade_count": 10,
+     "daily_avg_trades": 0.0,
+     "mdd": 5.6,
+     "profit": 700968.0,
+     "total_profit_pct": 14.02,
+     "payoff_ratio": 1.0042459936994932,
+     "strategy_gist": "alp_v2f:F02:y2024",
+     "created_at": 1783322759.5377886,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 10,
+      "csv_profit_sum": 700968,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 2,
+     "buy_name": "ALP_V2F_03",
+     "sell_name": "ALP_V2F_03",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_03_20260706162625.csv",
+     "trade_count": 4,
+     "daily_avg_trades": 0.0,
+     "mdd": 2.13,
+     "profit": 563222.0,
+     "total_profit_pct": 11.26,
+     "payoff_ratio": 1.877914951989026,
+     "strategy_gist": "alp_v2f:F03:y2024",
+     "created_at": 1783322788.3645906,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 4,
+      "csv_profit_sum": 563222,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    }
+   ]
+  },
+  {
+   "tag": "y2024_c2",
+   "run_id": "alp_v2f_warm64_y2024_20260706_c2",
+   "run_status": "complete",
+   "started_at": 1783323061.851618,
+   "finished_at": 1783323324.5015438,
+   "expected_pairs": 3,
+   "recorded_rows": 3,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_v2f_warm64_y2024_20260706_c2 pairs=3",
+    "[BATCH] prepare status=ok back_count=1538 elapsed=144s",
+    "[BATCH] gen0 alp_v2f:F04:y2024 ERROR (32s) warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+    "[BATCH] gen1 alp_v2f:F05:y2024 ok profit=-128,017 mdd=2.57 trades=4 daily=0.00 payoff=1.4911937377690803 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (35s)",
+    "[BATCH] gen2 alp_v2f:F06:y2024 ERROR (31s) warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_V2F_04",
+     "sell_name": "ALP_V2F_04",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_v2f:F04:y2024] backtest failed: warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_v2f:F04:y2024",
+     "created_at": 1783323238.4476714,
+     "reconciliation": {
+      "csv_found": false,
+      "note": "status=error"
+     }
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_V2F_05",
+     "sell_name": "ALP_V2F_05",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_05_20260706163430.csv",
+     "trade_count": 4,
+     "daily_avg_trades": 0.0,
+     "mdd": 2.57,
+     "profit": -128017.0,
+     "total_profit_pct": -2.56,
+     "payoff_ratio": 1.4911937377690803,
+     "strategy_gist": "alp_v2f:F05:y2024",
+     "created_at": 1783323273.8521051,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 4,
+      "csv_profit_sum": -128017,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 2,
+     "buy_name": "ALP_V2F_06",
+     "sell_name": "ALP_V2F_06",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_v2f:F06:y2024] backtest failed: warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_v2f:F06:y2024",
+     "created_at": 1783323305.145119,
+     "reconciliation": {
+      "csv_found": false,
+      "note": "status=error"
+     }
+    }
+   ]
+  },
+  {
+   "tag": "y2025_c1",
+   "run_id": "alp_v2f_warm64_y2025_20260706_c1",
+   "run_status": "complete",
+   "started_at": 1783323580.0441003,
+   "finished_at": 1783323826.736246,
+   "expected_pairs": 3,
+   "recorded_rows": 3,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_v2f_warm64_y2025_20260706_c1 pairs=3",
+    "[BATCH] prepare status=ok back_count=1638 elapsed=132s",
+    "[BATCH] gen0 alp_v2f:F01:y2025 ok profit=-514,535 mdd=11.78 trades=7 daily=0.00 payoff=0.7246879334257975 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (31s)",
+    "[BATCH] gen1 alp_v2f:F02:y2025 ok profit=-514,535 mdd=11.78 trades=7 daily=0.00 payoff=0.7246879334257975 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (32s)",
+    "[BATCH] gen2 alp_v2f:F03:y2025 ok profit=-90,919 mdd=1.82 trades=1 daily=0.00 payoff=0.0 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (32s)",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_V2F_01",
+     "sell_name": "ALP_V2F_01",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_01_20260706164219.csv",
+     "trade_count": 7,
+     "daily_avg_trades": 0.0,
+     "mdd": 11.78,
+     "profit": -514535.0,
+     "total_profit_pct": -10.29,
+     "payoff_ratio": 0.7246879334257975,
+     "strategy_gist": "alp_v2f:F01:y2025",
+     "created_at": 1783323742.840127,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 7,
+      "csv_profit_sum": -514535,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_V2F_02",
+     "sell_name": "ALP_V2F_02",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_02_20260706164252.csv",
+     "trade_count": 7,
+     "daily_avg_trades": 0.0,
+     "mdd": 11.78,
+     "profit": -514535.0,
+     "total_profit_pct": -10.29,
+     "payoff_ratio": 0.7246879334257975,
+     "strategy_gist": "alp_v2f:F02:y2025",
+     "created_at": 1783323775.1814756,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 7,
+      "csv_profit_sum": -514535,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 2,
+     "buy_name": "ALP_V2F_03",
+     "sell_name": "ALP_V2F_03",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_03_20260706164323.csv",
+     "trade_count": 1,
+     "daily_avg_trades": 0.0,
+     "mdd": 1.82,
+     "profit": -90919.0,
+     "total_profit_pct": -1.82,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_v2f:F03:y2025",
+     "created_at": 1783323807.0942936,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 1,
+      "csv_profit_sum": -90919,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    }
+   ]
+  },
+  {
+   "tag": "y2025_c2",
+   "run_id": "alp_v2f_warm64_y2025_20260706_c2",
+   "run_status": "complete",
+   "started_at": 1783324099.7457185,
+   "finished_at": 1783324342.558337,
+   "expected_pairs": 3,
+   "recorded_rows": 3,
+   "problems": [],
+   "batch_log_lines": [
+    "[BATCH] run_id=alp_v2f_warm64_y2025_20260706_c2 pairs=3",
+    "[BATCH] prepare status=ok back_count=1638 elapsed=127s",
+    "[BATCH] gen0 alp_v2f:F04:y2025 ERROR (31s) warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+    "[BATCH] gen1 alp_v2f:F05:y2025 ok profit=176,177 mdd=3.52 trades=3 daily=0.00 payoff=1.4697802197802197 gate=False reason=daily_avg_trades 0 < min_daily_trades 0.5 (34s)",
+    "[BATCH] gen2 alp_v2f:F06:y2025 ERROR (27s) warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+    "[BATCH] done"
+   ],
+   "rows": [
+    {
+     "gen_no": 0,
+     "buy_name": "ALP_V2F_04",
+     "sell_name": "ALP_V2F_04",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_v2f:F04:y2025] backtest failed: warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_v2f:F04:y2025",
+     "created_at": 1783324260.6886146,
+     "reconciliation": {
+      "csv_found": false,
+      "note": "status=error"
+     }
+    },
+    {
+     "gen_no": 1,
+     "buy_name": "ALP_V2F_05",
+     "sell_name": "ALP_V2F_05",
+     "status": "ok",
+     "gate_passed": 0,
+     "reason": "daily_avg_trades 0 < min_daily_trades 0.5",
+     "csv_path": "backtest/csv\\stock_bt_ALP_V2F_05_20260706165132.csv",
+     "trade_count": 3,
+     "daily_avg_trades": 0.0,
+     "mdd": 3.52,
+     "profit": 176177.0,
+     "total_profit_pct": 3.52,
+     "payoff_ratio": 1.4697802197802197,
+     "strategy_gist": "alp_v2f:F05:y2025",
+     "created_at": 1783324294.9928901,
+     "reconciliation": {
+      "csv_found": true,
+      "csv_rows": 3,
+      "csv_profit_sum": 176177,
+      "rows_match_trade_count": true,
+      "profit_match": true
+     }
+    },
+    {
+     "gen_no": 2,
+     "buy_name": "ALP_V2F_06",
+     "sell_name": "ALP_V2F_06",
+     "status": "error",
+     "gate_passed": 0,
+     "reason": "[alp_v2f:F06:y2025] backtest failed: warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+     "csv_path": null,
+     "trade_count": 0,
+     "daily_avg_trades": 0.0,
+     "mdd": 0.0,
+     "profit": 0.0,
+     "total_profit_pct": 0.0,
+     "payoff_ratio": 0.0,
+     "strategy_gist": "alp_v2f:F06:y2025",
+     "created_at": 1783324322.251087,
+     "reconciliation": {
+      "csv_found": false,
+      "note": "status=error"
+     }
+    }
+   ]
+  }
+ ]
+}

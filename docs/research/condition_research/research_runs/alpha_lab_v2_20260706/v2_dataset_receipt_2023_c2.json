@@ -1,0 +1,325 @@
+{
+  "generated_at": "2026-07-06T14:18:49.333681",
+  "prereg_sha": "dcac74927466f6383d3119d1b5905f4d0733f300de0987b95612d5e9b794444b",
+  "label_mode": "v2",
+  "l3_engine": "vector",
+  "sell_sha_ok": true,
+  "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+  "date_source": "dates",
+  "db_dir": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database",
+  "cache_dir": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_lab_v2_20260706\\cache",
+  "stride_sec": 5,
+  "admission_horizons_sec": [
+    60,
+    180,
+    300
+  ],
+  "admission": "same_as_v1",
+  "dates_requested": [
+    "20230112",
+    "20230127",
+    "20230208",
+    "20230221",
+    "20230306",
+    "20230316",
+    "20230329",
+    "20230410",
+    "20230420",
+    "20230504"
+  ],
+  "days_built": [
+    "20230112",
+    "20230127",
+    "20230208",
+    "20230221",
+    "20230306",
+    "20230316",
+    "20230329",
+    "20230410",
+    "20230420",
+    "20230504"
+  ],
+  "days_skipped_missing_db": [],
+  "n_days": 10,
+  "n_samples": 129574,
+  "labels": {
+    "L3_pos": {
+      "n": 129574,
+      "positives": 14392,
+      "positive_rate": 0.11107166561192831
+    }
+  },
+  "per_day": {
+    "20230112": {
+      "n_samples": 14158,
+      "shard": "20230112.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 14158,
+          "positives": 1192,
+          "positive_rate": 0.08419268258228563
+        },
+        "L3_net": {
+          "n": 14158,
+          "mean": -0.01039514525279349,
+          "p10": -0.02210771106183529,
+          "p50": -0.012357944156974554,
+          "p90": 0.004597632680088282
+        }
+      },
+      "l3_stats": {
+        "fired": 11052,
+        "forced_cap": 3106,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230127": {
+      "n_samples": 12941,
+      "shard": "20230127.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12941,
+          "positives": 798,
+          "positive_rate": 0.061664477242871496
+        },
+        "L3_net": {
+          "n": 12941,
+          "mean": -0.010468736296869948,
+          "p10": -0.02212444134056568,
+          "p50": -0.01199621707201004,
+          "p90": -0.0013566468842327595
+        }
+      },
+      "l3_stats": {
+        "fired": 10782,
+        "forced_cap": 2159,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230208": {
+      "n_samples": 15190,
+      "shard": "20230208.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 15190,
+          "positives": 1298,
+          "positive_rate": 0.08545095457537853
+        },
+        "L3_net": {
+          "n": 15190,
+          "mean": -0.010733940469507555,
+          "p10": -0.022584442049264908,
+          "p50": -0.01246286602690816,
+          "p90": 0.003316327463835478
+        }
+      },
+      "l3_stats": {
+        "fired": 12490,
+        "forced_cap": 2700,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230221": {
+      "n_samples": 14139,
+      "shard": "20230221.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 14139,
+          "positives": 1478,
+          "positive_rate": 0.10453355965768442
+        },
+        "L3_net": {
+          "n": 14139,
+          "mean": -0.009806469172920362,
+          "p10": -0.022835909202694894,
+          "p50": -0.012413900345563889,
+          "p90": 0.011061504855752167
+        }
+      },
+      "l3_stats": {
+        "fired": 11817,
+        "forced_cap": 2322,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230306": {
+      "n_samples": 14961,
+      "shard": "20230306.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 14961,
+          "positives": 1861,
+          "positive_rate": 0.12439008087694672
+        },
+        "L3_net": {
+          "n": 14961,
+          "mean": -0.008722131676606324,
+          "p10": -0.02313271351158619,
+          "p50": -0.012476464733481407,
+          "p90": 0.014414031989872456
+        }
+      },
+      "l3_stats": {
+        "fired": 11405,
+        "forced_cap": 3556,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230316": {
+      "n_samples": 9939,
+      "shard": "20230316.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 9939,
+          "positives": 1590,
+          "positive_rate": 0.15997585270147902
+        },
+        "L3_net": {
+          "n": 9939,
+          "mean": -0.009911824211714004,
+          "p10": -0.025487974286079407,
+          "p50": -0.015078157186508179,
+          "p90": 0.016735428944230205
+        }
+      },
+      "l3_stats": {
+        "fired": 8969,
+        "forced_cap": 970,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230329": {
+      "n_samples": 12348,
+      "shard": "20230329.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12348,
+          "positives": 1371,
+          "positive_rate": 0.11103012633624879
+        },
+        "L3_net": {
+          "n": 12348,
+          "mean": -0.010615161525035182,
+          "p10": -0.024934932589530945,
+          "p50": -0.013853516429662704,
+          "p90": 0.013541385531425476
+        }
+      },
+      "l3_stats": {
+        "fired": 10680,
+        "forced_cap": 1668,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230410": {
+      "n_samples": 14094,
+      "shard": "20230410.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 14094,
+          "positives": 2117,
+          "positive_rate": 0.15020576131687244
+        },
+        "L3_net": {
+          "n": 14094,
+          "mean": -0.007775520974634742,
+          "p10": -0.023688875138759613,
+          "p50": -0.012322080787271261,
+          "p90": 0.018628215417265892
+        }
+      },
+      "l3_stats": {
+        "fired": 11650,
+        "forced_cap": 2444,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230420": {
+      "n_samples": 11470,
+      "shard": "20230420.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11470,
+          "positives": 1501,
+          "positive_rate": 0.13086312118570184
+        },
+        "L3_net": {
+          "n": 11470,
+          "mean": -0.01115241672466176,
+          "p10": -0.026649095118045807,
+          "p50": -0.013719569891691208,
+          "p90": 0.014066933933645488
+        }
+      },
+      "l3_stats": {
+        "fired": 10109,
+        "forced_cap": 1361,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230504": {
+      "n_samples": 10334,
+      "shard": "20230504.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10334,
+          "positives": 1186,
+          "positive_rate": 0.11476678923940391
+        },
+        "L3_net": {
+          "n": 10334,
+          "mean": -0.011155725107555728,
+          "p10": -0.026873677410185336,
+          "p50": -0.013270211406052113,
+          "p90": 0.013492506928741932
+        }
+      },
+      "l3_stats": {
+        "fired": 9004,
+        "forced_cap": 1330,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    }
+  },
+  "elapsed_sec": 341.62
+}

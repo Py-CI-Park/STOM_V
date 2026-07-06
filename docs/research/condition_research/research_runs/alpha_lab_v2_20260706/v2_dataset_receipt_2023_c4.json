@@ -1,0 +1,267 @@
+{
+  "generated_at": "2026-07-06T14:29:11.159141",
+  "prereg_sha": "dcac74927466f6383d3119d1b5905f4d0733f300de0987b95612d5e9b794444b",
+  "label_mode": "v2",
+  "l3_engine": "vector",
+  "sell_sha_ok": true,
+  "sell_sha256": "8ef01e0ef2087ec95ac6b358b6f5c710414f3eb4dd401b01cc8162877f911c07",
+  "date_source": "dates",
+  "db_dir": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\_database",
+  "cache_dir": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_lab_v2_20260706\\cache",
+  "stride_sec": 5,
+  "admission_horizons_sec": [
+    60,
+    180,
+    300
+  ],
+  "admission": "same_as_v1",
+  "dates_requested": [
+    "20230823",
+    "20230905",
+    "20230915",
+    "20230927",
+    "20231017",
+    "20231027",
+    "20231108",
+    "20231122"
+  ],
+  "days_built": [
+    "20230823",
+    "20230905",
+    "20230915",
+    "20230927",
+    "20231017",
+    "20231027",
+    "20231108",
+    "20231122"
+  ],
+  "days_skipped_missing_db": [],
+  "n_days": 8,
+  "n_samples": 93943,
+  "labels": {
+    "L3_pos": {
+      "n": 93943,
+      "positives": 10300,
+      "positive_rate": 0.10964095249246884
+    }
+  },
+  "per_day": {
+    "20230823": {
+      "n_samples": 11740,
+      "shard": "20230823.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11740,
+          "positives": 1865,
+          "positive_rate": 0.15885860306643954
+        },
+        "L3_net": {
+          "n": 11740,
+          "mean": -0.009710825296272233,
+          "p10": -0.026949354447424412,
+          "p50": -0.013569803908467293,
+          "p90": 0.018993194028735165
+        }
+      },
+      "l3_stats": {
+        "fired": 10309,
+        "forced_cap": 1431,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230905": {
+      "n_samples": 12997,
+      "shard": "20230905.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12997,
+          "positives": 1316,
+          "positive_rate": 0.10125413556974687
+        },
+        "L3_net": {
+          "n": 12997,
+          "mean": -0.01092966976697969,
+          "p10": -0.02459334023296833,
+          "p50": -0.013533959165215492,
+          "p90": 0.010492117144167423
+        }
+      },
+      "l3_stats": {
+        "fired": 10827,
+        "forced_cap": 2170,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230915": {
+      "n_samples": 12722,
+      "shard": "20230915.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12722,
+          "positives": 1111,
+          "positive_rate": 0.08732903631504481
+        },
+        "L3_net": {
+          "n": 12722,
+          "mean": -0.010775803143079651,
+          "p10": -0.023128235712647438,
+          "p50": -0.012405023910105228,
+          "p90": 0.005242316052317619
+        }
+      },
+      "l3_stats": {
+        "fired": 10649,
+        "forced_cap": 2073,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20230927": {
+      "n_samples": 8150,
+      "shard": "20230927.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 8150,
+          "positives": 1007,
+          "positive_rate": 0.12355828220858896
+        },
+        "L3_net": {
+          "n": 8150,
+          "mean": -0.011046738780077376,
+          "p10": -0.02570951022207737,
+          "p50": -0.014145159162580967,
+          "p90": 0.014659704919904473
+        }
+      },
+      "l3_stats": {
+        "fired": 7264,
+        "forced_cap": 886,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231017": {
+      "n_samples": 13443,
+      "shard": "20231017.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 13443,
+          "positives": 1200,
+          "positive_rate": 0.08926578888640928
+        },
+        "L3_net": {
+          "n": 13443,
+          "mean": -0.01092021838534951,
+          "p10": -0.02482227236032486,
+          "p50": -0.012887796387076378,
+          "p90": 0.00776509428396821
+        }
+      },
+      "l3_stats": {
+        "fired": 11073,
+        "forced_cap": 2370,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231027": {
+      "n_samples": 10173,
+      "shard": "20231027.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 10173,
+          "positives": 826,
+          "positive_rate": 0.08119532094760641
+        },
+        "L3_net": {
+          "n": 10173,
+          "mean": -0.012799019089457355,
+          "p10": -0.025147458910942076,
+          "p50": -0.014064916409552097,
+          "p90": 0.001922341808676854
+        }
+      },
+      "l3_stats": {
+        "fired": 9046,
+        "forced_cap": 1127,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231108": {
+      "n_samples": 12982,
+      "shard": "20231108.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 12982,
+          "positives": 1477,
+          "positive_rate": 0.11377291634570945
+        },
+        "L3_net": {
+          "n": 12982,
+          "mean": -0.009631673245124298,
+          "p10": -0.02253102324903011,
+          "p50": -0.01261971890926361,
+          "p90": 0.013189632631838307
+        }
+      },
+      "l3_stats": {
+        "fired": 10655,
+        "forced_cap": 2327,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    },
+    "20231122": {
+      "n_samples": 11736,
+      "shard": "20231122.npz",
+      "labels": {
+        "L3_pos": {
+          "n": 11736,
+          "positives": 1498,
+          "positive_rate": 0.1276414451261077
+        },
+        "L3_net": {
+          "n": 11736,
+          "mean": -0.009788854343647298,
+          "p10": -0.0234527587890625,
+          "p50": -0.012703112326562405,
+          "p90": 0.014453163370490074
+        }
+      },
+      "l3_stats": {
+        "fired": 9917,
+        "forced_cap": 1819,
+        "bad_fire_quote_rows": 0,
+        "no_exit_quote": 0,
+        "path_empty": 0,
+        "entry_missing": 0,
+        "entry_quote_bad": 0
+      }
+    }
+  },
+  "elapsed_sec": 247.919
+}
