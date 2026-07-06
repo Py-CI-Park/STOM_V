@@ -1,0 +1,252 @@
+{
+  "version": 1,
+  "createdAt": "2026-07-06T14:05:10.590Z",
+  "updatedAt": "2026-07-06T14:29:56.556Z",
+  "briefPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/brief.md",
+  "goalsPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/goals.json",
+  "ledgerPath": ".omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/ledger.jsonl",
+  "codexGoalMode": "aggregate",
+  "goals": [
+    {
+      "id": "G001-plan-d-overnight-bounded-execution-u",
+      "title": "Plan D overnight bounded execution until 2026-07-07 06:00 KST. Start...",
+      "objective": "Plan D overnight bounded execution until 2026-07-07 06:00 KST. Start from commit 9ecf081c. Current state: rank01 R3 has one OOS survivor, and rank02 readiness is ready. Execute only research-lane work. Never run portfolio or export/live/final promotion. Never use DB UPDATE/DELETE. Never use git add -A. Never run OOS without preregistration. Never run full tick/min 288 batches in this overnight scope. Do not stage dashboard files, .gjc, or unrelated .omo/artifacts.",
+      "status": "complete",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: Plan D overnight bounded execution until 2026-07-07 06:00 KST. Start from com...",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 1.",
+          "essential": true,
+          "capturedEvidence": "overnight bounded constraints established; active Codex goal snapshot captured; rank02 readiness source package read; no runtime process spawned | cleanup: no qa runtime resources spawned",
+          "status": "pass",
+          "capturedAt": "2026-07-06T14:20:33.317Z"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Plan D overnight bounded execution until 2026-07-07 06:00 KST. Start from com....",
+          "essential": true,
+          "capturedEvidence": "boundary constraints checked: no portfolio/export/live/final, no DB UPDATE/DELETE, no git add -A, no full 288 batch in overnight scope | cleanup: no qa runtime resources spawned",
+          "status": "pass",
+          "capturedAt": "2026-07-06T14:20:45.627Z"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Plan D overnight bounded execution until 2026-07-07 06:00 KST. Start from com....",
+          "essential": false,
+          "capturedEvidence": "regression guard: existing dirty dashboard/.gjc/unrelated .omo state identified and excluded from planned scoped staging | cleanup: no qa runtime resources spawned",
+          "status": "pass",
+          "capturedAt": "2026-07-06T14:20:33.398Z"
+        }
+      ],
+      "attempt": 1,
+      "createdAt": "2026-07-06T14:05:10.590Z",
+      "updatedAt": "2026-07-06T14:29:38.568Z",
+      "startedAt": "2026-07-06T14:06:22.878Z",
+      "completedAt": "2026-07-06T14:29:38.568Z",
+      "evidence": "G001-plan-d-overnight-bounded-execution-u constraints established in .omo/ulw-loop/goals.json and ledger.jsonl; active Codex goal snapshot captured at .omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/codex_goal_snapshot_20260706_g001.json; no runtime resources spawned | cleanup: no qa runtime resources spawned"
+    },
+    {
+      "id": "G002-goal-1-rank02-r1-generate8-dry-run-o",
+      "title": "Goal 1: rank02 R1 generate8 dry-run only. Use rank02 as the active se...",
+      "objective": "Goal 1: rank02 R1 generate8 dry-run only. Use rank02 as the active seed, build context, generate eight R1 candidate slots, run static gate, and run DB registration dry-run only. Success requires source receipt, candidate seed JSON, static gate JSON, dry-run registration report, verification receipt, handoff, ledger, and Korean commit.",
+      "status": "complete",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "CLI/data-channel: read required source documents, generate rank02 R1 eight candidate seeds, run static gate, and run DB registration dry-run only",
+          "userModel": "happy",
+          "expectedEvidence": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_b_generate8_dryrun_20260706/plan_d_rank02_r1_generate8_dryrun_summary_20260706.json plus register_plan_d_rank02_r1_generate8_dryrun_20260706.json showing apply=false",
+          "essential": true,
+          "capturedEvidence": "rank02 R1 generate8 dry-run completed: summary docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_b_generate8_dryrun_20260706/plan_d_rank02_r1_generate8_dryrun_summary_20260706.json; register report shows dry_run=true inserted_row_count=0 | cleanup: no qa runtime resources spawned",
+          "status": "pass",
+          "capturedAt": "2026-07-06T14:26:21.663Z"
+        },
+        {
+          "id": "C002",
+          "scenario": "CLI/data-channel adversarial edge: verify no DB INSERT apply, no DB UPDATE/DELETE, sanitized names, and no pre-existing DB collisions before dry-run",
+          "userModel": "edge",
+          "expectedEvidence": "plan_d_rank02_r1_dryrun_db_absence_check_20260706.json and static gate JSON showing collisions=0, apply=false, sanitized=true",
+          "essential": true,
+          "capturedEvidence": "DB safety verified: plan_d_rank02_r1_dryrun_db_absence_check_20260706.json passed with buy_matches_before_dryrun=0 sell_matches_before_dryrun=0; static gate 8/8 sanitized; dry-run report inserted_row_count=0 and DB UPDATE/DELETE not used | cleanup: no qa runtime resources spawned",
+          "status": "pass",
+          "capturedAt": "2026-07-06T14:26:30.232Z"
+        },
+        {
+          "id": "C003",
+          "scenario": "Regression channel: parse all new JSON/JSONL artifacts, run verify_nonrelease_sync and git diff --check, and confirm forbidden dashboard/.gjc/unrelated artifacts are not staged",
+          "userModel": "regression",
+          "expectedEvidence": "verification receipt JSON plus command output in handoff showing parse ok, verify_nonrelease_sync ok, diff check ok, scoped staging only",
+          "essential": false,
+          "capturedEvidence": "verification receipt passed: plan_d_rank02_r1_verification_receipt_20260706.json records JSON/JSONL parse ok, verify_nonrelease_sync exit 0, scoped git diff --check exit 0, full git diff --check exit 0; forbidden dashboard/.gjc/unrelated artifacts excluded from staging plan | cleanup: no qa runtime resources spawned",
+          "status": "pass",
+          "capturedAt": "2026-07-06T14:26:39.181Z"
+        }
+      ],
+      "attempt": 1,
+      "createdAt": "2026-07-06T14:05:10.590Z",
+      "updatedAt": "2026-07-06T14:29:56.556Z",
+      "startedAt": "2026-07-06T14:29:46.850Z",
+      "completedAt": "2026-07-06T14:29:56.556Z",
+      "evidence": "G002-goal-1-rank02-r1-generate8-dry-run-o completed: source receipt, 8 candidate seeds, static gate 8/8, DB registration dry-run inserted_row_count=0, verification receipt, handoff, .omo/start-work ledger, and scoped staging plan recorded | cleanup: no replay/OOS runtime resources spawned"
+    },
+    {
+      "id": "G003-goal-2-rank02-r1-insert-only-and-off",
+      "title": "Goal 2: rank02 R1 INSERT-only and official min warm64 limited replay...",
+      "objective": "Goal 2: rank02 R1 INSERT-only and official min warm64 limited replay if Goal 1 passes. Insert only the dry-run-approved candidates, run preapply absence and postapply DB checks, then run official min full-period warm64 limited replay for at most the approved small set. Success requires replay result, classification, handoff, ledger, validation, and Korean commit.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: Goal 2: rank02 R1 INSERT-only and official min warm64 limited replay if Goal...",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 3.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Goal 2: rank02 R1 INSERT-only and official min warm64 limited replay if Goal....",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Goal 2: rank02 R1 INSERT-only and official min warm64 limited replay if Goal....",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-06T14:05:10.590Z",
+      "updatedAt": "2026-07-06T14:05:10.590Z"
+    },
+    {
+      "id": "G004-goal-3-rank02-selected-oos-if-goal-2",
+      "title": "Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. F...",
+      "objective": "Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. Freeze/preregister only selected candidates, run only selected OOS, classify survivor/hold/no_go, and never run portfolio/export. Success requires preregistration, OOS result, survivor/no_go ledgers, verification receipt, handoff, and Korean commit. If there are no improved candidates, record blocked-by-no-candidate and proceed to Goal 5.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. Freeze/pr...",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 4.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. Freeze/pr....",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. Freeze/pr....",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-06T14:05:10.590Z",
+      "updatedAt": "2026-07-06T14:05:10.590Z"
+    },
+    {
+      "id": "G005-goal-4-append-survivor-records-and-p",
+      "title": "Goal 4: append survivor records and prepare next seed readiness if Go...",
+      "objective": "Goal 4: append survivor records and prepare next seed readiness if Goal 3 has survivors. Append-only update seed_pool and oos_survivors, create passport, and prepare rank03 or next-seed readiness review only. Success requires append-only ledger proof, passport, readiness summary, handoff, validation, and Korean commit.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: Goal 4: append survivor records and prepare next seed readiness if Goal 3 has...",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 5.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Goal 4: append survivor records and prepare next seed readiness if Goal 3 has....",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Goal 4: append survivor records and prepare next seed readiness if Goal 3 has....",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-06T14:05:10.590Z",
+      "updatedAt": "2026-07-06T14:05:10.590Z"
+    },
+    {
+      "id": "G006-goal-5-deadline-closeout-and-whole-p",
+      "title": "Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00...",
+      "objective": "Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00 KST, or earlier if all reachable goals complete, write final handoff with completed pages, remaining pages, objective/benefit, blockers, next command, validation results, and commit hash list. Success requires handoff, ulw-loop evidence records or equivalent ledger, clean scoped staging, and Korean commit if there are new artifacts.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00 KST, or...",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 6.",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00 KST, or....",
+          "essential": true,
+          "capturedEvidence": null,
+          "status": "pending"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00 KST, or....",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-06T14:05:10.590Z",
+      "updatedAt": "2026-07-06T14:05:10.590Z"
+    }
+  ],
+  "codexObjective": "2026-07-07 06:00 KST까지 Plan D 남은 연구 페이지를 가능한 만큼 순차 실행하고, 완료하지 못하면 진행분을 handoff/ledger/커밋으로 정리해 보고한다."
+}

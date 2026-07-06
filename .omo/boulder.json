@@ -746,7 +746,7 @@
     "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export-20260706"
   ],
   "current_priority": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export",
-  "last_completed_scope": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export",
+  "last_completed_scope": "plan-d-rank02-r1-generate8-dryrun-no-portfolio-export",
   "updated_at": "2026-07-06T19:09:34+09:00",
   "plan_d_rank01_rd_freeze_r2_result": {
     "completed_at": "2026-07-06T17:17:04+09:00",
@@ -812,12 +812,12 @@
     "next_allowed_action": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export"
   },
   "current_plan": ".omo/plans/css-v7-repair-plan-c-plan-b-d-20260703.md",
-  "current_scope": "overnight-plan-d-rank01-r3-to-rank02-readiness-bounded-no-export",
-  "current_status": "completed_rank01_r3_oos_survivor_rank02_ready",
-  "current_session_id": "codex:overnight-plan-d-rank01-r3-to-rank02-readiness-bounded-no-export-20260706",
-  "last_updated": "2026-07-06T22:34:51+09:00",
-  "latest_evidence_dir": ".omo/evidence/overnight-plan-d-rank01-r3-to-rank02-readiness-bounded-no-export-20260706",
-  "latest_output_dir": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_h_r3_insert_replay_20260706",
+  "current_scope": "plan-d-rank02-r1-generate8-dryrun-no-portfolio-export",
+  "current_status": "completed_dry_run_only",
+  "current_session_id": "codex:plan-d-rank02-r1-generate8-dryrun-no-portfolio-export-20260706",
+  "last_updated": "2026-07-06T23:27:00+09:00",
+  "latest_evidence_dir": ".omo/evidence/plan-d-rank02-r1-generate8-dryrun-no-portfolio-export-20260706",
+  "latest_output_dir": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_b_generate8_dryrun_20260706",
   "guardrails": {
     "db_registration": "dry_run_only",
     "official_replay": false,
@@ -825,9 +825,9 @@
     "portfolio": false,
     "export_live_final_promotion": false
   },
-  "latest_handoff": "docs/update_log/2026-07-06_plan_d_rank01_r3_oos_and_rank02_readiness_handoff.md",
+  "latest_handoff": "docs/update_log/2026-07-06_plan_d_rank02_r1_generate8_dryrun_handoff.md",
   "latest_summary": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_g_r3_generate8_dryrun_20260706/plan_d_rank01_r3_generate8_dryrun_summary_20260706.json",
-  "next_recommended_scope": "plan-d-rank02-r1-generate8-dryrun-no-portfolio-export",
+  "next_recommended_scope": "plan-d-rank02-r1-insert-replay-no-portfolio-export",
   "last_result": {
     "r3_limited_replay_decision_counts": {
       "hold": 1,
@@ -840,5 +840,23 @@
     "rank02_readiness": "ready_for_rank02_r1_readiness_or_generate_dryrun_next_scope",
     "portfolio_executed": false,
     "export_live_final_executed": false
+  },
+  "plan_d_rank02_r1_generate8_dryrun_result": {
+    "scope": "plan-d-rank02-r1-generate8-dryrun-no-portfolio-export",
+    "status": "completed_dry_run_only",
+    "candidate_count": 8,
+    "static_gate_passed": 8,
+    "static_gate_failed": 0,
+    "dry_run_status": "dry_run_ok",
+    "planned_insert_count": 16,
+    "inserted_row_count": 0,
+    "db_insert_apply_used": false,
+    "official_replay_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "verification": "passed",
+    "handoff": "docs/update_log/2026-07-06_plan_d_rank02_r1_generate8_dryrun_handoff.md",
+    "next_allowed_action": "plan-d-rank02-r1-insert-replay-no-portfolio-export"
   }
 }
