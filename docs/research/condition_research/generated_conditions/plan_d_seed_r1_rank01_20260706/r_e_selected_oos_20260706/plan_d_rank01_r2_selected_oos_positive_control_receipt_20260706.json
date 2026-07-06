@@ -1,0 +1,262 @@
+{
+  "schema": "positive_control_receipt_v1",
+  "generated_at": "2026-07-06T09:54:00.146927+00:00",
+  "authority": "advisory_only",
+  "inputs": [
+    "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank01_20260706\\plan_d_rank01_positive_control_input_20260706.json",
+    "dashboard/reference_strategies.json"
+  ],
+  "passed_count": 20,
+  "total": 20,
+  "all_passed": true,
+  "per_champion": [
+    {
+      "name": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 145.91,
+        "mdd_pct": 4.06,
+        "trade_count": 19,
+        "total_profit_krw": 1079768.0,
+        "daily_avg_trades": 0.5
+      }
+    },
+    {
+      "name": "#1",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 255.34,
+        "mdd_pct": 3.17,
+        "trade_count": 3315,
+        "total_profit_krw": 305178048.0,
+        "daily_avg_trades": 13.3
+      }
+    },
+    {
+      "name": "#2",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 224.54,
+        "mdd_pct": 3.54,
+        "trade_count": 4648,
+        "total_profit_krw": 311831928.0,
+        "daily_avg_trades": 18.7
+      }
+    },
+    {
+      "name": "#3",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 190.12,
+        "mdd_pct": 2.68,
+        "trade_count": 4748,
+        "total_profit_krw": 304539119.0,
+        "daily_avg_trades": 19.0
+      }
+    },
+    {
+      "name": "#4",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 209.34,
+        "mdd_pct": 4.73,
+        "trade_count": 3646,
+        "total_profit_krw": 330921151.0,
+        "daily_avg_trades": 14.8
+      }
+    },
+    {
+      "name": "#5",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 204.92,
+        "mdd_pct": 6.12,
+        "trade_count": 4983,
+        "total_profit_krw": 323943486.0,
+        "daily_avg_trades": 20.2
+      }
+    },
+    {
+      "name": "#6",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 252.55,
+        "mdd_pct": 5.87,
+        "trade_count": 4483,
+        "total_profit_krw": 301243463.0,
+        "daily_avg_trades": 21.0
+      }
+    },
+    {
+      "name": "#7",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 134.17,
+        "mdd_pct": 2.87,
+        "trade_count": 5234,
+        "total_profit_krw": 310414954.0,
+        "daily_avg_trades": 21.7
+      }
+    },
+    {
+      "name": "#8",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 243.2,
+        "mdd_pct": 3.57,
+        "trade_count": 2624,
+        "total_profit_krw": 301576794.0,
+        "daily_avg_trades": 10.6
+      }
+    },
+    {
+      "name": "#9",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 152.25,
+        "mdd_pct": 3.8,
+        "trade_count": 5786,
+        "total_profit_krw": 303288419.0,
+        "daily_avg_trades": 23.2
+      }
+    },
+    {
+      "name": "#10",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 195.26,
+        "mdd_pct": 3.43,
+        "trade_count": 4149,
+        "total_profit_krw": 307425396.0,
+        "daily_avg_trades": 16.9
+      }
+    },
+    {
+      "name": "#11",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 252.2,
+        "mdd_pct": 4.51,
+        "trade_count": 3842,
+        "total_profit_krw": 300219347.0,
+        "daily_avg_trades": 15.5
+      }
+    },
+    {
+      "name": "#12",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 155.31,
+        "mdd_pct": 6.75,
+        "trade_count": 4713,
+        "total_profit_krw": 308147705.0,
+        "daily_avg_trades": 19.0
+      }
+    },
+    {
+      "name": "#13",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 215.77,
+        "mdd_pct": 3.26,
+        "trade_count": 3351,
+        "total_profit_krw": 302076575.0,
+        "daily_avg_trades": 14.0
+      }
+    },
+    {
+      "name": "#14",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 190.36,
+        "mdd_pct": 4.14,
+        "trade_count": 2618,
+        "total_profit_krw": 300935461.0,
+        "daily_avg_trades": 10.6
+      }
+    },
+    {
+      "name": "#15",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 225.62,
+        "mdd_pct": 1.9,
+        "trade_count": 3618,
+        "total_profit_krw": 310816464.0,
+        "daily_avg_trades": 14.7
+      }
+    },
+    {
+      "name": "#16",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 201.74,
+        "mdd_pct": 4.23,
+        "trade_count": 4088,
+        "total_profit_krw": 320208672.0,
+        "daily_avg_trades": 16.5
+      }
+    },
+    {
+      "name": "#17",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 262.05,
+        "mdd_pct": 6.63,
+        "trade_count": 3351,
+        "total_profit_krw": 316427795.0,
+        "daily_avg_trades": 16.2
+      }
+    },
+    {
+      "name": "#18",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 158.72,
+        "mdd_pct": 4.29,
+        "trade_count": 5237,
+        "total_profit_krw": 306029101.0,
+        "daily_avg_trades": 21.7
+      }
+    },
+    {
+      "name": "#19",
+      "passed": true,
+      "reasons": [],
+      "gate_metrics": {
+        "cagr": 136.65,
+        "mdd_pct": 3.6,
+        "trade_count": 4713,
+        "total_profit_krw": 300620434.0,
+        "daily_avg_trades": 18.9
+      }
+    }
+  ],
+  "verdict": "gate_healthy",
+  "gate_config": {
+    "mdd_cap": 20.0,
+    "min_trades": 20,
+    "min_daily_trades": 0.05,
+    "tpi_gate": 0.0,
+    "tpi_gate_enabled": false
+  }
+}

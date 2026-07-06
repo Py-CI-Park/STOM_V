@@ -730,11 +730,12 @@
     "blocker": null
   },
   "sessions": [
-    "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export-20260706"
+    "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export-20260706",
+    "codex:css-v7-repair-plan-c-plan-b-d-20260703-plan-d-rank01-r2-selected-oos-prereg-no-portfolio-export-20260706"
   ],
-  "current_priority": "plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export",
-  "last_completed_scope": "plan-d-rank01-rd-freeze-r2-limited-replay-no-portfolio-export",
-  "updated_at": "2026-07-06T17:17:04+09:00",
+  "current_priority": "plan-d-rank01-r2-selected-oos-prereg-no-portfolio-export",
+  "last_completed_scope": "plan-d-rank01-r2-selected-oos-prereg-no-portfolio-export",
+  "updated_at": "2026-07-06T18:56:08+09:00",
   "plan_d_rank01_rd_freeze_r2_result": {
     "completed_at": "2026-07-06T17:17:04+09:00",
     "result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_d_freeze_r2_limited_20260706/plan_d_rank01_r2_limited_replay_result_20260706.json",
@@ -780,5 +781,22 @@
         "selection_reason": "nearby_amount_axis_confirmation"
       }
     ]
+  },
+  "plan_d_rank01_r2_selected_oos_started": {
+    "started_at": "2026-07-06T18:48:27+09:00",
+    "plan": ".omo/plans/css-v7-repair-plan-c-plan-b-d-20260703.md",
+    "source_read_receipt": ".omo/evidence/plan-d-rank01-r2-selected-oos-prereg-no-portfolio-export-20260706/source_read_receipt.md",
+    "pairs": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_e_selected_oos_20260706/pairs_plan_d_rank01_r2_selected3_oos_20260706.json",
+    "config": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_e_selected_oos_20260706/oos_config_min_plan_d_rank01_r2_selected3_20260706.json",
+    "preregistration": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_e_selected_oos_20260706/plan_d_rank01_r2_selected_oos_preregistration_20260706.md",
+    "run_id": "lat_plan_d_rank01_r2_selected3_oos_min_warm64_20260706"
+  },
+  "plan_d_rank01_r2_selected_oos_result": {
+    "completed_at": "2026-07-06T18:56:08+09:00",
+    "result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_e_selected_oos_20260706/plan_d_rank01_r2_selected_oos_result_20260706.json",
+    "decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank01_20260706/r_e_selected_oos_20260706/plan_d_rank01_r2_selected_oos_round_decision_20260706.json",
+    "handoff": "docs/update_log/2026-07-06_plan_d_rank01_r2_selected_oos_handoff.md",
+    "survivor_count": 3,
+    "next_allowed_action": "plan-d-rank01-r2-survivor-freeze-r3-readiness-no-portfolio-export"
   }
 }
