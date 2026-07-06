@@ -1,0 +1,173 @@
+{
+  "schema": "plan_d_positive_control_input_v1",
+  "created_at": "2026-07-06T11:28:38+09:00",
+  "scope": "repair-composite-plan-d-seed-pool-intake",
+  "source_result_path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_result_20260706.json",
+  "champions": [
+    {
+      "name": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+      "metrics": {
+        "total_profit_krw": 1079768.0,
+        "mdd_pct": 4.06,
+        "trade_count": 19,
+        "daily_avg_trades": 0.5,
+        "cagr": 145.91
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90",
+      "metrics": {
+        "total_profit_krw": 1124220.0,
+        "mdd_pct": 4.12,
+        "trade_count": 18,
+        "daily_avg_trades": 0.5,
+        "cagr": 151.92
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90",
+      "metrics": {
+        "total_profit_krw": 865831.0,
+        "mdd_pct": 6.28,
+        "trade_count": 19,
+        "daily_avg_trades": 0.5,
+        "cagr": 117.0
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_19_profitmax_plus_l1430_sell_loose_tp4_sl3_hold90",
+      "metrics": {
+        "total_profit_krw": 865831.0,
+        "mdd_pct": 6.28,
+        "trade_count": 19,
+        "daily_avg_trades": 0.5,
+        "cagr": 117.0
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_17_balanced_plus_l14_sell_default_tp3_sl3_hold60",
+      "metrics": {
+        "total_profit_krw": 909297.0,
+        "mdd_pct": 4.06,
+        "trade_count": 18,
+        "daily_avg_trades": 0.5,
+        "cagr": 122.88
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_27_l14_focus_sparse_strength_sell_default_tp3_sl3_hold60",
+      "metrics": {
+        "total_profit_krw": 909297.0,
+        "mdd_pct": 4.06,
+        "trade_count": 18,
+        "daily_avg_trades": 0.5,
+        "cagr": 122.88
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_default_tp3_sl3_hold60",
+      "metrics": {
+        "total_profit_krw": 981721.0,
+        "mdd_pct": 6.04,
+        "trade_count": 32,
+        "daily_avg_trades": 0.9,
+        "cagr": 132.65
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_14_top_four_plus_l13_sell_default_tp3_sl3_hold60",
+      "metrics": {
+        "total_profit_krw": 826691.0,
+        "mdd_pct": 4.29,
+        "trade_count": 67,
+        "daily_avg_trades": 1.8,
+        "cagr": 37.7
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_25_daily_boost_core_l13_sell_default_tp3_sl3_hold60",
+      "metrics": {
+        "total_profit_krw": 826691.0,
+        "mdd_pct": 4.29,
+        "trade_count": 67,
+        "daily_avg_trades": 1.8,
+        "cagr": 37.7
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_loose_tp4_sl3_hold90",
+      "metrics": {
+        "total_profit_krw": 985556.0,
+        "mdd_pct": 6.64,
+        "trade_count": 31,
+        "daily_avg_trades": 0.8,
+        "cagr": 133.18
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_15_top_four_plus_l13_l14_sell_default_tp3_sl3_hold60",
+      "metrics": {
+        "total_profit_krw": 725284.0,
+        "mdd_pct": 4.32,
+        "trade_count": 75,
+        "daily_avg_trades": 2.0,
+        "cagr": 33.05
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_16_sparse_four_plus_l13_l14_sell_default_tp3_sl3_hold60",
+      "metrics": {
+        "total_profit_krw": 725284.0,
+        "mdd_pct": 4.32,
+        "trade_count": 75,
+        "daily_avg_trades": 2.0,
+        "cagr": 33.05
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_24_strength_profitmax_l13_l14_sell_default_tp3_sl3_hold60",
+      "metrics": {
+        "total_profit_krw": 725284.0,
+        "mdd_pct": 4.32,
+        "trade_count": 75,
+        "daily_avg_trades": 2.0,
+        "cagr": 33.05
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_13_top_four_plus_l14_sell_tight_tp3_sl2p5_hold60",
+      "metrics": {
+        "total_profit_krw": 486942.0,
+        "mdd_pct": 9.09,
+        "trade_count": 20,
+        "daily_avg_trades": 0.5,
+        "cagr": 65.8
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    },
+    {
+      "name": "repair_v3_20260706_17_balanced_plus_l14_sell_tight_tp3_sl2p5_hold60",
+      "metrics": {
+        "total_profit_krw": 624603.0,
+        "mdd_pct": 9.09,
+        "trade_count": 19,
+        "daily_avg_trades": 0.5,
+        "cagr": 84.41
+      },
+      "source": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_survivors_20260706.jsonl"
+    }
+  ]
+}
