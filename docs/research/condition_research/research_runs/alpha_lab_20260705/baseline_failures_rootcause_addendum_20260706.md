@@ -75,3 +75,7 @@ git diff --name-only 70775539 -- tests/unit/ | grep -v test_alpha_
 - 안전 확인: 위 8개 파일의 `subprocess.Popen` 사용처는 전부 monkeypatch 가짜(fail_popen/fake_popen), `multiprocessing`은 Queue/Process 시그니처 계약용 import — 표적 실행이 실제 백테스트/엔진 프로세스를 기동하지 않음을 소스 수준 확인 후 실행(min 스윕 비간섭 유지).
 
 **최종 판정**: "전체 통과" 리터럴 기준은 알파 소관(`alpha_lab/**`, `cli/alpha_*.py`, `tests/unit/test_alpha_*.py`, run-dir 문서) 내 어떤 정직한 수단으로도 충족 불가함이 2개 수복 라운드에 걸쳐 독립적으로 확정됐다. 잔여 경로는 (a) 게이트를 §6 권고("알파 스코프 전수 green + 기준선 10건 문서화 면제")로 판정하거나, (b) 10건 수리를 wt-dev 레인 별도 사안으로 발주하는 것 두 가지뿐이다. 추가 스코프 내 수복 라운드는 동일 결론만 재생산한다.
+
+## 8. 추록 — 11번째(신규 관측) 플레이키 실패 (2026-07-07, 알파 랩 v4 검증 라운드)
+
+알파 랩 v4 검증 라운드에서 전체 스위트 재실측(`11 failed, 4493 passed, 20 skipped in 469s`) 중 본 문서 §2 목록 10건 외에 `tests/unit/dashboard/test_backtest_jobs.py::test_cancel_kills_child_tree_and_releases_queue`가 추가로 관측됐다(격리 재실행 시 3 fail/2 pass로 비결정적). 이 문서의 "고정 10건" 목록은 **불변**이다 — 신규 항목은 결정적 실패가 아니라 확률적(flaky) 실패이므로 별도 문서로 근본원인·알파 무관성을 구성적으로 증명했다. 상세: `../alpha_lab_v4_20260707/pytest_baseline_11th_failure_repair_20260707.md`(원인 파일·테스트 파일 모두 알파 착수 커밋 `70775539`과 바이트 동일, `alpha` 토큰 0건, 알파 스코프 505 passed/0 failed 재확인). 본 부록 §1~7의 10건 목록·근본원인·판정은 이 추록으로 변경되지 않는다.

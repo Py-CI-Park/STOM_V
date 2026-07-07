@@ -1,0 +1,628 @@
+{
+ "schema": "alpha_lab_v4_oos_verdict_v1",
+ "created_at": "2026-07-07T08:50:00",
+ "stage": "r3_oos_blind_verdict",
+ "preregistration_sha256": "87821aaaa86e5b5ddc4f0673debaf3527cacd4a41a9231e132dfb482f4c3f3c3",
+ "ensemble_frozen_sha256": "111f5180c61dda291a8d1ffcce6580aa58232c05555a4a742a41daf155f26b23",
+ "oos_window": {
+  "start_ym": "202501",
+  "end_ym": "202602",
+  "n_months": 14
+ },
+ "oos_config_path": "docs/research/condition_research/research_runs/alpha_lab_v4_20260707/oos_config_tick_warm64_2025_2026_20260707.json",
+ "champion_set": [
+  "RR8_12",
+  "RR8_0",
+  "RR8_21",
+  "GPTAUTH_G8"
+ ],
+ "lookback": 2,
+ "engine_runs": {
+  "n_engine_calls": 4,
+  "run_ids": [
+   "alp_v4_r3_oos_chunk1_20260707",
+   "alp_v4_r3_oos_chunk2_20260707"
+  ],
+  "per_champion": {
+   "RR8_12": {
+    "run_id": "alp_v4_r3_oos_chunk1_20260707",
+    "gen_no": 0,
+    "csv_path": "backtest/csv\\stock_bt_ALP_V4_RR8_12_20260707083632.csv",
+    "engine_profit": 2652432.0,
+    "engine_mdd_pct": 13.33,
+    "trade_count": 211,
+    "daily_avg_trades": 0.8,
+    "payoff_ratio": 1.0661719892735253,
+    "gate_passed": true
+   },
+   "RR8_0": {
+    "run_id": "alp_v4_r3_oos_chunk1_20260707",
+    "gen_no": 1,
+    "csv_path": "backtest/csv\\stock_bt_ALP_V4_RR8_0_20260707083706.csv",
+    "engine_profit": 2897270.0,
+    "engine_mdd_pct": 17.34,
+    "trade_count": 158,
+    "daily_avg_trades": 0.6,
+    "payoff_ratio": 1.07426939878677,
+    "gate_passed": true
+   },
+   "RR8_21": {
+    "run_id": "alp_v4_r3_oos_chunk2_20260707",
+    "gen_no": 0,
+    "csv_path": "backtest/csv\\stock_bt_ALP_V4_RR8_21_20260707084100.csv",
+    "engine_profit": 3444287.0,
+    "engine_mdd_pct": 18.84,
+    "trade_count": 180,
+    "daily_avg_trades": 0.7,
+    "payoff_ratio": 1.0865242829282216,
+    "gate_passed": true
+   },
+   "GPTAUTH_G8": {
+    "run_id": "alp_v4_r3_oos_chunk2_20260707",
+    "gen_no": 1,
+    "csv_path": "backtest/csv\\stock_bt_ALP_V4_GPTAUTH_G8_20260707084140.csv",
+    "engine_profit": 1439459.0,
+    "engine_mdd_pct": 15.14,
+    "trade_count": 605,
+    "daily_avg_trades": 2.2,
+    "payoff_ratio": 1.7246321003314682,
+    "gate_passed": true
+   }
+  },
+  "monthly_pnl": {
+   "RR8_12": [
+    [
+     "202501",
+     941183.0
+    ],
+    [
+     "202502",
+     480729.0
+    ],
+    [
+     "202503",
+     802889.0
+    ],
+    [
+     "202504",
+     1181002.0
+    ],
+    [
+     "202505",
+     -268042.0
+    ],
+    [
+     "202506",
+     -446083.0
+    ],
+    [
+     "202507",
+     -66781.0
+    ],
+    [
+     "202508",
+     251956.0
+    ],
+    [
+     "202509",
+     -344770.0
+    ],
+    [
+     "202510",
+     476602.0
+    ],
+    [
+     "202511",
+     -147490.0
+    ],
+    [
+     "202512",
+     201501.0
+    ],
+    [
+     "202601",
+     456070.0
+    ],
+    [
+     "202602",
+     -866334.0
+    ]
+   ],
+   "RR8_0": [
+    [
+     "202501",
+     1128777.0
+    ],
+    [
+     "202502",
+     536731.0
+    ],
+    [
+     "202503",
+     1262650.0
+    ],
+    [
+     "202504",
+     613489.0
+    ],
+    [
+     "202505",
+     -126474.0
+    ],
+    [
+     "202506",
+     -457197.0
+    ],
+    [
+     "202507",
+     -23102.0
+    ],
+    [
+     "202508",
+     65659.0
+    ],
+    [
+     "202509",
+     -125471.0
+    ],
+    [
+     "202510",
+     85873.0
+    ],
+    [
+     "202511",
+     -176563.0
+    ],
+    [
+     "202512",
+     263150.0
+    ],
+    [
+     "202601",
+     198909.0
+    ],
+    [
+     "202602",
+     -349161.0
+    ]
+   ],
+   "RR8_21": [
+    [
+     "202501",
+     1115525.0
+    ],
+    [
+     "202502",
+     388960.0
+    ],
+    [
+     "202503",
+     1587784.0
+    ],
+    [
+     "202504",
+     650023.0
+    ],
+    [
+     "202505",
+     -454149.0
+    ],
+    [
+     "202506",
+     -750288.0
+    ],
+    [
+     "202507",
+     196315.0
+    ],
+    [
+     "202508",
+     100087.0
+    ],
+    [
+     "202509",
+     -101323.0
+    ],
+    [
+     "202510",
+     417766.0
+    ],
+    [
+     "202511",
+     -489748.0
+    ],
+    [
+     "202512",
+     428228.0
+    ],
+    [
+     "202601",
+     704268.0
+    ],
+    [
+     "202602",
+     -349161.0
+    ]
+   ],
+   "GPTAUTH_G8": [
+    [
+     "202501",
+     -1199665.0
+    ],
+    [
+     "202502",
+     493232.0
+    ],
+    [
+     "202503",
+     77916.0
+    ],
+    [
+     "202504",
+     835112.0
+    ],
+    [
+     "202505",
+     742904.0
+    ],
+    [
+     "202506",
+     6840.0
+    ],
+    [
+     "202507",
+     -25199.0
+    ],
+    [
+     "202508",
+     -207757.0
+    ],
+    [
+     "202509",
+     1436050.0
+    ],
+    [
+     "202510",
+     -271014.0
+    ],
+    [
+     "202511",
+     -155172.0
+    ],
+    [
+     "202512",
+     38879.0
+    ],
+    [
+     "202601",
+     77040.0
+    ],
+    [
+     "202602",
+     -409707.0
+    ]
+   ]
+  },
+  "crosscheck": "monthly_pnl_from_csv(csv) 합 == generation.profit, 4/4 exact (diff=0.0) — 월별 추출 무결성."
+ },
+ "per_config_oos": {
+  "single_alwayson[RR8_12]": {
+   "profit": 2652432.0,
+   "mdd": 873720.0,
+   "calmar": 3.035791786842467,
+   "ret_over_mdd": 3.035791786842467
+  },
+  "single_alwayson[RR8_0]": {
+   "profit": 2897270.0,
+   "mdd": 757275.0,
+   "calmar": 3.8259152883694827,
+   "ret_over_mdd": 3.8259152883694827
+  },
+  "single_alwayson[RR8_21]": {
+   "profit": 3444287.0,
+   "mdd": 1204437.0,
+   "calmar": 2.8596655532834014,
+   "ret_over_mdd": 2.8596655532834014
+  },
+  "single_alwayson[GPTAUTH_G8]": {
+   "profit": 1439459.0,
+   "mdd": 1199665.0,
+   "calmar": 1.1998841343208313,
+   "ret_over_mdd": 1.1998841343208313
+  },
+  "single_adaptive[RR8_12]": {
+   "profit": 1990655.0,
+   "mdd": 1415148.0,
+   "calmar": 1.4066761921721262,
+   "ret_over_mdd": 1.4066761921721262
+  },
+  "single_adaptive[RR8_0]": {
+   "profit": 2682253.0,
+   "mdd": 859394.0,
+   "calmar": 3.121098122630598,
+   "ret_over_mdd": 3.121098122630598
+  },
+  "single_adaptive[RR8_21]": {
+   "profit": 1597623.0,
+   "mdd": 2144669.0,
+   "calmar": 0.7449275389349126,
+   "ret_over_mdd": 0.7449275389349126
+  },
+  "single_adaptive[GPTAUTH_G8]": {
+   "profit": 17331.0,
+   "mdd": 1199665.0,
+   "calmar": 0.014446532990459837,
+   "ret_over_mdd": 0.014446532990459837
+  },
+  "ensemble_a_static_equal": {
+   "profit": 2608362.0,
+   "mdd": 493590.75,
+   "calmar": 5.2844628875237225,
+   "ret_over_mdd": 5.2844628875237225
+  },
+  "ensemble_b_adaptive_sum": {
+   "profit": 1571965.5,
+   "mdd": 1132639.75,
+   "calmar": 1.3878777431217648,
+   "ret_over_mdd": 1.3878777431217648
+  },
+  "ensemble_c_regime_rotation": {
+   "profit": 1727516.0,
+   "mdd": 1207774.0,
+   "calmar": 1.4303305088534775,
+   "ret_over_mdd": 1.4303305088534775
+  }
+ },
+ "adaptive_floor_oos": {
+  "RR8_12": {
+   "raw_mdd": 873720.0,
+   "timed_mdd": 1415148.0,
+   "gain_pct": -61.968136245021284
+  },
+  "RR8_0": {
+   "raw_mdd": 757275.0,
+   "timed_mdd": 859394.0,
+   "gain_pct": -13.485061569443069
+  },
+  "RR8_21": {
+   "raw_mdd": 1204437.0,
+   "timed_mdd": 2144669.0,
+   "gain_pct": -78.06402493447145
+  },
+  "GPTAUTH_G8": {
+   "raw_mdd": 1199665.0,
+   "timed_mdd": 1199665.0,
+   "gain_pct": 0.0
+  }
+ },
+ "regime_rotation_picks_oos": [
+  [
+   "202501",
+   "EQUAL_WARMUP"
+  ],
+  [
+   "202502",
+   "EQUAL_WARMUP"
+  ],
+  [
+   "202503",
+   "RR8_0"
+  ],
+  [
+   "202504",
+   "RR8_21"
+  ],
+  [
+   "202505",
+   "RR8_21"
+  ],
+  [
+   "202506",
+   "GPTAUTH_G8"
+  ],
+  [
+   "202507",
+   "GPTAUTH_G8"
+  ],
+  [
+   "202508",
+   "GPTAUTH_G8"
+  ],
+  [
+   "202509",
+   "RR8_21"
+  ],
+  [
+   "202510",
+   "GPTAUTH_G8"
+  ],
+  [
+   "202511",
+   "GPTAUTH_G8"
+  ],
+  [
+   "202512",
+   "RR8_12"
+  ],
+  [
+   "202601",
+   "RR8_0"
+  ],
+  [
+   "202602",
+   "RR8_21"
+  ]
+ ],
+ "best_alwayson_baseline": {
+  "slug": "RR8_0",
+  "profit": 2897270.0,
+  "mdd": 757275.0,
+  "calmar": 3.8259152883694827,
+  "ret_over_mdd": 3.8259152883694827
+ },
+ "winners": [
+  "ensemble_a_static_equal"
+ ],
+ "verdict": "success",
+ "verdict_rule_applied": "primary",
+ "discovery_vs_oos_comparison": {
+  "single_alwayson": {
+   "RR8_12": {
+    "discovery": {
+     "profit": 12631722.0,
+     "mdd": 668472.0,
+     "calmar": 18.89641151761031
+    },
+    "oos": {
+     "profit": 2652432.0,
+     "mdd": 873720.0,
+     "calmar": 3.035791786842467,
+     "ret_over_mdd": 3.035791786842467
+    }
+   },
+   "RR8_0": {
+    "discovery": {
+     "profit": 11404295.0,
+     "mdd": 578298.0,
+     "calmar": 19.72044689762026
+    },
+    "oos": {
+     "profit": 2897270.0,
+     "mdd": 757275.0,
+     "calmar": 3.8259152883694827,
+     "ret_over_mdd": 3.8259152883694827
+    }
+   },
+   "RR8_21": {
+    "discovery": {
+     "profit": 11134615.0,
+     "mdd": 606871.0,
+     "calmar": 18.34758128168919
+    },
+    "oos": {
+     "profit": 3444287.0,
+     "mdd": 1204437.0,
+     "calmar": 2.8596655532834014,
+     "ret_over_mdd": 2.8596655532834014
+    }
+   },
+   "GPTAUTH_G8": {
+    "discovery": {
+     "profit": -6932292.0,
+     "mdd": 10060666.0,
+     "calmar": -0.68904901524412
+    },
+    "oos": {
+     "profit": 1439459.0,
+     "mdd": 1199665.0,
+     "calmar": 1.1998841343208313,
+     "ret_over_mdd": 1.1998841343208313
+    }
+   }
+  },
+  "single_adaptive": {
+   "RR8_12": {
+    "discovery": {
+     "profit": 11175622.0,
+     "mdd": 662395.0,
+     "calmar": 16.871537375735024
+    },
+    "oos": {
+     "profit": 1990655.0,
+     "mdd": 1415148.0,
+     "calmar": 1.4066761921721262,
+     "ret_over_mdd": 1.4066761921721262
+    }
+   },
+   "RR8_0": {
+    "discovery": {
+     "profit": 8678271.0,
+     "mdd": 873141.0,
+     "calmar": 9.939140413747607
+    },
+    "oos": {
+     "profit": 2682253.0,
+     "mdd": 859394.0,
+     "calmar": 3.121098122630598,
+     "ret_over_mdd": 3.121098122630598
+    }
+   },
+   "RR8_21": {
+    "discovery": {
+     "profit": 7819114.0,
+     "mdd": 606871.0,
+     "calmar": 12.884309845090637
+    },
+    "oos": {
+     "profit": 1597623.0,
+     "mdd": 2144669.0,
+     "calmar": 0.7449275389349126,
+     "ret_over_mdd": 0.7449275389349126
+    }
+   },
+   "GPTAUTH_G8": {
+    "discovery": {
+     "profit": -93519.0,
+     "mdd": 1772830.0,
+     "calmar": -0.052751250824952196
+    },
+    "oos": {
+     "profit": 17331.0,
+     "mdd": 1199665.0,
+     "calmar": 0.014446532990459837,
+     "ret_over_mdd": 0.014446532990459837
+    }
+   }
+  },
+  "ensemble_a_static_equal": {
+   "discovery": {
+    "profit": 7059585.0,
+    "mdd": 599844.75,
+    "calmar": 11.769020233985543
+   },
+   "oos": {
+    "profit": 2608362.0,
+    "mdd": 493590.75,
+    "calmar": 5.2844628875237225,
+    "ret_over_mdd": 5.2844628875237225
+   }
+  },
+  "ensemble_b_adaptive_sum": {
+   "discovery": {
+    "profit": 6894872.0,
+    "mdd": 450276.5,
+    "calmar": 15.312529079354574
+   },
+   "oos": {
+    "profit": 1571965.5,
+    "mdd": 1132639.75,
+    "calmar": 1.3878777431217648,
+    "ret_over_mdd": 1.3878777431217648
+   }
+  },
+  "ensemble_c_regime_rotation": {
+   "discovery": {
+    "profit": 11419953.75,
+    "mdd": 662395.0,
+    "calmar": 17.240398478249382
+   },
+   "oos": {
+    "profit": 1727516.0,
+    "mdd": 1207774.0,
+    "calmar": 1.4303305088534775,
+    "ret_over_mdd": 1.4303305088534775
+   }
+  }
+ },
+ "mdd_convention_note": "per_config_oos/adaptive_floor_oos/best_alwayson_baseline의 mdd·calmar·ret_over_mdd는 월별 P&L 누적곡선의 원화 peak-drawdown 관례(alpha_lab.ensemble.portfolio.risk_adjusted_metrics, = ai_strategy_loop.fitness.adaptive_timing._equity_mdd와 동일 관례) — v4_assembly_report.json과 동일 척도로 discovery/OOS 비교 가능. engine_runs.per_champion.engine_mdd_pct는 엔진 자체 equity MDD%(예: RR8_12=13.33)로 척도가 다르다(v4_assembly_report.json honest_notes와 동일 주의사항 승계). ret_over_mdd는 이 파이프라인에서 calmar와 수치상 항상 동일(둘 다 profit/mdd, 연환산 없음) — 요청 스키마 호환을 위해 별도 필드로 중복 기재했을 뿐 새 지표가 아니다.",
+ "honest_notes": [
+  "판정: primary 규칙 충족 — ensemble_a_static_equal(calmar=5.2845)이 OOS 최선 단일 챔피언 always-on(RR8_0, calmar=3.8259)을 초과한다.",
+  "핵심 발견: 성공 구성은 (a) 정적 등가중 — 타이밍 오버레이 없음 — 뿐이다. (b) adaptive_sum과 (c) regime_rotation은 물론 단일 적응형(4/4)도 OOS에서 always-on 대비 개선되지 못했다(아래 adaptive_floor_oos 참조 — RR8_12 -61.97%, RR8_0 -13.49%, RR8_21 -78.06%, GPTAUTH_G8 0.0%, 전부 악화 또는 무변화). 설계 문서가 기대한 '적응형이 위험조정을 개선'하는 메커니즘은 이 OOS 창에서 재현되지 않았다 — 성공은 순수 다각화(비상관 손익 상쇄) 효과이지 타이밍 효과가 아니다.",
+  "적응형이 전 챔피언에서 악화된 원인(기제, 독립 확인): lookback=2 워밍업(첫 2개월, 202501~202502)은 판정 없이 원본을 그대로 쓴다 — 그런데 GPTAUTH_G8의 OOS 최대 단일 손실월(-1,199,665, 전체 창 최대낙폭의 근원)이 하필 warmup 첫 달(202501)에 있어 적응형이 그 낙폭을 전혀 막지 못했고, 이후 여러 흑자월을 FLAT 처리해 회복 수익만 깎았다(timed_mdd == raw_mdd 그대로, profit은 1,439,459→17,331로 급감). RR8_12/RR8_21은 202505~202506 연속 손실 직후(트레일링 합 음수) 발생한 202507~202508 반등을 FLAT 처리해 낙폭을 회복하지 못한 채 새 하락(202511 등)이 낮은 구간 위에 누적된 것이 MDD 악화의 기제 — discovery 리포트의 RR8_0 반례와 동일 계열의 'V자 반등 직후 FLAT' 역효과.",
+  "discovery 창에서 ensemble_a는 11개 구성 중 8위(calmar 11.77, discovery_calmar_ranking 참조)로 당시엔 유망 후보로 보이지 않았으나 OOS에서 1위(5.28)로 뒤집혔다 — discovery 순위가 OOS 순위를 예측하지 못한 사례. GPTAUTH_G8과 rr8 계보의 낮은 상관(discovery corr 0.077~0.308)이 발견창에서는 GPTAUTH_G8 자체의 큰 손실(mdd 77%, gate 실패)에 가려 앙상블 이득으로 드러나지 않았지만, OOS에서는 GPTAUTH_G8이 게이트 통과 수준(mdd 15.14%)으로 개선되며 상보적 다각화 가설이 실현됐다.",
+  "GPTAUTH_G8은 discovery에서 gate_passed=false(mdd 77.05%>35)였으나 OOS에서는 gate_passed=true(mdd 15.14%) — 동일 조건식이 창마다 게이트 통과 여부가 뒤바뀐다(레짐 의존성, 사전 배제 없이 앙상블에 포함시킨 R0/R1/R2 결정이 이 반전을 포착할 수 있었던 이유).",
+  "TICK902U3은 R0 discovery 백테 타임아웃(300s)으로 monthly_pnl이 없어 v4_ensemble_frozen.json champion_set에서 이미 제외됐고, R3도 동일하게 4챔피언(RR8_12/RR8_0/RR8_21/GPTAUTH_G8)만 백테했다 (preregistration_v4.json 및 v4_characterization.json과 일관).",
+  "엔진 사용: 이번 4회(챔피언당 정확히 1회, 재시도 0) + R0 5회 = 누적 9/60(봉인 예산). 청크 2개(2쌍씩), STOM_CLI_DB_STRATEGY=로컬 _database/strategy.db, --fail-fast-timeout, 청크 간 프로세스 확인 완료(잔존 warm 엔진 프로세스 0).",
+  "bt_full_end=20260227은 stock_tick_back.db 실측 최대일자(2026-02-28은 DB 미존재) — OOS 월별 P&L에 202602가 정상 포함됨(부분월이지만 각 챔피언 실거래 존재, 4/4 확인)."
+ ]
+}

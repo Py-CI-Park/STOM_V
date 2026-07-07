@@ -1,0 +1,338 @@
+{
+ "schema": "alpha_lab_v4_assembly_report_v1",
+ "created_at": "2026-07-07T08:21:17",
+ "stage": "r1_r2_ensemble_assembly",
+ "preregistration_sha256": "87821aaaa86e5b5ddc4f0673debaf3527cacd4a41a9231e132dfb482f4c3f3c3",
+ "discovery_window": {
+  "start_ym": "202203",
+  "end_ym": "202412",
+  "n_months": 34
+ },
+ "lookback": 2,
+ "champion_set_primary": [
+  "RR8_12",
+  "RR8_0",
+  "RR8_21",
+  "GPTAUTH_G8"
+ ],
+ "champion_set_gate_passed_subset": [
+  "RR8_12",
+  "RR8_0",
+  "RR8_21"
+ ],
+ "discovery": {
+  "single_alwayson": {
+   "RR8_12": {
+    "profit": 12631722.0,
+    "mdd": 668472.0,
+    "calmar": 18.89641151761031
+   },
+   "RR8_0": {
+    "profit": 11404295.0,
+    "mdd": 578298.0,
+    "calmar": 19.72044689762026
+   },
+   "RR8_21": {
+    "profit": 11134615.0,
+    "mdd": 606871.0,
+    "calmar": 18.34758128168919
+   },
+   "GPTAUTH_G8": {
+    "profit": -6932292.0,
+    "mdd": 10060666.0,
+    "calmar": -0.68904901524412
+   }
+  },
+  "single_adaptive": {
+   "RR8_12": {
+    "profit": 11175622.0,
+    "mdd": 662395.0,
+    "calmar": 16.871537375735024
+   },
+   "RR8_0": {
+    "profit": 8678271.0,
+    "mdd": 873141.0,
+    "calmar": 9.939140413747607
+   },
+   "RR8_21": {
+    "profit": 7819114.0,
+    "mdd": 606871.0,
+    "calmar": 12.884309845090637
+   },
+   "GPTAUTH_G8": {
+    "profit": -93519.0,
+    "mdd": 1772830.0,
+    "calmar": -0.052751250824952196
+   }
+  },
+  "ensemble_a": {
+   "profit": 7059585.0,
+   "mdd": 599844.75,
+   "calmar": 11.769020233985543
+  },
+  "ensemble_b": {
+   "profit": 6894872.0,
+   "mdd": 450276.5,
+   "calmar": 15.312529079354574
+  },
+  "ensemble_c": {
+   "profit": 11419953.75,
+   "mdd": 662395.0,
+   "calmar": 17.240398478249382
+  }
+ },
+ "regime_rotation_detail": {
+  "monthly_picks": [
+   {
+    "ym": "202203",
+    "pick": "EQUAL_WARMUP"
+   },
+   {
+    "ym": "202204",
+    "pick": "EQUAL_WARMUP"
+   },
+   {
+    "ym": "202205",
+    "pick": "RR8_12"
+   },
+   {
+    "ym": "202206",
+    "pick": "GPTAUTH_G8"
+   },
+   {
+    "ym": "202207",
+    "pick": "GPTAUTH_G8"
+   },
+   {
+    "ym": "202208",
+    "pick": "RR8_12"
+   },
+   {
+    "ym": "202209",
+    "pick": "RR8_12"
+   },
+   {
+    "ym": "202210",
+    "pick": "RR8_12"
+   },
+   {
+    "ym": "202211",
+    "pick": "RR8_21"
+   },
+   {
+    "ym": "202212",
+    "pick": "RR8_0"
+   },
+   {
+    "ym": "202301",
+    "pick": "RR8_0"
+   },
+   {
+    "ym": "202302",
+    "pick": "RR8_21"
+   },
+   {
+    "ym": "202303",
+    "pick": "RR8_0"
+   },
+   {
+    "ym": "202304",
+    "pick": "GPTAUTH_G8"
+   },
+   {
+    "ym": "202305",
+    "pick": "RR8_21"
+   },
+   {
+    "ym": "202306",
+    "pick": "RR8_21"
+   },
+   {
+    "ym": "202307",
+    "pick": "RR8_12"
+   },
+   {
+    "ym": "202308",
+    "pick": "RR8_12"
+   },
+   {
+    "ym": "202309",
+    "pick": "RR8_12"
+   },
+   {
+    "ym": "202310",
+    "pick": "RR8_12"
+   },
+   {
+    "ym": "202311",
+    "pick": "RR8_21"
+   },
+   {
+    "ym": "202312",
+    "pick": "RR8_21"
+   },
+   {
+    "ym": "202401",
+    "pick": "RR8_21"
+   },
+   {
+    "ym": "202402",
+    "pick": "RR8_12"
+   },
+   {
+    "ym": "202403",
+    "pick": "RR8_0"
+   },
+   {
+    "ym": "202404",
+    "pick": "RR8_0"
+   },
+   {
+    "ym": "202405",
+    "pick": "RR8_12"
+   },
+   {
+    "ym": "202406",
+    "pick": "RR8_12"
+   },
+   {
+    "ym": "202407",
+    "pick": "RR8_12"
+   },
+   {
+    "ym": "202408",
+    "pick": "RR8_0"
+   },
+   {
+    "ym": "202409",
+    "pick": "RR8_21"
+   },
+   {
+    "ym": "202410",
+    "pick": "RR8_0"
+   },
+   {
+    "ym": "202411",
+    "pick": "RR8_0"
+   },
+   {
+    "ym": "202412",
+    "pick": "RR8_0"
+   }
+  ],
+  "pick_counts": {
+   "RR8_12": 12,
+   "RR8_0": 9,
+   "RR8_21": 8,
+   "GPTAUTH_G8": 3,
+   "EQUAL_WARMUP": 2
+  }
+ },
+ "adaptive_floor": {
+  "per_champion_mdd_gain": {
+   "RR8_12": {
+    "raw_mdd": 668472.0,
+    "timed_mdd": 662395.0,
+    "gain_pct": 0.9090881891836905
+   },
+   "RR8_0": {
+    "raw_mdd": 578298.0,
+    "timed_mdd": 873141.0,
+    "gain_pct": -50.98461346918025
+   },
+   "RR8_21": {
+    "raw_mdd": 606871.0,
+    "timed_mdd": 606871.0,
+    "gain_pct": 0.0
+   },
+   "GPTAUTH_G8": {
+    "raw_mdd": 10060666.0,
+    "timed_mdd": 1772830.0,
+    "gain_pct": 82.37860197326896
+   }
+  },
+  "best_alwayson_champion": "RR8_0",
+  "best_alwayson_champion_mdd_gain_pct": -50.98461346918025
+ },
+ "discovery_calmar_ranking": [
+  {
+   "config": "single_alwayson[RR8_0]",
+   "calmar": 19.72044689762026
+  },
+  {
+   "config": "single_alwayson[RR8_12]",
+   "calmar": 18.89641151761031
+  },
+  {
+   "config": "single_alwayson[RR8_21]",
+   "calmar": 18.34758128168919
+  },
+  {
+   "config": "ensemble_c_regime_rotation",
+   "calmar": 17.240398478249382
+  },
+  {
+   "config": "single_adaptive[RR8_12]",
+   "calmar": 16.871537375735024
+  },
+  {
+   "config": "ensemble_b_adaptive_sum",
+   "calmar": 15.312529079354574
+  },
+  {
+   "config": "single_adaptive[RR8_21]",
+   "calmar": 12.884309845090637
+  },
+  {
+   "config": "ensemble_a_static_equal",
+   "calmar": 11.769020233985543
+  },
+  {
+   "config": "single_adaptive[RR8_0]",
+   "calmar": 9.939140413747607
+  },
+  {
+   "config": "single_adaptive[GPTAUTH_G8]",
+   "calmar": -0.052751250824952196
+  },
+  {
+   "config": "single_alwayson[GPTAUTH_G8]",
+   "calmar": -0.68904901524412
+  }
+ ],
+ "best_discovery_config": {
+  "config": "single_alwayson[RR8_0]",
+  "calmar": 19.72044689762026
+ },
+ "sensitivity_gate_passed_only_diagnostic": {
+  "note": "1차 산출물이 아님 — GPTAUTH_G8(게이트 실패, mdd 77.05%) 제외 시 참고용",
+  "champion_set": [
+   "RR8_12",
+   "RR8_0",
+   "RR8_21"
+  ],
+  "ensemble_a": {
+   "profit": 11723544.000000002,
+   "mdd": 600368.666666667,
+   "calmar": 19.52724159488669
+  },
+  "ensemble_b": {
+   "profit": 9224335.666666668,
+   "mdd": 600368.666666667,
+   "calmar": 15.364452175496606
+  },
+  "ensemble_c": {
+   "profit": 12875578.333333332,
+   "mdd": 662395.0,
+   "calmar": 19.437915946426727
+  }
+ },
+ "honest_notes": [
+  "GPTAUTH_G8은 discovery_gate_passed=false(mdd 77.05%>cap 35, R0 characterization) 이지만 excluded_from_ranking=false이고 rr8 계보와 상관 낮음(corr 0.077~0.308) - 설계 문서의 '상보적 다각화' 가설 검증 대상이라 1차 앙상블에 포함했다.",
+  "TICK902U3은 R0 백테 타임아웃(300s)으로 monthly_pnl 자체가 없어 전 산출물에서 제외.",
+  "가중 스킴은 static_equal/adaptive_sum 공통 1/N(등가중) - 타이밍 오버레이 효과만 격리 비교하기 위해 고정. regime_rotation은 매월 1개 챔피언에 전액 배정(워밍업 2개월은 등가중 대체).",
+  "MDD 척도 불일치 주의: 본 리포트의 mdd/calmar는 월별 P&L 누적곡선의 원화 peak-drawdown(adaptive_timing._equity_mdd 관례, 발산 없는 절대 반납액)이다. v4_characterization.json의 discovery_mdd/risk_adj_ratio는 엔진 equity 기준 MDD%(예: RR8_12=4.78%)로 척도가 다르다 - 그 결과 '발견창 최선 단일 챔피언'이 characterization 기준(RR8_12, risk_adj_ratio 최댓값)과 본 리포트 기준(RR8_0, calmar=19.72 최댓값)에서 서로 다르게 나온다. 둘 다 정확하지만 서로 다른 잣대 - 본 R1/R2 파이프라인은 월별 P&L 시퀀스만 입력받으므로 원화 기준을 계속 쓴다.",
+  "RR8_0의 적응형(lookback=2)은 always-on보다 MDD가 오히려 50.98% 악화된다 (578,298원→873,141원) - 설계 문서가 기대한 '적응형이 항상 MDD를 개선' 가설이 이 챔피언에는 반례다. 기제 확인(독립 재계산): 202309(-578,298) 급락 직후 202310(+477,958)·202311(+723,717) 두 달의 강한 반등이 트레일링(직전 2개월 raw 합)음수 판정으로 FLAT(0) 처리되어 always-on이라면 세웠을 신고점(7,785,184원)을 적응형 곡선이 세우지 못한다. 그 결과 이후 202401(-351,633) 별개 손실월이 아직 회복되지 않은 낮은 구간 위에 그대로 누적되어, always-on 최대낙폭(578,298원, 단일 급락월)보다 더 큰 낙폭(873,141원)을 만든다. 급락 직후 V자 반등이 오는 챔피언에는 '손실 후 플랫' 규칙이 역효과를 낼 수 있다는 정직한 반례.",
+  "발견창 기준으로는 앙상블 (a)(b)(c)·단일 적응형 전부 단일 최선 always-on(RR8_0, calmar=19.72)을 넘지 못한다(discovery_calmar_ranking 참조). 이는 R2 단계에서는 정상/예상된 결과다 - 사전등록(preregistration_v4.json)의 성공/부분/실패 판정은 R3 OOS 봉인창(2025-01~2026-02)에서만 확정되며, 본 발견창 수치는 파라미터 확정·봉인 근거일 뿐 최종 판정이 아니다."
+ ]
+}

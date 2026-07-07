@@ -164,11 +164,11 @@ class TestV2ProgramTags:
         for tag in ("P1", "P2", "P3", "P5"):
             assert total_trials(ledger, tag) == 1
 
-    def test_allowed_set_is_exactly_eight(self):
+    def test_allowed_set_is_exactly_nine(self):
         from alpha_lab.registry import ALLOWED_PROGRAMS
 
         assert ALLOWED_PROGRAMS == frozenset(
-            {"P1", "P2", "P3", "P5", "V2M", "V2F", "V3M", "V3H"}
+            {"P1", "P2", "P3", "P5", "V2M", "V2F", "V3M", "V3H", "V4E"}
         )
 
     def test_unknown_tag_still_rejected(self, tmp_path):
@@ -191,3 +191,15 @@ class TestV3ProgramTags:
         assert total_trials(ledger, "V3M") == 103
         assert total_trials(ledger, "V3H") == 40
         assert total_trials(ledger) == 143
+
+
+class TestV4ProgramTags:
+    """알파 랩 v4 additive 태그(V4E=레짐-적응 챔피언 앙상블 엔진 시행) — 기존 8태그
+    불변 + 신규 허용(preregistration_v4.json 봉인 87821aaa... — ledger.tags)."""
+
+    def test_v4_tag_accepted_and_filterable(self, tmp_path):
+        ledger = tmp_path / "ledger.jsonl"
+        append_trials(ledger, program="V4E", batch="r0_discovery_chunk1", n=3, now=NOW)
+        append_trials(ledger, program="V4E", batch="r0_discovery_chunk2", n=2, now=NOW)
+        assert total_trials(ledger, "V4E") == 5
+        assert total_trials(ledger) == 5
