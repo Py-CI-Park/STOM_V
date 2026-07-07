@@ -1,0 +1,42 @@
+{
+  "schema": "plan_d_rank02_r2_next_seed_readiness_v1",
+  "created_at": "2026-07-07T15:31:51+09:00",
+  "scope": "plan-d-rank02-r2-selected-oos-prereg-no-portfolio-export",
+  "ready": true,
+  "survivor_count": 3,
+  "active_seed_recommendation": "plan_d_rank02_r2_oos_20260707_01",
+  "active_basis": "best_score_with_low_mdd_survivor",
+  "profit_comparator_seed": "plan_d_rank02_r2_oos_20260707_03",
+  "next_allowed_page": "plan-d-rank02-r3-generate8-dryrun-no-portfolio-export",
+  "portfolio_ready": false,
+  "portfolio_blocker": "portfolio/export/live/final remains outside scope; requires explicit later boundary decision and broader portfolio evidence",
+  "survivors": [
+    {
+      "seed_id": "plan_d_rank02_r2_oos_20260707_01",
+      "label": "plan_d_r1_rank02_r2_06_active_buy_default_tp3_sl3_hold90",
+      "profit": 1079768.0,
+      "mdd": 4.06,
+      "score": 10.302048909853827
+    },
+    {
+      "seed_id": "plan_d_rank02_r2_oos_20260707_02",
+      "label": "plan_d_r1_rank02_r2_07_active_buy_tight_tp3_sl2p5_hold90",
+      "profit": 486942.0,
+      "mdd": 9.09,
+      "score": 1.035885240062386
+    },
+    {
+      "seed_id": "plan_d_rank02_r2_oos_20260707_03",
+      "label": "plan_d_r1_rank02_r2_01_l14_amt8000_rate80_hold90",
+      "profit": 1124220.0,
+      "mdd": 4.12,
+      "score": 10.202250246680189
+    }
+  ],
+  "guardrails": {
+    "db_update_delete_used": false,
+    "non_selected_oos_used": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false
+  }
+}

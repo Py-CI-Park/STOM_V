@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-07-07T05:28:06.072Z",
-  "updatedAt": "2026-07-07T06:20:14.558Z",
+  "updatedAt": "2026-07-07T06:33:40.937Z",
   "briefPath": ".omo/ulw-loop/20260707_plan_d_final_loop/brief.md",
   "goalsPath": ".omo/ulw-loop/20260707_plan_d_final_loop/goals.json",
   "ledgerPath": ".omo/ulw-loop/20260707_plan_d_final_loop/ledger.jsonl",
@@ -61,9 +61,9 @@
           "userModel": "happy",
           "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 2.",
           "essential": true,
-          "capturedEvidence": "R2 INSERT-only apply inserted 16 rows, official min full-period warm64 limited replay produced 8/8 honest rows, gate 8/8, improved 3 candidates, selected OOS preregistration draft ready; no OOS/portfolio/export/live/final executed. | cleanup: replay process exited code 0; no live QA runtime remains",
+          "capturedEvidence": "R2 selected OOS-style min warm64 replay completed for exactly selected 3 candidates: 3/3 honest rows, 3/3 gate passed, 3 survivors; survivor and seed_pool ledgers appended 3 rows each. | cleanup: replay process exited code 0; no live QA runtime remains",
           "status": "pass",
-          "capturedAt": "2026-07-07T06:20:14.558Z"
+          "capturedAt": "2026-07-07T06:33:27.434Z"
         },
         {
           "id": "C002",
@@ -71,9 +71,9 @@
           "userModel": "edge",
           "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Goal 1: Read-first and preflight. Capture full-document source receipt, curre....",
           "essential": true,
-          "capturedEvidence": "Boundary proof: no non-selected OOS was executed, no portfolio/export/live/final path was opened, duplicate append was guarded by seed_id checks, and stale blocked runs remain preserved.",
+          "capturedEvidence": "Boundary proof: preregistration existed before OOS; only selected 3 candidates ran; no non-selected OOS, no DB UPDATE/DELETE, no portfolio/export/live/final, no full tick/min 288; append used seed_id duplicate guard. | cleanup: replay process exited code 0; no live QA runtime remains",
           "status": "pass",
-          "capturedAt": "2026-07-07T05:55:37.622Z"
+          "capturedAt": "2026-07-07T06:33:40.540Z"
         },
         {
           "id": "C003",
@@ -81,14 +81,14 @@
           "userModel": "regression",
           "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Goal 1: Read-first and preflight. Capture full-document source receipt, curre....",
           "essential": false,
-          "capturedEvidence": "Quality gates for this milestone: JSON/JSONL parse verification ok, warm_session unit window passed, verify_nonrelease_sync passed, git diff --check passed for scoped files.",
+          "capturedEvidence": "Regression proof: JSON/JSONL parse ok for r_g outputs and global ledgers, verify_nonrelease_sync.py passed, scoped git diff --check passed, verification receipt recorded. | cleanup: no additional runtime resources spawned",
           "status": "pass",
-          "capturedAt": "2026-07-07T05:55:06.856Z"
+          "capturedAt": "2026-07-07T06:33:40.937Z"
         }
       ],
       "attempt": 0,
       "createdAt": "2026-07-07T05:28:06.072Z",
-      "updatedAt": "2026-07-07T06:20:14.558Z"
+      "updatedAt": "2026-07-07T06:33:40.937Z"
     }
   ],
   "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/20260707_plan_d_final_loop/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/20260707_plan_d_final_loop/ledger.jsonl as the audit trail."
