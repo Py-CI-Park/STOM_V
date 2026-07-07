@@ -1,0 +1,42 @@
+[
+  {
+    "label": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+    "buy": "LAT_plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90_B",
+    "sell": "LAT_plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r3_02_amt8000_tight_tp3_sl2p5_hold90",
+    "buy": "LAT_plan_d_r1_rank02_r3_02_amt8000_tight_tp3_sl2p5_hold90_B",
+    "sell": "LAT_plan_d_r1_rank02_r3_02_amt8000_tight_tp3_sl2p5_hold90_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r3_03_active_buy_hold60_tp3_sl3",
+    "buy": "LAT_plan_d_r1_rank02_r3_03_active_buy_hold60_tp3_sl3_B",
+    "sell": "LAT_plan_d_r1_rank02_r3_03_active_buy_hold60_tp3_sl3_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r3_04_active_buy_tp2p5_sl2p5_hold90",
+    "buy": "LAT_plan_d_r1_rank02_r3_04_active_buy_tp2p5_sl2p5_hold90_B",
+    "sell": "LAT_plan_d_r1_rank02_r3_04_active_buy_tp2p5_sl2p5_hold90_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r3_05_active_buy_tp3_sl2p5_hold60",
+    "buy": "LAT_plan_d_r1_rank02_r3_05_active_buy_tp3_sl2p5_hold60_B",
+    "sell": "LAT_plan_d_r1_rank02_r3_05_active_buy_tp3_sl2p5_hold60_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r3_06_amt8500_default_tp3_sl3_hold90",
+    "buy": "LAT_plan_d_r1_rank02_r3_06_amt8500_default_tp3_sl3_hold90_B",
+    "sell": "LAT_plan_d_r1_rank02_r3_06_amt8500_default_tp3_sl3_hold90_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r3_07_l1430_bridge_default_tp3_sl3",
+    "buy": "LAT_plan_d_r1_rank02_r3_07_l1430_bridge_default_tp3_sl3_B",
+    "sell": "LAT_plan_d_r1_rank02_r3_07_l1430_bridge_default_tp3_sl3_S"
+  },
+  {
+    "label": "plan_d_r1_rank02_r3_08_l13_l14_default_tp3_sl3",
+    "buy": "LAT_plan_d_r1_rank02_r3_08_l13_l14_default_tp3_sl3_B",
+    "sell": "LAT_plan_d_r1_rank02_r3_08_l13_l14_default_tp3_sl3_S"
+  }
+]
