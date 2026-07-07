@@ -65,11 +65,12 @@ Recommended next command:
 ```text
 $start-work .omo/plans/css-v7-repair-plan-c-plan-b-d-20260703.md
 
-??? plan-d-rank02-r5-generate8-dryrun-no-portfolio-export??? ????.
-??? R4 no-improve ??? ??? active seed plan_d_rank02_r3_oos_20260707_01?? R5 8-slot ??? ?? ????,
-static gate? DB registration dry-run??? ???? ?? replay/OOS/portfolio/export? ?? ?? ???.
+범위는 plan-d-rank02-r5-generate8-dryrun-no-portfolio-export까지만 진행한다.
+목표는 R4 no-improve 결과를 반영해 active seed plan_d_rank02_r3_oos_20260707_01의
+R5 8-slot 후보를 재설계하고, static gate와 DB registration dry-run까지만 수행해
+다음 limited replay 개방 가능 여부를 판단하는 것이다.
 
-??? ?? ?? ??:
+반드시 먼저 읽을 문서:
 - docs/update_log/2026-07-07_plan_d_rank02_r4_insert_replay_handoff.md
 - docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_l_r4_insert_replay_20260707/plan_d_rank02_r4_limited_replay_result_20260707.json
 - docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_l_r4_insert_replay_20260707/plan_d_rank02_r4_round_decision_20260707.json
@@ -77,21 +78,21 @@ static gate? DB registration dry-run??? ???? ?? replay/OOS/portfolio/export? ?? 
 - utility/ai_agent/strategy.txt
 - utility/ai_agent/rules.txt
 
-??:
-1. R4 flat/no_go axes? ?? ?? ??? ??? ????.
-2. active R3 seed buy/sell sha? R4 round decision? ?????.
-3. R5 ?? 8?? research lane ??/hypothesis_seed/sanitized ??? ????.
-4. R4?? ??? ?? TP/SL/hold/L14 amount ???? ???.
-5. static gate? DB registration dry-run? ????.
-6. ?? replay, OOS, portfolio, export/live/final promotion? ???? ???.
+진행:
+1. R4 flat/no_go axes를 정리하고 반복 금지 축을 결정한다.
+2. active R3 seed buy/sell sha와 R4 round decision을 재확인한다.
+3. R5 후보 8개를 research lane 전용/hypothesis_seed/sanitized 이름으로 설계한다.
+4. R4에서 효과가 없던 단순 TP/SL/hold/L14 amount 반복은 피한다.
+5. static gate와 DB registration dry-run만 수행한다.
+6. 공식 replay, OOS, portfolio, export/live/final promotion은 실행하지 않는다.
 
-??:
-- ?? replay ?? ??
-- OOS ?? ??
-- portfolio ?? ??
-- export/live/final promotion ??
-- DB INSERT apply ??
-- DB UPDATE/DELETE ??
-- git add -A ??
-- dashboard 7??, .gjc, unrelated .omo ?? ???? ??
+금지:
+- 공식 replay 실행 금지
+- OOS 실행 금지
+- portfolio 산출 금지
+- export/live/final promotion 금지
+- DB INSERT apply 금지
+- DB UPDATE/DELETE 금지
+- git add -A 금지
+- dashboard 7파일, .gjc, unrelated .omo 잔재 스테이징 금지
 ```
