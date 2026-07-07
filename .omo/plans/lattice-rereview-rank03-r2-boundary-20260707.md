@@ -30,7 +30,7 @@ next Plan D action and defines a hard stop if rank03 R2 does not improve.
 
 ## TODOs
 
-- [ ] R2-1. Source reread and parent freeze check
+- [x] R2-1. Source reread and parent freeze check
 
   Purpose: confirm that the active parent is exactly
   `plan_d_rank03_r1_oos_20260707_01` and that the rank03 R1 survivor metrics
@@ -41,7 +41,7 @@ next Plan D action and defines a hard stop if rank03 R2 does not improve.
   - Parent buy/sell sha and DB mapping match the passport and survivor result.
   - Positive control or latest gate-health receipt is checked before candidate generation.
 
-- [ ] R2-2. Generate rank03 R2 8-slot candidates, static gate, dry-run registration
+- [x] R2-2. Generate rank03 R2 8-slot candidates, static gate, dry-run registration
 
   Purpose: create only one bounded R2 candidate set from the rank03 R1 active
   parent, without replay or DB apply until syntax and registration dry-run pass.
@@ -53,7 +53,7 @@ next Plan D action and defines a hard stop if rank03 R2 does not improve.
   - Static gate and DB registration dry-run pass.
   - No official replay, OOS, portfolio, or export is run in this step.
 
-- [ ] R2-3. INSERT-only apply and official min warm64 limited replay
+- [x] R2-3. INSERT-only apply and official min warm64 limited replay
 
   Purpose: evaluate only the R2 candidates that passed static gate, using the
   official min full-period warm64 profile.
@@ -79,7 +79,10 @@ next Plan D action and defines a hard stop if rank03 R2 does not improve.
   - Results classify `survivor|hold|no_go`.
   - If no selected OOS survivor exists, stop Plan D and write redesign handoff.
 
-- [ ] R2-5. Boundary decision and handoff
+  Execution note 2026-07-07: current user scope forbids OOS. R2-05 was frozen
+  as the next selected OOS candidate, and a preregistration draft was written.
+
+- [x] R2-5. Boundary decision and handoff
 
   Purpose: decide whether Plan D can continue or must stop for lattice and
   condition-generation redesign.

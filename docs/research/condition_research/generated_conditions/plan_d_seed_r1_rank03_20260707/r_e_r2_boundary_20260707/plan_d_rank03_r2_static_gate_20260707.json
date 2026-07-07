@@ -1,0 +1,92 @@
+{
+  "schema": "plan_d_rank03_r2_static_gate_v1",
+  "created_at": "2026-07-07T21:10:00+09:00",
+  "scope": "lattice-rereview-rank03-r2-boundary-20260707",
+  "candidate_count": 8,
+  "passed_count": 8,
+  "failed_count": 0,
+  "checks": [
+    {
+      "condition_id": "plan_d_r1_rank03_r2_01_l1430_amt9000_default_tp3_sl3_hold90",
+      "buy_sha256": "38dc4435c44ef0f8b4a81c4ccc0d827cec3518a652d772132cd8dbb25de26e1d",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "axis": "l1430_amount_floor9000_rate80_default_sell",
+      "sell_profile": "default_tp3_sl3_hold90",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_02_l1430_rate75_default_tp3_sl3_hold90",
+      "buy_sha256": "16cf597c1b08021cbfddf66327a537b4627cf86f779b326237114a7620ea8b97",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "axis": "l1430_rate_floor75_default_sell",
+      "sell_profile": "default_tp3_sl3_hold90",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_03_l1430_end1500_default_tp3_sl3_hold90",
+      "buy_sha256": "81ed55f449945df749c0cd64816793b11d255606fd3bd07fcaf25a257147bf57",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "axis": "l1430_end1500_rate80_default_sell",
+      "sell_profile": "default_tp3_sl3_hold90",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_04_l14_l1430_default_tp3_sl3_hold90",
+      "buy_sha256": "1bd12ae0c32e06d64edaf2a0a07129c285ea7b6667628204669bf886aa21098e",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "axis": "l14_l1430_bridge_rate80_default_sell",
+      "sell_profile": "default_tp3_sl3_hold90",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90",
+      "buy_sha256": "162391fa9848410b0771df5e558ba7af6014eb1a3a0c1ef521ecf80aaa559518",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "axis": "l13_l1430_bridge_rate80_default_sell",
+      "sell_profile": "default_tp3_sl3_hold90",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_06_parent_buy_tight_sl25_hold90",
+      "buy_sha256": "4aa9844359438b1c10e66bee8c1ab77b7b1131734af0c15c97c729b6738801b7",
+      "sell_sha256": "85e6899bfc3cc2f4ba2d874f06caa3cf4ebe0ed94c0f892d6083b2bfc81c7d21",
+      "axis": "parent_buy_tp3_sl25_hold90",
+      "sell_profile": "tight_tp3_sl25_hold90",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_07_parent_buy_default_tp3_sl3_hold60",
+      "buy_sha256": "024a2fce92d49fdc6ebe5a69625164ca56f6400d1e4b173de285e2af3adaae64",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309",
+      "axis": "parent_buy_tp3_sl3_hold60",
+      "sell_profile": "default_tp3_sl3_hold60",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "condition_id": "plan_d_r1_rank03_r2_08_parent_buy_loose_tp4_sl3_hold90",
+      "buy_sha256": "0930d46b63a3e4afcb781c1159ddc992bf60353c7c7f382c239014feda3785a2",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "axis": "parent_buy_loose_tp4_sl3_hold90_control",
+      "sell_profile": "loose_tp4_sl3_hold90",
+      "passed": true,
+      "failures": []
+    }
+  ],
+  "constraints_observed": {
+    "research_lane_only": true,
+    "hypothesis_seed_label_only": true,
+    "sanitized_condition_ids": true,
+    "db_insert_apply_used": false,
+    "db_update_delete_used": false,
+    "oos_executed": false,
+    "portfolio_executed": false
+  },
+  "passed": true
+}

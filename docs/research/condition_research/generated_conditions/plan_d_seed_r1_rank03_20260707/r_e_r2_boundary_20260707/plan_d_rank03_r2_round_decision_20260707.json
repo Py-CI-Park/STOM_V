@@ -1,0 +1,23 @@
+{
+  "schema": "plan_d_rank03_r2_round_decision_v1",
+  "created_at": "2026-07-07T21:21:30+09:00",
+  "scope": "lattice-rereview-rank03-r2-boundary-20260707",
+  "limited_replay_result": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_e_r2_boundary_20260707\\plan_d_rank03_r2_limited_replay_result_20260707.json",
+  "decision": "open_selected_oos_preregistration_next",
+  "reason": "R2 produced one clear improved candidate with profit up, MDD down, daily coverage up vs rank03 R1 parent.",
+  "selected_oos_candidates": [
+    {
+      "label": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90",
+      "buy": "LAT_plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90_B",
+      "sell": "LAT_plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90_S",
+      "lane": "min"
+    }
+  ],
+  "selected_oos_pairs": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_e_r2_boundary_20260707\\pairs_plan_d_rank03_r2_selected1_oos_20260707.json",
+  "selected_oos_config": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_e_r2_boundary_20260707\\oos_config_min_plan_d_rank03_r2_selected1_20260707.json",
+  "oos_executed": false,
+  "portfolio_executed": false,
+  "export_live_final_executed": false,
+  "next_allowed_action": "plan-d-rank03-r2-selected-oos-prereg-no-portfolio-export",
+  "boundary_note": "Do not continue unlimited Plan D loops. Run only the selected R2-05 OOS-style robustness check next; if it fails, stop and redesign lattice/condition generation."
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "label": "plan_d_r1_rank03_r2_01_l1430_amt9000_default_tp3_sl3_hold90",
+    "buy": "LAT_plan_d_r1_rank03_r2_01_l1430_amt9000_default_tp3_sl3_hold90_B",
+    "sell": "LAT_plan_d_r1_rank03_r2_01_l1430_amt9000_default_tp3_sl3_hold90_S",
+    "lane": "min"
+  },
+  {
+    "label": "plan_d_r1_rank03_r2_02_l1430_rate75_default_tp3_sl3_hold90",
+    "buy": "LAT_plan_d_r1_rank03_r2_02_l1430_rate75_default_tp3_sl3_hold90_B",
+    "sell": "LAT_plan_d_r1_rank03_r2_02_l1430_rate75_default_tp3_sl3_hold90_S",
+    "lane": "min"
+  },
+  {
+    "label": "plan_d_r1_rank03_r2_03_l1430_end1500_default_tp3_sl3_hold90",
+    "buy": "LAT_plan_d_r1_rank03_r2_03_l1430_end1500_default_tp3_sl3_hold90_B",
+    "sell": "LAT_plan_d_r1_rank03_r2_03_l1430_end1500_default_tp3_sl3_hold90_S",
+    "lane": "min"
+  },
+  {
+    "label": "plan_d_r1_rank03_r2_04_l14_l1430_default_tp3_sl3_hold90",
+    "buy": "LAT_plan_d_r1_rank03_r2_04_l14_l1430_default_tp3_sl3_hold90_B",
+    "sell": "LAT_plan_d_r1_rank03_r2_04_l14_l1430_default_tp3_sl3_hold90_S",
+    "lane": "min"
+  },
+  {
+    "label": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90",
+    "buy": "LAT_plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90_B",
+    "sell": "LAT_plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90_S",
+    "lane": "min"
+  },
+  {
+    "label": "plan_d_r1_rank03_r2_06_parent_buy_tight_sl25_hold90",
+    "buy": "LAT_plan_d_r1_rank03_r2_06_parent_buy_tight_sl25_hold90_B",
+    "sell": "LAT_plan_d_r1_rank03_r2_06_parent_buy_tight_sl25_hold90_S",
+    "lane": "min"
+  },
+  {
+    "label": "plan_d_r1_rank03_r2_07_parent_buy_default_tp3_sl3_hold60",
+    "buy": "LAT_plan_d_r1_rank03_r2_07_parent_buy_default_tp3_sl3_hold60_B",
+    "sell": "LAT_plan_d_r1_rank03_r2_07_parent_buy_default_tp3_sl3_hold60_S",
+    "lane": "min"
+  },
+  {
+    "label": "plan_d_r1_rank03_r2_08_parent_buy_loose_tp4_sl3_hold90",
+    "buy": "LAT_plan_d_r1_rank03_r2_08_parent_buy_loose_tp4_sl3_hold90_B",
+    "sell": "LAT_plan_d_r1_rank03_r2_08_parent_buy_loose_tp4_sl3_hold90_S",
+    "lane": "min"
+  }
+]
