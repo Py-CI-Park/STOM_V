@@ -10,6 +10,12 @@
 
 Rank02 active branch `plan_d_rank02_r3_oos_20260707_01` is frozen for this mutation line.
 
+## Warm64 Prepare Blocker Closure
+
+The earlier rank02 R1 selected OOS blocker is closed for Plan D continuation. The first two selected OOS attempts stopped before candidate evaluation with 0 generation rows at `WarmSession.prepare -> _send_engine_data -> _collect_engine_shared_info`, so they were not condition-quality results. The same selected 2/OOS window/warm64 profile later completed as `lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry02_20260707` with warm prepare ok, 2/2 honest rows, and 2 survivors. R2 selected OOS then completed with 3/3 survivors, and R3 selected OOS completed with 1/1 survivor.
+
+Closure receipt: `docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/rank02_freeze_next_seed_intake_20260707/plan_d_rank02_warm64_prepare_blocker_closure_20260707.json`
+
 | Evidence | Value |
 |---|---:|
 | R6 run_id | `lat_plan_d_rank02_r6_8_min_warm64_20260707` |

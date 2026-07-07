@@ -10,6 +10,15 @@
 
 Rank02 active branch `plan_d_rank02_r3_oos_20260707_01` is frozen for this mutation line.
 
+Warm64 prepare blocker closure:
+
+- Earlier blocked attempts: `lat_plan_d_rank02_r1_selected2_oos_min_warm64_20260707`, `lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry01_20260707`
+- Blocker: 0 generation rows while waiting in `WarmSession.prepare -> _send_engine_data -> _collect_engine_shared_info`
+- Successful retry: `lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry02_20260707`
+- Retry02 result: warm prepare ok, 2/2 honest rows, 2 survivors
+- Follow-on confirmation: R2 selected OOS 3/3 survivors, R3 selected OOS 1/1 survivor
+- Closure receipt: `docs\research\condition_research\generated_conditions\plan_d_seed_pool_20260706\rank02_freeze_next_seed_intake_20260707\plan_d_rank02_warm64_prepare_blocker_closure_20260707.json`
+
 | Item | Value |
 |---|---:|
 | R6 run_id | `lat_plan_d_rank02_r6_8_min_warm64_20260707` |
@@ -43,6 +52,7 @@ Next active seed:
 Evidence:
 
 - source read receipt: `docs\research\condition_research\generated_conditions\plan_d_seed_pool_20260706\rank02_freeze_next_seed_intake_20260707\source_read_receipt_20260707.json`
+- warm64 blocker closure: `docs\research\condition_research\generated_conditions\plan_d_seed_pool_20260706\rank02_freeze_next_seed_intake_20260707\plan_d_rank02_warm64_prepare_blocker_closure_20260707.json`
 - intake decision: `docs\research\condition_research\generated_conditions\plan_d_seed_pool_20260706\rank02_freeze_next_seed_intake_20260707\plan_d_rank02_branch_freeze_next_seed_intake_20260707.json`
 - intake note: `docs\research\condition_research\generated_conditions\plan_d_seed_pool_20260706\rank02_freeze_next_seed_intake_20260707\plan_d_rank02_branch_freeze_next_seed_intake_20260707.md`
 

@@ -3,6 +3,24 @@
   "created_at": "2026-07-07T17:25:16+09:00",
   "scope": "plan-d-rank02-branch-freeze-next-seed-intake-no-portfolio-export",
   "decision": "rank02_branch_frozen_select_rank03_as_next_seed",
+  "warm64_prepare_blocker_closure": {
+    "status": "closed_resolved_by_retry02_and_follow_on_oos_runs",
+    "closure_receipt": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/rank02_freeze_next_seed_intake_20260707/plan_d_rank02_warm64_prepare_blocker_closure_20260707.json",
+    "blocked_attempts": [
+      "lat_plan_d_rank02_r1_selected2_oos_min_warm64_20260707",
+      "lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry01_20260707"
+    ],
+    "successful_retry": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry02_20260707",
+    "retry02_result": {
+      "warm_prepare": "ok",
+      "honest_rows": "2/2",
+      "survivors": 2
+    },
+    "follow_on_confirmation": [
+      "R2 selected OOS warm prepare ok, 3/3 survivors",
+      "R3 selected OOS warm prepare ok, 1/1 survivor"
+    ]
+  },
   "rank02_freeze": {
     "frozen_active_seed_id": "plan_d_rank02_r3_oos_20260707_01",
     "trigger": "three_consecutive_no_improve_limited_replay_rounds_since_r3",
