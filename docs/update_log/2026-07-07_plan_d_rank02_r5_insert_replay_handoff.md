@@ -39,9 +39,9 @@ DB backup was created by the registration tool and is runtime evidence, not sele
 | Metric | Value |
 |---|---:|
 | run_id | `lat_plan_d_rank02_r5_8_min_warm64_20260707` |
-| warm prepare | unknown |
-| back_count | None |
-| elapsed prepare seconds | None |
+| warm prepare | ok |
+| back_count | 1379 |
+| elapsed prepare seconds | 104 |
 | honest rows | 8/8 |
 | status_counts | ok 8 |
 | gate_passed | 7/8 |
@@ -57,7 +57,7 @@ DB backup was created by the registration tool and is runtime evidence, not sele
 | no_go | `plan_d_r1_rank02_r5_07_morning_amt1000_3500_default` | profit -812,381 / MDD 33.01 / trades 252 |
 | watch | `plan_d_r1_rank02_r5_08_eod1515_default` | closest to baseline, but still below active R3 profit |
 
-No R5 candidate improved over the active R3 full-period baseline (`2,297,191` profit / `16.31` MDD). Therefore selected OOS remains closed for this round, and `rounds_no_improve_delta=2` is recorded.
+No R5 candidate improved over the active R3 full-period baseline (`2,297,191` profit / `16.31` MDD). Therefore selected OOS remains closed for this round. This records `rounds_no_improve_delta=1` for R5 and `consecutive_no_improve_since_r3=2` across R4/R5.
 
 ## 6. Next Page
 

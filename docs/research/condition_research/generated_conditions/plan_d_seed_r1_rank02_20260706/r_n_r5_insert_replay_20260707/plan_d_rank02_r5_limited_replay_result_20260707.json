@@ -27,12 +27,12 @@
     "finished_at": 1783410621.334208
   },
   "warm_prepare": {
-    "status": "unknown",
-    "back_count": null,
-    "elapsed_seconds": null,
+    "status": "ok",
+    "back_count": 1379,
+    "elapsed_seconds": 104,
     "source": "artifacts/plan_d_rank02_r5_8_min_warm64_20260707.log"
   },
-  "log_completed": false,
+  "log_completed": true,
   "active_r3_full_period_baseline": {
     "label": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
     "profit": 2297191.0,
