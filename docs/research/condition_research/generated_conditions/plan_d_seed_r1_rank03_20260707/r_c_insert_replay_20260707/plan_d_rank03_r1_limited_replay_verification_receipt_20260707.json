@@ -1,0 +1,37 @@
+{
+  "schema": "plan_d_rank03_r1_limited_replay_verification_receipt_v1",
+  "created_at": "2026-07-07T17:57:38+09:00",
+  "scope": "plan-d-rank03-r1-insert-replay-no-portfolio-export",
+  "checks": {
+    "json_jsonl_parse": "pass_utf8_sig_11_json_3_jsonl",
+    "verify_nonrelease_sync": "pass",
+    "scoped_git_diff_check": "pass",
+    "target_python_process_scan_after_cleanup": "pass_no_live_claude_candidate_batch_eval_python",
+    "official_run_id_status": "complete",
+    "official_run_id": "lat_plan_d_rank03_r1_8_min_warm64_20260707",
+    "official_honest_rows": 8,
+    "duplicate_retry_cleanup_receipt": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_c_insert_replay_20260707/plan_d_rank03_r1_duplicate_retry_cleanup_receipt_20260707.json"
+  },
+  "decision_summary": {
+    "decision": "open_selected_oos_preregistration_next",
+    "selected_count": 1,
+    "selected_labels": [
+      "plan_d_r1_rank03_r1_08_parent_buy_default_tp3_sl3_hold90"
+    ],
+    "decision_counts": {
+      "flat": 5,
+      "no_go": 2,
+      "improved": 1
+    }
+  },
+  "constraints_observed": {
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "full_tick_288_executed": false,
+    "full_min_288_executed": false,
+    "db_update_delete_used": false,
+    "git_add_A_used": false
+  },
+  "notes": "retry01/retry02 stale rows were preserved without DB UPDATE/DELETE; official decision uses only the complete non-retry run_id."
+}
