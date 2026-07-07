@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-07-07T05:28:06.072Z",
-  "updatedAt": "2026-07-07T06:04:23.521Z",
+  "updatedAt": "2026-07-07T06:20:14.558Z",
   "briefPath": ".omo/ulw-loop/20260707_plan_d_final_loop/brief.md",
   "goalsPath": ".omo/ulw-loop/20260707_plan_d_final_loop/goals.json",
   "ledgerPath": ".omo/ulw-loop/20260707_plan_d_final_loop/ledger.jsonl",
@@ -61,9 +61,9 @@
           "userModel": "happy",
           "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 2.",
           "essential": true,
-          "capturedEvidence": "Warm64 blocker was resolved for selected retry02; survivor records were appended; next rank02 R2 8-slot dry-run was generated with static gate 8/8 pass and DB registration dry_run_ok planned_insert_count=16 conflicts=0.",
+          "capturedEvidence": "R2 INSERT-only apply inserted 16 rows, official min full-period warm64 limited replay produced 8/8 honest rows, gate 8/8, improved 3 candidates, selected OOS preregistration draft ready; no OOS/portfolio/export/live/final executed. | cleanup: replay process exited code 0; no live QA runtime remains",
           "status": "pass",
-          "capturedAt": "2026-07-07T06:04:23.521Z"
+          "capturedAt": "2026-07-07T06:20:14.558Z"
         },
         {
           "id": "C002",
@@ -88,7 +88,7 @@
       ],
       "attempt": 0,
       "createdAt": "2026-07-07T05:28:06.072Z",
-      "updatedAt": "2026-07-07T06:04:23.521Z"
+      "updatedAt": "2026-07-07T06:20:14.558Z"
     }
   ],
   "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/20260707_plan_d_final_loop/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/20260707_plan_d_final_loop/ledger.jsonl as the audit trail."
