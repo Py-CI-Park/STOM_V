@@ -1,0 +1,11 @@
+{
+  "created_at": "2026-07-07T17:34:04+09:00",
+  "scope": "rank03-readiness-review-only",
+  "seed_pool_count": 22,
+  "oos_survivor_count": 22,
+  "rank03_present": true,
+  "rank03_oos_survivor_present": true,
+  "rank03_folder_preexisting": false,
+  "seed_pool_sha256": "aa05bc395d4f97f6489f0f5122bb824d516c508a274f8f1734c7393e91af4cb4",
+  "oos_survivors_sha256": "0ed6249c334c567a7d3336694c4bebd8408e8be0ce4bcb88aff1da53447f9428"
+}

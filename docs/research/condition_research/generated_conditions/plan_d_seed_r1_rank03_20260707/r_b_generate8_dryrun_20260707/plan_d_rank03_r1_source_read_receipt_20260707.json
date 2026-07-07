@@ -1,0 +1,95 @@
+{
+  "schema": "plan_d_rank03_r1_source_read_receipt_v1",
+  "created_at": "2026-07-07T17:34:04+09:00",
+  "read_scope": "full_document",
+  "scope": "plan-d-seed-r1-rank03-readiness-dryrun-no-oos-portfolio-export",
+  "sources": [
+    {
+      "path": "docs/update_log/2026-07-07_plan_d_rank02_branch_freeze_next_seed_intake_handoff.md",
+      "line_count": 108,
+      "sha256": "e3bc9615fd37e6e72ad90541b2515c0a1ceabbd602b2347a9135cc64ff7ef28a",
+      "applied_sections": [
+        "read-first package",
+        "rank03 active seed",
+        "guardrails"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/rank02_freeze_next_seed_intake_20260707/plan_d_rank02_branch_freeze_next_seed_intake_20260707.json",
+      "line_count": 136,
+      "sha256": "8e2da44de1f321183034c9e6d85be9092120459de5ca71a868ced0301163d4bf",
+      "applied_sections": [
+        "read-first package",
+        "rank03 active seed",
+        "guardrails"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports/plan_d_rcs_oos_20260706_rank03.md",
+      "line_count": 147,
+      "sha256": "ede53446487066afbcf501d32ec7694a95043b15f83e2c60268ce3aa3cc15501",
+      "applied_sections": [
+        "read-first package",
+        "rank03 active seed",
+        "guardrails"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/seed_pool.jsonl",
+      "line_count": 22,
+      "sha256": "aa05bc395d4f97f6489f0f5122bb824d516c508a274f8f1734c7393e91af4cb4",
+      "applied_sections": [
+        "read-first package",
+        "rank03 active seed",
+        "guardrails"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/oos_survivors.jsonl",
+      "line_count": 22,
+      "sha256": "0ed6249c334c567a7d3336694c4bebd8408e8be0ce4bcb88aff1da53447f9428",
+      "applied_sections": [
+        "read-first package",
+        "rank03 active seed",
+        "guardrails"
+      ]
+    },
+    {
+      "path": "docs/research/condition_research/plans/2026-07-02_plan_D_seed_research_program.md",
+      "line_count": 149,
+      "sha256": "e0dae7379559fe6556a769c8e4312a6f48d926fc299c9e78373afab00dd16ae7",
+      "applied_sections": [
+        "read-first package",
+        "rank03 active seed",
+        "guardrails"
+      ]
+    },
+    {
+      "path": "utility/ai_agent/strategy.txt",
+      "line_count": 290,
+      "sha256": "44daa79cde5e1fb8f6c7e416622695eff62ff74ee034998ab41f59512d445753",
+      "applied_sections": [
+        "read-first package",
+        "rank03 active seed",
+        "guardrails"
+      ]
+    },
+    {
+      "path": "utility/ai_agent/rules.txt",
+      "line_count": 27,
+      "sha256": "11983746c69bd22d1ba5c65b21105b422d6d9561e4cdd221e6f2109ecd6e7e45",
+      "applied_sections": [
+        "read-first package",
+        "rank03 active seed",
+        "guardrails"
+      ]
+    }
+  ],
+  "guardrails": {
+    "db_insert_apply_used": false,
+    "official_replay_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "schema": "plan_d_rank03_r1_generate8_dryrun_summary_v1",
+  "created_at": "2026-07-07T17:35:21+09:00",
+  "scope": "plan-d-seed-r1-rank03-readiness-dryrun-no-oos-portfolio-export",
+  "parent": {
+    "seed_id": "plan_d_rcs_oos_20260706_rank03",
+    "condition_id": "repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90",
+    "buy_sha256": "8bc41fe1cead5449625dc6daf7b675fdc23009237d382a32028b6c10c413feb4",
+    "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+    "selected_oos_profit_krw": 865831.0,
+    "selected_oos_mdd_pct": 6.28,
+    "selected_oos_trades": 19,
+    "selected_oos_daily_avg_trades": 0.5
+  },
+  "readiness": {
+    "status": "ready_for_rank03_r1_generate8_dryrun_next_scope",
+    "positive_control_verdict": "gate_healthy",
+    "positive_control_passed": true,
+    "sha_recheck_passed": true
+  },
+  "candidate_design": {
+    "quota": {
+      "repair": 5,
+      "discovery": 3
+    },
+    "candidate_count": 8,
+    "lane": "min",
+    "label": "hypothesis_seed",
+    "name_style": "sanitized_filename_safe_v2",
+    "candidate_ids": [
+      "plan_d_r1_rank03_r1_01_l1430_rate75_hold90",
+      "plan_d_r1_rank03_r1_02_l1430_amt9000_rate80_hold90",
+      "plan_d_r1_rank03_r1_03_l1430_end1500_rate80_hold90",
+      "plan_d_r1_rank03_r1_04_l14_l1430_rate80_hold90",
+      "plan_d_r1_rank03_r1_05_l13_l1430_rate80_hold90",
+      "plan_d_r1_rank03_r1_06_morning_strength_relax_hold90",
+      "plan_d_r1_rank03_r1_07_momentum_mult992_hold90",
+      "plan_d_r1_rank03_r1_08_parent_buy_default_tp3_sl3_hold90"
+    ]
+  },
+  "gate_results": {
+    "static_gate_passed": 8,
+    "static_gate_failed": 0,
+    "db_absence_check_passed": true,
+    "buy_matches_before_dryrun": 0,
+    "sell_matches_before_dryrun": 0,
+    "dry_run_status": "dry_run_ok",
+    "planned_seed_count": 8,
+    "planned_insert_count": 16,
+    "inserted_seed_count": 0,
+    "inserted_row_count": 0,
+    "conflicts": []
+  },
+  "explicit_non_actions": {
+    "db_insert_apply_used": false,
+    "db_update_delete_used": false,
+    "official_replay_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false
+  },
+  "artifacts": {
+    "readiness_summary": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_a_readiness_20260707\\plan_d_rank03_readiness_summary_20260707.json",
+    "source_read_receipt": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_b_generate8_dryrun_20260707\\plan_d_rank03_r1_source_read_receipt_20260707.json",
+    "context_pack": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_b_generate8_dryrun_20260707\\plan_d_rank03_context_pack_20260707.md",
+    "design": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_b_generate8_dryrun_20260707\\plan_d_rank03_r1_design_20260707.json",
+    "seeds": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_b_generate8_dryrun_20260707\\plan_d_rank03_r1_generate8_seeds_20260707.json",
+    "static_gate": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_b_generate8_dryrun_20260707\\plan_d_rank03_r1_static_gate_20260707.json",
+    "db_absence_check": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_b_generate8_dryrun_20260707\\plan_d_rank03_r1_dryrun_db_absence_check_20260707.json",
+    "register_dry_run": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_b_generate8_dryrun_20260707\\register_plan_d_rank03_r1_generate8_dryrun_20260707.json",
+    "mapping": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_b_generate8_dryrun_20260707\\plan_d_rank03_r1_strategy_name_mapping_20260707.jsonl",
+    "pairs": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_b_generate8_dryrun_20260707\\pairs_plan_d_rank03_r1_generate8_20260707.json",
+    "pairs_min": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_b_generate8_dryrun_20260707\\pairs_min.json",
+    "pairs_tick": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank03_20260707\\r_b_generate8_dryrun_20260707\\pairs_tick.json"
+  },
+  "next_allowed_action": "plan-d-rank03-r1-insert-replay-no-portfolio-export"
+}

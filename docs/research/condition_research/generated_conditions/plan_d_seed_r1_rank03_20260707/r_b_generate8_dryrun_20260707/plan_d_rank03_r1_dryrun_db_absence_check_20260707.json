@@ -1,0 +1,11 @@
+{
+  "created_at": "2026-07-07T17:34:04+09:00",
+  "scope": "plan-d-seed-r1-rank03-readiness-dryrun-no-oos-portfolio-export",
+  "db": "ai_strategy_loop\\state\\loop_strategies.db",
+  "candidate_count": 8,
+  "buy_matches_before_dryrun": 0,
+  "sell_matches_before_dryrun": 0,
+  "conflicts": [],
+  "passed": true,
+  "db_mutation_executed": false
+}
