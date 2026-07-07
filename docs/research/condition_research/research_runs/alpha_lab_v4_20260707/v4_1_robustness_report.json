@@ -1,0 +1,193 @@
+{
+ "schema": "alpha_lab_v4_1_robustness_report_v1",
+ "created_at": "2026-07-07T02:06:48+00:00",
+ "preregistration_sha256": "db829ed93bdcb91784a38413ee37e4c9bec9f65024e321f7760f867494b4df35",
+ "parent_seal_v4": "87821aaa",
+ "champions": [
+  "RR8_12",
+  "RR8_0",
+  "RR8_21",
+  "GPTAUTH_G8"
+ ],
+ "windows": {
+  "y2022": "202203-202212",
+  "y2023": "202301-202312",
+  "y2024": "202401-202412",
+  "oos": "202501-202602"
+ },
+ "engine_calls_used": 0,
+ "data_source_notes": [
+  "v4_characterization.json: 4/4 챔피언 monthly_pnl 34개월(202203-202412) 완전 커버 확인 — 결손 없음.",
+  "v4_oos_verdict.json: 4/4 챔피언 engine_runs.monthly_pnl 14개월(202501-202602) 완전 커버 확인 — 결손 없음.",
+  "결손이 없어 봉인 예산(engine_budget_max=5) 중 0회 사용 — 신규 엔진 백테 없이 기존 산출물만 재사용."
+ ],
+ "per_window": [
+  {
+   "win": "y2022",
+   "n_months": 10,
+   "oneN_profit": 2887455.75,
+   "oneN_mdd": 186736.0,
+   "oneN_calmar": 15.462769631993831,
+   "singles": {
+    "RR8_12": {
+     "profit": 4130117.0,
+     "mdd": 235480.0,
+     "calmar": 17.539141328350603
+    },
+    "RR8_0": {
+     "profit": 3253203.0,
+     "mdd": 37426.0,
+     "calmar": 86.92360925559771
+    },
+    "RR8_21": {
+     "profit": 2804425.0,
+     "mdd": 90036.0,
+     "calmar": 31.14781865031765
+    },
+    "GPTAUTH_G8": {
+     "profit": 1362078.0,
+     "mdd": 845490.0,
+     "calmar": 1.6109924422524218
+    }
+   },
+   "mean_single_mdd": 302108.0,
+   "median_single_calmar": 24.343479989334128,
+   "T1_win": true,
+   "T2_win": false
+  },
+  {
+   "win": "y2023",
+   "n_months": 12,
+   "oneN_profit": 2982461.5,
+   "oneN_mdd": 599844.75,
+   "oneN_calmar": 4.972055686075438,
+   "singles": {
+    "RR8_12": {
+     "profit": 5649359.0,
+     "mdd": 662395.0,
+     "calmar": 8.528686055903199
+    },
+    "RR8_0": {
+     "profit": 4588771.0,
+     "mdd": 578298.0,
+     "calmar": 7.934959138713951
+    },
+    "RR8_21": {
+     "profit": 5526914.0,
+     "mdd": 560413.0,
+     "calmar": 9.86221590148694
+    },
+    "GPTAUTH_G8": {
+     "profit": -3835198.0,
+     "mdd": 5601494.0,
+     "calmar": -0.6846741244389444
+    }
+   },
+   "mean_single_mdd": 1850650.0,
+   "median_single_calmar": 8.231822597308575,
+   "T1_win": true,
+   "T2_win": false
+  },
+  {
+   "win": "y2024",
+   "n_months": 12,
+   "oneN_profit": 1189667.75,
+   "oneN_mdd": 352722.25,
+   "oneN_calmar": 3.37281742220685,
+   "singles": {
+    "RR8_12": {
+     "profit": 2852246.0,
+     "mdd": 668472.0,
+     "calmar": 4.266814466424921
+    },
+    "RR8_0": {
+     "profit": 3562321.0,
+     "mdd": 351633.0,
+     "calmar": 10.130792616165149
+    },
+    "RR8_21": {
+     "profit": 2803276.0,
+     "mdd": 606871.0,
+     "calmar": 4.61922879821247
+    },
+    "GPTAUTH_G8": {
+     "profit": -4459172.0,
+     "mdd": 4459172.0,
+     "calmar": -1.0
+    }
+   },
+   "mean_single_mdd": 1521537.0,
+   "median_single_calmar": 4.443021632318695,
+   "T1_win": true,
+   "T2_win": false
+  },
+  {
+   "win": "oos",
+   "n_months": 14,
+   "oneN_profit": 2608362.0,
+   "oneN_mdd": 493590.75,
+   "oneN_calmar": 5.2844628875237225,
+   "singles": {
+    "RR8_12": {
+     "profit": 2652432.0,
+     "mdd": 873720.0,
+     "calmar": 3.035791786842467
+    },
+    "RR8_0": {
+     "profit": 2897270.0,
+     "mdd": 757275.0,
+     "calmar": 3.8259152883694827
+    },
+    "RR8_21": {
+     "profit": 3444287.0,
+     "mdd": 1204437.0,
+     "calmar": 2.8596655532834014
+    },
+    "GPTAUTH_G8": {
+     "profit": 1439459.0,
+     "mdd": 1199665.0,
+     "calmar": 1.1998841343208313
+    }
+   },
+   "mean_single_mdd": 1008774.25,
+   "median_single_calmar": 2.947728670062934,
+   "T1_win": true,
+   "T2_win": true
+  }
+ ],
+ "T1_windows_passed": 4,
+ "T1_pass": true,
+ "T2_windows_passed": 1,
+ "T2_pass": false,
+ "T3_prob": 0.7536,
+ "T3_point": 1.0,
+ "T3_n": 10000,
+ "T3_seed": 20260707,
+ "T3_pass": true,
+ "T4": {
+  "split_at": 7,
+  "best_alwayson_comparator": "RR8_0",
+  "first_half": {
+   "n_months": 7,
+   "oneN_mdd": 438122.25,
+   "RR8_0_mdd": 606773.0,
+   "pass": true
+  },
+  "second_half": {
+   "n_months": 7,
+   "oneN_mdd": 493590.75,
+   "RR8_0_mdd": 349161.0,
+   "pass": false
+  }
+ },
+ "T4_pass": false,
+ "robust_verdict_rule": "T1 PASS AND (T2 PASS OR T3 PASS)",
+ "robust": true,
+ "honest_notes": [
+  "T1(다각화 MDD): 4/4 창 통과 → PASS(기준 >=3/4).",
+  "T2(위험조정 중앙값): 1/4 창 통과 → FAIL(기준 >=3/4).",
+  "T3(OOS 몬테카를로): P=0.7536(N=10000, seed=20260707) → PASS(기준 >=0.60).",
+  "T4(OOS 전후반): 전반 1/N mdd=438122.2 vs RR8_0 mdd=606773.0(PASS), 후반 1/N mdd=493590.8 vs RR8_0 mdd=349161.0(FAIL) → FAIL(양 반기 모두 만족해야 PASS).",
+  "robust_verdict_rule = T1 PASS AND (T2 PASS OR T3 PASS) = True AND (False OR True) = True → 견고 확정, 머지 권고."
+ ]
+}
