@@ -1,0 +1,61 @@
+{
+  "schema": "plan_d_rank02_r5_limited_replay_verification_receipt_v1",
+  "created_at": "2026-07-07T16:54:21+09:00",
+  "scope": "plan-d-rank02-r5-insert-limited-replay-no-oos-portfolio-export",
+  "run_id": "lat_plan_d_rank02_r5_8_min_warm64_20260707",
+  "process_exit_code": "not_captured_external_start",
+  "process_surface_clean": "No live python command line matched claude_candidate_batch_eval or lat_plan_d_rank02_r5_8_min_warm64_20260707 after completion.",
+  "process_completion_evidence": "loop_runs.status=complete and raw log contains [BATCH] done.",
+  "json_parse_checked": true,
+  "verify_nonrelease_sync": "passed",
+  "scoped_diff_check": "passed",
+  "constraints_observed": {
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "pairs_executed": 8,
+    "max_pairs_allowed": 8,
+    "db_update_delete_used": false,
+    "db_insert_apply_used": true,
+    "full_tick_288_executed": false,
+    "full_min_288_executed": false
+  },
+  "db_backup_staging_note": "ai_strategy_loop\\state\\loop_strategies.db.bak.lattice_20260707T074454Z was created as runtime evidence and is not selected for commit staging.",
+  "raw_log_staging_note": "artifacts/plan_d_rank02_r5_8_min_warm64_20260707.log is referenced but not selected for commit staging.",
+  "updated_at": "2026-07-07T16:55:26+09:00",
+  "json_parse_file_count": 14,
+  "json_parse_checked_files": [
+    "pairs_min.json",
+    "pairs_plan_d_rank02_r5_8_inserted_20260707.json",
+    "pairs_plan_d_rank02_r5_selected_oos_draft_20260707.json",
+    "pairs_tick.json",
+    "plan_d_rank02_r5_limited_replay_result_20260707.json",
+    "plan_d_rank02_r5_limited_replay_verification_receipt_20260707.json",
+    "plan_d_rank02_r5_no_improve_seed_state_receipt_20260707.json",
+    "plan_d_rank02_r5_postapply_db_check_20260707.json",
+    "plan_d_rank02_r5_preapply_absence_check_20260707.json",
+    "plan_d_rank02_r5_round_decision_20260707.json",
+    "plan_d_rank02_r5_selected_freeze_ledger_draft_20260707.jsonl",
+    "plan_d_rank02_r5_strategy_name_mapping_apply_20260707.jsonl",
+    "provenance_plan_d_rank02_r5_register_apply_20260707.jsonl",
+    "register_plan_d_rank02_r5_apply_20260707.json"
+  ],
+  "jsonl_counts": {
+    "plan_d_rank02_r5_selected_freeze_ledger_draft_20260707.jsonl": 0,
+    "plan_d_rank02_r5_strategy_name_mapping_apply_20260707.jsonl": 8,
+    "provenance_plan_d_rank02_r5_register_apply_20260707.jsonl": 8
+  },
+  "verify_nonrelease_sync_command": "python scripts/verify_nonrelease_sync.py",
+  "scoped_diff_check_command": "git diff --check -- docs/update_log/2026-07-07_plan_d_rank02_r5_insert_replay_handoff.md docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_n_r5_insert_replay_20260707",
+  "decision_summary": {
+    "honest_rows": 8,
+    "gate_passed": 7,
+    "improved": 0,
+    "flat": 7,
+    "no_go": 1,
+    "selected_oos_opened": false,
+    "best_profit_label": "plan_d_r1_rank02_r5_08_eod1515_default",
+    "best_profit": 2071786.0,
+    "active_r3_baseline_profit": 2297191.0
+  }
+}

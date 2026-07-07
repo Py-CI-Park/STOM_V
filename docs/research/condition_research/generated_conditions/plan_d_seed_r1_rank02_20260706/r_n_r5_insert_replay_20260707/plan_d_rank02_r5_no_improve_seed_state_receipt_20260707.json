@@ -1,0 +1,9 @@
+{
+  "schema": "plan_d_rank02_r5_no_improve_seed_state_receipt_v1",
+  "created_at": "2026-07-07T16:54:21+09:00",
+  "active_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+  "rounds_no_improve_delta": 2,
+  "seed_pool_appended": false,
+  "reason": "No OOS survivor and no freeze occurred; state change is recorded in round decision only. R5 is the second consecutive no-improve replay after R4.",
+  "portfolio_ready": false
+}
