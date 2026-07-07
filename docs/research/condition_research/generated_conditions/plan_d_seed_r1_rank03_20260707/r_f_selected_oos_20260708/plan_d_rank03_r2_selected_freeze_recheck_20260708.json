@@ -1,0 +1,26 @@
+{
+  "created_at_kst": "2026-07-07T22:32:26+09:00",
+  "scope": "plan-d-rank03-r2-selected-oos-prereg-no-portfolio-export",
+  "candidate_label": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90",
+  "freeze_ledger": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_selected_freeze_ledger_20260707.jsonl",
+  "checks": {
+    "stockbuy": {
+      "strategy_name": "LAT_plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90_B",
+      "row_found": true,
+      "code_sha256": "162391fa9848410b0771df5e558ba7af6014eb1a3a0c1ef521ecf80aaa559518",
+      "expected_sha256": "162391fa9848410b0771df5e558ba7af6014eb1a3a0c1ef521ecf80aaa559518",
+      "sha_match": true,
+      "code_length": 2582
+    },
+    "stocksell": {
+      "strategy_name": "LAT_plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90_S",
+      "row_found": true,
+      "code_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "expected_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "sha_match": true,
+      "code_length": 159
+    }
+  },
+  "all_sha_match": true,
+  "db_mode": "read_only"
+}

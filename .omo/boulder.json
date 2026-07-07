@@ -7,36 +7,33 @@
       "active_plan": ".omo/plans/lattice-rereview-rank03-r2-boundary-20260707.md",
       "plan_name": "lattice-rereview-rank03-r2-boundary-20260707",
       "session_ids": [
-        "codex:lattice-rereview-rank03-r2-boundary-20260707"
+        "codex:lattice-rereview-rank03-r2-boundary-20260707",
+        "ulw-loop:20260708_rank03_r2_closeout_loop_v2"
       ],
-      "status": "completed_selected_range",
+      "status": "completed_selected_oos_closeout",
       "started_at": "2026-07-07T21:04:14+09:00",
-      "ended_at": "2026-07-07T21:27:00+09:00",
+      "ended_at": "2026-07-07T22:32:26+09:00",
       "duration_ms": 1366000,
       "worktree_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev",
       "duration_human": "22.8m",
-      "latest_handoff": "docs/update_log/2026-07-07_plan_d_rank03_r2_limited_replay_boundary_handoff.md",
-      "latest_result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_limited_replay_result_20260707.json",
+      "latest_handoff": "docs/update_log/2026-07-08_plan_d_rank03_r2_selected_oos_closeout_handoff.md",
+      "latest_result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_selected_oos_result_20260708.json",
       "latest_round_decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_round_decision_20260707.json",
       "summary": {
-        "honest_rows": 8,
-        "status_counts": {
-          "ok": 8
-        },
-        "gate_passed_count": 8,
-        "decision_counts": {
-          "hold": 3,
-          "flat": 1,
-          "improved": 1,
-          "no_go": 3
-        },
         "selected_oos_candidate": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90",
-        "selected_profit": 1912728.0,
-        "selected_mdd": 10.79,
-        "selected_trades": 439,
-        "selected_daily": 2.1,
-        "next_allowed_action": "rank03-r2-selected-oos-prereg-no-portfolio-export"
-      }
+        "selected_oos_classification": "survivor",
+        "selected_oos_profit": 554624.0,
+        "selected_oos_mdd": 5.24,
+        "selected_oos_trades": 80,
+        "selected_oos_daily": 2.2,
+        "gate_passed": true,
+        "survivor_seed_id": "plan_d_rank03_r2_oos_20260708_01",
+        "r3_opened": false,
+        "portfolio_generated": false,
+        "next_recommended_action": "lattice_condition_generation_v2_redesign_plan_not_unbounded_plan_d_loop"
+      },
+      "latest_full_analysis": "docs/update_log/2026-07-08_condition_research_full_result_and_analysis.md",
+      "latest_boundary_receipt": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_f_selected_oos_20260708/plan_d_rank03_r2_boundary_receipt_20260708.json"
     },
     "condition-research-rereview-20260603": {
       "work_id": "condition-research-rereview-20260603",

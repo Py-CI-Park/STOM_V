@@ -1,0 +1,7 @@
+[BATCH] run_id=lat_plan_d_rank03_r2_selected1_oos_min_warm64_20260708 pairs=1
+
+[BATCH] prepare status=ok back_count=480 elapsed=161s
+
+[BATCH] gen0 plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90 ok profit=554,624 mdd=5.24 trades=80 daily=2.20 payoff=1.1230679156908663 gate=True reason=ok (29s)
+
+[BATCH] done
