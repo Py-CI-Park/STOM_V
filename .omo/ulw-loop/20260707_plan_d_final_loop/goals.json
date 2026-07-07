@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "createdAt": "2026-07-07T05:28:06.072Z",
+  "updatedAt": "2026-07-07T05:55:37.622Z",
+  "briefPath": ".omo/ulw-loop/20260707_plan_d_final_loop/brief.md",
+  "goalsPath": ".omo/ulw-loop/20260707_plan_d_final_loop/goals.json",
+  "ledgerPath": ".omo/ulw-loop/20260707_plan_d_final_loop/ledger.jsonl",
+  "codexGoalMode": "aggregate",
+  "goals": [
+    {
+      "id": "G001-plan-d-final-page-continuation-from",
+      "title": "Plan D final-page continuation from closeout commit fe1709c1. Before...",
+      "objective": "Plan D final-page continuation from closeout commit fe1709c1. Before action, read these sources fully: docs/update_log/2026-07-07_plan_d_overnight_ulw_closeout.md; docs/update_log/2026-07-07_plan_d_rank02_r1_selected_oos_blocked_handoff.md; docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_blocked_result_20260707.json; docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_preregistration_20260707.md; cli/warm_session.py; cli/runner.py. Guardrails for every goal: no DB UPDATE/DELETE, no git add -A, no OOS without preregistration, no non-selected OOS, no full tick/min 288, no portfolio/export/live/final promotion, do not stage dashboard files or .gjc or unrelated .omo residue, and preserve stale DB rows as evidence.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: Plan D final-page continuation from closeout commit fe1709c1. Before action,...",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 1.",
+          "essential": true,
+          "capturedEvidence": "Read-first package completed: closeout handoff, rank02 blocker handoff, blocked result, preregistration, cli/warm_session.py, cli/runner.py were read before action; guardrails preserved.",
+          "status": "pass",
+          "capturedAt": "2026-07-07T05:54:47.546Z",
+          "notes": "Current milestone used selected 2 only, no portfolio/export/live/final, no full tick/min 288, no manual DB UPDATE/DELETE."
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Plan D final-page continuation from closeout commit fe1709c1. Before action,....",
+          "essential": true,
+          "capturedEvidence": "Boundary proof: stale prior OOS run rows were preserved as evidence, no DB UPDATE/DELETE was used, and wrong-profile or non-selected OOS paths were not used.",
+          "status": "pass",
+          "capturedAt": "2026-07-07T05:55:06.667Z"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Plan D final-page continuation from closeout commit fe1709c1. Before action,....",
+          "essential": false,
+          "capturedEvidence": "Regression proof: python -m pytest tests/unit/test_warm_session_window.py -q passed 11 tests and python scripts/verify_nonrelease_sync.py passed.",
+          "status": "pass",
+          "capturedAt": "2026-07-07T05:55:06.752Z"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-07T05:28:06.072Z",
+      "updatedAt": "2026-07-07T05:55:06.752Z"
+    },
+    {
+      "id": "G002-goal-1-read-first-and-preflight-capt",
+      "title": "Goal 1: Read-first and preflight. Capture full-document source receip...",
+      "objective": "Goal 1: Read-first and preflight. Capture full-document source receipt, current git/process/DB stale-row state, and exact blocker reproduction facts without starting a new long OOS run. Goal 2: Diagnose the warm64 prepare engine-response wait. Build at least three hypotheses, inspect cli/warm_session.py, cli/runner.py, backtest engine handshake paths, configs, process counts, and existing blocker logs, then identify root cause or a narrow blocked reason. Goal 3: If a safe fix or workaround exists, implement only the minimal scoped change or operational workaround, add focused verification, and commit in Korean. If no safe fix exists, document why later goals are blocked. Goal 4: Retry only the preregistered rank02 selected two OOS with a new run_id, official min full-period warm64, and stop if honest rows are not produced. Do not run non-selected OOS. Goal 5: If honest OOS rows exist, classify survivor/hold/no_go and only then append survivor and seed_pool records append-only with next seed readiness. If no survivor exists, document Plan D blocked terminal state. Goal 6: If a next Plan D round opens safely, continue the same pattern: dry-run, INSERT-only, limited replay, preregistered selected OOS, handoff, ledger, verification receipt, and Korean commit. Stop at portfolio/export/live/final boundary and write terminal handoff.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "happy path for: Goal 1: Read-first and preflight. Capture full-document source receipt, curre...",
+          "userModel": "happy",
+          "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 2.",
+          "essential": true,
+          "capturedEvidence": "Warm64 prepare blocker diagnosed as pre-generation warm prepare wait; WarmBacktestSession now preserves timeout diagnostics; retry02 produced 2/2 honest OOS rows; both selected candidates were classified survivor and append-only survivor/seed_pool records were created.",
+          "status": "pass",
+          "capturedAt": "2026-07-07T05:55:29.780Z"
+        },
+        {
+          "id": "C002",
+          "scenario": "edge case (boundary/empty/malformed)",
+          "userModel": "edge",
+          "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Goal 1: Read-first and preflight. Capture full-document source receipt, curre....",
+          "essential": true,
+          "capturedEvidence": "Boundary proof: no non-selected OOS was executed, no portfolio/export/live/final path was opened, duplicate append was guarded by seed_id checks, and stale blocked runs remain preserved.",
+          "status": "pass",
+          "capturedAt": "2026-07-07T05:55:37.622Z"
+        },
+        {
+          "id": "C003",
+          "scenario": "regression: adjacent surface still works",
+          "userModel": "regression",
+          "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Goal 1: Read-first and preflight. Capture full-document source receipt, curre....",
+          "essential": false,
+          "capturedEvidence": "Quality gates for this milestone: JSON/JSONL parse verification ok, warm_session unit window passed, verify_nonrelease_sync passed, git diff --check passed for scoped files.",
+          "status": "pass",
+          "capturedAt": "2026-07-07T05:55:06.856Z"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-07T05:28:06.072Z",
+      "updatedAt": "2026-07-07T05:55:37.622Z"
+    }
+  ],
+  "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/20260707_plan_d_final_loop/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/20260707_plan_d_final_loop/ledger.jsonl as the audit trail."
+}

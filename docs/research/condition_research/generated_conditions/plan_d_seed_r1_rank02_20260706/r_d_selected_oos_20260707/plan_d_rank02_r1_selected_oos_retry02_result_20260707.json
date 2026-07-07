@@ -1,0 +1,153 @@
+{
+  "schema": "plan_d_rank02_r1_selected_oos_retry02_result_v1",
+  "created_at": "2026-07-07T14:51:33+09:00",
+  "scope": "plan-d-rank02-r1-selected-oos-retry02-no-portfolio-export",
+  "run_id": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry02_20260707",
+  "lane": "min",
+  "profile": {
+    "db": "_database/stock_min_back.db",
+    "oos_window": "2026-01-01~2026-02-27",
+    "time_window": "09:00~15:19",
+    "warm_engine_count": 64,
+    "engine_mode": "warm",
+    "timeframe": "min",
+    "bt_timeout": 1800,
+    "bt_warm_run_timeout": 1200
+  },
+  "config_json": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/oos_config_min_plan_d_rank02_r1_selected2_retry01_20260707.json",
+  "pairs_json": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/pairs_plan_d_rank02_r1_selected2_oos_20260707.json",
+  "run": {
+    "run_id": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry02_20260707",
+    "status": "complete",
+    "started_at": 1783402892.5077806,
+    "finished_at": 1783403067.8743021,
+    "best_gen": null,
+    "best_score": null
+  },
+  "warm_prepare": {
+    "status": "ok",
+    "back_count": 480,
+    "elapsed_seconds": 119,
+    "source": "artifacts/plan_d_rank02_r1_selected2_oos_min_warm64_retry02_20260707.log"
+  },
+  "blocker_resolution": {
+    "prior_blocked_result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_blocked_result_20260707.json",
+    "prior_blocker": "warm64_prepare_engine_response_wait_reproduced_with_0_generation_rows",
+    "resolution": "WarmBacktestSession now preserves _collect_engine_shared_info timeout diagnostics, then selected retry02 completed cleanly under the same min OOS window and warm64 profile.",
+    "root_cause_assessment": "The stale blocked runs are preserved as evidence. Clean retry success indicates the candidate quality was not the blocker; the remaining likely cause is transient/stale warm prepare process or shared runtime state in the earlier attempts."
+  },
+  "summary": {
+    "honest_rows": 2,
+    "status_counts": {
+      "ok": 2
+    },
+    "gate_passed_count": 2,
+    "decision_counts": {
+      "survivor": 2,
+      "hold": 0,
+      "no_go": 0
+    },
+    "survivor_labels": [
+      "plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90",
+      "plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90"
+    ],
+    "best_profit_label": "plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90",
+    "best_profit": 1124220.0,
+    "best_mdd_label": "plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90",
+    "best_mdd": 4.06
+  },
+  "classification": {
+    "survivor": [
+      "plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90",
+      "plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90"
+    ],
+    "hold": [],
+    "no_go": []
+  },
+  "rows": [
+    {
+      "gen_no": 0,
+      "label": "plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90",
+      "buy_name": "LAT_plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90_S",
+      "axis": "sell_tp3_sl3_hold90_on_rank02_parent_buy",
+      "mutation": "Keep rank02 parent buy; tighten take-profit 4.0 -> 3.0 while keeping SL -3 and hold90",
+      "sell_profile": "default_tp3_sl3_hold90",
+      "status": "ok",
+      "gate_passed": true,
+      "decision": "survivor",
+      "decision_reason": "status_ok_gate_passed_profit_positive_mdd_cap_daily_min_passed",
+      "profit": 1079768.0,
+      "mdd": 4.06,
+      "trade_count": 19,
+      "daily_avg_trades": 0.5,
+      "payoff_ratio": 1.8593380614657211,
+      "total_profit_pct": 21.6,
+      "calmar": 35.9384236453202,
+      "uptrend_r2": 0.5087562967282776,
+      "score": 10.302048909853827,
+      "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90_B_20260707144347.csv",
+      "buy_sha256": "bafc3f0c9139a3d89d70d999d60d99c090d525ea66c3757fee1ddc5685f98101",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "source_preflight": {
+        "profit": 2216506.0,
+        "mdd": 16.31,
+        "trade_count": 203,
+        "daily_avg_trades": 1.0,
+        "decision": "improved",
+        "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90_B_20260706234824.csv"
+      }
+    },
+    {
+      "gen_no": 1,
+      "label": "plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90",
+      "buy_name": "LAT_plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90_S",
+      "axis": "l14_amount_floor9000_rate80",
+      "mutation": "L14 amount floor 10000 -> 9000; keep rate floor 8.0 and loose sell hold90",
+      "sell_profile": "loose_tp4_sl3_hold90",
+      "status": "ok",
+      "gate_passed": true,
+      "decision": "survivor",
+      "decision_reason": "status_ok_gate_passed_profit_positive_mdd_cap_daily_min_passed",
+      "profit": 1124220.0,
+      "mdd": 4.12,
+      "trade_count": 18,
+      "daily_avg_trades": 0.5,
+      "payoff_ratio": 2.0863958736299164,
+      "total_profit_pct": 22.48,
+      "calmar": 36.873786407766985,
+      "uptrend_r2": 0.4995605692513437,
+      "score": 10.202250246680189,
+      "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90_B_20260707144408.csv",
+      "buy_sha256": "44a1a28f18d2d9b48a1e6ce9e16dce8c7041506a3bdf90c5750df046a5b708e3",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "source_preflight": {
+        "profit": 1348845.0,
+        "mdd": 18.56,
+        "trade_count": 204,
+        "daily_avg_trades": 1.0,
+        "decision": "improved",
+        "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90_B_20260706234410.csv"
+      }
+    }
+  ],
+  "constraints_observed": {
+    "db_update_delete_used": false,
+    "db_insert_apply_used": false,
+    "oos_without_preregistration_used": false,
+    "non_selected_candidate_oos_used": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "full_tick_288_executed": false,
+    "full_min_288_executed": false
+  },
+  "plan_d_readiness": {
+    "can_append_oos_survivors": true,
+    "can_continue_next_seed_from_rank02_oos": true,
+    "survivor_count": 2,
+    "next_allowed_action": "rank02_oos_survivor_seed_pool_intake_then_next_round_selection",
+    "portfolio_ready": false
+  },
+  "caveat": "The selected 2 were chosen from R1 full-period min replay that included 2026-01-01~2026-02-27, so this is fixed OOS-style robustness replay, not fully blind discovery OOS."
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "plan_d_rank02_r1_selected_oos_retry02_verification_receipt_v1",
+  "created_at": "2026-07-07T14:51:33+09:00",
+  "result_path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_retry02_result_20260707.json",
+  "row_count": 2,
+  "honest_rows": 2,
+  "survivor_count": 2,
+  "all_rows_gate_passed": true,
+  "all_rows_status_ok": true,
+  "appended_seed_ids": [
+    "plan_d_rank02_r1_oos_20260707_01",
+    "plan_d_rank02_r1_oos_20260707_02"
+  ],
+  "sha256": {
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_retry02_result_20260707.json": "5a4592b471e0544224620dbfe59c87e4102aac695c7187966d7591b70eb133c8",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_survivors_20260707.jsonl": "a68a52c4ba2c4657a281aadeff65ba8fe4ebe486950d96b1207cec5adc0a6267",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_oos_append_receipt_20260707.json": "4cc848de3d31b25d5f5b7b6e275d74790d0f3626cac0579d139c2d60c05a26ea",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_next_seed_readiness_20260707.json": "36ced7e0287b150079286ffbdaeb6306ff7d3eea7a2e069bbe84becbd4f7befa"
+  }
+}
