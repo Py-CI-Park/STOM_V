@@ -34,9 +34,10 @@
     "plan_d_r1_rank02_r5_08_eod1515_default"
   ],
   "selected_oos_candidates": [],
-  "rounds_no_improve_delta": 2,
+  "rounds_no_improve_delta": 1,
   "next_allowed_action": "rank02_r6_generate8_dryrun_no_oos_portfolio_export_or_rank02_branch_terminal_review",
   "oos_opened": false,
   "oos_open_reason": "not_opened_no_improved_candidate",
-  "portfolio_executed": false
+  "portfolio_executed": false,
+  "consecutive_no_improve_since_r3": 2
 }
