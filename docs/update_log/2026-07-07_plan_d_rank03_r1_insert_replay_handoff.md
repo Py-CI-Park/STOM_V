@@ -42,6 +42,7 @@ Replay evidence:
 - summary: `docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_c_insert_replay_20260707/plan_d_rank03_r1_limited_replay_summary_20260707.md`
 - round decision: `docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_c_insert_replay_20260707/plan_d_rank03_r1_round_decision_20260707.json`
 - batch log: `artifacts/plan_d_rank03_r1_8_min_warm64_20260707.log`
+- verification receipt: `docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_c_insert_replay_20260707/plan_d_rank03_r1_limited_replay_verification_receipt_20260707.json`
 
 ## 4. Candidate Decision
 
