@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-07-07T13:14:05.447Z",
-  "updatedAt": "2026-07-07T13:30:34.155Z",
+  "updatedAt": "2026-07-07T13:42:12.552Z",
   "briefPath": ".omo/ulw-loop/20260708_rank03_r2_closeout_loop_v2/brief.md",
   "goalsPath": ".omo/ulw-loop/20260708_rank03_r2_closeout_loop_v2/goals.json",
   "ledgerPath": ".omo/ulw-loop/20260708_rank03_r2_closeout_loop_v2/ledger.jsonl",
@@ -11,7 +11,7 @@
       "id": "G001-one-goal-only-complete-rank03-r2-clo",
       "title": "One goal only: complete rank03 R2 closeout by running selected R2-05...",
       "objective": "One goal only: complete rank03 R2 closeout by running selected R2-05 only OOS-style min warm64 replay, classify survivor/hold/no_go, append survivor records only if it survives, do not open R3, write full condition research result and analysis document, write handoff, update Boulder and ledgers, and create a Korean commit. Read first: docs/update_log/2026-07-07_plan_d_rank03_r2_limited_replay_boundary_handoff.md; docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_limited_replay_result_20260707.json; docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_round_decision_20260707.json; docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_selected_freeze_ledger_20260707.jsonl; docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_e_r2_boundary_20260707/plan_d_rank03_r2_selected_oos_preregistration_draft_20260707.md; docs/update_log/2026-07-07_lattice_research_rereview_and_rank03_r2_recommendation.md. Guardrails: no lattice redesign execution, no R3, no non-selected OOS, no full tick/min 288, no portfolio/export/live/final, no DB UPDATE/DELETE, no git add -A, do not stage dashboard/.gjc/unrelated .omo. Evidence criteria: C1 selected SHA mapping and OOS replay transcript/result, C2 boundary proof no forbidden scope and append-only only, C3 final research analysis doc plus JSON parsing/diff/nonrelease verification and Korean commit.",
-      "status": "pending",
+      "status": "in_progress",
       "successCriteria": [
         {
           "id": "C001",
@@ -39,14 +39,17 @@
           "userModel": "regression",
           "expectedEvidence": ".omo/ulw-loop/evidence/20260708_rank03_r2_closeout_loop_v2/C003_final_verification_receipt.json plus docs/update_log/2026-07-08_condition_research_full_result_and_analysis.md",
           "essential": false,
-          "capturedEvidence": null,
-          "status": "pending"
+          "capturedEvidence": "Final verification passed: JSON/JSONL parse ok, generation_rows=1, verify_nonrelease_sync pass, cached diff check pass, scoped Korean commit 086d8af9 created. Evidence: .omo/ulw-loop/evidence/20260708_rank03_r2_closeout_loop_v2/C003_final_verification_receipt.json; docs/update_log/2026-07-08_condition_research_full_result_and_analysis.md; docs/update_log/2026-07-08_plan_d_rank03_r2_selected_oos_closeout_handoff.md",
+          "status": "pass",
+          "capturedAt": "2026-07-07T13:41:03.344Z"
         }
       ],
-      "attempt": 0,
+      "attempt": 1,
       "createdAt": "2026-07-07T13:14:05.447Z",
-      "updatedAt": "2026-07-07T13:30:34.155Z"
+      "updatedAt": "2026-07-07T13:42:12.552Z",
+      "startedAt": "2026-07-07T13:42:12.552Z"
     }
   ],
-  "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/20260708_rank03_r2_closeout_loop_v2/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/20260708_rank03_r2_closeout_loop_v2/ledger.jsonl as the audit trail."
+  "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/20260708_rank03_r2_closeout_loop_v2/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/20260708_rank03_r2_closeout_loop_v2/ledger.jsonl as the audit trail.",
+  "activeGoalId": "G001-one-goal-only-complete-rank03-r2-clo"
 }
