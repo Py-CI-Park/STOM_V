@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-07-07T05:28:06.072Z",
-  "updatedAt": "2026-07-07T07:19:58.305Z",
+  "updatedAt": "2026-07-07T07:36:24.917Z",
   "briefPath": ".omo/ulw-loop/20260707_plan_d_final_loop/brief.md",
   "goalsPath": ".omo/ulw-loop/20260707_plan_d_final_loop/goals.json",
   "ledgerPath": ".omo/ulw-loop/20260707_plan_d_final_loop/ledger.jsonl",
@@ -62,9 +62,9 @@
           "userModel": "happy",
           "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 2.",
           "essential": true,
-          "capturedEvidence": "R4 generate8 dry-run completed: active_seed=plan_d_rank02_r3_oos_20260707_01, candidates=8, static_gate=8/8, registration dry-run status=dry_run_ok, planned inserts=16, inserted rows=0, conflicts=0. Outputs under docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_k_r4_generate8_dryrun_20260707 and handoff docs/update_log/2026-07-07_plan_d_rank02_r4_generate8_dryrun_handoff.md. | cleanup: no replay/OOS process spawned; register dry-run exited code 0",
+          "capturedEvidence": "R4 INSERT-only + limited replay completed: 8 seeds/16 strategy rows inserted with conflicts=0; run_id=lat_plan_d_rank02_r4_8_min_warm64_20260707 completed, warm prepare ok back_count=1379 elapsed=115s, 8/8 honest ok rows, 8/8 gate passed, decision_counts improved=0 flat=8 no_go=0. Best profit was R4_02 profit=2,165,123, below active R3 baseline 2,297,191, so selected OOS remains closed. | cleanup: replay process exited code 0; process scan found no live claude_candidate_batch_eval/R4 run_id",
           "status": "pass",
-          "capturedAt": "2026-07-07T07:19:43.069Z"
+          "capturedAt": "2026-07-07T07:36:09.998Z"
         },
         {
           "id": "C002",
@@ -72,9 +72,9 @@
           "userModel": "edge",
           "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Goal 1: Read-first and preflight. Capture full-document source receipt, curre....",
           "essential": true,
-          "capturedEvidence": "Boundary proof: R4 page intentionally omitted --apply, so DB registration was dry-run only with inserted rows=0; no DB UPDATE/DELETE, no official replay, no OOS, no portfolio/export/live/final, no full tick/min 288, sanitized candidate names 8/8. Dry-run report notes planned provenance path but no provenance JSONL was written because apply was omitted. | cleanup: no runtime process spawned",
+          "capturedEvidence": "Boundary proof: R4 applied only the predeclared 8 dry-run candidates via INSERT-only registration; preapply absence passed, postapply DB check found buy=8/sell=8; no DB UPDATE/DELETE, no OOS, no portfolio/export/live/final, no full tick/min 288. Empty selected OOS draft and preregistration note were written because improved=0. | cleanup: no replay process remains",
           "status": "pass",
-          "capturedAt": "2026-07-07T07:19:50.769Z"
+          "capturedAt": "2026-07-07T07:36:18.297Z"
         },
         {
           "id": "C003",
@@ -82,14 +82,14 @@
           "userModel": "regression",
           "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Goal 1: Read-first and preflight. Capture full-document source receipt, curre....",
           "essential": false,
-          "capturedEvidence": "Regression proof: R4 folder JSON/JSONL parsed with Python json (10 files, mapping JSONL 8 rows), python scripts/verify_nonrelease_sync.py passed, scoped git diff --check passed, verification receipt updated. | cleanup: no live QA runtime remains",
+          "capturedEvidence": "Regression proof: R4 insert/replay folder JSON/JSONL parsed with Python json (14 files; mapping/provenance JSONL 8 rows each), python scripts/verify_nonrelease_sync.py passed, scoped git diff --check passed, verification receipt updated. | cleanup: no live QA runtime remains",
           "status": "pass",
-          "capturedAt": "2026-07-07T07:19:58.305Z"
+          "capturedAt": "2026-07-07T07:36:24.917Z"
         }
       ],
       "attempt": 0,
       "createdAt": "2026-07-07T05:28:06.072Z",
-      "updatedAt": "2026-07-07T07:19:58.305Z"
+      "updatedAt": "2026-07-07T07:36:24.917Z"
     }
   ],
   "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/20260707_plan_d_final_loop/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/20260707_plan_d_final_loop/ledger.jsonl as the audit trail.",
