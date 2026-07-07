@@ -1,0 +1,47 @@
+{
+  "provider": "gpt_auth",
+  "bt_engine_mode": "warm",
+  "bt_warm_engine_count": 64,
+  "bt_betting": "5",
+  "bt_avg_time": 30,
+  "min_daily_trades": 0.5,
+  "mdd_cap": 35.0,
+  "winner_objective": "uptrend",
+  "autopsy_enabled": false,
+  "bt_full_start": 20220323,
+  "bt_full_end": 20241231,
+  "max_generations": 1,
+  "bt_timeout": 14400,
+  "bt_warm_run_timeout": 300,
+  "equity_points_enabled": true,
+  "bt_timeframe": "tick",
+  "bt_universe_start_time": 90000,
+  "bt_universe_end_time": 92800,
+  "_comment": "Plan B P5 official tick lattice profile; DB full period; warm64; preflight required before full run.",
+  "condition_discovery_preset": "fast",
+  "condition_discovery_process": "fast-discovery",
+  "_official_profile": {
+    "schema": "plan_b_p5_official_profile_v1",
+    "lane": "tick",
+    "source_db_range": {
+      "path": "_database/stock_tick_back.db",
+      "table_count": 2427,
+      "temporal_row_count": 124235459,
+      "index_min_len_filter": 14,
+      "min_index": "20220323090000",
+      "max_index": "20260227093000",
+      "start_date": 20220323,
+      "end_date": 20260227,
+      "skipped_no_index_tables": [],
+      "skipped_no_index_table_count": 0
+    },
+    "time_window_policy": "fast-discovery runtime resolves tick to 09:00:00-09:28:00; raw DB reaches 09:30:00 but is not claimed as runtime window.",
+    "full_run_forbidden_until_preflight_receipt": true
+  },
+  "_derived": {
+    "schema": "alpha_lab_v5_r0_discovery_window_config_v1",
+    "base_config": "docs/research/condition_research/research_runs/alpha_lab_v4_20260707/discovery_config_tick_warm64_2022_2024_20260707.json",
+    "changed_fields_only": [],
+    "window_basis": "preregistration_v5.json (sha 15144e12...) windows.discovery = '2022-03 ~ 2024-12' — v4 R0 discovery window과 동일하여 operative bt_* 필드는 v4 config와 byte-동일(재사용, 재구현 아님). v5 R0 신규 후보(CSS_V7_TICK_MASTER/C_T_900_920_*/Study_*)를 이 창에서만 백테한다. CSS_V7_MIN_MASTER는 min timeframe이며 별도 min 프로파일(seed_lattice_20260702/smoke_config_min_official_full_warm64_20260704.json 파생)이 필요하나, 로컬 stock_min_back.db 실측 범위(202504070900~202602271519)가 discovery 창을 전혀 커버하지 않아 R0 백테 자체를 생략한다(v5_candidate_pool.json 기록)."
+  }
+}

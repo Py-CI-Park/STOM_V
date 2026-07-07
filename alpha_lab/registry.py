@@ -20,12 +20,14 @@ from pathlib import Path
 
 # v1 프로그램 4태그 + 알파 랩 v2 additive 태그(V2M=채굴 리프, V2F=필터 A/B)
 # + 알파 랩 v3 additive 태그(V3M=EV 채굴 리프, V3H=힐클라임 엔진 시행)
-# + 알파 랩 v4 additive 태그(V4E=레짐-적응 챔피언 앙상블 엔진 시행).
-# 기존 태그 의미는 불변 — v2/v3/v4 확장은 각 preregistration_v{2,3,4}.json
+# + 알파 랩 v4 additive 태그(V4E=레짐-적응 챔피언 앙상블 엔진 시행)
+# + 알파 랩 v5 additive 태그(V5C=비상관 후보 특성화 엔진 시행).
+# 기존 태그 의미는 불변 — v2/v3/v4/v5 확장은 각 preregistration_v{2,3,4,5}.json
 # ledger.tags 봉인값(v3: 50d3d38a — {"path":..., "tags":["V3M","V3H"]};
-# v4: 87821aaa... — {"path":..., "tags":["V4E"]}).
+# v4: 87821aaa... — {"path":..., "tags":["V4E"]};
+# v5: 15144e12... — {"path":..., "tags":["V5C"]}).
 ALLOWED_PROGRAMS: frozenset[str] = frozenset(
-    {"P1", "P2", "P3", "P5", "V2M", "V2F", "V3M", "V3H", "V4E"}
+    {"P1", "P2", "P3", "P5", "V2M", "V2F", "V3M", "V3H", "V4E", "V5C"}
 )
 
 

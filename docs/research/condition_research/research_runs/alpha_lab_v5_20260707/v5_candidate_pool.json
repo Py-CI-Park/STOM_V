@@ -1,0 +1,170 @@
+{
+  "schema": "alpha_lab_v5_candidate_pool_v1",
+  "created_at": "2026-07-07T13:10:00",
+  "stage": "r0_candidate_pool",
+  "preregistration_sha256": "15144e1286be14cb9afb403d3fa55bd3f87543d215991ac25558f5a85601b731",
+  "source_db": "_database/strategy.db (local, worktree-isolated)",
+  "matching_method": "실측 조회: stockbuy/stocksell의 \"index\" 컬럼을 봉인 4개 type 접두/키워드로 LIKE 검색 후, buy 이름의 _B(_2/_FS 등 포함) 접미부를 _S(_2/_FS)로 치환한 이름이 stocksell에 실재하는지 정확 문자열 일치로 확인. rr8/ALP/gptauth 접두는 검색 패턴 자체가 겹치지 않음을 별도로 전수 확인(124건 별도 네임스페이스, 교차 없음).",
+  "sealed_types": [
+    "CSS_V7_MIN(민단위 0900-1518)",
+    "CSS_V7_TICK(틱 전창 0900-0930)",
+    "C_T_900_920(20분 틱)",
+    "Study(20250715/20250720)"
+  ],
+  "cap": 8,
+  "n_complete_pairs_identified": 9,
+  "n_backtestable_in_discovery_window": 8,
+  "n_excluded_data_gap": 1,
+  "candidates": [
+    {
+      "label": "CSS_V7_MIN_MASTER",
+      "type": "CSS_V7_MIN",
+      "buy_name": "CSS_V7_MIN_B_MASTER_0900_1518",
+      "sell_name": "CSS_V7_MIN_S_MASTER_0900_1518",
+      "buy_sha256": "a9844ee87061a420672a8dcb5c0f866ca7cdb4fafcfe59d4fa2e44fe7d60173f",
+      "sell_sha256": "1a2c00eb766f11e8db179a83afc44ddc2be35317bf6bdfa115fefa322971f442",
+      "compile_check": "ok (buy+sell both compile via python compile(...,'exec'))",
+      "assumed_timeframe": "min",
+      "backtestable_in_discovery_window": false,
+      "exclusion_reason": "data_gap: 로컬 _database/stock_min_back.db 실측 범위 202504070900~202602271519(1381 tables) — 봉인 discovery 창 2022-03~2024-12는 min DB에 전혀 존재하지 않음(0 rows). 전략 실패가 아니라 데이터 가용성 한계이므로 R0 백테 대상에서 제외하고 그 사유만 기록한다. cap=8 산정에서도 제외(백테 불가 항목은 cap 소모 대상이 아님)."
+    },
+    {
+      "label": "CSS_V7_TICK_MASTER",
+      "type": "CSS_V7_TICK",
+      "buy_name": "CSS_V7_TICK_B_MASTER_0900_0930",
+      "sell_name": "CSS_V7_TICK_S_MASTER_0900_0930",
+      "buy_sha256": "ba3421962481b8ad895794c11bc75e912dada2161bf2a13f940c71a40b816f25",
+      "sell_sha256": "68bedcf47100da014064336f80e31451247902aefba2e2f6e617880de9f7331b",
+      "compile_check": "ok",
+      "assumed_timeframe": "tick",
+      "backtestable_in_discovery_window": true
+    },
+    {
+      "label": "C_T_900_920_STUDY",
+      "type": "C_T_900_920",
+      "buy_name": "C_T_900_920_STUDY_B",
+      "sell_name": "C_T_900_920_STUDY_S",
+      "buy_sha256": "510c1934f0f707c6f756221e0abf85130c3396cc16fba9efcbdb17473528bead",
+      "sell_sha256": "7424b3fa0272752c17b4f2699ccad166d02aa3f8329f8a72573391cf78229c22",
+      "compile_check": "ok",
+      "assumed_timeframe": "tick",
+      "backtestable_in_discovery_window": true
+    },
+    {
+      "label": "C_T_900_920_U2",
+      "type": "C_T_900_920",
+      "buy_name": "C_T_900_920_U2_B",
+      "sell_name": "C_T_900_920_U2_S",
+      "buy_sha256": "902cb36b87f5828548531583cd4aa16ed4a5a2a597b3db3abba217cb0f86e2e3",
+      "sell_sha256": "e61d8ba393ae74de73d07e0cd291861bc3edeec1050cbc7d06a0750d67cba5c6",
+      "compile_check": "ok",
+      "assumed_timeframe": "tick",
+      "backtestable_in_discovery_window": true
+    },
+    {
+      "label": "C_T_900_920_U2_FS",
+      "type": "C_T_900_920",
+      "buy_name": "C_T_900_920_U2_B_FS",
+      "sell_name": "C_T_900_920_U2_S_FS",
+      "buy_sha256": "1fdc3814f737cbfbf12481b0bfce3eb8f123dd98382cf08b03fd44b6df5ada53",
+      "sell_sha256": "221fce3d0127361ac3b44ed07b260fb5f67e0aae51f5adb3c8e4adcbf0cb8fb0",
+      "compile_check": "ok",
+      "assumed_timeframe": "tick",
+      "backtestable_in_discovery_window": true
+    },
+    {
+      "label": "Study_20250715",
+      "type": "Study",
+      "buy_name": "20250715_Study",
+      "sell_name": "20250715_Study_S",
+      "buy_sha256": "dc45993746f53d48a01b6ff01f2b69fb8c9f343273347e9050858fa9ee2fcaf2",
+      "sell_sha256": "bab71873209cf3f2ec6445c765dcd55acd52c9c46c78b830eae2abce410b5bed",
+      "compile_check": "ok",
+      "assumed_timeframe": "tick (naming has no Min_/Tick_ prefix marker; grouped with tick-type peers in preregistration honest_note; will surface as anomalous low/zero trade count in discovery backtest if this assumption is wrong)",
+      "backtestable_in_discovery_window": true,
+      "note": "buy측 명명이 접미사 없이 bare('20250715_Study')이고 sell만 _S 접미 — 세대 2(_B_2/_S_2)와 별개의 독립 조건(코드 diff 확인: 09:00-09:30 초반 30분 이동평균 역배열형, 세대2는 09:30-15:00 20분봉 고가 돌파형 — 파라미터 리비전이 아니라 서로 다른 전략)."
+    },
+    {
+      "label": "Study_20250715_2",
+      "type": "Study",
+      "buy_name": "20250715_Study_B_2",
+      "sell_name": "20250715_Study_S_2",
+      "buy_sha256": "6468dc0dccddc5167003ba41b0002c2910421a6ad48d44a15b2f7e95ad866694",
+      "sell_sha256": "e0b6a0328d8b0128e8e96090d3b0eb2936b8d611faf0e24205def51c00bf888a",
+      "compile_check": "ok",
+      "assumed_timeframe": "tick",
+      "backtestable_in_discovery_window": true
+    },
+    {
+      "label": "Study_20250720",
+      "type": "Study",
+      "buy_name": "20250720_Study_B",
+      "sell_name": "20250720_Study_S",
+      "buy_sha256": "6f6a959995a0be27562fbbfa3a458ca47e3ceebe8fc5e07a65dea03cc9d1f7ac",
+      "sell_sha256": "2ea980b9ddd9913ee834d1388e051a115b5fec622fd83cd26e123b59ad21924d",
+      "compile_check": "ok",
+      "assumed_timeframe": "tick",
+      "backtestable_in_discovery_window": true
+    },
+    {
+      "label": "Study_20250720_2",
+      "type": "Study",
+      "buy_name": "20250720_Study_B_2",
+      "sell_name": "20250720_Study_S_2",
+      "buy_sha256": "b3e275d8b15c897673eadf7abbb74ae3103538db9bb2bad178c376524175f51b",
+      "sell_sha256": "3534f64df2732fa5560b543005133acae419e7e51dda262dc179834aeac8ecd3",
+      "compile_check": "ok",
+      "assumed_timeframe": "tick",
+      "backtestable_in_discovery_window": true
+    }
+  ],
+  "unpaired_menu_fragments_excluded": {
+    "note": "CSS_V7_MIN/CSS_V7_TICK은 MASTER 외에 개별 서브시그널(B측 메뉴, S측 메뉴)을 다수 보유하지만 _B<->_S 접미 치환으로 실재 짝이 확인되는 것은 MASTER뿐이다. 나머지는 서로 다른 이름의 '메뉴' 컴포넌트로 원래 짝지어 설계된 근거가 없어 임의 조합 시 신규 조건식 생성(금지)이 되므로 후보에서 제외한다(가치판단 없음 — 완전쌍 미확인).",
+    "css_v7_min_buy_only": [
+      "CSS_V7_MIN_B_BOX_BREAKOUT_EVENT_0900_1518",
+      "CSS_V7_MIN_B_BOX_LOW_SUPPORT_0900_1518",
+      "CSS_V7_MIN_B_DOJI_INTERNAL_SUPPORT_0900_1518",
+      "CSS_V7_MIN_B_DOJI_UPPER_BREAKOUT_0900_1518",
+      "CSS_V7_MIN_B_GAP_RESISTANCE_PULLBACK_0900_1518",
+      "CSS_V7_MIN_B_LONG_BOX_RAPID_RISER_0900_1518",
+      "CSS_V7_MIN_B_RETEST_PULLBACK_SWITCH_0900_1518"
+    ],
+    "css_v7_min_sell_only": [
+      "CSS_V7_MIN_S_BOX_LOWER_BREAKDOWN_0900_1518",
+      "CSS_V7_MIN_S_DOJI_LOWER_BREAKDOWN_0900_1518",
+      "CSS_V7_MIN_S_STRUCTURE_INVALIDATION_0900_1518",
+      "CSS_V7_MIN_S_SUPPORT_TO_RESIST_REJECTION_0900_1518",
+      "CSS_V7_MIN_S_TARGET_TRAILING_0900_1518"
+    ],
+    "css_v7_tick_buy_only": [
+      "CSS_V7_TICK_B_MICRO_BOX_BREAKOUT_0900_0930",
+      "CSS_V7_TICK_B_MICRO_DOJI_COMPRESSION_0900_0930",
+      "CSS_V7_TICK_B_MICRO_RETEST_SUPPORT_0900_0930"
+    ],
+    "css_v7_tick_sell_only": [
+      "CSS_V7_TICK_S_FAST_INVALIDATION_0900_0930",
+      "CSS_V7_TICK_S_MICRO_DOJI_FAIL_0900_0930"
+    ]
+  },
+  "excluded_namespaces_confirmed_disjoint": {
+    "rr8_alp_gptauth_count_in_db": 124,
+    "overlap_with_sealed_type_search": 0
+  },
+  "runtime_arity_audit": {
+    "schema": "post_hoc_completeness_finding_v1",
+    "added_at": "2026-07-07T14:20:00",
+    "trigger": "8개 백테 대상 후보를 전수 실행 시도한 결과 8/8 전부 실패(6개는 300초 시간초과, 2개는 56~62초만에 'backtest completed without metrics')했다 — 코드 길이/복잡도가 16줄(Study_20250715, 최단)~430줄(C_T_900_920_U2, 최장)로 크게 다른데도 동일 실패 패턴이 재현되어 후보별 특성이 아니라 구조적 결함을 의심하고 재검증했다.",
+    "method": "정규식으로 buy/sell 코드의 self.Buy(...)/self.Sell(...) 호출부 인자 개수를 세고, backtest/backengine_base.py의 실제 시그니처(Buy(self, buy_long=False), Sell(self, sell_long=False) — 0~1개 인자)와 대조.",
+    "finding": "9개 완전쌍 전원(CSS_V7_MIN_MASTER 포함) buy/sell 모두 self.Buy(종목코드, 종목명, 매수수량, 현재가, 매도호가1, 매수호가1, 데이터길이) / self.Sell(...동일 7인자) 레거시 호출 형태를 사용한다 — 현재 엔진 API(0~1 인자)와 arity 불일치. compile()은 Python 구문만 검사하므로(런타임 API 계약 무관) 1단계 compile 게이트를 전부 통과했지만 완전한 실행가능 쌍이 아니다.",
+    "prior_documented_precedent": "docs/update_log/2026-07-03_css_v7_root_cause_before_plan_b.md, docs/update_log/2026-07-03_css_v7_plan_b_precheck_timeout_diagnosis.md — CSS_V7 비-OPT 25개 조건식 중 21개가 동일한 self.Buy/Sell(7인자) 결함으로 'Plan C tick smoke timeout'을 일으켰음을 2026-07-03에 이미 확정 진단(엔진/데이터 성능 문제 아님, chart_sulsa v7.0 카탈로그의 조건식 생성 규약 오류). CSS_V7_OPT_* 4개만 self.Buy()/self.Sell() 정규형이라 문제 없음 — 단, OPT 변형은 봉인 candidate_pool.types 목록(CSS_V7_MIN/CSS_V7_TICK)에 없어 사전등록 범위 밖이므로 이번 R0에 임의로 대체 편입하지 않았다.",
+    "engine_source_mechanism": "backtest/backengine_base.py:725-730 — 매 틱마다 self.Strategy()를 bare `except:`로 감싸 호출한다. self.Buy(7 args)가 TypeError를 던지면 이 except가 잡아 BackStop(3)을 호출하고 return하는데, BackStop(gubun=3) 분기(566-574행)는 gubun in (1,2)일 때만 보내는 '백테중지완료' 신호를 보내지 않는다 — 즉 해당 엔진은 조용히 죽고 오케스트레이터는 그 엔진의 완료 신호를 영원히 기다리다 bt_warm_run_timeout(300초)에서 시간초과로 표면화된다(2026-07-03 문서의 '오류 관측성 문제' — 실제 런타임 예외가 타임아웃으로만 노출됨 — 와 완전히 일치).",
+    "conclusion": "9개 완전쌍 전원이 R0 discovery 특성화에 사용 불가능한 '불완전 쌍'이다(1단계 compile 게이트로는 포착 불가능한 런타임 API 결함, 성능/선택도 문제 아님). 코드 자체를 self.Buy()/self.Sell() 정규형으로 수정하는 것은 '완전 B+S 쌍 그대로 사용(신규 조건식 생성 아님)' 및 '기존파일 수정 additive만' 제약 위반이므로 이번 R0 범위에서 수행하지 않는다 — 수리는 별도 의사결정/작업(2026-07-03 문서의 '다음 결정' 항목)이다."
+  },
+  "engine_usage_this_stage": 8,
+  "honest_notes": [
+    "cap=8은 상한이지 목표치가 아니다 — 실측 결과 완전쌍 9건 중 CSS_V7_MIN_MASTER 1건이 min DB 데이터 갭으로 discovery 창 백테 자체가 불가능해, 자연히 정확히 8건이 R0 백테 대상이 된다(추가로 인위적 컷 불필요).",
+    "Study 계열 4건(20250715/20250715_2/20250720/20250720_2) 전부 코드 diff 확인 결과 서로 다른 로직(시간창·돌파조건·거래량조건 상이)이라 '세대 리비전'이 아닌 '같은 날짜에 작성된 서로 다른 후보'로 판단해 전부 포함했다(임의 축소하지 않음).",
+    "Study 계열의 timeframe은 strategy.db 명명에 Min_/Tick_ 접두가 없어 코드만으로 확정할 수 없다 — tick 창(discovery_config 재사용)으로 백테해 실측 거래수/일평균거래수가 비정상(0에 가깝거나 과도)이면 R0 특성화 결과에 caveat로 기록한다(사전 임의 배제하지 않고 실측으로 판단).",
+    "runtime_arity_audit 필드는 8개 백테 시도 중 5개 실측 실패 후 사후 진단으로 추가됐다 — 최초 v5_candidate_pool.json 작성 시점(1단계)에는 compile() 구문 검사만 수행했고, 이는 사후에 드러난 바와 같이 '완전한지' 확인으로 불충분했다(런타임 API arity는 별도 검사가 필요). 이 gap을 정직하게 기록한다."
+  ]
+}

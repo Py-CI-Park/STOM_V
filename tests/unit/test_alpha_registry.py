@@ -164,11 +164,11 @@ class TestV2ProgramTags:
         for tag in ("P1", "P2", "P3", "P5"):
             assert total_trials(ledger, tag) == 1
 
-    def test_allowed_set_is_exactly_nine(self):
+    def test_allowed_set_is_exactly_ten(self):
         from alpha_lab.registry import ALLOWED_PROGRAMS
 
         assert ALLOWED_PROGRAMS == frozenset(
-            {"P1", "P2", "P3", "P5", "V2M", "V2F", "V3M", "V3H", "V4E"}
+            {"P1", "P2", "P3", "P5", "V2M", "V2F", "V3M", "V3H", "V4E", "V5C"}
         )
 
     def test_unknown_tag_still_rejected(self, tmp_path):
