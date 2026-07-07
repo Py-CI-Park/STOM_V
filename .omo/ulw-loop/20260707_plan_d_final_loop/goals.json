@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-07-07T05:28:06.072Z",
-  "updatedAt": "2026-07-07T08:02:58.487Z",
+  "updatedAt": "2026-07-07T08:18:25.755Z",
   "briefPath": ".omo/ulw-loop/20260707_plan_d_final_loop/brief.md",
   "goalsPath": ".omo/ulw-loop/20260707_plan_d_final_loop/goals.json",
   "ledgerPath": ".omo/ulw-loop/20260707_plan_d_final_loop/ledger.jsonl",
@@ -82,14 +82,15 @@
           "userModel": "regression",
           "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Goal 1: Read-first and preflight. Capture full-document source receipt, curre....",
           "essential": false,
-          "capturedEvidence": "Regression proof: R6 dry-run folder JSON/JSONL parsed with Python json (10 files; mapping JSONL 8 rows), python scripts/verify_nonrelease_sync.py passed, scoped git diff --check passed, verification receipt updated. | cleanup: no live QA runtime remains",
+          "capturedEvidence": "R6 insert/replay completed from verified existing DB rows: 8/8 honest rows, gate_passed 8/8, improved 0, flat 8, no_go 0; rank02 branch freeze threshold reached at consecutive_no_improve_since_r3=3; OOS/portfolio/export not opened.",
           "status": "pass",
-          "capturedAt": "2026-07-07T08:02:58.487Z"
+          "capturedAt": "2026-07-07T08:18:25.755Z",
+          "notes": "Evidence: docs/update_log/2026-07-07_plan_d_rank02_r6_insert_replay_handoff.md; r_p_r6_insert_replay_20260707/plan_d_rank02_r6_limited_replay_result_20260707.json; verification receipt passed; verify_nonrelease_sync passed."
         }
       ],
       "attempt": 0,
       "createdAt": "2026-07-07T05:28:06.072Z",
-      "updatedAt": "2026-07-07T08:02:58.487Z"
+      "updatedAt": "2026-07-07T08:18:25.755Z"
     }
   ],
   "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/20260707_plan_d_final_loop/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/20260707_plan_d_final_loop/ledger.jsonl as the audit trail.",

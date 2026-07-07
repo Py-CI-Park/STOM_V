@@ -1,0 +1,118 @@
+{
+  "schema": "plan_d_rank02_branch_freeze_next_seed_intake_v1",
+  "created_at": "2026-07-07T17:25:16+09:00",
+  "scope": "plan-d-rank02-branch-freeze-next-seed-intake-no-portfolio-export",
+  "decision": "rank02_branch_frozen_select_rank03_as_next_seed",
+  "rank02_freeze": {
+    "frozen_active_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+    "trigger": "three_consecutive_no_improve_limited_replay_rounds_since_r3",
+    "rounds_no_improve": [
+      "R4",
+      "R5",
+      "R6"
+    ],
+    "r6_replay_summary": {
+      "run_id": "lat_plan_d_rank02_r6_8_min_warm64_20260707",
+      "honest_rows": "8/8",
+      "gate_passed": "8/8",
+      "decision_counts": {
+        "improved": 0,
+        "flat": 8,
+        "no_go": 0
+      },
+      "oos_opened": false
+    },
+    "reason": "No R6 candidate improved over the rank02 R3 full-period baseline, so the rank02 mutation line should not continue into more replay/OOS work."
+  },
+  "seed_pool_audit": {
+    "seed_pool_rows": 22,
+    "oos_survivor_rows": 22,
+    "original_plan_b_survivor_rows": 15,
+    "processed_original_roots": [
+      "plan_d_rcs_oos_20260706_rank01",
+      "plan_d_rcs_oos_20260706_rank02"
+    ],
+    "frozen_descendant_branch": [
+      "plan_d_rank02_r3_oos_20260707_01"
+    ],
+    "unprocessed_original_roots_top": [
+      {
+        "priority_rank": 3,
+        "seed_id": "plan_d_rcs_oos_20260706_rank03",
+        "condition_id": "repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90",
+        "score": 8.405463678617608,
+        "profit_krw": 865831.0,
+        "mdd_pct": 6.28,
+        "trade_count": 19
+      },
+      {
+        "priority_rank": 4,
+        "seed_id": "plan_d_rcs_oos_20260706_rank04",
+        "condition_id": "repair_v3_20260706_19_profitmax_plus_l1430_sell_loose_tp4_sl3_hold90",
+        "score": 8.405463678617608,
+        "profit_krw": 865831.0,
+        "mdd_pct": 6.28,
+        "trade_count": 19
+      },
+      {
+        "priority_rank": 5,
+        "seed_id": "plan_d_rcs_oos_20260706_rank05",
+        "condition_id": "repair_v3_20260706_17_balanced_plus_l14_sell_default_tp3_sl3_hold60",
+        "score": 6.618597271564055,
+        "profit_krw": 909297.0,
+        "mdd_pct": 4.06,
+        "trade_count": 18
+      }
+    ]
+  },
+  "next_seed": {
+    "seed_id": "plan_d_rcs_oos_20260706_rank03",
+    "condition_id": "repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90",
+    "source": "plan_b/repair_composite_selected_oos",
+    "priority_rank": 3,
+    "priority_basis": "selected_oos_score_desc_then_profit_desc",
+    "buy_name": "LAT_repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90_B",
+    "sell_name": "LAT_repair_v3_20260706_26_daily_boost_core_l1430_sell_loose_tp4_sl3_hold90_S",
+    "buy_sha256": "8bc41fe1cead5449625dc6daf7b675fdc23009237d382a32028b6c10c413feb4",
+    "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+    "source_run_id": "lat_repair_composite_selected16_oos_min_warm64_20260706",
+    "source_result_path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_result_20260706.json",
+    "passport_path": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports/plan_d_rcs_oos_20260706_rank03.md",
+    "best": {
+      "measurement_frame": "selected_oos_min_2026_01_01_to_2026_02_27_warm64",
+      "profit_krw": 865831.0,
+      "mdd_pct": 6.28,
+      "daily_avg_trades": 0.5,
+      "trade_count": 19,
+      "score": 8.405463678617608,
+      "gate_passed": true
+    },
+    "caveat": "This seed comes from the selected 16 robustness replay, not from a fully blind discovery OOS."
+  },
+  "allowed_next_page": {
+    "scope": "plan-d-seed-r1-rank03-readiness-dryrun-no-oos-portfolio-export",
+    "goal": "Use rank03 only as the active seed, re-run readiness/positive-control checks, prepare the rank03 context pack, and generate static-gated R1 8-slot candidates with DB registration dry-run only.",
+    "may_execute": [
+      "readiness audit",
+      "positive control receipt",
+      "context pack",
+      "R1 generate8 static gate",
+      "DB registration dry-run"
+    ],
+    "must_not_execute": [
+      "DB INSERT apply",
+      "official replay",
+      "OOS",
+      "portfolio",
+      "export/live/final promotion"
+    ]
+  },
+  "guardrails": {
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "db_mutation_executed": false,
+    "full_tick_or_min_288_executed": false,
+    "git_add_a_used": false
+  }
+}
