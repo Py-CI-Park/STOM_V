@@ -1,0 +1,31 @@
+{
+  "schema": "plan_d_rank02_r4_generate8_dryrun_summary_v1",
+  "created_at": "2026-07-07T16:18:20+09:00",
+  "scope": "plan-d-rank02-r4-generate8-dryrun-no-portfolio-export",
+  "active_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+  "active_condition_id": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+  "candidate_count": 8,
+  "static_gate_passed": 8,
+  "static_gate_failed": 0,
+  "design_axes": [
+    "amt7500_default_tp3_sl3_hold90",
+    "amt8500_default_tp3_sl3_hold90",
+    "amt8000_default_tp3_sl3_hold60",
+    "amt8000_tight_sl2p5_hold90",
+    "amt8000_take_tp2p5_hold90",
+    "amt8000_take_tp4_hold90",
+    "l1430_bridge_default_tp3_sl3",
+    "l13_l14_default_tp3_sl3"
+  ],
+  "constraints_observed": {
+    "db_insert_apply_used": false,
+    "db_update_delete_used": false,
+    "official_replay_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "full_tick_288_executed": false,
+    "full_min_288_executed": false
+  },
+  "next_allowed_scope": "plan-d-rank02-r4-insert-limited-replay-no-oos-portfolio-export"
+}

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-07-07T05:28:06.072Z",
-  "updatedAt": "2026-07-07T07:10:59.774Z",
+  "updatedAt": "2026-07-07T07:19:58.305Z",
   "briefPath": ".omo/ulw-loop/20260707_plan_d_final_loop/brief.md",
   "goalsPath": ".omo/ulw-loop/20260707_plan_d_final_loop/goals.json",
   "ledgerPath": ".omo/ulw-loop/20260707_plan_d_final_loop/ledger.jsonl",
@@ -11,7 +11,7 @@
       "id": "G001-plan-d-final-page-continuation-from",
       "title": "Plan D final-page continuation from closeout commit fe1709c1. Before...",
       "objective": "Plan D final-page continuation from closeout commit fe1709c1. Before action, read these sources fully: docs/update_log/2026-07-07_plan_d_overnight_ulw_closeout.md; docs/update_log/2026-07-07_plan_d_rank02_r1_selected_oos_blocked_handoff.md; docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_blocked_result_20260707.json; docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_d_selected_oos_20260707/plan_d_rank02_r1_selected_oos_preregistration_20260707.md; cli/warm_session.py; cli/runner.py. Guardrails for every goal: no DB UPDATE/DELETE, no git add -A, no OOS without preregistration, no non-selected OOS, no full tick/min 288, no portfolio/export/live/final promotion, do not stage dashboard files or .gjc or unrelated .omo residue, and preserve stale DB rows as evidence.",
-      "status": "pending",
+      "status": "in_progress",
       "successCriteria": [
         {
           "id": "C001",
@@ -45,9 +45,10 @@
           "capturedAt": "2026-07-07T05:55:06.752Z"
         }
       ],
-      "attempt": 0,
+      "attempt": 1,
       "createdAt": "2026-07-07T05:28:06.072Z",
-      "updatedAt": "2026-07-07T05:55:06.752Z"
+      "updatedAt": "2026-07-07T07:14:42.522Z",
+      "startedAt": "2026-07-07T07:14:42.522Z"
     },
     {
       "id": "G002-goal-1-read-first-and-preflight-capt",
@@ -61,9 +62,9 @@
           "userModel": "happy",
           "expectedEvidence": "Replace via revise_criterion with observable happy-path proof for goal 2.",
           "essential": true,
-          "capturedEvidence": "R3 selected OOS-style min warm64 retry01 completed for exactly selected 1 candidate: 1/1 honest row, 1/1 gate passed, survivor appended to oos_survivors and seed_pool with seed_id plan_d_rank02_r3_oos_20260707_01. | cleanup: replay process exited code 0; no live QA runtime remains",
+          "capturedEvidence": "R4 generate8 dry-run completed: active_seed=plan_d_rank02_r3_oos_20260707_01, candidates=8, static_gate=8/8, registration dry-run status=dry_run_ok, planned inserts=16, inserted rows=0, conflicts=0. Outputs under docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_k_r4_generate8_dryrun_20260707 and handoff docs/update_log/2026-07-07_plan_d_rank02_r4_generate8_dryrun_handoff.md. | cleanup: no replay/OOS process spawned; register dry-run exited code 0",
           "status": "pass",
-          "capturedAt": "2026-07-07T07:10:59.774Z"
+          "capturedAt": "2026-07-07T07:19:43.069Z"
         },
         {
           "id": "C002",
@@ -71,9 +72,9 @@
           "userModel": "edge",
           "expectedEvidence": "Replace via revise_criterion with boundary or malformed-input proof for: Goal 1: Read-first and preflight. Capture full-document source receipt, curre....",
           "essential": true,
-          "capturedEvidence": "Boundary proof: initial BOM config failure happened before backtest/DB work; retry used UTF-8 no-BOM inputs and new run_id; only selected 1 ran, no non-selected OOS, no DB UPDATE/DELETE, no full tick/min 288, no portfolio/export/live/final. | cleanup: replay process exited code 0; no live QA runtime remains",
+          "capturedEvidence": "Boundary proof: R4 page intentionally omitted --apply, so DB registration was dry-run only with inserted rows=0; no DB UPDATE/DELETE, no official replay, no OOS, no portfolio/export/live/final, no full tick/min 288, sanitized candidate names 8/8. Dry-run report notes planned provenance path but no provenance JSONL was written because apply was omitted. | cleanup: no runtime process spawned",
           "status": "pass",
-          "capturedAt": "2026-07-07T07:10:47.507Z"
+          "capturedAt": "2026-07-07T07:19:50.769Z"
         },
         {
           "id": "C003",
@@ -81,15 +82,16 @@
           "userModel": "regression",
           "expectedEvidence": "Replace via revise_criterion with regression proof for neighboring behavior after: Goal 1: Read-first and preflight. Capture full-document source receipt, curre....",
           "essential": false,
-          "capturedEvidence": "Regression proof: r_j JSON/JSONL and global ledgers parsed with Python json, verify_nonrelease_sync.py passed, scoped git diff --check passed, handoff and verification receipt recorded. | cleanup: no additional runtime resources spawned",
+          "capturedEvidence": "Regression proof: R4 folder JSON/JSONL parsed with Python json (10 files, mapping JSONL 8 rows), python scripts/verify_nonrelease_sync.py passed, scoped git diff --check passed, verification receipt updated. | cleanup: no live QA runtime remains",
           "status": "pass",
-          "capturedAt": "2026-07-07T07:10:47.546Z"
+          "capturedAt": "2026-07-07T07:19:58.305Z"
         }
       ],
       "attempt": 0,
       "createdAt": "2026-07-07T05:28:06.072Z",
-      "updatedAt": "2026-07-07T07:10:59.774Z"
+      "updatedAt": "2026-07-07T07:19:58.305Z"
     }
   ],
-  "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/20260707_plan_d_final_loop/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/20260707_plan_d_final_loop/ledger.jsonl as the audit trail."
+  "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/20260707_plan_d_final_loop/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/20260707_plan_d_final_loop/ledger.jsonl as the audit trail.",
+  "activeGoalId": "G001-plan-d-final-page-continuation-from"
 }
