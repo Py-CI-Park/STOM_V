@@ -1,0 +1,22 @@
+﻿{
+    "schema":  "plan_d_rank03_r1_selected_oos_retry02_stale_prepare_snapshot_v3",
+    "created_at":  "2026-07-07T18:24:09.6446931+09:00",
+    "status":  "stale_prepare_blocked",
+    "run_id":  "lat_plan_d_rank03_r1_selected1_oos_min_warm64_retry02_20260707",
+    "parent_pid":  109216,
+    "child_process_count_before_stop":  84,
+    "process_count_before_stop":  85,
+    "cpu_sum_before_stop":  1018.953125,
+    "stdout_log":  "artifacts/plan_d_rank03_r1_selected1_oos_min_warm64_retry02_20260707.log",
+    "stdout_size_bytes":  87,
+    "stdout_tail":  [
+                        "[BATCH] run_id=lat_plan_d_rank03_r1_selected1_oos_min_warm64_retry02_20260707 pairs=1"
+                    ],
+    "stderr_log":  "artifacts/plan_d_rank03_r1_selected1_oos_min_warm64_retry02_20260707.err",
+    "stderr_size_bytes":  10075,
+    "stderr_tail_omitted":  true,
+    "stop_result":  "process_tree_stopped_remaining_count_0",
+    "interpretation":  "retry02 stayed before prepare/gen output after initial and retry01 showed the same zero-row prepare-wait pattern; excluded from official OOS decision.",
+    "db_update_delete_used":  false,
+    "honest_oos_rows":  0
+}
