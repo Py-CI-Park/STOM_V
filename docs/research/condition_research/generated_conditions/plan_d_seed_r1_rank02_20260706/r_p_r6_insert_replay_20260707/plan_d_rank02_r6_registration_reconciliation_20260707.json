@@ -1,0 +1,52 @@
+{
+  "schema": "plan_d_rank02_r6_registration_reconciliation_v1",
+  "created_at": "2026-07-07T17:19:42+09:00",
+  "scope": "plan-d-rank02-r6-insert-limited-replay-no-oos-portfolio-export",
+  "status": "pass_replay_ready_registered_rows_verified",
+  "timeline": [
+    {
+      "step": "preapply_absence_check",
+      "evidence": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_p_r6_insert_replay_20260707\\plan_d_rank02_r6_preapply_absence_check_20260707.json",
+      "exists_count": 0,
+      "status": "pass_absent"
+    },
+    {
+      "step": "insert_only_apply_evidence",
+      "evidence": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_p_r6_insert_replay_20260707\\provenance_plan_d_rank02_r6_register_apply_20260707.jsonl",
+      "provenance_rows": 8,
+      "mapping_rows": 8,
+      "note": "Original register apply report appears overwritten by a later idempotency retry, but provenance/mapping/postapply evidence remains."
+    },
+    {
+      "step": "postapply_db_check",
+      "evidence": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_p_r6_insert_replay_20260707\\plan_d_rank02_r6_postapply_db_check_20260707.json",
+      "missing_count": 0,
+      "status": "pass_inserted"
+    },
+    {
+      "step": "db_content_sha_check",
+      "evidence": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_p_r6_insert_replay_20260707\\plan_d_rank02_r6_db_content_sha_check_20260707.json",
+      "missing_count": 0,
+      "mismatch_count": 0,
+      "status": "pass"
+    },
+    {
+      "step": "later_idempotency_retry",
+      "evidence": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_p_r6_insert_replay_20260707\\register_plan_d_rank02_r6_apply_20260707.json",
+      "status": "collision_abort",
+      "inserted_row_count": 0,
+      "conflict_count": 16,
+      "note": "This later retry did not mutate DB; it only confirms the target rows already existed."
+    }
+  ],
+  "authoritative_replay_readiness": {
+    "registered_rows_verified": true,
+    "content_sha_match": true,
+    "provenance_rows": 8,
+    "mapping_rows": 8,
+    "db_update_delete_used": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "schema": "plan_d_rank02_r6_branch_freeze_review_v1",
+  "created_at": "2026-07-07T17:15:51+09:00",
+  "active_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+  "trigger": "three_consecutive_no_improve_limited_replay_rounds_since_r3",
+  "rounds": [
+    {
+      "round": "R4",
+      "delta": 1,
+      "source": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_l_r4_insert_replay_20260707\\plan_d_rank02_r4_round_decision_20260707.json"
+    },
+    {
+      "round": "R5",
+      "delta": 1,
+      "source": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_n_r5_insert_replay_20260707\\plan_d_rank02_r5_round_decision_20260707.json"
+    },
+    {
+      "round": "R6",
+      "delta": 1,
+      "source": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_p_r6_insert_replay_20260707\\plan_d_rank02_r6_round_decision_20260707.json"
+    }
+  ],
+  "best_r6_candidate": {
+    "label": "plan_d_r1_rank02_r6_05_eod1515_morning_amt1500_2800",
+    "profit": 2015053.0,
+    "mdd": 15.71,
+    "trade_count": 202,
+    "decision": "flat"
+  },
+  "active_r3_baseline": {
+    "label": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+    "profit": 2297191.0,
+    "mdd": 16.31,
+    "trade_count": 209,
+    "daily_avg_trades": 1.0,
+    "source_path": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_i_r3_insert_replay_20260707\\plan_d_rank02_r3_limited_replay_result_20260707.json"
+  },
+  "decision": "freeze_rank02_r3_branch_no_oos",
+  "reason": "R6 produced 8/8 gate-passed rows but 0 improved candidates versus active R3 full-period baseline; Plan D no-improve threshold reached.",
+  "allowed_next_scope": "next_seed_intake_or_plan_d_terminal_summary_only",
+  "forbidden_next_scope": [
+    "selected_oos_without_improved_candidate",
+    "portfolio",
+    "export_live_final_promotion"
+  ]
+}

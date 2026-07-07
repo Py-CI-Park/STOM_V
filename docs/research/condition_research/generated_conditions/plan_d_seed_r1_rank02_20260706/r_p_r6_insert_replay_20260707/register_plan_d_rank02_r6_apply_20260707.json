@@ -1,0 +1,84 @@
+{
+  "status": "collision_abort",
+  "schema_version": 1,
+  "dry_run": false,
+  "seeds": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_o_r6_generate8_dryrun_20260707\\plan_d_rank02_r6_generate8_seeds_20260707.json",
+  "db": "ai_strategy_loop\\state\\loop_strategies.db",
+  "pairs_out": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_p_r6_insert_replay_20260707\\pairs_plan_d_rank02_r6_8_inserted_20260707.json",
+  "ledger_out": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_p_r6_insert_replay_20260707\\provenance_plan_d_rank02_r6_register_apply_20260707.jsonl",
+  "mapping_out": "docs\\research\\condition_research\\generated_conditions\\plan_d_seed_r1_rank02_20260706\\r_p_r6_insert_replay_20260707\\plan_d_rank02_r6_strategy_name_mapping_apply_20260707.jsonl",
+  "backup_path": null,
+  "planned_seed_count": 8,
+  "planned_insert_count": 16,
+  "inserted_seed_count": 0,
+  "inserted_row_count": 0,
+  "unsafe_legacy_name_count": 0,
+  "unsafe_target_name_count": 0,
+  "name_style": "filename_safe_v2",
+  "conflicts": [
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_01_eod1515_l14_rate9_default_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_01_eod1515_l14_rate9_default_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_02_eod1515_l14_amt8500_rate9_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_02_eod1515_l14_amt8500_rate9_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_03_eod1515_pmax110_108_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_03_eod1515_pmax110_108_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_04_eod1515_morning_amt1800_3000_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_04_eod1515_morning_amt1800_3000_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_05_eod1515_morning_amt1500_2800_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_05_eod1515_morning_amt1500_2800_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_06_eod1515_openpos996_rate9_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_06_eod1515_openpos996_rate9_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_07_eod1510_l14_rate9_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_07_eod1510_l14_rate9_S"
+    },
+    {
+      "table": "stockbuy",
+      "name": "LAT_plan_d_r1_rank02_r6_08_eod1520_l14_rate10_B"
+    },
+    {
+      "table": "stocksell",
+      "name": "LAT_plan_d_r1_rank02_r6_08_eod1520_l14_rate10_S"
+    }
+  ]
+}
