@@ -1,75 +1,60 @@
 {
   "schema": "plan_d_overnight_ulw_closeout_v1",
   "created_at": "2026-07-07T00:56:41+09:00",
+  "corrected_at": "2026-07-07T00:00:00+09:00",
   "scope": "Plan D overnight ULW execution through reachable pages",
   "objective": "Continue Plan D remaining research pages until all reachable pages complete or blocked before 2026-07-07 06:00 KST.",
   "summary": {
-    "complete_goals": 3,
+    "complete_goals": 4,
     "blocked_goals": 2,
-    "in_progress_goals": 1,
+    "in_progress_goals": 0,
     "pending_goals": 0,
     "latest_blocker": "rank02 selected OOS warm64 prepare/engine-response wait reproduced twice before generation rows",
-    "portfolio_export_live_final_executed": false
+    "portfolio_export_live_final_executed": false,
+    "db_update_delete_used": false
   },
   "goals": [
     {
       "id": "G001-plan-d-overnight-bounded-execution-u",
-      "title": "Plan D overnight bounded execution until 2026-07-07 06:00 KST. Start...",
       "status": "complete",
-      "attempt": 1,
-      "evidence": "G001-plan-d-overnight-bounded-execution-u constraints established in .omo/ulw-loop/goals.json and ledger.jsonl; active Codex goal snapshot captured at .omo/ulw-loop/019f248b-4725-75f2-9eb9-06f8541ce25f/codex_goal_snapshot_20260706_g001.json; no runtime resources spawned | cleanup: no qa runtime resources spawned",
-      "blocked_reason": ""
+      "meaning": "overnight bounds and guardrails"
     },
     {
       "id": "G002-goal-1-rank02-r1-generate8-dry-run-o",
-      "title": "Goal 1: rank02 R1 generate8 dry-run only. Use rank02 as the active se...",
       "status": "complete",
-      "attempt": 1,
-      "evidence": "G002-goal-1-rank02-r1-generate8-dry-run-o completed: source receipt, 8 candidate seeds, static gate 8/8, DB registration dry-run inserted_row_count=0, verification receipt, handoff, .omo/start-work ledger, and scoped staging plan recorded | cleanup: no replay/OOS runtime resources spawned",
-      "blocked_reason": ""
+      "meaning": "rank02 R1 generate8 dry-run"
     },
     {
       "id": "G003-goal-2-rank02-r1-insert-only-and-off",
-      "title": "Goal 2: rank02 R1 INSERT-only and official min warm64 limited replay...",
       "status": "complete",
-      "attempt": 1,
-      "evidence": "G003 completed: rank02 R1 INSERT-only apply inserted 16 rows, official min full-period warm64 limited replay produced 8/8 honest rows, decision_counts improved=2 flat=6, commit 012bdb71 recorded; OOS/portfolio/export not executed | cleanup: replay process exited code 0",
-      "blocked_reason": ""
+      "meaning": "rank02 R1 INSERT-only + full-period min warm64 limited replay"
     },
     {
       "id": "G004-goal-3-rank02-selected-oos-if-goal-2",
-      "title": "Goal 3: rank02 selected OOS if Goal 2 produces improved candidates. F...",
       "status": "blocked",
-      "attempt": 1,
-      "evidence": "G004 selected OOS is blocked before classification: two preregistered selected2 warm64 attempts produced 0 generation rows and reproduced WarmSession.prepare/_collect_engine_shared_info wait; commit 942e2014 records blocked handoff",
-      "blocked_reason": "G005 depends on OOS survivors, but no OOS rows exist; the safe next reachable page is deadline closeout plus next diagnostic command"
+      "meaning": "rank02 selected OOS prereg + selected2 OOS attempt",
+      "blocked_reason": "warm64 prepare/engine-response wait reproduced twice before generation rows"
     },
     {
       "id": "G005-goal-4-append-survivor-records-and-p",
-      "title": "Goal 4: append survivor records and prepare next seed readiness if Go...",
       "status": "blocked",
-      "attempt": 0,
-      "evidence": "G005 prerequisite is absent: G004 selected OOS produced 0 generation rows and no survivor/hold/no_go classification; blocked handoff commit 942e2014 records no survivor append is allowed",
-      "blocked_reason": "Appending survivor records without OOS survivor rows would fabricate research evidence; skip to G006 closeout"
+      "meaning": "append survivor records / next seed readiness",
+      "blocked_reason": "no OOS survivor rows exist"
     },
     {
       "id": "G006-goal-5-deadline-closeout-and-whole-p",
-      "title": "Goal 5: deadline closeout and whole-page status. By 2026-07-07 06:00...",
-      "status": "in_progress",
-      "attempt": 1,
-      "evidence": "",
-      "blocked_reason": ""
+      "status": "complete",
+      "meaning": "closeout and next command"
     }
   ],
   "commits": [
-    "942e2014 연구: Plan D rank02 OOS 준비 차단 기록",
-    "a502d20f 연구: Plan D rank02 R1 ULW 체크포인트 기록",
-    "012bdb71 연구: Plan D rank02 R1 제한 리플레이 기록",
-    "24fdbd03 연구: Plan D rank02 R1 후보 dry-run 기록",
-    "9ecf081c 연구: Plan D rank01 R3 OOS 생존과 rank02 준비성 기록",
-    "2bd4470a 연구: Plan D rank01 R3 후보 dry-run 고정",
-    "a7ad1b72 연구: Plan D rank01 R3 준비성 고정",
-    "834f0026 연구: Plan D rank01 R2 selected OOS 검증"
+    "e2997c9d ??: Plan D ULW ?? ?? ??",
+    "1c61a145 ??: Plan D ?? ULW ?? ??",
+    "942e2014 ??: Plan D rank02 OOS ?? ?? ??",
+    "a502d20f ??: Plan D rank02 R1 ULW ????? ??",
+    "012bdb71 ??: Plan D rank02 R1 ?? ???? ??",
+    "24fdbd03 ??: Plan D rank02 R1 ?? dry-run ??",
+    "9ecf081c ??: Plan D rank01 R3 OOS ??? rank02 ??? ??"
   ],
   "process_check_selected_oos": "[]",
   "key_artifacts": {
