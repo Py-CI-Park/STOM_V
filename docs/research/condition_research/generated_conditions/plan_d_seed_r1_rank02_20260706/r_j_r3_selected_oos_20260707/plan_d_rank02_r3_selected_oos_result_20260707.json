@@ -1,0 +1,105 @@
+{
+  "schema": "plan_d_rank02_r3_selected_oos_result_v1",
+  "created_at": "2026-07-07T16:09:15+09:00",
+  "scope": "plan-d-rank02-r3-selected-oos-prereg-no-portfolio-export",
+  "run_id": "lat_plan_d_rank02_r3_selected1_oos_min_warm64_retry01_20260707",
+  "lane": "min",
+  "profile": {
+    "db": "_database/stock_min_back.db",
+    "oos_window": "2026-01-01~2026-02-27",
+    "time_window": "09:00~15:19",
+    "warm_engine_count": 64,
+    "engine_mode": "warm",
+    "timeframe": "min",
+    "bt_timeout": 1800,
+    "bt_warm_run_timeout": 1200
+  },
+  "config_json": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_j_r3_selected_oos_20260707/oos_config_min_plan_d_rank02_r3_selected1_20260707.json",
+  "pairs_json": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_j_r3_selected_oos_20260707/pairs_plan_d_rank02_r3_selected1_oos_20260707.json",
+  "preregistration": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_j_r3_selected_oos_20260707/plan_d_rank02_r3_selected_oos_preregistration_20260707.md",
+  "warm_prepare": {
+    "status": "ok",
+    "back_count": 480,
+    "elapsed_seconds": 116,
+    "source": "artifacts/plan_d_rank02_r3_selected1_oos_min_warm64_retry01_20260707.log"
+  },
+  "summary": {
+    "honest_rows": 1,
+    "status_counts": {
+      "ok": 1
+    },
+    "gate_passed_count": 1,
+    "decision_counts": {
+      "survivor": 1,
+      "hold": 0,
+      "no_go": 0
+    },
+    "survivor_labels": [
+      "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90"
+    ],
+    "selected_count": 1,
+    "best_profit_label": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+    "best_profit": 1079768.0,
+    "best_mdd_label": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+    "best_mdd": 4.06
+  },
+  "classification": {
+    "survivor": [
+      "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90"
+    ],
+    "hold": [],
+    "no_go": []
+  },
+  "rows": [
+    {
+      "gen_no": 0,
+      "label": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+      "buy_name": "LAT_plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90_S",
+      "status": "ok",
+      "gate_passed": true,
+      "decision": "survivor",
+      "decision_reason": "status_ok_gate_passed_profit_positive_mdd_cap_daily_min_passed",
+      "profit": 1079768.0,
+      "mdd": 4.06,
+      "trade_count": 19,
+      "daily_avg_trades": 0.5,
+      "payoff_ratio": 1.8593380614657211,
+      "score": 10.302048909853827,
+      "calmar": 35.9384236453202,
+      "uptrend_r2": 0.5087562967282776,
+      "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90_B_20260707161718.csv",
+      "buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "source_preflight": {
+        "profit": 2297191.0,
+        "mdd": 16.31,
+        "trade_count": 209,
+        "daily_avg_trades": 1.0,
+        "decision": "improved",
+        "csv_path": "backtest/csv\\stock_bt_LAT_plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90_B_20260707154700.csv"
+      },
+      "axis": "amt8000_default_tp3_sl3_hold90",
+      "mutation": "Combine profit-comparator L14 amount 8000 buy with active default TP3/SL3 hold90 sell.",
+      "run_seconds": 21
+    }
+  ],
+  "constraints_observed": {
+    "db_update_delete_used": false,
+    "db_insert_apply_used": false,
+    "oos_without_preregistration_used": false,
+    "non_selected_candidate_oos_used": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "full_tick_288_executed": false,
+    "full_min_288_executed": false
+  },
+  "plan_d_readiness": {
+    "can_append_oos_survivors": true,
+    "can_continue_next_seed_from_rank02_r3_oos": true,
+    "survivor_count": 1,
+    "next_allowed_action": "rank02_r3_oos_survivor_seed_pool_intake_then_next_round_selection",
+    "portfolio_ready": false
+  },
+  "caveat": "The selected 1 was chosen from R3 full-period min replay that included 2026-01-01~2026-02-27, so this is fixed OOS-style robustness replay, not fully blind discovery OOS."
+}

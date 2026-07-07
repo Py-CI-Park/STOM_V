@@ -1,0 +1,26 @@
+{
+  "schema": "plan_d_rank02_r3_selected_oos_verification_receipt_v1",
+  "created_at": "2026-07-07T16:09:15+09:00",
+  "scope": "plan-d-rank02-r3-selected-oos-prereg-no-portfolio-export",
+  "status": "pass",
+  "run_id": "lat_plan_d_rank02_r3_selected1_oos_min_warm64_retry01_20260707",
+  "honest_rows": 1,
+  "gate_passed_count": 1,
+  "survivor_count": 1,
+  "append_receipt": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_j_r3_selected_oos_20260707/plan_d_rank02_r3_oos_append_receipt_20260707.json",
+  "guardrails": {
+    "db_update_delete_used": false,
+    "db_insert_apply_used": false,
+    "oos_without_preregistration_used": false,
+    "non_selected_candidate_oos_used": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "full_tick_288_executed": false,
+    "full_min_288_executed": false
+  },
+  "verification": {
+    "json_jsonl_parse": "pass: r_j JSON/JSONL plus global oos_survivors/seed_pool parsed with Python json",
+    "verify_nonrelease_sync": "pass: python scripts/verify_nonrelease_sync.py",
+    "scoped_git_diff_check": "pass: git diff --check for r_j outputs, global ledgers, passport, and handoff"
+  }
+}
