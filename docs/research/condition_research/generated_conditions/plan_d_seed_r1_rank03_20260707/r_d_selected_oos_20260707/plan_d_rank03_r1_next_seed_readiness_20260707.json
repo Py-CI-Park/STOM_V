@@ -1,0 +1,29 @@
+{
+  "schema": "plan_d_rank03_r1_next_seed_readiness_v1",
+  "created_at": "2026-07-07T18:39:38+09:00",
+  "scope": "plan-d-rank03-r1-selected-oos-retry03-survivor-append",
+  "active_parent_recommendation": "plan_d_rank03_r1_oos_20260707_01",
+  "status": "ready_for_rank03_r2_generate8_dryrun",
+  "recommendation_reason": "rank03 R1 selected OOS retry03 produced a gate-passing survivor with positive profit, MDD 6.14, and daily_avg_trades 0.50.",
+  "next_allowed_scope": "plan-d-rank03-r2-generate8-dryrun-no-portfolio-export",
+  "required_read_first": [
+    "docs/update_log/2026-07-07_plan_d_rank03_r1_selected_oos_retry03_survivor_handoff.md",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_selected_oos_retry03_result_20260707.json",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_oos_survivor_append_receipt_20260707.json",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_oos_append_receipt_20260707.json",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports/plan_d_rank03_r1_oos_20260707_01.md",
+    "docs/research/condition_research/plans/2026-07-02_plan_D_seed_research_program.md",
+    "utility/ai_agent/strategy.txt",
+    "utility/ai_agent/rules.txt"
+  ],
+  "forbidden_until_next_scope": [
+    "OOS without preregistration",
+    "portfolio",
+    "export/live/final promotion",
+    "DB UPDATE/DELETE",
+    "full tick/min 288 batch"
+  ],
+  "root_cause_resolution": "Pre-retry orphan multiprocessing cleanup removed stale warm children; selected-only retry03 then completed warm prepare and OOS row generation.",
+  "blocker_resolution": "pre_retry03 orphan cleanup killed 18 stale multiprocessing-fork children; retry03 then completed warm prepare ok.",
+  "updated_at": "2026-07-07T18:41:06+09:00"
+}

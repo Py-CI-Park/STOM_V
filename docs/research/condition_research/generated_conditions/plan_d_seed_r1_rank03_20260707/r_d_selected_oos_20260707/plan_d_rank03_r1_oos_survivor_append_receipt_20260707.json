@@ -1,0 +1,22 @@
+{
+  "schema": "plan_d_rank03_r1_oos_survivor_append_receipt_v1",
+  "created_at": "2026-07-07T18:39:25+09:00",
+  "scope": "plan-d-rank03-r1-selected-oos-warm-prepare-repair-or-bounded-retry-no-portfolio-export",
+  "appended": [
+    {
+      "path": "docs/research/condition_research/generated_conditions/oos_survivors.jsonl",
+      "seed_id": "plan_d_rank03_r1_oos_20260707_01"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/seed_pool.jsonl",
+      "seed_id": "plan_d_rank03_r1_oos_20260707_01"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/plan_d_seed_pool_20260706/passports/plan_d_rank03_r1_oos_20260707_01.md",
+      "seed_id": "plan_d_rank03_r1_oos_20260707_01"
+    }
+  ],
+  "duplicate_guard_passed": true,
+  "append_only": true,
+  "db_update_delete_used": false
+}
