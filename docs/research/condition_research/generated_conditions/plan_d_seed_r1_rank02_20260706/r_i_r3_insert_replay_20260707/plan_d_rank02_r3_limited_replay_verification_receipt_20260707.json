@@ -1,0 +1,39 @@
+{
+  "schema": "plan_d_rank02_r3_limited_replay_verification_receipt_v1",
+  "created_at": "2026-07-07T16:03:00+09:00",
+  "scope": "plan-d-rank02-r3-insert-limited-replay-no-oos-portfolio-export",
+  "status": "pass",
+  "evidence": {
+    "register_apply_report": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_i_r3_insert_replay_20260707/register_plan_d_rank02_r3_apply_20260707.json",
+    "limited_replay_result": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_i_r3_insert_replay_20260707/plan_d_rank02_r3_limited_replay_result_20260707.json",
+    "round_decision": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_i_r3_insert_replay_20260707/plan_d_rank02_r3_round_decision_20260707.json",
+    "handoff": "docs/update_log/2026-07-07_plan_d_rank02_r3_insert_replay_handoff.md"
+  },
+  "observed_results": {
+    "inserted_row_count": 16,
+    "honest_rows": 8,
+    "gate_passed_count": 8,
+    "improved_count": 1,
+    "flat_count": 7,
+    "no_go_count": 0,
+    "selected_oos_candidate_count": 1,
+    "selected_oos_candidates": [
+      "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90"
+    ]
+  },
+  "guardrails": {
+    "db_update_delete_used": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "export_live_final_executed": false,
+    "full_tick_288_executed": false,
+    "full_min_288_executed": false,
+    "pairs_executed": 8,
+    "max_pairs_allowed": 8
+  },
+  "verification": {
+    "json_jsonl_parse": "pass: 10 json files and 3 jsonl files parsed",
+    "verify_nonrelease_sync": "pass: python scripts/verify_nonrelease_sync.py",
+    "scoped_git_diff_check": "pass: git diff --check for handoff and r_i_r3_insert_replay_20260707"
+  }
+}

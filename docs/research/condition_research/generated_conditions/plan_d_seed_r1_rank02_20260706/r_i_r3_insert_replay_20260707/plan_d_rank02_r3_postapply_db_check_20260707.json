@@ -1,0 +1,104 @@
+{
+  "schema": "plan_d_rank02_r3_postapply_db_check_v2",
+  "created_at": "2026-07-07T15:44:30+09:00",
+  "scope": "plan-d-rank02-r3-insert-limited-replay-no-oos-portfolio-export",
+  "db": "ai_strategy_loop/state/loop_strategies.db",
+  "candidate_count": 8,
+  "passed": true,
+  "check_basis": "db_name_existence_plus_apply_provenance_sha; DB strategy text may round-trip through Korean runtime encoding, so byte-for-byte seed code comparison is not used as the pass gate",
+  "rows": [
+    {
+      "condition_id": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+      "buy_name": "LAT_plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90_S",
+      "buy_exists_after_apply": true,
+      "sell_exists_after_apply": true,
+      "provenance_buy_sha_matches_seed": true,
+      "provenance_sell_sha_matches_seed": true,
+      "expected_buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+      "expected_sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r3_02_amt8000_tight_tp3_sl2p5_hold90",
+      "buy_name": "LAT_plan_d_r1_rank02_r3_02_amt8000_tight_tp3_sl2p5_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r3_02_amt8000_tight_tp3_sl2p5_hold90_S",
+      "buy_exists_after_apply": true,
+      "sell_exists_after_apply": true,
+      "provenance_buy_sha_matches_seed": true,
+      "provenance_sell_sha_matches_seed": true,
+      "expected_buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+      "expected_sell_sha256": "85e6899bfc3cc2f4ba2d874f06caa3cf4ebe0ed94c0f892d6083b2bfc81c7d21"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r3_03_active_buy_hold60_tp3_sl3",
+      "buy_name": "LAT_plan_d_r1_rank02_r3_03_active_buy_hold60_tp3_sl3_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r3_03_active_buy_hold60_tp3_sl3_S",
+      "buy_exists_after_apply": true,
+      "sell_exists_after_apply": true,
+      "provenance_buy_sha_matches_seed": true,
+      "provenance_sell_sha_matches_seed": true,
+      "expected_buy_sha256": "e109bad965c9f1a005fd67b854338794e8fe7c8f80b6ec5d258e6dc9d79be1d7",
+      "expected_sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r3_04_active_buy_tp2p5_sl2p5_hold90",
+      "buy_name": "LAT_plan_d_r1_rank02_r3_04_active_buy_tp2p5_sl2p5_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r3_04_active_buy_tp2p5_sl2p5_hold90_S",
+      "buy_exists_after_apply": true,
+      "sell_exists_after_apply": true,
+      "provenance_buy_sha_matches_seed": true,
+      "provenance_sell_sha_matches_seed": true,
+      "expected_buy_sha256": "e109bad965c9f1a005fd67b854338794e8fe7c8f80b6ec5d258e6dc9d79be1d7",
+      "expected_sell_sha256": "e5fc85144bb05e85daca20b3ad813de1c4f778927cfdb0a304e82650aa7fcaae"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r3_05_active_buy_tp3_sl2p5_hold60",
+      "buy_name": "LAT_plan_d_r1_rank02_r3_05_active_buy_tp3_sl2p5_hold60_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r3_05_active_buy_tp3_sl2p5_hold60_S",
+      "buy_exists_after_apply": true,
+      "sell_exists_after_apply": true,
+      "provenance_buy_sha_matches_seed": true,
+      "provenance_sell_sha_matches_seed": true,
+      "expected_buy_sha256": "e109bad965c9f1a005fd67b854338794e8fe7c8f80b6ec5d258e6dc9d79be1d7",
+      "expected_sell_sha256": "01c800b9d64fa573fd823487d7e88e33b611ba818ca3b390b0904bb9464b35ce"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r3_06_amt8500_default_tp3_sl3_hold90",
+      "buy_name": "LAT_plan_d_r1_rank02_r3_06_amt8500_default_tp3_sl3_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r3_06_amt8500_default_tp3_sl3_hold90_S",
+      "buy_exists_after_apply": true,
+      "sell_exists_after_apply": true,
+      "provenance_buy_sha_matches_seed": true,
+      "provenance_sell_sha_matches_seed": true,
+      "expected_buy_sha256": "f3103a47883774e374afad2810247f05342641f57343059c4eddefffe08477bd",
+      "expected_sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r3_07_l1430_bridge_default_tp3_sl3",
+      "buy_name": "LAT_plan_d_r1_rank02_r3_07_l1430_bridge_default_tp3_sl3_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r3_07_l1430_bridge_default_tp3_sl3_S",
+      "buy_exists_after_apply": true,
+      "sell_exists_after_apply": true,
+      "provenance_buy_sha_matches_seed": true,
+      "provenance_sell_sha_matches_seed": true,
+      "expected_buy_sha256": "2ee432d82388504117573ab60cdc746751ac2a06b5e7be7ee37c4ab852956572",
+      "expected_sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r3_08_l13_l14_default_tp3_sl3",
+      "buy_name": "LAT_plan_d_r1_rank02_r3_08_l13_l14_default_tp3_sl3_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r3_08_l13_l14_default_tp3_sl3_S",
+      "buy_exists_after_apply": true,
+      "sell_exists_after_apply": true,
+      "provenance_buy_sha_matches_seed": true,
+      "provenance_sell_sha_matches_seed": true,
+      "expected_buy_sha256": "075f6269b24567682903c6ebe186c353106d7f1f5cd5a8decc9ea79de071a85c",
+      "expected_sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271"
+    }
+  ],
+  "constraints_observed": {
+    "read_only_check": true,
+    "db_update_delete_used": false,
+    "insert_only_apply_preceded_check": true
+  }
+}
