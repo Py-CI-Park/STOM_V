@@ -1,0 +1,8 @@
+[
+  {
+    "label": "plan_d_r1_rank03_r1_08_parent_buy_default_tp3_sl3_hold90",
+    "buy": "LAT_plan_d_r1_rank03_r1_08_parent_buy_default_tp3_sl3_hold90_B",
+    "sell": "LAT_plan_d_r1_rank03_r1_08_parent_buy_default_tp3_sl3_hold90_S",
+    "lane": "min"
+  }
+]

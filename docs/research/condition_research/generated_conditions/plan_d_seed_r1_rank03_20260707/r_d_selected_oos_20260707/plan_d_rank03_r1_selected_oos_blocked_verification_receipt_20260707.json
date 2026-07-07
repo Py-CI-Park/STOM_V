@@ -1,0 +1,15 @@
+{
+  "schema": "plan_d_rank03_r1_selected_oos_blocked_verification_receipt_v1",
+  "created_at": "2026-07-07T18:21:48+09:00",
+  "scope": "plan-d-rank03-r1-selected-oos-prereg-no-portfolio-export",
+  "checks": {
+    "selected_pair_count": "pass_1",
+    "preregistration_present": "pass",
+    "attempt_count": "3",
+    "honest_oos_rows": "0",
+    "target_python_process_scan_after_cleanup": "pass_no_live_target_python",
+    "db_update_delete_used": "false"
+  },
+  "result": "blocked",
+  "next": "repair_or_bounded_retry_before_any_R2"
+}

@@ -1,0 +1,72 @@
+{
+  "_comment": "Plan D rank03 R1 selected OOS-style profile; min lane; fixed 2026-01-01~2026-02-27 window; selected 1 only; robustness/OOS-style caveat recorded.",
+  "provider": "gpt_auth",
+  "bt_engine_mode": "warm",
+  "bt_timeframe": "min",
+  "full_session_enabled": true,
+  "bt_min_universe_end_time": 151900,
+  "bt_universe_start_time": 90000,
+  "bt_warm_engine_count": 64,
+  "bt_betting": "5",
+  "bt_avg_time": 30,
+  "min_daily_trades": 0.5,
+  "mdd_cap": 35.0,
+  "winner_objective": "uptrend",
+  "autopsy_enabled": false,
+  "bt_full_start": 20260101,
+  "bt_full_end": 20260227,
+  "max_generations": 1,
+  "bt_timeout": 1800,
+  "bt_warm_run_timeout": 1200,
+  "equity_points_enabled": true,
+  "condition_discovery_preset": "fast",
+  "condition_discovery_process": "fast-discovery",
+  "_official_profile": {
+    "schema": "plan_d_selected_oos_profile_v1",
+    "lane": "min",
+    "source_db_range": {
+      "path": "_database/stock_min_back.db",
+      "start_date": 20250407,
+      "end_date": 20260227,
+      "min_index": "202504070900",
+      "max_index": "202602271519"
+    },
+    "time_window_policy": "full_session_enabled runtime resolves min to 09:00-15:19.",
+    "full_run_forbidden_until_tick_official_export": false
+  },
+  "_oos_preregistration": {
+    "schema": "plan_d_rank03_r1_selected_oos_preregistration_v1",
+    "created_at": "2026-07-07T18:01:57+09:00",
+    "scope": "plan-d-rank03-r1-selected-oos-prereg-no-portfolio-export",
+    "source_selection_run_id": "lat_plan_d_rank03_r1_8_min_warm64_20260707",
+    "candidate_count": 1,
+    "pairs_json": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/pairs_plan_d_rank03_r1_selected1_oos_20260707.json",
+    "freeze_ledger": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_selected_freeze_ledger_20260707.jsonl",
+    "freeze_recheck": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank03_20260707/r_d_selected_oos_20260707/plan_d_rank03_r1_selected_freeze_recheck_20260707.json",
+    "lane": "min",
+    "db": "_database/stock_min_back.db",
+    "oos_window": {
+      "start": 20260101,
+      "end": 20260227
+    },
+    "time_window": {
+      "start_time": 90000,
+      "end_time": 151900
+    },
+    "warm_engine_count": 64,
+    "selection_rule": "selected from rank03 R1 round decision improved candidate only",
+    "decision_rule": {
+      "survivor": "status ok AND gate_passed true AND profit > 0 AND mdd <= 35 AND daily_avg_trades >= 0.5",
+      "hold": "status ok AND profit > 0 but one non-critical gate fails",
+      "no_go": "error/no_trades OR profit <= 0 OR mdd > 35"
+    },
+    "contamination_caveat": "The selected 1 was chosen from R1 full-period min replay that included 2026-01-01~2026-02-27, so this is fixed OOS-style robustness replay, not fully blind discovery OOS.",
+    "forbidden": [
+      "portfolio",
+      "export/live/final promotion",
+      "selected outside this 1",
+      "DB UPDATE/DELETE",
+      "preregistration-free OOS"
+    ]
+  }
+}
