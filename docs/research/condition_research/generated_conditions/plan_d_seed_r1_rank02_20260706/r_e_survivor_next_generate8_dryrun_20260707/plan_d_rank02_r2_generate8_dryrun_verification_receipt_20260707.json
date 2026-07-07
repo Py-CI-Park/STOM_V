@@ -1,0 +1,29 @@
+{
+  "schema": "plan_d_rank02_r2_generate8_dryrun_verification_receipt_v1",
+  "created_at": "2026-07-07T15:02:42+09:00",
+  "candidate_count": 8,
+  "static_gate_passed_count": 8,
+  "static_gate_failed_count": 0,
+  "db_registration_status": "dry_run_ok",
+  "dry_run": true,
+  "planned_insert_count": 16,
+  "inserted_row_count": 0,
+  "conflict_count": 0,
+  "formal_replay_executed": false,
+  "oos_executed": false,
+  "portfolio_executed": false,
+  "export_live_final_executed": false,
+  "next_page_open": true,
+  "sha256": {
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_e_survivor_next_generate8_dryrun_20260707/plan_d_rank02_r2_generate8_seeds_20260707.json": "f93b046003cc1afc5da94b35ab46323440337ca07b5daf8250657eccd805de6a",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_e_survivor_next_generate8_dryrun_20260707/plan_d_rank02_r2_design_20260707.json": "bfad4b2bc4694fda0e6cfee9965fb3c7d5951affbac0b88da97351708112e8a6",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_e_survivor_next_generate8_dryrun_20260707/plan_d_rank02_r2_static_gate_20260707.json": "cfec839c2667a373fa0ea90d0d9ca1ab9a7d3e9e01a7967bf699981eac07899a",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_e_survivor_next_generate8_dryrun_20260707/register_plan_d_rank02_r2_generate8_dryrun_20260707.json": "887191d4d403abf6eac705c60eca4656ba21341514ccc1218aa1900261728501",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_e_survivor_next_generate8_dryrun_20260707/pairs_plan_d_rank02_r2_generate8_20260707.json": "00a664977f2c80a92a90db2ce022a19d659d17022d2f8b77612ba2c637ec7d7c",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_e_survivor_next_generate8_dryrun_20260707/pairs_min.json": "65e39866fa8756493c63caa42bb4dad1c0e511d16077ad840167830cd85703eb",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_e_survivor_next_generate8_dryrun_20260707/pairs_tick.json": "a5338d955b09046ec0b16f3a9625b7955c763aae07dc722e474e6078745f932f",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_e_survivor_next_generate8_dryrun_20260707/plan_d_rank02_r2_strategy_name_mapping_20260707.jsonl": "95d8bcf7d785dcc59c16c740ee81668bebc99033ad01b55ccd6272ffb8035b0b",
+    "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_e_survivor_next_generate8_dryrun_20260707/plan_d_rank02_r2_generate8_dryrun_summary_20260707.json": "50672b683ea53d8c7cedbd858c26bbdc7f7381af9e3c08c5774a718d8b74a8ef",
+    ".omo/evidence/plan-d-rank02-r1-survivor-next-round-generate8-dryrun-no-portfolio-export-20260707/source_read_receipt.md": "15c9e9e2eaa4b39189ca703e172f3024f881005f9559be0c99591566ecd346fa"
+  }
+}

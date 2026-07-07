@@ -1,0 +1,114 @@
+{
+  "schema": "plan_d_rank02_r2_design_v1",
+  "created_at": "2026-07-07T15:01:17+09:00",
+  "scope": "plan-d-rank02-r1-survivor-next-round-generate8-dryrun-no-portfolio-export",
+  "active_seed_id": "plan_d_rank02_r1_oos_20260707_02",
+  "active_seed_metrics": {
+    "measurement_frame": "selected_oos_min_2026_01_01_to_2026_02_27_warm64",
+    "profit_krw": 1124220.0,
+    "mdd_pct": 4.12,
+    "daily_avg_trades": 0.5,
+    "trade_count": 18,
+    "score": 10.202250246680189,
+    "calmar": 36.873786407766985,
+    "uptrend_r2": 0.4995605692513437,
+    "payoff_ratio": 2.0863958736299164,
+    "gate_passed": true,
+    "reason": "status_ok_gate_passed_profit_positive_mdd_cap_daily_min_passed"
+  },
+  "comparator_seed_id": "plan_d_rank02_r1_oos_20260707_01",
+  "quota": {
+    "repair": 5,
+    "discovery": 3
+  },
+  "designs": [
+    {
+      "slot": 1,
+      "condition_id": "plan_d_r1_rank02_r2_01_l14_amt8000_rate80_hold90",
+      "quota_lane": "repair",
+      "axis": "l14_amount_floor8000_rate80",
+      "mutation": "L14 amount floor 9000 -> 8000; keep rate floor 8.0 and loose sell hold90",
+      "reason": "Test whether OOS daily trade count can rise from 0.5 without weakening the rate filter.",
+      "buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 2,
+      "condition_id": "plan_d_r1_rank02_r2_02_l14_amt9000_rate75_hold90",
+      "quota_lane": "repair",
+      "axis": "l14_amount9000_rate_floor75",
+      "mutation": "L14 rate floor 8.0 -> 7.5; keep amount floor 9000 and loose sell hold90",
+      "reason": "Probe a minimal rate relaxation around the OOS-surviving L14 coverage cell.",
+      "buy_sha256": "112941b0153a0c27b3c6523f654930bde9cf3f9bf81341c40245140cbeefd7cc",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 3,
+      "condition_id": "plan_d_r1_rank02_r2_03_l14_end1445_amt9000_rate80_hold90",
+      "quota_lane": "repair",
+      "axis": "l14_end1445_amount9000_rate80",
+      "mutation": "L14 window 14:00-14:30 -> 14:00-14:45; keep amount 9000/rate 8.0/loose sell hold90",
+      "reason": "Extend the late-day L14 window without adding a separate component.",
+      "buy_sha256": "51f68bff819c66aa60f9adf6c8fb6f0e28853741842a17a188074248d96a5787",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 4,
+      "condition_id": "plan_d_r1_rank02_r2_04_l13_l14_amt9000_rate80_hold90",
+      "quota_lane": "repair",
+      "axis": "l13_l14_bridge_amount9000_rate80",
+      "mutation": "Add adjacent L13 13:00-14:00 amount>=9000/rate>=8.0 component; keep active L14 and loose sell hold90",
+      "reason": "Borrow the rank01 R3 coverage bridge while keeping the rank02 OOS survivor thresholds.",
+      "buy_sha256": "075f6269b24567682903c6ebe186c353106d7f1f5cd5a8decc9ea79de071a85c",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 5,
+      "condition_id": "plan_d_r1_rank02_r2_05_l1430_bridge_amt9000_rate80_hold90",
+      "quota_lane": "repair",
+      "axis": "l1430_bridge_amount9000_rate80",
+      "mutation": "Add 14:30-14:45 amount>=9000/rate>=8.0 component; keep active L14 and loose sell hold90",
+      "reason": "Open only the immediate post-L14 interval to test coverage without morning drift.",
+      "buy_sha256": "2ee432d82388504117573ab60cdc746751ac2a06b5e7be7ee37c4ab852956572",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 6,
+      "condition_id": "plan_d_r1_rank02_r2_06_active_buy_default_tp3_sl3_hold90",
+      "quota_lane": "discovery",
+      "axis": "sell_tp3_sl3_hold90_on_active_buy",
+      "mutation": "Keep active buy; tighten take-profit 4.0 -> 3.0 while keeping SL -3 and hold90",
+      "reason": "Compare the active OOS survivor buy with the lower-MDD default sell style.",
+      "buy_sha256": "e109bad965c9f1a005fd67b854338794e8fe7c8f80b6ec5d258e6dc9d79be1d7",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 7,
+      "condition_id": "plan_d_r1_rank02_r2_07_active_buy_tight_tp3_sl2p5_hold90",
+      "quota_lane": "discovery",
+      "axis": "sell_tp3_sl2p5_hold90_on_active_buy",
+      "mutation": "Keep active buy; use TP 3.0, SL -2.5, hold90",
+      "reason": "Check whether slightly tighter loss control can preserve OOS MDD near 4%.",
+      "buy_sha256": "549e0b6a3fbcbd43095e3a2b878dfd187b5e5f1ee5b6c3032619753ec0f461d8",
+      "sell_sha256": "85e6899bfc3cc2f4ba2d874f06caa3cf4ebe0ed94c0f892d6083b2bfc81c7d21",
+      "static_gate_passed": true
+    },
+    {
+      "slot": 8,
+      "condition_id": "plan_d_r1_rank02_r2_08_active_buy_loose_hold60_tp4_sl3",
+      "quota_lane": "discovery",
+      "axis": "sell_tp4_sl3_hold60_on_active_buy",
+      "mutation": "Keep active buy and TP/SL; reduce hold 90 -> 60",
+      "reason": "Probe whether shorter max hold reduces give-back without changing entry coverage.",
+      "buy_sha256": "fea9bdfa7b7756d7451be308372be74704b7e5290fe01f5312b538dcaf83a28d",
+      "sell_sha256": "ed775a9512f7b9db0a82936a689fe371de65a971b5e810ee7752ec43f18c45cb",
+      "static_gate_passed": true
+    }
+  ]
+}
