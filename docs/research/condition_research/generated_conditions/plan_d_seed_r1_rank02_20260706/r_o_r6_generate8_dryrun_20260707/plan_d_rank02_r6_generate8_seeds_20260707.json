@@ -1,0 +1,350 @@
+{
+  "schema": "seed_lattice_seeds_v1",
+  "created_at": "2026-07-07T17:03:26+09:00",
+  "source": {
+    "scope": "plan-d-rank02-r6-generate8-dryrun-no-oos-portfolio-export",
+    "active_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+    "active_condition_id": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+    "active_source_result_path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_j_r3_selected_oos_20260707/plan_d_rank02_r3_selected_oos_result_20260707.json",
+    "r5_round_decision_path": "docs/research/condition_research/generated_conditions/plan_d_seed_r1_rank02_20260706/r_n_r5_insert_replay_20260707/plan_d_rank02_r5_round_decision_20260707.json",
+    "rationale": "R4/R5 produced two consecutive no-improve replays after active R3. R6 is a final dry-run-only terminal probe around the R5 eod1515 watch axis plus conservative buy-side filters before deciding whether to open one last limited replay or terminate the rank02 branch."
+  },
+  "seeds": [
+    {
+      "condition_id": "plan_d_r1_rank02_r6_01_eod1515_l14_rate9_default",
+      "cell_id": "min_plan_d_rank02_r6_terminal_probe",
+      "family": "plan_d_rank02_r6_terminal_probe",
+      "lane": "min",
+      "buy_code": "pd_r2_r2_01_signal = False\n\n# component 1: S09_PMAX\npd_r2_r2_01_part1 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part1 = False\n    elif not (체결강도 >= 109.0):\n        pd_r2_r2_01_part1 = False\nelse:\n    pd_r2_r2_01_part1 = False\n\nif pd_r2_r2_01_part1:\n    pd_r2_r2_01_signal = True\n\n# component 2: S10_PMAX\npd_r2_r2_01_part2 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part2 = False\n    elif not (체결강도 >= 107.0):\n        pd_r2_r2_01_part2 = False\nelse:\n    pd_r2_r2_01_part2 = False\n\nif pd_r2_r2_01_part2:\n    pd_r2_r2_01_signal = True\n\n# component 3: M09_POS\npd_r2_r2_01_part3 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        pd_r2_r2_01_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part3 = False\nelse:\n    pd_r2_r2_01_part3 = False\n\nif pd_r2_r2_01_part3:\n    pd_r2_r2_01_signal = True\n\n# component 4: M10_POS\npd_r2_r2_01_part4 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part4 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part4 = False\nelse:\n    pd_r2_r2_01_part4 = False\n\nif pd_r2_r2_01_part4:\n    pd_r2_r2_01_signal = True\n\n# component 5: L14_NEAR\npd_r2_r2_01_part5 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part5 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 8000.0):\n        pd_r2_r2_01_part5 = False\n    elif not (9.0 <= 등락율 < 29.0):\n        pd_r2_r2_01_part5 = False\n    elif not (현재가 >= 고가 * 1.0):\n        pd_r2_r2_01_part5 = False\nelse:\n    pd_r2_r2_01_part5 = False\n\nif pd_r2_r2_01_part5:\n    pd_r2_r2_01_signal = True\n\nif pd_r2_r2_01_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 90:\n    매도 = True\nelif 시분초 >= 151500:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "b489acc5e950d7be2ccdbe49f34064e75c28f2c0c75d1127d29cd7a0f32095ab",
+      "sell_sha256": "51679c202c504699ae42d8a7ae91d2665690d0e7277a44ffa68d3df9148699eb",
+      "label": "hypothesis_seed",
+      "params": {
+        "parent_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+        "parent_condition_id": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+        "parent_buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+        "parent_sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+        "source_candidate_condition_id": "plan_d_r1_rank02_r5_08_eod1515_default",
+        "previous_rounds": [
+          "plan_d_rank02_r4",
+          "plan_d_rank02_r5"
+        ],
+        "previous_consecutive_no_improve_since_r3": 2,
+        "watch_axis": "eod1515",
+        "avoided_axes": [
+          "standalone_l14_amount_floor7500_8500",
+          "standalone_tp_sl_hold_variants",
+          "standalone_l13_l14_coverage_copy",
+          "morning_amount_widening_1000_3500",
+          "pmax_strength_relaxation"
+        ],
+        "axis": "eod1515_l14_rate9_default",
+        "mutation": "Keep eod1515 sell watch axis and tighten L14 rate floor from 8.0 to 9.0.",
+        "quota_lane": "repair",
+        "scope": "plan-d-rank02-r6-generate8-dryrun-no-oos-portfolio-export",
+        "dry_run_only": true,
+        "formal_replay_allowed": false,
+        "oos_allowed": false,
+        "portfolio_allowed": false,
+        "export_live_final_allowed": false
+      },
+      "created_reason": "Keep eod1515 sell watch axis and tighten L14 rate floor from 8.0 to 9.0.",
+      "passport_md": "# plan_d_r1_rank02_r6_01_eod1515_l14_rate9_default\n\nparent: `plan_d_rank02_r3_oos_20260707_01` / `plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90`\nsource_candidate: `plan_d_r1_rank02_r5_08_eod1515_default`\naxis: `eod1515_l14_rate9_default`\nmutation: Keep eod1515 sell watch axis and tighten L14 rate floor from 8.0 to 9.0.\nlane: research/min only\nlabel: hypothesis_seed\nscope: static gate + DB registration dry-run only\nblocked: official replay, OOS, portfolio, export/live/final promotion"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_02_eod1515_l14_amt8500_rate9",
+      "cell_id": "min_plan_d_rank02_r6_terminal_probe",
+      "family": "plan_d_rank02_r6_terminal_probe",
+      "lane": "min",
+      "buy_code": "pd_r2_r2_01_signal = False\n\n# component 1: S09_PMAX\npd_r2_r2_01_part1 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part1 = False\n    elif not (체결강도 >= 109.0):\n        pd_r2_r2_01_part1 = False\nelse:\n    pd_r2_r2_01_part1 = False\n\nif pd_r2_r2_01_part1:\n    pd_r2_r2_01_signal = True\n\n# component 2: S10_PMAX\npd_r2_r2_01_part2 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part2 = False\n    elif not (체결강도 >= 107.0):\n        pd_r2_r2_01_part2 = False\nelse:\n    pd_r2_r2_01_part2 = False\n\nif pd_r2_r2_01_part2:\n    pd_r2_r2_01_signal = True\n\n# component 3: M09_POS\npd_r2_r2_01_part3 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        pd_r2_r2_01_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part3 = False\nelse:\n    pd_r2_r2_01_part3 = False\n\nif pd_r2_r2_01_part3:\n    pd_r2_r2_01_signal = True\n\n# component 4: M10_POS\npd_r2_r2_01_part4 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part4 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part4 = False\nelse:\n    pd_r2_r2_01_part4 = False\n\nif pd_r2_r2_01_part4:\n    pd_r2_r2_01_signal = True\n\n# component 5: L14_NEAR\npd_r2_r2_01_part5 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part5 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 8500.0):\n        pd_r2_r2_01_part5 = False\n    elif not (9.0 <= 등락율 < 29.0):\n        pd_r2_r2_01_part5 = False\n    elif not (현재가 >= 고가 * 1.0):\n        pd_r2_r2_01_part5 = False\nelse:\n    pd_r2_r2_01_part5 = False\n\nif pd_r2_r2_01_part5:\n    pd_r2_r2_01_signal = True\n\nif pd_r2_r2_01_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 90:\n    매도 = True\nelif 시분초 >= 151500:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "05bc11fcd1455acab58c235a68b79705c2bc3758cb3a3fdcb5cdc6e85b721120",
+      "sell_sha256": "51679c202c504699ae42d8a7ae91d2665690d0e7277a44ffa68d3df9148699eb",
+      "label": "hypothesis_seed",
+      "params": {
+        "parent_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+        "parent_condition_id": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+        "parent_buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+        "parent_sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+        "source_candidate_condition_id": "plan_d_r1_rank02_r5_08_eod1515_default",
+        "previous_rounds": [
+          "plan_d_rank02_r4",
+          "plan_d_rank02_r5"
+        ],
+        "previous_consecutive_no_improve_since_r3": 2,
+        "watch_axis": "eod1515",
+        "avoided_axes": [
+          "standalone_l14_amount_floor7500_8500",
+          "standalone_tp_sl_hold_variants",
+          "standalone_l13_l14_coverage_copy",
+          "morning_amount_widening_1000_3500",
+          "pmax_strength_relaxation"
+        ],
+        "axis": "eod1515_l14_amt8500_rate9",
+        "mutation": "Keep eod1515 sell watch axis and combine conservative L14 amount 8500 with rate floor 9.0.",
+        "quota_lane": "repair",
+        "scope": "plan-d-rank02-r6-generate8-dryrun-no-oos-portfolio-export",
+        "dry_run_only": true,
+        "formal_replay_allowed": false,
+        "oos_allowed": false,
+        "portfolio_allowed": false,
+        "export_live_final_allowed": false
+      },
+      "created_reason": "Keep eod1515 sell watch axis and combine conservative L14 amount 8500 with rate floor 9.0.",
+      "passport_md": "# plan_d_r1_rank02_r6_02_eod1515_l14_amt8500_rate9\n\nparent: `plan_d_rank02_r3_oos_20260707_01` / `plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90`\nsource_candidate: `plan_d_r1_rank02_r5_08_eod1515_default`\naxis: `eod1515_l14_amt8500_rate9`\nmutation: Keep eod1515 sell watch axis and combine conservative L14 amount 8500 with rate floor 9.0.\nlane: research/min only\nlabel: hypothesis_seed\nscope: static gate + DB registration dry-run only\nblocked: official replay, OOS, portfolio, export/live/final promotion"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_03_eod1515_pmax110_108",
+      "cell_id": "min_plan_d_rank02_r6_terminal_probe",
+      "family": "plan_d_rank02_r6_terminal_probe",
+      "lane": "min",
+      "buy_code": "pd_r2_r2_01_signal = False\n\n# component 1: S09_PMAX\npd_r2_r2_01_part1 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part1 = False\n    elif not (체결강도 >= 110.0):\n        pd_r2_r2_01_part1 = False\nelse:\n    pd_r2_r2_01_part1 = False\n\nif pd_r2_r2_01_part1:\n    pd_r2_r2_01_signal = True\n\n# component 2: S10_PMAX\npd_r2_r2_01_part2 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part2 = False\n    elif not (체결강도 >= 108.0):\n        pd_r2_r2_01_part2 = False\nelse:\n    pd_r2_r2_01_part2 = False\n\nif pd_r2_r2_01_part2:\n    pd_r2_r2_01_signal = True\n\n# component 3: M09_POS\npd_r2_r2_01_part3 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        pd_r2_r2_01_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part3 = False\nelse:\n    pd_r2_r2_01_part3 = False\n\nif pd_r2_r2_01_part3:\n    pd_r2_r2_01_signal = True\n\n# component 4: M10_POS\npd_r2_r2_01_part4 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part4 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part4 = False\nelse:\n    pd_r2_r2_01_part4 = False\n\nif pd_r2_r2_01_part4:\n    pd_r2_r2_01_signal = True\n\n# component 5: L14_NEAR\npd_r2_r2_01_part5 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part5 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 8000.0):\n        pd_r2_r2_01_part5 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        pd_r2_r2_01_part5 = False\n    elif not (현재가 >= 고가 * 1.0):\n        pd_r2_r2_01_part5 = False\nelse:\n    pd_r2_r2_01_part5 = False\n\nif pd_r2_r2_01_part5:\n    pd_r2_r2_01_signal = True\n\nif pd_r2_r2_01_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 90:\n    매도 = True\nelif 시분초 >= 151500:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "78f9988fcaac009c8324c0f5a8353600e736f7e9f7a20b793bd0da237b137330",
+      "sell_sha256": "51679c202c504699ae42d8a7ae91d2665690d0e7277a44ffa68d3df9148699eb",
+      "label": "hypothesis_seed",
+      "params": {
+        "parent_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+        "parent_condition_id": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+        "parent_buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+        "parent_sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+        "source_candidate_condition_id": "plan_d_r1_rank02_r5_08_eod1515_default",
+        "previous_rounds": [
+          "plan_d_rank02_r4",
+          "plan_d_rank02_r5"
+        ],
+        "previous_consecutive_no_improve_since_r3": 2,
+        "watch_axis": "eod1515",
+        "avoided_axes": [
+          "standalone_l14_amount_floor7500_8500",
+          "standalone_tp_sl_hold_variants",
+          "standalone_l13_l14_coverage_copy",
+          "morning_amount_widening_1000_3500",
+          "pmax_strength_relaxation"
+        ],
+        "axis": "eod1515_pmax110_108",
+        "mutation": "Keep eod1515 sell watch axis and mildly tighten S09/S10 strength thresholds to 110/108.",
+        "quota_lane": "repair",
+        "scope": "plan-d-rank02-r6-generate8-dryrun-no-oos-portfolio-export",
+        "dry_run_only": true,
+        "formal_replay_allowed": false,
+        "oos_allowed": false,
+        "portfolio_allowed": false,
+        "export_live_final_allowed": false
+      },
+      "created_reason": "Keep eod1515 sell watch axis and mildly tighten S09/S10 strength thresholds to 110/108.",
+      "passport_md": "# plan_d_r1_rank02_r6_03_eod1515_pmax110_108\n\nparent: `plan_d_rank02_r3_oos_20260707_01` / `plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90`\nsource_candidate: `plan_d_r1_rank02_r5_08_eod1515_default`\naxis: `eod1515_pmax110_108`\nmutation: Keep eod1515 sell watch axis and mildly tighten S09/S10 strength thresholds to 110/108.\nlane: research/min only\nlabel: hypothesis_seed\nscope: static gate + DB registration dry-run only\nblocked: official replay, OOS, portfolio, export/live/final promotion"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_04_eod1515_morning_amt1800_3000",
+      "cell_id": "min_plan_d_rank02_r6_terminal_probe",
+      "family": "plan_d_rank02_r6_terminal_probe",
+      "lane": "min",
+      "buy_code": "pd_r2_r2_01_signal = False\n\n# component 1: S09_PMAX\npd_r2_r2_01_part1 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1800.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part1 = False\n    elif not (체결강도 >= 109.0):\n        pd_r2_r2_01_part1 = False\nelse:\n    pd_r2_r2_01_part1 = False\n\nif pd_r2_r2_01_part1:\n    pd_r2_r2_01_signal = True\n\n# component 2: S10_PMAX\npd_r2_r2_01_part2 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1800.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part2 = False\n    elif not (체결강도 >= 107.0):\n        pd_r2_r2_01_part2 = False\nelse:\n    pd_r2_r2_01_part2 = False\n\nif pd_r2_r2_01_part2:\n    pd_r2_r2_01_signal = True\n\n# component 3: M09_POS\npd_r2_r2_01_part3 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        pd_r2_r2_01_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part3 = False\nelse:\n    pd_r2_r2_01_part3 = False\n\nif pd_r2_r2_01_part3:\n    pd_r2_r2_01_signal = True\n\n# component 4: M10_POS\npd_r2_r2_01_part4 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1800.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part4 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part4 = False\nelse:\n    pd_r2_r2_01_part4 = False\n\nif pd_r2_r2_01_part4:\n    pd_r2_r2_01_signal = True\n\n# component 5: L14_NEAR\npd_r2_r2_01_part5 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part5 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 8000.0):\n        pd_r2_r2_01_part5 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        pd_r2_r2_01_part5 = False\n    elif not (현재가 >= 고가 * 1.0):\n        pd_r2_r2_01_part5 = False\nelse:\n    pd_r2_r2_01_part5 = False\n\nif pd_r2_r2_01_part5:\n    pd_r2_r2_01_signal = True\n\nif pd_r2_r2_01_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 90:\n    매도 = True\nelif 시분초 >= 151500:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "bfc046b6f19fb29882ec16e7de546e6e265549e878bc3dab42299004c42936cb",
+      "sell_sha256": "51679c202c504699ae42d8a7ae91d2665690d0e7277a44ffa68d3df9148699eb",
+      "label": "hypothesis_seed",
+      "params": {
+        "parent_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+        "parent_condition_id": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+        "parent_buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+        "parent_sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+        "source_candidate_condition_id": "plan_d_r1_rank02_r5_08_eod1515_default",
+        "previous_rounds": [
+          "plan_d_rank02_r4",
+          "plan_d_rank02_r5"
+        ],
+        "previous_consecutive_no_improve_since_r3": 2,
+        "watch_axis": "eod1515",
+        "avoided_axes": [
+          "standalone_l14_amount_floor7500_8500",
+          "standalone_tp_sl_hold_variants",
+          "standalone_l13_l14_coverage_copy",
+          "morning_amount_widening_1000_3500",
+          "pmax_strength_relaxation"
+        ],
+        "axis": "eod1515_morning_amt1800_3000",
+        "mutation": "Keep eod1515 sell watch axis and narrow morning PMAX amount lower bound to 1800 while retaining upper 3000.",
+        "quota_lane": "repair",
+        "scope": "plan-d-rank02-r6-generate8-dryrun-no-oos-portfolio-export",
+        "dry_run_only": true,
+        "formal_replay_allowed": false,
+        "oos_allowed": false,
+        "portfolio_allowed": false,
+        "export_live_final_allowed": false
+      },
+      "created_reason": "Keep eod1515 sell watch axis and narrow morning PMAX amount lower bound to 1800 while retaining upper 3000.",
+      "passport_md": "# plan_d_r1_rank02_r6_04_eod1515_morning_amt1800_3000\n\nparent: `plan_d_rank02_r3_oos_20260707_01` / `plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90`\nsource_candidate: `plan_d_r1_rank02_r5_08_eod1515_default`\naxis: `eod1515_morning_amt1800_3000`\nmutation: Keep eod1515 sell watch axis and narrow morning PMAX amount lower bound to 1800 while retaining upper 3000.\nlane: research/min only\nlabel: hypothesis_seed\nscope: static gate + DB registration dry-run only\nblocked: official replay, OOS, portfolio, export/live/final promotion"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_05_eod1515_morning_amt1500_2800",
+      "cell_id": "min_plan_d_rank02_r6_terminal_probe",
+      "family": "plan_d_rank02_r6_terminal_probe",
+      "lane": "min",
+      "buy_code": "pd_r2_r2_01_signal = False\n\n# component 1: S09_PMAX\npd_r2_r2_01_part1 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 2800.0):\n        pd_r2_r2_01_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part1 = False\n    elif not (체결강도 >= 109.0):\n        pd_r2_r2_01_part1 = False\nelse:\n    pd_r2_r2_01_part1 = False\n\nif pd_r2_r2_01_part1:\n    pd_r2_r2_01_signal = True\n\n# component 2: S10_PMAX\npd_r2_r2_01_part2 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 2800.0):\n        pd_r2_r2_01_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part2 = False\n    elif not (체결강도 >= 107.0):\n        pd_r2_r2_01_part2 = False\nelse:\n    pd_r2_r2_01_part2 = False\n\nif pd_r2_r2_01_part2:\n    pd_r2_r2_01_signal = True\n\n# component 3: M09_POS\npd_r2_r2_01_part3 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        pd_r2_r2_01_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part3 = False\nelse:\n    pd_r2_r2_01_part3 = False\n\nif pd_r2_r2_01_part3:\n    pd_r2_r2_01_signal = True\n\n# component 4: M10_POS\npd_r2_r2_01_part4 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 2800.0):\n        pd_r2_r2_01_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part4 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part4 = False\nelse:\n    pd_r2_r2_01_part4 = False\n\nif pd_r2_r2_01_part4:\n    pd_r2_r2_01_signal = True\n\n# component 5: L14_NEAR\npd_r2_r2_01_part5 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part5 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 8000.0):\n        pd_r2_r2_01_part5 = False\n    elif not (8.0 <= 등락율 < 29.0):\n        pd_r2_r2_01_part5 = False\n    elif not (현재가 >= 고가 * 1.0):\n        pd_r2_r2_01_part5 = False\nelse:\n    pd_r2_r2_01_part5 = False\n\nif pd_r2_r2_01_part5:\n    pd_r2_r2_01_signal = True\n\nif pd_r2_r2_01_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 90:\n    매도 = True\nelif 시분초 >= 151500:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "58ea06f0fe8e586a9debb8ae8f1055104d6575efceb0b88a72daf6235eb9d6a7",
+      "sell_sha256": "51679c202c504699ae42d8a7ae91d2665690d0e7277a44ffa68d3df9148699eb",
+      "label": "hypothesis_seed",
+      "params": {
+        "parent_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+        "parent_condition_id": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+        "parent_buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+        "parent_sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+        "source_candidate_condition_id": "plan_d_r1_rank02_r5_08_eod1515_default",
+        "previous_rounds": [
+          "plan_d_rank02_r4",
+          "plan_d_rank02_r5"
+        ],
+        "previous_consecutive_no_improve_since_r3": 2,
+        "watch_axis": "eod1515",
+        "avoided_axes": [
+          "standalone_l14_amount_floor7500_8500",
+          "standalone_tp_sl_hold_variants",
+          "standalone_l13_l14_coverage_copy",
+          "morning_amount_widening_1000_3500",
+          "pmax_strength_relaxation"
+        ],
+        "axis": "eod1515_morning_amt1500_2800",
+        "mutation": "Keep eod1515 sell watch axis and narrow morning PMAX amount upper bound from 3000 to 2800.",
+        "quota_lane": "repair",
+        "scope": "plan-d-rank02-r6-generate8-dryrun-no-oos-portfolio-export",
+        "dry_run_only": true,
+        "formal_replay_allowed": false,
+        "oos_allowed": false,
+        "portfolio_allowed": false,
+        "export_live_final_allowed": false
+      },
+      "created_reason": "Keep eod1515 sell watch axis and narrow morning PMAX amount upper bound from 3000 to 2800.",
+      "passport_md": "# plan_d_r1_rank02_r6_05_eod1515_morning_amt1500_2800\n\nparent: `plan_d_rank02_r3_oos_20260707_01` / `plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90`\nsource_candidate: `plan_d_r1_rank02_r5_08_eod1515_default`\naxis: `eod1515_morning_amt1500_2800`\nmutation: Keep eod1515 sell watch axis and narrow morning PMAX amount upper bound from 3000 to 2800.\nlane: research/min only\nlabel: hypothesis_seed\nscope: static gate + DB registration dry-run only\nblocked: official replay, OOS, portfolio, export/live/final promotion"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_06_eod1515_openpos996_rate9",
+      "cell_id": "min_plan_d_rank02_r6_terminal_probe",
+      "family": "plan_d_rank02_r6_terminal_probe",
+      "lane": "min",
+      "buy_code": "pd_r2_r2_01_signal = False\n\n# component 1: S09_PMAX\npd_r2_r2_01_part1 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part1 = False\n    elif not (체결강도 >= 109.0):\n        pd_r2_r2_01_part1 = False\nelse:\n    pd_r2_r2_01_part1 = False\n\nif pd_r2_r2_01_part1:\n    pd_r2_r2_01_signal = True\n\n# component 2: S10_PMAX\npd_r2_r2_01_part2 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part2 = False\n    elif not (체결강도 >= 107.0):\n        pd_r2_r2_01_part2 = False\nelse:\n    pd_r2_r2_01_part2 = False\n\nif pd_r2_r2_01_part2:\n    pd_r2_r2_01_signal = True\n\n# component 3: M09_POS\npd_r2_r2_01_part3 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        pd_r2_r2_01_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part3 = False\n    elif not (현재가 >= 고가 * 0.996):\n        pd_r2_r2_01_part3 = False\nelse:\n    pd_r2_r2_01_part3 = False\n\nif pd_r2_r2_01_part3:\n    pd_r2_r2_01_signal = True\n\n# component 4: M10_POS\npd_r2_r2_01_part4 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part4 = False\n    elif not (현재가 >= 고가 * 0.996):\n        pd_r2_r2_01_part4 = False\nelse:\n    pd_r2_r2_01_part4 = False\n\nif pd_r2_r2_01_part4:\n    pd_r2_r2_01_signal = True\n\n# component 5: L14_NEAR\npd_r2_r2_01_part5 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part5 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 8000.0):\n        pd_r2_r2_01_part5 = False\n    elif not (9.0 <= 등락율 < 29.0):\n        pd_r2_r2_01_part5 = False\n    elif not (현재가 >= 고가 * 1.0):\n        pd_r2_r2_01_part5 = False\nelse:\n    pd_r2_r2_01_part5 = False\n\nif pd_r2_r2_01_part5:\n    pd_r2_r2_01_signal = True\n\nif pd_r2_r2_01_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 90:\n    매도 = True\nelif 시분초 >= 151500:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "e9225d50c97c22e6020f3c9e81b914a4d768796375d5a633d9ac0c6718cefd49",
+      "sell_sha256": "51679c202c504699ae42d8a7ae91d2665690d0e7277a44ffa68d3df9148699eb",
+      "label": "hypothesis_seed",
+      "params": {
+        "parent_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+        "parent_condition_id": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+        "parent_buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+        "parent_sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+        "source_candidate_condition_id": "plan_d_r1_rank02_r5_08_eod1515_default",
+        "previous_rounds": [
+          "plan_d_rank02_r4",
+          "plan_d_rank02_r5"
+        ],
+        "previous_consecutive_no_improve_since_r3": 2,
+        "watch_axis": "eod1515",
+        "avoided_axes": [
+          "standalone_l14_amount_floor7500_8500",
+          "standalone_tp_sl_hold_variants",
+          "standalone_l13_l14_coverage_copy",
+          "morning_amount_widening_1000_3500",
+          "pmax_strength_relaxation"
+        ],
+        "axis": "eod1515_openpos996_rate9",
+        "mutation": "Keep eod1515 sell watch axis and combine M09/M10 price proximity 0.996 with L14 rate floor 9.0.",
+        "quota_lane": "discovery",
+        "scope": "plan-d-rank02-r6-generate8-dryrun-no-oos-portfolio-export",
+        "dry_run_only": true,
+        "formal_replay_allowed": false,
+        "oos_allowed": false,
+        "portfolio_allowed": false,
+        "export_live_final_allowed": false
+      },
+      "created_reason": "Keep eod1515 sell watch axis and combine M09/M10 price proximity 0.996 with L14 rate floor 9.0.",
+      "passport_md": "# plan_d_r1_rank02_r6_06_eod1515_openpos996_rate9\n\nparent: `plan_d_rank02_r3_oos_20260707_01` / `plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90`\nsource_candidate: `plan_d_r1_rank02_r5_08_eod1515_default`\naxis: `eod1515_openpos996_rate9`\nmutation: Keep eod1515 sell watch axis and combine M09/M10 price proximity 0.996 with L14 rate floor 9.0.\nlane: research/min only\nlabel: hypothesis_seed\nscope: static gate + DB registration dry-run only\nblocked: official replay, OOS, portfolio, export/live/final promotion"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_07_eod1510_l14_rate9",
+      "cell_id": "min_plan_d_rank02_r6_terminal_probe",
+      "family": "plan_d_rank02_r6_terminal_probe",
+      "lane": "min",
+      "buy_code": "pd_r2_r2_01_signal = False\n\n# component 1: S09_PMAX\npd_r2_r2_01_part1 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part1 = False\n    elif not (체결강도 >= 109.0):\n        pd_r2_r2_01_part1 = False\nelse:\n    pd_r2_r2_01_part1 = False\n\nif pd_r2_r2_01_part1:\n    pd_r2_r2_01_signal = True\n\n# component 2: S10_PMAX\npd_r2_r2_01_part2 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part2 = False\n    elif not (체결강도 >= 107.0):\n        pd_r2_r2_01_part2 = False\nelse:\n    pd_r2_r2_01_part2 = False\n\nif pd_r2_r2_01_part2:\n    pd_r2_r2_01_signal = True\n\n# component 3: M09_POS\npd_r2_r2_01_part3 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        pd_r2_r2_01_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part3 = False\nelse:\n    pd_r2_r2_01_part3 = False\n\nif pd_r2_r2_01_part3:\n    pd_r2_r2_01_signal = True\n\n# component 4: M10_POS\npd_r2_r2_01_part4 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part4 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part4 = False\nelse:\n    pd_r2_r2_01_part4 = False\n\nif pd_r2_r2_01_part4:\n    pd_r2_r2_01_signal = True\n\n# component 5: L14_NEAR\npd_r2_r2_01_part5 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part5 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 8000.0):\n        pd_r2_r2_01_part5 = False\n    elif not (9.0 <= 등락율 < 29.0):\n        pd_r2_r2_01_part5 = False\n    elif not (현재가 >= 고가 * 1.0):\n        pd_r2_r2_01_part5 = False\nelse:\n    pd_r2_r2_01_part5 = False\n\nif pd_r2_r2_01_part5:\n    pd_r2_r2_01_signal = True\n\nif pd_r2_r2_01_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 90:\n    매도 = True\nelif 시분초 >= 151000:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "b489acc5e950d7be2ccdbe49f34064e75c28f2c0c75d1127d29cd7a0f32095ab",
+      "sell_sha256": "56c0801a114bab2c967f9a1447e0f8b7f58603aa0f6ef11039f094cf280af57f",
+      "label": "hypothesis_seed",
+      "params": {
+        "parent_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+        "parent_condition_id": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+        "parent_buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+        "parent_sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+        "source_candidate_condition_id": "plan_d_r1_rank02_r5_08_eod1515_default",
+        "previous_rounds": [
+          "plan_d_rank02_r4",
+          "plan_d_rank02_r5"
+        ],
+        "previous_consecutive_no_improve_since_r3": 2,
+        "watch_axis": "eod1515",
+        "avoided_axes": [
+          "standalone_l14_amount_floor7500_8500",
+          "standalone_tp_sl_hold_variants",
+          "standalone_l13_l14_coverage_copy",
+          "morning_amount_widening_1000_3500",
+          "pmax_strength_relaxation"
+        ],
+        "axis": "eod1510_l14_rate9",
+        "mutation": "Test slightly earlier hard exit 15:10 with L14 rate floor 9.0 after eod1515 lowered MDD but missed profit.",
+        "quota_lane": "discovery",
+        "scope": "plan-d-rank02-r6-generate8-dryrun-no-oos-portfolio-export",
+        "dry_run_only": true,
+        "formal_replay_allowed": false,
+        "oos_allowed": false,
+        "portfolio_allowed": false,
+        "export_live_final_allowed": false
+      },
+      "created_reason": "Test slightly earlier hard exit 15:10 with L14 rate floor 9.0 after eod1515 lowered MDD but missed profit.",
+      "passport_md": "# plan_d_r1_rank02_r6_07_eod1510_l14_rate9\n\nparent: `plan_d_rank02_r3_oos_20260707_01` / `plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90`\nsource_candidate: `plan_d_r1_rank02_r5_08_eod1515_default`\naxis: `eod1510_l14_rate9`\nmutation: Test slightly earlier hard exit 15:10 with L14 rate floor 9.0 after eod1515 lowered MDD but missed profit.\nlane: research/min only\nlabel: hypothesis_seed\nscope: static gate + DB registration dry-run only\nblocked: official replay, OOS, portfolio, export/live/final promotion"
+    },
+    {
+      "condition_id": "plan_d_r1_rank02_r6_08_eod1520_l14_rate10",
+      "cell_id": "min_plan_d_rank02_r6_terminal_probe",
+      "family": "plan_d_rank02_r6_terminal_probe",
+      "lane": "min",
+      "buy_code": "pd_r2_r2_01_signal = False\n\n# component 1: S09_PMAX\npd_r2_r2_01_part1 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part1 = False\nelif 90000 <= 시분초 < 100000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part1 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part1 = False\n    elif not (체결강도 >= 109.0):\n        pd_r2_r2_01_part1 = False\nelse:\n    pd_r2_r2_01_part1 = False\n\nif pd_r2_r2_01_part1:\n    pd_r2_r2_01_signal = True\n\n# component 2: S10_PMAX\npd_r2_r2_01_part2 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part2 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part2 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part2 = False\n    elif not (체결강도 >= 107.0):\n        pd_r2_r2_01_part2 = False\nelse:\n    pd_r2_r2_01_part2 = False\n\nif pd_r2_r2_01_part2:\n    pd_r2_r2_01_signal = True\n\n# component 3: M09_POS\npd_r2_r2_01_part3 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part3 = False\nelif 90000 <= 시분초 < 100000:\n    if not (시가총액 < 1500.0):\n        pd_r2_r2_01_part3 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part3 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part3 = False\nelse:\n    pd_r2_r2_01_part3 = False\n\nif pd_r2_r2_01_part3:\n    pd_r2_r2_01_signal = True\n\n# component 4: M10_POS\npd_r2_r2_01_part4 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part4 = False\nelif 100000 <= 시분초 < 110000:\n    if not (1500.0 <= 시가총액 < 3000.0):\n        pd_r2_r2_01_part4 = False\n    elif not (0.0 <= 등락율 < 3.0):\n        pd_r2_r2_01_part4 = False\n    elif not (현재가 >= 고가 * 0.994):\n        pd_r2_r2_01_part4 = False\nelse:\n    pd_r2_r2_01_part4 = False\n\nif pd_r2_r2_01_part4:\n    pd_r2_r2_01_signal = True\n\n# component 5: L14_NEAR\npd_r2_r2_01_part5 = True\n\nif not (관심종목 == 1):\n    pd_r2_r2_01_part5 = False\nelif 140000 <= 시분초 < 143000:\n    if not (시가총액 >= 8000.0):\n        pd_r2_r2_01_part5 = False\n    elif not (10.0 <= 등락율 < 29.0):\n        pd_r2_r2_01_part5 = False\n    elif not (현재가 >= 고가 * 1.0):\n        pd_r2_r2_01_part5 = False\nelse:\n    pd_r2_r2_01_part5 = False\n\nif pd_r2_r2_01_part5:\n    pd_r2_r2_01_signal = True\n\nif pd_r2_r2_01_signal:\n    self.Buy()",
+      "sell_code": "매도 = False\nif 수익률 >= 3.0:\n    매도 = True\nelif 수익률 <= -3.0:\n    매도 = True\nelif 보유시간 >= 90:\n    매도 = True\nelif 시분초 >= 152000:\n    매도 = True\nif 매도:\n    self.Sell()",
+      "buy_sha256": "48564437f0b08b13d4eff672f756dcc49e6162477c98a79745b0659078d2aa19",
+      "sell_sha256": "ba33244f3666c43979766d6f14967f16d75eb5b66f53b45abe5c99541e961d16",
+      "label": "hypothesis_seed",
+      "params": {
+        "parent_seed_id": "plan_d_rank02_r3_oos_20260707_01",
+        "parent_condition_id": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+        "parent_buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+        "parent_sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+        "source_candidate_condition_id": "plan_d_r1_rank02_r5_08_eod1515_default",
+        "previous_rounds": [
+          "plan_d_rank02_r4",
+          "plan_d_rank02_r5"
+        ],
+        "previous_consecutive_no_improve_since_r3": 2,
+        "watch_axis": "eod1515",
+        "avoided_axes": [
+          "standalone_l14_amount_floor7500_8500",
+          "standalone_tp_sl_hold_variants",
+          "standalone_l13_l14_coverage_copy",
+          "morning_amount_widening_1000_3500",
+          "pmax_strength_relaxation"
+        ],
+        "axis": "eod1520_l14_rate10",
+        "mutation": "Test slightly later hard exit 15:20 with L14 rate floor 10.0 as final watch-axis extension.",
+        "quota_lane": "discovery",
+        "scope": "plan-d-rank02-r6-generate8-dryrun-no-oos-portfolio-export",
+        "dry_run_only": true,
+        "formal_replay_allowed": false,
+        "oos_allowed": false,
+        "portfolio_allowed": false,
+        "export_live_final_allowed": false
+      },
+      "created_reason": "Test slightly later hard exit 15:20 with L14 rate floor 10.0 as final watch-axis extension.",
+      "passport_md": "# plan_d_r1_rank02_r6_08_eod1520_l14_rate10\n\nparent: `plan_d_rank02_r3_oos_20260707_01` / `plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90`\nsource_candidate: `plan_d_r1_rank02_r5_08_eod1515_default`\naxis: `eod1520_l14_rate10`\nmutation: Test slightly later hard exit 15:20 with L14 rate floor 10.0 as final watch-axis extension.\nlane: research/min only\nlabel: hypothesis_seed\nscope: static gate + DB registration dry-run only\nblocked: official replay, OOS, portfolio, export/live/final promotion"
+    }
+  ]
+}
