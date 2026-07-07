@@ -9,17 +9,17 @@
 
 ## 2. What Happened
 
-The selected OOS preregistration and pair/config files were present, but the OOS run did not produce an honest generation row.
+The selected OOS preregistration and pair/config files were created, but the OOS run did not produce an honest generation row.
 
 Three attempts reached only the first batch line and stayed before warm prepare/gen output:
 
 | run_id | DB status | generation rows | decision use |
-|---|---|---:|---|
+|---|---:|---:|---|
 | `lat_plan_d_rank03_r1_selected1_oos_min_warm64_20260707` | running preserved | 0 | stale evidence only |
 | `lat_plan_d_rank03_r1_selected1_oos_min_warm64_retry01_20260707` | running preserved | 0 | stale evidence only |
 | `lat_plan_d_rank03_r1_selected1_oos_min_warm64_retry02_20260707` | running preserved | 0 | stale evidence only |
 
-The live retry02 process was terminated after repeated 0-row prepare wait. DB UPDATE/DELETE was not used; stale run rows remain as evidence.
+The live retry02 process tree was terminated after repeated 0-row prepare wait. DB UPDATE/DELETE was not used; stale run rows remain as evidence.
 
 ## 3. Current Decision
 
@@ -59,8 +59,8 @@ $start-work .omo/plans/css-v7-repair-plan-c-plan-b-d-20260703.md
 진행:
 1. 세 stale run의 DB row_count, process 상태, log tail을 재확인한다.
 2. live target process가 있으면 종료하고 DB row는 보존한다.
-3. warm prepare가 막힌 원인을 runtime/process 관리 문제로 분류할지, config 문제로 분류할지 확인한다.
-4. 안전하면 새 run_id `lat_plan_d_rank03_r1_selected1_oos_min_warm64_retry03_20260707`로 selected 1개만 bounded retry한다.
+3. warm prepare 막힘 원인이 runtime/process 관리 문제인지, config 문제인지 분류한다.
+4. 안전하면 새 run_id lat_plan_d_rank03_r1_selected1_oos_min_warm64_retry03_20260707 로 selected 1개만 bounded retry한다.
 5. honest row가 생기면 survivor/hold/no_go를 분류한다.
 6. honest row가 없으면 R2를 열지 말고 Plan D rank03 selected OOS blocked로 유지한다.
 7. handoff, ledger, 검증 영수증을 갱신하고 한글 커밋한다.
