@@ -1,0 +1,39 @@
+{
+  "schema": "lattice_v2_candidate_dryrun_quality_gate_v1",
+  "created_at": "2026-07-08T11:18:37+09:00",
+  "status": "pass_outputs_complete_checkpoint_blocked_by_codex_goal_mismatch",
+  "original_intent": "Run $ulw-loop docs/research/condition_research/plans/lattice_condition_generation_v2_candidate_dryrun_20260708.md.",
+  "desired_outcome": "Max-32 metadata-only candidate ledger, source read receipt, static gate, DB registration dry-run, no-execution proof, handoff, verification, and Korean commit.",
+  "user_outcome_review": "Candidate output is complete: 32 metadata-only records, exact 8/8/8/4/4 class counts, research lane, hypothesis_seed labels, no condition bodies, static gate pass, DB dry-run with zero inserts, source receipt, handoff, and no DB/replay/OOS/portfolio/Plan D R3 execution.",
+  "criteria_coverage": {
+    "C001": "pass: full-document source receipt and 32-candidate metadata ledger with quota and lineage.",
+    "C002": "pass: static gate pass, DB dry-run ok, no runtime process, protected paths clean.",
+    "C003": "pass after remediation: C003 receipt now records JSON/JSONL parse, pytest, verify_nonrelease_sync, scoped git diff --check, staged-file policy, protected path check, Korean commit hash, and UTF-8 goals.json parse."
+  },
+  "review_results": {
+    "code_review_initial": "FAIL: C003 untracked and missing diff/stage evidence before remediation.",
+    "manual_qa": "PASS: .omo/evidence/20260708_lattice_generation_v2_candidate_dryrun-manual-qa.md",
+    "gate_review_initial": "FAIL: C003/ULW checkpoint incomplete before remediation.",
+    "remediation": "C003 receipt, handoff links, manual QA note, slop/programming no-op note, codex mismatch snapshot, and checkpoint evidence added."
+  },
+  "no_execution_boundary": {
+    "db_apply_executed": false,
+    "db_update_delete_executed": false,
+    "backtest_executed": false,
+    "limited_replay_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "plan_d_r3_executed": false,
+    "export_live_final_executed": false
+  },
+  "codex_goal_update": {
+    "update_goal_called": false,
+    "reason": "Skipped because get_goal returned a paused older Plan D objective, not the current ULW objective.",
+    "snapshot": ".omo\\ulw-loop\\evidence\\20260708_lattice_generation_v2_candidate_dryrun\\codex_goal_snapshot_paused_mismatch_20260708.json"
+  },
+  "checkpoint": {
+    "attempted": true,
+    "status": "blocked_external_codex_goal_mismatch",
+    "receipt": ".omo\\ulw-loop\\evidence\\20260708_lattice_generation_v2_candidate_dryrun\\checkpoint_blocked_by_codex_goal_mismatch_20260708.json"
+  }
+}

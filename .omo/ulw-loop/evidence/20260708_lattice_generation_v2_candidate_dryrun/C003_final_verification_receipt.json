@@ -1,0 +1,144 @@
+{
+  "schema": "ulw_c003_final_verification_receipt_v2",
+  "created_at": "2026-07-08T11:16:38+09:00",
+  "status": "pass",
+  "main_candidate_dryrun_commit": "8ff95c27",
+  "main_candidate_dryrun_commit_full": "8ff95c27fd79ca9e7c42337fa99a53fbba5611b4",
+  "json_jsonl_parse": {
+    "status": "pass",
+    "parsed_records_or_docs": 81,
+    "errors": []
+  },
+  "commands": [
+    {
+      "name": "pytest_register_lattice_seeds",
+      "command": "python -m pytest tests/unit/test_register_lattice_seeds.py -q",
+      "returncode": 0,
+      "stdout": "....                                                                     [100%]\n4 passed in 0.89s",
+      "stderr": "",
+      "status": "pass"
+    },
+    {
+      "name": "verify_nonrelease_sync",
+      "command": "python scripts/verify_nonrelease_sync.py",
+      "returncode": 0,
+      "stdout": "[OK] ��ũƮ���� .pyd ������ �����ϴ�.\n[OK] �ڷ��׷� qlist ����� ���� MainWindow ������ ��ġ�մϴ�.\n[OK] MainWindow�� �ڷ��׷� ��Ÿ���� �����մϴ�.\n[OK] ���� ���� ���İ� TelegramProcessAlive ��θ� ����մϴ�.\n[OK] �ڷ��׷� alive helper�� �����մϴ�.\n[OK] Jisu cleanup matches V2.70 removal.\n[OK] Shutdown cleanup matches current MainWindow runtime.\n[OK] Shutdown persists dialog geometry before closing dialogs.\n[OK] Shutdown hides Qt windows before bounded child cleanup.\n[OK] Shutdown does not raise SystemExit inside Qt closeEvent.\n[OK] Shutdown query/sound child wait is bounded with terminate fallback.\n[OK] Shutdown backtest stop acknowledgement wait is bounded with terminate fallback.\n[OK] BackTest ���μ��� �����ڰ� ���� ���� ���� ����� �����մϴ�.\n[OK] BackTest ���� ���ڰ� backQ ��ȸ ���޷� �������� �ʽ��ϴ�.\n[OK] WebCrawling runtime wiring matches QThread contract.\n[OK] static.py compatibility exports match runtime contract.\n[OK] WebCrawling stop contract includes timeout and cancellation guards.\n[OK] Key loading safety guard is present.\n[OK] Kiwoom P/L rounding matches expected loss math.\n[OK] ������ ��ũƮ������ �ø���Ű UI ������ ���ܵ˴ϴ�.\n[OK] ���� ������ ��ũƮ�� �ø���Ű ��å�� �����ϴ�.\n[OK] dict_set ���簡 ������ ��ũƮ�� �ø���Ű ��å�� �����ϴ�.\n[OK] legacy utility/setting.py�� ������ ��ũƮ�� �ø���Ű ��å�� �����ϴ�.\n\n��� ������ ��ũƮ�� ����ȭ ���巹�� �˻縦 ����߽��ϴ�.",
+      "stderr": "",
+      "status": "pass"
+    },
+    {
+      "name": "scoped_git_diff_check",
+      "command": "git diff --check -- docs/research/condition_research/generated_conditions/lattice_v2_candidate_dryrun_20260708 docs/update_log/2026-07-08_lattice_condition_generation_v2_candidate_dryrun_handoff.md .omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun .omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun .omo/evidence/20260708_lattice_generation_v2_candidate_dryrun-code-review.md .omo/evidence/20260708_lattice_generation_v2_candidate_dryrun-gate-review.md",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "warning: in the working copy of '.omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/goals.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of '.omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/ledger.jsonl', LF will be replaced by CRLF the next time Git touches it",
+      "status": "pass"
+    },
+    {
+      "name": "cached_staged_files_before_final_staging",
+      "command": "git diff --cached --name-only",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "",
+      "status": "pass"
+    },
+    {
+      "name": "protected_paths_status",
+      "command": "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "",
+      "status": "pass"
+    },
+    {
+      "name": "goals_json_parse_powershell_utf8",
+      "command": "powershell -NoProfile -Command Get-Content -Raw -Encoding UTF8 '.omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/goals.json' | ConvertFrom-Json | Out-Null",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "",
+      "status": "pass"
+    },
+    {
+      "name": "final_cached_staged_files",
+      "command": "git diff --cached --name-only",
+      "returncode": 0,
+      "stdout": ".omo/evidence/20260708_lattice_generation_v2_candidate_dryrun-code-review.md\n.omo/evidence/20260708_lattice_generation_v2_candidate_dryrun-gate-review.md\n.omo/evidence/20260708_lattice_generation_v2_candidate_dryrun-manual-qa.md\n.omo/evidence/20260708_lattice_generation_v2_candidate_dryrun-slop-noop.md\n.omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/goals.json\n.omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/ledger.jsonl\n.omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/C003_final_verification_receipt.json\n.omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/checkpoint_blocked_by_codex_goal_mismatch_20260708.json\n.omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/codex_goal_snapshot_paused_mismatch_20260708.json\n.omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/quality_gate_20260708.json\ndocs/update_log/2026-07-08_lattice_condition_generation_v2_candidate_dryrun_handoff.md",
+      "stderr": "",
+      "status": "pass"
+    },
+    {
+      "name": "final_cached_diff_check",
+      "command": "git diff --cached --check",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "",
+      "status": "pass"
+    }
+  ],
+  "required_c003_checks": {
+    "parse_all_generated_json_jsonl": "pass",
+    "verify_nonrelease_sync": "pass",
+    "scoped_git_diff_check": "pass",
+    "protected_paths_unchanged": "pass",
+    "staged_files_policy_checked": "pass",
+    "korean_commit_created": true,
+    "goals_json_parse_powershell_utf8": "pass",
+    "final_staged_files_policy": "pass",
+    "final_cached_diff_check": "pass"
+  },
+  "staged_file_policy": {
+    "allowed_prefixes": [
+      ".omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/",
+      ".omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/",
+      ".omo/evidence/20260708_lattice_generation_v2_candidate_dryrun-",
+      "docs/research/condition_research/generated_conditions/lattice_v2_candidate_dryrun_20260708/",
+      "docs/update_log/2026-07-08_lattice_condition_generation_v2_candidate_dryrun_handoff.md"
+    ],
+    "pre_final_staging_cached_files": [],
+    "final_staged_files_to_be_verified_immediately_before_commit": true,
+    "forbidden_paths": [
+      "dashboard 7 files",
+      ".gjc",
+      "unrelated .omo",
+      "protected DB/runtime paths"
+    ],
+    "final_staged_files": [
+      ".omo/evidence/20260708_lattice_generation_v2_candidate_dryrun-code-review.md",
+      ".omo/evidence/20260708_lattice_generation_v2_candidate_dryrun-gate-review.md",
+      ".omo/evidence/20260708_lattice_generation_v2_candidate_dryrun-manual-qa.md",
+      ".omo/evidence/20260708_lattice_generation_v2_candidate_dryrun-slop-noop.md",
+      ".omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/goals.json",
+      ".omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/ledger.jsonl",
+      ".omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/C003_final_verification_receipt.json",
+      ".omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/checkpoint_blocked_by_codex_goal_mismatch_20260708.json",
+      ".omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/codex_goal_snapshot_paused_mismatch_20260708.json",
+      ".omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/quality_gate_20260708.json",
+      "docs/update_log/2026-07-08_lattice_condition_generation_v2_candidate_dryrun_handoff.md"
+    ],
+    "final_staged_files_command": "git diff --cached --name-only",
+    "final_staged_files_returncode": 0,
+    "final_staged_files_violations": [],
+    "final_staged_files_status": "pass"
+  },
+  "review_blocker_resolution": {
+    "code_review_initial": "FAIL because C003 was untracked and missing diff/stage evidence",
+    "gate_review_initial": "FAIL because C003/ULW final evidence was incomplete before this remediation",
+    "resolution": "This receipt adds scoped git diff --check, staged-file policy, JSON parse, PowerShell goals.json parse, protected-path check, and references follow-up ULW checkpoint/quality-gate artifacts.",
+    "powershell_json_parse_note": "The previous PowerShell parse used default encoding and failed on UTF-8 Korean text. Re-run with -Encoding UTF8 passes."
+  },
+  "no_execution_boundary": {
+    "db_apply_executed": false,
+    "db_update_delete_executed": false,
+    "backtest_executed": false,
+    "limited_replay_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "plan_d_r3_executed": false
+  },
+  "updated_at": "2026-07-08T11:21:36+09:00",
+  "checkpoint_attempt": {
+    "attempted": true,
+    "status": "blocked_external_codex_goal_mismatch",
+    "receipt": ".omo\\ulw-loop\\evidence\\20260708_lattice_generation_v2_candidate_dryrun\\checkpoint_blocked_by_codex_goal_mismatch_20260708.json"
+  }
+}

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-07-08T01:53:31.494Z",
-  "updatedAt": "2026-07-08T02:03:01.221Z",
+  "updatedAt": "2026-07-08T02:05:48.386Z",
   "briefPath": ".omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/brief.md",
   "goalsPath": ".omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/goals.json",
   "ledgerPath": ".omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/ledger.jsonl",
@@ -11,7 +11,7 @@
       "id": "G001-one-goal-execute-docs-research-condi",
       "title": "One goal: execute docs/research/condition_research/plans/lattice_cond...",
       "objective": "One goal: execute docs/research/condition_research/plans/lattice_condition_generation_v2_candidate_dryrun_20260708.md by producing candidate metadata only, max 32 records, with candidate ledger, static gate receipt, DB registration dry-run receipt, no-execution proof, handoff, verification, and Korean commit. Strictly no DB INSERT apply, no DB UPDATE/DELETE, no backtest, no limited replay, no OOS, no portfolio, no Plan D R3, no export/live/final promotion, no git add -A, no dashboard/.gjc/unrelated .omo staging.",
-      "status": "pending",
+      "status": "in_progress",
       "successCriteria": [
         {
           "id": "C001",
@@ -41,14 +41,18 @@
           "userModel": "regression",
           "expectedEvidence": ".omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/C003_final_verification_receipt.json and Korean commit hash",
           "essential": false,
-          "capturedEvidence": null,
-          "status": "pending"
+          "capturedEvidence": ".omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/C003_final_verification_receipt.json",
+          "status": "pass",
+          "capturedAt": "2026-07-08T02:05:39.753Z",
+          "notes": "pytest register_lattice_seeds, verify_nonrelease_sync, JSON/JSONL parse, protected path check 통과. 본문 커밋 8ff95c27."
         }
       ],
-      "attempt": 0,
+      "attempt": 1,
       "createdAt": "2026-07-08T01:53:31.494Z",
-      "updatedAt": "2026-07-08T02:03:01.221Z"
+      "updatedAt": "2026-07-08T02:05:48.386Z",
+      "startedAt": "2026-07-08T02:05:48.386Z"
     }
   ],
-  "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/ledger.jsonl as the audit trail."
+  "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/ledger.jsonl as the audit trail.",
+  "activeGoalId": "G001-one-goal-execute-docs-research-condi"
 }

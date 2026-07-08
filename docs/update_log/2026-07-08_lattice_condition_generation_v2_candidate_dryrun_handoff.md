@@ -32,6 +32,9 @@ This page executed only the v2 candidate metadata dry-run. It did not generate S
 - DB registration dry-run receipt: `docs\research\condition_research\generated_conditions\lattice_v2_candidate_dryrun_20260708\lattice_v2_candidate_db_registration_dryrun_receipt_20260708.json`
 - ULW C001 evidence: `.omo\ulw-loop\evidence\20260708_lattice_generation_v2_candidate_dryrun\C001_candidate_ledger_receipt.json`
 - ULW C002 evidence: `.omo\ulw-loop\evidence\20260708_lattice_generation_v2_candidate_dryrun\C002_static_db_dryrun_boundary_receipt.json`
+- ULW C003 evidence: `.omo\ulw-loop\evidence\20260708_lattice_generation_v2_candidate_dryrun\C003_final_verification_receipt.json`
+- Manual QA note: `.omo\evidence\20260708_lattice_generation_v2_candidate_dryrun-manual-qa.md`
+- Slop/programming no-op note: `.omo\evidence\20260708_lattice_generation_v2_candidate_dryrun-slop-noop.md`
 
 ## Boundary Decision
 

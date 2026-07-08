@@ -1,0 +1,18 @@
+{
+  "schema": "ulw_checkpoint_blocked_receipt_v1",
+  "created_at": "2026-07-08T11:19:39+09:00",
+  "status": "blocked_external_codex_goal_mismatch",
+  "checkpoint_command": "omo-ulw-loop checkpoint --session-id 20260708_lattice_generation_v2_candidate_dryrun --goal-id G001-one-goal-execute-docs-research-condi --status complete --evidence .omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/C003_final_verification_receipt.json --codex-goal-json .omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/codex_goal_snapshot_paused_mismatch_20260708.json --quality-gate-json .omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/quality_gate_20260708.json --json",
+  "returncode": 1,
+  "stdout_json_summary": {
+    "ok": false,
+    "error": {
+      "code": "ulw_loop_codex_snapshot_mismatch",
+      "message": "Codex goal objective mismatch and status mismatch. Current get_goal returned a paused older Plan D objective, while ULW checkpoint expected the current aggregate candidate dry-run objective to be complete."
+    }
+  },
+  "reason": "Current Codex goal is a paused older Plan D objective. update_goal was not called because that objective is not complete and is not the current ULW candidate dry-run objective.",
+  "ulw_criteria_status": "3/3 pass before checkpoint attempt",
+  "candidate_dryrun_output_status": "complete",
+  "operator_decision": "Do not force update_goal on the wrong paused Codex objective; commit evidence and report checkpoint limitation."
+}
