@@ -1,0 +1,52 @@
+{
+  "schema": "lattice_condition_generation_v2_candidate_quota_ledger_v1",
+  "created_at": "2026-07-08T09:58:26+09:00",
+  "max_candidates_next_phase": 32,
+  "next_phase_allowed_actions": [
+    "read sources",
+    "generate design metadata",
+    "static gate",
+    "DB registration dry-run"
+  ],
+  "next_phase_forbidden_actions": [
+    "DB INSERT apply",
+    "backtest",
+    "limited replay",
+    "OOS",
+    "portfolio",
+    "Plan D R3",
+    "promotion"
+  ],
+  "classes": [
+    {
+      "class": "coverage_composite",
+      "quota": 8,
+      "source": "min sparse positive fragments + coverage repair",
+      "goal": "raise daily coverage without accepting high MDD"
+    },
+    {
+      "class": "risk_balanced_composite",
+      "quota": 8,
+      "source": "mdd<=35 fragments + nonpositive daily-covered fragments",
+      "goal": "combine low-MDD and coverage without single-axis repetition"
+    },
+    {
+      "class": "survivor_seed_derivative",
+      "quota": 8,
+      "source": "repair composite and Plan D seed lineage components",
+      "goal": "borrow components, not copy full survivors"
+    },
+    {
+      "class": "negative_control",
+      "quota": 4,
+      "source": "known-failed lattice-like shapes",
+      "goal": "catch misleading success output and gate drift"
+    },
+    {
+      "class": "holdout_control",
+      "quota": 4,
+      "source": "one or more frozen survivor benchmarks",
+      "goal": "detect whether new batch beats stable control"
+    }
+  ]
+}

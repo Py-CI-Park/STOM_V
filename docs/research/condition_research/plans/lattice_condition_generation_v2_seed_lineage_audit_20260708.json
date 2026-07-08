@@ -1,0 +1,248 @@
+{
+  "schema": "lattice_condition_generation_v2_seed_lineage_audit_v1",
+  "created_at": "2026-07-08T09:58:26+09:00",
+  "inputs": {
+    "seed_pool": "docs/research/condition_research/generated_conditions/seed_pool.jsonl",
+    "oos_survivors": "docs/research/condition_research/generated_conditions/oos_survivors.jsonl"
+  },
+  "counts": {
+    "seed_pool_records": 24,
+    "oos_survivor_records": 24,
+    "seed_sources": {
+      "plan_b": 15,
+      "plan_d_rank01_r3": 1,
+      "plan_d_rank02_r1": 2,
+      "plan_d_rank02_r2": 3,
+      "plan_d_rank02_r3": 1,
+      "plan_d_rank03_r1": 1,
+      "plan_d_rank03_r2": 1
+    },
+    "survivor_sources": {
+      "repair_composite_selected_oos": 15,
+      "plan_d_rank01_r3_selected_oos": 1,
+      "plan_d_rank02_r1_selected_oos": 2,
+      "plan_d_rank02_r2_selected_oos": 3,
+      "plan_d_rank02_r3_selected_oos": 1,
+      "plan_d_rank03_r1_selected_oos": 1,
+      "plan_d_rank03_r2_selected_oos": 1
+    },
+    "duplicate_buy_sha_count": 4,
+    "duplicate_sell_sha_count": 4
+  },
+  "duplicates": {
+    "buy_sha256": {
+      "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e": 3,
+      "045cc07ee3d87a11e2aceaacc01132b2057ac78e373dee770099028a21fb184d": 2,
+      "7e8bfbd4c2bceaba03868658c8242e31c00c303efea82e44e2682c5328b95716": 2,
+      "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809": 2
+    },
+    "sell_sha256": {
+      "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309": 9,
+      "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6": 6,
+      "01c800b9d64fa573fd823487d7e88e33b611ba818ca3b390b0904bb9464b35ce": 2,
+      "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271": 6
+    }
+  },
+  "latest_seed": {
+    "seed_id": "plan_d_rank03_r2_oos_20260708_01",
+    "condition_id": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90",
+    "source": "plan_d_rank03_r2",
+    "source_detail": "selected_oos_survivor",
+    "source_run_id": "lat_plan_d_rank03_r2_selected1_oos_min_warm64_20260708",
+    "buy_name": "LAT_plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90_B",
+    "sell_name": "LAT_plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90_S",
+    "buy_sha256": "162391fa9848410b0771df5e558ba7af6014eb1a3a0c1ef521ecf80aaa559518",
+    "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271",
+    "label": "hypothesis_seed"
+  },
+  "latest_survivor": {
+    "seed_id": "plan_d_rank03_r2_oos_20260708_01",
+    "condition_id": "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90",
+    "source": "plan_d_rank03_r2_selected_oos",
+    "source_run_id": "lat_plan_d_rank03_r2_selected1_oos_min_warm64_20260708",
+    "profit_krw": 554624.0,
+    "mdd_pct": 5.24,
+    "daily_avg_trades": 2.2,
+    "trade_count": 80,
+    "buy_name": "LAT_plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90_B",
+    "sell_name": "LAT_plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90_S",
+    "buy_sha256": "162391fa9848410b0771df5e558ba7af6014eb1a3a0c1ef521ecf80aaa559518",
+    "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271"
+  },
+  "top_survivors_by_profit": [
+    {
+      "seed_id": "plan_d_rcs_oos_20260706_rank02",
+      "condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90",
+      "source": "repair_composite_selected_oos",
+      "source_run_id": "lat_repair_composite_selected16_oos_min_warm64_20260706",
+      "profit_krw": 1124220.0,
+      "mdd_pct": 4.12,
+      "daily_avg_trades": 0.5,
+      "trade_count": 18,
+      "buy_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90_B",
+      "sell_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_loose_tp4_sl3_hold90_S",
+      "buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6"
+    },
+    {
+      "seed_id": "plan_d_rank02_r1_oos_20260707_02",
+      "condition_id": "plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90",
+      "source": "plan_d_rank02_r1_selected_oos",
+      "source_run_id": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry02_20260707",
+      "profit_krw": 1124220.0,
+      "mdd_pct": 4.12,
+      "daily_avg_trades": 0.5,
+      "trade_count": 18,
+      "buy_name": "LAT_plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r1_02_l14_amt9000_rate80_hold90_S",
+      "buy_sha256": "44a1a28f18d2d9b48a1e6ce9e16dce8c7041506a3bdf90c5750df046a5b708e3",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6"
+    },
+    {
+      "seed_id": "plan_d_rank02_r2_oos_20260707_03",
+      "condition_id": "plan_d_r1_rank02_r2_01_l14_amt8000_rate80_hold90",
+      "source": "plan_d_rank02_r2_selected_oos",
+      "source_run_id": "lat_plan_d_rank02_r2_selected3_oos_min_warm64_20260707",
+      "profit_krw": 1124220.0,
+      "mdd_pct": 4.12,
+      "daily_avg_trades": 0.5,
+      "trade_count": 18,
+      "buy_name": "LAT_plan_d_r1_rank02_r2_01_l14_amt8000_rate80_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r2_01_l14_amt8000_rate80_hold90_S",
+      "buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6"
+    },
+    {
+      "seed_id": "plan_d_rcs_oos_20260706_rank01",
+      "condition_id": "repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60",
+      "source": "repair_composite_selected_oos",
+      "source_run_id": "lat_repair_composite_selected16_oos_min_warm64_20260706",
+      "profit_krw": 1079768.0,
+      "mdd_pct": 4.06,
+      "daily_avg_trades": 0.5,
+      "trade_count": 19,
+      "buy_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_B",
+      "sell_name": "LAT_repair_v3_20260706_13_top_four_plus_l14_sell_default_tp3_sl3_hold60_S",
+      "buy_sha256": "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "seed_id": "plan_d_rank02_r1_oos_20260707_01",
+      "condition_id": "plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90",
+      "source": "plan_d_rank02_r1_selected_oos",
+      "source_run_id": "lat_plan_d_rank02_r1_selected2_oos_min_warm64_retry02_20260707",
+      "profit_krw": 1079768.0,
+      "mdd_pct": 4.06,
+      "daily_avg_trades": 0.5,
+      "trade_count": 19,
+      "buy_name": "LAT_plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r1_08_parent_buy_default_tp3_sl3_hold90_S",
+      "buy_sha256": "bafc3f0c9139a3d89d70d999d60d99c090d525ea66c3757fee1ddc5685f98101",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271"
+    },
+    {
+      "seed_id": "plan_d_rank02_r2_oos_20260707_01",
+      "condition_id": "plan_d_r1_rank02_r2_06_active_buy_default_tp3_sl3_hold90",
+      "source": "plan_d_rank02_r2_selected_oos",
+      "source_run_id": "lat_plan_d_rank02_r2_selected3_oos_min_warm64_20260707",
+      "profit_krw": 1079768.0,
+      "mdd_pct": 4.06,
+      "daily_avg_trades": 0.5,
+      "trade_count": 19,
+      "buy_name": "LAT_plan_d_r1_rank02_r2_06_active_buy_default_tp3_sl3_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r2_06_active_buy_default_tp3_sl3_hold90_S",
+      "buy_sha256": "e109bad965c9f1a005fd67b854338794e8fe7c8f80b6ec5d258e6dc9d79be1d7",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271"
+    },
+    {
+      "seed_id": "plan_d_rank02_r3_oos_20260707_01",
+      "condition_id": "plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90",
+      "source": "plan_d_rank02_r3_selected_oos",
+      "source_run_id": "lat_plan_d_rank02_r3_selected1_oos_min_warm64_retry01_20260707",
+      "profit_krw": 1079768.0,
+      "mdd_pct": 4.06,
+      "daily_avg_trades": 0.5,
+      "trade_count": 19,
+      "buy_name": "LAT_plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank02_r3_01_amt8000_default_tp3_sl3_hold90_S",
+      "buy_sha256": "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271"
+    },
+    {
+      "seed_id": "plan_d_rcs_oos_20260706_rank10",
+      "condition_id": "repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_loose_tp4_sl3_hold90",
+      "source": "repair_composite_selected_oos",
+      "source_run_id": "lat_repair_composite_selected16_oos_min_warm64_20260706",
+      "profit_krw": 985556.0,
+      "mdd_pct": 6.64,
+      "daily_avg_trades": 0.8,
+      "trade_count": 31,
+      "buy_name": "LAT_repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_loose_tp4_sl3_hold90_B",
+      "sell_name": "LAT_repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_loose_tp4_sl3_hold90_S",
+      "buy_sha256": "7e8bfbd4c2bceaba03868658c8242e31c00c303efea82e44e2682c5328b95716",
+      "sell_sha256": "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6"
+    },
+    {
+      "seed_id": "plan_d_rcs_oos_20260706_rank07",
+      "condition_id": "repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_default_tp3_sl3_hold60",
+      "source": "repair_composite_selected_oos",
+      "source_run_id": "lat_repair_composite_selected16_oos_min_warm64_20260706",
+      "profit_krw": 981721.0,
+      "mdd_pct": 6.04,
+      "daily_avg_trades": 0.9,
+      "trade_count": 32,
+      "buy_name": "LAT_repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_default_tp3_sl3_hold60_B",
+      "sell_name": "LAT_repair_v3_20260706_20_all_positive_plus_l14_l1430_sell_default_tp3_sl3_hold60_S",
+      "buy_sha256": "7e8bfbd4c2bceaba03868658c8242e31c00c303efea82e44e2682c5328b95716",
+      "sell_sha256": "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309"
+    },
+    {
+      "seed_id": "plan_d_rank03_r1_oos_20260707_01",
+      "condition_id": "plan_d_r1_rank03_r1_08_parent_buy_default_tp3_sl3_hold90",
+      "source": "plan_d_rank03_r1_selected_oos",
+      "source_run_id": "lat_plan_d_rank03_r1_selected1_oos_min_warm64_retry03_20260707",
+      "profit_krw": 931411.0,
+      "mdd_pct": 6.14,
+      "daily_avg_trades": 0.5,
+      "trade_count": 20,
+      "buy_name": "LAT_plan_d_r1_rank03_r1_08_parent_buy_default_tp3_sl3_hold90_B",
+      "sell_name": "LAT_plan_d_r1_rank03_r1_08_parent_buy_default_tp3_sl3_hold90_S",
+      "buy_sha256": "c6bf339034de92707413444e6cffc2a0b8c8877de6eb3bfd523ba281e68a1d13",
+      "sell_sha256": "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271"
+    }
+  ],
+  "lineage_rules_for_v2": [
+    "Use seed_pool/oos_survivors as component lineage and benchmark only.",
+    "Do not copy a survivor wholesale into promotion or portfolio.",
+    "Limit repeated buy_sha/sell_sha concentration per candidate batch.",
+    "Require a negative-control and holdout-control per dry-run batch.",
+    "Treat R2-05 as a benchmark seed, not as proof that Plan D can auto-continue."
+  ],
+  "risk_flags": [
+    {
+      "risk": "default_sell_concentration",
+      "evidence": {
+        "400f5decf168fbaa2f39a5bc769fd737ccd8e5341d1ba8219d6bfe745c4ac309": 9,
+        "0b38c51567b12e8c1df6b18b2491ab71845394ac452787470d24dd11c1bb79b6": 6,
+        "01c800b9d64fa573fd823487d7e88e33b611ba818ca3b390b0904bb9464b35ce": 2,
+        "5c02facbbb42d2072a699f054a86d79f31695ef5fc0fbdd9e1d902fb7be83271": 6
+      },
+      "mitigation": "cap sell profile repetition and include sell-profile diversity in quota"
+    },
+    {
+      "risk": "buy_sha_reuse",
+      "evidence": {
+        "3158a4cfd78c4cc0edee798ba2b1bb58190e676ffa2774fa52cb06059a4b032e": 3,
+        "045cc07ee3d87a11e2aceaacc01132b2057ac78e373dee770099028a21fb184d": 2,
+        "7e8bfbd4c2bceaba03868658c8242e31c00c303efea82e44e2682c5328b95716": 2,
+        "570f82ab52a890a6fb77e7a17988d1cd8a8de3ac37df5cc2fbfc8f3b80d39809": 2
+      },
+      "mitigation": "mark duplicate buy sha as lineage concentration, not independent discovery"
+    },
+    {
+      "risk": "selection_window_contamination",
+      "evidence": "survivors came from selected OOS-style/replay flows",
+      "mitigation": "freeze blind split before any new replay"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "ulw_c001_artifact_generation_receipt_v1",
+  "created_at": "2026-07-08T09:58:26+09:00",
+  "criterion": "C001_artifact_generation",
+  "status": "pass",
+  "source_receipt": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_overnight_source_receipt_20260708.json",
+  "artifact_files": [
+    "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_overnight_source_receipt_20260708.json",
+    "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+    "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_seed_lineage_audit_20260708.json",
+    "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+    "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_evaluation_protocol_20260708.json",
+    "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+    "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_overnight_page_completion_20260708.json",
+    "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.md",
+    "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_seed_lineage_audit_20260708.md",
+    "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.md",
+    "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_evaluation_protocol_20260708.md",
+    "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.md",
+    "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_static_dryrun_next_command_20260708.md",
+    "docs\\update_log\\2026-07-08_lattice_condition_generation_v2_redesign_overnight_execution_handoff.md",
+    "docs/research/condition_research/plans/lattice_condition_generation_v2_candidate_dryrun_20260708.md"
+  ],
+  "summary": {
+    "tick_gate_passed": 0,
+    "min_gate_passed": 0,
+    "p6_counts": {
+      "go": 0,
+      "hold": 0,
+      "no_go": 576
+    },
+    "deep_positive_mdd_daily_intersection": 0,
+    "seed_pool_records": 24,
+    "oos_survivor_records": 24
+  },
+  "cleanup": "No runtime process, tmux session, browser, DB connection, or temp directory was spawned for C001; generated static docs/JSON only; plan agent was closed before evidence recording.",
+  "updated_at": "2026-07-08T10:00:52+09:00"
+}

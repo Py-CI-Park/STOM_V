@@ -1,0 +1,119 @@
+{
+  "schema": "lattice_condition_generation_v2_overnight_source_receipt_v1",
+  "created_at": "2026-07-08T09:58:26+09:00",
+  "scope": "T0 source receipt revalidation for redesign-plan-only overnight work",
+  "sources": [
+    {
+      "path": "docs/update_log/2026-07-08_condition_research_full_result_and_analysis.md",
+      "exists": true,
+      "line_count": 363,
+      "byte_count": 17802,
+      "sha256": "e2bf3ec56d2c6ada3b832b363bc1af42e96f8ad613608b63338dd3063adefbf3",
+      "read_scope": "full_document_to_eof"
+    },
+    {
+      "path": "docs/update_log/2026-07-08_plan_d_rank03_r2_selected_oos_closeout_handoff.md",
+      "exists": true,
+      "line_count": 170,
+      "byte_count": 6538,
+      "sha256": "ac29af22df13aa9f1f22f7ccd2994af291188167874d62edd7b430f408892e72",
+      "read_scope": "full_document_to_eof"
+    },
+    {
+      "path": "docs/research/condition_research/plans/lattice_condition_generation_v2_redesign_source_receipt_20260708.json",
+      "exists": true,
+      "line_count": 104,
+      "byte_count": 4325,
+      "sha256": "22544941882cbab44f4ae68b0a4d8a87afb689026fadacd28cc1696367306a6c",
+      "read_scope": "full_document_to_eof"
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_official_full_warm64_288_export_summary_20260705.json",
+      "exists": true,
+      "line_count": 1936,
+      "byte_count": 71811,
+      "sha256": "391c51d95c6a128b4a1bf20a192369a853af86c3c25748c739c52d06962be183",
+      "read_scope": "full_document_to_eof"
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_min_official_full_warm64_288_export_summary_20260705.json",
+      "exists": true,
+      "line_count": 2374,
+      "byte_count": 90182,
+      "sha256": "6e548da4d40ec262bfa0b15431ce1ac78461415a9fdea1ca454d066e4d45aea3",
+      "read_scope": "full_document_to_eof"
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p6_lattice_go_no_go_hold_20260705.json",
+      "exists": true,
+      "line_count": 1615,
+      "byte_count": 67494,
+      "sha256": "bb165918b373fa7a485c37356c6840edbfc8289b93e598e44e077c690de214bf",
+      "read_scope": "full_document_to_eof"
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_overnight_20260705/overnight_no_d_576_deep_analysis_20260705.json",
+      "exists": true,
+      "line_count": 1697,
+      "byte_count": 56195,
+      "sha256": "17aa5833132588b918b6773290292acd5b683235c26821c34ebbadda4194cce5",
+      "read_scope": "full_document_to_eof"
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_coverage_20260706/repair_composite_coverage_preflight_result_20260706.json",
+      "exists": true,
+      "line_count": 1988,
+      "byte_count": 84579,
+      "sha256": "cf29fda18652e954be9bb400cf3221c03aa82c38beda738990da60d84fdd3085",
+      "read_scope": "full_document_to_eof"
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_freeze_expanded_20260706/repair_composite_expanded_preflight_result_20260706.json",
+      "exists": true,
+      "line_count": 5385,
+      "byte_count": 238069,
+      "sha256": "ee1af31288fd464bb79f7c548c6bd891e594363758eb7a2a0c8f374dfb148b9c",
+      "read_scope": "full_document_to_eof"
+    },
+    {
+      "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/repair_composite_selected_oos_20260706/repair_composite_selected_oos_result_20260706.json",
+      "exists": true,
+      "line_count": 873,
+      "byte_count": 45321,
+      "sha256": "662d29fa2e87b3d0d82f21836a5038f50a626d303bfa93135a1ab51472b79d72",
+      "read_scope": "full_document_to_eof"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/seed_pool.jsonl",
+      "exists": true,
+      "line_count": 24,
+      "byte_count": 118271,
+      "sha256": "f8f7f115eb0d85d4417ddbd8cae25f8c5e19a4a28bbfc65519cc94cede56b926",
+      "read_scope": "full_document_to_eof"
+    },
+    {
+      "path": "docs/research/condition_research/generated_conditions/oos_survivors.jsonl",
+      "exists": true,
+      "line_count": 24,
+      "byte_count": 32578,
+      "sha256": "5d62786250803136c3f6c3a8d1f963cda2efcb964f09f6113f3654f87fb97411",
+      "read_scope": "full_document_to_eof"
+    },
+    {
+      "path": "utility/ai_agent/strategy.txt",
+      "exists": true,
+      "line_count": 290,
+      "byte_count": 25483,
+      "sha256": "44daa79cde5e1fb8f6c7e416622695eff62ff74ee034998ab41f59512d445753",
+      "read_scope": "full_document_to_eof"
+    },
+    {
+      "path": "utility/ai_agent/rules.txt",
+      "exists": true,
+      "line_count": 27,
+      "byte_count": 2235,
+      "sha256": "11983746c69bd22d1ba5c65b21105b422d6d9561e4cdd221e6f2109ecd6e7e45",
+      "read_scope": "full_document_to_eof"
+    }
+  ]
+}
