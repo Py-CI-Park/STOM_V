@@ -1,0 +1,33 @@
+{
+  "schema": "ulw_c002_static_db_dryrun_boundary_receipt_v1",
+  "created_at": "2026-07-08T11:01:22+09:00",
+  "status": "pass",
+  "static_gate_receipt": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_candidate_dryrun_20260708\\lattice_v2_candidate_static_gate_receipt_20260708.json",
+  "db_registration_dryrun_receipt": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_candidate_dryrun_20260708\\lattice_v2_candidate_db_registration_dryrun_receipt_20260708.json",
+  "pairs_out": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_candidate_dryrun_20260708\\pairs_lattice_v2_candidate_dryrun_20260708.json",
+  "mapping_out": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_candidate_dryrun_20260708\\lattice_v2_candidate_strategy_name_mapping_dryrun_20260708.jsonl",
+  "db_apply_executed": false,
+  "backtest_executed": false,
+  "limited_replay_executed": false,
+  "oos_executed": false,
+  "portfolio_executed": false,
+  "plan_d_r3_executed": false,
+  "active_subagents": 0,
+  "next_execution_unlocked": false,
+  "updated_at": "2026-07-08T11:03:28+09:00",
+  "runtime_process_scan": {
+    "command": "Get-CimInstance Win32_Process -Filter \"name = 'python.exe'\" | Where-Object { $_.CommandLine -match 'claude_candidate_batch_eval|stock_min_back|stock_tick_back|stom_backtest|BackTest|portfolio|export|Plan D R3|register_lattice_seeds' } | Select-Object ProcessId,CommandLine | ConvertTo-Json -Depth 3",
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "matched_process_count": 0,
+    "status": "pass"
+  },
+  "protected_path_git_status": {
+    "command": "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json",
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "status": "pass"
+  }
+}

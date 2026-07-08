@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "createdAt": "2026-07-08T01:53:31.494Z",
+  "updatedAt": "2026-07-08T02:03:01.221Z",
+  "briefPath": ".omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/brief.md",
+  "goalsPath": ".omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/goals.json",
+  "ledgerPath": ".omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/ledger.jsonl",
+  "codexGoalMode": "aggregate",
+  "goals": [
+    {
+      "id": "G001-one-goal-execute-docs-research-condi",
+      "title": "One goal: execute docs/research/condition_research/plans/lattice_cond...",
+      "objective": "One goal: execute docs/research/condition_research/plans/lattice_condition_generation_v2_candidate_dryrun_20260708.md by producing candidate metadata only, max 32 records, with candidate ledger, static gate receipt, DB registration dry-run receipt, no-execution proof, handoff, verification, and Korean commit. Strictly no DB INSERT apply, no DB UPDATE/DELETE, no backtest, no limited replay, no OOS, no portfolio, no Plan D R3, no export/live/final promotion, no git add -A, no dashboard/.gjc/unrelated .omo staging.",
+      "status": "pending",
+      "successCriteria": [
+        {
+          "id": "C001",
+          "scenario": "CLI/data scenario: read all required source docs to EOF, parse JSON/JSONL, produce max-32 candidate metadata ledger with required class quotas, sanitized names, research lane, hypothesis_seed labels, and source lineage references only.",
+          "userModel": "happy",
+          "expectedEvidence": ".omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/C001_candidate_ledger_receipt.json plus docs/research/condition_research/generated_conditions/lattice_v2_candidate_dryrun_20260708/lattice_v2_candidate_ledger_20260708.jsonl",
+          "essential": true,
+          "capturedEvidence": ".omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/C001_candidate_ledger_receipt.json",
+          "status": "pass",
+          "capturedAt": "2026-07-08T02:03:01.139Z",
+          "notes": "후보 메타데이터 32개, quota 8/8/8/4/4, full-document read receipt 작성"
+        },
+        {
+          "id": "C002",
+          "scenario": "Boundary/static+DB dry-run scenario: validate all candidates have sanitized names, allowed class counts, research lane, hypothesis_seed labels, no condition body requiring backtest, no DB apply; perform read-only DB/name collision dry-run if DB is available; verify no runtime process and no protected path changes.",
+          "userModel": "edge",
+          "expectedEvidence": ".omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/C002_static_db_dryrun_boundary_receipt.json plus static/dry-run receipts under docs/research/condition_research/generated_conditions/lattice_v2_candidate_dryrun_20260708/",
+          "essential": true,
+          "capturedEvidence": ".omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/C002_static_db_dryrun_boundary_receipt.json",
+          "status": "pass",
+          "capturedAt": "2026-07-08T02:03:01.221Z",
+          "notes": "static gate pass, read-only DB collision dry-run ok, DB apply/backtest/OOS/portfolio 미실행"
+        },
+        {
+          "id": "C003",
+          "scenario": "Regression/final verification scenario: parse all generated JSON/JSONL, run verify_nonrelease_sync.py, run scoped git diff --check, verify protected paths unchanged, verify staged files are only candidate-dryrun artifacts, then commit with Korean message.",
+          "userModel": "regression",
+          "expectedEvidence": ".omo/ulw-loop/evidence/20260708_lattice_generation_v2_candidate_dryrun/C003_final_verification_receipt.json and Korean commit hash",
+          "essential": false,
+          "capturedEvidence": null,
+          "status": "pending"
+        }
+      ],
+      "attempt": 0,
+      "createdAt": "2026-07-08T01:53:31.494Z",
+      "updatedAt": "2026-07-08T02:03:01.221Z"
+    }
+  ],
+  "codexObjective": "Complete the durable ulw-loop plan in .omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/goals.json, including later accepted/appended stories, under the original brief constraints; use .omo/ulw-loop/20260708_lattice_generation_v2_candidate_dryrun/ledger.jsonl as the audit trail."
+}

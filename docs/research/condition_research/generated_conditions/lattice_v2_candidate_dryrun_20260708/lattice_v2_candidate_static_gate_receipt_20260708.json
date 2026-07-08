@@ -1,0 +1,31 @@
+{
+  "schema": "lattice_condition_generation_v2_static_gate_receipt_v1",
+  "created_at": "2026-07-08T11:01:22+09:00",
+  "status": "pass",
+  "candidate_count": 32,
+  "class_counts": {
+    "coverage_composite": 8,
+    "risk_balanced_composite": 8,
+    "survivor_seed_derivative": 8,
+    "negative_control": 4,
+    "holdout_control": 4
+  },
+  "max_candidates": 32,
+  "checks": {
+    "count_le_32": true,
+    "class_quotas_exact": true,
+    "sanitized_names": true,
+    "unique_candidate_ids": true,
+    "unique_planned_buy_names": true,
+    "unique_planned_sell_names": true,
+    "research_lane_only": true,
+    "hypothesis_seed_labels": true,
+    "metadata_only_no_condition_body": true,
+    "blocked_actions_declared": true,
+    "source_lineage_present": true
+  },
+  "errors": [],
+  "strategy_txt_sha256": "44daa79cde5e1fb8f6c7e416622695eff62ff74ee034998ab41f59512d445753",
+  "rules_txt_sha256": "11983746c69bd22d1ba5c65b21105b422d6d9561e4cdd221e6f2109ecd6e7e45",
+  "note": "No STOM buy/sell condition bodies were generated; strategy/rules were used as boundary references only."
+}
