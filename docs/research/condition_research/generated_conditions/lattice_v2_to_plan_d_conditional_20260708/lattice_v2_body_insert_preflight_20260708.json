@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-07-08T13:19:57.269695+00:00",
+  "status": "pass",
+  "db": "ai_strategy_loop/state/loop_strategies.db",
+  "seeds_path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_static_dryrun_seeds_20260708.json",
+  "seed_count": 8,
+  "pair_count": 8,
+  "planned_insert_rows": 16,
+  "db_counts_before": {
+    "stockbuy": 6302,
+    "stocksell": 6204
+  },
+  "conflicts": [],
+  "pairs_preview": [
+    {
+      "label": "body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+      "buy": "LAT_body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge_B",
+      "sell": "LAT_body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge_S",
+      "lane": "min"
+    },
+    {
+      "label": "body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+      "buy": "LAT_body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost_B",
+      "sell": "LAT_body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost_S",
+      "lane": "min"
+    },
+    {
+      "label": "body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage",
+      "buy": "LAT_body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage_B",
+      "sell": "LAT_body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage_S",
+      "lane": "min"
+    },
+    {
+      "label": "body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+      "buy": "LAT_body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse_B",
+      "sell": "LAT_body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse_S",
+      "lane": "min"
+    },
+    {
+      "label": "body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair",
+      "buy": "LAT_body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair_B",
+      "sell": "LAT_body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair_S",
+      "lane": "min"
+    },
+    {
+      "label": "body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+      "buy": "LAT_body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only_B",
+      "sell": "LAT_body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only_S",
+      "lane": "min"
+    },
+    {
+      "label": "body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape",
+      "buy": "LAT_body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape_B",
+      "sell": "LAT_body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape_S",
+      "lane": "tick"
+    },
+    {
+      "label": "body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default",
+      "buy": "LAT_body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default_B",
+      "sell": "LAT_body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default_S",
+      "lane": "min"
+    }
+  ],
+  "constraints": {
+    "insert_only": true,
+    "update_delete_allowed": false,
+    "allowed_seed_count": 8,
+    "allowed_replay_count": 8
+  }
+}

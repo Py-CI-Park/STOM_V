@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-07-08T13:29:26.083668+00:00",
+  "status": "stop_no_survivor",
+  "basis_result": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\lattice_v2_body8_min_warm64_limited_replay_result_20260708.json",
+  "limited_replay_run_id": "lat_lattice_v2_body8_min_warm64_20260708",
+  "survivor_count": 0,
+  "oos_executed": false,
+  "seed_pool_appended": false,
+  "plan_d_executed": false,
+  "reason": "limited replay produced zero survivors; all ok rows had negative profit and MDD above cap, so OOS and Plan D are blocked by preregistered rules",
+  "next_recommendation": "Do not continue Plan D from these 8 body seeds. Revisit v2 condition-generation risk filters or sell-side loss controls before another apply/replay page."
+}

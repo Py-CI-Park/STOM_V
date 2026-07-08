@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-07-08T13:31:53.343788+00:00",
+  "status": "pass",
+  "scope": "lattice_v2_to_plan_d_conditional_overnight_20260708",
+  "checks": [
+    {
+      "name": "JSON/JSONL parse",
+      "status": "pass"
+    },
+    {
+      "name": "python -m pytest tests/unit/test_register_lattice_seeds.py -q",
+      "status": "pass",
+      "detail": "4 passed in 1.09s"
+    },
+    {
+      "name": "python scripts/verify_nonrelease_sync.py",
+      "status": "pass"
+    },
+    {
+      "name": "scoped git diff --check",
+      "status": "pass"
+    },
+    {
+      "name": "protected path git status",
+      "status": "pass",
+      "detail": "no tracked protected-path status output"
+    }
+  ],
+  "runtime_db_mutation": {
+    "db": "ai_strategy_loop/state/loop_strategies.db",
+    "mode": "INSERT-only",
+    "inserted_seed_count": 8,
+    "inserted_row_count": 16,
+    "backup_path": "ai_strategy_loop/state/loop_strategies.db.bak.lattice_20260708T132014Z",
+    "committed": false
+  },
+  "result": {
+    "limited_replay_run_id": "lat_lattice_v2_body8_min_warm64_20260708",
+    "honest_rows": 8,
+    "gate_passed": 0,
+    "survivor": 0,
+    "hold": 0,
+    "no_go": 8,
+    "oos_executed": false,
+    "plan_d_executed": false
+  },
+  "files": [
+    {
+      "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_to_plan_d_conditional_overnight_20260708.md",
+      "sha256": "908b85576f7606a9a5da6d618172074adb57c9998af7364a0104051e0bc017b6",
+      "bytes": 4319
+    },
+    {
+      "path": "docs\\update_log\\2026-07-08_lattice_v2_to_plan_d_conditional_overnight_handoff.md",
+      "sha256": "7a071a5cca3e5d5b020f5aa52ddb12e46604ccd8c5a8695dbb688feccda92646",
+      "bytes": 6404
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\lattice_v2_body8_min_warm64_limited_replay_result_20260708.json",
+      "sha256": "2585cff9ec77aae7438e653a70fb7619e2381f1a6d8fb9e342fc0c7ac8dd07d8",
+      "bytes": 13667
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\lattice_v2_body_insert_postcheck_20260708.json",
+      "sha256": "6cfe9337d420e153ecf0849a8c94aa4ea08e0b82353200bf6ceefdfa9e65f35c",
+      "bytes": 4769
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\lattice_v2_body_insert_preflight_20260708.json",
+      "sha256": "38ba349fae69f6e009390293071d81e9c01b3f5ef1f5907bc49feff32ab02a75",
+      "bytes": 2938
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\lattice_v2_body_strategy_name_mapping_apply_20260708.jsonl",
+      "sha256": "b0608692a1c692f6f782211e4d37d7dac611f060ce39b5daf6a9c618e6b34c72",
+      "bytes": 5708
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\lattice_v2_to_plan_d_stop_decision_20260708.json",
+      "sha256": "6af91d7331b28f11b3ca360a37994abe5e4ab032080b1ee5889afc4d698b25d2",
+      "bytes": 828
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\pairs_lattice_v2_body_8_inserted_20260708.json",
+      "sha256": "21b1b7aa2cd933c111533f15a58c9a865c841df037a6096622ec8e87e4555fcf",
+      "bytes": 2178
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\pairs_min.json",
+      "sha256": "2a02eb27b6221d8af26c0d4467e3279c6e42e3d5604be2a03ef59e4db598f8d2",
+      "bytes": 1761
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\pairs_tick.json",
+      "sha256": "63b496c444ad10443103e5888d7f09fcdac3f06ad6c7cdd8e8b1be59e3d280ad",
+      "bytes": 261
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\provenance_lattice_v2_body_register_apply_20260708.jsonl",
+      "sha256": "9c8bb49dbdcde5b797db728e91dfd344b6ad590a1dfe9a7da9bba731dbd50116",
+      "bytes": 14474
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\register_lattice_v2_body_apply_20260708.json",
+      "sha256": "0c27b68ec17520179a47ae1657c9aa363c8b284700502c31a6b18b80dccfe09d",
+      "bytes": 1156
+    },
+    {
+      "path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\source_read_receipt_20260708.json",
+      "sha256": "57056b44a7eebe6e1954f4bdc35659149547894030353210d6e27e0dd0285de4",
+      "bytes": 3005
+    }
+  ]
+}
