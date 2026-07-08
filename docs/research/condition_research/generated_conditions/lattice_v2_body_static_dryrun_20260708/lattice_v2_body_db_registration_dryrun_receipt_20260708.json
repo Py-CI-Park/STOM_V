@@ -1,0 +1,22 @@
+{
+  "schema": "lattice_condition_generation_v2_body_db_registration_dryrun_receipt_v1",
+  "created_at": "2026-07-08T15:15:55+09:00",
+  "status": "dry_run_ok",
+  "dry_run": true,
+  "db_apply_executed": false,
+  "db_update_delete_executed": false,
+  "backtest_executed": false,
+  "oos_executed": false,
+  "portfolio_executed": false,
+  "plan_d_r3_executed": false,
+  "inserted_seed_count": 0,
+  "inserted_row_count": 0,
+  "planned_seed_count": 8,
+  "planned_insert_count": 16,
+  "conflicts": [],
+  "pairs_out": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\pairs_lattice_v2_body_static_dryrun_20260708.json",
+  "pairs_min_out": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\pairs_min.json",
+  "pairs_tick_out": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\pairs_tick.json",
+  "mapping_out": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_strategy_name_mapping_dryrun_20260708.jsonl",
+  "register_report": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\register_lattice_v2_body_static_dryrun_receipt_20260708.json"
+}

@@ -1,0 +1,8 @@
+{
+  "created_at": "2026-07-08T15:15:55+09:00",
+  "status": "pass",
+  "receipt": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_db_registration_dryrun_receipt_20260708.json",
+  "inserted_seed_count": 0,
+  "inserted_row_count": 0,
+  "conflicts": []
+}

@@ -1,0 +1,323 @@
+{
+  "schema": "lattice_condition_generation_v2_body_selection_v1",
+  "created_at": "2026-07-08T15:14:13+09:00",
+  "source_ledger": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_candidate_dryrun_20260708\\lattice_v2_candidate_ledger_20260708.json",
+  "selected_count": 8,
+  "selected_candidates": [
+    {
+      "selected_no": 1,
+      "source_candidate_id": "lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+      "generated_condition_id": "body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+      "cell_id": "min_body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+      "class": "coverage_composite",
+      "preferred_data_lane": "min_primary",
+      "planned_buy_name": "LAT_body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge_B",
+      "planned_sell_name": "LAT_body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge_S",
+      "rationale": "Bridge S09/S10 morning coverage with L13/L14 low-MDD fragments to attack daily_avg_trades gap.",
+      "expected_failure_mode_to_test": "low daily trades with otherwise low-MDD positive fragments",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "time_regime:morning_09_10_11_composite",
+            "time_regime:midday_13h_watch",
+            "coverage_class:daily_floor_repair"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "coverage_composite"
+          ]
+        }
+      ],
+      "buy_sha256": "05f190da08e931d71d473793e51ea333cbb33ae4da3eb1a2bc5528a5ec961b98",
+      "sell_sha256": "361481aeedba7a8f638c7b37688fd2d247eb985e32a222fc78cd76e821f97f1d"
+    },
+    {
+      "selected_no": 2,
+      "source_candidate_id": "lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+      "generated_condition_id": "body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+      "cell_id": "min_body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+      "class": "coverage_composite",
+      "preferred_data_lane": "min_primary",
+      "planned_buy_name": "LAT_body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost_B",
+      "planned_sell_name": "LAT_body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost_S",
+      "rationale": "Use L13/L14/L1430 coverage components as a candidate family, not a copied survivor.",
+      "expected_failure_mode_to_test": "coverage lift can overfit selected OOS-style window",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "time_regime:midday_13h_watch",
+            "time_regime:late_1430p_risk_watch"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "coverage_composite"
+          ]
+        }
+      ],
+      "buy_sha256": "87984fa1317ba6aa7aabb0fd839462f6406121ef1fee42cd57271a683bc88bff",
+      "sell_sha256": "361481aeedba7a8f638c7b37688fd2d247eb985e32a222fc78cd76e821f97f1d"
+    },
+    {
+      "selected_no": 3,
+      "source_candidate_id": "lattice_v2_coverage_06_momentum_strength_surge_coverage",
+      "generated_condition_id": "body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage",
+      "cell_id": "min_body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage",
+      "class": "coverage_composite",
+      "preferred_data_lane": "min_primary",
+      "planned_buy_name": "LAT_body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage_B",
+      "planned_sell_name": "LAT_body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage_S",
+      "rationale": "Combine momentum_breakout and strength_surge fragments because both have sparse positive evidence.",
+      "expected_failure_mode_to_test": "family correlation may not add independent signal",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "family:momentum_breakout",
+            "family:strength_surge"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "coverage_composite"
+          ]
+        }
+      ],
+      "buy_sha256": "463c1e97834f001e607ba9d6770016f074749ec4dda840e33c8afd944a9e3211",
+      "sell_sha256": "f5243a9af045d12e9129099157de4892ffbc7476b6f7932a0129599e2cea0164"
+    },
+    {
+      "selected_no": 4,
+      "source_candidate_id": "lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+      "generated_condition_id": "body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+      "cell_id": "min_body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+      "class": "risk_balanced_composite",
+      "preferred_data_lane": "min_primary",
+      "planned_buy_name": "LAT_body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse_B",
+      "planned_sell_name": "LAT_body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse_S",
+      "rationale": "Prioritize MDD<=10 survivor-like fragments while varying component mix rather than copying code.",
+      "expected_failure_mode_to_test": "low MDD may come with too few trades",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "risk_class:mdd_le_10_fragment",
+            "sell_profile:default_tp3_sl3_hold90_benchmark"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "risk_balanced_composite"
+          ]
+        }
+      ],
+      "buy_sha256": "727554860621cd54544b22361927897804eb0526da9c6727b4b3ea95ee35a719",
+      "sell_sha256": "d3ba2e7438a8d3819073e67adbef8765937af7bbe6787e880d812b65c87a761a"
+    },
+    {
+      "selected_no": 5,
+      "source_candidate_id": "lattice_v2_risk_08_dailycovered_nonpositive_repair",
+      "generated_condition_id": "body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair",
+      "cell_id": "min_body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair",
+      "class": "risk_balanced_composite",
+      "preferred_data_lane": "min_primary",
+      "planned_buy_name": "LAT_body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair_B",
+      "planned_sell_name": "LAT_body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair_S",
+      "rationale": "Explicitly target min rows that had MDD<=35 and daily>=0.5 but nonpositive profit.",
+      "expected_failure_mode_to_test": "profit sign may not flip",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "official_coverage:min",
+            "deep_predicate:mdd_le_35_and_daily_ge_0_5"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "risk_balanced_composite"
+          ]
+        }
+      ],
+      "buy_sha256": "410cfa548c0a6fc1291964816631fd34bfdf33da904b3ce0a5add8c3577b5ca8",
+      "sell_sha256": "361481aeedba7a8f638c7b37688fd2d247eb985e32a222fc78cd76e821f97f1d"
+    },
+    {
+      "selected_no": 6,
+      "source_candidate_id": "lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+      "generated_condition_id": "body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+      "cell_id": "min_body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+      "class": "survivor_seed_derivative",
+      "preferred_data_lane": "min_primary",
+      "planned_buy_name": "LAT_body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only_B",
+      "planned_sell_name": "LAT_body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only_S",
+      "rationale": "Use latest R2-05 survivor as benchmark lineage, component-only; no wholesale copy.",
+      "expected_failure_mode_to_test": "selection-window contamination",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "latest_survivor:plan_d_rank03_r2_oos_20260708_01"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "survivor_seed_derivative"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rank03_r2_oos_20260708_01",
+            "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90"
+          ],
+          "metrics": {
+            "profit_krw": 554624.0,
+            "mdd_pct": 5.24,
+            "daily_avg_trades": 2.2,
+            "trade_count": 80,
+            "score": 1.5293965228238289
+          }
+        }
+      ],
+      "buy_sha256": "28a641d34f7a8ae7360b14e324b423faf3f860f8cbbe454780fddbae2df91dba",
+      "sell_sha256": "361481aeedba7a8f638c7b37688fd2d247eb985e32a222fc78cd76e821f97f1d"
+    },
+    {
+      "selected_no": 7,
+      "source_candidate_id": "lattice_v2_neg_01_tick_prevday_active_0900_loss_shape",
+      "generated_condition_id": "body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape",
+      "cell_id": "tick_body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape",
+      "class": "negative_control",
+      "preferred_data_lane": "tick_diagnostic_or_min_negative_control",
+      "planned_buy_name": "LAT_body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape_B",
+      "planned_sell_name": "LAT_body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape_S",
+      "rationale": "Known-failed tick-like discovery shape retained only to catch misleading success output.",
+      "expected_failure_mode_to_test": "expected no_go control",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "tick:positive_profit=0",
+            "family:prevday_active"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "negative_control"
+          ]
+        }
+      ],
+      "buy_sha256": "bc73ad16bee4caac9171a9a8157652161c5c9fa2f6b2a599484442c47b4f0a28",
+      "sell_sha256": "015617a18baaf0b41c6423f97d879a88165577af787de1d4dedfd7aa49c81372"
+    },
+    {
+      "selected_no": 8,
+      "source_candidate_id": "lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default",
+      "generated_condition_id": "body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default",
+      "cell_id": "min_body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default",
+      "class": "holdout_control",
+      "preferred_data_lane": "min_primary",
+      "planned_buy_name": "LAT_body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default_B",
+      "planned_sell_name": "LAT_body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default_S",
+      "rationale": "Frozen benchmark against latest rank03 R2 selected survivor.",
+      "expected_failure_mode_to_test": "benchmark only",
+      "source_lineage": [
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_failure_map_20260708.json",
+          "ref": [
+            "holdout:plan_d_rank03_r2_oos_20260708_01"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_axis_spec_20260708.json",
+          "ref": [
+            "generation_rules",
+            "axes"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\plans\\lattice_condition_generation_v2_candidate_quota_ledger_20260708.json",
+          "ref": [
+            "holdout_control"
+          ]
+        },
+        {
+          "path": "docs\\research\\condition_research\\generated_conditions\\oos_survivors.jsonl",
+          "ref": [
+            "plan_d_rank03_r2_oos_20260708_01",
+            "plan_d_r1_rank03_r2_05_l13_l1430_default_tp3_sl3_hold90"
+          ],
+          "metrics": {
+            "profit_krw": 554624.0,
+            "mdd_pct": 5.24,
+            "daily_avg_trades": 2.2,
+            "trade_count": 80,
+            "score": 1.5293965228238289
+          }
+        }
+      ],
+      "buy_sha256": "bbdf0569af841daf4ed5b2f1a635e625efa2756a698d829840ab2a8b9e9212f4",
+      "sell_sha256": "361481aeedba7a8f638c7b37688fd2d247eb985e32a222fc78cd76e821f97f1d"
+    }
+  ]
+}

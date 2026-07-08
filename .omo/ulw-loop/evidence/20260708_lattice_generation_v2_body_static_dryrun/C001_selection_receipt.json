@@ -1,0 +1,17 @@
+{
+  "created_at": "2026-07-08T15:14:13+09:00",
+  "status": "pass",
+  "selected_count": 8,
+  "selected_ids": [
+    "lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+    "lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+    "lattice_v2_coverage_06_momentum_strength_surge_coverage",
+    "lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+    "lattice_v2_risk_08_dailycovered_nonpositive_repair",
+    "lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+    "lattice_v2_neg_01_tick_prevday_active_0900_loss_shape",
+    "lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default"
+  ],
+  "selection_path": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_selected_candidates_20260708.json",
+  "source_read_receipt": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_source_read_receipt_20260708.json"
+}

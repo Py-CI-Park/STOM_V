@@ -1,0 +1,42 @@
+{
+  "schema": "lattice_condition_generation_v2_body_final_verification_receipt_v1",
+  "created_at": "2026-07-08T15:17:47+09:00",
+  "status": "pass",
+  "checks": {
+    "json_jsonl_parse": "pass",
+    "seed_count": 8,
+    "static_gate": "pass",
+    "db_registration_dry_run": "dry_run_ok",
+    "inserted_seed_count": 0,
+    "inserted_row_count": 0,
+    "db_apply_executed": false,
+    "db_update_delete_executed": false,
+    "backtest_executed": false,
+    "oos_executed": false,
+    "portfolio_executed": false,
+    "plan_d_r3_executed": false,
+    "pytest_register_lattice_seeds": "4 passed in 0.88s",
+    "verify_nonrelease_sync": "pass",
+    "git_diff_check_scoped": "pass",
+    "protected_path_status": "clean for checked protected paths"
+  },
+  "commands": [
+    "@python json/jsonl parse and body checks",
+    "python -m pytest tests/unit/test_register_lattice_seeds.py -q",
+    "python scripts/verify_nonrelease_sync.py",
+    "git diff --check -- <scoped paths>",
+    "git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json"
+  ],
+  "artifacts": {
+    "plan": "docs/research/condition_research/plans/lattice_condition_generation_v2_body_generation_static_dryrun_20260708.md",
+    "source_read_receipt": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_source_read_receipt_20260708.json",
+    "selected_candidates": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_selected_candidates_20260708.json",
+    "seed_json": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_static_dryrun_seeds_20260708.json",
+    "static_gate_receipt": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_static_gate_receipt_20260708.json",
+    "db_registration_dryrun_receipt": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_db_registration_dryrun_receipt_20260708.json",
+    "register_report": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\register_lattice_v2_body_static_dryrun_receipt_20260708.json",
+    "pairs": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\pairs_lattice_v2_body_static_dryrun_20260708.json",
+    "mapping": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\lattice_v2_body_strategy_name_mapping_dryrun_20260708.jsonl"
+  },
+  "known_ulw_note": "create-goals split the plan into many granular goals; one parallel record-evidence call hit a Windows rename EPERM, so later evidence was recorded via receipt files and sequential ULW evidence where needed."
+}

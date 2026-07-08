@@ -1,0 +1,255 @@
+{
+  "schema": "seed_lattice_seeds_v1",
+  "created_at": "2026-07-08T15:14:13+09:00",
+  "seed_count": 8,
+  "seeds": [
+    {
+      "condition_id": "body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+      "cell_id": "min_body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+      "family": "coverage_composite",
+      "buy_code": "매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif not (90000 <= 시분초 <= 143000):\n    매수 = False\nelif not (-4 <= 등락율 <= 18):\n    매수 = False\nelif not (당일거래대금 >= 120):\n    매수 = False\nelif not (분당거래대금 >= 분당거래대금평균(30) * 0.70):\n    매수 = False\nelif not (체결강도 >= 95):\n    매수 = False\nelif not (현재가 >= 이동평균(60) * 0.985):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "sell_code": "매도 = False\nif 등락율 > 29:\n    매도 = True\nelif 수익률 <= -3:\n    매도 = True\nelif 수익률 >= 3:\n    매도 = True\nelif 보유시간 >= 90:\n    매도 = True\nelif 시분초 >= 145500:\n    매도 = True\n\nif 매도:\n    self.Sell()\n",
+      "buy_sha256": "05f190da08e931d71d473793e51ea333cbb33ae4da3eb1a2bc5528a5ec961b98",
+      "sell_sha256": "361481aeedba7a8f638c7b37688fd2d247eb985e32a222fc78cd76e821f97f1d",
+      "params": {
+        "source_candidate_id": "lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+        "candidate_class": "coverage_composite",
+        "preferred_data_lane": "min_primary",
+        "label": "hypothesis_seed",
+        "research_lane": true,
+        "body_generation_scope": "static_dryrun_only",
+        "blocked_actions": [
+          "DB INSERT apply",
+          "DB UPDATE/DELETE",
+          "backtest",
+          "limited replay",
+          "OOS",
+          "portfolio",
+          "Plan D R3",
+          "export/live/final promotion",
+          "full tick 288",
+          "full min 288"
+        ]
+      },
+      "created_reason": "Body static dry-run from lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge: Bridge S09/S10 morning coverage with L13/L14 low-MDD fragments to attack daily_avg_trades gap.",
+      "passport_md": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\passport_body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge.md"
+    },
+    {
+      "condition_id": "body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+      "cell_id": "min_body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+      "family": "coverage_composite",
+      "buy_code": "매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif not (130000 <= 시분초 <= 145000):\n    매수 = False\nelif not (-3 <= 등락율 <= 16):\n    매수 = False\nelif not (당일거래대금 >= 100):\n    매수 = False\nelif not (분당거래대금 >= 분당거래대금평균(30) * 0.65):\n    매수 = False\nelif not (체결강도 >= 체결강도평균(30) - 2):\n    매수 = False\nelif not (현재가 >= 이동평균(30) * 0.980):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "sell_code": "매도 = False\nif 등락율 > 29:\n    매도 = True\nelif 수익률 <= -3:\n    매도 = True\nelif 수익률 >= 3:\n    매도 = True\nelif 보유시간 >= 90:\n    매도 = True\nelif 시분초 >= 145500:\n    매도 = True\n\nif 매도:\n    self.Sell()\n",
+      "buy_sha256": "87984fa1317ba6aa7aabb0fd839462f6406121ef1fee42cd57271a683bc88bff",
+      "sell_sha256": "361481aeedba7a8f638c7b37688fd2d247eb985e32a222fc78cd76e821f97f1d",
+      "params": {
+        "source_candidate_id": "lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+        "candidate_class": "coverage_composite",
+        "preferred_data_lane": "min_primary",
+        "label": "hypothesis_seed",
+        "research_lane": true,
+        "body_generation_scope": "static_dryrun_only",
+        "blocked_actions": [
+          "DB INSERT apply",
+          "DB UPDATE/DELETE",
+          "backtest",
+          "limited replay",
+          "OOS",
+          "portfolio",
+          "Plan D R3",
+          "export/live/final promotion",
+          "full tick 288",
+          "full min 288"
+        ]
+      },
+      "created_reason": "Body static dry-run from lattice_v2_coverage_03_l13_l14_l1430_daily_boost: Use L13/L14/L1430 coverage components as a candidate family, not a copied survivor.",
+      "passport_md": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\passport_body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost.md"
+    },
+    {
+      "condition_id": "body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage",
+      "cell_id": "min_body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage",
+      "family": "coverage_composite",
+      "buy_code": "매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif not (93000 <= 시분초 <= 143000):\n    매수 = False\nelif not (-2 <= 등락율 <= 20):\n    매수 = False\nelif not (당일거래대금 >= 160):\n    매수 = False\nelif not (분당거래대금 >= 분당거래대금평균(30) * 0.90):\n    매수 = False\nelif not (체결강도 >= 체결강도평균(30) * 1.03):\n    매수 = False\nelif not (현재가 >= 최고현재가(20, 1) * 0.990):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "sell_code": "매도 = False\nif 등락율 > 29:\n    매도 = True\nelif 수익률 <= -3:\n    매도 = True\nelif 수익률 >= 4:\n    매도 = True\nelif 보유시간 >= 120:\n    매도 = True\nelif 시분초 >= 145500:\n    매도 = True\n\nif 매도:\n    self.Sell()\n",
+      "buy_sha256": "463c1e97834f001e607ba9d6770016f074749ec4dda840e33c8afd944a9e3211",
+      "sell_sha256": "f5243a9af045d12e9129099157de4892ffbc7476b6f7932a0129599e2cea0164",
+      "params": {
+        "source_candidate_id": "lattice_v2_coverage_06_momentum_strength_surge_coverage",
+        "candidate_class": "coverage_composite",
+        "preferred_data_lane": "min_primary",
+        "label": "hypothesis_seed",
+        "research_lane": true,
+        "body_generation_scope": "static_dryrun_only",
+        "blocked_actions": [
+          "DB INSERT apply",
+          "DB UPDATE/DELETE",
+          "backtest",
+          "limited replay",
+          "OOS",
+          "portfolio",
+          "Plan D R3",
+          "export/live/final promotion",
+          "full tick 288",
+          "full min 288"
+        ]
+      },
+      "created_reason": "Body static dry-run from lattice_v2_coverage_06_momentum_strength_surge_coverage: Combine momentum_breakout and strength_surge fragments because both have sparse positive evidence.",
+      "passport_md": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\passport_body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage.md"
+    },
+    {
+      "condition_id": "body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+      "cell_id": "min_body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+      "family": "risk_balanced_composite",
+      "buy_code": "매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif not (130000 <= 시분초 <= 143000):\n    매수 = False\nelif not (-2 <= 등락율 <= 14):\n    매수 = False\nelif not (당일거래대금 >= 180):\n    매수 = False\nelif not (분당거래대금 >= 분당거래대금평균(30) * 0.80):\n    매수 = False\nelif not (체결강도 >= 98):\n    매수 = False\nelif not (현재가 >= 이동평균(60) * 0.990):\n    매수 = False\nelif not (현재가 <= 최고현재가(30) * 0.995):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "sell_code": "매도 = False\nif 등락율 > 29:\n    매도 = True\nelif 수익률 <= -2:\n    매도 = True\nelif 수익률 >= 2:\n    매도 = True\nelif 보유시간 >= 60:\n    매도 = True\nelif 시분초 >= 145000:\n    매도 = True\n\nif 매도:\n    self.Sell()\n",
+      "buy_sha256": "727554860621cd54544b22361927897804eb0526da9c6727b4b3ea95ee35a719",
+      "sell_sha256": "d3ba2e7438a8d3819073e67adbef8765937af7bbe6787e880d812b65c87a761a",
+      "params": {
+        "source_candidate_id": "lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+        "candidate_class": "risk_balanced_composite",
+        "preferred_data_lane": "min_primary",
+        "label": "hypothesis_seed",
+        "research_lane": true,
+        "body_generation_scope": "static_dryrun_only",
+        "blocked_actions": [
+          "DB INSERT apply",
+          "DB UPDATE/DELETE",
+          "backtest",
+          "limited replay",
+          "OOS",
+          "portfolio",
+          "Plan D R3",
+          "export/live/final promotion",
+          "full tick 288",
+          "full min 288"
+        ]
+      },
+      "created_reason": "Body static dry-run from lattice_v2_risk_01_mdd10_l13_l14_default_diverse: Prioritize MDD<=10 survivor-like fragments while varying component mix rather than copying code.",
+      "passport_md": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\passport_body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse.md"
+    },
+    {
+      "condition_id": "body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair",
+      "cell_id": "min_body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair",
+      "family": "risk_balanced_composite",
+      "buy_code": "매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif not (93000 <= 시분초 <= 145000):\n    매수 = False\nelif not (-5 <= 등락율 <= 18):\n    매수 = False\nelif not (당일거래대금 >= 140):\n    매수 = False\nelif not (분당거래대금 >= 분당거래대금평균(30) * 0.75):\n    매수 = False\nelif not (체결강도 >= 체결강도평균(30) * 0.98):\n    매수 = False\nelif not (현재가 >= 최저현재가(30) * 1.005):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "sell_code": "매도 = False\nif 등락율 > 29:\n    매도 = True\nelif 수익률 <= -3:\n    매도 = True\nelif 수익률 >= 3:\n    매도 = True\nelif 보유시간 >= 90:\n    매도 = True\nelif 시분초 >= 145500:\n    매도 = True\n\nif 매도:\n    self.Sell()\n",
+      "buy_sha256": "410cfa548c0a6fc1291964816631fd34bfdf33da904b3ce0a5add8c3577b5ca8",
+      "sell_sha256": "361481aeedba7a8f638c7b37688fd2d247eb985e32a222fc78cd76e821f97f1d",
+      "params": {
+        "source_candidate_id": "lattice_v2_risk_08_dailycovered_nonpositive_repair",
+        "candidate_class": "risk_balanced_composite",
+        "preferred_data_lane": "min_primary",
+        "label": "hypothesis_seed",
+        "research_lane": true,
+        "body_generation_scope": "static_dryrun_only",
+        "blocked_actions": [
+          "DB INSERT apply",
+          "DB UPDATE/DELETE",
+          "backtest",
+          "limited replay",
+          "OOS",
+          "portfolio",
+          "Plan D R3",
+          "export/live/final promotion",
+          "full tick 288",
+          "full min 288"
+        ]
+      },
+      "created_reason": "Body static dry-run from lattice_v2_risk_08_dailycovered_nonpositive_repair: Explicitly target min rows that had MDD<=35 and daily>=0.5 but nonpositive profit.",
+      "passport_md": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\passport_body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair.md"
+    },
+    {
+      "condition_id": "body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+      "cell_id": "min_body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+      "family": "survivor_seed_derivative",
+      "buy_code": "매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif not (130000 <= 시분초 <= 143000):\n    매수 = False\nelif not (-3 <= 등락율 <= 15):\n    매수 = False\nelif not (당일거래대금 >= 150):\n    매수 = False\nelif not (분당거래대금 >= 분당거래대금평균(30) * 0.70):\n    매수 = False\nelif not (체결강도 >= 96):\n    매수 = False\nelif not (현재가 >= 이동평균(30) * 0.985):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "sell_code": "매도 = False\nif 등락율 > 29:\n    매도 = True\nelif 수익률 <= -3:\n    매도 = True\nelif 수익률 >= 3:\n    매도 = True\nelif 보유시간 >= 90:\n    매도 = True\nelif 시분초 >= 145500:\n    매도 = True\n\nif 매도:\n    self.Sell()\n",
+      "buy_sha256": "28a641d34f7a8ae7360b14e324b423faf3f860f8cbbe454780fddbae2df91dba",
+      "sell_sha256": "361481aeedba7a8f638c7b37688fd2d247eb985e32a222fc78cd76e821f97f1d",
+      "params": {
+        "source_candidate_id": "lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+        "candidate_class": "survivor_seed_derivative",
+        "preferred_data_lane": "min_primary",
+        "label": "hypothesis_seed",
+        "research_lane": true,
+        "body_generation_scope": "static_dryrun_only",
+        "blocked_actions": [
+          "DB INSERT apply",
+          "DB UPDATE/DELETE",
+          "backtest",
+          "limited replay",
+          "OOS",
+          "portfolio",
+          "Plan D R3",
+          "export/live/final promotion",
+          "full tick 288",
+          "full min 288"
+        ]
+      },
+      "created_reason": "Body static dry-run from lattice_v2_seed_01_rank03_r2_l13_l1430_component_only: Use latest R2-05 survivor as benchmark lineage, component-only; no wholesale copy.",
+      "passport_md": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\passport_body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only.md"
+    },
+    {
+      "condition_id": "body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape",
+      "cell_id": "tick_body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape",
+      "family": "negative_control",
+      "buy_code": "매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif not (90000 <= 시분초 <= 90500):\n    매수 = False\nelif not (-7 <= 등락율 <= 25):\n    매수 = False\nelif not (전일비 >= 80):\n    매수 = False\nelif not (초당거래대금 >= 20):\n    매수 = False\nelif not (체결강도 >= 80):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "sell_code": "매도 = False\nif 등락율 > 29:\n    매도 = True\nelif 수익률 <= -2:\n    매도 = True\nelif 수익률 >= 1:\n    매도 = True\nelif 보유시간 >= 30:\n    매도 = True\nelif 시분초 >= 91500:\n    매도 = True\n\nif 매도:\n    self.Sell()\n",
+      "buy_sha256": "bc73ad16bee4caac9171a9a8157652161c5c9fa2f6b2a599484442c47b4f0a28",
+      "sell_sha256": "015617a18baaf0b41c6423f97d879a88165577af787de1d4dedfd7aa49c81372",
+      "params": {
+        "source_candidate_id": "lattice_v2_neg_01_tick_prevday_active_0900_loss_shape",
+        "candidate_class": "negative_control",
+        "preferred_data_lane": "tick_diagnostic_or_min_negative_control",
+        "label": "hypothesis_seed",
+        "research_lane": true,
+        "body_generation_scope": "static_dryrun_only",
+        "blocked_actions": [
+          "DB INSERT apply",
+          "DB UPDATE/DELETE",
+          "backtest",
+          "limited replay",
+          "OOS",
+          "portfolio",
+          "Plan D R3",
+          "export/live/final promotion",
+          "full tick 288",
+          "full min 288"
+        ]
+      },
+      "created_reason": "Body static dry-run from lattice_v2_neg_01_tick_prevday_active_0900_loss_shape: Known-failed tick-like discovery shape retained only to catch misleading success output.",
+      "passport_md": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\passport_body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape.md"
+    },
+    {
+      "condition_id": "body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default",
+      "cell_id": "min_body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default",
+      "family": "holdout_control",
+      "buy_code": "매수 = True\nif not (관심종목 == 1):\n    매수 = False\nelif not (130000 <= 시분초 <= 143000):\n    매수 = False\nelif not (-3 <= 등락율 <= 15):\n    매수 = False\nelif not (당일거래대금 >= 150):\n    매수 = False\nelif not (분당거래대금 >= 분당거래대금평균(30) * 0.70):\n    매수 = False\nelif not (체결강도 >= 96):\n    매수 = False\nelif not (현재가 >= 이동평균(30) * 0.985):\n    매수 = False\nelif not (현재가 <= 최고현재가(30) * 0.998):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "sell_code": "매도 = False\nif 등락율 > 29:\n    매도 = True\nelif 수익률 <= -3:\n    매도 = True\nelif 수익률 >= 3:\n    매도 = True\nelif 보유시간 >= 90:\n    매도 = True\nelif 시분초 >= 145500:\n    매도 = True\n\nif 매도:\n    self.Sell()\n",
+      "buy_sha256": "bbdf0569af841daf4ed5b2f1a635e625efa2756a698d829840ab2a8b9e9212f4",
+      "sell_sha256": "361481aeedba7a8f638c7b37688fd2d247eb985e32a222fc78cd76e821f97f1d",
+      "params": {
+        "source_candidate_id": "lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default",
+        "candidate_class": "holdout_control",
+        "preferred_data_lane": "min_primary",
+        "label": "hypothesis_seed",
+        "research_lane": true,
+        "body_generation_scope": "static_dryrun_only",
+        "blocked_actions": [
+          "DB INSERT apply",
+          "DB UPDATE/DELETE",
+          "backtest",
+          "limited replay",
+          "OOS",
+          "portfolio",
+          "Plan D R3",
+          "export/live/final promotion",
+          "full tick 288",
+          "full min 288"
+        ]
+      },
+      "created_reason": "Body static dry-run from lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default: Frozen benchmark against latest rank03 R2 selected survivor.",
+      "passport_md": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_body_static_dryrun_20260708\\passport_body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default.md"
+    }
+  ]
+}
