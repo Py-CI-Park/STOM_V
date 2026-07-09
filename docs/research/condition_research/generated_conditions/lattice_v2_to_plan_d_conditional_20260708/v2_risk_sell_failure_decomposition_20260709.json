@@ -1,0 +1,1921 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-07-09T04:10:58.945764+00:00",
+  "scope": "analysis_only_existing_evidence_no_db_no_replay_no_oos_no_plan_d",
+  "source_receipt": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\source_read_receipt_risk_sell_review_20260709.json",
+  "basis_result": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\lattice_v2_body8_min_warm64_limited_replay_result_20260708.json",
+  "basis_stop_decision": "docs\\research\\condition_research\\generated_conditions\\lattice_v2_to_plan_d_conditional_20260708\\lattice_v2_to_plan_d_stop_decision_20260708.json",
+  "summary": {
+    "row_count": 8,
+    "ok_count": 7,
+    "error_count": 1,
+    "survivor_count": 0,
+    "hold_count": 0,
+    "no_go_count": 8,
+    "primary_failure_counts": {
+      "loss_plus_mdd": 7,
+      "no_metrics": 1
+    },
+    "parsed_csv_count": 7,
+    "broad_based_loss_count": 7,
+    "all_min_ok_rows_have_stop_loss": true,
+    "all_min_ok_rows_have_take_profit": true,
+    "all_min_ok_rows_have_time_stop": true,
+    "all_min_ok_rows_losing": true,
+    "all_min_ok_rows_mdd_over_cap": true,
+    "profile_note": "one tick-origin negative-control row produced no metrics under min profile; excluded from min-origin repair decision"
+  },
+  "rows": [
+    {
+      "gen_no": 0,
+      "label": "body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+      "lane_origin": "min",
+      "status": "ok",
+      "gate_passed": false,
+      "profit": -514545798.0,
+      "mdd": 312.19,
+      "trade_count": 21987,
+      "daily_avg_trades": 103.2,
+      "payoff_ratio": 1.132157688176809,
+      "csv_path": "backtest/csv\\stock_bt_LAT_body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge_B_20260708222405.csv",
+      "engine_reason": "mdd 312.2 > mdd_cap 35",
+      "initial_decision": "no_go",
+      "primary_failure": "loss_plus_mdd",
+      "seed_audit": {
+        "condition_id": "body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+        "family": "coverage_composite",
+        "cell_id": "min_body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge",
+        "hard_stop_loss_condition": true,
+        "stop_loss_threshold_pct": 90.0,
+        "take_profit_condition": true,
+        "take_profit_threshold_pct": 90.0,
+        "time_stop": true,
+        "time_stop_minutes": 145500.0,
+        "late_session_exit_rule": true,
+        "late_exit_time": 145500.0,
+        "position_hold_duration_limiter": true,
+        "volatility_or_range_cap": true,
+        "buy_range_lower": -4.0,
+        "buy_range_upper": 18.0,
+        "overtrading_throttle": false,
+        "overtrading_throttle_note": "No explicit daily max-trade/count throttle found; buy clauses are liquidity/coverage floors, not throttles."
+      },
+      "csv_loss_analysis": {
+        "csv_path": "backtest/csv\\stock_bt_LAT_body_01_lattice_v2_coverage_01_s09_s10_l13_l14_daily_bridge_B_20260708222405.csv",
+        "csv_exists": true,
+        "status": "parsed",
+        "row_count": 21987,
+        "columns": [
+          "B_거래대금증감",
+          "B_당일거래대금",
+          "B_등락율",
+          "B_매도총잔량",
+          "B_매수총잔량",
+          "B_분봉고가",
+          "B_분봉시가",
+          "B_분봉저가",
+          "B_시가총액",
+          "B_시분초",
+          "B_전일동시간비",
+          "B_체결강도",
+          "B_현재가",
+          "B_회전율",
+          "R_MAE",
+          "R_MFE",
+          "R_매수후최고수익률",
+          "R_매수후최저수익률",
+          "S_등락율",
+          "S_매도총잔량",
+          "S_매수총잔량",
+          "S_체결강도",
+          "S_현재가",
+          "매도가",
+          "매도금액",
+          "매도시간",
+          "매도조건",
+          "매수가",
+          "매수금액",
+          "매수시간",
+          "보유시간",
+          "수익금",
+          "수익금합계",
+          "수익률",
+          "시가총액",
+          "종목명",
+          "추가매수시간"
+        ],
+        "unavailable_columns": [],
+        "net_profit_from_csv": -514545798.0,
+        "gross_win": 908258346.0,
+        "gross_loss": -1422804144.0,
+        "win_count": 7944,
+        "loss_count": 14043,
+        "zero_count": 0,
+        "loss_trade_ratio": 0.6386955928503206,
+        "average_win": 114332.62160120846,
+        "average_loss": -101317.67741935483,
+        "largest_loss": -451164.0,
+        "largest_win": 1285666.0,
+        "bottom10_loss_sum": -3712766.0,
+        "top10_win_sum": 5848007.0,
+        "bottom10_loss_share_of_gross_loss": 0.002609470892853964,
+        "median_profit_rate": -0.68,
+        "average_profit_rate": -0.47026834038295356,
+        "median_hold_time": 64.0,
+        "average_hold_time": 56.54031927957429,
+        "avg_MAE": -1.785044799199527,
+        "avg_MFE": 1.2896766270978306,
+        "exit_condition_counts": {
+          "elif 보유시간 >= 90:": 9280,
+          "elif 수익률 <= -3:": 5856,
+          "elif 수익률 >= 3:": 4456,
+          "elif 시분초 >= 145500:": 2394,
+          "if 등락율 > 29:": 1
+        },
+        "worst_exit_conditions": [
+          {
+            "count": 5856,
+            "profit_sum": -999454626.0,
+            "loss_sum": -999454626.0,
+            "win_sum": 0.0,
+            "key": "elif 수익률 <= -3:",
+            "avg_profit": -170671.89651639343
+          },
+          {
+            "count": 9280,
+            "profit_sum": -245011353.0,
+            "loss_sum": -352419260.0,
+            "win_sum": 107407907.0,
+            "key": "elif 보유시간 >= 90:",
+            "avg_profit": -26402.08545258621
+          },
+          {
+            "count": 2394,
+            "profit_sum": -47281633.0,
+            "loss_sum": -70930258.0,
+            "win_sum": 23648625.0,
+            "key": "elif 시분초 >= 145500:",
+            "avg_profit": -19750.055555555555
+          },
+          {
+            "count": 1,
+            "profit_sum": 1285666.0,
+            "loss_sum": 0.0,
+            "win_sum": 1285666.0,
+            "key": "if 등락율 > 29:",
+            "avg_profit": 1285666.0
+          },
+          {
+            "count": 4456,
+            "profit_sum": 775916148.0,
+            "loss_sum": 0.0,
+            "win_sum": 775916148.0,
+            "key": "elif 수익률 >= 3:",
+            "avg_profit": 174128.39946140035
+          }
+        ],
+        "worst_buy_time_buckets": [
+          {
+            "count": 1042,
+            "profit_sum": -18059758.0,
+            "loss_sum": -68883547.0,
+            "win_sum": 50823789.0,
+            "key": "09:29",
+            "avg_profit": -17331.82149712092
+          },
+          {
+            "count": 682,
+            "profit_sum": -11309531.0,
+            "loss_sum": -47201699.0,
+            "win_sum": 35892168.0,
+            "key": "09:30",
+            "avg_profit": -16582.890029325514
+          },
+          {
+            "count": 294,
+            "profit_sum": -10442157.0,
+            "loss_sum": -22337607.0,
+            "win_sum": 11895450.0,
+            "key": "09:33",
+            "avg_profit": -35517.54081632653
+          },
+          {
+            "count": 474,
+            "profit_sum": -9700970.0,
+            "loss_sum": -34515406.0,
+            "win_sum": 24814436.0,
+            "key": "09:31",
+            "avg_profit": -20466.181434599155
+          },
+          {
+            "count": 194,
+            "profit_sum": -9062494.0,
+            "loss_sum": -17038833.0,
+            "win_sum": 7976339.0,
+            "key": "09:36",
+            "avg_profit": -46713.886597938144
+          }
+        ],
+        "worst_sell_time_buckets": [
+          {
+            "count": 2412,
+            "profit_sum": -47892904.0,
+            "loss_sum": -71867387.0,
+            "win_sum": 23974483.0,
+            "key": "14:55",
+            "avg_profit": -19856.096185737977
+          },
+          {
+            "count": 542,
+            "profit_sum": -16451644.0,
+            "loss_sum": -26008386.0,
+            "win_sum": 9556742.0,
+            "key": "10:59",
+            "avg_profit": -30353.586715867157
+          },
+          {
+            "count": 187,
+            "profit_sum": -8674299.0,
+            "loss_sum": -12599660.0,
+            "win_sum": 3925361.0,
+            "key": "11:03",
+            "avg_profit": -46386.6256684492
+          },
+          {
+            "count": 315,
+            "profit_sum": -7938960.0,
+            "loss_sum": -14621111.0,
+            "win_sum": 6682151.0,
+            "key": "11:00",
+            "avg_profit": -25203.04761904762
+          },
+          {
+            "count": 168,
+            "profit_sum": -6080549.0,
+            "loss_sum": -9908608.0,
+            "win_sum": 3828059.0,
+            "key": "11:02",
+            "avg_profit": -36193.744047619046
+          }
+        ],
+        "worst_hold_time_buckets": [
+          {
+            "count": 9316,
+            "profit_sum": -245425575.0,
+            "loss_sum": -355577604.0,
+            "win_sum": 110152029.0,
+            "key": "90-119",
+            "avg_profit": -26344.52286389008
+          },
+          {
+            "count": 6756,
+            "profit_sum": -108257460.0,
+            "loss_sum": -635359526.0,
+            "win_sum": 527102066.0,
+            "key": "0-29",
+            "avg_profit": -16023.898756660747
+          },
+          {
+            "count": 3931,
+            "profit_sum": -107922570.0,
+            "loss_sum": -283913081.0,
+            "win_sum": 175990511.0,
+            "key": "30-59",
+            "avg_profit": -27454.227931823963
+          },
+          {
+            "count": 1984,
+            "profit_sum": -52940193.0,
+            "loss_sum": -147953933.0,
+            "win_sum": 95013740.0,
+            "key": "60-89",
+            "avg_profit": -26683.56502016129
+          }
+        ],
+        "loss_concentration_assessment": "broad_based"
+      }
+    },
+    {
+      "gen_no": 1,
+      "label": "body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+      "lane_origin": "min",
+      "status": "ok",
+      "gate_passed": false,
+      "profit": -373908892.0,
+      "mdd": 188.2,
+      "trade_count": 12981,
+      "daily_avg_trades": 60.9,
+      "payoff_ratio": 1.1188517363105939,
+      "csv_path": "backtest/csv\\stock_bt_LAT_body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost_B_20260708222433.csv",
+      "engine_reason": "mdd 188.2 > mdd_cap 35",
+      "initial_decision": "no_go",
+      "primary_failure": "loss_plus_mdd",
+      "seed_audit": {
+        "condition_id": "body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+        "family": "coverage_composite",
+        "cell_id": "min_body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost",
+        "hard_stop_loss_condition": true,
+        "stop_loss_threshold_pct": 90.0,
+        "take_profit_condition": true,
+        "take_profit_threshold_pct": 90.0,
+        "time_stop": true,
+        "time_stop_minutes": 145500.0,
+        "late_session_exit_rule": true,
+        "late_exit_time": 145500.0,
+        "position_hold_duration_limiter": true,
+        "volatility_or_range_cap": true,
+        "buy_range_lower": -3.0,
+        "buy_range_upper": 16.0,
+        "overtrading_throttle": false,
+        "overtrading_throttle_note": "No explicit daily max-trade/count throttle found; buy clauses are liquidity/coverage floors, not throttles."
+      },
+      "csv_loss_analysis": {
+        "csv_path": "backtest/csv\\stock_bt_LAT_body_02_lattice_v2_coverage_03_l13_l14_l1430_daily_boost_B_20260708222433.csv",
+        "csv_exists": true,
+        "status": "parsed",
+        "row_count": 12981,
+        "columns": [
+          "B_거래대금증감",
+          "B_당일거래대금",
+          "B_등락율",
+          "B_매도총잔량",
+          "B_매수총잔량",
+          "B_분봉고가",
+          "B_분봉시가",
+          "B_분봉저가",
+          "B_시가총액",
+          "B_시분초",
+          "B_전일동시간비",
+          "B_체결강도",
+          "B_현재가",
+          "B_회전율",
+          "R_MAE",
+          "R_MFE",
+          "R_매수후최고수익률",
+          "R_매수후최저수익률",
+          "S_등락율",
+          "S_매도총잔량",
+          "S_매수총잔량",
+          "S_체결강도",
+          "S_현재가",
+          "매도가",
+          "매도금액",
+          "매도시간",
+          "매도조건",
+          "매수가",
+          "매수금액",
+          "매수시간",
+          "보유시간",
+          "수익금",
+          "수익금합계",
+          "수익률",
+          "시가총액",
+          "종목명",
+          "추가매수시간"
+        ],
+        "unavailable_columns": [],
+        "net_profit_from_csv": -373908892.0,
+        "gross_win": 316436972.0,
+        "gross_loss": -690345864.0,
+        "win_count": 3792,
+        "loss_count": 9189,
+        "zero_count": 0,
+        "loss_trade_ratio": 0.7078807487866883,
+        "average_win": 83448.56856540084,
+        "average_loss": -75127.42017629775,
+        "largest_loss": -385971.0,
+        "largest_win": 745588.0,
+        "bottom10_loss_sum": -3363423.0,
+        "top10_win_sum": 4851711.0,
+        "bottom10_loss_share_of_gross_loss": 0.0048720839442879605,
+        "median_profit_rate": -0.56,
+        "average_profit_rate": -0.5782104614436484,
+        "median_hold_time": 37.0,
+        "average_hold_time": 49.36206763731608,
+        "avg_MAE": -1.4824158385332409,
+        "avg_MFE": 0.8614952623064479,
+        "exit_condition_counts": {
+          "elif 시분초 >= 145500:": 5262,
+          "elif 보유시간 >= 90:": 4171,
+          "elif 수익률 <= -3:": 2232,
+          "elif 수익률 >= 3:": 1316
+        },
+        "worst_exit_conditions": [
+          {
+            "count": 2232,
+            "profit_sum": -381900445.0,
+            "loss_sum": -381900445.0,
+            "win_sum": 0.0,
+            "key": "elif 수익률 <= -3:",
+            "avg_profit": -171102.34991039426
+          },
+          {
+            "count": 5262,
+            "profit_sum": -120463525.0,
+            "loss_sum": -157619095.0,
+            "win_sum": 37155570.0,
+            "key": "elif 시분초 >= 145500:",
+            "avg_profit": -22893.10623337134
+          },
+          {
+            "count": 4171,
+            "profit_sum": -106876311.0,
+            "loss_sum": -150826324.0,
+            "win_sum": 43950013.0,
+            "key": "elif 보유시간 >= 90:",
+            "avg_profit": -25623.666027331576
+          },
+          {
+            "count": 1316,
+            "profit_sum": 235331389.0,
+            "loss_sum": 0.0,
+            "win_sum": 235331389.0,
+            "key": "elif 수익률 >= 3:",
+            "avg_profit": 178823.24392097266
+          }
+        ],
+        "worst_buy_time_buckets": [
+          {
+            "count": 2743,
+            "profit_sum": -74724008.0,
+            "loss_sum": -146245719.0,
+            "win_sum": 71521711.0,
+            "key": "13:00",
+            "avg_profit": -27241.709077652205
+          },
+          {
+            "count": 913,
+            "profit_sum": -21452847.0,
+            "loss_sum": -46323712.0,
+            "win_sum": 24870865.0,
+            "key": "13:01",
+            "avg_profit": -23497.094194961664
+          },
+          {
+            "count": 972,
+            "profit_sum": -16323242.0,
+            "loss_sum": -24541840.0,
+            "win_sum": 8218598.0,
+            "key": "14:31",
+            "avg_profit": -16793.458847736627
+          },
+          {
+            "count": 495,
+            "profit_sum": -15637211.0,
+            "loss_sum": -28447631.0,
+            "win_sum": 12810420.0,
+            "key": "13:02",
+            "avg_profit": -31590.325252525254
+          },
+          {
+            "count": 642,
+            "profit_sum": -12330935.0,
+            "loss_sum": -17853845.0,
+            "win_sum": 5522910.0,
+            "key": "14:32",
+            "avg_profit": -19207.06386292835
+          }
+        ],
+        "worst_sell_time_buckets": [
+          {
+            "count": 5258,
+            "profit_sum": -122570629.0,
+            "loss_sum": -160270048.0,
+            "win_sum": 37699419.0,
+            "key": "14:55",
+            "avg_profit": -23311.264549258274
+          },
+          {
+            "count": 2014,
+            "profit_sum": -52637470.0,
+            "loss_sum": -74735351.0,
+            "win_sum": 22097881.0,
+            "key": "14:30",
+            "avg_profit": -26135.784508440913
+          },
+          {
+            "count": 690,
+            "profit_sum": -16418120.0,
+            "loss_sum": -24874280.0,
+            "win_sum": 8456160.0,
+            "key": "14:31",
+            "avg_profit": -23794.376811594204
+          },
+          {
+            "count": 379,
+            "profit_sum": -9694182.0,
+            "loss_sum": -15502705.0,
+            "win_sum": 5808523.0,
+            "key": "14:32",
+            "avg_profit": -25578.316622691294
+          },
+          {
+            "count": 224,
+            "profit_sum": -7106622.0,
+            "loss_sum": -10368332.0,
+            "win_sum": 3261710.0,
+            "key": "14:33",
+            "avg_profit": -31725.991071428572
+          }
+        ],
+        "worst_hold_time_buckets": [
+          {
+            "count": 5942,
+            "profit_sum": -145704999.0,
+            "loss_sum": -317050698.0,
+            "win_sum": 171345699.0,
+            "key": "0-29",
+            "avg_profit": -24521.20481319421
+          },
+          {
+            "count": 4176,
+            "profit_sum": -107028668.0,
+            "loss_sum": -151309663.0,
+            "win_sum": 44280995.0,
+            "key": "90-119",
+            "avg_profit": -25629.47030651341
+          },
+          {
+            "count": 1675,
+            "profit_sum": -67449622.0,
+            "loss_sum": -132384036.0,
+            "win_sum": 64934414.0,
+            "key": "30-59",
+            "avg_profit": -40268.431044776116
+          },
+          {
+            "count": 1188,
+            "profit_sum": -53725603.0,
+            "loss_sum": -89601467.0,
+            "win_sum": 35875864.0,
+            "key": "60-89",
+            "avg_profit": -45223.57154882155
+          }
+        ],
+        "loss_concentration_assessment": "broad_based"
+      }
+    },
+    {
+      "gen_no": 2,
+      "label": "body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage",
+      "lane_origin": "min",
+      "status": "ok",
+      "gate_passed": false,
+      "profit": -288376184.0,
+      "mdd": 207.91,
+      "trade_count": 11249,
+      "daily_avg_trades": 52.8,
+      "payoff_ratio": 1.3072120825608975,
+      "csv_path": "backtest/csv\\stock_bt_LAT_body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage_B_20260708222458.csv",
+      "engine_reason": "mdd 207.9 > mdd_cap 35",
+      "initial_decision": "no_go",
+      "primary_failure": "loss_plus_mdd",
+      "seed_audit": {
+        "condition_id": "body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage",
+        "family": "coverage_composite",
+        "cell_id": "min_body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage",
+        "hard_stop_loss_condition": true,
+        "stop_loss_threshold_pct": 120.0,
+        "take_profit_condition": true,
+        "take_profit_threshold_pct": 120.0,
+        "time_stop": true,
+        "time_stop_minutes": 145500.0,
+        "late_session_exit_rule": true,
+        "late_exit_time": 145500.0,
+        "position_hold_duration_limiter": true,
+        "volatility_or_range_cap": true,
+        "buy_range_lower": -2.0,
+        "buy_range_upper": 20.0,
+        "overtrading_throttle": false,
+        "overtrading_throttle_note": "No explicit daily max-trade/count throttle found; buy clauses are liquidity/coverage floors, not throttles."
+      },
+      "csv_loss_analysis": {
+        "csv_path": "backtest/csv\\stock_bt_LAT_body_03_lattice_v2_coverage_06_momentum_strength_surge_coverage_B_20260708222458.csv",
+        "csv_exists": true,
+        "status": "parsed",
+        "row_count": 11249,
+        "columns": [
+          "B_거래대금증감",
+          "B_당일거래대금",
+          "B_등락율",
+          "B_매도총잔량",
+          "B_매수총잔량",
+          "B_분봉고가",
+          "B_분봉시가",
+          "B_분봉저가",
+          "B_시가총액",
+          "B_시분초",
+          "B_전일동시간비",
+          "B_체결강도",
+          "B_현재가",
+          "B_회전율",
+          "R_MAE",
+          "R_MFE",
+          "R_매수후최고수익률",
+          "R_매수후최저수익률",
+          "S_등락율",
+          "S_매도총잔량",
+          "S_매수총잔량",
+          "S_체결강도",
+          "S_현재가",
+          "매도가",
+          "매도금액",
+          "매도시간",
+          "매도조건",
+          "매수가",
+          "매수금액",
+          "매수시간",
+          "보유시간",
+          "수익금",
+          "수익금합계",
+          "수익률",
+          "시가총액",
+          "종목명",
+          "추가매수시간"
+        ],
+        "unavailable_columns": [],
+        "net_profit_from_csv": -288376184.0,
+        "gross_win": 575996410.0,
+        "gross_loss": -864372594.0,
+        "win_count": 3808,
+        "loss_count": 7441,
+        "zero_count": 0,
+        "loss_trade_ratio": 0.6614810205351587,
+        "average_win": 151259.56144957984,
+        "average_loss": -116163.49872328989,
+        "largest_loss": -1871868.0,
+        "largest_win": 700228.0,
+        "bottom10_loss_sum": -5276614.0,
+        "top10_win_sum": 5279176.0,
+        "bottom10_loss_share_of_gross_loss": 0.006104559580703226,
+        "median_profit_rate": -1.07,
+        "average_profit_rate": -0.5144795092897146,
+        "median_hold_time": 66.0,
+        "average_hold_time": 67.53249177704684,
+        "avg_MAE": -2.0126589030136013,
+        "avg_MFE": 1.65180193795004,
+        "exit_condition_counts": {
+          "elif 보유시간 >= 120:": 4143,
+          "elif 수익률 <= -3:": 3842,
+          "elif 수익률 >= 4:": 2162,
+          "elif 시분초 >= 145500:": 1098,
+          "if 등락율 > 29:": 4
+        },
+        "worst_exit_conditions": [
+          {
+            "count": 3842,
+            "profit_sum": -661030520.0,
+            "loss_sum": -661030520.0,
+            "win_sum": 0.0,
+            "key": "elif 수익률 <= -3:",
+            "avg_profit": -172053.7532535138
+          },
+          {
+            "count": 4143,
+            "profit_sum": -91999622.0,
+            "loss_sum": -162283689.0,
+            "win_sum": 70284067.0,
+            "key": "elif 보유시간 >= 120:",
+            "avg_profit": -22206.039584841903
+          },
+          {
+            "count": 1098,
+            "profit_sum": -28581920.0,
+            "loss_sum": -41058385.0,
+            "win_sum": 12476465.0,
+            "key": "elif 시분초 >= 145500:",
+            "avg_profit": -26030.89253187614
+          },
+          {
+            "count": 4,
+            "profit_sum": 1588642.0,
+            "loss_sum": 0.0,
+            "win_sum": 1588642.0,
+            "key": "if 등락율 > 29:",
+            "avg_profit": 397160.5
+          },
+          {
+            "count": 2162,
+            "profit_sum": 491647236.0,
+            "loss_sum": 0.0,
+            "win_sum": 491647236.0,
+            "key": "elif 수익률 >= 4:",
+            "avg_profit": 227403.9019426457
+          }
+        ],
+        "worst_buy_time_buckets": [
+          {
+            "count": 200,
+            "profit_sum": -8146092.0,
+            "loss_sum": -16544543.0,
+            "win_sum": 8398451.0,
+            "key": "09:33",
+            "avg_profit": -40730.46
+          },
+          {
+            "count": 587,
+            "profit_sum": -7518104.0,
+            "loss_sum": -41157146.0,
+            "win_sum": 33639042.0,
+            "key": "09:30",
+            "avg_profit": -12807.672913117547
+          },
+          {
+            "count": 139,
+            "profit_sum": -5813130.0,
+            "loss_sum": -12372524.0,
+            "win_sum": 6559394.0,
+            "key": "09:40",
+            "avg_profit": -41821.07913669065
+          },
+          {
+            "count": 132,
+            "profit_sum": -5230756.0,
+            "loss_sum": -11530924.0,
+            "win_sum": 6300168.0,
+            "key": "09:36",
+            "avg_profit": -39626.93939393939
+          },
+          {
+            "count": 297,
+            "profit_sum": -4686544.0,
+            "loss_sum": -21165599.0,
+            "win_sum": 16479055.0,
+            "key": "09:31",
+            "avg_profit": -15779.609427609428
+          }
+        ],
+        "worst_sell_time_buckets": [
+          {
+            "count": 1115,
+            "profit_sum": -29067779.0,
+            "loss_sum": -41897900.0,
+            "win_sum": 12830121.0,
+            "key": "14:55",
+            "avg_profit": -26069.756950672647
+          },
+          {
+            "count": 295,
+            "profit_sum": -5123976.0,
+            "loss_sum": -12318646.0,
+            "win_sum": 7194670.0,
+            "key": "11:30",
+            "avg_profit": -17369.410169491526
+          },
+          {
+            "count": 35,
+            "profit_sum": -5062856.0,
+            "loss_sum": -6569267.0,
+            "win_sum": 1506411.0,
+            "key": "10:13",
+            "avg_profit": -144653.0285714286
+          },
+          {
+            "count": 41,
+            "profit_sum": -3395648.0,
+            "loss_sum": -5503390.0,
+            "win_sum": 2107742.0,
+            "key": "09:56",
+            "avg_profit": -82820.68292682926
+          },
+          {
+            "count": 99,
+            "profit_sum": -3143719.0,
+            "loss_sum": -5754420.0,
+            "win_sum": 2610701.0,
+            "key": "11:35",
+            "avg_profit": -31754.737373737375
+          }
+        ],
+        "worst_hold_time_buckets": [
+          {
+            "count": 3869,
+            "profit_sum": -99261361.0,
+            "loss_sum": -427145949.0,
+            "win_sum": 327884588.0,
+            "key": "0-29",
+            "avg_profit": -25655.55983458258
+          },
+          {
+            "count": 4158,
+            "profit_sum": -91486461.0,
+            "loss_sum": -163424933.0,
+            "win_sum": 71938472.0,
+            "key": "120-149",
+            "avg_profit": -22002.515873015873
+          },
+          {
+            "count": 1501,
+            "profit_sum": -38877282.0,
+            "loss_sum": -136742148.0,
+            "win_sum": 97864866.0,
+            "key": "30-59",
+            "avg_profit": -25900.92071952032
+          },
+          {
+            "count": 996,
+            "profit_sum": -33325863.0,
+            "loss_sum": -82994551.0,
+            "win_sum": 49668688.0,
+            "key": "60-89",
+            "avg_profit": -33459.701807228914
+          },
+          {
+            "count": 725,
+            "profit_sum": -25425217.0,
+            "loss_sum": -54065013.0,
+            "win_sum": 28639796.0,
+            "key": "90-119",
+            "avg_profit": -35069.26482758621
+          }
+        ],
+        "loss_concentration_assessment": "broad_based"
+      }
+    },
+    {
+      "gen_no": 3,
+      "label": "body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+      "lane_origin": "min",
+      "status": "ok",
+      "gate_passed": false,
+      "profit": -106616341.0,
+      "mdd": 127.28,
+      "trade_count": 5015,
+      "daily_avg_trades": 23.5,
+      "payoff_ratio": 1.0252820105974727,
+      "csv_path": "backtest/csv\\stock_bt_LAT_body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse_B_20260708222521.csv",
+      "engine_reason": "mdd 127.3 > mdd_cap 35",
+      "initial_decision": "no_go",
+      "primary_failure": "loss_plus_mdd",
+      "seed_audit": {
+        "condition_id": "body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+        "family": "risk_balanced_composite",
+        "cell_id": "min_body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse",
+        "hard_stop_loss_condition": true,
+        "stop_loss_threshold_pct": 60.0,
+        "take_profit_condition": true,
+        "take_profit_threshold_pct": 60.0,
+        "time_stop": true,
+        "time_stop_minutes": 145000.0,
+        "late_session_exit_rule": true,
+        "late_exit_time": 145000.0,
+        "position_hold_duration_limiter": true,
+        "volatility_or_range_cap": true,
+        "buy_range_lower": -2.0,
+        "buy_range_upper": 14.0,
+        "overtrading_throttle": false,
+        "overtrading_throttle_note": "No explicit daily max-trade/count throttle found; buy clauses are liquidity/coverage floors, not throttles."
+      },
+      "csv_loss_analysis": {
+        "csv_path": "backtest/csv\\stock_bt_LAT_body_04_lattice_v2_risk_01_mdd10_l13_l14_default_diverse_B_20260708222521.csv",
+        "csv_exists": true,
+        "status": "parsed",
+        "row_count": 5015,
+        "columns": [
+          "B_거래대금증감",
+          "B_당일거래대금",
+          "B_등락율",
+          "B_매도총잔량",
+          "B_매수총잔량",
+          "B_분봉고가",
+          "B_분봉시가",
+          "B_분봉저가",
+          "B_시가총액",
+          "B_시분초",
+          "B_전일동시간비",
+          "B_체결강도",
+          "B_현재가",
+          "B_회전율",
+          "R_MAE",
+          "R_MFE",
+          "R_매수후최고수익률",
+          "R_매수후최저수익률",
+          "S_등락율",
+          "S_매도총잔량",
+          "S_매수총잔량",
+          "S_체결강도",
+          "S_현재가",
+          "매도가",
+          "매도금액",
+          "매도시간",
+          "매도조건",
+          "매수가",
+          "매수금액",
+          "매수시간",
+          "보유시간",
+          "수익금",
+          "수익금합계",
+          "수익률",
+          "시가총액",
+          "종목명",
+          "추가매수시간"
+        ],
+        "unavailable_columns": [],
+        "net_profit_from_csv": -106616341.0,
+        "gross_win": 97345943.0,
+        "gross_loss": -203962284.0,
+        "win_count": 1599,
+        "loss_count": 3416,
+        "zero_count": 0,
+        "loss_trade_ratio": 0.6811565304087737,
+        "average_win": 60879.263914946845,
+        "average_loss": -59707.92857142857,
+        "largest_loss": -255293.0,
+        "largest_win": 580785.0,
+        "bottom10_loss_sum": -2239437.0,
+        "top10_win_sum": 2915323.0,
+        "bottom10_loss_share_of_gross_loss": 0.010979662298741467,
+        "median_profit_rate": -0.48,
+        "average_profit_rate": -0.4280059820538385,
+        "median_hold_time": 45.0,
+        "average_hold_time": 41.39401794616152,
+        "avg_MAE": -1.172221335992024,
+        "avg_MFE": 0.6586181455633101,
+        "exit_condition_counts": {
+          "elif 보유시간 >= 60:": 1911,
+          "elif 시분초 >= 145000:": 1460,
+          "elif 수익률 <= -2:": 1022,
+          "elif 수익률 >= 2:": 622
+        },
+        "worst_exit_conditions": [
+          {
+            "count": 1022,
+            "profit_sum": -118935365.0,
+            "loss_sum": -118935365.0,
+            "win_sum": 0.0,
+            "key": "elif 수익률 <= -2:",
+            "avg_profit": -116375.11252446185
+          },
+          {
+            "count": 1911,
+            "profit_sum": -36520342.0,
+            "loss_sum": -51222688.0,
+            "win_sum": 14702346.0,
+            "key": "elif 보유시간 >= 60:",
+            "avg_profit": -19110.59236002093
+          },
+          {
+            "count": 1460,
+            "profit_sum": -23480046.0,
+            "loss_sum": -33804231.0,
+            "win_sum": 10324185.0,
+            "key": "elif 시분초 >= 145000:",
+            "avg_profit": -16082.223287671233
+          },
+          {
+            "count": 622,
+            "profit_sum": 72319412.0,
+            "loss_sum": 0.0,
+            "win_sum": 72319412.0,
+            "key": "elif 수익률 >= 2:",
+            "avg_profit": 116269.15112540193
+          }
+        ],
+        "worst_buy_time_buckets": [
+          {
+            "count": 483,
+            "profit_sum": -10625402.0,
+            "loss_sum": -19528936.0,
+            "win_sum": 8903534.0,
+            "key": "13:00",
+            "avg_profit": -21998.761904761905
+          },
+          {
+            "count": 233,
+            "profit_sum": -4563776.0,
+            "loss_sum": -9745371.0,
+            "win_sum": 5181595.0,
+            "key": "13:01",
+            "avg_profit": -19587.021459227468
+          },
+          {
+            "count": 209,
+            "profit_sum": -4020193.0,
+            "loss_sum": -8663642.0,
+            "win_sum": 4643449.0,
+            "key": "13:02",
+            "avg_profit": -19235.373205741627
+          },
+          {
+            "count": 94,
+            "profit_sum": -3205406.0,
+            "loss_sum": -4911828.0,
+            "win_sum": 1706422.0,
+            "key": "13:06",
+            "avg_profit": -34100.063829787236
+          },
+          {
+            "count": 106,
+            "profit_sum": -2819469.0,
+            "loss_sum": -4898381.0,
+            "win_sum": 2078912.0,
+            "key": "13:04",
+            "avg_profit": -26598.764150943396
+          }
+        ],
+        "worst_sell_time_buckets": [
+          {
+            "count": 1471,
+            "profit_sum": -23676159.0,
+            "loss_sum": -34206977.0,
+            "win_sum": 10530818.0,
+            "key": "14:50",
+            "avg_profit": -16095.281441196465
+          },
+          {
+            "count": 344,
+            "profit_sum": -7016541.0,
+            "loss_sum": -10205720.0,
+            "win_sum": 3189179.0,
+            "key": "14:00",
+            "avg_profit": -20396.92151162791
+          },
+          {
+            "count": 72,
+            "profit_sum": -3421597.0,
+            "loss_sum": -3793890.0,
+            "win_sum": 372293.0,
+            "key": "14:06",
+            "avg_profit": -47522.180555555555
+          },
+          {
+            "count": 154,
+            "profit_sum": -2906136.0,
+            "loss_sum": -5183570.0,
+            "win_sum": 2277434.0,
+            "key": "14:02",
+            "avg_profit": -18871.012987012986
+          },
+          {
+            "count": 80,
+            "profit_sum": -2382785.0,
+            "loss_sum": -3154641.0,
+            "win_sum": 771856.0,
+            "key": "14:04",
+            "avg_profit": -29784.8125
+          }
+        ],
+        "worst_hold_time_buckets": [
+          {
+            "count": 1480,
+            "profit_sum": -39599556.0,
+            "loss_sum": -91747632.0,
+            "win_sum": 52148076.0,
+            "key": "0-29",
+            "avg_profit": -26756.456756756757
+          },
+          {
+            "count": 1921,
+            "profit_sum": -36359734.0,
+            "loss_sum": -51706726.0,
+            "win_sum": 15346992.0,
+            "key": "60-89",
+            "avg_profit": -18927.503383654348
+          },
+          {
+            "count": 1614,
+            "profit_sum": -30657051.0,
+            "loss_sum": -60507926.0,
+            "win_sum": 29850875.0,
+            "key": "30-59",
+            "avg_profit": -18994.455390334573
+          }
+        ],
+        "loss_concentration_assessment": "broad_based"
+      }
+    },
+    {
+      "gen_no": 4,
+      "label": "body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair",
+      "lane_origin": "min",
+      "status": "ok",
+      "gate_passed": false,
+      "profit": -881171389.0,
+      "mdd": 441.67,
+      "trade_count": 30653,
+      "daily_avg_trades": 143.9,
+      "payoff_ratio": 1.1481739011947087,
+      "csv_path": "backtest/csv\\stock_bt_LAT_body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair_B_20260708222555.csv",
+      "engine_reason": "mdd 441.7 > mdd_cap 35",
+      "initial_decision": "no_go",
+      "primary_failure": "loss_plus_mdd",
+      "seed_audit": {
+        "condition_id": "body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair",
+        "family": "risk_balanced_composite",
+        "cell_id": "min_body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair",
+        "hard_stop_loss_condition": true,
+        "stop_loss_threshold_pct": 90.0,
+        "take_profit_condition": true,
+        "take_profit_threshold_pct": 90.0,
+        "time_stop": true,
+        "time_stop_minutes": 145500.0,
+        "late_session_exit_rule": true,
+        "late_exit_time": 145500.0,
+        "position_hold_duration_limiter": true,
+        "volatility_or_range_cap": true,
+        "buy_range_lower": -5.0,
+        "buy_range_upper": 18.0,
+        "overtrading_throttle": false,
+        "overtrading_throttle_note": "No explicit daily max-trade/count throttle found; buy clauses are liquidity/coverage floors, not throttles."
+      },
+      "csv_loss_analysis": {
+        "csv_path": "backtest/csv\\stock_bt_LAT_body_05_lattice_v2_risk_08_dailycovered_nonpositive_repair_B_20260708222555.csv",
+        "csv_exists": true,
+        "status": "parsed",
+        "row_count": 30653,
+        "columns": [
+          "B_거래대금증감",
+          "B_당일거래대금",
+          "B_등락율",
+          "B_매도총잔량",
+          "B_매수총잔량",
+          "B_분봉고가",
+          "B_분봉시가",
+          "B_분봉저가",
+          "B_시가총액",
+          "B_시분초",
+          "B_전일동시간비",
+          "B_체결강도",
+          "B_현재가",
+          "B_회전율",
+          "R_MAE",
+          "R_MFE",
+          "R_매수후최고수익률",
+          "R_매수후최저수익률",
+          "S_등락율",
+          "S_매도총잔량",
+          "S_매수총잔량",
+          "S_체결강도",
+          "S_현재가",
+          "매도가",
+          "매도금액",
+          "매도시간",
+          "매도조건",
+          "매수가",
+          "매수금액",
+          "매수시간",
+          "보유시간",
+          "수익금",
+          "수익금합계",
+          "수익률",
+          "시가총액",
+          "종목명",
+          "추가매수시간"
+        ],
+        "unavailable_columns": [],
+        "net_profit_from_csv": -881171389.0,
+        "gross_win": 1190811959.0,
+        "gross_loss": -2071983348.0,
+        "win_count": 10253,
+        "loss_count": 20400,
+        "zero_count": 0,
+        "loss_trade_ratio": 0.6655139790558836,
+        "average_win": 116142.78347800644,
+        "average_loss": -101567.81117647058,
+        "largest_loss": -451164.0,
+        "largest_win": 1241556.0,
+        "bottom10_loss_sum": -3944863.0,
+        "top10_win_sum": 6175849.0,
+        "bottom10_loss_share_of_gross_loss": 0.0019039067103545082,
+        "median_profit_rate": -0.78,
+        "average_profit_rate": -0.5767109255211562,
+        "median_hold_time": 58.0,
+        "average_hold_time": 54.42198153524941,
+        "avg_MAE": -1.829355691123218,
+        "avg_MFE": 1.2361742733174568,
+        "exit_condition_counts": {
+          "elif 보유시간 >= 90:": 11758,
+          "elif 수익률 <= -3:": 8362,
+          "elif 수익률 >= 3:": 5795,
+          "elif 시분초 >= 145500:": 4737,
+          "if 등락율 > 29:": 1
+        },
+        "worst_exit_conditions": [
+          {
+            "count": 8362,
+            "profit_sum": -1434082648.0,
+            "loss_sum": -1434082648.0,
+            "win_sum": 0.0,
+            "key": "elif 수익률 <= -3:",
+            "avg_profit": -171499.95790480747
+          },
+          {
+            "count": 11758,
+            "profit_sum": -354764656.0,
+            "loss_sum": -478051088.0,
+            "win_sum": 123286432.0,
+            "key": "elif 보유시간 >= 90:",
+            "avg_profit": -30172.193910529
+          },
+          {
+            "count": 4737,
+            "profit_sum": -119891056.0,
+            "loss_sum": -159849612.0,
+            "win_sum": 39958556.0,
+            "key": "elif 시분초 >= 145500:",
+            "avg_profit": -25309.49039476462
+          },
+          {
+            "count": 1,
+            "profit_sum": 1241556.0,
+            "loss_sum": 0.0,
+            "win_sum": 1241556.0,
+            "key": "if 등락율 > 29:",
+            "avg_profit": 1241556.0
+          },
+          {
+            "count": 5795,
+            "profit_sum": 1026325415.0,
+            "loss_sum": 0.0,
+            "win_sum": 1026325415.0,
+            "key": "elif 수익률 >= 3:",
+            "avg_profit": 177105.33477135462
+          }
+        ],
+        "worst_buy_time_buckets": [
+          {
+            "count": 991,
+            "profit_sum": -12891202.0,
+            "loss_sum": -67769070.0,
+            "win_sum": 54877868.0,
+            "key": "09:30",
+            "avg_profit": -13008.27648839556
+          },
+          {
+            "count": 308,
+            "profit_sum": -12244894.0,
+            "loss_sum": -23792673.0,
+            "win_sum": 11547779.0,
+            "key": "09:33",
+            "avg_profit": -39756.14935064935
+          },
+          {
+            "count": 147,
+            "profit_sum": -8100611.0,
+            "loss_sum": -13674752.0,
+            "win_sum": 5574141.0,
+            "key": "09:51",
+            "avg_profit": -55106.19727891157
+          },
+          {
+            "count": 314,
+            "profit_sum": -8010542.0,
+            "loss_sum": -22136927.0,
+            "win_sum": 14126385.0,
+            "key": "09:32",
+            "avg_profit": -25511.28025477707
+          },
+          {
+            "count": 442,
+            "profit_sum": -7467479.0,
+            "loss_sum": -31282829.0,
+            "win_sum": 23815350.0,
+            "key": "09:31",
+            "avg_profit": -16894.74886877828
+          }
+        ],
+        "worst_sell_time_buckets": [
+          {
+            "count": 4760,
+            "profit_sum": -120656962.0,
+            "loss_sum": -162340880.0,
+            "win_sum": 41683918.0,
+            "key": "14:55",
+            "avg_profit": -25348.1012605042
+          },
+          {
+            "count": 474,
+            "profit_sum": -15003691.0,
+            "loss_sum": -25033547.0,
+            "win_sum": 10029856.0,
+            "key": "11:00",
+            "avg_profit": -31653.356540084387
+          },
+          {
+            "count": 180,
+            "profit_sum": -7278045.0,
+            "loss_sum": -12131368.0,
+            "win_sum": 4853323.0,
+            "key": "11:05",
+            "avg_profit": -40433.583333333336
+          },
+          {
+            "count": 202,
+            "profit_sum": -7270677.0,
+            "loss_sum": -12229488.0,
+            "win_sum": 4958811.0,
+            "key": "11:02",
+            "avg_profit": -35993.4504950495
+          },
+          {
+            "count": 69,
+            "profit_sum": -6547751.0,
+            "loss_sum": -9414624.0,
+            "win_sum": 2866873.0,
+            "key": "10:02",
+            "avg_profit": -94894.9420289855
+          }
+        ],
+        "worst_hold_time_buckets": [
+          {
+            "count": 11798,
+            "profit_sum": -356196638.0,
+            "loss_sum": -482140217.0,
+            "win_sum": 125943579.0,
+            "key": "90-119",
+            "avg_profit": -30191.27292761485
+          },
+          {
+            "count": 10430,
+            "profit_sum": -215939192.0,
+            "loss_sum": -909993708.0,
+            "win_sum": 694054516.0,
+            "key": "0-29",
+            "avg_profit": -20703.661744966445
+          },
+          {
+            "count": 5086,
+            "profit_sum": -181384238.0,
+            "loss_sum": -422832746.0,
+            "win_sum": 241448508.0,
+            "key": "30-59",
+            "avg_profit": -35663.43649233189
+          },
+          {
+            "count": 3339,
+            "profit_sum": -127651321.0,
+            "loss_sum": -257016677.0,
+            "win_sum": 129365356.0,
+            "key": "60-89",
+            "avg_profit": -38230.40461215933
+          }
+        ],
+        "loss_concentration_assessment": "broad_based"
+      }
+    },
+    {
+      "gen_no": 5,
+      "label": "body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+      "lane_origin": "min",
+      "status": "ok",
+      "gate_passed": false,
+      "profit": -103427022.0,
+      "mdd": 90.64,
+      "trade_count": 4487,
+      "daily_avg_trades": 21.1,
+      "payoff_ratio": 1.0800817574669759,
+      "csv_path": "backtest/csv\\stock_bt_LAT_body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only_B_20260708222623.csv",
+      "engine_reason": "mdd 90.64 > mdd_cap 35",
+      "initial_decision": "no_go",
+      "primary_failure": "loss_plus_mdd",
+      "seed_audit": {
+        "condition_id": "body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+        "family": "survivor_seed_derivative",
+        "cell_id": "min_body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only",
+        "hard_stop_loss_condition": true,
+        "stop_loss_threshold_pct": 90.0,
+        "take_profit_condition": true,
+        "take_profit_threshold_pct": 90.0,
+        "time_stop": true,
+        "time_stop_minutes": 145500.0,
+        "late_session_exit_rule": true,
+        "late_exit_time": 145500.0,
+        "position_hold_duration_limiter": true,
+        "volatility_or_range_cap": true,
+        "buy_range_lower": -3.0,
+        "buy_range_upper": 15.0,
+        "overtrading_throttle": false,
+        "overtrading_throttle_note": "No explicit daily max-trade/count throttle found; buy clauses are liquidity/coverage floors, not throttles."
+      },
+      "csv_loss_analysis": {
+        "csv_path": "backtest/csv\\stock_bt_LAT_body_06_lattice_v2_seed_01_rank03_r2_l13_l1430_component_only_B_20260708222623.csv",
+        "csv_exists": true,
+        "status": "parsed",
+        "row_count": 4487,
+        "columns": [
+          "B_거래대금증감",
+          "B_당일거래대금",
+          "B_등락율",
+          "B_매도총잔량",
+          "B_매수총잔량",
+          "B_분봉고가",
+          "B_분봉시가",
+          "B_분봉저가",
+          "B_시가총액",
+          "B_시분초",
+          "B_전일동시간비",
+          "B_체결강도",
+          "B_현재가",
+          "B_회전율",
+          "R_MAE",
+          "R_MFE",
+          "R_매수후최고수익률",
+          "R_매수후최저수익률",
+          "S_등락율",
+          "S_매도총잔량",
+          "S_매수총잔량",
+          "S_체결강도",
+          "S_현재가",
+          "매도가",
+          "매도금액",
+          "매도시간",
+          "매도조건",
+          "매수가",
+          "매수금액",
+          "매수시간",
+          "보유시간",
+          "수익금",
+          "수익금합계",
+          "수익률",
+          "시가총액",
+          "종목명",
+          "추가매수시간"
+        ],
+        "unavailable_columns": [],
+        "net_profit_from_csv": -103427022.0,
+        "gross_win": 129633375.0,
+        "gross_loss": -233060397.0,
+        "win_count": 1529,
+        "loss_count": 2958,
+        "zero_count": 0,
+        "loss_trade_ratio": 0.6592377980833519,
+        "average_win": 84783.10987573577,
+        "average_loss": -78789.8569979716,
+        "largest_loss": -338562.0,
+        "largest_win": 422085.0,
+        "bottom10_loss_sum": -2697126.0,
+        "top10_win_sum": 3264186.0,
+        "bottom10_loss_share_of_gross_loss": 0.011572648269366846,
+        "median_profit_rate": -0.58,
+        "average_profit_rate": -0.4632694450635168,
+        "median_hold_time": 90.0,
+        "average_hold_time": 68.64898595943838,
+        "avg_MAE": -1.5605170492533986,
+        "avg_MFE": 1.0194428348562514,
+        "exit_condition_counts": {
+          "elif 보유시간 >= 90:": 2569,
+          "elif 수익률 <= -3:": 717,
+          "elif 시분초 >= 145500:": 657,
+          "elif 수익률 >= 3:": 544
+        },
+        "worst_exit_conditions": [
+          {
+            "count": 717,
+            "profit_sum": -120809190.0,
+            "loss_sum": -120809190.0,
+            "win_sum": 0.0,
+            "key": "elif 수익률 <= -3:",
+            "avg_profit": -168492.59414225942
+          },
+          {
+            "count": 2569,
+            "profit_sum": -58058193.0,
+            "loss_sum": -87206920.0,
+            "win_sum": 29148727.0,
+            "key": "elif 보유시간 >= 90:",
+            "avg_profit": -22599.530167380304
+          },
+          {
+            "count": 657,
+            "profit_sum": -17430508.0,
+            "loss_sum": -25044287.0,
+            "win_sum": 7613779.0,
+            "key": "elif 시분초 >= 145500:",
+            "avg_profit": -26530.453576864536
+          },
+          {
+            "count": 544,
+            "profit_sum": 92870869.0,
+            "loss_sum": 0.0,
+            "win_sum": 92870869.0,
+            "key": "elif 수익률 >= 3:",
+            "avg_profit": 170718.50919117648
+          }
+        ],
+        "worst_buy_time_buckets": [
+          {
+            "count": 1676,
+            "profit_sum": -31664856.0,
+            "loss_sum": -70877473.0,
+            "win_sum": 39212617.0,
+            "key": "13:00",
+            "avg_profit": -18893.112171837707
+          },
+          {
+            "count": 558,
+            "profit_sum": -6597530.0,
+            "loss_sum": -22101848.0,
+            "win_sum": 15504318.0,
+            "key": "13:01",
+            "avg_profit": -11823.530465949822
+          },
+          {
+            "count": 295,
+            "profit_sum": -5091720.0,
+            "loss_sum": -12521487.0,
+            "win_sum": 7429767.0,
+            "key": "13:02",
+            "avg_profit": -17260.06779661017
+          },
+          {
+            "count": 95,
+            "profit_sum": -2747148.0,
+            "loss_sum": -5051301.0,
+            "win_sum": 2304153.0,
+            "key": "13:04",
+            "avg_profit": -28917.34736842105
+          },
+          {
+            "count": 78,
+            "profit_sum": -2556871.0,
+            "loss_sum": -4886292.0,
+            "win_sum": 2329421.0,
+            "key": "13:05",
+            "avg_profit": -32780.39743589744
+          }
+        ],
+        "worst_sell_time_buckets": [
+          {
+            "count": 1383,
+            "profit_sum": -29768560.0,
+            "loss_sum": -45935913.0,
+            "win_sum": 16167353.0,
+            "key": "14:30",
+            "avg_profit": -21524.627621113523
+          },
+          {
+            "count": 661,
+            "profit_sum": -17866173.0,
+            "loss_sum": -25498708.0,
+            "win_sum": 7632535.0,
+            "key": "14:55",
+            "avg_profit": -27029.006051437216
+          },
+          {
+            "count": 455,
+            "profit_sum": -8475895.0,
+            "loss_sum": -14817752.0,
+            "win_sum": 6341857.0,
+            "key": "14:31",
+            "avg_profit": -18628.340659340658
+          },
+          {
+            "count": 252,
+            "profit_sum": -5907048.0,
+            "loss_sum": -9447322.0,
+            "win_sum": 3540274.0,
+            "key": "14:32",
+            "avg_profit": -23440.666666666668
+          },
+          {
+            "count": 129,
+            "profit_sum": -3058829.0,
+            "loss_sum": -4609818.0,
+            "win_sum": 1550989.0,
+            "key": "14:33",
+            "avg_profit": -23711.852713178294
+          }
+        ],
+        "worst_hold_time_buckets": [
+          {
+            "count": 2571,
+            "profit_sum": -58374197.0,
+            "loss_sum": -87522924.0,
+            "win_sum": 29148727.0,
+            "key": "90-119",
+            "avg_profit": -22704.860754570207
+          },
+          {
+            "count": 498,
+            "profit_sum": -16947067.0,
+            "loss_sum": -33307342.0,
+            "win_sum": 16360275.0,
+            "key": "60-89",
+            "avg_profit": -34030.25502008032
+          },
+          {
+            "count": 758,
+            "profit_sum": -15529196.0,
+            "loss_sum": -69133101.0,
+            "win_sum": 53603905.0,
+            "key": "0-29",
+            "avg_profit": -20487.065963060686
+          },
+          {
+            "count": 660,
+            "profit_sum": -12576562.0,
+            "loss_sum": -43097030.0,
+            "win_sum": 30520468.0,
+            "key": "30-59",
+            "avg_profit": -19055.39696969697
+          }
+        ],
+        "loss_concentration_assessment": "broad_based"
+      }
+    },
+    {
+      "gen_no": 6,
+      "label": "body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape",
+      "lane_origin": "tick",
+      "status": "error",
+      "gate_passed": false,
+      "profit": 0.0,
+      "mdd": 0.0,
+      "trade_count": 0,
+      "daily_avg_trades": 0.0,
+      "payoff_ratio": 0.0,
+      "csv_path": null,
+      "engine_reason": "[body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape] backtest failed: warm backtest non-success: status=error message=backtest completed without metrics csv=no metrics=no",
+      "initial_decision": "no_go",
+      "primary_failure": "no_metrics",
+      "seed_audit": {
+        "condition_id": "body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape",
+        "family": "negative_control",
+        "cell_id": "tick_body_07_lattice_v2_neg_01_tick_prevday_active_0900_loss_shape",
+        "hard_stop_loss_condition": true,
+        "stop_loss_threshold_pct": 30.0,
+        "take_profit_condition": true,
+        "take_profit_threshold_pct": 30.0,
+        "time_stop": true,
+        "time_stop_minutes": 91500.0,
+        "late_session_exit_rule": true,
+        "late_exit_time": 91500.0,
+        "position_hold_duration_limiter": true,
+        "volatility_or_range_cap": true,
+        "buy_range_lower": -7.0,
+        "buy_range_upper": 25.0,
+        "overtrading_throttle": false,
+        "overtrading_throttle_note": "No explicit daily max-trade/count throttle found; buy clauses are liquidity/coverage floors, not throttles."
+      },
+      "csv_loss_analysis": {
+        "csv_path": null,
+        "csv_exists": false,
+        "status": "no_metrics",
+        "row_count": 0,
+        "unavailable_columns": [
+          "csv_path"
+        ]
+      }
+    },
+    {
+      "gen_no": 7,
+      "label": "body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default",
+      "lane_origin": "min",
+      "status": "ok",
+      "gate_passed": false,
+      "profit": -101728684.0,
+      "mdd": 89.63,
+      "trade_count": 4365,
+      "daily_avg_trades": 20.5,
+      "payoff_ratio": 1.0784133339216708,
+      "csv_path": "backtest/csv\\stock_bt_LAT_body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default_B_20260708222720.csv",
+      "engine_reason": "mdd 89.63 > mdd_cap 35",
+      "initial_decision": "no_go",
+      "primary_failure": "loss_plus_mdd",
+      "seed_audit": {
+        "condition_id": "body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default",
+        "family": "holdout_control",
+        "cell_id": "min_body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default",
+        "hard_stop_loss_condition": true,
+        "stop_loss_threshold_pct": 90.0,
+        "take_profit_condition": true,
+        "take_profit_threshold_pct": 90.0,
+        "time_stop": true,
+        "time_stop_minutes": 145500.0,
+        "late_session_exit_rule": true,
+        "late_exit_time": 145500.0,
+        "position_hold_duration_limiter": true,
+        "volatility_or_range_cap": true,
+        "buy_range_lower": -3.0,
+        "buy_range_upper": 15.0,
+        "overtrading_throttle": false,
+        "overtrading_throttle_note": "No explicit daily max-trade/count throttle found; buy clauses are liquidity/coverage floors, not throttles."
+      },
+      "csv_loss_analysis": {
+        "csv_path": "backtest/csv\\stock_bt_LAT_body_08_lattice_v2_hold_04_holdout_rank03_r2_l13_l1430_default_B_20260708222720.csv",
+        "csv_exists": true,
+        "status": "parsed",
+        "row_count": 4365,
+        "columns": [
+          "B_거래대금증감",
+          "B_당일거래대금",
+          "B_등락율",
+          "B_매도총잔량",
+          "B_매수총잔량",
+          "B_분봉고가",
+          "B_분봉시가",
+          "B_분봉저가",
+          "B_시가총액",
+          "B_시분초",
+          "B_전일동시간비",
+          "B_체결강도",
+          "B_현재가",
+          "B_회전율",
+          "R_MAE",
+          "R_MFE",
+          "R_매수후최고수익률",
+          "R_매수후최저수익률",
+          "S_등락율",
+          "S_매도총잔량",
+          "S_매수총잔량",
+          "S_체결강도",
+          "S_현재가",
+          "매도가",
+          "매도금액",
+          "매도시간",
+          "매도조건",
+          "매수가",
+          "매수금액",
+          "매수시간",
+          "보유시간",
+          "수익금",
+          "수익금합계",
+          "수익률",
+          "시가총액",
+          "종목명",
+          "추가매수시간"
+        ],
+        "unavailable_columns": [],
+        "net_profit_from_csv": -101728684.0,
+        "gross_win": 122928040.0,
+        "gross_loss": -224656724.0,
+        "win_count": 1476,
+        "loss_count": 2889,
+        "zero_count": 0,
+        "loss_trade_ratio": 0.6618556701030928,
+        "average_win": 83284.57994579946,
+        "average_loss": -77762.79820006923,
+        "largest_loss": -338562.0,
+        "largest_win": 422085.0,
+        "bottom10_loss_sum": -2698834.0,
+        "top10_win_sum": 3227525.0,
+        "bottom10_loss_share_of_gross_loss": 0.012013145887411765,
+        "median_profit_rate": -0.57,
+        "average_profit_rate": -0.4683390607101947,
+        "median_hold_time": 90.0,
+        "average_hold_time": 69.15509736540665,
+        "avg_MAE": -1.5520114547537227,
+        "avg_MFE": 0.9933081328751432,
+        "exit_condition_counts": {
+          "elif 보유시간 >= 90:": 2477,
+          "elif 시분초 >= 145500:": 696,
+          "elif 수익률 <= -3:": 681,
+          "elif 수익률 >= 3:": 511
+        },
+        "worst_exit_conditions": [
+          {
+            "count": 681,
+            "profit_sum": -114895552.0,
+            "loss_sum": -114895552.0,
+            "win_sum": 0.0,
+            "key": "elif 수익률 <= -3:",
+            "avg_profit": -168715.93538913364
+          },
+          {
+            "count": 2477,
+            "profit_sum": -56820875.0,
+            "loss_sum": -84594334.0,
+            "win_sum": 27773459.0,
+            "key": "elif 보유시간 >= 90:",
+            "avg_profit": -22939.392410173597
+          },
+          {
+            "count": 696,
+            "profit_sum": -17129612.0,
+            "loss_sum": -25166838.0,
+            "win_sum": 8037226.0,
+            "key": "elif 시분초 >= 145500:",
+            "avg_profit": -24611.511494252874
+          },
+          {
+            "count": 511,
+            "profit_sum": 87117355.0,
+            "loss_sum": 0.0,
+            "win_sum": 87117355.0,
+            "key": "elif 수익률 >= 3:",
+            "avg_profit": 170484.06066536205
+          }
+        ],
+        "worst_buy_time_buckets": [
+          {
+            "count": 1104,
+            "profit_sum": -24335578.0,
+            "loss_sum": -49118816.0,
+            "win_sum": 24783238.0,
+            "key": "13:00",
+            "avg_profit": -22043.096014492752
+          },
+          {
+            "count": 482,
+            "profit_sum": -7902015.0,
+            "loss_sum": -21219138.0,
+            "win_sum": 13317123.0,
+            "key": "13:01",
+            "avg_profit": -16394.221991701244
+          },
+          {
+            "count": 320,
+            "profit_sum": -5934523.0,
+            "loss_sum": -13843463.0,
+            "win_sum": 7908940.0,
+            "key": "13:02",
+            "avg_profit": -18545.384375
+          },
+          {
+            "count": 146,
+            "profit_sum": -3700853.0,
+            "loss_sum": -7096594.0,
+            "win_sum": 3395741.0,
+            "key": "13:04",
+            "avg_profit": -25348.30821917808
+          },
+          {
+            "count": 134,
+            "profit_sum": -3452672.0,
+            "loss_sum": -6645801.0,
+            "win_sum": 3193129.0,
+            "key": "13:05",
+            "avg_profit": -25766.20895522388
+          }
+        ],
+        "worst_sell_time_buckets": [
+          {
+            "count": 909,
+            "profit_sum": -20538689.0,
+            "loss_sum": -31116428.0,
+            "win_sum": 10577739.0,
+            "key": "14:30",
+            "avg_profit": -22594.817381738172
+          },
+          {
+            "count": 711,
+            "profit_sum": -17657409.0,
+            "loss_sum": -25777528.0,
+            "win_sum": 8120119.0,
+            "key": "14:55",
+            "avg_profit": -24834.61181434599
+          },
+          {
+            "count": 383,
+            "profit_sum": -8096399.0,
+            "loss_sum": -13456042.0,
+            "win_sum": 5359643.0,
+            "key": "14:31",
+            "avg_profit": -21139.422976501304
+          },
+          {
+            "count": 271,
+            "profit_sum": -6306355.0,
+            "loss_sum": -10102264.0,
+            "win_sum": 3795909.0,
+            "key": "14:32",
+            "avg_profit": -23270.682656826568
+          },
+          {
+            "count": 160,
+            "profit_sum": -4081289.0,
+            "loss_sum": -5845171.0,
+            "win_sum": 1763882.0,
+            "key": "14:33",
+            "avg_profit": -25508.05625
+          }
+        ],
+        "worst_hold_time_buckets": [
+          {
+            "count": 2480,
+            "profit_sum": -56936560.0,
+            "loss_sum": -84910338.0,
+            "win_sum": 27973778.0,
+            "key": "90-119",
+            "avg_profit": -22958.290322580644
+          },
+          {
+            "count": 536,
+            "profit_sum": -17746250.0,
+            "loss_sum": -34523829.0,
+            "win_sum": 16777579.0,
+            "key": "60-89",
+            "avg_profit": -33108.67537313433
+          },
+          {
+            "count": 707,
+            "profit_sum": -14125472.0,
+            "loss_sum": -62994091.0,
+            "win_sum": 48868619.0,
+            "key": "0-29",
+            "avg_profit": -19979.451202263084
+          },
+          {
+            "count": 642,
+            "profit_sum": -12920402.0,
+            "loss_sum": -42228466.0,
+            "win_sum": 29308064.0,
+            "key": "30-59",
+            "avg_profit": -20125.23676012461
+          }
+        ],
+        "loss_concentration_assessment": "broad_based"
+      }
+    }
+  ]
+}
