@@ -1,0 +1,1 @@
+{"ts": "2026-07-11T06:23:51.761644", "series": "S-트랙", "window": "2022-03-23~2023-12-31(발견 가용)", "trial_type": "b(오프라인 봉인 판정)", "target": "W4-2b 챔피언 칸 게이트: ALP_V4 4종 진입 칸 L1 mean_net vs 전체 L1 평균", "result": "FAIL 0/4 (adv -0.111~-0.163%p, 사상 스팟체크 max_err=0) — 사전등록 §8 kill-2 발동", "session": "alpha-restart-s-track"}
