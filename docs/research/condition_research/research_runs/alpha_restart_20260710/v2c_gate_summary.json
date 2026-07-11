@@ -1,0 +1,255 @@
+{
+  "doc": "V2-3 본 적재 + V2-C 가문 투표 게이트 — S-트랙 사전등록 V2-A §4",
+  "generated": "2026-07-11T09:57:36.736323+00:00",
+  "full_load": {
+    "window": [
+      "20220323",
+      "20231231"
+    ],
+    "n_days": 437,
+    "n_onsets": 863446,
+    "n_2022": 363506,
+    "n_2023": 499940,
+    "build_id": "v2a_full_ce807f06bbea5b55",
+    "param_sha_v2": "ce807f06bbea5b55",
+    "updown_edges_v2": [
+      1.59,
+      3.56,
+      6.88
+    ],
+    "year_tax": {
+      "2022": 0.0023,
+      "2023": 0.002
+    },
+    "db_path": "C:\\System_Trading\\STOM\\STOM_V.wt-alpha\\docs\\research\\condition_research\\research_runs\\alpha_restart_20260710\\stats_map\\stats_map_v2a_full.db",
+    "stats_map_partition": "cells_pilot_v2",
+    "reproduction_gate_full": {
+      "n_paired": 862932,
+      "only_pure_labeled": 0,
+      "only_vector_labeled": 0,
+      "time_match_rate": 1.0,
+      "price_match_rate": 1.0,
+      "time_and_price_match_rate": 1.0,
+      "err_median_pp": 0.0,
+      "err_p99_pp": 0.0,
+      "err_max_pp": 0.0,
+      "n_mismatch": 0,
+      "mismatch_causes": {
+        "vector_later_exit": 0,
+        "vector_earlier_exit": 0,
+        "same_exit_price_diff": 0,
+        "examples": []
+      },
+      "criteria": {
+        "match_rate_ge_999": true,
+        "err_median_0pp": true,
+        "err_p99_le_010pp": true
+      },
+      "gate_pass": true
+    },
+    "cost_parity": {
+      "year_scalar_vs_vector": {
+        "2022": 0.0,
+        "2023": 0.0
+      },
+      "reduce_to_v1_max_err": 0.0,
+      "single_source": "config_v2.YEAR_TAX_RATE",
+      "passed": true
+    },
+    "l3_all_labeled": {
+      "n": 862932,
+      "mean": -0.010077959065030834,
+      "median": -0.01262069310293112,
+      "p_ge0": 0.14112699494282285,
+      "p_ge1": 0.09461348055234943
+    },
+    "h300_all_valid": {
+      "n": 693762,
+      "mean": -0.010742377441075212,
+      "median": -0.01125116238759979,
+      "p_ge0": 0.17094190803186107,
+      "p_ge1": 0.07520734776479542
+    },
+    "l3_labeled": 862932,
+    "h300_valid": 693762,
+    "h300_censored": 147333
+  },
+  "v2c_gate": {
+    "n_families": 2,
+    "families": {
+      "RR8": {
+        "family": "RR8",
+        "coverage": {
+          "total": 1172,
+          "discovery": 765,
+          "in_window_of_discovery": 765,
+          "outside_window": 0,
+          "after_discovery": 407
+        },
+        "n_trades_mapped": 765,
+        "l3_time_ud": {
+          "occ_mean": -0.010497901463856232,
+          "all_mean": -0.010077959065030841,
+          "improvement": -0.00041994239882539065,
+          "ci_low": -0.0006372012572934516,
+          "ci_high": -0.00022424164288816417,
+          "n_occ": 153428,
+          "label": "l3",
+          "axis": "time_ud",
+          "n_occupied_cells": 5,
+          "trade_weighted_ev": -0.011197613900087486,
+          "trades_total": 765,
+          "trades_in_judged_cells": 765
+        },
+        "l3_time_mc_ud": {
+          "occ_mean": -0.011133481659163386,
+          "all_mean": -0.010077959065030841,
+          "improvement": -0.001055522594132545,
+          "ci_low": -0.001365967847855848,
+          "ci_high": -0.0007490102320647221,
+          "n_occ": 75001,
+          "label": "l3",
+          "axis": "time_mc_ud",
+          "n_occupied_cells": 9,
+          "trade_weighted_ev": -0.011271377487218215,
+          "trades_total": 765,
+          "trades_in_judged_cells": 765
+        },
+        "h300_time_ud": {
+          "occ_mean": -0.011226570881858444,
+          "all_mean": -0.010742377441075212,
+          "improvement": -0.0004841934407832319,
+          "ci_low": -0.0007082430347514641,
+          "ci_high": -0.00024091803947556262,
+          "n_occ": 149352,
+          "label": "h300",
+          "axis": "time_ud",
+          "n_occupied_cells": 5,
+          "trade_weighted_ev": -0.01194910423775674,
+          "trades_total": 765,
+          "trades_in_judged_cells": 765
+        },
+        "verdict": "fail",
+        "verdict_h300_control": "fail"
+      },
+      "GPTAUTH": {
+        "family": "GPTAUTH",
+        "coverage": {
+          "total": 1447,
+          "discovery": 893,
+          "in_window_of_discovery": 893,
+          "outside_window": 0,
+          "after_discovery": 554
+        },
+        "n_trades_mapped": 893,
+        "l3_time_ud": {
+          "occ_mean": -0.010452505276037803,
+          "all_mean": -0.010077959065030841,
+          "improvement": -0.0003745462110069618,
+          "ci_low": -0.0005706794475299877,
+          "ci_high": -0.00018901511458322147,
+          "n_occ": 155000,
+          "label": "l3",
+          "axis": "time_ud",
+          "n_occupied_cells": 5,
+          "trade_weighted_ev": -0.010961594667851194,
+          "trades_total": 893,
+          "trades_in_judged_cells": 893
+        },
+        "l3_time_mc_ud": {
+          "occ_mean": -0.010347015025996843,
+          "all_mean": -0.010077959065030841,
+          "improvement": -0.0002690559609660019,
+          "ci_low": -0.00047424615860379237,
+          "ci_high": -6.602307548339193e-05,
+          "n_occ": 137386,
+          "label": "l3",
+          "axis": "time_mc_ud",
+          "n_occupied_cells": 10,
+          "trade_weighted_ev": -0.010971623542711643,
+          "trades_total": 893,
+          "trades_in_judged_cells": 893
+        },
+        "h300_time_ud": {
+          "occ_mean": -0.011319496197087178,
+          "all_mean": -0.010742377441075212,
+          "improvement": -0.0005771187560119663,
+          "ci_low": -0.0007683900610149326,
+          "ci_high": -0.00037264694991533847,
+          "n_occ": 150729,
+          "label": "h300",
+          "axis": "time_ud",
+          "n_occupied_cells": 5,
+          "trade_weighted_ev": -0.012360705448108864,
+          "trades_total": 893,
+          "trades_in_judged_cells": 893
+        },
+        "verdict": "fail",
+        "verdict_h300_control": "fail"
+      }
+    },
+    "rr8_internal_sensitivity_l3_time_ud": {
+      "RR8_0": {
+        "occ_mean": -0.010497901463856232,
+        "all_mean": -0.010077959065030841,
+        "improvement": -0.00041994239882539065,
+        "ci_low": -0.0006223525739751255,
+        "ci_high": -0.00021544191323371743,
+        "n_occ": 153428,
+        "label": "l3",
+        "axis": "time_ud",
+        "n_occupied_cells": 5,
+        "trade_weighted_ev": -0.011239035997655501,
+        "trades_total": 221,
+        "trades_in_judged_cells": 221
+      },
+      "RR8_21": {
+        "occ_mean": -0.010497901463856232,
+        "all_mean": -0.010077959065030841,
+        "improvement": -0.00041994239882539065,
+        "ci_low": -0.0006046710548785521,
+        "ci_high": -0.0002161753764783833,
+        "n_occ": 153428,
+        "label": "l3",
+        "axis": "time_ud",
+        "n_occupied_cells": 5,
+        "trade_weighted_ev": -0.011274265595512999,
+        "trades_total": 246,
+        "trades_in_judged_cells": 246
+      },
+      "RR8_12": {
+        "occ_mean": -0.010497901463856232,
+        "all_mean": -0.010077959065030841,
+        "improvement": -0.00041994239882539065,
+        "ci_low": -0.0006146063597976989,
+        "ci_high": -0.00020716885447546695,
+        "n_occ": 153428,
+        "label": "l3",
+        "axis": "time_ud",
+        "n_occupied_cells": 5,
+        "trade_weighted_ev": -0.011103618595935791,
+        "trades_total": 298,
+        "trades_in_judged_cells": 298
+      }
+    },
+    "verdicts": {
+      "RR8": "fail",
+      "GPTAUTH": "fail"
+    },
+    "n_pass": 0,
+    "interpretation_ladder": {
+      "position": "kill",
+      "message": "0 가문 통과 → 현재 축·서지 온셋·RR8_12 출구 조건부 칸-조준 폐기(칸 방법론 전체 폐기 아님, 함정 지도 유지)",
+      "n_pass": 0
+    },
+    "gate_thresholds": {
+      "improve_pass_pp": 0.1,
+      "improve_weak_pp": 0.05,
+      "ci": "day_block_bootstrap n_boot=400, ci_low>0",
+      "primary_label": "l3",
+      "primary_axis": "time_ud"
+    }
+  },
+  "overall_l1_l3_mean": -0.010077959065030834,
+  "overall_l1_h300_mean": -0.010742377441075212
+}
