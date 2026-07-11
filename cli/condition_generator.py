@@ -123,24 +123,51 @@ def _candidate_timeframe(candidate: dict, default_timeframe: str | None) -> str:
     return _SAFE_DEFAULT_TIMEFRAME
 
 
-def _b_only_blocking_reasons(expression: str, *, timeframe: str, kind: str = 'buy') -> list[str]:
+def _non_approved_variable_names(expression: str, *, timeframe: str, kind: str = 'buy') -> list[str]:
+    """Return sorted unapproved-variable names flagged by `validate_b_only`."""
+
+    return sorted({
+        reason.split(':', 1)[1]
+        for reason in validate_b_only(expression, timeframe=timeframe, kind=kind)
+        if reason.startswith('non_approved_variable:')
+    })
+
+
+def _b_variable_approval(expression: str, *, timeframe: str, kind: str = 'buy') -> dict:
+    """Positive provenance record of B-only variable approval, always computed.
+
+    Recorded on every valid candidate regardless of `enforce_approved_b_only`
+    so unapproved-variable usage stays visible even while the hard block is
+    off by default.
+    """
+
+    unknown_names = _non_approved_variable_names(expression, timeframe=timeframe, kind=kind)
+    return {
+        'approved': not unknown_names,
+        'unknown_names': unknown_names,
+        'timeframe': timeframe,
+    }
+
+
+def _b_only_blocking_reasons(
+    expression: str, *, timeframe: str, kind: str = 'buy', enforce_approved_b_only: bool = False,
+) -> list[str]:
     """B-only guard subset that is safe to enforce additively at ingestion.
 
     `validate_b_only` also flags `non_approved_variable:*` for any name outside
     the strategy-code variable_scope registry; existing pre-B_* candidate
     generators (raw scalar-name expressions) legitimately use names outside
-    that registry, so `non_approved_variable` stays a pure-function-only
-    diagnostic (see tests/unit/test_condition_fingerprint.py) and is not
-    wired as a hard ingestion blocker yet. `leaky_result_variable` (AST-based,
-    stricter than the legacy substring guard) and `forbidden_node` are new
-    hard blockers.
+    that registry, so `non_approved_variable` is a hard blocker only when the
+    caller opts in via `enforce_approved_b_only=True` (default False keeps
+    prior behavior; see `_b_variable_approval` for the always-on provenance
+    record). `leaky_result_variable` (AST-based, stricter than the legacy
+    substring guard) and `forbidden_node` are unconditional hard blockers.
     """
 
-    return [
-        reason
-        for reason in validate_b_only(expression, timeframe=timeframe, kind=kind)
-        if not reason.startswith('non_approved_variable:')
-    ]
+    reasons = validate_b_only(expression, timeframe=timeframe, kind=kind)
+    if enforce_approved_b_only:
+        return reasons
+    return [reason for reason in reasons if not reason.startswith('non_approved_variable:')]
 
 
 def _semantic_fingerprint_reasons(
@@ -168,6 +195,7 @@ def _candidate_failure_reasons(
     seen_fingerprints: set[str] | None = None,
     *,
     default_timeframe: str | None = None,
+    enforce_approved_b_only: bool = False,
 ) -> list[str]:
     reasons: list[str] = []
     lane = candidate.get('lane')
@@ -182,7 +210,9 @@ def _candidate_failure_reasons(
             reasons.append('duplicate_expression')
         reasons.extend(_expression_leakage_reasons(expression))
         timeframe = _candidate_timeframe(candidate, default_timeframe)
-        reasons.extend(_b_only_blocking_reasons(expression, timeframe=timeframe, kind='buy'))
+        reasons.extend(_b_only_blocking_reasons(
+            expression, timeframe=timeframe, kind='buy', enforce_approved_b_only=enforce_approved_b_only,
+        ))
         if not is_raw_duplicate:
             fingerprint_reasons, _fingerprint = _semantic_fingerprint_reasons(
                 expression, timeframe=timeframe, seen_fingerprints=seen_fingerprints,
@@ -223,7 +253,9 @@ def _candidate_failure_reasons(
     return reasons
 
 
-def validate_multi_hypothesis_candidate_pack(candidate_pack: dict, *, min_candidates: int = 2) -> dict:
+def validate_multi_hypothesis_candidate_pack(
+    candidate_pack: dict, *, min_candidates: int = 2, enforce_approved_b_only: bool = False,
+) -> dict:
     """Validate a side-effect-free LLM multi-hypothesis candidate pack."""
 
     if not isinstance(candidate_pack, dict):
@@ -264,6 +296,7 @@ def validate_multi_hypothesis_candidate_pack(candidate_pack: dict, *, min_candid
         )
         reasons = _candidate_failure_reasons(
             candidate, seen_expressions, seen_fingerprints, default_timeframe=pack_default_timeframe,
+            enforce_approved_b_only=enforce_approved_b_only,
         )
         expression = str(candidate.get('expression') or '').strip()
         if reasons:
@@ -306,6 +339,7 @@ def validate_multi_hypothesis_candidate_pack(candidate_pack: dict, *, min_candid
             'source': _LLM_RESEARCH_SOURCE,
             'fallback_used': False,
             'prompt_maturity_credit_allowed': True,
+            'b_variable_approval': _b_variable_approval(expression, timeframe=timeframe, kind='buy'),
         }
         valid_candidates.append(normalized)
 
