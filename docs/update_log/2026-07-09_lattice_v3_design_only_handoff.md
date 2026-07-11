@@ -19,4 +19,4 @@
 - 다음: design-only 다음 명령(`lattice_v3_next_command_20260709.md`)만 안전. CL-R은 정확 승인 문구 필요.
 
 ## 검증
-각 CL-D 산출물은 `.omo/evidence/task-<1..4>-ai-condition-loop-canonical-rebuild-20260711/`의 verifier로 재검증 가능(exit 0 = 통과).
+각 CL-D 산출물(CL-D0..CL-D4)은 `.omo/evidence/task-<1..5>-ai-condition-loop-canonical-rebuild-20260711/`의 verifier로 재검증 가능(exit 0 = 통과).
