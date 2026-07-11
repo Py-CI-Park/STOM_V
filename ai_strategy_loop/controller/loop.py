@@ -47,11 +47,19 @@ from cli.warm_session import WarmBacktestSession  # noqa: E402
 from ai_strategy_loop.controller.evidence_contract import (  # noqa: E402
     CANDIDATE_PASSPORT_SCHEMA,
     EVALUATION_MANIFEST_SCHEMA,
+    FEEDBACK_CONSUMPTION_SCHEMA,
+    FEEDBACK_ENVELOPE_SCHEMA,
     RUN_RECEIPT_SCHEMA,
     CandidatePassport,
+    canonical_json,
     EvaluationManifest,
+    FeedbackConsumption,
+    FeedbackEnvelope,
+    FeedbackSide,
     RunReceipt,
     compute_candidate_id,
+    compute_consumption_id,
+    compute_feedback_id,
     compute_manifest_id,
     compute_passport_id,
     compute_receipt_id,
@@ -1378,6 +1386,27 @@ def run_loop(
             parent_gen_for_record: Optional[int] = None
             evidence_current_passport_id: Optional[str] = None
             _evidence_gen_mode = "fresh"
+            # CL-R05 todo11 — durable feedback consumption tracking (evidence
+            #   ledger ON only). unconsumed_feedback(rid)의 최신 항목이 있으면 그
+            #   feedback_id를 이 세대의 소비 후보로 잡아둔다(패스포트 생성 이후에만
+            #   consumption을 남긴다 — 아래 b 근처). next_autopsy_feedback/
+            #   next_sell_feedback가 이미 채워져 있으면(같은 프로세스 내 정상 흐름)
+            #   렌더 텍스트는 손대지 않는다 — id만 추가로 들고 간다. 둘 다 비어 있으면
+            #   (resume 직후 프로세스 재시작으로 로컬 변수가 초기화된 경우) 영속 봉투의
+            #   rendered_text로 복원한다(resume restoration).
+            evidence_feedback_id_to_consume: Optional[str] = None
+            if evidence_enabled and evidence_store is not None:
+                _evidence_unconsumed = _evidence_safe_unconsumed_feedback(evidence_store, rid)
+                if _evidence_unconsumed:
+                    _evidence_newest_fb = _evidence_unconsumed[-1]
+                    evidence_feedback_id_to_consume = _evidence_newest_fb.get("feedback_id")
+                    if next_autopsy_feedback is None and next_sell_feedback is None:
+                        _evidence_rendered = _evidence_newest_fb.get("rendered_text")
+                        if _evidence_rendered:
+                            if _evidence_newest_fb.get("side") == FeedbackSide.SELL.value:
+                                next_sell_feedback = _evidence_rendered
+                            else:
+                                next_autopsy_feedback = _evidence_rendered
             use_seed = gen_no == 0 and seed_buy and seed_sell
             if use_seed:
                 buy_name = seed_buy
@@ -1508,6 +1537,23 @@ def run_loop(
                 if _evidence_safe_append_passport(evidence_store, _evidence_passport):
                     evidence_current_passport_id = _evidence_passport.passport_id
                     evidence_prev_passport_id = _evidence_passport.passport_id
+                    # CL-R05 todo11 — consumption proof: 오직 target passport가 실제로
+                    #   존재할 때만(패스포트 append 성공 직후) 소비를 남긴다. 생성/코드
+                    #   확보가 이 지점에 못 미치고 실패하면(위 continue 경로들) 소비를
+                    #   절대 남기지 않아, 자원(rid) resume 시 unconsumed_feedback(rid)가
+                    #   같은 봉투를 다시 내놓는다(재시도 안전, 이중 소비 없음 — 이미
+                    #   소비된 feedback_id는 NOT EXISTS 조건으로 제외됨).
+                    if evidence_feedback_id_to_consume:
+                        _evidence_prompt_id = f"promptrec_{rid}_g{gen_no}"
+                        _evidence_safe_append_consumption(
+                            evidence_store,
+                            _evidence_build_consumption(
+                                evidence_feedback_id_to_consume,
+                                _evidence_prompt_id,
+                                evidence_current_passport_id,
+                            ),
+                            rid,
+                        )
 
             # --- b. 엔진 호환 보장 (formula 빈 테이블) ---
             bootstrap.ensure_loop_db_engine_compat()
@@ -1595,6 +1641,22 @@ def run_loop(
                     err_fb = _backtest_error_feedback(outcome.reason, config)
                     next_autopsy_feedback = err_fb
                     next_sell_feedback = err_fb
+                    # CL-R05 todo11 — 실패 세대도 부검 근거(autopsy_kind="backtest_error")
+                    #   로 durable FeedbackEnvelope를 남긴다. record_generation(위)이 이미
+                    #   커밋된 뒤(eager-commit seam)라 append_feedback을 안전하게 호출할
+                    #   수 있다.
+                    if (evidence_enabled and evidence_store is not None
+                            and evidence_current_passport_id is not None):
+                        _evidence_safe_append_feedback(
+                            evidence_store,
+                            _evidence_build_feedback_envelope(
+                                evidence_current_passport_id, "backtest_error",
+                                FeedbackSide.ERROR.value,
+                                _evidence_error_result_identity_sha256(outcome),
+                                err_fb,
+                            ),
+                            rid,
+                        )
                 # P2a — 실패 세대(0거래/크래시)는 게이트 분석할 metrics가 없어 가정을
                 #   세우지 않는다. carry를 비워 다음 세대가 빈/오래된 가정을 판정하지
                 #   않게 한다(토글 OFF면 어차피 항상 None).
@@ -1815,6 +1877,33 @@ def run_loop(
                 effective_autopsy_fn, effective_exit_autopsy_fn,
                 effective_segment_autopsy_fn,
             )
+            # CL-R05 todo11 — ok-path autopsy 결과도 durable FeedbackEnvelope로
+            #   동결한다(record_generation은 위(ok-path st.record_generation)에서 이미
+            #   커밋된 뒤라 eager-commit seam을 만족한다). buy/sell 각각 텍스트가 있을
+            #   때만 append(둘 다 있으면 두 개의 별개 봉투 — side로 구분됨).
+            if (evidence_enabled and evidence_store is not None
+                    and evidence_current_passport_id is not None):
+                _evidence_ok_result_sha = _evidence_ok_result_identity_sha256(outcome, fit, graded)
+                if next_autopsy_feedback:
+                    _evidence_safe_append_feedback(
+                        evidence_store,
+                        _evidence_build_feedback_envelope(
+                            evidence_current_passport_id, "buy_autopsy",
+                            FeedbackSide.BUY.value, _evidence_ok_result_sha,
+                            next_autopsy_feedback,
+                        ),
+                        rid,
+                    )
+                if next_sell_feedback:
+                    _evidence_safe_append_feedback(
+                        evidence_store,
+                        _evidence_build_feedback_envelope(
+                            evidence_current_passport_id, "exit_autopsy",
+                            FeedbackSide.SELL.value, _evidence_ok_result_sha,
+                            next_sell_feedback,
+                        ),
+                        rid,
+                    )
             # T4 반복 정제 폐루프: 토글 ON일 때만 이 세대의 결과 CSV에서 '패배 구간'
             #   avoid 라인을 산출해 다음 세대 매수 프롬프트로 환류한다. 산출은 순수·무예외
             #   (build_segment_avoid_lines가 데이터 없음/부족/읽기 실패를 빈 리스트로 흡수).
@@ -2898,6 +2987,106 @@ def _evidence_safe_append_receipt(store: EvidenceStore, receipt: RunReceipt) -> 
         store.append_receipt(receipt)
     except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
         logger.exception("evidence: receipt append failed (ignored)")
+
+
+
+# =====================================================================
+# CL-R05 todo11 — durable feedback envelope + consumption proof (DEFAULT-OFF,
+#   additive). evidence_enabled=False면 이 섹션의 어떤 함수도 run_loop에서
+#   호출되지 않는다(byte-동일). ON일 때만 autopsy가 만든 렌더 피드백 문자열을
+#   FeedbackEnvelope로 동결하고, 다음 세대가 그 봉투를 실제로 소비했다는
+#   FeedbackConsumption을 남긴다. 두 테이블 모두 append-only — UPDATE/DELETE
+#   없음. append 실패는 로그 후 흡수(루프를 막지 않는다).
+# =====================================================================
+def _evidence_build_feedback_envelope(
+    source_passport_id: str, autopsy_kind: str, side: str,
+    source_result_sha256: str, rendered_text: str,
+) -> FeedbackEnvelope:
+    rendered_sha = text_sha256(rendered_text)
+    feedback_id = compute_feedback_id(
+        source_passport_id, autopsy_kind, side, source_result_sha256, rendered_sha,
+    )
+    return FeedbackEnvelope(
+        schema=FEEDBACK_ENVELOPE_SCHEMA,
+        feedback_id=feedback_id,
+        source_passport_id=source_passport_id,
+        autopsy_kind=autopsy_kind,
+        side=side,
+        source_result_sha256=source_result_sha256,
+        # 최소 additive 배선: 구조화 지시문 파서는 이 todo 범위 밖이므로, 렌더된
+        #   NL 피드백 원문 자체를 단일 directive로 보존한다(정보 손실 없음).
+        directives=(rendered_text,),
+        rendered_text=rendered_text,
+        rendered_sha256=rendered_sha,
+        created_at=_evidence_utc_now(),
+    )
+
+
+def _evidence_ok_result_identity_sha256(outcome: Any, fit: Any, graded: Any) -> str:
+    """성공 백테스트 결과의 안정적 identity digest (CSV 전체를 다시 읽지 않는다)."""
+    payload = canonical_json({
+        "csv_path": str(getattr(outcome, "csv_path", None) or ""),
+        "status": str(getattr(outcome, "status", None) or ""),
+        "trade_count": _evidence_safe_json(getattr(fit, "trade_count", None)),
+        "mdd": _evidence_safe_json(getattr(graded, "mdd", None)),
+        "total_profit": _evidence_safe_json(getattr(graded, "total_profit", None)),
+        "gate_passed": bool(getattr(fit, "gate_passed", False)),
+    })
+    return sha256_hex(payload)
+
+
+def _evidence_error_result_identity_sha256(outcome: Any) -> str:
+    """실패 백테스트(0거래/크래시/타임아웃) 결과의 안정적 identity digest."""
+    payload = canonical_json({
+        "csv_path": str(getattr(outcome, "csv_path", None) or ""),
+        "status": str(getattr(outcome, "status", None) or ""),
+        "reason": str(getattr(outcome, "reason", None) or ""),
+    })
+    return sha256_hex(payload)
+
+
+def _evidence_safe_append_feedback(
+    store: EvidenceStore, envelope: FeedbackEnvelope, run_id: str,
+) -> bool:
+    try:
+        store.append_feedback(envelope, run_id=run_id)
+        return True
+    except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
+        logger.exception("evidence: feedback envelope append failed (ignored)")
+        return False
+
+
+def _evidence_safe_unconsumed_feedback(store: EvidenceStore, run_id: str) -> List[Dict[str, Any]]:
+    try:
+        return store.unconsumed_feedback(run_id)
+    except Exception:  # noqa: BLE001 - 조회 실패는 흡수(소비 후보 없음으로 처리).
+        logger.exception("evidence: unconsumed_feedback query failed (ignored)")
+        return []
+
+
+def _evidence_build_consumption(
+    feedback_id: str, prompt_id: str, target_passport_id: str,
+) -> FeedbackConsumption:
+    return FeedbackConsumption(
+        schema=FEEDBACK_CONSUMPTION_SCHEMA,
+        consumption_id=compute_consumption_id(feedback_id, prompt_id, target_passport_id),
+        feedback_id=feedback_id,
+        prompt_id=prompt_id,
+        target_passport_id=target_passport_id,
+        created_at=_evidence_utc_now(),
+    )
+
+
+def _evidence_safe_append_consumption(
+    store: EvidenceStore, consumption: FeedbackConsumption, run_id: str,
+) -> bool:
+    try:
+        store.append_consumption(consumption, run_id=run_id)
+        return True
+    except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
+        logger.exception("evidence: feedback consumption append failed (ignored)")
+        return False
+
 
 
 def _read_strategy_code(name: str, kind: str) -> Optional[str]:
