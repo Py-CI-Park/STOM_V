@@ -5,6 +5,7 @@ import json
 import sys
 import time
 import uuid
+from datetime import datetime, timezone
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Mapping
@@ -44,11 +45,29 @@ from ai_strategy_loop.controller.state import LoopState
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 REFUSAL_OPERATING_DB_PATH = "operating_db_path_refused"
 DEFAULT_PROFILE = "clr07_learning_v1"
+FROZEN_CL_R07_PROFILE_NAME = DEFAULT_PROFILE
+FROZEN_CL_R07_PROFILE_SHA256 = "95c492da3d9a48c9edcfca411637fb401f3334a439c64c33eb79680aeea01636"
+FROZEN_CL_R07_CODE_HASH = "e813d48e970e8d4372ac053bf286d8a7d6ef3cf3100e7ef01e774c509a9e1909"
+FROZEN_CL_R07_CONFIG_HASH = FROZEN_CL_R07_PROFILE_SHA256
+FROZEN_CL_R07_DATA_HASH = "2692a6acd08721469b36e76c28860e2550c860899e569d7123c70c2a3d22df10"
 MAX_PROVIDER_CALLS = 3
 MAX_OFFICIAL_EVALUATIONS = 9
 MAX_ELAPSED_SECONDS = 120 * 60
 METHODOLOGY = "CL-R07_bounded_canonical_mini_loop"
 TIMEFRAME = "min"
+PROTECTED_PATHS: tuple[Path, ...] = (
+    PROJECT_ROOT / "_database",
+    PROJECT_ROOT / "_database_v3k_shadow",
+    PROJECT_ROOT / "_log",
+    PROJECT_ROOT / "backup",
+    PROJECT_ROOT / "backtest" / "graph",
+    PROJECT_ROOT / ".omx" / "reports",
+    PROJECT_ROOT / "ai_strategy_loop" / "state",
+    PROJECT_ROOT / ".gjc",
+    PROJECT_ROOT / "ai_strategy_loop" / "state" / "loop_runs.db",
+    PROJECT_ROOT / "ai_strategy_loop" / "state" / "loop_strategies.db",
+)
+PROTECTED_FILE_PATTERNS = ("*.db", "v3k_settings*.json")
 
 
 @dataclass(frozen=True)
@@ -114,8 +133,18 @@ def _proposal(candidate_id: str, lane: str, family: str, expression: str, novelt
     }
 
 
-def _utc(clock_value: float) -> str:
-    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(clock_value))
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _format_utc(value: datetime | str) -> str:
+    if isinstance(value, str):
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    else:
+        parsed = value
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError("wall clock must return a timezone-aware UTC datetime")
+    return parsed.astimezone(timezone.utc).isoformat()
 
 
 def _resolve(path: Path | str) -> Path:
@@ -130,30 +159,31 @@ def _is_relative_to(path: Path, parent: Path) -> bool:
         return False
 
 
+def _path_matches_protected_pattern(path: Path) -> bool:
+    return any(
+        path.match(pattern) or any(parent.match(pattern) for parent in path.parents)
+        for pattern in PROTECTED_FILE_PATTERNS
+    )
+
+
 def _protected_reason(strategy_db: Path, evidence_dir: Path) -> str | None:
-    protected_dirs = [
-        PROJECT_ROOT / "_database",
-        PROJECT_ROOT / "ai_strategy_loop" / "state",
-        PROJECT_ROOT / "_log",
-        PROJECT_ROOT / "backtest" / "graph",
-    ]
-    protected_files = {
-        (PROJECT_ROOT / "ai_strategy_loop" / "state" / "loop_runs.db").resolve(),
-        (PROJECT_ROOT / "ai_strategy_loop" / "state" / "loop_strategies.db").resolve(),
-    }
+    protected_paths = tuple(path.resolve() for path in PROTECTED_PATHS)
     for candidate in (strategy_db, evidence_dir):
-        if candidate in protected_files:
+        if any(
+            candidate == protected or _is_relative_to(candidate, protected)
+            for protected in protected_paths
+        ):
             return REFUSAL_OPERATING_DB_PATH
-        if any(_is_relative_to(candidate, protected) for protected in protected_dirs):
+        if _path_matches_protected_pattern(candidate):
             return REFUSAL_OPERATING_DB_PATH
     if strategy_db == evidence_dir or _is_relative_to(strategy_db, evidence_dir):
         return REFUSAL_OPERATING_DB_PATH
     return None
 
 
-def _profile_receipt(profile_name: str) -> ReplayProfile:
+def _profile_receipt() -> ReplayProfile:
     return ReplayProfile(
-        profile_id=profile_name,
+        profile_id=FROZEN_CL_R07_PROFILE_NAME,
         is_tick=False,
         universe="single_stock",
         betting="5",
@@ -171,11 +201,11 @@ def _profile_receipt(profile_name: str) -> ReplayProfile:
     )
 
 
-def _manifest_specs(profile_name: str) -> dict[str, dict[str, Any]]:
-    r07_profile = _profile_receipt(profile_name)
+def _manifest_specs() -> dict[str, dict[str, Any]]:
+    r07_profile = _profile_receipt()
     return {
         "CL-R07": {
-            "profile": profile_name,
+            "profile": FROZEN_CL_R07_PROFILE_NAME,
             "data": "single_stock 5d engine1 betting5 avg30 timeout300 warm120 MDD40 min30trades daily0.5",
             "universe": "single_stock",
             "methodology": METHODOLOGY,
@@ -230,6 +260,22 @@ def _manifest_specs(profile_name: str) -> dict[str, dict[str, Any]]:
         },
     }
 
+
+def _profile_validation_stop_reason(profile_name: str) -> str | None:
+    if profile_name != FROZEN_CL_R07_PROFILE_NAME:
+        return "profile_mismatch"
+    specs = _manifest_specs()
+    r07_spec = specs["CL-R07"]
+    profile = ReplayProfile.from_dict(r07_spec["fill"])
+    if profile.profile_sha256() != FROZEN_CL_R07_PROFILE_SHA256:
+        return "hash_mismatch"
+    if sha256_hex(str(r07_spec["data"])) != FROZEN_CL_R07_DATA_HASH:
+        return "hash_mismatch"
+    if str(r07_spec["code_hash"]) != FROZEN_CL_R07_CODE_HASH:
+        return "hash_mismatch"
+    if str(r07_spec["config_hash"]) != FROZEN_CL_R07_CONFIG_HASH:
+        return "hash_mismatch"
+    return None
 
 def _build_manifest(run_id: str, role: str, spec: Mapping[str, Any], created_at: str) -> EvaluationManifest:
     code_hash = spec.get("code_hash") or sha256_hex(role + ":code:" + canonical_json(dict(spec)))
@@ -383,8 +429,20 @@ def run_mini_loop(
     provider: Any | None = None,
     evaluator: Any | None = None,
     clock: Callable[[], float] | None = None,
+    wall_clock: Callable[[], datetime | str] | None = None,
 ) -> dict[str, Any]:
     clock = clock or time.monotonic
+    profile_stop = _profile_validation_stop_reason(config.profile)
+    if profile_stop:
+        return _summary(
+            f"NO_GO_{profile_stop.upper()}",
+            0,
+            0,
+            0.0,
+            profile_stop,
+            _resolve(config.strategy_db),
+            _resolve(config.evidence_dir),
+        )
     strategy_db = _resolve(config.strategy_db)
     evidence_dir = _resolve(config.evidence_dir)
     protected = _protected_reason(strategy_db, evidence_dir)
@@ -394,7 +452,8 @@ def run_mini_loop(
     provider = provider or BuiltInFakeProvider()
     evaluator = evaluator or BuiltInFakeEvaluator()
     start = clock()
-    now = lambda: _utc(clock())
+    wall_clock = wall_clock or _utc_now
+    now = lambda: _format_utc(wall_clock())
     run_id = f"clr07_{uuid.uuid4().hex[:12]}"
     state = LoopState(db_path=str(strategy_db), snapshot_dir=str(evidence_dir))
     store = EvidenceStore(state)
@@ -415,7 +474,7 @@ def run_mini_loop(
     clause_changes: list[bool] = []
 
     manifests: dict[str, EvaluationManifest] = {}
-    for role, spec in _manifest_specs(config.profile).items():
+    for role, spec in _manifest_specs().items():
         manifest = _build_manifest(run_id, role, spec, now())
         store.append_manifest(manifest)
         manifests[role] = manifest
@@ -527,6 +586,39 @@ def run_mini_loop(
         if selection.get("selected") is None:
             return stop("NO_GO_POOL_BLOCKED", "candidate_pool_blocked")
         selected = dict(selection["selected"])
+        rejection_reasons = [
+            {
+                "candidate_id": str(rejection.get("candidate", {}).get("candidate_id") or ""),
+                "reasons": list(rejection.get("reasons") or []),
+            }
+            for rejection in selection.get("rejected", [])
+        ]
+        lane_counts: dict[str, int] = {}
+        family_counts: dict[str, int] = {}
+        for proposal in proposals:
+            lane = str(proposal.get("lane") or "unknown")
+            family = str(proposal.get("family") or "unknown")
+            lane_counts[lane] = lane_counts.get(lane, 0) + 1
+            family_counts[family] = family_counts.get(family, 0) + 1
+        selection_receipt_id = _receipt(
+            store,
+            run_id=run_id,
+            phase_id=f"round_selection:{round_no}",
+            outcome="selected",
+            stop_reason=None,
+            counters={
+                "round_no": round_no,
+                "proposal_count": len(proposals),
+                "lane_counts": dict(sorted(lane_counts.items())),
+                "family_counts": dict(sorted(family_counts.items())),
+                "selected_candidate_id": str(selected.get("candidate_id") or ""),
+                "rejection_reasons": rejection_reasons,
+            },
+            predecessors=tuple(evidence_ids[-4:]),
+            evidence_hashes={"selection": sha256_hex(canonical_json(selection))},
+            created_at=now(),
+        )
+        evidence_ids.append(selection_receipt_id)
         passport = _passport(run_id, round_no, selected, parent_passport_id, manifests["CL-R07"].manifest_id, now())
         store.append_passport(passport)
         evidence_ids.append(passport.passport_id)

@@ -5,11 +5,13 @@ import os
 import sqlite3
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
 
 from ai_strategy_loop.scripts.run_canonical_mini_loop import (
+    DEFAULT_PROFILE,
     MiniLoopConfig,
     REFUSAL_OPERATING_DB_PATH,
     run_mini_loop,
@@ -175,6 +177,40 @@ def test_happy_three_round_fake_run_freezes_preregistration_and_writes_only_tmp(
     assert after == before
 
 
+def test_wrong_profile_fails_closed_before_state_provider_or_evaluator(tmp_path):
+    provider = FakeProvider()
+    evaluator = FakeEvaluator()
+
+    summary = run_mini_loop(
+        MiniLoopConfig(
+            strategy_db=tmp_path / "isolated.sqlite",
+            evidence_dir=tmp_path / "evidence",
+            profile="something_else",
+        ),
+        provider=provider,
+        evaluator=evaluator,
+        clock=FakeClock(),
+    )
+
+    assert summary["status"] == "NO_GO_PROFILE_MISMATCH"
+    assert summary["stop_reason"] == "profile_mismatch"
+    assert summary["provider_calls"] == 0
+    assert summary["official_evaluations"] == 0
+    assert summary["total_official_evaluation_spend"] == 0
+    assert provider.calls == 0
+    assert evaluator.calls == []
+    assert not (tmp_path / "isolated.sqlite").exists()
+    assert not (tmp_path / "evidence").exists()
+
+
+def test_default_profile_remains_happy_path(tmp_path):
+    summary, provider, evaluator = _run(tmp_path, profile=DEFAULT_PROFILE)
+
+    assert summary["status"] == "GO_PROCESS_PROOF"
+    assert provider.calls == 3
+    assert len(evaluator.calls) == 9
+
+
 def test_provider_budget_refuses_fourth_pack_before_extra_call(tmp_path):
     summary, provider, evaluator = _run(tmp_path, max_rounds=4)
 
@@ -199,6 +235,53 @@ def test_wall_clock_budget_refuses_121_minute_run(tmp_path):
 
     assert summary["status"] == "NO_GO_BUDGET_EXHAUSTED"
     assert summary["stop_reason"] == "no_go_budget_exhausted"
+    assert provider.calls == 0
+    assert evaluator.calls == []
+
+
+@pytest.mark.parametrize("protected", ["_database_v3k_shadow", "backup", ".omx/reports", "ai_strategy_loop/state"])
+@pytest.mark.parametrize("field", ["strategy_db", "evidence_dir"])
+def test_protected_roots_are_refused_for_strategy_db_and_evidence_dir(tmp_path, protected, field):
+    provider = FakeProvider()
+    evaluator = FakeEvaluator()
+    kwargs = {
+        "strategy_db": tmp_path / "isolated.sqlite",
+        "evidence_dir": tmp_path / "evidence",
+    }
+    kwargs[field] = Path(protected) / ("loop_strategies.sqlite" if field == "strategy_db" else "evidence")
+
+    summary = run_mini_loop(
+        MiniLoopConfig(**kwargs),
+        provider=provider,
+        evaluator=evaluator,
+        clock=FakeClock(),
+    )
+
+    assert summary["status"] == "NO_GO_OPERATING_DB_PATH_REFUSED"
+    assert summary["stop_reason"] == REFUSAL_OPERATING_DB_PATH
+    assert provider.calls == 0
+    assert evaluator.calls == []
+
+
+@pytest.mark.parametrize("field", ["strategy_db", "evidence_dir"])
+def test_real_loop_state_db_paths_are_refused_before_work(tmp_path, field):
+    provider = FakeProvider()
+    evaluator = FakeEvaluator()
+    kwargs = {
+        "strategy_db": tmp_path / "isolated.sqlite",
+        "evidence_dir": tmp_path / "evidence",
+    }
+    kwargs[field] = Path("ai_strategy_loop/state/loop_runs.db")
+
+    summary = run_mini_loop(
+        MiniLoopConfig(**kwargs),
+        provider=provider,
+        evaluator=evaluator,
+        clock=FakeClock(),
+    )
+
+    assert summary["status"] == "NO_GO_OPERATING_DB_PATH_REFUSED"
+    assert summary["stop_reason"] == REFUSAL_OPERATING_DB_PATH
     assert provider.calls == 0
     assert evaluator.calls == []
 
@@ -234,3 +317,33 @@ def test_future_preregistration_manifests_predate_first_r07_result(tmp_path):
     future_manifests = [manifest for manifest in manifests if manifest["role"] in {"CL-R08", "CL-R09", "CL-R10"}]
     assert len(future_manifests) == 3
     assert all(manifest["created_at"] < first_eval["created_at"] for manifest in future_manifests)
+
+
+def test_round_selection_receipts_persist_selected_and_three_rejections_per_round(tmp_path):
+    _summary, _provider, _evaluator = _run(tmp_path)
+
+    receipts = _read_payloads(tmp_path / "isolated.sqlite", "run_receipts")
+    round_receipts = [receipt for receipt in receipts if receipt["phase_id"].startswith("round_selection:")]
+
+    assert [receipt["budget_counters"]["round_no"] for receipt in round_receipts] == [1, 2, 3]
+    for receipt in round_receipts:
+        counters = receipt["budget_counters"]
+        assert counters["proposal_count"] == 4
+        assert counters["lane_counts"] == {"discovery": 2, "repair": 2}
+        assert sum(counters["family_counts"].values()) == 4
+        assert counters["selected_candidate_id"]
+        assert len(counters["rejection_reasons"]) == 3
+
+
+def test_evidence_created_at_uses_real_utc_wall_clock_not_budget_clock(tmp_path):
+    _summary, _provider, _evaluator = _run(tmp_path, clock=FakeClock(step=121 * 60))
+    # Budget clock fails before evidence is opened; happy-path evidence uses the wall-clock seam.
+    _summary, _provider, _evaluator = _run(tmp_path / "happy", clock=FakeClock())
+
+    receipts = _read_payloads(tmp_path / "happy" / "isolated.sqlite", "run_receipts")
+    passports = _read_payloads(tmp_path / "happy" / "isolated.sqlite", "candidate_passports")
+    for created_at in (receipts[0]["created_at"], passports[0]["created_at"]):
+        parsed = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+        assert parsed.tzinfo is not None
+        assert parsed.utcoffset() == timezone.utc.utcoffset(parsed)
+        assert parsed.year >= 2026
