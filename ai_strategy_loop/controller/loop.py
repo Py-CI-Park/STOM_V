@@ -30,6 +30,7 @@ from __future__ import annotations
 # (1) bootstrap을 가장 먼저 — cli.* / utility.* import 전에 env 격리.
 import ai_strategy_loop.bootstrap as bootstrap  # noqa: E402
 
+import dataclasses  # noqa: E402
 import json  # noqa: E402
 import logging  # noqa: E402
 import os  # noqa: E402
@@ -37,11 +38,27 @@ import subprocess  # noqa: E402
 import sys  # noqa: E402
 import time  # noqa: E402
 from collections import deque  # noqa: E402
+from datetime import datetime, timezone  # noqa: E402
 from typing import Any, Callable, Deque, Dict, List, Optional, Tuple  # noqa: E402
 
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from cli.config import BacktestConfig  # noqa: E402
 from cli.warm_session import WarmBacktestSession  # noqa: E402
+from ai_strategy_loop.controller.evidence_contract import (  # noqa: E402
+    CANDIDATE_PASSPORT_SCHEMA,
+    EVALUATION_MANIFEST_SCHEMA,
+    RUN_RECEIPT_SCHEMA,
+    CandidatePassport,
+    EvaluationManifest,
+    RunReceipt,
+    compute_candidate_id,
+    compute_manifest_id,
+    compute_passport_id,
+    compute_receipt_id,
+    sha256_hex,
+    text_sha256,
+)
+from ai_strategy_loop.controller.evidence_store import EvidenceStore  # noqa: E402
 from ai_strategy_loop.controller.history import (  # noqa: E402
     GenRecord,
     build_history_summary,
@@ -1122,6 +1139,12 @@ def run_loop(
     """
     from ai_strategy_loop.controller.condition_discovery import effective_condition_discovery_runtime_config  # noqa: PLC0415
 
+    # CL-R04 todo10 — evidence_ledger_enabled은 LoopConfig의 선언 필드가 아니라
+    #   (config.py는 이 todo의 수정 범위 밖) ad-hoc 속성으로 주입된다.
+    #   effective_condition_discovery_runtime_config가 dataclasses.replace()로
+    #   config를 복제하면 ad-hoc 속성은 소실되므로, 그 복제 이전(원본 config)에서
+    #   1회 읽어 보존한다.
+    _evidence_ledger_enabled_flag = bool(getattr(config, "evidence_ledger_enabled", False))
     config = effective_condition_discovery_runtime_config(config)
     # P6 — cross-process single-writer 락 획득. CLI/GUI 어느 진입점이든 같은
     #   current_state.json/loop_runs.db에 쓰므로, 살아있는 다른 루프가 락을 잡고
@@ -1175,6 +1198,18 @@ def run_loop(
 
     rid = st.resume_or_start(config, run_id=run_id)
     start_gen = st.get_last_completed_gen(rid) + 1
+    # CL-R04 todo10 — canonical evidence ledger (DEFAULT-OFF). OFF(기본)면
+    #   evidence_store는 None으로 남아 아래 모든 evidence_* 호출부가 스킵된다
+    #   (byte-동일). ON이면 run 시작 시 1회 EvaluationManifest를 동결한다
+    #   (resume 시 동일 config면 동일 manifest_id -> append_manifest가 멱등
+    #   no-op이라 안전하게 재호출된다).
+    evidence_enabled = _evidence_ledger_enabled_flag
+    evidence_store: Optional[EvidenceStore] = None
+    evidence_manifest_id: Optional[str] = None
+    evidence_prev_passport_id: Optional[str] = None
+    if evidence_enabled:
+        evidence_store = EvidenceStore(st)
+        evidence_manifest_id = _evidence_safe_append_manifest(evidence_store, config, rid)
 
     # provider 준비 (gpt_auth면 프록시 기동).
     provider, proxy_active = _make_provider_with_proxy(config)
@@ -1341,11 +1376,14 @@ def run_loop(
                           winner_buy=winner_buy, winner_sell=winner_sell,
                           _log_buf=_live_log_buf, _timing=_timing)
             parent_gen_for_record: Optional[int] = None
+            evidence_current_passport_id: Optional[str] = None
+            _evidence_gen_mode = "fresh"
             use_seed = gen_no == 0 and seed_buy and seed_sell
             if use_seed:
                 buy_name = seed_buy
                 sell_name = seed_sell
                 print(f"[LOOP] seed 사용: buy={buy_name} sell={sell_name}", flush=True)
+                _evidence_gen_mode = "seed"
                 # seed-and-refine: 시드가 곧 첫 출발점이다. 시드 코드를 base로 채워
                 #   gen1+가 이 코드를 점진 개선(hill-climb)하게 한다.
                 if getattr(config, "bt_refine_from_best", False):
@@ -1408,6 +1446,11 @@ def run_loop(
                 #   _generate_pair 호출 시그니처가 기존과 byte-identical 하다(하위호환).
                 if getattr(config, "prompt_logging_enabled", False):
                     gen_kwargs["state"] = st
+                _evidence_gen_mode = (
+                    "refine"
+                    if ("base_buy_code" in gen_kwargs or "base_sell_code" in gen_kwargs)
+                    else "fresh"
+                )
                 gen_res = _generate_pair(
                     provider, config, rid, gen_no, next_autopsy_feedback,
                     **gen_kwargs,
@@ -1438,6 +1481,33 @@ def run_loop(
                               winner_buy=winner_buy, winner_sell=winner_sell,
                               _log_buf=_live_log_buf, _timing=_timing)
                 _print_strategy_head(buy_name)
+
+            # CL-R04 todo10 — canonical CandidatePassport (evidence ledger ON only).
+            #   생성+정적 수리 이후, 백테스트 이전에 후보 신원을 동결한다. 코드 본문을
+            #   못 읽으면(해시 불가) 이 후보는 백테스트 없이 실패 처리한다(본문 없는
+            #   후보는 평가하지 않는다 — evidence_enabled=False면 이 블록 전체가 스킵되어
+            #   byte-동일하다).
+            if evidence_enabled and evidence_store is not None:
+                _evidence_buy_code = _read_strategy_code(buy_name, "buy")
+                _evidence_sell_code = _read_strategy_code(sell_name, "sell")
+                if not _evidence_buy_code or not _evidence_sell_code:
+                    reason_g = "evidence: generated code missing/unreadable (candidate rejected before backtest)"
+                    print(f"[LOOP] {reason_g}", flush=True)
+                    st.record_generation(
+                        rid, gen_no,
+                        buy_name=buy_name, sell_name=sell_name,
+                        status="error", score=0.0, gate_passed=False, reason=reason_g,
+                    )
+                    gen_no += 1
+                    continue
+                _evidence_passport = _evidence_build_passport(
+                    config, rid, gen_no, _evidence_gen_mode,
+                    buy_name, sell_name, _evidence_buy_code, _evidence_sell_code,
+                    evidence_prev_passport_id, evidence_manifest_id,
+                )
+                if _evidence_safe_append_passport(evidence_store, _evidence_passport):
+                    evidence_current_passport_id = _evidence_passport.passport_id
+                    evidence_prev_passport_id = _evidence_passport.passport_id
 
             # --- b. 엔진 호환 보장 (formula 빈 테이블) ---
             bootstrap.ensure_loop_db_engine_compat()
@@ -1504,6 +1574,13 @@ def run_loop(
                     reason=f"backtest failed/timeout: {outcome.reason} (elapsed {bt_elapsed:.0f}s)",
                     csv_path=outcome.csv_path,
                 )
+                if evidence_enabled and evidence_store is not None:
+                    _evidence_safe_append_receipt(
+                        evidence_store,
+                        _evidence_build_backtest_receipt(
+                            rid, gen_no, cumulative_tokens, evidence_current_passport_id,
+                        ),
+                    )
                 # 이력에 구체 실패 사유를 기록(CONVERGENCE — 회귀 회피 신호).
                 history_records.append(GenRecord(
                     gen_no=gen_no, graded_score=0.0, gate_passed=False,
@@ -1550,6 +1627,13 @@ def run_loop(
                     status="error", score=0.0, gate_passed=False,
                     reason=f"fitness failed: {fit_err}", csv_path=outcome.csv_path,
                 )
+                if evidence_enabled and evidence_store is not None:
+                    _evidence_safe_append_receipt(
+                        evidence_store,
+                        _evidence_build_backtest_receipt(
+                            rid, gen_no, cumulative_tokens, evidence_current_passport_id,
+                        ),
+                    )
                 gen_no += 1
                 continue
 
@@ -1611,6 +1695,13 @@ def run_loop(
                 # P2a — 직전 가정+이 세대 델타로 매긴 판정(토글 OFF면 None=NULL).
                 hypotheses_json=hypotheses_json,
             )
+            if evidence_enabled and evidence_store is not None:
+                _evidence_safe_append_receipt(
+                    evidence_store,
+                    _evidence_build_backtest_receipt(
+                        rid, gen_no, cumulative_tokens, evidence_current_passport_id,
+                    ),
+                )
             # O2 — 백테 시계열(누적수익곡선·일별손익·낙폭) 영속화. 토글 ON이고 결과
             #   CSV가 있을 때만, 이미 디스크에 있는 CSV를 파싱(추가 백테 0회)해
             #   equity_points에 다운샘플 영속한다. **파싱은 여기서(호출부) 하고 state엔
@@ -1796,6 +1887,14 @@ def run_loop(
             "winner_sell": winner_sell,
             "stop_reason": stop_reason,
         }
+        if evidence_enabled and evidence_store is not None:
+            _evidence_safe_append_receipt(
+                evidence_store,
+                _evidence_build_run_finished_receipt(
+                    rid, gen_no, cumulative_tokens, stop_reason,
+                    evidence_current_passport_id,
+                ),
+            )
     finally:
         # warm 세션 정리(엔진/서브토탈/공유메모리) — 프록시/state 정리보다 먼저.
         if warm_session is not None:
@@ -2553,6 +2652,219 @@ def _compute_holdout_verdict(outcome: BacktestOutcome, config: LoopConfig):
             passed=False, status="error", trade_count=0, total_profit=0.0,
             mdd_pct=0.0, reason=f"holdout 판정 예외: {exc}",
         )
+
+
+# =====================================================================
+# CL-R04 todo10 — canonical evidence ledger wiring (DEFAULT-OFF, additive).
+#   getattr(config, "evidence_ledger_enabled", False)가 False(기본)면 이
+#   섹션의 어떤 함수도 run_loop에서 호출되지 않는다 — DB 기록/반환값이 기존과
+#   byte-동일하다. ON일 때만 EvaluationManifest(run 1회)/CandidatePassport
+#   (세대마다)/RunReceipt(백테 결과+run 종료)를 append-only로 남긴다.
+#   evidence_store append 실패는 로그 후 흡수한다(증거 원장은 루프를 막지
+#   않는다) — 단, 생성된 코드 본문을 못 읽으면(해시 불가) 그 후보는 백테스트
+#   전에 실패 처리한다(§9a B-only 원칙과 동일하게 "본문 없는 후보"는 평가하지
+#   않는다).
+# =====================================================================
+def _evidence_utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _evidence_safe_json(value: Any) -> Any:
+    """dataclass/임의 객체 -> JSON-safe 구조(해시용, 절대 raise하지 않는다)."""
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, (list, tuple)):
+        return [_evidence_safe_json(v) for v in value]
+    if isinstance(value, dict):
+        return {str(k): _evidence_safe_json(v) for k, v in value.items()}
+    return str(value)
+
+
+def _evidence_config_dict(config: Any) -> Dict[str, Any]:
+    try:
+        raw = dataclasses.asdict(config)
+    except Exception:  # noqa: BLE001 - config가 dataclass가 아니어도 흡수.
+        raw = dict(getattr(config, "__dict__", {}) or {})
+    return {str(k): _evidence_safe_json(v) for k, v in raw.items()}
+
+
+def _evidence_fingerprint(code: str, timeframe: str) -> str:
+    """buy/sell 코드에서 결정론적 지문을 뽑는다.
+
+    코드가 파싱 가능한 단일 불리언 표현식이면 cli.condition_fingerprint.
+    ast_fingerprint(의미 정규화)를 쓴다. 대부분의 생성 코드는 다중 구문
+    스크립트라 파싱이 실패하므로, 그 경우 코드 본문 sha256 기반 폴백
+    문자열을 쓴다(안정적·결정론적, 매번 동일 코드 -> 동일 값).
+    """
+    try:
+        from cli.condition_fingerprint import ast_fingerprint  # noqa: PLC0415
+
+        return ast_fingerprint(code, timeframe=timeframe, methodology_version="v1")
+    except Exception:  # noqa: BLE001 - FingerprintError/SyntaxError 등 전부 폴백.
+        return f"codehash:{sha256_hex(code)}"
+
+
+def _evidence_rowset_fallback(buy_code: str, sell_code: str, timeframe: str) -> str:
+    """실제 데이터셋 조회 이전(백테스트 전) rowset_fingerprint 자리표시자.
+
+    dataset_sha/window/row_keys는 백테스트 이후에나 알 수 있어, 그 시점 이전에
+    필요한 이 필드는 buy+sell 코드 본문 결합 해시로 안정적으로 채운다.
+    """
+    return f"codehash:{sha256_hex(timeframe + '|' + buy_code + '|' + sell_code)}"
+
+
+def _evidence_build_manifest(config: Any, run_id: str) -> EvaluationManifest:
+    cfg_dict = _evidence_config_dict(config)
+    config_hash = sha256_hex(json.dumps(cfg_dict, sort_keys=True, ensure_ascii=True))
+    relevant = {
+        "bt_timeframe": cfg_dict.get("bt_timeframe"),
+        "bt_scope": cfg_dict.get("bt_scope"),
+        "evolution_mode": cfg_dict.get("evolution_mode"),
+        "bt_refine_from_best": cfg_dict.get("bt_refine_from_best"),
+        "mdd_cap": cfg_dict.get("mdd_cap"),
+        "min_daily_trades": cfg_dict.get("min_daily_trades"),
+    }
+    code_hash = sha256_hex(json.dumps(relevant, sort_keys=True, ensure_ascii=True))
+    timeframe = str(getattr(config, "bt_timeframe", None) or "min")
+    scope = str(getattr(config, "bt_scope", None) or "single_stock")
+    methodology = str(getattr(config, "evolution_mode", None) or "hillclimb")
+    manifest_id = compute_manifest_id(
+        run_id=run_id, profile="ai_strategy_loop", methodology=methodology,
+        timeframe=timeframe, scope=scope, role="run_primary",
+        code_hash=code_hash, config_hash=config_hash,
+    )
+    return EvaluationManifest(
+        schema=EVALUATION_MANIFEST_SCHEMA,
+        manifest_id=manifest_id,
+        run_id=run_id,
+        profile="ai_strategy_loop",
+        data=timeframe,
+        universe=scope,
+        methodology=methodology,
+        timeframe=timeframe,
+        scope=scope,
+        session={
+            "start_time": getattr(config, "bt_universe_start_time", None),
+            "end_time": getattr(config, "bt_universe_end_time", None),
+        },
+        period={
+            "start": getattr(config, "bt_start", None),
+            "end": getattr(config, "bt_end", None),
+            "window_days": getattr(config, "bt_window_days", None),
+        },
+        capital={"universe_cap": getattr(config, "bt_universe_cap", None)},
+        cost={"mdd_cap": getattr(config, "mdd_cap", None)},
+        fill={"engine_count": getattr(config, "bt_engine_count", None)},
+        role="run_primary",
+        code_hash=code_hash,
+        config_hash=config_hash,
+        created_at=_evidence_utc_now(),
+    )
+
+
+def _evidence_build_passport(
+    config: Any, run_id: str, gen_no: int, mode: str,
+    buy_name: str, sell_name: str, buy_code: str, sell_code: str,
+    parent_passport_id: Optional[str], manifest_id: Optional[str],
+) -> CandidatePassport:
+    timeframe = str(getattr(config, "bt_timeframe", None) or "min")
+    methodology = str(getattr(config, "evolution_mode", None) or "hillclimb")
+    buy_sha = text_sha256(buy_code)
+    sell_sha = text_sha256(sell_code)
+    candidate_id = compute_candidate_id(buy_sha, sell_sha, methodology, timeframe)
+    passport_id = compute_passport_id(run_id, 0, gen_no, 0)
+    return CandidatePassport(
+        schema=CANDIDATE_PASSPORT_SCHEMA,
+        passport_id=passport_id,
+        candidate_id=candidate_id,
+        run_id=run_id,
+        round_no=0,
+        gen_no=gen_no,
+        slot_no=0,
+        parent_passport_id=parent_passport_id,
+        mode=mode,
+        lane="canonical_run_loop",
+        family=methodology,
+        timeframe=timeframe,
+        buy_strategy_name=buy_name,
+        sell_strategy_name=sell_name,
+        buy_sha256=buy_sha,
+        sell_sha256=sell_sha,
+        ast_fingerprint=_evidence_fingerprint(buy_code, timeframe),
+        rowset_fingerprint=_evidence_rowset_fallback(buy_code, sell_code, timeframe),
+        evidence_ids=(manifest_id,) if manifest_id else (),
+        threshold_provenance={},
+        manifest_id=manifest_id or compute_manifest_id(
+            run_id=run_id, profile="ai_strategy_loop", methodology=methodology,
+            timeframe=timeframe, scope="unknown", role="run_primary",
+            code_hash=sha256_hex(""), config_hash=sha256_hex(""),
+        ),
+        created_at=_evidence_utc_now(),
+    )
+
+
+def _evidence_build_backtest_receipt(
+    run_id: str, gen_no: int, cumulative_tokens: int, passport_id: Optional[str],
+) -> RunReceipt:
+    phase_id = f"gen{gen_no}"
+    receipt_id = compute_receipt_id(run_id, phase_id, "backtest_outcome", None)
+    return RunReceipt(
+        schema=RUN_RECEIPT_SCHEMA,
+        receipt_id=receipt_id,
+        run_id=run_id,
+        phase_id=phase_id,
+        outcome="backtest_outcome",
+        stop_reason=None,
+        budget_counters={"gen_no": int(gen_no), "cumulative_tokens": int(cumulative_tokens)},
+        predecessor_ids=(passport_id,) if passport_id else (),
+        artifact_hashes={},
+        created_at=_evidence_utc_now(),
+    )
+
+
+def _evidence_build_run_finished_receipt(
+    run_id: str, gen_no: int, cumulative_tokens: int, stop_reason: str,
+    passport_id: Optional[str],
+) -> RunReceipt:
+    receipt_id = compute_receipt_id(run_id, "run", "run_finished", stop_reason)
+    return RunReceipt(
+        schema=RUN_RECEIPT_SCHEMA,
+        receipt_id=receipt_id,
+        run_id=run_id,
+        phase_id="run",
+        outcome="run_finished",
+        stop_reason=stop_reason,
+        budget_counters={"gen_no": int(gen_no), "cumulative_tokens": int(cumulative_tokens)},
+        predecessor_ids=(passport_id,) if passport_id else (),
+        artifact_hashes={},
+        created_at=_evidence_utc_now(),
+    )
+
+
+def _evidence_safe_append_manifest(store: EvidenceStore, config: Any, run_id: str) -> Optional[str]:
+    try:
+        manifest = _evidence_build_manifest(config, run_id)
+        store.append_manifest(manifest)
+        return manifest.manifest_id
+    except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
+        logger.exception("evidence: manifest freeze failed (ignored)")
+        return None
+
+
+def _evidence_safe_append_passport(store: EvidenceStore, passport: CandidatePassport) -> bool:
+    try:
+        store.append_passport(passport)
+        return True
+    except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
+        logger.exception("evidence: passport append failed (ignored)")
+        return False
+
+
+def _evidence_safe_append_receipt(store: EvidenceStore, receipt: RunReceipt) -> None:
+    try:
+        store.append_receipt(receipt)
+    except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).
+        logger.exception("evidence: receipt append failed (ignored)")
 
 
 def _read_strategy_code(name: str, kind: str) -> Optional[str]:
