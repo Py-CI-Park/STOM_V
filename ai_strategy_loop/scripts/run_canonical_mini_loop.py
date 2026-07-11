@@ -45,14 +45,55 @@ from ai_strategy_loop.controller.state import LoopState
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 REFUSAL_OPERATING_DB_PATH = "operating_db_path_refused"
 DEFAULT_PROFILE = "clr07_learning_v1"
-FROZEN_CL_R07_PROFILE_NAME = DEFAULT_PROFILE
-FROZEN_CL_R07_PROFILE_SHA256 = "95c492da3d9a48c9edcfca411637fb401f3334a439c64c33eb79680aeea01636"
-FROZEN_CL_R07_CODE_HASH = "e813d48e970e8d4372ac053bf286d8a7d6ef3cf3100e7ef01e774c509a9e1909"
-FROZEN_CL_R07_CONFIG_HASH = FROZEN_CL_R07_PROFILE_SHA256
-FROZEN_CL_R07_DATA_HASH = "2692a6acd08721469b36e76c28860e2550c860899e569d7123c70c2a3d22df10"
-MAX_PROVIDER_CALLS = 3
-MAX_OFFICIAL_EVALUATIONS = 9
-MAX_ELAPSED_SECONDS = 120 * 60
+@dataclass(frozen=True)
+class FrozenClR07Contract:
+    name: str
+    max_rounds: int
+    proposals_per_round: int
+    repair_per_round: int
+    discovery_per_round: int
+    evaluated_per_round: int
+    positive_controls: int
+    negative_controls: int
+    final_2x2: bool
+    max_official_evaluations: int
+    max_provider_pack_calls: int
+    wall_clock_cap_minutes: int
+    force_extra_evaluation: bool
+    profile_sha256: str
+    code_hash: str
+    config_hash: str
+    data_hash: str
+
+
+FROZEN_CLR07_CONTRACT = FrozenClR07Contract(
+    name=DEFAULT_PROFILE,
+    max_rounds=3,
+    proposals_per_round=4,
+    repair_per_round=2,
+    discovery_per_round=2,
+    evaluated_per_round=1,
+    positive_controls=1,
+    negative_controls=1,
+    final_2x2=True,
+    max_official_evaluations=9,
+    max_provider_pack_calls=3,
+    wall_clock_cap_minutes=120,
+    force_extra_evaluation=False,
+    profile_sha256="95c492da3d9a48c9edcfca411637fb401f3334a439c64c33eb79680aeea01636",
+    code_hash="e813d48e970e8d4372ac053bf286d8a7d6ef3cf3100e7ef01e774c509a9e1909",
+    config_hash="95c492da3d9a48c9edcfca411637fb401f3334a439c64c33eb79680aeea01636",
+    data_hash="2692a6acd08721469b36e76c28860e2550c860899e569d7123c70c2a3d22df10",
+)
+
+FROZEN_CL_R07_PROFILE_NAME = FROZEN_CLR07_CONTRACT.name
+FROZEN_CL_R07_PROFILE_SHA256 = FROZEN_CLR07_CONTRACT.profile_sha256
+FROZEN_CL_R07_CODE_HASH = FROZEN_CLR07_CONTRACT.code_hash
+FROZEN_CL_R07_CONFIG_HASH = FROZEN_CLR07_CONTRACT.config_hash
+FROZEN_CL_R07_DATA_HASH = FROZEN_CLR07_CONTRACT.data_hash
+MAX_PROVIDER_CALLS = FROZEN_CLR07_CONTRACT.max_provider_pack_calls
+MAX_OFFICIAL_EVALUATIONS = FROZEN_CLR07_CONTRACT.max_official_evaluations
+MAX_ELAPSED_SECONDS = FROZEN_CLR07_CONTRACT.wall_clock_cap_minutes * 60
 METHODOLOGY = "CL-R07_bounded_canonical_mini_loop"
 TIMEFRAME = "min"
 PROTECTED_PATHS: tuple[Path, ...] = (
@@ -75,8 +116,18 @@ class MiniLoopConfig:
     strategy_db: Path | str
     evidence_dir: Path | str
     profile: str = DEFAULT_PROFILE
-    max_rounds: int = 3
-    force_extra_evaluation: bool = False
+    max_rounds: int = FROZEN_CLR07_CONTRACT.max_rounds
+    proposals_per_round: int = FROZEN_CLR07_CONTRACT.proposals_per_round
+    repair_per_round: int = FROZEN_CLR07_CONTRACT.repair_per_round
+    discovery_per_round: int = FROZEN_CLR07_CONTRACT.discovery_per_round
+    evaluated_per_round: int = FROZEN_CLR07_CONTRACT.evaluated_per_round
+    positive_controls: int = FROZEN_CLR07_CONTRACT.positive_controls
+    negative_controls: int = FROZEN_CLR07_CONTRACT.negative_controls
+    final_2x2: bool = FROZEN_CLR07_CONTRACT.final_2x2
+    max_official_evaluations: int = FROZEN_CLR07_CONTRACT.max_official_evaluations
+    max_provider_pack_calls: int = FROZEN_CLR07_CONTRACT.max_provider_pack_calls
+    wall_clock_cap_minutes: int = FROZEN_CLR07_CONTRACT.wall_clock_cap_minutes
+    force_extra_evaluation: bool = FROZEN_CLR07_CONTRACT.force_extra_evaluation
 
 
 class BuiltInFakeProvider:
@@ -203,6 +254,7 @@ def _profile_receipt() -> ReplayProfile:
 
 def _manifest_specs() -> dict[str, dict[str, Any]]:
     r07_profile = _profile_receipt()
+    contract = FROZEN_CLR07_CONTRACT
     return {
         "CL-R07": {
             "profile": FROZEN_CL_R07_PROFILE_NAME,
@@ -211,7 +263,20 @@ def _manifest_specs() -> dict[str, dict[str, Any]]:
             "methodology": METHODOLOGY,
             "timeframe": TIMEFRAME,
             "scope": "bounded_three_round_driver_fake_provider_evaluator",
-            "session": {"max_rounds": 3, "proposals_per_round": 4, "evaluated_per_round": 1},
+            "session": {
+                "max_rounds": contract.max_rounds,
+                "proposals_per_round": contract.proposals_per_round,
+                "repair_per_round": contract.repair_per_round,
+                "discovery_per_round": contract.discovery_per_round,
+                "evaluated_per_round": contract.evaluated_per_round,
+                "positive_controls": contract.positive_controls,
+                "negative_controls": contract.negative_controls,
+                "final_2x2": contract.final_2x2,
+                "max_official_evaluations": contract.max_official_evaluations,
+                "max_provider_pack_calls": contract.max_provider_pack_calls,
+                "wall_clock_cap_minutes": contract.wall_clock_cap_minutes,
+                "force_extra_evaluation": contract.force_extra_evaluation,
+            },
             "period": {"days": 5, "role": "process_proof"},
             "capital": {"betting_code": "5"},
             "cost": {"fake": True},
@@ -261,20 +326,38 @@ def _manifest_specs() -> dict[str, dict[str, Any]]:
     }
 
 
-def _profile_validation_stop_reason(profile_name: str) -> str | None:
-    if profile_name != FROZEN_CL_R07_PROFILE_NAME:
-        return "profile_mismatch"
+def _frozen_contract_mismatch(config: MiniLoopConfig) -> str | None:
+    expected = FROZEN_CLR07_CONTRACT
+    expected_fields = {
+        "profile": expected.name,
+        "max_rounds": expected.max_rounds,
+        "proposals_per_round": expected.proposals_per_round,
+        "repair_per_round": expected.repair_per_round,
+        "discovery_per_round": expected.discovery_per_round,
+        "evaluated_per_round": expected.evaluated_per_round,
+        "positive_controls": expected.positive_controls,
+        "negative_controls": expected.negative_controls,
+        "final_2x2": expected.final_2x2,
+        "max_official_evaluations": expected.max_official_evaluations,
+        "max_provider_pack_calls": expected.max_provider_pack_calls,
+        "wall_clock_cap_minutes": expected.wall_clock_cap_minutes,
+        "force_extra_evaluation": expected.force_extra_evaluation,
+    }
+    for field, expected_value in expected_fields.items():
+        if getattr(config, field) != expected_value:
+            return "profile_mismatch" if field == "profile" else "frozen_contract_mismatch"
+
     specs = _manifest_specs()
     r07_spec = specs["CL-R07"]
     profile = ReplayProfile.from_dict(r07_spec["fill"])
-    if profile.profile_sha256() != FROZEN_CL_R07_PROFILE_SHA256:
-        return "hash_mismatch"
-    if sha256_hex(str(r07_spec["data"])) != FROZEN_CL_R07_DATA_HASH:
-        return "hash_mismatch"
-    if str(r07_spec["code_hash"]) != FROZEN_CL_R07_CODE_HASH:
-        return "hash_mismatch"
-    if str(r07_spec["config_hash"]) != FROZEN_CL_R07_CONFIG_HASH:
-        return "hash_mismatch"
+    if profile.profile_sha256() != expected.profile_sha256:
+        return "frozen_contract_mismatch"
+    if sha256_hex(str(r07_spec["data"])) != expected.data_hash:
+        return "frozen_contract_mismatch"
+    if str(r07_spec["code_hash"]) != expected.code_hash:
+        return "frozen_contract_mismatch"
+    if str(r07_spec["config_hash"]) != expected.config_hash:
+        return "frozen_contract_mismatch"
     return None
 
 def _build_manifest(run_id: str, role: str, spec: Mapping[str, Any], created_at: str) -> EvaluationManifest:
@@ -432,16 +515,16 @@ def run_mini_loop(
     wall_clock: Callable[[], datetime | str] | None = None,
 ) -> dict[str, Any]:
     clock = clock or time.monotonic
-    profile_stop = _profile_validation_stop_reason(config.profile)
-    if profile_stop:
+    contract_stop = _frozen_contract_mismatch(config)
+    if contract_stop:
         return _summary(
-            f"NO_GO_{profile_stop.upper()}",
+            f"NO_GO_{contract_stop.upper()}",
             0,
             0,
             0.0,
-            profile_stop,
-            _resolve(config.strategy_db),
-            _resolve(config.evidence_dir),
+            contract_stop,
+            Path(config.strategy_db),
+            Path(config.evidence_dir),
         )
     strategy_db = _resolve(config.strategy_db)
     evidence_dir = _resolve(config.evidence_dir)
@@ -545,7 +628,7 @@ def run_mini_loop(
         stopped = before_spend()
         if stopped is not None:
             return None, stopped
-        if total_eval_spend >= MAX_OFFICIAL_EVALUATIONS:
+        if total_eval_spend >= config.max_official_evaluations:
             return None, stop("NO_GO_BUDGET_EXHAUSTED", "no_go_budget_exhausted")
         total_eval_spend += 1
         result = evaluator.evaluate(
@@ -577,11 +660,24 @@ def run_mini_loop(
         stopped = before_spend()
         if stopped is not None:
             return stopped
-        if provider_calls >= MAX_PROVIDER_CALLS:
+        if provider_calls >= config.max_provider_pack_calls:
             return stop("NO_GO_BUDGET_EXHAUSTED", "no_go_budget_exhausted")
         provider_calls += 1
         unconsumed = store.unconsumed_feedback(run_id)
         proposals = provider.propose_pack(round_no=round_no, feedback=unconsumed)
+        lane_counts: dict[str, int] = {}
+        family_counts: dict[str, int] = {}
+        for proposal in proposals:
+            lane = str(proposal.get("lane") or "unknown")
+            family = str(proposal.get("family") or "unknown")
+            lane_counts[lane] = lane_counts.get(lane, 0) + 1
+            family_counts[family] = family_counts.get(family, 0) + 1
+        if (
+            len(proposals) > config.proposals_per_round
+            or lane_counts.get("repair", 0) > config.repair_per_round
+            or lane_counts.get("discovery", 0) > config.discovery_per_round
+        ):
+            return stop("NO_GO_BUDGET_EXHAUSTED", "no_go_budget_exhausted")
         selection = select_official_candidate(proposals, timeframe=TIMEFRAME, methodology_version=METHODOLOGY)
         if selection.get("selected") is None:
             return stop("NO_GO_POOL_BLOCKED", "candidate_pool_blocked")
@@ -593,13 +689,6 @@ def run_mini_loop(
             }
             for rejection in selection.get("rejected", [])
         ]
-        lane_counts: dict[str, int] = {}
-        family_counts: dict[str, int] = {}
-        for proposal in proposals:
-            lane = str(proposal.get("lane") or "unknown")
-            family = str(proposal.get("family") or "unknown")
-            lane_counts[lane] = lane_counts.get(lane, 0) + 1
-            family_counts[family] = family_counts.get(family, 0) + 1
         selection_receipt_id = _receipt(
             store,
             run_id=run_id,

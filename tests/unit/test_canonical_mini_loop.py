@@ -76,6 +76,15 @@ class FakeProvider:
             },
         }
 
+class OverProposingProvider(FakeProvider):
+    def propose_pack(self, *, round_no: int, feedback: list[dict]) -> list[dict]:
+        proposals = super().propose_pack(round_no=round_no, feedback=feedback)
+        self.proposals_seen += 1
+        return proposals + [
+            self._proposal(f"r{round_no}-repair-extra", "repair", "momentum", "거래대금 > 0", 0.1)
+        ]
+
+
 
 class FakeEvaluator:
     def __init__(self, *, mutate_manifest_after_first: bool = False) -> None:
@@ -211,23 +220,68 @@ def test_default_profile_remains_happy_path(tmp_path):
     assert len(evaluator.calls) == 9
 
 
-def test_provider_budget_refuses_fourth_pack_before_extra_call(tmp_path):
-    summary, provider, evaluator = _run(tmp_path, max_rounds=4)
+def test_tampered_max_rounds_fails_frozen_contract_before_side_effects(tmp_path):
+    provider = FakeProvider()
+    evaluator = FakeEvaluator()
+
+    summary = run_mini_loop(
+        MiniLoopConfig(
+            strategy_db=tmp_path / "isolated.sqlite",
+            evidence_dir=tmp_path / "evidence",
+            max_rounds=4,
+        ),
+        provider=provider,
+        evaluator=evaluator,
+        clock=FakeClock(),
+    )
+
+    assert summary["status"] == "NO_GO_FROZEN_CONTRACT_MISMATCH"
+    assert summary["stop_reason"] == "frozen_contract_mismatch"
+    assert summary["provider_calls"] == 0
+    assert summary["official_evaluations"] == 0
+    assert summary["total_official_evaluation_spend"] == 0
+    assert provider.calls == 0
+    assert evaluator.calls == []
+    assert not (tmp_path / "isolated.sqlite").exists()
+    assert not (tmp_path / "evidence").exists()
+
+
+def test_tampered_force_extra_evaluation_fails_frozen_contract_before_side_effects(tmp_path):
+    provider = FakeProvider()
+    evaluator = FakeEvaluator()
+
+    summary = run_mini_loop(
+        MiniLoopConfig(
+            strategy_db=tmp_path / "isolated.sqlite",
+            evidence_dir=tmp_path / "evidence",
+            force_extra_evaluation=True,
+        ),
+        provider=provider,
+        evaluator=evaluator,
+        clock=FakeClock(),
+    )
+
+    assert summary["status"] == "NO_GO_FROZEN_CONTRACT_MISMATCH"
+    assert summary["stop_reason"] == "frozen_contract_mismatch"
+    assert summary["provider_calls"] == 0
+    assert summary["official_evaluations"] == 0
+    assert summary["total_official_evaluation_spend"] == 0
+    assert provider.calls == 0
+    assert evaluator.calls == []
+    assert not (tmp_path / "isolated.sqlite").exists()
+    assert not (tmp_path / "evidence").exists()
+
+
+def test_internal_provider_pack_budget_refuses_over_proposing_provider(tmp_path):
+    provider = OverProposingProvider()
+    summary, provider, evaluator = _run(tmp_path, provider=provider)
 
     assert summary["status"] == "NO_GO_BUDGET_EXHAUSTED"
     assert summary["stop_reason"] == "no_go_budget_exhausted"
-    assert summary["provider_calls"] == 3
-    assert provider.calls == 3
-    assert len(evaluator.calls) == 3
-
-
-def test_official_evaluation_budget_refuses_tenth_evaluation(tmp_path):
-    summary, _provider, evaluator = _run(tmp_path, force_extra_evaluation=True)
-
-    assert summary["status"] == "NO_GO_BUDGET_EXHAUSTED"
-    assert summary["stop_reason"] == "no_go_budget_exhausted"
-    assert len(evaluator.calls) == 9
-    assert summary["total_official_evaluation_spend"] == 9
+    assert summary["provider_calls"] == 1
+    assert provider.calls == 1
+    assert evaluator.calls == []
+    assert (tmp_path / "isolated.sqlite").exists()
 
 
 def test_wall_clock_budget_refuses_121_minute_run(tmp_path):
