@@ -170,6 +170,13 @@ class TestCanonicalEvidenceWiringOn:
         ev2 = EvidenceStore(st2)
         passports2 = ev2.passports_for_run(rid)
         assert len(passports2) == 3
+        # true idempotency (not merely a UNIQUE-swallowed insert): every passport,
+        # including the post-resume gen, must reference the SAME existing
+        # manifest_id -- no dangling manifest_id reference is allowed.
+        for p in passports2:
+            assert p["manifest_id"] == manifest_id_first_run, p
+        gen2 = next(p for p in passports2 if p["gen_no"] == 2)
+        assert gen2["manifest_id"] == manifest_id_first_run
         st2.close()
 
     def test_generated_code_missing_fails_candidate_before_backtest(self, monkeypatch, tmp_path):

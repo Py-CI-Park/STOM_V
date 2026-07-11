@@ -2715,7 +2715,21 @@ def _evidence_rowset_fallback(buy_code: str, sell_code: str, timeframe: str) -> 
 
 def _evidence_build_manifest(config: Any, run_id: str) -> EvaluationManifest:
     cfg_dict = _evidence_config_dict(config)
-    config_hash = sha256_hex(json.dumps(cfg_dict, sort_keys=True, ensure_ascii=True))
+    timeframe = str(getattr(config, "bt_timeframe", None) or "min")
+    scope = str(getattr(config, "bt_scope", None) or "single_stock")
+    methodology = str(getattr(config, "evolution_mode", None) or "hillclimb")
+    session = {
+        "start_time": getattr(config, "bt_universe_start_time", None),
+        "end_time": getattr(config, "bt_universe_end_time", None),
+    }
+    period = {
+        "start": getattr(config, "bt_start", None),
+        "end": getattr(config, "bt_end", None),
+        "window_days": getattr(config, "bt_window_days", None),
+    }
+    capital = {"universe_cap": getattr(config, "bt_universe_cap", None)}
+    cost = {"mdd_cap": getattr(config, "mdd_cap", None)}
+    fill = {"engine_count": getattr(config, "bt_engine_count", None)}
     relevant = {
         "bt_timeframe": cfg_dict.get("bt_timeframe"),
         "bt_scope": cfg_dict.get("bt_scope"),
@@ -2725,9 +2739,23 @@ def _evidence_build_manifest(config: Any, run_id: str) -> EvaluationManifest:
         "min_daily_trades": cfg_dict.get("min_daily_trades"),
     }
     code_hash = sha256_hex(json.dumps(relevant, sort_keys=True, ensure_ascii=True))
-    timeframe = str(getattr(config, "bt_timeframe", None) or "min")
-    scope = str(getattr(config, "bt_scope", None) or "single_stock")
-    methodology = str(getattr(config, "evolution_mode", None) or "hillclimb")
+    # config_hash: manifest identity MUST be idempotent across a resume that only
+    # changes an operational knob (e.g. max_generations). It is deliberately hashed
+    # over the frozen evaluation subset only (`relevant`, i.e. the same fields that
+    # feed code_hash, plus the manifest's own session/period/capital/cost/fill §7
+    # fields below) -- NEVER the full LoopConfig -- so unrelated knobs never mint a
+    # new manifest_id and orphan later-gen passports under UNIQUE(run_id, role).
+    frozen_evaluation_subset = dict(relevant)
+    frozen_evaluation_subset.update({
+        "session": session,
+        "period": period,
+        "capital": capital,
+        "cost": cost,
+        "fill": fill,
+    })
+    config_hash = sha256_hex(
+        json.dumps(frozen_evaluation_subset, sort_keys=True, ensure_ascii=True)
+    )
     manifest_id = compute_manifest_id(
         run_id=run_id, profile="ai_strategy_loop", methodology=methodology,
         timeframe=timeframe, scope=scope, role="run_primary",
@@ -2743,18 +2771,11 @@ def _evidence_build_manifest(config: Any, run_id: str) -> EvaluationManifest:
         methodology=methodology,
         timeframe=timeframe,
         scope=scope,
-        session={
-            "start_time": getattr(config, "bt_universe_start_time", None),
-            "end_time": getattr(config, "bt_universe_end_time", None),
-        },
-        period={
-            "start": getattr(config, "bt_start", None),
-            "end": getattr(config, "bt_end", None),
-            "window_days": getattr(config, "bt_window_days", None),
-        },
-        capital={"universe_cap": getattr(config, "bt_universe_cap", None)},
-        cost={"mdd_cap": getattr(config, "mdd_cap", None)},
-        fill={"engine_count": getattr(config, "bt_engine_count", None)},
+        session=session,
+        period=period,
+        capital=capital,
+        cost=cost,
+        fill=fill,
         role="run_primary",
         code_hash=code_hash,
         config_hash=config_hash,
@@ -2844,6 +2865,18 @@ def _evidence_build_run_finished_receipt(
 def _evidence_safe_append_manifest(store: EvidenceStore, config: Any, run_id: str) -> Optional[str]:
     try:
         manifest = _evidence_build_manifest(config, run_id)
+        # Idempotent resume: manifest_id is content-addressed (frozen evaluation
+        # subset only, see _evidence_build_manifest). A resume that only changes an
+        # operational knob (e.g. max_generations) recomputes the SAME manifest_id,
+        # but `created_at` is wall-clock and would differ from the first freeze --
+        # re-inserting would trip the store's same-PK-different-payload corruption
+        # guard. Reuse the already-frozen row instead of attempting a re-insert.
+        existing = store._con.execute(
+            "SELECT manifest_id FROM evaluation_manifests WHERE manifest_id = ?",
+            (manifest.manifest_id,),
+        ).fetchone()
+        if existing is not None:
+            return existing[0]
         store.append_manifest(manifest)
         return manifest.manifest_id
     except Exception:  # noqa: BLE001 - 증거 원장 실패는 흡수(루프를 막지 않음).

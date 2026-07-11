@@ -1,4 +1,10 @@
-"""자동 조건식 탐색용 조건 코드 생성기 (library-only)."""
+"""자동 조건식 탐색용 조건 코드 생성기 (library-only).
+
+`expression_result_from_candidate_pack(..., enforce_approved_b_only=True)` hard-blocks
+non-approved-variable candidates. It defaults to False; enabling it requires the
+timeframe-specific approved-B_* registry to be reconciled first (tracked CL-R07
+prerequisite).
+"""
 
 from __future__ import annotations
 
@@ -366,8 +372,19 @@ def validate_multi_hypothesis_candidate_pack(
     }
 
 
-def expression_result_from_candidate_pack(candidate_pack: dict, *, planned_count: int = 3, min_candidates: int = 2) -> dict:
-    validation = validate_multi_hypothesis_candidate_pack(candidate_pack, min_candidates=min_candidates)
+def expression_result_from_candidate_pack(
+    candidate_pack: dict,
+    *,
+    planned_count: int = 3,
+    min_candidates: int = 2,
+    enforce_approved_b_only: bool = False,
+) -> dict:
+    # `enforce_approved_b_only` defaults to False (no behavior change). Flipping it on
+    # hard-blocks `non_approved_variable` candidates and requires the timeframe-specific
+    # approved-B_* registry to be reconciled first -- tracked as a CL-R07 prerequisite.
+    validation = validate_multi_hypothesis_candidate_pack(
+        candidate_pack, min_candidates=min_candidates, enforce_approved_b_only=enforce_approved_b_only,
+    )
     if not validation['valid']:
         return {
             'status': 'error',

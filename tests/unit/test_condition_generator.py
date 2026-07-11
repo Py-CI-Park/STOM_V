@@ -309,3 +309,18 @@ def test_deterministic_candidates_are_marked_diagnostic_fallback():
     assert fallback['prompt_maturity_credit_allowed'] is False
     assert fallback['selected_candidates'][0]['fallback_reason'] == 'llm_candidate_pack_missing'
     assert fallback['selected_candidates'][0]['prompt_maturity_score'] == 0
+
+
+
+def test_expression_result_from_candidate_pack_enforce_approved_b_only_rejects_unapproved_variable():
+    pack = _valid_candidate_pack()
+    pack['candidates'][3]['hypothesis_id'] = 'unapproved'
+    pack['candidates'][3]['expression'] = '완전히_존재하지않는_변수 > 1'
+
+    default_result = expression_result_from_candidate_pack(pack, planned_count=4)
+    enforced_result = expression_result_from_candidate_pack(pack, planned_count=4, enforce_approved_b_only=True)
+
+    assert default_result['status'] == 'ok'
+    assert enforced_result['candidate_count'] < default_result['candidate_count']
+    assert '완전히_존재하지않는_변수 > 1' in default_result['expressions']
+    assert '완전히_존재하지않는_변수 > 1' not in enforced_result['expressions']

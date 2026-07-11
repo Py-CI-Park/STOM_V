@@ -133,9 +133,17 @@ def _canonicalize(node: ast.AST) -> str:
         children = sorted(_canonicalize(value) for value in node.values)
         return f'({op_name} ' + ' '.join(children) + ')'
     if isinstance(node, ast.UnaryOp):
-        if not isinstance(node.op, ast.Not):
-            raise FingerprintError(f'forbidden unary operator: {type(node.op).__name__}')
-        return f'(not {_canonicalize(node.operand)})'
+        if isinstance(node.op, ast.Not):
+            return f'(not {_canonicalize(node.operand)})'
+        if isinstance(node.op, (ast.USub, ast.UAdd)) and isinstance(node.operand, ast.Constant):
+            sign = -1 if isinstance(node.op, ast.USub) else 1
+            value = node.operand.value
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise FingerprintError(
+                    f'unsupported constant type under unary operator: {type(value).__name__}'
+                )
+            return _canonical_constant(sign * value)
+        raise FingerprintError(f'forbidden unary operator: {type(node.op).__name__}')
     if isinstance(node, ast.Compare):
         left = _canonicalize(node.left)
         pieces = []

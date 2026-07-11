@@ -86,10 +86,11 @@ def main() -> int:
     #   않는다(EvidenceStore.append_passport/append_manifest를 이 스크립트가
     #   호출하지 않는다). canonical_phase_owner_ok(fixed_batch)==False로 그
     #   보장을 명시적으로 고정한다(회귀 시 즉시 AssertionError).
-    assert not canonical_phase_owner_ok(EXECUTION_KIND_FIXED_BATCH), (
-        "claude_candidate_batch_eval is execution_kind=fixed_batch and must "
-        "never be treated as a canonical phase owner"
-    )
+    if canonical_phase_owner_ok(EXECUTION_KIND_FIXED_BATCH):
+        raise RuntimeError(
+            "claude_candidate_batch_eval is execution_kind=fixed_batch and must "
+            "never be treated as a canonical phase owner"
+        )
 
     sess = WarmBacktestSession(_build_warm_btconfig(config))
     t0 = time.time()

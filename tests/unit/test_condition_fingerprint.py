@@ -97,6 +97,46 @@ def test_ast_fingerprint_rejects_unparseable():
         ast_fingerprint('체결강도 >', timeframe='min', methodology_version='v1')
 
 
+
+def test_ast_fingerprint_accepts_signed_numeric_literal():
+    # regression: unary minus/plus over a numeric constant (e.g. `등락율 < -3`)
+    # must fingerprint, not raise FingerprintError.
+    value = ast_fingerprint('등락율 < -3', timeframe='min', methodology_version='v1')
+    assert isinstance(value, str)
+    int(value, 16)
+
+
+def test_ast_fingerprint_signed_literal_decimal_equivalence():
+    a = ast_fingerprint('등락율 < -3', timeframe='min', methodology_version='v1')
+    b = ast_fingerprint('등락율 < -3.0', timeframe='min', methodology_version='v1')
+    assert a == b
+
+
+def test_ast_fingerprint_signed_literal_differs_from_unsigned():
+    a = ast_fingerprint('등락율 >= -2', timeframe='min', methodology_version='v1')
+    b = ast_fingerprint('등락율 >= 2', timeframe='min', methodology_version='v1')
+    assert a != b
+
+
+def test_ast_fingerprint_unary_not_still_works():
+    value = ast_fingerprint('not (체결강도 > 100 and 등락율 < 5)', timeframe='min', methodology_version='v1')
+    assert isinstance(value, str)
+    int(value, 16)
+
+
+@pytest.mark.parametrize(
+    'expression',
+    [
+        '-체결강도 > 1',
+        '-abs(체결강도) > 1',
+        '+체결강도 > 1',
+    ],
+)
+def test_ast_fingerprint_rejects_unary_minus_over_non_constant(expression):
+    with pytest.raises(FingerprintError):
+        ast_fingerprint(expression, timeframe='min', methodology_version='v1')
+
+
 # ---------------------------------------------------------------------------
 # rowset_fingerprint
 # ---------------------------------------------------------------------------
